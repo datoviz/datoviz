@@ -412,6 +412,8 @@ struct DvzSampledField
     DvzFieldGeometry geometry;
     void* data;
     uint64_t data_size;
+    void* upload;
+    uint64_t upload_size;
     bool dirty;
     bool dirty_full;
     DvzFieldRegion dirty_region;
@@ -737,11 +739,21 @@ uint32_t _scene_field_index(const DvzScene* scene, const DvzSampledField* field)
 
 bool _field_format_is_scalar(DvzFieldFormat format);
 
+bool _field_format_bytes_per_texel(DvzFieldFormat format, uint32_t* out_bytes);
+
+bool _field_format_texture_format(DvzFieldFormat format, uint32_t* out_format);
+
 bool _field_region_byte_size(
     DvzFieldFormat format, const DvzFieldRegion* region, uint64_t* out_size);
 
+bool _scene_prepare_field_texture(
+    DvzSampledField* field, DvzFieldRegion* out_region, const void** out_data);
+
 bool _scene_prepare_image_texture(
     DvzVisual* visual, DvzFieldRegion* out_region, const void** out_data);
+
+bool _scene_emit_sampled_field_texture_upload(
+    DvzFramePlan* plan, const char* resource_id, DvzSampledField* field);
 
 bool _scene_color_from_colormap(const DvzColormap* colormap, double t, uint8_t out_rgba[4]);
 

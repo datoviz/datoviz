@@ -828,19 +828,32 @@ static void _json_append_node(JsonBuilder* builder, const DvzFramePlanNode* node
         _json_append_escaped_string(builder, node->u.upload.data_tag);
         if (node->u.upload.texture_width > 0 && node->u.upload.texture_height > 0)
         {
+            uint32_t texture_depth =
+                node->u.upload.texture_depth > 0 ? node->u.upload.texture_depth : 1;
             _json_append(
                 builder,
                 ", \"texture\": { \"origin_x\": %" PRIu32 ", \"origin_y\": %" PRIu32
-                ", \"width\": %" PRIu32 ", \"height\": %" PRIu32,
+                ", \"origin_z\": %" PRIu32 ", \"width\": %" PRIu32
+                ", \"height\": %" PRIu32 ", \"depth\": %" PRIu32,
                 node->u.upload.texture_origin_x, node->u.upload.texture_origin_y,
-                node->u.upload.texture_width, node->u.upload.texture_height);
+                node->u.upload.texture_origin_z, node->u.upload.texture_width,
+                node->u.upload.texture_height, texture_depth);
+            if (node->u.upload.texture_format != 0)
+            {
+                _json_append(
+                    builder, ", \"format\": %" PRIu32 ", \"bytes_per_texel\": %" PRIu32,
+                    node->u.upload.texture_format, node->u.upload.texture_bytes_per_texel);
+            }
             if (node->u.upload.texture_alloc_width > 0 &&
                 node->u.upload.texture_alloc_height > 0)
             {
                 _json_append(
                     builder,
-                    ", \"alloc_width\": %" PRIu32 ", \"alloc_height\": %" PRIu32,
-                    node->u.upload.texture_alloc_width, node->u.upload.texture_alloc_height);
+                    ", \"alloc_width\": %" PRIu32 ", \"alloc_height\": %" PRIu32
+                    ", \"alloc_depth\": %" PRIu32,
+                    node->u.upload.texture_alloc_width, node->u.upload.texture_alloc_height,
+                    node->u.upload.texture_alloc_depth > 0 ? node->u.upload.texture_alloc_depth
+                                                           : 1);
             }
             _json_append(builder, " }");
         }
@@ -1173,8 +1186,57 @@ bool dvz_frame_plan_upload_set_texture_extent(
         return false;
     node->u.upload.texture_width  = width;
     node->u.upload.texture_height = height;
+    node->u.upload.texture_depth  = 1;
     return true;
 }
+
+
+/**
+ * Mark the most recently appended upload node as a 3D texture write.
+ *
+ * @param plan the FramePlan
+ * @param width written texture-region width in texels
+ * @param height written texture-region height in texels
+ * @param depth written texture-region depth in texels
+ * @return whether the hint was applied
+ */
+bool dvz_frame_plan_upload_set_texture_3d_extent(
+    DvzFramePlan* plan, uint32_t width, uint32_t height, uint32_t depth)
+{
+    if (plan == NULL || plan->count == 0)
+        return false;
+    DvzFramePlanNode* node = &plan->nodes[plan->count - 1];
+    if (node->type != DVZ_FRAME_PLAN_NODE_UPLOAD)
+        return false;
+    node->u.upload.texture_width  = width;
+    node->u.upload.texture_height = height;
+    node->u.upload.texture_depth  = depth;
+    return true;
+}
+
+
+
+/**
+ * Set the texture format on the most recently appended texture upload.
+ *
+ * @param plan the FramePlan
+ * @param format texture format, using VkFormat values
+ * @param bytes_per_texel bytes in one texel
+ * @return whether the format was applied
+ */
+bool dvz_frame_plan_upload_set_texture_format(
+    DvzFramePlan* plan, uint32_t format, uint32_t bytes_per_texel)
+{
+    if (plan == NULL || plan->count == 0)
+        return false;
+    DvzFramePlanNode* node = &plan->nodes[plan->count - 1];
+    if (node->type != DVZ_FRAME_PLAN_NODE_UPLOAD)
+        return false;
+    node->u.upload.texture_format = format;
+    node->u.upload.texture_bytes_per_texel = bytes_per_texel;
+    return true;
+}
+
 
 
 /**
@@ -1195,8 +1257,34 @@ bool dvz_frame_plan_upload_set_texture_allocation_extent(
         return false;
     node->u.upload.texture_alloc_width  = width;
     node->u.upload.texture_alloc_height = height;
+    node->u.upload.texture_alloc_depth  = 1;
     return true;
 }
+
+
+/**
+ * Set the 3D allocation extent on the most recently appended texture upload.
+ *
+ * @param plan the FramePlan
+ * @param width full texture allocation width in texels
+ * @param height full texture allocation height in texels
+ * @param depth full texture allocation depth in texels
+ * @return whether the allocation extent was applied
+ */
+bool dvz_frame_plan_upload_set_texture_3d_allocation_extent(
+    DvzFramePlan* plan, uint32_t width, uint32_t height, uint32_t depth)
+{
+    if (plan == NULL || plan->count == 0)
+        return false;
+    DvzFramePlanNode* node = &plan->nodes[plan->count - 1];
+    if (node->type != DVZ_FRAME_PLAN_NODE_UPLOAD)
+        return false;
+    node->u.upload.texture_alloc_width  = width;
+    node->u.upload.texture_alloc_height = height;
+    node->u.upload.texture_alloc_depth  = depth;
+    return true;
+}
+
 
 
 bool dvz_frame_plan_upload_set_texture_region(
@@ -1209,6 +1297,31 @@ bool dvz_frame_plan_upload_set_texture_region(
         return false;
     node->u.upload.texture_origin_x = origin_x;
     node->u.upload.texture_origin_y = origin_y;
+    node->u.upload.texture_origin_z = 0;
+    return true;
+}
+
+
+/**
+ * Set the 3D subregion origin on the most recently appended texture upload.
+ *
+ * @param plan the FramePlan
+ * @param origin_x destination x offset in texels
+ * @param origin_y destination y offset in texels
+ * @param origin_z destination z offset in texels
+ * @return whether the origin was applied
+ */
+bool dvz_frame_plan_upload_set_texture_3d_region(
+    DvzFramePlan* plan, uint32_t origin_x, uint32_t origin_y, uint32_t origin_z)
+{
+    if (plan == NULL || plan->count == 0)
+        return false;
+    DvzFramePlanNode* node = &plan->nodes[plan->count - 1];
+    if (node->type != DVZ_FRAME_PLAN_NODE_UPLOAD)
+        return false;
+    node->u.upload.texture_origin_x = origin_x;
+    node->u.upload.texture_origin_y = origin_y;
+    node->u.upload.texture_origin_z = origin_z;
     return true;
 }
 

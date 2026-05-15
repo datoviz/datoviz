@@ -332,21 +332,46 @@ bool _resource_ensure_texture_2d(
     ConverterState* state, ResourceId* resource, uint32_t width, uint32_t height,
     bool* needs_create)
 {
+    return _resource_ensure_texture(state, resource, width, height, 1, 0, needs_create);
+}
+
+
+
+/**
+ * Ensure a persisted resource has the requested texture extent and format.
+ *
+ * @param state the converter state
+ * @param resource the resource entry
+ * @param width the requested texture width
+ * @param height the requested texture height
+ * @param depth the requested texture depth
+ * @param format the requested texture format, or zero for the default RGBA8 format
+ * @param needs_create whether a CreateTexture command must be emitted
+ * @return whether the resource was sized successfully
+ */
+bool _resource_ensure_texture(
+    ConverterState* state, ResourceId* resource, uint32_t width, uint32_t height,
+    uint32_t depth, uint32_t format, bool* needs_create)
+{
     ANN(state);
     ANN(resource);
     ANN(needs_create);
 
-    if (width == 0 || height == 0)
+    if (width == 0 || height == 0 || depth == 0)
         return false;
 
-    if (*needs_create || resource->texture_width == 0 || resource->texture_height == 0)
+    if (*needs_create || resource->texture_width == 0 || resource->texture_height == 0 ||
+        resource->texture_depth == 0)
     {
         resource->texture_width = width;
         resource->texture_height = height;
+        resource->texture_depth = depth;
+        resource->texture_format = format;
         *needs_create = true;
         return true;
     }
-    if (width == resource->texture_width && height == resource->texture_height)
+    if (width == resource->texture_width && height == resource->texture_height &&
+        depth == resource->texture_depth && format == resource->texture_format)
         return true;
 
     if (state->next_id == UINT64_MAX)
@@ -354,6 +379,8 @@ bool _resource_ensure_texture_2d(
     resource->id = state->next_id++;
     resource->texture_width = width;
     resource->texture_height = height;
+    resource->texture_depth = depth;
+    resource->texture_format = format;
     *needs_create = true;
     return true;
 }

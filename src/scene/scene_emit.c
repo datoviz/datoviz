@@ -154,6 +154,67 @@ static bool _scene_attach_upload_metadata(
 }
 
 
+/**
+ * Emit one sampled field as a texture upload node.
+ *
+ * @param plan the destination frame plan
+ * @param resource_id the texture resource id
+ * @param field the sampled field
+ * @return whether the upload node was emitted
+ */
+bool _scene_emit_sampled_field_texture_upload(
+    DvzFramePlan* plan, const char* resource_id, DvzSampledField* field)
+{
+    ANN(plan);
+    ANN(resource_id);
+    ANN(field);
+    DvzFieldRegion upload_region = {0};
+    const void* upload_data = NULL;
+    if (!_scene_prepare_field_texture(field, &upload_region, &upload_data))
+        return false;
+
+    uint64_t bytes = 0;
+    uint32_t bytes_per_texel = 0;
+    uint32_t texture_format = 0;
+    if (!_field_region_byte_size(field->desc.format, &upload_region, &bytes) ||
+        !_field_format_bytes_per_texel(field->desc.format, &bytes_per_texel) ||
+        !_field_format_texture_format(field->desc.format, &texture_format))
+    {
+        log_error("sampled field texture upload size or format conversion failed");
+        return false;
+    }
+
+    if (!dvz_frame_plan_upload_bytes(plan, resource_id, 0, bytes, "field", upload_data))
+        return false;
+
+    DvzFramePlanUploadMeta metadata = {0};
+    metadata.kind = field->desc.dim == DVZ_FIELD_DIM_3D ? DVZ_FRAME_PLAN_RESOURCE_KIND_TEXTURE_3D
+                                                        : DVZ_FRAME_PLAN_RESOURCE_KIND_TEXTURE_2D;
+    metadata.role = DVZ_FRAME_PLAN_RESOURCE_ROLE_TEXTURE;
+    metadata.visual_index = UINT32_MAX;
+    metadata.buffer_index = UINT32_MAX;
+    if (!dvz_frame_plan_upload_metadata(plan, &metadata) ||
+        !dvz_frame_plan_upload_set_texture_format(plan, texture_format, bytes_per_texel))
+        return false;
+
+    if (field->desc.dim == DVZ_FIELD_DIM_3D)
+    {
+        return dvz_frame_plan_upload_set_texture_3d_extent(
+                   plan, upload_region.width, upload_region.height, upload_region.depth) &&
+               dvz_frame_plan_upload_set_texture_3d_allocation_extent(
+                   plan, field->desc.width, field->desc.height, field->desc.depth) &&
+               dvz_frame_plan_upload_set_texture_3d_region(
+                   plan, upload_region.x, upload_region.y, upload_region.z);
+    }
+
+    return dvz_frame_plan_upload_set_texture_extent(
+               plan, upload_region.width, upload_region.height) &&
+           dvz_frame_plan_upload_set_texture_allocation_extent(
+               plan, field->desc.width, field->desc.height) &&
+           dvz_frame_plan_upload_set_texture_region(plan, upload_region.x, upload_region.y);
+}
+
+
 
 /**
  * Emit dirty uploads for all panel-visible visuals in one figure.

@@ -56,6 +56,7 @@ typedef enum
     DVZ_FRAME_PLAN_RESOURCE_KIND_NONE = 0,
     DVZ_FRAME_PLAN_RESOURCE_KIND_BUFFER,
     DVZ_FRAME_PLAN_RESOURCE_KIND_TEXTURE_2D,
+    DVZ_FRAME_PLAN_RESOURCE_KIND_TEXTURE_3D,
 } DvzFramePlanResourceKind;
 
 
@@ -288,16 +289,20 @@ struct DvzFramePlanNode
             /* Optional primitive topology hint, propagated to the converter resource entry.
              * UINT32_MAX = unspecified (default; used by POINT and other typed families). */
             uint32_t topology;
-            /* Optional 2D texture write extent. When `texture_width > 0`, the upload targets a
-             * 2D texture rather than a vertex buffer; `byte_size` is `width * height * 4`
-             * (RGBA8). Default 0 = vertex-buffer upload. */
+            /* Optional texture write extent. When `texture_width > 0`, the upload targets a
+             * texture rather than a vertex buffer. Default 0 = vertex-buffer upload. */
             uint32_t texture_width;
             uint32_t texture_height;
+            uint32_t texture_depth;
+            uint32_t texture_format;
+            uint32_t texture_bytes_per_texel;
             /* Optional full texture allocation extent. Defaults to the write extent when unset. */
             uint32_t texture_alloc_width;
             uint32_t texture_alloc_height;
+            uint32_t texture_alloc_depth;
             uint32_t texture_origin_x;
             uint32_t texture_origin_y;
+            uint32_t texture_origin_z;
             DvzFramePlanUploadMeta metadata;
         } upload;
         struct

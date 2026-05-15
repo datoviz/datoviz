@@ -222,6 +222,31 @@ DVZ_EXPORT bool dvz_frame_plan_upload_set_texture_extent(
 
 
 /**
+ * Mark the most recently appended upload node as a 3D texture write of the given extent.
+ *
+ * @param plan the FramePlan
+ * @param width written texture-region width in texels
+ * @param height written texture-region height in texels
+ * @param depth written texture-region depth in texels
+ * @return whether the hint was applied (false if the most recent node is not an upload)
+ */
+DVZ_EXPORT bool dvz_frame_plan_upload_set_texture_3d_extent(
+    DvzFramePlan* plan, uint32_t width, uint32_t height, uint32_t depth);
+
+
+/**
+ * Tag the most recently appended texture upload node with an explicit format.
+ *
+ * @param plan the FramePlan
+ * @param format texture format, using VkFormat values
+ * @param bytes_per_texel bytes in one texel for row-stride calculation
+ * @return whether the format was applied
+ */
+DVZ_EXPORT bool dvz_frame_plan_upload_set_texture_format(
+    DvzFramePlan* plan, uint32_t format, uint32_t bytes_per_texel);
+
+
+/**
  * Tag the most recently appended texture upload node with the full allocation extent.
  *
  * Use this when the write extent is a sub-region and the converter must know the complete texture
@@ -237,6 +262,19 @@ DVZ_EXPORT bool dvz_frame_plan_upload_set_texture_allocation_extent(
 
 
 /**
+ * Tag the most recently appended 3D texture upload node with the full allocation extent.
+ *
+ * @param plan the FramePlan
+ * @param width full texture allocation width in texels
+ * @param height full texture allocation height in texels
+ * @param depth full texture allocation depth in texels
+ * @return whether the allocation extent was applied
+ */
+DVZ_EXPORT bool dvz_frame_plan_upload_set_texture_3d_allocation_extent(
+    DvzFramePlan* plan, uint32_t width, uint32_t height, uint32_t depth);
+
+
+/**
  * Tag the most recently appended texture upload node with a 2D sub-region origin.
  *
  * Use after `dvz_frame_plan_upload_set_texture_extent()`. The extent still names the upload
@@ -249,6 +287,19 @@ DVZ_EXPORT bool dvz_frame_plan_upload_set_texture_allocation_extent(
  */
 DVZ_EXPORT bool dvz_frame_plan_upload_set_texture_region(
     DvzFramePlan* plan, uint32_t origin_x, uint32_t origin_y);
+
+
+/**
+ * Tag the most recently appended texture upload node with a 3D sub-region origin.
+ *
+ * @param plan the FramePlan
+ * @param origin_x destination x offset in texels
+ * @param origin_y destination y offset in texels
+ * @param origin_z destination z offset in texels
+ * @return whether the origin was applied
+ */
+DVZ_EXPORT bool dvz_frame_plan_upload_set_texture_3d_region(
+    DvzFramePlan* plan, uint32_t origin_x, uint32_t origin_y, uint32_t origin_z);
 
 
 

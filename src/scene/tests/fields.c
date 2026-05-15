@@ -622,6 +622,158 @@ int test_scene_image_visual_rejects_3d_field(TstSuite* suite, TstItem* item)
 }
 
 
+int test_scene_sampled_field_3d_emits_runtime_texture_upload(
+    TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzSampledField* field = dvz_sampled_field(
+        scene, &(DvzSampledFieldDesc){
+                   .dim = DVZ_FIELD_DIM_3D,
+                   .format = DVZ_FIELD_FORMAT_R16_UNORM,
+                   .semantic = DVZ_FIELD_SEMANTIC_SCALAR,
+                   .width = 2,
+                   .height = 2,
+                   .depth = 2,
+               });
+    ANN(field);
+
+    uint16_t base[8] = {0, 1, 2, 3, 4, 5, 6, 7};
+    AT(dvz_sampled_field_set_data(
+        field, &(DvzFieldDataView){
+                   .data = base,
+                   .bytes_per_row = 2 * sizeof(uint16_t),
+                   .rows_per_image = 2,
+               }));
+
+    DvzFramePlanEmitter* emitter = dvz_frame_plan_emitter();
+    ANN(emitter);
+    DvzFramePlan* frame0 = dvz_frame_plan("figure.field3d.runtime", 0);
+    ANN(frame0);
+    AT(_scene_emit_sampled_field_texture_upload(frame0, "tex.field.volume", field));
+    AT(dvz_frame_plan_render(frame0, "panel.0", "target.panel.0.color", false));
+    AT(dvz_frame_plan_render_visual(frame0, "visual.texture.volume"));
+
+    DvzCapabilitySnapshot caps = {0};
+    DvzDiagnosticReport report = {0};
+    DvzFramePlanEmitConfig emit_cfg = dvz_frame_plan_emit_config();
+    dvz_capability_snapshot_default(&caps);
+    dvz_diagnostic_report_init(&report);
+    DvzDrp2CommandStream* stream0 =
+        dvz_frame_plan_emitter_emit_drp2(emitter, frame0, &caps, &report, &emit_cfg);
+    ANN(stream0);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+
+    uint64_t texture_id = 0;
+    bool created_texture = false;
+    bool wrote_full_texture = false;
+    for (uint32_t i = 0; i < dvz_drp2_stream_count(stream0); i++)
+    {
+        const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream0, i);
+        if (cmd->type == DVZ_DRP2_COMMAND_WRITE_TEXTURE)
+            texture_id = cmd->u.write_texture.texture_id;
+    }
+    for (uint32_t i = 0; i < dvz_drp2_stream_count(stream0); i++)
+    {
+        const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream0, i);
+        if (cmd->type == DVZ_DRP2_COMMAND_CREATE_TEXTURE && cmd->u.create_texture.id == texture_id)
+        {
+            created_texture = true;
+            AT(cmd->u.create_texture.width == 2);
+            AT(cmd->u.create_texture.height == 2);
+            AT(cmd->u.create_texture.depth == 2);
+            AT(cmd->u.create_texture.format == VK_FORMAT_R16_UNORM);
+        }
+        if (cmd->type == DVZ_DRP2_COMMAND_WRITE_TEXTURE &&
+            cmd->u.write_texture.texture_id == texture_id)
+        {
+            wrote_full_texture = true;
+            AT(cmd->u.write_texture.origin_z == 0);
+            AT(cmd->u.write_texture.width == 2);
+            AT(cmd->u.write_texture.height == 2);
+            AT(cmd->u.write_texture.depth == 2);
+            AT(cmd->u.write_texture.bytes_per_row == 2 * sizeof(uint16_t));
+            AT(cmd->u.write_texture.rows_per_image == 2);
+        }
+    }
+    AT(texture_id != 0);
+    AT(created_texture);
+    AT(wrote_full_texture);
+
+    field->dirty = false;
+    field->dirty_full = false;
+    field->dirty_region = (DvzFieldRegion){0};
+    uint16_t patch[2] = {101, 102};
+    AT(dvz_sampled_field_update_region(
+        field, (DvzFieldRegion){.x = 1, .y = 0, .z = 1, .width = 1, .height = 2, .depth = 1},
+        &(DvzFieldDataView){
+            .data = patch,
+            .bytes_per_row = sizeof(uint16_t),
+            .rows_per_image = 2,
+        }));
+
+    DvzFramePlan* frame1 = dvz_frame_plan("figure.field3d.runtime", 1);
+    ANN(frame1);
+    AT(_scene_emit_sampled_field_texture_upload(frame1, "tex.field.volume", field));
+    AT(dvz_frame_plan_render(frame1, "panel.0", "target.panel.0.color", false));
+    AT(dvz_frame_plan_render_visual(frame1, "visual.texture.volume"));
+    dvz_diagnostic_report_init(&report);
+    DvzDrp2CommandStream* stream1 =
+        dvz_frame_plan_emitter_emit_drp2(emitter, frame1, &caps, &report, &emit_cfg);
+    ANN(stream1);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+
+    bool recreated_texture = false;
+    bool wrote_partial_texture = false;
+    for (uint32_t i = 0; i < dvz_drp2_stream_count(stream1); i++)
+    {
+        const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream1, i);
+        if (cmd->type == DVZ_DRP2_COMMAND_CREATE_TEXTURE && cmd->u.create_texture.id == texture_id)
+            recreated_texture = true;
+        if (cmd->type == DVZ_DRP2_COMMAND_WRITE_TEXTURE &&
+            cmd->u.write_texture.texture_id == texture_id)
+        {
+            const uint16_t* uploaded = (const uint16_t*)cmd->u.write_texture.data_raw;
+            wrote_partial_texture = true;
+            AT(cmd->u.write_texture.origin_x == 1);
+            AT(cmd->u.write_texture.origin_y == 0);
+            AT(cmd->u.write_texture.origin_z == 1);
+            AT(cmd->u.write_texture.width == 1);
+            AT(cmd->u.write_texture.height == 2);
+            AT(cmd->u.write_texture.depth == 1);
+            AT(cmd->u.write_texture.bytes_per_row == sizeof(uint16_t));
+            AT(cmd->u.write_texture.rows_per_image == 2);
+            ANN(uploaded);
+            AT(uploaded[0] == 101);
+            AT(uploaded[1] == 102);
+        }
+    }
+    AT(!recreated_texture);
+    AT(wrote_partial_texture);
+
+    DvzDrp2RuntimeConfig runtime_cfg = dvz_drp2_runtime_vklite_config(NULL, NULL);
+    runtime_cfg.semantic_only = true;
+    DvzDrp2Runtime* runtime = dvz_drp2_runtime_vklite(&runtime_cfg);
+    ANN(runtime);
+    DvzDrp2ValidationResult result = dvz_drp2_runtime_execute(runtime, stream0);
+    AT(result.ok);
+    result = dvz_drp2_runtime_execute(runtime, stream1);
+    AT(result.ok);
+
+    dvz_drp2_runtime_destroy(runtime);
+    dvz_drp2_stream_destroy(stream1);
+    dvz_drp2_stream_destroy(stream0);
+    dvz_frame_plan_destroy(frame1);
+    dvz_frame_plan_destroy(frame0);
+    dvz_frame_plan_emitter_destroy(emitter);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
 int test_scene_sampled_field_update_region_rejects_out_of_bounds(
     TstSuite* suite, TstItem* item)
 {
@@ -1111,6 +1263,7 @@ int test_scene_fields(TstSuite* suite)
     TEST_SIMPLE(test_scene_sampled_field_update_region);
     TEST_SIMPLE(test_scene_sampled_field_rejects_unsupported_format);
     TEST_SIMPLE(test_scene_image_visual_rejects_3d_field);
+    TEST_SIMPLE(test_scene_sampled_field_3d_emits_runtime_texture_upload);
     TEST_SIMPLE(test_scene_sampled_field_update_region_rejects_out_of_bounds);
     TEST_SIMPLE(test_scene_sampled_field_destroy_clears_visual_binding);
     TEST_SIMPLE(test_scene_shared_field_update_marks_two_visuals_dirty);

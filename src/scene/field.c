@@ -20,6 +20,8 @@
 #include <stdint.h>
 #include <string.h>
 
+#include <volk.h>
+
 #include "_alloc.h"
 #include "_assertions.h"
 #include "_compat.h"
@@ -44,6 +46,8 @@ static DvzSceneBuffer* _scene_alloc_buffer_slot(DvzScene* scene);
 
 static void _scene_mark_field_region_dirty(
     DvzSampledField* field, DvzFieldRegion region, bool full);
+
+static bool _field_ensure_upload(DvzSampledField* field, uint64_t byte_size);
 
 
 
@@ -130,7 +134,14 @@ static bool _field_format_is_rgba8(DvzFieldFormat format)
 }
 
 
-static bool _field_format_bytes_per_texel(DvzFieldFormat format, uint32_t* out_bytes)
+/**
+ * Return the byte size of one texel for a sampled-field format.
+ *
+ * @param format the sampled-field format
+ * @param out_bytes output byte size
+ * @return whether the field format has a packed runtime representation
+ */
+bool _field_format_bytes_per_texel(DvzFieldFormat format, uint32_t* out_bytes)
 {
     ANN(out_bytes);
     switch (format)
@@ -158,6 +169,64 @@ static bool _field_format_bytes_per_texel(DvzFieldFormat format, uint32_t* out_b
         return true;
     default:
         *out_bytes = 0;
+        return false;
+    }
+}
+
+
+/**
+ * Return the runtime texture format for a sampled field format.
+ *
+ * @param format the sampled-field format
+ * @param out_format output texture format, using VkFormat values
+ * @return whether the field format can be realized as a runtime texture
+ */
+bool _field_format_texture_format(DvzFieldFormat format, uint32_t* out_format)
+{
+    ANN(out_format);
+    switch (format)
+    {
+    case DVZ_FIELD_FORMAT_R8_UNORM:
+        *out_format = VK_FORMAT_R8_UNORM;
+        return true;
+    case DVZ_FIELD_FORMAT_R8_SNORM:
+        *out_format = VK_FORMAT_R8_SNORM;
+        return true;
+    case DVZ_FIELD_FORMAT_R8_UINT:
+        *out_format = VK_FORMAT_R8_UINT;
+        return true;
+    case DVZ_FIELD_FORMAT_R8_SINT:
+        *out_format = VK_FORMAT_R8_SINT;
+        return true;
+    case DVZ_FIELD_FORMAT_R16_UNORM:
+        *out_format = VK_FORMAT_R16_UNORM;
+        return true;
+    case DVZ_FIELD_FORMAT_R16_SNORM:
+        *out_format = VK_FORMAT_R16_SNORM;
+        return true;
+    case DVZ_FIELD_FORMAT_R16_UINT:
+        *out_format = VK_FORMAT_R16_UINT;
+        return true;
+    case DVZ_FIELD_FORMAT_R16_SINT:
+        *out_format = VK_FORMAT_R16_SINT;
+        return true;
+    case DVZ_FIELD_FORMAT_R16_FLOAT:
+        *out_format = VK_FORMAT_R16_SFLOAT;
+        return true;
+    case DVZ_FIELD_FORMAT_R32_UINT:
+        *out_format = VK_FORMAT_R32_UINT;
+        return true;
+    case DVZ_FIELD_FORMAT_R32_SINT:
+        *out_format = VK_FORMAT_R32_SINT;
+        return true;
+    case DVZ_FIELD_FORMAT_R32_FLOAT:
+        *out_format = VK_FORMAT_R32_SFLOAT;
+        return true;
+    case DVZ_FIELD_FORMAT_RGBA8_UNORM:
+        *out_format = VK_FORMAT_R8G8B8A8_UNORM;
+        return true;
+    default:
+        *out_format = 0;
         return false;
     }
 }
@@ -449,6 +518,32 @@ static bool _visual_texture_ensure_upload(DvzVisualTexture* texture, uint64_t by
 }
 
 
+/**
+ * Ensure one sampled field has scratch storage for a packed upload.
+ *
+ * @param field the sampled field
+ * @param byte_size the required scratch size
+ * @return whether the scratch storage is available
+ */
+static bool _field_ensure_upload(DvzSampledField* field, uint64_t byte_size)
+{
+    ANN(field);
+    if (field->upload != NULL && field->upload_size == byte_size)
+        return true;
+    if (field->upload != NULL)
+    {
+        dvz_free(field->upload);
+        field->upload = NULL;
+        field->upload_size = 0;
+    }
+    field->upload = dvz_calloc(byte_size, 1);
+    if (field->upload == NULL)
+        return false;
+    field->upload_size = byte_size;
+    return true;
+}
+
+
 
 
 /**
@@ -501,6 +596,12 @@ void _scene_field_reset(DvzSampledField* field)
     {
         dvz_free(field->data);
         field->data = NULL;
+    }
+    if (field->upload != NULL)
+    {
+        dvz_free(field->upload);
+        field->upload = NULL;
+        field->upload_size = 0;
     }
     dvz_memset(field, sizeof(DvzSampledField), 0, sizeof(DvzSampledField));
 }
@@ -1408,6 +1509,79 @@ void _scene_refresh_field_dirty_state(DvzScene* scene, DvzSampledField* field)
         field->dirty_region = merged;
     else
         dvz_memset(&field->dirty_region, sizeof(DvzFieldRegion), 0, sizeof(DvzFieldRegion));
+}
+
+
+
+/**
+ * Prepare a sampled field as a tightly packed texture upload.
+ *
+ * @param field the sampled field
+ * @param out_region output uploaded region
+ * @param out_data output packed upload bytes
+ * @return whether the field can be uploaded as a texture
+ */
+bool _scene_prepare_field_texture(
+    DvzSampledField* field, DvzFieldRegion* out_region, const void** out_data)
+{
+    ANN(field);
+    ANN(out_region);
+    ANN(out_data);
+    if (field->data == NULL || field->desc.width == 0 || field->desc.height == 0 ||
+        field->desc.depth == 0)
+    {
+        log_error("sampled field texture upload requires uploaded data");
+        return false;
+    }
+
+    uint32_t bytes_per_texel = 0;
+    if (!_field_format_bytes_per_texel(field->desc.format, &bytes_per_texel))
+    {
+        log_error("sampled field texture upload has unsupported format %d", (int)field->desc.format);
+        return false;
+    }
+
+    *out_region = field->dirty ? field->dirty_region : _field_full_region(&field->desc);
+    if (field->dirty_full)
+        *out_region = _field_full_region(&field->desc);
+    if (out_region->width == 0 || out_region->height == 0 || out_region->depth == 0)
+        *out_region = _field_full_region(&field->desc);
+
+    if (out_region->x == 0 && out_region->y == 0 && out_region->z == 0 &&
+        out_region->width == field->desc.width && out_region->height == field->desc.height &&
+        out_region->depth == field->desc.depth)
+    {
+        *out_data = field->data;
+        return true;
+    }
+
+    uint64_t upload_size = 0;
+    if (!_field_region_byte_size(field->desc.format, out_region, &upload_size) ||
+        !_field_ensure_upload(field, upload_size))
+    {
+        log_error("sampled field texture upload scratch allocation failed");
+        return false;
+    }
+
+    uint8_t* dst = (uint8_t*)field->upload;
+    const uint8_t* src = (const uint8_t*)field->data;
+    uint64_t src_bpr = _field_default_bytes_per_row(&field->desc);
+    uint64_t row_bytes = (uint64_t)out_region->width * (uint64_t)bytes_per_texel;
+    for (uint32_t z = 0; z < out_region->depth; z++)
+    {
+        for (uint32_t y = 0; y < out_region->height; y++)
+        {
+            uint64_t src_offset =
+                ((uint64_t)(out_region->z + z) * field->desc.height + (out_region->y + y)) *
+                    src_bpr +
+                (uint64_t)out_region->x * (uint64_t)bytes_per_texel;
+            uint64_t dst_offset =
+                ((uint64_t)z * out_region->height + y) * row_bytes;
+            dvz_memcpy(dst + dst_offset, row_bytes, src + src_offset, row_bytes);
+        }
+    }
+    *out_data = field->upload;
+    return true;
 }
 
 

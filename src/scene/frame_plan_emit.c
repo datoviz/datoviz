@@ -280,10 +280,17 @@ bool _validate_capabilities(
                 uint32_t tex_h = node->u.upload.texture_alloc_height > 0
                                      ? node->u.upload.texture_alloc_height
                                      : node->u.upload.texture_height;
+                uint32_t tex_d = node->u.upload.texture_alloc_depth > 0
+                                     ? node->u.upload.texture_alloc_depth
+                                     : (node->u.upload.texture_depth > 0 ?
+                                            node->u.upload.texture_depth :
+                                            1);
                 if (tex_w > max_texture_extent)
                     max_texture_extent = tex_w;
                 if (tex_h > max_texture_extent)
                     max_texture_extent = tex_h;
+                if (tex_d > max_texture_extent)
+                    max_texture_extent = tex_d;
             }
             break;
         case DVZ_FRAME_PLAN_NODE_COMPUTE:
