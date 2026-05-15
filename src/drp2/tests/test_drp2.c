@@ -3229,6 +3229,24 @@ int test_drp2_recording_linear_roundtrip(TstSuite* suite, TstItem* item)
     AT(strstr(stream_jsonl, "\"op\":\"WriteBuffer\"") != NULL);
     AT(strstr(stream_jsonl, ".cmd") == NULL);
 
+    DvzDrp2Recording* recording = dvz_drp2_recording_open(path);
+    ANN(recording);
+    AT(dvz_drp2_recording_frame_count(recording) == 2);
+    const DvzDrp2CommandStream* loaded_stream = dvz_drp2_recording_stream(recording);
+    ANN(loaded_stream);
+    AT(dvz_drp2_stream_count(loaded_stream) == dvz_drp2_stream_count(stream));
+    const DvzDrp2RecordedFrame* frame0 = dvz_drp2_recording_frame(recording, 0);
+    const DvzDrp2RecordedFrame* frame1 = dvz_drp2_recording_frame(recording, 1);
+    ANN(frame0);
+    ANN(frame1);
+    AT(frame0->t_present == 0.0);
+    AT(frame0->first_command == 0);
+    AT(frame0->command_count == 3);
+    AT(frame1->t_present > 0.015 && frame1->t_present < 0.017);
+    AT(frame1->first_command == 3);
+    AT(frame1->command_count == 3);
+    dvz_drp2_recording_close(recording);
+
     DvzDrp2CommandStream* replay = dvz_drp2_recording_read_stream(path);
     ANN(replay);
     AT(dvz_drp2_stream_count(replay) == dvz_drp2_stream_count(stream));

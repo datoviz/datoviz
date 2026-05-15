@@ -62,6 +62,15 @@ struct DvzDrp2RecordingOwner
 };
 
 
+struct DvzDrp2Recording
+{
+    DvzDrp2CommandStream* stream;
+    DvzDrp2RecordedFrame* frames;
+    uint32_t frame_count;
+    uint32_t frame_capacity;
+};
+
+
 struct DvzDrp2Recorder
 {
     char path[DVZ_DRP2_RECORDING_PATH_SIZE];
@@ -274,6 +283,55 @@ static bool _recording_stream_append(DvzDrp2CommandStream* stream, const DvzDrp2
         return false;
     DvzDrp2Command* dst = &stream->commands[stream->count++];
     dvz_memcpy(dst, sizeof(DvzDrp2Command), command, sizeof(DvzDrp2Command));
+    return true;
+}
+
+
+
+/**
+ * Ensure a loaded recording has space for one more frame record.
+ *
+ * @param recording loaded recording
+ * @return whether capacity is available
+ */
+static bool _recording_frames_ensure_capacity(DvzDrp2Recording* recording)
+{
+    ANN(recording);
+    if (recording->frame_count < recording->frame_capacity)
+        return true;
+    uint32_t capacity = recording->frame_capacity == 0 ? 16 : recording->frame_capacity * 2;
+    if (capacity <= recording->frame_capacity)
+        return false;
+    uint64_t bytes = 0;
+    if (_dvz_mul_u64_overflows(capacity, sizeof(DvzDrp2RecordedFrame), &bytes))
+        return false;
+    DvzDrp2RecordedFrame* frames = (DvzDrp2RecordedFrame*)dvz_realloc(
+        recording->frames, bytes);
+    if (frames == NULL)
+        return false;
+    recording->frames = frames;
+    recording->frame_capacity = capacity;
+    return true;
+}
+
+
+
+/**
+ * Append one frame record to a loaded recording.
+ *
+ * @param recording loaded recording
+ * @param frame frame record
+ * @return whether the frame was appended
+ */
+static bool _recording_frame_append(
+    DvzDrp2Recording* recording, const DvzDrp2RecordedFrame* frame)
+{
+    ANN(recording);
+    ANN(frame);
+    if (!_recording_frames_ensure_capacity(recording))
+        return false;
+    DvzDrp2RecordedFrame* dst = &recording->frames[recording->frame_count++];
+    dvz_memcpy(dst, sizeof(DvzDrp2RecordedFrame), frame, sizeof(DvzDrp2RecordedFrame));
     return true;
 }
 
@@ -631,6 +689,28 @@ static bool _recording_line_u64(const char* line, const char* key, uint64_t* out
 
 
 /**
+ * Parse one double field from a JSONL record.
+ *
+ * @param line JSONL record
+ * @param key field key including surrounding quotes and trailing colon
+ * @param out parsed value
+ * @return whether the field was found and parsed
+ */
+static bool _recording_line_double(const char* line, const char* key, double* out)
+{
+    ANN(line);
+    ANN(key);
+    ANN(out);
+    const char* p = strstr(line, key);
+    if (p == NULL)
+        return false;
+    p += strlen(key);
+    return sscanf(p, "%lf", out) == 1;
+}
+
+
+
+/**
  * Parse one unsigned 32-bit integer field from a JSONL record.
  *
  * @param line JSONL record
@@ -951,6 +1031,34 @@ static bool _recording_read_command(
 }
 
 
+
+/**
+ * Decode one frame record and append it to a loaded recording.
+ *
+ * @param line JSONL frame record
+ * @param recording loaded recording
+ * @return whether the frame was appended
+ */
+static bool _recording_read_frame(const char* line, DvzDrp2Recording* recording)
+{
+    ANN(line);
+    ANN(recording);
+    DvzDrp2RecordedFrame frame = {0};
+    uint64_t first_command = 0;
+    if (!_recording_line_double(line, "\"t_present\":", &frame.t_present) ||
+        !_recording_line_u64(line, "\"first_command\":", &first_command) ||
+        !_recording_line_u32(line, "\"command_count\":", &frame.command_count) ||
+        first_command > UINT32_MAX)
+        return false;
+    frame.first_command = (uint32_t)first_command;
+    if (frame.first_command > recording->stream->count ||
+        frame.command_count > recording->stream->count - frame.first_command)
+        return false;
+    return _recording_frame_append(recording, &frame);
+}
+
+
+
 /**
  * Write the recording manifest.
  *
@@ -1127,12 +1235,12 @@ bool dvz_drp2_recording_write_stream(
 
 
 /**
- * Read a linear DRP2 recording directory.
+ * Open a linear DRP2 recording directory for indexed playback.
  *
  * @param path recording directory path
- * @return a reconstructed command stream, or NULL on error
+ * @return the loaded recording, or NULL on error
  */
-DvzDrp2CommandStream* dvz_drp2_recording_read_stream(const char* path)
+DvzDrp2Recording* dvz_drp2_recording_open(const char* path)
 {
     if (path == NULL)
         return NULL;
@@ -1143,16 +1251,19 @@ DvzDrp2CommandStream* dvz_drp2_recording_read_stream(const char* path)
     if (fp == NULL)
         return NULL;
 
+    DvzDrp2Recording* recording = (DvzDrp2Recording*)dvz_calloc(1, sizeof(DvzDrp2Recording));
     DvzDrp2CommandStream* stream = dvz_drp2_stream();
     DvzDrp2RecordingOwner* owner =
         (DvzDrp2RecordingOwner*)dvz_calloc(1, sizeof(DvzDrp2RecordingOwner));
-    if (stream == NULL || owner == NULL)
+    if (recording == NULL || stream == NULL || owner == NULL)
     {
         fclose(fp);
         dvz_drp2_stream_destroy(stream);
         dvz_free(owner);
+        dvz_free(recording);
         return NULL;
     }
+    recording->stream = stream;
     stream->owner = owner;
     stream->owner_release = _recording_owner_release;
 
@@ -1160,19 +1271,100 @@ DvzDrp2CommandStream* dvz_drp2_recording_read_stream(const char* path)
     char line[DVZ_DRP2_RECORDING_LINE_SIZE] = {0};
     while (fgets(line, sizeof(line), fp) != NULL)
     {
-        if (strstr(line, "\"type\":\"command\"") == NULL)
-            continue;
-        if (!_recording_read_command(path, line, stream, owner))
+        if (strstr(line, "\"type\":\"command\"") != NULL)
+            ok = _recording_read_command(path, line, stream, owner);
+        else if (strstr(line, "\"type\":\"frame\"") != NULL)
+            ok = _recording_read_frame(line, recording);
+        if (!ok)
         {
-            ok = false;
             break;
         }
     }
     fclose(fp);
     if (!ok)
     {
-        dvz_drp2_stream_destroy(stream);
+        dvz_drp2_recording_close(recording);
         return NULL;
     }
+    return recording;
+}
+
+
+
+/**
+ * Close a loaded DRP2 recording.
+ *
+ * @param recording loaded recording
+ */
+void dvz_drp2_recording_close(DvzDrp2Recording* recording)
+{
+    if (recording == NULL)
+        return;
+    dvz_drp2_stream_destroy(recording->stream);
+    dvz_free(recording->frames);
+    dvz_free(recording);
+}
+
+
+
+/**
+ * Return the full reconstructed command stream owned by a loaded recording.
+ *
+ * @param recording loaded recording
+ * @return the full command stream, valid until the recording is closed
+ */
+const DvzDrp2CommandStream* dvz_drp2_recording_stream(const DvzDrp2Recording* recording)
+{
+    if (recording == NULL)
+        return NULL;
+    return recording->stream;
+}
+
+
+
+/**
+ * Return the number of frame records in a loaded recording.
+ *
+ * @param recording loaded recording
+ * @return the frame count
+ */
+uint32_t dvz_drp2_recording_frame_count(const DvzDrp2Recording* recording)
+{
+    return recording != NULL ? recording->frame_count : 0;
+}
+
+
+
+/**
+ * Return one frame record from a loaded recording.
+ *
+ * @param recording loaded recording
+ * @param frame_index frame index
+ * @return the frame record, valid until the recording is closed, or NULL
+ */
+const DvzDrp2RecordedFrame* dvz_drp2_recording_frame(
+    const DvzDrp2Recording* recording, uint32_t frame_index)
+{
+    if (recording == NULL || frame_index >= recording->frame_count)
+        return NULL;
+    return &recording->frames[frame_index];
+}
+
+
+
+/**
+ * Read a linear DRP2 recording directory.
+ *
+ * @param path recording directory path
+ * @return a reconstructed command stream, or NULL on error
+ */
+DvzDrp2CommandStream* dvz_drp2_recording_read_stream(const char* path)
+{
+    DvzDrp2Recording* recording = dvz_drp2_recording_open(path);
+    if (recording == NULL)
+        return NULL;
+    DvzDrp2CommandStream* stream = recording->stream;
+    recording->stream = NULL;
+    dvz_drp2_recording_close(recording);
     return stream;
 }

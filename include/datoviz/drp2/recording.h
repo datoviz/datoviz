@@ -31,6 +31,8 @@ EXTERN_C_ON
 /*************************************************************************************************/
 
 typedef struct DvzDrp2RecordingInfo DvzDrp2RecordingInfo;
+typedef struct DvzDrp2Recording DvzDrp2Recording;
+typedef struct DvzDrp2RecordedFrame DvzDrp2RecordedFrame;
 typedef struct DvzDrp2Recorder DvzDrp2Recorder;
 
 struct DvzDrp2RecordingInfo
@@ -40,6 +42,14 @@ struct DvzDrp2RecordingInfo
     double duration_s;
     double t_present;
     const char* backend_hint;
+};
+
+
+struct DvzDrp2RecordedFrame
+{
+    double t_present;
+    uint32_t first_command;
+    uint32_t command_count;
 };
 
 
@@ -93,6 +103,53 @@ DVZ_EXPORT bool dvz_drp2_recorder_close(DvzDrp2Recorder* recorder);
  */
 DVZ_EXPORT bool dvz_drp2_recording_write_stream(
     const char* path, const DvzDrp2CommandStream* stream, const DvzDrp2RecordingInfo* info);
+
+
+/**
+ * Open a linear DRP2 recording directory for indexed playback.
+ *
+ * @param path recording directory path
+ * @return the loaded recording, or NULL on error
+ */
+DVZ_EXPORT DvzDrp2Recording* dvz_drp2_recording_open(const char* path);
+
+
+/**
+ * Close a loaded DRP2 recording.
+ *
+ * @param recording loaded recording
+ */
+DVZ_EXPORT void dvz_drp2_recording_close(DvzDrp2Recording* recording);
+
+
+/**
+ * Return the full reconstructed command stream owned by a loaded recording.
+ *
+ * @param recording loaded recording
+ * @return the full command stream, valid until the recording is closed
+ */
+DVZ_EXPORT const DvzDrp2CommandStream*
+dvz_drp2_recording_stream(const DvzDrp2Recording* recording);
+
+
+/**
+ * Return the number of frame records in a loaded recording.
+ *
+ * @param recording loaded recording
+ * @return the frame count
+ */
+DVZ_EXPORT uint32_t dvz_drp2_recording_frame_count(const DvzDrp2Recording* recording);
+
+
+/**
+ * Return one frame record from a loaded recording.
+ *
+ * @param recording loaded recording
+ * @param frame_index frame index
+ * @return the frame record, valid until the recording is closed, or NULL
+ */
+DVZ_EXPORT const DvzDrp2RecordedFrame*
+dvz_drp2_recording_frame(const DvzDrp2Recording* recording, uint32_t frame_index);
 
 
 /**
