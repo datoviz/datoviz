@@ -104,6 +104,21 @@ static uint32_t _min_u32(uint32_t a, uint32_t b)
 }
 
 
+#if DVZ_DRP2_HAS_VKLITE
+/**
+ * Wait for submitted vklite work before releasing runtime-owned backend resources.
+ *
+ * @param runtime the runtime
+ */
+static void _runtime_wait_backend_idle(DvzDrp2Runtime* runtime)
+{
+    ANN(runtime);
+    if (!runtime->semantic_only && runtime->device != NULL)
+        dvz_device_wait(runtime->device);
+}
+#endif
+
+
 /**
  * Return whether a borrowed stream frame can be exposed as a render target.
  *
@@ -213,6 +228,9 @@ void dvz_drp2_runtime_destroy(DvzDrp2Runtime* runtime)
 {
     if (runtime == NULL)
         return;
+#if DVZ_DRP2_HAS_VKLITE
+    _runtime_wait_backend_idle(runtime);
+#endif
     _drp2_runtime_state_cleanup(runtime->semantic_state);
     dvz_free(runtime->semantic_state);
 #if DVZ_DRP2_HAS_VKLITE
@@ -233,6 +251,10 @@ void dvz_drp2_runtime_reset(DvzDrp2Runtime* runtime)
 {
     if (runtime == NULL)
         return;
+
+#if DVZ_DRP2_HAS_VKLITE
+    _runtime_wait_backend_idle(runtime);
+#endif
 
     if (runtime->semantic_state != NULL)
     {

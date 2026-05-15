@@ -90,6 +90,8 @@ DVZ_EXPORT DvzDrp2RuntimeConfig dvz_drp2_runtime_config(const DvzDrp2Runtime* ru
 /**
  * Destroy a DRP2 runtime.
  *
+ * Vklite-backed runtimes wait for submitted device work before releasing owned backend resources.
+ *
  * @param runtime the runtime
  */
 DVZ_EXPORT void dvz_drp2_runtime_destroy(DvzDrp2Runtime* runtime);
@@ -100,7 +102,8 @@ DVZ_EXPORT void dvz_drp2_runtime_destroy(DvzDrp2Runtime* runtime);
  * Reset a DRP2 runtime to an empty semantic and backend state.
  *
  * This releases runtime-owned objects while keeping the runtime itself and its
- * borrowed device/allocator configuration alive for reuse.
+ * borrowed device/allocator configuration alive for reuse. Vklite-backed
+ * runtimes wait for submitted device work before releasing owned backend resources.
  *
  * @param runtime the runtime
  */

@@ -232,7 +232,7 @@ int main(int argc, char** argv)
     dvz_fprintf(
         stdout, "replay_dvzr_glfw: replaying %s (%s%s, speed %.3g)\n", args.path,
         args.loop ? "loop" : "once", args.fast ? ", fast" : "", args.speed);
-    dvz_app_run(app, args.loop ? 0 : frame_count);
+    dvz_app_run(app, frame_count);
 
     (void)dvz_app_window_replay_stop(win);
     dvz_app_destroy(app);
