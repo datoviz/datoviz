@@ -19,6 +19,7 @@
 #include "_assertions.h"
 #include "../_status.h"
 #include "../_trace.h"
+#include "datoviz/app.h"
 #include "datoviz/drp2/stream.h"
 #include "test_app.h"
 
@@ -27,6 +28,21 @@
 /*************************************************************************************************/
 /*  Functions                                                                                    */
 /*************************************************************************************************/
+
+static int test_app_config_defaults(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    ANN(item);
+
+    DvzAppConfig config = dvz_app_config();
+    AT(config.instance_extension_count == 0);
+    AT(config.instance_extensions == NULL);
+    AT(!config.enable_canvas_extensions);
+    AT(config.enable_glfw_extensions);
+    return 0;
+}
+
+
 
 static int test_app_trace_mode_parsing(TstSuite* suite, TstItem* item)
 {
@@ -372,6 +388,7 @@ int test_app(TstSuite* suite)
 {
     ANN(suite);
     const char* tags = "app";
+    TEST_SIMPLE(test_app_config_defaults);
     TEST_SIMPLE(test_app_trace_mode_parsing);
     TEST_SIMPLE(test_app_trace_plan_normal_changed_after_open_line);
     TEST_SIMPLE(test_app_trace_plan_normal_unchanged_rewrites_in_place);

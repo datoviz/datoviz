@@ -118,6 +118,87 @@ struct DvzApp
 #if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
 
 /**
+ * Add Vulkan instance extensions required by an external host.
+ *
+ * @param gpu_cfg GPU-context configuration receiving extension names
+ * @param count number of extension names
+ * @param extensions extension-name array, or NULL when count is zero
+ * @return true on success, false on invalid input
+ */
+static bool _app_gpu_config_add_instance_extensions(
+    DvzGpuCtxConfig* gpu_cfg, uint32_t count, const char* const* extensions)
+{
+    ANN(gpu_cfg);
+    if (count == 0)
+        return true;
+    if (extensions == NULL)
+    {
+        log_error("app config requires an extension-name array when extension count is nonzero");
+        return false;
+    }
+    if (count > 16)
+    {
+        log_error("app config supports at most 16 Vulkan instance extensions");
+        return false;
+    }
+    for (uint32_t i = 0; i < count; i++)
+    {
+        if (extensions[i] == NULL)
+        {
+            log_error("app config contains a NULL Vulkan instance extension name");
+            return false;
+        }
+        dvz_gpu_ctx_config_add_instance_extension(gpu_cfg, extensions[i]);
+    }
+    return true;
+}
+
+
+
+/**
+ * Add GLFW surface extensions when the default app configuration asks for them.
+ *
+ * @param app partially initialized app with a window host
+ * @param gpu_cfg GPU-context configuration receiving extension names
+ * @param config app configuration
+ */
+static void _app_gpu_config_add_glfw_extensions(
+    DvzApp* app, DvzGpuCtxConfig* gpu_cfg, const DvzAppConfig* config)
+{
+    ANN(app);
+    ANN(gpu_cfg);
+    ANN(config);
+#if DVZ_HAS_GLFW
+    if (!config->enable_glfw_extensions)
+        return;
+    /* If GLFW is available, add surface extensions so the same instance supports windowed mode. */
+    if (dvz_window_glfw_init())
+    {
+        uint32_t ext_count =
+            dvz_window_host_required_extension_count(app->window_host, DVZ_BACKEND_GLFW);
+        if (ext_count > 0)
+        {
+            const char* extensions[16] = {0};
+            int written = dvz_window_host_required_extensions(
+                app->window_host, DVZ_BACKEND_GLFW, ext_count, extensions);
+            if (written == (int)ext_count)
+            {
+                for (uint32_t i = 0; i < ext_count; i++)
+                    dvz_gpu_ctx_config_add_instance_extension(gpu_cfg, extensions[i]);
+                dvz_gpu_ctx_config_enable_canvas_extensions(gpu_cfg, true);
+            }
+        }
+    }
+#else
+    (void)app;
+    (void)gpu_cfg;
+    (void)config;
+#endif
+}
+
+
+
+/**
  * Return a readable label for one DRP2 command type.
  *
  * @param type command type enum value
@@ -993,11 +1074,34 @@ static void _app_draw(DvzCanvas* canvas, const DvzStreamFrame* frame, void* user
 /*  App lifecycle                                                                                */
 /*************************************************************************************************/
 
+DvzAppConfig dvz_app_config(void)
+{
+    DvzAppConfig config = {
+        .instance_extension_count = 0,
+        .instance_extensions = NULL,
+        .enable_canvas_extensions = false,
+        .enable_glfw_extensions = true,
+    };
+    return config;
+}
+
+
+
 DvzApp* dvz_app(DvzScene* scene)
+{
+    DvzAppConfig config = dvz_app_config();
+    return dvz_app_with_config(scene, &config);
+}
+
+
+
+DvzApp* dvz_app_with_config(DvzScene* scene, const DvzAppConfig* config)
 {
     ANN(scene);
 
 #if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
+    DvzAppConfig resolved = config != NULL ? *config : dvz_app_config();
+
     DvzApp* app = (DvzApp*)dvz_calloc(1, sizeof(DvzApp));
     if (app == NULL)
         return NULL;
@@ -1024,26 +1128,16 @@ DvzApp* dvz_app(DvzScene* scene)
     features13.synchronization2 = true;
     dvz_gpu_ctx_config_features13(&gpu_cfg, &features13);
 
-#if DVZ_HAS_GLFW
-    /* If GLFW is available, add surface extensions so the same instance supports windowed mode. */
-    if (dvz_window_glfw_init())
+    if (!_app_gpu_config_add_instance_extensions(
+            &gpu_cfg, resolved.instance_extension_count, resolved.instance_extensions))
     {
-        uint32_t ext_count =
-            dvz_window_host_required_extension_count(app->window_host, DVZ_BACKEND_GLFW);
-        if (ext_count > 0)
-        {
-            const char* extensions[16] = {0};
-            int written = dvz_window_host_required_extensions(
-                app->window_host, DVZ_BACKEND_GLFW, ext_count, extensions);
-            if (written == (int)ext_count)
-            {
-                for (uint32_t i = 0; i < ext_count; i++)
-                    dvz_gpu_ctx_config_add_instance_extension(&gpu_cfg, extensions[i]);
-                dvz_gpu_ctx_config_enable_canvas_extensions(&gpu_cfg, true);
-            }
-        }
+        dvz_window_host_destroy(app->window_host);
+        dvz_free(app);
+        return NULL;
     }
-#endif
+    if (resolved.enable_canvas_extensions)
+        dvz_gpu_ctx_config_enable_canvas_extensions(&gpu_cfg, true);
+    _app_gpu_config_add_glfw_extensions(app, &gpu_cfg, &resolved);
 
     app->gpu_ctx = dvz_gpu_ctx(&gpu_cfg);
     if (app->gpu_ctx == NULL)

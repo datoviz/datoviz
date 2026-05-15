@@ -16,6 +16,7 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
+#include <stdbool.h>
 #include <stdint.h>
 
 #include "datoviz/common/macros.h"
@@ -28,9 +29,24 @@
 /*************************************************************************************************/
 
 typedef struct DvzApp       DvzApp;
+typedef struct DvzAppConfig DvzAppConfig;
 typedef struct DvzAppWindow DvzAppWindow;
 
 typedef void (*DvzAppFrameCallback)(DvzAppWindow* win, void* user_data);
+
+
+
+/*************************************************************************************************/
+/*  Structs                                                                                      */
+/*************************************************************************************************/
+
+struct DvzAppConfig
+{
+    uint32_t instance_extension_count;
+    const char* const* instance_extensions;
+    bool enable_canvas_extensions;
+    bool enable_glfw_extensions;
+};
 
 
 
@@ -39,6 +55,14 @@ EXTERN_C_ON
 /*************************************************************************************************/
 /*  App lifecycle                                                                                */
 /*************************************************************************************************/
+
+/**
+ * Return the default app configuration.
+ *
+ * @return the default app configuration
+ */
+DVZ_EXPORT DvzAppConfig dvz_app_config(void);
+
 
 /**
  * Create an app bound to a scene.
@@ -50,6 +74,19 @@ EXTERN_C_ON
  * @return the app, or NULL on failure
  */
 DVZ_EXPORT DvzApp* dvz_app(DvzScene* scene);
+
+
+/**
+ * Create an app bound to a scene with explicit host integration requirements.
+ *
+ * Use this entry point when an external UI toolkit owns the native window and requires Vulkan
+ * instance extensions before Datoviz creates its GPU context.
+ *
+ * @param scene the scene (borrowed — must outlive the app)
+ * @param config optional app configuration, or NULL for dvz_app_config()
+ * @return the app, or NULL on failure
+ */
+DVZ_EXPORT DvzApp* dvz_app_with_config(DvzScene* scene, const DvzAppConfig* config);
 
 
 /**
