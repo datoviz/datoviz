@@ -100,6 +100,19 @@ static void _glfw_shutdown(void)
 
 
 
+/**
+ * Apply Datoviz GLFW window hints shared by every GLFW backend window.
+ */
+static void _glfw_apply_window_hints(void)
+{
+#if defined(GLFW_X11_CLASS_NAME) && defined(GLFW_X11_INSTANCE_NAME)
+    glfwWindowHintString(GLFW_X11_CLASS_NAME, "datoviz");
+    glfwWindowHintString(GLFW_X11_INSTANCE_NAME, "datoviz");
+#endif
+}
+
+
+
 static void
 _glfw_emit_pointer(GLFWwindow* handle, DvzPointerEventType type, DvzPointerButton button, int mods)
 {
@@ -285,6 +298,7 @@ _glfw_create(DvzWindowBackend* backend, DvzWindow* window, const DvzWindowConfig
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
     glfwWindowHint(GLFW_RESIZABLE, config->resizable ? GLFW_TRUE : GLFW_FALSE);
     glfwWindowHint(GLFW_VISIBLE, config->visible ? GLFW_TRUE : GLFW_FALSE);
+    _glfw_apply_window_hints();
     GLFWwindow* handle = glfwCreateWindow(
         (int)config->width, (int)config->height, config->title ? config->title : "", NULL, NULL);
     if (handle == NULL)
