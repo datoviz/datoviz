@@ -134,3 +134,8 @@ The first WebGPU pass resolved these DRP2 portability questions in the protocol 
   materializing an equivalent aligned binding.
 
 The positive fixture dashboard now runs without bind-group or render-pipeline metadata fallbacks.
+The same strict fixture assumptions are checked without a browser by:
+
+```bash
+just webgpu-fixture-preflight
+```

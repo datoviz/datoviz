@@ -1050,9 +1050,15 @@ drp2-fixtures *args='':
     @python3 tools/drp2_fixture_runner.py {{args}}
 #
 
+webgpu-fixture-preflight *args='':
+    @python3 tools/webgpu_fixture_preflight.py {{args}}
+#
+
 spec-check:
     @python3 tools/drp2_fixture_runner.py
+    @python3 tools/webgpu_fixture_preflight.py
     @.venv/bin/pytest -q testing/test_drp2_fixture_runner.py
+    @.venv/bin/pytest -q testing/test_webgpu_fixture_preflight.py
 #
 
 

@@ -90,6 +90,7 @@ Direct invocation is also available:
 
 ```bash
 python3 tools/drp2_fixture_runner.py
+python3 tools/webgpu_fixture_preflight.py
 ```
 
 Useful focused examples:
