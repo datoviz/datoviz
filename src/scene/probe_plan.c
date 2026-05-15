@@ -135,8 +135,7 @@ bool _scene_image_probe_plan(
     }
 
     DvzFramePlan* plan = dvz_frame_plan("figure.probe", pending->request.request_id);
-    DvzFramePlanEmitter* emitter = dvz_frame_plan_emitter();
-    bool ok = plan != NULL && emitter != NULL &&
+    bool ok = plan != NULL &&
               dvz_frame_plan_upload_bytes(
                   plan, "probe0_position", 0, position_bytes, "position", probe_positions) &&
               dvz_frame_plan_upload_bytes(
@@ -169,14 +168,12 @@ bool _scene_image_probe_plan(
             "image probe request %" PRIu64 " failed to assemble the GPU readback plan",
             pending->request.request_id);
         dvz_frame_plan_destroy(plan);
-        dvz_frame_plan_emitter_destroy(emitter);
         dvz_free(probe_positions);
         dvz_free(probe_texcoords);
         return false;
     }
 
     out_plan->plan = plan;
-    out_plan->emitter = emitter;
     out_plan->probe_positions = probe_positions;
     out_plan->probe_texcoords = probe_texcoords;
     return true;
@@ -194,13 +191,11 @@ void _scene_probe_plan_destroy(DvzSceneProbePlan* plan)
     if (plan == NULL)
         return;
     dvz_frame_plan_destroy(plan->plan);
-    dvz_frame_plan_emitter_destroy(plan->emitter);
     if (plan->probe_positions != NULL)
         dvz_free(plan->probe_positions);
     if (plan->probe_texcoords != NULL)
         dvz_free(plan->probe_texcoords);
     plan->plan = NULL;
-    plan->emitter = NULL;
     plan->probe_positions = NULL;
     plan->probe_texcoords = NULL;
 }

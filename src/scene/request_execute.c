@@ -34,11 +34,17 @@
 /*************************************************************************************************/
 
 static bool _scene_execute_readback_plan(
-    const DvzScene* scene, DvzDrp2Runtime* runtime, const DvzCapabilitySnapshot* caps,
-    DvzFramePlan* plan, DvzFramePlanEmitter* emitter, uint8_t rgba[4]);
+    const DvzScene* scene, DvzSceneRequestExecutor* executor, const DvzCapabilitySnapshot* caps,
+    DvzFramePlan* plan, uint8_t rgba[4]);
 
 static bool _scene_image_probe_sample_cpu(
     const DvzPanel* panel, DvzVisual* visual, const vec2 request_ndc, uint8_t rgba[4]);
+
+static bool _scene_runtime_config_matches(
+    const DvzDrp2RuntimeConfig* a, const DvzDrp2RuntimeConfig* b);
+
+static bool _scene_request_executor_prepare(
+    DvzSceneRequestExecutor* executor, DvzDrp2Runtime* source_runtime);
 
 static bool _scene_probe_request_has_image_candidate(
     const DvzFigure* figure, const DvzPendingProbeRequest* pending);
@@ -48,7 +54,7 @@ static bool _scene_process_point_pick_request(
     const DvzPendingPickRequest* pending);
 
 static bool _scene_process_image_probe_request(
-    DvzFigure* figure, DvzDrp2Runtime* runtime, const DvzCapabilitySnapshot* caps,
+    DvzFigure* figure, DvzSceneRequestExecutor* executor, const DvzCapabilitySnapshot* caps,
     const DvzPendingProbeRequest* pending);
 
 
@@ -64,9 +70,33 @@ static bool _scene_process_image_probe_request(
 uint32_t dvz_figure_process_requests(
     DvzFigure* figure, DvzDrp2Runtime* runtime, const DvzCapabilitySnapshot* caps)
 {
+    DvzSceneRequestExecutor executor = {0};
+    _scene_request_executor_init(&executor);
+    uint32_t processed =
+        _dvz_figure_process_requests_with_executor(figure, runtime, &executor, caps);
+    _scene_request_executor_destroy(&executor);
+    return processed;
+}
+
+
+
+/**
+ * Execute queued pick/probe requests with a caller-owned retained request executor.
+ *
+ * @param figure the figure
+ * @param runtime the caller's main DRP2 runtime
+ * @param executor the retained request executor
+ * @param caps the capability snapshot, or NULL for defaults
+ * @return the number of consumed requests
+ */
+uint32_t _dvz_figure_process_requests_with_executor(
+    DvzFigure* figure, DvzDrp2Runtime* runtime, DvzSceneRequestExecutor* executor,
+    const DvzCapabilitySnapshot* caps)
+{
     ANN(figure);
     ANN(figure->scene);
     ANN(runtime);
+    ANN(executor);
 
     DvzCapabilitySnapshot local_caps = {0};
     if (caps == NULL)
@@ -84,8 +114,6 @@ uint32_t dvz_figure_process_requests(
     if (scene->pending_pick_count == 0 && scene->pending_probe_count == 0)
         return 0;
 
-    DvzDrp2Runtime* request_runtime = NULL;
-
     for (uint32_t i = 0; i < scene->pending_pick_count;)
     {
         const DvzPendingPickRequest pending = scene->pending_picks[i];
@@ -94,7 +122,7 @@ uint32_t dvz_figure_process_requests(
             i++;
             continue;
         }
-        (void)_scene_process_point_pick_request(figure, request_runtime, caps, &pending);
+        (void)_scene_process_point_pick_request(figure, NULL, caps, &pending);
         _scene_remove_pending_pick_at(scene, i);
         processed++;
     }
@@ -107,22 +135,45 @@ uint32_t dvz_figure_process_requests(
             i++;
             continue;
         }
-        if (request_runtime == NULL &&
-            _scene_probe_request_has_image_candidate(figure, &pending))
-        {
-            DvzDrp2RuntimeConfig runtime_cfg = dvz_drp2_runtime_config(runtime);
-            request_runtime = dvz_drp2_runtime_vklite(&runtime_cfg);
-            if (request_runtime == NULL)
-                log_error("scene request runtime creation failed");
-        }
-        (void)_scene_process_image_probe_request(figure, request_runtime, caps, &pending);
+        if (_scene_probe_request_has_image_candidate(figure, &pending))
+            (void)_scene_request_executor_prepare(executor, runtime);
+        (void)_scene_process_image_probe_request(figure, executor, caps, &pending);
         _scene_remove_pending_probe_at(scene, i);
         processed++;
     }
 
-    if (request_runtime != NULL)
-        dvz_drp2_runtime_destroy(request_runtime);
     return processed;
+}
+
+
+
+/**
+ * Initialize a retained scene request executor.
+ *
+ * @param executor the request executor
+ */
+void _scene_request_executor_init(DvzSceneRequestExecutor* executor)
+{
+    ANN(executor);
+    dvz_memset(executor, sizeof(DvzSceneRequestExecutor), 0, sizeof(DvzSceneRequestExecutor));
+}
+
+
+
+/**
+ * Destroy a retained scene request executor.
+ *
+ * @param executor the request executor
+ */
+void _scene_request_executor_destroy(DvzSceneRequestExecutor* executor)
+{
+    if (executor == NULL)
+        return;
+    if (executor->runtime != NULL)
+        dvz_drp2_runtime_destroy(executor->runtime);
+    if (executor->emitter != NULL)
+        dvz_frame_plan_emitter_destroy(executor->emitter);
+    dvz_memset(executor, sizeof(DvzSceneRequestExecutor), 0, sizeof(DvzSceneRequestExecutor));
 }
 
 
@@ -139,13 +190,13 @@ uint32_t dvz_figure_process_requests(
  * @return true on successful execution and download
  */
 static bool _scene_execute_readback_plan(
-    const DvzScene* scene, DvzDrp2Runtime* runtime, const DvzCapabilitySnapshot* caps,
-    DvzFramePlan* plan, DvzFramePlanEmitter* emitter, uint8_t rgba[4])
+    const DvzScene* scene, DvzSceneRequestExecutor* executor, const DvzCapabilitySnapshot* caps,
+    DvzFramePlan* plan, uint8_t rgba[4])
 {
-    ANN(runtime);
+    ANN(executor);
     ANN(caps);
     ANN(rgba);
-    if (plan == NULL || emitter == NULL)
+    if (plan == NULL || executor->runtime == NULL || executor->emitter == NULL)
     {
         log_error("scene readback requires a prepared frame plan and emitter");
         return false;
@@ -156,13 +207,13 @@ static bool _scene_execute_readback_plan(
     DvzFramePlanEmitConfig cfg = dvz_frame_plan_emit_config();
     cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
     DvzDrp2CommandStream* stream =
-        dvz_frame_plan_emitter_emit_drp2(emitter, plan, caps, &report, &cfg);
+        dvz_frame_plan_emitter_emit_drp2(executor->emitter, plan, caps, &report, &cfg);
     if (stream == NULL)
     {
         log_error("scene readback DRP2 emission failed");
         return false;
     }
-    uint64_t rb_id = dvz_frame_plan_emitter_object_id(emitter, "_rb");
+    uint64_t rb_id = dvz_frame_plan_emitter_object_id(executor->emitter, "_rb");
     bool ok = false;
     if (rb_id == 0)
     {
@@ -170,8 +221,7 @@ static bool _scene_execute_readback_plan(
     }
     else
     {
-        dvz_drp2_runtime_reset(runtime);
-        DvzDrp2ValidationResult result = dvz_drp2_runtime_execute(runtime, stream);
+        DvzDrp2ValidationResult result = dvz_drp2_runtime_execute(executor->runtime, stream);
         if (!result.ok)
         {
             log_error(
@@ -186,7 +236,7 @@ static bool _scene_execute_readback_plan(
             }
             else
             {
-                ok = dvz_drp2_runtime_download_buffer(runtime, rb_id, 0, 4, rgba);
+                ok = dvz_drp2_runtime_download_buffer(executor->runtime, rb_id, 0, 4, rgba);
                 if (!ok)
                     log_error("scene readback buffer download failed");
             }
@@ -332,6 +382,68 @@ static bool _scene_image_probe_sample_cpu(
 }
 
 
+
+/**
+ * Return whether two DRP2 runtime configurations borrow the same backend.
+ *
+ * @param a first runtime configuration
+ * @param b second runtime configuration
+ * @return true when the configurations match
+ */
+static bool _scene_runtime_config_matches(
+    const DvzDrp2RuntimeConfig* a, const DvzDrp2RuntimeConfig* b)
+{
+    ANN(a);
+    ANN(b);
+    return a->device == b->device && a->allocator == b->allocator &&
+           a->semantic_only == b->semantic_only;
+}
+
+
+
+/**
+ * Ensure a retained request executor is ready for the caller runtime's backend.
+ *
+ * @param executor the retained request executor
+ * @param source_runtime the caller's main DRP2 runtime
+ * @return true when the executor is ready
+ */
+static bool _scene_request_executor_prepare(
+    DvzSceneRequestExecutor* executor, DvzDrp2Runtime* source_runtime)
+{
+    ANN(executor);
+    ANN(source_runtime);
+
+    DvzDrp2RuntimeConfig runtime_cfg = dvz_drp2_runtime_config(source_runtime);
+    if (executor->runtime != NULL && executor->emitter != NULL &&
+        _scene_runtime_config_matches(&executor->runtime_cfg, &runtime_cfg))
+    {
+        return true;
+    }
+
+    _scene_request_executor_destroy(executor);
+    executor->emitter = dvz_frame_plan_emitter();
+    if (executor->emitter == NULL)
+    {
+        log_error("scene request emitter creation failed");
+        return false;
+    }
+    executor->emitter_create_count++;
+
+    executor->runtime = dvz_drp2_runtime_vklite(&runtime_cfg);
+    if (executor->runtime == NULL)
+    {
+        log_error("scene request runtime creation failed");
+        _scene_request_executor_destroy(executor);
+        return false;
+    }
+    executor->runtime_cfg = runtime_cfg;
+    executor->runtime_create_count++;
+    return true;
+}
+
+
+
 /**
  * Return whether one pending probe has a visible image candidate that may need GPU readback.
  *
@@ -451,7 +563,7 @@ static bool _scene_process_point_pick_request(
 
 
 static bool _scene_process_image_probe_request(
-    DvzFigure* figure, DvzDrp2Runtime* runtime, const DvzCapabilitySnapshot* caps,
+    DvzFigure* figure, DvzSceneRequestExecutor* executor, const DvzCapabilitySnapshot* caps,
     const DvzPendingProbeRequest* pending)
 {
     ANN(figure);
@@ -492,7 +604,7 @@ static bool _scene_process_image_probe_request(
             continue;
         }
 
-        if (runtime == NULL)
+        if (executor == NULL || executor->runtime == NULL || executor->emitter == NULL)
         {
             log_error("image probe request requires a DRP2 runtime");
             continue;
@@ -504,7 +616,7 @@ static bool _scene_process_image_probe_request(
 
         uint8_t rgba[4] = {0};
         bool readback_ok = _scene_execute_readback_plan(
-            scene, runtime, caps, probe_plan.plan, probe_plan.emitter, rgba);
+            scene, executor, caps, probe_plan.plan, rgba);
         if (readback_ok)
             (void)_scene_image_probe_sample_cpu(panel, visual, request_ndc, rgba);
         bool hit = readback_ok && rgba[3] > 0;

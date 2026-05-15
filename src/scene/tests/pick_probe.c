@@ -925,6 +925,94 @@ int test_scene_process_requests_preserves_caller_runtime(TstSuite* suite, TstIte
 
 
 /**
+ * Ensure repeated image probes reuse one retained request runtime and emitter.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_image_probe_reuses_retained_request_executor(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzDrp2RuntimeConfig runtime_cfg = dvz_drp2_runtime_vklite_config(NULL, NULL);
+    runtime_cfg.semantic_only = true;
+    DvzDrp2Runtime* runtime = dvz_drp2_runtime_vklite(&runtime_cfg);
+    ANN(runtime);
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    ANN(figure);
+    DvzPanel* panel =
+        dvz_panel(figure, (DvzPanelDesc){.x = 0, .y = 0, .width = 1, .height = 1});
+    ANN(panel);
+
+    DvzVisual* image = dvz_image(scene, 0);
+    ANN(image);
+    float image_pos[4][3] = {
+        {-1.0f, -1.0f, 0.0f},
+        {-1.0f, 1.0f, 0.0f},
+        {1.0f, -1.0f, 0.0f},
+        {1.0f, 1.0f, 0.0f},
+    };
+    float texcoords[4][2] = {
+        {0.0f, 0.0f},
+        {0.0f, 1.0f},
+        {1.0f, 0.0f},
+        {1.0f, 1.0f},
+    };
+    uint8_t pixels[4 * 4 * 4] = {0};
+    for (uint32_t i = 0; i < 16; i++)
+    {
+        pixels[4 * i + 0] = 255;
+        pixels[4 * i + 1] = 255;
+        pixels[4 * i + 2] = 255;
+        pixels[4 * i + 3] = 255;
+    }
+    AT(dvz_visual_set_data(image, "position", image_pos, 4) == 0);
+    AT(dvz_visual_set_data(image, "texcoords", texcoords, 4) == 0);
+    AT(dvz_visual_set_texture(image, pixels, 4, 4) == 0);
+    AT(dvz_panel_add_visual(panel, image, NULL) == 0);
+
+    DvzCapabilitySnapshot caps;
+    dvz_capability_snapshot_default(&caps);
+    caps.shader_format_glsl = true;
+
+    DvzSceneRequestExecutor executor = {0};
+    _scene_request_executor_init(&executor);
+    scene->test.force_readback_download_failure = true;
+
+    tst_log_capture_begin(suite);
+    AT(dvz_panel_probe(panel, 16.0, 16.0, &(DvzProbeRequest){.request_id = 101}) == 0);
+    AT(_dvz_figure_process_requests_with_executor(figure, runtime, &executor, &caps) == 1);
+    AT(executor.runtime_create_count == 1);
+    AT(executor.emitter_create_count == 1);
+    uint64_t rb_id = dvz_frame_plan_emitter_object_id(executor.emitter, "_rb");
+    AT(rb_id != 0);
+    DvzProbeResult probe = {0};
+    AT(dvz_scene_poll_probe(scene, &probe));
+    AT(!probe.hit);
+
+    AT(dvz_panel_probe(panel, 48.0, 48.0, &(DvzProbeRequest){.request_id = 102}) == 0);
+    AT(_dvz_figure_process_requests_with_executor(figure, runtime, &executor, &caps) == 1);
+    AT(executor.runtime_create_count == 1);
+    AT(executor.emitter_create_count == 1);
+    AT(dvz_frame_plan_emitter_object_id(executor.emitter, "_rb") == rb_id);
+    AT(dvz_scene_poll_probe(scene, &probe));
+    AT(!probe.hit);
+
+    scene->test.force_readback_download_failure = false;
+    _scene_request_executor_destroy(&executor);
+    dvz_drp2_runtime_destroy(runtime);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
+/**
  * Ensure image probes sample the requested panel position, not a fixed image pixel.
  *
  * @param suite the active test suite
@@ -1232,7 +1320,6 @@ int test_scene_image_probe_plan_rejects_size_overflow(TstSuite* suite, TstItem* 
         suite, !_scene_image_probe_plan(panel, image, &pending, request_ndc, &plan));
     AT(_captured_log_contains(suite, "image probe request buffer size overflow"));
     AT(plan.plan == NULL);
-    AT(plan.emitter == NULL);
     AT(plan.probe_positions == NULL);
 
     dvz_scene_destroy(scene);
@@ -1265,6 +1352,7 @@ int test_scene_pick_probe(TstSuite* suite)
     TEST_SIMPLE(test_scene_process_pick_probe_requests);
     TEST_SIMPLE(test_scene_point_pick_quadrants);
     TEST_SIMPLE(test_scene_process_requests_preserves_caller_runtime);
+    TEST_SIMPLE(test_scene_image_probe_reuses_retained_request_executor);
     TEST_SIMPLE(test_scene_image_probe_respects_panel_request_position);
     TEST_SIMPLE(test_scene_image_probe_segment_rgba_hidden_visual);
     TEST_SIMPLE(test_scene_image_probe_plan_rejects_size_overflow);

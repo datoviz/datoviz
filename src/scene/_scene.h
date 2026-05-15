@@ -14,6 +14,7 @@
 #include <stdint.h>
 
 #include "_frame_plan.h"
+#include "datoviz/drp2/runtime.h"
 #include "datoviz/drp2/types.h"
 #include "datoviz/math/_cglm.h"
 #include "datoviz/scene/animation.h"
@@ -328,6 +329,7 @@ typedef struct DvzQueuedPickResult DvzQueuedPickResult;
 typedef struct DvzQueuedProbeResult DvzQueuedProbeResult;
 typedef struct DvzRequestFreshnessScope DvzRequestFreshnessScope;
 typedef struct DvzSceneProbePlan DvzSceneProbePlan;
+typedef struct DvzSceneRequestExecutor DvzSceneRequestExecutor;
 
 struct DvzPendingPickRequest
 {
@@ -377,9 +379,18 @@ struct DvzRequestFreshnessScope
 struct DvzSceneProbePlan
 {
     DvzFramePlan* plan;
-    DvzFramePlanEmitter* emitter;
     vec3* probe_positions;
     vec2* probe_texcoords;
+};
+
+
+struct DvzSceneRequestExecutor
+{
+    DvzDrp2Runtime* runtime;
+    DvzFramePlanEmitter* emitter;
+    DvzDrp2RuntimeConfig runtime_cfg;
+    uint32_t runtime_create_count;
+    uint32_t emitter_create_count;
 };
 
 
@@ -683,6 +694,11 @@ bool _scene_image_probe_plan(
     const DvzPanel* panel, DvzVisual* visual, const DvzPendingProbeRequest* pending,
     const vec2 request_ndc, DvzSceneProbePlan* out_plan);
 void _scene_probe_plan_destroy(DvzSceneProbePlan* plan);
+void _scene_request_executor_init(DvzSceneRequestExecutor* executor);
+void _scene_request_executor_destroy(DvzSceneRequestExecutor* executor);
+uint32_t _dvz_figure_process_requests_with_executor(
+    DvzFigure* figure, DvzDrp2Runtime* runtime, DvzSceneRequestExecutor* executor,
+    const DvzCapabilitySnapshot* caps);
 
 
 

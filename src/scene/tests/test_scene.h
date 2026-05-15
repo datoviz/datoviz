@@ -176,6 +176,8 @@ int test_scene_point_pick_quadrants(TstSuite* suite, TstItem* item);
 
 int test_scene_process_requests_preserves_caller_runtime(TstSuite* suite, TstItem* item);
 
+int test_scene_image_probe_reuses_retained_request_executor(TstSuite* suite, TstItem* item);
+
 int test_scene_image_probe_respects_panel_request_position(TstSuite* suite, TstItem* item);
 
 int test_scene_image_probe_segment_rgba_hidden_visual(TstSuite* suite, TstItem* item);

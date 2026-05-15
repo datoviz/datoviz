@@ -120,6 +120,7 @@ struct DvzApp
 #if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
     DvzGpuCtx*      gpu_ctx;
     DvzDrp2Runtime* runtime;
+    DvzSceneRequestExecutor request_executor;
     DvzWindowHost*  window_host;
 #endif
     uint32_t     window_count;
@@ -1469,7 +1470,8 @@ static void _app_draw(DvzCanvas* canvas, const DvzStreamFrame* frame, void* user
     if (!result.ok)
         _app_log_runtime_failure("_app_draw runtime execution failed", stream, result);
     else
-        (void)dvz_figure_process_requests(win->figure, app->runtime, &caps);
+        (void)_dvz_figure_process_requests_with_executor(
+            win->figure, app->runtime, &app->request_executor, &caps);
 
     if (result.ok)
         _app_record_stream(win, frame, stream);
@@ -1581,6 +1583,7 @@ DvzApp* dvz_app_with_config(DvzScene* scene, const DvzAppConfig* config)
         dvz_free(app);
         return NULL;
     }
+    _scene_request_executor_init(&app->request_executor);
 
     return app;
 #else
@@ -1658,6 +1661,7 @@ void dvz_app_destroy(DvzApp* app)
         dvz_window_host_destroy(app->window_host);
         app->window_host = NULL;
     }
+    _scene_request_executor_destroy(&app->request_executor);
     if (app->runtime != NULL)
     {
         dvz_drp2_runtime_destroy(app->runtime);
