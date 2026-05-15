@@ -273,8 +273,14 @@ Deliver the next implementation slices in this order unless the user redirects:
     -> vklite path and reuse the WBOIT-style multi-pass resource pattern. The implementation plan
     is recorded in [SCENE_SSAO_IMPLEMENTATION_PLAN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/SCENE_SSAO_IMPLEMENTATION_PLAN.md).
 12. Multi-pass FramePlan graph direction: before adding dual depth peeling or more one-off
-    transparency modes, generalize FramePlan around typed resources, typed passes, explicit
-    attachments, and resource access declarations. The plan is recorded in
+    transparency modes, add a small internal FramePlan graph skeleton around typed resources,
+    typed passes, explicit attachments, and resource access declarations. The first slice should be
+    schema, validation, deterministic debug output, and tests only, with no emitted-command
+    behavior change. After that schema exists, upgrade the DRP2 foundation in this order: named
+    depth resources, explicit color/depth attachment load/store ops, declared-access-driven
+    layout transitions, then render-pipeline raster state for cull mode and front-face winding.
+    Only then convert WBOIT lowering to the graph-backed path and use the same path for the next
+    transparency technique. The plan is recorded in
     [FRAME_PLAN_GRAPH_TRANSPARENCY_PLAN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/FRAME_PLAN_GRAPH_TRANSPARENCY_PLAN.md).
 
 Implementation-level checklists for these lanes are recorded in
@@ -312,8 +318,9 @@ After the immediate native 3D/manual-smoke/safety passes, proceed in this order 
 
 1. Browser/WebGPU feasibility: replay a narrow DRP2 subset for point, primitive, image, and minimal
    mesh/depth scenes.
-2. Transparency architecture: explicit WBOIT-style scene mode through frame plan, DRP2, runtime, and
-   capability fallback.
+2. Transparency architecture: internal FramePlan graph skeleton, required DRP2 attachment/access
+   upgrades, graph-backed WBOIT lowering, then the next transparency technique through the same
+   scene -> FramePlan -> DRP2 -> runtime path.
 3. Broader figure features: axes, lines/segments, rendered text/labels, colorbars, richer
    annotations, picking refinements, and additional visual families.
 4. Larger code organization cleanup once the active API seams stabilize enough to avoid churn.

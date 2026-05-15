@@ -36,6 +36,12 @@ FramePlan should become a small typed pass/resource graph. This should not be a 
 frame graph engine yet. The first goal is explicit, deterministic, validated multi-pass planning,
 not transient resource aliasing, automatic async scheduling, or aggressive pass reordering.
 
+The agreed implementation strategy is deliberately incremental: add the FramePlan graph vocabulary
+first as schema, validation, and deterministic debug output with no emitted-command behavior change;
+then upgrade the DRP2 attachment/resource contract that every graph-backed technique will need.
+The DRP2 work is required foundation, not optional cleanup, but it should be driven by the typed
+FramePlan model rather than designed as a broad backend rewrite in isolation.
+
 Use three conceptual layers:
 
 1. Scene intent: panels, visuals, controllers, alpha modes, picking/probing requests.
@@ -183,15 +189,20 @@ quality policy.
 
 ## Recommended Sequence
 
-1. Add the generic FramePlan resource/pass descriptors and tests with no behavior change.
-2. Extend DRP2 with named depth resources and explicit attachment load/store ops.
-3. Convert current WBOIT lowering to use the generic resource/pass graph while preserving the
+1. Add the generic FramePlan resource/pass descriptors, validation, JSON/debug output, and tests
+   with no emitted-command behavior change.
+2. Extend DRP2 with named depth resources and explicit color/depth attachment load/store ops.
+3. Generalize DRP2 attachment access and texture/resource layout transitions from declared graph
+   access, instead of relying on local WBOIT assumptions.
+4. Add DRP2 render-pipeline raster state for cull mode and front-face winding, which shell and
+   depth-peeling techniques need.
+5. Convert current WBOIT lowering to use the generic resource/pass graph while preserving the
    emitted command shape.
-4. Add shell two-pass as the smallest new transparency technique and use it to validate pipeline
+6. Add shell two-pass as the smallest new transparency technique and use it to validate pipeline
    cull/front-face state.
-5. Prototype dual depth peeling as a focused DRP2/vklite fixture.
-6. Lift dual depth peeling into scene as a technique builder and public alpha mode.
-7. Reuse the same graph machinery for SSAO and later postprocess/volume passes.
+7. Prototype dual depth peeling as a focused DRP2/vklite fixture.
+8. Lift dual depth peeling into scene as a technique builder and public alpha mode.
+9. Reuse the same graph machinery for SSAO and later postprocess/volume passes.
 
 
 ## Non-Goals For The First Slice
