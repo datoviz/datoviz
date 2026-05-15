@@ -331,6 +331,122 @@ int test_frame_plan_render_visual_metadata(TstSuite* suite, TstItem* item)
 
 
 /**
+ * Ensure runtime scene rendering follows graph pass order instead of render node order.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+static int test_frame_plan_runtime_uses_graph_pass_order(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzFramePlan* plan = dvz_frame_plan("figure.graph.runtime_order", 2);
+    ANN(plan);
+
+    DvzFramePlanUploadMeta upload_meta = {0};
+    upload_meta.kind = DVZ_FRAME_PLAN_RESOURCE_KIND_BUFFER;
+    upload_meta.visual_type = DVZ_VISUAL_TYPE_POINT;
+    upload_meta.visual_index = 0;
+    upload_meta.buffer_index = UINT32_MAX;
+
+    AT(dvz_frame_plan_upload(plan, "point-position", 0, 3 * 3 * sizeof(float), ""));
+    upload_meta.role = DVZ_FRAME_PLAN_RESOURCE_ROLE_POSITION;
+    AT(dvz_frame_plan_upload_metadata(plan, &upload_meta));
+    AT(dvz_frame_plan_upload(plan, "point-color", 0, 3 * sizeof(DvzColor), ""));
+    upload_meta.role = DVZ_FRAME_PLAN_RESOURCE_ROLE_COLOR;
+    AT(dvz_frame_plan_upload_metadata(plan, &upload_meta));
+    AT(dvz_frame_plan_upload(plan, "point-size", 0, 3 * sizeof(float), ""));
+    upload_meta.role = DVZ_FRAME_PLAN_RESOURCE_ROLE_SIZE;
+    AT(dvz_frame_plan_upload_metadata(plan, &upload_meta));
+
+    DvzFramePlanVisualMeta metadata = {0};
+    metadata.visual_type = DVZ_VISUAL_TYPE_POINT;
+    metadata.visual_index = 0;
+    metadata.buffer_index = UINT32_MAX;
+    metadata.topology = UINT32_MAX;
+    dvz_strlcpy(metadata.position_id, "point-position", sizeof(metadata.position_id));
+    dvz_strlcpy(metadata.color_id, "point-color", sizeof(metadata.color_id));
+    dvz_strlcpy(metadata.size_id, "point-size", sizeof(metadata.size_id));
+
+    AT(dvz_frame_plan_render_panel_role(
+        plan, "panel.1", "rt", false, (DvzPanelDesc){0.5f, 0.0f, 0.5f, 1.0f},
+        DVZ_FRAME_PLAN_RENDER_PASS_OPAQUE));
+    AT(dvz_frame_plan_render_visual(plan, "point"));
+    AT(dvz_frame_plan_render_visual_metadata(plan, &metadata));
+    AT(dvz_frame_plan_render_panel_role(
+        plan, "panel.0", "rt", false, (DvzPanelDesc){0.0f, 0.0f, 0.5f, 1.0f},
+        DVZ_FRAME_PLAN_RENDER_PASS_OPAQUE));
+    AT(dvz_frame_plan_render_visual(plan, "point"));
+    AT(dvz_frame_plan_render_visual_metadata(plan, &metadata));
+
+    DvzFrameGraphResource rt = {0};
+    dvz_strlcpy(rt.id, "rt", sizeof(rt.id));
+    rt.kind = DVZ_FRAME_GRAPH_RESOURCE_EXTERNAL_TARGET;
+    rt.extent_kind = DVZ_FRAME_GRAPH_EXTENT_FIGURE;
+    rt.usage_flags = DVZ_FRAME_GRAPH_RESOURCE_USAGE_COLOR_ATTACHMENT;
+    rt.lifetime = DVZ_FRAME_GRAPH_RESOURCE_LIFETIME_BORROWED;
+    AT(dvz_frame_plan_graph_resource(plan, &rt));
+
+    DvzFrameGraphAttachment color = {0};
+    dvz_strlcpy(color.resource_id, "rt", sizeof(color.resource_id));
+    color.load_op = DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_CLEAR;
+    color.store_op = DVZ_FRAME_GRAPH_ATTACHMENT_STORE_STORE;
+    color.access = DVZ_FRAME_GRAPH_ATTACHMENT_ACCESS_WRITE;
+
+    DvzFrameGraphPass pass0 = {0};
+    dvz_strlcpy(pass0.id, "panel.0.opaque", sizeof(pass0.id));
+    dvz_strlcpy(pass0.panel_id, "panel.0", sizeof(pass0.panel_id));
+    dvz_strlcpy(pass0.work_label, "opaque", sizeof(pass0.work_label));
+    pass0.kind = DVZ_FRAME_GRAPH_PASS_RENDER;
+    AT(dvz_frame_graph_pass_color_attachment(&pass0, &color));
+    AT(dvz_frame_plan_graph_pass(plan, &pass0));
+
+    color.load_op = DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_LOAD;
+    DvzFrameGraphPass pass1 = {0};
+    dvz_strlcpy(pass1.id, "panel.1.opaque", sizeof(pass1.id));
+    dvz_strlcpy(pass1.panel_id, "panel.1", sizeof(pass1.panel_id));
+    dvz_strlcpy(pass1.work_label, "opaque", sizeof(pass1.work_label));
+    pass1.kind = DVZ_FRAME_GRAPH_PASS_RENDER;
+    AT(dvz_frame_graph_pass_color_attachment(&pass1, &color));
+    AT(dvz_frame_plan_graph_pass(plan, &pass1));
+
+    DvzCapabilitySnapshot caps = {0};
+    DvzDiagnosticReport report = {0};
+    DvzFramePlanEmitConfig emit_cfg = dvz_frame_plan_emit_config();
+    emit_cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
+    dvz_capability_snapshot_default(&caps);
+    dvz_diagnostic_report_init(&report);
+
+    DvzFramePlanEmitter* emitter = dvz_frame_plan_emitter();
+    ANN(emitter);
+    DvzDrp2CommandStream* stream =
+        dvz_frame_plan_emitter_emit_drp2(emitter, plan, &caps, &report, &emit_cfg);
+    ANN(stream);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+
+    uint32_t viewport_count = 0;
+    float viewport_x[2] = {0};
+    for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
+    {
+        const DvzDrp2Command* command = dvz_drp2_stream_get(stream, i);
+        ANN(command);
+        if (command->type == DVZ_DRP2_COMMAND_SET_VIEWPORT && viewport_count < 2)
+            viewport_x[viewport_count++] = command->u.set_viewport.viewport[0];
+    }
+    AT(viewport_count == 2);
+    AC(viewport_x[0], 0.0f, 1e-6f);
+    AC(viewport_x[1], 0.5f, 1e-6f);
+
+    dvz_drp2_stream_destroy(stream);
+    dvz_frame_plan_emitter_destroy(emitter);
+    dvz_frame_plan_destroy(plan);
+    return 0;
+}
+
+
+/**
  * Ensure malformed typed FramePlan metadata reports a focused diagnostic.
  *
  * @param suite the active test suite
@@ -1084,6 +1200,7 @@ int test_scene_frame_plan(TstSuite* suite)
     TEST_SIMPLE(test_frame_plan_json_escapes_labels);
     TEST_SIMPLE(test_scene_resource_keys);
     TEST_SIMPLE(test_frame_plan_render_visual_metadata);
+    TEST_SIMPLE(test_frame_plan_runtime_uses_graph_pass_order);
     TEST_SIMPLE(test_frame_plan_render_visual_metadata_diagnostic);
     TEST_SIMPLE(test_frame_plan_dynamic_update);
     TEST_SIMPLE(test_frame_plan_texture_upload_json_includes_region);
