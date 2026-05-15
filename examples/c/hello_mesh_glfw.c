@@ -14,6 +14,7 @@
  * Build:  just example-c hello_mesh_glfw
  * Run:    ./build/examples/c/hello_mesh_glfw
  * Smoke:  ./build/examples/c/hello_mesh_glfw 60
+ * DVZR:   ./build/examples/c/hello_mesh_glfw record
  * Video:  ./build/examples/c/hello_mesh_glfw video
  */
 
@@ -179,6 +180,46 @@ static bool _video_enabled(int argc, char** argv)
 
 
 /**
+ * Return whether the example should record a DVZR stream.
+ *
+ * @param argc command-line argument count
+ * @param argv command-line argument vector
+ * @param default_path default path next to the executable
+ * @param out output recording path
+ * @param out_size output buffer size
+ * @return whether DVZR recording was requested
+ */
+static bool _recording_path(
+    int argc, char** argv, const char* default_path, char* out, size_t out_size)
+{
+    if (argc < 2 || argv == NULL || out == NULL || out_size == 0)
+        return false;
+    for (int i = 1; i < argc; i++)
+    {
+        if (argv[i] == NULL)
+            continue;
+        if (strcmp(argv[i], "record") == 0)
+        {
+            snprintf(out, out_size, "%s", default_path);
+            return true;
+        }
+        if (strncmp(argv[i], "record=", 7) == 0)
+        {
+            snprintf(out, out_size, "%s", argv[i] + 7);
+            return true;
+        }
+        if (strcmp(argv[i], "--record") == 0 && i + 1 < argc && argv[i + 1] != NULL)
+        {
+            snprintf(out, out_size, "%s", argv[i + 1]);
+            return true;
+        }
+    }
+    return false;
+}
+
+
+
+/**
  * Build an output path next to the example executable.
  *
  * @param exe executable path from argv[0]
@@ -235,6 +276,11 @@ int main(int argc, char** argv)
 {
     bool video_enabled = _video_enabled(argc, argv);
     uint32_t frame_count = _frame_count(argc, argv);
+    char default_dvzr_path[512] = {0};
+    char dvzr_path[512] = {0};
+    _outpath(argv[0], "hello_mesh_glfw.dvzr", default_dvzr_path, sizeof(default_dvzr_path));
+    bool recording_enabled =
+        _recording_path(argc, argv, default_dvzr_path, dvzr_path, sizeof(dvzr_path));
 
     DvzScene* scene = dvz_scene();
     if (scene == NULL)
@@ -369,6 +415,13 @@ int main(int argc, char** argv)
             return 1;
         }
     }
+    if (recording_enabled && dvz_app_window_record_start(win, dvzr_path) != 0)
+    {
+        fprintf(stderr, "dvz_app_window_record_start() failed\n");
+        dvz_app_destroy(app);
+        dvz_scene_destroy(scene);
+        return 1;
+    }
 
     MeshGlfwState state = {.arcball = arcball};
     DvzAnimation* spin = dvz_anim_timer(scene, 0.0, _mesh_glfw_timer, &state);
@@ -382,6 +435,13 @@ int main(int argc, char** argv)
     dvz_anim_start(spin, 0.0);
 
     dvz_app_run(app, frame_count);
+    if (recording_enabled)
+    {
+        if (dvz_app_window_record_stop(win) != 0)
+            fprintf(stderr, "dvz_app_window_record_stop() failed\n");
+        else
+            printf("hello_mesh_glfw: saved %s\n", dvzr_path);
+    }
     if (video_enabled)
         printf("hello_mesh_glfw: saved %s\n", mp4_path);
 
