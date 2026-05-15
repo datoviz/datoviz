@@ -40,6 +40,7 @@ http://localhost:8765/examples/webgpu/?stream=depth_overlap_wgsl
 http://localhost:8765/examples/webgpu/?stream=texture_sampling_wgsl
 http://localhost:8765/examples/webgpu/?stream=indexed_quad_wgsl
 http://localhost:8765/examples/webgpu/?stream=scene_primitive_wgsl
+http://localhost:8765/examples/webgpu/?stream=scene_point_wgsl
 http://localhost:8765/examples/webgpu/?stream=scene_image_wgsl
 ```
 
@@ -82,6 +83,7 @@ Manual checks:
 - Texture stream: the canvas should show four large color regions from the uploaded 2x2 texture.
 - Depth stream: the smaller green triangle must appear in front of the larger red triangle where
   they overlap.
+- Scene points stream: the canvas should show five circular points emitted as instanced quads.
 - Offscreen readback stream: the status line should include `readback nonzero=` with a nonzero value.
 - No-buffer and vertex-buffer streams should still render a single RGB triangle.
 

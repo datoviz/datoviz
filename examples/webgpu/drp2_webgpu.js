@@ -5,6 +5,7 @@ const streamSelectEl = document.querySelector("#stream-select");
 
 export const STREAMS = [
   { name: "scene_primitive_wgsl", label: "Scene primitive (WGSL)" },
+  { name: "scene_point_wgsl", label: "Scene points (WGSL)" },
   { name: "indexed_quad_wgsl", label: "Indexed quad" },
   { name: "texture_sampling_wgsl", label: "Texture sampling" },
   { name: "depth_overlap_wgsl", label: "Depth overlap" },
