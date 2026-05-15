@@ -179,6 +179,60 @@ Suggested message:
 - Enables future GPU picking by reading label ID under cursor.
 - Shows how napari layer semantics can map to a backend-neutral rendering primitive.
 
+## Current implementation gap
+
+As of the current v0.4-dev scene slice, this demo is not yet implementable in the final intended
+architecture without more rendering work.
+
+Already available:
+
+- retained `ImageVisual` rendering through the scene -> DRP2 -> vklite/app path;
+- retained `SampledField` objects, including enum values for integer field formats such as
+  `R16_UINT` and `R32_UINT`;
+- z-layered panel visual attachment, so a base image visual and an overlay visual can be drawn in
+  order;
+- partial sampled-field updates and dirty tracking;
+- live app/window execution with panzoom and Dear ImGui controls;
+- image probe request plumbing that can read back RGBA values from the image visual path.
+
+Missing for the real Labels-layer architecture:
+
+- a first-class `LabelsVisual` or an equivalent image-label mode that binds integer sampled fields
+  directly instead of CPU-converting them to RGBA;
+- format-aware DRP2 texture upload validation and runtime copy layout for non-RGBA8 texel sizes;
+- sampler configuration, especially nearest filtering for labels;
+- label shaders that use `usampler2D` / `textureLoad()` and color IDs in the fragment shader;
+- low-latency label uniforms for opacity, selected label, color mode, and boundary mode;
+- label-specific probing/picking that returns the integer label ID under the cursor, rather than an
+  RGBA value;
+- focused tests for integer texture upload, label compositing, selected-label updates, and label
+  probe readback.
+
+## Quick proof-of-concept path
+
+A short-term demo can emulate the napari workflow without claiming to be the final architecture:
+
+1. preprocess BBBC038 masks into a `uint32` label map exactly as above;
+2. CPU-color the label map into an `RGBA8` overlay image using the same hash-color rule planned for
+   the shader path;
+3. set alpha to `0` for label `0` and to the current labels opacity for nonzero labels;
+4. optionally compute boundaries on the CPU and color only boundary pixels;
+5. optionally apply selected-label highlighting by regenerating the overlay RGBA texture when the
+   selected label changes;
+6. render the microscopy image with one `ImageVisual`;
+7. render the CPU-colored label overlay with a second `ImageVisual` attached to the same panel with
+   a higher `z_layer`;
+8. use nearest-looking behavior by avoiding interpolation-sensitive transforms where possible, but
+   accept that the current default sampler path is still linear;
+9. emulate hover label readout on the CPU by mapping the cursor to panel/image pixel coordinates and
+   indexing the retained `uint32` label map directly.
+
+This shortcut is useful for a conference/demo proof of concept because it exercises the current
+scene/app path, panzoom, layered image compositing, GUI controls, and label-readout user experience.
+It deliberately does not demonstrate the key backend claim that labels remain integer GPU data and
+are colored/probed on the GPU. Any demo built this way should be described as "emulated labels
+overlay" or "CPU-colored labels prototype".
+
 ## Minimal implementation plan
 
 1. Write `prepare_bbbc038_labels.py` to download and convert 10 representative BBBC038 images.
