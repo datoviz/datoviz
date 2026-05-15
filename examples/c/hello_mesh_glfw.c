@@ -7,7 +7,7 @@
 /* hello_mesh_glfw — live rotating lit cube mesh via dvz_mesh + scene/app.
  *
  * Opens a GLFW window showing one indexed cube mesh with explicit face normals, per-face colours,
- * depth testing, and a perspective camera. The frame callback advances the panel arcball while the
+ * depth testing, and a perspective camera. A scene timer advances the panel arcball while the
  * user is idle so the retained 3D scene exercises the live scene -> DRP2 -> vklite/canvas path
  * continuously without fighting interactive arcball gestures.
  *
@@ -32,7 +32,6 @@
 #include "_alloc.h"
 #include "datoviz/app.h"
 #include "datoviz/canvas.h"
-#include "datoviz/input/pointer.h"
 #include "datoviz/scene.h"
 #include "datoviz/video.h"
 
@@ -58,7 +57,6 @@ typedef struct MeshGlfwState MeshGlfwState;
 struct MeshGlfwState
 {
     DvzArcball* arcball;
-    uint64_t last_timestamp_ns;
 };
 
 
@@ -204,32 +202,26 @@ static void _outpath(const char* exe, const char* name, char* out, size_t size)
 /*************************************************************************************************/
 
 /**
- * Advance the cube orientation for the next frame.
+ * Advance the cube orientation from the scene clock.
  *
- * @param win app-window whose frame just completed
+ * @param animation timer animation
+ * @param t current scene-clock time
+ * @param dt elapsed scene-clock time since the previous step
  * @param user_data mesh GLFW example state
  */
-static void _mesh_glfw_frame(DvzAppWindow* win, void* user_data)
+static void _mesh_glfw_timer(DvzAnimation* animation, double t, double dt, void* user_data)
 {
-    (void)win;
+    (void)animation;
+    (void)t;
     MeshGlfwState* state = (MeshGlfwState*)user_data;
     if (state == NULL || state->arcball == NULL)
         return;
 
-    uint64_t now = dvz_input_timestamp_ns();
-    if (state->last_timestamp_ns == 0)
-        state->last_timestamp_ns = now;
-
-    uint64_t elapsed_ns = now - state->last_timestamp_ns;
-    state->last_timestamp_ns = now;
-    float elapsed = (float)((double)elapsed_ns / 1000000000.0);
-    if (elapsed > 0.1f)
-        elapsed = 0.1f;
-
     if (!dvz_arcball_is_interacting(state->arcball))
     {
         dvz_arcball_rotate_axis(
-            state->arcball, ROTATION_SPEED_RAD_PER_SEC * elapsed, (vec3){0.0f, 1.0f, 0.0f});
+            state->arcball, ROTATION_SPEED_RAD_PER_SEC * (float)dt,
+            (vec3){0.0f, 1.0f, 0.0f});
     }
 }
 
@@ -355,6 +347,9 @@ int main(int argc, char** argv)
     }
     dvz_arcball_set(arcball, (vec3){+0.65f, 0.0f, +0.35f});
 
+    dvz_scene_set_clock_mode(scene, video_enabled ? DVZ_CLOCK_OFFLINE : DVZ_CLOCK_REALTIME);
+    dvz_scene_set_fps(scene, 60.0);
+
     char mp4_path[512] = {0};
     if (video_enabled)
     {
@@ -376,7 +371,15 @@ int main(int argc, char** argv)
     }
 
     MeshGlfwState state = {.arcball = arcball};
-    dvz_app_window_set_frame_callback(win, _mesh_glfw_frame, &state);
+    DvzAnimation* spin = dvz_anim_timer(scene, 0.0, _mesh_glfw_timer, &state);
+    if (spin == NULL)
+    {
+        fprintf(stderr, "dvz_anim_timer() failed\n");
+        dvz_app_destroy(app);
+        dvz_scene_destroy(scene);
+        return 1;
+    }
+    dvz_anim_start(spin, 0.0);
 
     dvz_app_run(app, frame_count);
     if (video_enabled)
