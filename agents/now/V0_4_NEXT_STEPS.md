@@ -146,11 +146,18 @@ Deliver the next implementation slices in this order unless the user redirects:
 5. Current DVZR next: broaden portable command coverage beyond the initial resource-write subset so
    real scene-emitted setup and frame streams can replay without the raw ABI-local fallback; then add
    a tiny paced/fast playback loop over `dvz_drp2_recording_execute_frame()`.
-6. Early WebGPU feasibility spike: replay a tiny DRP2 subset for clear, static point/primitive/image,
+6. CUDA/CuPy external-memory interop priority: treat CUDA/CuPy-owned GPU pointer -> Vulkan import as
+   unreliable on this branch. Prioritize the opposite direction for any new interop work: create and
+   own the allocation in Vulkan, export it through external memory, import it into CUDA/CuPy, and
+   synchronize cross-API access explicitly with external semaphores or timeline-compatible plumbing.
+   Do not make NVIDIA CIG (`VK_NV_external_compute_queue` / CUDA-in-Graphics contexts) a dependency
+   of this route; it is optional NVIDIA-specific scheduling plumbing, not required for Vulkan-owned
+   external memory imported into CUDA/CuPy.
+7. Early WebGPU feasibility spike: replay a tiny DRP2 subset for clear, static point/primitive/image,
    then depth. Keep it contract-pressure only; do not fork scene semantics.
-7. Rendered colorbar/text/annotation realization, reusing the current scene -> DRP2 path after the
+8. Rendered colorbar/text/annotation realization, reusing the current scene -> DRP2 path after the
    native 3D and manual-smoke gaps are clearer.
-8. Picking payload widening after the hardened slice: richer ids, mesh targets, and less ad-hoc RGBA
+9. Picking payload widening after the hardened slice: richer ids, mesh targets, and less ad-hoc RGBA
    payload encoding.
 
 Implementation-level checklists for these lanes are recorded in
@@ -176,6 +183,10 @@ For the immediate implementation pass:
 4. Keep examples and focused tests in lockstep with each retained slice.
 5. Treat declared-but-unimplemented public functions as a priority: either implement them narrowly
    or mark/document the gap before depending on them.
+6. For CUDA/CuPy interop, do not build new architecture around importing CUDA-owned allocations into
+   Vulkan. Prefer Vulkan-owned exportable resources that CUDA/CuPy imports through external-memory
+   handles. Keep NVIDIA CIG optional and vendor-specific rather than part of the required
+   external-memory contract.
 
 
 ## Roadmap After The Immediate Pass

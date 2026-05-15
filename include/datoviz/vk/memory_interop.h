@@ -39,6 +39,15 @@ EXTERN_C_ON
  * It is narrower than `memory.h` and should be included only by code that explicitly needs
  * raw memory handles, export/import plumbing, or external-handle inspection.
  *
+ * Interop direction matters. The current CUDA/CuPy-owned GPU pointer -> Vulkan import path has
+ * proved unreliable on the active branch and should not be the primary design target. Prioritize
+ * Vulkan-owned allocations exported through external memory handles and then imported by CUDA/CuPy,
+ * using explicit external synchronization around cross-API access.
+ *
+ * NVIDIA CIG (`VK_NV_external_compute_queue` / CUDA-in-Graphics contexts) is not required for that
+ * Vulkan -> CUDA/CuPy memory-sharing route. Treat it as an optional NVIDIA-only scheduling
+ * experiment rather than a dependency of the external-memory design.
+ *
  * The declarations below remain public on purpose even when some of them are lightly used on the
  * current branch, because allocator interop hardening is expected to continue here rather than
  * through private vk-only helpers.
@@ -96,8 +105,10 @@ DVZ_EXPORT VkDeviceMemory dvz_allocation_memory(DvzAllocation* alloc);
  * surface rather than reintroducing private entry points.
  *
  * !!! warning
- *     This function remains experimental on the current branch. The import-buffer test path is
- *     still documented as unreliable and should not be treated as a stable v0.4 contract yet.
+ *     This CUDA/CuPy-owned pointer -> Vulkan import direction remains experimental on the current
+ *     branch. It is unreliable in practice and should not be treated as a stable v0.4 contract.
+ *     Prefer the opposite direction: create/export Vulkan memory first, then import the external
+ *     memory handle into CUDA/CuPy.
  *
  * @param allocator the allocator
  * @param info the buffer creation info Vulkan struct
