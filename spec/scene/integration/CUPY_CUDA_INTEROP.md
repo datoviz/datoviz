@@ -106,9 +106,10 @@ The repository already contains two low-level CUDA/Vulkan memory tests in
 1. `test_memory_cuda_1` is the preferred Vulkan-owned direction. It creates an exportable Vulkan
    buffer, exports the allocation FD with `dvz_allocator_export()`, imports that FD into CUDA with
    `cudaImportExternalMemory()`, maps a CUDA pointer with
-   `cudaExternalMemoryGetMappedBuffer()`, launches a tiny CUDA kernel, and verifies the data from
-   the Vulkan allocation. This is the canonical registered CUDA interop smoke in
-   `src/vk/tests/test_vk.c`.
+   `cudaExternalMemoryGetMappedBuffer()`, imports a Vulkan-owned timeline semaphore into CUDA,
+   launches a tiny CUDA kernel, signals from CUDA, waits from Vulkan before copying the buffer, and
+   verifies the data from the Vulkan allocation. This is the canonical registered CUDA interop smoke
+   in `src/vk/tests/test_vk.c`.
 2. `test_memory_cuda_2` exercises the opposite CUDA-owned allocation -> Vulkan import direction with
    CUDA Driver virtual-memory APIs, `dvz_allocator_import_buffer()`, and an exported Vulkan timeline
    semaphore. This direction remains later work because it has proved less reliable as a primary
@@ -250,19 +251,14 @@ binding contract are stable.
 
 Start with narrow tests before adding Python examples:
 
-1. extend `test_memory_cuda_1` beyond the initial host-visible smoke so it no longer relies on
-   host-visible memory as the long-term model,
-2. add the same-direction external semaphore coverage: Vulkan-owned buffer exported to CUDA, CUDA
-   writes on a stream, CUDA signals an imported/exported semaphore, and Vulkan waits before copying
-   or drawing,
-3. add a device-local exportable buffer variant with staging/readback verification so the test
+1. add a device-local exportable buffer variant with staging/readback verification so the test
    reflects real vertex/storage-buffer use rather than only host-mappable memory,
-4. add runtime registration for a pre-existing shared buffer consumed by DRP2/vklite without a
+2. add runtime registration for a pre-existing shared buffer consumed by DRP2/vklite without a
    `WRITE_BUFFER` upload,
-5. add a point visual with external `position` and regular scene-owned `color`/`size`,
-6. add double-buffered CUDA write and Vulkan draw coverage with external semaphore waits/signals,
-7. add the Python CuPy wrapper lifetime test,
-8. add a live example that updates positions at a fixed rate without CPU upload.
+3. add a point visual with external `position` and regular scene-owned `color`/`size`,
+4. add double-buffered CUDA write and Vulkan draw coverage with external semaphore waits/signals,
+5. add the Python CuPy wrapper lifetime test,
+6. add a live example that updates positions at a fixed rate without CPU upload.
 
 The existing CUDA import/export tests in `src/vk/tests/test_memory.c` are the right low-level
 starting point, but the public example should only be added after the synchronization path is tested

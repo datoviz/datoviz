@@ -320,8 +320,13 @@ int test_memory_cuda_1(TstSuite* suite, TstItem* tstitem)
     DvzDevice* device = NULL;
     DvzVma* allocator = NULL;
     DvzAllocation* alloc = NULL;
+    DvzAllocation* staging_read_alloc = NULL;
     VkBuffer vk_buffer = VK_NULL_HANDLE;
+    VkBuffer staging_read_buffer = VK_NULL_HANDLE;
+    DvzSemaphore* interop_semaphore = NULL;
+    cudaExternalSemaphore_t cuda_semaphore = NULL;
     int fd = -1;
+    int semaphore_fd = -1;
 
     /******************* Vulkan setup *******************/
     DvzInstanceConfig icfg = dvz_instance_default_config();
@@ -353,19 +358,61 @@ int test_memory_cuda_1(TstSuite* suite, TstItem* tstitem)
     dvz_queues(&qc, &queues);
     DvzDeviceConfig dcfg = dvz_device_default_config(instance);
     dvz_device_config_set_gpu_index(&dcfg, vk_gpu_index);
+    VkPhysicalDeviceVulkan12Features features12 = {
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES};
+    features12.timelineSemaphore = true;
+    dvz_device_config_set_features12(&dcfg, &features12);
+    VkPhysicalDeviceVulkan13Features features13 = {
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES};
+    features13.synchronization2 = true;
+    dvz_device_config_set_features13(&dcfg, &features13);
     for (uint32_t i = 0; i < queues.queue_count; i++)
     {
         DvzQueue* queue = &queues.queues[i];
         dvz_device_config_request_queue(&dcfg, queue->family_idx, 1);
     }
     // IMPORTANT: need external memory device extension.
+    dvz_device_config_request_extension(&dcfg, VK_KHR_EXTERNAL_SEMAPHORE_EXTENSION_NAME);
     dvz_device_config_request_extension(&dcfg, VK_KHR_EXTERNAL_MEMORY_FD_EXTENSION_NAME);
+    dvz_device_config_request_extension(&dcfg, VK_KHR_EXTERNAL_SEMAPHORE_FD_EXTENSION_NAME);
     device = dvz_device_create(&dcfg);
     if (device == NULL)
     {
         out = 1;
         goto cleanup_vulkan;
     }
+    if (!dvz_device_has_extension(device, VK_KHR_EXTERNAL_SEMAPHORE_FD_EXTENSION_NAME))
+    {
+        log_warn("test_memory_cuda_1 skipped: Vulkan external semaphore FD unsupported");
+        out = 0;
+        goto cleanup_vulkan;
+    }
+
+    interop_semaphore = dvz_semaphore_create_wrapper();
+    ANN(interop_semaphore);
+    dvz_semaphore_timeline(
+        device, 0, interop_semaphore, VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_OPAQUE_FD_BIT);
+    semaphore_fd =
+        dvz_semaphore_export_fd(interop_semaphore, VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_OPAQUE_FD_BIT);
+    if (semaphore_fd < 0)
+    {
+        log_error("failed to export Vulkan timeline semaphore FD");
+        out = 1;
+        goto cleanup_vulkan;
+    }
+
+    struct cudaExternalSemaphoreHandleDesc sem_desc = {0};
+    sem_desc.type = cudaExternalSemaphoreHandleTypeTimelineSemaphoreFd;
+    sem_desc.handle.fd = semaphore_fd;
+    cerr = cudaImportExternalSemaphore(&cuda_semaphore, &sem_desc);
+    if (cerr != cudaSuccess)
+    {
+        log_error("cudaImportExternalSemaphore failed: %s", cudaGetErrorString(cerr));
+        out = 1;
+        goto cleanup_vulkan;
+    }
+    // CUDA assumes ownership of the opaque semaphore FD after successful import on Linux.
+    semaphore_fd = -1;
 
     // Memory allocator.
     allocator = dvz_allocator_create();
@@ -384,6 +431,22 @@ int test_memory_cuda_1(TstSuite* suite, TstItem* tstitem)
     dvz_allocator_buffer(
         allocator, &buf_info, DVZ_ALLOC_DEDICATED_MEMORY | DVZ_ALLOC_HOST_ACCESS_RANDOM, alloc,
         &vk_buffer);
+
+    VkBufferCreateInfo staging_info = {
+        .sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
+        .size = SIZE,
+        .usage = VK_BUFFER_USAGE_TRANSFER_DST_BIT,
+    };
+    staging_read_alloc = dvz_allocation_create();
+    ANN(staging_read_alloc);
+    out = dvz_allocator_buffer(
+        allocator, &staging_info, DVZ_ALLOC_HOST_ACCESS_RANDOM, staging_read_alloc,
+        &staging_read_buffer);
+    if (out != 0)
+    {
+        log_error("failed to create Vulkan staging readback buffer");
+        goto cleanup_vulkan;
+    }
 
     /******************* Initialize data on Vulkan side *******************/
     log_trace("mapping and sending data to the buffer");
@@ -435,22 +498,55 @@ int test_memory_cuda_1(TstSuite* suite, TstItem* tstitem)
 
     /******************* CUDA modifies Vulkan memory *******************/
     launch_add1_kernel((uint32_t*)cuda_ptr, N);
-    cudaDeviceSynchronize();
+    struct cudaExternalSemaphoreSignalParams signal_params = {0};
+    signal_params.params.fence.value = 1;
+    cerr = cudaSignalExternalSemaphoresAsync(&cuda_semaphore, &signal_params, 1, 0);
+    if (cerr != cudaSuccess)
+    {
+        log_error("cudaSignalExternalSemaphoresAsync failed: %s", cudaGetErrorString(cerr));
+        out = 1;
+        goto cleanup_cuda_mem;
+    }
+    cerr = cudaDeviceSynchronize();
+    if (cerr != cudaSuccess)
+    {
+        log_error("cudaDeviceSynchronize failed: %s", cudaGetErrorString(cerr));
+        out = 1;
+        goto cleanup_cuda_mem;
+    }
 
-    /******************* Check result from Vulkan side *******************/
-    ptr = (uint32_t*)dvz_allocator_map(allocator, alloc);
+    /******************* Check result from Vulkan side after semaphore wait *******************/
+    if (!_cuda_import_copy_buffer(
+            device, vk_buffer, staging_read_buffer, SIZE, dvz_semaphore_handle(interop_semaphore),
+            1, VK_NULL_HANDLE, 0))
+    {
+        out = 1;
+        goto cleanup_cuda_mem;
+    }
+    uint32_t* host_verify = (uint32_t*)dvz_malloc(SIZE);
+    ANN(host_verify);
+    if (dvz_allocator_copy_from(allocator, staging_read_alloc, 0, host_verify, SIZE) != 0)
+    {
+        log_error("failed to read Vulkan staging buffer");
+        dvz_free(host_verify);
+        out = 1;
+        goto cleanup_cuda_mem;
+    }
     for (uint32_t i = 0; i < N; i++)
     {
-        if (ptr[i] != i + 1)
+        if (host_verify[i] != i + 1)
         {
-            log_error("Mismatch after CUDA write at %u: got %u expected %u", i, ptr[i], i + 1);
+            log_error(
+                "Mismatch after CUDA write at %u: got %u expected %u", i, host_verify[i], i + 1);
             out = 1;
             break;
         }
     }
-    dvz_allocator_unmap(allocator, alloc);
+    dvz_free(host_verify);
     if (out == 0)
-        log_info("Vulkan->CUDA path verified OK (CUDA write visible in Vulkan)");
+        log_info("Vulkan->CUDA semaphore path verified OK (CUDA write visible in Vulkan)");
+    else
+        goto cleanup_cuda_mem;
 
     /******************* Vulkan modifies data again *******************/
     ptr = (uint32_t*)dvz_allocator_map(allocator, alloc);
@@ -492,10 +588,28 @@ cleanup_fd:
         close(fd);
 #endif
 cleanup_vulkan:
+    if (cuda_semaphore != NULL)
+    {
+        cudaDestroyExternalSemaphore(cuda_semaphore);
+        cuda_semaphore = NULL;
+    }
+#if OS_UNIX
+    if (semaphore_fd >= 0)
+        close(semaphore_fd);
+#endif
+    if (staging_read_buffer != VK_NULL_HANDLE)
+        dvz_allocator_destroy_buffer(allocator, staging_read_alloc, staging_read_buffer);
+    if (staging_read_alloc != NULL)
+        dvz_allocation_free(staging_read_alloc);
     if (alloc != NULL)
     {
         dvz_allocator_destroy_buffer(allocator, alloc, vk_buffer);
         dvz_allocation_free(alloc);
+    }
+    if (interop_semaphore != NULL)
+    {
+        dvz_semaphore_destroy(interop_semaphore);
+        dvz_semaphore_free(interop_semaphore);
     }
     if (allocator != NULL)
     {
