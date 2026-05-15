@@ -2,7 +2,7 @@
 
 > **Execution Status**
 > - **Status:** `ACTIVE DEVELOPMENT GUIDE`
-> - **Updated on:** `2026-05-15`
+> - **Updated on:** `2026-05-16`
 > - **Purpose:** give future agents the practical next steps after the first scene -> DRP2 ->
 >   vklite/canvas slice.
 
@@ -191,6 +191,17 @@ WBOIT visual diagnostic follow-up on `2026-05-15`: `hello_mesh_wboit_glfw` keeps
 by default, has a GUI toggle for a light comparison background, and uses tuned cube/reference colors
 so face overlap and front-card occlusion are easier to judge during live rotation.
 
+WBOIT resize follow-up on `2026-05-16` (`e18cca96`): `hello_mesh_wboit_glfw` exposed the same stale
+sampled-descriptor class previously seen in the depth-peeling resize path. WBOIT resolve bind-group
+emission now fingerprints the sampled accumulation/weight targets and target extent, so resize
+rebuilds the descriptor set instead of sampling destroyed image views. Validation: `git diff
+--check`, `just build`, `just test test_scene_visual_alpha_mode_emits_wboit_drp2`,
+`just test test_scene_visual_alpha_mode_wboit_glsl_executes`,
+`./build/examples/c/hello_mesh_wboit_glfw 60`, and `just test scene` (`203/203`). This is a
+tactical per-technique guardrail. The preferred generic fix is to make DRP2/vklite refresh
+dependent bind-group descriptors whenever a stable resource id is recreated; see
+[DRP2_DESCRIPTOR_REFRESH_PLAN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/DRP2_DESCRIPTOR_REFRESH_PLAN.md).
+
 
 ## Immediate Task
 
@@ -271,10 +282,16 @@ Deliver the next implementation slices in this order unless the user redirects:
     versus render-pass attachment formats. Use
     [WBOIT_MESH_INTERACTIVE_PLAN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/WBOIT_MESH_INTERACTIVE_PLAN.md)
     as the implementation checklist.
-11. SSAO planning note: early scene-level SSAO should follow the active scene -> FramePlan -> DRP2
+11. DRP2/vklite descriptor-refresh follow-up: implement a generic runtime invalidation/refresh path
+    for bind groups that reference stable resource ids whose backend handles are recreated. This
+    should supersede the recent WBOIT and depth-peeling extent-fingerprint guardrails once validated,
+    so future multi-pass techniques do not each need custom resize descriptor logic. The plan is
+    recorded in
+    [DRP2_DESCRIPTOR_REFRESH_PLAN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/DRP2_DESCRIPTOR_REFRESH_PLAN.md).
+12. SSAO planning note: early scene-level SSAO should follow the active scene -> FramePlan -> DRP2
     -> vklite path and reuse the WBOIT-style multi-pass resource pattern. The implementation plan
     is recorded in [SCENE_SSAO_IMPLEMENTATION_PLAN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/SCENE_SSAO_IMPLEMENTATION_PLAN.md).
-12. Multi-pass FramePlan graph direction: before adding dual depth peeling or more one-off
+13. Multi-pass FramePlan graph direction: before adding dual depth peeling or more one-off
     transparency modes, add a small internal FramePlan graph skeleton around typed resources,
     typed passes, explicit attachments, and resource access declarations. The first slice should be
     schema, validation, deterministic debug output, and tests only, with no emitted-command
