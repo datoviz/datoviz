@@ -118,6 +118,8 @@ static const char* _builtin_shader_resource_key(DvzSceneBuiltinShader shader, bo
         return fragment ? "volume_slice_frag" : "volume_slice_vert";
     case DVZ_SCENE_BUILTIN_SHADER_VOLUME_MIP:
         return fragment ? "volume_mip_frag" : "volume_slice_vert";
+    case DVZ_SCENE_BUILTIN_SHADER_VOLUME_COMPOSITE:
+        return fragment ? "volume_composite_frag" : "volume_slice_vert";
     case DVZ_SCENE_BUILTIN_SHADER_WBOIT_ACCUM:
         return fragment ? "wboit_accum_frag" : "primitive_vert";
     case DVZ_SCENE_BUILTIN_SHADER_WBOIT_ACCUM_LIT:

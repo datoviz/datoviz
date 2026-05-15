@@ -877,9 +877,14 @@ int test_scene_volume_retained_controls(TstSuite* suite, TstItem* item)
     AT(dvz_volume_state(volume)->version != version2);
     uint64_t version3 = dvz_volume_state(volume)->version;
 
+    AT(dvz_volume_set_render_mode(volume, DVZ_VOLUME_RENDER_COMPOSITE) == 0);
+    AT(dvz_volume_state(volume)->render_mode == DVZ_VOLUME_RENDER_COMPOSITE);
+    AT(dvz_volume_state(volume)->version != version3);
+    uint64_t version4 = dvz_volume_state(volume)->version;
+
     AT(dvz_volume_set_step_count(volume, 32) == 0);
     AT(dvz_volume_state(volume)->step_count == 32);
-    AT(dvz_volume_state(volume)->version != version3);
+    AT(dvz_volume_state(volume)->version != version4);
 
     double clip_min[3] = {0.1, 0.2, 0.3};
     double clip_max[3] = {0.9, 0.8, 0.7};
@@ -919,6 +924,8 @@ int test_scene_volume_retained_controls(TstSuite* suite, TstItem* item)
     AT(_captured_log_contains(suite, "requires a volume visual"));
     AT(dvz_volume_set_step_count(volume, 0) != 0);
     AT(_captured_log_contains(suite, "volume step count must be in"));
+    AT(dvz_volume_set_render_mode(volume, (DvzVolumeRenderMode)999) != 0);
+    AT(_captured_log_contains(suite, "unsupported volume render mode"));
 
     dvz_scene_destroy(scene);
     return 0;

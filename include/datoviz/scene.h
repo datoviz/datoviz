@@ -676,7 +676,7 @@ DVZ_EXPORT int dvz_volume_set_render_mode(DvzVisual* visual, DvzVolumeRenderMode
 
 
 /**
- * Set the volume raymarch step count used by MIP rendering.
+ * Set the volume raymarch step count used by MIP and composite rendering.
  *
  * @param visual the volume visual
  * @param step_count number of raymarch samples

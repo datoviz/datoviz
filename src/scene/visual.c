@@ -1884,7 +1884,8 @@ int dvz_volume_set_render_mode(DvzVisual* visual, DvzVolumeRenderMode mode)
         log_error("dvz_volume_set_render_mode requires a volume visual");
         return -1;
     }
-    if (mode != DVZ_VOLUME_RENDER_SLICE && mode != DVZ_VOLUME_RENDER_MIP)
+    if (mode != DVZ_VOLUME_RENDER_SLICE && mode != DVZ_VOLUME_RENDER_MIP &&
+        mode != DVZ_VOLUME_RENDER_COMPOSITE)
     {
         log_error("unsupported volume render mode %d", (int)mode);
         return -1;

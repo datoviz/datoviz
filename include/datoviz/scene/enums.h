@@ -118,6 +118,7 @@ typedef enum
 {
     DVZ_VOLUME_RENDER_SLICE = 0,
     DVZ_VOLUME_RENDER_MIP,
+    DVZ_VOLUME_RENDER_COMPOSITE,
 } DvzVolumeRenderMode;
 
 
