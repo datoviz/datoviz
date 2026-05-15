@@ -68,6 +68,8 @@ struct ResourceId
     uint32_t usage;                      /* DRP2 buffer usage flags                           */
     uint32_t item_stride;                /* optional element stride (index buffers)          */
     uint32_t topology;                   /* primitive topology hint (UINT32_MAX = unset)      */
+    uint32_t texture_width;              /* allocated texture width, when this is a texture   */
+    uint32_t texture_height;             /* allocated texture height, when this is a texture  */
     DvzFramePlanResourceKind kind;        /* typed resource kind, when supplied by FramePlan   */
     DvzFramePlanResourceRole role;        /* typed resource role, when supplied by FramePlan   */
 };
@@ -140,6 +142,10 @@ ResourceId* _resource_entry(ConverterState* state, const char* key, bool* is_new
 
 bool _resource_ensure_byte_size(
     ConverterState* state, ResourceId* resource, uint64_t required_size, bool* needs_create);
+
+bool _resource_ensure_texture_2d(
+    ConverterState* state, ResourceId* resource, uint32_t width, uint32_t height,
+    bool* needs_create);
 
 const char* _resource_data_tag(const ConverterState* state, uint64_t id);
 

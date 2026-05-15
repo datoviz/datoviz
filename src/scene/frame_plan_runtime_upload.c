@@ -66,17 +66,48 @@ bool _emitter_emit_upload(
             resource->role = node->u.upload.metadata.role;
         }
         resource->byte_size = node->u.upload.byte_size;
-        uint64_t id = resource->id;
         uint32_t w  = node->u.upload.texture_width;
         uint32_t h  = node->u.upload.texture_height;
         if (w > UINT32_MAX / 4)
             return false;
+        uint32_t texture_w = w;
+        uint32_t texture_h = h;
+        if (node->u.upload.texture_origin_x != 0 || node->u.upload.texture_origin_y != 0)
+        {
+            if (resource->texture_width > 0 && resource->texture_height > 0)
+            {
+                texture_w = resource->texture_width;
+                texture_h = resource->texture_height;
+                uint64_t end_x = 0;
+                uint64_t end_y = 0;
+                if (_dvz_add_u64_overflows(node->u.upload.texture_origin_x, w, &end_x) ||
+                    _dvz_add_u64_overflows(node->u.upload.texture_origin_y, h, &end_y))
+                    return false;
+                if (end_x > texture_w || end_y > texture_h)
+                    return false;
+            }
+            else
+            {
+                uint64_t alloc_w = 0;
+                uint64_t alloc_h = 0;
+                if (_dvz_add_u64_overflows(node->u.upload.texture_origin_x, w, &alloc_w) ||
+                    _dvz_add_u64_overflows(node->u.upload.texture_origin_y, h, &alloc_h) ||
+                    alloc_w > UINT32_MAX || alloc_h > UINT32_MAX)
+                    return false;
+                texture_w = (uint32_t)alloc_w;
+                texture_h = (uint32_t)alloc_h;
+            }
+        }
+        if (!_resource_ensure_texture_2d(
+                &emitter->resources, resource, texture_w, texture_h, &is_new))
+            return false;
+        uint64_t id = resource->id;
         uint32_t bpr = w * 4;
         if (is_new)
         {
             uint32_t usage =
                 DVZ_DRP2_TEXTURE_USAGE_TEXTURE_BINDING | DVZ_DRP2_TEXTURE_USAGE_COPY_DST;
-            if (!dvz_drp2_stream_create_texture_2d_usage(stream, id, w, h, usage))
+            if (!dvz_drp2_stream_create_texture_2d_usage(stream, id, texture_w, texture_h, usage))
                 return false;
         }
         if (emitter->resources.first_texture_id == 0)
@@ -164,26 +195,27 @@ bool _emitter_emit_texture_upload(
     ANN(node);
     ANN(out_id);
 
-    bool exists = false;
-    for (uint32_t i = 0; i < emitter->resources.count; i++)
-    {
-        if (strcmp(emitter->resources.resources[i].key, node->u.upload.resource_id) == 0)
-        {
-            exists = true;
-            break;
-        }
-    }
-
-    uint64_t id = _resource_id(&emitter->resources, node->u.upload.resource_id);
-    if (id == 0)
+    bool is_new = false;
+    ResourceId* resource =
+        _resource_entry(&emitter->resources, node->u.upload.resource_id, &is_new);
+    if (resource == NULL)
         return false;
 
     char* data = _zero_base64_alloc(node->u.upload.byte_size);
     if (data == NULL)
         return false;
 
+    uint32_t width = node->u.upload.texture_width > 0 ? node->u.upload.texture_width : 2;
+    uint32_t height = node->u.upload.texture_height > 0 ? node->u.upload.texture_height : 2;
+    if (!_resource_ensure_texture_2d(&emitter->resources, resource, width, height, &is_new))
+    {
+        dvz_free(data);
+        return false;
+    }
+    uint64_t id = resource->id;
+
     uint32_t usage = DVZ_DRP2_TEXTURE_USAGE_TEXTURE_BINDING | DVZ_DRP2_TEXTURE_USAGE_COPY_DST;
-    if (!exists && !dvz_drp2_stream_create_texture_2d_usage(stream, id, 2, 2, usage))
+    if (is_new && !dvz_drp2_stream_create_texture_2d_usage(stream, id, width, height, usage))
     {
         dvz_free(data);
         return false;
@@ -191,7 +223,8 @@ bool _emitter_emit_texture_upload(
     if (emitter->resources.first_texture_id == 0)
         emitter->resources.first_texture_id = id;
     *out_id = id;
-    bool ok = dvz_drp2_stream_write_texture_2d(stream, id, 0, 2, 2, 8, 2, data);
+    bool ok = dvz_drp2_stream_write_texture_2d(
+        stream, id, 0, width, height, width * 4, height, data);
     dvz_free(data);
     return ok;
 }

@@ -319,6 +319,48 @@ bool _resource_ensure_byte_size(
 
 
 /**
+ * Ensure a persisted resource has the requested 2D texture extent.
+ *
+ * @param state the converter state
+ * @param resource the resource entry
+ * @param width the requested texture width
+ * @param height the requested texture height
+ * @param needs_create whether a CreateTexture command must be emitted
+ * @return whether the resource was sized successfully
+ */
+bool _resource_ensure_texture_2d(
+    ConverterState* state, ResourceId* resource, uint32_t width, uint32_t height,
+    bool* needs_create)
+{
+    ANN(state);
+    ANN(resource);
+    ANN(needs_create);
+
+    if (width == 0 || height == 0)
+        return false;
+
+    if (*needs_create || resource->texture_width == 0 || resource->texture_height == 0)
+    {
+        resource->texture_width = width;
+        resource->texture_height = height;
+        *needs_create = true;
+        return true;
+    }
+    if (width == resource->texture_width && height == resource->texture_height)
+        return true;
+
+    if (state->next_id == UINT64_MAX)
+        return false;
+    resource->id = state->next_id++;
+    resource->texture_width = width;
+    resource->texture_height = height;
+    *needs_create = true;
+    return true;
+}
+
+
+
+/**
  * Look up the data tag for a resource id.
  *
  * @param state the converter state

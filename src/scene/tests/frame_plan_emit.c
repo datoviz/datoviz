@@ -1223,6 +1223,167 @@ int test_frame_plan_emitter_runtime_dynamic_grow_buffer(TstSuite* suite, TstItem
 
 
 /**
+ * Ensure runtime texture uploads recreate the logical texture when the full extent changes.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_frame_plan_emitter_runtime_texture_extent_changes(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzFramePlanEmitter* emitter = dvz_frame_plan_emitter();
+    ANN(emitter);
+
+    DvzFramePlan* frame0 = dvz_frame_plan("figure.runtime.texture.resize", 0);
+    DvzFramePlan* frame1 = dvz_frame_plan("figure.runtime.texture.resize", 1);
+    DvzFramePlan* frame2 = dvz_frame_plan("figure.runtime.texture.resize", 2);
+    ANN(frame0);
+    ANN(frame1);
+    ANN(frame2);
+
+    AT(dvz_frame_plan_upload(frame0, "tex.resize.rgba", 0, 16, "image.rgba.0"));
+    AT(dvz_frame_plan_upload_set_texture_extent(frame0, 2, 2));
+    AT(dvz_frame_plan_render(frame0, "panel.0", "target.panel.0.picking", true));
+    AT(dvz_frame_plan_render_visual(frame0, "visual.image.resize"));
+
+    AT(dvz_frame_plan_upload(frame1, "tex.resize.rgba", 0, 16, "image.rgba.1"));
+    AT(dvz_frame_plan_upload_set_texture_extent(frame1, 2, 2));
+    AT(dvz_frame_plan_render(frame1, "panel.0", "target.panel.0.picking", true));
+    AT(dvz_frame_plan_render_visual(frame1, "visual.image.resize"));
+
+    AT(dvz_frame_plan_upload(frame2, "tex.resize.rgba", 0, 64, "image.rgba.2"));
+    AT(dvz_frame_plan_upload_set_texture_extent(frame2, 4, 4));
+    AT(dvz_frame_plan_render(frame2, "panel.0", "target.panel.0.picking", true));
+    AT(dvz_frame_plan_render_visual(frame2, "visual.image.resize"));
+
+    DvzCapabilitySnapshot caps = {0};
+    DvzDiagnosticReport report = {0};
+    DvzFramePlanEmitConfig emit_cfg = dvz_frame_plan_emit_config();
+    emit_cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
+    dvz_capability_snapshot_default(&caps);
+    dvz_diagnostic_report_init(&report);
+
+    DvzDrp2CommandStream* stream0 =
+        dvz_frame_plan_emitter_emit_drp2(emitter, frame0, &caps, &report, &emit_cfg);
+    ANN(stream0);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+
+    uint64_t tex0 = 0;
+    bool created_tex0 = false;
+    for (uint32_t i = 0; i < dvz_drp2_stream_count(stream0); i++)
+    {
+        const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream0, i);
+        if (cmd->type == DVZ_DRP2_COMMAND_WRITE_TEXTURE)
+            tex0 = cmd->u.write_texture.texture_id;
+    }
+    AT(tex0 != 0);
+    for (uint32_t i = 0; i < dvz_drp2_stream_count(stream0); i++)
+    {
+        const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream0, i);
+        if (cmd->type == DVZ_DRP2_COMMAND_CREATE_TEXTURE && cmd->u.create_texture.id == tex0)
+        {
+            created_tex0 = true;
+            AT(cmd->u.create_texture.width == 2);
+            AT(cmd->u.create_texture.height == 2);
+        }
+    }
+    AT(created_tex0);
+
+    dvz_diagnostic_report_init(&report);
+    DvzDrp2CommandStream* stream1 =
+        dvz_frame_plan_emitter_emit_drp2(emitter, frame1, &caps, &report, &emit_cfg);
+    ANN(stream1);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+
+    bool recreated_tex0 = false;
+    bool wrote_tex0 = false;
+    for (uint32_t i = 0; i < dvz_drp2_stream_count(stream1); i++)
+    {
+        const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream1, i);
+        if (cmd->type == DVZ_DRP2_COMMAND_CREATE_TEXTURE && cmd->u.create_texture.id == tex0)
+            recreated_tex0 = true;
+        if (cmd->type == DVZ_DRP2_COMMAND_WRITE_TEXTURE &&
+            cmd->u.write_texture.texture_id == tex0)
+        {
+            wrote_tex0 = true;
+        }
+    }
+    AT(!recreated_tex0);
+    AT(wrote_tex0);
+
+    dvz_diagnostic_report_init(&report);
+    DvzDrp2CommandStream* stream2 =
+        dvz_frame_plan_emitter_emit_drp2(emitter, frame2, &caps, &report, &emit_cfg);
+    ANN(stream2);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+
+    uint64_t tex2 = 0;
+    bool created_tex2 = false;
+    bool wrote_tex2 = false;
+    bool rebound_tex2 = false;
+    for (uint32_t i = 0; i < dvz_drp2_stream_count(stream2); i++)
+    {
+        const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream2, i);
+        if (cmd->type == DVZ_DRP2_COMMAND_WRITE_TEXTURE)
+            tex2 = cmd->u.write_texture.texture_id;
+    }
+    for (uint32_t i = 0; i < dvz_drp2_stream_count(stream2); i++)
+    {
+        const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream2, i);
+        if (cmd->type == DVZ_DRP2_COMMAND_CREATE_TEXTURE && cmd->u.create_texture.id == tex2)
+        {
+            created_tex2 = true;
+            AT(cmd->u.create_texture.width == 4);
+            AT(cmd->u.create_texture.height == 4);
+        }
+        if (cmd->type == DVZ_DRP2_COMMAND_WRITE_TEXTURE &&
+            cmd->u.write_texture.texture_id == tex2)
+        {
+            wrote_tex2 = true;
+        }
+        if (cmd->type == DVZ_DRP2_COMMAND_CREATE_BIND_GROUP)
+        {
+            for (uint32_t j = 0; j < cmd->u.create_bind_group.entry_count; j++)
+            {
+                if (cmd->u.create_bind_group.entries[j].resource_id == tex2)
+                    rebound_tex2 = true;
+            }
+        }
+    }
+    AT(tex2 != 0);
+    AT(tex2 != tex0);
+    AT(created_tex2);
+    AT(wrote_tex2);
+    AT(rebound_tex2);
+
+    DvzDrp2RuntimeConfig runtime_cfg = dvz_drp2_runtime_vklite_config(NULL, NULL);
+    runtime_cfg.semantic_only = true;
+    DvzDrp2Runtime* runtime = dvz_drp2_runtime_vklite(&runtime_cfg);
+    ANN(runtime);
+
+    DvzDrp2ValidationResult result = dvz_drp2_runtime_execute(runtime, stream0);
+    AT(result.ok);
+    result = dvz_drp2_runtime_execute(runtime, stream1);
+    AT(result.ok);
+    result = dvz_drp2_runtime_execute(runtime, stream2);
+    AT(result.ok);
+
+    dvz_drp2_runtime_destroy(runtime);
+    dvz_drp2_stream_destroy(stream2);
+    dvz_drp2_stream_destroy(stream1);
+    dvz_drp2_stream_destroy(stream0);
+    dvz_frame_plan_destroy(frame2);
+    dvz_frame_plan_destroy(frame1);
+    dvz_frame_plan_destroy(frame0);
+    dvz_frame_plan_emitter_destroy(emitter);
+    return 0;
+}
+
+
+/**
  * Ensure persistent emitter object ids can grow beyond the initial resource-map capacity.
  *
  * @param suite the active test suite
@@ -1458,6 +1619,7 @@ int test_scene_frame_plan_emit(TstSuite* suite)
     TEST_SIMPLE(test_frame_plan_emitter_runtime_two_frames);
     TEST_SIMPLE(test_frame_plan_emitter_runtime_dynamic_two_frames);
     TEST_SIMPLE(test_frame_plan_emitter_runtime_dynamic_grow_buffer);
+    TEST_SIMPLE(test_frame_plan_emitter_runtime_texture_extent_changes);
     TEST_SIMPLE(test_frame_plan_emitter_runtime_object_map_grows);
     TEST_SIMPLE(test_frame_plan_emitter_runtime_texture_two_frames);
     TEST_SIMPLE(test_frame_plan_emitter_runtime_compute_two_frames);
