@@ -646,8 +646,8 @@ int dvz_allocator_export(DvzVma* allocator, DvzAllocation* alloc, int* handle)
  */
 int dvz_interop_buffer_export(
     DvzVma* allocator, DvzAllocation* alloc, uint64_t offset, uint64_t size, uint32_t usage,
-    int semaphore_handle, VkExternalSemaphoreHandleTypeFlags semaphore_handle_type,
-    uint64_t semaphore_value, DvzInteropBufferExport* out)
+    int semaphore_handle, uint32_t semaphore_handle_type, uint64_t semaphore_value,
+    DvzInteropBufferExport* out)
 {
     ANN(allocator);
     ANN(alloc);
@@ -678,7 +678,7 @@ int dvz_interop_buffer_export(
     }
 
     out->memory_handle = memory_handle;
-    out->memory_handle_type = dvz_allocator_external(allocator);
+    out->memory_handle_type = (uint32_t)dvz_allocator_external(allocator);
     out->allocation_size = allocation_size;
     out->offset = offset;
     out->size = size;

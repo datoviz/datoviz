@@ -35,13 +35,13 @@ typedef struct DvzInteropBufferExport DvzInteropBufferExport;
 struct DvzInteropBufferExport
 {
     int memory_handle;
-    VkExternalMemoryHandleTypeFlagsKHR memory_handle_type;
+    uint32_t memory_handle_type;
     uint64_t allocation_size;
     uint64_t offset;
     uint64_t size;
     uint32_t usage;
     int semaphore_handle;
-    VkExternalSemaphoreHandleTypeFlags semaphore_handle_type;
+    uint32_t semaphore_handle_type;
     uint64_t semaphore_value;
 };
 
@@ -126,8 +126,8 @@ DVZ_EXPORT int dvz_allocator_export(DvzVma* allocator, DvzAllocation* alloc, int
  */
 DVZ_EXPORT int dvz_interop_buffer_export(
     DvzVma* allocator, DvzAllocation* alloc, uint64_t offset, uint64_t size, uint32_t usage,
-    int semaphore_handle, VkExternalSemaphoreHandleTypeFlags semaphore_handle_type,
-    uint64_t semaphore_value, DvzInteropBufferExport* out);
+    int semaphore_handle, uint32_t semaphore_handle_type, uint64_t semaphore_value,
+    DvzInteropBufferExport* out);
 
 
 
