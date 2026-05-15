@@ -1797,9 +1797,11 @@ static bool _recording_attach_payload(
             return true;
         }
         command->u.create_shader_module.spirv = (const unsigned char*)payload;
+        command->u.create_shader_module.spirv_size = payload_size;
         if (_recording_owner_add(owner, payload))
             return true;
         command->u.create_shader_module.spirv = NULL;
+        command->u.create_shader_module.spirv_size = 0;
         dvz_free(payload);
         return false;
     default:

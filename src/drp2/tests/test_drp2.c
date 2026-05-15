@@ -4546,6 +4546,33 @@ int test_drp2_recording_render_jsonl_no_raw_fallback(TstSuite* suite, TstItem* i
     dvz_drp2_runtime_destroy(runtime);
 
     dvz_drp2_stream_destroy(replay);
+
+    const uint32_t spirv_words[4] = {
+        0x07230203u,
+        0x00010000u,
+        0x000d000bu,
+        0x00000001u,
+    };
+    DvzDrp2CommandStream* spirv_stream = dvz_drp2_stream();
+    ANN(spirv_stream);
+    AT(dvz_drp2_stream_create_shader_module_spirv(
+        spirv_stream, 20, "vertex", (const unsigned char*)spirv_words, sizeof(spirv_words)));
+
+    const char* spirv_path = "/tmp/dvz_drp2_recording_spirv_payload.dvzr";
+    AT(dvz_drp2_recording_write_stream(spirv_path, spirv_stream, &info));
+
+    DvzDrp2CommandStream* spirv_replay = dvz_drp2_recording_read_stream(spirv_path);
+    ANN(spirv_replay);
+    const DvzDrp2Command* spirv_shader = dvz_drp2_stream_get(spirv_replay, 0);
+    ANN(spirv_shader);
+    AT(spirv_shader->type == DVZ_DRP2_COMMAND_CREATE_SHADER_MODULE);
+    AT(spirv_shader->u.create_shader_module.spirv != NULL);
+    AT(spirv_shader->u.create_shader_module.spirv_size == sizeof(spirv_words));
+    AT(memcmp(
+           spirv_shader->u.create_shader_module.spirv, spirv_words, sizeof(spirv_words)) == 0);
+
+    dvz_drp2_stream_destroy(spirv_replay);
+    dvz_drp2_stream_destroy(spirv_stream);
     dvz_drp2_stream_destroy(stream);
     return 0;
 }

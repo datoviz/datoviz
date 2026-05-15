@@ -1033,7 +1033,8 @@ static void _app_record_stream(
             !dvz_drp2_stream_renderer_hello_reply(setup, "datoviz-drp2-runtime") ||
             !dvz_drp2_stream_create_texture_2d_format_usage(
                 setup, win->target_id, frame->extent.width, frame->extent.height,
-                VK_FORMAT_R8G8B8A8_UNORM, DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT) ||
+                VK_FORMAT_R8G8B8A8_UNORM,
+                DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT | DVZ_DRP2_TEXTURE_USAGE_COPY_SRC) ||
             !dvz_drp2_recorder_write_stream(win->recorder, t_present, setup))
         {
             log_error("_app_draw failed to append DVZR target setup stream");
