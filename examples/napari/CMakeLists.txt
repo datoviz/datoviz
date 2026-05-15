@@ -77,4 +77,5 @@ endfunction()
 
 if(TARGET datoviz_app AND TARGET datoviz_gui AND DVZ_HAS_GLFW)
     dvz_add_napari_example(large_labels_segmentation_glfw)
+    dvz_add_napari_example(dense_points_spatial_omics_glfw)
 endif()
