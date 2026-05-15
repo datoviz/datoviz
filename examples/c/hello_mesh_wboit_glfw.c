@@ -6,10 +6,10 @@
 
 /* hello_mesh_wboit_glfw — transparent mesh via scene WBOIT + app/GLFW.
  *
- * Opens a GLFW window showing one transparent WBOIT cube. A GUI overlay exposes live color, alpha,
- * ambient/diffuse, and light-direction sliders. The visual alpha-mode opt-in exercises scene
- * planning, DRP2 WBOIT accumulation/resolve, and the vklite runtime while retaining the normal
- * app/canvas presentation path.
+ * Opens a GLFW window showing one transparent WBOIT cube over an opaque reference card. A GUI
+ * overlay exposes live color, alpha, ambient/diffuse, and light-direction sliders. The visual
+ * alpha-mode opt-in exercises scene planning, DRP2 WBOIT accumulation/resolve, and the vklite
+ * runtime while retaining the normal app/canvas presentation path.
  *
  * Build:  just example-c hello_mesh_wboit_glfw
  * Run:    ./build/examples/c/hello_mesh_wboit_glfw
@@ -265,7 +265,7 @@ static void _mesh_wboit_gui(DvzGui* gui, DvzAppWindow* win, void* user_data)
             state->cube_rgb[0] = 56.0f / 255.0f;
             state->cube_rgb[1] = 220.0f / 255.0f;
             state->cube_rgb[2] = 1.0f;
-            state->cube_alpha = 72.0f / 255.0f;
+            state->cube_alpha = 56.0f / 255.0f;
             state->cube_light_direction[0] = 0.25f;
             state->cube_light_direction[1] = 0.70f;
             state->cube_light_direction[2] = 0.45f;
@@ -327,26 +327,44 @@ int main(int argc, char** argv)
         return 1;
     }
 
+    DvzVisual* reference = dvz_primitive(scene, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 0);
     DvzVisual* cube = dvz_mesh(scene, 0);
-    if (cube == NULL)
+    if (reference == NULL || cube == NULL)
     {
-        fprintf(stderr, "dvz_mesh() failed\n");
+        fprintf(stderr, "visual creation failed\n");
         dvz_scene_destroy(scene);
         return 1;
     }
+
+    float reference_positions[6][3] = {
+        {-0.95f, -0.95f, -1.05f},
+        {+0.95f, -0.95f, -1.05f},
+        {+0.95f, +0.95f, -1.05f},
+        {-0.95f, -0.95f, -1.05f},
+        {+0.95f, +0.95f, -1.05f},
+        {-0.95f, +0.95f, -1.05f},
+    };
+    DvzColor reference_colors[6] = {
+        {255, 230, 80, 255},
+        {255, 230, 80, 255},
+        {255, 80, 180, 255},
+        {255, 230, 80, 255},
+        {255, 80, 180, 255},
+        {80, 200, 255, 255},
+    };
 
     float positions[24][3] = {0};
     DvzColor colors[24] = {0};
     float normals[24][3] = {0};
     DvzIndex indices[36] = {0};
-    DvzColor cube_color = {56, 220, 255, 72};
+    DvzColor cube_color = {56, 220, 255, 56};
     _build_cube(0.72f, cube_color, positions, colors, normals, indices);
 
     MeshWboitState state = {
         .cube = cube,
         .cube_vertex_count = 24,
         .cube_rgb = {56.0f / 255.0f, 220.0f / 255.0f, 1.0f},
-        .cube_alpha = 72.0f / 255.0f,
+        .cube_alpha = 56.0f / 255.0f,
         .cube_light_direction = {0.25f, 0.70f, 0.45f},
         .cube_ambient = 0.18f,
         .cube_diffuse = 0.95f,
@@ -366,12 +384,16 @@ int main(int argc, char** argv)
         return 1;
     }
 
+    dvz_visual_set_data(reference, "position", reference_positions, 6);
+    dvz_visual_set_data(reference, "color", reference_colors, 6);
+
     dvz_visual_set_data(cube, "position", positions, 24);
     dvz_visual_set_data(cube, "normal", normals, 24);
     dvz_visual_set_buffer(cube, "index", index_buffer);
     _mesh_wboit_update_cube(&state);
     dvz_visual_set_alpha_mode(cube, DVZ_ALPHA_WBOIT);
 
+    dvz_panel_add_visual(panel, reference, NULL);
     dvz_panel_add_visual(panel, cube, NULL);
     dvz_panel_set_background_color(panel, 0.05f, 0.05f, 0.08f, 1.0f);
 
