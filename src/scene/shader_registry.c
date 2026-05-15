@@ -205,7 +205,7 @@
     "layout(location=0)out vec4 outAccum;\n"                                                     \
     "layout(location=1)out float outWeight;\n"                                                   \
     "void main(){float a=clamp(fragColor.a,0.0,1.0);"                                          \
-    "outAccum=vec4(fragColor.rgb*a,a);outWeight=a;}\n"
+    "outAccum=vec4(fragColor.rgb*a,a);outWeight=-log(max(1.0-a,1e-4));}\n"
 #define DRP2_WBOIT_ACCUM_LIT_FRAGMENT_GLSL                                                      \
     "#version 450\n"                                                                            \
     "layout(set=1,binding=0)uniform PrimitiveShading{vec4 lightDir;vec4 params;}shading;\n"    \
@@ -221,7 +221,7 @@
     "float lambert=max(dot(n,l),0.0);float spec=pow(max(dot(n,h),0.0),32.0);"                  \
     "vec3 rgb=fragColor.rgb*(shading.params.x+shading.params.y*lambert)+vec3(0.18*spec);"     \
     "float a=clamp(fragColor.a,0.0,1.0);vec3 lit=clamp(rgb,0.0,1.0);"                          \
-    "outAccum=vec4(lit*a,a);outWeight=a;}\n"
+    "outAccum=vec4(lit*a,a);outWeight=-log(max(1.0-a,1e-4));}\n"
 #define DRP2_WBOIT_RESOLVE_FRAGMENT_GLSL                                                        \
     "#version 450\n"                                                                            \
     "layout(set=0,binding=0)uniform texture2D accumTex;\n"                                      \
@@ -231,8 +231,8 @@
     "void main(){vec2 uv=gl_FragCoord.xy/vec2(textureSize(sampler2D(accumTex,samp),0));"        \
     "vec4 accum=texture(sampler2D(accumTex,samp),uv);"                                          \
     "float weight=texture(sampler2D(weightTex,samp),uv).r;"                                     \
-    "float alpha=clamp(accum.a,0.0,1.0);"                                                       \
-    "vec3 rgb=weight>1e-5?accum.rgb/max(weight,1e-5):vec3(0.0);"                               \
+    "float alpha=clamp(1.0-exp(-weight),0.0,1.0);"                                              \
+    "vec3 rgb=accum.a>1e-5?accum.rgb/max(accum.a,1e-5):vec3(0.0);"                             \
     "outColor=vec4(rgb,alpha);}\n"
 
 

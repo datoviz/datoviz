@@ -231,7 +231,7 @@ int main(int argc, char** argv)
     float shell_positions[24][3] = {0};
     DvzColor shell_colors[24] = {0};
     float shell_normals[24][3] = {0};
-    DvzColor shell_color = {40, 190, 255, 96};
+    DvzColor shell_color = {48, 210, 255, 56};
     _build_cube(0.72f, shell_color, shell_positions, shell_colors, shell_normals, indices);
 
     DvzSceneBuffer* index_buffer = dvz_scene_buffer(
@@ -267,8 +267,8 @@ int main(int argc, char** argv)
         shell,
         &(DvzPrimitiveShadingDesc){
             .light_direction = {0.35f, 0.55f, 0.75f},
-            .ambient = 0.35f,
-            .diffuse = 0.75f,
+            .ambient = 0.45f,
+            .diffuse = 0.55f,
         });
     dvz_visual_set_alpha_mode(shell, DVZ_ALPHA_WBOIT);
 
