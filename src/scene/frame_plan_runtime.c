@@ -1409,11 +1409,17 @@ static bool _runtime_resolve_texture_2d(
     ResourceId* resource = _resource_entry(&emitter->resources, key, &is_new);
     if (resource == NULL)
         return false;
+    uint64_t old_id = resource->id;
+    bool had_texture =
+        !is_new && resource->texture_width != 0 && resource->texture_height != 0;
     if (!_resource_ensure_texture_2d(&emitter->resources, resource, width, height, &is_new))
         return false;
 
     if (is_new)
     {
+        if (had_texture && old_id != 0 && old_id != resource->id &&
+            !dvz_drp2_stream_destroy_texture(stream, old_id))
+            return false;
         if (!dvz_drp2_stream_create_texture_2d_format_usage(
                 stream, resource->id, width, height, format, usage))
             return false;
@@ -1740,6 +1746,29 @@ static bool _emitter_prepare_wboit_targets(
 }
 
 
+
+/**
+ * Return a compact fingerprint for a depth-peel sampled bind group dependency set.
+ *
+ * @param front_id front accumulation texture id.
+ * @param back_id back accumulation texture id.
+ * @param depth_id depth pair texture id.
+ * @param sampler_id sampler id.
+ * @return dependency fingerprint.
+ */
+static uint64_t _depth_peel_bind_group_fingerprint(
+    uint64_t front_id, uint64_t back_id, uint64_t depth_id, uint64_t sampler_id)
+{
+    uint64_t hash = UINT64_C(1469598103934665603);
+    hash = (hash ^ front_id) * UINT64_C(1099511628211);
+    hash = (hash ^ back_id) * UINT64_C(1099511628211);
+    hash = (hash ^ depth_id) * UINT64_C(1099511628211);
+    hash = (hash ^ sampler_id) * UINT64_C(1099511628211);
+    return hash != 0 ? hash : UINT64_C(1);
+}
+
+
+
 /**
  * Resolve one sampled bind group for a depth-peeling graph pass.
  *
@@ -1767,10 +1796,30 @@ static bool _depth_peel_resolve_sampled_bind_group(
     if (pass->read_count < 3)
         return false;
 
-    bool is_new = false;
-    uint64_t bg_id = _obj_id(emitter, key, &is_new);
-    if (bg_id == 0)
+    uint64_t front_id = _graph_runtime_targets_get(targets, pass->reads[0].resource_id);
+    uint64_t back_id = _graph_runtime_targets_get(targets, pass->reads[1].resource_id);
+    uint64_t depth_id = _graph_runtime_targets_get(targets, pass->reads[2].resource_id);
+    if (front_id == 0 || back_id == 0 || depth_id == 0)
         return false;
+
+    bool is_new = false;
+    ResourceId* resource = _resource_entry(&emitter->objects, key, &is_new);
+    if (resource == NULL || resource->id == 0)
+        return false;
+    uint64_t bg_id = resource->id;
+    uint64_t fingerprint =
+        _depth_peel_bind_group_fingerprint(front_id, back_id, depth_id, sampler_id);
+    if (!is_new && resource->byte_size != fingerprint)
+    {
+        if (emitter->objects.next_id == UINT64_MAX)
+            return false;
+        if (!dvz_drp2_stream_destroy_bind_group(stream, bg_id))
+            return false;
+        resource->id = emitter->objects.next_id++;
+        bg_id = resource->id;
+        is_new = true;
+    }
+    resource->byte_size = fingerprint;
     if (is_new)
     {
         DvzDrp2BindGroupEntry entries[4] = {
@@ -1778,19 +1827,19 @@ static bool _depth_peel_resolve_sampled_bind_group(
                 .binding = 0,
                 .binding_type = DVZ_DRP2_BINDING_TYPE_SAMPLED_TEXTURE,
                 .resource_kind = DVZ_DRP2_BINDING_RESOURCE_TEXTURE,
-                .resource_id = _graph_runtime_targets_get(targets, pass->reads[0].resource_id),
+                .resource_id = front_id,
             },
             {
                 .binding = 1,
                 .binding_type = DVZ_DRP2_BINDING_TYPE_SAMPLED_TEXTURE,
                 .resource_kind = DVZ_DRP2_BINDING_RESOURCE_TEXTURE,
-                .resource_id = _graph_runtime_targets_get(targets, pass->reads[1].resource_id),
+                .resource_id = back_id,
             },
             {
                 .binding = 2,
                 .binding_type = DVZ_DRP2_BINDING_TYPE_SAMPLED_TEXTURE,
                 .resource_kind = DVZ_DRP2_BINDING_RESOURCE_TEXTURE,
-                .resource_id = _graph_runtime_targets_get(targets, pass->reads[2].resource_id),
+                .resource_id = depth_id,
             },
             {
                 .binding = 3,
@@ -1799,9 +1848,6 @@ static bool _depth_peel_resolve_sampled_bind_group(
                 .resource_id = sampler_id,
             },
         };
-        if (entries[0].resource_id == 0 || entries[1].resource_id == 0 ||
-            entries[2].resource_id == 0)
-            return false;
         if (!dvz_drp2_stream_create_bind_group_entries(stream, bg_id, bgl_id, 4, entries))
             return false;
     }
@@ -1911,22 +1957,9 @@ static bool _emitter_prepare_depth_peel_targets(
     ok = ok && composite_pass != NULL;
     if (ok)
     {
-        uint64_t composite_front = _graph_sampled_read_texture_id(
-            composite_pass, 0, out->color_id, &out->graph, 0);
-        uint64_t composite_back = _graph_sampled_read_texture_id(
-            composite_pass, 1, out->color_id, &out->graph, 0);
-        uint64_t composite_depth = _graph_sampled_read_texture_id(
-            composite_pass, 2, out->color_id, &out->graph, 0);
-        ok = composite_front != 0 && composite_back != 0 && composite_depth != 0;
-
-        char composite_bg_base[DVZ_SCENE_LABEL_SIZE];
-        dvz_snprintf(
-            composite_bg_base, sizeof(composite_bg_base),
-            "_bg_depth_peel_composite_%" PRIu64 "_%" PRIu64 "_%" PRIu64,
-            composite_front, composite_back, composite_depth);
         char composite_bg_key[DVZ_SCENE_LABEL_SIZE];
         _runtime_scope_key(
-            cfg, composite_bg_base, composite_bg_key, sizeof(composite_bg_key));
+            cfg, "_bg_depth_peel_composite", composite_bg_key, sizeof(composite_bg_key));
         ok = ok && _depth_peel_resolve_sampled_bind_group(
             emitter, stream, composite_pass, &out->graph, composite_bg_key,
             out->sampled_bgl_id, out->sampler_id, &out->composite_bg_id);

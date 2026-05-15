@@ -1079,13 +1079,12 @@ static void _app_sync_figure_size(DvzAppWindow* win, const DvzStreamFrame* frame
  * Return a frame-local scope key for mutable app-frame runtime intermediates.
  *
  * @param frame canvas frame attached to the DRP2 runtime
- * @return scope id combining the borrowed command buffer and current extent
+ * @return scope id based on the borrowed command buffer
  */
 static uint64_t _app_frame_runtime_scope(const DvzStreamFrame* frame)
 {
     ANN(frame);
     uint64_t scope = (uint64_t)(uintptr_t)frame->command_buffer;
-    scope ^= ((uint64_t)frame->extent.width << 32) ^ (uint64_t)frame->extent.height;
     return scope != 0 ? scope : UINT64_C(1);
 }
 

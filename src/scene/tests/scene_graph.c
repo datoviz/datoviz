@@ -4498,7 +4498,6 @@ int test_scene_visual_alpha_mode_emits_depth_peel_drp2(TstSuite* suite, TstItem*
 
     bool has_scoped_front_ping = false;
     bool has_scoped_composite_bind_group = false;
-    char scoped_composite_label[DVZ_SCENE_LABEL_SIZE] = {0};
     for (uint32_t i = 0; i < dvz_drp2_stream_count(scoped_stream); i++)
     {
         const DvzDrp2Command* command = dvz_drp2_stream_get(scoped_stream, i);
@@ -4518,10 +4517,7 @@ int test_scene_visual_alpha_mode_emits_depth_peel_drp2(TstSuite* suite, TstItem*
             has_scoped_composite_bind_group =
                 has_scoped_composite_bind_group ||
                 (label != NULL &&
-                 strstr(label, "_bg_depth_peel_composite_") == label &&
-                 strstr(label, "_scope_000000000000007b") != NULL);
-            if (has_scoped_composite_bind_group && scoped_composite_label[0] == '\0')
-                dvz_strlcpy(scoped_composite_label, label, sizeof(scoped_composite_label));
+                 strcmp(label, "_bg_depth_peel_composite_scope_000000000000007b") == 0);
         }
     }
     AT(has_scoped_front_ping);
@@ -4537,6 +4533,8 @@ int test_scene_visual_alpha_mode_emits_depth_peel_drp2(TstSuite* suite, TstItem*
 
     bool resized_front_ping = false;
     bool rebuilt_composite_bind_group = false;
+    bool destroyed_resized_texture = false;
+    bool destroyed_composite_bind_group = false;
     for (uint32_t i = 0; i < dvz_drp2_stream_count(scoped_resize_stream); i++)
     {
         const DvzDrp2Command* command = dvz_drp2_stream_get(scoped_resize_stream, i);
@@ -4552,6 +4550,8 @@ int test_scene_visual_alpha_mode_emits_depth_peel_drp2(TstSuite* suite, TstItem*
                  command->u.create_texture.width == 96 &&
                  command->u.create_texture.height == 48);
         }
+        else if (command->type == DVZ_DRP2_COMMAND_DESTROY_TEXTURE)
+            destroyed_resized_texture = true;
         else if (command->type == DVZ_DRP2_COMMAND_CREATE_BIND_GROUP)
         {
             const char* label =
@@ -4559,12 +4559,15 @@ int test_scene_visual_alpha_mode_emits_depth_peel_drp2(TstSuite* suite, TstItem*
             rebuilt_composite_bind_group =
                 rebuilt_composite_bind_group ||
                 (label != NULL &&
-                 strstr(label, "_bg_depth_peel_composite_") == label &&
-                 strstr(label, "_scope_000000000000007b") != NULL &&
-                 strcmp(label, scoped_composite_label) != 0);
+                 strcmp(label, "_bg_depth_peel_composite_scope_000000000000007b") == 0 &&
+                 command->u.create_bind_group.id != 0);
         }
+        else if (command->type == DVZ_DRP2_COMMAND_DESTROY_BIND_GROUP)
+            destroyed_composite_bind_group = true;
     }
     AT(resized_front_ping);
+    AT(destroyed_resized_texture);
+    AT(destroyed_composite_bind_group);
     AT(rebuilt_composite_bind_group);
 
     dvz_drp2_stream_destroy(scoped_resize_stream);
