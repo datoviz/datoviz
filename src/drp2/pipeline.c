@@ -628,9 +628,16 @@ DvzDrp2ValidationResult _vklite_create_render_pipeline(
     /* Vertex input layout (only when explicitly provided). */
     uint32_t nb = command->u.create_render_pipeline.binding_count;
     for (uint32_t i = 0; i < nb; i++)
+    {
+        VkVertexInputRate input_rate =
+            command->u.create_render_pipeline.binding_step_modes[i] ==
+                    DVZ_DRP2_VERTEX_STEP_MODE_INSTANCE
+                ? VK_VERTEX_INPUT_RATE_INSTANCE
+                : VK_VERTEX_INPUT_RATE_VERTEX;
         dvz_graphics_vertex_binding(
             graphics, i, command->u.create_render_pipeline.binding_strides[i],
-            VK_VERTEX_INPUT_RATE_VERTEX);
+            input_rate);
+    }
     uint32_t na = command->u.create_render_pipeline.attr_count;
     for (uint32_t i = 0; i < na; i++)
         dvz_graphics_vertex_attr(

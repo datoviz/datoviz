@@ -96,6 +96,7 @@ struct DvzDrp2Command
             uint32_t topology;        /* VkPrimitiveTopology; 0 = TRIANGLE_LIST           */
             uint32_t binding_count;
             uint32_t binding_strides[16]; /* stride in bytes per binding slot             */
+            uint32_t binding_step_modes[16]; /* DvzDrp2VertexStepMode per binding slot    */
             uint32_t attr_count;
             uint32_t attr_bindings[16];   /* which binding each attribute reads from      */
             uint32_t attr_locations[16];  /* layout(location=N)                           */

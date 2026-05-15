@@ -166,6 +166,20 @@ static const char* _topology_name(uint32_t topology)
 
 
 
+static const char* _step_mode_name(uint32_t step_mode)
+{
+    switch (step_mode)
+    {
+    case DVZ_DRP2_VERTEX_STEP_MODE_INSTANCE:
+        return "instance";
+    case DVZ_DRP2_VERTEX_STEP_MODE_VERTEX:
+    default:
+        return "vertex";
+    }
+}
+
+
+
 static void _json_append_vertex_buffers(JsonBuilder* builder, const DvzDrp2Command* command)
 {
     ANN(builder);
@@ -184,8 +198,9 @@ static void _json_append_vertex_buffers(JsonBuilder* builder, const DvzDrp2Comma
             _json_append(builder, ", ");
         _json_append(
             builder,
-            "{ \"array_stride\": %" PRIu32 ", \"step_mode\": \"vertex\", \"attributes\": [",
-            command->u.create_render_pipeline.binding_strides[b]);
+            "{ \"array_stride\": %" PRIu32 ", \"step_mode\": \"%s\", \"attributes\": [",
+            command->u.create_render_pipeline.binding_strides[b],
+            _step_mode_name(command->u.create_render_pipeline.binding_step_modes[b]));
 
         bool first_attr = true;
         for (uint32_t a = 0; a < command->u.create_render_pipeline.attr_count; a++)

@@ -550,6 +550,23 @@ bool dvz_drp2_stream_create_render_pipeline_ex(
     uint32_t attr_count, const uint32_t* attr_bindings, const uint32_t* attr_locations,
     const uint32_t* attr_formats, const uint32_t* attr_offsets)
 {
+    return dvz_drp2_stream_create_render_pipeline_ex2(
+        stream, id, vertex_shader_module_id, fragment_shader_module_id, vertex_buffer_slots,
+        topology, binding_count, binding_strides, NULL, attr_count, attr_bindings,
+        attr_locations, attr_formats, attr_offsets);
+}
+
+
+
+bool dvz_drp2_stream_create_render_pipeline_ex2(
+    DvzDrp2CommandStream* stream, uint64_t id, uint64_t vertex_shader_module_id,
+    uint64_t fragment_shader_module_id, uint32_t vertex_buffer_slots,
+    uint32_t topology,
+    uint32_t binding_count, const uint32_t* binding_strides,
+    const uint32_t* binding_step_modes,
+    uint32_t attr_count, const uint32_t* attr_bindings, const uint32_t* attr_locations,
+    const uint32_t* attr_formats, const uint32_t* attr_offsets)
+{
     DvzDrp2Command* command = _append_command(stream, DVZ_DRP2_COMMAND_CREATE_RENDER_PIPELINE);
     if (command == NULL)
         return false;
@@ -566,7 +583,11 @@ bool dvz_drp2_stream_create_render_pipeline_ex(
     uint32_t nb = binding_count < 16 ? binding_count : 16;
     command->u.create_render_pipeline.binding_count = nb;
     for (uint32_t i = 0; i < nb; i++)
+    {
         command->u.create_render_pipeline.binding_strides[i] = binding_strides[i];
+        command->u.create_render_pipeline.binding_step_modes[i] =
+            binding_step_modes != NULL ? binding_step_modes[i] : DVZ_DRP2_VERTEX_STEP_MODE_VERTEX;
+    }
     uint32_t na = attr_count < 16 ? attr_count : 16;
     command->u.create_render_pipeline.attr_count = na;
     for (uint32_t i = 0; i < na; i++)

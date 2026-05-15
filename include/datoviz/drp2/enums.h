@@ -65,6 +65,14 @@ typedef enum
 
 typedef enum
 {
+    DVZ_DRP2_VERTEX_STEP_MODE_VERTEX = 0,
+    DVZ_DRP2_VERTEX_STEP_MODE_INSTANCE = 1,
+} DvzDrp2VertexStepMode;
+
+
+
+typedef enum
+{
     DVZ_DRP2_BUFFER_USAGE_NONE = 0x0000,
     DVZ_DRP2_BUFFER_USAGE_COPY_SRC = 0x0001,
     DVZ_DRP2_BUFFER_USAGE_COPY_DST = 0x0002,

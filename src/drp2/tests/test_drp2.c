@@ -2910,6 +2910,39 @@ int test_drp2_write_buffer_bytes_large_json_roundtrip(TstSuite* suite, TstItem* 
 }
 
 
+int test_drp2_render_pipeline_step_modes_json(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzDrp2CommandStream* stream = dvz_drp2_stream();
+    ANN(stream);
+
+    uint32_t strides[2] = {3 * sizeof(float), 4 * sizeof(uint8_t)};
+    uint32_t step_modes[2] = {
+        DVZ_DRP2_VERTEX_STEP_MODE_VERTEX,
+        DVZ_DRP2_VERTEX_STEP_MODE_INSTANCE,
+    };
+    uint32_t bindings[2] = {0, 1};
+    uint32_t locations[2] = {0, 1};
+    uint32_t formats[2] = {VK_FORMAT_R32G32B32_SFLOAT, VK_FORMAT_R8G8B8A8_UNORM};
+    uint32_t offsets[2] = {0, 0};
+
+    AT(dvz_drp2_stream_create_render_pipeline_ex2(
+        stream, 10, 9000, 9001, 2, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 2, strides,
+        step_modes, 2, bindings, locations, formats, offsets));
+
+    char* json = dvz_drp2_stream_json(stream, "pipeline_step_modes");
+    ANN(json);
+    AT(strstr(json, "\"step_mode\": \"vertex\"") != NULL);
+    AT(strstr(json, "\"step_mode\": \"instance\"") != NULL);
+
+    dvz_drp2_stream_json_destroy(json);
+    dvz_drp2_stream_destroy(stream);
+    return 0;
+}
+
+
 
 /*************************************************************************************************/
 /*  Entry-point                                                                                  */
@@ -2928,6 +2961,7 @@ int test_drp2(TstSuite* suite)
     TEST_SIMPLE(test_drp2_write_buffer_bytes_uses_data_raw);
     TEST_SIMPLE(test_drp2_write_buffer_bytes_json_encodes_data_raw);
     TEST_SIMPLE(test_drp2_write_buffer_bytes_large_json_roundtrip);
+    TEST_SIMPLE(test_drp2_render_pipeline_step_modes_json);
     TEST_SIMPLE(test_drp2_begin_render_pass_clear_color_stored);
     TEST_SIMPLE(test_drp2_stream_json_preserves_clear_color);
     TEST_SIMPLE(test_drp2_runtime_validate_render_stream);
