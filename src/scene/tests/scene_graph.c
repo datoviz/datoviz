@@ -2271,6 +2271,7 @@ int test_scene_image_emit_uses_common_and_texture_sets(TstSuite* suite, TstItem*
     bool found_pipeline = false;
     bool found_common_layout = false;
     bool found_common_bind = false;
+    bool found_viewport_write = false;
     bool found_texture_bind = false;
     uint32_t count = dvz_drp2_stream_count(stream);
     for (uint32_t i = 0; i < count; i++)
@@ -2305,10 +2306,23 @@ int test_scene_image_emit_uses_common_and_texture_sets(TstSuite* suite, TstItem*
             if (cmd->u.set_bind_group.slot == 1)
                 found_texture_bind = true;
         }
+        else if (cmd->type == DVZ_DRP2_COMMAND_WRITE_BUFFER &&
+                 cmd->u.write_buffer.size == sizeof(DvzSceneViewportUniform))
+        {
+            const DvzSceneViewportUniform* viewport =
+                (const DvzSceneViewportUniform*)cmd->u.write_buffer.data_raw;
+            ANN(viewport);
+            AC(viewport->x, 0.0f, 1e-6f);
+            AC(viewport->y, 0.0f, 1e-6f);
+            AC(viewport->width, 64.0f, 1e-6f);
+            AC(viewport->height, 64.0f, 1e-6f);
+            found_viewport_write = true;
+        }
     }
     AT(found_pipeline);
     AT(found_common_layout);
     AT(found_common_bind);
+    AT(found_viewport_write);
     AT(found_texture_bind);
 
     dvz_drp2_stream_destroy(stream);

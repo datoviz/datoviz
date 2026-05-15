@@ -73,6 +73,11 @@ static void _viewport_uniform_from_render(
 {
     ANN(render);
     ANN(out);
+    if (render->u.render.has_viewport)
+    {
+        *out = render->u.render.viewport;
+        return;
+    }
     out->x = render->u.render.desc.x;
     out->y = render->u.render.desc.y;
     out->width = render->u.render.desc.width;

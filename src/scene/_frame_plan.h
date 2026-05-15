@@ -87,6 +87,16 @@ typedef struct DvzFramePlanVisualMeta
 
 
 
+typedef struct DvzSceneViewportUniform
+{
+    float x;
+    float y;
+    float width;
+    float height;
+} DvzSceneViewportUniform;
+
+
+
 struct DvzFramePlanNode
 {
     DvzFramePlanNodeType type;
@@ -131,6 +141,8 @@ struct DvzFramePlanNode
             DvzFramePlanVisualMeta visual_metadata[DVZ_SCENE_MAX_RENDER_VISUALS];
             bool picking;
             DvzPanelDesc desc;
+            bool has_viewport;
+            DvzSceneViewportUniform viewport;
             bool has_mvp;
             DvzMVP apply_mvp;  /* panel APPLY MVP from panzoom/arcball; identity MVP for FIXED computed by converter */
             DvzControllerMode controller_modes[DVZ_SCENE_MAX_RENDER_VISUALS];  /* parallel to visuals[] */

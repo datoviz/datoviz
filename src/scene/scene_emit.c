@@ -325,6 +325,10 @@ void _scene_emit_panel_render(
 
     DvzMVP panel_apply_mvp;
     _scene_panel_apply_mvp(panel, &panel_apply_mvp);
+    DvzSceneViewportUniform panel_viewport = {0};
+    _scene_panel_pixel_rect(
+        panel, &panel_viewport.x, &panel_viewport.y, &panel_viewport.width,
+        &panel_viewport.height);
 
     DvzFramePlanNode* node = NULL;
     for (uint32_t k = 0; k < panel->visual_count; k++)
@@ -349,6 +353,8 @@ void _scene_emit_panel_render(
             {
                 node->u.render.has_mvp = true;
                 node->u.render.apply_mvp = panel_apply_mvp;
+                node->u.render.has_viewport = true;
+                node->u.render.viewport = panel_viewport;
             }
         }
 
@@ -376,6 +382,5 @@ void _scene_emit_panel_render(
         }
     }
 }
-
 
 

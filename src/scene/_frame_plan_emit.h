@@ -59,16 +59,6 @@ typedef struct ResourceId ResourceId;
 typedef struct ConverterState ConverterState;
 typedef struct SceneRenderStateCache SceneRenderStateCache;
 
-typedef struct DvzSceneViewportUniform
-{
-    float x;
-    float y;
-    float width;
-    float height;
-} DvzSceneViewportUniform;
-
-
-
 struct ResourceId
 {
     char key[DVZ_SCENE_LABEL_SIZE];

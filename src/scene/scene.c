@@ -45,9 +45,6 @@ static void _scene_figure_id(const DvzFigure* figure, char* out, uint32_t size);
 
 static void _scene_panel_pixel_size(const DvzPanel* panel, float* out_width, float* out_height);
 
-static void _scene_panel_pixel_rect(
-    const DvzPanel* panel, float* out_x, float* out_y, float* out_width, float* out_height);
-
 static bool _scene_pick_request_supersedes(
     const DvzPendingPickRequest* pending, const DvzPanel* panel, uint64_t request_id);
 
@@ -170,7 +167,7 @@ static void _scene_panel_pixel_size(const DvzPanel* panel, float* out_width, flo
  * @param out_width output width in pixels
  * @param out_height output height in pixels
  */
-static void _scene_panel_pixel_rect(
+void _scene_panel_pixel_rect(
     const DvzPanel* panel, float* out_x, float* out_y, float* out_width, float* out_height)
 {
     ANN(panel);
