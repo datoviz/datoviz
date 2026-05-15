@@ -157,11 +157,15 @@ bool _emitter_emit_upload(
     uint32_t usage = node->u.upload.buffer_usage != 0
                          ? node->u.upload.buffer_usage
                          : (DVZ_DRP2_BUFFER_USAGE_COPY_DST | DVZ_DRP2_BUFFER_USAGE_VERTEX);
-    if (is_new && !dvz_drp2_stream_create_buffer(stream, id, buffer_size, usage))
-        return false;
     if (emitter->resources.first_vertex_buffer_id == 0)
         emitter->resources.first_vertex_buffer_id = id;
     *out_id = id;
+
+    if (node->u.upload.external)
+        return true;
+
+    if (is_new && !dvz_drp2_stream_create_buffer(stream, id, buffer_size, usage))
+        return false;
 
     if (node->u.upload.data != NULL)
     {

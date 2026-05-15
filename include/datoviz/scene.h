@@ -464,6 +464,29 @@ dvz_visual_set_buffer(DvzVisual* visual, const char* slot_name, DvzSceneBuffer* 
 
 
 /**
+ * Bind a scene-owned buffer to a per-item visual attribute.
+ *
+ * This is the C-level groundwork for externally produced GPU attributes. The first slice supports
+ * planar vertex attributes only: the scene buffer stride must match the attribute item size, and
+ * the attribute source must remain `DVZ_VISUAL_ATTR_SOURCE_PER_ITEM`.
+ *
+ * If the bound scene buffer has CPU data, the scene emits normal buffer upload commands. If it has
+ * no CPU data, the scene registers the resource label for a live runtime to satisfy separately and
+ * emits no CPU upload for that attribute.
+ *
+ * @param visual the visual
+ * @param attr_name attribute name
+ * @param buffer the scene buffer, or NULL to clear the binding
+ * @param byte_offset byte offset into the buffer
+ * @param item_count number of attribute items
+ * @return true on success, false on error
+ */
+DVZ_EXPORT bool dvz_visual_set_attr_buffer(
+    DvzVisual* visual, const char* attr_name, DvzSceneBuffer* buffer,
+    uint64_t byte_offset, uint32_t item_count);
+
+
+/**
  * Override primitive shading parameters.
  *
  * The current primitive/mesh slice uses these parameters only when a visual also has a bound

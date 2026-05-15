@@ -935,6 +935,16 @@ void dvz_scene_buffer_destroy(DvzSceneBuffer* buffer)
             DvzVisual* visual = &scene->visuals[i];
             if (visual->buffer == buffer)
                 _scene_release_visual_buffer(visual);
+            for (uint32_t ai = 0; ai < visual->attr_count; ai++)
+            {
+                if (visual->attrs[ai].buffer == buffer)
+                {
+                    visual->attrs[ai].buffer = NULL;
+                    visual->attrs[ai].buffer_byte_offset = 0;
+                    if (visual->attrs[ai].data == NULL)
+                        visual->attrs[ai].item_count = 0;
+                }
+            }
         }
     }
     _scene_buffer_reset(buffer);

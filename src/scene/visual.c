@@ -238,12 +238,13 @@ static bool _visual_attr_count_consistent(
     for (uint32_t i = 0; i < visual->attr_count; i++)
     {
         const DvzVisualAttr* attr = &visual->attrs[i];
+        bool attr_has_payload = attr->data != NULL || attr->buffer != NULL;
         if (visual->type == DVZ_VISUAL_TYPE_MESH && visual->mesh_default_color &&
             strcmp(attr_name, "position") == 0 && strcmp(attr->name, "color") == 0)
         {
             continue;
         }
-        if (strcmp(attr->name, attr_name) == 0 || attr->item_count == 0 || attr->data == NULL)
+        if (strcmp(attr->name, attr_name) == 0 || attr->item_count == 0 || !attr_has_payload)
             continue;
         if (attr->item_count == item_count)
             continue;
@@ -978,6 +979,109 @@ dvz_visual_attr_mutability(const DvzVisual* visual, const char* attr_name)
 
 
 /**
+ * Bind a scene buffer as one per-item visual attribute.
+ *
+ * @param visual the visual
+ * @param attr_name the attribute name
+ * @param buffer the scene buffer, or NULL to clear
+ * @param byte_offset byte offset into the buffer
+ * @param item_count number of attribute items
+ * @return whether the binding was updated
+ */
+bool dvz_visual_set_attr_buffer(
+    DvzVisual* visual, const char* attr_name, DvzSceneBuffer* buffer,
+    uint64_t byte_offset, uint32_t item_count)
+{
+    ANN(visual);
+    ANN(attr_name);
+    if (buffer != NULL && buffer->scene != visual->scene)
+    {
+        log_error("cannot bind an attribute buffer from a different scene");
+        return false;
+    }
+    if (!_scene_visual_mutation_allowed(visual->scene, "bind visual attribute buffer"))
+        return false;
+
+    uint32_t item_size = 0;
+    if (!_attr_supported(visual->type, attr_name, &item_size))
+        return false;
+    if (!_attr_source_supported(visual->type, attr_name, DVZ_VISUAL_ATTR_SOURCE_PER_ITEM))
+        return false;
+
+    DvzVisualAttr* attr = _attr_get_or_create(visual, attr_name, item_size);
+    if (attr == NULL)
+    {
+        log_error("visual attribute '%s' could not be registered", attr_name);
+        return false;
+    }
+
+    if (buffer == NULL)
+    {
+        attr->buffer = NULL;
+        attr->buffer_byte_offset = 0;
+        if (attr->data == NULL)
+            attr->item_count = 0;
+        return true;
+    }
+
+    if (item_count == 0)
+    {
+        log_error("visual attribute buffer '%s' requires item_count > 0", attr_name);
+        return false;
+    }
+    if (byte_offset != 0)
+    {
+        log_error("visual attribute buffer '%s' byte offsets are not supported yet", attr_name);
+        return false;
+    }
+    if ((buffer->desc.usage & DVZ_SCENE_BUFFER_USAGE_VERTEX) == 0)
+    {
+        log_error("visual attribute buffer '%s' requires VERTEX usage", attr_name);
+        return false;
+    }
+    if (buffer->desc.stride != item_size)
+    {
+        log_error(
+            "visual attribute buffer '%s' stride %u does not match item size %u", attr_name,
+            buffer->desc.stride, item_size);
+        return false;
+    }
+    if (attr->data != NULL)
+    {
+        log_error("visual attribute '%s' already has dense data and cannot bind a buffer", attr_name);
+        return false;
+    }
+    if (attr->source != DVZ_VISUAL_ATTR_SOURCE_PER_ITEM)
+    {
+        log_error("visual attribute buffer '%s' requires PER_ITEM source", attr_name);
+        return false;
+    }
+    if (!_visual_attr_count_consistent(visual, attr_name, item_count))
+        return false;
+
+    uint64_t byte_size = 0;
+    uint64_t byte_end = 0;
+    if (_dvz_mul_u64_overflows(item_count, buffer->desc.stride, &byte_size) ||
+        _dvz_add_u64_overflows(byte_offset, byte_size, &byte_end) ||
+        byte_end > buffer->desc.byte_size)
+    {
+        log_error(
+            "visual attribute buffer '%s' range exceeds buffer size (%" PRIu64 " > %" PRIu64 ")",
+            attr_name, byte_end, buffer->desc.byte_size);
+        return false;
+    }
+
+    attr->buffer = buffer;
+    attr->buffer_byte_offset = byte_offset;
+    attr->item_count = item_count;
+    attr->dirty_first_item = 0;
+    attr->dirty_item_count = 0;
+    return true;
+}
+
+
+
+/**
  * Replace one dense visual attribute payload.
  *
  * @param visual the visual
@@ -1017,6 +1121,11 @@ int dvz_visual_set_data(
         log_error(
             "visual attribute '%s' dense data requires PER_ITEM source; use source-specific data",
             attr_name);
+        return -1;
+    }
+    if (attr->buffer != NULL)
+    {
+        log_error("visual attribute '%s' already has a bound buffer", attr_name);
         return -1;
     }
 
@@ -1116,6 +1225,11 @@ int dvz_visual_set_data_range(
     {
         log_error(
             "visual attribute '%s' dense range update requires PER_ITEM source", attr_name);
+        return -1;
+    }
+    if (attr->buffer != NULL)
+    {
+        log_error("visual attribute '%s' range update cannot target a bound buffer", attr_name);
         return -1;
     }
 

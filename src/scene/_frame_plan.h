@@ -109,6 +109,7 @@ struct DvzFramePlanNode
             uint64_t byte_size;
             char data_tag[DVZ_SCENE_LABEL_SIZE];
             const void* data; /* optional: if non-NULL, actual bytes to upload */
+            bool external; /* register only; resource is provided by the live runtime */
             uint32_t buffer_usage; /* optional DRP2 buffer-usage mask (0 = vertex default) */
             uint32_t item_stride;  /* optional element stride, used by index buffers */
             /* Optional primitive topology hint, propagated to the converter resource entry.

@@ -1846,6 +1846,85 @@ int test_scene_visual_attr_source_and_mutability_metadata(TstSuite* suite, TstIt
 }
 
 
+int test_scene_point_external_position_buffer_emits_no_upload(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    ANN(panel);
+    DvzVisual* visual = dvz_point(scene, 0);
+    ANN(visual);
+
+    DvzSceneBufferDesc desc = {
+        .usage = DVZ_SCENE_BUFFER_USAGE_VERTEX,
+        .stride = sizeof(vec3),
+        .byte_size = 3 * sizeof(vec3),
+    };
+    DvzSceneBuffer* position = dvz_scene_buffer(scene, &desc);
+    ANN(position);
+    AT(dvz_visual_set_attr_buffer(visual, "position", position, 0, 3));
+
+    DvzColor colors[3] = {{255, 0, 0, 255}, {0, 255, 0, 255}, {0, 0, 255, 255}};
+    float sizes[3] = {4.0f, 5.0f, 6.0f};
+    AT(dvz_visual_set_data(visual, "color", colors, 3) == 0);
+    AT(dvz_visual_set_data(visual, "size", sizes, 3) == 0);
+    AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
+
+    DvzCapabilitySnapshot caps;
+    dvz_capability_snapshot_default(&caps);
+    DvzDiagnosticReport report;
+    dvz_diagnostic_report_init(&report);
+    DvzFramePlanEmitConfig emit_cfg = dvz_frame_plan_emit_config();
+    emit_cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
+
+    DvzDrp2CommandStream* stream = dvz_figure_emit_ex(figure, &caps, &report, &emit_cfg);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+    AT(stream != NULL);
+
+    uint64_t position_buffer_id = 0;
+    uint32_t create_count = 0;
+    uint32_t write_count = 0;
+    for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
+    {
+        const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream, i);
+        ANN(cmd);
+        if (cmd->type == DVZ_DRP2_COMMAND_SET_VERTEX_BUFFER &&
+            cmd->u.set_vertex_buffer.slot == 0)
+        {
+            position_buffer_id = cmd->u.set_vertex_buffer.buffer_id;
+        }
+    }
+    AT(position_buffer_id != 0);
+
+    for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
+    {
+        const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream, i);
+        ANN(cmd);
+        if (cmd->type == DVZ_DRP2_COMMAND_CREATE_BUFFER &&
+            cmd->u.create_buffer.id == position_buffer_id)
+        {
+            create_count++;
+        }
+        if (cmd->type == DVZ_DRP2_COMMAND_WRITE_BUFFER &&
+            cmd->u.write_buffer.buffer_id == position_buffer_id)
+        {
+            write_count++;
+        }
+    }
+    AT(create_count == 0);
+    AT(write_count == 0);
+
+    dvz_drp2_stream_destroy(stream);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
 int test_scene_point_rejects_texcoords_attribute(TstSuite* suite, TstItem* item)
 {
     ANN(suite);
@@ -3752,6 +3831,7 @@ int test_scene_graph(TstSuite* suite)
     TEST_SIMPLE(test_scene_rejects_cross_scene_visual);
     TEST_SIMPLE(test_scene_rejects_unsupported_point_attribute);
     TEST_SIMPLE(test_scene_visual_attr_source_and_mutability_metadata);
+    TEST_SIMPLE(test_scene_point_external_position_buffer_emits_no_upload);
     TEST_SIMPLE(test_scene_point_rejects_texcoords_attribute);
     TEST_SIMPLE(test_scene_primitive_rejects_size_attribute);
     TEST_SIMPLE(test_scene_path_rejects_size_attribute);

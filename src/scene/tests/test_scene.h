@@ -293,6 +293,8 @@ int test_scene_rejects_unsupported_point_attribute(TstSuite* suite, TstItem* ite
 
 int test_scene_visual_attr_source_and_mutability_metadata(TstSuite* suite, TstItem* item);
 
+int test_scene_point_external_position_buffer_emits_no_upload(TstSuite* suite, TstItem* item);
+
 int test_scene_point_rejects_texcoords_attribute(TstSuite* suite, TstItem* item);
 
 int test_scene_primitive_rejects_size_attribute(TstSuite* suite, TstItem* item);

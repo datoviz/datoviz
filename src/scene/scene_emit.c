@@ -58,6 +58,76 @@ static DvzFramePlanResourceRole _scene_attr_frame_plan_role(const char* attr_nam
 
 
 /**
+ * Return the scene-buffer index backing one visual attribute, when present.
+ *
+ * @param figure the parent figure
+ * @param visual the visual
+ * @param attr_name the attribute name
+ * @return the scene-buffer index, or UINT32_MAX when absent
+ */
+static uint32_t _scene_attr_buffer_index(
+    const DvzFigure* figure, const DvzVisual* visual, const char* attr_name)
+{
+    ANN(figure);
+    ANN(figure->scene);
+    ANN(visual);
+    ANN(attr_name);
+    int attr_idx = _attr_index(visual, attr_name);
+    if (attr_idx < 0 || visual->attrs[attr_idx].buffer == NULL)
+        return UINT32_MAX;
+    return _scene_buffer_index(figure->scene, visual->attrs[attr_idx].buffer);
+}
+
+
+
+/**
+ * Resolve the resource key used by one visual attribute.
+ *
+ * @param figure the parent figure
+ * @param visual the visual
+ * @param visual_index the visual index
+ * @param attr_name the attribute name
+ * @param out_key output resource key
+ * @param out_size output resource key capacity
+ * @return whether the key was resolved
+ */
+static bool _scene_attr_resource_key(
+    const DvzFigure* figure, const DvzVisual* visual, uint32_t visual_index,
+    const char* attr_name, char* out_key, size_t out_size)
+{
+    ANN(figure);
+    ANN(visual);
+    ANN(attr_name);
+    ANN(out_key);
+    uint32_t buffer_idx = _scene_attr_buffer_index(figure, visual, attr_name);
+    if (buffer_idx != UINT32_MAX)
+        return _scene_resource_key_buffer(buffer_idx, out_key, out_size);
+    return _scene_resource_key_visual_attr(visual_index, attr_name, out_key, out_size);
+}
+
+
+
+/**
+ * Convert scene buffer usage flags to DRP2 buffer usage flags.
+ *
+ * @param usage the scene buffer usage flags
+ * @return DRP2 buffer usage flags
+ */
+static uint32_t _scene_buffer_drp2_usage(uint32_t usage)
+{
+    uint32_t out = DVZ_DRP2_BUFFER_USAGE_COPY_DST;
+    if ((usage & DVZ_SCENE_BUFFER_USAGE_VERTEX) != 0)
+        out |= DVZ_DRP2_BUFFER_USAGE_VERTEX;
+    if ((usage & DVZ_SCENE_BUFFER_USAGE_INDEX) != 0)
+        out |= DVZ_DRP2_BUFFER_USAGE_INDEX;
+    if ((usage & DVZ_SCENE_BUFFER_USAGE_UNIFORM) != 0)
+        out |= DVZ_DRP2_BUFFER_USAGE_UNIFORM;
+    return out;
+}
+
+
+
+/**
  * Attach typed metadata to the most recently emitted upload node.
  *
  * @param plan the destination frame plan
@@ -111,6 +181,40 @@ void _scene_emit_visual_uploads(DvzFigure* figure, DvzFramePlan* plan)
             for (uint32_t ai = 0; ai < visual->attr_count; ai++)
             {
                 DvzVisualAttr* attr = &visual->attrs[ai];
+                if (attr->buffer != NULL)
+                {
+                    uint32_t buffer_idx = _scene_buffer_index(figure->scene, attr->buffer);
+                    if (buffer_idx == UINT32_MAX || emitted_buffers[buffer_idx])
+                        continue;
+                    char buffer_resource_id[128];
+                    if (!_scene_resource_key_buffer(
+                            buffer_idx, buffer_resource_id, sizeof(buffer_resource_id)))
+                        continue;
+                    bool has_cpu_data = attr->buffer->data != NULL;
+                    if ((has_cpu_data && attr->buffer->dirty) || !has_cpu_data)
+                    {
+                        dvz_frame_plan_upload_bytes(
+                            plan, buffer_resource_id, 0, attr->buffer->desc.byte_size, attr->name,
+                            attr->buffer->data);
+                        _scene_attach_upload_metadata(
+                            plan, visual, vidx, _scene_attr_frame_plan_role(attr->name),
+                            DVZ_FRAME_PLAN_RESOURCE_KIND_BUFFER, buffer_idx);
+                        DvzFramePlanNode* node = &plan->nodes[plan->count - 1];
+                        node->u.upload.external = !has_cpu_data;
+                        node->u.upload.buffer_usage =
+                            _scene_buffer_drp2_usage(attr->buffer->desc.usage);
+                        node->u.upload.item_stride = attr->buffer->desc.stride;
+                        if ((visual->type == DVZ_VISUAL_TYPE_PRIMITIVE ||
+                             visual->type == DVZ_VISUAL_TYPE_MESH ||
+                             visual->type == DVZ_VISUAL_TYPE_PATH) &&
+                            strcmp(attr->name, "position") == 0)
+                        {
+                            dvz_frame_plan_upload_set_topology(plan, (uint32_t)visual->topology);
+                        }
+                    }
+                    emitted_buffers[buffer_idx] = true;
+                    continue;
+                }
                 if (attr->dirty_item_count == 0 || attr->data == NULL || attr->item_count == 0)
                     continue;
                 char resource_id[128];
@@ -244,23 +348,26 @@ static bool _scene_visual_frame_plan_metadata(
     metadata->buffer_index = UINT32_MAX;
     metadata->topology = (uint32_t)visual->topology;
 
-    if (!_scene_resource_key_visual_attr(
-            visual_index, "position", metadata->position_id, sizeof(metadata->position_id)))
+    if (!_scene_attr_resource_key(
+            figure, visual, visual_index, "position", metadata->position_id,
+            sizeof(metadata->position_id)))
         return false;
-    if (!_scene_resource_key_visual_attr(
-            visual_index, "color", metadata->color_id, sizeof(metadata->color_id)))
+    if (!_scene_attr_resource_key(
+            figure, visual, visual_index, "color", metadata->color_id, sizeof(metadata->color_id)))
         return false;
-    if (!_scene_resource_key_visual_attr(
-            visual_index, "size", metadata->size_id, sizeof(metadata->size_id)))
+    if (!_scene_attr_resource_key(
+            figure, visual, visual_index, "size", metadata->size_id, sizeof(metadata->size_id)))
         return false;
-    if (!_scene_resource_key_visual_attr(
-            visual_index, "texcoords", metadata->texcoords_id, sizeof(metadata->texcoords_id)))
+    if (!_scene_attr_resource_key(
+            figure, visual, visual_index, "texcoords", metadata->texcoords_id,
+            sizeof(metadata->texcoords_id)))
         return false;
     if (!_scene_resource_key_visual_texture(
             visual_index, metadata->texture_id, sizeof(metadata->texture_id)))
         return false;
-    if (!_scene_resource_key_visual_attr(
-            visual_index, "normal", metadata->normal_id, sizeof(metadata->normal_id)))
+    if (!_scene_attr_resource_key(
+            figure, visual, visual_index, "normal", metadata->normal_id,
+            sizeof(metadata->normal_id)))
         return false;
     if (!_scene_resource_key_visual_attr(
             visual_index, "primitive_shading", metadata->shading_id, sizeof(metadata->shading_id)))
@@ -384,4 +491,3 @@ void _scene_emit_panel_render(
         }
     }
 }
-

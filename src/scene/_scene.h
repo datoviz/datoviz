@@ -439,6 +439,8 @@ struct DvzVisualAttr
 {
     char     name[64];
     void*    data;
+    DvzSceneBuffer* buffer;
+    uint64_t buffer_byte_offset;
     uint64_t item_count;
     uint32_t item_size;         /* bytes per item */
     DvzVisualAttrSource source;
