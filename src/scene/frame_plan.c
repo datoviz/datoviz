@@ -524,6 +524,244 @@ static bool _graph_pass_writes_resource(const DvzFrameGraphPass* pass, const cha
 
 
 
+/**
+ * Return whether a graph resource is per-frame.
+ *
+ * @param plan the FramePlan.
+ * @param resource_id the graph resource id.
+ * @return whether the resource has per-frame lifetime.
+ */
+static bool _graph_resource_is_per_frame(const DvzFramePlan* plan, const char* resource_id)
+{
+    ANN(plan);
+    ANN(resource_id);
+    uint32_t resource_index = 0;
+    if (!_graph_resource_index(plan, resource_id, &resource_index))
+        return false;
+    return plan->graph_resources[resource_index].lifetime ==
+           DVZ_FRAME_GRAPH_RESOURCE_LIFETIME_PER_FRAME;
+}
+
+
+
+/**
+ * Return the graph access represented by a color attachment.
+ *
+ * @param attachment the graph attachment descriptor.
+ * @return graph color attachment access.
+ */
+static DvzFrameGraphAccessUsage
+_graph_color_attachment_usage(const DvzFrameGraphAttachment* attachment)
+{
+    ANN(attachment);
+    (void)attachment;
+    return DVZ_FRAME_GRAPH_ACCESS_COLOR_ATTACHMENT;
+}
+
+
+
+/**
+ * Return the graph access represented by a depth attachment.
+ *
+ * @param attachment the graph attachment descriptor.
+ * @return graph depth attachment access.
+ */
+static DvzFrameGraphAccessUsage
+_graph_depth_attachment_usage(const DvzFrameGraphAttachment* attachment)
+{
+    ANN(attachment);
+    if (attachment->access == DVZ_FRAME_GRAPH_ATTACHMENT_ACCESS_READ)
+        return DVZ_FRAME_GRAPH_ACCESS_DEPTH_ATTACHMENT_READ;
+    if (attachment->access == DVZ_FRAME_GRAPH_ATTACHMENT_ACCESS_NONE)
+        return DVZ_FRAME_GRAPH_ACCESS_NONE;
+    return DVZ_FRAME_GRAPH_ACCESS_DEPTH_ATTACHMENT_WRITE;
+}
+
+
+
+/**
+ * Count producer declarations for a resource in one graph pass.
+ *
+ * @param pass the graph pass descriptor.
+ * @param resource_id the graph resource id.
+ * @param count output producer declaration count.
+ * @param usage optional output last producer usage.
+ * @return whether at least one producer declaration exists.
+ */
+static bool _graph_pass_write_count_resource(
+    const DvzFrameGraphPass* pass, const char* resource_id, uint32_t* count,
+    DvzFrameGraphAccessUsage* usage)
+{
+    ANN(pass);
+    ANN(resource_id);
+    ANN(count);
+    *count = 0;
+    for (uint32_t i = 0; i < pass->write_count; i++)
+    {
+        if (_graph_access_writes(pass->writes[i].usage) &&
+            strcmp(pass->writes[i].resource_id, resource_id) == 0)
+        {
+            *count += 1;
+            if (usage != NULL)
+                *usage = pass->writes[i].usage;
+        }
+    }
+    for (uint32_t i = 0; i < pass->color_attachment_count; i++)
+    {
+        if (_graph_attachment_writes(&pass->color_attachments[i]) &&
+            strcmp(pass->color_attachments[i].resource_id, resource_id) == 0)
+        {
+            *count += 1;
+            if (usage != NULL)
+                *usage = _graph_color_attachment_usage(&pass->color_attachments[i]);
+        }
+    }
+    if (pass->has_depth_attachment && _graph_attachment_writes(&pass->depth_attachment) &&
+        strcmp(pass->depth_attachment.resource_id, resource_id) == 0)
+    {
+        *count += 1;
+        if (usage != NULL)
+            *usage = _graph_depth_attachment_usage(&pass->depth_attachment);
+    }
+    if (pass->has_stencil_attachment && _graph_attachment_writes(&pass->stencil_attachment) &&
+        strcmp(pass->stencil_attachment.resource_id, resource_id) == 0)
+    {
+        *count += 1;
+        if (usage != NULL)
+            *usage = _graph_depth_attachment_usage(&pass->stencil_attachment);
+    }
+    return *count > 0;
+}
+
+
+
+/**
+ * Find the latest graph pass that writes a resource before a consumer pass.
+ *
+ * @param plan the FramePlan.
+ * @param resource_id the graph resource id.
+ * @param pass_index the consumer pass index.
+ * @param producer_index output producer pass index.
+ * @param producer_usage optional output producer access usage.
+ * @return whether a producer was found.
+ */
+static bool _graph_find_last_writer_before(
+    const DvzFramePlan* plan, const char* resource_id, uint32_t pass_index,
+    uint32_t* producer_index, DvzFrameGraphAccessUsage* producer_usage)
+{
+    ANN(plan);
+    ANN(resource_id);
+    ANN(producer_index);
+    for (uint32_t i = pass_index; i > 0; i--)
+    {
+        uint32_t count = 0;
+        DvzFrameGraphAccessUsage usage = DVZ_FRAME_GRAPH_ACCESS_NONE;
+        if (_graph_pass_write_count_resource(&plan->graph_passes[i - 1], resource_id, &count, &usage))
+        {
+            *producer_index = i - 1;
+            if (producer_usage != NULL)
+                *producer_usage = usage;
+            return true;
+        }
+    }
+    return false;
+}
+
+
+
+/**
+ * Build a dependency edge for a consumer access when a prior producer exists.
+ *
+ * @param plan the FramePlan.
+ * @param resource_id the graph resource id.
+ * @param consumer_usage the consumer access usage.
+ * @param consumer_index the consumer pass index.
+ * @param out optional output dependency descriptor.
+ * @return whether a dependency edge exists.
+ */
+static bool _graph_dependency_from_access(
+    const DvzFramePlan* plan, const char* resource_id, DvzFrameGraphAccessUsage consumer_usage,
+    uint32_t consumer_index, DvzFrameGraphDependency* out)
+{
+    ANN(plan);
+    ANN(resource_id);
+    uint32_t producer_index = 0;
+    DvzFrameGraphAccessUsage producer_usage = DVZ_FRAME_GRAPH_ACCESS_NONE;
+    if (!_graph_find_last_writer_before(
+            plan, resource_id, consumer_index, &producer_index, &producer_usage))
+        return false;
+    if (out != NULL)
+    {
+        dvz_memset(out, sizeof(DvzFrameGraphDependency), 0, sizeof(DvzFrameGraphDependency));
+        _copy_label(out->resource_id, DVZ_SCENE_LABEL_SIZE, resource_id);
+        out->producer_pass_index = producer_index;
+        out->consumer_pass_index = consumer_index;
+        _copy_label(
+            out->producer_pass_id, DVZ_SCENE_LABEL_SIZE, plan->graph_passes[producer_index].id);
+        _copy_label(
+            out->consumer_pass_id, DVZ_SCENE_LABEL_SIZE, plan->graph_passes[consumer_index].id);
+        out->producer_usage = producer_usage;
+        out->consumer_usage = consumer_usage;
+    }
+    return true;
+}
+
+
+
+/**
+ * Count dependencies consumed by one graph pass.
+ *
+ * @param plan the FramePlan.
+ * @param pass the graph pass descriptor.
+ * @param pass_index the graph pass index.
+ * @param target_index dependency index to materialize.
+ * @param out optional output dependency descriptor.
+ * @return dependency count for the pass.
+ */
+static uint32_t _graph_pass_dependency_count(
+    const DvzFramePlan* plan, const DvzFrameGraphPass* pass, uint32_t pass_index,
+    uint32_t target_index, DvzFrameGraphDependency* out)
+{
+    ANN(plan);
+    ANN(pass);
+    uint32_t count = 0;
+#define COUNT_DEP(resource, usage)                                                               \
+    do                                                                                            \
+    {                                                                                             \
+        if (_graph_dependency_from_access(plan, (resource), (usage), pass_index,                  \
+                                          count == target_index ? out : NULL))                    \
+            count++;                                                                              \
+    } while (0)
+
+    for (uint32_t i = 0; i < pass->read_count; i++)
+    {
+        if (_graph_access_reads(pass->reads[i].usage))
+            COUNT_DEP(pass->reads[i].resource_id, pass->reads[i].usage);
+    }
+    for (uint32_t i = 0; i < pass->color_attachment_count; i++)
+    {
+        const DvzFrameGraphAttachment* attachment = &pass->color_attachments[i];
+        if (_graph_attachment_reads(attachment))
+            COUNT_DEP(attachment->resource_id, _graph_color_attachment_usage(attachment));
+    }
+    if (pass->has_depth_attachment && _graph_attachment_reads(&pass->depth_attachment))
+    {
+        COUNT_DEP(
+            pass->depth_attachment.resource_id,
+            _graph_depth_attachment_usage(&pass->depth_attachment));
+    }
+    if (pass->has_stencil_attachment && _graph_attachment_reads(&pass->stencil_attachment))
+    {
+        COUNT_DEP(
+            pass->stencil_attachment.resource_id,
+            _graph_depth_attachment_usage(&pass->stencil_attachment));
+    }
+#undef COUNT_DEP
+    return count;
+}
+
+
+
 static bool _graph_resource_written_before(
     const DvzFramePlan* plan, const char* resource_id, uint32_t pass_index)
 {
@@ -625,8 +863,8 @@ static bool _graph_validate_access(
         !_graph_resource_written_before(plan, access->resource_id, pass_index))
     {
         _graph_report(
-            report, "FramePlan graph pass reads resource '%s' before any write",
-            access->resource_id);
+            report, "FramePlan graph pass '%s' reads resource '%s' before any producer",
+            plan->graph_passes[pass_index].id, access->resource_id);
         return false;
     }
     return true;
@@ -680,8 +918,8 @@ static bool _graph_validate_attachment(
         !_graph_resource_written_before(plan, attachment->resource_id, pass_index))
     {
         _graph_report(
-            report, "FramePlan graph attachment loads resource '%s' before any write",
-            attachment->resource_id);
+            report, "FramePlan graph pass '%s' loads attachment resource '%s' before any producer",
+            plan->graph_passes[pass_index].id, attachment->resource_id);
         return false;
     }
     return true;
@@ -784,6 +1022,57 @@ static bool _graph_validate_pass_kind(const DvzFrameGraphPass* pass, DvzDiagnost
         {
             _graph_report(
                 report, "FramePlan graph pass '%s' has render-only write access", pass->id);
+            ok = false;
+        }
+    }
+    return ok;
+}
+
+
+
+/**
+ * Validate producer declarations and producer availability for a graph pass.
+ *
+ * @param plan the FramePlan.
+ * @param pass the graph pass descriptor.
+ * @param pass_index the graph pass index.
+ * @param report optional diagnostic report.
+ * @return whether producer declarations are valid.
+ */
+static bool _graph_validate_pass_producers(
+    const DvzFramePlan* plan, const DvzFrameGraphPass* pass, uint32_t pass_index,
+    DvzDiagnosticReport* report)
+{
+    ANN(plan);
+    ANN(pass);
+    bool ok = true;
+    for (uint32_t i = 0; i < plan->graph_resource_count; i++)
+    {
+        uint32_t write_count = 0;
+        DvzFrameGraphAccessUsage usage = DVZ_FRAME_GRAPH_ACCESS_NONE;
+        if (_graph_pass_write_count_resource(pass, plan->graph_resources[i].id, &write_count, &usage) &&
+            write_count > 1)
+        {
+            _graph_report(
+                report,
+                "FramePlan graph pass '%s' has ambiguous producer declarations for resource '%s'",
+                pass->id, plan->graph_resources[i].id);
+            ok = false;
+        }
+    }
+
+    for (uint32_t i = 0; i < pass->read_count; i++)
+    {
+        if (!_graph_access_reads(pass->reads[i].usage) ||
+            !_graph_resource_is_per_frame(plan, pass->reads[i].resource_id))
+            continue;
+        if (!_graph_dependency_from_access(
+                plan, pass->reads[i].resource_id, pass->reads[i].usage, pass_index, NULL))
+        {
+            _graph_report(
+                report,
+                "FramePlan graph pass '%s' has no producer for resource '%s'",
+                pass->id, pass->reads[i].resource_id);
             ok = false;
         }
     }
@@ -1863,6 +2152,55 @@ const DvzFrameGraphPass* dvz_frame_plan_graph_pass_get(const DvzFramePlan* plan,
 
 
 /**
+ * Return the number of graph pass dependencies inferred from resource accesses.
+ *
+ * @param plan the FramePlan
+ * @return the dependency count
+ */
+uint32_t dvz_frame_plan_graph_dependency_count(const DvzFramePlan* plan)
+{
+    if (plan == NULL)
+        return 0;
+    uint32_t count = 0;
+    for (uint32_t i = 0; i < plan->graph_pass_count; i++)
+        count += _graph_pass_dependency_count(plan, &plan->graph_passes[i], i, UINT32_MAX, NULL);
+    return count;
+}
+
+
+
+/**
+ * Return one graph pass dependency inferred from resource accesses.
+ *
+ * @param plan the FramePlan
+ * @param index the dependency index
+ * @param out output dependency descriptor
+ * @return whether the dependency exists
+ */
+bool dvz_frame_plan_graph_dependency_get(
+    const DvzFramePlan* plan, uint32_t index, DvzFrameGraphDependency* out)
+{
+    if (plan == NULL || out == NULL)
+        return false;
+    uint32_t base = 0;
+    for (uint32_t i = 0; i < plan->graph_pass_count; i++)
+    {
+        uint32_t count =
+            _graph_pass_dependency_count(plan, &plan->graph_passes[i], i, UINT32_MAX, NULL);
+        if (index < base + count)
+        {
+            (void)_graph_pass_dependency_count(
+                plan, &plan->graph_passes[i], i, index - base, out);
+            return true;
+        }
+        base += count;
+    }
+    return false;
+}
+
+
+
+/**
  * Add a declared read access to a graph pass descriptor.
  *
  * @param pass the graph pass descriptor
@@ -1998,6 +2336,7 @@ bool dvz_frame_plan_graph_validate(const DvzFramePlan* plan, DvzDiagnosticReport
             ok = false;
         }
         ok = _graph_validate_pass_kind(pass, report) && ok;
+        ok = _graph_validate_pass_producers(plan, pass, i, report) && ok;
         if (_graph_pass_id_exists_before(plan, pass->id, i))
         {
             _graph_report(report, "FramePlan graph pass id '%s' is duplicated", pass->id);
@@ -2121,6 +2460,95 @@ char* dvz_frame_plan_json(const DvzFramePlan* plan)
         &builder,
         "      ]\n"
         "    }\n"
+        "  }\n"
+        "}\n");
+    if (builder.failed)
+    {
+        dvz_free(builder.data);
+        return NULL;
+    }
+    return builder.data;
+}
+
+
+
+/**
+ * Serialize graph pass order and inferred dependencies as deterministic debug JSON.
+ *
+ * @param plan the FramePlan
+ * @return an owned NUL-terminated JSON string
+ */
+char* dvz_frame_plan_graph_dump(const DvzFramePlan* plan)
+{
+    if (plan == NULL)
+        return NULL;
+
+    JsonBuilder builder = {0};
+    if (!_json_init(&builder))
+        return NULL;
+
+    _json_append(
+        &builder,
+        "{\n"
+        "  \"graph_debug\": {\n"
+        "    \"passes\": [\n");
+    for (uint32_t i = 0; i < plan->graph_pass_count; i++)
+    {
+        const DvzFrameGraphPass* pass = &plan->graph_passes[i];
+        _json_append(
+            &builder,
+            "      { \"index\": %" PRIu32 ", \"id\": ",
+            i);
+        _json_append_escaped_string(&builder, pass->id);
+        _json_append(&builder, ", \"kind\": ");
+        _json_append_escaped_string(&builder, _graph_pass_kind_name(pass->kind));
+        _json_append(&builder, ", \"reads\": ");
+        _json_append_graph_access_array(&builder, pass->read_count, pass->reads);
+        _json_append(&builder, ", \"writes\": ");
+        _json_append_graph_access_array(&builder, pass->write_count, pass->writes);
+        _json_append(&builder, ", \"color_attachments\": [");
+        for (uint32_t j = 0; j < pass->color_attachment_count; j++)
+        {
+            if (j > 0)
+                _json_append(&builder, ", ");
+            _json_append_graph_attachment(&builder, &pass->color_attachments[j]);
+        }
+        _json_append(&builder, "]");
+        if (pass->has_depth_attachment)
+        {
+            _json_append(&builder, ", \"depth_attachment\": ");
+            _json_append_graph_attachment(&builder, &pass->depth_attachment);
+        }
+        _json_append(&builder, " }%s\n", i + 1 < plan->graph_pass_count ? "," : "");
+    }
+
+    uint32_t dependency_count = dvz_frame_plan_graph_dependency_count(plan);
+    _json_append(
+        &builder,
+        "    ],\n"
+        "    \"dependencies\": [\n");
+    for (uint32_t i = 0; i < dependency_count; i++)
+    {
+        DvzFrameGraphDependency dep = {0};
+        if (!dvz_frame_plan_graph_dependency_get(plan, i, &dep))
+            continue;
+        _json_append(
+            &builder,
+            "      { \"resource_id\": ");
+        _json_append_escaped_string(&builder, dep.resource_id);
+        _json_append(&builder, ", \"producer\": ");
+        _json_append_escaped_string(&builder, dep.producer_pass_id);
+        _json_append(&builder, ", \"consumer\": ");
+        _json_append_escaped_string(&builder, dep.consumer_pass_id);
+        _json_append(&builder, ", \"producer_usage\": ");
+        _json_append_escaped_string(&builder, _graph_access_usage_name(dep.producer_usage));
+        _json_append(&builder, ", \"consumer_usage\": ");
+        _json_append_escaped_string(&builder, _graph_access_usage_name(dep.consumer_usage));
+        _json_append(&builder, " }%s\n", i + 1 < dependency_count ? "," : "");
+    }
+    _json_append(
+        &builder,
+        "    ]\n"
         "  }\n"
         "}\n");
     if (builder.failed)

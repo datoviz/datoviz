@@ -646,7 +646,8 @@ int test_frame_plan_graph_validation_read_before_write(TstSuite* suite, TstItem*
     AT(dvz_diagnostic_report_count(&report) >= 1);
     AT(strcmp(
            dvz_diagnostic_report_get(&report, 0),
-           "FramePlan graph pass reads resource 'tex.unwritten' before any write") == 0);
+           "FramePlan graph pass 'panel0.resolve' has no producer for resource 'tex.unwritten'") ==
+       0);
 
     dvz_frame_plan_destroy(plan);
     return 0;
@@ -698,6 +699,196 @@ int test_frame_plan_graph_validation_pass_kind(TstSuite* suite, TstItem* item)
            dvz_diagnostic_report_get(&report, 0),
            "FramePlan graph pass 'panel0.compute' has render attachments but is not a render "
            "pass") == 0);
+
+    dvz_frame_plan_destroy(plan);
+    return 0;
+}
+
+
+/**
+ * Ensure graph dependencies expose ordered WBOIT-style producers and consumers.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_frame_plan_graph_dependencies_dump(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzFramePlan* plan = dvz_frame_plan("figure.graph.dependencies", 18);
+    ANN(plan);
+
+    DvzFrameGraphResource rt = {0};
+    dvz_strlcpy(rt.id, "rt", sizeof(rt.id));
+    rt.kind = DVZ_FRAME_GRAPH_RESOURCE_EXTERNAL_TARGET;
+    rt.extent_kind = DVZ_FRAME_GRAPH_EXTENT_FIGURE;
+    rt.usage_flags = DVZ_FRAME_GRAPH_RESOURCE_USAGE_COLOR_ATTACHMENT;
+    rt.lifetime = DVZ_FRAME_GRAPH_RESOURCE_LIFETIME_BORROWED;
+    AT(dvz_frame_plan_graph_resource(plan, &rt));
+
+    DvzFrameGraphResource depth = {0};
+    dvz_strlcpy(depth.id, "panel0.depth", sizeof(depth.id));
+    depth.kind = DVZ_FRAME_GRAPH_RESOURCE_TEXTURE;
+    depth.extent_kind = DVZ_FRAME_GRAPH_EXTENT_FIGURE;
+    depth.usage_flags = DVZ_FRAME_GRAPH_RESOURCE_USAGE_DEPTH_ATTACHMENT;
+    depth.lifetime = DVZ_FRAME_GRAPH_RESOURCE_LIFETIME_PER_FRAME;
+    AT(dvz_frame_plan_graph_resource(plan, &depth));
+
+    DvzFrameGraphResource accum = {0};
+    dvz_strlcpy(accum.id, "panel0.wboit.accum", sizeof(accum.id));
+    accum.kind = DVZ_FRAME_GRAPH_RESOURCE_TEXTURE;
+    accum.extent_kind = DVZ_FRAME_GRAPH_EXTENT_FIGURE;
+    accum.usage_flags = DVZ_FRAME_GRAPH_RESOURCE_USAGE_COLOR_ATTACHMENT |
+                        DVZ_FRAME_GRAPH_RESOURCE_USAGE_SAMPLED;
+    accum.lifetime = DVZ_FRAME_GRAPH_RESOURCE_LIFETIME_PER_FRAME;
+    AT(dvz_frame_plan_graph_resource(plan, &accum));
+
+    DvzFrameGraphResource weight = {0};
+    dvz_strlcpy(weight.id, "panel0.wboit.weight", sizeof(weight.id));
+    weight.kind = DVZ_FRAME_GRAPH_RESOURCE_TEXTURE;
+    weight.extent_kind = DVZ_FRAME_GRAPH_EXTENT_FIGURE;
+    weight.usage_flags = DVZ_FRAME_GRAPH_RESOURCE_USAGE_COLOR_ATTACHMENT |
+                         DVZ_FRAME_GRAPH_RESOURCE_USAGE_SAMPLED;
+    weight.lifetime = DVZ_FRAME_GRAPH_RESOURCE_LIFETIME_PER_FRAME;
+    AT(dvz_frame_plan_graph_resource(plan, &weight));
+
+    DvzFrameGraphAttachment color = {0};
+    dvz_strlcpy(color.resource_id, "rt", sizeof(color.resource_id));
+    color.load_op = DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_CLEAR;
+    color.store_op = DVZ_FRAME_GRAPH_ATTACHMENT_STORE_STORE;
+    color.access = DVZ_FRAME_GRAPH_ATTACHMENT_ACCESS_WRITE;
+
+    DvzFrameGraphAttachment depth_write = {0};
+    dvz_strlcpy(depth_write.resource_id, "panel0.depth", sizeof(depth_write.resource_id));
+    depth_write.load_op = DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_CLEAR;
+    depth_write.store_op = DVZ_FRAME_GRAPH_ATTACHMENT_STORE_STORE;
+    depth_write.access = DVZ_FRAME_GRAPH_ATTACHMENT_ACCESS_WRITE;
+
+    DvzFrameGraphPass opaque = {0};
+    dvz_strlcpy(opaque.id, "panel0.opaque", sizeof(opaque.id));
+    opaque.kind = DVZ_FRAME_GRAPH_PASS_RENDER;
+    AT(dvz_frame_graph_pass_color_attachment(&opaque, &color));
+    AT(dvz_frame_graph_pass_depth_attachment(&opaque, &depth_write));
+    AT(dvz_frame_plan_graph_pass(plan, &opaque));
+
+    DvzFrameGraphAttachment accum_color = {0};
+    dvz_strlcpy(accum_color.resource_id, "panel0.wboit.accum", sizeof(accum_color.resource_id));
+    accum_color.load_op = DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_CLEAR;
+    accum_color.store_op = DVZ_FRAME_GRAPH_ATTACHMENT_STORE_STORE;
+    accum_color.access = DVZ_FRAME_GRAPH_ATTACHMENT_ACCESS_WRITE;
+
+    DvzFrameGraphAttachment weight_color = {0};
+    dvz_strlcpy(weight_color.resource_id, "panel0.wboit.weight", sizeof(weight_color.resource_id));
+    weight_color.load_op = DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_CLEAR;
+    weight_color.store_op = DVZ_FRAME_GRAPH_ATTACHMENT_STORE_STORE;
+    weight_color.access = DVZ_FRAME_GRAPH_ATTACHMENT_ACCESS_WRITE;
+
+    DvzFrameGraphAttachment depth_read = {0};
+    dvz_strlcpy(depth_read.resource_id, "panel0.depth", sizeof(depth_read.resource_id));
+    depth_read.load_op = DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_LOAD;
+    depth_read.store_op = DVZ_FRAME_GRAPH_ATTACHMENT_STORE_STORE;
+    depth_read.access = DVZ_FRAME_GRAPH_ATTACHMENT_ACCESS_READ;
+
+    DvzFrameGraphPass accum_pass = {0};
+    dvz_strlcpy(accum_pass.id, "panel0.wboit.accum", sizeof(accum_pass.id));
+    accum_pass.kind = DVZ_FRAME_GRAPH_PASS_RENDER;
+    AT(dvz_frame_graph_pass_color_attachment(&accum_pass, &accum_color));
+    AT(dvz_frame_graph_pass_color_attachment(&accum_pass, &weight_color));
+    AT(dvz_frame_graph_pass_depth_attachment(&accum_pass, &depth_read));
+    AT(dvz_frame_plan_graph_pass(plan, &accum_pass));
+
+    color.load_op = DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_LOAD;
+    DvzFrameGraphPass resolve = {0};
+    dvz_strlcpy(resolve.id, "panel0.wboit.resolve", sizeof(resolve.id));
+    resolve.kind = DVZ_FRAME_GRAPH_PASS_RENDER;
+    AT(dvz_frame_graph_pass_read(
+        &resolve, "panel0.wboit.accum", DVZ_FRAME_GRAPH_ACCESS_SAMPLED));
+    AT(dvz_frame_graph_pass_read(
+        &resolve, "panel0.wboit.weight", DVZ_FRAME_GRAPH_ACCESS_SAMPLED));
+    AT(dvz_frame_graph_pass_color_attachment(&resolve, &color));
+    AT(dvz_frame_plan_graph_pass(plan, &resolve));
+
+    DvzDiagnosticReport report = {0};
+    dvz_diagnostic_report_init(&report);
+    AT(dvz_frame_plan_graph_validate(plan, &report));
+    AT(dvz_diagnostic_report_count(&report) == 0);
+
+    AT(dvz_frame_plan_graph_dependency_count(plan) == 4);
+    DvzFrameGraphDependency dep = {0};
+    AT(dvz_frame_plan_graph_dependency_get(plan, 0, &dep));
+    AT(strcmp(dep.producer_pass_id, "panel0.opaque") == 0);
+    AT(strcmp(dep.consumer_pass_id, "panel0.wboit.accum") == 0);
+    AT(strcmp(dep.resource_id, "panel0.depth") == 0);
+    AT(dep.consumer_usage == DVZ_FRAME_GRAPH_ACCESS_DEPTH_ATTACHMENT_READ);
+    AT(dvz_frame_plan_graph_dependency_get(plan, 1, &dep));
+    AT(strcmp(dep.resource_id, "panel0.wboit.accum") == 0);
+    AT(strcmp(dep.consumer_pass_id, "panel0.wboit.resolve") == 0);
+    AT(dvz_frame_plan_graph_dependency_get(plan, 2, &dep));
+    AT(strcmp(dep.resource_id, "panel0.wboit.weight") == 0);
+    AT(strcmp(dep.consumer_pass_id, "panel0.wboit.resolve") == 0);
+    AT(dvz_frame_plan_graph_dependency_get(plan, 3, &dep));
+    AT(strcmp(dep.resource_id, "rt") == 0);
+    AT(strcmp(dep.consumer_pass_id, "panel0.wboit.resolve") == 0);
+
+    char* dump = dvz_frame_plan_graph_dump(plan);
+    ANN(dump);
+    AT(strstr(dump, "\"passes\"") != NULL);
+    AT(strstr(dump, "\"dependencies\"") != NULL);
+    AT(strstr(dump, "\"producer\": \"panel0.opaque\"") != NULL);
+    AT(strstr(dump, "\"consumer\": \"panel0.wboit.resolve\"") != NULL);
+    dvz_frame_plan_json_destroy(dump);
+
+    dvz_frame_plan_destroy(plan);
+    return 0;
+}
+
+
+/**
+ * Ensure graph validation reports ambiguous same-pass producers by pass and resource.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_frame_plan_graph_validation_ambiguous_producer(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzFramePlan* plan = dvz_frame_plan("figure.graph.ambiguous", 19);
+    ANN(plan);
+
+    DvzFrameGraphResource color_resource = {0};
+    dvz_strlcpy(color_resource.id, "color", sizeof(color_resource.id));
+    color_resource.kind = DVZ_FRAME_GRAPH_RESOURCE_TEXTURE;
+    color_resource.extent_kind = DVZ_FRAME_GRAPH_EXTENT_FIGURE;
+    color_resource.usage_flags = DVZ_FRAME_GRAPH_RESOURCE_USAGE_COLOR_ATTACHMENT;
+    color_resource.lifetime = DVZ_FRAME_GRAPH_RESOURCE_LIFETIME_PER_FRAME;
+    AT(dvz_frame_plan_graph_resource(plan, &color_resource));
+
+    DvzFrameGraphAttachment color = {0};
+    dvz_strlcpy(color.resource_id, "color", sizeof(color.resource_id));
+    color.load_op = DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_CLEAR;
+    color.store_op = DVZ_FRAME_GRAPH_ATTACHMENT_STORE_STORE;
+    color.access = DVZ_FRAME_GRAPH_ATTACHMENT_ACCESS_WRITE;
+
+    DvzFrameGraphPass pass = {0};
+    dvz_strlcpy(pass.id, "panel0.bad", sizeof(pass.id));
+    pass.kind = DVZ_FRAME_GRAPH_PASS_RENDER;
+    AT(dvz_frame_graph_pass_color_attachment(&pass, &color));
+    AT(dvz_frame_graph_pass_write(&pass, "color", DVZ_FRAME_GRAPH_ACCESS_COLOR_ATTACHMENT));
+    AT(dvz_frame_plan_graph_pass(plan, &pass));
+
+    DvzDiagnosticReport report = {0};
+    dvz_diagnostic_report_init(&report);
+    AT(!dvz_frame_plan_graph_validate(plan, &report));
+    AT(dvz_diagnostic_report_count(&report) >= 1);
+    AT(strcmp(
+           dvz_diagnostic_report_get(&report, 0),
+           "FramePlan graph pass 'panel0.bad' has ambiguous producer declarations for resource "
+           "'color'") == 0);
 
     dvz_frame_plan_destroy(plan);
     return 0;
@@ -898,7 +1089,9 @@ int test_scene_frame_plan(TstSuite* suite)
     TEST_SIMPLE(test_frame_plan_texture_upload_json_includes_region);
     TEST_SIMPLE(test_frame_plan_readbacks);
     TEST_SIMPLE(test_frame_plan_graph_static_multipass);
+    TEST_SIMPLE(test_frame_plan_graph_dependencies_dump);
     TEST_SIMPLE(test_frame_plan_graph_validation_read_before_write);
+    TEST_SIMPLE(test_frame_plan_graph_validation_ambiguous_producer);
     TEST_SIMPLE(test_frame_plan_graph_validation_missing_usage);
     TEST_SIMPLE(test_frame_plan_graph_validation_attachment_kind);
     TEST_SIMPLE(test_frame_plan_graph_validation_attachment_extent);

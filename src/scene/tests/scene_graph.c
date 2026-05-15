@@ -4216,13 +4216,23 @@ int test_scene_visual_alpha_mode_splits_frame_plan_passes(TstSuite* suite, TstIt
     AT(accum_resource->usage_flags & DVZ_FRAME_GRAPH_RESOURCE_USAGE_COLOR_ATTACHMENT);
     AT(accum_resource->usage_flags & DVZ_FRAME_GRAPH_RESOURCE_USAGE_SAMPLED);
 
+    const DvzFrameGraphPass* opaque_pass = dvz_frame_plan_graph_pass_get(plan, 0);
     const DvzFrameGraphPass* accum_pass = dvz_frame_plan_graph_pass_get(plan, 1);
     const DvzFrameGraphPass* resolve_pass = dvz_frame_plan_graph_pass_get(plan, 2);
+    ANN(opaque_pass);
     ANN(accum_pass);
     ANN(resolve_pass);
+    AT(strcmp(opaque_pass->work_label, "opaque") == 0);
+    AT(strcmp(accum_pass->work_label, "wboit_accum") == 0);
+    AT(strcmp(resolve_pass->work_label, "wboit_resolve") == 0);
     AT(accum_pass->color_attachment_count == 2);
     AT(resolve_pass->read_count == 2);
     AT(resolve_pass->color_attachment_count == 1);
+    AT(dvz_frame_plan_graph_dependency_count(plan) == 3);
+    DvzFrameGraphDependency dep = {0};
+    AT(dvz_frame_plan_graph_dependency_get(plan, 0, &dep));
+    AT(strcmp(dep.producer_pass_id, "figure_0_p0.wboit.accum") == 0);
+    AT(strcmp(dep.consumer_pass_id, "figure_0_p0.wboit.resolve") == 0);
 
     DvzDiagnosticReport report = {0};
     dvz_diagnostic_report_init(&report);

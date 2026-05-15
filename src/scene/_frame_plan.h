@@ -229,6 +229,19 @@ typedef struct DvzFrameGraphPass
 
 
 
+typedef struct DvzFrameGraphDependency
+{
+    char resource_id[DVZ_SCENE_LABEL_SIZE];
+    uint32_t producer_pass_index;
+    uint32_t consumer_pass_index;
+    char producer_pass_id[DVZ_SCENE_LABEL_SIZE];
+    char consumer_pass_id[DVZ_SCENE_LABEL_SIZE];
+    DvzFrameGraphAccessUsage producer_usage;
+    DvzFrameGraphAccessUsage consumer_usage;
+} DvzFrameGraphDependency;
+
+
+
 typedef struct DvzFramePlanUploadMeta
 {
     bool has_metadata;
@@ -412,6 +425,11 @@ uint32_t dvz_frame_plan_graph_pass_count(const DvzFramePlan* plan);
 
 const DvzFrameGraphPass* dvz_frame_plan_graph_pass_get(const DvzFramePlan* plan, uint32_t index);
 
+uint32_t dvz_frame_plan_graph_dependency_count(const DvzFramePlan* plan);
+
+bool dvz_frame_plan_graph_dependency_get(
+    const DvzFramePlan* plan, uint32_t index, DvzFrameGraphDependency* out);
+
 bool dvz_frame_graph_pass_read(
     DvzFrameGraphPass* pass, const char* resource_id, DvzFrameGraphAccessUsage usage);
 
@@ -425,3 +443,5 @@ bool dvz_frame_graph_pass_depth_attachment(
     DvzFrameGraphPass* pass, const DvzFrameGraphAttachment* attachment);
 
 bool dvz_frame_plan_graph_validate(const DvzFramePlan* plan, DvzDiagnosticReport* report);
+
+char* dvz_frame_plan_graph_dump(const DvzFramePlan* plan);

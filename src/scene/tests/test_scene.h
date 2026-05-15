@@ -105,7 +105,11 @@ int test_frame_plan_readbacks(TstSuite* suite, TstItem* item);
 
 int test_frame_plan_graph_static_multipass(TstSuite* suite, TstItem* item);
 
+int test_frame_plan_graph_dependencies_dump(TstSuite* suite, TstItem* item);
+
 int test_frame_plan_graph_validation_read_before_write(TstSuite* suite, TstItem* item);
+
+int test_frame_plan_graph_validation_ambiguous_producer(TstSuite* suite, TstItem* item);
 
 int test_frame_plan_graph_validation_missing_usage(TstSuite* suite, TstItem* item);
 
