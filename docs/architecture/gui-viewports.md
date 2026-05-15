@@ -44,8 +44,14 @@ Scene controllers should be attached through the viewport input router:
 dvz_panel_set_panzoom(panel, dvz_gui_viewport_input(viewport), 0);
 ```
 
-The viewport forwards pointer press, move, release, and wheel events in source-window coordinates.
-During a button drag, forwarding continues even if the pointer leaves the ImGui item.
+The viewport forwards pointer press, move, release, and wheel events in source-window coordinates,
+including the current keyboard modifier mask. During a button drag, forwarding continues even if
+the pointer leaves the ImGui item, and out-of-bounds drag coordinates are kept as raw source-window
+coordinates so controllers receive the full drag delta.
+
+Clicking a viewport gives it keyboard focus for Datoviz input routing. GLFW key press, release, and
+repeat events are forwarded to that viewport only while no regular ImGui widget wants keyboard
+capture. Clicking another ImGui item clears the focused viewport.
 
 
 ## Visibility

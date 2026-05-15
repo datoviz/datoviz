@@ -103,6 +103,7 @@ struct DvzGui
     DvzGuiCallback callback;
     void* callback_user_data;
     DvzGuiViewport* viewports;
+    DvzGuiViewport* keyboard_viewport;
     ImFont* font_regular;
     ImFont* font_mono;
     VkFormat color_format;
@@ -133,6 +134,7 @@ struct DvzGuiViewport
     bool visible;
     bool has_frame;
     bool texture_dirty;
+    bool keyboard_focused;
     bool input_capturing;
     int input_button;
     DvzPointerButton input_dvz_button;
@@ -229,6 +231,46 @@ static DvzGuiViewportConfig _gui_viewport_config_normalize(const DvzGuiViewportC
     if (out.resize_step == 0)
         out.resize_step = DVZ_GUI_VIEWPORT_DEFAULT_RESIZE_STEP;
     return out;
+}
+
+
+/**
+ * Return Datoviz keyboard modifier bits from the current ImGui IO state.
+ *
+ * @param io Dear ImGui IO state
+ * @return Datoviz keyboard modifier bit mask
+ */
+static int _gui_mods_from_io(const ImGuiIO& io)
+{
+    int mods = DVZ_KEY_MODIFIER_NONE;
+    if (io.KeyShift)
+        mods |= DVZ_KEY_MODIFIER_SHIFT;
+    if (io.KeyCtrl)
+        mods |= DVZ_KEY_MODIFIER_CONTROL;
+    if (io.KeyAlt)
+        mods |= DVZ_KEY_MODIFIER_ALT;
+    if (io.KeySuper)
+        mods |= DVZ_KEY_MODIFIER_SUPER;
+    return mods;
+}
+
+
+
+/**
+ * Translate a GLFW key action to a Datoviz keyboard event type.
+ *
+ * @param action GLFW key action
+ * @return Datoviz keyboard event type
+ */
+static DvzKeyboardEventType _gui_key_event_type(int action)
+{
+    if (action == GLFW_PRESS)
+        return DVZ_KEYBOARD_EVENT_PRESS;
+    if (action == GLFW_RELEASE)
+        return DVZ_KEYBOARD_EVENT_RELEASE;
+    if (action == GLFW_REPEAT)
+        return DVZ_KEYBOARD_EVENT_REPEAT;
+    return DVZ_KEYBOARD_EVENT_NONE;
 }
 
 
@@ -549,19 +591,28 @@ static void _gui_viewport_forward_input(
     DvzGuiViewport* viewport, ImVec2 image_min, ImVec2 size)
 {
     ANN(viewport);
-    DvzInputRouter* router = dvz_app_window_input(viewport->source);
-    if (router == NULL || size.x <= 0 || size.y <= 0)
+    if (viewport->source == NULL || dvz_app_window_input(viewport->source) == NULL ||
+        size.x <= 0 || size.y <= 0)
+    {
         return;
+    }
 
     ImGuiIO& io = ImGui::GetIO();
     const bool hovered = ImGui::IsItemHovered();
+    const bool active = ImGui::IsItemActive();
 
     float x = io.MousePos.x - image_min.x;
     float y = io.MousePos.y - image_min.y;
-    const uint64_t now = dvz_input_timestamp_ns();
     const float window_x = size.x;
     const float window_y = size.y;
-    const int mods = 0;
+    const int mods = _gui_mods_from_io(io);
+
+    if ((hovered && ImGui::IsMouseClicked(ImGuiMouseButton_Left)) || active)
+    {
+        viewport->keyboard_focused = true;
+        if (viewport->gui != NULL)
+            viewport->gui->keyboard_viewport = viewport;
+    }
 
     const DvzPointerButton buttons[3] = {
         DVZ_POINTER_BUTTON_LEFT,
@@ -575,32 +626,31 @@ static void _gui_viewport_forward_input(
             viewport->input_capturing = true;
             viewport->input_button = i;
             viewport->input_dvz_button = buttons[i];
-            dvz_pointer_emit_position(
-                router, DVZ_POINTER_EVENT_PRESS, x, y, window_x, window_y, buttons[i], mods,
-                1.0f, now, NULL);
+            (void)dvz_app_window_emit_pointer(
+                viewport->source, DVZ_POINTER_EVENT_PRESS, x, y, window_x, window_y, buttons[i],
+                mods);
         }
     }
 
     if (!hovered && !viewport->input_capturing)
         return;
 
-    dvz_pointer_emit_position(
-        router, DVZ_POINTER_EVENT_MOVE, x, y, window_x, window_y, DVZ_POINTER_BUTTON_NONE, mods,
-        1.0f, now, NULL);
+    (void)dvz_app_window_emit_pointer(
+        viewport->source, DVZ_POINTER_EVENT_MOVE, x, y, window_x, window_y,
+        DVZ_POINTER_BUTTON_NONE, mods);
     if (hovered && (io.MouseWheel != 0.0f || io.MouseWheelH != 0.0f))
     {
-        dvz_pointer_emit_wheel(
-            router, x, y, window_x, window_y, io.MouseWheelH, io.MouseWheel, mods, 1.0f, now,
-            NULL);
+        (void)dvz_app_window_emit_wheel(
+            viewport->source, x, y, window_x, window_y, io.MouseWheelH, io.MouseWheel, mods);
     }
 
     if (
         viewport->input_capturing &&
         (ImGui::IsMouseReleased(viewport->input_button) || !io.MouseDown[viewport->input_button]))
     {
-        dvz_pointer_emit_position(
-            router, DVZ_POINTER_EVENT_RELEASE, x, y, window_x, window_y,
-            viewport->input_dvz_button, mods, 1.0f, now, NULL);
+        (void)dvz_app_window_emit_pointer(
+            viewport->source, DVZ_POINTER_EVENT_RELEASE, x, y, window_x, window_y,
+            viewport->input_dvz_button, mods);
         viewport->input_capturing = false;
         viewport->input_button = 0;
         viewport->input_dvz_button = DVZ_POINTER_BUTTON_NONE;
@@ -625,6 +675,8 @@ static void _gui_viewport_destroy(DvzGuiViewport* viewport, bool detach)
         _gui_set_current(gui);
         if (detach)
             _gui_viewport_detach(gui, viewport);
+        if (gui->keyboard_viewport == viewport)
+            gui->keyboard_viewport = NULL;
     }
     if (viewport->canvas != NULL)
         (void)dvz_canvas_configure_live_image_sink(viewport->canvas, false, NULL);
@@ -669,6 +721,30 @@ static bool _gui_want_capture_keyboard(DvzGui* gui)
 {
     _gui_set_current(gui);
     return ImGui::GetIO().WantCaptureKeyboard;
+}
+
+
+/**
+ * Forward a GLFW key event to the currently keyboard-focused GUI viewport.
+ *
+ * @param gui the GUI overlay
+ * @param key GLFW key
+ * @param action GLFW action
+ * @param mods GLFW modifier mask
+ * @return whether the key was forwarded and should be consumed
+ */
+static bool _gui_viewport_forward_key(DvzGui* gui, int key, int action, int mods)
+{
+    ANN(gui);
+    DvzGuiViewport* viewport = gui->keyboard_viewport;
+    if (viewport == NULL || viewport->source == NULL || !viewport->keyboard_focused)
+        return false;
+
+    DvzKeyboardEventType type = _gui_key_event_type(action);
+    if (type == DVZ_KEYBOARD_EVENT_NONE)
+        return false;
+
+    return dvz_app_window_emit_key(viewport->source, type, (DvzKeyCode)key, mods) == 0;
 }
 
 
@@ -757,7 +833,10 @@ _gui_glfw_key(DvzWindow* window, int key, int scancode, int action, int mods, vo
     ANN(gui);
     _gui_set_current(gui);
     ImGui_ImplGlfw_KeyCallback(gui->glfw_window, key, scancode, action, mods);
-    return _gui_want_capture_keyboard(gui);
+    bool capture = _gui_want_capture_keyboard(gui);
+    if (!capture)
+        capture = _gui_viewport_forward_key(gui, key, action, mods);
+    return capture;
 }
 
 
@@ -1002,6 +1081,15 @@ void _dvz_gui_begin_frame(DvzGui* gui, DvzAppWindow* win, const DvzStreamFrame* 
     ImGui_ImplVulkan_NewFrame();
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
+    if (
+        ImGui::IsMouseClicked(ImGuiMouseButton_Left) ||
+        ImGui::IsMouseClicked(ImGuiMouseButton_Right) ||
+        ImGui::IsMouseClicked(ImGuiMouseButton_Middle))
+    {
+        if (gui->keyboard_viewport != NULL)
+            gui->keyboard_viewport->keyboard_focused = false;
+        gui->keyboard_viewport = NULL;
+    }
     _gui_submit_dockspace(gui);
     if (gui->callback != NULL)
         gui->callback(gui, win, gui->callback_user_data);
