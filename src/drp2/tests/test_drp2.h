@@ -216,6 +216,8 @@ int test_drp2_runtime_vklite_draws_multi_color_render_pass(TstSuite* suite, TstI
 
 int test_drp2_runtime_vklite_draws_wboit_format_passes(TstSuite* suite, TstItem* item);
 
+int test_drp2_runtime_vklite_samples_3d_texture(TstSuite* suite, TstItem* item);
+
 int test_drp2_runtime_vklite_samples_then_copies_texture(TstSuite* suite, TstItem* item);
 #endif
 

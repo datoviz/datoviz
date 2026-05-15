@@ -201,6 +201,8 @@ static DvzDrp2ValidationResult _vklite_create_texture(
                 object, DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
         object->views = views;
         dvz_image_views(images, views);
+        dvz_image_views_type(
+            views, depth > 1 ? VK_IMAGE_VIEW_TYPE_3D : VK_IMAGE_VIEW_TYPE_2D);
         if (_vklite_format_has_depth(format))
             dvz_image_views_aspect(views, VK_IMAGE_ASPECT_DEPTH_BIT);
         dvz_image_views_create(views);
