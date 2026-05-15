@@ -506,6 +506,78 @@ static void _emit_target_extent(
 
 
 /**
+ * Return a graph resource descriptor by id.
+ *
+ * @param plan the FramePlan.
+ * @param resource_id the graph resource id.
+ * @return the resource descriptor, or NULL when absent.
+ */
+static const DvzFrameGraphResource*
+_graph_resource_by_id(const DvzFramePlan* plan, const char* resource_id)
+{
+    ANN(plan);
+    ANN(resource_id);
+    for (uint32_t i = 0; i < dvz_frame_plan_graph_resource_count(plan); i++)
+    {
+        const DvzFrameGraphResource* resource = dvz_frame_plan_graph_resource_get(plan, i);
+        if (resource != NULL && strcmp(resource->id, resource_id) == 0)
+            return resource;
+    }
+    return NULL;
+}
+
+
+
+/**
+ * Return a graph pass descriptor by panel and work label.
+ *
+ * @param plan the FramePlan.
+ * @param panel_id the panel id.
+ * @param work_label the graph pass work label.
+ * @return the graph pass descriptor, or NULL when absent.
+ */
+static const DvzFrameGraphPass* _graph_pass_by_panel_work(
+    const DvzFramePlan* plan, const char* panel_id, const char* work_label)
+{
+    ANN(plan);
+    ANN(panel_id);
+    ANN(work_label);
+    for (uint32_t i = 0; i < dvz_frame_plan_graph_pass_count(plan); i++)
+    {
+        const DvzFrameGraphPass* pass = dvz_frame_plan_graph_pass_get(plan, i);
+        if (pass != NULL && strcmp(pass->panel_id, panel_id) == 0 &&
+            strcmp(pass->work_label, work_label) == 0)
+            return pass;
+    }
+    return NULL;
+}
+
+
+
+/**
+ * Convert graph texture usage flags to DRP2 texture usage flags.
+ *
+ * @param usage_flags graph resource usage flags.
+ * @return DRP2 texture usage flags.
+ */
+static uint32_t _graph_texture_usage_to_drp2(uint32_t usage_flags)
+{
+    uint32_t out = 0;
+    if ((usage_flags & DVZ_FRAME_GRAPH_RESOURCE_USAGE_COLOR_ATTACHMENT) != 0 ||
+        (usage_flags & DVZ_FRAME_GRAPH_RESOURCE_USAGE_DEPTH_ATTACHMENT) != 0)
+        out |= DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT;
+    if ((usage_flags & DVZ_FRAME_GRAPH_RESOURCE_USAGE_SAMPLED) != 0)
+        out |= DVZ_DRP2_TEXTURE_USAGE_TEXTURE_BINDING;
+    if ((usage_flags & DVZ_FRAME_GRAPH_RESOURCE_USAGE_COPY_SRC) != 0)
+        out |= DVZ_DRP2_TEXTURE_USAGE_COPY_SRC;
+    if ((usage_flags & DVZ_FRAME_GRAPH_RESOURCE_USAGE_COPY_DST) != 0)
+        out |= DVZ_DRP2_TEXTURE_USAGE_COPY_DST;
+    return out != 0 ? out : DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT;
+}
+
+
+
+/**
  * Resolve or create one WBOIT intermediate texture.
  *
  * @param emitter the persistent emitter.
@@ -519,7 +591,7 @@ static void _emit_target_extent(
  */
 static bool _wboit_resolve_intermediate_texture(
     DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, const char* key, uint32_t width,
-    uint32_t height, uint32_t format, uint64_t* out_id)
+    uint32_t height, uint32_t format, uint32_t usage, uint64_t* out_id)
 {
     ANN(emitter);
     ANN(stream);
@@ -535,8 +607,6 @@ static bool _wboit_resolve_intermediate_texture(
 
     if (is_new)
     {
-        uint32_t usage =
-            DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT | DVZ_DRP2_TEXTURE_USAGE_TEXTURE_BINDING;
         if (!dvz_drp2_stream_create_texture_2d_format_usage(
                 stream, resource->id, width, height, format, usage))
             return false;
@@ -559,8 +629,9 @@ static bool _wboit_resolve_intermediate_texture(
  * @return whether all resources were prepared.
  */
 static bool _emitter_prepare_wboit_targets(
-    DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, const DvzFramePlanNode* render,
-    uint64_t color_id, const DvzFramePlanEmitConfig* cfg, SceneWboitTargets* out)
+    DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, const DvzFramePlan* plan,
+    const DvzFramePlanNode* render, uint64_t color_id, const DvzFramePlanEmitConfig* cfg,
+    SceneWboitTargets* out)
 {
     ANN(emitter);
     ANN(stream);
@@ -580,13 +651,43 @@ static bool _emitter_prepare_wboit_targets(
     dvz_snprintf(accum_key, sizeof(accum_key), "_wboit_accum_%s", render->u.render.panel_id);
     dvz_snprintf(weight_key, sizeof(weight_key), "_wboit_weight_%s", render->u.render.panel_id);
 
+    const DvzFrameGraphPass* graph_pass =
+        _graph_pass_by_panel_work(plan, render->u.render.panel_id, "wboit_accum");
+    const DvzFrameGraphResource* accum_resource = NULL;
+    const DvzFrameGraphResource* weight_resource = NULL;
+    if (graph_pass != NULL && graph_pass->color_attachment_count >= 2)
+    {
+        accum_resource = _graph_resource_by_id(
+            plan, graph_pass->color_attachments[0].resource_id);
+        weight_resource = _graph_resource_by_id(
+            plan, graph_pass->color_attachments[1].resource_id);
+    }
+
+    const char* accum_resource_id = accum_resource != NULL ? accum_resource->id : accum_key;
+    const char* weight_resource_id = weight_resource != NULL ? weight_resource->id : weight_key;
+    uint32_t accum_format = accum_resource != NULL && accum_resource->format != 0
+                                ? accum_resource->format
+                                : VK_FORMAT_R16G16B16A16_SFLOAT;
+    uint32_t weight_format = weight_resource != NULL && weight_resource->format != 0
+                                 ? weight_resource->format
+                                 : VK_FORMAT_R16_SFLOAT;
+    uint32_t accum_usage = accum_resource != NULL
+                               ? _graph_texture_usage_to_drp2(accum_resource->usage_flags)
+                               : (DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT |
+                                  DVZ_DRP2_TEXTURE_USAGE_TEXTURE_BINDING);
+    uint32_t weight_usage = weight_resource != NULL
+                                ? _graph_texture_usage_to_drp2(weight_resource->usage_flags)
+                                : (DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT |
+                                   DVZ_DRP2_TEXTURE_USAGE_TEXTURE_BINDING);
+
     ok = ok &&
          _wboit_resolve_intermediate_texture(
-             emitter, stream, accum_key, width, height, VK_FORMAT_R16G16B16A16_SFLOAT,
+             emitter, stream, accum_resource_id, width, height, accum_format, accum_usage,
              &out->accum_id);
     ok = ok &&
          _wboit_resolve_intermediate_texture(
-             emitter, stream, weight_key, width, height, VK_FORMAT_R16_SFLOAT, &out->weight_id);
+             emitter, stream, weight_resource_id, width, height, weight_format, weight_usage,
+             &out->weight_id);
     if (!ok)
         return false;
 
@@ -996,7 +1097,7 @@ static bool _emitter_emit_scene_wboit_renders(
         if (ok && render->u.render.pass_role == DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_ACCUMULATION)
         {
             ok = _emitter_prepare_wboit_targets(
-                emitter, stream, render, color_id, cfg, &wboit_targets[target_count]);
+                emitter, stream, plan, render, color_id, cfg, &wboit_targets[target_count]);
             if (ok)
                 wboit_renders[target_count++] = render;
         }

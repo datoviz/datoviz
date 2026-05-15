@@ -4338,6 +4338,8 @@ int test_scene_visual_alpha_mode_emits_wboit_drp2(TstSuite* suite, TstItem* item
 
     bool has_accum_texture = false;
     bool has_weight_texture = false;
+    bool has_graph_accum_texture = false;
+    bool has_graph_weight_texture = false;
     bool has_accum_pipeline = false;
     bool has_resolve_pipeline = false;
     bool has_opaque_depth_pipeline = false;
@@ -4362,6 +4364,13 @@ int test_scene_visual_alpha_mode_emits_wboit_drp2(TstSuite* suite, TstItem* item
                 command->u.create_texture.format == VK_FORMAT_R16G16B16A16_SFLOAT;
             has_weight_texture =
                 has_weight_texture || command->u.create_texture.format == VK_FORMAT_R16_SFLOAT;
+            const char* label = dvz_drp2_stream_label(stream, command->u.create_texture.id);
+            has_graph_accum_texture =
+                has_graph_accum_texture ||
+                (label != NULL && strcmp(label, "fig0_p0.wboit.accum") == 0);
+            has_graph_weight_texture =
+                has_graph_weight_texture ||
+                (label != NULL && strcmp(label, "fig0_p0.wboit.weight") == 0);
         }
         else if (command->type == DVZ_DRP2_COMMAND_CREATE_RENDER_PIPELINE)
         {
@@ -4421,6 +4430,8 @@ int test_scene_visual_alpha_mode_emits_wboit_drp2(TstSuite* suite, TstItem* item
 
     AT(has_accum_texture);
     AT(has_weight_texture);
+    AT(has_graph_accum_texture);
+    AT(has_graph_weight_texture);
     AT(has_accum_pipeline);
     AT(has_resolve_pipeline);
     AT(has_opaque_depth_pipeline);
