@@ -68,6 +68,7 @@ struct SceneWboitTargets
     uint64_t color_id;
     uint64_t accum_id;
     uint64_t weight_id;
+    uint64_t depth_id;
     uint64_t sampler_id;
     uint64_t resolve_bgl_id;
     uint64_t resolve_bg_id;
@@ -89,6 +90,149 @@ struct SceneWboitTargets
 static bool _alpha_mode_is_standard_blend(DvzAlphaMode mode)
 {
     return mode == DVZ_ALPHA_BLENDED;
+}
+
+
+/**
+ * Create the volume bind group layout used by slice/raymarch shaders.
+ *
+ * @param stream destination DRP2 command stream.
+ * @param id bind group layout id.
+ * @return whether the command was appended.
+ */
+static bool _create_volume_bind_group_layout(DvzDrp2CommandStream* stream, uint64_t id)
+{
+    ANN(stream);
+
+    DvzDrp2BindGroupLayoutEntry entries[3] = {
+        {
+            .binding = 0,
+            .binding_type = DVZ_DRP2_BINDING_TYPE_SAMPLED_TEXTURE,
+            .visibility = DVZ_DRP2_SHADER_STAGE_FRAGMENT,
+            .access = DVZ_DRP2_BINDING_ACCESS_READ,
+        },
+        {
+            .binding = 1,
+            .binding_type = DVZ_DRP2_BINDING_TYPE_SAMPLER,
+            .visibility = DVZ_DRP2_SHADER_STAGE_FRAGMENT,
+            .access = DVZ_DRP2_BINDING_ACCESS_READ,
+        },
+        {
+            .binding = 2,
+            .binding_type = DVZ_DRP2_BINDING_TYPE_UNIFORM_BUFFER,
+            .visibility = DVZ_DRP2_SHADER_STAGE_FRAGMENT,
+            .access = DVZ_DRP2_BINDING_ACCESS_READ,
+        },
+    };
+    return dvz_drp2_stream_create_bind_group_layout_entries(stream, id, 3, entries);
+}
+
+
+/**
+ * Convert retained volume state into the shader uniform payload.
+ *
+ * @param state retained volume state.
+ * @param out output uniform payload.
+ */
+static void _volume_uniform_from_state(
+    const DvzVolumeState* state, DvzSceneVolumeUniform* out)
+{
+    ANN(state);
+    ANN(out);
+
+    dvz_memset(out, sizeof(DvzSceneVolumeUniform), 0, sizeof(DvzSceneVolumeUniform));
+    for (uint32_t i = 0; i < 3; i++)
+    {
+        out->clip_min[i] = state->clipping_enabled ? (float)state->clip_min[i] : 0.0f;
+        out->clip_max[i] = state->clipping_enabled ? (float)state->clip_max[i] : 1.0f;
+    }
+    out->clip_max[3] = 1.0f;
+    out->params[0] = state->opacity;
+    out->params[1] = state->clipping_enabled ? 1.0f : 0.0f;
+}
+
+
+/**
+ * Resolve the volume texture/sampler/parameter bind group for one visual.
+ *
+ * @param emitter frame-plan emitter carrying persistent object ids and uniform cache.
+ * @param stream destination DRP2 command stream.
+ * @param bgl_id volume bind group layout id.
+ * @param sampler_id shared volume sampler id.
+ * @param bind volume bind descriptor.
+ * @param out_bg_id resolved bind group id.
+ * @return whether the bind group was resolved.
+ */
+static bool _resolve_volume_bind_group(
+    DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, uint64_t bgl_id,
+    uint64_t sampler_id, const DvzSceneVisualBindDesc* bind, uint64_t* out_bg_id)
+{
+    ANN(emitter);
+    ANN(stream);
+    ANN(bind);
+    ANN(out_bg_id);
+    *out_bg_id = 0;
+
+    bool is_new = false;
+    char params_buf_key[64], params_slot_key[64], bg_key[64];
+    dvz_snprintf(
+        params_buf_key, sizeof(params_buf_key), "_buf_volume_params_%" PRIu64,
+        bind->volume_texture_id);
+    dvz_snprintf(
+        params_slot_key, sizeof(params_slot_key), "_slot_volume_params_%" PRIu64,
+        bind->volume_texture_id);
+    dvz_snprintf(bg_key, sizeof(bg_key), "_bg_volume_%" PRIu64, bind->volume_texture_id);
+
+    uint32_t usage = DVZ_DRP2_BUFFER_USAGE_UNIFORM | DVZ_DRP2_BUFFER_USAGE_MAP_WRITE |
+                     DVZ_DRP2_BUFFER_USAGE_COPY_DST;
+    uint64_t params_buf_id = _obj_id(emitter, params_buf_key, &is_new);
+    if (params_buf_id == 0)
+        return false;
+    if (is_new && !dvz_drp2_stream_create_buffer(
+                      stream, params_buf_id, sizeof(DvzSceneVolumeUniform), usage))
+        return false;
+
+    uint64_t bg_id = _obj_id(emitter, bg_key, &is_new);
+    if (bg_id == 0)
+        return false;
+    if (is_new)
+    {
+        DvzDrp2BindGroupEntry entries[3] = {
+            {
+                .binding = 0,
+                .binding_type = DVZ_DRP2_BINDING_TYPE_SAMPLED_TEXTURE,
+                .resource_kind = DVZ_DRP2_BINDING_RESOURCE_TEXTURE,
+                .resource_id = bind->volume_texture_id,
+            },
+            {
+                .binding = 1,
+                .binding_type = DVZ_DRP2_BINDING_TYPE_SAMPLER,
+                .resource_kind = DVZ_DRP2_BINDING_RESOURCE_SAMPLER,
+                .resource_id = sampler_id,
+            },
+            {
+                .binding = 2,
+                .binding_type = DVZ_DRP2_BINDING_TYPE_UNIFORM_BUFFER,
+                .resource_kind = DVZ_DRP2_BINDING_RESOURCE_BUFFER,
+                .resource_id = params_buf_id,
+                .offset = 0,
+                .size = sizeof(DvzSceneVolumeUniform),
+            },
+        };
+        if (!dvz_drp2_stream_create_bind_group_entries(stream, bg_id, bgl_id, 3, entries))
+            return false;
+    }
+
+    DvzSceneVolumeUniform* slot = _emitter_volume_slot(emitter, params_slot_key);
+    if (slot == NULL)
+        return false;
+    _volume_uniform_from_state(&bind->volume_state, slot);
+    if (!dvz_drp2_stream_write_buffer_bytes(
+            stream, params_buf_id, 0, sizeof(DvzSceneVolumeUniform), slot))
+        return false;
+
+    *out_bg_id = bg_id;
+    return true;
 }
 
 
@@ -578,6 +722,100 @@ static uint32_t _graph_texture_usage_to_drp2(uint32_t usage_flags)
 
 
 /**
+ * Convert a graph attachment load operation to a DRP2 attachment load operation.
+ *
+ * @param op graph attachment load operation.
+ * @return DRP2 attachment load operation.
+ */
+static DvzDrp2AttachmentLoadOp _graph_load_op_to_drp2(DvzFrameGraphAttachmentLoadOp op)
+{
+    switch (op)
+    {
+    case DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_CLEAR:
+        return DVZ_DRP2_ATTACHMENT_LOAD_CLEAR;
+    case DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_LOAD:
+        return DVZ_DRP2_ATTACHMENT_LOAD_LOAD;
+    case DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_DONT_CARE:
+        return DVZ_DRP2_ATTACHMENT_LOAD_DONT_CARE;
+    default:
+        return DVZ_DRP2_ATTACHMENT_LOAD_LOAD;
+    }
+}
+
+
+
+/**
+ * Convert a graph attachment store operation to a DRP2 attachment store operation.
+ *
+ * @param op graph attachment store operation.
+ * @return DRP2 attachment store operation.
+ */
+static DvzDrp2AttachmentStoreOp _graph_store_op_to_drp2(DvzFrameGraphAttachmentStoreOp op)
+{
+    switch (op)
+    {
+    case DVZ_FRAME_GRAPH_ATTACHMENT_STORE_STORE:
+        return DVZ_DRP2_ATTACHMENT_STORE_STORE;
+    case DVZ_FRAME_GRAPH_ATTACHMENT_STORE_DONT_CARE:
+        return DVZ_DRP2_ATTACHMENT_STORE_DONT_CARE;
+    default:
+        return DVZ_DRP2_ATTACHMENT_STORE_STORE;
+    }
+}
+
+
+
+/**
+ * Apply graph color attachment load/store operations to the current DRP2 render pass command.
+ *
+ * @param stream destination DRP2 command stream.
+ * @param pass graph pass descriptor.
+ * @return whether the command was updated.
+ */
+static bool _stream_apply_graph_color_ops(
+    DvzDrp2CommandStream* stream, const DvzFrameGraphPass* pass)
+{
+    ANN(stream);
+    if (pass == NULL)
+        return true;
+    bool ok = true;
+    for (uint32_t i = 0; ok && i < pass->color_attachment_count; i++)
+    {
+        const DvzFrameGraphAttachment* attachment = &pass->color_attachments[i];
+        ok = dvz_drp2_stream_begin_render_pass_set_color_attachment_ops(
+            stream, i, _graph_load_op_to_drp2(attachment->load_op),
+            _graph_store_op_to_drp2(attachment->store_op));
+    }
+    return ok;
+}
+
+
+
+/**
+ * Apply graph depth attachment state to the current DRP2 render pass command.
+ *
+ * @param stream destination DRP2 command stream.
+ * @param pass graph pass descriptor.
+ * @param depth_id named depth texture id, or zero for no graph depth.
+ * @return whether the command was updated.
+ */
+static bool _stream_apply_graph_depth(
+    DvzDrp2CommandStream* stream, const DvzFrameGraphPass* pass, uint64_t depth_id)
+{
+    ANN(stream);
+    if (pass == NULL || !pass->has_depth_attachment || depth_id == 0)
+        return true;
+    const DvzFrameGraphAttachment* attachment = &pass->depth_attachment;
+    return dvz_drp2_stream_begin_render_pass_set_depth_texture(
+               stream, depth_id, attachment->clear_depth) &&
+           dvz_drp2_stream_begin_render_pass_set_depth_ops(
+               stream, _graph_load_op_to_drp2(attachment->load_op),
+               _graph_store_op_to_drp2(attachment->store_op));
+}
+
+
+
+/**
  * Resolve or create one WBOIT intermediate texture.
  *
  * @param emitter the persistent emitter.
@@ -655,12 +893,15 @@ static bool _emitter_prepare_wboit_targets(
         _graph_pass_by_panel_work(plan, render->u.render.panel_id, "wboit_accum");
     const DvzFrameGraphResource* accum_resource = NULL;
     const DvzFrameGraphResource* weight_resource = NULL;
+    const DvzFrameGraphResource* depth_resource = NULL;
     if (graph_pass != NULL && graph_pass->color_attachment_count >= 2)
     {
         accum_resource = _graph_resource_by_id(
             plan, graph_pass->color_attachments[0].resource_id);
         weight_resource = _graph_resource_by_id(
             plan, graph_pass->color_attachments[1].resource_id);
+        if (graph_pass->has_depth_attachment)
+            depth_resource = _graph_resource_by_id(plan, graph_pass->depth_attachment.resource_id);
     }
 
     const char* accum_resource_id = accum_resource != NULL ? accum_resource->id : accum_key;
@@ -688,6 +929,17 @@ static bool _emitter_prepare_wboit_targets(
          _wboit_resolve_intermediate_texture(
              emitter, stream, weight_resource_id, width, height, weight_format, weight_usage,
              &out->weight_id);
+    if (!ok)
+        return false;
+    if (depth_resource != NULL)
+    {
+        uint32_t depth_format = depth_resource->format != 0 ? depth_resource->format :
+                                                             VK_FORMAT_D32_SFLOAT;
+        uint32_t depth_usage = _graph_texture_usage_to_drp2(depth_resource->usage_flags);
+        ok = _wboit_resolve_intermediate_texture(
+            emitter, stream, depth_resource->id, width, height, depth_format, depth_usage,
+            &out->depth_id);
+    }
     if (!ok)
         return false;
 
@@ -1129,12 +1381,21 @@ static bool _emitter_emit_scene_wboit_renders(
 
         if (render->u.render.pass_role == DVZ_FRAME_PLAN_RENDER_PASS_OPAQUE)
         {
+            const SceneWboitTargets* targets =
+                _wboit_targets_for_panel(
+                    wboit_targets, wboit_renders, target_count, render->u.render.panel_id);
+            const DvzFrameGraphPass* graph_pass =
+                _graph_pass_by_panel_work(plan, render->u.render.panel_id, "opaque");
             uint64_t pass_id = _emitter_next_transient_id(emitter);
             bool has_draws = batch_index < batch_count && batches[batch_index].render == render;
             ok = dvz_drp2_stream_begin_render_pass_region_clear(
                      stream, pass_id, encoder_id, color_id, cr, cg, cb, ca, 0.0f, 0.0f,
                      1.0f, 1.0f, clear_final);
-            if (ok && has_draws && _scene_render_needs_depth(emitter, render))
+            ok = ok && _stream_apply_graph_color_ops(stream, graph_pass);
+            if (ok && targets != NULL)
+                ok = _stream_apply_graph_depth(stream, graph_pass, targets->depth_id);
+            if (ok && has_draws && targets != NULL && targets->depth_id == 0 &&
+                _scene_render_needs_depth(emitter, render))
                 ok = dvz_drp2_stream_begin_render_pass_set_depth(stream, 1.0f);
             if (ok && has_draws)
             {
@@ -1157,13 +1418,17 @@ static bool _emitter_emit_scene_wboit_renders(
                 break;
             }
             uint64_t pass_id = _emitter_next_transient_id(emitter);
+            const DvzFrameGraphPass* graph_pass =
+                _graph_pass_by_panel_work(plan, render->u.render.panel_id, "wboit_accum");
             ok = dvz_drp2_stream_begin_render_pass_region_clear(
                      stream, pass_id, encoder_id, targets->accum_id, 0.0f, 0.0f, 0.0f, 0.0f,
                      render->u.render.desc.x, render->u.render.desc.y,
                      render->u.render.desc.width, render->u.render.desc.height, true) &&
                  dvz_drp2_stream_begin_render_pass_add_color_attachment(
                      stream, targets->weight_id, 0.0f, 0.0f, 0.0f, 0.0f, true);
-            if (ok && _scene_render_needs_depth(emitter, render))
+            ok = ok && _stream_apply_graph_color_ops(stream, graph_pass);
+            ok = ok && _stream_apply_graph_depth(stream, graph_pass, targets->depth_id);
+            if (ok && targets->depth_id == 0 && _scene_render_needs_depth(emitter, render))
                 ok = dvz_drp2_stream_begin_render_pass_set_depth(stream, 1.0f);
             bool has_draws = batch_index < batch_count && batches[batch_index].render == render;
             if (ok && has_draws)
@@ -1188,10 +1453,13 @@ static bool _emitter_emit_scene_wboit_renders(
                 break;
             }
             uint64_t pass_id = _emitter_next_transient_id(emitter);
+            const DvzFrameGraphPass* graph_pass =
+                _graph_pass_by_panel_work(plan, render->u.render.panel_id, "wboit_resolve");
             ok = dvz_drp2_stream_begin_render_pass_region_clear(
                      stream, pass_id, encoder_id, color_id, 0.0f, 0.0f, 0.0f, 0.0f,
                      render->u.render.desc.x, render->u.render.desc.y,
                      render->u.render.desc.width, render->u.render.desc.height, false) &&
+                 _stream_apply_graph_color_ops(stream, graph_pass) &&
                  _emitter_emit_wboit_resolve(stream, render, pass_id, targets) &&
                  dvz_drp2_stream_end_render_pass(stream, pass_id);
         }
