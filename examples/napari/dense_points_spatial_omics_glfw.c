@@ -917,25 +917,31 @@ int main(int argc, char** argv)
         return 1;
     }
 
+    dvz_panel_set_background_color(panel, 0.035f, 0.040f, 0.052f, 1.0f);
+
     DvzVisual* background = _background_visual(scene, &dataset);
     if (background != NULL)
     {
         (void)dvz_panel_add_visual(
             panel, background,
             &(DvzVisualAttachDesc){
-                .z_layer = -1,
+                .z_layer = 0,
                 .controller_mode = DVZ_CONTROLLER_APPLY,
             });
     }
     dvz_visual_set_alpha_mode(points, DVZ_ALPHA_BLENDED);
-    if (dvz_panel_add_visual(panel, points, NULL) != 0)
+    if (dvz_panel_add_visual(
+            panel, points,
+            &(DvzVisualAttachDesc){
+                .z_layer = 1,
+                .controller_mode = DVZ_CONTROLLER_APPLY,
+            }) != 0)
     {
         dvz_fprintf(stderr, "dense_points: point visual attach failed\n");
         dvz_scene_destroy(scene);
         _dataset_destroy(&dataset);
         return 1;
     }
-    dvz_panel_set_background_color(panel, 0.035f, 0.040f, 0.052f, 1.0f);
 
     DenseState state = {
         .dataset = dataset,
