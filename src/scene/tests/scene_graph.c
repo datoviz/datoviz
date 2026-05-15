@@ -35,6 +35,11 @@
 #include "test_scene.h"
 #include "testing.h"
 
+#if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
+bool _dvz_drp2_runtime_vklite_download_buffer(
+    DvzDrp2Runtime* runtime, uint64_t buffer_id, uint64_t offset, uint64_t size, void* out);
+#endif
+
 
 
 
@@ -4652,6 +4657,22 @@ int test_scene_visual_alpha_mode_wboit_glsl_executes(TstSuite* suite, TstItem* i
     ANN(stream);
     AT(dvz_diagnostic_report_count(&report) == 0);
 
+    uint64_t final_target_id = 0;
+    uint32_t begin_render_pass_count = 0;
+    for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
+    {
+        const DvzDrp2Command* command = dvz_drp2_stream_get(stream, i);
+        ANN(command);
+        if (command->type == DVZ_DRP2_COMMAND_BEGIN_RENDER_PASS)
+        {
+            begin_render_pass_count++;
+            if (final_target_id == 0)
+                final_target_id = command->u.begin_render_pass.texture_id;
+        }
+    }
+    AT(begin_render_pass_count == 3);
+    AT(final_target_id != 0);
+
     DvzDrp2RuntimeConfig runtime_cfg =
         dvz_drp2_runtime_vklite_config(dvz_gpu_ctx_device(ctx), dvz_gpu_ctx_alloc(ctx));
     DvzDrp2Runtime* runtime = dvz_drp2_runtime_vklite(&runtime_cfg);
@@ -4662,6 +4683,43 @@ int test_scene_visual_alpha_mode_wboit_glsl_executes(TstSuite* suite, TstItem* i
     AT(result.code == DVZ_DRP2_VALIDATION_OK);
     AT(dvz_gpu_ctx_error_count(ctx) == 0);
 
+    const uint64_t readback_buffer_id = 9001;
+    const uint64_t encoder_id = 9002;
+    const uint64_t command_buffer_id = 9003;
+    const uint64_t submission_id = 9004;
+    const uint32_t width = 64;
+    const uint32_t height = 64;
+    const uint64_t byte_size = width * height * 4;
+    DvzDrp2CommandStream* readback = dvz_drp2_stream();
+    ANN(readback);
+    AT(dvz_drp2_stream_create_buffer(
+        readback, readback_buffer_id, byte_size,
+        DVZ_DRP2_BUFFER_USAGE_COPY_DST | DVZ_DRP2_BUFFER_USAGE_MAP_READ));
+    AT(dvz_drp2_stream_begin_command_encoder(readback, encoder_id));
+    AT(dvz_drp2_stream_copy_texture_to_buffer(
+        readback, encoder_id, final_target_id, readback_buffer_id, 0, width, height,
+        width * 4, height));
+    AT(dvz_drp2_stream_finish_command_encoder(readback, encoder_id, command_buffer_id));
+    AT(dvz_drp2_stream_queue_submit(readback, command_buffer_id, submission_id));
+
+    result = dvz_drp2_runtime_execute(runtime, readback);
+    AT(result.ok);
+    AT(result.code == DVZ_DRP2_VALIDATION_OK);
+    uint8_t pixels[64 * 64 * 4] = {0};
+    AT(_dvz_drp2_runtime_vklite_download_buffer(
+        runtime, readback_buffer_id, 0, byte_size, pixels));
+    bool has_resolved_color = false;
+    for (uint32_t i = 0; i < width * height; i++)
+    {
+        uint8_t r = pixels[4 * i + 0];
+        uint8_t g = pixels[4 * i + 1];
+        uint8_t b = pixels[4 * i + 2];
+        uint8_t a = pixels[4 * i + 3];
+        has_resolved_color = has_resolved_color || (a > 0 && (r > 0 || g > 0 || b > 0));
+    }
+    AT(has_resolved_color);
+
+    dvz_drp2_stream_destroy(readback);
     dvz_drp2_runtime_destroy(runtime);
     dvz_drp2_stream_destroy(stream);
     dvz_scene_destroy(scene);
