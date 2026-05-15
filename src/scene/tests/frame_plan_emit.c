@@ -122,7 +122,7 @@ int test_frame_plan_emit_drp2_static_render_glsl(TstSuite* suite, TstItem* item)
     char* json = dvz_drp2_stream_json(stream, "scene_static_render_glsl_from_c");
     ANN(json);
     AT(strstr(json, "\"format\": \"glsl\"") != NULL);
-    AT(strstr(json, "#version 450\\nvoid main()") != NULL);
+    AT(strstr(json, "#version 450\\nlayout(location=0)in vec3 pos;") != NULL);
     AT(strstr(json, "\"format\": \"wgsl\"") == NULL);
 
     dvz_drp2_stream_json_destroy(json);

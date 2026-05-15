@@ -83,6 +83,8 @@
       "vertex_shader_module_id": 9000,
       "fragment_shader_module_id": 9001,
       "vertex_buffer_slots": 0,
+      "vertex_buffers": [],
+      "color_targets": [{ "format": "rgba8unorm" }],
       "bind_group_layout_ids": [100]
     },
     {

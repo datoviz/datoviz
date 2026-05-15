@@ -262,7 +262,11 @@ static void _json_append_vertex_buffers(JsonBuilder* builder, const DvzDrp2Comma
     ANN(command);
 
     if (command->u.create_render_pipeline.binding_count == 0)
+    {
+        if (command->u.create_render_pipeline.vertex_buffer_slots == 0)
+            _json_append(builder, ", \"vertex_buffers\": []");
         return;
+    }
 
     _json_append(
         builder, ", \"topology\": \"%s\"",
@@ -300,6 +304,21 @@ static void _json_append_vertex_buffers(JsonBuilder* builder, const DvzDrp2Comma
         _json_append(builder, "] }");
     }
     _json_append(builder, "]");
+}
+
+
+
+/**
+ * Append the default color target metadata for a render pipeline.
+ *
+ * @param builder the JSON builder
+ * @param command the CreateRenderPipeline command
+ */
+static void _json_append_color_targets(JsonBuilder* builder, const DvzDrp2Command* command)
+{
+    ANN(builder);
+    ANN(command);
+    _json_append(builder, ", \"color_targets\": [{ \"format\": \"rgba8unorm\" }]");
 }
 
 
@@ -486,6 +505,7 @@ static void _json_append_command(JsonBuilder* builder, const DvzDrp2Command* com
             _json_append(builder, "]");
         }
         _json_append_vertex_buffers(builder, command);
+        _json_append_color_targets(builder, command);
         if (command->u.create_render_pipeline.has_depth_attachment)
         {
             _json_append(

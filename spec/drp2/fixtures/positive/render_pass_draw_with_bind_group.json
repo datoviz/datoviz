@@ -63,11 +63,20 @@
       "cmd": "CreateRenderPipeline",
       "id": 10,
       "vertex_buffer_slots": 1,
+      "vertex_buffers": [
+        {
+          "array_stride": 12,
+          "attributes": [
+            { "format": "float32x3", "offset": 0, "shader_location": 0 }
+          ]
+        }
+      ],
       "bind_group_layout_ids": [
         14
       ],
       "vertex_shader_module_id": 9000,
-      "fragment_shader_module_id": 9001
+      "fragment_shader_module_id": 9001,
+      "color_targets": [{ "format": "rgba8unorm" }]
     },
     {
       "cmd": "CreateBuffer",

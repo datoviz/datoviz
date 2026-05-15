@@ -70,9 +70,11 @@
       "cmd": "CreateRenderPipeline",
       "id": 10,
       "vertex_buffer_slots": 0,
+      "vertex_buffers": [],
       "bind_group_layout_ids": [4],
       "vertex_shader_module_id": 9000,
-      "fragment_shader_module_id": 9001
+      "fragment_shader_module_id": 9001,
+      "color_targets": [{ "format": "rgba8unorm" }]
     },
     {
       "cmd": "CreateBindGroup",

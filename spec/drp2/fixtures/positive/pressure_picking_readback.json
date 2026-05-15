@@ -61,7 +61,16 @@
       "label": "id_pipeline",
       "vertex_shader_module_id": 9000,
       "fragment_shader_module_id": 9001,
-      "vertex_buffer_slots": 1
+      "vertex_buffer_slots": 1,
+      "vertex_buffers": [
+        {
+          "array_stride": 12,
+          "attributes": [
+            { "format": "float32x3", "offset": 0, "shader_location": 0 }
+          ]
+        }
+      ],
+      "color_targets": [{ "format": "r32uint" }]
     },
     {
       "cmd": "CreateBuffer",

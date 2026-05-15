@@ -17,6 +17,8 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include <vulkan/vulkan_core.h>
+
 #include "_alloc.h"
 #include "_assertions.h"
 #include "_frame_plan_emit.h"
@@ -29,6 +31,52 @@
 /*************************************************************************************************/
 /*  Helpers                                                                                      */
 /*************************************************************************************************/
+
+/**
+ * Emit the fixture triangle pipeline with explicit portable vertex metadata.
+ *
+ * @param stream the DRP2 command stream
+ * @return whether the pipeline command was emitted
+ */
+static bool _emit_fixture_triangle_pipeline(DvzDrp2CommandStream* stream)
+{
+    ANN(stream);
+    uint32_t strides[1]   = {12};
+    uint32_t bindings[1]  = {0};
+    uint32_t locations[1] = {0};
+    uint32_t formats[1]   = {VK_FORMAT_R32G32B32_SFLOAT};
+    uint32_t offsets[1]   = {0};
+    return dvz_drp2_stream_create_render_pipeline_ex(
+        stream, DRP2_ID_PIPELINE, DRP2_ID_VERTEX_SHADER, DRP2_ID_FRAGMENT_SHADER, 1,
+        VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 1, strides, 1, bindings, locations, formats, offsets);
+}
+
+
+
+/**
+ * Return the fixture vertex shader that consumes the explicit triangle vertex layout.
+ *
+ * @return the WGSL source
+ */
+static const char* _fixture_vertex_input_wgsl(void)
+{
+    return "@vertex fn main(@location(0) position: vec3f) -> @builtin(position) vec4f { return "
+           "vec4f(position, 1.0); }";
+}
+
+
+
+/**
+ * Return the GLSL fallback that consumes the explicit triangle vertex layout.
+ *
+ * @return the GLSL source
+ */
+static const char* _fixture_vertex_input_glsl(void)
+{
+    return "#version 450\nlayout(location=0)in vec3 pos;void main(){gl_Position=vec4(pos,1.0);}";
+}
+
+
 
 /**
  * Emit DRP2 commands for an upload node.
@@ -207,13 +255,12 @@ static bool _emit_compute_assisted_render(
                state->first_compute_input_id, state->first_compute_output_id,
                state->compute_buffer_size) &&
            _emit_shader(
-               stream, DRP2_ID_VERTEX_SHADER, "VERTEX", _fixture_vertex_wgsl(),
-               _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_FIXTURE, false), cfg) &&
+               stream, DRP2_ID_VERTEX_SHADER, "VERTEX", _fixture_vertex_input_wgsl(),
+               _fixture_vertex_input_glsl(), cfg) &&
            _emit_shader(
                stream, DRP2_ID_FRAGMENT_SHADER, "FRAGMENT", _fixture_fragment_wgsl(),
                _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_FIXTURE, true), cfg) &&
-           dvz_drp2_stream_create_render_pipeline(
-               stream, DRP2_ID_PIPELINE, DRP2_ID_VERTEX_SHADER, DRP2_ID_FRAGMENT_SHADER, 1) &&
+           _emit_fixture_triangle_pipeline(stream) &&
            dvz_drp2_stream_create_texture_2d(stream, DRP2_ID_COLOR_TARGET, 4, 4) &&
            dvz_drp2_stream_begin_command_encoder(stream, DRP2_ID_ENCODER) &&
            dvz_drp2_stream_begin_compute_pass(stream, DRP2_ID_COMPUTE_PASS, DRP2_ID_ENCODER) &&
@@ -303,13 +350,12 @@ _emit_render(
         return false;
 
     return _emit_shader(
-               stream, DRP2_ID_VERTEX_SHADER, "VERTEX", _fixture_vertex_wgsl(),
-               _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_FIXTURE, false), cfg) &&
+               stream, DRP2_ID_VERTEX_SHADER, "VERTEX", _fixture_vertex_input_wgsl(),
+               _fixture_vertex_input_glsl(), cfg) &&
            _emit_shader(
                stream, DRP2_ID_FRAGMENT_SHADER, "FRAGMENT", _fixture_fragment_wgsl(),
                _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_FIXTURE, true), cfg) &&
-           dvz_drp2_stream_create_render_pipeline(
-               stream, DRP2_ID_PIPELINE, DRP2_ID_VERTEX_SHADER, DRP2_ID_FRAGMENT_SHADER, 1) &&
+           _emit_fixture_triangle_pipeline(stream) &&
            dvz_drp2_stream_create_texture_2d(stream, DRP2_ID_COLOR_TARGET, 4, 4) &&
            dvz_drp2_stream_begin_command_encoder(stream, DRP2_ID_ENCODER) &&
            dvz_drp2_stream_begin_render_pass(

@@ -74,6 +74,7 @@
       "vertex_shader_module_id": 10,
       "fragment_shader_module_id": 11,
       "vertex_buffer_slots": 0,
+      "vertex_buffers": [],
       "topology": "triangle-list",
       "cull_mode": "back",
       "front_face": "ccw",
