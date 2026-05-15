@@ -107,12 +107,13 @@ The repository already contains two low-level CUDA/Vulkan memory tests in
    buffer, exports the allocation FD with `dvz_allocator_export()`, imports that FD into CUDA with
    `cudaImportExternalMemory()`, maps a CUDA pointer with
    `cudaExternalMemoryGetMappedBuffer()`, launches a tiny CUDA kernel, and verifies the data from
-   the Vulkan allocation. This is the right starting point for the Vulkan -> CUDA/CuPy route, but it
-   is not currently registered in `src/vk/tests/test_vk.c`.
+   the Vulkan allocation. This is the canonical registered CUDA interop smoke in
+   `src/vk/tests/test_vk.c`.
 2. `test_memory_cuda_2` exercises the opposite CUDA-owned allocation -> Vulkan import direction with
    CUDA Driver virtual-memory APIs, `dvz_allocator_import_buffer()`, and an exported Vulkan timeline
-   semaphore. This test is currently registered when CUDA is enabled, but this direction remains
-   later work because it has proved less reliable as a primary architecture.
+   semaphore. This direction remains later work because it has proved less reliable as a primary
+   architecture, so the test is kept available but is no longer the default registered CUDA interop
+   smoke.
 
 The video/NVENC path also imports Vulkan-owned external image memory into CUDA in
 `src/video/encoder_backend_nvenc.c`, mapping it as a CUDA mipmapped array before conversion and
@@ -249,9 +250,8 @@ binding contract are stable.
 
 Start with narrow tests before adding Python examples:
 
-1. harden and register `test_memory_cuda_1` as the canonical Vulkan-owned buffer -> CUDA import
-   smoke, including correct FD ownership after successful CUDA import and no reliance on host-visible
-   memory as the long-term model,
+1. extend `test_memory_cuda_1` beyond the initial host-visible smoke so it no longer relies on
+   host-visible memory as the long-term model,
 2. add the same-direction external semaphore coverage: Vulkan-owned buffer exported to CUDA, CUDA
    writes on a stream, CUDA signals an imported/exported semaphore, and Vulkan waits before copying
    or drawing,

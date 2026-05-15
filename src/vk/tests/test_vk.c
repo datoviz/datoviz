@@ -133,7 +133,7 @@ int test_vk(TstSuite* suite)
 
 #if DVZ_HAS_CUDA && !DVZ_ENABLE_ASAN_IN_DEBUG && !DVZ_USING_MSAN && !DVZ_USING_TSAN
     // Skip CUDA interop tests when sanitizers that conflict with CUDA are active.
-    TEST_SIMPLE(test_memory_cuda_2);
+    TEST_SIMPLE(test_memory_cuda_1);
 #endif
 
 

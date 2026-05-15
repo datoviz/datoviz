@@ -293,14 +293,20 @@ int test_memory_cuda_1(TstSuite* suite, TstItem* tstitem)
 
 #if DVZ_HAS_CUDA
     cudaError_t cerr;
+    CUdevice cu_device = 0;
     int device_count = 0;
     cerr = cudaGetDeviceCount(&device_count);
     if (cerr != cudaSuccess || device_count == 0)
     {
-        log_error("No CUDA devices found: %s", cudaGetErrorString(cerr));
-        return -1;
+        log_warn(
+            "test_memory_cuda_1 skipped: no CUDA devices found (%s)", cudaGetErrorString(cerr));
+        return 0;
     }
     log_info("CUDA reports %d device(s)", device_count);
+    if (cuda_check(cuInit(0), "cuInit"))
+        return 1;
+    if (cuda_check(cuDeviceGet(&cu_device, 0), "cuDeviceGet"))
+        return 1;
 
     const VkExternalMemoryHandleTypeFlagBits handle_type =
         VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_FD_BIT;
@@ -315,6 +321,7 @@ int test_memory_cuda_1(TstSuite* suite, TstItem* tstitem)
     DvzVma* allocator = NULL;
     DvzAllocation* alloc = NULL;
     VkBuffer vk_buffer = VK_NULL_HANDLE;
+    int fd = -1;
 
     /******************* Vulkan setup *******************/
     DvzInstanceConfig icfg = dvz_instance_default_config();
@@ -329,15 +336,23 @@ int test_memory_cuda_1(TstSuite* suite, TstItem* tstitem)
         goto cleanup_vulkan;
     }
 
+    uint32_t vk_gpu_index = UINT32_MAX;
+    if (!_cuda_import_find_vulkan_gpu(instance, cu_device, &vk_gpu_index))
+    {
+        log_warn("test_memory_cuda_1 skipped: no Vulkan physical device matches CUDA device 0");
+        out = 0;
+        goto cleanup_vulkan;
+    }
+
     // Query the queues.
     DvzQueueCaps qc = {0};
-    AT(dvz_instance_gpu_queue_caps(instance, 0, &qc));
+    AT(dvz_instance_gpu_queue_caps(instance, vk_gpu_index, &qc));
 
     // Initialize a device.
     DvzQueues queues = {0};
     dvz_queues(&qc, &queues);
     DvzDeviceConfig dcfg = dvz_device_default_config(instance);
-    dvz_device_config_set_gpu_index(&dcfg, 0);
+    dvz_device_config_set_gpu_index(&dcfg, vk_gpu_index);
     for (uint32_t i = 0; i < queues.queue_count; i++)
     {
         DvzQueue* queue = &queues.queues[i];
@@ -380,7 +395,6 @@ int test_memory_cuda_1(TstSuite* suite, TstItem* tstitem)
     log_trace("data copied");
 
     /******************* Export memory FD *******************/
-    int fd = -1;
     dvz_allocator_export(allocator, alloc, &fd);
     if (fd < 0)
     {
@@ -405,6 +419,8 @@ int test_memory_cuda_1(TstSuite* suite, TstItem* tstitem)
         log_error("cudaImportExternalMemory failed: %s", cudaGetErrorString(cerr));
         goto cleanup_fd;
     }
+    // CUDA assumes ownership of the opaque FD after successful import on Linux.
+    fd = -1;
 
     void* cuda_ptr = NULL;
     struct cudaExternalMemoryBufferDesc buf_desc = {0};
@@ -471,7 +487,10 @@ int test_memory_cuda_1(TstSuite* suite, TstItem* tstitem)
 cleanup_cuda_mem:
     cudaDestroyExternalMemory(cuda_mem);
 cleanup_fd:
-    close(fd);
+#if OS_UNIX
+    if (fd >= 0)
+        close(fd);
+#endif
 cleanup_vulkan:
     if (alloc != NULL)
     {
