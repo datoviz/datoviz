@@ -33,6 +33,7 @@ The default stream is `streams/indexed_quad_wgsl.json`. It renders a four-vertex
 The earlier smoke streams remain available:
 
 ```text
+http://localhost:8765/examples/webgpu/?stream=scene_point_panzoom_wgsl
 http://localhost:8765/examples/webgpu/?stream=hello_triangle_wgsl
 http://localhost:8765/examples/webgpu/?stream=triangle_vertex_buffer_wgsl
 http://localhost:8765/examples/webgpu/?stream=triangle_offscreen_readback_wgsl
@@ -84,7 +85,15 @@ Manual checks:
 - Depth stream: the smaller green triangle must appear in front of the larger red triangle where
   they overlap.
 - Scene points stream: the canvas should show five circular points emitted as instanced quads.
+- Scene points pan/zoom stream: drag the canvas to pan, use the wheel to zoom around the cursor,
+  and double-click to reset the view.
 - Offscreen readback stream: the status line should include `readback nonzero=` with a nonzero value.
 - No-buffer and vertex-buffer streams should still render a single RGB triangle.
 
-The next useful slice is uniform-buffer support in bind groups.
+The main page keeps the WebGPU runtime resources alive after loading a stream. The live pan/zoom
+example mutates only the scene MVP and viewport uniform buffers before replaying the DRP2 frame
+command slice, so the browser path still exercises the scene-generated DRP2 contract instead of a
+separate renderer API.
+
+The next useful slice is portable metadata for interactive uniform targets, so demos do not need
+PoC-local knowledge of scene-emitted buffer ids.

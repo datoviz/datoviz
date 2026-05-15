@@ -101,6 +101,9 @@ The PoC supports the fixture subset of:
 These are compatibility choices in the browser runner for ad hoc demo streams and older command
 forms. The fixture dashboard requires explicit bind-group layout and render-pipeline metadata.
 
+- The main demo page can keep persistent WebGPU resources for a loaded stream and replay only the
+  frame command slice after the first command encoder. The strict fixture dashboard still executes
+  each stream as a one-shot command list.
 - `texture_id: 0` means the current browser canvas texture.
 - Pipeline color target format `"canvas"` means `navigator.gpu.getPreferredCanvasFormat()`.
 - Texture dimensions `"canvas"` for width/height mean the current canvas pixel extent.
@@ -113,6 +116,9 @@ forms. The fixture dashboard requires explicit bind-group layout and render-pipe
   because WebGPU requires copy row pitch to be a multiple of 256 bytes.
 - Buffer binding offsets that are valid in DRP2 but not aligned for WebGPU are bound from offset 0
   in the PoC so fixture command paths can still execute.
+- The live pan/zoom dropdown entry reuses the scene-generated point stream and updates the MVP and
+  viewport uniform buffers by their current scene-emitted ids. This is demo metadata, not a stable
+  DRP2 contract.
 - Bind-group layout `visibility`, storage `access`, render-pipeline `vertex_buffers`, and
   render-pipeline `color_targets` are required by the fixture dashboard. Standalone demo streams
   still use DRP2 defaults and shader-source inference as compatibility fallbacks.
