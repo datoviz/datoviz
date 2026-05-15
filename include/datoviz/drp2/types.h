@@ -29,6 +29,7 @@
 
 #define DVZ_DRP2_MAX_BIND_GROUPS 4
 #define DVZ_DRP2_MAX_BINDINGS 16
+#define DVZ_DRP2_MAX_COLOR_ATTACHMENTS 4
 
 typedef struct DvzDrp2CommandStream DvzDrp2CommandStream;
 typedef struct DvzDrp2Command DvzDrp2Command;
@@ -39,6 +40,7 @@ typedef struct DvzBuffer DvzBuffer;
 typedef struct DvzDrp2BindGroupLayoutEntry DvzDrp2BindGroupLayoutEntry;
 typedef struct DvzDrp2BindGroupEntry DvzDrp2BindGroupEntry;
 typedef struct DvzDrp2ExternalBufferDesc DvzDrp2ExternalBufferDesc;
+typedef struct DvzDrp2ColorAttachment DvzDrp2ColorAttachment;
 
 
 
@@ -73,4 +75,12 @@ struct DvzDrp2ExternalBufferDesc
     DvzBuffer* buffer;
     uint64_t size;
     uint32_t usage;
+};
+
+
+struct DvzDrp2ColorAttachment
+{
+    uint64_t texture_id;
+    bool clear;
+    float clear_color[4];
 };

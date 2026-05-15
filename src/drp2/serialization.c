@@ -693,16 +693,37 @@ static void _json_append_command(JsonBuilder* builder, const DvzDrp2Command* com
         _json_append(
             builder,
             "{ \"cmd\": \"%s\", \"id\": %" PRIu64 ", \"encoder_id\": %" PRIu64
-            ", \"color_attachments\": [ { \"texture_id\": %" PRIu64
-            ", \"load_op\": \"%s\", \"store_op\": \"store\", "
-            "\"clear_value\": { \"r\": %g, \"g\": %g, \"b\": %g, \"a\": %g } } ]",
+            ", \"color_attachments\": [ ",
             _command_name(command->type), command->u.begin_render_pass.id,
-            command->u.begin_render_pass.encoder_id, command->u.begin_render_pass.texture_id,
-            command->u.begin_render_pass.clear ? "clear" : "load",
-            (double)command->u.begin_render_pass.clear_color[0],
-            (double)command->u.begin_render_pass.clear_color[1],
-            (double)command->u.begin_render_pass.clear_color[2],
-            (double)command->u.begin_render_pass.clear_color[3]);
+            command->u.begin_render_pass.encoder_id);
+        uint32_t color_count = command->u.begin_render_pass.color_attachment_count;
+        if (color_count == 0)
+            color_count = 1;
+        for (uint32_t i = 0; i < color_count; i++)
+        {
+            const DvzDrp2ColorAttachment* attachment =
+                command->u.begin_render_pass.color_attachment_count > 0
+                    ? &command->u.begin_render_pass.color_attachments[i]
+                    : NULL;
+            uint64_t texture_id =
+                attachment != NULL ? attachment->texture_id :
+                                     command->u.begin_render_pass.texture_id;
+            bool clear =
+                attachment != NULL ? attachment->clear : command->u.begin_render_pass.clear;
+            const float* clear_color =
+                attachment != NULL ? attachment->clear_color :
+                                     command->u.begin_render_pass.clear_color;
+            if (i > 0)
+                _json_append(builder, ", ");
+            _json_append(
+                builder,
+                "{ \"texture_id\": %" PRIu64
+                ", \"load_op\": \"%s\", \"store_op\": \"store\", "
+                "\"clear_value\": { \"r\": %g, \"g\": %g, \"b\": %g, \"a\": %g } }",
+                texture_id, clear ? "clear" : "load", (double)clear_color[0],
+                (double)clear_color[1], (double)clear_color[2], (double)clear_color[3]);
+        }
+        _json_append(builder, " ]");
         if (command->u.begin_render_pass.has_depth_attachment)
         {
             _json_append(

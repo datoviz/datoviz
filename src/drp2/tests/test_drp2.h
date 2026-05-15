@@ -197,6 +197,8 @@ int test_drp2_runtime_vklite_samples_then_copies_texture(TstSuite* suite, TstIte
 
 int test_drp2_begin_render_pass_clear_color_stored(TstSuite* suite, TstItem* item);
 
+int test_drp2_begin_render_pass_multi_color_attachments(TstSuite* suite, TstItem* item);
+
 int test_drp2_stream_json_preserves_clear_color(TstSuite* suite, TstItem* item);
 
 int test_drp2_write_buffer_bytes_large_json_roundtrip(TstSuite* suite, TstItem* item);

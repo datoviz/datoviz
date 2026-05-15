@@ -813,6 +813,23 @@ DVZ_EXPORT bool dvz_drp2_stream_begin_render_pass_region_clear(
 
 
 /**
+ * Add a color attachment to the most recently appended BeginRenderPass command.
+ *
+ * @param stream the command stream
+ * @param texture_id the color attachment texture id
+ * @param r clear color red channel
+ * @param g clear color green channel
+ * @param b clear color blue channel
+ * @param a clear color alpha channel
+ * @param clear whether to clear this attachment at render-pass begin
+ * @return whether the most recent command was a BeginRenderPass and was updated
+ */
+DVZ_EXPORT bool dvz_drp2_stream_begin_render_pass_add_color_attachment(
+    DvzDrp2CommandStream* stream, uint64_t texture_id, float r, float g, float b, float a,
+    bool clear);
+
+
+/**
  * Attach a transient depth attachment request to the most recently appended BeginRenderPass
  * command.
  *

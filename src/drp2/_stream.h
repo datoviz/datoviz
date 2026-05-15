@@ -175,6 +175,8 @@ struct DvzDrp2Command
             uint64_t id;
             uint64_t encoder_id;
             uint64_t texture_id;
+            uint32_t color_attachment_count;
+            DvzDrp2ColorAttachment color_attachments[DVZ_DRP2_MAX_COLOR_ATTACHMENTS];
             bool has_depth_attachment;
             float clear_depth;
             float clear_color[4]; /* RGBA clear values; {0,0,0,0} = transparent black */

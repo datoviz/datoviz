@@ -117,6 +117,9 @@ DvzDrp2ValidationResult _vklite_begin_render_pass(
 {
     ANN(state);
     ANN(command);
+    if (command->u.begin_render_pass.color_attachment_count > 1)
+        return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+
     Drp2VkliteObject* target = _vklite_find(state, command->u.begin_render_pass.texture_id);
     VkImageView target_view = _vklite_object_image_view(target);
     if (target == NULL || target->images == NULL || target_view == VK_NULL_HANDLE)

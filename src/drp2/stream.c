@@ -1237,6 +1237,13 @@ bool dvz_drp2_stream_begin_render_pass_region_clear(
     command->u.begin_render_pass.id = id;
     command->u.begin_render_pass.encoder_id = encoder_id;
     command->u.begin_render_pass.texture_id = texture_id;
+    command->u.begin_render_pass.color_attachment_count = 1;
+    command->u.begin_render_pass.color_attachments[0].texture_id = texture_id;
+    command->u.begin_render_pass.color_attachments[0].clear = clear;
+    command->u.begin_render_pass.color_attachments[0].clear_color[0] = r;
+    command->u.begin_render_pass.color_attachments[0].clear_color[1] = g;
+    command->u.begin_render_pass.color_attachments[0].clear_color[2] = b;
+    command->u.begin_render_pass.color_attachments[0].clear_color[3] = a;
     command->u.begin_render_pass.has_depth_attachment = false;
     command->u.begin_render_pass.clear_depth = 1.0f;
     command->u.begin_render_pass.clear_color[0] = r;
@@ -1248,6 +1255,43 @@ bool dvz_drp2_stream_begin_render_pass_region_clear(
     command->u.begin_render_pass.viewport[2] = width;
     command->u.begin_render_pass.viewport[3] = height;
     command->u.begin_render_pass.clear = clear;
+    return true;
+}
+
+
+
+/**
+ * Add a color attachment to the most recently appended BeginRenderPass command.
+ *
+ * @param stream the command stream
+ * @param texture_id the color attachment texture id
+ * @param r clear color red channel
+ * @param g clear color green channel
+ * @param b clear color blue channel
+ * @param a clear color alpha channel
+ * @param clear whether to clear this attachment at render-pass begin
+ * @return whether the most recent command was updated
+ */
+bool dvz_drp2_stream_begin_render_pass_add_color_attachment(
+    DvzDrp2CommandStream* stream, uint64_t texture_id, float r, float g, float b, float a,
+    bool clear)
+{
+    ANN(stream);
+    if (stream->count == 0)
+        return false;
+    DvzDrp2Command* command = &stream->commands[stream->count - 1];
+    if (command->type != DVZ_DRP2_COMMAND_BEGIN_RENDER_PASS)
+        return false;
+    uint32_t idx = command->u.begin_render_pass.color_attachment_count;
+    if (idx >= DVZ_DRP2_MAX_COLOR_ATTACHMENTS)
+        return false;
+    command->u.begin_render_pass.color_attachments[idx].texture_id = texture_id;
+    command->u.begin_render_pass.color_attachments[idx].clear = clear;
+    command->u.begin_render_pass.color_attachments[idx].clear_color[0] = r;
+    command->u.begin_render_pass.color_attachments[idx].clear_color[1] = g;
+    command->u.begin_render_pass.color_attachments[idx].clear_color[2] = b;
+    command->u.begin_render_pass.color_attachments[idx].clear_color[3] = a;
+    command->u.begin_render_pass.color_attachment_count++;
     return true;
 }
 
