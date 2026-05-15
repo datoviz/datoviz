@@ -309,6 +309,7 @@ static DvzVisual* _scene_alloc_visual(DvzScene* scene, DvzVisualType type, uint3
     visual->flags = flags;
     visual->visible = true;
     visual->z_layer = 0;
+    visual->alpha_mode = DVZ_ALPHA_OPAQUE;
     _primitive_shading_default(&visual->primitive_shading);
     return visual;
 }
@@ -849,6 +850,43 @@ void dvz_visual_set_visible(DvzVisual* visual, bool visible)
 {
     ANN(visual);
     visual->visible = visible;
+}
+
+
+
+/**
+ * Set the visual alpha handling mode.
+ *
+ * @param visual the visual
+ * @param mode the alpha handling mode
+ * @return 0 on success, -1 on error
+ */
+int dvz_visual_set_alpha_mode(DvzVisual* visual, DvzAlphaMode mode)
+{
+    ANN(visual);
+    if (!_scene_visual_mutation_allowed(visual->scene, "mutate scene visual alpha mode"))
+        return -1;
+    if (mode < DVZ_ALPHA_OPAQUE || mode > DVZ_ALPHA_MASK)
+    {
+        log_error("invalid visual alpha mode %d", (int)mode);
+        return -1;
+    }
+    visual->alpha_mode = mode;
+    return 0;
+}
+
+
+
+/**
+ * Return the visual alpha handling mode.
+ *
+ * @param visual the visual
+ * @return the alpha handling mode
+ */
+DvzAlphaMode dvz_visual_alpha_mode(const DvzVisual* visual)
+{
+    ANN(visual);
+    return visual->alpha_mode;
 }
 
 

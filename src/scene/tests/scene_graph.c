@@ -3794,6 +3794,37 @@ int test_scene_render_pass_scope_excludes_resource_commands(TstSuite* suite, Tst
 
 
 /**
+ * Verify visual alpha mode storage and validation.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_visual_alpha_mode(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    AT(scene != NULL);
+    DvzVisual* visual = dvz_mesh(scene, 0);
+    AT(visual != NULL);
+
+    AT(dvz_visual_alpha_mode(visual) == DVZ_ALPHA_OPAQUE);
+    AT(dvz_visual_set_alpha_mode(visual, DVZ_ALPHA_BLENDED) == 0);
+    AT(dvz_visual_alpha_mode(visual) == DVZ_ALPHA_BLENDED);
+    AT(dvz_visual_set_alpha_mode(visual, DVZ_ALPHA_MASK) == 0);
+    AT(dvz_visual_alpha_mode(visual) == DVZ_ALPHA_MASK);
+    AT_EXPECTED_ERROR_STRICT(
+        suite, dvz_visual_set_alpha_mode(visual, (DvzAlphaMode)(DVZ_ALPHA_MASK + 1)) == -1);
+    AT(dvz_visual_alpha_mode(visual) == DVZ_ALPHA_MASK);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+/**
  * Register scene graph tests.
  *
  * @param suite the active test suite
@@ -3830,6 +3861,7 @@ int test_scene_graph(TstSuite* suite)
     TEST_SIMPLE(test_scene_multi_panel_glsl_emits_viewport_scissor_commands);
     TEST_SIMPLE(test_scene_rejects_cross_scene_visual);
     TEST_SIMPLE(test_scene_rejects_unsupported_point_attribute);
+    TEST_SIMPLE(test_scene_visual_alpha_mode);
     TEST_SIMPLE(test_scene_visual_attr_source_and_mutability_metadata);
     TEST_SIMPLE(test_scene_point_external_position_buffer_emits_no_upload);
     TEST_SIMPLE(test_scene_point_rejects_texcoords_attribute);

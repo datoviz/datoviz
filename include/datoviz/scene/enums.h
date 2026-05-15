@@ -90,6 +90,16 @@ typedef enum
 
 typedef enum
 {
+    DVZ_ALPHA_OPAQUE = 0,
+    DVZ_ALPHA_BLENDED,
+    DVZ_ALPHA_BLENDED_EXACT,
+    DVZ_ALPHA_MASK,
+} DvzAlphaMode;
+
+
+
+typedef enum
+{
     DVZ_SCENE_TARGET_NONE = 0,
     DVZ_SCENE_TARGET_OBJECT,
     DVZ_SCENE_TARGET_ITEM,

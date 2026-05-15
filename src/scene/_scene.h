@@ -471,6 +471,7 @@ struct DvzVisual
     uint32_t     flags;
     bool         visible;
     int32_t      z_layer;
+    DvzAlphaMode alpha_mode;
 
     DvzPrimitiveTopology topology; /* used by DVZ_VISUAL_TYPE_PRIMITIVE */
     DvzVisualBinding bindings[DVZ_SCENE_MAX_VISUAL_BINDINGS];

@@ -305,6 +305,29 @@ DVZ_EXPORT void dvz_visual_set_visible(DvzVisual* visual, bool visible);
 
 
 /**
+ * Set the visual alpha handling mode.
+ *
+ * This controls which transparency path the scene planner should use for the visual. The active
+ * first slice stores the mode for later frame-plan pass assignment; rendering remains opaque until
+ * the WBOIT pass path is implemented.
+ *
+ * @param visual the visual
+ * @param mode the alpha handling mode
+ * @return 0 on success, -1 on error
+ */
+DVZ_EXPORT int dvz_visual_set_alpha_mode(DvzVisual* visual, DvzAlphaMode mode);
+
+
+/**
+ * Return the visual alpha handling mode.
+ *
+ * @param visual the visual
+ * @return the alpha handling mode
+ */
+DVZ_EXPORT DvzAlphaMode dvz_visual_alpha_mode(const DvzVisual* visual);
+
+
+/**
  * Declare the semantic source for a visual attribute.
  *
  * This metadata is used by scene planning and future external-buffer lowering. The active dense

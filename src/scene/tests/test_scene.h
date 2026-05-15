@@ -291,6 +291,8 @@ int test_scene_shared_field_mixed_full_and_partial_uploads(TstSuite* suite, TstI
 
 int test_scene_rejects_unsupported_point_attribute(TstSuite* suite, TstItem* item);
 
+int test_scene_visual_alpha_mode(TstSuite* suite, TstItem* item);
+
 int test_scene_visual_attr_source_and_mutability_metadata(TstSuite* suite, TstItem* item);
 
 int test_scene_point_external_position_buffer_emits_no_upload(TstSuite* suite, TstItem* item);
