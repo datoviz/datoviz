@@ -119,6 +119,9 @@ struct DvzGuiPanel
     uint32_t requested_height;
     bool has_frame;
     bool texture_dirty;
+    bool input_capturing;
+    int input_button;
+    DvzPointerButton input_dvz_button;
     DvzGuiPanel* next;
 };
 
@@ -422,9 +425,6 @@ static void _gui_panel_forward_input(
 
     ImGuiIO& io = ImGui::GetIO();
     const bool hovered = ImGui::IsItemHovered();
-    const bool active = ImGui::IsItemActive();
-    if (!hovered && !active)
-        return;
 
     float x = io.MousePos.x - image_min.x;
     float y = io.MousePos.y - image_min.y;
@@ -432,19 +432,6 @@ static void _gui_panel_forward_input(
     const float window_x = size.x;
     const float window_y = size.y;
     const int mods = 0;
-
-    if (hovered)
-    {
-        dvz_pointer_emit_position(
-            router, DVZ_POINTER_EVENT_MOVE, x, y, window_x, window_y,
-            DVZ_POINTER_BUTTON_NONE, mods, 1.0f, now, NULL);
-        if (io.MouseWheel != 0.0f || io.MouseWheelH != 0.0f)
-        {
-            dvz_pointer_emit_wheel(
-                router, x, y, window_x, window_y, io.MouseWheelH, io.MouseWheel, mods, 1.0f,
-                now, NULL);
-        }
-    }
 
     const DvzPointerButton buttons[3] = {
         DVZ_POINTER_BUTTON_LEFT,
@@ -455,16 +442,38 @@ static void _gui_panel_forward_input(
     {
         if (ImGui::IsMouseClicked(i) && hovered)
         {
+            panel->input_capturing = true;
+            panel->input_button = i;
+            panel->input_dvz_button = buttons[i];
             dvz_pointer_emit_position(
                 router, DVZ_POINTER_EVENT_PRESS, x, y, window_x, window_y, buttons[i], mods,
                 1.0f, now, NULL);
         }
-        if (ImGui::IsMouseReleased(i))
-        {
-            dvz_pointer_emit_position(
-                router, DVZ_POINTER_EVENT_RELEASE, x, y, window_x, window_y, buttons[i], mods,
-                1.0f, now, NULL);
-        }
+    }
+
+    if (!hovered && !panel->input_capturing)
+        return;
+
+    dvz_pointer_emit_position(
+        router, DVZ_POINTER_EVENT_MOVE, x, y, window_x, window_y, DVZ_POINTER_BUTTON_NONE, mods,
+        1.0f, now, NULL);
+    if (hovered && (io.MouseWheel != 0.0f || io.MouseWheelH != 0.0f))
+    {
+        dvz_pointer_emit_wheel(
+            router, x, y, window_x, window_y, io.MouseWheelH, io.MouseWheel, mods, 1.0f, now,
+            NULL);
+    }
+
+    if (
+        panel->input_capturing &&
+        (ImGui::IsMouseReleased(panel->input_button) || !io.MouseDown[panel->input_button]))
+    {
+        dvz_pointer_emit_position(
+            router, DVZ_POINTER_EVENT_RELEASE, x, y, window_x, window_y,
+            panel->input_dvz_button, mods, 1.0f, now, NULL);
+        panel->input_capturing = false;
+        panel->input_button = 0;
+        panel->input_dvz_button = DVZ_POINTER_BUTTON_NONE;
     }
 }
 
