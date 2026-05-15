@@ -103,6 +103,7 @@ struct DvzFramePlanEmitConfig
     uint32_t target_width;
     uint32_t target_height;
     bool fullscreen_triangle;
+    uint64_t runtime_resource_scope_id; /* Optional scope for mutable runtime intermediates. */
     float clear_color[4]; /* RGBA clear color for the render pass [0,1]; default opaque black */
 };
 

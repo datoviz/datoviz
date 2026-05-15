@@ -1425,11 +1425,40 @@ static bool _runtime_resolve_texture_2d(
 
 
 /**
+ * Build a runtime resource key scoped to the current frame target when requested.
+ *
+ * @param cfg optional emission configuration.
+ * @param base_key unscoped runtime resource key.
+ * @param out_key output key buffer.
+ * @param out_size output key buffer size.
+ */
+static void _runtime_scope_key(
+    const DvzFramePlanEmitConfig* cfg, const char* base_key, char* out_key, size_t out_size)
+{
+    ANN(base_key);
+    ANN(out_key);
+
+    if (out_size == 0)
+        return;
+    if (cfg != NULL && cfg->runtime_resource_scope_id != 0)
+    {
+        dvz_snprintf(
+            out_key, out_size, "%s_scope_%016" PRIx64, base_key,
+            cfg->runtime_resource_scope_id);
+        return;
+    }
+    dvz_strlcpy(out_key, base_key, out_size);
+}
+
+
+
+/**
  * Resolve or create one graph-declared 2D texture resource.
  *
  * @param emitter the persistent emitter.
  * @param stream destination DRP2 command stream.
  * @param plan the FramePlan carrying access declarations.
+ * @param cfg optional emission configuration with runtime resource scope.
  * @param resource graph resource descriptor.
  * @param width texture width in pixels.
  * @param height texture height in pixels.
@@ -1439,16 +1468,18 @@ static bool _runtime_resolve_texture_2d(
  */
 static bool _graph_resolve_texture_2d(
     DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, const DvzFramePlan* plan,
-    const DvzFrameGraphResource* resource, uint32_t width, uint32_t height,
-    uint32_t fallback_format, uint64_t* out_id)
+    const DvzFramePlanEmitConfig* cfg, const DvzFrameGraphResource* resource, uint32_t width,
+    uint32_t height, uint32_t fallback_format, uint64_t* out_id)
 {
     ANN(resource);
     uint32_t format = resource->format != 0 ? resource->format : fallback_format;
     uint32_t usage = _graph_texture_usage_to_drp2(resource->usage_flags);
     if (plan != NULL)
         usage |= _graph_declared_texture_usage_to_drp2(plan, resource->id);
-    return _runtime_resolve_texture_2d(
-        emitter, stream, resource->id, width, height, format, usage, out_id);
+
+    char key[DVZ_SCENE_LABEL_SIZE];
+    _runtime_scope_key(cfg, resource->id, key, sizeof(key));
+    return _runtime_resolve_texture_2d(emitter, stream, key, width, height, format, usage, out_id);
 }
 
 
@@ -1491,7 +1522,8 @@ static bool _graph_resolve_render_depth(
     uint32_t height = 0;
     _emit_target_extent(cfg, &width, &height);
     return _graph_resolve_texture_2d(
-        emitter, stream, plan, depth_resource, width, height, VK_FORMAT_D32_SFLOAT, out_depth_id);
+        emitter, stream, plan, cfg, depth_resource, width, height, VK_FORMAT_D32_SFLOAT,
+        out_depth_id);
 }
 
 
@@ -1527,8 +1559,12 @@ static bool _emitter_prepare_wboit_targets(
 
     char accum_key[DVZ_SCENE_LABEL_SIZE];
     char weight_key[DVZ_SCENE_LABEL_SIZE];
+    char scoped_accum_key[DVZ_SCENE_LABEL_SIZE];
+    char scoped_weight_key[DVZ_SCENE_LABEL_SIZE];
     dvz_snprintf(accum_key, sizeof(accum_key), "_wboit_accum_%s", render->u.render.panel_id);
     dvz_snprintf(weight_key, sizeof(weight_key), "_wboit_weight_%s", render->u.render.panel_id);
+    _runtime_scope_key(cfg, accum_key, scoped_accum_key, sizeof(scoped_accum_key));
+    _runtime_scope_key(cfg, weight_key, scoped_weight_key, sizeof(scoped_weight_key));
 
     const DvzFrameGraphPass* graph_pass = _graph_pass_for_render(plan, render);
     const DvzFrameGraphResource* accum_resource = NULL;
@@ -1549,24 +1585,24 @@ static bool _emitter_prepare_wboit_targets(
 
     ok = ok && (accum_resource != NULL
                     ? _graph_resolve_texture_2d(
-                          emitter, stream, plan, accum_resource, width, height,
+                          emitter, stream, plan, cfg, accum_resource, width, height,
                           VK_FORMAT_R16G16B16A16_SFLOAT, &out->accum_id)
                     : _runtime_resolve_texture_2d(
-                          emitter, stream, accum_key, width, height,
+                          emitter, stream, scoped_accum_key, width, height,
                           VK_FORMAT_R16G16B16A16_SFLOAT, fallback_usage, &out->accum_id));
     ok = ok && (weight_resource != NULL
                     ? _graph_resolve_texture_2d(
-                          emitter, stream, plan, weight_resource, width, height,
+                          emitter, stream, plan, cfg, weight_resource, width, height,
                           VK_FORMAT_R16_SFLOAT, &out->weight_id)
                     : _runtime_resolve_texture_2d(
-                          emitter, stream, weight_key, width, height, VK_FORMAT_R16_SFLOAT,
+                          emitter, stream, scoped_weight_key, width, height, VK_FORMAT_R16_SFLOAT,
                           fallback_usage, &out->weight_id));
     if (!ok)
         return false;
     if (depth_resource != NULL)
     {
         ok = _graph_resolve_texture_2d(
-            emitter, stream, plan, depth_resource, width, height, VK_FORMAT_D32_SFLOAT,
+            emitter, stream, plan, cfg, depth_resource, width, height, VK_FORMAT_D32_SFLOAT,
             &out->depth_id);
     }
     if (!ok)
@@ -1817,7 +1853,7 @@ static bool _emitter_prepare_depth_peel_targets(
 
         uint64_t texture_id = 0;
         ok = _graph_resolve_texture_2d(
-            emitter, stream, plan, resource, width, height,
+            emitter, stream, plan, cfg, resource, width, height,
             (resource->usage_flags & DVZ_FRAME_GRAPH_RESOURCE_USAGE_DEPTH_ATTACHMENT) != 0
                 ? VK_FORMAT_D32_SFLOAT
                 : VK_FORMAT_R16G16B16A16_SFLOAT,
@@ -1874,9 +1910,14 @@ static bool _emitter_prepare_depth_peel_targets(
         _graph_pass_by_panel_work(plan, render->u.render.panel_id, "depth_peel_composite");
     ok = ok && composite_pass != NULL;
     if (ok)
+    {
+        char composite_bg_key[DVZ_SCENE_LABEL_SIZE];
+        _runtime_scope_key(
+            cfg, "_bg_depth_peel_composite", composite_bg_key, sizeof(composite_bg_key));
         ok = _depth_peel_resolve_sampled_bind_group(
-            emitter, stream, composite_pass, &out->graph, "_bg_depth_peel_composite",
+            emitter, stream, composite_pass, &out->graph, composite_bg_key,
             out->sampled_bgl_id, out->sampler_id, &out->composite_bg_id);
+    }
 
     const char* fmt = _shader_format_tag(cfg);
     char vs_key[40];

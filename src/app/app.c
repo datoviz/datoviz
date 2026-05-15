@@ -1450,6 +1450,7 @@ static void _app_draw(DvzCanvas* canvas, const DvzStreamFrame* frame, void* user
     cfg.color_target_id       = win->target_id;
     cfg.target_width          = frame->extent.width;
     cfg.target_height         = frame->extent.height;
+    cfg.runtime_resource_scope_id = (uint64_t)(uintptr_t)frame->command_buffer;
     cfg.clear_color[0]        = 0.05f;
     cfg.clear_color[1]        = 0.05f;
     cfg.clear_color[2]        = 0.08f;
