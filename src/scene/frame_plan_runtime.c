@@ -519,7 +519,8 @@ static bool _emitter_prepare_render_multi(
             DvzSceneVisualPipelineDesc pipeline = {0};
             if (!_scene_visual_pipeline_desc(
                     &desc, render->u.render.picking, pass_has_depth_attachment,
-                    wboit_accumulation, alpha_mode, render->u.render.controller_modes[i],
+                    wboit_accumulation || depth_peel_pass, alpha_mode,
+                    render->u.render.controller_modes[i],
                     &pipeline))
             {
                 ok = false;

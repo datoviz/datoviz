@@ -1438,7 +1438,7 @@ static void _app_draw(DvzCanvas* canvas, const DvzStreamFrame* frame, void* user
     DvzCapabilitySnapshot caps;
     dvz_capability_snapshot_default(&caps);
     caps.shader_format_glsl = true;
-    caps.max_color_attachments = 2;
+    caps.max_color_attachments = 3;
     caps.render_target_format_rgba16float = true;
     caps.render_target_format_r16float = true;
     caps.supports_render_target_sampling = true;
