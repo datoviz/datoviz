@@ -4085,6 +4085,130 @@ int test_scene_visual_alpha_mode_requires_wboit_capabilities(TstSuite* suite, Ts
 
 
 /**
+ * Verify blended primitive visuals lower to an explicit WBOIT DRP2 command shape.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_visual_alpha_mode_emits_wboit_drp2(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    AT(scene != NULL);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    AT(figure != NULL);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    AT(panel != NULL);
+
+    DvzVisual* opaque = dvz_primitive(scene, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 0);
+    DvzVisual* transparent = dvz_primitive(scene, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 0);
+    AT(opaque != NULL);
+    AT(transparent != NULL);
+
+    float positions[3][3] = {
+        {-0.5f, -0.5f, 0.0f},
+        {0.5f, -0.5f, 0.0f},
+        {0.0f, 0.5f, 0.0f},
+    };
+    DvzColor opaque_colors[3] = {
+        {255, 255, 255, 255}, {255, 255, 255, 255}, {255, 255, 255, 255}};
+    DvzColor transparent_colors[3] = {
+        {255, 0, 0, 128}, {0, 255, 0, 128}, {0, 0, 255, 128}};
+
+    AT(dvz_visual_set_data(opaque, "position", positions, 3) == 0);
+    AT(dvz_visual_set_data(opaque, "color", opaque_colors, 3) == 0);
+    AT(dvz_visual_set_data(transparent, "position", positions, 3) == 0);
+    AT(dvz_visual_set_data(transparent, "color", transparent_colors, 3) == 0);
+    AT(dvz_visual_set_alpha_mode(transparent, DVZ_ALPHA_BLENDED) == 0);
+    AT(dvz_panel_add_visual(panel, opaque, NULL) == 0);
+    AT(dvz_panel_add_visual(panel, transparent, NULL) == 0);
+
+    DvzCapabilitySnapshot caps;
+    dvz_capability_snapshot_default(&caps);
+    caps.max_color_attachments = 2;
+    caps.render_target_format_rgba16float = true;
+    caps.render_target_format_r16float = true;
+    caps.supports_render_target_sampling = true;
+    caps.supports_color_blending = true;
+
+    DvzDiagnosticReport report;
+    dvz_diagnostic_report_init(&report);
+    DvzFramePlanEmitConfig cfg = dvz_frame_plan_emit_config();
+    cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
+    cfg.target_width = 64;
+    cfg.target_height = 64;
+
+    DvzDrp2CommandStream* stream = dvz_figure_emit_ex(figure, &caps, &report, &cfg);
+    ANN(stream);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+    DvzDrp2ValidationResult validation = dvz_drp2_validate_stream(stream);
+    AT(validation.ok);
+
+    bool has_accum_texture = false;
+    bool has_weight_texture = false;
+    bool has_accum_pipeline = false;
+    bool has_resolve_pipeline = false;
+    bool has_accum_pass = false;
+    bool has_resolve_bind_group = false;
+    uint32_t begin_pass_count = 0;
+
+    for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
+    {
+        const DvzDrp2Command* command = dvz_drp2_stream_get(stream, i);
+        ANN(command);
+        if (command->type == DVZ_DRP2_COMMAND_CREATE_TEXTURE)
+        {
+            has_accum_texture =
+                has_accum_texture ||
+                command->u.create_texture.format == VK_FORMAT_R16G16B16A16_SFLOAT;
+            has_weight_texture =
+                has_weight_texture || command->u.create_texture.format == VK_FORMAT_R16_SFLOAT;
+        }
+        else if (command->type == DVZ_DRP2_COMMAND_CREATE_RENDER_PIPELINE)
+        {
+            has_accum_pipeline =
+                has_accum_pipeline ||
+                (command->u.create_render_pipeline.color_target_count == 2 &&
+                 command->u.create_render_pipeline.color_targets[0].blend_enabled &&
+                 command->u.create_render_pipeline.color_targets[1].blend_enabled);
+            has_resolve_pipeline =
+                has_resolve_pipeline ||
+                (command->u.create_render_pipeline.color_target_count == 1 &&
+                 command->u.create_render_pipeline.color_targets[0].blend_enabled &&
+                 command->u.create_render_pipeline.color_targets[0].src_color_blend_factor ==
+                     VK_BLEND_FACTOR_SRC_ALPHA);
+        }
+        else if (command->type == DVZ_DRP2_COMMAND_BEGIN_RENDER_PASS)
+        {
+            begin_pass_count++;
+            has_accum_pass =
+                has_accum_pass || command->u.begin_render_pass.color_attachment_count == 2;
+        }
+        else if (command->type == DVZ_DRP2_COMMAND_CREATE_BIND_GROUP)
+        {
+            has_resolve_bind_group =
+                has_resolve_bind_group || command->u.create_bind_group.entry_count == 3;
+        }
+    }
+
+    AT(has_accum_texture);
+    AT(has_weight_texture);
+    AT(has_accum_pipeline);
+    AT(has_resolve_pipeline);
+    AT(has_accum_pass);
+    AT(has_resolve_bind_group);
+    AT(begin_pass_count == 3);
+
+    dvz_drp2_stream_destroy(stream);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+/**
  * Register scene graph tests.
  *
  * @param suite the active test suite
@@ -4124,6 +4248,7 @@ int test_scene_graph(TstSuite* suite)
     TEST_SIMPLE(test_scene_visual_alpha_mode);
     TEST_SIMPLE(test_scene_visual_alpha_mode_splits_frame_plan_passes);
     TEST_SIMPLE(test_scene_visual_alpha_mode_requires_wboit_capabilities);
+    TEST_SIMPLE(test_scene_visual_alpha_mode_emits_wboit_drp2);
     TEST_SIMPLE(test_scene_visual_attr_source_and_mutability_metadata);
     TEST_SIMPLE(test_scene_point_external_position_buffer_emits_no_upload);
     TEST_SIMPLE(test_scene_point_external_position_buffer_executes);

@@ -157,11 +157,13 @@ bool _scene_visual_desc_from_render(
     DvzSceneVisualDesc* out, const char** error);
 
 bool _scene_visual_shader_desc(
-    const DvzSceneVisualDesc* visual, bool picking, const char* format_tag,
+    const DvzSceneVisualDesc* visual, bool picking, bool wboit_accumulation,
+    const char* format_tag,
     DvzSceneVisualShaderDesc* out);
 
 bool _scene_visual_pipeline_desc(
     const DvzSceneVisualDesc* visual, bool picking, bool pass_needs_depth,
+    bool wboit_accumulation,
     DvzSceneVisualPipelineDesc* out);
 
 bool _scene_visual_bind_desc(

@@ -773,7 +773,8 @@ bool _scene_visual_desc_from_render(
  * @return whether a shader descriptor was resolved
  */
 bool _scene_visual_shader_desc(
-    const DvzSceneVisualDesc* visual, bool picking, const char* format_tag,
+    const DvzSceneVisualDesc* visual, bool picking, bool wboit_accumulation,
+    const char* format_tag,
     DvzSceneVisualShaderDesc* out)
 {
     ANN(visual);
@@ -823,6 +824,19 @@ bool _scene_visual_shader_desc(
         return true;
 
     case DVZ_SCENE_VISUAL_DESC_PRIMITIVE:
+        if (wboit_accumulation)
+        {
+            dvz_snprintf(out->vertex_key, sizeof(out->vertex_key), "_vs_wboit_accum%s", format_tag);
+            dvz_snprintf(
+                out->fragment_key, sizeof(out->fragment_key), "_fs_wboit_accum%s", format_tag);
+            dvz_snprintf(
+                out->pipeline_key, sizeof(out->pipeline_key), "_pipe_wboit_accum_t%u_n%u%s",
+                visual->topology, visual->has_normal ? 1u : 0u, format_tag);
+            out->vertex_glsl = _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_WBOIT_ACCUM, false);
+            out->fragment_glsl =
+                _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_WBOIT_ACCUM, true);
+            return true;
+        }
         if (visual->has_normal)
         {
             dvz_snprintf(out->vertex_key, sizeof(out->vertex_key), "_vs_prim_lit%s", format_tag);
@@ -883,6 +897,7 @@ bool _scene_visual_shader_desc(
  */
 bool _scene_visual_pipeline_desc(
     const DvzSceneVisualDesc* visual, bool picking, bool pass_needs_depth,
+    bool wboit_accumulation,
     DvzSceneVisualPipelineDesc* out)
 {
     ANN(visual);
@@ -939,9 +954,10 @@ bool _scene_visual_pipeline_desc(
         out->needs_shading_layout = visual->has_normal;
         if (pass_needs_depth)
         {
-            out->depth_write_enabled = visual->has_normal;
+            out->depth_write_enabled = visual->has_normal && !wboit_accumulation;
             out->depth_compare_op =
-                visual->has_normal ? VK_COMPARE_OP_LESS_OR_EQUAL : VK_COMPARE_OP_ALWAYS;
+                (visual->has_normal || wboit_accumulation) ? VK_COMPARE_OP_LESS_OR_EQUAL :
+                                                             VK_COMPARE_OP_ALWAYS;
         }
         return true;
 

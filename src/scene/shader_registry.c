@@ -199,6 +199,25 @@
     "layout(location=0)in vec2 fragUV;\n"                                                       \
     "layout(location=0)out vec4 outColor;\n"                                                    \
     "void main(){outColor=texture(tex,fragUV);}\n"
+#define DRP2_WBOIT_ACCUM_FRAGMENT_GLSL                                                          \
+    "#version 450\n"                                                                            \
+    "layout(location=0)in vec4 fragColor;\n"                                                    \
+    "layout(location=0)out vec4 outAccum;\n"                                                     \
+    "layout(location=1)out float outWeight;\n"                                                   \
+    "void main(){float a=clamp(fragColor.a,0.0,1.0);"                                          \
+    "outAccum=vec4(fragColor.rgb*a,a);outWeight=a;}\n"
+#define DRP2_WBOIT_RESOLVE_FRAGMENT_GLSL                                                        \
+    "#version 450\n"                                                                            \
+    "layout(set=0,binding=0)uniform texture2D accumTex;\n"                                      \
+    "layout(set=0,binding=1)uniform texture2D weightTex;\n"                                     \
+    "layout(set=0,binding=2)uniform sampler samp;\n"                                            \
+    "layout(location=0)out vec4 outColor;\n"                                                     \
+    "void main(){vec2 uv=gl_FragCoord.xy/vec2(textureSize(accumTex,0));"                        \
+    "vec4 accum=texture(sampler2D(accumTex,samp),uv);"                                          \
+    "float weight=texture(sampler2D(weightTex,samp),uv).r;"                                     \
+    "float alpha=clamp(accum.a,0.0,1.0);"                                                       \
+    "vec3 rgb=weight>1e-5?accum.rgb/max(weight,1e-5):vec3(0.0);"                               \
+    "outColor=vec4(rgb,alpha);}\n"
 
 
 
@@ -354,6 +373,10 @@ const char* _builtin_shader_glsl(DvzSceneBuiltinShader shader, bool fragment)
         return fragment ? DRP2_PRIMITIVE_LIT_FRAGMENT_GLSL : DRP2_PRIMITIVE_LIT_VERTEX_GLSL;
     case DVZ_SCENE_BUILTIN_SHADER_IMAGE:
         return fragment ? DRP2_IMAGE_FRAGMENT_GLSL : DRP2_IMAGE_VERTEX_GLSL;
+    case DVZ_SCENE_BUILTIN_SHADER_WBOIT_ACCUM:
+        return fragment ? DRP2_WBOIT_ACCUM_FRAGMENT_GLSL : DRP2_PRIMITIVE_VERTEX_GLSL;
+    case DVZ_SCENE_BUILTIN_SHADER_WBOIT_RESOLVE:
+        return fragment ? DRP2_WBOIT_RESOLVE_FRAGMENT_GLSL : DRP2_FULLSCREEN_VERTEX_GLSL;
     default:
         return NULL;
     }
