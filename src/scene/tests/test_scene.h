@@ -26,6 +26,16 @@
 
 int test_scene_panzoom_arcball(TstSuite* suite);
 
+int test_scene_animation(TstSuite* suite);
+
+int test_scene_animation_offline_timer_every_frame(TstSuite* suite, TstItem* item);
+
+int test_scene_animation_timer_period_and_stop(TstSuite* suite, TstItem* item);
+
+int test_scene_animation_realtime_delta_clamp(TstSuite* suite, TstItem* item);
+
+int test_scene_animation_destroy_reuses_slot(TstSuite* suite, TstItem* item);
+
 int test_scene_frame_plan(TstSuite* suite);
 
 int test_scene_frame_plan_emit(TstSuite* suite);
