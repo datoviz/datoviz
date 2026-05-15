@@ -14,6 +14,11 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
+#if defined(DVZ_HAS_GLFW) && DVZ_HAS_GLFW
+#define GLFW_INCLUDE_VULKAN
+#include <GLFW/glfw3.h>
+#endif
+
 #include <math.h>
 #include <string.h>
 
@@ -22,6 +27,7 @@
 #include "datoviz/app.h"
 #include "datoviz/canvas.h"
 #include "datoviz/scene.h"
+#include "datoviz/window/backend.h"
 #include "helpers.h"
 #include "test_scene.h"
 #include "testing.h"
@@ -86,6 +92,48 @@ static void _app_request_frame_probe_callback(DvzAppWindow* win, void* user_data
     probe->calls++;
     probe->last_window = win;
 }
+
+
+
+#if defined(DVZ_HAS_GLFW) && DVZ_HAS_GLFW
+/**
+ * Return an external-surface description for a GLFW-hosted app test.
+ *
+ * @param instance Vulkan instance used to create the surface
+ * @param surface borrowed Vulkan surface handle
+ * @param width framebuffer width in pixels
+ * @param height framebuffer height in pixels
+ * @return external surface description
+ */
+static DvzWindowExternalSurfaceInfo _app_glfw_surface_info(
+    VkInstance instance, VkSurfaceKHR surface, uint32_t width, uint32_t height)
+{
+    DvzWindowExternalSurfaceInfo info = {0};
+    info.instance = instance;
+    info.surface = surface;
+    info.extent.width = width;
+    info.extent.height = height;
+    info.scale_x = 1.0f;
+    info.scale_y = 1.0f;
+    info.owned_by_datoviz = false;
+    return info;
+}
+
+
+
+/**
+ * Return a NULL external-surface description for hosted release tests.
+ *
+ * @return external surface description with no live surface
+ */
+static DvzWindowExternalSurfaceInfo _app_null_surface_info(void)
+{
+    DvzWindowExternalSurfaceInfo info = {0};
+    info.scale_x = 1.0f;
+    info.scale_y = 1.0f;
+    return info;
+}
+#endif
 
 
 
@@ -337,6 +385,107 @@ int test_app_offscreen_render_enabled_gate(TstSuite* suite, TstItem* item)
     dvz_scene_destroy(scene);
     return 0;
 }
+
+
+#if defined(DVZ_HAS_GLFW) && DVZ_HAS_GLFW
+int test_app_external_surface_release_waits(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    if (!_scene_vklite_runtime_available())
+        return 0;
+
+    if (!dvz_window_glfw_init())
+    {
+        log_warn("test_app_external_surface_release_waits skipped: GLFW could not initialize");
+        return 0;
+    }
+
+    uint32_t extension_count = 0;
+    const char** extensions = glfwGetRequiredInstanceExtensions(&extension_count);
+    if (extension_count == 0 || extensions == NULL)
+    {
+        log_warn(
+            "test_app_external_surface_release_waits skipped: GLFW returned no Vulkan extensions");
+        glfwTerminate();
+        return 0;
+    }
+
+    DvzFigure* figure = NULL;
+    DvzScene* scene = _app_timer_test_scene(&figure);
+    AT(scene != NULL);
+    ANN(figure);
+
+    DvzAppConfig app_cfg = dvz_app_config();
+    app_cfg.instance_extension_count = extension_count;
+    app_cfg.instance_extensions = extensions;
+    app_cfg.enable_canvas_extensions = true;
+    app_cfg.enable_glfw_extensions = false;
+    DvzApp* app = dvz_app_with_config(scene, &app_cfg);
+    if (app == NULL)
+    {
+        log_warn("test_app_external_surface_release_waits skipped: GPU context creation failed");
+        dvz_scene_destroy(scene);
+        glfwTerminate();
+        return 0;
+    }
+
+    VkInstance instance = dvz_app_vk_instance(app);
+    AT(instance != VK_NULL_HANDLE);
+
+    glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+    glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
+    glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
+    GLFWwindow* glfw_window =
+        glfwCreateWindow(64, 64, "test_app_external_surface_release_waits", NULL, NULL);
+    if (glfw_window == NULL)
+    {
+        log_warn("test_app_external_surface_release_waits skipped: GLFW window creation failed");
+        dvz_app_destroy(app);
+        dvz_scene_destroy(scene);
+        glfwTerminate();
+        return 0;
+    }
+
+    VkSurfaceKHR surface = VK_NULL_HANDLE;
+    VkResult surface_res = glfwCreateWindowSurface(instance, glfw_window, NULL, &surface);
+    if (surface_res != VK_SUCCESS || surface == VK_NULL_HANDLE)
+    {
+        log_warn(
+            "test_app_external_surface_release_waits skipped: surface creation failed (%d)",
+            (int)surface_res);
+        glfwDestroyWindow(glfw_window);
+        dvz_app_destroy(app);
+        dvz_scene_destroy(scene);
+        glfwTerminate();
+        return 0;
+    }
+
+    DvzWindowExternalSurfaceInfo surface_info =
+        _app_glfw_surface_info(instance, surface, 64, 64);
+    DvzAppWindow* win = dvz_app_window_external_surface(app, figure, &surface_info);
+    AT(win != NULL);
+
+    AppRequestFrameProbe request_probe = {0};
+    dvz_app_window_set_request_frame_callback(win, _app_request_frame_probe_callback, &request_probe);
+    AT(dvz_app_window_render_once(win) == DVZ_CANVAS_FRAME_READY);
+
+    dvz_app_window_set_request_frame_callback(win, NULL, NULL);
+    DvzWindowExternalSurfaceInfo null_info = _app_null_surface_info();
+    AT(dvz_app_window_update_external_surface(win, &null_info) == 0);
+    AT(dvz_app_window_render_once(win) == DVZ_CANVAS_FRAME_WAIT_SURFACE);
+    AT(dvz_app_window_render_once(win) == DVZ_CANVAS_FRAME_WAIT_SURFACE);
+    AT(dvz_app_render_once(app) == DVZ_CANVAS_FRAME_WAIT_SURFACE);
+
+    vkDestroySurfaceKHR(instance, surface, NULL);
+    glfwDestroyWindow(glfw_window);
+    dvz_app_destroy(app);
+    dvz_scene_destroy(scene);
+    glfwTerminate();
+    return 0;
+}
+#endif
 
 
 int test_app_offscreen_panel_three_visuals_all_drawn(TstSuite* suite, TstItem* item)
@@ -1810,6 +1959,9 @@ int test_scene_app(TstSuite* suite)
     TEST_SIMPLE(test_app_offscreen_timer_advances_in_app_run);
     TEST_SIMPLE(test_app_offscreen_timer_advances_in_render_once);
     TEST_SIMPLE(test_app_offscreen_render_enabled_gate);
+#if defined(DVZ_HAS_GLFW) && DVZ_HAS_GLFW
+    TEST_SIMPLE(test_app_external_surface_release_waits);
+#endif
     TEST_SIMPLE(test_app_offscreen_panel_three_visuals_all_drawn);
     TEST_SIMPLE(test_app_offscreen_has_nonblank_pixels);
     TEST_SIMPLE(test_app_offscreen_image_has_nonblank_pixels);

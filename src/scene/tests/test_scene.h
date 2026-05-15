@@ -183,6 +183,10 @@ int test_app_offscreen_timer_advances_in_render_once(TstSuite* suite, TstItem* i
 
 int test_app_offscreen_render_enabled_gate(TstSuite* suite, TstItem* item);
 
+#if defined(DVZ_HAS_GLFW) && DVZ_HAS_GLFW
+int test_app_external_surface_release_waits(TstSuite* suite, TstItem* item);
+#endif
+
 int test_app_offscreen_lit_primitive_depth_orders_overlap(TstSuite* suite, TstItem* item);
 
 int test_app_offscreen_mesh_renders_nonblank(TstSuite* suite, TstItem* item);
