@@ -4382,6 +4382,8 @@ int test_scene_visual_alpha_mode_emits_wboit_drp2(TstSuite* suite, TstItem* item
     bool has_graph_accum_usage = false;
     bool has_graph_weight_usage = false;
     bool has_graph_depth_usage = false;
+    uint64_t graph_accum_texture_id = 0;
+    uint64_t graph_weight_texture_id = 0;
     bool has_accum_pipeline = false;
     bool has_resolve_pipeline = false;
     bool has_opaque_depth_pipeline = false;
@@ -4396,6 +4398,7 @@ int test_scene_visual_alpha_mode_emits_wboit_drp2(TstSuite* suite, TstItem* item
     uint64_t begin_pass_depth_textures[3] = {0};
     DvzDrp2AttachmentLoadOp begin_pass_depth_loads[3] = {0};
     DvzDrp2AttachmentAccess begin_pass_depth_access[3] = {0};
+    uint64_t begin_pass_second_attachment_textures[3] = {0};
     bool begin_pass_second_attachment_clears[3] = {0};
 
     for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
@@ -4417,9 +4420,13 @@ int test_scene_visual_alpha_mode_emits_wboit_drp2(TstSuite* suite, TstItem* item
             has_graph_accum_texture =
                 has_graph_accum_texture ||
                 (label != NULL && strcmp(label, "fig0_p0.wboit.accum") == 0);
+            if (label != NULL && strcmp(label, "fig0_p0.wboit.accum") == 0)
+                graph_accum_texture_id = command->u.create_texture.id;
             has_graph_weight_texture =
                 has_graph_weight_texture ||
                 (label != NULL && strcmp(label, "fig0_p0.wboit.weight") == 0);
+            if (label != NULL && strcmp(label, "fig0_p0.wboit.weight") == 0)
+                graph_weight_texture_id = command->u.create_texture.id;
             has_graph_accum_usage =
                 has_graph_accum_usage ||
                 (label != NULL && strcmp(label, "fig0_p0.wboit.accum") == 0 &&
@@ -4489,6 +4496,8 @@ int test_scene_visual_alpha_mode_emits_wboit_drp2(TstSuite* suite, TstItem* item
                     command->u.begin_render_pass.depth_access;
                 if (command->u.begin_render_pass.color_attachment_count > 1)
                 {
+                    begin_pass_second_attachment_textures[begin_pass_count] =
+                        command->u.begin_render_pass.color_attachments[1].texture_id;
                     begin_pass_second_attachment_clears[begin_pass_count] =
                         command->u.begin_render_pass.color_attachments[1].clear;
                 }
@@ -4509,6 +4518,8 @@ int test_scene_visual_alpha_mode_emits_wboit_drp2(TstSuite* suite, TstItem* item
     AT(has_named_depth_texture);
     AT(has_graph_accum_texture);
     AT(has_graph_weight_texture);
+    AT(graph_accum_texture_id != 0);
+    AT(graph_weight_texture_id != 0);
     AT(has_graph_accum_usage);
     AT(has_graph_weight_usage);
     AT(has_graph_depth_usage);
@@ -4522,6 +4533,10 @@ int test_scene_visual_alpha_mode_emits_wboit_drp2(TstSuite* suite, TstItem* item
     AT(begin_pass_color_counts[0] == 1);
     AT(begin_pass_color_counts[1] == 2);
     AT(begin_pass_color_counts[2] == 1);
+    AT(begin_pass_textures[1] == graph_accum_texture_id);
+    AT(begin_pass_second_attachment_textures[1] == graph_weight_texture_id);
+    AT(begin_pass_textures[1] != begin_pass_textures[0]);
+    AT(begin_pass_textures[1] != begin_pass_textures[2]);
     AT(begin_pass_clears[0]);
     AT(begin_pass_clears[1]);
     AT(begin_pass_depths[0]);

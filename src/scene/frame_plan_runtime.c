@@ -1120,6 +1120,38 @@ static bool _stream_apply_graph_depth(
 
 
 /**
+ * Return the runtime texture id declared by one graph color attachment.
+ *
+ * @param pass graph pass descriptor, or NULL.
+ * @param attachment_index color attachment index.
+ * @param final_color_id runtime id of the final render target.
+ * @param targets optional WBOIT runtime targets for the panel.
+ * @param fallback_id fallback runtime id when no graph declaration is available.
+ * @return runtime texture id for the graph color attachment.
+ */
+static uint64_t _graph_color_attachment_texture_id(
+    const DvzFrameGraphPass* pass, uint32_t attachment_index, uint64_t final_color_id,
+    const SceneWboitTargets* targets, uint64_t fallback_id)
+{
+    if (pass == NULL || attachment_index >= pass->color_attachment_count)
+        return fallback_id;
+
+    const char* resource_id = pass->color_attachments[attachment_index].resource_id;
+    if (strcmp(resource_id, "rt") == 0)
+        return final_color_id;
+    if (targets != NULL)
+    {
+        if (strstr(resource_id, ".wboit.accum") != NULL)
+            return targets->accum_id;
+        if (strstr(resource_id, ".wboit.weight") != NULL)
+            return targets->weight_id;
+    }
+    return fallback_id;
+}
+
+
+
+/**
  * Resolve or create one runtime 2D texture.
  *
  * @param emitter the persistent emitter.
@@ -1830,11 +1862,13 @@ static bool _emitter_emit_scene_wboit_renders(
                     wboit_targets, wboit_renders, target_count, render->u.render.panel_id);
             const DvzFrameGraphPass* graph_pass =
                 ordered_graph_pass != NULL ? ordered_graph_pass : _graph_pass_for_render(plan, render);
+            uint64_t target_id =
+                _graph_color_attachment_texture_id(graph_pass, 0, color_id, targets, color_id);
             uint64_t pass_id = _emitter_next_transient_id(emitter);
             const SceneRenderBatch* batch = _render_batch_for_node(batches, batch_count, render);
             bool has_draws = batch != NULL;
             ok = dvz_drp2_stream_begin_render_pass_region_clear(
-                     stream, pass_id, encoder_id, color_id, cr, cg, cb, ca, 0.0f, 0.0f,
+                     stream, pass_id, encoder_id, target_id, cr, cg, cb, ca, 0.0f, 0.0f,
                      1.0f, 1.0f, clear_final);
             ok = ok && _stream_apply_graph_color_ops(stream, graph_pass);
             if (ok && targets != NULL)
@@ -1863,12 +1897,16 @@ static bool _emitter_emit_scene_wboit_renders(
             uint64_t pass_id = _emitter_next_transient_id(emitter);
             const DvzFrameGraphPass* graph_pass =
                 ordered_graph_pass != NULL ? ordered_graph_pass : _graph_pass_for_render(plan, render);
+            uint64_t accum_id = _graph_color_attachment_texture_id(
+                graph_pass, 0, color_id, targets, targets->accum_id);
+            uint64_t weight_id = _graph_color_attachment_texture_id(
+                graph_pass, 1, color_id, targets, targets->weight_id);
             ok = dvz_drp2_stream_begin_render_pass_region_clear(
-                     stream, pass_id, encoder_id, targets->accum_id, 0.0f, 0.0f, 0.0f, 0.0f,
+                     stream, pass_id, encoder_id, accum_id, 0.0f, 0.0f, 0.0f, 0.0f,
                      render->u.render.desc.x, render->u.render.desc.y,
                      render->u.render.desc.width, render->u.render.desc.height, true) &&
                  dvz_drp2_stream_begin_render_pass_add_color_attachment(
-                     stream, targets->weight_id, 0.0f, 0.0f, 0.0f, 0.0f, true);
+                     stream, weight_id, 0.0f, 0.0f, 0.0f, 0.0f, true);
             ok = ok && _stream_apply_graph_color_ops(stream, graph_pass);
             ok = ok && _stream_apply_graph_depth(stream, graph_pass, targets->depth_id);
             if (ok && targets->depth_id == 0 && _scene_render_needs_depth(emitter, render))
@@ -1897,8 +1935,10 @@ static bool _emitter_emit_scene_wboit_renders(
             uint64_t pass_id = _emitter_next_transient_id(emitter);
             const DvzFrameGraphPass* graph_pass =
                 ordered_graph_pass != NULL ? ordered_graph_pass : _graph_pass_for_render(plan, render);
+            uint64_t target_id =
+                _graph_color_attachment_texture_id(graph_pass, 0, color_id, targets, color_id);
             ok = dvz_drp2_stream_begin_render_pass_region_clear(
-                stream, pass_id, encoder_id, color_id, cr, cg, cb, ca,
+                stream, pass_id, encoder_id, target_id, cr, cg, cb, ca,
                 render->u.render.desc.x, render->u.render.desc.y, render->u.render.desc.width,
                 render->u.render.desc.height, false);
             ok = ok && _stream_apply_graph_color_ops(stream, graph_pass);
@@ -1928,8 +1968,10 @@ static bool _emitter_emit_scene_wboit_renders(
             uint64_t pass_id = _emitter_next_transient_id(emitter);
             const DvzFrameGraphPass* graph_pass =
                 ordered_graph_pass != NULL ? ordered_graph_pass : _graph_pass_for_render(plan, render);
+            uint64_t target_id =
+                _graph_color_attachment_texture_id(graph_pass, 0, color_id, targets, color_id);
             ok = dvz_drp2_stream_begin_render_pass_region_clear(
-                     stream, pass_id, encoder_id, color_id, 0.0f, 0.0f, 0.0f, 0.0f,
+                     stream, pass_id, encoder_id, target_id, 0.0f, 0.0f, 0.0f, 0.0f,
                      render->u.render.desc.x, render->u.render.desc.y,
                      render->u.render.desc.width, render->u.render.desc.height, false) &&
                  _stream_apply_graph_color_ops(stream, graph_pass) &&
