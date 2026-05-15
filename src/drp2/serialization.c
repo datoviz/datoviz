@@ -339,6 +339,41 @@ static void _json_append_vertex_buffers(JsonBuilder* builder, const DvzDrp2Comma
 
 
 /**
+ * Append a DRP2 color write mask as a channel-name array.
+ *
+ * @param builder the JSON builder
+ * @param color_write_mask the internal Vulkan color component bitmask
+ */
+static void _json_append_color_write_mask(JsonBuilder* builder, uint32_t color_write_mask)
+{
+    ANN(builder);
+    uint32_t mask = color_write_mask == 0 ? 0xFu : color_write_mask;
+    bool first = true;
+
+    _json_append(builder, "[");
+    if ((mask & VK_COLOR_COMPONENT_R_BIT) != 0)
+    {
+        _json_append(builder, "\"red\"");
+        first = false;
+    }
+    if ((mask & VK_COLOR_COMPONENT_G_BIT) != 0)
+    {
+        _json_append(builder, "%s\"green\"", first ? "" : ", ");
+        first = false;
+    }
+    if ((mask & VK_COLOR_COMPONENT_B_BIT) != 0)
+    {
+        _json_append(builder, "%s\"blue\"", first ? "" : ", ");
+        first = false;
+    }
+    if ((mask & VK_COLOR_COMPONENT_A_BIT) != 0)
+        _json_append(builder, "%s\"alpha\"", first ? "" : ", ");
+    _json_append(builder, "]");
+}
+
+
+
+/**
  * Append the default color target metadata for a render pipeline.
  *
  * @param builder the JSON builder
@@ -362,9 +397,8 @@ static void _json_append_color_targets(JsonBuilder* builder, const DvzDrp2Comman
             format = "r16float";
         if (i > 0)
             _json_append(builder, ", ");
-        _json_append(
-            builder, "{ \"format\": \"%s\", \"write_mask\": %" PRIu32, format,
-            target->color_write_mask == 0 ? 0xFu : target->color_write_mask);
+        _json_append(builder, "{ \"format\": \"%s\", \"write_mask\": ", format);
+        _json_append_color_write_mask(builder, target->color_write_mask);
         if (target->blend_enabled)
         {
             _json_append(

@@ -4109,6 +4109,7 @@ int test_drp2_render_pipeline_color_targets_json(TstSuite* suite, TstItem* item)
     ANN(json);
     AT(strstr(json, "\"format\": \"rgba16float\"") != NULL);
     AT(strstr(json, "\"format\": \"r16float\"") != NULL);
+    AT(strstr(json, "\"write_mask\": [\"red\", \"green\", \"blue\", \"alpha\"]") != NULL);
     AT(strstr(json, "\"blend\"") != NULL);
 
     dvz_drp2_stream_json_destroy(json);
