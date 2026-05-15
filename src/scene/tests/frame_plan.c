@@ -498,6 +498,8 @@ int test_frame_plan_graph_static_multipass(TstSuite* suite, TstItem* item)
     dvz_strlcpy(rt.id, "rt", sizeof(rt.id));
     rt.kind = DVZ_FRAME_GRAPH_RESOURCE_EXTERNAL_TARGET;
     rt.extent_kind = DVZ_FRAME_GRAPH_EXTENT_FIGURE;
+    rt.width = 128;
+    rt.height = 96;
     rt.usage_flags =
         DVZ_FRAME_GRAPH_RESOURCE_USAGE_COLOR_ATTACHMENT | DVZ_FRAME_GRAPH_RESOURCE_USAGE_COPY_SRC;
     rt.lifetime = DVZ_FRAME_GRAPH_RESOURCE_LIFETIME_BORROWED;
@@ -506,7 +508,9 @@ int test_frame_plan_graph_static_multipass(TstSuite* suite, TstItem* item)
     DvzFrameGraphResource depth = {0};
     dvz_strlcpy(depth.id, "panel0.depth.opaque", sizeof(depth.id));
     depth.kind = DVZ_FRAME_GRAPH_RESOURCE_TEXTURE;
-    depth.extent_kind = DVZ_FRAME_GRAPH_EXTENT_PANEL;
+    depth.extent_kind = DVZ_FRAME_GRAPH_EXTENT_FIGURE;
+    depth.width = 128;
+    depth.height = 96;
     depth.usage_flags = DVZ_FRAME_GRAPH_RESOURCE_USAGE_DEPTH_ATTACHMENT |
                         DVZ_FRAME_GRAPH_RESOURCE_USAGE_SAMPLED;
     depth.lifetime = DVZ_FRAME_GRAPH_RESOURCE_LIFETIME_PER_FRAME;
@@ -516,6 +520,8 @@ int test_frame_plan_graph_static_multipass(TstSuite* suite, TstItem* item)
     dvz_strlcpy(accum.id, "panel0.wboit.accum", sizeof(accum.id));
     accum.kind = DVZ_FRAME_GRAPH_RESOURCE_TEXTURE;
     accum.extent_kind = DVZ_FRAME_GRAPH_EXTENT_PANEL;
+    accum.width = 128;
+    accum.height = 96;
     accum.usage_flags = DVZ_FRAME_GRAPH_RESOURCE_USAGE_COLOR_ATTACHMENT |
                         DVZ_FRAME_GRAPH_RESOURCE_USAGE_SAMPLED;
     accum.lifetime = DVZ_FRAME_GRAPH_RESOURCE_LIFETIME_PER_FRAME;
@@ -697,6 +703,127 @@ int test_frame_plan_graph_validation_missing_usage(TstSuite* suite, TstItem* ite
 
 
 /**
+ * Ensure the internal FramePlan graph rejects non-renderable color attachments.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_frame_plan_graph_validation_attachment_kind(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzFramePlan* plan = dvz_frame_plan("figure.graph.kind", 15);
+    ANN(plan);
+
+    DvzFrameGraphResource resource = {0};
+    dvz_strlcpy(resource.id, "buffer.not.renderable", sizeof(resource.id));
+    resource.kind = DVZ_FRAME_GRAPH_RESOURCE_BUFFER;
+    resource.extent_kind = DVZ_FRAME_GRAPH_EXTENT_FIXED;
+    resource.width = 64;
+    resource.height = 64;
+    resource.usage_flags = DVZ_FRAME_GRAPH_RESOURCE_USAGE_COLOR_ATTACHMENT;
+    resource.lifetime = DVZ_FRAME_GRAPH_RESOURCE_LIFETIME_PER_FRAME;
+    AT(dvz_frame_plan_graph_resource(plan, &resource));
+
+    DvzFrameGraphAttachment attachment = {0};
+    dvz_strlcpy(attachment.resource_id, "buffer.not.renderable", sizeof(attachment.resource_id));
+    attachment.load_op = DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_CLEAR;
+    attachment.store_op = DVZ_FRAME_GRAPH_ATTACHMENT_STORE_STORE;
+    attachment.access = DVZ_FRAME_GRAPH_ATTACHMENT_ACCESS_WRITE;
+
+    DvzFrameGraphPass pass = {0};
+    dvz_strlcpy(pass.id, "panel0.render", sizeof(pass.id));
+    pass.kind = DVZ_FRAME_GRAPH_PASS_RENDER;
+    AT(dvz_frame_graph_pass_color_attachment(&pass, &attachment));
+    AT(dvz_frame_plan_graph_pass(plan, &pass));
+
+    DvzDiagnosticReport report = {0};
+    dvz_diagnostic_report_init(&report);
+    AT(!dvz_frame_plan_graph_validate(plan, &report));
+    AT(dvz_diagnostic_report_count(&report) >= 1);
+    AT(strcmp(
+           dvz_diagnostic_report_get(&report, 0),
+           "FramePlan graph color attachment resource 'buffer.not.renderable' is not renderable") ==
+       0);
+
+    dvz_frame_plan_destroy(plan);
+    return 0;
+}
+
+
+/**
+ * Ensure the internal FramePlan graph rejects mismatched render attachment extents.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_frame_plan_graph_validation_attachment_extent(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzFramePlan* plan = dvz_frame_plan("figure.graph.extent", 16);
+    ANN(plan);
+
+    DvzFrameGraphResource color = {0};
+    dvz_strlcpy(color.id, "color.fixed", sizeof(color.id));
+    color.kind = DVZ_FRAME_GRAPH_RESOURCE_TEXTURE;
+    color.extent_kind = DVZ_FRAME_GRAPH_EXTENT_FIXED;
+    color.width = 64;
+    color.height = 64;
+    color.usage_flags = DVZ_FRAME_GRAPH_RESOURCE_USAGE_COLOR_ATTACHMENT;
+    color.lifetime = DVZ_FRAME_GRAPH_RESOURCE_LIFETIME_PER_FRAME;
+    AT(dvz_frame_plan_graph_resource(plan, &color));
+
+    DvzFrameGraphResource depth = {0};
+    dvz_strlcpy(depth.id, "depth.fixed.small", sizeof(depth.id));
+    depth.kind = DVZ_FRAME_GRAPH_RESOURCE_TEXTURE;
+    depth.extent_kind = DVZ_FRAME_GRAPH_EXTENT_FIXED;
+    depth.width = 32;
+    depth.height = 64;
+    depth.usage_flags = DVZ_FRAME_GRAPH_RESOURCE_USAGE_DEPTH_ATTACHMENT;
+    depth.lifetime = DVZ_FRAME_GRAPH_RESOURCE_LIFETIME_PER_FRAME;
+    AT(dvz_frame_plan_graph_resource(plan, &depth));
+
+    DvzFrameGraphAttachment color_attachment = {0};
+    dvz_strlcpy(color_attachment.resource_id, "color.fixed", sizeof(color_attachment.resource_id));
+    color_attachment.load_op = DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_CLEAR;
+    color_attachment.store_op = DVZ_FRAME_GRAPH_ATTACHMENT_STORE_STORE;
+    color_attachment.access = DVZ_FRAME_GRAPH_ATTACHMENT_ACCESS_WRITE;
+
+    DvzFrameGraphAttachment depth_attachment = {0};
+    dvz_strlcpy(
+        depth_attachment.resource_id, "depth.fixed.small", sizeof(depth_attachment.resource_id));
+    depth_attachment.load_op = DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_CLEAR;
+    depth_attachment.store_op = DVZ_FRAME_GRAPH_ATTACHMENT_STORE_STORE;
+    depth_attachment.access = DVZ_FRAME_GRAPH_ATTACHMENT_ACCESS_WRITE;
+    depth_attachment.clear_depth = 1.0f;
+
+    DvzFrameGraphPass pass = {0};
+    dvz_strlcpy(pass.id, "panel0.render", sizeof(pass.id));
+    pass.kind = DVZ_FRAME_GRAPH_PASS_RENDER;
+    AT(dvz_frame_graph_pass_color_attachment(&pass, &color_attachment));
+    AT(dvz_frame_graph_pass_depth_attachment(&pass, &depth_attachment));
+    AT(dvz_frame_plan_graph_pass(plan, &pass));
+
+    DvzDiagnosticReport report = {0};
+    dvz_diagnostic_report_init(&report);
+    AT(!dvz_frame_plan_graph_validate(plan, &report));
+    AT(dvz_diagnostic_report_count(&report) >= 1);
+    AT(strcmp(
+           dvz_diagnostic_report_get(&report, 0),
+           "FramePlan graph depth attachment resource 'depth.fixed.small' extent does not match "
+           "color attachment 'color.fixed'") == 0);
+
+    dvz_frame_plan_destroy(plan);
+    return 0;
+}
+
+
+/**
  * Register scene frameplan tests.
  *
  * @param suite the active test suite
@@ -722,6 +849,8 @@ int test_scene_frame_plan(TstSuite* suite)
     TEST_SIMPLE(test_frame_plan_graph_static_multipass);
     TEST_SIMPLE(test_frame_plan_graph_validation_read_before_write);
     TEST_SIMPLE(test_frame_plan_graph_validation_missing_usage);
+    TEST_SIMPLE(test_frame_plan_graph_validation_attachment_kind);
+    TEST_SIMPLE(test_frame_plan_graph_validation_attachment_extent);
 
     return 0;
 }

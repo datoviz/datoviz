@@ -109,6 +109,10 @@ int test_frame_plan_graph_validation_read_before_write(TstSuite* suite, TstItem*
 
 int test_frame_plan_graph_validation_missing_usage(TstSuite* suite, TstItem* item);
 
+int test_frame_plan_graph_validation_attachment_kind(TstSuite* suite, TstItem* item);
+
+int test_frame_plan_graph_validation_attachment_extent(TstSuite* suite, TstItem* item);
+
 int test_frame_plan_emit_drp2_static_render(TstSuite* suite, TstItem* item);
 
 int test_frame_plan_emit_drp2_static_render_glsl(TstSuite* suite, TstItem* item);

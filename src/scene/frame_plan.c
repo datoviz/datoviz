@@ -539,6 +539,40 @@ static bool _graph_resource_written_before(
 
 
 
+static bool _graph_resource_is_color_attachment_compatible(const DvzFrameGraphResource* resource)
+{
+    ANN(resource);
+    return resource->kind == DVZ_FRAME_GRAPH_RESOURCE_TEXTURE ||
+           resource->kind == DVZ_FRAME_GRAPH_RESOURCE_EXTERNAL_TARGET;
+}
+
+
+
+static bool _graph_resource_is_depth_attachment_compatible(const DvzFrameGraphResource* resource)
+{
+    ANN(resource);
+    return resource->kind == DVZ_FRAME_GRAPH_RESOURCE_TEXTURE;
+}
+
+
+
+static bool _graph_resource_extent_matches(
+    const DvzFrameGraphResource* a, const DvzFrameGraphResource* b)
+{
+    ANN(a);
+    ANN(b);
+
+    if (a->extent_kind != b->extent_kind)
+        return false;
+    if (a->extent_kind == DVZ_FRAME_GRAPH_EXTENT_FIXED)
+        return a->width == b->width && a->height == b->height;
+    if (a->extent_kind == DVZ_FRAME_GRAPH_EXTENT_RESOURCE_REF)
+        return strcmp(a->extent_resource_id, b->extent_resource_id) == 0;
+    return a->extent_kind != DVZ_FRAME_GRAPH_EXTENT_NONE;
+}
+
+
+
 static bool _graph_report(DvzDiagnosticReport* report, const char* fmt, ...)
 {
     if (report == NULL)
@@ -624,6 +658,23 @@ static bool _graph_validate_attachment(
         return false;
 
     const DvzFrameGraphResource* resource = &plan->graph_resources[resource_index];
+    if (usage == DVZ_FRAME_GRAPH_ACCESS_COLOR_ATTACHMENT &&
+        !_graph_resource_is_color_attachment_compatible(resource))
+    {
+        _graph_report(
+            report, "FramePlan graph color attachment resource '%s' is not renderable",
+            resource->id);
+        return false;
+    }
+    if ((usage == DVZ_FRAME_GRAPH_ACCESS_DEPTH_ATTACHMENT_READ ||
+         usage == DVZ_FRAME_GRAPH_ACCESS_DEPTH_ATTACHMENT_WRITE) &&
+        !_graph_resource_is_depth_attachment_compatible(resource))
+    {
+        _graph_report(
+            report, "FramePlan graph depth attachment resource '%s' is not a texture",
+            resource->id);
+        return false;
+    }
     if (_graph_attachment_reads(attachment) &&
         resource->lifetime == DVZ_FRAME_GRAPH_RESOURCE_LIFETIME_PER_FRAME &&
         !_graph_resource_written_before(plan, attachment->resource_id, pass_index))
@@ -634,6 +685,60 @@ static bool _graph_validate_attachment(
         return false;
     }
     return true;
+}
+
+
+
+static bool _graph_validate_render_pass_attachment_extents(
+    const DvzFramePlan* plan, const DvzFrameGraphPass* pass, DvzDiagnosticReport* report)
+{
+    ANN(plan);
+    ANN(pass);
+
+    if (pass->color_attachment_count == 0)
+        return true;
+
+    uint32_t first_color_index = 0;
+    if (!_graph_resource_index(
+            plan, pass->color_attachments[0].resource_id, &first_color_index))
+        return true;
+
+    bool ok = true;
+    const DvzFrameGraphResource* first_color = &plan->graph_resources[first_color_index];
+    for (uint32_t i = 1; i < pass->color_attachment_count; i++)
+    {
+        uint32_t color_index = 0;
+        if (!_graph_resource_index(plan, pass->color_attachments[i].resource_id, &color_index))
+            continue;
+        const DvzFrameGraphResource* color = &plan->graph_resources[color_index];
+        if (!_graph_resource_extent_matches(first_color, color))
+        {
+            _graph_report(
+                report,
+                "FramePlan graph color attachment resource '%s' extent does not match '%s'",
+                color->id, first_color->id);
+            ok = false;
+        }
+    }
+
+    if (pass->has_depth_attachment)
+    {
+        uint32_t depth_index = 0;
+        if (_graph_resource_index(plan, pass->depth_attachment.resource_id, &depth_index))
+        {
+            const DvzFrameGraphResource* depth = &plan->graph_resources[depth_index];
+            if (!_graph_resource_extent_matches(first_color, depth))
+            {
+                _graph_report(
+                    report,
+                    "FramePlan graph depth attachment resource '%s' extent does not match color "
+                    "attachment '%s'",
+                    depth->id, first_color->id);
+                ok = false;
+            }
+        }
+    }
+    return ok;
 }
 
 
@@ -1895,6 +2000,8 @@ bool dvz_frame_plan_graph_validate(const DvzFramePlan* plan, DvzDiagnosticReport
             ok = _graph_validate_attachment(plan, &pass->stencil_attachment, usage, i, report) &&
                  ok;
         }
+        if (pass->kind == DVZ_FRAME_GRAPH_PASS_RENDER)
+            ok = _graph_validate_render_pass_attachment_extents(plan, pass, report) && ok;
     }
     return ok;
 }
