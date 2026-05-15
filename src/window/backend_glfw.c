@@ -137,8 +137,13 @@ _glfw_emit_pointer(GLFWwindow* handle, DvzPointerEventType type, DvzPointerButto
 
 static void _glfw_cursor_pos_callback(GLFWwindow* handle, double xpos, double ypos)
 {
-    (void)xpos;
-    (void)ypos;
+    DvzWindow* window = _glfw_window(handle);
+    if (window != NULL && window->glfw_input_callbacks.cursor_pos != NULL &&
+        window->glfw_input_callbacks.cursor_pos(
+            window, xpos, ypos, window->glfw_input_user_data))
+    {
+        return;
+    }
     _glfw_emit_pointer(handle, DVZ_POINTER_EVENT_MOVE, DVZ_POINTER_BUTTON_NONE, 0);
 }
 
@@ -146,6 +151,13 @@ static void _glfw_cursor_pos_callback(GLFWwindow* handle, double xpos, double yp
 
 static void _glfw_mouse_button_callback(GLFWwindow* handle, int button, int action, int mods)
 {
+    DvzWindow* window = _glfw_window(handle);
+    if (window != NULL && window->glfw_input_callbacks.mouse_button != NULL &&
+        window->glfw_input_callbacks.mouse_button(
+            window, button, action, mods, window->glfw_input_user_data))
+    {
+        return;
+    }
     DvzPointerButton dvz_button = dvz_pointer_button_from_glfw(button);
     DvzPointerEventType type =
         (action == GLFW_PRESS) ? DVZ_POINTER_EVENT_PRESS : DVZ_POINTER_EVENT_RELEASE;
@@ -159,6 +171,11 @@ static void _glfw_scroll_callback(GLFWwindow* handle, double dx, double dy)
     DvzWindow* window = _glfw_window(handle);
     if (window == NULL)
         return;
+    if (window->glfw_input_callbacks.scroll != NULL &&
+        window->glfw_input_callbacks.scroll(window, dx, dy, window->glfw_input_user_data))
+    {
+        return;
+    }
     DvzInputRouter* router = dvz_window_backend_router(window);
     if (router == NULL)
         return;
@@ -183,10 +200,15 @@ static void _glfw_scroll_callback(GLFWwindow* handle, double dx, double dy)
 
 static void _glfw_key_callback(GLFWwindow* handle, int key, int scancode, int action, int mods)
 {
-    (void)scancode;
     DvzWindow* window = _glfw_window(handle);
     if (window == NULL)
         return;
+    if (window->glfw_input_callbacks.key != NULL &&
+        window->glfw_input_callbacks.key(
+            window, key, scancode, action, mods, window->glfw_input_user_data))
+    {
+        return;
+    }
     DvzInputRouter* router = dvz_window_backend_router(window);
     if (router == NULL)
         return;
@@ -200,6 +222,18 @@ static void _glfw_key_callback(GLFWwindow* handle, int key, int scancode, int ac
     if (type == DVZ_KEYBOARD_EVENT_NONE)
         return;
     dvz_keyboard_emit(router, type, (DvzKeyCode)key, mods, dvz_window_user_data(window));
+}
+
+
+
+static void _glfw_char_callback(GLFWwindow* handle, unsigned int codepoint)
+{
+    DvzWindow* window = _glfw_window(handle);
+    if (window == NULL)
+        return;
+    if (window->glfw_input_callbacks.character != NULL)
+        (void)window->glfw_input_callbacks.character(
+            window, (uint32_t)codepoint, window->glfw_input_user_data);
 }
 
 
@@ -311,6 +345,7 @@ _glfw_create(DvzWindowBackend* backend, DvzWindow* window, const DvzWindowConfig
     glfwSetMouseButtonCallback(handle, _glfw_mouse_button_callback);
     glfwSetScrollCallback(handle, _glfw_scroll_callback);
     glfwSetKeyCallback(handle, _glfw_key_callback);
+    glfwSetCharCallback(handle, _glfw_char_callback);
     glfwSetFramebufferSizeCallback(handle, _glfw_framebuffer_callback);
     glfwSetWindowContentScaleCallback(handle, _glfw_scale_callback);
     dvz_window_backend_set_handle(window, handle);

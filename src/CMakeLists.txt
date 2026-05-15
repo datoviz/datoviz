@@ -227,6 +227,7 @@ set(DVZ_COMPILE_DEFINITIONS ${DVZ_COMPILE_DEFINITIONS}
     DVZ_HAS_DRP2=$<IF:$<BOOL:${DVZ_BUILD_DRP2}>,1,0>
     DVZ_HAS_SCENE=$<IF:$<BOOL:${DVZ_BUILD_SCENE}>,1,0>
     DVZ_HAS_APP=$<IF:$<BOOL:${DVZ_BUILD_APP}>,1,0>
+    DVZ_HAS_GUI=$<IF:$<BOOL:${DVZ_BUILD_GUI}>,1,0>
 
     # Vulkan Memory Allocator uses Volk-loaded entry points.
     VMA_STATIC_VULKAN_FUNCTIONS=0
@@ -312,6 +313,10 @@ set(DVZ_APP_COMPONENTS
     datoviz_app
 )
 
+set(DVZ_GUI_COMPONENTS
+    datoviz_gui
+)
+
 if(NOT DVZ_BUILD_CORE AND (DVZ_BUILD_VK OR DVZ_BUILD_CANVAS))
     message(FATAL_ERROR "DVZ_BUILD_VK/DVZ_BUILD_CANVAS require DVZ_BUILD_CORE=ON.")
 endif()
@@ -344,6 +349,25 @@ if(DVZ_BUILD_APP AND NOT DVZ_BUILD_VK)
     message(FATAL_ERROR "DVZ_BUILD_APP requires DVZ_BUILD_VK=ON.")
 endif()
 
+if(DVZ_BUILD_GUI AND NOT DVZ_BUILD_APP)
+    message(FATAL_ERROR "DVZ_BUILD_GUI requires DVZ_BUILD_APP=ON.")
+endif()
+
+if(DVZ_BUILD_GUI AND NOT DVZ_HAS_GLFW)
+    message(FATAL_ERROR "DVZ_BUILD_GUI requires DVZ_WITH_GLFW=ON and a built GLFW target.")
+endif()
+
+if(DVZ_BUILD_GUI AND NOT EXISTS "${PROJECT_SOURCE_DIR}/external/imgui/imgui.h")
+    message(FATAL_ERROR "DVZ_BUILD_GUI requires external/imgui.")
+endif()
+
+if(DVZ_BUILD_GUI)
+    file(READ "${PROJECT_SOURCE_DIR}/external/imgui/imgui.h" _dvz_imgui_header)
+    if(NOT _dvz_imgui_header MATCHES "IMGUI_HAS_DOCK")
+        message(FATAL_ERROR "DVZ_BUILD_GUI requires a Dear ImGui docking branch/tag with IMGUI_HAS_DOCK.")
+    endif()
+endif()
+
 if(DVZ_BUILD_CORE)
     add_subdirectory(common)
     add_subdirectory(ds)
@@ -373,6 +397,10 @@ if(DVZ_BUILD_SCENE)
     add_subdirectory(scene)
 endif()
 
+if(DVZ_BUILD_GUI)
+    add_subdirectory(gui)
+endif()
+
 if(DVZ_BUILD_APP)
     add_subdirectory(app)
 endif()
@@ -400,6 +428,9 @@ if(DVZ_BUILD_SCENE)
 endif()
 if(DVZ_BUILD_APP)
     list(APPEND DVZ_COMPONENTS ${DVZ_APP_COMPONENTS})
+endif()
+if(DVZ_BUILD_GUI)
+    list(APPEND DVZ_COMPONENTS ${DVZ_GUI_COMPONENTS})
 endif()
 
 if(DVZ_BUILD_CORE)

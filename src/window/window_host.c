@@ -578,6 +578,23 @@ void* dvz_window_backend_handle(const DvzWindow* window)
 
 
 /**
+ * Register raw GLFW input callbacks for integrations that must see events before Datoviz routing.
+ */
+void dvz_window_glfw_set_input_callbacks(
+    DvzWindow* window, const DvzWindowGlfwInputCallbacks* callbacks, void* user_data)
+{
+    ANN(window);
+    if (callbacks != NULL)
+        window->glfw_input_callbacks = *callbacks;
+    else
+        dvz_memset(&window->glfw_input_callbacks, sizeof(window->glfw_input_callbacks), 0,
+                   sizeof(window->glfw_input_callbacks));
+    window->glfw_input_user_data = callbacks != NULL ? user_data : NULL;
+}
+
+
+
+/**
  * Store backend payload on the window.
  */
 void dvz_window_backend_set_payload(DvzWindow* window, void* payload)

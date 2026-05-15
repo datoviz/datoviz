@@ -20,6 +20,7 @@
 #include "drp2.h"
 #include "dvzmath.h"
 #include "geom.h"
+#include "gui.h"
 #include "input.h"
 #include "stream.h"
 #include "scene.h"

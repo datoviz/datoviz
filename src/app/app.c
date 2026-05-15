@@ -25,9 +25,13 @@
 #include "_status.h"
 #include "_trace.h"
 #include "datoviz/app.h"
+#include "datoviz/gui.h"
 #include "datoviz/scene.h"
 #include "../drp2/_stream.h"
 #include "../scene/_scene.h"
+#if defined(DVZ_HAS_GUI) && DVZ_HAS_GUI
+#include "../gui/_gui.h"
+#endif
 
 #if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
 #include "datoviz/canvas.h"
@@ -86,6 +90,9 @@ struct DvzAppWindow
     void* frame_user_data;
     DvzAppTraceSnapshot last_trace_snapshot;
     bool has_last_trace_snapshot;
+#if defined(DVZ_HAS_GUI) && DVZ_HAS_GUI
+    DvzGui* gui;
+#endif
 };
 
 
@@ -927,6 +934,11 @@ static void _app_draw(DvzCanvas* canvas, const DvzStreamFrame* frame, void* user
     DvzApp* app = win->app;
     ANN(app);
 
+#if defined(DVZ_HAS_GUI) && DVZ_HAS_GUI
+    if (win->gui != NULL)
+        _dvz_gui_begin_frame(win->gui, win, frame);
+#endif
+
     _app_sync_figure_size(win, frame);
 
     /* Attach the canvas frame to the reserved DRP2 texture ID. */
@@ -969,6 +981,11 @@ static void _app_draw(DvzCanvas* canvas, const DvzStreamFrame* frame, void* user
     else
         (void)dvz_figure_process_requests(win->figure, app->runtime, &caps);
     dvz_drp2_stream_destroy(stream);
+
+#if defined(DVZ_HAS_GUI) && DVZ_HAS_GUI
+    if (win->gui != NULL)
+        _dvz_gui_render_frame(win->gui, frame);
+#endif
 
     if (win->frame_callback != NULL && _app_frame_callback_allowed(win))
         win->frame_callback(win, win->frame_user_data);
@@ -1073,6 +1090,13 @@ void dvz_app_destroy(DvzApp* app)
     for (uint32_t i = 0; i < app->window_count; i++)
     {
         DvzAppWindow* win = &app->windows[i];
+#if defined(DVZ_HAS_GUI) && DVZ_HAS_GUI
+        if (win->gui != NULL)
+        {
+            _dvz_gui_destroy(win->gui);
+            win->gui = NULL;
+        }
+#endif
         if (win->canvas != NULL)
         {
             dvz_canvas_destroy(win->canvas);
@@ -1277,6 +1301,43 @@ void dvz_app_window_set_frame_callback(
     ANN(win);
     win->frame_callback = callback;
     win->frame_user_data = user_data;
+}
+
+
+
+/*************************************************************************************************/
+/*  GUI                                                                                          */
+/*************************************************************************************************/
+
+DvzGui* dvz_app_window_gui(DvzAppWindow* win, const DvzGuiConfig* config)
+{
+    ANN(win);
+#if defined(DVZ_HAS_GUI) && DVZ_HAS_GUI
+    if (win->gui != NULL)
+        return win->gui;
+    if (win->app == NULL || win->app->gpu_ctx == NULL || win->window == NULL)
+        return NULL;
+    win->gui = _dvz_gui_create(win->app->gpu_ctx, win->window, config);
+    return win->gui;
+#else
+    (void)config;
+    return NULL;
+#endif
+}
+
+
+
+void dvz_app_window_set_gui_callback(
+    DvzAppWindow* win, DvzGuiCallback callback, void* user_data)
+{
+    ANN(win);
+#if defined(DVZ_HAS_GUI) && DVZ_HAS_GUI
+    if (win->gui != NULL)
+        _dvz_gui_set_callback(win->gui, callback, user_data);
+#else
+    (void)callback;
+    (void)user_data;
+#endif
 }
 
 

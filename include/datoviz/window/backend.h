@@ -30,6 +30,7 @@
 typedef struct DvzWindowBackend DvzWindowBackend;
 typedef struct DvzWindowBackendProcs DvzWindowBackendProcs;
 typedef struct DvzWindowExternalSurfaceInfo DvzWindowExternalSurfaceInfo;
+typedef struct DvzWindowGlfwInputCallbacks DvzWindowGlfwInputCallbacks;
 
 typedef bool (*DvzWindowBackendProbe)(DvzWindowBackend* backend, DvzWindowHost* host);
 typedef bool (*DvzWindowBackendCreate)(
@@ -43,6 +44,14 @@ typedef uint32_t (*DvzWindowBackendRequiredExtensionCount)(
     DvzWindowBackend* backend, DvzWindowHost* host);
 typedef const char* (*DvzWindowBackendRequiredExtensionAt)(
     DvzWindowBackend* backend, DvzWindowHost* host, uint32_t index);
+typedef bool (*DvzWindowGlfwCursorPosCallback)(DvzWindow* window, double x, double y, void* user_data);
+typedef bool (*DvzWindowGlfwMouseButtonCallback)(
+    DvzWindow* window, int button, int action, int mods, void* user_data);
+typedef bool (*DvzWindowGlfwScrollCallback)(
+    DvzWindow* window, double xoffset, double yoffset, void* user_data);
+typedef bool (*DvzWindowGlfwKeyCallback)(
+    DvzWindow* window, int key, int scancode, int action, int mods, void* user_data);
+typedef bool (*DvzWindowGlfwCharCallback)(DvzWindow* window, uint32_t codepoint, void* user_data);
 
 
 
@@ -82,6 +91,17 @@ struct DvzWindowExternalSurfaceInfo
     float scale_x;
     float scale_y;
     bool owned_by_datoviz;
+};
+
+
+
+struct DvzWindowGlfwInputCallbacks
+{
+    DvzWindowGlfwCursorPosCallback cursor_pos;
+    DvzWindowGlfwMouseButtonCallback mouse_button;
+    DvzWindowGlfwScrollCallback scroll;
+    DvzWindowGlfwKeyCallback key;
+    DvzWindowGlfwCharCallback character;
 };
 
 
@@ -157,6 +177,21 @@ DVZ_EXPORT void* dvz_window_backend_payload(const DvzWindow* window);
  * @returns true when GLFW is initialized, false when the backend is unavailable
  */
 DVZ_EXPORT bool dvz_window_glfw_init(void);
+
+
+
+/**
+ * Register raw GLFW input callbacks for integrations that must see events before Datoviz routing.
+ *
+ * These callbacks are only used by GLFW windows. A callback returning true consumes the event and
+ * prevents the corresponding Datoviz pointer/keyboard event from being emitted.
+ *
+ * @param window target window
+ * @param callbacks callback table, or NULL to clear it
+ * @param user_data opaque pointer forwarded to every callback
+ */
+DVZ_EXPORT void dvz_window_glfw_set_input_callbacks(
+    DvzWindow* window, const DvzWindowGlfwInputCallbacks* callbacks, void* user_data);
 
 
 

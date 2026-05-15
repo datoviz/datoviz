@@ -53,6 +53,7 @@ option(DVZ_BUILD_DRP2 "Build the DRP2 layer" ON)
 option(DVZ_BUILD_WEBGPU "Build the WebGPU layer" OFF)
 option(DVZ_BUILD_SCENE "Build the scene layer" ON)
 option(DVZ_BUILD_APP "Build the app presentation layer" ON)
+option(DVZ_BUILD_GUI "Build the Dear ImGui app overlay layer" ON)
 
 if(DVZ_ENABLE_GPROF)
     add_compile_options(
@@ -455,6 +456,7 @@ message(STATUS "DVZ_BUILD_DRP2: ${DVZ_BUILD_DRP2}")
 message(STATUS "DVZ_BUILD_WEBGPU: ${DVZ_BUILD_WEBGPU}")
 message(STATUS "DVZ_BUILD_SCENE: ${DVZ_BUILD_SCENE}")
 message(STATUS "DVZ_BUILD_APP: ${DVZ_BUILD_APP}")
+message(STATUS "DVZ_BUILD_GUI: ${DVZ_BUILD_GUI}")
 
 if(DEFINED DVZ_USE_VALIDATION)
     message(STATUS "DVZ_USE_VALIDATION: ${DVZ_USE_VALIDATION} (Release configs disable validation unless explicitly ON)")

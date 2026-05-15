@@ -22,6 +22,10 @@ target_link_libraries(datoviz_app
     datoviz_vk
 )
 
+if(TARGET datoviz_gui)
+    target_link_libraries(datoviz_app PUBLIC datoviz_gui)
+endif()
+
 target_compile_definitions(datoviz_app PUBLIC
     ${DVZ_COMPILE_DEFINITIONS}
     DVZ_DRP2_HAS_VKLITE=1

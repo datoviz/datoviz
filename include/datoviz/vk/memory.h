@@ -177,11 +177,11 @@ DVZ_EXPORT VkDeviceSize dvz_allocation_size(DvzAllocation* alloc);
  * dvz_allocator_destroy() first.
  *
  * @param device the device
- * @param export if exporting created allocations, the external memory handle type
+ * @param export_handle_type if exporting created allocations, the external memory handle type
  * @param[out] allocator the allocator
  */
 DVZ_EXPORT int dvz_device_allocator(
-    DvzDevice* device, VkExternalMemoryHandleTypeFlagsKHR export, DvzVma* allocator);
+    DvzDevice* device, VkExternalMemoryHandleTypeFlagsKHR export_handle_type, DvzVma* allocator);
 
 
 

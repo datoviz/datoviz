@@ -75,6 +75,8 @@ struct DvzWindow
     DvzPointerGestureHandler* gesture_handler;
     DvzWindowConfig config;
     DvzWindowSurface surface;
+    DvzWindowGlfwInputCallbacks glfw_input_callbacks;
+    void* glfw_input_user_data;
     bool backend_owns_surface;
     char title[DVZ_WINDOW_TITLE_MAX];
     bool frame_pending;
