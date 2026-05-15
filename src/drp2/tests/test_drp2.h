@@ -190,6 +190,8 @@ int test_drp2_runtime_vklite_reallocates_object_table_safely(TstSuite* suite, Ts
 
 int test_drp2_runtime_vklite_draws_render_pass(TstSuite* suite, TstItem* item);
 
+int test_drp2_runtime_vklite_draws_multi_color_render_pass(TstSuite* suite, TstItem* item);
+
 int test_drp2_runtime_vklite_samples_then_copies_texture(TstSuite* suite, TstItem* item);
 #endif
 
