@@ -653,13 +653,15 @@ static bool _app_trace_print_command_detail(
         TRACE_ID(id, command->u.begin_render_pass.id);
         TRACE_ID(encoder, command->u.begin_render_pass.encoder_id);
         TRACE_ID(target, command->u.begin_render_pass.texture_id);
+        TRACE_ID(depth, command->u.begin_render_pass.depth_texture_id);
         dvz_fprintf(
             stderr, "  %03u = BeginRenderPass id=%s encoder=%s"
-                    " target=%s clear=%s depth=%s clear_depth=%.3g"
+                    " target=%s clear=%s depth=%s depth_target=%s clear_depth=%.3g"
                     " viewport=(%.3g,%.3g %.3gx%.3g)\n",
             index, id, encoder, target,
             command->u.begin_render_pass.clear ? "yes" : "load",
             command->u.begin_render_pass.has_depth_attachment ? "yes" : "no",
+            depth,
             (double)command->u.begin_render_pass.clear_depth,
             (double)command->u.begin_render_pass.viewport[0],
             (double)command->u.begin_render_pass.viewport[1],

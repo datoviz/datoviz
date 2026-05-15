@@ -205,6 +205,8 @@ int test_drp2_runtime_vklite_reallocates_object_table_safely(TstSuite* suite, Ts
 
 int test_drp2_runtime_vklite_draws_render_pass(TstSuite* suite, TstItem* item);
 
+int test_drp2_runtime_vklite_draws_named_depth_render_pass(TstSuite* suite, TstItem* item);
+
 int test_drp2_runtime_vklite_draws_multi_color_render_pass(TstSuite* suite, TstItem* item);
 
 int test_drp2_runtime_vklite_draws_wboit_format_passes(TstSuite* suite, TstItem* item);
@@ -227,7 +229,11 @@ int test_drp2_begin_render_pass_attachment_ops(TstSuite* suite, TstItem* item);
 
 int test_drp2_begin_render_pass_attachment_ops_validation(TstSuite* suite, TstItem* item);
 
+int test_drp2_begin_render_pass_named_depth_validation(TstSuite* suite, TstItem* item);
+
 int test_drp2_recording_preserves_attachment_ops(TstSuite* suite, TstItem* item);
+
+int test_drp2_recording_preserves_named_depth(TstSuite* suite, TstItem* item);
 
 int test_drp2_stream_json_preserves_clear_color(TstSuite* suite, TstItem* item);
 

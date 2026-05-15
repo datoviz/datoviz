@@ -932,6 +932,20 @@ dvz_drp2_stream_begin_render_pass_set_depth(DvzDrp2CommandStream* stream, float 
 
 
 /**
+ * Attach a named depth texture to the most recently appended BeginRenderPass command.
+ *
+ * A zero `depth_texture_id` keeps the existing transient depth attachment behavior.
+ *
+ * @param stream the command stream
+ * @param depth_texture_id the depth attachment texture id, or 0 for transient depth
+ * @param clear_depth the depth clear value used when the pass clears attachments
+ * @return whether the most recent command was a BeginRenderPass and was updated
+ */
+DVZ_EXPORT bool dvz_drp2_stream_begin_render_pass_set_depth_texture(
+    DvzDrp2CommandStream* stream, uint64_t depth_texture_id, float clear_depth);
+
+
+/**
  * Set load/store operations on the depth attachment of the most recent BeginRenderPass command.
  *
  * @param stream the command stream

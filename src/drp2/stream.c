@@ -1415,6 +1415,7 @@ bool dvz_drp2_stream_begin_render_pass_region_clear(
     command->u.begin_render_pass.color_attachments[0].clear_color[2] = b;
     command->u.begin_render_pass.color_attachments[0].clear_color[3] = a;
     command->u.begin_render_pass.has_depth_attachment = false;
+    command->u.begin_render_pass.depth_texture_id = 0;
     command->u.begin_render_pass.depth_load_op =
         clear ? DVZ_DRP2_ATTACHMENT_LOAD_CLEAR : DVZ_DRP2_ATTACHMENT_LOAD_LOAD;
     command->u.begin_render_pass.depth_store_op = DVZ_DRP2_ATTACHMENT_STORE_STORE;
@@ -1513,6 +1514,22 @@ bool dvz_drp2_stream_begin_render_pass_set_color_attachment_ops(
  */
 bool dvz_drp2_stream_begin_render_pass_set_depth(DvzDrp2CommandStream* stream, float clear_depth)
 {
+    return dvz_drp2_stream_begin_render_pass_set_depth_texture(stream, 0, clear_depth);
+}
+
+
+
+/**
+ * Attach a named depth texture to the most recent BeginRenderPass command.
+ *
+ * @param stream the command stream
+ * @param depth_texture_id the depth attachment texture id, or 0 for transient depth
+ * @param clear_depth the depth clear value
+ * @return whether the most recent command was updated
+ */
+bool dvz_drp2_stream_begin_render_pass_set_depth_texture(
+    DvzDrp2CommandStream* stream, uint64_t depth_texture_id, float clear_depth)
+{
     ANN(stream);
     if (stream->count == 0)
         return false;
@@ -1520,6 +1537,7 @@ bool dvz_drp2_stream_begin_render_pass_set_depth(DvzDrp2CommandStream* stream, f
     if (command->type != DVZ_DRP2_COMMAND_BEGIN_RENDER_PASS)
         return false;
     command->u.begin_render_pass.has_depth_attachment = true;
+    command->u.begin_render_pass.depth_texture_id = depth_texture_id;
     command->u.begin_render_pass.depth_load_op =
         command->u.begin_render_pass.clear ? DVZ_DRP2_ATTACHMENT_LOAD_CLEAR :
                                              DVZ_DRP2_ATTACHMENT_LOAD_LOAD;

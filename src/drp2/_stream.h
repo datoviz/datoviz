@@ -187,6 +187,7 @@ struct DvzDrp2Command
             uint32_t color_attachment_count;
             DvzDrp2ColorAttachment color_attachments[DVZ_DRP2_MAX_COLOR_ATTACHMENTS];
             bool has_depth_attachment;
+            uint64_t depth_texture_id;
             DvzDrp2AttachmentLoadOp depth_load_op;
             DvzDrp2AttachmentStoreOp depth_store_op;
             bool depth_ops_explicit;

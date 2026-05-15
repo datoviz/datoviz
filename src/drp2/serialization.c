@@ -863,8 +863,9 @@ static void _json_append_command(JsonBuilder* builder, const DvzDrp2Command* com
             _json_append(
                 builder,
                 ", \"depth_stencil_attachment\": { \"format\": \"depth32float\", "
-                "\"load_op\": \"%s\", \"store_op\": \"%s\", "
+                "\"texture_id\": %" PRIu64 ", \"load_op\": \"%s\", \"store_op\": \"%s\", "
                 "\"clear_value\": { \"depth\": %g } }",
+                command->u.begin_render_pass.depth_texture_id,
                 _attachment_load_name(command->u.begin_render_pass.depth_load_op),
                 _attachment_store_name(command->u.begin_render_pass.depth_store_op),
                 (double)command->u.begin_render_pass.clear_depth);

@@ -82,6 +82,36 @@ static VkImageUsageFlags _vklite_texture_usage(uint32_t usage)
 }
 
 
+static bool _vklite_format_has_depth(uint32_t format)
+{
+    switch ((VkFormat)format)
+    {
+    case VK_FORMAT_D16_UNORM:
+    case VK_FORMAT_X8_D24_UNORM_PACK32:
+    case VK_FORMAT_D32_SFLOAT:
+    case VK_FORMAT_D16_UNORM_S8_UINT:
+    case VK_FORMAT_D24_UNORM_S8_UINT:
+    case VK_FORMAT_D32_SFLOAT_S8_UINT:
+        return true;
+    default:
+        return false;
+    }
+}
+
+
+static VkImageUsageFlags _vklite_texture_usage_for_format(uint32_t usage, uint32_t format)
+{
+    VkImageUsageFlags out = _vklite_texture_usage(usage);
+    if ((usage & DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT) != 0 &&
+        _vklite_format_has_depth(format))
+    {
+        out &= (VkImageUsageFlags)(~(VkImageUsageFlags)VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT);
+        out |= VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+    }
+    return out;
+}
+
+
 /**
  * Destroy a partially-created vklite object and return a validation failure.
  *
@@ -154,7 +184,8 @@ static DvzDrp2ValidationResult _vklite_create_texture(
     dvz_images_mip(images, 1);
     dvz_images_layers(images, 1);
     dvz_images_samples(images, VK_SAMPLE_COUNT_1_BIT);
-    dvz_images_usage(images, _vklite_texture_usage(command->u.create_texture.usage));
+    dvz_images_usage(
+        images, _vklite_texture_usage_for_format(command->u.create_texture.usage, format));
     if (dvz_images_create(images) != 0)
         return _vklite_fail_destroy_object(
             object, DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
@@ -170,6 +201,8 @@ static DvzDrp2ValidationResult _vklite_create_texture(
                 object, DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
         object->views = views;
         dvz_image_views(images, views);
+        if (_vklite_format_has_depth(format))
+            dvz_image_views_aspect(views, VK_IMAGE_ASPECT_DEPTH_BIT);
         dvz_image_views_create(views);
         if (dvz_image_views_handle(views, 0) == VK_NULL_HANDLE)
             return _vklite_fail_destroy_object(

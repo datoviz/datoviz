@@ -954,6 +954,7 @@ static DvzDrp2ValidationResult _validate_begin_render_pass(
         color_count = 1;
     if (color_count > DVZ_DRP2_MAX_COLOR_ATTACHMENTS)
         return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+    const Drp2Object* first_color = NULL;
     for (uint32_t i = 0; i < color_count; i++)
     {
         const DvzDrp2ColorAttachment* attachment =
@@ -967,13 +968,29 @@ static DvzDrp2ValidationResult _validate_begin_render_pass(
         uint64_t texture_id = command->u.begin_render_pass.color_attachment_count > 0
                                   ? command->u.begin_render_pass.color_attachments[i].texture_id
                                   : command->u.begin_render_pass.texture_id;
-        if (!_has_object_kind(state, texture_id, DRP2_OBJECT_TEXTURE))
+        const Drp2Object* texture = _find_object(state, texture_id);
+        if (texture == NULL || texture->kind != DRP2_OBJECT_TEXTURE)
             return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+        if (i == 0)
+            first_color = texture;
     }
     if (command->u.begin_render_pass.has_depth_attachment &&
         (command->u.begin_render_pass.depth_load_op > DVZ_DRP2_ATTACHMENT_LOAD_DONT_CARE ||
          command->u.begin_render_pass.depth_store_op > DVZ_DRP2_ATTACHMENT_STORE_DONT_CARE))
         return _drp2_fail(DVZ_DRP2_VALIDATION_USAGE, command_index);
+    if (command->u.begin_render_pass.has_depth_attachment &&
+        command->u.begin_render_pass.depth_texture_id != 0)
+    {
+        const Drp2Object* depth =
+            _find_object(state, command->u.begin_render_pass.depth_texture_id);
+        if (depth == NULL || depth->kind != DRP2_OBJECT_TEXTURE)
+            return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+        if ((depth->usage & DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT) == 0)
+            return _drp2_fail(DVZ_DRP2_VALIDATION_USAGE, command_index);
+        if (first_color == NULL || depth->width != first_color->width ||
+            depth->height != first_color->height)
+            return _drp2_fail(DVZ_DRP2_VALIDATION_USAGE, command_index);
+    }
 
     Drp2Object* pass = _drp2_add_object(state, command->u.begin_render_pass.id, DRP2_OBJECT_RENDER_PASS);
     if (pass == NULL)
@@ -1003,6 +1020,9 @@ static DvzDrp2ValidationResult _validate_begin_render_pass(
                                   : command->u.begin_render_pass.texture_id;
         _mark_referenced(state, texture_id);
     }
+    if (command->u.begin_render_pass.has_depth_attachment &&
+        command->u.begin_render_pass.depth_texture_id != 0)
+        _mark_referenced(state, command->u.begin_render_pass.depth_texture_id);
     pass->open = true;
     pass->encoder_id = command->u.begin_render_pass.encoder_id;
     pass->has_depth_attachment = command->u.begin_render_pass.has_depth_attachment;

@@ -288,6 +288,7 @@ static uint64_t _trace_hash_command(uint64_t hash, const DvzDrp2Command* command
     case DVZ_DRP2_COMMAND_BEGIN_RENDER_PASS:
         hash = _trace_hash_u64(hash, command->u.begin_render_pass.texture_id);
         hash = _trace_hash_bool(hash, command->u.begin_render_pass.has_depth_attachment);
+        hash = _trace_hash_u64(hash, command->u.begin_render_pass.depth_texture_id);
         hash = _trace_hash_f32(hash, command->u.begin_render_pass.clear_depth);
         for (uint32_t i = 0; i < 4; i++)
             hash = _trace_hash_f32(hash, command->u.begin_render_pass.clear_color[i]);
@@ -646,8 +647,25 @@ static bool _trace_snapshot_append_command(
             command->u.write_texture.width, command->u.write_texture.height,
             command->u.write_texture.depth);
     case DVZ_DRP2_COMMAND_BEGIN_RENDER_PASS:
+        if (command->u.begin_render_pass.depth_texture_id != 0)
+        {
+            return _trace_snapshot_append(
+                snapshot, "render#%" PRIu32 " target=%" PRIu64
+                          " clear=%s depth=%s depth_target=%" PRIu64
+                          " area=(%.3g,%.3g %.3gx%.3g)",
+                _trace_pass_ordinal(passes, pass_count, command->u.begin_render_pass.id),
+                command->u.begin_render_pass.texture_id,
+                command->u.begin_render_pass.clear ? "yes" : "load",
+                command->u.begin_render_pass.has_depth_attachment ? "yes" : "no",
+                command->u.begin_render_pass.depth_texture_id,
+                (double)command->u.begin_render_pass.viewport[0],
+                (double)command->u.begin_render_pass.viewport[1],
+                (double)command->u.begin_render_pass.viewport[2],
+                (double)command->u.begin_render_pass.viewport[3]);
+        }
         return _trace_snapshot_append(
-            snapshot, "render#%" PRIu32 " target=%" PRIu64 " clear=%s depth=%s area=(%.3g,%.3g %.3gx%.3g)",
+            snapshot, "render#%" PRIu32
+                      " target=%" PRIu64 " clear=%s depth=%s area=(%.3g,%.3g %.3gx%.3g)",
             _trace_pass_ordinal(passes, pass_count, command->u.begin_render_pass.id),
             command->u.begin_render_pass.texture_id,
             command->u.begin_render_pass.clear ? "yes" : "load",
