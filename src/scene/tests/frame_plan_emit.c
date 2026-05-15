@@ -1639,6 +1639,100 @@ int test_frame_plan_emitter_runtime_compute_two_frames(TstSuite* suite, TstItem*
 }
 
 
+static int test_frame_plan_emit_scene_point_records_portable_dvzr(
+    TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    ANN(panel);
+    DvzVisual* visual = dvz_point(scene, 0);
+    ANN(visual);
+
+    float positions[3][3] = {
+        {-0.5f, -0.5f, 0.0f},
+        {0.5f, -0.5f, 0.0f},
+        {0.0f, 0.5f, 0.0f},
+    };
+    DvzColor colors[3] = {
+        {255, 0, 0, 255},
+        {0, 255, 0, 255},
+        {0, 0, 255, 255},
+    };
+    float sizes[3] = {8.0f, 9.0f, 10.0f};
+    AT(dvz_visual_set_data(visual, "position", positions, 3) == 0);
+    AT(dvz_visual_set_data(visual, "color", colors, 3) == 0);
+    AT(dvz_visual_set_data(visual, "size", sizes, 3) == 0);
+    AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
+
+    DvzCapabilitySnapshot caps = {0};
+    DvzDiagnosticReport report = {0};
+    DvzFramePlanEmitConfig emit_cfg = dvz_frame_plan_emit_config();
+    emit_cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
+    dvz_capability_snapshot_default(&caps);
+    dvz_diagnostic_report_init(&report);
+
+    DvzDrp2CommandStream* stream = dvz_figure_emit_ex(figure, &caps, &report, &emit_cfg);
+    ANN(stream);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+    AT(dvz_drp2_stream_count(stream) > 0);
+
+    DvzDrp2RuntimeConfig runtime_cfg = dvz_drp2_runtime_vklite_config(NULL, NULL);
+    runtime_cfg.semantic_only = true;
+    DvzDrp2Runtime* runtime = dvz_drp2_runtime_vklite(&runtime_cfg);
+    ANN(runtime);
+    DvzDrp2ValidationResult result = dvz_drp2_runtime_execute(runtime, stream);
+    AT(result.ok);
+    dvz_drp2_runtime_destroy(runtime);
+
+    DvzDrp2RecordingInfo info = {
+        .width = 64,
+        .height = 64,
+        .duration_s = 0.0,
+        .t_present = 0.0,
+        .backend_hint = "semantic",
+    };
+    const char* path = "/tmp/dvz_scene_point_emit_portable.dvzr";
+    AT(dvz_drp2_recording_write_stream(path, stream, &info));
+
+    FILE* stream_file = fopen("/tmp/dvz_scene_point_emit_portable.dvzr/stream.jsonl", "rb");
+    ANN(stream_file);
+    char jsonl[65536] = {0};
+    size_t size = fread(jsonl, 1, sizeof(jsonl) - 1, stream_file);
+    fclose(stream_file);
+    AT(size > 0);
+    AT(strstr(jsonl, ".cmd") == NULL);
+    AT(strstr(jsonl, "\"op\":\"CreateShaderModule\"") != NULL);
+    AT(strstr(jsonl, "\"op\":\"CreateBindGroupLayout\"") != NULL);
+    AT(strstr(jsonl, "\"op\":\"CreateBindGroup\"") != NULL);
+    AT(strstr(jsonl, "\"op\":\"CreateRenderPipeline\"") != NULL);
+    AT(strstr(jsonl, "\"op\":\"QueueSubmit\"") != NULL);
+
+    DvzDrp2Recording* recording = dvz_drp2_recording_open(path);
+    ANN(recording);
+    AT(dvz_drp2_recording_frame_count(recording) == 1);
+    const DvzDrp2CommandStream* loaded = dvz_drp2_recording_stream(recording);
+    ANN(loaded);
+    AT(dvz_drp2_stream_count(loaded) == dvz_drp2_stream_count(stream));
+
+    runtime = dvz_drp2_runtime_vklite(&runtime_cfg);
+    ANN(runtime);
+    result = dvz_drp2_recording_playback(recording, runtime, false);
+    AT(result.ok);
+    dvz_drp2_runtime_destroy(runtime);
+
+    dvz_drp2_recording_close(recording);
+    dvz_drp2_stream_destroy(stream);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
 /**
  * Register scene frameplan emission tests.
  *
@@ -1674,6 +1768,7 @@ int test_scene_frame_plan_emit(TstSuite* suite)
     TEST_SIMPLE(test_frame_plan_emitter_runtime_object_map_grows);
     TEST_SIMPLE(test_frame_plan_emitter_runtime_texture_two_frames);
     TEST_SIMPLE(test_frame_plan_emitter_runtime_compute_two_frames);
+    TEST_SIMPLE(test_frame_plan_emit_scene_point_records_portable_dvzr);
 
     return 0;
 }
