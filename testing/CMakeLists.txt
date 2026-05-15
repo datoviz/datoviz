@@ -292,6 +292,41 @@ if(_dvz_has_core AND _dvz_has_drp2)
     endif()
 
     add_test(NAME dvztest_drp2 COMMAND dvztest_drp2)
+
+    add_executable(dvz_drp2_player
+        dvz_drp2_player.c
+    )
+
+    target_link_libraries(dvz_drp2_player
+        PRIVATE
+        datoviz_common
+        datoviz_drp2
+    )
+
+    if(_dvz_has_vk)
+        target_link_libraries(dvz_drp2_player PRIVATE datoviz_vk datoviz_vklite datoviz_volk)
+    endif()
+
+    if(DVZ_WITH_MIMALLOC)
+        target_link_libraries(dvz_drp2_player PRIVATE $<$<CONFIG:Release>:mimalloc-static>)
+    endif()
+
+    target_include_directories(dvz_drp2_player
+        PRIVATE
+        ${PROJECT_SOURCE_DIR}/include
+        ${PROJECT_SOURCE_DIR}/src/common
+    )
+
+    if(_dvz_compile_definitions)
+        target_compile_definitions(dvz_drp2_player PRIVATE ${_dvz_compile_definitions})
+    endif()
+
+    if(APPLE)
+        set_target_properties(dvz_drp2_player PROPERTIES
+            BUILD_RPATH "${_dvz_runtime_rpath}"
+            INSTALL_RPATH "${_dvz_runtime_rpath}"
+        )
+    endif()
 else()
     message(STATUS "Skipping dvztest_drp2: drp2 target set is not enabled.")
 endif()
