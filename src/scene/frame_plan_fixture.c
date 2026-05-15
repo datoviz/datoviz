@@ -29,6 +29,14 @@
 
 
 /*************************************************************************************************/
+/*  Constants                                                                                    */
+/*************************************************************************************************/
+
+#define DRP2_FIXTURE_TRIANGLE_VERTEX_BYTES 36
+
+
+
+/*************************************************************************************************/
 /*  Helpers                                                                                      */
 /*************************************************************************************************/
 
@@ -109,6 +117,8 @@ _emit_upload(ConverterState* state, DvzDrp2CommandStream* stream, const DvzFrame
         dvz_free(data);
         return false;
     }
+    if (buffer_size < DRP2_FIXTURE_TRIANGLE_VERTEX_BYTES)
+        buffer_size = DRP2_FIXTURE_TRIANGLE_VERTEX_BYTES;
     uint32_t usage = DVZ_DRP2_BUFFER_USAGE_COPY_DST | DVZ_DRP2_BUFFER_USAGE_VERTEX;
     bool ok = dvz_drp2_stream_create_buffer(stream, id, buffer_size, usage) &&
               dvz_drp2_stream_write_buffer(

@@ -4,7 +4,7 @@
   "commands": [
     { "cmd": "HelloRenderer", "version": { "major": 2, "minor": 0 }, "client_name": "scene-fixture" },
     { "cmd": "RendererHelloReply", "version": { "major": 2, "minor": 0 }, "status": "ok", "renderer_name": "datoviz-drp2-fixture" },
-    { "cmd": "CreateBuffer", "id": 20, "size": 16, "usage": ["COPY_DST", "VERTEX"] },
+    { "cmd": "CreateBuffer", "id": 20, "size": 36, "usage": ["COPY_DST", "VERTEX"] },
     { "cmd": "WriteBuffer", "buffer_id": 20, "offset": 0, "size": 16, "data": "AAAAAAAAAAAAAAAAAAAAAA==" },
     { "cmd": "CreateShaderModule", "id": 9000, "stage": "VERTEX", "format": "wgsl", "entry_point": "main", "code": "@vertex fn main(@location(0) position: vec3f) -> @builtin(position) vec4f { return vec4f(position, 1.0); }" },
     { "cmd": "CreateShaderModule", "id": 9001, "stage": "FRAGMENT", "format": "wgsl", "entry_point": "main", "code": "@fragment fn main() -> @location(0) vec4f { return vec4f(1.0, 1.0, 1.0, 1.0); }" },
