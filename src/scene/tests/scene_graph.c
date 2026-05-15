@@ -4263,6 +4263,10 @@ int test_scene_visual_alpha_mode_emits_wboit_drp2(TstSuite* suite, TstItem* item
     bool has_accum_pass = false;
     bool has_resolve_bind_group = false;
     uint32_t begin_pass_count = 0;
+    uint64_t begin_pass_textures[3] = {0};
+    uint32_t begin_pass_color_counts[3] = {0};
+    bool begin_pass_clears[3] = {0};
+    bool begin_pass_second_attachment_clears[3] = {0};
 
     for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
     {
@@ -4292,6 +4296,19 @@ int test_scene_visual_alpha_mode_emits_wboit_drp2(TstSuite* suite, TstItem* item
         }
         else if (command->type == DVZ_DRP2_COMMAND_BEGIN_RENDER_PASS)
         {
+            if (begin_pass_count < 3)
+            {
+                begin_pass_textures[begin_pass_count] =
+                    command->u.begin_render_pass.texture_id;
+                begin_pass_color_counts[begin_pass_count] =
+                    command->u.begin_render_pass.color_attachment_count;
+                begin_pass_clears[begin_pass_count] = command->u.begin_render_pass.clear;
+                if (command->u.begin_render_pass.color_attachment_count > 1)
+                {
+                    begin_pass_second_attachment_clears[begin_pass_count] =
+                        command->u.begin_render_pass.color_attachments[1].clear;
+                }
+            }
             begin_pass_count++;
             has_accum_pass =
                 has_accum_pass || command->u.begin_render_pass.color_attachment_count == 2;
@@ -4310,6 +4327,16 @@ int test_scene_visual_alpha_mode_emits_wboit_drp2(TstSuite* suite, TstItem* item
     AT(has_accum_pass);
     AT(has_resolve_bind_group);
     AT(begin_pass_count == 3);
+    AT(begin_pass_color_counts[0] == 1);
+    AT(begin_pass_color_counts[1] == 2);
+    AT(begin_pass_color_counts[2] == 1);
+    AT(begin_pass_clears[0]);
+    AT(begin_pass_clears[1]);
+    AT(begin_pass_second_attachment_clears[1]);
+    AT(!begin_pass_clears[2]);
+    AT(begin_pass_textures[0] != 0);
+    AT(begin_pass_textures[0] == begin_pass_textures[2]);
+    AT(begin_pass_textures[1] != begin_pass_textures[0]);
 
     dvz_drp2_stream_destroy(stream);
     dvz_scene_destroy(scene);
