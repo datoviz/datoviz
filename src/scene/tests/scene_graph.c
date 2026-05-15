@@ -2179,6 +2179,51 @@ int test_scene_rejects_mismatched_point_attribute_counts(TstSuite* suite, TstIte
 }
 
 
+int test_scene_point_visual_resizes_existing_attributes(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzVisual* visual = dvz_point(scene, 0);
+    ANN(visual);
+
+    float positions3[3 * 3] = {
+        -0.50f, 0.00f, 0.0f,
+         0.00f, 0.00f, 0.0f,
+         0.50f, 0.00f, 0.0f,
+    };
+    DvzColor colors3[3] = {
+        {255, 0, 0, 255},
+        {0, 255, 0, 255},
+        {0, 0, 255, 255},
+    };
+    float sizes3[3] = {3.0f, 4.0f, 5.0f};
+
+    float positions2[2 * 3] = {
+        -0.25f, 0.00f, 0.0f,
+         0.25f, 0.00f, 0.0f,
+    };
+    DvzColor colors2[2] = {
+        {255, 255, 0, 255},
+        {0, 255, 255, 255},
+    };
+    float sizes2[2] = {6.0f, 7.0f};
+
+    AT(dvz_visual_set_data(visual, "position", positions3, 3) == 0);
+    AT(dvz_visual_set_data(visual, "color", colors3, 3) == 0);
+    AT(dvz_visual_set_data(visual, "size", sizes3, 3) == 0);
+
+    AT(dvz_visual_set_data(visual, "position", positions2, 2) == 0);
+    AT(dvz_visual_set_data(visual, "color", colors2, 2) == 0);
+    AT(dvz_visual_set_data(visual, "size", sizes2, 2) == 0);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
 int test_scene_rejects_range_update_without_full_allocation(TstSuite* suite, TstItem* item)
 {
     ANN(suite);
@@ -4534,6 +4579,7 @@ int test_scene_graph(TstSuite* suite)
     TEST_SIMPLE(test_scene_visual_common_binding_layout_order);
     TEST_SIMPLE(test_scene_empty_figure_emit_clear_only);
     TEST_SIMPLE(test_scene_point_emit_has_vertex_layout);
+    TEST_SIMPLE(test_scene_point_visual_resizes_existing_attributes);
     TEST_SIMPLE(test_scene_indexed_primitive_shading_updates_runtime);
     TEST_SIMPLE(test_scene_point_large_count_executes);
     TEST_SIMPLE(test_scene_second_emit_no_uploads_when_not_dirty);

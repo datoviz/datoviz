@@ -1,10 +1,5 @@
 #!/usr/bin/env python3
-"""Prepare dense spatial-points caches for the Datoviz napari demo.
-
-The default path generates a deterministic synthetic spatial-omics-like point cloud using only
-NumPy. Optional SpatialData extraction is intentionally best-effort so the render-time C demo does
-not depend on the SpatialData Python stack.
-"""
+"""Prepare dense spatial-points caches for the Datoviz napari demo."""
 
 from __future__ import annotations
 
@@ -16,7 +11,7 @@ import numpy as np
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-DEFAULT_CACHE = REPO_ROOT / ".cache" / "datoviz-napari-demos" / "spatial_points" / "synthetic"
+DEFAULT_ZARR_ROOT = REPO_ROOT / ".cache" / "datoviz-napari-demos" / "spatialdata" / "data.zarr"
 
 
 def _hash_u32(values: np.ndarray) -> np.ndarray:
@@ -60,98 +55,85 @@ def _density_colors(value: np.ndarray) -> np.ndarray:
     return colors
 
 
-def _synthetic_points(count: int, category_count: int, seed: int) -> tuple[np.ndarray, ...]:
-    rng = np.random.default_rng(seed)
-    cluster_count = max(64, min(512, count // 4096))
-    centers = rng.uniform(-0.82, 0.82, size=(cluster_count, 2)).astype(np.float32)
-    cluster_category = rng.integers(0, category_count, size=cluster_count, dtype=np.uint32)
-
-    idx = np.arange(count, dtype=np.uint32)
-    cluster = _hash_u32(idx + np.uint32(seed)) % np.uint32(cluster_count)
-    jitter_x = ((_hash_u32(idx * np.uint32(3) + np.uint32(11)) & 0xFFFF) / 65535.0) - 0.5
-    jitter_y = ((_hash_u32(idx * np.uint32(5) + np.uint32(23)) & 0xFFFF) / 65535.0) - 0.5
-    radius = 0.018 + 0.055 * ((cluster % np.uint32(17)).astype(np.float32) / 16.0)
-
-    positions = np.zeros((count, 3), dtype=np.float32)
-    positions[:, 0] = centers[cluster, 0] + jitter_x.astype(np.float32) * radius
-    positions[:, 1] = centers[cluster, 1] + jitter_y.astype(np.float32) * radius
-    positions[:, 0:2] = np.clip(positions[:, 0:2], -0.92, 0.92)
-
-    category = cluster_category[cluster]
-    value = ((_hash_u32(idx + np.uint32(101)) & 0xFFFF) / 65535.0).astype(np.float32)
-    return positions, category, value
+def _normalize_points(points: np.ndarray) -> np.ndarray:
+    out = np.zeros((points.shape[0], 3), dtype=np.float32)
+    lo = np.nanmin(points, axis=0)
+    hi = np.nanmax(points, axis=0)
+    span = np.maximum(hi - lo, 1e-6)
+    out[:, :2] = -0.92 + 1.84 * ((points - lo) / span)
+    return out
 
 
-def _synthetic_image(width: int, height: int, seed: int) -> np.ndarray:
-    y, x = np.mgrid[0:height, 0:width].astype(np.float32)
-    nx = (x / max(1, width - 1)) - 0.5
-    ny = (y / max(1, height - 1)) - 0.5
-    vignette = np.clip(1.0 - 1.65 * (np.abs(nx) + np.abs(ny)), 0.0, 1.0)
-    texture = ((_hash_u32((x.astype(np.uint32) * 1973) ^ (y.astype(np.uint32) * 9277)) & 63) / 63.0)
-    base = np.clip(34.0 + 150.0 * vignette + 22.0 * texture, 0, 255)
-    image = np.empty((height, width, 4), dtype=np.uint8)
-    image[:, :, 0] = np.clip(base * 0.82, 0, 255).astype(np.uint8)
-    image[:, :, 1] = np.clip(base * 0.92, 0, 255).astype(np.uint8)
-    image[:, :, 2] = np.clip(base * 1.08, 0, 255).astype(np.uint8)
-    image[:, :, 3] = 255
-    return image
+def _rgba_from_image(image: np.ndarray) -> np.ndarray:
+    array = np.asarray(image)
+    if array.ndim == 3 and array.shape[0] in (1, 3, 4):
+        array = np.moveaxis(array, 0, -1)
+    if array.ndim == 3 and array.shape[-1] == 1:
+        array = array[:, :, 0]
+
+    if array.ndim == 2:
+        raw = array.astype(np.float32, copy=False)
+        lo = float(np.nanmin(raw))
+        hi = float(np.nanmax(raw))
+        gray = np.clip(255.0 * (raw - lo) / max(hi - lo, 1e-6), 0, 255).astype(np.uint8)
+        rgba = np.empty((*gray.shape, 4), dtype=np.uint8)
+        rgba[:, :, 0] = gray
+        rgba[:, :, 1] = gray
+        rgba[:, :, 2] = gray
+        rgba[:, :, 3] = 255
+        return rgba
+
+    if array.ndim == 3 and array.shape[-1] in (3, 4):
+        raw = array.astype(np.float32, copy=False)
+        lo = float(np.nanmin(raw))
+        hi = float(np.nanmax(raw))
+        rgb = np.clip(255.0 * (raw - lo) / max(hi - lo, 1e-6), 0, 255).astype(np.uint8)
+        rgba = np.empty((array.shape[0], array.shape[1], 4), dtype=np.uint8)
+        rgba[:, :, : min(3, rgb.shape[-1])] = rgb[:, :, : min(3, rgb.shape[-1])]
+        rgba[:, :, 3] = 255 if rgb.shape[-1] == 3 else rgb[:, :, 3]
+        return rgba
+
+    raise RuntimeError(f"unsupported image shape {array.shape}")
 
 
-def _load_spatialdata(dataset: str) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
-    try:
-        import spatialdata.datasets as datasets
-    except ImportError as exc:
-        raise RuntimeError(
-            "SpatialData extraction requires the optional 'spatialdata' package. "
-            "Use --dataset synthetic to generate a cache with only NumPy."
-        ) from exc
+def _load_spatialdata_zarr(path: Path) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+    import spatialdata as sd
 
-    helper = getattr(datasets, dataset, None)
-    if helper is None:
-        raise RuntimeError(f"SpatialData helper '{dataset}' was not found")
-    sdata = helper()
+    sdata = sd.read_zarr(path)
 
-    tables = getattr(sdata, "tables", {})
-    for table in tables.values():
-        obs = getattr(table, "obs", None)
-        obsm = getattr(table, "obsm", {})
-        coords = obsm.get("spatial") if hasattr(obsm, "get") else None
-        if coords is None and obs is not None:
-            columns = getattr(obs, "columns", [])
-            if "x" in columns and "y" in columns:
-                coords = np.column_stack([np.asarray(obs["x"]), np.asarray(obs["y"])])
-        if coords is None:
-            continue
-
-        points = np.asarray(coords, dtype=np.float32)
-        if points.ndim != 2 or points.shape[1] < 2:
-            continue
-        points = points[:, :2]
-
+    if getattr(sdata, "points", {}):
+        name, points_df = next(iter(sdata.points.items()))
+        print(f"using SpatialData points element {name!r}")
+        df = points_df.compute() if hasattr(points_df, "compute") else points_df
+        points = np.column_stack([np.asarray(df["x"]), np.asarray(df["y"])]).astype(np.float32)
+        if "cell_type" in df:
+            _, inverse = np.unique(np.asarray(df["cell_type"]).astype(str), return_inverse=True)
+            category = inverse.astype(np.uint32)
+        else:
+            category = np.zeros(points.shape[0], dtype=np.uint32)
+        value = ((_hash_u32(np.arange(points.shape[0], dtype=np.uint32) + np.uint32(101)) & 0xFFFF) / 65535.0).astype(
+            np.float32
+        )
+    elif getattr(sdata, "shapes", {}):
+        name, shapes = next(iter(sdata.shapes.items()))
+        print(f"using SpatialData shapes element {name!r}")
+        centroids = shapes.geometry.centroid
+        points = np.column_stack([centroids.x.to_numpy(), centroids.y.to_numpy()]).astype(np.float32)
         category = np.zeros(points.shape[0], dtype=np.uint32)
         value = np.zeros(points.shape[0], dtype=np.float32)
-        if obs is not None:
-            for name in ("cell_type", "cluster", "annotation", "gene"):
-                if name in getattr(obs, "columns", []):
-                    _, inverse = np.unique(np.asarray(obs[name]).astype(str), return_inverse=True)
-                    category = inverse.astype(np.uint32)
-                    break
-            for name in ("intensity", "expression", "score", "quality", "area"):
-                if name in getattr(obs, "columns", []):
-                    raw = np.asarray(obs[name], dtype=np.float32)
-                    lo = float(np.nanmin(raw))
-                    hi = float(np.nanmax(raw))
-                    value = (raw - lo) / max(hi - lo, 1e-6)
-                    break
+    else:
+        raise RuntimeError(f"no points or shapes found in SpatialData Zarr {path}")
 
-        out = np.zeros((points.shape[0], 3), dtype=np.float32)
-        lo = np.nanmin(points, axis=0)
-        hi = np.nanmax(points, axis=0)
-        span = np.maximum(hi - lo, 1e-6)
-        out[:, :2] = -0.92 + 1.84 * ((points - lo) / span)
-        return out, category, value
+    if getattr(sdata, "images", {}):
+        image_name, image_data = next(iter(sdata.images.items()))
+        print(f"using SpatialData image element {image_name!r}")
+        data = image_data.data
+        data = data.compute() if hasattr(data, "compute") else data
+        image = _rgba_from_image(data)
+    else:
+        raise RuntimeError(f"no image found in SpatialData Zarr {path}")
 
-    raise RuntimeError(f"no usable spatial coordinate table found in SpatialData dataset {dataset!r}")
+    return _normalize_points(points), category, value, image
 
 
 def _write_cache(
@@ -177,6 +159,16 @@ def _write_cache(
     colors_density.tofile(output / "colors_density_rgba8.bin")
     image.tofile(output / "image_rgba8.bin")
 
+    lod_targets = (
+        ("real", positions.shape[0]),
+        ("1m", 1_000_000),
+        ("5m", 5_000_000),
+        ("10m", 10_000_000),
+    )
+    for name, target in lod_targets:
+        count = min(int(positions.shape[0]), target)
+        np.arange(count, dtype="<u4").tofile(output / f"lod_{name}_u32.bin")
+
     metadata = {
         "dataset": dataset,
         "point_count": int(positions.shape[0]),
@@ -194,22 +186,19 @@ def _write_cache(
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--dataset", default="synthetic", choices=("synthetic", "merfish", "mibitof"))
-    parser.add_argument("--output", type=Path, default=DEFAULT_CACHE)
-    parser.add_argument("--count", type=int, default=1_000_000)
-    parser.add_argument("--categories", type=int, default=16)
-    parser.add_argument("--image-size", type=int, default=1024)
-    parser.add_argument("--seed", type=int, default=42)
+    parser.add_argument("--dataset", default="merfish", choices=("merfish", "mibitof"))
+    parser.add_argument("--output", type=Path)
+    parser.add_argument("--zarr", type=Path, default=DEFAULT_ZARR_ROOT)
     args = parser.parse_args()
 
-    if args.dataset == "synthetic":
-        positions, category, value = _synthetic_points(args.count, args.categories, args.seed)
-    else:
-        positions, category, value = _load_spatialdata(args.dataset)
+    output = args.output
+    if output is None:
+        output = REPO_ROOT / ".cache" / "datoviz-napari-demos" / "spatial_points" / args.dataset
 
-    image = _synthetic_image(args.image_size, args.image_size, args.seed)
-    _write_cache(args.output, args.dataset, positions, category, value, image)
-    print(f"wrote {positions.shape[0]} points to {args.output}")
+    positions, category, value, image = _load_spatialdata_zarr(args.zarr)
+
+    _write_cache(output, args.dataset, positions, category, value, image)
+    print(f"wrote {positions.shape[0]} points to {output}")
     return 0
 
 

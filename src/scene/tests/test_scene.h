@@ -335,6 +335,8 @@ int test_scene_emit_warns_visual_with_no_position(TstSuite* suite, TstItem* item
 
 int test_scene_rejects_mismatched_point_attribute_counts(TstSuite* suite, TstItem* item);
 
+int test_scene_point_visual_resizes_existing_attributes(TstSuite* suite, TstItem* item);
+
 int test_scene_rejects_range_update_without_full_allocation(TstSuite* suite, TstItem* item);
 
 int test_scene_rejects_mutation_while_emitted_stream_is_live(TstSuite* suite, TstItem* item);

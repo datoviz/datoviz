@@ -235,6 +235,20 @@ static bool _visual_attr_count_consistent(
     if (item_count == 0)
         return false;
 
+    uint32_t old_item_count = 0;
+    bool resizing_existing_attr = false;
+    for (uint32_t i = 0; i < visual->attr_count; i++)
+    {
+        const DvzVisualAttr* attr = &visual->attrs[i];
+        bool attr_has_payload = attr->data != NULL || attr->buffer != NULL;
+        if (strcmp(attr->name, attr_name) == 0 && attr_has_payload && attr->item_count != 0)
+        {
+            old_item_count = attr->item_count;
+            resizing_existing_attr = old_item_count != item_count;
+            break;
+        }
+    }
+
     for (uint32_t i = 0; i < visual->attr_count; i++)
     {
         const DvzVisualAttr* attr = &visual->attrs[i];
@@ -247,6 +261,8 @@ static bool _visual_attr_count_consistent(
         if (strcmp(attr->name, attr_name) == 0 || attr->item_count == 0 || !attr_has_payload)
             continue;
         if (attr->item_count == item_count)
+            continue;
+        if (resizing_existing_attr && attr->item_count == old_item_count)
             continue;
 
         log_error(
