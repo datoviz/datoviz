@@ -1,16 +1,12 @@
-var<private> outColor: vec4<f32>;
-var<private> fragColor_1: vec4<f32>;
-
-fn main_1() {
-    let _e2 = fragColor_1;
-    outColor = _e2;
-    return;
-}
+struct FragmentIn {
+    @location(0) color: vec4f,
+    @location(1) corner: vec2f,
+};
 
 @fragment
-fn main(@location(0) fragColor: vec4<f32>) -> @location(0) vec4<f32> {
-    fragColor_1 = fragColor;
-    main_1();
-    let _e3 = outColor;
-    return _e3;
+fn main(input: FragmentIn) -> @location(0) vec4f {
+    if (dot(input.corner, input.corner) > 1.0) {
+        discard;
+    }
+    return input.color;
 }
