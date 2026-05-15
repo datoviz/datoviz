@@ -910,10 +910,14 @@ static void _json_append_command(JsonBuilder* builder, const DvzDrp2Command* com
             _json_append(
                 builder,
                 "{ \"texture_id\": %" PRIu64
-                ", \"load_op\": \"%s\", \"store_op\": \"%s\", \"access\": \"%s\", "
-                "\"clear_value\": { \"r\": %g, \"g\": %g, \"b\": %g, \"a\": %g } }",
-                texture_id, _attachment_load_name(load_op), _attachment_store_name(store_op),
-                _attachment_access_name(access),
+                ", \"load_op\": \"%s\", \"store_op\": \"%s\"",
+                texture_id, _attachment_load_name(load_op), _attachment_store_name(store_op));
+            if (access != DVZ_DRP2_ATTACHMENT_ACCESS_WRITE)
+            {
+                _json_append(builder, ", \"access\": \"%s\"", _attachment_access_name(access));
+            }
+            _json_append(
+                builder, ", \"clear_value\": { \"r\": %g, \"g\": %g, \"b\": %g, \"a\": %g } }",
                 (double)clear_color[0], (double)clear_color[1], (double)clear_color[2],
                 (double)clear_color[3]);
         }
@@ -923,12 +927,19 @@ static void _json_append_command(JsonBuilder* builder, const DvzDrp2Command* com
             _json_append(
                 builder,
                 ", \"depth_stencil_attachment\": { \"format\": \"depth32float\", "
-                "\"texture_id\": %" PRIu64 ", \"load_op\": \"%s\", \"store_op\": \"%s\", "
-                "\"access\": \"%s\", \"clear_value\": { \"depth\": %g } }",
+                "\"texture_id\": %" PRIu64 ", \"load_op\": \"%s\", \"store_op\": \"%s\"",
                 command->u.begin_render_pass.depth_texture_id,
                 _attachment_load_name(command->u.begin_render_pass.depth_load_op),
-                _attachment_store_name(command->u.begin_render_pass.depth_store_op),
-                _attachment_access_name(command->u.begin_render_pass.depth_access),
+                _attachment_store_name(command->u.begin_render_pass.depth_store_op));
+            if (command->u.begin_render_pass.depth_access !=
+                DVZ_DRP2_ATTACHMENT_ACCESS_READ_WRITE)
+            {
+                _json_append(
+                    builder, ", \"access\": \"%s\"",
+                    _attachment_access_name(command->u.begin_render_pass.depth_access));
+            }
+            _json_append(
+                builder, ", \"clear_value\": { \"depth\": %g } }",
                 (double)command->u.begin_render_pass.clear_depth);
         }
         _json_append(builder, " }");
