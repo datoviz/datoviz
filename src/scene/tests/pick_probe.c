@@ -1274,6 +1274,21 @@ int test_scene_image_probe_segment_rgba_hidden_visual(TstSuite* suite, TstItem* 
     AT(!probe.hit);
     AT(probe.request_id == 44);
 
+    dvz_panel_set_panzoom(panel, NULL, 0);
+    DvzPanzoom* pz = dvz_panel_panzoom(panel);
+    ANN(pz);
+    dvz_panzoom_zoom(pz, (vec2){2.0f, 2.0f});
+    dvz_panzoom_pan(pz, (vec2){0.5f, 0.0f});
+
+    AT(dvz_panel_probe(
+           panel, 48.0, 16.0,
+           &(DvzProbeRequest){.request_id = 45, .target = DVZ_SCENE_TARGET_SEGMENT}) == 0);
+    AT(dvz_figure_process_requests(figure, runtime, &caps) == 1);
+    AT(dvz_scene_poll_probe(scene, &probe));
+    AT(probe.hit);
+    AT(probe.request_id == 45);
+    AT(probe.category_id == 17);
+
     dvz_drp2_runtime_destroy(runtime);
     dvz_gpu_ctx_destroy(ctx);
     dvz_scene_destroy(scene);

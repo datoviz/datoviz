@@ -160,8 +160,8 @@ uint64_t _scene_panel_public_id(const DvzFigure* figure, const DvzPanel* panel)
 /**
  * Build an apply MVP that recenters one panel-local request onto the readback pixel.
  *
- * Image probing currently reads back one fixed pixel from a synthetic full-target render. The
- * request coordinate is therefore shifted onto the shared synthetic target NDC.
+ * Image probing reads back one pixel from a synthetic 1x1 target. The request coordinate is
+ * therefore shifted onto the target center.
  *
  * @param panel the panel
  * @param request_ndc the requested panel-local NDC coordinate
@@ -173,7 +173,7 @@ void _scene_request_apply_mvp(const DvzPanel* panel, const vec2 request_ndc, Dvz
     ANN(request_ndc);
     ANN(out);
     _scene_panel_apply_mvp(panel, out);
-    vec2 target_ndc = {-0.75f, 0.75f};
+    vec2 target_ndc = {0.0f, 0.0f};
     vec2 delta = {request_ndc[0] - target_ndc[0], request_ndc[1] - target_ndc[1]};
     _scene_center_apply_mvp(out, delta);
 }

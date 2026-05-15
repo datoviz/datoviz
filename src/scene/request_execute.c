@@ -37,9 +37,6 @@ static bool _scene_execute_readback_plan(
     const DvzScene* scene, DvzSceneRequestExecutor* executor, const DvzCapabilitySnapshot* caps,
     DvzFramePlan* plan, uint8_t rgba[4], bool* out_executed);
 
-static bool _scene_image_probe_sample_cpu(
-    const DvzPanel* panel, DvzVisual* visual, const vec2 request_ndc, uint8_t rgba[4]);
-
 static bool _scene_runtime_config_matches(
     const DvzDrp2RuntimeConfig* a, const DvzDrp2RuntimeConfig* b);
 
@@ -220,6 +217,8 @@ static bool _scene_execute_readback_plan(
     dvz_diagnostic_report_init(&report);
     DvzFramePlanEmitConfig cfg = dvz_frame_plan_emit_config();
     cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
+    cfg.target_width = 1;
+    cfg.target_height = 1;
     DvzDrp2CommandStream* stream =
         dvz_frame_plan_emitter_emit_drp2(executor->emitter, plan, caps, &report, &cfg);
     if (stream == NULL)
@@ -260,142 +259,6 @@ static bool _scene_execute_readback_plan(
     dvz_drp2_stream_destroy(stream);
     return ok;
 }
-
-
-/**
- * Sample the retained image texture at one panel-local request coordinate.
- *
- * @param panel the panel owning the probed visual
- * @param visual the image visual
- * @param request_ndc the request coordinate in panel-local NDC
- * @param rgba the output RGBA8 value
- * @return true when a retained texture value was sampled
- */
-static bool _scene_image_probe_sample_cpu(
-    const DvzPanel* panel, DvzVisual* visual, const vec2 request_ndc, uint8_t rgba[4])
-{
-    ANN(panel);
-    ANN(visual);
-    ANN(request_ndc);
-    ANN(rgba);
-
-    const uint8_t* data = NULL;
-    uint32_t width = 0;
-    uint32_t height = 0;
-    if (visual->field != NULL && visual->field->data != NULL &&
-        visual->field->desc.format == DVZ_FIELD_FORMAT_RGBA8_UNORM)
-    {
-        data = (const uint8_t*)visual->field->data;
-        width = visual->field->desc.width;
-        height = visual->field->desc.height;
-    }
-    else
-    {
-        DvzFieldRegion upload_region = {0};
-        const void* upload_data = NULL;
-        if (!_scene_prepare_image_texture(visual, &upload_region, &upload_data) ||
-            visual->texture.rgba == NULL)
-            return false;
-        (void)upload_region;
-        (void)upload_data;
-        data = (const uint8_t*)visual->texture.rgba;
-        width = visual->texture.width;
-        height = visual->texture.height;
-    }
-    if (data == NULL || width == 0 || height == 0)
-        return false;
-
-    double u = 0.5 * ((double)request_ndc[0] + 1.0);
-    double v = 0.5 * (1.0 - (double)request_ndc[1]);
-    int pos_idx = _attr_index(visual, "position");
-    int uv_idx = _attr_index(visual, "texcoords");
-    if (pos_idx >= 0 && uv_idx >= 0)
-    {
-        DvzVisualAttr* pos_attr = &visual->attrs[pos_idx];
-        DvzVisualAttr* uv_attr = &visual->attrs[uv_idx];
-        if (pos_attr->data != NULL && uv_attr->data != NULL && pos_attr->item_count > 0 &&
-            uv_attr->item_count == pos_attr->item_count && pos_attr->item_size == sizeof(vec3) &&
-            uv_attr->item_size == sizeof(vec2))
-        {
-            const vec3* positions = (const vec3*)pos_attr->data;
-            const vec2* texcoords = (const vec2*)uv_attr->data;
-            float min_x = positions[0][0];
-            float max_x = positions[0][0];
-            float min_y = positions[0][1];
-            float max_y = positions[0][1];
-            float min_u = texcoords[0][0];
-            float max_u = texcoords[0][0];
-            float min_v = texcoords[0][1];
-            float max_v = texcoords[0][1];
-            for (uint64_t j = 1; j < pos_attr->item_count; j++)
-            {
-                if (positions[j][0] < min_x)
-                    min_x = positions[j][0];
-                if (positions[j][0] > max_x)
-                    max_x = positions[j][0];
-                if (positions[j][1] < min_y)
-                    min_y = positions[j][1];
-                if (positions[j][1] > max_y)
-                    max_y = positions[j][1];
-                if (texcoords[j][0] < min_u)
-                    min_u = texcoords[j][0];
-                if (texcoords[j][0] > max_u)
-                    max_u = texcoords[j][0];
-                if (texcoords[j][1] < min_v)
-                    min_v = texcoords[j][1];
-                if (texcoords[j][1] > max_v)
-                    max_v = texcoords[j][1];
-            }
-            if (max_x != min_x && max_y != min_y)
-            {
-                DvzMVP mvp = {0};
-                _scene_panel_apply_mvp(panel, &mvp);
-                mat4 proj_view = GLM_MAT4_IDENTITY_INIT;
-                mat4 proj_view_model = GLM_MAT4_IDENTITY_INIT;
-                mat4 inv_proj_view_model = GLM_MAT4_IDENTITY_INIT;
-                glm_mat4_mul(mvp.proj, mvp.view, proj_view);
-                glm_mat4_mul(proj_view, mvp.model, proj_view_model);
-                glm_mat4_inv(proj_view_model, inv_proj_view_model);
-
-                vec4 clip = {request_ndc[0], -request_ndc[1], 0.0f, 1.0f};
-                vec4 local = {0};
-                glm_mat4_mulv(inv_proj_view_model, clip, local);
-                if (local[3] != 0.0f)
-                {
-                    double x = (double)(local[0] / local[3]);
-                    double y = (double)(local[1] / local[3]);
-                    double su = (x - min_x) / (double)(max_x - min_x);
-                    double sv = (y - min_y) / (double)(max_y - min_y);
-                    u = min_u + su * (double)(max_u - min_u);
-                    v = min_v + sv * (double)(max_v - min_v);
-                }
-            }
-        }
-    }
-    if (u < 0.0)
-        u = 0.0;
-    if (v < 0.0)
-        v = 0.0;
-    if (u >= 1.0)
-        u = 1.0 - 1e-12;
-    if (v >= 1.0)
-        v = 1.0 - 1e-12;
-
-    uint32_t x = (uint32_t)(u * (double)width);
-    uint32_t y = (uint32_t)(v * (double)height);
-    if (x >= width)
-        x = width - 1;
-    if (y >= height)
-        y = height - 1;
-
-    uint64_t index = 4 * ((uint64_t)y * width + x);
-    rgba[0] = data[index + 0];
-    rgba[1] = data[index + 1];
-    rgba[2] = data[index + 2];
-    rgba[3] = data[index + 3];
-    return true;
-}
-
 
 
 /**
@@ -738,8 +601,6 @@ static bool _scene_process_image_probe_request(
                 executor, visual, position_version, texcoord_version, texture_version);
             executor->image_probe_static_upload_count++;
         }
-        if (readback_ok)
-            (void)_scene_image_probe_sample_cpu(panel, visual, request_ndc, rgba);
         bool hit = readback_ok && rgba[3] > 0;
         if (!segment_probe && readback_ok && rgba[3] == 0)
         {
