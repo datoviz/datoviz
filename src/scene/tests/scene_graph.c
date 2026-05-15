@@ -4358,6 +4358,135 @@ int test_scene_visual_alpha_mode_depth_peel_frame_plan(TstSuite* suite, TstItem*
 
 
 /**
+ * Verify depth-peel alpha mode lowers to an executable DRP2 multi-pass shape.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_visual_alpha_mode_emits_depth_peel_drp2(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    AT(scene != NULL);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    AT(figure != NULL);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    AT(panel != NULL);
+
+    DvzVisual* opaque = dvz_primitive(scene, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 0);
+    DvzVisual* transparent = dvz_primitive(scene, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 0);
+    AT(opaque != NULL);
+    AT(transparent != NULL);
+
+    float positions[3][3] = {
+        {-0.5f, -0.5f, 0.0f},
+        {0.5f, -0.5f, 0.0f},
+        {0.0f, 0.5f, 0.0f},
+    };
+    DvzColor opaque_colors[3] = {
+        {255, 255, 255, 255}, {255, 255, 255, 255}, {255, 255, 255, 255}};
+    DvzColor transparent_colors[3] = {
+        {255, 0, 0, 128}, {0, 255, 0, 128}, {0, 0, 255, 128}};
+
+    AT(dvz_visual_set_data(opaque, "position", positions, 3) == 0);
+    AT(dvz_visual_set_data(opaque, "color", opaque_colors, 3) == 0);
+    AT(dvz_visual_set_data(transparent, "position", positions, 3) == 0);
+    AT(dvz_visual_set_data(transparent, "color", transparent_colors, 3) == 0);
+    AT(dvz_visual_set_alpha_mode(transparent, DVZ_ALPHA_DEPTH_PEEL) == 0);
+    AT(dvz_panel_add_visual(panel, opaque, NULL) == 0);
+    AT(dvz_panel_add_visual(panel, transparent, NULL) == 0);
+
+    DvzCapabilitySnapshot caps;
+    dvz_capability_snapshot_default(&caps);
+    caps.max_color_attachments = 3;
+    caps.render_target_format_rgba16float = true;
+    caps.supports_render_target_sampling = true;
+
+    DvzDiagnosticReport report;
+    dvz_diagnostic_report_init(&report);
+    DvzFramePlanEmitConfig cfg = dvz_frame_plan_emit_config();
+    cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
+    cfg.target_width = 64;
+    cfg.target_height = 64;
+
+    DvzDrp2CommandStream* stream = dvz_figure_emit_ex(figure, &caps, &report, &cfg);
+    ANN(stream);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+    DvzDrp2ValidationResult validation = dvz_drp2_validate_stream(stream);
+    AT(validation.ok);
+
+    bool has_front_ping = false;
+    bool has_front_pong = false;
+    bool has_depth_texture = false;
+    bool has_three_target_pipeline = false;
+    bool has_composite_pipeline = false;
+    bool has_composite_bind_group = false;
+    uint32_t begin_pass_count = 0;
+    uint32_t triple_attachment_passes = 0;
+    uint32_t sampled_bind_group_count = 0;
+    for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
+    {
+        const DvzDrp2Command* command = dvz_drp2_stream_get(stream, i);
+        ANN(command);
+        if (command->type == DVZ_DRP2_COMMAND_CREATE_TEXTURE)
+        {
+            const char* label = dvz_drp2_stream_label(stream, command->u.create_texture.id);
+            has_front_ping =
+                has_front_ping || (label != NULL &&
+                                   strcmp(label, "fig0_p0.peel.front_ping") == 0);
+            has_front_pong =
+                has_front_pong || (label != NULL &&
+                                   strcmp(label, "fig0_p0.peel.front_pong") == 0);
+            has_depth_texture =
+                has_depth_texture ||
+                (label != NULL && strcmp(label, "fig0_p0.depth.opaque") == 0 &&
+                 command->u.create_texture.format == VK_FORMAT_D32_SFLOAT);
+        }
+        else if (command->type == DVZ_DRP2_COMMAND_CREATE_RENDER_PIPELINE)
+        {
+            has_three_target_pipeline =
+                has_three_target_pipeline ||
+                command->u.create_render_pipeline.color_target_count == 3;
+            has_composite_pipeline =
+                has_composite_pipeline ||
+                (command->u.create_render_pipeline.bind_group_layout_count == 1 &&
+                 command->u.create_render_pipeline.vertex_buffer_slots == 0);
+        }
+        else if (command->type == DVZ_DRP2_COMMAND_CREATE_BIND_GROUP)
+        {
+            if (command->u.create_bind_group.entry_count == 4)
+                sampled_bind_group_count++;
+            has_composite_bind_group = has_composite_bind_group ||
+                                       command->u.create_bind_group.entry_count == 4;
+        }
+        else if (command->type == DVZ_DRP2_COMMAND_BEGIN_RENDER_PASS)
+        {
+            begin_pass_count++;
+            if (command->u.begin_render_pass.color_attachment_count == 3)
+                triple_attachment_passes++;
+        }
+    }
+
+    AT(has_front_ping);
+    AT(has_front_pong);
+    AT(has_depth_texture);
+    AT(has_three_target_pipeline);
+    AT(has_composite_pipeline);
+    AT(has_composite_bind_group);
+    AT(sampled_bind_group_count >= 2);
+    AT(begin_pass_count == 4);
+    AT(triple_attachment_passes == 2);
+
+    dvz_drp2_stream_destroy(stream);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+/**
  * Verify WBOIT alpha requests require explicit WBOIT-capable runtime facts.
  *
  * @param suite the active test suite
@@ -4836,6 +4965,89 @@ int test_scene_visual_alpha_mode_wboit_glsl_executes(TstSuite* suite, TstItem* i
 
 
 /**
+ * Execute the scene depth-peeling DRP2 path through the vklite runtime when a GPU is available.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_visual_alpha_mode_depth_peel_glsl_executes(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    if (!_scene_vklite_runtime_available())
+        return 0;
+
+    DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
+    VkPhysicalDeviceFeatures features10 = {0};
+    features10.independentBlend = true;
+    dvz_gpu_ctx_config_features10(&gpu_cfg, &features10);
+    VkPhysicalDeviceVulkan13Features features13 = {
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES};
+    features13.dynamicRendering = true;
+    features13.synchronization2 = true;
+    dvz_gpu_ctx_config_features13(&gpu_cfg, &features13);
+    DvzGpuCtx* ctx = dvz_gpu_ctx(&gpu_cfg);
+    if (ctx == NULL)
+        return 0;
+
+    DvzScene* scene = dvz_scene();
+    AT(scene != NULL);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    AT(figure != NULL);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    AT(panel != NULL);
+
+    DvzVisual* transparent = dvz_primitive(scene, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 0);
+    AT(transparent != NULL);
+    float positions[3][3] = {
+        {-0.6f, -0.6f, 0.0f},
+        {0.6f, -0.6f, 0.0f},
+        {0.0f, 0.6f, 0.0f},
+    };
+    DvzColor colors[3] = {{255, 0, 0, 192}, {0, 255, 0, 192}, {0, 0, 255, 192}};
+    AT(dvz_visual_set_data(transparent, "position", positions, 3) == 0);
+    AT(dvz_visual_set_data(transparent, "color", colors, 3) == 0);
+    AT(dvz_visual_set_alpha_mode(transparent, DVZ_ALPHA_DEPTH_PEEL) == 0);
+    AT(dvz_panel_add_visual(panel, transparent, NULL) == 0);
+
+    DvzCapabilitySnapshot caps;
+    dvz_capability_snapshot_default(&caps);
+    caps.max_color_attachments = 3;
+    caps.render_target_format_rgba16float = true;
+    caps.supports_render_target_sampling = true;
+
+    DvzDiagnosticReport report;
+    dvz_diagnostic_report_init(&report);
+    DvzFramePlanEmitConfig cfg = dvz_frame_plan_emit_config();
+    cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
+    cfg.target_width = 64;
+    cfg.target_height = 64;
+
+    DvzDrp2CommandStream* stream = dvz_figure_emit_ex(figure, &caps, &report, &cfg);
+    ANN(stream);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+
+    DvzDrp2RuntimeConfig runtime_cfg =
+        dvz_drp2_runtime_vklite_config(dvz_gpu_ctx_device(ctx), dvz_gpu_ctx_alloc(ctx));
+    DvzDrp2Runtime* runtime = dvz_drp2_runtime_vklite(&runtime_cfg);
+    ANN(runtime);
+
+    DvzDrp2ValidationResult result = dvz_drp2_runtime_execute(runtime, stream);
+    AT(result.ok);
+    AT(result.code == DVZ_DRP2_VALIDATION_OK);
+    AT(dvz_gpu_ctx_error_count(ctx) == 0);
+
+    dvz_drp2_runtime_destroy(runtime);
+    dvz_drp2_stream_destroy(stream);
+    dvz_scene_destroy(scene);
+    dvz_gpu_ctx_destroy(ctx);
+    return 0;
+}
+
+
+/**
  * Register scene graph tests.
  *
  * @param suite the active test suite
@@ -4876,9 +5088,11 @@ int test_scene_graph(TstSuite* suite)
     TEST_SIMPLE(test_scene_visual_alpha_mode_standard_blend);
     TEST_SIMPLE(test_scene_visual_alpha_mode_splits_frame_plan_passes);
     TEST_SIMPLE(test_scene_visual_alpha_mode_depth_peel_frame_plan);
+    TEST_SIMPLE(test_scene_visual_alpha_mode_emits_depth_peel_drp2);
     TEST_SIMPLE(test_scene_visual_alpha_mode_requires_wboit_capabilities);
     TEST_SIMPLE(test_scene_visual_alpha_mode_emits_wboit_drp2);
     TEST_SIMPLE(test_scene_visual_alpha_mode_wboit_glsl_executes);
+    TEST_SIMPLE(test_scene_visual_alpha_mode_depth_peel_glsl_executes);
     TEST_SIMPLE(test_scene_visual_attr_source_and_mutability_metadata);
     TEST_SIMPLE(test_scene_point_external_position_buffer_emits_no_upload);
     TEST_SIMPLE(test_scene_point_external_position_buffer_executes);
