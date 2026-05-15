@@ -20,6 +20,7 @@
 #include <stdint.h>
 
 #include "datoviz/common/macros.h"
+#include "datoviz/drp2/runtime.h"
 #include "datoviz/drp2/types.h"
 
 
@@ -163,6 +164,29 @@ dvz_drp2_recording_frame(const DvzDrp2Recording* recording, uint32_t frame_index
  */
 DVZ_EXPORT DvzDrp2CommandStream*
 dvz_drp2_recording_frame_stream(const DvzDrp2Recording* recording, uint32_t frame_index);
+
+
+/**
+ * Execute one recorded frame against an existing DRP2 runtime.
+ *
+ * @param recording loaded recording
+ * @param runtime the runtime
+ * @param frame_index frame index
+ * @return the validation result after frame execution
+ */
+DVZ_EXPORT DvzDrp2ValidationResult dvz_drp2_recording_execute_frame(
+    const DvzDrp2Recording* recording, DvzDrp2Runtime* runtime, uint32_t frame_index);
+
+
+/**
+ * Execute all recorded frames in order against an existing DRP2 runtime.
+ *
+ * @param recording loaded recording
+ * @param runtime the runtime
+ * @return the first failing validation result, or OK after all frames execute
+ */
+DVZ_EXPORT DvzDrp2ValidationResult
+dvz_drp2_recording_execute_all(const DvzDrp2Recording* recording, DvzDrp2Runtime* runtime);
 
 
 /**

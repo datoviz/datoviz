@@ -130,6 +130,46 @@ static bool _recording_join(
 
 
 /**
+ * Create a DRP2 validation result.
+ *
+ * @param ok whether validation succeeded
+ * @param code validation code
+ * @param command_index command index associated with the result
+ * @return the validation result
+ */
+static DvzDrp2ValidationResult _recording_result(
+    bool ok, DvzDrp2ValidationCode code, uint32_t command_index)
+{
+    DvzDrp2ValidationResult result = {0};
+    result.ok = ok;
+    result.code = code;
+    result.command_index = command_index;
+    return result;
+}
+
+
+
+/**
+ * Shift a frame-local validation command index to recording command coordinates.
+ *
+ * @param result validation result
+ * @param first_command first command index in the recorded frame
+ */
+static void _recording_result_offset(
+    DvzDrp2ValidationResult* result, uint32_t first_command)
+{
+    ANN(result);
+    if (result->ok || result->command_index == UINT32_MAX)
+        return;
+    if (result->command_index > UINT32_MAX - first_command)
+        result->command_index = UINT32_MAX;
+    else
+        result->command_index += first_command;
+}
+
+
+
+/**
  * Write one binary blob file.
  *
  * @param path blob path
@@ -1527,6 +1567,58 @@ DvzDrp2CommandStream* dvz_drp2_recording_frame_stream(
         }
     }
     return stream;
+}
+
+
+
+/**
+ * Execute one recorded frame against an existing DRP2 runtime.
+ *
+ * @param recording loaded recording
+ * @param runtime the runtime
+ * @param frame_index frame index
+ * @return the validation result after frame execution
+ */
+DvzDrp2ValidationResult dvz_drp2_recording_execute_frame(
+    const DvzDrp2Recording* recording, DvzDrp2Runtime* runtime, uint32_t frame_index)
+{
+    if (recording == NULL || runtime == NULL)
+        return _recording_result(false, DVZ_DRP2_VALIDATION_INVALID_ARGUMENT, 0);
+    const DvzDrp2RecordedFrame* frame = dvz_drp2_recording_frame(recording, frame_index);
+    if (frame == NULL)
+        return _recording_result(false, DVZ_DRP2_VALIDATION_INVALID_ARGUMENT, 0);
+    DvzDrp2CommandStream* stream = dvz_drp2_recording_frame_stream(recording, frame_index);
+    if (stream == NULL)
+        return _recording_result(
+            false, DVZ_DRP2_VALIDATION_INVALID_STATE, frame->first_command);
+    DvzDrp2ValidationResult result = dvz_drp2_runtime_execute(runtime, stream);
+    _recording_result_offset(&result, frame->first_command);
+    dvz_drp2_stream_destroy(stream);
+    return result;
+}
+
+
+
+/**
+ * Execute all recorded frames in order against an existing DRP2 runtime.
+ *
+ * @param recording loaded recording
+ * @param runtime the runtime
+ * @return the first failing validation result, or OK after all frames execute
+ */
+DvzDrp2ValidationResult
+dvz_drp2_recording_execute_all(const DvzDrp2Recording* recording, DvzDrp2Runtime* runtime)
+{
+    if (recording == NULL || runtime == NULL)
+        return _recording_result(false, DVZ_DRP2_VALIDATION_INVALID_ARGUMENT, 0);
+    for (uint32_t i = 0; i < recording->frame_count; i++)
+    {
+        DvzDrp2ValidationResult result =
+            dvz_drp2_recording_execute_frame(recording, runtime, i);
+        if (!result.ok)
+            return result;
+    }
+    return _recording_result(true, DVZ_DRP2_VALIDATION_OK, UINT32_MAX);
 }
 
 

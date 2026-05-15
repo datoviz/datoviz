@@ -3245,6 +3245,21 @@ int test_drp2_recording_linear_roundtrip(TstSuite* suite, TstItem* item)
     AT(frame1->t_present > 0.015 && frame1->t_present < 0.017);
     AT(frame1->first_command == 3);
     AT(frame1->command_count == 3);
+
+    runtime = dvz_drp2_runtime_vklite(&cfg);
+    ANN(runtime);
+    result = dvz_drp2_recording_execute_frame(recording, runtime, 0);
+    AT(result.ok);
+    result = dvz_drp2_recording_execute_frame(recording, runtime, 1);
+    AT(result.ok);
+    dvz_drp2_runtime_destroy(runtime);
+
+    runtime = dvz_drp2_runtime_vklite(&cfg);
+    ANN(runtime);
+    result = dvz_drp2_recording_execute_all(recording, runtime);
+    AT(result.ok);
+    dvz_drp2_runtime_destroy(runtime);
+
     DvzDrp2CommandStream* replay_setup_frame = dvz_drp2_recording_frame_stream(recording, 0);
     DvzDrp2CommandStream* replay_update_frame = dvz_drp2_recording_frame_stream(recording, 1);
     dvz_drp2_recording_close(recording);
