@@ -261,7 +261,15 @@ int main(int argc, char** argv)
 
     dvz_visual_set_data(shell, "position", shell_positions, 24);
     dvz_visual_set_data(shell, "color", shell_colors, 24);
+    dvz_visual_set_data(shell, "normal", shell_normals, 24);
     dvz_visual_set_buffer(shell, "index", index_buffer);
+    dvz_visual_set_primitive_shading(
+        shell,
+        &(DvzPrimitiveShadingDesc){
+            .light_direction = {0.35f, 0.55f, 0.75f},
+            .ambient = 0.35f,
+            .diffuse = 0.75f,
+        });
     dvz_visual_set_alpha_mode(shell, DVZ_ALPHA_WBOIT);
 
     dvz_panel_add_visual(panel, inner, NULL);

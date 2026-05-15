@@ -206,6 +206,21 @@
     "layout(location=1)out float outWeight;\n"                                                   \
     "void main(){float a=clamp(fragColor.a,0.0,1.0);"                                          \
     "outAccum=vec4(fragColor.rgb*a,a);outWeight=a;}\n"
+#define DRP2_WBOIT_ACCUM_LIT_FRAGMENT_GLSL                                                      \
+    "#version 450\n"                                                                            \
+    "layout(set=1,binding=0)uniform PrimitiveShading{vec4 lightDir;vec4 params;}shading;\n"    \
+    "layout(location=0)in vec4 fragColor;\n"                                                    \
+    "layout(location=1)in vec3 fragNormal;\n"                                                   \
+    "layout(location=2)in vec3 fragWorldPos;\n"                                                 \
+    "layout(location=3)in vec3 fragCameraPos;\n"                                                \
+    "layout(location=0)out vec4 outAccum;\n"                                                     \
+    "layout(location=1)out float outWeight;\n"                                                   \
+    "void main(){vec3 n=normalize(fragNormal);vec3 l=normalize(shading.lightDir.xyz);"         \
+    "vec3 v=normalize(fragCameraPos-fragWorldPos);vec3 h=normalize(l+v);"                      \
+    "float lambert=max(dot(n,l),0.0);float spec=pow(max(dot(n,h),0.0),32.0);"                  \
+    "vec3 rgb=fragColor.rgb*(shading.params.x+shading.params.y*lambert)+vec3(0.18*spec);"     \
+    "float a=clamp(fragColor.a,0.0,1.0);vec3 lit=clamp(rgb,0.0,1.0);"                          \
+    "outAccum=vec4(lit*a,a);outWeight=a;}\n"
 #define DRP2_WBOIT_RESOLVE_FRAGMENT_GLSL                                                        \
     "#version 450\n"                                                                            \
     "layout(set=0,binding=0)uniform texture2D accumTex;\n"                                      \
@@ -375,6 +390,8 @@ const char* _builtin_shader_glsl(DvzSceneBuiltinShader shader, bool fragment)
         return fragment ? DRP2_IMAGE_FRAGMENT_GLSL : DRP2_IMAGE_VERTEX_GLSL;
     case DVZ_SCENE_BUILTIN_SHADER_WBOIT_ACCUM:
         return fragment ? DRP2_WBOIT_ACCUM_FRAGMENT_GLSL : DRP2_PRIMITIVE_VERTEX_GLSL;
+    case DVZ_SCENE_BUILTIN_SHADER_WBOIT_ACCUM_LIT:
+        return fragment ? DRP2_WBOIT_ACCUM_LIT_FRAGMENT_GLSL : DRP2_PRIMITIVE_LIT_VERTEX_GLSL;
     case DVZ_SCENE_BUILTIN_SHADER_WBOIT_RESOLVE:
         return fragment ? DRP2_WBOIT_RESOLVE_FRAGMENT_GLSL : DRP2_FULLSCREEN_VERTEX_GLSL;
     default:

@@ -4359,9 +4359,22 @@ int test_scene_visual_alpha_mode_wboit_glsl_executes(TstSuite* suite, TstItem* i
         {0.6f, -0.6f, 0.0f},
         {0.0f, 0.6f, 0.0f},
     };
+    float normals[3][3] = {
+        {0.0f, 0.0f, 1.0f},
+        {0.0f, 0.0f, 1.0f},
+        {0.0f, 0.0f, 1.0f},
+    };
     DvzColor colors[3] = {{255, 0, 0, 128}, {0, 255, 0, 128}, {0, 0, 255, 128}};
     AT(dvz_visual_set_data(transparent, "position", positions, 3) == 0);
     AT(dvz_visual_set_data(transparent, "color", colors, 3) == 0);
+    AT(dvz_visual_set_data(transparent, "normal", normals, 3) == 0);
+    AT(dvz_visual_set_primitive_shading(
+           transparent,
+           &(DvzPrimitiveShadingDesc){
+               .light_direction = {0.0f, 0.0f, 1.0f},
+               .ambient = 0.25f,
+               .diffuse = 0.75f,
+           }) == 0);
     AT(dvz_visual_set_alpha_mode(transparent, DVZ_ALPHA_WBOIT) == 0);
     AT(dvz_panel_add_visual(panel, transparent, NULL) == 0);
 

@@ -270,6 +270,7 @@ Example shape:
 DvzVisual* shell = dvz_mesh(scene, 0);
 
 dvz_visual_set_data(shell, "position", positions, vertex_count);
+dvz_visual_set_data(shell, "normal", normals, vertex_count);
 dvz_visual_set_data(shell, "color", colors_rgba, vertex_count);
 dvz_visual_set_buffer(shell, "index", index_buffer);
 

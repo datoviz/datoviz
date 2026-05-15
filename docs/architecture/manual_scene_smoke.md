@@ -94,9 +94,10 @@ Bounded validation smoke:
 ./build/examples/c/hello_mesh_wboit_glfw 2
 ```
 
-Expected behavior: a lit opaque cube renders inside a transparent cyan mesh shell. Idle rotation
-advances through the scene clock, arcball drag remains interactive, and Vulkan validation stays
-quiet for the bounded smoke.
+Expected behavior: a lit opaque cube renders inside a transparent cyan mesh shell. The shell should
+show face-to-face lighting variation rather than one flat solid color. Idle rotation advances
+through the scene clock, arcball drag remains interactive, and Vulkan validation stays quiet for the
+bounded smoke.
 
 Automated coverage: `test_scene_visual_alpha_mode_standard_blend`,
 `test_scene_visual_alpha_mode_emits_wboit_drp2`,

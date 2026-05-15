@@ -826,15 +826,20 @@ bool _scene_visual_shader_desc(
     case DVZ_SCENE_VISUAL_DESC_PRIMITIVE:
         if (wboit_accumulation)
         {
-            dvz_snprintf(out->vertex_key, sizeof(out->vertex_key), "_vs_wboit_accum%s", format_tag);
+            DvzSceneBuiltinShader shader = visual->has_normal
+                                               ? DVZ_SCENE_BUILTIN_SHADER_WBOIT_ACCUM_LIT
+                                               : DVZ_SCENE_BUILTIN_SHADER_WBOIT_ACCUM;
             dvz_snprintf(
-                out->fragment_key, sizeof(out->fragment_key), "_fs_wboit_accum%s", format_tag);
+                out->vertex_key, sizeof(out->vertex_key), "_vs_wboit_accum_n%u%s",
+                visual->has_normal ? 1u : 0u, format_tag);
+            dvz_snprintf(
+                out->fragment_key, sizeof(out->fragment_key), "_fs_wboit_accum_n%u%s",
+                visual->has_normal ? 1u : 0u, format_tag);
             dvz_snprintf(
                 out->pipeline_key, sizeof(out->pipeline_key), "_pipe_wboit_accum_t%u_n%u%s",
                 visual->topology, visual->has_normal ? 1u : 0u, format_tag);
-            out->vertex_glsl = _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_WBOIT_ACCUM, false);
-            out->fragment_glsl =
-                _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_WBOIT_ACCUM, true);
+            out->vertex_glsl = _builtin_shader_glsl(shader, false);
+            out->fragment_glsl = _builtin_shader_glsl(shader, true);
             return true;
         }
         if (visual->has_normal)
