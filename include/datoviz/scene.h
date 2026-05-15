@@ -408,6 +408,24 @@ DVZ_EXPORT int dvz_visual_set_data(DvzVisual* visual, const char* attr_name, con
 
 
 /**
+ * Atomically replace several dense visual attribute payloads.
+ *
+ * This is the preferred API when changing the item count of a visual with several per-item
+ * attributes, such as point position/color/size. All updates are validated before any existing
+ * attribute payload is replaced. Every update in the batch must use the same item_count, and any
+ * existing dense per-item attribute with a different item_count must also be included in the batch.
+ * This call is rejected while any emitted scene stream is still live.
+ *
+ * @param visual the visual
+ * @param updates attribute update descriptors
+ * @param update_count number of update descriptors
+ * @return 0 on success, -1 on error
+ */
+DVZ_EXPORT int dvz_visual_set_data_many(
+    DvzVisual* visual, const DvzVisualDataUpdate* updates, uint32_t update_count);
+
+
+/**
  * Write a contiguous sub-range of attribute data to a visual.
  *
  * The attribute must already be fully allocated by a prior

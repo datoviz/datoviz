@@ -43,6 +43,9 @@ static bool _attr_supported(DvzVisualType type, const char* name, uint32_t* item
 static bool _attr_source_supported(
     DvzVisualType type, const char* name, DvzVisualAttrSource source);
 
+static bool _visual_data_update_contains_attr(
+    const DvzVisualDataUpdate* updates, uint32_t update_count, const char* attr_name);
+
 static DvzVisualAttr* _attr_get_or_create(DvzVisual* visual, const char* name, uint32_t item_size);
 
 static bool _visual_attr_count_consistent(
@@ -172,6 +175,29 @@ static bool _attr_source_supported(
 
 
 /**
+ * Return whether an attribute appears in a batch update list.
+ *
+ * @param updates update descriptors
+ * @param update_count number of update descriptors
+ * @param attr_name attribute name
+ * @return whether the attribute is present
+ */
+static bool _visual_data_update_contains_attr(
+    const DvzVisualDataUpdate* updates, uint32_t update_count, const char* attr_name)
+{
+    ANN(updates);
+    ANN(attr_name);
+    for (uint32_t i = 0; i < update_count; i++)
+    {
+        if (updates[i].attr_name != NULL && strcmp(updates[i].attr_name, attr_name) == 0)
+            return true;
+    }
+    return false;
+}
+
+
+
+/**
  * Find the index of one visual attribute by name.
  *
  * @param visual the visual
@@ -235,20 +261,6 @@ static bool _visual_attr_count_consistent(
     if (item_count == 0)
         return false;
 
-    uint32_t old_item_count = 0;
-    bool resizing_existing_attr = false;
-    for (uint32_t i = 0; i < visual->attr_count; i++)
-    {
-        const DvzVisualAttr* attr = &visual->attrs[i];
-        bool attr_has_payload = attr->data != NULL || attr->buffer != NULL;
-        if (strcmp(attr->name, attr_name) == 0 && attr_has_payload && attr->item_count != 0)
-        {
-            old_item_count = attr->item_count;
-            resizing_existing_attr = old_item_count != item_count;
-            break;
-        }
-    }
-
     for (uint32_t i = 0; i < visual->attr_count; i++)
     {
         const DvzVisualAttr* attr = &visual->attrs[i];
@@ -261,8 +273,6 @@ static bool _visual_attr_count_consistent(
         if (strcmp(attr->name, attr_name) == 0 || attr->item_count == 0 || !attr_has_payload)
             continue;
         if (attr->item_count == item_count)
-            continue;
-        if (resizing_existing_attr && attr->item_count == old_item_count)
             continue;
 
         log_error(
@@ -1251,6 +1261,229 @@ int dvz_visual_set_data(
     {
         visual->mesh_default_color = false;
     }
+    return 0;
+}
+
+
+
+/**
+ * Atomically replace several dense visual attribute payloads.
+ *
+ * @param visual the visual
+ * @param updates attribute update descriptors
+ * @param update_count number of update descriptors
+ * @return 0 on success, -1 on error
+ */
+int dvz_visual_set_data_many(
+    DvzVisual* visual, const DvzVisualDataUpdate* updates, uint32_t update_count)
+{
+    ANN(visual);
+    ANN(updates);
+    if (!_scene_visual_mutation_allowed(visual->scene, "mutate scene visual data"))
+        return -1;
+    if (update_count == 0)
+    {
+        log_error("visual batch data update requires update_count > 0");
+        return -1;
+    }
+
+    typedef struct PreparedUpdate
+    {
+        int attr_idx;
+        uint32_t item_size;
+        uint64_t byte_size;
+        void* data;
+    } PreparedUpdate;
+
+    PreparedUpdate* prepared =
+        (PreparedUpdate*)dvz_calloc((DvzSize)update_count, sizeof(PreparedUpdate));
+    if (prepared == NULL)
+    {
+        log_error("visual batch data update allocation failed");
+        return -1;
+    }
+
+    uint32_t batch_item_count = 0;
+    uint32_t new_attr_count = 0;
+    for (uint32_t i = 0; i < update_count; i++)
+    {
+        const DvzVisualDataUpdate* update = &updates[i];
+        if (update->attr_name == NULL || update->data == NULL || update->item_count == 0)
+        {
+            log_error("visual batch data update contains an invalid descriptor");
+            dvz_free(prepared);
+            return -1;
+        }
+
+        for (uint32_t j = 0; j < i; j++)
+        {
+            if (strcmp(updates[j].attr_name, update->attr_name) == 0)
+            {
+                log_error("visual batch data update repeats attribute '%s'", update->attr_name);
+                dvz_free(prepared);
+                return -1;
+            }
+        }
+
+        uint32_t item_size = 0;
+        if (!_attr_supported(visual->type, update->attr_name, &item_size))
+        {
+            dvz_free(prepared);
+            return -1;
+        }
+
+        if (i == 0)
+            batch_item_count = update->item_count;
+        else if (update->item_count != batch_item_count)
+        {
+            log_error(
+                "visual batch data update attribute '%s' item_count %u does not match batch "
+                "item_count %u",
+                update->attr_name, update->item_count, batch_item_count);
+            dvz_free(prepared);
+            return -1;
+        }
+
+        int attr_idx = _attr_index(visual, update->attr_name);
+        if (attr_idx >= 0)
+        {
+            DvzVisualAttr* attr = &visual->attrs[attr_idx];
+            if (attr->source != DVZ_VISUAL_ATTR_SOURCE_PER_ITEM)
+            {
+                log_error(
+                    "visual attribute '%s' dense data requires PER_ITEM source; use "
+                    "source-specific data",
+                    update->attr_name);
+                dvz_free(prepared);
+                return -1;
+            }
+            if (attr->buffer != NULL)
+            {
+                log_error("visual attribute '%s' already has a bound buffer", update->attr_name);
+                dvz_free(prepared);
+                return -1;
+            }
+        }
+        else
+        {
+            new_attr_count++;
+        }
+
+        uint64_t byte_size = 0;
+        if (_dvz_mul_u64_overflows(update->item_count, item_size, &byte_size))
+        {
+            log_error(
+                "visual attribute '%s' byte size overflow for item_count=%u item_size=%u",
+                update->attr_name, update->item_count, item_size);
+            dvz_free(prepared);
+            return -1;
+        }
+
+        prepared[i].attr_idx = attr_idx;
+        prepared[i].item_size = item_size;
+        prepared[i].byte_size = byte_size;
+    }
+
+    if (visual->attr_count + new_attr_count > DVZ_SCENE_MAX_ITEM_ATTRS)
+    {
+        log_error("visual batch data update exceeds the maximum attribute count");
+        dvz_free(prepared);
+        return -1;
+    }
+
+    for (uint32_t i = 0; i < visual->attr_count; i++)
+    {
+        const DvzVisualAttr* attr = &visual->attrs[i];
+        bool attr_has_payload = attr->data != NULL || attr->buffer != NULL;
+        if (attr->item_count == 0 || !attr_has_payload)
+            continue;
+        if (_visual_data_update_contains_attr(updates, update_count, attr->name))
+            continue;
+        if (visual->type == DVZ_VISUAL_TYPE_MESH && visual->mesh_default_color &&
+            strcmp(attr->name, "color") == 0 &&
+            _visual_data_update_contains_attr(updates, update_count, "position"))
+        {
+            continue;
+        }
+        if (attr->item_count == batch_item_count)
+            continue;
+
+        log_error(
+            "%s visual batch data update item_count %u omits existing attribute '%s' "
+            "item_count %u",
+            _visual_type_name(visual->type), batch_item_count, attr->name, attr->item_count);
+        dvz_free(prepared);
+        return -1;
+    }
+
+    for (uint32_t i = 0; i < update_count; i++)
+    {
+        prepared[i].data = dvz_malloc(prepared[i].byte_size);
+        if (prepared[i].data == NULL)
+        {
+            log_error(
+                "visual attribute '%s' allocation failed for %" PRIu64 " bytes",
+                updates[i].attr_name, prepared[i].byte_size);
+            for (uint32_t j = 0; j < i; j++)
+                dvz_free(prepared[j].data);
+            dvz_free(prepared);
+            return -1;
+        }
+        dvz_memcpy(prepared[i].data, prepared[i].byte_size, updates[i].data, prepared[i].byte_size);
+    }
+
+    bool mesh_position_updated = false;
+    bool mesh_color_updated = false;
+    for (uint32_t i = 0; i < update_count; i++)
+    {
+        DvzVisualAttr* attr = prepared[i].attr_idx >= 0 ?
+                                  &visual->attrs[prepared[i].attr_idx] :
+                                  _attr_get_or_create(
+                                      visual, updates[i].attr_name, prepared[i].item_size);
+        if (attr == NULL)
+        {
+            for (uint32_t j = i; j < update_count; j++)
+                dvz_free(prepared[j].data);
+            dvz_free(prepared);
+            return -1;
+        }
+
+        dvz_free(attr->data);
+        attr->data = prepared[i].data;
+        prepared[i].data = NULL;
+        attr->item_count = updates[i].item_count;
+        attr->dirty_first_item = 0;
+        attr->dirty_item_count = updates[i].item_count;
+        _visual_bump_version(&attr->version);
+
+        if (visual->type == DVZ_VISUAL_TYPE_MESH && strcmp(updates[i].attr_name, "position") == 0)
+            mesh_position_updated = true;
+        if (visual->type == DVZ_VISUAL_TYPE_MESH && strcmp(updates[i].attr_name, "color") == 0)
+            mesh_color_updated = true;
+    }
+
+    if (mesh_color_updated)
+        visual->mesh_default_color = false;
+    if (mesh_position_updated)
+    {
+        DvzVisualAttr* color = _attr_get_or_create(visual, "color", 4 * sizeof(uint8_t));
+        if (color == NULL)
+        {
+            dvz_free(prepared);
+            return -1;
+        }
+        if (color->data == NULL || visual->mesh_default_color)
+        {
+            if (!_mesh_ensure_default_color(visual, batch_item_count))
+            {
+                log_error("mesh default color allocation failed");
+                dvz_free(prepared);
+                return -1;
+            }
+        }
+    }
+
+    dvz_free(prepared);
     return 0;
 }
 

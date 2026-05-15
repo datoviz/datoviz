@@ -150,6 +150,15 @@ struct DvzVisualAttachDesc
 typedef struct DvzVisualAttachDesc DvzVisualAttachDesc;
 
 
+struct DvzVisualDataUpdate
+{
+    const char* attr_name;
+    const void* data;
+    uint32_t item_count;
+};
+typedef struct DvzVisualDataUpdate DvzVisualDataUpdate;
+
+
 
 struct DvzFormatDesc
 {

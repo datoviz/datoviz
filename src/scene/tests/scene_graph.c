@@ -2215,9 +2215,19 @@ int test_scene_point_visual_resizes_existing_attributes(TstSuite* suite, TstItem
     AT(dvz_visual_set_data(visual, "color", colors3, 3) == 0);
     AT(dvz_visual_set_data(visual, "size", sizes3, 3) == 0);
 
-    AT(dvz_visual_set_data(visual, "position", positions2, 2) == 0);
-    AT(dvz_visual_set_data(visual, "color", colors2, 2) == 0);
-    AT(dvz_visual_set_data(visual, "size", sizes2, 2) == 0);
+    DvzVisualDataUpdate partial[] = {
+        {.attr_name = "position", .data = positions2, .item_count = 2},
+    };
+    tst_log_capture_begin(suite);
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_visual_set_data_many(visual, partial, 1) == -1);
+    AT(_captured_log_contains(suite, "omits existing attribute 'color'"));
+
+    DvzVisualDataUpdate updates[] = {
+        {.attr_name = "position", .data = positions2, .item_count = 2},
+        {.attr_name = "color", .data = colors2, .item_count = 2},
+        {.attr_name = "size", .data = sizes2, .item_count = 2},
+    };
+    AT(dvz_visual_set_data_many(visual, updates, 3) == 0);
 
     dvz_scene_destroy(scene);
     return 0;
