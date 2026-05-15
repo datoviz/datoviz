@@ -98,6 +98,19 @@ and deferred borrowed-frame retirement setup. Validation: `git diff --check`, `j
 `just test drp2` (`83/83`), `just test scene` (`143/143`), and `clang-tidy -p build --quiet` on
 the touched DRP2 files.
 
+First WBOIT planning slice on `2026-05-15`: retained scene panel planning now routes
+`DVZ_ALPHA_BLENDED` visuals into a transparent accumulation FramePlan node, keeps opaque/mask visuals
+in the opaque node, and appends a WBOIT resolve node when transparent visuals are present. Capability
+validation now scans all render nodes rather than only the first one, so split render plans still
+observe texture, scene-render, and WBOIT requirements. Focused validation: `just build` passed;
+`./build/testing/dvztest_scene test_scene_visual_alpha_mode` passed the alpha-mode storage,
+pass-split, and capability checks; adjacent panel-render filters passed; and `clang-tidy -p build
+--quiet` on the touched scene files reported no new actionable diagnostics. Full `just test scene`
+still reports eight pre-existing exact fixture mismatches in generated DRP2 JSON fixtures
+(`scene_*_from_c` and WGSL scene fixture tests), and `just test drp2` reports the same five
+`scene_*_from_c` fixture mismatches after passing the DRP2 runtime and multi-color render-pass
+coverage.
+
 
 ## Immediate Task
 
@@ -165,6 +178,10 @@ Deliver the next implementation slices in this order unless the user redirects:
    native 3D and manual-smoke gaps are clearer.
 9. Picking payload widening after the hardened slice: richer ids, mesh targets, and less ad-hoc RGBA
    payload encoding.
+10. WBOIT next slice: add a minimal DRP2 fixture for accumulation plus resolve, then teach scene
+    lowering to allocate/sample the WBOIT intermediate targets with scene-owned accumulation and
+    resolve shaders. Use [WBOIT_MESH_INTERACTIVE_PLAN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/WBOIT_MESH_INTERACTIVE_PLAN.md)
+    as the implementation checklist.
 
 Implementation-level checklists for these lanes are recorded in
 [../../docs/tasks/2026-05-13-next-implementation-priorities/NEXT_STEPS.md](/home/cyrille/GIT/Viz/datoviz/docs/tasks/2026-05-13-next-implementation-priorities/NEXT_STEPS.md).

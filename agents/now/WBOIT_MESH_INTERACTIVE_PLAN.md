@@ -44,12 +44,26 @@ the work explicitly; vklite executes it.
 
 ## Current Missing Pieces
 
+Current implementation status on `2026-05-15`:
+
+1. Public `DvzAlphaMode` storage/accessors are present.
+2. `DvzCapabilitySnapshot` has the lower-level WBOIT facts used by scene diagnostics.
+3. FramePlan render-pass roles exist for opaque, transparent accumulation, WBOIT resolve, and
+   picking.
+4. Scene panel planning now splits drawable visuals by alpha mode into opaque and transparent
+   accumulation render nodes and appends a WBOIT resolve node whenever transparent visuals are
+   present. This is still a planning slice: the resolve node does not yet lower to executable DRP2
+   WBOIT commands.
+5. DRP2 already has first C support for multiple color attachments and per-target blend state, plus
+   vklite runtime smoke coverage for a multi-color render pass. A WBOIT-specific accumulation +
+   resolve fixture is still missing.
+
 ### 1. Public scene transparency API
 
 The current public scene headers have mesh visuals, RGBA colors, primitive shading, arcball
-controllers, and depth-capable rendering, but no implemented visual alpha-mode API.
+controllers, depth-capable rendering, and visual alpha-mode storage/accessors.
 
-Add an explicit visual-level mode such as:
+The active visual-level mode is:
 
 ```c
 typedef enum
@@ -64,10 +78,11 @@ DVZ_EXPORT int dvz_visual_set_alpha_mode(DvzVisual* visual, DvzAlphaMode mode);
 DVZ_EXPORT DvzAlphaMode dvz_visual_alpha_mode(const DvzVisual* visual);
 ```
 
-First implementation target:
+Current implementation target:
 
 1. `DVZ_ALPHA_OPAQUE`: existing path, depth test on, depth write on.
-2. `DVZ_ALPHA_BLENDED`: WBOIT path, depth test on, depth write off during accumulation.
+2. `DVZ_ALPHA_BLENDED`: planned into the WBOIT path, with executable accumulation/resolve still
+   pending.
 3. `DVZ_ALPHA_MASK` and `DVZ_ALPHA_BLENDED_EXACT`: may be declared later, but do not need to be
    implemented for the first WBOIT mesh example unless the public API pass wants the full enum now.
 
@@ -77,8 +92,8 @@ rendering explicitly; per-vertex or material alpha then supplies opacity.
 
 ### 2. Capability snapshot expansion
 
-`DvzCapabilitySnapshot` is currently too narrow for WBOIT planning. Extend it with lower-level facts
-needed to derive WBOIT availability rather than adding a single `supports_wboit` boolean.
+`DvzCapabilitySnapshot` now carries lower-level facts needed to derive WBOIT availability rather
+than a single `supports_wboit` boolean.
 
 Needed fields include:
 
@@ -97,8 +112,8 @@ Scene behavior should be explicit:
 
 ### 3. FramePlan pass roles
 
-Current scene planning emits one render node per panel. WBOIT requires explicit pass roles and
-intermediate resources.
+Current scene planning now emits separate render pass roles for alpha-mode split panels. WBOIT still
+needs explicit intermediate resource metadata and DRP2 lowering.
 
 Add enough FramePlan metadata to represent:
 
@@ -118,7 +133,7 @@ RenderNode: transparent accumulation pass
 RenderNode: WBOIT resolve pass
 ```
 
-Panels with no transparent visuals should not emit accumulation or resolve nodes.
+Panels with no transparent visuals do not emit accumulation or resolve nodes.
 
 Likely files:
 
@@ -220,13 +235,17 @@ area. On macOS, use `direnv exec .` for Vulkan-path tests.
 
 ## Suggested Implementation Order
 
-1. Add public `DvzAlphaMode` and visual storage/accessors, with tests.
-2. Expand `DvzCapabilitySnapshot` and diagnostics for WBOIT planning.
-3. Add FramePlan pass role/resource metadata and emit split opaque/transparent/resolve nodes without
-   executing new runtime behavior yet.
-4. Extend DRP2 C commands for multi-color attachments and per-target blend state.
-5. Update DRP2 semantic validation, JSON serialization, schemas, and fixtures.
-6. Teach vklite DRP2 runtime to execute multi-attachment passes and per-attachment blending.
+1. Done: add public `DvzAlphaMode` and visual storage/accessors, with tests.
+2. Done: expand `DvzCapabilitySnapshot` and diagnostics for WBOIT planning.
+3. Done for pass roles and first split planning: emit opaque/transparent/resolve FramePlan nodes
+   without executing new WBOIT runtime behavior yet. Still pending: explicit accumulation resource
+   metadata.
+4. Mostly done at the C command/runtime smoke level: DRP2 supports multiple color attachments and
+   per-target blend state. Still pending: WBOIT-specific fixture coverage.
+5. Next: update DRP2 semantic validation, JSON serialization, schemas, and fixtures for a minimal
+   WBOIT accumulation + resolve sequence.
+6. Teach vklite DRP2 runtime to execute WBOIT accumulation, intermediate texture transitions, and
+   resolve.
 7. Add scene WBOIT accumulation and resolve shaders.
 8. Lower scene WBOIT FramePlan nodes to explicit DRP2 command streams.
 9. Add offscreen regression tests.
@@ -272,4 +291,3 @@ Policy:
 4. WebGPU parity unless explicitly scoped;
 5. napari-style blend modes beyond alpha mode;
 6. per-item alpha-mode switching.
-

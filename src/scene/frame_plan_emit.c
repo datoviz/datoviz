@@ -256,13 +256,6 @@ bool _validate_capabilities(
     bool has_wboit_request = false;
     uint64_t max_readback_size = 0;
     uint32_t max_texture_extent = 0;
-    const DvzFramePlanNode* render = _first_node_of_type(plan, DVZ_FRAME_PLAN_NODE_RENDER);
-    if (render != NULL)
-    {
-        has_texture_render = _render_uses_texture(render);
-        has_scene_render   = render->u.render.visual_count > 0;
-    }
-
     for (uint32_t i = 0; i < plan->count; i++)
     {
         const DvzFramePlanNode* node = &plan->nodes[i];
@@ -300,6 +293,8 @@ bool _validate_capabilities(
                 max_readback_size = node->u.copy.byte_size;
             break;
         case DVZ_FRAME_PLAN_NODE_RENDER:
+            has_texture_render = has_texture_render || _render_uses_texture(node);
+            has_scene_render = has_scene_render || node->u.render.visual_count > 0;
             for (uint32_t j = 0; j < node->u.render.visual_count; j++)
             {
                 if (node->u.render.visual_metadata[j].has_metadata &&

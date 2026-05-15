@@ -21,7 +21,9 @@
 #include "_alloc.h"
 #include "_assertions.h"
 #include "_compat.h"
+#include "../_frame_plan.h"
 #include "../_scene.h"
+#include "../_scene_emit.h"
 #include "../_visual_pipeline.h"
 #include "../../drp2/_stream.h"
 #include "datoviz/drp2.h"
@@ -3929,10 +3931,89 @@ int test_scene_visual_alpha_mode(TstSuite* suite, TstItem* item)
     AT(dvz_visual_alpha_mode(visual) == DVZ_ALPHA_BLENDED);
     AT(dvz_visual_set_alpha_mode(visual, DVZ_ALPHA_MASK) == 0);
     AT(dvz_visual_alpha_mode(visual) == DVZ_ALPHA_MASK);
+#ifndef __clang_analyzer__
+    volatile int invalid_mode = (int)DVZ_ALPHA_MASK + 1;
     AT_EXPECTED_ERROR_STRICT(
-        suite, dvz_visual_set_alpha_mode(visual, (DvzAlphaMode)(DVZ_ALPHA_MASK + 1)) == -1);
+        suite,
+        dvz_visual_set_alpha_mode(
+            visual, (DvzAlphaMode)invalid_mode) == -1);
+#endif
     AT(dvz_visual_alpha_mode(visual) == DVZ_ALPHA_MASK);
 
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+/**
+ * Verify visual alpha mode splits retained panel rendering into WBOIT pass roles.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_visual_alpha_mode_splits_frame_plan_passes(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    AT(scene != NULL);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    AT(figure != NULL);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    AT(panel != NULL);
+
+    DvzVisual* opaque = dvz_point(scene, 0);
+    DvzVisual* transparent = dvz_point(scene, 0);
+    AT(opaque != NULL);
+    AT(transparent != NULL);
+
+    float positions[] = {
+        -0.5f, -0.5f, 0.0f,
+         0.5f, -0.5f, 0.0f,
+         0.0f,  0.5f, 0.0f,
+    };
+    DvzColor opaque_colors[3] = {{255, 0, 0, 255}, {0, 255, 0, 255}, {0, 0, 255, 255}};
+    DvzColor transparent_colors[3] = {{255, 0, 0, 128}, {0, 255, 0, 128}, {0, 0, 255, 128}};
+    float sizes[3] = {10.0f, 12.0f, 14.0f};
+
+    AT(dvz_visual_set_data(opaque, "position", positions, 3) == 0);
+    AT(dvz_visual_set_data(opaque, "color", opaque_colors, 3) == 0);
+    AT(dvz_visual_set_data(opaque, "size", sizes, 3) == 0);
+    AT(dvz_visual_set_data(transparent, "position", positions, 3) == 0);
+    AT(dvz_visual_set_data(transparent, "color", transparent_colors, 3) == 0);
+    AT(dvz_visual_set_data(transparent, "size", sizes, 3) == 0);
+    AT(dvz_visual_set_alpha_mode(transparent, DVZ_ALPHA_BLENDED) == 0);
+    AT(dvz_panel_add_visual(panel, opaque, NULL) == 0);
+    AT(dvz_panel_add_visual(panel, transparent, NULL) == 0);
+
+    DvzFramePlan* plan = dvz_frame_plan("figure.alpha.split", 0);
+    ANN(plan);
+    _scene_emit_panel_render(figure, 0, plan, "figure_0");
+
+    AT(dvz_frame_plan_node_count(plan) == 3);
+    const DvzFramePlanNode* opaque_node = dvz_frame_plan_node_get(plan, 0);
+    const DvzFramePlanNode* accum_node = dvz_frame_plan_node_get(plan, 1);
+    const DvzFramePlanNode* resolve_node = dvz_frame_plan_node_get(plan, 2);
+    ANN(opaque_node);
+    ANN(accum_node);
+    ANN(resolve_node);
+    AT(dvz_frame_plan_render_pass_role(opaque_node) == DVZ_FRAME_PLAN_RENDER_PASS_OPAQUE);
+    AT(
+        dvz_frame_plan_render_pass_role(accum_node) ==
+        DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_ACCUMULATION);
+    AT(dvz_frame_plan_render_pass_role(resolve_node) == DVZ_FRAME_PLAN_RENDER_PASS_WBOIT_RESOLVE);
+    AT(opaque_node->u.render.visual_count == 1);
+    AT(accum_node->u.render.visual_count == 1);
+    AT(resolve_node->u.render.visual_count == 0);
+    AT(opaque_node->u.render.visual_metadata[0].alpha_mode == DVZ_ALPHA_OPAQUE);
+    AT(accum_node->u.render.visual_metadata[0].alpha_mode == DVZ_ALPHA_BLENDED);
+    AT(strcmp(opaque_node->u.render.render_target_id, "rt") == 0);
+    AT(strcmp(accum_node->u.render.render_target_id, "rt.wboit_accum") == 0);
+    AT(strcmp(resolve_node->u.render.render_target_id, "rt") == 0);
+
+    dvz_frame_plan_destroy(plan);
     dvz_scene_destroy(scene);
     return 0;
 }
@@ -4041,6 +4122,7 @@ int test_scene_graph(TstSuite* suite)
     TEST_SIMPLE(test_scene_rejects_cross_scene_visual);
     TEST_SIMPLE(test_scene_rejects_unsupported_point_attribute);
     TEST_SIMPLE(test_scene_visual_alpha_mode);
+    TEST_SIMPLE(test_scene_visual_alpha_mode_splits_frame_plan_passes);
     TEST_SIMPLE(test_scene_visual_alpha_mode_requires_wboit_capabilities);
     TEST_SIMPLE(test_scene_visual_attr_source_and_mutability_metadata);
     TEST_SIMPLE(test_scene_point_external_position_buffer_emits_no_upload);

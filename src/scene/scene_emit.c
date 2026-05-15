@@ -388,6 +388,117 @@ static bool _scene_visual_frame_plan_metadata(
 
 
 /**
+ * Return whether an alpha mode belongs in the transparent WBOIT accumulation pass.
+ *
+ * @param mode the visual alpha mode
+ * @return whether the visual should be planned as transparent
+ */
+static bool _scene_alpha_mode_is_transparent(DvzAlphaMode mode)
+{
+    return mode == DVZ_ALPHA_BLENDED || mode == DVZ_ALPHA_BLENDED_EXACT;
+}
+
+
+
+/**
+ * Configure common panel transform metadata on a render node.
+ *
+ * @param node the render node
+ * @param panel_apply_mvp the panel APPLY MVP
+ * @param panel_viewport the panel pixel viewport
+ */
+static void _scene_configure_panel_render_node(
+    DvzFramePlanNode* node, const DvzMVP* panel_apply_mvp,
+    const DvzSceneViewportUniform* panel_viewport)
+{
+    ANN(node);
+    ANN(panel_apply_mvp);
+    ANN(panel_viewport);
+    node->u.render.has_mvp = true;
+    node->u.render.apply_mvp = *panel_apply_mvp;
+    node->u.render.has_viewport = true;
+    node->u.render.viewport = *panel_viewport;
+}
+
+
+
+/**
+ * Append a panel render pass with common panel transform metadata.
+ *
+ * @param plan the destination frame plan
+ * @param panel_id the panel id
+ * @param render_target_id the render target id
+ * @param desc the normalized panel rectangle
+ * @param pass_role the render pass role
+ * @param panel_apply_mvp the panel APPLY MVP
+ * @param panel_viewport the panel pixel viewport
+ * @return the appended render node, or NULL on failure
+ */
+static DvzFramePlanNode* _scene_begin_panel_render_pass(
+    DvzFramePlan* plan, const char* panel_id, const char* render_target_id, DvzPanelDesc desc,
+    DvzFramePlanRenderPassRole pass_role, const DvzMVP* panel_apply_mvp,
+    const DvzSceneViewportUniform* panel_viewport)
+{
+    ANN(plan);
+    ANN(panel_id);
+    ANN(render_target_id);
+    if (!dvz_frame_plan_render_panel_role(plan, panel_id, render_target_id, false, desc, pass_role))
+        return NULL;
+    DvzFramePlanNode* node = dvz_frame_plan_last_render_node(plan);
+    if (node != NULL)
+        _scene_configure_panel_render_node(node, panel_apply_mvp, panel_viewport);
+    return node;
+}
+
+
+
+/**
+ * Append one visual to the active render pass.
+ *
+ * @param figure the parent figure
+ * @param plan the destination frame plan
+ * @param node the active render node
+ * @param visual the visual
+ * @param attach the panel attachment
+ * @param visual_index the visual index within the figure
+ * @return whether the visual was appended
+ */
+static bool _scene_append_visual_to_render_pass(
+    const DvzFigure* figure, DvzFramePlan* plan, DvzFramePlanNode* node, const DvzVisual* visual,
+    const DvzPanelAttach* attach, uint32_t visual_index)
+{
+    ANN(figure);
+    ANN(plan);
+    ANN(node);
+    ANN(visual);
+    ANN(attach);
+
+    char visual_id[64];
+    uint32_t buffer_idx = _scene_buffer_index(figure->scene, visual->buffer);
+    if (buffer_idx != UINT32_MAX)
+    {
+        if (!_scene_resource_key_visual_indexed(
+                visual_index, buffer_idx, visual_id, sizeof(visual_id)))
+            return false;
+    }
+    else
+    {
+        if (!_scene_resource_key_visual(visual_index, visual_id, sizeof(visual_id)))
+            return false;
+    }
+    if (!dvz_frame_plan_render_visual(plan, visual_id))
+        return false;
+
+    DvzFramePlanVisualMeta metadata = {0};
+    if (_scene_visual_frame_plan_metadata(figure, visual, visual_index, &metadata))
+        dvz_frame_plan_render_visual_metadata(plan, &metadata);
+    node->u.render.controller_modes[node->u.render.visual_count - 1] = attach->controller_mode;
+    return true;
+}
+
+
+
+/**
  * Emit one panel render node into a frame plan.
  *
  * @param figure the parent figure
@@ -440,7 +551,9 @@ void _scene_emit_panel_render(
         panel, &panel_viewport.x, &panel_viewport.y, &panel_viewport.width,
         &panel_viewport.height);
 
-    DvzFramePlanNode* node = NULL;
+    DvzFramePlanNode* opaque_node = NULL;
+    DvzFramePlanNode* transparent_node = NULL;
+    bool has_transparent = false;
     for (uint32_t k = 0; k < panel->visual_count; k++)
     {
         uint32_t vi = order[k];
@@ -455,40 +568,65 @@ void _scene_emit_panel_render(
         if (pos_idx < 0 || visual->attrs[pos_idx].item_count == 0)
             continue;
 
-        if (node == NULL)
+        bool transparent = _scene_alpha_mode_is_transparent(visual->alpha_mode);
+        if (transparent)
         {
-            dvz_frame_plan_render_panel(plan, panel_id, "rt", false, panel->desc);
-            node = dvz_frame_plan_last_render_node(plan);
-            if (node != NULL)
-            {
-                node->u.render.has_mvp = true;
-                node->u.render.apply_mvp = panel_apply_mvp;
-                node->u.render.has_viewport = true;
-                node->u.render.viewport = panel_viewport;
-            }
+            has_transparent = true;
+            continue;
         }
 
-        char visual_id[64];
-        uint32_t buffer_idx = _scene_buffer_index(figure->scene, visual->buffer);
-        if (buffer_idx != UINT32_MAX)
+        if (opaque_node == NULL)
         {
-            if (!_scene_resource_key_visual_indexed(vidx, buffer_idx, visual_id, sizeof(visual_id)))
+            opaque_node = _scene_begin_panel_render_pass(
+                plan, panel_id, "rt", panel->desc, DVZ_FRAME_PLAN_RENDER_PASS_OPAQUE,
+                &panel_apply_mvp, &panel_viewport);
+            if (opaque_node == NULL)
                 continue;
         }
-        else
-        {
-            if (!_scene_resource_key_visual(vidx, visual_id, sizeof(visual_id)))
-                continue;
-        }
-        if (!dvz_frame_plan_render_visual(plan, visual_id))
+        (void)_scene_append_visual_to_render_pass(
+            figure, plan, opaque_node, visual, attach, vidx);
+    }
+
+    if (opaque_node == NULL && has_transparent)
+    {
+        (void)_scene_begin_panel_render_pass(
+            plan, panel_id, "rt", panel->desc, DVZ_FRAME_PLAN_RENDER_PASS_OPAQUE, &panel_apply_mvp,
+            &panel_viewport);
+    }
+
+    for (uint32_t k = 0; k < panel->visual_count; k++)
+    {
+        uint32_t vi = order[k];
+        DvzPanelAttach* attach = &panel->visuals[vi];
+        DvzVisual* visual = attach->visual;
+        if (visual == NULL || !visual->visible)
             continue;
-        if (node != NULL)
+        if (!_scene_alpha_mode_is_transparent(visual->alpha_mode))
+            continue;
+        uint32_t vidx = 0;
+        if (!_figure_visual_index(figure, visual, &vidx))
+            continue;
+        int pos_idx = _attr_index(visual, "position");
+        if (pos_idx < 0 || visual->attrs[pos_idx].item_count == 0)
+            continue;
+
+        if (transparent_node == NULL)
         {
-            DvzFramePlanVisualMeta metadata = {0};
-            if (_scene_visual_frame_plan_metadata(figure, visual, vidx, &metadata))
-                dvz_frame_plan_render_visual_metadata(plan, &metadata);
-            node->u.render.controller_modes[node->u.render.visual_count - 1] =
-                attach->controller_mode;
+            transparent_node = _scene_begin_panel_render_pass(
+                plan, panel_id, "rt.wboit_accum", panel->desc,
+                DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_ACCUMULATION, &panel_apply_mvp,
+                &panel_viewport);
+            if (transparent_node == NULL)
+                continue;
         }
+        (void)_scene_append_visual_to_render_pass(
+            figure, plan, transparent_node, visual, attach, vidx);
+    }
+
+    if (transparent_node != NULL)
+    {
+        (void)_scene_begin_panel_render_pass(
+            plan, panel_id, "rt", panel->desc, DVZ_FRAME_PLAN_RENDER_PASS_WBOIT_RESOLVE,
+            &panel_apply_mvp, &panel_viewport);
     }
 }
