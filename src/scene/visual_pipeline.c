@@ -25,6 +25,7 @@
 #include "_scene_resource_key.h"
 #include "_shader_registry.h"
 #include "_visual_pipeline.h"
+#include "datoviz/drp2/enums.h"
 
 
 
@@ -87,6 +88,41 @@ static bool _visual_meta_is_primitive(uint32_t visual_type)
 {
     return visual_type == DVZ_VISUAL_TYPE_PRIMITIVE || visual_type == DVZ_VISUAL_TYPE_MESH ||
            visual_type == DVZ_VISUAL_TYPE_PATH;
+}
+
+
+
+/**
+ * Resolve the backend-specific point visual lowering policy.
+ *
+ * @param shader_format the target shader format
+ * @param point_count number of logical points in the visual
+ * @param out the output lowering descriptor
+ * @return whether the lowering descriptor was resolved
+ */
+bool _scene_point_lowering_desc(
+    DvzSceneShaderFormat shader_format, uint32_t point_count,
+    DvzScenePointLoweringDesc* out)
+{
+    ANN(out);
+    dvz_memset(out, sizeof(DvzScenePointLoweringDesc), 0, sizeof(DvzScenePointLoweringDesc));
+
+    if (shader_format == DVZ_SCENE_SHADER_FORMAT_WGSL)
+    {
+        out->lowering = DVZ_SCENE_POINT_LOWERING_INSTANCED_QUADS;
+        out->topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+        out->vertex_step_mode = DVZ_DRP2_VERTEX_STEP_MODE_INSTANCE;
+        out->draw_vertex_count = 6;
+        out->draw_instance_count = point_count;
+        return true;
+    }
+
+    out->lowering = DVZ_SCENE_POINT_LOWERING_NATIVE_POINTS;
+    out->topology = VK_PRIMITIVE_TOPOLOGY_POINT_LIST;
+    out->vertex_step_mode = DVZ_DRP2_VERTEX_STEP_MODE_VERTEX;
+    out->draw_vertex_count = point_count;
+    out->draw_instance_count = 1;
+    return true;
 }
 
 

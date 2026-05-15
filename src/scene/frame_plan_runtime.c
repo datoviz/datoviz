@@ -584,6 +584,8 @@ static bool _emitter_emit_render(
     uint32_t vertex_count = 3; /* default for stub / non-point path */
     uint64_t bgl_id = 0;
     uint64_t bg_id  = 0;
+    DvzScenePointLoweringDesc point_lowering = {0};
+    bool has_point_lowering = false;
 
     /* Common bind group IDs used for GLSL/WGSL point, primitive, and image paths. */
     uint64_t common_bgl_id = 0;
@@ -619,9 +621,6 @@ static bool _emitter_emit_render(
         fs_glsl = _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_POINT, true);
         vs_wgsl = _builtin_shader_wgsl(DVZ_SCENE_BUILTIN_SHADER_POINT, false);
         fs_wgsl = _builtin_shader_wgsl(DVZ_SCENE_BUILTIN_SHADER_POINT, true);
-        topology = cfg != NULL && cfg->shader_format == DVZ_SCENE_SHADER_FORMAT_WGSL
-                       ? VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST
-                       : VK_PRIMITIVE_TOPOLOGY_POINT_LIST;
 
         uint64_t pos_id = _scene_visual_resource_by_role(
             &emitter->resources, vertex_buffer_ids, vertex_buffer_count,
@@ -632,6 +631,13 @@ static bool _emitter_emit_render(
             if (sz > 0)
                 vertex_count = (uint32_t)(sz / (3 * sizeof(float)));
         }
+        DvzSceneShaderFormat shader_format =
+            cfg != NULL ? cfg->shader_format : DVZ_SCENE_SHADER_FORMAT_GLSL;
+        has_point_lowering =
+            _scene_point_lowering_desc(shader_format, vertex_count, &point_lowering);
+        if (!has_point_lowering)
+            return false;
+        topology = point_lowering.topology;
     }
     else if (is_primitive)
     {
@@ -807,12 +813,12 @@ static bool _emitter_emit_render(
                                      VK_FORMAT_R8G8B8A8_UNORM,
                                      VK_FORMAT_R32_SFLOAT};
             uint32_t offsets[3]   = {0, 0, 0};
-            if (cfg != NULL && cfg->shader_format == DVZ_SCENE_SHADER_FORMAT_WGSL)
+            if (point_lowering.lowering == DVZ_SCENE_POINT_LOWERING_INSTANCED_QUADS)
             {
                 uint32_t step_modes[3] = {
-                    DVZ_DRP2_VERTEX_STEP_MODE_INSTANCE,
-                    DVZ_DRP2_VERTEX_STEP_MODE_INSTANCE,
-                    DVZ_DRP2_VERTEX_STEP_MODE_INSTANCE,
+                    point_lowering.vertex_step_mode,
+                    point_lowering.vertex_step_mode,
+                    point_lowering.vertex_step_mode,
                 };
                 ok = ok && dvz_drp2_stream_create_render_pipeline_ex2(
                                stream, pipe_id, vs_id, fs_id, vertex_buffer_count,
@@ -905,10 +911,10 @@ static bool _emitter_emit_render(
         ok = dvz_drp2_stream_set_vertex_buffer(stream, render_pass_id, i, vertex_buffer_ids[i], 0);
     uint32_t draw_vertex_count = vertex_count;
     uint32_t draw_instance_count = 1;
-    if (is_point && cfg != NULL && cfg->shader_format == DVZ_SCENE_SHADER_FORMAT_WGSL)
+    if (is_point && has_point_lowering)
     {
-        draw_vertex_count = 6;
-        draw_instance_count = vertex_count;
+        draw_vertex_count = point_lowering.draw_vertex_count;
+        draw_instance_count = point_lowering.draw_instance_count;
     }
     ok = ok && dvz_drp2_stream_draw(
                    stream, render_pass_id, draw_vertex_count, draw_instance_count, 0, 0) &&

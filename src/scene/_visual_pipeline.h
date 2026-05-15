@@ -37,6 +37,14 @@ typedef enum
 
 
 
+typedef enum
+{
+    DVZ_SCENE_POINT_LOWERING_NATIVE_POINTS = 0,
+    DVZ_SCENE_POINT_LOWERING_INSTANCED_QUADS,
+} DvzScenePointLowering;
+
+
+
 typedef struct DvzSceneVisualDesc
 {
     DvzSceneVisualDescKind kind;
@@ -102,6 +110,17 @@ typedef struct DvzSceneVisualBindDesc
 
 
 
+typedef struct DvzScenePointLoweringDesc
+{
+    DvzScenePointLowering lowering;
+    uint32_t topology;
+    uint32_t vertex_step_mode;
+    uint32_t draw_vertex_count;
+    uint32_t draw_instance_count;
+} DvzScenePointLoweringDesc;
+
+
+
 bool _is_point_visual(const ConverterState* state, const uint64_t* ids, uint32_t n);
 
 bool _is_primitive_visual(const ConverterState* state, const uint64_t* ids, uint32_t n);
@@ -136,5 +155,9 @@ bool _scene_visual_pipeline_desc(
 bool _scene_visual_bind_desc(
     const DvzSceneVisualDesc* visual, DvzControllerMode controller_mode,
     DvzSceneVisualBindDesc* out);
+
+bool _scene_point_lowering_desc(
+    DvzSceneShaderFormat shader_format, uint32_t point_count,
+    DvzScenePointLoweringDesc* out);
 
 bool _scene_render_needs_depth(DvzFramePlanEmitter* emitter, const DvzFramePlanNode* render);
