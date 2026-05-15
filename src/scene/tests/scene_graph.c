@@ -3939,6 +3939,71 @@ int test_scene_visual_alpha_mode(TstSuite* suite, TstItem* item)
 
 
 /**
+ * Verify blended alpha requests require explicit WBOIT-capable runtime facts.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_visual_alpha_mode_requires_wboit_capabilities(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    AT(scene != NULL);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    AT(figure != NULL);
+    DvzPanelDesc desc = {0.0f, 0.0f, 1.0f, 1.0f};
+    DvzPanel* panel = dvz_panel(figure, desc);
+    AT(panel != NULL);
+    DvzVisual* visual = dvz_point(scene, 0);
+    AT(visual != NULL);
+
+    float positions[] = {
+        -0.5f, -0.5f, 0.0f,
+         0.5f, -0.5f, 0.0f,
+         0.0f,  0.5f, 0.0f,
+    };
+    DvzColor colors[3] = {{255, 0, 0, 128}, {0, 255, 0, 128}, {0, 0, 255, 128}};
+    float sizes[3] = {10.0f, 12.0f, 14.0f};
+
+    AT(dvz_visual_set_data(visual, "position", positions, 3) == 0);
+    AT(dvz_visual_set_data(visual, "color", colors, 3) == 0);
+    AT(dvz_visual_set_data(visual, "size", sizes, 3) == 0);
+    AT(dvz_visual_set_alpha_mode(visual, DVZ_ALPHA_BLENDED) == 0);
+    AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
+
+    DvzCapabilitySnapshot caps;
+    dvz_capability_snapshot_default(&caps);
+    DvzDiagnosticReport report;
+    dvz_diagnostic_report_init(&report);
+
+    DvzDrp2CommandStream* stream = dvz_figure_emit(figure, &caps, &report);
+    AT(stream == NULL);
+    AT(dvz_diagnostic_report_count(&report) == 1);
+    const char* message = dvz_diagnostic_report_get(&report, 0);
+    AT(message != NULL);
+    AT(strstr(message, "WBOIT requires") != NULL);
+
+    caps.max_color_attachments = 2;
+    caps.render_target_format_rgba16float = true;
+    caps.render_target_format_r16float = true;
+    caps.supports_render_target_sampling = true;
+    caps.supports_color_blending = true;
+    dvz_diagnostic_report_init(&report);
+
+    stream = dvz_figure_emit(figure, &caps, &report);
+    AT(stream != NULL);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+
+    dvz_drp2_stream_destroy(stream);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+/**
  * Register scene graph tests.
  *
  * @param suite the active test suite
@@ -3976,6 +4041,7 @@ int test_scene_graph(TstSuite* suite)
     TEST_SIMPLE(test_scene_rejects_cross_scene_visual);
     TEST_SIMPLE(test_scene_rejects_unsupported_point_attribute);
     TEST_SIMPLE(test_scene_visual_alpha_mode);
+    TEST_SIMPLE(test_scene_visual_alpha_mode_requires_wboit_capabilities);
     TEST_SIMPLE(test_scene_visual_attr_source_and_mutability_metadata);
     TEST_SIMPLE(test_scene_point_external_position_buffer_emits_no_upload);
     TEST_SIMPLE(test_scene_point_external_position_buffer_executes);

@@ -182,6 +182,47 @@ void _diagnostic(DvzDiagnosticReport* report, const char* message)
 
 
 /**
+ * Return whether the capability snapshot can support WBOIT accumulation and resolve.
+ *
+ * @param caps the capability snapshot
+ * @param report the optional diagnostic report
+ * @return whether WBOIT can be emitted
+ */
+static bool _validate_wboit_capabilities(
+    const DvzCapabilitySnapshot* caps, DvzDiagnosticReport* report)
+{
+    ANN(caps);
+    if (caps->max_color_attachments < 2)
+    {
+        _diagnostic(report, "WBOIT requires at least two color attachments");
+        return false;
+    }
+    if (!caps->render_target_format_rgba16float)
+    {
+        _diagnostic(report, "WBOIT requires rgba16float render-target support");
+        return false;
+    }
+    if (!caps->render_target_format_r16float)
+    {
+        _diagnostic(report, "WBOIT requires r16float render-target support");
+        return false;
+    }
+    if (!caps->supports_render_target_sampling)
+    {
+        _diagnostic(report, "WBOIT requires sampling intermediate render targets");
+        return false;
+    }
+    if (!caps->supports_color_blending)
+    {
+        _diagnostic(report, "WBOIT requires color blending support");
+        return false;
+    }
+    return true;
+}
+
+
+
+/**
  * Validate FramePlan conversion against a capability snapshot.
  *
  * @param plan the FramePlan
@@ -212,6 +253,7 @@ bool _validate_capabilities(
     bool has_compute = false;
     bool has_texture_render = false;
     bool has_scene_render = false;  /* scene nodes do per-visual draws, not one composite draw */
+    bool has_wboit_request = false;
     uint64_t max_readback_size = 0;
     uint32_t max_texture_extent = 0;
     const DvzFramePlanNode* render = _first_node_of_type(plan, DVZ_FRAME_PLAN_NODE_RENDER);
@@ -257,6 +299,17 @@ bool _validate_capabilities(
             if (node->u.copy.byte_size > max_readback_size)
                 max_readback_size = node->u.copy.byte_size;
             break;
+        case DVZ_FRAME_PLAN_NODE_RENDER:
+            for (uint32_t j = 0; j < node->u.render.visual_count; j++)
+            {
+                if (node->u.render.visual_metadata[j].has_metadata &&
+                    node->u.render.visual_metadata[j].alpha_mode == DVZ_ALPHA_BLENDED)
+                {
+                    has_wboit_request = true;
+                    break;
+                }
+            }
+            break;
         default:
             break;
         }
@@ -290,6 +343,8 @@ bool _validate_capabilities(
         _diagnostic(report, "readback buffer exceeds max_buffer_size");
         return false;
     }
+    if (has_wboit_request && !_validate_wboit_capabilities(caps, report))
+        return false;
     return true;
 }
 

@@ -75,6 +75,7 @@ typedef struct DvzFramePlanVisualMeta
     uint32_t visual_index;
     uint32_t buffer_index;
     uint32_t topology;
+    DvzAlphaMode alpha_mode;
     char position_id[DVZ_SCENE_LABEL_SIZE];
     char color_id[DVZ_SCENE_LABEL_SIZE];
     char size_id[DVZ_SCENE_LABEL_SIZE];

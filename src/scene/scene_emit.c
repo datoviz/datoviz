@@ -347,6 +347,7 @@ static bool _scene_visual_frame_plan_metadata(
     metadata->visual_index = visual_index;
     metadata->buffer_index = UINT32_MAX;
     metadata->topology = (uint32_t)visual->topology;
+    metadata->alpha_mode = visual->alpha_mode;
 
     if (!_scene_attr_resource_key(
             figure, visual, visual_index, "position", metadata->position_id,
