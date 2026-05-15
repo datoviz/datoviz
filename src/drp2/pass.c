@@ -127,6 +127,228 @@ static Drp2TextureAccess _depth_texture_access(DvzDrp2AttachmentAccess access)
 
 
 /**
+ * Convert DRP2 color attachment access to vklite texture access.
+ *
+ * @param access DRP2 attachment access intent
+ * @return vklite texture access
+ */
+static Drp2TextureAccess _color_texture_access(DvzDrp2AttachmentAccess access)
+{
+    switch (access)
+    {
+    case DVZ_DRP2_ATTACHMENT_ACCESS_READ:
+        return DRP2_TEXTURE_ACCESS_COLOR_ATTACHMENT_READ;
+    case DVZ_DRP2_ATTACHMENT_ACCESS_WRITE:
+        return DRP2_TEXTURE_ACCESS_COLOR_ATTACHMENT_WRITE;
+    case DVZ_DRP2_ATTACHMENT_ACCESS_READ_WRITE:
+    default:
+        return DRP2_TEXTURE_ACCESS_COLOR_ATTACHMENT;
+    }
+}
+
+
+
+/**
+ * Return attachment access expanded for a load operation that reads existing contents.
+ *
+ * @param access declared attachment access
+ * @param load_op declared load operation
+ * @return effective access used for synchronization
+ */
+static DvzDrp2AttachmentAccess _attachment_effective_access(
+    DvzDrp2AttachmentAccess access, DvzDrp2AttachmentLoadOp load_op)
+{
+    if (access == DVZ_DRP2_ATTACHMENT_ACCESS_WRITE &&
+        load_op == DVZ_DRP2_ATTACHMENT_LOAD_LOAD)
+    {
+        return DVZ_DRP2_ATTACHMENT_ACCESS_READ_WRITE;
+    }
+    return access;
+}
+
+
+
+/**
+ * Find the layout entry that declares one bind-group binding's access.
+ *
+ * @param layout vklite bind-group layout object
+ * @param binding binding index
+ * @return layout entry, or NULL when not found
+ */
+static const DvzDrp2BindGroupLayoutEntry*
+_bind_group_layout_entry(const Drp2VkliteObject* layout, uint32_t binding)
+{
+    ANN(layout);
+    for (uint32_t i = 0; i < layout->layout_entry_count; i++)
+    {
+        if (layout->layout_entries[i].binding == binding)
+            return &layout->layout_entries[i];
+    }
+    return NULL;
+}
+
+
+
+/**
+ * Convert a texture binding declaration to vklite texture access.
+ *
+ * @param binding_type DRP2 binding type
+ * @param access declared binding access
+ * @return vklite texture access, or none when the binding does not imply image access
+ */
+static Drp2TextureAccess _binding_texture_access(
+    DvzDrp2BindingType binding_type, DvzDrp2BindingAccess access)
+{
+    if (binding_type == DVZ_DRP2_BINDING_TYPE_SAMPLED_TEXTURE)
+        return DRP2_TEXTURE_ACCESS_SAMPLED_READ;
+    if (binding_type == DVZ_DRP2_BINDING_TYPE_STORAGE_TEXTURE)
+    {
+        return access == DVZ_DRP2_BINDING_ACCESS_READ ?
+                   DRP2_TEXTURE_ACCESS_STORAGE_TEXTURE_READ :
+                   DRP2_TEXTURE_ACCESS_STORAGE_TEXTURE_READ_WRITE;
+    }
+    return DRP2_TEXTURE_ACCESS_NONE;
+}
+
+
+
+/**
+ * Transition the image used by a DRP2 texture binding before descriptor use.
+ *
+ * @param state vklite runtime state
+ * @param cmds command buffer wrapper
+ * @param bind_group bind-group object carrying resource bindings
+ * @param skip_count number of texture ids to skip because they are active attachments
+ * @param skip_texture_ids texture ids to leave in their attachment layouts
+ * @param command_index command index used for validation reporting
+ * @return DRP2 validation result
+ */
+static DvzDrp2ValidationResult _transition_bind_group_textures(
+    Drp2VkliteState* state, DvzCommands* cmds, const Drp2VkliteObject* bind_group,
+    uint32_t skip_count, const uint64_t* skip_texture_ids, uint32_t command_index)
+{
+    ANN(state);
+    ANN(cmds);
+    ANN(bind_group);
+
+    Drp2VkliteObject* layout = _vklite_find(state, bind_group->bind_group_layout_id);
+    if (layout == NULL || layout->kind != DRP2_OBJECT_BIND_GROUP_LAYOUT)
+        return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+
+    for (uint32_t i = 0; i < bind_group->bind_group_entry_count; i++)
+    {
+        const DvzDrp2BindGroupEntry* entry = &bind_group->bind_group_entries[i];
+        Drp2TextureAccess texture_access = _binding_texture_access(
+            entry->binding_type, DVZ_DRP2_BINDING_ACCESS_READ);
+        if (texture_access == DRP2_TEXTURE_ACCESS_NONE)
+            continue;
+        bool skip = false;
+        for (uint32_t j = 0; j < skip_count; j++)
+        {
+            if (skip_texture_ids != NULL && skip_texture_ids[j] == entry->resource_id)
+            {
+                skip = true;
+                break;
+            }
+        }
+        if (skip)
+            continue;
+
+        const DvzDrp2BindGroupLayoutEntry* layout_entry =
+            _bind_group_layout_entry(layout, entry->binding);
+        if (layout_entry != NULL)
+        {
+            texture_access =
+                _binding_texture_access(layout_entry->binding_type, layout_entry->access);
+        }
+        Drp2VkliteObject* texture = _vklite_find(state, entry->resource_id);
+        if (texture == NULL || texture->images == NULL)
+            return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+        _vklite_transition_image_access(cmds, texture, texture_access);
+    }
+    return _drp2_ok();
+}
+
+
+
+/**
+ * Transition all currently-declared bind-group textures before a render pass begins.
+ *
+ * @param state vklite runtime state
+ * @param cmds command buffer wrapper
+ * @param skip_count number of texture ids that are attachments in the pass being opened
+ * @param skip_texture_ids texture ids to leave in attachment layouts
+ * @param command_index command index used for validation reporting
+ * @return DRP2 validation result
+ */
+static DvzDrp2ValidationResult _transition_declared_bind_group_textures(
+    Drp2VkliteState* state, DvzCommands* cmds, uint32_t skip_count,
+    const uint64_t* skip_texture_ids, uint32_t command_index)
+{
+    ANN(state);
+    ANN(cmds);
+
+    for (uint32_t i = 0; i < state->count; i++)
+    {
+        const Drp2VkliteObject* object = &state->objects[i];
+        if (object->destroyed || object->kind != DRP2_OBJECT_BIND_GROUP)
+            continue;
+        DvzDrp2ValidationResult result = _transition_bind_group_textures(
+            state, cmds, object, skip_count, skip_texture_ids, command_index);
+        if (!result.ok)
+            return result;
+    }
+    return _drp2_ok();
+}
+
+
+
+/**
+ * Transition an owned transient depth image according to a declared attachment access.
+ *
+ * @param cmds command buffer wrapper
+ * @param owner object that owns the depth image wrapper
+ * @param access requested vklite texture access
+ */
+static void _transition_owned_depth_image_access(
+    DvzCommands* cmds, Drp2VkliteObject* owner, Drp2TextureAccess access)
+{
+    ANN(cmds);
+    ANN(owner);
+    ANN(owner->depth_images);
+
+    VkImageLayout layout = _vklite_texture_access_layout(access);
+    Drp2TextureAccess previous_access =
+        owner->depth_texture_access != DRP2_TEXTURE_ACCESS_NONE
+            ? owner->depth_texture_access
+            : DRP2_TEXTURE_ACCESS_NONE;
+    if (owner->depth_image_layout == layout && previous_access == access)
+        return;
+
+    VkPipelineStageFlags2 src_stage = VK_PIPELINE_STAGE_2_NONE;
+    VkAccessFlags2 src_access = 0;
+    VkPipelineStageFlags2 dst_stage = VK_PIPELINE_STAGE_2_NONE;
+    VkAccessFlags2 dst_access = 0;
+    _vklite_texture_access_scope(previous_access, &src_stage, &src_access);
+    _vklite_texture_access_scope(access, &dst_stage, &dst_access);
+
+    DvzBarriers barriers = {0};
+    dvz_barriers(&barriers);
+    DvzBarrierImage* bimg =
+        dvz_barriers_image(&barriers, dvz_image_handle(owner->depth_images, 0));
+    ANN(bimg);
+    dvz_barrier_image_stage(bimg, src_stage, dst_stage);
+    dvz_barrier_image_access(bimg, src_access, dst_access);
+    dvz_barrier_image_layout(bimg, owner->depth_image_layout, layout);
+    dvz_barrier_image_aspect(bimg, VK_IMAGE_ASPECT_DEPTH_BIT);
+    dvz_cmd_barriers(cmds, &barriers);
+    owner->depth_image_layout = layout;
+    owner->depth_texture_access = access;
+}
+
+
+
+/**
  * Find the active borrowed frame target depth image for same-size intermediate passes.
  *
  * @param state vklite runtime state
@@ -310,6 +532,7 @@ DvzDrp2ValidationResult _vklite_begin_render_pass(
         return _vklite_fail_destroy_object(
             pass, DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
     pass->rendering = rendering;
+    Drp2VkliteObject* transient_depth_owner = NULL;
 
     dvz_rendering(rendering);
     dvz_rendering_area(rendering, 0, 0, target->width, target->height);
@@ -355,6 +578,7 @@ DvzDrp2ValidationResult _vklite_begin_render_pass(
                               ? target
                               : (borrowed_depth_owner != NULL ? borrowed_depth_owner : pass);
             load_existing_depth = borrowed_depth_owner != NULL;
+            transient_depth_owner = depth_owner;
 
             if (load_existing_depth)
             {
@@ -415,133 +639,83 @@ DvzDrp2ValidationResult _vklite_begin_render_pass(
                 }
                 depth_owner->depth_images = depth_images;
                 depth_owner->depth_views = depth_views;
+                depth_owner->depth_image_layout = VK_IMAGE_LAYOUT_UNDEFINED;
+                depth_owner->depth_texture_access = DRP2_TEXTURE_ACCESS_NONE;
             }
         }
         if (depth_view == VK_NULL_HANDLE)
             return _vklite_fail_destroy_object(
                 pass, DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
         DvzAttachment* datt = dvz_rendering_depth(rendering);
-        dvz_attachment_image(datt, depth_view, VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL);
         DvzDrp2AttachmentLoadOp depth_load_op = command->u.begin_render_pass.depth_load_op;
         if (!command->u.begin_render_pass.depth_ops_explicit && load_existing_depth)
             depth_load_op = DVZ_DRP2_ATTACHMENT_LOAD_LOAD;
+        DvzDrp2AttachmentAccess depth_attachment_access =
+            _attachment_effective_access(
+                command->u.begin_render_pass.depth_access, depth_load_op);
+        Drp2TextureAccess depth_access = _depth_texture_access(depth_attachment_access);
+        dvz_attachment_image(datt, depth_view, _vklite_texture_access_layout(depth_access));
         dvz_attachment_ops(
             datt, _vklite_attachment_load_op(depth_load_op),
             _vklite_attachment_store_op(command->u.begin_render_pass.depth_store_op));
         if (depth_load_op == DVZ_DRP2_ATTACHMENT_LOAD_CLEAR)
         {
             dvz_attachment_clear(
-                datt, (VkClearValue){.depthStencil = {command->u.begin_render_pass.clear_depth, 0}});
+                datt,
+                (VkClearValue){.depthStencil = {command->u.begin_render_pass.clear_depth, 0}});
         }
     }
 
     if (!pass->borrowed_commands && dvz_cmd_begin_result(cmds) != 0)
         return _vklite_fail_destroy_object(
             pass, DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
-    for (uint32_t i = 0; i < state->count; i++)
-    {
-        Drp2VkliteObject* object = &state->objects[i];
-        bool is_color_target = false;
-        for (uint32_t j = 0; j < color_count; j++)
-        {
-            if (object == targets[j])
-            {
-                is_color_target = true;
-                break;
-            }
-        }
-        bool is_named_depth_target = object == named_depth;
-        if (object->kind == DRP2_OBJECT_TEXTURE && !is_color_target && !is_named_depth_target &&
-            object->views != NULL && !object->borrowed_frame_target &&
-            (object->usage & DVZ_DRP2_TEXTURE_USAGE_TEXTURE_BINDING) != 0)
-        {
-            _vklite_transition_image_access(cmds, object, DRP2_TEXTURE_ACCESS_SAMPLED_READ);
-        }
-    }
+    uint64_t skip_texture_ids[DVZ_DRP2_MAX_COLOR_ATTACHMENTS + 1] = {0};
+    uint32_t skip_count = 0;
+    for (uint32_t i = 0; i < color_count; i++)
+        skip_texture_ids[skip_count++] = targets[i]->id;
+    if (named_depth != NULL)
+        skip_texture_ids[skip_count++] = named_depth->id;
+
+    DvzDrp2ValidationResult bind_group_transition_result =
+        _transition_declared_bind_group_textures(
+            state, cmds, skip_count, skip_texture_ids, command_index);
+    if (!bind_group_transition_result.ok)
+        return bind_group_transition_result;
+
     for (uint32_t i = 0; i < color_count; i++)
     {
         if (!targets[i]->borrowed_frame_target)
         {
+            const DvzDrp2ColorAttachment* attachment =
+                command->u.begin_render_pass.color_attachment_count > 0
+                    ? &command->u.begin_render_pass.color_attachments[i]
+                    : NULL;
+            DvzDrp2AttachmentAccess access =
+                attachment != NULL ? attachment->access : DVZ_DRP2_ATTACHMENT_ACCESS_WRITE;
+            DvzDrp2AttachmentLoadOp load_op =
+                attachment != NULL ? attachment->load_op :
+                                     (command->u.begin_render_pass.clear ?
+                                          DVZ_DRP2_ATTACHMENT_LOAD_CLEAR :
+                                          DVZ_DRP2_ATTACHMENT_LOAD_LOAD);
+            access = _attachment_effective_access(access, load_op);
             _vklite_transition_image_access(
-                cmds, targets[i], DRP2_TEXTURE_ACCESS_COLOR_ATTACHMENT);
+                cmds, targets[i], _color_texture_access(access));
         }
     }
     if (named_depth != NULL)
     {
         _vklite_transition_image_access(
-            cmds, named_depth, _depth_texture_access(command->u.begin_render_pass.depth_access));
+            cmds, named_depth,
+            _depth_texture_access(_attachment_effective_access(
+                command->u.begin_render_pass.depth_access,
+                command->u.begin_render_pass.depth_load_op)));
     }
-    else if (pass->depth_images != NULL)
-    {
-        DvzBarriers barriers = {0};
-        dvz_barriers(&barriers);
-        DvzBarrierImage* bimg =
-            dvz_barriers_image(&barriers, dvz_image_handle(pass->depth_images, 0));
-        ANN(bimg);
-        dvz_barrier_image_stage(
-            bimg,
-            VK_PIPELINE_STAGE_2_EARLY_FRAGMENT_TESTS_BIT |
-                VK_PIPELINE_STAGE_2_LATE_FRAGMENT_TESTS_BIT,
-            VK_PIPELINE_STAGE_2_EARLY_FRAGMENT_TESTS_BIT |
-                VK_PIPELINE_STAGE_2_LATE_FRAGMENT_TESTS_BIT);
-        dvz_barrier_image_access(
-            bimg, VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,
-            VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_READ_BIT |
-                VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT);
-        dvz_barrier_image_layout(
-            bimg, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL);
-        dvz_barrier_image_aspect(bimg, VK_IMAGE_ASPECT_DEPTH_BIT);
-        dvz_cmd_barriers(cmds, &barriers);
-    }
-    else if (target->borrowed_frame_target && target->depth_images != NULL)
-    {
-        DvzBarriers barriers = {0};
-        dvz_barriers(&barriers);
-        DvzBarrierImage* bimg =
-            dvz_barriers_image(&barriers, dvz_image_handle(target->depth_images, 0));
-        ANN(bimg);
-        dvz_barrier_image_stage(
-            bimg,
-            VK_PIPELINE_STAGE_2_EARLY_FRAGMENT_TESTS_BIT |
-                VK_PIPELINE_STAGE_2_LATE_FRAGMENT_TESTS_BIT,
-            VK_PIPELINE_STAGE_2_EARLY_FRAGMENT_TESTS_BIT |
-                VK_PIPELINE_STAGE_2_LATE_FRAGMENT_TESTS_BIT);
-        dvz_barrier_image_access(
-            bimg, VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,
-            VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_READ_BIT |
-                VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT);
-        dvz_barrier_image_layout(
-            bimg, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL);
-        dvz_barrier_image_aspect(bimg, VK_IMAGE_ASPECT_DEPTH_BIT);
-        dvz_cmd_barriers(cmds, &barriers);
-    }
-    else if (command->u.begin_render_pass.has_depth_attachment)
-    {
-        Drp2VkliteObject* depth_owner =
-            _active_borrowed_depth_target(state, target->width, target->height);
-        if (depth_owner != NULL)
-        {
-            DvzBarriers barriers = {0};
-            dvz_barriers(&barriers);
-            DvzBarrierImage* bimg =
-                dvz_barriers_image(&barriers, dvz_image_handle(depth_owner->depth_images, 0));
-            ANN(bimg);
-            dvz_barrier_image_stage(
-                bimg,
-                VK_PIPELINE_STAGE_2_EARLY_FRAGMENT_TESTS_BIT |
-                    VK_PIPELINE_STAGE_2_LATE_FRAGMENT_TESTS_BIT,
-                VK_PIPELINE_STAGE_2_EARLY_FRAGMENT_TESTS_BIT |
-                    VK_PIPELINE_STAGE_2_LATE_FRAGMENT_TESTS_BIT);
-            dvz_barrier_image_access(
-                bimg, VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,
-                VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_READ_BIT |
-                    VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT);
-            dvz_barrier_image_layout(
-                bimg, VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL);
-            dvz_barrier_image_aspect(bimg, VK_IMAGE_ASPECT_DEPTH_BIT);
-            dvz_cmd_barriers(cmds, &barriers);
-        }
-    }
+    else if (transient_depth_owner != NULL && transient_depth_owner->depth_images != NULL)
+        _transition_owned_depth_image_access(
+            cmds, transient_depth_owner,
+            _depth_texture_access(_attachment_effective_access(
+                command->u.begin_render_pass.depth_access,
+                command->u.begin_render_pass.depth_load_op)));
     dvz_cmd_rendering_begin(cmds, rendering);
     return _drp2_ok();
 }
@@ -805,6 +979,15 @@ DvzDrp2ValidationResult _vklite_set_bind_group(
     else if (pass->kind != DRP2_OBJECT_RENDER_PASS)
         return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
 
+    if (pass->kind == DRP2_OBJECT_COMPUTE_PASS)
+    {
+        DvzDrp2ValidationResult transition_result =
+            _transition_bind_group_textures(state, pass->commands, bind_group, 0, NULL,
+                                            command_index);
+        if (!transition_result.ok)
+            return transition_result;
+    }
+
     if (pipeline->combined_pipeline_layout != VK_NULL_HANDLE)
     {
         VkDescriptorSet descriptor_set = dvz_descriptors_handle(bind_group->descriptors, 0);
@@ -918,16 +1101,6 @@ _vklite_end_render_pass(Drp2VkliteState* state, uint64_t pass_id, uint32_t comma
         return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
 
     dvz_cmd_rendering_end(pass->commands);
-    for (uint32_t i = 0; i < pass->color_target_count; i++)
-    {
-        Drp2VkliteObject* target = _vklite_find(state, pass->color_target_ids[i]);
-        if (target == NULL || target->borrowed_frame_target || target->images == NULL)
-            continue;
-        if ((target->usage & DVZ_DRP2_TEXTURE_USAGE_TEXTURE_BINDING) == 0)
-            continue;
-        _vklite_transition_image_access(
-            pass->commands, target, DRP2_TEXTURE_ACCESS_SAMPLED_READ);
-    }
     if (!pass->borrowed_commands)
     {
         DvzDrp2ValidationResult result =

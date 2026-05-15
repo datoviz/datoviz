@@ -78,9 +78,13 @@ typedef enum
     DRP2_TEXTURE_ACCESS_TRANSFER_WRITE,
     DRP2_TEXTURE_ACCESS_SAMPLED_READ,
     DRP2_TEXTURE_ACCESS_COLOR_ATTACHMENT,
+    DRP2_TEXTURE_ACCESS_COLOR_ATTACHMENT_READ,
+    DRP2_TEXTURE_ACCESS_COLOR_ATTACHMENT_WRITE,
     DRP2_TEXTURE_ACCESS_DEPTH_ATTACHMENT,
     DRP2_TEXTURE_ACCESS_DEPTH_ATTACHMENT_READ,
     DRP2_TEXTURE_ACCESS_DEPTH_ATTACHMENT_WRITE,
+    DRP2_TEXTURE_ACCESS_STORAGE_TEXTURE_READ,
+    DRP2_TEXTURE_ACCESS_STORAGE_TEXTURE_READ_WRITE,
 } Drp2TextureAccess;
 
 
@@ -191,8 +195,15 @@ struct Drp2VkliteObject
     VkImageView image_view;
     VkImageLayout image_layout;
     Drp2TextureAccess texture_access;
+    VkImageLayout depth_image_layout;
+    Drp2TextureAccess depth_texture_access;
     uint64_t texture_id;
     uint64_t sampler_id;
+    uint64_t bind_group_layout_id;
+    uint32_t layout_entry_count;
+    DvzDrp2BindGroupLayoutEntry layout_entries[DVZ_DRP2_MAX_BINDINGS];
+    uint32_t bind_group_entry_count;
+    DvzDrp2BindGroupEntry bind_group_entries[DVZ_DRP2_MAX_BINDINGS];
     uint32_t color_target_count;
     uint64_t color_target_ids[DVZ_DRP2_MAX_COLOR_ATTACHMENTS];
     uint32_t usage;
@@ -291,6 +302,8 @@ void _vklite_borrowed_frame_commands_free(DvzCommands* cmds);
 DvzDrp2ValidationResult _vklite_owned_commands_end_submit(
     DvzCommands* cmds, uint32_t command_index);
 VkImageLayout _vklite_texture_access_layout(Drp2TextureAccess access);
+void _vklite_texture_access_scope(
+    Drp2TextureAccess access, VkPipelineStageFlags2* stage, VkAccessFlags2* access_mask);
 void _vklite_transition_image_access(
     DvzCommands* cmds, Drp2VkliteObject* object, Drp2TextureAccess access);
 bool _vklite_compile_glsl(

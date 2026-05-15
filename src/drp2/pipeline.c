@@ -157,7 +157,7 @@ static bool _shaderc_load(void)
         return false;
     }
 
-    /* POSIX allows void* <-> function pointer via memcpy to avoid -Wpedantic warnings. */
+    /* POSIX allows void* <-> function pointer via byte copy to avoid -Wpedantic warnings. */
 #define _SC_SYM(field, name)                                                                      \
     {                                                                                             \
         void* _p = dvz_dynlib_sym(lib, name);                                                     \
@@ -167,7 +167,7 @@ static bool _shaderc_load(void)
             dvz_dynlib_close(lib);                                                                \
             return false;                                                                         \
         }                                                                                         \
-        memcpy(&g_shaderc.field, &_p, sizeof(_p));                                                \
+        dvz_memcpy(&g_shaderc.field, sizeof(g_shaderc.field), &_p, sizeof(_p));                   \
     }
 
     _SC_SYM(compiler_initialize, "shaderc_compiler_initialize")
@@ -471,6 +471,12 @@ DvzDrp2ValidationResult _vklite_create_bind_group_layout(
         return _vklite_fail_destroy_object(
             object, DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
     object->slots = slots;
+    object->layout_entry_count = command->u.create_bind_group_layout.entry_count;
+    dvz_memcpy(
+        object->layout_entries, sizeof(object->layout_entries),
+        command->u.create_bind_group_layout.entries,
+        command->u.create_bind_group_layout.entry_count *
+            sizeof(command->u.create_bind_group_layout.entries[0]));
 
     dvz_slots(state->runtime->device, slots);
     for (uint32_t i = 0; i < command->u.create_bind_group_layout.entry_count; i++)
@@ -524,6 +530,13 @@ DvzDrp2ValidationResult _vklite_create_bind_group(
         return _vklite_fail_destroy_object(
             object, DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
     object->descriptors = descriptors;
+    object->bind_group_layout_id = command->u.create_bind_group.bind_group_layout_id;
+    object->bind_group_entry_count = command->u.create_bind_group.entry_count;
+    dvz_memcpy(
+        object->bind_group_entries, sizeof(object->bind_group_entries),
+        command->u.create_bind_group.entries,
+        command->u.create_bind_group.entry_count *
+            sizeof(command->u.create_bind_group.entries[0]));
     dvz_descriptors(layout->slots, descriptors);
 
     for (uint32_t i = 0; i < command->u.create_bind_group.entry_count; i++)

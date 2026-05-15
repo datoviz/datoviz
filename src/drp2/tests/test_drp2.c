@@ -4234,6 +4234,33 @@ int test_drp2_runtime_vklite_draws_depth_peeling_shape(TstSuite* suite, TstItem*
     AT(resolved[2] > 0);
     AT(resolved[3] == 255);
 
+    Drp2VkliteObject* resolved_target = _vklite_find(runtime->vklite_state, 50);
+    Drp2VkliteObject* opaque_depth = _vklite_find(runtime->vklite_state, 51);
+    Drp2VkliteObject* front_ping = _vklite_find(runtime->vklite_state, 52);
+    Drp2VkliteObject* back_ping = _vklite_find(runtime->vklite_state, 53);
+    Drp2VkliteObject* depth_ping = _vklite_find(runtime->vklite_state, 54);
+    Drp2VkliteObject* front_pong = _vklite_find(runtime->vklite_state, 55);
+    Drp2VkliteObject* back_pong = _vklite_find(runtime->vklite_state, 56);
+    Drp2VkliteObject* depth_pong = _vklite_find(runtime->vklite_state, 57);
+    ANN(resolved_target);
+    ANN(opaque_depth);
+    ANN(front_ping);
+    ANN(back_ping);
+    ANN(depth_ping);
+    ANN(front_pong);
+    ANN(back_pong);
+    ANN(depth_pong);
+    AT(resolved_target->texture_access == DRP2_TEXTURE_ACCESS_TRANSFER_READ);
+    AT(resolved_target->image_layout == VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
+    AT(opaque_depth->texture_access == DRP2_TEXTURE_ACCESS_DEPTH_ATTACHMENT_READ);
+    AT(opaque_depth->image_layout == VK_IMAGE_LAYOUT_READ_ONLY_OPTIMAL);
+    AT(front_ping->texture_access == DRP2_TEXTURE_ACCESS_SAMPLED_READ);
+    AT(back_ping->texture_access == DRP2_TEXTURE_ACCESS_SAMPLED_READ);
+    AT(depth_ping->texture_access == DRP2_TEXTURE_ACCESS_SAMPLED_READ);
+    AT(front_pong->texture_access == DRP2_TEXTURE_ACCESS_SAMPLED_READ);
+    AT(back_pong->texture_access == DRP2_TEXTURE_ACCESS_SAMPLED_READ);
+    AT(depth_pong->texture_access == DRP2_TEXTURE_ACCESS_SAMPLED_READ);
+
     dvz_drp2_stream_destroy(stream);
     dvz_drp2_runtime_destroy(runtime);
     dvz_gpu_ctx_destroy(ctx);

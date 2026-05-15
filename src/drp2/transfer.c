@@ -107,12 +107,17 @@ VkImageLayout _vklite_texture_access_layout(Drp2TextureAccess access)
     case DRP2_TEXTURE_ACCESS_SAMPLED_READ:
         return VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
     case DRP2_TEXTURE_ACCESS_COLOR_ATTACHMENT:
+    case DRP2_TEXTURE_ACCESS_COLOR_ATTACHMENT_READ:
+    case DRP2_TEXTURE_ACCESS_COLOR_ATTACHMENT_WRITE:
         return VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
     case DRP2_TEXTURE_ACCESS_DEPTH_ATTACHMENT_READ:
         return VK_IMAGE_LAYOUT_READ_ONLY_OPTIMAL;
     case DRP2_TEXTURE_ACCESS_DEPTH_ATTACHMENT:
     case DRP2_TEXTURE_ACCESS_DEPTH_ATTACHMENT_WRITE:
         return VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL;
+    case DRP2_TEXTURE_ACCESS_STORAGE_TEXTURE_READ:
+    case DRP2_TEXTURE_ACCESS_STORAGE_TEXTURE_READ_WRITE:
+        return VK_IMAGE_LAYOUT_GENERAL;
     default:
         return VK_IMAGE_LAYOUT_UNDEFINED;
     }
@@ -126,7 +131,7 @@ VkImageLayout _vklite_texture_access_layout(Drp2TextureAccess access)
  * @param stage output Vulkan pipeline stage mask
  * @param access_mask output Vulkan access mask
  */
-static void _vklite_texture_access_scope(
+void _vklite_texture_access_scope(
     Drp2TextureAccess access, VkPipelineStageFlags2* stage, VkAccessFlags2* access_mask)
 {
     ANN(stage);
@@ -150,6 +155,14 @@ static void _vklite_texture_access_scope(
         *access_mask =
             VK_ACCESS_2_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT;
         break;
+    case DRP2_TEXTURE_ACCESS_COLOR_ATTACHMENT_READ:
+        *stage = VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT;
+        *access_mask = VK_ACCESS_2_COLOR_ATTACHMENT_READ_BIT;
+        break;
+    case DRP2_TEXTURE_ACCESS_COLOR_ATTACHMENT_WRITE:
+        *stage = VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT;
+        *access_mask = VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT;
+        break;
     case DRP2_TEXTURE_ACCESS_DEPTH_ATTACHMENT:
         *stage = VK_PIPELINE_STAGE_2_EARLY_FRAGMENT_TESTS_BIT |
                  VK_PIPELINE_STAGE_2_LATE_FRAGMENT_TESTS_BIT;
@@ -167,6 +180,19 @@ static void _vklite_texture_access_scope(
         *stage = VK_PIPELINE_STAGE_2_EARLY_FRAGMENT_TESTS_BIT |
                  VK_PIPELINE_STAGE_2_LATE_FRAGMENT_TESTS_BIT;
         *access_mask = VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+        break;
+    case DRP2_TEXTURE_ACCESS_STORAGE_TEXTURE_READ:
+        *stage = VK_PIPELINE_STAGE_2_VERTEX_SHADER_BIT |
+                 VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT |
+                 VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT;
+        *access_mask = VK_ACCESS_2_SHADER_STORAGE_READ_BIT;
+        break;
+    case DRP2_TEXTURE_ACCESS_STORAGE_TEXTURE_READ_WRITE:
+        *stage = VK_PIPELINE_STAGE_2_VERTEX_SHADER_BIT |
+                 VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT |
+                 VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT;
+        *access_mask =
+            VK_ACCESS_2_SHADER_STORAGE_READ_BIT | VK_ACCESS_2_SHADER_STORAGE_WRITE_BIT;
         break;
     default:
         *stage = VK_PIPELINE_STAGE_2_NONE;
@@ -198,6 +224,8 @@ static Drp2TextureAccess _vklite_texture_access_from_layout(const Drp2VkliteObje
     case VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL:
         return _vklite_format_has_depth(object->format) ? DRP2_TEXTURE_ACCESS_DEPTH_ATTACHMENT :
                                                           DRP2_TEXTURE_ACCESS_COLOR_ATTACHMENT;
+    case VK_IMAGE_LAYOUT_GENERAL:
+        return DRP2_TEXTURE_ACCESS_STORAGE_TEXTURE_READ_WRITE;
     default:
         return DRP2_TEXTURE_ACCESS_NONE;
     }
