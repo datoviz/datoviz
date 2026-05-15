@@ -61,6 +61,14 @@ validation: `just build`, `./build/testing/dvztest_drp2 drp2_recording` (`3/3`),
 `./build/testing/dvztest_scene test_frame_plan_emit_scene_core_visuals_record_portable_dvzr`, and
 `./build/testing/dvz_drp2_player --fast /tmp/dvz_scene_mesh_emit_portable.dvzr`.
 
+Second follow-up DVZR slice on 2026-05-15: loaded recordings now expose raw fallback diagnostics via
+`dvz_drp2_recording_raw_fallback_count()` and `dvz_drp2_recording_raw_fallback()`. The focused
+regression records a valid stream with a deliberately unsupported `DestroyBuffer` portable command,
+verifies the fallback command index/type, and confirms `dvz_drp2_player` warns while still replaying
+the recording through the semantic runtime. Focused validation:
+`./build/testing/dvztest_drp2 drp2_recording` (`4/4`) and
+`./build/testing/dvz_drp2_player --fast /tmp/dvz_drp2_recording_raw_fallback.dvzr`.
+
 Focused validation recorded before the latest `2026-05-13` follow-up commits:
 
 1. `just spec-check`: last recorded pass remained `119/119` DRP2 fixtures; `52` fixture-runner
@@ -174,10 +182,10 @@ Deliver the next implementation slices in this order unless the user redirects:
    stale result-slot cleanup, scene warning readiness, and DRP2 vklite transient object table
    trimming. Remaining review areas are trace/status hashing and string-buffer safety, plus a
    bounded live app smoke around request/runtime steady state.
-5. Current DVZR next: broaden portable command coverage beyond the point/primitive/mesh/image scene
-   baseline whenever new scene-emitted command families appear, add a negative/diagnostic path that
-   reports which command type forced raw fallback, and decide whether `dvz_drp2_player` should stay a
-   developer executable or become an installed CLI/app-level integration point.
+5. Current DVZR next: decide whether `dvz_drp2_player` should stay a developer executable or become
+   an installed CLI/app-level integration point, then add app/scene capture plumbing that records the
+   emitted frame streams directly to `.dvzr`. Broaden portable command coverage beyond the
+   point/primitive/mesh/image baseline whenever a real scene/app stream reports raw fallbacks.
 6. CUDA/CuPy external-memory interop priority: treat CUDA/CuPy-owned GPU pointer -> Vulkan import as
    unreliable on this branch. Prioritize the opposite direction for any new interop work: create and
    own the allocation in Vulkan, export it through external memory, import it into CUDA/CuPy, and
