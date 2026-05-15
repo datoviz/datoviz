@@ -221,6 +221,20 @@ DVZ_EXPORT int dvz_app_window_capture_png(DvzAppWindow* win, const char* path);
 
 
 /**
+ * Resize an app-window's logical and framebuffer extent.
+ *
+ * Intended for offscreen or externally-hosted windows whose size is controlled by another UI
+ * toolkit. GLFW windows should normally be resized by the platform window itself.
+ *
+ * @param win the app-window
+ * @param width width in pixels
+ * @param height height in pixels
+ * @return 0 on success, negative on error
+ */
+DVZ_EXPORT int dvz_app_window_resize(DvzAppWindow* win, uint32_t width, uint32_t height);
+
+
+/**
  * Register a callback invoked after each successful frame for one app-window.
  *
  * The callback runs after the scene stream has been emitted, executed, request processing has

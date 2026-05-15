@@ -1506,6 +1506,35 @@ int dvz_app_window_capture_png(DvzAppWindow* win, const char* path)
 }
 
 
+/**
+ * Resize an app-window's logical and framebuffer extent.
+ *
+ * @param win the app-window
+ * @param width width in pixels
+ * @param height height in pixels
+ * @return 0 on success, negative on error
+ */
+int dvz_app_window_resize(DvzAppWindow* win, uint32_t width, uint32_t height)
+{
+    ANN(win);
+    if (width == 0 || height == 0)
+        return -1;
+
+#if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
+    if (win->window == NULL || win->figure == NULL)
+        return -1;
+    dvz_window_backend_emit_resize(win->window, width, height, width, height, 1.0f, 1.0f);
+    dvz_figure_resize(win->figure, width, height);
+    return 0;
+#else
+    (void)width;
+    (void)height;
+    return -1;
+#endif
+}
+
+
+
 void dvz_app_window_set_frame_callback(
     DvzAppWindow* win, DvzAppFrameCallback callback, void* user_data)
 {

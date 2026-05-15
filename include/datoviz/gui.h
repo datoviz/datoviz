@@ -29,6 +29,7 @@
 /*************************************************************************************************/
 
 typedef struct DvzGui DvzGui;
+typedef struct DvzGuiPanel DvzGuiPanel;
 
 typedef void (*DvzGuiCallback)(DvzGui* gui, DvzAppWindow* win, void* user_data);
 
@@ -196,6 +197,40 @@ dvz_gui_slider_float(DvzGui* gui, const char* label, float* value, float min, fl
  * @param open optional open flag, or NULL
  */
 DVZ_EXPORT void dvz_gui_demo(DvzGui* gui, bool* open);
+
+
+
+/**
+ * Create a dockable ImGui panel that displays an app window's latest rendered image.
+ *
+ * @param gui the GUI overlay
+ * @param source app window providing the rendered image
+ * @return the GUI panel, or NULL on failure
+ */
+DVZ_EXPORT DvzGuiPanel* dvz_gui_panel(DvzGui* gui, DvzAppWindow* source);
+
+
+
+/**
+ * Destroy a dockable ImGui panel.
+ *
+ * @param panel the GUI panel
+ */
+DVZ_EXPORT void dvz_gui_panel_destroy(DvzGuiPanel* panel);
+
+
+
+/**
+ * Show a dockable ImGui window containing a Datoviz-rendered panel image.
+ *
+ * @param panel the GUI panel
+ * @param title the ImGui window title
+ * @param open optional open flag, or NULL
+ * @param flags Dear ImGui window flags
+ * @return whether the Datoviz image was visible this frame
+ */
+DVZ_EXPORT bool
+dvz_gui_panel_window(DvzGuiPanel* panel, const char* title, bool* open, int flags);
 
 
 

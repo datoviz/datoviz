@@ -24,6 +24,8 @@
 
 #include "_assertions.h"
 #include "_log.h"
+#include "datoviz/canvas.h"
+#include "datoviz/input/pointer.h"
 #include "datoviz/window/backend.h"
 
 #define GLFW_INCLUDE_NONE
@@ -93,12 +95,31 @@ struct DvzGui
     DvzGuiConfig config;
     DvzGuiCallback callback;
     void* callback_user_data;
+    DvzGuiPanel* panels;
     ImFont* font_regular;
     ImFont* font_mono;
     VkFormat color_format;
     bool glfw_initialized;
     bool vulkan_initialized;
     bool failed;
+};
+
+
+struct DvzGuiPanel
+{
+    DvzGui* gui;
+    DvzAppWindow* source;
+    DvzCanvas* canvas;
+    VkSampler sampler;
+    VkDescriptorSet texture;
+    VkImage image;
+    VkImageView image_view;
+    VkExtent2D extent;
+    uint32_t requested_width;
+    uint32_t requested_height;
+    bool has_frame;
+    bool texture_dirty;
+    DvzGuiPanel* next;
 };
 
 
@@ -188,6 +209,297 @@ static void _gui_load_fonts(DvzGui* gui)
 
     if (gui->font_regular != NULL)
         io.FontDefault = gui->font_regular;
+}
+
+
+
+/**
+ * Attach a GUI panel to the overlay-owned list.
+ *
+ * @param gui the GUI overlay
+ * @param panel the panel to attach
+ */
+static void _gui_panel_attach(DvzGui* gui, DvzGuiPanel* panel)
+{
+    ANN(gui);
+    ANN(panel);
+    panel->next = gui->panels;
+    gui->panels = panel;
+}
+
+
+
+/**
+ * Detach a GUI panel from the overlay-owned list.
+ *
+ * @param gui the GUI overlay
+ * @param panel the panel to detach
+ */
+static void _gui_panel_detach(DvzGui* gui, DvzGuiPanel* panel)
+{
+    ANN(gui);
+    ANN(panel);
+    DvzGuiPanel* prev = NULL;
+    DvzGuiPanel* cur = gui->panels;
+    while (cur != NULL)
+    {
+        if (cur == panel)
+        {
+            if (prev != NULL)
+                prev->next = cur->next;
+            else
+                gui->panels = cur->next;
+            panel->next = NULL;
+            return;
+        }
+        prev = cur;
+        cur = cur->next;
+    }
+}
+
+
+
+/**
+ * Create the sampler used when displaying Datoviz images through ImGui.
+ *
+ * @param panel GUI panel receiving the sampler
+ * @return whether the sampler was created
+ */
+static bool _gui_panel_create_sampler(DvzGuiPanel* panel)
+{
+    ANN(panel);
+    ANN(panel->gui);
+    VkDevice device = dvz_device_handle(panel->gui->device);
+    if (device == VK_NULL_HANDLE)
+        return false;
+
+    VkSamplerCreateInfo info = {};
+    info.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+    info.magFilter = VK_FILTER_LINEAR;
+    info.minFilter = VK_FILTER_LINEAR;
+    info.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+    info.addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+    info.addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+    info.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+    info.minLod = 0.0f;
+    info.maxLod = 0.0f;
+    info.maxAnisotropy = 1.0f;
+    VkResult res = vkCreateSampler(device, &info, NULL, &panel->sampler);
+    if (res != VK_SUCCESS)
+    {
+        log_error("Dear ImGui Datoviz panel sampler creation failed: %d", (int)res);
+        panel->sampler = VK_NULL_HANDLE;
+        return false;
+    }
+    return true;
+}
+
+
+
+/**
+ * Remove the ImGui descriptor for a panel image.
+ *
+ * @param panel GUI panel
+ */
+static void _gui_panel_remove_texture(DvzGuiPanel* panel)
+{
+    ANN(panel);
+    if (panel->texture == VK_NULL_HANDLE)
+        return;
+    if (panel->gui != NULL && panel->gui->vulkan_initialized)
+    {
+        _gui_set_current(panel->gui);
+        ImGui_ImplVulkan_RemoveTexture(panel->texture);
+    }
+    panel->texture = VK_NULL_HANDLE;
+}
+
+
+
+/**
+ * Ensure the ImGui descriptor points at the current Datoviz source image view.
+ *
+ * @param panel GUI panel
+ * @return whether a texture descriptor is ready
+ */
+static bool _gui_panel_ensure_texture(DvzGuiPanel* panel)
+{
+    ANN(panel);
+    DvzGui* gui = panel->gui;
+    ANN(gui);
+    if (!gui->vulkan_initialized || panel->image_view == VK_NULL_HANDLE ||
+        panel->sampler == VK_NULL_HANDLE)
+    {
+        return false;
+    }
+    if (!panel->texture_dirty && panel->texture != VK_NULL_HANDLE)
+        return true;
+
+    _gui_panel_remove_texture(panel);
+    _gui_set_current(gui);
+    panel->texture = ImGui_ImplVulkan_AddTexture(
+        panel->sampler, panel->image_view, VK_IMAGE_LAYOUT_GENERAL);
+    panel->texture_dirty = panel->texture == VK_NULL_HANDLE;
+    return panel->texture != VK_NULL_HANDLE;
+}
+
+
+
+/**
+ * Receive a live source-canvas image after submission.
+ *
+ * @param frame live image metadata
+ * @param user_data GUI panel
+ * @return 0 on success
+ */
+static int _gui_panel_live_image_callback(
+    const DvzCanvasLiveImageFrame* frame, void* user_data)
+{
+    ANN(frame);
+    DvzGuiPanel* panel = (DvzGuiPanel*)user_data;
+    ANN(panel);
+    if (frame->image_view == VK_NULL_HANDLE || frame->extent.width == 0 ||
+        frame->extent.height == 0)
+    {
+        return 0;
+    }
+    if (panel->image_view != frame->image_view)
+    {
+        panel->texture_dirty = true;
+        panel->image_view = frame->image_view;
+        panel->image = frame->image;
+    }
+    panel->extent = frame->extent;
+    panel->has_frame = true;
+    return 0;
+}
+
+
+
+/**
+ * Rebuild the source live-image stream after a panel resize.
+ *
+ * @param panel GUI panel
+ * @param width new source width
+ * @param height new source height
+ */
+static void _gui_panel_resize_source(DvzGuiPanel* panel, uint32_t width, uint32_t height)
+{
+    ANN(panel);
+    if (panel->requested_width == width && panel->requested_height == height)
+        return;
+    if (dvz_app_window_resize(panel->source, width, height) != 0)
+        return;
+    panel->requested_width = width;
+    panel->requested_height = height;
+    if (panel->canvas != NULL)
+    {
+        DvzCanvasLiveImageSinkConfig cfg = {};
+        cfg.callback = _gui_panel_live_image_callback;
+        cfg.user_data = panel;
+        (void)dvz_canvas_configure_live_image_sink(panel->canvas, false, NULL);
+        if (dvz_canvas_configure_live_image_sink(panel->canvas, true, &cfg) != 0)
+            log_error("failed to rebuild Datoviz GUI panel live-image sink after resize");
+    }
+}
+
+
+
+/**
+ * Forward ImGui item input to the source app-window router.
+ *
+ * @param panel GUI panel
+ * @param image_min top-left image position in ImGui coordinates
+ * @param size displayed image size
+ */
+static void _gui_panel_forward_input(
+    DvzGuiPanel* panel, ImVec2 image_min, ImVec2 size)
+{
+    ANN(panel);
+    DvzInputRouter* router = dvz_app_window_input(panel->source);
+    if (router == NULL || size.x <= 0 || size.y <= 0)
+        return;
+
+    ImGuiIO& io = ImGui::GetIO();
+    const bool hovered = ImGui::IsItemHovered();
+    const bool active = ImGui::IsItemActive();
+    if (!hovered && !active)
+        return;
+
+    float x = io.MousePos.x - image_min.x;
+    float y = io.MousePos.y - image_min.y;
+    const uint64_t now = dvz_input_timestamp_ns();
+    const float window_x = size.x;
+    const float window_y = size.y;
+    const int mods = 0;
+
+    if (hovered)
+    {
+        dvz_pointer_emit_position(
+            router, DVZ_POINTER_EVENT_MOVE, x, y, window_x, window_y,
+            DVZ_POINTER_BUTTON_NONE, mods, 1.0f, now, NULL);
+        if (io.MouseWheel != 0.0f || io.MouseWheelH != 0.0f)
+        {
+            dvz_pointer_emit_wheel(
+                router, x, y, window_x, window_y, io.MouseWheelH, io.MouseWheel, mods, 1.0f,
+                now, NULL);
+        }
+    }
+
+    const DvzPointerButton buttons[3] = {
+        DVZ_POINTER_BUTTON_LEFT,
+        DVZ_POINTER_BUTTON_RIGHT,
+        DVZ_POINTER_BUTTON_MIDDLE,
+    };
+    for (int i = 0; i < 3; i++)
+    {
+        if (ImGui::IsMouseClicked(i) && hovered)
+        {
+            dvz_pointer_emit_position(
+                router, DVZ_POINTER_EVENT_PRESS, x, y, window_x, window_y, buttons[i], mods,
+                1.0f, now, NULL);
+        }
+        if (ImGui::IsMouseReleased(i))
+        {
+            dvz_pointer_emit_position(
+                router, DVZ_POINTER_EVENT_RELEASE, x, y, window_x, window_y, buttons[i], mods,
+                1.0f, now, NULL);
+        }
+    }
+}
+
+
+
+/**
+ * Destroy a GUI panel, optionally unlinking it from the owning overlay.
+ *
+ * @param panel GUI panel
+ * @param detach whether to detach from the overlay-owned list
+ */
+static void _gui_panel_destroy(DvzGuiPanel* panel, bool detach)
+{
+    if (panel == NULL)
+        return;
+    DvzGui* gui = panel->gui;
+    if (gui != NULL)
+    {
+        _gui_set_current(gui);
+        if (detach)
+            _gui_panel_detach(gui, panel);
+    }
+    if (panel->canvas != NULL)
+        (void)dvz_canvas_configure_live_image_sink(panel->canvas, false, NULL);
+    _gui_panel_remove_texture(panel);
+    if (gui != NULL && panel->sampler != VK_NULL_HANDLE)
+    {
+        VkDevice device = dvz_device_handle(gui->device);
+        if (device != VK_NULL_HANDLE)
+        {
+            vkDeviceWaitIdle(device);
+            vkDestroySampler(device, panel->sampler, NULL);
+        }
+    }
+    dvz_free(panel);
 }
 
 
@@ -500,6 +812,8 @@ void _dvz_gui_destroy(DvzGui* gui)
 
     dvz_window_glfw_set_input_callbacks(gui->window, NULL, NULL);
     _gui_set_current(gui);
+    while (gui->panels != NULL)
+        _gui_panel_destroy(gui->panels, true);
     if (gui->vulkan_initialized)
         ImGui_ImplVulkan_Shutdown();
     if (gui->glfw_initialized)
@@ -759,4 +1073,114 @@ void dvz_gui_demo(DvzGui* gui, bool* open)
     ANN(gui);
     _gui_set_current(gui);
     ImGui::ShowDemoWindow(open);
+}
+
+
+
+/**
+ * Create a dockable ImGui panel that displays an app window's latest rendered image.
+ *
+ * @param gui the GUI overlay
+ * @param source app window providing the rendered image
+ * @return the GUI panel, or NULL on failure
+ */
+DvzGuiPanel* dvz_gui_panel(DvzGui* gui, DvzAppWindow* source)
+{
+    ANN(gui);
+    ANN(source);
+    DvzCanvas* canvas = dvz_app_window_canvas(source);
+    if (canvas == NULL)
+        return NULL;
+    if (dvz_canvas_render_mode(canvas) != DVZ_CANVAS_RENDER_MODE_OFFSCREEN)
+    {
+        log_error("Datoviz GUI panels require an offscreen source app-window");
+        return NULL;
+    }
+
+    DvzGuiPanel* panel = (DvzGuiPanel*)dvz_calloc(1, sizeof(DvzGuiPanel));
+    if (panel == NULL)
+        return NULL;
+    panel->gui = gui;
+    panel->source = source;
+    panel->canvas = canvas;
+    panel->texture_dirty = true;
+    if (!_gui_panel_create_sampler(panel))
+    {
+        dvz_free(panel);
+        return NULL;
+    }
+
+    DvzCanvasLiveImageSinkConfig cfg = {};
+    cfg.callback = _gui_panel_live_image_callback;
+    cfg.user_data = panel;
+    if (dvz_canvas_configure_live_image_sink(canvas, true, &cfg) != 0)
+    {
+        _gui_panel_destroy(panel, false);
+        return NULL;
+    }
+
+    _gui_panel_attach(gui, panel);
+    return panel;
+}
+
+
+
+/**
+ * Destroy a dockable ImGui panel.
+ *
+ * @param panel the GUI panel
+ */
+void dvz_gui_panel_destroy(DvzGuiPanel* panel)
+{
+    _gui_panel_destroy(panel, true);
+}
+
+
+
+/**
+ * Show a dockable ImGui window containing a Datoviz-rendered panel image.
+ *
+ * @param panel the GUI panel
+ * @param title the ImGui window title
+ * @param open optional open flag, or NULL
+ * @param flags Dear ImGui window flags
+ * @return whether the Datoviz image was visible this frame
+ */
+bool dvz_gui_panel_window(DvzGuiPanel* panel, const char* title, bool* open, int flags)
+{
+    ANN(panel);
+    ANN(title);
+    DvzGui* gui = panel->gui;
+    ANN(gui);
+    _gui_set_current(gui);
+
+    ImGui::SetNextWindowSize(ImVec2(520, 360), ImGuiCond_FirstUseEver);
+    bool shown = false;
+    if (ImGui::Begin(title, open, flags))
+    {
+        ImVec2 avail = ImGui::GetContentRegionAvail();
+        if (avail.x < 1.0f)
+            avail.x = 1.0f;
+        if (avail.y < 1.0f)
+            avail.y = 1.0f;
+
+        uint32_t width = (uint32_t)(avail.x + 0.5f);
+        uint32_t height = (uint32_t)(avail.y + 0.5f);
+        if (width > 0 && height > 0)
+            _gui_panel_resize_source(panel, width, height);
+
+        if (_gui_panel_ensure_texture(panel))
+        {
+            ImVec2 image_min = ImGui::GetCursorScreenPos();
+            ImGui::Image((ImTextureID)panel->texture, avail, ImVec2(0, 0), ImVec2(1, 1));
+            _gui_panel_forward_input(panel, image_min, avail);
+            shown = true;
+        }
+        else
+        {
+            ImGui::Dummy(avail);
+        }
+    }
+    ImGui::End();
+    return shown;
 }
