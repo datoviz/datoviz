@@ -174,7 +174,7 @@ void _scene_request_apply_mvp(const DvzPanel* panel, const vec2 request_ndc, Dvz
     ANN(out);
     _scene_panel_apply_mvp(panel, out);
     vec2 target_ndc = {0.0f, 0.0f};
-    vec2 delta = {request_ndc[0] - target_ndc[0], request_ndc[1] - target_ndc[1]};
+    vec2 delta = {request_ndc[0] - target_ndc[0], -request_ndc[1] - target_ndc[1]};
     _scene_center_apply_mvp(out, delta);
 }
 

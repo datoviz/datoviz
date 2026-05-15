@@ -122,9 +122,7 @@ bool _scene_image_probe_plan(
     ok = ok && dvz_frame_plan_render_panel(
                    plan, "panel.probe", "target.probe", false,
                    (DvzPanelDesc){.x = 0, .y = 0, .width = 1, .height = 1}) &&
-         dvz_frame_plan_render_visual(plan, "probe0") &&
-         dvz_frame_plan_copy(plan, "target.probe", "buf.probe", 4) &&
-         dvz_frame_plan_readback(plan, "buf.probe", "request.probe");
+         dvz_frame_plan_render_visual(plan, "probe0");
     DvzFramePlanNode* render = plan != NULL ? dvz_frame_plan_last_render_node(plan) : NULL;
     if (render != NULL)
     {
@@ -134,6 +132,8 @@ bool _scene_image_probe_plan(
         render->u.render.apply_mvp = mvp;
         render->u.render.controller_modes[0] = DVZ_CONTROLLER_APPLY;
     }
+    ok = ok && dvz_frame_plan_copy(plan, "target.probe", "buf.probe", 4) &&
+         dvz_frame_plan_readback(plan, "buf.probe", "request.probe");
     if (!ok)
     {
         log_error(
