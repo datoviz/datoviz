@@ -650,7 +650,7 @@ static void _scene_commit_emit_success(DvzFigure* figure)
                 if (has_normals)
                     visual->primitive_shading_dirty = false;
             }
-            if (visual->type == DVZ_VISUAL_TYPE_IMAGE)
+            if (visual->type == DVZ_VISUAL_TYPE_IMAGE || visual->type == DVZ_VISUAL_TYPE_VOLUME)
                 _scene_visual_texture_mark_clean(visual);
         }
     }

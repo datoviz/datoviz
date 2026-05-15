@@ -1934,11 +1934,11 @@ DvzDrp2CommandStream* dvz_frame_plan_emitter_emit_drp2(
     const DvzFramePlanNode* clear = _first_node_of_type(plan, DVZ_FRAME_PLAN_NODE_CLEAR);
     const DvzFramePlanNode* copy = _first_node_of_type(plan, DVZ_FRAME_PLAN_NODE_COPY);
     const DvzFramePlanNode* readback = _first_node_of_type(plan, DVZ_FRAME_PLAN_NODE_READBACK);
-    bool clear_only = upload == NULL && compute == NULL && clear != NULL;
+    bool clear_only = compute == NULL && clear != NULL && render == NULL;
     bool retained_render = upload == NULL && compute == NULL && render != NULL &&
                            render->u.render.visual_count > 0;
 
-    if ((!clear_only && !retained_render && upload == NULL) || (clear_only ? clear == NULL : render == NULL))
+    if ((!clear_only && !retained_render && upload == NULL) || (!clear_only && render == NULL))
     {
         _diagnostic(report, "runtime converter requires upload+render");
         return NULL;

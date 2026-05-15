@@ -378,6 +378,22 @@ void _scene_emit_visual_uploads(DvzFigure* figure, DvzFramePlan* plan)
                     continue;
                 }
             }
+            if (visual->type == DVZ_VISUAL_TYPE_VOLUME && visual->field != NULL &&
+                (visual->texture.dirty || visual->field->dirty))
+            {
+                char tex_resource_id[128];
+                if (!_scene_resource_key_visual_texture(
+                        vidx, tex_resource_id, sizeof(tex_resource_id)))
+                    continue;
+                if (!_scene_emit_sampled_field_texture_upload(plan, tex_resource_id, visual->field))
+                {
+                    log_error("volume visual texture upload failed");
+                    continue;
+                }
+                _scene_attach_upload_metadata(
+                    plan, visual, vidx, DVZ_FRAME_PLAN_RESOURCE_ROLE_TEXTURE,
+                    DVZ_FRAME_PLAN_RESOURCE_KIND_TEXTURE_3D, UINT32_MAX);
+            }
         }
     }
 }
@@ -583,6 +599,8 @@ void _scene_emit_panel_render(
     {
         DvzVisual* visual = panel->visuals[vi].visual;
         if (visual == NULL || !visual->visible)
+            continue;
+        if (visual->type == DVZ_VISUAL_TYPE_VOLUME)
             continue;
         uint32_t vidx = 0;
         if (!_figure_visual_index(figure, visual, &vidx))

@@ -291,6 +291,8 @@ int test_scene_image_visual_rejects_3d_field(TstSuite* suite, TstItem* item);
 
 int test_scene_volume_visual_binds_3d_field(TstSuite* suite, TstItem* item);
 
+int test_scene_volume_field_emit_realizes_3d_texture(TstSuite* suite, TstItem* item);
+
 int test_scene_sampled_field_3d_emits_runtime_texture_upload(
     TstSuite* suite, TstItem* item);
 
