@@ -111,16 +111,6 @@ still reports eight pre-existing exact fixture mismatches in generated DRP2 JSON
 `scene_*_from_c` fixture mismatches after passing the DRP2 runtime and multi-color render-pass
 coverage.
 
-Second WBOIT DRP2 fixture slice on `2026-05-15`: the positive DRP2 fixture corpus now includes
-`wboit_accumulation_resolve.json`, a minimal WBOIT-style command stream with RGBA16F + R16F
-accumulation attachments, additive per-target blend state, depth coordination, and a resolve pass
-that samples both intermediate targets. The C test suite also has
-`test_drp2_wboit_accumulation_resolve_stream` to validate the equivalent command-stream shape
-through semantic validation and JSON serialization. Validation: `just build`,
-`./build/testing/dvztest_drp2 test_drp2_wboit_accumulation_resolve_stream`, targeted fixture runner
-on the WBOIT fixture, positive fixture corpus (`36/36`), and `just spec-check` (`123/123` fixtures,
-`52` fixture-runner tests, `7` schema tests) passed.
-
 Executable WBOIT scene/app slice on `2026-05-15`: `DVZ_ALPHA_BLENDED` is now the ordinary source-over
 alpha path and `DVZ_ALPHA_WBOIT` is the explicit weighted blended OIT path. Scene lowering emits the
 WBOIT accumulation/resolve DRP2 shape with scene-owned shaders, vklite records all passes into the
