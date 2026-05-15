@@ -738,6 +738,8 @@ uint32_t _scene_buffer_index(const DvzScene* scene, const DvzSceneBuffer* buffer
 
 uint32_t _scene_field_index(const DvzScene* scene, const DvzSampledField* field);
 
+uint32_t _scene_scale_index(const DvzScene* scene, const DvzScale* scale);
+
 bool _field_format_is_scalar(DvzFieldFormat format);
 
 bool _field_format_bytes_per_texel(DvzFieldFormat format, uint32_t* out_bytes);
@@ -755,6 +757,10 @@ bool _scene_prepare_image_texture(
 
 bool _scene_emit_sampled_field_texture_upload(
     DvzFramePlan* plan, const char* resource_id, DvzSampledField* field);
+
+bool _scene_visual_frame_plan_metadata(
+    const DvzFigure* figure, const DvzVisual* visual, uint32_t visual_index,
+    DvzFramePlanVisualMeta* metadata);
 
 bool _scene_color_from_colormap(const DvzColormap* colormap, double t, uint8_t out_rgba[4]);
 

@@ -301,6 +301,8 @@ int test_scene_volume_field_emit_realizes_3d_texture(TstSuite* suite, TstItem* i
 
 int test_scene_volume_retained_controls(TstSuite* suite, TstItem* item);
 
+int test_scene_volume_visual_metadata_lowering(TstSuite* suite, TstItem* item);
+
 int test_scene_sampled_field_3d_emits_runtime_texture_upload(
     TstSuite* suite, TstItem* item);
 

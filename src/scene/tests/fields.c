@@ -874,6 +874,76 @@ int test_scene_volume_retained_controls(TstSuite* suite, TstItem* item)
 }
 
 
+int test_scene_volume_visual_metadata_lowering(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    ANN(figure);
+
+    DvzVisual* volume = dvz_volume(scene, 0);
+    ANN(volume);
+    DvzSampledField* field = dvz_sampled_field(
+        scene, &(DvzSampledFieldDesc){
+                   .dim = DVZ_FIELD_DIM_3D,
+                   .format = DVZ_FIELD_FORMAT_R8_UNORM,
+                   .semantic = DVZ_FIELD_SEMANTIC_SCALAR,
+                   .width = 8,
+                   .height = 6,
+                   .depth = 4,
+               });
+    ANN(field);
+    AT(dvz_visual_set_field(volume, "field", field));
+
+    DvzScale* scale = dvz_scale(scene, &(DvzScaleDesc){.kind = DVZ_SCALE_CONTINUOUS});
+    ANN(scale);
+    AT(dvz_visual_set_scale(volume, "colormap", scale) == 0);
+    AT(dvz_volume_set_opacity(volume, 0.5f) == 0);
+    AT(dvz_volume_set_sampling(volume, DVZ_VOLUME_SAMPLING_NEAREST) == 0);
+    double clip_min[3] = {0.1, 0.2, 0.3};
+    double clip_max[3] = {0.9, 0.8, 0.7};
+    AT(dvz_volume_set_clipping_box(volume, clip_min, clip_max) == 0);
+
+    DvzFramePlanVisualMeta metadata = {0};
+    AT(_scene_visual_frame_plan_metadata(figure, volume, 0, &metadata));
+    AT(metadata.has_metadata);
+    AT(metadata.visual_type == DVZ_VISUAL_TYPE_VOLUME);
+    AT(metadata.visual_index == 0);
+    AT(metadata.has_volume);
+    AT(metadata.field_format == DVZ_FIELD_FORMAT_R8_UNORM);
+    AT(metadata.field_width == 8);
+    AT(metadata.field_height == 6);
+    AT(metadata.field_depth == 4);
+    AT(metadata.scale_index == 0);
+    AT(metadata.volume_state.opacity == 0.5f);
+    AT(metadata.volume_state.sampling == DVZ_VOLUME_SAMPLING_NEAREST);
+    AT(metadata.volume_state.clipping_enabled);
+    AT(metadata.volume_state.clip_min[2] == 0.3);
+    AT(metadata.volume_state.clip_max[1] == 0.8);
+    AT(metadata.texture_id[0] != '\0');
+    AT(strcmp(metadata.volume_texture_id, metadata.texture_id) == 0);
+
+    DvzFramePlan* plan = dvz_frame_plan("figure.volume.metadata", 0);
+    ANN(plan);
+    AT(dvz_frame_plan_render(plan, "panel.0", "target.panel.0.color", false));
+    AT(dvz_frame_plan_render_visual(plan, "volume.debug"));
+    AT(dvz_frame_plan_render_visual_metadata(plan, &metadata));
+    const DvzFramePlanNode* node = dvz_frame_plan_node_get(plan, 0);
+    ANN(node);
+    AT(node->u.render.visual_metadata[0].has_metadata);
+    AT(node->u.render.visual_metadata[0].has_volume);
+    AT(node->u.render.visual_metadata[0].volume_state.opacity == 0.5f);
+    AT(strcmp(node->u.render.visual_metadata[0].volume_texture_id, metadata.texture_id) == 0);
+
+    dvz_frame_plan_destroy(plan);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
 int test_scene_sampled_field_3d_emits_runtime_texture_upload(
     TstSuite* suite, TstItem* item)
 {
@@ -1518,6 +1588,7 @@ int test_scene_fields(TstSuite* suite)
     TEST_SIMPLE(test_scene_volume_visual_binds_3d_field);
     TEST_SIMPLE(test_scene_volume_field_emit_realizes_3d_texture);
     TEST_SIMPLE(test_scene_volume_retained_controls);
+    TEST_SIMPLE(test_scene_volume_visual_metadata_lowering);
     TEST_SIMPLE(test_scene_sampled_field_3d_emits_runtime_texture_upload);
     TEST_SIMPLE(test_scene_sampled_field_update_region_rejects_out_of_bounds);
     TEST_SIMPLE(test_scene_sampled_field_destroy_clears_visual_binding);

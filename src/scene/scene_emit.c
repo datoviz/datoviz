@@ -409,7 +409,7 @@ void _scene_emit_visual_uploads(DvzFigure* figure, DvzFramePlan* plan)
  * @param metadata the output metadata
  * @return whether metadata was built
  */
-static bool _scene_visual_frame_plan_metadata(
+bool _scene_visual_frame_plan_metadata(
     const DvzFigure* figure, const DvzVisual* visual, uint32_t visual_index,
     DvzFramePlanVisualMeta* metadata)
 {
@@ -425,6 +425,7 @@ static bool _scene_visual_frame_plan_metadata(
     metadata->buffer_index = UINT32_MAX;
     metadata->topology = (uint32_t)visual->topology;
     metadata->alpha_mode = visual->alpha_mode;
+    metadata->scale_index = _scene_scale_index(figure->scene, visual->scale);
 
     if (!_scene_attr_resource_key(
             figure, visual, visual_index, "position", metadata->position_id,
@@ -443,6 +444,20 @@ static bool _scene_visual_frame_plan_metadata(
     if (!_scene_resource_key_visual_texture(
             visual_index, metadata->texture_id, sizeof(metadata->texture_id)))
         return false;
+    if (visual->type == DVZ_VISUAL_TYPE_VOLUME)
+    {
+        metadata->has_volume = true;
+        metadata->volume_state = visual->volume;
+        if (visual->field != NULL)
+        {
+            metadata->field_format = (uint32_t)visual->field->desc.format;
+            metadata->field_width = visual->field->desc.width;
+            metadata->field_height = visual->field->desc.height;
+            metadata->field_depth = visual->field->desc.depth;
+        }
+        dvz_strlcpy(
+            metadata->volume_texture_id, metadata->texture_id, sizeof(metadata->volume_texture_id));
+    }
     if (!_scene_attr_resource_key(
             figure, visual, visual_index, "normal", metadata->normal_id,
             sizeof(metadata->normal_id)))
