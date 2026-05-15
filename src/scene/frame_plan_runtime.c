@@ -836,6 +836,12 @@ static const char* _graph_work_label_for_render_role(DvzFramePlanRenderPassRole 
         return "transparent_blend";
     case DVZ_FRAME_PLAN_RENDER_PASS_WBOIT_RESOLVE:
         return "wboit_resolve";
+    case DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_INIT:
+        return "depth_peel_init";
+    case DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_ITER:
+        return "depth_peel_iter";
+    case DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_COMPOSITE:
+        return "depth_peel_composite";
     case DVZ_FRAME_PLAN_RENDER_PASS_PICKING:
         return "picking";
     default:

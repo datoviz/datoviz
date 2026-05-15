@@ -308,8 +308,9 @@ DVZ_EXPORT void dvz_visual_set_visible(DvzVisual* visual, bool visible);
  * Set the visual alpha handling mode.
  *
  * This controls which transparency path the scene planner should use for the visual. Use
- * DVZ_ALPHA_BLENDED for ordinary source-over alpha blending and DVZ_ALPHA_WBOIT for weighted
- * blended order-independent transparency.
+ * DVZ_ALPHA_BLENDED for ordinary source-over alpha blending, DVZ_ALPHA_WBOIT for weighted
+ * blended order-independent transparency, and DVZ_ALPHA_DEPTH_PEEL for the depth-peeling
+ * order-independent transparency path.
  *
  * @param visual the visual
  * @param mode the alpha handling mode

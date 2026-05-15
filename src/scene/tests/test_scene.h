@@ -339,6 +339,8 @@ int test_scene_visual_alpha_mode_standard_blend(TstSuite* suite, TstItem* item);
 
 int test_scene_visual_alpha_mode_splits_frame_plan_passes(TstSuite* suite, TstItem* item);
 
+int test_scene_visual_alpha_mode_depth_peel_frame_plan(TstSuite* suite, TstItem* item);
+
 int test_scene_visual_alpha_mode_requires_wboit_capabilities(TstSuite* suite, TstItem* item);
 
 int test_scene_visual_alpha_mode_emits_wboit_drp2(TstSuite* suite, TstItem* item);

@@ -255,6 +255,7 @@ bool _validate_capabilities(
     bool has_scene_render = false;  /* scene nodes do per-visual draws, not one composite draw */
     bool has_blend_request = false;
     bool has_wboit_request = false;
+    bool has_depth_peel_request = false;
     uint64_t max_readback_size = 0;
     uint32_t max_texture_extent = 0;
     for (uint32_t i = 0; i < plan->count; i++)
@@ -314,6 +315,8 @@ bool _validate_capabilities(
                     has_wboit_request = true;
                     break;
                 }
+                else if (node->u.render.visual_metadata[j].alpha_mode == DVZ_ALPHA_DEPTH_PEEL)
+                    has_depth_peel_request = true;
             }
             break;
         default:
@@ -356,6 +359,24 @@ bool _validate_capabilities(
     }
     if (has_wboit_request && !_validate_wboit_capabilities(caps, report))
         return false;
+    if (has_depth_peel_request)
+    {
+        if (caps->max_color_attachments < 3)
+        {
+            _diagnostic(report, "depth peeling requires at least three color attachments");
+            return false;
+        }
+        if (!caps->render_target_format_rgba16float)
+        {
+            _diagnostic(report, "depth peeling requires rgba16float render-target support");
+            return false;
+        }
+        if (!caps->supports_render_target_sampling)
+        {
+            _diagnostic(report, "depth peeling requires sampling intermediate render targets");
+            return false;
+        }
+    }
     return true;
 }
 

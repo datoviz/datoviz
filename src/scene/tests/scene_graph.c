@@ -4019,6 +4019,8 @@ int test_scene_visual_alpha_mode(TstSuite* suite, TstItem* item)
     AT(dvz_visual_alpha_mode(visual) == DVZ_ALPHA_BLENDED);
     AT(dvz_visual_set_alpha_mode(visual, DVZ_ALPHA_WBOIT) == 0);
     AT(dvz_visual_alpha_mode(visual) == DVZ_ALPHA_WBOIT);
+    AT(dvz_visual_set_alpha_mode(visual, DVZ_ALPHA_DEPTH_PEEL) == 0);
+    AT(dvz_visual_alpha_mode(visual) == DVZ_ALPHA_DEPTH_PEEL);
     AT(dvz_visual_set_alpha_mode(visual, DVZ_ALPHA_MASK) == 0);
     AT(dvz_visual_alpha_mode(visual) == DVZ_ALPHA_MASK);
 #ifndef __clang_analyzer__
@@ -4238,6 +4240,111 @@ int test_scene_visual_alpha_mode_splits_frame_plan_passes(TstSuite* suite, TstIt
     AT(dvz_frame_plan_graph_dependency_get(plan, 0, &dep));
     AT(strcmp(dep.producer_pass_id, "figure_0_p0.wboit.accum") == 0);
     AT(strcmp(dep.consumer_pass_id, "figure_0_p0.wboit.resolve") == 0);
+
+    DvzDiagnosticReport report = {0};
+    dvz_diagnostic_report_init(&report);
+    AT(dvz_frame_plan_graph_validate(plan, &report));
+    AT(dvz_diagnostic_report_count(&report) == 0);
+
+    dvz_frame_plan_destroy(plan);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+/**
+ * Verify depth-peel alpha mode expands retained panel rendering into graph passes.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_visual_alpha_mode_depth_peel_frame_plan(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    AT(scene != NULL);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    AT(figure != NULL);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    AT(panel != NULL);
+
+    DvzVisual* opaque = dvz_primitive(scene, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 0);
+    DvzVisual* transparent = dvz_primitive(scene, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 0);
+    AT(opaque != NULL);
+    AT(transparent != NULL);
+
+    float positions[3][3] = {
+        {-0.5f, -0.5f, 0.0f},
+        {0.5f, -0.5f, 0.0f},
+        {0.0f, 0.5f, 0.0f},
+    };
+    DvzColor opaque_colors[3] = {
+        {255, 255, 255, 255}, {255, 255, 255, 255}, {255, 255, 255, 255}};
+    DvzColor transparent_colors[3] = {
+        {255, 0, 0, 128}, {0, 255, 0, 128}, {0, 0, 255, 128}};
+
+    AT(dvz_visual_set_data(opaque, "position", positions, 3) == 0);
+    AT(dvz_visual_set_data(opaque, "color", opaque_colors, 3) == 0);
+    AT(dvz_visual_set_data(transparent, "position", positions, 3) == 0);
+    AT(dvz_visual_set_data(transparent, "color", transparent_colors, 3) == 0);
+    AT(dvz_visual_set_alpha_mode(transparent, DVZ_ALPHA_DEPTH_PEEL) == 0);
+    AT(dvz_panel_add_visual(panel, opaque, NULL) == 0);
+    AT(dvz_panel_add_visual(panel, transparent, NULL) == 0);
+
+    DvzFramePlan* plan = dvz_frame_plan("figure.alpha.depth_peel", 0);
+    ANN(plan);
+    _scene_emit_panel_render(figure, 0, plan, "figure_0");
+
+    AT(dvz_frame_plan_node_count(plan) == 4);
+    const DvzFramePlanNode* opaque_node = dvz_frame_plan_node_get(plan, 0);
+    const DvzFramePlanNode* init_node = dvz_frame_plan_node_get(plan, 1);
+    const DvzFramePlanNode* iter_node = dvz_frame_plan_node_get(plan, 2);
+    const DvzFramePlanNode* composite_node = dvz_frame_plan_node_get(plan, 3);
+    ANN(opaque_node);
+    ANN(init_node);
+    ANN(iter_node);
+    ANN(composite_node);
+    AT(dvz_frame_plan_render_pass_role(opaque_node) == DVZ_FRAME_PLAN_RENDER_PASS_OPAQUE);
+    AT(dvz_frame_plan_render_pass_role(init_node) == DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_INIT);
+    AT(dvz_frame_plan_render_pass_role(iter_node) == DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_ITER);
+    AT(
+        dvz_frame_plan_render_pass_role(composite_node) ==
+        DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_COMPOSITE);
+    AT(opaque_node->u.render.visual_count == 1);
+    AT(init_node->u.render.visual_count == 1);
+    AT(iter_node->u.render.visual_count == 1);
+    AT(composite_node->u.render.visual_count == 0);
+    AT(init_node->u.render.visual_metadata[0].alpha_mode == DVZ_ALPHA_DEPTH_PEEL);
+    AT(iter_node->u.render.visual_metadata[0].alpha_mode == DVZ_ALPHA_DEPTH_PEEL);
+
+    AT(dvz_frame_plan_graph_resource_count(plan) == 8);
+    AT(dvz_frame_plan_graph_pass_count(plan) == 4);
+    const DvzFrameGraphResource* depth_resource = dvz_frame_plan_graph_resource_get(plan, 1);
+    const DvzFrameGraphResource* front_ping = dvz_frame_plan_graph_resource_get(plan, 2);
+    ANN(depth_resource);
+    ANN(front_ping);
+    AT(strcmp(depth_resource->id, "figure_0_p0.depth.opaque") == 0);
+    AT(depth_resource->format == VK_FORMAT_D32_SFLOAT);
+    AT(strcmp(front_ping->id, "figure_0_p0.peel.front_ping") == 0);
+    AT(front_ping->format == VK_FORMAT_R16G16B16A16_SFLOAT);
+
+    const DvzFrameGraphPass* init_pass = dvz_frame_plan_graph_pass_get(plan, 1);
+    const DvzFrameGraphPass* iter_pass = dvz_frame_plan_graph_pass_get(plan, 2);
+    const DvzFrameGraphPass* composite_pass = dvz_frame_plan_graph_pass_get(plan, 3);
+    ANN(init_pass);
+    ANN(iter_pass);
+    ANN(composite_pass);
+    AT(strcmp(init_pass->work_label, "depth_peel_init") == 0);
+    AT(strcmp(iter_pass->work_label, "depth_peel_iter") == 0);
+    AT(strcmp(composite_pass->work_label, "depth_peel_composite") == 0);
+    AT(init_pass->color_attachment_count == 3);
+    AT(iter_pass->read_count == 3);
+    AT(iter_pass->color_attachment_count == 3);
+    AT(composite_pass->read_count == 3);
+    AT(composite_pass->color_attachment_count == 1);
 
     DvzDiagnosticReport report = {0};
     dvz_diagnostic_report_init(&report);
@@ -4768,6 +4875,7 @@ int test_scene_graph(TstSuite* suite)
     TEST_SIMPLE(test_scene_visual_alpha_mode);
     TEST_SIMPLE(test_scene_visual_alpha_mode_standard_blend);
     TEST_SIMPLE(test_scene_visual_alpha_mode_splits_frame_plan_passes);
+    TEST_SIMPLE(test_scene_visual_alpha_mode_depth_peel_frame_plan);
     TEST_SIMPLE(test_scene_visual_alpha_mode_requires_wboit_capabilities);
     TEST_SIMPLE(test_scene_visual_alpha_mode_emits_wboit_drp2);
     TEST_SIMPLE(test_scene_visual_alpha_mode_wboit_glsl_executes);
