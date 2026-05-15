@@ -329,6 +329,68 @@ DVZ_EXPORT int dvz_app_window_record_stop(DvzAppWindow* win);
 
 
 /**
+ * Start live replay of a DRP2 recording in an app-window.
+ *
+ * The replay path executes recorded DRP2 frame streams directly. App recordings render into the
+ * current app-window frame by attaching that borrowed frame under the recording's target id.
+ *
+ * @param win the app-window
+ * @param path input `.dvzr` recording directory
+ * @return 0 on success, negative on error
+ */
+DVZ_EXPORT int dvz_app_window_replay_start(DvzAppWindow* win, const char* path);
+
+
+/**
+ * Stop live replay and release the loaded recording.
+ *
+ * @param win the app-window
+ * @return 0 on success, negative on error
+ */
+DVZ_EXPORT int dvz_app_window_replay_stop(DvzAppWindow* win);
+
+
+/**
+ * Enable or disable timestamp-paced replay.
+ *
+ * @param win the app-window
+ * @param paced whether replay waits for recorded timestamps
+ */
+DVZ_EXPORT void dvz_app_window_replay_set_paced(DvzAppWindow* win, bool paced);
+
+
+/**
+ * Set replay speed multiplier.
+ *
+ * Values below or equal to zero are ignored. A value of 2 plays twice as fast.
+ *
+ * @param win the app-window
+ * @param speed replay speed multiplier
+ */
+DVZ_EXPORT void dvz_app_window_replay_set_speed(DvzAppWindow* win, double speed);
+
+
+/**
+ * Enable or disable replay looping.
+ *
+ * Looping resets the app DRP2 runtime before replay starts from frame zero again.
+ *
+ * @param win the app-window
+ * @param loop whether the recording should loop
+ */
+DVZ_EXPORT void dvz_app_window_replay_set_loop(DvzAppWindow* win, bool loop);
+
+
+/**
+ * Return the number of frames in the active replay recording.
+ *
+ * @param win the app-window
+ * @return replay frame count, or 0 when no replay is active
+ */
+DVZ_EXPORT uint32_t dvz_app_window_replay_frame_count(const DvzAppWindow* win);
+
+
+/**
  * Resize an app-window's logical and framebuffer extent.
  *
  * Intended for offscreen or externally-hosted windows whose size is controlled by another UI

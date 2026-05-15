@@ -99,6 +99,14 @@ struct DvzAppWindow
     DvzDrp2Recorder* recorder;
     DvzClock recording_clock;
     bool recording_target_created;
+    DvzDrp2Recording* replay_recording;
+    uint64_t replay_target_id;
+    uint32_t replay_frame_index;
+    DvzClock replay_clock;
+    bool replay_clock_started;
+    bool replay_paced;
+    bool replay_loop;
+    double replay_speed;
 #if defined(DVZ_HAS_GUI) && DVZ_HAS_GUI
     DvzGui* gui;
 #endif
@@ -1065,6 +1073,210 @@ static void _app_record_stream(
 
 
 /**
+ * Return whether a replay command creates or destroys the synthetic recorded frame target.
+ *
+ * @param command replay command
+ * @param target_id recorded app target id
+ * @return whether the command should be skipped for live replay
+ */
+static bool _app_replay_command_is_synthetic_target(
+    const DvzDrp2Command* command, uint64_t target_id)
+{
+    ANN(command);
+    if (target_id == 0)
+        return false;
+
+    if (command->type == DVZ_DRP2_COMMAND_CREATE_TEXTURE &&
+        command->u.create_texture.id == target_id)
+    {
+        return true;
+    }
+    if (command->type == DVZ_DRP2_COMMAND_DESTROY_TEXTURE &&
+        command->u.destroy_texture.texture_id == target_id)
+    {
+        return true;
+    }
+    return false;
+}
+
+
+
+/**
+ * Remove synthetic target setup commands from a mutable per-frame replay stream.
+ *
+ * @param stream mutable frame command stream
+ * @param target_id recorded app target id
+ */
+static void _app_replay_filter_synthetic_target(
+    DvzDrp2CommandStream* stream, uint64_t target_id)
+{
+    if (stream == NULL || stream->commands == NULL || target_id == 0)
+        return;
+
+    uint32_t write = 0;
+    for (uint32_t read = 0; read < stream->count; read++)
+    {
+        if (_app_replay_command_is_synthetic_target(&stream->commands[read], target_id))
+            continue;
+        if (write != read)
+        {
+            dvz_memmove(
+                &stream->commands[write], sizeof(DvzDrp2Command),
+                &stream->commands[read], sizeof(DvzDrp2Command));
+        }
+        write++;
+    }
+    stream->count = write;
+}
+
+
+
+/**
+ * Find the app recording target id in a loaded recording.
+ *
+ * @param recording loaded recording
+ * @param out_target_id output target id
+ * @return whether a renderable target id was found
+ */
+static bool _app_replay_find_target_id(
+    const DvzDrp2Recording* recording, uint64_t* out_target_id)
+{
+    ANN(out_target_id);
+    *out_target_id = 0;
+    const DvzDrp2CommandStream* stream = dvz_drp2_recording_stream(recording);
+    if (stream == NULL)
+        return false;
+
+    uint32_t count = dvz_drp2_stream_count(stream);
+    for (uint32_t i = 0; i < count; i++)
+    {
+        const DvzDrp2Command* command = dvz_drp2_stream_get(stream, i);
+        if (command == NULL || command->type != DVZ_DRP2_COMMAND_CREATE_TEXTURE)
+            continue;
+        if ((command->u.create_texture.usage & DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT) == 0)
+            continue;
+        *out_target_id = command->u.create_texture.id;
+        return *out_target_id != 0;
+    }
+    return false;
+}
+
+
+
+/**
+ * Reset live replay timing and runtime state.
+ *
+ * @param win replay app-window
+ */
+static void _app_replay_restart(DvzAppWindow* win)
+{
+    ANN(win);
+    if (win->app != NULL && win->app->runtime != NULL)
+        dvz_drp2_runtime_reset(win->app->runtime);
+    win->replay_frame_index = 0;
+    win->replay_clock = dvz_clock();
+    win->replay_clock_started = true;
+}
+
+
+
+/**
+ * Sleep until a recorded frame timestamp should be presented.
+ *
+ * @param win replay app-window
+ * @param frame recorded frame metadata
+ */
+static void _app_replay_pace(DvzAppWindow* win, const DvzDrp2RecordedFrame* frame)
+{
+    ANN(win);
+    if (!win->replay_paced || frame == NULL || frame->t_present <= 0)
+        return;
+    if (!win->replay_clock_started)
+    {
+        win->replay_clock = dvz_clock();
+        win->replay_clock_started = true;
+    }
+
+    double speed = win->replay_speed > 0 ? win->replay_speed : 1.0;
+    double target = frame->t_present / speed;
+    double now = dvz_clock_get(&win->replay_clock);
+    double delay = target - now;
+    if (delay <= 0)
+        return;
+
+    double delay_us = delay * 1000000.0;
+    int sleep_us = delay_us > (double)INT32_MAX ? INT32_MAX : (int)delay_us;
+    dvz_sleep_us(sleep_us);
+}
+
+
+
+/**
+ * Replay one recorded frame into the current live canvas frame.
+ *
+ * @param win replay app-window
+ * @param frame borrowed canvas frame
+ */
+static void _app_draw_replay(DvzAppWindow* win, const DvzStreamFrame* frame)
+{
+    ANN(win);
+    ANN(frame);
+    if (win->app == NULL || win->app->runtime == NULL || win->replay_recording == NULL)
+        return;
+
+    uint32_t frame_count = dvz_drp2_recording_frame_count(win->replay_recording);
+    if (frame_count == 0)
+        return;
+
+    if (win->replay_frame_index >= frame_count)
+    {
+        if (!win->replay_loop)
+        {
+            win->render_enabled = false;
+            return;
+        }
+        _app_replay_restart(win);
+    }
+
+    const DvzDrp2RecordedFrame* recorded =
+        dvz_drp2_recording_frame(win->replay_recording, win->replay_frame_index);
+    _app_replay_pace(win, recorded);
+
+    if (!dvz_drp2_runtime_attach_frame_target(
+            win->app->runtime, win->replay_target_id, frame))
+    {
+        log_error("_app_draw_replay failed to attach canvas frame target");
+        win->render_enabled = false;
+        return;
+    }
+
+    DvzDrp2CommandStream* stream =
+        dvz_drp2_recording_frame_stream(win->replay_recording, win->replay_frame_index);
+    if (stream == NULL)
+    {
+        log_error("_app_draw_replay failed to load frame stream");
+        win->render_enabled = false;
+        return;
+    }
+    _app_replay_filter_synthetic_target(stream, win->replay_target_id);
+
+    DvzDrp2ValidationResult result = dvz_drp2_runtime_execute(win->app->runtime, stream);
+    if (!result.ok)
+    {
+        _app_log_runtime_failure("_app_draw_replay runtime execution failed", stream, result);
+        win->render_enabled = false;
+    }
+    else
+    {
+        win->replay_frame_index++;
+        win->frame_index++;
+    }
+    dvz_drp2_stream_destroy(stream);
+}
+
+
+
+/**
  * Apply the DVZ_PRESENT_MODE environment override to a present canvas configuration.
  *
  * @param ccfg canvas configuration to mutate
@@ -1097,6 +1309,12 @@ static void _app_draw(DvzCanvas* canvas, const DvzStreamFrame* frame, void* user
     ANN(win);
     DvzApp* app = win->app;
     ANN(app);
+
+    if (win->replay_recording != NULL)
+    {
+        _app_draw_replay(win, frame);
+        return;
+    }
 
 #if defined(DVZ_HAS_GUI) && DVZ_HAS_GUI
     if (win->gui != NULL)
@@ -1321,6 +1539,11 @@ void dvz_app_destroy(DvzApp* app)
         {
             (void)dvz_drp2_recorder_close(win->recorder);
             win->recorder = NULL;
+        }
+        if (win->replay_recording != NULL)
+        {
+            dvz_drp2_recording_close(win->replay_recording);
+            win->replay_recording = NULL;
         }
         if (win->window != NULL)
         {
@@ -1831,6 +2054,138 @@ int dvz_app_window_record_stop(DvzAppWindow* win)
     return ok ? 0 : -1;
 #else
     return -1;
+#endif
+}
+
+
+
+/**
+ * Start app-window DVZR live replay.
+ *
+ * @param win the app-window
+ * @param path input recording directory path
+ * @return 0 on success, negative on error
+ */
+int dvz_app_window_replay_start(DvzAppWindow* win, const char* path)
+{
+    ANN(win);
+    ANN(path);
+#if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
+    if (win->app == NULL || win->app->runtime == NULL || win->replay_recording != NULL)
+        return -1;
+
+    DvzDrp2Recording* recording = dvz_drp2_recording_open(path);
+    if (recording == NULL)
+        return -1;
+
+    uint64_t target_id = 0;
+    if (!_app_replay_find_target_id(recording, &target_id))
+    {
+        dvz_drp2_recording_close(recording);
+        return -1;
+    }
+
+    win->replay_recording = recording;
+    win->replay_target_id = target_id;
+    win->replay_frame_index = 0;
+    win->replay_clock = dvz_clock();
+    win->replay_clock_started = true;
+    win->replay_paced = true;
+    win->replay_loop = false;
+    win->replay_speed = 1.0;
+    win->render_enabled = true;
+    dvz_drp2_runtime_reset(win->app->runtime);
+    return 0;
+#else
+    return -1;
+#endif
+}
+
+
+
+/**
+ * Stop app-window DVZR live replay.
+ *
+ * @param win the app-window
+ * @return 0 on success, negative on error
+ */
+int dvz_app_window_replay_stop(DvzAppWindow* win)
+{
+    ANN(win);
+#if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
+    if (win->replay_recording == NULL)
+        return -1;
+    dvz_drp2_recording_close(win->replay_recording);
+    win->replay_recording = NULL;
+    win->replay_target_id = 0;
+    win->replay_frame_index = 0;
+    win->replay_clock_started = false;
+    return 0;
+#else
+    return -1;
+#endif
+}
+
+
+
+/**
+ * Enable or disable timestamp-paced live replay.
+ *
+ * @param win the app-window
+ * @param paced whether replay waits for recorded timestamps
+ */
+void dvz_app_window_replay_set_paced(DvzAppWindow* win, bool paced)
+{
+    ANN(win);
+    win->replay_paced = paced;
+}
+
+
+
+/**
+ * Set the live replay speed multiplier.
+ *
+ * @param win the app-window
+ * @param speed speed multiplier
+ */
+void dvz_app_window_replay_set_speed(DvzAppWindow* win, double speed)
+{
+    ANN(win);
+    if (speed > 0)
+        win->replay_speed = speed;
+}
+
+
+
+/**
+ * Enable or disable live replay looping.
+ *
+ * @param win the app-window
+ * @param loop whether replay should loop
+ */
+void dvz_app_window_replay_set_loop(DvzAppWindow* win, bool loop)
+{
+    ANN(win);
+    win->replay_loop = loop;
+}
+
+
+
+/**
+ * Return the active live replay frame count.
+ *
+ * @param win the app-window
+ * @return replay frame count, or 0 when no replay is active
+ */
+uint32_t dvz_app_window_replay_frame_count(const DvzAppWindow* win)
+{
+    ANN(win);
+#if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
+    if (win->replay_recording == NULL)
+        return 0;
+    return dvz_drp2_recording_frame_count(win->replay_recording);
+#else
+    return 0;
 #endif
 }
 
