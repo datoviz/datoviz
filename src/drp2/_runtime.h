@@ -189,6 +189,7 @@ struct Drp2VkliteObject
     VkPipelineLayout combined_pipeline_layout; /* owned combined layout for two-set pipelines */
     VkDevice         combined_layout_device;   /* VkDevice needed to destroy combined_pipeline_layout */
     bool borrowed_slots;
+    bool borrowed_buffer;
     bool borrowed_commands;
     bool borrowed_frame_target;
     bool destroyed;

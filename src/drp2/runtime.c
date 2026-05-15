@@ -70,6 +70,27 @@ bool _dvz_drp2_runtime_vklite_download_buffer(
 #endif
 
 
+#if DVZ_DRP2_HAS_VKLITE
+/**
+ * Ensure a runtime has a vklite backend state object ready for direct registration.
+ *
+ * @param runtime the runtime
+ * @return whether the state object is available
+ */
+static bool _vklite_runtime_state_ensure(DvzDrp2Runtime* runtime)
+{
+    ANN(runtime);
+    if (runtime->vklite_state != NULL)
+        return true;
+    runtime->vklite_state = (Drp2VkliteState*)dvz_calloc(1, sizeof(Drp2VkliteState));
+    if (runtime->vklite_state == NULL)
+        return false;
+    runtime->vklite_state->runtime = runtime;
+    return true;
+}
+#endif
+
+
 /**
  * Return the smaller of two 32-bit unsigned integers.
  *
@@ -228,6 +249,70 @@ void dvz_drp2_runtime_reset(DvzDrp2Runtime* runtime)
         runtime->vklite_state = NULL;
     }
 #endif
+}
+
+
+/**
+ * Register a runtime-provided buffer under a DRP2 buffer id.
+ *
+ * @param runtime the runtime
+ * @param buffer_id the DRP2 buffer id
+ * @param desc the external buffer descriptor
+ * @return true on success
+ */
+bool dvz_drp2_runtime_register_external_buffer(
+    DvzDrp2Runtime* runtime, uint64_t buffer_id, const DvzDrp2ExternalBufferDesc* desc)
+{
+    if (runtime == NULL || desc == NULL || buffer_id == 0 || desc->size == 0 ||
+        desc->usage == DVZ_DRP2_BUFFER_USAGE_NONE)
+    {
+        return false;
+    }
+    if (!_drp2_runtime_state_ensure(runtime))
+        return false;
+
+    Drp2Object* existing = _drp2_find_any_object(runtime->semantic_state, buffer_id);
+    if (existing != NULL && !existing->destroyed)
+        return false;
+
+#if DVZ_DRP2_HAS_VKLITE
+    if (!runtime->semantic_only)
+    {
+        if (desc->buffer == NULL)
+            return false;
+        if (desc->size > dvz_buffer_size_value(desc->buffer))
+            return false;
+        if (!_vklite_runtime_state_ensure(runtime))
+            return false;
+        if (_vklite_find(runtime->vklite_state, buffer_id) != NULL)
+            return false;
+    }
+#else
+    if (!runtime->semantic_only)
+        return false;
+#endif
+
+    Drp2Object* semantic = _drp2_add_object(runtime->semantic_state, buffer_id, DRP2_OBJECT_BUFFER);
+    if (semantic == NULL)
+        return false;
+    semantic->size = desc->size;
+    semantic->usage = desc->usage;
+
+#if DVZ_DRP2_HAS_VKLITE
+    if (!runtime->semantic_only)
+    {
+        Drp2VkliteObject* object = _vklite_add(
+            runtime->vklite_state, buffer_id, DRP2_OBJECT_BUFFER);
+        if (object == NULL)
+        {
+            semantic->destroyed = true;
+            return false;
+        }
+        object->buffer = desc->buffer;
+        object->borrowed_buffer = true;
+    }
+#endif
+    return true;
 }
 
 

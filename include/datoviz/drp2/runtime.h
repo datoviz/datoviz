@@ -107,6 +107,22 @@ DVZ_EXPORT void dvz_drp2_runtime_destroy(DvzDrp2Runtime* runtime);
 DVZ_EXPORT void dvz_drp2_runtime_reset(DvzDrp2Runtime* runtime);
 
 
+/**
+ * Register a runtime-provided buffer under a DRP2 buffer id.
+ *
+ * The registration is live-runtime state and is not portable DRP2 stream data. Semantic-only
+ * runtimes use `size` and `usage` without requiring a backend buffer. Vklite-backed runtimes borrow
+ * `desc->buffer`; the caller must keep it alive until the runtime is reset or destroyed.
+ *
+ * @param runtime the runtime
+ * @param buffer_id the DRP2 buffer id to register
+ * @param desc the external buffer descriptor
+ * @return true on success
+ */
+DVZ_EXPORT bool dvz_drp2_runtime_register_external_buffer(
+    DvzDrp2Runtime* runtime, uint64_t buffer_id, const DvzDrp2ExternalBufferDesc* desc);
+
+
 
 /**
  * Validate a DRP2 command stream against the backend-agnostic semantic rules.

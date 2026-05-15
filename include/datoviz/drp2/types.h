@@ -35,8 +35,10 @@ typedef struct DvzDrp2Command DvzDrp2Command;
 typedef struct DvzDrp2Runtime DvzDrp2Runtime;
 typedef struct DvzDevice DvzDevice;
 typedef struct DvzVma DvzVma;
+typedef struct DvzBuffer DvzBuffer;
 typedef struct DvzDrp2BindGroupLayoutEntry DvzDrp2BindGroupLayoutEntry;
 typedef struct DvzDrp2BindGroupEntry DvzDrp2BindGroupEntry;
+typedef struct DvzDrp2ExternalBufferDesc DvzDrp2ExternalBufferDesc;
 
 
 
@@ -63,4 +65,12 @@ struct DvzDrp2BindGroupEntry
     uint64_t resource_id;
     uint64_t offset;
     uint64_t size;
+};
+
+
+struct DvzDrp2ExternalBufferDesc
+{
+    DvzBuffer* buffer;
+    uint64_t size;
+    uint32_t usage;
 };

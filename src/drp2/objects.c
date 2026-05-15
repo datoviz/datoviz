@@ -193,8 +193,11 @@ void _vklite_destroy_object(Drp2VkliteObject* object)
         return;
     if (object->buffer != NULL)
     {
-        dvz_buffer_destroy(object->buffer);
-        dvz_buffer_free(object->buffer);
+        if (!object->borrowed_buffer)
+        {
+            dvz_buffer_destroy(object->buffer);
+            dvz_buffer_free(object->buffer);
+        }
         object->buffer = NULL;
     }
     if (object->commands != NULL)
