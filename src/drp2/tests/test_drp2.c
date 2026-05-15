@@ -4546,6 +4546,115 @@ int test_drp2_recording_render_jsonl_no_raw_fallback(TstSuite* suite, TstItem* i
 
 
 
+int test_drp2_recording_compute_copy_jsonl_no_raw_fallback(TstSuite* suite, TstItem* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzDrp2CommandStream* stream = dvz_drp2_stream();
+    ANN(stream);
+
+    uint8_t payload[16] = {
+        0, 1, 2, 3, 4, 5, 6, 7,
+        8, 9, 10, 11, 12, 13, 14, 15,
+    };
+
+    AT(dvz_drp2_stream_hello_renderer(stream, "test-client"));
+    AT(dvz_drp2_stream_renderer_hello_reply(stream, "test-renderer"));
+    AT(dvz_drp2_stream_create_buffer(
+        stream, 1, sizeof(payload),
+        DVZ_DRP2_BUFFER_USAGE_COPY_SRC | DVZ_DRP2_BUFFER_USAGE_COPY_DST));
+    AT(dvz_drp2_stream_create_buffer(
+        stream, 2, sizeof(payload),
+        DVZ_DRP2_BUFFER_USAGE_COPY_DST | DVZ_DRP2_BUFFER_USAGE_STORAGE));
+    AT(dvz_drp2_stream_write_buffer_bytes(stream, 1, 0, sizeof(payload), payload));
+
+    DvzDrp2BindGroupLayoutEntry layout_entry = {
+        .binding = 0,
+        .binding_type = DVZ_DRP2_BINDING_TYPE_STORAGE_BUFFER,
+        .visibility = DVZ_DRP2_SHADER_STAGE_COMPUTE,
+        .access = DVZ_DRP2_BINDING_ACCESS_READ_WRITE,
+        .has_dynamic_offset = false,
+    };
+    AT(dvz_drp2_stream_create_bind_group_layout_entries(stream, 3, 1, &layout_entry));
+
+    DvzDrp2BindGroupEntry bind_entry = {
+        .binding = 0,
+        .binding_type = DVZ_DRP2_BINDING_TYPE_STORAGE_BUFFER,
+        .resource_kind = DVZ_DRP2_BINDING_RESOURCE_BUFFER,
+        .resource_id = 2,
+        .offset = 0,
+        .size = sizeof(payload),
+    };
+    AT(dvz_drp2_stream_create_bind_group_entries(stream, 4, 3, 1, &bind_entry));
+    AT(dvz_drp2_stream_create_shader_module_format(stream, 5, "compute", "wgsl", "compute-main"));
+    AT(dvz_drp2_stream_create_compute_pipeline_with_bind_group_layout(stream, 6, 5, 3));
+    AT(dvz_drp2_stream_begin_command_encoder(stream, 7));
+    AT(dvz_drp2_stream_copy_buffer_to_buffer(stream, 7, 1, 0, 2, 0, sizeof(payload)));
+    AT(dvz_drp2_stream_begin_compute_pass(stream, 8, 7));
+    AT(dvz_drp2_stream_set_pipeline(stream, 8, 6));
+    AT(dvz_drp2_stream_set_bind_group(stream, 8, 0, 4));
+    AT(dvz_drp2_stream_dispatch_workgroups(stream, 8, 1, 1, 1));
+    AT(dvz_drp2_stream_end_compute_pass(stream, 8));
+    AT(dvz_drp2_stream_finish_command_encoder(stream, 7, 9));
+    AT(dvz_drp2_stream_queue_submit(stream, 9, 10));
+
+    DvzDrp2RuntimeConfig cfg = dvz_drp2_runtime_vklite_config(NULL, NULL);
+    cfg.semantic_only = true;
+    DvzDrp2Runtime* runtime = dvz_drp2_runtime_vklite(&cfg);
+    ANN(runtime);
+    DvzDrp2ValidationResult result = dvz_drp2_runtime_execute(runtime, stream);
+    AT(result.ok);
+    dvz_drp2_runtime_destroy(runtime);
+
+    DvzDrp2RecordingInfo info = {
+        .width = 0,
+        .height = 0,
+        .duration_s = 0.0,
+        .t_present = 0.0,
+        .backend_hint = "semantic",
+    };
+    const char* path = "/tmp/dvz_drp2_recording_compute_copy_jsonl.dvzr";
+    AT(dvz_drp2_recording_write_stream(path, stream, &info));
+
+    FILE* stream_file = fopen("/tmp/dvz_drp2_recording_compute_copy_jsonl.dvzr/stream.jsonl", "rb");
+    ANN(stream_file);
+    char stream_jsonl[32768] = {0};
+    size_t stream_jsonl_size = fread(stream_jsonl, 1, sizeof(stream_jsonl) - 1, stream_file);
+    fclose(stream_file);
+    AT(stream_jsonl_size > 0);
+    AT(strstr(stream_jsonl, ".cmd") == NULL);
+    AT(strstr(stream_jsonl, "\"op\":\"CreateBindGroupLayout\"") != NULL);
+    AT(strstr(stream_jsonl, "\"op\":\"CreateBindGroup\"") != NULL);
+    AT(strstr(stream_jsonl, "\"op\":\"CreateComputePipeline\"") != NULL);
+    AT(strstr(stream_jsonl, "\"op\":\"CopyBufferToBuffer\"") != NULL);
+    AT(strstr(stream_jsonl, "\"op\":\"DispatchWorkgroups\"") != NULL);
+
+    DvzDrp2CommandStream* replay = dvz_drp2_recording_read_stream(path);
+    ANN(replay);
+    AT(dvz_drp2_stream_count(replay) == dvz_drp2_stream_count(stream));
+    for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
+    {
+        const DvzDrp2Command* a = dvz_drp2_stream_get(stream, i);
+        const DvzDrp2Command* b = dvz_drp2_stream_get(replay, i);
+        ANN(a);
+        ANN(b);
+        AT(a->type == b->type);
+    }
+
+    runtime = dvz_drp2_runtime_vklite(&cfg);
+    ANN(runtime);
+    result = dvz_drp2_runtime_execute(runtime, replay);
+    AT(result.ok);
+    dvz_drp2_runtime_destroy(runtime);
+
+    dvz_drp2_stream_destroy(replay);
+    dvz_drp2_stream_destroy(stream);
+    return 0;
+}
+
+
+
 /*************************************************************************************************/
 /*  Entry-point                                                                                  */
 /*************************************************************************************************/
@@ -4568,6 +4677,7 @@ int test_drp2(TstSuite* suite)
     TEST_SIMPLE(test_drp2_wboit_accumulation_resolve_stream);
     TEST_SIMPLE(test_drp2_recording_linear_roundtrip);
     TEST_SIMPLE(test_drp2_recording_render_jsonl_no_raw_fallback);
+    TEST_SIMPLE(test_drp2_recording_compute_copy_jsonl_no_raw_fallback);
     TEST_SIMPLE(test_drp2_begin_render_pass_clear_color_stored);
     TEST_SIMPLE(test_drp2_begin_render_pass_multi_color_attachments);
     TEST_SIMPLE(test_drp2_stream_json_preserves_clear_color);

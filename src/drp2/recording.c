@@ -765,6 +765,124 @@ static bool _recording_write_create_render_pipeline(
 
 
 /**
+ * Write a CreateComputePipeline command as indexed scalar JSON fields.
+ *
+ * @param stream_fp stream JSONL file
+ * @param command command to write
+ * @param index command index
+ * @return whether the command record was written
+ */
+static bool _recording_write_create_compute_pipeline(
+    FILE* stream_fp, const DvzDrp2Command* command, uint32_t index)
+{
+    ANN(stream_fp);
+    ANN(command);
+    if (dvz_fprintf(
+            stream_fp,
+            "{\"type\":\"command\",\"index\":%" PRIu32 ",\"cmd_type\":%d,"
+            "\"op\":\"CreateComputePipeline\",\"id\":%" PRIu64
+            ",\"compute_shader_module_id\":%" PRIu64
+            ",\"bind_group_layout_count\":%" PRIu32,
+            index, (int)command->type, command->u.create_compute_pipeline.id,
+            command->u.create_compute_pipeline.compute_shader_module_id,
+            command->u.create_compute_pipeline.bind_group_layout_count) <= 0)
+        return false;
+    for (uint32_t i = 0; i < DVZ_DRP2_MAX_BIND_GROUPS; i++)
+    {
+        if (dvz_fprintf(
+                stream_fp, ",\"bgl%" PRIu32 "_id\":%" PRIu64, i,
+                command->u.create_compute_pipeline.bind_group_layout_ids[i]) <= 0)
+            return false;
+    }
+    return dvz_fprintf(stream_fp, "}\n") > 0;
+}
+
+
+
+/**
+ * Write CreateBindGroupLayout as indexed scalar JSON fields.
+ *
+ * @param stream_fp stream JSONL file
+ * @param command command to write
+ * @param index command index
+ * @return whether the command record was written
+ */
+static bool _recording_write_create_bind_group_layout(
+    FILE* stream_fp, const DvzDrp2Command* command, uint32_t index)
+{
+    ANN(stream_fp);
+    ANN(command);
+    if (dvz_fprintf(
+            stream_fp,
+            "{\"type\":\"command\",\"index\":%" PRIu32 ",\"cmd_type\":%d,"
+            "\"op\":\"CreateBindGroupLayout\",\"id\":%" PRIu64
+            ",\"entry_count\":%" PRIu32,
+            index, (int)command->type, command->u.create_bind_group_layout.id,
+            command->u.create_bind_group_layout.entry_count) <= 0)
+        return false;
+    for (uint32_t i = 0; i < DVZ_DRP2_MAX_BINDINGS; i++)
+    {
+        const DvzDrp2BindGroupLayoutEntry* e =
+            &command->u.create_bind_group_layout.entries[i];
+        if (dvz_fprintf(
+                stream_fp,
+                ",\"entry%" PRIu32 "_binding\":%" PRIu32
+                ",\"entry%" PRIu32 "_binding_type\":%d"
+                ",\"entry%" PRIu32 "_visibility\":%" PRIu32
+                ",\"entry%" PRIu32 "_access\":%d"
+                ",\"entry%" PRIu32 "_has_dynamic_offset\":%u",
+                i, e->binding, i, (int)e->binding_type, i, e->visibility, i, (int)e->access, i,
+                e->has_dynamic_offset ? 1u : 0u) <= 0)
+            return false;
+    }
+    return dvz_fprintf(stream_fp, "}\n") > 0;
+}
+
+
+
+/**
+ * Write CreateBindGroup as indexed scalar JSON fields.
+ *
+ * @param stream_fp stream JSONL file
+ * @param command command to write
+ * @param index command index
+ * @return whether the command record was written
+ */
+static bool _recording_write_create_bind_group(
+    FILE* stream_fp, const DvzDrp2Command* command, uint32_t index)
+{
+    ANN(stream_fp);
+    ANN(command);
+    if (dvz_fprintf(
+            stream_fp,
+            "{\"type\":\"command\",\"index\":%" PRIu32 ",\"cmd_type\":%d,"
+            "\"op\":\"CreateBindGroup\",\"id\":%" PRIu64
+            ",\"bind_group_layout_id\":%" PRIu64 ",\"entry_count\":%" PRIu32,
+            index, (int)command->type, command->u.create_bind_group.id,
+            command->u.create_bind_group.bind_group_layout_id,
+            command->u.create_bind_group.entry_count) <= 0)
+        return false;
+    for (uint32_t i = 0; i < DVZ_DRP2_MAX_BINDINGS; i++)
+    {
+        const DvzDrp2BindGroupEntry* e = &command->u.create_bind_group.entries[i];
+        if (dvz_fprintf(
+                stream_fp,
+                ",\"entry%" PRIu32 "_binding\":%" PRIu32
+                ",\"entry%" PRIu32 "_binding_type\":%d"
+                ",\"entry%" PRIu32 "_resource_kind\":%d"
+                ",\"entry%" PRIu32 "_resource_id\":%" PRIu64
+                ",\"entry%" PRIu32 "_offset\":%" PRIu64
+                ",\"entry%" PRIu32 "_size\":%" PRIu64,
+                i, e->binding, i, (int)e->binding_type, i, (int)e->resource_kind, i,
+                e->resource_id, i, e->offset, i, e->size) <= 0)
+            return false;
+    }
+    return dvz_fprintf(stream_fp, "}\n") > 0;
+}
+
+
+
+/**
  * Write a BeginRenderPass command as indexed scalar JSON fields.
  *
  * @param stream_fp stream JSONL file
@@ -895,12 +1013,18 @@ static bool _recording_write_portable_command(
         return true;
     case DVZ_DRP2_COMMAND_CREATE_RENDER_PIPELINE:
         return _recording_write_create_render_pipeline(stream_fp, command, index);
+    case DVZ_DRP2_COMMAND_CREATE_COMPUTE_PIPELINE:
+        return _recording_write_create_compute_pipeline(stream_fp, command, index);
     case DVZ_DRP2_COMMAND_CREATE_SAMPLER:
         return dvz_fprintf(
                    stream_fp,
                    "{\"type\":\"command\",\"index\":%" PRIu32 ",\"cmd_type\":%d,"
                    "\"op\":\"CreateSampler\",\"id\":%" PRIu64 "}\n",
                    index, (int)command->type, command->u.create_sampler.id) > 0;
+    case DVZ_DRP2_COMMAND_CREATE_BIND_GROUP_LAYOUT:
+        return _recording_write_create_bind_group_layout(stream_fp, command, index);
+    case DVZ_DRP2_COMMAND_CREATE_BIND_GROUP:
+        return _recording_write_create_bind_group(stream_fp, command, index);
     case DVZ_DRP2_COMMAND_WRITE_BUFFER:
     {
         char payload_rel[128] = {0};
@@ -986,6 +1110,24 @@ static bool _recording_write_portable_command(
                    "}\n",
                    index, (int)command->type, command->u.set_pipeline.pass_id,
                    command->u.set_pipeline.pipeline_id) > 0;
+    case DVZ_DRP2_COMMAND_SET_BIND_GROUP:
+        if (dvz_fprintf(
+                stream_fp,
+                "{\"type\":\"command\",\"index\":%" PRIu32 ",\"cmd_type\":%d,"
+                "\"op\":\"SetBindGroup\",\"pass_id\":%" PRIu64 ",\"slot\":%" PRIu32
+                ",\"bind_group_id\":%" PRIu64 ",\"dynamic_offset_count\":%" PRIu32,
+                index, (int)command->type, command->u.set_bind_group.pass_id,
+                command->u.set_bind_group.slot, command->u.set_bind_group.bind_group_id,
+                command->u.set_bind_group.dynamic_offset_count) <= 0)
+            return false;
+        for (uint32_t i = 0; i < DVZ_DRP2_MAX_BINDINGS; i++)
+        {
+            if (dvz_fprintf(
+                    stream_fp, ",\"dynamic_offset%" PRIu32 "\":%" PRIu64, i,
+                    command->u.set_bind_group.dynamic_offsets[i]) <= 0)
+                return false;
+        }
+        return dvz_fprintf(stream_fp, "}\n") > 0;
     case DVZ_DRP2_COMMAND_SET_VERTEX_BUFFER:
         return dvz_fprintf(
                    stream_fp,
@@ -995,6 +1137,22 @@ static bool _recording_write_portable_command(
                    index, (int)command->type, command->u.set_vertex_buffer.pass_id,
                    command->u.set_vertex_buffer.slot, command->u.set_vertex_buffer.buffer_id,
                    command->u.set_vertex_buffer.offset) > 0;
+    case DVZ_DRP2_COMMAND_SET_INDEX_BUFFER:
+        if (!_recording_json_string_safe(command->u.set_index_buffer.index_format))
+        {
+            *out_supported = false;
+            return true;
+        }
+        return dvz_fprintf(
+                   stream_fp,
+                   "{\"type\":\"command\",\"index\":%" PRIu32 ",\"cmd_type\":%d,"
+                   "\"op\":\"SetIndexBuffer\",\"pass_id\":%" PRIu64
+                   ",\"buffer_id\":%" PRIu64 ",\"index_format\":\"%s\",\"offset\":%" PRIu64
+                   "}\n",
+                   index, (int)command->type, command->u.set_index_buffer.pass_id,
+                   command->u.set_index_buffer.buffer_id,
+                   command->u.set_index_buffer.index_format,
+                   command->u.set_index_buffer.offset) > 0;
     case DVZ_DRP2_COMMAND_DRAW:
         return dvz_fprintf(
                    stream_fp,
@@ -1022,6 +1180,109 @@ static bool _recording_write_portable_command(
                    "{\"type\":\"command\",\"index\":%" PRIu32 ",\"cmd_type\":%d,"
                    "\"op\":\"EndRenderPass\",\"pass_id\":%" PRIu64 "}\n",
                    index, (int)command->type, command->u.end_render_pass.pass_id) > 0;
+    case DVZ_DRP2_COMMAND_BEGIN_COMPUTE_PASS:
+        return dvz_fprintf(
+                   stream_fp,
+                   "{\"type\":\"command\",\"index\":%" PRIu32 ",\"cmd_type\":%d,"
+                   "\"op\":\"BeginComputePass\",\"id\":%" PRIu64 ",\"encoder_id\":%" PRIu64
+                   "}\n",
+                   index, (int)command->type, command->u.begin_compute_pass.id,
+                   command->u.begin_compute_pass.encoder_id) > 0;
+    case DVZ_DRP2_COMMAND_DISPATCH_WORKGROUPS:
+        return dvz_fprintf(
+                   stream_fp,
+                   "{\"type\":\"command\",\"index\":%" PRIu32 ",\"cmd_type\":%d,"
+                   "\"op\":\"DispatchWorkgroups\",\"pass_id\":%" PRIu64 ",\"x\":%" PRIu32
+                   ",\"y\":%" PRIu32 ",\"z\":%" PRIu32 "}\n",
+                   index, (int)command->type, command->u.dispatch.pass_id,
+                   command->u.dispatch.x, command->u.dispatch.y, command->u.dispatch.z) > 0;
+    case DVZ_DRP2_COMMAND_END_COMPUTE_PASS:
+        return dvz_fprintf(
+                   stream_fp,
+                   "{\"type\":\"command\",\"index\":%" PRIu32 ",\"cmd_type\":%d,"
+                   "\"op\":\"EndComputePass\",\"pass_id\":%" PRIu64 "}\n",
+                   index, (int)command->type, command->u.end_compute_pass.pass_id) > 0;
+    case DVZ_DRP2_COMMAND_COPY_BUFFER_TO_BUFFER:
+        return dvz_fprintf(
+                   stream_fp,
+                   "{\"type\":\"command\",\"index\":%" PRIu32 ",\"cmd_type\":%d,"
+                   "\"op\":\"CopyBufferToBuffer\",\"encoder_id\":%" PRIu64
+                   ",\"src_buffer_id\":%" PRIu64 ",\"src_offset\":%" PRIu64
+                   ",\"dst_buffer_id\":%" PRIu64 ",\"dst_offset\":%" PRIu64
+                   ",\"size\":%" PRIu64 "}\n",
+                   index, (int)command->type, command->u.copy_buffer_to_buffer.encoder_id,
+                   command->u.copy_buffer_to_buffer.src_buffer_id,
+                   command->u.copy_buffer_to_buffer.src_offset,
+                   command->u.copy_buffer_to_buffer.dst_buffer_id,
+                   command->u.copy_buffer_to_buffer.dst_offset,
+                   command->u.copy_buffer_to_buffer.size) > 0;
+    case DVZ_DRP2_COMMAND_COPY_BUFFER_TO_TEXTURE:
+        return dvz_fprintf(
+                   stream_fp,
+                   "{\"type\":\"command\",\"index\":%" PRIu32 ",\"cmd_type\":%d,"
+                   "\"op\":\"CopyBufferToTexture\",\"encoder_id\":%" PRIu64
+                   ",\"src_buffer_id\":%" PRIu64 ",\"src_offset\":%" PRIu64
+                   ",\"bytes_per_row\":%" PRIu32 ",\"rows_per_image\":%" PRIu32
+                   ",\"dst_texture_id\":%" PRIu64 ",\"dst_mip_level\":%" PRIu32
+                   ",\"dst_origin_x\":%" PRIu32 ",\"dst_origin_y\":%" PRIu32
+                   ",\"dst_origin_z\":%" PRIu32 ",\"width\":%" PRIu32
+                   ",\"height\":%" PRIu32 ",\"depth\":%" PRIu32 "}\n",
+                   index, (int)command->type, command->u.copy_buffer_to_texture.encoder_id,
+                   command->u.copy_buffer_to_texture.src_buffer_id,
+                   command->u.copy_buffer_to_texture.src_offset,
+                   command->u.copy_buffer_to_texture.bytes_per_row,
+                   command->u.copy_buffer_to_texture.rows_per_image,
+                   command->u.copy_buffer_to_texture.dst_texture_id,
+                   command->u.copy_buffer_to_texture.dst_mip_level,
+                   command->u.copy_buffer_to_texture.dst_origin_x,
+                   command->u.copy_buffer_to_texture.dst_origin_y,
+                   command->u.copy_buffer_to_texture.dst_origin_z,
+                   command->u.copy_buffer_to_texture.width,
+                   command->u.copy_buffer_to_texture.height,
+                   command->u.copy_buffer_to_texture.depth) > 0;
+    case DVZ_DRP2_COMMAND_COPY_TEXTURE_TO_BUFFER:
+        return dvz_fprintf(
+                   stream_fp,
+                   "{\"type\":\"command\",\"index\":%" PRIu32 ",\"cmd_type\":%d,"
+                   "\"op\":\"CopyTextureToBuffer\",\"encoder_id\":%" PRIu64
+                   ",\"src_texture_id\":%" PRIu64 ",\"dst_buffer_id\":%" PRIu64
+                   ",\"dst_offset\":%" PRIu64 ",\"width\":%" PRIu32
+                   ",\"height\":%" PRIu32 ",\"bytes_per_row\":%" PRIu32
+                   ",\"rows_per_image\":%" PRIu32 "}\n",
+                   index, (int)command->type, command->u.copy_texture_to_buffer.encoder_id,
+                   command->u.copy_texture_to_buffer.src_texture_id,
+                   command->u.copy_texture_to_buffer.dst_buffer_id,
+                   command->u.copy_texture_to_buffer.dst_offset,
+                   command->u.copy_texture_to_buffer.width,
+                   command->u.copy_texture_to_buffer.height,
+                   command->u.copy_texture_to_buffer.bytes_per_row,
+                   command->u.copy_texture_to_buffer.rows_per_image) > 0;
+    case DVZ_DRP2_COMMAND_COPY_TEXTURE_TO_TEXTURE:
+        return dvz_fprintf(
+                   stream_fp,
+                   "{\"type\":\"command\",\"index\":%" PRIu32 ",\"cmd_type\":%d,"
+                   "\"op\":\"CopyTextureToTexture\",\"encoder_id\":%" PRIu64
+                   ",\"src_texture_id\":%" PRIu64 ",\"src_mip_level\":%" PRIu32
+                   ",\"src_origin_x\":%" PRIu32 ",\"src_origin_y\":%" PRIu32
+                   ",\"src_origin_z\":%" PRIu32 ",\"dst_texture_id\":%" PRIu64
+                   ",\"dst_mip_level\":%" PRIu32 ",\"dst_origin_x\":%" PRIu32
+                   ",\"dst_origin_y\":%" PRIu32 ",\"dst_origin_z\":%" PRIu32
+                   ",\"width\":%" PRIu32 ",\"height\":%" PRIu32 ",\"depth\":%" PRIu32
+                   "}\n",
+                   index, (int)command->type, command->u.copy_texture_to_texture.encoder_id,
+                   command->u.copy_texture_to_texture.src_texture_id,
+                   command->u.copy_texture_to_texture.src_mip_level,
+                   command->u.copy_texture_to_texture.src_origin_x,
+                   command->u.copy_texture_to_texture.src_origin_y,
+                   command->u.copy_texture_to_texture.src_origin_z,
+                   command->u.copy_texture_to_texture.dst_texture_id,
+                   command->u.copy_texture_to_texture.dst_mip_level,
+                   command->u.copy_texture_to_texture.dst_origin_x,
+                   command->u.copy_texture_to_texture.dst_origin_y,
+                   command->u.copy_texture_to_texture.dst_origin_z,
+                   command->u.copy_texture_to_texture.width,
+                   command->u.copy_texture_to_texture.height,
+                   command->u.copy_texture_to_texture.depth) > 0;
     case DVZ_DRP2_COMMAND_FINISH_COMMAND_ENCODER:
         return dvz_fprintf(
                    stream_fp,
@@ -1308,7 +1569,10 @@ static bool _recording_field_name(
     ANN(out);
     ANN(prefix);
     ANN(suffix);
-    int rc = dvz_snprintf(out, (size_t)out_size, "\"%s%" PRIu32 "_%s\":", prefix, index, suffix);
+    int rc = suffix[0] == '\0'
+                 ? dvz_snprintf(out, (size_t)out_size, "\"%s%" PRIu32 "\":", prefix, index)
+                 : dvz_snprintf(
+                       out, (size_t)out_size, "\"%s%" PRIu32 "_%s\":", prefix, index, suffix);
     return rc >= 0 && (uint64_t)rc < out_size;
 }
 
@@ -1615,6 +1879,112 @@ static bool _recording_read_create_render_pipeline(const char* line, DvzDrp2Comm
 
 
 /**
+ * Decode CreateComputePipeline indexed fields.
+ *
+ * @param line JSONL command record
+ * @param command command to fill
+ * @return whether the fields were decoded
+ */
+static bool _recording_read_create_compute_pipeline(const char* line, DvzDrp2Command* command)
+{
+    ANN(line);
+    ANN(command);
+    command->type = DVZ_DRP2_COMMAND_CREATE_COMPUTE_PIPELINE;
+    if (!_recording_line_u64(line, "\"id\":", &command->u.create_compute_pipeline.id) ||
+        !_recording_line_u64(
+            line, "\"compute_shader_module_id\":",
+            &command->u.create_compute_pipeline.compute_shader_module_id) ||
+        !_recording_line_u32(
+            line, "\"bind_group_layout_count\":",
+            &command->u.create_compute_pipeline.bind_group_layout_count))
+        return false;
+    for (uint32_t i = 0; i < DVZ_DRP2_MAX_BIND_GROUPS; i++)
+    {
+        if (!_recording_line_indexed_u64(
+                line, "bgl", i, "id",
+                &command->u.create_compute_pipeline.bind_group_layout_ids[i]))
+            return false;
+    }
+    return true;
+}
+
+
+
+/**
+ * Decode CreateBindGroupLayout indexed fields.
+ *
+ * @param line JSONL command record
+ * @param command command to fill
+ * @return whether the fields were decoded
+ */
+static bool _recording_read_create_bind_group_layout(const char* line, DvzDrp2Command* command)
+{
+    ANN(line);
+    ANN(command);
+    command->type = DVZ_DRP2_COMMAND_CREATE_BIND_GROUP_LAYOUT;
+    if (!_recording_line_u64(line, "\"id\":", &command->u.create_bind_group_layout.id) ||
+        !_recording_line_u32(
+            line, "\"entry_count\":", &command->u.create_bind_group_layout.entry_count))
+        return false;
+    for (uint32_t i = 0; i < DVZ_DRP2_MAX_BINDINGS; i++)
+    {
+        DvzDrp2BindGroupLayoutEntry* e = &command->u.create_bind_group_layout.entries[i];
+        uint32_t binding_type = 0;
+        uint32_t access = 0;
+        if (!_recording_line_indexed_u32(line, "entry", i, "binding", &e->binding) ||
+            !_recording_line_indexed_u32(line, "entry", i, "binding_type", &binding_type) ||
+            !_recording_line_indexed_u32(line, "entry", i, "visibility", &e->visibility) ||
+            !_recording_line_indexed_u32(line, "entry", i, "access", &access) ||
+            !_recording_line_indexed_bool(
+                line, "entry", i, "has_dynamic_offset", &e->has_dynamic_offset))
+            return false;
+        e->binding_type = (DvzDrp2BindingType)binding_type;
+        e->access = (DvzDrp2BindingAccess)access;
+    }
+    return true;
+}
+
+
+
+/**
+ * Decode CreateBindGroup indexed fields.
+ *
+ * @param line JSONL command record
+ * @param command command to fill
+ * @return whether the fields were decoded
+ */
+static bool _recording_read_create_bind_group(const char* line, DvzDrp2Command* command)
+{
+    ANN(line);
+    ANN(command);
+    command->type = DVZ_DRP2_COMMAND_CREATE_BIND_GROUP;
+    if (!_recording_line_u64(line, "\"id\":", &command->u.create_bind_group.id) ||
+        !_recording_line_u64(
+            line, "\"bind_group_layout_id\":",
+            &command->u.create_bind_group.bind_group_layout_id) ||
+        !_recording_line_u32(line, "\"entry_count\":", &command->u.create_bind_group.entry_count))
+        return false;
+    for (uint32_t i = 0; i < DVZ_DRP2_MAX_BINDINGS; i++)
+    {
+        DvzDrp2BindGroupEntry* e = &command->u.create_bind_group.entries[i];
+        uint32_t binding_type = 0;
+        uint32_t resource_kind = 0;
+        if (!_recording_line_indexed_u32(line, "entry", i, "binding", &e->binding) ||
+            !_recording_line_indexed_u32(line, "entry", i, "binding_type", &binding_type) ||
+            !_recording_line_indexed_u32(line, "entry", i, "resource_kind", &resource_kind) ||
+            !_recording_line_indexed_u64(line, "entry", i, "resource_id", &e->resource_id) ||
+            !_recording_line_indexed_u64(line, "entry", i, "offset", &e->offset) ||
+            !_recording_line_indexed_u64(line, "entry", i, "size", &e->size))
+            return false;
+        e->binding_type = (DvzDrp2BindingType)binding_type;
+        e->resource_kind = (DvzDrp2BindingResourceKind)resource_kind;
+    }
+    return true;
+}
+
+
+
+/**
  * Decode BeginRenderPass indexed fields.
  *
  * @param line JSONL command record
@@ -1743,10 +2113,25 @@ static bool _recording_read_portable_command(
         if (!_recording_read_create_render_pipeline(line, &command))
             return false;
     }
+    else if (strcmp(op, "CreateComputePipeline") == 0)
+    {
+        if (!_recording_read_create_compute_pipeline(line, &command))
+            return false;
+    }
     else if (strcmp(op, "CreateSampler") == 0)
     {
         command.type = DVZ_DRP2_COMMAND_CREATE_SAMPLER;
         if (!_recording_line_u64(line, "\"id\":", &command.u.create_sampler.id))
+            return false;
+    }
+    else if (strcmp(op, "CreateBindGroupLayout") == 0)
+    {
+        if (!_recording_read_create_bind_group_layout(line, &command))
+            return false;
+    }
+    else if (strcmp(op, "CreateBindGroup") == 0)
+    {
+        if (!_recording_read_create_bind_group(line, &command))
             return false;
     }
     else if (strcmp(op, "WriteBuffer") == 0)
@@ -1839,6 +2224,24 @@ static bool _recording_read_portable_command(
             !_recording_line_u64(line, "\"pipeline_id\":", &command.u.set_pipeline.pipeline_id))
             return false;
     }
+    else if (strcmp(op, "SetBindGroup") == 0)
+    {
+        command.type = DVZ_DRP2_COMMAND_SET_BIND_GROUP;
+        if (!_recording_line_u64(line, "\"pass_id\":", &command.u.set_bind_group.pass_id) ||
+            !_recording_line_u32(line, "\"slot\":", &command.u.set_bind_group.slot) ||
+            !_recording_line_u64(
+                line, "\"bind_group_id\":", &command.u.set_bind_group.bind_group_id) ||
+            !_recording_line_u32(
+                line, "\"dynamic_offset_count\":",
+                &command.u.set_bind_group.dynamic_offset_count))
+            return false;
+        for (uint32_t i = 0; i < DVZ_DRP2_MAX_BINDINGS; i++)
+        {
+            if (!_recording_line_indexed_u64(
+                    line, "dynamic_offset", i, "", &command.u.set_bind_group.dynamic_offsets[i]))
+                return false;
+        }
+    }
     else if (strcmp(op, "SetVertexBuffer") == 0)
     {
         command.type = DVZ_DRP2_COMMAND_SET_VERTEX_BUFFER;
@@ -1846,6 +2249,17 @@ static bool _recording_read_portable_command(
             !_recording_line_u32(line, "\"slot\":", &command.u.set_vertex_buffer.slot) ||
             !_recording_line_u64(line, "\"buffer_id\":", &command.u.set_vertex_buffer.buffer_id) ||
             !_recording_line_u64(line, "\"offset\":", &command.u.set_vertex_buffer.offset))
+            return false;
+    }
+    else if (strcmp(op, "SetIndexBuffer") == 0)
+    {
+        command.type = DVZ_DRP2_COMMAND_SET_INDEX_BUFFER;
+        if (!_recording_line_u64(line, "\"pass_id\":", &command.u.set_index_buffer.pass_id) ||
+            !_recording_line_u64(line, "\"buffer_id\":", &command.u.set_index_buffer.buffer_id) ||
+            !_recording_line_string(
+                line, "\"index_format\":\"", command.u.set_index_buffer.index_format,
+                sizeof(command.u.set_index_buffer.index_format)) ||
+            !_recording_line_u64(line, "\"offset\":", &command.u.set_index_buffer.offset))
             return false;
     }
     else if (strcmp(op, "Draw") == 0)
@@ -1875,6 +2289,121 @@ static bool _recording_read_portable_command(
     {
         command.type = DVZ_DRP2_COMMAND_END_RENDER_PASS;
         if (!_recording_line_u64(line, "\"pass_id\":", &command.u.end_render_pass.pass_id))
+            return false;
+    }
+    else if (strcmp(op, "BeginComputePass") == 0)
+    {
+        command.type = DVZ_DRP2_COMMAND_BEGIN_COMPUTE_PASS;
+        if (!_recording_line_u64(line, "\"id\":", &command.u.begin_compute_pass.id) ||
+            !_recording_line_u64(line, "\"encoder_id\":", &command.u.begin_compute_pass.encoder_id))
+            return false;
+    }
+    else if (strcmp(op, "DispatchWorkgroups") == 0)
+    {
+        command.type = DVZ_DRP2_COMMAND_DISPATCH_WORKGROUPS;
+        if (!_recording_line_u64(line, "\"pass_id\":", &command.u.dispatch.pass_id) ||
+            !_recording_line_u32(line, "\"x\":", &command.u.dispatch.x) ||
+            !_recording_line_u32(line, "\"y\":", &command.u.dispatch.y) ||
+            !_recording_line_u32(line, "\"z\":", &command.u.dispatch.z))
+            return false;
+    }
+    else if (strcmp(op, "EndComputePass") == 0)
+    {
+        command.type = DVZ_DRP2_COMMAND_END_COMPUTE_PASS;
+        if (!_recording_line_u64(line, "\"pass_id\":", &command.u.end_compute_pass.pass_id))
+            return false;
+    }
+    else if (strcmp(op, "CopyBufferToBuffer") == 0)
+    {
+        command.type = DVZ_DRP2_COMMAND_COPY_BUFFER_TO_BUFFER;
+        if (!_recording_line_u64(
+                line, "\"encoder_id\":", &command.u.copy_buffer_to_buffer.encoder_id) ||
+            !_recording_line_u64(
+                line, "\"src_buffer_id\":", &command.u.copy_buffer_to_buffer.src_buffer_id) ||
+            !_recording_line_u64(
+                line, "\"src_offset\":", &command.u.copy_buffer_to_buffer.src_offset) ||
+            !_recording_line_u64(
+                line, "\"dst_buffer_id\":", &command.u.copy_buffer_to_buffer.dst_buffer_id) ||
+            !_recording_line_u64(
+                line, "\"dst_offset\":", &command.u.copy_buffer_to_buffer.dst_offset) ||
+            !_recording_line_u64(line, "\"size\":", &command.u.copy_buffer_to_buffer.size))
+            return false;
+    }
+    else if (strcmp(op, "CopyBufferToTexture") == 0)
+    {
+        command.type = DVZ_DRP2_COMMAND_COPY_BUFFER_TO_TEXTURE;
+        if (!_recording_line_u64(
+                line, "\"encoder_id\":", &command.u.copy_buffer_to_texture.encoder_id) ||
+            !_recording_line_u64(
+                line, "\"src_buffer_id\":", &command.u.copy_buffer_to_texture.src_buffer_id) ||
+            !_recording_line_u64(
+                line, "\"src_offset\":", &command.u.copy_buffer_to_texture.src_offset) ||
+            !_recording_line_u32(
+                line, "\"bytes_per_row\":", &command.u.copy_buffer_to_texture.bytes_per_row) ||
+            !_recording_line_u32(
+                line, "\"rows_per_image\":", &command.u.copy_buffer_to_texture.rows_per_image) ||
+            !_recording_line_u64(
+                line, "\"dst_texture_id\":", &command.u.copy_buffer_to_texture.dst_texture_id) ||
+            !_recording_line_u32(
+                line, "\"dst_mip_level\":", &command.u.copy_buffer_to_texture.dst_mip_level) ||
+            !_recording_line_u32(
+                line, "\"dst_origin_x\":", &command.u.copy_buffer_to_texture.dst_origin_x) ||
+            !_recording_line_u32(
+                line, "\"dst_origin_y\":", &command.u.copy_buffer_to_texture.dst_origin_y) ||
+            !_recording_line_u32(
+                line, "\"dst_origin_z\":", &command.u.copy_buffer_to_texture.dst_origin_z) ||
+            !_recording_line_u32(line, "\"width\":", &command.u.copy_buffer_to_texture.width) ||
+            !_recording_line_u32(line, "\"height\":", &command.u.copy_buffer_to_texture.height) ||
+            !_recording_line_u32(line, "\"depth\":", &command.u.copy_buffer_to_texture.depth))
+            return false;
+    }
+    else if (strcmp(op, "CopyTextureToBuffer") == 0)
+    {
+        command.type = DVZ_DRP2_COMMAND_COPY_TEXTURE_TO_BUFFER;
+        if (!_recording_line_u64(
+                line, "\"encoder_id\":", &command.u.copy_texture_to_buffer.encoder_id) ||
+            !_recording_line_u64(
+                line, "\"src_texture_id\":", &command.u.copy_texture_to_buffer.src_texture_id) ||
+            !_recording_line_u64(
+                line, "\"dst_buffer_id\":", &command.u.copy_texture_to_buffer.dst_buffer_id) ||
+            !_recording_line_u64(
+                line, "\"dst_offset\":", &command.u.copy_texture_to_buffer.dst_offset) ||
+            !_recording_line_u32(line, "\"width\":", &command.u.copy_texture_to_buffer.width) ||
+            !_recording_line_u32(line, "\"height\":", &command.u.copy_texture_to_buffer.height) ||
+            !_recording_line_u32(
+                line, "\"bytes_per_row\":", &command.u.copy_texture_to_buffer.bytes_per_row) ||
+            !_recording_line_u32(
+                line, "\"rows_per_image\":", &command.u.copy_texture_to_buffer.rows_per_image))
+            return false;
+    }
+    else if (strcmp(op, "CopyTextureToTexture") == 0)
+    {
+        command.type = DVZ_DRP2_COMMAND_COPY_TEXTURE_TO_TEXTURE;
+        if (!_recording_line_u64(
+                line, "\"encoder_id\":", &command.u.copy_texture_to_texture.encoder_id) ||
+            !_recording_line_u64(
+                line, "\"src_texture_id\":", &command.u.copy_texture_to_texture.src_texture_id) ||
+            !_recording_line_u32(
+                line, "\"src_mip_level\":", &command.u.copy_texture_to_texture.src_mip_level) ||
+            !_recording_line_u32(
+                line, "\"src_origin_x\":", &command.u.copy_texture_to_texture.src_origin_x) ||
+            !_recording_line_u32(
+                line, "\"src_origin_y\":", &command.u.copy_texture_to_texture.src_origin_y) ||
+            !_recording_line_u32(
+                line, "\"src_origin_z\":", &command.u.copy_texture_to_texture.src_origin_z) ||
+            !_recording_line_u64(
+                line, "\"dst_texture_id\":", &command.u.copy_texture_to_texture.dst_texture_id) ||
+            !_recording_line_u32(
+                line, "\"dst_mip_level\":", &command.u.copy_texture_to_texture.dst_mip_level) ||
+            !_recording_line_u32(
+                line, "\"dst_origin_x\":", &command.u.copy_texture_to_texture.dst_origin_x) ||
+            !_recording_line_u32(
+                line, "\"dst_origin_y\":", &command.u.copy_texture_to_texture.dst_origin_y) ||
+            !_recording_line_u32(
+                line, "\"dst_origin_z\":", &command.u.copy_texture_to_texture.dst_origin_z) ||
+            !_recording_line_u32(line, "\"width\":", &command.u.copy_texture_to_texture.width) ||
+            !_recording_line_u32(line, "\"height\":", &command.u.copy_texture_to_texture.height) ||
+            !_recording_line_u32(line, "\"depth\":", &command.u.copy_texture_to_texture.depth))
             return false;
     }
     else if (strcmp(op, "FinishCommandEncoder") == 0)
