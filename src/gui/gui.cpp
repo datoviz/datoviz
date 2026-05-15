@@ -33,6 +33,16 @@
 #include "backends/imgui_impl_glfw.h"
 #include "backends/imgui_impl_vulkan.h"
 #include "imgui.h"
+#include "gui_fonts.inc"
+
+
+
+/*************************************************************************************************/
+/*  Constants                                                                                    */
+/*************************************************************************************************/
+
+#define DVZ_GUI_DEFAULT_FONT_SIZE 16.0f
+#define DVZ_GUI_DEFAULT_MONO_FONT_SIZE 16.0f
 
 
 
@@ -83,6 +93,8 @@ struct DvzGui
     DvzGuiConfig config;
     DvzGuiCallback callback;
     void* callback_user_data;
+    ImFont* font_regular;
+    ImFont* font_mono;
     VkFormat color_format;
     bool glfw_initialized;
     bool vulkan_initialized;
@@ -118,6 +130,64 @@ static void _gui_set_current(DvzGui* gui)
     ANN(gui);
     ANN(gui->context);
     ImGui::SetCurrentContext(gui->context);
+}
+
+
+
+/**
+ * Return a usable font size.
+ *
+ * @param size requested font size
+ * @param fallback fallback font size
+ * @return requested font size, or fallback when the request is invalid
+ */
+static float _gui_font_size(float size, float fallback)
+{
+    return size > 0 ? size : fallback;
+}
+
+
+
+/**
+ * Load Datoviz's embedded ImGui fonts into the current font atlas.
+ *
+ * @param gui the GUI overlay
+ */
+static void _gui_load_fonts(DvzGui* gui)
+{
+    ANN(gui);
+    _gui_set_current(gui);
+
+    ImGuiIO& io = ImGui::GetIO();
+    const float font_size = _gui_font_size(gui->config.font_size, DVZ_GUI_DEFAULT_FONT_SIZE);
+    const float mono_font_size =
+        _gui_font_size(gui->config.mono_font_size, DVZ_GUI_DEFAULT_MONO_FONT_SIZE);
+
+    ImFontConfig regular_config = {};
+    regular_config.OversampleH = 2;
+    regular_config.OversampleV = 1;
+    gui->font_regular = io.Fonts->AddFontFromMemoryCompressedTTF(
+        dvz_gui_font_karla_regular_compressed_data,
+        (int)dvz_gui_font_karla_regular_compressed_size, font_size, &regular_config,
+        io.Fonts->GetGlyphRangesDefault());
+    if (gui->font_regular == NULL)
+    {
+        log_error("Dear ImGui failed to load the embedded Karla font");
+        gui->font_regular = io.Fonts->AddFontDefault();
+    }
+
+    ImFontConfig mono_config = {};
+    mono_config.OversampleH = 2;
+    mono_config.OversampleV = 1;
+    gui->font_mono = io.Fonts->AddFontFromMemoryCompressedTTF(
+        dvz_gui_font_cousine_regular_compressed_data,
+        (int)dvz_gui_font_cousine_regular_compressed_size, mono_font_size, &mono_config,
+        io.Fonts->GetGlyphRangesDefault());
+    if (gui->font_mono == NULL)
+        log_error("Dear ImGui failed to load the embedded Cousine font");
+
+    if (gui->font_regular != NULL)
+        io.FontDefault = gui->font_regular;
 }
 
 
@@ -393,6 +463,7 @@ DvzGui* _dvz_gui_create(DvzGpuCtx* gpu_ctx, DvzWindow* window, const DvzGuiConfi
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
     if (gui->config.ini_path != NULL)
         io.IniFilename = gui->config.ini_path;
+    _gui_load_fonts(gui);
     ImGui::StyleColorsDark();
 
     if (!ImGui_ImplGlfw_InitForVulkan(glfw_window, false))
@@ -532,6 +603,8 @@ DvzGuiConfig dvz_gui_config(void)
 {
     DvzGuiConfig config = {};
     config.flags = DVZ_GUI_FLAGS_DOCKING | DVZ_GUI_FLAGS_DOCKSPACE;
+    config.font_size = DVZ_GUI_DEFAULT_FONT_SIZE;
+    config.mono_font_size = DVZ_GUI_DEFAULT_MONO_FONT_SIZE;
     return config;
 }
 
@@ -582,6 +655,38 @@ void dvz_gui_text(DvzGui* gui, const char* text)
     ANN(text);
     _gui_set_current(gui);
     ImGui::TextUnformatted(text);
+}
+
+
+
+/**
+ * Push the default monospace ImGui font.
+ *
+ * @param gui the GUI overlay
+ * @return whether the monospace font was available and pushed
+ */
+bool dvz_gui_push_mono(DvzGui* gui)
+{
+    ANN(gui);
+    _gui_set_current(gui);
+    if (gui->font_mono == NULL)
+        return false;
+    ImGui::PushFont(gui->font_mono);
+    return true;
+}
+
+
+
+/**
+ * Pop the current ImGui font.
+ *
+ * @param gui the GUI overlay
+ */
+void dvz_gui_pop_font(DvzGui* gui)
+{
+    ANN(gui);
+    _gui_set_current(gui);
+    ImGui::PopFont();
 }
 
 

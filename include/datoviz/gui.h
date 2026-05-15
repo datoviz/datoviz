@@ -55,6 +55,8 @@ typedef struct DvzGuiConfig
 {
     uint32_t flags;
     const char* ini_path;
+    float font_size;
+    float mono_font_size;
 } DvzGuiConfig;
 
 
@@ -127,6 +129,25 @@ DVZ_EXPORT void dvz_gui_end(DvzGui* gui);
  * @param text null-terminated text
  */
 DVZ_EXPORT void dvz_gui_text(DvzGui* gui, const char* text);
+
+
+
+/**
+ * Push the default monospace ImGui font.
+ *
+ * @param gui the GUI overlay
+ * @return whether the monospace font was available and pushed
+ */
+DVZ_EXPORT bool dvz_gui_push_mono(DvzGui* gui);
+
+
+
+/**
+ * Pop the current ImGui font.
+ *
+ * @param gui the GUI overlay
+ */
+DVZ_EXPORT void dvz_gui_pop_font(DvzGui* gui);
 
 
 

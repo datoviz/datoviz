@@ -76,6 +76,11 @@ static void gui_callback(DvzGui* gui, DvzAppWindow* win, void* user_data)
         changed |= dvz_gui_slider_float(gui, "X offset", &state->x_offset, -0.5f, 0.5f);
         changed |= dvz_gui_checkbox(gui, "Show points", &state->show_points);
         (void)dvz_gui_checkbox(gui, "Show ImGui demo", &state->show_demo);
+        if (dvz_gui_push_mono(gui))
+        {
+            dvz_gui_text(gui, "mono: Cousine-Regular");
+            dvz_gui_pop_font(gui);
+        }
     }
     dvz_gui_end(gui);
 
