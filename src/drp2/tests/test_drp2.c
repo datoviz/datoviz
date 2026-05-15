@@ -3525,6 +3525,178 @@ int test_drp2_runtime_vklite_draws_multi_color_render_pass(TstSuite* suite, TstI
 
 
 
+/**
+ * Execute WBOIT-shaped RGBA16F/R16F accumulation and resolve passes through vklite.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_drp2_runtime_vklite_draws_wboit_format_passes(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    if (!_drp2_vklite_runtime_available())
+        return 0;
+
+    DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
+    VkPhysicalDeviceFeatures features10 = {0};
+    features10.independentBlend = true;
+    dvz_gpu_ctx_config_features10(&gpu_cfg, &features10);
+    VkPhysicalDeviceVulkan13Features features13 = {
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES};
+    features13.dynamicRendering = true;
+    features13.synchronization2 = true;
+    dvz_gpu_ctx_config_features13(&gpu_cfg, &features13);
+    DvzGpuCtx* ctx = dvz_gpu_ctx(&gpu_cfg);
+    if (ctx == NULL)
+    {
+        log_warn("DRP2 WBOIT format pass test skipped because GPU context creation failed");
+        return 0;
+    }
+
+    DvzDrp2RuntimeConfig cfg =
+        dvz_drp2_runtime_vklite_config(dvz_gpu_ctx_device(ctx), dvz_gpu_ctx_alloc(ctx));
+    DvzDrp2Runtime* runtime = dvz_drp2_runtime_vklite(&cfg);
+    ANN(runtime);
+
+    DvzDrp2CommandStream* stream = dvz_drp2_stream();
+    ANN(stream);
+    AT(dvz_drp2_stream_hello_renderer(stream, "test-client"));
+    AT(dvz_drp2_stream_renderer_hello_reply(stream, "test-renderer"));
+
+    AT(dvz_drp2_stream_create_sampler(stream, 2));
+
+    DvzDrp2BindGroupLayoutEntry layout_entries[3] = {
+        {
+            .binding = 0,
+            .binding_type = DVZ_DRP2_BINDING_TYPE_SAMPLED_TEXTURE,
+            .visibility = DVZ_DRP2_SHADER_STAGE_FRAGMENT,
+            .access = DVZ_DRP2_BINDING_ACCESS_READ,
+        },
+        {
+            .binding = 1,
+            .binding_type = DVZ_DRP2_BINDING_TYPE_SAMPLED_TEXTURE,
+            .visibility = DVZ_DRP2_SHADER_STAGE_FRAGMENT,
+            .access = DVZ_DRP2_BINDING_ACCESS_READ,
+        },
+        {
+            .binding = 2,
+            .binding_type = DVZ_DRP2_BINDING_TYPE_SAMPLER,
+            .visibility = DVZ_DRP2_SHADER_STAGE_FRAGMENT,
+            .access = DVZ_DRP2_BINDING_ACCESS_READ,
+        },
+    };
+    AT(dvz_drp2_stream_create_bind_group_layout_entries(stream, 3, 3, layout_entries));
+
+    AT(dvz_drp2_stream_create_shader_module_format(
+        stream, 10, "VERTEX", "glsl",
+        "#version 450\nvec2 p[3]=vec2[](vec2(-1,-1),vec2(3,-1),vec2(-1,3));"
+        "void main(){gl_Position=vec4(p[gl_VertexIndex],0,1);}"));
+    AT(dvz_drp2_stream_create_shader_module_format(
+        stream, 11, "FRAGMENT", "glsl",
+        "#version 450\nlayout(location=0)out vec4 accum;"
+        "layout(location=1)out float reveal;"
+        "void main(){accum=vec4(1,0,0,1);reveal=1;}"));
+    AT(dvz_drp2_stream_create_render_pipeline(stream, 12, 10, 11, 0));
+    AT(dvz_drp2_stream_pipeline_set_color_target(
+        stream, 0, VK_FORMAT_R16G16B16A16_SFLOAT));
+    AT(dvz_drp2_stream_pipeline_set_color_target(stream, 1, VK_FORMAT_R16_SFLOAT));
+    AT(dvz_drp2_stream_pipeline_set_color_blend(
+        stream, 0, VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ONE, VK_BLEND_OP_ADD,
+        VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ONE, VK_BLEND_OP_ADD,
+        VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT |
+            VK_COLOR_COMPONENT_A_BIT));
+    AT(dvz_drp2_stream_pipeline_set_color_blend(
+        stream, 1, VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ONE, VK_BLEND_OP_ADD,
+        VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ONE, VK_BLEND_OP_ADD, VK_COLOR_COMPONENT_R_BIT));
+
+    AT(dvz_drp2_stream_create_shader_module_format(
+        stream, 20, "VERTEX", "glsl",
+        "#version 450\nvec2 p[3]=vec2[](vec2(-1,-1),vec2(3,-1),vec2(-1,3));"
+        "void main(){gl_Position=vec4(p[gl_VertexIndex],0,1);}"));
+    AT(dvz_drp2_stream_create_shader_module_format(
+        stream, 21, "FRAGMENT", "glsl",
+        "#version 450\nlayout(set=0,binding=0)uniform sampler2D accum_tex;"
+        "layout(set=0,binding=1)uniform sampler2D reveal_tex;"
+        "layout(location=0)out vec4 color;"
+        "void main(){vec4 a=texelFetch(accum_tex,ivec2(0),0);"
+        "float r=texelFetch(reveal_tex,ivec2(0),0).r;color=vec4(a.r,r,0,1);}"));
+    AT(dvz_drp2_stream_create_render_pipeline_with_bind_group_layout(
+        stream, 22, 20, 21, 0, 3));
+
+    AT(dvz_drp2_stream_create_texture_2d_format_usage(
+        stream, 30, 2, 2, VK_FORMAT_R16G16B16A16_SFLOAT,
+        DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT | DVZ_DRP2_TEXTURE_USAGE_TEXTURE_BINDING));
+    AT(dvz_drp2_stream_create_texture_2d_format_usage(
+        stream, 31, 2, 2, VK_FORMAT_R16_SFLOAT,
+        DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT | DVZ_DRP2_TEXTURE_USAGE_TEXTURE_BINDING));
+    AT(dvz_drp2_stream_create_texture_2d_usage(
+        stream, 32, 2, 2,
+        DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT | DVZ_DRP2_TEXTURE_USAGE_COPY_SRC));
+    AT(dvz_drp2_stream_create_buffer(
+        stream, 33, 4, DVZ_DRP2_BUFFER_USAGE_COPY_DST | DVZ_DRP2_BUFFER_USAGE_MAP_READ));
+
+    DvzDrp2BindGroupEntry bind_entries[3] = {
+        {
+            .binding = 0,
+            .binding_type = DVZ_DRP2_BINDING_TYPE_SAMPLED_TEXTURE,
+            .resource_kind = DVZ_DRP2_BINDING_RESOURCE_TEXTURE,
+            .resource_id = 30,
+        },
+        {
+            .binding = 1,
+            .binding_type = DVZ_DRP2_BINDING_TYPE_SAMPLED_TEXTURE,
+            .resource_kind = DVZ_DRP2_BINDING_RESOURCE_TEXTURE,
+            .resource_id = 31,
+        },
+        {
+            .binding = 2,
+            .binding_type = DVZ_DRP2_BINDING_TYPE_SAMPLER,
+            .resource_kind = DVZ_DRP2_BINDING_RESOURCE_SAMPLER,
+            .resource_id = 2,
+        },
+    };
+    AT(dvz_drp2_stream_create_bind_group_entries(stream, 34, 3, 3, bind_entries));
+
+    AT(dvz_drp2_stream_begin_command_encoder(stream, 40));
+    AT(dvz_drp2_stream_begin_render_pass_clear(stream, 41, 40, 30, 0, 0, 0, 0));
+    AT(dvz_drp2_stream_begin_render_pass_add_color_attachment(
+        stream, 31, 0, 0, 0, 0, true));
+    AT(dvz_drp2_stream_set_pipeline(stream, 41, 12));
+    AT(dvz_drp2_stream_draw(stream, 41, 3, 1, 0, 0));
+    AT(dvz_drp2_stream_end_render_pass(stream, 41));
+
+    AT(dvz_drp2_stream_begin_render_pass_clear(stream, 42, 40, 32, 0, 0, 0, 1));
+    AT(dvz_drp2_stream_set_pipeline(stream, 42, 22));
+    AT(dvz_drp2_stream_set_bind_group(stream, 42, 0, 34));
+    AT(dvz_drp2_stream_draw(stream, 42, 3, 1, 0, 0));
+    AT(dvz_drp2_stream_end_render_pass(stream, 42));
+    AT(dvz_drp2_stream_copy_texture_to_buffer(stream, 40, 32, 33, 0, 1, 1, 4, 1));
+    AT(dvz_drp2_stream_finish_command_encoder(stream, 40, 43));
+    AT(dvz_drp2_stream_queue_submit(stream, 43, 44));
+
+    DvzDrp2ValidationResult result = dvz_drp2_runtime_execute(runtime, stream);
+    AT(result.ok);
+    AT(result.code == DVZ_DRP2_VALIDATION_OK);
+    AT(dvz_gpu_ctx_error_count(ctx) == 0);
+
+    uint8_t resolved[4] = {0};
+    AT(_dvz_drp2_runtime_vklite_download_buffer(runtime, 33, 0, 4, resolved));
+    AT(resolved[0] == 255);
+    AT(resolved[1] == 255);
+    AT(resolved[2] == 0);
+    AT(resolved[3] == 255);
+
+    dvz_drp2_stream_destroy(stream);
+    dvz_drp2_runtime_destroy(runtime);
+    dvz_gpu_ctx_destroy(ctx);
+    return 0;
+}
+
+
+
 int test_drp2_runtime_vklite_samples_then_copies_texture(TstSuite* suite, TstItem* item)
 {
     ANN(suite);
@@ -4377,6 +4549,7 @@ int test_drp2(TstSuite* suite)
     TEST_SIMPLE(test_drp2_runtime_vklite_reallocates_object_table_safely);
     TEST_SIMPLE(test_drp2_runtime_vklite_draws_render_pass);
     TEST_SIMPLE(test_drp2_runtime_vklite_draws_multi_color_render_pass);
+    TEST_SIMPLE(test_drp2_runtime_vklite_draws_wboit_format_passes);
     TEST_SIMPLE(test_drp2_runtime_vklite_samples_then_copies_texture);
 #endif
 

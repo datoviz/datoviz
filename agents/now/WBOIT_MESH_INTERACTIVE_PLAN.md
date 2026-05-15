@@ -55,8 +55,8 @@ Current implementation status on `2026-05-15`:
    present. This is still a planning slice: the resolve node does not yet lower to executable DRP2
    WBOIT commands.
 5. DRP2 already has first C support for multiple color attachments, per-target blend state, and
-   explicit texture formats on `CreateTexture`, plus vklite runtime smoke coverage for a
-   multi-color render pass.
+   explicit texture formats on `CreateTexture`, plus vklite runtime smoke coverage for both a
+   generic multi-color render pass and a WBOIT-shaped RGBA16F/R16F accumulation + resolve path.
 6. The DRP2 positive fixture corpus now includes `wboit_accumulation_resolve.json`, which encodes a
    minimal WBOIT-style accumulation pass with RGBA16F + R16F attachments, additive per-target
    blending, depth attachment coordination, and a resolve pass that samples both intermediate
@@ -167,9 +167,8 @@ Current completed pieces:
 
 Still pending:
 
-1. backend smoke coverage that executes real RGBA16F/R16F intermediate texture formats end to end;
-2. scene lowering that emits the WBOIT fixture shape from FramePlan transparent/resolve nodes;
-3. tighter validation that pipeline color target formats match render-pass attachment formats.
+1. scene lowering that emits the WBOIT fixture shape from FramePlan transparent/resolve nodes;
+2. tighter validation that pipeline color target formats match render-pass attachment formats.
 
 Likely files:
 
@@ -190,7 +189,7 @@ The vklite runtime must lower DRP2 multi-attachment/blend commands to Vulkan dyn
 
 Needed runtime work:
 
-1. execute RGBA16F and R16F accumulation render targets through a focused runtime smoke test;
+1. route scene lowering through the tested RGBA16F and R16F accumulation render targets;
 2. begin render passes with two color attachments for accumulation;
 3. configure additive blending separately per attachment;
 4. run transparent mesh accumulation with depth test enabled and depth write disabled;
