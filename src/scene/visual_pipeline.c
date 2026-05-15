@@ -371,7 +371,7 @@ static bool _scene_visual_desc_from_metadata(
         out->vbuf_ids[out->vbuf_count++] = uvw_id;
         out->volume_texture_id = tex_id;
         out->volume_state = meta->volume_state;
-        out->topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP;
+        out->topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
     }
     else
     {

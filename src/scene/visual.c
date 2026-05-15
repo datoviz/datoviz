@@ -1773,22 +1773,40 @@ DvzVisual* dvz_volume(DvzScene* scene, uint32_t flags)
     if (visual == NULL)
         return NULL;
 
-    static const float positions[4][3] = {
-        {-1.0f, -1.0f, 0.0f},
-        {+1.0f, -1.0f, 0.0f},
-        {-1.0f, +1.0f, 0.0f},
-        {+1.0f, +1.0f, 0.0f},
+    visual->topology = DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+
+    static const float positions[36][3] = {
+        {-1.0f, -1.0f, -1.0f}, {+1.0f, -1.0f, -1.0f}, {+1.0f, +1.0f, -1.0f},
+        {-1.0f, -1.0f, -1.0f}, {+1.0f, +1.0f, -1.0f}, {-1.0f, +1.0f, -1.0f},
+        {-1.0f, -1.0f, +1.0f}, {+1.0f, +1.0f, +1.0f}, {+1.0f, -1.0f, +1.0f},
+        {-1.0f, -1.0f, +1.0f}, {-1.0f, +1.0f, +1.0f}, {+1.0f, +1.0f, +1.0f},
+        {-1.0f, -1.0f, -1.0f}, {-1.0f, +1.0f, -1.0f}, {-1.0f, +1.0f, +1.0f},
+        {-1.0f, -1.0f, -1.0f}, {-1.0f, +1.0f, +1.0f}, {-1.0f, -1.0f, +1.0f},
+        {+1.0f, -1.0f, -1.0f}, {+1.0f, -1.0f, +1.0f}, {+1.0f, +1.0f, +1.0f},
+        {+1.0f, -1.0f, -1.0f}, {+1.0f, +1.0f, +1.0f}, {+1.0f, +1.0f, -1.0f},
+        {-1.0f, -1.0f, -1.0f}, {-1.0f, -1.0f, +1.0f}, {+1.0f, -1.0f, +1.0f},
+        {-1.0f, -1.0f, -1.0f}, {+1.0f, -1.0f, +1.0f}, {+1.0f, -1.0f, -1.0f},
+        {-1.0f, +1.0f, -1.0f}, {+1.0f, +1.0f, +1.0f}, {-1.0f, +1.0f, +1.0f},
+        {-1.0f, +1.0f, -1.0f}, {+1.0f, +1.0f, -1.0f}, {+1.0f, +1.0f, +1.0f},
     };
-    static const float texcoords[4][3] = {
-        {0.0f, 0.0f, 0.5f},
-        {1.0f, 0.0f, 0.5f},
-        {0.0f, 1.0f, 0.5f},
-        {1.0f, 1.0f, 0.5f},
+    static const float texcoords[36][3] = {
+        {0.0f, 0.0f, 0.0f}, {1.0f, 0.0f, 0.0f}, {1.0f, 1.0f, 0.0f},
+        {0.0f, 0.0f, 0.0f}, {1.0f, 1.0f, 0.0f}, {0.0f, 1.0f, 0.0f},
+        {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f, 1.0f}, {1.0f, 0.0f, 1.0f},
+        {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f, 1.0f}, {1.0f, 1.0f, 1.0f},
+        {0.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 1.0f, 1.0f},
+        {0.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 1.0f},
+        {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f, 1.0f}, {1.0f, 1.0f, 1.0f},
+        {1.0f, 0.0f, 0.0f}, {1.0f, 1.0f, 1.0f}, {1.0f, 1.0f, 0.0f},
+        {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 1.0f}, {1.0f, 0.0f, 1.0f},
+        {0.0f, 0.0f, 0.0f}, {1.0f, 0.0f, 1.0f}, {1.0f, 0.0f, 0.0f},
+        {0.0f, 1.0f, 0.0f}, {1.0f, 1.0f, 1.0f}, {0.0f, 1.0f, 1.0f},
+        {0.0f, 1.0f, 0.0f}, {1.0f, 1.0f, 0.0f}, {1.0f, 1.0f, 1.0f},
     };
-    if (dvz_visual_set_data(visual, "position", positions, 4) != 0 ||
-        dvz_visual_set_data(visual, "texcoords", texcoords, 4) != 0)
+    if (dvz_visual_set_data(visual, "position", positions, 36) != 0 ||
+        dvz_visual_set_data(visual, "texcoords", texcoords, 36) != 0)
     {
-        log_error("dvz_volume: failed to initialize default slice geometry");
+        log_error("dvz_volume: failed to initialize default box geometry");
     }
     return visual;
 }

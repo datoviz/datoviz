@@ -633,6 +633,29 @@ int test_scene_volume_visual_binds_3d_field(TstSuite* suite, TstItem* item)
     DvzVisual* volume = dvz_volume(scene, 0);
     ANN(volume);
     AT(volume->type == DVZ_VISUAL_TYPE_VOLUME);
+    AT(volume->topology == DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
+
+    const DvzVisualAttr* position_attr = NULL;
+    const DvzVisualAttr* texcoord_attr = NULL;
+    for (uint32_t i = 0; i < volume->attr_count; i++)
+    {
+        if (strcmp(volume->attrs[i].name, "position") == 0)
+            position_attr = &volume->attrs[i];
+        if (strcmp(volume->attrs[i].name, "texcoords") == 0)
+            texcoord_attr = &volume->attrs[i];
+    }
+    ANN(position_attr);
+    ANN(texcoord_attr);
+    AT(position_attr->item_count == 36);
+    AT(texcoord_attr->item_count == 36);
+    const float(*positions)[3] = (const float(*)[3])position_attr->data;
+    const float(*texcoords)[3] = (const float(*)[3])texcoord_attr->data;
+    ANN(positions);
+    ANN(texcoords);
+    AT(positions[0][2] == -1.0f);
+    AT(positions[11][2] == +1.0f);
+    AT(texcoords[0][2] == 0.0f);
+    AT(texcoords[11][2] == 1.0f);
 
     DvzSampledField* field3d = dvz_sampled_field(
         scene, &(DvzSampledFieldDesc){
@@ -708,16 +731,19 @@ int test_scene_volume_field_emit_realizes_3d_texture(TstSuite* suite, TstItem* i
 
     DvzCapabilitySnapshot caps = {0};
     DvzDiagnosticReport report = {0};
+    DvzFramePlanEmitConfig cfg = {.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL};
     dvz_capability_snapshot_default(&caps);
     dvz_diagnostic_report_init(&report);
 
-    DvzDrp2CommandStream* stream0 = dvz_figure_emit(figure, &caps, &report);
+    DvzDrp2CommandStream* stream0 = dvz_figure_emit_ex(figure, &caps, &report, &cfg);
     ANN(stream0);
     AT(dvz_diagnostic_report_count(&report) == 0);
 
     uint64_t texture_id = 0;
     bool created_texture = false;
     bool wrote_full_texture = false;
+    bool created_triangle_list_pipeline = false;
+    bool drew_box_proxy = false;
     for (uint32_t i = 0; i < dvz_drp2_stream_count(stream0); i++)
     {
         const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream0, i);
@@ -748,10 +774,19 @@ int test_scene_volume_field_emit_realizes_3d_texture(TstSuite* suite, TstItem* i
             AT(cmd->u.write_texture.bytes_per_row == 2 * sizeof(uint16_t));
             AT(cmd->u.write_texture.rows_per_image == 2);
         }
+        if (cmd->type == DVZ_DRP2_COMMAND_CREATE_RENDER_PIPELINE &&
+            cmd->u.create_render_pipeline.topology == VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST)
+        {
+            created_triangle_list_pipeline = true;
+        }
+        if (cmd->type == DVZ_DRP2_COMMAND_DRAW && cmd->u.draw.vertex_count == 36)
+            drew_box_proxy = true;
     }
     AT(texture_id != 0);
     AT(created_texture);
     AT(wrote_full_texture);
+    AT(created_triangle_list_pipeline);
+    AT(drew_box_proxy);
     AT(!field->dirty);
     AT(!volume->texture.dirty);
     dvz_drp2_stream_destroy(stream0);
@@ -766,7 +801,7 @@ int test_scene_volume_field_emit_realizes_3d_texture(TstSuite* suite, TstItem* i
         }));
 
     dvz_diagnostic_report_init(&report);
-    DvzDrp2CommandStream* stream1 = dvz_figure_emit(figure, &caps, &report);
+    DvzDrp2CommandStream* stream1 = dvz_figure_emit_ex(figure, &caps, &report, &cfg);
     ANN(stream1);
     AT(dvz_diagnostic_report_count(&report) == 0);
 
