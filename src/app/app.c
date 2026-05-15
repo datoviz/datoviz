@@ -1038,6 +1038,7 @@ static void _app_draw(DvzCanvas* canvas, const DvzStreamFrame* frame, void* user
         _dvz_gui_begin_frame(win->gui, win, frame);
 #endif
 
+    _dvz_scene_animations_step(app->scene, dvz_input_timestamp_ns());
     _app_sync_figure_size(win, frame);
 
     /* Attach the canvas frame to the reserved DRP2 texture ID. */
