@@ -78,7 +78,7 @@ sdata = merfish()   # or mibitof()
 Cache under:
 
 ```text
-~/.cache/datoviz-napari-demos/spatialdata/merfish.zarr
+.cache/datoviz-napari-demos/spatialdata/merfish.zarr
 ```
 
 If the helper API changes, use the SpatialData datasets page as the authoritative index and download the corresponding Zarr from the listed S3 bucket.
@@ -97,14 +97,14 @@ metadata.json
 The Python preparation cache may be stored as:
 
 ```text
-~/.cache/datoviz-napari-demos/spatial_points/merfish_points.npz
+.cache/datoviz-napari-demos/spatial_points/merfish_points.npz
 ```
 
 For the Stage 1 C runtime, export a simple Datoviz-ready cache that does not require a Zarr or NPZ
 reader in the C example:
 
 ```text
-~/.cache/datoviz-napari-demos/spatial_points/merfish/
+.cache/datoviz-napari-demos/spatial_points/merfish/
   metadata.json
   positions_f32.bin      # N x 3 float32, already normalized into scene coordinates
   category_u32.bin       # N uint32

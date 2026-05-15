@@ -257,7 +257,7 @@ static void _join_path(const char* dir, const char* name, char* out, size_t out_
 
 
 /**
- * Fill the default cache path under the user's home directory.
+ * Fill the default repo-local ignored cache path.
  *
  * @param out output path buffer
  * @param out_size output buffer size
@@ -265,11 +265,9 @@ static void _join_path(const char* dir, const char* name, char* out, size_t out_
  */
 static bool _default_cache_path(char* out, size_t out_size)
 {
-    const char* home = getenv("HOME");
-    if (home == NULL || out == NULL || out_size == 0)
+    if (out == NULL || out_size == 0)
         return false;
-    (void)snprintf(
-        out, out_size, "%s/.cache/datoviz-napari-demos/spatial_points/synthetic", home);
+    (void)snprintf(out, out_size, ".cache/datoviz-napari-demos/spatial_points/synthetic");
     return true;
 }
 

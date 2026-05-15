@@ -15,9 +15,8 @@ from pathlib import Path
 import numpy as np
 
 
-DEFAULT_CACHE = (
-    Path.home() / ".cache" / "datoviz-napari-demos" / "spatial_points" / "synthetic"
-)
+REPO_ROOT = Path(__file__).resolve().parents[2]
+DEFAULT_CACHE = REPO_ROOT / ".cache" / "datoviz-napari-demos" / "spatial_points" / "synthetic"
 
 
 def _hash_u32(values: np.ndarray) -> np.ndarray:
