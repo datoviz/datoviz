@@ -35,12 +35,12 @@
 
 static void _vklite_region(
     DvzImageRegion* region, uint32_t width, uint32_t height, uint32_t depth,
-    uint32_t bytes_per_row, uint32_t rows_per_image)
+    uint32_t bytes_per_row, uint32_t rows_per_image, uint32_t bytes_per_texel)
 {
     ANN(region);
     dvz_image_region(region);
     dvz_image_region_extent(region, width, height, depth);
-    region->bufferRowLength = bytes_per_row / DVZ_DRP2_RGBA8_BYTES_PER_TEXEL;
+    region->bufferRowLength = bytes_per_row / bytes_per_texel;
     region->bufferImageHeight = rows_per_image;
 }
 
@@ -302,6 +302,9 @@ DvzDrp2ValidationResult _vklite_write_texture(
     uint64_t size = _drp2_texture_layout_size(
         command->u.write_texture.depth, command->u.write_texture.bytes_per_row,
         command->u.write_texture.rows_per_image);
+    uint32_t bytes_per_texel = 0;
+    if (!_drp2_texture_format_bytes_per_texel(texture->format, &bytes_per_texel))
+        return _drp2_fail(DVZ_DRP2_VALIDATION_USAGE, command_index);
 
     /* WebGPU-shaped: zero-size write is a valid no-op. */
     if (size == 0)
@@ -338,7 +341,7 @@ DvzDrp2ValidationResult _vklite_write_texture(
     _vklite_region(
         &region, command->u.write_texture.width, command->u.write_texture.height,
         command->u.write_texture.depth, command->u.write_texture.bytes_per_row,
-        command->u.write_texture.rows_per_image);
+        command->u.write_texture.rows_per_image, bytes_per_texel);
     _vklite_region_offset(
         &region, command->u.write_texture.origin_x, command->u.write_texture.origin_y,
         command->u.write_texture.origin_z);
@@ -417,6 +420,9 @@ DvzDrp2ValidationResult _vklite_copy_buffer_to_texture(
     Drp2VkliteObject* dst = _vklite_find(state, command->u.copy_buffer_to_texture.dst_texture_id);
     if (src == NULL || src->buffer == NULL || dst == NULL || dst->images == NULL)
         return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+    uint32_t bytes_per_texel = 0;
+    if (!_drp2_texture_format_bytes_per_texel(dst->format, &bytes_per_texel))
+        return _drp2_fail(DVZ_DRP2_VALIDATION_USAGE, command_index);
 
     DvzCommands* cmds = _vklite_owned_commands_create(state->runtime->device);
     if (cmds == NULL)
@@ -427,7 +433,7 @@ DvzDrp2ValidationResult _vklite_copy_buffer_to_texture(
         &region, command->u.copy_buffer_to_texture.width,
         command->u.copy_buffer_to_texture.height, command->u.copy_buffer_to_texture.depth,
         command->u.copy_buffer_to_texture.bytes_per_row,
-        command->u.copy_buffer_to_texture.rows_per_image);
+        command->u.copy_buffer_to_texture.rows_per_image, bytes_per_texel);
     _vklite_region_offset(
         &region, command->u.copy_buffer_to_texture.dst_origin_x,
         command->u.copy_buffer_to_texture.dst_origin_y,
@@ -464,6 +470,9 @@ DvzDrp2ValidationResult _vklite_copy_texture_to_buffer(
     Drp2VkliteObject* dst = _vklite_find(state, command->u.copy_texture_to_buffer.dst_buffer_id);
     if (src == NULL || src->images == NULL || dst == NULL || dst->buffer == NULL)
         return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+    uint32_t bytes_per_texel = 0;
+    if (!_drp2_texture_format_bytes_per_texel(src->format, &bytes_per_texel))
+        return _drp2_fail(DVZ_DRP2_VALIDATION_USAGE, command_index);
 
     DvzCommands* cmds = _vklite_owned_commands_create(state->runtime->device);
     if (cmds == NULL)
@@ -474,7 +483,7 @@ DvzDrp2ValidationResult _vklite_copy_texture_to_buffer(
         &region, command->u.copy_texture_to_buffer.width,
         command->u.copy_texture_to_buffer.height, 1,
         command->u.copy_texture_to_buffer.bytes_per_row,
-        command->u.copy_texture_to_buffer.rows_per_image);
+        command->u.copy_texture_to_buffer.rows_per_image, bytes_per_texel);
 
     if (dvz_cmd_begin_result(cmds) != 0)
     {

@@ -193,6 +193,7 @@ struct Drp2VkliteObject
     uint32_t format;
     uint32_t width;
     uint32_t height;
+    uint32_t depth;
     float viewport_x;
     float viewport_y;
     float viewport_width;
@@ -244,6 +245,7 @@ DvzDrp2ValidationResult _drp2_fail(DvzDrp2ValidationCode code, uint32_t command_
 bool _drp2_range_overflows(uint64_t offset, uint64_t size, uint64_t total);
 uint64_t _drp2_texture_layout_size(
     uint32_t depth, uint32_t bytes_per_row, uint32_t rows_per_image);
+bool _drp2_texture_format_bytes_per_texel(uint32_t format, uint32_t* out_bytes);
 bool _drp2_frame_target_valid(uint64_t texture_id, const DvzStreamFrame* frame);
 bool _drp2_runtime_state_ensure_capacity(Drp2RuntimeState* state);
 Drp2Object* _drp2_find_any_object(Drp2RuntimeState* state, uint64_t id);

@@ -1283,8 +1283,42 @@ bool dvz_drp2_stream_write_texture_2d_region(
 
 
 
+/**
+ * Append a CreateTexture command for a 3D texture with default RGBA8 format and sampled usage.
+ *
+ * @param stream the command stream
+ * @param id the texture id
+ * @param width the texture width
+ * @param height the texture height
+ * @param depth the texture depth
+ * @return whether the command was appended
+ */
 bool dvz_drp2_stream_create_texture_3d(
     DvzDrp2CommandStream* stream, uint64_t id, uint32_t width, uint32_t height, uint32_t depth)
+{
+    return dvz_drp2_stream_create_texture_3d_format_usage(
+        stream, id, width, height, depth, VK_FORMAT_R8G8B8A8_UNORM,
+        DVZ_DRP2_TEXTURE_USAGE_COPY_SRC | DVZ_DRP2_TEXTURE_USAGE_COPY_DST |
+            DVZ_DRP2_TEXTURE_USAGE_TEXTURE_BINDING);
+}
+
+
+
+/**
+ * Append a CreateTexture command for a 3D texture with explicit format and usage.
+ *
+ * @param stream the command stream
+ * @param id the texture id
+ * @param width the texture width
+ * @param height the texture height
+ * @param depth the texture depth
+ * @param format texture format, using VkFormat values
+ * @param usage texture usage flags
+ * @return whether the command was appended
+ */
+bool dvz_drp2_stream_create_texture_3d_format_usage(
+    DvzDrp2CommandStream* stream, uint64_t id, uint32_t width, uint32_t height, uint32_t depth,
+    uint32_t format, uint32_t usage)
 {
     DvzDrp2Command* command = _append_command(stream, DVZ_DRP2_COMMAND_CREATE_TEXTURE);
     if (command == NULL)
@@ -1293,15 +1327,30 @@ bool dvz_drp2_stream_create_texture_3d(
     command->u.create_texture.width = width;
     command->u.create_texture.height = height;
     command->u.create_texture.depth = depth;
-    command->u.create_texture.format = VK_FORMAT_R8G8B8A8_UNORM;
-    command->u.create_texture.usage =
-        DVZ_DRP2_TEXTURE_USAGE_COPY_SRC | DVZ_DRP2_TEXTURE_USAGE_COPY_DST |
-        DVZ_DRP2_TEXTURE_USAGE_TEXTURE_BINDING;
+    command->u.create_texture.format = format;
+    command->u.create_texture.usage = usage;
     return true;
 }
 
 
 
+/**
+ * Append a WriteTexture command for a 3D texture subregion.
+ *
+ * @param stream the command stream
+ * @param texture_id the destination texture id
+ * @param mip_level the destination mip level
+ * @param origin_x x offset in texels
+ * @param origin_y y offset in texels
+ * @param origin_z z offset in texels
+ * @param width the written width
+ * @param height the written height
+ * @param depth the written depth
+ * @param bytes_per_row the source bytes per row
+ * @param rows_per_image the source rows per image
+ * @param data_base64 base64-encoded payload
+ * @return whether the command was appended
+ */
 bool dvz_drp2_stream_write_texture_3d(
     DvzDrp2CommandStream* stream, uint64_t texture_id, uint32_t mip_level,
     uint32_t origin_x, uint32_t origin_y, uint32_t origin_z,
@@ -1333,6 +1382,54 @@ bool dvz_drp2_stream_write_texture_3d(
     command->u.write_texture.bytes_per_row  = bytes_per_row;
     command->u.write_texture.rows_per_image = rows_per_image;
     command->u.write_texture.data_base64    = buf;
+    return true;
+}
+
+
+
+/**
+ * Append a WriteTexture command for a 3D texture subregion using raw bytes.
+ *
+ * @param stream the command stream
+ * @param texture_id the destination texture id
+ * @param mip_level the destination mip level
+ * @param origin_x x offset in texels
+ * @param origin_y y offset in texels
+ * @param origin_z z offset in texels
+ * @param width the written width
+ * @param height the written height
+ * @param depth the written depth
+ * @param bytes_per_row the source bytes per row
+ * @param rows_per_image the source rows per image
+ * @param data raw texture bytes
+ * @return whether the command was appended
+ */
+bool dvz_drp2_stream_write_texture_3d_bytes(
+    DvzDrp2CommandStream* stream, uint64_t texture_id, uint32_t mip_level,
+    uint32_t origin_x, uint32_t origin_y, uint32_t origin_z,
+    uint32_t width, uint32_t height, uint32_t depth,
+    uint32_t bytes_per_row, uint32_t rows_per_image, const void* data)
+{
+    ANN(stream);
+    if (data == NULL)
+        return false;
+
+    DvzDrp2Command* command = _append_command(stream, DVZ_DRP2_COMMAND_WRITE_TEXTURE);
+    if (command == NULL)
+        return false;
+    command->type                            = DVZ_DRP2_COMMAND_WRITE_TEXTURE;
+    command->u.write_texture.texture_id      = texture_id;
+    command->u.write_texture.mip_level       = mip_level;
+    command->u.write_texture.origin_x        = origin_x;
+    command->u.write_texture.origin_y        = origin_y;
+    command->u.write_texture.origin_z        = origin_z;
+    command->u.write_texture.width           = width;
+    command->u.write_texture.height          = height;
+    command->u.write_texture.depth           = depth;
+    command->u.write_texture.bytes_per_row   = bytes_per_row;
+    command->u.write_texture.rows_per_image  = rows_per_image;
+    command->u.write_texture.data_raw        = data; /* borrowed; caller keeps alive */
+    command->u.write_texture.data_base64     = NULL;
     return true;
 }
 

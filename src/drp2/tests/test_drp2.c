@@ -1004,6 +1004,78 @@ int test_drp2_runtime_validate_write_texture(TstSuite* suite, TstItem* item)
 
 
 
+int test_drp2_runtime_validate_write_texture_3d_formats(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzDrp2CommandStream* stream = dvz_drp2_stream();
+    ANN(stream);
+
+    uint8_t r8_values[3 * 2 * 2] = {0};
+    uint16_t r16_values[2 * 2 * 2] = {0};
+
+    AT(dvz_drp2_stream_hello_renderer(stream, "test-client"));
+    AT(dvz_drp2_stream_renderer_hello_reply(stream, "test-renderer"));
+    AT(dvz_drp2_stream_create_texture_3d_format_usage(
+        stream, 1, 3, 2, 2, VK_FORMAT_R8_UNORM,
+        DVZ_DRP2_TEXTURE_USAGE_COPY_DST | DVZ_DRP2_TEXTURE_USAGE_TEXTURE_BINDING));
+    AT(dvz_drp2_stream_write_texture_3d_bytes(
+        stream, 1, 0, 0, 0, 0, 3, 2, 2, 3, 2, r8_values));
+    AT(dvz_drp2_stream_create_texture_3d_format_usage(
+        stream, 2, 2, 2, 2, VK_FORMAT_R16_UNORM,
+        DVZ_DRP2_TEXTURE_USAGE_COPY_DST | DVZ_DRP2_TEXTURE_USAGE_TEXTURE_BINDING));
+    AT(dvz_drp2_stream_write_texture_3d_bytes(
+        stream, 2, 0, 0, 0, 0, 2, 2, 2, 2 * sizeof(uint16_t), 2, r16_values));
+
+    const DvzDrp2Command* r8_texture = dvz_drp2_stream_get(stream, 2);
+    ANN(r8_texture);
+    AT(r8_texture->u.create_texture.depth == 2);
+    AT(r8_texture->u.create_texture.format == VK_FORMAT_R8_UNORM);
+
+    const DvzDrp2Command* r16_texture = dvz_drp2_stream_get(stream, 4);
+    ANN(r16_texture);
+    AT(r16_texture->u.create_texture.depth == 2);
+    AT(r16_texture->u.create_texture.format == VK_FORMAT_R16_UNORM);
+
+    DvzDrp2ValidationResult result = dvz_drp2_validate_stream(stream);
+    AT(result.ok);
+
+    dvz_drp2_stream_destroy(stream);
+    return 0;
+}
+
+
+
+int test_drp2_runtime_rejects_write_texture_format_row_layout(
+    TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzDrp2CommandStream* stream = dvz_drp2_stream();
+    ANN(stream);
+
+    uint16_t values[2 * 2 * 2] = {0};
+
+    AT(dvz_drp2_stream_hello_renderer(stream, "test-client"));
+    AT(dvz_drp2_stream_renderer_hello_reply(stream, "test-renderer"));
+    AT(dvz_drp2_stream_create_texture_3d_format_usage(
+        stream, 1, 2, 2, 2, VK_FORMAT_R16_UNORM, DVZ_DRP2_TEXTURE_USAGE_COPY_DST));
+    AT(dvz_drp2_stream_write_texture_3d_bytes(
+        stream, 1, 0, 0, 0, 0, 2, 2, 2, 3, 2, values));
+
+    DvzDrp2ValidationResult result = dvz_drp2_validate_stream(stream);
+    AT(!result.ok);
+    AT(result.code == DVZ_DRP2_VALIDATION_USAGE);
+    AT(result.command_index == 3);
+
+    dvz_drp2_stream_destroy(stream);
+    return 0;
+}
+
+
+
 int test_drp2_runtime_validate_copy_buffer_to_texture(TstSuite* suite, TstItem* item)
 {
     ANN(suite);
@@ -5160,6 +5232,8 @@ int test_drp2(TstSuite* suite)
     TEST_SIMPLE(test_drp2_runtime_rejects_draw_indexed_without_index_buffer);
     TEST_SIMPLE(test_drp2_runtime_rejects_wrong_index_buffer_usage);
     TEST_SIMPLE(test_drp2_runtime_validate_write_texture);
+    TEST_SIMPLE(test_drp2_runtime_validate_write_texture_3d_formats);
+    TEST_SIMPLE(test_drp2_runtime_rejects_write_texture_format_row_layout);
     TEST_SIMPLE(test_drp2_runtime_validate_copy_buffer_to_texture);
     TEST_SIMPLE(test_drp2_runtime_validate_copy_texture_to_texture);
     TEST_SIMPLE(test_drp2_runtime_validate_texture_sampler_bind_group);

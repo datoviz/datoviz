@@ -18,6 +18,8 @@
 #include <stdint.h>
 #include <string.h>
 
+#include <volk.h>
+
 #include "_alloc.h"
 #include "_assertions.h"
 #include "_overflow.h"
@@ -98,13 +100,20 @@ static bool _texture_box_overflows(
 
 
 static bool _texture_layout_invalid(
-    uint32_t width, uint32_t height, uint32_t depth, uint32_t bytes_per_row,
+    uint32_t format, uint32_t width, uint32_t height, uint32_t depth, uint32_t bytes_per_row,
     uint32_t rows_per_image)
 {
     if (width == 0 || height == 0 || depth == 0)
         return true;
-    uint64_t min_row = (uint64_t)width * DVZ_DRP2_RGBA8_BYTES_PER_TEXEL;
+    uint32_t bytes_per_texel = 0;
+    if (!_drp2_texture_format_bytes_per_texel(format, &bytes_per_texel) || bytes_per_texel == 0)
+        return true;
+    uint64_t min_row = 0;
+    if (_dvz_mul_u64_overflows(width, bytes_per_texel, &min_row))
+        return true;
     if (bytes_per_row < min_row)
+        return true;
+    if (bytes_per_row % bytes_per_texel != 0)
         return true;
     if (rows_per_image < height)
         return true;
@@ -207,6 +216,62 @@ uint64_t _drp2_texture_layout_size(
     uint32_t depth, uint32_t bytes_per_row, uint32_t rows_per_image)
 {
     return (uint64_t)depth * rows_per_image * bytes_per_row;
+}
+
+
+/**
+ * Return the byte size of one texel for a DRP2 texture format.
+ *
+ * @param format texture format, using VkFormat values; zero means default RGBA8
+ * @param out_bytes output byte size
+ * @return whether the format is supported by DRP2 texture layout validation
+ */
+bool _drp2_texture_format_bytes_per_texel(uint32_t format, uint32_t* out_bytes)
+{
+    ANN(out_bytes);
+    VkFormat vk_format = format != 0 ? (VkFormat)format : VK_FORMAT_R8G8B8A8_UNORM;
+    switch (vk_format)
+    {
+    case VK_FORMAT_R8_UNORM:
+    case VK_FORMAT_R8_SNORM:
+    case VK_FORMAT_R8_UINT:
+    case VK_FORMAT_R8_SINT:
+        *out_bytes = 1;
+        return true;
+    case VK_FORMAT_R16_UNORM:
+    case VK_FORMAT_R16_SNORM:
+    case VK_FORMAT_R16_UINT:
+    case VK_FORMAT_R16_SINT:
+    case VK_FORMAT_R16_SFLOAT:
+        *out_bytes = 2;
+        return true;
+    case VK_FORMAT_R32_UINT:
+    case VK_FORMAT_R32_SINT:
+    case VK_FORMAT_R32_SFLOAT:
+    case VK_FORMAT_D32_SFLOAT:
+        *out_bytes = 4;
+        return true;
+    case VK_FORMAT_R8G8B8A8_UNORM:
+    case VK_FORMAT_R8G8B8A8_UINT:
+    case VK_FORMAT_R8G8B8A8_SINT:
+    case VK_FORMAT_B8G8R8A8_UNORM:
+        *out_bytes = 4;
+        return true;
+    case VK_FORMAT_R16G16B16A16_UNORM:
+    case VK_FORMAT_R16G16B16A16_UINT:
+    case VK_FORMAT_R16G16B16A16_SINT:
+    case VK_FORMAT_R16G16B16A16_SFLOAT:
+        *out_bytes = 8;
+        return true;
+    case VK_FORMAT_R32G32B32A32_UINT:
+    case VK_FORMAT_R32G32B32A32_SINT:
+    case VK_FORMAT_R32G32B32A32_SFLOAT:
+        *out_bytes = 16;
+        return true;
+    default:
+        *out_bytes = 0;
+        return false;
+    }
 }
 
 
@@ -501,6 +566,9 @@ static DvzDrp2ValidationResult _validate_create_texture(
 
     uint64_t id = command->u.create_texture.id;
     if (id == 0 || command->u.create_texture.width == 0 || command->u.create_texture.height == 0)
+        return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_ARGUMENT, command_index);
+    uint32_t bytes_per_texel = 0;
+    if (!_drp2_texture_format_bytes_per_texel(command->u.create_texture.format, &bytes_per_texel))
         return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_ARGUMENT, command_index);
     if (_drp2_find_any_object(state, id) != NULL)
         return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
@@ -905,7 +973,7 @@ static DvzDrp2ValidationResult _validate_write_texture(
             command->u.write_texture.height, command->u.write_texture.depth))
         return _drp2_fail(DVZ_DRP2_VALIDATION_OUT_OF_RANGE, command_index);
     if (_texture_layout_invalid(
-            command->u.write_texture.width, command->u.write_texture.height,
+            texture->format, command->u.write_texture.width, command->u.write_texture.height,
             command->u.write_texture.depth, command->u.write_texture.bytes_per_row,
             command->u.write_texture.rows_per_image))
         return _drp2_fail(DVZ_DRP2_VALIDATION_USAGE, command_index);
@@ -1470,8 +1538,9 @@ static DvzDrp2ValidationResult _validate_copy_buffer_to_texture(
             command->u.copy_buffer_to_texture.height, command->u.copy_buffer_to_texture.depth))
         return _drp2_fail(DVZ_DRP2_VALIDATION_OUT_OF_RANGE, command_index);
     if (_texture_layout_invalid(
-            command->u.copy_buffer_to_texture.width, command->u.copy_buffer_to_texture.height,
-            command->u.copy_buffer_to_texture.depth, command->u.copy_buffer_to_texture.bytes_per_row,
+            texture->format, command->u.copy_buffer_to_texture.width,
+            command->u.copy_buffer_to_texture.height, command->u.copy_buffer_to_texture.depth,
+            command->u.copy_buffer_to_texture.bytes_per_row,
             command->u.copy_buffer_to_texture.rows_per_image))
         return _drp2_fail(DVZ_DRP2_VALIDATION_USAGE, command_index);
 
@@ -1509,7 +1578,8 @@ static DvzDrp2ValidationResult _validate_copy_texture_to_buffer(
             command->u.copy_texture_to_buffer.height, 1))
         return _drp2_fail(DVZ_DRP2_VALIDATION_OUT_OF_RANGE, command_index);
     if (_texture_layout_invalid(
-            command->u.copy_texture_to_buffer.width, command->u.copy_texture_to_buffer.height, 1,
+            texture->format, command->u.copy_texture_to_buffer.width,
+            command->u.copy_texture_to_buffer.height, 1,
             command->u.copy_texture_to_buffer.bytes_per_row,
             command->u.copy_texture_to_buffer.rows_per_image))
         return _drp2_fail(DVZ_DRP2_VALIDATION_USAGE, command_index);

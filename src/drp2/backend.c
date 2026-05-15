@@ -214,6 +214,7 @@ static DvzDrp2ValidationResult _vklite_create_texture(
     object->format = (uint32_t)format;
     object->width = command->u.create_texture.width;
     object->height = command->u.create_texture.height;
+    object->depth = depth;
     return _drp2_ok();
 }
 

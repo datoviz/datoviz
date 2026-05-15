@@ -217,6 +217,23 @@ DVZ_EXPORT bool dvz_drp2_stream_create_texture_3d(
 
 
 /**
+ * Append a CreateTexture command for a 3D texture with explicit format and usage.
+ *
+ * @param stream the command stream
+ * @param id the texture id
+ * @param width the texture width
+ * @param height the texture height
+ * @param depth the texture depth (number of slices)
+ * @param format texture format, using VkFormat values
+ * @param usage texture usage flags
+ * @return whether the command was appended
+ */
+DVZ_EXPORT bool dvz_drp2_stream_create_texture_3d_format_usage(
+    DvzDrp2CommandStream* stream, uint64_t id, uint32_t width, uint32_t height, uint32_t depth,
+    uint32_t format, uint32_t usage);
+
+
+/**
  * Append a DestroyTexture command.
  *
  * @param stream the command stream
@@ -814,6 +831,32 @@ DVZ_EXPORT bool dvz_drp2_stream_write_texture_3d(
     uint32_t origin_x, uint32_t origin_y, uint32_t origin_z,
     uint32_t width, uint32_t height, uint32_t depth,
     uint32_t bytes_per_row, uint32_t rows_per_image, const char* data_base64);
+
+
+/**
+ * Append a WriteTexture command for a 3D sub-region using raw bytes.
+ *
+ * Mirrors `dvz_drp2_stream_write_texture_2d_bytes` for 3D texture uploads.
+ *
+ * @param stream the command stream
+ * @param texture_id the destination texture id
+ * @param mip_level the destination mip level
+ * @param origin_x x offset in texels
+ * @param origin_y y offset in texels
+ * @param origin_z z offset in texels
+ * @param width the written width
+ * @param height the written height
+ * @param depth the written depth
+ * @param bytes_per_row the source bytes per row
+ * @param rows_per_image the source rows per image
+ * @param data raw pixel bytes (must remain valid until the stream executes)
+ * @return whether the command was appended
+ */
+DVZ_EXPORT bool dvz_drp2_stream_write_texture_3d_bytes(
+    DvzDrp2CommandStream* stream, uint64_t texture_id, uint32_t mip_level,
+    uint32_t origin_x, uint32_t origin_y, uint32_t origin_z,
+    uint32_t width, uint32_t height, uint32_t depth,
+    uint32_t bytes_per_row, uint32_t rows_per_image, const void* data);
 
 
 

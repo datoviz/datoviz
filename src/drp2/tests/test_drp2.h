@@ -92,6 +92,11 @@ int test_drp2_runtime_rejects_wrong_index_buffer_usage(TstSuite* suite, TstItem*
 
 int test_drp2_runtime_validate_write_texture(TstSuite* suite, TstItem* item);
 
+int test_drp2_runtime_validate_write_texture_3d_formats(TstSuite* suite, TstItem* item);
+
+int test_drp2_runtime_rejects_write_texture_format_row_layout(
+    TstSuite* suite, TstItem* item);
+
 int test_drp2_runtime_validate_copy_buffer_to_texture(TstSuite* suite, TstItem* item);
 
 int test_drp2_runtime_validate_copy_texture_to_texture(TstSuite* suite, TstItem* item);
