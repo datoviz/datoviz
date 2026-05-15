@@ -49,7 +49,7 @@ struct DvzDrp2RecordingInfo
 /*************************************************************************************************/
 
 /**
- * Open a raw linear DRP2 recorder.
+ * Open a linear DRP2 recorder.
  *
  * @param path recording directory path
  * @param info optional recording metadata
@@ -60,7 +60,7 @@ dvz_drp2_recorder_open(const char* path, const DvzDrp2RecordingInfo* info);
 
 
 /**
- * Append one timestamped command stream to a raw linear DRP2 recorder.
+ * Append one timestamped command stream to a linear DRP2 recorder.
  *
  * @param recorder the recorder
  * @param t_present presentation timestamp for this stream
@@ -72,7 +72,7 @@ DVZ_EXPORT bool dvz_drp2_recorder_write_stream(
 
 
 /**
- * Close a raw linear DRP2 recorder.
+ * Close a linear DRP2 recorder.
  *
  * @param recorder the recorder
  * @return whether the recorder was closed cleanly
@@ -81,10 +81,10 @@ DVZ_EXPORT bool dvz_drp2_recorder_close(DvzDrp2Recorder* recorder);
 
 
 /**
- * Write a raw linear DRP2 recording directory.
+ * Write a linear DRP2 recording directory.
  *
- * This first recording slice preserves command order and stores payload bytes as blobs. It is an
- * ABI-local development format, not yet the portable DVZR command encoding.
+ * Supported MVP commands are stored as portable JSON records with payload bytes in blobs.
+ * Unsupported commands fall back to ABI-local raw command blobs for development replay.
  *
  * @param path recording directory path
  * @param stream the command stream to record
@@ -96,7 +96,7 @@ DVZ_EXPORT bool dvz_drp2_recording_write_stream(
 
 
 /**
- * Read a raw linear DRP2 recording directory.
+ * Read a linear DRP2 recording directory.
  *
  * @param path recording directory path
  * @return a reconstructed command stream, or NULL on error

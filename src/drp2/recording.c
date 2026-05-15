@@ -5,7 +5,7 @@
  */
 
 /*************************************************************************************************/
-/*  DRP2 raw linear recording                                                                    */
+/*  DRP2 linear recording                                                                        */
 /*************************************************************************************************/
 
 
@@ -327,6 +327,177 @@ static bool _recording_write_payload_blob(
 }
 
 
+/**
+ * Write one payload blob and return its relative path.
+ *
+ * @param root recording root directory
+ * @param blob_index running blob index
+ * @param raw raw byte pointer, if available
+ * @param base64 base64 string, if available
+ * @param size expected payload byte size
+ * @param out_rel output relative blob path
+ * @param out_rel_size output path capacity
+ * @return whether the payload blob was written
+ */
+static bool _recording_write_payload_ref(
+    const char* root, uint32_t* blob_index, const void* raw, const char* base64, uint64_t size,
+    char* out_rel, uint64_t out_rel_size)
+{
+    ANN(root);
+    ANN(blob_index);
+    ANN(out_rel);
+    if (*blob_index == UINT32_MAX)
+        return false;
+    char payload_path[DVZ_DRP2_RECORDING_PATH_SIZE] = {0};
+    int rc =
+        dvz_snprintf(out_rel, (size_t)out_rel_size, "blobs/%08" PRIu32 ".bin", (*blob_index)++);
+    if (rc < 0 || (uint64_t)rc >= out_rel_size)
+        return false;
+    if (!_recording_join(root, out_rel, payload_path, sizeof(payload_path)))
+        return false;
+    return _recording_write_payload_blob(payload_path, raw, base64, size);
+}
+
+
+
+/**
+ * Return whether a string can be emitted as a simple unescaped JSON string.
+ *
+ * @param str string to inspect
+ * @return whether the string is safe to write without escaping
+ */
+static bool _recording_json_string_safe(const char* str)
+{
+    ANN(str);
+    const unsigned char* p = (const unsigned char*)str;
+    while (*p != '\0')
+    {
+        if (*p < 0x20 || *p == '"' || *p == '\\')
+            return false;
+        p++;
+    }
+    return true;
+}
+
+
+
+/**
+ * Write one portable JSON command record when the command is in the MVP subset.
+ *
+ * @param root recording root directory
+ * @param stream_fp stream JSONL file
+ * @param command command to write
+ * @param index command index
+ * @param blob_index running blob index
+ * @param out_supported whether the command was in the portable subset
+ * @return whether the command record was written
+ */
+static bool _recording_write_portable_command(
+    const char* root, FILE* stream_fp, const DvzDrp2Command* command, uint32_t index,
+    uint32_t* blob_index, bool* out_supported)
+{
+    ANN(root);
+    ANN(stream_fp);
+    ANN(command);
+    ANN(blob_index);
+    ANN(out_supported);
+    *out_supported = true;
+
+    switch (command->type)
+    {
+    case DVZ_DRP2_COMMAND_HELLO_RENDERER:
+        if (!_recording_json_string_safe(command->u.handshake.name))
+        {
+            *out_supported = false;
+            return true;
+        }
+        return dvz_fprintf(
+                   stream_fp,
+                   "{\"type\":\"command\",\"index\":%" PRIu32 ",\"cmd_type\":%d,"
+                   "\"op\":\"HelloRenderer\",\"name\":\"%s\"}\n",
+                   index, (int)command->type, command->u.handshake.name) > 0;
+    case DVZ_DRP2_COMMAND_RENDERER_HELLO_REPLY:
+        if (!_recording_json_string_safe(command->u.handshake.name))
+        {
+            *out_supported = false;
+            return true;
+        }
+        return dvz_fprintf(
+                   stream_fp,
+                   "{\"type\":\"command\",\"index\":%" PRIu32 ",\"cmd_type\":%d,"
+                   "\"op\":\"RendererHelloReply\",\"name\":\"%s\"}\n",
+                   index, (int)command->type, command->u.handshake.name) > 0;
+    case DVZ_DRP2_COMMAND_CREATE_BUFFER:
+        return dvz_fprintf(
+                   stream_fp,
+                   "{\"type\":\"command\",\"index\":%" PRIu32 ",\"cmd_type\":%d,"
+                   "\"op\":\"CreateBuffer\",\"id\":%" PRIu64 ",\"size\":%" PRIu64
+                   ",\"usage\":%" PRIu32 "}\n",
+                   index, (int)command->type, command->u.create_buffer.id,
+                   command->u.create_buffer.size, command->u.create_buffer.usage) > 0;
+    case DVZ_DRP2_COMMAND_CREATE_TEXTURE:
+        return dvz_fprintf(
+                   stream_fp,
+                   "{\"type\":\"command\",\"index\":%" PRIu32 ",\"cmd_type\":%d,"
+                   "\"op\":\"CreateTexture\",\"id\":%" PRIu64 ",\"width\":%" PRIu32
+                   ",\"height\":%" PRIu32 ",\"depth\":%" PRIu32 ",\"usage\":%" PRIu32 "}\n",
+                   index, (int)command->type, command->u.create_texture.id,
+                   command->u.create_texture.width, command->u.create_texture.height,
+                   command->u.create_texture.depth, command->u.create_texture.usage) > 0;
+    case DVZ_DRP2_COMMAND_WRITE_BUFFER:
+    {
+        char payload_rel[128] = {0};
+        uint64_t payload_size = command->u.write_buffer.size;
+        if (payload_size > 0 &&
+            !_recording_write_payload_ref(
+                root, blob_index, command->u.write_buffer.data_raw,
+                command->u.write_buffer.data_base64, payload_size, payload_rel,
+                sizeof(payload_rel)))
+            return false;
+        return dvz_fprintf(
+                   stream_fp,
+                   "{\"type\":\"command\",\"index\":%" PRIu32 ",\"cmd_type\":%d,"
+                   "\"op\":\"WriteBuffer\",\"buffer_id\":%" PRIu64 ",\"offset\":%" PRIu64
+                   ",\"size\":%" PRIu64 ",\"payload_blob\":\"%s\","
+                   "\"payload_size\":%" PRIu64 "}\n",
+                   index, (int)command->type, command->u.write_buffer.buffer_id,
+                   command->u.write_buffer.offset, payload_size, payload_rel, payload_size) > 0;
+    }
+    case DVZ_DRP2_COMMAND_WRITE_TEXTURE:
+    {
+        uint64_t payload_size = 0;
+        if (!_recording_texture_payload_size(command, &payload_size))
+            return false;
+        char payload_rel[128] = {0};
+        if (payload_size > 0 &&
+            !_recording_write_payload_ref(
+                root, blob_index, command->u.write_texture.data_raw,
+                command->u.write_texture.data_base64, payload_size, payload_rel,
+                sizeof(payload_rel)))
+            return false;
+        return dvz_fprintf(
+                   stream_fp,
+                   "{\"type\":\"command\",\"index\":%" PRIu32 ",\"cmd_type\":%d,"
+                   "\"op\":\"WriteTexture\",\"texture_id\":%" PRIu64
+                   ",\"mip_level\":%" PRIu32 ",\"origin_x\":%" PRIu32
+                   ",\"origin_y\":%" PRIu32 ",\"origin_z\":%" PRIu32
+                   ",\"width\":%" PRIu32 ",\"height\":%" PRIu32 ",\"depth\":%" PRIu32
+                   ",\"bytes_per_row\":%" PRIu32 ",\"rows_per_image\":%" PRIu32
+                   ",\"payload_blob\":\"%s\",\"payload_size\":%" PRIu64 "}\n",
+                   index, (int)command->type, command->u.write_texture.texture_id,
+                   command->u.write_texture.mip_level, command->u.write_texture.origin_x,
+                   command->u.write_texture.origin_y, command->u.write_texture.origin_z,
+                   command->u.write_texture.width, command->u.write_texture.height,
+                   command->u.write_texture.depth, command->u.write_texture.bytes_per_row,
+                   command->u.write_texture.rows_per_image, payload_rel, payload_size) > 0;
+    }
+    default:
+        *out_supported = false;
+        return true;
+    }
+}
+
+
 
 /**
  * Write a command blob and optional payload blob.
@@ -346,6 +517,13 @@ static bool _recording_write_command(
     ANN(stream_fp);
     ANN(command);
     ANN(blob_index);
+
+    bool portable_supported = false;
+    if (!_recording_write_portable_command(
+            root, stream_fp, command, index, blob_index, &portable_supported))
+        return false;
+    if (portable_supported)
+        return true;
 
     char command_rel[128] = {0};
     char command_path[DVZ_DRP2_RECORDING_PATH_SIZE] = {0};
@@ -453,6 +631,28 @@ static bool _recording_line_u64(const char* line, const char* key, uint64_t* out
 
 
 /**
+ * Parse one unsigned 32-bit integer field from a JSONL record.
+ *
+ * @param line JSONL record
+ * @param key field key including surrounding quotes and trailing colon
+ * @param out parsed value
+ * @return whether the field was found and parsed
+ */
+static bool _recording_line_u32(const char* line, const char* key, uint32_t* out)
+{
+    ANN(line);
+    ANN(key);
+    ANN(out);
+    uint64_t value = 0;
+    if (!_recording_line_u64(line, key, &value) || value > UINT32_MAX)
+        return false;
+    *out = (uint32_t)value;
+    return true;
+}
+
+
+
+/**
  * Parse one string field from a JSONL record.
  *
  * @param line JSONL record
@@ -472,7 +672,7 @@ static bool _recording_line_string(
         return false;
     p += strlen(key);
     const char* q = strchr(p, '"');
-    if (q == NULL || q <= p)
+    if (q == NULL || q < p)
         return false;
     uint64_t len = (uint64_t)(q - p);
     if (len >= out_size)
@@ -540,6 +740,150 @@ static bool _recording_attach_payload(
 
 
 /**
+ * Load a portable-command payload blob when present.
+ *
+ * @param root recording root directory
+ * @param line JSONL command record
+ * @param out_payload output owned payload bytes, or NULL for an empty payload
+ * @param out_payload_size output payload byte size
+ * @return whether the payload fields were valid and the blob was loaded
+ */
+static bool _recording_read_payload_ref(
+    const char* root, const char* line, void** out_payload, uint64_t* out_payload_size)
+{
+    ANN(root);
+    ANN(line);
+    ANN(out_payload);
+    ANN(out_payload_size);
+    *out_payload = NULL;
+    *out_payload_size = 0;
+    if (!_recording_line_u64(line, "\"payload_size\":", out_payload_size))
+        return false;
+    if (*out_payload_size == 0)
+        return true;
+
+    char payload_rel[128] = {0};
+    char payload_path[DVZ_DRP2_RECORDING_PATH_SIZE] = {0};
+    if (!_recording_line_string(line, "\"payload_blob\":\"", payload_rel, sizeof(payload_rel)) ||
+        !_recording_join(root, payload_rel, payload_path, sizeof(payload_path)))
+        return false;
+    *out_payload = _recording_read_blob(payload_path, *out_payload_size);
+    return *out_payload != NULL;
+}
+
+
+
+/**
+ * Decode one portable JSON command record and append it to a stream.
+ *
+ * @param root recording root directory
+ * @param line JSONL command record
+ * @param op portable operation name
+ * @param stream output stream
+ * @param owner output stream owner
+ * @return whether the command was appended
+ */
+static bool _recording_read_portable_command(
+    const char* root, const char* line, const char* op, DvzDrp2CommandStream* stream,
+    DvzDrp2RecordingOwner* owner)
+{
+    ANN(root);
+    ANN(line);
+    ANN(op);
+    ANN(stream);
+    ANN(owner);
+
+    DvzDrp2Command command = {0};
+    if (strcmp(op, "HelloRenderer") == 0 || strcmp(op, "RendererHelloReply") == 0)
+    {
+        command.type = strcmp(op, "HelloRenderer") == 0 ? DVZ_DRP2_COMMAND_HELLO_RENDERER
+                                                        : DVZ_DRP2_COMMAND_RENDERER_HELLO_REPLY;
+        if (!_recording_line_string(
+                line, "\"name\":\"", command.u.handshake.name,
+                sizeof(command.u.handshake.name)))
+            return false;
+    }
+    else if (strcmp(op, "CreateBuffer") == 0)
+    {
+        command.type = DVZ_DRP2_COMMAND_CREATE_BUFFER;
+        if (!_recording_line_u64(line, "\"id\":", &command.u.create_buffer.id) ||
+            !_recording_line_u64(line, "\"size\":", &command.u.create_buffer.size) ||
+            !_recording_line_u32(line, "\"usage\":", &command.u.create_buffer.usage))
+            return false;
+    }
+    else if (strcmp(op, "CreateTexture") == 0)
+    {
+        command.type = DVZ_DRP2_COMMAND_CREATE_TEXTURE;
+        if (!_recording_line_u64(line, "\"id\":", &command.u.create_texture.id) ||
+            !_recording_line_u32(line, "\"width\":", &command.u.create_texture.width) ||
+            !_recording_line_u32(line, "\"height\":", &command.u.create_texture.height) ||
+            !_recording_line_u32(line, "\"depth\":", &command.u.create_texture.depth) ||
+            !_recording_line_u32(line, "\"usage\":", &command.u.create_texture.usage))
+            return false;
+    }
+    else if (strcmp(op, "WriteBuffer") == 0)
+    {
+        command.type = DVZ_DRP2_COMMAND_WRITE_BUFFER;
+        if (!_recording_line_u64(line, "\"buffer_id\":", &command.u.write_buffer.buffer_id) ||
+            !_recording_line_u64(line, "\"offset\":", &command.u.write_buffer.offset) ||
+            !_recording_line_u64(line, "\"size\":", &command.u.write_buffer.size))
+            return false;
+
+        void* payload = NULL;
+        uint64_t payload_size = 0;
+        if (!_recording_read_payload_ref(root, line, &payload, &payload_size))
+            return false;
+        if (payload_size != command.u.write_buffer.size)
+        {
+            dvz_free(payload);
+            return false;
+        }
+        if (!_recording_attach_payload(owner, &command, payload, payload_size, "bytes"))
+            return false;
+    }
+    else if (strcmp(op, "WriteTexture") == 0)
+    {
+        command.type = DVZ_DRP2_COMMAND_WRITE_TEXTURE;
+        if (!_recording_line_u64(line, "\"texture_id\":", &command.u.write_texture.texture_id) ||
+            !_recording_line_u32(line, "\"mip_level\":", &command.u.write_texture.mip_level) ||
+            !_recording_line_u32(line, "\"origin_x\":", &command.u.write_texture.origin_x) ||
+            !_recording_line_u32(line, "\"origin_y\":", &command.u.write_texture.origin_y) ||
+            !_recording_line_u32(line, "\"origin_z\":", &command.u.write_texture.origin_z) ||
+            !_recording_line_u32(line, "\"width\":", &command.u.write_texture.width) ||
+            !_recording_line_u32(line, "\"height\":", &command.u.write_texture.height) ||
+            !_recording_line_u32(line, "\"depth\":", &command.u.write_texture.depth) ||
+            !_recording_line_u32(
+                line, "\"bytes_per_row\":", &command.u.write_texture.bytes_per_row) ||
+            !_recording_line_u32(
+                line, "\"rows_per_image\":", &command.u.write_texture.rows_per_image))
+            return false;
+
+        uint64_t expected_size = 0;
+        if (!_recording_texture_payload_size(&command, &expected_size))
+            return false;
+        void* payload = NULL;
+        uint64_t payload_size = 0;
+        if (!_recording_read_payload_ref(root, line, &payload, &payload_size))
+            return false;
+        if (payload_size != expected_size)
+        {
+            dvz_free(payload);
+            return false;
+        }
+        if (!_recording_attach_payload(owner, &command, payload, payload_size, "bytes"))
+            return false;
+    }
+    else
+    {
+        return false;
+    }
+
+    return _recording_stream_append(stream, &command);
+}
+
+
+
+/**
  * Decode one command record and append it to a stream.
  *
  * @param root recording root directory
@@ -556,6 +900,10 @@ static bool _recording_read_command(
     ANN(line);
     ANN(stream);
     ANN(owner);
+
+    char op[64] = {0};
+    if (_recording_line_string(line, "\"op\":\"", op, sizeof(op)))
+        return _recording_read_portable_command(root, line, op, stream, owner);
 
     char command_rel[128] = {0};
     char command_path[DVZ_DRP2_RECORDING_PATH_SIZE] = {0};
@@ -628,7 +976,7 @@ static bool _recording_write_manifest(const char* path, const DvzDrp2RecordingIn
                   "{\n"
                   "  \"format\": \"datoviz-drp-recording\",\n"
                   "  \"version\": 1,\n"
-                  "  \"encoding\": \"raw-linear-abi-local\",\n"
+                  "  \"encoding\": \"jsonl-command-v0-with-raw-fallback\",\n"
                   "  \"drp_version\": \"2.0\",\n"
                   "  \"width\": %" PRIu32 ",\n"
                   "  \"height\": %" PRIu32 ",\n"
@@ -647,7 +995,7 @@ static bool _recording_write_manifest(const char* path, const DvzDrp2RecordingIn
 /*************************************************************************************************/
 
 /**
- * Open a raw linear DRP2 recorder.
+ * Open a linear DRP2 recorder.
  *
  * @param path recording directory path
  * @param info optional recording metadata
@@ -697,7 +1045,7 @@ DvzDrp2Recorder* dvz_drp2_recorder_open(
 
 
 /**
- * Append one timestamped command stream to a raw linear DRP2 recorder.
+ * Append one timestamped command stream to a linear DRP2 recorder.
  *
  * @param recorder the recorder
  * @param t_present presentation timestamp for this stream
@@ -733,7 +1081,7 @@ bool dvz_drp2_recorder_write_stream(
 
 
 /**
- * Close a raw linear DRP2 recorder.
+ * Close a linear DRP2 recorder.
  *
  * @param recorder the recorder
  * @return whether the recorder was closed cleanly
@@ -756,7 +1104,7 @@ bool dvz_drp2_recorder_close(DvzDrp2Recorder* recorder)
 
 
 /**
- * Write a raw linear DRP2 recording directory.
+ * Write a linear DRP2 recording directory.
  *
  * @param path recording directory path
  * @param stream the command stream to record
@@ -779,7 +1127,7 @@ bool dvz_drp2_recording_write_stream(
 
 
 /**
- * Read a raw linear DRP2 recording directory.
+ * Read a linear DRP2 recording directory.
  *
  * @param path recording directory path
  * @return a reconstructed command stream, or NULL on error

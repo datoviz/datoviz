@@ -15,6 +15,7 @@
 /*************************************************************************************************/
 
 #include <stdint.h>
+#include <stdio.h>
 #include <string.h>
 
 #include "_alloc.h"
@@ -3147,7 +3148,7 @@ int test_drp2_render_pipeline_step_modes_json(TstSuite* suite, TstItem* item)
 
 
 /**
- * Ensure a raw linear DRP2 recording round-trips command and payload blobs.
+ * Ensure a linear DRP2 recording round-trips portable commands and payload blobs.
  *
  * @param suite the active test suite
  * @param item the active test item
@@ -3218,6 +3219,15 @@ int test_drp2_recording_linear_roundtrip(TstSuite* suite, TstItem* item)
     AT(dvz_drp2_recorder_write_stream(recorder, 0.0, setup_stream));
     AT(dvz_drp2_recorder_write_stream(recorder, 0.016, update_stream));
     AT(dvz_drp2_recorder_close(recorder));
+
+    FILE* stream_file = fopen("/tmp/dvz_drp2_recording_linear.dvzr/stream.jsonl", "rb");
+    ANN(stream_file);
+    char stream_jsonl[4096] = {0};
+    size_t stream_jsonl_size = fread(stream_jsonl, 1, sizeof(stream_jsonl) - 1, stream_file);
+    fclose(stream_file);
+    AT(stream_jsonl_size > 0);
+    AT(strstr(stream_jsonl, "\"op\":\"WriteBuffer\"") != NULL);
+    AT(strstr(stream_jsonl, ".cmd") == NULL);
 
     DvzDrp2CommandStream* replay = dvz_drp2_recording_read_stream(path);
     ANN(replay);
