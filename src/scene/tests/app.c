@@ -284,6 +284,61 @@ int test_app_offscreen_timer_advances_in_render_once(TstSuite* suite, TstItem* i
 }
 
 
+int test_app_offscreen_render_enabled_gate(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    if (!_scene_vklite_runtime_available())
+        return 0;
+
+    DvzFigure* figure = NULL;
+    DvzScene* scene = _app_timer_test_scene(&figure);
+    AT(scene != NULL);
+    ANN(figure);
+
+    dvz_scene_set_clock_mode(scene, DVZ_CLOCK_OFFLINE);
+    dvz_scene_set_fps(scene, 8.0);
+    AppTimerProbe timer_probe = {0};
+    DvzAnimation* timer = dvz_anim_timer(scene, 0.0, _app_timer_probe_callback, &timer_probe);
+    ANN(timer);
+    dvz_anim_start(timer, 0.0);
+
+    DvzApp* app = dvz_app(scene);
+    if (app == NULL)
+    {
+        log_warn("test_app_offscreen_render_enabled_gate skipped: GPU context creation failed");
+        dvz_scene_destroy(scene);
+        return 0;
+    }
+    DvzAppWindow* win = dvz_app_window(app, figure, 64, 64);
+    AT(win != NULL);
+    AT(dvz_app_window_render_enabled(win));
+
+    AppRequestFrameProbe request_probe = {0};
+    dvz_app_window_set_request_frame_callback(win, _app_request_frame_probe_callback, &request_probe);
+
+    dvz_app_window_set_render_enabled(win, false);
+    AT(!dvz_app_window_render_enabled(win));
+    AT(dvz_app_window_render_once(win) == 0);
+    AT(request_probe.calls == 0);
+    AT(timer_probe.calls == 0);
+    AC(dvz_scene_clock_time(scene), 0.0, EPS);
+
+    dvz_app_window_set_render_enabled(win, true);
+    AT(dvz_app_window_render_enabled(win));
+    AT(dvz_app_window_render_once(win) == DVZ_CANVAS_FRAME_READY);
+    AT(request_probe.calls == 1);
+    AT(request_probe.last_window == win);
+    AT(timer_probe.calls == 1);
+    AC(dvz_scene_clock_time(scene), 0.0, EPS);
+
+    dvz_app_destroy(app);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
 int test_app_offscreen_panel_three_visuals_all_drawn(TstSuite* suite, TstItem* item)
 {
     ANN(suite);
@@ -1754,6 +1809,7 @@ int test_scene_app(TstSuite* suite)
     TEST_SIMPLE(test_app_offscreen);
     TEST_SIMPLE(test_app_offscreen_timer_advances_in_app_run);
     TEST_SIMPLE(test_app_offscreen_timer_advances_in_render_once);
+    TEST_SIMPLE(test_app_offscreen_render_enabled_gate);
     TEST_SIMPLE(test_app_offscreen_panel_three_visuals_all_drawn);
     TEST_SIMPLE(test_app_offscreen_has_nonblank_pixels);
     TEST_SIMPLE(test_app_offscreen_image_has_nonblank_pixels);
