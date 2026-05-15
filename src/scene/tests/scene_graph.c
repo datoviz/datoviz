@@ -4390,6 +4390,7 @@ int test_scene_visual_alpha_mode_emits_wboit_drp2(TstSuite* suite, TstItem* item
     bool has_fixed_background_depth_pipeline = false;
     bool has_accum_pass = false;
     bool has_resolve_bind_group = false;
+    bool resolve_bind_group_samples_graph_targets = false;
     uint32_t begin_pass_count = 0;
     uint64_t begin_pass_textures[3] = {0};
     uint32_t begin_pass_color_counts[3] = {0};
@@ -4510,6 +4511,15 @@ int test_scene_visual_alpha_mode_emits_wboit_drp2(TstSuite* suite, TstItem* item
         {
             has_resolve_bind_group =
                 has_resolve_bind_group || command->u.create_bind_group.entry_count == 3;
+            if (command->u.create_bind_group.entry_count == 3)
+            {
+                resolve_bind_group_samples_graph_targets =
+                    resolve_bind_group_samples_graph_targets ||
+                    (command->u.create_bind_group.entries[0].resource_id ==
+                         graph_accum_texture_id &&
+                     command->u.create_bind_group.entries[1].resource_id ==
+                         graph_weight_texture_id);
+            }
         }
     }
 
@@ -4529,6 +4539,7 @@ int test_scene_visual_alpha_mode_emits_wboit_drp2(TstSuite* suite, TstItem* item
     AT(has_fixed_background_depth_pipeline);
     AT(has_accum_pass);
     AT(has_resolve_bind_group);
+    AT(resolve_bind_group_samples_graph_targets);
     AT(begin_pass_count == 3);
     AT(begin_pass_color_counts[0] == 1);
     AT(begin_pass_color_counts[1] == 2);

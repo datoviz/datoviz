@@ -1385,18 +1385,31 @@ static bool _emitter_prepare_wboit_targets(
         return false;
     if (ok && is_new)
     {
+        const DvzFrameGraphPass* resolve_graph_pass =
+            _graph_pass_by_panel_work(plan, render->u.render.panel_id, "wboit_resolve");
+        uint64_t accum_id = out->accum_id;
+        uint64_t weight_id = out->weight_id;
+        if (resolve_graph_pass != NULL && resolve_graph_pass->read_count >= 2)
+        {
+            const char* read0 = resolve_graph_pass->reads[0].resource_id;
+            const char* read1 = resolve_graph_pass->reads[1].resource_id;
+            if (strstr(read0, ".wboit.weight") != NULL)
+                accum_id = out->weight_id;
+            if (strstr(read1, ".wboit.accum") != NULL)
+                weight_id = out->accum_id;
+        }
         DvzDrp2BindGroupEntry entries[3] = {
             {
                 .binding = 0,
                 .binding_type = DVZ_DRP2_BINDING_TYPE_SAMPLED_TEXTURE,
                 .resource_kind = DVZ_DRP2_BINDING_RESOURCE_TEXTURE,
-                .resource_id = out->accum_id,
+                .resource_id = accum_id,
             },
             {
                 .binding = 1,
                 .binding_type = DVZ_DRP2_BINDING_TYPE_SAMPLED_TEXTURE,
                 .resource_kind = DVZ_DRP2_BINDING_RESOURCE_TEXTURE,
-                .resource_id = out->weight_id,
+                .resource_id = weight_id,
             },
             {
                 .binding = 2,
