@@ -321,8 +321,10 @@ int test_memory_cuda_1(TstSuite* suite, TstItem* tstitem)
     DvzVma* allocator = NULL;
     DvzAllocation* alloc = NULL;
     DvzAllocation* staging_read_alloc = NULL;
+    DvzAllocation* staging_write_alloc = NULL;
     VkBuffer vk_buffer = VK_NULL_HANDLE;
     VkBuffer staging_read_buffer = VK_NULL_HANDLE;
+    VkBuffer staging_write_buffer = VK_NULL_HANDLE;
     DvzSemaphore* interop_semaphore = NULL;
     cudaExternalSemaphore_t cuda_semaphore = NULL;
     int fd = -1;
@@ -420,17 +422,28 @@ int test_memory_cuda_1(TstSuite* suite, TstItem* tstitem)
     // IMPORTANT: need to pass the external memory handle type when creating the allocator.
     dvz_device_allocator(device, handle_type, allocator);
 
-    // Create a mappable buffer.
+    // Create a device-local exportable buffer.
     VkBufferCreateInfo buf_info = {
         .sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
         .size = SIZE,
-        .usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
+        .usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT |
+                 VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
     };
     alloc = dvz_allocation_create();
     ANN(alloc);
-    dvz_allocator_buffer(
-        allocator, &buf_info, DVZ_ALLOC_DEDICATED_MEMORY | DVZ_ALLOC_HOST_ACCESS_RANDOM, alloc,
-        &vk_buffer);
+    out = dvz_allocator_buffer(allocator, &buf_info, DVZ_ALLOC_DEDICATED_MEMORY, alloc, &vk_buffer);
+    if (out != 0)
+    {
+        log_error("failed to create exportable Vulkan buffer");
+        goto cleanup_vulkan;
+    }
+    const VkDeviceSize allocation_size = dvz_allocation_size(alloc);
+    if (allocation_size < SIZE)
+    {
+        log_error("exportable Vulkan buffer allocation is smaller than requested");
+        out = 1;
+        goto cleanup_vulkan;
+    }
 
     VkBufferCreateInfo staging_info = {
         .sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
@@ -448,13 +461,38 @@ int test_memory_cuda_1(TstSuite* suite, TstItem* tstitem)
         goto cleanup_vulkan;
     }
 
+    staging_info.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
+    staging_write_alloc = dvz_allocation_create();
+    ANN(staging_write_alloc);
+    out = dvz_allocator_buffer(
+        allocator, &staging_info, DVZ_ALLOC_HOST_ACCESS_SEQUENTIAL_WRITE, staging_write_alloc,
+        &staging_write_buffer);
+    if (out != 0)
+    {
+        log_error("failed to create Vulkan staging upload buffer");
+        goto cleanup_vulkan;
+    }
+
     /******************* Initialize data on Vulkan side *******************/
-    log_trace("mapping and sending data to the buffer");
-    uint32_t* ptr = (uint32_t*)dvz_allocator_map(allocator, alloc);
-    ANN(ptr);
+    log_trace("staging initial data to the exportable buffer");
+    uint32_t* host_init = (uint32_t*)dvz_malloc(SIZE);
+    ANN(host_init);
     for (uint32_t i = 0; i < N; i++)
-        ptr[i] = i;
-    dvz_allocator_unmap(allocator, alloc);
+        host_init[i] = i;
+    if (dvz_allocator_copy_to(allocator, staging_write_alloc, 0, host_init, SIZE) != 0)
+    {
+        dvz_free(host_init);
+        log_error("failed to write Vulkan staging upload buffer");
+        out = 1;
+        goto cleanup_vulkan;
+    }
+    dvz_free(host_init);
+    if (!_cuda_import_copy_buffer(
+            device, staging_write_buffer, vk_buffer, SIZE, VK_NULL_HANDLE, 0, VK_NULL_HANDLE, 0))
+    {
+        out = 1;
+        goto cleanup_vulkan;
+    }
     log_trace("data copied");
 
     /******************* Export memory FD *******************/
@@ -474,7 +512,7 @@ int test_memory_cuda_1(TstSuite* suite, TstItem* tstitem)
     struct cudaExternalMemoryHandleDesc handle_desc = {0};
     handle_desc.type = cudaExternalMemoryHandleTypeOpaqueFd;
     handle_desc.handle.fd = fd;
-    handle_desc.size = SIZE;
+    handle_desc.size = allocation_size;
 
     cerr = cudaImportExternalMemory(&cuda_mem, &handle_desc);
     if (cerr != cudaSuccess)
@@ -549,18 +587,51 @@ int test_memory_cuda_1(TstSuite* suite, TstItem* tstitem)
         goto cleanup_cuda_mem;
 
     /******************* Vulkan modifies data again *******************/
-    ptr = (uint32_t*)dvz_allocator_map(allocator, alloc);
+    uint32_t* host_upload = (uint32_t*)dvz_malloc(SIZE);
+    ANN(host_upload);
     for (uint32_t i = 0; i < N; i++)
-        ptr[i] += 1; // add 1 again (now should be i + 2)
-    dvz_allocator_unmap(allocator, alloc);
-    vkDeviceWaitIdle(device->vk_device); // ensure write visible
+        host_upload[i] = i + 2;
+    if (dvz_allocator_copy_to(allocator, staging_write_alloc, 0, host_upload, SIZE) != 0)
+    {
+        dvz_free(host_upload);
+        log_error("failed to write Vulkan staging upload buffer");
+        out = 2;
+        goto cleanup_cuda_mem;
+    }
+    dvz_free(host_upload);
+    if (!_cuda_import_copy_buffer(
+            device, staging_write_buffer, vk_buffer, SIZE, VK_NULL_HANDLE, 0,
+            dvz_semaphore_handle(interop_semaphore), 2))
+    {
+        out = 2;
+        goto cleanup_cuda_mem;
+    }
 
     /******************* CUDA reads and checks *******************/
+    struct cudaExternalSemaphoreWaitParams wait_params = {0};
+    wait_params.params.fence.value = 2;
+    cerr = cudaWaitExternalSemaphoresAsync(&cuda_semaphore, &wait_params, 1, 0);
+    if (cerr != cudaSuccess)
+    {
+        log_error("cudaWaitExternalSemaphoresAsync failed: %s", cudaGetErrorString(cerr));
+        out = 2;
+        goto cleanup_cuda_mem;
+    }
+    cerr = cudaDeviceSynchronize();
+    if (cerr != cudaSuccess)
+    {
+        log_error("cudaDeviceSynchronize failed: %s", cudaGetErrorString(cerr));
+        out = 2;
+        goto cleanup_cuda_mem;
+    }
     uint32_t* host_copy = (uint32_t*)dvz_malloc(SIZE);
     ANN(host_copy);
     cerr = cudaMemcpy(host_copy, cuda_ptr, SIZE, cudaMemcpyDeviceToHost);
     if (cerr != cudaSuccess)
+    {
         log_error("cudaMemcpyDeviceToHost failed: %s", cudaGetErrorString(cerr));
+        out = 2;
+    }
     else
     {
         for (uint32_t i = 0; i < N; i++)
@@ -601,6 +672,10 @@ cleanup_vulkan:
         dvz_allocator_destroy_buffer(allocator, staging_read_alloc, staging_read_buffer);
     if (staging_read_alloc != NULL)
         dvz_allocation_free(staging_read_alloc);
+    if (staging_write_buffer != VK_NULL_HANDLE)
+        dvz_allocator_destroy_buffer(allocator, staging_write_alloc, staging_write_buffer);
+    if (staging_write_alloc != NULL)
+        dvz_allocation_free(staging_write_alloc);
     if (alloc != NULL)
     {
         dvz_allocator_destroy_buffer(allocator, alloc, vk_buffer);
