@@ -272,6 +272,10 @@ Deliver the next implementation slices in this order unless the user redirects:
 11. SSAO planning note: early scene-level SSAO should follow the active scene -> FramePlan -> DRP2
     -> vklite path and reuse the WBOIT-style multi-pass resource pattern. The implementation plan
     is recorded in [SCENE_SSAO_IMPLEMENTATION_PLAN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/SCENE_SSAO_IMPLEMENTATION_PLAN.md).
+12. Multi-pass FramePlan graph direction: before adding dual depth peeling or more one-off
+    transparency modes, generalize FramePlan around typed resources, typed passes, explicit
+    attachments, and resource access declarations. The plan is recorded in
+    [FRAME_PLAN_GRAPH_TRANSPARENCY_PLAN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/FRAME_PLAN_GRAPH_TRANSPARENCY_PLAN.md).
 
 Implementation-level checklists for these lanes are recorded in
 [../../docs/tasks/2026-05-13-next-implementation-priorities/NEXT_STEPS.md](/home/cyrille/GIT/Viz/datoviz/docs/tasks/2026-05-13-next-implementation-priorities/NEXT_STEPS.md).
