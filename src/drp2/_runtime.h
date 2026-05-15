@@ -175,6 +175,7 @@ struct Drp2VkliteObject
     VkImageLayout image_layout;
     uint64_t texture_id;
     uint64_t sampler_id;
+    uint32_t usage;
     uint32_t width;
     uint32_t height;
     float viewport_x;

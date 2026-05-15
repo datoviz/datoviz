@@ -174,6 +174,7 @@ static DvzDrp2ValidationResult _vklite_create_texture(
     }
 
     object->image_layout = VK_IMAGE_LAYOUT_UNDEFINED;
+    object->usage = command->u.create_texture.usage;
     object->width = command->u.create_texture.width;
     object->height = command->u.create_texture.height;
     return _drp2_ok();

@@ -117,24 +117,54 @@ DvzDrp2ValidationResult _vklite_begin_render_pass(
 {
     ANN(state);
     ANN(command);
-    if (command->u.begin_render_pass.color_attachment_count > 1)
+
+    uint32_t color_count = command->u.begin_render_pass.color_attachment_count;
+    if (color_count == 0)
+        color_count = 1;
+    if (color_count > DVZ_DRP2_MAX_COLOR_ATTACHMENTS)
         return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
 
-    Drp2VkliteObject* target = _vklite_find(state, command->u.begin_render_pass.texture_id);
-    VkImageView target_view = _vklite_object_image_view(target);
-    if (target == NULL || target->images == NULL || target_view == VK_NULL_HANDLE)
+    Drp2VkliteObject* targets[DVZ_DRP2_MAX_COLOR_ATTACHMENTS] = {0};
+    VkImageView target_views[DVZ_DRP2_MAX_COLOR_ATTACHMENTS] = {0};
+    for (uint32_t i = 0; i < color_count; i++)
+    {
+        uint64_t texture_id = command->u.begin_render_pass.color_attachment_count > 0
+                                  ? command->u.begin_render_pass.color_attachments[i].texture_id
+                                  : command->u.begin_render_pass.texture_id;
+        targets[i] = _vklite_find(state, texture_id);
+        target_views[i] = _vklite_object_image_view(targets[i]);
+        if (targets[i] == NULL || targets[i]->images == NULL ||
+            target_views[i] == VK_NULL_HANDLE)
+            return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+    }
+    Drp2VkliteObject* target = targets[0];
+    if (target->borrowed_frame_target && color_count > 1)
         return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+    for (uint32_t i = 1; i < color_count; i++)
+    {
+        if (targets[i]->borrowed_frame_target || targets[i]->width != target->width ||
+            targets[i]->height != target->height)
+            return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+    }
 
     Drp2VkliteObject* pass =
         _vklite_add(state, command->u.begin_render_pass.id, DRP2_OBJECT_RENDER_PASS);
     if (pass == NULL)
         return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
 
-    target = _vklite_find(state, command->u.begin_render_pass.texture_id);
-    target_view = _vklite_object_image_view(target);
-    if (target == NULL || target->images == NULL || target_view == VK_NULL_HANDLE)
-        return _vklite_fail_destroy_object(
-            pass, DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+    for (uint32_t i = 0; i < color_count; i++)
+    {
+        uint64_t texture_id = command->u.begin_render_pass.color_attachment_count > 0
+                                  ? command->u.begin_render_pass.color_attachments[i].texture_id
+                                  : command->u.begin_render_pass.texture_id;
+        targets[i] = _vklite_find(state, texture_id);
+        target_views[i] = _vklite_object_image_view(targets[i]);
+        if (targets[i] == NULL || targets[i]->images == NULL ||
+            target_views[i] == VK_NULL_HANDLE)
+            return _vklite_fail_destroy_object(
+                pass, DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+    }
+    target = targets[0];
 
     DvzCommands* cmds = NULL;
     if (target->borrowed_frame_target)
@@ -171,22 +201,28 @@ DvzDrp2ValidationResult _vklite_begin_render_pass(
             pass, DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
     pass->rendering = rendering;
 
-    VkClearValue clear = {.color.float32 = {
-        command->u.begin_render_pass.clear_color[0],
-        command->u.begin_render_pass.clear_color[1],
-        command->u.begin_render_pass.clear_color[2],
-        command->u.begin_render_pass.clear_color[3],
-    }};
     dvz_rendering(rendering);
     dvz_rendering_area(rendering, 0, 0, target->width, target->height);
-    DvzAttachment* catt = dvz_rendering_color(rendering, 0);
-    dvz_attachment_image(catt, target_view, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
-    dvz_attachment_ops(
-        catt, command->u.begin_render_pass.clear ? VK_ATTACHMENT_LOAD_OP_CLEAR :
-                                                   VK_ATTACHMENT_LOAD_OP_LOAD,
-        VK_ATTACHMENT_STORE_OP_STORE);
-    if (command->u.begin_render_pass.clear)
-        dvz_attachment_clear(catt, clear);
+    for (uint32_t i = 0; i < color_count; i++)
+    {
+        const DvzDrp2ColorAttachment* attachment =
+            command->u.begin_render_pass.color_attachment_count > 0
+                ? &command->u.begin_render_pass.color_attachments[i]
+                : NULL;
+        bool clear_attachment =
+            attachment != NULL ? attachment->clear : command->u.begin_render_pass.clear;
+        const float* clear_color =
+            attachment != NULL ? attachment->clear_color : command->u.begin_render_pass.clear_color;
+        VkClearValue clear = {
+            .color.float32 = {clear_color[0], clear_color[1], clear_color[2], clear_color[3]}};
+        DvzAttachment* catt = dvz_rendering_color(rendering, i);
+        dvz_attachment_image(catt, target_views[i], VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+        dvz_attachment_ops(
+            catt, clear_attachment ? VK_ATTACHMENT_LOAD_OP_CLEAR : VK_ATTACHMENT_LOAD_OP_LOAD,
+            VK_ATTACHMENT_STORE_OP_STORE);
+        if (clear_attachment)
+            dvz_attachment_clear(catt, clear);
+    }
     if (command->u.begin_render_pass.has_depth_attachment)
     {
         Drp2VkliteObject* depth_owner = target->borrowed_frame_target ? target : pass;
@@ -262,20 +298,33 @@ DvzDrp2ValidationResult _vklite_begin_render_pass(
     for (uint32_t i = 0; i < state->count; i++)
     {
         Drp2VkliteObject* object = &state->objects[i];
-        if (object->kind == DRP2_OBJECT_TEXTURE && object != target && object->views != NULL &&
-            !object->borrowed_frame_target)
+        bool is_color_target = false;
+        for (uint32_t j = 0; j < color_count; j++)
+        {
+            if (object == targets[j])
+            {
+                is_color_target = true;
+                break;
+            }
+        }
+        if (object->kind == DRP2_OBJECT_TEXTURE && !is_color_target && object->views != NULL &&
+            !object->borrowed_frame_target &&
+            (object->usage & DVZ_DRP2_TEXTURE_USAGE_TEXTURE_BINDING) != 0)
         {
             _vklite_transition_image(
                 cmds, object, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
                 VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT, VK_ACCESS_2_SHADER_SAMPLED_READ_BIT);
         }
     }
-    if (!target->borrowed_frame_target)
+    for (uint32_t i = 0; i < color_count; i++)
     {
-        _vklite_transition_image(
-            cmds, target, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-            VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT,
-            VK_ACCESS_2_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT);
+        if (!targets[i]->borrowed_frame_target)
+        {
+            _vklite_transition_image(
+                cmds, targets[i], VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+                VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT,
+                VK_ACCESS_2_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT);
+        }
     }
     if (pass->depth_images != NULL)
     {
