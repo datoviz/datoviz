@@ -204,6 +204,13 @@ static QWidget* _controls_widget(SceneState* state, DvzQtHostedWindow* view_wind
     layout->addWidget(size_label);
     layout->addWidget(size_slider);
 
+    QLabel* wheel_label = new QLabel(QStringLiteral("Wheel sensitivity 100%"));
+    QSlider* wheel_slider = new QSlider(Qt::Horizontal);
+    wheel_slider->setRange(10, 200);
+    wheel_slider->setValue(100);
+    layout->addWidget(wheel_label);
+    layout->addWidget(wheel_slider);
+
     QLabel* palette_label = new QLabel(QStringLiteral("Palette"));
     QComboBox* palette_combo = new QComboBox();
     palette_combo->addItem(QStringLiteral("Cool"));
@@ -230,6 +237,12 @@ static QWidget* _controls_widget(SceneState* state, DvzQtHostedWindow* view_wind
         (void)_apply_point_size(state, (float)value);
         view_window->request_scene_frame();
     });
+    QObject::connect(
+        wheel_slider, &QSlider::valueChanged, controls,
+        [view_window, wheel_label](int value) {
+            view_window->set_wheel_scale((float)value / 100.0f);
+            wheel_label->setText(QStringLiteral("Wheel sensitivity %1%").arg(value));
+        });
     QObject::connect(
         palette_combo, QOverload<int>::of(&QComboBox::currentIndexChanged), controls,
         [state, view_window](int index) {
@@ -355,4 +368,3 @@ int main(int argc, char** argv)
     dvz_scene_destroy(scene);
     return rc;
 }
-
