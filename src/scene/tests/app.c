@@ -34,6 +34,72 @@
 /*************************************************************************************************/
 
 #if defined(DVZ_HAS_APP) && DVZ_HAS_APP
+
+typedef struct
+{
+    uint32_t calls;
+    double last_t;
+    double last_dt;
+    double total_dt;
+} AppTimerProbe;
+
+
+
+/**
+ * Record one app-driven timer callback.
+ *
+ * @param animation animation handle
+ * @param t current scene-clock time
+ * @param dt elapsed scene-clock time
+ * @param user_data timer probe storage
+ */
+static void _app_timer_probe_callback(
+    DvzAnimation* animation, double t, double dt, void* user_data)
+{
+    (void)animation;
+    AppTimerProbe* probe = (AppTimerProbe*)user_data;
+    ANN(probe);
+    probe->calls++;
+    probe->last_t = t;
+    probe->last_dt = dt;
+    probe->total_dt += dt;
+}
+
+
+
+/**
+ * Create a minimal scene/figure/panel used by app timer integration tests.
+ *
+ * @param out_figure destination for the created figure handle
+ * @return scene handle, or NULL on failure
+ */
+static DvzScene* _app_timer_test_scene(DvzFigure** out_figure)
+{
+    ANN(out_figure);
+    DvzScene* scene = dvz_scene();
+    if (scene == NULL)
+        return NULL;
+
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    if (figure == NULL)
+    {
+        dvz_scene_destroy(scene);
+        return NULL;
+    }
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    if (panel == NULL)
+    {
+        dvz_scene_destroy(scene);
+        return NULL;
+    }
+    (void)panel;
+
+    *out_figure = figure;
+    return scene;
+}
+
+
+
 int test_app_offscreen(TstSuite* suite, TstItem* item)
 {
     ANN(suite);
@@ -77,6 +143,98 @@ int test_app_offscreen(TstSuite* suite, TstItem* item)
     AT(dvz_app_window_render_once(win) == DVZ_CANVAS_FRAME_READY);
     AT(dvz_app_render_once(app) == 0);
     dvz_app_run(app, 1);
+
+    dvz_app_destroy(app);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+int test_app_offscreen_timer_advances_in_app_run(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    if (!_scene_vklite_runtime_available())
+        return 0;
+
+    DvzFigure* figure = NULL;
+    DvzScene* scene = _app_timer_test_scene(&figure);
+    AT(scene != NULL);
+    ANN(figure);
+
+    dvz_scene_set_clock_mode(scene, DVZ_CLOCK_OFFLINE);
+    dvz_scene_set_fps(scene, 4.0);
+    AppTimerProbe probe = {0};
+    DvzAnimation* timer = dvz_anim_timer(scene, 0.0, _app_timer_probe_callback, &probe);
+    ANN(timer);
+    dvz_anim_start(timer, 0.0);
+
+    DvzApp* app = dvz_app(scene);
+    if (app == NULL)
+    {
+        log_warn("test_app_offscreen_timer_advances_in_app_run skipped: GPU context creation failed");
+        dvz_scene_destroy(scene);
+        return 0;
+    }
+    DvzAppWindow* win = dvz_app_window(app, figure, 64, 64);
+    AT(win != NULL);
+
+    dvz_app_run(app, 2);
+
+    AT(probe.calls == 2);
+    AC(probe.last_t, 0.25, EPS);
+    AC(probe.last_dt, 0.25, EPS);
+    AC(probe.total_dt, 0.25, EPS);
+    AC(dvz_scene_clock_time(scene), 0.25, EPS);
+    AC(dvz_scene_clock_dt(scene), 0.25, EPS);
+
+    dvz_app_destroy(app);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+int test_app_offscreen_timer_advances_in_render_once(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    if (!_scene_vklite_runtime_available())
+        return 0;
+
+    DvzFigure* figure = NULL;
+    DvzScene* scene = _app_timer_test_scene(&figure);
+    AT(scene != NULL);
+    ANN(figure);
+
+    dvz_scene_set_clock_mode(scene, DVZ_CLOCK_OFFLINE);
+    dvz_scene_set_fps(scene, 8.0);
+    AppTimerProbe probe = {0};
+    DvzAnimation* timer = dvz_anim_timer(scene, 0.0, _app_timer_probe_callback, &probe);
+    ANN(timer);
+    dvz_anim_start(timer, 0.0);
+
+    DvzApp* app = dvz_app(scene);
+    if (app == NULL)
+    {
+        log_warn(
+            "test_app_offscreen_timer_advances_in_render_once skipped: GPU context creation failed");
+        dvz_scene_destroy(scene);
+        return 0;
+    }
+    DvzAppWindow* win = dvz_app_window(app, figure, 64, 64);
+    AT(win != NULL);
+
+    AT(dvz_app_window_render_once(win) == DVZ_CANVAS_FRAME_READY);
+    AT(dvz_app_window_render_once(win) == DVZ_CANVAS_FRAME_READY);
+
+    AT(probe.calls == 2);
+    AC(probe.last_t, 0.125, EPS);
+    AC(probe.last_dt, 0.125, EPS);
+    AC(probe.total_dt, 0.125, EPS);
+    AC(dvz_scene_clock_time(scene), 0.125, EPS);
+    AC(dvz_scene_clock_dt(scene), 0.125, EPS);
 
     dvz_app_destroy(app);
     dvz_scene_destroy(scene);
@@ -1552,6 +1710,8 @@ int test_scene_app(TstSuite* suite)
 
 #if defined(DVZ_HAS_APP) && DVZ_HAS_APP
     TEST_SIMPLE(test_app_offscreen);
+    TEST_SIMPLE(test_app_offscreen_timer_advances_in_app_run);
+    TEST_SIMPLE(test_app_offscreen_timer_advances_in_render_once);
     TEST_SIMPLE(test_app_offscreen_panel_three_visuals_all_drawn);
     TEST_SIMPLE(test_app_offscreen_has_nonblank_pixels);
     TEST_SIMPLE(test_app_offscreen_image_has_nonblank_pixels);
