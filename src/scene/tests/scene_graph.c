@@ -4209,6 +4209,91 @@ int test_scene_visual_alpha_mode_emits_wboit_drp2(TstSuite* suite, TstItem* item
 
 
 /**
+ * Execute the scene WBOIT DRP2 path through the vklite runtime when a GPU is available.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_visual_alpha_mode_wboit_glsl_executes(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    if (!_scene_vklite_runtime_available())
+        return 0;
+
+    DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
+    VkPhysicalDeviceFeatures features10 = {0};
+    features10.independentBlend = true;
+    dvz_gpu_ctx_config_features10(&gpu_cfg, &features10);
+    VkPhysicalDeviceVulkan13Features features13 = {
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES};
+    features13.dynamicRendering = true;
+    features13.synchronization2 = true;
+    dvz_gpu_ctx_config_features13(&gpu_cfg, &features13);
+    DvzGpuCtx* ctx = dvz_gpu_ctx(&gpu_cfg);
+    if (ctx == NULL)
+        return 0;
+
+    DvzScene* scene = dvz_scene();
+    AT(scene != NULL);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    AT(figure != NULL);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    AT(panel != NULL);
+
+    DvzVisual* transparent = dvz_primitive(scene, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 0);
+    AT(transparent != NULL);
+    float positions[3][3] = {
+        {-0.6f, -0.6f, 0.0f},
+        {0.6f, -0.6f, 0.0f},
+        {0.0f, 0.6f, 0.0f},
+    };
+    DvzColor colors[3] = {{255, 0, 0, 128}, {0, 255, 0, 128}, {0, 0, 255, 128}};
+    AT(dvz_visual_set_data(transparent, "position", positions, 3) == 0);
+    AT(dvz_visual_set_data(transparent, "color", colors, 3) == 0);
+    AT(dvz_visual_set_alpha_mode(transparent, DVZ_ALPHA_BLENDED) == 0);
+    AT(dvz_panel_add_visual(panel, transparent, NULL) == 0);
+
+    DvzCapabilitySnapshot caps;
+    dvz_capability_snapshot_default(&caps);
+    caps.max_color_attachments = 2;
+    caps.render_target_format_rgba16float = true;
+    caps.render_target_format_r16float = true;
+    caps.supports_render_target_sampling = true;
+    caps.supports_color_blending = true;
+
+    DvzDiagnosticReport report;
+    dvz_diagnostic_report_init(&report);
+    DvzFramePlanEmitConfig cfg = dvz_frame_plan_emit_config();
+    cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
+    cfg.target_width = 64;
+    cfg.target_height = 64;
+
+    DvzDrp2CommandStream* stream = dvz_figure_emit_ex(figure, &caps, &report, &cfg);
+    ANN(stream);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+
+    DvzDrp2RuntimeConfig runtime_cfg =
+        dvz_drp2_runtime_vklite_config(dvz_gpu_ctx_device(ctx), dvz_gpu_ctx_alloc(ctx));
+    DvzDrp2Runtime* runtime = dvz_drp2_runtime_vklite(&runtime_cfg);
+    ANN(runtime);
+
+    DvzDrp2ValidationResult result = dvz_drp2_runtime_execute(runtime, stream);
+    AT(result.ok);
+    AT(result.code == DVZ_DRP2_VALIDATION_OK);
+    AT(dvz_gpu_ctx_error_count(ctx) == 0);
+
+    dvz_drp2_runtime_destroy(runtime);
+    dvz_drp2_stream_destroy(stream);
+    dvz_scene_destroy(scene);
+    dvz_gpu_ctx_destroy(ctx);
+    return 0;
+}
+
+
+/**
  * Register scene graph tests.
  *
  * @param suite the active test suite
@@ -4249,6 +4334,7 @@ int test_scene_graph(TstSuite* suite)
     TEST_SIMPLE(test_scene_visual_alpha_mode_splits_frame_plan_passes);
     TEST_SIMPLE(test_scene_visual_alpha_mode_requires_wboit_capabilities);
     TEST_SIMPLE(test_scene_visual_alpha_mode_emits_wboit_drp2);
+    TEST_SIMPLE(test_scene_visual_alpha_mode_wboit_glsl_executes);
     TEST_SIMPLE(test_scene_visual_attr_source_and_mutability_metadata);
     TEST_SIMPLE(test_scene_point_external_position_buffer_emits_no_upload);
     TEST_SIMPLE(test_scene_point_external_position_buffer_executes);

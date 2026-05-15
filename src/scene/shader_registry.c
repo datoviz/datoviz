@@ -212,7 +212,7 @@
     "layout(set=0,binding=1)uniform texture2D weightTex;\n"                                     \
     "layout(set=0,binding=2)uniform sampler samp;\n"                                            \
     "layout(location=0)out vec4 outColor;\n"                                                     \
-    "void main(){vec2 uv=gl_FragCoord.xy/vec2(textureSize(accumTex,0));"                        \
+    "void main(){vec2 uv=gl_FragCoord.xy/vec2(textureSize(sampler2D(accumTex,samp),0));"        \
     "vec4 accum=texture(sampler2D(accumTex,samp),uv);"                                          \
     "float weight=texture(sampler2D(weightTex,samp),uv).r;"                                     \
     "float alpha=clamp(accum.a,0.0,1.0);"                                                       \

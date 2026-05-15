@@ -301,6 +301,8 @@ int test_scene_visual_alpha_mode_requires_wboit_capabilities(TstSuite* suite, Ts
 
 int test_scene_visual_alpha_mode_emits_wboit_drp2(TstSuite* suite, TstItem* item);
 
+int test_scene_visual_alpha_mode_wboit_glsl_executes(TstSuite* suite, TstItem* item);
+
 int test_scene_visual_attr_source_and_mutability_metadata(TstSuite* suite, TstItem* item);
 
 int test_scene_point_external_position_buffer_emits_no_upload(TstSuite* suite, TstItem* item);

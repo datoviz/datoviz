@@ -59,9 +59,11 @@ bool _render_pass_resolve_color_target(
         return false;
     if (is_new)
     {
+        uint32_t width = cfg != NULL && cfg->target_width > 0 ? cfg->target_width : 4;
+        uint32_t height = cfg != NULL && cfg->target_height > 0 ? cfg->target_height : 4;
         uint32_t usage =
             DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT | DVZ_DRP2_TEXTURE_USAGE_COPY_SRC;
-        if (!dvz_drp2_stream_create_texture_2d_usage(stream, color_id, 4, 4, usage))
+        if (!dvz_drp2_stream_create_texture_2d_usage(stream, color_id, width, height, usage))
             return false;
     }
     *out_id = color_id;
