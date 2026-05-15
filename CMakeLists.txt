@@ -242,20 +242,34 @@ set_property(GLOBAL PROPERTY DVZ_ALL_TARGETS "")
 # Shader precompilation — builtin scene visual shaders compiled to SPIR-V at build time.
 # -------------------------------------------------------------------------------------------------
 
+set(GLSL_SOURCE_DIR "${PROJECT_SOURCE_DIR}/src/scene/glsl")
+if(EXISTS "${GLSL_SOURCE_DIR}")
+    file(GLOB GLSL_STAGE_SOURCES
+        "${GLSL_SOURCE_DIR}/*.vert"
+        "${GLSL_SOURCE_DIR}/*.frag"
+        "${GLSL_SOURCE_DIR}/*.comp")
+    file(GLOB GLSL_TEXT_SOURCES
+        "${GLSL_SOURCE_DIR}/*.vert"
+        "${GLSL_SOURCE_DIR}/*.frag"
+        "${GLSL_SOURCE_DIR}/*.comp"
+        "${GLSL_SOURCE_DIR}/*.glsl")
+    file(GLOB GLSL_INCLUDES "${GLSL_SOURCE_DIR}/*.glsl")
+else()
+    set(GLSL_STAGE_SOURCES "")
+    set(GLSL_TEXT_SOURCES "")
+    set(GLSL_INCLUDES "")
+endif()
+
 find_program(GLSLC glslc
     HINTS "${GLSLC_PATH}" "$ENV{VULKAN_SDK}/bin"
 )
 
 if(GLSLC)
-    set(GLSL_SOURCE_DIR "${PROJECT_SOURCE_DIR}/src/scene/glsl")
     set(SPIRV_DIR       "${CMAKE_BINARY_DIR}/shaders")
     file(MAKE_DIRECTORY "${SPIRV_DIR}")
 
-    file(GLOB GLSL_SOURCES "${GLSL_SOURCE_DIR}/*.vert" "${GLSL_SOURCE_DIR}/*.frag")
-    file(GLOB GLSL_INCLUDES "${GLSL_SOURCE_DIR}/*.glsl")
-
     set(SPIRV_OUTPUTS "")
-    foreach(glsl_src ${GLSL_SOURCES})
+    foreach(glsl_src ${GLSL_STAGE_SOURCES})
         get_filename_component(shader_name "${glsl_src}" NAME)
         set(spv_out "${SPIRV_DIR}/${shader_name}.spv")
         add_custom_command(
@@ -290,6 +304,31 @@ else()
     message(WARNING "glslc not found — builtin shaders will use runtime GLSL compilation.")
     set(DVZ_HAS_PRECOMPILED_SHADERS 0)
     set(DVZ_SHADERS_C "")
+endif()
+
+# -------------------------------------------------------------------------------------------------
+# GLSL embedding — runtime fallback sources for built-in scene visual shaders.
+# -------------------------------------------------------------------------------------------------
+
+if(GLSL_TEXT_SOURCES)
+    set(GLSL_SHADERS_C "${CMAKE_BINARY_DIR}/_glsl_shaders.c")
+    string(REPLACE ";" "\\;" _glsl_list_escaped "${GLSL_TEXT_SOURCES}")
+    add_custom_command(
+        OUTPUT  "${GLSL_SHADERS_C}"
+        COMMAND "${CMAKE_COMMAND}"
+            "-DFILES=${_glsl_list_escaped}"
+            "-DPREFIX=glsl"
+            "-DOUTPUT=${GLSL_SHADERS_C}"
+            -P "${PROJECT_SOURCE_DIR}/cmake/embed_text_resources.cmake"
+        DEPENDS ${GLSL_TEXT_SOURCES}
+        COMMENT "Embedding GLSL shaders into _glsl_shaders.c"
+    )
+    add_custom_target(datoviz_glsl_shaders DEPENDS "${GLSL_SHADERS_C}")
+    set(DVZ_HAS_GLSL_SHADERS 1)
+    set(DVZ_GLSL_SHADERS_C "${GLSL_SHADERS_C}")
+else()
+    set(DVZ_HAS_GLSL_SHADERS 0)
+    set(DVZ_GLSL_SHADERS_C "")
 endif()
 
 # -------------------------------------------------------------------------------------------------

@@ -190,6 +190,10 @@ const unsigned char* dvz_resource_shader(const char* name, unsigned long* size);
 const char* dvz_resource_wgsl(const char* name, unsigned long* size);
 
 
+// Defined in cmake-generated file build/_glsl_shaders.c
+const char* dvz_resource_glsl(const char* name, unsigned long* size);
+
+
 
 // Defined in cmake-generated file build/_textures.c
 unsigned char* dvz_resource_texture(const char* name, unsigned long* size);

@@ -22,224 +22,110 @@
 
 
 /*************************************************************************************************/
-/*  Constants                                                                                    */
+/*  Macros                                                                                       */
 /*************************************************************************************************/
 
-#define DRP2_VERTEX_WGSL                                                                        \
-    "@vertex fn main() -> @builtin(position) vec4f { return vec4f(0.0, 0.0, 0.0, 1.0); }"
-#define DRP2_FULLSCREEN_VERTEX_WGSL                                                             \
-    "@vertex fn main(@builtin(vertex_index) idx: u32) -> @builtin(position) vec4f { var pos = " \
-    "array<vec2f, 3>(vec2f(-1.0, -1.0), vec2f(3.0, -1.0), vec2f(-1.0, 3.0)); return "          \
-    "vec4f(pos[idx], 0.0, 1.0); }"
-#define DRP2_FRAGMENT_WGSL                                                                      \
-    "@fragment fn main() -> @location(0) vec4f { return vec4f(1.0, 1.0, 1.0, 1.0); }"
-#define DRP2_TEXTURE_VERTEX_WGSL                                                                \
-    "@vertex fn main(@builtin(vertex_index) idx: u32) -> @builtin(position) vec4f { var pos = " \
-    "array<vec2f, 3>(vec2f(-1.0, -1.0), vec2f(3.0, -1.0), vec2f(-1.0, 3.0)); return "          \
-    "vec4f(pos[idx], 0.0, 1.0); }"
-#define DRP2_TEXTURE_FRAGMENT_WGSL                                                              \
-    "@group(0) @binding(0) var source: texture_2d<f32>; @group(0) @binding(1) var samp: "      \
-    "sampler; @fragment fn main(@builtin(position) pos: vec4f) -> @location(0) vec4f { "       \
-    "return textureSample(source, samp, vec2f(0.5, 0.5)); }"
-#define DRP2_COMPUTE_WGSL                                                                       \
-    "@group(0) @binding(0) var<storage, read> input: array<f32>; @group(0) @binding(1) "        \
-    "var<storage, read_write> output: array<f32>; @compute @workgroup_size(9) fn main("        \
-    "@builtin(global_invocation_id) id: vec3u) { output[id.x] = input[id.x]; }"
-#define DRP2_PIXEL_VERTEX_WGSL                                                                  \
-    "struct MVP { model: mat4x4f, view: mat4x4f, proj: mat4x4f, time: f32, flags: u32, }\n"    \
-    "struct Viewport { rect: vec4f, }\n"                                                        \
-    "struct VertexIn { @location(0) position: vec3f, @location(1) color: vec4f, "               \
-    "@location(2) size: f32, }\n"                                                               \
-    "struct VertexOut { @builtin(position) position: vec4f, @location(0) color: vec4f, }\n"     \
-    "@group(0) @binding(0) var<uniform> mvp: MVP;\n"                                            \
-    "@group(0) @binding(1) var<uniform> viewport: Viewport;\n"                                  \
-    "fn quad_corner(vertex_id: u32) -> vec2f {"                                                  \
-    "let corners = array<vec2f, 6>(vec2f(-1.0, -1.0), vec2f(1.0, -1.0), "                      \
-    "vec2f(-1.0, 1.0), vec2f(-1.0, 1.0), vec2f(1.0, -1.0), vec2f(1.0, 1.0));"                 \
-    "return corners[vertex_id];}\n"                                                            \
-    "@vertex fn main(@builtin(vertex_index) vertex_id: u32, input: VertexIn) -> VertexOut {"    \
-    "let corner = quad_corner(vertex_id);"                                                      \
-    "let center = mvp.proj * mvp.view * mvp.model * vec4f(input.position, 1.0);"                \
-    "let radius = vec2f(input.size / viewport.rect.z, input.size / viewport.rect.w);"           \
-    "var output: VertexOut;"                                                                    \
-    "output.position = vec4f(center.xy + corner * radius * center.w, center.zw);"               \
-    "output.color = input.color; return output;}\n"
-#define DRP2_PIXEL_FRAGMENT_WGSL                                                                \
-    "struct FragmentIn { @location(0) color: vec4f, }\n"                                       \
-    "@fragment fn main(input: FragmentIn) -> @location(0) vec4f { return input.color; }\n"
+#ifndef DVZ_HAS_GLSL_SHADERS
+#define DVZ_HAS_GLSL_SHADERS 0
+#endif
 
-#define DRP2_VERTEX_GLSL                                                                        \
-    "#version 450\nvoid main(){gl_Position=vec4(0.0,0.0,0.0,1.0);}"
-#define DRP2_FULLSCREEN_VERTEX_GLSL                                                             \
-    "#version 450\nvec2 p[3]=vec2[](vec2(-1,-1),vec2(3,-1),vec2(-1,3));"                       \
-    "void main(){gl_Position=vec4(p[gl_VertexIndex],0,1);}"
-#define DRP2_FRAGMENT_GLSL                                                                      \
-    "#version 450\nlayout(location=0)out vec4 color;void main(){color=vec4(1.0);}"
-#define DRP2_TEXTURE_VERTEX_GLSL                                                                \
-    "#version 450\nvec2 p[3]=vec2[](vec2(-1,-1),vec2(3,-1),vec2(-1,3));"                       \
-    "void main(){gl_Position=vec4(p[gl_VertexIndex],0,1);}"
-#define DRP2_TEXTURE_FRAGMENT_GLSL                                                              \
-    "#version 450\nlayout(set=0,binding=0)uniform sampler2D t;"                                \
-    "layout(location=0)out vec4 c;void main(){c=texture(t,vec2(.5));}"
-#define DRP2_COMPUTE_GLSL                                                                       \
-    "#version 450\nlayout(local_size_x=1)in;void main(){}"
+#ifndef DVZ_HAS_PRECOMPILED_SHADERS
+#define DVZ_HAS_PRECOMPILED_SHADERS 0
+#endif
 
-/* Point visual: separate vertex buffers for position (vec3), color (u8 RGBA->vec4), size (float). */
-#define DRP2_POINT_VERTEX_GLSL                                                                  \
-    "#version 450\n"                                                                            \
-    "layout(set=0,binding=0)uniform MVP{mat4 model;mat4 view;mat4 proj;float time;uint flags;}mvp;\n" \
-    "layout(set=0,binding=1)uniform Viewport{vec4 rect;}viewport;\n"                           \
-    "layout(location=0)in vec3 inPos;\n"                                                        \
-    "layout(location=1)in vec4 inColor;\n"                                                      \
-    "layout(location=2)in float inSize;\n"                                                      \
-    "layout(location=0)out vec4 fragColor;\n"                                                   \
-    "void main(){"                                                                               \
-    "gl_Position=mvp.proj*mvp.view*mvp.model*vec4(inPos,1.0);"                                 \
-    "gl_PointSize=inSize;"                                                                       \
-    "fragColor=inColor;}\n"
-#define DRP2_POINT_FRAGMENT_GLSL                                                                \
-    "#version 450\n"                                                                            \
-    "layout(location=0)in vec4 fragColor;\n"                                                    \
-    "layout(location=0)out vec4 outColor;\n"                                                    \
-    "void main(){outColor=fragColor;}\n"
-#define DRP2_PIXEL_VERTEX_GLSL DRP2_POINT_VERTEX_GLSL
-#define DRP2_PIXEL_FRAGMENT_GLSL DRP2_POINT_FRAGMENT_GLSL
-#define DRP2_POINT_PICK_VERTEX_GLSL                                                             \
-    "#version 450\n"                                                                            \
-    "layout(set=0,binding=0)uniform MVP{mat4 model;mat4 view;mat4 proj;float time;uint flags;}mvp;\n" \
-    "layout(set=0,binding=1)uniform Viewport{vec4 rect;}viewport;\n"                           \
-    "layout(location=0)in vec3 inPos;\n"                                                        \
-    "layout(location=2)in float inSize;\n"                                                      \
-    "layout(location=0)flat out uint fragId;\n"                                                 \
-    "void main(){"                                                                               \
-    "gl_Position=mvp.proj*mvp.view*mvp.model*vec4(inPos,1.0);"                                 \
-    "gl_PointSize=inSize;"                                                                       \
-    "fragId=uint(gl_VertexIndex)+1u;}\n"
-#define DRP2_POINT_PICK_FRAGMENT_GLSL                                                           \
-    "#version 450\n"                                                                            \
-    "layout(location=0)flat in uint fragId;\n"                                                  \
-    "layout(location=0)out vec4 outColor;\n"                                                    \
-    "void main(){outColor=vec4(float(fragId&255u)/255.0,float((fragId>>8u)&255u)/255.0,"       \
-    "float((fragId>>16u)&255u)/255.0,float((fragId>>24u)&255u)/255.0);}\n"
-
-/* Primitive visual: position (vec3) + color (u8 RGBA->vec4); topology selected per visual. */
-#define DRP2_PRIMITIVE_VERTEX_GLSL                                                              \
-    "#version 450\n"                                                                            \
-    "layout(set=0,binding=0)uniform MVP{mat4 model;mat4 view;mat4 proj;float time;uint flags;}mvp;\n" \
-    "layout(set=0,binding=1)uniform Viewport{vec4 rect;}viewport;\n"                           \
-    "layout(location=0)in vec3 inPos;\n"                                                        \
-    "layout(location=1)in vec4 inColor;\n"                                                      \
-    "layout(location=0)out vec4 fragColor;\n"                                                   \
-    "void main(){gl_Position=mvp.proj*mvp.view*mvp.model*vec4(inPos,1.0);fragColor=inColor;}\n"
-#define DRP2_PRIMITIVE_FRAGMENT_GLSL                                                            \
-    "#version 450\n"                                                                            \
-    "layout(location=0)in vec4 fragColor;\n"                                                    \
-    "layout(location=0)out vec4 outColor;\n"                                                    \
-    "void main(){outColor=fragColor;}\n"
-#define DRP2_PRIMITIVE_VERTEX_WGSL                                                              \
-    "struct MVP { model: mat4x4f, view: mat4x4f, proj: mat4x4f, time: f32, flags: u32, }\n"    \
-    "struct Viewport { rect: vec4f, }\n"                                                        \
-    "struct VertexIn { @location(0) position: vec3f, @location(1) color: vec4f, }\n"            \
-    "struct VertexOut { @builtin(position) position: vec4f, @location(0) color: vec4f, }\n"     \
-    "@group(0) @binding(0) var<uniform> mvp: MVP;\n"                                            \
-    "@group(0) @binding(1) var<uniform> viewport: Viewport;\n"                                  \
-    "fn transform(position: vec3f) -> vec4f {"                                                   \
-    "return mvp.proj * mvp.view * mvp.model * vec4f(position, 1.0);}\n"                         \
-    "@vertex fn main(input: VertexIn) -> VertexOut {"                                           \
-    "var output: VertexOut; output.position = transform(input.position);"                       \
-    "output.color = input.color; return output;}\n"
-#define DRP2_PRIMITIVE_FRAGMENT_WGSL                                                            \
-    "struct FragmentIn { @location(0) color: vec4f, }\n"                                       \
-    "@fragment fn main(input: FragmentIn) -> @location(0) vec4f { return input.color; }\n"
-#define DRP2_PRIMITIVE_LIT_VERTEX_GLSL                                                          \
-    "#version 450\n"                                                                            \
-    "layout(set=0,binding=0)uniform MVP{mat4 model;mat4 view;mat4 proj;float time;uint flags;}mvp;\n" \
-    "layout(set=0,binding=1)uniform Viewport{vec4 rect;}viewport;\n"                           \
-    "layout(location=0)in vec3 inPos;\n"                                                        \
-    "layout(location=1)in vec4 inColor;\n"                                                      \
-    "layout(location=2)in vec3 inNormal;\n"                                                     \
-    "layout(location=0)out vec4 fragColor;\n"                                                   \
-    "layout(location=1)out vec3 fragNormal;\n"                                                  \
-    "layout(location=2)out vec3 fragWorldPos;\n"                                                \
-    "layout(location=3)out vec3 fragCameraPos;\n"                                               \
-    "vec4 transform(vec3 pos){vec4 tr=mvp.proj*mvp.view*mvp.model*vec4(pos,1.0);"              \
-    "tr.y=-tr.y;tr.z=0.5*(tr.z+tr.w);return tr;}\n"                                            \
-    "void main(){vec4 world=mvp.model*vec4(inPos,1.0);gl_Position=transform(inPos);"           \
-    "fragColor=inColor;fragWorldPos=world.xyz;"                                                \
-    "fragCameraPos=(inverse(mvp.view)*vec4(0,0,0,1)).xyz;"                                     \
-    "fragNormal=transpose(inverse(mat3(mvp.model)))*inNormal;}\n"
-#define DRP2_PRIMITIVE_LIT_FRAGMENT_GLSL                                                        \
-    "#version 450\n"                                                                            \
-    "layout(set=1,binding=0)uniform PrimitiveShading{vec4 lightDir;vec4 params;}shading;\n"    \
-    "layout(location=0)in vec4 fragColor;\n"                                                    \
-    "layout(location=1)in vec3 fragNormal;\n"                                                   \
-    "layout(location=2)in vec3 fragWorldPos;\n"                                                 \
-    "layout(location=3)in vec3 fragCameraPos;\n"                                                \
-    "layout(location=0)out vec4 outColor;\n"                                                    \
-    "void main(){vec3 n=normalize(fragNormal);vec3 l=normalize(shading.lightDir.xyz);"         \
-    "vec3 v=normalize(fragCameraPos-fragWorldPos);vec3 h=normalize(l+v);"                      \
-    "float lambert=max(dot(n,l),0.0);float spec=pow(max(dot(n,h),0.0),32.0);"                  \
-    "vec3 rgb=fragColor.rgb*(shading.params.x+shading.params.y*lambert)+vec3(0.18*spec);"     \
-    "outColor=vec4(clamp(rgb,0.0,1.0),fragColor.a);}\n"
-
-/* Image visual: position (vec3) + texcoords (vec2); samples a 2D RGBA8 texture. */
-#define DRP2_IMAGE_VERTEX_GLSL                                                                  \
-    "#version 450\n"                                                                            \
-    "layout(set=0,binding=0)uniform MVP{mat4 model;mat4 view;mat4 proj;float time;uint flags;}mvp;\n" \
-    "layout(set=0,binding=1)uniform Viewport{vec4 rect;}viewport;\n"                           \
-    "layout(location=0)in vec3 inPos;\n"                                                        \
-    "layout(location=1)in vec2 inUV;\n"                                                         \
-    "layout(location=0)out vec2 fragUV;\n"                                                      \
-    "vec4 transform(vec3 pos){vec4 tr=mvp.proj*mvp.view*mvp.model*vec4(pos,1.0);"              \
-    "tr.y=-tr.y;tr.z=0.5*(tr.z+tr.w);return tr;}\n"                                            \
-    "void main(){gl_Position=transform(inPos);fragUV=inUV;}\n"
-#define DRP2_IMAGE_FRAGMENT_GLSL                                                                \
-    "#version 450\n"                                                                            \
-    "layout(set=1,binding=0)uniform sampler2D tex;\n"                                           \
-    "layout(location=0)in vec2 fragUV;\n"                                                       \
-    "layout(location=0)out vec4 outColor;\n"                                                    \
-    "void main(){outColor=texture(tex,fragUV);}\n"
-#define DRP2_WBOIT_ACCUM_FRAGMENT_GLSL                                                          \
-    "#version 450\n"                                                                            \
-    "layout(location=0)in vec4 fragColor;\n"                                                    \
-    "layout(location=0)out vec4 outAccum;\n"                                                     \
-    "layout(location=1)out float outWeight;\n"                                                   \
-    "void main(){float a=clamp(fragColor.a,0.0,1.0);"                                          \
-    "outAccum=vec4(fragColor.rgb*a,a);outWeight=-log(max(1.0-a,1e-4));}\n"
-#define DRP2_WBOIT_ACCUM_LIT_FRAGMENT_GLSL                                                      \
-    "#version 450\n"                                                                            \
-    "layout(set=1,binding=0)uniform PrimitiveShading{vec4 lightDir;vec4 params;}shading;\n"    \
-    "layout(location=0)in vec4 fragColor;\n"                                                    \
-    "layout(location=1)in vec3 fragNormal;\n"                                                   \
-    "layout(location=2)in vec3 fragWorldPos;\n"                                                 \
-    "layout(location=3)in vec3 fragCameraPos;\n"                                                \
-    "layout(location=0)out vec4 outAccum;\n"                                                     \
-    "layout(location=1)out float outWeight;\n"                                                   \
-    "void main(){vec3 n=normalize(fragNormal);if(!gl_FrontFacing)n=-n;"                        \
-    "vec3 l=normalize(shading.lightDir.xyz);"                                                   \
-    "vec3 v=normalize(fragCameraPos-fragWorldPos);vec3 h=normalize(l+v);"                      \
-    "float lambert=max(dot(n,l),0.0);float spec=pow(max(dot(n,h),0.0),32.0);"                  \
-    "vec3 rgb=fragColor.rgb*(shading.params.x+shading.params.y*lambert)+vec3(0.18*spec);"     \
-    "float a=clamp(fragColor.a,0.0,1.0);vec3 lit=clamp(rgb,0.0,1.0);"                          \
-    "outAccum=vec4(lit*a,a);outWeight=-log(max(1.0-a,1e-4));}\n"
-#define DRP2_WBOIT_RESOLVE_FRAGMENT_GLSL                                                        \
-    "#version 450\n"                                                                            \
-    "layout(set=0,binding=0)uniform texture2D accumTex;\n"                                      \
-    "layout(set=0,binding=1)uniform texture2D weightTex;\n"                                     \
-    "layout(set=0,binding=2)uniform sampler samp;\n"                                            \
-    "layout(location=0)out vec4 outColor;\n"                                                     \
-    "void main(){vec2 uv=gl_FragCoord.xy/vec2(textureSize(sampler2D(accumTex,samp),0));"        \
-    "vec4 accum=texture(sampler2D(accumTex,samp),uv);"                                          \
-    "float weight=texture(sampler2D(weightTex,samp),uv).r;"                                     \
-    "float alpha=clamp(1.0-exp(-weight),0.0,1.0);"                                              \
-    "vec3 rgb=accum.a>1e-5?accum.rgb/max(accum.a,1e-5):vec3(0.0);"                             \
-    "outColor=vec4(rgb,alpha);}\n"
+#ifndef DVZ_HAS_WGSL_SHADERS
+#define DVZ_HAS_WGSL_SHADERS 0
+#endif
 
 
 
 /*************************************************************************************************/
 /*  Functions                                                                                    */
 /*************************************************************************************************/
+
+/**
+ * Return an embedded GLSL shader source by registry key.
+ *
+ * @param key the generated shader resource key
+ * @return the shader source, or NULL when unavailable
+ */
+static const char* _resource_glsl(const char* key)
+{
+#if DVZ_HAS_GLSL_SHADERS
+    unsigned long size = 0;
+    const char* source = dvz_resource_glsl(key, &size);
+    if (source != NULL && size > 0)
+        return source;
+#else
+    (void)key;
+#endif
+    return NULL;
+}
+
+
+
+/**
+ * Return an embedded WGSL shader source by registry key.
+ *
+ * @param key the generated shader resource key
+ * @return the shader source, or NULL when unavailable
+ */
+static const char* _resource_wgsl(const char* key)
+{
+#if DVZ_HAS_WGSL_SHADERS
+    unsigned long size = 0;
+    const char* source = dvz_resource_wgsl(key, &size);
+    if (source != NULL && size > 0)
+        return source;
+#else
+    (void)key;
+#endif
+    return NULL;
+}
+
+
+
+/**
+ * Return the embedded shader resource key for a built-in shader stage.
+ *
+ * @param shader the built-in shader key
+ * @param fragment whether to return the fragment-stage variant
+ * @return the generated shader resource key, or NULL when unsupported
+ */
+static const char* _builtin_shader_resource_key(DvzSceneBuiltinShader shader, bool fragment)
+{
+    switch (shader)
+    {
+    case DVZ_SCENE_BUILTIN_SHADER_FIXTURE:
+        return fragment ? "fixture_frag" : "fixture_vert";
+    case DVZ_SCENE_BUILTIN_SHADER_TEXTURE:
+        return fragment ? "texture_frag" : "texture_vert";
+    case DVZ_SCENE_BUILTIN_SHADER_COMPUTE_COPY:
+        return fragment ? NULL : "compute_copy";
+    case DVZ_SCENE_BUILTIN_SHADER_POINT:
+        return fragment ? "point_frag" : "point_vert";
+    case DVZ_SCENE_BUILTIN_SHADER_PIXEL:
+        return fragment ? "pixel_frag" : "pixel_vert";
+    case DVZ_SCENE_BUILTIN_SHADER_POINT_PICK:
+        return fragment ? "point_pick_frag" : "point_pick_vert";
+    case DVZ_SCENE_BUILTIN_SHADER_PRIMITIVE:
+        return fragment ? "primitive_frag" : "primitive_vert";
+    case DVZ_SCENE_BUILTIN_SHADER_PRIMITIVE_LIT:
+        return fragment ? "primitive_lit_frag" : "primitive_lit_vert";
+    case DVZ_SCENE_BUILTIN_SHADER_IMAGE:
+        return fragment ? "image_frag" : "image_vert";
+    case DVZ_SCENE_BUILTIN_SHADER_WBOIT_ACCUM:
+        return fragment ? "wboit_accum_frag" : "primitive_vert";
+    case DVZ_SCENE_BUILTIN_SHADER_WBOIT_ACCUM_LIT:
+        return fragment ? "wboit_accum_lit_frag" : "primitive_lit_vert";
+    case DVZ_SCENE_BUILTIN_SHADER_WBOIT_RESOLVE:
+        return fragment ? "wboit_resolve_frag" : "fullscreen_vert";
+    default:
+        return NULL;
+    }
+}
+
+
 
 /**
  * Return the short shader-format tag used in runtime cache keys.
@@ -301,13 +187,13 @@ void _render_vertex_shader_source(
 {
     if (cfg != NULL && cfg->fullscreen_triangle)
     {
-        *wgsl = DRP2_FULLSCREEN_VERTEX_WGSL;
-        *glsl = DRP2_FULLSCREEN_VERTEX_GLSL;
+        *wgsl = _resource_wgsl("fullscreen_vert");
+        *glsl = _resource_glsl("fullscreen_vert");
     }
     else
     {
-        *wgsl = DRP2_VERTEX_WGSL;
-        *glsl = DRP2_VERTEX_GLSL;
+        *wgsl = _resource_wgsl("fixture_vert");
+        *glsl = _resource_glsl("fixture_vert");
     }
 }
 
@@ -350,11 +236,15 @@ bool _emit_shader_spirv(
     const char* spirv_key, const char* glsl, const DvzFramePlanEmitConfig* cfg)
 {
     (void)cfg;
+#if DVZ_HAS_PRECOMPILED_SHADERS
     unsigned long spv_size = 0;
     const unsigned char* spv = dvz_resource_shader(spirv_key, &spv_size);
     if (spv != NULL && spv_size > 0)
         return dvz_drp2_stream_create_shader_module_spirv(
             stream, id, stage, spv, (uint64_t)spv_size);
+#else
+    (void)spirv_key;
+#endif
     return dvz_drp2_stream_create_shader_module_format(stream, id, stage, "glsl", glsl);
 }
 
@@ -369,36 +259,12 @@ bool _emit_shader_spirv(
  */
 const char* _builtin_shader_glsl(DvzSceneBuiltinShader shader, bool fragment)
 {
-    switch (shader)
-    {
-    case DVZ_SCENE_BUILTIN_SHADER_FIXTURE:
-        return fragment ? DRP2_FRAGMENT_GLSL : DRP2_VERTEX_GLSL;
-    case DVZ_SCENE_BUILTIN_SHADER_TEXTURE:
-        return fragment ? DRP2_TEXTURE_FRAGMENT_GLSL : DRP2_TEXTURE_VERTEX_GLSL;
-    case DVZ_SCENE_BUILTIN_SHADER_COMPUTE_COPY:
-        return fragment ? NULL : DRP2_COMPUTE_GLSL;
-    case DVZ_SCENE_BUILTIN_SHADER_POINT:
-        return fragment ? DRP2_POINT_FRAGMENT_GLSL : DRP2_POINT_VERTEX_GLSL;
-    case DVZ_SCENE_BUILTIN_SHADER_PIXEL:
-        return fragment ? DRP2_PIXEL_FRAGMENT_GLSL : DRP2_PIXEL_VERTEX_GLSL;
-    case DVZ_SCENE_BUILTIN_SHADER_POINT_PICK:
-        return fragment ? DRP2_POINT_PICK_FRAGMENT_GLSL : DRP2_POINT_PICK_VERTEX_GLSL;
-    case DVZ_SCENE_BUILTIN_SHADER_PRIMITIVE:
-        return fragment ? DRP2_PRIMITIVE_FRAGMENT_GLSL : DRP2_PRIMITIVE_VERTEX_GLSL;
-    case DVZ_SCENE_BUILTIN_SHADER_PRIMITIVE_LIT:
-        return fragment ? DRP2_PRIMITIVE_LIT_FRAGMENT_GLSL : DRP2_PRIMITIVE_LIT_VERTEX_GLSL;
-    case DVZ_SCENE_BUILTIN_SHADER_IMAGE:
-        return fragment ? DRP2_IMAGE_FRAGMENT_GLSL : DRP2_IMAGE_VERTEX_GLSL;
-    case DVZ_SCENE_BUILTIN_SHADER_WBOIT_ACCUM:
-        return fragment ? DRP2_WBOIT_ACCUM_FRAGMENT_GLSL : DRP2_PRIMITIVE_VERTEX_GLSL;
-    case DVZ_SCENE_BUILTIN_SHADER_WBOIT_ACCUM_LIT:
-        return fragment ? DRP2_WBOIT_ACCUM_LIT_FRAGMENT_GLSL : DRP2_PRIMITIVE_LIT_VERTEX_GLSL;
-    case DVZ_SCENE_BUILTIN_SHADER_WBOIT_RESOLVE:
-        return fragment ? DRP2_WBOIT_RESOLVE_FRAGMENT_GLSL : DRP2_FULLSCREEN_VERTEX_GLSL;
-    default:
+    const char* key = _builtin_shader_resource_key(shader, fragment);
+    if (key == NULL)
         return NULL;
-    }
+    return _resource_glsl(key);
 }
+
 
 
 /**
@@ -410,55 +276,10 @@ const char* _builtin_shader_glsl(DvzSceneBuiltinShader shader, bool fragment)
  */
 const char* _builtin_shader_wgsl(DvzSceneBuiltinShader shader, bool fragment)
 {
-    switch (shader)
-    {
-    case DVZ_SCENE_BUILTIN_SHADER_POINT:
-#if DVZ_HAS_WGSL_SHADERS
-    {
-        unsigned long size = 0;
-        const char* key = fragment ? "point_frag" : "point_vert";
-        const char* source = dvz_resource_wgsl(key, &size);
-        if (source != NULL && size > 0)
-            return source;
-    }
-#endif
+    const char* key = _builtin_shader_resource_key(shader, fragment);
+    if (key == NULL)
         return NULL;
-    case DVZ_SCENE_BUILTIN_SHADER_PIXEL:
-#if DVZ_HAS_WGSL_SHADERS
-    {
-        unsigned long size = 0;
-        const char* key = fragment ? "pixel_frag" : "pixel_vert";
-        const char* source = dvz_resource_wgsl(key, &size);
-        if (source != NULL && size > 0)
-            return source;
-    }
-#endif
-        return fragment ? DRP2_PIXEL_FRAGMENT_WGSL : DRP2_PIXEL_VERTEX_WGSL;
-    case DVZ_SCENE_BUILTIN_SHADER_IMAGE:
-#if DVZ_HAS_WGSL_SHADERS
-    {
-        unsigned long size = 0;
-        const char* key = fragment ? "image_frag" : "image_vert";
-        const char* source = dvz_resource_wgsl(key, &size);
-        if (source != NULL && size > 0)
-            return source;
-    }
-#endif
-        return NULL;
-    case DVZ_SCENE_BUILTIN_SHADER_PRIMITIVE:
-#if DVZ_HAS_WGSL_SHADERS
-    {
-        unsigned long size = 0;
-        const char* key = fragment ? "primitive_frag" : "primitive_vert";
-        const char* source = dvz_resource_wgsl(key, &size);
-        if (source != NULL && size > 0)
-            return source;
-    }
-#endif
-        return fragment ? DRP2_PRIMITIVE_FRAGMENT_WGSL : DRP2_PRIMITIVE_VERTEX_WGSL;
-    default:
-        return NULL;
-    }
+    return _resource_wgsl(key);
 }
 
 
@@ -470,7 +291,7 @@ const char* _builtin_shader_wgsl(DvzSceneBuiltinShader shader, bool fragment)
  */
 const char* _fixture_vertex_wgsl(void)
 {
-    return DRP2_VERTEX_WGSL;
+    return _resource_wgsl("fixture_vert");
 }
 
 
@@ -482,7 +303,7 @@ const char* _fixture_vertex_wgsl(void)
  */
 const char* _fullscreen_vertex_wgsl(void)
 {
-    return DRP2_FULLSCREEN_VERTEX_WGSL;
+    return _resource_wgsl("fullscreen_vert");
 }
 
 
@@ -494,7 +315,7 @@ const char* _fullscreen_vertex_wgsl(void)
  */
 const char* _fixture_fragment_wgsl(void)
 {
-    return DRP2_FRAGMENT_WGSL;
+    return _resource_wgsl("fixture_frag");
 }
 
 
@@ -506,7 +327,7 @@ const char* _fixture_fragment_wgsl(void)
  */
 const char* _texture_vertex_wgsl(void)
 {
-    return DRP2_TEXTURE_VERTEX_WGSL;
+    return _resource_wgsl("texture_vert");
 }
 
 
@@ -518,7 +339,7 @@ const char* _texture_vertex_wgsl(void)
  */
 const char* _texture_fragment_wgsl(void)
 {
-    return DRP2_TEXTURE_FRAGMENT_WGSL;
+    return _resource_wgsl("texture_frag");
 }
 
 
@@ -530,5 +351,5 @@ const char* _texture_fragment_wgsl(void)
  */
 const char* _compute_copy_wgsl(void)
 {
-    return DRP2_COMPUTE_WGSL;
+    return _resource_wgsl("compute_copy");
 }
