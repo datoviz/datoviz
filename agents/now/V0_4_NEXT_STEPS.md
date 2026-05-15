@@ -208,7 +208,9 @@ Read in this order:
    for the current shipped request-resolution behavior and caveats,
 5. [SCENE_PICK_PROBE_EXECUTION_PLAN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/SCENE_PICK_PROBE_EXECUTION_PLAN.md)
    for the original planned shape,
-6. the current `scene` and `drp2` tests before broadening any API.
+6. [IMAGE_PICKING_RECOVERY_PLAN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/IMAGE_PICKING_RECOVERY_PLAN.md)
+   before touching the current image probe / segmentation-label hover path,
+7. the current `scene` and `drp2` tests before broadening any API.
 
 Deliver the next implementation slices in this order unless the user redirects:
 
