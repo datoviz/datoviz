@@ -33,7 +33,27 @@
 typedef struct
 {
     DvzAppWindow* app_window;
+    bool repaint_requested;
+    uint32_t request_count;
 } HostedGlfwState;
+
+
+
+/**
+ * Mark that Datoviz requested a host repaint.
+ *
+ * @param win Datoviz app-window requesting a frame
+ * @param user_data hosted GLFW state
+ */
+static void _request_frame_callback(DvzAppWindow* win, void* user_data)
+{
+    (void)win;
+    HostedGlfwState* state = (HostedGlfwState*)user_data;
+    if (state == NULL)
+        return;
+    state->repaint_requested = true;
+    state->request_count++;
+}
 
 
 
@@ -399,6 +419,7 @@ int main(int argc, char** argv)
 
     HostedGlfwState host_state = {.app_window = app_window};
     glfwSetWindowUserPointer(window, &host_state);
+    dvz_app_window_set_request_frame_callback(app_window, _request_frame_callback, &host_state);
     glfwSetCursorPosCallback(window, _cursor_pos_callback);
     glfwSetMouseButtonCallback(window, _mouse_button_callback);
     glfwSetScrollCallback(window, _scroll_callback);
@@ -411,7 +432,10 @@ int main(int argc, char** argv)
     uint32_t frame = 0;
     while (!glfwWindowShouldClose(window) && (max_frames == 0 || frame < max_frames))
     {
-        glfwPollEvents();
+        if (max_frames == 0 && !host_state.repaint_requested)
+            glfwWaitEventsTimeout(0.1);
+        else
+            glfwPollEvents();
 
         info = _surface_info(window, instance, surface, false);
         if (dvz_app_window_update_external_surface(app_window, &info) != 0)
@@ -420,7 +444,9 @@ int main(int argc, char** argv)
             break;
         }
 
-        _emit_resize(window, app_window);
+        if (max_frames == 0 && !host_state.repaint_requested)
+            continue;
+        host_state.repaint_requested = false;
         int rc = dvz_app_window_render_once(app_window);
         if (rc < 0)
         {
@@ -442,6 +468,8 @@ int main(int argc, char** argv)
     dvz_scene_destroy(scene);
     glfwTerminate();
 
-    printf("hosted_glfw_smoke: rendered %u frame(s)\n", frame);
+    printf(
+        "hosted_glfw_smoke: rendered %u frame(s), %u request(s)\n", frame,
+        host_state.request_count);
     return 0;
 }

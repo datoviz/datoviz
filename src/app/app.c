@@ -89,6 +89,8 @@ struct DvzAppWindow
     uint64_t frame_index;
     DvzAppFrameCallback frame_callback;
     void* frame_user_data;
+    DvzAppRequestFrameCallback request_frame_callback;
+    void* request_frame_user_data;
     DvzAppTraceSnapshot last_trace_snapshot;
     bool has_last_trace_snapshot;
 #if defined(DVZ_HAS_GUI) && DVZ_HAS_GUI
@@ -1518,6 +1520,7 @@ int dvz_app_window_emit_resize(
     dvz_window_backend_emit_resize(
         win->window, framebuffer_width, framebuffer_height, window_width, window_height,
         content_scale_x, content_scale_y);
+    dvz_app_window_request_frame(win);
     return 0;
 #else
     return -1;
@@ -1554,6 +1557,7 @@ int dvz_app_window_emit_pointer(
         router, type, x, y, window_width, window_height, button, mods,
         _app_window_content_scale(win), dvz_input_timestamp_ns(),
         win->window != NULL ? dvz_window_user_data(win->window) : NULL);
+    dvz_app_window_request_frame(win);
     return 0;
 #else
     return -1;
@@ -1589,6 +1593,7 @@ int dvz_app_window_emit_wheel(
     dvz_pointer_emit_wheel(
         router, x, y, window_width, window_height, dx, dy, mods, _app_window_content_scale(win),
         dvz_input_timestamp_ns(), win->window != NULL ? dvz_window_user_data(win->window) : NULL);
+    dvz_app_window_request_frame(win);
     return 0;
 #else
     return -1;
@@ -1618,6 +1623,7 @@ dvz_app_window_emit_key(DvzAppWindow* win, DvzKeyboardEventType type, DvzKeyCode
         return -1;
     dvz_keyboard_emit(
         router, type, key, mods, win->window != NULL ? dvz_window_user_data(win->window) : NULL);
+    dvz_app_window_request_frame(win);
     return 0;
 #else
     return -1;
@@ -1680,12 +1686,48 @@ int dvz_app_window_resize(DvzAppWindow* win, uint32_t width, uint32_t height)
         return -1;
     dvz_window_backend_emit_resize(win->window, width, height, width, height, 1.0f, 1.0f);
     dvz_figure_resize(win->figure, width, height);
+    dvz_app_window_request_frame(win);
     return 0;
 #else
     (void)width;
     (void)height;
     return -1;
 #endif
+}
+
+
+
+/**
+ * Request that the host schedules another frame for an app-window.
+ *
+ * @param win app-window requesting a frame
+ */
+void dvz_app_window_request_frame(DvzAppWindow* win)
+{
+    ANN(win);
+#if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
+    if (win->app != NULL && win->app->window_host != NULL && win->window != NULL)
+        dvz_window_host_request_frame(win->app->window_host, win->window);
+#endif
+    if (win->request_frame_callback != NULL)
+        win->request_frame_callback(win, win->request_frame_user_data);
+}
+
+
+
+/**
+ * Register a callback invoked whenever Datoviz requests another frame.
+ *
+ * @param win app-window receiving the callback
+ * @param callback callback pointer, or NULL to clear it
+ * @param user_data opaque pointer forwarded to the callback
+ */
+void dvz_app_window_set_request_frame_callback(
+    DvzAppWindow* win, DvzAppRequestFrameCallback callback, void* user_data)
+{
+    ANN(win);
+    win->request_frame_callback = callback;
+    win->request_frame_user_data = user_data;
 }
 
 

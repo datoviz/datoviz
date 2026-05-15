@@ -38,6 +38,7 @@ typedef struct DvzAppWindow DvzAppWindow;
 typedef struct DvzWindowExternalSurfaceInfo DvzWindowExternalSurfaceInfo;
 
 typedef void (*DvzAppFrameCallback)(DvzAppWindow* win, void* user_data);
+typedef void (*DvzAppRequestFrameCallback)(DvzAppWindow* win, void* user_data);
 
 
 
@@ -303,6 +304,31 @@ DVZ_EXPORT int dvz_app_window_capture_png(DvzAppWindow* win, const char* path);
  * @return 0 on success, negative on error
  */
 DVZ_EXPORT int dvz_app_window_resize(DvzAppWindow* win, uint32_t width, uint32_t height);
+
+
+/**
+ * Request that the host schedules another frame for an app-window.
+ *
+ * Hosted UI adapters should map the registered callback to their native repaint primitive, for
+ * example QWindow::requestUpdate(), QWidget::update(), an SDL wakeup, or a Tk idle callback.
+ *
+ * @param win the app-window
+ */
+DVZ_EXPORT void dvz_app_window_request_frame(DvzAppWindow* win);
+
+
+/**
+ * Register a callback invoked whenever Datoviz requests another frame.
+ *
+ * This is a passive scheduling signal: it does not change dvz_app_run() behavior and does not
+ * render by itself. The host remains responsible for calling dvz_app_window_render_once().
+ *
+ * @param win the app-window
+ * @param callback callback pointer, or NULL to clear it
+ * @param user_data opaque pointer forwarded to the callback
+ */
+DVZ_EXPORT void dvz_app_window_set_request_frame_callback(
+    DvzAppWindow* win, DvzAppRequestFrameCallback callback, void* user_data);
 
 
 /**

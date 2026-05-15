@@ -44,6 +44,13 @@ typedef struct
 } AppTimerProbe;
 
 
+typedef struct
+{
+    uint32_t calls;
+    DvzAppWindow* last_window;
+} AppRequestFrameProbe;
+
+
 
 /**
  * Record one app-driven timer callback.
@@ -63,6 +70,21 @@ static void _app_timer_probe_callback(
     probe->last_t = t;
     probe->last_dt = dt;
     probe->total_dt += dt;
+}
+
+
+/**
+ * Record one app-window request-frame callback.
+ *
+ * @param win app-window requesting a frame
+ * @param user_data request-frame probe storage
+ */
+static void _app_request_frame_probe_callback(DvzAppWindow* win, void* user_data)
+{
+    AppRequestFrameProbe* probe = (AppRequestFrameProbe*)user_data;
+    ANN(probe);
+    probe->calls++;
+    probe->last_window = win;
 }
 
 
@@ -138,6 +160,15 @@ int test_app_offscreen(TstSuite* suite, TstItem* item)
     AT(dvz_app_vk_instance(app) != VK_NULL_HANDLE);
     DvzAppWindow* win = dvz_app_window(app, figure, 64, 64);
     AT(win != NULL);
+
+    AppRequestFrameProbe request_probe = {0};
+    dvz_app_window_set_request_frame_callback(win, _app_request_frame_probe_callback, &request_probe);
+    dvz_app_window_request_frame(win);
+    AT(request_probe.calls == 1);
+    AT(request_probe.last_window == win);
+    AT(dvz_app_window_emit_resize(win, 64, 64, 64, 64, 1.0f, 1.0f) == 0);
+    AT(request_probe.calls == 2);
+    AT(request_probe.last_window == win);
 
     /* Exercise host-driven and Datoviz-owned frame paths. */
     AT(dvz_app_window_render_once(win) == DVZ_CANVAS_FRAME_READY);
