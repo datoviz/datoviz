@@ -956,19 +956,26 @@ bool dvz_visual_set_field(DvzVisual* visual, const char* slot_name, DvzSampledFi
         log_error("cannot bind a sampled field from a different scene");
         return false;
     }
-    if (visual->type != DVZ_VISUAL_TYPE_IMAGE)
+    if (visual->type != DVZ_VISUAL_TYPE_IMAGE && visual->type != DVZ_VISUAL_TYPE_VOLUME)
     {
-        log_error("dvz_visual_set_field is only supported for image visuals in the first slice");
+        log_error("dvz_visual_set_field is only supported for image and volume visuals");
         return false;
     }
     if (strcmp(slot_name, "field") != 0)
     {
-        log_error("unsupported image field slot '%s' (expected 'field')", slot_name);
+        log_error("unsupported visual field slot '%s' (expected 'field')", slot_name);
         return false;
     }
-    if (field != NULL && field->desc.dim != DVZ_FIELD_DIM_2D)
+    if (field != NULL && visual->type == DVZ_VISUAL_TYPE_IMAGE &&
+        field->desc.dim != DVZ_FIELD_DIM_2D)
     {
         log_error("image visuals require a 2D sampled field");
+        return false;
+    }
+    if (field != NULL && visual->type == DVZ_VISUAL_TYPE_VOLUME &&
+        field->desc.dim != DVZ_FIELD_DIM_3D)
+    {
+        log_error("volume visuals require a 3D sampled field");
         return false;
     }
     if (!_scene_visual_mutation_allowed(visual->scene, "bind sampled field"))

@@ -631,6 +631,20 @@ DVZ_EXPORT DvzVisual* dvz_image(DvzScene* scene, uint32_t flags);
 
 
 /**
+ * Create a volume visual.
+ *
+ * First-slice scope: volume visuals retain a 3D sampled field bound through
+ * `dvz_visual_set_field(volume, "field", field)`. GPU ray-marched rendering is deferred; the
+ * retained scene can still realize the bound field as a runtime 3D texture upload.
+ *
+ * @param scene the scene
+ * @param flags variant flags
+ * @return the visual
+ */
+DVZ_EXPORT DvzVisual* dvz_volume(DvzScene* scene, uint32_t flags);
+
+
+/**
  * Attach a 2D RGBA8 texture to an image visual.
  *
  * Transitional convenience wrapper: this creates or updates a scene-owned sampled field and

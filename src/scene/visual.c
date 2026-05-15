@@ -128,6 +128,8 @@ static bool _attr_supported(DvzVisualType type, const char* name, uint32_t* item
         expected = "position, color";
     else if (type == DVZ_VISUAL_TYPE_IMAGE)
         expected = "position, texcoords";
+    else if (type == DVZ_VISUAL_TYPE_VOLUME)
+        expected = "no vertex attributes; bind a 3D field";
 
     log_error(
         "unsupported %s visual attribute '%s' (expected one of: %s)",
@@ -1723,6 +1725,20 @@ DvzVisual* dvz_image(DvzScene* scene, uint32_t flags)
 {
     ANN(scene);
     return _scene_alloc_visual(scene, DVZ_VISUAL_TYPE_IMAGE, flags);
+}
+
+
+/**
+ * Create a volume visual.
+ *
+ * @param scene the scene
+ * @param flags variant flags
+ * @return the visual, or NULL on allocation failure
+ */
+DvzVisual* dvz_volume(DvzScene* scene, uint32_t flags)
+{
+    ANN(scene);
+    return _scene_alloc_visual(scene, DVZ_VISUAL_TYPE_VOLUME, flags);
 }
 
 

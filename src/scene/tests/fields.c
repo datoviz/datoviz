@@ -622,6 +622,55 @@ int test_scene_image_visual_rejects_3d_field(TstSuite* suite, TstItem* item)
 }
 
 
+int test_scene_volume_visual_binds_3d_field(TstSuite* suite, TstItem* item)
+{
+    tst_log_capture_begin(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+
+    DvzVisual* volume = dvz_volume(scene, 0);
+    ANN(volume);
+    AT(volume->type == DVZ_VISUAL_TYPE_VOLUME);
+
+    DvzSampledField* field3d = dvz_sampled_field(
+        scene, &(DvzSampledFieldDesc){
+                   .dim = DVZ_FIELD_DIM_3D,
+                   .format = DVZ_FIELD_FORMAT_R8_UNORM,
+                   .semantic = DVZ_FIELD_SEMANTIC_SCALAR,
+                   .width = 4,
+                   .height = 4,
+                   .depth = 4,
+               });
+    ANN(field3d);
+    AT(dvz_visual_set_field(volume, "field", field3d));
+    AT(volume->field == field3d);
+    AT(strcmp(volume->field_slot, "field") == 0);
+    AT(volume->texture.dirty);
+
+    DvzSampledField* field2d = dvz_sampled_field(
+        scene, &(DvzSampledFieldDesc){
+                   .dim = DVZ_FIELD_DIM_2D,
+                   .format = DVZ_FIELD_FORMAT_R8_UNORM,
+                   .semantic = DVZ_FIELD_SEMANTIC_SCALAR,
+                   .width = 4,
+                   .height = 4,
+                   .depth = 1,
+               });
+    ANN(field2d);
+    AT(!dvz_visual_set_field(volume, "field", field2d));
+    AT(_captured_log_contains(suite, "require a 3D sampled field"));
+
+    AT(dvz_visual_set_field(volume, "field", NULL));
+    AT(volume->field == NULL);
+    AT(volume->field_slot[0] == '\0');
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
 int test_scene_sampled_field_3d_emits_runtime_texture_upload(
     TstSuite* suite, TstItem* item)
 {
@@ -1263,6 +1312,7 @@ int test_scene_fields(TstSuite* suite)
     TEST_SIMPLE(test_scene_sampled_field_update_region);
     TEST_SIMPLE(test_scene_sampled_field_rejects_unsupported_format);
     TEST_SIMPLE(test_scene_image_visual_rejects_3d_field);
+    TEST_SIMPLE(test_scene_volume_visual_binds_3d_field);
     TEST_SIMPLE(test_scene_sampled_field_3d_emits_runtime_texture_upload);
     TEST_SIMPLE(test_scene_sampled_field_update_region_rejects_out_of_bounds);
     TEST_SIMPLE(test_scene_sampled_field_destroy_clears_visual_binding);

@@ -234,7 +234,8 @@ DVZ_EXPORT const DvzSampledFieldDesc* dvz_sampled_field_desc(const DvzSampledFie
 /**
  * Bind a scene-owned sampled field to a named visual slot.
  *
- * First retained slice: image visuals accept the `"field"` slot and require a 2D field.
+ * Image visuals accept the `"field"` slot and require a 2D field. Volume visuals accept the
+ * `"field"` slot and require a 3D field.
  *
  * @param visual the visual
  * @param slot_name the semantic slot name
