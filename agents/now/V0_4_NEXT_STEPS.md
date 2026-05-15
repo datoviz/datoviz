@@ -175,13 +175,17 @@ Deliver the next implementation slices in this order unless the user redirects:
    synchronize cross-API access explicitly with external semaphores or timeline-compatible plumbing.
    Do not make NVIDIA CIG (`VK_NV_external_compute_queue` / CUDA-in-Graphics contexts) a dependency
    of this route; it is optional NVIDIA-specific scheduling plumbing, not required for Vulkan-owned
-   external memory imported into CUDA/CuPy. The current code already has a preferred-direction
-   starting point in `src/vk/tests/test_memory.c:test_memory_cuda_1`, but that test is not currently
-   registered in `src/vk/tests/test_vk.c`; the registered CUDA interop test is
-   `test_memory_cuda_2`, which exercises the later CUDA-owned allocation -> Vulkan import direction.
-   Next implementation step: harden/register `test_memory_cuda_1`, add same-direction external
-   semaphore coverage, then move up to DRP2 runtime registration for an externally shared vertex
-   buffer.
+   external memory imported into CUDA/CuPy. The canonical registered CUDA interop smoke is now
+   `src/vk/tests/test_memory.c:test_memory_cuda_1`, which exercises the preferred Vulkan-owned
+   buffer -> CUDA import path, matches CUDA/Vulkan devices by UUID before creating the Vulkan
+   device, and covers same-direction external timeline semaphore synchronization. The DRP2-level
+   smoke `src/drp2/tests/test_drp2.c:test_drp2_runtime_vklite_draws_cuda_external_vertex_buffer`
+   now verifies a CUDA-filled Vulkan-owned external vertex buffer registered through
+   `dvz_drp2_runtime_register_external_buffer()`, rendered through the vklite runtime, and checked
+   by texture readback. `test_memory_cuda_2` remains available for the later CUDA-owned allocation
+   -> Vulkan import direction, but it should not drive the primary architecture. Next
+   implementation step: define the Python/CuPy-facing exported handle + size/offset + semaphore
+   metadata contract without adding a generic public binding API yet.
 7. Early WebGPU feasibility spike: replay a tiny DRP2 subset for clear, static point/primitive/image,
    then depth. Keep it contract-pressure only; do not fork scene semantics.
 8. Rendered colorbar/text/annotation realization, reusing the current scene -> DRP2 path after the
