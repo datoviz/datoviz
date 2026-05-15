@@ -15,6 +15,7 @@
 /*************************************************************************************************/
 
 #include <inttypes.h>
+#include <math.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <string.h>
@@ -54,6 +55,8 @@ static bool _visual_attr_count_consistent(
 static void _scene_release_visual_scale(DvzVisual* visual);
 
 static void _primitive_shading_default(DvzPrimitiveShadingState* shading);
+
+static void _volume_state_default(DvzVolumeState* state);
 
 static bool _mesh_ensure_default_color(DvzVisual* visual, uint32_t item_count);
 
@@ -339,6 +342,7 @@ static DvzVisual* _scene_alloc_visual(DvzScene* scene, DvzVisualType type, uint3
     visual->z_layer = 0;
     visual->alpha_mode = DVZ_ALPHA_OPAQUE;
     _primitive_shading_default(&visual->primitive_shading);
+    _volume_state_default(&visual->volume);
     return visual;
 }
 
@@ -605,6 +609,27 @@ static void _primitive_shading_default(DvzPrimitiveShadingState* shading)
     shading->light_direction[2] = 1.0f;
     shading->params[0] = 0.2f;
     shading->params[1] = 0.8f;
+}
+
+
+
+/**
+ * Initialize retained volume-state defaults.
+ *
+ * @param state the volume state
+ */
+static void _volume_state_default(DvzVolumeState* state)
+{
+    ANN(state);
+    dvz_memset(state, sizeof(DvzVolumeState), 0, sizeof(DvzVolumeState));
+    state->opacity = 1.0f;
+    state->sampling = DVZ_VOLUME_SAMPLING_LINEAR;
+    state->clip_min[0] = 0.0;
+    state->clip_min[1] = 0.0;
+    state->clip_min[2] = 0.0;
+    state->clip_max[0] = 1.0;
+    state->clip_max[1] = 1.0;
+    state->clip_max[2] = 1.0;
 }
 
 
@@ -1742,13 +1767,155 @@ DvzVisual* dvz_volume(DvzScene* scene, uint32_t flags)
 }
 
 
+/**
+ * Set the global opacity multiplier on a volume visual.
+ *
+ * @param visual the volume visual
+ * @param opacity opacity multiplier in [0, 1]
+ * @return 0 on success, -1 on error
+ */
+int dvz_volume_set_opacity(DvzVisual* visual, float opacity)
+{
+    ANN(visual);
+    if (visual->type != DVZ_VISUAL_TYPE_VOLUME)
+    {
+        log_error("dvz_volume_set_opacity requires a volume visual");
+        return -1;
+    }
+    if (!isfinite(opacity) || opacity < 0.0f || opacity > 1.0f)
+    {
+        log_error("volume opacity must be finite and in [0, 1]");
+        return -1;
+    }
+    if (!_scene_visual_mutation_allowed(visual->scene, "set volume opacity"))
+        return -1;
+    visual->volume.opacity = opacity;
+    _visual_bump_version(&visual->volume.version);
+    return 0;
+}
+
+
+
+/**
+ * Set the texture sampling mode on a volume visual.
+ *
+ * @param visual the volume visual
+ * @param sampling the sampling mode
+ * @return 0 on success, -1 on error
+ */
+int dvz_volume_set_sampling(DvzVisual* visual, DvzVolumeSamplingMode sampling)
+{
+    ANN(visual);
+    if (visual->type != DVZ_VISUAL_TYPE_VOLUME)
+    {
+        log_error("dvz_volume_set_sampling requires a volume visual");
+        return -1;
+    }
+    if (sampling != DVZ_VOLUME_SAMPLING_LINEAR && sampling != DVZ_VOLUME_SAMPLING_NEAREST)
+    {
+        log_error("unsupported volume sampling mode %d", (int)sampling);
+        return -1;
+    }
+    if (!_scene_visual_mutation_allowed(visual->scene, "set volume sampling"))
+        return -1;
+    visual->volume.sampling = sampling;
+    _visual_bump_version(&visual->volume.version);
+    return 0;
+}
+
+
+
+/**
+ * Enable axis-aligned clipping on a volume visual.
+ *
+ * @param visual the volume visual
+ * @param clip_min minimum normalized clip coordinate
+ * @param clip_max maximum normalized clip coordinate
+ * @return 0 on success, -1 on error
+ */
+int dvz_volume_set_clipping_box(
+    DvzVisual* visual, const double clip_min[3], const double clip_max[3])
+{
+    ANN(visual);
+    ANN(clip_min);
+    ANN(clip_max);
+    if (visual->type != DVZ_VISUAL_TYPE_VOLUME)
+    {
+        log_error("dvz_volume_set_clipping_box requires a volume visual");
+        return -1;
+    }
+    for (uint32_t i = 0; i < 3; i++)
+    {
+        if (!isfinite(clip_min[i]) || !isfinite(clip_max[i]) || clip_min[i] < 0.0 ||
+            clip_max[i] > 1.0 || clip_min[i] > clip_max[i])
+        {
+            log_error("volume clipping box coordinates must satisfy 0 <= min <= max <= 1");
+            return -1;
+        }
+    }
+    if (!_scene_visual_mutation_allowed(visual->scene, "set volume clipping box"))
+        return -1;
+    for (uint32_t i = 0; i < 3; i++)
+    {
+        visual->volume.clip_min[i] = clip_min[i];
+        visual->volume.clip_max[i] = clip_max[i];
+    }
+    visual->volume.clipping_enabled = true;
+    _visual_bump_version(&visual->volume.version);
+    return 0;
+}
+
+
+
+/**
+ * Disable axis-aligned clipping on a volume visual.
+ *
+ * @param visual the volume visual
+ * @return 0 on success, -1 on error
+ */
+int dvz_volume_clear_clipping(DvzVisual* visual)
+{
+    ANN(visual);
+    if (visual->type != DVZ_VISUAL_TYPE_VOLUME)
+    {
+        log_error("dvz_volume_clear_clipping requires a volume visual");
+        return -1;
+    }
+    if (!_scene_visual_mutation_allowed(visual->scene, "clear volume clipping"))
+        return -1;
+    visual->volume.clipping_enabled = false;
+    visual->volume.clip_min[0] = 0.0;
+    visual->volume.clip_min[1] = 0.0;
+    visual->volume.clip_min[2] = 0.0;
+    visual->volume.clip_max[0] = 1.0;
+    visual->volume.clip_max[1] = 1.0;
+    visual->volume.clip_max[2] = 1.0;
+    _visual_bump_version(&visual->volume.version);
+    return 0;
+}
+
+
+
+/**
+ * Return the retained volume state for inspection.
+ *
+ * @param visual the volume visual
+ * @return the volume state, or NULL on error
+ */
+const DvzVolumeState* dvz_volume_state(const DvzVisual* visual)
+{
+    if (visual == NULL || visual->type != DVZ_VISUAL_TYPE_VOLUME)
+        return NULL;
+    return &visual->volume;
+}
+
+
 
 /**
  * Bind a scene-owned scale to a named visual slot.
  *
- * First retained slice: image visuals accept the `"colormap"` slot. Other
- * visual families and slot names are rejected until their retained scale
- * wiring is implemented.
+ * Image and volume visuals accept the `"colormap"` slot. Other visual families and slot names are
+ * rejected until their retained scale wiring is implemented.
  *
  * @param visual the visual
  * @param slot_name the semantic slot name
@@ -1764,14 +1931,14 @@ int dvz_visual_set_scale(DvzVisual* visual, const char* slot_name, DvzScale* sca
         log_error("cannot bind a scale from a different scene");
         return -1;
     }
-    if (visual->type != DVZ_VISUAL_TYPE_IMAGE)
+    if (visual->type != DVZ_VISUAL_TYPE_IMAGE && visual->type != DVZ_VISUAL_TYPE_VOLUME)
     {
-        log_error("dvz_visual_set_scale is only supported for image visuals in the first slice");
+        log_error("dvz_visual_set_scale is only supported for image and volume visuals");
         return -1;
     }
     if (strcmp(slot_name, "colormap") != 0)
     {
-        log_error("unsupported image scale slot '%s' (expected 'colormap')", slot_name);
+        log_error("unsupported visual scale slot '%s' (expected 'colormap')", slot_name);
         return -1;
     }
     if (!_scene_visual_mutation_allowed(visual->scene, "bind scale"))

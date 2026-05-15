@@ -134,6 +134,18 @@ struct DvzPrimitiveShadingDesc
 typedef struct DvzPrimitiveShadingDesc DvzPrimitiveShadingDesc;
 
 
+struct DvzVolumeState
+{
+    float opacity;
+    DvzVolumeSamplingMode sampling;
+    bool clipping_enabled;
+    double clip_min[3];
+    double clip_max[3];
+    uint64_t version;
+};
+typedef struct DvzVolumeState DvzVolumeState;
+
+
 
 /* Per-visual attachment options.
  *

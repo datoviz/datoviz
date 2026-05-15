@@ -806,6 +806,74 @@ int test_scene_volume_field_emit_realizes_3d_texture(TstSuite* suite, TstItem* i
 }
 
 
+int test_scene_volume_retained_controls(TstSuite* suite, TstItem* item)
+{
+    tst_log_capture_begin(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzVisual* volume = dvz_volume(scene, 0);
+    ANN(volume);
+
+    const DvzVolumeState* state = dvz_volume_state(volume);
+    ANN(state);
+    AT(state->opacity == 1.0f);
+    AT(state->sampling == DVZ_VOLUME_SAMPLING_LINEAR);
+    AT(!state->clipping_enabled);
+    AT(state->clip_min[0] == 0.0);
+    AT(state->clip_max[2] == 1.0);
+    uint64_t version0 = state->version;
+
+    AT(dvz_volume_set_opacity(volume, 0.35f) == 0);
+    AT(dvz_volume_state(volume)->opacity == 0.35f);
+    AT(dvz_volume_state(volume)->version != version0);
+    uint64_t version1 = dvz_volume_state(volume)->version;
+
+    AT(dvz_volume_set_sampling(volume, DVZ_VOLUME_SAMPLING_NEAREST) == 0);
+    AT(dvz_volume_state(volume)->sampling == DVZ_VOLUME_SAMPLING_NEAREST);
+    AT(dvz_volume_state(volume)->version != version1);
+
+    double clip_min[3] = {0.1, 0.2, 0.3};
+    double clip_max[3] = {0.9, 0.8, 0.7};
+    AT(dvz_volume_set_clipping_box(volume, clip_min, clip_max) == 0);
+    state = dvz_volume_state(volume);
+    ANN(state);
+    AT(state->clipping_enabled);
+    AT(state->clip_min[1] == 0.2);
+    AT(state->clip_max[2] == 0.7);
+
+    AT(dvz_volume_clear_clipping(volume) == 0);
+    state = dvz_volume_state(volume);
+    ANN(state);
+    AT(!state->clipping_enabled);
+    AT(state->clip_min[0] == 0.0);
+    AT(state->clip_max[2] == 1.0);
+
+    AT(dvz_volume_set_opacity(volume, -0.1f) != 0);
+    AT(_captured_log_contains(suite, "volume opacity must be finite"));
+    double invalid_min[3] = {0.0, 0.8, 0.0};
+    double invalid_max[3] = {1.0, 0.7, 1.0};
+    AT(dvz_volume_set_clipping_box(volume, invalid_min, invalid_max) != 0);
+    AT(_captured_log_contains(suite, "volume clipping box coordinates"));
+
+    DvzScale* scale = dvz_scale(scene, &(DvzScaleDesc){.kind = DVZ_SCALE_CONTINUOUS});
+    ANN(scale);
+    AT(dvz_visual_set_scale(volume, "colormap", scale) == 0);
+    AT(volume->scale == scale);
+    AT(strcmp(volume->scale_slot, "colormap") == 0);
+
+    DvzVisual* image = dvz_image(scene, 0);
+    ANN(image);
+    AT(dvz_volume_state(image) == NULL);
+    AT(dvz_volume_set_sampling(image, DVZ_VOLUME_SAMPLING_LINEAR) != 0);
+    AT(_captured_log_contains(suite, "requires a volume visual"));
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
 int test_scene_sampled_field_3d_emits_runtime_texture_upload(
     TstSuite* suite, TstItem* item)
 {
@@ -1449,6 +1517,7 @@ int test_scene_fields(TstSuite* suite)
     TEST_SIMPLE(test_scene_image_visual_rejects_3d_field);
     TEST_SIMPLE(test_scene_volume_visual_binds_3d_field);
     TEST_SIMPLE(test_scene_volume_field_emit_realizes_3d_texture);
+    TEST_SIMPLE(test_scene_volume_retained_controls);
     TEST_SIMPLE(test_scene_sampled_field_3d_emits_runtime_texture_upload);
     TEST_SIMPLE(test_scene_sampled_field_update_region_rejects_out_of_bounds);
     TEST_SIMPLE(test_scene_sampled_field_destroy_clears_visual_binding);

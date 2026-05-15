@@ -510,6 +510,7 @@ struct DvzVisual
     DvzPrimitiveShadingState primitive_shading;
     bool                     primitive_shading_dirty;
     bool                     mesh_default_color;
+    DvzVolumeState           volume;
 
     /* Attribute slots — indexed by attr index (type-specific) */
     uint32_t      attr_count;

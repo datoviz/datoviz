@@ -645,6 +645,57 @@ DVZ_EXPORT DvzVisual* dvz_volume(DvzScene* scene, uint32_t flags);
 
 
 /**
+ * Set the global opacity multiplier on a volume visual.
+ *
+ * @param visual the volume visual
+ * @param opacity opacity multiplier in [0, 1]
+ * @return 0 on success, -1 on error
+ */
+DVZ_EXPORT int dvz_volume_set_opacity(DvzVisual* visual, float opacity);
+
+
+/**
+ * Set the texture sampling mode on a volume visual.
+ *
+ * @param visual the volume visual
+ * @param sampling the sampling mode
+ * @return 0 on success, -1 on error
+ */
+DVZ_EXPORT int
+dvz_volume_set_sampling(DvzVisual* visual, DvzVolumeSamplingMode sampling);
+
+
+/**
+ * Enable axis-aligned clipping on a volume visual.
+ *
+ * @param visual the volume visual
+ * @param clip_min minimum normalized clip coordinate
+ * @param clip_max maximum normalized clip coordinate
+ * @return 0 on success, -1 on error
+ */
+DVZ_EXPORT int
+dvz_volume_set_clipping_box(DvzVisual* visual, const double clip_min[3], const double clip_max[3]);
+
+
+/**
+ * Disable axis-aligned clipping on a volume visual.
+ *
+ * @param visual the volume visual
+ * @return 0 on success, -1 on error
+ */
+DVZ_EXPORT int dvz_volume_clear_clipping(DvzVisual* visual);
+
+
+/**
+ * Return the retained volume state for inspection.
+ *
+ * @param visual the volume visual
+ * @return the volume state, or NULL on error
+ */
+DVZ_EXPORT const DvzVolumeState* dvz_volume_state(const DvzVisual* visual);
+
+
+/**
  * Attach a 2D RGBA8 texture to an image visual.
  *
  * Transitional convenience wrapper: this creates or updates a scene-owned sampled field and

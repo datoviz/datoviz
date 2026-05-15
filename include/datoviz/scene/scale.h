@@ -177,7 +177,8 @@ DVZ_EXPORT void dvz_colorbar_set_format(
  *
  * First retained slice: image visuals accept the `"colormap"` slot. Other
  * visual families and slot names are rejected until their retained scale
- * wiring is implemented.
+ * wiring is implemented. Volume visuals also accept the `"colormap"` slot as retained transfer
+ * function state for the volume renderer.
  *
  * @param visual the visual
  * @param slot_name the semantic slot name
