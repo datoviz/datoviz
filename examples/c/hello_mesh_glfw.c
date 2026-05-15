@@ -14,6 +14,7 @@
  * Build:  just example-c hello_mesh_glfw
  * Run:    ./build/examples/c/hello_mesh_glfw
  * Smoke:  ./build/examples/c/hello_mesh_glfw 60
+ * Video:  ./build/examples/c/hello_mesh_glfw video
  */
 
 
@@ -22,14 +23,18 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
+#include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "_alloc.h"
 #include "datoviz/app.h"
+#include "datoviz/canvas.h"
 #include "datoviz/input/pointer.h"
 #include "datoviz/scene.h"
+#include "datoviz/video.h"
 
 
 
@@ -134,16 +139,62 @@ static void _build_cube(
  */
 static uint32_t _frame_count(int argc, char** argv)
 {
-    if (argc < 2 || argv == NULL || argv[1] == NULL)
+    if (argc < 2 || argv == NULL)
         return 0;
 
-    char* end = NULL;
-    unsigned long value = strtoul(argv[1], &end, 10);
-    if (end == argv[1] || (end != NULL && *end != '\0'))
-        return 0;
-    if (value > UINT32_MAX)
-        return UINT32_MAX;
-    return (uint32_t)value;
+    for (int i = 1; i < argc; i++)
+    {
+        if (argv[i] == NULL)
+            continue;
+        char* end = NULL;
+        unsigned long value = strtoul(argv[i], &end, 10);
+        if (end == argv[i] || (end != NULL && *end != '\0'))
+            continue;
+        if (value > UINT32_MAX)
+            return UINT32_MAX;
+        return (uint32_t)value;
+    }
+    return 0;
+}
+
+
+
+/**
+ * Return whether the example should enable live MP4 recording.
+ *
+ * @param argc command-line argument count
+ * @param argv command-line argument vector
+ * @return whether video recording was requested
+ */
+static bool _video_enabled(int argc, char** argv)
+{
+    if (argc < 2 || argv == NULL)
+        return false;
+    for (int i = 1; i < argc; i++)
+    {
+        if (argv[i] != NULL && strcmp(argv[i], "video") == 0)
+            return true;
+    }
+    return false;
+}
+
+
+
+/**
+ * Build an output path next to the example executable.
+ *
+ * @param exe executable path from argv[0]
+ * @param name output file name
+ * @param out destination path buffer
+ * @param size destination path buffer size
+ */
+static void _outpath(const char* exe, const char* name, char* out, size_t size)
+{
+    const char* slash = exe != NULL ? strrchr(exe, '/') : NULL;
+    if (slash != NULL)
+        snprintf(out, size, "%.*s/%s", (int)(slash - exe), exe, name);
+    else
+        snprintf(out, size, "%s", name);
 }
 
 
@@ -190,6 +241,9 @@ static void _mesh_glfw_frame(DvzAppWindow* win, void* user_data)
 
 int main(int argc, char** argv)
 {
+    bool video_enabled = _video_enabled(argc, argv);
+    uint32_t frame_count = _frame_count(argc, argv);
+
     DvzScene* scene = dvz_scene();
     if (scene == NULL)
     {
@@ -301,10 +355,32 @@ int main(int argc, char** argv)
     }
     dvz_arcball_set(arcball, (vec3){+0.65f, 0.0f, +0.35f});
 
+    char mp4_path[512] = {0};
+    if (video_enabled)
+    {
+        DvzVideoSinkConfig video = dvz_video_sink_default_config();
+        video.encoder.backend = "nvenc";
+        video.encoder.width = WIDTH;
+        video.encoder.height = HEIGHT;
+        video.encoder.fps = 60;
+        _outpath(argv[0], "hello_mesh_glfw.mp4", mp4_path, sizeof(mp4_path));
+        video.encoder.mp4_path = mp4_path;
+
+        if (dvz_canvas_configure_video_sink(dvz_app_window_canvas(win), true, &video) != 0)
+        {
+            fprintf(stderr, "dvz_canvas_configure_video_sink() failed\n");
+            dvz_app_destroy(app);
+            dvz_scene_destroy(scene);
+            return 1;
+        }
+    }
+
     MeshGlfwState state = {.arcball = arcball};
     dvz_app_window_set_frame_callback(win, _mesh_glfw_frame, &state);
 
-    dvz_app_run(app, _frame_count(argc, argv));
+    dvz_app_run(app, frame_count);
+    if (video_enabled)
+        printf("hello_mesh_glfw: saved %s\n", mp4_path);
 
     dvz_app_destroy(app);
     dvz_scene_destroy(scene);
