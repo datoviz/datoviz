@@ -17,13 +17,14 @@ Then open:
 http://localhost:8765/examples/webgpu/fixtures.html
 ```
 
-The committed manifest currently covers the `32` positive DRP2 fixtures under
+The committed manifest currently covers the `35` positive DRP2 fixtures under
 `spec/drp2/fixtures/positive`.
 
 Current status as of this note:
 
-- positive fixture count: `32`
-- last manual dashboard run: `32 pass, 0 unsupported, 0 fail`
+- positive fixture count: `35`
+- last manual dashboard run before adding C-emitted WGSL scene fixtures:
+  `32 pass, 0 unsupported, 0 fail`
 - remaining unsupported positive fixture group: none in the committed positive fixture manifest
 
 

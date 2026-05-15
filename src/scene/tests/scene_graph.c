@@ -498,6 +498,9 @@ int test_scene_point_emit_wgsl_instanced_quads(TstSuite* suite, TstItem* item)
     AT(strstr(json, "\"instance_count\": 3") != NULL);
     AT(strstr(json, "quad_corner") != NULL);
     dvz_drp2_stream_json_destroy(json);
+    AT(_assert_stream_matches_fixture(
+           stream, "scene_point_wgsl_from_c",
+           "spec/drp2/fixtures/positive/scene_point_wgsl_from_c.json") == 0);
 
     dvz_drp2_stream_destroy(stream);
     dvz_scene_destroy(scene);
@@ -566,6 +569,9 @@ int test_scene_primitive_triangle_list_emit_wgsl(TstSuite* suite, TstItem* item)
     AT(strstr(json, "VertexIn") != NULL);
 
     dvz_drp2_stream_json_destroy(json);
+    AT(_assert_stream_matches_fixture(
+           stream, "scene_primitive_wgsl_from_c",
+           "spec/drp2/fixtures/positive/scene_primitive_wgsl_from_c.json") == 0);
     dvz_drp2_stream_destroy(stream);
     dvz_scene_destroy(scene);
     return 0;
@@ -2291,6 +2297,9 @@ int test_scene_image_emit_wgsl(TstSuite* suite, TstItem* item)
     AT(strstr(json, "\"vertex_buffers\": [") != NULL);
 
     dvz_drp2_stream_json_destroy(json);
+    AT(_assert_stream_matches_fixture(
+           stream, "scene_image_wgsl_from_c",
+           "spec/drp2/fixtures/positive/scene_image_wgsl_from_c.json") == 0);
     dvz_drp2_stream_destroy(stream);
     dvz_scene_destroy(scene);
     return 0;
