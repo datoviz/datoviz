@@ -262,9 +262,9 @@ area. On macOS, use `direnv exec .` for Vulkan-path tests.
     can diagnose whether opaque geometry writes depth before WBOIT accumulation. The expected stream
     shape is opaque `rt` pass with depth writes, `_wboit_accum_*` pass with depth test/no depth
     writes, and final `rt` resolve pass with no depth.
-13. Done: switch the live example to a light diagnostic background by default, add a GUI toggle for
-    the background, and tune the cube/reference defaults so WBOIT face overlap and opaque-card
-    occlusion are easier to inspect.
+13. Done: keep the live example on a dark background by default, add a GUI toggle for a light
+    comparison background, and tune the cube/reference defaults so WBOIT face overlap and
+    opaque-card occlusion are easier to inspect.
 14. Next: add offscreen/capture coverage for WBOIT if needed.
 
 

@@ -187,10 +187,9 @@ hello_mesh_wboit_glfw -j2`, `./build/testing/dvztest_drp2 test_drp2_stream_debug
 `./build/testing/dvztest_scene test_scene_visual_alpha_mode_emits_wboit_drp2`, and bounded labeled
 trace smoke.
 
-WBOIT visual diagnostic follow-up on `2026-05-15`: `hello_mesh_wboit_glfw` now defaults to a light
-diagnostic background, has a GUI toggle to switch back to the dark background, and uses tuned
-cube/reference colors so face overlap and front-card occlusion are easier to judge during live
-rotation.
+WBOIT visual diagnostic follow-up on `2026-05-15`: `hello_mesh_wboit_glfw` keeps the dark background
+by default, has a GUI toggle for a light comparison background, and uses tuned cube/reference colors
+so face overlap and front-card occlusion are easier to judge during live rotation.
 
 
 ## Immediate Task

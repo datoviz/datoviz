@@ -94,14 +94,13 @@ Bounded validation smoke:
 ./build/examples/c/hello_mesh_wboit_glfw 2
 ```
 
-Expected behavior: one lit, transparent teal WBOIT cube renders on a light diagnostic background
-between opaque reference cards. The large rear card should remain visible through the cube, while
-the narrow front strip should occlude the cube where it is in front. The cube should show
-face-to-face lighting variation and visible overlap against the light background rather than one
-flat solid color. A GUI overlay named `WBOIT cube` exposes a Light background toggle plus live Red,
-Green, Blue, Alpha, Ambient, Diffuse, and Light X/Y/Z sliders for visual tuning. Idle rotation
-advances through the scene clock, arcball drag remains interactive, and Vulkan validation stays
-quiet for the bounded smoke.
+Expected behavior: one lit, transparent teal WBOIT cube renders on a dark background between opaque
+reference cards. The large rear card should remain visible through the cube, while the narrow front
+strip should occlude the cube where it is in front. The cube should show face-to-face lighting
+variation and visible overlap rather than one flat solid color. A GUI overlay named `WBOIT cube`
+exposes a Light background toggle plus live Red, Green, Blue, Alpha, Ambient, Diffuse, and Light
+X/Y/Z sliders for visual tuning. Idle rotation advances through the scene clock, arcball drag
+remains interactive, and Vulkan validation stays quiet for the bounded smoke.
 
 For command inspection, run the bounded smoke with full labeled DRP2 trace:
 

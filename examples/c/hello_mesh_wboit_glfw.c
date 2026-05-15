@@ -286,7 +286,7 @@ static void _mesh_wboit_gui(DvzGui* gui, DvzAppWindow* win, void* user_data)
             dvz_gui_slider_float(gui, "Light Z", &state->cube_light_direction[2], -1.0f, 1.0f);
         if (dvz_gui_button(gui, "Reset"))
         {
-            state->light_background = true;
+            state->light_background = false;
             state->cube_rgb[0] = 36.0f / 255.0f;
             state->cube_rgb[1] = 150.0f / 255.0f;
             state->cube_rgb[2] = 185.0f / 255.0f;
@@ -409,7 +409,7 @@ int main(int argc, char** argv)
         .cube_light_direction = {0.25f, 0.70f, 0.45f},
         .cube_ambient = 0.18f,
         .cube_diffuse = 0.95f,
-        .light_background = true,
+        .light_background = false,
     };
     dvz_memcpy(state.cube_colors, sizeof(state.cube_colors), colors, sizeof(colors));
 
