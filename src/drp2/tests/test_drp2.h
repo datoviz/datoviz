@@ -38,6 +38,8 @@ int test_drp2_write_buffer_bytes_json_encodes_data_raw(TstSuite* suite, TstItem*
 
 int test_drp2_render_pipeline_step_modes_json(TstSuite* suite, TstItem* item);
 
+int test_drp2_recording_linear_roundtrip(TstSuite* suite, TstItem* item);
+
 #if DVZ_DRP2_HAS_VKLITE
 int test_drp2_write_buffer_bytes_large_payload_executes(TstSuite* suite, TstItem* item);
 #endif

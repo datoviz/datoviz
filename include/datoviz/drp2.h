@@ -18,3 +18,4 @@
 
 #include "drp2/stream.h"
 #include "drp2/runtime.h"
+#include "drp2/recording.h"

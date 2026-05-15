@@ -3146,6 +3146,100 @@ int test_drp2_render_pipeline_step_modes_json(TstSuite* suite, TstItem* item)
 }
 
 
+/**
+ * Ensure a raw linear DRP2 recording round-trips command and payload blobs.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_drp2_recording_linear_roundtrip(TstSuite* suite, TstItem* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzDrp2CommandStream* stream = dvz_drp2_stream();
+    ANN(stream);
+
+    AT(dvz_drp2_stream_hello_renderer(stream, "test-client"));
+    AT(dvz_drp2_stream_renderer_hello_reply(stream, "test-renderer"));
+
+    uint8_t buffer_payload[16] = {
+        0, 1, 2, 3, 4, 5, 6, 7,
+        8, 9, 10, 11, 12, 13, 14, 15,
+    };
+    uint8_t texture_payload[16] = {
+        255, 0, 0, 255, 0, 255, 0, 255,
+        0, 0, 255, 255, 255, 255, 255, 255,
+    };
+
+    AT(dvz_drp2_stream_create_buffer(
+        stream, 1, sizeof(buffer_payload), DVZ_DRP2_BUFFER_USAGE_COPY_DST));
+    AT(dvz_drp2_stream_write_buffer_bytes(
+        stream, 1, 0, sizeof(buffer_payload), buffer_payload));
+    AT(dvz_drp2_stream_create_texture_2d_usage(
+        stream, 2, 2, 2, DVZ_DRP2_TEXTURE_USAGE_COPY_DST));
+    AT(dvz_drp2_stream_write_texture_2d_region_bytes(
+        stream, 2, 0, 0, 0, 2, 2, 8, 2, texture_payload));
+
+    DvzDrp2RuntimeConfig cfg = dvz_drp2_runtime_vklite_config(NULL, NULL);
+    cfg.semantic_only = true;
+    DvzDrp2Runtime* runtime = dvz_drp2_runtime_vklite(&cfg);
+    ANN(runtime);
+    DvzDrp2ValidationResult result = dvz_drp2_runtime_execute(runtime, stream);
+    AT(result.ok);
+    dvz_drp2_runtime_destroy(runtime);
+
+    DvzDrp2RecordingInfo info = {
+        .width = 64,
+        .height = 64,
+        .duration_s = 0.016,
+        .t_present = 0.016,
+        .backend_hint = "semantic",
+    };
+    const char* path = "/tmp/dvz_drp2_recording_linear.dvzr";
+    AT(dvz_drp2_recording_write_stream(path, stream, &info));
+
+    DvzDrp2CommandStream* replay = dvz_drp2_recording_read_stream(path);
+    ANN(replay);
+    AT(dvz_drp2_stream_count(replay) == dvz_drp2_stream_count(stream));
+
+    for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
+    {
+        const DvzDrp2Command* a = dvz_drp2_stream_get(stream, i);
+        const DvzDrp2Command* b = dvz_drp2_stream_get(replay, i);
+        ANN(a);
+        ANN(b);
+        AT(a->type == b->type);
+    }
+
+    const DvzDrp2Command* write_buffer = dvz_drp2_stream_get(replay, 3);
+    ANN(write_buffer);
+    AT(write_buffer->u.write_buffer.size == sizeof(buffer_payload));
+    AT(write_buffer->u.write_buffer.data_raw != NULL);
+    AT(memcmp(
+           write_buffer->u.write_buffer.data_raw, buffer_payload, sizeof(buffer_payload)) == 0);
+
+    const DvzDrp2Command* write_texture = dvz_drp2_stream_get(replay, 5);
+    ANN(write_texture);
+    AT(write_texture->u.write_texture.width == 2);
+    AT(write_texture->u.write_texture.height == 2);
+    AT(write_texture->u.write_texture.data_raw != NULL);
+    AT(memcmp(
+           write_texture->u.write_texture.data_raw, texture_payload, sizeof(texture_payload)) == 0);
+
+    runtime = dvz_drp2_runtime_vklite(&cfg);
+    ANN(runtime);
+    result = dvz_drp2_runtime_execute(runtime, replay);
+    AT(result.ok);
+    dvz_drp2_runtime_destroy(runtime);
+
+    dvz_drp2_stream_destroy(replay);
+    dvz_drp2_stream_destroy(stream);
+    return 0;
+}
+
+
 
 /*************************************************************************************************/
 /*  Entry-point                                                                                  */
@@ -3165,6 +3259,7 @@ int test_drp2(TstSuite* suite)
     TEST_SIMPLE(test_drp2_write_buffer_bytes_json_encodes_data_raw);
     TEST_SIMPLE(test_drp2_write_buffer_bytes_large_json_roundtrip);
     TEST_SIMPLE(test_drp2_render_pipeline_step_modes_json);
+    TEST_SIMPLE(test_drp2_recording_linear_roundtrip);
     TEST_SIMPLE(test_drp2_begin_render_pass_clear_color_stored);
     TEST_SIMPLE(test_drp2_stream_json_preserves_clear_color);
     TEST_SIMPLE(test_drp2_runtime_validate_render_stream);
