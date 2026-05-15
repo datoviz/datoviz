@@ -100,6 +100,8 @@ void dvz_descriptors(DvzSlots* slots, DvzDescriptors* descriptors)
 
     log_trace("allocate descriptor sets");
     VK_CHECK_RESULT(vkAllocateDescriptorSets(vkd, &info, descriptors->vk_descriptors));
+    descriptors->vk_pool = dpool;
+    descriptors->set_count = info.descriptorSetCount;
 }
 
 
@@ -113,8 +115,7 @@ void dvz_descriptors(DvzSlots* slots, DvzDescriptors* descriptors)
 uint32_t dvz_descriptors_set_count(DvzDescriptors* descriptors)
 {
     ANN(descriptors);
-    ANN(descriptors->slots);
-    return dvz_slots_set_count(descriptors->slots);
+    return descriptors->set_count;
 }
 
 
@@ -233,6 +234,19 @@ void dvz_descriptors_free(DvzDescriptors* descriptors)
     if (descriptors == NULL)
     {
         return;
+    }
+    if (descriptors->device != NULL && descriptors->vk_pool != VK_NULL_HANDLE &&
+        descriptors->set_count > 0)
+    {
+        VkDevice vkd = dvz_device_handle(descriptors->device);
+        if (vkd != VK_NULL_HANDLE)
+        {
+            VkResult res = vkFreeDescriptorSets(
+                vkd, descriptors->vk_pool, descriptors->set_count,
+                descriptors->vk_descriptors);
+            if (res != VK_SUCCESS)
+                log_error("failed to free descriptor sets: %d", (int)res);
+        }
     }
     dvz_free(descriptors);
 }

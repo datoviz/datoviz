@@ -127,6 +127,15 @@ int test_vklite_descriptors_1(TstSuite* suite, TstItem* tstitem)
     dvz_buffer_free(ubuf);
     dvz_buffer_free(sbuf);
     dvz_descriptors_free(desc);
+    for (uint32_t i = 0; i < DVZ_MAX_DESCRIPTOR_SETS + 16; i++)
+    {
+        DvzDescriptors* recycled = dvz_descriptors_create_wrapper();
+        ANN(recycled);
+        dvz_descriptors(slots, recycled);
+        AT(dvz_descriptors_handle(recycled, 0) != VK_NULL_HANDLE);
+        AT(dvz_descriptors_handle(recycled, 1) != VK_NULL_HANDLE);
+        dvz_descriptors_free(recycled);
+    }
     dvz_slots_destroy(slots);
     dvz_slots_free(slots);
     uint32_t err_count = dvz_gpu_ctx_error_count(ctx);

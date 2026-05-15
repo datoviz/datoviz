@@ -30,5 +30,7 @@ struct DvzDescriptors
 {
     DvzSlots* slots;
     DvzDevice* device;
+    VkDescriptorPool vk_pool;
+    uint32_t set_count;
     VkDescriptorSet vk_descriptors[DVZ_MAX_SETS];
 };

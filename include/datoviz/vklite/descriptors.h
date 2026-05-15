@@ -153,8 +153,8 @@ DVZ_EXPORT void dvz_cmd_bind_descriptors(
 /**
  * Free a descriptor wrapper allocated by dvz_descriptors_create().
  *
- * This only releases the CPU-side wrapper. The underlying descriptor sets are pool-backed and are
- * reclaimed with the parent descriptor pool/device rather than through this wrapper.
+ * This releases the CPU-side wrapper and returns its Vulkan descriptor sets to the parent
+ * device-owned descriptor pool. The wrapper must be freed before the parent device is destroyed.
  *
  * @param descriptors descriptor wrapper to free
  */

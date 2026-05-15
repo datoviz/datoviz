@@ -40,6 +40,9 @@ static bool _scene_execute_readback_plan(
 static bool _scene_image_probe_sample_cpu(
     const DvzPanel* panel, DvzVisual* visual, const vec2 request_ndc, uint8_t rgba[4]);
 
+static bool _scene_probe_request_has_image_candidate(
+    const DvzFigure* figure, const DvzPendingProbeRequest* pending);
+
 static bool _scene_process_point_pick_request(
     DvzFigure* figure, DvzDrp2Runtime* runtime, const DvzCapabilitySnapshot* caps,
     const DvzPendingPickRequest* pending);
@@ -81,13 +84,7 @@ uint32_t dvz_figure_process_requests(
     if (scene->pending_pick_count == 0 && scene->pending_probe_count == 0)
         return 0;
 
-    DvzDrp2RuntimeConfig runtime_cfg = dvz_drp2_runtime_config(runtime);
-    DvzDrp2Runtime* request_runtime = dvz_drp2_runtime_vklite(&runtime_cfg);
-    if (request_runtime == NULL)
-    {
-        log_error("scene request runtime creation failed");
-        return 0;
-    }
+    DvzDrp2Runtime* request_runtime = NULL;
 
     for (uint32_t i = 0; i < scene->pending_pick_count;)
     {
@@ -110,12 +107,21 @@ uint32_t dvz_figure_process_requests(
             i++;
             continue;
         }
+        if (request_runtime == NULL &&
+            _scene_probe_request_has_image_candidate(figure, &pending))
+        {
+            DvzDrp2RuntimeConfig runtime_cfg = dvz_drp2_runtime_config(runtime);
+            request_runtime = dvz_drp2_runtime_vklite(&runtime_cfg);
+            if (request_runtime == NULL)
+                log_error("scene request runtime creation failed");
+        }
         (void)_scene_process_image_probe_request(figure, request_runtime, caps, &pending);
         _scene_remove_pending_probe_at(scene, i);
         processed++;
     }
 
-    dvz_drp2_runtime_destroy(request_runtime);
+    if (request_runtime != NULL)
+        dvz_drp2_runtime_destroy(request_runtime);
     return processed;
 }
 
@@ -326,13 +332,49 @@ static bool _scene_image_probe_sample_cpu(
 }
 
 
+/**
+ * Return whether one pending probe has a visible image candidate that may need GPU readback.
+ *
+ * @param figure figure whose request queue is being processed
+ * @param pending pending probe request
+ * @return true when a matching image visual exists
+ */
+static bool _scene_probe_request_has_image_candidate(
+    const DvzFigure* figure, const DvzPendingProbeRequest* pending)
+{
+    ANN(figure);
+    ANN(pending);
+    if (pending->panel == NULL || pending->panel->figure != figure)
+        return false;
+
+    const DvzPanel* panel = pending->panel;
+    bool segment_probe = pending->request.target == DVZ_SCENE_TARGET_SEGMENT;
+    for (uint32_t i = 0; i < panel->visual_count; i++)
+    {
+        const DvzVisual* visual = panel->visuals[i].visual;
+        if (visual == NULL || visual->type != DVZ_VISUAL_TYPE_IMAGE)
+            continue;
+        if (segment_probe)
+        {
+            if ((visual->pick_capabilities & DVZ_PICK_CAPABILITY_GROUP) != 0)
+                return true;
+        }
+        else if (visual->visible)
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+
 
 static bool _scene_process_point_pick_request(
     DvzFigure* figure, DvzDrp2Runtime* runtime, const DvzCapabilitySnapshot* caps,
     const DvzPendingPickRequest* pending)
 {
+    (void)runtime;
     ANN(figure);
-    ANN(runtime);
     ANN(caps);
     ANN(pending);
     ANN(pending->panel);
@@ -413,7 +455,6 @@ static bool _scene_process_image_probe_request(
     const DvzPendingProbeRequest* pending)
 {
     ANN(figure);
-    ANN(runtime);
     ANN(caps);
     ANN(pending);
     ANN(pending->panel);
@@ -448,6 +489,12 @@ static bool _scene_process_image_probe_request(
         }
         else if (!visual->visible)
         {
+            continue;
+        }
+
+        if (runtime == NULL)
+        {
+            log_error("image probe request requires a DRP2 runtime");
             continue;
         }
 

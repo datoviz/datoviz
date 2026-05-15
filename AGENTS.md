@@ -574,6 +574,12 @@ Codex may and should run analysis tools when they are available and relevant to 
   smoke loops such as `dvz_live_canvas --frames 300`.
 * If an analysis tool is unavailable, too noisy for the active subsystem, or impractical for the current
   environment, report that explicitly and fall back to focused tests and runtime validation.
+* When investigating scene -> DRP2 -> app churn, descriptor pressure, or unexpected runtime object
+  creation, enable the DRP2 app stream trace before guessing: use `DVZ_DRP2_TRACE=full` for every
+  emitted app frame, or `DVZ_DRP2_TRACE=1` / `normal` to print full details only when the normalized
+  stream changes. Add `DVZ_DRP2_TRACE_COLOR=0` or `NO_COLOR=1` when capturing logs. Remember that
+  this app trace covers app-frame streams; request-only readback/probe streams may need their own
+  focused logging or tests.
 
 ## 🚧 Refactor Roadmap Guidance
 
