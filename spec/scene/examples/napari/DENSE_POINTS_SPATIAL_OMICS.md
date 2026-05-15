@@ -6,6 +6,24 @@ This demo shows a high-density `Points`-like napari workflow: millions of detect
 
 This is one of the best demos for napari maintainers because the data model is simple but the rendering pressure is very high.
 
+## Implementation stance for current v0.4
+
+Build this demo in two stages.
+
+Stage 1 should be a **C-rendered MVP** using the current v0.4 `scene -> DRP2 -> app` path. The
+preparation tool may be Python, but the interactive demo should be a C example under
+`examples/napari/` so it exercises the same retained scene, app window, GUI, panzoom, and Vulkan
+runtime path as the other active v0.4 examples.
+
+Stage 1 should not depend on the full SpatialData runtime at rendering time and should not require
+new point shader semantics. It should precompute point colors and LOD subsets on the CPU, then feed
+the current `dvz_point()` visual with the attributes supported today: `position`, `color`, and
+`size`.
+
+Stage 2 is the renderer/API upgrade that turns the demo into the full intended napari Points stress
+test: native instanced point quads, antialiased disc/Gaussian shaders, shader-side category/value
+coloring, point opacity as a lightweight style parameter, and stronger density/LOD modes.
+
 ## Napari use case being mirrored
 
 Napari's Points layer displays an `N x D` coordinate array and is commonly used for spots, annotations, detections, centroids, landmarks, and spatial biology data. The napari docs explicitly frame points as useful for spots found automatically or manually annotated over images.
@@ -76,10 +94,45 @@ image: optional uint8/float32 background
 metadata.json
 ```
 
-Store it as:
+The Python preparation cache may be stored as:
 
 ```text
 ~/.cache/datoviz-napari-demos/spatial_points/merfish_points.npz
+```
+
+For the Stage 1 C runtime, export a simple Datoviz-ready cache that does not require a Zarr or NPZ
+reader in the C example:
+
+```text
+~/.cache/datoviz-napari-demos/spatial_points/merfish/
+  metadata.json
+  positions_f32.bin      # N x 3 float32, already normalized into scene coordinates
+  category_u32.bin       # N uint32
+  value_f32.bin          # N float32
+  colors_category_rgba8.bin
+  colors_continuous_rgba8.bin
+  colors_density_rgba8.bin
+  lod_real_u32.bin       # optional index list, or omitted when real count is the base set
+  lod_1m_u32.bin
+  lod_5m_u32.bin
+  lod_10m_u32.bin
+  image_rgba8.bin        # optional W x H x 4 background
+```
+
+`metadata.json` should include at least:
+
+```json
+{
+  "point_count": 1000000,
+  "image_width": 1024,
+  "image_height": 1024,
+  "x_min": 0.0,
+  "x_max": 1.0,
+  "y_min": 0.0,
+  "y_max": 1.0,
+  "category_count": 12,
+  "category_names": ["unknown"]
+}
 ```
 
 ## Preprocessing pipeline
@@ -92,7 +145,8 @@ Store it as:
 3. Normalize coordinates into image/world space.
 4. Extract one categorical column, such as cell type, cluster, annotation, or gene identity.
 5. Extract one continuous column, such as intensity, expression score, area, confidence, or quality.
-6. Save compact arrays for Datoviz.
+6. Save the Python preparation cache.
+7. Export the Datoviz-ready binary cache for the C example.
 
 If the real dataset extraction is too slow, generate a synthetic stress extension:
 
@@ -106,43 +160,97 @@ This keeps the demo visually biological while reaching stress-test scale.
 
 ## Datoviz adaptation
 
+### Stage 1: current v0.4 C demo
+
+Stage 1 should use only features that exist in the active v0.4 path:
+
+- `dvz_image()` for the optional tissue/microscopy background.
+- `dvz_point()` for points.
+- `dvz_visual_set_data()` for full point-count/color-mode swaps.
+- `dvz_visual_set_data_range()` only for small interactive updates when useful.
+- `dvz_panel_set_panzoom()` for interaction.
+- `dvz_gui_*` controls in the GLFW app.
+- ordinary alpha blending for translucent points.
+
+Stage 1 rendering should be explicit about what is emulated:
+
+- Categorical mode uses precomputed RGBA8 colors from `category`.
+- Continuous mode uses precomputed RGBA8 colors from `value`.
+- Density mode uses precomputed low-alpha RGBA8 colors and ordinary blending.
+- Opacity changes may reupload the color buffer in Stage 1.
+- Filtering by category may rebuild/reupload compacted position/color/size arrays, or may be
+  deferred if it makes the MVP too CPU-heavy.
+- LOD uses precomputed subsets or prefix counts, not shader-side culling.
+
+Stage 1 should measure and print FPS while panning/zooming and while switching point-count/color
+mode. It should report the actual rendered point count so the demo does not imply more than it is
+drawing.
+
 ### Required visuals
 
 - Background image visual, optional but strongly recommended.
-- Point visual with instanced circular or Gaussian markers.
-- Optional density mode, either additive alpha or screen-space accumulation.
+- Stage 1: current point visual using `position`, `color`, and `size`.
+- Stage 2: point visual with instanced circular or Gaussian markers.
+- Stage 2 optional: density mode, either additive alpha or screen-space accumulation.
 
 ### GPU buffers
 
-Use one structure-of-arrays or interleaved instance buffer:
+Stage 1 uses the current point visual attributes:
+
+```text
+position: float32x3
+color: rgba8
+size: float32
+```
+
+Stage 2 should extend the point visual or add a point-style resource so shader-side feature mapping
+is possible:
 
 ```text
 position: float32x2 or float32x3
 size: float32
 category: uint32
 value: float32
+opacity: optional float32 or uniform style parameter
 ```
 
 Rendering modes:
 
 1. **Categorical mode**
-   - color by `category` using a color table.
+   - Stage 1: color by precomputed RGBA8 category colors.
+   - Stage 2: color by `category` using a color table.
 2. **Continuous mode**
-   - color by `value` using a colormap texture.
+   - Stage 1: color by precomputed RGBA8 continuous colors.
+   - Stage 2: color by `value` using a colormap texture.
 3. **Density mode**
-   - small alpha, additive or premultiplied blending.
+   - Stage 1: small precomputed alpha with ordinary blending.
+   - Stage 2: additive or premultiplied blending, or screen-space accumulation.
 4. **LOD mode**
-   - precomputed random subsamples or screen-space density culling.
+   - Stage 1: precomputed random subsamples or prefix counts.
+   - Stage 2: precomputed subsets plus optional screen-space density culling.
 
-Point shader:
+Stage 2 point shader:
 
 - Use instanced quads, not native point sprites.
 - Generate antialiased discs in fragment shader using signed distance to marker center.
 - Use opacity correction for dense zoomed-out views.
 
+### Stage 2 prerequisites
+
+These items are not required for the Stage 1 MVP but are required before claiming the full demo:
+
+- Native GLSL point lowering to instanced quads, matching or superseding the current WGSL fixture
+  shape.
+- Antialiased disc/Gaussian point fragment shader.
+- A point style path that can change global size/opacity without reuploading position buffers.
+- Category/value attributes or equivalent style buffers accepted by point visuals.
+- Color-table and colormap texture binding for point visuals.
+- A well-defined density blending mode.
+- LOD selection rules that are deterministic and visible in diagnostics/FPS output.
+
 ## Demo UI
 
-Controls:
+Stage 1 controls:
 
 - Dataset selector: MERFISH / MIBI-TOF / synthetic stress.
 - Point count: real / 1M / 5M / 10M.
@@ -150,8 +258,14 @@ Controls:
 - Point size slider.
 - Opacity slider.
 - LOD toggle.
-- Filter by category.
 - Background image visibility.
+
+Stage 2 controls:
+
+- Filter by category.
+- Shader-side categorical palette selector.
+- Continuous colormap selector and value-range controls.
+- Density/additive mode selector.
 
 ## What to present in the demo
 
@@ -172,16 +286,45 @@ Suggested message:
 
 ## Minimal implementation plan
 
-1. Write `prepare_spatial_points.py` to extract and cache coordinates from SpatialData MERFISH or MIBI-TOF.
-2. Implement point visual with instanced quads and SDF antialiasing.
-3. Implement feature color table and continuous colormap.
-4. Implement stress duplication to 1M/5M/10M points.
-5. Add GUI controls.
-6. Record FPS while panning and zooming.
+### Stage 1
+
+1. Write `prepare_spatial_points.py` to extract and cache coordinates from SpatialData MERFISH or
+   MIBI-TOF.
+2. Export Datoviz-ready binary arrays and `metadata.json`.
+3. Implement `examples/napari/dense_points_spatial_omics_glfw.c`.
+4. Load the binary cache, or fall back to a synthetic stress dataset when the cache is missing.
+5. Render the optional image background plus one point visual.
+6. Precompute or load color buffers for categorical, continuous, and density modes.
+7. Add GUI controls for point-count preset, color mode, point size, opacity, LOD, and background
+   visibility.
+8. Print FPS and rendered point count during live interaction.
+
+### Stage 2
+
+1. Implement native GLSL instanced-quad point lowering.
+2. Add SDF antialiasing for circular/Gaussian markers.
+3. Add point feature/style attributes for category, value, and opacity.
+4. Implement shader-side feature color table and continuous colormap lookup.
+5. Add a stronger density blending mode.
+6. Add deterministic LOD or screen-space density culling.
+7. Update the demo to use the Stage 2 path and keep the Stage 1 fallback if useful.
 
 ## Acceptance criteria
 
-- Loads a real spatial-omics dataset or prepared cache.
-- Renders at least 1 million points interactively on a recent GPU.
-- Supports categorical coloring and opacity updates without point-buffer reupload.
-- Includes an LOD or density mode useful at zoomed-out scale.
+### Stage 1
+
+- Loads a prepared cache or falls back to a synthetic stress dataset.
+- Runs as a C GLFW example through the current v0.4 scene/app path.
+- Renders the background image when present.
+- Renders at least 1 million points interactively on a recent discrete GPU, or reports the measured
+  maximum point count if the current point-sprite path falls short.
+- Supports categorical, continuous, and density-like modes through precomputed RGBA8 colors.
+- Supports point-count/LOD presets through precomputed subsets or prefix counts.
+- Prints FPS and rendered point count.
+
+### Stage 2
+
+- Uses instanced antialiased point quads in the native app path.
+- Supports categorical coloring and opacity updates without position-buffer reupload.
+- Supports continuous colormap lookup without CPU color-buffer regeneration.
+- Includes a density or LOD mode useful at zoomed-out scale.
