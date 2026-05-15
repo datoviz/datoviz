@@ -207,6 +207,9 @@ Deliver the next implementation slices in this order unless the user redirects:
     versus render-pass attachment formats. Use
     [WBOIT_MESH_INTERACTIVE_PLAN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/WBOIT_MESH_INTERACTIVE_PLAN.md)
     as the implementation checklist.
+11. SSAO planning note: early scene-level SSAO should follow the active scene -> FramePlan -> DRP2
+    -> vklite path and reuse the WBOIT-style multi-pass resource pattern. The implementation plan
+    is recorded in [SCENE_SSAO_IMPLEMENTATION_PLAN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/SCENE_SSAO_IMPLEMENTATION_PLAN.md).
 
 Implementation-level checklists for these lanes are recorded in
 [../../docs/tasks/2026-05-13-next-implementation-priorities/NEXT_STEPS.md](/home/cyrille/GIT/Viz/datoviz/docs/tasks/2026-05-13-next-implementation-priorities/NEXT_STEPS.md).
