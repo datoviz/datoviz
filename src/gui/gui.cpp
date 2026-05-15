@@ -1172,7 +1172,15 @@ bool dvz_gui_panel_window(DvzGuiPanel* panel, const char* title, bool* open, int
         if (_gui_panel_ensure_texture(panel))
         {
             ImVec2 image_min = ImGui::GetCursorScreenPos();
-            ImGui::Image((ImTextureID)panel->texture, avail, ImVec2(0, 0), ImVec2(1, 1));
+            ImVec2 image_max = ImVec2(image_min.x + avail.x, image_min.y + avail.y);
+            ImGui::PushID(panel);
+            ImGui::InvisibleButton(
+                "image", avail,
+                ImGuiButtonFlags_MouseButtonLeft | ImGuiButtonFlags_MouseButtonRight |
+                    ImGuiButtonFlags_MouseButtonMiddle);
+            ImGui::PopID();
+            ImGui::GetWindowDrawList()->AddImage(
+                (ImTextureID)panel->texture, image_min, image_max, ImVec2(0, 0), ImVec2(1, 1));
             _gui_panel_forward_input(panel, image_min, avail);
             shown = true;
         }
