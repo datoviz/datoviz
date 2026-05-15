@@ -956,12 +956,24 @@ static DvzDrp2ValidationResult _validate_begin_render_pass(
         return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
     for (uint32_t i = 0; i < color_count; i++)
     {
+        const DvzDrp2ColorAttachment* attachment =
+            command->u.begin_render_pass.color_attachment_count > 0
+                ? &command->u.begin_render_pass.color_attachments[i]
+                : NULL;
+        if (attachment != NULL &&
+            (attachment->load_op > DVZ_DRP2_ATTACHMENT_LOAD_DONT_CARE ||
+             attachment->store_op > DVZ_DRP2_ATTACHMENT_STORE_DONT_CARE))
+            return _drp2_fail(DVZ_DRP2_VALIDATION_USAGE, command_index);
         uint64_t texture_id = command->u.begin_render_pass.color_attachment_count > 0
                                   ? command->u.begin_render_pass.color_attachments[i].texture_id
                                   : command->u.begin_render_pass.texture_id;
         if (!_has_object_kind(state, texture_id, DRP2_OBJECT_TEXTURE))
             return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
     }
+    if (command->u.begin_render_pass.has_depth_attachment &&
+        (command->u.begin_render_pass.depth_load_op > DVZ_DRP2_ATTACHMENT_LOAD_DONT_CARE ||
+         command->u.begin_render_pass.depth_store_op > DVZ_DRP2_ATTACHMENT_STORE_DONT_CARE))
+        return _drp2_fail(DVZ_DRP2_VALIDATION_USAGE, command_index);
 
     Drp2Object* pass = _drp2_add_object(state, command->u.begin_render_pass.id, DRP2_OBJECT_RENDER_PASS);
     if (pass == NULL)

@@ -4005,6 +4005,141 @@ int test_drp2_begin_render_pass_multi_color_attachments(TstSuite* suite, TstItem
 
 
 
+int test_drp2_begin_render_pass_attachment_ops(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzDrp2CommandStream* stream = dvz_drp2_stream();
+    ANN(stream);
+
+    AT(dvz_drp2_stream_begin_render_pass_clear(stream, 1, 2, 3, 0.2f, 0.4f, 0.6f, 1.0f));
+    AT(dvz_drp2_stream_begin_render_pass_set_color_attachment_ops(
+        stream, 0, DVZ_DRP2_ATTACHMENT_LOAD_LOAD, DVZ_DRP2_ATTACHMENT_STORE_DONT_CARE));
+    AT(dvz_drp2_stream_begin_render_pass_set_depth(stream, 0.5f));
+    AT(dvz_drp2_stream_begin_render_pass_set_depth_ops(
+        stream, DVZ_DRP2_ATTACHMENT_LOAD_DONT_CARE, DVZ_DRP2_ATTACHMENT_STORE_STORE));
+
+    const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream, 0);
+    ANN(cmd);
+    AT(cmd->type == DVZ_DRP2_COMMAND_BEGIN_RENDER_PASS);
+    AT(cmd->u.begin_render_pass.color_attachments[0].load_op == DVZ_DRP2_ATTACHMENT_LOAD_LOAD);
+    AT(
+        cmd->u.begin_render_pass.color_attachments[0].store_op ==
+        DVZ_DRP2_ATTACHMENT_STORE_DONT_CARE);
+    AT(!cmd->u.begin_render_pass.color_attachments[0].clear);
+    AT(cmd->u.begin_render_pass.depth_load_op == DVZ_DRP2_ATTACHMENT_LOAD_DONT_CARE);
+    AT(cmd->u.begin_render_pass.depth_store_op == DVZ_DRP2_ATTACHMENT_STORE_STORE);
+    AT(cmd->u.begin_render_pass.depth_ops_explicit);
+
+    char* json = dvz_drp2_stream_json(stream, "attachment_ops");
+    ANN(json);
+    AT(strstr(json, "\"load_op\": \"load\"") != NULL);
+    AT(strstr(json, "\"store_op\": \"dont_care\"") != NULL);
+    AT(strstr(json, "\"depth_stencil_attachment\"") != NULL);
+    AT(strstr(json, "\"load_op\": \"dont_care\"") != NULL);
+
+    dvz_drp2_stream_json_destroy(json);
+    dvz_drp2_stream_destroy(stream);
+    return 0;
+}
+
+
+
+int test_drp2_begin_render_pass_attachment_ops_validation(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzDrp2CommandStream* stream = dvz_drp2_stream();
+    ANN(stream);
+
+    AT(dvz_drp2_stream_hello_renderer(stream, "test-client"));
+    AT(dvz_drp2_stream_renderer_hello_reply(stream, "test-renderer"));
+    AT(dvz_drp2_stream_create_texture_2d(stream, 1, 4, 4));
+    AT(dvz_drp2_stream_begin_command_encoder(stream, 2));
+    AT(dvz_drp2_stream_begin_render_pass(stream, 3, 2, 1));
+    uint32_t invalid_load_op = 99;
+    AT(
+        sizeof(stream->commands[4].u.begin_render_pass.color_attachments[0].load_op) ==
+        sizeof(invalid_load_op));
+    dvz_memcpy(
+        &stream->commands[4].u.begin_render_pass.color_attachments[0].load_op,
+        sizeof(stream->commands[4].u.begin_render_pass.color_attachments[0].load_op),
+        &invalid_load_op, sizeof(invalid_load_op));
+
+    DvzDrp2ValidationResult result = dvz_drp2_validate_stream(stream);
+    AT(!result.ok);
+    AT(result.code == DVZ_DRP2_VALIDATION_USAGE);
+    AT(result.command_index == 4);
+
+    dvz_drp2_stream_destroy(stream);
+    return 0;
+}
+
+
+
+int test_drp2_recording_preserves_attachment_ops(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzDrp2CommandStream* stream = dvz_drp2_stream();
+    ANN(stream);
+
+    AT(dvz_drp2_stream_hello_renderer(stream, "test-client"));
+    AT(dvz_drp2_stream_renderer_hello_reply(stream, "test-renderer"));
+    AT(dvz_drp2_stream_create_texture_2d_format_usage(
+        stream, 1, 8, 8, VK_FORMAT_R8G8B8A8_UNORM, DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT));
+    AT(dvz_drp2_stream_begin_command_encoder(stream, 2));
+    AT(dvz_drp2_stream_begin_render_pass_clear(stream, 3, 2, 1, 0.0f, 0.0f, 0.0f, 1.0f));
+    AT(dvz_drp2_stream_begin_render_pass_set_color_attachment_ops(
+        stream, 0, DVZ_DRP2_ATTACHMENT_LOAD_LOAD, DVZ_DRP2_ATTACHMENT_STORE_DONT_CARE));
+    AT(dvz_drp2_stream_begin_render_pass_set_depth(stream, 1.0f));
+    AT(dvz_drp2_stream_begin_render_pass_set_depth_ops(
+        stream, DVZ_DRP2_ATTACHMENT_LOAD_LOAD, DVZ_DRP2_ATTACHMENT_STORE_DONT_CARE));
+
+    DvzDrp2RecordingInfo info = {
+        .width = 8,
+        .height = 8,
+        .duration_s = 0.0,
+        .t_present = 0.0,
+        .backend_hint = "semantic",
+    };
+    const char* path = "/tmp/dvz_drp2_recording_attachment_ops.dvzr";
+    AT(dvz_drp2_recording_write_stream(path, stream, &info));
+
+    FILE* stream_file = fopen("/tmp/dvz_drp2_recording_attachment_ops.dvzr/stream.jsonl", "rb");
+    ANN(stream_file);
+    char stream_jsonl[8192] = {0};
+    size_t stream_jsonl_size = fread(stream_jsonl, 1, sizeof(stream_jsonl) - 1, stream_file);
+    fclose(stream_file);
+    AT(stream_jsonl_size > 0);
+    AT(strstr(stream_jsonl, "\"ca0_load_op\":1") != NULL);
+    AT(strstr(stream_jsonl, "\"ca0_store_op\":1") != NULL);
+    AT(strstr(stream_jsonl, "\"depth_load_op\":1") != NULL);
+    AT(strstr(stream_jsonl, "\"depth_store_op\":1") != NULL);
+
+    DvzDrp2CommandStream* replay = dvz_drp2_recording_read_stream(path);
+    ANN(replay);
+    const DvzDrp2Command* pass = dvz_drp2_stream_get(replay, 4);
+    ANN(pass);
+    AT(pass->type == DVZ_DRP2_COMMAND_BEGIN_RENDER_PASS);
+    AT(pass->u.begin_render_pass.color_attachments[0].load_op == DVZ_DRP2_ATTACHMENT_LOAD_LOAD);
+    AT(
+        pass->u.begin_render_pass.color_attachments[0].store_op ==
+        DVZ_DRP2_ATTACHMENT_STORE_DONT_CARE);
+    AT(pass->u.begin_render_pass.depth_load_op == DVZ_DRP2_ATTACHMENT_LOAD_LOAD);
+    AT(pass->u.begin_render_pass.depth_store_op == DVZ_DRP2_ATTACHMENT_STORE_DONT_CARE);
+    AT(pass->u.begin_render_pass.depth_ops_explicit);
+
+    dvz_drp2_stream_destroy(replay);
+    dvz_drp2_stream_destroy(stream);
+    return 0;
+}
+
+
+
 int test_drp2_stream_json_preserves_clear_color(TstSuite* suite, TstItem* item)
 {
     ANN(suite);
@@ -4793,6 +4928,9 @@ int test_drp2(TstSuite* suite)
     TEST_SIMPLE(test_drp2_recording_reports_raw_fallback_command);
     TEST_SIMPLE(test_drp2_begin_render_pass_clear_color_stored);
     TEST_SIMPLE(test_drp2_begin_render_pass_multi_color_attachments);
+    TEST_SIMPLE(test_drp2_begin_render_pass_attachment_ops);
+    TEST_SIMPLE(test_drp2_begin_render_pass_attachment_ops_validation);
+    TEST_SIMPLE(test_drp2_recording_preserves_attachment_ops);
     TEST_SIMPLE(test_drp2_stream_json_preserves_clear_color);
     TEST_SIMPLE(test_drp2_runtime_validate_render_stream);
     TEST_SIMPLE(test_drp2_runtime_validate_render_state_inherited_across_passes);

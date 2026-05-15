@@ -187,6 +187,9 @@ struct DvzDrp2Command
             uint32_t color_attachment_count;
             DvzDrp2ColorAttachment color_attachments[DVZ_DRP2_MAX_COLOR_ATTACHMENTS];
             bool has_depth_attachment;
+            DvzDrp2AttachmentLoadOp depth_load_op;
+            DvzDrp2AttachmentStoreOp depth_store_op;
+            bool depth_ops_explicit;
             float clear_depth;
             float clear_color[4]; /* RGBA clear values; {0,0,0,0} = transparent black */
             float viewport[4];    /* normalized x, y, width, height in [0,1] target space */

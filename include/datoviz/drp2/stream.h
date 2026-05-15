@@ -906,6 +906,20 @@ DVZ_EXPORT bool dvz_drp2_stream_begin_render_pass_add_color_attachment(
 
 
 /**
+ * Set load/store operations on one color attachment of the most recent BeginRenderPass command.
+ *
+ * @param stream the command stream
+ * @param attachment_index the color attachment index
+ * @param load_op the attachment load operation
+ * @param store_op the attachment store operation
+ * @return whether the most recent command was a BeginRenderPass and was updated
+ */
+DVZ_EXPORT bool dvz_drp2_stream_begin_render_pass_set_color_attachment_ops(
+    DvzDrp2CommandStream* stream, uint32_t attachment_index, DvzDrp2AttachmentLoadOp load_op,
+    DvzDrp2AttachmentStoreOp store_op);
+
+
+/**
  * Attach a transient depth attachment request to the most recently appended BeginRenderPass
  * command.
  *
@@ -915,6 +929,19 @@ DVZ_EXPORT bool dvz_drp2_stream_begin_render_pass_add_color_attachment(
  */
 DVZ_EXPORT bool
 dvz_drp2_stream_begin_render_pass_set_depth(DvzDrp2CommandStream* stream, float clear_depth);
+
+
+/**
+ * Set load/store operations on the depth attachment of the most recent BeginRenderPass command.
+ *
+ * @param stream the command stream
+ * @param load_op the depth attachment load operation
+ * @param store_op the depth attachment store operation
+ * @return whether the most recent command was a BeginRenderPass and was updated
+ */
+DVZ_EXPORT bool dvz_drp2_stream_begin_render_pass_set_depth_ops(
+    DvzDrp2CommandStream* stream, DvzDrp2AttachmentLoadOp load_op,
+    DvzDrp2AttachmentStoreOp store_op);
 
 
 

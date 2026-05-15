@@ -223,6 +223,12 @@ int test_drp2_begin_render_pass_clear_color_stored(TstSuite* suite, TstItem* ite
 
 int test_drp2_begin_render_pass_multi_color_attachments(TstSuite* suite, TstItem* item);
 
+int test_drp2_begin_render_pass_attachment_ops(TstSuite* suite, TstItem* item);
+
+int test_drp2_begin_render_pass_attachment_ops_validation(TstSuite* suite, TstItem* item);
+
+int test_drp2_recording_preserves_attachment_ops(TstSuite* suite, TstItem* item);
+
 int test_drp2_stream_json_preserves_clear_color(TstSuite* suite, TstItem* item);
 
 int test_drp2_write_buffer_bytes_large_json_roundtrip(TstSuite* suite, TstItem* item);

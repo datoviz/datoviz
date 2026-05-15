@@ -507,6 +507,38 @@ static const char* _depth_compare_name(uint32_t compare_op)
 
 
 
+static const char* _attachment_load_name(DvzDrp2AttachmentLoadOp op)
+{
+    switch (op)
+    {
+    case DVZ_DRP2_ATTACHMENT_LOAD_CLEAR:
+        return "clear";
+    case DVZ_DRP2_ATTACHMENT_LOAD_LOAD:
+        return "load";
+    case DVZ_DRP2_ATTACHMENT_LOAD_DONT_CARE:
+        return "dont_care";
+    default:
+        return "unknown";
+    }
+}
+
+
+
+static const char* _attachment_store_name(DvzDrp2AttachmentStoreOp op)
+{
+    switch (op)
+    {
+    case DVZ_DRP2_ATTACHMENT_STORE_STORE:
+        return "store";
+    case DVZ_DRP2_ATTACHMENT_STORE_DONT_CARE:
+        return "dont_care";
+    default:
+        return "unknown";
+    }
+}
+
+
+
 static void _json_append_command(JsonBuilder* builder, const DvzDrp2Command* command)
 {
     ANN(builder);
@@ -804,8 +836,13 @@ static void _json_append_command(JsonBuilder* builder, const DvzDrp2Command* com
             uint64_t texture_id =
                 attachment != NULL ? attachment->texture_id :
                                      command->u.begin_render_pass.texture_id;
-            bool clear =
-                attachment != NULL ? attachment->clear : command->u.begin_render_pass.clear;
+            DvzDrp2AttachmentLoadOp load_op =
+                attachment != NULL ? attachment->load_op :
+                                     (command->u.begin_render_pass.clear ?
+                                          DVZ_DRP2_ATTACHMENT_LOAD_CLEAR :
+                                          DVZ_DRP2_ATTACHMENT_LOAD_LOAD);
+            DvzDrp2AttachmentStoreOp store_op =
+                attachment != NULL ? attachment->store_op : DVZ_DRP2_ATTACHMENT_STORE_STORE;
             const float* clear_color =
                 attachment != NULL ? attachment->clear_color :
                                      command->u.begin_render_pass.clear_color;
@@ -814,10 +851,11 @@ static void _json_append_command(JsonBuilder* builder, const DvzDrp2Command* com
             _json_append(
                 builder,
                 "{ \"texture_id\": %" PRIu64
-                ", \"load_op\": \"%s\", \"store_op\": \"store\", "
+                ", \"load_op\": \"%s\", \"store_op\": \"%s\", "
                 "\"clear_value\": { \"r\": %g, \"g\": %g, \"b\": %g, \"a\": %g } }",
-                texture_id, clear ? "clear" : "load", (double)clear_color[0],
-                (double)clear_color[1], (double)clear_color[2], (double)clear_color[3]);
+                texture_id, _attachment_load_name(load_op), _attachment_store_name(store_op),
+                (double)clear_color[0], (double)clear_color[1], (double)clear_color[2],
+                (double)clear_color[3]);
         }
         _json_append(builder, " ]");
         if (command->u.begin_render_pass.has_depth_attachment)
@@ -825,9 +863,10 @@ static void _json_append_command(JsonBuilder* builder, const DvzDrp2Command* com
             _json_append(
                 builder,
                 ", \"depth_stencil_attachment\": { \"format\": \"depth32float\", "
-                "\"load_op\": \"%s\", \"store_op\": \"store\", "
+                "\"load_op\": \"%s\", \"store_op\": \"%s\", "
                 "\"clear_value\": { \"depth\": %g } }",
-                command->u.begin_render_pass.clear ? "clear" : "load",
+                _attachment_load_name(command->u.begin_render_pass.depth_load_op),
+                _attachment_store_name(command->u.begin_render_pass.depth_store_op),
                 (double)command->u.begin_render_pass.clear_depth);
         }
         _json_append(builder, " }");

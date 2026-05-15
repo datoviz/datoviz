@@ -939,7 +939,8 @@ static bool _recording_write_begin_render_pass(
             "{\"type\":\"command\",\"index\":%" PRIu32 ",\"cmd_type\":%d,"
             "\"op\":\"BeginRenderPass\",\"id\":%" PRIu64 ",\"encoder_id\":%" PRIu64
             ",\"texture_id\":%" PRIu64 ",\"color_attachment_count\":%" PRIu32
-            ",\"has_depth_attachment\":%u,\"clear_depth\":%.9g,"
+            ",\"has_depth_attachment\":%u,\"depth_load_op\":%" PRIu32
+            ",\"depth_store_op\":%" PRIu32 ",\"depth_ops_explicit\":%u,\"clear_depth\":%.9g,"
             "\"clear_color0\":%.9g,\"clear_color1\":%.9g,\"clear_color2\":%.9g,"
             "\"clear_color3\":%.9g,\"viewport0\":%.9g,\"viewport1\":%.9g,"
             "\"viewport2\":%.9g,\"viewport3\":%.9g,\"clear\":%u",
@@ -947,6 +948,9 @@ static bool _recording_write_begin_render_pass(
             command->u.begin_render_pass.encoder_id, command->u.begin_render_pass.texture_id,
             command->u.begin_render_pass.color_attachment_count,
             command->u.begin_render_pass.has_depth_attachment ? 1u : 0u,
+            (uint32_t)command->u.begin_render_pass.depth_load_op,
+            (uint32_t)command->u.begin_render_pass.depth_store_op,
+            command->u.begin_render_pass.depth_ops_explicit ? 1u : 0u,
             (double)command->u.begin_render_pass.clear_depth,
             (double)command->u.begin_render_pass.clear_color[0],
             (double)command->u.begin_render_pass.clear_color[1],
@@ -965,9 +969,11 @@ static bool _recording_write_begin_render_pass(
         if (dvz_fprintf(
                 stream_fp,
                 ",\"ca%" PRIu32 "_texture_id\":%" PRIu64 ",\"ca%" PRIu32 "_clear\":%u,"
+                "\"ca%" PRIu32 "_load_op\":%" PRIu32 ",\"ca%" PRIu32 "_store_op\":%" PRIu32 ","
                 "\"ca%" PRIu32 "_clear_color0\":%.9g,\"ca%" PRIu32 "_clear_color1\":%.9g,"
                 "\"ca%" PRIu32 "_clear_color2\":%.9g,\"ca%" PRIu32 "_clear_color3\":%.9g",
-                i, a->texture_id, i, a->clear ? 1u : 0u, i, (double)a->clear_color[0], i,
+                i, a->texture_id, i, a->clear ? 1u : 0u, i, (uint32_t)a->load_op, i,
+                (uint32_t)a->store_op, i, (double)a->clear_color[0], i,
                 (double)a->clear_color[1], i, (double)a->clear_color[2], i,
                 (double)a->clear_color[3]) <= 0)
             return false;
@@ -2089,6 +2095,20 @@ static bool _recording_read_begin_render_pass(const char* line, DvzDrp2Command* 
         !_recording_line_bool(line, "\"clear\":", &command->u.begin_render_pass.clear))
         return false;
 
+    command->u.begin_render_pass.depth_load_op =
+        command->u.begin_render_pass.clear ? DVZ_DRP2_ATTACHMENT_LOAD_CLEAR :
+                                             DVZ_DRP2_ATTACHMENT_LOAD_LOAD;
+    command->u.begin_render_pass.depth_store_op = DVZ_DRP2_ATTACHMENT_STORE_STORE;
+    command->u.begin_render_pass.depth_ops_explicit = false;
+    uint32_t depth_load_op = (uint32_t)command->u.begin_render_pass.depth_load_op;
+    uint32_t depth_store_op = (uint32_t)command->u.begin_render_pass.depth_store_op;
+    if (_recording_line_u32(line, "\"depth_load_op\":", &depth_load_op))
+        command->u.begin_render_pass.depth_load_op = (DvzDrp2AttachmentLoadOp)depth_load_op;
+    if (_recording_line_u32(line, "\"depth_store_op\":", &depth_store_op))
+        command->u.begin_render_pass.depth_store_op = (DvzDrp2AttachmentStoreOp)depth_store_op;
+    (void)_recording_line_bool(
+        line, "\"depth_ops_explicit\":", &command->u.begin_render_pass.depth_ops_explicit);
+
     for (uint32_t i = 0; i < DVZ_DRP2_MAX_COLOR_ATTACHMENTS; i++)
     {
         DvzDrp2ColorAttachment* a = &command->u.begin_render_pass.color_attachments[i];
@@ -2099,6 +2119,14 @@ static bool _recording_read_begin_render_pass(const char* line, DvzDrp2Command* 
             !_recording_line_indexed_float(line, "ca", i, "clear_color2", &a->clear_color[2]) ||
             !_recording_line_indexed_float(line, "ca", i, "clear_color3", &a->clear_color[3]))
             return false;
+        a->load_op = a->clear ? DVZ_DRP2_ATTACHMENT_LOAD_CLEAR : DVZ_DRP2_ATTACHMENT_LOAD_LOAD;
+        a->store_op = DVZ_DRP2_ATTACHMENT_STORE_STORE;
+        uint32_t load_op = (uint32_t)a->load_op;
+        uint32_t store_op = (uint32_t)a->store_op;
+        if (_recording_line_indexed_u32(line, "ca", i, "load_op", &load_op))
+            a->load_op = (DvzDrp2AttachmentLoadOp)load_op;
+        if (_recording_line_indexed_u32(line, "ca", i, "store_op", &store_op))
+            a->store_op = (DvzDrp2AttachmentStoreOp)store_op;
     }
     return true;
 }

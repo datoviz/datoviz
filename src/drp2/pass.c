@@ -135,6 +135,38 @@ static Drp2VkliteObject* _active_borrowed_depth_target(
 }
 
 
+
+static VkAttachmentLoadOp _vklite_attachment_load_op(DvzDrp2AttachmentLoadOp op)
+{
+    switch (op)
+    {
+    case DVZ_DRP2_ATTACHMENT_LOAD_CLEAR:
+        return VK_ATTACHMENT_LOAD_OP_CLEAR;
+    case DVZ_DRP2_ATTACHMENT_LOAD_LOAD:
+        return VK_ATTACHMENT_LOAD_OP_LOAD;
+    case DVZ_DRP2_ATTACHMENT_LOAD_DONT_CARE:
+        return VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+    default:
+        return VK_ATTACHMENT_LOAD_OP_LOAD;
+    }
+}
+
+
+
+static VkAttachmentStoreOp _vklite_attachment_store_op(DvzDrp2AttachmentStoreOp op)
+{
+    switch (op)
+    {
+    case DVZ_DRP2_ATTACHMENT_STORE_STORE:
+        return VK_ATTACHMENT_STORE_OP_STORE;
+    case DVZ_DRP2_ATTACHMENT_STORE_DONT_CARE:
+        return VK_ATTACHMENT_STORE_OP_DONT_CARE;
+    default:
+        return VK_ATTACHMENT_STORE_OP_STORE;
+    }
+}
+
+
 /**
  * Begin a vklite dynamic-rendering pass for a DRP2 BeginRenderPass command.
  *
@@ -254,6 +286,12 @@ DvzDrp2ValidationResult _vklite_begin_render_pass(
                 : NULL;
         bool clear_attachment =
             attachment != NULL ? attachment->clear : command->u.begin_render_pass.clear;
+        DvzDrp2AttachmentLoadOp load_op =
+            attachment != NULL ? attachment->load_op :
+                                 (clear_attachment ? DVZ_DRP2_ATTACHMENT_LOAD_CLEAR :
+                                                     DVZ_DRP2_ATTACHMENT_LOAD_LOAD);
+        DvzDrp2AttachmentStoreOp store_op =
+            attachment != NULL ? attachment->store_op : DVZ_DRP2_ATTACHMENT_STORE_STORE;
         const float* clear_color =
             attachment != NULL ? attachment->clear_color : command->u.begin_render_pass.clear_color;
         VkClearValue clear = {
@@ -261,9 +299,8 @@ DvzDrp2ValidationResult _vklite_begin_render_pass(
         DvzAttachment* catt = dvz_rendering_color(rendering, i);
         dvz_attachment_image(catt, target_views[i], VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
         dvz_attachment_ops(
-            catt, clear_attachment ? VK_ATTACHMENT_LOAD_OP_CLEAR : VK_ATTACHMENT_LOAD_OP_LOAD,
-            VK_ATTACHMENT_STORE_OP_STORE);
-        if (clear_attachment)
+            catt, _vklite_attachment_load_op(load_op), _vklite_attachment_store_op(store_op));
+        if (load_op == DVZ_DRP2_ATTACHMENT_LOAD_CLEAR)
             dvz_attachment_clear(catt, clear);
     }
     if (command->u.begin_render_pass.has_depth_attachment)
@@ -344,12 +381,13 @@ DvzDrp2ValidationResult _vklite_begin_render_pass(
                 pass, DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
         DvzAttachment* datt = dvz_rendering_depth(rendering);
         dvz_attachment_image(datt, depth_view, VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL);
+        DvzDrp2AttachmentLoadOp depth_load_op = command->u.begin_render_pass.depth_load_op;
+        if (!command->u.begin_render_pass.depth_ops_explicit && load_existing_depth)
+            depth_load_op = DVZ_DRP2_ATTACHMENT_LOAD_LOAD;
         dvz_attachment_ops(
-            datt, load_existing_depth || !command->u.begin_render_pass.clear ?
-                      VK_ATTACHMENT_LOAD_OP_LOAD :
-                      VK_ATTACHMENT_LOAD_OP_CLEAR,
-            VK_ATTACHMENT_STORE_OP_STORE);
-        if (!load_existing_depth && command->u.begin_render_pass.clear)
+            datt, _vklite_attachment_load_op(depth_load_op),
+            _vklite_attachment_store_op(command->u.begin_render_pass.depth_store_op));
+        if (depth_load_op == DVZ_DRP2_ATTACHMENT_LOAD_CLEAR)
         {
             dvz_attachment_clear(
                 datt, (VkClearValue){.depthStencil = {command->u.begin_render_pass.clear_depth, 0}});

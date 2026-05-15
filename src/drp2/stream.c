@@ -1406,11 +1406,19 @@ bool dvz_drp2_stream_begin_render_pass_region_clear(
     command->u.begin_render_pass.color_attachment_count = 1;
     command->u.begin_render_pass.color_attachments[0].texture_id = texture_id;
     command->u.begin_render_pass.color_attachments[0].clear = clear;
+    command->u.begin_render_pass.color_attachments[0].load_op =
+        clear ? DVZ_DRP2_ATTACHMENT_LOAD_CLEAR : DVZ_DRP2_ATTACHMENT_LOAD_LOAD;
+    command->u.begin_render_pass.color_attachments[0].store_op =
+        DVZ_DRP2_ATTACHMENT_STORE_STORE;
     command->u.begin_render_pass.color_attachments[0].clear_color[0] = r;
     command->u.begin_render_pass.color_attachments[0].clear_color[1] = g;
     command->u.begin_render_pass.color_attachments[0].clear_color[2] = b;
     command->u.begin_render_pass.color_attachments[0].clear_color[3] = a;
     command->u.begin_render_pass.has_depth_attachment = false;
+    command->u.begin_render_pass.depth_load_op =
+        clear ? DVZ_DRP2_ATTACHMENT_LOAD_CLEAR : DVZ_DRP2_ATTACHMENT_LOAD_LOAD;
+    command->u.begin_render_pass.depth_store_op = DVZ_DRP2_ATTACHMENT_STORE_STORE;
+    command->u.begin_render_pass.depth_ops_explicit = false;
     command->u.begin_render_pass.clear_depth = 1.0f;
     command->u.begin_render_pass.clear_color[0] = r;
     command->u.begin_render_pass.clear_color[1] = g;
@@ -1453,11 +1461,44 @@ bool dvz_drp2_stream_begin_render_pass_add_color_attachment(
         return false;
     command->u.begin_render_pass.color_attachments[idx].texture_id = texture_id;
     command->u.begin_render_pass.color_attachments[idx].clear = clear;
+    command->u.begin_render_pass.color_attachments[idx].load_op =
+        clear ? DVZ_DRP2_ATTACHMENT_LOAD_CLEAR : DVZ_DRP2_ATTACHMENT_LOAD_LOAD;
+    command->u.begin_render_pass.color_attachments[idx].store_op =
+        DVZ_DRP2_ATTACHMENT_STORE_STORE;
     command->u.begin_render_pass.color_attachments[idx].clear_color[0] = r;
     command->u.begin_render_pass.color_attachments[idx].clear_color[1] = g;
     command->u.begin_render_pass.color_attachments[idx].clear_color[2] = b;
     command->u.begin_render_pass.color_attachments[idx].clear_color[3] = a;
     command->u.begin_render_pass.color_attachment_count++;
+    return true;
+}
+
+
+
+/**
+ * Set load/store operations on one color attachment of the most recent BeginRenderPass command.
+ *
+ * @param stream the command stream
+ * @param attachment_index the color attachment index
+ * @param load_op the attachment load operation
+ * @param store_op the attachment store operation
+ * @return whether the most recent command was updated
+ */
+bool dvz_drp2_stream_begin_render_pass_set_color_attachment_ops(
+    DvzDrp2CommandStream* stream, uint32_t attachment_index, DvzDrp2AttachmentLoadOp load_op,
+    DvzDrp2AttachmentStoreOp store_op)
+{
+    ANN(stream);
+    if (stream->count == 0)
+        return false;
+    DvzDrp2Command* command = &stream->commands[stream->count - 1];
+    if (command->type != DVZ_DRP2_COMMAND_BEGIN_RENDER_PASS ||
+        attachment_index >= command->u.begin_render_pass.color_attachment_count)
+        return false;
+    command->u.begin_render_pass.color_attachments[attachment_index].load_op = load_op;
+    command->u.begin_render_pass.color_attachments[attachment_index].store_op = store_op;
+    command->u.begin_render_pass.color_attachments[attachment_index].clear =
+        load_op == DVZ_DRP2_ATTACHMENT_LOAD_CLEAR;
     return true;
 }
 
@@ -1479,7 +1520,39 @@ bool dvz_drp2_stream_begin_render_pass_set_depth(DvzDrp2CommandStream* stream, f
     if (command->type != DVZ_DRP2_COMMAND_BEGIN_RENDER_PASS)
         return false;
     command->u.begin_render_pass.has_depth_attachment = true;
+    command->u.begin_render_pass.depth_load_op =
+        command->u.begin_render_pass.clear ? DVZ_DRP2_ATTACHMENT_LOAD_CLEAR :
+                                             DVZ_DRP2_ATTACHMENT_LOAD_LOAD;
+    command->u.begin_render_pass.depth_store_op = DVZ_DRP2_ATTACHMENT_STORE_STORE;
+    command->u.begin_render_pass.depth_ops_explicit = false;
     command->u.begin_render_pass.clear_depth = clear_depth;
+    return true;
+}
+
+
+
+/**
+ * Set load/store operations on the depth attachment of the most recent BeginRenderPass command.
+ *
+ * @param stream the command stream
+ * @param load_op the depth attachment load operation
+ * @param store_op the depth attachment store operation
+ * @return whether the most recent command was updated
+ */
+bool dvz_drp2_stream_begin_render_pass_set_depth_ops(
+    DvzDrp2CommandStream* stream, DvzDrp2AttachmentLoadOp load_op,
+    DvzDrp2AttachmentStoreOp store_op)
+{
+    ANN(stream);
+    if (stream->count == 0)
+        return false;
+    DvzDrp2Command* command = &stream->commands[stream->count - 1];
+    if (command->type != DVZ_DRP2_COMMAND_BEGIN_RENDER_PASS)
+        return false;
+    command->u.begin_render_pass.has_depth_attachment = true;
+    command->u.begin_render_pass.depth_load_op = load_op;
+    command->u.begin_render_pass.depth_store_op = store_op;
+    command->u.begin_render_pass.depth_ops_explicit = true;
     return true;
 }
 

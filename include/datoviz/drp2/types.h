@@ -83,6 +83,8 @@ struct DvzDrp2ColorAttachment
 {
     uint64_t texture_id;
     bool clear;
+    DvzDrp2AttachmentLoadOp load_op;
+    DvzDrp2AttachmentStoreOp store_op;
     float clear_color[4];
 };
 
