@@ -4341,9 +4341,10 @@ int test_scene_visual_alpha_mode_depth_peel_frame_plan(TstSuite* suite, TstItem*
     AT(strcmp(iter_pass->work_label, "depth_peel_iter") == 0);
     AT(strcmp(composite_pass->work_label, "depth_peel_composite") == 0);
     AT(init_pass->color_attachment_count == 3);
-    AT(iter_pass->read_count == 3);
+    AT(iter_pass->read_count == 0);
     AT(iter_pass->color_attachment_count == 3);
     AT(composite_pass->read_count == 3);
+    AT(strcmp(composite_pass->reads[0].resource_id, "figure_0_p0.peel.front_ping") == 0);
     AT(composite_pass->color_attachment_count == 1);
 
     DvzDiagnosticReport report = {0};
@@ -4423,6 +4424,7 @@ int test_scene_visual_alpha_mode_emits_depth_peel_drp2(TstSuite* suite, TstItem*
     bool has_depth_texture = false;
     bool has_three_target_pipeline = false;
     bool has_composite_pipeline = false;
+    bool has_blended_composite_pipeline = false;
     bool has_composite_bind_group = false;
     uint32_t begin_pass_count = 0;
     uint32_t triple_attachment_passes = 0;
@@ -4454,6 +4456,13 @@ int test_scene_visual_alpha_mode_emits_depth_peel_drp2(TstSuite* suite, TstItem*
                 has_composite_pipeline ||
                 (command->u.create_render_pipeline.bind_group_layout_count == 1 &&
                  command->u.create_render_pipeline.vertex_buffer_slots == 0);
+            has_blended_composite_pipeline =
+                has_blended_composite_pipeline ||
+                (command->u.create_render_pipeline.bind_group_layout_count == 1 &&
+                 command->u.create_render_pipeline.vertex_buffer_slots == 0 &&
+                 command->u.create_render_pipeline.color_targets[0].blend_enabled &&
+                 command->u.create_render_pipeline.color_targets[0].src_color_blend_factor ==
+                     VK_BLEND_FACTOR_SRC_ALPHA);
         }
         else if (command->type == DVZ_DRP2_COMMAND_CREATE_BIND_GROUP)
         {
@@ -4475,8 +4484,9 @@ int test_scene_visual_alpha_mode_emits_depth_peel_drp2(TstSuite* suite, TstItem*
     AT(has_depth_texture);
     AT(has_three_target_pipeline);
     AT(has_composite_pipeline);
+    AT(has_blended_composite_pipeline);
     AT(has_composite_bind_group);
-    AT(sampled_bind_group_count >= 2);
+    AT(sampled_bind_group_count >= 1);
     AT(begin_pass_count == 4);
     AT(triple_attachment_passes == 2);
 
@@ -5001,6 +5011,7 @@ int test_scene_visual_alpha_mode_depth_peel_glsl_executes(TstSuite* suite, TstIt
 
     DvzVisual* transparent = dvz_primitive(scene, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 0);
     AT(transparent != NULL);
+    dvz_panel_set_background_color(panel, 0.05f, 0.05f, 0.08f, 1.0f);
     float positions[3][3] = {
         {-0.6f, -0.6f, 0.0f},
         {0.6f, -0.6f, 0.0f},
@@ -5029,6 +5040,16 @@ int test_scene_visual_alpha_mode_depth_peel_glsl_executes(TstSuite* suite, TstIt
     ANN(stream);
     AT(dvz_diagnostic_report_count(&report) == 0);
 
+    uint64_t final_target_id = 0;
+    for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
+    {
+        const DvzDrp2Command* command = dvz_drp2_stream_get(stream, i);
+        ANN(command);
+        if (command->type == DVZ_DRP2_COMMAND_BEGIN_RENDER_PASS && final_target_id == 0)
+            final_target_id = command->u.begin_render_pass.texture_id;
+    }
+    AT(final_target_id != 0);
+
     DvzDrp2RuntimeConfig runtime_cfg =
         dvz_drp2_runtime_vklite_config(dvz_gpu_ctx_device(ctx), dvz_gpu_ctx_alloc(ctx));
     DvzDrp2Runtime* runtime = dvz_drp2_runtime_vklite(&runtime_cfg);
@@ -5039,6 +5060,34 @@ int test_scene_visual_alpha_mode_depth_peel_glsl_executes(TstSuite* suite, TstIt
     AT(result.code == DVZ_DRP2_VALIDATION_OK);
     AT(dvz_gpu_ctx_error_count(ctx) == 0);
 
+    const uint64_t readback_buffer_id = 9101;
+    const uint64_t encoder_id = 9102;
+    const uint64_t command_buffer_id = 9103;
+    const uint64_t submission_id = 9104;
+    const uint32_t width = 64;
+    const uint32_t height = 64;
+    const uint64_t byte_size = width * height * 4;
+    DvzDrp2CommandStream* readback = dvz_drp2_stream();
+    ANN(readback);
+    AT(dvz_drp2_stream_create_buffer(
+        readback, readback_buffer_id, byte_size,
+        DVZ_DRP2_BUFFER_USAGE_COPY_DST | DVZ_DRP2_BUFFER_USAGE_MAP_READ));
+    AT(dvz_drp2_stream_begin_command_encoder(readback, encoder_id));
+    AT(dvz_drp2_stream_copy_texture_to_buffer(
+        readback, encoder_id, final_target_id, readback_buffer_id, 0, width, height,
+        width * 4, height));
+    AT(dvz_drp2_stream_finish_command_encoder(readback, encoder_id, command_buffer_id));
+    AT(dvz_drp2_stream_queue_submit(readback, command_buffer_id, submission_id));
+
+    result = dvz_drp2_runtime_execute(runtime, readback);
+    AT(result.ok);
+    AT(result.code == DVZ_DRP2_VALIDATION_OK);
+    uint8_t pixels[64 * 64 * 4] = {0};
+    AT(_dvz_drp2_runtime_vklite_download_buffer(
+        runtime, readback_buffer_id, 0, byte_size, pixels));
+    AT(pixels[0] > 0 || pixels[1] > 0 || pixels[2] > 0);
+
+    dvz_drp2_stream_destroy(readback);
     dvz_drp2_runtime_destroy(runtime);
     dvz_drp2_stream_destroy(stream);
     dvz_scene_destroy(scene);

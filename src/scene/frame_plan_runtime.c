@@ -101,10 +101,121 @@ struct SceneDepthPeelTargets
     SceneGraphRuntimeTargets graph;
     uint64_t sampler_id;
     uint64_t sampled_bgl_id;
-    uint64_t iter_bg_id;
     uint64_t composite_bg_id;
     uint64_t composite_pipeline_id;
 };
+
+
+
+/*************************************************************************************************/
+/*  Depth peeling shaders                                                                        */
+/*************************************************************************************************/
+
+/**
+ * Return the unlit depth-peeling fragment shader for one shell pass.
+ *
+ * @param back_pass whether the shader writes the back-shell accumulation.
+ * @return GLSL source.
+ */
+static const char* _depth_peel_unlit_fragment_glsl(bool back_pass)
+{
+    if (back_pass)
+    {
+        return "#version 450\n"
+               "layout(location=0)in vec4 fragColor;"
+               "layout(location=0)out vec4 frontAccum;"
+               "layout(location=1)out vec4 backAccum;"
+               "layout(location=2)out vec4 depthPair;"
+               "void main(){"
+               "float a=clamp(fragColor.a,0.0,1.0);"
+               "frontAccum=vec4(0.0);"
+               "backAccum=vec4(fragColor.rgb*a,a);"
+               "depthPair=vec4(gl_FragCoord.z,1.0-gl_FragCoord.z,0.0,1.0);"
+               "}";
+    }
+
+    return "#version 450\n"
+           "layout(location=0)in vec4 fragColor;"
+           "layout(location=0)out vec4 frontAccum;"
+           "layout(location=1)out vec4 backAccum;"
+           "layout(location=2)out vec4 depthPair;"
+           "void main(){"
+           "float a=clamp(fragColor.a,0.0,1.0);"
+           "frontAccum=vec4(fragColor.rgb*a,a);"
+           "backAccum=vec4(0.0);"
+           "depthPair=vec4(gl_FragCoord.z,1.0-gl_FragCoord.z,0.0,1.0);"
+           "}";
+}
+
+
+
+/**
+ * Return the lit depth-peeling fragment shader for one shell pass.
+ *
+ * @param back_pass whether the shader writes the back-shell accumulation.
+ * @return GLSL source.
+ */
+static const char* _depth_peel_lit_fragment_glsl(bool back_pass)
+{
+    if (back_pass)
+    {
+        return "#version 450\n"
+               "layout(set=1,binding=0)uniform PrimitiveShading{"
+               "vec4 lightDir;vec4 params;}shading;"
+               "layout(location=0)in vec4 fragColor;"
+               "layout(location=1)in vec3 fragNormal;"
+               "layout(location=2)in vec3 fragWorldPos;"
+               "layout(location=3)in vec3 fragCameraPos;"
+               "layout(location=0)out vec4 frontAccum;"
+               "layout(location=1)out vec4 backAccum;"
+               "layout(location=2)out vec4 depthPair;"
+               "vec4 shade(){"
+               "vec3 n=normalize(fragNormal);"
+               "vec3 l=normalize(shading.lightDir.xyz);"
+               "vec3 v=normalize(fragCameraPos-fragWorldPos);"
+               "vec3 h=normalize(l+v);"
+               "float lambert=max(dot(n,l),0.0);"
+               "float spec=pow(max(dot(n,h),0.0),32.0);"
+               "vec3 rgb=fragColor.rgb*(shading.params.x+shading.params.y*lambert)+"
+               "vec3(0.18*spec);"
+               "return vec4(clamp(rgb,0.0,1.0),fragColor.a);"
+               "}"
+               "void main(){"
+               "vec4 c=shade();float a=clamp(c.a,0.0,1.0);"
+               "frontAccum=vec4(0.0);"
+               "backAccum=vec4(c.rgb*a,a);"
+               "depthPair=vec4(gl_FragCoord.z,1.0-gl_FragCoord.z,0.0,1.0);"
+               "}";
+    }
+
+    return "#version 450\n"
+           "layout(set=1,binding=0)uniform PrimitiveShading{"
+           "vec4 lightDir;vec4 params;}shading;"
+           "layout(location=0)in vec4 fragColor;"
+           "layout(location=1)in vec3 fragNormal;"
+           "layout(location=2)in vec3 fragWorldPos;"
+           "layout(location=3)in vec3 fragCameraPos;"
+           "layout(location=0)out vec4 frontAccum;"
+           "layout(location=1)out vec4 backAccum;"
+           "layout(location=2)out vec4 depthPair;"
+           "vec4 shade(){"
+           "vec3 n=normalize(fragNormal);"
+           "vec3 l=normalize(shading.lightDir.xyz);"
+           "vec3 v=normalize(fragCameraPos-fragWorldPos);"
+           "vec3 h=normalize(l+v);"
+           "float lambert=max(dot(n,l),0.0);"
+           "float spec=pow(max(dot(n,h),0.0),32.0);"
+           "vec3 rgb=fragColor.rgb*(shading.params.x+shading.params.y*lambert)+"
+           "vec3(0.18*spec);"
+           "return vec4(clamp(rgb,0.0,1.0),fragColor.a);"
+           "}"
+           "void main(){"
+           "vec4 c=shade();float a=clamp(c.a,0.0,1.0);"
+           "frontAccum=vec4(c.rgb*a,a);"
+           "backAccum=vec4(0.0);"
+           "depthPair=vec4(gl_FragCoord.z,1.0-gl_FragCoord.z,0.0,1.0);"
+           "}";
+}
 
 
 
@@ -459,6 +570,20 @@ static bool _emitter_prepare_render_multi(
                 render->u.render.pass_role == DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_INIT
                     ? "_peel_init"
                     : "_peel_iter");
+            key_len = strlen(shader.fragment_key);
+            dvz_snprintf(
+                shader.fragment_key + key_len, sizeof(shader.fragment_key) - key_len,
+                render->u.render.pass_role == DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_INIT
+                    ? "_peel_init"
+                    : "_peel_iter");
+            shader.fragment_glsl = desc.has_normal
+                                       ? _depth_peel_lit_fragment_glsl(
+                                             render->u.render.pass_role ==
+                                             DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_ITER)
+                                       : _depth_peel_unlit_fragment_glsl(
+                                             render->u.render.pass_role ==
+                                             DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_ITER);
+            shader.fragment_spirv_key = NULL;
         }
         if (render->u.render.controller_modes[i] == DVZ_CONTROLLER_FIXED)
         {
@@ -1671,15 +1796,17 @@ static const char* _depth_peel_composite_vertex_glsl(void)
 static const char* _depth_peel_composite_fragment_glsl(void)
 {
     return "#version 450\n"
-           "layout(set=0,binding=0)uniform sampler2D front_accum;"
-           "layout(set=0,binding=1)uniform sampler2D back_accum;"
-           "layout(set=0,binding=2)uniform sampler2D depth_pair;"
+           "layout(set=0,binding=0)uniform texture2D front_accum;"
+           "layout(set=0,binding=1)uniform texture2D back_accum;"
+           "layout(set=0,binding=2)uniform texture2D depth_pair;"
+           "layout(set=0,binding=3)uniform sampler samp;"
            "layout(location=0)out vec4 color;"
            "void main(){ivec2 uv=ivec2(gl_FragCoord.xy);"
-           "vec4 f=texelFetch(front_accum,uv,0);"
-           "vec4 b=texelFetch(back_accum,uv,0);"
-           "vec4 d=texelFetch(depth_pair,uv,0);"
-           "color=vec4(max(f.rgb,b.rgb)+0.05*d.rgb, max(max(f.a,b.a),1.0));}";
+           "vec4 f=texelFetch(sampler2D(front_accum,samp),uv,0);"
+           "vec4 b=texelFetch(sampler2D(back_accum,samp),uv,0);"
+           "float a=clamp(f.a+b.a*(1.0-f.a),0.0,1.0);"
+           "vec3 premul=f.rgb+b.rgb*(1.0-f.a);"
+           "color=a>0.0?vec4(premul/a,a):vec4(0.0);}";
 }
 
 
@@ -1849,15 +1976,9 @@ static bool _emitter_prepare_depth_peel_targets(
                        stream, out->sampled_bgl_id, 4, entries);
     }
 
-    const DvzFrameGraphPass* iter_pass =
-        _graph_pass_by_panel_work(plan, render->u.render.panel_id, "depth_peel_iter");
     const DvzFrameGraphPass* composite_pass =
         _graph_pass_by_panel_work(plan, render->u.render.panel_id, "depth_peel_composite");
-    ok = ok && iter_pass != NULL && composite_pass != NULL;
-    if (ok)
-        ok = _depth_peel_resolve_sampled_bind_group(
-            emitter, stream, iter_pass, &out->graph, "_bg_depth_peel_iter",
-            out->sampled_bgl_id, out->sampler_id, &out->iter_bg_id);
+    ok = ok && composite_pass != NULL;
     if (ok)
         ok = _depth_peel_resolve_sampled_bind_group(
             emitter, stream, composite_pass, &out->graph, "_bg_depth_peel_composite",
@@ -1893,7 +2014,13 @@ static bool _emitter_prepare_depth_peel_targets(
     {
         ok = ok && dvz_drp2_stream_create_render_pipeline_with_bind_group_layout(
                        stream, out->composite_pipeline_id, vs_id, fs_id, 0,
-                       out->sampled_bgl_id);
+                       out->sampled_bgl_id) &&
+             dvz_drp2_stream_pipeline_set_color_blend(
+                 stream, 0, VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,
+                 VK_BLEND_OP_ADD, VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,
+                 VK_BLEND_OP_ADD,
+                 VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT |
+                     VK_COLOR_COMPONENT_A_BIT);
     }
     return ok;
 }

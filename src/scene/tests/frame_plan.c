@@ -1066,12 +1066,6 @@ int test_frame_plan_graph_depth_peeling_shape(TstSuite* suite, TstItem* item)
     dvz_strlcpy(iter.panel_id, "panel.0", sizeof(iter.panel_id));
     dvz_strlcpy(iter.work_label, "depth_peel_iter", sizeof(iter.work_label));
     iter.kind = DVZ_FRAME_GRAPH_PASS_RENDER;
-    AT(dvz_frame_graph_pass_read(
-        &iter, "panel0.peel.front_ping", DVZ_FRAME_GRAPH_ACCESS_SAMPLED));
-    AT(dvz_frame_graph_pass_read(
-        &iter, "panel0.peel.back_ping", DVZ_FRAME_GRAPH_ACCESS_SAMPLED));
-    AT(dvz_frame_graph_pass_read(
-        &iter, "panel0.peel.depth_ping", DVZ_FRAME_GRAPH_ACCESS_SAMPLED));
     for (uint32_t i = 3; i < 6; i++)
     {
         DvzFrameGraphAttachment attachment = {0};
@@ -1096,7 +1090,7 @@ int test_frame_plan_graph_depth_peeling_shape(TstSuite* suite, TstItem* item)
     dvz_strlcpy(composite.work_label, "depth_peel_composite", sizeof(composite.work_label));
     composite.kind = DVZ_FRAME_GRAPH_PASS_RENDER;
     AT(dvz_frame_graph_pass_read(
-        &composite, "panel0.peel.front_pong", DVZ_FRAME_GRAPH_ACCESS_SAMPLED));
+        &composite, "panel0.peel.front_ping", DVZ_FRAME_GRAPH_ACCESS_SAMPLED));
     AT(dvz_frame_graph_pass_read(
         &composite, "panel0.peel.back_pong", DVZ_FRAME_GRAPH_ACCESS_SAMPLED));
     AT(dvz_frame_graph_pass_read(
@@ -1118,7 +1112,7 @@ int test_frame_plan_graph_depth_peeling_shape(TstSuite* suite, TstItem* item)
     const DvzFrameGraphPass* pass = dvz_frame_plan_graph_pass_get(plan, 2);
     ANN(pass);
     AT(strcmp(pass->id, "panel0.peel.iter.0") == 0);
-    AT(pass->read_count == 3);
+    AT(pass->read_count == 0);
     AT(pass->color_attachment_count == 3);
     AT(pass->has_depth_attachment);
 
@@ -1127,7 +1121,7 @@ int test_frame_plan_graph_depth_peeling_shape(TstSuite* suite, TstItem* item)
     AT(dvz_frame_plan_graph_validate(plan, &report));
     AT(dvz_diagnostic_report_count(&report) == 0);
 
-    AT(dvz_frame_plan_graph_dependency_count(plan) == 9);
+    AT(dvz_frame_plan_graph_dependency_count(plan) == 6);
     DvzFrameGraphDependency dep = {0};
     AT(dvz_frame_plan_graph_dependency_get(plan, 0, &dep));
     AT(strcmp(dep.producer_pass_id, "panel0.opaque") == 0);
@@ -1136,11 +1130,11 @@ int test_frame_plan_graph_depth_peeling_shape(TstSuite* suite, TstItem* item)
     AT(dep.consumer_usage == DVZ_FRAME_GRAPH_ACCESS_DEPTH_ATTACHMENT_READ);
 
     AT(dvz_frame_plan_graph_dependency_get(plan, 1, &dep));
-    AT(strcmp(dep.producer_pass_id, "panel0.peel.init") == 0);
+    AT(strcmp(dep.producer_pass_id, "panel0.opaque") == 0);
     AT(strcmp(dep.consumer_pass_id, "panel0.peel.iter.0") == 0);
-    AT(strcmp(dep.resource_id, "panel0.peel.front_ping") == 0);
+    AT(strcmp(dep.resource_id, "panel0.depth.opaque") == 0);
 
-    AT(dvz_frame_plan_graph_dependency_get(plan, 8, &dep));
+    AT(dvz_frame_plan_graph_dependency_get(plan, 5, &dep));
     AT(strcmp(dep.producer_pass_id, "panel0.opaque") == 0);
     AT(strcmp(dep.consumer_pass_id, "panel0.peel.composite") == 0);
     AT(strcmp(dep.resource_id, "rt") == 0);
