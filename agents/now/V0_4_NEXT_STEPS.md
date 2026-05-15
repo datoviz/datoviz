@@ -69,6 +69,16 @@ the recording through the semantic runtime. Focused validation:
 `./build/testing/dvztest_drp2 drp2_recording` (`4/4`) and
 `./build/testing/dvz_drp2_player --fast /tmp/dvz_drp2_recording_raw_fallback.dvzr`.
 
+Third follow-up DVZR slice on 2026-05-15: app-window recording is now available through
+`dvz_app_window_record_start()` / `dvz_app_window_record_stop()`. The app draw path appends
+successfully emitted scene DRP2 streams to a linear recorder and writes a one-time synthetic
+playback target setup stream so borrowed canvas-target recordings can replay through the semantic
+runtime. Focused validation: `just build`,
+`./build/testing/dvztest_scene test_app_offscreen_records_dvzr_frames`,
+`./build/testing/dvztest_scene test_frame_plan_emit_scene_core_visuals_record_portable_dvzr`,
+`./build/testing/dvztest_drp2 drp2_recording` (`4/4`), and
+`./build/testing/dvz_drp2_player --fast /tmp/dvz_app_offscreen_recording.dvzr`.
+
 Focused validation recorded before the latest `2026-05-13` follow-up commits:
 
 1. `just spec-check`: last recorded pass remained `119/119` DRP2 fixtures; `52` fixture-runner
@@ -183,8 +193,8 @@ Deliver the next implementation slices in this order unless the user redirects:
    trimming. Remaining review areas are trace/status hashing and string-buffer safety, plus a
    bounded live app smoke around request/runtime steady state.
 5. Current DVZR next: decide whether `dvz_drp2_player` should stay a developer executable or become
-   an installed CLI/app-level integration point, then add app/scene capture plumbing that records the
-   emitted frame streams directly to `.dvzr`. Broaden portable command coverage beyond the
+   an installed CLI/app-level integration point, add a small C example or app smoke that records a
+   visible scene to `.dvzr`, and broaden portable command coverage beyond the
    point/primitive/mesh/image baseline whenever a real scene/app stream reports raw fallbacks.
 6. CUDA/CuPy external-memory interop priority: treat CUDA/CuPy-owned GPU pointer -> Vulkan import as
    unreliable on this branch. Prioritize the opposite direction for any new interop work: create and
