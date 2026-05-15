@@ -69,6 +69,66 @@ The exact names can change, but the ownership should remain:
 2. CUDA/CuPy owns a mapped view while the shared object is alive.
 3. Python keeps the Datoviz shared object alive for as long as the CuPy array exists.
 
+This section is a product/API sketch, not an implementation requirement for the current C-side
+interop pass. The immediate contract work can be completed without writing Python code: define the
+metadata, ownership, synchronization, and validation rules that a future Python binding must follow.
+
+
+## Python/CuPy-Facing Export Contract
+
+The first stable contract is a buffer-export descriptor produced by Datoviz and consumed by a
+Python-side CUDA/CuPy bridge. The descriptor describes a Vulkan-owned allocation and an optional
+external synchronization primitive. It does not serialize into DRP2 fixtures and should not be
+treated as portable scene data.
+
+Required buffer fields:
+
+| Field | Meaning |
+|---|---|
+| `memory_handle` | OS handle for the exported Vulkan device-memory allocation. |
+| `memory_handle_type` | Vulkan external-memory handle type used for `memory_handle`. |
+| `allocation_size` | Full exported allocation size in bytes, as required by CUDA import. |
+| `offset` | Byte offset of the logical buffer view within the allocation. |
+| `size` | Logical byte size of the buffer view to expose to CUDA/CuPy. |
+| `usage` | Datoviz/DRP2 usage bits expected by the rendering side. |
+
+Optional synchronization fields:
+
+| Field | Meaning |
+|---|---|
+| `semaphore_handle` | OS handle for an exported Vulkan semaphore, or `-1` when absent. |
+| `semaphore_handle_type` | Vulkan external-semaphore handle type, or `0` when absent. |
+| `semaphore_value` | Timeline value associated with the exported buffer state. |
+
+The current C carrier for this data is `DvzInteropBufferExport` from
+`include/datoviz/vk/memory_interop.h`, filled by `dvz_interop_buffer_export()`. A future Python
+binding may wrap this in a higher-level object, but the field semantics above are the stable
+contract to preserve.
+
+Ownership rules:
+
+1. Datoviz owns the Vulkan buffer, allocation, and semaphore objects.
+2. Exported OS handles are owned by the receiver once successfully returned, unless the specific
+   import API consumes the handle during import.
+3. The Python bridge must close any handle it owns on every failure and destruction path.
+4. The Datoviz owner object must outlive the CuPy array and any CUDA external-memory mapping made
+   from the exported handle.
+5. Destroying the shared object must either wait for outstanding CUDA/Vulkan work or defer
+   destruction through a runtime retirement path.
+
+Validation requirements:
+
+1. reject zero-sized buffer views,
+2. reject `offset + size` ranges outside `allocation_size`,
+3. reject unsupported external memory or semaphore handle types,
+4. reject CUDA/Vulkan device mismatches before importing memory,
+5. reject stale registrations after the Datoviz buffer has been destroyed,
+6. reject use without explicit synchronization when both APIs can write the buffer.
+
+The initial platform target is Linux opaque FD external memory plus opaque FD timeline semaphores.
+Windows handle support can be reserved in the field model, but it should not be documented as
+validated until there is an equivalent smoke test.
+
 
 ## Low-Level Runtime Shape
 
@@ -85,17 +145,19 @@ Required pieces:
 6. import or share synchronization primitives with CUDA,
 7. register the runtime buffer with DRP2 object ids used by scene emission.
 
-The runtime should expose a registration path such as:
+The runtime exposes a registration path:
 
 ```c
-int dvz_drp2_runtime_register_external_buffer(
+bool dvz_drp2_runtime_register_external_buffer(
     DvzDrp2Runtime* runtime,
     uint64_t buffer_id,
-    const DvzExternalBufferDesc* desc);
+    const DvzDrp2ExternalBufferDesc* desc);
 ```
 
-The exact public C shape is not final. The important point is that external handles are registered
-with a live runtime, not serialized as portable scene data.
+The important point is that external buffers are registered with a live runtime, not serialized as
+portable scene data. The runtime borrows the registered `DvzBuffer`; the caller must keep the buffer
+alive until the runtime is reset or destroyed. No generic public binding API is required for the
+current spec pass.
 
 
 ## Current Low-Level Status
@@ -128,6 +190,13 @@ DRP2 runtime registration for a pre-existing vklite buffer is covered by
 buffer id, copies from it into a runtime-created destination buffer without emitting a source
 `CreateBuffer` or `WriteBuffer`, and downloads the destination for verification. The next integration
 step is to connect that registration path to scene-emitted external attribute sources.
+
+The DRP2 CUDA smoke
+`test_drp2_runtime_vklite_draws_cuda_external_vertex_buffer` verifies the first end-to-end rendering
+shape: a Vulkan-owned exportable vertex buffer is imported into CUDA, filled by CUDA, synchronized
+through an external timeline semaphore, registered through
+`dvz_drp2_runtime_register_external_buffer()`, drawn by the vklite runtime, and checked by texture
+readback. This establishes the C-side route needed by the future CuPy wrapper.
 
 NVIDIA CIG (`VK_NV_external_compute_queue` / CUDA-in-Graphics contexts) is not used by these paths
 and should remain optional NVIDIA-specific scheduling work. It is not required for Vulkan-owned
