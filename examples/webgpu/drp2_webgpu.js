@@ -749,22 +749,145 @@ function beginRenderPass(context, textures, encoders, command) {
 
 
 
+function createExecutionState() {
+  return {
+    buffers: new Map(),
+    textures: new Map(),
+    textureViews: new Map(),
+    samplers: new Map(),
+    bindGroupLayouts: new Map(),
+    bindGroups: new Map(),
+    shaders: new Map(),
+    pipelines: new Map(),
+  };
+}
+
+
+
+function splitStreamCommands(stream) {
+  const commands = required(stream.commands, "DRP2 stream needs commands");
+  const frameStart = commands.findIndex((command) => command.cmd === "BeginCommandEncoder");
+  if (frameStart < 0) {
+    return { setupCommands: commands, frameCommands: [] };
+  }
+  return {
+    setupCommands: commands.slice(0, frameStart),
+    frameCommands: commands.slice(frameStart),
+  };
+}
+
+
+
+async function executeWithErrorScopes(device, callback) {
+  const scopes = ["validation", "out-of-memory", "internal"];
+  for (const scope of scopes) {
+    device.pushErrorScope(scope);
+  }
+
+  let result = null;
+  let thrown = null;
+  try {
+    result = await callback();
+  } catch (error) {
+    thrown = error;
+  }
+
+  const errors = [];
+  for (const scope of scopes.slice().reverse()) {
+    const error = await device.popErrorScope();
+    if (error !== null) {
+      errors.push(`${scope}: ${error.message}`);
+    }
+  }
+
+  if (thrown !== null) {
+    throw thrown;
+  }
+  if (errors.length > 0) {
+    throw new Error(errors.join("\n"));
+  }
+  return result;
+}
+
+
+
+export class Drp2WebGpuRuntime {
+  constructor(device, context, canvasFormat, options = {}) {
+    this.device = device;
+    this.context = context;
+    this.canvasFormat = canvasFormat;
+    this.options = options;
+    this.state = createExecutionState();
+    this.stream = null;
+    this.setupCommands = [];
+    this.frameCommands = [];
+  }
+
+  async load(stream, options = {}) {
+    this.stream = stream;
+    this.options = { ...this.options, ...options };
+    this.state = createExecutionState();
+
+    const split = splitStreamCommands(stream);
+    this.setupCommands = split.setupCommands;
+    this.frameCommands = split.frameCommands;
+
+    return await executeDrp2StreamChecked(
+      this.device,
+      this.context,
+      this.canvasFormat,
+      stream,
+      {
+        ...this.options,
+        commands: this.setupCommands,
+        state: this.state,
+      },
+    );
+  }
+
+  async render(options = {}) {
+    if (this.stream === null) {
+      throw new Error("runtime has no loaded stream");
+    }
+    return await executeDrp2StreamChecked(
+      this.device,
+      this.context,
+      this.canvasFormat,
+      this.stream,
+      {
+        ...this.options,
+        ...options,
+        commands: this.frameCommands,
+        state: this.state,
+      },
+    );
+  }
+
+  writeBuffer(bufferId, offset, bytes) {
+    const buffer = required(this.state.buffers.get(bufferId), `unknown buffer ${bufferId}`);
+    this.device.queue.writeBuffer(buffer, offset, bytes, 0, bytes.byteLength);
+  }
+}
+
+
+
 export async function executeDrp2Stream(device, context, canvasFormat, stream, options = {}) {
-  const buffers = new Map();
-  const textures = new Map();
-  const textureViews = new Map();
-  const samplers = new Map();
-  const bindGroupLayouts = new Map();
-  const bindGroups = new Map();
-  const shaders = new Map();
-  const pipelines = new Map();
+  const state = options.state ?? createExecutionState();
+  const buffers = state.buffers;
+  const textures = state.textures;
+  const textureViews = state.textureViews;
+  const samplers = state.samplers;
+  const bindGroupLayouts = state.bindGroupLayouts;
+  const bindGroups = state.bindGroups;
+  const shaders = state.shaders;
+  const pipelines = state.pipelines;
   const encoders = new Map();
   const passes = new Map();
   const commandBuffers = new Map();
   const pendingTightTextureCopies = [];
   const readbackReplies = [];
 
-  for (const command of stream.commands) {
+  for (const command of options.commands ?? stream.commands) {
     switch (command.cmd) {
       case "HelloRenderer":
       case "RendererHelloReply":
@@ -1305,7 +1428,7 @@ export async function executeDrp2Stream(device, context, canvasFormat, stream, o
     }
   }
 
-  return { readbacks: readbackReplies };
+  return { readbacks: readbackReplies, state };
 }
 
 
@@ -1317,34 +1440,10 @@ export async function executeDrp2StreamChecked(
   stream,
   options = {},
 ) {
-  const scopes = ["validation", "out-of-memory", "internal"];
-  for (const scope of scopes) {
-    device.pushErrorScope(scope);
-  }
-
-  let result = null;
-  let thrown = null;
-  try {
-    result = await executeDrp2Stream(device, context, canvasFormat, stream, options);
-  } catch (error) {
-    thrown = error;
-  }
-
-  const errors = [];
-  for (const scope of scopes.slice().reverse()) {
-    const error = await device.popErrorScope();
-    if (error !== null) {
-      errors.push(`${scope}: ${error.message}`);
-    }
-  }
-
-  if (thrown !== null) {
-    throw thrown;
-  }
-  if (errors.length > 0) {
-    throw new Error(errors.join("\n"));
-  }
-  return result;
+  return await executeWithErrorScopes(
+    device,
+    async () => await executeDrp2Stream(device, context, canvasFormat, stream, options),
+  );
 }
 
 
