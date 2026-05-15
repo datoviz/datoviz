@@ -94,10 +94,9 @@ Bounded validation smoke:
 ./build/examples/c/hello_mesh_wboit_glfw 2
 ```
 
-Expected behavior: a lit, transparent WBOIT cube renders inside a transparent cyan WBOIT mesh shell.
-Both cubes use weighted blended OIT so the example does not depend on sorting closed mesh faces. The
-shell should show face-to-face lighting variation rather than one flat solid color. A GUI overlay
-named `WBOIT shell` exposes live Red, Green, Blue, Alpha, Ambient, Diffuse, and Light X/Y/Z sliders
+Expected behavior: one lit, transparent cyan WBOIT cube renders against the dark background. The
+cube should show face-to-face lighting variation rather than one flat solid color. A GUI overlay
+named `WBOIT cube` exposes live Red, Green, Blue, Alpha, Ambient, Diffuse, and Light X/Y/Z sliders
 for visual tuning. Idle rotation advances through the scene clock, arcball drag remains interactive,
 and Vulkan validation stays quiet for the bounded smoke.
 

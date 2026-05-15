@@ -25,9 +25,9 @@ Low-level Vulkan/vklite proof material already exists in:
 ## Target Outcome
 
 Add a native interactive C example, likely `examples/c/hello_mesh_wboit_glfw.c`, that renders an
-arcball-controlled 3D scene with at least one transparent mesh shell and one opaque or less
-transparent interior object. The current example includes a GUI overlay for tuning shell RGB, alpha,
-ambient/diffuse strength, and light direction at runtime.
+arcball-controlled 3D scene with at least one transparent mesh visual. The current example uses one
+WBOIT cube and includes a GUI overlay for tuning cube RGB, alpha, ambient/diffuse strength, and
+light direction at runtime.
 
 The example must exercise the active architecture:
 
@@ -224,7 +224,7 @@ Add tests in layers:
 3. capability test: WBOIT request fails with a diagnostic when required capability facts are absent.
 4. DRP2 fixture test: multi-attachment accumulation + resolve validates and serializes.
 5. vklite/DRP2 runtime smoke: accumulation + resolve produces nonblank output.
-6. app/offscreen scene smoke: transparent mesh shell renders nonblank and does not break depth.
+6. app/offscreen scene smoke: transparent mesh renders nonblank and does not break depth.
 7. manual GLFW example: arcball interaction with transparent mesh remains stable.
 
 Use focused validation first:
@@ -257,7 +257,7 @@ area. On macOS, use `direnv exec .` for Vulkan-path tests.
 8. Done: lower scene WBOIT FramePlan nodes to explicit DRP2 command streams.
 9. Done: add focused scene/vklite WBOIT regression tests.
 10. Done: add `examples/c/hello_mesh_wboit_glfw.c`.
-11. Done: add live GUI controls for WBOIT shell color, alpha, ambient/diffuse, and light direction.
+11. Done: add live GUI controls for WBOIT cube color, alpha, ambient/diffuse, and light direction.
 12. Next: use the live controls to choose better defaults and add offscreen/capture coverage for
     WBOIT if needed.
 
@@ -270,16 +270,16 @@ sorting. They should opt a visual into transparent rendering explicitly.
 Example shape:
 
 ```c
-DvzVisual* shell = dvz_mesh(scene, 0);
+DvzVisual* cube = dvz_mesh(scene, 0);
 
-dvz_visual_set_data(shell, "position", positions, vertex_count);
-dvz_visual_set_data(shell, "normal", normals, vertex_count);
-dvz_visual_set_data(shell, "color", colors_rgba, vertex_count);
-dvz_visual_set_buffer(shell, "index", index_buffer);
+dvz_visual_set_data(cube, "position", positions, vertex_count);
+dvz_visual_set_data(cube, "normal", normals, vertex_count);
+dvz_visual_set_data(cube, "color", colors_rgba, vertex_count);
+dvz_visual_set_buffer(cube, "index", index_buffer);
 
-dvz_visual_set_alpha_mode(shell, DVZ_ALPHA_WBOIT);
+dvz_visual_set_alpha_mode(cube, DVZ_ALPHA_WBOIT);
 
-dvz_panel_add_visual(panel, shell, NULL);
+dvz_panel_add_visual(panel, cube, NULL);
 dvz_panel_set_arcball(panel, router, 0);
 ```
 
