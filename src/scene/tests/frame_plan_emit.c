@@ -982,6 +982,10 @@ int test_frame_plan_emit_drp2_compute_assisted(TstSuite* suite, TstItem* item)
     AT(strstr(json, "\"cmd\": \"DispatchWorkgroups\"") != NULL);
     AT(strstr(json, "\"usage\": [\"VERTEX\", \"STORAGE\"]") != NULL);
     AT(strstr(json, "\"binding_type\": \"storage_buffer\"") != NULL);
+    AT(strstr(json, "\"binding\": 0, \"binding_type\": \"storage_buffer\", \"visibility\": "
+                    "[\"COMPUTE\"], \"access\": \"read\"") != NULL);
+    AT(strstr(json, "\"binding\": 1, \"binding_type\": \"storage_buffer\", \"visibility\": "
+                    "[\"COMPUTE\"], \"access\": \"read_write\"") != NULL);
 
     dvz_drp2_stream_json_destroy(json);
     AT(_assert_stream_matches_fixture(

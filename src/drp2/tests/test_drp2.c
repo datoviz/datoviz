@@ -1243,6 +1243,10 @@ int test_drp2_runtime_validate_compute_storage_bind_group(TstSuite* suite, TstIt
     ANN(json);
     AT(strstr(json, "\"cmd\": \"CreateBindGroupLayout\"") != NULL);
     AT(strstr(json, "\"binding_type\": \"storage_buffer\"") != NULL);
+    AT(strstr(json, "\"binding\": 0, \"binding_type\": \"storage_buffer\", \"visibility\": "
+                    "[\"COMPUTE\"], \"access\": \"read\"") != NULL);
+    AT(strstr(json, "\"binding\": 1, \"binding_type\": \"storage_buffer\", \"visibility\": "
+                    "[\"COMPUTE\"], \"access\": \"read_write\"") != NULL);
     AT(strstr(json, "\"cmd\": \"SetBindGroup\"") != NULL);
     AT(strstr(json, "\"cmd\": \"DispatchWorkgroups\"") != NULL);
 

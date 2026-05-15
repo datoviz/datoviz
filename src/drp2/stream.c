@@ -775,7 +775,7 @@ bool dvz_drp2_stream_create_texture_sampler_bind_group_layout(
 
 
 /**
- * Append a CreateBindGroupLayout command for two storage buffers.
+ * Append a CreateBindGroupLayout command for compute input/output storage buffers.
  *
  * @param stream the command stream
  * @param id the bind-group layout id
@@ -788,7 +788,7 @@ bool dvz_drp2_stream_create_storage_bind_group_layout(DvzDrp2CommandStream* stre
             .binding = 0,
             .binding_type = DVZ_DRP2_BINDING_TYPE_STORAGE_BUFFER,
             .visibility = DVZ_DRP2_SHADER_STAGE_COMPUTE,
-            .access = DVZ_DRP2_BINDING_ACCESS_READ_WRITE,
+            .access = DVZ_DRP2_BINDING_ACCESS_READ,
         },
         {
             .binding = 1,
