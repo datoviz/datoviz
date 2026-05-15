@@ -636,7 +636,7 @@ int test_frame_plan_graph_validation_read_before_write(TstSuite* suite, TstItem*
 
     DvzFrameGraphPass pass = {0};
     dvz_strlcpy(pass.id, "panel0.resolve", sizeof(pass.id));
-    pass.kind = DVZ_FRAME_GRAPH_PASS_RENDER;
+    pass.kind = DVZ_FRAME_GRAPH_PASS_COMPUTE;
     AT(dvz_frame_graph_pass_read(&pass, "tex.unwritten", DVZ_FRAME_GRAPH_ACCESS_SAMPLED));
     AT(dvz_frame_plan_graph_pass(plan, &pass));
 
@@ -647,6 +647,57 @@ int test_frame_plan_graph_validation_read_before_write(TstSuite* suite, TstItem*
     AT(strcmp(
            dvz_diagnostic_report_get(&report, 0),
            "FramePlan graph pass reads resource 'tex.unwritten' before any write") == 0);
+
+    dvz_frame_plan_destroy(plan);
+    return 0;
+}
+
+
+/**
+ * Ensure the internal FramePlan graph rejects attachments on non-render passes.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_frame_plan_graph_validation_pass_kind(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzFramePlan* plan = dvz_frame_plan("figure.graph.pass_kind", 17);
+    ANN(plan);
+
+    DvzFrameGraphResource resource = {0};
+    dvz_strlcpy(resource.id, "color.fixed", sizeof(resource.id));
+    resource.kind = DVZ_FRAME_GRAPH_RESOURCE_TEXTURE;
+    resource.extent_kind = DVZ_FRAME_GRAPH_EXTENT_FIXED;
+    resource.width = 64;
+    resource.height = 64;
+    resource.usage_flags = DVZ_FRAME_GRAPH_RESOURCE_USAGE_COLOR_ATTACHMENT;
+    resource.lifetime = DVZ_FRAME_GRAPH_RESOURCE_LIFETIME_PER_FRAME;
+    AT(dvz_frame_plan_graph_resource(plan, &resource));
+
+    DvzFrameGraphAttachment attachment = {0};
+    dvz_strlcpy(attachment.resource_id, "color.fixed", sizeof(attachment.resource_id));
+    attachment.load_op = DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_CLEAR;
+    attachment.store_op = DVZ_FRAME_GRAPH_ATTACHMENT_STORE_STORE;
+    attachment.access = DVZ_FRAME_GRAPH_ATTACHMENT_ACCESS_WRITE;
+
+    DvzFrameGraphPass pass = {0};
+    dvz_strlcpy(pass.id, "panel0.compute", sizeof(pass.id));
+    pass.kind = DVZ_FRAME_GRAPH_PASS_COMPUTE;
+    AT(dvz_frame_graph_pass_color_attachment(&pass, &attachment));
+    AT(dvz_frame_plan_graph_pass(plan, &pass));
+
+    DvzDiagnosticReport report = {0};
+    dvz_diagnostic_report_init(&report);
+    AT(!dvz_frame_plan_graph_validate(plan, &report));
+    AT(dvz_diagnostic_report_count(&report) >= 1);
+    AT(strcmp(
+           dvz_diagnostic_report_get(&report, 0),
+           "FramePlan graph pass 'panel0.compute' has render attachments but is not a render "
+           "pass") == 0);
 
     dvz_frame_plan_destroy(plan);
     return 0;
@@ -851,6 +902,7 @@ int test_scene_frame_plan(TstSuite* suite)
     TEST_SIMPLE(test_frame_plan_graph_validation_missing_usage);
     TEST_SIMPLE(test_frame_plan_graph_validation_attachment_kind);
     TEST_SIMPLE(test_frame_plan_graph_validation_attachment_extent);
+    TEST_SIMPLE(test_frame_plan_graph_validation_pass_kind);
 
     return 0;
 }

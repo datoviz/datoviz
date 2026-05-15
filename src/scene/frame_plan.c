@@ -743,6 +743,55 @@ static bool _graph_validate_render_pass_attachment_extents(
 
 
 
+static bool _graph_validate_pass_kind(const DvzFrameGraphPass* pass, DvzDiagnosticReport* report)
+{
+    ANN(pass);
+
+    bool ok = true;
+    bool has_attachment = pass->color_attachment_count > 0 || pass->has_depth_attachment ||
+                          pass->has_stencil_attachment;
+    if (has_attachment && pass->kind != DVZ_FRAME_GRAPH_PASS_RENDER)
+    {
+        _graph_report(
+            report, "FramePlan graph pass '%s' has render attachments but is not a render pass",
+            pass->id);
+        ok = false;
+    }
+
+    if (pass->kind == DVZ_FRAME_GRAPH_PASS_RENDER && pass->color_attachment_count == 0)
+    {
+        _graph_report(
+            report, "FramePlan graph render pass '%s' has no color attachments", pass->id);
+        ok = false;
+    }
+
+    for (uint32_t i = 0; i < pass->read_count; i++)
+    {
+        if (pass->kind != DVZ_FRAME_GRAPH_PASS_RENDER &&
+            (pass->reads[i].usage == DVZ_FRAME_GRAPH_ACCESS_COLOR_ATTACHMENT ||
+             pass->reads[i].usage == DVZ_FRAME_GRAPH_ACCESS_DEPTH_ATTACHMENT_READ))
+        {
+            _graph_report(
+                report, "FramePlan graph pass '%s' has render-only read access", pass->id);
+            ok = false;
+        }
+    }
+    for (uint32_t i = 0; i < pass->write_count; i++)
+    {
+        if (pass->kind != DVZ_FRAME_GRAPH_PASS_RENDER &&
+            (pass->writes[i].usage == DVZ_FRAME_GRAPH_ACCESS_COLOR_ATTACHMENT ||
+             pass->writes[i].usage == DVZ_FRAME_GRAPH_ACCESS_DEPTH_ATTACHMENT_WRITE))
+        {
+            _graph_report(
+                report, "FramePlan graph pass '%s' has render-only write access", pass->id);
+            ok = false;
+        }
+    }
+    return ok;
+}
+
+
+
 static void _json_append_graph_resource_usage(JsonBuilder* builder, uint32_t usage_flags)
 {
     ANN(builder);
@@ -1948,6 +1997,7 @@ bool dvz_frame_plan_graph_validate(const DvzFramePlan* plan, DvzDiagnosticReport
             _graph_report(report, "FramePlan graph pass at index %" PRIu32 " is incomplete", i);
             ok = false;
         }
+        ok = _graph_validate_pass_kind(pass, report) && ok;
         if (_graph_pass_id_exists_before(plan, pass->id, i))
         {
             _graph_report(report, "FramePlan graph pass id '%s' is duplicated", pass->id);
