@@ -948,6 +948,30 @@ static DvzDrp2AttachmentStoreOp _graph_store_op_to_drp2(DvzFrameGraphAttachmentS
 
 
 /**
+ * Convert graph attachment access to DRP2 attachment access.
+ *
+ * @param access graph attachment access.
+ * @return DRP2 attachment access.
+ */
+static DvzDrp2AttachmentAccess _graph_attachment_access_to_drp2(
+    DvzFrameGraphAttachmentAccess access)
+{
+    switch (access)
+    {
+    case DVZ_FRAME_GRAPH_ATTACHMENT_ACCESS_READ:
+        return DVZ_DRP2_ATTACHMENT_ACCESS_READ;
+    case DVZ_FRAME_GRAPH_ATTACHMENT_ACCESS_READ_WRITE:
+        return DVZ_DRP2_ATTACHMENT_ACCESS_READ_WRITE;
+    case DVZ_FRAME_GRAPH_ATTACHMENT_ACCESS_NONE:
+    case DVZ_FRAME_GRAPH_ATTACHMENT_ACCESS_WRITE:
+    default:
+        return DVZ_DRP2_ATTACHMENT_ACCESS_WRITE;
+    }
+}
+
+
+
+/**
  * Apply graph color attachment load/store operations to the current DRP2 render pass command.
  *
  * @param stream destination DRP2 command stream.
@@ -966,7 +990,9 @@ static bool _stream_apply_graph_color_ops(
         const DvzFrameGraphAttachment* attachment = &pass->color_attachments[i];
         ok = dvz_drp2_stream_begin_render_pass_set_color_attachment_ops(
             stream, i, _graph_load_op_to_drp2(attachment->load_op),
-            _graph_store_op_to_drp2(attachment->store_op));
+            _graph_store_op_to_drp2(attachment->store_op)) &&
+             dvz_drp2_stream_begin_render_pass_set_color_attachment_access(
+                 stream, i, _graph_attachment_access_to_drp2(attachment->access));
     }
     return ok;
 }
@@ -992,7 +1018,9 @@ static bool _stream_apply_graph_depth(
                stream, depth_id, attachment->clear_depth) &&
            dvz_drp2_stream_begin_render_pass_set_depth_ops(
                stream, _graph_load_op_to_drp2(attachment->load_op),
-               _graph_store_op_to_drp2(attachment->store_op));
+               _graph_store_op_to_drp2(attachment->store_op)) &&
+           dvz_drp2_stream_begin_render_pass_set_depth_access(
+               stream, _graph_attachment_access_to_drp2(attachment->access));
 }
 
 

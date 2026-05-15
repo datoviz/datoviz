@@ -963,6 +963,18 @@ DVZ_EXPORT bool dvz_drp2_stream_begin_render_pass_set_color_attachment_ops(
 
 
 /**
+ * Set access intent on one color attachment of the most recent BeginRenderPass command.
+ *
+ * @param stream the command stream
+ * @param attachment_index the color attachment index
+ * @param access the attachment access intent
+ * @return whether the most recent command was a BeginRenderPass and was updated
+ */
+DVZ_EXPORT bool dvz_drp2_stream_begin_render_pass_set_color_attachment_access(
+    DvzDrp2CommandStream* stream, uint32_t attachment_index, DvzDrp2AttachmentAccess access);
+
+
+/**
  * Attach a transient depth attachment request to the most recently appended BeginRenderPass
  * command.
  *
@@ -999,6 +1011,17 @@ DVZ_EXPORT bool dvz_drp2_stream_begin_render_pass_set_depth_texture(
 DVZ_EXPORT bool dvz_drp2_stream_begin_render_pass_set_depth_ops(
     DvzDrp2CommandStream* stream, DvzDrp2AttachmentLoadOp load_op,
     DvzDrp2AttachmentStoreOp store_op);
+
+
+/**
+ * Set access intent on the depth attachment of the most recent BeginRenderPass command.
+ *
+ * @param stream the command stream
+ * @param access the depth attachment access intent
+ * @return whether the most recent command was a BeginRenderPass and was updated
+ */
+DVZ_EXPORT bool dvz_drp2_stream_begin_render_pass_set_depth_access(
+    DvzDrp2CommandStream* stream, DvzDrp2AttachmentAccess access);
 
 
 

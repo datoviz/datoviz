@@ -85,6 +85,7 @@ struct DvzDrp2ColorAttachment
     bool clear;
     DvzDrp2AttachmentLoadOp load_op;
     DvzDrp2AttachmentStoreOp store_op;
+    DvzDrp2AttachmentAccess access;
     float clear_color[4];
 };
 

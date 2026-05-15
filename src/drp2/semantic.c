@@ -1031,7 +1031,8 @@ static DvzDrp2ValidationResult _validate_begin_render_pass(
                 : NULL;
         if (attachment != NULL &&
             (attachment->load_op > DVZ_DRP2_ATTACHMENT_LOAD_DONT_CARE ||
-             attachment->store_op > DVZ_DRP2_ATTACHMENT_STORE_DONT_CARE))
+             attachment->store_op > DVZ_DRP2_ATTACHMENT_STORE_DONT_CARE ||
+             attachment->access > DVZ_DRP2_ATTACHMENT_ACCESS_READ_WRITE))
             return _drp2_fail(DVZ_DRP2_VALIDATION_USAGE, command_index);
         uint64_t texture_id = command->u.begin_render_pass.color_attachment_count > 0
                                   ? command->u.begin_render_pass.color_attachments[i].texture_id
@@ -1044,7 +1045,8 @@ static DvzDrp2ValidationResult _validate_begin_render_pass(
     }
     if (command->u.begin_render_pass.has_depth_attachment &&
         (command->u.begin_render_pass.depth_load_op > DVZ_DRP2_ATTACHMENT_LOAD_DONT_CARE ||
-         command->u.begin_render_pass.depth_store_op > DVZ_DRP2_ATTACHMENT_STORE_DONT_CARE))
+         command->u.begin_render_pass.depth_store_op > DVZ_DRP2_ATTACHMENT_STORE_DONT_CARE ||
+         command->u.begin_render_pass.depth_access > DVZ_DRP2_ATTACHMENT_ACCESS_READ_WRITE))
         return _drp2_fail(DVZ_DRP2_VALIDATION_USAGE, command_index);
     if (command->u.begin_render_pass.has_depth_attachment &&
         command->u.begin_render_pass.depth_texture_id != 0)

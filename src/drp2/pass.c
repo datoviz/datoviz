@@ -104,6 +104,27 @@ static void _render_area_from_viewport(
 }
 
 
+/**
+ * Convert DRP2 depth attachment access to vklite texture access.
+ *
+ * @param access DRP2 attachment access intent.
+ * @return vklite texture access.
+ */
+static Drp2TextureAccess _depth_texture_access(DvzDrp2AttachmentAccess access)
+{
+    switch (access)
+    {
+    case DVZ_DRP2_ATTACHMENT_ACCESS_READ:
+        return DRP2_TEXTURE_ACCESS_DEPTH_ATTACHMENT_READ;
+    case DVZ_DRP2_ATTACHMENT_ACCESS_WRITE:
+        return DRP2_TEXTURE_ACCESS_DEPTH_ATTACHMENT_WRITE;
+    case DVZ_DRP2_ATTACHMENT_ACCESS_READ_WRITE:
+    default:
+        return DRP2_TEXTURE_ACCESS_DEPTH_ATTACHMENT;
+    }
+}
+
+
 
 /**
  * Find the active borrowed frame target depth image for same-size intermediate passes.
@@ -447,7 +468,8 @@ DvzDrp2ValidationResult _vklite_begin_render_pass(
     }
     if (named_depth != NULL)
     {
-        _vklite_transition_image_access(cmds, named_depth, DRP2_TEXTURE_ACCESS_DEPTH_ATTACHMENT);
+        _vklite_transition_image_access(
+            cmds, named_depth, _depth_texture_access(command->u.begin_render_pass.depth_access));
     }
     else if (pass->depth_images != NULL)
     {

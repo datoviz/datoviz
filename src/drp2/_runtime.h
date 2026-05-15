@@ -79,6 +79,8 @@ typedef enum
     DRP2_TEXTURE_ACCESS_SAMPLED_READ,
     DRP2_TEXTURE_ACCESS_COLOR_ATTACHMENT,
     DRP2_TEXTURE_ACCESS_DEPTH_ATTACHMENT,
+    DRP2_TEXTURE_ACCESS_DEPTH_ATTACHMENT_READ,
+    DRP2_TEXTURE_ACCESS_DEPTH_ATTACHMENT_WRITE,
 } Drp2TextureAccess;
 
 
@@ -185,6 +187,7 @@ struct Drp2VkliteObject
     VkCommandBuffer command_buffer;
     VkImageView image_view;
     VkImageLayout image_layout;
+    Drp2TextureAccess texture_access;
     uint64_t texture_id;
     uint64_t sampler_id;
     uint32_t color_target_count;

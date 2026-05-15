@@ -539,6 +539,23 @@ static const char* _attachment_store_name(DvzDrp2AttachmentStoreOp op)
 
 
 
+static const char* _attachment_access_name(DvzDrp2AttachmentAccess access)
+{
+    switch (access)
+    {
+    case DVZ_DRP2_ATTACHMENT_ACCESS_WRITE:
+        return "write";
+    case DVZ_DRP2_ATTACHMENT_ACCESS_READ:
+        return "read";
+    case DVZ_DRP2_ATTACHMENT_ACCESS_READ_WRITE:
+        return "read_write";
+    default:
+        return "unknown";
+    }
+}
+
+
+
 static void _json_append_command(JsonBuilder* builder, const DvzDrp2Command* command)
 {
     ANN(builder);
@@ -843,6 +860,8 @@ static void _json_append_command(JsonBuilder* builder, const DvzDrp2Command* com
                                           DVZ_DRP2_ATTACHMENT_LOAD_LOAD);
             DvzDrp2AttachmentStoreOp store_op =
                 attachment != NULL ? attachment->store_op : DVZ_DRP2_ATTACHMENT_STORE_STORE;
+            DvzDrp2AttachmentAccess access =
+                attachment != NULL ? attachment->access : DVZ_DRP2_ATTACHMENT_ACCESS_WRITE;
             const float* clear_color =
                 attachment != NULL ? attachment->clear_color :
                                      command->u.begin_render_pass.clear_color;
@@ -851,9 +870,10 @@ static void _json_append_command(JsonBuilder* builder, const DvzDrp2Command* com
             _json_append(
                 builder,
                 "{ \"texture_id\": %" PRIu64
-                ", \"load_op\": \"%s\", \"store_op\": \"%s\", "
+                ", \"load_op\": \"%s\", \"store_op\": \"%s\", \"access\": \"%s\", "
                 "\"clear_value\": { \"r\": %g, \"g\": %g, \"b\": %g, \"a\": %g } }",
                 texture_id, _attachment_load_name(load_op), _attachment_store_name(store_op),
+                _attachment_access_name(access),
                 (double)clear_color[0], (double)clear_color[1], (double)clear_color[2],
                 (double)clear_color[3]);
         }
@@ -864,10 +884,11 @@ static void _json_append_command(JsonBuilder* builder, const DvzDrp2Command* com
                 builder,
                 ", \"depth_stencil_attachment\": { \"format\": \"depth32float\", "
                 "\"texture_id\": %" PRIu64 ", \"load_op\": \"%s\", \"store_op\": \"%s\", "
-                "\"clear_value\": { \"depth\": %g } }",
+                "\"access\": \"%s\", \"clear_value\": { \"depth\": %g } }",
                 command->u.begin_render_pass.depth_texture_id,
                 _attachment_load_name(command->u.begin_render_pass.depth_load_op),
                 _attachment_store_name(command->u.begin_render_pass.depth_store_op),
+                _attachment_access_name(command->u.begin_render_pass.depth_access),
                 (double)command->u.begin_render_pass.clear_depth);
         }
         _json_append(builder, " }");

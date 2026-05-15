@@ -4262,9 +4262,13 @@ int test_drp2_begin_render_pass_attachment_ops(TstSuite* suite, TstItem* item)
     AT(dvz_drp2_stream_begin_render_pass_clear(stream, 1, 2, 3, 0.2f, 0.4f, 0.6f, 1.0f));
     AT(dvz_drp2_stream_begin_render_pass_set_color_attachment_ops(
         stream, 0, DVZ_DRP2_ATTACHMENT_LOAD_LOAD, DVZ_DRP2_ATTACHMENT_STORE_DONT_CARE));
+    AT(dvz_drp2_stream_begin_render_pass_set_color_attachment_access(
+        stream, 0, DVZ_DRP2_ATTACHMENT_ACCESS_READ_WRITE));
     AT(dvz_drp2_stream_begin_render_pass_set_depth(stream, 0.5f));
     AT(dvz_drp2_stream_begin_render_pass_set_depth_ops(
         stream, DVZ_DRP2_ATTACHMENT_LOAD_DONT_CARE, DVZ_DRP2_ATTACHMENT_STORE_STORE));
+    AT(dvz_drp2_stream_begin_render_pass_set_depth_access(
+        stream, DVZ_DRP2_ATTACHMENT_ACCESS_READ));
 
     const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream, 0);
     ANN(cmd);
@@ -4273,17 +4277,23 @@ int test_drp2_begin_render_pass_attachment_ops(TstSuite* suite, TstItem* item)
     AT(
         cmd->u.begin_render_pass.color_attachments[0].store_op ==
         DVZ_DRP2_ATTACHMENT_STORE_DONT_CARE);
+    AT(
+        cmd->u.begin_render_pass.color_attachments[0].access ==
+        DVZ_DRP2_ATTACHMENT_ACCESS_READ_WRITE);
     AT(!cmd->u.begin_render_pass.color_attachments[0].clear);
     AT(cmd->u.begin_render_pass.depth_load_op == DVZ_DRP2_ATTACHMENT_LOAD_DONT_CARE);
     AT(cmd->u.begin_render_pass.depth_store_op == DVZ_DRP2_ATTACHMENT_STORE_STORE);
+    AT(cmd->u.begin_render_pass.depth_access == DVZ_DRP2_ATTACHMENT_ACCESS_READ);
     AT(cmd->u.begin_render_pass.depth_ops_explicit);
 
     char* json = dvz_drp2_stream_json(stream, "attachment_ops");
     ANN(json);
     AT(strstr(json, "\"load_op\": \"load\"") != NULL);
     AT(strstr(json, "\"store_op\": \"dont_care\"") != NULL);
+    AT(strstr(json, "\"access\": \"read_write\"") != NULL);
     AT(strstr(json, "\"depth_stencil_attachment\"") != NULL);
     AT(strstr(json, "\"load_op\": \"dont_care\"") != NULL);
+    AT(strstr(json, "\"access\": \"read\"") != NULL);
 
     dvz_drp2_stream_json_destroy(json);
     dvz_drp2_stream_destroy(stream);
@@ -4414,9 +4424,13 @@ int test_drp2_recording_preserves_attachment_ops(TstSuite* suite, TstItem* item)
     AT(dvz_drp2_stream_begin_render_pass_clear(stream, 3, 2, 1, 0.0f, 0.0f, 0.0f, 1.0f));
     AT(dvz_drp2_stream_begin_render_pass_set_color_attachment_ops(
         stream, 0, DVZ_DRP2_ATTACHMENT_LOAD_LOAD, DVZ_DRP2_ATTACHMENT_STORE_DONT_CARE));
+    AT(dvz_drp2_stream_begin_render_pass_set_color_attachment_access(
+        stream, 0, DVZ_DRP2_ATTACHMENT_ACCESS_READ_WRITE));
     AT(dvz_drp2_stream_begin_render_pass_set_depth(stream, 1.0f));
     AT(dvz_drp2_stream_begin_render_pass_set_depth_ops(
         stream, DVZ_DRP2_ATTACHMENT_LOAD_LOAD, DVZ_DRP2_ATTACHMENT_STORE_DONT_CARE));
+    AT(dvz_drp2_stream_begin_render_pass_set_depth_access(
+        stream, DVZ_DRP2_ATTACHMENT_ACCESS_READ));
 
     DvzDrp2RecordingInfo info = {
         .width = 8,
@@ -4436,8 +4450,10 @@ int test_drp2_recording_preserves_attachment_ops(TstSuite* suite, TstItem* item)
     AT(stream_jsonl_size > 0);
     AT(strstr(stream_jsonl, "\"ca0_load_op\":1") != NULL);
     AT(strstr(stream_jsonl, "\"ca0_store_op\":1") != NULL);
+    AT(strstr(stream_jsonl, "\"ca0_access\":2") != NULL);
     AT(strstr(stream_jsonl, "\"depth_load_op\":1") != NULL);
     AT(strstr(stream_jsonl, "\"depth_store_op\":1") != NULL);
+    AT(strstr(stream_jsonl, "\"depth_access\":1") != NULL);
 
     DvzDrp2CommandStream* replay = dvz_drp2_recording_read_stream(path);
     ANN(replay);
@@ -4448,8 +4464,12 @@ int test_drp2_recording_preserves_attachment_ops(TstSuite* suite, TstItem* item)
     AT(
         pass->u.begin_render_pass.color_attachments[0].store_op ==
         DVZ_DRP2_ATTACHMENT_STORE_DONT_CARE);
+    AT(
+        pass->u.begin_render_pass.color_attachments[0].access ==
+        DVZ_DRP2_ATTACHMENT_ACCESS_READ_WRITE);
     AT(pass->u.begin_render_pass.depth_load_op == DVZ_DRP2_ATTACHMENT_LOAD_LOAD);
     AT(pass->u.begin_render_pass.depth_store_op == DVZ_DRP2_ATTACHMENT_STORE_DONT_CARE);
+    AT(pass->u.begin_render_pass.depth_access == DVZ_DRP2_ATTACHMENT_ACCESS_READ);
     AT(pass->u.begin_render_pass.depth_ops_explicit);
 
     dvz_drp2_stream_destroy(replay);

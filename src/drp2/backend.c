@@ -212,6 +212,7 @@ static DvzDrp2ValidationResult _vklite_create_texture(
     }
 
     object->image_layout = VK_IMAGE_LAYOUT_UNDEFINED;
+    object->texture_access = DRP2_TEXTURE_ACCESS_NONE;
     object->usage = command->u.create_texture.usage;
     object->format = (uint32_t)format;
     object->width = command->u.create_texture.width;
@@ -323,6 +324,7 @@ bool _vklite_attach_frame_target(
 
     object->images = images;
     object->image_layout = frame->image_layout;
+    object->texture_access = DRP2_TEXTURE_ACCESS_COLOR_ATTACHMENT;
     object->command_buffer = frame->command_buffer;
     object->image_view = frame->image_view;
     object->width = frame->extent.width;

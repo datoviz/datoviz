@@ -190,6 +190,7 @@ struct DvzDrp2Command
             uint64_t depth_texture_id;
             DvzDrp2AttachmentLoadOp depth_load_op;
             DvzDrp2AttachmentStoreOp depth_store_op;
+            DvzDrp2AttachmentAccess depth_access;
             bool depth_ops_explicit;
             float clear_depth;
             float clear_color[4]; /* RGBA clear values; {0,0,0,0} = transparent black */

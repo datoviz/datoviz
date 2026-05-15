@@ -925,6 +925,7 @@ int test_scene_mesh_emits_depth_attachment(TstSuite* suite, TstItem* item)
 
     bool found_depth_pass = false;
     bool found_named_depth_pass = false;
+    bool found_named_depth_write = false;
     bool found_named_depth_texture = false;
     bool found_named_depth_usage = false;
     bool found_depth_pipeline = false;
@@ -948,6 +949,10 @@ int test_scene_mesh_emits_depth_attachment(TstSuite* suite, TstItem* item)
             found_depth_pass = found_depth_pass || cmd->u.begin_render_pass.has_depth_attachment;
             found_named_depth_pass =
                 found_named_depth_pass || cmd->u.begin_render_pass.depth_texture_id != 0;
+            found_named_depth_write =
+                found_named_depth_write ||
+                (cmd->u.begin_render_pass.depth_texture_id != 0 &&
+                 cmd->u.begin_render_pass.depth_access == DVZ_DRP2_ATTACHMENT_ACCESS_WRITE);
         }
         if (cmd->type == DVZ_DRP2_COMMAND_CREATE_RENDER_PIPELINE)
         {
@@ -960,6 +965,7 @@ int test_scene_mesh_emits_depth_attachment(TstSuite* suite, TstItem* item)
     }
     AT(found_depth_pass);
     AT(found_named_depth_pass);
+    AT(found_named_depth_write);
     AT(found_named_depth_texture);
     AT(found_named_depth_usage);
     AT(found_depth_pipeline);
@@ -4379,6 +4385,7 @@ int test_scene_visual_alpha_mode_emits_wboit_drp2(TstSuite* suite, TstItem* item
     bool begin_pass_depths[3] = {0};
     uint64_t begin_pass_depth_textures[3] = {0};
     DvzDrp2AttachmentLoadOp begin_pass_depth_loads[3] = {0};
+    DvzDrp2AttachmentAccess begin_pass_depth_access[3] = {0};
     bool begin_pass_second_attachment_clears[3] = {0};
 
     for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
@@ -4468,6 +4475,8 @@ int test_scene_visual_alpha_mode_emits_wboit_drp2(TstSuite* suite, TstItem* item
                     command->u.begin_render_pass.depth_texture_id;
                 begin_pass_depth_loads[begin_pass_count] =
                     command->u.begin_render_pass.depth_load_op;
+                begin_pass_depth_access[begin_pass_count] =
+                    command->u.begin_render_pass.depth_access;
                 if (command->u.begin_render_pass.color_attachment_count > 1)
                 {
                     begin_pass_second_attachment_clears[begin_pass_count] =
@@ -4513,6 +4522,8 @@ int test_scene_visual_alpha_mode_emits_wboit_drp2(TstSuite* suite, TstItem* item
     AT(begin_pass_depth_textures[2] == 0);
     AT(begin_pass_depth_loads[0] == DVZ_DRP2_ATTACHMENT_LOAD_CLEAR);
     AT(begin_pass_depth_loads[1] == DVZ_DRP2_ATTACHMENT_LOAD_LOAD);
+    AT(begin_pass_depth_access[0] == DVZ_DRP2_ATTACHMENT_ACCESS_WRITE);
+    AT(begin_pass_depth_access[1] == DVZ_DRP2_ATTACHMENT_ACCESS_READ);
     AT(begin_pass_second_attachment_clears[1]);
     AT(!begin_pass_clears[2]);
     AT(begin_pass_textures[0] != 0);

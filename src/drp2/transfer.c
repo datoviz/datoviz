@@ -109,6 +109,8 @@ VkImageLayout _vklite_texture_access_layout(Drp2TextureAccess access)
     case DRP2_TEXTURE_ACCESS_COLOR_ATTACHMENT:
         return VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
     case DRP2_TEXTURE_ACCESS_DEPTH_ATTACHMENT:
+    case DRP2_TEXTURE_ACCESS_DEPTH_ATTACHMENT_READ:
+    case DRP2_TEXTURE_ACCESS_DEPTH_ATTACHMENT_WRITE:
         return VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL;
     default:
         return VK_IMAGE_LAYOUT_UNDEFINED;
@@ -152,6 +154,16 @@ static void _vklite_texture_access_scope(
                  VK_PIPELINE_STAGE_2_LATE_FRAGMENT_TESTS_BIT;
         *access_mask = VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_READ_BIT |
                        VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+        break;
+    case DRP2_TEXTURE_ACCESS_DEPTH_ATTACHMENT_READ:
+        *stage = VK_PIPELINE_STAGE_2_EARLY_FRAGMENT_TESTS_BIT |
+                 VK_PIPELINE_STAGE_2_LATE_FRAGMENT_TESTS_BIT;
+        *access_mask = VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_READ_BIT;
+        break;
+    case DRP2_TEXTURE_ACCESS_DEPTH_ATTACHMENT_WRITE:
+        *stage = VK_PIPELINE_STAGE_2_EARLY_FRAGMENT_TESTS_BIT |
+                 VK_PIPELINE_STAGE_2_LATE_FRAGMENT_TESTS_BIT;
+        *access_mask = VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
         break;
     default:
         *stage = VK_PIPELINE_STAGE_2_NONE;
@@ -203,15 +215,17 @@ void _vklite_transition_image_access(
     ANN(object);
     ANN(object->images);
     VkImageLayout layout = _vklite_texture_access_layout(access);
-    if (object->image_layout == layout)
+    Drp2TextureAccess previous_access = object->texture_access != DRP2_TEXTURE_ACCESS_NONE
+                                            ? object->texture_access
+                                            : _vklite_texture_access_from_layout(object);
+    if (object->image_layout == layout && previous_access == access)
         return;
 
     VkPipelineStageFlags2 src_stage = VK_PIPELINE_STAGE_2_NONE;
     VkAccessFlags2 src_access = 0;
     VkPipelineStageFlags2 dst_stage = VK_PIPELINE_STAGE_2_NONE;
     VkAccessFlags2 dst_access = 0;
-    _vklite_texture_access_scope(
-        _vklite_texture_access_from_layout(object), &src_stage, &src_access);
+    _vklite_texture_access_scope(previous_access, &src_stage, &src_access);
     _vklite_texture_access_scope(access, &dst_stage, &dst_access);
 
     DvzBarriers barriers = {0};
@@ -224,6 +238,7 @@ void _vklite_transition_image_access(
     dvz_barrier_image_aspect(bimg, _vklite_texture_aspect(object));
     dvz_cmd_barriers(cmds, &barriers);
     object->image_layout = layout;
+    object->texture_access = access;
 }
 
 
