@@ -2,8 +2,19 @@ const statusEl = document.querySelector("#status");
 const canvas = document.querySelector("#viewport");
 const streamNameEl = document.querySelector("#stream-name");
 const streamSelectEl = document.querySelector("#stream-select");
+const interactionHelpEl = document.querySelector("#interaction-help");
 
 export const STREAMS = [
+  {
+    name: "scene_point_panzoom_wgsl",
+    label: "Scene points pan/zoom",
+    source: "scene_point_wgsl",
+    interactive: {
+      type: "panzoom",
+      mvpBufferId: 5001,
+      viewportBufferId: 5002,
+    },
+  },
   { name: "scene_primitive_wgsl", label: "Scene primitive (WGSL)" },
   { name: "scene_point_wgsl", label: "Scene points (WGSL)" },
   { name: "indexed_quad_wgsl", label: "Indexed quad" },
@@ -19,6 +30,18 @@ export const STREAMS = [
 function setStatus(message, isError = false) {
   statusEl.textContent = message;
   statusEl.style.color = isError ? "#ff8f8f" : "#9be59b";
+}
+
+
+
+function streamConfigByName(name) {
+  return STREAMS.find((item) => item.name === name) ?? STREAMS[0];
+}
+
+
+
+function streamSourceName(config) {
+  return config.source ?? config.name;
 }
 
 
@@ -573,6 +596,163 @@ function resizeCanvasToDisplaySize(device, context, format) {
     alphaMode: "opaque",
   });
   return true;
+}
+
+
+
+function identityMat4() {
+  const mat = new Float32Array(16);
+  mat[0] = 1;
+  mat[5] = 1;
+  mat[10] = 1;
+  mat[15] = 1;
+  return mat;
+}
+
+
+
+function panzoomProjMat4(scale, offsetX, offsetY) {
+  const mat = identityMat4();
+  mat[0] = scale;
+  mat[5] = scale;
+  mat[12] = offsetX;
+  mat[13] = offsetY;
+  return mat;
+}
+
+
+
+function mvpUniformBytes(scale, offsetX, offsetY) {
+  const buffer = new ArrayBuffer(208);
+  const f32 = new Float32Array(buffer);
+  f32.set(identityMat4(), 0);
+  f32.set(identityMat4(), 16);
+  f32.set(panzoomProjMat4(scale, offsetX, offsetY), 32);
+  return new Uint8Array(buffer);
+}
+
+
+
+function viewportUniformBytes() {
+  return new Uint8Array(new Float32Array([0, 0, canvas.width, canvas.height]).buffer);
+}
+
+
+
+function clamp(value, minValue, maxValue) {
+  return Math.min(maxValue, Math.max(minValue, value));
+}
+
+
+
+function eventNdc(event) {
+  const rect = canvas.getBoundingClientRect();
+  const x = ((event.clientX - rect.left) / Math.max(1, rect.width)) * 2 - 1;
+  const y = 1 - ((event.clientY - rect.top) / Math.max(1, rect.height)) * 2;
+  return { x, y };
+}
+
+
+
+class PanzoomInteraction {
+  constructor(config, requestRender) {
+    this.config = config;
+    this.requestRender = requestRender;
+    this.scale = 1;
+    this.offsetX = 0;
+    this.offsetY = 0;
+    this.dragging = false;
+    this.lastX = 0;
+    this.lastY = 0;
+
+    this.onPointerDown = this.onPointerDown.bind(this);
+    this.onPointerMove = this.onPointerMove.bind(this);
+    this.onPointerUp = this.onPointerUp.bind(this);
+    this.onWheel = this.onWheel.bind(this);
+    this.onDoubleClick = this.onDoubleClick.bind(this);
+
+    canvas.addEventListener("pointerdown", this.onPointerDown);
+    canvas.addEventListener("pointermove", this.onPointerMove);
+    canvas.addEventListener("pointerup", this.onPointerUp);
+    canvas.addEventListener("pointercancel", this.onPointerUp);
+    canvas.addEventListener("wheel", this.onWheel, { passive: false });
+    canvas.addEventListener("dblclick", this.onDoubleClick);
+  }
+
+  destroy() {
+    canvas.removeEventListener("pointerdown", this.onPointerDown);
+    canvas.removeEventListener("pointermove", this.onPointerMove);
+    canvas.removeEventListener("pointerup", this.onPointerUp);
+    canvas.removeEventListener("pointercancel", this.onPointerUp);
+    canvas.removeEventListener("wheel", this.onWheel);
+    canvas.removeEventListener("dblclick", this.onDoubleClick);
+  }
+
+  reset() {
+    this.scale = 1;
+    this.offsetX = 0;
+    this.offsetY = 0;
+    this.requestRender();
+  }
+
+  onPointerDown(event) {
+    if (event.button !== 0) {
+      return;
+    }
+    this.dragging = true;
+    this.lastX = event.clientX;
+    this.lastY = event.clientY;
+    canvas.setPointerCapture(event.pointerId);
+  }
+
+  onPointerMove(event) {
+    if (!this.dragging) {
+      return;
+    }
+    const rect = canvas.getBoundingClientRect();
+    const dx = event.clientX - this.lastX;
+    const dy = event.clientY - this.lastY;
+    this.lastX = event.clientX;
+    this.lastY = event.clientY;
+    this.offsetX += (2 * dx) / Math.max(1, rect.width);
+    this.offsetY -= (2 * dy) / Math.max(1, rect.height);
+    this.requestRender();
+  }
+
+  onPointerUp(event) {
+    if (!this.dragging) {
+      return;
+    }
+    this.dragging = false;
+    if (canvas.hasPointerCapture(event.pointerId)) {
+      canvas.releasePointerCapture(event.pointerId);
+    }
+  }
+
+  onWheel(event) {
+    event.preventDefault();
+    const ndc = eventNdc(event);
+    const oldScale = this.scale;
+    const factor = Math.exp(-event.deltaY * 0.0015);
+    this.scale = clamp(this.scale * factor, 0.05, 100);
+    const ratio = this.scale / oldScale;
+    this.offsetX = ndc.x - (ndc.x - this.offsetX) * ratio;
+    this.offsetY = ndc.y - (ndc.y - this.offsetY) * ratio;
+    this.requestRender();
+  }
+
+  onDoubleClick() {
+    this.reset();
+  }
+
+  beforeRender(runtime) {
+    runtime.writeBuffer(
+      this.config.mvpBufferId,
+      0,
+      mvpUniformBytes(this.scale, this.offsetX, this.offsetY),
+    );
+    runtime.writeBuffer(this.config.viewportBufferId, 0, viewportUniformBytes());
+  }
 }
 
 
@@ -1454,6 +1634,9 @@ async function main() {
     const params = new URLSearchParams(window.location.search);
     let streamName = params.get("stream") ?? "indexed_quad_wgsl";
     let stream = null;
+    let streamConfig = streamConfigByName(streamName);
+    let runtime = null;
+    let interaction = null;
 
     for (const item of STREAMS) {
       const option = document.createElement("option");
@@ -1461,17 +1644,38 @@ async function main() {
       option.textContent = item.label;
       streamSelectEl.appendChild(option);
     }
+    streamName = streamConfig.name;
     streamSelectEl.value = streamName;
 
+    const configureInteraction = (config) => {
+      if (interaction !== null) {
+        interaction.destroy();
+        interaction = null;
+      }
+      if (config.interactive?.type === "panzoom") {
+        interaction = new PanzoomInteraction(config.interactive, () => {
+          render().catch((error) => setStatus(error.message, true));
+        });
+        interactionHelpEl.textContent = "drag to pan, wheel to zoom, double-click to reset";
+      } else {
+        interactionHelpEl.textContent = "";
+      }
+    };
+
     const loadStream = async (name) => {
-      const streamPath = `./streams/${name}.json`;
+      streamConfig = streamConfigByName(name);
+      const sourceName = streamSourceName(streamConfig);
+      const streamPath = `./streams/${sourceName}.json`;
       streamNameEl.textContent = streamPath.slice(2);
       const response = await fetch(streamPath, { cache: "no-cache" });
       if (!response.ok) {
         throw new Error(`failed to load stream: ${response.status} ${response.statusText}`);
       }
-      streamName = name;
+      streamName = streamConfig.name;
       stream = await response.json();
+      runtime = new Drp2WebGpuRuntime(device, context, format);
+      await runtime.load(stream);
+      configureInteraction(streamConfig);
       const url = new URL(window.location.href);
       url.searchParams.set("stream", streamName);
       window.history.replaceState(null, "", url);
@@ -1490,18 +1694,25 @@ async function main() {
       try {
         do {
           rerenderRequested = false;
-          resizeCanvasToDisplaySize(device, context, format);
           if (stream === null) {
             await loadStream(streamName);
           }
-          const result = await executeDrp2StreamChecked(device, context, format, stream);
+          const resized = resizeCanvasToDisplaySize(device, context, format);
+          if (resized && interaction === null) {
+            await runtime.load(stream);
+          }
+          if (interaction !== null) {
+            interaction.beforeRender(runtime);
+          }
+          const result = await runtime.render();
           if (result.readbacks.length > 0) {
             const readback = result.readbacks[0];
             setStatus(
               `Rendered ${stream.name}; readback nonzero=${readback.summary.nonzero}`,
             );
           } else {
-            setStatus(`Rendered ${stream.name}; readbacks=0`);
+            const suffix = interaction !== null ? "; pan/zoom active" : "";
+            setStatus(`Rendered ${streamName}; readbacks=0${suffix}`);
           }
         } while (rerenderRequested);
       } finally {

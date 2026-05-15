@@ -96,6 +96,10 @@
       color: #f3d48b;
       text-align: right;
     }
+
+    #interaction-help {
+      color: #9ec5ff;
+    }
   </style>
 </head>
 <body>
@@ -110,7 +114,7 @@
     <canvas id="viewport" aria-label="DRP2 WebGPU output"></canvas>
   </main>
   <footer>
-    <span>Datoviz experimental WebGPU PoC</span>
+    <span>Datoviz experimental WebGPU PoC <span id="interaction-help"></span></span>
     <span id="status">Starting</span>
   </footer>
   <script type="module" src="./drp2_webgpu.js"></script>
