@@ -4661,6 +4661,62 @@ int test_drp2_recording_compute_copy_jsonl_no_raw_fallback(TstSuite* suite, TstI
 
 
 
+/**
+ * Ensure loaded recordings report ABI-local raw fallback commands.
+ *
+ * @param suite test suite
+ * @param item test item
+ * @return 0 on success
+ */
+int test_drp2_recording_reports_raw_fallback_command(TstSuite* suite, TstItem* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzDrp2CommandStream* stream = dvz_drp2_stream();
+    ANN(stream);
+    AT(dvz_drp2_stream_hello_renderer(stream, "test-client"));
+    AT(dvz_drp2_stream_renderer_hello_reply(stream, "test-renderer"));
+    AT(dvz_drp2_stream_create_buffer(
+        stream, 1, 16, DVZ_DRP2_BUFFER_USAGE_COPY_DST));
+    AT(dvz_drp2_stream_destroy_buffer(stream, 1));
+
+    DvzDrp2RecordingInfo info = {
+        .width = 0,
+        .height = 0,
+        .duration_s = 0.0,
+        .t_present = 0.0,
+        .backend_hint = "semantic",
+    };
+    const char* path = "/tmp/dvz_drp2_recording_raw_fallback.dvzr";
+    AT(dvz_drp2_recording_write_stream(path, stream, &info));
+
+    FILE* stream_file = fopen("/tmp/dvz_drp2_recording_raw_fallback.dvzr/stream.jsonl", "rb");
+    ANN(stream_file);
+    char stream_jsonl[8192] = {0};
+    size_t stream_jsonl_size = fread(stream_jsonl, 1, sizeof(stream_jsonl) - 1, stream_file);
+    fclose(stream_file);
+    AT(stream_jsonl_size > 0);
+    AT(strstr(stream_jsonl, "\"op\":\"CreateBuffer\"") != NULL);
+    AT(strstr(stream_jsonl, ".cmd") != NULL);
+    AT(strstr(stream_jsonl, "\"command_blob\":\"") != NULL);
+
+    DvzDrp2Recording* recording = dvz_drp2_recording_open(path);
+    ANN(recording);
+    AT(dvz_drp2_recording_raw_fallback_count(recording) == 1);
+    const DvzDrp2RawFallback* fallback = dvz_drp2_recording_raw_fallback(recording, 0);
+    ANN(fallback);
+    AT(fallback->command_index == 3);
+    AT(fallback->command_type == DVZ_DRP2_COMMAND_DESTROY_BUFFER);
+    AT(dvz_drp2_recording_raw_fallback(recording, 1) == NULL);
+    dvz_drp2_recording_close(recording);
+
+    dvz_drp2_stream_destroy(stream);
+    return 0;
+}
+
+
+
 /*************************************************************************************************/
 /*  Entry-point                                                                                  */
 /*************************************************************************************************/
@@ -4684,6 +4740,7 @@ int test_drp2(TstSuite* suite)
     TEST_SIMPLE(test_drp2_recording_linear_roundtrip);
     TEST_SIMPLE(test_drp2_recording_render_jsonl_no_raw_fallback);
     TEST_SIMPLE(test_drp2_recording_compute_copy_jsonl_no_raw_fallback);
+    TEST_SIMPLE(test_drp2_recording_reports_raw_fallback_command);
     TEST_SIMPLE(test_drp2_begin_render_pass_clear_color_stored);
     TEST_SIMPLE(test_drp2_begin_render_pass_multi_color_attachments);
     TEST_SIMPLE(test_drp2_stream_json_preserves_clear_color);

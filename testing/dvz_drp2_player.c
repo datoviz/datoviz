@@ -86,6 +86,25 @@ static int _play_recording(const DvzDrp2Recording* recording, bool fast)
     if (recording == NULL)
         return 1;
 
+    uint32_t raw_fallback_count = dvz_drp2_recording_raw_fallback_count(recording);
+    if (raw_fallback_count > 0)
+    {
+        dvz_fprintf(
+            stderr,
+            "dvz_drp2_player: warning: recording uses %" PRIu32
+            " ABI-local raw fallback command(s); portability is not guaranteed\n",
+            raw_fallback_count);
+        const DvzDrp2RawFallback* fallback = dvz_drp2_recording_raw_fallback(recording, 0);
+        if (fallback != NULL)
+        {
+            dvz_fprintf(
+                stderr,
+                "dvz_drp2_player: first raw fallback at command %" PRIu32
+                " type %d\n",
+                fallback->command_index, (int)fallback->command_type);
+        }
+    }
+
 #if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
     DvzDrp2RuntimeConfig cfg = dvz_drp2_runtime_vklite_config(NULL, NULL);
     cfg.semantic_only = true;
