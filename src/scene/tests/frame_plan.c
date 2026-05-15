@@ -962,6 +962,210 @@ int test_frame_plan_graph_dependencies_dump(TstSuite* suite, TstItem* item)
 
 
 /**
+ * Ensure the FramePlan graph can describe a depth-peeling-shaped pass/resource graph.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_frame_plan_graph_depth_peeling_shape(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzFramePlan* plan = dvz_frame_plan("figure.graph.depth_peel", 20);
+    ANN(plan);
+
+    DvzFrameGraphResource rt = {0};
+    dvz_strlcpy(rt.id, "rt", sizeof(rt.id));
+    rt.kind = DVZ_FRAME_GRAPH_RESOURCE_EXTERNAL_TARGET;
+    rt.format = VK_FORMAT_R8G8B8A8_UNORM;
+    rt.extent_kind = DVZ_FRAME_GRAPH_EXTENT_FIGURE;
+    rt.usage_flags = DVZ_FRAME_GRAPH_RESOURCE_USAGE_COLOR_ATTACHMENT |
+                     DVZ_FRAME_GRAPH_RESOURCE_USAGE_COPY_SRC;
+    rt.lifetime = DVZ_FRAME_GRAPH_RESOURCE_LIFETIME_BORROWED;
+    AT(dvz_frame_plan_graph_resource(plan, &rt));
+
+    DvzFrameGraphResource opaque_depth = {0};
+    dvz_strlcpy(opaque_depth.id, "panel0.depth.opaque", sizeof(opaque_depth.id));
+    opaque_depth.kind = DVZ_FRAME_GRAPH_RESOURCE_TEXTURE;
+    opaque_depth.format = VK_FORMAT_D32_SFLOAT;
+    opaque_depth.extent_kind = DVZ_FRAME_GRAPH_EXTENT_FIGURE;
+    opaque_depth.usage_flags = DVZ_FRAME_GRAPH_RESOURCE_USAGE_DEPTH_ATTACHMENT;
+    opaque_depth.lifetime = DVZ_FRAME_GRAPH_RESOURCE_LIFETIME_PER_FRAME;
+    AT(dvz_frame_plan_graph_resource(plan, &opaque_depth));
+
+    const char* color_ids[6] = {
+        "panel0.peel.front_ping",
+        "panel0.peel.back_ping",
+        "panel0.peel.depth_ping",
+        "panel0.peel.front_pong",
+        "panel0.peel.back_pong",
+        "panel0.peel.depth_pong",
+    };
+    for (uint32_t i = 0; i < 6; i++)
+    {
+        DvzFrameGraphResource resource = {0};
+        dvz_strlcpy(resource.id, color_ids[i], sizeof(resource.id));
+        resource.kind = DVZ_FRAME_GRAPH_RESOURCE_TEXTURE;
+        resource.format = VK_FORMAT_R16G16B16A16_SFLOAT;
+        resource.extent_kind = DVZ_FRAME_GRAPH_EXTENT_FIGURE;
+        resource.usage_flags = DVZ_FRAME_GRAPH_RESOURCE_USAGE_COLOR_ATTACHMENT |
+                               DVZ_FRAME_GRAPH_RESOURCE_USAGE_SAMPLED;
+        resource.lifetime = DVZ_FRAME_GRAPH_RESOURCE_LIFETIME_PER_FRAME;
+        AT(dvz_frame_plan_graph_resource(plan, &resource));
+    }
+
+    DvzFrameGraphAttachment rt_clear = {0};
+    dvz_strlcpy(rt_clear.resource_id, "rt", sizeof(rt_clear.resource_id));
+    rt_clear.load_op = DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_CLEAR;
+    rt_clear.store_op = DVZ_FRAME_GRAPH_ATTACHMENT_STORE_STORE;
+    rt_clear.access = DVZ_FRAME_GRAPH_ATTACHMENT_ACCESS_WRITE;
+
+    DvzFrameGraphAttachment depth_write = {0};
+    dvz_strlcpy(depth_write.resource_id, "panel0.depth.opaque", sizeof(depth_write.resource_id));
+    depth_write.load_op = DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_CLEAR;
+    depth_write.store_op = DVZ_FRAME_GRAPH_ATTACHMENT_STORE_STORE;
+    depth_write.access = DVZ_FRAME_GRAPH_ATTACHMENT_ACCESS_WRITE;
+    depth_write.clear_depth = 1.0f;
+
+    DvzFrameGraphPass opaque = {0};
+    dvz_strlcpy(opaque.id, "panel0.opaque", sizeof(opaque.id));
+    dvz_strlcpy(opaque.panel_id, "panel.0", sizeof(opaque.panel_id));
+    dvz_strlcpy(opaque.work_label, "opaque", sizeof(opaque.work_label));
+    opaque.kind = DVZ_FRAME_GRAPH_PASS_RENDER;
+    AT(dvz_frame_graph_pass_color_attachment(&opaque, &rt_clear));
+    AT(dvz_frame_graph_pass_depth_attachment(&opaque, &depth_write));
+    AT(dvz_frame_plan_graph_pass(plan, &opaque));
+
+    DvzFrameGraphAttachment depth_read = {0};
+    dvz_strlcpy(depth_read.resource_id, "panel0.depth.opaque", sizeof(depth_read.resource_id));
+    depth_read.load_op = DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_LOAD;
+    depth_read.store_op = DVZ_FRAME_GRAPH_ATTACHMENT_STORE_DONT_CARE;
+    depth_read.access = DVZ_FRAME_GRAPH_ATTACHMENT_ACCESS_READ;
+
+    DvzFrameGraphPass init = {0};
+    dvz_strlcpy(init.id, "panel0.peel.init", sizeof(init.id));
+    dvz_strlcpy(init.panel_id, "panel.0", sizeof(init.panel_id));
+    dvz_strlcpy(init.work_label, "depth_peel_init", sizeof(init.work_label));
+    init.kind = DVZ_FRAME_GRAPH_PASS_RENDER;
+    for (uint32_t i = 0; i < 3; i++)
+    {
+        DvzFrameGraphAttachment attachment = {0};
+        dvz_strlcpy(attachment.resource_id, color_ids[i], sizeof(attachment.resource_id));
+        attachment.load_op = DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_CLEAR;
+        attachment.store_op = DVZ_FRAME_GRAPH_ATTACHMENT_STORE_STORE;
+        attachment.access = DVZ_FRAME_GRAPH_ATTACHMENT_ACCESS_WRITE;
+        AT(dvz_frame_graph_pass_color_attachment(&init, &attachment));
+    }
+    AT(dvz_frame_graph_pass_depth_attachment(&init, &depth_read));
+    AT(dvz_frame_plan_graph_pass(plan, &init));
+
+    DvzFrameGraphPass iter = {0};
+    dvz_strlcpy(iter.id, "panel0.peel.iter.0", sizeof(iter.id));
+    dvz_strlcpy(iter.panel_id, "panel.0", sizeof(iter.panel_id));
+    dvz_strlcpy(iter.work_label, "depth_peel_iter", sizeof(iter.work_label));
+    iter.kind = DVZ_FRAME_GRAPH_PASS_RENDER;
+    AT(dvz_frame_graph_pass_read(
+        &iter, "panel0.peel.front_ping", DVZ_FRAME_GRAPH_ACCESS_SAMPLED));
+    AT(dvz_frame_graph_pass_read(
+        &iter, "panel0.peel.back_ping", DVZ_FRAME_GRAPH_ACCESS_SAMPLED));
+    AT(dvz_frame_graph_pass_read(
+        &iter, "panel0.peel.depth_ping", DVZ_FRAME_GRAPH_ACCESS_SAMPLED));
+    for (uint32_t i = 3; i < 6; i++)
+    {
+        DvzFrameGraphAttachment attachment = {0};
+        dvz_strlcpy(attachment.resource_id, color_ids[i], sizeof(attachment.resource_id));
+        attachment.load_op = DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_CLEAR;
+        attachment.store_op = DVZ_FRAME_GRAPH_ATTACHMENT_STORE_STORE;
+        attachment.access = DVZ_FRAME_GRAPH_ATTACHMENT_ACCESS_WRITE;
+        AT(dvz_frame_graph_pass_color_attachment(&iter, &attachment));
+    }
+    AT(dvz_frame_graph_pass_depth_attachment(&iter, &depth_read));
+    AT(dvz_frame_plan_graph_pass(plan, &iter));
+
+    DvzFrameGraphAttachment rt_load = {0};
+    dvz_strlcpy(rt_load.resource_id, "rt", sizeof(rt_load.resource_id));
+    rt_load.load_op = DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_LOAD;
+    rt_load.store_op = DVZ_FRAME_GRAPH_ATTACHMENT_STORE_STORE;
+    rt_load.access = DVZ_FRAME_GRAPH_ATTACHMENT_ACCESS_WRITE;
+
+    DvzFrameGraphPass composite = {0};
+    dvz_strlcpy(composite.id, "panel0.peel.composite", sizeof(composite.id));
+    dvz_strlcpy(composite.panel_id, "panel.0", sizeof(composite.panel_id));
+    dvz_strlcpy(composite.work_label, "depth_peel_composite", sizeof(composite.work_label));
+    composite.kind = DVZ_FRAME_GRAPH_PASS_RENDER;
+    AT(dvz_frame_graph_pass_read(
+        &composite, "panel0.peel.front_pong", DVZ_FRAME_GRAPH_ACCESS_SAMPLED));
+    AT(dvz_frame_graph_pass_read(
+        &composite, "panel0.peel.back_pong", DVZ_FRAME_GRAPH_ACCESS_SAMPLED));
+    AT(dvz_frame_graph_pass_read(
+        &composite, "panel0.peel.depth_pong", DVZ_FRAME_GRAPH_ACCESS_SAMPLED));
+    AT(dvz_frame_graph_pass_color_attachment(&composite, &rt_load));
+    AT(dvz_frame_plan_graph_pass(plan, &composite));
+
+    AT(dvz_frame_plan_graph_resource_count(plan) == 8);
+    AT(dvz_frame_plan_graph_pass_count(plan) == 4);
+
+    const DvzFrameGraphResource* front_ping = dvz_frame_plan_graph_resource_get(plan, 2);
+    ANN(front_ping);
+    AT(strcmp(front_ping->id, "panel0.peel.front_ping") == 0);
+    AT(front_ping->format == VK_FORMAT_R16G16B16A16_SFLOAT);
+    AT(
+        (front_ping->usage_flags & DVZ_FRAME_GRAPH_RESOURCE_USAGE_COLOR_ATTACHMENT) != 0);
+    AT((front_ping->usage_flags & DVZ_FRAME_GRAPH_RESOURCE_USAGE_SAMPLED) != 0);
+
+    const DvzFrameGraphPass* pass = dvz_frame_plan_graph_pass_get(plan, 2);
+    ANN(pass);
+    AT(strcmp(pass->id, "panel0.peel.iter.0") == 0);
+    AT(pass->read_count == 3);
+    AT(pass->color_attachment_count == 3);
+    AT(pass->has_depth_attachment);
+
+    DvzDiagnosticReport report = {0};
+    dvz_diagnostic_report_init(&report);
+    AT(dvz_frame_plan_graph_validate(plan, &report));
+    AT(dvz_diagnostic_report_count(&report) == 0);
+
+    AT(dvz_frame_plan_graph_dependency_count(plan) == 9);
+    DvzFrameGraphDependency dep = {0};
+    AT(dvz_frame_plan_graph_dependency_get(plan, 0, &dep));
+    AT(strcmp(dep.producer_pass_id, "panel0.opaque") == 0);
+    AT(strcmp(dep.consumer_pass_id, "panel0.peel.init") == 0);
+    AT(strcmp(dep.resource_id, "panel0.depth.opaque") == 0);
+    AT(dep.consumer_usage == DVZ_FRAME_GRAPH_ACCESS_DEPTH_ATTACHMENT_READ);
+
+    AT(dvz_frame_plan_graph_dependency_get(plan, 1, &dep));
+    AT(strcmp(dep.producer_pass_id, "panel0.peel.init") == 0);
+    AT(strcmp(dep.consumer_pass_id, "panel0.peel.iter.0") == 0);
+    AT(strcmp(dep.resource_id, "panel0.peel.front_ping") == 0);
+
+    AT(dvz_frame_plan_graph_dependency_get(plan, 8, &dep));
+    AT(strcmp(dep.producer_pass_id, "panel0.opaque") == 0);
+    AT(strcmp(dep.consumer_pass_id, "panel0.peel.composite") == 0);
+    AT(strcmp(dep.resource_id, "rt") == 0);
+
+    char* dump = dvz_frame_plan_graph_dump(plan);
+    ANN(dump);
+    AT(strstr(dump, "\"id\": \"panel0.peel.iter.0\"") != NULL);
+    AT(strstr(dump, "\"resource_id\": \"panel0.peel.depth_pong\"") != NULL);
+    AT(strstr(dump, "\"consumer\": \"panel0.peel.composite\"") != NULL);
+    dvz_frame_plan_json_destroy(dump);
+
+    char* json = dvz_frame_plan_json(plan);
+    ANN(json);
+    AT(strstr(json, "\"id\": \"panel0.peel.front_ping\"") != NULL);
+    AT(strstr(json, "\"work\": \"depth_peel_composite\"") != NULL);
+    AT(strstr(json, "\"usage\": \"sampled\"") != NULL);
+    AT(strstr(json, "\"access\": \"read\"") != NULL);
+    dvz_frame_plan_json_destroy(json);
+
+    dvz_frame_plan_destroy(plan);
+    return 0;
+}
+
+
+/**
  * Ensure graph validation reports ambiguous same-pass producers by pass and resource.
  *
  * @param suite the active test suite
@@ -1207,6 +1411,7 @@ int test_scene_frame_plan(TstSuite* suite)
     TEST_SIMPLE(test_frame_plan_readbacks);
     TEST_SIMPLE(test_frame_plan_graph_static_multipass);
     TEST_SIMPLE(test_frame_plan_graph_dependencies_dump);
+    TEST_SIMPLE(test_frame_plan_graph_depth_peeling_shape);
     TEST_SIMPLE(test_frame_plan_graph_validation_read_before_write);
     TEST_SIMPLE(test_frame_plan_graph_validation_ambiguous_producer);
     TEST_SIMPLE(test_frame_plan_graph_validation_missing_usage);
