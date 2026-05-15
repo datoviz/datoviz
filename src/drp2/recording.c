@@ -62,6 +62,16 @@ struct DvzDrp2RecordingOwner
 };
 
 
+struct DvzDrp2Recorder
+{
+    char path[DVZ_DRP2_RECORDING_PATH_SIZE];
+    FILE* stream_fp;
+    uint32_t blob_index;
+    uint64_t command_count;
+    bool closed;
+};
+
+
 
 /*************************************************************************************************/
 /*  Helpers                                                                                      */
@@ -593,31 +603,16 @@ static bool _recording_read_command(
 }
 
 
-
-/*************************************************************************************************/
-/*  Functions                                                                                    */
-/*************************************************************************************************/
-
 /**
- * Write a raw linear DRP2 recording directory.
+ * Write the recording manifest.
  *
  * @param path recording directory path
- * @param stream the command stream to record
  * @param info optional recording metadata
- * @return whether the recording was written
+ * @return whether the manifest was written
  */
-bool dvz_drp2_recording_write_stream(
-    const char* path, const DvzDrp2CommandStream* stream, const DvzDrp2RecordingInfo* info)
+static bool _recording_write_manifest(const char* path, const DvzDrp2RecordingInfo* info)
 {
-    if (path == NULL || stream == NULL)
-        return false;
-    if (!_recording_mkdir(path))
-        return false;
-    char blobs_path[DVZ_DRP2_RECORDING_PATH_SIZE] = {0};
-    if (!_recording_join(path, "blobs", blobs_path, sizeof(blobs_path)) ||
-        !_recording_mkdir(blobs_path))
-        return false;
-
+    ANN(path);
     char manifest_path[DVZ_DRP2_RECORDING_PATH_SIZE] = {0};
     if (!_recording_join(path, "manifest.json", manifest_path, sizeof(manifest_path)))
         return false;
@@ -642,34 +637,143 @@ bool dvz_drp2_recording_write_stream(
                   "}\n",
                   width, height, duration_s, backend_hint) > 0;
     fclose(manifest);
-    if (!ok)
-        return false;
+    return ok;
+}
+
+
+
+/*************************************************************************************************/
+/*  Functions                                                                                    */
+/*************************************************************************************************/
+
+/**
+ * Open a raw linear DRP2 recorder.
+ *
+ * @param path recording directory path
+ * @param info optional recording metadata
+ * @return the recorder, or NULL on error
+ */
+DvzDrp2Recorder* dvz_drp2_recorder_open(
+    const char* path, const DvzDrp2RecordingInfo* info)
+{
+    if (path == NULL)
+        return NULL;
+    if (!_recording_mkdir(path))
+        return NULL;
+    char blobs_path[DVZ_DRP2_RECORDING_PATH_SIZE] = {0};
+    if (!_recording_join(path, "blobs", blobs_path, sizeof(blobs_path)) ||
+        !_recording_mkdir(blobs_path))
+        return NULL;
+    if (!_recording_write_manifest(path, info))
+        return NULL;
 
     char stream_path[DVZ_DRP2_RECORDING_PATH_SIZE] = {0};
     if (!_recording_join(path, "stream.jsonl", stream_path, sizeof(stream_path)))
-        return false;
+        return NULL;
     FILE* stream_fp = fopen(stream_path, "wb");
     if (stream_fp == NULL)
-        return false;
+        return NULL;
 
-    double t_present = info != NULL ? info->t_present : 0.0;
-    ok = dvz_fprintf(
-             stream_fp,
-             "{\"type\":\"begin\",\"version\":1,\"drp_version\":\"2.0\","
-             "\"command_count\":%" PRIu32 "}\n",
-             stream->count) > 0;
-    uint32_t blob_index = 0;
-    for (uint32_t i = 0; ok && i < stream->count; i++)
-        ok = _recording_write_command(path, stream_fp, &stream->commands[i], i, &blob_index);
-    if (ok)
+    DvzDrp2Recorder* recorder = (DvzDrp2Recorder*)dvz_calloc(1, sizeof(DvzDrp2Recorder));
+    if (recorder == NULL)
     {
-        ok = dvz_fprintf(
-                 stream_fp, "{\"type\":\"frame\",\"t_present\":%.17g,\"command_count\":%" PRIu32
-                            "}\n{\"type\":\"end\"}\n",
-                 t_present, stream->count) > 0;
+        fclose(stream_fp);
+        return NULL;
     }
-    fclose(stream_fp);
+    dvz_strlcpy(recorder->path, path, sizeof(recorder->path));
+    recorder->stream_fp = stream_fp;
+    bool ok = dvz_fprintf(
+                  stream_fp,
+                  "{\"type\":\"begin\",\"version\":1,\"drp_version\":\"2.0\","
+                  "\"command_count\":0}\n") > 0;
+    if (!ok)
+    {
+        dvz_drp2_recorder_close(recorder);
+        return NULL;
+    }
+    return recorder;
+}
+
+
+
+/**
+ * Append one timestamped command stream to a raw linear DRP2 recorder.
+ *
+ * @param recorder the recorder
+ * @param t_present presentation timestamp for this stream
+ * @param stream the command stream to append
+ * @return whether the stream was appended
+ */
+bool dvz_drp2_recorder_write_stream(
+    DvzDrp2Recorder* recorder, double t_present, const DvzDrp2CommandStream* stream)
+{
+    if (recorder == NULL || recorder->stream_fp == NULL || recorder->closed || stream == NULL)
+        return false;
+    bool ok = true;
+    uint64_t start_index = recorder->command_count;
+    for (uint32_t i = 0; ok && i < stream->count; i++)
+    {
+        if (recorder->command_count > UINT32_MAX)
+            return false;
+        ok = _recording_write_command(
+            recorder->path, recorder->stream_fp, &stream->commands[i],
+            (uint32_t)recorder->command_count, &recorder->blob_index);
+        if (ok)
+            recorder->command_count++;
+    }
+    if (!ok)
+        return false;
+    return dvz_fprintf(
+               recorder->stream_fp,
+               "{\"type\":\"frame\",\"t_present\":%.17g,\"first_command\":%" PRIu64
+               ",\"command_count\":%" PRIu32 "}\n",
+               t_present, start_index, stream->count) > 0;
+}
+
+
+
+/**
+ * Close a raw linear DRP2 recorder.
+ *
+ * @param recorder the recorder
+ * @return whether the recorder was closed cleanly
+ */
+bool dvz_drp2_recorder_close(DvzDrp2Recorder* recorder)
+{
+    if (recorder == NULL)
+        return false;
+    bool ok = true;
+    if (!recorder->closed && recorder->stream_fp != NULL)
+        ok = dvz_fprintf(recorder->stream_fp, "{\"type\":\"end\"}\n") > 0;
+    if (recorder->stream_fp != NULL)
+        fclose(recorder->stream_fp);
+    recorder->stream_fp = NULL;
+    recorder->closed = true;
+    dvz_free(recorder);
     return ok;
+}
+
+
+
+/**
+ * Write a raw linear DRP2 recording directory.
+ *
+ * @param path recording directory path
+ * @param stream the command stream to record
+ * @param info optional recording metadata
+ * @return whether the recording was written
+ */
+bool dvz_drp2_recording_write_stream(
+    const char* path, const DvzDrp2CommandStream* stream, const DvzDrp2RecordingInfo* info)
+{
+    if (path == NULL || stream == NULL)
+        return false;
+    DvzDrp2Recorder* recorder = dvz_drp2_recorder_open(path, info);
+    if (recorder == NULL)
+        return false;
+    double t_present = info != NULL ? info->t_present : 0.0;
+    bool ok = dvz_drp2_recorder_write_stream(recorder, t_present, stream);
+    return dvz_drp2_recorder_close(recorder) && ok;
 }
 
 

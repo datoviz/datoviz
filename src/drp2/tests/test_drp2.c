@@ -3190,6 +3190,21 @@ int test_drp2_recording_linear_roundtrip(TstSuite* suite, TstItem* item)
     AT(result.ok);
     dvz_drp2_runtime_destroy(runtime);
 
+    DvzDrp2CommandStream* setup_stream = dvz_drp2_stream();
+    DvzDrp2CommandStream* update_stream = dvz_drp2_stream();
+    ANN(setup_stream);
+    ANN(update_stream);
+    AT(dvz_drp2_stream_hello_renderer(setup_stream, "test-client"));
+    AT(dvz_drp2_stream_renderer_hello_reply(setup_stream, "test-renderer"));
+    AT(dvz_drp2_stream_create_buffer(
+        setup_stream, 1, sizeof(buffer_payload), DVZ_DRP2_BUFFER_USAGE_COPY_DST));
+    AT(dvz_drp2_stream_write_buffer_bytes(
+        update_stream, 1, 0, sizeof(buffer_payload), buffer_payload));
+    AT(dvz_drp2_stream_create_texture_2d_usage(
+        update_stream, 2, 2, 2, DVZ_DRP2_TEXTURE_USAGE_COPY_DST));
+    AT(dvz_drp2_stream_write_texture_2d_region_bytes(
+        update_stream, 2, 0, 0, 0, 2, 2, 8, 2, texture_payload));
+
     DvzDrp2RecordingInfo info = {
         .width = 64,
         .height = 64,
@@ -3198,7 +3213,11 @@ int test_drp2_recording_linear_roundtrip(TstSuite* suite, TstItem* item)
         .backend_hint = "semantic",
     };
     const char* path = "/tmp/dvz_drp2_recording_linear.dvzr";
-    AT(dvz_drp2_recording_write_stream(path, stream, &info));
+    DvzDrp2Recorder* recorder = dvz_drp2_recorder_open(path, &info);
+    ANN(recorder);
+    AT(dvz_drp2_recorder_write_stream(recorder, 0.0, setup_stream));
+    AT(dvz_drp2_recorder_write_stream(recorder, 0.016, update_stream));
+    AT(dvz_drp2_recorder_close(recorder));
 
     DvzDrp2CommandStream* replay = dvz_drp2_recording_read_stream(path);
     ANN(replay);
@@ -3235,6 +3254,8 @@ int test_drp2_recording_linear_roundtrip(TstSuite* suite, TstItem* item)
     dvz_drp2_runtime_destroy(runtime);
 
     dvz_drp2_stream_destroy(replay);
+    dvz_drp2_stream_destroy(update_stream);
+    dvz_drp2_stream_destroy(setup_stream);
     dvz_drp2_stream_destroy(stream);
     return 0;
 }
