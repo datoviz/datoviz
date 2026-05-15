@@ -32,10 +32,12 @@
 #endif
 
 #include "datoviz/vk/gpu_ctx.h"
+#include "datoviz/vk/device.h"
 #include "datoviz/vk/gpu.h"
 #include "datoviz/vk/instance.h"
 #include "datoviz/vk/memory.h"
 #include "datoviz/vk/memory_interop.h"
+#include "datoviz/vk/queues.h"
 #include "datoviz/vklite/commands.h"
 #include "datoviz/vklite/sync.h"
 #include "test_vk.h"
@@ -276,6 +278,159 @@ int test_memory_1(TstSuite* suite, TstItem* tstitem)
     dvz_gpu_ctx_destroy(ctx);
 
     return err_count > 0;
+}
+
+
+
+/**
+ * Verify the low-level exported buffer metadata package for CUDA/CuPy interop.
+ *
+ * @param suite the test suite
+ * @param tstitem the test item
+ * @return 0 on success
+ */
+int test_memory_interop_buffer_export(TstSuite* suite, TstItem* tstitem)
+{
+    ANN(suite);
+    ANN(tstitem);
+
+#if !OS_UNIX
+    log_warn("test_memory_interop_buffer_export skipped: opaque FD path is Unix-only");
+    return 0;
+#else
+    int out = 0;
+    DvzInstance* instance = NULL;
+    DvzDevice* device = NULL;
+    DvzVma* allocator = NULL;
+    DvzAllocation* alloc = NULL;
+    VkBuffer vk_buffer = VK_NULL_HANDLE;
+    DvzSemaphore* semaphore = NULL;
+    int semaphore_fd = -1;
+    DvzInteropBufferExport export_desc = {.memory_handle = -1, .semaphore_handle = -1};
+
+    DvzInstanceConfig icfg = dvz_instance_default_config();
+    icfg.flags = 0;
+    dvz_instance_config_request_extension(
+        &icfg, VK_KHR_EXTERNAL_MEMORY_CAPABILITIES_EXTENSION_NAME);
+    instance = dvz_instance_create(&icfg);
+    if (instance == NULL)
+    {
+        out = 1;
+        goto cleanup;
+    }
+
+    uint32_t gpu_count = dvz_instance_gpu_count(instance);
+    if (gpu_count == 0)
+    {
+        log_warn("test_memory_interop_buffer_export skipped: no Vulkan GPU available");
+        goto cleanup;
+    }
+
+    DvzQueueCaps qc = {0};
+    AT(dvz_instance_gpu_queue_caps(instance, 0, &qc));
+    DvzQueues queues = {0};
+    dvz_queues(&qc, &queues);
+
+    DvzDeviceConfig dcfg = dvz_device_default_config(instance);
+    dvz_device_config_set_gpu_index(&dcfg, 0);
+    VkPhysicalDeviceVulkan12Features features12 = {
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES};
+    features12.timelineSemaphore = true;
+    dvz_device_config_set_features12(&dcfg, &features12);
+    for (uint32_t i = 0; i < queues.queue_count; i++)
+    {
+        DvzQueue* queue = &queues.queues[i];
+        dvz_device_config_request_queue(&dcfg, queue->family_idx, 1);
+    }
+    dvz_device_config_request_extension(&dcfg, VK_KHR_EXTERNAL_MEMORY_EXTENSION_NAME);
+    dvz_device_config_request_extension(&dcfg, VK_KHR_EXTERNAL_MEMORY_FD_EXTENSION_NAME);
+    dvz_device_config_request_extension(&dcfg, VK_KHR_EXTERNAL_SEMAPHORE_EXTENSION_NAME);
+    dvz_device_config_request_extension(&dcfg, VK_KHR_EXTERNAL_SEMAPHORE_FD_EXTENSION_NAME);
+    device = dvz_device_create(&dcfg);
+    if (device == NULL)
+    {
+        out = 1;
+        goto cleanup;
+    }
+    if (!dvz_device_has_extension(device, VK_KHR_EXTERNAL_SEMAPHORE_FD_EXTENSION_NAME))
+    {
+        log_warn("test_memory_interop_buffer_export skipped: external semaphore FD unsupported");
+        goto cleanup;
+    }
+
+    allocator = dvz_allocator_create();
+    ANN(allocator);
+    if (dvz_device_allocator(
+            device, VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_FD_BIT, allocator) != 0)
+    {
+        out = 1;
+        goto cleanup;
+    }
+
+    VkBufferCreateInfo buf_info = {
+        .sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
+        .size = 256,
+        .usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
+    };
+    alloc = dvz_allocation_create();
+    ANN(alloc);
+    if (dvz_allocator_buffer(allocator, &buf_info, DVZ_ALLOC_DEDICATED_MEMORY, alloc, &vk_buffer) !=
+        0)
+    {
+        out = 1;
+        goto cleanup;
+    }
+
+    semaphore = dvz_semaphore_create_wrapper();
+    ANN(semaphore);
+    dvz_semaphore_timeline(
+        device, 0, semaphore, VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_OPAQUE_FD_BIT);
+    semaphore_fd =
+        dvz_semaphore_export_fd(semaphore, VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_OPAQUE_FD_BIT);
+    if (semaphore_fd < 0)
+    {
+        out = 1;
+        goto cleanup;
+    }
+
+    AT(dvz_interop_buffer_export(
+           allocator, alloc, 16, 128, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, semaphore_fd,
+           VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_OPAQUE_FD_BIT, 7, &export_desc) == 0);
+    AT(export_desc.memory_handle >= 0);
+    AT(export_desc.memory_handle_type == VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_FD_BIT);
+    AT(export_desc.allocation_size >= 256);
+    AT(export_desc.offset == 16);
+    AT(export_desc.size == 128);
+    AT(export_desc.usage == VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
+    AT(export_desc.semaphore_handle == semaphore_fd);
+    AT(export_desc.semaphore_handle_type == VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_OPAQUE_FD_BIT);
+    AT(export_desc.semaphore_value == 7);
+
+cleanup:
+    if (export_desc.memory_handle >= 0)
+        close(export_desc.memory_handle);
+    if (semaphore_fd >= 0)
+        close(semaphore_fd);
+    if (semaphore != NULL)
+    {
+        dvz_semaphore_destroy(semaphore);
+        dvz_semaphore_free(semaphore);
+    }
+    if (vk_buffer != VK_NULL_HANDLE)
+        dvz_allocator_destroy_buffer(allocator, alloc, vk_buffer);
+    if (alloc != NULL)
+        dvz_allocation_free(alloc);
+    if (allocator != NULL)
+    {
+        dvz_allocator_destroy(allocator);
+        dvz_allocator_free(allocator);
+    }
+    if (device != NULL)
+        dvz_device_destroy(device);
+    if (instance != NULL)
+        dvz_instance_destroy(instance);
+    return out;
+#endif
 }
 
 

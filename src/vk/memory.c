@@ -630,6 +630,68 @@ int dvz_allocator_export(DvzVma* allocator, DvzAllocation* alloc, int* handle)
 
 
 
+/**
+ * Export a Vulkan-owned buffer allocation and package external interop metadata.
+ *
+ * @param allocator the allocator configured for external-memory export
+ * @param alloc the Vulkan-owned allocation backing the buffer
+ * @param offset byte offset of the logical buffer view within the allocation
+ * @param size logical buffer-view size in bytes
+ * @param usage DRP2/Vulkan buffer usage flags expected by the consumer
+ * @param semaphore_handle optional exported external semaphore handle, or -1 when absent
+ * @param semaphore_handle_type external semaphore handle type, or 0 when absent
+ * @param semaphore_value timeline semaphore value associated with the export
+ * @param[out] out export descriptor
+ * @return 0 on success, -1 on failure
+ */
+int dvz_interop_buffer_export(
+    DvzVma* allocator, DvzAllocation* alloc, uint64_t offset, uint64_t size, uint32_t usage,
+    int semaphore_handle, VkExternalSemaphoreHandleTypeFlags semaphore_handle_type,
+    uint64_t semaphore_value, DvzInteropBufferExport* out)
+{
+    ANN(allocator);
+    ANN(alloc);
+    ANN(out);
+
+    dvz_memset(out, sizeof(*out), 0, sizeof(*out));
+    out->memory_handle = -1;
+    out->semaphore_handle = -1;
+
+    if (size == 0)
+    {
+        log_error("cannot export an empty interop buffer view");
+        return -1;
+    }
+
+    uint64_t allocation_size = (uint64_t)dvz_allocation_size(alloc);
+    if (offset > allocation_size || size > allocation_size - offset)
+    {
+        log_error("interop buffer view exceeds the exported allocation");
+        return -1;
+    }
+
+    int memory_handle = -1;
+    if (dvz_allocator_export(allocator, alloc, &memory_handle) != 0 || memory_handle < 0)
+    {
+        log_error("failed to export interop buffer memory handle");
+        return -1;
+    }
+
+    out->memory_handle = memory_handle;
+    out->memory_handle_type = dvz_allocator_external(allocator);
+    out->allocation_size = allocation_size;
+    out->offset = offset;
+    out->size = size;
+    out->usage = usage;
+    out->semaphore_handle = semaphore_handle;
+    out->semaphore_handle_type = semaphore_handle_type;
+    out->semaphore_value = semaphore_value;
+
+    return 0;
+}
+
+
+
 int dvz_allocator_import_buffer(
     DvzVma* allocator, VkBufferCreateInfo* info, DvzAllocationFlags flags, int handle,
     DvzAllocation* alloc, VkBuffer* vk_buffer)

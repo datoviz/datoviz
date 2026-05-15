@@ -14,6 +14,9 @@ Current proof points:
    registers a CUDA-filled Vulkan-owned external vertex buffer through
    `dvz_drp2_runtime_register_external_buffer()`, renders through the DRP2 vklite runtime, and
    verifies the rendered color by readback.
+3. `src/vk/tests/test_memory.c:test_memory_interop_buffer_export` verifies the low-level
+   `DvzInteropBufferExport` package: exported memory handle, allocation size, logical byte range,
+   usage flags, external semaphore handle metadata, and semaphore value.
 
 `test_memory_cuda_2` remains useful for later CUDA-owned allocation experiments, but it is not the
 primary v0.4 route.
@@ -42,13 +45,17 @@ Ownership rules:
 4. DRP2 registration should continue to use `dvz_drp2_runtime_register_external_buffer()` for the
    runtime object table, keeping stream data portable.
 
+## Implemented C Descriptor Slice
+
+The low-level C descriptor now lives in `datoviz/vk/memory_interop.h` as
+`DvzInteropBufferExport`, with `dvz_interop_buffer_export()` packaging metadata from a
+Vulkan-owned `DvzAllocation` and explicit logical buffer view parameters.
+
+`dvz_interop_buffer_export()` transfers ownership of the exported memory handle to the caller on
+success. The semaphore handle is copied as metadata only; its ownership remains defined by the code
+that exported it.
+
 ## Next Implementation Slice
 
-1. Add a low-level C descriptor, tentatively `DvzInteropBufferExport`, in
-   `datoviz/vk/memory_interop.h`.
-2. Add a helper that fills the descriptor from a Vulkan-owned `DvzAllocation` plus explicit logical
-   buffer view metadata.
-3. Add focused C coverage that exports the descriptor, verifies handle/size/value fields, closes the
-   transferred FDs, and does not require Python.
-4. After that, add a tiny Python/CuPy smoke that imports the exported FD and writes a vertex buffer,
-   matching the existing C CUDA/DRP2 render smoke.
+Add a tiny Python/CuPy smoke that imports the exported FD, writes a vertex buffer, signals the
+exported semaphore, and reuses the existing DRP2 registered-buffer render path for verification.

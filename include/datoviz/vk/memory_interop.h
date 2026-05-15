@@ -21,6 +21,33 @@
 
 
 /*************************************************************************************************/
+/*  Typedefs                                                                                     */
+/*************************************************************************************************/
+
+typedef struct DvzInteropBufferExport DvzInteropBufferExport;
+
+
+
+/*************************************************************************************************/
+/*  Structs                                                                                      */
+/*************************************************************************************************/
+
+struct DvzInteropBufferExport
+{
+    int memory_handle;
+    VkExternalMemoryHandleTypeFlagsKHR memory_handle_type;
+    uint64_t allocation_size;
+    uint64_t offset;
+    uint64_t size;
+    uint32_t usage;
+    int semaphore_handle;
+    VkExternalSemaphoreHandleTypeFlags semaphore_handle_type;
+    uint64_t semaphore_value;
+};
+
+
+
+/*************************************************************************************************/
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
@@ -77,6 +104,30 @@ DVZ_EXPORT VkExternalMemoryHandleTypeFlagsKHR dvz_allocator_external(DvzVma* all
  * @param[out] handle the exported handle pointing to that allocation
  */
 DVZ_EXPORT int dvz_allocator_export(DvzVma* allocator, DvzAllocation* alloc, int* handle);
+
+
+/**
+ * Export a Vulkan-owned buffer allocation and package external interop metadata.
+ *
+ * This helper transfers ownership of `out->memory_handle` to the caller on success. The optional
+ * `semaphore_handle` is copied into the descriptor as metadata; ownership of that handle remains
+ * defined by the call site that exported it.
+ *
+ * @param allocator the allocator configured for external-memory export
+ * @param alloc the Vulkan-owned allocation backing the buffer
+ * @param offset byte offset of the logical buffer view within the allocation
+ * @param size logical buffer-view size in bytes
+ * @param usage DRP2/Vulkan buffer usage flags expected by the consumer
+ * @param semaphore_handle optional exported external semaphore handle, or -1 when absent
+ * @param semaphore_handle_type external semaphore handle type, or 0 when absent
+ * @param semaphore_value timeline semaphore value associated with the export
+ * @param[out] out export descriptor
+ * @return 0 on success, -1 on failure
+ */
+DVZ_EXPORT int dvz_interop_buffer_export(
+    DvzVma* allocator, DvzAllocation* alloc, uint64_t offset, uint64_t size, uint32_t usage,
+    int semaphore_handle, VkExternalSemaphoreHandleTypeFlags semaphore_handle_type,
+    uint64_t semaphore_value, DvzInteropBufferExport* out);
 
 
 
