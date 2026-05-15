@@ -54,10 +54,15 @@ struct VolumeGlfwState
     DvzArcball* arcball;
     DvzVisual* volume;
     DvzScale* transfer_scale;
+    DvzColormap* transfer_map;
     int render_mode;
     bool transfer;
     bool clipping;
     float opacity;
+    float tf_threshold;
+    float tf_window;
+    float tf_ramp;
+    float tf_alpha;
     float clip_min[3];
     float clip_max[3];
     float step_count;
@@ -176,6 +181,59 @@ static void _fill_volume(uint8_t* data, uint32_t size)
 
 
 /**
+ * Clamp a floating-point value to a closed interval.
+ *
+ * @param value input value
+ * @param min_value interval lower bound
+ * @param max_value interval upper bound
+ * @return clamped value
+ */
+static float _clamp_float(float value, float min_value, float max_value)
+{
+    if (value < min_value)
+        return min_value;
+    if (value > max_value)
+        return max_value;
+    return value;
+}
+
+
+
+/**
+ * Rebuild the editable opacity transfer function.
+ *
+ * @param state example state
+ */
+static void _update_transfer_function(VolumeGlfwState* state)
+{
+    ANN(state);
+    if (state->transfer_map == NULL)
+        return;
+
+    state->tf_threshold = _clamp_float(state->tf_threshold, 0.0f, 0.98f);
+    state->tf_window = _clamp_float(state->tf_window, 0.02f, 1.0f);
+    state->tf_ramp = _clamp_float(state->tf_ramp, 0.05f, 1.0f);
+    state->tf_alpha = _clamp_float(state->tf_alpha, 0.0f, 1.0f);
+
+    float low = state->tf_threshold;
+    float high = _clamp_float(low + state->tf_window, low + 0.01f, 1.0f);
+    float mid = low + (high - low) * state->tf_ramp;
+    uint8_t mid_alpha = (uint8_t)(state->tf_alpha * 128.0f + 0.5f);
+    uint8_t high_alpha = (uint8_t)(state->tf_alpha * 255.0f + 0.5f);
+
+    DvzColormapStop transfer_stops[5] = {
+        {.position = 0.00, .rgba = {0, 0, 0, 0}},
+        {.position = low, .rgba = {0, 0, 0, 0}},
+        {.position = mid, .rgba = {30, 120, 220, mid_alpha}},
+        {.position = high, .rgba = {230, 230, 245, high_alpha}},
+        {.position = 1.00, .rgba = {255, 190, 80, high_alpha}},
+    };
+    dvz_colormap_set_stops(state->transfer_map, transfer_stops, 5);
+}
+
+
+
+/**
  * Apply retained volume controls after GUI changes.
  *
  * @param state example state
@@ -285,6 +343,10 @@ static void _volume_glfw_gui(DvzGui* gui, DvzAppWindow* win, void* user_data)
         changed |= dvz_gui_checkbox(gui, "Transfer", &state->transfer);
         changed |= dvz_gui_slider_float(gui, "Opacity", &state->opacity, 0.05f, 1.0f);
         changed |= dvz_gui_slider_float(gui, "Steps", &state->step_count, 4.0f, 256.0f);
+        changed |= dvz_gui_slider_float(gui, "TF threshold", &state->tf_threshold, 0.0f, 0.98f);
+        changed |= dvz_gui_slider_float(gui, "TF window", &state->tf_window, 0.02f, 1.0f);
+        changed |= dvz_gui_slider_float(gui, "TF ramp", &state->tf_ramp, 0.05f, 1.0f);
+        changed |= dvz_gui_slider_float(gui, "TF alpha", &state->tf_alpha, 0.0f, 1.0f);
         changed |= dvz_gui_checkbox(gui, "Clip", &state->clipping);
         changed |= dvz_gui_slider_float(gui, "Clip X min", &state->clip_min[0], 0.0f, 0.95f);
         changed |= dvz_gui_slider_float(gui, "Clip X max", &state->clip_max[0], 0.05f, 1.0f);
@@ -299,6 +361,10 @@ static void _volume_glfw_gui(DvzGui* gui, DvzAppWindow* win, void* user_data)
             state->clipping = false;
             state->opacity = 1.0f;
             state->step_count = 128.0f;
+            state->tf_threshold = 0.25f;
+            state->tf_window = 0.55f;
+            state->tf_ramp = 0.70f;
+            state->tf_alpha = 1.0f;
             state->clip_min[0] = 0.0f;
             state->clip_min[1] = 0.0f;
             state->clip_min[2] = 0.0f;
@@ -321,7 +387,10 @@ static void _volume_glfw_gui(DvzGui* gui, DvzAppWindow* win, void* user_data)
         }
     }
     if (changed)
+    {
+        _update_transfer_function(state);
         _apply_volume_controls(state);
+    }
 }
 
 
@@ -445,13 +514,6 @@ int main(int argc, char** argv)
         dvz_scene_destroy(scene);
         return 1;
     }
-    DvzColormapStop transfer_stops[4] = {
-        {.position = 0.00, .rgba = {0, 0, 0, 0}},
-        {.position = 0.25, .rgba = {30, 120, 220, 32}},
-        {.position = 0.65, .rgba = {230, 230, 245, 170}},
-        {.position = 1.00, .rgba = {255, 190, 80, 255}},
-    };
-    dvz_colormap_set_stops(transfer_map, transfer_stops, 4);
     dvz_scale_set_colormap(transfer_scale, transfer_map);
     if (dvz_panel_add_visual(panel, volume, NULL) != 0)
     {
@@ -464,13 +526,19 @@ int main(int argc, char** argv)
     VolumeGlfwState state = {
         .volume = volume,
         .transfer_scale = transfer_scale,
+        .transfer_map = transfer_map,
         .render_mode = DVZ_VOLUME_RENDER_COMPOSITE,
         .transfer = true,
         .opacity = 1.0f,
         .step_count = 128.0f,
+        .tf_threshold = 0.25f,
+        .tf_window = 0.55f,
+        .tf_ramp = 0.70f,
+        .tf_alpha = 1.0f,
         .clip_min = {0.0f, 0.0f, 0.0f},
         .clip_max = {1.0f, 1.0f, 1.0f},
     };
+    _update_transfer_function(&state);
     _apply_volume_controls(&state);
 
     DvzApp* app = dvz_app(scene);
