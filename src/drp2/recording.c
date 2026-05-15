@@ -20,6 +20,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #if defined(_WIN32)
@@ -1476,7 +1477,15 @@ static bool _recording_line_u64(const char* line, const char* key, uint64_t* out
     if (p == NULL)
         return false;
     p += strlen(key);
-    return sscanf(p, "%" SCNu64, out) == 1;
+    if (*p == '-')
+        return false;
+    char* end = NULL;
+    errno = 0;
+    unsigned long long value = strtoull(p, &end, 10);
+    if (end == p || errno == ERANGE || value > UINT64_MAX)
+        return false;
+    *out = (uint64_t)value;
+    return true;
 }
 
 
@@ -1498,7 +1507,13 @@ static bool _recording_line_double(const char* line, const char* key, double* ou
     if (p == NULL)
         return false;
     p += strlen(key);
-    return sscanf(p, "%lf", out) == 1;
+    char* end = NULL;
+    errno = 0;
+    double value = strtod(p, &end);
+    if (end == p || errno == ERANGE)
+        return false;
+    *out = value;
+    return true;
 }
 
 
@@ -1542,7 +1557,13 @@ static bool _recording_line_i32(const char* line, const char* key, int32_t* out)
     if (p == NULL)
         return false;
     p += strlen(key);
-    return sscanf(p, "%" SCNd32, out) == 1;
+    char* end = NULL;
+    errno = 0;
+    long value = strtol(p, &end, 10);
+    if (end == p || errno == ERANGE || value < INT32_MIN || value > INT32_MAX)
+        return false;
+    *out = (int32_t)value;
+    return true;
 }
 
 
@@ -1564,7 +1585,13 @@ static bool _recording_line_float(const char* line, const char* key, float* out)
     if (p == NULL)
         return false;
     p += strlen(key);
-    return sscanf(p, "%f", out) == 1;
+    char* end = NULL;
+    errno = 0;
+    float value = strtof(p, &end);
+    if (end == p || errno == ERANGE)
+        return false;
+    *out = value;
+    return true;
 }
 
 
