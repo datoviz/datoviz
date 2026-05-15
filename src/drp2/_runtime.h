@@ -143,6 +143,9 @@ struct Drp2Object
     bool render_index_buffer_bound;
     uint32_t render_bound_bind_group_mask;
     bool has_depth_attachment;
+    uint32_t color_attachment_count;
+    uint32_t color_attachment_formats[DVZ_DRP2_MAX_COLOR_ATTACHMENTS];
+    uint32_t depth_attachment_format;
     bool depth_write_enabled;
     uint32_t depth_compare_op;
     float viewport_x;

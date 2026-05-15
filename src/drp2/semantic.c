@@ -126,6 +126,32 @@ static bool _texture_layout_invalid(
 }
 
 
+
+/**
+ * Return the effective texture format used by DRP2 when a format is omitted.
+ *
+ * @param format texture format from a command or object
+ * @return backend-native texture format enum value
+ */
+static uint32_t _effective_color_format(uint32_t format)
+{
+    return format != 0 ? format : VK_FORMAT_R8G8B8A8_UNORM;
+}
+
+
+
+/**
+ * Return the effective depth attachment format used by DRP2 transient depth.
+ *
+ * @return backend-native depth texture format enum value
+ */
+static uint32_t _effective_depth_format(void)
+{
+    return VK_FORMAT_D32_SFLOAT;
+}
+
+
+
 static bool _binding_type_is_buffer(DvzDrp2BindingType type)
 {
     return type == DVZ_DRP2_BINDING_TYPE_UNIFORM_BUFFER ||
@@ -663,6 +689,17 @@ static DvzDrp2ValidationResult _validate_create_render_pipeline(
             object->bind_group_layout_count * sizeof(uint64_t));
     }
     object->has_depth_attachment = command->u.create_render_pipeline.has_depth_attachment;
+    uint32_t color_target_count = command->u.create_render_pipeline.color_target_count;
+    if (color_target_count == 0)
+        color_target_count = 1;
+    object->color_attachment_count = color_target_count;
+    for (uint32_t i = 0; i < color_target_count; i++)
+    {
+        object->color_attachment_formats[i] = _effective_color_format(
+            command->u.create_render_pipeline.color_targets[i].format);
+    }
+    object->depth_attachment_format =
+        object->has_depth_attachment ? _effective_depth_format() : 0;
     object->depth_write_enabled = command->u.create_render_pipeline.depth_write_enabled;
     object->depth_compare_op = command->u.create_render_pipeline.depth_compare_op;
     return _drp2_ok();
@@ -1003,6 +1040,11 @@ static DvzDrp2ValidationResult _validate_begin_encoder(
 
 
 
+static DvzDrp2ValidationResult _validate_render_pipeline_attachments(
+    const Drp2Object* pass, const Drp2Object* pipeline, uint32_t command_index);
+
+
+
 static DvzDrp2ValidationResult _validate_begin_render_pass(
     Drp2RuntimeState* state, const DvzDrp2Command* command, uint32_t command_index)
 {
@@ -1096,6 +1138,38 @@ static DvzDrp2ValidationResult _validate_begin_render_pass(
     pass->open = true;
     pass->encoder_id = command->u.begin_render_pass.encoder_id;
     pass->has_depth_attachment = command->u.begin_render_pass.has_depth_attachment;
+    pass->color_attachment_count = color_count;
+    for (uint32_t i = 0; i < color_count; i++)
+    {
+        uint64_t texture_id = command->u.begin_render_pass.color_attachment_count > 0
+                                  ? command->u.begin_render_pass.color_attachments[i].texture_id
+                                  : command->u.begin_render_pass.texture_id;
+        const Drp2Object* texture = _find_object(state, texture_id);
+        if (texture == NULL || texture->kind != DRP2_OBJECT_TEXTURE)
+        {
+            pass->destroyed = true;
+            return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+        }
+        pass->color_attachment_formats[i] = _effective_color_format(texture->format);
+    }
+    if (command->u.begin_render_pass.has_depth_attachment)
+    {
+        if (command->u.begin_render_pass.depth_texture_id != 0)
+        {
+            const Drp2Object* depth =
+                _find_object(state, command->u.begin_render_pass.depth_texture_id);
+            if (depth == NULL || depth->kind != DRP2_OBJECT_TEXTURE)
+            {
+                pass->destroyed = true;
+                return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+            }
+            pass->depth_attachment_format = depth->format;
+        }
+        else
+        {
+            pass->depth_attachment_format = _effective_depth_format();
+        }
+    }
     pass->viewport_x = command->u.begin_render_pass.viewport[0];
     pass->viewport_y = command->u.begin_render_pass.viewport[1];
     pass->viewport_width = command->u.begin_render_pass.viewport[2];
@@ -1183,6 +1257,37 @@ static DvzDrp2ValidationResult _validate_set_scissor(
 
 
 
+/**
+ * Validate that a render pipeline is compatible with the active render pass attachments.
+ *
+ * @param pass the active render pass object
+ * @param pipeline the render pipeline object
+ * @param command_index command index used for validation reporting
+ * @return validation result
+ */
+static DvzDrp2ValidationResult _validate_render_pipeline_attachments(
+    const Drp2Object* pass, const Drp2Object* pipeline, uint32_t command_index)
+{
+    ANN(pass);
+    ANN(pipeline);
+
+    if (pipeline->color_attachment_count != pass->color_attachment_count)
+        return _drp2_fail(DVZ_DRP2_VALIDATION_USAGE, command_index);
+    for (uint32_t i = 0; i < pipeline->color_attachment_count; i++)
+    {
+        if (pipeline->color_attachment_formats[i] != pass->color_attachment_formats[i])
+            return _drp2_fail(DVZ_DRP2_VALIDATION_USAGE, command_index);
+    }
+    if (pipeline->has_depth_attachment != pass->has_depth_attachment)
+        return _drp2_fail(DVZ_DRP2_VALIDATION_USAGE, command_index);
+    if (pipeline->has_depth_attachment &&
+        pipeline->depth_attachment_format != pass->depth_attachment_format)
+        return _drp2_fail(DVZ_DRP2_VALIDATION_USAGE, command_index);
+    return _drp2_ok();
+}
+
+
+
 static DvzDrp2ValidationResult _validate_set_pipeline(
     Drp2RuntimeState* state, const DvzDrp2Command* command, uint32_t command_index)
 {
@@ -1201,8 +1306,16 @@ static DvzDrp2ValidationResult _validate_set_pipeline(
     else
         return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
 
-    if (!_has_object_kind(state, command->u.set_pipeline.pipeline_id, pipeline_kind))
+    Drp2Object* pipeline = _find_object(state, command->u.set_pipeline.pipeline_id);
+    if (pipeline == NULL || pipeline->kind != pipeline_kind)
         return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+    if (pass->kind == DRP2_OBJECT_RENDER_PASS)
+    {
+        DvzDrp2ValidationResult result =
+            _validate_render_pipeline_attachments(pass, pipeline, command_index);
+        if (!result.ok)
+            return result;
+    }
 
     pass->pipeline_id = command->u.set_pipeline.pipeline_id;
     pass->bound_vertex_mask = 0;
@@ -1353,6 +1466,11 @@ static DvzDrp2ValidationResult _validate_render_draw_state(
     Drp2Object* pipeline = _find_object(state, pass->pipeline_id);
     if (pipeline == NULL || pipeline->kind != DRP2_OBJECT_RENDER_PIPELINE)
         return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+
+    DvzDrp2ValidationResult attachment_result =
+        _validate_render_pipeline_attachments(pass, pipeline, command_index);
+    if (!attachment_result.ok)
+        return attachment_result;
 
     uint32_t required_mask = 0;
     if (pipeline->vertex_buffer_slots >= 32)
