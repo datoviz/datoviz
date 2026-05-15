@@ -20,6 +20,7 @@
 #include "_alloc.h"
 #include "_assertions.h"
 #include "_compat.h"
+#include "../_frame_plan.h"
 #include "../_frame_plan_emit.h"
 #include "../_scene.h"
 #include "../../drp2/_stream.h"
@@ -52,6 +53,21 @@ typedef enum
     SCENE_DVZR_VISUAL_MESH,
     SCENE_DVZR_VISUAL_IMAGE,
 } SceneDvzrVisualKind;
+
+
+#if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
+typedef struct
+{
+    uint64_t rt;
+    uint64_t depth;
+    uint64_t front_ping;
+    uint64_t back_ping;
+    uint64_t depth_ping;
+    uint64_t front_pong;
+    uint64_t back_pong;
+    uint64_t depth_pong;
+} SceneDepthPeelResourceIds;
+#endif
 
 
 
@@ -170,6 +186,603 @@ static bool _add_dvzr_visual(DvzScene* scene, DvzPanel* panel, SceneDvzrVisualKi
 
     return false;
 }
+
+
+#if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
+/**
+ * Return the fixed DRP2 id used by the depth-peeling graph lowering test.
+ *
+ * @param resource_id the FramePlan graph resource id
+ * @return the corresponding DRP2 object id, or 0 when unknown
+ */
+static uint64_t _depth_peel_resource_id(const char* resource_id)
+{
+    ANN(resource_id);
+
+    if (strcmp(resource_id, "rt") == 0)
+        return 50;
+    if (strcmp(resource_id, "panel0.depth.opaque") == 0)
+        return 51;
+    if (strcmp(resource_id, "panel0.peel.front_ping") == 0)
+        return 52;
+    if (strcmp(resource_id, "panel0.peel.back_ping") == 0)
+        return 53;
+    if (strcmp(resource_id, "panel0.peel.depth_ping") == 0)
+        return 54;
+    if (strcmp(resource_id, "panel0.peel.front_pong") == 0)
+        return 55;
+    if (strcmp(resource_id, "panel0.peel.back_pong") == 0)
+        return 56;
+    if (strcmp(resource_id, "panel0.peel.depth_pong") == 0)
+        return 57;
+    return 0;
+}
+
+
+
+/**
+ * Convert graph resource usage flags to the DRP2 texture usage bits needed by the test.
+ *
+ * @param usage graph resource usage flags
+ * @return DRP2 texture usage flags
+ */
+static uint32_t _depth_peel_texture_usage(uint32_t usage)
+{
+    uint32_t out = 0;
+    if ((usage & DVZ_FRAME_GRAPH_RESOURCE_USAGE_COLOR_ATTACHMENT) != 0 ||
+        (usage & DVZ_FRAME_GRAPH_RESOURCE_USAGE_DEPTH_ATTACHMENT) != 0)
+        out |= DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT;
+    if ((usage & DVZ_FRAME_GRAPH_RESOURCE_USAGE_SAMPLED) != 0)
+        out |= DVZ_DRP2_TEXTURE_USAGE_TEXTURE_BINDING;
+    if ((usage & DVZ_FRAME_GRAPH_RESOURCE_USAGE_COPY_SRC) != 0)
+        out |= DVZ_DRP2_TEXTURE_USAGE_COPY_SRC;
+    if ((usage & DVZ_FRAME_GRAPH_RESOURCE_USAGE_COPY_DST) != 0)
+        out |= DVZ_DRP2_TEXTURE_USAGE_COPY_DST;
+    return out;
+}
+
+
+
+/**
+ * Build the depth-peeling graph shape used by FramePlan graph and DRP2 lowering tests.
+ *
+ * @param out output frame plan owned by the caller
+ * @return 0 on success
+ */
+static int _depth_peel_frame_plan_graph(DvzFramePlan** out)
+{
+    ANN(out);
+
+    DvzFramePlan* plan = dvz_frame_plan("figure.emit.depth_peel", 20);
+    ANN(plan);
+
+    DvzFrameGraphResource rt = {0};
+    dvz_strlcpy(rt.id, "rt", sizeof(rt.id));
+    rt.kind = DVZ_FRAME_GRAPH_RESOURCE_EXTERNAL_TARGET;
+    rt.format = VK_FORMAT_R8G8B8A8_UNORM;
+    rt.extent_kind = DVZ_FRAME_GRAPH_EXTENT_FIGURE;
+    rt.usage_flags = DVZ_FRAME_GRAPH_RESOURCE_USAGE_COLOR_ATTACHMENT |
+                     DVZ_FRAME_GRAPH_RESOURCE_USAGE_COPY_SRC;
+    rt.lifetime = DVZ_FRAME_GRAPH_RESOURCE_LIFETIME_BORROWED;
+    AT(dvz_frame_plan_graph_resource(plan, &rt));
+
+    DvzFrameGraphResource opaque_depth = {0};
+    dvz_strlcpy(opaque_depth.id, "panel0.depth.opaque", sizeof(opaque_depth.id));
+    opaque_depth.kind = DVZ_FRAME_GRAPH_RESOURCE_TEXTURE;
+    opaque_depth.format = VK_FORMAT_D32_SFLOAT;
+    opaque_depth.extent_kind = DVZ_FRAME_GRAPH_EXTENT_FIGURE;
+    opaque_depth.usage_flags = DVZ_FRAME_GRAPH_RESOURCE_USAGE_DEPTH_ATTACHMENT;
+    opaque_depth.lifetime = DVZ_FRAME_GRAPH_RESOURCE_LIFETIME_PER_FRAME;
+    AT(dvz_frame_plan_graph_resource(plan, &opaque_depth));
+
+    const char* color_ids[6] = {
+        "panel0.peel.front_ping",
+        "panel0.peel.back_ping",
+        "panel0.peel.depth_ping",
+        "panel0.peel.front_pong",
+        "panel0.peel.back_pong",
+        "panel0.peel.depth_pong",
+    };
+    for (uint32_t i = 0; i < 6; i++)
+    {
+        DvzFrameGraphResource resource = {0};
+        dvz_strlcpy(resource.id, color_ids[i], sizeof(resource.id));
+        resource.kind = DVZ_FRAME_GRAPH_RESOURCE_TEXTURE;
+        resource.format = VK_FORMAT_R16G16B16A16_SFLOAT;
+        resource.extent_kind = DVZ_FRAME_GRAPH_EXTENT_FIGURE;
+        resource.usage_flags = DVZ_FRAME_GRAPH_RESOURCE_USAGE_COLOR_ATTACHMENT |
+                               DVZ_FRAME_GRAPH_RESOURCE_USAGE_SAMPLED;
+        resource.lifetime = DVZ_FRAME_GRAPH_RESOURCE_LIFETIME_PER_FRAME;
+        AT(dvz_frame_plan_graph_resource(plan, &resource));
+    }
+
+    DvzFrameGraphAttachment rt_clear = {0};
+    dvz_strlcpy(rt_clear.resource_id, "rt", sizeof(rt_clear.resource_id));
+    rt_clear.load_op = DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_CLEAR;
+    rt_clear.store_op = DVZ_FRAME_GRAPH_ATTACHMENT_STORE_STORE;
+    rt_clear.access = DVZ_FRAME_GRAPH_ATTACHMENT_ACCESS_WRITE;
+
+    DvzFrameGraphAttachment depth_write = {0};
+    dvz_strlcpy(depth_write.resource_id, "panel0.depth.opaque", sizeof(depth_write.resource_id));
+    depth_write.load_op = DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_CLEAR;
+    depth_write.store_op = DVZ_FRAME_GRAPH_ATTACHMENT_STORE_STORE;
+    depth_write.access = DVZ_FRAME_GRAPH_ATTACHMENT_ACCESS_WRITE;
+    depth_write.clear_depth = 1.0f;
+
+    DvzFrameGraphPass opaque = {0};
+    dvz_strlcpy(opaque.id, "panel0.opaque", sizeof(opaque.id));
+    dvz_strlcpy(opaque.panel_id, "panel.0", sizeof(opaque.panel_id));
+    dvz_strlcpy(opaque.work_label, "opaque", sizeof(opaque.work_label));
+    opaque.kind = DVZ_FRAME_GRAPH_PASS_RENDER;
+    AT(dvz_frame_graph_pass_color_attachment(&opaque, &rt_clear));
+    AT(dvz_frame_graph_pass_depth_attachment(&opaque, &depth_write));
+    AT(dvz_frame_plan_graph_pass(plan, &opaque));
+
+    DvzFrameGraphAttachment depth_read = {0};
+    dvz_strlcpy(depth_read.resource_id, "panel0.depth.opaque", sizeof(depth_read.resource_id));
+    depth_read.load_op = DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_LOAD;
+    depth_read.store_op = DVZ_FRAME_GRAPH_ATTACHMENT_STORE_DONT_CARE;
+    depth_read.access = DVZ_FRAME_GRAPH_ATTACHMENT_ACCESS_READ;
+
+    DvzFrameGraphPass init = {0};
+    dvz_strlcpy(init.id, "panel0.peel.init", sizeof(init.id));
+    dvz_strlcpy(init.panel_id, "panel.0", sizeof(init.panel_id));
+    dvz_strlcpy(init.work_label, "depth_peel_init", sizeof(init.work_label));
+    init.kind = DVZ_FRAME_GRAPH_PASS_RENDER;
+    for (uint32_t i = 0; i < 3; i++)
+    {
+        DvzFrameGraphAttachment attachment = {0};
+        dvz_strlcpy(attachment.resource_id, color_ids[i], sizeof(attachment.resource_id));
+        attachment.load_op = DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_CLEAR;
+        attachment.store_op = DVZ_FRAME_GRAPH_ATTACHMENT_STORE_STORE;
+        attachment.access = DVZ_FRAME_GRAPH_ATTACHMENT_ACCESS_WRITE;
+        AT(dvz_frame_graph_pass_color_attachment(&init, &attachment));
+    }
+    AT(dvz_frame_graph_pass_depth_attachment(&init, &depth_read));
+    AT(dvz_frame_plan_graph_pass(plan, &init));
+
+    DvzFrameGraphPass iter = {0};
+    dvz_strlcpy(iter.id, "panel0.peel.iter.0", sizeof(iter.id));
+    dvz_strlcpy(iter.panel_id, "panel.0", sizeof(iter.panel_id));
+    dvz_strlcpy(iter.work_label, "depth_peel_iter", sizeof(iter.work_label));
+    iter.kind = DVZ_FRAME_GRAPH_PASS_RENDER;
+    AT(dvz_frame_graph_pass_read(
+        &iter, "panel0.peel.front_ping", DVZ_FRAME_GRAPH_ACCESS_SAMPLED));
+    AT(dvz_frame_graph_pass_read(
+        &iter, "panel0.peel.back_ping", DVZ_FRAME_GRAPH_ACCESS_SAMPLED));
+    AT(dvz_frame_graph_pass_read(
+        &iter, "panel0.peel.depth_ping", DVZ_FRAME_GRAPH_ACCESS_SAMPLED));
+    for (uint32_t i = 3; i < 6; i++)
+    {
+        DvzFrameGraphAttachment attachment = {0};
+        dvz_strlcpy(attachment.resource_id, color_ids[i], sizeof(attachment.resource_id));
+        attachment.load_op = DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_CLEAR;
+        attachment.store_op = DVZ_FRAME_GRAPH_ATTACHMENT_STORE_STORE;
+        attachment.access = DVZ_FRAME_GRAPH_ATTACHMENT_ACCESS_WRITE;
+        AT(dvz_frame_graph_pass_color_attachment(&iter, &attachment));
+    }
+    AT(dvz_frame_graph_pass_depth_attachment(&iter, &depth_read));
+    AT(dvz_frame_plan_graph_pass(plan, &iter));
+
+    DvzFrameGraphAttachment rt_load = {0};
+    dvz_strlcpy(rt_load.resource_id, "rt", sizeof(rt_load.resource_id));
+    rt_load.load_op = DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_LOAD;
+    rt_load.store_op = DVZ_FRAME_GRAPH_ATTACHMENT_STORE_STORE;
+    rt_load.access = DVZ_FRAME_GRAPH_ATTACHMENT_ACCESS_WRITE;
+
+    DvzFrameGraphPass composite = {0};
+    dvz_strlcpy(composite.id, "panel0.peel.composite", sizeof(composite.id));
+    dvz_strlcpy(composite.panel_id, "panel.0", sizeof(composite.panel_id));
+    dvz_strlcpy(composite.work_label, "depth_peel_composite", sizeof(composite.work_label));
+    composite.kind = DVZ_FRAME_GRAPH_PASS_RENDER;
+    AT(dvz_frame_graph_pass_read(
+        &composite, "panel0.peel.front_pong", DVZ_FRAME_GRAPH_ACCESS_SAMPLED));
+    AT(dvz_frame_graph_pass_read(
+        &composite, "panel0.peel.back_pong", DVZ_FRAME_GRAPH_ACCESS_SAMPLED));
+    AT(dvz_frame_graph_pass_read(
+        &composite, "panel0.peel.depth_pong", DVZ_FRAME_GRAPH_ACCESS_SAMPLED));
+    AT(dvz_frame_graph_pass_color_attachment(&composite, &rt_load));
+    AT(dvz_frame_plan_graph_pass(plan, &composite));
+
+    *out = plan;
+    return 0;
+}
+
+
+
+/**
+ * Append DRP2 texture creation commands for every resource declared by a graph.
+ *
+ * @param stream the command stream
+ * @param plan the frame plan with graph resources
+ */
+static int _depth_peel_emit_graph_resources(DvzDrp2CommandStream* stream, const DvzFramePlan* plan)
+{
+    ANN(stream);
+    ANN(plan);
+
+    for (uint32_t i = 0; i < dvz_frame_plan_graph_resource_count(plan); i++)
+    {
+        const DvzFrameGraphResource* resource = dvz_frame_plan_graph_resource_get(plan, i);
+        ANN(resource);
+        uint64_t id = _depth_peel_resource_id(resource->id);
+        AT(id != 0);
+        uint32_t usage = _depth_peel_texture_usage(resource->usage_flags);
+        if (strcmp(resource->id, "rt") == 0)
+            usage |= DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT | DVZ_DRP2_TEXTURE_USAGE_COPY_SRC;
+
+        AT(dvz_drp2_stream_create_texture_2d_format_usage(
+            stream, id, 2, 2, resource->format, usage));
+    }
+    return 0;
+}
+
+
+
+/**
+ * Append the synthetic fullscreen shader and pipeline setup for graph lowering coverage.
+ *
+ * @param stream the command stream
+ */
+static int _depth_peel_emit_pipeline_setup(DvzDrp2CommandStream* stream)
+{
+    ANN(stream);
+
+    AT(dvz_drp2_stream_create_sampler(stream, 2));
+
+    DvzDrp2BindGroupLayoutEntry sampled_entries[4] = {
+        {
+            .binding = 0,
+            .binding_type = DVZ_DRP2_BINDING_TYPE_SAMPLED_TEXTURE,
+            .visibility = DVZ_DRP2_SHADER_STAGE_FRAGMENT,
+            .access = DVZ_DRP2_BINDING_ACCESS_READ,
+        },
+        {
+            .binding = 1,
+            .binding_type = DVZ_DRP2_BINDING_TYPE_SAMPLED_TEXTURE,
+            .visibility = DVZ_DRP2_SHADER_STAGE_FRAGMENT,
+            .access = DVZ_DRP2_BINDING_ACCESS_READ,
+        },
+        {
+            .binding = 2,
+            .binding_type = DVZ_DRP2_BINDING_TYPE_SAMPLED_TEXTURE,
+            .visibility = DVZ_DRP2_SHADER_STAGE_FRAGMENT,
+            .access = DVZ_DRP2_BINDING_ACCESS_READ,
+        },
+        {
+            .binding = 3,
+            .binding_type = DVZ_DRP2_BINDING_TYPE_SAMPLER,
+            .visibility = DVZ_DRP2_SHADER_STAGE_FRAGMENT,
+            .access = DVZ_DRP2_BINDING_ACCESS_READ,
+        },
+    };
+    AT(dvz_drp2_stream_create_bind_group_layout_entries(stream, 3, 4, sampled_entries));
+
+    const char* fullscreen_vs =
+        "#version 450\nvec2 p[3]=vec2[](vec2(-1,-1),vec2(3,-1),vec2(-1,3));"
+        "void main(){gl_Position=vec4(p[gl_VertexIndex],0,1);}";
+    AT(dvz_drp2_stream_create_shader_module_format(stream, 10, "VERTEX", "glsl", fullscreen_vs));
+    AT(dvz_drp2_stream_create_shader_module_format(
+        stream, 11, "FRAGMENT", "glsl",
+        "#version 450\nlayout(location=0)out vec4 color;"
+        "void main(){color=vec4(0.05,0.05,0.05,1.0);}"));
+    AT(dvz_drp2_stream_create_render_pipeline(stream, 12, 10, 11, 0));
+    AT(dvz_drp2_stream_pipeline_set_depth_state(stream, true, VK_COMPARE_OP_LESS_OR_EQUAL));
+
+    AT(dvz_drp2_stream_create_shader_module_format(stream, 20, "VERTEX", "glsl", fullscreen_vs));
+    AT(dvz_drp2_stream_create_shader_module_format(
+        stream, 21, "FRAGMENT", "glsl",
+        "#version 450\nlayout(location=0)out vec4 front_accum;"
+        "layout(location=1)out vec4 back_accum;layout(location=2)out vec4 depth_pair;"
+        "void main(){front_accum=vec4(0.25,0,0,1);back_accum=vec4(0,0.25,0,1);"
+        "depth_pair=vec4(gl_FragCoord.z,1.0-gl_FragCoord.z,0,1);}"));
+    AT(dvz_drp2_stream_create_render_pipeline(stream, 22, 20, 21, 0));
+    AT(dvz_drp2_stream_pipeline_set_color_target(
+        stream, 0, VK_FORMAT_R16G16B16A16_SFLOAT));
+    AT(dvz_drp2_stream_pipeline_set_color_target(
+        stream, 1, VK_FORMAT_R16G16B16A16_SFLOAT));
+    AT(dvz_drp2_stream_pipeline_set_color_target(
+        stream, 2, VK_FORMAT_R16G16B16A16_SFLOAT));
+    AT(dvz_drp2_stream_pipeline_set_depth_state(stream, false, VK_COMPARE_OP_LESS_OR_EQUAL));
+    AT(dvz_drp2_stream_pipeline_set_raster_state(
+        stream, VK_CULL_MODE_BACK_BIT, VK_FRONT_FACE_COUNTER_CLOCKWISE));
+
+    AT(dvz_drp2_stream_create_shader_module_format(stream, 30, "VERTEX", "glsl", fullscreen_vs));
+    AT(dvz_drp2_stream_create_shader_module_format(
+        stream, 31, "FRAGMENT", "glsl",
+        "#version 450\nlayout(set=0,binding=0)uniform sampler2D prev_front;"
+        "layout(set=0,binding=1)uniform sampler2D prev_back;"
+        "layout(set=0,binding=2)uniform sampler2D prev_depth;"
+        "layout(location=0)out vec4 front_accum;layout(location=1)out vec4 back_accum;"
+        "layout(location=2)out vec4 depth_pair;"
+        "void main(){ivec2 uv=ivec2(gl_FragCoord.xy);vec4 f=texelFetch(prev_front,uv,0);"
+        "vec4 b=texelFetch(prev_back,uv,0);vec4 d=texelFetch(prev_depth,uv,0);"
+        "front_accum=f+vec4(0.25,0,0,0);back_accum=b+vec4(0,0.25,0,0);"
+        "depth_pair=d+vec4(0.05,0.05,0,0);}"));
+    AT(dvz_drp2_stream_create_render_pipeline_with_bind_group_layout(
+        stream, 32, 30, 31, 0, 3));
+    AT(dvz_drp2_stream_pipeline_set_color_target(
+        stream, 0, VK_FORMAT_R16G16B16A16_SFLOAT));
+    AT(dvz_drp2_stream_pipeline_set_color_target(
+        stream, 1, VK_FORMAT_R16G16B16A16_SFLOAT));
+    AT(dvz_drp2_stream_pipeline_set_color_target(
+        stream, 2, VK_FORMAT_R16G16B16A16_SFLOAT));
+    AT(dvz_drp2_stream_pipeline_set_depth_state(stream, false, VK_COMPARE_OP_LESS_OR_EQUAL));
+    AT(dvz_drp2_stream_pipeline_set_raster_state(
+        stream, VK_CULL_MODE_FRONT_BIT, VK_FRONT_FACE_COUNTER_CLOCKWISE));
+
+    AT(dvz_drp2_stream_create_shader_module_format(stream, 40, "VERTEX", "glsl", fullscreen_vs));
+    AT(dvz_drp2_stream_create_shader_module_format(
+        stream, 41, "FRAGMENT", "glsl",
+        "#version 450\nlayout(set=0,binding=0)uniform sampler2D front_accum;"
+        "layout(set=0,binding=1)uniform sampler2D back_accum;"
+        "layout(set=0,binding=2)uniform sampler2D depth_pair;"
+        "layout(location=0)out vec4 color;"
+        "void main(){ivec2 uv=ivec2(gl_FragCoord.xy);vec4 f=texelFetch(front_accum,uv,0);"
+        "vec4 b=texelFetch(back_accum,uv,0);vec4 d=texelFetch(depth_pair,uv,0);"
+        "color=vec4(f.r,b.g,d.r,1.0);}"));
+    AT(dvz_drp2_stream_create_render_pipeline_with_bind_group_layout(
+        stream, 42, 40, 41, 0, 3));
+    return 0;
+}
+
+
+
+/**
+ * Append bind groups that sample graph ping and pong resources.
+ *
+ * @param stream the command stream
+ * @param ids fixed DRP2 ids for graph resources
+ */
+static int _depth_peel_emit_bind_groups(
+    DvzDrp2CommandStream* stream, SceneDepthPeelResourceIds ids)
+{
+    ANN(stream);
+
+    DvzDrp2BindGroupEntry peel_entries[4] = {
+        {
+            .binding = 0,
+            .binding_type = DVZ_DRP2_BINDING_TYPE_SAMPLED_TEXTURE,
+            .resource_kind = DVZ_DRP2_BINDING_RESOURCE_TEXTURE,
+            .resource_id = ids.front_ping,
+        },
+        {
+            .binding = 1,
+            .binding_type = DVZ_DRP2_BINDING_TYPE_SAMPLED_TEXTURE,
+            .resource_kind = DVZ_DRP2_BINDING_RESOURCE_TEXTURE,
+            .resource_id = ids.back_ping,
+        },
+        {
+            .binding = 2,
+            .binding_type = DVZ_DRP2_BINDING_TYPE_SAMPLED_TEXTURE,
+            .resource_kind = DVZ_DRP2_BINDING_RESOURCE_TEXTURE,
+            .resource_id = ids.depth_ping,
+        },
+        {
+            .binding = 3,
+            .binding_type = DVZ_DRP2_BINDING_TYPE_SAMPLER,
+            .resource_kind = DVZ_DRP2_BINDING_RESOURCE_SAMPLER,
+            .resource_id = 2,
+        },
+    };
+    AT(dvz_drp2_stream_create_bind_group_entries(stream, 60, 3, 4, peel_entries));
+
+    DvzDrp2BindGroupEntry composite_entries[4] = {
+        {
+            .binding = 0,
+            .binding_type = DVZ_DRP2_BINDING_TYPE_SAMPLED_TEXTURE,
+            .resource_kind = DVZ_DRP2_BINDING_RESOURCE_TEXTURE,
+            .resource_id = ids.front_pong,
+        },
+        {
+            .binding = 1,
+            .binding_type = DVZ_DRP2_BINDING_TYPE_SAMPLED_TEXTURE,
+            .resource_kind = DVZ_DRP2_BINDING_RESOURCE_TEXTURE,
+            .resource_id = ids.back_pong,
+        },
+        {
+            .binding = 2,
+            .binding_type = DVZ_DRP2_BINDING_TYPE_SAMPLED_TEXTURE,
+            .resource_kind = DVZ_DRP2_BINDING_RESOURCE_TEXTURE,
+            .resource_id = ids.depth_pong,
+        },
+        {
+            .binding = 3,
+            .binding_type = DVZ_DRP2_BINDING_TYPE_SAMPLER,
+            .resource_kind = DVZ_DRP2_BINDING_RESOURCE_SAMPLER,
+            .resource_id = 2,
+        },
+    };
+    AT(dvz_drp2_stream_create_bind_group_entries(stream, 61, 3, 4, composite_entries));
+    return 0;
+}
+
+
+
+/**
+ * Append graph-ordered render passes for the synthetic depth-peeling stream.
+ *
+ * @param stream the command stream
+ * @param plan the frame plan whose graph defines pass order and attachments
+ * @param ids fixed DRP2 ids for graph resources
+ */
+static int _depth_peel_emit_graph_passes(
+    DvzDrp2CommandStream* stream, const DvzFramePlan* plan, SceneDepthPeelResourceIds ids)
+{
+    ANN(stream);
+    ANN(plan);
+    AT(dvz_frame_plan_graph_pass_count(plan) == 4);
+
+    AT(dvz_drp2_stream_begin_command_encoder(stream, 80));
+
+    const DvzFrameGraphPass* opaque = dvz_frame_plan_graph_pass_get(plan, 0);
+    ANN(opaque);
+    AT(strcmp(opaque->id, "panel0.opaque") == 0);
+    AT(dvz_drp2_stream_begin_render_pass_clear(stream, 81, 80, ids.rt, 0, 0, 0, 1));
+    AT(dvz_drp2_stream_begin_render_pass_set_depth_texture(stream, ids.depth, 1.0f));
+    AT(dvz_drp2_stream_set_pipeline(stream, 81, 12));
+    AT(dvz_drp2_stream_draw(stream, 81, 3, 1, 0, 0));
+    AT(dvz_drp2_stream_end_render_pass(stream, 81));
+
+    const DvzFrameGraphPass* init = dvz_frame_plan_graph_pass_get(plan, 1);
+    ANN(init);
+    AT(strcmp(init->id, "panel0.peel.init") == 0);
+    AT(init->color_attachment_count == 3);
+    AT(dvz_drp2_stream_begin_render_pass_clear(
+        stream, 82, 80, _depth_peel_resource_id(init->color_attachments[0].resource_id),
+        0, 0, 0, 0));
+    AT(dvz_drp2_stream_begin_render_pass_add_color_attachment(
+        stream, _depth_peel_resource_id(init->color_attachments[1].resource_id),
+        0, 0, 0, 0, true));
+    AT(dvz_drp2_stream_begin_render_pass_add_color_attachment(
+        stream, _depth_peel_resource_id(init->color_attachments[2].resource_id),
+        0, 0, 0, 0, true));
+    AT(dvz_drp2_stream_begin_render_pass_set_depth_texture(stream, ids.depth, 1.0f));
+    AT(dvz_drp2_stream_begin_render_pass_set_depth_ops(
+        stream, DVZ_DRP2_ATTACHMENT_LOAD_LOAD, DVZ_DRP2_ATTACHMENT_STORE_DONT_CARE));
+    AT(dvz_drp2_stream_begin_render_pass_set_depth_access(
+        stream, DVZ_DRP2_ATTACHMENT_ACCESS_READ));
+    AT(dvz_drp2_stream_set_pipeline(stream, 82, 22));
+    AT(dvz_drp2_stream_draw(stream, 82, 3, 1, 0, 0));
+    AT(dvz_drp2_stream_end_render_pass(stream, 82));
+
+    const DvzFrameGraphPass* iter = dvz_frame_plan_graph_pass_get(plan, 2);
+    ANN(iter);
+    AT(strcmp(iter->id, "panel0.peel.iter.0") == 0);
+    AT(iter->color_attachment_count == 3);
+    AT(iter->read_count == 3);
+    AT(dvz_drp2_stream_begin_render_pass_clear(
+        stream, 83, 80, _depth_peel_resource_id(iter->color_attachments[0].resource_id),
+        0, 0, 0, 0));
+    AT(dvz_drp2_stream_begin_render_pass_add_color_attachment(
+        stream, _depth_peel_resource_id(iter->color_attachments[1].resource_id),
+        0, 0, 0, 0, true));
+    AT(dvz_drp2_stream_begin_render_pass_add_color_attachment(
+        stream, _depth_peel_resource_id(iter->color_attachments[2].resource_id),
+        0, 0, 0, 0, true));
+    AT(dvz_drp2_stream_begin_render_pass_set_depth_texture(stream, ids.depth, 1.0f));
+    AT(dvz_drp2_stream_begin_render_pass_set_depth_ops(
+        stream, DVZ_DRP2_ATTACHMENT_LOAD_LOAD, DVZ_DRP2_ATTACHMENT_STORE_DONT_CARE));
+    AT(dvz_drp2_stream_begin_render_pass_set_depth_access(
+        stream, DVZ_DRP2_ATTACHMENT_ACCESS_READ));
+    AT(dvz_drp2_stream_set_pipeline(stream, 83, 32));
+    AT(dvz_drp2_stream_set_bind_group(stream, 83, 0, 60));
+    AT(dvz_drp2_stream_draw(stream, 83, 3, 1, 0, 0));
+    AT(dvz_drp2_stream_end_render_pass(stream, 83));
+
+    const DvzFrameGraphPass* composite = dvz_frame_plan_graph_pass_get(plan, 3);
+    ANN(composite);
+    AT(strcmp(composite->id, "panel0.peel.composite") == 0);
+    AT(dvz_drp2_stream_begin_render_pass_clear(stream, 84, 80, ids.rt, 0, 0, 0, 1));
+    AT(dvz_drp2_stream_begin_render_pass_set_color_attachment_ops(
+        stream, 0, DVZ_DRP2_ATTACHMENT_LOAD_LOAD, DVZ_DRP2_ATTACHMENT_STORE_STORE));
+    AT(dvz_drp2_stream_set_pipeline(stream, 84, 42));
+    AT(dvz_drp2_stream_set_bind_group(stream, 84, 0, 61));
+    AT(dvz_drp2_stream_draw(stream, 84, 3, 1, 0, 0));
+    AT(dvz_drp2_stream_end_render_pass(stream, 84));
+    AT(dvz_drp2_stream_copy_texture_to_buffer(stream, 80, ids.rt, 70, 0, 1, 1, 4, 1));
+    AT(dvz_drp2_stream_finish_command_encoder(stream, 80, 85));
+    AT(dvz_drp2_stream_queue_submit(stream, 85, 86));
+    return 0;
+}
+
+
+
+/**
+ * Lower the focused depth-peeling graph descriptor into a DRP2 command stream.
+ *
+ * @param plan the graph-only frame plan
+ * @param out_stream output command stream owned by the caller
+ * @return 0 on success
+ */
+static int _depth_peel_graph_to_drp2(
+    const DvzFramePlan* plan, DvzDrp2CommandStream** out_stream)
+{
+    ANN(plan);
+    ANN(out_stream);
+
+    SceneDepthPeelResourceIds ids = {
+        .rt = _depth_peel_resource_id("rt"),
+        .depth = _depth_peel_resource_id("panel0.depth.opaque"),
+        .front_ping = _depth_peel_resource_id("panel0.peel.front_ping"),
+        .back_ping = _depth_peel_resource_id("panel0.peel.back_ping"),
+        .depth_ping = _depth_peel_resource_id("panel0.peel.depth_ping"),
+        .front_pong = _depth_peel_resource_id("panel0.peel.front_pong"),
+        .back_pong = _depth_peel_resource_id("panel0.peel.back_pong"),
+        .depth_pong = _depth_peel_resource_id("panel0.peel.depth_pong"),
+    };
+
+    DvzDrp2CommandStream* stream = dvz_drp2_stream();
+    ANN(stream);
+    AT(dvz_drp2_stream_hello_renderer(stream, "scene-graph-test"));
+    AT(dvz_drp2_stream_renderer_hello_reply(stream, "test-renderer"));
+
+    AT(_depth_peel_emit_pipeline_setup(stream) == 0);
+    AT(_depth_peel_emit_graph_resources(stream, plan) == 0);
+    AT(dvz_drp2_stream_create_buffer(
+        stream, 70, 4, DVZ_DRP2_BUFFER_USAGE_COPY_DST | DVZ_DRP2_BUFFER_USAGE_MAP_READ));
+    AT(_depth_peel_emit_bind_groups(stream, ids) == 0);
+    AT(_depth_peel_emit_graph_passes(stream, plan, ids) == 0);
+    *out_stream = stream;
+    return 0;
+}
+
+
+
+/**
+ * Verify the lowered stream preserves graph resource ids in passes and bind groups.
+ *
+ * @param stream the stream to inspect
+ * @return 0 on success
+ */
+static int _assert_depth_peel_graph_stream_shape(const DvzDrp2CommandStream* stream)
+{
+    ANN(stream);
+
+    uint32_t named_depth_passes = 0;
+    uint32_t three_color_passes = 0;
+    uint32_t raster_pipelines = 0;
+    bool sampled_ping = false;
+    bool sampled_pong = false;
+
+    for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
+    {
+        const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream, i);
+        ANN(cmd);
+        if (cmd->type == DVZ_DRP2_COMMAND_BEGIN_RENDER_PASS)
+        {
+            if (cmd->u.begin_render_pass.depth_texture_id == 51)
+                named_depth_passes++;
+            if (cmd->u.begin_render_pass.color_attachment_count == 3)
+                three_color_passes++;
+        }
+        else if (cmd->type == DVZ_DRP2_COMMAND_CREATE_RENDER_PIPELINE)
+        {
+            if (cmd->u.create_render_pipeline.has_raster_state)
+                raster_pipelines++;
+        }
+        else if (cmd->type == DVZ_DRP2_COMMAND_CREATE_BIND_GROUP)
+        {
+            const DvzDrp2BindGroupEntry* entries = cmd->u.create_bind_group.entries;
+            if (cmd->u.create_bind_group.id == 60)
+                sampled_ping = entries[0].resource_id == 52 && entries[1].resource_id == 53 &&
+                               entries[2].resource_id == 54;
+            if (cmd->u.create_bind_group.id == 61)
+                sampled_pong = entries[0].resource_id == 55 && entries[1].resource_id == 56 &&
+                               entries[2].resource_id == 57;
+        }
+    }
+
+    AT(named_depth_passes == 3);
+    AT(three_color_passes == 2);
+    AT(raster_pipelines == 2);
+    AT(sampled_ping);
+    AT(sampled_pong);
+    return 0;
+}
+
+
+#endif
 
 
 
@@ -900,6 +1513,77 @@ int test_frame_plan_emitter_runtime_compute_two_frames_glsl_executes(
     dvz_gpu_ctx_destroy(ctx);
     return 0;
 }
+
+
+#if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
+int test_frame_plan_emit_drp2_depth_peeling_graph_executes(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    if (!_scene_vklite_runtime_available())
+        return 0;
+
+    DvzFramePlan* plan = NULL;
+    AT(_depth_peel_frame_plan_graph(&plan) == 0);
+    ANN(plan);
+
+    DvzDiagnosticReport report = {0};
+    dvz_diagnostic_report_init(&report);
+    AT(dvz_frame_plan_graph_validate(plan, &report));
+    AT(dvz_diagnostic_report_count(&report) == 0);
+
+    DvzDrp2CommandStream* stream = NULL;
+    AT(_depth_peel_graph_to_drp2(plan, &stream) == 0);
+    ANN(stream);
+    AT(_assert_depth_peel_graph_stream_shape(stream) == 0);
+
+    DvzDrp2ValidationResult validation = dvz_drp2_validate_stream(stream);
+    AT(validation.ok);
+    AT(validation.code == DVZ_DRP2_VALIDATION_OK);
+
+    DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
+    VkPhysicalDeviceFeatures features10 = {0};
+    features10.independentBlend = true;
+    dvz_gpu_ctx_config_features10(&gpu_cfg, &features10);
+    VkPhysicalDeviceVulkan13Features features13 = {
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES};
+    features13.dynamicRendering = true;
+    features13.synchronization2 = true;
+    dvz_gpu_ctx_config_features13(&gpu_cfg, &features13);
+    DvzGpuCtx* ctx = dvz_gpu_ctx(&gpu_cfg);
+    if (ctx == NULL)
+    {
+        log_warn("scene depth-peeling graph DRP2 test skipped because GPU context creation failed");
+        dvz_drp2_stream_destroy(stream);
+        dvz_frame_plan_destroy(plan);
+        return 0;
+    }
+
+    DvzDrp2RuntimeConfig runtime_cfg =
+        dvz_drp2_runtime_vklite_config(dvz_gpu_ctx_device(ctx), dvz_gpu_ctx_alloc(ctx));
+    DvzDrp2Runtime* runtime = dvz_drp2_runtime_vklite(&runtime_cfg);
+    ANN(runtime);
+
+    DvzDrp2ValidationResult result = dvz_drp2_runtime_execute(runtime, stream);
+    AT(result.ok);
+    AT(result.code == DVZ_DRP2_VALIDATION_OK);
+    AT(dvz_gpu_ctx_error_count(ctx) == 0);
+
+    uint8_t resolved[4] = {0};
+    AT(_dvz_drp2_runtime_vklite_download_buffer(runtime, 70, 0, 4, resolved));
+    AT(resolved[0] > 0);
+    AT(resolved[1] > 0);
+    AT(resolved[2] > 0);
+    AT(resolved[3] == 255);
+
+    dvz_drp2_runtime_destroy(runtime);
+    dvz_drp2_stream_destroy(stream);
+    dvz_frame_plan_destroy(plan);
+    dvz_gpu_ctx_destroy(ctx);
+    return 0;
+}
+#endif
 
 
 int test_scene_drp2_offscreen_canvas_frame(TstSuite* suite, TstItem* item)
@@ -1893,6 +2577,7 @@ int test_scene_frame_plan_emit(TstSuite* suite)
     TEST_SIMPLE(test_frame_plan_emitter_runtime_dynamic_two_frames_glsl_executes);
     TEST_SIMPLE(test_frame_plan_emitter_runtime_texture_two_frames_glsl_executes);
     TEST_SIMPLE(test_frame_plan_emitter_runtime_compute_two_frames_glsl_executes);
+    TEST_SIMPLE(test_frame_plan_emit_drp2_depth_peeling_graph_executes);
     TEST_SIMPLE(test_scene_drp2_offscreen_canvas_frame);
 #endif
     TEST_SIMPLE(test_frame_plan_emit_drp2_readback);
