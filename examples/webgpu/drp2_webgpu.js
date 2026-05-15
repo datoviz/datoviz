@@ -662,14 +662,23 @@ class PanzoomInteraction {
     this.offsetX = 0;
     this.offsetY = 0;
     this.dragging = false;
+    this.dragButton = -1;
     this.lastX = 0;
     this.lastY = 0;
+    this.pressX = 0;
+    this.pressY = 0;
+    this.pressNdcX = 0;
+    this.pressNdcY = 0;
+    this.pressScale = 1;
+    this.pressOffsetX = 0;
+    this.pressOffsetY = 0;
 
     this.onPointerDown = this.onPointerDown.bind(this);
     this.onPointerMove = this.onPointerMove.bind(this);
     this.onPointerUp = this.onPointerUp.bind(this);
     this.onWheel = this.onWheel.bind(this);
     this.onDoubleClick = this.onDoubleClick.bind(this);
+    this.onContextMenu = this.onContextMenu.bind(this);
 
     canvas.addEventListener("pointerdown", this.onPointerDown);
     canvas.addEventListener("pointermove", this.onPointerMove);
@@ -677,6 +686,7 @@ class PanzoomInteraction {
     canvas.addEventListener("pointercancel", this.onPointerUp);
     canvas.addEventListener("wheel", this.onWheel, { passive: false });
     canvas.addEventListener("dblclick", this.onDoubleClick);
+    canvas.addEventListener("contextmenu", this.onContextMenu);
   }
 
   destroy() {
@@ -686,6 +696,7 @@ class PanzoomInteraction {
     canvas.removeEventListener("pointercancel", this.onPointerUp);
     canvas.removeEventListener("wheel", this.onWheel);
     canvas.removeEventListener("dblclick", this.onDoubleClick);
+    canvas.removeEventListener("contextmenu", this.onContextMenu);
   }
 
   reset() {
@@ -696,12 +707,21 @@ class PanzoomInteraction {
   }
 
   onPointerDown(event) {
-    if (event.button !== 0) {
+    if (event.button !== 0 && event.button !== 2) {
       return;
     }
     this.dragging = true;
+    this.dragButton = event.button;
     this.lastX = event.clientX;
     this.lastY = event.clientY;
+    this.pressX = event.clientX;
+    this.pressY = event.clientY;
+    const ndc = eventNdc(event);
+    this.pressNdcX = ndc.x;
+    this.pressNdcY = ndc.y;
+    this.pressScale = this.scale;
+    this.pressOffsetX = this.offsetX;
+    this.pressOffsetY = this.offsetY;
     canvas.setPointerCapture(event.pointerId);
   }
 
@@ -714,8 +734,17 @@ class PanzoomInteraction {
     const dy = event.clientY - this.lastY;
     this.lastX = event.clientX;
     this.lastY = event.clientY;
-    this.offsetX += (2 * dx) / Math.max(1, rect.width);
-    this.offsetY -= (2 * dy) / Math.max(1, rect.height);
+    if (this.dragButton === 0) {
+      this.offsetX += (2 * dx) / Math.max(1, rect.width);
+      this.offsetY -= (2 * dy) / Math.max(1, rect.height);
+    } else if (this.dragButton === 2) {
+      const shiftY = -2 * (event.clientY - this.pressY) / Math.max(1, rect.height);
+      const factor = Math.exp(2.5 * shiftY);
+      this.scale = clamp(this.pressScale * factor, 0.05, 100);
+      const ratio = this.scale / this.pressScale;
+      this.offsetX = this.pressNdcX - (this.pressNdcX - this.pressOffsetX) * ratio;
+      this.offsetY = this.pressNdcY - (this.pressNdcY - this.pressOffsetY) * ratio;
+    }
     this.requestRender();
   }
 
@@ -724,6 +753,7 @@ class PanzoomInteraction {
       return;
     }
     this.dragging = false;
+    this.dragButton = -1;
     if (canvas.hasPointerCapture(event.pointerId)) {
       canvas.releasePointerCapture(event.pointerId);
     }
@@ -743,6 +773,10 @@ class PanzoomInteraction {
 
   onDoubleClick() {
     this.reset();
+  }
+
+  onContextMenu(event) {
+    event.preventDefault();
   }
 
   beforeRender(runtime) {
@@ -1656,7 +1690,8 @@ async function main() {
         interaction = new PanzoomInteraction(config.interactive, () => {
           render().catch((error) => setStatus(error.message, true));
         });
-        interactionHelpEl.textContent = "drag to pan, wheel to zoom, double-click to reset";
+        interactionHelpEl.textContent =
+          "left-drag to pan, right-drag/wheel to zoom, double-click to reset";
       } else {
         interactionHelpEl.textContent = "";
       }
