@@ -93,6 +93,7 @@ struct DvzVisualTexture
     bool field_dirty;
     bool field_dirty_full;
     DvzFieldRegion field_dirty_region;
+    uint64_t version;           /* increments when texture payload semantics change */
 };
 
 
@@ -389,8 +390,13 @@ struct DvzSceneRequestExecutor
     DvzDrp2Runtime* runtime;
     DvzFramePlanEmitter* emitter;
     DvzDrp2RuntimeConfig runtime_cfg;
+    DvzVisual* image_probe_visual;
+    uint64_t image_probe_position_version;
+    uint64_t image_probe_texcoord_version;
+    uint64_t image_probe_texture_version;
     uint32_t runtime_create_count;
     uint32_t emitter_create_count;
+    uint32_t image_probe_static_upload_count;
 };
 
 
@@ -458,6 +464,7 @@ struct DvzVisualAttr
     DvzVisualAttrMutability mutability;
     uint64_t dirty_first_item;  /* first dirty item index */
     uint64_t dirty_item_count;  /* number of dirty items (0 = not dirty) */
+    uint64_t version;           /* increments when dense or bound payload changes */
 };
 
 
@@ -692,7 +699,7 @@ bool _scene_point_pick_cpu(
 void _scene_pick_trace(const char* format, ...);
 bool _scene_image_probe_plan(
     const DvzPanel* panel, DvzVisual* visual, const DvzPendingProbeRequest* pending,
-    const vec2 request_ndc, DvzSceneProbePlan* out_plan);
+    const vec2 request_ndc, bool include_static_uploads, DvzSceneProbePlan* out_plan);
 void _scene_probe_plan_destroy(DvzSceneProbePlan* plan);
 void _scene_request_executor_init(DvzSceneRequestExecutor* executor);
 void _scene_request_executor_destroy(DvzSceneRequestExecutor* executor);

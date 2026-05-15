@@ -989,6 +989,7 @@ int test_scene_image_probe_reuses_retained_request_executor(TstSuite* suite, Tst
     AT(_dvz_figure_process_requests_with_executor(figure, runtime, &executor, &caps) == 1);
     AT(executor.runtime_create_count == 1);
     AT(executor.emitter_create_count == 1);
+    AT(executor.image_probe_static_upload_count == 1);
     uint64_t rb_id = dvz_frame_plan_emitter_object_id(executor.emitter, "_rb");
     AT(rb_id != 0);
     DvzProbeResult probe = {0};
@@ -999,6 +1000,18 @@ int test_scene_image_probe_reuses_retained_request_executor(TstSuite* suite, Tst
     AT(_dvz_figure_process_requests_with_executor(figure, runtime, &executor, &caps) == 1);
     AT(executor.runtime_create_count == 1);
     AT(executor.emitter_create_count == 1);
+    AT(executor.image_probe_static_upload_count == 1);
+    AT(dvz_frame_plan_emitter_object_id(executor.emitter, "_rb") == rb_id);
+    AT(dvz_scene_poll_probe(scene, &probe));
+    AT(!probe.hit);
+
+    pixels[0] = 128;
+    AT(dvz_visual_set_texture(image, pixels, 4, 4) == 0);
+    AT(dvz_panel_probe(panel, 32.0, 32.0, &(DvzProbeRequest){.request_id = 103}) == 0);
+    AT(_dvz_figure_process_requests_with_executor(figure, runtime, &executor, &caps) == 1);
+    AT(executor.runtime_create_count == 1);
+    AT(executor.emitter_create_count == 1);
+    AT(executor.image_probe_static_upload_count == 2);
     AT(dvz_frame_plan_emitter_object_id(executor.emitter, "_rb") == rb_id);
     AT(dvz_scene_poll_probe(scene, &probe));
     AT(!probe.hit);
@@ -1317,7 +1330,7 @@ int test_scene_image_probe_plan_rejects_size_overflow(TstSuite* suite, TstItem* 
 
     tst_log_capture_begin(suite);
     AT_EXPECTED_ERROR_STRICT(
-        suite, !_scene_image_probe_plan(panel, image, &pending, request_ndc, &plan));
+        suite, !_scene_image_probe_plan(panel, image, &pending, request_ndc, true, &plan));
     AT(_captured_log_contains(suite, "image probe request buffer size overflow"));
     AT(plan.plan == NULL);
     AT(plan.probe_positions == NULL);

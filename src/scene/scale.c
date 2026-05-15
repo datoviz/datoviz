@@ -33,6 +33,8 @@ static void _scene_mark_scale_dirty(DvzScale* scale);
 
 static void _scene_mark_colormap_dirty(DvzColormap* colormap);
 
+static void _scene_texture_bump_version(DvzVisual* visual);
+
 
 
 /*************************************************************************************************/
@@ -59,8 +61,23 @@ static void _scene_mark_scale_dirty(DvzScale* scale)
         {
             _scene_visual_texture_mark_clean(visual);
             visual->texture.dirty = true;
+            _scene_texture_bump_version(visual);
         }
     }
+}
+
+
+
+/**
+ * Advance a retained visual texture version.
+ *
+ * @param visual the image visual
+ */
+static void _scene_texture_bump_version(DvzVisual* visual)
+{
+    ANN(visual);
+    visual->texture.version =
+        visual->texture.version == UINT64_MAX ? 1 : visual->texture.version + 1;
 }
 
 

@@ -35,7 +35,7 @@
 
 static bool _scene_execute_readback_plan(
     const DvzScene* scene, DvzSceneRequestExecutor* executor, const DvzCapabilitySnapshot* caps,
-    DvzFramePlan* plan, uint8_t rgba[4]);
+    DvzFramePlan* plan, uint8_t rgba[4], bool* out_executed);
 
 static bool _scene_image_probe_sample_cpu(
     const DvzPanel* panel, DvzVisual* visual, const vec2 request_ndc, uint8_t rgba[4]);
@@ -45,6 +45,18 @@ static bool _scene_runtime_config_matches(
 
 static bool _scene_request_executor_prepare(
     DvzSceneRequestExecutor* executor, DvzDrp2Runtime* source_runtime);
+
+static bool _scene_image_probe_static_versions(
+    const DvzVisual* visual, uint64_t* out_position_version, uint64_t* out_texcoord_version,
+    uint64_t* out_texture_version);
+
+static bool _scene_image_probe_needs_static_upload(
+    const DvzSceneRequestExecutor* executor, const DvzVisual* visual, uint64_t position_version,
+    uint64_t texcoord_version, uint64_t texture_version);
+
+static void _scene_image_probe_mark_static_uploaded(
+    DvzSceneRequestExecutor* executor, DvzVisual* visual, uint64_t position_version,
+    uint64_t texcoord_version, uint64_t texture_version);
 
 static bool _scene_probe_request_has_image_candidate(
     const DvzFigure* figure, const DvzPendingProbeRequest* pending);
@@ -185,17 +197,19 @@ void _scene_request_executor_destroy(DvzSceneRequestExecutor* executor)
  * @param runtime the DRP2 runtime
  * @param caps the capability snapshot
  * @param plan the prepared frame plan
- * @param emitter the frame-plan emitter
  * @param rgba the destination 4-byte readback buffer
+ * @param out_executed whether the stream executed successfully before download
  * @return true on successful execution and download
  */
 static bool _scene_execute_readback_plan(
     const DvzScene* scene, DvzSceneRequestExecutor* executor, const DvzCapabilitySnapshot* caps,
-    DvzFramePlan* plan, uint8_t rgba[4])
+    DvzFramePlan* plan, uint8_t rgba[4], bool* out_executed)
 {
     ANN(executor);
     ANN(caps);
     ANN(rgba);
+    ANN(out_executed);
+    *out_executed = false;
     if (plan == NULL || executor->runtime == NULL || executor->emitter == NULL)
     {
         log_error("scene readback requires a prepared frame plan and emitter");
@@ -230,6 +244,7 @@ static bool _scene_execute_readback_plan(
         }
         else
         {
+            *out_executed = true;
             if (scene != NULL && scene->test.force_readback_download_failure)
             {
                 log_error("scene readback buffer download forced to fail");
@@ -445,6 +460,92 @@ static bool _scene_request_executor_prepare(
 
 
 /**
+ * Return image-probe static resource versions for one visual.
+ *
+ * @param visual the image visual
+ * @param out_position_version position attribute version
+ * @param out_texcoord_version texcoord attribute version
+ * @param out_texture_version texture payload version
+ * @return true when required static resources exist
+ */
+static bool _scene_image_probe_static_versions(
+    const DvzVisual* visual, uint64_t* out_position_version, uint64_t* out_texcoord_version,
+    uint64_t* out_texture_version)
+{
+    ANN(visual);
+    ANN(out_position_version);
+    ANN(out_texcoord_version);
+    ANN(out_texture_version);
+
+    int pos_idx = _attr_index(visual, "position");
+    int uv_idx = _attr_index(visual, "texcoords");
+    if (pos_idx < 0 || uv_idx < 0)
+        return false;
+    const DvzVisualAttr* pos_attr = &visual->attrs[pos_idx];
+    const DvzVisualAttr* uv_attr = &visual->attrs[uv_idx];
+    if (pos_attr->data == NULL || uv_attr->data == NULL || pos_attr->item_count == 0 ||
+        uv_attr->item_count != pos_attr->item_count || pos_attr->item_size != sizeof(vec3) ||
+        uv_attr->item_size != sizeof(vec2))
+    {
+        return false;
+    }
+
+    *out_position_version = pos_attr->version;
+    *out_texcoord_version = uv_attr->version;
+    *out_texture_version = visual->texture.version;
+    return true;
+}
+
+
+
+/**
+ * Return whether the retained image-probe static resources must be refreshed.
+ *
+ * @param executor the retained request executor
+ * @param visual the image visual
+ * @param position_version position attribute version
+ * @param texcoord_version texcoord attribute version
+ * @param texture_version texture payload version
+ * @return true when static uploads are required
+ */
+static bool _scene_image_probe_needs_static_upload(
+    const DvzSceneRequestExecutor* executor, const DvzVisual* visual, uint64_t position_version,
+    uint64_t texcoord_version, uint64_t texture_version)
+{
+    ANN(executor);
+    ANN(visual);
+    return executor->image_probe_visual != visual ||
+           executor->image_probe_position_version != position_version ||
+           executor->image_probe_texcoord_version != texcoord_version ||
+           executor->image_probe_texture_version != texture_version;
+}
+
+
+
+/**
+ * Mark the retained image-probe static resources as current.
+ *
+ * @param executor the retained request executor
+ * @param visual the image visual
+ * @param position_version position attribute version
+ * @param texcoord_version texcoord attribute version
+ * @param texture_version texture payload version
+ */
+static void _scene_image_probe_mark_static_uploaded(
+    DvzSceneRequestExecutor* executor, DvzVisual* visual, uint64_t position_version,
+    uint64_t texcoord_version, uint64_t texture_version)
+{
+    ANN(executor);
+    ANN(visual);
+    executor->image_probe_visual = visual;
+    executor->image_probe_position_version = position_version;
+    executor->image_probe_texcoord_version = texcoord_version;
+    executor->image_probe_texture_version = texture_version;
+}
+
+
+
+/**
  * Return whether one pending probe has a visible image candidate that may need GPU readback.
  *
  * @param figure figure whose request queue is being processed
@@ -610,13 +711,33 @@ static bool _scene_process_image_probe_request(
             continue;
         }
 
+        uint64_t position_version = 0;
+        uint64_t texcoord_version = 0;
+        uint64_t texture_version = 0;
+        if (!_scene_image_probe_static_versions(
+                visual, &position_version, &texcoord_version, &texture_version))
+        {
+            continue;
+        }
+
+        bool include_static_uploads = _scene_image_probe_needs_static_upload(
+            executor, visual, position_version, texcoord_version, texture_version);
+
         DvzSceneProbePlan probe_plan = {0};
-        if (!_scene_image_probe_plan(panel, visual, pending, request_ndc, &probe_plan))
+        if (!_scene_image_probe_plan(
+                panel, visual, pending, request_ndc, include_static_uploads, &probe_plan))
             continue;
 
         uint8_t rgba[4] = {0};
+        bool executed = false;
         bool readback_ok = _scene_execute_readback_plan(
-            scene, executor, caps, probe_plan.plan, rgba);
+            scene, executor, caps, probe_plan.plan, rgba, &executed);
+        if (executed && include_static_uploads)
+        {
+            _scene_image_probe_mark_static_uploaded(
+                executor, visual, position_version, texcoord_version, texture_version);
+            executor->image_probe_static_upload_count++;
+        }
         if (readback_ok)
             (void)_scene_image_probe_sample_cpu(panel, visual, request_ndc, rgba);
         bool hit = readback_ok && rgba[3] > 0;

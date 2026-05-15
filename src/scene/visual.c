@@ -582,6 +582,19 @@ static void _primitive_shading_default(DvzPrimitiveShadingState* shading)
 
 
 /**
+ * Advance a retained visual payload version.
+ *
+ * @param version the version counter
+ */
+static void _visual_bump_version(uint64_t* version)
+{
+    ANN(version);
+    *version = *version == UINT64_MAX ? 1 : *version + 1;
+}
+
+
+
+/**
  * Ensure a mesh has a default opaque-white color attribute.
  *
  * @param visual the mesh visual
@@ -615,6 +628,7 @@ static bool _mesh_ensure_default_color(DvzVisual* visual, uint32_t item_count)
     color->item_count = item_count;
     color->dirty_first_item = 0;
     color->dirty_item_count = item_count;
+    _visual_bump_version(&color->version);
     visual->mesh_default_color = true;
     return true;
 }
@@ -1114,6 +1128,7 @@ bool dvz_visual_set_attr_buffer(
     attr->item_count = item_count;
     attr->dirty_first_item = 0;
     attr->dirty_item_count = 0;
+    _visual_bump_version(&attr->version);
     return true;
 }
 
@@ -1201,6 +1216,7 @@ int dvz_visual_set_data(
     attr->item_count       = item_count;
     attr->dirty_first_item = 0;
     attr->dirty_item_count = item_count; /* whole buffer dirty */
+    _visual_bump_version(&attr->version);
     if (visual->type == DVZ_VISUAL_TYPE_MESH && strcmp(attr_name, "position") == 0)
     {
         DvzVisualAttr* color = _attr_get_or_create(visual, "color", 4 * sizeof(uint8_t));
@@ -1337,6 +1353,7 @@ int dvz_visual_set_data_range(
     }
     if (visual->type == DVZ_VISUAL_TYPE_MESH && strcmp(attr_name, "color") == 0)
         visual->mesh_default_color = false;
+    _visual_bump_version(&attr->version);
     return 0;
 }
 
@@ -1501,6 +1518,7 @@ int dvz_visual_set_scale(DvzVisual* visual, const char* slot_name, DvzScale* sca
     {
         _scene_visual_texture_mark_clean(visual);
         visual->texture.dirty = true;
+        _visual_bump_version(&visual->texture.version);
     }
     return 0;
 }
