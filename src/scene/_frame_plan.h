@@ -25,6 +25,10 @@
 /*************************************************************************************************/
 
 #define DVZ_FRAME_PLAN_INITIAL_NODE_CAPACITY 32
+#define DVZ_FRAME_PLAN_INITIAL_GRAPH_RESOURCE_CAPACITY 16
+#define DVZ_FRAME_PLAN_INITIAL_GRAPH_PASS_CAPACITY 16
+#define DVZ_FRAME_PLAN_MAX_GRAPH_ACCESSES 8
+#define DVZ_FRAME_PLAN_MAX_GRAPH_COLOR_ATTACHMENTS 4
 
 
 
@@ -53,6 +57,174 @@ typedef enum
     DVZ_FRAME_PLAN_RESOURCE_KIND_BUFFER,
     DVZ_FRAME_PLAN_RESOURCE_KIND_TEXTURE_2D,
 } DvzFramePlanResourceKind;
+
+
+typedef enum
+{
+    DVZ_FRAME_GRAPH_RESOURCE_NONE = 0,
+    DVZ_FRAME_GRAPH_RESOURCE_BUFFER,
+    DVZ_FRAME_GRAPH_RESOURCE_TEXTURE,
+    DVZ_FRAME_GRAPH_RESOURCE_EXTERNAL_TARGET,
+} DvzFrameGraphResourceKind;
+
+
+
+typedef enum
+{
+    DVZ_FRAME_GRAPH_EXTENT_NONE = 0,
+    DVZ_FRAME_GRAPH_EXTENT_FIGURE,
+    DVZ_FRAME_GRAPH_EXTENT_PANEL,
+    DVZ_FRAME_GRAPH_EXTENT_FIXED,
+    DVZ_FRAME_GRAPH_EXTENT_RESOURCE_REF,
+} DvzFrameGraphExtentKind;
+
+
+
+typedef enum
+{
+    DVZ_FRAME_GRAPH_RESOURCE_LIFETIME_NONE = 0,
+    DVZ_FRAME_GRAPH_RESOURCE_LIFETIME_BORROWED,
+    DVZ_FRAME_GRAPH_RESOURCE_LIFETIME_PER_FRAME,
+    DVZ_FRAME_GRAPH_RESOURCE_LIFETIME_PERSISTENT,
+} DvzFrameGraphResourceLifetime;
+
+
+
+typedef enum
+{
+    DVZ_FRAME_GRAPH_RESOURCE_USAGE_NONE = 0x00u,
+    DVZ_FRAME_GRAPH_RESOURCE_USAGE_COLOR_ATTACHMENT = 0x01u,
+    DVZ_FRAME_GRAPH_RESOURCE_USAGE_DEPTH_ATTACHMENT = 0x02u,
+    DVZ_FRAME_GRAPH_RESOURCE_USAGE_SAMPLED = 0x04u,
+    DVZ_FRAME_GRAPH_RESOURCE_USAGE_STORAGE = 0x08u,
+    DVZ_FRAME_GRAPH_RESOURCE_USAGE_COPY_SRC = 0x10u,
+    DVZ_FRAME_GRAPH_RESOURCE_USAGE_COPY_DST = 0x20u,
+} DvzFrameGraphResourceUsage;
+
+
+
+typedef enum
+{
+    DVZ_FRAME_GRAPH_PASS_NONE = 0,
+    DVZ_FRAME_GRAPH_PASS_RENDER,
+    DVZ_FRAME_GRAPH_PASS_COMPUTE,
+    DVZ_FRAME_GRAPH_PASS_COPY,
+    DVZ_FRAME_GRAPH_PASS_READBACK,
+    DVZ_FRAME_GRAPH_PASS_CLEAR,
+} DvzFrameGraphPassKind;
+
+
+
+typedef enum
+{
+    DVZ_FRAME_GRAPH_ACCESS_NONE = 0,
+    DVZ_FRAME_GRAPH_ACCESS_SAMPLED,
+    DVZ_FRAME_GRAPH_ACCESS_STORAGE_READ,
+    DVZ_FRAME_GRAPH_ACCESS_STORAGE_WRITE,
+    DVZ_FRAME_GRAPH_ACCESS_COLOR_ATTACHMENT,
+    DVZ_FRAME_GRAPH_ACCESS_DEPTH_ATTACHMENT_READ,
+    DVZ_FRAME_GRAPH_ACCESS_DEPTH_ATTACHMENT_WRITE,
+    DVZ_FRAME_GRAPH_ACCESS_COPY_SRC,
+    DVZ_FRAME_GRAPH_ACCESS_COPY_DST,
+} DvzFrameGraphAccessUsage;
+
+
+
+typedef enum
+{
+    DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_CLEAR = 0,
+    DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_LOAD,
+    DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_DONT_CARE,
+} DvzFrameGraphAttachmentLoadOp;
+
+
+
+typedef enum
+{
+    DVZ_FRAME_GRAPH_ATTACHMENT_STORE_STORE = 0,
+    DVZ_FRAME_GRAPH_ATTACHMENT_STORE_DONT_CARE,
+} DvzFrameGraphAttachmentStoreOp;
+
+
+
+typedef enum
+{
+    DVZ_FRAME_GRAPH_ATTACHMENT_ACCESS_NONE = 0,
+    DVZ_FRAME_GRAPH_ATTACHMENT_ACCESS_READ,
+    DVZ_FRAME_GRAPH_ATTACHMENT_ACCESS_WRITE,
+    DVZ_FRAME_GRAPH_ATTACHMENT_ACCESS_READ_WRITE,
+} DvzFrameGraphAttachmentAccess;
+
+
+
+typedef struct DvzFrameGraphResource
+{
+    char id[DVZ_SCENE_LABEL_SIZE];
+    DvzFrameGraphResourceKind kind;
+    uint32_t format;
+    DvzFrameGraphExtentKind extent_kind;
+    uint32_t width;
+    uint32_t height;
+    uint32_t depth;
+    char extent_resource_id[DVZ_SCENE_LABEL_SIZE];
+    uint32_t usage_flags;
+    DvzFrameGraphResourceLifetime lifetime;
+} DvzFrameGraphResource;
+
+
+
+typedef struct DvzFrameGraphAccess
+{
+    char resource_id[DVZ_SCENE_LABEL_SIZE];
+    DvzFrameGraphAccessUsage usage;
+} DvzFrameGraphAccess;
+
+
+
+typedef struct DvzFrameGraphAttachment
+{
+    char resource_id[DVZ_SCENE_LABEL_SIZE];
+    DvzFrameGraphAttachmentLoadOp load_op;
+    DvzFrameGraphAttachmentStoreOp store_op;
+    DvzFrameGraphAttachmentAccess access;
+    float clear_color[4];
+    float clear_depth;
+    uint32_t clear_stencil;
+} DvzFrameGraphAttachment;
+
+
+
+typedef struct DvzFrameGraphRect
+{
+    float x;
+    float y;
+    float width;
+    float height;
+} DvzFrameGraphRect;
+
+
+
+typedef struct DvzFrameGraphPass
+{
+    char id[DVZ_SCENE_LABEL_SIZE];
+    DvzFrameGraphPassKind kind;
+    char panel_id[DVZ_SCENE_LABEL_SIZE];
+    bool has_viewport;
+    DvzFrameGraphRect viewport;
+    bool has_scissor;
+    DvzFrameGraphRect scissor;
+    uint32_t read_count;
+    DvzFrameGraphAccess reads[DVZ_FRAME_PLAN_MAX_GRAPH_ACCESSES];
+    uint32_t write_count;
+    DvzFrameGraphAccess writes[DVZ_FRAME_PLAN_MAX_GRAPH_ACCESSES];
+    uint32_t color_attachment_count;
+    DvzFrameGraphAttachment color_attachments[DVZ_FRAME_PLAN_MAX_GRAPH_COLOR_ATTACHMENTS];
+    bool has_depth_attachment;
+    DvzFrameGraphAttachment depth_attachment;
+    bool has_stencil_attachment;
+    DvzFrameGraphAttachment stencil_attachment;
+    char work_label[DVZ_SCENE_LABEL_SIZE];
+} DvzFrameGraphPass;
 
 
 
@@ -182,6 +354,12 @@ struct DvzFramePlan
     uint32_t capacity;
     uint32_t count;
     DvzFramePlanNode* nodes;
+    uint32_t graph_resource_capacity;
+    uint32_t graph_resource_count;
+    DvzFrameGraphResource* graph_resources;
+    uint32_t graph_pass_capacity;
+    uint32_t graph_pass_count;
+    DvzFrameGraphPass* graph_passes;
 };
 
 
@@ -207,3 +385,30 @@ bool dvz_frame_plan_render_visual_metadata(
     DvzFramePlan* plan, const DvzFramePlanVisualMeta* metadata);
 
 bool dvz_frame_plan_upload_metadata(DvzFramePlan* plan, const DvzFramePlanUploadMeta* metadata);
+
+bool dvz_frame_plan_graph_resource(DvzFramePlan* plan, const DvzFrameGraphResource* resource);
+
+uint32_t dvz_frame_plan_graph_resource_count(const DvzFramePlan* plan);
+
+const DvzFrameGraphResource*
+dvz_frame_plan_graph_resource_get(const DvzFramePlan* plan, uint32_t index);
+
+bool dvz_frame_plan_graph_pass(DvzFramePlan* plan, const DvzFrameGraphPass* pass);
+
+uint32_t dvz_frame_plan_graph_pass_count(const DvzFramePlan* plan);
+
+const DvzFrameGraphPass* dvz_frame_plan_graph_pass_get(const DvzFramePlan* plan, uint32_t index);
+
+bool dvz_frame_graph_pass_read(
+    DvzFrameGraphPass* pass, const char* resource_id, DvzFrameGraphAccessUsage usage);
+
+bool dvz_frame_graph_pass_write(
+    DvzFrameGraphPass* pass, const char* resource_id, DvzFrameGraphAccessUsage usage);
+
+bool dvz_frame_graph_pass_color_attachment(
+    DvzFrameGraphPass* pass, const DvzFrameGraphAttachment* attachment);
+
+bool dvz_frame_graph_pass_depth_attachment(
+    DvzFrameGraphPass* pass, const DvzFrameGraphAttachment* attachment);
+
+bool dvz_frame_plan_graph_validate(const DvzFramePlan* plan, DvzDiagnosticReport* report);

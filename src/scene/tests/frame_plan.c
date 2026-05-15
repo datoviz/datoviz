@@ -480,6 +480,223 @@ int test_frame_plan_readbacks(TstSuite* suite, TstItem* item)
 
 
 /**
+ * Ensure the internal FramePlan graph records typed resources, passes, and attachments.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_frame_plan_graph_static_multipass(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzFramePlan* plan = dvz_frame_plan("figure.graph", 12);
+    ANN(plan);
+
+    DvzFrameGraphResource rt = {0};
+    dvz_strlcpy(rt.id, "rt", sizeof(rt.id));
+    rt.kind = DVZ_FRAME_GRAPH_RESOURCE_EXTERNAL_TARGET;
+    rt.extent_kind = DVZ_FRAME_GRAPH_EXTENT_FIGURE;
+    rt.usage_flags =
+        DVZ_FRAME_GRAPH_RESOURCE_USAGE_COLOR_ATTACHMENT | DVZ_FRAME_GRAPH_RESOURCE_USAGE_COPY_SRC;
+    rt.lifetime = DVZ_FRAME_GRAPH_RESOURCE_LIFETIME_BORROWED;
+    AT(dvz_frame_plan_graph_resource(plan, &rt));
+
+    DvzFrameGraphResource depth = {0};
+    dvz_strlcpy(depth.id, "panel0.depth.opaque", sizeof(depth.id));
+    depth.kind = DVZ_FRAME_GRAPH_RESOURCE_TEXTURE;
+    depth.extent_kind = DVZ_FRAME_GRAPH_EXTENT_PANEL;
+    depth.usage_flags = DVZ_FRAME_GRAPH_RESOURCE_USAGE_DEPTH_ATTACHMENT |
+                        DVZ_FRAME_GRAPH_RESOURCE_USAGE_SAMPLED;
+    depth.lifetime = DVZ_FRAME_GRAPH_RESOURCE_LIFETIME_PER_FRAME;
+    AT(dvz_frame_plan_graph_resource(plan, &depth));
+
+    DvzFrameGraphResource accum = {0};
+    dvz_strlcpy(accum.id, "panel0.wboit.accum", sizeof(accum.id));
+    accum.kind = DVZ_FRAME_GRAPH_RESOURCE_TEXTURE;
+    accum.extent_kind = DVZ_FRAME_GRAPH_EXTENT_PANEL;
+    accum.usage_flags = DVZ_FRAME_GRAPH_RESOURCE_USAGE_COLOR_ATTACHMENT |
+                        DVZ_FRAME_GRAPH_RESOURCE_USAGE_SAMPLED;
+    accum.lifetime = DVZ_FRAME_GRAPH_RESOURCE_LIFETIME_PER_FRAME;
+    AT(dvz_frame_plan_graph_resource(plan, &accum));
+
+    DvzFrameGraphAttachment rt_clear = {0};
+    dvz_strlcpy(rt_clear.resource_id, "rt", sizeof(rt_clear.resource_id));
+    rt_clear.load_op = DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_CLEAR;
+    rt_clear.store_op = DVZ_FRAME_GRAPH_ATTACHMENT_STORE_STORE;
+    rt_clear.access = DVZ_FRAME_GRAPH_ATTACHMENT_ACCESS_WRITE;
+
+    DvzFrameGraphAttachment depth_clear = {0};
+    dvz_strlcpy(depth_clear.resource_id, "panel0.depth.opaque", sizeof(depth_clear.resource_id));
+    depth_clear.load_op = DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_CLEAR;
+    depth_clear.store_op = DVZ_FRAME_GRAPH_ATTACHMENT_STORE_STORE;
+    depth_clear.access = DVZ_FRAME_GRAPH_ATTACHMENT_ACCESS_WRITE;
+    depth_clear.clear_depth = 1.0f;
+
+    DvzFrameGraphAttachment accum_clear = {0};
+    dvz_strlcpy(accum_clear.resource_id, "panel0.wboit.accum", sizeof(accum_clear.resource_id));
+    accum_clear.load_op = DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_CLEAR;
+    accum_clear.store_op = DVZ_FRAME_GRAPH_ATTACHMENT_STORE_STORE;
+    accum_clear.access = DVZ_FRAME_GRAPH_ATTACHMENT_ACCESS_WRITE;
+
+    DvzFrameGraphPass opaque = {0};
+    dvz_strlcpy(opaque.id, "panel0.opaque", sizeof(opaque.id));
+    dvz_strlcpy(opaque.panel_id, "panel.0", sizeof(opaque.panel_id));
+    dvz_strlcpy(opaque.work_label, "draws", sizeof(opaque.work_label));
+    opaque.kind = DVZ_FRAME_GRAPH_PASS_RENDER;
+    opaque.has_viewport = true;
+    opaque.viewport = (DvzFrameGraphRect){0.0f, 0.0f, 128.0f, 96.0f};
+    opaque.has_scissor = true;
+    opaque.scissor = (DvzFrameGraphRect){0.0f, 0.0f, 128.0f, 96.0f};
+    AT(dvz_frame_graph_pass_color_attachment(&opaque, &rt_clear));
+    AT(dvz_frame_graph_pass_depth_attachment(&opaque, &depth_clear));
+    AT(dvz_frame_plan_graph_pass(plan, &opaque));
+
+    DvzFrameGraphPass accum_pass = {0};
+    dvz_strlcpy(accum_pass.id, "panel0.wboit.accum", sizeof(accum_pass.id));
+    dvz_strlcpy(accum_pass.panel_id, "panel.0", sizeof(accum_pass.panel_id));
+    dvz_strlcpy(accum_pass.work_label, "draws", sizeof(accum_pass.work_label));
+    accum_pass.kind = DVZ_FRAME_GRAPH_PASS_RENDER;
+    AT(dvz_frame_graph_pass_color_attachment(&accum_pass, &accum_clear));
+    AT(dvz_frame_plan_graph_pass(plan, &accum_pass));
+
+    DvzFrameGraphAttachment rt_load = {0};
+    dvz_strlcpy(rt_load.resource_id, "rt", sizeof(rt_load.resource_id));
+    rt_load.load_op = DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_LOAD;
+    rt_load.store_op = DVZ_FRAME_GRAPH_ATTACHMENT_STORE_STORE;
+    rt_load.access = DVZ_FRAME_GRAPH_ATTACHMENT_ACCESS_WRITE;
+
+    DvzFrameGraphPass resolve = {0};
+    dvz_strlcpy(resolve.id, "panel0.wboit.resolve", sizeof(resolve.id));
+    dvz_strlcpy(resolve.panel_id, "panel.0", sizeof(resolve.panel_id));
+    dvz_strlcpy(resolve.work_label, "draws", sizeof(resolve.work_label));
+    resolve.kind = DVZ_FRAME_GRAPH_PASS_RENDER;
+    AT(dvz_frame_graph_pass_read(
+        &resolve, "panel0.wboit.accum", DVZ_FRAME_GRAPH_ACCESS_SAMPLED));
+    AT(dvz_frame_graph_pass_color_attachment(&resolve, &rt_load));
+    AT(dvz_frame_plan_graph_pass(plan, &resolve));
+
+    AT(dvz_frame_plan_graph_resource_count(plan) == 3);
+    AT(dvz_frame_plan_graph_pass_count(plan) == 3);
+    AT(dvz_frame_plan_graph_resource_get(plan, 2) != NULL);
+    AT(dvz_frame_plan_graph_pass_get(plan, 2) != NULL);
+
+    DvzDiagnosticReport report = {0};
+    dvz_diagnostic_report_init(&report);
+    AT(dvz_frame_plan_graph_validate(plan, &report));
+    AT(dvz_diagnostic_report_count(&report) == 0);
+
+    char* json = dvz_frame_plan_json(plan);
+    ANN(json);
+    AT(strstr(json, "\"graph\"") != NULL);
+    AT(strstr(json, "\"resources\"") != NULL);
+    AT(strstr(json, "\"passes\"") != NULL);
+    AT(strstr(json, "\"id\": \"panel0.wboit.resolve\"") != NULL);
+    AT(strstr(json, "\"viewport\": { \"x\": 0") != NULL);
+    AT(strstr(json, "\"scissor\": { \"x\": 0") != NULL);
+    AT(strstr(json, "\"resource_id\": \"panel0.wboit.accum\"") != NULL);
+    AT(strstr(json, "\"load_op\": \"load\"") != NULL);
+    AT(strstr(json, "\"usage\": \"sampled\"") != NULL);
+
+    dvz_frame_plan_json_destroy(json);
+    dvz_frame_plan_destroy(plan);
+    return 0;
+}
+
+
+/**
+ * Ensure the internal FramePlan graph reports read-before-write mistakes.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_frame_plan_graph_validation_read_before_write(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzFramePlan* plan = dvz_frame_plan("figure.graph.invalid", 13);
+    ANN(plan);
+
+    DvzFrameGraphResource resource = {0};
+    dvz_strlcpy(resource.id, "tex.unwritten", sizeof(resource.id));
+    resource.kind = DVZ_FRAME_GRAPH_RESOURCE_TEXTURE;
+    resource.extent_kind = DVZ_FRAME_GRAPH_EXTENT_PANEL;
+    resource.usage_flags = DVZ_FRAME_GRAPH_RESOURCE_USAGE_SAMPLED;
+    resource.lifetime = DVZ_FRAME_GRAPH_RESOURCE_LIFETIME_PER_FRAME;
+    AT(dvz_frame_plan_graph_resource(plan, &resource));
+
+    DvzFrameGraphPass pass = {0};
+    dvz_strlcpy(pass.id, "panel0.resolve", sizeof(pass.id));
+    pass.kind = DVZ_FRAME_GRAPH_PASS_RENDER;
+    AT(dvz_frame_graph_pass_read(&pass, "tex.unwritten", DVZ_FRAME_GRAPH_ACCESS_SAMPLED));
+    AT(dvz_frame_plan_graph_pass(plan, &pass));
+
+    DvzDiagnosticReport report = {0};
+    dvz_diagnostic_report_init(&report);
+    AT(!dvz_frame_plan_graph_validate(plan, &report));
+    AT(dvz_diagnostic_report_count(&report) >= 1);
+    AT(strcmp(
+           dvz_diagnostic_report_get(&report, 0),
+           "FramePlan graph pass reads resource 'tex.unwritten' before any write") == 0);
+
+    dvz_frame_plan_destroy(plan);
+    return 0;
+}
+
+
+/**
+ * Ensure the internal FramePlan graph rejects attachment usage mismatches.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_frame_plan_graph_validation_missing_usage(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzFramePlan* plan = dvz_frame_plan("figure.graph.usage", 14);
+    ANN(plan);
+
+    DvzFrameGraphResource resource = {0};
+    dvz_strlcpy(resource.id, "tex.sampled.only", sizeof(resource.id));
+    resource.kind = DVZ_FRAME_GRAPH_RESOURCE_TEXTURE;
+    resource.extent_kind = DVZ_FRAME_GRAPH_EXTENT_PANEL;
+    resource.usage_flags = DVZ_FRAME_GRAPH_RESOURCE_USAGE_SAMPLED;
+    resource.lifetime = DVZ_FRAME_GRAPH_RESOURCE_LIFETIME_PER_FRAME;
+    AT(dvz_frame_plan_graph_resource(plan, &resource));
+
+    DvzFrameGraphAttachment attachment = {0};
+    dvz_strlcpy(attachment.resource_id, "tex.sampled.only", sizeof(attachment.resource_id));
+    attachment.load_op = DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_CLEAR;
+    attachment.store_op = DVZ_FRAME_GRAPH_ATTACHMENT_STORE_STORE;
+    attachment.access = DVZ_FRAME_GRAPH_ATTACHMENT_ACCESS_WRITE;
+
+    DvzFrameGraphPass pass = {0};
+    dvz_strlcpy(pass.id, "panel0.render", sizeof(pass.id));
+    pass.kind = DVZ_FRAME_GRAPH_PASS_RENDER;
+    AT(dvz_frame_graph_pass_color_attachment(&pass, &attachment));
+    AT(dvz_frame_plan_graph_pass(plan, &pass));
+
+    DvzDiagnosticReport report = {0};
+    dvz_diagnostic_report_init(&report);
+    AT(!dvz_frame_plan_graph_validate(plan, &report));
+    AT(dvz_diagnostic_report_count(&report) >= 1);
+    AT(strcmp(
+           dvz_diagnostic_report_get(&report, 0),
+           "FramePlan graph resource 'tex.sampled.only' is missing usage for color_attachment") ==
+       0);
+
+    dvz_frame_plan_destroy(plan);
+    return 0;
+}
+
+
+/**
  * Register scene frameplan tests.
  *
  * @param suite the active test suite
@@ -502,6 +719,9 @@ int test_scene_frame_plan(TstSuite* suite)
     TEST_SIMPLE(test_frame_plan_dynamic_update);
     TEST_SIMPLE(test_frame_plan_texture_upload_json_includes_region);
     TEST_SIMPLE(test_frame_plan_readbacks);
+    TEST_SIMPLE(test_frame_plan_graph_static_multipass);
+    TEST_SIMPLE(test_frame_plan_graph_validation_read_before_write);
+    TEST_SIMPLE(test_frame_plan_graph_validation_missing_usage);
 
     return 0;
 }
