@@ -17,6 +17,7 @@
 
 #include "datoviz/app.h"
 #include "datoviz/gui.h"
+#include "datoviz/imgui.h"
 #include "datoviz/scene.h"
 
 
@@ -81,6 +82,8 @@ static void gui_callback(DvzGui* gui, DvzAppWindow* win, void* user_data)
             dvz_gui_text(gui, "mono: Cousine-Regular");
             dvz_gui_pop_font(gui);
         }
+        igSeparator();
+        igTextUnformatted("raw cimgui: igSeparator + igTextUnformatted", NULL);
     }
     dvz_gui_end(gui);
 

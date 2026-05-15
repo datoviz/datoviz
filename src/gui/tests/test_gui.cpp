@@ -24,10 +24,10 @@
 #include "datoviz/app.h"
 #include "datoviz/canvas.h"
 #include "datoviz/gui.h"
+#include "datoviz/imgui.h"
 #include "datoviz/input/pointer.h"
 #include "datoviz/input/router.h"
 #include "datoviz/scene.h"
-#include "imgui.h"
 
 
 
@@ -114,16 +114,23 @@ static void _gui_viewport_resize_callback(DvzGui* gui, DvzAppWindow* win, void* 
 
     if (smoke->frame == 0)
     {
-        ImGui::SetNextWindowSize(ImVec2(360, 260), ImGuiCond_Always);
+        igSetNextWindowSize(ImVec2{360, 260}, ImGuiCond_Always);
     }
     else if (smoke->frame == 1)
     {
-        ImGui::SetNextWindowSize(ImVec2(260, 220), ImGuiCond_Always);
+        igSetNextWindowSize(ImVec2{260, 220}, ImGuiCond_Always);
     }
     else
     {
-        ImGui::SetNextWindowCollapsed(true, ImGuiCond_Always);
+        igSetNextWindowCollapsed(true, ImGuiCond_Always);
     }
+
+    if (igBegin("Raw cimgui smoke", NULL, 0))
+    {
+        igTextUnformatted("ig* raw calls are available", NULL);
+        (void)igButton("raw button", ImVec2{0, 0});
+    }
+    igEnd();
 
     bool shown = dvz_gui_viewport_window(smoke->viewport, "GUI viewport smoke", NULL, 0);
     if (shown)

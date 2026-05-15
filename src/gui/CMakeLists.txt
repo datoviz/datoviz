@@ -23,13 +23,20 @@ set(GUI_EXTERNAL_SRC
     "${PROJECT_SOURCE_DIR}/external/imgui/backends/imgui_impl_vulkan.cpp"
 )
 
+set(CIMGUI_SRC
+    "${PROJECT_SOURCE_DIR}/external/cimgui/cimgui.cpp"
+)
+
 if(CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
     set_source_files_properties(${GUI_EXTERNAL_SRC} PROPERTIES COMPILE_FLAGS "/W0")
+    set_source_files_properties(${CIMGUI_SRC} PROPERTIES COMPILE_FLAGS "/W0")
 else()
     set_source_files_properties(${GUI_EXTERNAL_SRC} PROPERTIES COMPILE_FLAGS "-w")
+    set_source_files_properties(${CIMGUI_SRC} PROPERTIES COMPILE_FLAGS "-w")
 endif()
 
 add_library(datoviz_gui OBJECT ${GUI_SRC})
+add_library(datoviz_cimgui OBJECT ${CIMGUI_SRC})
 
 target_include_directories(datoviz_gui
     PUBLIC
@@ -59,6 +66,19 @@ target_compile_definitions(datoviz_gui PUBLIC
     DVZ_HAS_GUI=1
 )
 
+target_include_directories(datoviz_cimgui
+    PUBLIC
+    ${PROJECT_SOURCE_DIR}/include
+    ${PROJECT_SOURCE_DIR}/external/cimgui
+    ${PROJECT_SOURCE_DIR}/external/cimgui/imgui
+)
+
+target_compile_definitions(datoviz_cimgui PUBLIC
+    ${DVZ_COMPILE_DEFINITIONS}
+    DVZ_HAS_GUI=1
+)
+
 if(WIN32)
     target_compile_definitions(datoviz_gui PRIVATE DVZ_SHARED)
+    target_compile_definitions(datoviz_cimgui PRIVATE DVZ_SHARED)
 endif()

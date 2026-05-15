@@ -315,6 +315,7 @@ set(DVZ_APP_COMPONENTS
 
 set(DVZ_GUI_COMPONENTS
     datoviz_gui
+    datoviz_cimgui
 )
 
 if(NOT DVZ_BUILD_CORE AND (DVZ_BUILD_VK OR DVZ_BUILD_CANVAS))
@@ -361,10 +362,18 @@ if(DVZ_BUILD_GUI AND NOT EXISTS "${PROJECT_SOURCE_DIR}/external/imgui/imgui.h")
     message(FATAL_ERROR "DVZ_BUILD_GUI requires external/imgui.")
 endif()
 
+if(DVZ_BUILD_GUI AND NOT EXISTS "${PROJECT_SOURCE_DIR}/external/cimgui/cimgui.h")
+    message(FATAL_ERROR "DVZ_BUILD_GUI requires external/cimgui.")
+endif()
+
 if(DVZ_BUILD_GUI)
     file(READ "${PROJECT_SOURCE_DIR}/external/imgui/imgui.h" _dvz_imgui_header)
     if(NOT _dvz_imgui_header MATCHES "IMGUI_HAS_DOCK")
         message(FATAL_ERROR "DVZ_BUILD_GUI requires a Dear ImGui docking branch/tag with IMGUI_HAS_DOCK.")
+    endif()
+    file(READ "${PROJECT_SOURCE_DIR}/external/cimgui/cimgui.h" _dvz_cimgui_header)
+    if(NOT _dvz_cimgui_header MATCHES "1\\.91\\.9b" OR NOT _dvz_cimgui_header MATCHES "docking branch")
+        message(FATAL_ERROR "DVZ_BUILD_GUI requires cimgui generated for Dear ImGui 1.91.9b docking.")
     endif()
 endif()
 
@@ -541,6 +550,7 @@ endif()
 target_include_directories(datoviz
     PUBLIC
     $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+    $<$<BOOL:${DVZ_BUILD_GUI}>:$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/external/cimgui>>
     $<INSTALL_INTERFACE:include>
 )
 

@@ -33,6 +33,18 @@ dvz_gui_viewport_window(viewport, "Datoviz viewport", NULL, 0);
 offscreen source app-window.
 
 
+## Raw ImGui C API
+
+Datoviz also exposes the generated cimgui binding through `datoviz/imgui.h`. This is the raw
+version-coupled API with upstream `ig*` names, such as `igBegin()`, `igTextUnformatted()`, and
+`igButton()`. It is intended for advanced code that needs Dear ImGui coverage beyond the curated
+`dvz_gui_*` helpers.
+
+Raw `ig*` calls are valid inside a Datoviz GUI callback because Datoviz sets the current ImGui
+context before invoking user GUI code. The raw layer should not own Datoviz concepts such as
+`DvzGuiViewport`; those remain in `datoviz/gui.h`.
+
+
 ## Input
 
 Mouse input can be forwarded from the ImGui image item to the source input router. This is enabled

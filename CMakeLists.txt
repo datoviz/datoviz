@@ -476,3 +476,10 @@ if(DVZ_BUILD_VK OR DVZ_BUILD_CANVAS)
         DESTINATION include
     )
 endif()
+
+if(DVZ_BUILD_GUI)
+    install(FILES
+        ${PROJECT_SOURCE_DIR}/external/cimgui/cimgui.h
+        DESTINATION include
+    )
+endif()

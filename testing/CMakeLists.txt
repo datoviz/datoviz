@@ -318,6 +318,9 @@ if(_dvz_has_core AND _dvz_has_drp2 AND _dvz_has_scene)
     if(TARGET datoviz_gui)
         target_link_libraries(dvztest_scene PRIVATE datoviz_gui)
     endif()
+    if(TARGET datoviz_cimgui)
+        target_link_libraries(dvztest_scene PRIVATE datoviz_cimgui)
+    endif()
 
     if(_dvz_has_vk)
         target_link_libraries(dvztest_scene PRIVATE datoviz_vk datoviz_vklite datoviz_volk)
@@ -492,7 +495,7 @@ else()
 endif()
 
 if(_dvz_has_core AND _dvz_has_vk AND _dvz_has_canvas)
-    if(_dvz_has_drp2 AND _dvz_has_scene AND _dvz_has_app AND TARGET datoviz_gui)
+    if(_dvz_has_drp2 AND _dvz_has_scene AND _dvz_has_app AND TARGET datoviz_gui AND TARGET datoviz_cimgui)
         add_executable(dvztest_gui
             ${DVZ_TEST_GUI_SOURCES}
             components/dvztest_gui.c
@@ -517,6 +520,7 @@ if(_dvz_has_core AND _dvz_has_vk AND _dvz_has_canvas)
             datoviz_scene
             datoviz_app
             datoviz_gui
+            datoviz_cimgui
             testing
         )
 
@@ -619,6 +623,10 @@ if(_dvz_has_core AND _dvz_has_vk AND _dvz_has_canvas)
         target_link_libraries(dvztest PRIVATE datoviz_gui)
         target_link_libraries(dvztest_integration PRIVATE datoviz_gui)
     endif()
+    if(TARGET datoviz_cimgui)
+        target_link_libraries(dvztest PRIVATE datoviz_cimgui)
+        target_link_libraries(dvztest_integration PRIVATE datoviz_cimgui)
+    endif()
 
     if(DVZ_THREADING_TARGET)
         target_link_libraries(dvztest PRIVATE ${DVZ_THREADING_TARGET})
@@ -663,6 +671,9 @@ if(_dvz_has_core AND _dvz_has_vk AND _dvz_has_canvas)
 
     if(TARGET datoviz_gui)
         target_link_libraries(dvz_live_canvas PRIVATE datoviz_gui)
+    endif()
+    if(TARGET datoviz_cimgui)
+        target_link_libraries(dvz_live_canvas PRIVATE datoviz_cimgui)
     endif()
 
     if(DVZ_THREADING_TARGET)
