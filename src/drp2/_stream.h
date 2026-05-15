@@ -92,6 +92,8 @@ struct DvzDrp2Command
             bool has_depth_attachment;
             bool depth_write_enabled;
             uint32_t depth_compare_op;      /* VkCompareOp */
+            uint32_t color_target_count;
+            DvzDrp2ColorTarget color_targets[DVZ_DRP2_MAX_COLOR_ATTACHMENTS];
             /* Vertex input layout (binding_count==0 → no vertex attributes). */
             uint32_t topology;        /* VkPrimitiveTopology; 0 = TRIANGLE_LIST           */
             uint32_t binding_count;

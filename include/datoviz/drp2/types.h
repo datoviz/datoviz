@@ -41,6 +41,7 @@ typedef struct DvzDrp2BindGroupLayoutEntry DvzDrp2BindGroupLayoutEntry;
 typedef struct DvzDrp2BindGroupEntry DvzDrp2BindGroupEntry;
 typedef struct DvzDrp2ExternalBufferDesc DvzDrp2ExternalBufferDesc;
 typedef struct DvzDrp2ColorAttachment DvzDrp2ColorAttachment;
+typedef struct DvzDrp2ColorTarget DvzDrp2ColorTarget;
 
 
 
@@ -83,4 +84,18 @@ struct DvzDrp2ColorAttachment
     uint64_t texture_id;
     bool clear;
     float clear_color[4];
+};
+
+
+struct DvzDrp2ColorTarget
+{
+    uint32_t format;
+    bool blend_enabled;
+    uint32_t src_color_blend_factor;
+    uint32_t dst_color_blend_factor;
+    uint32_t color_blend_op;
+    uint32_t src_alpha_blend_factor;
+    uint32_t dst_alpha_blend_factor;
+    uint32_t alpha_blend_op;
+    uint32_t color_write_mask;
 };

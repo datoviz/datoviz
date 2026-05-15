@@ -318,7 +318,38 @@ static void _json_append_color_targets(JsonBuilder* builder, const DvzDrp2Comman
 {
     ANN(builder);
     ANN(command);
-    _json_append(builder, ", \"color_targets\": [{ \"format\": \"rgba8unorm\" }]");
+    uint32_t count = command->u.create_render_pipeline.color_target_count;
+    if (count == 0)
+        count = 1;
+    _json_append(builder, ", \"color_targets\": [");
+    for (uint32_t i = 0; i < count; i++)
+    {
+        const DvzDrp2ColorTarget* target = &command->u.create_render_pipeline.color_targets[i];
+        const char* format = "rgba8unorm";
+        if (target->format == VK_FORMAT_R16G16B16A16_SFLOAT)
+            format = "rgba16float";
+        else if (target->format == VK_FORMAT_R16_SFLOAT)
+            format = "r16float";
+        if (i > 0)
+            _json_append(builder, ", ");
+        _json_append(
+            builder, "{ \"format\": \"%s\", \"write_mask\": %" PRIu32, format,
+            target->color_write_mask == 0 ? 0xFu : target->color_write_mask);
+        if (target->blend_enabled)
+        {
+            _json_append(
+                builder,
+                ", \"blend\": { \"color\": { \"src_factor\": %" PRIu32
+                ", \"dst_factor\": %" PRIu32 ", \"operation\": %" PRIu32
+                " }, \"alpha\": { \"src_factor\": %" PRIu32 ", \"dst_factor\": %" PRIu32
+                ", \"operation\": %" PRIu32 " } }",
+                target->src_color_blend_factor, target->dst_color_blend_factor,
+                target->color_blend_op, target->src_alpha_blend_factor,
+                target->dst_alpha_blend_factor, target->alpha_blend_op);
+        }
+        _json_append(builder, " }");
+    }
+    _json_append(builder, "]");
 }
 
 

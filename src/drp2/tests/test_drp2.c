@@ -3255,6 +3255,49 @@ int test_drp2_render_pipeline_step_modes_json(TstSuite* suite, TstItem* item)
 }
 
 
+int test_drp2_render_pipeline_color_targets_json(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzDrp2CommandStream* stream = dvz_drp2_stream();
+    ANN(stream);
+
+    AT(dvz_drp2_stream_create_render_pipeline(stream, 10, 9000, 9001, 0));
+    AT(dvz_drp2_stream_pipeline_set_color_target(
+        stream, 0, VK_FORMAT_R16G16B16A16_SFLOAT));
+    AT(dvz_drp2_stream_pipeline_set_color_target(stream, 1, VK_FORMAT_R16_SFLOAT));
+    AT(dvz_drp2_stream_pipeline_set_color_blend(
+        stream, 0, VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ONE, VK_BLEND_OP_ADD,
+        VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ONE, VK_BLEND_OP_ADD,
+        VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT |
+            VK_COLOR_COMPONENT_A_BIT));
+    AT(dvz_drp2_stream_pipeline_set_color_blend(
+        stream, 1, VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ONE, VK_BLEND_OP_ADD,
+        VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ONE, VK_BLEND_OP_ADD,
+        VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT |
+            VK_COLOR_COMPONENT_A_BIT));
+
+    const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream, 0);
+    ANN(cmd);
+    AT(cmd->u.create_render_pipeline.color_target_count == 2);
+    AT(cmd->u.create_render_pipeline.color_targets[0].format == VK_FORMAT_R16G16B16A16_SFLOAT);
+    AT(cmd->u.create_render_pipeline.color_targets[1].format == VK_FORMAT_R16_SFLOAT);
+    AT(cmd->u.create_render_pipeline.color_targets[0].blend_enabled);
+    AT(cmd->u.create_render_pipeline.color_targets[1].blend_enabled);
+
+    char* json = dvz_drp2_stream_json(stream, "pipeline_color_targets");
+    ANN(json);
+    AT(strstr(json, "\"format\": \"rgba16float\"") != NULL);
+    AT(strstr(json, "\"format\": \"r16float\"") != NULL);
+    AT(strstr(json, "\"blend\"") != NULL);
+
+    dvz_drp2_stream_json_destroy(json);
+    dvz_drp2_stream_destroy(stream);
+    return 0;
+}
+
+
 /**
  * Ensure a linear DRP2 recording round-trips portable commands and payload blobs.
  *
@@ -3454,6 +3497,7 @@ int test_drp2(TstSuite* suite)
     TEST_SIMPLE(test_drp2_write_buffer_bytes_json_encodes_data_raw);
     TEST_SIMPLE(test_drp2_write_buffer_bytes_large_json_roundtrip);
     TEST_SIMPLE(test_drp2_render_pipeline_step_modes_json);
+    TEST_SIMPLE(test_drp2_render_pipeline_color_targets_json);
     TEST_SIMPLE(test_drp2_recording_linear_roundtrip);
     TEST_SIMPLE(test_drp2_begin_render_pass_clear_color_stored);
     TEST_SIMPLE(test_drp2_begin_render_pass_multi_color_attachments);

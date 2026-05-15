@@ -384,6 +384,38 @@ DVZ_EXPORT bool dvz_drp2_stream_pipeline_set_depth_state(
     DvzDrp2CommandStream* stream, bool depth_write_enabled, uint32_t depth_compare_op);
 
 
+/**
+ * Set one color target format on the most recently appended CreateRenderPipeline command.
+ *
+ * @param stream the command stream
+ * @param idx the color target index
+ * @param format backend-native texture format enum value
+ * @return whether the most recent command was a CreateRenderPipeline and was updated
+ */
+DVZ_EXPORT bool dvz_drp2_stream_pipeline_set_color_target(
+    DvzDrp2CommandStream* stream, uint32_t idx, uint32_t format);
+
+
+/**
+ * Set one color target blend state on the most recently appended CreateRenderPipeline command.
+ *
+ * @param stream the command stream
+ * @param idx the color target index
+ * @param src_color source color blend factor
+ * @param dst_color destination color blend factor
+ * @param color_op color blend operation
+ * @param src_alpha source alpha blend factor
+ * @param dst_alpha destination alpha blend factor
+ * @param alpha_op alpha blend operation
+ * @param color_write_mask color component write mask
+ * @return whether the most recent command was a CreateRenderPipeline and was updated
+ */
+DVZ_EXPORT bool dvz_drp2_stream_pipeline_set_color_blend(
+    DvzDrp2CommandStream* stream, uint32_t idx, uint32_t src_color, uint32_t dst_color,
+    uint32_t color_op, uint32_t src_alpha, uint32_t dst_alpha, uint32_t alpha_op,
+    uint32_t color_write_mask);
+
+
 
 /**
  * Append a DestroyRenderPipeline command.

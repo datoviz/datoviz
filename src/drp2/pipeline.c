@@ -673,11 +673,36 @@ DvzDrp2ValidationResult _vklite_create_render_pipeline(
     dvz_graphics_shader(graphics, VK_SHADER_STAGE_VERTEX_BIT, dvz_shader_handle(vertex->shader));
     dvz_graphics_shader(
         graphics, VK_SHADER_STAGE_FRAGMENT_BIT, dvz_shader_handle(fragment->shader));
-    dvz_graphics_attachment_color(graphics, 0, VK_FORMAT_R8G8B8A8_UNORM);
-    dvz_graphics_color_write_mask(
-        graphics, 0,
-        VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT |
-            VK_COLOR_COMPONENT_A_BIT);
+    uint32_t color_target_count = command->u.create_render_pipeline.color_target_count;
+    if (color_target_count == 0)
+        color_target_count = 1;
+    if (color_target_count > DVZ_DRP2_MAX_COLOR_ATTACHMENTS)
+        return _vklite_fail_destroy_object(
+            object, DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+    for (uint32_t i = 0; i < color_target_count; i++)
+    {
+        const DvzDrp2ColorTarget* target = &command->u.create_render_pipeline.color_targets[i];
+        VkFormat format = target->format != 0 ? (VkFormat)target->format :
+                                               VK_FORMAT_R8G8B8A8_UNORM;
+        uint32_t mask = target->color_write_mask != 0 ? target->color_write_mask :
+                                                     (VK_COLOR_COMPONENT_R_BIT |
+                                                      VK_COLOR_COMPONENT_G_BIT |
+                                                      VK_COLOR_COMPONENT_B_BIT |
+                                                      VK_COLOR_COMPONENT_A_BIT);
+        dvz_graphics_attachment_color(graphics, i, format);
+        dvz_graphics_color_write_mask(graphics, i, mask);
+        if (target->blend_enabled)
+        {
+            dvz_graphics_blend_color(
+                graphics, i, (VkBlendFactor)target->src_color_blend_factor,
+                (VkBlendFactor)target->dst_color_blend_factor,
+                (VkBlendOp)target->color_blend_op, mask);
+            dvz_graphics_blend_alpha(
+                graphics, i, (VkBlendFactor)target->src_alpha_blend_factor,
+                (VkBlendFactor)target->dst_alpha_blend_factor,
+                (VkBlendOp)target->alpha_blend_op);
+        }
+    }
     if (command->u.create_render_pipeline.has_depth_attachment)
     {
         dvz_graphics_attachment_depth(graphics, VK_FORMAT_D32_SFLOAT);

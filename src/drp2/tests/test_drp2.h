@@ -194,6 +194,9 @@ int test_drp2_runtime_vklite_samples_then_copies_texture(TstSuite* suite, TstIte
 #endif
 
 
+int test_drp2_render_pipeline_color_targets_json(TstSuite* suite, TstItem* item);
+
+
 
 int test_drp2_begin_render_pass_clear_color_stored(TstSuite* suite, TstItem* item);
 

@@ -479,6 +479,9 @@ bool dvz_drp2_stream_create_render_pipeline_with_bind_group_layout(
     command->u.create_render_pipeline.vertex_shader_module_id = vertex_shader_module_id;
     command->u.create_render_pipeline.fragment_shader_module_id = fragment_shader_module_id;
     command->u.create_render_pipeline.vertex_buffer_slots = vertex_buffer_slots;
+    command->u.create_render_pipeline.color_target_count = 1;
+    command->u.create_render_pipeline.color_targets[0].format = 0;
+    command->u.create_render_pipeline.color_targets[0].color_write_mask = 0xFu;
     if (bind_group_layout_id != 0)
     {
         command->u.create_render_pipeline.bind_group_layout_count = 1;
@@ -583,6 +586,52 @@ bool dvz_drp2_stream_pipeline_set_depth_state(
     command->u.create_render_pipeline.depth_compare_op = depth_compare_op;
     return true;
 }
+
+
+bool dvz_drp2_stream_pipeline_set_color_target(
+    DvzDrp2CommandStream* stream, uint32_t idx, uint32_t format)
+{
+    ANN(stream);
+    if (stream->count == 0 || idx >= DVZ_DRP2_MAX_COLOR_ATTACHMENTS)
+        return false;
+    DvzDrp2Command* command = &stream->commands[stream->count - 1];
+    if (command->type != DVZ_DRP2_COMMAND_CREATE_RENDER_PIPELINE)
+        return false;
+    command->u.create_render_pipeline.color_target_count =
+        MAX(command->u.create_render_pipeline.color_target_count, idx + 1);
+    command->u.create_render_pipeline.color_targets[idx].format = format;
+    if (command->u.create_render_pipeline.color_targets[idx].color_write_mask == 0)
+        command->u.create_render_pipeline.color_targets[idx].color_write_mask = 0xFu;
+    return true;
+}
+
+
+
+bool dvz_drp2_stream_pipeline_set_color_blend(
+    DvzDrp2CommandStream* stream, uint32_t idx, uint32_t src_color, uint32_t dst_color,
+    uint32_t color_op, uint32_t src_alpha, uint32_t dst_alpha, uint32_t alpha_op,
+    uint32_t color_write_mask)
+{
+    ANN(stream);
+    if (stream->count == 0 || idx >= DVZ_DRP2_MAX_COLOR_ATTACHMENTS)
+        return false;
+    DvzDrp2Command* command = &stream->commands[stream->count - 1];
+    if (command->type != DVZ_DRP2_COMMAND_CREATE_RENDER_PIPELINE)
+        return false;
+    command->u.create_render_pipeline.color_target_count =
+        MAX(command->u.create_render_pipeline.color_target_count, idx + 1);
+    DvzDrp2ColorTarget* target = &command->u.create_render_pipeline.color_targets[idx];
+    target->blend_enabled = true;
+    target->src_color_blend_factor = src_color;
+    target->dst_color_blend_factor = dst_color;
+    target->color_blend_op = color_op;
+    target->src_alpha_blend_factor = src_alpha;
+    target->dst_alpha_blend_factor = dst_alpha;
+    target->alpha_blend_op = alpha_op;
+    target->color_write_mask = color_write_mask;
+    return true;
+}
+
 
 
 bool dvz_drp2_stream_create_render_pipeline_ex(

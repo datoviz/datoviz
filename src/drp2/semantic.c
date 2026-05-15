@@ -569,6 +569,8 @@ static DvzDrp2ValidationResult _validate_create_render_pipeline(
         return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
     if (command->u.create_render_pipeline.bind_group_layout_count > DVZ_DRP2_MAX_BIND_GROUPS)
         return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+    if (command->u.create_render_pipeline.color_target_count > DVZ_DRP2_MAX_COLOR_ATTACHMENTS)
+        return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
     for (uint32_t i = 0; i < command->u.create_render_pipeline.bind_group_layout_count; i++)
     {
         if (!_has_object_kind(
