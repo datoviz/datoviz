@@ -31,6 +31,7 @@
 #include <string.h>
 
 #include "_alloc.h"
+#include "_compat.h"
 #include "datoviz/app.h"
 #include "datoviz/canvas.h"
 #include "datoviz/scene.h"
@@ -200,17 +201,17 @@ static bool _recording_path(
             continue;
         if (strcmp(argv[i], "record") == 0)
         {
-            snprintf(out, out_size, "%s", default_path);
+            dvz_snprintf(out, out_size, "%s", default_path);
             return true;
         }
         if (strncmp(argv[i], "record=", 7) == 0)
         {
-            snprintf(out, out_size, "%s", argv[i] + 7);
+            dvz_snprintf(out, out_size, "%s", argv[i] + 7);
             return true;
         }
         if (strcmp(argv[i], "--record") == 0 && i + 1 < argc && argv[i + 1] != NULL)
         {
-            snprintf(out, out_size, "%s", argv[i + 1]);
+            dvz_snprintf(out, out_size, "%s", argv[i + 1]);
             return true;
         }
     }
@@ -231,9 +232,9 @@ static void _outpath(const char* exe, const char* name, char* out, size_t size)
 {
     const char* slash = exe != NULL ? strrchr(exe, '/') : NULL;
     if (slash != NULL)
-        snprintf(out, size, "%.*s/%s", (int)(slash - exe), exe, name);
+        dvz_snprintf(out, size, "%.*s/%s", (int)(slash - exe), exe, name);
     else
-        snprintf(out, size, "%s", name);
+        dvz_snprintf(out, size, "%s", name);
 }
 
 
@@ -285,14 +286,14 @@ int main(int argc, char** argv)
     DvzScene* scene = dvz_scene();
     if (scene == NULL)
     {
-        fprintf(stderr, "dvz_scene() failed\n");
+        dvz_fprintf(stderr, "dvz_scene() failed\n");
         return 1;
     }
 
     DvzFigure* figure = dvz_figure(scene, WIDTH, HEIGHT, 0);
     if (figure == NULL)
     {
-        fprintf(stderr, "dvz_figure() failed\n");
+        dvz_fprintf(stderr, "dvz_figure() failed\n");
         dvz_scene_destroy(scene);
         return 1;
     }
@@ -301,7 +302,7 @@ int main(int argc, char** argv)
         dvz_panel(figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
     if (panel == NULL)
     {
-        fprintf(stderr, "dvz_panel() failed\n");
+        dvz_fprintf(stderr, "dvz_panel() failed\n");
         dvz_scene_destroy(scene);
         return 1;
     }
@@ -314,7 +315,7 @@ int main(int argc, char** argv)
     camera_desc.far = 100.0f;
     if (!dvz_panel_set_camera(panel, &camera_desc))
     {
-        fprintf(stderr, "dvz_panel_set_camera() failed\n");
+        dvz_fprintf(stderr, "dvz_panel_set_camera() failed\n");
         dvz_scene_destroy(scene);
         return 1;
     }
@@ -322,7 +323,7 @@ int main(int argc, char** argv)
     DvzVisual* visual = dvz_mesh(scene, 0);
     if (visual == NULL)
     {
-        fprintf(stderr, "dvz_mesh() failed\n");
+        dvz_fprintf(stderr, "dvz_mesh() failed\n");
         dvz_scene_destroy(scene);
         return 1;
     }
@@ -340,13 +341,13 @@ int main(int argc, char** argv)
                });
     if (index_buffer == NULL)
     {
-        fprintf(stderr, "dvz_scene_buffer() failed\n");
+        dvz_fprintf(stderr, "dvz_scene_buffer() failed\n");
         dvz_scene_destroy(scene);
         return 1;
     }
     if (!dvz_scene_buffer_set_data(index_buffer, indices, sizeof(indices)))
     {
-        fprintf(stderr, "dvz_scene_buffer_set_data() failed\n");
+        dvz_fprintf(stderr, "dvz_scene_buffer_set_data() failed\n");
         dvz_scene_destroy(scene);
         return 1;
     }
@@ -368,7 +369,7 @@ int main(int argc, char** argv)
     DvzApp* app = dvz_app(scene);
     if (app == NULL)
     {
-        fprintf(stderr, "dvz_app() failed (no GPU or display?)\n");
+        dvz_fprintf(stderr, "dvz_app() failed (no GPU or display?)\n");
         dvz_scene_destroy(scene);
         return 1;
     }
@@ -376,7 +377,7 @@ int main(int argc, char** argv)
     DvzAppWindow* win = dvz_app_window_glfw(app, figure, WIDTH, HEIGHT, "hello_mesh_glfw");
     if (win == NULL)
     {
-        fprintf(stderr, "dvz_app_window_glfw() failed (GLFW unavailable?)\n");
+        dvz_fprintf(stderr, "dvz_app_window_glfw() failed (GLFW unavailable?)\n");
         dvz_app_destroy(app);
         dvz_scene_destroy(scene);
         return 1;
@@ -386,7 +387,7 @@ int main(int argc, char** argv)
     DvzArcball* arcball = dvz_panel_arcball(panel);
     if (arcball == NULL)
     {
-        fprintf(stderr, "dvz_panel_set_arcball() failed\n");
+        dvz_fprintf(stderr, "dvz_panel_set_arcball() failed\n");
         dvz_app_destroy(app);
         dvz_scene_destroy(scene);
         return 1;
@@ -409,7 +410,7 @@ int main(int argc, char** argv)
 
         if (dvz_canvas_configure_video_sink(dvz_app_window_canvas(win), true, &video) != 0)
         {
-            fprintf(stderr, "dvz_canvas_configure_video_sink() failed\n");
+            dvz_fprintf(stderr, "dvz_canvas_configure_video_sink() failed\n");
             dvz_app_destroy(app);
             dvz_scene_destroy(scene);
             return 1;
@@ -417,7 +418,7 @@ int main(int argc, char** argv)
     }
     if (recording_enabled && dvz_app_window_record_start(win, dvzr_path) != 0)
     {
-        fprintf(stderr, "dvz_app_window_record_start() failed\n");
+        dvz_fprintf(stderr, "dvz_app_window_record_start() failed\n");
         dvz_app_destroy(app);
         dvz_scene_destroy(scene);
         return 1;
@@ -427,7 +428,7 @@ int main(int argc, char** argv)
     DvzAnimation* spin = dvz_anim_timer(scene, 0.0, _mesh_glfw_timer, &state);
     if (spin == NULL)
     {
-        fprintf(stderr, "dvz_anim_timer() failed\n");
+        dvz_fprintf(stderr, "dvz_anim_timer() failed\n");
         dvz_app_destroy(app);
         dvz_scene_destroy(scene);
         return 1;
@@ -438,12 +439,12 @@ int main(int argc, char** argv)
     if (recording_enabled)
     {
         if (dvz_app_window_record_stop(win) != 0)
-            fprintf(stderr, "dvz_app_window_record_stop() failed\n");
+            dvz_fprintf(stderr, "dvz_app_window_record_stop() failed\n");
         else
-            printf("hello_mesh_glfw: saved %s\n", dvzr_path);
+            dvz_fprintf(stdout, "hello_mesh_glfw: saved %s\n", dvzr_path);
     }
     if (video_enabled)
-        printf("hello_mesh_glfw: saved %s\n", mp4_path);
+        dvz_fprintf(stdout, "hello_mesh_glfw: saved %s\n", mp4_path);
 
     dvz_app_destroy(app);
     dvz_scene_destroy(scene);
