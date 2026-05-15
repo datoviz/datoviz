@@ -275,6 +275,8 @@ int test_scene_shared_field_update_marks_two_visuals_dirty(TstSuite* suite, TstI
 int test_scene_image_field_partial_update_emits_texture_subregion(
     TstSuite* suite, TstItem* item);
 
+int test_scene_image_field_resize_emits_texture_reallocation(TstSuite* suite, TstItem* item);
+
 int test_scene_shared_field_mixed_full_and_partial_uploads(TstSuite* suite, TstItem* item);
 
 int test_scene_rejects_unsupported_point_attribute(TstSuite* suite, TstItem* item);

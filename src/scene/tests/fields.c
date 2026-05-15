@@ -835,6 +835,136 @@ int test_scene_image_field_partial_update_emits_texture_subregion(TstSuite* suit
 }
 
 
+/**
+ * Ensure a retained image field resize emits a new texture allocation extent.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_image_field_resize_emits_texture_reallocation(TstSuite* suite, TstItem* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
+    ANN(panel);
+
+    DvzVisual* image = dvz_image(scene, 0);
+    ANN(image);
+    float positions[4][3] = {
+        {-0.5f, -0.5f, 0.0f}, {-0.5f, 0.5f, 0.0f},
+        { 0.5f, -0.5f, 0.0f}, { 0.5f, 0.5f, 0.0f},
+    };
+    float texcoords[4][2] = {
+        {0.0f, 0.0f}, {0.0f, 1.0f}, {1.0f, 0.0f}, {1.0f, 1.0f},
+    };
+    AT(dvz_visual_set_data(image, "position", positions, 4) == 0);
+    AT(dvz_visual_set_data(image, "texcoords", texcoords, 4) == 0);
+
+    DvzSampledField* field = dvz_sampled_field(
+        scene, &(DvzSampledFieldDesc){
+                   .dim = DVZ_FIELD_DIM_2D,
+                   .format = DVZ_FIELD_FORMAT_RGBA8_UNORM,
+                   .semantic = DVZ_FIELD_SEMANTIC_COLOR,
+                   .width = 2,
+                   .height = 2,
+                   .depth = 1,
+               });
+    ANN(field);
+    uint8_t pixels[2 * 2 * 4] = {0};
+    AT(dvz_sampled_field_set_data(
+        field, &(DvzFieldDataView){.data = pixels, .bytes_per_row = 2 * 4, .rows_per_image = 2}));
+    AT(dvz_visual_set_field(image, "field", field));
+    AT(dvz_panel_add_visual(panel, image, NULL) == 0);
+
+    DvzCapabilitySnapshot caps;
+    dvz_capability_snapshot_default(&caps);
+    DvzDiagnosticReport report;
+    dvz_diagnostic_report_init(&report);
+
+    DvzDrp2CommandStream* stream0 = dvz_figure_emit(figure, &caps, &report);
+    ANN(stream0);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+
+    uint64_t tex0 = 0;
+    bool created_tex0 = false;
+    for (uint32_t i = 0; i < dvz_drp2_stream_count(stream0); i++)
+    {
+        const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream0, i);
+        if (cmd->type == DVZ_DRP2_COMMAND_WRITE_TEXTURE)
+            tex0 = cmd->u.write_texture.texture_id;
+    }
+    for (uint32_t i = 0; i < dvz_drp2_stream_count(stream0); i++)
+    {
+        const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream0, i);
+        if (cmd->type == DVZ_DRP2_COMMAND_CREATE_TEXTURE && cmd->u.create_texture.id == tex0)
+        {
+            created_tex0 = true;
+            AT(cmd->u.create_texture.width == 2);
+            AT(cmd->u.create_texture.height == 2);
+        }
+    }
+    AT(tex0 != 0);
+    AT(created_tex0);
+    dvz_drp2_stream_destroy(stream0);
+
+    uint8_t resized[4 * 3 * 4] = {0};
+    AT(dvz_sampled_field_resize(
+        field, 4, 3, 1,
+        &(DvzFieldDataView){.data = resized, .bytes_per_row = 4 * 4, .rows_per_image = 3}));
+    const DvzSampledFieldDesc* desc = dvz_sampled_field_desc(field);
+    ANN(desc);
+    AT(desc->width == 4);
+    AT(desc->height == 3);
+
+    dvz_diagnostic_report_init(&report);
+    DvzDrp2CommandStream* stream1 = dvz_figure_emit(figure, &caps, &report);
+    ANN(stream1);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+
+    uint64_t tex1 = 0;
+    bool created_tex1 = false;
+    bool wrote_resized = false;
+    for (uint32_t i = 0; i < dvz_drp2_stream_count(stream1); i++)
+    {
+        const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream1, i);
+        if (cmd->type == DVZ_DRP2_COMMAND_WRITE_TEXTURE)
+        {
+            tex1 = cmd->u.write_texture.texture_id;
+            if (cmd->u.write_texture.origin_x == 0 && cmd->u.write_texture.origin_y == 0 &&
+                cmd->u.write_texture.width == 4 && cmd->u.write_texture.height == 3)
+            {
+                wrote_resized = true;
+            }
+        }
+    }
+    for (uint32_t i = 0; i < dvz_drp2_stream_count(stream1); i++)
+    {
+        const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream1, i);
+        if (cmd->type == DVZ_DRP2_COMMAND_CREATE_TEXTURE && cmd->u.create_texture.id == tex1)
+        {
+            created_tex1 = true;
+            AT(cmd->u.create_texture.width == 4);
+            AT(cmd->u.create_texture.height == 3);
+        }
+    }
+    AT(tex1 != 0);
+    AT(tex1 != tex0);
+    AT(created_tex1);
+    AT(wrote_resized);
+    AT(!field->dirty);
+
+    dvz_drp2_stream_destroy(stream1);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
 int test_scene_shared_field_mixed_full_and_partial_uploads(TstSuite* suite, TstItem* item)
 {
     (void)suite;
@@ -985,6 +1115,7 @@ int test_scene_fields(TstSuite* suite)
     TEST_SIMPLE(test_scene_sampled_field_destroy_clears_visual_binding);
     TEST_SIMPLE(test_scene_shared_field_update_marks_two_visuals_dirty);
     TEST_SIMPLE(test_scene_image_field_partial_update_emits_texture_subregion);
+    TEST_SIMPLE(test_scene_image_field_resize_emits_texture_reallocation);
     TEST_SIMPLE(test_scene_shared_field_mixed_full_and_partial_uploads);
 
     return 0;

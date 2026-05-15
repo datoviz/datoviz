@@ -35,6 +35,9 @@
 
 static double _half_to_double(uint16_t bits);
 
+static void _field_copy_full_data(
+    const DvzSampledFieldDesc* desc, const DvzFieldDataView* view, void* dst);
+
 static DvzSampledField* _scene_alloc_field_slot(DvzScene* scene);
 
 static DvzSceneBuffer* _scene_alloc_buffer_slot(DvzScene* scene);
@@ -309,6 +312,39 @@ static bool _field_data_view_valid(
         return false;
     }
     return true;
+}
+
+
+/**
+ * Copy a full sampled-field payload into tightly packed owned storage.
+ *
+ * @param desc the sampled-field descriptor
+ * @param view the source data view
+ * @param dst the destination buffer
+ */
+static void _field_copy_full_data(
+    const DvzSampledFieldDesc* desc, const DvzFieldDataView* view, void* dst)
+{
+    ANN(desc);
+    ANN(view);
+    ANN(dst);
+    uint64_t bytes_per_row =
+        view->bytes_per_row != 0 ? view->bytes_per_row : _field_default_bytes_per_row(desc);
+    uint64_t rows_per_image = view->rows_per_image != 0 ? view->rows_per_image : desc->height;
+    uint64_t copy_bytes_per_row = _field_default_bytes_per_row(desc);
+    const uint8_t* src = (const uint8_t*)view->data;
+    uint8_t* dst_bytes = (uint8_t*)dst;
+    for (uint32_t z = 0; z < desc->depth; z++)
+    {
+        for (uint32_t y = 0; y < desc->height; y++)
+        {
+            uint64_t src_offset = ((uint64_t)z * rows_per_image + y) * bytes_per_row;
+            uint64_t dst_offset = ((uint64_t)z * desc->height + y) * copy_bytes_per_row;
+            dvz_memcpy(
+                dst_bytes + dst_offset, copy_bytes_per_row, src + src_offset,
+                copy_bytes_per_row);
+        }
+    }
 }
 
 
@@ -624,21 +660,70 @@ bool dvz_sampled_field_set_data(DvzSampledField* field, const DvzFieldDataView* 
         }
     }
 
-    uint64_t bytes_per_row = view->bytes_per_row != 0 ? view->bytes_per_row
-                                                      : _field_default_bytes_per_row(&field->desc);
-    uint64_t rows_per_image = view->rows_per_image != 0 ? view->rows_per_image : field->desc.height;
-    uint64_t copy_bytes_per_row = _field_default_bytes_per_row(&field->desc);
-    const uint8_t* src = (const uint8_t*)view->data;
-    uint8_t* dst = (uint8_t*)field->data;
-    for (uint32_t z = 0; z < field->desc.depth; z++)
+    _field_copy_full_data(&field->desc, view, field->data);
+    _scene_mark_field_region_dirty(field, full, true);
+    return true;
+}
+
+
+/**
+ * Change the sampled-field extent and replace its full payload.
+ *
+ * @param field the sampled field
+ * @param width new field width in samples
+ * @param height new field height in samples
+ * @param depth new field depth in samples
+ * @param view the uploaded data view for the new extent
+ * @return true on success, false on error
+ */
+bool dvz_sampled_field_resize(
+    DvzSampledField* field, uint32_t width, uint32_t height, uint32_t depth,
+    const DvzFieldDataView* view)
+{
+    ANN(field);
+    ANN(view);
+    if (!_scene_visual_mutation_allowed(field->scene, "resize sampled field"))
+        return false;
+    if (width == 0 || height == 0 || depth == 0)
     {
-        for (uint32_t y = 0; y < field->desc.height; y++)
-        {
-            uint64_t src_offset = ((uint64_t)z * rows_per_image + y) * bytes_per_row;
-            uint64_t dst_offset = ((uint64_t)z * field->desc.height + y) * copy_bytes_per_row;
-            dvz_memcpy(dst + dst_offset, copy_bytes_per_row, src + src_offset, copy_bytes_per_row);
-        }
+        log_error("sampled field dimensions must be non-zero");
+        return false;
     }
+
+    DvzSampledFieldDesc desc = field->desc;
+    desc.width = width;
+    desc.height = height;
+    desc.depth = depth;
+    if (desc.dim == DVZ_FIELD_DIM_2D && desc.depth != 1)
+    {
+        log_error("2D sampled fields must use depth=1");
+        return false;
+    }
+
+    uint64_t data_size = 0;
+    if (!_field_expected_data_size(&desc, &data_size))
+    {
+        log_error("sampled field size overflow");
+        return false;
+    }
+
+    DvzFieldRegion full = _field_full_region(&desc);
+    if (!_field_data_view_valid(&desc, view, &full))
+        return false;
+
+    void* data = dvz_calloc(data_size, 1);
+    if (data == NULL)
+    {
+        log_error("sampled field allocation failed for %" PRIu64 " bytes", data_size);
+        return false;
+    }
+    _field_copy_full_data(&desc, view, data);
+
+    if (field->data != NULL)
+        dvz_free(field->data);
+    field->desc = desc;
+    field->data = data;
+    field->data_size = data_size;
     _scene_mark_field_region_dirty(field, full, true);
     return true;
 }
@@ -1465,4 +1550,3 @@ bool _scene_prepare_image_texture(
     *out_data = visual->texture.upload;
     return true;
 }
-

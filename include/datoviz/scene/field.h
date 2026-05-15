@@ -177,6 +177,24 @@ DVZ_EXPORT bool dvz_sampled_field_set_data(
 
 
 /**
+ * Change the field extent and replace the entire payload.
+ *
+ * The field format, semantic, dimensionality, and visual bindings are preserved. Bound image
+ * visuals receive a full dirty mark so the next scene emission reallocates the texture if needed.
+ *
+ * @param field the sampled field
+ * @param width new field width in samples
+ * @param height new field height in samples
+ * @param depth new field depth in samples (must be 1 for 2D fields)
+ * @param view the uploaded data view for the new extent
+ * @return true on success, false on error
+ */
+DVZ_EXPORT bool dvz_sampled_field_resize(
+    DvzSampledField* field, uint32_t width, uint32_t height, uint32_t depth,
+    const DvzFieldDataView* view);
+
+
+/**
  * Update a field subregion in sample coordinates.
  *
  * @param field the sampled field
