@@ -461,6 +461,9 @@ static bool _emitter_prepare_render_multi(
             if (ok && pipeline.has_depth_state)
                 ok = dvz_drp2_stream_pipeline_set_depth_state(
                     stream, pipeline.depth_write_enabled, pipeline.depth_compare_op);
+            if (ok && pipeline.has_raster_state)
+                ok = dvz_drp2_stream_pipeline_set_raster_state(
+                    stream, pipeline.cull_mode, pipeline.front_face);
             if (ok && wboit_accumulation)
             {
                 ok = ok &&

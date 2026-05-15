@@ -110,6 +110,9 @@ typedef struct DvzSceneVisualPipelineDesc
     bool has_depth_state;
     bool depth_write_enabled;
     uint32_t depth_compare_op;
+    bool has_raster_state;
+    uint32_t cull_mode;
+    uint32_t front_face;
 } DvzSceneVisualPipelineDesc;
 
 

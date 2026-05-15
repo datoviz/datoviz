@@ -1040,6 +1040,9 @@ bool _scene_visual_pipeline_desc(
         out->formats[1] = VK_FORMAT_R32G32B32_SFLOAT;
         out->needs_common_layout = true;
         out->needs_volume_layout = true;
+        out->has_raster_state = true;
+        out->cull_mode = VK_CULL_MODE_FRONT_BIT;
+        out->front_face = VK_FRONT_FACE_CLOCKWISE;
         return true;
 
     case DVZ_SCENE_VISUAL_DESC_NONE:

@@ -19,7 +19,6 @@ layout(set = 1, binding = 2) uniform VolumeParams {
 layout(location = 0) in vec3 fragUVW;
 layout(location = 0) out vec4 outColor;
 
-const float ENTRY_FACE_EPSILON = 0.004;
 const float EXTINCTION_SCALE = 4.0;
 
 float safe_inv(float v)
@@ -28,11 +27,6 @@ float safe_inv(float v)
         return v < 0.0 ? -1e6 : 1e6;
     }
     return 1.0 / v;
-}
-
-bool inside_box(vec3 p, vec3 box_min, vec3 box_max)
-{
-    return all(greaterThanEqual(p, box_min)) && all(lessThanEqual(p, box_max));
 }
 
 bool ray_box(vec3 ro, vec3 rd, vec3 box_min, vec3 box_max, out float t0, out float t1)
@@ -64,13 +58,6 @@ void main()
     float proxy_t1 = 0.0;
     if (!ray_box(ro, rd, vec3(0.0), vec3(1.0), proxy_t0, proxy_t1)) {
         discard;
-    }
-
-    if (!inside_box(ro, vec3(0.0), vec3(1.0))) {
-        vec3 proxy_entry = ro + rd * max(proxy_t0, 0.0);
-        if (distance(proxy_entry, fragUVW) > ENTRY_FACE_EPSILON) {
-            discard;
-        }
     }
 
     vec3 box_min = volume.clip_min.xyz;

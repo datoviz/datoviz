@@ -743,6 +743,7 @@ int test_scene_volume_field_emit_realizes_3d_texture(TstSuite* suite, TstItem* i
     bool created_texture = false;
     bool wrote_full_texture = false;
     bool created_triangle_list_pipeline = false;
+    bool created_entry_face_pipeline = false;
     bool drew_box_proxy = false;
     for (uint32_t i = 0; i < dvz_drp2_stream_count(stream0); i++)
     {
@@ -778,6 +779,12 @@ int test_scene_volume_field_emit_realizes_3d_texture(TstSuite* suite, TstItem* i
             cmd->u.create_render_pipeline.topology == VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST)
         {
             created_triangle_list_pipeline = true;
+            if (cmd->u.create_render_pipeline.has_raster_state &&
+                cmd->u.create_render_pipeline.cull_mode == VK_CULL_MODE_FRONT_BIT &&
+                cmd->u.create_render_pipeline.front_face == VK_FRONT_FACE_CLOCKWISE)
+            {
+                created_entry_face_pipeline = true;
+            }
         }
         if (cmd->type == DVZ_DRP2_COMMAND_DRAW && cmd->u.draw.vertex_count == 36)
             drew_box_proxy = true;
@@ -786,6 +793,7 @@ int test_scene_volume_field_emit_realizes_3d_texture(TstSuite* suite, TstItem* i
     AT(created_texture);
     AT(wrote_full_texture);
     AT(created_triangle_list_pipeline);
+    AT(created_entry_face_pipeline);
     AT(drew_box_proxy);
     AT(!field->dirty);
     AT(!volume->texture.dirty);
