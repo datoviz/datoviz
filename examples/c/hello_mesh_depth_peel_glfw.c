@@ -179,6 +179,19 @@ int main(int argc, char** argv)
     }
     dvz_panel_set_background_color(panel, 0.05f, 0.05f, 0.08f, 1.0f);
 
+    DvzCameraDesc camera_desc = dvz_camera_desc();
+    camera_desc.eye[2] = 3.2f;
+    camera_desc.up[1] = 1.0f;
+    camera_desc.fov_y = 0.78539816339f;
+    camera_desc.near = 0.1f;
+    camera_desc.far = 100.0f;
+    if (!dvz_panel_set_camera(panel, &camera_desc))
+    {
+        fprintf(stderr, "dvz_panel_set_camera() failed\n");
+        dvz_scene_destroy(scene);
+        return 1;
+    }
+
     DvzVisual* reference = dvz_primitive(scene, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 0);
     DvzVisual* cube = dvz_mesh(scene, 0);
     if (reference == NULL || cube == NULL)
@@ -221,7 +234,7 @@ int main(int argc, char** argv)
     DvzColor colors[24] = {0};
     float normals[24][3] = {0};
     DvzIndex indices[36] = {0};
-    DvzColor cube_color = {48, 170, 220, 120};
+    DvzColor cube_color = {48, 170, 220, 82};
     _build_cube(0.72f, cube_color, positions, colors, normals, indices);
 
     DvzSceneBuffer* index_buffer = dvz_scene_buffer(
@@ -246,8 +259,7 @@ int main(int argc, char** argv)
     dvz_visual_set_buffer(cube, "index", index_buffer);
     dvz_visual_set_alpha_mode(cube, DVZ_ALPHA_DEPTH_PEEL);
 
-    dvz_panel_add_visual(
-        panel, reference, &(DvzVisualAttachDesc){.controller_mode = DVZ_CONTROLLER_FIXED});
+    dvz_panel_add_visual(panel, reference, NULL);
     dvz_panel_add_visual(panel, cube, NULL);
 
     DvzApp* app = dvz_app(scene);
