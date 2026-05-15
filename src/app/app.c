@@ -27,6 +27,7 @@
 #include "datoviz/app.h"
 #include "datoviz/scene.h"
 #include "../drp2/_stream.h"
+#include "../scene/_scene.h"
 
 #if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
 #include "datoviz/canvas.h"
@@ -901,6 +902,22 @@ static void _app_log_runtime_failure(
 
 
 
+/**
+ * Return whether a frame callback may safely run mutation-oriented user code.
+ *
+ * @param win app window owning the callback
+ * @return true when no emitted scene stream is still live
+ */
+static bool _app_frame_callback_allowed(DvzAppWindow* win)
+{
+    ANN(win);
+    if (win->app == NULL || win->app->scene == NULL)
+        return true;
+    return _scene_visual_mutation_allowed(win->app->scene, "run app frame callback");
+}
+
+
+
 static void _app_draw(DvzCanvas* canvas, const DvzStreamFrame* frame, void* user_data)
 {
     (void)canvas;
@@ -953,7 +970,7 @@ static void _app_draw(DvzCanvas* canvas, const DvzStreamFrame* frame, void* user
         (void)dvz_figure_process_requests(win->figure, app->runtime, &caps);
     dvz_drp2_stream_destroy(stream);
 
-    if (win->frame_callback != NULL)
+    if (win->frame_callback != NULL && _app_frame_callback_allowed(win))
         win->frame_callback(win, win->frame_user_data);
     win->frame_index++;
 }

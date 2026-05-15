@@ -23,6 +23,7 @@
 #include "_alloc.h"
 #include "_assertions.h"
 #include "_compat.h"
+#include "_overflow.h"
 #include "../drp2/_stream.h"
 
 
@@ -372,6 +373,12 @@ static bool _trace_snapshot_ensure(DvzAppTraceSnapshot* snapshot)
     ANN(snapshot);
     if (snapshot->lines == NULL || snapshot->capacity == 0)
     {
+        uint64_t bytes = 0;
+        if (_dvz_mul_u64_overflows(
+                DVZ_APP_TRACE_INITIAL_LINES, sizeof(DvzAppTraceLine), &bytes))
+        {
+            return false;
+        }
         snapshot->capacity = DVZ_APP_TRACE_INITIAL_LINES;
         snapshot->lines =
             (DvzAppTraceLine*)dvz_calloc(snapshot->capacity, sizeof(DvzAppTraceLine));
@@ -384,8 +391,10 @@ static bool _trace_snapshot_ensure(DvzAppTraceSnapshot* snapshot)
 
     uint32_t old_capacity = snapshot->capacity;
     uint32_t capacity = old_capacity * 2;
-    DvzAppTraceLine* lines =
-        (DvzAppTraceLine*)dvz_realloc(snapshot->lines, capacity * sizeof(DvzAppTraceLine));
+    uint64_t bytes = 0;
+    if (_dvz_mul_u64_overflows(capacity, sizeof(DvzAppTraceLine), &bytes))
+        return false;
+    DvzAppTraceLine* lines = (DvzAppTraceLine*)dvz_realloc(snapshot->lines, bytes);
     if (lines == NULL)
         return false;
     dvz_memset(
@@ -933,6 +942,9 @@ bool _dvz_app_trace_snapshot_build(
     TracePassMap* passes = NULL;
     if (pass_capacity > 0)
     {
+        uint64_t bytes = 0;
+        if (_dvz_mul_u64_overflows(pass_capacity, sizeof(TracePassMap), &bytes))
+            return false;
         passes = (TracePassMap*)dvz_calloc(pass_capacity, sizeof(TracePassMap));
         if (passes == NULL)
             return false;

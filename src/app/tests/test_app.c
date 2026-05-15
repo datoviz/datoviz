@@ -94,6 +94,22 @@ static int test_app_status_line_combines_trace_and_fps(TstSuite* suite, TstItem*
 }
 
 
+static int test_app_status_line_rejects_truncation(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    ANN(item);
+
+    DvzAppStatus status;
+    _dvz_app_status_init(&status);
+    _dvz_app_status_trace(&status, UINT64_MAX, UINT32_MAX, UINT32_MAX, true);
+    _dvz_app_status_fps(&status, 123456789.0, UINT32_MAX, 123456789.0);
+
+    char line[16] = {0};
+    AT(!_dvz_app_status_line(&status, line, sizeof(line)));
+    return 0;
+}
+
+
 static int test_app_trace_fingerprint_name_is_frame_stable(TstSuite* suite, TstItem* item)
 {
     ANN(suite);
@@ -313,6 +329,44 @@ static int test_app_trace_snapshot_rejects_truncated_suffix(TstSuite* suite, Tst
 }
 
 
+static int test_app_trace_snapshot_recovers_after_failed_build(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    ANN(item);
+
+    DvzDrp2CommandStream* bad = dvz_drp2_stream();
+    DvzDrp2CommandStream* good = dvz_drp2_stream();
+    ANN(bad);
+    ANN(good);
+
+    char long_format[256] = {0};
+    for (uint32_t i = 0; i < sizeof(long_format) - 1; i++)
+        long_format[i] = 'x';
+
+    AT(dvz_drp2_stream_begin_render_pass(bad, 100, 7, 5000));
+    AT(dvz_drp2_stream_set_index_buffer(bad, 100, UINT64_MAX, long_format, UINT64_MAX));
+
+    AT(dvz_drp2_stream_begin_render_pass(good, 100, 7, 5000));
+    AT(dvz_drp2_stream_draw(good, 100, 3, 1, 0, 0));
+
+    DvzAppTraceSnapshot snapshot;
+    _dvz_app_trace_snapshot_init(&snapshot);
+    AT(!_dvz_app_trace_snapshot_build(&snapshot, bad));
+    AT(snapshot.count == 0);
+    AT(snapshot.lines == NULL);
+
+    AT(_dvz_app_trace_snapshot_build(&snapshot, good));
+    AT(snapshot.count == 2);
+    AT(_dvz_app_trace_snapshot_line_count(
+           &snapshot, "render#0 draw vertices=3 first=0 instances=1") == 1);
+
+    _dvz_app_trace_snapshot_destroy(&snapshot);
+    dvz_drp2_stream_destroy(bad);
+    dvz_drp2_stream_destroy(good);
+    return 0;
+}
+
+
 
 int test_app(TstSuite* suite)
 {
@@ -322,6 +376,7 @@ int test_app(TstSuite* suite)
     TEST_SIMPLE(test_app_trace_plan_normal_changed_after_open_line);
     TEST_SIMPLE(test_app_trace_plan_normal_unchanged_rewrites_in_place);
     TEST_SIMPLE(test_app_status_line_combines_trace_and_fps);
+    TEST_SIMPLE(test_app_status_line_rejects_truncation);
     TEST_SIMPLE(test_app_trace_fingerprint_name_is_frame_stable);
     TEST_SIMPLE(test_app_trace_fingerprint_ignores_frame_handles_and_payloads);
     TEST_SIMPLE(test_app_trace_fingerprint_keeps_write_ranges);
@@ -329,5 +384,6 @@ int test_app(TstSuite* suite)
     TEST_SIMPLE(test_app_trace_snapshot_ignores_transient_pass_ids);
     TEST_SIMPLE(test_app_trace_snapshot_keeps_draw_payload);
     TEST_SIMPLE(test_app_trace_snapshot_rejects_truncated_suffix);
+    TEST_SIMPLE(test_app_trace_snapshot_recovers_after_failed_build);
     return 0;
 }
