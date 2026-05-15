@@ -102,7 +102,7 @@ typedef enum
 {
     DVZ_ALPHA_OPAQUE = 0,
     DVZ_ALPHA_BLENDED,
-    DVZ_ALPHA_BLENDED_EXACT,
+    DVZ_ALPHA_WBOIT,
     DVZ_ALPHA_MASK,
 } DvzAlphaMode;
 

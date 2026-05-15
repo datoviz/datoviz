@@ -50,17 +50,15 @@ Current implementation status on `2026-05-15`:
 2. `DvzCapabilitySnapshot` has the lower-level WBOIT facts used by scene diagnostics.
 3. FramePlan render-pass roles exist for opaque, transparent accumulation, WBOIT resolve, and
    picking.
-4. Scene panel planning now splits drawable visuals by alpha mode into opaque and transparent
-   accumulation render nodes and appends a WBOIT resolve node whenever transparent visuals are
-   present. This is still a planning slice: the resolve node does not yet lower to executable DRP2
-   WBOIT commands.
-5. DRP2 already has first C support for multiple color attachments, per-target blend state, and
-   explicit texture formats on `CreateTexture`, plus vklite runtime smoke coverage for both a
-   generic multi-color render pass and a WBOIT-shaped RGBA16F/R16F accumulation + resolve path.
-6. The DRP2 positive fixture corpus now includes `wboit_accumulation_resolve.json`, which encodes a
-   minimal WBOIT-style accumulation pass with RGBA16F + R16F attachments, additive per-target
-   blending, depth attachment coordination, and a resolve pass that samples both intermediate
-   targets.
+4. Scene panel planning splits explicit `DVZ_ALPHA_WBOIT` visuals into transparent accumulation
+   render nodes and appends a WBOIT resolve node whenever WBOIT visuals are present.
+5. `DVZ_ALPHA_BLENDED` remains available as the non-WBOIT source-over alpha route for visuals that do
+   not need order-independent transparency.
+6. Scene lowering now emits executable DRP2 WBOIT commands with scene-owned accumulation and resolve
+   shaders, RGBA16F/R16F intermediate targets, additive per-target blending, and final resolve.
+7. The DRP2 vklite runtime executes the multi-pass WBOIT path through borrowed app/canvas frame
+   command buffers, including intermediate texture transitions and transient depth lifetime handling.
+8. `examples/c/hello_mesh_wboit_glfw.c` exists and validates as a bounded GLFW smoke.
 
 ### 1. Public scene transparency API
 
@@ -74,7 +72,7 @@ typedef enum
 {
     DVZ_ALPHA_OPAQUE = 0,
     DVZ_ALPHA_BLENDED,
-    DVZ_ALPHA_BLENDED_EXACT,
+    DVZ_ALPHA_WBOIT,
     DVZ_ALPHA_MASK,
 } DvzAlphaMode;
 
@@ -85,10 +83,9 @@ DVZ_EXPORT DvzAlphaMode dvz_visual_alpha_mode(const DvzVisual* visual);
 Current implementation target:
 
 1. `DVZ_ALPHA_OPAQUE`: existing path, depth test on, depth write on.
-2. `DVZ_ALPHA_BLENDED`: planned into the WBOIT path, with executable accumulation/resolve still
-   pending.
-3. `DVZ_ALPHA_MASK` and `DVZ_ALPHA_BLENDED_EXACT`: may be declared later, but do not need to be
-   implemented for the first WBOIT mesh example unless the public API pass wants the full enum now.
+2. `DVZ_ALPHA_BLENDED`: ordinary source-over blending on the final target.
+3. `DVZ_ALPHA_WBOIT`: explicit weighted blended OIT with accumulation and resolve passes.
+4. `DVZ_ALPHA_MASK`: retained API value; mask-specific shader behavior remains a later slice.
 
 Do not infer WBOIT only from `color.a < 255`. The user should opt the visual into transparent
 rendering explicitly; per-vertex or material alpha then supplies opacity.
@@ -109,15 +106,15 @@ Needed fields include:
 
 Scene behavior should be explicit:
 
-1. if a visual requests `DVZ_ALPHA_BLENDED` and capabilities cannot realize WBOIT, emit a diagnostic;
-2. do not silently downgrade to ordinary sorted alpha blending in the first implementation;
-3. keep fallback policy separate from the first WBOIT path.
+1. if a visual requests `DVZ_ALPHA_WBOIT` and capabilities cannot realize WBOIT, emit a diagnostic;
+2. if a visual requests `DVZ_ALPHA_BLENDED`, require ordinary color blending support only;
+3. do not silently downgrade WBOIT to a different transparency route.
 
 
 ### 3. FramePlan pass roles
 
-Current scene planning now emits separate render pass roles for alpha-mode split panels. WBOIT still
-needs explicit intermediate resource metadata and DRP2 lowering.
+Current scene planning emits separate render pass roles only for explicit WBOIT visuals. Ordinary
+`DVZ_ALPHA_BLENDED` visuals stay in the final-target render pass with a source-over blend pipeline.
 
 Add enough FramePlan metadata to represent:
 
@@ -167,8 +164,8 @@ Current completed pieces:
 
 Still pending:
 
-1. scene lowering that emits the WBOIT fixture shape from FramePlan transparent/resolve nodes;
-2. tighter validation that pipeline color target formats match render-pass attachment formats.
+1. tighter validation that pipeline color target formats match render-pass attachment formats;
+2. broader recording/fixture coverage for scene-emitted WBOIT streams if DVZR replay needs it.
 
 Likely files:
 
@@ -187,7 +184,7 @@ Likely files:
 
 The vklite runtime must lower DRP2 multi-attachment/blend commands to Vulkan dynamic rendering.
 
-Needed runtime work:
+Completed runtime work:
 
 1. route scene lowering through the tested RGBA16F and R16F accumulation render targets;
 2. begin render passes with two color attachments for accumulation;
@@ -253,12 +250,13 @@ area. On macOS, use `direnv exec .` for Vulkan-path tests.
    per-target blend state. Still pending: WBOIT-specific fixture coverage.
 5. Done: add DRP2 semantic/schema/fixture coverage for a minimal WBOIT accumulation + resolve
    sequence.
-6. Next: teach vklite DRP2 runtime to execute WBOIT accumulation, intermediate texture transitions, and
-   resolve.
-7. Add scene WBOIT accumulation and resolve shaders.
-8. Lower scene WBOIT FramePlan nodes to explicit DRP2 command streams.
-9. Add offscreen regression tests.
-10. Add `examples/c/hello_mesh_wboit_glfw.c`.
+6. Done: teach vklite DRP2 runtime to execute WBOIT accumulation, intermediate texture transitions,
+   and resolve.
+7. Done: add scene WBOIT accumulation and resolve shaders.
+8. Done: lower scene WBOIT FramePlan nodes to explicit DRP2 command streams.
+9. Done: add focused scene/vklite WBOIT regression tests.
+10. Done: add `examples/c/hello_mesh_wboit_glfw.c`.
+11. Next: improve example aesthetics and add offscreen/capture coverage for WBOIT if needed.
 
 
 ## Intended User API Shape
@@ -272,11 +270,10 @@ Example shape:
 DvzVisual* shell = dvz_mesh(scene, 0);
 
 dvz_visual_set_data(shell, "position", positions, vertex_count);
-dvz_visual_set_data(shell, "normal", normals, vertex_count);
 dvz_visual_set_data(shell, "color", colors_rgba, vertex_count);
 dvz_visual_set_buffer(shell, "index", index_buffer);
 
-dvz_visual_set_alpha_mode(shell, DVZ_ALPHA_BLENDED);
+dvz_visual_set_alpha_mode(shell, DVZ_ALPHA_WBOIT);
 
 dvz_panel_add_visual(panel, shell, NULL);
 dvz_panel_set_arcball(panel, router, 0);
@@ -286,16 +283,17 @@ Policy:
 
 1. transparent rendering is automatic after explicit opt-in;
 2. alpha values remain material/color data;
-3. `DVZ_ALPHA_BLENDED` maps to WBOIT by default in v0.4;
-4. no CPU sorting is exposed to the user;
-5. no separate transparent mesh visual family is needed;
-6. capability failure produces a diagnostic rather than a silent downgrade.
+3. `DVZ_ALPHA_BLENDED` maps to ordinary source-over blending;
+4. `DVZ_ALPHA_WBOIT` maps to weighted blended order-independent transparency;
+5. no CPU sorting is exposed to the user;
+6. no separate transparent mesh visual family is needed;
+7. capability failure produces a diagnostic rather than a silent downgrade.
 
 
 ## Non-Goals For The First Slice
 
 1. exact per-pixel linked-list OIT;
-2. ordinary sorted alpha as an implicit fallback;
+2. CPU-sorted alpha fallback;
 3. volume transparency integration;
 4. WebGPU parity unless explicitly scoped;
 5. napari-style blend modes beyond alpha mode;

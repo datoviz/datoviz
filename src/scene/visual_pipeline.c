@@ -897,7 +897,7 @@ bool _scene_visual_shader_desc(
  */
 bool _scene_visual_pipeline_desc(
     const DvzSceneVisualDesc* visual, bool picking, bool pass_needs_depth,
-    bool wboit_accumulation,
+    bool wboit_accumulation, DvzAlphaMode alpha_mode,
     DvzSceneVisualPipelineDesc* out)
 {
     ANN(visual);
@@ -954,7 +954,8 @@ bool _scene_visual_pipeline_desc(
         out->needs_shading_layout = visual->has_normal;
         if (pass_needs_depth)
         {
-            out->depth_write_enabled = visual->has_normal && !wboit_accumulation;
+            out->depth_write_enabled =
+                visual->has_normal && !wboit_accumulation && alpha_mode != DVZ_ALPHA_BLENDED;
             out->depth_compare_op =
                 (visual->has_normal || wboit_accumulation) ? VK_COMPARE_OP_LESS_OR_EQUAL :
                                                              VK_COMPARE_OP_ALWAYS;

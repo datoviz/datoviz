@@ -176,6 +176,8 @@ struct Drp2VkliteObject
     VkImageLayout image_layout;
     uint64_t texture_id;
     uint64_t sampler_id;
+    uint32_t color_target_count;
+    uint64_t color_target_ids[DVZ_DRP2_MAX_COLOR_ATTACHMENTS];
     uint32_t usage;
     uint32_t format;
     uint32_t width;

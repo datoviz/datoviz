@@ -295,6 +295,8 @@ int test_scene_rejects_unsupported_point_attribute(TstSuite* suite, TstItem* ite
 
 int test_scene_visual_alpha_mode(TstSuite* suite, TstItem* item);
 
+int test_scene_visual_alpha_mode_standard_blend(TstSuite* suite, TstItem* item);
+
 int test_scene_visual_alpha_mode_splits_frame_plan_passes(TstSuite* suite, TstItem* item);
 
 int test_scene_visual_alpha_mode_requires_wboit_capabilities(TstSuite* suite, TstItem* item);

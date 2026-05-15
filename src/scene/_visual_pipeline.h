@@ -163,7 +163,7 @@ bool _scene_visual_shader_desc(
 
 bool _scene_visual_pipeline_desc(
     const DvzSceneVisualDesc* visual, bool picking, bool pass_needs_depth,
-    bool wboit_accumulation,
+    bool wboit_accumulation, DvzAlphaMode alpha_mode,
     DvzSceneVisualPipelineDesc* out);
 
 bool _scene_visual_bind_desc(

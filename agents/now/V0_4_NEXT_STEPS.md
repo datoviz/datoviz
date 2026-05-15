@@ -98,8 +98,8 @@ and deferred borrowed-frame retirement setup. Validation: `git diff --check`, `j
 `just test drp2` (`83/83`), `just test scene` (`143/143`), and `clang-tidy -p build --quiet` on
 the touched DRP2 files.
 
-First WBOIT planning slice on `2026-05-15`: retained scene panel planning now routes
-`DVZ_ALPHA_BLENDED` visuals into a transparent accumulation FramePlan node, keeps opaque/mask visuals
+First WBOIT planning slice on `2026-05-15`: retained scene panel planning routes WBOIT visuals into
+a transparent accumulation FramePlan node, keeps opaque/mask/ordinary blended visuals
 in the opaque node, and appends a WBOIT resolve node when transparent visuals are present. Capability
 validation now scans all render nodes rather than only the first one, so split render plans still
 observe texture, scene-render, and WBOIT requirements. Focused validation: `just build` passed;
@@ -120,6 +120,16 @@ through semantic validation and JSON serialization. Validation: `just build`,
 `./build/testing/dvztest_drp2 test_drp2_wboit_accumulation_resolve_stream`, targeted fixture runner
 on the WBOIT fixture, positive fixture corpus (`36/36`), and `just spec-check` (`123/123` fixtures,
 `52` fixture-runner tests, `7` schema tests) passed.
+
+Executable WBOIT scene/app slice on `2026-05-15`: `DVZ_ALPHA_BLENDED` is now the ordinary source-over
+alpha path and `DVZ_ALPHA_WBOIT` is the explicit weighted blended OIT path. Scene lowering emits the
+WBOIT accumulation/resolve DRP2 shape with scene-owned shaders, vklite records all passes into the
+active borrowed frame command buffer, and transient depth/color transitions are synchronized for the
+multi-pass app path. `examples/c/hello_mesh_wboit_glfw.c` now exercises an arcball mesh scene with
+an opaque lit cube and a WBOIT transparent shell. Validation: `just build`,
+`./build/testing/dvztest_scene test_scene_visual_alpha_mode` (`6/6`),
+`./build/testing/dvztest_drp2 test_drp2` (`86/86`), and
+`./build/examples/c/hello_mesh_wboit_glfw 2` passed without validation output.
 
 
 ## Immediate Task
@@ -192,8 +202,9 @@ Deliver the next implementation slices in this order unless the user redirects:
    native 3D and manual-smoke gaps are clearer.
 9. Picking payload widening after the hardened slice: richer ids, mesh targets, and less ad-hoc RGBA
    payload encoding.
-10. WBOIT next slice: teach the vklite DRP2 runtime and scene lowering to allocate/sample the WBOIT
-    intermediate targets with scene-owned accumulation and resolve shaders. Use
+10. WBOIT follow-up slice: polish the interactive mesh example visually, add any missing offscreen
+    WBOIT readback/capture coverage, and tighten DRP2 validation around pipeline color-target formats
+    versus render-pass attachment formats. Use
     [WBOIT_MESH_INTERACTIVE_PLAN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/WBOIT_MESH_INTERACTIVE_PLAN.md)
     as the implementation checklist.
 

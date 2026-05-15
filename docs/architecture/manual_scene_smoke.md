@@ -80,6 +80,32 @@ Current gap: live capture/readback is not part of this GLFW example; offscreen `
 covers capture.
 
 
+### 3D mesh WBOIT transparency
+
+Command:
+
+```bash
+./build/examples/c/hello_mesh_wboit_glfw
+```
+
+Bounded validation smoke:
+
+```bash
+./build/examples/c/hello_mesh_wboit_glfw 2
+```
+
+Expected behavior: a lit opaque cube renders inside a transparent cyan mesh shell. Idle rotation
+advances through the scene clock, arcball drag remains interactive, and Vulkan validation stays
+quiet for the bounded smoke.
+
+Automated coverage: `test_scene_visual_alpha_mode_standard_blend`,
+`test_scene_visual_alpha_mode_emits_wboit_drp2`,
+`test_scene_visual_alpha_mode_wboit_glsl_executes`,
+`test_drp2_wboit_accumulation_resolve_stream`, and DRP2 runtime multi-color render-pass tests.
+
+Current gap: visual polish and offscreen WBOIT capture/readback coverage are still minimal.
+
+
 ### App trace/status
 
 Command:
@@ -268,6 +294,7 @@ just test test_scene_process_pick_probe_requests
 ./build/examples/c/hello_point_glfw
 ./build/examples/c/hello_pick_hover_glfw
 ./build/examples/c/hello_mesh_glfw
+./build/examples/c/hello_mesh_wboit_glfw 2
 ```
 
 Record OS, GPU, backend, command, observed behavior, and whether Vulkan validation layers were

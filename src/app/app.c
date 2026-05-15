@@ -1056,6 +1056,11 @@ static void _app_draw(DvzCanvas* canvas, const DvzStreamFrame* frame, void* user
     DvzCapabilitySnapshot caps;
     dvz_capability_snapshot_default(&caps);
     caps.shader_format_glsl = true;
+    caps.max_color_attachments = 2;
+    caps.render_target_format_rgba16float = true;
+    caps.render_target_format_r16float = true;
+    caps.supports_render_target_sampling = true;
+    caps.supports_color_blending = true;
 
     DvzFramePlanEmitConfig cfg = dvz_frame_plan_emit_config();
     cfg.shader_format         = DVZ_SCENE_SHADER_FORMAT_GLSL;
@@ -1148,8 +1153,12 @@ DvzApp* dvz_app_with_config(DvzScene* scene, const DvzAppConfig* config)
         return NULL;
     }
 
-    /* GPU context — request dynamic rendering, synchronization2, and timeline semaphores. */
+    /* GPU context — request independent blending, dynamic rendering, synchronization2, and
+     * timeline semaphores. */
     DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
+    VkPhysicalDeviceFeatures features10 = {0};
+    features10.independentBlend = true;
+    dvz_gpu_ctx_config_features10(&gpu_cfg, &features10);
     VkPhysicalDeviceVulkan12Features features12 = {
         .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES};
     features12.timelineSemaphore = true;

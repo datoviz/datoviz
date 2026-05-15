@@ -167,7 +167,16 @@ DvzDrp2ValidationResult _vklite_begin_render_pass(
     target = targets[0];
 
     DvzCommands* cmds = NULL;
-    if (target->borrowed_frame_target)
+    if (state->active_borrowed_command_buffer != VK_NULL_HANDLE)
+    {
+        cmds = _vklite_borrowed_frame_commands_create(
+            state->runtime->device, state->active_borrowed_command_buffer);
+        if (cmds == NULL)
+            return _vklite_fail_destroy_object(
+                pass, DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+        pass->borrowed_commands = true;
+    }
+    else if (target->borrowed_frame_target)
     {
         cmds = _vklite_borrowed_frame_commands_create(
             state->runtime->device, target->command_buffer);
@@ -186,6 +195,9 @@ DvzDrp2ValidationResult _vklite_begin_render_pass(
     pass->commands = cmds;
     pass->width = target->width;
     pass->height = target->height;
+    pass->color_target_count = color_count;
+    for (uint32_t i = 0; i < color_count; i++)
+        pass->color_target_ids[i] = targets[i]->id;
     pass->viewport_x = command->u.begin_render_pass.viewport[0];
     pass->viewport_y = command->u.begin_render_pass.viewport[1];
     pass->viewport_width = command->u.begin_render_pass.viewport[2];
@@ -292,7 +304,7 @@ DvzDrp2ValidationResult _vklite_begin_render_pass(
         }
     }
 
-    if (!target->borrowed_frame_target && dvz_cmd_begin_result(cmds) != 0)
+    if (!pass->borrowed_commands && dvz_cmd_begin_result(cmds) != 0)
         return _vklite_fail_destroy_object(
             pass, DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
     for (uint32_t i = 0; i < state->count; i++)
@@ -330,14 +342,17 @@ DvzDrp2ValidationResult _vklite_begin_render_pass(
     {
         DvzBarriers barriers = {0};
         dvz_barriers(&barriers);
-        DvzBarrierImage* bimg = dvz_barriers_image(&barriers, dvz_image_handle(pass->depth_images, 0));
+        DvzBarrierImage* bimg =
+            dvz_barriers_image(&barriers, dvz_image_handle(pass->depth_images, 0));
         ANN(bimg);
         dvz_barrier_image_stage(
-            bimg, VK_PIPELINE_STAGE_2_NONE,
+            bimg,
+            VK_PIPELINE_STAGE_2_EARLY_FRAGMENT_TESTS_BIT |
+                VK_PIPELINE_STAGE_2_LATE_FRAGMENT_TESTS_BIT,
             VK_PIPELINE_STAGE_2_EARLY_FRAGMENT_TESTS_BIT |
                 VK_PIPELINE_STAGE_2_LATE_FRAGMENT_TESTS_BIT);
         dvz_barrier_image_access(
-            bimg, 0,
+            bimg, VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,
             VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_READ_BIT |
                 VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT);
         dvz_barrier_image_layout(
@@ -353,11 +368,13 @@ DvzDrp2ValidationResult _vklite_begin_render_pass(
             dvz_barriers_image(&barriers, dvz_image_handle(target->depth_images, 0));
         ANN(bimg);
         dvz_barrier_image_stage(
-            bimg, VK_PIPELINE_STAGE_2_NONE,
+            bimg,
+            VK_PIPELINE_STAGE_2_EARLY_FRAGMENT_TESTS_BIT |
+                VK_PIPELINE_STAGE_2_LATE_FRAGMENT_TESTS_BIT,
             VK_PIPELINE_STAGE_2_EARLY_FRAGMENT_TESTS_BIT |
                 VK_PIPELINE_STAGE_2_LATE_FRAGMENT_TESTS_BIT);
         dvz_barrier_image_access(
-            bimg, 0,
+            bimg, VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,
             VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_READ_BIT |
                 VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT);
         dvz_barrier_image_layout(
@@ -741,6 +758,17 @@ _vklite_end_render_pass(Drp2VkliteState* state, uint64_t pass_id, uint32_t comma
         return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
 
     dvz_cmd_rendering_end(pass->commands);
+    for (uint32_t i = 0; i < pass->color_target_count; i++)
+    {
+        Drp2VkliteObject* target = _vklite_find(state, pass->color_target_ids[i]);
+        if (target == NULL || target->borrowed_frame_target || target->images == NULL)
+            continue;
+        if ((target->usage & DVZ_DRP2_TEXTURE_USAGE_TEXTURE_BINDING) == 0)
+            continue;
+        _vklite_transition_image(
+            pass->commands, target, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+            VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT, VK_ACCESS_2_SHADER_SAMPLED_READ_BIT);
+    }
     if (!pass->borrowed_commands)
     {
         DvzDrp2ValidationResult result =
@@ -750,6 +778,12 @@ _vklite_end_render_pass(Drp2VkliteState* state, uint64_t pass_id, uint32_t comma
             _vklite_destroy_object_slot(state, pass);
             return result;
         }
+    }
+    else if (pass->depth_images != NULL &&
+             state->active_borrowed_command_buffer != VK_NULL_HANDLE &&
+             _vklite_defer_destroy_object(state, pass, state->active_borrowed_command_buffer))
+    {
+        return _drp2_ok();
     }
     _vklite_destroy_object_slot(state, pass);
     return _drp2_ok();

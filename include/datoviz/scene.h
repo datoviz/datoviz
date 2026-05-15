@@ -307,9 +307,9 @@ DVZ_EXPORT void dvz_visual_set_visible(DvzVisual* visual, bool visible);
 /**
  * Set the visual alpha handling mode.
  *
- * This controls which transparency path the scene planner should use for the visual. The active
- * first slice stores the mode for later frame-plan pass assignment; rendering remains opaque until
- * the WBOIT pass path is implemented.
+ * This controls which transparency path the scene planner should use for the visual. Use
+ * DVZ_ALPHA_BLENDED for ordinary source-over alpha blending and DVZ_ALPHA_WBOIT for weighted
+ * blended order-independent transparency.
  *
  * @param visual the visual
  * @param mode the alpha handling mode

@@ -253,6 +253,7 @@ bool _validate_capabilities(
     bool has_compute = false;
     bool has_texture_render = false;
     bool has_scene_render = false;  /* scene nodes do per-visual draws, not one composite draw */
+    bool has_blend_request = false;
     bool has_wboit_request = false;
     uint64_t max_readback_size = 0;
     uint32_t max_texture_extent = 0;
@@ -297,8 +298,11 @@ bool _validate_capabilities(
             has_scene_render = has_scene_render || node->u.render.visual_count > 0;
             for (uint32_t j = 0; j < node->u.render.visual_count; j++)
             {
-                if (node->u.render.visual_metadata[j].has_metadata &&
-                    node->u.render.visual_metadata[j].alpha_mode == DVZ_ALPHA_BLENDED)
+                if (!node->u.render.visual_metadata[j].has_metadata)
+                    continue;
+                if (node->u.render.visual_metadata[j].alpha_mode == DVZ_ALPHA_BLENDED)
+                    has_blend_request = true;
+                else if (node->u.render.visual_metadata[j].alpha_mode == DVZ_ALPHA_WBOIT)
                 {
                     has_wboit_request = true;
                     break;
@@ -336,6 +340,11 @@ bool _validate_capabilities(
     if (max_readback_size > caps->max_buffer_size)
     {
         _diagnostic(report, "readback buffer exceeds max_buffer_size");
+        return false;
+    }
+    if (has_blend_request && !caps->supports_color_blending)
+    {
+        _diagnostic(report, "alpha blending requires color blending support");
         return false;
     }
     if (has_wboit_request && !_validate_wboit_capabilities(caps, report))

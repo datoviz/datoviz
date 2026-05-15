@@ -391,11 +391,11 @@ static bool _scene_visual_frame_plan_metadata(
  * Return whether an alpha mode belongs in the transparent WBOIT accumulation pass.
  *
  * @param mode the visual alpha mode
- * @return whether the visual should be planned as transparent
+ * @return whether the visual should be planned through WBOIT
  */
-static bool _scene_alpha_mode_is_transparent(DvzAlphaMode mode)
+static bool _scene_alpha_mode_is_wboit(DvzAlphaMode mode)
 {
-    return mode == DVZ_ALPHA_BLENDED || mode == DVZ_ALPHA_BLENDED_EXACT;
+    return mode == DVZ_ALPHA_WBOIT;
 }
 
 
@@ -568,7 +568,7 @@ void _scene_emit_panel_render(
         if (pos_idx < 0 || visual->attrs[pos_idx].item_count == 0)
             continue;
 
-        bool transparent = _scene_alpha_mode_is_transparent(visual->alpha_mode);
+        bool transparent = _scene_alpha_mode_is_wboit(visual->alpha_mode);
         if (transparent)
         {
             has_transparent = true;
@@ -601,7 +601,7 @@ void _scene_emit_panel_render(
         DvzVisual* visual = attach->visual;
         if (visual == NULL || !visual->visible)
             continue;
-        if (!_scene_alpha_mode_is_transparent(visual->alpha_mode))
+        if (!_scene_alpha_mode_is_wboit(visual->alpha_mode))
             continue;
         uint32_t vidx = 0;
         if (!_figure_visual_index(figure, visual, &vidx))

@@ -81,6 +81,19 @@ struct SceneWboitTargets
 /*************************************************************************************************/
 
 /**
+ * Return whether an alpha mode uses ordinary source-over blending.
+ *
+ * @param mode the visual alpha mode
+ * @return whether the mode needs a blended final-target pipeline
+ */
+static bool _alpha_mode_is_standard_blend(DvzAlphaMode mode)
+{
+    return mode == DVZ_ALPHA_BLENDED;
+}
+
+
+
+/**
  * Prepare resources for one panel's draws before opening the render pass.
  *
  * @param emitter frame-plan emitter carrying scene/runtime state.
@@ -143,6 +156,15 @@ static bool _emitter_prepare_render_multi(
         if (!_scene_visual_shader_desc(
                 &desc, render->u.render.picking, wboit_accumulation, fmt, &shader))
             continue;
+        DvzAlphaMode alpha_mode = render->u.render.visual_metadata[i].has_metadata
+                                      ? render->u.render.visual_metadata[i].alpha_mode
+                                      : DVZ_ALPHA_OPAQUE;
+        if (_alpha_mode_is_standard_blend(alpha_mode))
+        {
+            size_t key_len = strlen(shader.pipeline_key);
+            dvz_snprintf(
+                shader.pipeline_key + key_len, sizeof(shader.pipeline_key) - key_len, "_blend");
+        }
 
         /* Shaders (cached). */
         uint64_t vs_id = _obj_id(emitter, shader.vertex_key, &is_new);
@@ -196,7 +218,7 @@ static bool _emitter_prepare_render_multi(
             DvzSceneVisualPipelineDesc pipeline = {0};
             if (!_scene_visual_pipeline_desc(
                     &desc, render->u.render.picking, pass_needs_depth, wboit_accumulation,
-                    &pipeline))
+                    alpha_mode, &pipeline))
             {
                 ok = false;
                 break;
@@ -253,6 +275,15 @@ static bool _emitter_prepare_render_multi(
                          stream, 1, VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ONE, VK_BLEND_OP_ADD,
                          VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ONE, VK_BLEND_OP_ADD,
                          VK_COLOR_COMPONENT_R_BIT);
+            }
+            else if (ok && _alpha_mode_is_standard_blend(alpha_mode))
+            {
+                ok = dvz_drp2_stream_pipeline_set_color_blend(
+                    stream, 0, VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,
+                    VK_BLEND_OP_ADD, VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,
+                    VK_BLEND_OP_ADD,
+                    VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |
+                        VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT);
             }
         }
 
