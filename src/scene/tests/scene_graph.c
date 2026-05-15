@@ -342,6 +342,95 @@ int test_scene_primitive_triangle_list_glsl_executes(TstSuite* suite, TstItem* i
 }
 
 
+int test_scene_point_emit_wgsl_instanced_quads(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    AT(scene != NULL);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    AT(figure != NULL);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    AT(panel != NULL);
+    DvzVisual* visual = dvz_point(scene, 0);
+    AT(visual != NULL);
+
+    float positions[3][3] = {
+        {-0.5f, -0.4f, 0.0f},
+        { 0.0f,  0.4f, 0.0f},
+        { 0.5f, -0.4f, 0.0f},
+    };
+    DvzColor colors[3] = {{255, 0, 0, 255}, {0, 180, 255, 255}, {255, 255, 255, 255}};
+    float sizes[3] = {8.0f, 14.0f, 20.0f};
+
+    AT(dvz_visual_set_data(visual, "position", positions, 3) == 0);
+    AT(dvz_visual_set_data(visual, "color", colors, 3) == 0);
+    AT(dvz_visual_set_data(visual, "size", sizes, 3) == 0);
+    AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
+
+    DvzCapabilitySnapshot caps;
+    dvz_capability_snapshot_default(&caps);
+    caps.shader_format_wgsl = true;
+    caps.shader_format_glsl = false;
+    caps.max_vertex_buffers = 16;
+    caps.max_bind_groups = 4;
+    caps.max_buffer_size = 256 * 1024 * 1024;
+
+    DvzFramePlanEmitConfig emit_cfg = dvz_frame_plan_emit_config();
+    emit_cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_WGSL;
+
+    DvzDiagnosticReport report;
+    dvz_diagnostic_report_init(&report);
+    DvzDrp2CommandStream* stream = dvz_figure_emit_ex(figure, &caps, &report, &emit_cfg);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+    ANN(stream);
+
+    bool found_pipeline = false;
+    bool found_draw = false;
+    const uint32_t count = dvz_drp2_stream_count(stream);
+    for (uint32_t i = 0; i < count; i++)
+    {
+        const DvzDrp2Command* command = dvz_drp2_stream_get(stream, i);
+        ANN(command);
+        if (command->type == DVZ_DRP2_COMMAND_CREATE_RENDER_PIPELINE)
+        {
+            found_pipeline = true;
+            AT(command->u.create_render_pipeline.topology == VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
+            AT(command->u.create_render_pipeline.binding_count == 3);
+            AT(command->u.create_render_pipeline.binding_step_modes[0] ==
+               DVZ_DRP2_VERTEX_STEP_MODE_INSTANCE);
+            AT(command->u.create_render_pipeline.binding_step_modes[1] ==
+               DVZ_DRP2_VERTEX_STEP_MODE_INSTANCE);
+            AT(command->u.create_render_pipeline.binding_step_modes[2] ==
+               DVZ_DRP2_VERTEX_STEP_MODE_INSTANCE);
+        }
+        else if (command->type == DVZ_DRP2_COMMAND_DRAW)
+        {
+            found_draw = true;
+            AT(command->u.draw.vertex_count == 6);
+            AT(command->u.draw.instance_count == 3);
+        }
+    }
+    AT(found_pipeline);
+    AT(found_draw);
+
+    char* json = dvz_drp2_stream_json(stream, "scene_point_wgsl_from_c");
+    ANN(json);
+    AT(strstr(json, "\"format\": \"wgsl\"") != NULL);
+    AT(strstr(json, "\"topology\": \"triangle-list\"") != NULL);
+    AT(strstr(json, "\"step_mode\": \"instance\"") != NULL);
+    AT(strstr(json, "\"vertex_count\": 6") != NULL);
+    AT(strstr(json, "\"instance_count\": 3") != NULL);
+    AT(strstr(json, "quad_corner") != NULL);
+    dvz_drp2_stream_json_destroy(json);
+
+    dvz_drp2_stream_destroy(stream);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
 int test_scene_primitive_line_strip_glsl_executes(TstSuite* suite, TstItem* item)
 {
     ANN(suite);
@@ -2599,13 +2688,7 @@ int test_scene_second_emit_no_uploads_when_not_dirty(TstSuite* suite, TstItem* i
     AT(dvz_diagnostic_report_count(&report) == 0);
     AT(stream1 != NULL);
 
-    uint32_t wb_count1 = 0;
-    for (uint32_t i = 0; i < dvz_drp2_stream_count(stream1); i++)
-    {
-        const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream1, i);
-        if (cmd->type == DVZ_DRP2_COMMAND_WRITE_BUFFER)
-            wb_count1++;
-    }
+    uint32_t wb_count1 = _stream_visual_write_buffer_count(stream1);
     AT(wb_count1 > 0);
     dvz_drp2_stream_destroy(stream1);
 
@@ -2620,8 +2703,11 @@ int test_scene_second_emit_no_uploads_when_not_dirty(TstSuite* suite, TstItem* i
     for (uint32_t i = 0; i < dvz_drp2_stream_count(stream2); i++)
     {
         const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream2, i);
-        if (cmd->type == DVZ_DRP2_COMMAND_WRITE_BUFFER)
+        if (cmd->type == DVZ_DRP2_COMMAND_WRITE_BUFFER &&
+            cmd->u.write_buffer.size != sizeof(DvzMVP))
+        {
             wb_count2++;
+        }
         else if (cmd->type == DVZ_DRP2_COMMAND_DRAW)
             found_draw = true;
     }
@@ -2777,7 +2863,7 @@ int test_scene_repeated_partial_updates_across_frames(TstSuite* suite, TstItem* 
     DvzDrp2CommandStream* stream2 = dvz_figure_emit(figure, &caps, &report);
     AT(dvz_diagnostic_report_count(&report) == 0);
     AT(stream2 != NULL);
-    AT(_stream_write_buffer_count(stream2) == 1);
+    AT(_stream_visual_write_buffer_count(stream2) == 1);
     AT(_stream_write_buffer_range_count(stream2, frame2_offset, frame2_size) == 1);
     dvz_drp2_stream_destroy(stream2);
 
@@ -2793,7 +2879,7 @@ int test_scene_repeated_partial_updates_across_frames(TstSuite* suite, TstItem* 
     DvzDrp2CommandStream* stream3 = dvz_figure_emit(figure, &caps, &report);
     AT(dvz_diagnostic_report_count(&report) == 0);
     AT(stream3 != NULL);
-    AT(_stream_write_buffer_count(stream3) == 1);
+    AT(_stream_visual_write_buffer_count(stream3) == 1);
     AT(_stream_write_buffer_range_count(stream3, frame2_offset, frame2_size) == 0);
     AT(_stream_write_buffer_range_count(stream3, frame3_offset, frame3_size) == 1);
 
@@ -2869,7 +2955,7 @@ int test_scene_partial_update_merges_ranges_before_emit(TstSuite* suite, TstItem
     const uint64_t item_size = 3 * sizeof(float);
     const uint64_t expected_offset = 2 * item_size;
     const uint64_t expected_size = 9 * item_size;
-    AT(_stream_write_buffer_count(stream2) == 1);
+    AT(_stream_visual_write_buffer_count(stream2) == 1);
     AT(_stream_write_buffer_range_count(stream2, expected_offset, expected_size) == 1);
 
     dvz_drp2_stream_destroy(stream2);
@@ -2933,7 +3019,7 @@ int test_scene_multiple_panels_multiple_point_visuals_emit(TstSuite* suite, TstI
     DvzDrp2CommandStream* stream1 = dvz_figure_emit(figure, &caps, &report);
     AT(dvz_diagnostic_report_count(&report) == 0);
     AT(stream1 != NULL);
-    AT(_stream_write_buffer_count(stream1) == 6);
+    AT(_stream_visual_write_buffer_count(stream1) == 6);
     AT(_stream_set_vertex_buffer_count(stream1) == 6);
     AT(_stream_draw_count(stream1) == 2);
     uint32_t begin_render_pass_count = 0;
@@ -2970,7 +3056,7 @@ int test_scene_multiple_panels_multiple_point_visuals_emit(TstSuite* suite, TstI
     DvzDrp2CommandStream* stream2 = dvz_figure_emit(figure, &caps, &report);
     AT(dvz_diagnostic_report_count(&report) == 0);
     AT(stream2 != NULL);
-    AT(_stream_write_buffer_count(stream2) == 1);
+    AT(_stream_visual_write_buffer_count(stream2) == 1);
     AT(_stream_write_buffer_range_count(stream2, sizeof(float), 2 * sizeof(float)) == 1);
     AT(_stream_set_vertex_buffer_count(stream2) == 6);
     AT(_stream_draw_count(stream2) == 2);
@@ -3081,6 +3167,7 @@ int test_scene_graph(TstSuite* suite)
     const char* tags = "scene";
 
     TEST_SIMPLE(test_scene_point_emit_glsl_executes);
+    TEST_SIMPLE(test_scene_point_emit_wgsl_instanced_quads);
     TEST_SIMPLE(test_scene_primitive_triangle_list_glsl_executes);
     TEST_SIMPLE(test_scene_primitive_line_strip_glsl_executes);
     TEST_SIMPLE(test_scene_primitive_triangle_list_emit_wgsl);

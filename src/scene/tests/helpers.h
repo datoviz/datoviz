@@ -66,6 +66,8 @@ int _assert_stream_matches_fixture(DvzDrp2CommandStream* stream, const char* nam
 
 uint32_t _stream_write_buffer_count(const DvzDrp2CommandStream* stream);
 
+uint32_t _stream_visual_write_buffer_count(const DvzDrp2CommandStream* stream);
+
 uint32_t _stream_write_buffer_range_count(
     const DvzDrp2CommandStream* stream, uint64_t offset, uint64_t size);
 

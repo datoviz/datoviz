@@ -242,6 +242,30 @@ uint32_t _stream_write_buffer_count(const DvzDrp2CommandStream* stream)
 
 
 /**
+ * Count visual-data WRITE_BUFFER commands in a DRP2 stream.
+ *
+ * @param stream the command stream
+ * @return number of WRITE_BUFFER commands excluding per-panel MVP uniform uploads
+ */
+uint32_t _stream_visual_write_buffer_count(const DvzDrp2CommandStream* stream)
+{
+    ANN(stream);
+
+    uint32_t count = 0;
+    for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
+    {
+        const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream, i);
+        if (cmd->type == DVZ_DRP2_COMMAND_WRITE_BUFFER &&
+            cmd->u.write_buffer.size != sizeof(DvzMVP))
+        {
+            count++;
+        }
+    }
+    return count;
+}
+
+
+/**
  * Count WRITE_BUFFER commands matching a byte range in a DRP2 stream.
  *
  * @param stream the command stream
@@ -355,5 +379,4 @@ uint32_t _stream_create_buffer_size_count(
     }
     return count;
 }
-
 

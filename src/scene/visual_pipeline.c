@@ -725,6 +725,8 @@ bool _scene_visual_shader_desc(
             dvz_snprintf(out->pipeline_key, sizeof(out->pipeline_key), "_pipe_point%s", format_tag);
             out->vertex_glsl = _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_POINT, false);
             out->fragment_glsl = _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_POINT, true);
+            out->vertex_wgsl = _builtin_shader_wgsl(DVZ_SCENE_BUILTIN_SHADER_POINT, false);
+            out->fragment_wgsl = _builtin_shader_wgsl(DVZ_SCENE_BUILTIN_SHADER_POINT, true);
             out->vertex_spirv_key = "point_vert";
             out->fragment_spirv_key = "point_frag";
         }

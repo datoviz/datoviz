@@ -592,7 +592,8 @@ static bool _emitter_emit_render(
         (is_point || is_primitive || is_image) &&
         cfg != NULL &&
         (cfg->shader_format == DVZ_SCENE_SHADER_FORMAT_GLSL ||
-         (cfg->shader_format == DVZ_SCENE_SHADER_FORMAT_WGSL && (is_primitive || is_image)));
+         (cfg->shader_format == DVZ_SCENE_SHADER_FORMAT_WGSL &&
+          (is_point || is_primitive || is_image)));
 
     /* When IMAGE: re-narrow vertex_buffer_ids to (position, texcoords) only — the texture
      * is bound through a bind group, not as a vertex buffer. */
@@ -609,14 +610,18 @@ static bool _emitter_emit_render(
     char fs_key[16];
     char pipe_key[48];
 
-    if (is_point && cfg != NULL && cfg->shader_format == DVZ_SCENE_SHADER_FORMAT_GLSL)
+    if (is_point)
     {
-        /* Point visual: use type-specific shaders and POINT_LIST topology. */
+        /* Point visual: native points for GLSL, instanced quads for WGSL. */
         dvz_snprintf(vs_key, sizeof(vs_key), "_vs_point%s", fmt);
         dvz_snprintf(fs_key, sizeof(fs_key), "_fs_point%s", fmt);
         vs_glsl = _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_POINT, false);
         fs_glsl = _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_POINT, true);
-        topology = VK_PRIMITIVE_TOPOLOGY_POINT_LIST;
+        vs_wgsl = _builtin_shader_wgsl(DVZ_SCENE_BUILTIN_SHADER_POINT, false);
+        fs_wgsl = _builtin_shader_wgsl(DVZ_SCENE_BUILTIN_SHADER_POINT, true);
+        topology = cfg != NULL && cfg->shader_format == DVZ_SCENE_SHADER_FORMAT_WGSL
+                       ? VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST
+                       : VK_PRIMITIVE_TOPOLOGY_POINT_LIST;
 
         uint64_t pos_id = _scene_visual_resource_by_role(
             &emitter->resources, vertex_buffer_ids, vertex_buffer_count,
@@ -778,7 +783,7 @@ static bool _emitter_emit_render(
         }
     }
 
-    if (is_point && cfg != NULL && cfg->shader_format == DVZ_SCENE_SHADER_FORMAT_GLSL)
+    if (is_point)
         dvz_snprintf(pipe_key, sizeof(pipe_key), "_pipe_point%s", fmt);
     else if (is_primitive)
         dvz_snprintf(pipe_key, sizeof(pipe_key), "_pipe_prim_t%u%s", topology, fmt);
@@ -792,7 +797,7 @@ static bool _emitter_emit_render(
         return false;
     if (ok && is_new)
     {
-        if (is_point && cfg != NULL && cfg->shader_format == DVZ_SCENE_SHADER_FORMAT_GLSL)
+        if (is_point)
         {
             /* Explicit vertex layout: binding0=position(vec3), binding1=color(u8vec4), binding2=size(float) */
             uint32_t strides[3]   = {3*sizeof(float), 4*sizeof(uint8_t), sizeof(float)};
@@ -802,11 +807,26 @@ static bool _emitter_emit_render(
                                      VK_FORMAT_R8G8B8A8_UNORM,
                                      VK_FORMAT_R32_SFLOAT};
             uint32_t offsets[3]   = {0, 0, 0};
-            ok = ok && dvz_drp2_stream_create_render_pipeline_ex(
-                           stream, pipe_id, vs_id, fs_id, vertex_buffer_count,
-                           topology,
-                           3, strides,
-                           3, bindings, locations, formats, offsets);
+            if (cfg != NULL && cfg->shader_format == DVZ_SCENE_SHADER_FORMAT_WGSL)
+            {
+                uint32_t step_modes[3] = {
+                    DVZ_DRP2_VERTEX_STEP_MODE_INSTANCE,
+                    DVZ_DRP2_VERTEX_STEP_MODE_INSTANCE,
+                    DVZ_DRP2_VERTEX_STEP_MODE_INSTANCE,
+                };
+                ok = ok && dvz_drp2_stream_create_render_pipeline_ex2(
+                               stream, pipe_id, vs_id, fs_id, vertex_buffer_count,
+                               topology, 3, strides, step_modes,
+                               3, bindings, locations, formats, offsets);
+            }
+            else
+            {
+                ok = ok && dvz_drp2_stream_create_render_pipeline_ex(
+                               stream, pipe_id, vs_id, fs_id, vertex_buffer_count,
+                               topology,
+                               3, strides,
+                               3, bindings, locations, formats, offsets);
+            }
             if (ok && uses_mvp && mvp_bgl_id != 0)
                 ok = dvz_drp2_stream_pipeline_set_bind_group_layout(stream, mvp_bgl_id);
         }
@@ -883,7 +903,15 @@ static bool _emitter_emit_render(
         ok = dvz_drp2_stream_set_bind_group(stream, render_pass_id, 1, bg_id);
     for (uint32_t i = 0; ok && i < vertex_buffer_count; i++)
         ok = dvz_drp2_stream_set_vertex_buffer(stream, render_pass_id, i, vertex_buffer_ids[i], 0);
-    ok = ok && dvz_drp2_stream_draw(stream, render_pass_id, vertex_count, 1, 0, 0) &&
+    uint32_t draw_vertex_count = vertex_count;
+    uint32_t draw_instance_count = 1;
+    if (is_point && cfg != NULL && cfg->shader_format == DVZ_SCENE_SHADER_FORMAT_WGSL)
+    {
+        draw_vertex_count = 6;
+        draw_instance_count = vertex_count;
+    }
+    ok = ok && dvz_drp2_stream_draw(
+                   stream, render_pass_id, draw_vertex_count, draw_instance_count, 0, 0) &&
          dvz_drp2_stream_end_render_pass(stream, render_pass_id);
     ok = ok && _render_pass_copy_finish_submit(
                    stream, encoder_id, command_buffer_id, submission_id, color_id, rb_id,
