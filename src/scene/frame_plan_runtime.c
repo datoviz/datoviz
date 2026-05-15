@@ -337,6 +337,7 @@ static void _emitter_label_stream_ids(
  * @param stream destination DRP2 command stream.
  * @param render render node to prepare.
  * @param cfg optional frame-plan emit configuration.
+ * @param pass_has_depth_attachment whether the render pass will carry a depth attachment.
  * @param sampled_depth_id depth texture sampled by volume shaders, or zero.
  * @param report diagnostic report receiving recoverable emission errors.
  * @param draws output draw descriptors filled from prepared visuals.
@@ -345,8 +346,9 @@ static void _emitter_label_stream_ids(
  */
 static bool _emitter_prepare_render_multi(
     DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, const DvzFramePlanNode* render,
-    const DvzFramePlanEmitConfig* cfg, uint64_t sampled_depth_id, DvzDiagnosticReport* report,
-    SceneRenderDraw* draws, uint32_t* draw_count_out)
+    const DvzFramePlanEmitConfig* cfg, bool pass_has_depth_attachment,
+    uint64_t sampled_depth_id, DvzDiagnosticReport* report, SceneRenderDraw* draws,
+    uint32_t* draw_count_out)
 {
     ANN(emitter);
     ANN(stream);
@@ -359,7 +361,6 @@ static bool _emitter_prepare_render_multi(
     const char* fmt = _shader_format_tag(cfg);
     bool wboit_accumulation =
         render->u.render.pass_role == DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_ACCUMULATION;
-    bool pass_needs_depth = _scene_render_needs_depth(emitter, render);
 
     uint64_t common_bgl_id = 0;
     uint64_t apply_bg_id = 0;
@@ -462,8 +463,9 @@ static bool _emitter_prepare_render_multi(
         {
             DvzSceneVisualPipelineDesc pipeline = {0};
             if (!_scene_visual_pipeline_desc(
-                    &desc, render->u.render.picking, pass_needs_depth, wboit_accumulation,
-                    alpha_mode, render->u.render.controller_modes[i], &pipeline))
+                    &desc, render->u.render.picking, pass_has_depth_attachment,
+                    wboit_accumulation, alpha_mode, render->u.render.controller_modes[i],
+                    &pipeline))
             {
                 ok = false;
                 break;
@@ -1544,11 +1546,16 @@ static bool _emitter_emit_render_multi(
                 graph_pass->depth_attachment.access == DVZ_FRAME_GRAPH_ATTACHMENT_ACCESS_READ
             ? graph_depth_id
             : 0;
+    bool pass_has_depth_attachment =
+        graph_pass != NULL && graph_pass->has_depth_attachment && graph_depth_id != 0;
+    if (!pass_has_depth_attachment && needs_depth && graph_depth_id == 0)
+        pass_has_depth_attachment = true;
 
     SceneRenderDraw draws[DVZ_SCENE_MAX_RENDER_VISUALS] = {0};
     uint32_t draw_count = 0;
     ok = _emitter_prepare_render_multi(
-        emitter, stream, render, cfg, sampled_depth_id, report, draws, &draw_count);
+        emitter, stream, render, cfg, pass_has_depth_attachment, sampled_depth_id, report, draws,
+        &draw_count);
     if (!ok)
         return false;
 
@@ -1626,7 +1633,7 @@ static bool _emitter_emit_scene_figure_renders(
         SceneRenderBatch* batch = &batches[batch_count];
         batch->render = render;
         ok = _emitter_prepare_render_multi(
-            emitter, stream, render, cfg, 0, report, batch->draws, &batch->draw_count);
+            emitter, stream, render, cfg, false, 0, report, batch->draws, &batch->draw_count);
         if (ok)
             batch_count++;
     }
@@ -1735,7 +1742,21 @@ static bool _emitter_emit_scene_wboit_renders(
         if (render->u.render.pass_role == DVZ_FRAME_PLAN_RENDER_PASS_WBOIT_RESOLVE)
             continue;
 
+        const DvzFrameGraphPass* render_graph_pass = NULL;
+        uint64_t render_graph_depth_id = 0;
+        ok = _graph_resolve_render_depth(
+            emitter, stream, plan, render, cfg, &render_graph_pass, &render_graph_depth_id);
+        if (!ok)
+            break;
+        bool pass_has_depth_attachment =
+            render_graph_pass != NULL && render_graph_pass->has_depth_attachment &&
+            render_graph_depth_id != 0;
+        if (!pass_has_depth_attachment && _scene_render_needs_depth(emitter, render))
+            pass_has_depth_attachment = true;
         uint64_t sampled_depth_id = 0;
+        if (render_graph_pass != NULL && render_graph_pass->has_depth_attachment &&
+            render_graph_pass->depth_attachment.access == DVZ_FRAME_GRAPH_ATTACHMENT_ACCESS_READ)
+            sampled_depth_id = render_graph_depth_id;
         if (render->u.render.pass_role == DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_ACCUMULATION)
         {
             ok = _emitter_prepare_wboit_targets(
@@ -1755,7 +1776,9 @@ static bool _emitter_emit_scene_wboit_renders(
             if (ok)
             {
                 wboit_targets[target_count].color_id = color_id;
-                sampled_depth_id = wboit_targets[target_count].depth_id;
+                if (graph_pass != NULL && graph_pass->has_depth_attachment &&
+                    graph_pass->depth_attachment.access == DVZ_FRAME_GRAPH_ATTACHMENT_ACCESS_READ)
+                    sampled_depth_id = wboit_targets[target_count].depth_id;
                 wboit_renders[target_count++] = render;
             }
         }
@@ -1765,8 +1788,8 @@ static bool _emitter_emit_scene_wboit_renders(
             SceneRenderBatch* batch = &batches[batch_count];
             batch->render = render;
             ok = _emitter_prepare_render_multi(
-                emitter, stream, render, cfg, sampled_depth_id, report, batch->draws,
-                &batch->draw_count);
+                emitter, stream, render, cfg, pass_has_depth_attachment, sampled_depth_id,
+                report, batch->draws, &batch->draw_count);
             if (ok)
                 batch_count++;
         }

@@ -1109,7 +1109,7 @@ bool _scene_visual_bind_desc(
 
 
 /**
- * Return whether a scene render node needs a depth attachment.
+ * Return whether a scene render node needs a depth attachment for fixed-function depth testing.
  *
  * @param emitter the persistent emitter
  * @param render the render node
@@ -1130,8 +1130,6 @@ bool _scene_render_needs_depth(DvzFramePlanEmitter* emitter, const DvzFramePlanN
         const DvzFramePlanVisualMeta* meta = &render->u.render.visual_metadata[i];
         if (meta->has_metadata)
         {
-            if (meta->visual_type == DVZ_VISUAL_TYPE_VOLUME)
-                return true;
             if (!_visual_meta_is_primitive(meta->visual_type))
                 continue;
             uint64_t pos_buf = _resource_lookup_label(&emitter->resources, meta->position_id);
