@@ -4176,6 +4176,30 @@ int test_scene_visual_alpha_mode_splits_frame_plan_passes(TstSuite* suite, TstIt
     AT(strcmp(opaque_node->u.render.render_target_id, "rt") == 0);
     AT(strcmp(accum_node->u.render.render_target_id, "rt.wboit_accum") == 0);
     AT(strcmp(resolve_node->u.render.render_target_id, "rt") == 0);
+    AT(dvz_frame_plan_graph_resource_count(plan) == 3);
+    AT(dvz_frame_plan_graph_pass_count(plan) == 3);
+
+    const DvzFrameGraphResource* accum_resource = dvz_frame_plan_graph_resource_get(plan, 1);
+    const DvzFrameGraphResource* weight_resource = dvz_frame_plan_graph_resource_get(plan, 2);
+    ANN(accum_resource);
+    ANN(weight_resource);
+    AT(strcmp(accum_resource->id, "figure_0_p0.wboit.accum") == 0);
+    AT(strcmp(weight_resource->id, "figure_0_p0.wboit.weight") == 0);
+    AT(accum_resource->usage_flags & DVZ_FRAME_GRAPH_RESOURCE_USAGE_COLOR_ATTACHMENT);
+    AT(accum_resource->usage_flags & DVZ_FRAME_GRAPH_RESOURCE_USAGE_SAMPLED);
+
+    const DvzFrameGraphPass* accum_pass = dvz_frame_plan_graph_pass_get(plan, 1);
+    const DvzFrameGraphPass* resolve_pass = dvz_frame_plan_graph_pass_get(plan, 2);
+    ANN(accum_pass);
+    ANN(resolve_pass);
+    AT(accum_pass->color_attachment_count == 2);
+    AT(resolve_pass->read_count == 2);
+    AT(resolve_pass->color_attachment_count == 1);
+
+    DvzDiagnosticReport report = {0};
+    dvz_diagnostic_report_init(&report);
+    AT(dvz_frame_plan_graph_validate(plan, &report));
+    AT(dvz_diagnostic_report_count(&report) == 0);
 
     dvz_frame_plan_destroy(plan);
     dvz_scene_destroy(scene);

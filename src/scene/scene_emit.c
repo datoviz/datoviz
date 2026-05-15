@@ -478,6 +478,253 @@ static bool _scene_alpha_mode_is_wboit(DvzAlphaMode mode)
 
 
 /**
+ * Return whether one retained visual should participate in depth-tested scene passes.
+ *
+ * @param visual the retained visual
+ * @param attach the panel attachment
+ * @return whether the visual requests scene depth
+ */
+static bool _scene_visual_requests_depth(const DvzVisual* visual, const DvzPanelAttach* attach)
+{
+    ANN(visual);
+    ANN(attach);
+    if (attach->controller_mode == DVZ_CONTROLLER_FIXED)
+        return false;
+    return visual->type == DVZ_VISUAL_TYPE_PRIMITIVE || visual->type == DVZ_VISUAL_TYPE_MESH ||
+           visual->type == DVZ_VISUAL_TYPE_PATH;
+}
+
+
+
+/**
+ * Return whether a graph resource id is already declared.
+ *
+ * @param plan the frame plan
+ * @param resource_id the resource id
+ * @return whether the graph resource exists
+ */
+static bool _scene_frame_graph_has_resource(const DvzFramePlan* plan, const char* resource_id)
+{
+    ANN(plan);
+    ANN(resource_id);
+    for (uint32_t i = 0; i < dvz_frame_plan_graph_resource_count(plan); i++)
+    {
+        const DvzFrameGraphResource* resource = dvz_frame_plan_graph_resource_get(plan, i);
+        if (resource != NULL && strcmp(resource->id, resource_id) == 0)
+            return true;
+    }
+    return false;
+}
+
+
+
+/**
+ * Add a graph resource unless it already exists.
+ *
+ * @param plan the frame plan
+ * @param resource the graph resource descriptor
+ * @return whether the resource exists or was added
+ */
+static bool
+_scene_frame_graph_resource_once(DvzFramePlan* plan, const DvzFrameGraphResource* resource)
+{
+    ANN(plan);
+    ANN(resource);
+    if (_scene_frame_graph_has_resource(plan, resource->id))
+        return true;
+    return dvz_frame_plan_graph_resource(plan, resource);
+}
+
+
+
+/**
+ * Fill a color attachment descriptor.
+ *
+ * @param attachment the graph attachment descriptor
+ * @param resource_id the resource id
+ * @param load_op the attachment load op
+ * @param clear whether the attachment starts with a clear value
+ */
+static void _scene_frame_graph_color_attachment(
+    DvzFrameGraphAttachment* attachment, const char* resource_id,
+    DvzFrameGraphAttachmentLoadOp load_op, bool clear)
+{
+    ANN(attachment);
+    ANN(resource_id);
+    dvz_memset(attachment, sizeof(DvzFrameGraphAttachment), 0, sizeof(DvzFrameGraphAttachment));
+    dvz_strlcpy(attachment->resource_id, resource_id, sizeof(attachment->resource_id));
+    attachment->load_op = load_op;
+    attachment->store_op = DVZ_FRAME_GRAPH_ATTACHMENT_STORE_STORE;
+    attachment->access = DVZ_FRAME_GRAPH_ATTACHMENT_ACCESS_WRITE;
+    attachment->clear_color[3] = clear ? 0.0f : 1.0f;
+}
+
+
+
+/**
+ * Fill a depth attachment descriptor.
+ *
+ * @param attachment the graph attachment descriptor
+ * @param resource_id the resource id
+ * @param load_op the attachment load op
+ * @param access the attachment access
+ */
+static void _scene_frame_graph_depth_attachment(
+    DvzFrameGraphAttachment* attachment, const char* resource_id,
+    DvzFrameGraphAttachmentLoadOp load_op, DvzFrameGraphAttachmentAccess access)
+{
+    ANN(attachment);
+    ANN(resource_id);
+    dvz_memset(attachment, sizeof(DvzFrameGraphAttachment), 0, sizeof(DvzFrameGraphAttachment));
+    dvz_strlcpy(attachment->resource_id, resource_id, sizeof(attachment->resource_id));
+    attachment->load_op = load_op;
+    attachment->store_op = DVZ_FRAME_GRAPH_ATTACHMENT_STORE_STORE;
+    attachment->access = access;
+    attachment->clear_depth = 1.0f;
+}
+
+
+
+/**
+ * Emit graph descriptors for one WBOIT panel plan.
+ *
+ * @param plan the frame plan
+ * @param panel_id the panel id
+ * @param opaque_needs_depth whether the opaque pass writes depth
+ * @param transparent_needs_depth whether the accumulation pass reads depth
+ * @return whether graph descriptors were emitted
+ */
+static bool _scene_emit_wboit_frame_graph(
+    DvzFramePlan* plan, const char* panel_id, bool opaque_needs_depth,
+    bool transparent_needs_depth)
+{
+    ANN(plan);
+    ANN(panel_id);
+
+    char accum_id[DVZ_SCENE_LABEL_SIZE];
+    char weight_id[DVZ_SCENE_LABEL_SIZE];
+    char depth_id[DVZ_SCENE_LABEL_SIZE];
+    char opaque_pass_id[DVZ_SCENE_LABEL_SIZE];
+    char accum_pass_id[DVZ_SCENE_LABEL_SIZE];
+    char resolve_pass_id[DVZ_SCENE_LABEL_SIZE];
+    dvz_snprintf(accum_id, sizeof(accum_id), "%s.wboit.accum", panel_id);
+    dvz_snprintf(weight_id, sizeof(weight_id), "%s.wboit.weight", panel_id);
+    dvz_snprintf(depth_id, sizeof(depth_id), "%s.depth", panel_id);
+    dvz_snprintf(opaque_pass_id, sizeof(opaque_pass_id), "%s.opaque", panel_id);
+    dvz_snprintf(accum_pass_id, sizeof(accum_pass_id), "%s.wboit.accum", panel_id);
+    dvz_snprintf(resolve_pass_id, sizeof(resolve_pass_id), "%s.wboit.resolve", panel_id);
+
+    DvzFrameGraphResource rt = {0};
+    dvz_strlcpy(rt.id, "rt", sizeof(rt.id));
+    rt.kind = DVZ_FRAME_GRAPH_RESOURCE_EXTERNAL_TARGET;
+    rt.extent_kind = DVZ_FRAME_GRAPH_EXTENT_FIGURE;
+    rt.usage_flags =
+        DVZ_FRAME_GRAPH_RESOURCE_USAGE_COLOR_ATTACHMENT | DVZ_FRAME_GRAPH_RESOURCE_USAGE_COPY_SRC;
+    rt.lifetime = DVZ_FRAME_GRAPH_RESOURCE_LIFETIME_BORROWED;
+    if (!_scene_frame_graph_resource_once(plan, &rt))
+        return false;
+
+    DvzFrameGraphResource accum = {0};
+    dvz_strlcpy(accum.id, accum_id, sizeof(accum.id));
+    accum.kind = DVZ_FRAME_GRAPH_RESOURCE_TEXTURE;
+    accum.format = VK_FORMAT_R16G16B16A16_SFLOAT;
+    accum.extent_kind = DVZ_FRAME_GRAPH_EXTENT_FIGURE;
+    accum.usage_flags = DVZ_FRAME_GRAPH_RESOURCE_USAGE_COLOR_ATTACHMENT |
+                        DVZ_FRAME_GRAPH_RESOURCE_USAGE_SAMPLED;
+    accum.lifetime = DVZ_FRAME_GRAPH_RESOURCE_LIFETIME_PER_FRAME;
+    if (!_scene_frame_graph_resource_once(plan, &accum))
+        return false;
+
+    DvzFrameGraphResource weight = {0};
+    dvz_strlcpy(weight.id, weight_id, sizeof(weight.id));
+    weight.kind = DVZ_FRAME_GRAPH_RESOURCE_TEXTURE;
+    weight.format = VK_FORMAT_R16_SFLOAT;
+    weight.extent_kind = DVZ_FRAME_GRAPH_EXTENT_FIGURE;
+    weight.usage_flags = DVZ_FRAME_GRAPH_RESOURCE_USAGE_COLOR_ATTACHMENT |
+                         DVZ_FRAME_GRAPH_RESOURCE_USAGE_SAMPLED;
+    weight.lifetime = DVZ_FRAME_GRAPH_RESOURCE_LIFETIME_PER_FRAME;
+    if (!_scene_frame_graph_resource_once(plan, &weight))
+        return false;
+
+    bool shared_depth = opaque_needs_depth && transparent_needs_depth;
+    if (shared_depth)
+    {
+        DvzFrameGraphResource depth = {0};
+        dvz_strlcpy(depth.id, depth_id, sizeof(depth.id));
+        depth.kind = DVZ_FRAME_GRAPH_RESOURCE_TEXTURE;
+        depth.format = VK_FORMAT_D32_SFLOAT;
+        depth.extent_kind = DVZ_FRAME_GRAPH_EXTENT_FIGURE;
+        depth.usage_flags = DVZ_FRAME_GRAPH_RESOURCE_USAGE_DEPTH_ATTACHMENT |
+                            DVZ_FRAME_GRAPH_RESOURCE_USAGE_SAMPLED;
+        depth.lifetime = DVZ_FRAME_GRAPH_RESOURCE_LIFETIME_PER_FRAME;
+        if (!_scene_frame_graph_resource_once(plan, &depth))
+            return false;
+    }
+
+    DvzFrameGraphAttachment color = {0};
+    DvzFrameGraphAttachment depth = {0};
+    DvzFrameGraphPass opaque = {0};
+    dvz_strlcpy(opaque.id, opaque_pass_id, sizeof(opaque.id));
+    dvz_strlcpy(opaque.panel_id, panel_id, sizeof(opaque.panel_id));
+    dvz_strlcpy(opaque.work_label, "opaque", sizeof(opaque.work_label));
+    opaque.kind = DVZ_FRAME_GRAPH_PASS_RENDER;
+    _scene_frame_graph_color_attachment(
+        &color, "rt", DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_CLEAR, true);
+    if (!dvz_frame_graph_pass_color_attachment(&opaque, &color))
+        return false;
+    if (shared_depth)
+    {
+        _scene_frame_graph_depth_attachment(
+            &depth, depth_id, DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_CLEAR,
+            DVZ_FRAME_GRAPH_ATTACHMENT_ACCESS_WRITE);
+        if (!dvz_frame_graph_pass_depth_attachment(&opaque, &depth))
+            return false;
+    }
+    if (!dvz_frame_plan_graph_pass(plan, &opaque))
+        return false;
+
+    DvzFrameGraphPass accum_pass = {0};
+    dvz_strlcpy(accum_pass.id, accum_pass_id, sizeof(accum_pass.id));
+    dvz_strlcpy(accum_pass.panel_id, panel_id, sizeof(accum_pass.panel_id));
+    dvz_strlcpy(accum_pass.work_label, "wboit_accum", sizeof(accum_pass.work_label));
+    accum_pass.kind = DVZ_FRAME_GRAPH_PASS_RENDER;
+    _scene_frame_graph_color_attachment(
+        &color, accum_id, DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_CLEAR, true);
+    if (!dvz_frame_graph_pass_color_attachment(&accum_pass, &color))
+        return false;
+    _scene_frame_graph_color_attachment(
+        &color, weight_id, DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_CLEAR, true);
+    if (!dvz_frame_graph_pass_color_attachment(&accum_pass, &color))
+        return false;
+    if (shared_depth)
+    {
+        _scene_frame_graph_depth_attachment(
+            &depth, depth_id, DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_LOAD,
+            DVZ_FRAME_GRAPH_ATTACHMENT_ACCESS_READ);
+        if (!dvz_frame_graph_pass_depth_attachment(&accum_pass, &depth))
+            return false;
+    }
+    if (!dvz_frame_plan_graph_pass(plan, &accum_pass))
+        return false;
+
+    DvzFrameGraphPass resolve = {0};
+    dvz_strlcpy(resolve.id, resolve_pass_id, sizeof(resolve.id));
+    dvz_strlcpy(resolve.panel_id, panel_id, sizeof(resolve.panel_id));
+    dvz_strlcpy(resolve.work_label, "wboit_resolve", sizeof(resolve.work_label));
+    resolve.kind = DVZ_FRAME_GRAPH_PASS_RENDER;
+    if (!dvz_frame_graph_pass_read(&resolve, accum_id, DVZ_FRAME_GRAPH_ACCESS_SAMPLED) ||
+        !dvz_frame_graph_pass_read(&resolve, weight_id, DVZ_FRAME_GRAPH_ACCESS_SAMPLED))
+        return false;
+    _scene_frame_graph_color_attachment(
+        &color, "rt", DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_LOAD, false);
+    if (!dvz_frame_graph_pass_color_attachment(&resolve, &color))
+        return false;
+    return dvz_frame_plan_graph_pass(plan, &resolve);
+}
+
+
+
+/**
  * Configure common panel transform metadata on a render node.
  *
  * @param node the render node
@@ -633,6 +880,8 @@ void _scene_emit_panel_render(
     DvzFramePlanNode* opaque_node = NULL;
     DvzFramePlanNode* transparent_node = NULL;
     bool has_transparent = false;
+    bool opaque_needs_depth = false;
+    bool transparent_needs_depth = false;
     for (uint32_t k = 0; k < panel->visual_count; k++)
     {
         uint32_t vi = order[k];
@@ -651,6 +900,8 @@ void _scene_emit_panel_render(
         if (transparent)
         {
             has_transparent = true;
+            transparent_needs_depth =
+                transparent_needs_depth || _scene_visual_requests_depth(visual, attach);
             continue;
         }
 
@@ -664,11 +915,12 @@ void _scene_emit_panel_render(
         }
         (void)_scene_append_visual_to_render_pass(
             figure, plan, opaque_node, visual, attach, vidx);
+        opaque_needs_depth = opaque_needs_depth || _scene_visual_requests_depth(visual, attach);
     }
 
     if (opaque_node == NULL && has_transparent)
     {
-        (void)_scene_begin_panel_render_pass(
+        opaque_node = _scene_begin_panel_render_pass(
             plan, panel_id, "rt", panel->desc, DVZ_FRAME_PLAN_RENDER_PASS_OPAQUE, &panel_apply_mvp,
             &panel_viewport);
     }
@@ -700,6 +952,8 @@ void _scene_emit_panel_render(
         }
         (void)_scene_append_visual_to_render_pass(
             figure, plan, transparent_node, visual, attach, vidx);
+        transparent_needs_depth =
+            transparent_needs_depth || _scene_visual_requests_depth(visual, attach);
     }
 
     if (transparent_node != NULL)
@@ -707,5 +961,8 @@ void _scene_emit_panel_render(
         (void)_scene_begin_panel_render_pass(
             plan, panel_id, "rt", panel->desc, DVZ_FRAME_PLAN_RENDER_PASS_WBOIT_RESOLVE,
             &panel_apply_mvp, &panel_viewport);
+        if (!_scene_emit_wboit_frame_graph(
+                plan, panel_id, opaque_needs_depth, transparent_needs_depth))
+            log_error("failed to emit WBOIT FramePlan graph for panel %s", panel_id);
     }
 }
