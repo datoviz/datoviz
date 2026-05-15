@@ -142,7 +142,9 @@ alpha path and `DVZ_ALPHA_WBOIT` is the explicit weighted blended OIT path. Scen
 WBOIT accumulation/resolve DRP2 shape with scene-owned shaders, vklite records all passes into the
 active borrowed frame command buffer, and transient depth/color transitions are synchronized for the
 multi-pass app path. `examples/c/hello_mesh_wboit_glfw.c` now exercises an arcball mesh scene with
-an opaque lit cube and a WBOIT transparent shell. Validation: `just build`,
+an opaque lit cube and a WBOIT transparent shell. The example also has a GUI panel for live shell
+RGB/alpha, ambient/diffuse, and light-direction tuning. Validation before the live-control
+follow-up: `just build`,
 `./build/testing/dvztest_scene test_scene_visual_alpha_mode` (`6/6`),
 `./build/testing/dvztest_drp2 test_drp2` (`86/86`), and
 `./build/examples/c/hello_mesh_wboit_glfw 2` passed without validation output.
@@ -219,8 +221,9 @@ Deliver the next implementation slices in this order unless the user redirects:
    native 3D and manual-smoke gaps are clearer.
 9. Picking payload widening after the hardened slice: richer ids, mesh targets, and less ad-hoc RGBA
    payload encoding.
-10. WBOIT follow-up slice: polish the interactive mesh example visually, add any missing offscreen
-    WBOIT readback/capture coverage, and tighten DRP2 validation around pipeline color-target formats
+10. WBOIT follow-up slice: use the interactive mesh example sliders to settle better default shell
+    material values, add any missing offscreen WBOIT readback/capture coverage, and tighten DRP2
+    validation around pipeline color-target formats
     versus render-pass attachment formats. Use
     [WBOIT_MESH_INTERACTIVE_PLAN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/WBOIT_MESH_INTERACTIVE_PLAN.md)
     as the implementation checklist.

@@ -26,7 +26,8 @@ Low-level Vulkan/vklite proof material already exists in:
 
 Add a native interactive C example, likely `examples/c/hello_mesh_wboit_glfw.c`, that renders an
 arcball-controlled 3D scene with at least one transparent mesh shell and one opaque or less
-transparent interior object.
+transparent interior object. The current example includes a GUI overlay for tuning shell RGB, alpha,
+ambient/diffuse strength, and light direction at runtime.
 
 The example must exercise the active architecture:
 
@@ -256,7 +257,9 @@ area. On macOS, use `direnv exec .` for Vulkan-path tests.
 8. Done: lower scene WBOIT FramePlan nodes to explicit DRP2 command streams.
 9. Done: add focused scene/vklite WBOIT regression tests.
 10. Done: add `examples/c/hello_mesh_wboit_glfw.c`.
-11. Next: improve example aesthetics and add offscreen/capture coverage for WBOIT if needed.
+11. Done: add live GUI controls for WBOIT shell color, alpha, ambient/diffuse, and light direction.
+12. Next: use the live controls to choose better defaults and add offscreen/capture coverage for
+    WBOIT if needed.
 
 
 ## Intended User API Shape

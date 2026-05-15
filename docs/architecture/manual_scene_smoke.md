@@ -95,9 +95,10 @@ Bounded validation smoke:
 ```
 
 Expected behavior: a lit opaque cube renders inside a transparent cyan mesh shell. The shell should
-show face-to-face lighting variation rather than one flat solid color. Idle rotation advances
-through the scene clock, arcball drag remains interactive, and Vulkan validation stays quiet for the
-bounded smoke.
+show face-to-face lighting variation rather than one flat solid color. A GUI overlay named
+`WBOIT shell` exposes live Red, Green, Blue, Alpha, Ambient, Diffuse, and Light X/Y/Z sliders for
+visual tuning. Idle rotation advances through the scene clock, arcball drag remains interactive, and
+Vulkan validation stays quiet for the bounded smoke.
 
 Automated coverage: `test_scene_visual_alpha_mode_standard_blend`,
 `test_scene_visual_alpha_mode_emits_wboit_drp2`,
