@@ -86,7 +86,7 @@ The PoC supports the fixture subset of:
 - `rgba8unorm`, `bgra8unorm`, and `depth32float` textures
 - `r32uint` integer render targets for picking-style readback fixtures
 - one color attachment per render pass
-- `triangle-list` topology
+- `point-list`, `line-list`, `line-strip`, `triangle-list`, and `triangle-strip` topology
 - `uint16` and `uint32` index buffers
 - sampled texture bindings
 - sampler bindings

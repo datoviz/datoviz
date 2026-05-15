@@ -51,8 +51,15 @@ function mapStoreOp(storeOp) {
 
 
 function mapTopology(topology) {
-  if (topology === undefined || topology === "triangle-list") {
-    return "triangle-list";
+  const normalized = topology ?? "triangle-list";
+  if (
+    normalized === "point-list" ||
+    normalized === "line-list" ||
+    normalized === "line-strip" ||
+    normalized === "triangle-list" ||
+    normalized === "triangle-strip"
+  ) {
+    return normalized;
   }
   throw new Error(`unsupported topology: ${topology}`);
 }
