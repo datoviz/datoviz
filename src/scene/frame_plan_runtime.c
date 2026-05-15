@@ -1911,10 +1911,23 @@ static bool _emitter_prepare_depth_peel_targets(
     ok = ok && composite_pass != NULL;
     if (ok)
     {
+        uint64_t composite_front = _graph_sampled_read_texture_id(
+            composite_pass, 0, out->color_id, &out->graph, 0);
+        uint64_t composite_back = _graph_sampled_read_texture_id(
+            composite_pass, 1, out->color_id, &out->graph, 0);
+        uint64_t composite_depth = _graph_sampled_read_texture_id(
+            composite_pass, 2, out->color_id, &out->graph, 0);
+        ok = composite_front != 0 && composite_back != 0 && composite_depth != 0;
+
+        char composite_bg_base[DVZ_SCENE_LABEL_SIZE];
+        dvz_snprintf(
+            composite_bg_base, sizeof(composite_bg_base),
+            "_bg_depth_peel_composite_%" PRIu64 "_%" PRIu64 "_%" PRIu64,
+            composite_front, composite_back, composite_depth);
         char composite_bg_key[DVZ_SCENE_LABEL_SIZE];
         _runtime_scope_key(
-            cfg, "_bg_depth_peel_composite", composite_bg_key, sizeof(composite_bg_key));
-        ok = _depth_peel_resolve_sampled_bind_group(
+            cfg, composite_bg_base, composite_bg_key, sizeof(composite_bg_key));
+        ok = ok && _depth_peel_resolve_sampled_bind_group(
             emitter, stream, composite_pass, &out->graph, composite_bg_key,
             out->sampled_bgl_id, out->sampler_id, &out->composite_bg_id);
     }

@@ -1062,10 +1062,10 @@ static void _app_sync_figure_size(DvzAppWindow* win, const DvzStreamFrame* frame
         DvzInputRouter* router = dvz_canvas_input(win->canvas);
         DvzInputResizeEvent resize = {0};
         if (router != NULL && dvz_input_router_last_resize(router, &resize) &&
-            resize.window_width > 0 && resize.window_height > 0)
+            resize.framebuffer_width > 0 && resize.framebuffer_height > 0)
         {
-            width = resize.window_width;
-            height = resize.window_height;
+            width = resize.framebuffer_width;
+            height = resize.framebuffer_height;
         }
     }
 
@@ -1073,6 +1073,21 @@ static void _app_sync_figure_size(DvzAppWindow* win, const DvzStreamFrame* frame
         dvz_figure_resize(win->figure, width, height);
 }
 
+
+
+/**
+ * Return a frame-local scope key for mutable app-frame runtime intermediates.
+ *
+ * @param frame canvas frame attached to the DRP2 runtime
+ * @return scope id combining the borrowed command buffer and current extent
+ */
+static uint64_t _app_frame_runtime_scope(const DvzStreamFrame* frame)
+{
+    ANN(frame);
+    uint64_t scope = (uint64_t)(uintptr_t)frame->command_buffer;
+    scope ^= ((uint64_t)frame->extent.width << 32) ^ (uint64_t)frame->extent.height;
+    return scope != 0 ? scope : UINT64_C(1);
+}
 
 
 
@@ -1450,7 +1465,7 @@ static void _app_draw(DvzCanvas* canvas, const DvzStreamFrame* frame, void* user
     cfg.color_target_id       = win->target_id;
     cfg.target_width          = frame->extent.width;
     cfg.target_height         = frame->extent.height;
-    cfg.runtime_resource_scope_id = (uint64_t)(uintptr_t)frame->command_buffer;
+    cfg.runtime_resource_scope_id = _app_frame_runtime_scope(frame);
     cfg.clear_color[0]        = 0.05f;
     cfg.clear_color[1]        = 0.05f;
     cfg.clear_color[2]        = 0.08f;

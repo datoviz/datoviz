@@ -4498,6 +4498,7 @@ int test_scene_visual_alpha_mode_emits_depth_peel_drp2(TstSuite* suite, TstItem*
 
     bool has_scoped_front_ping = false;
     bool has_scoped_composite_bind_group = false;
+    char scoped_composite_label[DVZ_SCENE_LABEL_SIZE] = {0};
     for (uint32_t i = 0; i < dvz_drp2_stream_count(scoped_stream); i++)
     {
         const DvzDrp2Command* command = dvz_drp2_stream_get(scoped_stream, i);
@@ -4517,12 +4518,56 @@ int test_scene_visual_alpha_mode_emits_depth_peel_drp2(TstSuite* suite, TstItem*
             has_scoped_composite_bind_group =
                 has_scoped_composite_bind_group ||
                 (label != NULL &&
-                 strcmp(label, "_bg_depth_peel_composite_scope_000000000000007b") == 0);
+                 strstr(label, "_bg_depth_peel_composite_") == label &&
+                 strstr(label, "_scope_000000000000007b") != NULL);
+            if (has_scoped_composite_bind_group && scoped_composite_label[0] == '\0')
+                dvz_strlcpy(scoped_composite_label, label, sizeof(scoped_composite_label));
         }
     }
     AT(has_scoped_front_ping);
     AT(has_scoped_composite_bind_group);
 
+    dvz_diagnostic_report_init(&report);
+    cfg.target_width = 96;
+    cfg.target_height = 48;
+    DvzDrp2CommandStream* scoped_resize_stream =
+        dvz_figure_emit_ex(figure, &caps, &report, &cfg);
+    ANN(scoped_resize_stream);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+
+    bool resized_front_ping = false;
+    bool rebuilt_composite_bind_group = false;
+    for (uint32_t i = 0; i < dvz_drp2_stream_count(scoped_resize_stream); i++)
+    {
+        const DvzDrp2Command* command = dvz_drp2_stream_get(scoped_resize_stream, i);
+        ANN(command);
+        if (command->type == DVZ_DRP2_COMMAND_CREATE_TEXTURE)
+        {
+            const char* label =
+                dvz_drp2_stream_label(scoped_resize_stream, command->u.create_texture.id);
+            resized_front_ping =
+                resized_front_ping ||
+                (label != NULL &&
+                 strcmp(label, "fig0_p0.peel.front_ping_scope_000000000000007b") == 0 &&
+                 command->u.create_texture.width == 96 &&
+                 command->u.create_texture.height == 48);
+        }
+        else if (command->type == DVZ_DRP2_COMMAND_CREATE_BIND_GROUP)
+        {
+            const char* label =
+                dvz_drp2_stream_label(scoped_resize_stream, command->u.create_bind_group.id);
+            rebuilt_composite_bind_group =
+                rebuilt_composite_bind_group ||
+                (label != NULL &&
+                 strstr(label, "_bg_depth_peel_composite_") == label &&
+                 strstr(label, "_scope_000000000000007b") != NULL &&
+                 strcmp(label, scoped_composite_label) != 0);
+        }
+    }
+    AT(resized_front_ping);
+    AT(rebuilt_composite_bind_group);
+
+    dvz_drp2_stream_destroy(scoped_resize_stream);
     dvz_drp2_stream_destroy(scoped_stream);
     dvz_drp2_stream_destroy(stream);
     dvz_scene_destroy(scene);
