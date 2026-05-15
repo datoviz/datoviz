@@ -19,6 +19,8 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include <vulkan/vulkan_core.h>
+
 #include "datoviz/common/macros.h"
 #include "datoviz/scene/types.h"
 
@@ -88,6 +90,18 @@ DVZ_EXPORT DvzApp* dvz_app(DvzScene* scene);
  * @return the app, or NULL on failure
  */
 DVZ_EXPORT DvzApp* dvz_app_with_config(DvzScene* scene, const DvzAppConfig* config);
+
+
+/**
+ * Return the Vulkan instance owned by the app.
+ *
+ * Hosted integrations use this borrowed handle to create their native VkSurfaceKHR after passing
+ * required instance extensions to dvz_app_with_config().
+ *
+ * @param app the app
+ * @return borrowed Vulkan instance handle, or VK_NULL_HANDLE when unavailable
+ */
+DVZ_EXPORT VkInstance dvz_app_vk_instance(DvzApp* app);
 
 
 /**

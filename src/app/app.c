@@ -1193,6 +1193,29 @@ DvzApp* dvz_app_with_config(DvzScene* scene, const DvzAppConfig* config)
 }
 
 
+
+/**
+ * Return the borrowed Vulkan instance handle owned by the app.
+ *
+ * @param app app to query
+ * @return Vulkan instance handle, or VK_NULL_HANDLE when unavailable
+ */
+VkInstance dvz_app_vk_instance(DvzApp* app)
+{
+    ANN(app);
+#if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
+    if (app->gpu_ctx == NULL)
+        return VK_NULL_HANDLE;
+    DvzInstance* instance = dvz_gpu_ctx_instance(app->gpu_ctx);
+    if (instance == NULL)
+        return VK_NULL_HANDLE;
+    return dvz_instance_handle(instance);
+#else
+    return VK_NULL_HANDLE;
+#endif
+}
+
+
 void dvz_app_destroy(DvzApp* app)
 {
     if (app == NULL)

@@ -69,6 +69,7 @@ int test_app_offscreen(TstSuite* suite, TstItem* item)
         dvz_scene_destroy(scene);
         return 0;
     }
+    AT(dvz_app_vk_instance(app) != VK_NULL_HANDLE);
     DvzAppWindow* win = dvz_app_window(app, figure, 64, 64);
     AT(win != NULL);
 
