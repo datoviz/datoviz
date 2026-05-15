@@ -18,8 +18,15 @@
 
 #include "datoviz/gui.h"
 #include "datoviz/stream/frame_stream.h"
-#include "datoviz/vk/gpu_ctx.h"
 #include "datoviz/window.h"
+
+
+
+/*************************************************************************************************/
+/*  Forward declarations                                                                         */
+/*************************************************************************************************/
+
+typedef struct DvzGpuCtx DvzGpuCtx;
 
 
 

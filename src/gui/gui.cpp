@@ -24,10 +24,6 @@
 
 #include "_assertions.h"
 #include "_log.h"
-#include "datoviz/vk/device.h"
-#include "datoviz/vk/gpu_ctx.h"
-#include "datoviz/vk/instance.h"
-#include "datoviz/vk/queues.h"
 #include "datoviz/window/backend.h"
 
 #define GLFW_INCLUDE_NONE
@@ -37,6 +33,38 @@
 #include "backends/imgui_impl_glfw.h"
 #include "backends/imgui_impl_vulkan.h"
 #include "imgui.h"
+
+
+
+/*************************************************************************************************/
+/*  Datoviz C API shims                                                                          */
+/*************************************************************************************************/
+
+extern "C" {
+typedef struct DvzDevice DvzDevice;
+typedef struct DvzGpuCtx DvzGpuCtx;
+typedef struct DvzInstance DvzInstance;
+typedef struct DvzQueue DvzQueue;
+
+typedef enum DvzQueueRole
+{
+    DVZ_QUEUE_MAIN,
+    DVZ_QUEUE_COMPUTE,
+    DVZ_QUEUE_TRANSFER,
+    DVZ_QUEUE_VIDEO_ENCODE,
+    DVZ_QUEUE_VIDEO_DECODE,
+    DVZ_QUEUE_COUNT,
+} DvzQueueRole;
+
+DvzInstance* dvz_gpu_ctx_instance(DvzGpuCtx* ctx);
+DvzDevice* dvz_gpu_ctx_device(DvzGpuCtx* ctx);
+DvzQueue* dvz_gpu_ctx_queue(DvzGpuCtx* ctx, DvzQueueRole role);
+VkInstance dvz_instance_handle(DvzInstance* instance);
+VkPhysicalDevice dvz_device_physical_device(DvzDevice* device);
+VkDevice dvz_device_handle(DvzDevice* device);
+uint32_t dvz_queue_family(DvzQueue* queue);
+VkQueue dvz_queue_handle(DvzQueue* queue);
+}
 
 
 
@@ -288,6 +316,7 @@ static bool _gui_ensure_vulkan(DvzGui* gui, const DvzStreamFrame* frame)
     init_info.UseDynamicRendering = true;
     init_info.PipelineRenderingCreateInfo = rendering_info;
     init_info.CheckVkResultFn = _gui_check_vk_result;
+    init_info.MinAllocationSize = 1024 * 1024;
 
     _gui_set_current(gui);
     if (!ImGui_ImplVulkan_Init(&init_info))
