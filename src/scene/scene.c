@@ -751,6 +751,8 @@ DvzScene* dvz_scene(void)
     if (scene == NULL)
         return NULL;
     dvz_capability_snapshot_default(&scene->caps);
+    scene->clock.mode = DVZ_CLOCK_REALTIME;
+    scene->clock.fps = 60.0;
     scene->emitter = dvz_frame_plan_emitter();
     if (scene->emitter == NULL)
     {

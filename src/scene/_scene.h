@@ -16,6 +16,7 @@
 #include "_frame_plan.h"
 #include "datoviz/drp2/types.h"
 #include "datoviz/math/_cglm.h"
+#include "datoviz/scene/animation.h"
 #include "datoviz/scene/arcball.h"
 #include "datoviz/scene/camera.h"
 #include "datoviz/scene/enums.h"
@@ -53,6 +54,7 @@
 #define DVZ_SCENE_MAX_PROBE_RESULTS 128
 #define DVZ_SCENE_MAX_PENDING_REQUESTS 128
 #define DVZ_SCENE_MAX_REQUEST_SCOPES 256
+#define DVZ_SCENE_MAX_ANIMATIONS 128
 
 
 
@@ -114,6 +116,7 @@ typedef struct DvzPinnedReadout DvzPinnedReadout;
 typedef struct DvzFont DvzFont;
 typedef struct DvzText DvzText;
 typedef struct DvzAnnotation DvzAnnotation;
+typedef struct DvzAnimation DvzAnimation;
 
 
 
@@ -132,6 +135,46 @@ struct DvzSceneFormatState
     char unit[32];
     char prefix[DVZ_SCENE_LABEL_SIZE];
     char suffix[DVZ_SCENE_LABEL_SIZE];
+};
+
+
+
+/*************************************************************************************************/
+/*  Animation                                                                                    */
+/*************************************************************************************************/
+
+typedef enum
+{
+    DVZ_ANIMATION_NONE = 0,
+    DVZ_ANIMATION_TIMER,
+} DvzAnimationType;
+
+
+
+typedef struct DvzSceneClock DvzSceneClock;
+
+struct DvzSceneClock
+{
+    DvzSceneClockMode mode;
+    double t;
+    double dt;
+    double fps;
+    uint64_t last_wall_time_ns;
+    bool initialized;
+};
+
+
+
+struct DvzAnimation
+{
+    DvzScene* scene;
+    DvzAnimationType type;
+    bool active;
+    double t_start;
+    double period_s;
+    double last_fire_t;
+    DvzAnimTimerCallback timer_callback;
+    void* user_data;
 };
 
 
@@ -509,6 +552,11 @@ struct DvzScene
 {
     DvzCapabilitySnapshot caps;
 
+    DvzSceneClock clock;
+
+    uint32_t animation_count;
+    DvzAnimation animations[DVZ_SCENE_MAX_ANIMATIONS];
+
     DvzFramePlanEmitter* emitter; /* shared across all figures — owns GPU resource key→ID map */
 
     uint32_t outstanding_emitted_streams;
@@ -677,3 +725,5 @@ void _scene_visual_reset(DvzVisual* visual, bool release_owned_resources);
 uint64_t _scene_visual_public_id(const DvzScene* scene, const DvzVisual* visual);
 
 void _scene_panel_visual_order(const DvzPanel* panel, uint32_t* order);
+
+void _dvz_scene_animations_step(DvzScene* scene, uint64_t wall_time_ns);

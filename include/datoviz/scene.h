@@ -18,6 +18,7 @@
 
 #include "datoviz/common/macros.h"
 #include "scene/annotation.h"
+#include "scene/animation.h"
 #include "scene/arcball.h"
 #include "scene/camera.h"
 #include "scene/enums.h"
