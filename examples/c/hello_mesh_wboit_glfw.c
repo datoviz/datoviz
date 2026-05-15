@@ -6,7 +6,7 @@
 
 /* hello_mesh_wboit_glfw — transparent mesh shell via scene WBOIT + app/GLFW.
  *
- * Opens a GLFW window showing a lightly transparent cube inside an explicitly WBOIT transparent cube
+ * Opens a GLFW window showing a transparent WBOIT cube inside an explicitly WBOIT transparent cube
  * shell. A GUI overlay exposes live shell color, alpha, ambient/diffuse, and light-direction sliders.
  * The visual alpha-mode opt-in exercises scene planning, DRP2 WBOIT accumulation/resolve, and the
  * vklite runtime while retaining the normal app/canvas presentation path.
@@ -340,7 +340,7 @@ int main(int argc, char** argv)
     DvzColor inner_colors[24] = {0};
     float inner_normals[24][3] = {0};
     DvzIndex indices[36] = {0};
-    DvzColor inner_color = {245, 245, 245, 220};
+    DvzColor inner_color = {245, 245, 245, 160};
     _build_cube(0.42f, inner_color, inner_positions, inner_colors, inner_normals, indices);
 
     float shell_positions[24][3] = {0};
@@ -377,7 +377,7 @@ int main(int argc, char** argv)
     dvz_visual_set_data(inner, "color", inner_colors, 24);
     dvz_visual_set_data(inner, "normal", inner_normals, 24);
     dvz_visual_set_buffer(inner, "index", index_buffer);
-    dvz_visual_set_alpha_mode(inner, DVZ_ALPHA_BLENDED);
+    dvz_visual_set_alpha_mode(inner, DVZ_ALPHA_WBOIT);
     dvz_visual_set_primitive_shading(
         inner,
         &(DvzPrimitiveShadingDesc){
