@@ -301,6 +301,11 @@ Semantics:
 1. the tuple `(dimension, width, height, depth)` defines the logical texture extent,
 2. `usage`, `format`, `mip_level_count`, and `sample_count` constrain later copies and attachment use.
 
+The C stream API carries `format` as a `VkFormat` value. Convenience helpers that do not take an
+explicit format emit `rgba8unorm`; WBOIT-style intermediate targets should use the explicit
+format-and-usage helper so RGBA16F accumulation and R16F revealage textures survive serialization and
+runtime creation.
+
 
 ### `DestroyTexture`
 

@@ -101,6 +101,7 @@ struct Drp2Object
     Drp2ObjectKind kind;
     uint64_t size;
     uint32_t usage;
+    uint32_t format;
     uint32_t width;
     uint32_t height;
     uint32_t depth;
@@ -176,6 +177,7 @@ struct Drp2VkliteObject
     uint64_t texture_id;
     uint64_t sampler_id;
     uint32_t usage;
+    uint32_t format;
     uint32_t width;
     uint32_t height;
     float viewport_x;

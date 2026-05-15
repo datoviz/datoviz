@@ -674,10 +674,12 @@ static bool _recording_write_portable_command(
                    stream_fp,
                    "{\"type\":\"command\",\"index\":%" PRIu32 ",\"cmd_type\":%d,"
                    "\"op\":\"CreateTexture\",\"id\":%" PRIu64 ",\"width\":%" PRIu32
-                   ",\"height\":%" PRIu32 ",\"depth\":%" PRIu32 ",\"usage\":%" PRIu32 "}\n",
+                   ",\"height\":%" PRIu32 ",\"depth\":%" PRIu32 ",\"format\":%" PRIu32
+                   ",\"usage\":%" PRIu32 "}\n",
                    index, (int)command->type, command->u.create_texture.id,
                    command->u.create_texture.width, command->u.create_texture.height,
-                   command->u.create_texture.depth, command->u.create_texture.usage) > 0;
+                   command->u.create_texture.depth, command->u.create_texture.format,
+                   command->u.create_texture.usage) > 0;
     case DVZ_DRP2_COMMAND_WRITE_BUFFER:
     {
         char payload_rel[128] = {0};
@@ -1076,6 +1078,7 @@ static bool _recording_read_portable_command(
             !_recording_line_u32(line, "\"depth\":", &command.u.create_texture.depth) ||
             !_recording_line_u32(line, "\"usage\":", &command.u.create_texture.usage))
             return false;
+        (void)_recording_line_u32(line, "\"format\":", &command.u.create_texture.format);
     }
     else if (strcmp(op, "WriteBuffer") == 0)
     {

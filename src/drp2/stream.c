@@ -283,8 +283,8 @@ bool dvz_drp2_stream_destroy_buffer(DvzDrp2CommandStream* stream, uint64_t buffe
 bool dvz_drp2_stream_create_texture_2d(
     DvzDrp2CommandStream* stream, uint64_t id, uint32_t width, uint32_t height)
 {
-    return dvz_drp2_stream_create_texture_2d_usage(
-        stream, id, width, height,
+    return dvz_drp2_stream_create_texture_2d_format_usage(
+        stream, id, width, height, VK_FORMAT_R8G8B8A8_UNORM,
         DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT | DVZ_DRP2_TEXTURE_USAGE_COPY_SRC |
             DVZ_DRP2_TEXTURE_USAGE_COPY_DST);
 }
@@ -304,6 +304,27 @@ bool dvz_drp2_stream_create_texture_2d(
 bool dvz_drp2_stream_create_texture_2d_usage(
     DvzDrp2CommandStream* stream, uint64_t id, uint32_t width, uint32_t height, uint32_t usage)
 {
+    return dvz_drp2_stream_create_texture_2d_format_usage(
+        stream, id, width, height, VK_FORMAT_R8G8B8A8_UNORM, usage);
+}
+
+
+
+/**
+ * Append a CreateTexture command for a 2D texture with explicit format and usage.
+ *
+ * @param stream the command stream
+ * @param id the texture id
+ * @param width the texture width
+ * @param height the texture height
+ * @param format texture format, using VkFormat values
+ * @param usage texture usage flags
+ * @return whether the command was appended
+ */
+bool dvz_drp2_stream_create_texture_2d_format_usage(
+    DvzDrp2CommandStream* stream, uint64_t id, uint32_t width, uint32_t height, uint32_t format,
+    uint32_t usage)
+{
     DvzDrp2Command* command = _append_command(stream, DVZ_DRP2_COMMAND_CREATE_TEXTURE);
     if (command == NULL)
         return false;
@@ -311,6 +332,7 @@ bool dvz_drp2_stream_create_texture_2d_usage(
     command->u.create_texture.width = width;
     command->u.create_texture.height = height;
     command->u.create_texture.depth = 1;
+    command->u.create_texture.format = format;
     command->u.create_texture.usage = usage;
     return true;
 }
@@ -378,7 +400,7 @@ bool dvz_drp2_stream_create_shader_module_format(
         stream->count--;
         return false;
     }
-    memcpy(code_copy, src, n);
+    dvz_memcpy(code_copy, n, src, n);
 
     command->u.create_shader_module.id = id;
     _copy_label(command->u.create_shader_module.stage, DVZ_DRP2_LABEL_SIZE, stage ? stage : "");
@@ -1076,7 +1098,7 @@ bool dvz_drp2_stream_write_buffer(
         stream->count--;
         return false;
     }
-    memcpy(buf, src, n);
+    dvz_memcpy(buf, n, src, n);
 
     command->u.write_buffer.buffer_id   = buffer_id;
     command->u.write_buffer.offset      = offset;
@@ -1116,7 +1138,7 @@ bool dvz_drp2_stream_write_texture_2d(
         stream->count--;
         return false;
     }
-    memcpy(buf, src, n);
+    dvz_memcpy(buf, n, src, n);
 
     command->u.write_texture.texture_id     = texture_id;
     command->u.write_texture.mip_level      = mip_level;
@@ -1149,7 +1171,7 @@ bool dvz_drp2_stream_write_texture_2d_region(
         stream->count--;
         return false;
     }
-    memcpy(buf, src, n);
+    dvz_memcpy(buf, n, src, n);
 
     command->u.write_texture.texture_id     = texture_id;
     command->u.write_texture.mip_level      = mip_level;
@@ -1177,6 +1199,7 @@ bool dvz_drp2_stream_create_texture_3d(
     command->u.create_texture.width = width;
     command->u.create_texture.height = height;
     command->u.create_texture.depth = depth;
+    command->u.create_texture.format = VK_FORMAT_R8G8B8A8_UNORM;
     command->u.create_texture.usage =
         DVZ_DRP2_TEXTURE_USAGE_COPY_SRC | DVZ_DRP2_TEXTURE_USAGE_COPY_DST |
         DVZ_DRP2_TEXTURE_USAGE_TEXTURE_BINDING;
@@ -1203,7 +1226,7 @@ bool dvz_drp2_stream_write_texture_3d(
         stream->count--;
         return false;
     }
-    memcpy(buf, src, n);
+    dvz_memcpy(buf, n, src, n);
 
     command->u.write_texture.texture_id     = texture_id;
     command->u.write_texture.mip_level      = mip_level;

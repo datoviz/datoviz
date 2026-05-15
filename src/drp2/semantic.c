@@ -510,6 +510,7 @@ static DvzDrp2ValidationResult _validate_create_texture(
     object->width  = command->u.create_texture.width;
     object->height = command->u.create_texture.height;
     object->depth  = command->u.create_texture.depth > 1 ? command->u.create_texture.depth : 1;
+    object->format = command->u.create_texture.format;
     object->usage  = command->u.create_texture.usage;
     return _drp2_ok();
 }

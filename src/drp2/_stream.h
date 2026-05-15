@@ -62,6 +62,7 @@ struct DvzDrp2Command
             uint32_t width;
             uint32_t height;
             uint32_t depth;  /* 1 for 2D, >1 for 3D */
+            uint32_t format; /* VkFormat, 0 means the default RGBA8 format */
             uint32_t usage;
         } create_texture;
         struct

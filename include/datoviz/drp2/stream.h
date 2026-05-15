@@ -159,6 +159,23 @@ DVZ_EXPORT bool dvz_drp2_stream_create_texture_2d_usage(
 
 
 /**
+ * Append a CreateTexture command for a 2D texture with explicit format and usage.
+ *
+ * @param stream the command stream
+ * @param id the texture id
+ * @param width the texture width
+ * @param height the texture height
+ * @param format texture format, using VkFormat values
+ * @param usage texture usage flags
+ * @return whether the command was appended
+ */
+DVZ_EXPORT bool dvz_drp2_stream_create_texture_2d_format_usage(
+    DvzDrp2CommandStream* stream, uint64_t id, uint32_t width, uint32_t height, uint32_t format,
+    uint32_t usage);
+
+
+
+/**
  * Append a CreateTexture command for a 3D texture.
  *
  * @param stream the command stream

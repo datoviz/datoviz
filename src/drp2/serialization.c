@@ -145,6 +145,36 @@ static const char* _vertex_format_name(uint32_t format)
 
 
 
+static const char* _texture_format_name(uint32_t format)
+{
+    switch (format)
+    {
+    case 0:
+    case VK_FORMAT_R8G8B8A8_UNORM:
+        return "rgba8unorm";
+    case VK_FORMAT_B8G8R8A8_UNORM:
+        return "bgra8unorm";
+    case VK_FORMAT_R16_SFLOAT:
+        return "r16float";
+    case VK_FORMAT_R16G16B16A16_SFLOAT:
+        return "rgba16float";
+    case VK_FORMAT_R32_SFLOAT:
+        return "r32float";
+    case VK_FORMAT_R32_UINT:
+        return "r32uint";
+    case VK_FORMAT_R32_SINT:
+        return "r32sint";
+    case VK_FORMAT_R32G32_UINT:
+        return "rg32uint";
+    case VK_FORMAT_D32_SFLOAT:
+        return "depth32float";
+    default:
+        return "rgba8unorm";
+    }
+}
+
+
+
 static const char* _topology_name(uint32_t topology)
 {
     switch (topology)
@@ -482,11 +512,12 @@ static void _json_append_command(JsonBuilder* builder, const DvzDrp2Command* com
             builder,
             "{ \"cmd\": \"%s\", \"id\": %" PRIu64
             ", \"dimension\": \"%s\", \"width\": %" PRIu32 ", \"height\": %" PRIu32
-            ", \"depth\": %" PRIu32 ", \"format\": \"rgba8unorm\", \"usage\": ",
+            ", \"depth\": %" PRIu32 ", \"format\": \"%s\", \"usage\": ",
             _command_name(command->type), command->u.create_texture.id,
             command->u.create_texture.depth > 1 ? "3d" : "2d",
             command->u.create_texture.width, command->u.create_texture.height,
-            command->u.create_texture.depth > 0 ? command->u.create_texture.depth : 1);
+            command->u.create_texture.depth > 0 ? command->u.create_texture.depth : 1,
+            _texture_format_name(command->u.create_texture.format));
         _json_append_texture_usage(builder, command->u.create_texture.usage);
         _json_append(builder, ", \"mip_level_count\": 1, \"sample_count\": 1 }");
         break;

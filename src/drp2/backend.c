@@ -143,9 +143,12 @@ static DvzDrp2ValidationResult _vklite_create_texture(
     object->images = images;
 
     uint32_t depth = command->u.create_texture.depth > 1 ? command->u.create_texture.depth : 1;
+    VkFormat format = command->u.create_texture.format != 0 ?
+                          (VkFormat)command->u.create_texture.format :
+                          VK_FORMAT_R8G8B8A8_UNORM;
     VkImageType img_type = depth > 1 ? VK_IMAGE_TYPE_3D : VK_IMAGE_TYPE_2D;
     dvz_images(state->runtime->device, state->runtime->allocator, img_type, 1, images);
-    dvz_images_format(images, VK_FORMAT_R8G8B8A8_UNORM);
+    dvz_images_format(images, format);
     dvz_images_size(
         images, command->u.create_texture.width, command->u.create_texture.height, depth);
     dvz_images_mip(images, 1);
@@ -175,6 +178,7 @@ static DvzDrp2ValidationResult _vklite_create_texture(
 
     object->image_layout = VK_IMAGE_LAYOUT_UNDEFINED;
     object->usage = command->u.create_texture.usage;
+    object->format = (uint32_t)format;
     object->width = command->u.create_texture.width;
     object->height = command->u.create_texture.height;
     return _drp2_ok();
