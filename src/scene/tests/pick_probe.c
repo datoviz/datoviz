@@ -1067,6 +1067,119 @@ int test_scene_image_probe_respects_panel_request_position(TstSuite* suite, TstI
 }
 
 
+int test_scene_image_probe_segment_rgba_hidden_visual(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    ANN(item);
+    if (!_scene_vklite_runtime_available())
+        return 0;
+
+    DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
+    VkPhysicalDeviceVulkan13Features features13 = {
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES};
+    features13.dynamicRendering = true;
+    features13.synchronization2 = true;
+    dvz_gpu_ctx_config_features13(&gpu_cfg, &features13);
+    DvzGpuCtx* ctx = dvz_gpu_ctx(&gpu_cfg);
+    if (ctx == NULL)
+    {
+        log_warn("segment probe test skipped because GPU context creation failed");
+        return 0;
+    }
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(
+        figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+    ANN(panel);
+
+    DvzVisual* image = dvz_image(scene, 0);
+    ANN(image);
+    float image_pos[4][3] = {
+        {-1.0f, -1.0f, 0.0f},
+        {-1.0f, 1.0f, 0.0f},
+        {1.0f, -1.0f, 0.0f},
+        {1.0f, 1.0f, 0.0f},
+    };
+    float texcoords[4][2] = {
+        {0.0f, 0.0f},
+        {0.0f, 1.0f},
+        {1.0f, 0.0f},
+        {1.0f, 1.0f},
+    };
+    uint8_t pixels[4 * 4 * 4] = {0};
+    for (uint32_t y = 0; y < 4; y++)
+    {
+        for (uint32_t x = 0; x < 4; x++)
+        {
+            uint32_t label = y < 2 ? (x < 2 ? 17u : 258u) : (x < 2 ? 65537u : 0u);
+            uint32_t i = 4 * (y * 4 + x);
+            pixels[i + 0] = (uint8_t)(label & 0xffu);
+            pixels[i + 1] = (uint8_t)((label >> 8) & 0xffu);
+            pixels[i + 2] = (uint8_t)((label >> 16) & 0xffu);
+            pixels[i + 3] = label == 0 ? 0 : 255;
+        }
+    }
+    AT(dvz_visual_set_data(image, "position", image_pos, 4) == 0);
+    AT(dvz_visual_set_data(image, "texcoords", texcoords, 4) == 0);
+    AT(dvz_visual_set_texture(image, pixels, 4, 4) == 0);
+    dvz_visual_set_pick_capabilities(image, DVZ_PICK_CAPABILITY_GROUP);
+    dvz_visual_set_visible(image, false);
+    AT(dvz_panel_add_visual(panel, image, NULL) == 0);
+
+    DvzDrp2RuntimeConfig runtime_cfg =
+        dvz_drp2_runtime_vklite_config(dvz_gpu_ctx_device(ctx), dvz_gpu_ctx_alloc(ctx));
+    DvzDrp2Runtime* runtime = dvz_drp2_runtime_vklite(&runtime_cfg);
+    ANN(runtime);
+
+    DvzCapabilitySnapshot caps = {0};
+    dvz_capability_snapshot_default(&caps);
+    caps.shader_format_glsl = true;
+
+    AT(dvz_panel_probe(
+           panel, 16.0, 16.0,
+           &(DvzProbeRequest){.request_id = 41, .target = DVZ_SCENE_TARGET_SEGMENT}) == 0);
+    AT(dvz_panel_probe(
+           panel, 48.0, 16.0,
+           &(DvzProbeRequest){.request_id = 42, .target = DVZ_SCENE_TARGET_SEGMENT}) == 0);
+    AT(dvz_panel_probe(
+           panel, 16.0, 48.0,
+           &(DvzProbeRequest){.request_id = 43, .target = DVZ_SCENE_TARGET_SEGMENT}) == 0);
+    AT(dvz_panel_probe(
+           panel, 48.0, 48.0,
+           &(DvzProbeRequest){.request_id = 44, .target = DVZ_SCENE_TARGET_SEGMENT}) == 0);
+    AT(dvz_figure_process_requests(figure, runtime, &caps) == 4);
+
+    DvzProbeResult probe = {0};
+    AT(dvz_scene_poll_probe(scene, &probe));
+    AT(probe.hit);
+    AT(probe.request_id == 41);
+    AT(probe.target == DVZ_SCENE_TARGET_SEGMENT);
+    AT(probe.category_id == 17);
+
+    AT(dvz_scene_poll_probe(scene, &probe));
+    AT(probe.hit);
+    AT(probe.request_id == 42);
+    AT(probe.category_id == 258);
+
+    AT(dvz_scene_poll_probe(scene, &probe));
+    AT(probe.hit);
+    AT(probe.request_id == 43);
+    AT(probe.category_id == 65537);
+
+    AT(dvz_scene_poll_probe(scene, &probe));
+    AT(!probe.hit);
+    AT(probe.request_id == 44);
+
+    dvz_drp2_runtime_destroy(runtime);
+    dvz_gpu_ctx_destroy(ctx);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
 int test_scene_image_probe_plan_rejects_size_overflow(TstSuite* suite, TstItem* item)
 {
     ANN(suite);
@@ -1153,6 +1266,7 @@ int test_scene_pick_probe(TstSuite* suite)
     TEST_SIMPLE(test_scene_point_pick_quadrants);
     TEST_SIMPLE(test_scene_process_requests_preserves_caller_runtime);
     TEST_SIMPLE(test_scene_image_probe_respects_panel_request_position);
+    TEST_SIMPLE(test_scene_image_probe_segment_rgba_hidden_visual);
     TEST_SIMPLE(test_scene_image_probe_plan_rejects_size_overflow);
 
     return 0;

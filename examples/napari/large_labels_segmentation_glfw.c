@@ -72,10 +72,12 @@ struct LabelsDemoState
 {
     DvzScene* scene;
     DvzPanel* panel;
+    DvzAppWindow* win;
     DvzVisual* overlay;
     uint32_t* labels;
     uint8_t* base_rgba;
     uint8_t* overlay_rgba;
+    uint8_t* pick_rgba;
     uint32_t label_count;
     float opacity;
     float selected_label_value;
@@ -87,8 +89,8 @@ struct LabelsDemoState
     double cursor_x;
     double cursor_y;
     uint32_t hover_label;
-    uint32_t hover_x;
-    uint32_t hover_y;
+    uint64_t next_probe_request_id;
+    uint64_t select_probe_request_id;
 };
 
 
@@ -346,6 +348,33 @@ static void _rebuild_overlay(LabelsDemoState* state)
 
 
 /**
+ * Encode label IDs into an RGBA8 texture for scene segment probing.
+ *
+ * @param labels source uint32 label map
+ * @param rgba output RGBA8 pick texture
+ */
+static void _encode_pick_texture(const uint32_t* labels, uint8_t* rgba)
+{
+    if (labels == NULL || rgba == NULL)
+        return;
+
+    for (uint32_t y = 0; y < TEX_H; y++)
+    {
+        for (uint32_t x = 0; x < TEX_W; x++)
+        {
+            uint32_t id = labels[y * TEX_W + x];
+            uint64_t p = 4ull * ((uint64_t)y * TEX_W + x);
+            rgba[p + 0] = (uint8_t)(id & 0xffu);
+            rgba[p + 1] = (uint8_t)((id >> 8) & 0xffu);
+            rgba[p + 2] = (uint8_t)((id >> 16) & 0xffu);
+            rgba[p + 3] = id == 0 ? 0 : 255;
+        }
+    }
+}
+
+
+
+/**
  * Rebuild and upload the overlay texture if a control or click changed label display state.
  *
  * @param state demo state
@@ -363,43 +392,56 @@ static void _upload_overlay_if_dirty(LabelsDemoState* state)
 
 
 /**
- * Convert a cursor position to a texture pixel and update hover state.
+ * Select a decoded label and mark the overlay for refresh.
  *
  * @param state demo state
+ * @param label_id label id, or 0 to clear the selection
  */
-static void _update_hover(LabelsDemoState* state)
+static void _select_label(LabelsDemoState* state, uint32_t label_id)
 {
-    if (state == NULL || !state->cursor_valid || state->labels == NULL || state->panel == NULL)
+    if (state == NULL)
         return;
 
-    DvzPanzoom* pz = dvz_panel_panzoom(state->panel);
-    float panel_x = (float)state->cursor_x;
-    float panel_y = (float)state->cursor_y;
-    float ndc_x = 2.0f * panel_x / (float)WIDTH - 1.0f;
-    float ndc_y = 2.0f * panel_y / (float)HEIGHT - 1.0f;
-    if (pz != NULL)
+    uint32_t selected = label_id;
+    if (selected > state->label_count)
+        selected = 0;
+    if ((uint32_t)(state->selected_label_value + 0.5f) != selected)
     {
-        ndc_x = ndc_x / pz->zoom[0] - pz->pan[0];
-        ndc_y = ndc_y / pz->zoom[1] - pz->pan[1];
+        state->selected_label_value = (float)selected;
+        state->dirty_overlay = true;
     }
+}
 
-    float u = (ndc_x - IMAGE_MIN_NDC) / (IMAGE_MAX_NDC - IMAGE_MIN_NDC);
-    float v = (ndc_y - IMAGE_MIN_NDC) / (IMAGE_MAX_NDC - IMAGE_MIN_NDC);
-    if (u < 0.0f || u >= 1.0f || v < 0.0f || v >= 1.0f)
+
+
+/**
+ * Queue a segment probe at the current cursor position.
+ *
+ * @param state demo state
+ * @param select whether the resolved probe should update the selected label
+ */
+static void _request_label_probe(LabelsDemoState* state, bool select)
+{
+    if (state == NULL || !state->cursor_valid || state->panel == NULL)
+        return;
+
+    uint64_t request_id = ++state->next_probe_request_id;
+    if (request_id == 0)
+        request_id = ++state->next_probe_request_id;
+    if (dvz_panel_probe(
+            state->panel, state->cursor_x, state->cursor_y,
+            &(DvzProbeRequest){
+                .request_id = request_id,
+                .target = DVZ_SCENE_TARGET_SEGMENT,
+            }) != 0)
     {
-        state->hover_label = 0;
+        dvz_fprintf(stderr, "label segment probe request failed\n");
         return;
     }
-
-    uint32_t x = (uint32_t)(u * (float)TEX_W);
-    uint32_t y = (uint32_t)(v * (float)TEX_H);
-    if (x >= TEX_W)
-        x = TEX_W - 1;
-    if (y >= TEX_H)
-        y = TEX_H - 1;
-    state->hover_x = x;
-    state->hover_y = y;
-    state->hover_label = state->labels[y * TEX_W + x];
+    if (select)
+        state->select_probe_request_id = request_id;
+    if (state->win != NULL)
+        dvz_app_window_request_frame(state->win);
 }
 
 
@@ -466,19 +508,33 @@ static void _pointer_callback(DvzInputRouter* router, const DvzPointerEvent* eve
     state->cursor_valid = true;
     state->cursor_x = event->pos[0];
     state->cursor_y = event->pos[1];
-    _update_hover(state);
+    _request_label_probe(state, false);
+}
 
-    if (event->type == DVZ_POINTER_EVENT_CLICK)
-    {
-        uint32_t selected = state->hover_label;
-        if (selected > state->label_count)
-            selected = 0;
-        if ((uint32_t)(state->selected_label_value + 0.5f) != selected)
-        {
-            state->selected_label_value = (float)selected;
-            state->dirty_overlay = true;
-        }
-    }
+
+
+/**
+ * Handle derived click gestures emitted by the pointer gesture handler.
+ *
+ * @param router input router emitting the event
+ * @param event input-event payload
+ * @param user_data demo state
+ */
+static void _input_event_callback(DvzInputRouter* router, const DvzInputEvent* event, void* user_data)
+{
+    (void)router;
+    LabelsDemoState* state = (LabelsDemoState*)user_data;
+    if (state == NULL || event == NULL || event->type != DVZ_INPUT_EVENT_POINTER)
+        return;
+
+    const DvzPointerEvent* pointer = &event->content.pointer;
+    if (pointer->type != DVZ_POINTER_EVENT_CLICK)
+        return;
+
+    state->cursor_valid = true;
+    state->cursor_x = pointer->pos[0];
+    state->cursor_y = pointer->pos[1];
+    _request_label_probe(state, true);
 }
 
 
@@ -493,6 +549,25 @@ static void _frame_callback(DvzAppWindow* win, void* user_data)
 {
     (void)win;
     LabelsDemoState* state = (LabelsDemoState*)user_data;
+    if (state == NULL)
+        return;
+
+    DvzProbeResult probe = {0};
+    while (dvz_scene_poll_probe(state->scene, &probe))
+    {
+        if (probe.target != DVZ_SCENE_TARGET_SEGMENT)
+            continue;
+
+        uint32_t label_id =
+            probe.hit && probe.category_id <= UINT32_MAX ? (uint32_t)probe.category_id : 0;
+        state->hover_label = label_id;
+        if (state->select_probe_request_id != 0 &&
+            probe.request_id == state->select_probe_request_id)
+        {
+            _select_label(state, label_id);
+            state->select_probe_request_id = 0;
+        }
+    }
     _upload_overlay_if_dirty(state);
 }
 
@@ -528,7 +603,7 @@ static void _gui_callback(DvzGui* gui, DvzAppWindow* win, void* user_data)
             changed = true;
         }
         igSeparator();
-        igText("Hover: label %u  pixel (%u, %u)", state->hover_label, state->hover_x, state->hover_y);
+        igText("Hover: label %u", state->hover_label);
     }
     dvz_gui_end(gui);
 
@@ -546,12 +621,14 @@ int main(int argc, char** argv)
 {
     uint8_t* base_rgba = (uint8_t*)dvz_calloc(TEX_W * TEX_H * 4ull, 1);
     uint8_t* overlay_rgba = (uint8_t*)dvz_calloc(TEX_W * TEX_H * 4ull, 1);
+    uint8_t* pick_rgba = (uint8_t*)dvz_calloc(TEX_W * TEX_H * 4ull, 1);
     uint32_t* labels = (uint32_t*)dvz_calloc(TEX_W * TEX_H, sizeof(uint32_t));
-    if (base_rgba == NULL || overlay_rgba == NULL || labels == NULL)
+    if (base_rgba == NULL || overlay_rgba == NULL || pick_rgba == NULL || labels == NULL)
     {
         fprintf(stderr, "texture allocation failed\n");
         dvz_free(base_rgba);
         dvz_free(overlay_rgba);
+        dvz_free(pick_rgba);
         dvz_free(labels);
         return 1;
     }
@@ -560,6 +637,7 @@ int main(int argc, char** argv)
     _generate_base_image(base_rgba);
     _generate_cells(cells);
     _generate_labels(cells, labels, base_rgba);
+    _encode_pick_texture(labels, pick_rgba);
 
     DvzScene* scene = dvz_scene();
     if (scene == NULL)
@@ -567,6 +645,7 @@ int main(int argc, char** argv)
         fprintf(stderr, "dvz_scene() failed\n");
         dvz_free(base_rgba);
         dvz_free(overlay_rgba);
+        dvz_free(pick_rgba);
         dvz_free(labels);
         return 1;
     }
@@ -579,6 +658,7 @@ int main(int argc, char** argv)
         dvz_scene_destroy(scene);
         dvz_free(base_rgba);
         dvz_free(overlay_rgba);
+        dvz_free(pick_rgba);
         dvz_free(labels);
         return 1;
     }
@@ -589,6 +669,7 @@ int main(int argc, char** argv)
         .labels = labels,
         .base_rgba = base_rgba,
         .overlay_rgba = overlay_rgba,
+        .pick_rgba = pick_rgba,
         .label_count = CELL_COUNT,
         .opacity = 0.48f,
         .selected_label_value = 0.0f,
@@ -598,24 +679,30 @@ int main(int argc, char** argv)
 
     DvzVisual* base = _image_visual(scene, base_rgba, DVZ_ALPHA_OPAQUE);
     DvzVisual* overlay = _image_visual(scene, overlay_rgba, DVZ_ALPHA_BLENDED);
+    DvzVisual* label_pick = _image_visual(scene, pick_rgba, DVZ_ALPHA_OPAQUE);
     state.overlay = overlay;
-    if (base == NULL || overlay == NULL)
+    if (base == NULL || overlay == NULL || label_pick == NULL)
     {
         fprintf(stderr, "image visual setup failed\n");
         dvz_scene_destroy(scene);
         dvz_free(base_rgba);
         dvz_free(overlay_rgba);
+        dvz_free(pick_rgba);
         dvz_free(labels);
         return 1;
     }
+    dvz_visual_set_pick_capabilities(label_pick, DVZ_PICK_CAPABILITY_GROUP);
+    dvz_visual_set_visible(label_pick, false);
 
     if (dvz_panel_add_visual(panel, base, &(DvzVisualAttachDesc){.z_layer = 0}) != 0 ||
-        dvz_panel_add_visual(panel, overlay, &(DvzVisualAttachDesc){.z_layer = 1}) != 0)
+        dvz_panel_add_visual(panel, overlay, &(DvzVisualAttachDesc){.z_layer = 1}) != 0 ||
+        dvz_panel_add_visual(panel, label_pick, &(DvzVisualAttachDesc){.z_layer = 2}) != 0)
     {
         fprintf(stderr, "panel visual attachment failed\n");
         dvz_scene_destroy(scene);
         dvz_free(base_rgba);
         dvz_free(overlay_rgba);
+        dvz_free(pick_rgba);
         dvz_free(labels);
         return 1;
     }
@@ -628,6 +715,7 @@ int main(int argc, char** argv)
         dvz_scene_destroy(scene);
         dvz_free(base_rgba);
         dvz_free(overlay_rgba);
+        dvz_free(pick_rgba);
         dvz_free(labels);
         return 1;
     }
@@ -641,9 +729,11 @@ int main(int argc, char** argv)
         dvz_scene_destroy(scene);
         dvz_free(base_rgba);
         dvz_free(overlay_rgba);
+        dvz_free(pick_rgba);
         dvz_free(labels);
         return 1;
     }
+    state.win = win;
 
     DvzInputRouter* router = dvz_app_window_input(win);
     if (router == NULL)
@@ -653,11 +743,13 @@ int main(int argc, char** argv)
         dvz_scene_destroy(scene);
         dvz_free(base_rgba);
         dvz_free(overlay_rgba);
+        dvz_free(pick_rgba);
         dvz_free(labels);
         return 1;
     }
     dvz_panel_set_panzoom(panel, router, DVZ_PANZOOM_FLAGS_KEEP_ASPECT);
     dvz_input_subscribe_pointer(router, _pointer_callback, &state);
+    dvz_input_subscribe_event(router, _input_event_callback, &state);
     dvz_app_window_set_frame_callback(win, _frame_callback, &state);
 
     DvzGuiConfig gui_config = dvz_gui_config();
@@ -669,6 +761,7 @@ int main(int argc, char** argv)
         dvz_scene_destroy(scene);
         dvz_free(base_rgba);
         dvz_free(overlay_rgba);
+        dvz_free(pick_rgba);
         dvz_free(labels);
         return 1;
     }
@@ -680,6 +773,7 @@ int main(int argc, char** argv)
     dvz_scene_destroy(scene);
     dvz_free(base_rgba);
     dvz_free(overlay_rgba);
+    dvz_free(pick_rgba);
     dvz_free(labels);
     return 0;
 }

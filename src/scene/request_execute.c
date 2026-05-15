@@ -38,7 +38,7 @@ static bool _scene_execute_readback_plan(
     DvzFramePlan* plan, DvzFramePlanEmitter* emitter, uint8_t rgba[4]);
 
 static bool _scene_image_probe_sample_cpu(
-    DvzVisual* visual, const vec2 request_ndc, uint8_t rgba[4]);
+    const DvzPanel* panel, DvzVisual* visual, const vec2 request_ndc, uint8_t rgba[4]);
 
 static bool _scene_process_point_pick_request(
     DvzFigure* figure, DvzDrp2Runtime* runtime, const DvzCapabilitySnapshot* caps,
@@ -194,14 +194,16 @@ static bool _scene_execute_readback_plan(
 /**
  * Sample the retained image texture at one panel-local request coordinate.
  *
+ * @param panel the panel owning the probed visual
  * @param visual the image visual
  * @param request_ndc the request coordinate in panel-local NDC
  * @param rgba the output RGBA8 value
  * @return true when a retained texture value was sampled
  */
 static bool _scene_image_probe_sample_cpu(
-    DvzVisual* visual, const vec2 request_ndc, uint8_t rgba[4])
+    const DvzPanel* panel, DvzVisual* visual, const vec2 request_ndc, uint8_t rgba[4])
 {
+    ANN(panel);
     ANN(visual);
     ANN(request_ndc);
     ANN(rgba);
@@ -234,6 +236,71 @@ static bool _scene_image_probe_sample_cpu(
 
     double u = 0.5 * ((double)request_ndc[0] + 1.0);
     double v = 0.5 * (1.0 - (double)request_ndc[1]);
+    int pos_idx = _attr_index(visual, "position");
+    int uv_idx = _attr_index(visual, "texcoords");
+    if (pos_idx >= 0 && uv_idx >= 0)
+    {
+        DvzVisualAttr* pos_attr = &visual->attrs[pos_idx];
+        DvzVisualAttr* uv_attr = &visual->attrs[uv_idx];
+        if (pos_attr->data != NULL && uv_attr->data != NULL && pos_attr->item_count > 0 &&
+            uv_attr->item_count == pos_attr->item_count && pos_attr->item_size == sizeof(vec3) &&
+            uv_attr->item_size == sizeof(vec2))
+        {
+            const vec3* positions = (const vec3*)pos_attr->data;
+            const vec2* texcoords = (const vec2*)uv_attr->data;
+            float min_x = positions[0][0];
+            float max_x = positions[0][0];
+            float min_y = positions[0][1];
+            float max_y = positions[0][1];
+            float min_u = texcoords[0][0];
+            float max_u = texcoords[0][0];
+            float min_v = texcoords[0][1];
+            float max_v = texcoords[0][1];
+            for (uint64_t j = 1; j < pos_attr->item_count; j++)
+            {
+                if (positions[j][0] < min_x)
+                    min_x = positions[j][0];
+                if (positions[j][0] > max_x)
+                    max_x = positions[j][0];
+                if (positions[j][1] < min_y)
+                    min_y = positions[j][1];
+                if (positions[j][1] > max_y)
+                    max_y = positions[j][1];
+                if (texcoords[j][0] < min_u)
+                    min_u = texcoords[j][0];
+                if (texcoords[j][0] > max_u)
+                    max_u = texcoords[j][0];
+                if (texcoords[j][1] < min_v)
+                    min_v = texcoords[j][1];
+                if (texcoords[j][1] > max_v)
+                    max_v = texcoords[j][1];
+            }
+            if (max_x != min_x && max_y != min_y)
+            {
+                DvzMVP mvp = {0};
+                _scene_panel_apply_mvp(panel, &mvp);
+                mat4 proj_view = GLM_MAT4_IDENTITY_INIT;
+                mat4 proj_view_model = GLM_MAT4_IDENTITY_INIT;
+                mat4 inv_proj_view_model = GLM_MAT4_IDENTITY_INIT;
+                glm_mat4_mul(mvp.proj, mvp.view, proj_view);
+                glm_mat4_mul(proj_view, mvp.model, proj_view_model);
+                glm_mat4_inv(proj_view_model, inv_proj_view_model);
+
+                vec4 clip = {request_ndc[0], -request_ndc[1], 0.0f, 1.0f};
+                vec4 local = {0};
+                glm_mat4_mulv(inv_proj_view_model, clip, local);
+                if (local[3] != 0.0f)
+                {
+                    double x = (double)(local[0] / local[3]);
+                    double y = (double)(local[1] / local[3]);
+                    double su = (x - min_x) / (double)(max_x - min_x);
+                    double sv = (y - min_y) / (double)(max_y - min_y);
+                    u = min_u + su * (double)(max_u - min_u);
+                    v = min_v + sv * (double)(max_v - min_v);
+                }
+            }
+        }
+    }
     if (u < 0.0)
         u = 0.0;
     if (v < 0.0)
@@ -366,13 +433,23 @@ static bool _scene_process_image_probe_request(
 
     uint32_t order[DVZ_SCENE_MAX_VISUALS] = {0};
     _scene_panel_visual_order(panel, order);
+    bool segment_probe = pending->request.target == DVZ_SCENE_TARGET_SEGMENT;
 
     for (int32_t oi = (int32_t)panel->visual_count - 1; oi >= 0; oi--)
     {
         DvzPanelAttach* attach = &panel->visuals[order[oi]];
         DvzVisual* visual = attach->visual;
-        if (visual == NULL || !visual->visible || visual->type != DVZ_VISUAL_TYPE_IMAGE)
+        if (visual == NULL || visual->type != DVZ_VISUAL_TYPE_IMAGE)
             continue;
+        if (segment_probe)
+        {
+            if ((visual->pick_capabilities & DVZ_PICK_CAPABILITY_GROUP) == 0)
+                continue;
+        }
+        else if (!visual->visible)
+        {
+            continue;
+        }
 
         DvzSceneProbePlan probe_plan = {0};
         if (!_scene_image_probe_plan(panel, visual, pending, request_ndc, &probe_plan))
@@ -382,9 +459,9 @@ static bool _scene_process_image_probe_request(
         bool readback_ok = _scene_execute_readback_plan(
             scene, runtime, caps, probe_plan.plan, probe_plan.emitter, rgba);
         if (readback_ok)
-            (void)_scene_image_probe_sample_cpu(visual, request_ndc, rgba);
+            (void)_scene_image_probe_sample_cpu(panel, visual, request_ndc, rgba);
         bool hit = readback_ok && rgba[3] > 0;
-        if (readback_ok && rgba[3] == 0)
+        if (!segment_probe && readback_ok && rgba[3] == 0)
         {
             log_error(
                 "image probe request %" PRIu64 " returned a transparent GPU pixel",
@@ -398,13 +475,28 @@ static bool _scene_process_image_probe_request(
         DvzProbeResult resolved = miss;
         resolved.hit = true;
         resolved.visual_id = _scene_visual_public_id(scene, visual);
-        resolved.target = DVZ_SCENE_TARGET_PIXEL;
-        resolved.value_kind = DVZ_PROBE_VALUE_VEC4;
-        resolved.vector[0] = rgba[0] / 255.0;
-        resolved.vector[1] = rgba[1] / 255.0;
-        resolved.vector[2] = rgba[2] / 255.0;
-        resolved.vector[3] = rgba[3] / 255.0;
-        dvz_strlcpy(resolved.label, "rgba", sizeof(resolved.label));
+        if (segment_probe)
+        {
+            uint64_t label_id = (uint64_t)rgba[0] | ((uint64_t)rgba[1] << 8) |
+                                ((uint64_t)rgba[2] << 16);
+            if (label_id == 0)
+                continue;
+            resolved.target = DVZ_SCENE_TARGET_SEGMENT;
+            resolved.target_id = label_id;
+            resolved.value_kind = DVZ_PROBE_VALUE_LABEL;
+            resolved.category_id = label_id;
+            dvz_snprintf(resolved.label, sizeof(resolved.label), "label %" PRIu64, label_id);
+        }
+        else
+        {
+            resolved.target = DVZ_SCENE_TARGET_PIXEL;
+            resolved.value_kind = DVZ_PROBE_VALUE_VEC4;
+            resolved.vector[0] = rgba[0] / 255.0;
+            resolved.vector[1] = rgba[1] / 255.0;
+            resolved.vector[2] = rgba[2] / 255.0;
+            resolved.vector[3] = rgba[3] / 255.0;
+            dvz_strlcpy(resolved.label, "rgba", sizeof(resolved.label));
+        }
         return _scene_push_probe_result(scene, panel, pending->freshness_serial, &resolved);
     }
 

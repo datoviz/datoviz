@@ -178,6 +178,8 @@ int test_scene_process_requests_preserves_caller_runtime(TstSuite* suite, TstIte
 
 int test_scene_image_probe_respects_panel_request_position(TstSuite* suite, TstItem* item);
 
+int test_scene_image_probe_segment_rgba_hidden_visual(TstSuite* suite, TstItem* item);
+
 int test_scene_image_probe_transparent_pixel_misses(TstSuite* suite, TstItem* item);
 
 int test_scene_image_probe_gpu_readback_failure_misses(TstSuite* suite, TstItem* item);
