@@ -160,6 +160,8 @@ int test_scene_image_emit_wgsl(TstSuite* suite, TstItem* item);
 
 int test_scene_image_emit_uses_common_and_texture_sets(TstSuite* suite, TstItem* item);
 
+int test_scene_visual_common_binding_layout_order(TstSuite* suite, TstItem* item);
+
 int test_scene_process_pick_probe_requests(TstSuite* suite, TstItem* item);
 
 int test_scene_point_pick_quadrants(TstSuite* suite, TstItem* item);

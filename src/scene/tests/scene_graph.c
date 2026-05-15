@@ -35,6 +35,80 @@
 
 
 /*************************************************************************************************/
+/*  Helpers                                                                                      */
+/*************************************************************************************************/
+
+/**
+ * Return whether a command creates the scene common bind-group layout.
+ *
+ * @param cmd the command to inspect
+ * @return whether the command creates the common MVP/viewport layout
+ */
+static bool _is_scene_common_bind_group_layout(const DvzDrp2Command* cmd)
+{
+    ANN(cmd);
+    if (cmd->type != DVZ_DRP2_COMMAND_CREATE_BIND_GROUP_LAYOUT)
+        return false;
+    if (cmd->u.create_bind_group_layout.entry_count != 2)
+        return false;
+    return cmd->u.create_bind_group_layout.entries[0].binding == 0 &&
+           cmd->u.create_bind_group_layout.entries[1].binding == 1 &&
+           cmd->u.create_bind_group_layout.entries[0].binding_type ==
+               DVZ_DRP2_BINDING_TYPE_UNIFORM_BUFFER &&
+           cmd->u.create_bind_group_layout.entries[1].binding_type ==
+               DVZ_DRP2_BINDING_TYPE_UNIFORM_BUFFER;
+}
+
+
+
+/**
+ * Find the scene common bind-group layout id in an emitted stream.
+ *
+ * @param stream the emitted DRP2 stream
+ * @return the common bind-group layout id, or zero when absent
+ */
+static uint64_t _stream_scene_common_layout_id(const DvzDrp2CommandStream* stream)
+{
+    ANN(stream);
+    for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
+    {
+        const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream, i);
+        if (cmd != NULL && _is_scene_common_bind_group_layout(cmd))
+            return cmd->u.create_bind_group_layout.id;
+    }
+    return 0;
+}
+
+
+
+/**
+ * Find the layout id used by a bind group in an emitted stream.
+ *
+ * @param stream the emitted DRP2 stream
+ * @param bind_group_id the bind group id
+ * @return the bind group's layout id, or zero when absent
+ */
+static uint64_t
+_stream_bind_group_layout_id(const DvzDrp2CommandStream* stream, uint64_t bind_group_id)
+{
+    ANN(stream);
+    if (bind_group_id == 0)
+        return 0;
+    for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
+    {
+        const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream, i);
+        if (cmd != NULL && cmd->type == DVZ_DRP2_COMMAND_CREATE_BIND_GROUP &&
+            cmd->u.create_bind_group.id == bind_group_id)
+        {
+            return cmd->u.create_bind_group.bind_group_layout_id;
+        }
+    }
+    return 0;
+}
+
+
+
+/*************************************************************************************************/
 /*  Tests                                                                                        */
 /*************************************************************************************************/
 
@@ -2331,6 +2405,204 @@ int test_scene_image_emit_uses_common_and_texture_sets(TstSuite* suite, TstItem*
 }
 
 
+/**
+ * Ensure scene visuals keep shared data in set 0 and visual-specific data in set 1.
+ *
+ * @param suite the test suite
+ * @param item the test item
+ * @return 0 on success
+ */
+int test_scene_visual_common_binding_layout_order(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    ANN(panel);
+
+    float point_pos[3][3] = {
+        {-0.8f, -0.8f, 0.0f}, {-0.7f, -0.8f, 0.0f}, {-0.75f, -0.7f, 0.0f},
+    };
+    DvzColor point_color[3] = {
+        {255, 0, 0, 255}, {0, 255, 0, 255}, {0, 0, 255, 255},
+    };
+    float point_size[3] = {8.0f, 8.0f, 8.0f};
+    DvzVisual* point = dvz_point(scene, 0);
+    ANN(point);
+    AT(dvz_visual_set_data(point, "position", point_pos, 3) == 0);
+    AT(dvz_visual_set_data(point, "color", point_color, 3) == 0);
+    AT(dvz_visual_set_data(point, "size", point_size, 3) == 0);
+    AT(dvz_panel_add_visual(panel, point, NULL) == 0);
+
+    float prim_pos[3][3] = {
+        {-0.5f, -0.8f, 0.0f}, {-0.3f, -0.8f, 0.0f}, {-0.4f, -0.6f, 0.0f},
+    };
+    DvzColor prim_color[3] = {
+        {255, 255, 0, 255}, {255, 255, 0, 255}, {255, 255, 0, 255},
+    };
+    DvzVisual* primitive = dvz_primitive(scene, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 0);
+    ANN(primitive);
+    AT(dvz_visual_set_data(primitive, "position", prim_pos, 3) == 0);
+    AT(dvz_visual_set_data(primitive, "color", prim_color, 3) == 0);
+    AT(dvz_panel_add_visual(panel, primitive, NULL) == 0);
+
+    float path_pos[4][3] = {
+        {-0.2f, -0.8f, 0.0f}, {-0.1f, -0.7f, 0.0f},
+        {0.0f, -0.8f, 0.0f},  {0.1f, -0.7f, 0.0f},
+    };
+    DvzColor path_color[4] = {
+        {0, 255, 255, 255}, {0, 255, 255, 255},
+        {0, 255, 255, 255}, {0, 255, 255, 255},
+    };
+    DvzVisual* path = dvz_path(scene, 0);
+    ANN(path);
+    AT(dvz_visual_set_data(path, "position", path_pos, 4) == 0);
+    AT(dvz_visual_set_data(path, "color", path_color, 4) == 0);
+    AT(dvz_panel_add_visual(panel, path, NULL) == 0);
+
+    float image_pos[4][3] = {
+        {0.2f, -0.8f, 0.0f}, {0.2f, -0.6f, 0.0f},
+        {0.4f, -0.8f, 0.0f}, {0.4f, -0.6f, 0.0f},
+    };
+    float image_uv[4][2] = {
+        {0.0f, 0.0f}, {0.0f, 1.0f}, {1.0f, 0.0f}, {1.0f, 1.0f},
+    };
+    uint8_t pixels[4 * 4 * 4];
+    dvz_memset(pixels, sizeof(pixels), 255, sizeof(pixels));
+    DvzVisual* image = dvz_image(scene, 0);
+    ANN(image);
+    AT(dvz_visual_set_data(image, "position", image_pos, 4) == 0);
+    AT(dvz_visual_set_data(image, "texcoords", image_uv, 4) == 0);
+    AT(dvz_visual_set_texture(image, pixels, 4, 4) == 0);
+    AT(dvz_panel_add_visual(panel, image, NULL) == 0);
+
+    float mesh_pos[4][3] = {
+        {0.55f, -0.8f, 0.0f}, {0.55f, -0.6f, 0.0f},
+        {0.75f, -0.8f, 0.0f}, {0.75f, -0.6f, 0.0f},
+    };
+    float mesh_normal[4][3] = {
+        {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 1.0f},
+        {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 1.0f},
+    };
+    DvzIndex mesh_index[6] = {0, 1, 2, 2, 1, 3};
+    DvzSceneBuffer* index_buffer = dvz_scene_buffer(
+        scene, &(DvzSceneBufferDesc){
+                   .usage = DVZ_SCENE_BUFFER_USAGE_INDEX,
+                   .stride = sizeof(DvzIndex),
+               });
+    ANN(index_buffer);
+    AT(dvz_scene_buffer_set_data(index_buffer, mesh_index, sizeof(mesh_index)));
+    DvzVisual* mesh = dvz_mesh(scene, 0);
+    ANN(mesh);
+    AT(dvz_visual_set_data(mesh, "position", mesh_pos, 4) == 0);
+    AT(dvz_visual_set_data(mesh, "normal", mesh_normal, 4) == 0);
+    AT(dvz_visual_set_buffer(mesh, "index", index_buffer));
+    AT(dvz_panel_add_visual(panel, mesh, NULL) == 0);
+
+    DvzCapabilitySnapshot caps;
+    dvz_capability_snapshot_default(&caps);
+    caps.shader_format_glsl = true;
+    caps.max_vertex_buffers = 16;
+    caps.max_bind_groups = 4;
+    caps.max_buffer_size = 256 * 1024 * 1024;
+
+    DvzDiagnosticReport report;
+    dvz_diagnostic_report_init(&report);
+    DvzFramePlanEmitConfig cfg = dvz_frame_plan_emit_config();
+    cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
+
+    DvzDrp2CommandStream* stream = dvz_figure_emit_ex(figure, &caps, &report, &cfg);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+    ANN(stream);
+
+    uint64_t common_layout_id = _stream_scene_common_layout_id(stream);
+    AT(common_layout_id != 0);
+
+    bool found_point_pipeline = false;
+    bool found_primitive_pipeline = false;
+    bool found_path_pipeline = false;
+    bool found_image_pipeline = false;
+    bool found_lit_mesh_pipeline = false;
+    bool found_common_bind = false;
+    bool found_visual_bind = false;
+
+    for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
+    {
+        const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream, i);
+        if (cmd == NULL)
+            continue;
+        if (cmd->type == DVZ_DRP2_COMMAND_CREATE_RENDER_PIPELINE)
+        {
+            const uint32_t topology = cmd->u.create_render_pipeline.topology;
+            const uint32_t slots = cmd->u.create_render_pipeline.vertex_buffer_slots;
+            const uint32_t layout_count = cmd->u.create_render_pipeline.bind_group_layout_count;
+            AT(layout_count >= 1);
+            AT(cmd->u.create_render_pipeline.bind_group_layout_ids[0] == common_layout_id);
+
+            if (slots == 3 && topology == VK_PRIMITIVE_TOPOLOGY_POINT_LIST)
+            {
+                AT(layout_count == 1);
+                found_point_pipeline = true;
+            }
+            else if (slots == 2 && topology == VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST)
+            {
+                AT(layout_count == 1);
+                found_primitive_pipeline = true;
+            }
+            else if (slots == 2 && topology == VK_PRIMITIVE_TOPOLOGY_LINE_STRIP)
+            {
+                AT(layout_count == 1);
+                found_path_pipeline = true;
+            }
+            else if (slots == 2 && topology == VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP)
+            {
+                AT(layout_count == 2);
+                AT(cmd->u.create_render_pipeline.bind_group_layout_ids[1] != common_layout_id);
+                found_image_pipeline = true;
+            }
+            else if (slots == 3 && topology == VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST)
+            {
+                AT(layout_count == 2);
+                AT(cmd->u.create_render_pipeline.bind_group_layout_ids[1] != common_layout_id);
+                found_lit_mesh_pipeline = true;
+            }
+        }
+        else if (cmd->type == DVZ_DRP2_COMMAND_SET_BIND_GROUP)
+        {
+            uint64_t layout_id =
+                _stream_bind_group_layout_id(stream, cmd->u.set_bind_group.bind_group_id);
+            if (cmd->u.set_bind_group.slot == 0)
+            {
+                AT(layout_id == common_layout_id);
+                found_common_bind = true;
+            }
+            else if (cmd->u.set_bind_group.slot == 1)
+            {
+                AT(layout_id != 0);
+                AT(layout_id != common_layout_id);
+                found_visual_bind = true;
+            }
+        }
+    }
+
+    AT(found_point_pipeline);
+    AT(found_primitive_pipeline);
+    AT(found_path_pipeline);
+    AT(found_image_pipeline);
+    AT(found_lit_mesh_pipeline);
+    AT(found_common_bind);
+    AT(found_visual_bind);
+
+    dvz_drp2_stream_destroy(stream);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
 
 /**
  * Check that an empty panel emits an explicit clear-only render pass.
@@ -3236,6 +3508,7 @@ int test_scene_graph(TstSuite* suite)
     TEST_SIMPLE(test_scene_image_emit);
     TEST_SIMPLE(test_scene_image_emit_wgsl);
     TEST_SIMPLE(test_scene_image_emit_uses_common_and_texture_sets);
+    TEST_SIMPLE(test_scene_visual_common_binding_layout_order);
     TEST_SIMPLE(test_scene_empty_figure_emit_clear_only);
     TEST_SIMPLE(test_scene_point_emit_has_vertex_layout);
     TEST_SIMPLE(test_scene_indexed_primitive_shading_updates_runtime);

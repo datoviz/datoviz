@@ -129,6 +129,23 @@ The first visual contract should model a visual as a pure function of:
 By the time planning begins, these inputs should already be in a read-only state for the frame.
 
 
+## DRP2 Binding Convention
+
+Built-in scene visuals use one shared bind-group convention when lowered to DRP2:
+
+1. set `0` is reserved for scene/panel common data,
+2. set `0`, binding `0` is the MVP uniform,
+3. set `0`, binding `1` is the viewport uniform,
+4. set `1+` is reserved for visual-specific resources.
+
+Point, primitive, path, mesh, and image visuals all bind the common set at group `0` when they
+consume panel transform or viewport data. Image visuals bind their sampled texture and sampler at
+group `1`. Lit primitive and mesh visuals bind their shading parameter uniform at group `1`.
+
+No visual-specific resource should be placed in the common group. No built-in visual that consumes
+MVP or viewport data should skip the common group.
+
+
 ## Public Type Model
 
 `DvzVisual*` is the single opaque handle type for all visual families. There is no
