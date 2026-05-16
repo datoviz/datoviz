@@ -13,6 +13,8 @@ from dataclasses import dataclass
 from pathlib import Path
 
 
+Vec3 = tuple[float, float, float]
+
 PDB_URL = "https://files.rcsb.org/download/{pdb_id}.pdb"
 WATER_NAMES = {"HOH", "WAT", "H2O"}
 
@@ -87,12 +89,36 @@ class Atom:
     residue: str
     chain: str
     residue_index: int
+    insertion_code: str
     x: float
     y: float
     z: float
     occupancy: float
     bfactor: float
     hetero: bool
+
+
+@dataclass
+class Residue:
+    chain: str
+    residue_index: int
+    insertion_code: str
+    name: str
+    atoms: dict[str, Atom]
+    ss: int = 0
+
+
+SS_COIL = 0
+SS_HELIX = 1
+SS_SHEET = 2
+SS_TURN = 3
+
+SS_COLORS = {
+    SS_COIL: (185, 185, 185, 255),
+    SS_HELIX: (220, 75, 65, 255),
+    SS_SHEET: (230, 190, 65, 255),
+    SS_TURN: (85, 155, 225, 255),
+}
 
 
 def _default_cache_dir(pdb_id: str) -> Path:
@@ -166,6 +192,7 @@ def _parse_pdb(text: str, include_hetero: bool, keep_waters: bool) -> list[Atom]
             residue=residue,
             chain=chain,
             residue_index=residue_index,
+            insertion_code=insertion_code,
             x=x,
             y=y,
             z=z,
@@ -191,7 +218,71 @@ def _parse_pdb(text: str, include_hetero: bool, keep_waters: bool) -> list[Atom]
     return atoms
 
 
-def _center_and_radius(atoms: list[Atom]) -> tuple[tuple[float, float, float], float, list[float], list[float]]:
+def _residues_from_atoms(atoms: list[Atom]) -> list[Residue]:
+    residues: dict[tuple[str, int, str], Residue] = {}
+    for atom in atoms:
+        key = (atom.chain, atom.residue_index, atom.insertion_code)
+        residue = residues.get(key)
+        if residue is None:
+            residue = Residue(
+                chain=atom.chain,
+                residue_index=atom.residue_index,
+                insertion_code=atom.insertion_code,
+                name=atom.residue,
+                atoms={},
+            )
+            residues[key] = residue
+        residue.atoms[atom.name.strip().upper()] = atom
+    return sorted(residues.values(), key=lambda r: (r.chain, r.residue_index, r.insertion_code))
+
+
+def _ss_category(code: str) -> int:
+    code = (code or " ").strip().upper()
+    if code in {"H", "G", "I"}:
+        return SS_HELIX
+    if code in {"E", "B"}:
+        return SS_SHEET
+    if code in {"T", "S", "P"}:
+        return SS_TURN
+    return SS_COIL
+
+
+def _assign_dssp(residues: list[Residue], pdb_text: str, enabled: bool) -> bool:
+    if not enabled:
+        return False
+    try:
+        import rs_dssp  # type: ignore
+    except ImportError:
+        print("warning: --dssp requested but rs-dssp is unavailable", file=sys.stderr)
+        return False
+
+    try:
+        result = rs_dssp.assign_from_string(pdb_text, calculate_sasa=False)
+    except Exception as exc:
+        print(f"warning: DSSP assignment failed: {exc}", file=sys.stderr)
+        return False
+
+    lookup: dict[tuple[str, int], int] = {}
+    for item in result.residues:
+        try:
+            chain = str(item.chain_id)
+            seq_id = int(item.seq_id)
+            code = str(item.structure)
+        except (AttributeError, TypeError, ValueError):
+            continue
+        lookup[(chain, seq_id)] = _ss_category(code)
+
+    assigned = 0
+    for residue in residues:
+        ss = lookup.get((residue.chain, residue.residue_index))
+        if ss is None:
+            continue
+        residue.ss = ss
+        assigned += 1
+    return assigned > 0
+
+
+def _center_and_radius(atoms: list[Atom]) -> tuple[Vec3, float, list[float], list[float]]:
     xs = [atom.x for atom in atoms]
     ys = [atom.y for atom in atoms]
     zs = [atom.z for atom in atoms]
@@ -236,6 +327,231 @@ def _infer_bonds(atoms: list[Atom], max_distance: float, scale: float) -> list[t
     return bonds
 
 
+def _v_add(a: Vec3, b: Vec3) -> Vec3:
+    return (a[0] + b[0], a[1] + b[1], a[2] + b[2])
+
+
+def _v_sub(a: Vec3, b: Vec3) -> Vec3:
+    return (a[0] - b[0], a[1] - b[1], a[2] - b[2])
+
+
+def _v_mul(a: Vec3, s: float) -> Vec3:
+    return (a[0] * s, a[1] * s, a[2] * s)
+
+
+def _v_dot(a: Vec3, b: Vec3) -> float:
+    return a[0] * b[0] + a[1] * b[1] + a[2] * b[2]
+
+
+def _v_cross(a: Vec3, b: Vec3) -> Vec3:
+    return (
+        a[1] * b[2] - a[2] * b[1],
+        a[2] * b[0] - a[0] * b[2],
+        a[0] * b[1] - a[1] * b[0],
+    )
+
+
+def _v_len(a: Vec3) -> float:
+    return math.sqrt(_v_dot(a, a))
+
+
+def _v_norm(a: Vec3, fallback: Vec3 = (0.0, 0.0, 1.0)) -> Vec3:
+    length = _v_len(a)
+    if length <= 1e-12:
+        return fallback
+    return (a[0] / length, a[1] / length, a[2] / length)
+
+
+def _atom_pos(atom: Atom) -> Vec3:
+    return (atom.x, atom.y, atom.z)
+
+
+def _catmull_rom(
+    p0: Vec3,
+    p1: Vec3,
+    p2: Vec3,
+    p3: Vec3,
+    t: float,
+) -> Vec3:
+    t2 = t * t
+    t3 = t2 * t
+    return (
+        0.5
+        * (
+            2 * p1[0]
+            + (-p0[0] + p2[0]) * t
+            + (2 * p0[0] - 5 * p1[0] + 4 * p2[0] - p3[0]) * t2
+            + (-p0[0] + 3 * p1[0] - 3 * p2[0] + p3[0]) * t3
+        ),
+        0.5
+        * (
+            2 * p1[1]
+            + (-p0[1] + p2[1]) * t
+            + (2 * p0[1] - 5 * p1[1] + 4 * p2[1] - p3[1]) * t2
+            + (-p0[1] + 3 * p1[1] - 3 * p2[1] + p3[1]) * t3
+        ),
+        0.5
+        * (
+            2 * p1[2]
+            + (-p0[2] + p2[2]) * t
+            + (2 * p0[2] - 5 * p1[2] + 4 * p2[2] - p3[2]) * t2
+            + (-p0[2] + 3 * p1[2] - 3 * p2[2] + p3[2]) * t3
+        ),
+    )
+
+
+def _residue_frame(residue: Residue, tangent: Vec3, previous_up: Vec3) -> tuple[Vec3, Vec3]:
+    n = residue.atoms.get("N")
+    ca = residue.atoms.get("CA")
+    c = residue.atoms.get("C")
+    up = previous_up
+    if n is not None and ca is not None and c is not None:
+        n_to_ca = _v_sub(_atom_pos(n), _atom_pos(ca))
+        c_to_ca = _v_sub(_atom_pos(c), _atom_pos(ca))
+        up = _v_norm(_v_cross(n_to_ca, c_to_ca), up)
+    up = _v_sub(up, _v_mul(tangent, _v_dot(up, tangent)))
+    up = _v_norm(up, previous_up)
+    side = _v_norm(_v_cross(tangent, up), (1.0, 0.0, 0.0))
+    up = _v_norm(_v_cross(side, tangent), up)
+    return side, up
+
+
+def _ribbon_corner(
+    p: Vec3, side: Vec3, up: Vec3, half_w: float, half_t: float
+) -> list[tuple[Vec3, Vec3]]:
+    return [
+        (_v_add(_v_add(p, _v_mul(side, -half_w)), _v_mul(up, +half_t)), up),
+        (_v_add(_v_add(p, _v_mul(side, +half_w)), _v_mul(up, +half_t)), up),
+        (_v_add(_v_add(p, _v_mul(side, -half_w)), _v_mul(up, -half_t)), _v_mul(up, -1.0)),
+        (_v_add(_v_add(p, _v_mul(side, +half_w)), _v_mul(up, -half_t)), _v_mul(up, -1.0)),
+        (_v_add(_v_add(p, _v_mul(side, -half_w)), _v_mul(up, +half_t)), _v_mul(side, -1.0)),
+        (_v_add(_v_add(p, _v_mul(side, -half_w)), _v_mul(up, -half_t)), _v_mul(side, -1.0)),
+        (_v_add(_v_add(p, _v_mul(side, +half_w)), _v_mul(up, +half_t)), side),
+        (_v_add(_v_add(p, _v_mul(side, +half_w)), _v_mul(up, -half_t)), side),
+    ]
+
+
+def _ribbon_shape(ss: int, radius: float) -> tuple[float, float]:
+    scale = 1.0 / radius
+    if ss == SS_HELIX:
+        return 1.05 * scale, 0.22 * scale
+    if ss == SS_SHEET:
+        return 1.35 * scale, 0.16 * scale
+    if ss == SS_TURN:
+        return 0.62 * scale, 0.13 * scale
+    return 0.46 * scale, 0.11 * scale
+
+
+def _ribbon_mesh(
+    residues: list[Residue],
+    chains: dict[str, int],
+    center: Vec3,
+    radius: float,
+    samples_per_segment: int,
+) -> dict[str, list]:
+    positions: list[float] = []
+    normals: list[float] = []
+    colors_chain: list[tuple[int, int, int, int]] = []
+    colors_ss: list[tuple[int, int, int, int]] = []
+    indices: list[int] = []
+    residue_ss: list[int] = []
+
+    by_chain: dict[str, list[Residue]] = {}
+    for residue in residues:
+        if "CA" not in residue.atoms:
+            continue
+        by_chain.setdefault(residue.chain, []).append(residue)
+        residue_ss.append(residue.ss)
+
+    vertex_count = 0
+    for chain, chain_residues in sorted(by_chain.items()):
+        if len(chain_residues) < 2:
+            continue
+        ca = [_atom_pos(residue.atoms["CA"]) for residue in chain_residues]
+        up = (0.0, 0.0, 1.0)
+        section_count = 0
+        for i in range(len(chain_residues) - 1):
+            segment_samples = samples_per_segment
+            for s in range(segment_samples):
+                t = s / float(segment_samples)
+                p0 = ca[max(i - 1, 0)]
+                p1 = ca[i]
+                p2 = ca[i + 1]
+                p3 = ca[min(i + 2, len(ca) - 1)]
+                p = _catmull_rom(p0, p1, p2, p3, t)
+                tangent = _v_norm(_v_sub(p2, p1), (0.0, 0.0, 1.0))
+                residue = chain_residues[i if t < 0.5 else i + 1]
+                side, up = _residue_frame(residue, tangent, up)
+                width, thickness = _ribbon_shape(residue.ss, radius)
+                p_norm = (
+                    (p[0] - center[0]) / radius,
+                    (p[1] - center[1]) / radius,
+                    (p[2] - center[2]) / radius,
+                )
+                half_w = 0.5 * width
+                half_t = 0.5 * thickness
+                chain_color = CHAIN_PALETTE[chains[chain] % len(CHAIN_PALETTE)]
+                ss_color = SS_COLORS.get(residue.ss, SS_COLORS[SS_COIL])
+                for pos, normal in _ribbon_corner(p_norm, side, up, half_w, half_t):
+                    positions.extend(pos)
+                    normals.extend(_v_norm(normal))
+                    colors_chain.append(chain_color)
+                    colors_ss.append(ss_color)
+                if section_count > 0:
+                    a = vertex_count - 8
+                    b = vertex_count
+                    quads = [
+                        (a + 0, a + 1, b + 1, b + 0),
+                        (a + 2, b + 2, b + 3, a + 3),
+                        (a + 4, b + 4, b + 5, a + 5),
+                        (a + 6, a + 7, b + 7, b + 6),
+                    ]
+                    for q0, q1, q2, q3 in quads:
+                        indices.extend([q0, q1, q2, q0, q2, q3])
+                vertex_count += 8
+                section_count += 1
+        # Add an explicit final section at the last C-alpha.
+        p = ca[-1]
+        tangent = _v_norm(_v_sub(ca[-1], ca[-2]), (0.0, 0.0, 1.0))
+        residue = chain_residues[-1]
+        side, up = _residue_frame(residue, tangent, up)
+        width, thickness = _ribbon_shape(residue.ss, radius)
+        p_norm = (
+            (p[0] - center[0]) / radius,
+            (p[1] - center[1]) / radius,
+            (p[2] - center[2]) / radius,
+        )
+        half_w = 0.5 * width
+        half_t = 0.5 * thickness
+        chain_color = CHAIN_PALETTE[chains[chain] % len(CHAIN_PALETTE)]
+        ss_color = SS_COLORS.get(residue.ss, SS_COLORS[SS_COIL])
+        for pos, normal in _ribbon_corner(p_norm, side, up, half_w, half_t):
+            positions.extend(pos)
+            normals.extend(_v_norm(normal))
+            colors_chain.append(chain_color)
+            colors_ss.append(ss_color)
+        if section_count > 0:
+            a = vertex_count - 8
+            b = vertex_count
+            for q0, q1, q2, q3 in [
+                (a + 0, a + 1, b + 1, b + 0),
+                (a + 2, b + 2, b + 3, a + 3),
+                (a + 4, b + 4, b + 5, a + 5),
+                (a + 6, a + 7, b + 7, b + 6),
+            ]:
+                indices.extend([q0, q1, q2, q0, q2, q3])
+        vertex_count += 8
+
+    return {
+        "position": positions,
+        "normal": normals,
+        "color_chain": colors_chain,
+        "color_ss": colors_ss,
+        "index": indices,
+        "residue_ss": residue_ss,
+    }
+
+
 def _write_f32(path: Path, values: list[float]) -> None:
     with path.open("wb") as f:
         for value in values:
@@ -246,6 +562,11 @@ def _write_u32(path: Path, values: list[int]) -> None:
     with path.open("wb") as f:
         for value in values:
             f.write(struct.pack("<I", int(value)))
+
+
+def _write_u8(path: Path, values: list[int]) -> None:
+    with path.open("wb") as f:
+        f.write(bytes(max(0, min(255, int(value))) for value in values))
 
 
 def _write_rgba8(path: Path, values: list[tuple[int, int, int, int]]) -> None:
@@ -259,11 +580,17 @@ def _export_bundle(
     atoms: list[Atom],
     bonds: list[tuple[int, int]],
     source: str,
+    pdb_text: str,
     output_dir: Path,
+    use_dssp: bool,
+    ribbon_samples: int,
 ) -> None:
     output_dir.mkdir(parents=True, exist_ok=True)
     center, radius, bbox_min, bbox_max = _center_and_radius(atoms)
     chains = _chain_map(atoms)
+    residues = _residues_from_atoms(atoms)
+    dssp_assigned = _assign_dssp(residues, pdb_text, use_dssp)
+    ribbon = _ribbon_mesh(residues, chains, center, radius, max(1, ribbon_samples))
 
     positions: list[float] = []
     radius_vdw: list[float] = []
@@ -310,6 +637,15 @@ def _export_bundle(
     _write_u32(output_dir / "atom_chain.u32", atom_chain)
     _write_u32(output_dir / "atom_residue.u32", atom_residue)
     _write_u32(output_dir / "bond_index.u32", bond_index)
+    _write_f32(output_dir / "ribbon_position.f32", ribbon["position"])
+    _write_f32(output_dir / "ribbon_normal.f32", ribbon["normal"])
+    _write_rgba8(output_dir / "ribbon_color_chain.rgba8", ribbon["color_chain"])
+    _write_rgba8(output_dir / "ribbon_color_ss.rgba8", ribbon["color_ss"])
+    _write_u32(output_dir / "ribbon_index.u32", ribbon["index"])
+    _write_u8(output_dir / "residue_secondary_structure.u8", ribbon["residue_ss"])
+
+    ribbon_vertex_count = len(ribbon["position"]) // 3
+    ribbon_index_count = len(ribbon["index"])
 
     metadata = {
         "format": "datoviz.protein.bundle.v1",
@@ -323,10 +659,20 @@ def _export_bundle(
         "bbox_max": bbox_max,
         "atom_count": len(atoms),
         "bond_count": len(bonds),
+        "residue_count": len(residues),
         "chain_count": len(chains),
         "chains": sorted(chains, key=chains.get),
         "has_surface": False,
-        "has_ribbon": False,
+        "has_ribbon": ribbon_vertex_count > 0 and ribbon_index_count > 0,
+        "dssp_assigned": dssp_assigned,
+        "secondary_structure_encoding": {
+            "0": "coil",
+            "1": "helix",
+            "2": "sheet",
+            "3": "turn",
+        },
+        "ribbon_vertex_count": ribbon_vertex_count,
+        "ribbon_index_count": ribbon_index_count,
         "files": {
             "atom_position": "atom_position.f32",
             "atom_radius_vdw": "atom_radius_vdw.f32",
@@ -337,6 +683,12 @@ def _export_bundle(
             "atom_chain": "atom_chain.u32",
             "atom_residue": "atom_residue.u32",
             "bond_index": "bond_index.u32",
+            "ribbon_position": "ribbon_position.f32",
+            "ribbon_normal": "ribbon_normal.f32",
+            "ribbon_color_chain": "ribbon_color_chain.rgba8",
+            "ribbon_color_ss": "ribbon_color_ss.rgba8",
+            "ribbon_index": "ribbon_index.u32",
+            "residue_secondary_structure": "residue_secondary_structure.u8",
         },
     }
     (output_dir / "metadata.json").write_text(json.dumps(metadata, indent=2) + "\n")
@@ -353,6 +705,17 @@ def _parse_args(argv: list[str]) -> argparse.Namespace:
     )
     parser.add_argument("--include-hetero", action="store_true", help="include HETATM records")
     parser.add_argument("--keep-waters", action="store_true", help="keep water molecules")
+    parser.add_argument(
+        "--dssp",
+        action="store_true",
+        help="assign secondary structure with optional rs-dssp Python package",
+    )
+    parser.add_argument(
+        "--ribbon-samples",
+        type=int,
+        default=4,
+        help="interpolated ribbon sections per residue segment",
+    )
     parser.add_argument("--bond-scale", type=float, default=1.25, help="covalent radius scale")
     parser.add_argument(
         "--max-bond-distance",
@@ -378,7 +741,8 @@ def main(argv: list[str]) -> int:
         return 1
 
     bonds = _infer_bonds(atoms, args.max_bond_distance, args.bond_scale)
-    _export_bundle(pdb_id, atoms, bonds, source, output_dir)
+    _export_bundle(
+        pdb_id, atoms, bonds, source, text, output_dir, args.dssp, args.ribbon_samples)
     print(
         f"wrote {output_dir} ({len(atoms)} atoms, {len(bonds)} inferred bonds, "
         f"{len(_chain_map(atoms))} chains)"
