@@ -44,11 +44,11 @@ class MeshData:
 
 
 DEFAULT_REGIONS = (
-    RegionSpec(997, "root", "Whole brain", (214, 214, 214, 42)),
-    RegionSpec(315, "Isocortex", "Isocortex", (112, 185, 102, 156)),
-    RegionSpec(1089, "HPF", "Hippocampal formation", (126, 208, 75, 178)),
-    RegionSpec(549, "TH", "Thalamus", (255, 144, 159, 190)),
-    RegionSpec(294, "SC", "Superior colliculus", (255, 153, 0, 184)),
+    RegionSpec(997, "root", "Whole brain", (214, 214, 214, 255)),
+    RegionSpec(315, "Isocortex", "Isocortex", (112, 185, 102, 255)),
+    RegionSpec(1089, "HPF", "Hippocampal formation", (126, 208, 75, 255)),
+    RegionSpec(549, "TH", "Thalamus", (255, 144, 159, 255)),
+    RegionSpec(294, "SC", "Superior colliculus", (255, 153, 0, 255)),
 )
 
 

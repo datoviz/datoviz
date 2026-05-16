@@ -86,6 +86,7 @@ typedef struct AllenIblAtlasRegion
     char name[96];
     uint32_t vertex_start;
     uint32_t vertex_count;
+    float alpha;
     bool visible;
 } AllenIblAtlasRegion;
 
@@ -523,6 +524,7 @@ static void _load_ibl_region_metadata(const char* data_dir, AllenIblAtlasMesh* a
             region.vertex_count <= atlas->vertex_count - region.vertex_start)
         {
             region.visible = true;
+            region.alpha = 1.0f;
             atlas->regions[atlas->region_count++] = region;
         }
         p = object_end + 1;
@@ -645,6 +647,11 @@ static bool _load_ibl_atlas_mesh(const char* data_dir, AllenIblAtlasMesh* atlas)
     if (atlas->base_color == NULL)
         goto error;
     dvz_memcpy(atlas->base_color, color_size, atlas->color, color_size);
+    for (uint32_t i = 0; i < (uint32_t)vertex_count; i++)
+    {
+        atlas->base_color[i][3] = 255;
+        atlas->color[i][3] = 255;
+    }
 
     _load_ibl_volume_bounds(data_dir, atlas);
     _load_ibl_region_metadata(data_dir, atlas);
@@ -1311,20 +1318,22 @@ static void _apply_atlas_mesh_controls(AllenMouseBrainState* state)
     _apply_transparency_modes(state);
     for (uint32_t i = 0; i < state->atlas_mesh->vertex_count; i++)
     {
-        uint32_t alpha = state->atlas_mesh->base_color[i][3];
+        uint32_t alpha = 255;
         alpha = (uint32_t)((float)alpha * state->atlas_alpha_scale + 0.5f);
         state->atlas_mesh->color[i][3] = alpha > 255u ? 255u : (uint8_t)alpha;
     }
     for (uint32_t r = 0; r < state->atlas_mesh->region_count; r++)
     {
         const AllenIblAtlasRegion* region = &state->atlas_mesh->regions[r];
-        if (region->visible)
-            continue;
         uint32_t end = region->vertex_start + region->vertex_count;
         if (end > state->atlas_mesh->vertex_count)
             end = state->atlas_mesh->vertex_count;
+        uint32_t alpha = region->visible ? (uint32_t)(region->alpha * 255.0f + 0.5f) : 0;
+        alpha = (uint32_t)((float)alpha * state->atlas_alpha_scale + 0.5f);
+        if (alpha > 255u)
+            alpha = 255u;
         for (uint32_t i = region->vertex_start; i < end; i++)
-            state->atlas_mesh->color[i][3] = 0;
+            state->atlas_mesh->color[i][3] = (uint8_t)alpha;
     }
 
     if (dvz_visual_set_data(
@@ -1540,6 +1549,9 @@ static void _allen_mouse_brain_gui(DvzGui* gui, DvzAppWindow* win, void* user_da
                     dvz_snprintf(
                         label, sizeof(label), "%s - %s", region->acronym, region->name);
                     atlas_changed |= dvz_gui_checkbox(gui, label, &region->visible);
+                    dvz_snprintf(
+                        label, sizeof(label), "%s alpha", region->acronym);
+                    atlas_changed |= dvz_gui_slider_float(gui, label, &region->alpha, 0.0f, 1.0f);
                 }
             }
         }
@@ -1567,7 +1579,10 @@ static void _allen_mouse_brain_gui(DvzGui* gui, DvzAppWindow* win, void* user_da
             if (state->atlas_mesh != NULL)
             {
                 for (uint32_t r = 0; r < state->atlas_mesh->region_count; r++)
+                {
                     state->atlas_mesh->regions[r].visible = true;
+                    state->atlas_mesh->regions[r].alpha = 1.0f;
+                }
             }
             changed = true;
             atlas_changed = true;
