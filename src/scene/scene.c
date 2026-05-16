@@ -644,7 +644,8 @@ static void _scene_commit_emit_success(DvzFigure* figure)
             if (
                 visual->type == DVZ_VISUAL_TYPE_POINT || visual->type == DVZ_VISUAL_TYPE_PIXEL ||
                 visual->type == DVZ_VISUAL_TYPE_PRIMITIVE ||
-                visual->type == DVZ_VISUAL_TYPE_MESH)
+                visual->type == DVZ_VISUAL_TYPE_MESH ||
+                visual->type == DVZ_VISUAL_TYPE_SPHERE)
             {
                 int normal_idx = _attr_index(visual, "normal");
                 bool has_normals =
@@ -652,7 +653,7 @@ static void _scene_commit_emit_success(DvzFigure* figure)
                     visual->attrs[normal_idx].item_count > 0;
                 bool point_like = visual->type == DVZ_VISUAL_TYPE_POINT ||
                                   visual->type == DVZ_VISUAL_TYPE_PIXEL;
-                if (point_like || has_normals)
+                if (point_like || has_normals || visual->type == DVZ_VISUAL_TYPE_SPHERE)
                     visual->material_params_dirty = false;
             }
             if (visual->type == DVZ_VISUAL_TYPE_IMAGE || visual->type == DVZ_VISUAL_TYPE_VOLUME)

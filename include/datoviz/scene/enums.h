@@ -118,6 +118,14 @@ typedef enum
 
 typedef enum
 {
+    DVZ_SPHERE_FLAGS_NONE = 0x0000,
+    DVZ_SPHERE_FLAGS_LIGHTING = 0x0001,
+    DVZ_SPHERE_FLAGS_SIZE_PIXELS = 0x0002,
+} DvzSphereFlags;
+
+
+typedef enum
+{
     DVZ_DEPTH_CUE_NONE = 0,
     DVZ_DEPTH_CUE_FADE_TO_BACKGROUND,
     DVZ_DEPTH_CUE_DESATURATE,

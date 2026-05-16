@@ -404,6 +404,7 @@ dvz_visual_attr_mutability(const DvzVisual* visual, const char* attr_name);
  *
  * First-slice visual families currently accept:
  * point: `"position"` (vec3f), `"color"` (RGBA8), `"size"` (float)
+ * sphere: `"position"` (vec3f), `"color"` (RGBA8), `"size"` (float radius)
  * primitive/path: `"position"` (vec3f), `"color"` (RGBA8)
  * mesh: `"position"` (vec3f), optional `"color"` (RGBA8), optional `"normal"` (vec3f)
  * primitive only: `"normal"` (vec3f)
@@ -546,8 +547,8 @@ DVZ_EXPORT bool dvz_visual_set_attr_buffer(
  * Override primitive shading parameters.
  *
  * The current primitive/mesh slice uses these parameters only when a visual also has a bound
- * `normal` attribute. The default light direction is `(0, 0, 1)` with ambient `0.2`
- * and diffuse `0.8`.
+ * `normal` attribute. Sphere visuals use the same material light parameters. The default light
+ * direction is `(0, 0, 1)` with ambient `0.2` and diffuse `0.8`.
  *
  * @param visual the visual
  * @param desc the shading descriptor, or NULL to restore defaults
@@ -558,11 +559,11 @@ dvz_visual_set_primitive_shading(DvzVisual* visual, const DvzPrimitiveShadingDes
 
 
 /**
- * Configure depth cueing for a point, pixel, primitive, or mesh visual.
+ * Configure depth cueing for a point, pixel, primitive, mesh, or sphere visual.
  *
- * Primitive/mesh visuals use depth cueing through the material shader path. Point/pixel visuals
- * use the same cue parameters without lighting. The `near_depth` and `far_depth` values are
- * interpreted in the descriptor metric, where lower values are closer. The default metric is
+ * Primitive/mesh/sphere visuals use depth cueing through the material shader path. Point/pixel
+ * visuals use the same cue parameters without lighting. The `near_depth` and `far_depth` values
+ * are interpreted in the descriptor metric, where lower values are closer. The default metric is
  * normalized clip depth after the visual's scene transform. Pass NULL to disable depth cueing.
  *
  * @param visual the visual
@@ -598,6 +599,59 @@ DVZ_EXPORT DvzVisual* dvz_point(DvzScene* scene, uint32_t flags);
  * @return the visual
  */
 DVZ_EXPORT DvzVisual* dvz_pixel(DvzScene* scene, uint32_t flags);
+
+
+/**
+ * Create a sphere impostor visual.
+ *
+ * Sphere visuals render one analytic 3D sphere per item from `position` (vec3 center), `color`
+ * (RGBA8), and `size` (float radius). The GLSL backend reconstructs the sphere surface in the
+ * fragment shader, writes sphere-surface depth, and uses analytic antialiasing at the silhouette.
+ *
+ * @param scene the scene
+ * @param flags variant flags
+ * @return the visual
+ */
+DVZ_EXPORT DvzVisual* dvz_sphere(DvzScene* scene, uint32_t flags);
+
+
+/**
+ * Set sphere centers.
+ *
+ * @param visual the sphere visual
+ * @param first first item index
+ * @param count number of centers
+ * @param pos packed vec3 center data
+ * @return 0 on success, -1 on error
+ */
+DVZ_EXPORT int
+dvz_sphere_position(DvzVisual* visual, uint32_t first, uint32_t count, const float* pos);
+
+
+/**
+ * Set sphere colors.
+ *
+ * @param visual the sphere visual
+ * @param first first item index
+ * @param count number of colors
+ * @param color packed RGBA8 color data
+ * @return 0 on success, -1 on error
+ */
+DVZ_EXPORT int
+dvz_sphere_color(DvzVisual* visual, uint32_t first, uint32_t count, DvzColor* color);
+
+
+/**
+ * Set sphere radii.
+ *
+ * @param visual the sphere visual
+ * @param first first item index
+ * @param count number of radii
+ * @param size packed radius data
+ * @return 0 on success, -1 on error
+ */
+DVZ_EXPORT int
+dvz_sphere_size(DvzVisual* visual, uint32_t first, uint32_t count, const float* size);
 
 
 /**

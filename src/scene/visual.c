@@ -97,6 +97,7 @@ static uint32_t _attr_item_size(DvzVisualType type, const char* name)
     case DVZ_VISUAL_TYPE_POINT:
     case DVZ_VISUAL_TYPE_PIXEL:
     case DVZ_VISUAL_TYPE_MARKER:
+    case DVZ_VISUAL_TYPE_SPHERE:
         if (strcmp(name, "position") == 0) return 3 * sizeof(float);
         if (strcmp(name, "color") == 0)    return 4 * sizeof(uint8_t);
         if (strcmp(name, "size") == 0)     return sizeof(float);
@@ -666,6 +667,7 @@ static void _material_state_default(DvzSceneMaterialState* material, DvzVisualTy
     case DVZ_VISUAL_TYPE_PRIMITIVE:
     case DVZ_VISUAL_TYPE_MESH:
     case DVZ_VISUAL_TYPE_PATH:
+    case DVZ_VISUAL_TYPE_SPHERE:
         material->kind = DVZ_MATERIAL_KIND_LIT;
         break;
     case DVZ_VISUAL_TYPE_VOLUME:
@@ -743,7 +745,8 @@ static void _material_params_sync_state(
 static bool _material_depth_cue_supported(DvzVisualType visual_type)
 {
     return visual_type == DVZ_VISUAL_TYPE_POINT || visual_type == DVZ_VISUAL_TYPE_PIXEL ||
-           visual_type == DVZ_VISUAL_TYPE_PRIMITIVE || visual_type == DVZ_VISUAL_TYPE_MESH;
+           visual_type == DVZ_VISUAL_TYPE_PRIMITIVE || visual_type == DVZ_VISUAL_TYPE_MESH ||
+           visual_type == DVZ_VISUAL_TYPE_SPHERE;
 }
 
 
@@ -1102,7 +1105,7 @@ int dvz_visual_set_link_keys(
 
 
 /**
- * Override primitive shading parameters.
+ * Override primitive, mesh, or sphere shading parameters.
  *
  * @param visual the visual
  * @param desc the shading descriptor, or NULL to restore defaults
@@ -1112,9 +1115,10 @@ int dvz_visual_set_primitive_shading(
     DvzVisual* visual, const DvzPrimitiveShadingDesc* desc)
 {
     ANN(visual);
-    if (visual->type != DVZ_VISUAL_TYPE_PRIMITIVE && visual->type != DVZ_VISUAL_TYPE_MESH)
+    if (visual->type != DVZ_VISUAL_TYPE_PRIMITIVE && visual->type != DVZ_VISUAL_TYPE_MESH &&
+        visual->type != DVZ_VISUAL_TYPE_SPHERE)
     {
-        log_error("primitive shading is only supported for primitive and mesh visuals");
+        log_error("primitive shading is only supported for primitive, mesh, and sphere visuals");
         return -1;
     }
     if (!_scene_visual_mutation_allowed(visual->scene, "update primitive shading"))
@@ -1947,6 +1951,97 @@ DvzVisual* dvz_pixel(DvzScene* scene, uint32_t flags)
 }
 
 
+/**
+ * Create a sphere impostor visual.
+ *
+ * @param scene the scene
+ * @param flags variant flags
+ * @return the visual, or NULL on allocation failure
+ */
+DvzVisual* dvz_sphere(DvzScene* scene, uint32_t flags)
+{
+    ANN(scene);
+    DvzVisual* visual = _scene_alloc_visual(scene, DVZ_VISUAL_TYPE_SPHERE, flags);
+    if (visual == NULL)
+        return NULL;
+    visual->topology = DVZ_PRIMITIVE_TOPOLOGY_POINT_LIST;
+    visual->material_params_dirty = true;
+    return visual;
+}
+
+
+/**
+ * Set sphere centers.
+ *
+ * @param visual the sphere visual
+ * @param first first item index
+ * @param count number of centers
+ * @param pos packed vec3 center data
+ * @return 0 on success, -1 on error
+ */
+int dvz_sphere_position(DvzVisual* visual, uint32_t first, uint32_t count, const float* pos)
+{
+    ANN(visual);
+    ANN(pos);
+    if (visual->type != DVZ_VISUAL_TYPE_SPHERE)
+    {
+        log_error("dvz_sphere_position requires a sphere visual");
+        return -1;
+    }
+    if (first == 0)
+        return dvz_visual_set_data(visual, "position", pos, count);
+    return dvz_visual_set_data_range(visual, "position", pos, first, count);
+}
+
+
+/**
+ * Set sphere colors.
+ *
+ * @param visual the sphere visual
+ * @param first first item index
+ * @param count number of colors
+ * @param color packed RGBA8 color data
+ * @return 0 on success, -1 on error
+ */
+int dvz_sphere_color(DvzVisual* visual, uint32_t first, uint32_t count, DvzColor* color)
+{
+    ANN(visual);
+    ANN(color);
+    if (visual->type != DVZ_VISUAL_TYPE_SPHERE)
+    {
+        log_error("dvz_sphere_color requires a sphere visual");
+        return -1;
+    }
+    if (first == 0)
+        return dvz_visual_set_data(visual, "color", color, count);
+    return dvz_visual_set_data_range(visual, "color", color, first, count);
+}
+
+
+/**
+ * Set sphere radii.
+ *
+ * @param visual the sphere visual
+ * @param first first item index
+ * @param count number of radii
+ * @param size packed radius data
+ * @return 0 on success, -1 on error
+ */
+int dvz_sphere_size(DvzVisual* visual, uint32_t first, uint32_t count, const float* size)
+{
+    ANN(visual);
+    ANN(size);
+    if (visual->type != DVZ_VISUAL_TYPE_SPHERE)
+    {
+        log_error("dvz_sphere_size requires a sphere visual");
+        return -1;
+    }
+    if (first == 0)
+        return dvz_visual_set_data(visual, "size", size, count);
+    return dvz_visual_set_data_range(visual, "size", size, first, count);
+}
+
+
 
 /**
  * Create a primitive visual.
@@ -2358,6 +2453,8 @@ const char* _visual_type_name(DvzVisualType type)
         return "volume";
     case DVZ_VISUAL_TYPE_PRIMITIVE:
         return "primitive";
+    case DVZ_VISUAL_TYPE_SPHERE:
+        return "sphere";
     default:
         return "unknown";
     }

@@ -224,6 +224,92 @@ int test_scene_point_emit_glsl_executes(TstSuite* suite, TstItem* item)
 }
 
 
+/**
+ * Execute the scene sphere visual GLSL path through the vklite runtime when available.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_sphere_emit_glsl_executes(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    if (!_scene_vklite_runtime_available())
+        return 0;
+
+    DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
+    VkPhysicalDeviceVulkan13Features features13 = {
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES};
+    features13.dynamicRendering = true;
+    features13.synchronization2 = true;
+    dvz_gpu_ctx_config_features13(&gpu_cfg, &features13);
+    DvzGpuCtx* ctx = dvz_gpu_ctx(&gpu_cfg);
+    if (ctx == NULL)
+    {
+        log_warn("test_scene_sphere_emit_glsl_executes skipped: GPU context creation failed");
+        return 0;
+    }
+
+    DvzScene* scene = dvz_scene();
+    AT(scene != NULL);
+    DvzFigure* figure = dvz_figure(scene, 96, 96, 0);
+    AT(figure != NULL);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    AT(panel != NULL);
+    DvzVisual* sphere = dvz_sphere(scene, DVZ_SPHERE_FLAGS_LIGHTING);
+    AT(sphere != NULL);
+
+    float positions[3][3] = {
+        {-0.45f, -0.20f, 0.0f},
+        {+0.25f, -0.05f, 0.2f},
+        {+0.00f, +0.38f, 0.1f},
+    };
+    DvzColor colors[3] = {
+        {220, 80, 80, 255},
+        {80, 190, 120, 255},
+        {80, 130, 230, 255},
+    };
+    float sizes[3] = {0.22f, 0.26f, 0.20f};
+
+    AT(dvz_sphere_position(sphere, 0, 3, &positions[0][0]) == 0);
+    AT(dvz_sphere_color(sphere, 0, 3, colors) == 0);
+    AT(dvz_sphere_size(sphere, 0, 3, sizes) == 0);
+    AT(dvz_panel_add_visual(panel, sphere, NULL) == 0);
+
+    DvzCapabilitySnapshot caps;
+    dvz_capability_snapshot_default(&caps);
+    caps.supports_color_blending = true;
+    DvzDiagnosticReport report;
+    dvz_diagnostic_report_init(&report);
+    DvzFramePlanEmitConfig emit_cfg = dvz_frame_plan_emit_config();
+    emit_cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
+    emit_cfg.target_width = 96;
+    emit_cfg.target_height = 96;
+
+    DvzDrp2CommandStream* stream = dvz_figure_emit_ex(figure, &caps, &report, &emit_cfg);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+    AT(stream != NULL);
+
+    DvzDrp2RuntimeConfig runtime_cfg =
+        dvz_drp2_runtime_vklite_config(dvz_gpu_ctx_device(ctx), dvz_gpu_ctx_alloc(ctx));
+    DvzDrp2Runtime* runtime = dvz_drp2_runtime_vklite(&runtime_cfg);
+    ANN(runtime);
+
+    DvzDrp2ValidationResult result = dvz_drp2_runtime_execute(runtime, stream);
+    AT(result.ok);
+    AT(result.code == DVZ_DRP2_VALIDATION_OK);
+    AT(dvz_gpu_ctx_error_count(ctx) == 0);
+
+    dvz_drp2_runtime_destroy(runtime);
+    dvz_drp2_stream_destroy(stream);
+    dvz_scene_destroy(scene);
+    dvz_gpu_ctx_destroy(ctx);
+    return 0;
+}
+
+
 
 /**
  * Verify the scene point visual backend lowering decision.
@@ -4283,6 +4369,7 @@ int test_scene_visual_pass_capabilities(TstSuite* suite, TstItem* item)
     DvzVisual* path = dvz_path(scene, 0);
     DvzVisual* fixed_primitive = dvz_primitive(scene, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 0);
     DvzVisual* mesh = dvz_mesh(scene, 0);
+    DvzVisual* sphere = dvz_sphere(scene, DVZ_SPHERE_FLAGS_LIGHTING);
     DvzVisual* image = dvz_image(scene, 0);
     DvzVisual* volume = dvz_volume(scene, 0);
     AT(point != NULL);
@@ -4291,6 +4378,7 @@ int test_scene_visual_pass_capabilities(TstSuite* suite, TstItem* item)
     AT(path != NULL);
     AT(fixed_primitive != NULL);
     AT(mesh != NULL);
+    AT(sphere != NULL);
     AT(image != NULL);
     AT(volume != NULL);
 
@@ -4331,6 +4419,7 @@ int test_scene_visual_pass_capabilities(TstSuite* suite, TstItem* item)
     AT(dvz_panel_add_visual(panel, path, NULL) == 0);
     AT(dvz_panel_add_visual(panel, fixed_primitive, &fixed) == 0);
     AT(dvz_panel_add_visual(panel, mesh, NULL) == 0);
+    AT(dvz_panel_add_visual(panel, sphere, NULL) == 0);
     AT(dvz_panel_add_visual(panel, image, NULL) == 0);
     AT(dvz_panel_add_visual(panel, volume, NULL) == 0);
 
@@ -4422,7 +4511,20 @@ int test_scene_visual_pass_capabilities(TstSuite* suite, TstItem* item)
     AT(!gbuffer.needs_object_id);
     AT(gbuffer.producer_count == 1);
 
-    AT(_scene_visual_pass_caps_from_visual(image, &panel->visuals[6], &caps));
+    AT(_scene_visual_pass_caps_from_visual(sphere, &panel->visuals[6], &caps));
+    AT(caps.kind == DVZ_SCENE_VISUAL_DESC_SPHERE);
+    AT(caps.draws_in_opaque_pass);
+    AT(caps.writes_color);
+    AT(caps.writes_depth);
+    AT(caps.eligible_for_depth_postprocess);
+    AT(caps.eligible_for_gbuffer);
+    AT(caps.needs_material_layout);
+    AT(caps.uses_material_set);
+    AT(caps.supports_depth_cue);
+    AT(_scene_technique_gbuffer_plan_add_visual(&gbuffer, sphere, &panel->visuals[6]));
+    AT(gbuffer.producer_count == 2);
+
+    AT(_scene_visual_pass_caps_from_visual(image, &panel->visuals[7], &caps));
     AT(caps.kind == DVZ_SCENE_VISUAL_DESC_IMAGE);
     AT(caps.draws_in_opaque_pass);
     AT(caps.writes_color);
@@ -4431,10 +4533,10 @@ int test_scene_visual_pass_capabilities(TstSuite* suite, TstItem* item)
     AT(!caps.eligible_for_depth_postprocess);
     AT(!caps.eligible_for_gbuffer);
     AT(caps.uses_image_set);
-    AT(!_scene_technique_gbuffer_plan_add_visual(&gbuffer, image, &panel->visuals[6]));
-    AT(gbuffer.producer_count == 1);
+    AT(!_scene_technique_gbuffer_plan_add_visual(&gbuffer, image, &panel->visuals[7]));
+    AT(gbuffer.producer_count == 2);
 
-    AT(_scene_visual_pass_caps_from_visual(volume, &panel->visuals[7], &caps));
+    AT(_scene_visual_pass_caps_from_visual(volume, &panel->visuals[8], &caps));
     AT(caps.kind == DVZ_SCENE_VISUAL_DESC_VOLUME);
     AT(caps.draws_in_transparent_blend_pass);
     AT(!caps.draws_in_opaque_pass);
@@ -4446,8 +4548,8 @@ int test_scene_visual_pass_capabilities(TstSuite* suite, TstItem* item)
     AT(!caps.eligible_for_depth_postprocess);
     AT(!caps.eligible_for_gbuffer);
     AT(caps.uses_volume_set);
-    AT(!_scene_technique_gbuffer_plan_add_visual(&gbuffer, volume, &panel->visuals[7]));
-    AT(gbuffer.producer_count == 1);
+    AT(!_scene_technique_gbuffer_plan_add_visual(&gbuffer, volume, &panel->visuals[8]));
+    AT(gbuffer.producer_count == 2);
 
     DvzSceneVisualDesc desc = {
         .kind = DVZ_SCENE_VISUAL_DESC_PRIMITIVE,
@@ -5300,6 +5402,95 @@ int test_scene_ssao_glsl_executes(TstSuite* suite, TstItem* item)
     emit_cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
     emit_cfg.target_width = 64;
     emit_cfg.target_height = 64;
+
+    DvzDrp2CommandStream* stream = dvz_figure_emit_ex(figure, &caps, &report, &emit_cfg);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+    AT(stream != NULL);
+
+    DvzDrp2RuntimeConfig runtime_cfg =
+        dvz_drp2_runtime_vklite_config(dvz_gpu_ctx_device(ctx), dvz_gpu_ctx_alloc(ctx));
+    DvzDrp2Runtime* runtime = dvz_drp2_runtime_vklite(&runtime_cfg);
+    ANN(runtime);
+
+    DvzDrp2ValidationResult result = dvz_drp2_runtime_execute(runtime, stream);
+    AT(result.ok);
+    AT(result.code == DVZ_DRP2_VALIDATION_OK);
+    AT(dvz_gpu_ctx_error_count(ctx) == 0);
+
+    dvz_drp2_runtime_destroy(runtime);
+    dvz_drp2_stream_destroy(stream);
+    dvz_scene_destroy(scene);
+    dvz_gpu_ctx_destroy(ctx);
+    return 0;
+}
+
+
+/**
+ * Execute SSAO with sphere impostors feeding the G-buffer through the vklite runtime.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_sphere_ssao_glsl_executes(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    if (!_scene_vklite_runtime_available())
+        return 0;
+
+    DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
+    VkPhysicalDeviceVulkan13Features features13 = {
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES};
+    features13.dynamicRendering = true;
+    features13.synchronization2 = true;
+    dvz_gpu_ctx_config_features13(&gpu_cfg, &features13);
+    DvzGpuCtx* ctx = dvz_gpu_ctx(&gpu_cfg);
+    if (ctx == NULL)
+        return 0;
+
+    DvzScene* scene = dvz_scene();
+    AT(scene != NULL);
+    DvzFigure* figure = dvz_figure(scene, 96, 96, 0);
+    AT(figure != NULL);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    AT(panel != NULL);
+    DvzVisual* sphere = dvz_sphere(scene, DVZ_SPHERE_FLAGS_LIGHTING);
+    AT(sphere != NULL);
+
+    float positions[4][3] = {
+        {-0.30f, -0.25f, 0.15f},
+        {+0.15f, -0.25f, 0.25f},
+        {-0.08f, +0.12f, 0.35f},
+        {+0.38f, +0.08f, 0.18f},
+    };
+    DvzColor colors[4] = {
+        {210, 75, 75, 255},
+        {75, 180, 120, 255},
+        {75, 120, 220, 255},
+        {220, 190, 75, 255},
+    };
+    float sizes[4] = {0.28f, 0.28f, 0.26f, 0.24f};
+
+    AT(dvz_sphere_position(sphere, 0, 4, &positions[0][0]) == 0);
+    AT(dvz_sphere_color(sphere, 0, 4, colors) == 0);
+    AT(dvz_sphere_size(sphere, 0, 4, sizes) == 0);
+    AT(dvz_panel_add_visual(panel, sphere, NULL) == 0);
+    AT(_scene_technique_state_set_ssao(
+        &panel->techniques,
+        &(DvzSceneSsaoDesc){.radius = 1.0f, .strength = 2.5f, .bias = 0.02f,
+                            .sample_count = 16}));
+
+    DvzCapabilitySnapshot caps;
+    dvz_capability_snapshot_default(&caps);
+    caps.supports_color_blending = true;
+    DvzDiagnosticReport report;
+    dvz_diagnostic_report_init(&report);
+    DvzFramePlanEmitConfig emit_cfg = dvz_frame_plan_emit_config();
+    emit_cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
+    emit_cfg.target_width = 96;
+    emit_cfg.target_height = 96;
 
     DvzDrp2CommandStream* stream = dvz_figure_emit_ex(figure, &caps, &report, &emit_cfg);
     AT(dvz_diagnostic_report_count(&report) == 0);
@@ -6672,6 +6863,7 @@ int test_scene_graph(TstSuite* suite)
     const char* tags = "scene";
 
     TEST_SIMPLE(test_scene_point_emit_glsl_executes);
+    TEST_SIMPLE(test_scene_sphere_emit_glsl_executes);
     TEST_SIMPLE(test_scene_point_like_lowering_policy);
     TEST_SIMPLE(test_scene_point_emit_glsl_native_points);
     TEST_SIMPLE(test_scene_point_emit_wgsl_instanced_quads);
@@ -6708,6 +6900,7 @@ int test_scene_graph(TstSuite* suite)
     TEST_SIMPLE(test_scene_ssao_graph_foundation);
     TEST_SIMPLE(test_scene_ssao_runtime_lowering);
     TEST_SIMPLE(test_scene_ssao_glsl_executes);
+    TEST_SIMPLE(test_scene_sphere_ssao_glsl_executes);
     TEST_SIMPLE(test_scene_ssao_ignores_ineligible_visuals);
     TEST_SIMPLE(test_scene_visual_alpha_mode_standard_blend);
     TEST_SIMPLE(test_scene_visual_alpha_mode_splits_frame_plan_passes);

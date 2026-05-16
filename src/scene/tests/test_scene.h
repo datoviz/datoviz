@@ -160,6 +160,8 @@ int test_scene_drp2_offscreen_canvas_frame(TstSuite* suite, TstItem* item);
 
 int test_scene_point_emit_glsl_executes(TstSuite* suite, TstItem* item);
 
+int test_scene_sphere_emit_glsl_executes(TstSuite* suite, TstItem* item);
+
 int test_scene_point_like_lowering_policy(TstSuite* suite, TstItem* item);
 
 int test_scene_point_emit_glsl_native_points(TstSuite* suite, TstItem* item);
@@ -366,6 +368,8 @@ int test_scene_ssao_graph_foundation(TstSuite* suite, TstItem* item);
 int test_scene_ssao_runtime_lowering(TstSuite* suite, TstItem* item);
 
 int test_scene_ssao_glsl_executes(TstSuite* suite, TstItem* item);
+
+int test_scene_sphere_ssao_glsl_executes(TstSuite* suite, TstItem* item);
 
 int test_scene_ssao_ignores_ineligible_visuals(TstSuite* suite, TstItem* item);
 

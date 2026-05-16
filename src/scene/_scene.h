@@ -75,6 +75,7 @@ typedef enum
     DVZ_VISUAL_TYPE_MESH      = 7,
     DVZ_VISUAL_TYPE_VOLUME    = 8,
     DVZ_VISUAL_TYPE_PRIMITIVE = 9,
+    DVZ_VISUAL_TYPE_SPHERE    = 10,
 } DvzVisualType;
 
 

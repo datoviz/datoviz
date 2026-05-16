@@ -113,6 +113,8 @@ static bool _scene_visual_needs_material_params(const DvzVisual* visual)
         visual->type == DVZ_VISUAL_TYPE_POINT || visual->type == DVZ_VISUAL_TYPE_PIXEL;
     if (point_like)
         return visual->material.depth_cue_enabled;
+    if (visual->type == DVZ_VISUAL_TYPE_SPHERE)
+        return true;
     if (visual->type == DVZ_VISUAL_TYPE_PRIMITIVE || visual->type == DVZ_VISUAL_TYPE_MESH)
         return _scene_visual_has_attr_data(visual, "normal");
     return false;
@@ -349,7 +351,8 @@ void _scene_emit_visual_uploads(DvzFigure* figure, DvzFramePlan* plan)
                         node->u.upload.item_stride = attr->buffer->desc.stride;
                         if ((visual->type == DVZ_VISUAL_TYPE_PRIMITIVE ||
                              visual->type == DVZ_VISUAL_TYPE_MESH ||
-                             visual->type == DVZ_VISUAL_TYPE_PATH) &&
+                             visual->type == DVZ_VISUAL_TYPE_PATH ||
+                             visual->type == DVZ_VISUAL_TYPE_SPHERE) &&
                             strcmp(attr->name, "position") == 0)
                         {
                             dvz_frame_plan_upload_set_topology(plan, (uint32_t)visual->topology);
@@ -374,7 +377,8 @@ void _scene_emit_visual_uploads(DvzFigure* figure, DvzFramePlan* plan)
                     DVZ_FRAME_PLAN_RESOURCE_KIND_BUFFER, UINT32_MAX);
                 if ((visual->type == DVZ_VISUAL_TYPE_PRIMITIVE ||
                      visual->type == DVZ_VISUAL_TYPE_MESH ||
-                     visual->type == DVZ_VISUAL_TYPE_PATH) &&
+                     visual->type == DVZ_VISUAL_TYPE_PATH ||
+                     visual->type == DVZ_VISUAL_TYPE_SPHERE) &&
                     strcmp(attr->name, "position") == 0)
                 {
                     dvz_frame_plan_upload_set_topology(plan, (uint32_t)visual->topology);
@@ -383,7 +387,8 @@ void _scene_emit_visual_uploads(DvzFigure* figure, DvzFramePlan* plan)
             if (
                 visual->type == DVZ_VISUAL_TYPE_POINT || visual->type == DVZ_VISUAL_TYPE_PIXEL ||
                 visual->type == DVZ_VISUAL_TYPE_PRIMITIVE ||
-                visual->type == DVZ_VISUAL_TYPE_MESH)
+                visual->type == DVZ_VISUAL_TYPE_MESH ||
+                visual->type == DVZ_VISUAL_TYPE_SPHERE)
             {
                 if (_scene_visual_needs_material_params(visual) && visual->material_params_dirty)
                 {

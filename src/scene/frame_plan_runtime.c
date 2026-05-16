@@ -527,21 +527,46 @@ static bool _emitter_prepare_render_multi(
         DvzSceneVisualShaderDesc shader = {0};
         if (gbuffer_pass)
         {
-            if (desc.kind != DVZ_SCENE_VISUAL_DESC_PRIMITIVE || !desc.has_normal)
+            if (desc.kind == DVZ_SCENE_VISUAL_DESC_PRIMITIVE && !desc.has_normal)
+                continue;
+            if (desc.kind != DVZ_SCENE_VISUAL_DESC_PRIMITIVE &&
+                desc.kind != DVZ_SCENE_VISUAL_DESC_SPHERE)
                 continue;
             desc.material_buffer_id = 0;
-            dvz_snprintf(shader.vertex_key, sizeof(shader.vertex_key), "_vs_gbuffer_prim%s", fmt);
-            dvz_snprintf(
-                shader.fragment_key, sizeof(shader.fragment_key), "_fs_gbuffer_normal%s", fmt);
-            dvz_snprintf(
-                shader.pipeline_key, sizeof(shader.pipeline_key), "_pipe_gbuffer_t%u%s",
-                desc.topology, fmt);
-            shader.vertex_glsl =
-                _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_GBUFFER_NORMAL, false);
-            shader.fragment_glsl =
-                _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_GBUFFER_NORMAL, true);
-            shader.vertex_spirv_key = "primitive_lit_vert";
-            shader.fragment_spirv_key = "gbuffer_normal_frag";
+            if (desc.kind == DVZ_SCENE_VISUAL_DESC_SPHERE)
+            {
+                dvz_snprintf(
+                    shader.vertex_key, sizeof(shader.vertex_key), "_vs_gbuffer_sphere%s", fmt);
+                dvz_snprintf(
+                    shader.fragment_key, sizeof(shader.fragment_key), "_fs_gbuffer_sphere%s",
+                    fmt);
+                dvz_snprintf(
+                    shader.pipeline_key, sizeof(shader.pipeline_key), "_pipe_gbuffer_sphere%s",
+                    fmt);
+                shader.vertex_glsl =
+                    _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_SPHERE_GBUFFER, false);
+                shader.fragment_glsl =
+                    _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_SPHERE_GBUFFER, true);
+                shader.vertex_spirv_key = "sphere_gbuffer_vert";
+                shader.fragment_spirv_key = "sphere_gbuffer_frag";
+            }
+            else
+            {
+                dvz_snprintf(
+                    shader.vertex_key, sizeof(shader.vertex_key), "_vs_gbuffer_prim%s", fmt);
+                dvz_snprintf(
+                    shader.fragment_key, sizeof(shader.fragment_key), "_fs_gbuffer_normal%s",
+                    fmt);
+                dvz_snprintf(
+                    shader.pipeline_key, sizeof(shader.pipeline_key), "_pipe_gbuffer_t%u%s",
+                    desc.topology, fmt);
+                shader.vertex_glsl =
+                    _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_GBUFFER_NORMAL, false);
+                shader.fragment_glsl =
+                    _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_GBUFFER_NORMAL, true);
+                shader.vertex_spirv_key = "primitive_lit_vert";
+                shader.fragment_spirv_key = "gbuffer_normal_frag";
+            }
         }
         else if (!_scene_visual_shader_desc(
                      &desc, render->u.render.picking, wboit_accumulation, fmt, &shader))
@@ -749,6 +774,15 @@ static bool _emitter_prepare_render_multi(
             {
                 ok = dvz_drp2_stream_pipeline_set_color_target(
                     stream, 0, VK_FORMAT_R16G16B16A16_SFLOAT);
+            }
+            else if (ok && desc.kind == DVZ_SCENE_VISUAL_DESC_SPHERE)
+            {
+                ok = dvz_drp2_stream_pipeline_set_color_blend(
+                    stream, 0, VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,
+                    VK_BLEND_OP_ADD, VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,
+                    VK_BLEND_OP_ADD,
+                    VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |
+                        VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT);
             }
             else if (ok && _alpha_mode_is_standard_blend(alpha_mode))
             {
