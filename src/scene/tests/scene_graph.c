@@ -4038,6 +4038,67 @@ int test_scene_visual_alpha_mode(TstSuite* suite, TstItem* item)
 
 
 /**
+ * Verify internal material state defaults and compatibility setter synchronization.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_visual_internal_material_state(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    AT(scene != NULL);
+    DvzVisual* point = dvz_point(scene, 0);
+    DvzVisual* mesh = dvz_mesh(scene, 0);
+    DvzVisual* volume = dvz_volume(scene, 0);
+    AT(point != NULL);
+    AT(mesh != NULL);
+    AT(volume != NULL);
+
+    AT(point->material.kind == DVZ_MATERIAL_KIND_UNLIT);
+    AT(mesh->material.kind == DVZ_MATERIAL_KIND_LIT);
+    AT(volume->material.kind == DVZ_MATERIAL_KIND_VOLUME);
+    AT(mesh->material.alpha_mode == DVZ_ALPHA_OPAQUE);
+    AT(mesh->material.opacity == 1.0f);
+    AT(mesh->material.light_direction[2] == 1.0f);
+    AT(mesh->material.ambient == 0.2f);
+    AT(mesh->material.diffuse == 0.8f);
+    AT(mesh->material.scalar_scale == 1.0f);
+
+    AT(dvz_visual_set_alpha_mode(mesh, DVZ_ALPHA_WBOIT) == 0);
+    AT(mesh->alpha_mode == DVZ_ALPHA_WBOIT);
+    AT(mesh->material.alpha_mode == DVZ_ALPHA_WBOIT);
+    uint64_t material_version = mesh->material.version;
+    AT(material_version > 0);
+
+    AT(dvz_visual_set_primitive_shading(
+           mesh,
+           &(DvzPrimitiveShadingDesc){
+               .light_direction = {1.0f, 2.0f, 3.0f},
+               .ambient = 0.35f,
+               .diffuse = 0.65f,
+           }) == 0);
+    AT(mesh->primitive_shading.light_direction[0] == 1.0f);
+    AT(mesh->primitive_shading.light_direction[1] == 2.0f);
+    AT(mesh->primitive_shading.light_direction[2] == 3.0f);
+    AT(mesh->primitive_shading.params[0] == 0.35f);
+    AT(mesh->primitive_shading.params[1] == 0.65f);
+    AT(mesh->material.light_direction[0] == 1.0f);
+    AT(mesh->material.light_direction[1] == 2.0f);
+    AT(mesh->material.light_direction[2] == 3.0f);
+    AT(mesh->material.ambient == 0.35f);
+    AT(mesh->material.diffuse == 0.65f);
+    AT(mesh->material.version > material_version);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+/**
  * Verify ordinary blended alpha stays on the final target with a source-over blend pipeline.
  *
  * @param suite the active test suite
@@ -5337,6 +5398,7 @@ int test_scene_graph(TstSuite* suite)
     TEST_SIMPLE(test_scene_rejects_cross_scene_visual);
     TEST_SIMPLE(test_scene_rejects_unsupported_point_attribute);
     TEST_SIMPLE(test_scene_visual_alpha_mode);
+    TEST_SIMPLE(test_scene_visual_internal_material_state);
     TEST_SIMPLE(test_scene_visual_alpha_mode_standard_blend);
     TEST_SIMPLE(test_scene_visual_alpha_mode_splits_frame_plan_passes);
     TEST_SIMPLE(test_scene_visual_alpha_mode_depth_peel_frame_plan);

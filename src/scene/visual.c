@@ -56,6 +56,11 @@ static void _scene_release_visual_scale(DvzVisual* visual);
 
 static void _primitive_shading_default(DvzPrimitiveShadingState* shading);
 
+static void _material_state_default(DvzMaterialState* material, DvzVisualType visual_type);
+
+static void _material_sync_primitive_shading(
+    DvzMaterialState* material, const DvzPrimitiveShadingState* shading);
+
 static void _volume_state_default(DvzVolumeState* state);
 
 static bool _mesh_ensure_default_color(DvzVisual* visual, uint32_t item_count);
@@ -345,7 +350,9 @@ static DvzVisual* _scene_alloc_visual(DvzScene* scene, DvzVisualType type, uint3
     visual->visible = true;
     visual->z_layer = 0;
     visual->alpha_mode = DVZ_ALPHA_OPAQUE;
+    _material_state_default(&visual->material, type);
     _primitive_shading_default(&visual->primitive_shading);
+    _material_sync_primitive_shading(&visual->material, &visual->primitive_shading);
     _volume_state_default(&visual->volume);
     return visual;
 }
@@ -613,6 +620,62 @@ static void _primitive_shading_default(DvzPrimitiveShadingState* shading)
     shading->light_direction[2] = 1.0f;
     shading->params[0] = 0.2f;
     shading->params[1] = 0.8f;
+}
+
+
+
+/**
+ * Initialize material defaults for one visual family.
+ *
+ * @param material the material state
+ * @param visual_type the retained visual type
+ */
+static void _material_state_default(DvzMaterialState* material, DvzVisualType visual_type)
+{
+    ANN(material);
+    dvz_memset(material, sizeof(DvzMaterialState), 0, sizeof(DvzMaterialState));
+    material->alpha_mode = DVZ_ALPHA_OPAQUE;
+    material->opacity = 1.0f;
+    material->light_direction[2] = 1.0f;
+    material->ambient = 0.2f;
+    material->diffuse = 0.8f;
+    material->scalar_scale = 1.0f;
+
+    switch (visual_type)
+    {
+    case DVZ_VISUAL_TYPE_PRIMITIVE:
+    case DVZ_VISUAL_TYPE_MESH:
+    case DVZ_VISUAL_TYPE_PATH:
+        material->kind = DVZ_MATERIAL_KIND_LIT;
+        break;
+    case DVZ_VISUAL_TYPE_VOLUME:
+        material->kind = DVZ_MATERIAL_KIND_VOLUME;
+        break;
+    default:
+        material->kind = DVZ_MATERIAL_KIND_UNLIT;
+        break;
+    }
+}
+
+
+
+/**
+ * Mirror primitive shading state into the internal material state.
+ *
+ * @param material the material state
+ * @param shading the primitive shading state
+ */
+static void _material_sync_primitive_shading(
+    DvzMaterialState* material, const DvzPrimitiveShadingState* shading)
+{
+    ANN(material);
+    ANN(shading);
+    material->light_direction[0] = shading->light_direction[0];
+    material->light_direction[1] = shading->light_direction[1];
+    material->light_direction[2] = shading->light_direction[2];
+    material->light_direction[3] = shading->light_direction[3];
+    material->ambient = shading->params[0];
+    material->diffuse = shading->params[1];
 }
 
 
@@ -891,6 +954,8 @@ int dvz_visual_set_primitive_shading(
         visual->primitive_shading.params[0] = desc->ambient;
         visual->primitive_shading.params[1] = desc->diffuse;
     }
+    _material_sync_primitive_shading(&visual->material, &visual->primitive_shading);
+    _visual_bump_version(&visual->material.version);
     visual->primitive_shading_dirty = true;
     return 0;
 }
@@ -945,6 +1010,8 @@ int dvz_visual_set_alpha_mode(DvzVisual* visual, DvzAlphaMode mode)
         return -1;
     }
     visual->alpha_mode = mode;
+    visual->material.alpha_mode = mode;
+    _visual_bump_version(&visual->material.version);
     return 0;
 }
 

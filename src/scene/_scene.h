@@ -438,6 +438,49 @@ struct DvzPrimitiveShadingState
 };
 
 
+typedef enum
+{
+    DVZ_MATERIAL_KIND_UNLIT = 0,
+    DVZ_MATERIAL_KIND_LIT,
+    DVZ_MATERIAL_KIND_SCIENTIFIC,
+    DVZ_MATERIAL_KIND_VOLUME,
+} DvzMaterialKind;
+
+
+typedef enum
+{
+    DVZ_DEPTH_CUE_NONE = 0,
+    DVZ_DEPTH_CUE_FADE_TO_BACKGROUND,
+    DVZ_DEPTH_CUE_DESATURATE,
+    DVZ_DEPTH_CUE_DARKEN,
+} DvzDepthCueMode;
+
+
+typedef struct DvzMaterialState DvzMaterialState;
+
+struct DvzMaterialState
+{
+    DvzMaterialKind kind;
+    DvzAlphaMode alpha_mode;
+    float opacity;
+    float light_direction[4];
+    float ambient;
+    float diffuse;
+    float specular;
+    float shininess;
+    bool depth_cue_enabled;
+    DvzDepthCueMode depth_cue_mode;
+    float depth_cue_near;
+    float depth_cue_far;
+    float depth_cue_strength;
+    bool scalar_modulation_enabled;
+    char scalar_slot[32];
+    float scalar_scale;
+    float scalar_bias;
+    uint64_t version;
+};
+
+
 
 /*************************************************************************************************/
 /*  Visual attribute slot                                                                        */
@@ -492,6 +535,7 @@ struct DvzVisual
     bool         visible;
     int32_t      z_layer;
     DvzAlphaMode alpha_mode;
+    DvzMaterialState material;
 
     DvzPrimitiveTopology topology; /* used by DVZ_VISUAL_TYPE_PRIMITIVE */
     DvzVisualBinding bindings[DVZ_SCENE_MAX_VISUAL_BINDINGS];
