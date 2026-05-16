@@ -634,6 +634,8 @@ static void _material_params_default(DvzSceneMaterialParams* params)
     params->light_direction[2] = 1.0f;
     params->params[0] = 0.2f;
     params->params[1] = 0.8f;
+    params->params[2] = 0.25f;
+    params->params[3] = 32.0f;
     params->depth_cue[1] = 1.0f;
     params->depth_cue[2] = 1.0f;
     params->depth_cue_extra[2] = 3.0f;
@@ -656,6 +658,8 @@ static void _material_state_default(DvzSceneMaterialState* material, DvzVisualTy
     material->light_direction[2] = 1.0f;
     material->ambient = 0.2f;
     material->diffuse = 0.8f;
+    material->specular = 0.25f;
+    material->shininess = 32.0f;
     material->depth_cue_far = 1.0f;
     material->depth_cue_strength = 1.0f;
     material->depth_cue_density = 3.0f;
@@ -698,6 +702,8 @@ static void _material_state_sync_params(
     material->light_direction[3] = params->light_direction[3];
     material->ambient = params->params[0];
     material->diffuse = params->params[1];
+    material->specular = params->params[2];
+    material->shininess = params->params[3];
 }
 
 
@@ -1131,6 +1137,8 @@ int dvz_visual_set_primitive_shading(
         visual->material_params.light_direction[2] = desc->light_direction[2];
         visual->material_params.params[0] = desc->ambient;
         visual->material_params.params[1] = desc->diffuse;
+        visual->material_params.params[2] = desc->specular;
+        visual->material_params.params[3] = desc->shininess;
     }
     _material_state_sync_params(&visual->material, &visual->material_params);
     _material_params_sync_state(&visual->material_params, &visual->material);

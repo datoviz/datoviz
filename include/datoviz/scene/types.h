@@ -140,6 +140,8 @@ struct DvzPrimitiveShadingDesc
     float light_direction[3];
     float ambient;
     float diffuse;
+    float specular;
+    float shininess;
 };
 typedef struct DvzPrimitiveShadingDesc DvzPrimitiveShadingDesc;
 

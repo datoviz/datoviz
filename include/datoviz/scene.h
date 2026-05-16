@@ -548,7 +548,8 @@ DVZ_EXPORT bool dvz_visual_set_attr_buffer(
  *
  * The current primitive/mesh slice uses these parameters only when a visual also has a bound
  * `normal` attribute. Sphere visuals use the same material light parameters. The default light
- * direction is `(0, 0, 1)` with ambient `0.2` and diffuse `0.8`.
+ * direction is `(0, 0, 1)` with ambient `0.2`, diffuse `0.8`, specular `0.25`, and
+ * shininess `32`.
  *
  * @param visual the visual
  * @param desc the shading descriptor, or NULL to restore defaults

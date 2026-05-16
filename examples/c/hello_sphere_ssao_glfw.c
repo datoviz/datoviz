@@ -420,8 +420,10 @@ int main(int argc, char** argv)
         visual,
         &(DvzPrimitiveShadingDesc){
             .light_direction = {0.35f, 0.70f, 0.62f},
-            .ambient = 0.28f,
-            .diffuse = 0.88f,
+            .ambient = 0.18f,
+            .diffuse = 0.76f,
+            .specular = 0.85f,
+            .shininess = 96.0f,
         });
     dvz_panel_set_background_color(panel, 0.035f, 0.040f, 0.052f, 1.0f);
 
