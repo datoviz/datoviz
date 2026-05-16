@@ -1,0 +1,610 @@
+{
+  "name": "hello_mesh_dvzr_wgsl",
+  "version": {
+    "major": 2,
+    "minor": 0
+  },
+  "source": "build/examples/c/hello_mesh_glfw.dvzr",
+  "commands": [
+    {
+      "cmd": "HelloRenderer",
+      "version": {
+        "major": 2,
+        "minor": 0
+      },
+      "client_name": "app-recording"
+    },
+    {
+      "cmd": "RendererHelloReply",
+      "version": {
+        "major": 2,
+        "minor": 0
+      },
+      "status": "ok",
+      "renderer_name": "datoviz-drp2-runtime"
+    },
+    {
+      "cmd": "CreateBuffer",
+      "id": 1,
+      "size": 288,
+      "usage": [
+        "COPY_DST",
+        "VERTEX"
+      ]
+    },
+    {
+      "cmd": "WriteBuffer",
+      "buffer_id": 1,
+      "offset": 0,
+      "size": 288,
+      "data": "4XoUv+F6FL/hehQ/4XoUP+F6FL/hehQ/4XoUP+F6FD/hehQ/4XoUv+F6FD/hehQ/4XoUP+F6FL/hehS/4XoUv+F6FL/hehS/4XoUv+F6FD/hehS/4XoUP+F6FD/hehS/4XoUv+F6FL/hehS/4XoUv+F6FL/hehQ/4XoUv+F6FD/hehQ/4XoUv+F6FD/hehS/4XoUP+F6FL/hehQ/4XoUP+F6FL/hehS/4XoUP+F6FD/hehS/4XoUP+F6FD/hehQ/4XoUv+F6FD/hehQ/4XoUP+F6FD/hehQ/4XoUP+F6FD/hehS/4XoUv+F6FD/hehS/4XoUv+F6FL/hehS/4XoUP+F6FL/hehS/4XoUP+F6FL/hehQ/4XoUv+F6FL/hehQ/",
+      "data_encoding": "base64"
+    },
+    {
+      "cmd": "CreateBuffer",
+      "id": 2,
+      "size": 96,
+      "usage": [
+        "COPY_DST",
+        "VERTEX"
+      ]
+    },
+    {
+      "cmd": "WriteBuffer",
+      "buffer_id": 2,
+      "offset": 0,
+      "size": 96,
+      "data": "71NQ/+9TUP/vU1D/71NQ/0Kl9f9CpfX/QqX1/0Kl9f9mu2r/Zrtq/2a7av9mu2r//8oo///KKP//yij//8oo/6tHvP+rR7z/q0e8/6tHvP//cEP//3BD//9wQ///cEP/",
+      "data_encoding": "base64"
+    },
+    {
+      "cmd": "CreateBuffer",
+      "id": 3,
+      "size": 288,
+      "usage": [
+        "COPY_DST",
+        "VERTEX"
+      ]
+    },
+    {
+      "cmd": "WriteBuffer",
+      "buffer_id": 3,
+      "offset": 0,
+      "size": 288,
+      "data": "AAAAAAAAAAAAAIA/AAAAAAAAAAAAAIA/AAAAAAAAAAAAAIA/AAAAAAAAAAAAAIA/AAAAAAAAAAAAAIC/AAAAAAAAAAAAAIC/AAAAAAAAAAAAAIC/AAAAAAAAAAAAAIC/AACAvwAAAAAAAAAAAACAvwAAAAAAAAAAAACAvwAAAAAAAAAAAACAvwAAAAAAAAAAAACAPwAAAAAAAAAAAACAPwAAAAAAAAAAAACAPwAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAgD8AAAAAAAAAAAAAgD8AAAAAAAAAAAAAgD8AAAAAAAAAAAAAgL8AAAAAAAAAAAAAgL8AAAAAAAAAAAAAgL8AAAAAAAAAAAAAgL8AAAAA",
+      "data_encoding": "base64"
+    },
+    {
+      "cmd": "CreateBuffer",
+      "id": 4,
+      "size": 32,
+      "usage": [
+        "COPY_DST",
+        "MAP_WRITE",
+        "UNIFORM"
+      ]
+    },
+    {
+      "cmd": "WriteBuffer",
+      "buffer_id": 4,
+      "offset": 0,
+      "size": 32,
+      "data": "MzOzPs3MDD8AAEA/AAAAAAAAgD6amVk/AAAAAAAAAAA=",
+      "data_encoding": "base64"
+    },
+    {
+      "cmd": "CreateBuffer",
+      "id": 5,
+      "size": 144,
+      "usage": [
+        "COPY_DST",
+        "INDEX"
+      ]
+    },
+    {
+      "cmd": "WriteBuffer",
+      "buffer_id": 5,
+      "offset": 0,
+      "size": 144,
+      "data": "AAAAAAEAAAACAAAAAAAAAAIAAAADAAAABAAAAAUAAAAGAAAABAAAAAYAAAAHAAAACAAAAAkAAAAKAAAACAAAAAoAAAALAAAADAAAAA0AAAAOAAAADAAAAA4AAAAPAAAAEAAAABEAAAASAAAAEAAAABIAAAATAAAAFAAAABUAAAAWAAAAFAAAABYAAAAXAAAA",
+      "data_encoding": "base64"
+    },
+    {
+      "cmd": "CreateBuffer",
+      "id": 6,
+      "size": 48,
+      "usage": [
+        "COPY_DST",
+        "VERTEX"
+      ]
+    },
+    {
+      "cmd": "WriteBuffer",
+      "buffer_id": 6,
+      "offset": 0,
+      "size": 48,
+      "data": "AACAvwAAgD8AAAAAAACAvwAAgL8AAAAAAACAPwAAgD8AAAAAAACAPwAAgL8AAAAA",
+      "data_encoding": "base64"
+    },
+    {
+      "cmd": "CreateBuffer",
+      "id": 7,
+      "size": 16,
+      "usage": [
+        "COPY_DST",
+        "VERTEX"
+      ]
+    },
+    {
+      "cmd": "WriteBuffer",
+      "buffer_id": 7,
+      "offset": 0,
+      "size": 16,
+      "data": "DQ0U/w0NFP8NDRT/DQ0U/w==",
+      "data_encoding": "base64"
+    },
+    {
+      "cmd": "CreateBindGroupLayout",
+      "id": 8,
+      "entries": [
+        {
+          "binding": 0,
+          "binding_type": "uniform_buffer",
+          "visibility": [
+            "VERTEX",
+            "FRAGMENT"
+          ]
+        },
+        {
+          "binding": 1,
+          "binding_type": "uniform_buffer",
+          "visibility": [
+            "VERTEX",
+            "FRAGMENT"
+          ]
+        }
+      ]
+    },
+    {
+      "cmd": "CreateBuffer",
+      "id": 9,
+      "size": 208,
+      "usage": [
+        "COPY_DST",
+        "MAP_WRITE",
+        "UNIFORM"
+      ]
+    },
+    {
+      "cmd": "CreateBuffer",
+      "id": 10,
+      "size": 16,
+      "usage": [
+        "COPY_DST",
+        "MAP_WRITE",
+        "UNIFORM"
+      ]
+    },
+    {
+      "cmd": "CreateBindGroup",
+      "id": 11,
+      "bind_group_layout_id": 8,
+      "entries": [
+        {
+          "binding": 0,
+          "binding_type": "uniform_buffer",
+          "resource_kind": "buffer",
+          "resource_id": 9,
+          "offset": 0,
+          "size": 208
+        },
+        {
+          "binding": 1,
+          "binding_type": "uniform_buffer",
+          "resource_kind": "buffer",
+          "resource_id": 10,
+          "offset": 0,
+          "size": 16
+        }
+      ]
+    },
+    {
+      "cmd": "WriteBuffer",
+      "buffer_id": 9,
+      "offset": 0,
+      "size": 208,
+      "data": "u3pwP27Diz5cf1Q+AAAAAE2Qr74YcT8/7YgRPwAAAAAAAAAAf+0avybMSz8AAAAAAAAAAAAAAAAAAAAAAACAPwAAgD8AAAAAAAAAgAAAAAAAAACAAACAPwAAAIAAAAAAAAAAAAAAAAAAAIA/AAAAAAAAAIAAAACAAABAwAAAgD+1w+c/AAAAAAAAAAAAAAAAAAAAAHmCGkAAAAAAAAAAAAAAAAAAAAAAmkGAvwAAgL8AAAAAAAAAAEgBTb4AAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+      "data_encoding": "base64"
+    },
+    {
+      "cmd": "WriteBuffer",
+      "buffer_id": 10,
+      "offset": 0,
+      "size": 16,
+      "data": "AAAAAAAAAAAAAEhEAAAWRA==",
+      "data_encoding": "base64"
+    },
+    {
+      "cmd": "CreateBuffer",
+      "id": 12,
+      "size": 208,
+      "usage": [
+        "COPY_DST",
+        "MAP_WRITE",
+        "UNIFORM"
+      ]
+    },
+    {
+      "cmd": "CreateBuffer",
+      "id": 13,
+      "size": 16,
+      "usage": [
+        "COPY_DST",
+        "MAP_WRITE",
+        "UNIFORM"
+      ]
+    },
+    {
+      "cmd": "CreateBindGroup",
+      "id": 14,
+      "bind_group_layout_id": 8,
+      "entries": [
+        {
+          "binding": 0,
+          "binding_type": "uniform_buffer",
+          "resource_kind": "buffer",
+          "resource_id": 12,
+          "offset": 0,
+          "size": 208
+        },
+        {
+          "binding": 1,
+          "binding_type": "uniform_buffer",
+          "resource_kind": "buffer",
+          "resource_id": 13,
+          "offset": 0,
+          "size": 16
+        }
+      ]
+    },
+    {
+      "cmd": "WriteBuffer",
+      "buffer_id": 12,
+      "offset": 0,
+      "size": 208,
+      "data": "AACAPwAAAAAAAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAAAAAACAPwAAgD8AAAAAAAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAAAAAAAAgD8AAIA/AAAAAAAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAAAAAA==",
+      "data_encoding": "base64"
+    },
+    {
+      "cmd": "WriteBuffer",
+      "buffer_id": 13,
+      "offset": 0,
+      "size": 16,
+      "data": "AAAAAAAAAAAAAEhEAAAWRA==",
+      "data_encoding": "base64"
+    },
+    {
+      "cmd": "CreateShaderModule",
+      "id": 15,
+      "stage": "VERTEX",
+      "format": "wgsl",
+      "entry_point": "main",
+      "code": "struct MVP {\n    model: mat4x4f,\n    view: mat4x4f,\n    proj: mat4x4f,\n    time: f32,\n    flags: u32,\n}\n\nstruct Viewport {\n    rect: vec4f,\n}\n\nstruct VertexIn {\n    @location(0) position: vec3f,\n    @location(1) color: vec4f,\n}\n\nstruct VertexOut {\n    @builtin(position) position: vec4f,\n    @location(0) color: vec4f,\n}\n\n@group(0) @binding(0) var<uniform> mvp: MVP;\n@group(0) @binding(1) var<uniform> viewport: Viewport;\n\nfn transform(position: vec3f) -> vec4f {\n    return mvp.proj * mvp.view * mvp.model * vec4f(position, 1.0);\n}\n\n@vertex\nfn main(input: VertexIn) -> VertexOut {\n    var output: VertexOut;\n    output.position = transform(input.position);\n    output.color = input.color;\n    return output;\n}\n",
+      "builtin_family": "scene.primitive",
+      "builtin_variant": "default",
+      "builtin_version": 1
+    },
+    {
+      "cmd": "CreateShaderModule",
+      "id": 16,
+      "stage": "FRAGMENT",
+      "format": "wgsl",
+      "entry_point": "main",
+      "code": "struct FragmentIn {\n    @location(0) color: vec4f,\n}\n\n@fragment\nfn main(input: FragmentIn) -> @location(0) vec4f {\n    return input.color;\n}\n",
+      "builtin_family": "scene.primitive",
+      "builtin_variant": "default",
+      "builtin_version": 1
+    },
+    {
+      "cmd": "CreateRenderPipeline",
+      "id": 17,
+      "vertex_buffer_slots": 2,
+      "vertex_shader_module_id": 15,
+      "fragment_shader_module_id": 16,
+      "topology": "triangle-strip",
+      "vertex_buffers": [
+        {
+          "array_stride": 12,
+          "step_mode": "vertex",
+          "attributes": [
+            {
+              "shader_location": 0,
+              "offset": 0,
+              "format": "float32x3"
+            }
+          ]
+        },
+        {
+          "array_stride": 4,
+          "step_mode": "vertex",
+          "attributes": [
+            {
+              "shader_location": 1,
+              "offset": 0,
+              "format": "unorm8x4"
+            }
+          ]
+        }
+      ],
+      "color_targets": [
+        {
+          "format": "canvas"
+        }
+      ],
+      "bind_group_layout_ids": [
+        8
+      ],
+      "depth_stencil": {
+        "format": "depth32float",
+        "depth_write_enabled": false,
+        "depth_compare": "always"
+      }
+    },
+    {
+      "cmd": "CreateShaderModule",
+      "id": 18,
+      "stage": "VERTEX",
+      "format": "wgsl",
+      "entry_point": "main",
+      "code": "// datoviz-builtin-shader: scene.primitive lit vertex v1\n\nstruct MVP {\n    model: mat4x4f,\n    view: mat4x4f,\n    proj: mat4x4f,\n    time: f32,\n    flags: u32,\n}\n\nstruct Viewport {\n    rect: vec4f,\n}\n\nstruct VertexIn {\n    @location(0) position: vec3f,\n    @location(1) color: vec4f,\n    @location(2) normal: vec3f,\n}\n\nstruct VertexOut {\n    @builtin(position) position: vec4f,\n    @location(0) color: vec4f,\n    @location(1) normal: vec3f,\n    @location(2) world_position: vec3f,\n    @location(3) camera_position: vec3f,\n    @location(4) depth: f32,\n}\n\n@group(0) @binding(0) var<uniform> mvp: MVP;\n@group(0) @binding(1) var<uniform> viewport: Viewport;\n\nfn transform(position: vec3f) -> vec4f {\n    return mvp.proj * mvp.view * mvp.model * vec4f(position, 1.0);\n}\n\n@vertex\nfn main(input: VertexIn) -> VertexOut {\n    var output: VertexOut;\n    let world = mvp.model * vec4f(input.position, 1.0);\n    let clip = transform(input.position);\n    output.position = clip;\n    output.color = input.color;\n    output.world_position = world.xyz;\n    output.camera_position = (inverse(mvp.view) * vec4f(0.0, 0.0, 0.0, 1.0)).xyz;\n    output.normal = transpose(inverse(mat3x3f(\n        mvp.model[0].xyz,\n        mvp.model[1].xyz,\n        mvp.model[2].xyz\n    ))) * input.normal;\n    output.depth = clip.z / max(abs(clip.w), 1e-6);\n    return output;\n}\n",
+      "builtin_family": "scene.primitive",
+      "builtin_variant": "lit",
+      "builtin_version": 1
+    },
+    {
+      "cmd": "CreateShaderModule",
+      "id": 19,
+      "stage": "FRAGMENT",
+      "format": "wgsl",
+      "entry_point": "main",
+      "code": "// datoviz-builtin-shader: scene.primitive lit fragment v1\n\nstruct SceneMaterial {\n    light_direction: vec4f,\n    params: vec4f,\n    depth_cue: vec4f,\n    depth_cue_color: vec4f,\n    depth_cue_extra: vec4f,\n}\n\n@group(1) @binding(0) var<uniform> material: SceneMaterial;\n\nfn depth_cue_coordinate(cue: vec3f) -> f32 {\n    let metric = i32(material.depth_cue_extra.x + 0.5);\n    if (metric == 1) {\n        return cue.y;\n    }\n    if (metric == 2) {\n        return cue.z;\n    }\n    return cue.x;\n}\n\nfn depth_cue_factor(cue: vec3f) -> f32 {\n    let strength = clamp(material.depth_cue.z, 0.0, 1.0);\n    let mode = i32(material.depth_cue.w + 0.5);\n    if (mode == 0 || strength <= 0.0) {\n        return 0.0;\n    }\n\n    let denom = max(material.depth_cue.y - material.depth_cue.x, 1e-6);\n    let coord = depth_cue_coordinate(cue);\n    var t = clamp((coord - material.depth_cue.x) / denom, 0.0, 1.0);\n    let falloff = i32(material.depth_cue_extra.y + 0.5);\n    if (falloff == 1) {\n        let density = max(material.depth_cue_extra.z, 1e-6);\n        t = (1.0 - exp(-density * t)) / max(1.0 - exp(-density), 1e-6);\n    }\n    return t * strength;\n}\n\nfn apply_depth_cue(rgb: vec3f, cue: vec3f) -> vec3f {\n    let mode = i32(material.depth_cue.w + 0.5);\n    let t = depth_cue_factor(cue);\n    if (t <= 0.0) {\n        return rgb;\n    }\n    if (mode == 1) {\n        return mix(rgb, material.depth_cue_color.rgb, t);\n    }\n    if (mode == 2) {\n        let luma = dot(rgb, vec3f(0.2126, 0.7152, 0.0722));\n        return mix(rgb, vec3f(luma), t);\n    }\n    if (mode == 3) {\n        return mix(rgb, vec3f(0.0), t);\n    }\n    return rgb;\n}\n\n\nstruct FragmentIn {\n    @location(0) color: vec4f,\n    @location(1) normal: vec3f,\n    @location(2) world_position: vec3f,\n    @location(3) camera_position: vec3f,\n    @location(4) depth: f32,\n}\n\n@fragment\nfn main(input: FragmentIn) -> @location(0) vec4f {\n    let n = normalize(input.normal);\n    let l = normalize(material.light_direction.xyz);\n    let v = normalize(input.camera_position - input.world_position);\n    let h = normalize(l + v);\n    let lambert = max(dot(n, l), 0.0);\n    let specular = pow(max(dot(n, h), 0.0), 32.0);\n    let rgb = input.color.rgb * (material.params.x + material.params.y * lambert) +\n        vec3f(0.18 * specular);\n    let cue = vec3f(\n        input.depth,\n        length(input.camera_position - input.world_position),\n        length(input.world_position)\n    );\n    return vec4f(apply_depth_cue(clamp(rgb, vec3f(0.0), vec3f(1.0)), cue), input.color.a);\n}\n",
+      "builtin_family": "scene.primitive",
+      "builtin_variant": "lit",
+      "builtin_version": 1
+    },
+    {
+      "cmd": "CreateBindGroupLayout",
+      "id": 20,
+      "entries": [
+        {
+          "binding": 0,
+          "binding_type": "uniform_buffer",
+          "visibility": [
+            "VERTEX",
+            "FRAGMENT"
+          ]
+        }
+      ]
+    },
+    {
+      "cmd": "CreateRenderPipeline",
+      "id": 21,
+      "vertex_buffer_slots": 3,
+      "vertex_shader_module_id": 18,
+      "fragment_shader_module_id": 19,
+      "topology": "triangle-list",
+      "vertex_buffers": [
+        {
+          "array_stride": 12,
+          "step_mode": "vertex",
+          "attributes": [
+            {
+              "shader_location": 0,
+              "offset": 0,
+              "format": "float32x3"
+            }
+          ]
+        },
+        {
+          "array_stride": 4,
+          "step_mode": "vertex",
+          "attributes": [
+            {
+              "shader_location": 1,
+              "offset": 0,
+              "format": "unorm8x4"
+            }
+          ]
+        },
+        {
+          "array_stride": 12,
+          "step_mode": "vertex",
+          "attributes": [
+            {
+              "shader_location": 2,
+              "offset": 0,
+              "format": "float32x3"
+            }
+          ]
+        }
+      ],
+      "color_targets": [
+        {
+          "format": "canvas"
+        }
+      ],
+      "bind_group_layout_ids": [
+        8,
+        20
+      ],
+      "depth_stencil": {
+        "format": "depth32float",
+        "depth_write_enabled": true,
+        "depth_compare": "less-equal"
+      }
+    },
+    {
+      "cmd": "CreateBindGroup",
+      "id": 22,
+      "bind_group_layout_id": 20,
+      "entries": [
+        {
+          "binding": 0,
+          "binding_type": "uniform_buffer",
+          "resource_kind": "buffer",
+          "resource_id": 4,
+          "offset": 0,
+          "size": 32
+        }
+      ]
+    },
+    {
+      "cmd": "CreateTexture",
+      "id": 27,
+      "dimension": "2d",
+      "width": "canvas",
+      "height": "canvas",
+      "depth": 1,
+      "format": "depth32float",
+      "usage": [
+        "RENDER_ATTACHMENT"
+      ],
+      "mip_level_count": 1,
+      "sample_count": 1
+    },
+    {
+      "cmd": "BeginCommandEncoder",
+      "id": 23
+    },
+    {
+      "cmd": "BeginRenderPass",
+      "id": 24,
+      "encoder_id": 23,
+      "color_attachments": [
+        {
+          "texture_id": 0,
+          "load_op": "clear",
+          "store_op": "store",
+          "clear_value": {
+            "r": 0.0500000007,
+            "g": 0.0500000007,
+            "b": 0.0799999982,
+            "a": 1.0
+          }
+        }
+      ],
+      "depth_stencil_attachment": {
+        "texture_id": 27,
+        "depth_load_op": "clear",
+        "depth_store_op": "store",
+        "depth_clear_value": 1.0
+      }
+    },
+    {
+      "cmd": "SetPipeline",
+      "pass_id": 24,
+      "pipeline_id": 17
+    },
+    {
+      "cmd": "SetBindGroup",
+      "pass_id": 24,
+      "slot": 0,
+      "bind_group_id": 14
+    },
+    {
+      "cmd": "SetVertexBuffer",
+      "pass_id": 24,
+      "slot": 0,
+      "buffer_id": 6,
+      "offset": 0
+    },
+    {
+      "cmd": "SetVertexBuffer",
+      "pass_id": 24,
+      "slot": 1,
+      "buffer_id": 7,
+      "offset": 0
+    },
+    {
+      "cmd": "Draw",
+      "pass_id": 24,
+      "vertex_count": 4,
+      "instance_count": 1,
+      "first_vertex": 0,
+      "first_instance": 0
+    },
+    {
+      "cmd": "SetPipeline",
+      "pass_id": 24,
+      "pipeline_id": 21
+    },
+    {
+      "cmd": "SetBindGroup",
+      "pass_id": 24,
+      "slot": 0,
+      "bind_group_id": 11
+    },
+    {
+      "cmd": "SetBindGroup",
+      "pass_id": 24,
+      "slot": 1,
+      "bind_group_id": 22
+    },
+    {
+      "cmd": "SetVertexBuffer",
+      "pass_id": 24,
+      "slot": 0,
+      "buffer_id": 1,
+      "offset": 0
+    },
+    {
+      "cmd": "SetVertexBuffer",
+      "pass_id": 24,
+      "slot": 1,
+      "buffer_id": 2,
+      "offset": 0
+    },
+    {
+      "cmd": "SetVertexBuffer",
+      "pass_id": 24,
+      "slot": 2,
+      "buffer_id": 3,
+      "offset": 0
+    },
+    {
+      "cmd": "SetIndexBuffer",
+      "pass_id": 24,
+      "buffer_id": 5,
+      "index_format": "uint32",
+      "offset": 0
+    },
+    {
+      "cmd": "DrawIndexed",
+      "pass_id": 24,
+      "index_count": 36,
+      "instance_count": 1,
+      "first_index": 0,
+      "base_vertex": 0,
+      "first_instance": 0
+    },
+    {
+      "cmd": "EndRenderPass",
+      "pass_id": 24
+    },
+    {
+      "cmd": "FinishCommandEncoder",
+      "encoder_id": 23,
+      "command_buffer_id": 25
+    },
+    {
+      "cmd": "QueueSubmit",
+      "command_buffer_ids": [
+        25
+      ],
+      "submission_id": 26
+    }
+  ],
+  "expected": {
+    "outcome": "success"
+  }
+}

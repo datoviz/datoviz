@@ -17,6 +17,7 @@ export const STREAMS = [
   },
   { name: "scene_primitive_wgsl", label: "Scene primitive (WGSL)" },
   { name: "scene_point_wgsl", label: "Scene points (WGSL)" },
+  { name: "hello_mesh_dvzr_wgsl", label: "DVZR mesh replay (WGSL)" },
   { name: "indexed_quad_wgsl", label: "Indexed quad" },
   { name: "texture_sampling_wgsl", label: "Texture sampling" },
   { name: "depth_overlap_wgsl", label: "Depth overlap" },
@@ -282,6 +283,33 @@ function decodeBase64(data) {
     bytes[i] = binary.charCodeAt(i);
   }
   return bytes;
+}
+
+
+
+async function decodePayload(command, label) {
+  const bytes = decodeBase64(required(command.data, `${label} needs data`));
+  const encoding = command.data_encoding ?? "base64";
+  if (encoding === "base64") {
+    return bytes;
+  }
+  if (encoding === "base64+gzip") {
+    if (typeof DecompressionStream === "undefined") {
+      throw new Error("base64+gzip payloads need browser DecompressionStream support");
+    }
+    const stream = new Blob([bytes]).stream().pipeThrough(new DecompressionStream("gzip"));
+    const decoded = new Uint8Array(await new Response(stream).arrayBuffer());
+    if (
+      command.uncompressed_size !== undefined &&
+      decoded.byteLength !== command.uncompressed_size
+    ) {
+      throw new Error(
+        `${label} uncompressed size ${decoded.byteLength} does not match ${command.uncompressed_size}`,
+      );
+    }
+    return decoded;
+  }
+  throw new Error(`unsupported payload encoding: ${encoding}`);
 }
 
 
@@ -1134,7 +1162,7 @@ export async function executeDrp2Stream(device, context, canvasFormat, stream, o
           buffers.get(command.buffer_id),
           `unknown buffer ${command.buffer_id}`,
         );
-        const bytes = decodeBase64(required(command.data, "WriteBuffer needs data"));
+        const bytes = await decodePayload(command, "WriteBuffer");
         const size = command.size ?? bytes.byteLength;
         if (size !== bytes.byteLength) {
           throw new Error(`WriteBuffer size ${size} does not match payload size ${bytes.byteLength}`);
@@ -1176,7 +1204,7 @@ export async function executeDrp2Stream(device, context, canvasFormat, stream, o
           textures.get(command.texture_id),
           `unknown texture ${command.texture_id}`,
         );
-        const bytes = decodeBase64(required(command.data, "WriteTexture needs data"));
+        const bytes = await decodePayload(command, "WriteTexture");
         const size = required(command.size, "WriteTexture needs size");
         const origin = command.origin ?? { x: 0, y: 0, z: 0 };
         device.queue.writeTexture(

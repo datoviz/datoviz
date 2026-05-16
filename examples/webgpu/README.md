@@ -30,9 +30,23 @@ node examples/webgpu/generate_fixture_manifest.mjs
 The default stream is `streams/indexed_quad_wgsl.json`. It renders a four-vertex quad through
 `SetIndexBuffer` and `DrawIndexed`. Use the page menu to switch streams.
 
+Developer DVZR recordings can be adapted to the browser stream shape:
+
+```bash
+python3 tools/dvzr_to_webgpu_stream.py \
+    build/examples/c/hello_mesh_glfw.dvzr \
+    examples/webgpu/streams/hello_mesh_dvzr_wgsl.json \
+    --frame 1
+```
+
+The adapter remaps large native ids to JavaScript-safe ids, replaces known built-in GLSL/SPIR-V
+shader modules with WGSL variants, maps the recorded render target to the browser canvas, and may
+encode large binary payloads as `base64+gzip`.
+
 The earlier smoke streams remain available:
 
 ```text
+http://localhost:8765/examples/webgpu/?stream=hello_mesh_dvzr_wgsl
 http://localhost:8765/examples/webgpu/?stream=scene_point_panzoom_wgsl
 http://localhost:8765/examples/webgpu/?stream=hello_triangle_wgsl
 http://localhost:8765/examples/webgpu/?stream=triangle_vertex_buffer_wgsl
