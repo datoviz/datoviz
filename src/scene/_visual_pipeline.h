@@ -70,6 +70,7 @@ typedef struct DvzSceneVisualDesc
     uint64_t material_buffer_id;
     uint64_t image_texture_id;
     uint64_t volume_texture_id;
+    uint32_t volume_visual_index;
     bool volume_transfer_rgba;
     bool volume_occluded;
     DvzVolumeOcclusionDesc volume_occlusion;
@@ -165,6 +166,8 @@ typedef struct DvzSceneVisualBindDesc
     bool uses_volume_set1;
     uint64_t volume_texture_id;
     uint64_t volume_depth_texture_id;
+    uint32_t volume_visual_index;
+    uint32_t volume_bind_variant;
     bool volume_transfer_rgba;
     bool volume_occluded;
     DvzVolumeOcclusionDesc volume_occlusion;

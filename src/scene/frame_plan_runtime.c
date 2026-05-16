@@ -402,16 +402,17 @@ static bool _resolve_volume_bind_group(
         return false;
 
     bool is_new = false;
-    char params_buf_key[64], params_slot_key[64], bg_key[96];
+    char params_buf_key[96], params_slot_key[96], bg_key[128];
     dvz_snprintf(
-        params_buf_key, sizeof(params_buf_key), "_buf_volume_params_%" PRIu64,
-        bind->volume_texture_id);
+        params_buf_key, sizeof(params_buf_key), "_buf_volume_params_%u_%u_%" PRIu64,
+        bind->volume_visual_index, bind->volume_bind_variant, bind->volume_texture_id);
     dvz_snprintf(
-        params_slot_key, sizeof(params_slot_key), "_slot_volume_params_%" PRIu64,
-        bind->volume_texture_id);
+        params_slot_key, sizeof(params_slot_key), "_slot_volume_params_%u_%u_%" PRIu64,
+        bind->volume_visual_index, bind->volume_bind_variant, bind->volume_texture_id);
     dvz_snprintf(
-        bg_key, sizeof(bg_key), "_bg_volume_%" PRIu64 "_depth_%" PRIu64,
-        bind->volume_texture_id, depth_texture_id);
+        bg_key, sizeof(bg_key), "_bg_volume_%u_%u_%" PRIu64 "_depth_%" PRIu64,
+        bind->volume_visual_index, bind->volume_bind_variant, bind->volume_texture_id,
+        depth_texture_id);
 
     uint32_t usage = DVZ_DRP2_BUFFER_USAGE_UNIFORM | DVZ_DRP2_BUFFER_USAGE_MAP_WRITE |
                      DVZ_DRP2_BUFFER_USAGE_COPY_DST;
@@ -921,6 +922,15 @@ static bool _emitter_prepare_render_multi(
             bind.volume_occlusion.enabled = false;
         if (bind.uses_volume_set1 && volume_occlusion_pass)
             bind.volume_occlusion.enabled = true;
+        if (bind.uses_volume_set1)
+        {
+            if (volume_occlusion_pass)
+                bind.volume_bind_variant = 2;
+            else if (sampled_depth_is_volume_occlusion && bind.volume_occluded)
+                bind.volume_bind_variant = 1;
+            else
+                bind.volume_bind_variant = 0;
+        }
         if (bind.uses_volume_set1 && sampled_depth_id != 0 &&
             (!sampled_depth_is_volume_occlusion || bind.volume_occluded))
             bind.volume_depth_texture_id = sampled_depth_id;

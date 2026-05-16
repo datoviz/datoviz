@@ -506,6 +506,7 @@ static bool _scene_visual_desc_from_metadata(
         out->kind = DVZ_SCENE_VISUAL_DESC_VOLUME;
         out->vbuf_ids[out->vbuf_count++] = uvw_id;
         out->volume_texture_id = tex_id;
+        out->volume_visual_index = meta->visual_index;
         out->volume_transfer_rgba = meta->volume_transfer_rgba;
         out->volume_occluded = meta->volume_occluded;
         out->volume_occlusion = meta->volume_occlusion;
@@ -1588,6 +1589,7 @@ bool _scene_visual_bind_desc(
         out->uses_fixed_common = caps.fixed_controller;
         out->uses_volume_set1 = caps.uses_volume_set;
         out->volume_texture_id = visual->volume_texture_id;
+        out->volume_visual_index = visual->volume_visual_index;
         out->volume_transfer_rgba = visual->volume_transfer_rgba;
         out->volume_occluded = visual->volume_occluded;
         out->volume_occlusion = visual->volume_occlusion;
