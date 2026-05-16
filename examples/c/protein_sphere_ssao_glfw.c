@@ -30,6 +30,7 @@
 #include "_assertions.h"
 #include "_compat.h"
 #include "datoviz/app.h"
+#include "datoviz/gui.h"
 #include "datoviz/scene.h"
 
 
@@ -57,6 +58,25 @@ typedef struct ProteinBundle
     float* radii;
     DvzColor* colors;
 } ProteinBundle;
+
+
+typedef struct ProteinExampleState
+{
+    DvzPanel* panel;
+    DvzVisual* spheres;
+    DvzArcball* arcball;
+    const ProteinBundle* bundle;
+    float* live_radii;
+    bool ssao_enabled;
+    float atom_scale;
+    float ssao_radius;
+    float ssao_strength;
+    float ssao_bias;
+    float ssao_power;
+    float ssao_min_visibility;
+    float ssao_samples;
+    bool ssao_blur;
+} ProteinExampleState;
 
 
 
@@ -281,6 +301,111 @@ static float* _scaled_radii(const ProteinBundle* bundle, float scale)
 
 
 /**
+ * Update the retained sphere radii from the current atom scale.
+ *
+ * @param state example state
+ */
+static void _apply_atom_scale(ProteinExampleState* state)
+{
+    ANN(state);
+    ANN(state->bundle);
+    ANN(state->live_radii);
+
+    if (state->atom_scale < 0.15f)
+        state->atom_scale = 0.15f;
+    if (state->atom_scale > 2.5f)
+        state->atom_scale = 2.5f;
+    for (uint32_t i = 0; i < state->bundle->atom_count; i++)
+        state->live_radii[i] = state->bundle->radii[i] * state->atom_scale;
+    if (dvz_sphere_size(state->spheres, 0, state->bundle->atom_count, state->live_radii) != 0)
+        dvz_fprintf(stderr, "dvz_sphere_size() failed\n");
+}
+
+
+
+/**
+ * Update the panel SSAO state from live controls.
+ *
+ * @param state example state
+ */
+static void _apply_ssao(ProteinExampleState* state)
+{
+    ANN(state);
+    ANN(state->panel);
+
+    if (!state->ssao_enabled)
+    {
+        (void)dvz_panel_set_ssao(state->panel, NULL);
+        return;
+    }
+    if (state->ssao_samples < 4.0f)
+        state->ssao_samples = 4.0f;
+    if (state->ssao_samples > 32.0f)
+        state->ssao_samples = 32.0f;
+
+    (void)dvz_panel_set_ssao(
+        state->panel,
+        &(DvzSsaoDesc){
+            .radius = state->ssao_radius,
+            .strength = state->ssao_strength,
+            .bias = state->ssao_bias,
+            .power = state->ssao_power,
+            .min_visibility = state->ssao_min_visibility,
+            .blur_radius = 2.0f,
+            .blur_depth_sigma = 0.65f,
+            .blur_normal_sigma = 0.35f,
+            .sample_count = (uint32_t)(state->ssao_samples + 0.5f),
+            .blur_enabled = state->ssao_blur,
+        });
+}
+
+
+
+/**
+ * Build the live protein controls.
+ *
+ * @param gui GUI overlay
+ * @param win app window
+ * @param user_data example state
+ */
+static void _protein_gui(DvzGui* gui, DvzAppWindow* win, void* user_data)
+{
+    ANN(gui);
+    ANN(win);
+    ProteinExampleState* state = (ProteinExampleState*)user_data;
+    ANN(state);
+
+    if (dvz_gui_begin(gui, "Protein", NULL, 0))
+    {
+        dvz_gui_text(gui, state->bundle->path);
+
+        bool atom_changed = false;
+        atom_changed |= dvz_gui_slider_float(gui, "Atom scale", &state->atom_scale, 0.15f, 2.5f);
+        if (atom_changed)
+            _apply_atom_scale(state);
+
+        bool ssao_changed = false;
+        ssao_changed |= dvz_gui_checkbox(gui, "SSAO", &state->ssao_enabled);
+        ssao_changed |= dvz_gui_slider_float(gui, "Radius", &state->ssao_radius, 0.05f, 4.0f);
+        ssao_changed |= dvz_gui_slider_float(gui, "Strength", &state->ssao_strength, 0.0f, 6.0f);
+        ssao_changed |= dvz_gui_slider_float(gui, "Bias", &state->ssao_bias, 0.0f, 0.12f);
+        ssao_changed |= dvz_gui_slider_float(gui, "Power", &state->ssao_power, 0.1f, 8.0f);
+        ssao_changed |= dvz_gui_slider_float(
+            gui, "Min visibility", &state->ssao_min_visibility, 0.0f, 1.0f);
+        ssao_changed |= dvz_gui_slider_float(gui, "Samples", &state->ssao_samples, 4.0f, 32.0f);
+        ssao_changed |= dvz_gui_checkbox(gui, "Blur", &state->ssao_blur);
+        if (ssao_changed)
+            _apply_ssao(state);
+
+        if (dvz_gui_button(gui, "Reset view"))
+            dvz_arcball_reset(state->arcball);
+    }
+    dvz_gui_end(gui);
+}
+
+
+
+/**
  * Print a short message explaining how to create the default bundle.
  *
  * @param path expected bundle path
@@ -331,7 +456,8 @@ int main(int argc, char** argv)
         return 1;
     }
 
-    float* scaled_radii = _scaled_radii(&bundle, 0.82f);
+    float atom_scale = 0.82f;
+    float* scaled_radii = _scaled_radii(&bundle, atom_scale);
     if (scaled_radii == NULL)
     {
         _protein_bundle_destroy(&bundle);
@@ -397,13 +523,6 @@ int main(int argc, char** argv)
             .shininess = 80.0f,
         });
     dvz_panel_set_background_color(panel, 0.030f, 0.034f, 0.044f, 1.0f);
-    (void)dvz_panel_set_ssao(
-        panel,
-        &(DvzSsaoDesc){.radius = 1.0f, .strength = 2.4f, .bias = 0.02f, .power = 1.4f,
-                       .min_visibility = 0.16f, .blur_radius = 2.0f,
-                       .blur_depth_sigma = 0.65f, .blur_normal_sigma = 0.35f,
-                       .sample_count = 16, .blur_enabled = true});
-
     DvzApp* app = dvz_app(scene);
     if (app == NULL)
     {
@@ -438,6 +557,30 @@ int main(int argc, char** argv)
         return 1;
     }
     dvz_arcball_initial(arcball, (vec3){+0.70f, 0.0f, +0.30f});
+
+    ProteinExampleState state = {
+        .panel = panel,
+        .spheres = spheres,
+        .arcball = arcball,
+        .bundle = &bundle,
+        .live_radii = scaled_radii,
+        .ssao_enabled = true,
+        .atom_scale = atom_scale,
+        .ssao_radius = 1.0f,
+        .ssao_strength = 2.4f,
+        .ssao_bias = 0.02f,
+        .ssao_power = 1.4f,
+        .ssao_min_visibility = 0.16f,
+        .ssao_samples = 16.0f,
+        .ssao_blur = true,
+    };
+    _apply_ssao(&state);
+
+    DvzGui* gui = dvz_app_window_gui(win, NULL);
+    if (gui == NULL)
+        dvz_fprintf(stderr, "warning: failed to attach GUI overlay\n");
+    else
+        dvz_app_window_set_gui_callback(win, _protein_gui, &state);
 
     dvz_fprintf(
         stderr, "loaded %" PRIu32 " atoms from %s\n", bundle.atom_count, bundle.path);
