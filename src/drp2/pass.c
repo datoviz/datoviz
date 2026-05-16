@@ -384,10 +384,11 @@ static void _transition_owned_depth_image_access(
  * @param state vklite runtime state
  * @param width required target width
  * @param height required target height
+ * @param sample_count required target sample count
  * @return borrowed frame target with live depth resources, or NULL
  */
 static Drp2VkliteObject* _active_borrowed_depth_target(
-    Drp2VkliteState* state, uint32_t width, uint32_t height)
+    Drp2VkliteState* state, uint32_t width, uint32_t height, uint32_t sample_count)
 {
     ANN(state);
     if (state->active_borrowed_command_buffer == VK_NULL_HANDLE)
@@ -399,6 +400,8 @@ static Drp2VkliteObject* _active_borrowed_depth_target(
         if (object->destroyed || !object->borrowed_frame_target)
             continue;
         if (object->width != width || object->height != height)
+            continue;
+        if (object->sample_count != sample_count)
             continue;
         if (object->depth_images == NULL || object->depth_views == NULL)
             continue;
@@ -461,17 +464,34 @@ DvzDrp2ValidationResult _vklite_begin_render_pass(
         return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
 
     Drp2VkliteObject* targets[DVZ_DRP2_MAX_COLOR_ATTACHMENTS] = {0};
+    Drp2VkliteObject* resolves[DVZ_DRP2_MAX_COLOR_ATTACHMENTS] = {0};
     VkImageView target_views[DVZ_DRP2_MAX_COLOR_ATTACHMENTS] = {0};
+    VkImageView resolve_views[DVZ_DRP2_MAX_COLOR_ATTACHMENTS] = {0};
     for (uint32_t i = 0; i < color_count; i++)
     {
-        uint64_t texture_id = command->u.begin_render_pass.color_attachment_count > 0
-                                  ? command->u.begin_render_pass.color_attachments[i].texture_id
-                                  : command->u.begin_render_pass.texture_id;
+        const DvzDrp2ColorAttachment* attachment =
+            command->u.begin_render_pass.color_attachment_count > 0
+                ? &command->u.begin_render_pass.color_attachments[i]
+                : NULL;
+        uint64_t texture_id =
+            attachment != NULL ? attachment->texture_id :
+                                 command->u.begin_render_pass.texture_id;
         targets[i] = _vklite_find(state, texture_id);
         target_views[i] = _vklite_object_image_view(targets[i]);
         if (targets[i] == NULL || targets[i]->images == NULL ||
             target_views[i] == VK_NULL_HANDLE)
             return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+        if (attachment != NULL && attachment->resolve_texture_id != 0)
+        {
+            resolves[i] = _vklite_find(state, attachment->resolve_texture_id);
+            resolve_views[i] = _vklite_object_image_view(resolves[i]);
+            if (resolves[i] == NULL || resolves[i]->images == NULL ||
+                resolve_views[i] == VK_NULL_HANDLE || targets[i]->sample_count <= 1 ||
+                resolves[i]->sample_count != 1 || resolves[i]->width != targets[i]->width ||
+                resolves[i]->height != targets[i]->height ||
+                resolves[i]->format != targets[i]->format)
+                return _drp2_fail(DVZ_DRP2_VALIDATION_USAGE, command_index);
+        }
     }
     Drp2VkliteObject* target = targets[0];
     if (target->borrowed_frame_target && color_count > 1)
@@ -479,7 +499,8 @@ DvzDrp2ValidationResult _vklite_begin_render_pass(
     for (uint32_t i = 1; i < color_count; i++)
     {
         if (targets[i]->borrowed_frame_target || targets[i]->width != target->width ||
-            targets[i]->height != target->height)
+            targets[i]->height != target->height ||
+            targets[i]->sample_count != target->sample_count)
             return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
     }
 
@@ -493,7 +514,8 @@ DvzDrp2ValidationResult _vklite_begin_render_pass(
         if (named_depth == NULL || named_depth->images == NULL ||
             named_depth_view == VK_NULL_HANDLE ||
             (named_depth->usage & DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT) == 0 ||
-            named_depth->width != target->width || named_depth->height != target->height)
+            named_depth->width != target->width || named_depth->height != target->height ||
+            named_depth->sample_count != target->sample_count)
             return _drp2_fail(DVZ_DRP2_VALIDATION_USAGE, command_index);
     }
 
@@ -504,15 +526,28 @@ DvzDrp2ValidationResult _vklite_begin_render_pass(
 
     for (uint32_t i = 0; i < color_count; i++)
     {
-        uint64_t texture_id = command->u.begin_render_pass.color_attachment_count > 0
-                                  ? command->u.begin_render_pass.color_attachments[i].texture_id
-                                  : command->u.begin_render_pass.texture_id;
+        const DvzDrp2ColorAttachment* attachment =
+            command->u.begin_render_pass.color_attachment_count > 0
+                ? &command->u.begin_render_pass.color_attachments[i]
+                : NULL;
+        uint64_t texture_id =
+            attachment != NULL ? attachment->texture_id :
+                                 command->u.begin_render_pass.texture_id;
         targets[i] = _vklite_find(state, texture_id);
         target_views[i] = _vklite_object_image_view(targets[i]);
         if (targets[i] == NULL || targets[i]->images == NULL ||
             target_views[i] == VK_NULL_HANDLE)
             return _vklite_fail_destroy_object(
                 pass, DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+        if (attachment != NULL && attachment->resolve_texture_id != 0)
+        {
+            resolves[i] = _vklite_find(state, attachment->resolve_texture_id);
+            resolve_views[i] = _vklite_object_image_view(resolves[i]);
+            if (resolves[i] == NULL || resolves[i]->images == NULL ||
+                resolve_views[i] == VK_NULL_HANDLE)
+                return _vklite_fail_destroy_object(
+                    pass, DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+        }
     }
     target = targets[0];
 
@@ -545,6 +580,7 @@ DvzDrp2ValidationResult _vklite_begin_render_pass(
     pass->commands = cmds;
     pass->width = target->width;
     pass->height = target->height;
+    pass->sample_count = target->sample_count;
     pass->color_target_count = color_count;
     for (uint32_t i = 0; i < color_count; i++)
         pass->color_target_ids[i] = targets[i]->id;
@@ -586,6 +622,16 @@ DvzDrp2ValidationResult _vklite_begin_render_pass(
             .color.float32 = {clear_color[0], clear_color[1], clear_color[2], clear_color[3]}};
         DvzAttachment* catt = dvz_rendering_color(rendering, i);
         dvz_attachment_image(catt, target_views[i], VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+        if (resolve_views[i] != VK_NULL_HANDLE)
+        {
+            VkResolveModeFlagBits resolve_mode =
+                attachment != NULL && attachment->resolve_mode != 0 ?
+                    (VkResolveModeFlagBits)attachment->resolve_mode :
+                    VK_RESOLVE_MODE_AVERAGE_BIT;
+            dvz_attachment_resolve(
+                catt, resolve_mode, resolve_views[i],
+                VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+        }
         dvz_attachment_ops(
             catt, _vklite_attachment_load_op(load_op), _vklite_attachment_store_op(store_op));
         if (load_op == DVZ_DRP2_ATTACHMENT_LOAD_CLEAR)
@@ -603,7 +649,8 @@ DvzDrp2ValidationResult _vklite_begin_render_pass(
             borrowed_depth_owner =
                 target->borrowed_frame_target
                     ? NULL
-                    : _active_borrowed_depth_target(state, target->width, target->height);
+                    : _active_borrowed_depth_target(
+                          state, target->width, target->height, target->sample_count);
             depth_owner = target->borrowed_frame_target
                               ? target
                               : (borrowed_depth_owner != NULL ? borrowed_depth_owner : pass);
@@ -634,7 +681,7 @@ DvzDrp2ValidationResult _vklite_begin_render_pass(
                 dvz_images_size(depth_images, target->width, target->height, 1);
                 dvz_images_mip(depth_images, 1);
                 dvz_images_layers(depth_images, 1);
-                dvz_images_samples(depth_images, VK_SAMPLE_COUNT_1_BIT);
+                dvz_images_samples(depth_images, _vklite_sample_count(target->sample_count));
                 dvz_images_usage(depth_images, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT);
                 if (dvz_images_create(depth_images) != 0)
                 {
@@ -699,10 +746,15 @@ DvzDrp2ValidationResult _vklite_begin_render_pass(
     if (!pass->borrowed_commands && dvz_cmd_begin_result(cmds) != 0)
         return _vklite_fail_destroy_object(
             pass, DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
-    uint64_t skip_texture_ids[DVZ_DRP2_MAX_COLOR_ATTACHMENTS + 1] = {0};
+    uint64_t skip_texture_ids[(2 * DVZ_DRP2_MAX_COLOR_ATTACHMENTS) + 1] = {0};
     uint32_t skip_count = 0;
     for (uint32_t i = 0; i < color_count; i++)
         skip_texture_ids[skip_count++] = targets[i]->id;
+    for (uint32_t i = 0; i < color_count; i++)
+    {
+        if (resolves[i] != NULL)
+            skip_texture_ids[skip_count++] = resolves[i]->id;
+    }
     if (named_depth != NULL)
         skip_texture_ids[skip_count++] = named_depth->id;
 
@@ -730,6 +782,11 @@ DvzDrp2ValidationResult _vklite_begin_render_pass(
             access = _attachment_effective_access(access, load_op);
             _vklite_transition_image_access(
                 cmds, targets[i], _color_texture_access(access));
+        }
+        if (resolves[i] != NULL)
+        {
+            _vklite_transition_image_access(
+                cmds, resolves[i], DRP2_TEXTURE_ACCESS_COLOR_ATTACHMENT_WRITE);
         }
     }
     if (named_depth != NULL)

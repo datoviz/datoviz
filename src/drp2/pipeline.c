@@ -920,6 +920,9 @@ DvzDrp2ValidationResult _vklite_create_render_pipeline(
             (VkCompareOp)command->u.create_render_pipeline.depth_compare_op,
             DVZ_GRAPHICS_FLAGS_FIXED);
     }
+    dvz_graphics_multisampling(
+        graphics, _vklite_sample_count(command->u.create_render_pipeline.sample_count), 0.0f,
+        command->u.create_render_pipeline.alpha_to_coverage_enabled);
 
     /* binding_count==0 means old-style call (no vertex layout); use TRIANGLE_LIST as default.
        Otherwise respect the topology set via create_render_pipeline_ex. */

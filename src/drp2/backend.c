@@ -99,6 +99,31 @@ static bool _vklite_format_has_depth(uint32_t format)
 }
 
 
+/**
+ * Convert a DRP2 sample count to a Vulkan sample count flag.
+ *
+ * @param sample_count raster sample count, with 0 treated as 1
+ * @return Vulkan sample-count flag
+ */
+VkSampleCountFlagBits _vklite_sample_count(uint32_t sample_count)
+{
+    switch (sample_count)
+    {
+    case 2:
+        return VK_SAMPLE_COUNT_2_BIT;
+    case 4:
+        return VK_SAMPLE_COUNT_4_BIT;
+    case 8:
+        return VK_SAMPLE_COUNT_8_BIT;
+    case 1:
+    case 0:
+    default:
+        return VK_SAMPLE_COUNT_1_BIT;
+    }
+}
+
+
+
 static VkImageUsageFlags _vklite_texture_usage_for_format(uint32_t usage, uint32_t format)
 {
     VkImageUsageFlags out = _vklite_texture_usage(usage);
@@ -225,7 +250,7 @@ static DvzDrp2ValidationResult _vklite_create_texture(
         images, command->u.create_texture.width, command->u.create_texture.height, depth);
     dvz_images_mip(images, 1);
     dvz_images_layers(images, 1);
-    dvz_images_samples(images, VK_SAMPLE_COUNT_1_BIT);
+    dvz_images_samples(images, _vklite_sample_count(command->u.create_texture.sample_count));
     dvz_images_usage(
         images, _vklite_texture_usage_for_format(command->u.create_texture.usage, format));
     if (dvz_images_create(images) != 0)
@@ -260,6 +285,8 @@ static DvzDrp2ValidationResult _vklite_create_texture(
     object->width = command->u.create_texture.width;
     object->height = command->u.create_texture.height;
     object->depth = depth;
+    object->sample_count =
+        command->u.create_texture.sample_count != 0 ? command->u.create_texture.sample_count : 1;
     if (replaced)
     {
         DvzDrp2ValidationResult result = _vklite_refresh_dependent_bind_groups(
@@ -378,6 +405,7 @@ bool _vklite_attach_frame_target(
     object->image_view = frame->image_view;
     object->width = frame->extent.width;
     object->height = frame->extent.height;
+    object->sample_count = 1;
     object->borrowed_frame_target = true;
     object->destroyed = false;
     return true;

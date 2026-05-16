@@ -214,6 +214,8 @@ int test_drp2_runtime_vklite_draws_render_pass(TstSuite* suite, TstItem* item);
 
 int test_drp2_runtime_vklite_draws_named_depth_render_pass(TstSuite* suite, TstItem* item);
 
+int test_drp2_runtime_vklite_draws_msaa_resolve_render_pass(TstSuite* suite, TstItem* item);
+
 int test_drp2_runtime_vklite_draws_multi_color_render_pass(TstSuite* suite, TstItem* item);
 
 int test_drp2_runtime_vklite_draws_wboit_format_passes(TstSuite* suite, TstItem* item);

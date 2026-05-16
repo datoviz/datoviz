@@ -214,6 +214,7 @@ struct Drp2VkliteObject
     uint32_t width;
     uint32_t height;
     uint32_t depth;
+    uint32_t sample_count;
     float viewport_x;
     float viewport_y;
     float viewport_width;
@@ -322,6 +323,7 @@ DvzDrp2ValidationResult _vklite_build_bind_group_descriptors(
     DvzDescriptors** out);
 DvzDrp2ValidationResult _vklite_refresh_dependent_bind_groups(
     Drp2VkliteState* state, uint64_t resource_id, uint32_t command_index);
+VkSampleCountFlagBits _vklite_sample_count(uint32_t sample_count);
 DvzDrp2ValidationResult _vklite_create_bind_group(
     Drp2VkliteState* state, const DvzDrp2Command* command, uint32_t command_index);
 DvzDrp2ValidationResult _vklite_create_render_pipeline(
