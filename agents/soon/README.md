@@ -4,7 +4,8 @@ This directory holds imminent implementation plans that should stay visible, but
 `agents/now/` noisy.
 
 Use this directory for work expected soon, including WebGPU/WASM, depth peeling, screen-space
-volume occlusion, graph-backed scene techniques, visual-family expansion, and controller work.
+volume occlusion, graph-backed screen-space effects, scene techniques, visual-family expansion,
+and controller work.
 Cross-cutting analysis notes that inform near-term work, such as example gap reports, can also
 live here.
 

@@ -21,7 +21,7 @@ Start with the small active set in [now/](now/):
 
 Near-term work that is expected soon, but should not crowd the active entry-point directory, lives
 in [soon/](soon/). This includes the WebGPU, WASM, dual-depth-peeling, and screen-space volume
-occlusion tracks.
+occlusion/effects tracks.
 
 
 ## Start Here
@@ -66,8 +66,9 @@ Runtime, graph, and backend lanes:
 4. [soon/DUAL_DEPTH_PEELING_PLAN.md](soon/DUAL_DEPTH_PEELING_PLAN.md)
 5. [soon/SCREEN_SPACE_SCENE_OCCLUSION_PLAN.md](soon/SCREEN_SPACE_SCENE_OCCLUSION_PLAN.md)
 6. [soon/SCREEN_SPACE_VOLUME_OCCLUSION_PLAN.md](soon/SCREEN_SPACE_VOLUME_OCCLUSION_PLAN.md)
-7. [soon/SCENE_WGSL_SHADER_VARIANTS_PLAN.md](soon/SCENE_WGSL_SHADER_VARIANTS_PLAN.md)
-8. [soon/SCENE_WASM_WEBGPU_PORT_PLAN.md](soon/SCENE_WASM_WEBGPU_PORT_PLAN.md)
+7. [soon/SCENE_SCREEN_SPACE_EFFECTS_PLAN.md](soon/SCENE_SCREEN_SPACE_EFFECTS_PLAN.md)
+8. [soon/SCENE_WGSL_SHADER_VARIANTS_PLAN.md](soon/SCENE_WGSL_SHADER_VARIANTS_PLAN.md)
+9. [soon/SCENE_WASM_WEBGPU_PORT_PLAN.md](soon/SCENE_WASM_WEBGPU_PORT_PLAN.md)
 
 Scene feature lanes:
 
