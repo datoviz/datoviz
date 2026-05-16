@@ -126,6 +126,13 @@ typedef enum
 
 typedef enum
 {
+    DVZ_SPHERE_MODE_FAST_IMPOSTOR = 0,
+    DVZ_SPHERE_MODE_RAYCAST_IMPOSTOR = 1,
+} DvzSphereMode;
+
+
+typedef enum
+{
     DVZ_DEPTH_CUE_NONE = 0,
     DVZ_DEPTH_CUE_FADE_TO_BACKGROUND,
     DVZ_DEPTH_CUE_DESATURATE,

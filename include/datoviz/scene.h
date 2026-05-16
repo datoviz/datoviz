@@ -666,6 +666,20 @@ DVZ_EXPORT DvzVisual* dvz_sphere(DvzScene* scene, uint32_t flags);
 
 
 /**
+ * Set the sphere impostor rendering mode.
+ *
+ * `DVZ_SPHERE_MODE_FAST_IMPOSTOR` uses the cheap point-coordinate sphere reconstruction.
+ * `DVZ_SPHERE_MODE_RAYCAST_IMPOSTOR` intersects the camera ray with the sphere in the fragment
+ * shader for more accurate surface position, normal, and depth.
+ *
+ * @param visual the sphere visual
+ * @param mode the rendering mode
+ * @return 0 on success, -1 on error
+ */
+DVZ_EXPORT int dvz_sphere_mode(DvzVisual* visual, DvzSphereMode mode);
+
+
+/**
  * Set sphere centers.
  *
  * @param visual the sphere visual

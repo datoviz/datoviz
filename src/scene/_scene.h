@@ -561,6 +561,7 @@ struct DvzVisual
     uint32_t        link_key_count;
     DvzSceneMaterialParams material_params;
     bool                   material_params_dirty;
+    DvzSphereMode          sphere_mode;
     bool                   mesh_default_color;
     DvzVolumeState         volume;
 

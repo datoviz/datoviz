@@ -310,6 +310,49 @@ int test_scene_sphere_emit_glsl_executes(TstSuite* suite, TstItem* item)
 }
 
 
+/**
+ * Verify that sphere rendering mode state is retained and uploaded through material params.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_sphere_mode(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    AT(scene != NULL);
+    DvzVisual* sphere = dvz_sphere(scene, DVZ_SPHERE_FLAGS_LIGHTING);
+    AT(sphere != NULL);
+    AT(sphere->sphere_mode == DVZ_SPHERE_MODE_FAST_IMPOSTOR);
+    AT(sphere->material_params.depth_cue_extra[3] == (float)DVZ_SPHERE_MODE_FAST_IMPOSTOR);
+
+    AT(dvz_sphere_mode(sphere, DVZ_SPHERE_MODE_RAYCAST_IMPOSTOR) == 0);
+    AT(sphere->sphere_mode == DVZ_SPHERE_MODE_RAYCAST_IMPOSTOR);
+    AT(sphere->material_params.depth_cue_extra[3] == (float)DVZ_SPHERE_MODE_RAYCAST_IMPOSTOR);
+    AT(sphere->material_params_dirty);
+
+    AT(dvz_visual_set_primitive_shading(
+           sphere,
+           &(DvzPrimitiveShadingDesc){
+               .light_direction = {0.0f, 0.0f, 1.0f},
+               .ambient = 0.2f,
+               .diffuse = 0.7f,
+               .specular = 0.8f,
+               .shininess = 64.0f,
+           }) == 0);
+    AT(sphere->sphere_mode == DVZ_SPHERE_MODE_RAYCAST_IMPOSTOR);
+    AT(sphere->material_params.depth_cue_extra[3] == (float)DVZ_SPHERE_MODE_RAYCAST_IMPOSTOR);
+    AT(dvz_sphere_mode(sphere, DVZ_SPHERE_MODE_FAST_IMPOSTOR) == 0);
+    AT(sphere->material_params.depth_cue_extra[3] == (float)DVZ_SPHERE_MODE_FAST_IMPOSTOR);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
 
 /**
  * Verify the scene point visual backend lowering decision.
@@ -5458,6 +5501,7 @@ int test_scene_sphere_ssao_glsl_executes(TstSuite* suite, TstItem* item)
     AT(panel != NULL);
     DvzVisual* sphere = dvz_sphere(scene, DVZ_SPHERE_FLAGS_LIGHTING);
     AT(sphere != NULL);
+    AT(dvz_sphere_mode(sphere, DVZ_SPHERE_MODE_RAYCAST_IMPOSTOR) == 0);
 
     float positions[4][3] = {
         {-0.30f, -0.25f, 0.15f},
@@ -6864,6 +6908,7 @@ int test_scene_graph(TstSuite* suite)
 
     TEST_SIMPLE(test_scene_point_emit_glsl_executes);
     TEST_SIMPLE(test_scene_sphere_emit_glsl_executes);
+    TEST_SIMPLE(test_scene_sphere_mode);
     TEST_SIMPLE(test_scene_point_like_lowering_policy);
     TEST_SIMPLE(test_scene_point_emit_glsl_native_points);
     TEST_SIMPLE(test_scene_point_emit_wgsl_instanced_quads);

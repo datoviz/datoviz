@@ -532,7 +532,8 @@ static bool _emitter_prepare_render_multi(
             if (desc.kind != DVZ_SCENE_VISUAL_DESC_PRIMITIVE &&
                 desc.kind != DVZ_SCENE_VISUAL_DESC_SPHERE)
                 continue;
-            desc.material_buffer_id = 0;
+            if (desc.kind != DVZ_SCENE_VISUAL_DESC_SPHERE)
+                desc.material_buffer_id = 0;
             if (desc.kind == DVZ_SCENE_VISUAL_DESC_SPHERE)
             {
                 dvz_snprintf(
@@ -680,7 +681,7 @@ static bool _emitter_prepare_render_multi(
                 ok = false;
                 break;
             }
-            if (gbuffer_pass)
+            if (gbuffer_pass && desc.kind != DVZ_SCENE_VISUAL_DESC_SPHERE)
                 pipeline.needs_material_layout = false;
             if (
                 force_point_depth &&

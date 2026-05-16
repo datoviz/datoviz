@@ -71,6 +71,8 @@ static int _material_apply_depth_cue(
 
 static void _visual_material_mark_dirty(DvzVisual* visual);
 
+static void _sphere_params_sync_mode(DvzVisual* visual);
+
 static void _visual_bump_version(uint64_t* version);
 
 static void _volume_state_default(DvzVolumeState* state);
@@ -857,8 +859,24 @@ static void _visual_material_mark_dirty(DvzVisual* visual)
 {
     ANN(visual);
     _material_params_sync_state(&visual->material_params, &visual->material);
+    _sphere_params_sync_mode(visual);
     _visual_bump_version(&visual->material.version);
     visual->material_params_dirty = true;
+}
+
+
+
+/**
+ * Mirror the retained sphere mode into the material payload spare slot.
+ *
+ * @param visual the visual
+ */
+static void _sphere_params_sync_mode(DvzVisual* visual)
+{
+    ANN(visual);
+    if (visual->type != DVZ_VISUAL_TYPE_SPHERE)
+        return;
+    visual->material_params.depth_cue_extra[3] = (float)visual->sphere_mode;
 }
 
 
@@ -1142,6 +1160,7 @@ int dvz_visual_set_primitive_shading(
     }
     _material_state_sync_params(&visual->material, &visual->material_params);
     _material_params_sync_state(&visual->material_params, &visual->material);
+    _sphere_params_sync_mode(visual);
     _visual_bump_version(&visual->material.version);
     visual->material_params_dirty = true;
     return 0;
@@ -1973,8 +1992,43 @@ DvzVisual* dvz_sphere(DvzScene* scene, uint32_t flags)
     if (visual == NULL)
         return NULL;
     visual->topology = DVZ_PRIMITIVE_TOPOLOGY_POINT_LIST;
+    visual->sphere_mode = DVZ_SPHERE_MODE_FAST_IMPOSTOR;
+    _sphere_params_sync_mode(visual);
     visual->material_params_dirty = true;
     return visual;
+}
+
+
+/**
+ * Set the sphere impostor rendering mode.
+ *
+ * @param visual the sphere visual
+ * @param mode the rendering mode
+ * @return 0 on success, -1 on error
+ */
+int dvz_sphere_mode(DvzVisual* visual, DvzSphereMode mode)
+{
+    ANN(visual);
+    if (visual->type != DVZ_VISUAL_TYPE_SPHERE)
+    {
+        log_error("dvz_sphere_mode requires a sphere visual");
+        return -1;
+    }
+    if (mode != DVZ_SPHERE_MODE_FAST_IMPOSTOR && mode != DVZ_SPHERE_MODE_RAYCAST_IMPOSTOR)
+    {
+        log_error("invalid sphere rendering mode");
+        return -1;
+    }
+    if (!_scene_visual_mutation_allowed(visual->scene, "update sphere mode"))
+        return -1;
+
+    if (visual->sphere_mode == mode)
+        return 0;
+    visual->sphere_mode = mode;
+    _sphere_params_sync_mode(visual);
+    _visual_bump_version(&visual->material.version);
+    visual->material_params_dirty = true;
+    return 0;
 }
 
 
