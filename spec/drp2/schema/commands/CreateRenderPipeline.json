@@ -79,6 +79,20 @@
       "type": "integer",
       "minimum": 1
     },
+    "multisample": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["sample_count", "alpha_to_coverage_enabled"],
+      "properties": {
+        "sample_count": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "alpha_to_coverage_enabled": {
+          "type": "boolean"
+        }
+      }
+    },
     "depth_stencil": {
       "type": "object",
       "additionalProperties": false,

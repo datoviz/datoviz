@@ -4908,6 +4908,7 @@ int test_scene_visual_pass_capabilities(TstSuite* suite, TstItem* item)
     DvzSceneVisualDesc desc = {
         .kind = DVZ_SCENE_VISUAL_DESC_PRIMITIVE,
         .has_normal = true,
+        .depth_test_enabled = true,
         .material_buffer_id = 42,
     };
     AT(_scene_visual_pass_caps_from_desc(

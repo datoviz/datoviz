@@ -145,6 +145,24 @@ class DRP2CapabilityValidator:
                 f'texture extent {extent} exceeds capability limit {max_dimension} for dimension {dimension}',
             )
 
+    def _handle_CreateRenderPipeline(self, index: int, command: Dict[str, Any]) -> None:
+        supported_sample_counts = self.capabilities.get('supported_sample_counts')
+        if supported_sample_counts is None:
+            return
+
+        multisample = command.get('multisample')
+        sample_count = command.get(
+            'sample_count',
+            multisample.get('sample_count', 1) if isinstance(multisample, dict) else 1,
+        )
+        if sample_count not in supported_sample_counts:
+            raise CapabilityFailure(
+                'DRP2_ERR_UNSUPPORTED_CAPABILITY',
+                index,
+                f'render pipeline sample count {sample_count} is not supported by '
+                'the fixture capability set',
+            )
+
     def _handle_CreateShaderModule(self, index: int, command: Dict[str, Any]) -> None:
         supported_formats = self.capabilities.get('supported_shader_formats')
         if supported_formats is not None and command['format'] not in supported_formats:
