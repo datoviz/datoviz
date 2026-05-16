@@ -1,7 +1,7 @@
 # Scene Techniques And Materials Plan
 
 > **Execution Status**
-> - **Status:** `PICKUP PLAN`
+> - **Status:** `IMPLEMENTED THROUGH SPHERE SSAO`
 > - **Updated on:** `2026-05-16`
 > - **Purpose:** define the next architecture slices for scene effects, materials, and visual pass
 >   capabilities without adding more one-off render paths.
@@ -20,7 +20,33 @@ Completed implementation commits:
 7. `0068f1e2` — added internal scene/panel technique activation state;
 8. `7e50fe26` — added the first panel-local EDL scene technique;
 9. `8981472e` — fixed sampled depth transitions for the EDL/runtime path;
-10. `f90774ba` — added the interactive point-cloud EDL GLFW example.
+10. `f90774ba` — added the interactive point-cloud EDL GLFW example;
+11. `52870408` — enabled depth testing for point visuals;
+12. `bbc729f2` — added depth cueing for point visuals;
+13. `4748026a` — introduced shared scene material parameters;
+14. `23d1baf1` — refactored scene shader variant selection;
+15. `f42e03ae` — factored visual material update helpers;
+16. `f47c8e90` — shared scene material shader helpers;
+17. `5f390337` — extended depth cue metrics and falloff;
+18. `b90a6383` — clarified scene visual pass capabilities;
+19. `1ca7979b` — extracted depth post-process graph planning;
+20. `dcfea8c8` — added the SSAO graph planning foundation;
+21. `ac8769e9` — added SSAO runtime lowering;
+22. `2f132123` — added SSAO runtime smoke coverage;
+23. `e28645d7` — added offscreen SSAO image-difference coverage;
+24. `d2b9a90b` — added the standalone sphere impostor visual;
+25. `f0765368` — used sphere impostors in the SSAO example;
+26. `fb98fc55` — improved sphere material highlights and antialiasing;
+27. `0548bca8` — stabilized sphere edges and SSAO depth;
+28. `64cd5cc5` — added raycast sphere impostor mode;
+29. `3e73bb72` — added the sphere raycast mode toggle to the SSAO example;
+30. `8289e423` — improved scene SSAO sampling and composite;
+31. `db55e05e` — added the SSAO bilateral blur pass;
+32. `9687fa0e` — tuned sphere SSAO example defaults;
+33. `8011973a` — added DRP2 multisample protocol fields;
+34. `8cc9d4fa` — added scene panel MSAA lowering;
+35. `7782d9fc` — used the named MSAA resolve mode in scene graph lowering;
+36. `d1a472ee` — covered point visuals in the EDL depth-producer regression.
 
 The G-buffer foundation now covers internal eligibility, graph declarations, and opt-in runtime
 lowering for primitive/mesh visuals with normals. The current runtime slice emits normal and depth
@@ -29,7 +55,12 @@ now routed through internal scene/panel technique state and remains default-off 
 effect requests it. EDL is the first concrete post-process on this foundation: it is exposed as a
 small panel-local public toggle through `dvz_panel_set_edl()`, emits an opaque scene color/depth
 intermediate plus a fullscreen resolve pass, and has both offscreen app regression coverage and an
-interactive GLFW/GUI example.
+interactive GLFW/GUI example. SSAO is now also exposed as a panel-local technique, uses the same
+G-buffer foundation, supports optional bilateral blur, and has graph, DRP2 runtime, offscreen image
+difference, and sphere-impostor runtime coverage. Sphere is a standalone retained visual family with
+analytic impostor rendering, material lighting, antialiased silhouettes, raycast mode, G-buffer
+output, and a GLFW/GUI SSAO example. MSAA is implemented as a panel-local graph-backed technique
+with DRP2 multisample lowering and explicit resolve metadata.
 
 
 ## Source Architecture Note
@@ -42,17 +73,19 @@ That note is the architectural target. This file is the practical implementation
 
 ## Current Repo Reality
 
-Do not assume a material system already exists. Current scene state is split across:
+Do not assume a public `DvzMaterial` object exists. The current retained material policy is an
+internal compatibility layer split across:
 
 1. `DvzAlphaMode` on visuals;
-2. `DvzPrimitiveShadingDesc` and the internal primitive shading uniform;
-3. `DvzVolumeState`;
-4. scale/colormap bindings;
-5. family-specific shader, pipeline, and bind descriptors in `src/scene/visual_pipeline.c`.
+2. internal `DvzMaterialState` / `DvzSceneMaterialParams` on visuals;
+3. `DvzPrimitiveShadingDesc` as the typed compatibility setter for lit material fields;
+4. `DvzVolumeState`;
+5. scale/colormap bindings;
+6. family-specific shader, pipeline, and bind descriptors in `src/scene/visual_pipeline.c`.
 
 The FramePlan graph is active and should be the shared foundation. Current graph-backed paths
-include opaque depth, WBOIT, depth peeling, and blended volume. Keep new work on the existing
-scene -> FramePlan graph -> DRP2 -> vklite/canvas route.
+include opaque depth, WBOIT, depth peeling, blended volume, G-buffer, EDL, SSAO, SSAO blur, and
+MSAA resolve. Keep new work on the existing scene -> FramePlan graph -> DRP2 -> vklite/canvas route.
 
 
 ## Implementation Slices
@@ -199,25 +232,29 @@ git diff --check
 
 Technique activation is now normalized internally. Implement effects in this order:
 
-1. EDL for point/pixel/particle-heavy panels, using depth only;
-2. object-id selected outlines, using a semantic object/group id buffer;
-3. SSAO/GTAO for primitive/mesh/sphere-impostor-capable visuals;
-4. generic scalar material modulation for curvature/cavity/accessibility/uncertainty channels.
+1. EDL for point/pixel/particle-heavy panels, using depth only — implemented for opaque
+   depth-producing visuals and guarded by visual capability metadata;
+2. SSAO/GTAO for primitive/mesh/sphere-impostor-capable visuals — implemented as graph-backed SSAO
+   with optional bilateral blur;
+3. sphere impostors as the dense-particle/atom visual family — implemented with color, G-buffer, and
+   SSAO coverage;
+4. object-id selected outlines, using a semantic object/group id buffer — still deferred until the
+   selection/semantic-id contract is made explicit;
+5. generic scalar material modulation for curvature/cavity/accessibility/uncertainty channels —
+   still deferred until scalar slots are represented in retained visual/material state.
 
-Current EDL status: the first native GLSL/vklite slice is implemented for opaque point/pixel and
-opaque depth-writing visuals in the simple opaque graph branch. It intentionally remains
-default-off and does not yet compose with WBOIT, depth peeling, or blended volume branches. The next
-useful EDL follow-up is to route point/pixel depth-writing through the same visual capability
-metadata used by mesh/primitive effects, then decide whether EDL should become a generic graph
+Current EDL status: the native GLSL/vklite slice is implemented for opaque point/pixel and opaque
+depth-writing visuals in the simple opaque graph branch, and point/pixel eligibility is now routed
+through the same visual capability metadata as primitive, mesh, path, and sphere effects. It
+intentionally remains default-off and does not yet compose with WBOIT, depth peeling, blended volume,
+or SSAO branches. The next EDL architecture decision is whether it should become a generic graph
 post-process that can run after selected transparent techniques.
 
 Use the existing SSAO implementation plan for the SSAO-specific graph and shader details:
 [SCENE_SSAO_IMPLEMENTATION_PLAN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/SCENE_SSAO_IMPLEMENTATION_PLAN.md).
 
-Sphere impostors should be implemented as a standalone visual family before relying on SSAO demos
-for dense particle/atom scenes. Do not fold sphere into marker: the v0.3 model was a dedicated
-ray-traced sphere sprite with lighting, optional texturing, analytic normals, and shader-written
-depth. The v0.4 pickup plan is recorded in
+Sphere impostors have been implemented as a standalone visual family rather than a marker variant.
+The v0.4 pickup plan and remaining texture/equirectangular follow-ups are recorded in
 [SCENE_SPHERE_VISUAL_PLAN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/SCENE_SPHERE_VISUAL_PLAN.md).
 
 
