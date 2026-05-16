@@ -21,6 +21,30 @@ Typical uses: brain surfaces, terrain, 3D anatomical models, procedural geometry
 isosurfaces, polyhedral shapes.
 
 
+## Surface Plot Contract
+
+A surface plot is a structured-grid mesh convenience, not a separate baseline visual family.
+
+The preferred construction path is:
+
+1. `geom` generates a structured surface-grid `DvzGeometry` payload from row/column counts,
+   heights, optional scalar/color data, origin, and two grid basis vectors;
+2. the scene uploads or updates that payload as a mesh geometry resource;
+3. the `mesh` visual renders it with the usual mesh styling: lighting, material, colormap,
+   texture, edge overlay, transparency, and isolines;
+4. app/UI code may expose surface-specific controls such as height scale, colormap range,
+   contour mode, and camera presets.
+
+The convenience API may expose a user-facing `surface` helper, but internally it should still
+create or update a mesh geometry resource. It should not create a parallel surface renderer or a
+second mesh-like visual contract.
+
+When the input is a regular grid, the scene should keep optional structured-grid provenance
+alongside the mesh resource. This provenance is useful for efficient height-only updates, normal
+recomputation, row/column edge overlays, surface-specific contours, scalar isolines, and future
+level-of-detail. Rendering can still proceed through ordinary indexed triangles.
+
+
 ## Geometry Resource
 
 The `mesh` visual references a scene-owned mesh geometry resource.
