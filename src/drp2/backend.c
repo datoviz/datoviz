@@ -405,6 +405,7 @@ bool _vklite_attach_frame_target(
     object->image_view = frame->image_view;
     object->width = frame->extent.width;
     object->height = frame->extent.height;
+    object->format = (uint32_t)frame->color_format;
     object->sample_count = 1;
     object->borrowed_frame_target = true;
     object->destroyed = false;

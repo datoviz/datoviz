@@ -486,6 +486,8 @@ bool dvz_drp2_runtime_attach_frame_target(
     object->width = frame->extent.width;
     object->height = frame->extent.height;
     object->depth = 1;
+    object->format = (uint32_t)frame->color_format;
+    object->sample_count = 1;
     object->usage = DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT | DVZ_DRP2_TEXTURE_USAGE_COPY_SRC;
     return true;
 }

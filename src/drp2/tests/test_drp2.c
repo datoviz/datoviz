@@ -2370,9 +2370,18 @@ int test_drp2_runtime_frame_target_validation(TstSuite* suite, TstItem* item)
     invalid.image_borrowed = false;
     AT(!dvz_drp2_runtime_attach_frame_target(runtime, 7, &invalid));
 
+    frame.color_format = VK_FORMAT_B8G8R8A8_UNORM;
     AT(dvz_drp2_runtime_attach_frame_target(runtime, 7, &frame));
+    Drp2Object* frame_target = _drp2_find_any_object(runtime->semantic_state, 7);
+    ANN(frame_target);
+    AT(frame_target->format == VK_FORMAT_B8G8R8A8_UNORM);
+    AT(frame_target->sample_count == 1);
     frame = _test_stream_frame(0x200, 8, 4);
     AT(dvz_drp2_runtime_attach_frame_target(runtime, 7, &frame));
+    frame_target = _drp2_find_any_object(runtime->semantic_state, 7);
+    ANN(frame_target);
+    AT(frame_target->format == VK_FORMAT_R8G8B8A8_UNORM);
+    AT(frame_target->sample_count == 1);
 
     DvzDrp2CommandStream* stream = dvz_drp2_stream();
     ANN(stream);
