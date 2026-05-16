@@ -25,6 +25,7 @@
 #include "_alloc.h"
 #include "_assertions.h"
 #include "../_scene.h"
+#include "../_technique.h"
 #include "datoviz/app.h"
 #include "datoviz/canvas.h"
 #include "datoviz/drp2.h"
@@ -57,6 +58,14 @@ typedef struct
     uint32_t calls;
     DvzAppWindow* last_window;
 } AppRequestFrameProbe;
+
+
+typedef struct
+{
+    DvzScene* scene;
+    DvzPanel* panel;
+    DvzVisual* visual;
+} AppSsaoQuad;
 
 
 
@@ -93,6 +102,93 @@ static void _app_request_frame_probe_callback(DvzAppWindow* win, void* user_data
     ANN(probe);
     probe->calls++;
     probe->last_window = win;
+}
+
+
+
+/**
+ * Add one indexed quad mesh to the panel used by SSAO offscreen tests.
+ *
+ * @param scene scene owner
+ * @param panel destination panel
+ * @param xmin minimum X coordinate
+ * @param xmax maximum X coordinate
+ * @param ymin minimum Y coordinate
+ * @param ymax maximum Y coordinate
+ * @param z clip-depth-like scene coordinate
+ * @param color per-vertex color
+ * @return created quad handles
+ */
+static AppSsaoQuad _app_ssao_add_quad(
+    DvzScene* scene, DvzPanel* panel, float xmin, float xmax, float ymin, float ymax, float z,
+    DvzColor color)
+{
+    ANN(scene);
+    ANN(panel);
+
+    AppSsaoQuad out = {.scene = scene, .panel = panel};
+    out.visual = dvz_mesh(scene, 0);
+    if (out.visual == NULL)
+        return out;
+
+    float positions[4][3] = {
+        {xmin, ymin, z},
+        {xmax, ymin, z},
+        {xmin, ymax, z},
+        {xmax, ymax, z},
+    };
+    DvzColor colors[4] = {0};
+    float normals[4][3] = {
+        {0.0f, 0.0f, 1.0f},
+        {0.0f, 0.0f, 1.0f},
+        {0.0f, 0.0f, 1.0f},
+        {0.0f, 0.0f, 1.0f},
+    };
+    for (uint32_t i = 0; i < 4; i++)
+        dvz_memcpy(colors[i], sizeof(DvzColor), color, sizeof(DvzColor));
+
+    DvzIndex indices[6] = {0, 1, 2, 2, 1, 3};
+    DvzSceneBuffer* index_buffer = dvz_scene_buffer(
+        scene, &(DvzSceneBufferDesc){
+                   .usage = DVZ_SCENE_BUFFER_USAGE_INDEX,
+                   .stride = sizeof(DvzIndex),
+               });
+    if (index_buffer == NULL)
+        return out;
+    if (!dvz_scene_buffer_set_data(index_buffer, indices, sizeof(indices)))
+        return out;
+
+    if (dvz_visual_set_data(out.visual, "position", positions, 4) != 0 ||
+        dvz_visual_set_data(out.visual, "color", colors, 4) != 0 ||
+        dvz_visual_set_data(out.visual, "normal", normals, 4) != 0 ||
+        !dvz_visual_set_buffer(out.visual, "index", index_buffer) ||
+        dvz_panel_add_visual(panel, out.visual, NULL) != 0)
+    {
+        out.visual = NULL;
+        return out;
+    }
+    return out;
+}
+
+
+
+/**
+ * Sum the RGB luminance of a captured image.
+ *
+ * @param rgba captured RGBA8 buffer
+ * @param pixel_count number of pixels
+ * @return RGB luminance sum
+ */
+static uint64_t _app_rgb_sum(const uint8_t* rgba, uint32_t pixel_count)
+{
+    ANN(rgba);
+    uint64_t sum = 0;
+    for (uint32_t i = 0; i < pixel_count; i++)
+    {
+        const uint8_t* px = &rgba[4 * i];
+        sum += (uint64_t)px[0] + (uint64_t)px[1] + (uint64_t)px[2];
+    }
+    return sum;
 }
 
 
@@ -862,6 +958,96 @@ int test_app_offscreen_points_edl_renders(TstSuite* suite, TstItem* item)
     AT(lit_count > 0);
 
     dvz_free(rgba);
+    dvz_app_destroy(app);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+/**
+ * Ensure SSAO visibly darkens an offscreen mesh scene versus the same scene without SSAO.
+ *
+ * @param suite the test suite
+ * @param item the test item
+ * @return 0 on success
+ */
+int test_app_offscreen_mesh_ssao_changes_pixels(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    if (!_scene_vklite_runtime_available())
+        return 0;
+
+    DvzScene* scene = dvz_scene();
+    AT(scene != NULL);
+    DvzFigure* figure = dvz_figure(scene, 96, 96, 0);
+    AT(figure != NULL);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    AT(panel != NULL);
+
+    DvzColor back_color = {188, 196, 205, 255};
+    DvzColor front_color = {224, 150, 92, 255};
+    AppSsaoQuad back =
+        _app_ssao_add_quad(scene, panel, -0.82f, +0.82f, -0.72f, +0.72f, 0.65f, back_color);
+    AppSsaoQuad front =
+        _app_ssao_add_quad(scene, panel, -0.22f, +0.52f, -0.28f, +0.46f, 0.25f, front_color);
+    AT(back.visual != NULL);
+    AT(front.visual != NULL);
+    dvz_panel_set_background_color(panel, 0.03f, 0.035f, 0.045f, 1.0f);
+
+    DvzApp* app = dvz_app(scene);
+    if (app == NULL)
+    {
+        log_warn("test_app_offscreen_mesh_ssao_changes_pixels skipped: GPU context creation failed");
+        dvz_scene_destroy(scene);
+        return 0;
+    }
+    DvzAppWindow* win = dvz_app_window(app, figure, 96, 96);
+    ANN(win);
+    DvzCanvas* canvas = dvz_app_window_canvas(win);
+    ANN(canvas);
+
+    dvz_app_run(app, 1);
+    uint32_t width0 = 0, height0 = 0;
+    uint8_t* rgba0 = NULL;
+    AT(dvz_canvas_capture_rgba(canvas, &width0, &height0, &rgba0) == 0);
+    ANN(rgba0);
+    AT(width0 == 96);
+    AT(height0 == 96);
+
+    AT(_scene_technique_state_set_ssao(
+        &panel->techniques,
+        &(DvzSceneSsaoDesc){.radius = 3.0f, .strength = 8.0f, .bias = 0.0f,
+                            .sample_count = 16}));
+    dvz_app_run(app, 1);
+    uint32_t width1 = 0, height1 = 0;
+    uint8_t* rgba1 = NULL;
+    AT(dvz_canvas_capture_rgba(canvas, &width1, &height1, &rgba1) == 0);
+    ANN(rgba1);
+    AT(width1 == width0);
+    AT(height1 == height0);
+
+    uint32_t darkened_count = 0;
+    uint32_t changed_count = 0;
+    const uint32_t pixel_count = width0 * height0;
+    for (uint32_t i = 0; i < pixel_count; i++)
+    {
+        const uint8_t* a = &rgba0[4 * i];
+        const uint8_t* b = &rgba1[4 * i];
+        int lum0 = (int)a[0] + (int)a[1] + (int)a[2];
+        int lum1 = (int)b[0] + (int)b[1] + (int)b[2];
+        if (lum0 != lum1)
+            changed_count++;
+        if (lum0 > 80 && lum1 + 24 < lum0)
+            darkened_count++;
+    }
+    AT(changed_count > 0);
+    AT(darkened_count > 8);
+    AT(_app_rgb_sum(rgba1, pixel_count) < _app_rgb_sum(rgba0, pixel_count));
+
+    dvz_free(rgba1);
+    dvz_free(rgba0);
     dvz_app_destroy(app);
     dvz_scene_destroy(scene);
     return 0;
@@ -2969,6 +3155,7 @@ int test_scene_app(TstSuite* suite)
     TEST_SIMPLE(test_app_offscreen_point_depth_cue_darkens_far);
     TEST_SIMPLE(test_app_offscreen_has_nonblank_pixels);
     TEST_SIMPLE(test_app_offscreen_points_edl_renders);
+    TEST_SIMPLE(test_app_offscreen_mesh_ssao_changes_pixels);
     TEST_SIMPLE(test_app_offscreen_records_dvzr_frames);
     TEST_SIMPLE(test_app_offscreen_image_has_nonblank_pixels);
     TEST_SIMPLE(test_app_offscreen_image_field_partial_update_changes_region);
