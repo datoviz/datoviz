@@ -831,7 +831,8 @@ static uint32_t _graph_resource_sample_count(const DvzFrameGraphResource* resour
  */
 static bool _graph_resource_sample_count_valid(uint32_t sample_count)
 {
-    return sample_count == 1 || sample_count == 2 || sample_count == 4 || sample_count == 8;
+    return sample_count == 1 || sample_count == 2 || sample_count == 4 || sample_count == 8 ||
+           sample_count == 16;
 }
 
 

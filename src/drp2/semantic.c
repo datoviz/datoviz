@@ -161,7 +161,8 @@ static uint32_t _effective_sample_count(uint32_t sample_count)
  */
 static bool _sample_count_valid(uint32_t sample_count)
 {
-    return sample_count == 1 || sample_count == 2 || sample_count == 4 || sample_count == 8;
+    return sample_count == 1 || sample_count == 2 || sample_count == 4 || sample_count == 8 ||
+           sample_count == 16;
 }
 
 

@@ -115,6 +115,8 @@ VkSampleCountFlagBits _vklite_sample_count(uint32_t sample_count)
         return VK_SAMPLE_COUNT_4_BIT;
     case 8:
         return VK_SAMPLE_COUNT_8_BIT;
+    case 16:
+        return VK_SAMPLE_COUNT_16_BIT;
     case 1:
     case 0:
     default:

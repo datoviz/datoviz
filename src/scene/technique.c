@@ -104,7 +104,8 @@ _scene_frame_graph_resource_once(DvzFramePlan* plan, const DvzFrameGraphResource
  */
 static bool _scene_msaa_sample_count_valid(uint32_t sample_count)
 {
-    return sample_count == 1 || sample_count == 2 || sample_count == 4 || sample_count == 8;
+    return sample_count == 1 || sample_count == 2 || sample_count == 4 || sample_count == 8 ||
+           sample_count == 16;
 }
 
 

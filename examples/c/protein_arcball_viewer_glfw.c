@@ -832,16 +832,18 @@ static void _apply_msaa(ProteinExampleState* state)
     }
     if (state->msaa_samples < 2.0f)
         state->msaa_samples = 2.0f;
-    if (state->msaa_samples > 8.0f)
-        state->msaa_samples = 8.0f;
+    if (state->msaa_samples > 16.0f)
+        state->msaa_samples = 16.0f;
 
     uint32_t sample_count = (uint32_t)(state->msaa_samples + 0.5f);
     if (sample_count <= 2)
         sample_count = 2;
     else if (sample_count <= 4)
         sample_count = 4;
-    else
+    else if (sample_count <= 8)
         sample_count = 8;
+    else
+        sample_count = 16;
     state->msaa_samples = (float)sample_count;
 
     DvzMsaaDesc desc = dvz_msaa_desc();
@@ -959,7 +961,7 @@ static void _protein_gui(DvzGui* gui, DvzAppWindow* win, void* user_data)
         bool msaa_changed = false;
         msaa_changed |= dvz_gui_checkbox(gui, "Enable MSAA", &state->msaa_enabled);
         msaa_changed |=
-            dvz_gui_slider_float(gui, "MSAA samples", &state->msaa_samples, 2.0f, 8.0f);
+            dvz_gui_slider_float(gui, "MSAA samples", &state->msaa_samples, 2.0f, 16.0f);
         msaa_changed |=
             dvz_gui_checkbox(gui, "Alpha-to-coverage", &state->msaa_alpha_to_coverage);
         if (msaa_changed)
@@ -1222,7 +1224,7 @@ int main(int argc, char** argv)
         .ssao_power = 2.153f,
         .ssao_min_visibility = 0.450f,
         .ssao_samples = 32.0f,
-        .msaa_samples = 8.0f,
+        .msaa_samples = 16.0f,
         .ambient = 0.20f,
         .diffuse = 0.76f,
         .specular = 0.572f,
