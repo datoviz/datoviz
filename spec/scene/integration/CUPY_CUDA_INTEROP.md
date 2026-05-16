@@ -1,5 +1,9 @@
 # CuPy/CUDA Interop Design
 
+See also [../proposals/PARTICLE_SYSTEM_DESIGN.md](../proposals/PARTICLE_SYSTEM_DESIGN.md) for the
+particle-system use case where CuPy writes a Datoviz/Vulkan-owned state buffer consumed directly by
+particle render views and optional trails.
+
 This document records the recommended design direction for zero-copy Python/CuPy integration with
 Datoviz.
 

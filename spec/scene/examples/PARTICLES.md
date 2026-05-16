@@ -1,5 +1,9 @@
 # GPU Particle System Compute Example
 
+See also [../proposals/PARTICLE_SYSTEM_DESIGN.md](../proposals/PARTICLE_SYSTEM_DESIGN.md) for the
+scene-level particle-system design that separates GPU-updated simulation state, render views,
+CUDA/CuPy producers, and optional track/trail consumers.
+
 ## Purpose
 
 This example demonstrates how a Datoviz v0.4 scene can run a dynamic particle simulation in a GPU compute shader and render the same particle buffer directly, without any GPU-to-CPU readback or CPU-mediated updates after initialization.

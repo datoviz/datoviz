@@ -184,6 +184,11 @@ Tubes and 3D arrows should wait until the 2D stroke path is stable enough to sha
 style vocabulary, but they should not reuse the 2D screen-space stroke shaders. They need different
 geometry, depth, lighting, clipping, picking, and performance policy.
 
+Particle systems are related but distinct. A particle system owns dynamic GPU-updated state such as
+position, velocity, age, and size; track, streamline, and tube visuals are optional consumers of
+particle history or selected trajectories. The scene-level design lives in
+`spec/scene/proposals/PARTICLE_SYSTEM_DESIGN.md`.
+
 For tractography, the practical rendering ladder should be:
 
 1. **Ribbon/strip mode:** fastest path for many streamlines; supports depth cueing, clipping, alpha,

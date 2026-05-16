@@ -36,10 +36,11 @@ Use this map when turning proposals into implementation-ready spec changes.
    `../semantics/LEGENDS_AND_COLORBARS.md`, `../semantics/AXES.md`, `../semantics/TEXT.md`,
    and `../api/API_SURFACE.md`.
 3. `MESH_API_DESIGN.md`, `MESH_SHADING_DESIGN.md`, `MATERIAL_LIGHTING_API.md`,
-   `TRANSPARENCY_WBOIT_DESIGN.md`, `VOLUME_DESIGN.md`, and
+   `PARTICLE_SYSTEM_DESIGN.md`, `TRANSPARENCY_WBOIT_DESIGN.md`, `VOLUME_DESIGN.md`, and
    `RAY_TRACING_FORWARD_COMPAT.md` promote into `../visuals/MESH.md`,
    `../visuals/VOLUME.md`, `../semantics/LIGHTING.md`, `../semantics/TRANSPARENCY.md`,
-   `../semantics/VISUAL_CONTRACT.md`, and `../core/RUNTIME_BOUNDARY.md`.
+   `../semantics/VISUAL_CONTRACT.md`, `../pipeline/FRAME_PLAN.md`, and
+   `../core/RUNTIME_BOUNDARY.md`.
 4. `RESOURCE_UPDATE_DESIGN.md`, `SCIENTIFIC_COORDINATE_NORMALIZATION.md`,
    `ASSET_BOUNDARY_DESIGN.md`, `CAPABILITY_FALLBACK_DESIGN.md`,
    `SAMPLED_FIELD_API_DESIGN.md`,
@@ -77,9 +78,10 @@ Visual families, material, lighting, and render modes:
 1. [MESH_API_DESIGN.md](MESH_API_DESIGN.md)
 2. [MESH_SHADING_DESIGN.md](MESH_SHADING_DESIGN.md)
 3. [MATERIAL_LIGHTING_API.md](MATERIAL_LIGHTING_API.md)
-4. [TRANSPARENCY_WBOIT_DESIGN.md](TRANSPARENCY_WBOIT_DESIGN.md)
-5. [VOLUME_DESIGN.md](VOLUME_DESIGN.md)
-6. [RAY_TRACING_FORWARD_COMPAT.md](RAY_TRACING_FORWARD_COMPAT.md)
+4. [PARTICLE_SYSTEM_DESIGN.md](PARTICLE_SYSTEM_DESIGN.md)
+5. [TRANSPARENCY_WBOIT_DESIGN.md](TRANSPARENCY_WBOIT_DESIGN.md)
+6. [VOLUME_DESIGN.md](VOLUME_DESIGN.md)
+7. [RAY_TRACING_FORWARD_COMPAT.md](RAY_TRACING_FORWARD_COMPAT.md)
 
 Resources, transforms, geometry, validation, and integration:
 
