@@ -1,0 +1,335 @@
+/*
+ * Copyright (c) 2021 Cyrille Rossant and contributors. All rights reserved.
+ * Licensed under the MIT license. See LICENSE file in the project root for details.
+ * SPDX-License-Identifier: MIT
+ */
+
+/* hello_points_edl_glfw - interactive point-cloud EDL example.
+ *
+ * Build:  just example-c hello_points_edl_glfw
+ * Run:    ./build/examples/c/hello_points_edl_glfw
+ */
+
+#include <math.h>
+#include <stdbool.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+
+#include "_alloc.h"
+#include "_assertions.h"
+#include "_compat.h"
+#include "datoviz/app.h"
+#include "datoviz/gui.h"
+#include "datoviz/scene.h"
+
+
+
+/*************************************************************************************************/
+/*  Constants                                                                                    */
+/*************************************************************************************************/
+
+#define POINT_COUNT 9216u
+#define WIDTH       1000u
+#define HEIGHT      760u
+
+static const float TAU = 6.28318530718f;
+
+
+
+/*************************************************************************************************/
+/*  Structs                                                                                      */
+/*************************************************************************************************/
+
+typedef struct EdlExampleState
+{
+    DvzPanel* panel;
+    bool edl_enabled;
+    float radius;
+    float strength;
+    float depth_scale;
+} EdlExampleState;
+
+
+
+/*************************************************************************************************/
+/*  Helpers                                                                                      */
+/*************************************************************************************************/
+
+/**
+ * Parse an optional bounded frame count from the command line.
+ *
+ * @param argc command-line argument count
+ * @param argv command-line argument vector
+ * @return requested frame count, or 0 for the interactive loop
+ */
+static uint32_t _frame_count(int argc, char** argv)
+{
+    if (argc < 2 || argv == NULL)
+        return 0;
+    char* end = NULL;
+    unsigned long value = strtoul(argv[1], &end, 10);
+    if (end == argv[1] || (end != NULL && *end != '\0'))
+        return 0;
+    if (value > UINT32_MAX)
+        return UINT32_MAX;
+    return (uint32_t)value;
+}
+
+
+
+/**
+ * Fill a deterministic 3D point shell with depth-rich local structure.
+ *
+ * @param positions point positions
+ * @param colors point colors
+ * @param sizes point sizes
+ * @param count number of points to fill
+ */
+static void _build_points(
+    float (*positions)[3], DvzColor* colors, float* sizes, uint32_t count)
+{
+    ANN(positions);
+    ANN(colors);
+    ANN(sizes);
+
+    const uint32_t rings = 96;
+    const uint32_t per_ring = 96;
+    for (uint32_t i = 0; i < count; i++)
+    {
+        uint32_t ring = i / per_ring;
+        uint32_t col = i % per_ring;
+        float u = (float)ring / (float)(rings - 1);
+        float v = -1.0f + 2.0f * u;
+        float theta = TAU * (float)col / (float)per_ring + 0.055f * (float)ring;
+        float equator = sqrtf(fmaxf(0.0f, 1.0f - v * v));
+        float wave = 0.55f + 0.18f * sinf(5.0f * theta + 7.0f * v) +
+                     0.12f * cosf(9.0f * theta - 3.0f * v);
+
+        positions[i][0] = wave * equator * cosf(theta);
+        positions[i][1] = 0.72f * v;
+        positions[i][2] = wave * equator * sinf(theta);
+
+        float hue = 0.5f + 0.5f * sinf(theta + 1.8f * v);
+        colors[i][0] = (uint8_t)(45.0f + 160.0f * hue);
+        colors[i][1] = (uint8_t)(85.0f + 130.0f * (1.0f - u));
+        colors[i][2] = (uint8_t)(150.0f + 80.0f * u);
+        colors[i][3] = 255;
+        sizes[i] = 5.5f;
+    }
+}
+
+
+
+/**
+ * Apply the retained EDL state to the panel.
+ *
+ * @param state example state
+ */
+static void _apply_edl(EdlExampleState* state)
+{
+    ANN(state);
+    ANN(state->panel);
+
+    if (!state->edl_enabled)
+    {
+        (void)dvz_panel_set_edl(state->panel, NULL);
+        return;
+    }
+
+    DvzEdlDesc desc = {
+        .radius = state->radius,
+        .strength = state->strength,
+        .depth_scale = state->depth_scale,
+    };
+    if (!dvz_panel_set_edl(state->panel, &desc))
+        dvz_fprintf(stderr, "dvz_panel_set_edl() failed\n");
+}
+
+
+
+/**
+ * Reset the example EDL controls to useful point-cloud defaults.
+ *
+ * @param state example state
+ */
+static void _reset_edl(EdlExampleState* state)
+{
+    ANN(state);
+    state->edl_enabled = true;
+    state->radius = 2.0f;
+    state->strength = 70.0f;
+    state->depth_scale = 1.0f;
+    _apply_edl(state);
+}
+
+
+
+/**
+ * Build the live EDL controls.
+ *
+ * @param gui GUI overlay
+ * @param win app window
+ * @param user_data example state
+ */
+static void _edl_gui(DvzGui* gui, DvzAppWindow* win, void* user_data)
+{
+    (void)win;
+    EdlExampleState* state = (EdlExampleState*)user_data;
+    if (state == NULL)
+        return;
+
+    bool changed = false;
+    if (dvz_gui_begin(gui, "Eye-Dome Lighting", NULL, 0))
+    {
+        changed |= dvz_gui_checkbox(gui, "Enable EDL", &state->edl_enabled);
+        changed |= dvz_gui_slider_float(gui, "Radius", &state->radius, 1.0f, 8.0f);
+        changed |= dvz_gui_slider_float(gui, "Strength", &state->strength, 0.0f, 160.0f);
+        changed |= dvz_gui_slider_float(gui, "Depth scale", &state->depth_scale, 0.1f, 8.0f);
+        if (dvz_gui_button(gui, "Reset"))
+        {
+            _reset_edl(state);
+            changed = false;
+        }
+    }
+    dvz_gui_end(gui);
+
+    if (changed)
+        _apply_edl(state);
+}
+
+
+
+/*************************************************************************************************/
+/*  Functions                                                                                    */
+/*************************************************************************************************/
+
+int main(int argc, char** argv)
+{
+    DvzScene* scene = dvz_scene();
+    if (scene == NULL)
+    {
+        dvz_fprintf(stderr, "dvz_scene() failed\n");
+        return 1;
+    }
+
+    DvzFigure* figure = dvz_figure(scene, WIDTH, HEIGHT, 0);
+    if (figure == NULL)
+    {
+        dvz_fprintf(stderr, "dvz_figure() failed\n");
+        dvz_scene_destroy(scene);
+        return 1;
+    }
+
+    DvzPanel* panel =
+        dvz_panel(figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+    if (panel == NULL)
+    {
+        dvz_fprintf(stderr, "dvz_panel() failed\n");
+        dvz_scene_destroy(scene);
+        return 1;
+    }
+
+    DvzCameraDesc camera_desc = dvz_camera_desc();
+    camera_desc.eye[2] = 3.0f;
+    camera_desc.near = 0.1f;
+    camera_desc.far = 100.0f;
+    if (!dvz_panel_set_camera(panel, &camera_desc))
+    {
+        dvz_fprintf(stderr, "dvz_panel_set_camera() failed\n");
+        dvz_scene_destroy(scene);
+        return 1;
+    }
+
+    DvzVisual* visual = dvz_point(scene, 0);
+    if (visual == NULL)
+    {
+        dvz_fprintf(stderr, "dvz_point() failed\n");
+        dvz_scene_destroy(scene);
+        return 1;
+    }
+
+    float(*positions)[3] = (float(*)[3])dvz_calloc(POINT_COUNT, sizeof(*positions));
+    DvzColor* colors = (DvzColor*)dvz_calloc(POINT_COUNT, sizeof(DvzColor));
+    float* sizes = (float*)dvz_calloc(POINT_COUNT, sizeof(float));
+    if (positions == NULL || colors == NULL || sizes == NULL)
+    {
+        dvz_fprintf(stderr, "point allocation failed\n");
+        dvz_free(sizes);
+        dvz_free(colors);
+        dvz_free(positions);
+        dvz_scene_destroy(scene);
+        return 1;
+    }
+    _build_points(positions, colors, sizes, POINT_COUNT);
+
+    if (dvz_visual_set_data(visual, "position", positions, POINT_COUNT) != 0 ||
+        dvz_visual_set_data(visual, "color", colors, POINT_COUNT) != 0 ||
+        dvz_visual_set_data(visual, "size", sizes, POINT_COUNT) != 0 ||
+        dvz_panel_add_visual(panel, visual, NULL) != 0)
+    {
+        dvz_fprintf(stderr, "point visual setup failed\n");
+        dvz_free(sizes);
+        dvz_free(colors);
+        dvz_free(positions);
+        dvz_scene_destroy(scene);
+        return 1;
+    }
+    dvz_panel_set_background_color(panel, 0.035f, 0.045f, 0.055f, 1.0f);
+
+    EdlExampleState gui_state = {
+        .panel = panel,
+    };
+    _reset_edl(&gui_state);
+
+    DvzApp* app = dvz_app(scene);
+    if (app == NULL)
+    {
+        dvz_fprintf(stderr, "dvz_app() failed (no GPU or display?)\n");
+        dvz_free(sizes);
+        dvz_free(colors);
+        dvz_free(positions);
+        dvz_scene_destroy(scene);
+        return 1;
+    }
+
+    DvzAppWindow* win = dvz_app_window_glfw(app, figure, WIDTH, HEIGHT, "hello_points_edl_glfw");
+    if (win == NULL)
+    {
+        dvz_fprintf(stderr, "dvz_app_window_glfw() failed (GLFW unavailable?)\n");
+        dvz_app_destroy(app);
+        dvz_free(sizes);
+        dvz_free(colors);
+        dvz_free(positions);
+        dvz_scene_destroy(scene);
+        return 1;
+    }
+
+    dvz_panel_set_arcball(panel, dvz_app_window_input(win), 0);
+    DvzArcball* arcball = dvz_panel_arcball(panel);
+    if (arcball != NULL)
+        dvz_arcball_set(arcball, (vec3){+0.45f, -0.12f, +0.25f});
+
+    DvzGuiConfig gui_config = dvz_gui_config();
+    DvzGui* gui = dvz_app_window_gui(win, &gui_config);
+    if (gui == NULL)
+    {
+        dvz_fprintf(stderr, "dvz_app_window_gui() failed\n");
+        dvz_app_destroy(app);
+        dvz_free(sizes);
+        dvz_free(colors);
+        dvz_free(positions);
+        dvz_scene_destroy(scene);
+        return 1;
+    }
+    dvz_app_window_set_gui_callback(win, _edl_gui, &gui_state);
+
+    dvz_app_run(app, _frame_count(argc, argv));
+
+    dvz_app_destroy(app);
+    dvz_free(sizes);
+    dvz_free(colors);
+    dvz_free(positions);
+    dvz_scene_destroy(scene);
+    return 0;
+}
