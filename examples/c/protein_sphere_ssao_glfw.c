@@ -44,6 +44,8 @@
 
 #define DEFAULT_PDB_ID "1ubq"
 
+#define ROTATION_SPEED_RAD_PER_SEC 0.22f
+
 
 
 /*************************************************************************************************/
@@ -65,11 +67,13 @@ typedef struct ProteinExampleState
     DvzPanel* panel;
     DvzVisual* spheres;
     DvzArcball* arcball;
+    DvzAnimation* spin;
     const ProteinBundle* bundle;
     float* live_radii;
     bool ssao_enabled;
     bool msaa_enabled;
     bool msaa_alpha_to_coverage;
+    bool spin_enabled;
     float atom_scale;
     float ssao_radius;
     float ssao_strength;
@@ -403,6 +407,24 @@ static void _apply_msaa(ProteinExampleState* state)
 
 
 /**
+ * Update the arcball spin animation from live controls.
+ *
+ * @param state example state
+ */
+static void _apply_spin(ProteinExampleState* state)
+{
+    ANN(state);
+    if (state->spin == NULL)
+        return;
+    if (state->spin_enabled)
+        dvz_anim_start(state->spin, 0.0);
+    else
+        dvz_anim_stop(state->spin);
+}
+
+
+
+/**
  * Build the live protein controls.
  *
  * @param gui GUI overlay
@@ -419,6 +441,11 @@ static void _protein_gui(DvzGui* gui, DvzAppWindow* win, void* user_data)
     if (dvz_gui_begin(gui, "Protein", NULL, 0))
     {
         dvz_gui_text(gui, state->bundle->path);
+
+        bool spin_changed = false;
+        spin_changed |= dvz_gui_checkbox(gui, "Auto rotate", &state->spin_enabled);
+        if (spin_changed)
+            _apply_spin(state);
 
         bool atom_changed = false;
         atom_changed |= dvz_gui_slider_float(gui, "Atom scale", &state->atom_scale, 0.15f, 2.5f);
@@ -607,16 +634,33 @@ int main(int argc, char** argv)
         return 1;
     }
     dvz_arcball_initial(arcball, (vec3){+0.70f, 0.0f, +0.30f});
+    dvz_scene_set_clock_mode(scene, DVZ_CLOCK_REALTIME);
+    dvz_scene_set_fps(scene, 60.0);
+
+    DvzAnimation* spin = dvz_anim_arcball_spin(
+        scene, arcball, (vec3){0.0f, 1.0f, 0.0f}, ROTATION_SPEED_RAD_PER_SEC,
+        DVZ_ARCBALL_SPIN_FLAGS_PAUSE_ON_INTERACTION);
+    if (spin == NULL)
+    {
+        dvz_fprintf(stderr, "dvz_anim_arcball_spin() failed\n");
+        dvz_app_destroy(app);
+        dvz_scene_destroy(scene);
+        dvz_free(scaled_radii);
+        _protein_bundle_destroy(&bundle);
+        return 1;
+    }
 
     ProteinExampleState state = {
         .panel = panel,
         .spheres = spheres,
         .arcball = arcball,
+        .spin = spin,
         .bundle = &bundle,
         .live_radii = scaled_radii,
         .ssao_enabled = true,
         .msaa_enabled = true,
         .msaa_alpha_to_coverage = true,
+        .spin_enabled = false,
         .atom_scale = atom_scale,
         .ssao_radius = 0.496f,
         .ssao_strength = 1.458f,
