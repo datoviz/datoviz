@@ -36,6 +36,7 @@ Their role is narrower:
 13. `API_SCALE_COLORBAR_ANNOTATION.md`
 14. `API_SAMPLED_FIELD.md`
 15. `IMAGE_EMBEDDING_LOD.md`
+16. `CRYSTAL_PHONON_EXPLORER.md`
 
 
 ## Common Structure
