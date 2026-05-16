@@ -25,6 +25,75 @@ Their output vertex data enters the normal resource upload path and is downcast 
 `UploadNode` time by the standard CPU precision policy (see `pipeline/TRANSFORM_PIPELINE.md`).
 
 
+## Procedural Render Geometry
+
+Some geometry utilities are not triangulation algorithms; they are deterministic generators for
+small renderable mesh assets. These utilities still belong in the geometry layer because their
+output is ordinary indexed geometry consumed by scene visuals.
+
+The geometry layer should include:
+
+1. primitive solids such as cubes, spheres, cylinders, cones, torus meshes, and arrows;
+2. classic polyhedra when useful for examples or markers;
+3. 3D gizmo-axis geometry;
+4. structured surface grids.
+
+These generators must not become a second scene graph. They produce CPU-side geometry payloads,
+which are then uploaded through the same resource path as imported or user-provided meshes.
+
+
+### Gizmo Axis Geometry
+
+The v0.3 orientation gizmo was built from three colored arrows merged into one shape. That remains
+the recommended geometry baseline for v0.4, but the generator should live in `geom` rather than in
+a Python-only shape collection abstraction.
+
+Recommended generator:
+
+```text
+dvz_geom_gizmo_axes(&desc, &out_geometry)
+```
+
+The descriptor should control:
+
+1. axis length;
+2. shaft radius;
+3. head length;
+4. head radius;
+5. tessellation count;
+6. per-axis colors.
+
+The generated geometry is ordinary mesh geometry. Scene-level orientation-gizmo behavior, such as
+pinning it to a corner viewport and synchronizing it with an arcball or camera rotation, belongs in
+the scene/app layer rather than in the geometry generator.
+
+
+### Structured Surface Grid Geometry
+
+A surface-grid generator converts a dense rectangular height field into indexed mesh geometry.
+
+Recommended generator:
+
+```text
+dvz_geom_surface_grid(&desc, &out_geometry)
+```
+
+The descriptor should include:
+
+1. row and column counts;
+2. height array;
+3. optional scalar or color array;
+4. origin;
+5. two basis vectors defining the grid plane;
+6. height scale or height direction;
+7. normal policy;
+8. optional structured-grid metadata output.
+
+The generator should preserve enough structured provenance for downstream systems to support
+height-only updates, normal recomputation, grid edge overlays, contours, isolines, and future LOD.
+The renderable output is still a standard mesh geometry payload.
+
+
 ## Bundled Dependencies
 
 | Utility area | Library | Notes |

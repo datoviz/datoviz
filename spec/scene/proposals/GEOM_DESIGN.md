@@ -145,6 +145,7 @@ Immediate useful families:
 6. cone
 7. torus
 8. arrow
+9. gizmo axes
 
 Classic solids worth keeping in scope:
 
@@ -161,7 +162,48 @@ Pragmatic note:
 1. a colored cube with duplicated face vertices is immediately useful for the first live mesh
    example,
 2. flat-shaded and smooth-shaded generation should both be supported explicitly,
-3. indexed and expanded/non-indexed output modes should be deliberate choices, not accidents.
+3. indexed and expanded/non-indexed output modes should be deliberate choices, not accidents,
+4. gizmo axes should reuse arrow generation and merge helpers instead of carrying a bespoke
+   visual-family implementation.
+
+
+## Gizmo Geometry
+
+The v0.3 gizmo was a useful and well-scoped geometry construction: three colored arrows built from
+the existing arrow generator and merged into one mesh. v0.4 should keep that idea, but place it in
+`geom`.
+
+Recommended split:
+
+1. `geom` provides arrow and gizmo-axis geometry generators,
+2. scene/app code decides whether the generated geometry is used as an orientation gizmo,
+   transform gizmo, annotation, or ordinary mesh,
+3. pickable transform-gizmo behavior is implemented as controller or annotation behavior, not as
+   special geometry-generator behavior.
+
+The non-interactive orientation-gizmo path should be brought back first. The interactive transform
+gizmo should wait for stable object transform, picking identity, and selection APIs.
+
+
+## Surface Grid Geometry
+
+Surface plots should be revived as structured-grid geometry generation rather than as a special
+case inside a mesh visual or Python shape collection.
+
+The surface-grid generator should accept:
+
+1. row and column counts,
+2. height data,
+3. optional scalar/color data,
+4. origin,
+5. two grid basis vectors,
+6. height scale or height direction,
+7. normal-generation policy,
+8. optional output metadata preserving structured-grid identity.
+
+The output is ordinary `DvzGeometry`, but preserving structured provenance is important. It enables
+height-only updates, normal recomputation, grid wire overlays, contours, isolines, and future LOD
+without treating the surface as anonymous triangles too early.
 
 
 ## Mesh Operations
@@ -314,6 +356,7 @@ Procedural generators:
 11. `dvz_geom_octahedron(...)`
 12. `dvz_geom_dodecahedron(...)`
 13. `dvz_geom_icosahedron(...)`
+14. `dvz_geom_gizmo_axes(...)`
 
 Planar triangulation:
 
