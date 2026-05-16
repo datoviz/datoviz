@@ -70,6 +70,7 @@ struct DvzDrp2Command
             uint32_t depth;  /* 1 for 2D, >1 for 3D */
             uint32_t format; /* VkFormat, 0 means the default RGBA8 format */
             uint32_t usage;
+            uint32_t sample_count;
         } create_texture;
         struct
         {
@@ -105,6 +106,8 @@ struct DvzDrp2Command
             bool has_raster_state;
             uint32_t cull_mode;             /* VkCullModeFlags */
             uint32_t front_face;            /* VkFrontFace */
+            uint32_t sample_count;
+            bool alpha_to_coverage_enabled;
             uint32_t color_target_count;
             DvzDrp2ColorTarget color_targets[DVZ_DRP2_MAX_COLOR_ATTACHMENTS];
             /* Vertex input layout (binding_count==0 → no vertex attributes). */

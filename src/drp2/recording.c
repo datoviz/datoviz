@@ -753,6 +753,7 @@ static bool _recording_write_create_render_pipeline(
             "\"depth_write_enabled\":%u,\"depth_compare_op\":%" PRIu32
             ",\"has_raster_state\":%u,\"cull_mode\":%" PRIu32
             ",\"front_face\":%" PRIu32 ",\"color_target_count\":%" PRIu32
+            ",\"sample_count\":%" PRIu32 ",\"alpha_to_coverage_enabled\":%u"
             ",\"topology\":%" PRIu32
             ",\"binding_count\":%" PRIu32 ",\"attr_count\":%" PRIu32,
             index, (int)command->type, command->u.create_render_pipeline.id,
@@ -767,6 +768,10 @@ static bool _recording_write_create_render_pipeline(
             command->u.create_render_pipeline.cull_mode,
             command->u.create_render_pipeline.front_face,
             command->u.create_render_pipeline.color_target_count,
+            command->u.create_render_pipeline.sample_count != 0 ?
+                command->u.create_render_pipeline.sample_count :
+                1,
+            command->u.create_render_pipeline.alpha_to_coverage_enabled ? 1u : 0u,
             command->u.create_render_pipeline.topology,
             command->u.create_render_pipeline.binding_count,
             command->u.create_render_pipeline.attr_count) <= 0)
@@ -1006,11 +1011,14 @@ static bool _recording_write_begin_render_pass(
         if (dvz_fprintf(
                 stream_fp,
                 ",\"ca%" PRIu32 "_texture_id\":%" PRIu64 ",\"ca%" PRIu32 "_clear\":%u,"
+                "\"ca%" PRIu32 "_resolve_texture_id\":%" PRIu64
+                ",\"ca%" PRIu32 "_resolve_mode\":%" PRIu32 ","
                 "\"ca%" PRIu32 "_load_op\":%" PRIu32 ",\"ca%" PRIu32 "_store_op\":%" PRIu32 ","
                 "\"ca%" PRIu32 "_access\":%" PRIu32 ","
                 "\"ca%" PRIu32 "_clear_color0\":%.9g,\"ca%" PRIu32 "_clear_color1\":%.9g,"
                 "\"ca%" PRIu32 "_clear_color2\":%.9g,\"ca%" PRIu32 "_clear_color3\":%.9g",
-                i, a->texture_id, i, a->clear ? 1u : 0u, i, (uint32_t)a->load_op, i,
+                i, a->texture_id, i, a->clear ? 1u : 0u, i, a->resolve_texture_id, i,
+                a->resolve_mode, i, (uint32_t)a->load_op, i,
                 (uint32_t)a->store_op, i, (uint32_t)a->access, i, (double)a->clear_color[0], i,
                 (double)a->clear_color[1], i, (double)a->clear_color[2], i,
                 (double)a->clear_color[3]) <= 0)
@@ -1081,11 +1089,14 @@ static bool _recording_write_portable_command(
                    "{\"type\":\"command\",\"index\":%" PRIu32 ",\"cmd_type\":%d,"
                    "\"op\":\"CreateTexture\",\"id\":%" PRIu64 ",\"width\":%" PRIu32
                    ",\"height\":%" PRIu32 ",\"depth\":%" PRIu32 ",\"format\":%" PRIu32
-                   ",\"usage\":%" PRIu32 "}\n",
+                   ",\"usage\":%" PRIu32 ",\"sample_count\":%" PRIu32 "}\n",
                    index, (int)command->type, command->u.create_texture.id,
                    command->u.create_texture.width, command->u.create_texture.height,
                    command->u.create_texture.depth, command->u.create_texture.format,
-                   command->u.create_texture.usage) > 0;
+                   command->u.create_texture.usage,
+                   command->u.create_texture.sample_count != 0 ?
+                       command->u.create_texture.sample_count :
+                       1) > 0;
     case DVZ_DRP2_COMMAND_CREATE_SHADER_MODULE:
         if (!_recording_write_create_shader_module(
                 root, stream_fp, command, index, blob_index))
@@ -1905,6 +1916,8 @@ static bool _recording_read_create_render_pipeline(const char* line, DvzDrp2Comm
     command->u.create_render_pipeline.has_raster_state = false;
     command->u.create_render_pipeline.cull_mode = VK_CULL_MODE_NONE;
     command->u.create_render_pipeline.front_face = VK_FRONT_FACE_COUNTER_CLOCKWISE;
+    command->u.create_render_pipeline.sample_count = 1;
+    command->u.create_render_pipeline.alpha_to_coverage_enabled = false;
     if (!_recording_line_u64(line, "\"id\":", &command->u.create_render_pipeline.id) ||
         !_recording_line_u64(
             line, "\"vertex_shader_module_id\":",
@@ -1940,6 +1953,11 @@ static bool _recording_read_create_render_pipeline(const char* line, DvzDrp2Comm
     (void)_recording_line_u32(line, "\"cull_mode\":", &command->u.create_render_pipeline.cull_mode);
     (void)_recording_line_u32(
         line, "\"front_face\":", &command->u.create_render_pipeline.front_face);
+    (void)_recording_line_u32(
+        line, "\"sample_count\":", &command->u.create_render_pipeline.sample_count);
+    (void)_recording_line_bool(
+        line, "\"alpha_to_coverage_enabled\":",
+        &command->u.create_render_pipeline.alpha_to_coverage_enabled);
     (void)_recording_line_string(
         line, "\"builtin_pipeline\":\"", command->u.create_render_pipeline.builtin_pipeline,
         sizeof(command->u.create_render_pipeline.builtin_pipeline));
@@ -2183,6 +2201,9 @@ static bool _recording_read_begin_render_pass(const char* line, DvzDrp2Command* 
         uint32_t load_op = (uint32_t)a->load_op;
         uint32_t store_op = (uint32_t)a->store_op;
         uint32_t access = (uint32_t)a->access;
+        (void)_recording_line_indexed_u64(
+            line, "ca", i, "resolve_texture_id", &a->resolve_texture_id);
+        (void)_recording_line_indexed_u32(line, "ca", i, "resolve_mode", &a->resolve_mode);
         if (_recording_line_indexed_u32(line, "ca", i, "load_op", &load_op))
             a->load_op = (DvzDrp2AttachmentLoadOp)load_op;
         if (_recording_line_indexed_u32(line, "ca", i, "store_op", &store_op))
@@ -2243,6 +2264,9 @@ static bool _recording_read_portable_command(
             !_recording_line_u32(line, "\"usage\":", &command.u.create_texture.usage))
             return false;
         (void)_recording_line_u32(line, "\"format\":", &command.u.create_texture.format);
+        command.u.create_texture.sample_count = 1;
+        (void)_recording_line_u32(
+            line, "\"sample_count\":", &command.u.create_texture.sample_count);
     }
     else if (strcmp(op, "CreateShaderModule") == 0)
     {

@@ -82,6 +82,8 @@ struct DvzDrp2ExternalBufferDesc
 struct DvzDrp2ColorAttachment
 {
     uint64_t texture_id;
+    uint64_t resolve_texture_id;
+    uint32_t resolve_mode;
     bool clear;
     DvzDrp2AttachmentLoadOp load_op;
     DvzDrp2AttachmentStoreOp store_op;

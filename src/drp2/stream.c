@@ -419,6 +419,28 @@ bool dvz_drp2_stream_create_texture_2d_format_usage(
     DvzDrp2CommandStream* stream, uint64_t id, uint32_t width, uint32_t height, uint32_t format,
     uint32_t usage)
 {
+    return dvz_drp2_stream_create_texture_2d_format_usage_samples(
+        stream, id, width, height, format, usage, 1);
+}
+
+
+
+/**
+ * Append a CreateTexture command for a 2D texture with explicit format, usage, and samples.
+ *
+ * @param stream the command stream
+ * @param id the texture id
+ * @param width the texture width
+ * @param height the texture height
+ * @param format texture format, using VkFormat values
+ * @param usage texture usage flags
+ * @param sample_count raster sample count, with 0 treated as 1
+ * @return whether the command was appended
+ */
+bool dvz_drp2_stream_create_texture_2d_format_usage_samples(
+    DvzDrp2CommandStream* stream, uint64_t id, uint32_t width, uint32_t height, uint32_t format,
+    uint32_t usage, uint32_t sample_count)
+{
     DvzDrp2Command* command = _append_command(stream, DVZ_DRP2_COMMAND_CREATE_TEXTURE);
     if (command == NULL)
         return false;
@@ -428,6 +450,7 @@ bool dvz_drp2_stream_create_texture_2d_format_usage(
     command->u.create_texture.depth = 1;
     command->u.create_texture.format = format;
     command->u.create_texture.usage = usage;
+    command->u.create_texture.sample_count = sample_count == 0 ? 1 : sample_count;
     return true;
 }
 
@@ -630,6 +653,7 @@ bool dvz_drp2_stream_create_render_pipeline_with_bind_group_layout(
     command->u.create_render_pipeline.vertex_shader_module_id = vertex_shader_module_id;
     command->u.create_render_pipeline.fragment_shader_module_id = fragment_shader_module_id;
     command->u.create_render_pipeline.vertex_buffer_slots = vertex_buffer_slots;
+    command->u.create_render_pipeline.sample_count = 1;
     command->u.create_render_pipeline.color_target_count = 1;
     command->u.create_render_pipeline.color_targets[0].format = 0;
     command->u.create_render_pipeline.color_targets[0].color_write_mask = 0xFu;
@@ -764,6 +788,30 @@ bool dvz_drp2_stream_pipeline_set_raster_state(
 
 
 
+/**
+ * Set multisampling state on the most recently appended CreateRenderPipeline command.
+ *
+ * @param stream the command stream
+ * @param sample_count raster sample count, with 0 treated as 1
+ * @param alpha_to_coverage_enabled whether alpha-to-coverage is enabled
+ * @return whether the most recent command was a CreateRenderPipeline and was updated
+ */
+bool dvz_drp2_stream_pipeline_set_multisampling(
+    DvzDrp2CommandStream* stream, uint32_t sample_count, bool alpha_to_coverage_enabled)
+{
+    ANN(stream);
+    if (stream->count == 0)
+        return false;
+    DvzDrp2Command* command = &stream->commands[stream->count - 1];
+    if (command->type != DVZ_DRP2_COMMAND_CREATE_RENDER_PIPELINE)
+        return false;
+    command->u.create_render_pipeline.sample_count = sample_count == 0 ? 1 : sample_count;
+    command->u.create_render_pipeline.alpha_to_coverage_enabled = alpha_to_coverage_enabled;
+    return true;
+}
+
+
+
 bool dvz_drp2_stream_pipeline_set_color_target(
     DvzDrp2CommandStream* stream, uint32_t idx, uint32_t format)
 {
@@ -882,6 +930,11 @@ bool dvz_drp2_stream_create_render_pipeline_ex2(
     command->u.create_render_pipeline.has_raster_state = false;
     command->u.create_render_pipeline.cull_mode = VK_CULL_MODE_NONE;
     command->u.create_render_pipeline.front_face = VK_FRONT_FACE_COUNTER_CLOCKWISE;
+    command->u.create_render_pipeline.sample_count = 1;
+    command->u.create_render_pipeline.alpha_to_coverage_enabled = false;
+    command->u.create_render_pipeline.color_target_count = 1;
+    command->u.create_render_pipeline.color_targets[0].format = 0;
+    command->u.create_render_pipeline.color_targets[0].color_write_mask = 0xFu;
     command->u.create_render_pipeline.topology = topology;
     uint32_t nb = binding_count < 16 ? binding_count : 16;
     command->u.create_render_pipeline.binding_count = nb;
@@ -1425,6 +1478,7 @@ bool dvz_drp2_stream_create_texture_3d_format_usage(
     command->u.create_texture.depth = depth;
     command->u.create_texture.format = format;
     command->u.create_texture.usage = usage;
+    command->u.create_texture.sample_count = 1;
     return true;
 }
 
@@ -1722,6 +1776,35 @@ bool dvz_drp2_stream_begin_render_pass_set_color_attachment_access(
         attachment_index >= command->u.begin_render_pass.color_attachment_count)
         return false;
     command->u.begin_render_pass.color_attachments[attachment_index].access = access;
+    return true;
+}
+
+
+
+/**
+ * Set the resolve target on one color attachment of the most recent BeginRenderPass command.
+ *
+ * @param stream the command stream
+ * @param attachment_index the color attachment index
+ * @param resolve_texture_id the single-sample resolve texture id, or 0 to disable resolve
+ * @param resolve_mode backend-native resolve mode, with 0 treated as average
+ * @return whether the most recent command was updated
+ */
+bool dvz_drp2_stream_begin_render_pass_set_color_attachment_resolve(
+    DvzDrp2CommandStream* stream, uint32_t attachment_index, uint64_t resolve_texture_id,
+    uint32_t resolve_mode)
+{
+    ANN(stream);
+    if (stream->count == 0)
+        return false;
+    DvzDrp2Command* command = &stream->commands[stream->count - 1];
+    if (command->type != DVZ_DRP2_COMMAND_BEGIN_RENDER_PASS ||
+        attachment_index >= command->u.begin_render_pass.color_attachment_count)
+        return false;
+    command->u.begin_render_pass.color_attachments[attachment_index].resolve_texture_id =
+        resolve_texture_id;
+    command->u.begin_render_pass.color_attachments[attachment_index].resolve_mode =
+        resolve_mode == 0 ? VK_RESOLVE_MODE_AVERAGE_BIT : resolve_mode;
     return true;
 }
 

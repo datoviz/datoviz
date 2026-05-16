@@ -168,6 +168,7 @@ typedef struct DvzFrameGraphResource
     uint32_t width;
     uint32_t height;
     uint32_t depth;
+    uint32_t sample_count;
     char extent_resource_id[DVZ_SCENE_LABEL_SIZE];
     uint32_t usage_flags;
     DvzFrameGraphResourceLifetime lifetime;
@@ -186,6 +187,8 @@ typedef struct DvzFrameGraphAccess
 typedef struct DvzFrameGraphAttachment
 {
     char resource_id[DVZ_SCENE_LABEL_SIZE];
+    char resolve_resource_id[DVZ_SCENE_LABEL_SIZE];
+    uint32_t resolve_mode;
     DvzFrameGraphAttachmentLoadOp load_op;
     DvzFrameGraphAttachmentStoreOp store_op;
     DvzFrameGraphAttachmentAccess access;

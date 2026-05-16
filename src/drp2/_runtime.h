@@ -122,6 +122,7 @@ struct Drp2Object
     uint32_t width;
     uint32_t height;
     uint32_t depth;
+    uint32_t sample_count;
     uint32_t vertex_buffer_slots;
     uint64_t vertex_shader_module_id;
     uint64_t fragment_shader_module_id;
@@ -150,6 +151,8 @@ struct Drp2Object
     uint32_t color_attachment_count;
     uint32_t color_attachment_formats[DVZ_DRP2_MAX_COLOR_ATTACHMENTS];
     uint32_t depth_attachment_format;
+    uint32_t raster_sample_count;
+    bool alpha_to_coverage_enabled;
     bool depth_write_enabled;
     uint32_t depth_compare_op;
     float viewport_x;

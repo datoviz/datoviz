@@ -634,7 +634,11 @@ static void _json_append_command(JsonBuilder* builder, const DvzDrp2Command* com
             command->u.create_texture.depth > 0 ? command->u.create_texture.depth : 1,
             _texture_format_name(command->u.create_texture.format));
         _json_append_texture_usage(builder, command->u.create_texture.usage);
-        _json_append(builder, ", \"mip_level_count\": 1, \"sample_count\": 1 }");
+        _json_append(
+            builder, ", \"mip_level_count\": 1, \"sample_count\": %" PRIu32 " }",
+            command->u.create_texture.sample_count != 0 ?
+                command->u.create_texture.sample_count :
+                1);
         break;
     case DVZ_DRP2_COMMAND_DESTROY_TEXTURE:
         _json_append(
@@ -710,6 +714,14 @@ static void _json_append_command(JsonBuilder* builder, const DvzDrp2Command* com
                 _cull_mode_name(command->u.create_render_pipeline.cull_mode),
                 _front_face_name(command->u.create_render_pipeline.front_face));
         }
+        _json_append(
+            builder,
+            ", \"multisample\": { \"sample_count\": %" PRIu32
+            ", \"alpha_to_coverage_enabled\": %s }",
+            command->u.create_render_pipeline.sample_count != 0 ?
+                command->u.create_render_pipeline.sample_count :
+                1,
+            command->u.create_render_pipeline.alpha_to_coverage_enabled ? "true" : "false");
         _json_append_color_targets(builder, command);
         if (command->u.create_render_pipeline.has_depth_attachment)
         {
@@ -932,6 +944,16 @@ static void _json_append_command(JsonBuilder* builder, const DvzDrp2Command* com
                 "{ \"texture_id\": %" PRIu64
                 ", \"load_op\": \"%s\", \"store_op\": \"%s\"",
                 texture_id, _attachment_load_name(load_op), _attachment_store_name(store_op));
+            if (attachment != NULL && attachment->resolve_texture_id != 0)
+            {
+                _json_append(
+                    builder,
+                    ", \"resolve_target\": { \"texture_id\": %" PRIu64
+                    ", \"mode\": %" PRIu32 " }",
+                    attachment->resolve_texture_id,
+                    attachment->resolve_mode != 0 ? attachment->resolve_mode :
+                                                    (uint32_t)VK_RESOLVE_MODE_AVERAGE_BIT);
+            }
             if (access != DVZ_DRP2_ATTACHMENT_ACCESS_WRITE)
             {
                 _json_append(builder, ", \"access\": \"%s\"", _attachment_access_name(access));

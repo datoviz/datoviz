@@ -1148,7 +1148,9 @@ static void _json_append_graph_resource(JsonBuilder* builder, const DvzFrameGrap
         _json_append(builder, ", \"resource_id\": ");
         _json_append_escaped_string(builder, resource->extent_resource_id);
     }
-    _json_append(builder, " }, \"usage\": ");
+    _json_append(
+        builder, " }, \"sample_count\": %" PRIu32 ", \"usage\": ",
+        resource->sample_count != 0 ? resource->sample_count : 1);
     _json_append_graph_resource_usage(builder, resource->usage_flags);
     _json_append(builder, ", \"lifetime\": ");
     _json_append_escaped_string(builder, _graph_lifetime_name(resource->lifetime));
@@ -1210,6 +1212,12 @@ _json_append_graph_attachment(JsonBuilder* builder, const DvzFrameGraphAttachmen
     _json_append_escaped_string(builder, _graph_attachment_store_name(attachment->store_op));
     _json_append(builder, ", \"access\": ");
     _json_append_escaped_string(builder, _graph_attachment_access_name(attachment->access));
+    if (attachment->resolve_resource_id[0] != '\0')
+    {
+        _json_append(builder, ", \"resolve_resource_id\": ");
+        _json_append_escaped_string(builder, attachment->resolve_resource_id);
+        _json_append(builder, ", \"resolve_mode\": %" PRIu32, attachment->resolve_mode);
+    }
     _json_append(
         builder,
         ", \"clear_color\": [%.9g, %.9g, %.9g, %.9g], \"clear_depth\": %.9g,"

@@ -201,6 +201,23 @@ DVZ_EXPORT bool dvz_drp2_stream_create_texture_2d_format_usage(
     uint32_t usage);
 
 
+/**
+ * Append a CreateTexture command for a 2D texture with explicit format, usage, and samples.
+ *
+ * @param stream the command stream
+ * @param id the texture id
+ * @param width the texture width
+ * @param height the texture height
+ * @param format texture format, using VkFormat values
+ * @param usage texture usage flags
+ * @param sample_count raster sample count, with 0 treated as 1
+ * @return whether the command was appended
+ */
+DVZ_EXPORT bool dvz_drp2_stream_create_texture_2d_format_usage_samples(
+    DvzDrp2CommandStream* stream, uint64_t id, uint32_t width, uint32_t height, uint32_t format,
+    uint32_t usage, uint32_t sample_count);
+
+
 
 /**
  * Append a CreateTexture command for a 3D texture.
@@ -470,6 +487,18 @@ DVZ_EXPORT bool dvz_drp2_stream_pipeline_set_depth_state(
  */
 DVZ_EXPORT bool dvz_drp2_stream_pipeline_set_raster_state(
     DvzDrp2CommandStream* stream, uint32_t cull_mode, uint32_t front_face);
+
+
+/**
+ * Set multisampling state on the most recently appended CreateRenderPipeline command.
+ *
+ * @param stream the command stream
+ * @param sample_count raster sample count, with 0 treated as 1
+ * @param alpha_to_coverage_enabled whether alpha-to-coverage is enabled
+ * @return whether the most recent command was a CreateRenderPipeline and was updated
+ */
+DVZ_EXPORT bool dvz_drp2_stream_pipeline_set_multisampling(
+    DvzDrp2CommandStream* stream, uint32_t sample_count, bool alpha_to_coverage_enabled);
 
 
 /**
@@ -1013,6 +1042,20 @@ DVZ_EXPORT bool dvz_drp2_stream_begin_render_pass_set_color_attachment_ops(
  */
 DVZ_EXPORT bool dvz_drp2_stream_begin_render_pass_set_color_attachment_access(
     DvzDrp2CommandStream* stream, uint32_t attachment_index, DvzDrp2AttachmentAccess access);
+
+
+/**
+ * Set the resolve target on one color attachment of the most recent BeginRenderPass command.
+ *
+ * @param stream the command stream
+ * @param attachment_index the color attachment index
+ * @param resolve_texture_id the single-sample resolve texture id, or 0 to disable resolve
+ * @param resolve_mode backend-native resolve mode, with 0 treated as average
+ * @return whether the most recent command was a BeginRenderPass and was updated
+ */
+DVZ_EXPORT bool dvz_drp2_stream_begin_render_pass_set_color_attachment_resolve(
+    DvzDrp2CommandStream* stream, uint32_t attachment_index, uint64_t resolve_texture_id,
+    uint32_t resolve_mode);
 
 
 /**

@@ -188,7 +188,8 @@ static uint64_t _trace_hash_command(uint64_t hash, const DvzDrp2Command* command
         hash = _trace_hash_u32(hash, command->u.create_texture.height);
         hash = _trace_hash_u32(hash, command->u.create_texture.depth);
         hash = _trace_hash_u32(hash, command->u.create_texture.format);
-        return _trace_hash_u32(hash, command->u.create_texture.usage);
+        hash = _trace_hash_u32(hash, command->u.create_texture.usage);
+        return _trace_hash_u32(hash, command->u.create_texture.sample_count);
     case DVZ_DRP2_COMMAND_DESTROY_TEXTURE:
         return _trace_hash_u64(hash, command->u.destroy_texture.texture_id);
     case DVZ_DRP2_COMMAND_CREATE_SHADER_MODULE:
@@ -220,6 +221,9 @@ static uint64_t _trace_hash_command(uint64_t hash, const DvzDrp2Command* command
         hash = _trace_hash_bool(hash, command->u.create_render_pipeline.has_raster_state);
         hash = _trace_hash_u32(hash, command->u.create_render_pipeline.cull_mode);
         hash = _trace_hash_u32(hash, command->u.create_render_pipeline.front_face);
+        hash = _trace_hash_u32(hash, command->u.create_render_pipeline.sample_count);
+        hash = _trace_hash_bool(
+            hash, command->u.create_render_pipeline.alpha_to_coverage_enabled);
         hash = _trace_hash_u32(hash, command->u.create_render_pipeline.color_target_count);
         for (uint32_t i = 0; i < command->u.create_render_pipeline.color_target_count &&
                              i < DVZ_DRP2_MAX_COLOR_ATTACHMENTS;
@@ -333,6 +337,8 @@ static uint64_t _trace_hash_command(uint64_t hash, const DvzDrp2Command* command
             const DvzDrp2ColorAttachment* attachment =
                 &command->u.begin_render_pass.color_attachments[i];
             hash = _trace_hash_u64(hash, attachment->texture_id);
+            hash = _trace_hash_u64(hash, attachment->resolve_texture_id);
+            hash = _trace_hash_u32(hash, attachment->resolve_mode);
             hash = _trace_hash_bool(hash, attachment->clear);
             hash = _trace_hash_u32(hash, attachment->load_op);
             hash = _trace_hash_u32(hash, attachment->store_op);

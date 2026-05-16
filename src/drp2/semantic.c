@@ -141,6 +141,32 @@ static uint32_t _effective_color_format(uint32_t format)
 
 
 /**
+ * Return the effective raster sample count used by DRP2 when omitted.
+ *
+ * @param sample_count sample count from a command or object
+ * @return effective sample count
+ */
+static uint32_t _effective_sample_count(uint32_t sample_count)
+{
+    return sample_count != 0 ? sample_count : 1;
+}
+
+
+
+/**
+ * Return whether a DRP2 raster sample count is currently supported.
+ *
+ * @param sample_count effective raster sample count
+ * @return whether the sample count is valid
+ */
+static bool _sample_count_valid(uint32_t sample_count)
+{
+    return sample_count == 1 || sample_count == 2 || sample_count == 4 || sample_count == 8;
+}
+
+
+
+/**
  * Return the effective depth attachment format used by DRP2 transient depth.
  *
  * @return backend-native depth texture format enum value
@@ -677,6 +703,11 @@ static DvzDrp2ValidationResult _validate_create_texture(
     uint32_t bytes_per_texel = 0;
     if (!_drp2_texture_format_bytes_per_texel(command->u.create_texture.format, &bytes_per_texel))
         return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_ARGUMENT, command_index);
+    uint32_t sample_count = _effective_sample_count(command->u.create_texture.sample_count);
+    if (!_sample_count_valid(sample_count))
+        return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_ARGUMENT, command_index);
+    if (sample_count > 1 && command->u.create_texture.depth > 1)
+        return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_ARGUMENT, command_index);
     Drp2Object* object = _drp2_find_any_object(state, id);
     if (object != NULL)
     {
@@ -695,6 +726,7 @@ static DvzDrp2ValidationResult _validate_create_texture(
     object->depth  = command->u.create_texture.depth > 1 ? command->u.create_texture.depth : 1;
     object->format = command->u.create_texture.format;
     object->usage  = command->u.create_texture.usage;
+    object->sample_count = sample_count;
     return _drp2_ok();
 }
 
@@ -759,6 +791,12 @@ static DvzDrp2ValidationResult _validate_create_render_pipeline(
         (!_raster_cull_mode_valid(command->u.create_render_pipeline.cull_mode) ||
          !_raster_front_face_valid(command->u.create_render_pipeline.front_face)))
         return _drp2_fail(DVZ_DRP2_VALIDATION_USAGE, command_index);
+    uint32_t sample_count =
+        _effective_sample_count(command->u.create_render_pipeline.sample_count);
+    if (!_sample_count_valid(sample_count))
+        return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_ARGUMENT, command_index);
+    if (command->u.create_render_pipeline.alpha_to_coverage_enabled && sample_count <= 1)
+        return _drp2_fail(DVZ_DRP2_VALIDATION_USAGE, command_index);
     for (uint32_t i = 0; i < command->u.create_render_pipeline.bind_group_layout_count; i++)
     {
         if (!_has_object_kind(
@@ -795,6 +833,9 @@ static DvzDrp2ValidationResult _validate_create_render_pipeline(
         object->has_depth_attachment ? _effective_depth_format() : 0;
     object->depth_write_enabled = command->u.create_render_pipeline.depth_write_enabled;
     object->depth_compare_op = command->u.create_render_pipeline.depth_compare_op;
+    object->raster_sample_count = sample_count;
+    object->alpha_to_coverage_enabled =
+        command->u.create_render_pipeline.alpha_to_coverage_enabled;
     return _drp2_ok();
 }
 
@@ -1173,6 +1214,7 @@ static DvzDrp2ValidationResult _validate_begin_render_pass(
     if (color_count > DVZ_DRP2_MAX_COLOR_ATTACHMENTS)
         return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
     const Drp2Object* first_color = NULL;
+    uint32_t pass_sample_count = 1;
     for (uint32_t i = 0; i < color_count; i++)
     {
         const DvzDrp2ColorAttachment* attachment =
@@ -1190,6 +1232,22 @@ static DvzDrp2ValidationResult _validate_begin_render_pass(
         const Drp2Object* texture = _find_object(state, texture_id);
         if (texture == NULL || texture->kind != DRP2_OBJECT_TEXTURE)
             return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+        uint32_t color_sample_count = _effective_sample_count(texture->sample_count);
+        if (i == 0)
+            pass_sample_count = color_sample_count;
+        else if (color_sample_count != pass_sample_count)
+            return _drp2_fail(DVZ_DRP2_VALIDATION_USAGE, command_index);
+        if (attachment != NULL && attachment->resolve_texture_id != 0)
+        {
+            const Drp2Object* resolve = _find_object(state, attachment->resolve_texture_id);
+            if (resolve == NULL || resolve->kind != DRP2_OBJECT_TEXTURE)
+                return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+            if (_effective_sample_count(resolve->sample_count) != 1 ||
+                color_sample_count <= 1 || resolve->width != texture->width ||
+                resolve->height != texture->height ||
+                _effective_color_format(resolve->format) != _effective_color_format(texture->format))
+                return _drp2_fail(DVZ_DRP2_VALIDATION_USAGE, command_index);
+        }
         if (i == 0)
             first_color = texture;
     }
@@ -1208,7 +1266,8 @@ static DvzDrp2ValidationResult _validate_begin_render_pass(
         if ((depth->usage & DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT) == 0)
             return _drp2_fail(DVZ_DRP2_VALIDATION_USAGE, command_index);
         if (first_color == NULL || depth->width != first_color->width ||
-            depth->height != first_color->height)
+            depth->height != first_color->height ||
+            _effective_sample_count(depth->sample_count) != pass_sample_count)
             return _drp2_fail(DVZ_DRP2_VALIDATION_USAGE, command_index);
     }
 
@@ -1239,6 +1298,10 @@ static DvzDrp2ValidationResult _validate_begin_render_pass(
                                   ? command->u.begin_render_pass.color_attachments[i].texture_id
                                   : command->u.begin_render_pass.texture_id;
         _mark_referenced(state, texture_id);
+        if (command->u.begin_render_pass.color_attachment_count > 0 &&
+            command->u.begin_render_pass.color_attachments[i].resolve_texture_id != 0)
+            _mark_referenced(
+                state, command->u.begin_render_pass.color_attachments[i].resolve_texture_id);
     }
     if (command->u.begin_render_pass.has_depth_attachment &&
         command->u.begin_render_pass.depth_texture_id != 0)
@@ -1260,6 +1323,7 @@ static DvzDrp2ValidationResult _validate_begin_render_pass(
         }
         pass->color_attachment_formats[i] = _effective_color_format(texture->format);
     }
+    pass->raster_sample_count = pass_sample_count;
     if (command->u.begin_render_pass.has_depth_attachment)
     {
         if (command->u.begin_render_pass.depth_texture_id != 0)
@@ -1390,6 +1454,8 @@ static DvzDrp2ValidationResult _validate_render_pipeline_attachments(
         return _drp2_fail(DVZ_DRP2_VALIDATION_USAGE, command_index);
     if (pipeline->has_depth_attachment &&
         pipeline->depth_attachment_format != pass->depth_attachment_format)
+        return _drp2_fail(DVZ_DRP2_VALIDATION_USAGE, command_index);
+    if (pipeline->raster_sample_count != pass->raster_sample_count)
         return _drp2_fail(DVZ_DRP2_VALIDATION_USAGE, command_index);
     return _drp2_ok();
 }

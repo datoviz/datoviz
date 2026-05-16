@@ -604,10 +604,12 @@ static bool _app_trace_print_command_detail(
         TRACE_ID(id, command->u.create_texture.id);
         dvz_fprintf(
             stderr, "  %03u + CreateTexture id=%s size=(%" PRIu32 ",%" PRIu32
-                    ",%" PRIu32 ") usage=0x%" PRIx32 "\n",
+                    ",%" PRIu32 ") usage=0x%" PRIx32 " samples=%" PRIu32 "\n",
             index, id, command->u.create_texture.width,
             command->u.create_texture.height, command->u.create_texture.depth,
-            command->u.create_texture.usage);
+            command->u.create_texture.usage,
+            command->u.create_texture.sample_count != 0 ? command->u.create_texture.sample_count :
+                                                          1);
         return true;
     }
     case DVZ_DRP2_COMMAND_DESTROY_TEXTURE:
@@ -645,7 +647,7 @@ static bool _app_trace_print_command_detail(
             stderr, "  %03u + CreateRenderPipeline id=%s vs=%s fs=%s"
                     " vslots=%" PRIu32 " bgls=%" PRIu32
                     " depth=%s write=%s compare=%" PRIu32 " topology=%" PRIu32
-                    " bindings=%" PRIu32 " attrs=%" PRIu32 "\n",
+                    " samples=%" PRIu32 " a2c=%s bindings=%" PRIu32 " attrs=%" PRIu32 "\n",
             index, id, vs, fs,
             command->u.create_render_pipeline.vertex_buffer_slots,
             command->u.create_render_pipeline.bind_group_layout_count,
@@ -653,6 +655,10 @@ static bool _app_trace_print_command_detail(
             command->u.create_render_pipeline.depth_write_enabled ? "yes" : "no",
             command->u.create_render_pipeline.depth_compare_op,
             command->u.create_render_pipeline.topology,
+            command->u.create_render_pipeline.sample_count != 0 ?
+                command->u.create_render_pipeline.sample_count :
+                1,
+            command->u.create_render_pipeline.alpha_to_coverage_enabled ? "yes" : "no",
             command->u.create_render_pipeline.binding_count,
             command->u.create_render_pipeline.attr_count);
         return true;
