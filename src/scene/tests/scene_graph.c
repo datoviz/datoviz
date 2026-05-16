@@ -5062,7 +5062,7 @@ int test_scene_edl_runtime_lowering(TstSuite* suite, TstItem* item)
 
 
 /**
- * Verify primitive and mesh depth producers can feed the EDL post-process branch.
+ * Verify point, primitive, and mesh depth producers can feed the EDL post-process branch.
  *
  * @param suite the active test suite
  * @param item the active test item
@@ -5079,6 +5079,24 @@ int test_scene_edl_depth_producer_capabilities(TstSuite* suite, TstItem* item)
     AT(figure != NULL);
     DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
     AT(panel != NULL);
+
+    float point_positions[3][3] = {
+        {-0.90f, +0.45f, 0.0f},
+        {-0.65f, +0.45f, 0.1f},
+        {-0.78f, +0.70f, 0.2f},
+    };
+    DvzColor point_colors[3] = {
+        {80, 170, 235, 255},
+        {80, 170, 235, 255},
+        {80, 170, 235, 255},
+    };
+    float point_sizes[3] = {12.0f, 12.0f, 12.0f};
+    DvzVisual* point = dvz_point(scene, 0);
+    AT(point != NULL);
+    AT(dvz_visual_set_data(point, "position", point_positions, 3) == 0);
+    AT(dvz_visual_set_data(point, "color", point_colors, 3) == 0);
+    AT(dvz_visual_set_data(point, "size", point_sizes, 3) == 0);
+    AT(dvz_panel_add_visual(panel, point, NULL) == 0);
 
     float primitive_positions[3][3] = {
         {-0.80f, -0.60f, 0.1f},
@@ -5136,7 +5154,7 @@ int test_scene_edl_depth_producer_capabilities(TstSuite* suite, TstItem* item)
     ANN(opaque_node);
     ANN(edl_node);
     AT(dvz_frame_plan_render_pass_role(opaque_node) == DVZ_FRAME_PLAN_RENDER_PASS_OPAQUE);
-    AT(opaque_node->u.render.visual_count == 2);
+    AT(opaque_node->u.render.visual_count == 3);
     AT(dvz_frame_plan_render_pass_role(edl_node) == DVZ_FRAME_PLAN_RENDER_PASS_EDL_RESOLVE);
     AT(dvz_frame_plan_graph_pass_count(plan) == 2);
     const DvzFrameGraphPass* opaque_pass = dvz_frame_plan_graph_pass_get(plan, 0);
