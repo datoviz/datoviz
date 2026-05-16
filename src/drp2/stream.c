@@ -533,6 +533,41 @@ bool dvz_drp2_stream_create_shader_module_spirv(
 }
 
 
+/**
+ * Attach optional built-in shader identity metadata to a CreateShaderModule command.
+ *
+ * @param stream the command stream
+ * @param shader_module_id the shader module id
+ * @param family stable built-in shader family id
+ * @param variant stable built-in shader variant id
+ * @param version built-in shader contract version
+ * @return whether the matching command was found and updated
+ */
+bool dvz_drp2_stream_shader_set_builtin_identity(
+    DvzDrp2CommandStream* stream, uint64_t shader_module_id, const char* family,
+    const char* variant, uint32_t version)
+{
+    if (stream == NULL || shader_module_id == 0 || family == NULL || variant == NULL)
+        return false;
+
+    for (uint32_t i = 0; i < stream->count; i++)
+    {
+        DvzDrp2Command* command = &stream->commands[i];
+        if (command->type != DVZ_DRP2_COMMAND_CREATE_SHADER_MODULE ||
+            command->u.create_shader_module.id != shader_module_id)
+            continue;
+
+        _copy_label(
+            command->u.create_shader_module.builtin_family, DVZ_DRP2_LABEL_SIZE, family);
+        _copy_label(
+            command->u.create_shader_module.builtin_variant, DVZ_DRP2_LABEL_SIZE, variant);
+        command->u.create_shader_module.builtin_version = version;
+        return true;
+    }
+    return false;
+}
+
+
 
 /**
  * Append a DestroyShaderModule command.
@@ -771,6 +806,39 @@ bool dvz_drp2_stream_pipeline_set_color_blend(
     target->alpha_blend_op = alpha_op;
     target->color_write_mask = color_write_mask;
     return true;
+}
+
+
+/**
+ * Attach optional built-in pipeline identity metadata to a CreateRenderPipeline command.
+ *
+ * @param stream the command stream
+ * @param render_pipeline_id the render pipeline id
+ * @param pipeline stable built-in pipeline id
+ * @param version built-in pipeline contract version
+ * @return whether the matching command was found and updated
+ */
+bool dvz_drp2_stream_pipeline_set_builtin_identity(
+    DvzDrp2CommandStream* stream, uint64_t render_pipeline_id, const char* pipeline,
+    uint32_t version)
+{
+    if (stream == NULL || render_pipeline_id == 0 || pipeline == NULL)
+        return false;
+
+    for (uint32_t i = 0; i < stream->count; i++)
+    {
+        DvzDrp2Command* command = &stream->commands[i];
+        if (command->type != DVZ_DRP2_COMMAND_CREATE_RENDER_PIPELINE ||
+            command->u.create_render_pipeline.id != render_pipeline_id)
+            continue;
+
+        _copy_label(
+            command->u.create_render_pipeline.builtin_pipeline, DVZ_DRP2_LABEL_SIZE,
+            pipeline);
+        command->u.create_render_pipeline.builtin_version = version;
+        return true;
+    }
+    return false;
 }
 
 

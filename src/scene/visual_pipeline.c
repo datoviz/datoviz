@@ -1136,6 +1136,23 @@ static void _scene_shader_desc_set_builtin(
 }
 
 
+/**
+ * Attach stable built-in identity metadata to a shader descriptor.
+ *
+ * @param out the output shader descriptor
+ * @param family the shader family id
+ * @param variant the shader variant id
+ */
+static void _scene_shader_desc_set_identity(
+    DvzSceneVisualShaderDesc* out, const char* family, const char* variant)
+{
+    ANN(out);
+    out->builtin_family = family;
+    out->builtin_variant = variant != NULL ? variant : "default";
+    out->builtin_pipeline = family;
+}
+
+
 
 /**
  * Resolve point-like shader metadata from feature flags.
@@ -1181,6 +1198,10 @@ static bool _scene_shader_desc_point_like(
                              DVZ_SCENE_BUILTIN_SHADER_POINT;
 
     _scene_shader_desc_set_builtin(out, shader);
+    _scene_shader_desc_set_identity(out, features->kind == DVZ_SCENE_VISUAL_DESC_PIXEL ?
+                                             "scene.pixel" :
+                                             "scene.point",
+                                    picking ? "pick" : depth_cue ? "depth_cue" : "default");
     if (!picking)
     {
         out->vertex_spirv_key = depth_cue ?
@@ -1234,6 +1255,8 @@ static bool _scene_shader_desc_primitive(
             out->pipeline_key, sizeof(out->pipeline_key), "_pipe_wboit_accum_t%u_n%u%s",
             features->topology, lit ? 1u : 0u, format_tag);
         _scene_shader_desc_set_builtin(out, shader);
+        _scene_shader_desc_set_identity(
+            out, "scene.primitive", lit ? "wboit_lit" : "wboit");
         return true;
     }
 
@@ -1245,6 +1268,7 @@ static bool _scene_shader_desc_primitive(
             out->pipeline_key, sizeof(out->pipeline_key), "_pipe_prim_lit_t%u%s",
             features->topology, format_tag);
         _scene_shader_desc_set_builtin(out, DVZ_SCENE_BUILTIN_SHADER_PRIMITIVE_LIT);
+        _scene_shader_desc_set_identity(out, "scene.primitive", "lit");
         return true;
     }
 
@@ -1254,6 +1278,7 @@ static bool _scene_shader_desc_primitive(
         out->pipeline_key, sizeof(out->pipeline_key), "_pipe_prim_t%u%s", features->topology,
         format_tag);
     _scene_shader_desc_set_builtin(out, DVZ_SCENE_BUILTIN_SHADER_PRIMITIVE);
+    _scene_shader_desc_set_identity(out, "scene.primitive", "default");
     out->vertex_spirv_key = "primitive_vert";
     out->fragment_spirv_key = "primitive_frag";
     return true;
@@ -1281,6 +1306,7 @@ static bool _scene_shader_desc_sphere(
     dvz_snprintf(out->fragment_key, sizeof(out->fragment_key), "_fs_sphere%s", format_tag);
     dvz_snprintf(out->pipeline_key, sizeof(out->pipeline_key), "_pipe_sphere%s", format_tag);
     _scene_shader_desc_set_builtin(out, DVZ_SCENE_BUILTIN_SHADER_SPHERE);
+    _scene_shader_desc_set_identity(out, "scene.sphere", "default");
     out->vertex_spirv_key = "sphere_vert";
     out->fragment_spirv_key = "sphere_frag";
     return true;
@@ -1329,6 +1355,7 @@ bool _scene_visual_shader_desc(
         dvz_snprintf(out->fragment_key, sizeof(out->fragment_key), "_fs_img%s", format_tag);
         dvz_snprintf(out->pipeline_key, sizeof(out->pipeline_key), "_pipe_img%s", format_tag);
         _scene_shader_desc_set_builtin(out, DVZ_SCENE_BUILTIN_SHADER_IMAGE);
+        _scene_shader_desc_set_identity(out, "scene.image", "default");
         out->vertex_spirv_key = "image_vert";
         out->fragment_spirv_key = "image_frag";
         return true;
@@ -1351,6 +1378,8 @@ bool _scene_visual_shader_desc(
                                      mip       ? DVZ_SCENE_BUILTIN_SHADER_VOLUME_MIP :
                                                  DVZ_SCENE_BUILTIN_SHADER_VOLUME_SLICE;
         _scene_shader_desc_set_builtin(out, shader);
+        _scene_shader_desc_set_identity(
+            out, "scene.volume", composite ? "composite" : mip ? "mip" : "slice");
         out->vertex_spirv_key = "volume_slice_vert";
         out->fragment_spirv_key =
             composite ? "volume_composite_frag" : mip ? "volume_mip_frag" : "volume_slice_frag";

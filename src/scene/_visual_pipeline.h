@@ -119,6 +119,9 @@ typedef struct DvzSceneVisualShaderDesc
     const char* fragment_wgsl;
     const char* vertex_spirv_key;
     const char* fragment_spirv_key;
+    const char* builtin_family;
+    const char* builtin_variant;
+    const char* builtin_pipeline;
 } DvzSceneVisualShaderDesc;
 
 

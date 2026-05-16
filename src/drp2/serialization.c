@@ -645,11 +645,22 @@ static void _json_append_command(JsonBuilder* builder, const DvzDrp2Command* com
         _json_append(
             builder,
             "{ \"cmd\": \"%s\", \"id\": %" PRIu64 ", \"stage\": \"%s\", \"format\": \"%s\", "
-            "\"entry_point\": \"main\", \"code\": ",
+            "\"entry_point\": \"main\"",
             _command_name(command->type), command->u.create_shader_module.id,
             command->u.create_shader_module.stage,
             command->u.create_shader_module.format[0] != '\0' ? command->u.create_shader_module.format
                                                                : "wgsl");
+        if (command->u.create_shader_module.builtin_family[0] != '\0')
+        {
+            _json_append(builder, ", \"builtin_family\": ");
+            _json_append_escaped_string(builder, command->u.create_shader_module.builtin_family);
+            _json_append(builder, ", \"builtin_variant\": ");
+            _json_append_escaped_string(builder, command->u.create_shader_module.builtin_variant);
+            _json_append(
+                builder, ", \"builtin_version\": %" PRIu32,
+                command->u.create_shader_module.builtin_version);
+        }
+        _json_append(builder, ", \"code\": ");
         _json_append_escaped_string(builder, command->u.create_shader_module.code);
         _json_append(builder, " }");
         break;
@@ -668,6 +679,15 @@ static void _json_append_command(JsonBuilder* builder, const DvzDrp2Command* com
             command->u.create_render_pipeline.vertex_buffer_slots,
             command->u.create_render_pipeline.vertex_shader_module_id,
             command->u.create_render_pipeline.fragment_shader_module_id);
+        if (command->u.create_render_pipeline.builtin_pipeline[0] != '\0')
+        {
+            _json_append(builder, ", \"builtin_pipeline\": ");
+            _json_append_escaped_string(
+                builder, command->u.create_render_pipeline.builtin_pipeline);
+            _json_append(
+                builder, ", \"builtin_version\": %" PRIu32,
+                command->u.create_render_pipeline.builtin_version);
+        }
         if (command->u.create_render_pipeline.bind_group_layout_count > 0)
         {
             _json_append(builder, ", \"bind_group_layout_ids\": [");

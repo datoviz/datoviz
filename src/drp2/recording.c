@@ -673,7 +673,9 @@ static bool _recording_write_create_shader_module(
     ANN(command);
     ANN(blob_index);
     if (!_recording_json_string_safe(command->u.create_shader_module.stage) ||
-        !_recording_json_string_safe(command->u.create_shader_module.format))
+        !_recording_json_string_safe(command->u.create_shader_module.format) ||
+        !_recording_json_string_safe(command->u.create_shader_module.builtin_family) ||
+        !_recording_json_string_safe(command->u.create_shader_module.builtin_variant))
         return false;
 
     const void* payload = NULL;
@@ -698,15 +700,29 @@ static bool _recording_write_create_shader_module(
             root, blob_index, payload, NULL, payload_size, payload_rel, sizeof(payload_rel)))
         return false;
 
-    return dvz_fprintf(
-               stream_fp,
-               "{\"type\":\"command\",\"index\":%" PRIu32 ",\"cmd_type\":%d,"
-               "\"op\":\"CreateShaderModule\",\"id\":%" PRIu64 ",\"stage\":\"%s\","
-               "\"format\":\"%s\",\"payload_blob\":\"%s\",\"payload_size\":%" PRIu64
-               ",\"payload_kind\":\"%s\"}\n",
-               index, (int)command->type, command->u.create_shader_module.id,
-               command->u.create_shader_module.stage, command->u.create_shader_module.format,
-               payload_rel, payload_size, payload_kind) > 0;
+    if (dvz_fprintf(
+            stream_fp,
+            "{\"type\":\"command\",\"index\":%" PRIu32 ",\"cmd_type\":%d,"
+            "\"op\":\"CreateShaderModule\",\"id\":%" PRIu64 ",\"stage\":\"%s\","
+            "\"format\":\"%s\",\"payload_blob\":\"%s\",\"payload_size\":%" PRIu64
+            ",\"payload_kind\":\"%s\"",
+            index, (int)command->type, command->u.create_shader_module.id,
+            command->u.create_shader_module.stage, command->u.create_shader_module.format,
+            payload_rel, payload_size, payload_kind) <= 0)
+        return false;
+
+    if (command->u.create_shader_module.builtin_family[0] != '\0')
+    {
+        if (dvz_fprintf(
+                stream_fp,
+                ",\"builtin_family\":\"%s\",\"builtin_variant\":\"%s\","
+                "\"builtin_version\":%" PRIu32,
+                command->u.create_shader_module.builtin_family,
+                command->u.create_shader_module.builtin_variant,
+                command->u.create_shader_module.builtin_version) <= 0)
+            return false;
+    }
+    return dvz_fprintf(stream_fp, "}\n") > 0;
 }
 
 
@@ -724,6 +740,9 @@ static bool _recording_write_create_render_pipeline(
 {
     ANN(stream_fp);
     ANN(command);
+    if (!_recording_json_string_safe(command->u.create_render_pipeline.builtin_pipeline))
+        return false;
+
     if (dvz_fprintf(
             stream_fp,
             "{\"type\":\"command\",\"index\":%" PRIu32 ",\"cmd_type\":%d,"
@@ -752,6 +771,15 @@ static bool _recording_write_create_render_pipeline(
             command->u.create_render_pipeline.binding_count,
             command->u.create_render_pipeline.attr_count) <= 0)
         return false;
+
+    if (command->u.create_render_pipeline.builtin_pipeline[0] != '\0')
+    {
+        if (dvz_fprintf(
+                stream_fp, ",\"builtin_pipeline\":\"%s\",\"builtin_version\":%" PRIu32,
+                command->u.create_render_pipeline.builtin_pipeline,
+                command->u.create_render_pipeline.builtin_version) <= 0)
+            return false;
+    }
 
     for (uint32_t i = 0; i < DVZ_DRP2_MAX_BIND_GROUPS; i++)
     {
@@ -1912,6 +1940,11 @@ static bool _recording_read_create_render_pipeline(const char* line, DvzDrp2Comm
     (void)_recording_line_u32(line, "\"cull_mode\":", &command->u.create_render_pipeline.cull_mode);
     (void)_recording_line_u32(
         line, "\"front_face\":", &command->u.create_render_pipeline.front_face);
+    (void)_recording_line_string(
+        line, "\"builtin_pipeline\":\"", command->u.create_render_pipeline.builtin_pipeline,
+        sizeof(command->u.create_render_pipeline.builtin_pipeline));
+    (void)_recording_line_u32(
+        line, "\"builtin_version\":", &command->u.create_render_pipeline.builtin_version);
 
     for (uint32_t i = 0; i < DVZ_DRP2_MAX_BIND_GROUPS; i++)
     {
@@ -2222,6 +2255,14 @@ static bool _recording_read_portable_command(
                 line, "\"format\":\"", command.u.create_shader_module.format,
                 sizeof(command.u.create_shader_module.format)))
             return false;
+        (void)_recording_line_string(
+            line, "\"builtin_family\":\"", command.u.create_shader_module.builtin_family,
+            sizeof(command.u.create_shader_module.builtin_family));
+        (void)_recording_line_string(
+            line, "\"builtin_variant\":\"", command.u.create_shader_module.builtin_variant,
+            sizeof(command.u.create_shader_module.builtin_variant));
+        (void)_recording_line_u32(
+            line, "\"builtin_version\":", &command.u.create_shader_module.builtin_version);
 
         char payload_kind[64] = {0};
         (void)_recording_line_string(line, "\"payload_kind\":\"", payload_kind, sizeof(payload_kind));

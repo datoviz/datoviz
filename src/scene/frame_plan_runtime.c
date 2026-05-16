@@ -635,6 +635,9 @@ static bool _emitter_prepare_render_multi(
                                shader.vertex_glsl, cfg);
             else
                 ok = ok && _emit_shader(stream, vs_id, "VERTEX", NULL, shader.vertex_glsl, cfg);
+            if (ok && shader.builtin_family != NULL && shader.builtin_variant != NULL)
+                ok = dvz_drp2_stream_shader_set_builtin_identity(
+                    stream, vs_id, shader.builtin_family, shader.builtin_variant, 1);
         }
 
         uint64_t fs_id = _obj_id(emitter, shader.fragment_key, &is_new);
@@ -658,6 +661,9 @@ static bool _emitter_prepare_render_multi(
             else
                 ok = ok &&
                      _emit_shader(stream, fs_id, "FRAGMENT", NULL, shader.fragment_glsl, cfg);
+            if (ok && shader.builtin_family != NULL && shader.builtin_variant != NULL)
+                ok = dvz_drp2_stream_shader_set_builtin_identity(
+                    stream, fs_id, shader.builtin_family, shader.builtin_variant, 1);
         }
 
         uint64_t pipe_id = _obj_id(emitter, shader.pipeline_key, &is_new);
@@ -715,6 +721,9 @@ static bool _emitter_prepare_render_multi(
                            pipeline.topology, pipeline.binding_count, pipeline.strides,
                            pipeline.attr_count, pipeline.bindings, pipeline.locations,
                            pipeline.formats, pipeline.offsets);
+            if (ok && shader.builtin_pipeline != NULL)
+                ok = dvz_drp2_stream_pipeline_set_builtin_identity(
+                    stream, pipe_id, shader.builtin_pipeline, 1);
             if (ok && pipeline.needs_common_layout && common_bgl_id != 0)
                 ok = dvz_drp2_stream_pipeline_set_bind_group_layout(stream, common_bgl_id);
             if (ok && pipeline.needs_image_layout && img_bgl_id != 0 &&

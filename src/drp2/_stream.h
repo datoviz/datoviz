@@ -80,6 +80,9 @@ struct DvzDrp2Command
             uint64_t        id;
             char            stage[DVZ_DRP2_LABEL_SIZE];
             char            format[DVZ_DRP2_LABEL_SIZE];
+            char            builtin_family[DVZ_DRP2_LABEL_SIZE];
+            char            builtin_variant[DVZ_DRP2_LABEL_SIZE];
+            uint32_t        builtin_version;
             char*           code;      /* heap-allocated; freed by stream_destroy */
             const unsigned char* spirv; /* in-process SPIR-V bytes: borrowed, not freed */
             uint64_t        spirv_size; /* byte count */
@@ -114,6 +117,8 @@ struct DvzDrp2Command
             uint32_t attr_locations[16];  /* layout(location=N)                           */
             uint32_t attr_formats[16];    /* VkFormat                                     */
             uint32_t attr_offsets[16];    /* byte offset within the binding stride        */
+            char builtin_pipeline[DVZ_DRP2_LABEL_SIZE];
+            uint32_t builtin_version;
         } create_render_pipeline;
         struct
         {
