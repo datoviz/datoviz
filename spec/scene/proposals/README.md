@@ -48,6 +48,9 @@ Mostly promoted:
 When changing active behavior for these topics, update the specialized spec first and add only a
 short cross-reference or remaining-work note in the proposal.
 
+Implementation-ready work packets now live in `../slices/`. Use those files for concrete code
+slices once the specialized specs and proposals already agree on behavior.
+
 
 ## Promotion Targets
 
@@ -134,8 +137,12 @@ Cross-cutting checkpoint:
 For the next public API pass, read these first:
 
 1. [../api/API_SURFACE.md](../api/API_SURFACE.md)
-2. [INTERACTION_API_DESIGN.md](INTERACTION_API_DESIGN.md)
-3. [ANNOTATION_TEXT_SCALE_API.md](ANNOTATION_TEXT_SCALE_API.md)
-4. [PICKING_DESIGN.md](PICKING_DESIGN.md)
-5. [PROBE_READOUT_DESIGN.md](PROBE_READOUT_DESIGN.md)
+2. [../slices/README.md](../slices/README.md)
+3. [../slices/TEXT_RENDERING_SLICE.md](../slices/TEXT_RENDERING_SLICE.md)
+4. [../slices/ANNOTATION_LABEL_SLICE.md](../slices/ANNOTATION_LABEL_SLICE.md)
+5. [../slices/COLORBAR_RENDERING_SLICE.md](../slices/COLORBAR_RENDERING_SLICE.md)
+6. [INTERACTION_API_DESIGN.md](INTERACTION_API_DESIGN.md)
+7. [ANNOTATION_TEXT_SCALE_API.md](ANNOTATION_TEXT_SCALE_API.md)
+8. [PICKING_DESIGN.md](PICKING_DESIGN.md)
+9. [PROBE_READOUT_DESIGN.md](PROBE_READOUT_DESIGN.md)
 6. [COLORBAR_COLORMAP_DESIGN.md](COLORBAR_COLORMAP_DESIGN.md)

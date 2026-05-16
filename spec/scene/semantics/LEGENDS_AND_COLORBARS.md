@@ -1,6 +1,6 @@
 # Scene Legends And Colorbars
 
-This document defines how legends and colorbars should work in the future scene layer.
+This document defines how legends and colorbars should work in the v0.4 scene layer.
 
 Legends and colorbars are annotation-side semantic objects.
 
@@ -37,8 +37,12 @@ The intended flow is:
 
 ## API Model
 
-`DvzLegend` and `DvzColorbar` are distinct types at the API level. They share placement and
-invalidation rules but have different content models and are not subtypes of a common base.
+`DvzColorbar` is an installed retained API handle in the current v0.4 scene headers.
+
+`DvzLegend` is the preferred semantic handle for discrete legends, but it is not installed yet.
+When categorical legend work starts, the public API decision must be recorded in
+`api/API_SURFACE.md` before implementation. Legends and colorbars should remain distinct types at
+the API level because they share placement and invalidation rules but have different content models.
 
 Legends and colorbars hold a reference to a `DvzScale*` handle (see `semantics/SCALES.md`). The scale is
 a first-class scene object with a stable identity; legends and colorbars do not own the scale.
@@ -602,3 +606,8 @@ This document intentionally does not freeze:
 
 `validation/VALIDATION.md` covers legend/colorbar validation and cross-object semantic checks that
 build on this document.
+
+The first implementation-ready colorbar packet is
+[../slices/COLORBAR_RENDERING_SLICE.md](../slices/COLORBAR_RENDERING_SLICE.md). Discrete legend
+implementation is intentionally staged in [../slices/LEGEND_SLICE.md](../slices/LEGEND_SLICE.md)
+until categorical scale labels, ordering, and the public `DvzLegend` boundary are concrete.

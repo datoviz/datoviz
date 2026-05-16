@@ -1,6 +1,6 @@
 # Scene Visual Contract
 
-This document defines the producer-side contract for a `Visual` in the future scene layer.
+This document defines the producer-side contract for a `Visual` in the v0.4 scene layer.
 
 It does not define the final public C API.
 

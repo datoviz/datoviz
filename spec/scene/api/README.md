@@ -19,8 +19,9 @@ scene concepts into C and language bindings.
 ## Related Directories
 
 1. [../headers](../headers): implementation-facing draft header sketches.
-2. [../proposals](../proposals): active design addenda that feed future API drafts.
-3. [../examples](../examples): API pressure sketches and worked examples.
+2. [../slices](../slices): implementation-ready work packets for mature API areas.
+3. [../proposals](../proposals): active design addenda that feed future API drafts.
+4. [../examples](../examples): API pressure sketches and worked examples.
 
 
 ## Active Proposal Inputs
@@ -30,3 +31,11 @@ scene concepts into C and language bindings.
 3. [../proposals/MESH_API_DESIGN.md](../proposals/MESH_API_DESIGN.md)
 4. [../proposals/MATERIAL_LIGHTING_API.md](../proposals/MATERIAL_LIGHTING_API.md)
 5. [../proposals/SAMPLED_FIELD_API_DESIGN.md](../proposals/SAMPLED_FIELD_API_DESIGN.md)
+
+
+## Active Implementation Slice Inputs
+
+1. [../slices/TEXT_RENDERING_SLICE.md](../slices/TEXT_RENDERING_SLICE.md)
+2. [../slices/ANNOTATION_LABEL_SLICE.md](../slices/ANNOTATION_LABEL_SLICE.md)
+3. [../slices/COLORBAR_RENDERING_SLICE.md](../slices/COLORBAR_RENDERING_SLICE.md)
+4. [../slices/LEGEND_SLICE.md](../slices/LEGEND_SLICE.md)

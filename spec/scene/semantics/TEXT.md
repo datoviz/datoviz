@@ -16,6 +16,9 @@ This document is normative for the current v0.4 text model.
 for future implementation details such as equation backends, color-font handling, and direct GPU
 outline rendering.
 
+The first implementation-ready rendering packet is
+[../slices/TEXT_RENDERING_SLICE.md](../slices/TEXT_RENDERING_SLICE.md).
+
 
 ## Semantic Purpose
 

@@ -1,6 +1,6 @@
 # Scene Visual Families
 
-This document defines the preferred visual-family vocabulary for the future scene layer.
+This document defines the preferred visual-family vocabulary for the v0.4 scene layer.
 
 It is not a frozen public API.
 

@@ -1,6 +1,6 @@
 # Scene Annotations
 
-This document defines how annotations should work in the future scene layer.
+This document defines how annotations should work in the v0.4 scene layer.
 
 Annotations are scene-side semantic objects.
 
@@ -59,14 +59,19 @@ It should not force the user to think in terms of:
 
 ## API Model
 
-Annotation subtypes are distinct types at the API level. There is no shared `DvzAnnotation`
-union or base struct — the content models of text labels, callouts, guide lines, probe overlays,
-and region overlays differ enough that a generic type would obscure more than it clarifies.
-Shared behaviour — attachment, placement, invalidation, z-order — is covered by shared rules in
-this spec and matching fields in each subtype, not by a common C base type.
+The current installed API exposes one retained `DvzAnnotation` handle for the first annotation
+slice, including label annotations. That handle is a semantic scene object, not a renderer union.
 
-Legends and colorbars are dedicated scene objects (`DvzLegend`, `DvzColorbar`) defined in
-`semantics/LEGENDS_AND_COLORBARS.md`. They are not annotation subtypes.
+Future annotation subtypes may grow dedicated handles when their content models justify it. Text
+labels, callouts, guide lines, probe overlays, scale bars, dimensions, and region overlays differ
+enough that the public API should not force every mature subtype through one monolithic descriptor.
+Shared behaviour — attachment, placement, invalidation, and z-order — is covered by shared rules in
+this spec and matching fields in each subtype or descriptor.
+
+Colorbars are dedicated scene objects (`DvzColorbar`) defined in
+`semantics/LEGENDS_AND_COLORBARS.md`. Legends are also dedicated explanatory objects in the semantic
+model, but the current installed public headers do not yet expose a `DvzLegend` handle. Neither
+colorbars nor future legends should be implemented as ordinary annotation subtypes.
 
 
 ## Non-Goals
@@ -539,3 +544,7 @@ This document intentionally does not freeze:
 
 `semantics/LEGENDS_AND_COLORBARS.md` and `validation/VALIDATION.md` are the natural follow-ons from this
 document; annotation-heavy and multi-panel worked examples further pressure-test it.
+
+The first implementation-ready annotation packet is
+[../slices/ANNOTATION_LABEL_SLICE.md](../slices/ANNOTATION_LABEL_SLICE.md). Measurement annotations
+should wait until that label path and the text rendering slice are active.

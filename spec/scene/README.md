@@ -43,10 +43,11 @@ The scene spec is split by kind of authority:
 7. [validation](validation/README.md): validation, adaptation, diagnostics, and deferred items.
 8. [integration](integration/README.md): host UI, threading, high-DPI, and custom visuals.
 9. [export](export/README.md): image and vector export semantics.
-10. [headers](headers/README.md): implementation-facing draft C header sketches.
-11. [proposals](proposals/README.md): active design addenda awaiting promotion into specialized specs.
-12. [decisions](decisions/README.md): historical ADR-style decision records.
-13. [examples](examples/README.md): worked examples and API-shape pressure tests.
+10. [slices](slices/README.md): implementation-ready work packets for mature spec areas.
+11. [headers](headers/README.md): implementation-facing draft C header sketches.
+12. [proposals](proposals/README.md): active design addenda awaiting promotion into specialized specs.
+13. [decisions](decisions/README.md): historical ADR-style decision records.
+14. [examples](examples/README.md): worked examples and API-shape pressure tests.
 
 
 ## Relationship To The DRP2 Spec
@@ -133,10 +134,11 @@ For cross-tree overlap, use this source-of-truth order:
 2. DRP2 active JSON schemas for machine-checkable command shape,
 3. scene normative documents for scene semantics,
 4. scene proposals for rules not yet promoted into specialized spec files,
-5. historical scene decision records for rationale behind older choices,
-6. installed scene headers for public names and signatures that already exist,
-7. `spec/scene/api/API_SURFACE.md` for public API shape policy and not-yet-implemented groups,
-8. examples, deferred trackers, and historical header sketches as informative material.
+5. scene implementation slices for concrete work boundaries that apply those rules,
+6. historical scene decision records for rationale behind older choices,
+7. installed scene headers for public names and signatures that already exist,
+8. `spec/scene/api/API_SURFACE.md` for public API shape policy and not-yet-implemented groups,
+9. examples, deferred trackers, and historical header sketches as informative material.
 
 
 ## Recommended Reading Order
@@ -157,8 +159,9 @@ Read the scene spec in this order during review.
 4. [api/API_SURFACE.md](api/API_SURFACE.md) — public API shape policy and implemented-vs-draft boundary
 5. [api/API_IMPLEMENTATION_READINESS.md](api/API_IMPLEMENTATION_READINESS.md) — checklist for the next public API pass
 6. [headers/README.md](headers/README.md) — draft header index for pressure-testing the surface
-7. [proposals/README.md](proposals/README.md) — active scene proposals awaiting promotion
-8. [api/IMPLEMENTATION_NOTES.md](api/IMPLEMENTATION_NOTES.md) — C-facing mapping, Python binding architecture
+7. [slices/README.md](slices/README.md) — implementation-ready work packets and readiness matrix
+8. [proposals/README.md](proposals/README.md) — active scene proposals awaiting promotion
+9. [api/IMPLEMENTATION_NOTES.md](api/IMPLEMENTATION_NOTES.md) — C-facing mapping, Python binding architecture
 
 ### 3. Visual semantics
 
@@ -172,6 +175,9 @@ Read the scene spec in this order during review.
 8. [semantics/ANNOTATIONS.md](semantics/ANNOTATIONS.md) — labels, guides, probes, overlays, and callouts
 9. [semantics/LEGENDS_AND_COLORBARS.md](semantics/LEGENDS_AND_COLORBARS.md) — explanatory mapping semantics
 10. [semantics/TEXT.md](semantics/TEXT.md) — text content, placement, resources, and DPI behavior
+11. [slices/TEXT_RENDERING_SLICE.md](slices/TEXT_RENDERING_SLICE.md) — first rendered text work packet
+12. [slices/ANNOTATION_LABEL_SLICE.md](slices/ANNOTATION_LABEL_SLICE.md) — first rendered label annotation work packet
+13. [slices/COLORBAR_RENDERING_SLICE.md](slices/COLORBAR_RENDERING_SLICE.md) — first rendered colorbar work packet
 
 ### 4. Data, transforms, planning, and runtime handoff
 

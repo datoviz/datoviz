@@ -60,6 +60,12 @@ Treat these installed declarations as draft contracts until implemented in `src/
 Colorbars, text, and annotations are currently retained semantic objects, but rendered
 ticks/labels/glyphs remain future work.
 
+Implementation-ready rendering work for those retained objects is tracked in:
+
+1. [../slices/TEXT_RENDERING_SLICE.md](../slices/TEXT_RENDERING_SLICE.md),
+2. [../slices/ANNOTATION_LABEL_SLICE.md](../slices/ANNOTATION_LABEL_SLICE.md),
+3. [../slices/COLORBAR_RENDERING_SLICE.md](../slices/COLORBAR_RENDERING_SLICE.md).
+
 
 ## Opaque Handles Versus Public Structs
 

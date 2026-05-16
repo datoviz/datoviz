@@ -1,6 +1,6 @@
 # Scene Axes
 
-This document defines how axes should work in the future scene layer.
+This document defines how axes should work in the v0.4 scene layer.
 
 Axes are scene-side semantic objects.
 

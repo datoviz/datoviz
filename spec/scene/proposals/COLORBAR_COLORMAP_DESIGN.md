@@ -9,6 +9,10 @@
 This note narrows the broader scales and legends/colorbars material into the active design choices
 that matter now for scientific visualization workflows.
 
+For concrete implementation work, use
+[../slices/COLORBAR_RENDERING_SLICE.md](../slices/COLORBAR_RENDERING_SLICE.md). This proposal remains
+the rationale for scale ownership, colorbar ownership, and range-control semantics.
+
 
 ## Objective
 

@@ -60,6 +60,13 @@ active implementation status is:
 | Interaction/selection | policies, pick/probe queues, selection/link APIs | active bookkeeping and tests | request processing executes through app/runtime for point/image | narrow point/image GPU readback | broader mesh/object/sphere/volume picking and rendered selection highlights |
 | Text/annotations | font, text, annotation APIs | active bookkeeping and lifecycle tests | no rendered glyph/text/annotation path | no | font atlas, shaping, glyph rendering, rendered annotations, glyph/text picking |
 
+The implementation-ready packets for the retained-but-not-rendered rows are:
+
+1. [../slices/TEXT_RENDERING_SLICE.md](../slices/TEXT_RENDERING_SLICE.md),
+2. [../slices/ANNOTATION_LABEL_SLICE.md](../slices/ANNOTATION_LABEL_SLICE.md),
+3. [../slices/COLORBAR_RENDERING_SLICE.md](../slices/COLORBAR_RENDERING_SLICE.md),
+4. [../slices/LEGEND_SLICE.md](../slices/LEGEND_SLICE.md).
+
 Remaining implementation work should focus on:
 
 1. broadening pick/probe coverage beyond the first point/image DRP2 readback paths,

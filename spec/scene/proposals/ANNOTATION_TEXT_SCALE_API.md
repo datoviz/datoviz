@@ -9,6 +9,15 @@
 This note turns the current text, scale, colorbar, and annotation design decisions into one focused
 scene-facing API shape.
 
+For concrete implementation work, prefer the narrower slice documents:
+
+1. [../slices/TEXT_RENDERING_SLICE.md](../slices/TEXT_RENDERING_SLICE.md),
+2. [../slices/ANNOTATION_LABEL_SLICE.md](../slices/ANNOTATION_LABEL_SLICE.md),
+3. [../slices/COLORBAR_RENDERING_SLICE.md](../slices/COLORBAR_RENDERING_SLICE.md),
+4. [../slices/LEGEND_SLICE.md](../slices/LEGEND_SLICE.md).
+
+This proposal remains rationale and API-shape background.
+
 
 ## Objective
 

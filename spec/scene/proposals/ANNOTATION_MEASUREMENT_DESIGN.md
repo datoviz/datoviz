@@ -9,6 +9,10 @@
 This note narrows the broader scene annotation discussion into the active measurement-oriented
 requirements that should shape v0.4 text, transforms, picking, and axes.
 
+For immediate implementation work, start with
+[../slices/ANNOTATION_LABEL_SLICE.md](../slices/ANNOTATION_LABEL_SLICE.md). Measurement annotations
+should be implemented after the retained label and text rendering paths are active.
+
 
 ## Objective
 
