@@ -66,8 +66,12 @@ typedef struct SsaoExampleState
     float bias;
     float power;
     float min_visibility;
+    float blur_radius;
+    float blur_depth_sigma;
+    float blur_normal_sigma;
     float sample_count;
     float size_scale;
+    bool blur_enabled;
     bool debug_view;
 } SsaoExampleState;
 
@@ -236,7 +240,11 @@ static void _apply_ssao(SsaoExampleState* state)
         .bias = state->bias,
         .power = state->power,
         .min_visibility = state->min_visibility,
+        .blur_radius = state->blur_radius,
+        .blur_depth_sigma = state->blur_depth_sigma,
+        .blur_normal_sigma = state->blur_normal_sigma,
         .sample_count = (uint32_t)(state->sample_count + 0.5f),
+        .blur_enabled = state->blur_enabled,
         .debug_view = state->debug_view,
     };
     if (!_scene_technique_state_set_ssao(&state->panel->techniques, &desc))
@@ -297,8 +305,12 @@ static void _reset_controls(SsaoExampleState* state)
     state->bias = 0.012f;
     state->power = 2.8f;
     state->min_visibility = 0.10f;
+    state->blur_radius = 2.0f;
+    state->blur_depth_sigma = 0.65f;
+    state->blur_normal_sigma = 0.35f;
     state->sample_count = 32.0f;
     state->size_scale = 1.0f;
+    state->blur_enabled = true;
     state->debug_view = false;
     _apply_sphere_sizes(state);
     _apply_sphere_mode(state);
@@ -339,6 +351,12 @@ static void _ssao_gui(DvzGui* gui, DvzAppWindow* win, void* user_data)
         ssao_changed |=
             dvz_gui_slider_float(gui, "Min visibility", &state->min_visibility, 0.0f, 1.0f);
         ssao_changed |= dvz_gui_slider_float(gui, "Samples", &state->sample_count, 4.0f, 32.0f);
+        ssao_changed |= dvz_gui_checkbox(gui, "Blur", &state->blur_enabled);
+        ssao_changed |= dvz_gui_slider_float(gui, "Blur radius", &state->blur_radius, 1.0f, 8.0f);
+        ssao_changed |=
+            dvz_gui_slider_float(gui, "Depth sigma", &state->blur_depth_sigma, 0.01f, 2.5f);
+        ssao_changed |=
+            dvz_gui_slider_float(gui, "Normal sigma", &state->blur_normal_sigma, 0.01f, 1.0f);
         ssao_changed |= dvz_gui_checkbox(gui, "Raw SSAO", &state->debug_view);
         if (dvz_gui_button(gui, "Reset"))
         {

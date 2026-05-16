@@ -769,6 +769,7 @@ void _scene_emit_panel_render(
     DvzFramePlanNode* blended_node = NULL;
     DvzFramePlanNode* edl_node = NULL;
     DvzFramePlanNode* ssao_node = NULL;
+    DvzFramePlanNode* ssao_blur_node = NULL;
     DvzFramePlanNode* ssao_composite_node = NULL;
     DvzSceneGBufferPlan gbuffer = {0};
     _scene_technique_gbuffer_plan_init(&gbuffer);
@@ -1012,11 +1013,18 @@ void _scene_emit_panel_render(
         ssao_node = _scene_begin_panel_render_pass(
             plan, panel_id, "rt.ssao.occlusion", panel->desc, DVZ_FRAME_PLAN_RENDER_PASS_SSAO,
             &panel_apply_mvp, &panel_viewport);
+        if (ssao_state->blur_enabled)
+        {
+            ssao_blur_node = _scene_begin_panel_render_pass(
+                plan, panel_id, "rt.ssao.blur", panel->desc, DVZ_FRAME_PLAN_RENDER_PASS_SSAO_BLUR,
+                &panel_apply_mvp, &panel_viewport);
+        }
         ssao_composite_node = _scene_begin_panel_render_pass(
             plan, panel_id, "rt", panel->desc, DVZ_FRAME_PLAN_RENDER_PASS_SSAO_COMPOSITE,
             &panel_apply_mvp, &panel_viewport);
-        if (ssao_node == NULL || ssao_composite_node == NULL ||
-            !_scene_technique_emit_ssao_frame_graph(plan, panel_id, &gbuffer))
+        if (ssao_node == NULL || (ssao_state->blur_enabled && ssao_blur_node == NULL) ||
+            ssao_composite_node == NULL ||
+            !_scene_technique_emit_ssao_frame_graph(plan, panel_id, &gbuffer, ssao_state))
             log_error("failed to emit SSAO FramePlan graph for panel %s", panel_id);
     }
 }

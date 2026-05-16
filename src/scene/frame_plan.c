@@ -208,6 +208,8 @@ static const char* _render_pass_role_name(DvzFramePlanRenderPassRole role)
         return "gbuffer";
     case DVZ_FRAME_PLAN_RENDER_PASS_SSAO:
         return "ssao";
+    case DVZ_FRAME_PLAN_RENDER_PASS_SSAO_BLUR:
+        return "ssao_blur";
     case DVZ_FRAME_PLAN_RENDER_PASS_SSAO_COMPOSITE:
         return "ssao_composite";
     case DVZ_FRAME_PLAN_RENDER_PASS_EDL_RESOLVE:

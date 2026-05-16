@@ -142,4 +142,5 @@ bool _scene_technique_emit_gbuffer_frame_graph(
     DvzFramePlan* plan, const char* panel_id, const DvzSceneGBufferPlan* gbuffer);
 
 bool _scene_technique_emit_ssao_frame_graph(
-    DvzFramePlan* plan, const char* panel_id, const DvzSceneGBufferPlan* gbuffer);
+    DvzFramePlan* plan, const char* panel_id, const DvzSceneGBufferPlan* gbuffer,
+    const DvzSceneSsaoTechniqueState* ssao);

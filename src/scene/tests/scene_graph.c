@@ -5170,6 +5170,7 @@ int test_scene_ssao_graph_foundation(TstSuite* suite, TstItem* item)
     AT(ssao->strength == 2.0f);
     AT(ssao->bias == 0.05f);
     AT(ssao->sample_count == 32);
+    AT(!ssao->blur_enabled);
 
     DvzFramePlan* plan = dvz_frame_plan("figure.ssao", 0);
     ANN(plan);
@@ -5233,6 +5234,36 @@ int test_scene_ssao_graph_foundation(TstSuite* suite, TstItem* item)
     AT(strcmp(composite_pass->reads[0].resource_id, "figure_0_p0.ssao.occlusion") == 0);
     AT(strcmp(composite_pass->color_attachments[0].resource_id, "rt") == 0);
     AT(composite_pass->color_attachments[0].load_op == DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_LOAD);
+
+    dvz_frame_plan_destroy(plan);
+
+    AT(_scene_technique_state_set_ssao(
+        &panel->techniques,
+        &(DvzSceneSsaoDesc){.radius = 1.25f, .strength = 2.0f, .bias = 0.05f,
+                            .sample_count = 32, .blur_enabled = true}));
+    plan = dvz_frame_plan("figure.ssao.blur", 0);
+    ANN(plan);
+    _scene_emit_panel_render(figure, 0, plan, "figure_0");
+    AT(dvz_frame_plan_node_count(plan) == 6);
+    AT(dvz_frame_plan_graph_pass_count(plan) == 5);
+    const DvzFramePlanNode* blur_node = dvz_frame_plan_node_get(plan, 4);
+    composite_node = dvz_frame_plan_node_get(plan, 5);
+    ANN(blur_node);
+    ANN(composite_node);
+    AT(dvz_frame_plan_render_pass_role(blur_node) == DVZ_FRAME_PLAN_RENDER_PASS_SSAO_BLUR);
+    AT(dvz_frame_plan_render_pass_role(composite_node) ==
+       DVZ_FRAME_PLAN_RENDER_PASS_SSAO_COMPOSITE);
+    const DvzFrameGraphPass* blur_pass = dvz_frame_plan_graph_pass_get(plan, 3);
+    composite_pass = dvz_frame_plan_graph_pass_get(plan, 4);
+    ANN(blur_pass);
+    ANN(composite_pass);
+    AT(strcmp(blur_pass->work_label, "ssao_blur") == 0);
+    AT(blur_pass->read_count == 3);
+    AT(strcmp(blur_pass->reads[0].resource_id, "figure_0_p0.ssao.occlusion") == 0);
+    AT(strcmp(blur_pass->reads[1].resource_id, "figure_0_p0.gbuffer.normal") == 0);
+    AT(strcmp(blur_pass->reads[2].resource_id, "figure_0_p0.gbuffer.depth") == 0);
+    AT(strcmp(blur_pass->color_attachments[0].resource_id, "figure_0_p0.ssao.blur") == 0);
+    AT(strcmp(composite_pass->reads[0].resource_id, "figure_0_p0.ssao.blur") == 0);
 
     dvz_frame_plan_destroy(plan);
     dvz_scene_destroy(scene);
@@ -5355,7 +5386,7 @@ int test_scene_ssao_runtime_lowering(TstSuite* suite, TstItem* item)
             found_ssao_bind_group =
                 found_ssao_bind_group || cmd->u.create_bind_group.entry_count == 4;
             found_composite_bind_group =
-                found_composite_bind_group || cmd->u.create_bind_group.entry_count == 2;
+                found_composite_bind_group || cmd->u.create_bind_group.entry_count == 3;
         }
     }
     AT(found_occlusion_texture);
