@@ -51,7 +51,7 @@
 #define DEFAULT_SLICE_OPACITY 1.0f
 #define DEFAULT_VOLUME_OPACITY 0.85f
 #define DEFAULT_VOLUME_STEPS  192.0f
-#define DEFAULT_ATLAS_ALPHA   (72.0f / 255.0f)
+#define DEFAULT_ATLAS_ALPHA_SCALE 1.0f
 #define MOUSE_BRAIN_WIDTH 320
 #define MOUSE_BRAIN_HEIGHT 456
 #define MOUSE_BRAIN_DEPTH 528
@@ -79,6 +79,7 @@ typedef struct AllenIblAtlasMesh
 {
     float (*pos)[3];
     float (*normal)[3];
+    DvzColor* base_color;
     DvzColor* color;
     DvzIndex* idx;
     uint32_t vertex_count;
@@ -106,7 +107,7 @@ typedef struct AllenMouseBrainState
     float slice_opacity;
     float volume_opacity;
     float volume_steps;
-    float atlas_alpha;
+    float atlas_alpha_scale;
     float atlas_ambient;
     float atlas_diffuse;
     float atlas_light_direction[3];
@@ -463,6 +464,12 @@ static bool _load_ibl_atlas_mesh(const char* data_dir, AllenIblAtlasMesh* atlas)
     atlas->idx = (DvzIndex*)idx;
     atlas->vertex_count = (uint32_t)vertex_count;
     atlas->index_count = (uint32_t)index_count;
+
+    atlas->base_color = (DvzColor*)dvz_calloc(color_size, 1);
+    if (atlas->base_color == NULL)
+        goto error;
+    dvz_memcpy(atlas->base_color, color_size, atlas->color, color_size);
+
     _load_ibl_volume_bounds(data_dir, atlas);
 
     dvz_fprintf(
@@ -475,6 +482,8 @@ error:
     dvz_free(color);
     dvz_free(normal);
     dvz_free(pos);
+    dvz_free(atlas->base_color);
+    dvz_memset(atlas, sizeof(AllenIblAtlasMesh), 0, sizeof(AllenIblAtlasMesh));
     return false;
 }
 
@@ -491,6 +500,7 @@ static void _ibl_atlas_mesh_destroy(AllenIblAtlasMesh* atlas)
         return;
     dvz_free(atlas->idx);
     dvz_free(atlas->color);
+    dvz_free(atlas->base_color);
     dvz_free(atlas->normal);
     dvz_free(atlas->pos);
     dvz_memset(atlas, sizeof(AllenIblAtlasMesh), 0, sizeof(AllenIblAtlasMesh));
@@ -1087,23 +1097,6 @@ static void _volume_aspect_bounds(
 
 
 /**
- * Convert a normalized alpha value to an 8-bit color channel.
- *
- * @param value normalized alpha value
- * @return clamped 8-bit alpha channel
- */
-static uint8_t _alpha_u8(float value)
-{
-    if (value < 0.0f)
-        value = 0.0f;
-    if (value > 1.0f)
-        value = 1.0f;
-    return (uint8_t)(255.0f * value + 0.5f);
-}
-
-
-
-/**
  * Upload retained atlas mesh controls.
  *
  * @param state example state
@@ -1115,9 +1108,12 @@ static void _apply_atlas_mesh_controls(AllenMouseBrainState* state)
         return;
 
     dvz_visual_set_visible(state->atlas_mesh_visual, state->show_atlas_mesh);
-    uint8_t alpha = _alpha_u8(state->atlas_alpha);
     for (uint32_t i = 0; i < state->atlas_mesh->vertex_count; i++)
-        state->atlas_mesh->color[i][3] = alpha;
+    {
+        uint32_t alpha = state->atlas_mesh->base_color[i][3];
+        alpha = (uint32_t)((float)alpha * state->atlas_alpha_scale + 0.5f);
+        state->atlas_mesh->color[i][3] = alpha > 255u ? 255u : (uint8_t)alpha;
+    }
 
     if (dvz_visual_set_data(
             state->atlas_mesh_visual, "color", state->atlas_mesh->color,
@@ -1256,7 +1252,8 @@ static void _allen_mouse_brain_gui(DvzGui* gui, DvzAppWindow* win, void* user_da
         if (state->atlas_mesh_visual != NULL)
         {
             atlas_changed |=
-                dvz_gui_slider_float(gui, "Atlas alpha", &state->atlas_alpha, 0.02f, 0.80f);
+                dvz_gui_slider_float(
+                    gui, "Atlas alpha scale", &state->atlas_alpha_scale, 0.20f, 1.50f);
             atlas_changed |=
                 dvz_gui_slider_float(gui, "Atlas ambient", &state->atlas_ambient, 0.0f, 1.0f);
             atlas_changed |=
@@ -1274,7 +1271,7 @@ static void _allen_mouse_brain_gui(DvzGui* gui, DvzAppWindow* win, void* user_da
             state->slice_opacity = DEFAULT_SLICE_OPACITY;
             state->volume_opacity = DEFAULT_VOLUME_OPACITY;
             state->volume_steps = DEFAULT_VOLUME_STEPS;
-            state->atlas_alpha = DEFAULT_ATLAS_ALPHA;
+            state->atlas_alpha_scale = DEFAULT_ATLAS_ALPHA_SCALE;
             state->atlas_ambient = 0.22f;
             state->atlas_diffuse = 0.95f;
             state->slice_position = DEFAULT_SLICE_POS;
@@ -1551,7 +1548,7 @@ int main(int argc, char** argv)
         .slice_opacity = DEFAULT_SLICE_OPACITY,
         .volume_opacity = DEFAULT_VOLUME_OPACITY,
         .volume_steps = DEFAULT_VOLUME_STEPS,
-        .atlas_alpha = DEFAULT_ATLAS_ALPHA,
+        .atlas_alpha_scale = DEFAULT_ATLAS_ALPHA_SCALE,
         .atlas_ambient = 0.22f,
         .atlas_diffuse = 0.95f,
         .atlas_light_direction = {0.20f, 0.70f, 0.45f},
