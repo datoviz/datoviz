@@ -650,6 +650,13 @@ static bool _emitter_prepare_render_multi(
                 dvz_snprintf(
                     shader.pipeline_key + key_len, sizeof(shader.pipeline_key) - key_len,
                     "_a2c");
+                key_len = strlen(shader.fragment_key);
+                dvz_snprintf(
+                    shader.fragment_key + key_len, sizeof(shader.fragment_key) - key_len,
+                    "_a2c");
+                shader.fragment_glsl =
+                    _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_SPHERE_A2C, true);
+                shader.fragment_spirv_key = "sphere_a2c_frag";
             }
         }
 

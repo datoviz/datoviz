@@ -992,7 +992,7 @@ void _scene_emit_panel_render(
         }
         else if ((gbuffer_node != NULL || (!ssao_enabled && msaa_state != NULL)) &&
                  !_scene_technique_emit_opaque_frame_graph(
-                     plan, panel_id, opaque_needs_depth, ssao_enabled ? NULL : msaa_state))
+                     plan, panel_id, opaque_needs_depth, msaa_state))
             log_error("failed to emit opaque FramePlan graph for panel %s", panel_id);
     }
     if (ssao_enabled && gbuffer_node != NULL && gbuffer.producer_count > 0)

@@ -4861,6 +4861,7 @@ int test_scene_msaa_runtime_lowering(TstSuite* suite, TstItem* item)
     bool found_depth_texture = false;
     bool found_resolve_pass = false;
     bool found_msaa_pipeline = false;
+    bool found_sphere_a2c_shader = false;
     for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
     {
         const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream, i);
@@ -4880,6 +4881,13 @@ int test_scene_msaa_runtime_lowering(TstSuite* suite, TstItem* item)
                 found_depth_texture = cmd->u.create_texture.sample_count == 4 &&
                                       cmd->u.create_texture.format == VK_FORMAT_D32_SFLOAT;
             }
+        }
+        else if (cmd->type == DVZ_DRP2_COMMAND_CREATE_SHADER_MODULE)
+        {
+            const char* label = dvz_drp2_stream_label(stream, cmd->u.create_shader_module.id);
+            found_sphere_a2c_shader =
+                found_sphere_a2c_shader ||
+                (label != NULL && strcmp(label, "_fs_sphereg_a2c") == 0);
         }
         else if (cmd->type == DVZ_DRP2_COMMAND_BEGIN_RENDER_PASS)
         {
@@ -4906,6 +4914,7 @@ int test_scene_msaa_runtime_lowering(TstSuite* suite, TstItem* item)
     AT(found_depth_texture);
     AT(found_resolve_pass);
     AT(found_msaa_pipeline);
+    AT(found_sphere_a2c_shader);
 
     dvz_drp2_stream_destroy(stream);
     dvz_frame_plan_destroy(plan);
@@ -5445,6 +5454,8 @@ int test_scene_ssao_runtime_lowering(TstSuite* suite, TstItem* item)
     AT(figure != NULL);
     DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
     AT(panel != NULL);
+    AT(dvz_panel_set_msaa(
+        panel, &(DvzMsaaDesc){.enabled = true, .sample_count = 4, .alpha_to_coverage = true}));
 
     DvzVisual* mesh = dvz_mesh(scene, 0);
     AT(mesh != NULL);
@@ -5501,6 +5512,9 @@ int test_scene_ssao_runtime_lowering(TstSuite* suite, TstItem* item)
     bool found_composite_pipeline = false;
     bool found_ssao_bind_group = false;
     bool found_composite_bind_group = false;
+    bool found_msaa_color_texture = false;
+    bool found_msaa_render_pipeline = false;
+    bool found_single_sample_gbuffer = false;
     for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
     {
         const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream, i);
@@ -5514,6 +5528,14 @@ int test_scene_ssao_runtime_lowering(TstSuite* suite, TstItem* item)
                  cmd->u.create_texture.format == VK_FORMAT_R8_UNORM &&
                  (cmd->u.create_texture.usage & DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT) != 0 &&
                  (cmd->u.create_texture.usage & DVZ_DRP2_TEXTURE_USAGE_TEXTURE_BINDING) != 0);
+            found_msaa_color_texture =
+                found_msaa_color_texture ||
+                (label != NULL && strcmp(label, "fig0_p0.msaa.color") == 0 &&
+                 cmd->u.create_texture.sample_count == 4);
+            found_single_sample_gbuffer =
+                found_single_sample_gbuffer ||
+                (label != NULL && strcmp(label, "fig0_p0.gbuffer.normal") == 0 &&
+                 cmd->u.create_texture.sample_count == 1);
         }
         else if (cmd->type == DVZ_DRP2_COMMAND_WRITE_BUFFER)
         {
@@ -5535,6 +5557,8 @@ int test_scene_ssao_runtime_lowering(TstSuite* suite, TstItem* item)
                 found_composite_pipeline ||
                 (label != NULL && strstr(label, "_pipe_ssao_comp") != NULL &&
                  cmd->u.create_render_pipeline.color_targets[0].blend_enabled);
+            found_msaa_render_pipeline =
+                found_msaa_render_pipeline || cmd->u.create_render_pipeline.sample_count == 4;
         }
         else if (cmd->type == DVZ_DRP2_COMMAND_CREATE_BIND_GROUP)
         {
@@ -5550,6 +5574,9 @@ int test_scene_ssao_runtime_lowering(TstSuite* suite, TstItem* item)
     AT(found_composite_pipeline);
     AT(found_ssao_bind_group);
     AT(found_composite_bind_group);
+    AT(found_msaa_color_texture);
+    AT(found_msaa_render_pipeline);
+    AT(found_single_sample_gbuffer);
 
     dvz_drp2_stream_destroy(stream);
     dvz_scene_destroy(scene);

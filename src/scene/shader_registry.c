@@ -114,6 +114,8 @@ static const char* _builtin_shader_resource_key(DvzSceneBuiltinShader shader, bo
         return fragment ? "point_pick_frag" : "point_pick_vert";
     case DVZ_SCENE_BUILTIN_SHADER_SPHERE:
         return fragment ? "sphere_frag" : "sphere_vert";
+    case DVZ_SCENE_BUILTIN_SHADER_SPHERE_A2C:
+        return fragment ? "sphere_a2c_frag" : "sphere_vert";
     case DVZ_SCENE_BUILTIN_SHADER_SPHERE_GBUFFER:
         return fragment ? "sphere_gbuffer_frag" : "sphere_gbuffer_vert";
     case DVZ_SCENE_BUILTIN_SHADER_PRIMITIVE:
