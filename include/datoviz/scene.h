@@ -302,7 +302,7 @@ DVZ_EXPORT DvzArcball* dvz_panel_arcball(DvzPanel* panel);
  * Attach a fly camera controller to a panel and connect it to an input router.
  *
  * The fly controller updates the panel camera. Keyboard movement supports WASD and arrow keys;
- * pointer drag controls look/orbit gestures.
+ * left-drag controls look, and right-drag moves on the camera vertical plane unless a pivot is set.
  *
  * @param panel the panel
  * @param router input router to subscribe to (may be NULL to create without connecting)

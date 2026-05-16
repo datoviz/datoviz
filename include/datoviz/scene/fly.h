@@ -216,6 +216,16 @@ DVZ_EXPORT void dvz_fly_initial_lookat(DvzFly* fly, vec3 position, vec3 target);
 
 
 /**
+ * Set the movement mode.
+ *
+ * @param fly the fly controller
+ * @param mode movement mode
+ */
+DVZ_EXPORT void dvz_fly_set_mode(DvzFly* fly, DvzFlyMode mode);
+
+
+
+/**
  * Move forward along the active movement direction.
  *
  * @param fly the fly controller

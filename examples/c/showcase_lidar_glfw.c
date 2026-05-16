@@ -17,6 +17,7 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
+#include <float.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -45,10 +46,12 @@
 #define CUE_DISTANCE_MIN 0.0f
 #define CUE_DISTANCE_MAX 12.0f
 #define CUE_DISTANCE_EPS 1e-4f
-
-static const vec3 LIDAR_FLY_EYE = {+2.0f, +2.0f, -6.0f};
-static const vec3 LIDAR_FLY_TARGET = {+1.71428573f, +1.57142854f, -5.14285707f};
-static const vec3 LIDAR_FLY_UP = {-0.13552618f, +0.90350789f, +0.40657854f};
+#define LIDAR_FLY_BACK_RATIO   0.09f
+#define LIDAR_FLY_HEIGHT_RATIO 0.01f
+#define LIDAR_FLY_SIDE_RATIO   0.25f
+#define LIDAR_FLY_LOOK_RATIO   0.008f
+#define LIDAR_FLY_TARGET_SIDE  0.21f
+#define LIDAR_FLY_TARGET_BACK  0.006f
 
 
 
@@ -66,13 +69,26 @@ typedef struct LidarDataset
 
 
 
+typedef struct LidarViewParams
+{
+    vec3 eye;
+    vec3 target;
+    vec3 up;
+    float far;
+    float speed;
+} LidarViewParams;
+
+
+
 typedef struct LidarExampleState
 {
     DvzPanel* panel;
+    DvzFly* fly;
     DvzVisual* visual;
     LidarDataset* dataset;
     bool edl_enabled;
     bool depth_cue_enabled;
+    bool fps_mode;
     DvzDepthCueMode depth_cue_mode;
     float radius;
     float strength;
@@ -343,6 +359,125 @@ static void _destroy_lidar_dataset(LidarDataset* dataset)
 
 
 /**
+ * Return the axis that best matches the implicit ground-zero floor normal.
+ *
+ * @param min_pos point-cloud minimum bounds
+ * @param max_pos point-cloud maximum bounds
+ * @return detected up axis index
+ */
+static uint32_t _detect_floor_up_axis(const vec3 min_pos, const vec3 max_pos)
+{
+    uint32_t axis = 1;
+    float best_extent = FLT_MAX;
+    for (uint32_t i = 0; i < 3; i++)
+    {
+        float extent = max_pos[i] - min_pos[i];
+        if (min_pos[i] <= 0.0f && max_pos[i] >= 0.0f && extent < best_extent)
+        {
+            axis = i;
+            best_extent = extent;
+        }
+    }
+    if (best_extent < FLT_MAX)
+        return axis;
+
+    for (uint32_t i = 0; i < 3; i++)
+    {
+        float extent = max_pos[i] - min_pos[i];
+        if (extent < best_extent)
+        {
+            axis = i;
+            best_extent = extent;
+        }
+    }
+    return axis;
+}
+
+
+
+/**
+ * Compute a fly-camera pose from the point-cloud bounds and the ground-zero floor plane.
+ *
+ * @param dataset loaded LIDAR dataset
+ * @param out output fly view parameters
+ * @return whether the pose could be computed
+ */
+static bool _compute_lidar_view_params(const LidarDataset* dataset, LidarViewParams* out)
+{
+    ANN(dataset);
+    ANN(out);
+    if (dataset->positions == NULL || dataset->point_count == 0)
+        return false;
+
+    vec3 min_pos = {FLT_MAX, FLT_MAX, FLT_MAX};
+    vec3 max_pos = {-FLT_MAX, -FLT_MAX, -FLT_MAX};
+    for (uint32_t i = 0; i < dataset->point_count; i++)
+    {
+        for (uint32_t j = 0; j < 3; j++)
+        {
+            float value = dataset->positions[i][j];
+            if (value < min_pos[j])
+                min_pos[j] = value;
+            if (value > max_pos[j])
+                max_pos[j] = value;
+        }
+    }
+
+    vec3 center = {
+        0.5f * (min_pos[0] + max_pos[0]),
+        0.5f * (min_pos[1] + max_pos[1]),
+        0.5f * (min_pos[2] + max_pos[2]),
+    };
+    vec3 extent = {
+        max_pos[0] - min_pos[0],
+        max_pos[1] - min_pos[1],
+        max_pos[2] - min_pos[2],
+    };
+
+    uint32_t up_axis = _detect_floor_up_axis(min_pos, max_pos);
+    uint32_t side_axis = up_axis == 0 ? 1 : 0;
+    uint32_t forward_axis = up_axis == 2 ? 1 : 2;
+    if (extent[side_axis] > extent[forward_axis])
+    {
+        uint32_t tmp = side_axis;
+        side_axis = forward_axis;
+        forward_axis = tmp;
+    }
+
+    float forward_extent = extent[forward_axis] > 0.0f ? extent[forward_axis] : 1.0f;
+    float side_extent = extent[side_axis] > 0.0f ? extent[side_axis] : forward_extent;
+    float ground =
+        min_pos[up_axis] <= 0.0f && max_pos[up_axis] >= 0.0f ? 0.0f : min_pos[up_axis];
+
+    vec3 eye = {center[0], center[1], center[2]};
+    vec3 target = {center[0], center[1], center[2]};
+    vec3 up = {0.0f, 0.0f, 0.0f};
+    eye[up_axis] = ground + LIDAR_FLY_HEIGHT_RATIO * forward_extent;
+    eye[side_axis] = center[side_axis] + LIDAR_FLY_SIDE_RATIO * side_extent;
+    eye[forward_axis] = min_pos[forward_axis] - LIDAR_FLY_BACK_RATIO * forward_extent;
+    target[up_axis] = ground + LIDAR_FLY_LOOK_RATIO * forward_extent;
+    target[side_axis] = center[side_axis] + LIDAR_FLY_TARGET_SIDE * side_extent;
+    target[forward_axis] = min_pos[forward_axis] - LIDAR_FLY_TARGET_BACK * forward_extent;
+    up[up_axis] = 1.0f;
+
+    dvz_memcpy(out->eye, sizeof(out->eye), eye, sizeof(eye));
+    dvz_memcpy(out->target, sizeof(out->target), target, sizeof(target));
+    dvz_memcpy(out->up, sizeof(out->up), up, sizeof(up));
+    out->far = 10.0f * forward_extent;
+    out->speed = 0.32f * forward_extent;
+
+    dvz_fprintf(
+        stderr,
+        "LIDAR floor plane: axis=%u value=%.3f; fly eye=(%.3f %.3f %.3f), "
+        "target=(%.3f %.3f %.3f)\n",
+        up_axis, ground, out->eye[0], out->eye[1], out->eye[2], out->target[0],
+        out->target[1], out->target[2]);
+    return true;
+}
+
+
+
+/**
  * Apply the retained point-size control to the visual.
  *
  * @param state example state
@@ -483,6 +618,21 @@ static void _apply_depth_cue(LidarExampleState* state)
 
 
 /**
+ * Apply the retained navigation-mode state to the fly controller.
+ *
+ * @param state example state
+ */
+static void _apply_fly_mode(LidarExampleState* state)
+{
+    ANN(state);
+    if (state->fly == NULL)
+        return;
+    dvz_fly_set_mode(state->fly, state->fps_mode ? DVZ_FLY_MODE_PLANE : DVZ_FLY_MODE_FREE);
+}
+
+
+
+/**
  * Reset the example controls to useful LIDAR defaults.
  *
  * @param state example state
@@ -490,8 +640,9 @@ static void _apply_depth_cue(LidarExampleState* state)
 static void _reset_lidar_controls(LidarExampleState* state)
 {
     ANN(state);
-    state->edl_enabled = true;
-    state->depth_cue_enabled = true;
+    state->edl_enabled = false;
+    state->depth_cue_enabled = false;
+    state->fps_mode = true;
     state->depth_cue_mode = DVZ_DEPTH_CUE_FADE_TO_BACKGROUND;
     state->radius = 2.0f;
     state->strength = 70.0f;
@@ -506,6 +657,7 @@ static void _reset_lidar_controls(LidarExampleState* state)
     state->point_size = LIDAR_DEFAULT_POINT_SIZE;
     _apply_edl(state);
     _apply_depth_cue(state);
+    _apply_fly_mode(state);
     _apply_point_size(state);
 }
 
@@ -527,9 +679,11 @@ static void _lidar_gui(DvzGui* gui, DvzAppWindow* win, void* user_data)
 
     bool changed = false;
     bool cue_changed = false;
+    bool nav_changed = false;
     bool point_changed = false;
     if (dvz_gui_begin(gui, "LIDAR EDL", NULL, 0))
     {
+        nav_changed |= dvz_gui_checkbox(gui, "FPS mode", &state->fps_mode);
         point_changed |=
             dvz_gui_slider_float(gui, "Point size", &state->point_size, 1.0f, 10.0f);
         changed |= dvz_gui_checkbox(gui, "Enable EDL", &state->edl_enabled);
@@ -564,6 +718,8 @@ static void _lidar_gui(DvzGui* gui, DvzAppWindow* win, void* user_data)
     }
     dvz_gui_end(gui);
 
+    if (nav_changed)
+        _apply_fly_mode(state);
     if (changed)
         _apply_edl(state);
     if (cue_changed)
@@ -585,6 +741,14 @@ int main(int argc, char** argv)
     uint32_t stride = _data_stride(argc, argv);
     if (!_load_lidar_dataset(data_dir, stride, &dataset))
         return 1;
+
+    LidarViewParams view = {0};
+    if (!_compute_lidar_view_params(&dataset, &view))
+    {
+        dvz_fprintf(stderr, "failed to compute the LIDAR fly-camera pose\n");
+        _destroy_lidar_dataset(&dataset);
+        return 1;
+    }
 
     DvzScene* scene = dvz_scene();
     if (scene == NULL)
@@ -614,13 +778,11 @@ int main(int argc, char** argv)
     }
 
     DvzCameraDesc camera_desc = dvz_camera_desc();
-    dvz_memcpy(camera_desc.eye, sizeof(camera_desc.eye), LIDAR_FLY_EYE, sizeof(LIDAR_FLY_EYE));
-    dvz_memcpy(
-        camera_desc.target, sizeof(camera_desc.target), LIDAR_FLY_TARGET,
-        sizeof(LIDAR_FLY_TARGET));
-    dvz_memcpy(camera_desc.up, sizeof(camera_desc.up), LIDAR_FLY_UP, sizeof(LIDAR_FLY_UP));
+    dvz_memcpy(camera_desc.eye, sizeof(camera_desc.eye), view.eye, sizeof(view.eye));
+    dvz_memcpy(camera_desc.target, sizeof(camera_desc.target), view.target, sizeof(view.target));
+    dvz_memcpy(camera_desc.up, sizeof(camera_desc.up), view.up, sizeof(view.up));
     camera_desc.near = 0.1f;
-    camera_desc.far = 100.0f;
+    camera_desc.far = view.far;
     if (!dvz_panel_set_camera(panel, &camera_desc))
     {
         dvz_fprintf(stderr, "dvz_panel_set_camera() failed\n");
@@ -654,6 +816,7 @@ int main(int argc, char** argv)
         .panel = panel,
         .visual = visual,
         .dataset = &dataset,
+        .fps_mode = true,
     };
     _reset_lidar_controls(&gui_state);
 
@@ -676,16 +839,22 @@ int main(int argc, char** argv)
         return 1;
     }
 
-    dvz_panel_set_arcball(panel, dvz_app_window_input(win), 0);
-    DvzArcball* arcball = dvz_panel_arcball(panel);
-    if (arcball == NULL)
+    DvzFlyDesc fly_desc = dvz_fly_desc();
+    fly_desc.mode = DVZ_FLY_MODE_PLANE;
+    dvz_memcpy(fly_desc.position, sizeof(fly_desc.position), view.eye, sizeof(view.eye));
+    dvz_memcpy(fly_desc.target, sizeof(fly_desc.target), view.target, sizeof(view.target));
+    dvz_memcpy(fly_desc.up, sizeof(fly_desc.up), view.up, sizeof(view.up));
+    fly_desc.speed = view.speed;
+    DvzFly* fly = dvz_panel_set_fly(panel, dvz_app_window_input(win), &fly_desc);
+    if (fly == NULL)
     {
-        dvz_fprintf(stderr, "dvz_panel_set_arcball() failed\n");
+        dvz_fprintf(stderr, "dvz_panel_set_fly() failed\n");
         dvz_app_destroy(app);
         dvz_scene_destroy(scene);
         _destroy_lidar_dataset(&dataset);
         return 1;
     }
+    gui_state.fly = fly;
 
     DvzGuiConfig gui_config = dvz_gui_config();
     DvzGui* gui = dvz_app_window_gui(win, &gui_config);

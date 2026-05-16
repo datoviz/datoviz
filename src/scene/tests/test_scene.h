@@ -34,7 +34,13 @@ int test_fly_create_default(TstSuite* suite, TstItem* item);
 
 int test_fly_free_and_plane_movement(TstSuite* suite, TstItem* item);
 
+int test_fly_set_mode(TstSuite* suite, TstItem* item);
+
 int test_fly_keyboard_arrows_update(TstSuite* suite, TstItem* item);
+
+int test_fly_ctrl_and_space_use_same_vertical_speed(TstSuite* suite, TstItem* item);
+
+int test_fly_right_drag_moves_vertical_plane(TstSuite* suite, TstItem* item);
 
 int test_fly_pivot_preserves_eye_and_orbits(TstSuite* suite, TstItem* item);
 

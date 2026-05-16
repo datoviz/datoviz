@@ -95,6 +95,39 @@ int test_fly_free_and_plane_movement(TstSuite* suite, TstItem* item)
 
 
 
+int test_fly_set_mode(TstSuite* suite, TstItem* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzFlyDesc desc = dvz_fly_desc();
+    desc.use_angles = true;
+    desc.position[0] = 0.0f;
+    desc.position[1] = 0.0f;
+    desc.position[2] = 0.0f;
+    desc.yaw = -GLM_PI_2f;
+    desc.pitch = GLM_PI_4f;
+    desc.mode = DVZ_FLY_MODE_PLANE;
+
+    DvzFly* fly = dvz_fly(&desc);
+    ANN(fly);
+    dvz_fly_move_forward(fly, 1.0f);
+    vec3 pos = {0};
+    dvz_fly_get_position(fly, pos);
+    AC(pos[1], 0.0f, 1e-5f);
+
+    dvz_fly_reset(fly);
+    dvz_fly_set_mode(fly, DVZ_FLY_MODE_FREE);
+    dvz_fly_move_forward(fly, 1.0f);
+    dvz_fly_get_position(fly, pos);
+    AT(pos[1] > 0.5f);
+
+    dvz_fly_destroy(fly);
+    return 0;
+}
+
+
+
 int test_fly_keyboard_arrows_update(TstSuite* suite, TstItem* item)
 {
     (void)suite;
@@ -126,6 +159,84 @@ int test_fly_keyboard_arrows_update(TstSuite* suite, TstItem* item)
     dvz_fly_update(fly, 0.5);
     dvz_fly_get_position(fly, pos);
     AC(pos[2], 2.0f, 1e-5f);
+
+    dvz_fly_destroy(fly);
+    return 0;
+}
+
+
+
+int test_fly_ctrl_and_space_use_same_vertical_speed(TstSuite* suite, TstItem* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzFlyDesc desc = dvz_fly_desc();
+    desc.speed = 2.0f;
+    DvzFly* fly = dvz_fly(&desc);
+    ANN(fly);
+
+    DvzKeyboardEvent press_space = {
+        .type = DVZ_KEYBOARD_EVENT_PRESS,
+        .key = DVZ_KEY_SPACE,
+        .mods = 0,
+    };
+    AT(dvz_fly_keyboard(fly, &press_space));
+    dvz_fly_update(fly, 0.5);
+
+    vec3 pos = {0};
+    dvz_fly_get_position(fly, pos);
+    AC(pos[1], 0.5f, 1e-5f);
+
+    DvzKeyboardEvent release_space = {
+        .type = DVZ_KEYBOARD_EVENT_RELEASE,
+        .key = DVZ_KEY_SPACE,
+        .mods = 0,
+    };
+    AT(dvz_fly_keyboard(fly, &release_space));
+    dvz_fly_reset(fly);
+
+    DvzKeyboardEvent press_ctrl = {
+        .type = DVZ_KEYBOARD_EVENT_PRESS,
+        .key = DVZ_KEY_LEFT_CONTROL,
+        .mods = 0,
+    };
+    AT(dvz_fly_keyboard(fly, &press_ctrl));
+    dvz_fly_update(fly, 0.5);
+
+    dvz_fly_get_position(fly, pos);
+    AC(pos[1], -0.5f, 1e-5f);
+
+    dvz_fly_destroy(fly);
+    return 0;
+}
+
+
+
+int test_fly_right_drag_moves_vertical_plane(TstSuite* suite, TstItem* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzFlyDesc desc = dvz_fly_desc();
+    desc.speed = 2.0f;
+    DvzFly* fly = dvz_fly(&desc);
+    ANN(fly);
+    dvz_fly_resize(fly, 800.0f, 600.0f);
+
+    DvzPointerEvent drag = {
+        .type = DVZ_POINTER_EVENT_DRAG,
+        .button = DVZ_POINTER_BUTTON_RIGHT,
+        .pos = {200.0f, 100.0f},
+        .content.d.last_pos = {100.0f, 200.0f},
+    };
+    AT(dvz_fly_pointer(fly, &drag));
+
+    vec3 pos = {0};
+    dvz_fly_get_position(fly, pos);
+    AC(pos[0], 0.5f, 1e-5f);
+    AC(pos[1], 0.3333333f, 1e-5f);
+    AC(pos[2], 3.0f, 1e-5f);
 
     dvz_fly_destroy(fly);
     return 0;
@@ -248,7 +359,10 @@ int test_scene_fly(TstSuite* suite)
     const char* tags = "scene,fly";
     TEST_SIMPLE(test_fly_create_default);
     TEST_SIMPLE(test_fly_free_and_plane_movement);
+    TEST_SIMPLE(test_fly_set_mode);
     TEST_SIMPLE(test_fly_keyboard_arrows_update);
+    TEST_SIMPLE(test_fly_ctrl_and_space_use_same_vertical_speed);
+    TEST_SIMPLE(test_fly_right_drag_moves_vertical_plane);
     TEST_SIMPLE(test_fly_pivot_preserves_eye_and_orbits);
     TEST_SIMPLE(test_panel_fly_getter);
     TEST_SIMPLE(test_figure_fly_update_advances_panel_camera);

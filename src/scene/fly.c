@@ -33,8 +33,9 @@
 #define DVZ_FLY_DEFAULT_SPEED  1.0f
 #define DVZ_FLY_DEFAULT_FAST   5.0f
 #define DVZ_FLY_DEFAULT_SLOW   0.2f
-#define DVZ_FLY_DEFAULT_LOOK   0.5f
-#define DVZ_FLY_DEFAULT_WHEEL  0.25f
+#define DVZ_FLY_DEFAULT_LOOK   0.7f
+#define DVZ_FLY_DEFAULT_WHEEL  0.12f
+#define DVZ_FLY_VERTICAL_SPEED 0.5f
 #define DVZ_FLY_PITCH_EPS     0.001f
 #define DVZ_FLY_PIVOT_MARKER_S 1.0
 
@@ -152,8 +153,7 @@ static void _fly_vectors(const DvzFly* fly, vec3 out_front, vec3 out_right, vec3
     glm_vec3_normalize(front);
     glm_vec3_copy(front, out_front);
 
-    vec3 world_up = {0};
-    glm_vec3_copy(fly->world_up, world_up);
+    vec3 world_up = {fly->world_up[0], fly->world_up[1], fly->world_up[2]};
     if (!_vec3_valid(world_up))
         glm_vec3_copy((vec3){0.0f, 1.0f, 0.0f}, world_up);
     glm_vec3_normalize(world_up);
@@ -203,7 +203,9 @@ static void _fly_movement_basis(
     _fly_vectors(fly, front, right, up);
     glm_vec3_copy(front, out_forward);
     glm_vec3_copy(right, out_right);
-    glm_vec3_copy(fly->world_up, out_up);
+    out_up[0] = fly->world_up[0];
+    out_up[1] = fly->world_up[1];
+    out_up[2] = fly->world_up[2];
     if (!_vec3_valid(out_up))
         glm_vec3_copy((vec3){0.0f, 1.0f, 0.0f}, out_up);
     glm_vec3_normalize(out_up);
@@ -339,7 +341,6 @@ static bool _fly_keyboard_state(DvzFly* fly, const DvzKeyboardEvent* ev)
     case DVZ_KEY_LEFT_CONTROL:
     case DVZ_KEY_RIGHT_CONTROL:
         fly->key_down = state;
-        fly->key_slow = state && (ev->key == DVZ_KEY_LEFT_CONTROL || ev->key == DVZ_KEY_RIGHT_CONTROL);
         return true;
     case DVZ_KEY_LEFT_SHIFT:
     case DVZ_KEY_RIGHT_SHIFT:
@@ -432,7 +433,9 @@ DvzFly* dvz_fly(const DvzFlyDesc* desc)
     fly->flags = desc->flags;
     fly->viewport_size[0] = DVZ_FLY_DEFAULT_WIDTH;
     fly->viewport_size[1] = DVZ_FLY_DEFAULT_HEIGHT;
-    glm_vec3_copy(desc->up, fly->world_up);
+    fly->world_up[0] = desc->up[0];
+    fly->world_up[1] = desc->up[1];
+    fly->world_up[2] = desc->up[2];
     if (!_vec3_valid(fly->world_up))
         glm_vec3_copy((vec3){0.0f, 1.0f, 0.0f}, fly->world_up);
     glm_vec3_normalize(fly->world_up);
@@ -564,6 +567,20 @@ void dvz_fly_initial_lookat(DvzFly* fly, vec3 position, vec3 target)
 
 
 /**
+ * Set the movement mode.
+ *
+ * @param fly the fly controller
+ * @param mode movement mode
+ */
+void dvz_fly_set_mode(DvzFly* fly, DvzFlyMode mode)
+{
+    ANN(fly);
+    fly->mode = mode;
+}
+
+
+
+/**
  * Move forward along the active movement direction.
  *
  * @param fly the fly controller
@@ -666,7 +683,9 @@ void dvz_fly_get_position(const DvzFly* fly, vec3 out_pos)
 {
     ANN(fly);
     ANN(out_pos);
-    glm_vec3_copy(fly->position, out_pos);
+    out_pos[0] = fly->position[0];
+    out_pos[1] = fly->position[1];
+    out_pos[2] = fly->position[2];
 }
 
 
@@ -683,7 +702,9 @@ void dvz_fly_get_target(const DvzFly* fly, vec3 out_target)
     ANN(out_target);
     vec3 front = {0}, right = {0}, up = {0};
     _fly_vectors(fly, front, right, up);
-    glm_vec3_add(fly->position, front, out_target);
+    out_target[0] = fly->position[0] + front[0];
+    out_target[1] = fly->position[1] + front[1];
+    out_target[2] = fly->position[2] + front[2];
 }
 
 
@@ -870,9 +891,9 @@ void dvz_fly_update(DvzFly* fly, double dt)
     if (fly->key_left)
         right -= amount;
     if (fly->key_up)
-        up += amount;
+        up += DVZ_FLY_VERTICAL_SPEED * amount;
     if (fly->key_down)
-        up -= amount;
+        up -= DVZ_FLY_VERTICAL_SPEED * amount;
 
     if (forward != 0.0f)
         dvz_fly_move_forward(fly, forward);
@@ -947,6 +968,14 @@ bool dvz_fly_pointer(DvzFly* fly, const DvzPointerEvent* ev)
             float dy = +fly->look_speed * delta[1] / height * GLM_PIf;
             fly->interacting = dvz_fly_orbit(fly, dx, dy);
             return fly->interacting;
+        }
+        if (ev->button == DVZ_POINTER_BUTTON_RIGHT)
+        {
+            float scale = 2.0f * fly->speed;
+            dvz_fly_move_right(fly, scale * delta[0] / width);
+            dvz_fly_move_up(fly, -DVZ_FLY_VERTICAL_SPEED * scale * delta[1] / height);
+            fly->interacting = true;
+            return true;
         }
         break;
     }
