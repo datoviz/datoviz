@@ -120,7 +120,8 @@ SS_COLORS = {
     SS_TURN: (85, 155, 225, 255),
 }
 
-RIBBON_CROSS_SECTION_COUNT = 16
+DEFAULT_RIBBON_SAMPLES = 16
+DEFAULT_RIBBON_CROSS_SECTION_COUNT = 24
 
 
 def _default_cache_dir(pdb_id: str) -> Path:
@@ -491,20 +492,25 @@ def _append_ribbon_section(
     up: Vec3,
     half_w: float,
     half_t: float,
+    cross_section_count: int,
     chain_color: tuple[int, int, int, int],
     ss_color: tuple[int, int, int, int],
 ) -> None:
+    cross_section_count = max(3, cross_section_count)
     for pos, normal in _ribbon_section(
-        p, side, up, half_w, half_t, RIBBON_CROSS_SECTION_COUNT):
+        p, side, up, half_w, half_t, cross_section_count):
         positions.extend(pos)
         normals.extend(normal)
         colors_chain.append(chain_color)
         colors_ss.append(ss_color)
 
 
-def _append_ribbon_section_indices(indices: list[int], previous: int, current: int) -> None:
-    for i in range(RIBBON_CROSS_SECTION_COUNT):
-        j = (i + 1) % RIBBON_CROSS_SECTION_COUNT
+def _append_ribbon_section_indices(
+    indices: list[int], previous: int, current: int, cross_section_count: int
+) -> None:
+    cross_section_count = max(3, cross_section_count)
+    for i in range(cross_section_count):
+        j = (i + 1) % cross_section_count
         q0 = previous + i
         q1 = previous + j
         q2 = current + j
@@ -529,6 +535,7 @@ def _ribbon_mesh(
     center: Vec3,
     radius: float,
     samples_per_segment: int,
+    cross_section_count: int,
 ) -> dict[str, list]:
     positions: list[float] = []
     normals: list[float] = []
@@ -581,12 +588,12 @@ def _ribbon_mesh(
                 ss_color = SS_COLORS.get(residue.ss, SS_COLORS[SS_COIL])
                 _append_ribbon_section(
                     positions, normals, colors_chain, colors_ss, p_norm, side, up, half_w, half_t,
-                    chain_color, ss_color)
+                    cross_section_count, chain_color, ss_color)
                 if section_count > 0:
-                    a = vertex_count - RIBBON_CROSS_SECTION_COUNT
+                    a = vertex_count - cross_section_count
                     b = vertex_count
-                    _append_ribbon_section_indices(indices, a, b)
-                vertex_count += RIBBON_CROSS_SECTION_COUNT
+                    _append_ribbon_section_indices(indices, a, b, cross_section_count)
+                vertex_count += cross_section_count
                 section_count += 1
         # Add an explicit final section at the last C-alpha.
         p = ca[-1]
@@ -605,12 +612,12 @@ def _ribbon_mesh(
         ss_color = SS_COLORS.get(residue.ss, SS_COLORS[SS_COIL])
         _append_ribbon_section(
             positions, normals, colors_chain, colors_ss, p_norm, side, up, half_w, half_t,
-            chain_color, ss_color)
+            cross_section_count, chain_color, ss_color)
         if section_count > 0:
-            a = vertex_count - RIBBON_CROSS_SECTION_COUNT
+            a = vertex_count - cross_section_count
             b = vertex_count
-            _append_ribbon_section_indices(indices, a, b)
-        vertex_count += RIBBON_CROSS_SECTION_COUNT
+            _append_ribbon_section_indices(indices, a, b, cross_section_count)
+        vertex_count += cross_section_count
 
     return {
         "position": positions,
@@ -654,13 +661,21 @@ def _export_bundle(
     output_dir: Path,
     use_dssp: bool,
     ribbon_samples: int,
+    ribbon_cross_section_count: int,
 ) -> None:
     output_dir.mkdir(parents=True, exist_ok=True)
     center, radius, bbox_min, bbox_max = _center_and_radius(atoms)
     chains = _chain_map(atoms)
     residues = _residues_from_atoms(atoms)
     dssp_assigned = _assign_dssp(residues, pdb_text, use_dssp)
-    ribbon = _ribbon_mesh(residues, chains, center, radius, max(1, ribbon_samples))
+    ribbon = _ribbon_mesh(
+        residues,
+        chains,
+        center,
+        radius,
+        max(1, ribbon_samples),
+        max(3, ribbon_cross_section_count),
+    )
 
     positions: list[float] = []
     radius_vdw: list[float] = []
@@ -742,7 +757,7 @@ def _export_bundle(
             "3": "turn",
         },
         "ribbon_samples_per_segment": max(1, ribbon_samples),
-        "ribbon_cross_section_count": RIBBON_CROSS_SECTION_COUNT,
+        "ribbon_cross_section_count": max(3, ribbon_cross_section_count),
         "ribbon_vertex_count": ribbon_vertex_count,
         "ribbon_index_count": ribbon_index_count,
         "files": {
@@ -785,8 +800,14 @@ def _parse_args(argv: list[str]) -> argparse.Namespace:
     parser.add_argument(
         "--ribbon-samples",
         type=int,
-        default=10,
+        default=DEFAULT_RIBBON_SAMPLES,
         help="interpolated ribbon sections per residue segment",
+    )
+    parser.add_argument(
+        "--ribbon-cross-section-count",
+        type=int,
+        default=DEFAULT_RIBBON_CROSS_SECTION_COUNT,
+        help="ribbon cross-section sample count",
     )
     parser.add_argument("--bond-scale", type=float, default=1.25, help="covalent radius scale")
     parser.add_argument(
@@ -814,7 +835,16 @@ def main(argv: list[str]) -> int:
 
     bonds = _infer_bonds(atoms, args.max_bond_distance, args.bond_scale)
     _export_bundle(
-        pdb_id, atoms, bonds, source, text, output_dir, args.dssp, args.ribbon_samples)
+        pdb_id,
+        atoms,
+        bonds,
+        source,
+        text,
+        output_dir,
+        args.dssp,
+        args.ribbon_samples,
+        args.ribbon_cross_section_count,
+    )
     print(
         f"wrote {output_dir} ({len(atoms)} atoms, {len(bonds)} inferred bonds, "
         f"{len(_chain_map(atoms))} chains)"

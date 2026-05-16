@@ -19,6 +19,7 @@
 /*************************************************************************************************/
 
 #include <errno.h>
+#include <ctype.h>
 #include <inttypes.h>
 #include <stdbool.h>
 #include <stdint.h>
@@ -57,6 +58,9 @@
 #define PROTEIN_RIBBON_COLOR_CHAIN 0
 #define PROTEIN_RIBBON_COLOR_SS    1
 
+#define PROTEIN_PRESET_COUNT 4
+
+static const char* PRESET_PDB_IDS[PROTEIN_PRESET_COUNT] = {"1CRN", "1UBQ", "4HHB", "6M0J"};
 
 
 /*************************************************************************************************/
@@ -88,9 +92,11 @@ typedef struct ProteinExampleState
     DvzPanel* panel;
     DvzVisual* spheres;
     DvzVisual* ribbon;
+    DvzSceneBuffer* ribbon_index_buffer;
     DvzArcball* arcball;
     DvzAnimation* spin;
-    const ProteinBundle* bundle;
+    ProteinBundle* bundle;
+    int selected_molecule;
     float* live_radii;
     int render_mode;
     int atom_color_mode;
@@ -116,6 +122,10 @@ typedef struct ProteinExampleState
     float rim_strength;
     bool ssao_blur;
 } ProteinExampleState;
+
+
+
+static void _apply_render_mode(ProteinExampleState* state);
 
 
 
@@ -161,6 +171,58 @@ static bool _default_bundle_path(char* out, size_t out_size)
     int n = dvz_snprintf(
         out, out_size, "%s/.cache/datoviz/proteins/%s", home, DEFAULT_PDB_ID);
     return n > 0 && (size_t)n < out_size;
+}
+
+
+
+/**
+ * Return a bundle path for a given PDB id under the default cache directory.
+ *
+ * @param pdb_id PDB identifier
+ * @param out output path buffer
+ * @param out_size output path buffer size
+ * @return whether the path fits
+ */
+static bool _cache_bundle_path(const char* pdb_id, char* out, size_t out_size)
+{
+    ANN(pdb_id);
+    ANN(out);
+    const char* home = getenv("HOME");
+    if (home == NULL || home[0] == '\0')
+        return false;
+
+    char lower_id[16] = {0};
+    size_t i = 0;
+    for (; i < sizeof(lower_id) - 1 && pdb_id[i] != '\0'; ++i)
+        lower_id[i] = (char)tolower((unsigned char)pdb_id[i]);
+    lower_id[i] = '\0';
+    if (lower_id[0] == '\0')
+        return false;
+
+    int n = dvz_snprintf(out, out_size, "%s/.cache/datoviz/proteins/%s", home, lower_id);
+    return n > 0 && (size_t)n < out_size;
+}
+
+
+
+/**
+ * Return the preset dropdown index for a loaded bundle path, or 0 if unknown.
+ *
+ * @param bundle_path current bundle path
+ * @return preset index
+ */
+static int _pdb_preset_index(const char* bundle_path)
+{
+    ANN(bundle_path);
+    for (int i = 0; i < PROTEIN_PRESET_COUNT; ++i)
+    {
+        char preset_path[1024] = {0};
+        if (!_cache_bundle_path(PRESET_PDB_IDS[i], preset_path, sizeof(preset_path)))
+            continue;
+        if (strcmp(bundle_path, preset_path) == 0)
+            return i;
+    }
+    return 0;
 }
 
 
@@ -542,6 +604,119 @@ static void _apply_ribbon_color(ProteinExampleState* state)
 
 
 /**
+ * Reload the active bundle and refresh visual data.
+ *
+ * @param state example state
+ * @param bundle_path path to the protein bundle directory
+ * @return true on success
+ */
+static bool _reload_bundle(ProteinExampleState* state, const char* bundle_path)
+{
+    ANN(state);
+    ANN(bundle_path);
+
+    ProteinBundle next = {0};
+    if (!_protein_bundle_load(bundle_path, &next))
+    {
+        dvz_fprintf(stderr, "failed to load bundle '%s'\n", bundle_path);
+        return false;
+    }
+
+    float* next_radii = _scaled_radii(&next, state->atom_scale);
+    if (next_radii == NULL)
+    {
+        _protein_bundle_destroy(&next);
+        dvz_fprintf(stderr, "failed to allocate scaled radii for '%s'\n", bundle_path);
+        return false;
+    }
+
+    DvzVisualDataUpdate sphere_updates[3] = {
+        {.attr_name = "position",
+         .data = next.positions,
+         .item_count = next.atom_count},
+        {.attr_name = "color",
+         .data = _atom_colors(&next, state->atom_color_mode),
+         .item_count = next.atom_count},
+        {.attr_name = "size", .data = next_radii, .item_count = next.atom_count},
+    };
+    if (dvz_visual_set_data_many(state->spheres, sphere_updates, 3) != 0)
+    {
+        _protein_bundle_destroy(&next);
+        dvz_free(next_radii);
+        return false;
+    }
+
+    if (state->ribbon != NULL)
+    {
+        if (next.has_ribbon)
+        {
+            if (state->ribbon_index_buffer == NULL)
+            {
+                _protein_bundle_destroy(&next);
+                dvz_free(next_radii);
+                return false;
+            }
+            if (!dvz_scene_buffer_set_data(
+                    state->ribbon_index_buffer, next.ribbon_indices,
+                    (uint64_t)next.ribbon_index_count * sizeof(DvzIndex)) ||
+                dvz_visual_set_data_many(
+                    state->ribbon,
+                    (DvzVisualDataUpdate[]){
+                        {.attr_name = "position",
+                         .data = next.ribbon_positions,
+                         .item_count = next.ribbon_vertex_count},
+                        {.attr_name = "normal",
+                         .data = next.ribbon_normals,
+                         .item_count = next.ribbon_vertex_count},
+                        {.attr_name = "color", .data = _ribbon_colors(&next, state->ribbon_color_mode),
+                         .item_count = next.ribbon_vertex_count}},
+                    3) != 0)
+            {
+                _protein_bundle_destroy(&next);
+                dvz_free(next_radii);
+                return false;
+            }
+        }
+        else
+        {
+            dvz_visual_set_visible(state->ribbon, false);
+        }
+    }
+
+    _protein_bundle_destroy(state->bundle);
+    dvz_free(state->live_radii);
+    *state->bundle = next;
+    state->live_radii = next_radii;
+    _apply_atom_scale(state);
+    if (state->ribbon != NULL && state->bundle->has_ribbon)
+        _apply_ribbon_color(state);
+    _apply_render_mode(state);
+    return true;
+}
+
+
+
+/**
+ * Reload one of the preset molecules.
+ *
+ * @param state example state
+ * @param index preset molecule index
+ * @return true on success
+ */
+static bool _reload_preset_bundle(ProteinExampleState* state, int index)
+{
+    ANN(state);
+    if (index < 0 || index >= PROTEIN_PRESET_COUNT)
+        return false;
+    char bundle_path[1024] = {0};
+    if (!_cache_bundle_path(PRESET_PDB_IDS[index], bundle_path, sizeof(bundle_path)))
+        return false;
+    return _reload_bundle(state, bundle_path);
+}
+
+
+
+/**
  * Update visual visibility from the current render mode.
  *
  * @param state example state
@@ -554,6 +729,11 @@ static void _apply_render_mode(ProteinExampleState* state)
     if (state->render_mode == PROTEIN_RENDER_RIBBON && !state->bundle->has_ribbon)
         state->render_mode = PROTEIN_RENDER_SPHERES;
     dvz_visual_set_visible(state->spheres, state->render_mode == PROTEIN_RENDER_SPHERES);
+    if (state->render_mode == PROTEIN_RENDER_RIBBON && state->bundle->has_ribbon)
+    {
+        state->ribbon_color_mode = PROTEIN_RIBBON_COLOR_SS;
+        _apply_ribbon_color(state);
+    }
     if (state->ribbon != NULL)
         dvz_visual_set_visible(state->ribbon, state->render_mode == PROTEIN_RENDER_RIBBON);
 }
@@ -707,6 +887,21 @@ static void _protein_gui(DvzGui* gui, DvzAppWindow* win, void* user_data)
 
     if (dvz_gui_begin(gui, "Protein", NULL, 0))
     {
+        int selected_molecule = state->selected_molecule;
+        if (igCombo_Str_arr(
+                "Molecule", &selected_molecule, PRESET_PDB_IDS, PROTEIN_PRESET_COUNT, PROTEIN_PRESET_COUNT))
+        {
+            if (_reload_preset_bundle(state, selected_molecule))
+            {
+                state->selected_molecule = selected_molecule;
+                dvz_arcball_reset(state->arcball);
+            }
+            else
+            {
+                dvz_fprintf(stderr, "failed to load %s\n", PRESET_PDB_IDS[selected_molecule]);
+            }
+        }
+
         dvz_gui_text(gui, state->bundle->path);
 
         const char* render_modes[] = {"Spheres", "Ribbon"};
@@ -871,6 +1066,7 @@ int main(int argc, char** argv)
         return 1;
     }
     DvzVisual* ribbon = NULL;
+    DvzSceneBuffer* ribbon_index_buffer = NULL;
 
     DvzCameraDesc camera_desc = dvz_camera_desc();
     camera_desc.eye[2] = 3.35f;
@@ -913,14 +1109,14 @@ int main(int argc, char** argv)
     if (bundle.has_ribbon)
     {
         ribbon = dvz_mesh(scene, 0);
-        DvzSceneBuffer* index_buffer = dvz_scene_buffer(
+        ribbon_index_buffer = dvz_scene_buffer(
             scene, &(DvzSceneBufferDesc){
                        .usage = DVZ_SCENE_BUFFER_USAGE_INDEX,
                        .stride = sizeof(DvzIndex),
                    });
-        if (ribbon == NULL || index_buffer == NULL ||
+        if (ribbon == NULL || ribbon_index_buffer == NULL ||
             !dvz_scene_buffer_set_data(
-                index_buffer, bundle.ribbon_indices,
+                ribbon_index_buffer, bundle.ribbon_indices,
                 (uint64_t)bundle.ribbon_index_count * sizeof(DvzIndex)) ||
             dvz_visual_set_data(
                 ribbon, "position", bundle.ribbon_positions, bundle.ribbon_vertex_count) != 0 ||
@@ -928,7 +1124,7 @@ int main(int argc, char** argv)
                 0 ||
             dvz_visual_set_data(
                 ribbon, "color", bundle.ribbon_colors_chain, bundle.ribbon_vertex_count) != 0 ||
-            !dvz_visual_set_buffer(ribbon, "index", index_buffer) ||
+            !dvz_visual_set_buffer(ribbon, "index", ribbon_index_buffer) ||
             dvz_panel_add_visual(panel, ribbon, NULL) != 0)
         {
             dvz_fprintf(stderr, "ribbon visual setup failed\n");
@@ -1005,10 +1201,12 @@ int main(int argc, char** argv)
         .panel = panel,
         .spheres = spheres,
         .ribbon = ribbon,
+        .ribbon_index_buffer = ribbon_index_buffer,
         .arcball = arcball,
         .spin = spin,
         .bundle = &bundle,
         .live_radii = scaled_radii,
+        .selected_molecule = _pdb_preset_index(bundle.path),
         .render_mode = PROTEIN_RENDER_SPHERES,
         .atom_color_mode = PROTEIN_ATOM_COLOR_ELEMENT,
         .ribbon_color_mode = PROTEIN_RIBBON_COLOR_CHAIN,
