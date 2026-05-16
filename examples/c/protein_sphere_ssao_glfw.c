@@ -456,7 +456,7 @@ int main(int argc, char** argv)
         return 1;
     }
 
-    float atom_scale = 0.82f;
+    float atom_scale = 0.535f;
     float* scaled_radii = _scaled_radii(&bundle, atom_scale);
     if (scaled_radii == NULL)
     {
@@ -566,12 +566,12 @@ int main(int argc, char** argv)
         .live_radii = scaled_radii,
         .ssao_enabled = true,
         .atom_scale = atom_scale,
-        .ssao_radius = 1.0f,
-        .ssao_strength = 2.4f,
-        .ssao_bias = 0.02f,
-        .ssao_power = 1.4f,
-        .ssao_min_visibility = 0.16f,
-        .ssao_samples = 16.0f,
+        .ssao_radius = 0.496f,
+        .ssao_strength = 1.458f,
+        .ssao_bias = 0.012f,
+        .ssao_power = 2.153f,
+        .ssao_min_visibility = 0.582f,
+        .ssao_samples = 32.0f,
         .ssao_blur = true,
     };
     _apply_ssao(&state);
