@@ -125,6 +125,7 @@ typedef struct AllenMouseBrainState
     bool show_slice;
     bool show_volume;
     bool show_atlas_mesh;
+    bool atlas_uploads_initialized;
     bool clip_volume_at_slice;
     bool keep_positive_side;
     bool linear_sampling;
@@ -1318,6 +1319,22 @@ static void _apply_transparency_modes(AllenMouseBrainState* state)
 }
 
 
+/**
+ * Apply retained atlas mesh visibility without mutating its buffers.
+ *
+ * @param state example state
+ */
+static void _apply_atlas_mesh_visibility(AllenMouseBrainState* state)
+{
+    ANN(state);
+    if (state->atlas_mesh_visual == NULL)
+        return;
+
+    dvz_visual_set_visible(state->atlas_mesh_visual, state->show_atlas_mesh);
+    _apply_transparency_modes(state);
+}
+
+
 
 /**
  * Upload retained atlas mesh controls.
@@ -1330,9 +1347,8 @@ static void _apply_atlas_mesh_controls(AllenMouseBrainState* state)
     if (state->atlas_mesh_visual == NULL || state->atlas_mesh == NULL)
         return;
 
-    dvz_visual_set_visible(state->atlas_mesh_visual, state->show_atlas_mesh);
-    _apply_transparency_modes(state);
-    if (!state->show_atlas_mesh)
+    _apply_atlas_mesh_visibility(state);
+    if (!state->show_atlas_mesh && state->atlas_uploads_initialized)
         return;
 
     for (uint32_t i = 0; i < state->atlas_mesh->vertex_count; i++)
@@ -1376,6 +1392,7 @@ static void _apply_atlas_mesh_controls(AllenMouseBrainState* state)
     {
         dvz_fprintf(stderr, "failed to update Allen/IBL atlas mesh material\n");
     }
+    state->atlas_uploads_initialized = true;
 }
 
 
@@ -1476,6 +1493,7 @@ static void _allen_mouse_brain_gui(DvzGui* gui, DvzAppWindow* win, void* user_da
 
     bool changed = false;
     bool atlas_changed = false;
+    bool atlas_visibility_changed = false;
     bool occlusion_changed = false;
     if (dvz_gui_begin(gui, "Allen Mouse Brain", NULL, 0))
     {
@@ -1537,7 +1555,8 @@ static void _allen_mouse_brain_gui(DvzGui* gui, DvzAppWindow* win, void* user_da
         if (state->atlas_mesh_visual != NULL)
         {
             dvz_gui_text(gui, "Atlas mesh");
-            atlas_changed |= dvz_gui_checkbox(gui, "Show atlas mesh", &state->show_atlas_mesh);
+            atlas_visibility_changed |=
+                dvz_gui_checkbox(gui, "Show atlas mesh", &state->show_atlas_mesh);
             atlas_changed |=
                 dvz_gui_slider_float(
                     gui, "Atlas alpha scale", &state->atlas_alpha_scale, 0.20f, 1.50f);
@@ -1613,6 +1632,8 @@ static void _allen_mouse_brain_gui(DvzGui* gui, DvzAppWindow* win, void* user_da
         _apply_volume_controls(state);
     if (occlusion_changed)
         _apply_volume_occlusion_controls(state);
+    if (atlas_visibility_changed)
+        _apply_atlas_mesh_visibility(state);
     if (atlas_changed)
         _apply_atlas_mesh_controls(state);
 }
