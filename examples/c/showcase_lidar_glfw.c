@@ -37,10 +37,14 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define WIDTH  1200u
-#define HEIGHT 820u
+#define WIDTH  800u
+#define HEIGHT 600u
 #define LIDAR_POSITION_SCALE 5.0f
 #define LIDAR_DEFAULT_POINT_SIZE 2.0f
+
+static const vec3 LIDAR_FLY_EYE = {+2.0f, +2.0f, -6.0f};
+static const vec3 LIDAR_FLY_TARGET = {+1.71428573f, +1.57142854f, -5.14285707f};
+static const vec3 LIDAR_FLY_UP = {-0.13552618f, +0.90350789f, +0.40657854f};
 
 
 
@@ -534,16 +538,12 @@ int main(int argc, char** argv)
     }
 
     DvzCameraDesc camera_desc = dvz_camera_desc();
-    camera_desc.eye[0] = +2.0f;
-    camera_desc.eye[1] = +2.0f;
-    camera_desc.eye[2] = -6.0f;
-    camera_desc.target[0] = 0.0f;
-    camera_desc.target[1] = -1.0f;
-    camera_desc.target[2] = 0.0f;
-    camera_desc.up[0] = 0.0f;
-    camera_desc.up[1] = 1.0f;
-    camera_desc.up[2] = 0.0f;
-    camera_desc.near = 0.05f;
+    dvz_memcpy(camera_desc.eye, sizeof(camera_desc.eye), LIDAR_FLY_EYE, sizeof(LIDAR_FLY_EYE));
+    dvz_memcpy(
+        camera_desc.target, sizeof(camera_desc.target), LIDAR_FLY_TARGET,
+        sizeof(LIDAR_FLY_TARGET));
+    dvz_memcpy(camera_desc.up, sizeof(camera_desc.up), LIDAR_FLY_UP, sizeof(LIDAR_FLY_UP));
+    camera_desc.near = 0.1f;
     camera_desc.far = 100.0f;
     if (!dvz_panel_set_camera(panel, &camera_desc))
     {
@@ -610,7 +610,6 @@ int main(int argc, char** argv)
         _destroy_lidar_dataset(&dataset);
         return 1;
     }
-    dvz_arcball_set(arcball, (vec3){+0.30f, -0.10f, 0.0f});
 
     DvzGuiConfig gui_config = dvz_gui_config();
     DvzGui* gui = dvz_app_window_gui(win, &gui_config);
