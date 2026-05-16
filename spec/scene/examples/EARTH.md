@@ -90,6 +90,38 @@ Implementation freedom:
 - A dedicated skybox primitive, cubemap visual, environment visual, or low-level cube draw is all acceptable.
 - The exact shader and object type are not prescribed.
 
+Recommended first environment map:
+
+- Use a deterministic deep-space cubemap: mostly black star field with a subtle blue/violet nebula,
+  a faint Milky-Way-like band, and enough asymmetric features to make camera rotation obvious.
+- Prefer six square RGBA images with the conventional face roles:
+  `posx`, `negx`, `posy`, `negy`, `posz`, `negz`.
+- Keep the image content visually quiet near the center of each face so the Earth remains the focus.
+- Include a few recognizable off-center star clusters or nebula patches so incorrect face ordering,
+  mirroring, or upside-down faces are easy to spot during manual testing.
+- If checked-in assets are not available, generate the six faces deterministically as a tiny fixture
+  or download them from `datoviz/data` and cache them locally.
+
+Recommended source/generation contract:
+
+- Preferred source, once assets are added to the shared data repository:
+  `datoviz/data/textures/skybox/deep_space/{posx,negx,posy,negy,posz,negz}.png`.
+- Preferred local cache path for downloaded or generated files:
+  `.cache/datoviz/examples/earth_cubemap/deep_space/{posx,negx,posy,negy,posz,negz}.png`.
+- If the remote cubemap is unavailable, the example may generate the six PNG faces on first run
+  with a fixed seed, for example `seed = 0xD42024`, square size `512 x 512`, and RGBA8 output.
+- The generated fallback should combine:
+  - a dark radial background with slightly different tint per face,
+  - deterministic point stars with a small number of larger bright stars,
+  - one or two soft nebula bands or clusters that continue approximately across neighboring faces,
+  - subtle face labels or hidden test markers only in debug builds, not in the gallery output.
+- Generated assets should be written to the same cache path and reused on later runs.
+
+For this example, "environment map" means the visible cubemap background. It does not need to drive
+image-based lighting, reflections, or PBR material response. Those are useful future extensions, but
+the first implementation should prove cubemap creation, upload, sampling, face orientation, and
+camera-relative skybox behavior.
+
 ### 2. Globe / fake sphere visual
 
 The example must include a single Earth at the center of the scene.
@@ -433,4 +465,3 @@ The final Python example should:
 - contain any tiny asset-cache helper needed for out-of-the-box operation,
 - clearly demonstrate cubemap rendering,
 - be suitable for inclusion in the gallery or showcase examples.
-
