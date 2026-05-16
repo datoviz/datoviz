@@ -180,6 +180,12 @@ For the first implementation, support mesh and primitive visuals with normals. P
 volume, and fixed-overlay visuals can remain on the ordinary final-target path until the composition
 policy is deliberately broadened.
 
+The next high-value SSAO demonstration target should be a dedicated sphere visual, not a marker
+variant and not a tessellated mesh fallback. Sphere impostors can provide analytic normals and
+correct sphere-surface depth in the G-buffer while keeping per-item data compact. The dedicated
+implementation plan is recorded in
+[SCENE_SPHERE_VISUAL_PLAN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/SCENE_SPHERE_VISUAL_PLAN.md).
+
 
 ## Runtime Emission Changes
 

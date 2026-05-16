@@ -356,6 +356,12 @@ Deliver the next implementation slices in this order unless the user redirects:
     [../../docs/architecture/scene_techniques_materials.md](/home/cyrille/GIT/Viz/datoviz/docs/architecture/scene_techniques_materials.md),
     and the pickup plan is
     [SCENE_TECHNIQUES_MATERIALS_PLAN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/SCENE_TECHNIQUES_MATERIALS_PLAN.md).
+15. Sphere visual family: add a dedicated v0.4 sphere impostor visual before using SSAO demos for
+    dense atom/particle scenes. This should follow the v0.3 conceptual model: center/color/size
+    payload, hard-coded sphere reconstruction in the fragment shader, material lighting, optional
+    texturing later, correct `gl_FragDepth`, G-buffer normal/depth support, and always-on analytic
+    antialiased silhouettes. Do not fold sphere into marker. The plan is recorded in
+    [SCENE_SPHERE_VISUAL_PLAN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/SCENE_SPHERE_VISUAL_PLAN.md).
 
 Implementation-level checklists for these lanes are recorded in
 [../../docs/tasks/2026-05-13-next-implementation-priorities/NEXT_STEPS.md](/home/cyrille/GIT/Viz/datoviz/docs/tasks/2026-05-13-next-implementation-priorities/NEXT_STEPS.md).

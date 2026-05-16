@@ -214,6 +214,12 @@ post-process that can run after selected transparent techniques.
 Use the existing SSAO implementation plan for the SSAO-specific graph and shader details:
 [SCENE_SSAO_IMPLEMENTATION_PLAN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/SCENE_SSAO_IMPLEMENTATION_PLAN.md).
 
+Sphere impostors should be implemented as a standalone visual family before relying on SSAO demos
+for dense particle/atom scenes. Do not fold sphere into marker: the v0.3 model was a dedicated
+ray-traced sphere sprite with lighting, optional texturing, analytic normals, and shader-written
+depth. The v0.4 pickup plan is recorded in
+[SCENE_SPHERE_VISUAL_PLAN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/SCENE_SPHERE_VISUAL_PLAN.md).
+
 
 ## Guardrails
 
