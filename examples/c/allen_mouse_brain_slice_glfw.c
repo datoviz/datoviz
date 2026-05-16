@@ -4,10 +4,10 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* allen_mouse_brain_slice_glfw - local Allen mouse brain RGBA volume slice.
+/* allen_mouse_brain_slice_glfw - local Allen mouse brain RGBA slice and 3D volume.
  *
  * Build:   just example-c allen_mouse_brain_slice_glfw
- * Run:     ./build/examples/c/allen_mouse_brain_slice_glfw
+ * Run:     ./build/examples/c/allen_mouse_brain_slice_glfw [frames] [--downsample=2]
  * Data:    data/volumes/allen_mouse_brain_rgba.npy.gz
  */
 
@@ -46,7 +46,9 @@
 #define DEFAULT_VOLUME_FILE "allen_mouse_brain_rgba.npy.gz"
 #define DEFAULT_AXIS          DVZ_VOLUME_AXIS_Z
 #define DEFAULT_SLICE_POS     0.5f
-#define DEFAULT_OPACITY       1.0f
+#define DEFAULT_SLICE_OPACITY 1.0f
+#define DEFAULT_VOLUME_OPACITY 0.85f
+#define DEFAULT_VOLUME_STEPS  192.0f
 #define MOUSE_BRAIN_WIDTH 320
 #define MOUSE_BRAIN_HEIGHT 456
 #define MOUSE_BRAIN_DEPTH 528
@@ -60,19 +62,27 @@
 typedef struct AllenMouseBrainVolume
 {
     char* raw_data;
+    uint8_t* downsampled_data;
     uint8_t* voxels;
     uint32_t width;
     uint32_t height;
     uint32_t depth;
+    uint32_t downsample;
 } AllenMouseBrainVolume;
 
 
 
 typedef struct AllenMouseBrainState
 {
-    DvzVisual* volume;
+    DvzVisual* slice_visual;
+    DvzVisual* volume_visual;
+    bool show_slice;
+    bool show_volume;
     bool linear_sampling;
-    float opacity;
+    int render_mode;
+    float slice_opacity;
+    float volume_opacity;
+    float volume_steps;
     float slice_position;
     DvzVolumeAxis axis;
 } AllenMouseBrainState;
@@ -107,6 +117,67 @@ static uint32_t _frame_count(int argc, char** argv)
         return (uint32_t)value;
     }
     return 0;
+}
+
+
+
+/**
+ * Parse an optional bounded unsigned command-line option.
+ *
+ * @param argc command-line argument count
+ * @param argv command-line argument vector
+ * @param name long option name without leading dashes
+ * @param default_value fallback value when the option is absent
+ * @param min_value minimum accepted value
+ * @param max_value maximum accepted value
+ * @return parsed option value
+ */
+static uint32_t _option_u32(
+    int argc, char** argv, const char* name, uint32_t default_value, uint32_t min_value,
+    uint32_t max_value)
+{
+    ANN(name);
+    if (argc < 2 || argv == NULL)
+        return default_value;
+
+    char prefix[64] = {0};
+    int prefix_len = dvz_snprintf(prefix, sizeof(prefix), "--%s=", name);
+    if (prefix_len <= 0 || (size_t)prefix_len >= sizeof(prefix))
+        return default_value;
+
+    char flag[64] = {0};
+    int flag_len = dvz_snprintf(flag, sizeof(flag), "--%s", name);
+    if (flag_len <= 0 || (size_t)flag_len >= sizeof(flag))
+        return default_value;
+
+    for (int i = 1; i < argc; i++)
+    {
+        if (argv[i] == NULL)
+            continue;
+
+        const char* value_str = NULL;
+        if (strncmp(argv[i], prefix, (size_t)prefix_len) == 0)
+        {
+            value_str = argv[i] + prefix_len;
+        }
+        else if (strcmp(argv[i], flag) == 0 && i + 1 < argc && argv[i + 1] != NULL)
+        {
+            value_str = argv[i + 1];
+        }
+        if (value_str == NULL)
+            continue;
+
+        char* end = NULL;
+        unsigned long value = strtoul(value_str, &end, 10);
+        if (end == value_str || (end != NULL && *end != '\0'))
+            return default_value;
+        if (value < min_value)
+            return min_value;
+        if (value > max_value)
+            return max_value;
+        return (uint32_t)value;
+    }
+    return default_value;
 }
 
 
@@ -501,7 +572,154 @@ static bool _read_allen_mouse_brain(const char* path, AllenMouseBrainVolume* out
     out->width = parsed.width;
     out->height = parsed.height;
     out->depth = parsed.depth;
+    out->downsample = 1;
     return true;
+}
+
+
+
+/**
+ * Return the ceiling of an unsigned integer division.
+ *
+ * @param value dividend
+ * @param divisor divisor
+ * @return ceil(value / divisor), or zero when divisor is zero
+ */
+static uint32_t _ceil_div_u32(uint32_t value, uint32_t divisor)
+{
+    if (divisor == 0)
+        return 0;
+    return value / divisor + (value % divisor != 0 ? 1u : 0u);
+}
+
+
+
+/**
+ * Return the larger of two unsigned 32-bit integers.
+ *
+ * @param a first value
+ * @param b second value
+ * @return max(a, b)
+ */
+static uint32_t _max_u32(uint32_t a, uint32_t b)
+{
+    return a > b ? a : b;
+}
+
+
+
+/**
+ * Downsample an RGBA volume by selecting the strongest voxel in every block.
+ *
+ * @param volume volume metadata and storage
+ * @param factor integer downsample factor
+ * @return whether downsampling succeeded
+ */
+static bool _downsample_allen_mouse_brain(AllenMouseBrainVolume* volume, uint32_t factor)
+{
+    ANN(volume);
+    if (factor <= 1)
+        return true;
+    if (volume->voxels == NULL || volume->width == 0 || volume->height == 0 || volume->depth == 0)
+        return false;
+
+    uint32_t out_width = _ceil_div_u32(volume->width, factor);
+    uint32_t out_height = _ceil_div_u32(volume->height, factor);
+    uint32_t out_depth = _ceil_div_u32(volume->depth, factor);
+    if (out_width == 0 || out_height == 0 || out_depth == 0)
+        return false;
+
+    uint64_t voxel_count = 0;
+    uint64_t byte_count = 0;
+    if (_dvz_mul_u64_overflows(out_width, out_height, &voxel_count) ||
+        _dvz_mul_u64_overflows(voxel_count, out_depth, &voxel_count) ||
+        _dvz_mul_u64_overflows(voxel_count, 4, &byte_count))
+    {
+        return false;
+    }
+
+    uint8_t* dst = (uint8_t*)dvz_calloc(byte_count, 1);
+    if (dst == NULL)
+        return false;
+
+    const uint8_t* src = volume->voxels;
+    uint32_t src_width = volume->width;
+    uint32_t src_height = volume->height;
+    uint32_t src_depth = volume->depth;
+    for (uint32_t z = 0; z < out_depth; z++)
+    {
+        uint32_t z0 = z * factor;
+        uint32_t z1 = _max_u32(z0 + 1, z0 + factor);
+        if (z1 > src_depth)
+            z1 = src_depth;
+        for (uint32_t y = 0; y < out_height; y++)
+        {
+            uint32_t y0 = y * factor;
+            uint32_t y1 = _max_u32(y0 + 1, y0 + factor);
+            if (y1 > src_height)
+                y1 = src_height;
+            for (uint32_t x = 0; x < out_width; x++)
+            {
+                uint32_t x0 = x * factor;
+                uint32_t x1 = _max_u32(x0 + 1, x0 + factor);
+                if (x1 > src_width)
+                    x1 = src_width;
+
+                const uint8_t* best = NULL;
+                uint32_t best_score = 0;
+                for (uint32_t zz = z0; zz < z1; zz++)
+                {
+                    for (uint32_t yy = y0; yy < y1; yy++)
+                    {
+                        for (uint32_t xx = x0; xx < x1; xx++)
+                        {
+                            uint64_t src_index =
+                                (((uint64_t)zz * src_height + yy) * src_width + xx) * 4u;
+                            const uint8_t* candidate = src + src_index;
+                            uint32_t luminance = (uint32_t)candidate[0] + candidate[1] +
+                                                 candidate[2];
+                            uint32_t score = (uint32_t)candidate[3] * 1024u + luminance;
+                            if (best == NULL || score > best_score)
+                            {
+                                best = candidate;
+                                best_score = score;
+                            }
+                        }
+                    }
+                }
+
+                uint64_t dst_index = (((uint64_t)z * out_height + y) * out_width + x) * 4u;
+                if (best != NULL)
+                    dvz_memcpy(dst + dst_index, 4, best, 4);
+            }
+        }
+    }
+
+    volume->downsampled_data = dst;
+    volume->voxels = dst;
+    volume->width = out_width;
+    volume->height = out_height;
+    volume->depth = out_depth;
+    volume->downsample = factor;
+    return true;
+}
+
+
+
+/**
+ * Free owned Allen mouse brain volume storage.
+ *
+ * @param volume volume metadata and storage
+ */
+static void _allen_mouse_brain_destroy(AllenMouseBrainVolume* volume)
+{
+    if (volume == NULL)
+        return;
+    if (volume->downsampled_data != NULL)
+        dvz_free(volume->downsampled_data);
+    if (volume->raw_data != NULL)
+        dvz_free(volume->raw_data);
+    dvz_memset(volume, sizeof(AllenMouseBrainVolume), 0, sizeof(AllenMouseBrainVolume));
 }
 
 
@@ -514,15 +732,31 @@ static bool _read_allen_mouse_brain(const char* path, AllenMouseBrainVolume* out
 static void _apply_volume_controls(AllenMouseBrainState* state)
 {
     ANN(state);
-    if (state->volume == NULL)
+    if (state->slice_visual == NULL || state->volume_visual == NULL)
         return;
-    (void)dvz_volume_set_render_mode(state->volume, DVZ_VOLUME_RENDER_SLICE);
-    (void)dvz_volume_set_opacity(state->volume, state->opacity);
+
+    DvzVolumeSamplingMode sampling =
+        state->linear_sampling ? DVZ_VOLUME_SAMPLING_LINEAR : DVZ_VOLUME_SAMPLING_NEAREST;
+
+    (void)dvz_volume_set_render_mode(state->slice_visual, DVZ_VOLUME_RENDER_SLICE);
+    (void)dvz_volume_set_opacity(
+        state->slice_visual, state->show_slice ? state->slice_opacity : 0.0f);
     (void)dvz_volume_set_sampling(
-        state->volume,
-        state->linear_sampling ? DVZ_VOLUME_SAMPLING_LINEAR : DVZ_VOLUME_SAMPLING_NEAREST);
-    (void)dvz_volume_set_slice_axis(state->volume, state->axis);
-    (void)dvz_volume_set_slice_position(state->volume, (double)state->slice_position);
+        state->slice_visual, sampling);
+    (void)dvz_volume_set_slice_axis(state->slice_visual, state->axis);
+    (void)dvz_volume_set_slice_position(state->slice_visual, (double)state->slice_position);
+
+    DvzVolumeRenderMode mode = DVZ_VOLUME_RENDER_MIP;
+    if (state->render_mode == DVZ_VOLUME_RENDER_COMPOSITE)
+        mode = DVZ_VOLUME_RENDER_COMPOSITE;
+    uint32_t step_count = (uint32_t)(state->volume_steps + 0.5f);
+    if (step_count < 1)
+        step_count = 1;
+    (void)dvz_volume_set_render_mode(state->volume_visual, mode);
+    (void)dvz_volume_set_opacity(
+        state->volume_visual, state->show_volume ? state->volume_opacity : 0.0f);
+    (void)dvz_volume_set_sampling(state->volume_visual, sampling);
+    (void)dvz_volume_set_step_count(state->volume_visual, step_count);
 }
 
 
@@ -544,6 +778,18 @@ static void _allen_mouse_brain_gui(DvzGui* gui, DvzAppWindow* win, void* user_da
     bool changed = false;
     if (dvz_gui_begin(gui, "Allen Mouse Brain", NULL, 0))
     {
+        changed |= dvz_gui_checkbox(gui, "Show slice", &state->show_slice);
+        changed |= dvz_gui_checkbox(gui, "Show full volume", &state->show_volume);
+        if (dvz_gui_button(gui, "MIP volume"))
+        {
+            state->render_mode = DVZ_VOLUME_RENDER_MIP;
+            changed = true;
+        }
+        if (dvz_gui_button(gui, "Composite volume"))
+        {
+            state->render_mode = DVZ_VOLUME_RENDER_COMPOSITE;
+            changed = true;
+        }
         if (dvz_gui_button(gui, "Axis X"))
         {
             state->axis = DVZ_VOLUME_AXIS_X;
@@ -561,11 +807,18 @@ static void _allen_mouse_brain_gui(DvzGui* gui, DvzAppWindow* win, void* user_da
         }
         changed |= dvz_gui_checkbox(gui, "Linear sampling", &state->linear_sampling);
         changed |= dvz_gui_slider_float(gui, "Slice position", &state->slice_position, 0.0f, 1.0f);
-        changed |= dvz_gui_slider_float(gui, "Opacity", &state->opacity, 0.0f, 1.0f);
+        changed |= dvz_gui_slider_float(gui, "Slice opacity", &state->slice_opacity, 0.0f, 1.0f);
+        changed |= dvz_gui_slider_float(gui, "Volume opacity", &state->volume_opacity, 0.0f, 1.0f);
+        changed |= dvz_gui_slider_float(gui, "Volume steps", &state->volume_steps, 8.0f, 512.0f);
         if (dvz_gui_button(gui, "Reset"))
         {
+            state->show_slice = true;
+            state->show_volume = true;
             state->linear_sampling = true;
-            state->opacity = DEFAULT_OPACITY;
+            state->render_mode = DVZ_VOLUME_RENDER_MIP;
+            state->slice_opacity = DEFAULT_SLICE_OPACITY;
+            state->volume_opacity = DEFAULT_VOLUME_OPACITY;
+            state->volume_steps = DEFAULT_VOLUME_STEPS;
             state->slice_position = DEFAULT_SLICE_POS;
             state->axis = DEFAULT_AXIS;
             changed = true;
@@ -586,6 +839,7 @@ static void _allen_mouse_brain_gui(DvzGui* gui, DvzAppWindow* win, void* user_da
 int main(int argc, char** argv)
 {
     uint32_t frame_count = _frame_count(argc, argv);
+    uint32_t downsample = _option_u32(argc, argv, "downsample", 1, 1, 8);
 
     char data_path[1024] = {0};
     if (!_data_path(argc, argv, data_path, sizeof(data_path)))
@@ -604,12 +858,24 @@ int main(int argc, char** argv)
             data_path);
         return 1;
     }
+    if (!_downsample_allen_mouse_brain(&volume_data, downsample))
+    {
+        dvz_fprintf(stderr, "failed to downsample Allen mouse brain volume by %u\n", downsample);
+        _allen_mouse_brain_destroy(&volume_data);
+        return 1;
+    }
+    if (volume_data.downsample > 1)
+    {
+        dvz_fprintf(
+            stderr, "using downsampled Allen mouse brain volume %ux%ux%u (factor %u)\n",
+            volume_data.width, volume_data.height, volume_data.depth, volume_data.downsample);
+    }
 
     DvzScene* scene = dvz_scene();
     if (scene == NULL)
     {
         dvz_fprintf(stderr, "dvz_scene() failed\n");
-        dvz_free(volume_data.raw_data);
+        _allen_mouse_brain_destroy(&volume_data);
         return 1;
     }
 
@@ -617,7 +883,7 @@ int main(int argc, char** argv)
     if (figure == NULL)
     {
         dvz_fprintf(stderr, "dvz_figure() failed\n");
-        dvz_free(volume_data.raw_data);
+        _allen_mouse_brain_destroy(&volume_data);
         dvz_scene_destroy(scene);
         return 1;
     }
@@ -627,7 +893,7 @@ int main(int argc, char** argv)
     if (panel == NULL)
     {
         dvz_fprintf(stderr, "dvz_panel() failed\n");
-        dvz_free(volume_data.raw_data);
+        _allen_mouse_brain_destroy(&volume_data);
         dvz_scene_destroy(scene);
         return 1;
     }
@@ -641,7 +907,7 @@ int main(int argc, char** argv)
     if (!dvz_panel_set_camera(panel, &camera_desc))
     {
         dvz_fprintf(stderr, "dvz_panel_set_camera() failed\n");
-        dvz_free(volume_data.raw_data);
+        _allen_mouse_brain_destroy(&volume_data);
         dvz_scene_destroy(scene);
         return 1;
     }
@@ -658,7 +924,7 @@ int main(int argc, char** argv)
     if (field == NULL)
     {
         dvz_fprintf(stderr, "dvz_sampled_field() failed\n");
-        dvz_free(volume_data.raw_data);
+        _allen_mouse_brain_destroy(&volume_data);
         dvz_scene_destroy(scene);
         return 1;
     }
@@ -670,46 +936,64 @@ int main(int argc, char** argv)
                    }))
     {
         dvz_fprintf(stderr, "dvz_sampled_field_set_data() failed\n");
-        dvz_free(volume_data.raw_data);
+        _allen_mouse_brain_destroy(&volume_data);
         dvz_scene_destroy(scene);
         return 1;
     }
 
-    DvzVisual* volume = dvz_volume(scene, 0);
-    if (volume == NULL)
+    DvzVisual* volume_3d = dvz_volume(scene, 0);
+    DvzVisual* volume_slice = dvz_volume(scene, 0);
+    if (volume_3d == NULL || volume_slice == NULL)
     {
         dvz_fprintf(stderr, "dvz_volume() failed\n");
-        dvz_free(volume_data.raw_data);
+        _allen_mouse_brain_destroy(&volume_data);
         dvz_scene_destroy(scene);
         return 1;
     }
-    if (!dvz_visual_set_field(volume, "field", field))
+    if (!dvz_visual_set_field(volume_3d, "field", field) ||
+        !dvz_visual_set_field(volume_slice, "field", field))
     {
         dvz_fprintf(stderr, "dvz_visual_set_field() failed\n");
-        dvz_free(volume_data.raw_data);
+        _allen_mouse_brain_destroy(&volume_data);
         dvz_scene_destroy(scene);
         return 1;
     }
-    if (dvz_visual_set_alpha_mode(volume, DVZ_ALPHA_BLENDED) != 0)
+    if (dvz_visual_set_alpha_mode(volume_3d, DVZ_ALPHA_BLENDED) != 0 ||
+        dvz_visual_set_alpha_mode(volume_slice, DVZ_ALPHA_BLENDED) != 0)
     {
         dvz_fprintf(stderr, "dvz_visual_set_alpha_mode() failed\n");
-        dvz_free(volume_data.raw_data);
+        _allen_mouse_brain_destroy(&volume_data);
         dvz_scene_destroy(scene);
         return 1;
     }
-    if (dvz_panel_add_visual(panel, volume, NULL) != 0)
+    DvzVisualAttachDesc volume_attach = {
+        .z_layer = 0,
+        .controller_mode = DVZ_CONTROLLER_APPLY,
+    };
+    DvzVisualAttachDesc slice_attach = {
+        .z_layer = 1,
+        .controller_mode = DVZ_CONTROLLER_APPLY,
+    };
+    if (dvz_panel_add_visual(panel, volume_3d, &volume_attach) != 0 ||
+        dvz_panel_add_visual(panel, volume_slice, &slice_attach) != 0)
     {
         dvz_fprintf(stderr, "dvz_panel_add_visual() failed\n");
-        dvz_free(volume_data.raw_data);
+        _allen_mouse_brain_destroy(&volume_data);
         dvz_scene_destroy(scene);
         return 1;
     }
     dvz_panel_set_background_color(panel, 0.025f, 0.035f, 0.045f, 1.0f);
 
     AllenMouseBrainState state = {
-        .volume = volume,
+        .slice_visual = volume_slice,
+        .volume_visual = volume_3d,
+        .show_slice = true,
+        .show_volume = true,
         .linear_sampling = true,
-        .opacity = DEFAULT_OPACITY,
+        .render_mode = DVZ_VOLUME_RENDER_MIP,
+        .slice_opacity = DEFAULT_SLICE_OPACITY,
+        .volume_opacity = DEFAULT_VOLUME_OPACITY,
+        .volume_steps = DEFAULT_VOLUME_STEPS,
         .slice_position = DEFAULT_SLICE_POS,
         .axis = DEFAULT_AXIS,
     };
@@ -719,7 +1003,7 @@ int main(int argc, char** argv)
     if (app == NULL)
     {
         dvz_fprintf(stderr, "dvz_app() failed (no GPU or display?)\n");
-        dvz_free(volume_data.raw_data);
+        _allen_mouse_brain_destroy(&volume_data);
         dvz_scene_destroy(scene);
         return 1;
     }
@@ -729,7 +1013,7 @@ int main(int argc, char** argv)
     if (win == NULL)
     {
         dvz_fprintf(stderr, "dvz_app_window_glfw() failed (GLFW unavailable?)\n");
-        dvz_free(volume_data.raw_data);
+        _allen_mouse_brain_destroy(&volume_data);
         dvz_app_destroy(app);
         dvz_scene_destroy(scene);
         return 1;
@@ -739,7 +1023,7 @@ int main(int argc, char** argv)
     if (arcball == NULL)
     {
         dvz_fprintf(stderr, "dvz_panel_set_arcball() failed\n");
-        dvz_free(volume_data.raw_data);
+        _allen_mouse_brain_destroy(&volume_data);
         dvz_app_destroy(app);
         dvz_scene_destroy(scene);
         return 1;
@@ -750,7 +1034,7 @@ int main(int argc, char** argv)
     if (gui == NULL)
     {
         dvz_fprintf(stderr, "dvz_app_window_gui() failed\n");
-        dvz_free(volume_data.raw_data);
+        _allen_mouse_brain_destroy(&volume_data);
         dvz_app_destroy(app);
         dvz_scene_destroy(scene);
         return 1;
@@ -762,7 +1046,7 @@ int main(int argc, char** argv)
 
     dvz_app_run(app, frame_count);
 
-    dvz_free(volume_data.raw_data);
+    _allen_mouse_brain_destroy(&volume_data);
     dvz_app_destroy(app);
     dvz_scene_destroy(scene);
     return 0;
