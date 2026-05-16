@@ -78,6 +78,8 @@ typedef struct AllenMouseBrainState
     DvzVisual* volume_visual;
     bool show_slice;
     bool show_volume;
+    bool clip_volume_at_slice;
+    bool keep_positive_side;
     bool linear_sampling;
     int render_mode;
     float slice_opacity;
@@ -791,6 +793,24 @@ static void _apply_volume_controls(AllenMouseBrainState* state)
         state->volume_visual, state->show_volume ? state->volume_opacity : 0.0f);
     (void)dvz_volume_set_sampling(state->volume_visual, sampling);
     (void)dvz_volume_set_step_count(state->volume_visual, step_count);
+
+    if (state->clip_volume_at_slice)
+    {
+        double clip_min[3] = {0.0, 0.0, 0.0};
+        double clip_max[3] = {1.0, 1.0, 1.0};
+        uint32_t axis = (uint32_t)state->axis;
+        if (axis > 2)
+            axis = 2;
+        if (state->keep_positive_side)
+            clip_min[axis] = (double)state->slice_position;
+        else
+            clip_max[axis] = (double)state->slice_position;
+        (void)dvz_volume_set_clipping_box(state->volume_visual, clip_min, clip_max);
+    }
+    else
+    {
+        (void)dvz_volume_clear_clipping(state->volume_visual);
+    }
 }
 
 
@@ -814,6 +834,8 @@ static void _allen_mouse_brain_gui(DvzGui* gui, DvzAppWindow* win, void* user_da
     {
         changed |= dvz_gui_checkbox(gui, "Show slice", &state->show_slice);
         changed |= dvz_gui_checkbox(gui, "Show full volume", &state->show_volume);
+        changed |= dvz_gui_checkbox(gui, "Clip volume at slice", &state->clip_volume_at_slice);
+        changed |= dvz_gui_checkbox(gui, "Keep positive side", &state->keep_positive_side);
         if (dvz_gui_button(gui, "MIP volume"))
         {
             state->render_mode = DVZ_VOLUME_RENDER_COMPOSITE;
@@ -848,6 +870,8 @@ static void _allen_mouse_brain_gui(DvzGui* gui, DvzAppWindow* win, void* user_da
         {
             state->show_slice = true;
             state->show_volume = true;
+            state->clip_volume_at_slice = false;
+            state->keep_positive_side = true;
             state->linear_sampling = true;
             state->render_mode = DVZ_VOLUME_RENDER_MIP;
             state->slice_opacity = DEFAULT_SLICE_OPACITY;
@@ -1034,6 +1058,8 @@ int main(int argc, char** argv)
         .volume_visual = volume_3d,
         .show_slice = true,
         .show_volume = true,
+        .clip_volume_at_slice = false,
+        .keep_positive_side = true,
         .linear_sampling = true,
         .render_mode = DVZ_VOLUME_RENDER_COMPOSITE,
         .slice_opacity = DEFAULT_SLICE_OPACITY,
