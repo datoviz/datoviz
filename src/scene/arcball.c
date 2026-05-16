@@ -14,6 +14,8 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
+#include <math.h>
+
 #include "_alloc.h"
 #include "_assertions.h"
 #include "_log.h"
@@ -23,8 +25,37 @@
 
 
 /*************************************************************************************************/
+/*  Constants                                                                                    */
+/*************************************************************************************************/
+
+#define DVZ_ARCBALL_ZOOM_MIN        0.02f
+#define DVZ_ARCBALL_ZOOM_MAX       50.00f
+#define DVZ_ARCBALL_ZOOM_WHEEL_COEF 0.15f
+
+
+
+/*************************************************************************************************/
 /*  Helpers                                                                                      */
 /*************************************************************************************************/
+
+/**
+ * Clamp a float into a closed range.
+ *
+ * @param value input value
+ * @param min_value minimum accepted value
+ * @param max_value maximum accepted value
+ * @return clamped value
+ */
+static float _clampf(float value, float min_value, float max_value)
+{
+    if (value < min_value)
+        return min_value;
+    if (value > max_value)
+        return max_value;
+    return value;
+}
+
+
 
 static void _screen_to_arcball(vec2 p, versor q)
 {
@@ -63,6 +94,21 @@ static void _constrain(versor q, vec3 axis)
     {
         glm_vec3_normalize_to((vec3){-axis[1], axis[0], 0.0f}, q);
     }
+}
+
+
+/**
+ * Apply a wheel zoom delta to an arcball.
+ *
+ * @param arcball arcball controller
+ * @param dir wheel direction
+ */
+static void _arcball_zoom_wheel(DvzArcball* arcball, vec2 dir)
+{
+    ANN(arcball);
+    if (dir[1] == 0.0f)
+        return;
+    dvz_arcball_zoom(arcball, arcball->zoom * expf(DVZ_ARCBALL_ZOOM_WHEEL_COEF * dir[1]));
 }
 
 
@@ -126,6 +172,7 @@ void dvz_arcball_reset(DvzArcball* arcball)
     ANN(arcball);
     dvz_arcball_set(arcball, arcball->init);
     glm_quat_identity(arcball->rotation);
+    arcball->zoom = 1.0f;
     arcball->interacting = false;
 }
 
@@ -161,6 +208,19 @@ void dvz_arcball_rotate_axis(DvzArcball* arcball, float angle, vec3 axis)
     mat4 rot = GLM_MAT4_IDENTITY_INIT;
     glm_rotate_make(rot, angle, axis);
     glm_mat4_mul(rot, arcball->mat, arcball->mat);
+}
+
+
+/**
+ * Set the uniform zoom factor.
+ *
+ * @param arcball arcball controller
+ * @param zoom uniform zoom factor
+ */
+void dvz_arcball_zoom(DvzArcball* arcball, float zoom)
+{
+    ANN(arcball);
+    arcball->zoom = _clampf(zoom, DVZ_ARCBALL_ZOOM_MIN, DVZ_ARCBALL_ZOOM_MAX);
 }
 
 
@@ -223,6 +283,7 @@ void dvz_arcball_model(DvzArcball* arcball, mat4 model)
     mat4 rot = GLM_MAT4_IDENTITY_INIT;
     glm_quat_mat4(arcball->rotation, rot);
     glm_mat4_mul(rot, arcball->mat, model);
+    glm_scale_uni(model, arcball->zoom);
 }
 
 
@@ -311,6 +372,13 @@ bool dvz_arcball_pointer(DvzArcball* arcball, const DvzPointerEvent* ev)
     case DVZ_POINTER_EVENT_DOUBLE_CLICK:
         dvz_arcball_reset(arcball);
         break;
+
+    case DVZ_POINTER_EVENT_WHEEL:
+    {
+        vec2 dir = {ev->content.w.dir[0], ev->content.w.dir[1]};
+        _arcball_zoom_wheel(arcball, dir);
+        break;
+    }
 
     default:
         return false;

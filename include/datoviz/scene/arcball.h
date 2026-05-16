@@ -64,6 +64,7 @@ struct DvzArcball
     vec3 init;       /* initial Euler angles (used by reset) */
     vec4 rotation;   /* in-flight quaternion (while dragging); same layout as cglm versor */
     vec3 constrain;  /* constrain axis; null if no constraint */
+    float zoom;      /* uniform model-space zoom factor */
     bool interacting; /* true while the pointer is controlling the arcball */
 };
 
@@ -110,6 +111,12 @@ DVZ_EXPORT void dvz_arcball_set(DvzArcball* arcball, vec3 angles);
  * Apply an incremental rotation around an axis to the accumulated orientation.
  */
 DVZ_EXPORT void dvz_arcball_rotate_axis(DvzArcball* arcball, float angle, vec3 axis);
+
+
+/**
+ * Set the uniform zoom factor.
+ */
+DVZ_EXPORT void dvz_arcball_zoom(DvzArcball* arcball, float zoom);
 
 
 

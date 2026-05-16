@@ -359,6 +359,53 @@ int test_arcball_rotate_axis_is_incremental(TstSuite* suite, TstItem* item)
 }
 
 
+/**
+ * Check that wheel events update arcball zoom and model scale.
+ *
+ * @param suite test suite
+ * @param item test item
+ * @return test status
+ */
+int test_arcball_zoom_wheel(TstSuite* suite, TstItem* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzArcball* arc = dvz_arcball(800.0f, 800.0f, 0);
+    ANN(arc);
+    AT(fabsf(arc->zoom - 1.0f) < 1e-5f);
+
+    DvzPointerEvent wheel_in = {
+        .type = DVZ_POINTER_EVENT_WHEEL,
+        .content.w.dir = {0.0f, 1.0f},
+        .pos = {400.0f, 400.0f},
+    };
+    AT(dvz_arcball_pointer(arc, &wheel_in));
+    AT(arc->zoom > 1.0f);
+    float zoom_in = arc->zoom;
+
+    DvzPointerEvent wheel_out = {
+        .type = DVZ_POINTER_EVENT_WHEEL,
+        .content.w.dir = {0.0f, -2.0f},
+        .pos = {400.0f, 400.0f},
+    };
+    AT(dvz_arcball_pointer(arc, &wheel_out));
+    AT(arc->zoom < zoom_in);
+
+    dvz_arcball_zoom(arc, 2.5f);
+    mat4 model = GLM_MAT4_IDENTITY_INIT;
+    dvz_arcball_model(arc, model);
+    AT(fabsf(model[0][0] - 2.5f) < 1e-5f);
+
+    DvzPointerEvent reset = {.type = DVZ_POINTER_EVENT_DOUBLE_CLICK};
+    AT(dvz_arcball_pointer(arc, &reset));
+    AT(fabsf(arc->zoom - 1.0f) < 1e-5f);
+
+    dvz_arcball_destroy(arc);
+    return 0;
+}
+
+
 int test_arcball_interaction_state(TstSuite* suite, TstItem* item)
 {
     (void)suite;
@@ -451,6 +498,7 @@ int test_scene_panzoom_arcball(TstSuite* suite)
     TEST_SIMPLE(test_arcball_rotate_produces_nonidentity_model);
     TEST_SIMPLE(test_arcball_end_commits_rotation);
     TEST_SIMPLE(test_arcball_rotate_axis_is_incremental);
+    TEST_SIMPLE(test_arcball_zoom_wheel);
     TEST_SIMPLE(test_arcball_interaction_state);
     TEST_SIMPLE(test_arcball_double_click_resets);
 

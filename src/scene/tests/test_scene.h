@@ -76,6 +76,8 @@ int test_arcball_end_commits_rotation(TstSuite* suite, TstItem* item);
 
 int test_arcball_rotate_axis_is_incremental(TstSuite* suite, TstItem* item);
 
+int test_arcball_zoom_wheel(TstSuite* suite, TstItem* item);
+
 int test_arcball_interaction_state(TstSuite* suite, TstItem* item);
 
 int test_arcball_double_click_resets(TstSuite* suite, TstItem* item);

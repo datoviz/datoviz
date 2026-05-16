@@ -44,10 +44,14 @@ static const float TAU = 6.28318530718f;
 typedef struct EdlExampleState
 {
     DvzPanel* panel;
+    DvzVisual* visual;
+    float* sizes;
+    uint32_t point_count;
     bool edl_enabled;
     float radius;
     float strength;
     float depth_scale;
+    float point_size;
 } EdlExampleState;
 
 
@@ -120,6 +124,24 @@ static void _build_points(
 }
 
 
+/**
+ * Apply the retained point-size control to the visual.
+ *
+ * @param state example state
+ */
+static void _apply_point_size(EdlExampleState* state)
+{
+    ANN(state);
+    ANN(state->visual);
+    ANN(state->sizes);
+
+    for (uint32_t i = 0; i < state->point_count; i++)
+        state->sizes[i] = state->point_size;
+    if (dvz_visual_set_data(state->visual, "size", state->sizes, state->point_count) != 0)
+        dvz_fprintf(stderr, "failed to update point size\n");
+}
+
+
 
 /**
  * Apply the retained EDL state to the panel.
@@ -160,7 +182,9 @@ static void _reset_edl(EdlExampleState* state)
     state->radius = 2.0f;
     state->strength = 70.0f;
     state->depth_scale = 1.0f;
+    state->point_size = 5.5f;
     _apply_edl(state);
+    _apply_point_size(state);
 }
 
 
@@ -180,8 +204,11 @@ static void _edl_gui(DvzGui* gui, DvzAppWindow* win, void* user_data)
         return;
 
     bool changed = false;
+    bool point_changed = false;
     if (dvz_gui_begin(gui, "Eye-Dome Lighting", NULL, 0))
     {
+        point_changed |=
+            dvz_gui_slider_float(gui, "Point size", &state->point_size, 1.0f, 24.0f);
         changed |= dvz_gui_checkbox(gui, "Enable EDL", &state->edl_enabled);
         changed |= dvz_gui_slider_float(gui, "Radius", &state->radius, 1.0f, 8.0f);
         changed |= dvz_gui_slider_float(gui, "Strength", &state->strength, 0.0f, 160.0f);
@@ -196,6 +223,8 @@ static void _edl_gui(DvzGui* gui, DvzAppWindow* win, void* user_data)
 
     if (changed)
         _apply_edl(state);
+    if (point_changed)
+        _apply_point_size(state);
 }
 
 
@@ -279,6 +308,9 @@ int main(int argc, char** argv)
 
     EdlExampleState gui_state = {
         .panel = panel,
+        .visual = visual,
+        .sizes = sizes,
+        .point_count = POINT_COUNT,
     };
     _reset_edl(&gui_state);
 
