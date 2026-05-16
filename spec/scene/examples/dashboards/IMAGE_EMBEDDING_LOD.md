@@ -1,5 +1,13 @@
 # Image Embedding LOD Explorer Example Specification
 
+> **Agent Pickup**
+> - **Category:** `dashboards`
+> - **Implementation target:** Polished demo concept; implement in stages so the first slice can run with bounded resources.
+> - **Data policy:** Public/downloaded assets require cache metadata and an offline fallback or reduced fixture.
+> - **Preprocessing:** Usually required; specify source download, conversion, decimation/packing, and generated cache files.
+> - **Validation:** Manual visual checklist plus bounded smoke command; add screenshot/readback validation when feasible.
+
+
 ## Summary
 
 This example demonstrates an interactive image embedding explorer for Datoviz v0.4. A set of

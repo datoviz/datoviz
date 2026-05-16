@@ -217,7 +217,7 @@ Read the scene spec in this order during review.
 8. [examples/core/LINKED_PANELS_PROBE_COLORBAR.md](examples/core/LINKED_PANELS_PROBE_COLORBAR.md)
 9. [examples/core/MOUSE_BRAIN_ATLAS_EXPLORER.md](examples/core/MOUSE_BRAIN_ATLAS_EXPLORER.md)
 10. [examples/core/LINKED_PANELS_AXES_PANZOOM.md](examples/core/LINKED_PANELS_AXES_PANZOOM.md)
-11. [examples/showcase/ANIMATION_VIDEO_EXPORT.md](examples/showcase/ANIMATION_VIDEO_EXPORT.md)
+11. [examples/core/ANIMATION_VIDEO_EXPORT.md](examples/core/ANIMATION_VIDEO_EXPORT.md)
 12. [examples/api/API_MESH_SELECTION_LINK.md](examples/api/API_MESH_SELECTION_LINK.md)
 13. [examples/api/API_IMAGE_PROBE_PINNED_READOUT.md](examples/api/API_IMAGE_PROBE_PINNED_READOUT.md)
 14. [examples/api/API_SCALE_COLORBAR_ANNOTATION.md](examples/api/API_SCALE_COLORBAR_ANNOTATION.md)

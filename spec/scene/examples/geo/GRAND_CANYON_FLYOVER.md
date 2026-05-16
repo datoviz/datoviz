@@ -1,4 +1,12 @@
-# GRAND_CANYON_FLYOVER
+# Grand Canyon Flyover
+
+> **Agent Pickup**
+> - **Category:** `geo`
+> - **Implementation target:** Geographic or globe/terrain example with a minimal deterministic mode and optional real assets.
+> - **Data policy:** Prefer public datasets with cache metadata; include a synthetic fallback for offline development.
+> - **Preprocessing:** Required for real datasets; specify download, projection, tiling, simplification, and cache outputs.
+> - **Validation:** Smoke command, camera/interaction checklist, and visual checks for projection or coordinate correctness.
+
 
 ## Purpose
 

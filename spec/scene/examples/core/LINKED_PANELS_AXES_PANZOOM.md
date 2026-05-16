@@ -1,5 +1,13 @@
 # Example: Linked Panels With Shared X Axis And Independent Y Axes
 
+> **Agent Pickup**
+> - **Category:** `core`
+> - **Implementation target:** Small runnable C example or focused scene/DRP2 regression on the active v0.4 path.
+> - **Data policy:** Inline or deterministic synthetic data unless this file explicitly names a cache.
+> - **Preprocessing:** None for the first slice; keep any later generator deterministic and checked in or documented.
+> - **Validation:** Bounded smoke run plus screenshot/readback or fixture coverage when practical.
+
+
 This example traces the full axis pipeline — domain source, tick generation, covered-domain
 check, and `FramePlan` contribution — across two panels that share a panzoom X controller and
 have independent Y controllers.

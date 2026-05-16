@@ -1,5 +1,13 @@
 # Example: Mouse Brain Atlas Explorer With Transparent Regions And Slice Probe
 
+> **Agent Pickup**
+> - **Category:** `core`
+> - **Implementation target:** Small runnable C example or focused scene/DRP2 regression on the active v0.4 path.
+> - **Data policy:** Inline or deterministic synthetic data unless this file explicitly names a cache.
+> - **Preprocessing:** None for the first slice; keep any later generator deterministic and checked in or documented.
+> - **Validation:** Bounded smoke run plus screenshot/readback or fixture coverage when practical.
+
+
 This example pressure-tests a realistic neuroscience scene with nested anatomical regions, a
 transparent enclosing surface, interior region meshes, one volume slice backed by volumetric
 sampling, picking-driven selection, and one linked 2D subplot.

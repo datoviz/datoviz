@@ -1,5 +1,13 @@
 # Example: Animation And Video Export
 
+> **Agent Pickup**
+> - **Category:** `core`
+> - **Implementation target:** Polished demo concept; implement in stages so the first slice can run with bounded resources.
+> - **Data policy:** Public/downloaded assets require cache metadata and an offline fallback or reduced fixture.
+> - **Preprocessing:** Usually required; specify source download, conversion, decimation/packing, and generated cache files.
+> - **Validation:** Manual visual checklist plus bounded smoke command; add screenshot/readback validation when feasible.
+
+
 This example traces the animation system through a 3D scatter scene with a camera fly-through
 exported to video, combining all three animation types.
 

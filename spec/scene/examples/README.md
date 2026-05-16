@@ -16,6 +16,19 @@ Their role is narrower:
 3. show how resources feed `FramePlan`,
 4. show which DRP2 command categories are implied.
 
+Use [TEMPLATE.md](TEMPLATE.md) for new example specs. Existing examples should keep their
+domain-specific detail, but each file should provide enough information for an agent to pick up the
+implementation without asking for missing data-planning context. In practice, every example should
+answer:
+
+1. what artifact to implement,
+2. what data to use, download, synthesize, or cache,
+3. what preprocessing script is needed, if any,
+4. which scene visuals, panels, resources, transforms, and interactions are required,
+5. which Datoviz capabilities are mandatory versus optional,
+6. how to validate the result with a smoke command, screenshot/readback check, fixture, or manual
+   interaction checklist.
+
 
 ## Directory Layout
 
@@ -32,6 +45,8 @@ Small examples that should stay closest to the active v0.4 implementation path.
 7. [core/LINKED_PANELS_AXES_PANZOOM.md](core/LINKED_PANELS_AXES_PANZOOM.md)
 8. [core/LINKED_PANELS_PROBE_COLORBAR.md](core/LINKED_PANELS_PROBE_COLORBAR.md)
 9. [core/MOUSE_BRAIN_ATLAS_EXPLORER.md](core/MOUSE_BRAIN_ATLAS_EXPLORER.md)
+10. [core/ANIMATION_VIDEO_EXPORT.md](core/ANIMATION_VIDEO_EXPORT.md)
+11. [core/LATEX_MICROTEX_TEXT_VISUAL.md](core/LATEX_MICROTEX_TEXT_VISUAL.md)
 
 ### `api/`
 
@@ -54,32 +69,60 @@ Compute-heavy and shader-heavy examples.
 2. [compute/GRAY_SCOTT.md](compute/GRAY_SCOTT.md)
 3. [compute/MANDELBROT.md](compute/MANDELBROT.md)
 
-### `science/`
+### `astronomy/`
 
-Scientific domain examples that pressure-test geometry, fields, volume, labels, and interaction.
+Astronomy and astrophysics examples.
+
+1. [astronomy/ASTRONOMY_MANY_LABELS.md](astronomy/ASTRONOMY_MANY_LABELS.md)
+2. [astronomy/GALAXY.md](astronomy/GALAXY.md)
+
+### `bio/`
+
+Biomedical, molecular, and physiology examples.
+
+1. [bio/PHYSIOLOGY_SIGNAL_WORKBENCH.md](bio/PHYSIOLOGY_SIGNAL_WORKBENCH.md)
+2. [bio/PROTEIN_ARCBALL_VIEWER.md](bio/PROTEIN_ARCBALL_VIEWER.md)
+
+### `engineering/`
+
+Engineering simulation and post-processing examples.
+
+1. [engineering/FINITE_ELEMENT_STRESS_VIEWER.md](engineering/FINITE_ELEMENT_STRESS_VIEWER.md)
+
+### `materials/`
+
+Materials-science examples.
+
+1. [materials/CRYSTAL_PHONON_EXPLORER.md](materials/CRYSTAL_PHONON_EXPLORER.md)
+
+### `neuro/`
+
+Neuroscience, brain-atlas, and tractography examples.
+
+1. [neuro/ALLEN_IBL_COORDINATE_MESH_VOLUME_PLAN.md](neuro/ALLEN_IBL_COORDINATE_MESH_VOLUME_PLAN.md)
+2. [neuro/ALLEN_MOUSE_BRAIN_SLICE_EXAMPLE_PLAN.md](neuro/ALLEN_MOUSE_BRAIN_SLICE_EXAMPLE_PLAN.md)
+3. [neuro/DIFFUSION_TRACTOGRAPHY.md](neuro/DIFFUSION_TRACTOGRAPHY.md)
+
+### `physics/`
+
+Physics, field-line, fluid, plasma, and event-display examples.
+
+1. [physics/CFD_VORTICITY_ADVECTION.md](physics/CFD_VORTICITY_ADVECTION.md)
+2. [physics/HEP_EVENT_DISPLAY.md](physics/HEP_EVENT_DISPLAY.md)
+3. [physics/TOKAMAK_PLASMA_FIELD_LINES.md](physics/TOKAMAK_PLASMA_FIELD_LINES.md)
 
 ### `geo/`
 
 Geographic, projection, terrain, atmosphere, and globe examples.
 
+This includes Earth, Mars, wind, flight, animal migration, choropleth, earthquake, and terrain
+examples.
+
 ### `dashboards/`
 
 Operational or dense-interface examples with multiple coordinated panels.
 
-### `showcase/`
-
-Gallery-style or polished demonstration examples that combine several lower-level capabilities.
-
-1. [showcase/ANIMATION_VIDEO_EXPORT.md](showcase/ANIMATION_VIDEO_EXPORT.md)
-2. [showcase/ASTRONOMY_MANY_LABELS.md](showcase/ASTRONOMY_MANY_LABELS.md)
-3. [showcase/GALAXY.md](showcase/GALAXY.md)
-4. [showcase/IMAGE_EMBEDDING_LOD.md](showcase/IMAGE_EMBEDDING_LOD.md)
-5. [showcase/LATEX_MICROTEX_TEXT_VISUAL.md](showcase/LATEX_MICROTEX_TEXT_VISUAL.md)
-6. [showcase/ALLEN_IBL_COORDINATE_MESH_VOLUME_PLAN.md](showcase/ALLEN_IBL_COORDINATE_MESH_VOLUME_PLAN.md)
-7. [showcase/ALLEN_MOUSE_BRAIN_SLICE_EXAMPLE_PLAN.md](showcase/ALLEN_MOUSE_BRAIN_SLICE_EXAMPLE_PLAN.md)
-8. [showcase/CHOROPLETH_GLOBE_EXAMPLE_PLAN.md](showcase/CHOROPLETH_GLOBE_EXAMPLE_PLAN.md)
-9. [showcase/FLIGHT_TRAJECTORIES_DEMO_PLAN.md](showcase/FLIGHT_TRAJECTORIES_DEMO_PLAN.md)
-10. [showcase/MARS_TEXTURED_MESH_EXAMPLE_PLAN.md](showcase/MARS_TEXTURED_MESH_EXAMPLE_PLAN.md)
+This includes market, DAQ, DICOM, and image-embedding explorer examples.
 
 
 ## Common Structure

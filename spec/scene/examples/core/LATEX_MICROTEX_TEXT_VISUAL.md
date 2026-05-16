@@ -1,5 +1,13 @@
 # Datoviz v0.4 Text, Glyph, and LaTeX/Math Rendering Specification
 
+> **Agent Pickup**
+> - **Category:** `core`
+> - **Implementation target:** Polished demo concept; implement in stages so the first slice can run with bounded resources.
+> - **Data policy:** Public/downloaded assets require cache metadata and an offline fallback or reduced fixture.
+> - **Preprocessing:** Usually required; specify source download, conversion, decimation/packing, and generated cache files.
+> - **Validation:** Manual visual checklist plus bounded smoke command; add screenshot/readback validation when feasible.
+
+
 ## Goal
 
 Add a bundled text and math rendering subsystem to Datoviz v0.4 that supports:

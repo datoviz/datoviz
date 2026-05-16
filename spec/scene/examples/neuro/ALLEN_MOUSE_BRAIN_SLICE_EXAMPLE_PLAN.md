@@ -1,5 +1,13 @@
 # Allen Mouse Brain Slice Example Plan
 
+> **Agent Pickup**
+> - **Category:** `neuro`
+> - **Implementation target:** Polished demo concept; implement in stages so the first slice can run with bounded resources.
+> - **Data policy:** Public/downloaded assets require cache metadata and an offline fallback or reduced fixture.
+> - **Preprocessing:** Usually required; specify source download, conversion, decimation/packing, and generated cache files.
+> - **Validation:** Manual visual checklist plus bounded smoke command; add screenshot/readback validation when feasible.
+
+
 > **Execution Status**
 > - **Status:** `PLANNING NOTE`
 > - **Updated on:** `2026-05-16`

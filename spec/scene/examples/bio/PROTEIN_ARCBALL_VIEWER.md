@@ -1,4 +1,12 @@
-# PROTEIN_ARCBALL_VIEWER
+# Protein Arcball Viewer
+
+> **Agent Pickup**
+> - **Category:** `bio`
+> - **Implementation target:** Scientific domain example with staged implementation, starting from deterministic or prepared data.
+> - **Data policy:** Synthetic or prepared-cache first slice; real public data may be a second stage with license notes.
+> - **Preprocessing:** Document any data conversion script, output schema, coordinate normalization, and cache validation.
+> - **Validation:** Smoke run plus domain-specific visual, picking/probe, and performance acceptance criteria.
+
 
 ## Purpose
 
@@ -49,7 +57,7 @@ In other words, this example should help validate that the scene API can express
 **Suggested Python file:**
 
 ```text
-examples/showcase/protein_arcball_viewer.py
+examples/python/protein_arcball_viewer.py
 ```
 
 **Suggested spec filename:**
@@ -1070,7 +1078,7 @@ That is already enough to meaningfully validate the v0.4 scene architecture.
 
 ## Summary
 
-`PROTEIN_ARCBALL_VIEWER` is a showcase/example/spec whose primary purpose is to validate that Datoviz v0.4 can support a **modern multi-pass scientific visualization scene**, not just single-pass direct rendering.
+`PROTEIN_ARCBALL_VIEWER` is an example spec whose primary purpose is to validate that Datoviz v0.4 can support a **modern multi-pass scientific visualization scene**, not just single-pass direct rendering.
 
 The key architectural pressure point is **early SSAO integration**.
 

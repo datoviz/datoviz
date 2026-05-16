@@ -1,5 +1,13 @@
 # Gray-Scott Reaction-Diffusion Compute Example
 
+> **Agent Pickup**
+> - **Category:** `compute`
+> - **Implementation target:** Shader/compute-oriented example, preferably runnable with deterministic defaults.
+> - **Data policy:** Generated or synthetic data by default; optional assets must have a cache and fallback.
+> - **Preprocessing:** Document shader inputs, generated buffers/textures, and any optional Python preparation script.
+> - **Validation:** Bounded smoke run, deterministic seed, and visual/readback criteria for the simulation state.
+
+
 ## Purpose
 
 This example demonstrates how a Datoviz v0.4 scene can combine a GPU compute simulation with rendering in the same frame, without any GPU-to-CPU readback or CPU-mediated texture updates.

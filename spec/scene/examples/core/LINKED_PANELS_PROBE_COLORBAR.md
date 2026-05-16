@@ -1,5 +1,13 @@
 # Example: Linked Panels With Shared Probe And Consolidated Colorbar
 
+> **Agent Pickup**
+> - **Category:** `core`
+> - **Implementation target:** Small runnable C example or focused scene/DRP2 regression on the active v0.4 path.
+> - **Data policy:** Inline or deterministic synthetic data unless this file explicitly names a cache.
+> - **Preprocessing:** None for the first slice; keep any later generator deterministic and checked in or documented.
+> - **Validation:** Bounded smoke run plus screenshot/readback or fixture coverage when practical.
+
+
 This example instantiates a multi-panel scene with shared data, linked interaction, transient
 annotations, and one consolidated explanatory object.
 

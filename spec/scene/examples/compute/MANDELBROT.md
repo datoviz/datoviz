@@ -1,8 +1,14 @@
-# `mandelbrot_deep_zoom.md`
+# High-Precision Mandelbrot Deep Zoom
 
-## Example: High-Precision Mandelbrot Deep Zoom
+> **Agent Pickup**
+> - **Category:** `compute`
+> - **Implementation target:** Shader/compute-oriented example, preferably runnable with deterministic defaults.
+> - **Data policy:** Generated or synthetic data by default; optional assets must have a cache and fallback.
+> - **Preprocessing:** Document shader inputs, generated buffers/textures, and any optional Python preparation script.
+> - **Validation:** Bounded smoke run, deterministic seed, and visual/readback criteria for the simulation state.
 
-### Goal
+
+## Goal
 
 Create a Datoviz v0.4 example showing a high-precision, deeply zoomable Mandelbrot fractal rendered interactively on the GPU.
 
@@ -30,7 +36,7 @@ mandelbrot_deep_zoom.md
 Suggested eventual example script names:
 
 ```text
-examples/showcase/mandelbrot_deep_zoom.py
+examples/python/mandelbrot_deep_zoom.py
 ```
 
 or, for a lower-level C implementation:

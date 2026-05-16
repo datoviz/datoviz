@@ -1,5 +1,13 @@
 # Crystal Phonon Explorer
 
+> **Agent Pickup**
+> - **Category:** `materials`
+> - **Implementation target:** Scientific domain example with staged implementation, starting from deterministic or prepared data.
+> - **Data policy:** Synthetic or prepared-cache first slice; real public data may be a second stage with license notes.
+> - **Preprocessing:** Document any data conversion script, output schema, coordinate normalization, and cache validation.
+> - **Validation:** Smoke run plus domain-specific visual, picking/probe, and performance acceptance criteria.
+
+
 ## Example Name
 
 `CRYSTAL_PHONON_EXPLORER`

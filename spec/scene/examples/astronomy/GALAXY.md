@@ -1,4 +1,12 @@
-# Datoviz v0.4 Example Specification: `gaia_galaxy`
+# Gaia Galaxy
+
+> **Agent Pickup**
+> - **Category:** `astronomy`
+> - **Implementation target:** Polished demo concept; implement in stages so the first slice can run with bounded resources.
+> - **Data policy:** Public/downloaded assets require cache metadata and an offline fallback or reduced fixture.
+> - **Preprocessing:** Usually required; specify source download, conversion, decimation/packing, and generated cache files.
+> - **Validation:** Manual visual checklist plus bounded smoke command; add screenshot/readback validation when feasible.
+
 
 ## Goal
 
@@ -14,7 +22,7 @@ The exact Datoviz v0.4 Python API is not yet fixed. This document intentionally 
 
 Suggested file names:
 
-- Python example: `examples/showcase/gaia_galaxy.py`
+- Python example: `examples/python/gaia_galaxy.py`
 - Dataset in `datoviz/data`: `gaia/gaia_galaxy_100k.npz`
 - This specification: `gaia_galaxy.md`
 

@@ -1,5 +1,13 @@
 # Streaming DAQ Viewer Example Specification
 
+> **Agent Pickup**
+> - **Category:** `dashboards`
+> - **Implementation target:** Dense multi-panel example with predictable controls and a synthetic or cached data mode.
+> - **Data policy:** Synthetic fallback is mandatory; public or local replay data may be optional.
+> - **Preprocessing:** Use a deterministic Python preparation script when real data is downloaded or converted.
+> - **Validation:** Bounded smoke run plus manual interaction checklist for linked panels, picking, and updates.
+
+
 ## Summary
 
 This example demonstrates a real-time, high-density data acquisition (DAQ) viewer for Datoviz v0.4. It shows many digital and analog time series updating continuously in a fixed-size ring buffer, with a moving write cursor and optional scrolling display mode.

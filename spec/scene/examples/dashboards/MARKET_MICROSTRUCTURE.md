@@ -1,6 +1,12 @@
-# MARKET_MICROSTRUCTURE.md
+# Market Microstructure Dashboard
 
-# Datoviz v0.4 Example Specification: Market Microstructure Dashboard
+> **Agent Pickup**
+> - **Category:** `dashboards`
+> - **Implementation target:** Dense multi-panel example with predictable controls and a synthetic or cached data mode.
+> - **Data policy:** Synthetic fallback is mandatory; public or local replay data may be optional.
+> - **Preprocessing:** Use a deterministic Python preparation script when real data is downloaded or converted.
+> - **Validation:** Bounded smoke run plus manual interaction checklist for linked panels, picking, and updates.
+
 
 ## Summary
 
@@ -466,7 +472,7 @@ Use text if available for tooltip and axis labels. If text rendering is not read
 ## Suggested Implementation Structure
 
 ```text
-examples/showcase/market_microstructure.py
+examples/python/market_microstructure.py
 ```
 
 Suggested structure:
@@ -686,4 +692,3 @@ The desired scene semantics are:
 - optional ImGui controls.
 
 Prefer simple, explicit code over a complex reusable dashboard framework. The example should be easy to inspect, modify, and use as a regression test for Datoviz v0.4.
-

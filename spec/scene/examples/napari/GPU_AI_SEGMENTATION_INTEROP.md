@@ -1,4 +1,12 @@
-# GPU AI SEGMENTATION INTEROP
+# GPU AI Segmentation Interop
+
+> **Agent Pickup**
+> - **Category:** `napari`
+> - **Implementation target:** Napari-class scene pressure test, usually staged as a current v0.4 demo plus a richer follow-up.
+> - **Data policy:** Use public sample data or deterministic synthetic fallback; cache prepared arrays/textures explicitly.
+> - **Preprocessing:** Required when data is downloaded, resampled, tiled, labeled, or packed for GPU upload.
+> - **Validation:** Stage-specific acceptance criteria covering current v0.4 behavior and the richer napari-class target.
+
 
 ## Purpose
 

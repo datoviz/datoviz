@@ -1,5 +1,13 @@
 # Diffusion MRI Tractography Example
 
+> **Agent Pickup**
+> - **Category:** `neuro`
+> - **Implementation target:** Scientific domain example with staged implementation, starting from deterministic or prepared data.
+> - **Data policy:** Synthetic or prepared-cache first slice; real public data may be a second stage with license notes.
+> - **Preprocessing:** Document any data conversion script, output schema, coordinate normalization, and cache validation.
+> - **Validation:** Smoke run plus domain-specific visual, picking/probe, and performance acceptance criteria.
+
+
 ## Goal
 
 Create a polished Datoviz v0.4 Python example showing **3D diffusion MRI tractography streamlines** as colored paths, tubes, or ribbons.

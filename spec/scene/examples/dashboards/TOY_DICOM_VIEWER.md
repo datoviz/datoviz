@@ -1,6 +1,12 @@
-# TOY_DICOM_VIEWER.md
+# Toy DICOM Viewer
 
-# Datoviz v0.4 example specification: Toy DICOM Viewer
+> **Agent Pickup**
+> - **Category:** `dashboards`
+> - **Implementation target:** Dense multi-panel example with predictable controls and a synthetic or cached data mode.
+> - **Data policy:** Synthetic fallback is mandatory; public or local replay data may be optional.
+> - **Preprocessing:** Use a deterministic Python preparation script when real data is downloaded or converted.
+> - **Validation:** Bounded smoke run plus manual interaction checklist for linked panels, picking, and updates.
+
 
 ## Goal
 
@@ -23,7 +29,7 @@ The primary purpose is to test Datoviz v0.4 scene capabilities: multi-panel layo
 Suggested example filename:
 
 ```text
-examples/showcase/toy_dicom_viewer.py
+examples/python/toy_dicom_viewer.py
 ```
 
 Suggested documentation/spec filename:

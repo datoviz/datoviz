@@ -1,5 +1,13 @@
 # API Sketch: Image Probe With Pinned Readout
 
+> **Agent Pickup**
+> - **Category:** `api`
+> - **Implementation target:** API-shape pressure test; promote to focused header/test work only after the public surface is ready.
+> - **Data policy:** No external data required; use the inline usage flow as the source of truth.
+> - **Preprocessing:** None.
+> - **Validation:** Header/API review plus focused scene tests when the sketch is promoted.
+
+
 This example pressure-tests the public API shape for image sampling, semantic probe payloads, and
 pinned readout annotations.
 

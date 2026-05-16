@@ -1,5 +1,13 @@
 # Earth Cubemap
 
+> **Agent Pickup**
+> - **Category:** `geo`
+> - **Implementation target:** Geographic or globe/terrain example with a minimal deterministic mode and optional real assets.
+> - **Data policy:** Prefer public datasets with cache metadata; include a synthetic fallback for offline development.
+> - **Preprocessing:** Required for real datasets; specify download, projection, tiling, simplification, and cache outputs.
+> - **Validation:** Smoke command, camera/interaction checklist, and visual checks for projection or coordinate correctness.
+
+
 ## Summary
 
 Create a self-contained Python example for the Datoviz v0.4 branch that demonstrates **cubemap rendering** with an interactive **3D globe** in front of a **universe / deep-space background**.
