@@ -13,6 +13,27 @@
 #
 # <name> is derived from the filename with extension stripped and non-alnum chars -> '_'.
 
+function(read_text_with_local_includes input output_data output_size)
+    file(READ "${input}" data)
+    get_filename_component(input_dir "${input}" DIRECTORY)
+
+    string(REGEX MATCHALL "#include[ \t]+\"[^\"]+\"" includes "${data}")
+    foreach(include_stmt IN LISTS includes)
+        string(REGEX REPLACE ".*\"([^\"]+)\".*" "\\1" include_name "${include_stmt}")
+        set(include_path "${input_dir}/${include_name}")
+        if(EXISTS "${include_path}")
+            file(READ "${include_path}" include_data)
+            string(REPLACE "${include_stmt}" "${include_data}" data "${data}")
+        else()
+            message(WARNING "embed_text_resources: include ${include_path} does not exist")
+        endif()
+    endforeach()
+
+    string(LENGTH "${data}" data_size)
+    set(${output_data} "${data}" PARENT_SCOPE)
+    set(${output_size} "${data_size}" PARENT_SCOPE)
+endfunction()
+
 function(create_text_resources files prefix output)
     file(WRITE "${output}" "")
     file(APPEND "${output}" "#include <string.h>\n")
@@ -31,8 +52,8 @@ function(create_text_resources files prefix output)
         endif()
         string(REGEX REPLACE "[^A-Za-z0-9]" "_" cname "${stem}")
 
-        file(READ "${txt}" filedata HEX)
-        file(SIZE "${txt}" filesize)
+        read_text_with_local_includes("${txt}" filetext filesize)
+        string(HEX "${filetext}" filedata)
         string(REGEX REPLACE "([0-9a-f][0-9a-f])" "0x\\1," filedata "${filedata}")
 
         file(APPEND "${output}" "static const unsigned char DVZ_RESOURCE_${prefix}_${cname}[] = {${filedata}0x00};\n")

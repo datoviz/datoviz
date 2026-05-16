@@ -1,11 +1,6 @@
 #version 450
 
-layout(set = 1, binding = 0) uniform SceneMaterial {
-    vec4 lightDir;
-    vec4 params;
-    vec4 depthCue;
-    vec4 depthCueColor;
-} material;
+#include "scene_material.glsl"
 
 layout(location = 0) in vec4 fragColor;
 layout(location = 1) in vec3 fragNormal;
@@ -14,27 +9,6 @@ layout(location = 3) in vec3 fragCameraPos;
 layout(location = 4) in float fragDepth;
 layout(location = 0) out vec4 outAccum;
 layout(location = 1) out float outWeight;
-
-vec3 applyDepthCue(vec3 rgb)
-{
-    float strength = clamp(material.depthCue.z, 0.0, 1.0);
-    int mode = int(material.depthCue.w + 0.5);
-    if (mode == 0 || strength <= 0.0)
-        return rgb;
-
-    float denom = max(material.depthCue.y - material.depthCue.x, 1e-6);
-    float t = clamp((fragDepth - material.depthCue.x) / denom, 0.0, 1.0) * strength;
-    if (mode == 1)
-        return mix(rgb, material.depthCueColor.rgb, t);
-    if (mode == 2)
-    {
-        float luma = dot(rgb, vec3(0.2126, 0.7152, 0.0722));
-        return mix(rgb, vec3(luma), t);
-    }
-    if (mode == 3)
-        return mix(rgb, vec3(0.0), t);
-    return rgb;
-}
 
 void main()
 {
@@ -48,7 +22,7 @@ void main()
     float spec = pow(max(dot(n, h), 0.0), 32.0);
     vec3 rgb = fragColor.rgb * (material.params.x + material.params.y * lambert) + vec3(0.18 * spec);
     float a = clamp(fragColor.a, 0.0, 1.0);
-    vec3 lit = applyDepthCue(clamp(rgb, 0.0, 1.0));
+    vec3 lit = applyDepthCue(clamp(rgb, 0.0, 1.0), fragDepth);
     outAccum = vec4(lit * a, a);
     outWeight = -log(max(1.0 - a, 1e-4));
 }
