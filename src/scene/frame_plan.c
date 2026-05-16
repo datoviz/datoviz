@@ -204,6 +204,8 @@ static const char* _render_pass_role_name(DvzFramePlanRenderPassRole role)
     {
     case DVZ_FRAME_PLAN_RENDER_PASS_OPAQUE:
         return "opaque";
+    case DVZ_FRAME_PLAN_RENDER_PASS_GBUFFER:
+        return "gbuffer";
     case DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_ACCUMULATION:
         return "transparent_accumulation";
     case DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_BLEND:

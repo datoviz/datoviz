@@ -4270,6 +4270,156 @@ int test_scene_visual_pass_capabilities(TstSuite* suite, TstItem* item)
 
 
 /**
+ * Verify eligible mesh visuals lower an internal G-buffer graph pass to DRP2.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_gbuffer_runtime_lowering(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    AT(scene != NULL);
+    scene->gbuffer_enabled = true;
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    AT(figure != NULL);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    AT(panel != NULL);
+
+    DvzVisual* mesh = dvz_mesh(scene, 0);
+    AT(mesh != NULL);
+
+    float positions[4][3] = {
+        {-0.5f, -0.5f, 0.0f},
+        {0.5f, -0.5f, 0.0f},
+        {-0.5f, 0.5f, 0.0f},
+        {0.5f, 0.5f, 0.0f},
+    };
+    float normals[4][3] = {
+        {0.0f, 0.0f, 1.0f},
+        {0.0f, 0.0f, 1.0f},
+        {0.0f, 0.0f, 1.0f},
+        {0.0f, 0.0f, 1.0f},
+    };
+    DvzIndex indices[6] = {0, 1, 2, 2, 1, 3};
+    DvzSceneBuffer* index_buffer = dvz_scene_buffer(
+        scene, &(DvzSceneBufferDesc){
+                   .usage = DVZ_SCENE_BUFFER_USAGE_INDEX,
+                   .stride = sizeof(DvzIndex),
+               });
+    ANN(index_buffer);
+    AT(dvz_scene_buffer_set_data(index_buffer, indices, sizeof(indices)));
+
+    AT(dvz_visual_set_data(mesh, "position", positions, 4) == 0);
+    AT(dvz_visual_set_data(mesh, "normal", normals, 4) == 0);
+    AT(dvz_visual_set_buffer(mesh, "index", index_buffer));
+    AT(dvz_panel_add_visual(panel, mesh, NULL) == 0);
+
+    DvzFramePlan* plan = dvz_frame_plan("figure.gbuffer", 0);
+    ANN(plan);
+    _scene_emit_panel_render(figure, 0, plan, "figure_0");
+    AT(dvz_frame_plan_node_count(plan) == 2);
+    const DvzFramePlanNode* gbuffer_node = dvz_frame_plan_node_get(plan, 0);
+    const DvzFramePlanNode* opaque_node = dvz_frame_plan_node_get(plan, 1);
+    ANN(gbuffer_node);
+    ANN(opaque_node);
+    AT(dvz_frame_plan_render_pass_role(gbuffer_node) == DVZ_FRAME_PLAN_RENDER_PASS_GBUFFER);
+    AT(dvz_frame_plan_render_pass_role(opaque_node) == DVZ_FRAME_PLAN_RENDER_PASS_OPAQUE);
+    AT(gbuffer_node->u.render.visual_count == 1);
+    AT(opaque_node->u.render.visual_count == 1);
+    AT(dvz_frame_plan_graph_resource_count(plan) == 4);
+    AT(dvz_frame_plan_graph_pass_count(plan) == 2);
+    const DvzFrameGraphPass* gbuffer_pass = dvz_frame_plan_graph_pass_get(plan, 0);
+    ANN(gbuffer_pass);
+    AT(strcmp(gbuffer_pass->work_label, "gbuffer") == 0);
+    AT(gbuffer_pass->color_attachment_count == 1);
+    AT(gbuffer_pass->has_depth_attachment);
+    AT(strcmp(gbuffer_pass->color_attachments[0].resource_id, "figure_0_p0.gbuffer.normal") == 0);
+    AT(strcmp(gbuffer_pass->depth_attachment.resource_id, "figure_0_p0.gbuffer.depth") == 0);
+
+    DvzCapabilitySnapshot caps = {0};
+    DvzDiagnosticReport report = {0};
+    DvzFramePlanEmitConfig cfg = dvz_frame_plan_emit_config();
+    cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
+    cfg.target_width = 64;
+    cfg.target_height = 64;
+    dvz_capability_snapshot_default(&caps);
+    dvz_diagnostic_report_init(&report);
+
+    DvzDrp2CommandStream* stream = dvz_figure_emit_ex(figure, &caps, &report, &cfg);
+    ANN(stream);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+    DvzDrp2ValidationResult validation = dvz_drp2_validate_stream(stream);
+    AT(validation.ok);
+
+    bool found_normal_texture = false;
+    bool found_depth_texture = false;
+    bool found_gbuffer_pass = false;
+    bool found_gbuffer_pipeline = false;
+    uint64_t normal_id = 0;
+    uint64_t depth_id = 0;
+    for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
+    {
+        const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream, i);
+        ANN(cmd);
+        if (cmd->type == DVZ_DRP2_COMMAND_CREATE_TEXTURE)
+        {
+            const char* label = dvz_drp2_stream_label(stream, cmd->u.create_texture.id);
+            if (label != NULL && strcmp(label, "fig0_p0.gbuffer.normal") == 0)
+            {
+                normal_id = cmd->u.create_texture.id;
+                found_normal_texture =
+                    cmd->u.create_texture.format == VK_FORMAT_R16G16B16A16_SFLOAT &&
+                    (cmd->u.create_texture.usage &
+                     DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT) != 0 &&
+                    (cmd->u.create_texture.usage & DVZ_DRP2_TEXTURE_USAGE_TEXTURE_BINDING) != 0;
+            }
+            if (label != NULL && strcmp(label, "fig0_p0.gbuffer.depth") == 0)
+            {
+                depth_id = cmd->u.create_texture.id;
+                found_depth_texture =
+                    cmd->u.create_texture.format == VK_FORMAT_D32_SFLOAT &&
+                    (cmd->u.create_texture.usage &
+                     DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT) != 0 &&
+                    (cmd->u.create_texture.usage & DVZ_DRP2_TEXTURE_USAGE_TEXTURE_BINDING) != 0;
+            }
+        }
+        else if (cmd->type == DVZ_DRP2_COMMAND_BEGIN_RENDER_PASS)
+        {
+            found_gbuffer_pass =
+                found_gbuffer_pass ||
+                 (normal_id != 0 && depth_id != 0 &&
+                 cmd->u.begin_render_pass.texture_id == normal_id &&
+                 cmd->u.begin_render_pass.depth_texture_id == depth_id);
+        }
+        else if (cmd->type == DVZ_DRP2_COMMAND_CREATE_RENDER_PIPELINE)
+        {
+            const char* label = dvz_drp2_stream_label(stream, cmd->u.create_render_pipeline.id);
+            found_gbuffer_pipeline =
+                found_gbuffer_pipeline ||
+                (label != NULL && strstr(label, "_pipe_gbuffer") != NULL &&
+                 cmd->u.create_render_pipeline.color_targets[0].format ==
+                     VK_FORMAT_R16G16B16A16_SFLOAT &&
+                 cmd->u.create_render_pipeline.has_depth_attachment &&
+                 cmd->u.create_render_pipeline.depth_write_enabled);
+        }
+    }
+    AT(found_normal_texture);
+    AT(found_depth_texture);
+    AT(found_gbuffer_pass);
+    AT(found_gbuffer_pipeline);
+
+    dvz_drp2_stream_destroy(stream);
+    dvz_frame_plan_destroy(plan);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+/**
  * Verify ordinary blended alpha stays on the final target with a source-over blend pipeline.
  *
  * @param suite the active test suite
@@ -5571,6 +5721,7 @@ int test_scene_graph(TstSuite* suite)
     TEST_SIMPLE(test_scene_visual_alpha_mode);
     TEST_SIMPLE(test_scene_visual_internal_material_state);
     TEST_SIMPLE(test_scene_visual_pass_capabilities);
+    TEST_SIMPLE(test_scene_gbuffer_runtime_lowering);
     TEST_SIMPLE(test_scene_visual_alpha_mode_standard_blend);
     TEST_SIMPLE(test_scene_visual_alpha_mode_splits_frame_plan_passes);
     TEST_SIMPLE(test_scene_visual_alpha_mode_depth_peel_frame_plan);

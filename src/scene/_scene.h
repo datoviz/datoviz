@@ -625,6 +625,8 @@ struct DvzScene
 {
     DvzCapabilitySnapshot caps;
 
+    bool gbuffer_enabled;
+
     DvzSceneClock clock;
 
     uint32_t animation_count;

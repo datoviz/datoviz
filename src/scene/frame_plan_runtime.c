@@ -46,6 +46,7 @@ typedef struct SceneRenderDraw SceneRenderDraw;
 typedef struct SceneRenderBatch SceneRenderBatch;
 typedef struct SceneGraphRuntimeTarget SceneGraphRuntimeTarget;
 typedef struct SceneGraphRuntimeTargets SceneGraphRuntimeTargets;
+typedef struct SceneGBufferTargets SceneGBufferTargets;
 typedef struct SceneWboitTargets SceneWboitTargets;
 typedef struct SceneDepthPeelTargets SceneDepthPeelTargets;
 
@@ -77,6 +78,15 @@ struct SceneGraphRuntimeTargets
 {
     SceneGraphRuntimeTarget targets[DVZ_FRAME_PLAN_INITIAL_GRAPH_RESOURCE_CAPACITY];
     uint32_t count;
+};
+
+
+struct SceneGBufferTargets
+{
+    uint64_t normal_id;
+    uint64_t object_id;
+    uint64_t depth_id;
+    SceneGraphRuntimeTargets graph;
 };
 
 
@@ -446,6 +456,7 @@ static bool _emitter_prepare_render_multi(
     const char* fmt = _shader_format_tag(cfg);
     bool wboit_accumulation =
         render->u.render.pass_role == DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_ACCUMULATION;
+    bool gbuffer_pass = render->u.render.pass_role == DVZ_FRAME_PLAN_RENDER_PASS_GBUFFER;
     bool depth_peel_pass =
         render->u.render.pass_role == DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_INIT ||
         render->u.render.pass_role == DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_ITER;
@@ -481,8 +492,26 @@ static bool _emitter_prepare_render_multi(
         }
 
         DvzSceneVisualShaderDesc shader = {0};
-        if (!_scene_visual_shader_desc(
-                &desc, render->u.render.picking, wboit_accumulation, fmt, &shader))
+        if (gbuffer_pass)
+        {
+            if (desc.kind != DVZ_SCENE_VISUAL_DESC_PRIMITIVE || !desc.has_normal)
+                continue;
+            desc.shading_buffer_id = 0;
+            dvz_snprintf(shader.vertex_key, sizeof(shader.vertex_key), "_vs_gbuffer_prim%s", fmt);
+            dvz_snprintf(
+                shader.fragment_key, sizeof(shader.fragment_key), "_fs_gbuffer_normal%s", fmt);
+            dvz_snprintf(
+                shader.pipeline_key, sizeof(shader.pipeline_key), "_pipe_gbuffer_t%u%s",
+                desc.topology, fmt);
+            shader.vertex_glsl =
+                _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_GBUFFER_NORMAL, false);
+            shader.fragment_glsl =
+                _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_GBUFFER_NORMAL, true);
+            shader.vertex_spirv_key = "primitive_lit_vert";
+            shader.fragment_spirv_key = "gbuffer_normal_frag";
+        }
+        else if (!_scene_visual_shader_desc(
+                     &desc, render->u.render.picking, wboit_accumulation, fmt, &shader))
             continue;
         DvzAlphaMode alpha_mode = render->u.render.visual_metadata[i].has_metadata
                                       ? render->u.render.visual_metadata[i].alpha_mode
@@ -580,6 +609,8 @@ static bool _emitter_prepare_render_multi(
                 ok = false;
                 break;
             }
+            if (gbuffer_pass)
+                pipeline.needs_shading_layout = false;
             uint64_t shading_bgl_id = 0;
             if (pipeline.needs_shading_layout)
             {
@@ -664,6 +695,11 @@ static bool _emitter_prepare_render_multi(
                 else if (ok)
                     ok = dvz_drp2_stream_pipeline_set_raster_state(
                         stream, VK_CULL_MODE_FRONT_BIT, VK_FRONT_FACE_COUNTER_CLOCKWISE);
+            }
+            else if (ok && gbuffer_pass)
+            {
+                ok = dvz_drp2_stream_pipeline_set_color_target(
+                    stream, 0, VK_FORMAT_R16G16B16A16_SFLOAT);
             }
             else if (ok && _alpha_mode_is_standard_blend(alpha_mode))
             {
@@ -939,6 +975,8 @@ static const char* _graph_work_label_for_render_role(DvzFramePlanRenderPassRole 
     {
     case DVZ_FRAME_PLAN_RENDER_PASS_OPAQUE:
         return "opaque";
+    case DVZ_FRAME_PLAN_RENDER_PASS_GBUFFER:
+        return "gbuffer";
     case DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_ACCUMULATION:
         return "wboit_accum";
     case DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_BLEND:
@@ -1549,6 +1587,71 @@ static bool _graph_resolve_render_depth(
 
 
 /**
+ * Prepare graph-declared G-buffer targets for one panel.
+ *
+ * @param emitter the persistent emitter
+ * @param stream destination DRP2 command stream
+ * @param plan the FramePlan
+ * @param render the G-buffer render node
+ * @param cfg optional frame-plan emit configuration
+ * @param out output G-buffer target ids
+ * @return whether all declared targets were prepared
+ */
+static bool _emitter_prepare_gbuffer_targets(
+    DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, const DvzFramePlan* plan,
+    const DvzFramePlanNode* render, const DvzFramePlanEmitConfig* cfg, SceneGBufferTargets* out)
+{
+    ANN(emitter);
+    ANN(stream);
+    ANN(plan);
+    ANN(render);
+    ANN(out);
+
+    const DvzFrameGraphPass* pass = _graph_pass_for_render(plan, render);
+    if (pass == NULL)
+        return false;
+
+    uint32_t width = 0;
+    uint32_t height = 0;
+    _emit_target_extent(cfg, &width, &height);
+
+    bool ok = true;
+    for (uint32_t i = 0; ok && i < pass->color_attachment_count; i++)
+    {
+        const DvzFrameGraphAttachment* attachment = &pass->color_attachments[i];
+        const DvzFrameGraphResource* resource =
+            _graph_resource_by_id(plan, attachment->resource_id);
+        if (resource == NULL)
+            return false;
+        uint64_t texture_id = 0;
+        ok = _graph_resolve_texture_2d(
+            emitter, stream, plan, cfg, resource, width, height,
+            VK_FORMAT_R16G16B16A16_SFLOAT, &texture_id);
+        ok = ok && _graph_runtime_targets_add(&out->graph, resource->id, texture_id);
+        if (ok && i == 0)
+            out->normal_id = texture_id;
+        else if (ok && i == 1)
+            out->object_id = texture_id;
+    }
+
+    if (ok && pass->has_depth_attachment)
+    {
+        const DvzFrameGraphResource* resource =
+            _graph_resource_by_id(plan, pass->depth_attachment.resource_id);
+        if (resource == NULL)
+            return false;
+        ok = _graph_resolve_texture_2d(
+            emitter, stream, plan, cfg, resource, width, height, VK_FORMAT_D32_SFLOAT,
+            &out->depth_id);
+        ok = ok && _graph_runtime_targets_add(&out->graph, resource->id, out->depth_id);
+    }
+
+    return ok && out->normal_id != 0;
+}
+
+
+
+/**
  * Return a compact fingerprint for a WBOIT resolve bind group dependency set.
  *
  * @param accum_id accumulation texture id.
@@ -2045,6 +2148,33 @@ static bool _emitter_prepare_depth_peel_targets(
 
 
 /**
+ * Return G-buffer targets associated with a panel id.
+ *
+ * @param targets target array
+ * @param renders render-node array parallel to targets
+ * @param count target count
+ * @param panel_id panel id to find
+ * @return target entry, or NULL when absent
+ */
+static const SceneGBufferTargets* _gbuffer_targets_for_panel(
+    const SceneGBufferTargets* targets, const DvzFramePlanNode* const* renders, uint32_t count,
+    const char* panel_id)
+{
+    ANN(targets);
+    ANN(renders);
+    ANN(panel_id);
+
+    for (uint32_t i = 0; i < count; i++)
+    {
+        if (renders[i] != NULL && strcmp(renders[i]->u.render.panel_id, panel_id) == 0)
+            return &targets[i];
+    }
+    return NULL;
+}
+
+
+
+/**
  * Return WBOIT targets associated with a panel id.
  *
  * @param targets target array.
@@ -2312,12 +2442,12 @@ static bool _emitter_emit_scene_figure_renders(
 
 
 /**
- * Return whether the plan contains WBOIT render-pass roles.
+ * Return whether the plan contains graph-backed technique render-pass roles.
  *
  * @param plan the FramePlan.
- * @return whether transparent accumulation or WBOIT resolve nodes are present.
+ * @return whether graph-backed scene technique nodes are present.
  */
-static bool _plan_has_wboit_roles(const DvzFramePlan* plan)
+static bool _plan_has_graph_technique_roles(const DvzFramePlan* plan)
 {
     ANN(plan);
     for (uint32_t i = 0; i < plan->count; i++)
@@ -2325,7 +2455,8 @@ static bool _plan_has_wboit_roles(const DvzFramePlan* plan)
         const DvzFramePlanNode* node = &plan->nodes[i];
         if (node->type != DVZ_FRAME_PLAN_NODE_RENDER)
             continue;
-        if (node->u.render.pass_role == DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_ACCUMULATION ||
+        if (node->u.render.pass_role == DVZ_FRAME_PLAN_RENDER_PASS_GBUFFER ||
+            node->u.render.pass_role == DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_ACCUMULATION ||
             node->u.render.pass_role == DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_BLEND ||
             node->u.render.pass_role == DVZ_FRAME_PLAN_RENDER_PASS_WBOIT_RESOLVE ||
             node->u.render.pass_role == DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_INIT ||
@@ -2339,7 +2470,7 @@ static bool _plan_has_wboit_roles(const DvzFramePlan* plan)
 
 
 /**
- * Emit scene render nodes with WBOIT accumulation and resolve passes.
+ * Emit scene render nodes with graph-backed technique passes.
  *
  * @param emitter the persistent emitter.
  * @param stream destination DRP2 command stream.
@@ -2349,7 +2480,7 @@ static bool _plan_has_wboit_roles(const DvzFramePlan* plan)
  * @param report diagnostic report receiving recoverable emission errors.
  * @return whether the commands were emitted.
  */
-static bool _emitter_emit_scene_wboit_renders(
+static bool _emitter_emit_scene_graph_renders(
     DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, const DvzFramePlan* plan,
     const DvzFramePlanNode* readback, const DvzFramePlanEmitConfig* cfg,
     DvzDiagnosticReport* report)
@@ -2368,6 +2499,10 @@ static bool _emitter_emit_scene_wboit_renders(
 
     SceneRenderBatch* batches =
         (SceneRenderBatch*)dvz_calloc(plan->count, sizeof(SceneRenderBatch));
+    SceneGBufferTargets* gbuffer_targets =
+        (SceneGBufferTargets*)dvz_calloc(plan->count, sizeof(SceneGBufferTargets));
+    const DvzFramePlanNode** gbuffer_renders =
+        (const DvzFramePlanNode**)dvz_calloc(plan->count, sizeof(DvzFramePlanNode*));
     SceneWboitTargets* wboit_targets =
         (SceneWboitTargets*)dvz_calloc(plan->count, sizeof(SceneWboitTargets));
     const DvzFramePlanNode** wboit_renders =
@@ -2376,19 +2511,23 @@ static bool _emitter_emit_scene_wboit_renders(
         (SceneDepthPeelTargets*)dvz_calloc(plan->count, sizeof(SceneDepthPeelTargets));
     const DvzFramePlanNode** depth_peel_renders =
         (const DvzFramePlanNode**)dvz_calloc(plan->count, sizeof(DvzFramePlanNode*));
-    if (batches == NULL || wboit_targets == NULL || wboit_renders == NULL ||
-        depth_peel_targets == NULL || depth_peel_renders == NULL)
+    if (batches == NULL || gbuffer_targets == NULL || gbuffer_renders == NULL ||
+        wboit_targets == NULL || wboit_renders == NULL || depth_peel_targets == NULL ||
+        depth_peel_renders == NULL)
     {
         dvz_free(depth_peel_renders);
         dvz_free(depth_peel_targets);
         dvz_free(wboit_renders);
         dvz_free(wboit_targets);
+        dvz_free(gbuffer_renders);
+        dvz_free(gbuffer_targets);
         dvz_free(batches);
         return false;
     }
 
     bool ok = true;
     uint32_t batch_count = 0;
+    uint32_t gbuffer_target_count = 0;
     uint32_t target_count = 0;
     uint32_t depth_target_count = 0;
     for (uint32_t i = 0; ok && i < plan->count; i++)
@@ -2419,7 +2558,14 @@ static bool _emitter_emit_scene_wboit_renders(
         if (render_graph_pass != NULL && render_graph_pass->has_depth_attachment &&
             render_graph_pass->depth_attachment.access == DVZ_FRAME_GRAPH_ATTACHMENT_ACCESS_READ)
             sampled_depth_id = render_graph_depth_id;
-        if (render->u.render.pass_role == DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_ACCUMULATION)
+        if (render->u.render.pass_role == DVZ_FRAME_PLAN_RENDER_PASS_GBUFFER)
+        {
+            ok = _emitter_prepare_gbuffer_targets(
+                emitter, stream, plan, render, cfg, &gbuffer_targets[gbuffer_target_count]);
+            if (ok)
+                gbuffer_renders[gbuffer_target_count++] = render;
+        }
+        else if (render->u.render.pass_role == DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_ACCUMULATION)
         {
             ok = _emitter_prepare_wboit_targets(
                 emitter, stream, plan, render, color_id, cfg, &wboit_targets[target_count]);
@@ -2487,6 +2633,8 @@ static bool _emitter_emit_scene_wboit_renders(
         dvz_free(depth_peel_targets);
         dvz_free(wboit_renders);
         dvz_free(wboit_targets);
+        dvz_free(gbuffer_renders);
+        dvz_free(gbuffer_targets);
         dvz_free(batches);
         return false;
     }
@@ -2512,7 +2660,50 @@ static bool _emitter_emit_scene_wboit_renders(
         if (render == NULL || render->type != DVZ_FRAME_PLAN_NODE_RENDER)
             continue;
 
-        if (render->u.render.pass_role == DVZ_FRAME_PLAN_RENDER_PASS_OPAQUE)
+        if (render->u.render.pass_role == DVZ_FRAME_PLAN_RENDER_PASS_GBUFFER)
+        {
+            const SceneGBufferTargets* targets =
+                _gbuffer_targets_for_panel(
+                    gbuffer_targets, gbuffer_renders, gbuffer_target_count,
+                    render->u.render.panel_id);
+            if (targets == NULL)
+            {
+                ok = false;
+                break;
+            }
+            const DvzFrameGraphPass* graph_pass = ordered_graph_pass != NULL
+                                                      ? ordered_graph_pass
+                                                      : _graph_pass_for_render(plan, render);
+            uint64_t target_id = _graph_color_attachment_texture_id(
+                graph_pass, 0, color_id, &targets->graph, targets->normal_id);
+            uint64_t pass_id = _emitter_next_transient_id(emitter);
+            const SceneRenderBatch* batch = _render_batch_for_node(batches, batch_count, render);
+            bool has_draws = batch != NULL;
+            ok = dvz_drp2_stream_begin_render_pass_region_clear(
+                stream, pass_id, encoder_id, target_id, 0.5f, 0.5f, 1.0f, 0.0f,
+                render->u.render.desc.x, render->u.render.desc.y, render->u.render.desc.width,
+                render->u.render.desc.height, true);
+            if (ok && graph_pass != NULL && graph_pass->color_attachment_count > 1)
+            {
+                uint64_t object_id = _graph_color_attachment_texture_id(
+                    graph_pass, 1, color_id, &targets->graph, targets->object_id);
+                ok = dvz_drp2_stream_begin_render_pass_add_color_attachment(
+                    stream, object_id, 0.0f, 0.0f, 0.0f, 0.0f, true);
+            }
+            ok = ok && _stream_apply_graph_color_ops(stream, graph_pass);
+            ok = ok && _stream_apply_graph_depth(stream, graph_pass, targets->depth_id);
+            if (ok && has_draws)
+            {
+                scene_cache.pipeline_id = 0;
+                scene_cache.bg_set0 = 0;
+                ok = _emitter_emit_render_multi_draws(
+                    stream, render, pass_id, batch->draws, batch->draw_count, &scene_cache);
+            }
+            ok = ok && dvz_drp2_stream_end_render_pass(stream, pass_id);
+            scene_cache.pipeline_id = 0;
+            scene_cache.bg_set0 = 0;
+        }
+        else if (render->u.render.pass_role == DVZ_FRAME_PLAN_RENDER_PASS_OPAQUE)
         {
             const SceneWboitTargets* targets =
                 _wboit_targets_for_panel(
@@ -2745,6 +2936,8 @@ static bool _emitter_emit_scene_wboit_renders(
     dvz_free(depth_peel_targets);
     dvz_free(wboit_renders);
     dvz_free(wboit_targets);
+    dvz_free(gbuffer_renders);
+    dvz_free(gbuffer_targets);
     dvz_free(batches);
     return ok;
 }
@@ -3183,8 +3376,8 @@ static bool _emitter_emit_plain_renders(
     ANN(plan);
 
     if (cfg != NULL && cfg->shader_format == DVZ_SCENE_SHADER_FORMAT_GLSL &&
-        _plan_has_wboit_roles(plan))
-        return _emitter_emit_scene_wboit_renders(emitter, stream, plan, readback, cfg, report);
+        _plan_has_graph_technique_roles(plan))
+        return _emitter_emit_scene_graph_renders(emitter, stream, plan, readback, cfg, report);
 
     uint32_t render_node_count = 0;
     uint32_t scene_render_node_count = 0;

@@ -674,11 +674,15 @@ void _scene_emit_panel_render(
         &panel_viewport.height);
 
     DvzFramePlanNode* opaque_node = NULL;
+    DvzFramePlanNode* gbuffer_node = NULL;
     DvzFramePlanNode* transparent_node = NULL;
     DvzFramePlanNode* depth_peel_init_node = NULL;
     DvzFramePlanNode* depth_peel_iter_node = NULL;
     DvzFramePlanNode* depth_peel_composite_node = NULL;
     DvzFramePlanNode* blended_node = NULL;
+    DvzSceneGBufferPlan gbuffer = {0};
+    _scene_technique_gbuffer_plan_init(&gbuffer);
+    bool gbuffer_enabled = figure->scene != NULL && figure->scene->gbuffer_enabled;
     bool has_transparent = false;
     bool opaque_needs_depth = false;
     bool transparent_needs_depth = false;
@@ -704,6 +708,20 @@ void _scene_emit_panel_render(
             has_transparent = true;
             transparent_needs_depth = transparent_needs_depth || caps.needs_depth_attachment;
             continue;
+        }
+
+        if (gbuffer_enabled && _scene_technique_gbuffer_plan_add_visual(&gbuffer, visual, attach))
+        {
+            if (gbuffer_node == NULL)
+            {
+                gbuffer_node = _scene_begin_panel_render_pass(
+                    plan, panel_id, "rt.gbuffer.normal", panel->desc,
+                    DVZ_FRAME_PLAN_RENDER_PASS_GBUFFER, &panel_apply_mvp, &panel_viewport);
+                if (gbuffer_node == NULL)
+                    continue;
+            }
+            (void)_scene_append_visual_to_render_pass(
+                figure, plan, gbuffer_node, visual, attach, vidx);
         }
 
         if (opaque_node == NULL)
@@ -816,24 +834,36 @@ void _scene_emit_panel_render(
         (void)_scene_begin_panel_render_pass(
             plan, panel_id, "rt", panel->desc, DVZ_FRAME_PLAN_RENDER_PASS_WBOIT_RESOLVE,
             &panel_apply_mvp, &panel_viewport);
+        if (gbuffer_enabled && gbuffer_node != NULL &&
+            !_scene_technique_emit_gbuffer_frame_graph(plan, panel_id, &gbuffer))
+            log_error("failed to emit G-buffer FramePlan graph for panel %s", panel_id);
         if (!_scene_technique_emit_wboit_frame_graph(
                 plan, panel_id, opaque_needs_depth, transparent_needs_depth))
             log_error("failed to emit WBOIT FramePlan graph for panel %s", panel_id);
     }
     else if (depth_peel_init_node != NULL)
     {
+        if (gbuffer_enabled && gbuffer_node != NULL &&
+            !_scene_technique_emit_gbuffer_frame_graph(plan, panel_id, &gbuffer))
+            log_error("failed to emit G-buffer FramePlan graph for panel %s", panel_id);
         if (!_scene_technique_emit_depth_peel_frame_graph(
                 plan, panel_id, opaque_needs_depth, transparent_needs_depth))
             log_error("failed to emit depth-peeling FramePlan graph for panel %s", panel_id);
     }
     else if (blended_node != NULL)
     {
+        if (gbuffer_enabled && gbuffer_node != NULL &&
+            !_scene_technique_emit_gbuffer_frame_graph(plan, panel_id, &gbuffer))
+            log_error("failed to emit G-buffer FramePlan graph for panel %s", panel_id);
         if (!_scene_technique_emit_blended_frame_graph(
                 plan, panel_id, opaque_needs_depth, transparent_needs_depth))
             log_error("failed to emit blended FramePlan graph for panel %s", panel_id);
     }
     else if (opaque_node != NULL && opaque_needs_depth)
     {
+        if (gbuffer_enabled && gbuffer_node != NULL &&
+            !_scene_technique_emit_gbuffer_frame_graph(plan, panel_id, &gbuffer))
+            log_error("failed to emit G-buffer FramePlan graph for panel %s", panel_id);
         if (!_scene_technique_emit_opaque_frame_graph(plan, panel_id, opaque_needs_depth))
             log_error("failed to emit opaque FramePlan graph for panel %s", panel_id);
     }
