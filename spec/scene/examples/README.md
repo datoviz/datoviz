@@ -35,6 +35,7 @@ Their role is narrower:
 12. `API_IMAGE_PROBE_PINNED_READOUT.md`
 13. `API_SCALE_COLORBAR_ANNOTATION.md`
 14. `API_SAMPLED_FIELD.md`
+15. `IMAGE_EMBEDDING_LOD.md`
 
 
 ## Common Structure
