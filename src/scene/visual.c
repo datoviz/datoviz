@@ -1532,6 +1532,23 @@ DvzAlphaMode dvz_visual_alpha_mode(const DvzVisual* visual)
 }
 
 
+/**
+ * Mark a visual as embedded in the panel volume occluder.
+ *
+ * @param visual the visual
+ * @param enabled whether the visual should sample panel volume occlusion
+ * @return 0 on success, -1 on validation error
+ */
+int dvz_visual_set_volume_occluded(DvzVisual* visual, bool enabled)
+{
+    ANN(visual);
+    if (!_scene_visual_mutation_allowed(visual->scene, "set volume occlusion"))
+        return -1;
+    visual->volume_occluded = enabled;
+    return 0;
+}
+
+
 
 /**
  * Declare the semantic source for one visual attribute.

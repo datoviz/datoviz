@@ -565,6 +565,7 @@ bool _scene_visual_frame_plan_metadata(
     {
         metadata->has_volume = true;
         metadata->volume_state = visual->volume;
+        metadata->volume_occluded = visual->volume_occluded;
         metadata->volume_transfer_rgba =
             visual->field != NULL && visual->field->desc.format == DVZ_FIELD_FORMAT_RGBA8_UNORM;
         metadata->volume_transfer_rgba =

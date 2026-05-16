@@ -1131,6 +1131,8 @@ static const char* _graph_work_label_for_render_role(DvzFramePlanRenderPassRole 
         return "opaque";
     case DVZ_FRAME_PLAN_RENDER_PASS_GBUFFER:
         return "gbuffer";
+    case DVZ_FRAME_PLAN_RENDER_PASS_VOLUME_OCCLUSION:
+        return "volume_occlusion";
     case DVZ_FRAME_PLAN_RENDER_PASS_SSAO:
         return "ssao";
     case DVZ_FRAME_PLAN_RENDER_PASS_SSAO_BLUR:
@@ -3528,6 +3530,7 @@ static bool _plan_has_graph_render_passes(const DvzFramePlan* plan)
         if (node->type != DVZ_FRAME_PLAN_NODE_RENDER)
             continue;
         if (node->u.render.pass_role == DVZ_FRAME_PLAN_RENDER_PASS_GBUFFER ||
+            node->u.render.pass_role == DVZ_FRAME_PLAN_RENDER_PASS_VOLUME_OCCLUSION ||
             node->u.render.pass_role == DVZ_FRAME_PLAN_RENDER_PASS_SSAO ||
             node->u.render.pass_role == DVZ_FRAME_PLAN_RENDER_PASS_SSAO_BLUR ||
             node->u.render.pass_role == DVZ_FRAME_PLAN_RENDER_PASS_SSAO_COMPOSITE ||

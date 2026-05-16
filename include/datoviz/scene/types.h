@@ -154,6 +154,16 @@ struct DvzSsaoDesc
 typedef struct DvzSsaoDesc DvzSsaoDesc;
 
 
+struct DvzVolumeOcclusionDesc
+{
+    bool enabled;
+    float alpha_threshold;
+    float fade_distance;
+    float occluded_alpha;
+};
+typedef struct DvzVolumeOcclusionDesc DvzVolumeOcclusionDesc;
+
+
 struct DvzSceneBufferDesc
 {
     uint32_t usage;

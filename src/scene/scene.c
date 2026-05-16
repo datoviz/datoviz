@@ -1030,6 +1030,56 @@ bool dvz_panel_set_ssao(DvzPanel* panel, const DvzSsaoDesc* desc)
 }
 
 
+/**
+ * Configure a panel volume visual as the screen-space occluder for embedded visuals.
+ *
+ * @param panel the panel
+ * @param volume the volume visual attached to the same panel, or NULL to disable
+ * @param desc volume occlusion descriptor, or NULL to disable
+ * @return 0 on success, -1 on validation error
+ */
+int dvz_panel_set_volume_occluder(
+    DvzPanel* panel, DvzVisual* volume, const DvzVolumeOcclusionDesc* desc)
+{
+    ANN(panel);
+    if (volume == NULL || desc == NULL || !desc->enabled)
+    {
+        panel->volume_occluder_visual = NULL;
+        panel->volume_occlusion_enabled = false;
+        dvz_memset(
+            &panel->volume_occlusion, sizeof(DvzVolumeOcclusionDesc), 0,
+            sizeof(DvzVolumeOcclusionDesc));
+        return 0;
+    }
+    if (volume->type != DVZ_VISUAL_TYPE_VOLUME)
+    {
+        log_error("dvz_panel_set_volume_occluder requires a volume visual");
+        return -1;
+    }
+
+    bool attached = false;
+    for (uint32_t i = 0; i < panel->visual_count; i++)
+        attached = attached || panel->visuals[i].visual == volume;
+    if (!attached)
+    {
+        log_error("volume occluder must be attached to the panel");
+        return -1;
+    }
+
+    panel->volume_occluder_visual = volume;
+    panel->volume_occlusion = *desc;
+    panel->volume_occlusion.enabled = true;
+    if (panel->volume_occlusion.alpha_threshold <= 0.0f)
+        panel->volume_occlusion.alpha_threshold = 0.08f;
+    if (panel->volume_occlusion.fade_distance <= 0.0f)
+        panel->volume_occlusion.fade_distance = 0.08f;
+    if (panel->volume_occlusion.occluded_alpha <= 0.0f)
+        panel->volume_occlusion.occluded_alpha = 0.20f;
+    panel->volume_occlusion_enabled = true;
+    return 0;
+}
+
+
 
 void dvz_panel_destroy(DvzPanel* panel)
 {

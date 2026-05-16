@@ -293,6 +293,18 @@ DVZ_EXPORT bool dvz_panel_set_ssao(DvzPanel* panel, const DvzSsaoDesc* desc);
 
 
 /**
+ * Configure a panel volume visual as the screen-space occluder for embedded visuals.
+ *
+ * @param panel the panel
+ * @param volume the volume visual attached to the same panel, or NULL to disable
+ * @param desc volume occlusion descriptor, or NULL to disable
+ * @return 0 on success, -1 on validation error
+ */
+DVZ_EXPORT int dvz_panel_set_volume_occluder(
+    DvzPanel* panel, DvzVisual* volume, const DvzVolumeOcclusionDesc* desc);
+
+
+/**
  * Attach a panzoom controller to a panel and connect it to an input router.
  *
  * Pan: left-drag. Zoom: right-drag or scroll wheel. Double-click: reset.
@@ -439,6 +451,16 @@ DVZ_EXPORT bool dvz_visual_depth_test(const DvzVisual* visual);
  * @return 0 on success, -1 on error
  */
 DVZ_EXPORT int dvz_visual_set_alpha_mode(DvzVisual* visual, DvzAlphaMode mode);
+
+
+/**
+ * Mark a visual as embedded in the panel volume occluder.
+ *
+ * @param visual the visual
+ * @param enabled whether the visual should sample panel volume occlusion
+ * @return 0 on success, -1 on validation error
+ */
+DVZ_EXPORT int dvz_visual_set_volume_occluded(DvzVisual* visual, bool enabled);
 
 
 /**

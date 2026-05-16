@@ -575,6 +575,7 @@ struct DvzVisual
     bool                   material_params_dirty;
     DvzSphereMode          sphere_mode;
     bool                   mesh_default_color;
+    bool                   volume_occluded;
     DvzVolumeState         volume;
 
     /* Attribute slots — indexed by attr index (type-specific) */
@@ -694,6 +695,9 @@ struct DvzPanel
     DvzTurntable* turntable; /* optional turntable camera controller (owned) */
     DvzInteractionPolicy* interaction;
     DvzHoverState hover;
+    DvzVisual* volume_occluder_visual;
+    DvzVolumeOcclusionDesc volume_occlusion;
+    bool volume_occlusion_enabled;
 
     /* Optional background visual created by dvz_panel_set_background_*. The visual itself
      * lives in scene->visuals[] (weak ref); this pointer lets repeat calls update the

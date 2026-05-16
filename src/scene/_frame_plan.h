@@ -275,6 +275,7 @@ typedef struct DvzFramePlanVisualMeta
     uint32_t field_depth;
     uint32_t scale_index;
     bool volume_transfer_rgba;
+    bool volume_occluded;
     DvzVolumeState volume_state;
     char position_id[DVZ_SCENE_LABEL_SIZE];
     char color_id[DVZ_SCENE_LABEL_SIZE];
