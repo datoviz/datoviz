@@ -202,6 +202,23 @@ tactical per-technique guardrail. The preferred generic fix is to make DRP2/vkli
 dependent bind-group descriptors whenever a stable resource id is recreated; see
 [DRP2_DESCRIPTOR_REFRESH_PLAN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/DRP2_DESCRIPTOR_REFRESH_PLAN.md).
 
+Descriptor-refresh/runtime smoke follow-up on `2026-05-16`: the DRP2/vklite runtime now has GPU
+execution coverage for descriptor refresh after recreating uniform buffers, storage buffers, and
+samplers (`482d1f64`). The app path also has a retained offscreen resize smoke over one reused
+runtime with mixed mesh and image visuals (`343a2cf2`).
+
+Hot-path trace/request follow-up on `2026-05-16`: app trace fingerprinting now hashes recently added
+stable semantic fields, including texture formats, pipeline color/raster/blend state, render-pass
+attachment ops, dynamic offsets, and bounded fixed-size labels (`4b411390`). The app test suite now
+includes a bounded offscreen pick/probe steady-state smoke that queues requests before repeated
+frames, exercises the real app-owned runtime/request executor, and verifies pending/result slots are
+cleared after every frame (`5a97417e`). Validation: `cmake --build build --target dvztest`,
+`cmake --build build --target dvztest_scene`,
+`./build/testing/dvztest_scene test_app_offscreen_pick_probe_request_steady_state` (`1/1`),
+`just test app` (`48/48`), `just test scene` (`206/206`), `just spec-check` (`123/123` DRP2
+fixtures, `35/35` WebGPU preflight fixtures, `52` fixture-runner tests, and `7` schema/generation
+tests), and `git diff --check`.
+
 
 ## Immediate Task
 
@@ -245,10 +262,10 @@ Deliver the next implementation slices in this order unless the user redirects:
    partial texture-update smoke now has `examples/c/hello_texture_update_glfw.c`; the live
    multi-panel smoke now has `examples/c/hello_multi_panel_glfw.c`, plus
    `examples/c/hello_linked_panels_glfw.c` for linked panzoom propagation.
-4. Current next: the hot-path hygiene pass has covered bounds checks, borrowed-depth ownership,
-   stale result-slot cleanup, scene warning readiness, and DRP2 vklite transient object table
-   trimming. Remaining review areas are trace/status hashing and string-buffer safety, plus a
-   bounded live app smoke around request/runtime steady state.
+4. Done: the hot-path hygiene pass has covered bounds checks, borrowed-depth ownership, stale
+   result-slot cleanup, scene warning readiness, DRP2 vklite transient object table trimming,
+   trace/status hashing and string-buffer safety, and a bounded app smoke around request/runtime
+   steady state.
 5. Current DVZR next: decide whether `dvz_drp2_player` and `replay_dvzr_glfw` should stay developer
    executables or become installed CLI/app-level integration points, add image-diff or bounded
    live-window replay regression coverage if this becomes a CI lane, and broaden portable command
