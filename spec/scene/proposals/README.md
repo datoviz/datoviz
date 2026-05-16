@@ -30,6 +30,9 @@ Use this map when turning proposals into implementation-ready spec changes.
    `PROBE_READOUT_DESIGN.md` promote into `../interaction/PICKING.md`,
    `../interaction/SELECTION.md`, `../interaction/CONTROLLERS.md`,
    `../interaction/EVENT_CALLBACKS.md`, and `../api/API_SURFACE.md`.
+   `CONTROLLER_INSPECTORS_AND_GIZMOS.md` promotes into `../integration/EXTERNAL_UI.md`,
+   `../interaction/CONTROLLERS.md`, `../semantics/GEOMETRY_UTILITIES.md`,
+   `GEOM_DESIGN.md`, and `../visuals/MESH.md`.
 2. `ANNOTATION_MEASUREMENT_DESIGN.md`, `ANNOTATION_TEXT_SCALE_API.md`,
    `COLORBAR_COLORMAP_DESIGN.md`, `AXES_DOMAIN_DESIGN.md`, and `TEXT_DESIGN.md` promote into
    `../semantics/ANNOTATIONS.md`, `../semantics/SCALES.md`,
@@ -60,10 +63,11 @@ Use this map when turning proposals into implementation-ready spec changes.
 Interaction and event behavior:
 
 1. [INTERACTION_API_DESIGN.md](INTERACTION_API_DESIGN.md)
-2. [PICKING_DESIGN.md](PICKING_DESIGN.md)
-3. [PROBE_READOUT_DESIGN.md](PROBE_READOUT_DESIGN.md)
-4. [SELECTION_HIGHLIGHT_DESIGN.md](SELECTION_HIGHLIGHT_DESIGN.md)
-5. [TRANSFORM_CONTROLLER_DESIGN.md](TRANSFORM_CONTROLLER_DESIGN.md)
+2. [CONTROLLER_INSPECTORS_AND_GIZMOS.md](CONTROLLER_INSPECTORS_AND_GIZMOS.md)
+3. [PICKING_DESIGN.md](PICKING_DESIGN.md)
+4. [PROBE_READOUT_DESIGN.md](PROBE_READOUT_DESIGN.md)
+5. [SELECTION_HIGHLIGHT_DESIGN.md](SELECTION_HIGHLIGHT_DESIGN.md)
+6. [TRANSFORM_CONTROLLER_DESIGN.md](TRANSFORM_CONTROLLER_DESIGN.md)
 
 Text, axes, scales, annotations, and explanatory objects:
 
