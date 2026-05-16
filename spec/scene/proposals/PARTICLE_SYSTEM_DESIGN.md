@@ -1,8 +1,10 @@
-# Particle System Design
+> **Execution Status**
+> - **Status:** `SCENE SPEC PROPOSAL`
+> - **Updated on:** `2026-05-16`
+> - **Purpose:** define future particle-system ownership, GPU update, render-view, and external
+>   producer constraints for the scene -> FramePlan -> DRP2 -> runtime path.
 
-> Status: proposal.
-> Scope: GPU-updated particle state, render views, optional tracks, and CUDA/CuPy producer
-> integration for the scene -> FramePlan -> DRP2 -> runtime path.
+# Particle System Design
 
 
 ## Purpose

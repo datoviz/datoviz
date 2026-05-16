@@ -3,6 +3,10 @@
  * Installed headers under include/datoviz/scene*.h are authoritative for public names that
  * already exist. This file is auxiliary scratch material for older/broader API ideas not yet
  * promoted to installed public headers.
+ *
+ * Legacy warning: this file intentionally preserves stale or speculative spellings such as
+ * DvzRuntime, DvzRenderTarget, and older constructor shapes. Do not use it as a source of truth for
+ * active v0.4 API names; update installed headers and tests for implementation work.
  */
 
 /*************************************************************************************************/

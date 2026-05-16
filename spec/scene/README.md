@@ -111,7 +111,7 @@ Unless a document says otherwise, this directory should be read with the followi
    current implementation-facing rules on their own,
 7. `api/API_SURFACE.md` is the normative bridge from scene semantics to public C API shape policy,
 8. installed headers under `include/datoviz/scene*.h` are authoritative for names already drafted;
-   `headers/scene_api.h` remains auxiliary scratch material only where it covers ideas not yet in
+   `headers/scene_api.h` is legacy auxiliary scratch material only where it covers ideas not yet in
    installed headers.
 
 ## Status Vocabulary
@@ -137,7 +137,7 @@ For cross-tree overlap, use this source-of-truth order:
 5. historical scene decision records for rationale behind older choices,
 6. installed scene headers for public names and signatures that already exist,
 7. `spec/scene/api/API_SURFACE.md` for public API shape policy and not-yet-implemented groups,
-8. `spec/scene/headers/scene_api.h` for auxiliary draft C sketches not yet promoted,
+8. `spec/scene/headers/scene_api.h` for legacy auxiliary draft C sketches not yet promoted,
 9. examples and deferred trackers as informative material.
 
 
@@ -242,8 +242,8 @@ Read the scene spec in this order during review.
   checklist for the next public scene API pass
 - [api/IMPLEMENTATION_NOTES.md](api/IMPLEMENTATION_NOTES.md): C object mapping, Python binding
   architecture, and per-family GPU data preparation notes
-- [headers/README.md](headers/README.md): draft header index for the current scene, runtime, and
-  diagnostics surfaces; `scene_api.h` is authoritative for the API groups it covers
+- [headers/README.md](headers/README.md): draft header index for scene diagnostics and legacy
+  scratch surfaces; installed headers are authoritative for active public names
 - [proposals/README.md](proposals/README.md): active design addenda with promotion targets for
   implementation-ready spec work
 - [decisions/README.md](decisions/README.md): historical ADR-style records and authority policy

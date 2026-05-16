@@ -1,10 +1,13 @@
 # Minimal PoC: Replacing napari's VisPy canvas with a Datoviz v0.3 offscreen canvas
 
-Status: proof-of-concept design  
+Status: historical proof-of-concept design  
 Target Datoviz branch: `main` / v0.3.x  
 Target napari integration point: `QtViewer(..., canvas_class=DatovizCanvas)`  
 Rendering strategy: Datoviz offscreen rendering → PNG/RGBA readback → Qt widget paint  
 Initial layer support: one 2D or 3D `Image` layer only
+
+Historical note: this file records an old v0.3 offscreen experiment. It is not an active v0.4
+implementation target and should not be used to guide current scene -> DRP2 -> app work.
 
 ---
 
@@ -30,7 +33,7 @@ Datoviz image visual
 PNG/RGBA readback
         ↓
 Qt QWidget paint
-````
+```
 
 The PoC is intentionally narrow. It does not aim to be fast, complete, or production-quality.
 

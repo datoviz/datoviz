@@ -14,8 +14,9 @@ They are intended to pressure-test:
 ## Normative Status
 
 Installed headers under `include/datoviz/scene*.h` are now authoritative for public names and
-signatures that already exist. `scene_api.h` is an auxiliary draft for older or broader API ideas
-not yet promoted to installed headers; do not treat it as overriding installed headers.
+signatures that already exist. `scene_api.h` is a legacy auxiliary draft for older or broader API
+ideas not yet promoted to installed headers; do not treat it as overriding installed headers.
+Several names in that file intentionally remain stale because they preserve design history.
 
 `diagnostics.h` and any runtime-service sketches are informative unless a later document explicitly
 promotes them.
@@ -34,7 +35,8 @@ when preserving them for design history; prefer editing installed headers plus t
 
 ## Files
 
-1. `scene_api.h`: broad auxiliary draft C spelling for older scene API ideas not yet promoted
+1. `scene_api.h`: legacy broad auxiliary draft C spelling for older scene API ideas not yet
+   promoted; not a source of truth for active public names
 2. `scene_public_api_draft.h`: compact companion note for the installed interaction, scales,
    colorbars, text, and annotations header split
 3. `diagnostics.h`: draft shared diagnostic enums and record/report types

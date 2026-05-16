@@ -1,9 +1,13 @@
 # Datoviz v0.4 Scene Design Notes for Future napari Backend Compatibility
 
-Status: design guidance  
+Status: informative design guidance  
 Audience: Datoviz v0.4 scene/runtime developers  
-Scope: Datoviz `spec/scene/` implementation decisions that affect future napari integration  
+Scope: Datoviz scene/runtime implementation decisions that affect future napari integration  
 Non-goal: this is not a napari implementation plan and not a proposal to change napari public APIs
+
+Authority note: this file is a napari-focused pressure test. Specialized scene specs such as
+`../HOSTED_BACKENDS.md`, `../HIGH_DPI.md`, and `../../pipeline/RESOURCE_MODEL.md` remain the
+implementation-facing sources of truth when wording overlaps.
 
 ---
 
@@ -23,7 +27,7 @@ Datoviz Scene / Figure / Panel / Visual / Resource / FramePlan
 DRP2 command stream
     ↓
 Datoviz runtime backend: Vulkan, WebGPU, offscreen, headless, video
-````
+```
 
 The key principle is:
 
