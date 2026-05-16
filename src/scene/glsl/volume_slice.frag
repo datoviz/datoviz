@@ -121,8 +121,8 @@ float depth_visibility(vec3 uvw)
         if (delta <= 0.0) {
             return 1.0;
         }
-        float fade_distance = max(volume.occlusion.y, 0.001);
         float hidden_alpha = clamp(volume.occlusion.z, 0.0, 1.0);
+        float fade_distance = max(volume.occlusion.y, 0.0001);
         float fade = smoothstep(0.0, fade_distance, delta);
         return mix(1.0, hidden_alpha, fade);
     }

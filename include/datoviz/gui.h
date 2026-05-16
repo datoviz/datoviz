@@ -230,6 +230,21 @@ DVZ_EXPORT bool
 dvz_gui_slider_float(DvzGui* gui, const char* label, float* value, float min, float max);
 
 
+/**
+ * Show a float slider with an explicit display format.
+ *
+ * @param gui the GUI overlay
+ * @param label slider label
+ * @param value value edited in place
+ * @param min minimum value
+ * @param max maximum value
+ * @param format printf-style value format
+ * @return whether the value changed
+ */
+DVZ_EXPORT bool dvz_gui_slider_float_format(
+    DvzGui* gui, const char* label, float* value, float min, float max, const char* format);
+
+
 
 /**
  * Show Dear ImGui's demo window.
