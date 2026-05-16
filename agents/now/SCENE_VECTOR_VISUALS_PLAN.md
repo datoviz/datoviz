@@ -162,19 +162,37 @@ The public "2D arrow" API can be a convenience wrapper that creates a `segment` 
 5. picking: item id should refer to the source vector, not the generated shaft/marker geometry.
 
 
-### Tube
+### Tube, Streamline, And 3D Arrow
 
-`tube` is a 3D path visual, not a 2D stroke:
+`tube` is a 3D path visual, not a 2D stroke. This lane should explicitly cover tractography and
+other dense streamline/trajectory use cases:
 
-1. input: polyline or curve-flattened path in 3D;
-2. output: retained mesh generated from a stable frame field along the path;
-3. cross-sections: round, square, ribbon; round with configurable side count first;
-4. caps: none, flat, round/hemisphere later;
-5. joins: smooth frame propagation for continuous paths, bevel or broken joins for sharp turns;
-6. material: use existing mesh/primitive material and depth/SSAO paths.
+1. input: many variable-length 3D polylines or curve-flattened paths;
+2. output modes: fast camera-facing ribbon/strip, true retained tube mesh, and optional directional
+   glyphs/arrowheads;
+3. cross-sections: ribbon first for dense tractograms, round tube with configurable side count for
+   selected/high-quality bundles, square/other sections later;
+4. caps: none and flat first, round/hemisphere later;
+5. joins/frames: stable parallel-transport frames for tubes, view-stable orientation for ribbons,
+   and explicit handling of sharp turns or broken streamlines;
+6. material: use existing mesh/primitive material and depth/SSAO paths for tube meshes; use a lean
+   unlit/depth-cued shader for dense ribbons;
+7. attributes: per-vertex or per-streamline color, optional scalar, width/radius, bundle id, and
+   source streamline id for picking/selection.
 
-Tubes should wait until the 2D stroke path is stable because they need different geometry, depth,
-lighting, and picking behavior.
+Tubes and 3D arrows should wait until the 2D stroke path is stable enough to share input topology and
+style vocabulary, but they should not reuse the 2D screen-space stroke shaders. They need different
+geometry, depth, lighting, clipping, picking, and performance policy.
+
+For tractography, the practical rendering ladder should be:
+
+1. **Ribbon/strip mode:** fastest path for many streamlines; supports depth cueing, clipping, alpha,
+   bundle coloring, and picking by streamline id.
+2. **Tube mesh mode:** true 3D normals and lighting for selected bundles, screenshots, or lower-density
+   scenes; generated from polyline data with parallel-transport frames.
+3. **3D arrow/glyph mode:** cone/cylinder or cone-only direction cues for selected streamlines,
+   vector fields, flow direction, or orientation debugging. Reuse the v0.3 `dvz_shape_arrow()` design
+   as geometry prior art, but emit retained v0.4 mesh/instance resources.
 
 
 ## Stroke Model
@@ -566,26 +584,37 @@ git diff --check
 ```
 
 
-### Stage 9. Tubes
+### Stage 9. Streamlines, Tubes, And 3D Arrows
 
-Scope: 3D path geometry.
+Scope: 3D path geometry for tractography, trajectories, vector fields, and selected directional
+glyphs.
 
 Expected work:
 
 1. review the existing v0.3 `dvz_shape_arrow()` cylinder+cone mesh path before choosing public 3D
    arrow/tube APIs;
-2. add `dvz_tube()` or a path render mode for 3D tube output;
-3. generate indexed mesh buffers from a source polyline;
-4. compute stable frames with parallel transport, not naive Frenet frames;
-5. support round cross-section with a small configurable side count;
-6. support flat caps first and round caps later;
-7. reuse mesh material state, depth cueing, SSAO/G-buffer eligibility, and normal generation;
-8. add examples for streamlines, trajectories, and 3D graph edges.
+2. add a fast `dvz_streamline()` or path render mode for dense 3D polyline/ribbon output before
+   committing every streamline to tube mesh geometry;
+3. add `dvz_tube()` or a tube render mode for true 3D tube output;
+4. support variable-length polyline batches with per-streamline offsets/counts and stable source ids;
+5. generate indexed mesh buffers from a source polyline for tube mode;
+6. compute stable frames with parallel transport, not naive Frenet frames;
+7. support ribbon width, tube radius, round tube cross-section with a small configurable side count,
+   and flat caps first;
+8. add optional 3D arrowheads/glyphs as retained mesh instances for selected streamlines or vectors;
+9. support tractography-style coloring: per-vertex RGB, per-bundle color, direction color, scalar
+   colormap later;
+10. support clipping/slicing hooks so dense brain-tract views can be cut without rebuilding geometry;
+11. reuse mesh material state, depth cueing, SSAO/G-buffer eligibility, and normal generation where
+    tube mode uses true geometry;
+12. add examples for tractography bundles, streamlines, trajectories, vector fields, and 3D graph
+    edges.
 
 Validation:
 
 ```text
 just build
+just test test_scene_streamline
 just test test_scene_tube
 just test scene
 git diff --check
@@ -600,6 +629,7 @@ Likely public API shape:
 DvzVisual* dvz_segment(DvzScene* scene, uint32_t flags);
 DvzVisual* dvz_path(DvzScene* scene, uint32_t flags);
 DvzVisual* dvz_vector(DvzScene* scene, uint32_t flags);
+DvzVisual* dvz_streamline(DvzScene* scene, uint32_t flags);
 DvzVisual* dvz_tube(DvzScene* scene, uint32_t flags);
 
 int dvz_visual_set_stroke(DvzVisual* visual, const DvzStrokeDesc* desc);
@@ -640,6 +670,8 @@ Runtime tests:
 3. resize smoke with dash atlas and marker resources;
 4. panzoom tests proving pixel-width strokes stay pixel-width;
 5. world-width tests proving 3D/world strokes scale with the camera.
+6. tractography smoke tests with many variable-length streamlines, camera rotation, clipping, and
+   stable source-id picking.
 
 Manual examples:
 
@@ -648,8 +680,10 @@ Manual examples:
 3. `hello_arrows_glfw`;
 4. `hello_vector_field_glfw`;
 5. `hello_svg_subset`;
-6. `hello_tube_glfw`.
-7. ports of the useful v0.3 examples: `examples/visuals/segment.py`, `examples/visuals/path.py`,
+6. `hello_streamline_glfw`;
+7. `hello_tube_glfw`;
+8. `hello_tractography_glfw`;
+9. ports of the useful v0.3 examples: `examples/visuals/segment.py`, `examples/visuals/path.py`,
    `examples/visuals/marker.py`, `examples/features/segment_cap.py`, and
    `examples/features/marker_mode.py`.
 
@@ -670,6 +704,10 @@ Manual examples:
    Dash phase, stroke width, and color should be uniform/material updates when possible.
 7. **Porting debt:** v0.3 code uses the old batch/visual abstraction, direct allocation in places,
    point-size marker sprites, and legacy shader includes. Port the behavior, not the architecture.
+8. **Tractography density:** true tubes for every streamline can be too expensive. Keep ribbon/strip
+   mode as the dense default and reserve tube mesh mode for selected bundles or quality renders.
+9. **Tube frame stability:** naive Frenet frames twist or fail on straight segments. Use
+   parallel-transport frames and add rotation-stability tests.
 
 
 ## Recommended Order
@@ -682,7 +720,8 @@ Manual examples:
 6. Vector field visual.
 7. SVG path parser and curve flattening.
 8. Fill tessellation and SVG subset import.
-9. 3D tubes.
+9. Dense 3D streamlines/ribbons for tractography.
+10. Tube meshes and 3D arrow/glyph instances for selected/high-quality 3D paths.
 
 This order gives useful scientific visuals early while keeping the hard SVG and 3D geometry problems
 behind a stable stroke backend.
