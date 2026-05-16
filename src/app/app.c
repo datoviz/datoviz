@@ -36,6 +36,7 @@
 #endif
 
 #if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
+#include <volk.h>
 #include "datoviz/canvas.h"
 #include "datoviz/drp2/recording.h"
 #include "datoviz/drp2/runtime.h"
@@ -45,6 +46,7 @@
 #include "datoviz/input/router.h"
 #include "datoviz/scene/frame_plan.h"
 #include "datoviz/vk/device.h"
+#include "datoviz/vk/gpu.h"
 #include "datoviz/vk/gpu_ctx.h"
 #include "datoviz/window.h"
 #include "datoviz/window/backend.h"
@@ -167,6 +169,40 @@ static bool _app_env_flag_enabled(const char* name)
         return false;
     }
     return true;
+}
+
+
+
+/**
+ * Apply runtime-backed limits to app frame emission capabilities.
+ *
+ * @param app app owning the runtime GPU context
+ * @param caps capabilities to update
+ */
+static void _app_apply_runtime_caps(DvzApp* app, DvzCapabilitySnapshot* caps)
+{
+    ANN(caps);
+    if (app == NULL || app->gpu_ctx == NULL)
+        return;
+
+    DvzInstance* instance = dvz_gpu_ctx_instance(app->gpu_ctx);
+    uint32_t gpu_index = dvz_gpu_ctx_gpu_index(app->gpu_ctx);
+    VkPhysicalDevice physical_device = VK_NULL_HANDLE;
+    if (instance == NULL ||
+        !dvz_instance_gpu_handle(instance, gpu_index, &physical_device) ||
+        physical_device == VK_NULL_HANDLE)
+        return;
+
+    VkPhysicalDeviceVulkan13Properties props13 = {
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_PROPERTIES,
+    };
+    VkPhysicalDeviceProperties2 props = {
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2,
+        .pNext = &props13,
+    };
+    vkGetPhysicalDeviceProperties2(physical_device, &props);
+    if (props13.maxBufferSize > caps->max_buffer_size)
+        caps->max_buffer_size = props13.maxBufferSize;
 }
 
 
@@ -1585,6 +1621,7 @@ static void _app_draw(DvzCanvas* canvas, const DvzStreamFrame* frame, void* user
     /* Emit the DRP2 command stream with the canvas as external color target. */
     DvzCapabilitySnapshot caps;
     dvz_capability_snapshot_default(&caps);
+    _app_apply_runtime_caps(app, &caps);
     caps.shader_format_glsl = true;
     caps.max_color_attachments = 3;
     caps.render_target_format_rgba16float = true;
