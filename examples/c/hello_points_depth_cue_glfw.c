@@ -33,6 +33,13 @@
 #define WIDTH       1000u
 #define HEIGHT      760u
 #define ROTATION_SPEED_RAD_PER_SEC 0.22f
+#define CLIP_CUE_MIN  0.0f
+#define CLIP_CUE_MAX  1.0f
+#define EYE_CUE_MIN   0.0f
+#define EYE_CUE_MAX   6.0f
+#define WORLD_CUE_MIN 0.0f
+#define WORLD_CUE_MAX 2.0f
+#define CUE_EPS       1e-4f
 
 static const float TAU = 6.28318530718f;
 
@@ -255,6 +262,66 @@ static DvzDepthCueMetric _depth_cue_metric_next(DvzDepthCueMetric metric)
 }
 
 
+/**
+ * Return the slider bounds for one depth-cue metric.
+ *
+ * @param metric depth-cue metric
+ * @param min output lower bound
+ * @param max output upper bound
+ */
+static void _depth_cue_metric_range(DvzDepthCueMetric metric, float* min, float* max)
+{
+    ANN(min);
+    ANN(max);
+
+    switch (metric)
+    {
+    case DVZ_DEPTH_CUE_METRIC_EYE_DISTANCE:
+        *min = EYE_CUE_MIN;
+        *max = EYE_CUE_MAX;
+        break;
+    case DVZ_DEPTH_CUE_METRIC_WORLD_DISTANCE:
+        *min = WORLD_CUE_MIN;
+        *max = WORLD_CUE_MAX;
+        break;
+    case DVZ_DEPTH_CUE_METRIC_CLIP_DEPTH:
+    default:
+        *min = CLIP_CUE_MIN;
+        *max = CLIP_CUE_MAX;
+        break;
+    }
+}
+
+
+
+/**
+ * Reset the cue thresholds to useful defaults for the active metric.
+ *
+ * @param state example state
+ */
+static void _reset_cue_thresholds(DepthCueExampleState* state)
+{
+    ANN(state);
+
+    switch (state->depth_cue_metric)
+    {
+    case DVZ_DEPTH_CUE_METRIC_EYE_DISTANCE:
+        state->depth_cue_near = 2.3f;
+        state->depth_cue_far = 3.9f;
+        break;
+    case DVZ_DEPTH_CUE_METRIC_WORLD_DISTANCE:
+        state->depth_cue_near = 0.4f;
+        state->depth_cue_far = 1.2f;
+        break;
+    case DVZ_DEPTH_CUE_METRIC_CLIP_DEPTH:
+    default:
+        state->depth_cue_near = 0.98f;
+        state->depth_cue_far = 1.0f;
+        break;
+    }
+}
+
+
 
 /**
  * Return a short label for a depth-cue falloff.
@@ -307,8 +374,17 @@ static void _apply_depth_cue(DepthCueExampleState* state)
         return;
     }
 
-    if (state->depth_cue_far <= state->depth_cue_near + 1e-4f)
-        state->depth_cue_far = state->depth_cue_near + 1e-4f;
+    float range_min = 0.0f;
+    float range_max = 1.0f;
+    _depth_cue_metric_range(state->depth_cue_metric, &range_min, &range_max);
+    if (state->depth_cue_near < range_min)
+        state->depth_cue_near = range_min;
+    if (state->depth_cue_near > range_max - CUE_EPS)
+        state->depth_cue_near = range_max - CUE_EPS;
+    if (state->depth_cue_far > range_max)
+        state->depth_cue_far = range_max;
+    if (state->depth_cue_far <= state->depth_cue_near + CUE_EPS)
+        state->depth_cue_far = state->depth_cue_near + CUE_EPS;
 
     DvzDepthCueDesc desc = {
         .mode = state->depth_cue_mode,
@@ -341,10 +417,9 @@ static void _reset_controls(DepthCueExampleState* state)
     ANN(state);
     state->depth_cue_enabled = true;
     state->depth_cue_mode = DVZ_DEPTH_CUE_FADE_TO_BACKGROUND;
-    state->depth_cue_metric = DVZ_DEPTH_CUE_METRIC_CLIP_DEPTH;
+    state->depth_cue_metric = DVZ_DEPTH_CUE_METRIC_EYE_DISTANCE;
     state->depth_cue_falloff = DVZ_DEPTH_CUE_FALLOFF_LINEAR;
-    state->depth_cue_near = 0.42f;
-    state->depth_cue_far = 0.98f;
+    _reset_cue_thresholds(state);
     state->depth_cue_strength = 0.62f;
     state->depth_cue_density = 3.0f;
     state->depth_cue_background[0] = 0.035f;
@@ -397,6 +472,7 @@ static void _depth_cue_gui(DvzGui* gui, DvzAppWindow* win, void* user_data)
         if (dvz_gui_button(gui, metric_label))
         {
             state->depth_cue_metric = _depth_cue_metric_next(state->depth_cue_metric);
+            _reset_cue_thresholds(state);
             cue_changed = true;
         }
         char falloff_label[64];
@@ -408,12 +484,13 @@ static void _depth_cue_gui(DvzGui* gui, DvzAppWindow* win, void* user_data)
             state->depth_cue_falloff = _depth_cue_falloff_next(state->depth_cue_falloff);
             cue_changed = true;
         }
-        float range_max =
-            state->depth_cue_metric == DVZ_DEPTH_CUE_METRIC_CLIP_DEPTH ? 1.0f : 4.0f;
+        float range_min = 0.0f;
+        float range_max = 1.0f;
+        _depth_cue_metric_range(state->depth_cue_metric, &range_min, &range_max);
         cue_changed |=
-            dvz_gui_slider_float(gui, "Cue near", &state->depth_cue_near, 0.0f, range_max);
+            dvz_gui_slider_float(gui, "Cue near", &state->depth_cue_near, range_min, range_max);
         cue_changed |=
-            dvz_gui_slider_float(gui, "Cue far", &state->depth_cue_far, 0.0f, range_max);
+            dvz_gui_slider_float(gui, "Cue far", &state->depth_cue_far, range_min, range_max);
         cue_changed |=
             dvz_gui_slider_float(gui, "Cue strength", &state->depth_cue_strength, 0.0f, 1.0f);
         cue_changed |=

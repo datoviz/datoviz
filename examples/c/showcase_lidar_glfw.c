@@ -42,6 +42,9 @@
 #define LIDAR_POSITION_SCALE 5.0f
 #define LIDAR_DEFAULT_POINT_SIZE 2.0f
 #define LIDAR_DEFAULT_STRIDE 2u
+#define CUE_DISTANCE_MIN 0.0f
+#define CUE_DISTANCE_MAX 12.0f
+#define CUE_DISTANCE_EPS 1e-4f
 
 static const vec3 LIDAR_FLY_EYE = {+2.0f, +2.0f, -6.0f};
 static const vec3 LIDAR_FLY_TARGET = {+1.71428573f, +1.57142854f, -5.14285707f};
@@ -451,11 +454,18 @@ static void _apply_depth_cue(LidarExampleState* state)
         return;
     }
 
-    if (state->depth_cue_far <= state->depth_cue_near + 1e-4f)
-        state->depth_cue_far = state->depth_cue_near + 1e-4f;
+    if (state->depth_cue_near < CUE_DISTANCE_MIN)
+        state->depth_cue_near = CUE_DISTANCE_MIN;
+    if (state->depth_cue_near > CUE_DISTANCE_MAX - CUE_DISTANCE_EPS)
+        state->depth_cue_near = CUE_DISTANCE_MAX - CUE_DISTANCE_EPS;
+    if (state->depth_cue_far > CUE_DISTANCE_MAX)
+        state->depth_cue_far = CUE_DISTANCE_MAX;
+    if (state->depth_cue_far <= state->depth_cue_near + CUE_DISTANCE_EPS)
+        state->depth_cue_far = state->depth_cue_near + CUE_DISTANCE_EPS;
 
     DvzDepthCueDesc desc = {
         .mode = state->depth_cue_mode,
+        .metric = DVZ_DEPTH_CUE_METRIC_EYE_DISTANCE,
         .near_depth = state->depth_cue_near,
         .far_depth = state->depth_cue_far,
         .strength = state->depth_cue_strength,
@@ -486,8 +496,8 @@ static void _reset_lidar_controls(LidarExampleState* state)
     state->radius = 2.0f;
     state->strength = 70.0f;
     state->depth_scale = 1.0f;
-    state->depth_cue_near = 0.35f;
-    state->depth_cue_far = 0.98f;
+    state->depth_cue_near = 3.5f;
+    state->depth_cue_far = 10.2f;
     state->depth_cue_strength = 0.30f;
     state->depth_cue_background[0] = 0.030f;
     state->depth_cue_background[1] = 0.036f;
@@ -537,9 +547,11 @@ static void _lidar_gui(DvzGui* gui, DvzAppWindow* win, void* user_data)
             cue_changed = true;
         }
         cue_changed |=
-            dvz_gui_slider_float(gui, "Cue near", &state->depth_cue_near, 0.0f, 1.0f);
+            dvz_gui_slider_float(
+                gui, "Cue near", &state->depth_cue_near, CUE_DISTANCE_MIN, CUE_DISTANCE_MAX);
         cue_changed |=
-            dvz_gui_slider_float(gui, "Cue far", &state->depth_cue_far, 0.0f, 1.0f);
+            dvz_gui_slider_float(
+                gui, "Cue far", &state->depth_cue_far, CUE_DISTANCE_MIN, CUE_DISTANCE_MAX);
         cue_changed |=
             dvz_gui_slider_float(gui, "Cue strength", &state->depth_cue_strength, 0.0f, 1.0f);
         if (dvz_gui_button(gui, "Reset"))

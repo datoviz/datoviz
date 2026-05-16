@@ -33,6 +33,9 @@
 #define WIDTH       1000u
 #define HEIGHT      760u
 #define ROTATION_SPEED_RAD_PER_SEC 0.28f
+#define CUE_DISTANCE_MIN 0.0f
+#define CUE_DISTANCE_MAX 6.0f
+#define CUE_DISTANCE_EPS 1e-4f
 
 static const float TAU = 6.28318530718f;
 
@@ -257,11 +260,18 @@ static void _apply_depth_cue(EdlExampleState* state)
         return;
     }
 
-    if (state->depth_cue_far <= state->depth_cue_near + 1e-4f)
-        state->depth_cue_far = state->depth_cue_near + 1e-4f;
+    if (state->depth_cue_near < CUE_DISTANCE_MIN)
+        state->depth_cue_near = CUE_DISTANCE_MIN;
+    if (state->depth_cue_near > CUE_DISTANCE_MAX - CUE_DISTANCE_EPS)
+        state->depth_cue_near = CUE_DISTANCE_MAX - CUE_DISTANCE_EPS;
+    if (state->depth_cue_far > CUE_DISTANCE_MAX)
+        state->depth_cue_far = CUE_DISTANCE_MAX;
+    if (state->depth_cue_far <= state->depth_cue_near + CUE_DISTANCE_EPS)
+        state->depth_cue_far = state->depth_cue_near + CUE_DISTANCE_EPS;
 
     DvzDepthCueDesc desc = {
         .mode = state->depth_cue_mode,
+        .metric = DVZ_DEPTH_CUE_METRIC_EYE_DISTANCE,
         .near_depth = state->depth_cue_near,
         .far_depth = state->depth_cue_far,
         .strength = state->depth_cue_strength,
@@ -292,8 +302,8 @@ static void _reset_edl(EdlExampleState* state)
     state->radius = 2.0f;
     state->strength = 70.0f;
     state->depth_scale = 1.0f;
-    state->depth_cue_near = 0.45f;
-    state->depth_cue_far = 0.95f;
+    state->depth_cue_near = 2.4f;
+    state->depth_cue_far = 3.8f;
     state->depth_cue_strength = 0.35f;
     state->depth_cue_background[0] = 0.035f;
     state->depth_cue_background[1] = 0.045f;
@@ -345,9 +355,11 @@ static void _edl_gui(DvzGui* gui, DvzAppWindow* win, void* user_data)
             cue_changed = true;
         }
         cue_changed |=
-            dvz_gui_slider_float(gui, "Cue near", &state->depth_cue_near, 0.0f, 1.0f);
+            dvz_gui_slider_float(
+                gui, "Cue near", &state->depth_cue_near, CUE_DISTANCE_MIN, CUE_DISTANCE_MAX);
         cue_changed |=
-            dvz_gui_slider_float(gui, "Cue far", &state->depth_cue_far, 0.0f, 1.0f);
+            dvz_gui_slider_float(
+                gui, "Cue far", &state->depth_cue_far, CUE_DISTANCE_MIN, CUE_DISTANCE_MAX);
         cue_changed |=
             dvz_gui_slider_float(gui, "Cue strength", &state->depth_cue_strength, 0.0f, 1.0f);
         if (dvz_gui_button(gui, "Reset"))
