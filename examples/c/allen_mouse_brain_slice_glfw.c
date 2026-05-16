@@ -974,7 +974,8 @@ static bool _swizzle_allen_mouse_brain_to_ibl_axes(AllenMouseBrainVolume* volume
             for (uint32_t dv = 0; dv < src_width; dv++)
             {
                 uint64_t src_index = (((uint64_t)ap * src_height + ml) * src_width + dv) * 4u;
-                uint64_t dst_index = (((uint64_t)dv * out_height + ap) * out_width + ml) * 4u;
+                uint32_t ibl_dv = out_depth - 1u - dv;
+                uint64_t dst_index = (((uint64_t)ibl_dv * out_height + ap) * out_width + ml) * 4u;
                 dvz_memcpy(dst + dst_index, 4, src + src_index, 4);
             }
         }
