@@ -64,6 +64,15 @@ static void _material_state_sync_params(
 static void _material_params_sync_state(
     DvzSceneMaterialParams* params, const DvzSceneMaterialState* material);
 
+static bool _material_depth_cue_supported(DvzVisualType visual_type);
+
+static int _material_apply_depth_cue(
+    DvzSceneMaterialState* material, const DvzDepthCueDesc* desc);
+
+static void _visual_material_mark_dirty(DvzVisual* visual);
+
+static void _visual_bump_version(uint64_t* version);
+
 static void _volume_state_default(DvzVolumeState* state);
 
 static bool _mesh_ensure_default_color(DvzVisual* visual, uint32_t item_count);
@@ -720,6 +729,101 @@ static void _material_params_sync_state(
 
 
 /**
+ * Return whether one visual family can consume shared depth-cue material parameters.
+ *
+ * @param visual_type the retained visual type
+ * @return whether depth cueing is supported
+ */
+static bool _material_depth_cue_supported(DvzVisualType visual_type)
+{
+    return visual_type == DVZ_VISUAL_TYPE_POINT || visual_type == DVZ_VISUAL_TYPE_PIXEL ||
+           visual_type == DVZ_VISUAL_TYPE_PRIMITIVE || visual_type == DVZ_VISUAL_TYPE_MESH;
+}
+
+
+
+/**
+ * Apply or clear a depth-cue descriptor on retained material state.
+ *
+ * @param material the retained material state
+ * @param desc the depth-cue descriptor, or NULL to disable depth cueing
+ * @return 0 on success, -1 on validation error
+ */
+static int _material_apply_depth_cue(
+    DvzSceneMaterialState* material, const DvzDepthCueDesc* desc)
+{
+    ANN(material);
+
+    if (desc == NULL)
+    {
+        material->depth_cue_enabled = false;
+        material->depth_cue_mode = DVZ_DEPTH_CUE_NONE;
+        material->depth_cue_near = 0.0f;
+        material->depth_cue_far = 1.0f;
+        material->depth_cue_strength = 1.0f;
+        material->depth_cue_background[0] = 0.0f;
+        material->depth_cue_background[1] = 0.0f;
+        material->depth_cue_background[2] = 0.0f;
+        material->depth_cue_background[3] = 1.0f;
+        return 0;
+    }
+
+    if (desc->mode <= DVZ_DEPTH_CUE_NONE || desc->mode > DVZ_DEPTH_CUE_DARKEN)
+    {
+        log_error("invalid depth cue mode %d", (int)desc->mode);
+        return -1;
+    }
+    if (!isfinite(desc->near_depth) || !isfinite(desc->far_depth) ||
+        desc->far_depth <= desc->near_depth)
+    {
+        log_error("depth cue near/far values must be finite and strictly increasing");
+        return -1;
+    }
+    if (!isfinite(desc->strength) || desc->strength < 0.0f || desc->strength > 1.0f)
+    {
+        log_error("depth cue strength must be finite and in [0, 1]");
+        return -1;
+    }
+    for (uint32_t i = 0; i < 4; i++)
+    {
+        if (!isfinite(desc->background_color[i]) || desc->background_color[i] < 0.0f ||
+            desc->background_color[i] > 1.0f)
+        {
+            log_error("depth cue background color values must be finite and in [0, 1]");
+            return -1;
+        }
+    }
+
+    material->depth_cue_enabled = true;
+    material->depth_cue_mode = desc->mode;
+    material->depth_cue_near = desc->near_depth;
+    material->depth_cue_far = desc->far_depth;
+    material->depth_cue_strength = desc->strength;
+    material->depth_cue_background[0] = desc->background_color[0];
+    material->depth_cue_background[1] = desc->background_color[1];
+    material->depth_cue_background[2] = desc->background_color[2];
+    material->depth_cue_background[3] = desc->background_color[3];
+    return 0;
+}
+
+
+
+/**
+ * Synchronize retained material state into the GPU parameter payload and mark it dirty.
+ *
+ * @param visual the visual owning the material state
+ */
+static void _visual_material_mark_dirty(DvzVisual* visual)
+{
+    ANN(visual);
+    _material_params_sync_state(&visual->material_params, &visual->material);
+    _visual_bump_version(&visual->material.version);
+    visual->material_params_dirty = true;
+}
+
+
+
+/**
  * Initialize retained volume-state defaults.
  *
  * @param state the volume state
@@ -1011,9 +1115,7 @@ int dvz_visual_set_primitive_shading(
 int dvz_visual_set_depth_cue(DvzVisual* visual, const DvzDepthCueDesc* desc)
 {
     ANN(visual);
-    if (
-        visual->type != DVZ_VISUAL_TYPE_POINT && visual->type != DVZ_VISUAL_TYPE_PIXEL &&
-        visual->type != DVZ_VISUAL_TYPE_PRIMITIVE && visual->type != DVZ_VISUAL_TYPE_MESH)
+    if (!_material_depth_cue_supported(visual->type))
     {
         log_error("depth cueing is only supported for point, pixel, primitive, and mesh visuals");
         return -1;
@@ -1021,59 +1123,9 @@ int dvz_visual_set_depth_cue(DvzVisual* visual, const DvzDepthCueDesc* desc)
     if (!_scene_visual_mutation_allowed(visual->scene, "update visual depth cue"))
         return -1;
 
-    if (desc == NULL)
-    {
-        visual->material.depth_cue_enabled = false;
-        visual->material.depth_cue_mode = DVZ_DEPTH_CUE_NONE;
-        visual->material.depth_cue_near = 0.0f;
-        visual->material.depth_cue_far = 1.0f;
-        visual->material.depth_cue_strength = 1.0f;
-        visual->material.depth_cue_background[0] = 0.0f;
-        visual->material.depth_cue_background[1] = 0.0f;
-        visual->material.depth_cue_background[2] = 0.0f;
-        visual->material.depth_cue_background[3] = 1.0f;
-    }
-    else
-    {
-        if (desc->mode <= DVZ_DEPTH_CUE_NONE || desc->mode > DVZ_DEPTH_CUE_DARKEN)
-        {
-            log_error("invalid depth cue mode %d", (int)desc->mode);
-            return -1;
-        }
-        if (!isfinite(desc->near_depth) || !isfinite(desc->far_depth) ||
-            desc->far_depth <= desc->near_depth)
-        {
-            log_error("depth cue near/far values must be finite and strictly increasing");
-            return -1;
-        }
-        if (!isfinite(desc->strength) || desc->strength < 0.0f || desc->strength > 1.0f)
-        {
-            log_error("depth cue strength must be finite and in [0, 1]");
-            return -1;
-        }
-        for (uint32_t i = 0; i < 4; i++)
-        {
-            if (!isfinite(desc->background_color[i]) || desc->background_color[i] < 0.0f ||
-                desc->background_color[i] > 1.0f)
-            {
-                log_error("depth cue background color values must be finite and in [0, 1]");
-                return -1;
-            }
-        }
-        visual->material.depth_cue_enabled = true;
-        visual->material.depth_cue_mode = desc->mode;
-        visual->material.depth_cue_near = desc->near_depth;
-        visual->material.depth_cue_far = desc->far_depth;
-        visual->material.depth_cue_strength = desc->strength;
-        visual->material.depth_cue_background[0] = desc->background_color[0];
-        visual->material.depth_cue_background[1] = desc->background_color[1];
-        visual->material.depth_cue_background[2] = desc->background_color[2];
-        visual->material.depth_cue_background[3] = desc->background_color[3];
-    }
-
-    _material_params_sync_state(&visual->material_params, &visual->material);
-    _visual_bump_version(&visual->material.version);
-    visual->material_params_dirty = true;
+    if (_material_apply_depth_cue(&visual->material, desc) != 0)
+        return -1;
+    _visual_material_mark_dirty(visual);
     return 0;
 }
 
