@@ -849,6 +849,53 @@ bool _scene_technique_emit_blended_frame_graph(
 }
 
 
+/**
+ * Emit graph descriptors for one panel volume occlusion prepass.
+ *
+ * @param plan the frame plan
+ * @param panel_id the panel id
+ * @return whether graph descriptors were emitted
+ */
+bool _scene_technique_emit_volume_occlusion_frame_graph(
+    DvzFramePlan* plan, const char* panel_id)
+{
+    ANN(plan);
+    ANN(panel_id);
+
+    char depth_id[DVZ_SCENE_LABEL_SIZE];
+    char pass_id[DVZ_SCENE_LABEL_SIZE];
+    dvz_snprintf(depth_id, sizeof(depth_id), "%s.volume_occlusion.depth", panel_id);
+    dvz_snprintf(pass_id, sizeof(pass_id), "%s.volume_occlusion", panel_id);
+
+    DvzFrameGraphResource depth = {0};
+    dvz_strlcpy(depth.id, depth_id, sizeof(depth.id));
+    depth.kind = DVZ_FRAME_GRAPH_RESOURCE_TEXTURE;
+    depth.format = VK_FORMAT_R32_SFLOAT;
+    depth.extent_kind = DVZ_FRAME_GRAPH_EXTENT_FIGURE;
+    depth.usage_flags = DVZ_FRAME_GRAPH_RESOURCE_USAGE_COLOR_ATTACHMENT |
+                        DVZ_FRAME_GRAPH_RESOURCE_USAGE_SAMPLED;
+    depth.lifetime = DVZ_FRAME_GRAPH_RESOURCE_LIFETIME_PER_FRAME;
+    if (!_scene_frame_graph_resource_once(plan, &depth))
+        return false;
+
+    DvzFrameGraphAttachment color = {0};
+    DvzFrameGraphPass pass = {0};
+    dvz_strlcpy(pass.id, pass_id, sizeof(pass.id));
+    dvz_strlcpy(pass.panel_id, panel_id, sizeof(pass.panel_id));
+    dvz_strlcpy(pass.work_label, "volume_occlusion", sizeof(pass.work_label));
+    pass.kind = DVZ_FRAME_GRAPH_PASS_RENDER;
+    _scene_frame_graph_color_attachment(
+        &color, depth_id, DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_CLEAR, true);
+    color.clear_color[0] = 0.0f;
+    color.clear_color[1] = 0.0f;
+    color.clear_color[2] = 0.0f;
+    color.clear_color[3] = 0.0f;
+    if (!dvz_frame_graph_pass_color_attachment(&pass, &color))
+        return false;
+    return dvz_frame_plan_graph_pass(plan, &pass);
+}
+
+
 
 /**
  * Emit graph descriptors for one depth-peeling panel plan.

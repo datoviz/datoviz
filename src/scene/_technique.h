@@ -115,6 +115,9 @@ bool _scene_technique_emit_blended_frame_graph(
     DvzFramePlan* plan, const char* panel_id, bool opaque_needs_depth,
     bool transparent_needs_depth);
 
+bool _scene_technique_emit_volume_occlusion_frame_graph(
+    DvzFramePlan* plan, const char* panel_id);
+
 bool _scene_technique_emit_depth_peel_frame_graph(
     DvzFramePlan* plan, const char* panel_id, bool opaque_needs_depth,
     bool transparent_needs_depth);
