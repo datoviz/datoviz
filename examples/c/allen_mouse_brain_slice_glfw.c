@@ -55,6 +55,7 @@
 #define DEFAULT_OCCLUSION_THRESHOLD 0.08f
 #define DEFAULT_OCCLUSION_FADE 0.08f
 #define DEFAULT_OCCLUSION_HIDDEN_ALPHA 0.20f
+#define MAX_ATLAS_REGIONS 32
 #define MOUSE_BRAIN_WIDTH 320
 #define MOUSE_BRAIN_HEIGHT 456
 #define MOUSE_BRAIN_DEPTH 528
@@ -78,6 +79,18 @@ typedef struct AllenMouseBrainVolume
 
 
 
+typedef struct AllenIblAtlasRegion
+{
+    uint32_t id;
+    char acronym[32];
+    char name[96];
+    uint32_t vertex_start;
+    uint32_t vertex_count;
+    bool visible;
+} AllenIblAtlasRegion;
+
+
+
 typedef struct AllenIblAtlasMesh
 {
     float (*pos)[3];
@@ -90,6 +103,8 @@ typedef struct AllenIblAtlasMesh
     double volume_bounds_min[3];
     double volume_bounds_max[3];
     bool has_volume_bounds;
+    AllenIblAtlasRegion regions[MAX_ATLAS_REGIONS];
+    uint32_t region_count;
 } AllenIblAtlasMesh;
 
 
@@ -370,6 +385,154 @@ static bool _parse_json_number_array(
 }
 
 
+/**
+ * Parse one unsigned JSON value in an object slice.
+ *
+ * @param begin object slice start
+ * @param end object slice end
+ * @param key JSON key to find
+ * @param out output value
+ * @return whether parsing succeeded
+ */
+static bool _parse_json_u32_in_object(
+    const char* begin, const char* end, const char* key, uint32_t* out)
+{
+    ANN(begin);
+    ANN(end);
+    ANN(key);
+    ANN(out);
+
+    const char* p = strstr(begin, key);
+    if (p == NULL || p >= end)
+        return false;
+    p = strchr(p, ':');
+    if (p == NULL || p >= end)
+        return false;
+    p++;
+    while (p < end && isspace((uint8_t)(*p)))
+        p++;
+    char* next = NULL;
+    unsigned long value = strtoul(p, &next, 10);
+    if (next == NULL || next == p || next > end || value > UINT32_MAX)
+        return false;
+    *out = (uint32_t)value;
+    return true;
+}
+
+
+
+/**
+ * Parse one quoted JSON string value in an object slice.
+ *
+ * @param begin object slice start
+ * @param end object slice end
+ * @param key JSON key to find
+ * @param out output string
+ * @param out_size output string capacity
+ * @return whether parsing succeeded
+ */
+static bool _parse_json_string_in_object(
+    const char* begin, const char* end, const char* key, char* out, size_t out_size)
+{
+    ANN(begin);
+    ANN(end);
+    ANN(key);
+    ANN(out);
+    if (out_size == 0)
+        return false;
+
+    const char* p = strstr(begin, key);
+    if (p == NULL || p >= end)
+        return false;
+    p = strchr(p, ':');
+    if (p == NULL || p >= end)
+        return false;
+    p++;
+    while (p < end && isspace((uint8_t)(*p)))
+        p++;
+    if (p >= end || *p != '"')
+        return false;
+    p++;
+    const char* q = strchr(p, '"');
+    if (q == NULL || q <= p || q > end)
+        return false;
+    size_t len = (size_t)(q - p);
+    if (len >= out_size)
+        len = out_size - 1;
+    dvz_memcpy(out, out_size, p, len);
+    out[len] = '\0';
+    return true;
+}
+
+
+
+/**
+ * Load prepared atlas region metadata from the JSON sidecar.
+ *
+ * @param data_dir asset directory
+ * @param atlas atlas mesh state receiving region metadata
+ */
+static void _load_ibl_region_metadata(const char* data_dir, AllenIblAtlasMesh* atlas)
+{
+    ANN(data_dir);
+    ANN(atlas);
+
+    char path[1024] = {0};
+    if (!_join_path(data_dir, "metadata.json", path, sizeof(path)))
+        return;
+
+    DvzSize size = 0;
+    char* text = (char*)dvz_read_file(path, &size);
+    if (text == NULL)
+        return;
+    if (size == 0)
+    {
+        dvz_free(text);
+        return;
+    }
+
+    const char* end = text + size;
+    const char* regions = strstr(text, "\"regions\"");
+    if (regions == NULL || regions >= end)
+        goto cleanup;
+    const char* p = strchr(regions, '[');
+    if (p == NULL || p >= end)
+        goto cleanup;
+
+    atlas->region_count = 0;
+    while (p < end && atlas->region_count < MAX_ATLAS_REGIONS)
+    {
+        p = strchr(p, '{');
+        if (p == NULL || p >= end)
+            break;
+        const char* object_end = strchr(p, '}');
+        if (object_end == NULL || object_end >= end)
+            break;
+
+        AllenIblAtlasRegion region = {0};
+        if (_parse_json_u32_in_object(p, object_end, "\"id\"", &region.id) &&
+            _parse_json_u32_in_object(
+                p, object_end, "\"vertex_start\"", &region.vertex_start) &&
+            _parse_json_u32_in_object(
+                p, object_end, "\"vertex_count\"", &region.vertex_count) &&
+            _parse_json_string_in_object(
+                p, object_end, "\"acronym\"", region.acronym, sizeof(region.acronym)) &&
+            _parse_json_string_in_object(
+                p, object_end, "\"name\"", region.name, sizeof(region.name)) &&
+            region.vertex_start <= atlas->vertex_count &&
+            region.vertex_count <= atlas->vertex_count - region.vertex_start)
+        {
+            region.visible = true;
+            atlas->regions[atlas->region_count++] = region;
+        }
+        p = object_end + 1;
+    }
+
+cleanup:
+    dvz_free(text);
+}
+
+
 
 /**
  * Load scene-space volume bounds from the prepared Allen/IBL metadata file.
@@ -388,8 +551,13 @@ static void _load_ibl_volume_bounds(const char* data_dir, AllenIblAtlasMesh* atl
 
     DvzSize size = 0;
     char* text = (char*)dvz_read_file(path, &size);
-    if (text == NULL || size == 0)
+    if (text == NULL)
         return;
+    if (size == 0)
+    {
+        dvz_free(text);
+        return;
+    }
 
     double values[6] = {0};
     if (_parse_json_number_array(text, size, "volume_bounds_scene", values, 6))
@@ -479,10 +647,11 @@ static bool _load_ibl_atlas_mesh(const char* data_dir, AllenIblAtlasMesh* atlas)
     dvz_memcpy(atlas->base_color, color_size, atlas->color, color_size);
 
     _load_ibl_volume_bounds(data_dir, atlas);
+    _load_ibl_region_metadata(data_dir, atlas);
 
     dvz_fprintf(
-        stderr, "loaded Allen/IBL atlas mesh: %u vertices, %u triangles\n",
-        atlas->vertex_count, atlas->index_count / 3);
+        stderr, "loaded Allen/IBL atlas mesh: %u vertices, %u triangles, %u regions\n",
+        atlas->vertex_count, atlas->index_count / 3, atlas->region_count);
     return true;
 
 error:
@@ -1146,6 +1315,17 @@ static void _apply_atlas_mesh_controls(AllenMouseBrainState* state)
         alpha = (uint32_t)((float)alpha * state->atlas_alpha_scale + 0.5f);
         state->atlas_mesh->color[i][3] = alpha > 255u ? 255u : (uint8_t)alpha;
     }
+    for (uint32_t r = 0; r < state->atlas_mesh->region_count; r++)
+    {
+        const AllenIblAtlasRegion* region = &state->atlas_mesh->regions[r];
+        if (region->visible)
+            continue;
+        uint32_t end = region->vertex_start + region->vertex_count;
+        if (end > state->atlas_mesh->vertex_count)
+            end = state->atlas_mesh->vertex_count;
+        for (uint32_t i = region->vertex_start; i < end; i++)
+            state->atlas_mesh->color[i][3] = 0;
+    }
 
     if (dvz_visual_set_data(
             state->atlas_mesh_visual, "color", state->atlas_mesh->color,
@@ -1338,6 +1518,30 @@ static void _allen_mouse_brain_gui(DvzGui* gui, DvzAppWindow* win, void* user_da
                 dvz_gui_slider_float(gui, "Atlas ambient", &state->atlas_ambient, 0.0f, 1.0f);
             atlas_changed |=
                 dvz_gui_slider_float(gui, "Atlas diffuse", &state->atlas_diffuse, 0.0f, 1.5f);
+            if (state->atlas_mesh != NULL && state->atlas_mesh->region_count > 0)
+            {
+                dvz_gui_text(gui, "Atlas regions");
+                if (dvz_gui_button(gui, "Show all regions"))
+                {
+                    for (uint32_t r = 0; r < state->atlas_mesh->region_count; r++)
+                        state->atlas_mesh->regions[r].visible = true;
+                    atlas_changed = true;
+                }
+                if (dvz_gui_button(gui, "Hide all regions"))
+                {
+                    for (uint32_t r = 0; r < state->atlas_mesh->region_count; r++)
+                        state->atlas_mesh->regions[r].visible = false;
+                    atlas_changed = true;
+                }
+                for (uint32_t r = 0; r < state->atlas_mesh->region_count; r++)
+                {
+                    AllenIblAtlasRegion* region = &state->atlas_mesh->regions[r];
+                    char label[160] = {0};
+                    dvz_snprintf(
+                        label, sizeof(label), "%s - %s", region->acronym, region->name);
+                    atlas_changed |= dvz_gui_checkbox(gui, label, &region->visible);
+                }
+            }
         }
         if (dvz_gui_button(gui, "Reset"))
         {
@@ -1360,6 +1564,11 @@ static void _allen_mouse_brain_gui(DvzGui* gui, DvzAppWindow* win, void* user_da
             state->atlas_diffuse = 0.95f;
             state->slice_position = DEFAULT_SLICE_POS;
             state->axis = DEFAULT_AXIS;
+            if (state->atlas_mesh != NULL)
+            {
+                for (uint32_t r = 0; r < state->atlas_mesh->region_count; r++)
+                    state->atlas_mesh->regions[r].visible = true;
+            }
             changed = true;
             atlas_changed = true;
             occlusion_changed = true;
