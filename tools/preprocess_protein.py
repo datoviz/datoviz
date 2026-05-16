@@ -432,19 +432,36 @@ def _catmull_rom_tangent(
     )
 
 
-def _residue_frame(residue: Residue, tangent: Vec3, previous_up: Vec3) -> tuple[Vec3, Vec3]:
+def _residue_up(residue: Residue, tangent: Vec3, fallback: Vec3) -> Vec3:
     n = residue.atoms.get("N")
     ca = residue.atoms.get("CA")
     c = residue.atoms.get("C")
-    up = previous_up
+    up = fallback
     if n is not None and ca is not None and c is not None:
         n_to_ca = _v_sub(_atom_pos(n), _atom_pos(ca))
         c_to_ca = _v_sub(_atom_pos(c), _atom_pos(ca))
         up = _v_norm(_v_cross(n_to_ca, c_to_ca), up)
     up = _v_sub(up, _v_mul(tangent, _v_dot(up, tangent)))
-    up = _v_norm(up, previous_up)
+    return _v_norm(up, fallback)
+
+
+def _initial_ribbon_frame(residue: Residue, tangent: Vec3) -> tuple[Vec3, Vec3]:
+    up = _residue_up(residue, tangent, (0.0, 0.0, 1.0))
     side = _v_norm(_v_cross(tangent, up), (1.0, 0.0, 0.0))
     up = _v_norm(_v_cross(side, tangent), up)
+    return side, up
+
+
+def _transport_ribbon_frame(
+    tangent: Vec3, previous_side: Vec3, previous_up: Vec3
+) -> tuple[Vec3, Vec3]:
+    side = _v_sub(previous_side, _v_mul(tangent, _v_dot(previous_side, tangent)))
+    if _v_len(side) <= 1e-8:
+        side = _v_cross(tangent, previous_up)
+    side = _v_norm(side, previous_side)
+    if _v_dot(side, previous_side) < 0.0:
+        side = _v_mul(side, -1.0)
+    up = _v_norm(_v_cross(side, tangent), previous_up)
     return side, up
 
 
@@ -532,7 +549,12 @@ def _ribbon_mesh(
         if len(chain_residues) < 2:
             continue
         ca = [_atom_pos(residue.atoms["CA"]) for residue in chain_residues]
-        up = (0.0, 0.0, 1.0)
+        p0 = ca[0]
+        p1 = ca[0]
+        p2 = ca[1]
+        p3 = ca[min(2, len(ca) - 1)]
+        tangent = _v_norm(_catmull_rom_tangent(p0, p1, p2, p3, 0.0), (0.0, 0.0, 1.0))
+        side, up = _initial_ribbon_frame(chain_residues[0], tangent)
         section_count = 0
         for i in range(len(chain_residues) - 1):
             segment_samples = samples_per_segment
@@ -545,7 +567,8 @@ def _ribbon_mesh(
                 p = _catmull_rom(p0, p1, p2, p3, t)
                 tangent = _v_norm(_catmull_rom_tangent(p0, p1, p2, p3, t), (0.0, 0.0, 1.0))
                 residue = chain_residues[i if t < 0.5 else i + 1]
-                side, up = _residue_frame(residue, tangent, up)
+                if section_count > 0:
+                    side, up = _transport_ribbon_frame(tangent, side, up)
                 width, thickness = _ribbon_shape(residue.ss, radius)
                 p_norm = (
                     (p[0] - center[0]) / radius,
@@ -569,7 +592,7 @@ def _ribbon_mesh(
         p = ca[-1]
         tangent = _v_norm(_v_sub(ca[-1], ca[-2]), (0.0, 0.0, 1.0))
         residue = chain_residues[-1]
-        side, up = _residue_frame(residue, tangent, up)
+        side, up = _transport_ribbon_frame(tangent, side, up)
         width, thickness = _ribbon_shape(residue.ss, radius)
         p_norm = (
             (p[0] - center[0]) / radius,
