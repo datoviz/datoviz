@@ -115,6 +115,7 @@ Backlog, strategic direction, or secondary cleanup tracks.
 
 1. [later/SPLIT.md](/home/cyrille/GIT/Viz/datoviz/agents/later/SPLIT.md)
 2. [later/DRP2_WEBGPU_ROADMAP.md](/home/cyrille/GIT/Viz/datoviz/agents/later/DRP2_WEBGPU_ROADMAP.md)
+3. [later/UNIFIED_RAY_RENDERING_ROADMAP.md](/home/cyrille/GIT/Viz/datoviz/agents/later/UNIFIED_RAY_RENDERING_ROADMAP.md)
 
 
 ## Maintenance Rules
