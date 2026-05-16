@@ -842,7 +842,7 @@ int main(int argc, char** argv)
         return 1;
     }
 
-    float atom_scale = 0.519f;
+    float atom_scale = 0.594f;
     float* scaled_radii = _scaled_radii(&bundle, atom_scale);
     if (scaled_radii == NULL)
     {
@@ -1012,7 +1012,7 @@ int main(int argc, char** argv)
         .render_mode = PROTEIN_RENDER_SPHERES,
         .atom_color_mode = PROTEIN_ATOM_COLOR_ELEMENT,
         .ribbon_color_mode = PROTEIN_RIBBON_COLOR_CHAIN,
-        .standard_material = false,
+        .standard_material = true,
         .ssao_enabled = true,
         .msaa_enabled = true,
         .msaa_alpha_to_coverage = true,
@@ -1027,10 +1027,10 @@ int main(int argc, char** argv)
         .msaa_samples = 8.0f,
         .ambient = 0.20f,
         .diffuse = 0.76f,
-        .specular = 0.628f,
+        .specular = 0.572f,
         .shininess = 80.0f,
-        .roughness = 0.30f,
-        .rim_strength = 0.12f,
+        .roughness = 0.474f,
+        .rim_strength = 0.035f,
         .ssao_blur = true,
     };
     _apply_material(&state);
