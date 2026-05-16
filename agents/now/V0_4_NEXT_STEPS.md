@@ -219,6 +219,16 @@ cleared after every frame (`5a97417e`). Validation: `cmake --build build --targe
 fixtures, `35/35` WebGPU preflight fixtures, `52` fixture-runner tests, and `7` schema/generation
 tests), and `git diff --check`.
 
+Scene techniques/materials follow-up on `2026-05-16`: the architecture lane now has the first
+material-backed effect and graph-backed technique foundations. Landed commits include technique
+builder extraction (`bc36100e`), internal material state (`6b85c209`), lit primitive depth cueing
+(`bbb17c87`), visual pass capabilities (`af19c693`), G-buffer graph declaration (`310b3cb9`),
+planning-doc refresh (`ec1d3c84`), and opt-in G-buffer runtime lowering (`f58cec92`). The current
+G-buffer slice emits normal/depth targets for eligible primitive/mesh visuals with normals through
+the existing scene -> FramePlan graph -> DRP2 -> vklite path, guarded by an internal opt-in flag.
+Validation for `f58cec92`: `just build`, `just test test_scene_gbuffer_runtime_lowering`,
+`just test scene` (`210/210`), `just test drp2` (`119/119`), and `git diff --check`.
+
 
 ## Immediate Task
 
@@ -318,9 +328,12 @@ Deliver the next implementation slices in this order unless the user redirects:
     Only then convert WBOIT lowering to the graph-backed path and use the same path for the next
     transparency technique. The plan is recorded in
     [FRAME_PLAN_GRAPH_TRANSPARENCY_PLAN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/FRAME_PLAN_GRAPH_TRANSPARENCY_PLAN.md).
-14. Scene techniques/materials architecture: before adding depth cueing, EDL, SSAO, outlines, or
-    curvature/cavity shading as isolated effects, route them through a small technique-builder
-    layer, internal material state, and visual pass capability descriptors. The architecture note is
+14. Scene techniques/materials architecture: before adding EDL, SSAO, outlines, or
+    curvature/cavity shading as isolated effects, route them through the technique-builder layer,
+    internal material state, visual pass capability descriptors, and normalized internal technique
+    activation state. The G-buffer runtime path is opt-in and currently internal; the next
+    infrastructure slice should replace the temporary `scene->gbuffer_enabled` flag with a
+    scene/panel technique-state descriptor before exposing effect controls. The architecture note is
     [../../docs/architecture/scene_techniques_materials.md](/home/cyrille/GIT/Viz/datoviz/docs/architecture/scene_techniques_materials.md),
     and the pickup plan is
     [SCENE_TECHNIQUES_MATERIALS_PLAN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/SCENE_TECHNIQUES_MATERIALS_PLAN.md).

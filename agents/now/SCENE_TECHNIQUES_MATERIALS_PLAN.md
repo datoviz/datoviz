@@ -15,12 +15,14 @@ Completed implementation commits:
 2. `6b85c209` — added internal scene material state;
 3. `bbb17c87` — added lit primitive depth cueing;
 4. `af19c693` — added scene visual pass capabilities;
-5. `310b3cb9` — added the internal G-buffer graph foundation.
+5. `310b3cb9` — added the internal G-buffer graph foundation;
+6. `f58cec92` — added opt-in G-buffer DRP2 runtime lowering.
 
-The G-buffer foundation currently covers internal eligibility and graph declarations for primitive/mesh
-visuals with normals. It does not yet lower a G-buffer render pass to DRP2 runtime output attachments;
-that runtime lowering should be the next infrastructure slice before SSAO, outlines, or curvature effects
-depend on the resources.
+The G-buffer foundation now covers internal eligibility, graph declarations, and opt-in runtime
+lowering for primitive/mesh visuals with normals. The current runtime slice emits normal and depth
+targets through the existing scene -> FramePlan graph -> DRP2 -> vklite path. The opt-in is still an
+internal `scene->gbuffer_enabled` flag used by tests; normalize that into a technique state before
+adding user-facing effect controls.
 
 
 ## Source Architecture Note
@@ -141,14 +143,14 @@ git diff --check
 
 Scope: graph-backed depth, normal, and object-id resources.
 
-Status: initial graph foundation landed in `310b3cb9`.
+Status: graph foundation landed in `310b3cb9`; opt-in runtime lowering landed in `f58cec92`.
 
 Expected work:
 
-1. add a G-buffer technique builder with graph resources for depth, normal, and optional object id;
-2. start with primitive/mesh visuals that have normals;
-3. add explicit pass roles only where runtime dispatch still requires them;
-4. keep the graph as the authoritative resource/pass description;
+1. keep primitive/mesh visuals with normals as the first eligible family;
+2. keep explicit pass roles only where runtime dispatch still requires them;
+3. keep the graph as the authoritative resource/pass description;
+4. add optional object-id output only when outlines or picking-style effects need it;
 5. avoid adding effect-specific descriptor refresh or resize logic.
 
 Validation:
@@ -161,9 +163,32 @@ git diff --check
 ```
 
 
-### 6. Effects On The Shared Foundation
+### 6. Technique Activation And Runtime Policy
 
-After the G-buffer foundation exists, implement effects in this order:
+Scope: replace the temporary internal G-buffer flag with consistent technique state.
+
+Expected work:
+
+1. add an internal scene or panel technique-state descriptor for enabled techniques and options;
+2. route the G-buffer opt-in through that state while preserving default-off behavior;
+3. decide whether effects are scene-wide or panel-local before exposing any public API;
+4. keep graph-backed runtime dispatch generic; do not add another per-effect execution path;
+5. add tests proving the default scene stream is unchanged and opt-in streams add only requested
+   passes.
+
+Validation:
+
+```text
+just build
+just test scene
+just test drp2
+git diff --check
+```
+
+
+### 7. Effects On The Shared Foundation
+
+After technique activation is normalized, implement effects in this order:
 
 1. EDL for point/pixel/particle-heavy panels, using depth only;
 2. object-id selected outlines, using a semantic object/group id buffer;
