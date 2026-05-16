@@ -41,6 +41,8 @@ _dvz_gui_create(DvzApp* app, DvzGpuCtx* gpu_ctx, DvzWindow* window, const DvzGui
 void _dvz_gui_destroy(DvzGui* gui);
 void _dvz_gui_set_callback(DvzGui* gui, DvzGuiCallback callback, void* user_data);
 void _dvz_gui_begin_frame(DvzGui* gui, DvzAppWindow* win, const DvzStreamFrame* frame);
+void _dvz_gui_fps_overlay(
+    DvzGui* gui, double fps, double frame_ms, uint32_t frames, double elapsed_s);
 void _dvz_gui_render_frame(DvzGui* gui, const DvzStreamFrame* frame);
 
 EXTERN_C_OFF

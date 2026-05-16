@@ -109,6 +109,15 @@ struct DvzAppWindow
     bool replay_paced;
     bool replay_loop;
     double replay_speed;
+    bool fps_overlay_enabled;
+    bool fps_valid;
+    uint64_t fps_last_ns;
+    uint64_t fps_sample_start_ns;
+    uint32_t fps_sample_frames;
+    uint32_t fps_last_sample_frames;
+    double fps;
+    double fps_frame_ms;
+    double fps_last_sample_elapsed_s;
 #if defined(DVZ_HAS_GUI) && DVZ_HAS_GUI
     DvzGui* gui;
 #endif
@@ -136,6 +145,83 @@ struct DvzApp
 /*************************************************************************************************/
 
 #if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
+
+/**
+ * Return whether an environment flag is enabled.
+ *
+ * @param name environment variable name
+ * @return whether the variable exists and is not an explicit false value
+ */
+static bool _app_env_flag_enabled(const char* name)
+{
+    ANN(name);
+    const char* value = getenv(name);
+    if (value == NULL || value[0] == '\0')
+        return false;
+    if (
+        strcmp(value, "0") == 0 || strcmp(value, "false") == 0 ||
+        strcmp(value, "FALSE") == 0 || strcmp(value, "off") == 0 ||
+        strcmp(value, "OFF") == 0 || strcmp(value, "no") == 0 ||
+        strcmp(value, "NO") == 0)
+    {
+        return false;
+    }
+    return true;
+}
+
+
+
+/**
+ * Update the per-window FPS estimator after a submitted frame.
+ *
+ * @param win app-window receiving the submitted frame
+ * @param now current monotonic timestamp in nanoseconds
+ */
+static void _app_window_fps_update(DvzAppWindow* win, uint64_t now)
+{
+    ANN(win);
+    if (now == 0)
+        return;
+
+    if (win->fps_last_ns != 0 && now > win->fps_last_ns)
+    {
+        uint64_t dt_ns = now - win->fps_last_ns;
+        double dt_s = (double)dt_ns * 1e-9;
+        if (dt_s > 0)
+        {
+            double instant_fps = 1.0 / dt_s;
+            if (!win->fps_valid)
+            {
+                win->fps = instant_fps;
+                win->fps_frame_ms = dt_s * 1e3;
+                win->fps_valid = true;
+            }
+            else
+            {
+                const double alpha = 0.10;
+                win->fps = win->fps + alpha * (instant_fps - win->fps);
+                win->fps_frame_ms =
+                    win->fps_frame_ms + alpha * ((dt_s * 1e3) - win->fps_frame_ms);
+            }
+        }
+    }
+
+    win->fps_last_ns = now;
+    if (win->fps_sample_start_ns == 0)
+        win->fps_sample_start_ns = now;
+    win->fps_sample_frames++;
+
+    uint64_t elapsed_ns = now - win->fps_sample_start_ns;
+    if (elapsed_ns >= 1000000000ULL)
+    {
+        win->fps_last_sample_frames = win->fps_sample_frames;
+        win->fps_last_sample_elapsed_s = (double)elapsed_ns * 1e-9;
+        win->fps_sample_frames = 0;
+        win->fps_sample_start_ns = now;
+    }
+}
+
+
 
 /**
  * Add Vulkan instance extensions required by an external host.
@@ -1468,7 +1554,15 @@ static void _app_draw(DvzCanvas* canvas, const DvzStreamFrame* frame, void* user
 
 #if defined(DVZ_HAS_GUI) && DVZ_HAS_GUI
     if (win->gui != NULL)
+    {
         _dvz_gui_begin_frame(win->gui, win, frame);
+        if (win->fps_overlay_enabled && win->fps_valid)
+        {
+            _dvz_gui_fps_overlay(
+                win->gui, win->fps, win->fps_frame_ms, win->fps_last_sample_frames,
+                win->fps_last_sample_elapsed_s);
+        }
+    }
 #endif
 
     _dvz_scene_animations_step(app->scene, dvz_input_timestamp_ns());
@@ -1830,9 +1924,17 @@ dvz_app_window_glfw(DvzApp* app, DvzFigure* figure, uint32_t width, uint32_t hei
     win->target_id      = DVZ_APP_CANVAS_TARGET_BASE + (uint64_t)app->window_count;
     win->is_interactive = true;
     win->render_enabled = true;
+    win->fps_overlay_enabled = _app_env_flag_enabled("DVZ_FPS_OVERLAY");
     app->window_count++;
 
     dvz_canvas_set_draw_callback(canvas, _app_draw, win);
+#if defined(DVZ_HAS_GUI) && DVZ_HAS_GUI
+    if (win->fps_overlay_enabled && dvz_app_window_gui(win, NULL) == NULL)
+        log_warn("DVZ_FPS_OVERLAY is enabled but the Dear ImGui overlay could not be created");
+#else
+    if (win->fps_overlay_enabled)
+        log_warn("DVZ_FPS_OVERLAY is enabled but Datoviz was built without GUI support");
+#endif
     return win;
 #else
     (void)width;
@@ -2508,6 +2610,7 @@ int dvz_app_window_render_once(DvzAppWindow* win)
     {
         if (dvz_canvas_submit(win->canvas) != 0)
             return -1;
+        _app_window_fps_update(win, dvz_input_timestamp_ns());
         if (win->app != NULL && win->app->scene != NULL &&
             dvz_scene_has_active_animations(win->app->scene))
         {

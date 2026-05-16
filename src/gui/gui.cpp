@@ -1098,6 +1098,53 @@ void _dvz_gui_begin_frame(DvzGui* gui, DvzAppWindow* win, const DvzStreamFrame* 
 
 
 /**
+ * Submit the built-in FPS overlay for the current ImGui frame.
+ *
+ * @param gui the GUI overlay
+ * @param fps smoothed frames per second
+ * @param frame_ms smoothed frame duration in milliseconds
+ * @param frames frames in the latest coarse measurement window
+ * @param elapsed_s latest coarse measurement-window duration in seconds
+ */
+void _dvz_gui_fps_overlay(
+    DvzGui* gui, double fps, double frame_ms, uint32_t frames, double elapsed_s)
+{
+    ANN(gui);
+    if (gui->failed || !gui->vulkan_initialized)
+        return;
+
+    _gui_set_current(gui);
+
+    const ImGuiViewport* viewport = ImGui::GetMainViewport();
+    ImVec2 pos = viewport != NULL ? viewport->WorkPos : ImVec2(0.0f, 0.0f);
+    pos.x += 8.0f;
+    pos.y += 8.0f;
+
+    ImGui::SetNextWindowPos(pos, ImGuiCond_Always, ImVec2(0.0f, 0.0f));
+    ImGui::SetNextWindowBgAlpha(0.55f);
+
+    ImGuiWindowFlags flags =
+        ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize |
+        ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing |
+        ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoInputs;
+
+    if (ImGui::Begin("Datoviz FPS overlay", NULL, flags))
+    {
+        if (gui->font_mono != NULL)
+            ImGui::PushFont(gui->font_mono);
+        ImGui::Text("FPS %6.1f", fps);
+        ImGui::Text("%6.2f ms", frame_ms);
+        if (frames > 0 && elapsed_s > 0)
+            ImGui::Text("%u frames / %.2fs", frames, elapsed_s);
+        if (gui->font_mono != NULL)
+            ImGui::PopFont();
+    }
+    ImGui::End();
+}
+
+
+
+/**
  * Render the current ImGui frame into the borrowed canvas command buffer.
  *
  * @param gui the GUI overlay
