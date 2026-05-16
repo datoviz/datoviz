@@ -1097,6 +1097,27 @@ static void _volume_aspect_bounds(
 
 
 /**
+ * Apply the transparency technique required by the currently visible visual set.
+ *
+ * @param state example state
+ */
+static void _apply_transparency_modes(AllenMouseBrainState* state)
+{
+    ANN(state);
+    if (state->slice_visual == NULL || state->volume_visual == NULL)
+        return;
+
+    bool use_wboit = state->atlas_mesh_visual != NULL && state->show_atlas_mesh;
+    DvzAlphaMode volume_mode = use_wboit ? DVZ_ALPHA_WBOIT : DVZ_ALPHA_BLENDED;
+    (void)dvz_visual_set_alpha_mode(state->volume_visual, volume_mode);
+    (void)dvz_visual_set_alpha_mode(state->slice_visual, volume_mode);
+    if (state->atlas_mesh_visual != NULL)
+        (void)dvz_visual_set_alpha_mode(state->atlas_mesh_visual, DVZ_ALPHA_WBOIT);
+}
+
+
+
+/**
  * Upload retained atlas mesh controls.
  *
  * @param state example state
@@ -1108,6 +1129,7 @@ static void _apply_atlas_mesh_controls(AllenMouseBrainState* state)
         return;
 
     dvz_visual_set_visible(state->atlas_mesh_visual, state->show_atlas_mesh);
+    _apply_transparency_modes(state);
     for (uint32_t i = 0; i < state->atlas_mesh->vertex_count; i++)
     {
         uint32_t alpha = state->atlas_mesh->base_color[i][3];
@@ -1556,6 +1578,7 @@ int main(int argc, char** argv)
         .axis = DEFAULT_AXIS,
     };
     _apply_volume_controls(&state);
+    _apply_transparency_modes(&state);
     _apply_atlas_mesh_controls(&state);
 
     DvzApp* app = dvz_app(scene);
