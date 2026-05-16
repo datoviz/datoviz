@@ -1548,6 +1548,21 @@ int main(int argc, char** argv)
         dvz_scene_destroy(scene);
         return 1;
     }
+    DvzVolumeOcclusionDesc volume_occlusion = {
+        .enabled = true,
+        .alpha_threshold = 0.08f,
+        .fade_distance = 0.08f,
+        .occluded_alpha = 0.20f,
+    };
+    if (dvz_panel_set_volume_occluder(panel, volume_3d, &volume_occlusion) != 0 ||
+        dvz_visual_set_volume_occluded(volume_slice, true) != 0)
+    {
+        dvz_fprintf(stderr, "volume occlusion setup failed\n");
+        _ibl_atlas_mesh_destroy(&atlas_mesh);
+        _allen_mouse_brain_destroy(&volume_data);
+        dvz_scene_destroy(scene);
+        return 1;
+    }
     if (atlas_mesh_visual != NULL && dvz_panel_add_visual(panel, atlas_mesh_visual, &atlas_attach) != 0)
     {
         dvz_fprintf(stderr, "dvz_panel_add_visual() failed for Allen/IBL atlas mesh\n");
