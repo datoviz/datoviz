@@ -629,6 +629,53 @@ static bool _trace_is_hex(char c)
 
 
 /**
+ * Return whether a label has a transient frame-scope suffix.
+ *
+ * @param label source debug label
+ * @return true if the label ends with "_scope_" followed by 16 hex digits
+ */
+static bool _trace_label_has_scope_suffix(const char* label)
+{
+    if (label == NULL)
+        return false;
+    uint32_t len = 0;
+    while (len < DVZ_DRP2_LABEL_SIZE && label[len] != '\0')
+        len++;
+
+    const uint32_t suffix_len = 7 + 16;
+    if (len < suffix_len)
+        return false;
+    uint32_t suffix = len - suffix_len;
+    if (strncmp(&label[suffix], "_scope_", 7) != 0)
+        return false;
+    for (uint32_t i = suffix + 7; i < len; i++)
+    {
+        if (!_trace_is_hex(label[i]))
+            return false;
+    }
+    return true;
+}
+
+
+
+/**
+ * Return whether a label names a transient post-process bind group.
+ *
+ * @param label source debug label
+ * @return true if the label is a transient bind group
+ */
+static bool _trace_label_is_transient_bind_group(const char* label)
+{
+    if (label == NULL)
+        return false;
+    return strncmp(label, "_bg_edl_", strlen("_bg_edl_")) == 0 ||
+           strncmp(label, "_bg_wboit_", strlen("_bg_wboit_")) == 0 ||
+           strncmp(label, "_bg_ssao_", strlen("_bg_ssao_")) == 0;
+}
+
+
+
+/**
  * Normalize one DRP2 debug label for semantic trace comparison.
  *
  * @param label source debug label
@@ -653,24 +700,31 @@ static bool _trace_normalize_label(const char* label, char* out, uint32_t out_si
         int written = dvz_snprintf(out, out_size, "_bg_wboit_resolve");
         return written >= 0 && (uint32_t)written < out_size;
     }
+    if (strncmp(label, "_bg_ssao_blur_", strlen("_bg_ssao_blur_")) == 0)
+    {
+        int written = dvz_snprintf(out, out_size, "_bg_ssao_blur");
+        return written >= 0 && (uint32_t)written < out_size;
+    }
+    if (strncmp(label, "_bg_ssao_composite_", strlen("_bg_ssao_composite_")) == 0)
+    {
+        int written = dvz_snprintf(out, out_size, "_bg_ssao_composite");
+        return written >= 0 && (uint32_t)written < out_size;
+    }
+    if (strncmp(label, "_bg_ssao_", strlen("_bg_ssao_")) == 0)
+    {
+        int written = dvz_snprintf(out, out_size, "_bg_ssao");
+        return written >= 0 && (uint32_t)written < out_size;
+    }
 
     uint32_t len = 0;
     while (len < DVZ_DRP2_LABEL_SIZE && label[len] != '\0')
         len++;
 
     uint32_t copy_len = len;
-    const uint32_t suffix_len = 7 + 16;
-    if (len >= suffix_len)
+    if (_trace_label_has_scope_suffix(label))
     {
-        uint32_t suffix = len - suffix_len;
-        if (strncmp(&label[suffix], "_scope_", 7) == 0)
-        {
-            bool hex = true;
-            for (uint32_t i = suffix + 7; i < len; i++)
-                hex = hex && _trace_is_hex(label[i]);
-            if (hex)
-                copy_len = suffix;
-        }
+        const uint32_t suffix_len = 7 + 16;
+        copy_len = len - suffix_len;
     }
 
     if (copy_len >= out_size)
@@ -746,6 +800,10 @@ static bool _trace_snapshot_append_command(
             return false;
         return _trace_snapshot_append(snapshot, "- buffer id=%s", a);
     case DVZ_DRP2_COMMAND_CREATE_TEXTURE:
+    {
+        const char* label = dvz_drp2_stream_label(stream, command->u.create_texture.id);
+        if (_trace_label_has_scope_suffix(label))
+            return true;
         if (!_trace_semantic_id(stream, command->u.create_texture.id, a, sizeof(a)))
             return false;
         return _trace_snapshot_append(
@@ -753,10 +811,17 @@ static bool _trace_snapshot_append_command(
                       " usage=0x%" PRIx32,
             a, command->u.create_texture.width, command->u.create_texture.height,
             command->u.create_texture.depth, command->u.create_texture.usage);
+    }
     case DVZ_DRP2_COMMAND_DESTROY_TEXTURE:
+    {
+        const char* label =
+            dvz_drp2_stream_label(stream, command->u.destroy_texture.texture_id);
+        if (_trace_label_has_scope_suffix(label))
+            return true;
         if (!_trace_semantic_id(stream, command->u.destroy_texture.texture_id, a, sizeof(a)))
             return false;
         return _trace_snapshot_append(snapshot, "- texture id=%s", a);
+    }
     case DVZ_DRP2_COMMAND_CREATE_SHADER_MODULE:
         if (!_trace_semantic_id(stream, command->u.create_shader_module.id, a, sizeof(a)))
             return false;
@@ -814,6 +879,10 @@ static bool _trace_snapshot_append_command(
             snapshot, "+ bind-layout id=%s entries=%" PRIu32, a,
             command->u.create_bind_group_layout.entry_count);
     case DVZ_DRP2_COMMAND_CREATE_BIND_GROUP:
+    {
+        const char* label = dvz_drp2_stream_label(stream, command->u.create_bind_group.id);
+        if (_trace_label_is_transient_bind_group(label))
+            return true;
         if (!_trace_semantic_id(stream, command->u.create_bind_group.id, a, sizeof(a)) ||
             !_trace_semantic_id(
                 stream, command->u.create_bind_group.bind_group_layout_id, b, sizeof(b)))
@@ -821,15 +890,22 @@ static bool _trace_snapshot_append_command(
         return _trace_snapshot_append(
             snapshot, "+ bind-group id=%s layout=%s entries=%" PRIu32, a, b,
             command->u.create_bind_group.entry_count);
+    }
     case DVZ_DRP2_COMMAND_DESTROY_BIND_GROUP_LAYOUT:
         if (!_trace_semantic_id(
                 stream, command->u.destroy_bind_group_layout.bind_group_layout_id, a, sizeof(a)))
             return false;
         return _trace_snapshot_append(snapshot, "- bind-layout id=%s", a);
     case DVZ_DRP2_COMMAND_DESTROY_BIND_GROUP:
+    {
+        const char* label =
+            dvz_drp2_stream_label(stream, command->u.destroy_bind_group.bind_group_id);
+        if (_trace_label_is_transient_bind_group(label))
+            return true;
         if (!_trace_semantic_id(stream, command->u.destroy_bind_group.bind_group_id, a, sizeof(a)))
             return false;
         return _trace_snapshot_append(snapshot, "- bind-group id=%s", a);
+    }
     case DVZ_DRP2_COMMAND_WRITE_BUFFER:
         if (!_trace_semantic_id(stream, command->u.write_buffer.buffer_id, a, sizeof(a)))
             return false;

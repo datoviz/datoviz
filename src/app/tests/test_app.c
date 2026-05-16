@@ -322,8 +322,9 @@ static int test_app_trace_fingerprint_bounds_fixed_labels(TstSuite* suite, TstIt
     DvzDrp2CommandStream* stream = dvz_drp2_stream();
     ANN(stream);
     AT(dvz_drp2_stream_hello_renderer(stream, "client"));
+    AT(stream->count == 1);
 
-    DvzDrp2Command* command = (DvzDrp2Command*)dvz_drp2_stream_get(stream, 0);
+    DvzDrp2Command* command = &stream->commands[0];
     ANN(command);
     dvz_memset(
         command->u.handshake.name, sizeof(command->u.handshake.name), 'x',
@@ -507,12 +508,143 @@ static int test_app_trace_snapshot_normalizes_scoped_edl_resources(
 
     AT(_dvz_app_trace_snapshot_equal(&sa, &sb));
     AT(_dvz_app_trace_snapshot_line_count(
-           &sa, "+ texture id=fig0_p0.edl.color size=800x600x1 usage=0x14") == 1);
+           &sa, "+ texture id=fig0_p0.edl.color size=800x600x1 usage=0x14") == 0);
     AT(_dvz_app_trace_snapshot_line_count(
            &sa,
            "render#0 target=fig0_p0.edl.color clear=yes depth=yes "
            "depth_target=fig0_p0.edl.depth area=(0,0 1x1)") == 1);
     AT(_dvz_app_trace_snapshot_line_count(&sa, "pass#0 bind[0]=_bg_edl_resolve") == 1);
+
+    _dvz_app_trace_snapshot_destroy(&sa);
+    _dvz_app_trace_snapshot_destroy(&sb);
+    dvz_drp2_stream_destroy(a);
+    dvz_drp2_stream_destroy(b);
+    return 0;
+}
+
+
+
+static int test_app_trace_snapshot_normalizes_scoped_ssao_resources(
+    TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    ANN(item);
+
+    DvzDrp2CommandStream* a = dvz_drp2_stream();
+    DvzDrp2CommandStream* b = dvz_drp2_stream();
+    ANN(a);
+    ANN(b);
+
+    AT(dvz_drp2_stream_begin_render_pass_region_clear(
+        a, 100, 7, 34, 0, 0, 0, 1, 0, 0, 1, 1, true));
+    AT(dvz_drp2_stream_set_label(
+        a, 34, "fig0_p0.gbuffer.normal_scope_aaaaaaaaaaaaaaaa"));
+    AT(dvz_drp2_stream_begin_render_pass_set_depth_texture(a, 33, 1));
+    AT(dvz_drp2_stream_set_label(
+        a, 33, "fig0_p0.gbuffer.depth_scope_aaaaaaaaaaaaaaaa"));
+    AT(dvz_drp2_stream_set_bind_group(a, 100, 0, 5034));
+    AT(dvz_drp2_stream_set_label(a, 5034, "_bg_ssao_34_33_26"));
+    AT(dvz_drp2_stream_end_render_pass(a, 100));
+    AT(dvz_drp2_stream_begin_render_pass_region_clear(
+        a, 101, 7, 36, 0, 0, 0, 1, 0, 0, 1, 1, true));
+    AT(dvz_drp2_stream_set_label(
+        a, 36, "fig0_p0.ssao.blur_scope_aaaaaaaaaaaaaaaa"));
+    AT(dvz_drp2_stream_set_bind_group(a, 101, 0, 5035));
+    AT(dvz_drp2_stream_set_label(a, 5035, "_bg_ssao_blur_35_34_33_26"));
+    AT(dvz_drp2_stream_end_render_pass(a, 101));
+    AT(dvz_drp2_stream_begin_render_pass_region_clear(
+        a, 102, 7, 5000, 0, 0, 0, 1, 0, 0, 1, 1, false));
+    AT(dvz_drp2_stream_set_label(a, 5000, "rt"));
+    AT(dvz_drp2_stream_set_bind_group(a, 102, 0, 5036));
+    AT(dvz_drp2_stream_set_label(a, 5036, "_bg_ssao_composite_36_26"));
+    AT(dvz_drp2_stream_end_render_pass(a, 102));
+
+    AT(dvz_drp2_stream_begin_render_pass_region_clear(
+        b, 200, 8, 39, 0, 0, 0, 1, 0, 0, 1, 1, true));
+    AT(dvz_drp2_stream_set_label(
+        b, 39, "fig0_p0.gbuffer.normal_scope_bbbbbbbbbbbbbbbb"));
+    AT(dvz_drp2_stream_begin_render_pass_set_depth_texture(b, 38, 1));
+    AT(dvz_drp2_stream_set_label(
+        b, 38, "fig0_p0.gbuffer.depth_scope_bbbbbbbbbbbbbbbb"));
+    AT(dvz_drp2_stream_set_bind_group(b, 200, 0, 5037));
+    AT(dvz_drp2_stream_set_label(b, 5037, "_bg_ssao_39_38_26"));
+    AT(dvz_drp2_stream_end_render_pass(b, 200));
+    AT(dvz_drp2_stream_begin_render_pass_region_clear(
+        b, 201, 8, 41, 0, 0, 0, 1, 0, 0, 1, 1, true));
+    AT(dvz_drp2_stream_set_label(
+        b, 41, "fig0_p0.ssao.blur_scope_bbbbbbbbbbbbbbbb"));
+    AT(dvz_drp2_stream_set_bind_group(b, 201, 0, 5038));
+    AT(dvz_drp2_stream_set_label(b, 5038, "_bg_ssao_blur_40_39_38_26"));
+    AT(dvz_drp2_stream_end_render_pass(b, 201));
+    AT(dvz_drp2_stream_begin_render_pass_region_clear(
+        b, 202, 8, 5000, 0, 0, 0, 1, 0, 0, 1, 1, false));
+    AT(dvz_drp2_stream_set_label(b, 5000, "rt"));
+    AT(dvz_drp2_stream_set_bind_group(b, 202, 0, 5039));
+    AT(dvz_drp2_stream_set_label(b, 5039, "_bg_ssao_composite_41_26"));
+    AT(dvz_drp2_stream_end_render_pass(b, 202));
+
+    DvzAppTraceSnapshot sa;
+    DvzAppTraceSnapshot sb;
+    _dvz_app_trace_snapshot_init(&sa);
+    _dvz_app_trace_snapshot_init(&sb);
+    AT(_dvz_app_trace_snapshot_build(&sa, a));
+    AT(_dvz_app_trace_snapshot_build(&sb, b));
+
+    AT(_dvz_app_trace_snapshot_equal(&sa, &sb));
+    AT(_dvz_app_trace_snapshot_line_count(&sa, "pass#0 bind[0]=_bg_ssao") == 1);
+    AT(_dvz_app_trace_snapshot_line_count(&sa, "pass#1 bind[0]=_bg_ssao_blur") == 1);
+    AT(_dvz_app_trace_snapshot_line_count(&sa, "pass#2 bind[0]=_bg_ssao_composite") == 1);
+
+    _dvz_app_trace_snapshot_destroy(&sa);
+    _dvz_app_trace_snapshot_destroy(&sb);
+    dvz_drp2_stream_destroy(a);
+    dvz_drp2_stream_destroy(b);
+    return 0;
+}
+
+
+
+static int test_app_trace_snapshot_ignores_transient_scoped_creates(
+    TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    ANN(item);
+
+    DvzDrp2CommandStream* a = dvz_drp2_stream();
+    DvzDrp2CommandStream* b = dvz_drp2_stream();
+    ANN(a);
+    ANN(b);
+
+    AT(dvz_drp2_stream_create_texture_2d_format_usage(a, 34, 100, 100, 126, 0x14));
+    AT(dvz_drp2_stream_set_label(
+        a, 34, "fig0_p0.gbuffer.normal_scope_aaaaaaaaaaaaaaaa"));
+    AT(dvz_drp2_stream_create_texture_sampler_bind_group(a, 5034, 5019, 34, 26));
+    AT(dvz_drp2_stream_set_label(a, 5034, "_bg_ssao_34_33_26"));
+    AT(dvz_drp2_stream_begin_render_pass_region_clear(
+        a, 100, 7, 34, 0, 0, 0, 1, 0, 0, 1, 1, true));
+    AT(dvz_drp2_stream_set_bind_group(a, 100, 0, 5034));
+    AT(dvz_drp2_stream_draw(a, 100, 3, 1, 0, 0));
+
+    AT(dvz_drp2_stream_set_label(
+        b, 35, "fig0_p0.gbuffer.normal_scope_bbbbbbbbbbbbbbbb"));
+    AT(dvz_drp2_stream_set_label(b, 5035, "_bg_ssao_35_33_26"));
+    AT(dvz_drp2_stream_begin_render_pass_region_clear(
+        b, 101, 8, 35, 0, 0, 0, 1, 0, 0, 1, 1, true));
+    AT(dvz_drp2_stream_set_bind_group(b, 101, 0, 5035));
+    AT(dvz_drp2_stream_draw(b, 101, 3, 1, 0, 0));
+
+    DvzAppTraceSnapshot sa;
+    DvzAppTraceSnapshot sb;
+    _dvz_app_trace_snapshot_init(&sa);
+    _dvz_app_trace_snapshot_init(&sb);
+    AT(_dvz_app_trace_snapshot_build(&sa, a));
+    AT(_dvz_app_trace_snapshot_build(&sb, b));
+
+    AT(_dvz_app_trace_snapshot_equal(&sa, &sb));
+    AT(_dvz_app_trace_snapshot_line_count(
+           &sa, "+ texture id=fig0_p0.gbuffer.normal size=100x100x1 usage=0x14") == 0);
+    AT(_dvz_app_trace_snapshot_line_count(&sa, "+ bind-group id=_bg_ssao") == 0);
+    AT(_dvz_app_trace_snapshot_line_count(&sa, "pass#0 bind[0]=_bg_ssao") == 1);
 
     _dvz_app_trace_snapshot_destroy(&sa);
     _dvz_app_trace_snapshot_destroy(&sb);
@@ -663,6 +795,8 @@ int test_app(TstSuite* suite)
     TEST_SIMPLE(test_app_trace_snapshot_ignores_transient_pass_ids);
     TEST_SIMPLE(test_app_trace_snapshot_keeps_draw_payload);
     TEST_SIMPLE(test_app_trace_snapshot_normalizes_scoped_edl_resources);
+    TEST_SIMPLE(test_app_trace_snapshot_normalizes_scoped_ssao_resources);
+    TEST_SIMPLE(test_app_trace_snapshot_ignores_transient_scoped_creates);
     TEST_SIMPLE(test_app_trace_snapshot_keeps_scoped_edl_draw_payload);
     TEST_SIMPLE(test_app_trace_snapshot_rejects_truncated_suffix);
     TEST_SIMPLE(test_app_trace_snapshot_recovers_after_failed_build);
