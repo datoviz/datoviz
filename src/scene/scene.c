@@ -1012,6 +1012,20 @@ bool dvz_panel_set_msaa(DvzPanel* panel, const DvzMsaaDesc* desc)
 }
 
 
+/**
+ * Configure screen-space ambient occlusion for one panel.
+ *
+ * @param panel the panel
+ * @param desc SSAO descriptor, or NULL to disable
+ * @return whether the panel SSAO state was updated
+ */
+bool dvz_panel_set_ssao(DvzPanel* panel, const DvzSsaoDesc* desc)
+{
+    ANN(panel);
+    return _scene_technique_state_set_ssao(&panel->techniques, desc);
+}
+
+
 
 void dvz_panel_destroy(DvzPanel* panel)
 {

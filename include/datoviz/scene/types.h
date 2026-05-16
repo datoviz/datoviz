@@ -135,6 +135,23 @@ struct DvzMsaaDesc
 typedef struct DvzMsaaDesc DvzMsaaDesc;
 
 
+struct DvzSsaoDesc
+{
+    float radius;
+    float strength;
+    float bias;
+    float power;
+    float min_visibility;
+    float blur_radius;
+    float blur_depth_sigma;
+    float blur_normal_sigma;
+    uint32_t sample_count;
+    bool blur_enabled;
+    bool debug_view;
+};
+typedef struct DvzSsaoDesc DvzSsaoDesc;
+
+
 struct DvzSceneBufferDesc
 {
     uint32_t usage;

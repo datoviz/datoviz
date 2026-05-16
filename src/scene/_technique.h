@@ -49,20 +49,7 @@ typedef struct DvzSceneDepthPostProcessGraphDesc
 } DvzSceneDepthPostProcessGraphDesc;
 
 
-typedef struct DvzSceneSsaoDesc
-{
-    float radius;
-    float strength;
-    float bias;
-    float power;
-    float min_visibility;
-    float blur_radius;
-    float blur_depth_sigma;
-    float blur_normal_sigma;
-    uint32_t sample_count;
-    bool blur_enabled;
-    bool debug_view;
-} DvzSceneSsaoDesc;
+typedef DvzSsaoDesc DvzSceneSsaoDesc;
 
 
 

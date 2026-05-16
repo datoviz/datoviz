@@ -29,7 +29,6 @@
 #include "datoviz/app.h"
 #include "datoviz/gui.h"
 #include "datoviz/scene.h"
-#include "../../src/scene/_technique.h"
 
 
 
@@ -229,7 +228,7 @@ static void _apply_ssao(SsaoExampleState* state)
 
     if (!state->ssao_enabled)
     {
-        (void)_scene_technique_state_set_ssao(&state->panel->techniques, NULL);
+        (void)dvz_panel_set_ssao(state->panel, NULL);
         return;
     }
     if (state->sample_count < 4.0f)
@@ -237,7 +236,7 @@ static void _apply_ssao(SsaoExampleState* state)
     if (state->sample_count > 32.0f)
         state->sample_count = 32.0f;
 
-    DvzSceneSsaoDesc desc = {
+    DvzSsaoDesc desc = {
         .radius = state->radius,
         .strength = state->strength,
         .bias = state->bias,
@@ -250,8 +249,8 @@ static void _apply_ssao(SsaoExampleState* state)
         .blur_enabled = state->blur_enabled,
         .debug_view = state->debug_view,
     };
-    if (!_scene_technique_state_set_ssao(&state->panel->techniques, &desc))
-        dvz_fprintf(stderr, "_scene_technique_state_set_ssao() failed\n");
+    if (!dvz_panel_set_ssao(state->panel, &desc))
+        dvz_fprintf(stderr, "dvz_panel_set_ssao() failed\n");
 }
 
 

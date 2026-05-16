@@ -278,6 +278,21 @@ DVZ_EXPORT bool dvz_panel_set_msaa(DvzPanel* panel, const DvzMsaaDesc* desc);
 
 
 /**
+ * Configure screen-space ambient occlusion for one panel.
+ *
+ * SSAO renders eligible opaque normal-producing visuals through an internal G-buffer, computes an
+ * occlusion texture from panel depth and normals, optionally blurs it, and composites the result
+ * into the panel output. Pass NULL to disable SSAO on the panel. Descriptor values are clamped to
+ * implementation-supported ranges.
+ *
+ * @param panel the panel
+ * @param desc SSAO descriptor, or NULL to disable
+ * @return whether the panel SSAO state was updated
+ */
+DVZ_EXPORT bool dvz_panel_set_ssao(DvzPanel* panel, const DvzSsaoDesc* desc);
+
+
+/**
  * Attach a panzoom controller to a panel and connect it to an input router.
  *
  * Pan: left-drag. Zoom: right-drag or scroll wheel. Double-click: reset.
