@@ -17,6 +17,7 @@
 /*************************************************************************************************/
 
 #include <stdbool.h>
+#include <stdint.h>
 
 #include "_scene.h"
 
@@ -34,6 +35,18 @@ typedef struct DvzSceneGBufferPlan
     bool needs_object_id;
     uint32_t producer_count;
 } DvzSceneGBufferPlan;
+
+
+typedef struct DvzSceneDepthPostProcessGraphDesc
+{
+    const char* color_suffix;
+    const char* depth_suffix;
+    const char* resolve_suffix;
+    const char* resolve_work_label;
+    uint32_t color_format;
+    DvzFrameGraphAttachmentLoadOp resolve_load_op;
+    bool resolve_clear;
+} DvzSceneDepthPostProcessGraphDesc;
 
 
 
@@ -85,6 +98,10 @@ bool _scene_technique_emit_depth_peel_frame_graph(
 
 bool _scene_technique_emit_opaque_frame_graph(
     DvzFramePlan* plan, const char* panel_id, bool needs_depth);
+
+bool _scene_technique_emit_depth_postprocess_frame_graph(
+    DvzFramePlan* plan, const char* panel_id,
+    const DvzSceneDepthPostProcessGraphDesc* desc);
 
 bool _scene_technique_emit_edl_frame_graph(DvzFramePlan* plan, const char* panel_id);
 

@@ -355,6 +355,10 @@ int test_scene_gbuffer_runtime_lowering(TstSuite* suite, TstItem* item);
 
 int test_scene_edl_runtime_lowering(TstSuite* suite, TstItem* item);
 
+int test_scene_edl_depth_producer_capabilities(TstSuite* suite, TstItem* item);
+
+int test_scene_edl_ignores_ineligible_passes(TstSuite* suite, TstItem* item);
+
 int test_scene_visual_alpha_mode_standard_blend(TstSuite* suite, TstItem* item);
 
 int test_scene_visual_alpha_mode_splits_frame_plan_passes(TstSuite* suite, TstItem* item);

@@ -888,25 +888,34 @@ bool _scene_technique_emit_opaque_frame_graph(
 
 
 /**
- * Emit graph descriptors for one EDL post-processing panel plan.
+ * Emit graph descriptors for one depth-based post-processing panel plan.
  *
  * @param plan the frame plan
  * @param panel_id the panel id
+ * @param desc the depth post-process graph descriptor
  * @return whether graph descriptors were emitted
  */
-bool _scene_technique_emit_edl_frame_graph(DvzFramePlan* plan, const char* panel_id)
+bool _scene_technique_emit_depth_postprocess_frame_graph(
+    DvzFramePlan* plan, const char* panel_id,
+    const DvzSceneDepthPostProcessGraphDesc* desc)
 {
     ANN(plan);
     ANN(panel_id);
+    ANN(desc);
+    ANN(desc->color_suffix);
+    ANN(desc->depth_suffix);
+    ANN(desc->resolve_suffix);
+    ANN(desc->resolve_work_label);
 
     char color_id[DVZ_SCENE_LABEL_SIZE];
     char depth_id[DVZ_SCENE_LABEL_SIZE];
     char opaque_pass_id[DVZ_SCENE_LABEL_SIZE];
     char resolve_pass_id[DVZ_SCENE_LABEL_SIZE];
-    dvz_snprintf(color_id, sizeof(color_id), "%s.edl.color", panel_id);
-    dvz_snprintf(depth_id, sizeof(depth_id), "%s.edl.depth", panel_id);
+    dvz_snprintf(color_id, sizeof(color_id), "%s.%s", panel_id, desc->color_suffix);
+    dvz_snprintf(depth_id, sizeof(depth_id), "%s.%s", panel_id, desc->depth_suffix);
     dvz_snprintf(opaque_pass_id, sizeof(opaque_pass_id), "%s.opaque", panel_id);
-    dvz_snprintf(resolve_pass_id, sizeof(resolve_pass_id), "%s.edl.resolve", panel_id);
+    dvz_snprintf(resolve_pass_id, sizeof(resolve_pass_id), "%s.%s", panel_id,
+                 desc->resolve_suffix);
 
     DvzFrameGraphResource rt = {0};
     dvz_strlcpy(rt.id, "rt", sizeof(rt.id));
@@ -921,7 +930,7 @@ bool _scene_technique_emit_edl_frame_graph(DvzFramePlan* plan, const char* panel
     DvzFrameGraphResource color = {0};
     dvz_strlcpy(color.id, color_id, sizeof(color.id));
     color.kind = DVZ_FRAME_GRAPH_RESOURCE_TEXTURE;
-    color.format = VK_FORMAT_R8G8B8A8_UNORM;
+    color.format = desc->color_format;
     color.extent_kind = DVZ_FRAME_GRAPH_EXTENT_FIGURE;
     color.usage_flags = DVZ_FRAME_GRAPH_RESOURCE_USAGE_COLOR_ATTACHMENT |
                         DVZ_FRAME_GRAPH_RESOURCE_USAGE_SAMPLED;
@@ -962,16 +971,39 @@ bool _scene_technique_emit_edl_frame_graph(DvzFramePlan* plan, const char* panel
     DvzFrameGraphPass resolve = {0};
     dvz_strlcpy(resolve.id, resolve_pass_id, sizeof(resolve.id));
     dvz_strlcpy(resolve.panel_id, panel_id, sizeof(resolve.panel_id));
-    dvz_strlcpy(resolve.work_label, "edl_resolve", sizeof(resolve.work_label));
+    dvz_strlcpy(resolve.work_label, desc->resolve_work_label, sizeof(resolve.work_label));
     resolve.kind = DVZ_FRAME_GRAPH_PASS_RENDER;
     if (!dvz_frame_graph_pass_read(&resolve, color_id, DVZ_FRAME_GRAPH_ACCESS_SAMPLED) ||
         !dvz_frame_graph_pass_read(&resolve, depth_id, DVZ_FRAME_GRAPH_ACCESS_SAMPLED))
         return false;
     _scene_frame_graph_color_attachment(
-        &attachment, "rt", DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_CLEAR, true);
+        &attachment, "rt", desc->resolve_load_op, desc->resolve_clear);
     if (!dvz_frame_graph_pass_color_attachment(&resolve, &attachment))
         return false;
     return dvz_frame_plan_graph_pass(plan, &resolve);
+}
+
+
+
+/**
+ * Emit graph descriptors for one EDL post-processing panel plan.
+ *
+ * @param plan the frame plan
+ * @param panel_id the panel id
+ * @return whether graph descriptors were emitted
+ */
+bool _scene_technique_emit_edl_frame_graph(DvzFramePlan* plan, const char* panel_id)
+{
+    const DvzSceneDepthPostProcessGraphDesc desc = {
+        .color_suffix = "edl.color",
+        .depth_suffix = "edl.depth",
+        .resolve_suffix = "edl.resolve",
+        .resolve_work_label = "edl_resolve",
+        .color_format = VK_FORMAT_R8G8B8A8_UNORM,
+        .resolve_load_op = DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_CLEAR,
+        .resolve_clear = true,
+    };
+    return _scene_technique_emit_depth_postprocess_frame_graph(plan, panel_id, &desc);
 }
 
 

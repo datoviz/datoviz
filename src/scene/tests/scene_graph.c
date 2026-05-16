@@ -4681,6 +4681,180 @@ int test_scene_edl_runtime_lowering(TstSuite* suite, TstItem* item)
 
 
 /**
+ * Verify primitive and mesh depth producers can feed the EDL post-process branch.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_edl_depth_producer_capabilities(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    AT(scene != NULL);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    AT(figure != NULL);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    AT(panel != NULL);
+
+    float primitive_positions[3][3] = {
+        {-0.80f, -0.60f, 0.1f},
+        {-0.20f, -0.60f, 0.1f},
+        {-0.50f, +0.10f, 0.1f},
+    };
+    DvzColor primitive_colors[3] = {
+        {240, 90, 70, 255},
+        {240, 90, 70, 255},
+        {240, 90, 70, 255},
+    };
+    DvzVisual* primitive = dvz_primitive(scene, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 0);
+    AT(primitive != NULL);
+    AT(dvz_visual_set_data(primitive, "position", primitive_positions, 3) == 0);
+    AT(dvz_visual_set_data(primitive, "color", primitive_colors, 3) == 0);
+    AT(dvz_panel_add_visual(panel, primitive, NULL) == 0);
+
+    float mesh_positions[4][3] = {
+        {0.10f, -0.50f, 0.2f},
+        {0.70f, -0.50f, 0.2f},
+        {0.10f, +0.30f, 0.2f},
+        {0.70f, +0.30f, 0.2f},
+    };
+    float mesh_normals[4][3] = {
+        {0.0f, 0.0f, 1.0f},
+        {0.0f, 0.0f, 1.0f},
+        {0.0f, 0.0f, 1.0f},
+        {0.0f, 0.0f, 1.0f},
+    };
+    DvzIndex mesh_indices[6] = {0, 1, 2, 2, 1, 3};
+    DvzSceneBuffer* index_buffer = dvz_scene_buffer(
+        scene, &(DvzSceneBufferDesc){
+                   .usage = DVZ_SCENE_BUFFER_USAGE_INDEX,
+                   .stride = sizeof(DvzIndex),
+               });
+    ANN(index_buffer);
+    AT(dvz_scene_buffer_set_data(index_buffer, mesh_indices, sizeof(mesh_indices)));
+
+    DvzVisual* mesh = dvz_mesh(scene, 0);
+    AT(mesh != NULL);
+    AT(dvz_visual_set_data(mesh, "position", mesh_positions, 4) == 0);
+    AT(dvz_visual_set_data(mesh, "normal", mesh_normals, 4) == 0);
+    AT(dvz_visual_set_buffer(mesh, "index", index_buffer));
+    AT(dvz_panel_add_visual(panel, mesh, NULL) == 0);
+
+    AT(dvz_panel_set_edl(
+        panel, &(DvzEdlDesc){.radius = 2.0f, .strength = 55.0f, .depth_scale = 1.0f}));
+
+    DvzFramePlan* plan = dvz_frame_plan("figure.edl.depth_producers", 0);
+    ANN(plan);
+    _scene_emit_panel_render(figure, 0, plan, "figure_0");
+    AT(dvz_frame_plan_node_count(plan) == 3);
+    const DvzFramePlanNode* opaque_node = dvz_frame_plan_node_get(plan, 0);
+    const DvzFramePlanNode* edl_node = dvz_frame_plan_node_get(plan, 2);
+    ANN(opaque_node);
+    ANN(edl_node);
+    AT(dvz_frame_plan_render_pass_role(opaque_node) == DVZ_FRAME_PLAN_RENDER_PASS_OPAQUE);
+    AT(opaque_node->u.render.visual_count == 2);
+    AT(dvz_frame_plan_render_pass_role(edl_node) == DVZ_FRAME_PLAN_RENDER_PASS_EDL_RESOLVE);
+    AT(dvz_frame_plan_graph_pass_count(plan) == 2);
+    const DvzFrameGraphPass* opaque_pass = dvz_frame_plan_graph_pass_get(plan, 0);
+    ANN(opaque_pass);
+    AT(opaque_pass->has_depth_attachment);
+    AT(strcmp(opaque_pass->depth_attachment.resource_id, "figure_0_p0.edl.depth") == 0);
+
+    dvz_frame_plan_destroy(plan);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
+/**
+ * Verify EDL stays inactive when enabled on visuals without eligible opaque depth producers.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_edl_ignores_ineligible_passes(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    AT(scene != NULL);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    AT(figure != NULL);
+    DvzPanel* fixed_panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 0.5f, 1.0f});
+    DvzPanel* transparent_panel = dvz_panel(figure, (DvzPanelDesc){0.5f, 0.0f, 0.5f, 1.0f});
+    AT(fixed_panel != NULL);
+    AT(transparent_panel != NULL);
+
+    float positions[3][3] = {
+        {-0.5f, -0.5f, 0.0f},
+        {+0.5f, -0.5f, 0.0f},
+        {0.0f, +0.5f, 0.0f},
+    };
+    DvzColor colors[3] = {
+        {220, 80, 80, 255},
+        {220, 80, 80, 255},
+        {220, 80, 80, 255},
+    };
+    DvzVisual* fixed_visual = dvz_primitive(scene, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 0);
+    AT(fixed_visual != NULL);
+    AT(dvz_visual_set_data(fixed_visual, "position", positions, 3) == 0);
+    AT(dvz_visual_set_data(fixed_visual, "color", colors, 3) == 0);
+    AT(dvz_panel_add_visual(
+           fixed_panel, fixed_visual,
+           &(DvzVisualAttachDesc){.controller_mode = DVZ_CONTROLLER_FIXED}) == 0);
+    AT(dvz_panel_set_edl(
+        fixed_panel, &(DvzEdlDesc){.radius = 2.0f, .strength = 55.0f, .depth_scale = 1.0f}));
+
+    DvzFramePlan* fixed_plan = dvz_frame_plan("figure.edl.fixed", 0);
+    ANN(fixed_plan);
+    _scene_emit_panel_render(figure, 0, fixed_plan, "figure_0");
+    AT(dvz_frame_plan_node_count(fixed_plan) == 1);
+    AT(dvz_frame_plan_graph_pass_count(fixed_plan) == 0);
+
+    float point_sizes[3] = {18.0f, 18.0f, 18.0f};
+    DvzVisual* transparent_point = dvz_point(scene, 0);
+    AT(transparent_point != NULL);
+    AT(dvz_visual_set_data(transparent_point, "position", positions, 3) == 0);
+    AT(dvz_visual_set_data(transparent_point, "color", colors, 3) == 0);
+    AT(dvz_visual_set_data(transparent_point, "size", point_sizes, 3) == 0);
+    AT(dvz_visual_set_alpha_mode(transparent_point, DVZ_ALPHA_WBOIT) == 0);
+    AT(dvz_panel_add_visual(transparent_panel, transparent_point, NULL) == 0);
+    AT(dvz_panel_set_edl(
+        transparent_panel,
+        &(DvzEdlDesc){.radius = 2.0f, .strength = 55.0f, .depth_scale = 1.0f}));
+
+    DvzFramePlan* transparent_plan = dvz_frame_plan("figure.edl.transparent", 0);
+    ANN(transparent_plan);
+    _scene_emit_panel_render(figure, 1, transparent_plan, "figure_0");
+    bool found_edl_resolve = false;
+    bool found_wboit_resolve = false;
+    for (uint32_t i = 0; i < dvz_frame_plan_graph_pass_count(transparent_plan); i++)
+    {
+        const DvzFrameGraphPass* pass = dvz_frame_plan_graph_pass_get(transparent_plan, i);
+        ANN(pass);
+        found_edl_resolve =
+            found_edl_resolve || strcmp(pass->work_label, "edl_resolve") == 0;
+        found_wboit_resolve =
+            found_wboit_resolve || strcmp(pass->work_label, "wboit_resolve") == 0;
+    }
+    AT(!found_edl_resolve);
+    AT(found_wboit_resolve);
+
+    dvz_frame_plan_destroy(transparent_plan);
+    dvz_frame_plan_destroy(fixed_plan);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
+/**
  * Verify ordinary blended alpha stays on the final target with a source-over blend pipeline.
  *
  * @param suite the active test suite
@@ -6005,6 +6179,8 @@ int test_scene_graph(TstSuite* suite)
     TEST_SIMPLE(test_scene_visual_pass_capabilities);
     TEST_SIMPLE(test_scene_gbuffer_runtime_lowering);
     TEST_SIMPLE(test_scene_edl_runtime_lowering);
+    TEST_SIMPLE(test_scene_edl_depth_producer_capabilities);
+    TEST_SIMPLE(test_scene_edl_ignores_ineligible_passes);
     TEST_SIMPLE(test_scene_visual_alpha_mode_standard_blend);
     TEST_SIMPLE(test_scene_visual_alpha_mode_splits_frame_plan_passes);
     TEST_SIMPLE(test_scene_visual_alpha_mode_depth_peel_frame_plan);
