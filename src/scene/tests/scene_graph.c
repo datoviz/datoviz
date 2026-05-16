@@ -5129,6 +5129,103 @@ int test_scene_ssao_runtime_lowering(TstSuite* suite, TstItem* item)
 
 
 /**
+ * Execute the scene SSAO DRP2 path through the vklite runtime when a GPU is available.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_ssao_glsl_executes(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    if (!_scene_vklite_runtime_available())
+        return 0;
+
+    DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
+    VkPhysicalDeviceVulkan13Features features13 = {
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES};
+    features13.dynamicRendering = true;
+    features13.synchronization2 = true;
+    dvz_gpu_ctx_config_features13(&gpu_cfg, &features13);
+    DvzGpuCtx* ctx = dvz_gpu_ctx(&gpu_cfg);
+    if (ctx == NULL)
+        return 0;
+
+    DvzScene* scene = dvz_scene();
+    AT(scene != NULL);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    AT(figure != NULL);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    AT(panel != NULL);
+    DvzVisual* mesh = dvz_mesh(scene, 0);
+    AT(mesh != NULL);
+
+    float positions[4][3] = {
+        {-0.75f, -0.75f, 0.20f},
+        {+0.75f, -0.75f, 0.20f},
+        {-0.75f, +0.75f, 0.55f},
+        {+0.75f, +0.75f, 0.55f},
+    };
+    float normals[4][3] = {
+        {0.0f, -0.35f, 0.94f},
+        {0.0f, -0.35f, 0.94f},
+        {0.0f, +0.35f, 0.94f},
+        {0.0f, +0.35f, 0.94f},
+    };
+    DvzIndex indices[6] = {0, 1, 2, 2, 1, 3};
+    DvzSceneBuffer* index_buffer = dvz_scene_buffer(
+        scene, &(DvzSceneBufferDesc){
+                   .usage = DVZ_SCENE_BUFFER_USAGE_INDEX,
+                   .stride = sizeof(DvzIndex),
+               });
+    ANN(index_buffer);
+    AT(dvz_scene_buffer_set_data(index_buffer, indices, sizeof(indices)));
+
+    AT(dvz_visual_set_data(mesh, "position", positions, 4) == 0);
+    AT(dvz_visual_set_data(mesh, "normal", normals, 4) == 0);
+    AT(dvz_visual_set_buffer(mesh, "index", index_buffer));
+    AT(dvz_panel_add_visual(panel, mesh, NULL) == 0);
+    AT(_scene_technique_state_set_ssao(
+        &panel->techniques,
+        &(DvzSceneSsaoDesc){.radius = 1.0f, .strength = 2.5f, .bias = 0.02f,
+                            .sample_count = 16}));
+
+    DvzCapabilitySnapshot caps;
+    dvz_capability_snapshot_default(&caps);
+    caps.supports_color_blending = true;
+    DvzDiagnosticReport report;
+    dvz_diagnostic_report_init(&report);
+    DvzFramePlanEmitConfig emit_cfg = dvz_frame_plan_emit_config();
+    emit_cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
+    emit_cfg.target_width = 64;
+    emit_cfg.target_height = 64;
+
+    DvzDrp2CommandStream* stream = dvz_figure_emit_ex(figure, &caps, &report, &emit_cfg);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+    AT(stream != NULL);
+
+    DvzDrp2RuntimeConfig runtime_cfg =
+        dvz_drp2_runtime_vklite_config(dvz_gpu_ctx_device(ctx), dvz_gpu_ctx_alloc(ctx));
+    DvzDrp2Runtime* runtime = dvz_drp2_runtime_vklite(&runtime_cfg);
+    ANN(runtime);
+
+    DvzDrp2ValidationResult result = dvz_drp2_runtime_execute(runtime, stream);
+    AT(result.ok);
+    AT(result.code == DVZ_DRP2_VALIDATION_OK);
+    AT(dvz_gpu_ctx_error_count(ctx) == 0);
+
+    dvz_drp2_runtime_destroy(runtime);
+    dvz_drp2_stream_destroy(stream);
+    dvz_scene_destroy(scene);
+    dvz_gpu_ctx_destroy(ctx);
+    return 0;
+}
+
+
+
+/**
  * Verify SSAO opt-in is a no-op when no opaque normal-producing visual is present.
  *
  * @param suite the active test suite
@@ -6510,6 +6607,7 @@ int test_scene_graph(TstSuite* suite)
     TEST_SIMPLE(test_scene_edl_ignores_ineligible_passes);
     TEST_SIMPLE(test_scene_ssao_graph_foundation);
     TEST_SIMPLE(test_scene_ssao_runtime_lowering);
+    TEST_SIMPLE(test_scene_ssao_glsl_executes);
     TEST_SIMPLE(test_scene_ssao_ignores_ineligible_visuals);
     TEST_SIMPLE(test_scene_visual_alpha_mode_standard_blend);
     TEST_SIMPLE(test_scene_visual_alpha_mode_splits_frame_plan_passes);
