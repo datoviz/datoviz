@@ -31,6 +31,7 @@
 #include "_compat.h"
 #include "datoviz/app.h"
 #include "datoviz/gui.h"
+#include "datoviz/imgui.h"
 #include "datoviz/scene.h"
 
 
@@ -46,6 +47,16 @@
 
 #define ROTATION_SPEED_RAD_PER_SEC 0.22f
 
+#define PROTEIN_RENDER_SPHERES 0
+#define PROTEIN_RENDER_RIBBON  1
+
+#define PROTEIN_ATOM_COLOR_ELEMENT 0
+#define PROTEIN_ATOM_COLOR_CHAIN   1
+#define PROTEIN_ATOM_COLOR_BFACTOR 2
+
+#define PROTEIN_RIBBON_COLOR_CHAIN 0
+#define PROTEIN_RIBBON_COLOR_SS    1
+
 
 
 /*************************************************************************************************/
@@ -58,7 +69,17 @@ typedef struct ProteinBundle
     uint32_t atom_count;
     float* positions;
     float* radii;
-    DvzColor* colors;
+    DvzColor* atom_colors_element;
+    DvzColor* atom_colors_chain;
+    DvzColor* atom_colors_bfactor;
+    bool has_ribbon;
+    uint32_t ribbon_vertex_count;
+    uint32_t ribbon_index_count;
+    float* ribbon_positions;
+    float* ribbon_normals;
+    DvzColor* ribbon_colors_chain;
+    DvzColor* ribbon_colors_ss;
+    DvzIndex* ribbon_indices;
 } ProteinBundle;
 
 
@@ -66,10 +87,14 @@ typedef struct ProteinExampleState
 {
     DvzPanel* panel;
     DvzVisual* spheres;
+    DvzVisual* ribbon;
     DvzArcball* arcball;
     DvzAnimation* spin;
     const ProteinBundle* bundle;
     float* live_radii;
+    int render_mode;
+    int atom_color_mode;
+    int ribbon_color_mode;
     bool ssao_enabled;
     bool msaa_enabled;
     bool msaa_alpha_to_coverage;
@@ -216,10 +241,100 @@ static void _protein_bundle_destroy(ProteinBundle* bundle)
 {
     if (bundle == NULL)
         return;
-    dvz_free(bundle->colors);
+    dvz_free(bundle->ribbon_indices);
+    dvz_free(bundle->ribbon_colors_ss);
+    dvz_free(bundle->ribbon_colors_chain);
+    dvz_free(bundle->ribbon_normals);
+    dvz_free(bundle->ribbon_positions);
+    dvz_free(bundle->atom_colors_bfactor);
+    dvz_free(bundle->atom_colors_chain);
+    dvz_free(bundle->atom_colors_element);
     dvz_free(bundle->radii);
     dvz_free(bundle->positions);
     dvz_memset(bundle, sizeof(ProteinBundle), 0, sizeof(ProteinBundle));
+}
+
+
+
+/**
+ * Read an optional ribbon mesh from the exported bundle.
+ *
+ * @param dir protein bundle directory
+ * @param out output bundle
+ */
+static void _protein_bundle_load_ribbon(const char* dir, ProteinBundle* out)
+{
+    ANN(dir);
+    ANN(out);
+
+    char position_path[1200] = {0};
+    char normal_path[1200] = {0};
+    char color_chain_path[1200] = {0};
+    char color_ss_path[1200] = {0};
+    char index_path[1200] = {0};
+    if (!_join_path(dir, "ribbon_position.f32", position_path, sizeof(position_path)) ||
+        !_join_path(dir, "ribbon_normal.f32", normal_path, sizeof(normal_path)) ||
+        !_join_path(dir, "ribbon_color_chain.rgba8", color_chain_path, sizeof(color_chain_path)) ||
+        !_join_path(dir, "ribbon_color_ss.rgba8", color_ss_path, sizeof(color_ss_path)) ||
+        !_join_path(dir, "ribbon_index.u32", index_path, sizeof(index_path)))
+    {
+        return;
+    }
+
+    uint64_t position_size = 0;
+    uint64_t normal_size = 0;
+    uint64_t color_chain_size = 0;
+    uint64_t color_ss_size = 0;
+    uint64_t index_size = 0;
+    if (!_file_size(position_path, &position_size) || !_file_size(normal_path, &normal_size) ||
+        !_file_size(color_chain_path, &color_chain_size) ||
+        !_file_size(color_ss_path, &color_ss_size) || !_file_size(index_path, &index_size))
+    {
+        return;
+    }
+
+    if (position_size == 0 || position_size % (3u * sizeof(float)) != 0 ||
+        normal_size != position_size || index_size == 0 || index_size % sizeof(DvzIndex) != 0)
+    {
+        return;
+    }
+
+    uint64_t vertex_count64 = position_size / (3u * sizeof(float));
+    uint64_t index_count64 = index_size / sizeof(DvzIndex);
+    if (vertex_count64 > UINT32_MAX || index_count64 > UINT32_MAX)
+        return;
+    if (color_chain_size != vertex_count64 * sizeof(DvzColor) ||
+        color_ss_size != vertex_count64 * sizeof(DvzColor))
+    {
+        return;
+    }
+
+    out->ribbon_vertex_count = (uint32_t)vertex_count64;
+    out->ribbon_index_count = (uint32_t)index_count64;
+    out->ribbon_positions = (float*)dvz_calloc((size_t)out->ribbon_vertex_count * 3u, sizeof(float));
+    out->ribbon_normals = (float*)dvz_calloc((size_t)out->ribbon_vertex_count * 3u, sizeof(float));
+    out->ribbon_colors_chain = (DvzColor*)dvz_calloc(out->ribbon_vertex_count, sizeof(DvzColor));
+    out->ribbon_colors_ss = (DvzColor*)dvz_calloc(out->ribbon_vertex_count, sizeof(DvzColor));
+    out->ribbon_indices = (DvzIndex*)dvz_calloc(out->ribbon_index_count, sizeof(DvzIndex));
+    if (out->ribbon_positions == NULL || out->ribbon_normals == NULL ||
+        out->ribbon_colors_chain == NULL || out->ribbon_colors_ss == NULL ||
+        out->ribbon_indices == NULL)
+    {
+        _protein_bundle_destroy(out);
+        return;
+    }
+
+    if (!_read_file_exact(position_path, out->ribbon_positions, position_size) ||
+        !_read_file_exact(normal_path, out->ribbon_normals, normal_size) ||
+        !_read_file_exact(color_chain_path, out->ribbon_colors_chain, color_chain_size) ||
+        !_read_file_exact(color_ss_path, out->ribbon_colors_ss, color_ss_size) ||
+        !_read_file_exact(index_path, out->ribbon_indices, index_size))
+    {
+        _protein_bundle_destroy(out);
+        return;
+    }
+
+    out->has_ribbon = true;
 }
 
 
@@ -240,19 +355,28 @@ static bool _protein_bundle_load(const char* dir, ProteinBundle* out)
 
     char position_path[1200] = {0};
     char radius_path[1200] = {0};
-    char color_path[1200] = {0};
+    char color_element_path[1200] = {0};
+    char color_chain_path[1200] = {0};
+    char color_bfactor_path[1200] = {0};
     if (!_join_path(dir, "atom_position.f32", position_path, sizeof(position_path)) ||
         !_join_path(dir, "atom_radius_vdw.f32", radius_path, sizeof(radius_path)) ||
-        !_join_path(dir, "atom_color_element.rgba8", color_path, sizeof(color_path)))
+        !_join_path(dir, "atom_color_element.rgba8", color_element_path, sizeof(color_element_path)) ||
+        !_join_path(dir, "atom_color_chain.rgba8", color_chain_path, sizeof(color_chain_path)) ||
+        !_join_path(
+            dir, "atom_color_bfactor.rgba8", color_bfactor_path, sizeof(color_bfactor_path)))
     {
         return false;
     }
 
     uint64_t position_size = 0;
     uint64_t radius_size = 0;
-    uint64_t color_size = 0;
+    uint64_t color_element_size = 0;
+    uint64_t color_chain_size = 0;
+    uint64_t color_bfactor_size = 0;
     if (!_file_size(position_path, &position_size) || !_file_size(radius_path, &radius_size) ||
-        !_file_size(color_path, &color_size))
+        !_file_size(color_element_path, &color_element_size) ||
+        !_file_size(color_chain_path, &color_chain_size) ||
+        !_file_size(color_bfactor_path, &color_bfactor_size))
     {
         return false;
     }
@@ -262,27 +386,38 @@ static bool _protein_bundle_load(const char* dir, ProteinBundle* out)
     uint64_t atom_count64 = position_size / (3u * sizeof(float));
     if (atom_count64 > UINT32_MAX)
         return false;
-    if (radius_size != atom_count64 * sizeof(float) || color_size != atom_count64 * sizeof(DvzColor))
+    if (radius_size != atom_count64 * sizeof(float) ||
+        color_element_size != atom_count64 * sizeof(DvzColor) ||
+        color_chain_size != atom_count64 * sizeof(DvzColor) ||
+        color_bfactor_size != atom_count64 * sizeof(DvzColor))
+    {
         return false;
+    }
 
     out->atom_count = (uint32_t)atom_count64;
-    out->positions = (float*)dvz_calloc(out->atom_count * 3u, sizeof(float));
+    out->positions = (float*)dvz_calloc((size_t)out->atom_count * 3u, sizeof(float));
     out->radii = (float*)dvz_calloc(out->atom_count, sizeof(float));
-    out->colors = (DvzColor*)dvz_calloc(out->atom_count, sizeof(DvzColor));
-    if (out->positions == NULL || out->radii == NULL || out->colors == NULL)
+    out->atom_colors_element = (DvzColor*)dvz_calloc(out->atom_count, sizeof(DvzColor));
+    out->atom_colors_chain = (DvzColor*)dvz_calloc(out->atom_count, sizeof(DvzColor));
+    out->atom_colors_bfactor = (DvzColor*)dvz_calloc(out->atom_count, sizeof(DvzColor));
+    if (out->positions == NULL || out->radii == NULL || out->atom_colors_element == NULL ||
+        out->atom_colors_chain == NULL || out->atom_colors_bfactor == NULL)
     {
         _protein_bundle_destroy(out);
         return false;
     }
     if (!_read_file_exact(position_path, out->positions, position_size) ||
         !_read_file_exact(radius_path, out->radii, radius_size) ||
-        !_read_file_exact(color_path, out->colors, color_size))
+        !_read_file_exact(color_element_path, out->atom_colors_element, color_element_size) ||
+        !_read_file_exact(color_chain_path, out->atom_colors_chain, color_chain_size) ||
+        !_read_file_exact(color_bfactor_path, out->atom_colors_bfactor, color_bfactor_size))
     {
         _protein_bundle_destroy(out);
         return false;
     }
 
-    return true;
+    _protein_bundle_load_ribbon(dir, out);
+    return out->atom_count > 0;
 }
 
 
@@ -326,6 +461,94 @@ static void _apply_atom_scale(ProteinExampleState* state)
         state->live_radii[i] = state->bundle->radii[i] * state->atom_scale;
     if (dvz_sphere_size(state->spheres, 0, state->bundle->atom_count, state->live_radii) != 0)
         dvz_fprintf(stderr, "dvz_sphere_size() failed\n");
+}
+
+
+
+/**
+ * Return the active atom color array.
+ *
+ * @param bundle protein bundle
+ * @param mode atom color mode
+ * @return atom color array
+ */
+static DvzColor* _atom_colors(const ProteinBundle* bundle, int mode)
+{
+    ANN(bundle);
+    if (mode == PROTEIN_ATOM_COLOR_CHAIN)
+        return bundle->atom_colors_chain;
+    if (mode == PROTEIN_ATOM_COLOR_BFACTOR)
+        return bundle->atom_colors_bfactor;
+    return bundle->atom_colors_element;
+}
+
+
+
+/**
+ * Return the active ribbon color array.
+ *
+ * @param bundle protein bundle
+ * @param mode ribbon color mode
+ * @return ribbon color array
+ */
+static DvzColor* _ribbon_colors(const ProteinBundle* bundle, int mode)
+{
+    ANN(bundle);
+    if (mode == PROTEIN_RIBBON_COLOR_SS)
+        return bundle->ribbon_colors_ss;
+    return bundle->ribbon_colors_chain;
+}
+
+
+
+/**
+ * Update sphere colors from the current color mode.
+ *
+ * @param state example state
+ */
+static void _apply_atom_color(ProteinExampleState* state)
+{
+    ANN(state);
+    ANN(state->bundle);
+    DvzColor* colors = _atom_colors(state->bundle, state->atom_color_mode);
+    if (dvz_sphere_color(state->spheres, 0, state->bundle->atom_count, colors) != 0)
+        dvz_fprintf(stderr, "dvz_sphere_color() failed\n");
+}
+
+
+
+/**
+ * Update ribbon colors from the current color mode.
+ *
+ * @param state example state
+ */
+static void _apply_ribbon_color(ProteinExampleState* state)
+{
+    ANN(state);
+    ANN(state->bundle);
+    if (state->ribbon == NULL || !state->bundle->has_ribbon)
+        return;
+    DvzColor* colors = _ribbon_colors(state->bundle, state->ribbon_color_mode);
+    dvz_visual_set_data(state->ribbon, "color", colors, state->bundle->ribbon_vertex_count);
+}
+
+
+
+/**
+ * Update visual visibility from the current render mode.
+ *
+ * @param state example state
+ */
+static void _apply_render_mode(ProteinExampleState* state)
+{
+    ANN(state);
+    ANN(state->spheres);
+
+    if (state->render_mode == PROTEIN_RENDER_RIBBON && !state->bundle->has_ribbon)
+        state->render_mode = PROTEIN_RENDER_SPHERES;
+    dvz_visual_set_visible(state->spheres, state->render_mode == PROTEIN_RENDER_SPHERES);
+    if (state->ribbon != NULL)
+        dvz_visual_set_visible(state->ribbon, state->render_mode == PROTEIN_RENDER_RIBBON);
 }
 
 
@@ -442,6 +665,24 @@ static void _protein_gui(DvzGui* gui, DvzAppWindow* win, void* user_data)
     {
         dvz_gui_text(gui, state->bundle->path);
 
+        const char* render_modes[] = {"Spheres", "Ribbon"};
+        int render_mode_count = state->bundle->has_ribbon ? 2 : 1;
+        if (igCombo_Str_arr("Rendering", &state->render_mode, render_modes, render_mode_count, 2))
+            _apply_render_mode(state);
+
+        if (state->render_mode == PROTEIN_RENDER_RIBBON && state->bundle->has_ribbon)
+        {
+            const char* color_modes[] = {"Chain", "Secondary structure"};
+            if (igCombo_Str_arr("Coloring", &state->ribbon_color_mode, color_modes, 2, 2))
+                _apply_ribbon_color(state);
+        }
+        else
+        {
+            const char* color_modes[] = {"Element", "Chain", "B-factor"};
+            if (igCombo_Str_arr("Coloring", &state->atom_color_mode, color_modes, 3, 3))
+                _apply_atom_color(state);
+        }
+
         bool spin_changed = false;
         spin_changed |= dvz_gui_checkbox(gui, "Auto rotate", &state->spin_enabled);
         if (spin_changed)
@@ -491,7 +732,7 @@ static void _print_prepare_hint(const char* path)
 {
     dvz_fprintf(stderr, "failed to load protein bundle at '%s'\n", path);
     dvz_fprintf(stderr, "prepare one with:\n");
-    dvz_fprintf(stderr, "  python tools/preprocess_protein.py 1UBQ\n");
+    dvz_fprintf(stderr, "  uv run --with rs-dssp tools/preprocess_protein.py 1UBQ --dssp\n");
 }
 
 
@@ -561,6 +802,7 @@ int main(int argc, char** argv)
         _protein_bundle_destroy(&bundle);
         return 1;
     }
+    DvzVisual* ribbon = NULL;
 
     DvzCameraDesc camera_desc = dvz_camera_desc();
     camera_desc.eye[2] = 3.35f;
@@ -579,7 +821,7 @@ int main(int argc, char** argv)
 
     if (dvz_sphere_mode(spheres, DVZ_SPHERE_MODE_RAYCAST_IMPOSTOR) != 0 ||
         dvz_sphere_position(spheres, 0, bundle.atom_count, bundle.positions) != 0 ||
-        dvz_sphere_color(spheres, 0, bundle.atom_count, bundle.colors) != 0 ||
+        dvz_sphere_color(spheres, 0, bundle.atom_count, bundle.atom_colors_element) != 0 ||
         dvz_sphere_size(spheres, 0, bundle.atom_count, scaled_radii) != 0 ||
         dvz_panel_add_visual(panel, spheres, NULL) != 0)
     {
@@ -599,6 +841,47 @@ int main(int argc, char** argv)
             .specular = 0.55f,
             .shininess = 80.0f,
         });
+
+    if (bundle.has_ribbon)
+    {
+        ribbon = dvz_mesh(scene, 0);
+        DvzSceneBuffer* index_buffer = dvz_scene_buffer(
+            scene, &(DvzSceneBufferDesc){
+                       .usage = DVZ_SCENE_BUFFER_USAGE_INDEX,
+                       .stride = sizeof(DvzIndex),
+                   });
+        if (ribbon == NULL || index_buffer == NULL ||
+            !dvz_scene_buffer_set_data(
+                index_buffer, bundle.ribbon_indices,
+                (uint64_t)bundle.ribbon_index_count * sizeof(DvzIndex)) ||
+            dvz_visual_set_data(
+                ribbon, "position", bundle.ribbon_positions, bundle.ribbon_vertex_count) != 0 ||
+            dvz_visual_set_data(ribbon, "normal", bundle.ribbon_normals, bundle.ribbon_vertex_count) !=
+                0 ||
+            dvz_visual_set_data(
+                ribbon, "color", bundle.ribbon_colors_chain, bundle.ribbon_vertex_count) != 0 ||
+            !dvz_visual_set_buffer(ribbon, "index", index_buffer) ||
+            dvz_panel_add_visual(panel, ribbon, NULL) != 0)
+        {
+            dvz_fprintf(stderr, "ribbon visual setup failed\n");
+            dvz_scene_destroy(scene);
+            dvz_free(scaled_radii);
+            _protein_bundle_destroy(&bundle);
+            return 1;
+        }
+
+        dvz_visual_set_primitive_shading(
+            ribbon,
+            &(DvzPrimitiveShadingDesc){
+                .light_direction = {0.25f, 0.65f, 0.72f},
+                .ambient = 0.26f,
+                .diffuse = 0.78f,
+                .specular = 0.35f,
+                .shininess = 48.0f,
+            });
+        dvz_visual_set_visible(ribbon, false);
+    }
+
     dvz_panel_set_background_color(panel, 0.030f, 0.034f, 0.044f, 1.0f);
     DvzApp* app = dvz_app(scene);
     if (app == NULL)
@@ -653,10 +936,14 @@ int main(int argc, char** argv)
     ProteinExampleState state = {
         .panel = panel,
         .spheres = spheres,
+        .ribbon = ribbon,
         .arcball = arcball,
         .spin = spin,
         .bundle = &bundle,
         .live_radii = scaled_radii,
+        .render_mode = PROTEIN_RENDER_SPHERES,
+        .atom_color_mode = PROTEIN_ATOM_COLOR_ELEMENT,
+        .ribbon_color_mode = PROTEIN_RIBBON_COLOR_CHAIN,
         .ssao_enabled = true,
         .msaa_enabled = true,
         .msaa_alpha_to_coverage = true,
