@@ -11,8 +11,6 @@ from pathlib import Path
 from typing import Iterable
 
 import numpy as np
-import trimesh
-from iblatlas.atlas import AllenAtlas
 
 
 DEFAULT_OUTPUT = Path("data/allen_ibl_assets")
@@ -36,6 +34,14 @@ class RegionSpec:
     color: tuple[int, int, int, int]
 
 
+@dataclass(frozen=True)
+class MeshData:
+    """Minimal triangle mesh payload loaded from Allen OBJ/PLY assets."""
+
+    vertices: np.ndarray
+    faces: np.ndarray
+
+
 DEFAULT_REGIONS = (
     RegionSpec(997, "root", "Whole brain", (214, 214, 214, 48)),
     RegionSpec(315, "Isocortex", "Isocortex", (112, 185, 102, 112)),
@@ -49,7 +55,7 @@ def _download_mesh(region_id: int, cache_dir: Path) -> Path:
     """Download one Allen CCF structure mesh into the local cache."""
     cache_dir.mkdir(parents=True, exist_ok=True)
     last_error: Exception | None = None
-    for suffix in ("ply", "obj"):
+    for suffix in ("obj", "ply"):
         path = cache_dir / f"{region_id}.{suffix}"
         if path.exists() and path.stat().st_size > 0:
             return path
@@ -65,22 +71,83 @@ def _download_mesh(region_id: int, cache_dir: Path) -> Path:
     raise RuntimeError(f"could not download mesh {region_id}") from last_error
 
 
-def _as_mesh(loaded: trimesh.Trimesh | trimesh.Scene) -> trimesh.Trimesh:
-    """Return a single mesh from a trimesh loader result."""
-    if isinstance(loaded, trimesh.Trimesh):
-        return loaded
-    if isinstance(loaded, trimesh.Scene):
-        meshes = [geom for geom in loaded.geometry.values() if isinstance(geom, trimesh.Trimesh)]
-        if not meshes:
-            raise ValueError("loaded scene does not contain triangle meshes")
-        return trimesh.util.concatenate(meshes)
-    raise TypeError(f"unsupported mesh payload type: {type(loaded)!r}")
+def _load_obj(path: Path) -> MeshData:
+    """Load a simple triangulated Wavefront OBJ mesh."""
+    vertices: list[tuple[float, float, float]] = []
+    faces: list[tuple[int, int, int]] = []
+    with path.open("r", encoding="utf8", errors="replace") as stream:
+        for line in stream:
+            if line.startswith("v "):
+                parts = line.split()
+                if len(parts) >= 4:
+                    vertices.append((float(parts[1]), float(parts[2]), float(parts[3])))
+            elif line.startswith("f "):
+                raw = line.split()[1:]
+                if len(raw) < 3:
+                    continue
+                idx = [int(item.split("/", 1)[0]) - 1 for item in raw]
+                for i in range(1, len(idx) - 1):
+                    faces.append((idx[0], idx[i], idx[i + 1]))
+    return MeshData(
+        np.ascontiguousarray(vertices, dtype=np.float64),
+        np.ascontiguousarray(faces, dtype=np.uint32),
+    )
 
 
-def _load_region_mesh(region: RegionSpec, cache_dir: Path) -> trimesh.Trimesh:
+def _load_ascii_ply(path: Path) -> MeshData:
+    """Load a simple ASCII PLY triangle mesh."""
+    with path.open("r", encoding="utf8", errors="replace") as stream:
+        if stream.readline().strip() != "ply":
+            raise ValueError(f"{path} is not a PLY file")
+
+        vertex_count = 0
+        face_count = 0
+        is_ascii = False
+        while True:
+            line = stream.readline()
+            if not line:
+                raise ValueError(f"{path} has no PLY end_header")
+            stripped = line.strip()
+            if stripped == "format ascii 1.0":
+                is_ascii = True
+            elif stripped.startswith("element vertex "):
+                vertex_count = int(stripped.split()[2])
+            elif stripped.startswith("element face "):
+                face_count = int(stripped.split()[2])
+            elif stripped == "end_header":
+                break
+        if not is_ascii:
+            raise ValueError(f"{path} is not an ASCII PLY file")
+
+        vertices = []
+        for _ in range(vertex_count):
+            parts = stream.readline().split()
+            vertices.append((float(parts[0]), float(parts[1]), float(parts[2])))
+
+        faces = []
+        for _ in range(face_count):
+            parts = stream.readline().split()
+            if not parts:
+                continue
+            count = int(parts[0])
+            idx = [int(value) for value in parts[1 : 1 + count]]
+            for i in range(1, len(idx) - 1):
+                faces.append((idx[0], idx[i], idx[i + 1]))
+    return MeshData(
+        np.ascontiguousarray(vertices, dtype=np.float64),
+        np.ascontiguousarray(faces, dtype=np.uint32),
+    )
+
+
+def _load_region_mesh(region: RegionSpec, cache_dir: Path) -> MeshData:
     """Load one cached or downloaded Allen CCF region mesh."""
     path = _download_mesh(region.region_id, cache_dir)
-    mesh = _as_mesh(trimesh.load(path, process=False))
+    if path.suffix == ".obj":
+        mesh = _load_obj(path)
+    elif path.suffix == ".ply":
+        mesh = _load_ascii_ply(path)
+    else:
+        raise ValueError(f"unsupported mesh suffix: {path.suffix}")
     if mesh.vertices.size == 0 or mesh.faces.size == 0:
         raise ValueError(f"empty mesh for region {region.region_id}")
     return mesh
@@ -105,7 +172,7 @@ def _compute_vertex_normals(positions: np.ndarray, indices: np.ndarray) -> np.nd
     return np.ascontiguousarray(normals, dtype=np.float32)
 
 
-def _scene_volume_bounds(ba: AllenAtlas, offset_xyz_m: np.ndarray, scale: float) -> list[list[float]]:
+def _scene_volume_bounds(ba, offset_xyz_m: np.ndarray, scale: float) -> list[list[float]]:
     """Return scene-space bounds for the 25um Allen RGBA volume."""
     ap, ml, dv = DEFAULT_VOLUME_SHAPE_AP_ML_DV
     corners = np.array(
@@ -139,6 +206,14 @@ def _region_specs(region_ids: Iterable[int] | None) -> tuple[RegionSpec, ...]:
 
 def prepare(output_dir: Path, cache_dir: Path, scale: float, region_ids: Iterable[int] | None) -> None:
     """Prepare the combined atlas mesh bundle consumed by the C example."""
+    try:
+        from iblatlas.atlas import AllenAtlas
+    except ModuleNotFoundError as exc:
+        raise RuntimeError(
+            "iblatlas is required for authoritative Allen CCF -> IBL xyz conversion; "
+            "install it in this Python environment before preparing assets"
+        ) from exc
+
     output_dir.mkdir(parents=True, exist_ok=True)
     regions = _region_specs(region_ids)
     ba = AllenAtlas(res_um=int(DEFAULT_RES_UM))
