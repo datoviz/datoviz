@@ -59,6 +59,8 @@ typedef struct SsaoExampleState
     float* live_sizes;
     uint32_t sphere_count;
     bool ssao_enabled;
+    bool msaa_enabled;
+    bool msaa_alpha_to_coverage;
     bool spin_enabled;
     bool raycast_mode;
     float radius;
@@ -70,6 +72,7 @@ typedef struct SsaoExampleState
     float blur_depth_sigma;
     float blur_normal_sigma;
     float sample_count;
+    float msaa_sample_count;
     float size_scale;
     bool blur_enabled;
     bool debug_view;
@@ -254,6 +257,43 @@ static void _apply_ssao(SsaoExampleState* state)
 
 
 /**
+ * Apply the retained MSAA control to the panel.
+ *
+ * @param state example state
+ */
+static void _apply_msaa(SsaoExampleState* state)
+{
+    ANN(state);
+    ANN(state->panel);
+
+    if (!state->msaa_enabled)
+    {
+        (void)dvz_panel_set_msaa(state->panel, NULL);
+        return;
+    }
+    if (state->msaa_sample_count < 2.0f)
+        state->msaa_sample_count = 2.0f;
+    if (state->msaa_sample_count > 8.0f)
+        state->msaa_sample_count = 8.0f;
+    uint32_t sample_count = (uint32_t)(state->msaa_sample_count + 0.5f);
+    if (sample_count <= 2)
+        sample_count = 2;
+    else if (sample_count <= 4)
+        sample_count = 4;
+    else
+        sample_count = 8;
+    state->msaa_sample_count = (float)sample_count;
+
+    DvzMsaaDesc desc = dvz_msaa_desc();
+    desc.sample_count = sample_count;
+    desc.alpha_to_coverage = state->msaa_alpha_to_coverage;
+    if (!dvz_panel_set_msaa(state->panel, &desc))
+        dvz_fprintf(stderr, "dvz_panel_set_msaa() failed\n");
+}
+
+
+
+/**
  * Apply the current sphere rendering mode to the retained visual.
  *
  * @param state example state
@@ -298,6 +338,8 @@ static void _reset_controls(SsaoExampleState* state)
 {
     ANN(state);
     state->ssao_enabled = true;
+    state->msaa_enabled = true;
+    state->msaa_alpha_to_coverage = true;
     state->spin_enabled = false;
     state->raycast_mode = true;
     state->radius = 0.126f;
@@ -309,11 +351,13 @@ static void _reset_controls(SsaoExampleState* state)
     state->blur_depth_sigma = 1.237f;
     state->blur_normal_sigma = 0.445f;
     state->sample_count = 32.0f;
+    state->msaa_sample_count = 4.0f;
     state->size_scale = 0.652f;
     state->blur_enabled = true;
     state->debug_view = false;
     _apply_sphere_sizes(state);
     _apply_sphere_mode(state);
+    _apply_msaa(state);
     _apply_ssao(state);
     _apply_spin(state);
 }
@@ -335,6 +379,7 @@ static void _ssao_gui(DvzGui* gui, DvzAppWindow* win, void* user_data)
         return;
 
     bool ssao_changed = false;
+    bool msaa_changed = false;
     bool spin_changed = false;
     bool size_changed = false;
     bool mode_changed = false;
@@ -342,6 +387,11 @@ static void _ssao_gui(DvzGui* gui, DvzAppWindow* win, void* user_data)
     {
         spin_changed |= dvz_gui_checkbox(gui, "Auto rotate", &state->spin_enabled);
         mode_changed |= dvz_gui_checkbox(gui, "Raycast impostor", &state->raycast_mode);
+        msaa_changed |= dvz_gui_checkbox(gui, "Enable MSAA", &state->msaa_enabled);
+        msaa_changed |=
+            dvz_gui_slider_float(gui, "MSAA samples", &state->msaa_sample_count, 2.0f, 8.0f);
+        msaa_changed |=
+            dvz_gui_checkbox(gui, "Alpha-to-coverage", &state->msaa_alpha_to_coverage);
         ssao_changed |= dvz_gui_checkbox(gui, "Enable SSAO", &state->ssao_enabled);
         size_changed |= dvz_gui_slider_float(gui, "Sphere size", &state->size_scale, 0.35f, 2.5f);
         ssao_changed |= dvz_gui_slider_float(gui, "Radius", &state->radius, 0.05f, 4.0f);
@@ -362,6 +412,7 @@ static void _ssao_gui(DvzGui* gui, DvzAppWindow* win, void* user_data)
         {
             _reset_controls(state);
             ssao_changed = false;
+            msaa_changed = false;
             spin_changed = false;
             size_changed = false;
             mode_changed = false;
@@ -375,6 +426,8 @@ static void _ssao_gui(DvzGui* gui, DvzAppWindow* win, void* user_data)
         _apply_sphere_sizes(state);
     if (ssao_changed)
         _apply_ssao(state);
+    if (msaa_changed)
+        _apply_msaa(state);
     if (spin_changed)
         _apply_spin(state);
 }

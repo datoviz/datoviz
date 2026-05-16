@@ -96,6 +96,18 @@ _scene_frame_graph_resource_once(DvzFramePlan* plan, const DvzFrameGraphResource
 }
 
 
+/**
+ * Return whether a sample count is supported by the scene MSAA planner.
+ *
+ * @param sample_count requested sample count
+ * @return whether the value maps to a Vulkan color sample count
+ */
+static bool _scene_msaa_sample_count_valid(uint32_t sample_count)
+{
+    return sample_count == 1 || sample_count == 2 || sample_count == 4 || sample_count == 8;
+}
+
+
 
 /**
  * Fill a color attachment descriptor.
@@ -198,6 +210,7 @@ void _scene_technique_state_init(DvzSceneTechniqueState* state)
     state->ssao.strength = 1.0f;
     state->ssao.bias = 0.025f;
     state->ssao.sample_count = 16;
+    state->msaa.sample_count = 1;
 }
 
 
@@ -369,6 +382,66 @@ _scene_technique_ssao_state(const DvzScene* scene, const DvzPanel* panel)
         return &panel->techniques.ssao;
     if (scene != NULL && _scene_technique_state_ssao_enabled(&scene->techniques))
         return &scene->techniques.ssao;
+    return NULL;
+}
+
+
+/**
+ * Configure internal MSAA state.
+ *
+ * @param state the technique state
+ * @param desc MSAA descriptor, or NULL to disable
+ * @return whether the state was updated
+ */
+bool _scene_technique_state_set_msaa(
+    DvzSceneTechniqueState* state, const DvzMsaaDesc* desc)
+{
+    ANN(state);
+    if (desc == NULL || !desc->enabled)
+    {
+        state->msaa.enabled = false;
+        state->msaa.sample_count = 1;
+        state->msaa.alpha_to_coverage = false;
+        return true;
+    }
+
+    uint32_t sample_count = desc->sample_count == 0 ? 4 : desc->sample_count;
+    if (!_scene_msaa_sample_count_valid(sample_count) || sample_count <= 1)
+        return false;
+
+    state->msaa.enabled = true;
+    state->msaa.sample_count = sample_count;
+    state->msaa.alpha_to_coverage = desc->alpha_to_coverage;
+    return true;
+}
+
+
+/**
+ * Return whether a technique state enables MSAA.
+ *
+ * @param state the technique state
+ * @return whether MSAA is enabled
+ */
+bool _scene_technique_state_msaa_enabled(const DvzSceneTechniqueState* state)
+{
+    return state != NULL && state->msaa.enabled && state->msaa.sample_count > 1;
+}
+
+
+/**
+ * Return the effective MSAA state for one scene/panel pair.
+ *
+ * @param scene the scene
+ * @param panel the panel
+ * @return the effective MSAA state, or NULL when disabled
+ */
+const DvzSceneMsaaTechniqueState*
+_scene_technique_msaa_state(const DvzScene* scene, const DvzPanel* panel)
+{
+    if (panel != NULL && _scene_technique_state_msaa_enabled(&panel->techniques))
+        return &panel->techniques.msaa;
+    if (scene != NULL && _scene_technique_state_msaa_enabled(&scene->techniques))
+        return &scene->techniques.msaa;
     return NULL;
 }
 
@@ -952,14 +1025,20 @@ bool _scene_technique_emit_depth_peel_frame_graph(
  * @return whether graph descriptors were emitted
  */
 bool _scene_technique_emit_opaque_frame_graph(
-    DvzFramePlan* plan, const char* panel_id, bool needs_depth)
+    DvzFramePlan* plan, const char* panel_id, bool needs_depth,
+    const DvzSceneMsaaTechniqueState* msaa)
 {
     ANN(plan);
     ANN(panel_id);
 
+    uint32_t sample_count =
+        msaa != NULL && msaa->enabled && msaa->sample_count > 1 ? msaa->sample_count : 1;
+    bool multisample = sample_count > 1;
     char depth_id[DVZ_SCENE_LABEL_SIZE];
+    char msaa_color_id[DVZ_SCENE_LABEL_SIZE];
     char opaque_pass_id[DVZ_SCENE_LABEL_SIZE];
     dvz_snprintf(depth_id, sizeof(depth_id), "%s.depth", panel_id);
+    dvz_snprintf(msaa_color_id, sizeof(msaa_color_id), "%s.msaa.color", panel_id);
     dvz_snprintf(opaque_pass_id, sizeof(opaque_pass_id), "%s.opaque", panel_id);
 
     DvzFrameGraphResource rt = {0};
@@ -972,6 +1051,20 @@ bool _scene_technique_emit_opaque_frame_graph(
     if (!_scene_frame_graph_resource_once(plan, &rt))
         return false;
 
+    if (multisample)
+    {
+        DvzFrameGraphResource msaa_color = {0};
+        dvz_strlcpy(msaa_color.id, msaa_color_id, sizeof(msaa_color.id));
+        msaa_color.kind = DVZ_FRAME_GRAPH_RESOURCE_TEXTURE;
+        msaa_color.format = VK_FORMAT_R8G8B8A8_UNORM;
+        msaa_color.extent_kind = DVZ_FRAME_GRAPH_EXTENT_FIGURE;
+        msaa_color.usage_flags = DVZ_FRAME_GRAPH_RESOURCE_USAGE_COLOR_ATTACHMENT;
+        msaa_color.sample_count = sample_count;
+        msaa_color.lifetime = DVZ_FRAME_GRAPH_RESOURCE_LIFETIME_PER_FRAME;
+        if (!_scene_frame_graph_resource_once(plan, &msaa_color))
+            return false;
+    }
+
     if (needs_depth)
     {
         DvzFrameGraphResource depth = {0};
@@ -980,6 +1073,7 @@ bool _scene_technique_emit_opaque_frame_graph(
         depth.format = VK_FORMAT_D32_SFLOAT;
         depth.extent_kind = DVZ_FRAME_GRAPH_EXTENT_FIGURE;
         depth.usage_flags = DVZ_FRAME_GRAPH_RESOURCE_USAGE_DEPTH_ATTACHMENT;
+        depth.sample_count = sample_count;
         depth.lifetime = DVZ_FRAME_GRAPH_RESOURCE_LIFETIME_PER_FRAME;
         if (!_scene_frame_graph_resource_once(plan, &depth))
             return false;
@@ -992,8 +1086,14 @@ bool _scene_technique_emit_opaque_frame_graph(
     dvz_strlcpy(opaque.panel_id, panel_id, sizeof(opaque.panel_id));
     dvz_strlcpy(opaque.work_label, "opaque", sizeof(opaque.work_label));
     opaque.kind = DVZ_FRAME_GRAPH_PASS_RENDER;
+    opaque.alpha_to_coverage = multisample && msaa != NULL && msaa->alpha_to_coverage;
     _scene_frame_graph_color_attachment(
-        &color, "rt", DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_CLEAR, true);
+        &color, multisample ? msaa_color_id : "rt", DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_CLEAR, true);
+    if (multisample)
+    {
+        dvz_strlcpy(color.resolve_resource_id, "rt", sizeof(color.resolve_resource_id));
+        color.resolve_mode = 1;
+    }
     if (!dvz_frame_graph_pass_color_attachment(&opaque, &color))
         return false;
     if (needs_depth)

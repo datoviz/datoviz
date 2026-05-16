@@ -105,6 +105,14 @@ bool _scene_technique_state_ssao_enabled(const DvzSceneTechniqueState* state);
 const DvzSceneSsaoTechniqueState*
 _scene_technique_ssao_state(const DvzScene* scene, const DvzPanel* panel);
 
+bool _scene_technique_state_set_msaa(
+    DvzSceneTechniqueState* state, const DvzMsaaDesc* desc);
+
+bool _scene_technique_state_msaa_enabled(const DvzSceneTechniqueState* state);
+
+const DvzSceneMsaaTechniqueState*
+_scene_technique_msaa_state(const DvzScene* scene, const DvzPanel* panel);
+
 void _scene_technique_edl_uniform(
     const DvzSceneEdlTechniqueState* edl, DvzSceneEdlUniform* out);
 
@@ -125,7 +133,8 @@ bool _scene_technique_emit_depth_peel_frame_graph(
     bool transparent_needs_depth);
 
 bool _scene_technique_emit_opaque_frame_graph(
-    DvzFramePlan* plan, const char* panel_id, bool needs_depth);
+    DvzFramePlan* plan, const char* panel_id, bool needs_depth,
+    const DvzSceneMsaaTechniqueState* msaa);
 
 bool _scene_technique_emit_depth_postprocess_frame_graph(
     DvzFramePlan* plan, const char* panel_id,

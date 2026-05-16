@@ -228,6 +228,7 @@ typedef struct DvzFrameGraphPass
     DvzFrameGraphAttachment depth_attachment;
     bool has_stencil_attachment;
     DvzFrameGraphAttachment stencil_attachment;
+    bool alpha_to_coverage;
     char work_label[DVZ_SCENE_LABEL_SIZE];
 } DvzFrameGraphPass;
 

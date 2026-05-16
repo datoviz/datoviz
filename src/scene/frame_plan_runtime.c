@@ -73,6 +73,7 @@ struct SceneGraphRuntimeTarget
 {
     char resource_id[DVZ_SCENE_LABEL_SIZE];
     uint64_t texture_id;
+    uint32_t sample_count;
 };
 
 
@@ -151,6 +152,23 @@ struct SceneDepthPeelTargets
     uint64_t composite_bg_id;
     uint64_t composite_pipeline_id;
 };
+
+
+/*************************************************************************************************/
+/*  Function prototypes                                                                          */
+/*************************************************************************************************/
+
+static uint64_t _graph_runtime_texture_id_for_resource(
+    const char* resource_id, uint64_t final_color_id, const SceneGraphRuntimeTargets* targets,
+    uint64_t fallback_id);
+
+static bool _graph_resolve_texture_2d(
+    DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, const DvzFramePlan* plan,
+    const DvzFramePlanEmitConfig* cfg, const DvzFrameGraphResource* resource, uint32_t width,
+    uint32_t height, uint32_t fallback_format, uint64_t* out_id);
+
+static bool _graph_runtime_targets_add(
+    SceneGraphRuntimeTargets* targets, const char* resource_id, uint64_t texture_id);
 
 
 
@@ -480,8 +498,8 @@ static void _emitter_label_stream_ids(
 static bool _emitter_prepare_render_multi(
     DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, const DvzFramePlanNode* render,
     const DvzFramePlanEmitConfig* cfg, bool pass_has_depth_attachment, bool force_point_depth,
-    uint64_t sampled_depth_id, DvzDiagnosticReport* report, SceneRenderDraw* draws,
-    uint32_t* draw_count_out)
+    uint64_t sampled_depth_id, uint32_t pass_sample_count, bool pass_alpha_to_coverage,
+    DvzDiagnosticReport* report, SceneRenderDraw* draws, uint32_t* draw_count_out)
 {
     ANN(emitter);
     ANN(stream);
@@ -620,6 +638,20 @@ static bool _emitter_prepare_render_multi(
                 shader.pipeline_key + key_len, sizeof(shader.pipeline_key) - key_len,
                 force_point_depth ? "_zwrite" : "_depth");
         }
+        if (pass_sample_count > 1)
+        {
+            size_t key_len = strlen(shader.pipeline_key);
+            dvz_snprintf(
+                shader.pipeline_key + key_len, sizeof(shader.pipeline_key) - key_len,
+                "_msaa%" PRIu32, pass_sample_count);
+            if (desc.kind == DVZ_SCENE_VISUAL_DESC_SPHERE && pass_alpha_to_coverage)
+            {
+                key_len = strlen(shader.pipeline_key);
+                dvz_snprintf(
+                    shader.pipeline_key + key_len, sizeof(shader.pipeline_key) - key_len,
+                    "_a2c");
+            }
+        }
 
         /* Shaders (cached). */
         uint64_t vs_id = _obj_id(emitter, shader.vertex_key, &is_new);
@@ -697,6 +729,10 @@ static bool _emitter_prepare_render_multi(
                 pipeline.depth_write_enabled = true;
                 pipeline.depth_compare_op = VK_COMPARE_OP_LESS_OR_EQUAL;
             }
+            if (
+                pass_sample_count > 1 && desc.kind == DVZ_SCENE_VISUAL_DESC_SPHERE &&
+                pass_alpha_to_coverage)
+                pipeline.alpha_to_coverage = true;
             uint64_t material_bgl_id = 0;
             if (pipeline.needs_material_layout)
             {
@@ -727,6 +763,9 @@ static bool _emitter_prepare_render_multi(
                            pipeline.topology, pipeline.binding_count, pipeline.strides,
                            pipeline.attr_count, pipeline.bindings, pipeline.locations,
                            pipeline.formats, pipeline.offsets);
+            if (ok && pass_sample_count > 1)
+                ok = dvz_drp2_stream_pipeline_set_multisampling(
+                    stream, pass_sample_count, pipeline.alpha_to_coverage);
             if (ok && shader.builtin_pipeline != NULL)
                 ok = dvz_drp2_stream_pipeline_set_builtin_identity(
                     stream, pipe_id, shader.builtin_pipeline, 1);
@@ -1252,6 +1291,9 @@ _graph_declared_texture_usage_to_drp2(const DvzFramePlan* plan, const char* reso
             if (strcmp(pass->color_attachments[j].resource_id, resource_id) == 0)
                 usage |= _graph_access_usage_to_drp2(
                     DVZ_FRAME_GRAPH_ACCESS_COLOR_ATTACHMENT);
+            if (strcmp(pass->color_attachments[j].resolve_resource_id, resource_id) == 0)
+                usage |= _graph_access_usage_to_drp2(
+                    DVZ_FRAME_GRAPH_ACCESS_COLOR_ATTACHMENT);
         }
         if (pass->has_depth_attachment &&
             strcmp(pass->depth_attachment.resource_id, resource_id) == 0)
@@ -1332,6 +1374,36 @@ static DvzDrp2AttachmentAccess _graph_attachment_access_to_drp2(
 }
 
 
+/**
+ * Return a graph resource's effective sample count.
+ *
+ * @param resource the graph resource
+ * @return sample count, defaulting to 1 when unset
+ */
+static uint32_t _graph_resource_sample_count(const DvzFrameGraphResource* resource)
+{
+    return resource != NULL && resource->sample_count != 0 ? resource->sample_count : 1;
+}
+
+
+/**
+ * Return the raster sample count implied by a render graph pass.
+ *
+ * @param plan the FramePlan carrying graph resources
+ * @param pass graph pass descriptor
+ * @return raster sample count, defaulting to 1
+ */
+static uint32_t
+_graph_render_pass_sample_count(const DvzFramePlan* plan, const DvzFrameGraphPass* pass)
+{
+    if (plan == NULL || pass == NULL || pass->color_attachment_count == 0)
+        return 1;
+    const DvzFrameGraphResource* resource =
+        _graph_resource_by_id(plan, pass->color_attachments[0].resource_id);
+    return _graph_resource_sample_count(resource);
+}
+
+
 
 /**
  * Apply graph color attachment load/store operations to the current DRP2 render pass command.
@@ -1341,7 +1413,8 @@ static DvzDrp2AttachmentAccess _graph_attachment_access_to_drp2(
  * @return whether the command was updated.
  */
 static bool _stream_apply_graph_color_ops(
-    DvzDrp2CommandStream* stream, const DvzFrameGraphPass* pass)
+    DvzDrp2CommandStream* stream, const DvzFrameGraphPass* pass, uint64_t final_color_id,
+    const SceneGraphRuntimeTargets* targets)
 {
     ANN(stream);
     if (pass == NULL)
@@ -1355,6 +1428,14 @@ static bool _stream_apply_graph_color_ops(
             _graph_store_op_to_drp2(attachment->store_op)) &&
              dvz_drp2_stream_begin_render_pass_set_color_attachment_access(
                  stream, i, _graph_attachment_access_to_drp2(attachment->access));
+        if (ok && attachment->resolve_resource_id[0] != '\0')
+        {
+            uint64_t resolve_id = _graph_runtime_texture_id_for_resource(
+                attachment->resolve_resource_id, final_color_id, targets, 0);
+            ok = resolve_id != 0 &&
+                 dvz_drp2_stream_begin_render_pass_set_color_attachment_resolve(
+                     stream, i, resolve_id, attachment->resolve_mode);
+        }
     }
     return ok;
 }
@@ -1518,6 +1599,50 @@ static uint64_t _graph_sampled_read_texture_id(
 }
 
 
+/**
+ * Prepare graph-declared color targets for one render pass.
+ *
+ * @param emitter the persistent emitter
+ * @param stream destination DRP2 command stream
+ * @param plan the FramePlan
+ * @param pass graph pass descriptor
+ * @param cfg optional frame-plan emit configuration
+ * @param out output runtime target map
+ * @return whether all non-external color targets were prepared
+ */
+static bool _graph_prepare_render_color_targets(
+    DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, const DvzFramePlan* plan,
+    const DvzFrameGraphPass* pass, const DvzFramePlanEmitConfig* cfg,
+    SceneGraphRuntimeTargets* out)
+{
+    ANN(emitter);
+    ANN(stream);
+    ANN(plan);
+    ANN(out);
+    if (pass == NULL)
+        return true;
+
+    uint32_t width = 0;
+    uint32_t height = 0;
+    _emit_target_extent(cfg, &width, &height);
+
+    bool ok = true;
+    for (uint32_t i = 0; ok && i < pass->color_attachment_count; i++)
+    {
+        const DvzFrameGraphResource* resource =
+            _graph_resource_by_id(plan, pass->color_attachments[i].resource_id);
+        if (resource == NULL || resource->kind == DVZ_FRAME_GRAPH_RESOURCE_EXTERNAL_TARGET)
+            continue;
+        uint64_t texture_id = 0;
+        ok = _graph_resolve_texture_2d(
+            emitter, stream, plan, cfg, resource, width, height, VK_FORMAT_R8G8B8A8_UNORM,
+            &texture_id);
+        ok = ok && _graph_runtime_targets_add(out, resource->id, texture_id);
+    }
+    return ok;
+}
+
+
 
 /**
  * Resolve or create one runtime 2D texture.
@@ -1534,7 +1659,7 @@ static uint64_t _graph_sampled_read_texture_id(
  */
 static bool _runtime_resolve_texture_2d(
     DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, const char* key, uint32_t width,
-    uint32_t height, uint32_t format, uint32_t usage, uint64_t* out_id)
+    uint32_t height, uint32_t format, uint32_t usage, uint32_t sample_count, uint64_t* out_id)
 {
     ANN(emitter);
     ANN(stream);
@@ -1555,23 +1680,26 @@ static bool _runtime_resolve_texture_2d(
         resource->texture_height = height;
         resource->texture_depth = 1;
         resource->texture_format = format;
+        resource->texture_sample_count = sample_count;
         is_new = true;
     }
     else if (
         width != resource->texture_width || height != resource->texture_height ||
-        resource->texture_depth != 1 || format != resource->texture_format)
+        resource->texture_depth != 1 || format != resource->texture_format ||
+        sample_count != resource->texture_sample_count)
     {
         resource->texture_width = width;
         resource->texture_height = height;
         resource->texture_depth = 1;
         resource->texture_format = format;
+        resource->texture_sample_count = sample_count;
         is_new = true;
     }
 
     if (is_new)
     {
-        if (!dvz_drp2_stream_create_texture_2d_format_usage(
-                stream, resource->id, width, height, format, usage))
+        if (!dvz_drp2_stream_create_texture_2d_format_usage_samples(
+                stream, resource->id, width, height, format, usage, sample_count))
             return false;
     }
     *out_id = resource->id;
@@ -1635,7 +1763,9 @@ static bool _graph_resolve_texture_2d(
 
     char key[DVZ_SCENE_LABEL_SIZE];
     _runtime_scope_key(cfg, resource->id, key, sizeof(key));
-    return _runtime_resolve_texture_2d(emitter, stream, key, width, height, format, usage, out_id);
+    return _runtime_resolve_texture_2d(
+        emitter, stream, key, width, height, format, usage,
+        _graph_resource_sample_count(resource), out_id);
 }
 
 
@@ -2522,14 +2652,14 @@ static bool _emitter_prepare_wboit_targets(
                           VK_FORMAT_R16G16B16A16_SFLOAT, &out->accum_id)
                     : _runtime_resolve_texture_2d(
                           emitter, stream, scoped_accum_key, width, height,
-                          VK_FORMAT_R16G16B16A16_SFLOAT, fallback_usage, &out->accum_id));
+                          VK_FORMAT_R16G16B16A16_SFLOAT, fallback_usage, 1, &out->accum_id));
     ok = ok && (weight_resource != NULL
                     ? _graph_resolve_texture_2d(
                           emitter, stream, plan, cfg, weight_resource, width, height,
                           VK_FORMAT_R16_SFLOAT, &out->weight_id)
                     : _runtime_resolve_texture_2d(
                           emitter, stream, scoped_weight_key, width, height, VK_FORMAT_R16_SFLOAT,
-                          fallback_usage, &out->weight_id));
+                          fallback_usage, 1, &out->weight_id));
     if (!ok)
         return false;
     if (depth_resource != NULL)
@@ -3173,9 +3303,11 @@ static bool _emitter_emit_render_multi(
 
     SceneRenderDraw draws[DVZ_SCENE_MAX_RENDER_VISUALS] = {0};
     uint32_t draw_count = 0;
+    uint32_t pass_sample_count = _graph_render_pass_sample_count(plan, graph_pass);
     ok = _emitter_prepare_render_multi(
-        emitter, stream, render, cfg, pass_has_depth_attachment, false, sampled_depth_id, report,
-        draws, &draw_count);
+        emitter, stream, render, cfg, pass_has_depth_attachment, false, sampled_depth_id,
+        pass_sample_count, graph_pass != NULL && graph_pass->alpha_to_coverage, report, draws,
+        &draw_count);
     if (!ok)
         return false;
 
@@ -3183,7 +3315,7 @@ static bool _emitter_emit_render_multi(
          dvz_drp2_stream_begin_render_pass_region_clear(
              stream, render_pass_id, encoder_id, color_id, cr, cg, cb, ca, 0.0f, 0.0f, 1.0f,
              1.0f, clear);
-    ok = ok && _stream_apply_graph_color_ops(stream, graph_pass);
+    ok = ok && _stream_apply_graph_color_ops(stream, graph_pass, color_id, NULL);
     ok = ok && _stream_apply_graph_depth(stream, graph_pass, graph_depth_id);
     if (ok && needs_depth && graph_depth_id == 0)
         ok = dvz_drp2_stream_begin_render_pass_set_depth(stream, 1.0f);
@@ -3254,7 +3386,7 @@ static bool _emitter_emit_scene_figure_renders(
         SceneRenderBatch* batch = &batches[batch_count];
         batch->render = render;
         ok = _emitter_prepare_render_multi(
-            emitter, stream, render, cfg, needs_depth, false, 0, report, batch->draws,
+            emitter, stream, render, cfg, needs_depth, false, 0, 1, false, report, batch->draws,
             &batch->draw_count);
         if (ok)
             batch_count++;
@@ -3514,8 +3646,9 @@ static bool _emitter_emit_scene_graph_renders(
                 strstr(render_graph_pass->depth_attachment.resource_id, ".edl.depth") != NULL;
             ok = _emitter_prepare_render_multi(
                 emitter, stream, render, cfg, pass_has_depth_attachment, force_point_depth,
-                sampled_depth_id,
-                report, batch->draws, &batch->draw_count);
+                sampled_depth_id, _graph_render_pass_sample_count(plan, render_graph_pass),
+                render_graph_pass != NULL && render_graph_pass->alpha_to_coverage, report,
+                batch->draws, &batch->draw_count);
             if (ok)
                 batch_count++;
         }
@@ -3587,7 +3720,8 @@ static bool _emitter_emit_scene_graph_renders(
                 ok = dvz_drp2_stream_begin_render_pass_add_color_attachment(
                     stream, object_id, 0.0f, 0.0f, 0.0f, 0.0f, true);
             }
-            ok = ok && _stream_apply_graph_color_ops(stream, graph_pass);
+            ok = ok && _stream_apply_graph_color_ops(
+                           stream, graph_pass, color_id, &targets->graph);
             ok = ok && _stream_apply_graph_depth(stream, graph_pass, targets->depth_id);
             if (ok && has_draws)
             {
@@ -3624,6 +3758,16 @@ static bool _emitter_emit_scene_graph_renders(
             const DvzFrameGraphPass* graph_pass = ordered_graph_pass != NULL
                                                       ? ordered_graph_pass
                                                       : _graph_pass_for_render(plan, render);
+            SceneGraphRuntimeTargets local_graph_targets = {0};
+            if (ok && graph_targets == NULL)
+            {
+                ok = _graph_prepare_render_color_targets(
+                    emitter, stream, plan, graph_pass, cfg, &local_graph_targets);
+                if (!ok)
+                    break;
+                if (local_graph_targets.count > 0)
+                    graph_targets = &local_graph_targets;
+            }
             if (ok && graph_depth_id == 0 && graph_pass != NULL &&
                 graph_pass->has_depth_attachment)
             {
@@ -3643,7 +3787,8 @@ static bool _emitter_emit_scene_graph_renders(
             ok = ok && dvz_drp2_stream_begin_render_pass_region_clear(
                      stream, pass_id, encoder_id, target_id, cr, cg, cb, ca, 0.0f, 0.0f,
                      1.0f, 1.0f, clear_final);
-            ok = ok && _stream_apply_graph_color_ops(stream, graph_pass);
+            ok = ok && _stream_apply_graph_color_ops(
+                           stream, graph_pass, color_id, graph_targets);
             if (ok && graph_depth_id != 0)
                 ok = _stream_apply_graph_depth(stream, graph_pass, graph_depth_id);
             if (ok && has_draws && graph_depth_id == 0 &&
@@ -3685,7 +3830,8 @@ static bool _emitter_emit_scene_graph_renders(
                      render->u.render.desc.width, render->u.render.desc.height, true) &&
                  dvz_drp2_stream_begin_render_pass_add_color_attachment(
                      stream, weight_id, 0.0f, 0.0f, 0.0f, 0.0f, true);
-            ok = ok && _stream_apply_graph_color_ops(stream, graph_pass);
+            ok = ok && _stream_apply_graph_color_ops(
+                           stream, graph_pass, color_id, &targets->graph);
             ok = ok && _stream_apply_graph_depth(stream, graph_pass, targets->depth_id);
             if (ok && targets->depth_id == 0 && _scene_render_needs_depth(emitter, render))
                 ok = dvz_drp2_stream_begin_render_pass_set_depth(stream, 1.0f);
@@ -3721,7 +3867,8 @@ static bool _emitter_emit_scene_graph_renders(
                 stream, pass_id, encoder_id, target_id, cr, cg, cb, ca,
                 render->u.render.desc.x, render->u.render.desc.y, render->u.render.desc.width,
                 render->u.render.desc.height, false);
-            ok = ok && _stream_apply_graph_color_ops(stream, graph_pass);
+            ok = ok && _stream_apply_graph_color_ops(
+                           stream, graph_pass, color_id, &targets->graph);
             ok = ok && _stream_apply_graph_depth(stream, graph_pass, targets->depth_id);
             const SceneRenderBatch* batch = _render_batch_for_node(batches, batch_count, render);
             bool has_draws = batch != NULL;
@@ -3766,7 +3913,8 @@ static bool _emitter_emit_scene_graph_renders(
                      stream, second_id, 0.0f, 0.0f, 0.0f, 0.0f, true) &&
                  dvz_drp2_stream_begin_render_pass_add_color_attachment(
                      stream, third_id, 0.0f, 0.0f, 0.0f, 0.0f, true);
-            ok = ok && _stream_apply_graph_color_ops(stream, graph_pass);
+            ok = ok && _stream_apply_graph_color_ops(
+                           stream, graph_pass, color_id, &targets->graph);
             ok = ok && _stream_apply_graph_depth(stream, graph_pass, targets->depth_id);
             const SceneRenderBatch* batch = _render_batch_for_node(batches, batch_count, render);
             bool has_draws = batch != NULL;
@@ -3801,7 +3949,7 @@ static bool _emitter_emit_scene_graph_renders(
                      stream, pass_id, encoder_id, target_id, 0.0f, 0.0f, 0.0f, 0.0f,
                      render->u.render.desc.x, render->u.render.desc.y,
                      render->u.render.desc.width, render->u.render.desc.height, false) &&
-                 _stream_apply_graph_color_ops(stream, graph_pass) &&
+                 _stream_apply_graph_color_ops(stream, graph_pass, color_id, &targets->graph) &&
                  dvz_drp2_stream_set_viewport(
                      stream, pass_id, render->u.render.desc.x, render->u.render.desc.y,
                      render->u.render.desc.width, render->u.render.desc.height) &&
@@ -3836,7 +3984,7 @@ static bool _emitter_emit_scene_graph_renders(
                      stream, pass_id, encoder_id, target_id, 1.0f, 1.0f, 1.0f, 1.0f,
                      render->u.render.desc.x, render->u.render.desc.y,
                      render->u.render.desc.width, render->u.render.desc.height, true) &&
-                 _stream_apply_graph_color_ops(stream, graph_pass) &&
+                 _stream_apply_graph_color_ops(stream, graph_pass, color_id, &targets->graph) &&
                  dvz_drp2_stream_set_viewport(
                      stream, pass_id, render->u.render.desc.x, render->u.render.desc.y,
                      render->u.render.desc.width, render->u.render.desc.height) &&
@@ -3868,7 +4016,7 @@ static bool _emitter_emit_scene_graph_renders(
                      stream, pass_id, encoder_id, target_id, 1.0f, 1.0f, 1.0f, 1.0f,
                      render->u.render.desc.x, render->u.render.desc.y,
                      render->u.render.desc.width, render->u.render.desc.height, true) &&
-                 _stream_apply_graph_color_ops(stream, graph_pass) &&
+                 _stream_apply_graph_color_ops(stream, graph_pass, color_id, &targets->graph) &&
                  dvz_drp2_stream_set_viewport(
                      stream, pass_id, render->u.render.desc.x, render->u.render.desc.y,
                      render->u.render.desc.width, render->u.render.desc.height) &&
@@ -3901,7 +4049,7 @@ static bool _emitter_emit_scene_graph_renders(
                      stream, pass_id, encoder_id, target_id, 0.0f, 0.0f, 0.0f, 0.0f,
                      render->u.render.desc.x, render->u.render.desc.y,
                      render->u.render.desc.width, render->u.render.desc.height, false) &&
-                 _stream_apply_graph_color_ops(stream, graph_pass) &&
+                 _stream_apply_graph_color_ops(stream, graph_pass, color_id, &targets->graph) &&
                  dvz_drp2_stream_set_viewport(
                      stream, pass_id, render->u.render.desc.x, render->u.render.desc.y,
                      render->u.render.desc.width, render->u.render.desc.height) &&
@@ -3937,7 +4085,7 @@ static bool _emitter_emit_scene_graph_renders(
                      stream, pass_id, encoder_id, target_id, cr, cg, cb, ca,
                      render->u.render.desc.x, render->u.render.desc.y,
                      render->u.render.desc.width, render->u.render.desc.height, true) &&
-                 _stream_apply_graph_color_ops(stream, graph_pass) &&
+                 _stream_apply_graph_color_ops(stream, graph_pass, color_id, &targets->graph) &&
                  dvz_drp2_stream_set_viewport(
                      stream, pass_id, render->u.render.desc.x, render->u.render.desc.y,
                      render->u.render.desc.width, render->u.render.desc.height) &&
@@ -3973,7 +4121,7 @@ static bool _emitter_emit_scene_graph_renders(
                      stream, pass_id, encoder_id, target_id, 0.0f, 0.0f, 0.0f, 0.0f,
                      render->u.render.desc.x, render->u.render.desc.y,
                      render->u.render.desc.width, render->u.render.desc.height, false) &&
-                 _stream_apply_graph_color_ops(stream, graph_pass) &&
+                 _stream_apply_graph_color_ops(stream, graph_pass, color_id, &targets->graph) &&
                  _emitter_emit_wboit_resolve(stream, render, pass_id, targets) &&
                  dvz_drp2_stream_end_render_pass(stream, pass_id);
         }

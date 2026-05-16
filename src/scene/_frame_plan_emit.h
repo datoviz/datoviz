@@ -81,6 +81,7 @@ struct ResourceId
     uint32_t texture_height;             /* allocated texture height, when this is a texture  */
     uint32_t texture_depth;              /* allocated texture depth, when this is a texture   */
     uint32_t texture_format;             /* texture format, when this is a texture            */
+    uint32_t texture_sample_count;       /* texture sample count, defaulting to one           */
     DvzFramePlanResourceKind kind;        /* typed resource kind, when supplied by FramePlan   */
     DvzFramePlanResourceRole role;        /* typed resource role, when supplied by FramePlan   */
 };

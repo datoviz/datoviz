@@ -776,6 +776,8 @@ void _scene_emit_panel_render(
     bool gbuffer_enabled = _scene_technique_gbuffer_enabled(figure->scene, panel);
     const DvzSceneSsaoTechniqueState* ssao_state =
         _scene_technique_ssao_state(figure->scene, panel);
+    const DvzSceneMsaaTechniqueState* msaa_state =
+        _scene_technique_msaa_state(figure->scene, panel);
     bool ssao_enabled = ssao_state != NULL && ssao_state->enabled;
     bool gbuffer_required = gbuffer_enabled || ssao_enabled;
     const DvzSceneEdlTechniqueState* edl_state =
@@ -988,8 +990,9 @@ void _scene_emit_panel_render(
                 !_scene_technique_emit_edl_frame_graph(plan, panel_id))
                 log_error("failed to emit EDL FramePlan graph for panel %s", panel_id);
         }
-        else if (gbuffer_node != NULL &&
-                 !_scene_technique_emit_opaque_frame_graph(plan, panel_id, opaque_needs_depth))
+        else if ((gbuffer_node != NULL || (!ssao_enabled && msaa_state != NULL)) &&
+                 !_scene_technique_emit_opaque_frame_graph(
+                     plan, panel_id, opaque_needs_depth, ssao_enabled ? NULL : msaa_state))
             log_error("failed to emit opaque FramePlan graph for panel %s", panel_id);
     }
     if (ssao_enabled && gbuffer_node != NULL && gbuffer.producer_count > 0)

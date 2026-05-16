@@ -631,12 +631,21 @@ typedef struct DvzSceneSsaoTechniqueState
 } DvzSceneSsaoTechniqueState;
 
 
+typedef struct DvzSceneMsaaTechniqueState
+{
+    bool enabled;
+    uint32_t sample_count;
+    bool alpha_to_coverage;
+} DvzSceneMsaaTechniqueState;
+
+
 
 typedef struct DvzSceneTechniqueState
 {
     DvzSceneGBufferTechniqueState gbuffer;
     DvzSceneEdlTechniqueState edl;
     DvzSceneSsaoTechniqueState ssao;
+    DvzSceneMsaaTechniqueState msaa;
 } DvzSceneTechniqueState;
 
 

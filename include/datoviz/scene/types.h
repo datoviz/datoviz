@@ -126,6 +126,15 @@ struct DvzEdlDesc
 typedef struct DvzEdlDesc DvzEdlDesc;
 
 
+struct DvzMsaaDesc
+{
+    bool enabled;
+    uint32_t sample_count;
+    bool alpha_to_coverage;
+};
+typedef struct DvzMsaaDesc DvzMsaaDesc;
+
+
 struct DvzSceneBufferDesc
 {
     uint32_t usage;

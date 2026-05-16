@@ -955,6 +955,21 @@ bool _dvz_figure_fly_update(DvzFigure* figure, double dt)
 /*  Panel                                                                                        */
 /*************************************************************************************************/
 
+/**
+ * Return default panel MSAA options.
+ *
+ * @return MSAA descriptor with 4x samples and alpha-to-coverage enabled
+ */
+DvzMsaaDesc dvz_msaa_desc(void)
+{
+    return (DvzMsaaDesc){
+        .enabled = true,
+        .sample_count = 4,
+        .alpha_to_coverage = true,
+    };
+}
+
+
 DvzPanel* dvz_panel(DvzFigure* figure, DvzPanelDesc desc)
 {
     ANN(figure);
@@ -980,6 +995,20 @@ bool dvz_panel_set_edl(DvzPanel* panel, const DvzEdlDesc* desc)
 {
     ANN(panel);
     return _scene_technique_state_set_edl(&panel->techniques, desc);
+}
+
+
+/**
+ * Configure internal multisample antialiasing for one panel.
+ *
+ * @param panel the panel
+ * @param desc MSAA descriptor, or NULL to disable
+ * @return whether the panel MSAA state was updated
+ */
+bool dvz_panel_set_msaa(DvzPanel* panel, const DvzMsaaDesc* desc)
+{
+    ANN(panel);
+    return _scene_technique_state_set_msaa(&panel->techniques, desc);
 }
 
 

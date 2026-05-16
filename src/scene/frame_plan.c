@@ -811,6 +811,30 @@ static bool _graph_resource_is_depth_attachment_compatible(const DvzFrameGraphRe
 }
 
 
+/**
+ * Return a graph resource's effective sample count.
+ *
+ * @param resource the graph resource
+ * @return sample count, defaulting to 1 when unset
+ */
+static uint32_t _graph_resource_sample_count(const DvzFrameGraphResource* resource)
+{
+    return resource != NULL && resource->sample_count != 0 ? resource->sample_count : 1;
+}
+
+
+/**
+ * Return whether a graph resource sample count is supported.
+ *
+ * @param sample_count the effective sample count
+ * @return whether the value is valid
+ */
+static bool _graph_resource_sample_count_valid(uint32_t sample_count)
+{
+    return sample_count == 1 || sample_count == 2 || sample_count == 4 || sample_count == 8;
+}
+
+
 
 static bool _graph_resource_extent_matches(
     const DvzFrameGraphResource* a, const DvzFrameGraphResource* b)
@@ -914,6 +938,14 @@ static bool _graph_validate_attachment(
         return false;
 
     const DvzFrameGraphResource* resource = &plan->graph_resources[resource_index];
+    uint32_t sample_count = _graph_resource_sample_count(resource);
+    if (!_graph_resource_sample_count_valid(sample_count))
+    {
+        _graph_report(
+            report, "FramePlan graph resource '%s' has invalid sample count %" PRIu32,
+            resource->id, sample_count);
+        return false;
+    }
     if (usage == DVZ_FRAME_GRAPH_ACCESS_COLOR_ATTACHMENT &&
         !_graph_resource_is_color_attachment_compatible(resource))
     {
@@ -940,6 +972,54 @@ static bool _graph_validate_attachment(
             plan->graph_passes[pass_index].id, attachment->resource_id);
         return false;
     }
+    if (usage == DVZ_FRAME_GRAPH_ACCESS_COLOR_ATTACHMENT &&
+        attachment->resolve_resource_id[0] != '\0')
+    {
+        uint32_t resolve_index = 0;
+        if (!_graph_resource_index(plan, attachment->resolve_resource_id, &resolve_index))
+        {
+            _graph_report(
+                report, "FramePlan graph resolve attachment references unknown resource '%s'",
+                attachment->resolve_resource_id);
+            return false;
+        }
+        const DvzFrameGraphResource* resolve = &plan->graph_resources[resolve_index];
+        if (!_graph_resource_is_color_attachment_compatible(resolve))
+        {
+            _graph_report(
+                report, "FramePlan graph resolve resource '%s' is not renderable",
+                resolve->id);
+            return false;
+        }
+        if (_graph_resource_sample_count(resource) <= 1 ||
+            _graph_resource_sample_count(resolve) != 1)
+        {
+            _graph_report(
+                report,
+                "FramePlan graph resolve from '%s' to '%s' requires multisample color and "
+                "single-sample resolve",
+                resource->id, resolve->id);
+            return false;
+        }
+        if (!_graph_resource_extent_matches(resource, resolve))
+        {
+            _graph_report(
+                report,
+                "FramePlan graph resolve resource '%s' extent does not match color attachment "
+                "'%s'",
+                resolve->id, resource->id);
+            return false;
+        }
+        if (resource->format != 0 && resolve->format != 0 && resource->format != resolve->format)
+        {
+            _graph_report(
+                report,
+                "FramePlan graph resolve resource '%s' format does not match color attachment "
+                "'%s'",
+                resolve->id, resource->id);
+            return false;
+        }
+    }
     return true;
 }
 
@@ -961,6 +1041,7 @@ static bool _graph_validate_render_pass_attachment_extents(
 
     bool ok = true;
     const DvzFrameGraphResource* first_color = &plan->graph_resources[first_color_index];
+    uint32_t first_sample_count = _graph_resource_sample_count(first_color);
     for (uint32_t i = 1; i < pass->color_attachment_count; i++)
     {
         uint32_t color_index = 0;
@@ -972,6 +1053,15 @@ static bool _graph_validate_render_pass_attachment_extents(
             _graph_report(
                 report,
                 "FramePlan graph color attachment resource '%s' extent does not match '%s'",
+                color->id, first_color->id);
+            ok = false;
+        }
+        if (_graph_resource_sample_count(color) != first_sample_count)
+        {
+            _graph_report(
+                report,
+                "FramePlan graph color attachment resource '%s' sample count does not match "
+                "'%s'",
                 color->id, first_color->id);
             ok = false;
         }
@@ -989,6 +1079,15 @@ static bool _graph_validate_render_pass_attachment_extents(
                     report,
                     "FramePlan graph depth attachment resource '%s' extent does not match color "
                     "attachment '%s'",
+                    depth->id, first_color->id);
+                ok = false;
+            }
+            if (_graph_resource_sample_count(depth) != first_sample_count)
+            {
+                _graph_report(
+                    report,
+                    "FramePlan graph depth attachment resource '%s' sample count does not "
+                    "match color attachment '%s'",
                     depth->id, first_color->id);
                 ok = false;
             }
@@ -1271,6 +1370,8 @@ static void _json_append_graph_pass(JsonBuilder* builder, const DvzFrameGraphPas
         _json_append(builder, ", \"stencil_attachment\": ");
         _json_append_graph_attachment(builder, &pass->stencil_attachment);
     }
+    if (pass->alpha_to_coverage)
+        _json_append(builder, ", \"alpha_to_coverage\": true");
     if (pass->work_label[0] != '\0')
     {
         _json_append(builder, ", \"work\": ");

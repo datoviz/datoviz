@@ -390,6 +390,8 @@ int test_scene_visual_pass_capabilities(TstSuite* suite, TstItem* item);
 
 int test_scene_gbuffer_runtime_lowering(TstSuite* suite, TstItem* item);
 
+int test_scene_msaa_runtime_lowering(TstSuite* suite, TstItem* item);
+
 int test_scene_edl_runtime_lowering(TstSuite* suite, TstItem* item);
 
 int test_scene_edl_depth_producer_capabilities(TstSuite* suite, TstItem* item);

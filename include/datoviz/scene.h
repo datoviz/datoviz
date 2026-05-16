@@ -185,6 +185,14 @@ DVZ_EXPORT uint32_t dvz_figure_process_requests(
 /*************************************************************************************************/
 
 /**
+ * Return default panel MSAA options.
+ *
+ * @return MSAA descriptor with 4x samples and alpha-to-coverage enabled
+ */
+DVZ_EXPORT DvzMsaaDesc dvz_msaa_desc(void);
+
+
+/**
  * Create a panel inside a figure.
  *
  * @param figure the figure
@@ -254,6 +262,19 @@ DVZ_EXPORT void dvz_panel_set_background_color(
  * @return whether the panel EDL state was updated
  */
 DVZ_EXPORT bool dvz_panel_set_edl(DvzPanel* panel, const DvzEdlDesc* desc);
+
+
+/**
+ * Configure internal multisample antialiasing for one panel.
+ *
+ * The panel renders opaque scene color/depth into transient multisample attachments and resolves
+ * into the figure target. Pass NULL or a descriptor with enabled=false to disable MSAA.
+ *
+ * @param panel the panel
+ * @param desc MSAA descriptor, or NULL to disable
+ * @return whether the panel MSAA state was updated
+ */
+DVZ_EXPORT bool dvz_panel_set_msaa(DvzPanel* panel, const DvzMsaaDesc* desc);
 
 
 /**

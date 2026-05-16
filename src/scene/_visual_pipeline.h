@@ -147,6 +147,7 @@ typedef struct DvzSceneVisualPipelineDesc
     bool has_raster_state;
     uint32_t cull_mode;
     uint32_t front_face;
+    bool alpha_to_coverage;
 } DvzSceneVisualPipelineDesc;
 
 
