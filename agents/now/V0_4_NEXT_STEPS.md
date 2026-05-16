@@ -219,6 +219,18 @@ cleared after every frame (`5a97417e`). Validation: `cmake --build build --targe
 fixtures, `35/35` WebGPU preflight fixtures, `52` fixture-runner tests, and `7` schema/generation
 tests), and `git diff --check`.
 
+EDL scene-technique slice on `2026-05-16`: panel-local Eye-Dome Lighting is now available through
+`dvz_panel_set_edl()`. Scene emission lowers eligible opaque point/pixel and depth-writing visuals
+into a graph-declared color/depth intermediate plus a fullscreen EDL resolve pass. The DRP2 vklite
+runtime now transitions sampled depth bindings with the depth-read layout expected by depth
+descriptors, which keeps both EDL and existing volume depth sampling validation-clean. The example
+`examples/c/hello_points_edl_glfw.c` shows a dense point cloud with an ImGui control panel for
+enabling/disabling EDL and tuning radius, strength, and depth scale. Validation: `just build`,
+`just test drp2` (`119/119`), `just test scene` (`212/212`),
+`just test test_app_offscreen_points_edl_renders`, bounded smoke
+`./build/examples/c/hello_points_edl_glfw 1`, `git diff --check`, and `clang-tidy -p build --quiet`
+on the touched DRP2/scene/example files.
+
 Scene techniques/materials follow-up on `2026-05-16`: the architecture lane now has the first
 material-backed effect and graph-backed technique foundations. Landed commits include technique
 builder extraction (`bc36100e`), internal material state (`6b85c209`), lit primitive depth cueing

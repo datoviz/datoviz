@@ -17,13 +17,19 @@ Completed implementation commits:
 4. `af19c693` — added scene visual pass capabilities;
 5. `310b3cb9` — added the internal G-buffer graph foundation;
 6. `f58cec92` — added opt-in G-buffer DRP2 runtime lowering;
-7. `0068f1e2` — added internal scene/panel technique activation state.
+7. `0068f1e2` — added internal scene/panel technique activation state;
+8. `7e50fe26` — added the first panel-local EDL scene technique;
+9. `8981472e` — fixed sampled depth transitions for the EDL/runtime path;
+10. `f90774ba` — added the interactive point-cloud EDL GLFW example.
 
 The G-buffer foundation now covers internal eligibility, graph declarations, and opt-in runtime
 lowering for primitive/mesh visuals with normals. The current runtime slice emits normal and depth
 targets through the existing scene -> FramePlan graph -> DRP2 -> vklite path. G-buffer activation is
 now routed through internal scene/panel technique state and remains default-off until a concrete
-effect requests it.
+effect requests it. EDL is the first concrete post-process on this foundation: it is exposed as a
+small panel-local public toggle through `dvz_panel_set_edl()`, emits an opaque scene color/depth
+intermediate plus a fullscreen resolve pass, and has both offscreen app regression coverage and an
+interactive GLFW/GUI example.
 
 
 ## Source Architecture Note
@@ -197,6 +203,13 @@ Technique activation is now normalized internally. Implement effects in this ord
 2. object-id selected outlines, using a semantic object/group id buffer;
 3. SSAO/GTAO for primitive/mesh/sphere-impostor-capable visuals;
 4. generic scalar material modulation for curvature/cavity/accessibility/uncertainty channels.
+
+Current EDL status: the first native GLSL/vklite slice is implemented for opaque point/pixel and
+opaque depth-writing visuals in the simple opaque graph branch. It intentionally remains
+default-off and does not yet compose with WBOIT, depth peeling, or blended volume branches. The next
+useful EDL follow-up is to route point/pixel depth-writing through the same visual capability
+metadata used by mesh/primitive effects, then decide whether EDL should become a generic graph
+post-process that can run after selected transparent techniques.
 
 Use the existing SSAO implementation plan for the SSAO-specific graph and shader details:
 [SCENE_SSAO_IMPLEMENTATION_PLAN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/SCENE_SSAO_IMPLEMENTATION_PLAN.md).
