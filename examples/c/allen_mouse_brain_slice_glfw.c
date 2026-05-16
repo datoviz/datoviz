@@ -1433,8 +1433,8 @@ int main(int argc, char** argv)
         dvz_scene_destroy(scene);
         return 1;
     }
-    if (dvz_visual_set_alpha_mode(volume_3d, DVZ_ALPHA_BLENDED) != 0 ||
-        dvz_visual_set_alpha_mode(volume_slice, DVZ_ALPHA_BLENDED) != 0)
+    if (dvz_visual_set_alpha_mode(volume_3d, DVZ_ALPHA_WBOIT) != 0 ||
+        dvz_visual_set_alpha_mode(volume_slice, DVZ_ALPHA_WBOIT) != 0)
     {
         dvz_fprintf(stderr, "dvz_visual_set_alpha_mode() failed\n");
         _allen_mouse_brain_destroy(&volume_data);
