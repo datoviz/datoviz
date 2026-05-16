@@ -605,6 +605,100 @@ DvzDrp2ValidationResult _vklite_build_bind_group_descriptors(
 
 
 /**
+ * Return whether a bind group references a backend resource id.
+ *
+ * @param bind_group bind-group object carrying saved entries
+ * @param resource_id backend resource id to match
+ * @return whether the bind group depends on the resource
+ */
+static bool _vklite_bind_group_references_resource(
+    const Drp2VkliteObject* bind_group, uint64_t resource_id)
+{
+    ANN(bind_group);
+    if (bind_group->kind != DRP2_OBJECT_BIND_GROUP)
+        return false;
+    for (uint32_t i = 0; i < bind_group->bind_group_entry_count; i++)
+    {
+        if (bind_group->bind_group_entries[i].resource_id == resource_id)
+            return true;
+    }
+    return false;
+}
+
+
+
+/**
+ * Retire one descriptor wrapper without mutating the live bind-group object.
+ *
+ * @param state vklite runtime state
+ * @param descriptors descriptor wrapper to retire
+ * @return whether the wrapper was retired
+ */
+static bool _vklite_retire_bind_group_descriptors(
+    Drp2VkliteState* state, DvzDescriptors* descriptors)
+{
+    ANN(state);
+    if (descriptors == NULL)
+        return true;
+
+    if (state->active_borrowed_command_buffer != VK_NULL_HANDLE)
+    {
+        Drp2VkliteObject retired = {0};
+        retired.kind = DRP2_OBJECT_BIND_GROUP;
+        retired.descriptors = descriptors;
+        return _vklite_defer_destroy_object(
+            state, &retired, state->active_borrowed_command_buffer);
+    }
+
+    dvz_descriptors_free(descriptors);
+    return true;
+}
+
+
+
+/**
+ * Rebuild bind-group descriptors that reference a recreated backend resource id.
+ *
+ * @param state vklite runtime state
+ * @param resource_id recreated resource id
+ * @param command_index command index used for validation reporting
+ * @return DRP2 validation result
+ */
+DvzDrp2ValidationResult _vklite_refresh_dependent_bind_groups(
+    Drp2VkliteState* state, uint64_t resource_id, uint32_t command_index)
+{
+    ANN(state);
+    if (resource_id == 0)
+        return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_ARGUMENT, command_index);
+
+    for (uint32_t i = 0; i < state->count; i++)
+    {
+        Drp2VkliteObject* object = &state->objects[i];
+        if (object->destroyed || object->kind != DRP2_OBJECT_BIND_GROUP)
+            continue;
+        if (!_vklite_bind_group_references_resource(object, resource_id))
+            continue;
+
+        DvzDescriptors* descriptors = NULL;
+        DvzDrp2ValidationResult result =
+            _vklite_build_bind_group_descriptors(state, object, command_index, &descriptors);
+        if (!result.ok)
+            return result;
+
+        DvzDescriptors* retired = object->descriptors;
+        if (!_vklite_retire_bind_group_descriptors(state, retired))
+        {
+            dvz_descriptors_free(descriptors);
+            return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+        }
+        object->descriptors = descriptors;
+    }
+    return _drp2_ok();
+}
+
+
+
+/**
  * Create vklite descriptors from a DRP2 CreateBindGroup command.
  *
  * @param state vklite runtime state

@@ -162,10 +162,12 @@ static DvzDrp2ValidationResult _vklite_create_texture(
     ANN(state);
     ANN(command);
     Drp2VkliteObject* previous = _vklite_find(state, command->u.create_texture.id);
+    bool replaced = false;
     if (previous != NULL)
     {
         if (previous->kind != DRP2_OBJECT_TEXTURE)
             return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+        replaced = true;
         if (state->active_borrowed_command_buffer != VK_NULL_HANDLE)
         {
             if (!_vklite_defer_destroy_object(
@@ -233,6 +235,13 @@ static DvzDrp2ValidationResult _vklite_create_texture(
     object->width = command->u.create_texture.width;
     object->height = command->u.create_texture.height;
     object->depth = depth;
+    if (replaced)
+    {
+        DvzDrp2ValidationResult result = _vklite_refresh_dependent_bind_groups(
+            state, command->u.create_texture.id, command_index);
+        if (!result.ok)
+            return result;
+    }
     return _drp2_ok();
 }
 
