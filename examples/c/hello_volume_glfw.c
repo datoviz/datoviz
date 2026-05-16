@@ -51,7 +51,6 @@ typedef struct VolumeGlfwState VolumeGlfwState;
 
 struct VolumeGlfwState
 {
-    DvzArcball* arcball;
     DvzVisual* volume;
     DvzScale* transfer_scale;
     DvzColormap* transfer_map;
@@ -276,34 +275,6 @@ static void _apply_volume_controls(VolumeGlfwState* state)
     {
         (void)dvz_volume_clear_clipping(state->volume);
     }
-}
-
-
-
-/*************************************************************************************************/
-/*  Callbacks                                                                                    */
-/*************************************************************************************************/
-
-/**
- * Advance the volume orientation from the scene clock.
- *
- * @param animation timer animation
- * @param t current scene-clock time
- * @param dt elapsed scene-clock time since the previous step
- * @param user_data volume GLFW example state
- */
-static void _volume_glfw_timer(DvzAnimation* animation, double t, double dt, void* user_data)
-{
-    (void)animation;
-    (void)t;
-    VolumeGlfwState* state = (VolumeGlfwState*)user_data;
-    if (state == NULL || state->arcball == NULL)
-        return;
-
-    if (!dvz_arcball_is_interacting(state->arcball))
-        dvz_arcball_rotate_axis(
-            state->arcball, ROTATION_SPEED_RAD_PER_SEC * (float)dt,
-            (vec3){0.0f, 1.0f, 0.0f});
 }
 
 
@@ -568,7 +539,6 @@ int main(int argc, char** argv)
         return 1;
     }
     dvz_arcball_set(arcball, (vec3){+0.55f, 0.0f, +0.30f});
-    state.arcball = arcball;
 
     DvzGuiConfig gui_config = dvz_gui_config();
     DvzGui* gui = dvz_app_window_gui(win, &gui_config);
@@ -584,10 +554,12 @@ int main(int argc, char** argv)
     dvz_scene_set_clock_mode(scene, DVZ_CLOCK_REALTIME);
     dvz_scene_set_fps(scene, 60.0);
 
-    DvzAnimation* spin = dvz_anim_timer(scene, 0.0, _volume_glfw_timer, &state);
+    DvzAnimation* spin = dvz_anim_arcball_spin(
+        scene, arcball, (vec3){0.0f, 1.0f, 0.0f}, ROTATION_SPEED_RAD_PER_SEC,
+        DVZ_ARCBALL_SPIN_FLAGS_PAUSE_ON_INTERACTION);
     if (spin == NULL)
     {
-        dvz_fprintf(stderr, "dvz_anim_timer() failed\n");
+        dvz_fprintf(stderr, "dvz_anim_arcball_spin() failed\n");
         dvz_app_destroy(app);
         dvz_scene_destroy(scene);
         return 1;

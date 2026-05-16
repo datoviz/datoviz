@@ -7,9 +7,8 @@
 /* hello_mesh_glfw — live rotating lit cube mesh via dvz_mesh + scene/app.
  *
  * Opens a GLFW window showing one indexed cube mesh with explicit face normals, per-face colours,
- * depth testing, and a perspective camera. A scene timer advances the panel arcball while the
- * user is idle so the retained 3D scene exercises the live scene -> DRP2 -> vklite/canvas path
- * continuously without fighting interactive arcball gestures.
+ * depth testing, and a perspective camera. A scene arcball spin animation keeps the retained 3D
+ * scene exercising the live scene -> DRP2 -> vklite/canvas path while the user is idle.
  *
  * Build:  just example-c hello_mesh_glfw
  * Run:    ./build/examples/c/hello_mesh_glfw
@@ -47,19 +46,6 @@
 #define HEIGHT 600
 
 #define ROTATION_SPEED_RAD_PER_SEC 0.9f
-
-
-
-/*************************************************************************************************/
-/*  Structs                                                                                      */
-/*************************************************************************************************/
-
-typedef struct MeshGlfwState MeshGlfwState;
-
-struct MeshGlfwState
-{
-    DvzArcball* arcball;
-};
 
 
 
@@ -240,36 +226,6 @@ static void _outpath(const char* exe, const char* name, char* out, size_t size)
 
 
 /*************************************************************************************************/
-/*  Callbacks                                                                                    */
-/*************************************************************************************************/
-
-/**
- * Advance the cube orientation from the scene clock.
- *
- * @param animation timer animation
- * @param t current scene-clock time
- * @param dt elapsed scene-clock time since the previous step
- * @param user_data mesh GLFW example state
- */
-static void _mesh_glfw_timer(DvzAnimation* animation, double t, double dt, void* user_data)
-{
-    (void)animation;
-    (void)t;
-    MeshGlfwState* state = (MeshGlfwState*)user_data;
-    if (state == NULL || state->arcball == NULL)
-        return;
-
-    if (!dvz_arcball_is_interacting(state->arcball))
-    {
-        dvz_arcball_rotate_axis(
-            state->arcball, ROTATION_SPEED_RAD_PER_SEC * (float)dt,
-            (vec3){0.0f, 1.0f, 0.0f});
-    }
-}
-
-
-
-/*************************************************************************************************/
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
@@ -424,11 +380,12 @@ int main(int argc, char** argv)
         return 1;
     }
 
-    MeshGlfwState state = {.arcball = arcball};
-    DvzAnimation* spin = dvz_anim_timer(scene, 0.0, _mesh_glfw_timer, &state);
+    DvzAnimation* spin = dvz_anim_arcball_spin(
+        scene, arcball, (vec3){0.0f, 1.0f, 0.0f}, ROTATION_SPEED_RAD_PER_SEC,
+        DVZ_ARCBALL_SPIN_FLAGS_PAUSE_ON_INTERACTION);
     if (spin == NULL)
     {
-        dvz_fprintf(stderr, "dvz_anim_timer() failed\n");
+        dvz_fprintf(stderr, "dvz_anim_arcball_spin() failed\n");
         dvz_app_destroy(app);
         dvz_scene_destroy(scene);
         return 1;

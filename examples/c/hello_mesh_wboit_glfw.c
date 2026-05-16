@@ -29,6 +29,7 @@
 
 #include "_alloc.h"
 #include "_assertions.h"
+#include "_compat.h"
 #include "datoviz/app.h"
 #include "datoviz/gui.h"
 #include "datoviz/scene.h"
@@ -54,7 +55,6 @@ typedef struct MeshWboitState MeshWboitState;
 
 struct MeshWboitState
 {
-    DvzArcball* arcball;
     DvzPanel* panel;
     DvzVisual* cube;
     uint32_t cube_vertex_count;
@@ -225,33 +225,6 @@ static uint32_t _frame_count(int argc, char** argv)
 
 
 
-/*************************************************************************************************/
-/*  Callbacks                                                                                    */
-/*************************************************************************************************/
-
-/**
- * Advance the arcball orientation from the scene clock.
- *
- * @param animation timer animation
- * @param t current scene-clock time
- * @param dt elapsed scene-clock time since the previous step
- * @param user_data mesh WBOIT example state
- */
-static void _mesh_wboit_timer(DvzAnimation* animation, double t, double dt, void* user_data)
-{
-    (void)animation;
-    (void)t;
-    MeshWboitState* state = (MeshWboitState*)user_data;
-    if (state == NULL || state->arcball == NULL)
-        return;
-    if (!dvz_arcball_is_interacting(state->arcball))
-        dvz_arcball_rotate_axis(
-            state->arcball, ROTATION_SPEED_RAD_PER_SEC * (float)dt,
-            (vec3){0.0f, 1.0f, 0.0f});
-}
-
-
-
 /**
  * Build the live WBOIT material controls.
  *
@@ -321,14 +294,14 @@ int main(int argc, char** argv)
     DvzScene* scene = dvz_scene();
     if (scene == NULL)
     {
-        fprintf(stderr, "dvz_scene() failed\n");
+        dvz_fprintf(stderr, "dvz_scene() failed\n");
         return 1;
     }
 
     DvzFigure* figure = dvz_figure(scene, WIDTH, HEIGHT, 0);
     if (figure == NULL)
     {
-        fprintf(stderr, "dvz_figure() failed\n");
+        dvz_fprintf(stderr, "dvz_figure() failed\n");
         dvz_scene_destroy(scene);
         return 1;
     }
@@ -337,7 +310,7 @@ int main(int argc, char** argv)
         dvz_panel(figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
     if (panel == NULL)
     {
-        fprintf(stderr, "dvz_panel() failed\n");
+        dvz_fprintf(stderr, "dvz_panel() failed\n");
         dvz_scene_destroy(scene);
         return 1;
     }
@@ -350,7 +323,7 @@ int main(int argc, char** argv)
     camera_desc.far = 100.0f;
     if (!dvz_panel_set_camera(panel, &camera_desc))
     {
-        fprintf(stderr, "dvz_panel_set_camera() failed\n");
+        dvz_fprintf(stderr, "dvz_panel_set_camera() failed\n");
         dvz_scene_destroy(scene);
         return 1;
     }
@@ -359,7 +332,7 @@ int main(int argc, char** argv)
     DvzVisual* cube = dvz_mesh(scene, 0);
     if (reference == NULL || cube == NULL)
     {
-        fprintf(stderr, "visual creation failed\n");
+        dvz_fprintf(stderr, "visual creation failed\n");
         dvz_scene_destroy(scene);
         return 1;
     }
@@ -421,7 +394,7 @@ int main(int argc, char** argv)
     if (index_buffer == NULL ||
         !dvz_scene_buffer_set_data(index_buffer, indices, sizeof(indices)))
     {
-        fprintf(stderr, "index buffer setup failed\n");
+        dvz_fprintf(stderr, "index buffer setup failed\n");
         dvz_scene_destroy(scene);
         return 1;
     }
@@ -442,7 +415,7 @@ int main(int argc, char** argv)
     DvzApp* app = dvz_app(scene);
     if (app == NULL)
     {
-        fprintf(stderr, "dvz_app() failed (no GPU or display?)\n");
+        dvz_fprintf(stderr, "dvz_app() failed (no GPU or display?)\n");
         dvz_scene_destroy(scene);
         return 1;
     }
@@ -450,7 +423,7 @@ int main(int argc, char** argv)
     DvzAppWindow* win = dvz_app_window_glfw(app, figure, WIDTH, HEIGHT, "hello_mesh_wboit_glfw");
     if (win == NULL)
     {
-        fprintf(stderr, "dvz_app_window_glfw() failed (GLFW unavailable?)\n");
+        dvz_fprintf(stderr, "dvz_app_window_glfw() failed (GLFW unavailable?)\n");
         dvz_app_destroy(app);
         dvz_scene_destroy(scene);
         return 1;
@@ -460,19 +433,18 @@ int main(int argc, char** argv)
     DvzArcball* arcball = dvz_panel_arcball(panel);
     if (arcball == NULL)
     {
-        fprintf(stderr, "dvz_panel_set_arcball() failed\n");
+        dvz_fprintf(stderr, "dvz_panel_set_arcball() failed\n");
         dvz_app_destroy(app);
         dvz_scene_destroy(scene);
         return 1;
     }
     dvz_arcball_set(arcball, (vec3){+0.65f, 0.0f, +0.35f});
-    state.arcball = arcball;
 
     DvzGuiConfig gui_config = dvz_gui_config();
     DvzGui* gui = dvz_app_window_gui(win, &gui_config);
     if (gui == NULL)
     {
-        fprintf(stderr, "dvz_app_window_gui() failed\n");
+        dvz_fprintf(stderr, "dvz_app_window_gui() failed\n");
         dvz_app_destroy(app);
         dvz_scene_destroy(scene);
         return 1;
@@ -482,10 +454,12 @@ int main(int argc, char** argv)
     dvz_scene_set_clock_mode(scene, DVZ_CLOCK_REALTIME);
     dvz_scene_set_fps(scene, 60.0);
 
-    DvzAnimation* spin = dvz_anim_timer(scene, 0.0, _mesh_wboit_timer, &state);
+    DvzAnimation* spin = dvz_anim_arcball_spin(
+        scene, arcball, (vec3){0.0f, 1.0f, 0.0f}, ROTATION_SPEED_RAD_PER_SEC,
+        DVZ_ARCBALL_SPIN_FLAGS_PAUSE_ON_INTERACTION);
     if (spin == NULL)
     {
-        fprintf(stderr, "dvz_anim_timer() failed\n");
+        dvz_fprintf(stderr, "dvz_anim_arcball_spin() failed\n");
         dvz_app_destroy(app);
         dvz_scene_destroy(scene);
         return 1;
