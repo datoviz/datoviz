@@ -216,6 +216,7 @@ def _scene_volume_bounds(ba, offset_xyz_m: np.ndarray, scale: float) -> list[lis
     )
     xyz = ba.ccf2xyz(corners, ccf_order="apdvml")
     scene = (xyz - offset_xyz_m) * scale
+    scene[:, 1] *= -1.0
     return [scene.min(axis=0).tolist(), scene.max(axis=0).tolist()]
 
 
@@ -259,6 +260,7 @@ def prepare(output_dir: Path, cache_dir: Path, scale: float, region_ids: Iterabl
         ccf = np.asarray(mesh.vertices, dtype=np.float64)
         xyz = ba.ccf2xyz(ccf, ccf_order="apdvml")
         pos = np.ascontiguousarray((xyz - offset_xyz_m) * scale, dtype=np.float32)
+        pos[:, 1] *= -1.0
         idx = np.ascontiguousarray(np.asarray(mesh.faces, dtype=np.uint32).reshape(-1) + vertex_offset)
         color = np.empty((pos.shape[0], 4), dtype=np.uint8)
         color[:] = np.asarray(region.color, dtype=np.uint8)

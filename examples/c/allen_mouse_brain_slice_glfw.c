@@ -985,7 +985,9 @@ static bool _swizzle_allen_mouse_brain_to_ibl_axes(AllenMouseBrainVolume* volume
             {
                 uint64_t src_index = (((uint64_t)ap * src_height + ml) * src_width + dv) * 4u;
                 uint32_t ibl_dv = out_depth - 1u - dv;
-                uint64_t dst_index = (((uint64_t)ibl_dv * out_height + ap) * out_width + ml) * 4u;
+                uint32_t ibl_ap = out_height - 1u - ap;
+                uint64_t dst_index =
+                    (((uint64_t)ibl_dv * out_height + ibl_ap) * out_width + ml) * 4u;
                 dvz_memcpy(dst + dst_index, 4, src + src_index, 4);
             }
         }
@@ -1176,6 +1178,7 @@ static void _apply_volume_controls(AllenMouseBrainState* state)
     DvzVolumeSamplingMode sampling =
         state->linear_sampling ? DVZ_VOLUME_SAMPLING_LINEAR : DVZ_VOLUME_SAMPLING_NEAREST;
 
+    dvz_visual_set_visible(state->slice_visual, state->show_slice);
     (void)dvz_volume_set_render_mode(state->slice_visual, DVZ_VOLUME_RENDER_SLICE);
     (void)dvz_volume_set_opacity(
         state->slice_visual, state->show_slice ? state->slice_opacity : 0.0f);
