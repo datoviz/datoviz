@@ -328,7 +328,8 @@ DVZ_EXPORT DvzPanzoom* dvz_panel_panzoom(DvzPanel* panel);
 /**
  * Attach an arcball controller to a panel and connect it to an input router.
  *
- * Rotate: left-drag. Double-click: reset.
+ * Rotate: left-drag. Pan rotation center: right-drag or middle-drag. Zoom: scroll wheel.
+ * Double-click: reset.
  *
  * @param panel the panel
  * @param router input router to subscribe to (may be NULL to create without connecting)

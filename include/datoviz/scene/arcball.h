@@ -65,6 +65,8 @@ struct DvzArcball
     vec4 rotation;   /* in-flight quaternion (while dragging); same layout as cglm versor */
     vec3 constrain;  /* constrain axis; null if no constraint */
     float zoom;      /* uniform model-space zoom factor */
+    vec2 pan;        /* panel-plane translation applied before rotation */
+    vec2 pan_center; /* committed pan baseline used during right/middle drag */
     bool interacting; /* true while the pointer is controlling the arcball */
 };
 
@@ -109,14 +111,39 @@ DVZ_EXPORT void dvz_arcball_set(DvzArcball* arcball, vec3 angles);
 
 /**
  * Apply an incremental rotation around an axis to the accumulated orientation.
+ *
+ * @param arcball arcball controller
+ * @param angle rotation angle in radians
+ * @param axis rotation axis
  */
 DVZ_EXPORT void dvz_arcball_rotate_axis(DvzArcball* arcball, float angle, vec3 axis);
 
 
 /**
  * Set the uniform zoom factor.
+ *
+ * @param arcball arcball controller
+ * @param zoom uniform zoom factor
  */
 DVZ_EXPORT void dvz_arcball_zoom(DvzArcball* arcball, float zoom);
+
+
+/**
+ * Set the panel-plane pan offset.
+ *
+ * @param arcball arcball controller
+ * @param pan panel-plane pan offset
+ */
+DVZ_EXPORT void dvz_arcball_pan(DvzArcball* arcball, vec2 pan);
+
+
+/**
+ * Apply an incremental panel-plane pan shift in pixels.
+ *
+ * @param arcball arcball controller
+ * @param shift_px shift in viewport pixels
+ */
+DVZ_EXPORT void dvz_arcball_pan_shift(DvzArcball* arcball, vec2 shift_px);
 
 
 

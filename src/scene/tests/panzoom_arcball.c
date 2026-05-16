@@ -406,6 +406,66 @@ int test_arcball_zoom_wheel(TstSuite* suite, TstItem* item)
 }
 
 
+/**
+ * Check that right-drag pans the arcball rotation center.
+ *
+ * @param suite test suite
+ * @param item test item
+ * @return test status
+ */
+int test_arcball_pan_right_drag(TstSuite* suite, TstItem* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzArcball* arc = dvz_arcball(800.0f, 600.0f, 0);
+    ANN(arc);
+
+    DvzPointerEvent start = {
+        .type = DVZ_POINTER_EVENT_DRAG_START,
+        .button = DVZ_POINTER_BUTTON_RIGHT,
+        .pos = {400.0f, 300.0f},
+    };
+    AT(dvz_arcball_pointer(arc, &start));
+    AT(dvz_arcball_is_interacting(arc));
+
+    DvzPointerEvent drag = {
+        .type = DVZ_POINTER_EVENT_DRAG,
+        .button = DVZ_POINTER_BUTTON_RIGHT,
+        .content.d.press_pos = {400.0f, 300.0f},
+        .content.d.last_pos = {400.0f, 300.0f},
+        .content.d.shift = {80.0f, -60.0f},
+        .content.d.is_press_valid = true,
+        .pos = {480.0f, 240.0f},
+    };
+    AT(dvz_arcball_pointer(arc, &drag));
+    AT(fabsf(arc->pan[0] - 0.2f) < 1e-5f);
+    AT(fabsf(arc->pan[1] - 0.2f) < 1e-5f);
+
+    mat4 model = GLM_MAT4_IDENTITY_INIT;
+    dvz_arcball_model(arc, model);
+    AT(fabsf(model[3][0] - 0.2f) < 1e-5f);
+    AT(fabsf(model[3][1] - 0.2f) < 1e-5f);
+
+    DvzPointerEvent stop = {
+        .type = DVZ_POINTER_EVENT_DRAG_STOP,
+        .button = DVZ_POINTER_BUTTON_RIGHT,
+    };
+    AT(dvz_arcball_pointer(arc, &stop));
+    AT(!dvz_arcball_is_interacting(arc));
+    AT(fabsf(arc->pan_center[0] - arc->pan[0]) < 1e-5f);
+    AT(fabsf(arc->pan_center[1] - arc->pan[1]) < 1e-5f);
+
+    DvzPointerEvent reset = {.type = DVZ_POINTER_EVENT_DOUBLE_CLICK};
+    AT(dvz_arcball_pointer(arc, &reset));
+    AT(fabsf(arc->pan[0]) < 1e-5f);
+    AT(fabsf(arc->pan[1]) < 1e-5f);
+
+    dvz_arcball_destroy(arc);
+    return 0;
+}
+
+
 int test_arcball_interaction_state(TstSuite* suite, TstItem* item)
 {
     (void)suite;
@@ -499,6 +559,7 @@ int test_scene_panzoom_arcball(TstSuite* suite)
     TEST_SIMPLE(test_arcball_end_commits_rotation);
     TEST_SIMPLE(test_arcball_rotate_axis_is_incremental);
     TEST_SIMPLE(test_arcball_zoom_wheel);
+    TEST_SIMPLE(test_arcball_pan_right_drag);
     TEST_SIMPLE(test_arcball_interaction_state);
     TEST_SIMPLE(test_arcball_double_click_resets);
 

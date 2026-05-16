@@ -217,6 +217,25 @@ It may also:
 2. schedule picking or probes if the interaction model wants that.
 
 
+### Arcball Interaction Policy
+
+Status on 2026-05-16: the active `DvzArcball` controller supports:
+
+1. left-drag rotation;
+2. right-drag or middle-drag panel-plane pan, moving the apparent rotation center;
+3. scroll-wheel zoom;
+4. double-click reset of rotation, zoom, and pan.
+
+The arcball pan is controller state, not visual geometry. It must compose into the panel model
+matrix so every visual attached with `DVZ_CONTROLLER_APPLY` observes the same shifted rotation
+center. A fixed overlay visual attached with `DVZ_CONTROLLER_FIXED` remains unaffected.
+
+The pan operation is deliberately screen-driven. It changes the panel-plane translation used by the
+arcball model rather than editing mesh vertices or camera target data. More advanced pivot picking
+can be added later by resolving a picked data-space point and setting the arcball center to that
+semantic target, but the default right/middle drag path should remain lightweight and deterministic.
+
+
 ## `GlobeController`
 
 This controller supports navigation on a 3D geographic globe.

@@ -112,6 +112,25 @@ static void _arcball_zoom_wheel(DvzArcball* arcball, vec2 dir)
 }
 
 
+/**
+ * Apply a drag-relative panel-plane pan shift.
+ *
+ * @param arcball arcball controller
+ * @param shift_px pointer shift from the drag press position in pixels
+ */
+static void _arcball_pan_drag(DvzArcball* arcball, vec2 shift_px)
+{
+    ANN(arcball);
+    float width = arcball->viewport_size[0];
+    float height = arcball->viewport_size[1];
+    if (width <= 0.0f || height <= 0.0f)
+        return;
+
+    arcball->pan[0] = arcball->pan_center[0] + 2.0f * shift_px[0] / width;
+    arcball->pan[1] = arcball->pan_center[1] - 2.0f * shift_px[1] / height;
+}
+
+
 
 /*************************************************************************************************/
 /*  Input callback                                                                               */
@@ -173,6 +192,8 @@ void dvz_arcball_reset(DvzArcball* arcball)
     dvz_arcball_set(arcball, arcball->init);
     glm_quat_identity(arcball->rotation);
     arcball->zoom = 1.0f;
+    glm_vec2_zero(arcball->pan);
+    glm_vec2_zero(arcball->pan_center);
     arcball->interacting = false;
 }
 
@@ -221,6 +242,35 @@ void dvz_arcball_zoom(DvzArcball* arcball, float zoom)
 {
     ANN(arcball);
     arcball->zoom = _clampf(zoom, DVZ_ARCBALL_ZOOM_MIN, DVZ_ARCBALL_ZOOM_MAX);
+}
+
+
+/**
+ * Set the panel-plane pan offset.
+ *
+ * @param arcball arcball controller
+ * @param pan panel-plane pan offset
+ */
+void dvz_arcball_pan(DvzArcball* arcball, vec2 pan)
+{
+    ANN(arcball);
+    glm_vec2_copy(pan, arcball->pan);
+    glm_vec2_copy(pan, arcball->pan_center);
+}
+
+
+/**
+ * Apply an incremental panel-plane pan shift in pixels.
+ *
+ * @param arcball arcball controller
+ * @param shift_px shift in viewport pixels
+ */
+void dvz_arcball_pan_shift(DvzArcball* arcball, vec2 shift_px)
+{
+    ANN(arcball);
+    glm_vec2_copy(arcball->pan, arcball->pan_center);
+    _arcball_pan_drag(arcball, shift_px);
+    glm_vec2_copy(arcball->pan, arcball->pan_center);
 }
 
 
@@ -282,8 +332,13 @@ void dvz_arcball_model(DvzArcball* arcball, mat4 model)
     ANN(arcball);
     mat4 rot = GLM_MAT4_IDENTITY_INIT;
     glm_quat_mat4(arcball->rotation, rot);
-    glm_mat4_mul(rot, arcball->mat, model);
-    glm_scale_uni(model, arcball->zoom);
+    mat4 base = GLM_MAT4_IDENTITY_INIT;
+    glm_mat4_mul(rot, arcball->mat, base);
+    glm_scale_uni(base, arcball->zoom);
+
+    mat4 translate = GLM_MAT4_IDENTITY_INIT;
+    glm_translate_make(translate, (vec3){arcball->pan[0], arcball->pan[1], 0.0f});
+    glm_mat4_mul(translate, base, model);
 }
 
 
@@ -334,18 +389,25 @@ bool dvz_arcball_pointer(DvzArcball* arcball, const DvzPointerEvent* ev)
     switch (ev->type)
     {
     case DVZ_POINTER_EVENT_PRESS:
-        if (ev->button == DVZ_POINTER_BUTTON_LEFT)
+        if (ev->button == DVZ_POINTER_BUTTON_LEFT || ev->button == DVZ_POINTER_BUTTON_MIDDLE ||
+            ev->button == DVZ_POINTER_BUTTON_RIGHT)
             arcball->interacting = true;
         break;
 
     case DVZ_POINTER_EVENT_RELEASE:
-        if (ev->button == DVZ_POINTER_BUTTON_LEFT)
+        if (ev->button == DVZ_POINTER_BUTTON_LEFT || ev->button == DVZ_POINTER_BUTTON_MIDDLE ||
+            ev->button == DVZ_POINTER_BUTTON_RIGHT)
             arcball->interacting = false;
         break;
 
     case DVZ_POINTER_EVENT_DRAG_START:
-        if (ev->button == DVZ_POINTER_BUTTON_LEFT)
+        if (ev->button == DVZ_POINTER_BUTTON_LEFT || ev->button == DVZ_POINTER_BUTTON_MIDDLE ||
+            ev->button == DVZ_POINTER_BUTTON_RIGHT)
+        {
+            if (ev->button == DVZ_POINTER_BUTTON_MIDDLE || ev->button == DVZ_POINTER_BUTTON_RIGHT)
+                glm_vec2_copy(arcball->pan, arcball->pan_center);
             arcball->interacting = true;
+        }
         break;
 
     case DVZ_POINTER_EVENT_DRAG:
@@ -362,10 +424,19 @@ bool dvz_arcball_pointer(DvzArcball* arcball, const DvzPointerEvent* ev)
             };
             dvz_arcball_rotate(arcball, cur_pos, last_pos);
         }
+        else if ((ev->button == DVZ_POINTER_BUTTON_MIDDLE ||
+                  ev->button == DVZ_POINTER_BUTTON_RIGHT) &&
+                 ev->content.d.is_press_valid)
+        {
+            vec2 shift = {ev->content.d.shift[0], ev->content.d.shift[1]};
+            _arcball_pan_drag(arcball, shift);
+            arcball->interacting = true;
+        }
         break;
 
     case DVZ_POINTER_EVENT_DRAG_STOP:
         dvz_arcball_end(arcball);
+        glm_vec2_copy(arcball->pan, arcball->pan_center);
         arcball->interacting = false;
         break;
 
