@@ -21,6 +21,7 @@
 #include <errno.h>
 #include <ctype.h>
 #include <inttypes.h>
+#include <math.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -47,6 +48,8 @@
 #define DEFAULT_PDB_ID "1ubq"
 
 #define ROTATION_SPEED_RAD_PER_SEC 0.22f
+#define PROTEIN_RIBBON_WIDTH_SCALE 1.45f
+#define PROTEIN_RIBBON_DEFAULT_CROSS_SECTION_COUNT 24u
 
 #define PROTEIN_RENDER_SPHERES 0
 #define PROTEIN_RENDER_RIBBON  1
@@ -79,6 +82,7 @@ typedef struct ProteinBundle
     bool has_ribbon;
     uint32_t ribbon_vertex_count;
     uint32_t ribbon_index_count;
+    uint32_t ribbon_cross_section_count;
     float* ribbon_positions;
     float* ribbon_normals;
     DvzColor* ribbon_colors_chain;
@@ -96,6 +100,8 @@ typedef struct ProteinExampleState
     DvzArcball* arcball;
     DvzAnimation* spin;
     ProteinBundle* bundle;
+    DvzIndex* ribbon_indices_upload;
+    uint32_t ribbon_index_upload_count;
     int selected_molecule;
     float* live_radii;
     int render_mode;
@@ -303,6 +309,152 @@ static bool _read_file_exact(const char* path, void* dst, uint64_t byte_size)
 
 
 /**
+ * Infer the ribbon cross-section vertex count from the first indexed segment.
+ *
+ * @param indices ribbon index array
+ * @param index_count number of indices
+ * @param vertex_count number of ribbon vertices
+ * @return inferred cross-section count, or zero when it cannot be inferred
+ */
+static uint32_t _infer_ribbon_cross_section_count(
+    const DvzIndex* indices, uint32_t index_count, uint32_t vertex_count)
+{
+    if (indices == NULL || index_count < 6 || vertex_count < 3)
+        return 0;
+
+    uint32_t max_guess = vertex_count / 2u;
+    for (uint32_t group = 0; group + 5u < index_count; group += 6u)
+    {
+        uint32_t i = group / 6u;
+        if (i == 0 || i > max_guess)
+            continue;
+        if (indices[group + 1u] == 0 && indices[group] == i)
+            return i + 1u;
+    }
+    if (vertex_count % PROTEIN_RIBBON_DEFAULT_CROSS_SECTION_COUNT == 0)
+        return PROTEIN_RIBBON_DEFAULT_CROSS_SECTION_COUNT;
+    return 0;
+}
+
+
+
+/**
+ * Widen ribbon cross-sections around their local centroid.
+ *
+ * @param bundle protein bundle containing ribbon geometry
+ * @param scale scale applied along the inferred cross-section major axis
+ */
+static void _protein_bundle_widen_ribbon(ProteinBundle* bundle, float scale)
+{
+    ANN(bundle);
+    if (!bundle->has_ribbon || bundle->ribbon_positions == NULL ||
+        bundle->ribbon_cross_section_count == 0 || scale <= 0.0f)
+    {
+        return;
+    }
+    uint32_t cross = bundle->ribbon_cross_section_count;
+    if (bundle->ribbon_vertex_count < cross || bundle->ribbon_vertex_count % cross != 0)
+        return;
+
+    for (uint32_t first = 0; first < bundle->ribbon_vertex_count; first += cross)
+    {
+        float center[3] = {0};
+        for (uint32_t i = 0; i < cross; i++)
+        {
+            const float* p = &bundle->ribbon_positions[(first + i) * 3u];
+            center[0] += p[0];
+            center[1] += p[1];
+            center[2] += p[2];
+        }
+        center[0] /= (float)cross;
+        center[1] /= (float)cross;
+        center[2] /= (float)cross;
+
+        float axis[3] = {1.0f, 0.0f, 0.0f};
+        float max_len2 = 0.0f;
+        for (uint32_t i = 0; i < cross; i++)
+        {
+            const float* p = &bundle->ribbon_positions[(first + i) * 3u];
+            float dx = p[0] - center[0];
+            float dy = p[1] - center[1];
+            float dz = p[2] - center[2];
+            float len2 = dx * dx + dy * dy + dz * dz;
+            if (len2 > max_len2)
+            {
+                max_len2 = len2;
+                axis[0] = dx;
+                axis[1] = dy;
+                axis[2] = dz;
+            }
+        }
+        if (max_len2 <= 1e-12f)
+            continue;
+        float inv_len = 1.0f / sqrtf(max_len2);
+        axis[0] *= inv_len;
+        axis[1] *= inv_len;
+        axis[2] *= inv_len;
+
+        for (uint32_t i = 0; i < cross; i++)
+        {
+            float* p = &bundle->ribbon_positions[(first + i) * 3u];
+            float dx = p[0] - center[0];
+            float dy = p[1] - center[1];
+            float dz = p[2] - center[2];
+            float projection = dx * axis[0] + dy * axis[1] + dz * axis[2];
+            float delta = projection * (scale - 1.0f);
+            p[0] += axis[0] * delta;
+            p[1] += axis[1] * delta;
+            p[2] += axis[2] * delta;
+        }
+    }
+}
+
+
+
+/**
+ * Prepare a padded index upload so stale GPU index tails only draw degenerate triangles.
+ *
+ * @param state example state
+ * @param bundle source protein bundle
+ * @return whether a padded upload buffer is available
+ */
+static bool _prepare_ribbon_indices_upload(
+    ProteinExampleState* state, const ProteinBundle* bundle)
+{
+    ANN(state);
+    ANN(bundle);
+    if (!bundle->has_ribbon || bundle->ribbon_indices == NULL || bundle->ribbon_index_count == 0)
+        return false;
+
+    uint32_t upload_count = state->ribbon_index_upload_count;
+    if (upload_count < bundle->ribbon_index_count)
+        upload_count = bundle->ribbon_index_count;
+    if (upload_count == 0)
+        return false;
+
+    if (state->ribbon_indices_upload == NULL ||
+        state->ribbon_index_upload_count < upload_count)
+    {
+        DvzIndex* upload = (DvzIndex*)dvz_calloc(upload_count, sizeof(DvzIndex));
+        if (upload == NULL)
+            return false;
+        dvz_free(state->ribbon_indices_upload);
+        state->ribbon_indices_upload = upload;
+        state->ribbon_index_upload_count = upload_count;
+    }
+
+    dvz_memset(
+        state->ribbon_indices_upload, upload_count * sizeof(DvzIndex), 0,
+        upload_count * sizeof(DvzIndex));
+    dvz_memcpy(
+        state->ribbon_indices_upload, bundle->ribbon_index_count * sizeof(DvzIndex),
+        bundle->ribbon_indices, bundle->ribbon_index_count * sizeof(DvzIndex));
+    return true;
+}
+
+
+
+/**
  * Release all CPU arrays owned by a protein bundle.
  *
  * @param bundle protein bundle
@@ -405,6 +557,9 @@ static void _protein_bundle_load_ribbon(const char* dir, ProteinBundle* out)
     }
 
     out->has_ribbon = true;
+    out->ribbon_cross_section_count = _infer_ribbon_cross_section_count(
+        out->ribbon_indices, out->ribbon_index_count, out->ribbon_vertex_count);
+    _protein_bundle_widen_ribbon(out, PROTEIN_RIBBON_WIDTH_SCALE);
 }
 
 
@@ -657,9 +812,15 @@ static bool _reload_bundle(ProteinExampleState* state, const char* bundle_path)
                 dvz_free(next_radii);
                 return false;
             }
+            if (!_prepare_ribbon_indices_upload(state, &next))
+            {
+                _protein_bundle_destroy(&next);
+                dvz_free(next_radii);
+                return false;
+            }
             if (!dvz_scene_buffer_set_data(
-                    state->ribbon_index_buffer, next.ribbon_indices,
-                    (uint64_t)next.ribbon_index_count * sizeof(DvzIndex)) ||
+                    state->ribbon_index_buffer, state->ribbon_indices_upload,
+                    (uint64_t)state->ribbon_index_upload_count * sizeof(DvzIndex)) ||
                 dvz_visual_set_data_many(
                     state->ribbon,
                     (DvzVisualDataUpdate[]){
@@ -1218,6 +1379,7 @@ int main(int argc, char** argv)
         .spin = spin,
         .bundle = &bundle,
         .live_radii = scaled_radii,
+        .ribbon_index_upload_count = bundle.ribbon_index_count,
         .selected_molecule = _pdb_preset_index(bundle.path),
         .render_mode = PROTEIN_RENDER_SPHERES,
         .atom_color_mode = PROTEIN_ATOM_COLOR_ELEMENT,
@@ -1260,7 +1422,8 @@ int main(int argc, char** argv)
 
     dvz_app_destroy(app);
     dvz_scene_destroy(scene);
-    dvz_free(scaled_radii);
+    dvz_free(state.ribbon_indices_upload);
+    dvz_free(state.live_radii);
     _protein_bundle_destroy(&bundle);
     return 0;
 }
