@@ -47,16 +47,31 @@
       min-width: 0;
     }
 
-    select {
-      min-width: 220px;
-      max-width: 36vw;
+    select,
+    button {
       height: 30px;
       border: 1px solid #3a4252;
       border-radius: 4px;
       background: #171b23;
       color: #f1f3f7;
       font: inherit;
+    }
+
+    select {
+      min-width: 220px;
+      max-width: 36vw;
       padding: 0 8px;
+    }
+
+    button {
+      min-width: 64px;
+      padding: 0 10px;
+      cursor: pointer;
+    }
+
+    button:disabled {
+      cursor: default;
+      opacity: 0.45;
     }
 
     header {
@@ -101,12 +116,20 @@
     #interaction-help {
       color: #9ec5ff;
     }
+
+    #frame-info {
+      min-width: 74px;
+      color: #cbd1dc;
+      text-align: right;
+    }
   </style>
 </head>
 <body>
   <header>
     <strong>DRP2 WebGPU</strong>
     <div class="toolbar">
+      <button id="play-toggle" type="button" disabled>Play</button>
+      <span id="frame-info">0/0</span>
       <select id="stream-select" aria-label="DRP2 stream"></select>
       <code id="stream-name">streams/indexed_quad_wgsl.json</code>
     </div>

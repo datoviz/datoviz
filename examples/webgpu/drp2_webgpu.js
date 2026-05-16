@@ -3,6 +3,8 @@ const canvas = document.querySelector("#viewport");
 const streamNameEl = document.querySelector("#stream-name");
 const streamSelectEl = document.querySelector("#stream-select");
 const interactionHelpEl = document.querySelector("#interaction-help");
+const playToggleEl = document.querySelector("#play-toggle");
+const frameInfoEl = document.querySelector("#frame-info");
 
 export const STREAMS = [
   {
@@ -1031,6 +1033,12 @@ function createExecutionState() {
 
 function splitStreamCommands(stream) {
   const commands = required(stream.commands, "DRP2 stream needs commands");
+  if (Number.isInteger(stream.setup_command_count)) {
+    return {
+      setupCommands: commands.slice(0, stream.setup_command_count),
+      frameCommands: commands.slice(stream.setup_command_count),
+    };
+  }
   const frameStart = commands.findIndex((command) => command.cmd === "BeginCommandEncoder");
   if (frameStart < 0) {
     return { setupCommands: commands, frameCommands: [] };
@@ -1086,6 +1094,7 @@ export class Drp2WebGpuRuntime {
     this.stream = null;
     this.setupCommands = [];
     this.frameCommands = [];
+    this.frames = [];
   }
 
   async load(stream, options = {}) {
@@ -1096,6 +1105,7 @@ export class Drp2WebGpuRuntime {
     const split = splitStreamCommands(stream);
     this.setupCommands = split.setupCommands;
     this.frameCommands = split.frameCommands;
+    this.frames = Array.isArray(stream.frames) ? stream.frames : [];
 
     return await executeDrp2StreamChecked(
       this.device,
@@ -1111,8 +1121,19 @@ export class Drp2WebGpuRuntime {
   }
 
   async render(options = {}) {
+    return await this.renderFrame(options.frameIndex ?? null, options);
+  }
+
+  async renderFrame(frameIndex = null, options = {}) {
     if (this.stream === null) {
       throw new Error("runtime has no loaded stream");
+    }
+    let commands = this.frameCommands;
+    if (frameIndex !== null && this.frames.length > 0) {
+      const frame = required(this.frames[frameIndex], `unknown frame ${frameIndex}`);
+      const first = required(frame.first_command, "frame needs first_command");
+      const count = required(frame.command_count, "frame needs command_count");
+      commands = this.stream.commands.slice(first, first + count);
     }
     return await executeDrp2StreamChecked(
       this.device,
@@ -1122,7 +1143,7 @@ export class Drp2WebGpuRuntime {
       {
         ...this.options,
         ...options,
-        commands: this.frameCommands,
+        commands,
         state: this.state,
       },
     );
@@ -1722,6 +1743,9 @@ async function main() {
     let streamConfig = streamConfigByName(streamName);
     let runtime = null;
     let interaction = null;
+    let frameIndex = 0;
+    let playing = false;
+    let playbackRequest = 0;
 
     for (const item of STREAMS) {
       const option = document.createElement("option");
@@ -1748,6 +1772,24 @@ async function main() {
       }
     };
 
+    const frameCount = () => runtime?.frames?.length ?? 0;
+
+    const updatePlaybackUi = () => {
+      const count = frameCount();
+      playToggleEl.disabled = count <= 1 || interaction !== null;
+      playToggleEl.textContent = playing ? "Pause" : "Play";
+      frameInfoEl.textContent = count > 0 ? `${frameIndex + 1}/${count}` : "0/0";
+    };
+
+    const stopPlayback = () => {
+      playing = false;
+      if (playbackRequest !== 0) {
+        cancelAnimationFrame(playbackRequest);
+        playbackRequest = 0;
+      }
+      updatePlaybackUi();
+    };
+
     const loadStream = async (name) => {
       streamConfig = streamConfigByName(name);
       const sourceName = streamSourceName(streamConfig);
@@ -1763,6 +1805,9 @@ async function main() {
       runtime = new Drp2WebGpuRuntime(device, context, format);
       await runtime.load(stream);
       configureInteraction(streamConfig);
+      frameIndex = 0;
+      stopPlayback();
+      updatePlaybackUi();
       const url = new URL(window.location.href);
       url.searchParams.set("stream", streamName);
       window.history.replaceState(null, "", url);
@@ -1791,7 +1836,8 @@ async function main() {
           if (interaction !== null) {
             interaction.beforeRender(runtime);
           }
-          const result = await runtime.render();
+          const count = frameCount();
+          const result = await runtime.render({ frameIndex: count > 0 ? frameIndex : null });
           if (result.readbacks.length > 0) {
             const readback = result.readbacks[0];
             setStatus(
@@ -1799,15 +1845,56 @@ async function main() {
             );
           } else {
             const suffix = interaction !== null ? "; pan/zoom active" : "";
-            setStatus(`Rendered ${streamName}; readbacks=0${suffix}`);
+            const frameSuffix = count > 0 ? `; frame=${frameIndex + 1}/${count}` : "";
+            setStatus(`Rendered ${streamName}; readbacks=0${frameSuffix}${suffix}`);
           }
+          updatePlaybackUi();
         } while (rerenderRequested);
       } finally {
         rendering = false;
       }
     };
 
+    const schedulePlayback = () => {
+      playbackRequest = requestAnimationFrame(async () => {
+        playbackRequest = 0;
+        if (!playing) {
+          return;
+        }
+        const count = frameCount();
+        if (count <= 1) {
+          stopPlayback();
+          return;
+        }
+        frameIndex = (frameIndex + 1) % count;
+        try {
+          await render();
+        } catch (error) {
+          stopPlayback();
+          setStatus(error.message, true);
+          return;
+        }
+        if (playing) {
+          schedulePlayback();
+        }
+      });
+    };
+
+    playToggleEl.addEventListener("click", () => {
+      if (playing) {
+        stopPlayback();
+        return;
+      }
+      if (frameCount() <= 1 || interaction !== null) {
+        return;
+      }
+      playing = true;
+      updatePlaybackUi();
+      schedulePlayback();
+    });
+
     streamSelectEl.addEventListener("change", () => {
+      stopPlayback();
       loadStream(streamSelectEl.value)
         .then(render)
         .catch((error) => setStatus(error.message, true));
@@ -1816,6 +1903,7 @@ async function main() {
     await loadStream(streamName);
     await render();
     new ResizeObserver(() => {
+      stopPlayback();
       render().catch((error) => setStatus(error.message, true));
     }).observe(canvas);
   } catch (error) {
@@ -1826,6 +1914,13 @@ async function main() {
 
 
 
-if (canvas !== null && statusEl !== null && streamNameEl !== null && streamSelectEl !== null) {
+if (
+  canvas !== null &&
+  statusEl !== null &&
+  streamNameEl !== null &&
+  streamSelectEl !== null &&
+  playToggleEl !== null &&
+  frameInfoEl !== null
+) {
   main();
 }

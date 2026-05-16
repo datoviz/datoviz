@@ -109,6 +109,17 @@ def _parse_args() -> argparse.Namespace:
         help="Keep commands through this recorded frame index instead of all frames.",
     )
     parser.add_argument(
+        "--frames",
+        default=None,
+        help="Adapt a sampled playback range as START:COUNT recorded frames.",
+    )
+    parser.add_argument(
+        "--frame-stride",
+        type=int,
+        default=1,
+        help="Recorded-frame stride used with --frames.",
+    )
+    parser.add_argument(
         "--gzip-threshold",
         type=int,
         default=512,
@@ -140,6 +151,47 @@ def _records_through_frame(records: list[dict[str, Any]], frame: int | None) -> 
         for record in records
         if record.get("type") != "command" or int(record["index"]) < end
     ]
+
+
+def _parse_frame_range(value: str | None) -> tuple[int, int] | None:
+    if value is None:
+        return None
+    parts = value.split(":", 1)
+    if len(parts) != 2:
+        raise ValueError("--frames must use START:COUNT syntax")
+    start = int(parts[0])
+    count = int(parts[1])
+    if start < 0 or count <= 0:
+        raise ValueError("--frames requires START >= 0 and COUNT > 0")
+    return start, count
+
+
+def _selected_frames(
+    frames: list[dict[str, Any]],
+    frame: int | None,
+    frame_range: tuple[int, int] | None,
+    frame_stride: int,
+) -> list[dict[str, Any]]:
+    if frame_stride <= 0:
+        raise ValueError("--frame-stride must be positive")
+    if frame is not None and frame_range is not None:
+        raise ValueError("--frame and --frames are mutually exclusive")
+    if frame_range is not None:
+        start, count = frame_range
+        out = []
+        for i in range(count):
+            idx = start + i * frame_stride
+            if idx >= len(frames):
+                break
+            out.append({**frames[idx], "_recorded_index": idx})
+        if not out:
+            raise ValueError(f"frame range starts outside recording with {len(frames)} frames")
+        return out
+    if frame is not None:
+        if frame < 0 or frame >= len(frames):
+            raise ValueError(f"frame index {frame} is out of range, recording has {len(frames)} frames")
+        return [{**item, "_recorded_index": i} for i, item in enumerate(frames[: frame + 1])]
+    return [{**item, "_recorded_index": i} for i, item in enumerate(frames)]
 
 
 def _flag_names(value: int, table: list[tuple[int, str]]) -> list[str]:
@@ -504,23 +556,106 @@ def _convert_command(
     raise ValueError(f"unsupported command op {op!r}")
 
 
-def adapt(recording: Path, output: Path, name: str, frame: int | None, gzip_threshold: int) -> None:
-    records = _records_through_frame(_read_records(recording), frame)
-    source_commands = [record for record in records if record.get("type") == "command"]
+def adapt(
+    recording: Path,
+    output: Path,
+    name: str,
+    frame: int | None,
+    frame_range: tuple[int, int] | None,
+    frame_stride: int,
+    gzip_threshold: int,
+) -> None:
+    records = _read_records(recording)
+    all_commands = [record for record in records if record.get("type") == "command"]
+    all_frames = [record for record in records if record.get("type") == "frame"]
+    selected_frames = _selected_frames(all_frames, frame, frame_range, frame_stride)
+    source_setup_end = next(
+        (
+            int(command["index"])
+            for command in all_commands
+            if command.get("op") == "BeginCommandEncoder"
+        ),
+        len(all_commands),
+    )
+    command_by_index = {int(command["index"]): command for command in all_commands}
+    source_commands = [
+        command
+        for command in all_commands
+        if int(command["index"]) < source_setup_end
+    ]
+    frame_source_spans: list[tuple[int, dict[str, Any], int, int]] = []
+
+    for frame_i, frame_record in enumerate(selected_frames):
+        start = int(frame_record["first_command"])
+        end = start + int(frame_record["command_count"])
+        start = max(start, source_setup_end)
+        if start >= end:
+            continue
+        first_out = len(source_commands)
+        for command_index in range(start, end):
+            command = command_by_index.get(command_index)
+            if command is not None:
+                source_commands.append(command)
+        count = len(source_commands) - first_out
+        if count > 0:
+            frame_source_spans.append((frame_i, frame_record, first_out, count))
+
     identities = _infer_shader_identities(source_commands)
     canvas_extent = _recorded_canvas_extent(source_commands)
     ids = IdMap()
     canvas_texture_ids: set[int] = set()
     commands: list[dict[str, Any]] = []
     needs_depth = False
+    source_to_output: dict[int, tuple[int, int]] = {}
 
     for command in source_commands:
+        out_start = len(commands)
         converted = _convert_command(
             recording, command, ids, identities, canvas_texture_ids, gzip_threshold)
         for item in converted:
             if item.get("depth_stencil_attachment", {}).get("texture_id") == "__depth__":
                 needs_depth = True
             commands.append(item)
+        source_to_output[int(command["index"])] = (out_start, len(commands) - out_start)
+
+    setup_command_count = len(
+        [
+            command
+            for command in source_commands
+            if int(command["index"]) < source_setup_end
+        ]
+    )
+    setup_command_count = sum(
+        source_to_output[int(command["index"])][1]
+        for command in source_commands
+        if int(command["index"]) < source_setup_end
+    )
+    frames: list[dict[str, Any]] = []
+    first_t = float(frame_source_spans[0][1].get("t_present", 0)) if frame_source_spans else 0.0
+
+    for frame_i, frame_record, first_source, source_count in frame_source_spans:
+        out_start = None
+        out_end = None
+        for command in source_commands[first_source:first_source + source_count]:
+            start, count = source_to_output[int(command["index"])]
+            if count == 0:
+                continue
+            out_start = start if out_start is None else min(out_start, start)
+            end = start + count
+            out_end = end if out_end is None else max(out_end, end)
+        if out_start is None or out_end is None or out_start >= out_end:
+            continue
+        t_present = float(frame_record.get("t_present", 0))
+        frames.append(
+            {
+                "index": int(frame_i),
+                "recorded_index": int(frame_record.get("_recorded_index", frame_i)),
+                "t_present": t_present,
+                "t": t_present - first_t,
+                "first_command": out_start,
+                "command_count": out_end - out_start,
+            }
+        )
 
     if needs_depth:
         depth_id = ids.synthetic()
@@ -538,9 +673,14 @@ def adapt(recording: Path, output: Path, name: str, frame: int | None, gzip_thre
         }
         insert_at = next(
             (i for i, command in enumerate(commands) if command["cmd"] == "BeginCommandEncoder"),
-            len(commands),
+            setup_command_count,
         )
         commands.insert(insert_at, depth_command)
+        if insert_at <= setup_command_count:
+            setup_command_count += 1
+        for frame_record in frames:
+            if int(frame_record["first_command"]) >= insert_at:
+                frame_record["first_command"] = int(frame_record["first_command"]) + 1
         for command in commands:
             attachment = command.get("depth_stencil_attachment")
             if attachment is not None and attachment.get("texture_id") == "__depth__":
@@ -558,6 +698,8 @@ def adapt(recording: Path, output: Path, name: str, frame: int | None, gzip_thre
                 "version": {"major": 2, "minor": 0},
                 "source": source,
                 **({"canvas": canvas_extent} if canvas_extent is not None else {}),
+                "setup_command_count": setup_command_count,
+                "frames": frames,
                 "commands": commands,
                 "expected": {"outcome": "success"},
             },
@@ -572,7 +714,15 @@ def main() -> int:
     args = _parse_args()
     recording = args.recording.resolve()
     output = args.output.resolve()
-    adapt(recording, output, args.name or output.stem, args.frame, args.gzip_threshold)
+    adapt(
+        recording,
+        output,
+        args.name or output.stem,
+        args.frame,
+        _parse_frame_range(args.frames),
+        args.frame_stride,
+        args.gzip_threshold,
+    )
     return 0
 
 
