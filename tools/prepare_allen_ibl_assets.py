@@ -297,7 +297,7 @@ def prepare(output_dir: Path, cache_dir: Path, scale: float, region_ids: Iterabl
         "offset_xyz_m": offset_xyz_m.tolist(),
         "scale": scale,
         "volume_shape_ap_ml_dv": list(DEFAULT_VOLUME_SHAPE_AP_ML_DV),
-        "texture_axis_for_ml_ap_dv": {"ML": "Y", "AP": "Z", "DV": "X"},
+        "texture_axis_for_ml_ap_dv": {"ML": "X", "AP": "Y", "DV": "Z"},
         "volume_bounds_scene": _scene_volume_bounds(ba, offset_xyz_m, scale),
         "mesh_files": {
             "position": "allen_ibl_mesh_pos.npy",

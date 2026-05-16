@@ -46,7 +46,7 @@
 #define DEFAULT_DATA_PATH "data/volumes/allen_mouse_brain_rgba.npy.gz"
 #define DEFAULT_VOLUME_FILE "allen_mouse_brain_rgba.npy.gz"
 #define DEFAULT_IBL_ASSET_DIR "data/allen_ibl_assets"
-#define DEFAULT_AXIS          DVZ_VOLUME_AXIS_Z
+#define DEFAULT_AXIS          DVZ_VOLUME_AXIS_Y
 #define DEFAULT_SLICE_POS     0.5f
 #define DEFAULT_SLICE_OPACITY 1.0f
 #define DEFAULT_VOLUME_OPACITY 0.85f
@@ -935,6 +935,65 @@ static bool _downsample_allen_mouse_brain(AllenMouseBrainVolume* volume, uint32_
 
 
 /**
+ * Swizzle the loaded Allen volume from raw storage axes to IBL scene axes.
+ *
+ * @param volume volume metadata and storage
+ * @return whether swizzling succeeded
+ */
+static bool _swizzle_allen_mouse_brain_to_ibl_axes(AllenMouseBrainVolume* volume)
+{
+    ANN(volume);
+    if (volume->voxels == NULL || volume->width == 0 || volume->height == 0 || volume->depth == 0)
+        return false;
+
+    uint32_t src_width = volume->width;
+    uint32_t src_height = volume->height;
+    uint32_t src_depth = volume->depth;
+    uint32_t out_width = src_height;
+    uint32_t out_height = src_depth;
+    uint32_t out_depth = src_width;
+
+    uint64_t voxel_count = 0;
+    uint64_t byte_count = 0;
+    if (_dvz_mul_u64_overflows(out_width, out_height, &voxel_count) ||
+        _dvz_mul_u64_overflows(voxel_count, out_depth, &voxel_count) ||
+        _dvz_mul_u64_overflows(voxel_count, 4, &byte_count))
+    {
+        return false;
+    }
+
+    uint8_t* dst = (uint8_t*)dvz_calloc(byte_count, 1);
+    if (dst == NULL)
+        return false;
+
+    const uint8_t* src = volume->voxels;
+    for (uint32_t ap = 0; ap < src_depth; ap++)
+    {
+        for (uint32_t ml = 0; ml < src_height; ml++)
+        {
+            for (uint32_t dv = 0; dv < src_width; dv++)
+            {
+                uint64_t src_index = (((uint64_t)ap * src_height + ml) * src_width + dv) * 4u;
+                uint64_t dst_index = (((uint64_t)dv * out_height + ap) * out_width + ml) * 4u;
+                dvz_memcpy(dst + dst_index, 4, src + src_index, 4);
+            }
+        }
+    }
+
+    uint8_t* previous_downsampled = volume->downsampled_data;
+    volume->downsampled_data = dst;
+    volume->voxels = dst;
+    volume->width = out_width;
+    volume->height = out_height;
+    volume->depth = out_depth;
+    if (previous_downsampled != NULL)
+        dvz_free(previous_downsampled);
+    return true;
+}
+
+
+
+/**
  * Normalize the Allen RGBA alpha channel for display transfer.
  *
  * @param volume volume metadata and storage
@@ -1175,17 +1234,17 @@ static void _allen_mouse_brain_gui(DvzGui* gui, DvzAppWindow* win, void* user_da
         }
         if (dvz_gui_button(gui, "Slice axis ML"))
         {
-            state->axis = DVZ_VOLUME_AXIS_Y;
+            state->axis = DVZ_VOLUME_AXIS_X;
             changed = true;
         }
         if (dvz_gui_button(gui, "Slice axis AP"))
         {
-            state->axis = DVZ_VOLUME_AXIS_Z;
+            state->axis = DVZ_VOLUME_AXIS_Y;
             changed = true;
         }
         if (dvz_gui_button(gui, "Slice axis DV"))
         {
-            state->axis = DVZ_VOLUME_AXIS_X;
+            state->axis = DVZ_VOLUME_AXIS_Z;
             changed = true;
         }
         changed |= dvz_gui_checkbox(gui, "Linear sampling", &state->linear_sampling);
@@ -1262,6 +1321,12 @@ int main(int argc, char** argv)
     if (!_downsample_allen_mouse_brain(&volume_data, downsample))
     {
         dvz_fprintf(stderr, "failed to downsample Allen mouse brain volume by %u\n", downsample);
+        _allen_mouse_brain_destroy(&volume_data);
+        return 1;
+    }
+    if (!_swizzle_allen_mouse_brain_to_ibl_axes(&volume_data))
+    {
+        dvz_fprintf(stderr, "failed to swizzle Allen mouse brain volume into IBL axes\n");
         _allen_mouse_brain_destroy(&volume_data);
         return 1;
     }
@@ -1428,7 +1493,7 @@ int main(int argc, char** argv)
             dvz_visual_set_data(
                 atlas_mesh_visual, "normal", atlas_mesh.normal, atlas_mesh.vertex_count) != 0 ||
             !dvz_visual_set_buffer(atlas_mesh_visual, "index", atlas_index_buffer) ||
-            dvz_visual_set_alpha_mode(atlas_mesh_visual, DVZ_ALPHA_BLENDED) != 0 ||
+            dvz_visual_set_alpha_mode(atlas_mesh_visual, DVZ_ALPHA_WBOIT) != 0 ||
             dvz_visual_set_depth_test(atlas_mesh_visual, true) != 0)
         {
             dvz_fprintf(stderr, "Allen/IBL atlas mesh visual setup failed\n");
