@@ -42,12 +42,12 @@ fn main(input: VertexIn) -> VertexOut {
     output.position = clip;
     output.color = input.color;
     output.world_position = world.xyz;
-    output.camera_position = (inverse(mvp.view) * vec4f(0.0, 0.0, 0.0, 1.0)).xyz;
-    output.normal = transpose(inverse(mat3x3f(
+    output.camera_position = vec3f(0.0, 0.0, 3.0);
+    output.normal = mat3x3f(
         mvp.model[0].xyz,
         mvp.model[1].xyz,
         mvp.model[2].xyz
-    ))) * input.normal;
+    ) * input.normal;
     output.depth = clip.z / max(abs(clip.w), 1e-6);
     return output;
 }
