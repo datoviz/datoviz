@@ -191,9 +191,6 @@ endif()
 # -------------------------------------------------------------------------------------------------
 # Compile definitions
 # -------------------------------------------------------------------------------------------------
-#
-set(DVZ_HAS_ZLIB 0)
-
 # Validation layers are enabled by default except for Release builds unless manually overridden.
 option(DVZ_USE_VALIDATION "Enable Vulkan validation layers and debug utils" ON)
 

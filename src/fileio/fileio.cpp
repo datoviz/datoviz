@@ -268,7 +268,7 @@ char* dvz_read_gz(const char* filename, DvzSize* size)
 
     log_error(
         "unable to load .gz file, Datoviz was not built with zlib support. Please activate " //
-        "CMake option DATOVIZ_WITH_ZLIB");
+        "CMake option DVZ_WITH_ZLIB");
     return NULL;
 
 #endif

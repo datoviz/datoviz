@@ -28,6 +28,11 @@ target_include_directories(datoviz_fileio
 target_compile_definitions(
     datoviz_fileio PUBLIC
     ${DVZ_COMPILE_DEFINITIONS} "FPNG_USE_UNALIGNED_LOADS=0")
+
+if(DVZ_HAS_ZLIB AND TARGET ZLIB::ZLIB)
+    target_link_libraries(datoviz_fileio PUBLIC ZLIB::ZLIB)
+endif()
+
 if(WIN32)
     target_compile_definitions(datoviz_fileio PRIVATE DVZ_SHARED)
 endif()

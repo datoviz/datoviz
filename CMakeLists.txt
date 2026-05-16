@@ -69,8 +69,10 @@ set(DVZ_NVENC_LIB "")
 set(DVZ_NVENC_LIB_DIR "")
 option(DVZ_ENABLE_KVAZAAR "Enable Kvazaar software HEVC backend" ON)
 option(DVZ_WITH_GLFW "Enable the GLFW window backend" ON)
+option(DVZ_WITH_ZLIB "Enable zlib support for gzip-compressed data files" ON)
 set(DVZ_HAS_KVZ 0)
 set(DVZ_HAS_GLFW 0)
+set(DVZ_HAS_ZLIB 0)
 
 set(DVZ_GLFW_DIR "${PROJECT_SOURCE_DIR}/external/glfw")
 
@@ -101,6 +103,18 @@ if(DVZ_WITH_GLFW AND NOT DVZ_HAS_GLFW)
 endif()
 
 set(DVZ_HAS_GLFW "${DVZ_HAS_GLFW}" CACHE INTERNAL "GLFW availability flag" FORCE)
+
+if(DVZ_WITH_ZLIB)
+    find_package(ZLIB QUIET)
+
+    if(ZLIB_FOUND)
+        set(DVZ_HAS_ZLIB 1)
+    else()
+        message(WARNING "DVZ_WITH_ZLIB is ON but zlib was not found; gzip loading is disabled.")
+    endif()
+endif()
+
+set(DVZ_HAS_ZLIB "${DVZ_HAS_ZLIB}" CACHE INTERNAL "zlib availability flag" FORCE)
 
 if(DVZ_ENABLE_CUDA)
     find_package(CUDAToolkit QUIET)
@@ -489,6 +503,8 @@ message(STATUS "DVZ_ENABLE_ASAN_IN_DEBUG: ${DVZ_ENABLE_ASAN_IN_DEBUG}")
 message(STATUS "DVZ_ENABLE_COVERAGE: ${DVZ_ENABLE_COVERAGE}")
 message(STATUS "DVZ_USE_MIMALLOC_RELEASE_DEFAULT: ${DVZ_USE_MIMALLOC_RELEASE_DEFAULT}")
 message(STATUS "DVZ_ENABLE_CUDA: ${DVZ_ENABLE_CUDA}")
+message(STATUS "DVZ_WITH_ZLIB: ${DVZ_WITH_ZLIB}")
+message(STATUS "DVZ_HAS_ZLIB: ${DVZ_HAS_ZLIB}")
 message(STATUS "DVZ_WITH_MIMALLOC (detected): ${DVZ_WITH_MIMALLOC}")
 message(STATUS "DVZ_BUILD_CORE: ${DVZ_BUILD_CORE}")
 message(STATUS "DVZ_BUILD_VK: ${DVZ_BUILD_VK}")
