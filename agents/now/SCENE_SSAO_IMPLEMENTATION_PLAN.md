@@ -275,14 +275,35 @@ Most required DRP2 primitives already exist:
 - fullscreen triangle draws,
 - render-target-to-sampled transitions driven by declared access.
 
-Likely DRP2 gaps to check while implementing:
+Remaining DRP2 gaps to close or deliberately defer before the first SSAO slice:
 
-- support for the chosen single-channel formats in serialization, validation, runtime image usage,
-  and vklite pipeline format handling;
-- enough color attachments for the three-output gbuffer pass;
-- graph validation coverage for SSAO's multi-pass dependencies;
-- bind-group layout shape for multiple sampled textures plus uniform buffer plus sampler;
-- resize coverage proving SSAO graph texture recreation refreshes dependent vklite descriptors.
+1. **Sampler configuration.** DRP2 `CreateSampler` currently creates a fixed linear,
+   clamp-to-edge sampler. SSAO noise usually wants nearest filtering and may want repeat wrapping.
+   Strategy: either extend DRP2 with a narrow sampler descriptor command/API before the SSAO noise
+   texture lands, or choose a first shader path that does not rely on repeat/nearest noise sampling.
+   If the latter is chosen, record it as a deliberate first-slice simplification.
+2. **Single-channel render-target format serialization.** Runtime pipeline creation accepts
+   backend VkFormat color targets, but the DRP2 JSON/spec output should explicitly name every SSAO
+   render-target format used by tests. Add `VK_FORMAT_R32_SFLOAT` for linear depth and the chosen
+   AO format (`VK_FORMAT_R8_UNORM` or `VK_FORMAT_R16_SFLOAT`) to pipeline color-target
+   serialization before adding SSAO fixtures that inspect JSON.
+3. **Focused format/runtime coverage.** Add a DRP2 fixture/test that creates a three-output gbuffer
+   pass with `RGBA8`, `RGBA16F`, and `R32F` color targets, plus an AO fullscreen pass with the
+   chosen AO format. Validate the semantic stream and execute it through the vklite semantic runtime
+   at minimum.
+4. **Descriptor refresh regression coverage for SSAO-shaped bindings.** Descriptor refresh now
+   handles recreated buffers, textures, and samplers in the vklite runtime. Add one SSAO-shaped
+   resize test that recreates a stable graph texture id after its bind group exists and verifies the
+   subsequent fullscreen pass does not require re-emitting the bind group solely for descriptor
+   freshness.
+5. **Capability reporting.** Extend scene capability validation once final formats are chosen so
+   unsupported SSAO paths fail with explicit diagnostics rather than relying on Vulkan creation
+   failure.
+
+The color-attachment count itself is not a blocker: `DVZ_DRP2_MAX_COLOR_ATTACHMENTS` and
+`DVZ_FRAME_PLAN_MAX_GRAPH_COLOR_ATTACHMENTS` are both `4`, so the three-output gbuffer fits the
+current command and graph limits. Named graph depth attachments, sampled texture bindings, fullscreen
+draws, and render-target-to-sampled transitions are already present.
 
 If a gap appears in DRP2, extend the existing command model narrowly rather than bypassing it with
 vklite-only code.
