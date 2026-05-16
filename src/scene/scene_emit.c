@@ -997,7 +997,8 @@ void _scene_emit_panel_render(
         if (_scene_ssao_params_resource_key(
                 panel_id, ssao_params_key, sizeof(ssao_params_key)))
         {
-            _scene_technique_ssao_uniform(ssao_state, &panel->techniques.ssao.uniform);
+            _scene_technique_ssao_uniform(
+                ssao_state, &panel_apply_mvp, &panel_viewport, &panel->techniques.ssao.uniform);
             if (dvz_frame_plan_upload_bytes(
                     plan, ssao_params_key, 0, sizeof(DvzSceneSsaoUniform), "ssao_params",
                     &panel->techniques.ssao.uniform))

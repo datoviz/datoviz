@@ -64,8 +64,11 @@ typedef struct SsaoExampleState
     float radius;
     float strength;
     float bias;
+    float power;
+    float min_visibility;
     float sample_count;
     float size_scale;
+    bool debug_view;
 } SsaoExampleState;
 
 
@@ -224,14 +227,17 @@ static void _apply_ssao(SsaoExampleState* state)
     }
     if (state->sample_count < 4.0f)
         state->sample_count = 4.0f;
-    if (state->sample_count > 16.0f)
-        state->sample_count = 16.0f;
+    if (state->sample_count > 32.0f)
+        state->sample_count = 32.0f;
 
     DvzSceneSsaoDesc desc = {
         .radius = state->radius,
         .strength = state->strength,
         .bias = state->bias,
+        .power = state->power,
+        .min_visibility = state->min_visibility,
         .sample_count = (uint32_t)(state->sample_count + 0.5f),
+        .debug_view = state->debug_view,
     };
     if (!_scene_technique_state_set_ssao(&state->panel->techniques, &desc))
         dvz_fprintf(stderr, "_scene_technique_state_set_ssao() failed\n");
@@ -287,10 +293,13 @@ static void _reset_controls(SsaoExampleState* state)
     state->spin_enabled = true;
     state->raycast_mode = false;
     state->radius = 1.05f;
-    state->strength = 4.2f;
+    state->strength = 1.0f;
     state->bias = 0.012f;
-    state->sample_count = 16.0f;
+    state->power = 2.8f;
+    state->min_visibility = 0.10f;
+    state->sample_count = 32.0f;
     state->size_scale = 1.0f;
+    state->debug_view = false;
     _apply_sphere_sizes(state);
     _apply_sphere_mode(state);
     _apply_ssao(state);
@@ -324,9 +333,13 @@ static void _ssao_gui(DvzGui* gui, DvzAppWindow* win, void* user_data)
         ssao_changed |= dvz_gui_checkbox(gui, "Enable SSAO", &state->ssao_enabled);
         size_changed |= dvz_gui_slider_float(gui, "Sphere size", &state->size_scale, 0.35f, 2.5f);
         ssao_changed |= dvz_gui_slider_float(gui, "Radius", &state->radius, 0.05f, 4.0f);
-        ssao_changed |= dvz_gui_slider_float(gui, "Strength", &state->strength, 0.0f, 12.0f);
+        ssao_changed |= dvz_gui_slider_float(gui, "Strength", &state->strength, 0.0f, 3.0f);
         ssao_changed |= dvz_gui_slider_float(gui, "Bias", &state->bias, 0.0f, 0.12f);
-        ssao_changed |= dvz_gui_slider_float(gui, "Samples", &state->sample_count, 4.0f, 16.0f);
+        ssao_changed |= dvz_gui_slider_float(gui, "Power", &state->power, 0.1f, 8.0f);
+        ssao_changed |=
+            dvz_gui_slider_float(gui, "Min visibility", &state->min_visibility, 0.0f, 1.0f);
+        ssao_changed |= dvz_gui_slider_float(gui, "Samples", &state->sample_count, 4.0f, 32.0f);
+        ssao_changed |= dvz_gui_checkbox(gui, "Raw SSAO", &state->debug_view);
         if (dvz_gui_button(gui, "Reset"))
         {
             _reset_controls(state);

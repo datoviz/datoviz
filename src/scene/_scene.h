@@ -603,7 +603,12 @@ typedef struct DvzSceneEdlTechniqueState
 
 typedef struct DvzSceneSsaoUniform
 {
+    mat4 inv_proj;
+    mat4 view;
+    float viewport[4];
     float params[4];
+    float params2[4];
+    float params3[4];
 } DvzSceneSsaoUniform;
 
 
@@ -614,7 +619,14 @@ typedef struct DvzSceneSsaoTechniqueState
     float radius;
     float strength;
     float bias;
+    float power;
+    float min_visibility;
+    float blur_radius;
+    float blur_depth_sigma;
+    float blur_normal_sigma;
     uint32_t sample_count;
+    bool blur_enabled;
+    bool debug_view;
     DvzSceneSsaoUniform uniform;
 } DvzSceneSsaoTechniqueState;
 

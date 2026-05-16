@@ -322,11 +322,21 @@ bool _scene_technique_state_set_ssao(
     state->ssao.radius = _clampf(desc->radius, 0.001f, 64.0f);
     state->ssao.strength = _clampf(desc->strength, 0.0f, 16.0f);
     state->ssao.bias = _clampf(desc->bias, 0.0f, 1.0f);
+    state->ssao.power = desc->power > 0.0f ? _clampf(desc->power, 0.1f, 8.0f) : 1.0f;
+    state->ssao.min_visibility = _clampf(desc->min_visibility, 0.0f, 1.0f);
+    state->ssao.blur_radius =
+        desc->blur_radius > 0.0f ? _clampf(desc->blur_radius, 1.0f, 8.0f) : 2.0f;
+    state->ssao.blur_depth_sigma =
+        desc->blur_depth_sigma > 0.0f ? _clampf(desc->blur_depth_sigma, 0.001f, 10.0f) : 0.65f;
+    state->ssao.blur_normal_sigma =
+        desc->blur_normal_sigma > 0.0f ? _clampf(desc->blur_normal_sigma, 0.001f, 1.0f) : 0.35f;
     state->ssao.sample_count = desc->sample_count == 0 ? 16 : desc->sample_count;
     if (state->ssao.sample_count < 4)
         state->ssao.sample_count = 4;
-    if (state->ssao.sample_count > 64)
-        state->ssao.sample_count = 64;
+    if (state->ssao.sample_count > 32)
+        state->ssao.sample_count = 32;
+    state->ssao.blur_enabled = desc->blur_enabled;
+    state->ssao.debug_view = desc->debug_view;
     return true;
 }
 
@@ -392,16 +402,40 @@ void _scene_technique_edl_uniform(
  * @param out output shader uniform
  */
 void _scene_technique_ssao_uniform(
-    const DvzSceneSsaoTechniqueState* ssao, DvzSceneSsaoUniform* out)
+    const DvzSceneSsaoTechniqueState* ssao, const DvzMVP* mvp,
+    const DvzSceneViewportUniform* viewport, DvzSceneSsaoUniform* out)
 {
     ANN(out);
     dvz_memset(out, sizeof(DvzSceneSsaoUniform), 0, sizeof(DvzSceneSsaoUniform));
     if (ssao == NULL)
         return;
+    if (mvp != NULL)
+    {
+        mat4 proj = {0};
+        mat4 view = {0};
+        dvz_memcpy(proj, sizeof(proj), mvp->proj, sizeof(mvp->proj));
+        dvz_memcpy(view, sizeof(view), mvp->view, sizeof(mvp->view));
+        glm_mat4_inv(proj, out->inv_proj);
+        glm_mat4_copy(view, out->view);
+    }
+    if (viewport != NULL)
+    {
+        out->viewport[0] = viewport->x;
+        out->viewport[1] = viewport->y;
+        out->viewport[2] = viewport->width > 0.0f ? viewport->width : 1.0f;
+        out->viewport[3] = viewport->height > 0.0f ? viewport->height : 1.0f;
+    }
     out->params[0] = ssao->radius;
     out->params[1] = ssao->strength;
     out->params[2] = ssao->bias;
     out->params[3] = (float)ssao->sample_count;
+    out->params2[0] = ssao->power;
+    out->params2[1] = ssao->min_visibility;
+    out->params2[2] = ssao->blur_radius;
+    out->params2[3] = ssao->debug_view ? 1.0f : 0.0f;
+    out->params3[0] = ssao->blur_depth_sigma;
+    out->params3[1] = ssao->blur_normal_sigma;
+    out->params3[2] = ssao->blur_enabled ? 1.0f : 0.0f;
 }
 
 

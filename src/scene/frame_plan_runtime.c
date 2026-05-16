@@ -2141,7 +2141,7 @@ static bool _emitter_prepare_ssao_targets(
         return false;
     if (ok && is_new)
     {
-        DvzDrp2BindGroupLayoutEntry entries[2] = {
+        DvzDrp2BindGroupLayoutEntry entries[3] = {
             {
                 .binding = 0,
                 .binding_type = DVZ_DRP2_BINDING_TYPE_SAMPLED_TEXTURE,
@@ -2154,18 +2154,26 @@ static bool _emitter_prepare_ssao_targets(
                 .visibility = DVZ_DRP2_SHADER_STAGE_FRAGMENT,
                 .access = DVZ_DRP2_BINDING_ACCESS_READ,
             },
+            {
+                .binding = 2,
+                .binding_type = DVZ_DRP2_BINDING_TYPE_UNIFORM_BUFFER,
+                .visibility = DVZ_DRP2_SHADER_STAGE_FRAGMENT,
+                .access = DVZ_DRP2_BINDING_ACCESS_READ,
+            },
         };
         ok = ok && dvz_drp2_stream_create_bind_group_layout_entries(
-                       stream, out->composite_bgl_id, 2, entries);
+                       stream, out->composite_bgl_id, 3, entries);
     }
 
-    dvz_snprintf(bg_key, sizeof(bg_key), "_bg_ssao_composite_%" PRIu64, out->occlusion_id);
+    dvz_snprintf(
+        bg_key, sizeof(bg_key), "_bg_ssao_composite_%" PRIu64 "_%" PRIu64,
+        out->occlusion_id, out->params_id);
     ResourceId* composite_bg = _resource_entry(&emitter->objects, bg_key, &is_new);
     if (composite_bg == NULL || composite_bg->id == 0)
         return false;
     out->composite_bg_id = composite_bg->id;
     fingerprint =
-        _ssao_bind_group_fingerprint(out->occlusion_id, 0, out->sampler_id, 0);
+        _ssao_bind_group_fingerprint(out->occlusion_id, 0, out->sampler_id, out->params_id);
     if (!is_new && composite_bg->byte_size != fingerprint)
         is_new = true;
     composite_bg->byte_size = fingerprint;
@@ -2173,7 +2181,7 @@ static bool _emitter_prepare_ssao_targets(
     {
         uint64_t occlusion_id = _graph_sampled_read_texture_id(
             composite_pass, 0, 0, &out->graph, out->occlusion_id);
-        DvzDrp2BindGroupEntry entries[2] = {
+        DvzDrp2BindGroupEntry entries[3] = {
             {
                 .binding = 0,
                 .binding_type = DVZ_DRP2_BINDING_TYPE_SAMPLED_TEXTURE,
@@ -2186,9 +2194,17 @@ static bool _emitter_prepare_ssao_targets(
                 .resource_kind = DVZ_DRP2_BINDING_RESOURCE_SAMPLER,
                 .resource_id = out->sampler_id,
             },
+            {
+                .binding = 2,
+                .binding_type = DVZ_DRP2_BINDING_TYPE_UNIFORM_BUFFER,
+                .resource_kind = DVZ_DRP2_BINDING_RESOURCE_BUFFER,
+                .resource_id = out->params_id,
+                .offset = 0,
+                .size = sizeof(DvzSceneSsaoUniform),
+            },
         };
         ok = ok && dvz_drp2_stream_create_bind_group_entries(
-                       stream, out->composite_bg_id, out->composite_bgl_id, 2, entries);
+                       stream, out->composite_bg_id, out->composite_bgl_id, 3, entries);
     }
 
     const char* fmt = _shader_format_tag(cfg);

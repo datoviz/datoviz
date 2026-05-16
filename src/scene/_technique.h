@@ -54,7 +54,14 @@ typedef struct DvzSceneSsaoDesc
     float radius;
     float strength;
     float bias;
+    float power;
+    float min_visibility;
+    float blur_radius;
+    float blur_depth_sigma;
+    float blur_normal_sigma;
     uint32_t sample_count;
+    bool blur_enabled;
+    bool debug_view;
 } DvzSceneSsaoDesc;
 
 
@@ -102,7 +109,8 @@ void _scene_technique_edl_uniform(
     const DvzSceneEdlTechniqueState* edl, DvzSceneEdlUniform* out);
 
 void _scene_technique_ssao_uniform(
-    const DvzSceneSsaoTechniqueState* ssao, DvzSceneSsaoUniform* out);
+    const DvzSceneSsaoTechniqueState* ssao, const DvzMVP* mvp,
+    const DvzSceneViewportUniform* viewport, DvzSceneSsaoUniform* out);
 
 bool _scene_technique_emit_wboit_frame_graph(
     DvzFramePlan* plan, const char* panel_id, bool opaque_needs_depth,
