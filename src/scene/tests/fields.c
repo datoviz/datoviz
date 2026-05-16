@@ -873,6 +873,8 @@ int test_scene_volume_retained_controls(TstSuite* suite, TstItem* item)
     AT(!state->clipping_enabled);
     AT(state->clip_min[0] == 0.0);
     AT(state->clip_max[2] == 1.0);
+    AT(state->bounds_min[0] == -1.0);
+    AT(state->bounds_max[2] == +1.0);
     uint64_t version0 = state->version;
 
     AT(dvz_volume_set_opacity(volume, 0.35f) == 0);
@@ -898,6 +900,16 @@ int test_scene_volume_retained_controls(TstSuite* suite, TstItem* item)
     AT(dvz_volume_set_step_count(volume, 32) == 0);
     AT(dvz_volume_state(volume)->step_count == 32);
     AT(dvz_volume_state(volume)->version != version4);
+    uint64_t version5 = dvz_volume_state(volume)->version;
+
+    double bounds_min[3] = {-0.5, -0.75, -1.0};
+    double bounds_max[3] = {+0.5, +0.75, +1.0};
+    AT(dvz_volume_set_bounds(volume, bounds_min, bounds_max) == 0);
+    state = dvz_volume_state(volume);
+    ANN(state);
+    AT(state->bounds_min[1] == -0.75);
+    AT(state->bounds_max[0] == +0.5);
+    AT(state->version != version5);
 
     double clip_min[3] = {0.1, 0.2, 0.3};
     double clip_max[3] = {0.9, 0.8, 0.7};
@@ -930,6 +942,10 @@ int test_scene_volume_retained_controls(TstSuite* suite, TstItem* item)
     double invalid_max[3] = {1.0, 0.7, 1.0};
     AT(dvz_volume_set_clipping_box(volume, invalid_min, invalid_max) != 0);
     AT(_captured_log_contains(suite, "volume clipping box coordinates"));
+    double invalid_bounds_min[3] = {0.0, -1.0, -1.0};
+    double invalid_bounds_max[3] = {0.0, +1.0, +1.0};
+    AT(dvz_volume_set_bounds(volume, invalid_bounds_min, invalid_bounds_max) != 0);
+    AT(_captured_log_contains(suite, "volume bounds must be finite"));
 
     DvzScale* scale = dvz_scale(scene, &(DvzScaleDesc){.kind = DVZ_SCALE_CONTINUOUS});
     ANN(scale);

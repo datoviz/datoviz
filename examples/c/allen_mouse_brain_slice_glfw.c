@@ -725,6 +725,40 @@ static void _allen_mouse_brain_destroy(AllenMouseBrainVolume* volume)
 
 
 /**
+ * Return centered object-space bounds preserving volume voxel aspect.
+ *
+ * @param volume volume metadata
+ * @param bounds_min output minimum coordinate
+ * @param bounds_max output maximum coordinate
+ */
+static void _volume_aspect_bounds(
+    const AllenMouseBrainVolume* volume, double bounds_min[3], double bounds_max[3])
+{
+    ANN(volume);
+    ANN(bounds_min);
+    ANN(bounds_max);
+    uint32_t max_dim = volume->width;
+    if (volume->height > max_dim)
+        max_dim = volume->height;
+    if (volume->depth > max_dim)
+        max_dim = volume->depth;
+    if (max_dim == 0)
+        max_dim = 1;
+
+    double sx = (double)volume->width / (double)max_dim;
+    double sy = (double)volume->height / (double)max_dim;
+    double sz = (double)volume->depth / (double)max_dim;
+    bounds_min[0] = -sx;
+    bounds_min[1] = -sy;
+    bounds_min[2] = -sz;
+    bounds_max[0] = +sx;
+    bounds_max[1] = +sy;
+    bounds_max[2] = +sz;
+}
+
+
+
+/**
  * Apply retained volume controls.
  *
  * @param state example state
@@ -962,6 +996,17 @@ int main(int argc, char** argv)
         dvz_visual_set_alpha_mode(volume_slice, DVZ_ALPHA_BLENDED) != 0)
     {
         dvz_fprintf(stderr, "dvz_visual_set_alpha_mode() failed\n");
+        _allen_mouse_brain_destroy(&volume_data);
+        dvz_scene_destroy(scene);
+        return 1;
+    }
+    double bounds_min[3] = {0};
+    double bounds_max[3] = {0};
+    _volume_aspect_bounds(&volume_data, bounds_min, bounds_max);
+    if (dvz_volume_set_bounds(volume_3d, bounds_min, bounds_max) != 0 ||
+        dvz_volume_set_bounds(volume_slice, bounds_min, bounds_max) != 0)
+    {
+        dvz_fprintf(stderr, "dvz_volume_set_bounds() failed\n");
         _allen_mouse_brain_destroy(&volume_data);
         dvz_scene_destroy(scene);
         return 1;

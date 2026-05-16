@@ -349,6 +349,13 @@ static void _volume_uniform_from_state(
     out->slice[1] = (float)state->slice_position;
     out->slice[2] = 0.0f;
     out->slice[3] = 1.0f;
+    for (uint32_t i = 0; i < 3; i++)
+    {
+        out->bounds_min[i] = (float)state->bounds_min[i];
+        out->bounds_max[i] = (float)state->bounds_max[i];
+    }
+    out->bounds_min[3] = 1.0f;
+    out->bounds_max[3] = 1.0f;
 }
 
 

@@ -15,9 +15,13 @@ layout(set = 1, binding = 2) uniform VolumeParams {
     vec4 clip_min;
     vec4 clip_max;
     vec4 params;
+    vec4 slice;
+    vec4 bounds_min;
+    vec4 bounds_max;
 } volume;
 
 layout(location = 0) in vec3 fragUVW;
+layout(location = 1) in vec3 fragObj;
 layout(location = 0) out vec4 outColor;
 
 float safe_inv(float v)
@@ -40,17 +44,33 @@ bool ray_box(vec3 ro, vec3 rd, vec3 box_min, vec3 box_max, out float t0, out flo
     return t1 >= max(t0, 0.0);
 }
 
-vec3 camera_uvw()
+vec3 camera_object()
 {
     mat4 inv_model = inverse(mvp.model);
     mat4 inv_view = inverse(mvp.view);
-    vec3 camera_obj = (inv_model * inv_view * vec4(0.0, 0.0, 0.0, 1.0)).xyz;
-    return 0.5 * camera_obj + vec3(0.5);
+    return (inv_model * inv_view * vec4(0.0, 0.0, 0.0, 1.0)).xyz;
+}
+
+vec3 object_to_uvw(vec3 pos)
+{
+    vec3 extent = max(volume.bounds_max.xyz - volume.bounds_min.xyz, vec3(1e-6));
+    return (pos - volume.bounds_min.xyz) / extent;
+}
+
+vec3 object_dir_to_uvw(vec3 dir)
+{
+    vec3 extent = max(volume.bounds_max.xyz - volume.bounds_min.xyz, vec3(1e-6));
+    return dir / extent;
+}
+
+vec3 uvw_to_object(vec3 uvw)
+{
+    return mix(volume.bounds_min.xyz, volume.bounds_max.xyz, uvw);
 }
 
 float projected_depth(vec3 uvw)
 {
-    vec3 pos = uvw * 2.0 - vec3(1.0);
+    vec3 pos = uvw_to_object(uvw);
     vec4 clip = mvp.proj * mvp.view * mvp.model * vec4(pos, 1.0);
     if (clip.w <= 0.0) {
         return 1.0;
@@ -71,8 +91,10 @@ bool occluded_by_scene_depth(vec3 uvw)
 
 void main()
 {
-    vec3 ro = camera_uvw();
-    vec3 rd = normalize(fragUVW - ro);
+    vec3 ro_obj = camera_object();
+    vec3 rd_obj = normalize(fragObj - ro_obj);
+    vec3 ro = object_to_uvw(ro_obj);
+    vec3 rd = object_dir_to_uvw(rd_obj);
 
     float proxy_t0 = 0.0;
     float proxy_t1 = 0.0;

@@ -938,6 +938,21 @@ DVZ_EXPORT int dvz_volume_set_step_count(DvzVisual* visual, uint32_t step_count)
 
 
 /**
+ * Set the object-space volume proxy bounds.
+ *
+ * The bounds control the rendered box geometry while preserving normalized UVW texture sampling.
+ * They are useful for displaying anisotropic volumes in their physical aspect ratio.
+ *
+ * @param visual the volume visual
+ * @param bounds_min minimum object-space coordinate
+ * @param bounds_max maximum object-space coordinate
+ * @return 0 on success, -1 on error
+ */
+DVZ_EXPORT int
+dvz_volume_set_bounds(DvzVisual* visual, const double bounds_min[3], const double bounds_max[3]);
+
+
+/**
  * Enable axis-aligned clipping on a volume visual.
  *
  * @param visual the volume visual

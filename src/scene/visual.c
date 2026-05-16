@@ -85,6 +85,8 @@ static void _visual_bump_version(uint64_t* version);
 
 static void _volume_state_default(DvzVolumeState* state);
 
+static int _volume_apply_bounds_geometry(DvzVisual* visual);
+
 static bool _mesh_ensure_default_color(DvzVisual* visual, uint32_t item_count);
 
 
@@ -1110,6 +1112,12 @@ static void _volume_state_default(DvzVolumeState* state)
     state->clip_max[0] = 1.0;
     state->clip_max[1] = 1.0;
     state->clip_max[2] = 1.0;
+    state->bounds_min[0] = -1.0;
+    state->bounds_min[1] = -1.0;
+    state->bounds_min[2] = -1.0;
+    state->bounds_max[0] = +1.0;
+    state->bounds_max[1] = +1.0;
+    state->bounds_max[2] = +1.0;
 }
 
 
@@ -2447,35 +2455,17 @@ DvzVisual* dvz_image(DvzScene* scene, uint32_t flags)
 
 
 /**
- * Create a volume visual.
+ * Apply the current retained volume bounds to the proxy cube attributes.
  *
- * @param scene the scene
- * @param flags variant flags
- * @return the visual, or NULL on allocation failure
+ * @param visual the volume visual
+ * @return 0 on success, -1 on error
  */
-DvzVisual* dvz_volume(DvzScene* scene, uint32_t flags)
+static int _volume_apply_bounds_geometry(DvzVisual* visual)
 {
-    ANN(scene);
-    DvzVisual* visual = _scene_alloc_visual(scene, DVZ_VISUAL_TYPE_VOLUME, flags);
-    if (visual == NULL)
-        return NULL;
+    ANN(visual);
+    if (visual->type != DVZ_VISUAL_TYPE_VOLUME)
+        return -1;
 
-    visual->topology = DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
-
-    static const float positions[36][3] = {
-        {-1.0f, -1.0f, -1.0f}, {+1.0f, -1.0f, -1.0f}, {+1.0f, +1.0f, -1.0f},
-        {-1.0f, -1.0f, -1.0f}, {+1.0f, +1.0f, -1.0f}, {-1.0f, +1.0f, -1.0f},
-        {-1.0f, -1.0f, +1.0f}, {+1.0f, +1.0f, +1.0f}, {+1.0f, -1.0f, +1.0f},
-        {-1.0f, -1.0f, +1.0f}, {-1.0f, +1.0f, +1.0f}, {+1.0f, +1.0f, +1.0f},
-        {-1.0f, -1.0f, -1.0f}, {-1.0f, +1.0f, -1.0f}, {-1.0f, +1.0f, +1.0f},
-        {-1.0f, -1.0f, -1.0f}, {-1.0f, +1.0f, +1.0f}, {-1.0f, -1.0f, +1.0f},
-        {+1.0f, -1.0f, -1.0f}, {+1.0f, -1.0f, +1.0f}, {+1.0f, +1.0f, +1.0f},
-        {+1.0f, -1.0f, -1.0f}, {+1.0f, +1.0f, +1.0f}, {+1.0f, +1.0f, -1.0f},
-        {-1.0f, -1.0f, -1.0f}, {-1.0f, -1.0f, +1.0f}, {+1.0f, -1.0f, +1.0f},
-        {-1.0f, -1.0f, -1.0f}, {+1.0f, -1.0f, +1.0f}, {+1.0f, -1.0f, -1.0f},
-        {-1.0f, +1.0f, -1.0f}, {+1.0f, +1.0f, +1.0f}, {-1.0f, +1.0f, +1.0f},
-        {-1.0f, +1.0f, -1.0f}, {+1.0f, +1.0f, -1.0f}, {+1.0f, +1.0f, +1.0f},
-    };
     static const float texcoords[36][3] = {
         {0.0f, 0.0f, 0.0f}, {1.0f, 0.0f, 0.0f}, {1.0f, 1.0f, 0.0f},
         {0.0f, 0.0f, 0.0f}, {1.0f, 1.0f, 0.0f}, {0.0f, 1.0f, 0.0f},
@@ -2490,11 +2480,44 @@ DvzVisual* dvz_volume(DvzScene* scene, uint32_t flags)
         {0.0f, 1.0f, 0.0f}, {1.0f, 1.0f, 1.0f}, {0.0f, 1.0f, 1.0f},
         {0.0f, 1.0f, 0.0f}, {1.0f, 1.0f, 0.0f}, {1.0f, 1.0f, 1.0f},
     };
+    float positions[36][3] = {0};
+    for (uint32_t i = 0; i < 36; i++)
+    {
+        for (uint32_t j = 0; j < 3; j++)
+        {
+            double min_value = visual->volume.bounds_min[j];
+            double max_value = visual->volume.bounds_max[j];
+            positions[i][j] = (float)(min_value + (max_value - min_value) * texcoords[i][j]);
+        }
+    }
+
     if (dvz_visual_set_data(visual, "position", positions, 36) != 0 ||
         dvz_visual_set_data(visual, "texcoords", texcoords, 36) != 0)
     {
         log_error("dvz_volume: failed to initialize default box geometry");
+        return -1;
     }
+    return 0;
+}
+
+
+/**
+ * Create a volume visual.
+ *
+ * @param scene the scene
+ * @param flags variant flags
+ * @return the visual, or NULL on allocation failure
+ */
+DvzVisual* dvz_volume(DvzScene* scene, uint32_t flags)
+{
+    ANN(scene);
+    DvzVisual* visual = _scene_alloc_visual(scene, DVZ_VISUAL_TYPE_VOLUME, flags);
+    if (visual == NULL)
+        return NULL;
+
+    visual->topology = DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+    if (_volume_apply_bounds_geometry(visual) != 0)
+        log_error("dvz_volume: failed to apply default bounds");
     return visual;
 }
 
@@ -2664,6 +2687,49 @@ int dvz_volume_set_step_count(DvzVisual* visual, uint32_t step_count)
     if (!_scene_visual_mutation_allowed(visual->scene, "set volume step count"))
         return -1;
     visual->volume.step_count = step_count;
+    _visual_bump_version(&visual->volume.version);
+    return 0;
+}
+
+
+
+/**
+ * Set the object-space volume proxy bounds.
+ *
+ * @param visual the volume visual
+ * @param bounds_min minimum object-space coordinate
+ * @param bounds_max maximum object-space coordinate
+ * @return 0 on success, -1 on error
+ */
+int dvz_volume_set_bounds(
+    DvzVisual* visual, const double bounds_min[3], const double bounds_max[3])
+{
+    ANN(visual);
+    ANN(bounds_min);
+    ANN(bounds_max);
+    if (visual->type != DVZ_VISUAL_TYPE_VOLUME)
+    {
+        log_error("dvz_volume_set_bounds requires a volume visual");
+        return -1;
+    }
+    for (uint32_t i = 0; i < 3; i++)
+    {
+        if (!isfinite(bounds_min[i]) || !isfinite(bounds_max[i]) ||
+            bounds_min[i] >= bounds_max[i])
+        {
+            log_error("volume bounds must be finite and satisfy min < max");
+            return -1;
+        }
+    }
+    if (!_scene_visual_mutation_allowed(visual->scene, "set volume bounds"))
+        return -1;
+    for (uint32_t i = 0; i < 3; i++)
+    {
+        visual->volume.bounds_min[i] = bounds_min[i];
+        visual->volume.bounds_max[i] = bounds_max[i];
+    }
+    if (_volume_apply_bounds_geometry(visual) != 0)
+        return -1;
     _visual_bump_version(&visual->volume.version);
     return 0;
 }
