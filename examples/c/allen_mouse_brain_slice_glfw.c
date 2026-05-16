@@ -709,6 +709,46 @@ static bool _downsample_allen_mouse_brain(AllenMouseBrainVolume* volume, uint32_
 
 
 /**
+ * Normalize the Allen RGBA alpha channel for display transfer.
+ *
+ * @param volume volume metadata and storage
+ */
+static void _normalize_allen_alpha(AllenMouseBrainVolume* volume)
+{
+    ANN(volume);
+    if (volume->voxels == NULL)
+        return;
+
+    uint64_t voxel_count = 0;
+    if (_dvz_mul_u64_overflows(volume->width, volume->height, &voxel_count) ||
+        _dvz_mul_u64_overflows(voxel_count, volume->depth, &voxel_count))
+    {
+        return;
+    }
+
+    uint8_t max_alpha = 0;
+    for (uint64_t i = 0; i < voxel_count; i++)
+    {
+        uint8_t alpha = volume->voxels[4 * i + 3];
+        if (alpha > max_alpha)
+            max_alpha = alpha;
+    }
+    if (max_alpha == 0 || max_alpha == 255)
+        return;
+
+    for (uint64_t i = 0; i < voxel_count; i++)
+    {
+        uint8_t alpha = volume->voxels[4 * i + 3];
+        if (alpha == 0)
+            continue;
+        uint32_t scaled = ((uint32_t)alpha * 255u + (uint32_t)max_alpha / 2u) / max_alpha;
+        volume->voxels[4 * i + 3] = scaled > 255u ? 255u : (uint8_t)scaled;
+    }
+}
+
+
+
+/**
  * Free owned Allen mouse brain volume storage.
  *
  * @param volume volume metadata and storage
@@ -922,6 +962,7 @@ int main(int argc, char** argv)
         _allen_mouse_brain_destroy(&volume_data);
         return 1;
     }
+    _normalize_allen_alpha(&volume_data);
     if (volume_data.downsample > 1)
     {
         dvz_fprintf(

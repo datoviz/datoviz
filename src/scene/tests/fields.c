@@ -1132,6 +1132,12 @@ int test_scene_volume_rgba_field_no_transfer(TstSuite* suite, TstItem* item)
     AT(dvz_visual_set_field(volume, "field", field));
     AT(dvz_panel_add_visual(panel, volume, NULL) == 0);
 
+    DvzFramePlanVisualMeta metadata = {0};
+    AT(_scene_visual_frame_plan_metadata(figure, volume, 0, &metadata));
+    AT(metadata.has_volume);
+    AT(metadata.field_format == DVZ_FIELD_FORMAT_RGBA8_UNORM);
+    AT(metadata.volume_transfer_rgba);
+
     DvzCapabilitySnapshot caps = {0};
     DvzDiagnosticReport report = {0};
     DvzFramePlanEmitConfig cfg = {.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL};

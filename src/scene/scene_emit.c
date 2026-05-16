@@ -566,7 +566,10 @@ bool _scene_visual_frame_plan_metadata(
         metadata->has_volume = true;
         metadata->volume_state = visual->volume;
         metadata->volume_transfer_rgba =
-            visual->scale != NULL && visual->scale->colormap != NULL;
+            visual->field != NULL && visual->field->desc.format == DVZ_FIELD_FORMAT_RGBA8_UNORM;
+        metadata->volume_transfer_rgba =
+            metadata->volume_transfer_rgba ||
+            (visual->scale != NULL && visual->scale->colormap != NULL);
         if (visual->field != NULL)
         {
             metadata->field_format = (uint32_t)visual->field->desc.format;
