@@ -26,6 +26,18 @@
 
 int test_scene_panzoom_arcball(TstSuite* suite);
 
+int test_scene_fly(TstSuite* suite);
+
+int test_fly_create_default(TstSuite* suite, TstItem* item);
+
+int test_fly_free_and_plane_movement(TstSuite* suite, TstItem* item);
+
+int test_fly_keyboard_arrows_update(TstSuite* suite, TstItem* item);
+
+int test_fly_pivot_preserves_eye_and_orbits(TstSuite* suite, TstItem* item);
+
+int test_panel_fly_getter(TstSuite* suite, TstItem* item);
+
 int test_scene_animation(TstSuite* suite);
 
 int test_scene_animation_offline_timer_every_frame(TstSuite* suite, TstItem* item);

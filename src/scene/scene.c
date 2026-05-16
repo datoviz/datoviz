@@ -851,6 +851,8 @@ void dvz_figure_resize(DvzFigure* figure, uint32_t width, uint32_t height)
             dvz_arcball_resize(panel->arcball, panel_width, panel_height);
         if (panel->camera != NULL)
             dvz_camera_resize(panel->camera, panel_width, panel_height);
+        if (panel->fly != NULL)
+            dvz_fly_viewport(panel->fly, panel_x, panel_y, panel_width, panel_height);
     }
 }
 
@@ -963,6 +965,11 @@ void dvz_panel_destroy(DvzPanel* panel)
         dvz_arcball_destroy(panel->arcball);
         panel->arcball = NULL;
     }
+    if (panel->fly != NULL)
+    {
+        dvz_fly_destroy(panel->fly);
+        panel->fly = NULL;
+    }
     if (panel->camera != NULL)
     {
         dvz_camera_destroy(panel->camera);
@@ -1062,6 +1069,58 @@ DvzCamera* dvz_panel_camera(DvzPanel* panel)
 {
     ANN(panel);
     return panel->camera;
+}
+
+
+/**
+ * Attach a fly camera controller to a panel and connect it to an input router.
+ *
+ * @param panel the panel
+ * @param router input router to subscribe to
+ * @param desc fly descriptor, or NULL for defaults
+ * @return the panel-owned fly controller
+ */
+DvzFly* dvz_panel_set_fly(DvzPanel* panel, DvzInputRouter* router, const DvzFlyDesc* desc)
+{
+    ANN(panel);
+    if (panel->fly != NULL)
+        dvz_fly_destroy(panel->fly);
+    if (panel->camera == NULL)
+    {
+        DvzCameraDesc camera_desc = dvz_camera_desc();
+        panel->camera = _dvz_camera(&camera_desc);
+    }
+    if (panel->camera == NULL)
+        return NULL;
+
+    panel->fly = dvz_fly(desc);
+    if (panel->fly == NULL)
+        return NULL;
+
+    float w = 0.0f;
+    float h = 0.0f;
+    float x = 0.0f;
+    float y = 0.0f;
+    _scene_panel_pixel_rect(panel, &x, &y, &w, &h);
+    dvz_fly_viewport(panel->fly, x, y, w, h);
+    dvz_fly_set_camera(panel->fly, panel->camera);
+    dvz_camera_resize(panel->camera, w, h);
+    if (router != NULL)
+        dvz_fly_connect(panel->fly, router);
+    return panel->fly;
+}
+
+
+/**
+ * Return the fly controller attached to a panel.
+ *
+ * @param panel the panel
+ * @return the panel-owned fly controller, or NULL
+ */
+DvzFly* dvz_panel_fly(DvzPanel* panel)
+{
+    ANN(panel);
+    return panel->fly;
 }
 
 

@@ -23,6 +23,7 @@
 #include "scene/camera.h"
 #include "scene/enums.h"
 #include "scene/field.h"
+#include "scene/fly.h"
 #include "scene/frame_plan.h"
 #include "scene/interaction.h"
 #include "scene/panzoom.h"
@@ -294,6 +295,30 @@ DVZ_EXPORT void dvz_panel_set_arcball(DvzPanel* panel, DvzInputRouter* router, i
  * @return the panel-owned arcball, or NULL
  */
 DVZ_EXPORT DvzArcball* dvz_panel_arcball(DvzPanel* panel);
+
+
+/**
+ * Attach a fly camera controller to a panel and connect it to an input router.
+ *
+ * The fly controller updates the panel camera. Keyboard movement supports WASD and arrow keys;
+ * pointer drag controls look/orbit gestures.
+ *
+ * @param panel the panel
+ * @param router input router to subscribe to (may be NULL to create without connecting)
+ * @param desc fly descriptor, or NULL for defaults
+ * @return the panel-owned fly controller
+ */
+DVZ_EXPORT DvzFly*
+dvz_panel_set_fly(DvzPanel* panel, DvzInputRouter* router, const DvzFlyDesc* desc);
+
+
+/**
+ * Return the fly controller attached to a panel.
+ *
+ * @param panel the panel
+ * @return the panel-owned fly controller, or NULL
+ */
+DVZ_EXPORT DvzFly* dvz_panel_fly(DvzPanel* panel);
 
 
 
