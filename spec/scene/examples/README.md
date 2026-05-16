@@ -42,6 +42,7 @@ Their role is narrower:
 19. `CFD_VORTICITY_ADVECTION.md`
 20. `FINITE_ELEMENT_STRESS_VIEWER.md`
 21. `TOKAMAK_PLASMA_FIELD_LINES.md`
+22. `HEP_EVENT_DISPLAY.md`
 
 
 ## Common Structure
