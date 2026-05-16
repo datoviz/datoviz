@@ -194,6 +194,10 @@ void _scene_technique_state_init(DvzSceneTechniqueState* state)
     state->edl.radius = 1.5f;
     state->edl.strength = 35.0f;
     state->edl.depth_scale = 1.0f;
+    state->ssao.radius = 0.5f;
+    state->ssao.strength = 1.0f;
+    state->ssao.bias = 0.025f;
+    state->ssao.sample_count = 16;
 }
 
 
@@ -292,6 +296,69 @@ _scene_technique_edl_state(const DvzScene* scene, const DvzPanel* panel)
         return &panel->techniques.edl;
     if (scene != NULL && _scene_technique_state_edl_enabled(&scene->techniques))
         return &scene->techniques.edl;
+    return NULL;
+}
+
+
+
+/**
+ * Configure internal SSAO state.
+ *
+ * @param state the technique state
+ * @param desc SSAO descriptor, or NULL to disable
+ * @return whether the state was updated
+ */
+bool _scene_technique_state_set_ssao(
+    DvzSceneTechniqueState* state, const DvzSceneSsaoDesc* desc)
+{
+    ANN(state);
+    if (desc == NULL)
+    {
+        state->ssao.enabled = false;
+        return true;
+    }
+
+    state->ssao.enabled = true;
+    state->ssao.radius = _clampf(desc->radius, 0.001f, 64.0f);
+    state->ssao.strength = _clampf(desc->strength, 0.0f, 16.0f);
+    state->ssao.bias = _clampf(desc->bias, 0.0f, 1.0f);
+    state->ssao.sample_count = desc->sample_count == 0 ? 16 : desc->sample_count;
+    if (state->ssao.sample_count < 4)
+        state->ssao.sample_count = 4;
+    if (state->ssao.sample_count > 64)
+        state->ssao.sample_count = 64;
+    return true;
+}
+
+
+
+/**
+ * Return whether a technique state enables SSAO.
+ *
+ * @param state the technique state
+ * @return whether SSAO is enabled
+ */
+bool _scene_technique_state_ssao_enabled(const DvzSceneTechniqueState* state)
+{
+    return state != NULL && state->ssao.enabled;
+}
+
+
+
+/**
+ * Return the effective SSAO state for one scene/panel pair.
+ *
+ * @param scene the scene
+ * @param panel the panel
+ * @return the effective SSAO state, or NULL when disabled
+ */
+const DvzSceneSsaoTechniqueState*
+_scene_technique_ssao_state(const DvzScene* scene, const DvzPanel* panel)
+{
+    if (panel != NULL && _scene_technique_state_ssao_enabled(&panel->techniques))
+        return &panel->techniques.ssao;
+    if (scene != NULL && _scene_technique_state_ssao_enabled(&scene->techniques))
+        return &scene->techniques.ssao;
     return NULL;
 }
 
@@ -1163,4 +1230,82 @@ bool _scene_technique_emit_gbuffer_frame_graph(
     }
 
     return dvz_frame_plan_graph_pass(plan, &pass);
+}
+
+
+
+/**
+ * Emit graph descriptors for one SSAO graph-only panel plan.
+ *
+ * @param plan the frame plan
+ * @param panel_id the panel id
+ * @param gbuffer the G-buffer plan providing normal and depth inputs
+ * @return whether graph descriptors were emitted
+ */
+bool _scene_technique_emit_ssao_frame_graph(
+    DvzFramePlan* plan, const char* panel_id, const DvzSceneGBufferPlan* gbuffer)
+{
+    ANN(plan);
+    ANN(panel_id);
+    ANN(gbuffer);
+
+    if (!gbuffer->enabled || gbuffer->producer_count == 0)
+        return true;
+    if (!gbuffer->needs_depth || !gbuffer->needs_normal)
+        return false;
+
+    char depth_id[DVZ_SCENE_LABEL_SIZE];
+    char normal_id[DVZ_SCENE_LABEL_SIZE];
+    char occlusion_id[DVZ_SCENE_LABEL_SIZE];
+    char pass_id[DVZ_SCENE_LABEL_SIZE];
+    char composite_id[DVZ_SCENE_LABEL_SIZE];
+    dvz_snprintf(depth_id, sizeof(depth_id), "%s.gbuffer.depth", panel_id);
+    dvz_snprintf(normal_id, sizeof(normal_id), "%s.gbuffer.normal", panel_id);
+    dvz_snprintf(occlusion_id, sizeof(occlusion_id), "%s.ssao.occlusion", panel_id);
+    dvz_snprintf(pass_id, sizeof(pass_id), "%s.ssao", panel_id);
+    dvz_snprintf(composite_id, sizeof(composite_id), "%s.ssao.composite", panel_id);
+
+    DvzFrameGraphResource occlusion = {0};
+    dvz_strlcpy(occlusion.id, occlusion_id, sizeof(occlusion.id));
+    occlusion.kind = DVZ_FRAME_GRAPH_RESOURCE_TEXTURE;
+    occlusion.format = VK_FORMAT_R8_UNORM;
+    occlusion.extent_kind = DVZ_FRAME_GRAPH_EXTENT_FIGURE;
+    occlusion.usage_flags = DVZ_FRAME_GRAPH_RESOURCE_USAGE_COLOR_ATTACHMENT |
+                             DVZ_FRAME_GRAPH_RESOURCE_USAGE_SAMPLED;
+    occlusion.lifetime = DVZ_FRAME_GRAPH_RESOURCE_LIFETIME_PER_FRAME;
+    if (!_scene_frame_graph_resource_once(plan, &occlusion))
+        return false;
+
+    DvzFrameGraphAttachment attachment = {0};
+    DvzFrameGraphPass ssao = {0};
+    dvz_strlcpy(ssao.id, pass_id, sizeof(ssao.id));
+    dvz_strlcpy(ssao.panel_id, panel_id, sizeof(ssao.panel_id));
+    dvz_strlcpy(ssao.work_label, "ssao", sizeof(ssao.work_label));
+    ssao.kind = DVZ_FRAME_GRAPH_PASS_RENDER;
+    if (!dvz_frame_graph_pass_read(&ssao, normal_id, DVZ_FRAME_GRAPH_ACCESS_SAMPLED) ||
+        !dvz_frame_graph_pass_read(&ssao, depth_id, DVZ_FRAME_GRAPH_ACCESS_SAMPLED))
+        return false;
+    _scene_frame_graph_color_attachment(
+        &attachment, occlusion_id, DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_CLEAR, true);
+    attachment.clear_color[0] = 1.0f;
+    attachment.clear_color[1] = 1.0f;
+    attachment.clear_color[2] = 1.0f;
+    attachment.clear_color[3] = 1.0f;
+    if (!dvz_frame_graph_pass_color_attachment(&ssao, &attachment))
+        return false;
+    if (!dvz_frame_plan_graph_pass(plan, &ssao))
+        return false;
+
+    DvzFrameGraphPass composite = {0};
+    dvz_strlcpy(composite.id, composite_id, sizeof(composite.id));
+    dvz_strlcpy(composite.panel_id, panel_id, sizeof(composite.panel_id));
+    dvz_strlcpy(composite.work_label, "ssao_composite", sizeof(composite.work_label));
+    composite.kind = DVZ_FRAME_GRAPH_PASS_RENDER;
+    if (!dvz_frame_graph_pass_read(&composite, occlusion_id, DVZ_FRAME_GRAPH_ACCESS_SAMPLED))
+        return false;
+    _scene_frame_graph_color_attachment(
+        &attachment, "rt", DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_LOAD, false);
+    if (!dvz_frame_graph_pass_color_attachment(&composite, &attachment))
+        return false;
+    return dvz_frame_plan_graph_pass(plan, &composite);
 }

@@ -4855,6 +4855,192 @@ int test_scene_edl_ignores_ineligible_passes(TstSuite* suite, TstItem* item)
 
 
 /**
+ * Verify opt-in SSAO declares a G-buffer-backed graph without changing the default path.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_ssao_graph_foundation(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    AT(scene != NULL);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    AT(figure != NULL);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    AT(panel != NULL);
+
+    DvzVisual* mesh = dvz_mesh(scene, 0);
+    AT(mesh != NULL);
+
+    float positions[4][3] = {
+        {-0.5f, -0.5f, 0.0f},
+        {0.5f, -0.5f, 0.0f},
+        {-0.5f, 0.5f, 0.0f},
+        {0.5f, 0.5f, 0.0f},
+    };
+    float normals[4][3] = {
+        {0.0f, 0.0f, 1.0f},
+        {0.0f, 0.0f, 1.0f},
+        {0.0f, 0.0f, 1.0f},
+        {0.0f, 0.0f, 1.0f},
+    };
+    DvzIndex indices[6] = {0, 1, 2, 2, 1, 3};
+    DvzSceneBuffer* index_buffer = dvz_scene_buffer(
+        scene, &(DvzSceneBufferDesc){
+                   .usage = DVZ_SCENE_BUFFER_USAGE_INDEX,
+                   .stride = sizeof(DvzIndex),
+               });
+    ANN(index_buffer);
+    AT(dvz_scene_buffer_set_data(index_buffer, indices, sizeof(indices)));
+
+    AT(dvz_visual_set_data(mesh, "position", positions, 4) == 0);
+    AT(dvz_visual_set_data(mesh, "normal", normals, 4) == 0);
+    AT(dvz_visual_set_buffer(mesh, "index", index_buffer));
+    AT(dvz_panel_add_visual(panel, mesh, NULL) == 0);
+
+    AT(!_scene_technique_state_ssao_enabled(&panel->techniques));
+    AT(panel->techniques.ssao.radius == 0.5f);
+    AT(panel->techniques.ssao.strength == 1.0f);
+    AT(panel->techniques.ssao.bias == 0.025f);
+    AT(panel->techniques.ssao.sample_count == 16);
+
+    DvzFramePlan* default_plan = dvz_frame_plan("figure.ssao.default", 0);
+    ANN(default_plan);
+    _scene_emit_panel_render(figure, 0, default_plan, "figure_0");
+    AT(dvz_frame_plan_node_count(default_plan) == 1);
+    AT(dvz_frame_plan_graph_pass_count(default_plan) == 0);
+    dvz_frame_plan_destroy(default_plan);
+
+    AT(_scene_technique_state_set_ssao(
+        &panel->techniques,
+        &(DvzSceneSsaoDesc){.radius = 1.25f, .strength = 2.0f, .bias = 0.05f,
+                            .sample_count = 32}));
+    const DvzSceneSsaoTechniqueState* ssao = _scene_technique_ssao_state(scene, panel);
+    ANN(ssao);
+    AT(ssao->enabled);
+    AT(ssao->radius == 1.25f);
+    AT(ssao->strength == 2.0f);
+    AT(ssao->bias == 0.05f);
+    AT(ssao->sample_count == 32);
+
+    DvzFramePlan* plan = dvz_frame_plan("figure.ssao", 0);
+    ANN(plan);
+    _scene_emit_panel_render(figure, 0, plan, "figure_0");
+    AT(dvz_frame_plan_node_count(plan) == 2);
+    AT(dvz_frame_plan_graph_pass_count(plan) == 4);
+    const DvzFramePlanNode* gbuffer_node = dvz_frame_plan_node_get(plan, 0);
+    const DvzFramePlanNode* opaque_node = dvz_frame_plan_node_get(plan, 1);
+    ANN(gbuffer_node);
+    ANN(opaque_node);
+    AT(dvz_frame_plan_render_pass_role(gbuffer_node) == DVZ_FRAME_PLAN_RENDER_PASS_GBUFFER);
+    AT(dvz_frame_plan_render_pass_role(opaque_node) == DVZ_FRAME_PLAN_RENDER_PASS_OPAQUE);
+
+    bool found_normal = false;
+    bool found_depth = false;
+    bool found_occlusion = false;
+    for (uint32_t i = 0; i < dvz_frame_plan_graph_resource_count(plan); i++)
+    {
+        const DvzFrameGraphResource* resource = dvz_frame_plan_graph_resource_get(plan, i);
+        ANN(resource);
+        found_normal =
+            found_normal || strcmp(resource->id, "figure_0_p0.gbuffer.normal") == 0;
+        found_depth =
+            found_depth || strcmp(resource->id, "figure_0_p0.gbuffer.depth") == 0;
+        found_occlusion =
+            found_occlusion ||
+            (strcmp(resource->id, "figure_0_p0.ssao.occlusion") == 0 &&
+             resource->format == VK_FORMAT_R8_UNORM);
+    }
+    AT(found_normal);
+    AT(found_depth);
+    AT(found_occlusion);
+
+    const DvzFrameGraphPass* gbuffer_pass = dvz_frame_plan_graph_pass_get(plan, 0);
+    const DvzFrameGraphPass* opaque_pass = dvz_frame_plan_graph_pass_get(plan, 1);
+    const DvzFrameGraphPass* ssao_pass = dvz_frame_plan_graph_pass_get(plan, 2);
+    const DvzFrameGraphPass* composite_pass = dvz_frame_plan_graph_pass_get(plan, 3);
+    ANN(gbuffer_pass);
+    ANN(opaque_pass);
+    ANN(ssao_pass);
+    ANN(composite_pass);
+    AT(strcmp(gbuffer_pass->work_label, "gbuffer") == 0);
+    AT(strcmp(opaque_pass->work_label, "opaque") == 0);
+    AT(strcmp(ssao_pass->work_label, "ssao") == 0);
+    AT(strcmp(composite_pass->work_label, "ssao_composite") == 0);
+    AT(ssao_pass->read_count == 2);
+    AT(strcmp(ssao_pass->reads[0].resource_id, "figure_0_p0.gbuffer.normal") == 0);
+    AT(strcmp(ssao_pass->reads[1].resource_id, "figure_0_p0.gbuffer.depth") == 0);
+    AT(strcmp(ssao_pass->color_attachments[0].resource_id, "figure_0_p0.ssao.occlusion") == 0);
+    AT(composite_pass->read_count == 1);
+    AT(strcmp(composite_pass->reads[0].resource_id, "figure_0_p0.ssao.occlusion") == 0);
+    AT(strcmp(composite_pass->color_attachments[0].resource_id, "rt") == 0);
+    AT(composite_pass->color_attachments[0].load_op == DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_LOAD);
+
+    dvz_frame_plan_destroy(plan);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
+/**
+ * Verify SSAO opt-in is a no-op when no opaque normal-producing visual is present.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_ssao_ignores_ineligible_visuals(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    AT(scene != NULL);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    AT(figure != NULL);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    AT(panel != NULL);
+
+    DvzVisual* primitive = dvz_primitive(scene, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 0);
+    AT(primitive != NULL);
+    float positions[3][3] = {
+        {-0.5f, -0.5f, 0.0f},
+        {+0.5f, -0.5f, 0.0f},
+        {0.0f, +0.5f, 0.0f},
+    };
+    DvzColor colors[3] = {
+        {220, 80, 80, 255},
+        {220, 80, 80, 255},
+        {220, 80, 80, 255},
+    };
+    AT(dvz_visual_set_data(primitive, "position", positions, 3) == 0);
+    AT(dvz_visual_set_data(primitive, "color", colors, 3) == 0);
+    AT(dvz_panel_add_visual(panel, primitive, NULL) == 0);
+    AT(_scene_technique_state_set_ssao(
+        &panel->techniques,
+        &(DvzSceneSsaoDesc){.radius = 1.25f, .strength = 2.0f, .bias = 0.05f,
+                            .sample_count = 32}));
+
+    DvzFramePlan* plan = dvz_frame_plan("figure.ssao.ineligible", 0);
+    ANN(plan);
+    _scene_emit_panel_render(figure, 0, plan, "figure_0");
+    AT(dvz_frame_plan_node_count(plan) == 1);
+    AT(dvz_frame_plan_graph_resource_count(plan) == 0);
+    AT(dvz_frame_plan_graph_pass_count(plan) == 0);
+
+    dvz_frame_plan_destroy(plan);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
+/**
  * Verify ordinary blended alpha stays on the final target with a source-over blend pipeline.
  *
  * @param suite the active test suite
@@ -6181,6 +6367,8 @@ int test_scene_graph(TstSuite* suite)
     TEST_SIMPLE(test_scene_edl_runtime_lowering);
     TEST_SIMPLE(test_scene_edl_depth_producer_capabilities);
     TEST_SIMPLE(test_scene_edl_ignores_ineligible_passes);
+    TEST_SIMPLE(test_scene_ssao_graph_foundation);
+    TEST_SIMPLE(test_scene_ssao_ignores_ineligible_visuals);
     TEST_SIMPLE(test_scene_visual_alpha_mode_standard_blend);
     TEST_SIMPLE(test_scene_visual_alpha_mode_splits_frame_plan_passes);
     TEST_SIMPLE(test_scene_visual_alpha_mode_depth_peel_frame_plan);

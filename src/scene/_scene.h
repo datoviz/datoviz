@@ -595,11 +595,22 @@ typedef struct DvzSceneEdlTechniqueState
 } DvzSceneEdlTechniqueState;
 
 
+typedef struct DvzSceneSsaoTechniqueState
+{
+    bool enabled;
+    float radius;
+    float strength;
+    float bias;
+    uint32_t sample_count;
+} DvzSceneSsaoTechniqueState;
+
+
 
 typedef struct DvzSceneTechniqueState
 {
     DvzSceneGBufferTechniqueState gbuffer;
     DvzSceneEdlTechniqueState edl;
+    DvzSceneSsaoTechniqueState ssao;
 } DvzSceneTechniqueState;
 
 

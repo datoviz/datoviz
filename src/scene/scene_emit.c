@@ -709,6 +709,10 @@ void _scene_emit_panel_render(
     DvzSceneGBufferPlan gbuffer = {0};
     _scene_technique_gbuffer_plan_init(&gbuffer);
     bool gbuffer_enabled = _scene_technique_gbuffer_enabled(figure->scene, panel);
+    const DvzSceneSsaoTechniqueState* ssao_state =
+        _scene_technique_ssao_state(figure->scene, panel);
+    bool ssao_enabled = ssao_state != NULL && ssao_state->enabled;
+    bool gbuffer_required = gbuffer_enabled || ssao_enabled;
     const DvzSceneEdlTechniqueState* edl_state =
         _scene_technique_edl_state(figure->scene, panel);
     bool edl_enabled = edl_state != NULL && edl_state->enabled;
@@ -740,7 +744,7 @@ void _scene_emit_panel_render(
             continue;
         }
 
-        if (gbuffer_enabled && _scene_technique_gbuffer_plan_add_visual(&gbuffer, visual, attach))
+        if (gbuffer_required && _scene_technique_gbuffer_plan_add_visual(&gbuffer, visual, attach))
         {
             if (gbuffer_node == NULL)
             {
@@ -866,7 +870,7 @@ void _scene_emit_panel_render(
         (void)_scene_begin_panel_render_pass(
             plan, panel_id, "rt", panel->desc, DVZ_FRAME_PLAN_RENDER_PASS_WBOIT_RESOLVE,
             &panel_apply_mvp, &panel_viewport);
-        if (gbuffer_enabled && gbuffer_node != NULL &&
+        if (gbuffer_required && gbuffer_node != NULL &&
             !_scene_technique_emit_gbuffer_frame_graph(plan, panel_id, &gbuffer))
             log_error("failed to emit G-buffer FramePlan graph for panel %s", panel_id);
         if (!_scene_technique_emit_wboit_frame_graph(
@@ -875,7 +879,7 @@ void _scene_emit_panel_render(
     }
     else if (depth_peel_init_node != NULL)
     {
-        if (gbuffer_enabled && gbuffer_node != NULL &&
+        if (gbuffer_required && gbuffer_node != NULL &&
             !_scene_technique_emit_gbuffer_frame_graph(plan, panel_id, &gbuffer))
             log_error("failed to emit G-buffer FramePlan graph for panel %s", panel_id);
         if (!_scene_technique_emit_depth_peel_frame_graph(
@@ -884,7 +888,7 @@ void _scene_emit_panel_render(
     }
     else if (blended_node != NULL)
     {
-        if (gbuffer_enabled && gbuffer_node != NULL &&
+        if (gbuffer_required && gbuffer_node != NULL &&
             !_scene_technique_emit_gbuffer_frame_graph(plan, panel_id, &gbuffer))
             log_error("failed to emit G-buffer FramePlan graph for panel %s", panel_id);
         if (!_scene_technique_emit_blended_frame_graph(
@@ -893,7 +897,7 @@ void _scene_emit_panel_render(
     }
     else if (opaque_node != NULL && opaque_needs_depth)
     {
-        if (gbuffer_enabled && gbuffer_node != NULL &&
+        if (gbuffer_required && gbuffer_node != NULL &&
             !_scene_technique_emit_gbuffer_frame_graph(plan, panel_id, &gbuffer))
             log_error("failed to emit G-buffer FramePlan graph for panel %s", panel_id);
         if (edl_enabled && edl_has_depth_producer)
@@ -923,4 +927,7 @@ void _scene_emit_panel_render(
                  !_scene_technique_emit_opaque_frame_graph(plan, panel_id, opaque_needs_depth))
             log_error("failed to emit opaque FramePlan graph for panel %s", panel_id);
     }
+    if (ssao_enabled && gbuffer_node != NULL && gbuffer.producer_count > 0 &&
+        !_scene_technique_emit_ssao_frame_graph(plan, panel_id, &gbuffer))
+        log_error("failed to emit SSAO FramePlan graph for panel %s", panel_id);
 }

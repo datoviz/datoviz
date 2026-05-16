@@ -49,6 +49,15 @@ typedef struct DvzSceneDepthPostProcessGraphDesc
 } DvzSceneDepthPostProcessGraphDesc;
 
 
+typedef struct DvzSceneSsaoDesc
+{
+    float radius;
+    float strength;
+    float bias;
+    uint32_t sample_count;
+} DvzSceneSsaoDesc;
+
+
 
 /*************************************************************************************************/
 /*  Functions                                                                                    */
@@ -81,6 +90,14 @@ bool _scene_technique_state_edl_enabled(const DvzSceneTechniqueState* state);
 const DvzSceneEdlTechniqueState*
 _scene_technique_edl_state(const DvzScene* scene, const DvzPanel* panel);
 
+bool _scene_technique_state_set_ssao(
+    DvzSceneTechniqueState* state, const DvzSceneSsaoDesc* desc);
+
+bool _scene_technique_state_ssao_enabled(const DvzSceneTechniqueState* state);
+
+const DvzSceneSsaoTechniqueState*
+_scene_technique_ssao_state(const DvzScene* scene, const DvzPanel* panel);
+
 void _scene_technique_edl_uniform(
     const DvzSceneEdlTechniqueState* edl, DvzSceneEdlUniform* out);
 
@@ -111,4 +128,7 @@ bool _scene_technique_gbuffer_plan_add_visual(
     DvzSceneGBufferPlan* plan, const DvzVisual* visual, const DvzPanelAttach* attach);
 
 bool _scene_technique_emit_gbuffer_frame_graph(
+    DvzFramePlan* plan, const char* panel_id, const DvzSceneGBufferPlan* gbuffer);
+
+bool _scene_technique_emit_ssao_frame_graph(
     DvzFramePlan* plan, const char* panel_id, const DvzSceneGBufferPlan* gbuffer);
