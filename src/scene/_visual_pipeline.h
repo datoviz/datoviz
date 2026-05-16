@@ -76,6 +76,32 @@ typedef struct DvzSceneVisualDesc
 } DvzSceneVisualDesc;
 
 
+typedef struct DvzSceneVisualPassCaps
+{
+    DvzSceneVisualDescKind kind;
+    DvzAlphaMode alpha_mode;
+    DvzControllerMode controller_mode;
+    bool fixed_controller;
+    bool has_normals;
+    bool draws_in_opaque_pass;
+    bool draws_in_wboit_pass;
+    bool draws_in_depth_peel_pass;
+    bool draws_in_transparent_blend_pass;
+    bool uses_source_over_blend;
+    bool can_write_depth;
+    bool can_depth_test;
+    bool samples_depth;
+    bool needs_depth_attachment;
+    bool uses_common_set;
+    bool needs_material_layout;
+    bool uses_material_set;
+    bool uses_image_set;
+    bool uses_volume_set;
+    bool supports_depth_cue;
+    bool depth_cue_enabled;
+} DvzSceneVisualPassCaps;
+
+
 
 typedef struct DvzSceneVisualShaderDesc
 {
@@ -168,6 +194,13 @@ bool _scene_render_visual_has_position_resource(
 bool _scene_visual_desc_from_render(
     DvzFramePlanEmitter* emitter, const DvzFramePlanNode* render, uint32_t visual_index,
     DvzSceneVisualDesc* out, const char** error);
+
+bool _scene_visual_pass_caps_from_visual(
+    const DvzVisual* visual, const DvzPanelAttach* attach, DvzSceneVisualPassCaps* out);
+
+bool _scene_visual_pass_caps_from_desc(
+    const DvzSceneVisualDesc* visual, DvzAlphaMode alpha_mode,
+    DvzControllerMode controller_mode, DvzSceneVisualPassCaps* out);
 
 bool _scene_visual_shader_desc(
     const DvzSceneVisualDesc* visual, bool picking, bool wboit_accumulation,

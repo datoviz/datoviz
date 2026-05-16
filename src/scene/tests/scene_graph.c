@@ -4137,6 +4137,123 @@ int test_scene_visual_internal_material_state(TstSuite* suite, TstItem* item)
 
 
 /**
+ * Verify internal pass capability resolution for current retained visual families.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_visual_pass_capabilities(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    AT(scene != NULL);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    AT(figure != NULL);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    AT(panel != NULL);
+
+    DvzVisual* point = dvz_point(scene, 0);
+    DvzVisual* primitive = dvz_primitive(scene, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 0);
+    DvzVisual* fixed_primitive = dvz_primitive(scene, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 0);
+    DvzVisual* mesh = dvz_mesh(scene, 0);
+    DvzVisual* volume = dvz_volume(scene, 0);
+    AT(point != NULL);
+    AT(primitive != NULL);
+    AT(fixed_primitive != NULL);
+    AT(mesh != NULL);
+    AT(volume != NULL);
+
+    float normals[3][3] = {
+        {0.0f, 0.0f, 1.0f},
+        {0.0f, 0.0f, 1.0f},
+        {0.0f, 0.0f, 1.0f},
+    };
+    AT(dvz_visual_set_data(mesh, "normal", normals, 3) == 0);
+    AT(dvz_visual_set_depth_cue(
+           mesh,
+           &(DvzDepthCueDesc){
+               .mode = DVZ_DEPTH_CUE_DARKEN,
+               .near_depth = 0.1f,
+               .far_depth = 0.9f,
+               .strength = 0.5f,
+               .background_color = {0.0f, 0.0f, 0.0f, 1.0f},
+           }) == 0);
+    AT(dvz_visual_set_alpha_mode(point, DVZ_ALPHA_WBOIT) == 0);
+    AT(dvz_visual_set_alpha_mode(volume, DVZ_ALPHA_BLENDED) == 0);
+
+    DvzVisualAttachDesc fixed = {
+        .z_layer = 0,
+        .controller_mode = DVZ_CONTROLLER_FIXED,
+    };
+    AT(dvz_panel_add_visual(panel, point, NULL) == 0);
+    AT(dvz_panel_add_visual(panel, primitive, NULL) == 0);
+    AT(dvz_panel_add_visual(panel, fixed_primitive, &fixed) == 0);
+    AT(dvz_panel_add_visual(panel, mesh, NULL) == 0);
+    AT(dvz_panel_add_visual(panel, volume, NULL) == 0);
+
+    DvzSceneVisualPassCaps caps = {0};
+    AT(_scene_visual_pass_caps_from_visual(point, &panel->visuals[0], &caps));
+    AT(caps.kind == DVZ_SCENE_VISUAL_DESC_POINT);
+    AT(caps.draws_in_wboit_pass);
+    AT(!caps.draws_in_opaque_pass);
+    AT(!caps.needs_depth_attachment);
+    AT(caps.uses_common_set);
+    AT(!caps.uses_material_set);
+
+    AT(_scene_visual_pass_caps_from_visual(primitive, &panel->visuals[1], &caps));
+    AT(caps.kind == DVZ_SCENE_VISUAL_DESC_PRIMITIVE);
+    AT(caps.draws_in_opaque_pass);
+    AT(caps.can_write_depth);
+    AT(caps.can_depth_test);
+    AT(caps.needs_depth_attachment);
+    AT(!caps.has_normals);
+    AT(!caps.supports_depth_cue);
+
+    AT(_scene_visual_pass_caps_from_visual(fixed_primitive, &panel->visuals[2], &caps));
+    AT(caps.fixed_controller);
+    AT(!caps.can_write_depth);
+    AT(!caps.can_depth_test);
+    AT(!caps.needs_depth_attachment);
+
+    AT(_scene_visual_pass_caps_from_visual(mesh, &panel->visuals[3], &caps));
+    AT(caps.kind == DVZ_SCENE_VISUAL_DESC_PRIMITIVE);
+    AT(caps.has_normals);
+    AT(caps.needs_material_layout);
+    AT(caps.uses_material_set);
+    AT(caps.supports_depth_cue);
+    AT(caps.depth_cue_enabled);
+
+    AT(_scene_visual_pass_caps_from_visual(volume, &panel->visuals[4], &caps));
+    AT(caps.kind == DVZ_SCENE_VISUAL_DESC_VOLUME);
+    AT(caps.draws_in_transparent_blend_pass);
+    AT(!caps.draws_in_opaque_pass);
+    AT(caps.uses_source_over_blend);
+    AT(caps.samples_depth);
+    AT(caps.needs_depth_attachment);
+    AT(caps.uses_volume_set);
+
+    DvzSceneVisualDesc desc = {
+        .kind = DVZ_SCENE_VISUAL_DESC_PRIMITIVE,
+        .has_normal = true,
+        .shading_buffer_id = 42,
+    };
+    AT(_scene_visual_pass_caps_from_desc(
+        &desc, DVZ_ALPHA_BLENDED, DVZ_CONTROLLER_APPLY, &caps));
+    AT(caps.draws_in_opaque_pass);
+    AT(caps.uses_source_over_blend);
+    AT(caps.needs_material_layout);
+    AT(caps.uses_material_set);
+    AT(caps.supports_depth_cue);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+/**
  * Verify ordinary blended alpha stays on the final target with a source-over blend pipeline.
  *
  * @param suite the active test suite
@@ -5437,6 +5554,7 @@ int test_scene_graph(TstSuite* suite)
     TEST_SIMPLE(test_scene_rejects_unsupported_point_attribute);
     TEST_SIMPLE(test_scene_visual_alpha_mode);
     TEST_SIMPLE(test_scene_visual_internal_material_state);
+    TEST_SIMPLE(test_scene_visual_pass_capabilities);
     TEST_SIMPLE(test_scene_visual_alpha_mode_standard_blend);
     TEST_SIMPLE(test_scene_visual_alpha_mode_splits_frame_plan_passes);
     TEST_SIMPLE(test_scene_visual_alpha_mode_depth_peel_frame_plan);

@@ -25,6 +25,7 @@
 #include "_scene_emit.h"
 #include "_scene_resource_key.h"
 #include "_technique.h"
+#include "_visual_pipeline.h"
 #include "datoviz/drp2/runtime.h"
 
 
@@ -695,15 +696,13 @@ void _scene_emit_panel_render(
         if (pos_idx < 0 || visual->attrs[pos_idx].item_count == 0)
             continue;
 
-        bool transparent = _scene_alpha_mode_is_wboit(visual->alpha_mode) ||
-                           _scene_alpha_mode_is_depth_peel(visual->alpha_mode) ||
-                           (_scene_alpha_mode_is_blended(visual->alpha_mode) &&
-                            visual->type == DVZ_VISUAL_TYPE_VOLUME);
-        if (transparent)
+        DvzSceneVisualPassCaps caps = {0};
+        if (!_scene_visual_pass_caps_from_visual(visual, attach, &caps))
+            continue;
+        if (!caps.draws_in_opaque_pass)
         {
             has_transparent = true;
-            transparent_needs_depth =
-                transparent_needs_depth || _scene_transparent_visual_needs_depth(visual, attach);
+            transparent_needs_depth = transparent_needs_depth || caps.needs_depth_attachment;
             continue;
         }
 
@@ -717,7 +716,7 @@ void _scene_emit_panel_render(
         }
         (void)_scene_append_visual_to_render_pass(
             figure, plan, opaque_node, visual, attach, vidx);
-        opaque_needs_depth = opaque_needs_depth || _scene_visual_writes_depth(visual, attach);
+        opaque_needs_depth = opaque_needs_depth || caps.can_write_depth;
     }
 
     if (opaque_node == NULL && has_transparent)
@@ -734,11 +733,10 @@ void _scene_emit_panel_render(
         DvzVisual* visual = attach->visual;
         if (visual == NULL || !visual->visible)
             continue;
-        bool wboit = _scene_alpha_mode_is_wboit(visual->alpha_mode);
-        bool depth_peel = _scene_alpha_mode_is_depth_peel(visual->alpha_mode);
-        bool blended = _scene_alpha_mode_is_blended(visual->alpha_mode) &&
-                       visual->type == DVZ_VISUAL_TYPE_VOLUME;
-        if (!wboit && !depth_peel && !blended)
+        DvzSceneVisualPassCaps caps = {0};
+        if (!_scene_visual_pass_caps_from_visual(visual, attach, &caps))
+            continue;
+        if (caps.draws_in_opaque_pass)
             continue;
         uint32_t vidx = 0;
         if (!_figure_visual_index(figure, visual, &vidx))
@@ -747,7 +745,7 @@ void _scene_emit_panel_render(
         if (pos_idx < 0 || visual->attrs[pos_idx].item_count == 0)
             continue;
 
-        if (blended)
+        if (caps.draws_in_transparent_blend_pass)
         {
             if (blended_node == NULL)
             {
@@ -760,12 +758,11 @@ void _scene_emit_panel_render(
             }
             (void)_scene_append_visual_to_render_pass(
                 figure, plan, blended_node, visual, attach, vidx);
-            transparent_needs_depth =
-                transparent_needs_depth || _scene_transparent_visual_needs_depth(visual, attach);
+            transparent_needs_depth = transparent_needs_depth || caps.needs_depth_attachment;
             continue;
         }
 
-        if (depth_peel)
+        if (caps.draws_in_depth_peel_pass)
         {
             if (depth_peel_init_node == NULL)
             {
@@ -796,8 +793,7 @@ void _scene_emit_panel_render(
                 figure, plan, depth_peel_init_node, visual, attach, vidx);
             (void)_scene_append_visual_to_render_pass(
                 figure, plan, depth_peel_iter_node, visual, attach, vidx);
-            transparent_needs_depth =
-                transparent_needs_depth || _scene_transparent_visual_needs_depth(visual, attach);
+            transparent_needs_depth = transparent_needs_depth || caps.needs_depth_attachment;
             continue;
         }
 
@@ -812,8 +808,7 @@ void _scene_emit_panel_render(
         }
         (void)_scene_append_visual_to_render_pass(
             figure, plan, transparent_node, visual, attach, vidx);
-        transparent_needs_depth =
-            transparent_needs_depth || _scene_transparent_visual_needs_depth(visual, attach);
+        transparent_needs_depth = transparent_needs_depth || caps.needs_depth_attachment;
     }
 
     if (transparent_node != NULL)

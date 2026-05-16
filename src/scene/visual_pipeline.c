@@ -91,6 +91,83 @@ static bool _visual_meta_is_primitive(uint32_t visual_type)
 }
 
 
+/**
+ * Return whether a visual descriptor uses the primitive pipeline family.
+ *
+ * @param kind the visual descriptor kind
+ * @return whether the descriptor is primitive-like
+ */
+static bool _visual_desc_is_primitive(DvzSceneVisualDescKind kind)
+{
+    return kind == DVZ_SCENE_VISUAL_DESC_PRIMITIVE;
+}
+
+
+
+/**
+ * Return whether a visual descriptor uses a sampled-image bind group.
+ *
+ * @param kind the visual descriptor kind
+ * @return whether the descriptor is image-like
+ */
+static bool _visual_desc_is_image(DvzSceneVisualDescKind kind)
+{
+    return kind == DVZ_SCENE_VISUAL_DESC_IMAGE;
+}
+
+
+
+/**
+ * Return whether a visual descriptor uses a sampled-volume bind group.
+ *
+ * @param kind the visual descriptor kind
+ * @return whether the descriptor is volume-like
+ */
+static bool _visual_desc_is_volume(DvzSceneVisualDescKind kind)
+{
+    return kind == DVZ_SCENE_VISUAL_DESC_VOLUME;
+}
+
+
+
+/**
+ * Return whether an alpha mode uses source-over color blending.
+ *
+ * @param mode the visual alpha mode
+ * @return whether source-over blending is requested
+ */
+static bool _alpha_mode_uses_source_over(DvzAlphaMode mode)
+{
+    return mode == DVZ_ALPHA_BLENDED;
+}
+
+
+
+/**
+ * Return whether an alpha mode routes a visual through WBOIT.
+ *
+ * @param mode the visual alpha mode
+ * @return whether WBOIT was requested
+ */
+static bool _alpha_mode_routes_wboit(DvzAlphaMode mode)
+{
+    return mode == DVZ_ALPHA_WBOIT;
+}
+
+
+
+/**
+ * Return whether an alpha mode routes a visual through depth peeling.
+ *
+ * @param mode the visual alpha mode
+ * @return whether depth peeling was requested
+ */
+static bool _alpha_mode_routes_depth_peel(DvzAlphaMode mode)
+{
+    return mode == DVZ_ALPHA_DEPTH_PEEL;
+}
+
+
 
 /**
  * Return the point-like family represented by a retained visual type.
@@ -781,6 +858,139 @@ bool _scene_visual_desc_from_render(
 }
 
 
+/**
+ * Resolve common pass capabilities from normalized visual facts.
+ *
+ * @param kind the visual descriptor kind
+ * @param alpha_mode the visual alpha mode
+ * @param controller_mode the panel controller attachment mode
+ * @param has_normals whether the visual has normals
+ * @param has_material_resource whether a material uniform resource exists
+ * @param depth_cue_enabled whether retained material state enables depth cueing
+ * @param out the output pass capabilities
+ */
+static void _scene_visual_pass_caps_resolve(
+    DvzSceneVisualDescKind kind, DvzAlphaMode alpha_mode, DvzControllerMode controller_mode,
+    bool has_normals, bool has_material_resource, bool depth_cue_enabled,
+    DvzSceneVisualPassCaps* out)
+{
+    ANN(out);
+    dvz_memset(out, sizeof(DvzSceneVisualPassCaps), 0, sizeof(DvzSceneVisualPassCaps));
+
+    bool primitive = _visual_desc_is_primitive(kind);
+    bool image = _visual_desc_is_image(kind);
+    bool volume = _visual_desc_is_volume(kind);
+    bool fixed = controller_mode == DVZ_CONTROLLER_FIXED;
+    bool wboit = _alpha_mode_routes_wboit(alpha_mode);
+    bool depth_peel = _alpha_mode_routes_depth_peel(alpha_mode);
+    bool transparent_blend = _alpha_mode_uses_source_over(alpha_mode) && volume;
+
+    out->kind = kind;
+    out->alpha_mode = alpha_mode;
+    out->controller_mode = controller_mode;
+    out->fixed_controller = fixed;
+    out->has_normals = has_normals;
+    out->draws_in_wboit_pass = wboit;
+    out->draws_in_depth_peel_pass = depth_peel;
+    out->draws_in_transparent_blend_pass = transparent_blend;
+    out->draws_in_opaque_pass = !wboit && !depth_peel && !transparent_blend;
+    out->uses_source_over_blend = _alpha_mode_uses_source_over(alpha_mode);
+    out->can_write_depth = primitive && !fixed;
+    out->can_depth_test = primitive && !fixed;
+    out->samples_depth = volume && !fixed;
+    out->needs_depth_attachment = out->can_depth_test || out->samples_depth;
+    out->uses_common_set = kind != DVZ_SCENE_VISUAL_DESC_NONE;
+    out->needs_material_layout = primitive && has_normals;
+    out->uses_material_set = out->needs_material_layout && has_material_resource;
+    out->uses_image_set = image;
+    out->uses_volume_set = volume;
+    out->supports_depth_cue = primitive && has_normals;
+    out->depth_cue_enabled = out->supports_depth_cue && depth_cue_enabled;
+}
+
+
+
+/**
+ * Resolve pass capabilities from one retained visual attachment.
+ *
+ * @param visual the retained visual
+ * @param attach the panel attachment
+ * @param out the output pass capabilities
+ * @return whether capabilities were resolved
+ */
+bool _scene_visual_pass_caps_from_visual(
+    const DvzVisual* visual, const DvzPanelAttach* attach, DvzSceneVisualPassCaps* out)
+{
+    ANN(visual);
+    ANN(attach);
+    ANN(out);
+
+    DvzSceneVisualDescKind kind = DVZ_SCENE_VISUAL_DESC_NONE;
+    switch (visual->type)
+    {
+    case DVZ_VISUAL_TYPE_POINT:
+    case DVZ_VISUAL_TYPE_PIXEL:
+    case DVZ_VISUAL_TYPE_MARKER:
+        kind = visual->type == DVZ_VISUAL_TYPE_PIXEL ? DVZ_SCENE_VISUAL_DESC_PIXEL :
+                                                       DVZ_SCENE_VISUAL_DESC_POINT;
+        break;
+    case DVZ_VISUAL_TYPE_PRIMITIVE:
+    case DVZ_VISUAL_TYPE_MESH:
+    case DVZ_VISUAL_TYPE_PATH:
+        kind = DVZ_SCENE_VISUAL_DESC_PRIMITIVE;
+        break;
+    case DVZ_VISUAL_TYPE_IMAGE:
+        kind = DVZ_SCENE_VISUAL_DESC_IMAGE;
+        break;
+    case DVZ_VISUAL_TYPE_VOLUME:
+        kind = DVZ_SCENE_VISUAL_DESC_VOLUME;
+        break;
+    case DVZ_VISUAL_TYPE_NONE:
+    default:
+        return false;
+    }
+
+    bool has_normals = false;
+    if (_visual_desc_is_primitive(kind))
+    {
+        int normal_idx = _attr_index(visual, "normal");
+        has_normals = normal_idx >= 0 && visual->attrs[normal_idx].data != NULL &&
+                      visual->attrs[normal_idx].item_count > 0;
+    }
+
+    _scene_visual_pass_caps_resolve(
+        kind, visual->alpha_mode, attach->controller_mode, has_normals, has_normals,
+        visual->material.depth_cue_enabled, out);
+    return true;
+}
+
+
+
+/**
+ * Resolve pass capabilities from one FramePlan visual descriptor.
+ *
+ * @param visual the visual descriptor
+ * @param alpha_mode the visual alpha mode
+ * @param controller_mode the panel controller attachment mode
+ * @param out the output pass capabilities
+ * @return whether capabilities were resolved
+ */
+bool _scene_visual_pass_caps_from_desc(
+    const DvzSceneVisualDesc* visual, DvzAlphaMode alpha_mode,
+    DvzControllerMode controller_mode, DvzSceneVisualPassCaps* out)
+{
+    ANN(visual);
+    ANN(out);
+    if (visual->kind == DVZ_SCENE_VISUAL_DESC_NONE)
+        return false;
+
+    _scene_visual_pass_caps_resolve(
+        visual->kind, alpha_mode, controller_mode, visual->has_normal,
+        visual->shading_buffer_id != 0, false, out);
+    return true;
+}
+
+
 
 /**
  * Resolve shader and pipeline cache-key metadata for one visual descriptor.
@@ -953,6 +1163,10 @@ bool _scene_visual_pipeline_desc(
     ANN(out);
     dvz_memset(out, sizeof(DvzSceneVisualPipelineDesc), 0, sizeof(DvzSceneVisualPipelineDesc));
 
+    DvzSceneVisualPassCaps caps = {0};
+    if (!_scene_visual_pass_caps_from_desc(visual, alpha_mode, controller_mode, &caps))
+        return false;
+
     out->topology = visual->topology;
     out->has_depth_state = pass_needs_depth;
     if (pass_needs_depth)
@@ -980,7 +1194,7 @@ bool _scene_visual_pipeline_desc(
         out->formats[0] = VK_FORMAT_R32G32B32_SFLOAT;
         out->formats[1] = picking ? VK_FORMAT_R32_SFLOAT : VK_FORMAT_R8G8B8A8_UNORM;
         out->formats[2] = VK_FORMAT_R32_SFLOAT;
-        out->needs_common_layout = true;
+        out->needs_common_layout = caps.uses_common_set;
         return true;
 
     case DVZ_SCENE_VISUAL_DESC_PRIMITIVE:
@@ -999,14 +1213,14 @@ bool _scene_visual_pipeline_desc(
         out->formats[0] = VK_FORMAT_R32G32B32_SFLOAT;
         out->formats[1] = VK_FORMAT_R8G8B8A8_UNORM;
         out->formats[2] = VK_FORMAT_R32G32B32_SFLOAT;
-        out->needs_common_layout = true;
-        out->needs_shading_layout = visual->has_normal;
+        out->needs_common_layout = caps.uses_common_set;
+        out->needs_shading_layout = caps.needs_material_layout;
         if (pass_needs_depth)
         {
-            bool fixed = controller_mode == DVZ_CONTROLLER_FIXED;
             out->depth_write_enabled =
-                !fixed && !wboit_accumulation && alpha_mode != DVZ_ALPHA_BLENDED;
-            out->depth_compare_op = fixed ? VK_COMPARE_OP_ALWAYS : VK_COMPARE_OP_LESS_OR_EQUAL;
+                caps.can_write_depth && !wboit_accumulation && alpha_mode != DVZ_ALPHA_BLENDED;
+            out->depth_compare_op =
+                caps.can_depth_test ? VK_COMPARE_OP_LESS_OR_EQUAL : VK_COMPARE_OP_ALWAYS;
         }
         return true;
 
@@ -1022,8 +1236,8 @@ bool _scene_visual_pipeline_desc(
         out->locations[1] = 1;
         out->formats[0] = VK_FORMAT_R32G32B32_SFLOAT;
         out->formats[1] = VK_FORMAT_R32G32_SFLOAT;
-        out->needs_common_layout = true;
-        out->needs_image_layout = true;
+        out->needs_common_layout = caps.uses_common_set;
+        out->needs_image_layout = caps.uses_image_set;
         return true;
 
     case DVZ_SCENE_VISUAL_DESC_VOLUME:
@@ -1038,8 +1252,8 @@ bool _scene_visual_pipeline_desc(
         out->locations[1] = 1;
         out->formats[0] = VK_FORMAT_R32G32B32_SFLOAT;
         out->formats[1] = VK_FORMAT_R32G32B32_SFLOAT;
-        out->needs_common_layout = true;
-        out->needs_volume_layout = true;
+        out->needs_common_layout = caps.uses_common_set;
+        out->needs_volume_layout = caps.uses_volume_set;
         out->has_raster_state = true;
         out->cull_mode = VK_CULL_MODE_BACK_BIT;
         out->front_face = VK_FRONT_FACE_CLOCKWISE;
@@ -1069,32 +1283,37 @@ bool _scene_visual_bind_desc(
     ANN(out);
     dvz_memset(out, sizeof(DvzSceneVisualBindDesc), 0, sizeof(DvzSceneVisualBindDesc));
 
+    DvzSceneVisualPassCaps caps = {0};
+    if (!_scene_visual_pass_caps_from_desc(
+            visual, DVZ_ALPHA_OPAQUE, controller_mode, &caps))
+        return false;
+
     switch (visual->kind)
     {
     case DVZ_SCENE_VISUAL_DESC_PIXEL:
     case DVZ_SCENE_VISUAL_DESC_POINT:
-        out->uses_common_set0 = true;
-        out->uses_fixed_common = controller_mode == DVZ_CONTROLLER_FIXED;
+        out->uses_common_set0 = caps.uses_common_set;
+        out->uses_fixed_common = caps.fixed_controller;
         return true;
 
     case DVZ_SCENE_VISUAL_DESC_PRIMITIVE:
-        out->uses_common_set0 = true;
-        out->uses_fixed_common = controller_mode == DVZ_CONTROLLER_FIXED;
-        out->uses_shading_set1 = visual->has_normal && visual->shading_buffer_id != 0;
+        out->uses_common_set0 = caps.uses_common_set;
+        out->uses_fixed_common = caps.fixed_controller;
+        out->uses_shading_set1 = caps.uses_material_set;
         out->shading_buffer_id = visual->shading_buffer_id;
         return true;
 
     case DVZ_SCENE_VISUAL_DESC_IMAGE:
-        out->uses_common_set0 = true;
-        out->uses_fixed_common = controller_mode == DVZ_CONTROLLER_FIXED;
-        out->uses_image_set1 = true;
+        out->uses_common_set0 = caps.uses_common_set;
+        out->uses_fixed_common = caps.fixed_controller;
+        out->uses_image_set1 = caps.uses_image_set;
         out->image_texture_id = visual->image_texture_id;
         return true;
 
     case DVZ_SCENE_VISUAL_DESC_VOLUME:
-        out->uses_common_set0 = true;
-        out->uses_fixed_common = controller_mode == DVZ_CONTROLLER_FIXED;
-        out->uses_volume_set1 = true;
+        out->uses_common_set0 = caps.uses_common_set;
+        out->uses_fixed_common = caps.fixed_controller;
+        out->uses_volume_set1 = caps.uses_volume_set;
         out->volume_texture_id = visual->volume_texture_id;
         out->volume_transfer_rgba = visual->volume_transfer_rgba;
         out->volume_state = visual->volume_state;

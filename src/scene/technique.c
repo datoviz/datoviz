@@ -22,6 +22,7 @@
 #include "_assertions.h"
 #include "_compat.h"
 #include "_technique.h"
+#include "_visual_pipeline.h"
 
 
 
@@ -172,10 +173,10 @@ bool _scene_visual_writes_depth(const DvzVisual* visual, const DvzPanelAttach* a
 {
     ANN(visual);
     ANN(attach);
-    if (attach->controller_mode == DVZ_CONTROLLER_FIXED)
+    DvzSceneVisualPassCaps caps = {0};
+    if (!_scene_visual_pass_caps_from_visual(visual, attach, &caps))
         return false;
-    return visual->type == DVZ_VISUAL_TYPE_PRIMITIVE || visual->type == DVZ_VISUAL_TYPE_MESH ||
-           visual->type == DVZ_VISUAL_TYPE_PATH;
+    return caps.can_write_depth;
 }
 
 
@@ -191,9 +192,10 @@ static bool _scene_visual_samples_depth(const DvzVisual* visual, const DvzPanelA
 {
     ANN(visual);
     ANN(attach);
-    if (attach->controller_mode == DVZ_CONTROLLER_FIXED)
+    DvzSceneVisualPassCaps caps = {0};
+    if (!_scene_visual_pass_caps_from_visual(visual, attach, &caps))
         return false;
-    return visual->type == DVZ_VISUAL_TYPE_VOLUME;
+    return caps.samples_depth;
 }
 
 
