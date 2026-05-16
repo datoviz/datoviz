@@ -47,6 +47,7 @@ typedef enum
     DVZ_FRAME_PLAN_RESOURCE_ROLE_NORMAL,
     DVZ_FRAME_PLAN_RESOURCE_ROLE_INDEX,
     DVZ_FRAME_PLAN_RESOURCE_ROLE_PRIMITIVE_SHADING,
+    DVZ_FRAME_PLAN_RESOURCE_ROLE_MATERIAL_PARAMS,
 } DvzFramePlanResourceRole;
 
 
@@ -278,7 +279,7 @@ typedef struct DvzFramePlanVisualMeta
     char volume_texture_id[DVZ_SCENE_LABEL_SIZE];
     char normal_id[DVZ_SCENE_LABEL_SIZE];
     char index_id[DVZ_SCENE_LABEL_SIZE];
-    char shading_id[DVZ_SCENE_LABEL_SIZE];
+    char material_id[DVZ_SCENE_LABEL_SIZE];
 } DvzFramePlanVisualMeta;
 
 

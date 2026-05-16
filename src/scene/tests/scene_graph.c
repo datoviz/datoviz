@@ -863,7 +863,7 @@ int test_scene_mesh_indexed_default_color_emits_draw_indexed(TstSuite* suite, Ts
     AT(found_set_index);
     AT(found_draw_indexed);
     AT(_stream_set_vertex_buffer_count(stream) == 3);
-    AT(_stream_write_buffer_range_count(stream, 0, sizeof(DvzPrimitiveShadingState)) == 1);
+    AT(_stream_write_buffer_range_count(stream, 0, sizeof(DvzSceneMaterialParams)) == 1);
 
     dvz_drp2_stream_destroy(stream);
     dvz_scene_destroy(scene);
@@ -1037,7 +1037,7 @@ int test_scene_indexed_primitive_emits_draw_indexed(TstSuite* suite, TstItem* it
     AT(found_set_index);
     AT(found_draw_indexed);
     AT(_stream_set_vertex_buffer_count(stream) == 3);
-    AT(_stream_write_buffer_range_count(stream, 0, sizeof(DvzPrimitiveShadingState)) == 1);
+    AT(_stream_write_buffer_range_count(stream, 0, sizeof(DvzSceneMaterialParams)) == 1);
 
     dvz_drp2_stream_destroy(stream);
     dvz_scene_destroy(scene);
@@ -3349,7 +3349,7 @@ int test_scene_indexed_primitive_shading_updates_runtime(TstSuite* suite, TstIte
     DvzDrp2CommandStream* stream0 = dvz_figure_emit_ex(figure, &caps, &report, &emit_cfg);
     ANN(stream0);
     AT(_stream_set_vertex_buffer_count(stream0) == 3);
-    AT(_stream_write_buffer_range_count(stream0, 0, sizeof(DvzPrimitiveShadingState)) == 1);
+    AT(_stream_write_buffer_range_count(stream0, 0, sizeof(DvzSceneMaterialParams)) == 1);
     if (runtime != NULL)
     {
         DvzDrp2ValidationResult result = dvz_drp2_runtime_execute(runtime, stream0);
@@ -3370,7 +3370,7 @@ int test_scene_indexed_primitive_shading_updates_runtime(TstSuite* suite, TstIte
     DvzDrp2CommandStream* stream1 = dvz_figure_emit_ex(figure, &caps, &report, &emit_cfg);
     ANN(stream1);
     AT(_stream_set_vertex_buffer_count(stream1) == 3);
-    AT(_stream_write_buffer_range_count(stream1, 0, sizeof(DvzPrimitiveShadingState)) == 1);
+    AT(_stream_write_buffer_range_count(stream1, 0, sizeof(DvzSceneMaterialParams)) == 1);
 
     if (runtime != NULL)
     {
@@ -4061,8 +4061,8 @@ int test_scene_visual_internal_material_state(TstSuite* suite, TstItem* item)
     AT(mesh->material.depth_cue_far == 1.0f);
     AT(mesh->material.depth_cue_strength == 1.0f);
     AT(mesh->material.depth_cue_background[3] == 1.0f);
-    AT(mesh->primitive_shading.depth_cue[1] == 1.0f);
-    AT(mesh->primitive_shading.depth_cue[2] == 0.0f);
+    AT(mesh->material_params.depth_cue[1] == 1.0f);
+    AT(mesh->material_params.depth_cue[2] == 0.0f);
     AT(mesh->material.scalar_scale == 1.0f);
 
     uint64_t point_material_version = point->material.version;
@@ -4077,15 +4077,15 @@ int test_scene_visual_internal_material_state(TstSuite* suite, TstItem* item)
            }) == 0);
     AT(point->material.depth_cue_enabled);
     AT(point->material.depth_cue_mode == DVZ_DEPTH_CUE_FADE_TO_BACKGROUND);
-    AT(point->primitive_shading.depth_cue[0] == 0.1f);
-    AT(point->primitive_shading.depth_cue[1] == 0.8f);
-    AT(point->primitive_shading.depth_cue[2] == 0.5f);
-    AT(point->primitive_shading.depth_cue[3] == (float)DVZ_DEPTH_CUE_FADE_TO_BACKGROUND);
-    AT(point->primitive_shading.depth_cue_color[2] == 0.06f);
+    AT(point->material_params.depth_cue[0] == 0.1f);
+    AT(point->material_params.depth_cue[1] == 0.8f);
+    AT(point->material_params.depth_cue[2] == 0.5f);
+    AT(point->material_params.depth_cue[3] == (float)DVZ_DEPTH_CUE_FADE_TO_BACKGROUND);
+    AT(point->material_params.depth_cue_color[2] == 0.06f);
     AT(point->material.version > point_material_version);
     AT(dvz_visual_set_depth_cue(point, NULL) == 0);
     AT(!point->material.depth_cue_enabled);
-    AT(point->primitive_shading.depth_cue[2] == 0.0f);
+    AT(point->material_params.depth_cue[2] == 0.0f);
 
     AT(dvz_visual_set_alpha_mode(mesh, DVZ_ALPHA_WBOIT) == 0);
     AT(mesh->alpha_mode == DVZ_ALPHA_WBOIT);
@@ -4100,11 +4100,11 @@ int test_scene_visual_internal_material_state(TstSuite* suite, TstItem* item)
                .ambient = 0.35f,
                .diffuse = 0.65f,
            }) == 0);
-    AT(mesh->primitive_shading.light_direction[0] == 1.0f);
-    AT(mesh->primitive_shading.light_direction[1] == 2.0f);
-    AT(mesh->primitive_shading.light_direction[2] == 3.0f);
-    AT(mesh->primitive_shading.params[0] == 0.35f);
-    AT(mesh->primitive_shading.params[1] == 0.65f);
+    AT(mesh->material_params.light_direction[0] == 1.0f);
+    AT(mesh->material_params.light_direction[1] == 2.0f);
+    AT(mesh->material_params.light_direction[2] == 3.0f);
+    AT(mesh->material_params.params[0] == 0.35f);
+    AT(mesh->material_params.params[1] == 0.65f);
     AT(mesh->material.light_direction[0] == 1.0f);
     AT(mesh->material.light_direction[1] == 2.0f);
     AT(mesh->material.light_direction[2] == 3.0f);
@@ -4128,18 +4128,18 @@ int test_scene_visual_internal_material_state(TstSuite* suite, TstItem* item)
     AT(mesh->material.depth_cue_far == 0.9f);
     AT(mesh->material.depth_cue_strength == 0.75f);
     AT(mesh->material.depth_cue_background[2] == 0.3f);
-    AT(mesh->primitive_shading.depth_cue[0] == 0.25f);
-    AT(mesh->primitive_shading.depth_cue[1] == 0.9f);
-    AT(mesh->primitive_shading.depth_cue[2] == 0.75f);
-    AT(mesh->primitive_shading.depth_cue[3] == (float)DVZ_DEPTH_CUE_DESATURATE);
-    AT(mesh->primitive_shading.depth_cue_color[1] == 0.2f);
+    AT(mesh->material_params.depth_cue[0] == 0.25f);
+    AT(mesh->material_params.depth_cue[1] == 0.9f);
+    AT(mesh->material_params.depth_cue[2] == 0.75f);
+    AT(mesh->material_params.depth_cue[3] == (float)DVZ_DEPTH_CUE_DESATURATE);
+    AT(mesh->material_params.depth_cue_color[1] == 0.2f);
     AT(mesh->material.version > material_version);
 
     material_version = mesh->material.version;
     AT(dvz_visual_set_depth_cue(mesh, NULL) == 0);
     AT(!mesh->material.depth_cue_enabled);
     AT(mesh->material.depth_cue_mode == DVZ_DEPTH_CUE_NONE);
-    AT(mesh->primitive_shading.depth_cue[2] == 0.0f);
+    AT(mesh->material_params.depth_cue[2] == 0.0f);
     AT(mesh->material.version > material_version);
 
     dvz_scene_destroy(scene);
@@ -4277,7 +4277,7 @@ int test_scene_visual_pass_capabilities(TstSuite* suite, TstItem* item)
     DvzSceneVisualDesc desc = {
         .kind = DVZ_SCENE_VISUAL_DESC_PRIMITIVE,
         .has_normal = true,
-        .shading_buffer_id = 42,
+        .material_buffer_id = 42,
     };
     AT(_scene_visual_pass_caps_from_desc(
         &desc, DVZ_ALPHA_BLENDED, DVZ_CONTROLLER_APPLY, &caps));

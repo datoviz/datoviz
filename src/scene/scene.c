@@ -641,15 +641,19 @@ static void _scene_commit_emit_success(DvzFigure* figure)
                 continue;
             for (uint32_t ai = 0; ai < visual->attr_count; ai++)
                 visual->attrs[ai].dirty_item_count = 0;
-            if (visual->type == DVZ_VISUAL_TYPE_PRIMITIVE ||
+            if (
+                visual->type == DVZ_VISUAL_TYPE_POINT || visual->type == DVZ_VISUAL_TYPE_PIXEL ||
+                visual->type == DVZ_VISUAL_TYPE_PRIMITIVE ||
                 visual->type == DVZ_VISUAL_TYPE_MESH)
             {
                 int normal_idx = _attr_index(visual, "normal");
                 bool has_normals =
                     normal_idx >= 0 && visual->attrs[normal_idx].data != NULL &&
                     visual->attrs[normal_idx].item_count > 0;
-                if (has_normals)
-                    visual->primitive_shading_dirty = false;
+                bool point_like = visual->type == DVZ_VISUAL_TYPE_POINT ||
+                                  visual->type == DVZ_VISUAL_TYPE_PIXEL;
+                if (point_like || has_normals)
+                    visual->material_params_dirty = false;
             }
             if (visual->type == DVZ_VISUAL_TYPE_IMAGE || visual->type == DVZ_VISUAL_TYPE_VOLUME)
                 _scene_visual_texture_mark_clean(visual);

@@ -434,9 +434,9 @@ struct DvzSceneBuffer
 };
 
 
-typedef struct DvzPrimitiveShadingState DvzPrimitiveShadingState;
+typedef struct DvzSceneMaterialParams DvzSceneMaterialParams;
 
-struct DvzPrimitiveShadingState
+struct DvzSceneMaterialParams
 {
     float light_direction[4];
     float params[4];
@@ -454,9 +454,9 @@ typedef enum
 } DvzMaterialKind;
 
 
-typedef struct DvzMaterialState DvzMaterialState;
+typedef struct DvzSceneMaterialState DvzSceneMaterialState;
 
-struct DvzMaterialState
+struct DvzSceneMaterialState
 {
     DvzMaterialKind kind;
     DvzAlphaMode alpha_mode;
@@ -534,7 +534,7 @@ struct DvzVisual
     bool         visible;
     int32_t      z_layer;
     DvzAlphaMode alpha_mode;
-    DvzMaterialState material;
+    DvzSceneMaterialState material;
 
     DvzPrimitiveTopology topology; /* used by DVZ_VISUAL_TYPE_PRIMITIVE */
     DvzVisualBinding bindings[DVZ_SCENE_MAX_VISUAL_BINDINGS];
@@ -550,10 +550,10 @@ struct DvzVisual
     DvzLinkChannel* link_channel;
     uint64_t*       link_keys;
     uint32_t        link_key_count;
-    DvzPrimitiveShadingState primitive_shading;
-    bool                     primitive_shading_dirty;
-    bool                     mesh_default_color;
-    DvzVolumeState           volume;
+    DvzSceneMaterialParams material_params;
+    bool                   material_params_dirty;
+    bool                   mesh_default_color;
+    DvzVolumeState         volume;
 
     /* Attribute slots — indexed by attr index (type-specific) */
     uint32_t      attr_count;

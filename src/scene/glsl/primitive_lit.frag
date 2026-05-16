@@ -1,11 +1,11 @@
 #version 450
 
-layout(set = 1, binding = 0) uniform PrimitiveShading {
+layout(set = 1, binding = 0) uniform SceneMaterial {
     vec4 lightDir;
     vec4 params;
     vec4 depthCue;
     vec4 depthCueColor;
-} shading;
+} material;
 
 layout(location = 0) in vec4 fragColor;
 layout(location = 1) in vec3 fragNormal;
@@ -16,15 +16,15 @@ layout(location = 0) out vec4 outColor;
 
 vec3 applyDepthCue(vec3 rgb)
 {
-    float strength = clamp(shading.depthCue.z, 0.0, 1.0);
-    int mode = int(shading.depthCue.w + 0.5);
+    float strength = clamp(material.depthCue.z, 0.0, 1.0);
+    int mode = int(material.depthCue.w + 0.5);
     if (mode == 0 || strength <= 0.0)
         return rgb;
 
-    float denom = max(shading.depthCue.y - shading.depthCue.x, 1e-6);
-    float t = clamp((fragDepth - shading.depthCue.x) / denom, 0.0, 1.0) * strength;
+    float denom = max(material.depthCue.y - material.depthCue.x, 1e-6);
+    float t = clamp((fragDepth - material.depthCue.x) / denom, 0.0, 1.0) * strength;
     if (mode == 1)
-        return mix(rgb, shading.depthCueColor.rgb, t);
+        return mix(rgb, material.depthCueColor.rgb, t);
     if (mode == 2)
     {
         float luma = dot(rgb, vec3(0.2126, 0.7152, 0.0722));
@@ -38,11 +38,11 @@ vec3 applyDepthCue(vec3 rgb)
 void main()
 {
     vec3 n = normalize(fragNormal);
-    vec3 l = normalize(shading.lightDir.xyz);
+    vec3 l = normalize(material.lightDir.xyz);
     vec3 v = normalize(fragCameraPos - fragWorldPos);
     vec3 h = normalize(l + v);
     float lambert = max(dot(n, l), 0.0);
     float spec = pow(max(dot(n, h), 0.0), 32.0);
-    vec3 rgb = fragColor.rgb * (shading.params.x + shading.params.y * lambert) + vec3(0.18 * spec);
+    vec3 rgb = fragColor.rgb * (material.params.x + material.params.y * lambert) + vec3(0.18 * spec);
     outColor = vec4(applyDepthCue(clamp(rgb, 0.0, 1.0)), fragColor.a);
 }

@@ -332,18 +332,18 @@ void _scene_emit_visual_uploads(DvzFigure* figure, DvzFramePlan* plan)
                     visual->attrs[normal_idx].item_count > 0;
                 bool point_like = visual->type == DVZ_VISUAL_TYPE_POINT ||
                                   visual->type == DVZ_VISUAL_TYPE_PIXEL;
-                if ((point_like || has_normals) && visual->primitive_shading_dirty)
+                if ((point_like || has_normals) && visual->material_params_dirty)
                 {
-                    char shading_resource_id[128];
+                    char material_resource_id[128];
                     if (!_scene_resource_key_visual_attr(
-                            vidx, "primitive_shading", shading_resource_id,
-                            sizeof(shading_resource_id)))
+                            vidx, "material_params", material_resource_id,
+                            sizeof(material_resource_id)))
                         continue;
                     dvz_frame_plan_upload_bytes(
-                        plan, shading_resource_id, 0, sizeof(DvzPrimitiveShadingState),
-                        "primitive_shading", &visual->primitive_shading);
+                        plan, material_resource_id, 0, sizeof(DvzSceneMaterialParams),
+                        "material_params", &visual->material_params);
                     _scene_attach_upload_metadata(
-                        plan, visual, vidx, DVZ_FRAME_PLAN_RESOURCE_ROLE_PRIMITIVE_SHADING,
+                        plan, visual, vidx, DVZ_FRAME_PLAN_RESOURCE_ROLE_MATERIAL_PARAMS,
                         DVZ_FRAME_PLAN_RESOURCE_KIND_BUFFER, UINT32_MAX);
                     DvzFramePlanNode* node = &plan->nodes[plan->count - 1];
                     node->u.upload.buffer_usage = DVZ_DRP2_BUFFER_USAGE_UNIFORM |
@@ -523,7 +523,7 @@ bool _scene_visual_frame_plan_metadata(
             sizeof(metadata->normal_id)))
         return false;
     if (!_scene_resource_key_visual_attr(
-            visual_index, "primitive_shading", metadata->shading_id, sizeof(metadata->shading_id)))
+            visual_index, "material_params", metadata->material_id, sizeof(metadata->material_id)))
         return false;
 
     uint32_t buffer_index = _scene_buffer_index(figure->scene, visual->buffer);

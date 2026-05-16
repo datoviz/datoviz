@@ -54,15 +54,15 @@ static bool _visual_attr_count_consistent(
 
 static void _scene_release_visual_scale(DvzVisual* visual);
 
-static void _primitive_shading_default(DvzPrimitiveShadingState* shading);
+static void _material_params_default(DvzSceneMaterialParams* params);
 
-static void _material_state_default(DvzMaterialState* material, DvzVisualType visual_type);
+static void _material_state_default(DvzSceneMaterialState* material, DvzVisualType visual_type);
 
-static void _material_sync_primitive_shading(
-    DvzMaterialState* material, const DvzPrimitiveShadingState* shading);
+static void _material_state_sync_params(
+    DvzSceneMaterialState* material, const DvzSceneMaterialParams* params);
 
-static void _primitive_shading_sync_material(
-    DvzPrimitiveShadingState* shading, const DvzMaterialState* material);
+static void _material_params_sync_state(
+    DvzSceneMaterialParams* params, const DvzSceneMaterialState* material);
 
 static void _volume_state_default(DvzVolumeState* state);
 
@@ -354,9 +354,9 @@ static DvzVisual* _scene_alloc_visual(DvzScene* scene, DvzVisualType type, uint3
     visual->z_layer = 0;
     visual->alpha_mode = DVZ_ALPHA_OPAQUE;
     _material_state_default(&visual->material, type);
-    _primitive_shading_default(&visual->primitive_shading);
-    _material_sync_primitive_shading(&visual->material, &visual->primitive_shading);
-    _primitive_shading_sync_material(&visual->primitive_shading, &visual->material);
+    _material_params_default(&visual->material_params);
+    _material_state_sync_params(&visual->material, &visual->material_params);
+    _material_params_sync_state(&visual->material_params, &visual->material);
     _volume_state_default(&visual->volume);
     return visual;
 }
@@ -613,19 +613,19 @@ static void _scene_release_visual_scale(DvzVisual* visual)
 
 
 /**
- * Initialize primitive shading defaults.
+ * Initialize material uniform defaults.
  *
- * @param shading the shading state
+ * @param params the material parameter payload
  */
-static void _primitive_shading_default(DvzPrimitiveShadingState* shading)
+static void _material_params_default(DvzSceneMaterialParams* params)
 {
-    ANN(shading);
-    dvz_memset(shading, sizeof(DvzPrimitiveShadingState), 0, sizeof(DvzPrimitiveShadingState));
-    shading->light_direction[2] = 1.0f;
-    shading->params[0] = 0.2f;
-    shading->params[1] = 0.8f;
-    shading->depth_cue[1] = 1.0f;
-    shading->depth_cue[2] = 1.0f;
+    ANN(params);
+    dvz_memset(params, sizeof(DvzSceneMaterialParams), 0, sizeof(DvzSceneMaterialParams));
+    params->light_direction[2] = 1.0f;
+    params->params[0] = 0.2f;
+    params->params[1] = 0.8f;
+    params->depth_cue[1] = 1.0f;
+    params->depth_cue[2] = 1.0f;
 }
 
 
@@ -636,10 +636,10 @@ static void _primitive_shading_default(DvzPrimitiveShadingState* shading)
  * @param material the material state
  * @param visual_type the retained visual type
  */
-static void _material_state_default(DvzMaterialState* material, DvzVisualType visual_type)
+static void _material_state_default(DvzSceneMaterialState* material, DvzVisualType visual_type)
 {
     ANN(material);
-    dvz_memset(material, sizeof(DvzMaterialState), 0, sizeof(DvzMaterialState));
+    dvz_memset(material, sizeof(DvzSceneMaterialState), 0, sizeof(DvzSceneMaterialState));
     material->alpha_mode = DVZ_ALPHA_OPAQUE;
     material->opacity = 1.0f;
     material->light_direction[2] = 1.0f;
@@ -669,52 +669,52 @@ static void _material_state_default(DvzMaterialState* material, DvzVisualType vi
 
 
 /**
- * Mirror primitive shading state into the internal material state.
+ * Mirror a material parameter payload into the retained material state.
  *
  * @param material the material state
- * @param shading the primitive shading state
+ * @param params the material parameter payload
  */
-static void _material_sync_primitive_shading(
-    DvzMaterialState* material, const DvzPrimitiveShadingState* shading)
+static void _material_state_sync_params(
+    DvzSceneMaterialState* material, const DvzSceneMaterialParams* params)
 {
     ANN(material);
-    ANN(shading);
-    material->light_direction[0] = shading->light_direction[0];
-    material->light_direction[1] = shading->light_direction[1];
-    material->light_direction[2] = shading->light_direction[2];
-    material->light_direction[3] = shading->light_direction[3];
-    material->ambient = shading->params[0];
-    material->diffuse = shading->params[1];
+    ANN(params);
+    material->light_direction[0] = params->light_direction[0];
+    material->light_direction[1] = params->light_direction[1];
+    material->light_direction[2] = params->light_direction[2];
+    material->light_direction[3] = params->light_direction[3];
+    material->ambient = params->params[0];
+    material->diffuse = params->params[1];
 }
 
 
 /**
- * Mirror internal material state into the primitive shading shader payload.
+ * Mirror retained material state into the GPU material parameter payload.
  *
- * @param shading the primitive shading state
+ * @param params the material parameter payload
  * @param material the material state
  */
-static void _primitive_shading_sync_material(
-    DvzPrimitiveShadingState* shading, const DvzMaterialState* material)
+static void _material_params_sync_state(
+    DvzSceneMaterialParams* params, const DvzSceneMaterialState* material)
 {
-    ANN(shading);
+    ANN(params);
     ANN(material);
-    shading->light_direction[0] = material->light_direction[0];
-    shading->light_direction[1] = material->light_direction[1];
-    shading->light_direction[2] = material->light_direction[2];
-    shading->light_direction[3] = material->light_direction[3];
-    shading->params[0] = material->ambient;
-    shading->params[1] = material->diffuse;
-    shading->params[2] = material->specular;
-    shading->params[3] = material->shininess;
-    shading->depth_cue[0] = material->depth_cue_near;
-    shading->depth_cue[1] = material->depth_cue_far;
-    shading->depth_cue[2] = material->depth_cue_enabled ? material->depth_cue_strength : 0.0f;
-    shading->depth_cue[3] = (float)material->depth_cue_mode;
-    shading->depth_cue_color[0] = material->depth_cue_background[0];
-    shading->depth_cue_color[1] = material->depth_cue_background[1];
-    shading->depth_cue_color[2] = material->depth_cue_background[2];
-    shading->depth_cue_color[3] = material->depth_cue_background[3];
+    params->light_direction[0] = material->light_direction[0];
+    params->light_direction[1] = material->light_direction[1];
+    params->light_direction[2] = material->light_direction[2];
+    params->light_direction[3] = material->light_direction[3];
+    params->params[0] = material->ambient;
+    params->params[1] = material->diffuse;
+    params->params[2] = material->specular;
+    params->params[3] = material->shininess;
+    params->depth_cue[0] = material->depth_cue_near;
+    params->depth_cue[1] = material->depth_cue_far;
+    params->depth_cue[2] = material->depth_cue_enabled ? material->depth_cue_strength : 0.0f;
+    params->depth_cue[3] = (float)material->depth_cue_mode;
+    params->depth_cue_color[0] = material->depth_cue_background[0];
+    params->depth_cue_color[1] = material->depth_cue_background[1];
+    params->depth_cue_color[2] = material->depth_cue_background[2];
+    params->depth_cue_color[3] = material->depth_cue_background[3];
 }
 
 
@@ -984,19 +984,19 @@ int dvz_visual_set_primitive_shading(
     }
     if (!_scene_visual_mutation_allowed(visual->scene, "update primitive shading"))
         return -1;
-    _primitive_shading_default(&visual->primitive_shading);
+    _material_params_default(&visual->material_params);
     if (desc != NULL)
     {
-        visual->primitive_shading.light_direction[0] = desc->light_direction[0];
-        visual->primitive_shading.light_direction[1] = desc->light_direction[1];
-        visual->primitive_shading.light_direction[2] = desc->light_direction[2];
-        visual->primitive_shading.params[0] = desc->ambient;
-        visual->primitive_shading.params[1] = desc->diffuse;
+        visual->material_params.light_direction[0] = desc->light_direction[0];
+        visual->material_params.light_direction[1] = desc->light_direction[1];
+        visual->material_params.light_direction[2] = desc->light_direction[2];
+        visual->material_params.params[0] = desc->ambient;
+        visual->material_params.params[1] = desc->diffuse;
     }
-    _material_sync_primitive_shading(&visual->material, &visual->primitive_shading);
-    _primitive_shading_sync_material(&visual->primitive_shading, &visual->material);
+    _material_state_sync_params(&visual->material, &visual->material_params);
+    _material_params_sync_state(&visual->material_params, &visual->material);
     _visual_bump_version(&visual->material.version);
-    visual->primitive_shading_dirty = true;
+    visual->material_params_dirty = true;
     return 0;
 }
 
@@ -1071,9 +1071,9 @@ int dvz_visual_set_depth_cue(DvzVisual* visual, const DvzDepthCueDesc* desc)
         visual->material.depth_cue_background[3] = desc->background_color[3];
     }
 
-    _primitive_shading_sync_material(&visual->primitive_shading, &visual->material);
+    _material_params_sync_state(&visual->material_params, &visual->material);
     _visual_bump_version(&visual->material.version);
-    visual->primitive_shading_dirty = true;
+    visual->material_params_dirty = true;
     return 0;
 }
 
@@ -1880,7 +1880,7 @@ DvzVisual* dvz_primitive(DvzScene* scene, DvzPrimitiveTopology topology, uint32_
     if (visual == NULL)
         return NULL;
     visual->topology = topology;
-    visual->primitive_shading_dirty = true;
+    visual->material_params_dirty = true;
     return visual;
 }
 
@@ -1902,7 +1902,7 @@ DvzVisual* dvz_mesh(DvzScene* scene, uint32_t flags)
     if (visual == NULL)
         return NULL;
     visual->topology = DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
-    visual->primitive_shading_dirty = true;
+    visual->material_params_dirty = true;
     return visual;
 }
 

@@ -65,7 +65,7 @@ typedef struct DvzSceneVisualDesc
     uint64_t vbuf_ids[DVZ_SCENE_MAX_NODE_RESOURCES];
     uint32_t vbuf_count;
     uint64_t index_buffer_id;
-    uint64_t shading_buffer_id;
+    uint64_t material_buffer_id;
     uint64_t image_texture_id;
     uint64_t volume_texture_id;
     bool volume_transfer_rgba;
@@ -132,7 +132,7 @@ typedef struct DvzSceneVisualPipelineDesc
     bool needs_common_layout;
     bool needs_image_layout;
     bool needs_volume_layout;
-    bool needs_shading_layout;
+    bool needs_material_layout;
     bool has_depth_state;
     bool depth_write_enabled;
     uint32_t depth_compare_op;
@@ -154,8 +154,8 @@ typedef struct DvzSceneVisualBindDesc
     uint64_t volume_depth_texture_id;
     bool volume_transfer_rgba;
     DvzVolumeState volume_state;
-    bool uses_shading_set1;
-    uint64_t shading_buffer_id;
+    bool uses_material_set1;
+    uint64_t material_buffer_id;
 } DvzSceneVisualBindDesc;
 
 

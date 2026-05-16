@@ -260,7 +260,8 @@ static const char* _resource_role_tag(DvzFramePlanResourceRole role)
     case DVZ_FRAME_PLAN_RESOURCE_ROLE_INDEX:
         return "index";
     case DVZ_FRAME_PLAN_RESOURCE_ROLE_PRIMITIVE_SHADING:
-        return "primitive_shading";
+    case DVZ_FRAME_PLAN_RESOURCE_ROLE_MATERIAL_PARAMS:
+        return "material_params";
     case DVZ_FRAME_PLAN_RESOURCE_ROLE_NONE:
     default:
         return NULL;
@@ -385,7 +386,7 @@ static bool _scene_visual_desc_from_metadata(
         out->vbuf_ids[out->vbuf_count++] = color_id;
         out->vbuf_ids[out->vbuf_count++] = size_id;
         out->topology = VK_PRIMITIVE_TOPOLOGY_POINT_LIST;
-        out->shading_buffer_id = _resource_lookup_label(&emitter->resources, meta->shading_id);
+        out->material_buffer_id = _resource_lookup_label(&emitter->resources, meta->material_id);
         return true;
     }
 
@@ -416,7 +417,7 @@ static bool _scene_visual_desc_from_metadata(
             return false;
         }
         out->index_buffer_id = _resource_lookup_label(&emitter->resources, meta->index_id);
-        out->shading_buffer_id = _resource_lookup_label(&emitter->resources, meta->shading_id);
+        out->material_buffer_id = _resource_lookup_label(&emitter->resources, meta->material_id);
     }
     else if (meta->visual_type == DVZ_VISUAL_TYPE_IMAGE)
     {
@@ -769,7 +770,7 @@ bool _scene_visual_desc_from_render(
         DVZ_FRAME_PLAN_RESOURCE_ROLE_COLOR, DVZ_FRAME_PLAN_RESOURCE_ROLE_SIZE,
         DVZ_FRAME_PLAN_RESOURCE_ROLE_TEXCOORDS, DVZ_FRAME_PLAN_RESOURCE_ROLE_TEXTURE,
         DVZ_FRAME_PLAN_RESOURCE_ROLE_NORMAL, DVZ_FRAME_PLAN_RESOURCE_ROLE_INDEX,
-        DVZ_FRAME_PLAN_RESOURCE_ROLE_PRIMITIVE_SHADING};
+        DVZ_FRAME_PLAN_RESOURCE_ROLE_MATERIAL_PARAMS};
     for (uint32_t ai = 0; ai < 7; ai++)
     {
         uint64_t rid_id = _render_visual_resource_id(
@@ -781,9 +782,9 @@ bool _scene_visual_desc_from_render(
             out->index_buffer_id = rid_id;
             continue;
         }
-        if (optionals[ai] == DVZ_FRAME_PLAN_RESOURCE_ROLE_PRIMITIVE_SHADING)
+        if (optionals[ai] == DVZ_FRAME_PLAN_RESOURCE_ROLE_MATERIAL_PARAMS)
         {
-            out->shading_buffer_id = rid_id;
+            out->material_buffer_id = rid_id;
             continue;
         }
         if (out->vbuf_count >= DVZ_SCENE_MAX_NODE_RESOURCES)
@@ -991,7 +992,7 @@ bool _scene_visual_pass_caps_from_desc(
 
     _scene_visual_pass_caps_resolve(
         visual->kind, alpha_mode, controller_mode, visual->has_normal,
-        visual->shading_buffer_id != 0, visual->shading_buffer_id != 0, out);
+        visual->material_buffer_id != 0, visual->material_buffer_id != 0, out);
     return true;
 }
 
@@ -1020,7 +1021,7 @@ bool _scene_visual_shader_desc(
     {
     case DVZ_SCENE_VISUAL_DESC_PIXEL:
     {
-        bool depth_cue = visual->shading_buffer_id != 0;
+        bool depth_cue = visual->material_buffer_id != 0;
         dvz_snprintf(
             out->vertex_key, sizeof(out->vertex_key), "_vs_pixel%s%s",
             depth_cue ? "_cue" : "", format_tag);
@@ -1057,7 +1058,7 @@ bool _scene_visual_shader_desc(
         }
         else
         {
-            bool depth_cue = visual->shading_buffer_id != 0;
+            bool depth_cue = visual->material_buffer_id != 0;
             dvz_snprintf(
                 out->vertex_key, sizeof(out->vertex_key), "_vs_point%s%s",
                 depth_cue ? "_cue" : "", format_tag);
@@ -1222,7 +1223,7 @@ bool _scene_visual_pipeline_desc(
         out->formats[1] = picking ? VK_FORMAT_R32_SFLOAT : VK_FORMAT_R8G8B8A8_UNORM;
         out->formats[2] = VK_FORMAT_R32_SFLOAT;
         out->needs_common_layout = caps.uses_common_set;
-        out->needs_shading_layout = caps.needs_material_layout;
+        out->needs_material_layout = caps.needs_material_layout;
         if (pass_needs_depth)
         {
             out->depth_write_enabled =
@@ -1249,7 +1250,7 @@ bool _scene_visual_pipeline_desc(
         out->formats[1] = VK_FORMAT_R8G8B8A8_UNORM;
         out->formats[2] = VK_FORMAT_R32G32B32_SFLOAT;
         out->needs_common_layout = caps.uses_common_set;
-        out->needs_shading_layout = caps.needs_material_layout;
+        out->needs_material_layout = caps.needs_material_layout;
         if (pass_needs_depth)
         {
             out->depth_write_enabled =
@@ -1329,15 +1330,15 @@ bool _scene_visual_bind_desc(
     case DVZ_SCENE_VISUAL_DESC_POINT:
         out->uses_common_set0 = caps.uses_common_set;
         out->uses_fixed_common = caps.fixed_controller;
-        out->uses_shading_set1 = caps.uses_material_set;
-        out->shading_buffer_id = visual->shading_buffer_id;
+        out->uses_material_set1 = caps.uses_material_set;
+        out->material_buffer_id = visual->material_buffer_id;
         return true;
 
     case DVZ_SCENE_VISUAL_DESC_PRIMITIVE:
         out->uses_common_set0 = caps.uses_common_set;
         out->uses_fixed_common = caps.fixed_controller;
-        out->uses_shading_set1 = caps.uses_material_set;
-        out->shading_buffer_id = visual->shading_buffer_id;
+        out->uses_material_set1 = caps.uses_material_set;
+        out->material_buffer_id = visual->material_buffer_id;
         return true;
 
     case DVZ_SCENE_VISUAL_DESC_IMAGE:

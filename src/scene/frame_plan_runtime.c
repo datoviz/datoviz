@@ -511,7 +511,7 @@ static bool _emitter_prepare_render_multi(
         {
             if (desc.kind != DVZ_SCENE_VISUAL_DESC_PRIMITIVE || !desc.has_normal)
                 continue;
-            desc.shading_buffer_id = 0;
+            desc.material_buffer_id = 0;
             dvz_snprintf(shader.vertex_key, sizeof(shader.vertex_key), "_vs_gbuffer_prim%s", fmt);
             dvz_snprintf(
                 shader.fragment_key, sizeof(shader.fragment_key), "_fs_gbuffer_normal%s", fmt);
@@ -632,7 +632,7 @@ static bool _emitter_prepare_render_multi(
                 break;
             }
             if (gbuffer_pass)
-                pipeline.needs_shading_layout = false;
+                pipeline.needs_material_layout = false;
             if (
                 force_point_depth &&
                 (desc.kind == DVZ_SCENE_VISUAL_DESC_POINT ||
@@ -642,15 +642,15 @@ static bool _emitter_prepare_render_multi(
                 pipeline.depth_write_enabled = true;
                 pipeline.depth_compare_op = VK_COMPARE_OP_LESS_OR_EQUAL;
             }
-            uint64_t shading_bgl_id = 0;
-            if (pipeline.needs_shading_layout)
+            uint64_t material_bgl_id = 0;
+            if (pipeline.needs_material_layout)
             {
-                bool shading_bgl_new = false;
-                shading_bgl_id = _obj_id(emitter, "_bgl_prim_shading", &shading_bgl_new);
-                if (shading_bgl_id == 0) { ok = false; break; }
-                if (shading_bgl_new)
+                bool material_bgl_new = false;
+                material_bgl_id = _obj_id(emitter, "_bgl_material_params", &material_bgl_new);
+                if (material_bgl_id == 0) { ok = false; break; }
+                if (material_bgl_new)
                     ok = ok &&
-                         dvz_drp2_stream_create_uniform_bind_group_layout(stream, shading_bgl_id);
+                         dvz_drp2_stream_create_uniform_bind_group_layout(stream, material_bgl_id);
             }
             if (pipeline.needs_image_layout && img_bgl_id == 0)
             {
@@ -686,8 +686,8 @@ static bool _emitter_prepare_render_multi(
             if (ok && pipeline.needs_volume_layout && volume_bgl_id != 0 &&
                 pipeline.needs_common_layout)
                 ok = dvz_drp2_stream_pipeline_set_bind_group_layout2(stream, volume_bgl_id);
-            if (ok && pipeline.needs_shading_layout)
-                ok = dvz_drp2_stream_pipeline_set_bind_group_layout2(stream, shading_bgl_id);
+            if (ok && pipeline.needs_material_layout)
+                ok = dvz_drp2_stream_pipeline_set_bind_group_layout2(stream, material_bgl_id);
             if (ok && pipeline.has_depth_state)
                 ok = dvz_drp2_stream_pipeline_set_depth_state(
                     stream, pipeline.depth_write_enabled, pipeline.depth_compare_op);
@@ -756,26 +756,27 @@ static bool _emitter_prepare_render_multi(
             bind.volume_depth_texture_id = sampled_depth_id;
         if (bind.uses_common_set0)
             vis_bg_set0 = bind.uses_fixed_common ? fixed_bg_id : apply_bg_id;
-        if (bind.uses_shading_set1)
+        if (bind.uses_material_set1)
         {
-            bool shading_bgl_new = false;
-            uint64_t shading_bgl_id = _obj_id(emitter, "_bgl_prim_shading", &shading_bgl_new);
-            if (shading_bgl_id == 0) { ok = false; break; }
-            if (shading_bgl_new)
+            bool material_bgl_new = false;
+            uint64_t material_bgl_id =
+                _obj_id(emitter, "_bgl_material_params", &material_bgl_new);
+            if (material_bgl_id == 0) { ok = false; break; }
+            if (material_bgl_new)
                 ok = ok && dvz_drp2_stream_create_uniform_bind_group_layout(
-                               stream, shading_bgl_id);
-            char shading_bg_key[64];
+                               stream, material_bgl_id);
+            char material_bg_key[64];
             dvz_snprintf(
-                shading_bg_key, sizeof(shading_bg_key), "_bg_prim_shading_%" PRIu64,
-                bind.shading_buffer_id);
-            uint64_t shading_bg_id = _obj_id(emitter, shading_bg_key, &is_new);
-            if (shading_bg_id == 0) { ok = false; break; }
+                material_bg_key, sizeof(material_bg_key), "_bg_material_params_%" PRIu64,
+                bind.material_buffer_id);
+            uint64_t material_bg_id = _obj_id(emitter, material_bg_key, &is_new);
+            if (material_bg_id == 0) { ok = false; break; }
             if (ok && is_new)
                 ok = ok && dvz_drp2_stream_create_uniform_bind_group(
-                               stream, shading_bg_id, shading_bgl_id,
-                               bind.shading_buffer_id, 0,
-                               sizeof(DvzPrimitiveShadingState));
-            vis_bg_set1 = shading_bg_id;
+                               stream, material_bg_id, material_bgl_id,
+                               bind.material_buffer_id, 0,
+                               sizeof(DvzSceneMaterialParams));
+            vis_bg_set1 = material_bg_id;
         }
         if (bind.uses_image_set1)
         {
