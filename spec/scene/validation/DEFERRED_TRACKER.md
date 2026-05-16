@@ -5,6 +5,12 @@ It is informative — the authoritative deferral note lives in the originating d
 
 Items are grouped by target milestone.
 
+Status note on 2026-05-16: this tracker no longer lists capabilities that have landed in the
+active scene/app slice, including retained point/primitive/mesh/path/image/pixel/sphere/volume
+visuals, retained sampled fields and scale/colorbar bookkeeping, WBOIT/depth-peel/EDL/SSAO/G-buffer
+execution slices, app/offscreen/GLFW presentation, DVZR app recording/replay, point-pick readback,
+and basic image-probe readback. Deferred entries below are gaps beyond those active slices.
+
 
 ## DRP2 2.1
 
@@ -27,21 +33,33 @@ These items are in scope for v0.4 but deferred beyond the initial implementation
 | Lanczos and high-quality downsampling filters for export | `spec/scene/export/IMAGE_EXPORT.md` |
 | GPU compute pre-pass for non-linear projection (e.g., geographic) | `spec/scene/semantics/NONLINEAR_TRANSFORMS.md` |
 | Non-linear transform interaction with axes | `spec/scene/semantics/NONLINEAR_TRANSFORMS.md` |
-| Tapered (per-vertex width) lines | `spec/scene/visuals/PATH.md` |
+| Path widths, caps, joins, grouping, and tapered (per-vertex width) lines | `spec/scene/visuals/PATH.md` |
 | `volume` multiplane / MPR render mode | `spec/scene/visuals/VOLUME.md` |
+| Richer volume transfer functions and isosurface controls beyond the active first slice | `spec/scene/visuals/VOLUME.md` |
+| Volume DVR/MIP ray-cast picking identity | `spec/scene/interaction/PICKING.md` |
 | Automatic LOD for mesh simplification | `spec/scene/semantics/GEOMETRY_UTILITIES.md` |
 | Concave (alpha-shape) hull computation | `spec/scene/semantics/GEOMETRY_UTILITIES.md` |
 | Annotation shape generation (msdfgen integration) | `spec/scene/semantics/GEOMETRY_UTILITIES.md` |
+| Rendered text/glyph path: shaping, atlas population, glyph runs, and text draw emission | `spec/scene/semantics/TEXT.md`, `spec/scene/visuals/GLYPH.md` |
+| Glyph-level, substring-level, and text-object picking | `spec/scene/semantics/TEXT.md`, `spec/scene/visuals/GLYPH.md` |
+| Rendered annotations, annotation labels, guides, and callout geometry | `spec/scene/semantics/ANNOTATIONS.md` |
+| Rendered colorbar ramps, ticks, labels, and layout-realization geometry | `spec/scene/semantics/LEGENDS_AND_COLORBARS.md` |
+| Labels and categorical sampled-field rendering/probe semantics beyond retained descriptors | `spec/scene/proposals/SAMPLED_FIELD_API_DESIGN.md` |
+| Richer probe payloads beyond basic point identity and image RGBA/value readback | `spec/scene/proposals/PROBE_READOUT_DESIGN.md` |
+| Broader mesh, sphere, volume, object, and grouped-family picking | `spec/scene/interaction/PICKING.md` |
 | Scene-level animation timeline coordination | `spec/scene/interaction/ANIMATION.md` |
 | Multi-scene GPU resource sharing across threads | `spec/scene/integration/THREAD_SAFETY.md` |
 | Polar axis geometry (circular gridlines, radial labels) | `spec/scene/pipeline/TRANSFORM_PIPELINE.md` |
 | Map tile loading and LOD management | `spec/scene/pipeline/TRANSFORM_PIPELINE.md` |
 | Per-item material / PBR lighting for sphere | `spec/scene/visuals/SPHERE.md` |
+| Full PBR material model beyond current material/Phong/depth-cue slices | `spec/scene/semantics/LIGHTING.md`, `spec/scene/proposals/MATERIAL_LIGHTING_API.md` |
 | Selection state synchronization across scenes | `spec/scene/interaction/SELECTION.md` |
+| Rendered selection highlight overlays/effects | `spec/scene/interaction/SELECTION.md`, `spec/scene/proposals/SELECTION_HIGHLIGHT_DESIGN.md` |
 | Custom visual dirty-tracking optimization | `spec/scene/integration/CUSTOM_VISUALS.md` |
 | Per-character glyph orientation | `spec/scene/visuals/GLYPH.md` |
-| Volume DVR/MIP ray-cast picking identity | `spec/scene/interaction/PICKING.md` |
 | Vector export tile-based rendering and SVG-level effects | `spec/scene/export/VECTOR_EXPORT.md` |
+| Python/CuPy/host adapter API layer over the low-level interop/runtime hooks | `spec/scene/integration/CUPY_CUDA_INTEROP.md`, `spec/scene/integration/HOSTED_BACKENDS.md` |
+| Full exact OIT beyond active WBOIT and depth-peeling modes | `spec/scene/semantics/TRANSPARENCY.md` |
 | `wiggle` promotion to a full visual family | `spec/scene/semantics/VISUAL_FAMILIES.md` |
 
 

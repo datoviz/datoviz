@@ -17,7 +17,7 @@ The normative sources remain:
 6. [../interaction/SELECTION.md](../interaction/SELECTION.md),
 7. [../visuals/MESH.md](../visuals/MESH.md),
 8. [../visuals/VOLUME.md](../visuals/VOLUME.md),
-9. [../headers/scene_api.h](../headers/scene_api.h) for API groups it already spells.
+9. installed headers under `include/datoviz/scene*.h` for active public names and signatures.
 
 
 ## Ready Boundaries
@@ -37,8 +37,8 @@ These boundaries are now explicit enough to start public API drafting:
    the only public meaning.
 6. Scales and colormaps are scene-owned semantic objects. Colorbars are explanatory objects bound to
    scales; they do not own the scale or colormap.
-7. `SampledField` is the active shared scene-owned regular-grid resource for image paths and future
-   volume/probe/readout consumers.
+7. `SampledField` is the active shared scene-owned regular-grid resource for image and volume paths
+   and future broader probe/readout consumers.
 8. The active rendering path is scene -> `FramePlan` -> `DvzDrp2CommandStream` ->
    `DvzDrp2Runtime` -> vklite/canvas/app. Scene code emits backend-agnostic DRP2 work and does
    not own swapchains, command-buffer lifetimes, or native host event loops.
@@ -46,21 +46,28 @@ These boundaries are now explicit enough to start public API drafting:
    recording and replay are active app-window capabilities.
 
 
-## Implementation Work Still Needed
+## Implementation Status Snapshot
 
 The installed headers now spell the first versions of scene, figure, app-window, interaction,
-scale/colorbar, text/annotation, and sampled-field APIs. Remaining implementation work should focus
-on:
+scale/colorbar, text/annotation, sampled-field, material, technique, and visual-family APIs. The
+active implementation status is:
 
-1. hardening `DvzInteractionPolicy`, request/freshness handling, deterministic pick/probe result
-   queues, and panel binding,
-2. implementing `DvzSelection`, `DvzLinkChannel`, stable link-key storage, and selection mutation
-   rules,
-3. broadening pick/probe coverage beyond the first point/image DRP2 readback paths,
-4. implementing `DvzFont`, `DvzText`, and `DvzAnnotation` retained-object lifecycle and invalidation,
-5. rendering colorbar ticks/labels and text/annotation geometry after retained bookkeeping exists,
-6. deciding whether mesh needs a separate public geometry resource beyond current scene buffers,
-7. extending volume/sampled-field probe results when volume slices become active.
+| Area | Public API | Retained state | Native rendering / execution | GPU request/readback | Remaining gaps |
+|---|---|---|---|---|---|
+| Core scene/app | scene, figure, panel, app-window, emit, capture, DVZR recording/replay | active | active scene -> FramePlan -> DRP2 -> vklite/canvas/app path | frame capture and runtime readbacks are used by tests | installed CLI boundary for DVZR replay remains a product decision |
+| Visual families | pixel, point, primitive, path, image, mesh, sphere, volume constructors | active for those families | active for retained first slices, including WBOIT/depth-peel, EDL, SSAO/G-buffer where eligible | point pick and image probe only | marker, segment, glyph rendering, errorbar, boxplot, richer path/image/volume features |
+| Sampled fields/scales | `DvzSampledField`, scale, colormap, colorbar APIs | fields/scales/colorbars retain state | image and volume consume fields; image/volume colormap bindings are active | image probe returns a basic value payload | labels/categorical fields, richer probe payloads, rendered colorbar ticks/labels |
+| Interaction/selection | policies, pick/probe queues, selection/link APIs | active bookkeeping and tests | request processing executes through app/runtime for point/image | narrow point/image GPU readback | broader mesh/object/sphere/volume picking and rendered selection highlights |
+| Text/annotations | font, text, annotation APIs | active bookkeeping and lifecycle tests | no rendered glyph/text/annotation path | no | font atlas, shaping, glyph rendering, rendered annotations, glyph/text picking |
+
+Remaining implementation work should focus on:
+
+1. broadening pick/probe coverage beyond the first point/image DRP2 readback paths,
+2. rendering colorbar ticks/labels and text/annotation geometry after retained bookkeeping exists,
+3. deciding whether mesh needs a separate public geometry resource beyond current scene buffers,
+4. extending volume/sampled-field probe results beyond the current image-oriented payload,
+5. implementing rendered selection highlights once selection/link bookkeeping has a stable visual
+   target.
 
 
 ## Non-Blocking Follow-Up

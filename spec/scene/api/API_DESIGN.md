@@ -309,9 +309,10 @@ only. Not a first-class public user-facing API.
 
 This document should be read together with:
 
-1. `headers/scene_api.h` for the authoritative C API spelling it already covers,
+1. installed headers under `include/datoviz/scene*.h` for active C API names and signatures,
 2. `../semantics/VISUAL_CONTRACT.md` and `../semantics/VISUAL_FAMILY_RULES.md` for family contract details,
 3. `../pipeline/RESOURCE_MODEL.md` for logical resource classes,
 4. `../validation/VALIDATION.md` and `../validation/ADAPTATION.md` for stage ordering and failure semantics,
 5. `../core/RUNTIME_BOUNDARY.md` for the lower execution boundary and service model,
-6. `IMPLEMENTATION_NOTES.md` for one tentative implementation-facing translation of this profile.
+6. `IMPLEMENTATION_NOTES.md` for the current implementation-facing translation of this profile,
+7. `../headers/scene_api.h` only as legacy scratch material for ideas not yet promoted.

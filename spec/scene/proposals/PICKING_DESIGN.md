@@ -1,13 +1,26 @@
 > **Execution Status**
-> - **Status:** `SCENE SPEC PROPOSAL`
-> - **Updated on:** `2026-05-09`
-> - **Purpose:** define the intended v0.4 picking contract across visual families, identity
->   resolution, frame-plan/readback flow, and precision levels.
+> - **Status:** `MOSTLY PROMOTED`
+> - **Updated on:** `2026-05-16`
+> - **Purpose:** preserve picking design rationale and remaining precision-policy notes after
+>   promotion into interaction, visual-family, and API specs.
 
 # Picking Design
 
 This note records the intended v0.4 picking contract before mesh, text, and annotation work
 hardens around inconsistent identity assumptions.
+
+
+## Authority Note
+
+Active scene picking rules now live primarily in
+[`../interaction/PICKING.md`](../interaction/PICKING.md). Selection integration belongs in
+[`../interaction/SELECTION.md`](../interaction/SELECTION.md), family-specific hit identity belongs
+in the relevant `../visuals/*.md` files, and public result/request shape belongs in
+[`../api/API_SURFACE.md`](../api/API_SURFACE.md) plus
+[`../api/API_DESIGN.md`](../api/API_DESIGN.md).
+
+This proposal remains a rationale and backlog note for precision levels, multi-hit policy, and
+future family extensions. When the active pick path changes, update the specialized specs first.
 
 
 ## Objective

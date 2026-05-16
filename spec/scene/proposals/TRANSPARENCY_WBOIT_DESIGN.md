@@ -1,11 +1,25 @@
 > **Execution Status**
-> - **Status:** `ACTIVE FIRST SLICE`
+> - **Status:** `MOSTLY PROMOTED`
 > - **Updated on:** `2026-05-16`
-> - **Purpose:** record the active v0.4 weighted blended OIT contract and remaining follow-up work.
+> - **Purpose:** preserve WBOIT design rationale and remaining follow-up work after promotion into
+>   specialized transparency specs.
 
 # Transparency and WBOIT Design
 
 This note records the intended transparency contract for the active v0.4 scene stack.
+
+
+## Authority Note
+
+Active transparency rules now live primarily in
+[`../semantics/TRANSPARENCY.md`](../semantics/TRANSPARENCY.md). Frame-plan ordering belongs in
+[`../pipeline/FRAME_PLAN.md`](../pipeline/FRAME_PLAN.md), capability adaptation belongs in
+[`../validation/ADAPTATION.md`](../validation/ADAPTATION.md), and runtime-boundary ownership belongs
+in [`../core/RUNTIME_BOUNDARY.md`](../core/RUNTIME_BOUNDARY.md).
+
+This proposal remains a rationale and follow-up note for WBOIT attachment/resolve design. If it
+disagrees with the specialized specs, update the specialized specs first and keep only a concise
+backlog note here.
 
 
 ## Objective

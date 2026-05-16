@@ -1,13 +1,26 @@
 > **Execution Status**
-> - **Status:** `SCENE SPEC PROPOSAL`
-> - **Updated on:** `2026-05-09`
-> - **Purpose:** define the intended v0.4 retained update contract for scene geometry, textures,
->   glyph atlases, and other mutable resources.
+> - **Status:** `MOSTLY PROMOTED`
+> - **Updated on:** `2026-05-16`
+> - **Purpose:** preserve retained-update rationale and remaining API naming notes after promotion
+>   into the resource and invalidation specs.
 
 # Resource Update Design
 
 This note narrows the larger scene resource model into the active update contract needed now for
 mesh, text, image, and picking-related retained resources.
+
+
+## Authority Note
+
+Active resource ownership, dirty tracking, subrange uploads, texture-region dirtiness, and
+frame-plan upload effects are now owned by
+[`../pipeline/RESOURCE_MODEL.md`](../pipeline/RESOURCE_MODEL.md) and
+[`../pipeline/INVALIDATION_AND_CACHING.md`](../pipeline/INVALIDATION_AND_CACHING.md). Validation
+diagnostics belong in [`../validation/VALIDATION.md`](../validation/VALIDATION.md) and
+[`../validation/DIAGNOSTICS.md`](../validation/DIAGNOSTICS.md).
+
+This proposal remains as a concise rationale for why partial updates are first-class and as a
+parking place for API naming examples that have not yet moved into the public API spec.
 
 
 ## Objective

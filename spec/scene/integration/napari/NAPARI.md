@@ -499,7 +499,8 @@ Datoviz currently has `alpha_mode` and transparency pass structure:
 ```text
 DVZ_ALPHA_OPAQUE
 DVZ_ALPHA_BLENDED
-DVZ_ALPHA_BLENDED_EXACT
+DVZ_ALPHA_WBOIT
+DVZ_ALPHA_DEPTH_PEEL
 DVZ_ALPHA_MASK
 ```
 

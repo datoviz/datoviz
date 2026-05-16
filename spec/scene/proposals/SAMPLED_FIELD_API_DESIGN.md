@@ -1,8 +1,8 @@
 > **Execution Status**
-> - **Status:** `SCENE SPEC PROPOSAL`
-> - **Updated on:** `2026-05-10`
-> - **Purpose:** define the implementation-grade `SampledField` resource contract and draft the
->   first public API shape for regular sampled-grid scene data.
+> - **Status:** `PARTIALLY PROMOTED`
+> - **Updated on:** `2026-05-16`
+> - **Purpose:** preserve `SampledField` API rationale and unresolved choices after promotion of
+>   the active resource/visual rules.
 
 # SampledField API Design
 
@@ -14,6 +14,19 @@ The goal is to give future implementation work one explicit contract for:
 2. scalar, vector, and multi-channel color-like payloads,
 3. shared data ownership across image, volume, probe, and future field consumers,
 4. CPU fallback and GPU-native execution without changing scene semantics.
+
+
+## Authority Note
+
+The active `SampledField` resource contract is now owned by
+[`../pipeline/RESOURCE_MODEL.md`](../pipeline/RESOURCE_MODEL.md). Image and volume binding rules
+belong in [`../visuals/IMAGE.md`](../visuals/IMAGE.md) and
+[`../visuals/VOLUME.md`](../visuals/VOLUME.md). Public API shape belongs in
+[`../api/API_SURFACE.md`](../api/API_SURFACE.md) and implementation-readiness tracking belongs in
+[`../api/API_IMPLEMENTATION_READINESS.md`](../api/API_IMPLEMENTATION_READINESS.md).
+
+This proposal remains useful for detailed enum/API sketches, rationale, and open choices. Do not
+copy its long format lists into other specs unless those specs need the normative detail.
 
 
 ## Objective
@@ -614,7 +627,7 @@ Avoid starting with:
 
 ## Promotion Targets
 
-This proposal should promote into:
+This proposal has mostly promoted into:
 
 1. `../pipeline/RESOURCE_MODEL.md`
 2. `../pipeline/INVALIDATION_AND_CACHING.md`
@@ -623,6 +636,12 @@ This proposal should promote into:
 5. `../visuals/VOLUME.md`
 6. `../api/API_SURFACE.md`
 7. `../headers/scene_public_api_draft.h`
+
+Remaining proposal-owned material:
+
+1. detailed public enum sketches,
+2. convenience function naming options,
+3. unresolved lifetime and channel-metadata choices.
 
 
 ## Open Choices

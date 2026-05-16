@@ -22,6 +22,33 @@ Use this authority order inside the scene spec:
    authority on their own.
 
 
+## Promotion Status
+
+Some mature proposals are now mostly represented by specialized specs. Keep those proposals as
+design rationale and backlog notes; do not treat them as the primary rule source when the listed
+specialized spec exists.
+
+Mostly promoted:
+
+1. `TRANSPARENCY_WBOIT_DESIGN.md` -> `../semantics/TRANSPARENCY.md`, with frame-plan and
+   adaptation details owned by `../pipeline/FRAME_PLAN.md` and `../validation/ADAPTATION.md`.
+2. `SAMPLED_FIELD_API_DESIGN.md` -> `../pipeline/RESOURCE_MODEL.md`,
+   `../visuals/IMAGE.md`, `../visuals/VOLUME.md`, and `../api/API_SURFACE.md`.
+3. `RESOURCE_UPDATE_DESIGN.md` -> `../pipeline/RESOURCE_MODEL.md` and
+   `../pipeline/INVALIDATION_AND_CACHING.md`.
+4. `PICKING_DESIGN.md` -> `../interaction/PICKING.md`, visual-family specs, and
+   `../api/API_SURFACE.md`.
+5. `PROBE_READOUT_DESIGN.md` -> `../interaction/PICKING.md`,
+   `../semantics/ANNOTATIONS.md`, `../visuals/IMAGE.md`, `../visuals/VOLUME.md`, and
+   `../api/API_SURFACE.md`.
+6. `UI_BACKEND_INTEGRATION.md` -> `../integration/EXTERNAL_UI.md`,
+   `../integration/HOSTED_BACKENDS.md`, `../pipeline/FRAME_LIFECYCLE.md`, and
+   `../core/RUNTIME_BOUNDARY.md`.
+
+When changing active behavior for these topics, update the specialized spec first and add only a
+short cross-reference or remaining-work note in the proposal.
+
+
 ## Promotion Targets
 
 Use this map when turning proposals into implementation-ready spec changes.

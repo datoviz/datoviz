@@ -1,13 +1,27 @@
 > **Execution Status**
-> - **Status:** `SCENE SPEC PROPOSAL`
-> - **Updated on:** `2026-05-09`
-> - **Purpose:** define the intended v0.4 contract for semantic probe results and readout payloads
->   across image, volume, mesh, and annotation workflows.
+> - **Status:** `PARTIALLY PROMOTED`
+> - **Updated on:** `2026-05-16`
+> - **Purpose:** preserve cross-family probe/readout rationale while active rules move into
+>   picking, annotation, visual-family, and API specs.
 
 # Probe and Readout Design
 
 This note records the active v0.4 direction for turning picks and queries into meaningful semantic
 readouts rather than leaving each visual family to invent its own payload shape.
+
+
+## Authority Note
+
+Probe/readout no longer owns the pick identity model. Active picking and readback routing belong in
+[`../interaction/PICKING.md`](../interaction/PICKING.md); probe annotations and pinned readouts
+belong in [`../semantics/ANNOTATIONS.md`](../semantics/ANNOTATIONS.md); sampled image and volume
+payload rules belong in [`../visuals/IMAGE.md`](../visuals/IMAGE.md) and
+[`../visuals/VOLUME.md`](../visuals/VOLUME.md); public API shape belongs in
+[`../api/API_SURFACE.md`](../api/API_SURFACE.md).
+
+This proposal remains the cross-family rationale for semantic values, units, formatting, and
+probe-only versus probe-plus-selection policy until those details are fully split into specialized
+specs.
 
 
 ## Objective

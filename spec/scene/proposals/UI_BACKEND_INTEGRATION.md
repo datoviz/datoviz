@@ -1,13 +1,27 @@
 > **Execution Status**
-> - **Status:** `SCENE SPEC PROPOSAL`
-> - **Updated on:** `2026-05-09`
-> - **Purpose:** define the active implications of external UI frameworks and host backends for the
->   scene boundary, including Dear ImGui and Qt/PyQt-style embedding.
+> - **Status:** `MOSTLY PROMOTED`
+> - **Updated on:** `2026-05-16`
+> - **Purpose:** preserve external-UI and hosted-backend rationale after promotion into integration
+>   and frame-lifecycle specs.
 
 # UI and Backend Integration
 
 This note narrows the broader external-UI discussion into the active design decisions that matter
 for scene mutation, embedding, and host-toolkit integration.
+
+
+## Authority Note
+
+Active external-UI boundary rules now live in
+[`../integration/EXTERNAL_UI.md`](../integration/EXTERNAL_UI.md). Host-owned event-loop,
+external-surface, Qt/PyQt, IPython, Jupyter, SDL, and toolkit-adapter direction now lives in
+[`../integration/HOSTED_BACKENDS.md`](../integration/HOSTED_BACKENDS.md). Per-frame overlay ordering
+belongs in [`../pipeline/FRAME_LIFECYCLE.md`](../pipeline/FRAME_LIFECYCLE.md), and scene/runtime
+ownership boundaries belong in [`../core/RUNTIME_BOUNDARY.md`](../core/RUNTIME_BOUNDARY.md).
+
+This proposal remains a rationale note for the overlap between external widgets, retained scene
+mutation, and hosted presentation. Do not add new Qt- or ImGui-specific normative rules here unless
+the specialized integration docs also receive the rule.
 
 
 ## Objective
