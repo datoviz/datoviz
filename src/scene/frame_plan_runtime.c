@@ -564,6 +564,13 @@ static bool _emitter_prepare_render_multi(
             dvz_snprintf(
                 shader.pipeline_key + key_len, sizeof(shader.pipeline_key) - key_len, "_fixed");
         }
+        if (pass_has_depth_attachment && !gbuffer_pass && !wboit_accumulation && !depth_peel_pass)
+        {
+            size_t key_len = strlen(shader.pipeline_key);
+            dvz_snprintf(
+                shader.pipeline_key + key_len, sizeof(shader.pipeline_key) - key_len,
+                force_point_depth ? "_zwrite" : "_depth");
+        }
 
         /* Shaders (cached). */
         uint64_t vs_id = _obj_id(emitter, shader.vertex_key, &is_new);

@@ -686,6 +686,8 @@ int test_app_offscreen_points_edl_renders(TstSuite* suite, TstItem* item)
     ANN(canvas);
 
     dvz_app_run(app, 1);
+    AT(dvz_panel_set_edl(panel, NULL));
+    dvz_app_run(app, 1);
 
     uint32_t width = 0, height = 0;
     uint8_t* rgba = NULL;
