@@ -29,6 +29,7 @@
 #include "scene/panzoom.h"
 #include "scene/scale.h"
 #include "scene/text.h"
+#include "scene/turntable.h"
 #include "scene/types.h"
 
 
@@ -319,6 +320,29 @@ dvz_panel_set_fly(DvzPanel* panel, DvzInputRouter* router, const DvzFlyDesc* des
  * @return the panel-owned fly controller, or NULL
  */
 DVZ_EXPORT DvzFly* dvz_panel_fly(DvzPanel* panel);
+
+
+/**
+ * Attach a turntable camera controller to a panel and connect it to an input router.
+ *
+ * The turntable controller updates the panel camera by orbiting around a stable-up pivot.
+ *
+ * @param panel the panel
+ * @param router input router to subscribe to (may be NULL to create without connecting)
+ * @param desc turntable descriptor, or NULL for defaults
+ * @return the panel-owned turntable controller
+ */
+DVZ_EXPORT DvzTurntable* dvz_panel_set_turntable(
+    DvzPanel* panel, DvzInputRouter* router, const DvzTurntableDesc* desc);
+
+
+/**
+ * Return the turntable controller attached to a panel.
+ *
+ * @param panel the panel
+ * @return the panel-owned turntable controller, or NULL
+ */
+DVZ_EXPORT DvzTurntable* dvz_panel_turntable(DvzPanel* panel);
 
 
 

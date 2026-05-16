@@ -28,6 +28,8 @@ int test_scene_panzoom_arcball(TstSuite* suite);
 
 int test_scene_fly(TstSuite* suite);
 
+int test_scene_turntable(TstSuite* suite);
+
 int test_fly_create_default(TstSuite* suite, TstItem* item);
 
 int test_fly_free_and_plane_movement(TstSuite* suite, TstItem* item);
@@ -39,6 +41,16 @@ int test_fly_pivot_preserves_eye_and_orbits(TstSuite* suite, TstItem* item);
 int test_panel_fly_getter(TstSuite* suite, TstItem* item);
 
 int test_figure_fly_update_advances_panel_camera(TstSuite* suite, TstItem* item);
+
+int test_turntable_create_default(TstSuite* suite, TstItem* item);
+
+int test_turntable_orbit_preserves_distance(TstSuite* suite, TstItem* item);
+
+int test_turntable_pivot_preserves_eye(TstSuite* suite, TstItem* item);
+
+int test_turntable_pan_moves_pivot_and_eye(TstSuite* suite, TstItem* item);
+
+int test_panel_turntable_getter(TstSuite* suite, TstItem* item);
 
 int test_scene_animation(TstSuite* suite);
 

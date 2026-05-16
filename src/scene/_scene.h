@@ -24,6 +24,7 @@
 #include "datoviz/scene/fly.h"
 #include "datoviz/scene/frame_plan.h"
 #include "datoviz/scene/panzoom.h"
+#include "datoviz/scene/turntable.h"
 #include "datoviz/scene/types.h"
 
 
@@ -656,6 +657,7 @@ struct DvzPanel
     DvzArcball* arcball; /* optional arcball controller (owned) */
     DvzCamera* camera;   /* optional camera (owned) */
     DvzFly* fly;         /* optional fly camera controller (owned) */
+    DvzTurntable* turntable; /* optional turntable camera controller (owned) */
     DvzInteractionPolicy* interaction;
     DvzHoverState hover;
 

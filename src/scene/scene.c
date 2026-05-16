@@ -853,6 +853,9 @@ void dvz_figure_resize(DvzFigure* figure, uint32_t width, uint32_t height)
             dvz_camera_resize(panel->camera, panel_width, panel_height);
         if (panel->fly != NULL)
             dvz_fly_viewport(panel->fly, panel_x, panel_y, panel_width, panel_height);
+        if (panel->turntable != NULL)
+            dvz_turntable_viewport(
+                panel->turntable, panel_x, panel_y, panel_width, panel_height);
     }
 }
 
@@ -999,6 +1002,11 @@ void dvz_panel_destroy(DvzPanel* panel)
     {
         dvz_fly_destroy(panel->fly);
         panel->fly = NULL;
+    }
+    if (panel->turntable != NULL)
+    {
+        dvz_turntable_destroy(panel->turntable);
+        panel->turntable = NULL;
     }
     if (panel->camera != NULL)
     {
@@ -1151,6 +1159,59 @@ DvzFly* dvz_panel_fly(DvzPanel* panel)
 {
     ANN(panel);
     return panel->fly;
+}
+
+
+/**
+ * Attach a turntable camera controller to a panel and connect it to an input router.
+ *
+ * @param panel the panel
+ * @param router input router to subscribe to
+ * @param desc turntable descriptor, or NULL for defaults
+ * @return the panel-owned turntable controller
+ */
+DvzTurntable* dvz_panel_set_turntable(
+    DvzPanel* panel, DvzInputRouter* router, const DvzTurntableDesc* desc)
+{
+    ANN(panel);
+    if (panel->turntable != NULL)
+        dvz_turntable_destroy(panel->turntable);
+    if (panel->camera == NULL)
+    {
+        DvzCameraDesc camera_desc = dvz_camera_desc();
+        panel->camera = _dvz_camera(&camera_desc);
+    }
+    if (panel->camera == NULL)
+        return NULL;
+
+    panel->turntable = dvz_turntable(desc);
+    if (panel->turntable == NULL)
+        return NULL;
+
+    float w = 0.0f;
+    float h = 0.0f;
+    float x = 0.0f;
+    float y = 0.0f;
+    _scene_panel_pixel_rect(panel, &x, &y, &w, &h);
+    dvz_turntable_viewport(panel->turntable, x, y, w, h);
+    dvz_turntable_set_camera(panel->turntable, panel->camera);
+    dvz_camera_resize(panel->camera, w, h);
+    if (router != NULL)
+        dvz_turntable_connect(panel->turntable, router);
+    return panel->turntable;
+}
+
+
+/**
+ * Return the turntable controller attached to a panel.
+ *
+ * @param panel the panel
+ * @return the panel-owned turntable controller, or NULL
+ */
+DvzTurntable* dvz_panel_turntable(DvzPanel* panel)
+{
+    ANN(panel);
+    return panel->turntable;
 }
 
 
