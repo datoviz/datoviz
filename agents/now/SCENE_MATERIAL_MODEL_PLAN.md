@@ -1,10 +1,36 @@
 # Scene Material Model Plan
 
 > **Execution Status**
-> - **Status:** `PLANNING NOTE`
+> - **Status:** `IMPLEMENTED FIRST PUBLIC SLICE`
 > - **Updated on:** `2026-05-16`
 > - **Purpose:** define a shared material API for scene visuals with both a fast Phong model and a
 >   higher-quality standard model.
+
+
+## Progress On This Lane
+
+Completed implementation commits:
+
+1. `70765767` — added the public `DvzMaterialDesc` value API, internal model/standard state, and
+   a compatibility route from `dvz_visual_set_primitive_shading()` to
+   `dvz_visual_set_material()`;
+2. `569ddf61` — extended the scene material uniform payload and shared GLSL/WGSL material helpers
+   so Phong, standard, and unlit models lower through one shader evaluator;
+3. `a89bee0e` — updated `hello_sphere_ssao_glfw` to expose Phong/standard material controls.
+
+The first public material slice is now active for primitive, mesh, and sphere visuals. Phong remains
+the default fast model. The standard model stores roughness, specular strength, metallic, emissive,
+and rim-strength fields and evaluates through the shared material helper. Depth cueing remains a
+separate typed setter and composes with the material payload. The primitive-specific shading setter
+is still public compatibility scaffolding, but it now forwards through the unified material setter.
+
+Remaining follow-ups:
+
+1. make the standard lighting model visually better without turning it into a full PBR renderer;
+2. decide whether `base_color_factor`, opacity, and alpha-mode material fields should apply to
+   point/pixel/image/volume families through narrower family-specific policy;
+3. add material-aware G-buffer fields only when a concrete post-process needs them;
+4. update docs/examples that still describe primitive-specific shading as the primary route.
 
 
 ## Decision
@@ -32,13 +58,16 @@ shader-family-specific parameter blocks.
 
 The scene material layer currently exists internally:
 
-1. `DvzSceneMaterialState` stores alpha mode, opacity, light direction, ADS fields, depth cueing,
-   scalar modulation placeholders, and a version;
+1. `DvzSceneMaterialState` stores model, alpha mode, opacity, base-color factor, light direction,
+   ADS fields, standard-material fields, depth cueing, scalar modulation placeholders, and a
+   version;
 2. `DvzSceneMaterialParams` is the GPU payload consumed by primitive/mesh/sphere material shaders;
-3. `dvz_visual_set_primitive_shading()` currently updates ADS-style fields;
-4. `dvz_visual_set_depth_cue()` shares depth cueing across point/pixel/primitive/mesh/sphere where
+3. `dvz_visual_set_material()` is the public value-descriptor setter for primitive, mesh, and
+   sphere visuals;
+4. `dvz_visual_set_primitive_shading()` currently forwards to the Phong material path;
+5. `dvz_visual_set_depth_cue()` shares depth cueing across point/pixel/primitive/mesh/sphere where
    supported;
-5. sphere currently reuses the primitive shading descriptor for specular highlights.
+6. sphere uses the same material descriptor and shader helper as primitive/mesh color passes.
 
 This is already better than one-off uniforms, but the public naming and parameter model still imply
 that only primitive shading exists.
