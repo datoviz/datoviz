@@ -610,131 +610,260 @@ static bool _trace_snapshot_append_pass_line(
 
 
 /**
+ * Return whether one character is a lowercase or uppercase hexadecimal digit.
+ *
+ * @param c character to test
+ * @return true if the character is hexadecimal
+ */
+static bool _trace_is_hex(char c)
+{
+    return (c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F');
+}
+
+
+
+/**
+ * Normalize one DRP2 debug label for semantic trace comparison.
+ *
+ * @param label source debug label
+ * @param out destination label
+ * @param out_size destination buffer size
+ * @return whether the normalized label fit in the destination buffer
+ */
+static bool _trace_normalize_label(const char* label, char* out, uint32_t out_size)
+{
+    ANN(label);
+    ANN(out);
+    if (out_size == 0)
+        return false;
+
+    if (strncmp(label, "_bg_edl_", strlen("_bg_edl_")) == 0)
+    {
+        int written = dvz_snprintf(out, out_size, "_bg_edl_resolve");
+        return written >= 0 && (uint32_t)written < out_size;
+    }
+    if (strncmp(label, "_bg_wboit_", strlen("_bg_wboit_")) == 0)
+    {
+        int written = dvz_snprintf(out, out_size, "_bg_wboit_resolve");
+        return written >= 0 && (uint32_t)written < out_size;
+    }
+
+    uint32_t len = 0;
+    while (len < DVZ_DRP2_LABEL_SIZE && label[len] != '\0')
+        len++;
+
+    uint32_t copy_len = len;
+    const uint32_t suffix_len = 7 + 16;
+    if (len >= suffix_len)
+    {
+        uint32_t suffix = len - suffix_len;
+        if (strncmp(&label[suffix], "_scope_", 7) == 0)
+        {
+            bool hex = true;
+            for (uint32_t i = suffix + 7; i < len; i++)
+                hex = hex && _trace_is_hex(label[i]);
+            if (hex)
+                copy_len = suffix;
+        }
+    }
+
+    if (copy_len >= out_size)
+        return false;
+    if (copy_len > 0)
+        dvz_memcpy(out, out_size, label, copy_len);
+    out[copy_len] = '\0';
+    return true;
+}
+
+
+
+/**
+ * Format one DRP2 id as a normalized semantic trace token.
+ *
+ * @param stream command stream carrying debug labels
+ * @param id numeric DRP2 id
+ * @param out destination token
+ * @param out_size destination buffer size
+ * @return whether the token fit in the destination buffer
+ */
+static bool _trace_semantic_id(
+    const DvzDrp2CommandStream* stream, uint64_t id, char* out, uint32_t out_size)
+{
+    ANN(stream);
+    ANN(out);
+    if (out_size == 0)
+        return false;
+
+    const char* label = dvz_drp2_stream_label(stream, id);
+    if (label != NULL && label[0] != '\0')
+        return _trace_normalize_label(label, out, out_size);
+
+    int written = dvz_snprintf(out, out_size, "%" PRIu64, id);
+    return written >= 0 && (uint32_t)written < out_size;
+}
+
+
+
+/**
  * Append the compact normalized representation for one command.
  *
  * @param snapshot destination snapshot
+ * @param stream command stream carrying debug labels
  * @param command source command
  * @param passes transient pass map
  * @param pass_count pass map count
  * @return whether the command was represented successfully
  */
 static bool _trace_snapshot_append_command(
-    DvzAppTraceSnapshot* snapshot, const DvzDrp2Command* command, const TracePassMap* passes,
-    uint32_t pass_count)
+    DvzAppTraceSnapshot* snapshot, const DvzDrp2CommandStream* stream,
+    const DvzDrp2Command* command, const TracePassMap* passes, uint32_t pass_count)
 {
     ANN(snapshot);
+    ANN(stream);
     ANN(command);
     char suffix[160] = {0};
+    char a[DVZ_DRP2_LABEL_SIZE] = {0};
+    char b[DVZ_DRP2_LABEL_SIZE] = {0};
+    char c[DVZ_DRP2_LABEL_SIZE] = {0};
     uint32_t ordinal = UINT32_MAX;
 
     switch (command->type)
     {
     case DVZ_DRP2_COMMAND_CREATE_BUFFER:
+        if (!_trace_semantic_id(stream, command->u.create_buffer.id, a, sizeof(a)))
+            return false;
         return _trace_snapshot_append(
-            snapshot, "+ buffer id=%" PRIu64 " size=%" PRIu64 " usage=0x%" PRIx32,
-            command->u.create_buffer.id, command->u.create_buffer.size,
-            command->u.create_buffer.usage);
+            snapshot, "+ buffer id=%s size=%" PRIu64 " usage=0x%" PRIx32, a,
+            command->u.create_buffer.size, command->u.create_buffer.usage);
     case DVZ_DRP2_COMMAND_DESTROY_BUFFER:
-        return _trace_snapshot_append(
-            snapshot, "- buffer id=%" PRIu64, command->u.destroy_buffer.buffer_id);
+        if (!_trace_semantic_id(stream, command->u.destroy_buffer.buffer_id, a, sizeof(a)))
+            return false;
+        return _trace_snapshot_append(snapshot, "- buffer id=%s", a);
     case DVZ_DRP2_COMMAND_CREATE_TEXTURE:
+        if (!_trace_semantic_id(stream, command->u.create_texture.id, a, sizeof(a)))
+            return false;
         return _trace_snapshot_append(
-            snapshot, "+ texture id=%" PRIu64 " size=%" PRIu32 "x%" PRIu32 "x%" PRIu32
+            snapshot, "+ texture id=%s size=%" PRIu32 "x%" PRIu32 "x%" PRIu32
                       " usage=0x%" PRIx32,
-            command->u.create_texture.id, command->u.create_texture.width,
-            command->u.create_texture.height, command->u.create_texture.depth,
-            command->u.create_texture.usage);
+            a, command->u.create_texture.width, command->u.create_texture.height,
+            command->u.create_texture.depth, command->u.create_texture.usage);
     case DVZ_DRP2_COMMAND_DESTROY_TEXTURE:
-        return _trace_snapshot_append(
-            snapshot, "- texture id=%" PRIu64, command->u.destroy_texture.texture_id);
+        if (!_trace_semantic_id(stream, command->u.destroy_texture.texture_id, a, sizeof(a)))
+            return false;
+        return _trace_snapshot_append(snapshot, "- texture id=%s", a);
     case DVZ_DRP2_COMMAND_CREATE_SHADER_MODULE:
+        if (!_trace_semantic_id(stream, command->u.create_shader_module.id, a, sizeof(a)))
+            return false;
         return _trace_snapshot_append(
-            snapshot, "+ shader id=%" PRIu64 " stage=%.*s format=%.*s",
-            command->u.create_shader_module.id, DVZ_APP_TRACE_LABEL_PRINT_SIZE,
+            snapshot, "+ shader id=%s stage=%.*s format=%.*s", a,
+            DVZ_APP_TRACE_LABEL_PRINT_SIZE,
             command->u.create_shader_module.stage, DVZ_APP_TRACE_LABEL_PRINT_SIZE,
             command->u.create_shader_module.format);
     case DVZ_DRP2_COMMAND_DESTROY_SHADER_MODULE:
-        return _trace_snapshot_append(
-            snapshot, "- shader id=%" PRIu64, command->u.destroy_shader_module.shader_module_id);
+        if (!_trace_semantic_id(
+                stream, command->u.destroy_shader_module.shader_module_id, a, sizeof(a)))
+            return false;
+        return _trace_snapshot_append(snapshot, "- shader id=%s", a);
     case DVZ_DRP2_COMMAND_CREATE_RENDER_PIPELINE:
+        if (!_trace_semantic_id(stream, command->u.create_render_pipeline.id, a, sizeof(a)) ||
+            !_trace_semantic_id(
+                stream, command->u.create_render_pipeline.vertex_shader_module_id, b, sizeof(b)) ||
+            !_trace_semantic_id(
+                stream, command->u.create_render_pipeline.fragment_shader_module_id, c,
+                sizeof(c)))
+            return false;
         return _trace_snapshot_append(
-            snapshot, "+ render-pipeline id=%" PRIu64 " shaders=(%" PRIu64 ",%" PRIu64
-                      ") vslots=%" PRIu32 " attrs=%" PRIu32 " depth=%s",
-            command->u.create_render_pipeline.id,
-            command->u.create_render_pipeline.vertex_shader_module_id,
-            command->u.create_render_pipeline.fragment_shader_module_id,
+            snapshot, "+ render-pipeline id=%s shaders=(%s,%s) vslots=%" PRIu32
+                      " attrs=%" PRIu32 " depth=%s",
+            a, b, c,
             command->u.create_render_pipeline.vertex_buffer_slots,
             command->u.create_render_pipeline.attr_count,
             command->u.create_render_pipeline.has_depth_attachment ? "yes" : "no");
     case DVZ_DRP2_COMMAND_DESTROY_RENDER_PIPELINE:
-        return _trace_snapshot_append(
-            snapshot, "- render-pipeline id=%" PRIu64,
-            command->u.destroy_render_pipeline.render_pipeline_id);
+        if (!_trace_semantic_id(
+                stream, command->u.destroy_render_pipeline.render_pipeline_id, a, sizeof(a)))
+            return false;
+        return _trace_snapshot_append(snapshot, "- render-pipeline id=%s", a);
     case DVZ_DRP2_COMMAND_CREATE_COMPUTE_PIPELINE:
+        if (!_trace_semantic_id(stream, command->u.create_compute_pipeline.id, a, sizeof(a)) ||
+            !_trace_semantic_id(
+                stream, command->u.create_compute_pipeline.compute_shader_module_id, b,
+                sizeof(b)))
+            return false;
         return _trace_snapshot_append(
-            snapshot, "+ compute-pipeline id=%" PRIu64 " shader=%" PRIu64,
-            command->u.create_compute_pipeline.id,
-            command->u.create_compute_pipeline.compute_shader_module_id);
+            snapshot, "+ compute-pipeline id=%s shader=%s", a, b);
     case DVZ_DRP2_COMMAND_DESTROY_COMPUTE_PIPELINE:
-        return _trace_snapshot_append(
-            snapshot, "- compute-pipeline id=%" PRIu64,
-            command->u.destroy_compute_pipeline.compute_pipeline_id);
+        if (!_trace_semantic_id(
+                stream, command->u.destroy_compute_pipeline.compute_pipeline_id, a, sizeof(a)))
+            return false;
+        return _trace_snapshot_append(snapshot, "- compute-pipeline id=%s", a);
     case DVZ_DRP2_COMMAND_CREATE_SAMPLER:
-        return _trace_snapshot_append(
-            snapshot, "+ sampler id=%" PRIu64, command->u.create_sampler.id);
+        if (!_trace_semantic_id(stream, command->u.create_sampler.id, a, sizeof(a)))
+            return false;
+        return _trace_snapshot_append(snapshot, "+ sampler id=%s", a);
     case DVZ_DRP2_COMMAND_CREATE_BIND_GROUP_LAYOUT:
+        if (!_trace_semantic_id(stream, command->u.create_bind_group_layout.id, a, sizeof(a)))
+            return false;
         return _trace_snapshot_append(
-            snapshot, "+ bind-layout id=%" PRIu64 " entries=%" PRIu32,
-            command->u.create_bind_group_layout.id,
+            snapshot, "+ bind-layout id=%s entries=%" PRIu32, a,
             command->u.create_bind_group_layout.entry_count);
     case DVZ_DRP2_COMMAND_CREATE_BIND_GROUP:
+        if (!_trace_semantic_id(stream, command->u.create_bind_group.id, a, sizeof(a)) ||
+            !_trace_semantic_id(
+                stream, command->u.create_bind_group.bind_group_layout_id, b, sizeof(b)))
+            return false;
         return _trace_snapshot_append(
-            snapshot, "+ bind-group id=%" PRIu64 " layout=%" PRIu64 " entries=%" PRIu32,
-            command->u.create_bind_group.id, command->u.create_bind_group.bind_group_layout_id,
+            snapshot, "+ bind-group id=%s layout=%s entries=%" PRIu32, a, b,
             command->u.create_bind_group.entry_count);
     case DVZ_DRP2_COMMAND_DESTROY_BIND_GROUP_LAYOUT:
-        return _trace_snapshot_append(
-            snapshot, "- bind-layout id=%" PRIu64,
-            command->u.destroy_bind_group_layout.bind_group_layout_id);
+        if (!_trace_semantic_id(
+                stream, command->u.destroy_bind_group_layout.bind_group_layout_id, a, sizeof(a)))
+            return false;
+        return _trace_snapshot_append(snapshot, "- bind-layout id=%s", a);
     case DVZ_DRP2_COMMAND_DESTROY_BIND_GROUP:
-        return _trace_snapshot_append(
-            snapshot, "- bind-group id=%" PRIu64, command->u.destroy_bind_group.bind_group_id);
+        if (!_trace_semantic_id(stream, command->u.destroy_bind_group.bind_group_id, a, sizeof(a)))
+            return false;
+        return _trace_snapshot_append(snapshot, "- bind-group id=%s", a);
     case DVZ_DRP2_COMMAND_WRITE_BUFFER:
+        if (!_trace_semantic_id(stream, command->u.write_buffer.buffer_id, a, sizeof(a)))
+            return false;
         return _trace_snapshot_append(
-            snapshot, "~ buffer id=%" PRIu64 " off=%" PRIu64 " size=%" PRIu64,
-            command->u.write_buffer.buffer_id, command->u.write_buffer.offset,
-            command->u.write_buffer.size);
+            snapshot, "~ buffer id=%s off=%" PRIu64 " size=%" PRIu64, a,
+            command->u.write_buffer.offset, command->u.write_buffer.size);
     case DVZ_DRP2_COMMAND_WRITE_TEXTURE:
+        if (!_trace_semantic_id(stream, command->u.write_texture.texture_id, a, sizeof(a)))
+            return false;
         return _trace_snapshot_append(
-            snapshot, "~ texture id=%" PRIu64 " origin=(%" PRIu32 ",%" PRIu32 ",%" PRIu32
+            snapshot, "~ texture id=%s origin=(%" PRIu32 ",%" PRIu32 ",%" PRIu32
                       ") size=(%" PRIu32 ",%" PRIu32 ",%" PRIu32 ")",
-            command->u.write_texture.texture_id, command->u.write_texture.origin_x,
+            a, command->u.write_texture.origin_x,
             command->u.write_texture.origin_y, command->u.write_texture.origin_z,
             command->u.write_texture.width, command->u.write_texture.height,
             command->u.write_texture.depth);
     case DVZ_DRP2_COMMAND_BEGIN_RENDER_PASS:
+        if (!_trace_semantic_id(stream, command->u.begin_render_pass.texture_id, a, sizeof(a)) ||
+            !_trace_semantic_id(
+                stream, command->u.begin_render_pass.depth_texture_id, b, sizeof(b)))
+            return false;
         if (command->u.begin_render_pass.depth_texture_id != 0)
         {
             return _trace_snapshot_append(
-                snapshot, "render#%" PRIu32 " target=%" PRIu64
-                          " clear=%s depth=%s depth_target=%" PRIu64
+                snapshot, "render#%" PRIu32 " target=%s"
+                          " clear=%s depth=%s depth_target=%s"
                           " area=(%.3g,%.3g %.3gx%.3g)",
                 _trace_pass_ordinal(passes, pass_count, command->u.begin_render_pass.id),
-                command->u.begin_render_pass.texture_id,
-                command->u.begin_render_pass.clear ? "yes" : "load",
+                a, command->u.begin_render_pass.clear ? "yes" : "load",
                 command->u.begin_render_pass.has_depth_attachment ? "yes" : "no",
-                command->u.begin_render_pass.depth_texture_id,
-                (double)command->u.begin_render_pass.viewport[0],
+                b, (double)command->u.begin_render_pass.viewport[0],
                 (double)command->u.begin_render_pass.viewport[1],
                 (double)command->u.begin_render_pass.viewport[2],
                 (double)command->u.begin_render_pass.viewport[3]);
         }
         return _trace_snapshot_append(
             snapshot, "render#%" PRIu32
-                      " target=%" PRIu64 " clear=%s depth=%s area=(%.3g,%.3g %.3gx%.3g)",
+                      " target=%s clear=%s depth=%s area=(%.3g,%.3g %.3gx%.3g)",
             _trace_pass_ordinal(passes, pass_count, command->u.begin_render_pass.id),
-            command->u.begin_render_pass.texture_id,
-            command->u.begin_render_pass.clear ? "yes" : "load",
+            a, command->u.begin_render_pass.clear ? "yes" : "load",
             command->u.begin_render_pass.has_depth_attachment ? "yes" : "no",
             (double)command->u.begin_render_pass.viewport[0],
             (double)command->u.begin_render_pass.viewport[1],
@@ -770,31 +899,37 @@ static bool _trace_snapshot_append_command(
         return _trace_snapshot_append_pass_line(snapshot, "render", ordinal, suffix);
     case DVZ_DRP2_COMMAND_SET_PIPELINE:
         ordinal = _trace_pass_ordinal(passes, pass_count, command->u.set_pipeline.pass_id);
+        if (!_trace_semantic_id(stream, command->u.set_pipeline.pipeline_id, a, sizeof(a)))
+            return false;
         if (!_trace_format_suffix(
-            suffix, sizeof(suffix), "pipeline=%" PRIu64,
-            command->u.set_pipeline.pipeline_id))
+            suffix, sizeof(suffix), "pipeline=%s", a))
             return false;
         return _trace_snapshot_append_pass_line(snapshot, "pass", ordinal, suffix);
     case DVZ_DRP2_COMMAND_SET_BIND_GROUP:
         ordinal = _trace_pass_ordinal(passes, pass_count, command->u.set_bind_group.pass_id);
+        if (!_trace_semantic_id(stream, command->u.set_bind_group.bind_group_id, a, sizeof(a)))
+            return false;
         if (!_trace_format_suffix(
-            suffix, sizeof(suffix), "bind[%" PRIu32 "]=%" PRIu64,
-            command->u.set_bind_group.slot, command->u.set_bind_group.bind_group_id))
+            suffix, sizeof(suffix), "bind[%" PRIu32 "]=%s",
+            command->u.set_bind_group.slot, a))
             return false;
         return _trace_snapshot_append_pass_line(snapshot, "pass", ordinal, suffix);
     case DVZ_DRP2_COMMAND_SET_VERTEX_BUFFER:
         ordinal = _trace_pass_ordinal(passes, pass_count, command->u.set_vertex_buffer.pass_id);
+        if (!_trace_semantic_id(stream, command->u.set_vertex_buffer.buffer_id, a, sizeof(a)))
+            return false;
         if (!_trace_format_suffix(
-            suffix, sizeof(suffix), "vbuf[%" PRIu32 "]=%" PRIu64 " off=%" PRIu64,
-            command->u.set_vertex_buffer.slot, command->u.set_vertex_buffer.buffer_id,
-            command->u.set_vertex_buffer.offset))
+            suffix, sizeof(suffix), "vbuf[%" PRIu32 "]=%s off=%" PRIu64,
+            command->u.set_vertex_buffer.slot, a, command->u.set_vertex_buffer.offset))
             return false;
         return _trace_snapshot_append_pass_line(snapshot, "render", ordinal, suffix);
     case DVZ_DRP2_COMMAND_SET_INDEX_BUFFER:
         ordinal = _trace_pass_ordinal(passes, pass_count, command->u.set_index_buffer.pass_id);
+        if (!_trace_semantic_id(stream, command->u.set_index_buffer.buffer_id, a, sizeof(a)))
+            return false;
         if (!_trace_format_suffix(
-            suffix, sizeof(suffix), "ibuf=%" PRIu64 " fmt=%.*s off=%" PRIu64,
-            command->u.set_index_buffer.buffer_id, DVZ_APP_TRACE_LABEL_PRINT_SIZE,
+            suffix, sizeof(suffix), "ibuf=%s fmt=%.*s off=%" PRIu64, a,
+            DVZ_APP_TRACE_LABEL_PRINT_SIZE,
             command->u.set_index_buffer.index_format, command->u.set_index_buffer.offset))
             return false;
         return _trace_snapshot_append_pass_line(snapshot, "render", ordinal, suffix);
@@ -824,49 +959,62 @@ static bool _trace_snapshot_append_command(
             return false;
         return _trace_snapshot_append_pass_line(snapshot, "compute", ordinal, suffix);
     case DVZ_DRP2_COMMAND_COPY_BUFFER_TO_BUFFER:
+        if (!_trace_semantic_id(
+                stream, command->u.copy_buffer_to_buffer.src_buffer_id, a, sizeof(a)) ||
+            !_trace_semantic_id(
+                stream, command->u.copy_buffer_to_buffer.dst_buffer_id, b, sizeof(b)))
+            return false;
         return _trace_snapshot_append(
-            snapshot, "~ copy buffer %" PRIu64 ":%" PRIu64 " -> %" PRIu64 ":%" PRIu64
+            snapshot, "~ copy buffer %s:%" PRIu64 " -> %s:%" PRIu64
                       " size=%" PRIu64,
-            command->u.copy_buffer_to_buffer.src_buffer_id,
-            command->u.copy_buffer_to_buffer.src_offset,
-            command->u.copy_buffer_to_buffer.dst_buffer_id,
+            a, command->u.copy_buffer_to_buffer.src_offset, b,
             command->u.copy_buffer_to_buffer.dst_offset,
             command->u.copy_buffer_to_buffer.size);
     case DVZ_DRP2_COMMAND_COPY_BUFFER_TO_TEXTURE:
+        if (!_trace_semantic_id(
+                stream, command->u.copy_buffer_to_texture.src_buffer_id, a, sizeof(a)) ||
+            !_trace_semantic_id(
+                stream, command->u.copy_buffer_to_texture.dst_texture_id, b, sizeof(b)))
+            return false;
         return _trace_snapshot_append(
-            snapshot, "~ copy buffer %" PRIu64 ":%" PRIu64 " -> texture %" PRIu64
+            snapshot, "~ copy buffer %s:%" PRIu64 " -> texture %s"
                       " size=(%" PRIu32 ",%" PRIu32 ",%" PRIu32 ")",
-            command->u.copy_buffer_to_texture.src_buffer_id,
-            command->u.copy_buffer_to_texture.src_offset,
-            command->u.copy_buffer_to_texture.dst_texture_id,
+            a, command->u.copy_buffer_to_texture.src_offset, b,
             command->u.copy_buffer_to_texture.width,
             command->u.copy_buffer_to_texture.height,
             command->u.copy_buffer_to_texture.depth);
     case DVZ_DRP2_COMMAND_COPY_TEXTURE_TO_BUFFER:
+        if (!_trace_semantic_id(
+                stream, command->u.copy_texture_to_buffer.src_texture_id, a, sizeof(a)) ||
+            !_trace_semantic_id(
+                stream, command->u.copy_texture_to_buffer.dst_buffer_id, b, sizeof(b)))
+            return false;
         return _trace_snapshot_append(
-            snapshot, "~ copy texture %" PRIu64 " -> buffer %" PRIu64 ":%" PRIu64
+            snapshot, "~ copy texture %s -> buffer %s:%" PRIu64
                       " size=(%" PRIu32 ",%" PRIu32 ")",
-            command->u.copy_texture_to_buffer.src_texture_id,
-            command->u.copy_texture_to_buffer.dst_buffer_id,
-            command->u.copy_texture_to_buffer.dst_offset,
+            a, b, command->u.copy_texture_to_buffer.dst_offset,
             command->u.copy_texture_to_buffer.width,
             command->u.copy_texture_to_buffer.height);
     case DVZ_DRP2_COMMAND_COPY_TEXTURE_TO_TEXTURE:
+        if (!_trace_semantic_id(
+                stream, command->u.copy_texture_to_texture.src_texture_id, a, sizeof(a)) ||
+            !_trace_semantic_id(
+                stream, command->u.copy_texture_to_texture.dst_texture_id, b, sizeof(b)))
+            return false;
         return _trace_snapshot_append(
-            snapshot, "~ copy texture %" PRIu64 " -> %" PRIu64 " size=(%" PRIu32
+            snapshot, "~ copy texture %s -> %s size=(%" PRIu32
                       ",%" PRIu32 ",%" PRIu32 ")",
-            command->u.copy_texture_to_texture.src_texture_id,
-            command->u.copy_texture_to_texture.dst_texture_id,
-            command->u.copy_texture_to_texture.width,
+            a, b, command->u.copy_texture_to_texture.width,
             command->u.copy_texture_to_texture.height,
             command->u.copy_texture_to_texture.depth);
     case DVZ_DRP2_COMMAND_QUEUE_SUBMIT:
         if (!command->u.queue_submit.has_readback)
             return true;
+        if (!_trace_semantic_id(stream, command->u.queue_submit.buffer_id, a, sizeof(a)))
+            return false;
         return _trace_snapshot_append(
-            snapshot, "readback buffer=%" PRIu64 " off=%" PRIu64 " size=%" PRIu64,
-            command->u.queue_submit.buffer_id, command->u.queue_submit.offset,
-            command->u.queue_submit.size);
+            snapshot, "readback buffer=%s off=%" PRIu64 " size=%" PRIu64, a,
+            command->u.queue_submit.offset, command->u.queue_submit.size);
     case DVZ_DRP2_COMMAND_HELLO_RENDERER:
     case DVZ_DRP2_COMMAND_RENDERER_HELLO_REPLY:
     case DVZ_DRP2_COMMAND_BEGIN_COMMAND_ENCODER:
@@ -1101,7 +1249,7 @@ bool _dvz_app_trace_snapshot_build(
             ok = false;
             break;
         }
-        ok = _trace_snapshot_append_command(snapshot, command, passes, pass_count);
+        ok = _trace_snapshot_append_command(snapshot, stream, command, passes, pass_count);
     }
 
     dvz_free(passes);
