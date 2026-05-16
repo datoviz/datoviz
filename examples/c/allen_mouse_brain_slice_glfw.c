@@ -52,9 +52,9 @@
 #define DEFAULT_VOLUME_OPACITY 0.85f
 #define DEFAULT_VOLUME_STEPS  192.0f
 #define DEFAULT_ATLAS_ALPHA_SCALE 1.0f
-#define DEFAULT_OCCLUSION_THRESHOLD 0.08f
-#define DEFAULT_OCCLUSION_FADE 0.08f
-#define DEFAULT_OCCLUSION_HIDDEN_ALPHA 0.20f
+#define DEFAULT_OCCLUSION_THRESHOLD 0.181f
+#define DEFAULT_OCCLUSION_FADE 0.001f
+#define DEFAULT_OCCLUSION_HIDDEN_ALPHA 0.097f
 #define MAX_ATLAS_REGIONS 32
 #define MOUSE_BRAIN_WIDTH 320
 #define MOUSE_BRAIN_HEIGHT 456
@@ -1504,7 +1504,7 @@ static void _allen_mouse_brain_gui(DvzGui* gui, DvzAppWindow* win, void* user_da
         occlusion_changed |= dvz_gui_slider_float(
             gui, "Occlusion density", &state->occlusion_threshold, 0.01f, 0.35f);
         occlusion_changed |= dvz_gui_slider_float(
-            gui, "Soft edge", &state->occlusion_fade, 0.0005f, 0.20f);
+            gui, "Soft edge", &state->occlusion_fade, 0.0001f, 0.01f);
         occlusion_changed |= dvz_gui_slider_float(
             gui, "Hidden slice visibility", &state->occlusion_hidden_alpha, 0.0f, 0.60f);
         if (dvz_gui_button(gui, "Reset occlusion"))
@@ -1559,9 +1559,9 @@ static void _allen_mouse_brain_gui(DvzGui* gui, DvzAppWindow* win, void* user_da
         {
             state->show_slice = true;
             state->show_volume = true;
-            state->show_atlas_mesh = state->atlas_mesh_visual != NULL;
-            state->clip_volume_at_slice = false;
-            state->keep_positive_side = true;
+            state->show_atlas_mesh = false;
+            state->clip_volume_at_slice = true;
+            state->keep_positive_side = false;
             state->linear_sampling = true;
             state->volume_occlusion_enabled = true;
             state->render_mode = DVZ_VOLUME_RENDER_MIP;
@@ -1867,9 +1867,9 @@ int main(int argc, char** argv)
         .atlas_mesh = atlas_loaded ? &atlas_mesh : NULL,
         .show_slice = true,
         .show_volume = true,
-        .show_atlas_mesh = atlas_loaded,
-        .clip_volume_at_slice = false,
-        .keep_positive_side = true,
+        .show_atlas_mesh = false,
+        .clip_volume_at_slice = true,
+        .keep_positive_side = false,
         .linear_sampling = true,
         .volume_occlusion_enabled = true,
         .render_mode = DVZ_VOLUME_RENDER_COMPOSITE,
