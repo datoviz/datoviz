@@ -158,6 +158,7 @@ typedef enum
 {
     DVZ_ANIMATION_NONE = 0,
     DVZ_ANIMATION_TIMER,
+    DVZ_ANIMATION_ARCBALL_SPIN,
 } DvzAnimationType;
 
 
@@ -186,6 +187,10 @@ struct DvzAnimation
     double last_fire_t;
     DvzAnimTimerCallback timer_callback;
     void* user_data;
+    DvzArcball* arcball;
+    vec3 axis;
+    float speed_rad_per_sec;
+    uint32_t flags;
 };
 
 

@@ -14,6 +14,8 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
+#include <string.h>
+
 #include "_assertions.h"
 #include "../_scene.h"
 #include "datoviz/scene.h"
@@ -247,6 +249,58 @@ int test_scene_animation_active_query(TstSuite* suite, TstItem* item)
 }
 
 
+/**
+ * Ensure an arcball spin animation advances and pauses during interaction.
+ *
+ * @param suite test suite
+ * @param item test item
+ * @return 0 on success
+ */
+int test_scene_animation_arcball_spin(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    ANN(item);
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    dvz_scene_set_clock_mode(scene, DVZ_CLOCK_OFFLINE);
+    dvz_scene_set_fps(scene, 10.0);
+
+    DvzArcball* arcball = dvz_arcball(800.0f, 600.0f, 0);
+    ANN(arcball);
+
+    mat4 before = GLM_MAT4_IDENTITY_INIT;
+    dvz_arcball_model(arcball, before);
+
+    DvzAnimation* spin = dvz_anim_arcball_spin(
+        scene, arcball, (vec3){0.0f, 1.0f, 0.0f}, 1.0f,
+        DVZ_ARCBALL_SPIN_FLAGS_PAUSE_ON_INTERACTION);
+    ANN(spin);
+    dvz_anim_start(spin, 0.0);
+
+    _dvz_scene_animations_step(scene, 0);
+    _dvz_scene_animations_step(scene, 0);
+    mat4 after = GLM_MAT4_IDENTITY_INIT;
+    dvz_arcball_model(arcball, after);
+    AT(memcmp(before, after, sizeof(mat4)) != 0);
+
+    mat4 paused_before = GLM_MAT4_IDENTITY_INIT;
+    dvz_arcball_model(arcball, paused_before);
+    arcball->interacting = true;
+    _dvz_scene_animations_step(scene, 0);
+    mat4 paused_after = GLM_MAT4_IDENTITY_INIT;
+    dvz_arcball_model(arcball, paused_after);
+    AT(memcmp(paused_before, paused_after, sizeof(mat4)) == 0);
+
+    dvz_anim_stop(spin);
+    AT(!dvz_scene_has_active_animations(scene));
+
+    dvz_arcball_destroy(arcball);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
 
 /**
  * Register scene animation tests.
@@ -264,6 +318,7 @@ int test_scene_animation(TstSuite* suite)
     TEST_SIMPLE(test_scene_animation_realtime_delta_clamp);
     TEST_SIMPLE(test_scene_animation_destroy_reuses_slot);
     TEST_SIMPLE(test_scene_animation_active_query);
+    TEST_SIMPLE(test_scene_animation_arcball_spin);
 
     return 0;
 }

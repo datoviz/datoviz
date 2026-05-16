@@ -88,6 +88,43 @@ static bool _animation_timer_should_fire(const DvzAnimation* animation, double t
 }
 
 
+/**
+ * Return whether a non-timer animation should advance at the current scene time.
+ *
+ * @param animation animation handle
+ * @param t current scene time
+ * @return true when the animation should advance
+ */
+static bool _animation_should_advance(const DvzAnimation* animation, double t)
+{
+    ANN(animation);
+    if (!animation->active || animation->scene == NULL)
+        return false;
+    return t >= animation->t_start;
+}
+
+
+/**
+ * Advance an arcball spin animation by one scene-clock delta.
+ *
+ * @param animation arcball spin animation
+ * @param dt elapsed scene-clock time since the previous step
+ */
+static void _animation_arcball_spin_step(DvzAnimation* animation, double dt)
+{
+    ANN(animation);
+    if (animation->arcball == NULL || dt == 0.0 || animation->speed_rad_per_sec == 0.0f)
+        return;
+    if ((animation->flags & DVZ_ARCBALL_SPIN_FLAGS_PAUSE_ON_INTERACTION) &&
+        dvz_arcball_is_interacting(animation->arcball))
+    {
+        return;
+    }
+    dvz_arcball_rotate_axis(
+        animation->arcball, animation->speed_rad_per_sec * (float)dt, animation->axis);
+}
+
+
 
 /**
  * Return the next scene-clock delta.
@@ -239,6 +276,38 @@ DvzAnimation* dvz_anim_timer(
 }
 
 
+/**
+ * Create an arcball spin animation driven by the scene clock.
+ *
+ * @param scene owning scene
+ * @param arcball target arcball controller
+ * @param axis rotation axis
+ * @param speed_rad_per_sec angular speed in radians per second
+ * @param flags DvzArcballSpinFlags bitmask
+ * @return the animation handle, or NULL on failure
+ */
+DvzAnimation* dvz_anim_arcball_spin(
+    DvzScene* scene, DvzArcball* arcball, vec3 axis, float speed_rad_per_sec, uint32_t flags)
+{
+    ANN(scene);
+    ANN(arcball);
+    if (glm_vec3_norm(axis) == 0.0f)
+    {
+        log_error("arcball spin axis must be nonzero");
+        return NULL;
+    }
+    DvzAnimation* animation = _animation_alloc(scene);
+    if (animation == NULL)
+        return NULL;
+    animation->type = DVZ_ANIMATION_ARCBALL_SPIN;
+    animation->arcball = arcball;
+    glm_vec3_normalize_to(axis, animation->axis);
+    animation->speed_rad_per_sec = speed_rad_per_sec;
+    animation->flags = flags;
+    return animation;
+}
+
+
 
 /**
  * Start or restart an animation at a scene-clock time.
@@ -316,9 +385,22 @@ void _dvz_scene_animations_step(DvzScene* scene, uint64_t wall_time_ns)
     for (uint32_t i = 0; i < animation_count; i++)
     {
         DvzAnimation* animation = &scene->animations[i];
-        if (!_animation_timer_should_fire(animation, t))
-            continue;
-        animation->last_fire_t = t;
-        animation->timer_callback(animation, t, dt, animation->user_data);
+        switch (animation->type)
+        {
+        case DVZ_ANIMATION_TIMER:
+            if (!_animation_timer_should_fire(animation, t))
+                continue;
+            animation->last_fire_t = t;
+            animation->timer_callback(animation, t, dt, animation->user_data);
+            break;
+
+        case DVZ_ANIMATION_ARCBALL_SPIN:
+            if (_animation_should_advance(animation, t))
+                _animation_arcball_spin_step(animation, dt);
+            break;
+
+        default:
+            break;
+        }
     }
 }

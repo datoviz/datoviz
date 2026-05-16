@@ -30,7 +30,7 @@
 
 #define DVZ_ARCBALL_ZOOM_MIN        0.02f
 #define DVZ_ARCBALL_ZOOM_MAX       50.00f
-#define DVZ_ARCBALL_ZOOM_WHEEL_COEF 0.15f
+#define DVZ_ARCBALL_ZOOM_WHEEL_COEF 0.05f
 
 
 

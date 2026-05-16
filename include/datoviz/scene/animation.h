@@ -17,6 +17,7 @@
 /*************************************************************************************************/
 
 #include "datoviz/common/macros.h"
+#include "datoviz/math/types.h"
 #include "datoviz/scene/types.h"
 
 
@@ -32,12 +33,20 @@ typedef enum
 } DvzSceneClockMode;
 
 
+typedef enum
+{
+    DVZ_ARCBALL_SPIN_FLAGS_NONE                 = 0x00,
+    DVZ_ARCBALL_SPIN_FLAGS_PAUSE_ON_INTERACTION = 0x01,
+} DvzArcballSpinFlags;
+
+
 
 /*************************************************************************************************/
 /*  Typedefs                                                                                     */
 /*************************************************************************************************/
 
 typedef struct DvzAnimation DvzAnimation;
+typedef struct DvzArcball DvzArcball;
 
 typedef void (*DvzAnimTimerCallback)(
     DvzAnimation* animation, double t, double dt, void* user_data);
@@ -110,6 +119,20 @@ DVZ_EXPORT bool dvz_scene_has_active_animations(const DvzScene* scene);
  */
 DVZ_EXPORT DvzAnimation* dvz_anim_timer(
     DvzScene* scene, double period_s, DvzAnimTimerCallback callback, void* user_data);
+
+
+/**
+ * Create an arcball spin animation driven by the scene clock.
+ *
+ * @param scene owning scene
+ * @param arcball target arcball controller
+ * @param axis rotation axis
+ * @param speed_rad_per_sec angular speed in radians per second
+ * @param flags DvzArcballSpinFlags bitmask
+ * @return the animation handle, or NULL on failure
+ */
+DVZ_EXPORT DvzAnimation* dvz_anim_arcball_spin(
+    DvzScene* scene, DvzArcball* arcball, vec3 axis, float speed_rad_per_sec, uint32_t flags);
 
 
 

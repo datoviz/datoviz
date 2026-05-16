@@ -32,6 +32,7 @@
 #define POINT_COUNT 9216u
 #define WIDTH       1000u
 #define HEIGHT      760u
+#define ROTATION_SPEED_RAD_PER_SEC 0.28f
 
 static const float TAU = 6.28318530718f;
 
@@ -45,9 +46,11 @@ typedef struct EdlExampleState
 {
     DvzPanel* panel;
     DvzVisual* visual;
+    DvzAnimation* spin;
     float* sizes;
     uint32_t point_count;
     bool edl_enabled;
+    bool spin_enabled;
     float radius;
     float strength;
     float depth_scale;
@@ -142,6 +145,23 @@ static void _apply_point_size(EdlExampleState* state)
 }
 
 
+/**
+ * Apply the retained spin control to the scene animation.
+ *
+ * @param state example state
+ */
+static void _apply_spin(EdlExampleState* state)
+{
+    ANN(state);
+    if (state->spin == NULL)
+        return;
+    if (state->spin_enabled)
+        dvz_anim_start(state->spin, 0.0);
+    else
+        dvz_anim_stop(state->spin);
+}
+
+
 
 /**
  * Apply the retained EDL state to the panel.
@@ -205,10 +225,12 @@ static void _edl_gui(DvzGui* gui, DvzAppWindow* win, void* user_data)
 
     bool changed = false;
     bool point_changed = false;
+    bool spin_changed = false;
     if (dvz_gui_begin(gui, "Eye-Dome Lighting", NULL, 0))
     {
         point_changed |=
             dvz_gui_slider_float(gui, "Point size", &state->point_size, 1.0f, 24.0f);
+        spin_changed |= dvz_gui_checkbox(gui, "Auto rotate", &state->spin_enabled);
         changed |= dvz_gui_checkbox(gui, "Enable EDL", &state->edl_enabled);
         changed |= dvz_gui_slider_float(gui, "Radius", &state->radius, 1.0f, 8.0f);
         changed |= dvz_gui_slider_float(gui, "Strength", &state->strength, 0.0f, 160.0f);
@@ -225,6 +247,8 @@ static void _edl_gui(DvzGui* gui, DvzAppWindow* win, void* user_data)
         _apply_edl(state);
     if (point_changed)
         _apply_point_size(state);
+    if (spin_changed)
+        _apply_spin(state);
 }
 
 
@@ -339,8 +363,34 @@ int main(int argc, char** argv)
 
     dvz_panel_set_arcball(panel, dvz_app_window_input(win), 0);
     DvzArcball* arcball = dvz_panel_arcball(panel);
-    if (arcball != NULL)
-        dvz_arcball_set(arcball, (vec3){+0.45f, -0.12f, +0.25f});
+    if (arcball == NULL)
+    {
+        dvz_fprintf(stderr, "dvz_panel_set_arcball() failed\n");
+        dvz_app_destroy(app);
+        dvz_free(sizes);
+        dvz_free(colors);
+        dvz_free(positions);
+        dvz_scene_destroy(scene);
+        return 1;
+    }
+    dvz_arcball_set(arcball, (vec3){+0.45f, -0.12f, +0.25f});
+
+    DvzAnimation* spin = dvz_anim_arcball_spin(
+        scene, arcball, (vec3){0.0f, 1.0f, 0.0f}, ROTATION_SPEED_RAD_PER_SEC,
+        DVZ_ARCBALL_SPIN_FLAGS_PAUSE_ON_INTERACTION);
+    if (spin == NULL)
+    {
+        dvz_fprintf(stderr, "dvz_anim_arcball_spin() failed\n");
+        dvz_app_destroy(app);
+        dvz_free(sizes);
+        dvz_free(colors);
+        dvz_free(positions);
+        dvz_scene_destroy(scene);
+        return 1;
+    }
+    gui_state.spin = spin;
+    gui_state.spin_enabled = true;
+    _apply_spin(&gui_state);
 
     DvzGuiConfig gui_config = dvz_gui_config();
     DvzGui* gui = dvz_app_window_gui(win, &gui_config);

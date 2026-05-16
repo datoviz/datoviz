@@ -38,6 +38,8 @@ int test_scene_animation_destroy_reuses_slot(TstSuite* suite, TstItem* item);
 
 int test_scene_animation_active_query(TstSuite* suite, TstItem* item);
 
+int test_scene_animation_arcball_spin(TstSuite* suite, TstItem* item);
+
 int test_scene_frame_plan(TstSuite* suite);
 
 int test_scene_frame_plan_emit(TstSuite* suite);
