@@ -1330,10 +1330,11 @@ static void _apply_atlas_mesh_controls(AllenMouseBrainState* state)
     if (state->atlas_mesh_visual == NULL || state->atlas_mesh == NULL)
         return;
 
-    if (state->atlas_mesh->draw_idx == NULL || state->atlas_index_buffer == NULL)
+    dvz_visual_set_visible(state->atlas_mesh_visual, state->show_atlas_mesh);
+    _apply_transparency_modes(state);
+    if (!state->show_atlas_mesh)
         return;
 
-    state->atlas_mesh->draw_index_count = 0;
     for (uint32_t i = 0; i < state->atlas_mesh->vertex_count; i++)
     {
         uint32_t alpha = 255;
@@ -1352,36 +1353,6 @@ static void _apply_atlas_mesh_controls(AllenMouseBrainState* state)
             alpha = 255u;
         for (uint32_t i = region->vertex_start; i < end; i++)
             state->atlas_mesh->color[i][3] = (uint8_t)alpha;
-        if (region_alpha <= 0.0001f)
-            continue;
-        if (region->index_start > state->atlas_mesh->index_count ||
-            region->index_count > state->atlas_mesh->index_count - region->index_start ||
-            region->index_count > state->atlas_mesh->index_count - state->atlas_mesh->draw_index_count)
-            continue;
-        dvz_memcpy(
-            state->atlas_mesh->draw_idx + state->atlas_mesh->draw_index_count,
-            (state->atlas_mesh->index_count - state->atlas_mesh->draw_index_count) *
-                sizeof(DvzIndex),
-            state->atlas_mesh->idx + region->index_start, region->index_count * sizeof(DvzIndex));
-        state->atlas_mesh->draw_index_count += region->index_count;
-    }
-    if (state->atlas_mesh->region_count == 0 && state->atlas_alpha_scale > 0.0001f)
-    {
-        state->atlas_mesh->draw_index_count = state->atlas_mesh->index_count;
-        dvz_memcpy(
-            state->atlas_mesh->draw_idx, state->atlas_mesh->index_count * sizeof(DvzIndex),
-            state->atlas_mesh->idx, state->atlas_mesh->index_count * sizeof(DvzIndex));
-    }
-
-    bool show_mesh = state->show_atlas_mesh && state->atlas_mesh->draw_index_count > 0;
-    dvz_visual_set_visible(state->atlas_mesh_visual, show_mesh);
-    _apply_transparency_modes(state);
-    if (show_mesh &&
-        !dvz_scene_buffer_set_data(
-            state->atlas_index_buffer, state->atlas_mesh->draw_idx,
-            state->atlas_mesh->draw_index_count * sizeof(DvzIndex)))
-    {
-        dvz_fprintf(stderr, "failed to update Allen/IBL atlas mesh index buffer\n");
     }
 
     if (dvz_visual_set_data(
