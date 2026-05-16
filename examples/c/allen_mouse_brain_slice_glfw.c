@@ -1311,36 +1311,10 @@ static void _apply_transparency_modes(AllenMouseBrainState* state)
     if (state->slice_visual == NULL || state->volume_visual == NULL)
         return;
 
-    bool atlas_visible = false;
-    bool atlas_transparent = false;
-    if (state->atlas_mesh_visual != NULL && state->show_atlas_mesh)
-    {
-        if (state->atlas_mesh != NULL)
-        {
-            if (state->atlas_mesh->region_count == 0)
-            {
-                atlas_visible = state->atlas_alpha_scale > 0.0001f;
-                atlas_transparent = state->atlas_alpha_scale < 0.999f;
-            }
-            for (uint32_t r = 0; r < state->atlas_mesh->region_count; r++)
-            {
-                const AllenIblAtlasRegion* region = &state->atlas_mesh->regions[r];
-                float alpha = region->visible ? region->alpha * state->atlas_alpha_scale : 0.0f;
-                if (alpha <= 0.0001f)
-                    continue;
-                atlas_visible = true;
-                atlas_transparent = atlas_transparent || alpha < 0.999f;
-            }
-        }
-    }
-    (void)dvz_visual_set_alpha_mode(state->volume_visual, DVZ_ALPHA_WBOIT);
-    (void)dvz_visual_set_alpha_mode(state->slice_visual, DVZ_ALPHA_WBOIT);
+    (void)dvz_visual_set_alpha_mode(state->volume_visual, DVZ_ALPHA_BLENDED);
+    (void)dvz_visual_set_alpha_mode(state->slice_visual, DVZ_ALPHA_BLENDED);
     if (state->atlas_mesh_visual != NULL)
-    {
-        DvzAlphaMode atlas_mode =
-            atlas_visible && atlas_transparent ? DVZ_ALPHA_WBOIT : DVZ_ALPHA_OPAQUE;
-        (void)dvz_visual_set_alpha_mode(state->atlas_mesh_visual, atlas_mode);
-    }
+        (void)dvz_visual_set_alpha_mode(state->atlas_mesh_visual, DVZ_ALPHA_WBOIT);
 }
 
 
