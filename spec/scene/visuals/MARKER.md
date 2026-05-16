@@ -219,6 +219,12 @@ Ignored when `shape` is not `arrow`.
 
 Standard — see `SHARED_ATTRIBUTES.md`. Default: `screen`.
 
+Implementation status on 2026-05-16: `size_space = data` remains required for markers whose
+shape represents physical extent. The marker still faces the camera and keeps its SDF/bitmap/MSDF
+shape evaluation in screen space, but the final mark extent is derived by projecting a data-space
+size through the active panel transform. Backends that only support fixed screen-space markers must
+diagnose the unsupported size-space mode.
+
 
 ### `tex_scale`
 

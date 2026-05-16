@@ -68,6 +68,11 @@ Ignored when `size` source is `PER_ITEM` or `PER_GROUP`.
 
 Standard — see `SHARED_ATTRIBUTES.md`. Default: `screen`.
 
+Implementation status on 2026-05-16: `size_space = data` is part of the required point
+contract even when an early backend only supports screen-pixel point sizes. A backend that cannot
+yet project data-space radii must emit a capability diagnostic or fall back explicitly; it should
+not reinterpret data-space sizes as screen pixels silently.
+
 
 ## Defaults And Missing Values
 

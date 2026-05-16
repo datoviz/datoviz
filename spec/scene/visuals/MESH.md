@@ -172,6 +172,12 @@ Applies when `lighting = phong`. Ignored when `lighting = flat`.
 Color of triangle edges (wireframe lines) drawn on top of the mesh surface.
 Set to transparent to disable. Edge detection is handled internally by the scene.
 
+The preferred implementation is a derived edge-overlay geometry path, not Vulkan polygon line mode
+and not a permanent fragment-only wireframe mode in the baseline mesh shader. The scene should
+derive a unique edge list from the triangle index buffer, classify boundary and interior edges when
+that information is useful, and render those edges as a separate overlay pass using the same panel
+transform and depth state as the source mesh.
+
 #### `linewidth`
 
 | Property | Value |
@@ -181,6 +187,29 @@ Set to transparent to disable. Edge detection is handled internally by the scene
 | Mutability | `dynamic` |
 
 Width of drawn edges. Only relevant when `edgecolor` is not transparent.
+
+
+### Wireframe Recommendation
+
+Status on 2026-05-16: mesh wireframe is a planned visual capability, not part of the active
+first-slice mesh runtime.
+
+The recommended high-quality path is:
+
+1. derive an edge table from the mesh indices, preserving stable edge ids when the mesh resource is
+   stable;
+2. expand each edge to a camera-facing ribbon or segment impostor in a dedicated overlay pipeline;
+3. evaluate analytic coverage in the fragment shader for antialiased edges;
+4. depth-test against the mesh depth buffer, with optional depth bias or polygon-offset equivalent
+   to reduce z-fighting;
+5. expose edge color, linewidth, opacity, boundary-only mode, and feature-edge mode as mesh visual
+   parameters;
+6. allow the edge overlay to participate in transparency and capture/export as an ordinary derived
+   scene contribution.
+
+Barycentric-coordinate wireframe remains useful as a diagnostic shader variant, but it requires
+vertex duplication or extra barycentric payloads and couples edge styling to the surface shader.
+It should not be the default public mesh wireframe path.
 
 
 ### Isoline Parameters
@@ -223,6 +252,10 @@ Color of isoline contours. Two forms:
 
 When a Scale is used, the isoline value at each level is looked up through the Scale domain
 and palette, independent of the `colormap` Scale used for mesh face coloring.
+
+For mesh isolines, prefer a dedicated mesh-isoline or derived-overlay path once scalar surface
+fields are retained in the mesh resource. Keep isoline payloads out of the baseline position/color/
+normal mesh vertex layout unless the selected shader variant actually needs them.
 
 
 ## Shape Builders

@@ -249,6 +249,28 @@ Color of all isoline contours. Visual-wide.
 Width of drawn isolines.
 
 
+## Contour And Isoline Recommendation
+
+Status on 2026-05-16: the active native image visual is still a sampled-texture quad, so the
+following is the target contract rather than a completed implementation.
+
+Use two related but distinct paths:
+
+1. **Label contours**: categorical boundary display for integer label images. The first
+   implementation should keep the source label field raw, sample with nearest filtering, and use a
+   fragment-shader neighbor check to show boundaries. This is the cheapest useful contour mode for
+   napari-style labels and avoids generating geometry for every label edge.
+2. **Scalar isolines**: continuous contour lines over a scalar field. If the line is only a visual
+   overlay on the same image, a fragment-shader isoline test is acceptable for the first slice. If
+   the line must be independently styled, picked, exported as vector geometry, or drawn with
+   high-quality joins and antialiasing, generate a derived path/segment overlay with marching
+   squares in a compute node or CPU fallback.
+
+Do not bake contours into the uploaded image texture. Contour color, width, selected-label state,
+and level selection belong in parameter resources so interactive updates do not force texture
+reuploads.
+
+
 ## Defaults And Missing Values
 
 | Field | Default | Missing-value policy | `DvzStyle` override |

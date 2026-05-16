@@ -70,6 +70,11 @@ For per-item size, use `point`.
 
 Standard — see `SHARED_ATTRIBUTES.md`. Default: `screen`.
 
+Implementation status on 2026-05-16: `size_space = data` is a valid pixel-family contract for
+zoom-scaled cell-like squares or dense regular marks. It may be implemented by expanding each item
+to a quad after projection. Backends that only support screen-pixel pixels must report that
+limitation instead of silently treating data-space sizes as screen-space sizes.
+
 
 ## Defaults And Missing Values
 
