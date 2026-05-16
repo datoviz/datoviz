@@ -60,6 +60,17 @@ bool _scene_technique_state_gbuffer_enabled(const DvzSceneTechniqueState* state)
 
 bool _scene_technique_gbuffer_enabled(const DvzScene* scene, const DvzPanel* panel);
 
+bool _scene_technique_state_set_edl(
+    DvzSceneTechniqueState* state, const DvzEdlDesc* desc);
+
+bool _scene_technique_state_edl_enabled(const DvzSceneTechniqueState* state);
+
+const DvzSceneEdlTechniqueState*
+_scene_technique_edl_state(const DvzScene* scene, const DvzPanel* panel);
+
+void _scene_technique_edl_uniform(
+    const DvzSceneEdlTechniqueState* edl, DvzSceneEdlUniform* out);
+
 bool _scene_technique_emit_wboit_frame_graph(
     DvzFramePlan* plan, const char* panel_id, bool opaque_needs_depth,
     bool transparent_needs_depth);
@@ -74,6 +85,8 @@ bool _scene_technique_emit_depth_peel_frame_graph(
 
 bool _scene_technique_emit_opaque_frame_graph(
     DvzFramePlan* plan, const char* panel_id, bool needs_depth);
+
+bool _scene_technique_emit_edl_frame_graph(DvzFramePlan* plan, const char* panel_id);
 
 void _scene_technique_gbuffer_plan_init(DvzSceneGBufferPlan* plan);
 

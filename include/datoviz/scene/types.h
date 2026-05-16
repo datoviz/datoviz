@@ -117,6 +117,15 @@ struct DvzPanelDesc
 typedef struct DvzPanelDesc DvzPanelDesc;
 
 
+struct DvzEdlDesc
+{
+    float radius;
+    float strength;
+    float depth_scale;
+};
+typedef struct DvzEdlDesc DvzEdlDesc;
+
+
 struct DvzSceneBufferDesc
 {
     uint32_t usage;

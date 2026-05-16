@@ -134,6 +134,25 @@ static bool _scene_caps_support_gbuffer(const DvzSceneVisualPassCaps* caps)
 
 
 
+/**
+ * Clamp a float into a closed range.
+ *
+ * @param value input value
+ * @param min_value minimum accepted value
+ * @param max_value maximum accepted value
+ * @return clamped value
+ */
+static float _clampf(float value, float min_value, float max_value)
+{
+    if (value < min_value)
+        return min_value;
+    if (value > max_value)
+        return max_value;
+    return value;
+}
+
+
+
 /*************************************************************************************************/
 /*  Functions                                                                                    */
 /*************************************************************************************************/
@@ -147,6 +166,9 @@ void _scene_technique_state_init(DvzSceneTechniqueState* state)
 {
     ANN(state);
     dvz_memset(state, sizeof(DvzSceneTechniqueState), 0, sizeof(DvzSceneTechniqueState));
+    state->edl.radius = 1.5f;
+    state->edl.strength = 35.0f;
+    state->edl.depth_scale = 1.0f;
 }
 
 
@@ -189,6 +211,84 @@ bool _scene_technique_gbuffer_enabled(const DvzScene* scene, const DvzPanel* pan
 {
     return (scene != NULL && _scene_technique_state_gbuffer_enabled(&scene->techniques)) ||
            (panel != NULL && _scene_technique_state_gbuffer_enabled(&panel->techniques));
+}
+
+
+
+/**
+ * Configure internal EDL state.
+ *
+ * @param state the technique state
+ * @param desc EDL descriptor, or NULL to disable
+ * @return whether the state was updated
+ */
+bool _scene_technique_state_set_edl(DvzSceneTechniqueState* state, const DvzEdlDesc* desc)
+{
+    ANN(state);
+    if (desc == NULL)
+    {
+        state->edl.enabled = false;
+        return true;
+    }
+
+    state->edl.enabled = true;
+    state->edl.radius = _clampf(desc->radius, 1.0f, 8.0f);
+    state->edl.strength = _clampf(desc->strength, 0.0f, 200.0f);
+    state->edl.depth_scale = _clampf(desc->depth_scale, 0.001f, 1000.0f);
+    return true;
+}
+
+
+
+/**
+ * Return whether a technique state enables EDL.
+ *
+ * @param state the technique state
+ * @return whether EDL is enabled
+ */
+bool _scene_technique_state_edl_enabled(const DvzSceneTechniqueState* state)
+{
+    return state != NULL && state->edl.enabled;
+}
+
+
+
+/**
+ * Return the effective EDL state for one scene/panel pair.
+ *
+ * @param scene the scene
+ * @param panel the panel
+ * @return the effective EDL state, or NULL when disabled
+ */
+const DvzSceneEdlTechniqueState*
+_scene_technique_edl_state(const DvzScene* scene, const DvzPanel* panel)
+{
+    if (panel != NULL && _scene_technique_state_edl_enabled(&panel->techniques))
+        return &panel->techniques.edl;
+    if (scene != NULL && _scene_technique_state_edl_enabled(&scene->techniques))
+        return &scene->techniques.edl;
+    return NULL;
+}
+
+
+
+/**
+ * Fill the EDL shader uniform from retained technique state.
+ *
+ * @param edl the effective EDL state
+ * @param out output shader uniform
+ */
+void _scene_technique_edl_uniform(
+    const DvzSceneEdlTechniqueState* edl, DvzSceneEdlUniform* out)
+{
+    ANN(out);
+    dvz_memset(out, sizeof(DvzSceneEdlUniform), 0, sizeof(DvzSceneEdlUniform));
+    if (edl == NULL)
+        return;
+    out->params[0] = edl->radius;
+    out->params[1] = edl->strength;
+    out->params[2] = edl->depth_scale;
+    out->params[3] = edl->enabled ? 1.0f : 0.0f;
 }
 
 
@@ -748,6 +848,95 @@ bool _scene_technique_emit_opaque_frame_graph(
             return false;
     }
     return dvz_frame_plan_graph_pass(plan, &opaque);
+}
+
+
+
+/**
+ * Emit graph descriptors for one EDL post-processing panel plan.
+ *
+ * @param plan the frame plan
+ * @param panel_id the panel id
+ * @return whether graph descriptors were emitted
+ */
+bool _scene_technique_emit_edl_frame_graph(DvzFramePlan* plan, const char* panel_id)
+{
+    ANN(plan);
+    ANN(panel_id);
+
+    char color_id[DVZ_SCENE_LABEL_SIZE];
+    char depth_id[DVZ_SCENE_LABEL_SIZE];
+    char opaque_pass_id[DVZ_SCENE_LABEL_SIZE];
+    char resolve_pass_id[DVZ_SCENE_LABEL_SIZE];
+    dvz_snprintf(color_id, sizeof(color_id), "%s.edl.color", panel_id);
+    dvz_snprintf(depth_id, sizeof(depth_id), "%s.edl.depth", panel_id);
+    dvz_snprintf(opaque_pass_id, sizeof(opaque_pass_id), "%s.opaque", panel_id);
+    dvz_snprintf(resolve_pass_id, sizeof(resolve_pass_id), "%s.edl.resolve", panel_id);
+
+    DvzFrameGraphResource rt = {0};
+    dvz_strlcpy(rt.id, "rt", sizeof(rt.id));
+    rt.kind = DVZ_FRAME_GRAPH_RESOURCE_EXTERNAL_TARGET;
+    rt.extent_kind = DVZ_FRAME_GRAPH_EXTENT_FIGURE;
+    rt.usage_flags =
+        DVZ_FRAME_GRAPH_RESOURCE_USAGE_COLOR_ATTACHMENT | DVZ_FRAME_GRAPH_RESOURCE_USAGE_COPY_SRC;
+    rt.lifetime = DVZ_FRAME_GRAPH_RESOURCE_LIFETIME_BORROWED;
+    if (!_scene_frame_graph_resource_once(plan, &rt))
+        return false;
+
+    DvzFrameGraphResource color = {0};
+    dvz_strlcpy(color.id, color_id, sizeof(color.id));
+    color.kind = DVZ_FRAME_GRAPH_RESOURCE_TEXTURE;
+    color.format = VK_FORMAT_R8G8B8A8_UNORM;
+    color.extent_kind = DVZ_FRAME_GRAPH_EXTENT_FIGURE;
+    color.usage_flags = DVZ_FRAME_GRAPH_RESOURCE_USAGE_COLOR_ATTACHMENT |
+                        DVZ_FRAME_GRAPH_RESOURCE_USAGE_SAMPLED;
+    color.lifetime = DVZ_FRAME_GRAPH_RESOURCE_LIFETIME_PER_FRAME;
+    if (!_scene_frame_graph_resource_once(plan, &color))
+        return false;
+
+    DvzFrameGraphResource depth = {0};
+    dvz_strlcpy(depth.id, depth_id, sizeof(depth.id));
+    depth.kind = DVZ_FRAME_GRAPH_RESOURCE_TEXTURE;
+    depth.format = VK_FORMAT_D32_SFLOAT;
+    depth.extent_kind = DVZ_FRAME_GRAPH_EXTENT_FIGURE;
+    depth.usage_flags = DVZ_FRAME_GRAPH_RESOURCE_USAGE_DEPTH_ATTACHMENT |
+                        DVZ_FRAME_GRAPH_RESOURCE_USAGE_SAMPLED;
+    depth.lifetime = DVZ_FRAME_GRAPH_RESOURCE_LIFETIME_PER_FRAME;
+    if (!_scene_frame_graph_resource_once(plan, &depth))
+        return false;
+
+    DvzFrameGraphAttachment attachment = {0};
+    DvzFrameGraphAttachment depth_attachment = {0};
+    DvzFrameGraphPass opaque = {0};
+    dvz_strlcpy(opaque.id, opaque_pass_id, sizeof(opaque.id));
+    dvz_strlcpy(opaque.panel_id, panel_id, sizeof(opaque.panel_id));
+    dvz_strlcpy(opaque.work_label, "opaque", sizeof(opaque.work_label));
+    opaque.kind = DVZ_FRAME_GRAPH_PASS_RENDER;
+    _scene_frame_graph_color_attachment(
+        &attachment, color_id, DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_CLEAR, true);
+    if (!dvz_frame_graph_pass_color_attachment(&opaque, &attachment))
+        return false;
+    _scene_frame_graph_depth_attachment(
+        &depth_attachment, depth_id, DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_CLEAR,
+        DVZ_FRAME_GRAPH_ATTACHMENT_ACCESS_WRITE);
+    if (!dvz_frame_graph_pass_depth_attachment(&opaque, &depth_attachment))
+        return false;
+    if (!dvz_frame_plan_graph_pass(plan, &opaque))
+        return false;
+
+    DvzFrameGraphPass resolve = {0};
+    dvz_strlcpy(resolve.id, resolve_pass_id, sizeof(resolve.id));
+    dvz_strlcpy(resolve.panel_id, panel_id, sizeof(resolve.panel_id));
+    dvz_strlcpy(resolve.work_label, "edl_resolve", sizeof(resolve.work_label));
+    resolve.kind = DVZ_FRAME_GRAPH_PASS_RENDER;
+    if (!dvz_frame_graph_pass_read(&resolve, color_id, DVZ_FRAME_GRAPH_ACCESS_SAMPLED) ||
+        !dvz_frame_graph_pass_read(&resolve, depth_id, DVZ_FRAME_GRAPH_ACCESS_SAMPLED))
+        return false;
+    _scene_frame_graph_color_attachment(
+        &attachment, "rt", DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_CLEAR, true);
+    if (!dvz_frame_graph_pass_color_attachment(&resolve, &attachment))
+        return false;
+    return dvz_frame_plan_graph_pass(plan, &resolve);
 }
 
 

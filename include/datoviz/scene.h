@@ -241,6 +241,20 @@ DVZ_EXPORT void dvz_panel_set_background_color(
 
 
 /**
+ * Configure Eye-Dome Lighting for one panel.
+ *
+ * EDL is a depth-based post-process intended to improve local depth perception for dense point,
+ * pixel, and opaque geometry views. Pass NULL to disable EDL on the panel. The descriptor values
+ * are clamped to implementation-supported ranges.
+ *
+ * @param panel the panel
+ * @param desc EDL descriptor, or NULL to disable
+ * @return whether the panel EDL state was updated
+ */
+DVZ_EXPORT bool dvz_panel_set_edl(DvzPanel* panel, const DvzEdlDesc* desc);
+
+
+/**
  * Attach a panzoom controller to a panel and connect it to an input router.
  *
  * Pan: left-drag. Zoom: right-drag or scroll wheel. Double-click: reset.

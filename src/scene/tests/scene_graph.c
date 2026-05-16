@@ -4432,6 +4432,153 @@ int test_scene_gbuffer_runtime_lowering(TstSuite* suite, TstItem* item)
 
 
 /**
+ * Verify point panels can lower an EDL post-process graph pass to DRP2.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_edl_runtime_lowering(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    AT(scene != NULL);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    AT(figure != NULL);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    AT(panel != NULL);
+
+    DvzVisual* points = dvz_point(scene, 0);
+    AT(points != NULL);
+    float positions[3][3] = {
+        {-0.35f, -0.20f, 0.1f},
+        {+0.20f, +0.05f, 0.3f},
+        {+0.05f, +0.35f, 0.6f},
+    };
+    DvzColor colors[3] = {
+        {255, 80, 60, 255},
+        {80, 220, 120, 255},
+        {80, 140, 255, 255},
+    };
+    float sizes[3] = {18.0f, 22.0f, 26.0f};
+    AT(dvz_visual_set_data(points, "position", positions, 3) == 0);
+    AT(dvz_visual_set_data(points, "color", colors, 3) == 0);
+    AT(dvz_visual_set_data(points, "size", sizes, 3) == 0);
+    AT(dvz_panel_add_visual(panel, points, NULL) == 0);
+
+    DvzFramePlan* default_plan = dvz_frame_plan("figure.edl.default", 0);
+    ANN(default_plan);
+    _scene_emit_panel_render(figure, 0, default_plan, "figure_0");
+    AT(dvz_frame_plan_node_count(default_plan) == 1);
+    AT(dvz_frame_plan_graph_pass_count(default_plan) == 0);
+    dvz_frame_plan_destroy(default_plan);
+
+    AT(dvz_panel_set_edl(
+        panel, &(DvzEdlDesc){.radius = 2.0f, .strength = 55.0f, .depth_scale = 1.0f}));
+
+    DvzFramePlan* plan = dvz_frame_plan("figure.edl", 0);
+    ANN(plan);
+    _scene_emit_panel_render(figure, 0, plan, "figure_0");
+    AT(dvz_frame_plan_node_count(plan) == 3);
+    const DvzFramePlanNode* opaque_node = dvz_frame_plan_node_get(plan, 0);
+    const DvzFramePlanNode* upload_node = dvz_frame_plan_node_get(plan, 1);
+    const DvzFramePlanNode* edl_node = dvz_frame_plan_node_get(plan, 2);
+    ANN(opaque_node);
+    ANN(upload_node);
+    ANN(edl_node);
+    AT(dvz_frame_plan_render_pass_role(opaque_node) == DVZ_FRAME_PLAN_RENDER_PASS_OPAQUE);
+    AT(dvz_frame_plan_node_type(upload_node) == DVZ_FRAME_PLAN_NODE_UPLOAD);
+    AT(dvz_frame_plan_render_pass_role(edl_node) == DVZ_FRAME_PLAN_RENDER_PASS_EDL_RESOLVE);
+    AT(strcmp(upload_node->u.upload.resource_id, "figure_0_p0.edl.params") == 0);
+    AT(upload_node->u.upload.byte_size == sizeof(DvzSceneEdlUniform));
+    AT(dvz_frame_plan_graph_resource_count(plan) == 3);
+    AT(dvz_frame_plan_graph_pass_count(plan) == 2);
+    const DvzFrameGraphPass* opaque_pass = dvz_frame_plan_graph_pass_get(plan, 0);
+    const DvzFrameGraphPass* edl_pass = dvz_frame_plan_graph_pass_get(plan, 1);
+    ANN(opaque_pass);
+    ANN(edl_pass);
+    AT(strcmp(opaque_pass->work_label, "opaque") == 0);
+    AT(strcmp(edl_pass->work_label, "edl_resolve") == 0);
+    AT(opaque_pass->has_depth_attachment);
+    AT(strcmp(opaque_pass->color_attachments[0].resource_id, "figure_0_p0.edl.color") == 0);
+    AT(strcmp(opaque_pass->depth_attachment.resource_id, "figure_0_p0.edl.depth") == 0);
+    AT(edl_pass->read_count == 2);
+    AT(strcmp(edl_pass->reads[0].resource_id, "figure_0_p0.edl.color") == 0);
+    AT(strcmp(edl_pass->reads[1].resource_id, "figure_0_p0.edl.depth") == 0);
+
+    DvzCapabilitySnapshot caps = {0};
+    DvzDiagnosticReport report = {0};
+    DvzFramePlanEmitConfig cfg = dvz_frame_plan_emit_config();
+    cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
+    cfg.target_width = 64;
+    cfg.target_height = 64;
+    dvz_capability_snapshot_default(&caps);
+    dvz_diagnostic_report_init(&report);
+
+    DvzDrp2CommandStream* stream = dvz_figure_emit_ex(figure, &caps, &report, &cfg);
+    ANN(stream);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+    DvzDrp2ValidationResult validation = dvz_drp2_validate_stream(stream);
+    AT(validation.ok);
+
+    bool found_color_texture = false;
+    bool found_depth_texture = false;
+    bool found_params_upload = false;
+    bool found_edl_pipeline = false;
+    bool found_edl_bind_group = false;
+    for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
+    {
+        const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream, i);
+        ANN(cmd);
+        if (cmd->type == DVZ_DRP2_COMMAND_CREATE_TEXTURE)
+        {
+            const char* label = dvz_drp2_stream_label(stream, cmd->u.create_texture.id);
+            found_color_texture =
+                found_color_texture ||
+                (label != NULL && strcmp(label, "fig0_p0.edl.color") == 0 &&
+                 cmd->u.create_texture.format == VK_FORMAT_R8G8B8A8_UNORM);
+            found_depth_texture =
+                found_depth_texture ||
+                (label != NULL && strcmp(label, "fig0_p0.edl.depth") == 0 &&
+                 cmd->u.create_texture.format == VK_FORMAT_D32_SFLOAT);
+        }
+        else if (cmd->type == DVZ_DRP2_COMMAND_WRITE_BUFFER)
+        {
+            const char* label = dvz_drp2_stream_label(stream, cmd->u.write_buffer.buffer_id);
+            found_params_upload =
+                found_params_upload ||
+                (label != NULL && strcmp(label, "fig0_p0.edl.params") == 0 &&
+                 cmd->u.write_buffer.size == sizeof(DvzSceneEdlUniform));
+        }
+        else if (cmd->type == DVZ_DRP2_COMMAND_CREATE_RENDER_PIPELINE)
+        {
+            const char* label = dvz_drp2_stream_label(stream, cmd->u.create_render_pipeline.id);
+            found_edl_pipeline =
+                found_edl_pipeline ||
+                (label != NULL && strstr(label, "_pipe_edl_resolve") != NULL);
+        }
+        else if (cmd->type == DVZ_DRP2_COMMAND_CREATE_BIND_GROUP)
+        {
+            found_edl_bind_group =
+                found_edl_bind_group || cmd->u.create_bind_group.entry_count == 4;
+        }
+    }
+    AT(found_color_texture);
+    AT(found_depth_texture);
+    AT(found_params_upload);
+    AT(found_edl_pipeline);
+    AT(found_edl_bind_group);
+
+    dvz_drp2_stream_destroy(stream);
+    dvz_frame_plan_destroy(plan);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+/**
  * Verify ordinary blended alpha stays on the final target with a source-over blend pipeline.
  *
  * @param suite the active test suite
@@ -5734,6 +5881,7 @@ int test_scene_graph(TstSuite* suite)
     TEST_SIMPLE(test_scene_visual_internal_material_state);
     TEST_SIMPLE(test_scene_visual_pass_capabilities);
     TEST_SIMPLE(test_scene_gbuffer_runtime_lowering);
+    TEST_SIMPLE(test_scene_edl_runtime_lowering);
     TEST_SIMPLE(test_scene_visual_alpha_mode_standard_blend);
     TEST_SIMPLE(test_scene_visual_alpha_mode_splits_frame_plan_passes);
     TEST_SIMPLE(test_scene_visual_alpha_mode_depth_peel_frame_plan);

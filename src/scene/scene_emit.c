@@ -110,6 +110,27 @@ static bool _scene_attr_resource_key(
 
 
 /**
+ * Resolve the resource key used by one panel's EDL uniform.
+ *
+ * @param panel_id the panel id
+ * @param out_key output resource key
+ * @param out_size output resource key capacity
+ * @return whether the key was resolved
+ */
+static bool _scene_edl_params_resource_key(
+    const char* panel_id, char* out_key, size_t out_size)
+{
+    ANN(panel_id);
+    ANN(out_key);
+    if (out_size == 0)
+        return false;
+    dvz_snprintf(out_key, out_size, "%s.edl.params", panel_id);
+    return true;
+}
+
+
+
+/**
  * Convert scene buffer usage flags to DRP2 buffer usage flags.
  *
  * @param usage the scene buffer usage flags
@@ -680,9 +701,14 @@ void _scene_emit_panel_render(
     DvzFramePlanNode* depth_peel_iter_node = NULL;
     DvzFramePlanNode* depth_peel_composite_node = NULL;
     DvzFramePlanNode* blended_node = NULL;
+    DvzFramePlanNode* edl_node = NULL;
     DvzSceneGBufferPlan gbuffer = {0};
     _scene_technique_gbuffer_plan_init(&gbuffer);
     bool gbuffer_enabled = _scene_technique_gbuffer_enabled(figure->scene, panel);
+    const DvzSceneEdlTechniqueState* edl_state =
+        _scene_technique_edl_state(figure->scene, panel);
+    bool edl_enabled = edl_state != NULL && edl_state->enabled;
+    bool edl_has_depth_producer = false;
     bool has_transparent = false;
     bool opaque_needs_depth = false;
     bool transparent_needs_depth = false;
@@ -734,7 +760,12 @@ void _scene_emit_panel_render(
         }
         (void)_scene_append_visual_to_render_pass(
             figure, plan, opaque_node, visual, attach, vidx);
-        opaque_needs_depth = opaque_needs_depth || caps.can_write_depth;
+        bool edl_depth_visual =
+            edl_enabled && caps.draws_in_opaque_pass && !caps.fixed_controller &&
+            (caps.can_write_depth || caps.kind == DVZ_SCENE_VISUAL_DESC_POINT ||
+             caps.kind == DVZ_SCENE_VISUAL_DESC_PIXEL);
+        opaque_needs_depth = opaque_needs_depth || caps.can_write_depth || edl_depth_visual;
+        edl_has_depth_producer = edl_has_depth_producer || edl_depth_visual;
     }
 
     if (opaque_node == NULL && has_transparent)
@@ -864,7 +895,30 @@ void _scene_emit_panel_render(
         if (gbuffer_enabled && gbuffer_node != NULL &&
             !_scene_technique_emit_gbuffer_frame_graph(plan, panel_id, &gbuffer))
             log_error("failed to emit G-buffer FramePlan graph for panel %s", panel_id);
-        if (!_scene_technique_emit_opaque_frame_graph(plan, panel_id, opaque_needs_depth))
+        if (edl_enabled && edl_has_depth_producer)
+        {
+            char edl_params_key[DVZ_SCENE_LABEL_SIZE];
+            if (_scene_edl_params_resource_key(panel_id, edl_params_key, sizeof(edl_params_key)))
+            {
+                _scene_technique_edl_uniform(edl_state, &panel->techniques.edl.uniform);
+                if (dvz_frame_plan_upload_bytes(
+                        plan, edl_params_key, 0, sizeof(DvzSceneEdlUniform), "edl_params",
+                        &panel->techniques.edl.uniform))
+                {
+                    DvzFramePlanNode* node = &plan->nodes[plan->count - 1];
+                    node->u.upload.buffer_usage = DVZ_DRP2_BUFFER_USAGE_UNIFORM |
+                                                  DVZ_DRP2_BUFFER_USAGE_MAP_WRITE |
+                                                  DVZ_DRP2_BUFFER_USAGE_COPY_DST;
+                }
+            }
+            edl_node = _scene_begin_panel_render_pass(
+                plan, panel_id, "rt", panel->desc, DVZ_FRAME_PLAN_RENDER_PASS_EDL_RESOLVE,
+                &panel_apply_mvp, &panel_viewport);
+            if (edl_node == NULL ||
+                !_scene_technique_emit_edl_frame_graph(plan, panel_id))
+                log_error("failed to emit EDL FramePlan graph for panel %s", panel_id);
+        }
+        else if (!_scene_technique_emit_opaque_frame_graph(plan, panel_id, opaque_needs_depth))
             log_error("failed to emit opaque FramePlan graph for panel %s", panel_id);
     }
 }

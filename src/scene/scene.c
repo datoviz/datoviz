@@ -929,6 +929,21 @@ DvzPanel* dvz_panel(DvzFigure* figure, DvzPanelDesc desc)
 }
 
 
+/**
+ * Configure Eye-Dome Lighting for one panel.
+ *
+ * @param panel the panel
+ * @param desc EDL descriptor, or NULL to disable
+ * @return whether the panel EDL state was updated
+ */
+bool dvz_panel_set_edl(DvzPanel* panel, const DvzEdlDesc* desc)
+{
+    ANN(panel);
+    return _scene_technique_state_set_edl(&panel->techniques, desc);
+}
+
+
+
 void dvz_panel_destroy(DvzPanel* panel)
 {
     if (panel == NULL)

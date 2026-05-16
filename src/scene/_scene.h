@@ -569,9 +569,28 @@ typedef struct DvzSceneGBufferTechniqueState
 
 
 
+typedef struct DvzSceneEdlUniform
+{
+    float params[4];
+} DvzSceneEdlUniform;
+
+
+
+typedef struct DvzSceneEdlTechniqueState
+{
+    bool enabled;
+    float radius;
+    float strength;
+    float depth_scale;
+    DvzSceneEdlUniform uniform;
+} DvzSceneEdlTechniqueState;
+
+
+
 typedef struct DvzSceneTechniqueState
 {
     DvzSceneGBufferTechniqueState gbuffer;
+    DvzSceneEdlTechniqueState edl;
 } DvzSceneTechniqueState;
 
 
