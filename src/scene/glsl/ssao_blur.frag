@@ -45,15 +45,15 @@ void main()
 
     vec3 centerPos = reconstructViewPosition(p, centerDepth);
     vec3 centerNormal = viewNormalFromEncoded(texelFetch(sampler2D(normalTex, samp), p, 0));
-    int radius = int(clamp(round(ssao.params2.z), 1.0, 8.0));
+    int radius = int(clamp(round(ssao.params2.z), 1.0, 16.0));
     float depthSigma = max(ssao.params3.x, 0.001);
     float normalSigma = max(ssao.params3.y, 0.001);
 
     float weightedVisibility = 0.0;
     float totalWeight = 0.0;
-    for (int y = -8; y <= 8; y++)
+    for (int y = -16; y <= 16; y++)
     {
-        for (int x = -8; x <= 8; x++)
+        for (int x = -16; x <= 16; x++)
         {
             if (abs(x) > radius || abs(y) > radius)
                 continue;

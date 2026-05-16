@@ -339,7 +339,7 @@ bool _scene_technique_state_set_ssao(
     state->ssao.power = desc->power > 0.0f ? _clampf(desc->power, 0.1f, 8.0f) : 1.0f;
     state->ssao.min_visibility = _clampf(desc->min_visibility, 0.0f, 1.0f);
     state->ssao.blur_radius =
-        desc->blur_radius > 0.0f ? _clampf(desc->blur_radius, 1.0f, 8.0f) : 2.0f;
+        desc->blur_radius > 0.0f ? _clampf(desc->blur_radius, 1.0f, 16.0f) : 2.0f;
     state->ssao.blur_depth_sigma =
         desc->blur_depth_sigma > 0.0f ? _clampf(desc->blur_depth_sigma, 0.001f, 10.0f) : 0.65f;
     state->ssao.blur_normal_sigma =

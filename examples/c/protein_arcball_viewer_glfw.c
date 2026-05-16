@@ -113,6 +113,7 @@ typedef struct ProteinExampleState
     float ssao_power;
     float ssao_min_visibility;
     float ssao_samples;
+    float ssao_blur_radius;
     float msaa_samples;
     float ambient;
     float diffuse;
@@ -796,6 +797,10 @@ static void _apply_ssao(ProteinExampleState* state)
         state->ssao_samples = 4.0f;
     if (state->ssao_samples > 32.0f)
         state->ssao_samples = 32.0f;
+    if (state->ssao_blur_radius < 1.0f)
+        state->ssao_blur_radius = 1.0f;
+    if (state->ssao_blur_radius > 16.0f)
+        state->ssao_blur_radius = 16.0f;
 
     (void)dvz_panel_set_ssao(
         state->panel,
@@ -805,7 +810,7 @@ static void _apply_ssao(ProteinExampleState* state)
             .bias = state->ssao_bias,
             .power = state->ssao_power,
             .min_visibility = state->ssao_min_visibility,
-            .blur_radius = 2.0f,
+            .blur_radius = state->ssao_blur_radius,
             .blur_depth_sigma = 0.65f,
             .blur_normal_sigma = 0.35f,
             .sample_count = (uint32_t)(state->ssao_samples + 0.5f),
@@ -977,6 +982,11 @@ static void _protein_gui(DvzGui* gui, DvzAppWindow* win, void* user_data)
             gui, "Min visibility", &state->ssao_min_visibility, 0.0f, 1.0f);
         ssao_changed |= dvz_gui_slider_float(gui, "Samples", &state->ssao_samples, 4.0f, 32.0f);
         ssao_changed |= dvz_gui_checkbox(gui, "Blur", &state->ssao_blur);
+        if (state->ssao_blur)
+        {
+            ssao_changed |=
+                dvz_gui_slider_float(gui, "Blur radius", &state->ssao_blur_radius, 1.0f, 16.0f);
+        }
         if (ssao_changed)
             _apply_ssao(state);
 
@@ -1224,6 +1234,7 @@ int main(int argc, char** argv)
         .ssao_power = 2.153f,
         .ssao_min_visibility = 0.450f,
         .ssao_samples = 32.0f,
+        .ssao_blur_radius = 4.0f,
         .msaa_samples = 16.0f,
         .ambient = 0.20f,
         .diffuse = 0.76f,
