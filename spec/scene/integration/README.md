@@ -17,6 +17,9 @@ threads, high-DPI windows, or custom user-provided visual families.
    and other host-owned event-loop integrations.
 6. [CUPY_CUDA_INTEROP.md](CUPY_CUDA_INTEROP.md): zero-copy CUDA/CuPy memory sharing design for
    real-time Datoviz visualization.
+7. [ANDROID_SUPPORT.md](ANDROID_SUPPORT.md): Android Vulkan hosted-surface build and runtime plan.
+8. [IOS_SUPPORT.md](IOS_SUPPORT.md): iOS MoltenVK hosted-surface build and runtime plan.
+9. [TOUCH_SUPPORT.md](TOUCH_SUPPORT.md): touch contact, gesture, controller, and validation plan.
 
 
 ## Active Proposal Inputs
