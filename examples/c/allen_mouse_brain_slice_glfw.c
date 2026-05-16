@@ -1293,12 +1293,29 @@ static void _apply_transparency_modes(AllenMouseBrainState* state)
     if (state->slice_visual == NULL || state->volume_visual == NULL)
         return;
 
-    bool use_wboit = state->atlas_mesh_visual != NULL && state->show_atlas_mesh;
+    bool atlas_transparent = false;
+    if (state->atlas_mesh_visual != NULL && state->show_atlas_mesh)
+    {
+        atlas_transparent = state->atlas_alpha_scale < 0.999f;
+        if (state->atlas_mesh != NULL)
+        {
+            for (uint32_t r = 0; r < state->atlas_mesh->region_count; r++)
+            {
+                const AllenIblAtlasRegion* region = &state->atlas_mesh->regions[r];
+                atlas_transparent =
+                    atlas_transparent || !region->visible || region->alpha < 0.999f;
+            }
+        }
+    }
+    bool use_wboit = state->atlas_mesh_visual != NULL && state->show_atlas_mesh && atlas_transparent;
     DvzAlphaMode volume_mode = use_wboit ? DVZ_ALPHA_WBOIT : DVZ_ALPHA_BLENDED;
     (void)dvz_visual_set_alpha_mode(state->volume_visual, volume_mode);
     (void)dvz_visual_set_alpha_mode(state->slice_visual, volume_mode);
     if (state->atlas_mesh_visual != NULL)
-        (void)dvz_visual_set_alpha_mode(state->atlas_mesh_visual, DVZ_ALPHA_WBOIT);
+    {
+        DvzAlphaMode atlas_mode = atlas_transparent ? DVZ_ALPHA_WBOIT : DVZ_ALPHA_OPAQUE;
+        (void)dvz_visual_set_alpha_mode(state->atlas_mesh_visual, atlas_mode);
+    }
 }
 
 
@@ -1485,14 +1502,12 @@ static void _allen_mouse_brain_gui(DvzGui* gui, DvzAppWindow* win, void* user_da
         changed |= dvz_gui_checkbox(gui, "Clip volume at slice", &state->clip_volume_at_slice);
         changed |= dvz_gui_checkbox(gui, "Keep positive side", &state->keep_positive_side);
         changed |= dvz_gui_checkbox(gui, "Linear sampling", &state->linear_sampling);
-        if (dvz_gui_button(gui, "MIP volume"))
+        const char* render_modes[] = {"MIP volume", "Composite volume"};
+        int render_mode = state->render_mode == DVZ_VOLUME_RENDER_COMPOSITE ? 1 : 0;
+        if (dvz_gui_combo(gui, "Render mode", &render_mode, render_modes, 2))
         {
-            state->render_mode = DVZ_VOLUME_RENDER_MIP;
-            changed = true;
-        }
-        if (dvz_gui_button(gui, "Composite volume"))
-        {
-            state->render_mode = DVZ_VOLUME_RENDER_COMPOSITE;
+            state->render_mode =
+                render_mode == 1 ? DVZ_VOLUME_RENDER_COMPOSITE : DVZ_VOLUME_RENDER_MIP;
             changed = true;
         }
         changed |= dvz_gui_slider_float(gui, "Volume opacity", &state->volume_opacity, 0.0f, 1.0f);

@@ -215,6 +215,20 @@ DVZ_EXPORT bool dvz_gui_button(DvzGui* gui, const char* label);
 DVZ_EXPORT bool dvz_gui_checkbox(DvzGui* gui, const char* label, bool* value);
 
 
+/**
+ * Show a dropdown combo.
+ *
+ * @param gui the GUI overlay
+ * @param label combo label
+ * @param current_item selected item index edited in place
+ * @param items item labels
+ * @param item_count number of item labels
+ * @return whether the selection changed
+ */
+DVZ_EXPORT bool dvz_gui_combo(
+    DvzGui* gui, const char* label, int* current_item, const char* const* items, int item_count);
+
+
 
 /**
  * Show a float slider.
