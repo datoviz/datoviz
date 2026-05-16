@@ -37,6 +37,7 @@ Their role is narrower:
 14. `API_SAMPLED_FIELD.md`
 15. `IMAGE_EMBEDDING_LOD.md`
 16. `CRYSTAL_PHONON_EXPLORER.md`
+17. `EARTHQUAKE_AFTERSHOCK_EXPLORER.md`
 
 
 ## Common Structure
