@@ -386,6 +386,27 @@ void _scene_technique_edl_uniform(
 
 
 /**
+ * Fill the SSAO shader uniform from retained technique state.
+ *
+ * @param ssao the effective SSAO state
+ * @param out output shader uniform
+ */
+void _scene_technique_ssao_uniform(
+    const DvzSceneSsaoTechniqueState* ssao, DvzSceneSsaoUniform* out)
+{
+    ANN(out);
+    dvz_memset(out, sizeof(DvzSceneSsaoUniform), 0, sizeof(DvzSceneSsaoUniform));
+    if (ssao == NULL)
+        return;
+    out->params[0] = ssao->radius;
+    out->params[1] = ssao->strength;
+    out->params[2] = ssao->bias;
+    out->params[3] = (float)ssao->sample_count;
+}
+
+
+
+/**
  * Return whether an alpha mode belongs in the transparent WBOIT accumulation pass.
  *
  * @param mode the visual alpha mode

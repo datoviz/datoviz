@@ -132,6 +132,10 @@ static const char* _builtin_shader_resource_key(DvzSceneBuiltinShader shader, bo
         return fragment ? "wboit_accum_lit_frag" : "primitive_lit_vert";
     case DVZ_SCENE_BUILTIN_SHADER_WBOIT_RESOLVE:
         return fragment ? "wboit_resolve_frag" : "fullscreen_vert";
+    case DVZ_SCENE_BUILTIN_SHADER_SSAO:
+        return fragment ? "ssao_frag" : "fullscreen_vert";
+    case DVZ_SCENE_BUILTIN_SHADER_SSAO_COMPOSITE:
+        return fragment ? "ssao_composite_frag" : "fullscreen_vert";
     case DVZ_SCENE_BUILTIN_SHADER_EDL_RESOLVE:
         return fragment ? "edl_resolve_frag" : "fullscreen_vert";
     case DVZ_SCENE_BUILTIN_SHADER_DEPTH_PEEL_FRONT:

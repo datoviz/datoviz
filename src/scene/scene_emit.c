@@ -131,6 +131,27 @@ static bool _scene_edl_params_resource_key(
 
 
 /**
+ * Resolve the resource key used by one panel's SSAO uniform.
+ *
+ * @param panel_id the panel id
+ * @param out_key output resource key
+ * @param out_size output resource key capacity
+ * @return whether the key was resolved
+ */
+static bool _scene_ssao_params_resource_key(
+    const char* panel_id, char* out_key, size_t out_size)
+{
+    ANN(panel_id);
+    ANN(out_key);
+    if (out_size == 0)
+        return false;
+    dvz_snprintf(out_key, out_size, "%s.ssao.params", panel_id);
+    return true;
+}
+
+
+
+/**
  * Convert scene buffer usage flags to DRP2 buffer usage flags.
  *
  * @param usage the scene buffer usage flags
@@ -706,6 +727,8 @@ void _scene_emit_panel_render(
     DvzFramePlanNode* depth_peel_composite_node = NULL;
     DvzFramePlanNode* blended_node = NULL;
     DvzFramePlanNode* edl_node = NULL;
+    DvzFramePlanNode* ssao_node = NULL;
+    DvzFramePlanNode* ssao_composite_node = NULL;
     DvzSceneGBufferPlan gbuffer = {0};
     _scene_technique_gbuffer_plan_init(&gbuffer);
     bool gbuffer_enabled = _scene_technique_gbuffer_enabled(figure->scene, panel);
@@ -927,7 +950,31 @@ void _scene_emit_panel_render(
                  !_scene_technique_emit_opaque_frame_graph(plan, panel_id, opaque_needs_depth))
             log_error("failed to emit opaque FramePlan graph for panel %s", panel_id);
     }
-    if (ssao_enabled && gbuffer_node != NULL && gbuffer.producer_count > 0 &&
-        !_scene_technique_emit_ssao_frame_graph(plan, panel_id, &gbuffer))
-        log_error("failed to emit SSAO FramePlan graph for panel %s", panel_id);
+    if (ssao_enabled && gbuffer_node != NULL && gbuffer.producer_count > 0)
+    {
+        char ssao_params_key[DVZ_SCENE_LABEL_SIZE];
+        if (_scene_ssao_params_resource_key(
+                panel_id, ssao_params_key, sizeof(ssao_params_key)))
+        {
+            _scene_technique_ssao_uniform(ssao_state, &panel->techniques.ssao.uniform);
+            if (dvz_frame_plan_upload_bytes(
+                    plan, ssao_params_key, 0, sizeof(DvzSceneSsaoUniform), "ssao_params",
+                    &panel->techniques.ssao.uniform))
+            {
+                DvzFramePlanNode* node = &plan->nodes[plan->count - 1];
+                node->u.upload.buffer_usage = DVZ_DRP2_BUFFER_USAGE_UNIFORM |
+                                              DVZ_DRP2_BUFFER_USAGE_MAP_WRITE |
+                                              DVZ_DRP2_BUFFER_USAGE_COPY_DST;
+            }
+        }
+        ssao_node = _scene_begin_panel_render_pass(
+            plan, panel_id, "rt.ssao.occlusion", panel->desc, DVZ_FRAME_PLAN_RENDER_PASS_SSAO,
+            &panel_apply_mvp, &panel_viewport);
+        ssao_composite_node = _scene_begin_panel_render_pass(
+            plan, panel_id, "rt", panel->desc, DVZ_FRAME_PLAN_RENDER_PASS_SSAO_COMPOSITE,
+            &panel_apply_mvp, &panel_viewport);
+        if (ssao_node == NULL || ssao_composite_node == NULL ||
+            !_scene_technique_emit_ssao_frame_graph(plan, panel_id, &gbuffer))
+            log_error("failed to emit SSAO FramePlan graph for panel %s", panel_id);
+    }
 }

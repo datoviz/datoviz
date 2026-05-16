@@ -101,6 +101,9 @@ _scene_technique_ssao_state(const DvzScene* scene, const DvzPanel* panel);
 void _scene_technique_edl_uniform(
     const DvzSceneEdlTechniqueState* edl, DvzSceneEdlUniform* out);
 
+void _scene_technique_ssao_uniform(
+    const DvzSceneSsaoTechniqueState* ssao, DvzSceneSsaoUniform* out);
+
 bool _scene_technique_emit_wboit_frame_graph(
     DvzFramePlan* plan, const char* panel_id, bool opaque_needs_depth,
     bool transparent_needs_depth);

@@ -361,6 +361,8 @@ int test_scene_edl_ignores_ineligible_passes(TstSuite* suite, TstItem* item);
 
 int test_scene_ssao_graph_foundation(TstSuite* suite, TstItem* item);
 
+int test_scene_ssao_runtime_lowering(TstSuite* suite, TstItem* item);
+
 int test_scene_ssao_ignores_ineligible_visuals(TstSuite* suite, TstItem* item);
 
 int test_scene_visual_alpha_mode_standard_blend(TstSuite* suite, TstItem* item);

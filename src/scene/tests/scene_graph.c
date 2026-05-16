@@ -4930,14 +4930,24 @@ int test_scene_ssao_graph_foundation(TstSuite* suite, TstItem* item)
     DvzFramePlan* plan = dvz_frame_plan("figure.ssao", 0);
     ANN(plan);
     _scene_emit_panel_render(figure, 0, plan, "figure_0");
-    AT(dvz_frame_plan_node_count(plan) == 2);
+    AT(dvz_frame_plan_node_count(plan) == 5);
     AT(dvz_frame_plan_graph_pass_count(plan) == 4);
     const DvzFramePlanNode* gbuffer_node = dvz_frame_plan_node_get(plan, 0);
     const DvzFramePlanNode* opaque_node = dvz_frame_plan_node_get(plan, 1);
+    const DvzFramePlanNode* upload_node = dvz_frame_plan_node_get(plan, 2);
+    const DvzFramePlanNode* ssao_node = dvz_frame_plan_node_get(plan, 3);
+    const DvzFramePlanNode* composite_node = dvz_frame_plan_node_get(plan, 4);
     ANN(gbuffer_node);
     ANN(opaque_node);
+    ANN(upload_node);
+    ANN(ssao_node);
+    ANN(composite_node);
     AT(dvz_frame_plan_render_pass_role(gbuffer_node) == DVZ_FRAME_PLAN_RENDER_PASS_GBUFFER);
     AT(dvz_frame_plan_render_pass_role(opaque_node) == DVZ_FRAME_PLAN_RENDER_PASS_OPAQUE);
+    AT(strcmp(upload_node->u.upload.resource_id, "figure_0_p0.ssao.params") == 0);
+    AT(dvz_frame_plan_render_pass_role(ssao_node) == DVZ_FRAME_PLAN_RENDER_PASS_SSAO);
+    AT(dvz_frame_plan_render_pass_role(composite_node) ==
+       DVZ_FRAME_PLAN_RENDER_PASS_SSAO_COMPOSITE);
 
     bool found_normal = false;
     bool found_depth = false;
@@ -4981,6 +4991,137 @@ int test_scene_ssao_graph_foundation(TstSuite* suite, TstItem* item)
     AT(composite_pass->color_attachments[0].load_op == DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_LOAD);
 
     dvz_frame_plan_destroy(plan);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
+/**
+ * Verify opt-in SSAO lowers its graph resources and fullscreen passes to DRP2.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_ssao_runtime_lowering(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    AT(scene != NULL);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    AT(figure != NULL);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    AT(panel != NULL);
+
+    DvzVisual* mesh = dvz_mesh(scene, 0);
+    AT(mesh != NULL);
+
+    float positions[4][3] = {
+        {-0.5f, -0.5f, 0.0f},
+        {0.5f, -0.5f, 0.0f},
+        {-0.5f, 0.5f, 0.0f},
+        {0.5f, 0.5f, 0.0f},
+    };
+    float normals[4][3] = {
+        {0.0f, 0.0f, 1.0f},
+        {0.0f, 0.0f, 1.0f},
+        {0.0f, 0.0f, 1.0f},
+        {0.0f, 0.0f, 1.0f},
+    };
+    DvzIndex indices[6] = {0, 1, 2, 2, 1, 3};
+    DvzSceneBuffer* index_buffer = dvz_scene_buffer(
+        scene, &(DvzSceneBufferDesc){
+                   .usage = DVZ_SCENE_BUFFER_USAGE_INDEX,
+                   .stride = sizeof(DvzIndex),
+               });
+    ANN(index_buffer);
+    AT(dvz_scene_buffer_set_data(index_buffer, indices, sizeof(indices)));
+
+    AT(dvz_visual_set_data(mesh, "position", positions, 4) == 0);
+    AT(dvz_visual_set_data(mesh, "normal", normals, 4) == 0);
+    AT(dvz_visual_set_buffer(mesh, "index", index_buffer));
+    AT(dvz_panel_add_visual(panel, mesh, NULL) == 0);
+    AT(_scene_technique_state_set_ssao(
+        &panel->techniques,
+        &(DvzSceneSsaoDesc){.radius = 1.25f, .strength = 2.0f, .bias = 0.05f,
+                            .sample_count = 16}));
+
+    DvzCapabilitySnapshot caps = {0};
+    DvzDiagnosticReport report = {0};
+    DvzFramePlanEmitConfig cfg = dvz_frame_plan_emit_config();
+    cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
+    cfg.target_width = 64;
+    cfg.target_height = 64;
+    dvz_capability_snapshot_default(&caps);
+    caps.supports_color_blending = true;
+    dvz_diagnostic_report_init(&report);
+
+    DvzDrp2CommandStream* stream = dvz_figure_emit_ex(figure, &caps, &report, &cfg);
+    ANN(stream);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+    DvzDrp2ValidationResult validation = dvz_drp2_validate_stream(stream);
+    AT(validation.ok);
+
+    bool found_occlusion_texture = false;
+    bool found_params_upload = false;
+    bool found_ssao_pipeline = false;
+    bool found_composite_pipeline = false;
+    bool found_ssao_bind_group = false;
+    bool found_composite_bind_group = false;
+    for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
+    {
+        const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream, i);
+        ANN(cmd);
+        if (cmd->type == DVZ_DRP2_COMMAND_CREATE_TEXTURE)
+        {
+            const char* label = dvz_drp2_stream_label(stream, cmd->u.create_texture.id);
+            found_occlusion_texture =
+                found_occlusion_texture ||
+                (label != NULL && strcmp(label, "fig0_p0.ssao.occlusion") == 0 &&
+                 cmd->u.create_texture.format == VK_FORMAT_R8_UNORM &&
+                 (cmd->u.create_texture.usage & DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT) != 0 &&
+                 (cmd->u.create_texture.usage & DVZ_DRP2_TEXTURE_USAGE_TEXTURE_BINDING) != 0);
+        }
+        else if (cmd->type == DVZ_DRP2_COMMAND_WRITE_BUFFER)
+        {
+            const char* label = dvz_drp2_stream_label(stream, cmd->u.write_buffer.buffer_id);
+            found_params_upload =
+                found_params_upload ||
+                (label != NULL && strcmp(label, "fig0_p0.ssao.params") == 0 &&
+                 cmd->u.write_buffer.size == sizeof(DvzSceneSsaoUniform));
+        }
+        else if (cmd->type == DVZ_DRP2_COMMAND_CREATE_RENDER_PIPELINE)
+        {
+            const char* label = dvz_drp2_stream_label(stream, cmd->u.create_render_pipeline.id);
+            found_ssao_pipeline =
+                found_ssao_pipeline ||
+                (label != NULL && strstr(label, "_pipe_ssao") != NULL &&
+                 strstr(label, "_pipe_ssao_comp") == NULL &&
+                 cmd->u.create_render_pipeline.color_targets[0].format == VK_FORMAT_R8_UNORM);
+            found_composite_pipeline =
+                found_composite_pipeline ||
+                (label != NULL && strstr(label, "_pipe_ssao_comp") != NULL &&
+                 cmd->u.create_render_pipeline.color_targets[0].blend_enabled);
+        }
+        else if (cmd->type == DVZ_DRP2_COMMAND_CREATE_BIND_GROUP)
+        {
+            found_ssao_bind_group =
+                found_ssao_bind_group || cmd->u.create_bind_group.entry_count == 4;
+            found_composite_bind_group =
+                found_composite_bind_group || cmd->u.create_bind_group.entry_count == 2;
+        }
+    }
+    AT(found_occlusion_texture);
+    AT(found_params_upload);
+    AT(found_ssao_pipeline);
+    AT(found_composite_pipeline);
+    AT(found_ssao_bind_group);
+    AT(found_composite_bind_group);
+
+    dvz_drp2_stream_destroy(stream);
     dvz_scene_destroy(scene);
     return 0;
 }
@@ -6368,6 +6509,7 @@ int test_scene_graph(TstSuite* suite)
     TEST_SIMPLE(test_scene_edl_depth_producer_capabilities);
     TEST_SIMPLE(test_scene_edl_ignores_ineligible_passes);
     TEST_SIMPLE(test_scene_ssao_graph_foundation);
+    TEST_SIMPLE(test_scene_ssao_runtime_lowering);
     TEST_SIMPLE(test_scene_ssao_ignores_ineligible_visuals);
     TEST_SIMPLE(test_scene_visual_alpha_mode_standard_blend);
     TEST_SIMPLE(test_scene_visual_alpha_mode_splits_frame_plan_passes);

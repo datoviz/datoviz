@@ -595,6 +595,13 @@ typedef struct DvzSceneEdlTechniqueState
 } DvzSceneEdlTechniqueState;
 
 
+typedef struct DvzSceneSsaoUniform
+{
+    float params[4];
+} DvzSceneSsaoUniform;
+
+
+
 typedef struct DvzSceneSsaoTechniqueState
 {
     bool enabled;
@@ -602,6 +609,7 @@ typedef struct DvzSceneSsaoTechniqueState
     float strength;
     float bias;
     uint32_t sample_count;
+    DvzSceneSsaoUniform uniform;
 } DvzSceneSsaoTechniqueState;
 
 
