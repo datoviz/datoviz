@@ -79,6 +79,25 @@ float projected_depth(vec3 uvw)
     return clamp(0.5 * (clip.z / clip.w) + 0.5, 0.0, 1.0);
 }
 
+float view_depth_from_uvw(vec3 uvw)
+{
+    vec3 pos = uvw_to_object(uvw);
+    vec4 view = mvp.view * mvp.model * vec4(pos, 1.0);
+    return -view.z;
+}
+
+float linearize_depth(float depth)
+{
+    float z_ndc = depth * 2.0 - 1.0;
+    float a = mvp.proj[2][2];
+    float b = mvp.proj[3][2];
+    float denom = z_ndc + a;
+    if (abs(denom) < 1e-6) {
+        return 1e6;
+    }
+    return b / denom;
+}
+
 float axis_value(int axis, vec3 value)
 {
     return axis == 0 ? value.x : (axis == 1 ? value.y : value.z);
@@ -94,11 +113,15 @@ float depth_visibility(vec3 uvw)
         if (scene_depth <= 0.000001) {
             return 1.0;
         }
-        float delta = self_depth - scene_depth;
+        float delta_depth = self_depth - scene_depth;
+        if (delta_depth <= 0.0) {
+            return 1.0;
+        }
+        float delta = view_depth_from_uvw(uvw) - linearize_depth(scene_depth);
         if (delta <= 0.0) {
             return 1.0;
         }
-        float fade_distance = max(volume.occlusion.y, 0.0005);
+        float fade_distance = max(volume.occlusion.y, 0.001);
         float hidden_alpha = clamp(volume.occlusion.z, 0.0, 1.0);
         float fade = smoothstep(0.0, fade_distance, delta);
         return mix(1.0, hidden_alpha, fade);

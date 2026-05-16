@@ -53,7 +53,7 @@
 #define DEFAULT_VOLUME_STEPS  192.0f
 #define DEFAULT_ATLAS_ALPHA_SCALE 1.0f
 #define DEFAULT_OCCLUSION_THRESHOLD 0.181f
-#define DEFAULT_OCCLUSION_FADE 0.001f
+#define DEFAULT_OCCLUSION_FADE 0.05f
 #define DEFAULT_OCCLUSION_HIDDEN_ALPHA 0.097f
 #define MAX_ATLAS_REGIONS 32
 #define MOUSE_BRAIN_WIDTH 320
@@ -1504,7 +1504,7 @@ static void _allen_mouse_brain_gui(DvzGui* gui, DvzAppWindow* win, void* user_da
         occlusion_changed |= dvz_gui_slider_float(
             gui, "Occlusion density", &state->occlusion_threshold, 0.01f, 0.35f);
         occlusion_changed |= dvz_gui_slider_float(
-            gui, "Soft edge", &state->occlusion_fade, 0.0001f, 0.01f);
+            gui, "Soft edge", &state->occlusion_fade, 0.001f, 0.25f);
         occlusion_changed |= dvz_gui_slider_float(
             gui, "Hidden slice visibility", &state->occlusion_hidden_alpha, 0.0f, 0.60f);
         if (dvz_gui_button(gui, "Reset occlusion"))
