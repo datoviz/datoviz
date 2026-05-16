@@ -23,6 +23,7 @@
 #include "../_frame_plan_emit.h"
 #include "../_scene_resource_key.h"
 #include "../_scene.h"
+#include "../_technique.h"
 #include "../../drp2/_stream.h"
 #include "datoviz/drp2.h"
 #include "datoviz/scene.h"
@@ -1160,6 +1161,84 @@ int test_frame_plan_graph_depth_peeling_shape(TstSuite* suite, TstItem* item)
 
 
 /**
+ * Ensure the internal G-buffer technique declares shared depth, normal, and object-id targets.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_frame_plan_graph_gbuffer_shape(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzFramePlan* plan = dvz_frame_plan("figure.graph.gbuffer", 8);
+    ANN(plan);
+
+    DvzSceneGBufferPlan gbuffer = {0};
+    _scene_technique_gbuffer_plan_init(&gbuffer);
+    gbuffer.enabled = true;
+    gbuffer.needs_depth = true;
+    gbuffer.needs_normal = true;
+    gbuffer.needs_object_id = true;
+    gbuffer.producer_count = 1;
+
+    AT(_scene_technique_emit_gbuffer_frame_graph(plan, "panel0", &gbuffer));
+    AT(dvz_frame_plan_graph_resource_count(plan) == 3);
+    AT(dvz_frame_plan_graph_pass_count(plan) == 1);
+
+    const DvzFrameGraphResource* depth = dvz_frame_plan_graph_resource_get(plan, 0);
+    const DvzFrameGraphResource* normal = dvz_frame_plan_graph_resource_get(plan, 1);
+    const DvzFrameGraphResource* object = dvz_frame_plan_graph_resource_get(plan, 2);
+    ANN(depth);
+    ANN(normal);
+    ANN(object);
+    AT(strcmp(depth->id, "panel0.gbuffer.depth") == 0);
+    AT(depth->format == VK_FORMAT_D32_SFLOAT);
+    AT(depth->usage_flags & DVZ_FRAME_GRAPH_RESOURCE_USAGE_DEPTH_ATTACHMENT);
+    AT(depth->usage_flags & DVZ_FRAME_GRAPH_RESOURCE_USAGE_SAMPLED);
+    AT(strcmp(normal->id, "panel0.gbuffer.normal") == 0);
+    AT(normal->format == VK_FORMAT_R16G16B16A16_SFLOAT);
+    AT(normal->usage_flags & DVZ_FRAME_GRAPH_RESOURCE_USAGE_COLOR_ATTACHMENT);
+    AT(normal->usage_flags & DVZ_FRAME_GRAPH_RESOURCE_USAGE_SAMPLED);
+    AT(strcmp(object->id, "panel0.gbuffer.object_id") == 0);
+    AT(object->format == VK_FORMAT_R32_UINT);
+    AT(object->usage_flags & DVZ_FRAME_GRAPH_RESOURCE_USAGE_COLOR_ATTACHMENT);
+    AT(object->usage_flags & DVZ_FRAME_GRAPH_RESOURCE_USAGE_SAMPLED);
+
+    const DvzFrameGraphPass* pass = dvz_frame_plan_graph_pass_get(plan, 0);
+    ANN(pass);
+    AT(strcmp(pass->id, "panel0.gbuffer") == 0);
+    AT(strcmp(pass->work_label, "gbuffer") == 0);
+    AT(pass->color_attachment_count == 2);
+    AT(pass->has_depth_attachment);
+    AT(strcmp(pass->color_attachments[0].resource_id, "panel0.gbuffer.normal") == 0);
+    AT(strcmp(pass->color_attachments[1].resource_id, "panel0.gbuffer.object_id") == 0);
+    AT(strcmp(pass->depth_attachment.resource_id, "panel0.gbuffer.depth") == 0);
+    AT(pass->depth_attachment.access == DVZ_FRAME_GRAPH_ATTACHMENT_ACCESS_WRITE);
+
+    DvzDiagnosticReport report = {0};
+    dvz_diagnostic_report_init(&report);
+    AT(dvz_frame_plan_graph_validate(plan, &report));
+    AT(dvz_diagnostic_report_count(&report) == 0);
+
+    char* dump = dvz_frame_plan_graph_dump(plan);
+    ANN(dump);
+    AT(strstr(dump, "\"resource_id\": \"panel0.gbuffer.normal\"") != NULL);
+    dvz_frame_plan_json_destroy(dump);
+
+    char* json = dvz_frame_plan_json(plan);
+    ANN(json);
+    AT(strstr(json, "\"work\": \"gbuffer\"") != NULL);
+    AT(strstr(json, "\"id\": \"panel0.gbuffer.object_id\"") != NULL);
+    dvz_frame_plan_json_destroy(json);
+
+    dvz_frame_plan_destroy(plan);
+    return 0;
+}
+
+
+/**
  * Ensure graph validation reports ambiguous same-pass producers by pass and resource.
  *
  * @param suite the active test suite
@@ -1406,6 +1485,7 @@ int test_scene_frame_plan(TstSuite* suite)
     TEST_SIMPLE(test_frame_plan_graph_static_multipass);
     TEST_SIMPLE(test_frame_plan_graph_dependencies_dump);
     TEST_SIMPLE(test_frame_plan_graph_depth_peeling_shape);
+    TEST_SIMPLE(test_frame_plan_graph_gbuffer_shape);
     TEST_SIMPLE(test_frame_plan_graph_validation_read_before_write);
     TEST_SIMPLE(test_frame_plan_graph_validation_ambiguous_producer);
     TEST_SIMPLE(test_frame_plan_graph_validation_missing_usage);

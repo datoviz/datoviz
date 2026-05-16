@@ -119,6 +119,21 @@ static void _scene_frame_graph_depth_attachment(
 
 
 
+/**
+ * Return whether visual capabilities can feed a primitive/mesh G-buffer.
+ *
+ * @param caps the resolved visual pass capabilities
+ * @return whether the visual can write the G-buffer depth and normal targets
+ */
+static bool _scene_caps_support_gbuffer(const DvzSceneVisualPassCaps* caps)
+{
+    ANN(caps);
+    return caps->draws_in_opaque_pass && caps->kind == DVZ_SCENE_VISUAL_DESC_PRIMITIVE &&
+           caps->can_write_depth && caps->has_normals;
+}
+
+
+
 /*************************************************************************************************/
 /*  Functions                                                                                    */
 /*************************************************************************************************/
@@ -678,4 +693,163 @@ bool _scene_technique_emit_opaque_frame_graph(
             return false;
     }
     return dvz_frame_plan_graph_pass(plan, &opaque);
+}
+
+
+
+/**
+ * Reset an internal G-buffer plan.
+ *
+ * @param plan the G-buffer plan
+ */
+void _scene_technique_gbuffer_plan_init(DvzSceneGBufferPlan* plan)
+{
+    ANN(plan);
+    dvz_memset(plan, sizeof(DvzSceneGBufferPlan), 0, sizeof(DvzSceneGBufferPlan));
+}
+
+
+
+/**
+ * Add one retained visual to an internal G-buffer plan when it is eligible.
+ *
+ * @param plan the G-buffer plan
+ * @param visual the retained visual
+ * @param attach the panel attachment
+ * @return whether the visual was accepted as a G-buffer producer
+ */
+bool _scene_technique_gbuffer_plan_add_visual(
+    DvzSceneGBufferPlan* plan, const DvzVisual* visual, const DvzPanelAttach* attach)
+{
+    ANN(plan);
+    ANN(visual);
+    ANN(attach);
+
+    DvzSceneVisualPassCaps caps = {0};
+    if (!_scene_visual_pass_caps_from_visual(visual, attach, &caps))
+        return false;
+    if (!_scene_caps_support_gbuffer(&caps))
+        return false;
+
+    plan->enabled = true;
+    plan->needs_depth = true;
+    plan->needs_normal = true;
+    plan->producer_count++;
+    return true;
+}
+
+
+
+/**
+ * Emit graph descriptors for one panel G-buffer plan.
+ *
+ * @param plan the frame plan
+ * @param panel_id the panel id
+ * @param gbuffer the G-buffer plan
+ * @return whether graph descriptors were emitted
+ */
+bool _scene_technique_emit_gbuffer_frame_graph(
+    DvzFramePlan* plan, const char* panel_id, const DvzSceneGBufferPlan* gbuffer)
+{
+    ANN(plan);
+    ANN(panel_id);
+    ANN(gbuffer);
+
+    if (!gbuffer->enabled || gbuffer->producer_count == 0)
+        return true;
+    if (!gbuffer->needs_depth && !gbuffer->needs_normal && !gbuffer->needs_object_id)
+        return false;
+
+    char depth_id[DVZ_SCENE_LABEL_SIZE];
+    char normal_id[DVZ_SCENE_LABEL_SIZE];
+    char object_id[DVZ_SCENE_LABEL_SIZE];
+    char pass_id[DVZ_SCENE_LABEL_SIZE];
+    dvz_snprintf(depth_id, sizeof(depth_id), "%s.gbuffer.depth", panel_id);
+    dvz_snprintf(normal_id, sizeof(normal_id), "%s.gbuffer.normal", panel_id);
+    dvz_snprintf(object_id, sizeof(object_id), "%s.gbuffer.object_id", panel_id);
+    dvz_snprintf(pass_id, sizeof(pass_id), "%s.gbuffer", panel_id);
+
+    if (gbuffer->needs_depth)
+    {
+        DvzFrameGraphResource depth = {0};
+        dvz_strlcpy(depth.id, depth_id, sizeof(depth.id));
+        depth.kind = DVZ_FRAME_GRAPH_RESOURCE_TEXTURE;
+        depth.format = VK_FORMAT_D32_SFLOAT;
+        depth.extent_kind = DVZ_FRAME_GRAPH_EXTENT_FIGURE;
+        depth.usage_flags = DVZ_FRAME_GRAPH_RESOURCE_USAGE_DEPTH_ATTACHMENT |
+                            DVZ_FRAME_GRAPH_RESOURCE_USAGE_SAMPLED;
+        depth.lifetime = DVZ_FRAME_GRAPH_RESOURCE_LIFETIME_PER_FRAME;
+        if (!_scene_frame_graph_resource_once(plan, &depth))
+            return false;
+    }
+
+    if (gbuffer->needs_normal)
+    {
+        DvzFrameGraphResource normal = {0};
+        dvz_strlcpy(normal.id, normal_id, sizeof(normal.id));
+        normal.kind = DVZ_FRAME_GRAPH_RESOURCE_TEXTURE;
+        normal.format = VK_FORMAT_R16G16B16A16_SFLOAT;
+        normal.extent_kind = DVZ_FRAME_GRAPH_EXTENT_FIGURE;
+        normal.usage_flags = DVZ_FRAME_GRAPH_RESOURCE_USAGE_COLOR_ATTACHMENT |
+                             DVZ_FRAME_GRAPH_RESOURCE_USAGE_SAMPLED;
+        normal.lifetime = DVZ_FRAME_GRAPH_RESOURCE_LIFETIME_PER_FRAME;
+        if (!_scene_frame_graph_resource_once(plan, &normal))
+            return false;
+    }
+
+    if (gbuffer->needs_object_id)
+    {
+        DvzFrameGraphResource object = {0};
+        dvz_strlcpy(object.id, object_id, sizeof(object.id));
+        object.kind = DVZ_FRAME_GRAPH_RESOURCE_TEXTURE;
+        object.format = VK_FORMAT_R32_UINT;
+        object.extent_kind = DVZ_FRAME_GRAPH_EXTENT_FIGURE;
+        object.usage_flags = DVZ_FRAME_GRAPH_RESOURCE_USAGE_COLOR_ATTACHMENT |
+                             DVZ_FRAME_GRAPH_RESOURCE_USAGE_SAMPLED;
+        object.lifetime = DVZ_FRAME_GRAPH_RESOURCE_LIFETIME_PER_FRAME;
+        if (!_scene_frame_graph_resource_once(plan, &object))
+            return false;
+    }
+
+    DvzFrameGraphPass pass = {0};
+    DvzFrameGraphAttachment attachment = {0};
+    dvz_strlcpy(pass.id, pass_id, sizeof(pass.id));
+    dvz_strlcpy(pass.panel_id, panel_id, sizeof(pass.panel_id));
+    dvz_strlcpy(pass.work_label, "gbuffer", sizeof(pass.work_label));
+    pass.kind = DVZ_FRAME_GRAPH_PASS_RENDER;
+
+    if (gbuffer->needs_normal)
+    {
+        _scene_frame_graph_color_attachment(
+            &attachment, normal_id, DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_CLEAR, true);
+        attachment.clear_color[0] = 0.5f;
+        attachment.clear_color[1] = 0.5f;
+        attachment.clear_color[2] = 1.0f;
+        attachment.clear_color[3] = 0.0f;
+        if (!dvz_frame_graph_pass_color_attachment(&pass, &attachment))
+            return false;
+    }
+
+    if (gbuffer->needs_object_id)
+    {
+        _scene_frame_graph_color_attachment(
+            &attachment, object_id, DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_CLEAR, true);
+        attachment.clear_color[0] = 0.0f;
+        attachment.clear_color[1] = 0.0f;
+        attachment.clear_color[2] = 0.0f;
+        attachment.clear_color[3] = 0.0f;
+        if (!dvz_frame_graph_pass_color_attachment(&pass, &attachment))
+            return false;
+    }
+
+    if (gbuffer->needs_depth)
+    {
+        _scene_frame_graph_depth_attachment(
+            &attachment, depth_id, DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_CLEAR,
+            DVZ_FRAME_GRAPH_ATTACHMENT_ACCESS_WRITE);
+        if (!dvz_frame_graph_pass_depth_attachment(&pass, &attachment))
+            return false;
+    }
+
+    return dvz_frame_plan_graph_pass(plan, &pass);
 }

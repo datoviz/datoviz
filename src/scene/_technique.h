@@ -23,6 +23,21 @@
 
 
 /*************************************************************************************************/
+/*  Structs                                                                                      */
+/*************************************************************************************************/
+
+typedef struct DvzSceneGBufferPlan
+{
+    bool enabled;
+    bool needs_depth;
+    bool needs_normal;
+    bool needs_object_id;
+    uint32_t producer_count;
+} DvzSceneGBufferPlan;
+
+
+
+/*************************************************************************************************/
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
@@ -51,3 +66,11 @@ bool _scene_technique_emit_depth_peel_frame_graph(
 
 bool _scene_technique_emit_opaque_frame_graph(
     DvzFramePlan* plan, const char* panel_id, bool needs_depth);
+
+void _scene_technique_gbuffer_plan_init(DvzSceneGBufferPlan* plan);
+
+bool _scene_technique_gbuffer_plan_add_visual(
+    DvzSceneGBufferPlan* plan, const DvzVisual* visual, const DvzPanelAttach* attach);
+
+bool _scene_technique_emit_gbuffer_frame_graph(
+    DvzFramePlan* plan, const char* panel_id, const DvzSceneGBufferPlan* gbuffer);

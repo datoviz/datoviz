@@ -24,6 +24,7 @@
 #include "../_frame_plan.h"
 #include "../_scene.h"
 #include "../_scene_emit.h"
+#include "../_technique.h"
 #include "../_visual_pipeline.h"
 #include "../../drp2/_stream.h"
 #include "datoviz/drp2.h"
@@ -4195,6 +4196,9 @@ int test_scene_visual_pass_capabilities(TstSuite* suite, TstItem* item)
     AT(dvz_panel_add_visual(panel, volume, NULL) == 0);
 
     DvzSceneVisualPassCaps caps = {0};
+    DvzSceneGBufferPlan gbuffer = {0};
+    _scene_technique_gbuffer_plan_init(&gbuffer);
+
     AT(_scene_visual_pass_caps_from_visual(point, &panel->visuals[0], &caps));
     AT(caps.kind == DVZ_SCENE_VISUAL_DESC_POINT);
     AT(caps.draws_in_wboit_pass);
@@ -4202,6 +4206,7 @@ int test_scene_visual_pass_capabilities(TstSuite* suite, TstItem* item)
     AT(!caps.needs_depth_attachment);
     AT(caps.uses_common_set);
     AT(!caps.uses_material_set);
+    AT(!_scene_technique_gbuffer_plan_add_visual(&gbuffer, point, &panel->visuals[0]));
 
     AT(_scene_visual_pass_caps_from_visual(primitive, &panel->visuals[1], &caps));
     AT(caps.kind == DVZ_SCENE_VISUAL_DESC_PRIMITIVE);
@@ -4211,12 +4216,15 @@ int test_scene_visual_pass_capabilities(TstSuite* suite, TstItem* item)
     AT(caps.needs_depth_attachment);
     AT(!caps.has_normals);
     AT(!caps.supports_depth_cue);
+    AT(!_scene_technique_gbuffer_plan_add_visual(&gbuffer, primitive, &panel->visuals[1]));
 
     AT(_scene_visual_pass_caps_from_visual(fixed_primitive, &panel->visuals[2], &caps));
     AT(caps.fixed_controller);
     AT(!caps.can_write_depth);
     AT(!caps.can_depth_test);
     AT(!caps.needs_depth_attachment);
+    AT(!_scene_technique_gbuffer_plan_add_visual(
+        &gbuffer, fixed_primitive, &panel->visuals[2]));
 
     AT(_scene_visual_pass_caps_from_visual(mesh, &panel->visuals[3], &caps));
     AT(caps.kind == DVZ_SCENE_VISUAL_DESC_PRIMITIVE);
@@ -4225,6 +4233,12 @@ int test_scene_visual_pass_capabilities(TstSuite* suite, TstItem* item)
     AT(caps.uses_material_set);
     AT(caps.supports_depth_cue);
     AT(caps.depth_cue_enabled);
+    AT(_scene_technique_gbuffer_plan_add_visual(&gbuffer, mesh, &panel->visuals[3]));
+    AT(gbuffer.enabled);
+    AT(gbuffer.needs_depth);
+    AT(gbuffer.needs_normal);
+    AT(!gbuffer.needs_object_id);
+    AT(gbuffer.producer_count == 1);
 
     AT(_scene_visual_pass_caps_from_visual(volume, &panel->visuals[4], &caps));
     AT(caps.kind == DVZ_SCENE_VISUAL_DESC_VOLUME);
@@ -4234,6 +4248,8 @@ int test_scene_visual_pass_capabilities(TstSuite* suite, TstItem* item)
     AT(caps.samples_depth);
     AT(caps.needs_depth_attachment);
     AT(caps.uses_volume_set);
+    AT(!_scene_technique_gbuffer_plan_add_visual(&gbuffer, volume, &panel->visuals[4]));
+    AT(gbuffer.producer_count == 1);
 
     DvzSceneVisualDesc desc = {
         .kind = DVZ_SCENE_VISUAL_DESC_PRIMITIVE,
