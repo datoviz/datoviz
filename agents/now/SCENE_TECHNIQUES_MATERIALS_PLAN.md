@@ -16,13 +16,14 @@ Completed implementation commits:
 3. `bbb17c87` — added lit primitive depth cueing;
 4. `af19c693` — added scene visual pass capabilities;
 5. `310b3cb9` — added the internal G-buffer graph foundation;
-6. `f58cec92` — added opt-in G-buffer DRP2 runtime lowering.
+6. `f58cec92` — added opt-in G-buffer DRP2 runtime lowering;
+7. `0068f1e2` — added internal scene/panel technique activation state.
 
 The G-buffer foundation now covers internal eligibility, graph declarations, and opt-in runtime
 lowering for primitive/mesh visuals with normals. The current runtime slice emits normal and depth
-targets through the existing scene -> FramePlan graph -> DRP2 -> vklite path. The opt-in is still an
-internal `scene->gbuffer_enabled` flag used by tests; normalize that into a technique state before
-adding user-facing effect controls.
+targets through the existing scene -> FramePlan graph -> DRP2 -> vklite path. G-buffer activation is
+now routed through internal scene/panel technique state and remains default-off until a concrete
+effect requests it.
 
 
 ## Source Architecture Note
@@ -167,6 +168,8 @@ git diff --check
 
 Scope: replace the temporary internal G-buffer flag with consistent technique state.
 
+Status: landed in `0068f1e2`.
+
 Expected work:
 
 1. add an internal scene or panel technique-state descriptor for enabled techniques and options;
@@ -188,7 +191,7 @@ git diff --check
 
 ### 7. Effects On The Shared Foundation
 
-After technique activation is normalized, implement effects in this order:
+Technique activation is now normalized internally. Implement effects in this order:
 
 1. EDL for point/pixel/particle-heavy panels, using depth only;
 2. object-id selected outlines, using a semantic object/group id buffer;

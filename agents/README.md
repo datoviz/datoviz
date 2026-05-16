@@ -20,8 +20,8 @@ Active execution notes:
 
 Current branch emphasis as of `2026-05-16`: native scene -> DRP2 -> app is active for retained
 2D/early-3D rendering, pick/probe request handling, app trace/status diagnostics, and the first
-graph-backed scene techniques. The G-buffer path now has internal graph and runtime lowering, but
-its activation is still private and should be normalized before public effect controls. Treat broad
+graph-backed scene techniques. The G-buffer path now has internal graph/runtime lowering and private
+scene/panel activation state. Treat broad
 new scene API growth, WebGPU runtime work, and hygiene/static-analysis sweeps as separate prioritized
 lanes rather than mixing them into one implementation pass.
 

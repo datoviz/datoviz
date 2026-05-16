@@ -229,6 +229,13 @@ the existing scene -> FramePlan graph -> DRP2 -> vklite path, guarded by an inte
 Validation for `f58cec92`: `just build`, `just test test_scene_gbuffer_runtime_lowering`,
 `just test scene` (`210/210`), `just test drp2` (`119/119`), and `git diff --check`.
 
+Scene technique activation follow-up on `2026-05-16`: the temporary scene-level G-buffer boolean was
+replaced by internal scene/panel `DvzSceneTechniqueState` (`0068f1e2`). G-buffer remains default-off,
+and the focused runtime regression now verifies both unchanged default planning and panel-local
+opt-in. Validation: `just build`, `just test test_scene_gbuffer_runtime_lowering`, `just test scene`
+(`210/210`), `just test drp2` (`119/119`), `clang-tidy -p build --quiet` on the touched scene files,
+and `git diff --check`.
+
 
 ## Immediate Task
 
@@ -330,10 +337,10 @@ Deliver the next implementation slices in this order unless the user redirects:
     [FRAME_PLAN_GRAPH_TRANSPARENCY_PLAN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/FRAME_PLAN_GRAPH_TRANSPARENCY_PLAN.md).
 14. Scene techniques/materials architecture: before adding EDL, SSAO, outlines, or
     curvature/cavity shading as isolated effects, route them through the technique-builder layer,
-    internal material state, visual pass capability descriptors, and normalized internal technique
-    activation state. The G-buffer runtime path is opt-in and currently internal; the next
-    infrastructure slice should replace the temporary `scene->gbuffer_enabled` flag with a
-    scene/panel technique-state descriptor before exposing effect controls. The architecture note is
+    internal material state, visual pass capability descriptors, and the internal scene/panel
+    technique activation state. G-buffer runtime lowering is opt-in and currently internal. The next
+    effect slice should start with a narrow depth-based technique such as EDL, or add object-id
+    G-buffer output first if selected outlines are prioritized. The architecture note is
     [../../docs/architecture/scene_techniques_materials.md](/home/cyrille/GIT/Viz/datoviz/docs/architecture/scene_techniques_materials.md),
     and the pickup plan is
     [SCENE_TECHNIQUES_MATERIALS_PLAN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/SCENE_TECHNIQUES_MATERIALS_PLAN.md).
