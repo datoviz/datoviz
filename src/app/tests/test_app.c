@@ -16,9 +16,11 @@
 
 #include <string.h>
 
+#include "_alloc.h"
 #include "_assertions.h"
 #include "../_status.h"
 #include "../_trace.h"
+#include "../../drp2/_stream.h"
 #include "datoviz/app.h"
 #include "datoviz/drp2/stream.h"
 #include "test_app.h"
@@ -192,6 +194,146 @@ static int test_app_trace_fingerprint_keeps_write_ranges(TstSuite* suite, TstIte
 
     dvz_drp2_stream_destroy(a);
     dvz_drp2_stream_destroy(b);
+    return 0;
+}
+
+
+static int test_app_trace_fingerprint_keeps_texture_format(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    ANN(item);
+
+    DvzDrp2CommandStream* a = dvz_drp2_stream();
+    DvzDrp2CommandStream* b = dvz_drp2_stream();
+    ANN(a);
+    ANN(b);
+
+    AT(dvz_drp2_stream_create_texture_2d_format_usage(a, 42, 64, 64, 37, 0x12));
+    AT(dvz_drp2_stream_create_texture_2d_format_usage(b, 42, 64, 64, 38, 0x12));
+
+    uint64_t fa = 0;
+    uint64_t fb = 0;
+    AT(_dvz_app_trace_fingerprint(a, &fa));
+    AT(_dvz_app_trace_fingerprint(b, &fb));
+    AT(fa != fb);
+
+    dvz_drp2_stream_destroy(a);
+    dvz_drp2_stream_destroy(b);
+    return 0;
+}
+
+
+static int test_app_trace_fingerprint_keeps_pipeline_attachment_state(
+    TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    ANN(item);
+
+    DvzDrp2CommandStream* a = dvz_drp2_stream();
+    DvzDrp2CommandStream* b = dvz_drp2_stream();
+    ANN(a);
+    ANN(b);
+
+    AT(dvz_drp2_stream_create_render_pipeline(a, 10, 1, 2, 0));
+    AT(dvz_drp2_stream_pipeline_set_raster_state(a, 1, 2));
+    AT(dvz_drp2_stream_pipeline_set_color_target(a, 0, 37));
+    AT(dvz_drp2_stream_pipeline_set_color_blend(a, 0, 1, 2, 3, 4, 5, 6, 0x0f));
+
+    AT(dvz_drp2_stream_create_render_pipeline(b, 10, 1, 2, 0));
+    AT(dvz_drp2_stream_pipeline_set_raster_state(b, 1, 2));
+    AT(dvz_drp2_stream_pipeline_set_color_target(b, 0, 38));
+    AT(dvz_drp2_stream_pipeline_set_color_blend(b, 0, 1, 2, 3, 4, 5, 6, 0x0f));
+
+    uint64_t fa = 0;
+    uint64_t fb = 0;
+    AT(_dvz_app_trace_fingerprint(a, &fa));
+    AT(_dvz_app_trace_fingerprint(b, &fb));
+    AT(fa != fb);
+
+    dvz_drp2_stream_destroy(a);
+    dvz_drp2_stream_destroy(b);
+    return 0;
+}
+
+
+static int test_app_trace_fingerprint_keeps_render_attachment_ops(
+    TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    ANN(item);
+
+    DvzDrp2CommandStream* a = dvz_drp2_stream();
+    DvzDrp2CommandStream* b = dvz_drp2_stream();
+    ANN(a);
+    ANN(b);
+
+    AT(dvz_drp2_stream_begin_render_pass(a, 100, 7, 5000));
+    AT(dvz_drp2_stream_begin_render_pass_set_color_attachment_ops(
+        a, 0, DVZ_DRP2_ATTACHMENT_LOAD_CLEAR, DVZ_DRP2_ATTACHMENT_STORE_STORE));
+
+    AT(dvz_drp2_stream_begin_render_pass(b, 104, 8, 5000));
+    AT(dvz_drp2_stream_begin_render_pass_set_color_attachment_ops(
+        b, 0, DVZ_DRP2_ATTACHMENT_LOAD_LOAD, DVZ_DRP2_ATTACHMENT_STORE_STORE));
+
+    uint64_t fa = 0;
+    uint64_t fb = 0;
+    AT(_dvz_app_trace_fingerprint(a, &fa));
+    AT(_dvz_app_trace_fingerprint(b, &fb));
+    AT(fa != fb);
+
+    dvz_drp2_stream_destroy(a);
+    dvz_drp2_stream_destroy(b);
+    return 0;
+}
+
+
+static int test_app_trace_fingerprint_keeps_dynamic_offsets(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    ANN(item);
+
+    DvzDrp2CommandStream* a = dvz_drp2_stream();
+    DvzDrp2CommandStream* b = dvz_drp2_stream();
+    ANN(a);
+    ANN(b);
+
+    uint64_t offsets_a[2] = {16, 32};
+    uint64_t offsets_b[2] = {16, 48};
+    AT(dvz_drp2_stream_set_bind_group_dynamic(a, 100, 0, 77, 2, offsets_a));
+    AT(dvz_drp2_stream_set_bind_group_dynamic(b, 104, 0, 77, 2, offsets_b));
+
+    uint64_t fa = 0;
+    uint64_t fb = 0;
+    AT(_dvz_app_trace_fingerprint(a, &fa));
+    AT(_dvz_app_trace_fingerprint(b, &fb));
+    AT(fa != fb);
+
+    dvz_drp2_stream_destroy(a);
+    dvz_drp2_stream_destroy(b);
+    return 0;
+}
+
+
+static int test_app_trace_fingerprint_bounds_fixed_labels(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    ANN(item);
+
+    DvzDrp2CommandStream* stream = dvz_drp2_stream();
+    ANN(stream);
+    AT(dvz_drp2_stream_hello_renderer(stream, "client"));
+
+    DvzDrp2Command* command = (DvzDrp2Command*)dvz_drp2_stream_get(stream, 0);
+    ANN(command);
+    dvz_memset(
+        command->u.handshake.name, sizeof(command->u.handshake.name), 'x',
+        sizeof(command->u.handshake.name));
+
+    uint64_t fingerprint = 0;
+    AT(_dvz_app_trace_fingerprint(stream, &fingerprint));
+    AT(fingerprint != 0);
+
+    dvz_drp2_stream_destroy(stream);
     return 0;
 }
 
@@ -397,6 +539,11 @@ int test_app(TstSuite* suite)
     TEST_SIMPLE(test_app_trace_fingerprint_name_is_frame_stable);
     TEST_SIMPLE(test_app_trace_fingerprint_ignores_frame_handles_and_payloads);
     TEST_SIMPLE(test_app_trace_fingerprint_keeps_write_ranges);
+    TEST_SIMPLE(test_app_trace_fingerprint_keeps_texture_format);
+    TEST_SIMPLE(test_app_trace_fingerprint_keeps_pipeline_attachment_state);
+    TEST_SIMPLE(test_app_trace_fingerprint_keeps_render_attachment_ops);
+    TEST_SIMPLE(test_app_trace_fingerprint_keeps_dynamic_offsets);
+    TEST_SIMPLE(test_app_trace_fingerprint_bounds_fixed_labels);
     TEST_SIMPLE(test_app_trace_fingerprint_ignores_transient_pass_ids);
     TEST_SIMPLE(test_app_trace_snapshot_ignores_transient_pass_ids);
     TEST_SIMPLE(test_app_trace_snapshot_keeps_draw_payload);

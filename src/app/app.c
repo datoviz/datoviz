@@ -72,6 +72,7 @@
 #define DVZ_TRACE_COLOR_MAGENTA "\x1b[35m"
 #define DVZ_TRACE_COLOR_RED   "\x1b[31m"
 #define DVZ_TRACE_COLOR_BOLD  "\x1b[1m"
+#define DVZ_APP_TRACE_LABEL_PRINT_SIZE ((int)(DVZ_DRP2_LABEL_SIZE - 1))
 
 
 
@@ -455,9 +456,13 @@ static void _trace_format_id(
         return;
     const char* label = dvz_drp2_stream_label(stream, id);
     if (label != NULL)
-        dvz_snprintf(out, out_size, "%" PRIu64 "(%s)", id, label);
+    {
+        dvz_snprintf(
+            out, out_size, "%" PRIu64 "(%.*s)", id, DVZ_APP_TRACE_LABEL_PRINT_SIZE, label);
+    }
     else
         dvz_snprintf(out, out_size, "%" PRIu64, id);
+    out[out_size - 1] = '\0';
 }
 
 
@@ -484,11 +489,13 @@ static bool _app_trace_print_command_detail(
     {
     case DVZ_DRP2_COMMAND_HELLO_RENDERER:
         dvz_fprintf(
-            stderr, "  %03u = HelloRenderer name=%s\n", index, command->u.handshake.name);
+            stderr, "  %03u = HelloRenderer name=%.*s\n", index,
+            DVZ_APP_TRACE_LABEL_PRINT_SIZE, command->u.handshake.name);
         return true;
     case DVZ_DRP2_COMMAND_RENDERER_HELLO_REPLY:
         dvz_fprintf(
-            stderr, "  %03u = RendererHelloReply name=%s\n", index, command->u.handshake.name);
+            stderr, "  %03u = RendererHelloReply name=%.*s\n", index,
+            DVZ_APP_TRACE_LABEL_PRINT_SIZE, command->u.handshake.name);
         return true;
     case DVZ_DRP2_COMMAND_CREATE_BUFFER:
     {
@@ -528,10 +535,10 @@ static bool _app_trace_print_command_detail(
     {
         TRACE_ID(id, command->u.create_shader_module.id);
         dvz_fprintf(
-            stderr, "  %03u + CreateShaderModule id=%s stage=%s format=%s"
+            stderr, "  %03u + CreateShaderModule id=%s stage=%.*s format=%.*s"
                     " code=%s spirv_size=%" PRIu64 "\n",
-            index, id, command->u.create_shader_module.stage,
-            command->u.create_shader_module.format,
+            index, id, DVZ_APP_TRACE_LABEL_PRINT_SIZE, command->u.create_shader_module.stage,
+            DVZ_APP_TRACE_LABEL_PRINT_SIZE, command->u.create_shader_module.format,
             command->u.create_shader_module.code != NULL ? "yes" : "no",
             command->u.create_shader_module.spirv_size);
         return true;
@@ -837,15 +844,17 @@ static bool _app_trace_print_command_detail(
             TRACE_ID(pass, command->u.set_index_buffer.pass_id);
             dvz_fprintf(
                 stderr, "  %03u = SetIndexBuffer pass=%s"
-                        " buffer=%s format=%s offset=%" PRIu64 "\n",
-                index, pass, buffer, command->u.set_index_buffer.index_format,
+                        " buffer=%s format=%.*s offset=%" PRIu64 "\n",
+                index, pass, buffer, DVZ_APP_TRACE_LABEL_PRINT_SIZE,
+                command->u.set_index_buffer.index_format,
                 command->u.set_index_buffer.offset);
         }
         else
             dvz_fprintf(
                 stderr, "  %03u = SetIndexBuffer buffer=%s"
-                        " format=%s offset=%" PRIu64 "\n",
-                index, buffer, command->u.set_index_buffer.index_format,
+                        " format=%.*s offset=%" PRIu64 "\n",
+                index, buffer, DVZ_APP_TRACE_LABEL_PRINT_SIZE,
+                command->u.set_index_buffer.index_format,
                 command->u.set_index_buffer.offset);
         return true;
     }

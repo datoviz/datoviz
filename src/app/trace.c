@@ -35,6 +35,7 @@
 #define DVZ_APP_TRACE_FNV_OFFSET    1469598103934665603ULL
 #define DVZ_APP_TRACE_FNV_PRIME     1099511628211ULL
 #define DVZ_APP_TRACE_INITIAL_LINES 32
+#define DVZ_APP_TRACE_LABEL_PRINT_SIZE ((int)(DVZ_DRP2_LABEL_SIZE - 1))
 
 
 
@@ -136,17 +137,19 @@ static uint64_t _trace_hash_f32(uint64_t hash, float value)
 
 
 /**
- * Extend one FNV-1a hash with a NUL-terminated string.
+ * Extend one FNV-1a hash with a bounded fixed-size label.
  *
  * @param hash current hash
  * @param value value to hash
  * @return updated hash
  */
-static uint64_t _trace_hash_string(uint64_t hash, const char* value)
+static uint64_t _trace_hash_label(uint64_t hash, const char* value, uint64_t max_size)
 {
     if (value == NULL)
         return _trace_hash_u64(hash, 0);
-    uint64_t len = (uint64_t)strlen(value);
+    uint64_t len = 0;
+    while (len < max_size && value[len] != '\0')
+        len++;
     hash = _trace_hash_u64(hash, len);
     if (len > 0)
         hash = _trace_hash_bytes(hash, value, len);
@@ -171,7 +174,8 @@ static uint64_t _trace_hash_command(uint64_t hash, const DvzDrp2Command* command
     {
     case DVZ_DRP2_COMMAND_HELLO_RENDERER:
     case DVZ_DRP2_COMMAND_RENDERER_HELLO_REPLY:
-        return _trace_hash_string(hash, command->u.handshake.name);
+        return _trace_hash_label(
+            hash, command->u.handshake.name, sizeof(command->u.handshake.name));
     case DVZ_DRP2_COMMAND_CREATE_BUFFER:
         hash = _trace_hash_u64(hash, command->u.create_buffer.id);
         hash = _trace_hash_u64(hash, command->u.create_buffer.size);
@@ -183,13 +187,18 @@ static uint64_t _trace_hash_command(uint64_t hash, const DvzDrp2Command* command
         hash = _trace_hash_u32(hash, command->u.create_texture.width);
         hash = _trace_hash_u32(hash, command->u.create_texture.height);
         hash = _trace_hash_u32(hash, command->u.create_texture.depth);
+        hash = _trace_hash_u32(hash, command->u.create_texture.format);
         return _trace_hash_u32(hash, command->u.create_texture.usage);
     case DVZ_DRP2_COMMAND_DESTROY_TEXTURE:
         return _trace_hash_u64(hash, command->u.destroy_texture.texture_id);
     case DVZ_DRP2_COMMAND_CREATE_SHADER_MODULE:
         hash = _trace_hash_u64(hash, command->u.create_shader_module.id);
-        hash = _trace_hash_string(hash, command->u.create_shader_module.stage);
-        return _trace_hash_string(hash, command->u.create_shader_module.format);
+        hash = _trace_hash_label(
+            hash, command->u.create_shader_module.stage,
+            sizeof(command->u.create_shader_module.stage));
+        return _trace_hash_label(
+            hash, command->u.create_shader_module.format,
+            sizeof(command->u.create_shader_module.format));
     case DVZ_DRP2_COMMAND_DESTROY_SHADER_MODULE:
         return _trace_hash_u64(hash, command->u.destroy_shader_module.shader_module_id);
     case DVZ_DRP2_COMMAND_CREATE_RENDER_PIPELINE:
@@ -201,14 +210,40 @@ static uint64_t _trace_hash_command(uint64_t hash, const DvzDrp2Command* command
         for (uint32_t i = 0; i < command->u.create_render_pipeline.bind_group_layout_count &&
                              i < DVZ_DRP2_MAX_BIND_GROUPS;
              i++)
-            hash = _trace_hash_u64(hash, command->u.create_render_pipeline.bind_group_layout_ids[i]);
+        {
+            hash = _trace_hash_u64(
+                hash, command->u.create_render_pipeline.bind_group_layout_ids[i]);
+        }
         hash = _trace_hash_bool(hash, command->u.create_render_pipeline.has_depth_attachment);
         hash = _trace_hash_bool(hash, command->u.create_render_pipeline.depth_write_enabled);
         hash = _trace_hash_u32(hash, command->u.create_render_pipeline.depth_compare_op);
+        hash = _trace_hash_bool(hash, command->u.create_render_pipeline.has_raster_state);
+        hash = _trace_hash_u32(hash, command->u.create_render_pipeline.cull_mode);
+        hash = _trace_hash_u32(hash, command->u.create_render_pipeline.front_face);
+        hash = _trace_hash_u32(hash, command->u.create_render_pipeline.color_target_count);
+        for (uint32_t i = 0; i < command->u.create_render_pipeline.color_target_count &&
+                             i < DVZ_DRP2_MAX_COLOR_ATTACHMENTS;
+             i++)
+        {
+            const DvzDrp2ColorTarget* target =
+                &command->u.create_render_pipeline.color_targets[i];
+            hash = _trace_hash_u32(hash, target->format);
+            hash = _trace_hash_bool(hash, target->blend_enabled);
+            hash = _trace_hash_u32(hash, target->src_color_blend_factor);
+            hash = _trace_hash_u32(hash, target->dst_color_blend_factor);
+            hash = _trace_hash_u32(hash, target->color_blend_op);
+            hash = _trace_hash_u32(hash, target->src_alpha_blend_factor);
+            hash = _trace_hash_u32(hash, target->dst_alpha_blend_factor);
+            hash = _trace_hash_u32(hash, target->alpha_blend_op);
+            hash = _trace_hash_u32(hash, target->color_write_mask);
+        }
         hash = _trace_hash_u32(hash, command->u.create_render_pipeline.topology);
         hash = _trace_hash_u32(hash, command->u.create_render_pipeline.binding_count);
         for (uint32_t i = 0; i < command->u.create_render_pipeline.binding_count && i < 16; i++)
+        {
             hash = _trace_hash_u32(hash, command->u.create_render_pipeline.binding_strides[i]);
+            hash = _trace_hash_u32(hash, command->u.create_render_pipeline.binding_step_modes[i]);
+        }
         hash = _trace_hash_u32(hash, command->u.create_render_pipeline.attr_count);
         for (uint32_t i = 0; i < command->u.create_render_pipeline.attr_count && i < 16; i++)
         {
@@ -227,7 +262,10 @@ static uint64_t _trace_hash_command(uint64_t hash, const DvzDrp2Command* command
         for (uint32_t i = 0; i < command->u.create_compute_pipeline.bind_group_layout_count &&
                              i < DVZ_DRP2_MAX_BIND_GROUPS;
              i++)
-            hash = _trace_hash_u64(hash, command->u.create_compute_pipeline.bind_group_layout_ids[i]);
+        {
+            hash = _trace_hash_u64(
+                hash, command->u.create_compute_pipeline.bind_group_layout_ids[i]);
+        }
         return hash;
     case DVZ_DRP2_COMMAND_DESTROY_COMPUTE_PIPELINE:
         return _trace_hash_u64(hash, command->u.destroy_compute_pipeline.compute_pipeline_id);
@@ -287,8 +325,27 @@ static uint64_t _trace_hash_command(uint64_t hash, const DvzDrp2Command* command
         return _trace_hash_u32(hash, command->u.write_texture.rows_per_image);
     case DVZ_DRP2_COMMAND_BEGIN_RENDER_PASS:
         hash = _trace_hash_u64(hash, command->u.begin_render_pass.texture_id);
+        hash = _trace_hash_u32(hash, command->u.begin_render_pass.color_attachment_count);
+        for (uint32_t i = 0; i < command->u.begin_render_pass.color_attachment_count &&
+                             i < DVZ_DRP2_MAX_COLOR_ATTACHMENTS;
+             i++)
+        {
+            const DvzDrp2ColorAttachment* attachment =
+                &command->u.begin_render_pass.color_attachments[i];
+            hash = _trace_hash_u64(hash, attachment->texture_id);
+            hash = _trace_hash_bool(hash, attachment->clear);
+            hash = _trace_hash_u32(hash, attachment->load_op);
+            hash = _trace_hash_u32(hash, attachment->store_op);
+            hash = _trace_hash_u32(hash, attachment->access);
+            for (uint32_t j = 0; j < 4; j++)
+                hash = _trace_hash_f32(hash, attachment->clear_color[j]);
+        }
         hash = _trace_hash_bool(hash, command->u.begin_render_pass.has_depth_attachment);
         hash = _trace_hash_u64(hash, command->u.begin_render_pass.depth_texture_id);
+        hash = _trace_hash_u32(hash, command->u.begin_render_pass.depth_load_op);
+        hash = _trace_hash_u32(hash, command->u.begin_render_pass.depth_store_op);
+        hash = _trace_hash_u32(hash, command->u.begin_render_pass.depth_access);
+        hash = _trace_hash_bool(hash, command->u.begin_render_pass.depth_ops_explicit);
         hash = _trace_hash_f32(hash, command->u.begin_render_pass.clear_depth);
         for (uint32_t i = 0; i < 4; i++)
             hash = _trace_hash_f32(hash, command->u.begin_render_pass.clear_color[i]);
@@ -307,14 +364,22 @@ static uint64_t _trace_hash_command(uint64_t hash, const DvzDrp2Command* command
         return _trace_hash_u64(hash, command->u.set_pipeline.pipeline_id);
     case DVZ_DRP2_COMMAND_SET_BIND_GROUP:
         hash = _trace_hash_u32(hash, command->u.set_bind_group.slot);
-        return _trace_hash_u64(hash, command->u.set_bind_group.bind_group_id);
+        hash = _trace_hash_u64(hash, command->u.set_bind_group.bind_group_id);
+        hash = _trace_hash_u32(hash, command->u.set_bind_group.dynamic_offset_count);
+        for (uint32_t i = 0; i < command->u.set_bind_group.dynamic_offset_count &&
+                             i < DVZ_DRP2_MAX_BINDINGS;
+             i++)
+            hash = _trace_hash_u64(hash, command->u.set_bind_group.dynamic_offsets[i]);
+        return hash;
     case DVZ_DRP2_COMMAND_SET_VERTEX_BUFFER:
         hash = _trace_hash_u32(hash, command->u.set_vertex_buffer.slot);
         hash = _trace_hash_u64(hash, command->u.set_vertex_buffer.buffer_id);
         return _trace_hash_u64(hash, command->u.set_vertex_buffer.offset);
     case DVZ_DRP2_COMMAND_SET_INDEX_BUFFER:
         hash = _trace_hash_u64(hash, command->u.set_index_buffer.buffer_id);
-        hash = _trace_hash_string(hash, command->u.set_index_buffer.index_format);
+        hash = _trace_hash_label(
+            hash, command->u.set_index_buffer.index_format,
+            sizeof(command->u.set_index_buffer.index_format));
         return _trace_hash_u64(hash, command->u.set_index_buffer.offset);
     case DVZ_DRP2_COMMAND_DRAW:
         hash = _trace_hash_u32(hash, command->u.draw.vertex_count);
@@ -584,8 +649,9 @@ static bool _trace_snapshot_append_command(
             snapshot, "- texture id=%" PRIu64, command->u.destroy_texture.texture_id);
     case DVZ_DRP2_COMMAND_CREATE_SHADER_MODULE:
         return _trace_snapshot_append(
-            snapshot, "+ shader id=%" PRIu64 " stage=%s format=%s",
-            command->u.create_shader_module.id, command->u.create_shader_module.stage,
+            snapshot, "+ shader id=%" PRIu64 " stage=%.*s format=%.*s",
+            command->u.create_shader_module.id, DVZ_APP_TRACE_LABEL_PRINT_SIZE,
+            command->u.create_shader_module.stage, DVZ_APP_TRACE_LABEL_PRINT_SIZE,
             command->u.create_shader_module.format);
     case DVZ_DRP2_COMMAND_DESTROY_SHADER_MODULE:
         return _trace_snapshot_append(
@@ -727,9 +793,9 @@ static bool _trace_snapshot_append_command(
     case DVZ_DRP2_COMMAND_SET_INDEX_BUFFER:
         ordinal = _trace_pass_ordinal(passes, pass_count, command->u.set_index_buffer.pass_id);
         if (!_trace_format_suffix(
-            suffix, sizeof(suffix), "ibuf=%" PRIu64 " fmt=%s off=%" PRIu64,
-            command->u.set_index_buffer.buffer_id, command->u.set_index_buffer.index_format,
-            command->u.set_index_buffer.offset))
+            suffix, sizeof(suffix), "ibuf=%" PRIu64 " fmt=%.*s off=%" PRIu64,
+            command->u.set_index_buffer.buffer_id, DVZ_APP_TRACE_LABEL_PRINT_SIZE,
+            command->u.set_index_buffer.index_format, command->u.set_index_buffer.offset))
             return false;
         return _trace_snapshot_append_pass_line(snapshot, "render", ordinal, suffix);
     case DVZ_DRP2_COMMAND_DRAW:
