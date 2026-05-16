@@ -68,6 +68,8 @@ typedef struct ProteinExampleState
     const ProteinBundle* bundle;
     float* live_radii;
     bool ssao_enabled;
+    bool msaa_enabled;
+    bool msaa_alpha_to_coverage;
     float atom_scale;
     float ssao_radius;
     float ssao_strength;
@@ -75,6 +77,7 @@ typedef struct ProteinExampleState
     float ssao_power;
     float ssao_min_visibility;
     float ssao_samples;
+    float msaa_samples;
     bool ssao_blur;
 } ProteinExampleState;
 
@@ -362,6 +365,44 @@ static void _apply_ssao(ProteinExampleState* state)
 
 
 /**
+ * Update the panel MSAA state from live controls.
+ *
+ * @param state example state
+ */
+static void _apply_msaa(ProteinExampleState* state)
+{
+    ANN(state);
+    ANN(state->panel);
+
+    if (!state->msaa_enabled)
+    {
+        (void)dvz_panel_set_msaa(state->panel, NULL);
+        return;
+    }
+    if (state->msaa_samples < 2.0f)
+        state->msaa_samples = 2.0f;
+    if (state->msaa_samples > 8.0f)
+        state->msaa_samples = 8.0f;
+
+    uint32_t sample_count = (uint32_t)(state->msaa_samples + 0.5f);
+    if (sample_count <= 2)
+        sample_count = 2;
+    else if (sample_count <= 4)
+        sample_count = 4;
+    else
+        sample_count = 8;
+    state->msaa_samples = (float)sample_count;
+
+    DvzMsaaDesc desc = dvz_msaa_desc();
+    desc.sample_count = sample_count;
+    desc.alpha_to_coverage = state->msaa_alpha_to_coverage;
+    if (!dvz_panel_set_msaa(state->panel, &desc))
+        dvz_fprintf(stderr, "dvz_panel_set_msaa() failed\n");
+}
+
+
+
+/**
  * Build the live protein controls.
  *
  * @param gui GUI overlay
@@ -383,6 +424,15 @@ static void _protein_gui(DvzGui* gui, DvzAppWindow* win, void* user_data)
         atom_changed |= dvz_gui_slider_float(gui, "Atom scale", &state->atom_scale, 0.15f, 2.5f);
         if (atom_changed)
             _apply_atom_scale(state);
+
+        bool msaa_changed = false;
+        msaa_changed |= dvz_gui_checkbox(gui, "Enable MSAA", &state->msaa_enabled);
+        msaa_changed |=
+            dvz_gui_slider_float(gui, "MSAA samples", &state->msaa_samples, 2.0f, 8.0f);
+        msaa_changed |=
+            dvz_gui_checkbox(gui, "Alpha-to-coverage", &state->msaa_alpha_to_coverage);
+        if (msaa_changed)
+            _apply_msaa(state);
 
         bool ssao_changed = false;
         ssao_changed |= dvz_gui_checkbox(gui, "SSAO", &state->ssao_enabled);
@@ -565,6 +615,8 @@ int main(int argc, char** argv)
         .bundle = &bundle,
         .live_radii = scaled_radii,
         .ssao_enabled = true,
+        .msaa_enabled = true,
+        .msaa_alpha_to_coverage = true,
         .atom_scale = atom_scale,
         .ssao_radius = 0.496f,
         .ssao_strength = 1.458f,
@@ -572,8 +624,10 @@ int main(int argc, char** argv)
         .ssao_power = 2.153f,
         .ssao_min_visibility = 0.582f,
         .ssao_samples = 32.0f,
+        .msaa_samples = 8.0f,
         .ssao_blur = true,
     };
+    _apply_msaa(&state);
     _apply_ssao(&state);
 
     DvzGui* gui = dvz_app_window_gui(win, NULL);
