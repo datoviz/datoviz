@@ -918,6 +918,36 @@ DvzDrp2CommandStream* dvz_figure_emit(
 }
 
 
+/**
+ * Advance fly controllers attached to a figure.
+ *
+ * @param figure the figure
+ * @param dt elapsed time in seconds
+ * @return whether any fly controller still needs animation frames
+ */
+bool _dvz_figure_fly_update(DvzFigure* figure, double dt)
+{
+    if (figure == NULL)
+        return false;
+
+    bool active = false;
+    for (uint32_t i = 0; i < figure->panel_count; i++)
+    {
+        DvzFly* fly = figure->panels[i].fly;
+        if (fly == NULL)
+            continue;
+
+        if (fly->key_forward || fly->key_backward || fly->key_left || fly->key_right ||
+            fly->key_up || fly->key_down || fly->interacting || fly->pivot_marker_time_left > 0.0)
+        {
+            active = true;
+        }
+        dvz_fly_update(fly, dt);
+    }
+    return active;
+}
+
+
 /*************************************************************************************************/
 /*  Panel                                                                                        */
 /*************************************************************************************************/

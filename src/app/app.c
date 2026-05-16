@@ -1567,6 +1567,7 @@ static void _app_draw(DvzCanvas* canvas, const DvzStreamFrame* frame, void* user
 
     _dvz_scene_animations_step(app->scene, dvz_input_timestamp_ns());
     _app_sync_figure_size(win, frame);
+    bool fly_active = _dvz_figure_fly_update(win->figure, app->scene->clock.dt);
 
     /* Attach the canvas frame to the reserved DRP2 texture ID. */
     if (!dvz_drp2_runtime_attach_frame_target(app->runtime, win->target_id, frame))
@@ -1628,6 +1629,8 @@ static void _app_draw(DvzCanvas* canvas, const DvzStreamFrame* frame, void* user
 
     if (win->frame_callback != NULL && _app_frame_callback_allowed(win))
         win->frame_callback(win, win->frame_user_data);
+    if (fly_active)
+        dvz_app_window_request_frame(win);
     win->frame_index++;
 }
 

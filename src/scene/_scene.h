@@ -205,6 +205,8 @@ DvzCamera* _dvz_camera(const DvzCameraDesc* desc);
 
 void _scene_panel_apply_mvp(const DvzPanel* panel, DvzMVP* out);
 
+bool _dvz_figure_fly_update(DvzFigure* figure, double dt);
+
 
 
 /*************************************************************************************************/

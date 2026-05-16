@@ -38,6 +38,8 @@ int test_fly_pivot_preserves_eye_and_orbits(TstSuite* suite, TstItem* item);
 
 int test_panel_fly_getter(TstSuite* suite, TstItem* item);
 
+int test_figure_fly_update_advances_panel_camera(TstSuite* suite, TstItem* item);
+
 int test_scene_animation(TstSuite* suite);
 
 int test_scene_animation_offline_timer_every_frame(TstSuite* suite, TstItem* item);

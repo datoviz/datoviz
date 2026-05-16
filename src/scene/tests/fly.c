@@ -191,6 +191,53 @@ int test_panel_fly_getter(TstSuite* suite, TstItem* item)
 
 
 
+int test_figure_fly_update_advances_panel_camera(TstSuite* suite, TstItem* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 800, 600, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    ANN(panel);
+
+    DvzFlyDesc desc = dvz_fly_desc();
+    desc.speed = 2.0f;
+    DvzFly* fly = dvz_panel_set_fly(panel, NULL, &desc);
+    ANN(fly);
+
+    DvzKeyboardEvent press = {
+        .type = DVZ_KEYBOARD_EVENT_PRESS,
+        .key = DVZ_KEY_W,
+        .mods = 0,
+    };
+    AT(dvz_fly_keyboard(fly, &press));
+    AT(_dvz_figure_fly_update(figure, 0.5));
+
+    vec3 pos = {0};
+    dvz_fly_get_position(fly, pos);
+    AC(pos[2], 2.0f, 1e-5f);
+
+    DvzMVP mvp = {0};
+    _scene_panel_apply_mvp(panel, &mvp);
+    AC(mvp.view[3][2], -2.0f, 1e-4f);
+
+    DvzKeyboardEvent release = {
+        .type = DVZ_KEYBOARD_EVENT_RELEASE,
+        .key = DVZ_KEY_W,
+        .mods = 0,
+    };
+    AT(dvz_fly_keyboard(fly, &release));
+    AT(!_dvz_figure_fly_update(figure, 0.5));
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
 /*************************************************************************************************/
 /*  Test suite                                                                                   */
 /*************************************************************************************************/
@@ -204,5 +251,6 @@ int test_scene_fly(TstSuite* suite)
     TEST_SIMPLE(test_fly_keyboard_arrows_update);
     TEST_SIMPLE(test_fly_pivot_preserves_eye_and_orbits);
     TEST_SIMPLE(test_panel_fly_getter);
+    TEST_SIMPLE(test_figure_fly_update_advances_panel_camera);
     return 0;
 }
