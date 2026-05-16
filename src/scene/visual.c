@@ -58,13 +58,21 @@ static void _material_params_default(DvzSceneMaterialParams* params);
 
 static void _material_state_default(DvzSceneMaterialState* material, DvzVisualType visual_type);
 
-static void _material_state_sync_params(
-    DvzSceneMaterialState* material, const DvzSceneMaterialParams* params);
-
 static void _material_params_sync_state(
     DvzSceneMaterialParams* params, const DvzSceneMaterialState* material);
 
 static bool _material_depth_cue_supported(DvzVisualType visual_type);
+
+static bool _material_visual_supported(DvzVisualType visual_type);
+
+static bool _material_model_valid(DvzMaterialModel model);
+
+static bool _material_alpha_mode_valid(DvzAlphaMode mode);
+
+static bool _material_desc_valid(const DvzMaterialDesc* desc);
+
+static void _material_state_apply_desc(
+    DvzSceneMaterialState* material, const DvzMaterialDesc* desc);
 
 static int _material_apply_depth_cue(
     DvzSceneMaterialState* material, const DvzDepthCueDesc* desc);
@@ -367,7 +375,6 @@ static DvzVisual* _scene_alloc_visual(DvzScene* scene, DvzVisualType type, uint3
     visual->alpha_mode = DVZ_ALPHA_OPAQUE;
     _material_state_default(&visual->material, type);
     _material_params_default(&visual->material_params);
-    _material_state_sync_params(&visual->material, &visual->material_params);
     _material_params_sync_state(&visual->material_params, &visual->material);
     _volume_state_default(&visual->volume);
     return visual;
@@ -646,6 +653,27 @@ static void _material_params_default(DvzSceneMaterialParams* params)
 
 
 /**
+ * Return the default public material descriptor.
+ *
+ * @return default material descriptor
+ */
+DvzMaterialDesc dvz_material_desc(void)
+{
+    DvzMaterialDesc desc = {
+        .model = DVZ_MATERIAL_MODEL_PHONG,
+        .alpha_mode = DVZ_ALPHA_OPAQUE,
+        .opacity = 1.0f,
+        .base_color_factor = {1.0f, 1.0f, 1.0f, 1.0f},
+        .light_direction = {0.0f, 0.0f, 1.0f},
+        .phong = {.ambient = 0.2f, .diffuse = 0.8f, .specular = 0.25f, .shininess = 32.0f},
+        .standard = {.roughness = 0.5f, .specular = 0.5f},
+    };
+    return desc;
+}
+
+
+
+/**
  * Initialize material defaults for one visual family.
  *
  * @param material the material state
@@ -655,17 +683,9 @@ static void _material_state_default(DvzSceneMaterialState* material, DvzVisualTy
 {
     ANN(material);
     dvz_memset(material, sizeof(DvzSceneMaterialState), 0, sizeof(DvzSceneMaterialState));
+    DvzMaterialDesc desc = dvz_material_desc();
+    _material_state_apply_desc(material, &desc);
     material->alpha_mode = DVZ_ALPHA_OPAQUE;
-    material->opacity = 1.0f;
-    material->light_direction[2] = 1.0f;
-    material->ambient = 0.2f;
-    material->diffuse = 0.8f;
-    material->specular = 0.25f;
-    material->shininess = 32.0f;
-    material->depth_cue_far = 1.0f;
-    material->depth_cue_strength = 1.0f;
-    material->depth_cue_density = 3.0f;
-    material->depth_cue_background[3] = 1.0f;
     material->scalar_scale = 1.0f;
 
     switch (visual_type)
@@ -675,12 +695,15 @@ static void _material_state_default(DvzSceneMaterialState* material, DvzVisualTy
     case DVZ_VISUAL_TYPE_PATH:
     case DVZ_VISUAL_TYPE_SPHERE:
         material->kind = DVZ_MATERIAL_KIND_LIT;
+        material->model = DVZ_MATERIAL_MODEL_PHONG;
         break;
     case DVZ_VISUAL_TYPE_VOLUME:
         material->kind = DVZ_MATERIAL_KIND_VOLUME;
+        material->model = DVZ_MATERIAL_MODEL_UNLIT;
         break;
     default:
         material->kind = DVZ_MATERIAL_KIND_UNLIT;
+        material->model = DVZ_MATERIAL_MODEL_UNLIT;
         break;
     }
 }
@@ -688,25 +711,169 @@ static void _material_state_default(DvzSceneMaterialState* material, DvzVisualTy
 
 
 /**
- * Mirror a material parameter payload into the retained material state.
+ * Return whether one visual family supports shared surface material parameters.
  *
- * @param material the material state
- * @param params the material parameter payload
+ * @param visual_type the retained visual type
+ * @return whether shared material parameters are supported
  */
-static void _material_state_sync_params(
-    DvzSceneMaterialState* material, const DvzSceneMaterialParams* params)
+static bool _material_visual_supported(DvzVisualType visual_type)
+{
+    return visual_type == DVZ_VISUAL_TYPE_PRIMITIVE || visual_type == DVZ_VISUAL_TYPE_MESH ||
+           visual_type == DVZ_VISUAL_TYPE_SPHERE;
+}
+
+
+
+/**
+ * Return whether a material model enum value is valid.
+ *
+ * @param model the material model
+ * @return whether the model is valid
+ */
+static bool _material_model_valid(DvzMaterialModel model)
+{
+    return model >= DVZ_MATERIAL_MODEL_UNLIT && model <= DVZ_MATERIAL_MODEL_STANDARD;
+}
+
+
+
+/**
+ * Return whether an alpha-mode enum value is valid.
+ *
+ * @param mode the alpha mode
+ * @return whether the alpha mode is valid
+ */
+static bool _material_alpha_mode_valid(DvzAlphaMode mode)
+{
+    return mode >= DVZ_ALPHA_OPAQUE && mode <= DVZ_ALPHA_MASK;
+}
+
+
+
+/**
+ * Return whether one public material descriptor is usable.
+ *
+ * @param desc the material descriptor
+ * @return whether the descriptor is valid
+ */
+static bool _material_desc_valid(const DvzMaterialDesc* desc)
+{
+    ANN(desc);
+    if (!_material_model_valid(desc->model))
+    {
+        log_error("invalid material model %d", (int)desc->model);
+        return false;
+    }
+    if (!_material_alpha_mode_valid(desc->alpha_mode))
+    {
+        log_error("invalid material alpha mode %d", (int)desc->alpha_mode);
+        return false;
+    }
+    if (!isfinite(desc->opacity) || desc->opacity < 0.0f || desc->opacity > 1.0f)
+    {
+        log_error("material opacity must be finite and in [0, 1]");
+        return false;
+    }
+    for (uint32_t i = 0; i < 4; i++)
+    {
+        if (!isfinite(desc->base_color_factor[i]) || desc->base_color_factor[i] < 0.0f)
+        {
+            log_error("material base color factor values must be finite and nonnegative");
+            return false;
+        }
+    }
+    for (uint32_t i = 0; i < 3; i++)
+    {
+        if (!isfinite(desc->light_direction[i]))
+        {
+            log_error("material light direction values must be finite");
+            return false;
+        }
+        if (!isfinite(desc->standard.emissive[i]) || desc->standard.emissive[i] < 0.0f)
+        {
+            log_error("standard material emissive values must be finite and nonnegative");
+            return false;
+        }
+    }
+    if (!isfinite(desc->phong.ambient) || !isfinite(desc->phong.diffuse) ||
+        !isfinite(desc->phong.specular))
+    {
+        log_error("Phong material ADS values must be finite");
+        return false;
+    }
+    if (!isfinite(desc->phong.shininess) || desc->phong.shininess < 0.0f)
+    {
+        log_error("Phong material shininess must be finite and nonnegative");
+        return false;
+    }
+    if (!isfinite(desc->standard.roughness) || desc->standard.roughness < 0.0f ||
+        desc->standard.roughness > 1.0f)
+    {
+        log_error("standard material roughness must be finite and in [0, 1]");
+        return false;
+    }
+    if (!isfinite(desc->standard.specular) || desc->standard.specular < 0.0f)
+    {
+        log_error("standard material specular strength must be finite and nonnegative");
+        return false;
+    }
+    if (!isfinite(desc->standard.metallic) || desc->standard.metallic < 0.0f ||
+        desc->standard.metallic > 1.0f)
+    {
+        log_error("standard material metallic must be finite and in [0, 1]");
+        return false;
+    }
+    if (!isfinite(desc->standard.rim_strength) || desc->standard.rim_strength < 0.0f)
+    {
+        log_error("standard material rim strength must be finite and nonnegative");
+        return false;
+    }
+    return true;
+}
+
+
+
+/**
+ * Apply a public material descriptor to retained material state.
+ *
+ * @param material the retained material state
+ * @param desc the material descriptor
+ */
+static void _material_state_apply_desc(
+    DvzSceneMaterialState* material, const DvzMaterialDesc* desc)
 {
     ANN(material);
-    ANN(params);
-    material->light_direction[0] = params->light_direction[0];
-    material->light_direction[1] = params->light_direction[1];
-    material->light_direction[2] = params->light_direction[2];
-    material->light_direction[3] = params->light_direction[3];
-    material->ambient = params->params[0];
-    material->diffuse = params->params[1];
-    material->specular = params->params[2];
-    material->shininess = params->params[3];
+    ANN(desc);
+
+    material->model = desc->model;
+    material->alpha_mode = desc->alpha_mode;
+    material->opacity = desc->opacity;
+    for (uint32_t i = 0; i < 4; i++)
+        material->base_color_factor[i] = desc->base_color_factor[i];
+    material->light_direction[0] = desc->light_direction[0];
+    material->light_direction[1] = desc->light_direction[1];
+    material->light_direction[2] = desc->light_direction[2];
+    material->light_direction[3] = 0.0f;
+    material->ambient = desc->phong.ambient;
+    material->diffuse = desc->phong.diffuse;
+    material->specular = desc->phong.specular;
+    material->shininess = desc->phong.shininess;
+    material->roughness = desc->standard.roughness;
+    material->standard_specular = desc->standard.specular;
+    material->metallic = desc->standard.metallic;
+    material->emissive[0] = desc->standard.emissive[0];
+    material->emissive[1] = desc->standard.emissive[1];
+    material->emissive[2] = desc->standard.emissive[2];
+    material->rim_strength = desc->standard.rim_strength;
+    material->depth_cue_far = material->depth_cue_far == 0.0f ? 1.0f : material->depth_cue_far;
+    material->depth_cue_strength =
+        material->depth_cue_strength == 0.0f ? 1.0f : material->depth_cue_strength;
+    material->depth_cue_density =
+        material->depth_cue_density == 0.0f ? 3.0f : material->depth_cue_density;
+    material->depth_cue_background[3] =
+        material->depth_cue_background[3] == 0.0f ? 1.0f : material->depth_cue_background[3];
 }
+
 
 
 /**
@@ -724,10 +891,28 @@ static void _material_params_sync_state(
     params->light_direction[1] = material->light_direction[1];
     params->light_direction[2] = material->light_direction[2];
     params->light_direction[3] = material->light_direction[3];
-    params->params[0] = material->ambient;
-    params->params[1] = material->diffuse;
-    params->params[2] = material->specular;
-    params->params[3] = material->shininess;
+    if (material->model == DVZ_MATERIAL_MODEL_STANDARD)
+    {
+        float roughness = fminf(fmaxf(material->roughness, 0.0f), 1.0f);
+        params->params[0] = fmaxf(0.04f, 0.2f * (1.0f - material->metallic));
+        params->params[1] = fmaxf(0.0f, 1.0f - 0.25f * roughness);
+        params->params[2] = fmaxf(0.0f, material->standard_specular);
+        params->params[3] = fmaxf(1.0f, 128.0f * (1.0f - roughness) + 1.0f);
+    }
+    else if (material->model == DVZ_MATERIAL_MODEL_UNLIT)
+    {
+        params->params[0] = 1.0f;
+        params->params[1] = 0.0f;
+        params->params[2] = 0.0f;
+        params->params[3] = 1.0f;
+    }
+    else
+    {
+        params->params[0] = material->ambient;
+        params->params[1] = material->diffuse;
+        params->params[2] = material->specular;
+        params->params[3] = material->shininess;
+    }
     params->depth_cue[0] = material->depth_cue_near;
     params->depth_cue[1] = material->depth_cue_far;
     params->depth_cue[2] = material->depth_cue_enabled ? material->depth_cue_strength : 0.0f;
@@ -1129,6 +1314,36 @@ int dvz_visual_set_link_keys(
 
 
 /**
+ * Set shared material parameters for a primitive, mesh, or sphere visual.
+ *
+ * @param visual the visual
+ * @param desc the material descriptor, or NULL to restore defaults
+ * @return 0 on success, -1 on error
+ */
+int dvz_visual_set_material(DvzVisual* visual, const DvzMaterialDesc* desc)
+{
+    ANN(visual);
+    if (!_material_visual_supported(visual->type))
+    {
+        log_error("materials are only supported for primitive, mesh, and sphere visuals");
+        return -1;
+    }
+    if (!_scene_visual_mutation_allowed(visual->scene, "update visual material"))
+        return -1;
+
+    DvzMaterialDesc material_desc = desc != NULL ? *desc : dvz_material_desc();
+    if (!_material_desc_valid(&material_desc))
+        return -1;
+
+    _material_state_apply_desc(&visual->material, &material_desc);
+    visual->alpha_mode = material_desc.alpha_mode;
+    _visual_material_mark_dirty(visual);
+    return 0;
+}
+
+
+
+/**
  * Override primitive, mesh, or sphere shading parameters.
  *
  * @param visual the visual
@@ -1139,31 +1354,21 @@ int dvz_visual_set_primitive_shading(
     DvzVisual* visual, const DvzPrimitiveShadingDesc* desc)
 {
     ANN(visual);
-    if (visual->type != DVZ_VISUAL_TYPE_PRIMITIVE && visual->type != DVZ_VISUAL_TYPE_MESH &&
-        visual->type != DVZ_VISUAL_TYPE_SPHERE)
-    {
-        log_error("primitive shading is only supported for primitive, mesh, and sphere visuals");
-        return -1;
-    }
-    if (!_scene_visual_mutation_allowed(visual->scene, "update primitive shading"))
-        return -1;
-    _material_params_default(&visual->material_params);
+    DvzMaterialDesc material = dvz_material_desc();
+    material.model = DVZ_MATERIAL_MODEL_PHONG;
+    material.alpha_mode = visual->alpha_mode;
+    material.opacity = visual->material.opacity;
     if (desc != NULL)
     {
-        visual->material_params.light_direction[0] = desc->light_direction[0];
-        visual->material_params.light_direction[1] = desc->light_direction[1];
-        visual->material_params.light_direction[2] = desc->light_direction[2];
-        visual->material_params.params[0] = desc->ambient;
-        visual->material_params.params[1] = desc->diffuse;
-        visual->material_params.params[2] = desc->specular;
-        visual->material_params.params[3] = desc->shininess;
+        material.light_direction[0] = desc->light_direction[0];
+        material.light_direction[1] = desc->light_direction[1];
+        material.light_direction[2] = desc->light_direction[2];
+        material.phong.ambient = desc->ambient;
+        material.phong.diffuse = desc->diffuse;
+        material.phong.specular = desc->specular;
+        material.phong.shininess = desc->shininess;
     }
-    _material_state_sync_params(&visual->material, &visual->material_params);
-    _material_params_sync_state(&visual->material_params, &visual->material);
-    _sphere_params_sync_mode(visual);
-    _visual_bump_version(&visual->material.version);
-    visual->material_params_dirty = true;
-    return 0;
+    return dvz_visual_set_material(visual, &material);
 }
 
 

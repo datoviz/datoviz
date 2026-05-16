@@ -465,13 +465,20 @@ typedef struct DvzSceneMaterialState DvzSceneMaterialState;
 struct DvzSceneMaterialState
 {
     DvzMaterialKind kind;
+    DvzMaterialModel model;
     DvzAlphaMode alpha_mode;
     float opacity;
+    float base_color_factor[4];
     float light_direction[4];
     float ambient;
     float diffuse;
     float specular;
     float shininess;
+    float roughness;
+    float standard_specular;
+    float metallic;
+    float emissive[3];
+    float rim_strength;
     bool depth_cue_enabled;
     DvzDepthCueMode depth_cue_mode;
     DvzDepthCueMetric depth_cue_metric;

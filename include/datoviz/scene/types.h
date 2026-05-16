@@ -172,6 +172,40 @@ struct DvzPrimitiveShadingDesc
 typedef struct DvzPrimitiveShadingDesc DvzPrimitiveShadingDesc;
 
 
+struct DvzPhongMaterial
+{
+    float ambient;
+    float diffuse;
+    float specular;
+    float shininess;
+};
+typedef struct DvzPhongMaterial DvzPhongMaterial;
+
+
+struct DvzStandardMaterial
+{
+    float roughness;
+    float specular;
+    float metallic;
+    float emissive[3];
+    float rim_strength;
+};
+typedef struct DvzStandardMaterial DvzStandardMaterial;
+
+
+struct DvzMaterialDesc
+{
+    DvzMaterialModel model;
+    DvzAlphaMode alpha_mode;
+    float opacity;
+    float base_color_factor[4];
+    float light_direction[3];
+    DvzPhongMaterial phong;
+    DvzStandardMaterial standard;
+};
+typedef struct DvzMaterialDesc DvzMaterialDesc;
+
+
 struct DvzDepthCueDesc
 {
     DvzDepthCueMode mode;

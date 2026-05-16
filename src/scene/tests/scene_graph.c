@@ -4315,6 +4315,140 @@ int test_scene_visual_internal_material_state(TstSuite* suite, TstItem* item)
 
 
 /**
+ * Verify the public material descriptor updates retained state and the current GPU payload.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_visual_material_setter(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzMaterialDesc defaults = dvz_material_desc();
+    AT(defaults.model == DVZ_MATERIAL_MODEL_PHONG);
+    AT(defaults.alpha_mode == DVZ_ALPHA_OPAQUE);
+    AT(defaults.opacity == 1.0f);
+    AT(defaults.base_color_factor[0] == 1.0f);
+    AT(defaults.base_color_factor[3] == 1.0f);
+    AT(defaults.light_direction[2] == 1.0f);
+    AT(defaults.phong.ambient == 0.2f);
+    AT(defaults.phong.diffuse == 0.8f);
+    AT(defaults.phong.specular == 0.25f);
+    AT(defaults.phong.shininess == 32.0f);
+    AT(defaults.standard.roughness == 0.5f);
+    AT(defaults.standard.specular == 0.5f);
+
+    DvzScene* scene = dvz_scene();
+    AT(scene != NULL);
+    DvzVisual* mesh = dvz_mesh(scene, 0);
+    DvzVisual* sphere = dvz_sphere(scene, DVZ_SPHERE_FLAGS_LIGHTING);
+    DvzVisual* point = dvz_point(scene, 0);
+    AT(mesh != NULL);
+    AT(sphere != NULL);
+    AT(point != NULL);
+    AT(mesh->material.model == DVZ_MATERIAL_MODEL_PHONG);
+    AT(point->material.model == DVZ_MATERIAL_MODEL_UNLIT);
+
+    DvzMaterialDesc phong = dvz_material_desc();
+    phong.alpha_mode = DVZ_ALPHA_WBOIT;
+    phong.opacity = 0.5f;
+    phong.base_color_factor[0] = 0.75f;
+    phong.light_direction[0] = 1.0f;
+    phong.light_direction[1] = 2.0f;
+    phong.light_direction[2] = 3.0f;
+    phong.phong.ambient = 0.15f;
+    phong.phong.diffuse = 0.70f;
+    phong.phong.specular = 0.40f;
+    phong.phong.shininess = 48.0f;
+    uint64_t version = mesh->material.version;
+    AT(dvz_visual_set_material(mesh, &phong) == 0);
+    AT(mesh->material.model == DVZ_MATERIAL_MODEL_PHONG);
+    AT(mesh->alpha_mode == DVZ_ALPHA_WBOIT);
+    AT(mesh->material.alpha_mode == DVZ_ALPHA_WBOIT);
+    AT(mesh->material.opacity == 0.5f);
+    AT(mesh->material.base_color_factor[0] == 0.75f);
+    AT(mesh->material.light_direction[0] == 1.0f);
+    AT(mesh->material.light_direction[1] == 2.0f);
+    AT(mesh->material.light_direction[2] == 3.0f);
+    AT(mesh->material.ambient == 0.15f);
+    AT(mesh->material.diffuse == 0.70f);
+    AT(mesh->material.specular == 0.40f);
+    AT(mesh->material.shininess == 48.0f);
+    AT(mesh->material_params.params[0] == 0.15f);
+    AT(mesh->material_params.params[1] == 0.70f);
+    AT(mesh->material_params.params[2] == 0.40f);
+    AT(mesh->material_params.params[3] == 48.0f);
+    AT(mesh->material.version > version);
+
+    DvzMaterialDesc standard = dvz_material_desc();
+    standard.model = DVZ_MATERIAL_MODEL_STANDARD;
+    standard.alpha_mode = DVZ_ALPHA_OPAQUE;
+    standard.opacity = 0.9f;
+    standard.standard.roughness = 0.25f;
+    standard.standard.specular = 0.6f;
+    standard.standard.metallic = 0.2f;
+    standard.standard.emissive[1] = 0.05f;
+    standard.standard.rim_strength = 0.3f;
+    version = mesh->material.version;
+    AT(dvz_visual_set_material(mesh, &standard) == 0);
+    AT(mesh->material.model == DVZ_MATERIAL_MODEL_STANDARD);
+    AT(mesh->material.roughness == 0.25f);
+    AT(mesh->material.standard_specular == 0.6f);
+    AT(mesh->material.metallic == 0.2f);
+    AT(mesh->material.emissive[1] == 0.05f);
+    AT(mesh->material.rim_strength == 0.3f);
+    AT(mesh->material_params.params[0] > 0.0f);
+    AT(mesh->material_params.params[1] > 0.0f);
+    AT(mesh->material_params.params[2] == 0.6f);
+    AT(mesh->material_params.params[3] > 1.0f);
+    AT(mesh->material.version > version);
+
+    AT(dvz_visual_set_depth_cue(
+           mesh,
+           &(DvzDepthCueDesc){
+               .mode = DVZ_DEPTH_CUE_DARKEN,
+               .near_depth = 0.1f,
+               .far_depth = 0.9f,
+               .strength = 0.4f,
+               .background_color = {0.0f, 0.0f, 0.0f, 1.0f},
+           }) == 0);
+    AT(dvz_visual_set_material(mesh, NULL) == 0);
+    AT(mesh->material.model == DVZ_MATERIAL_MODEL_PHONG);
+    AT(mesh->alpha_mode == DVZ_ALPHA_OPAQUE);
+    AT(mesh->material.depth_cue_enabled);
+    AT(mesh->material_params.depth_cue[2] == 0.4f);
+    AT(mesh->material_params.params[0] == 0.2f);
+    AT(mesh->material_params.params[1] == 0.8f);
+
+    AT(dvz_visual_set_primitive_shading(
+           sphere,
+           &(DvzPrimitiveShadingDesc){
+               .light_direction = {0.0f, 1.0f, 0.0f},
+               .ambient = 0.3f,
+               .diffuse = 0.6f,
+               .specular = 0.2f,
+               .shininess = 16.0f,
+           }) == 0);
+    AT(sphere->material.model == DVZ_MATERIAL_MODEL_PHONG);
+    AT(sphere->material.ambient == 0.3f);
+    AT(sphere->material_params.params[3] == 16.0f);
+    AT(sphere->material_params.depth_cue_extra[3] == (float)DVZ_SPHERE_MODE_FAST_IMPOSTOR);
+
+#ifndef __clang_analyzer__
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_visual_set_material(point, &phong) == -1);
+    DvzMaterialDesc bad = dvz_material_desc();
+    bad.opacity = 2.0f;
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_visual_set_material(mesh, &bad) == -1);
+#endif
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+/**
  * Verify disabling pixel depth cueing returns to the plain pixel pipeline.
  *
  * @param suite the active test suite
@@ -7149,6 +7283,7 @@ int test_scene_graph(TstSuite* suite)
     TEST_SIMPLE(test_scene_rejects_unsupported_point_attribute);
     TEST_SIMPLE(test_scene_visual_alpha_mode);
     TEST_SIMPLE(test_scene_visual_internal_material_state);
+    TEST_SIMPLE(test_scene_visual_material_setter);
     TEST_SIMPLE(test_scene_pixel_depth_cue_toggle_switches_pipeline);
     TEST_SIMPLE(test_scene_visual_pass_capabilities);
     TEST_SIMPLE(test_scene_gbuffer_runtime_lowering);
