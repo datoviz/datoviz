@@ -24,6 +24,7 @@
 
 #include "_alloc.h"
 #include "_assertions.h"
+#include "../_scene.h"
 #include "datoviz/app.h"
 #include "datoviz/canvas.h"
 #include "datoviz/drp2.h"
@@ -1898,6 +1899,116 @@ int test_app_offscreen_resize_reuses_runtime_with_mesh_and_image(TstSuite* suite
 }
 
 
+/**
+ * Ensure app-owned request execution stays steady across repeated pick/probe frames.
+ *
+ * @param suite the test suite
+ * @param item the test item
+ * @return 0 on success
+ */
+int test_app_offscreen_pick_probe_request_steady_state(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    if (!_scene_vklite_runtime_available())
+        return 0;
+
+    DvzScene* scene = dvz_scene();
+    AT(scene != NULL);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    AT(figure != NULL);
+    DvzPanel* panel =
+        dvz_panel(figure, (DvzPanelDesc){.x = 0, .y = 0, .width = 1, .height = 1});
+    AT(panel != NULL);
+
+    DvzVisual* points = dvz_point(scene, 0);
+    AT(points != NULL);
+    dvz_visual_set_pick_capabilities(points, DVZ_PICK_CAPABILITY_ITEM);
+    float point_pos[1][3] = {{0.0f, 0.0f, 0.0f}};
+    DvzColor point_color[1] = {{255, 255, 0, 255}};
+    float point_size[1] = {24.0f};
+    AT(dvz_visual_set_data(points, "position", point_pos, 1) == 0);
+    AT(dvz_visual_set_data(points, "color", point_color, 1) == 0);
+    AT(dvz_visual_set_data(points, "size", point_size, 1) == 0);
+    AT(dvz_panel_add_visual(panel, points, NULL) == 0);
+
+    DvzVisual* image = dvz_image(scene, 0);
+    AT(image != NULL);
+    float image_pos[4][3] = {
+        {-1.0f, -1.0f, 0.0f},
+        {-1.0f, 1.0f, 0.0f},
+        {1.0f, -1.0f, 0.0f},
+        {1.0f, 1.0f, 0.0f},
+    };
+    float texcoords[4][2] = {
+        {0.0f, 0.0f},
+        {0.0f, 1.0f},
+        {1.0f, 0.0f},
+        {1.0f, 1.0f},
+    };
+    uint8_t pixels[4 * 4 * 4] = {0};
+    for (uint32_t i = 0; i < 16; i++)
+    {
+        pixels[4 * i + 0] = 255;
+        pixels[4 * i + 3] = 255;
+    }
+    AT(dvz_visual_set_data(image, "position", image_pos, 4) == 0);
+    AT(dvz_visual_set_data(image, "texcoords", texcoords, 4) == 0);
+    AT(dvz_visual_set_texture(image, pixels, 4, 4) == 0);
+    AT(dvz_panel_add_visual(panel, image, &(DvzVisualAttachDesc){.z_layer = -1}) == 0);
+
+    DvzApp* app = dvz_app(scene);
+    if (app == NULL)
+    {
+        log_warn("test_app_offscreen_pick_probe_request_steady_state skipped: GPU context failed");
+        dvz_scene_destroy(scene);
+        return 0;
+    }
+    DvzAppWindow* win = dvz_app_window(app, figure, 64, 64);
+    AT(win != NULL);
+
+    for (uint32_t frame = 0; frame < 8; frame++)
+    {
+        uint64_t pick_id = 100 + frame;
+        uint64_t probe_id = 200 + frame;
+        AT(dvz_panel_pick(panel, 32.0, 32.0, &(DvzPickRequest){.request_id = pick_id}) == 0);
+        AT(dvz_panel_probe(panel, 32.0, 32.0, &(DvzProbeRequest){.request_id = probe_id}) == 0);
+        AT(scene->pending_pick_count == 1);
+        AT(scene->pending_probe_count == 1);
+
+        AT(dvz_app_window_render_once(win) == DVZ_CANVAS_FRAME_READY);
+        AT(scene->pending_pick_count == 0);
+        AT(scene->pending_probe_count == 0);
+
+        DvzPickResult pick = {0};
+        DvzProbeResult probe = {0};
+        AT(dvz_scene_poll_pick(scene, &pick));
+        AT(dvz_scene_poll_probe(scene, &probe));
+        AT(pick.hit);
+        AT(pick.request_id == pick_id);
+        AT(pick.resolved_target == DVZ_SCENE_TARGET_ITEM);
+        AT(pick.resolved_id == 0);
+        AT(probe.hit);
+        AT(probe.request_id == probe_id);
+        AT(probe.value_kind == DVZ_PROBE_VALUE_VEC4);
+        AT(probe.vector[0] > 0.9);
+        AT(probe.vector[1] < 0.1);
+        AT(probe.vector[2] < 0.1);
+        AT(probe.vector[3] > 0.9);
+
+        AT(!dvz_scene_poll_pick(scene, &pick));
+        AT(!dvz_scene_poll_probe(scene, &probe));
+        AT(scene->pick_result_count == 0);
+        AT(scene->probe_result_count == 0);
+    }
+
+    dvz_app_destroy(app);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
 
 int test_app_offscreen_two_panel_points_light_both_halves(TstSuite* suite, TstItem* item)
 {
@@ -2525,6 +2636,7 @@ int test_scene_app(TstSuite* suite)
     TEST_SIMPLE(test_app_offscreen_retained_render_second_frame);
     TEST_SIMPLE(test_app_offscreen_image_retained_render_second_frame);
     TEST_SIMPLE(test_app_offscreen_resize_reuses_runtime_with_mesh_and_image);
+    TEST_SIMPLE(test_app_offscreen_pick_probe_request_steady_state);
     TEST_SIMPLE(test_app_offscreen_two_panel_points_light_both_halves);
     TEST_SIMPLE(test_app_offscreen_clear_color);
     TEST_SIMPLE(test_app_offscreen_volume_slice_renders_field);

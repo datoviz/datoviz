@@ -456,6 +456,8 @@ int test_app_offscreen_retained_render_second_frame(TstSuite* suite, TstItem* it
 int test_app_offscreen_resize_reuses_runtime_with_mesh_and_image(
     TstSuite* suite, TstItem* item);
 
+int test_app_offscreen_pick_probe_request_steady_state(TstSuite* suite, TstItem* item);
+
 int test_app_offscreen_two_panel_points_light_both_halves(TstSuite* suite, TstItem* item);
 
 int test_app_offscreen_clear_color(TstSuite* suite, TstItem* item);
