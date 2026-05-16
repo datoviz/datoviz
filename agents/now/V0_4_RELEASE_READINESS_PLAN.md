@@ -50,6 +50,11 @@ documentation, a strong gallery, and a credible quality audit.
    `canvas`, `stream`, `video`) should be documented as advanced and integration-oriented surfaces,
    especially for users who already have their own engine or want only capture/stream/sink pieces.
 
+6. **Use a task-oriented documentation taxonomy.**
+   Public documentation should follow a Diataxis-style split between tutorials, how-to guides,
+   reference, and explanation. Each page should have one primary job: teach a first experience,
+   solve a specific task, state technical facts, or explain architecture and tradeoffs.
+
 
 ## Proposed Milestones
 
@@ -176,12 +181,14 @@ Work:
 4. Audit `examples/*/README.md`.
 5. Decide what stays as public documentation, what becomes developer architecture notes, and what
    moves to historical task records.
-6. Remove or clearly mark v0.3-era claims that no longer match v0.4.
-7. Normalize terminology: scene, visual, panel, figure, controller, frame plan, DRP2 stream,
+6. Classify each public-facing page as tutorial, how-to guide, reference, or explanation. Split or
+   move pages that mix incompatible reader goals.
+7. Remove or clearly mark v0.3-era claims that no longer match v0.4.
+8. Normalize terminology: scene, visual, panel, figure, controller, frame plan, DRP2 stream,
    runtime, canvas, stream sink, offscreen, WebGPU, video, GUI.
-8. Normalize warnings and feature-state labels: stable, experimental, advanced, backend-specific,
+9. Normalize warnings and feature-state labels: stable, experimental, advanced, backend-specific,
    planned, deferred.
-9. Check all Markdown links, image references, and code fences.
+10. Check all Markdown links, image references, and code fences.
 
 Exit criteria:
 
@@ -190,6 +197,8 @@ Exit criteria:
 3. Markdown link checks pass or documented external exceptions are recorded.
 4. The repo has a clear split between user docs, specs, architecture notes, agent plans, and task
    records.
+5. User-facing pages have an explicit documentation type, and pages with mixed goals are split or
+   intentionally justified.
 
 
 ### M5: Documentation System Decision
@@ -260,25 +269,23 @@ Recommended structure:
 
 1. **Home:** what Datoviz is, what v0.4 supports, screenshots/videos, install links, and clear
    status.
-2. **Quickstart:** smallest C example, smallest Python example, and first scene example.
-3. **Concepts:** figure, panel, visual, data coordinates, transforms, controllers, scales,
-   colormaps, text, axes, annotations, picking, probing, events, GUI, frame plans.
-4. **Scene guide:** the main user-facing guide, organized by workflows rather than internals.
-5. **Visual guide:** one page per visual family, with supported attributes, examples, limitations,
-   performance notes, and picking/probing behavior.
+2. **Tutorials:** first successful experiences for a beginner, such as first C scene, first Python
+   scene, first image, first interactive app, and first offscreen capture. These should be guided,
+   linear, and short; they should not try to become API reference or architecture essays.
+3. **How-to guides:** narrow task recipes for users who know what they want to do, such as adding a
+   visual, configuring controllers, using scales/colormaps, picking/probing, recording/replaying
+   DVZR, exporting video, embedding GUI controls, running offscreen, and trying WebGPU if supported.
+4. **Reference:** generated C API, Python raw bindings, visual capability tables, environment
+   variables, feature/status tables, command-line options, example metadata, supported platforms,
+   and lower-layer API facts. Reference pages should be terse, complete, and easy to scan.
+5. **Explanation:** conceptual and architectural pages covering figure/panel/visual concepts,
+   scene vs DRP2/vklite/canvas responsibilities, frame plans, ownership and borrowed handles,
+   rendering techniques, performance model, backend limits, and release compatibility policy.
 6. **Examples and gallery:** one page per example, generated from runnable source and captured
-   media.
-7. **C API reference:** generated from public headers, with stable grouping by module.
-8. **Python raw bindings:** ctypes API reference, generation details, and limitations.
-9. **Advanced C layers:** DRP2, vklite, canvas, stream sinks, offscreen rendering, video export,
-   and integration into external engines.
-10. **GUI:** ImGui/cimgui-facing docs, common widgets, event integration, and limits.
-11. **IPython/Jupyter:** what works, what is experimental, display/capture modes, event-loop
-    caveats.
-12. **WebGPU/WASM:** status, supported DRP2 subset, browser setup, limitations, and examples.
-13. **Video/export:** encoder support, platform notes, deterministic offline rendering, and
-    animated gallery generation.
-14. **Developer docs:** build, tests, architecture, contributing, release process, and agent usage.
+   media. Gallery pages can link to tutorial/how-to/reference/explanation pages, but should not
+   replace them.
+7. **Developer docs:** build, tests, architecture, contributing, release process, agent usage, and
+   historical task records. Developer docs should stay visibly separate from user documentation.
 
 Content requirements:
 
@@ -288,6 +295,13 @@ Content requirements:
 3. Every public header should contribute to the generated C reference.
 4. Every public function should have a useful one-sentence summary and parameter documentation.
 5. Pages should include limitations where they matter instead of implying completeness.
+6. Every public documentation page should declare or imply one primary type: tutorial, how-to,
+   reference, or explanation.
+7. Tutorials should optimize for learning and confidence, not feature exhaustiveness.
+8. How-to guides should answer concrete tasks and link out to reference instead of duplicating it.
+9. Reference should state behavior, inputs, outputs, constraints, defaults, and support level
+   without narrative detours.
+10. Explanation should cover why the system works the way it does, not step-by-step instructions.
 
 
 ### M7: Python Binding Readiness
@@ -579,11 +593,14 @@ Recommended pattern:
 4. Prefer many narrow PRs over one broad release-polish branch.
 5. Keep generated rewrites reviewable. For docs, ask agents to preserve factual claims and update
    status rather than invent unsupported behavior.
-6. Use agents for first-pass audits, then have a human decide API names, public promises, release
+6. For documentation tasks, require the agent to state the intended page type: tutorial, how-to,
+   reference, or explanation. Do not let one generated page mix guided lessons, recipes, API facts,
+   and architecture rationale unless the mix is explicitly intentional.
+7. Use agents for first-pass audits, then have a human decide API names, public promises, release
    messaging, and deprecation policy.
-7. For static analysis, ask agents to triage findings into true defects, false positives, tool
+8. For static analysis, ask agents to triage findings into true defects, false positives, tool
    limitations, and follow-up tickets.
-8. For gallery work, ask agents to produce runnable examples plus metadata and generated media,
+9. For gallery work, ask agents to produce runnable examples plus metadata and generated media,
    then review visual quality manually.
 
 Good agent task examples:
