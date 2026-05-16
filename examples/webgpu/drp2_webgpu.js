@@ -47,6 +47,18 @@ function streamSourceName(config) {
 
 
 
+function applyStreamCanvasAspect(stream) {
+  const width = Number(stream.canvas?.width);
+  const height = Number(stream.canvas?.height);
+  if (Number.isFinite(width) && Number.isFinite(height) && width > 0 && height > 0) {
+    canvas.style.setProperty("--stream-aspect", `${width / height}`);
+  } else {
+    canvas.style.removeProperty("--stream-aspect");
+  }
+}
+
+
+
 function required(value, message) {
   if (value === undefined || value === null) {
     throw new Error(message);
@@ -1747,6 +1759,7 @@ async function main() {
       }
       streamName = streamConfig.name;
       stream = await response.json();
+      applyStreamCanvasAspect(stream);
       runtime = new Drp2WebGpuRuntime(device, context, format);
       await runtime.load(stream);
       configureInteraction(streamConfig);

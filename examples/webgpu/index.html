@@ -75,11 +75,12 @@
     }
 
     canvas {
-      width: min(80vw, 720px);
-      height: min(80vh, 720px);
+      --stream-aspect: 1;
+      width: min(80vw, calc((100vh - 144px) * var(--stream-aspect)), 720px);
+      height: auto;
       max-width: calc(100vw - 48px);
       max-height: calc(100vh - 144px);
-      aspect-ratio: 1;
+      aspect-ratio: var(--stream-aspect);
       background: #05070b;
       border: 1px solid #2d3442;
       display: block;

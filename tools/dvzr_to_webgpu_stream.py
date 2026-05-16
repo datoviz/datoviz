@@ -214,6 +214,19 @@ def _infer_shader_identities(commands: list[dict[str, Any]]) -> dict[int, tuple[
     return identities
 
 
+def _recorded_canvas_extent(commands: list[dict[str, Any]]) -> dict[str, int] | None:
+    for command in commands:
+        if command.get("op") != "CreateTexture":
+            continue
+        if not (int(command.get("usage", 0)) & 0x10):
+            continue
+        return {
+            "width": int(command["width"]),
+            "height": int(command["height"]),
+        }
+    return None
+
+
 class IdMap:
     def __init__(self) -> None:
         self._map: dict[int, int] = {}
@@ -495,6 +508,7 @@ def adapt(recording: Path, output: Path, name: str, frame: int | None, gzip_thre
     records = _records_through_frame(_read_records(recording), frame)
     source_commands = [record for record in records if record.get("type") == "command"]
     identities = _infer_shader_identities(source_commands)
+    canvas_extent = _recorded_canvas_extent(source_commands)
     ids = IdMap()
     canvas_texture_ids: set[int] = set()
     commands: list[dict[str, Any]] = []
@@ -543,6 +557,7 @@ def adapt(recording: Path, output: Path, name: str, frame: int | None, gzip_thre
                 "name": name,
                 "version": {"major": 2, "minor": 0},
                 "source": source,
+                **({"canvas": canvas_extent} if canvas_extent is not None else {}),
                 "commands": commands,
                 "expected": {"outcome": "success"},
             },

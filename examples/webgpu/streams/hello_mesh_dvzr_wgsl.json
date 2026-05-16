@@ -5,6 +5,10 @@
     "minor": 0
   },
   "source": "build/examples/c/hello_mesh_glfw.dvzr",
+  "canvas": {
+    "width": 800,
+    "height": 600
+  },
   "commands": [
     {
       "cmd": "HelloRenderer",

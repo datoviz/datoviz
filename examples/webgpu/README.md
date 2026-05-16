@@ -41,7 +41,8 @@ python3 tools/dvzr_to_webgpu_stream.py \
 
 The adapter remaps large native ids to JavaScript-safe ids, replaces known built-in GLSL/SPIR-V
 shader modules with WGSL variants, maps the recorded render target to the browser canvas, and may
-encode large binary payloads as `base64+gzip`.
+encode large binary payloads as `base64+gzip`. For DVZR recordings, the adapter also stores the
+recorded canvas extent so the browser page can preserve the original replay aspect ratio.
 
 The earlier smoke streams remain available:
 
