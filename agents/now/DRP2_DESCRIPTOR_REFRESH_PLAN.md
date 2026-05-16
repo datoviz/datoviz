@@ -1,7 +1,35 @@
 # DRP2/vklite Descriptor Refresh Plan
 
-> Status: planned follow-up after the WBOIT/depth-peeling resize fixes.
+> Status: implemented on 2026-05-16.
 > Created: 2026-05-16.
+
+## Implementation Notes
+
+Implemented in the DRP2/vklite runtime:
+
+1. `_vklite_create_bind_group()` now saves bind-group metadata and delegates descriptor allocation
+   and population to `_vklite_build_bind_group_descriptors()`.
+2. `_vklite_refresh_dependent_bind_groups()` rebuilds descriptor wrappers for live bind groups that
+   reference a recreated resource id, then retires the old wrapper immediately or through the
+   borrowed-command-buffer deferred-destroy queue.
+3. Stable-id `CreateTexture`, `CreateBuffer`, and `CreateSampler` recreation all trigger the refresh
+   path after the replacement backend object has been created.
+4. Semantic validation now permits stable-id buffer and sampler recreation only after the object has
+   been referenced by submitted work, matching the existing texture replacement rule. Recreated
+   buffers are rejected when saved live bind-group ranges or usage flags would become invalid.
+5. WBOIT and depth-peeling scene emitters no longer use target extent changes as sampled bind-group
+   cache invalidators. They keep fingerprints only for the semantic dependency ids and sampler id.
+
+Focused coverage added:
+
+1. DRP2/vklite execution samples a texture through an existing bind group, recreates the same
+   texture id at a new extent, and draws again without re-emitting `CreateBindGroup`.
+2. DRP2/vklite refresh with a simulated active borrowed command buffer defers the retired descriptor
+   wrapper.
+3. Semantic validation covers buffer/sampler stable-id recreation through an existing bind group and
+   rejects recreated buffers that would invalidate saved descriptor ranges.
+4. Scene WBOIT/depth-peeling regressions now assert that resize emits recreated textures without
+   re-emitting the sampled resolve/composite bind groups.
 
 ## Problem
 
@@ -76,4 +104,3 @@ Once runtime-level refresh is implemented and validated, revisit the local scene
 2. Remove or simplify the depth-peeling sampled bind-group extent fingerprint for the same reason.
 3. Keep technique-local bind-group cache keys only for real semantic dependencies that change the
    resource ids or binding shape, not for backend handle freshness after resize.
-
