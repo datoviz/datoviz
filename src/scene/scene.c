@@ -637,10 +637,16 @@ static void _scene_commit_emit_success(DvzFigure* figure)
         for (uint32_t vi = 0; vi < panel->visual_count; vi++)
         {
             DvzVisual* visual = panel->visuals[vi].visual;
-            if (visual == NULL)
+            if (visual == NULL || !visual->visible)
                 continue;
             for (uint32_t ai = 0; ai < visual->attr_count; ai++)
+            {
                 visual->attrs[ai].dirty_item_count = 0;
+                if (visual->attrs[ai].buffer != NULL)
+                    visual->attrs[ai].buffer->dirty = false;
+            }
+            if (visual->buffer != NULL)
+                visual->buffer->dirty = false;
             if (
                 visual->type == DVZ_VISUAL_TYPE_POINT || visual->type == DVZ_VISUAL_TYPE_PIXEL ||
                 visual->type == DVZ_VISUAL_TYPE_PRIMITIVE ||
@@ -662,8 +668,6 @@ static void _scene_commit_emit_success(DvzFigure* figure)
     }
     for (uint32_t i = 0; i < figure->scene->field_count; i++)
         _scene_refresh_field_dirty_state(figure->scene, &figure->scene->fields[i]);
-    for (uint32_t i = 0; i < figure->scene->buffer_count; i++)
-        figure->scene->buffers[i].dirty = false;
 }
 
 

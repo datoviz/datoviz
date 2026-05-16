@@ -842,7 +842,7 @@ int main(int argc, char** argv)
         return 1;
     }
 
-    float atom_scale = 0.535f;
+    float atom_scale = 0.519f;
     float* scaled_radii = _scaled_radii(&bundle, atom_scale);
     if (scaled_radii == NULL)
     {
@@ -1012,22 +1012,22 @@ int main(int argc, char** argv)
         .render_mode = PROTEIN_RENDER_SPHERES,
         .atom_color_mode = PROTEIN_ATOM_COLOR_ELEMENT,
         .ribbon_color_mode = PROTEIN_RIBBON_COLOR_CHAIN,
-        .standard_material = true,
+        .standard_material = false,
         .ssao_enabled = true,
         .msaa_enabled = true,
         .msaa_alpha_to_coverage = true,
         .spin_enabled = false,
         .atom_scale = atom_scale,
-        .ssao_radius = 0.496f,
-        .ssao_strength = 1.458f,
-        .ssao_bias = 0.012f,
+        .ssao_radius = 0.520f,
+        .ssao_strength = 1.925f,
+        .ssao_bias = 0.004f,
         .ssao_power = 2.153f,
-        .ssao_min_visibility = 0.582f,
+        .ssao_min_visibility = 0.450f,
         .ssao_samples = 32.0f,
         .msaa_samples = 8.0f,
         .ambient = 0.20f,
         .diffuse = 0.76f,
-        .specular = 0.55f,
+        .specular = 0.628f,
         .shininess = 80.0f,
         .roughness = 0.30f,
         .rim_strength = 0.12f,

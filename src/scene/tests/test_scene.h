@@ -485,6 +485,10 @@ int test_scene_point_emit_has_vertex_layout(TstSuite* suite, TstItem* item);
 
 int test_scene_second_emit_no_uploads_when_not_dirty(TstSuite* suite, TstItem* item);
 
+int test_scene_hidden_visual_first_visible_later_uploads(TstSuite* suite, TstItem* item);
+
+int test_scene_hidden_indexed_mesh_first_visible_later_uploads(TstSuite* suite, TstItem* item);
+
 int test_scene_partial_update_uploads_only_range(TstSuite* suite, TstItem* item);
 
 int test_scene_repeated_partial_updates_across_frames(TstSuite* suite, TstItem* item);
