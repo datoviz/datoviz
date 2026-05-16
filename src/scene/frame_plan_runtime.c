@@ -3782,7 +3782,9 @@ static bool _emitter_emit_scene_graph_renders(
         bool depth_peel_render =
             render->u.render.pass_role == DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_INIT ||
             render->u.render.pass_role == DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_ITER;
-        if (!depth_peel_render && !pass_has_depth_attachment &&
+        bool transient_depth_allowed =
+            render->u.render.pass_role != DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_ACCUMULATION;
+        if (!depth_peel_render && transient_depth_allowed && !pass_has_depth_attachment &&
             _scene_render_needs_depth(emitter, render))
             pass_has_depth_attachment = true;
         uint64_t sampled_depth_id = 0;
@@ -4091,8 +4093,6 @@ static bool _emitter_emit_scene_graph_renders(
             ok = ok && _stream_apply_graph_color_ops(
                            stream, graph_pass, color_id, &targets->graph);
             ok = ok && _stream_apply_graph_depth(stream, graph_pass, targets->depth_id);
-            if (ok && targets->depth_id == 0 && _scene_render_needs_depth(emitter, render))
-                ok = dvz_drp2_stream_begin_render_pass_set_depth(stream, 1.0f);
             const SceneRenderBatch* batch = _render_batch_for_node(batches, batch_count, render);
             bool has_draws = batch != NULL;
             if (ok && has_draws)
