@@ -17,7 +17,9 @@
 #include <inttypes.h>
 #include <string.h>
 
+#include "_alloc.h"
 #include "_assertions.h"
+#include "_overflow.h"
 #include "../_scene.h"
 #include "../../drp2/_stream.h"
 #include "datoviz/drp2.h"

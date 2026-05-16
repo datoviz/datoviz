@@ -91,7 +91,7 @@ void main()
 
     int axis = int(clamp(volume.slice.x, 0.0, 2.0));
     float axis_pos = clamp(volume.slice.y, 0.0, 1.0);
-    float slice_coord = mix(axis_value(axis, box_min), axis_value(box_max, axis), axis_pos);
+    float slice_coord = mix(axis_value(axis, box_min), axis_value(axis, box_max), axis_pos);
     float axis_rd = (axis == 0 ? rd.x : (axis == 1 ? rd.y : rd.z));
     if (abs(axis_rd) < 1e-6) {
         discard;

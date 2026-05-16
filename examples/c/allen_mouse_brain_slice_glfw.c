@@ -27,6 +27,7 @@
 #include "_alloc.h"
 #include "_assertions.h"
 #include "_compat.h"
+#include "_overflow.h"
 #include "datoviz/app.h"
 #include "datoviz/fileio.h"
 #include "datoviz/gui.h"
@@ -733,7 +734,9 @@ int main(int argc, char** argv)
         dvz_scene_destroy(scene);
         return 1;
     }
-    if (!dvz_panel_set_arcball(panel, dvz_app_window_input(win), 0))
+    dvz_panel_set_arcball(panel, dvz_app_window_input(win), 0);
+    DvzArcball* arcball = dvz_panel_arcball(panel);
+    if (arcball == NULL)
     {
         dvz_fprintf(stderr, "dvz_panel_set_arcball() failed\n");
         dvz_free(volume_data.raw_data);
