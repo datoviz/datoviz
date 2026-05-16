@@ -746,7 +746,8 @@ static bool _scene_panel_has_visible_volume_occlusion_target(const DvzPanel* pan
  */
 static bool _scene_append_visual_to_render_pass(
     const DvzFigure* figure, DvzFramePlan* plan, DvzFramePlanNode* node, const DvzVisual* visual,
-    const DvzPanelAttach* attach, uint32_t visual_index)
+    const DvzPanelAttach* attach, uint32_t visual_index,
+    const DvzVolumeOcclusionDesc* volume_occlusion)
 {
     ANN(figure);
     ANN(plan);
@@ -776,6 +777,11 @@ static bool _scene_append_visual_to_render_pass(
     DvzFramePlanVisualMeta metadata = {0};
     if (_scene_visual_frame_plan_metadata(figure, visual, visual_index, &metadata))
     {
+        if (metadata.has_volume && volume_occlusion != NULL)
+        {
+            metadata.has_volume_occlusion = true;
+            metadata.volume_occlusion = *volume_occlusion;
+        }
         dvz_memcpy(
             &node->u.render.visual_metadata[slot], sizeof(DvzFramePlanVisualMeta), &metadata,
             sizeof(DvzFramePlanVisualMeta));
@@ -860,7 +866,7 @@ void _scene_emit_panel_render(
                 };
                 (void)_scene_append_visual_to_render_pass(
                     figure, plan, volume_occlusion_node, panel->volume_occluder_visual, &attach,
-                    occluder_index);
+                    occluder_index, &panel->volume_occlusion);
             }
         }
     }
@@ -927,7 +933,8 @@ void _scene_emit_panel_render(
                     continue;
             }
             (void)_scene_append_visual_to_render_pass(
-                figure, plan, gbuffer_node, visual, attach, vidx);
+                figure, plan, gbuffer_node, visual, attach, vidx,
+                volume_occlusion_enabled ? &panel->volume_occlusion : NULL);
         }
 
         if (opaque_node == NULL)
@@ -939,7 +946,8 @@ void _scene_emit_panel_render(
                 continue;
         }
         (void)_scene_append_visual_to_render_pass(
-            figure, plan, opaque_node, visual, attach, vidx);
+            figure, plan, opaque_node, visual, attach, vidx,
+            volume_occlusion_enabled ? &panel->volume_occlusion : NULL);
         bool edl_depth_visual = edl_enabled && caps.eligible_for_depth_postprocess;
         opaque_needs_depth = opaque_needs_depth || caps.writes_depth || edl_depth_visual;
         edl_has_depth_producer = edl_has_depth_producer || edl_depth_visual;
@@ -983,7 +991,8 @@ void _scene_emit_panel_render(
                     continue;
             }
             (void)_scene_append_visual_to_render_pass(
-                figure, plan, blended_node, visual, attach, vidx);
+                figure, plan, blended_node, visual, attach, vidx,
+                volume_occlusion_enabled ? &panel->volume_occlusion : NULL);
             transparent_needs_depth = transparent_needs_depth || caps.needs_depth_attachment;
             continue;
         }
@@ -1016,9 +1025,11 @@ void _scene_emit_panel_render(
                     continue;
             }
             (void)_scene_append_visual_to_render_pass(
-                figure, plan, depth_peel_init_node, visual, attach, vidx);
+                figure, plan, depth_peel_init_node, visual, attach, vidx,
+                volume_occlusion_enabled ? &panel->volume_occlusion : NULL);
             (void)_scene_append_visual_to_render_pass(
-                figure, plan, depth_peel_iter_node, visual, attach, vidx);
+                figure, plan, depth_peel_iter_node, visual, attach, vidx,
+                volume_occlusion_enabled ? &panel->volume_occlusion : NULL);
             transparent_needs_depth = transparent_needs_depth || caps.needs_depth_attachment;
             continue;
         }
@@ -1033,7 +1044,8 @@ void _scene_emit_panel_render(
                 continue;
         }
         (void)_scene_append_visual_to_render_pass(
-            figure, plan, transparent_node, visual, attach, vidx);
+            figure, plan, transparent_node, visual, attach, vidx,
+            volume_occlusion_enabled ? &panel->volume_occlusion : NULL);
         transparent_needs_depth = transparent_needs_depth || caps.needs_depth_attachment;
     }
 

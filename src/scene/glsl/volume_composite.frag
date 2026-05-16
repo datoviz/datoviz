@@ -18,6 +18,7 @@ layout(set = 1, binding = 2) uniform VolumeParams {
     vec4 slice;
     vec4 bounds_min;
     vec4 bounds_max;
+    vec4 occlusion;
 } volume;
 
 layout(location = 0) in vec3 fragUVW;
@@ -85,6 +86,9 @@ bool occluded_by_scene_depth(vec3 uvw)
     vec2 size = vec2(textureSize(depthTex, 0));
     vec2 uv = clamp(gl_FragCoord.xy / size, vec2(0.0), vec2(1.0));
     float scene_depth = texture(depthTex, uv).r;
+    if (volume.occlusion.w > 0.5 && scene_depth <= 0.000001) {
+        return false;
+    }
     if (scene_depth >= 0.999999) {
         return false;
     }

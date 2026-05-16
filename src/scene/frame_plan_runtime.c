@@ -328,7 +328,8 @@ static bool _resolve_volume_dummy_depth(
  * @param out output uniform payload.
  */
 static void _volume_uniform_from_state(
-    const DvzVolumeState* state, bool transfer_rgba, DvzSceneVolumeUniform* out)
+    const DvzVolumeState* state, bool transfer_rgba, const DvzVolumeOcclusionDesc* occlusion,
+    DvzSceneVolumeUniform* out)
 {
     ANN(state);
     ANN(out);
@@ -356,6 +357,21 @@ static void _volume_uniform_from_state(
     }
     out->bounds_min[3] = 1.0f;
     out->bounds_max[3] = 1.0f;
+    if (occlusion != NULL && occlusion->enabled)
+    {
+        out->occlusion[0] = occlusion->alpha_threshold > 0.0f ? occlusion->alpha_threshold : 0.08f;
+        out->occlusion[1] = occlusion->fade_distance > 0.0f ? occlusion->fade_distance : 0.08f;
+        out->occlusion[2] =
+            occlusion->occluded_alpha >= 0.0f ? occlusion->occluded_alpha : 0.20f;
+        out->occlusion[3] = 1.0f;
+    }
+    else
+    {
+        out->occlusion[0] = 0.08f;
+        out->occlusion[1] = 0.08f;
+        out->occlusion[2] = 0.20f;
+        out->occlusion[3] = 0.0f;
+    }
 }
 
 
@@ -446,7 +462,8 @@ static bool _resolve_volume_bind_group(
     DvzSceneVolumeUniform* slot = _emitter_volume_slot(emitter, params_slot_key);
     if (slot == NULL)
         return false;
-    _volume_uniform_from_state(&bind->volume_state, bind->volume_transfer_rgba, slot);
+    _volume_uniform_from_state(
+        &bind->volume_state, bind->volume_transfer_rgba, &bind->volume_occlusion, slot);
     if (!dvz_drp2_stream_write_buffer_bytes(
             stream, params_buf_id, 0, sizeof(DvzSceneVolumeUniform), slot))
         return false;
@@ -900,6 +917,10 @@ static bool _emitter_prepare_render_multi(
             ok = false;
             break;
         }
+        if (bind.uses_volume_set1 && !volume_occlusion_pass && !bind.volume_occluded)
+            bind.volume_occlusion.enabled = false;
+        if (bind.uses_volume_set1 && volume_occlusion_pass)
+            bind.volume_occlusion.enabled = true;
         if (bind.uses_volume_set1 && sampled_depth_id != 0 &&
             (!sampled_depth_is_volume_occlusion || bind.volume_occluded))
             bind.volume_depth_texture_id = sampled_depth_id;

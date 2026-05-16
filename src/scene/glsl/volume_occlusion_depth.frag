@@ -17,6 +17,7 @@ layout(set = 1, binding = 2) uniform VolumeParams {
     vec4 slice;
     vec4 bounds_min;
     vec4 bounds_max;
+    vec4 occlusion;
 } volume;
 
 layout(location = 0) in vec3 fragUVW;
@@ -24,8 +25,6 @@ layout(location = 1) in vec3 fragObj;
 layout(location = 0) out float outDepth;
 
 const float EXTINCTION_SCALE = 4.0;
-const float ALPHA_THRESHOLD = 0.08;
-
 float safe_inv(float v)
 {
     if (abs(v) < 1e-6) {
@@ -113,6 +112,7 @@ void main()
     float ray_length = end_t - start_t;
     float step_len = ray_length / float(steps);
     bool transfer = volume.clip_min.w > 0.5;
+    float alpha_threshold = max(volume.occlusion.x, 0.0001);
     float accum = 0.0;
     for (int i = 0; i < 1024; i++) {
         if (i >= steps) {
@@ -126,7 +126,7 @@ void main()
             1.0 - exp(-density * volume.params.x * EXTINCTION_SCALE * step_len);
         sample_alpha = clamp(sample_alpha, 0.0, 1.0);
         accum += (1.0 - accum) * sample_alpha;
-        if (accum > ALPHA_THRESHOLD) {
+        if (accum > alpha_threshold) {
             outDepth = projected_depth(uvw);
             return;
         }

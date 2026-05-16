@@ -18,6 +18,7 @@ layout(set = 1, binding = 2) uniform VolumeParams {
     vec4 slice;
     vec4 bounds_min;
     vec4 bounds_max;
+    vec4 occlusion;
 } volume;
 
 layout(location = 0) in vec3 fragUVW;
@@ -83,15 +84,29 @@ float axis_value(int axis, vec3 value)
     return axis == 0 ? value.x : (axis == 1 ? value.y : value.z);
 }
 
-bool occluded_by_scene_depth(vec3 uvw)
+float depth_visibility(vec3 uvw)
 {
     vec2 size = vec2(textureSize(depthTex, 0));
     vec2 uv = clamp(gl_FragCoord.xy / size, vec2(0.0), vec2(1.0));
     float scene_depth = texture(depthTex, uv).r;
-    if (scene_depth >= 0.999999) {
-        return false;
+    float self_depth = projected_depth(uvw);
+    if (volume.occlusion.w > 0.5) {
+        if (scene_depth <= 0.000001) {
+            return 1.0;
+        }
+        float delta = self_depth - scene_depth;
+        if (delta <= 0.0) {
+            return 1.0;
+        }
+        float fade_distance = max(volume.occlusion.y, 0.0005);
+        float hidden_alpha = clamp(volume.occlusion.z, 0.0, 1.0);
+        float fade = smoothstep(0.0, fade_distance, delta);
+        return mix(1.0, hidden_alpha, fade);
     }
-    return projected_depth(uvw) > scene_depth + 0.0005;
+    if (scene_depth >= 0.999999) {
+        return 1.0;
+    }
+    return self_depth > scene_depth + 0.0005 ? 0.0 : 1.0;
 }
 
 void main()
@@ -127,15 +142,16 @@ void main()
     if (any(lessThan(uvw, box_min)) || any(greaterThan(uvw, box_max))) {
         discard;
     }
-    if (occluded_by_scene_depth(uvw)) {
+    float visibility = depth_visibility(uvw);
+    if (visibility <= 0.0) {
         discard;
     }
 
     vec4 sample_value = texture(tex, uvw);
     if (volume.clip_min.w > 0.5) {
-        outColor = vec4(sample_value.rgb, sample_value.a * volume.params.x);
+        outColor = vec4(sample_value.rgb, sample_value.a * volume.params.x * visibility);
     } else {
         float value = sample_value.r;
-        outColor = vec4(value, value, value, value * volume.params.x);
+        outColor = vec4(value, value, value, value * volume.params.x * visibility);
     }
 }
