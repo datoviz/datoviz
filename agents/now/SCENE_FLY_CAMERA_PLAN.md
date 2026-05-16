@@ -98,21 +98,66 @@ often needs to coexist with fly navigation.
 Recommended behavior:
 
 1. `DvzFly` stores an optional `pivot`, `has_pivot`, and `pivot_distance`.
-2. A public setter can move the pivot on demand:
+2. Normal fly movement ignores the pivot. `WASD`, arrows, and mouse-look continue to update the
+   camera from position/yaw/pitch as `target = position + front`.
+3. A public setter can move the pivot on demand:
 
    ```c
    void dvz_fly_pivot(DvzFly* fly, vec3 pivot);
    void dvz_fly_clear_pivot(DvzFly* fly);
+   bool dvz_fly_has_pivot(const DvzFly* fly);
+   void dvz_fly_look_at_pivot(DvzFly* fly);
    ```
 
-3. A later scene-level helper can set the pivot from selection, picked point, panel center,
+4. A later scene-level helper can set the pivot from selection, picked point, panel center,
    visual bounds, or scene bounds.
-4. Right-drag or a modifier-drag can orbit around the active pivot while preserving distance.
-5. When no pivot is set, orbit can use `position + front * pivot_distance` or be disabled,
+5. Right-drag or a modifier-drag can orbit around the active pivot while preserving distance.
+6. When no pivot is set, orbit can use `position + front * pivot_distance` or be disabled,
    depending on flags.
 
-This gives users a hybrid navigation style: fly through the scene, then orbit around the selected
-object or probe point without switching controllers.
+When a pivot is set or changed, the default policy should preserve the camera eye and recompute
+orientation from the new pivot:
+
+```text
+position stays unchanged
+pivot = new world-space point
+front = normalize(pivot - position)
+yaw/pitch = angles derived from front
+pivot_distance = length(pivot - position)
+target = pivot while look-at-pivot or orbit mode is active
+```
+
+This avoids a surprising camera jump when the user clicks an object, selects a point, or asks the
+controller to orbit a new location. A later optional policy can preserve yaw/pitch/distance instead
+and move the eye immediately around the new pivot, but that should not be the default.
+
+The pivot enables extra operations, not a permanent different movement mode:
+
+1. `look_at_pivot`: reorient toward the pivot without moving.
+2. `orbit_pivot`: rotate camera position around the pivot while looking at it.
+3. `dolly_pivot`: move along the camera-pivot line.
+4. `clear_pivot`: return to pure free-fly behavior.
+
+This gives users a hybrid navigation style: fly through the scene, set a pivot from a selected
+object or probe point, then orbit that point without switching controllers.
+
+
+## Pivot Marker
+
+The pivot should be optionally visible, but it should not be shown permanently by default.
+
+Recommended first behavior:
+
+1. Keep the first implementation state-only if overlay plumbing would distract from the controller
+   core.
+2. Add a transient marker in a follow-up: show a small crosshair or ring for about one second after
+   the pivot changes.
+3. Keep the marker visible while an orbit-pivot gesture is active.
+4. Allow an explicit always-visible/debug mode.
+5. Hide the marker for captures/screenshots unless the user explicitly enables it.
+
+The marker should be treated as a navigation overlay or annotation aid, not as a normal data visual.
+It should not affect scene bounds, picking, visual ordering, or exported data semantics.
 
 
 ## Turntable
@@ -270,8 +315,11 @@ Implement:
 
 1. `dvz_fly_pivot()`
 2. `dvz_fly_clear_pivot()`
-3. `dvz_fly_orbit()` as a direct math helper
-4. Optional pointer gesture for pivot orbit
+3. `dvz_fly_has_pivot()`
+4. `dvz_fly_look_at_pivot()`
+5. `dvz_fly_orbit()` as a direct math helper
+6. Optional pointer gesture for pivot orbit
+7. Optional transient pivot marker state, or a clean extension point for a later overlay marker
 
 Focused tests:
 
@@ -280,6 +328,9 @@ Focused tests:
 3. Clearing pivot returns to normal fly behavior.
 4. Moving the pivot on demand updates subsequent orbit center without affecting current position
    unexpectedly.
+5. Setting a new pivot with the preserve-eye policy recomputes yaw, pitch, and pivot distance.
+6. Pivot marker state, if included, becomes transiently visible after pivot changes and while
+   orbiting.
 
 
 ## Stage 6: Turntable Arcball Follow-Up

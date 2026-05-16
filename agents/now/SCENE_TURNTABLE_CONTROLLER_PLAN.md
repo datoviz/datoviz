@@ -168,6 +168,28 @@ Default should be policy 1 because selecting a new pivot should not cause the ca
 Expose policy 2 later only if a concrete workflow needs it.
 
 
+## Pivot Marker
+
+The pivot should be visible only when it helps the user understand navigation state. It should not
+be a permanent default visual.
+
+Recommended behavior:
+
+1. First implementation may keep the pivot state-only if overlay work would broaden the patch too
+   much.
+2. Follow-up implementation should show a small crosshair, ring, or point marker transiently after
+   the pivot changes.
+3. Keep the marker visible while the user is actively orbiting or panning the pivot.
+4. Add an always-visible/debug option for camera setup, demos, and diagnostics.
+5. Hide the marker from screenshots/captures by default unless explicitly enabled.
+
+The marker should be an overlay/navigation annotation rather than a normal data visual. It should
+not affect scene bounds, picking, visual ordering, color scales, or data export semantics.
+
+Fly and turntable should share the same pivot-marker policy where practical so users get consistent
+feedback when changing pivots across controller modes.
+
+
 ## Input Defaults
 
 Initial controls:
@@ -252,6 +274,7 @@ Add helper APIs after base turntable behavior is stable:
 2. Set pivot from scene or visual bounds.
 3. Set pivot from a pick/probe result when available.
 4. Optionally expose a user callback for custom pivot resolution.
+5. Add transient pivot marker state or a clean extension point for a later overlay marker.
 
 These helpers should remain scene-layer conveniences. The core controller should only know about a
 world-space point.
