@@ -301,6 +301,12 @@ Deliver the next implementation slices in this order unless the user redirects:
     Only then convert WBOIT lowering to the graph-backed path and use the same path for the next
     transparency technique. The plan is recorded in
     [FRAME_PLAN_GRAPH_TRANSPARENCY_PLAN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/FRAME_PLAN_GRAPH_TRANSPARENCY_PLAN.md).
+14. Scene techniques/materials architecture: before adding depth cueing, EDL, SSAO, outlines, or
+    curvature/cavity shading as isolated effects, route them through a small technique-builder
+    layer, internal material state, and visual pass capability descriptors. The architecture note is
+    [../../docs/architecture/scene_techniques_materials.md](/home/cyrille/GIT/Viz/datoviz/docs/architecture/scene_techniques_materials.md),
+    and the pickup plan is
+    [SCENE_TECHNIQUES_MATERIALS_PLAN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/SCENE_TECHNIQUES_MATERIALS_PLAN.md).
 
 Implementation-level checklists for these lanes are recorded in
 [../../docs/tasks/2026-05-13-next-implementation-priorities/NEXT_STEPS.md](/home/cyrille/GIT/Viz/datoviz/docs/tasks/2026-05-13-next-implementation-priorities/NEXT_STEPS.md).

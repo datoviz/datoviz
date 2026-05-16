@@ -16,6 +16,7 @@ Active execution notes:
 3. [now/SCENE_PUBLIC_API_HEADER_PLAN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/SCENE_PUBLIC_API_HEADER_PLAN.md)
 4. [now/SCENE_WGSL_SHADER_VARIANTS_PLAN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/SCENE_WGSL_SHADER_VARIANTS_PLAN.md)
 5. [now/WBOIT_MESH_INTERACTIVE_PLAN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/WBOIT_MESH_INTERACTIVE_PLAN.md)
+6. [now/SCENE_TECHNIQUES_MATERIALS_PLAN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/SCENE_TECHNIQUES_MATERIALS_PLAN.md)
 
 Current branch emphasis as of `2026-05-13`: native scene -> DRP2 -> app is active for retained
 2D/early-3D rendering, pick/probe request handling, and app trace/status diagnostics. Treat broad
@@ -58,6 +59,8 @@ If resuming work on the branch:
 9. Read [now/WBOIT_MESH_INTERACTIVE_PLAN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/WBOIT_MESH_INTERACTIVE_PLAN.md)
    before working on WBOIT, transparent meshes, scene alpha modes, multi-attachment render passes,
    or transparent mesh examples.
+10. Read [now/SCENE_TECHNIQUES_MATERIALS_PLAN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/SCENE_TECHNIQUES_MATERIALS_PLAN.md)
+    before adding depth cueing, EDL, SSAO, outlines, materials, or visual pass capabilities.
 
 
 ## Directory Layout
@@ -73,6 +76,7 @@ header-state note, not an instruction to draft another broad API surface.
 3. [now/SCENE_PUBLIC_API_HEADER_PLAN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/SCENE_PUBLIC_API_HEADER_PLAN.md)
 4. [now/SCENE_WGSL_SHADER_VARIANTS_PLAN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/SCENE_WGSL_SHADER_VARIANTS_PLAN.md)
 5. [now/WBOIT_MESH_INTERACTIVE_PLAN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/WBOIT_MESH_INTERACTIVE_PLAN.md)
+6. [now/SCENE_TECHNIQUES_MATERIALS_PLAN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/SCENE_TECHNIQUES_MATERIALS_PLAN.md)
 
 ### `done/`
 
