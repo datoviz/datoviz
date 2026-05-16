@@ -193,8 +193,9 @@ Implemented on `2026-05-16`:
   suffix.
 - EDL and WBOIT bind-group labels derived from rotating texture ids are collapsed to stable resolve
   roles in normal trace snapshots.
-- Normal-mode changed-frame dumps now print the normalized snapshot; `DVZ_DRP2_TRACE=full` remains
-  the raw command/id stream.
+- Normal-mode changed-frame dumps keep the existing detailed raw display, including command
+  prefixes, ids, labels, and color handling. The normalized snapshot is used only for
+  `changed`/`unchanged` detection and semantic line counts.
 - App trace tests cover scoped EDL target/bind-group normalization and still catch real draw-count
   changes.
 

@@ -1069,40 +1069,11 @@ static void _app_trace_stream_full(
 
 
 /**
- * Print the normalized human-readable dump for one DRP2 stream snapshot.
- *
- * @param snapshot normalized trace snapshot
- * @param frame_index 0-based frame index for the owning window
- * @param command_count raw DRP2 command count
- * @param label short trace label for the frame header
- */
-static void _app_trace_stream_normal(
-    const DvzAppTraceSnapshot* snapshot, uint64_t frame_index, uint32_t command_count,
-    const char* label)
-{
-    ANN(snapshot);
-    ANN(label);
-    bool use_color = _trace_color_enabled();
-    dvz_fprintf(
-        stderr, "\n%sframe %08" PRIu64 " | %s | %" PRIu32 " cmds | %" PRIu32
-                " semantic%s\n",
-        use_color ? DVZ_TRACE_COLOR_BOLD : "", frame_index, label, command_count,
-        snapshot->count, use_color ? DVZ_TRACE_COLOR_RESET : "");
-    if (use_color)
-        dvz_fprintf(stderr, "%s", DVZ_TRACE_COLOR_DIM);
-    for (uint32_t i = 0; i < snapshot->count; i++)
-        dvz_fprintf(stderr, "  %03" PRIu32 " = %s\n", i, snapshot->lines[i].text);
-    if (use_color)
-        dvz_fprintf(stderr, "%s", DVZ_TRACE_COLOR_RESET);
-}
-
-
-/**
  * Print or refresh the live DRP2 trace for one emitted stream.
  *
- * In normal mode, changed frames print one normalized human-readable command list while unchanged
+ * In normal mode, changed frames print one expanded human-readable command list while unchanged
  * frames rewrite one in-place status line without scrolling. In full mode, every frame prints an
- * expanded raw command list.
+ * expanded command list.
  *
  * @param win app-window owning the trace state
  * @param stream the emitted command stream
@@ -1145,7 +1116,7 @@ static void _app_trace_stream(DvzAppWindow* win, const DvzDrp2CommandStream* str
     {
         if (plan.event_kind == DVZ_APP_TRACE_EVENT_CHANGED)
         {
-            _app_trace_stream_normal(&snapshot, win->frame_index, command_count, "changed");
+            _app_trace_stream_full(stream, win->frame_index, "changed");
         }
         _dvz_app_status_trace(
             &win->app->status, win->frame_index, command_count, snapshot.count, changed);
