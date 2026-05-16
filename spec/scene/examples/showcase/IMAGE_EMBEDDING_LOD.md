@@ -71,13 +71,13 @@ version should be 2-D to keep the interaction and LOD policy easy to validate.
 
 This example exercises:
 
-1. `../visuals/IMAGE.md` for textured rectangles and solid-color image items;
-2. `../pipeline/RESOURCE_MODEL.md` for sampled fields, texture resources, and retained updates;
-3. `../pipeline/FRAME_PLAN.md` for batched draw emission;
-4. `../pipeline/INVALIDATION_AND_CACHING.md` for avoiding per-frame resource churn;
-5. `../interaction/CONTROLLERS.md` for panzoom or camera control;
-6. `../interaction/PICKING.md` for item identification under the cursor;
-7. `../semantics/VISUAL_CONTRACT.md` for stable visual and item identity.
+1. `../../visuals/IMAGE.md` for textured rectangles and solid-color image items;
+2. `../../pipeline/RESOURCE_MODEL.md` for sampled fields, texture resources, and retained updates;
+3. `../../pipeline/FRAME_PLAN.md` for batched draw emission;
+4. `../../pipeline/INVALIDATION_AND_CACHING.md` for avoiding per-frame resource churn;
+5. `../../interaction/CONTROLLERS.md` for panzoom or camera control;
+6. `../../interaction/PICKING.md` for item identification under the cursor;
+7. `../../semantics/VISUAL_CONTRACT.md` for stable visual and item identity.
 
 
 ## Dataset Scale

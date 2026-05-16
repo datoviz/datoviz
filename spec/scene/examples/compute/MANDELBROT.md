@@ -17,7 +17,7 @@ The example should demonstrate:
 
 The preferred implementation is a **Python example using the v0.4 Scene API**, with a custom shader-backed fullscreen visual. If the Python API is not yet mature enough for custom shaders, the example may instead be implemented in **C on top of the Scene C API or directly on top of DRP**.
 
-Datoviz v0.4 scene is expected to remain GPU-backend agnostic and emit DRP commands rather than direct Vulkan/windowing calls, so this example should be specified at the Scene/DRP level rather than tied to a particular backend.  The Scene API already includes panels, cameras, visuals, resources, controllers, animation hooks, and DRP generation concepts that fit this example well.  DRP supports WebGPU-style shader modules, render pipelines, compute pipelines, buffers, textures, passes, and command encoding, which are enough for either fragment-shader or compute-shader Mandelbrot rendering. 
+Datoviz v0.4 scene is expected to remain GPU-backend agnostic and emit DRP commands rather than direct Vulkan/windowing calls, so this example should be specified at the Scene/DRP level rather than tied to a particular backend.  The Scene API already includes panels, cameras, visuals, resources, controllers, animation hooks, and DRP generation concepts that fit this example well.  DRP supports WebGPU-style shader modules, render pipelines, compute pipelines, buffers, textures, passes, and command encoding, which are enough for either fragment-shader or compute-shader Mandelbrot rendering.
 
 ---
 
@@ -248,7 +248,7 @@ The visual needs:
 * optional storage buffer containing the high-precision reference orbit;
 * optional 1D texture or uniform array for the color palette.
 
-The Scene layer’s concepts of resources, channels, visuals, panels, controllers, animations, and framegraph passes map naturally to this. Resources are CPU-side arrays tracked for dirty regions and uploaded through DRP when needed.  Visuals can be assigned to opaque, transparent, overlay, or picking stages, although this example only needs one main render pass and possibly an overlay pass. 
+The Scene layer’s concepts of resources, channels, visuals, panels, controllers, animations, and framegraph passes map naturally to this. Resources are CPU-side arrays tracked for dirty regions and uploaded through DRP when needed.  Visuals can be assigned to opaque, transparent, overlay, or picking stages, although this example only needs one main render pass and possibly an overlay pass.
 
 ---
 
@@ -299,7 +299,7 @@ easeInOutSine
 
 The animation should remain interactive: user input should pause or override the automated zoom.
 
-Scene-level animation hooks are planned in v0.4 through animation objects updated by `scene_update`, so the example should conceptually use that mechanism where available. 
+Scene-level animation hooks are planned in v0.4 through animation objects updated by `scene_update`, so the example should conceptually use that mechanism where available.
 
 ### Interaction
 
@@ -568,7 +568,7 @@ The C version should:
 * attach an event controller;
 * build DRP commands every frame.
 
-The Scene C API already defines scene, panel, visual, resource, controller, animation, framegraph, and DRP builder structures that fit this design. 
+The Scene C API already defines scene, panel, visual, resource, controller, animation, framegraph, and DRP builder structures that fit this design.
 
 ### Option C: Direct DRP implementation
 
@@ -588,7 +588,7 @@ If the custom Scene visual path is not available, implement directly with DRP:
 12. End pass.
 13. Submit.
 
-DRP’s object model is intentionally WebGPU-aligned, with explicit buffer, shader, bind group, pipeline, render pass, draw, compute dispatch, and submit commands. 
+DRP’s object model is intentionally WebGPU-aligned, with explicit buffer, shader, bind group, pipeline, render pass, draw, compute dispatch, and submit commands.
 
 ### Option D: Compute shader + texture
 
@@ -604,7 +604,7 @@ This is useful if:
 * progressive rendering is implemented;
 * tiled rendering is desired.
 
-DRP supports compute pipelines and compute passes, including dispatch commands. 
+DRP supports compute pipelines and compute passes, including dispatch commands.
 
 Fragment-shader rendering is simpler and should be the default.
 

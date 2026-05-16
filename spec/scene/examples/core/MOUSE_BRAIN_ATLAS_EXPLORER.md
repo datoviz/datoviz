@@ -9,8 +9,8 @@ sampling, picking-driven selection, and one linked 2D subplot.
 
 This example should be read against:
 
-1. `../api/API_DESIGN.md` for the current preferred scene-facing API defaults,
-2. `../core/RUNTIME_BOUNDARY.md` for runtime capability and completion assumptions,
+1. `../../api/API_DESIGN.md` for the current preferred scene-facing API defaults,
+2. `../../core/RUNTIME_BOUNDARY.md` for runtime capability and completion assumptions,
 3. `../DIAGNOSTICS.md` for multi-phase diagnostics expectations,
 4. the specialized family, resource, annotation, and controller docs referenced by the example body.
 

@@ -2,14 +2,12 @@
 
 This directory contains worked examples that pressure-test the current scene specification.
 
-Most examples are not API proposals.
+Most examples are not API proposals. Files under [api/](api/) are deliberate API-shape sketches.
+They are informative, and may use installed-but-not-yet-implemented function names to
+pressure-test the public API shape.
 
-Files prefixed with `API_` are deliberate API-shape sketches. They are still informative, and may
-use installed-but-not-yet-implemented function names to pressure-test the public API shape.
-
-They are also not independent normative sources.
-
-They should be read as informative pressure tests of the main scene-spec documents.
+These files are not independent normative sources. They should be read as informative pressure
+tests of the main scene-spec documents.
 
 Their role is narrower:
 
@@ -19,31 +17,69 @@ Their role is narrower:
 4. show which DRP2 command categories are implied.
 
 
-## Current Examples
+## Directory Layout
 
-1. `POINT_2D.md`
-2. `MARKER_PICKING.md`
-3. `PATH_AXES_2D.md`
-4. `VOLUME_SLICE.md`
-5. `SPHERE_IMPOSTOR.md`
-6. `VOLUME_OFFSCREEN.md`
-7. `LINKED_PANELS_PROBE_COLORBAR.md`
-8. `MOUSE_BRAIN_ATLAS_EXPLORER.md`
-9. `LINKED_PANELS_AXES_PANZOOM.md`
-10. `ANIMATION_VIDEO_EXPORT.md`
-11. `API_MESH_SELECTION_LINK.md`
-12. `API_IMAGE_PROBE_PINNED_READOUT.md`
-13. `API_SCALE_COLORBAR_ANNOTATION.md`
-14. `API_SAMPLED_FIELD.md`
-15. `IMAGE_EMBEDDING_LOD.md`
-16. `CRYSTAL_PHONON_EXPLORER.md`
-17. `EARTHQUAKE_AFTERSHOCK_EXPLORER.md`
-18. `PHYSIOLOGY_SIGNAL_WORKBENCH.md`
-19. `CFD_VORTICITY_ADVECTION.md`
-20. `FINITE_ELEMENT_STRESS_VIEWER.md`
-21. `TOKAMAK_PLASMA_FIELD_LINES.md`
-22. `HEP_EVENT_DISPLAY.md`
-23. `ANIMAL_MIGRATION_TRACKS.md`
+### `core/`
+
+Small examples that should stay closest to the active v0.4 implementation path.
+
+1. [core/POINT_2D.md](core/POINT_2D.md)
+2. [core/MARKER_PICKING.md](core/MARKER_PICKING.md)
+3. [core/PATH_AXES_2D.md](core/PATH_AXES_2D.md)
+4. [core/VOLUME_SLICE.md](core/VOLUME_SLICE.md)
+5. [core/VOLUME_OFFSCREEN.md](core/VOLUME_OFFSCREEN.md)
+6. [core/SPHERE_IMPOSTOR.md](core/SPHERE_IMPOSTOR.md)
+7. [core/LINKED_PANELS_AXES_PANZOOM.md](core/LINKED_PANELS_AXES_PANZOOM.md)
+8. [core/LINKED_PANELS_PROBE_COLORBAR.md](core/LINKED_PANELS_PROBE_COLORBAR.md)
+9. [core/MOUSE_BRAIN_ATLAS_EXPLORER.md](core/MOUSE_BRAIN_ATLAS_EXPLORER.md)
+
+### `api/`
+
+API-shape sketches.
+
+1. [api/API_IMAGE_PROBE_PINNED_READOUT.md](api/API_IMAGE_PROBE_PINNED_READOUT.md)
+2. [api/API_MESH_SELECTION_LINK.md](api/API_MESH_SELECTION_LINK.md)
+3. [api/API_SAMPLED_FIELD.md](api/API_SAMPLED_FIELD.md)
+4. [api/API_SCALE_COLORBAR_ANNOTATION.md](api/API_SCALE_COLORBAR_ANNOTATION.md)
+
+### `napari/`
+
+Napari-class image, label, points, tracks, vectors, and orthoslice pressure tests.
+
+### `compute/`
+
+Compute-heavy and shader-heavy examples.
+
+1. [compute/PARTICLES.md](compute/PARTICLES.md)
+2. [compute/GRAY_SCOTT.md](compute/GRAY_SCOTT.md)
+3. [compute/MANDELBROT.md](compute/MANDELBROT.md)
+
+### `science/`
+
+Scientific domain examples that pressure-test geometry, fields, volume, labels, and interaction.
+
+### `geo/`
+
+Geographic, projection, terrain, atmosphere, and globe examples.
+
+### `dashboards/`
+
+Operational or dense-interface examples with multiple coordinated panels.
+
+### `showcase/`
+
+Gallery-style or polished demonstration examples that combine several lower-level capabilities.
+
+1. [showcase/ANIMATION_VIDEO_EXPORT.md](showcase/ANIMATION_VIDEO_EXPORT.md)
+2. [showcase/ASTRONOMY_MANY_LABELS.md](showcase/ASTRONOMY_MANY_LABELS.md)
+3. [showcase/GALAXY.md](showcase/GALAXY.md)
+4. [showcase/IMAGE_EMBEDDING_LOD.md](showcase/IMAGE_EMBEDDING_LOD.md)
+5. [showcase/LATEX_MICROTEX_TEXT_VISUAL.md](showcase/LATEX_MICROTEX_TEXT_VISUAL.md)
+6. [showcase/ALLEN_IBL_COORDINATE_MESH_VOLUME_PLAN.md](showcase/ALLEN_IBL_COORDINATE_MESH_VOLUME_PLAN.md)
+7. [showcase/ALLEN_MOUSE_BRAIN_SLICE_EXAMPLE_PLAN.md](showcase/ALLEN_MOUSE_BRAIN_SLICE_EXAMPLE_PLAN.md)
+8. [showcase/CHOROPLETH_GLOBE_EXAMPLE_PLAN.md](showcase/CHOROPLETH_GLOBE_EXAMPLE_PLAN.md)
+9. [showcase/FLIGHT_TRAJECTORIES_DEMO_PLAN.md](showcase/FLIGHT_TRAJECTORIES_DEMO_PLAN.md)
+10. [showcase/MARS_TEXTURED_MESH_EXAMPLE_PLAN.md](showcase/MARS_TEXTURED_MESH_EXAMPLE_PLAN.md)
 
 
 ## Common Structure

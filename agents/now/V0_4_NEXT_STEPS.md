@@ -200,7 +200,7 @@ rebuilds the descriptor set instead of sampling destroyed image views. Validatio
 `./build/examples/c/hello_mesh_wboit_glfw 60`, and `just test scene` (`203/203`). This is a
 tactical per-technique guardrail. The preferred generic fix is to make DRP2/vklite refresh
 dependent bind-group descriptors whenever a stable resource id is recreated; see
-[DRP2_DESCRIPTOR_REFRESH_PLAN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/DRP2_DESCRIPTOR_REFRESH_PLAN.md).
+[DRP2_DESCRIPTOR_REFRESH_PLAN.md](/home/cyrille/GIT/Viz/datoviz/agents/done/DRP2_DESCRIPTOR_REFRESH_PLAN.md).
 
 Descriptor-refresh/runtime smoke follow-up on `2026-05-16`: the DRP2/vklite runtime now has GPU
 execution coverage for descriptor refresh after recreating uniform buffers, storage buffers, and
@@ -263,7 +263,7 @@ Read in this order:
    for the active vertical-slice history,
 4. [../done/SCENE_PICK_PROBE_EXECUTION.md](/home/cyrille/GIT/Viz/datoviz/agents/done/SCENE_PICK_PROBE_EXECUTION.md)
    for the current shipped request-resolution behavior and caveats,
-5. [SCENE_PICK_PROBE_EXECUTION_PLAN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/SCENE_PICK_PROBE_EXECUTION_PLAN.md)
+5. [SCENE_PICK_PROBE_EXECUTION_PLAN.md](/home/cyrille/GIT/Viz/datoviz/agents/done/SCENE_PICK_PROBE_EXECUTION_PLAN.md)
    for the original planned shape,
 6. [IMAGE_PICKING_RECOVERY_PLAN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/IMAGE_PICKING_RECOVERY_PLAN.md)
    before touching the current image probe / segmentation-label hover path,
@@ -333,10 +333,10 @@ Deliver the next implementation slices in this order unless the user redirects:
     should supersede the recent WBOIT and depth-peeling extent-fingerprint guardrails once validated,
     so future multi-pass techniques do not each need custom resize descriptor logic. The plan is
     recorded in
-    [DRP2_DESCRIPTOR_REFRESH_PLAN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/DRP2_DESCRIPTOR_REFRESH_PLAN.md).
+    [DRP2_DESCRIPTOR_REFRESH_PLAN.md](/home/cyrille/GIT/Viz/datoviz/agents/done/DRP2_DESCRIPTOR_REFRESH_PLAN.md).
 12. SSAO planning note: early scene-level SSAO should follow the active scene -> FramePlan -> DRP2
     -> vklite path and reuse the WBOIT-style multi-pass resource pattern. The implementation plan
-    is recorded in [SCENE_SSAO_IMPLEMENTATION_PLAN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/SCENE_SSAO_IMPLEMENTATION_PLAN.md).
+    is recorded in [SCENE_SSAO_IMPLEMENTATION_PLAN.md](/home/cyrille/GIT/Viz/datoviz/agents/soon/SCENE_SSAO_IMPLEMENTATION_PLAN.md).
 13. Multi-pass FramePlan graph direction: before adding dual depth peeling or more one-off
     transparency modes, add a small internal FramePlan graph skeleton around typed resources,
     typed passes, explicit attachments, and resource access declarations. The first slice should be
@@ -346,7 +346,7 @@ Deliver the next implementation slices in this order unless the user redirects:
     layout transitions, then render-pipeline raster state for cull mode and front-face winding.
     Only then convert WBOIT lowering to the graph-backed path and use the same path for the next
     transparency technique. The plan is recorded in
-    [FRAME_PLAN_GRAPH_TRANSPARENCY_PLAN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/FRAME_PLAN_GRAPH_TRANSPARENCY_PLAN.md).
+    [FRAME_PLAN_GRAPH_TRANSPARENCY_PLAN.md](/home/cyrille/GIT/Viz/datoviz/agents/soon/FRAME_PLAN_GRAPH_TRANSPARENCY_PLAN.md).
 14. Scene techniques/materials architecture: before adding EDL, SSAO, outlines, or
     curvature/cavity shading as isolated effects, route them through the technique-builder layer,
     internal material state, visual pass capability descriptors, and the internal scene/panel
@@ -355,13 +355,13 @@ Deliver the next implementation slices in this order unless the user redirects:
     G-buffer output first if selected outlines are prioritized. The architecture note is
     [../../docs/architecture/scene_techniques_materials.md](/home/cyrille/GIT/Viz/datoviz/docs/architecture/scene_techniques_materials.md),
     and the pickup plan is
-    [SCENE_TECHNIQUES_MATERIALS_PLAN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/SCENE_TECHNIQUES_MATERIALS_PLAN.md).
+    [SCENE_TECHNIQUES_MATERIALS_PLAN.md](/home/cyrille/GIT/Viz/datoviz/agents/soon/SCENE_TECHNIQUES_MATERIALS_PLAN.md).
 15. Sphere visual family: add a dedicated v0.4 sphere impostor visual before using SSAO demos for
     dense atom/particle scenes. This should follow the v0.3 conceptual model: center/color/size
     payload, hard-coded sphere reconstruction in the fragment shader, material lighting, optional
     texturing later, correct `gl_FragDepth`, G-buffer normal/depth support, and always-on analytic
     antialiased silhouettes. Do not fold sphere into marker. The plan is recorded in
-    [SCENE_SPHERE_VISUAL_PLAN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/SCENE_SPHERE_VISUAL_PLAN.md).
+    [SCENE_SPHERE_VISUAL_PLAN.md](/home/cyrille/GIT/Viz/datoviz/agents/soon/SCENE_SPHERE_VISUAL_PLAN.md).
 
 Implementation-level checklists for these lanes are recorded in
 [../../docs/tasks/2026-05-13-next-implementation-priorities/NEXT_STEPS.md](/home/cyrille/GIT/Viz/datoviz/docs/tasks/2026-05-13-next-implementation-priorities/NEXT_STEPS.md).

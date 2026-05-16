@@ -9,11 +9,11 @@ use cases:
 
 Normative inputs:
 
-1. [../proposals/SAMPLED_FIELD_API_DESIGN.md](../proposals/SAMPLED_FIELD_API_DESIGN.md)
-2. [../pipeline/RESOURCE_MODEL.md](../pipeline/RESOURCE_MODEL.md)
-3. [../visuals/IMAGE.md](../visuals/IMAGE.md)
-4. [../visuals/VOLUME.md](../visuals/VOLUME.md)
-5. [../semantics/SCALES.md](../semantics/SCALES.md)
+1. [../../proposals/SAMPLED_FIELD_API_DESIGN.md](../../proposals/SAMPLED_FIELD_API_DESIGN.md)
+2. [../../pipeline/RESOURCE_MODEL.md](../../pipeline/RESOURCE_MODEL.md)
+3. [../../visuals/IMAGE.md](../../visuals/IMAGE.md)
+4. [../../visuals/VOLUME.md](../../visuals/VOLUME.md)
+5. [../../semantics/SCALES.md](../../semantics/SCALES.md)
 
 
 ## Goals

@@ -1,6 +1,6 @@
 # GPU Particle System Compute Example
 
-See also [../proposals/PARTICLE_SYSTEM_DESIGN.md](../proposals/PARTICLE_SYSTEM_DESIGN.md) for the
+See also [../../proposals/PARTICLE_SYSTEM_DESIGN.md](../../proposals/PARTICLE_SYSTEM_DESIGN.md) for the
 scene-level particle-system design that separates GPU-updated simulation state, render views,
 CUDA/CuPy producers, and optional track/trail consumers.
 

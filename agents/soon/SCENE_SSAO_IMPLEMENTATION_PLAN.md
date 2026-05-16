@@ -184,7 +184,7 @@ The next high-value SSAO demonstration target should be a dedicated sphere visua
 variant and not a tessellated mesh fallback. Sphere impostors can provide analytic normals and
 correct sphere-surface depth in the G-buffer while keeping per-item data compact. The dedicated
 implementation plan is recorded in
-[SCENE_SPHERE_VISUAL_PLAN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/SCENE_SPHERE_VISUAL_PLAN.md).
+[SCENE_SPHERE_VISUAL_PLAN.md](/home/cyrille/GIT/Viz/datoviz/agents/soon/SCENE_SPHERE_VISUAL_PLAN.md).
 
 
 ## Runtime Emission Changes
@@ -217,7 +217,7 @@ lands, because they will become the generic scene multi-pass runtime path.
 
 ## Descriptor Refresh Coordination
 
-`agents/now/DRP2_DESCRIPTOR_REFRESH_PLAN.md` has now landed its first texture-recreation slice in
+`agents/done/DRP2_DESCRIPTOR_REFRESH_PLAN.md` has now landed its first texture-recreation slice in
 the DRP2/vklite runtime. SSAO should rely on the runtime invariant from that plan:
 
 > A live bind group in the runtime must always describe the current backend handles of every

@@ -258,10 +258,10 @@ drift.
 
 Keep tiny usage examples for:
 
-1. [examples/API_MESH_SELECTION_LINK.md](../examples/API_MESH_SELECTION_LINK.md),
-2. [examples/API_IMAGE_PROBE_PINNED_READOUT.md](../examples/API_IMAGE_PROBE_PINNED_READOUT.md),
-3. [examples/API_SCALE_COLORBAR_ANNOTATION.md](../examples/API_SCALE_COLORBAR_ANNOTATION.md),
-4. [examples/API_SAMPLED_FIELD.md](../examples/API_SAMPLED_FIELD.md).
+1. [examples/api/API_MESH_SELECTION_LINK.md](../examples/api/API_MESH_SELECTION_LINK.md),
+2. [examples/api/API_IMAGE_PROBE_PINNED_READOUT.md](../examples/api/API_IMAGE_PROBE_PINNED_READOUT.md),
+3. [examples/api/API_SCALE_COLORBAR_ANNOTATION.md](../examples/api/API_SCALE_COLORBAR_ANNOTATION.md),
+4. [examples/api/API_SAMPLED_FIELD.md](../examples/api/API_SAMPLED_FIELD.md).
 
 These examples are API pressure tests. They may reference drafted APIs that are not fully implemented
 yet, but awkward examples should still block broadening the public surface.

@@ -17,11 +17,12 @@ memory.
 
 This proposal complements:
 
-1. [../examples/PARTICLES.md](../examples/PARTICLES.md), which describes the gallery/example
+1. [../examples/compute/PARTICLES.md](../examples/compute/PARTICLES.md), which describes the
+   gallery/example
    pressure test;
 2. [../integration/CUPY_CUDA_INTEROP.md](../integration/CUPY_CUDA_INTEROP.md), which defines the
    preferred Vulkan-owned external-memory route for CuPy;
-3. [../../../agents/now/SCENE_VECTOR_VISUALS_PLAN.md](../../../agents/now/SCENE_VECTOR_VISUALS_PLAN.md),
+3. [../../../agents/soon/SCENE_VECTOR_VISUALS_PLAN.md](../../../agents/soon/SCENE_VECTOR_VISUALS_PLAN.md),
    which defines `path`, `streamline`, and `tube` as trajectory/geometry renderers.
 
 

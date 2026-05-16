@@ -28,7 +28,7 @@ There is already substantial background material:
 1. family spec:
    [spec/scene/visuals/VOLUME.md](../visuals/VOLUME.md)
 2. realistic mixed-use example:
-   [spec/scene/examples/MOUSE_BRAIN_ATLAS_EXPLORER.md](../examples/MOUSE_BRAIN_ATLAS_EXPLORER.md)
+   [spec/scene/examples/core/MOUSE_BRAIN_ATLAS_EXPLORER.md](../examples/core/MOUSE_BRAIN_ATLAS_EXPLORER.md)
 3. active transparency direction:
    [spec/scene/proposals/TRANSPARENCY_WBOIT_DESIGN.md](TRANSPARENCY_WBOIT_DESIGN.md)
 4. active picking direction:

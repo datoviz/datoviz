@@ -8,11 +8,11 @@ annotations, and one consolidated explanatory object.
 
 This example should be read against:
 
-1. `../semantics/LEGENDS_AND_COLORBARS.md` for shared explanatory-object and mapping-identity rules,
-2. `../semantics/ANNOTATIONS.md` for transient probe and crosshair semantics,
-3. `../interaction/PICKING.md` for latest-request-wins hover semantics,
-4. `../interaction/CONTROLLERS.md` for linked-panel interaction,
-5. `../pipeline/FRAME_PLAN.md` for panel-local plus shared scene-level `FramePlan` structure.
+1. `../../semantics/LEGENDS_AND_COLORBARS.md` for shared explanatory-object and mapping-identity rules,
+2. `../../semantics/ANNOTATIONS.md` for transient probe and crosshair semantics,
+3. `../../interaction/PICKING.md` for latest-request-wins hover semantics,
+4. `../../interaction/CONTROLLERS.md` for linked-panel interaction,
+5. `../../pipeline/FRAME_PLAN.md` for panel-local plus shared scene-level `FramePlan` structure.
 
 
 ## Scene Setup

@@ -8,11 +8,11 @@ panel-attached colorbars, and retained annotation labels.
 
 Read this against:
 
-1. `../api/API_SURFACE.md`
-2. `../semantics/SCALES.md`
-3. `../semantics/LEGENDS_AND_COLORBARS.md`
-4. `../semantics/ANNOTATIONS.md`
-5. `../proposals/ANNOTATION_TEXT_SCALE_API.md`
+1. `../../api/API_SURFACE.md`
+2. `../../semantics/SCALES.md`
+3. `../../semantics/LEGENDS_AND_COLORBARS.md`
+4. `../../semantics/ANNOTATIONS.md`
+5. `../../proposals/ANNOTATION_TEXT_SCALE_API.md`
 
 
 ## Desired User Flow

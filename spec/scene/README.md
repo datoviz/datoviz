@@ -208,20 +208,20 @@ Read the scene spec in this order during review.
 ### 6. Worked examples
 
 1. [examples/README.md](examples/README.md) — entry point for worked examples
-2. [examples/POINT_2D.md](examples/POINT_2D.md)
-3. [examples/MARKER_PICKING.md](examples/MARKER_PICKING.md)
-4. [examples/PATH_AXES_2D.md](examples/PATH_AXES_2D.md)
-5. [examples/VOLUME_SLICE.md](examples/VOLUME_SLICE.md)
-6. [examples/SPHERE_IMPOSTOR.md](examples/SPHERE_IMPOSTOR.md)
-7. [examples/VOLUME_OFFSCREEN.md](examples/VOLUME_OFFSCREEN.md)
-8. [examples/LINKED_PANELS_PROBE_COLORBAR.md](examples/LINKED_PANELS_PROBE_COLORBAR.md)
-9. [examples/MOUSE_BRAIN_ATLAS_EXPLORER.md](examples/MOUSE_BRAIN_ATLAS_EXPLORER.md)
-10. [examples/LINKED_PANELS_AXES_PANZOOM.md](examples/LINKED_PANELS_AXES_PANZOOM.md)
-11. [examples/ANIMATION_VIDEO_EXPORT.md](examples/ANIMATION_VIDEO_EXPORT.md)
-12. [examples/API_MESH_SELECTION_LINK.md](examples/API_MESH_SELECTION_LINK.md)
-13. [examples/API_IMAGE_PROBE_PINNED_READOUT.md](examples/API_IMAGE_PROBE_PINNED_READOUT.md)
-14. [examples/API_SCALE_COLORBAR_ANNOTATION.md](examples/API_SCALE_COLORBAR_ANNOTATION.md)
-15. [examples/API_SAMPLED_FIELD.md](examples/API_SAMPLED_FIELD.md)
+2. [examples/core/POINT_2D.md](examples/core/POINT_2D.md)
+3. [examples/core/MARKER_PICKING.md](examples/core/MARKER_PICKING.md)
+4. [examples/core/PATH_AXES_2D.md](examples/core/PATH_AXES_2D.md)
+5. [examples/core/VOLUME_SLICE.md](examples/core/VOLUME_SLICE.md)
+6. [examples/core/SPHERE_IMPOSTOR.md](examples/core/SPHERE_IMPOSTOR.md)
+7. [examples/core/VOLUME_OFFSCREEN.md](examples/core/VOLUME_OFFSCREEN.md)
+8. [examples/core/LINKED_PANELS_PROBE_COLORBAR.md](examples/core/LINKED_PANELS_PROBE_COLORBAR.md)
+9. [examples/core/MOUSE_BRAIN_ATLAS_EXPLORER.md](examples/core/MOUSE_BRAIN_ATLAS_EXPLORER.md)
+10. [examples/core/LINKED_PANELS_AXES_PANZOOM.md](examples/core/LINKED_PANELS_AXES_PANZOOM.md)
+11. [examples/showcase/ANIMATION_VIDEO_EXPORT.md](examples/showcase/ANIMATION_VIDEO_EXPORT.md)
+12. [examples/api/API_MESH_SELECTION_LINK.md](examples/api/API_MESH_SELECTION_LINK.md)
+13. [examples/api/API_IMAGE_PROBE_PINNED_READOUT.md](examples/api/API_IMAGE_PROBE_PINNED_READOUT.md)
+14. [examples/api/API_SCALE_COLORBAR_ANNOTATION.md](examples/api/API_SCALE_COLORBAR_ANNOTATION.md)
+15. [examples/api/API_SAMPLED_FIELD.md](examples/api/API_SAMPLED_FIELD.md)
 
 
 ## Document Index
@@ -317,9 +317,11 @@ Read the scene spec in this order during review.
   by milestone (DRP2 2.1, v0.4+, no target)
 - [examples/README.md](examples/README.md): worked scene-spec examples that instantiate families,
   transforms, and `FramePlan` shapes
-- [examples/API_MESH_SELECTION_LINK.md](examples/API_MESH_SELECTION_LINK.md),
-  [examples/API_IMAGE_PROBE_PINNED_READOUT.md](examples/API_IMAGE_PROBE_PINNED_READOUT.md), and
-  [examples/API_SCALE_COLORBAR_ANNOTATION.md](examples/API_SCALE_COLORBAR_ANNOTATION.md): tiny
+- [examples/api/API_MESH_SELECTION_LINK.md](examples/api/API_MESH_SELECTION_LINK.md),
+  [examples/api/API_IMAGE_PROBE_PINNED_READOUT.md](examples/api/API_IMAGE_PROBE_PINNED_READOUT.md),
+  and
+  [examples/api/API_SCALE_COLORBAR_ANNOTATION.md](examples/api/API_SCALE_COLORBAR_ANNOTATION.md):
+  tiny
   public API-shape pressure tests for the next header draft
 
 
