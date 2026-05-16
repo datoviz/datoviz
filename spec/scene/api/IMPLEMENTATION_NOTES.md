@@ -243,7 +243,8 @@ Pure Python, imports `_ctypes`, adds:
 3. context managers for scene and resource lifecycle,
 4. `__repr__` and inspection helpers,
 5. inline colormap and scale shortcuts (see `semantics/SCALES.md`),
-6. Pythonic property setters instead of explicit setter calls.
+6. Pythonic property setters instead of explicit setter calls,
+7. visual layer/group conveniences for z ordering, show/hide toggles, and batch styling.
 
 The sugar layer must not contain scene logic. Any new semantic capability must be added to the C
 API first, then surfaced through the sugar layer.
