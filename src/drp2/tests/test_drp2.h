@@ -111,6 +111,8 @@ int test_drp2_runtime_validate_bind_group_dynamic_offsets(TstSuite* suite, TstIt
 
 int test_drp2_runtime_validate_bind_group_after_table_growth(TstSuite* suite, TstItem* item);
 
+int test_drp2_runtime_validate_recreate_bind_group_resources(TstSuite* suite, TstItem* item);
+
 int test_drp2_runtime_reuses_submitted_transient_ids(TstSuite* suite, TstItem* item);
 
 int test_drp2_runtime_registers_external_buffer_semantic(TstSuite* suite, TstItem* item);

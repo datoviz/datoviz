@@ -424,6 +424,23 @@ _vklite_create_sampler(Drp2VkliteState* state, const DvzDrp2Command* command, ui
     ANN(state);
     ANN(command);
 
+    Drp2VkliteObject* previous = _vklite_find(state, command->u.create_sampler.id);
+    bool replaced = false;
+    if (previous != NULL)
+    {
+        if (previous->kind != DRP2_OBJECT_SAMPLER)
+            return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+        replaced = true;
+        if (state->active_borrowed_command_buffer != VK_NULL_HANDLE)
+        {
+            if (!_vklite_defer_destroy_object(
+                    state, previous, state->active_borrowed_command_buffer))
+                return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+        }
+        else
+            _vklite_destroy_object_slot(state, previous);
+    }
+
     Drp2VkliteObject* object = _vklite_add(state, command->u.create_sampler.id, DRP2_OBJECT_SAMPLER);
     if (object == NULL)
         return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
@@ -443,6 +460,13 @@ _vklite_create_sampler(Drp2VkliteState* state, const DvzDrp2Command* command, ui
     if (dvz_sampler_create(sampler) != 0)
         return _vklite_fail_destroy_object(
             object, DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+    if (replaced)
+    {
+        DvzDrp2ValidationResult result = _vklite_refresh_dependent_bind_groups(
+            state, command->u.create_sampler.id, command_index);
+        if (!result.ok)
+            return result;
+    }
     return _drp2_ok();
 }
 

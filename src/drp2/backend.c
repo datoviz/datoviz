@@ -134,6 +134,24 @@ static DvzDrp2ValidationResult _vklite_create_buffer(
 {
     ANN(state);
     ANN(command);
+
+    Drp2VkliteObject* previous = _vklite_find(state, command->u.create_buffer.id);
+    bool replaced = false;
+    if (previous != NULL)
+    {
+        if (previous->kind != DRP2_OBJECT_BUFFER)
+            return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+        replaced = true;
+        if (state->active_borrowed_command_buffer != VK_NULL_HANDLE)
+        {
+            if (!_vklite_defer_destroy_object(
+                    state, previous, state->active_borrowed_command_buffer))
+                return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+        }
+        else
+            _vklite_destroy_object_slot(state, previous);
+    }
+
     Drp2VkliteObject* object =
         _vklite_add(state, command->u.create_buffer.id, DRP2_OBJECT_BUFFER);
     if (object == NULL)
@@ -152,6 +170,13 @@ static DvzDrp2ValidationResult _vklite_create_buffer(
     if (dvz_buffer_create(buffer) != 0)
         return _vklite_fail_destroy_object(
             object, DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+    if (replaced)
+    {
+        DvzDrp2ValidationResult result = _vklite_refresh_dependent_bind_groups(
+            state, command->u.create_buffer.id, command_index);
+        if (!result.ok)
+            return result;
+    }
     return _drp2_ok();
 }
 

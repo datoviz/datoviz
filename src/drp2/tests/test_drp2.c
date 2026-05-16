@@ -1524,6 +1524,115 @@ int test_drp2_runtime_validate_bind_group_after_table_growth(TstSuite* suite, Ts
 
 
 
+/**
+ * Validate stable-id buffer and sampler recreation for an existing bind group.
+ *
+ * @param suite test suite
+ * @param item test item
+ * @return 0 on success
+ */
+int test_drp2_runtime_validate_recreate_bind_group_resources(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzDrp2RuntimeConfig cfg = {0};
+    cfg.semantic_only = true;
+    DvzDrp2Runtime* runtime = dvz_drp2_runtime_vklite(&cfg);
+    ANN(runtime);
+
+    DvzDrp2BindGroupLayoutEntry layout_entries[2] = {
+        {
+            .binding = 0,
+            .binding_type = DVZ_DRP2_BINDING_TYPE_UNIFORM_BUFFER,
+            .visibility = DVZ_DRP2_SHADER_STAGE_FRAGMENT,
+            .access = DVZ_DRP2_BINDING_ACCESS_READ,
+        },
+        {
+            .binding = 1,
+            .binding_type = DVZ_DRP2_BINDING_TYPE_SAMPLER,
+            .visibility = DVZ_DRP2_SHADER_STAGE_FRAGMENT,
+            .access = DVZ_DRP2_BINDING_ACCESS_READ,
+        },
+    };
+    DvzDrp2BindGroupEntry bind_entries[2] = {
+        {
+            .binding = 0,
+            .binding_type = DVZ_DRP2_BINDING_TYPE_UNIFORM_BUFFER,
+            .resource_kind = DVZ_DRP2_BINDING_RESOURCE_BUFFER,
+            .resource_id = 2,
+            .offset = 8,
+            .size = 16,
+        },
+        {
+            .binding = 1,
+            .binding_type = DVZ_DRP2_BINDING_TYPE_SAMPLER,
+            .resource_kind = DVZ_DRP2_BINDING_RESOURCE_SAMPLER,
+            .resource_id = 3,
+        },
+    };
+
+    DvzDrp2CommandStream* setup = dvz_drp2_stream();
+    ANN(setup);
+    AT(dvz_drp2_stream_hello_renderer(setup, "test-client"));
+    AT(dvz_drp2_stream_renderer_hello_reply(setup, "test-renderer"));
+    AT(dvz_drp2_stream_create_buffer(setup, 2, 32, DVZ_DRP2_BUFFER_USAGE_UNIFORM));
+    AT(dvz_drp2_stream_create_sampler(setup, 3));
+    AT(dvz_drp2_stream_create_bind_group_layout_entries(setup, 4, 2, layout_entries));
+    AT(dvz_drp2_stream_create_bind_group_entries(setup, 5, 4, 2, bind_entries));
+    AT(dvz_drp2_stream_create_shader_module(setup, 6, "vertex", "@vertex fn main() {}"));
+    AT(dvz_drp2_stream_create_shader_module(setup, 7, "fragment", "@fragment fn main() {}"));
+    AT(dvz_drp2_stream_create_render_pipeline_with_bind_group_layout(setup, 8, 6, 7, 0, 4));
+    AT(dvz_drp2_stream_create_texture_2d_usage(
+        setup, 9, 2, 2, DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT));
+    AT(dvz_drp2_stream_begin_command_encoder(setup, 10));
+    AT(dvz_drp2_stream_begin_render_pass(setup, 11, 10, 9));
+    AT(dvz_drp2_stream_set_pipeline(setup, 11, 8));
+    AT(dvz_drp2_stream_set_bind_group(setup, 11, 0, 5));
+    AT(dvz_drp2_stream_draw(setup, 11, 3, 1, 0, 0));
+    AT(dvz_drp2_stream_end_render_pass(setup, 11));
+    AT(dvz_drp2_stream_finish_command_encoder(setup, 10, 12));
+    AT(dvz_drp2_stream_queue_submit(setup, 12, 13));
+
+    DvzDrp2ValidationResult result = dvz_drp2_runtime_execute(runtime, setup);
+    AT(result.ok);
+    AT(result.code == DVZ_DRP2_VALIDATION_OK);
+
+    DvzDrp2CommandStream* too_small = dvz_drp2_stream();
+    ANN(too_small);
+    AT(dvz_drp2_stream_create_buffer(too_small, 2, 8, DVZ_DRP2_BUFFER_USAGE_UNIFORM));
+    result = dvz_drp2_runtime_execute(runtime, too_small);
+    AT(!result.ok);
+    AT(result.code == DVZ_DRP2_VALIDATION_OUT_OF_RANGE);
+
+    DvzDrp2CommandStream* recreated = dvz_drp2_stream();
+    ANN(recreated);
+    AT(dvz_drp2_stream_create_buffer(recreated, 2, 64, DVZ_DRP2_BUFFER_USAGE_UNIFORM));
+    AT(dvz_drp2_stream_create_sampler(recreated, 3));
+    AT(dvz_drp2_stream_create_texture_2d_usage(
+        recreated, 19, 2, 2, DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT));
+    AT(dvz_drp2_stream_begin_command_encoder(recreated, 20));
+    AT(dvz_drp2_stream_begin_render_pass(recreated, 21, 20, 19));
+    AT(dvz_drp2_stream_set_pipeline(recreated, 21, 8));
+    AT(dvz_drp2_stream_set_bind_group(recreated, 21, 0, 5));
+    AT(dvz_drp2_stream_draw(recreated, 21, 3, 1, 0, 0));
+    AT(dvz_drp2_stream_end_render_pass(recreated, 21));
+    AT(dvz_drp2_stream_finish_command_encoder(recreated, 20, 22));
+    AT(dvz_drp2_stream_queue_submit(recreated, 22, 23));
+
+    result = dvz_drp2_runtime_execute(runtime, recreated);
+    AT(result.ok);
+    AT(result.code == DVZ_DRP2_VALIDATION_OK);
+
+    dvz_drp2_stream_destroy(recreated);
+    dvz_drp2_stream_destroy(too_small);
+    dvz_drp2_stream_destroy(setup);
+    dvz_drp2_runtime_destroy(runtime);
+    return 0;
+}
+
+
+
 int test_drp2_runtime_reuses_submitted_transient_ids(TstSuite* suite, TstItem* item)
 {
     ANN(suite);
@@ -6101,6 +6210,7 @@ int test_drp2(TstSuite* suite)
     TEST_SIMPLE(test_drp2_runtime_rejects_bind_group_entry_mismatch);
     TEST_SIMPLE(test_drp2_runtime_validate_bind_group_dynamic_offsets);
     TEST_SIMPLE(test_drp2_runtime_validate_bind_group_after_table_growth);
+    TEST_SIMPLE(test_drp2_runtime_validate_recreate_bind_group_resources);
     TEST_SIMPLE(test_drp2_runtime_reuses_submitted_transient_ids);
     TEST_SIMPLE(test_drp2_runtime_registers_external_buffer_semantic);
     TEST_SIMPLE(test_drp2_runtime_validate_compute_storage_bind_group);

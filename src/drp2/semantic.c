@@ -168,6 +168,46 @@ static bool _binding_type_is_texture(DvzDrp2BindingType type)
 
 
 
+/**
+ * Validate live bind-group entries that would keep referencing a recreated buffer.
+ *
+ * @param state semantic runtime state
+ * @param buffer_id recreated buffer id
+ * @param size recreated buffer size
+ * @param usage recreated buffer usage flags
+ * @param command_index command index used for validation reporting
+ * @return DRP2 validation result
+ */
+static DvzDrp2ValidationResult _validate_buffer_recreate_bind_groups(
+    Drp2RuntimeState* state, uint64_t buffer_id, uint64_t size, uint32_t usage,
+    uint32_t command_index)
+{
+    ANN(state);
+    for (uint32_t i = 0; i < state->count; i++)
+    {
+        const Drp2Object* bind_group = &state->objects[i];
+        if (bind_group->destroyed || bind_group->kind != DRP2_OBJECT_BIND_GROUP)
+            continue;
+        for (uint32_t j = 0; j < bind_group->bind_group_entry_count; j++)
+        {
+            const DvzDrp2BindGroupEntry* entry = &bind_group->bind_group_entries[j];
+            if (entry->resource_id != buffer_id || !_binding_type_is_buffer(entry->binding_type))
+                continue;
+            if (entry->binding_type == DVZ_DRP2_BINDING_TYPE_UNIFORM_BUFFER &&
+                (usage & DVZ_DRP2_BUFFER_USAGE_UNIFORM) == 0)
+                return _drp2_fail(DVZ_DRP2_VALIDATION_USAGE, command_index);
+            if (entry->binding_type == DVZ_DRP2_BINDING_TYPE_STORAGE_BUFFER &&
+                (usage & DVZ_DRP2_BUFFER_USAGE_STORAGE) == 0)
+                return _drp2_fail(DVZ_DRP2_VALIDATION_USAGE, command_index);
+            if (_drp2_range_overflows(entry->offset, entry->size, size))
+                return _drp2_fail(DVZ_DRP2_VALIDATION_OUT_OF_RANGE, command_index);
+        }
+    }
+    return _drp2_ok();
+}
+
+
+
 static const DvzDrp2BindGroupLayoutEntry* _layout_entry_for_binding(
     const Drp2Object* layout, uint32_t binding)
 {
@@ -600,12 +640,24 @@ static DvzDrp2ValidationResult _validate_create_buffer(
     uint64_t size = command->u.create_buffer.size;
     if (id == 0 || size == 0)
         return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_ARGUMENT, command_index);
-    if (_drp2_find_any_object(state, id) != NULL)
-        return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
 
-    Drp2Object* object = _drp2_add_object(state, id, DRP2_OBJECT_BUFFER);
-    if (object == NULL)
-        return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+    Drp2Object* object = _drp2_find_any_object(state, id);
+    if (object != NULL)
+    {
+        if (object->destroyed || object->kind != DRP2_OBJECT_BUFFER ||
+            !object->referenced_by_work)
+            return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+        DvzDrp2ValidationResult result = _validate_buffer_recreate_bind_groups(
+            state, id, size, command->u.create_buffer.usage, command_index);
+        if (!result.ok)
+            return result;
+    }
+    else
+    {
+        object = _drp2_add_object(state, id, DRP2_OBJECT_BUFFER);
+        if (object == NULL)
+            return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+    }
     object->size = size;
     object->usage = command->u.create_buffer.usage;
     return _drp2_ok();
@@ -859,10 +911,17 @@ static DvzDrp2ValidationResult _validate_create_sampler(
     uint64_t id = command->u.create_sampler.id;
     if (id == 0)
         return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_ARGUMENT, command_index);
-    if (_drp2_find_any_object(state, id) != NULL)
+    Drp2Object* object = _drp2_find_any_object(state, id);
+    if (object != NULL)
+    {
+        if (object->destroyed || object->kind != DRP2_OBJECT_SAMPLER ||
+            !object->referenced_by_work)
+            return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+    }
+    else if (_drp2_add_object(state, id, DRP2_OBJECT_SAMPLER) == NULL)
+    {
         return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
-    if (_drp2_add_object(state, id, DRP2_OBJECT_SAMPLER) == NULL)
-        return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+    }
     return _drp2_ok();
 }
 
