@@ -1,0 +1,134 @@
+#version 450
+
+layout(set = 0, binding = 0) uniform MVP {
+    mat4 model;
+    mat4 view;
+    mat4 proj;
+    float time;
+    uint flags;
+} mvp;
+
+layout(set = 1, binding = 0) uniform sampler3D tex;
+
+layout(set = 1, binding = 2) uniform VolumeParams {
+    vec4 clip_min;
+    vec4 clip_max;
+    vec4 params;
+    vec4 slice;
+    vec4 bounds_min;
+    vec4 bounds_max;
+} volume;
+
+layout(location = 0) in vec3 fragUVW;
+layout(location = 1) in vec3 fragObj;
+layout(location = 0) out float outDepth;
+
+const float EXTINCTION_SCALE = 4.0;
+const float ALPHA_THRESHOLD = 0.08;
+
+float safe_inv(float v)
+{
+    if (abs(v) < 1e-6) {
+        return v < 0.0 ? -1e6 : 1e6;
+    }
+    return 1.0 / v;
+}
+
+bool ray_box(vec3 ro, vec3 rd, vec3 box_min, vec3 box_max, out float t0, out float t1)
+{
+    vec3 inv_rd = vec3(safe_inv(rd.x), safe_inv(rd.y), safe_inv(rd.z));
+    vec3 t_near = (box_min - ro) * inv_rd;
+    vec3 t_far = (box_max - ro) * inv_rd;
+    vec3 t_min = min(t_near, t_far);
+    vec3 t_max = max(t_near, t_far);
+    t0 = max(max(t_min.x, t_min.y), t_min.z);
+    t1 = min(min(t_max.x, t_max.y), t_max.z);
+    return t1 >= max(t0, 0.0);
+}
+
+vec3 camera_object()
+{
+    mat4 inv_model = inverse(mvp.model);
+    mat4 inv_view = inverse(mvp.view);
+    return (inv_model * inv_view * vec4(0.0, 0.0, 0.0, 1.0)).xyz;
+}
+
+vec3 object_to_uvw(vec3 pos)
+{
+    vec3 extent = max(volume.bounds_max.xyz - volume.bounds_min.xyz, vec3(1e-6));
+    return (pos - volume.bounds_min.xyz) / extent;
+}
+
+vec3 object_dir_to_uvw(vec3 dir)
+{
+    vec3 extent = max(volume.bounds_max.xyz - volume.bounds_min.xyz, vec3(1e-6));
+    return dir / extent;
+}
+
+vec3 uvw_to_object(vec3 uvw)
+{
+    return mix(volume.bounds_min.xyz, volume.bounds_max.xyz, uvw);
+}
+
+float projected_depth(vec3 uvw)
+{
+    vec3 pos = uvw_to_object(uvw);
+    vec4 clip = mvp.proj * mvp.view * mvp.model * vec4(pos, 1.0);
+    if (clip.w <= 0.0) {
+        return 0.0;
+    }
+    return clamp(0.5 * (clip.z / clip.w) + 0.5, 0.0, 1.0);
+}
+
+void main()
+{
+    outDepth = 0.0;
+
+    vec3 ro_obj = camera_object();
+    vec3 rd_obj = normalize(fragObj - ro_obj);
+    vec3 ro = object_to_uvw(ro_obj);
+    vec3 rd = object_dir_to_uvw(rd_obj);
+
+    float proxy_t0 = 0.0;
+    float proxy_t1 = 0.0;
+    if (!ray_box(ro, rd, vec3(0.0), vec3(1.0), proxy_t0, proxy_t1)) {
+        discard;
+    }
+
+    vec3 box_min = volume.clip_min.xyz;
+    vec3 box_max = volume.clip_max.xyz;
+    float t0 = 0.0;
+    float t1 = 0.0;
+    if (!ray_box(ro, rd, box_min, box_max, t0, t1)) {
+        discard;
+    }
+
+    int steps = int(clamp(volume.params.z, 1.0, 1024.0));
+    float start_t = max(t0, 0.0);
+    float end_t = t1;
+    if (end_t <= start_t) {
+        discard;
+    }
+
+    float ray_length = end_t - start_t;
+    float step_len = ray_length / float(steps);
+    bool transfer = volume.clip_min.w > 0.5;
+    float accum = 0.0;
+    for (int i = 0; i < 1024; i++) {
+        if (i >= steps) {
+            break;
+        }
+        float t = (float(i) + 0.5) / float(steps);
+        vec3 uvw = ro + rd * mix(start_t, end_t, t);
+        vec4 sample_value = texture(tex, uvw);
+        float density = clamp(transfer ? sample_value.a : sample_value.r, 0.0, 1.0);
+        float sample_alpha =
+            1.0 - exp(-density * volume.params.x * EXTINCTION_SCALE * step_len);
+        sample_alpha = clamp(sample_alpha, 0.0, 1.0);
+        accum += (1.0 - accum) * sample_alpha;
+        if (accum > ALPHA_THRESHOLD) {
+            outDepth = projected_depth(uvw);
+            return;
+        }
+    }
+}

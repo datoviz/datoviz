@@ -501,6 +501,7 @@ static void _emitter_label_stream_ids(
  * @param pass_has_depth_attachment whether the render pass will carry a depth attachment.
  * @param force_point_depth whether point-like visuals must emit depth writes.
  * @param sampled_depth_id depth texture sampled by volume shaders, or zero.
+ * @param sampled_depth_is_volume_occlusion whether sampled_depth_id is a volume occlusion texture.
  * @param report diagnostic report receiving recoverable emission errors.
  * @param draws output draw descriptors filled from prepared visuals.
  * @param draw_count_out output number of prepared draw descriptors.
@@ -509,8 +510,9 @@ static void _emitter_label_stream_ids(
 static bool _emitter_prepare_render_multi(
     DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, const DvzFramePlanNode* render,
     const DvzFramePlanEmitConfig* cfg, bool pass_has_depth_attachment, bool force_point_depth,
-    uint64_t sampled_depth_id, uint32_t pass_sample_count, bool pass_alpha_to_coverage,
-    DvzDiagnosticReport* report, SceneRenderDraw* draws, uint32_t* draw_count_out)
+    uint64_t sampled_depth_id, bool sampled_depth_is_volume_occlusion,
+    uint32_t pass_sample_count, bool pass_alpha_to_coverage, DvzDiagnosticReport* report,
+    SceneRenderDraw* draws, uint32_t* draw_count_out)
 {
     ANN(emitter);
     ANN(stream);
@@ -523,6 +525,8 @@ static bool _emitter_prepare_render_multi(
     const char* fmt = _shader_format_tag(cfg);
     bool wboit_accumulation =
         render->u.render.pass_role == DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_ACCUMULATION;
+    bool volume_occlusion_pass =
+        render->u.render.pass_role == DVZ_FRAME_PLAN_RENDER_PASS_VOLUME_OCCLUSION;
     bool gbuffer_pass = render->u.render.pass_role == DVZ_FRAME_PLAN_RENDER_PASS_GBUFFER;
     bool depth_peel_pass =
         render->u.render.pass_role == DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_INIT ||
@@ -602,6 +606,23 @@ static bool _emitter_prepare_render_multi(
                 shader.vertex_spirv_key = "primitive_lit_vert";
                 shader.fragment_spirv_key = "gbuffer_normal_frag";
             }
+        }
+        else if (volume_occlusion_pass)
+        {
+            if (desc.kind != DVZ_SCENE_VISUAL_DESC_VOLUME)
+                continue;
+            dvz_snprintf(shader.vertex_key, sizeof(shader.vertex_key), "_vs_vol_occ%s", fmt);
+            dvz_snprintf(shader.fragment_key, sizeof(shader.fragment_key), "_fs_vol_occ%s", fmt);
+            dvz_snprintf(shader.pipeline_key, sizeof(shader.pipeline_key), "_pipe_vol_occ%s", fmt);
+            shader.vertex_glsl =
+                _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_VOLUME_OCCLUSION_DEPTH, false);
+            shader.fragment_glsl =
+                _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_VOLUME_OCCLUSION_DEPTH, true);
+            shader.vertex_spirv_key = "volume_slice_vert";
+            shader.fragment_spirv_key = "volume_occlusion_depth_frag";
+            shader.builtin_family = "scene.volume";
+            shader.builtin_variant = "occlusion_depth";
+            shader.builtin_pipeline = "scene.volume";
         }
         else if (!_scene_visual_shader_desc(
                      &desc, render->u.render.picking, wboit_accumulation, fmt, &shader))
@@ -854,6 +875,11 @@ static bool _emitter_prepare_render_multi(
                 ok = dvz_drp2_stream_pipeline_set_color_target(
                     stream, 0, VK_FORMAT_R16G16B16A16_SFLOAT);
             }
+            else if (ok && volume_occlusion_pass)
+            {
+                ok = dvz_drp2_stream_pipeline_set_color_target(
+                    stream, 0, VK_FORMAT_R32_SFLOAT);
+            }
             else if (ok && _alpha_mode_is_standard_blend(alpha_mode))
             {
                 ok = dvz_drp2_stream_pipeline_set_color_blend(
@@ -874,7 +900,8 @@ static bool _emitter_prepare_render_multi(
             ok = false;
             break;
         }
-        if (bind.uses_volume_set1)
+        if (bind.uses_volume_set1 && sampled_depth_id != 0 &&
+            (!sampled_depth_is_volume_occlusion || bind.volume_occluded))
             bind.volume_depth_texture_id = sampled_depth_id;
         if (bind.uses_common_set0)
             vis_bg_set0 = bind.uses_fixed_common ? fixed_bg_id : apply_bg_id;
@@ -1688,6 +1715,65 @@ static uint64_t _graph_sampled_read_texture_id(
 
     return _graph_runtime_texture_id_for_resource(
         pass->reads[read_index].resource_id, final_color_id, targets, fallback_id);
+}
+
+
+/**
+ * Return the index of a sampled volume-occlusion read in a graph pass.
+ *
+ * @param pass graph pass descriptor, or NULL
+ * @param out_read_index output read index
+ * @return whether a volume occlusion read was found
+ */
+static bool _graph_volume_occlusion_read_index(
+    const DvzFrameGraphPass* pass, uint32_t* out_read_index)
+{
+    ANN(out_read_index);
+    if (pass == NULL)
+        return false;
+    for (uint32_t i = 0; i < pass->read_count; i++)
+    {
+        if (pass->reads[i].usage == DVZ_FRAME_GRAPH_ACCESS_SAMPLED &&
+            strstr(pass->reads[i].resource_id, ".volume_occlusion.depth") != NULL)
+        {
+            *out_read_index = i;
+            return true;
+        }
+    }
+    return false;
+}
+
+
+/**
+ * Resolve the sampled volume-occlusion texture read by a graph pass.
+ *
+ * @param emitter the persistent emitter
+ * @param stream destination DRP2 command stream
+ * @param plan the FramePlan
+ * @param cfg optional frame-plan emit configuration
+ * @param pass graph pass descriptor, or NULL
+ * @param out_id output texture id
+ * @return whether the lookup succeeded
+ */
+static bool _graph_resolve_volume_occlusion_read(
+    DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, const DvzFramePlan* plan,
+    const DvzFramePlanEmitConfig* cfg, const DvzFrameGraphPass* pass, uint64_t* out_id)
+{
+    ANN(out_id);
+    *out_id = 0;
+    uint32_t read_index = 0;
+    if (!_graph_volume_occlusion_read_index(pass, &read_index))
+        return true;
+
+    const DvzFrameGraphResource* resource =
+        _graph_resource_by_id(plan, pass->reads[read_index].resource_id);
+    if (resource == NULL)
+        return false;
+    uint32_t width = 0;
+    uint32_t height = 0;
+    _emit_target_extent(cfg, &width, &height);
+    return _graph_resolve_texture_2d(
+        emitter, stream, plan, cfg, resource, width, height, VK_FORMAT_R32_SFLOAT, out_id);
 }
 
 
@@ -3398,8 +3484,8 @@ static bool _emitter_emit_render_multi(
     uint32_t pass_sample_count = _graph_render_pass_sample_count(emitter, plan, graph_pass);
     ok = _emitter_prepare_render_multi(
         emitter, stream, render, cfg, pass_has_depth_attachment, false, sampled_depth_id,
-        pass_sample_count, graph_pass != NULL && graph_pass->alpha_to_coverage, report, draws,
-        &draw_count);
+        false, pass_sample_count, graph_pass != NULL && graph_pass->alpha_to_coverage, report,
+        draws, &draw_count);
     if (!ok)
         return false;
 
@@ -3478,8 +3564,8 @@ static bool _emitter_emit_scene_figure_renders(
         SceneRenderBatch* batch = &batches[batch_count];
         batch->render = render;
         ok = _emitter_prepare_render_multi(
-            emitter, stream, render, cfg, needs_depth, false, 0, 1, false, report, batch->draws,
-            &batch->draw_count);
+            emitter, stream, render, cfg, needs_depth, false, 0, false, 1, false, report,
+            batch->draws, &batch->draw_count);
         if (ok)
             batch_count++;
     }
@@ -3729,6 +3815,17 @@ static bool _emitter_emit_scene_graph_renders(
                     DVZ_FRAME_GRAPH_ATTACHMENT_ACCESS_READ)
                 sampled_depth_id = targets->depth_id;
         }
+        bool sampled_depth_is_volume_occlusion = false;
+        uint64_t volume_occlusion_depth_id = 0;
+        ok = _graph_resolve_volume_occlusion_read(
+            emitter, stream, plan, cfg, render_graph_pass, &volume_occlusion_depth_id);
+        if (!ok)
+            break;
+        if (volume_occlusion_depth_id != 0)
+        {
+            sampled_depth_id = volume_occlusion_depth_id;
+            sampled_depth_is_volume_occlusion = true;
+        }
 
         if (render->u.render.visual_count > 0)
         {
@@ -3739,7 +3836,7 @@ static bool _emitter_emit_scene_graph_renders(
                 strstr(render_graph_pass->depth_attachment.resource_id, ".edl.depth") != NULL;
             ok = _emitter_prepare_render_multi(
                 emitter, stream, render, cfg, pass_has_depth_attachment, force_point_depth,
-                sampled_depth_id,
+                sampled_depth_id, sampled_depth_is_volume_occlusion,
                 _graph_render_pass_sample_count(emitter, plan, render_graph_pass),
                 render_graph_pass != NULL && render_graph_pass->alpha_to_coverage, report,
                 batch->draws, &batch->draw_count);
@@ -3817,6 +3914,42 @@ static bool _emitter_emit_scene_graph_renders(
             ok = ok && _stream_apply_graph_color_ops(
                            stream, graph_pass, color_id, &targets->graph);
             ok = ok && _stream_apply_graph_depth(stream, graph_pass, targets->depth_id);
+            if (ok && has_draws)
+            {
+                scene_cache.pipeline_id = 0;
+                scene_cache.bg_set0 = 0;
+                ok = _emitter_emit_render_multi_draws(
+                    stream, render, pass_id, batch->draws, batch->draw_count, &scene_cache);
+            }
+            ok = ok && dvz_drp2_stream_end_render_pass(stream, pass_id);
+            scene_cache.pipeline_id = 0;
+            scene_cache.bg_set0 = 0;
+        }
+        else if (render->u.render.pass_role == DVZ_FRAME_PLAN_RENDER_PASS_VOLUME_OCCLUSION)
+        {
+            const DvzFrameGraphPass* graph_pass = ordered_graph_pass != NULL
+                                                      ? ordered_graph_pass
+                                                      : _graph_pass_for_render(plan, render);
+            SceneGraphRuntimeTargets graph_targets = {0};
+            ok = _graph_prepare_render_color_targets(
+                emitter, stream, plan, graph_pass, cfg, &graph_targets);
+            if (!ok)
+                break;
+            uint64_t target_id =
+                _graph_color_attachment_texture_id(graph_pass, 0, color_id, &graph_targets, 0);
+            if (target_id == 0)
+            {
+                ok = false;
+                break;
+            }
+            uint64_t pass_id = _emitter_next_transient_id(emitter);
+            const SceneRenderBatch* batch = _render_batch_for_node(batches, batch_count, render);
+            bool has_draws = batch != NULL;
+            ok = dvz_drp2_stream_begin_render_pass_region_clear(
+                stream, pass_id, encoder_id, target_id, 0.0f, 0.0f, 0.0f, 0.0f,
+                render->u.render.desc.x, render->u.render.desc.y, render->u.render.desc.width,
+                render->u.render.desc.height, true);
+            ok = ok && _stream_apply_graph_color_ops(stream, graph_pass, color_id, &graph_targets);
             if (ok && has_draws)
             {
                 scene_cache.pipeline_id = 0;
