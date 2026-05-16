@@ -5235,6 +5235,115 @@ int test_scene_msaa_runtime_lowering(TstSuite* suite, TstItem* item)
 
 
 /**
+ * Verify runtime MSAA emission is lowered to device sample-count capabilities.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_msaa_runtime_capability_lowering(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    AT(scene != NULL);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    AT(figure != NULL);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    AT(panel != NULL);
+    AT(dvz_panel_set_msaa(
+        panel, &(DvzMsaaDesc){.enabled = true, .sample_count = 16,
+                              .alpha_to_coverage = true}));
+
+    DvzVisual* sphere = dvz_sphere(scene, 0);
+    AT(sphere != NULL);
+    float positions[1][3] = {{0.0f, 0.0f, 0.0f}};
+    DvzColor colors[1] = {{255, 128, 64, 255}};
+    float sizes[1] = {0.35f};
+    AT(dvz_visual_set_data(sphere, "position", positions, 1) == 0);
+    AT(dvz_visual_set_data(sphere, "color", colors, 1) == 0);
+    AT(dvz_visual_set_data(sphere, "size", sizes, 1) == 0);
+    AT(dvz_panel_add_visual(panel, sphere, NULL) == 0);
+
+    DvzFramePlan* plan = dvz_frame_plan("figure.msaa", 0);
+    ANN(plan);
+    _scene_emit_panel_render(figure, 0, plan, "figure_0");
+
+    const DvzFrameGraphResource* msaa_color = NULL;
+    const DvzFrameGraphResource* depth = NULL;
+    for (uint32_t i = 0; i < dvz_frame_plan_graph_resource_count(plan); i++)
+    {
+        const DvzFrameGraphResource* resource = dvz_frame_plan_graph_resource_get(plan, i);
+        ANN(resource);
+        if (strcmp(resource->id, "figure_0_p0.msaa.color") == 0)
+            msaa_color = resource;
+        else if (strcmp(resource->id, "figure_0_p0.depth") == 0)
+            depth = resource;
+    }
+    ANN(msaa_color);
+    ANN(depth);
+    AT(msaa_color->sample_count == 16);
+    AT(depth->sample_count == 16);
+
+    DvzCapabilitySnapshot caps = {0};
+    DvzDiagnosticReport report = {0};
+    DvzFramePlanEmitConfig cfg = dvz_frame_plan_emit_config();
+    cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
+    cfg.target_width = 64;
+    cfg.target_height = 64;
+    dvz_capability_snapshot_default(&caps);
+    caps.max_color_sample_count = 16;
+    caps.max_depth_sample_count = 8;
+    dvz_diagnostic_report_init(&report);
+
+    DvzDrp2CommandStream* stream = dvz_figure_emit_ex(figure, &caps, &report, &cfg);
+    ANN(stream);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+    DvzDrp2ValidationResult validation = dvz_drp2_validate_stream(stream);
+    AT(validation.ok);
+
+    bool found_msaa_texture = false;
+    bool found_depth_texture = false;
+    bool found_msaa_pipeline = false;
+    for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
+    {
+        const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream, i);
+        ANN(cmd);
+        if (cmd->type == DVZ_DRP2_COMMAND_CREATE_TEXTURE)
+        {
+            const char* label = dvz_drp2_stream_label(stream, cmd->u.create_texture.id);
+            found_msaa_texture =
+                found_msaa_texture ||
+                (label != NULL && strcmp(label, "fig0_p0.msaa.color") == 0 &&
+                 cmd->u.create_texture.sample_count == 8);
+            found_depth_texture =
+                found_depth_texture ||
+                (label != NULL && strcmp(label, "fig0_p0.depth") == 0 &&
+                 cmd->u.create_texture.sample_count == 8);
+        }
+        else if (cmd->type == DVZ_DRP2_COMMAND_CREATE_RENDER_PIPELINE)
+        {
+            const char* label = dvz_drp2_stream_label(stream, cmd->u.create_render_pipeline.id);
+            found_msaa_pipeline =
+                found_msaa_pipeline ||
+                (label != NULL && strstr(label, "_pipe_sphere") != NULL &&
+                 cmd->u.create_render_pipeline.sample_count == 8 &&
+                 cmd->u.create_render_pipeline.alpha_to_coverage_enabled);
+        }
+    }
+    AT(found_msaa_texture);
+    AT(found_depth_texture);
+    AT(found_msaa_pipeline);
+
+    dvz_drp2_stream_destroy(stream);
+    dvz_frame_plan_destroy(plan);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+/**
  * Verify point panels can lower an EDL post-process graph pass to DRP2.
  *
  * @param suite the active test suite
@@ -7466,6 +7575,7 @@ int test_scene_graph(TstSuite* suite)
     TEST_SIMPLE(test_scene_visual_pass_capabilities);
     TEST_SIMPLE(test_scene_gbuffer_runtime_lowering);
     TEST_SIMPLE(test_scene_msaa_runtime_lowering);
+    TEST_SIMPLE(test_scene_msaa_runtime_capability_lowering);
     TEST_SIMPLE(test_scene_edl_runtime_lowering);
     TEST_SIMPLE(test_scene_edl_depth_producer_capabilities);
     TEST_SIMPLE(test_scene_edl_ignores_ineligible_passes);

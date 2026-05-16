@@ -118,6 +118,8 @@ struct DvzFramePlanEmitter
     ConverterState objects;
     uint64_t next_transient_id;
     bool handshake_sent;
+    uint32_t max_color_sample_count;
+    uint32_t max_depth_sample_count;
 
     /* Common cache: APPLY and FIXED slots are panel-specific once viewport is part of set 0. */
     char mvp_panel_ids[DVZ_SCENE_COMMON_CACHE_CAPACITY][DVZ_SCENE_LABEL_SIZE];

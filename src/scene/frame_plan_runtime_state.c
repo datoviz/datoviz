@@ -576,6 +576,8 @@ DvzFramePlanEmitter* dvz_frame_plan_emitter(void)
     _state_init(&emitter->objects);
     emitter->objects.next_id = DRP2_EMITTER_OBJECT_ID_BASE;
     emitter->next_transient_id = DRP2_RUNTIME_TRANSIENT_ID_BASE;
+    emitter->max_color_sample_count = 16;
+    emitter->max_depth_sample_count = 16;
     return emitter;
 }
 

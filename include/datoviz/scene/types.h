@@ -78,6 +78,8 @@ struct DvzCapabilitySnapshot
     uint32_t max_bind_groups;
     uint32_t max_vertex_buffers;
     uint32_t max_color_attachments;
+    uint32_t max_color_sample_count;
+    uint32_t max_depth_sample_count;
     bool shader_format_wgsl;
     bool shader_format_glsl;
     bool render_target_format_rgba16float;

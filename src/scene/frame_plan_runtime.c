@@ -1405,20 +1405,85 @@ static uint32_t _graph_resource_sample_count(const DvzFrameGraphResource* resour
 
 
 /**
+ * Clamp a requested sample count to a supported power-of-two sample count.
+ *
+ * @param sample_count requested sample count.
+ * @param max_sample_count maximum supported sample count.
+ * @return supported sample count.
+ */
+static uint32_t _sample_count_lowered(uint32_t sample_count, uint32_t max_sample_count)
+{
+    if (sample_count <= 1 || max_sample_count <= 1)
+        return 1;
+    if (sample_count >= 16 && max_sample_count >= 16)
+        return 16;
+    if (sample_count >= 8 && max_sample_count >= 8)
+        return 8;
+    if (sample_count >= 4 && max_sample_count >= 4)
+        return 4;
+    if (sample_count >= 2 && max_sample_count >= 2)
+        return 2;
+    return 1;
+}
+
+
+/**
+ * Return a graph resource's capability-lowered sample count.
+ *
+ * @param emitter runtime emitter carrying current device limits.
+ * @param resource the graph resource.
+ * @return supported sample count, defaulting to one when unset.
+ */
+static uint32_t _graph_resource_lowered_sample_count(
+    const DvzFramePlanEmitter* emitter, const DvzFrameGraphResource* resource)
+{
+    uint32_t sample_count = _graph_resource_sample_count(resource);
+    if (sample_count <= 1 || emitter == NULL || resource == NULL)
+        return sample_count;
+
+    uint32_t max_sample_count = 16;
+    bool color = (resource->usage_flags & DVZ_FRAME_GRAPH_RESOURCE_USAGE_COLOR_ATTACHMENT) != 0;
+    bool depth = (resource->usage_flags & DVZ_FRAME_GRAPH_RESOURCE_USAGE_DEPTH_ATTACHMENT) != 0;
+    if (color || depth)
+    {
+        uint32_t color_max =
+            emitter->max_color_sample_count != 0 ? emitter->max_color_sample_count : 1;
+        uint32_t depth_max =
+            emitter->max_depth_sample_count != 0 ? emitter->max_depth_sample_count : 1;
+        max_sample_count = color_max < depth_max ? color_max : depth_max;
+    }
+    if (max_sample_count == 0)
+        max_sample_count = 1;
+    return _sample_count_lowered(sample_count, max_sample_count);
+}
+
+
+/**
  * Return the raster sample count implied by a render graph pass.
  *
+ * @param emitter runtime emitter carrying current device limits.
  * @param plan the FramePlan carrying graph resources
  * @param pass graph pass descriptor
  * @return raster sample count, defaulting to 1
  */
 static uint32_t
-_graph_render_pass_sample_count(const DvzFramePlan* plan, const DvzFrameGraphPass* pass)
+_graph_render_pass_sample_count(
+    const DvzFramePlanEmitter* emitter, const DvzFramePlan* plan, const DvzFrameGraphPass* pass)
 {
     if (plan == NULL || pass == NULL || pass->color_attachment_count == 0)
         return 1;
     const DvzFrameGraphResource* resource =
         _graph_resource_by_id(plan, pass->color_attachments[0].resource_id);
-    return _graph_resource_sample_count(resource);
+    uint32_t sample_count = _graph_resource_lowered_sample_count(emitter, resource);
+    if (pass->has_depth_attachment)
+    {
+        const DvzFrameGraphResource* depth =
+            _graph_resource_by_id(plan, pass->depth_attachment.resource_id);
+        uint32_t depth_sample_count = _graph_resource_lowered_sample_count(emitter, depth);
+        if (depth_sample_count < sample_count)
+            sample_count = depth_sample_count;
+    }
+    return sample_count;
 }
 
 
@@ -1783,7 +1848,7 @@ static bool _graph_resolve_texture_2d(
     _runtime_scope_key(cfg, resource->id, key, sizeof(key));
     return _runtime_resolve_texture_2d(
         emitter, stream, key, width, height, format, usage,
-        _graph_resource_sample_count(resource), out_id);
+        _graph_resource_lowered_sample_count(emitter, resource), out_id);
 }
 
 
@@ -3321,7 +3386,7 @@ static bool _emitter_emit_render_multi(
 
     SceneRenderDraw draws[DVZ_SCENE_MAX_RENDER_VISUALS] = {0};
     uint32_t draw_count = 0;
-    uint32_t pass_sample_count = _graph_render_pass_sample_count(plan, graph_pass);
+    uint32_t pass_sample_count = _graph_render_pass_sample_count(emitter, plan, graph_pass);
     ok = _emitter_prepare_render_multi(
         emitter, stream, render, cfg, pass_has_depth_attachment, false, sampled_depth_id,
         pass_sample_count, graph_pass != NULL && graph_pass->alpha_to_coverage, report, draws,
@@ -3664,7 +3729,8 @@ static bool _emitter_emit_scene_graph_renders(
                 strstr(render_graph_pass->depth_attachment.resource_id, ".edl.depth") != NULL;
             ok = _emitter_prepare_render_multi(
                 emitter, stream, render, cfg, pass_has_depth_attachment, force_point_depth,
-                sampled_depth_id, _graph_render_pass_sample_count(plan, render_graph_pass),
+                sampled_depth_id,
+                _graph_render_pass_sample_count(emitter, plan, render_graph_pass),
                 render_graph_pass != NULL && render_graph_pass->alpha_to_coverage, report,
                 batch->draws, &batch->draw_count);
             if (ok)
@@ -5024,6 +5090,10 @@ DvzDrp2CommandStream* dvz_frame_plan_emitter_emit_drp2(
     }
     if (caps != NULL && !_validate_capabilities(plan, caps, cfg, report))
         return NULL;
+    emitter->max_color_sample_count =
+        caps != NULL && caps->max_color_sample_count != 0 ? caps->max_color_sample_count : 16;
+    emitter->max_depth_sample_count =
+        caps != NULL && caps->max_depth_sample_count != 0 ? caps->max_depth_sample_count : 16;
 
     DvzDrp2CommandStream* stream = dvz_drp2_stream();
     ANN(stream);

@@ -149,6 +149,55 @@ struct DvzApp
 #if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
 
 /**
+ * Return the largest sample count represented by Vulkan sample-count flags.
+ *
+ * @param flags Vulkan sample-count flag mask.
+ * @return largest supported sample count, defaulting to one.
+ */
+static uint32_t _app_max_sample_count_from_flags(VkSampleCountFlags flags)
+{
+    if ((flags & VK_SAMPLE_COUNT_16_BIT) != 0)
+        return 16;
+    if ((flags & VK_SAMPLE_COUNT_8_BIT) != 0)
+        return 8;
+    if ((flags & VK_SAMPLE_COUNT_4_BIT) != 0)
+        return 4;
+    if ((flags & VK_SAMPLE_COUNT_2_BIT) != 0)
+        return 2;
+    return 1;
+}
+
+
+
+/**
+ * Query the largest image sample count supported for one format and usage.
+ *
+ * @param physical_device Vulkan physical device.
+ * @param format image format to query.
+ * @param usage Vulkan image usage flags.
+ * @param framebuffer_flags device framebuffer sample-count flags for the attachment class.
+ * @return largest supported sample count, defaulting to one.
+ */
+static uint32_t _app_image_max_sample_count(
+    VkPhysicalDevice physical_device, VkFormat format, VkImageUsageFlags usage,
+    VkSampleCountFlags framebuffer_flags)
+{
+    if (physical_device == VK_NULL_HANDLE)
+        return 1;
+
+    VkImageFormatProperties props = {0};
+    VkResult res = vkGetPhysicalDeviceImageFormatProperties(
+        physical_device, format, VK_IMAGE_TYPE_2D, VK_IMAGE_TILING_OPTIMAL, usage, 0, &props);
+    if (res != VK_SUCCESS)
+        return _app_max_sample_count_from_flags(framebuffer_flags);
+
+    VkSampleCountFlags flags = props.sampleCounts & framebuffer_flags;
+    return _app_max_sample_count_from_flags(flags);
+}
+
+
+
+/**
  * Return whether an environment flag is enabled.
  *
  * @param name environment variable name
@@ -203,6 +252,13 @@ static void _app_apply_runtime_caps(DvzApp* app, DvzCapabilitySnapshot* caps)
     vkGetPhysicalDeviceProperties2(physical_device, &props);
     if (props13.maxBufferSize > caps->max_buffer_size)
         caps->max_buffer_size = props13.maxBufferSize;
+
+    caps->max_color_sample_count = _app_image_max_sample_count(
+        physical_device, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
+        props.properties.limits.framebufferColorSampleCounts);
+    caps->max_depth_sample_count = _app_image_max_sample_count(
+        physical_device, VK_FORMAT_D32_SFLOAT, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
+        props.properties.limits.framebufferDepthSampleCounts);
 }
 
 

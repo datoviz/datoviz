@@ -1503,6 +1503,8 @@ void dvz_capability_snapshot_default(DvzCapabilitySnapshot* snapshot)
     snapshot->max_bind_groups = 4;
     snapshot->max_vertex_buffers = 8;
     snapshot->max_color_attachments = 1;
+    snapshot->max_color_sample_count = 16;
+    snapshot->max_depth_sample_count = 16;
     snapshot->shader_format_wgsl = true;
     snapshot->shader_format_glsl = true;
     snapshot->render_target_format_rgba16float = false;
