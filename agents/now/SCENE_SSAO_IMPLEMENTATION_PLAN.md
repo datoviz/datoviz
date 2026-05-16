@@ -2,15 +2,15 @@
 
 > **Execution Status**
 > - **Status:** `PLANNING NOTE`
-> - **Updated on:** `2026-05-15`
-> - **Purpose:** make the SSAO integration path easy to find before the protein and
->   tractography examples start depending on it.
+> - **Updated on:** `2026-05-16`
+> - **Purpose:** keep the SSAO integration path aligned with the current scene FramePlan graph,
+>   runtime graph-resource emission, and the pending generic DRP2/vklite descriptor refresh.
 
 
 ## Context
 
-SSAO should be integrated through the active scene -> FramePlan -> DRP2 -> vklite runtime path. Do
-not add a parallel renderer, presentation layer, or ad-hoc Vulkan path for scene SSAO.
+SSAO should be integrated through the active scene -> FramePlan graph -> DRP2 -> vklite runtime
+path. Do not add a parallel renderer, presentation layer, or ad-hoc Vulkan path for scene SSAO.
 
 The low-level mechanics already have a narrow vklite prototype:
 
@@ -24,14 +24,48 @@ it to shader-read layout, then run a fullscreen pass. It is not a production sce
 the shader has hardcoded resolution, uses depth only, and does not reconstruct view-space position
 or use normals.
 
-The closest scene-level precedent is WBOIT. It already splits one panel into multiple FramePlan
-render roles, creates per-panel intermediate textures, samples them in a fullscreen resolve pass,
-and emits the path through DRP2. Use the WBOIT code shape in:
+The closest scene-level precedents are now WBOIT and retained depth peeling. They both split one
+panel into multiple render nodes, declare the intermediate resources and pass dependencies in the
+FramePlan graph, then let `frame_plan_runtime.c` resolve graph resource ids to DRP2 texture ids.
+Use these files as the model:
 
+- `src/scene/_frame_plan.h`
+- `src/scene/frame_plan.c`
 - `src/scene/scene_emit.c`
 - `src/scene/frame_plan_runtime.c`
 - `src/scene/shader_registry.c`
+- `src/scene/tests/frame_plan.c`
 - `src/scene/tests/scene_graph.c`
+
+
+## Current FramePlan Graph Contract
+
+The FramePlan is no longer just an ordered list of render roles. It now carries a compact frame
+graph:
+
+- `DvzFrameGraphResource`: logical resources with kind, format, extent kind, usage flags, and
+  lifetime.
+- `DvzFrameGraphPass`: render/compute/copy/readback/clear pass descriptors with explicit reads,
+  writes, color attachments, depth attachments, viewport/scissor metadata, and a `work_label`.
+- `DvzFrameGraphDependency`: derived producer/consumer dependencies exposed by
+  `dvz_frame_plan_graph_dependency_get()`.
+- Graph resource usage flags are translated into DRP2 texture usage, and declared reads add
+  sampled/storage/copy usage in `_graph_declared_texture_usage_to_drp2()`.
+
+Render nodes still carry `DvzFramePlanRenderPassRole`. Treat those roles as the bridge from retained
+scene visuals to executable DRP2 work, but treat the graph as the authoritative resource/pass
+description. For SSAO, add roles only for runtime dispatch and tests; also add graph resources,
+graph passes, and dependencies.
+
+Important current limits:
+
+- `DVZ_FRAME_PLAN_MAX_GRAPH_COLOR_ATTACHMENTS` is `4`, so a base color + normal + linear-depth
+  gbuffer fits without changing graph capacity.
+- Existing WBOIT/depth-peel graph resources use `DVZ_FRAME_GRAPH_EXTENT_FIGURE` and panel
+  viewport/scissor rectangles for per-panel work. Follow that first unless panel-sized graph
+  allocation is deliberately implemented and tested.
+- Existing graph-backed intermediates use `DVZ_FRAME_GRAPH_RESOURCE_LIFETIME_PER_FRAME`.
+- Graph pass ordering is used by `frame_plan_runtime.c` when `dvz_frame_plan_graph_pass_count() > 0`.
 
 
 ## Target Pipeline
@@ -39,11 +73,13 @@ and emits the path through DRP2. Use the WBOIT code shape in:
 The minimum useful scene SSAO pipeline is:
 
 ```text
-GEOMETRY / GBUFFER PASS
+GBUFFER PASS
   outputs:
     base color texture
     normal texture
     linear depth texture
+  depth:
+    graph-declared D32 depth attachment for depth testing
 
 SSAO PASS
   inputs:
@@ -65,10 +101,10 @@ COMPOSITE PASS
     base color texture
     ssao or blurred ssao texture
   output:
-    final panel color target
+    final panel color target (`rt`)
 ```
 
-Start without blur. The first slice should be geometry -> SSAO -> composite.
+Start without blur. The first slice should be gbuffer -> SSAO -> composite.
 
 
 ## Public Scene API
@@ -96,61 +132,126 @@ DVZ_EXPORT int dvz_panel_set_ssao(DvzPanel* panel, const DvzSsaoDesc* desc);
 Keep the API typed. Do not add a generic public framegraph or binding API for this first slice.
 
 
-## FramePlan Changes
+## FramePlan Graph Changes
 
-Extend `DvzFramePlanRenderPassRole` with SSAO-specific roles. A narrow role-based extension is
-consistent with the current WBOIT approach and avoids introducing a generic framegraph too early.
-
-Suggested roles:
+Extend `DvzFramePlanRenderPassRole` with SSAO-specific roles for runtime dispatch:
 
 ```c
-DVZ_FRAME_PLAN_RENDER_PASS_GBUFFER,
+DVZ_FRAME_PLAN_RENDER_PASS_SSAO_GBUFFER,
 DVZ_FRAME_PLAN_RENDER_PASS_SSAO,
 DVZ_FRAME_PLAN_RENDER_PASS_SSAO_BLUR,
 DVZ_FRAME_PLAN_RENDER_PASS_SSAO_COMPOSITE,
 ```
 
-When a panel has SSAO enabled, `_scene_emit_panel_render()` should emit:
+Then add a graph builder in `scene_emit.c`, parallel to `_scene_emit_wboit_frame_graph()` and
+`_scene_emit_depth_peel_frame_graph()`, for example `_scene_emit_ssao_frame_graph()`.
 
-1. a gbuffer render node for SSAO-applicable visuals,
-2. an SSAO fullscreen render node,
-3. optionally an SSAO blur render node,
-4. a composite render node targeting `rt`.
+Suggested graph resource ids for panel `figure_0_p0`:
+
+- `figure_0_p0.ssao.color`
+- `figure_0_p0.ssao.normal`
+- `figure_0_p0.ssao.linear_depth`
+- `figure_0_p0.ssao.depth`
+- `figure_0_p0.ssao.ao`
+- `figure_0_p0.ssao.blur` later, only when blur is enabled
+- borrowed `rt`
+
+Suggested resource declarations:
+
+- color: `TEXTURE`, `VK_FORMAT_R8G8B8A8_UNORM`, `COLOR_ATTACHMENT | SAMPLED`, `PER_FRAME`
+- normal: `TEXTURE`, `VK_FORMAT_R16G16B16A16_SFLOAT`, `COLOR_ATTACHMENT | SAMPLED`, `PER_FRAME`
+- linear depth: `TEXTURE`, `VK_FORMAT_R32_SFLOAT`, `COLOR_ATTACHMENT | SAMPLED`, `PER_FRAME`
+- graph depth: `TEXTURE`, `VK_FORMAT_D32_SFLOAT`, `DEPTH_ATTACHMENT`, `PER_FRAME`
+- AO: `TEXTURE`, `VK_FORMAT_R8_UNORM` or `VK_FORMAT_R16_SFLOAT`,
+  `COLOR_ATTACHMENT | SAMPLED`, `PER_FRAME`
+- `rt`: `EXTERNAL_TARGET`, `COLOR_ATTACHMENT | COPY_SRC`, `BORROWED`
+
+Suggested pass shape:
+
+1. `ssao_gbuffer`: render pass with three color attachments and the graph depth attachment. It
+   draws only SSAO-applicable opaque visuals.
+2. `ssao`: render pass with `reads = normal, linear_depth` and one AO color attachment. It draws a
+   fullscreen triangle.
+3. `ssao_blur`: deferred first; when added it reads AO and writes blur.
+4. `ssao_composite`: render pass with `reads = color, ao_or_blur` and `rt` as a loaded color
+   attachment. It draws a fullscreen triangle into the final panel region.
 
 For the first implementation, support mesh and primitive visuals with normals. Points, images, text,
-and fixed-overlay visuals can remain on the ordinary final-target path until the composition policy
-is deliberately broadened.
+volume, and fixed-overlay visuals can remain on the ordinary final-target path until the composition
+policy is deliberately broadened.
 
 
-## Intermediate Resources
+## Runtime Emission Changes
 
-Create cached per-panel resources in the runtime emitter, following the WBOIT target-cache pattern:
+Add an SSAO target bundle in `frame_plan_runtime.c`, equivalent in spirit to `SceneWboitTargets`
+and `SceneDepthPeelTargets`. It should contain:
 
-- `_ssao_color_<panel_id>`: base color, likely `VK_FORMAT_R8G8B8A8_UNORM`
-- `_ssao_normal_<panel_id>`: normal, likely `VK_FORMAT_R16G16B16A16_SFLOAT`
-- `_ssao_depth_<panel_id>`: linear depth, likely `VK_FORMAT_R32_SFLOAT`
-- `_ssao_ao_<panel_id>`: AO factor, likely `VK_FORMAT_R8_UNORM` or `VK_FORMAT_R16_SFLOAT`
-- `_ssao_blur_<panel_id>`: optional blur target
+- runtime texture ids for color, normal, linear depth, graph depth, AO, and optional blur;
+- `SceneGraphRuntimeTargets graph` for graph resource id -> runtime texture id lookup;
+- sampler id;
+- bind-group layout ids for SSAO and composite;
+- bind-group ids for SSAO and composite;
+- fullscreen pipeline ids.
 
-Do not start by sampling the transient Vulkan depth attachment created by
-`dvz_drp2_stream_begin_render_pass_set_depth()`. DRP2 currently creates that depth attachment
-inside the vklite render-pass path for depth testing, and it is not represented as a sampled scene
-resource. A color-encoded linear-depth render target is a simpler and more portable first slice.
+Resolve graph resources with `_graph_resolve_texture_2d()` instead of hardcoding private texture
+creation. Add every resolved graph texture to `SceneGraphRuntimeTargets`, then use
+`_graph_sampled_read_texture_id()` / `_graph_color_attachment_texture_id()` to bind the graph reads
+and attachments.
+
+The first runtime path can mirror the existing WBOIT/depth-peel special cases:
+
+- include SSAO roles in the multi-pass detection helper currently named `_plan_has_wboit_roles()`;
+- prepare render batches for `SSAO_GBUFFER`;
+- prepare SSAO fullscreen resources before graph-order execution;
+- branch on `SSAO_GBUFFER`, `SSAO`, `SSAO_COMPOSITE`, and later `SSAO_BLUR` in graph pass order.
+
+Consider renaming `_plan_has_wboit_roles()` and `_emitter_emit_scene_wboit_renders()` once SSAO
+lands, because they will become the generic scene multi-pass runtime path.
+
+
+## Descriptor Refresh Coordination
+
+`agents/now/DRP2_DESCRIPTOR_REFRESH_PLAN.md` is the current owner for the stale-descriptor problem.
+SSAO should be designed for the target invariant from that plan:
+
+> A live bind group in the runtime must always describe the current backend handles of every
+> resource id it references.
+
+Do not create a new long-term SSAO-specific descriptor freshness mechanism. WBOIT and depth peeling
+currently carry local bind-group fingerprints that include texture ids, sampler ids, and target
+extent as tactical resize guardrails. The descriptor refresh work should move that responsibility to
+DRP2/vklite by rebuilding descriptor wrappers when a stable texture/buffer/sampler id is recreated.
+
+Practical coordination rule:
+
+- If generic descriptor refresh has landed before SSAO implementation starts, rely on it and cache
+  SSAO bind groups by semantic resource ids/binding shape only.
+- If SSAO lands first, a temporary SSAO bind-group fingerprint is acceptable for resize safety, but
+  it must be marked as temporary and covered by a cleanup item that removes it once the generic
+  descriptor refresh is validated.
+- Do not duplicate the descriptor refresh algorithm in scene code.
+
+SSAO resize tests should include the stable-id texture recreation path so the generic refresh work
+has pressure from a third multi-pass technique, not only WBOIT/depth peeling.
 
 
 ## Shader Work
 
-Add builtin scene shaders in the shader registry:
+Add built-in scene shaders in the shader registry:
 
 - gbuffer mesh/primitive vertex and fragment variants,
 - fullscreen SSAO fragment,
 - optional fullscreen blur fragment,
 - fullscreen composite fragment.
 
-The gbuffer pass should still request normal depth testing through the existing transient depth
-attachment path. It should additionally write a sampled linear-depth color target. The SSAO shader
-should take viewport size, radius, bias, intensity, sample count, and projection/reconstruction data
-through a uniform buffer.
+The gbuffer pass should use the graph-declared `VK_FORMAT_D32_SFLOAT` depth attachment for depth
+testing and additionally write sampled linear depth into a color attachment. Do not start by
+sampling an implicit transient depth attachment from
+`dvz_drp2_stream_begin_render_pass_set_depth()`; graph-declared sampled attachments are now the
+right contract for multi-pass scene techniques.
+
+The SSAO shader should take viewport size, radius, bias, intensity, sample count, and
+projection/reconstruction data through a uniform buffer.
 
 Runtime-generated data needed by the SSAO pass:
 
@@ -163,18 +264,21 @@ Runtime-generated data needed by the SSAO pass:
 Most required DRP2 primitives already exist:
 
 - multi-color render attachments,
+- graph-declared depth attachments,
 - sampled textures,
 - samplers,
 - bind-group layouts and bind groups,
 - fullscreen triangle draws,
-- render-target-to-sampled transitions for texture-binding render targets.
+- render-target-to-sampled transitions driven by declared access.
 
 Likely DRP2 gaps to check while implementing:
 
-- support for the chosen single-channel formats in serialization/validation/runtime,
-- enough color attachments for gbuffer output,
-- stable resource recreation on figure resize,
-- bind-group layout shape for multiple sampled textures plus uniform buffer plus sampler.
+- support for the chosen single-channel formats in serialization, validation, runtime image usage,
+  and vklite pipeline format handling;
+- enough color attachments for the three-output gbuffer pass;
+- graph validation coverage for SSAO's multi-pass dependencies;
+- bind-group layout shape for multiple sampled textures plus uniform buffer plus sampler;
+- descriptor refresh behavior when SSAO graph textures are recreated at a new extent.
 
 If a gap appears in DRP2, extend the existing command model narrowly rather than bypassing it with
 vklite-only code.
@@ -191,20 +295,25 @@ Extend `DvzCapabilitySnapshot` and `_validate_capabilities()` for SSAO:
 - color blending is not required for the basic SSAO composite unless the composite is blended over
   pre-existing content.
 
-Diagnostics should be explicit, like the current WBOIT messages.
+Diagnostics should be explicit, like the current WBOIT and depth-peeling messages.
 
 
 ## Tests
 
 Add tests in increasing cost order:
 
-1. `scene` command-shape test: enabling panel SSAO emits gbuffer, SSAO, and composite roles.
-2. `scene` DRP2 emission test: stream contains gbuffer textures, SSAO bind group, fullscreen draws,
-   and validates.
-3. Runtime GPU smoke: offscreen mesh with SSAO enabled executes through vklite without validation
+1. `frame_plan` graph-shape test: an SSAO panel graph declares color, normal, linear depth, graph
+   depth, AO, and the expected pass dependencies.
+2. `scene` command-shape test: enabling panel SSAO emits gbuffer, SSAO, and composite render roles
+   plus matching graph passes.
+3. `scene` DRP2 emission test: stream contains graph-created gbuffer/AO textures, SSAO/composite
+   bind groups, fullscreen draws, declared depth, and validates.
+4. Semantic runtime resize test: repeated emits with the same runtime scope and a different target
+   extent recreate SSAO textures and still execute through the vklite semantic runtime. After the
+   generic descriptor refresh lands, this should not require SSAO-local descriptor fingerprints.
+5. Runtime GPU smoke: offscreen mesh with SSAO enabled executes through vklite without validation
    errors and produces nonblank pixels.
-4. Toggle test: rendering with SSAO enabled changes the captured image compared with disabled SSAO.
-5. Resize test: per-panel SSAO intermediate targets are recreated at the new target extent.
+6. Toggle test: rendering with SSAO enabled changes the captured image compared with disabled SSAO.
 
 Use the narrowest available validation loop while working:
 
@@ -223,11 +332,13 @@ For Vulkan-path changes, also run a focused GPU/offscreen smoke when the environ
 Implement only this first:
 
 1. `DvzSsaoDesc` plus `dvz_panel_set_ssao()`.
-2. FramePlan roles for gbuffer, SSAO, and composite.
+2. SSAO render roles plus `ssao_gbuffer`, `ssao`, and `ssao_composite` graph passes.
 3. Mesh/primitive-with-normals gbuffer path.
-4. Per-panel color, normal, linear-depth, and AO textures.
+4. Graph-declared color, normal, linear-depth, depth, and AO textures.
 5. Fullscreen SSAO pass and composite pass in GLSL.
-6. Scene command-shape test and one GPU smoke test.
+6. Scene graph-shape test, DRP2 command-shape test, resize semantic-runtime test, and one GPU smoke
+   test.
 
-Defer blur, WebGPU/WGSL parity, point/image participation, generated normals, GUI controls, and a
-fully generic framegraph until the first retained scene SSAO path is executing reliably.
+Defer blur, WebGPU/WGSL parity, point/image/volume participation, generated normals, GUI controls,
+panel-sized graph allocation, and a fully generic public framegraph until the first retained scene
+SSAO path is executing reliably.
