@@ -4,7 +4,7 @@
 > - **Status:** `PLANNING NOTE`
 > - **Updated on:** `2026-05-16`
 > - **Purpose:** keep the SSAO integration path aligned with the current scene FramePlan graph,
->   runtime graph-resource emission, and the pending generic DRP2/vklite descriptor refresh.
+>   runtime graph-resource emission, and the landed DRP2/vklite descriptor refresh path.
 
 
 ## Context
@@ -211,28 +211,32 @@ lands, because they will become the generic scene multi-pass runtime path.
 
 ## Descriptor Refresh Coordination
 
-`agents/now/DRP2_DESCRIPTOR_REFRESH_PLAN.md` is the current owner for the stale-descriptor problem.
-SSAO should be designed for the target invariant from that plan:
+`agents/now/DRP2_DESCRIPTOR_REFRESH_PLAN.md` has now landed its first texture-recreation slice in
+the DRP2/vklite runtime. SSAO should rely on the runtime invariant from that plan:
 
 > A live bind group in the runtime must always describe the current backend handles of every
 > resource id it references.
 
-Do not create a new long-term SSAO-specific descriptor freshness mechanism. WBOIT and depth peeling
-currently carry local bind-group fingerprints that include texture ids, sampler ids, and target
-extent as tactical resize guardrails. The descriptor refresh work should move that responsibility to
-DRP2/vklite by rebuilding descriptor wrappers when a stable texture/buffer/sampler id is recreated.
+Current runtime shape:
 
-Practical coordination rule:
+- `_vklite_build_bind_group_descriptors()` centralizes descriptor wrapper creation from saved
+  bind-group entries.
+- `_vklite_refresh_dependent_bind_groups()` walks live bind groups that reference a recreated
+  resource id, rebuilds their descriptor wrappers, swaps them onto the bind-group object, and retires
+  the old wrapper.
+- `_vklite_create_texture()` calls that refresh helper after replacing an existing texture id.
+- Retired wrappers go through the existing borrowed-command-buffer deferred-destroy path when a
+  borrowed frame command buffer is active.
 
-- If generic descriptor refresh has landed before SSAO implementation starts, rely on it and cache
-  SSAO bind groups by semantic resource ids/binding shape only.
-- If SSAO lands first, a temporary SSAO bind-group fingerprint is acceptable for resize safety, but
-  it must be marked as temporary and covered by a cleanup item that removes it once the generic
-  descriptor refresh is validated.
-- Do not duplicate the descriptor refresh algorithm in scene code.
+Do not create an SSAO-specific descriptor freshness mechanism. Cache SSAO bind groups by semantic
+resource ids and binding shape. WBOIT and depth peeling still have local bind-group fingerprints that
+include texture ids, sampler ids, and target extent as tactical guardrails; SSAO should not add a
+third copy of that pattern unless a new runtime gap is demonstrated.
 
-SSAO resize tests should include the stable-id texture recreation path so the generic refresh work
-has pressure from a third multi-pass technique, not only WBOIT/depth peeling.
+SSAO resize tests should include the stable-id texture recreation path and should pass without
+re-emitting SSAO bind groups solely because the target extent changed. If buffer or sampler
+recreation becomes part of the SSAO path, verify whether the generic refresh has been generalized
+beyond texture recreation before relying on stable ids for those resource kinds.
 
 
 ## Shader Work
@@ -278,7 +282,7 @@ Likely DRP2 gaps to check while implementing:
 - enough color attachments for the three-output gbuffer pass;
 - graph validation coverage for SSAO's multi-pass dependencies;
 - bind-group layout shape for multiple sampled textures plus uniform buffer plus sampler;
-- descriptor refresh behavior when SSAO graph textures are recreated at a new extent.
+- resize coverage proving SSAO graph texture recreation refreshes dependent vklite descriptors.
 
 If a gap appears in DRP2, extend the existing command model narrowly rather than bypassing it with
 vklite-only code.
@@ -309,8 +313,8 @@ Add tests in increasing cost order:
 3. `scene` DRP2 emission test: stream contains graph-created gbuffer/AO textures, SSAO/composite
    bind groups, fullscreen draws, declared depth, and validates.
 4. Semantic runtime resize test: repeated emits with the same runtime scope and a different target
-   extent recreate SSAO textures and still execute through the vklite semantic runtime. After the
-   generic descriptor refresh lands, this should not require SSAO-local descriptor fingerprints.
+   extent recreate SSAO textures and still execute through the vklite semantic runtime without
+   SSAO-local descriptor fingerprints.
 5. Runtime GPU smoke: offscreen mesh with SSAO enabled executes through vklite without validation
    errors and produces nonblank pixels.
 6. Toggle test: rendering with SSAO enabled changes the captured image compared with disabled SSAO.
