@@ -60,6 +60,7 @@ typedef struct SsaoExampleState
     uint32_t sphere_count;
     bool ssao_enabled;
     bool spin_enabled;
+    bool raycast_mode;
     float radius;
     float strength;
     float bias;
@@ -239,6 +240,24 @@ static void _apply_ssao(SsaoExampleState* state)
 
 
 /**
+ * Apply the current sphere rendering mode to the retained visual.
+ *
+ * @param state example state
+ */
+static void _apply_sphere_mode(SsaoExampleState* state)
+{
+    ANN(state);
+    if (state->sphere == NULL)
+        return;
+    DvzSphereMode mode = state->raycast_mode ? DVZ_SPHERE_MODE_RAYCAST_IMPOSTOR :
+                                               DVZ_SPHERE_MODE_FAST_IMPOSTOR;
+    if (dvz_sphere_mode(state->sphere, mode) != 0)
+        dvz_fprintf(stderr, "dvz_sphere_mode() failed\n");
+}
+
+
+
+/**
  * Apply the retained spin control to the scene animation.
  *
  * @param state example state
@@ -266,12 +285,14 @@ static void _reset_controls(SsaoExampleState* state)
     ANN(state);
     state->ssao_enabled = true;
     state->spin_enabled = true;
+    state->raycast_mode = false;
     state->radius = 1.05f;
     state->strength = 4.2f;
     state->bias = 0.012f;
     state->sample_count = 16.0f;
     state->size_scale = 1.0f;
     _apply_sphere_sizes(state);
+    _apply_sphere_mode(state);
     _apply_ssao(state);
     _apply_spin(state);
 }
@@ -295,9 +316,11 @@ static void _ssao_gui(DvzGui* gui, DvzAppWindow* win, void* user_data)
     bool ssao_changed = false;
     bool spin_changed = false;
     bool size_changed = false;
+    bool mode_changed = false;
     if (dvz_gui_begin(gui, "SSAO", NULL, 0))
     {
         spin_changed |= dvz_gui_checkbox(gui, "Auto rotate", &state->spin_enabled);
+        mode_changed |= dvz_gui_checkbox(gui, "Raycast impostor", &state->raycast_mode);
         ssao_changed |= dvz_gui_checkbox(gui, "Enable SSAO", &state->ssao_enabled);
         size_changed |= dvz_gui_slider_float(gui, "Sphere size", &state->size_scale, 0.35f, 2.5f);
         ssao_changed |= dvz_gui_slider_float(gui, "Radius", &state->radius, 0.05f, 4.0f);
@@ -310,10 +333,13 @@ static void _ssao_gui(DvzGui* gui, DvzAppWindow* win, void* user_data)
             ssao_changed = false;
             spin_changed = false;
             size_changed = false;
+            mode_changed = false;
         }
     }
     dvz_gui_end(gui);
 
+    if (mode_changed)
+        _apply_sphere_mode(state);
     if (size_changed)
         _apply_sphere_sizes(state);
     if (ssao_changed)
