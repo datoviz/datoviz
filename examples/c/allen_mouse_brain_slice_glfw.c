@@ -1315,7 +1315,26 @@ static void _apply_transparency_modes(AllenMouseBrainState* state)
     (void)dvz_visual_set_alpha_mode(state->volume_visual, DVZ_ALPHA_BLENDED);
     (void)dvz_visual_set_alpha_mode(state->slice_visual, DVZ_ALPHA_BLENDED);
     if (state->atlas_mesh_visual != NULL)
-        (void)dvz_visual_set_alpha_mode(state->atlas_mesh_visual, DVZ_ALPHA_WBOIT);
+    {
+        bool atlas_opaque = state->show_atlas_mesh && state->atlas_mesh != NULL;
+        if (atlas_opaque && state->atlas_mesh->region_count > 0)
+        {
+            for (uint32_t r = 0; r < state->atlas_mesh->region_count; r++)
+            {
+                const AllenIblAtlasRegion* region = &state->atlas_mesh->regions[r];
+                float alpha = region->visible ? region->alpha * state->atlas_alpha_scale : 0.0f;
+                if (alpha < 0.999f)
+                {
+                    atlas_opaque = false;
+                    break;
+                }
+            }
+        }
+        else if (state->atlas_alpha_scale < 0.999f)
+            atlas_opaque = false;
+        (void)dvz_visual_set_alpha_mode(
+            state->atlas_mesh_visual, atlas_opaque ? DVZ_ALPHA_OPAQUE : DVZ_ALPHA_WBOIT);
+    }
 }
 
 
