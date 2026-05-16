@@ -7,6 +7,22 @@
 >   capabilities without adding more one-off render paths.
 
 
+## Progress On This Lane
+
+Completed implementation commits:
+
+1. `bc36100e` — extracted scene technique graph planning;
+2. `6b85c209` — added internal scene material state;
+3. `bbb17c87` — added lit primitive depth cueing;
+4. `af19c693` — added scene visual pass capabilities;
+5. `310b3cb9` — added the internal G-buffer graph foundation.
+
+The G-buffer foundation currently covers internal eligibility and graph declarations for primitive/mesh
+visuals with normals. It does not yet lower a G-buffer render pass to DRP2 runtime output attachments;
+that runtime lowering should be the next infrastructure slice before SSAO, outlines, or curvature effects
+depend on the resources.
+
+
 ## Source Architecture Note
 
 Start with
@@ -124,6 +140,8 @@ git diff --check
 ### 5. G-Buffer Foundation
 
 Scope: graph-backed depth, normal, and object-id resources.
+
+Status: initial graph foundation landed in `310b3cb9`.
 
 Expected work:
 
