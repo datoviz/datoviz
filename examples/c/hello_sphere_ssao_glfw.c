@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* hello_mesh_ssao_glfw - lit height-field mesh with internal SSAO controls.
+/* hello_sphere_ssao_glfw - dense analytic sphere impostors with internal SSAO controls.
  *
- * Build:  just example-c hello_mesh_ssao_glfw
- * Run:    ./build/examples/c/hello_mesh_ssao_glfw
- * Smoke:  ./build/examples/c/hello_mesh_ssao_glfw 60
+ * Build:  just example-c hello_sphere_ssao_glfw
+ * Run:    ./build/examples/c/hello_sphere_ssao_glfw
+ * Smoke:  ./build/examples/c/hello_sphere_ssao_glfw 60
  */
 
 
@@ -37,9 +37,10 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define WIDTH  1000u
-#define HEIGHT 760u
-#define GRID   64u
+#define WIDTH       1000u
+#define HEIGHT      760u
+#define CLOUD_GRID  11u
+#define MAX_SPHERES (CLOUD_GRID * CLOUD_GRID * CLOUD_GRID)
 
 #define ROTATION_SPEED_RAD_PER_SEC 0.22f
 
@@ -52,13 +53,18 @@
 typedef struct SsaoExampleState
 {
     DvzPanel* panel;
+    DvzVisual* sphere;
     DvzAnimation* spin;
+    float* base_sizes;
+    float* live_sizes;
+    uint32_t sphere_count;
     bool ssao_enabled;
     bool spin_enabled;
     float radius;
     float strength;
     float bias;
     float sample_count;
+    float size_scale;
 } SsaoExampleState;
 
 
@@ -90,46 +96,6 @@ static uint32_t _frame_count(int argc, char** argv)
 
 
 /**
- * Return a smooth terrain height at normalized coordinates.
- *
- * @param x normalized X coordinate
- * @param z normalized Z coordinate
- * @return height value
- */
-static float _height(float x, float z)
-{
-    float r2a = (x + 0.38f) * (x + 0.38f) + (z - 0.18f) * (z - 0.18f);
-    float r2b = (x - 0.28f) * (x - 0.28f) + (z + 0.24f) * (z + 0.24f);
-    float ridge = expf(-14.0f * r2a) + 0.72f * expf(-22.0f * r2b);
-    float waves = 0.09f * sinf(10.0f * x + 3.0f * z) + 0.07f * cosf(8.0f * z);
-    return 0.42f * ridge + waves - 0.18f;
-}
-
-
-
-/**
- * Normalize a vector in place.
- *
- * @param v vector to normalize
- */
-static void _normalize3(float v[3])
-{
-    float n = sqrtf(v[0] * v[0] + v[1] * v[1] + v[2] * v[2]);
-    if (n <= 1e-8f)
-    {
-        v[0] = 0.0f;
-        v[1] = 1.0f;
-        v[2] = 0.0f;
-        return;
-    }
-    v[0] /= n;
-    v[1] /= n;
-    v[2] /= n;
-}
-
-
-
-/**
  * Convert a normalized float channel to an 8-bit color channel.
  *
  * @param value normalized channel value
@@ -147,68 +113,95 @@ static uint8_t _u8(float value)
 
 
 /**
- * Build a deterministic indexed height-field mesh.
+ * Return a deterministic pseudo-random offset in [-0.5, +0.5].
  *
- * @param positions output positions
- * @param colors output colors
- * @param normals output normals
- * @param indices output triangle indices
+ * @param seed integer seed
+ * @return deterministic offset
  */
-static void _build_heightfield(
-    float (*positions)[3], DvzColor* colors, float (*normals)[3], DvzIndex* indices)
+static float _jitter(uint32_t seed)
+{
+    uint32_t x = seed * 747796405u + 2891336453u;
+    x = ((x >> ((x >> 28u) + 4u)) ^ x) * 277803737u;
+    x = (x >> 22u) ^ x;
+    return ((float)(x & 0xFFFFu) / 65535.0f) - 0.5f;
+}
+
+
+
+/**
+ * Build a deterministic compact cloud of overlapping sphere impostors.
+ *
+ * @param positions output sphere centers
+ * @param colors output sphere colors
+ * @param sizes output base sphere radii
+ * @param max_count output array capacity
+ * @return number of generated spheres
+ */
+static uint32_t
+_build_sphere_cloud(float (*positions)[3], DvzColor* colors, float* sizes, uint32_t max_count)
 {
     ANN(positions);
     ANN(colors);
-    ANN(normals);
-    ANN(indices);
+    ANN(sizes);
 
-    const float step = 2.0f / (float)(GRID - 1);
-    for (uint32_t j = 0; j < GRID; j++)
+    uint32_t count = 0;
+    const float inv = 1.0f / (float)(CLOUD_GRID - 1u);
+    for (uint32_t k = 0; k < CLOUD_GRID; k++)
     {
-        for (uint32_t i = 0; i < GRID; i++)
+        for (uint32_t j = 0; j < CLOUD_GRID; j++)
         {
-            uint32_t idx = j * GRID + i;
-            float x = -1.0f + step * (float)i;
-            float z = -1.0f + step * (float)j;
-            float y = _height(x, z);
-            positions[idx][0] = x;
-            positions[idx][1] = y;
-            positions[idx][2] = z;
+            for (uint32_t i = 0; i < CLOUD_GRID; i++)
+            {
+                float x = -1.0f + 2.0f * (float)i * inv;
+                float y = -1.0f + 2.0f * (float)j * inv;
+                float z = -1.0f + 2.0f * (float)k * inv;
+                float r = sqrtf(x * x + y * y + z * z);
+                if (r > 1.03f || count >= max_count)
+                    continue;
 
-            float hx0 = _height(x - step, z);
-            float hx1 = _height(x + step, z);
-            float hz0 = _height(x, z - step);
-            float hz1 = _height(x, z + step);
-            normals[idx][0] = -(hx1 - hx0);
-            normals[idx][1] = 2.0f * step;
-            normals[idx][2] = -(hz1 - hz0);
-            _normalize3(normals[idx]);
+                uint32_t seed = i + 23u * j + 521u * k;
+                positions[count][0] = 0.92f * x + 0.020f * _jitter(seed + 1u);
+                positions[count][1] = 0.82f * y + 0.018f * _jitter(seed + 2u);
+                positions[count][2] = 0.92f * z + 0.020f * _jitter(seed + 3u);
 
-            float t = fminf(fmaxf((y + 0.35f) / 0.85f, 0.0f), 1.0f);
-            colors[idx][0] = _u8(0.18f + 0.55f * t);
-            colors[idx][1] = _u8(0.35f + 0.42f * (1.0f - fabsf(t - 0.55f)));
-            colors[idx][2] = _u8(0.62f - 0.34f * t);
-            colors[idx][3] = 255;
+                float t = 0.5f + 0.5f * z;
+                float band = 0.5f + 0.5f * sinf(9.0f * x + 5.0f * y);
+                colors[count][0] = _u8(0.24f + 0.58f * t);
+                colors[count][1] = _u8(0.34f + 0.36f * band);
+                colors[count][2] = _u8(0.74f - 0.42f * t + 0.12f * band);
+                colors[count][3] = 255;
+
+                sizes[count] = 0.060f + 0.018f * (1.0f - r) + 0.010f * band;
+                count++;
+            }
         }
     }
+    return count;
+}
 
-    uint32_t k = 0;
-    for (uint32_t j = 0; j + 1 < GRID; j++)
+
+
+/**
+ * Apply the current sphere-size multiplier to the retained visual.
+ *
+ * @param state example state
+ */
+static void _apply_sphere_sizes(SsaoExampleState* state)
+{
+    ANN(state);
+    if (state->sphere == NULL || state->base_sizes == NULL || state->live_sizes == NULL ||
+        state->sphere_count == 0)
     {
-        for (uint32_t i = 0; i + 1 < GRID; i++)
-        {
-            uint32_t a = j * GRID + i;
-            uint32_t b = j * GRID + i + 1;
-            uint32_t c = (j + 1) * GRID + i;
-            uint32_t d = (j + 1) * GRID + i + 1;
-            indices[k++] = a;
-            indices[k++] = b;
-            indices[k++] = c;
-            indices[k++] = c;
-            indices[k++] = b;
-            indices[k++] = d;
-        }
+        return;
     }
+    if (state->size_scale < 0.35f)
+        state->size_scale = 0.35f;
+    if (state->size_scale > 2.5f)
+        state->size_scale = 2.5f;
+    for (uint32_t i = 0; i < state->sphere_count; i++)
+        state->live_sizes[i] = state->base_sizes[i] * state->size_scale;
+    if (dvz_sphere_size(state->sphere, 0, state->sphere_count, state->live_sizes) != 0)
+        dvz_fprintf(stderr, "dvz_sphere_size() failed\n");
 }
 
 
@@ -264,19 +257,21 @@ static void _apply_spin(SsaoExampleState* state)
 
 
 /**
- * Reset the live SSAO controls to useful defaults.
+ * Reset the live controls to useful defaults.
  *
  * @param state example state
  */
-static void _reset_ssao(SsaoExampleState* state)
+static void _reset_controls(SsaoExampleState* state)
 {
     ANN(state);
     state->ssao_enabled = true;
     state->spin_enabled = true;
-    state->radius = 1.15f;
-    state->strength = 3.2f;
-    state->bias = 0.015f;
+    state->radius = 1.05f;
+    state->strength = 4.2f;
+    state->bias = 0.012f;
     state->sample_count = 16.0f;
+    state->size_scale = 1.0f;
+    _apply_sphere_sizes(state);
     _apply_ssao(state);
     _apply_spin(state);
 }
@@ -299,23 +294,28 @@ static void _ssao_gui(DvzGui* gui, DvzAppWindow* win, void* user_data)
 
     bool ssao_changed = false;
     bool spin_changed = false;
+    bool size_changed = false;
     if (dvz_gui_begin(gui, "SSAO", NULL, 0))
     {
         spin_changed |= dvz_gui_checkbox(gui, "Auto rotate", &state->spin_enabled);
         ssao_changed |= dvz_gui_checkbox(gui, "Enable SSAO", &state->ssao_enabled);
+        size_changed |= dvz_gui_slider_float(gui, "Sphere size", &state->size_scale, 0.35f, 2.5f);
         ssao_changed |= dvz_gui_slider_float(gui, "Radius", &state->radius, 0.05f, 4.0f);
         ssao_changed |= dvz_gui_slider_float(gui, "Strength", &state->strength, 0.0f, 12.0f);
         ssao_changed |= dvz_gui_slider_float(gui, "Bias", &state->bias, 0.0f, 0.12f);
         ssao_changed |= dvz_gui_slider_float(gui, "Samples", &state->sample_count, 4.0f, 16.0f);
         if (dvz_gui_button(gui, "Reset"))
         {
-            _reset_ssao(state);
+            _reset_controls(state);
             ssao_changed = false;
             spin_changed = false;
+            size_changed = false;
         }
     }
     dvz_gui_end(gui);
 
+    if (size_changed)
+        _apply_sphere_sizes(state);
     if (ssao_changed)
         _apply_ssao(state);
     if (spin_changed)
@@ -355,7 +355,7 @@ int main(int argc, char** argv)
     }
 
     DvzCameraDesc camera_desc = dvz_camera_desc();
-    camera_desc.eye[2] = 3.35f;
+    camera_desc.eye[2] = 3.45f;
     camera_desc.up[1] = 1.0f;
     camera_desc.fov_y = 0.72f;
     camera_desc.near = 0.1f;
@@ -367,61 +367,50 @@ int main(int argc, char** argv)
         return 1;
     }
 
-    const uint32_t vertex_count = GRID * GRID;
-    const uint32_t index_count = (GRID - 1) * (GRID - 1) * 6;
-    float(*positions)[3] = (float(*)[3])dvz_calloc(vertex_count, sizeof(*positions));
-    DvzColor* colors = (DvzColor*)dvz_calloc(vertex_count, sizeof(DvzColor));
-    float(*normals)[3] = (float(*)[3])dvz_calloc(vertex_count, sizeof(*normals));
-    DvzIndex* indices = (DvzIndex*)dvz_calloc(index_count, sizeof(DvzIndex));
-    if (positions == NULL || colors == NULL || normals == NULL || indices == NULL)
+    float(*positions)[3] = (float(*)[3])dvz_calloc(MAX_SPHERES, sizeof(*positions));
+    DvzColor* colors = (DvzColor*)dvz_calloc(MAX_SPHERES, sizeof(DvzColor));
+    float* base_sizes = (float*)dvz_calloc(MAX_SPHERES, sizeof(float));
+    float* live_sizes = (float*)dvz_calloc(MAX_SPHERES, sizeof(float));
+    if (positions == NULL || colors == NULL || base_sizes == NULL || live_sizes == NULL)
     {
-        dvz_fprintf(stderr, "mesh allocation failed\n");
-        dvz_free(indices);
-        dvz_free(normals);
+        dvz_fprintf(stderr, "sphere cloud allocation failed\n");
+        dvz_free(live_sizes);
+        dvz_free(base_sizes);
         dvz_free(colors);
         dvz_free(positions);
         dvz_scene_destroy(scene);
         return 1;
     }
-    _build_heightfield(positions, colors, normals, indices);
-
-    DvzSceneBuffer* index_buffer = dvz_scene_buffer(
-        scene, &(DvzSceneBufferDesc){
-                   .usage = DVZ_SCENE_BUFFER_USAGE_INDEX,
-                   .stride = sizeof(DvzIndex),
-               });
-    if (index_buffer == NULL || !dvz_scene_buffer_set_data(
-                                    index_buffer, indices, index_count * sizeof(DvzIndex)))
+    uint32_t sphere_count = _build_sphere_cloud(positions, colors, base_sizes, MAX_SPHERES);
+    if (sphere_count == 0)
     {
-        dvz_fprintf(stderr, "index buffer setup failed\n");
-        dvz_free(indices);
-        dvz_free(normals);
+        dvz_fprintf(stderr, "sphere cloud generation failed\n");
+        dvz_free(live_sizes);
+        dvz_free(base_sizes);
         dvz_free(colors);
         dvz_free(positions);
         dvz_scene_destroy(scene);
         return 1;
     }
 
-    DvzVisual* visual = dvz_mesh(scene, 0);
+    DvzVisual* visual = dvz_sphere(scene, DVZ_SPHERE_FLAGS_LIGHTING);
     if (visual == NULL)
     {
-        dvz_fprintf(stderr, "dvz_mesh() failed\n");
-        dvz_free(indices);
-        dvz_free(normals);
+        dvz_fprintf(stderr, "dvz_sphere() failed\n");
+        dvz_free(live_sizes);
+        dvz_free(base_sizes);
         dvz_free(colors);
         dvz_free(positions);
         dvz_scene_destroy(scene);
         return 1;
     }
-    if (dvz_visual_set_data(visual, "position", positions, vertex_count) != 0 ||
-        dvz_visual_set_data(visual, "color", colors, vertex_count) != 0 ||
-        dvz_visual_set_data(visual, "normal", normals, vertex_count) != 0 ||
-        !dvz_visual_set_buffer(visual, "index", index_buffer) ||
+    if (dvz_sphere_position(visual, 0, sphere_count, &positions[0][0]) != 0 ||
+        dvz_sphere_color(visual, 0, sphere_count, colors) != 0 ||
         dvz_panel_add_visual(panel, visual, NULL) != 0)
     {
-        dvz_fprintf(stderr, "mesh visual setup failed\n");
-        dvz_free(indices);
-        dvz_free(normals);
+        dvz_fprintf(stderr, "sphere visual setup failed\n");
+        dvz_free(live_sizes);
+        dvz_free(base_sizes);
         dvz_free(colors);
         dvz_free(positions);
         dvz_scene_destroy(scene);
@@ -430,9 +419,9 @@ int main(int argc, char** argv)
     dvz_visual_set_primitive_shading(
         visual,
         &(DvzPrimitiveShadingDesc){
-            .light_direction = {0.30f, 0.70f, 0.62f},
-            .ambient = 0.34f,
-            .diffuse = 0.82f,
+            .light_direction = {0.35f, 0.70f, 0.62f},
+            .ambient = 0.28f,
+            .diffuse = 0.88f,
         });
     dvz_panel_set_background_color(panel, 0.035f, 0.040f, 0.052f, 1.0f);
 
@@ -440,21 +429,21 @@ int main(int argc, char** argv)
     if (app == NULL)
     {
         dvz_fprintf(stderr, "dvz_app() failed (no GPU or display?)\n");
-        dvz_free(indices);
-        dvz_free(normals);
+        dvz_free(live_sizes);
+        dvz_free(base_sizes);
         dvz_free(colors);
         dvz_free(positions);
         dvz_scene_destroy(scene);
         return 1;
     }
 
-    DvzAppWindow* win = dvz_app_window_glfw(app, figure, WIDTH, HEIGHT, "hello_mesh_ssao_glfw");
+    DvzAppWindow* win = dvz_app_window_glfw(app, figure, WIDTH, HEIGHT, "hello_sphere_ssao_glfw");
     if (win == NULL)
     {
         dvz_fprintf(stderr, "dvz_app_window_glfw() failed (GLFW unavailable?)\n");
         dvz_app_destroy(app);
-        dvz_free(indices);
-        dvz_free(normals);
+        dvz_free(live_sizes);
+        dvz_free(base_sizes);
         dvz_free(colors);
         dvz_free(positions);
         dvz_scene_destroy(scene);
@@ -467,8 +456,8 @@ int main(int argc, char** argv)
     {
         dvz_fprintf(stderr, "dvz_panel_set_arcball() failed\n");
         dvz_app_destroy(app);
-        dvz_free(indices);
-        dvz_free(normals);
+        dvz_free(live_sizes);
+        dvz_free(base_sizes);
         dvz_free(colors);
         dvz_free(positions);
         dvz_scene_destroy(scene);
@@ -485,8 +474,8 @@ int main(int argc, char** argv)
     {
         dvz_fprintf(stderr, "dvz_anim_arcball_spin() failed\n");
         dvz_app_destroy(app);
-        dvz_free(indices);
-        dvz_free(normals);
+        dvz_free(live_sizes);
+        dvz_free(base_sizes);
         dvz_free(colors);
         dvz_free(positions);
         dvz_scene_destroy(scene);
@@ -495,9 +484,13 @@ int main(int argc, char** argv)
 
     SsaoExampleState state = {
         .panel = panel,
+        .sphere = visual,
         .spin = spin,
+        .base_sizes = base_sizes,
+        .live_sizes = live_sizes,
+        .sphere_count = sphere_count,
     };
-    _reset_ssao(&state);
+    _reset_controls(&state);
 
     DvzGuiConfig gui_config = dvz_gui_config();
     DvzGui* gui = dvz_app_window_gui(win, &gui_config);
@@ -505,8 +498,8 @@ int main(int argc, char** argv)
     {
         dvz_fprintf(stderr, "dvz_app_window_gui() failed\n");
         dvz_app_destroy(app);
-        dvz_free(indices);
-        dvz_free(normals);
+        dvz_free(live_sizes);
+        dvz_free(base_sizes);
         dvz_free(colors);
         dvz_free(positions);
         dvz_scene_destroy(scene);
@@ -517,8 +510,8 @@ int main(int argc, char** argv)
     dvz_app_run(app, _frame_count(argc, argv));
 
     dvz_app_destroy(app);
-    dvz_free(indices);
-    dvz_free(normals);
+    dvz_free(live_sizes);
+    dvz_free(base_sizes);
     dvz_free(colors);
     dvz_free(positions);
     dvz_scene_destroy(scene);
