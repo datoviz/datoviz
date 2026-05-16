@@ -1063,6 +1063,26 @@ void _scene_emit_panel_render(
         if (!_scene_technique_emit_wboit_frame_graph(
                 plan, panel_id, opaque_needs_depth, transparent_needs_depth))
             log_error("failed to emit WBOIT FramePlan graph for panel %s", panel_id);
+        if (blended_node != NULL)
+        {
+            char blend_pass_id[DVZ_SCENE_LABEL_SIZE];
+            dvz_snprintf(
+                blend_pass_id, sizeof(blend_pass_id), "%s.transparent_blend", panel_id);
+            DvzFrameGraphAttachment color = {0};
+            dvz_strlcpy(color.resource_id, "rt", sizeof(color.resource_id));
+            color.load_op = DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_LOAD;
+            color.store_op = DVZ_FRAME_GRAPH_ATTACHMENT_STORE_STORE;
+            color.access = DVZ_FRAME_GRAPH_ATTACHMENT_ACCESS_WRITE;
+            color.clear_color[3] = 1.0f;
+            DvzFrameGraphPass blend = {0};
+            dvz_strlcpy(blend.id, blend_pass_id, sizeof(blend.id));
+            dvz_strlcpy(blend.panel_id, panel_id, sizeof(blend.panel_id));
+            dvz_strlcpy(blend.work_label, "transparent_blend", sizeof(blend.work_label));
+            blend.kind = DVZ_FRAME_GRAPH_PASS_RENDER;
+            if (!dvz_frame_graph_pass_color_attachment(&blend, &color) ||
+                !dvz_frame_plan_graph_pass(plan, &blend))
+                log_error("failed to emit blended FramePlan graph for panel %s", panel_id);
+        }
     }
     else if (depth_peel_init_node != NULL)
     {
