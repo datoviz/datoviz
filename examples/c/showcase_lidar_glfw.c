@@ -41,6 +41,7 @@
 #define HEIGHT 600u
 #define LIDAR_POSITION_SCALE 5.0f
 #define LIDAR_DEFAULT_POINT_SIZE 2.0f
+#define LIDAR_DEFAULT_STRIDE 2u
 
 static const vec3 LIDAR_FLY_EYE = {+2.0f, +2.0f, -6.0f};
 static const vec3 LIDAR_FLY_TARGET = {+1.71428573f, +1.57142854f, -5.14285707f};
@@ -132,6 +133,40 @@ static const char* _data_dir(int argc, char** argv)
 
 
 /**
+ * Return the requested local-data sampling stride.
+ *
+ * @param argc command-line argument count
+ * @param argv command-line argument vector
+ * @return sampling stride, clamped to at least one
+ */
+static uint32_t _data_stride(int argc, char** argv)
+{
+    for (int i = 1; i < argc; i++)
+    {
+        if (argv[i] == NULL)
+            continue;
+        const char* value = NULL;
+        if (strncmp(argv[i], "--stride=", 9) == 0)
+            value = argv[i] + 9;
+        else if (strcmp(argv[i], "--stride") == 0 && i + 1 < argc && argv[i + 1] != NULL)
+            value = argv[i + 1];
+        if (value == NULL)
+            continue;
+
+        char* end = NULL;
+        unsigned long stride = strtoul(value, &end, 10);
+        if (end == value || (end != NULL && *end != '\0') || stride == 0)
+            return LIDAR_DEFAULT_STRIDE;
+        if (stride > UINT32_MAX)
+            return UINT32_MAX;
+        return (uint32_t)stride;
+    }
+    return LIDAR_DEFAULT_STRIDE;
+}
+
+
+
+/**
  * Join a directory and basename into a fixed-size path buffer.
  *
  * @param dir directory path
@@ -172,13 +207,16 @@ static void _print_prepare_hint(const char* data_dir)
  * Load the local LIDAR arrays and allocate the per-point size buffer.
  *
  * @param data_dir directory containing lidar_pos.npy and lidar_color.npy
+ * @param stride sampling stride
  * @param dataset output dataset
  * @return whether loading and validation succeeded
  */
-static bool _load_lidar_dataset(const char* data_dir, LidarDataset* dataset)
+static bool _load_lidar_dataset(const char* data_dir, uint32_t stride, LidarDataset* dataset)
 {
     ANN(data_dir);
     ANN(dataset);
+    if (stride == 0)
+        stride = 1;
 
     char pos_path[1024] = {0};
     char color_path[1024] = {0};
@@ -227,7 +265,32 @@ static bool _load_lidar_dataset(const char* data_dir, LidarDataset* dataset)
         return false;
     }
 
-    float* sizes = (float*)dvz_calloc((size_t)pos_count, sizeof(float));
+    DvzSize sampled_count = (pos_count + stride - 1) / stride;
+    if (sampled_count > UINT32_MAX)
+    {
+        dvz_fprintf(stderr, "sampled LIDAR point count exceeds uint32 range\n");
+        dvz_free(color);
+        dvz_free(pos);
+        return false;
+    }
+
+    float(*positions)[3] = (float(*)[3])pos;
+    DvzColor* colors = (DvzColor*)color;
+    if (stride > 1)
+    {
+        for (DvzSize dst = 0, src = 0; src < pos_count; dst++, src += stride)
+        {
+            positions[dst][0] = positions[src][0];
+            positions[dst][1] = positions[src][1];
+            positions[dst][2] = positions[src][2];
+            colors[dst][0] = colors[src][0];
+            colors[dst][1] = colors[src][1];
+            colors[dst][2] = colors[src][2];
+            colors[dst][3] = colors[src][3];
+        }
+    }
+
+    float* sizes = (float*)dvz_calloc((size_t)sampled_count, sizeof(float));
     if (sizes == NULL)
     {
         dvz_fprintf(stderr, "unable to allocate LIDAR point sizes\n");
@@ -236,8 +299,7 @@ static bool _load_lidar_dataset(const char* data_dir, LidarDataset* dataset)
         return false;
     }
 
-    float(*positions)[3] = (float(*)[3])pos;
-    for (DvzSize i = 0; i < pos_count; i++)
+    for (DvzSize i = 0; i < sampled_count; i++)
     {
         positions[i][0] *= LIDAR_POSITION_SCALE;
         positions[i][1] *= LIDAR_POSITION_SCALE;
@@ -246,11 +308,12 @@ static bool _load_lidar_dataset(const char* data_dir, LidarDataset* dataset)
     }
 
     dataset->positions = positions;
-    dataset->colors = (DvzColor*)color;
+    dataset->colors = colors;
     dataset->sizes = sizes;
-    dataset->point_count = (uint32_t)pos_count;
+    dataset->point_count = (uint32_t)sampled_count;
 
-    dvz_fprintf(stderr, "loaded LIDAR data with %u points\n", dataset->point_count);
+    dvz_fprintf(
+        stderr, "loaded LIDAR data with %u points (stride=%u)\n", dataset->point_count, stride);
     return true;
 }
 
@@ -507,7 +570,8 @@ int main(int argc, char** argv)
 {
     LidarDataset dataset = {0};
     const char* data_dir = _data_dir(argc, argv);
-    if (!_load_lidar_dataset(data_dir, &dataset))
+    uint32_t stride = _data_stride(argc, argv);
+    if (!_load_lidar_dataset(data_dir, stride, &dataset))
         return 1;
 
     DvzScene* scene = dvz_scene();
