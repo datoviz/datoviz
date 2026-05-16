@@ -217,6 +217,43 @@ It may also:
 2. schedule picking or probes if the interaction model wants that.
 
 
+### Controller State Inspection And Editing
+
+Controllers should expose family-specific state snapshots so external UI, Python wrappers, tests,
+and serialization helpers can read and edit navigation state without duplicating controller math.
+
+Recommended state APIs:
+
+```text
+dvz_panzoom_get_state(panzoom, &state)
+dvz_panzoom_set_state(panzoom, &state)
+
+dvz_arcball_get_state(arcball, &state)
+dvz_arcball_set_state(arcball, &state)
+
+dvz_turntable_get_state(turntable, &state)
+dvz_turntable_set_state(turntable, &state)
+
+dvz_fly_get_state(fly, &state)
+dvz_fly_set_state(fly, &state)
+```
+
+State structs should carry semantic values such as pan, zoom, quaternion, pivot, yaw, pitch,
+distance, position, target, roll, movement speed, and clamp limits. They should not carry derived
+view, projection, or model matrices as authoritative state.
+
+Applying a state snapshot is semantically equivalent to a user gesture:
+
+1. the controller updates its internal state;
+2. attached panel or camera state is updated when relevant;
+3. `PanelTransformDirty` is marked;
+4. axis/layout dirty state is marked only when visible domains or layout-affecting values change;
+5. redraw is requested.
+
+This state surface is the correct foundation for small controller inspector widgets. Those widgets
+remain external UI clients; the controller stays the source of truth.
+
+
 ### Arcball Interaction Policy
 
 Status on 2026-05-16: the active `DvzArcball` controller supports:

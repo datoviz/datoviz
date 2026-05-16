@@ -78,6 +78,34 @@ For example:
 The state should remain single-sourced at the scene level.
 
 
+## Controller Inspector Widgets
+
+Controller inspector widgets are a recommended external-UI pattern.
+
+Examples include:
+
+1. a panzoom widget exposing pan, zoom, visible domain, and reset controls;
+2. an arcball widget exposing rotation, zoom, pan center, and reset controls;
+3. a turntable widget exposing yaw, pitch, distance, pivot, and clamp controls;
+4. a fly-camera widget exposing position, yaw, pitch, roll, movement speed, and pivot controls;
+5. a camera widget exposing eye, target, up vector, FOV, near plane, and far plane.
+
+These widgets are not scene primitives. They are app-owned inspectors that read and mutate
+scene-owned controller state through public controller APIs.
+
+The preferred implementation path is:
+
+1. external UI reads a controller state snapshot;
+2. external UI displays scalar/vector controls;
+3. user edits are applied through controller setters or state-update APIs;
+4. the controller marks the same invalidation scopes as an equivalent input gesture;
+5. the app requests redraw.
+
+The widget must not own camera math, write panel matrices directly, or bypass controller
+invalidation. A controller inspector is equivalent to a typed editing surface for the controller,
+not a second controller implementation.
+
+
 ## Input Routing
 
 The spec should allow an app-level event policy in which external UI receives input before scene
