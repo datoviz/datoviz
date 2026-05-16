@@ -1757,6 +1757,148 @@ int test_app_offscreen_image_retained_render_second_frame(TstSuite* suite, TstIt
 }
 
 
+
+/**
+ * Ensure a reused offscreen app/runtime survives repeated resizes with mixed retained visuals.
+ *
+ * @param suite the test suite
+ * @param item the test item
+ * @return 0 on success
+ */
+int test_app_offscreen_resize_reuses_runtime_with_mesh_and_image(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    if (!_scene_vklite_runtime_available())
+        return 0;
+
+    DvzScene* scene = dvz_scene();
+    AT(scene != NULL);
+    DvzFigure* figure = dvz_figure(scene, 96, 64, 0);
+    AT(figure != NULL);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    AT(panel != NULL);
+    dvz_panel_set_background_color(panel, 0.05f, 0.05f, 0.08f, 1.0f);
+
+    DvzVisual* mesh = dvz_mesh(scene, 0);
+    DvzVisual* image = dvz_image(scene, 0);
+    AT(mesh != NULL);
+    AT(image != NULL);
+
+    float mesh_positions[4][3] = {
+        {-0.9f, -0.8f, 0.0f}, {-0.9f, 0.8f, 0.0f},
+        {-0.1f, -0.8f, 0.0f}, {-0.1f, 0.8f, 0.0f},
+    };
+    DvzColor mesh_colors[4] = {
+        {64, 255, 64, 255},
+        {64, 255, 64, 255},
+        {64, 255, 64, 255},
+        {64, 255, 64, 255},
+    };
+    float mesh_normals[4][3] = {
+        {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 1.0f},
+        {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 1.0f},
+    };
+    DvzIndex mesh_indices[6] = {0, 1, 2, 2, 1, 3};
+
+    DvzSceneBuffer* index_buffer = dvz_scene_buffer(
+        scene, &(DvzSceneBufferDesc){
+                   .usage = DVZ_SCENE_BUFFER_USAGE_INDEX,
+                   .stride = sizeof(DvzIndex),
+               });
+    ANN(index_buffer);
+    AT(dvz_scene_buffer_set_data(index_buffer, mesh_indices, sizeof(mesh_indices)));
+
+    AT(dvz_visual_set_data(mesh, "position", mesh_positions, 4) == 0);
+    AT(dvz_visual_set_data(mesh, "color", mesh_colors, 4) == 0);
+    AT(dvz_visual_set_data(mesh, "normal", mesh_normals, 4) == 0);
+    AT(dvz_visual_set_buffer(mesh, "index", index_buffer));
+    AT(dvz_visual_set_primitive_shading(
+           mesh,
+           &(DvzPrimitiveShadingDesc){
+               .light_direction = {0.0f, 0.0f, 1.0f},
+               .ambient = 1.0f,
+               .diffuse = 0.0f,
+           }) == 0);
+    AT(dvz_panel_add_visual(panel, mesh, NULL) == 0);
+
+    float image_positions[4][3] = {
+        {0.1f, -0.8f, 0.0f}, {0.1f, 0.8f, 0.0f},
+        {0.9f, -0.8f, 0.0f}, {0.9f, 0.8f, 0.0f},
+    };
+    float image_texcoords[4][2] = {
+        {0.0f, 0.0f}, {0.0f, 1.0f}, {1.0f, 0.0f}, {1.0f, 1.0f},
+    };
+    uint8_t pixels[4 * 4 * 4] = {0};
+    for (uint32_t i = 0; i < 4 * 4; i++)
+    {
+        pixels[4 * i + 0] = 255;
+        pixels[4 * i + 3] = 255;
+    }
+
+    AT(dvz_visual_set_data(image, "position", image_positions, 4) == 0);
+    AT(dvz_visual_set_data(image, "texcoords", image_texcoords, 4) == 0);
+    AT(dvz_visual_set_texture(image, pixels, 4, 4) == 0);
+    AT(dvz_panel_add_visual(panel, image, NULL) == 0);
+
+    DvzApp* app = dvz_app(scene);
+    if (app == NULL)
+    {
+        log_warn(
+            "test_app_offscreen_resize_reuses_runtime_with_mesh_and_image skipped: GPU context "
+            "creation failed");
+        dvz_scene_destroy(scene);
+        return 0;
+    }
+    DvzAppWindow* win = dvz_app_window(app, figure, 96, 64);
+    AT(win != NULL);
+    DvzCanvas* canvas = dvz_app_window_canvas(win);
+    ANN(canvas);
+
+    const uint32_t sizes[][2] = {
+        {96, 64},
+        {128, 72},
+        {80, 96},
+        {144, 80},
+        {96, 64},
+    };
+
+    for (uint32_t frame = 0; frame < sizeof(sizes) / sizeof(sizes[0]); frame++)
+    {
+        uint32_t expected_width = sizes[frame][0];
+        uint32_t expected_height = sizes[frame][1];
+        AT(dvz_app_window_resize(win, expected_width, expected_height) == 0);
+        AT(dvz_app_window_render_once(win) == DVZ_CANVAS_FRAME_READY);
+
+        uint32_t width = 0;
+        uint32_t height = 0;
+        uint8_t* rgba = NULL;
+        AT(dvz_canvas_capture_rgba(canvas, &width, &height, &rgba) == 0);
+        ANN(rgba);
+        AT(width == expected_width);
+        AT(height == expected_height);
+
+        const uint8_t* mesh_center = _pixel_at(rgba, width, height, width / 4, height / 2);
+        AT(mesh_center[1] > 180);
+        AT(mesh_center[0] < 140);
+        AT(mesh_center[2] < 140);
+
+        const uint8_t* image_center = _pixel_at(rgba, width, height, (3 * width) / 4, height / 2);
+        AT(image_center[0] > 200);
+        AT(image_center[1] < 80);
+        AT(image_center[2] < 80);
+
+        dvz_free(rgba);
+    }
+
+    dvz_app_destroy(app);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
 int test_app_offscreen_two_panel_points_light_both_halves(TstSuite* suite, TstItem* item)
 {
     ANN(suite);
@@ -2382,6 +2524,7 @@ int test_scene_app(TstSuite* suite)
     TEST_SIMPLE(test_app_offscreen_shared_field_mixed_runtime_updates);
     TEST_SIMPLE(test_app_offscreen_retained_render_second_frame);
     TEST_SIMPLE(test_app_offscreen_image_retained_render_second_frame);
+    TEST_SIMPLE(test_app_offscreen_resize_reuses_runtime_with_mesh_and_image);
     TEST_SIMPLE(test_app_offscreen_two_panel_points_light_both_halves);
     TEST_SIMPLE(test_app_offscreen_clear_color);
     TEST_SIMPLE(test_app_offscreen_volume_slice_renders_field);
