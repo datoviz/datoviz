@@ -76,6 +76,21 @@ artificial:
 13. `boxplot`
 
 
+## Active Implementation Status
+
+| Family | Active implementation status |
+|---|---|
+| `pixel` | active retained visual |
+| `primitive` | active retained visual |
+| `point` | active retained visual |
+| `path` | active first slice as line/strip |
+| `image` | active retained visual with `SampledField` binding |
+| `mesh` | active retained visual |
+| `sphere` | active impostor visual |
+| `volume` | active first slice with sampled-field-backed volume state |
+| `marker`, `segment`, `glyph`, `errorbar`, `boxplot` | spec only or higher-level bookkeeping in the active slice |
+
+
 ## Rationale For Kept Families
 
 ### `primitive`
@@ -183,7 +198,8 @@ Keep `mesh` as its own family.
 
 Reason:
 
-1. indexed geometry plus optional normals/material/light state is a distinct resource schema,
+1. indexed geometry plus optional normals, material, Phong, and depth-cue state is a distinct
+   resource schema,
 2. mesh semantics differ materially from point, marker, and image families,
 3. mesh is likely to remain central for scientific surfaces and geometry-heavy scenes.
 

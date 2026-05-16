@@ -16,23 +16,23 @@ These documents refine `../semantics/VISUAL_FAMILY_RULES.md` and `../semantics/V
 detail to implement or validate each family.
 
 
-## Status
+## Active Implementation Status
 
-| Family | Spec |
-|---|---|
-| `pixel` | [PIXEL.md](PIXEL.md) |
-| `primitive` | [PRIMITIVE.md](PRIMITIVE.md) |
-| `point` | [POINT.md](POINT.md) |
-| `marker` | [MARKER.md](MARKER.md) |
-| `segment` | [SEGMENT.md](SEGMENT.md) |
-| `path` | [PATH.md](PATH.md) |
-| `glyph` | [GLYPH.md](GLYPH.md) |
-| `image` | [IMAGE.md](IMAGE.md) |
-| `mesh` | [MESH.md](MESH.md) |
-| `sphere` | [SPHERE.md](SPHERE.md) |
-| `volume` | [VOLUME.md](VOLUME.md) |
-| `errorbar` | [ERRORBAR.md](ERRORBAR.md) |
-| `boxplot` | [BOXPLOT.md](BOXPLOT.md) |
+| Family | Spec | Active implementation status |
+|---|---|---|
+| `pixel` | [PIXEL.md](PIXEL.md) | active retained visual |
+| `primitive` | [PRIMITIVE.md](PRIMITIVE.md) | active retained visual |
+| `point` | [POINT.md](POINT.md) | active retained visual |
+| `marker` | [MARKER.md](MARKER.md) | spec only |
+| `segment` | [SEGMENT.md](SEGMENT.md) | spec only |
+| `path` | [PATH.md](PATH.md) | active first slice as line/strip |
+| `glyph` | [GLYPH.md](GLYPH.md) | spec only; text bookkeeping exists above the visual slice |
+| `image` | [IMAGE.md](IMAGE.md) | active retained visual with `SampledField` binding |
+| `mesh` | [MESH.md](MESH.md) | active retained visual |
+| `sphere` | [SPHERE.md](SPHERE.md) | active impostor visual |
+| `volume` | [VOLUME.md](VOLUME.md) | active first slice with sampled-field-backed volume state |
+| `errorbar` | [ERRORBAR.md](ERRORBAR.md) | spec only |
+| `boxplot` | [BOXPLOT.md](BOXPLOT.md) | spec only |
 
 
 ## Reading Order

@@ -1,8 +1,7 @@
 > **Execution Status**
-> - **Status:** `SCENE SPEC PROPOSAL`
-> - **Updated on:** `2026-05-09`
-> - **Purpose:** define the intended v0.4 transparency contract with weighted blended OIT as the
->   first transparent rendering path.
+> - **Status:** `ACTIVE FIRST SLICE`
+> - **Updated on:** `2026-05-16`
+> - **Purpose:** record the active v0.4 weighted blended OIT contract and remaining follow-up work.
 
 # Transparency and WBOIT Design
 
@@ -11,8 +10,9 @@ This note records the intended transparency contract for the active v0.4 scene s
 
 ## Objective
 
-Support transparent visuals as a first-class scene feature using weighted blended order-independent
-transparency (WBOIT) as the first implementation target.
+Support transparent visuals as a first-class scene feature. Ordinary source-over blending,
+weighted blended order-independent transparency (WBOIT), and depth peeling are distinct alpha modes.
+WBOIT is the active first OIT slice.
 
 This note is about:
 
@@ -35,8 +35,9 @@ It matters immediately for:
 4. runtime attachment ownership,
 5. capability-aware adaptation.
 
-WBOIT should be designed now, even if the first opaque mesh lands before the first transparent
-visual.
+The first WBOIT path is now active enough to validate alpha-mode planning, DRP2 emission, and
+runtime execution. Remaining work should broaden coverage without changing the public alpha-mode
+meaning.
 
 
 ## Existing Material In The Repo
@@ -63,24 +64,28 @@ Transparency should not be represented only as “alpha less than one”.
 Recommended split:
 
 1. material opacity remains material data,
-2. transparency path is a visual/render mode,
+2. transparency path is a visual alpha mode,
 3. scene/frame-plan decides pass structure from that visual mode.
 
-Reserved visual render modes:
+Installed visual alpha modes:
 
-1. `opaque`
-2. `transparent_wboit`
+1. `DVZ_ALPHA_OPAQUE`
+2. `DVZ_ALPHA_BLENDED` — ordinary source-over alpha blending
+3. `DVZ_ALPHA_WBOIT` — weighted blended OIT
+4. `DVZ_ALPHA_DEPTH_PEEL` — depth peeling
+5. `DVZ_ALPHA_MASK`
 
 Deferred:
 
 1. exact OIT / per-pixel linked list mode
-2. implicit fallback to standard sorted alpha blending
+2. implicit fallback between OIT modes
 
 Recommendation:
 
-1. do not expose ordinary back-to-front alpha blending as the default transparent path,
-2. treat WBOIT as the intended transparent path for v0.4,
-3. do not silently downgrade a visual that asks for WBOIT when capability is missing.
+1. keep ordinary source-over alpha blending explicit as `DVZ_ALPHA_BLENDED`,
+2. use `DVZ_ALPHA_WBOIT` for the active weighted-OIT path,
+3. use `DVZ_ALPHA_DEPTH_PEEL` for the current explicit higher-quality OIT path,
+4. do not silently downgrade a visual that asks for WBOIT when capability is missing.
 
 
 ## Why WBOIT First
@@ -100,7 +105,7 @@ This is the best practical middle ground between quality, complexity, and implem
 
 A transparent visual should carry:
 
-1. render mode = `transparent_wboit`
+1. alpha mode = `DVZ_ALPHA_BLENDED`, `DVZ_ALPHA_WBOIT`, or `DVZ_ALPHA_DEPTH_PEEL`
 2. opacity/material alpha state
 3. any future transparency-specific material controls
 
@@ -121,8 +126,10 @@ hidden blending.
 Recommended panel-level pass ordering:
 
 1. opaque pass
-2. transparent accumulation pass
-3. transparent composite/resolve pass
+2. source-over transparent pass when `DVZ_ALPHA_BLENDED` visuals are present
+3. WBOIT accumulation pass when `DVZ_ALPHA_WBOIT` visuals are present
+4. WBOIT composite/resolve pass
+5. depth-peeling passes when `DVZ_ALPHA_DEPTH_PEEL` visuals are present
 
 Rules:
 
@@ -175,7 +182,8 @@ This is important because:
 The active DRP2/runtime lane should support WBOIT through the existing explicit command surface,
 not through scene-private shortcuts.
 
-WBOIT pressures DRP2 in the following areas:
+WBOIT is represented explicitly in emitted command streams. It pressures DRP2 in the following
+areas:
 
 1. multiple color attachments,
 2. per-attachment blend state,
@@ -221,9 +229,9 @@ Relevant lower-level capability pressures include:
 3. color blending support,
 4. ability to execute the needed accumulation and resolve passes.
 
-Scene behavior when unavailable:
+Scene behavior when WBOIT is unavailable:
 
-1. requesting `transparent_wboit` on an unsupported runtime should be a capability failure /
+1. requesting `DVZ_ALPHA_WBOIT` on an unsupported runtime should be a capability failure /
    explicit diagnostic,
 2. do not silently downgrade to some weaker blend path unless a future explicit fallback policy is
    designed.
@@ -231,13 +239,12 @@ Scene behavior when unavailable:
 
 ## Mesh Interaction
 
-The active mesh family should be designed so transparent mesh visuals can use the same visual
-family with a different render mode.
+The active mesh family uses the same visual family for opaque and transparent mesh visuals.
 
 Recommended behavior:
 
 1. opaque mesh and transparent mesh remain the same family,
-2. transparent path is chosen through visual render mode,
+2. transparent path is chosen through visual alpha mode,
 3. material opacity participates in the transparent accumulation path,
 4. no separate “transparent mesh” public visual family is needed.
 
@@ -290,27 +297,27 @@ This matters for scale bars, 3D labels, and bounding-box annotations.
 
 ## Why Not Standard Alpha Blending First
 
-Do not treat standard sorted alpha blending as the default transparent implementation target.
+Do not treat standard sorted alpha blending as the default OIT implementation target.
 
 Reasons:
 
 1. it bakes ordering assumptions into the wrong layer,
-2. it is a poor fit for the intended scientific visualization use cases,
-3. it would likely create rework once WBOIT lands,
-4. the branch already treats WBOIT as the intended v0.4 transparent path.
+2. it is a poor fit for the intended scientific visualization use cases that need OIT,
+3. the branch already has WBOIT as the explicit first OIT path.
 
 
 ## Initial Public API Direction
 
 The exact names can evolve, but conceptually the public scene surface should expose:
 
-1. a visual alpha/render mode selector,
+1. a visual alpha-mode selector,
 2. material opacity,
 3. diagnostics/capability feedback when transparent mode cannot be planned.
 
 Suggested conceptual calls:
 
-1. `dvz_visual_set_alpha_mode(visual, DVZ_ALPHA_OPAQUE / DVZ_ALPHA_BLENDED)` or equivalent
+1. `dvz_visual_set_alpha_mode(visual, DVZ_ALPHA_OPAQUE / DVZ_ALPHA_BLENDED /
+   DVZ_ALPHA_WBOIT / DVZ_ALPHA_DEPTH_PEEL)` or equivalent
 2. material opacity/state setters on mesh or future text/image visuals
 
 The implementation should map this to:
@@ -319,19 +326,18 @@ The implementation should map this to:
 2. opaque + WBOIT accumulation + resolve nodes.
 
 
-## Phase-1 Implementation Target
+## Phase-1 Implementation Status
 
-The first transparency implementation target should be:
+The active first transparency slice includes:
 
-1. mesh visual with `transparent_wboit`,
+1. retained visuals with `DVZ_ALPHA_WBOIT`,
 2. per-panel accumulation targets,
 3. explicit transparent accumulation pass,
 4. explicit composite pass,
-5. capability-gated planning and diagnostics,
-6. offscreen and live example coverage.
+5. capability-gated planning and diagnostics.
 
-This is enough to pressure the architecture correctly without trying to solve every transparent
-visual family at once.
+This is enough to pressure the architecture without treating every transparent visual family as
+complete.
 
 
 ## Explicit Non-Goals For The First Transparency Slice

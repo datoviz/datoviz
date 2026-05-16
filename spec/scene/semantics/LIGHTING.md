@@ -5,39 +5,44 @@ This document defines the scene-level lighting model for Datoviz v0.4.
 
 ## Purpose
 
-The lighting model provides scene-owned light sources that 3D visual families can consume
-to produce shaded rendering.
+The current active lighting slice provides per-visual material, Phong shading, and depth-cue
+controls for 3D-capable visual families.
 
 It is intentionally simple for v0.4 — covering the most common scientific visualization needs
 — while being designed to extend cleanly to physically-based rendering (PBR) and hardware
 ray tracing in future versions.
 
 
-## Position
+## Current Active Model
 
-Light sources sit:
+The active implementation does not expose scene-owned light handles yet. Shading state is carried by
+the visual/material block and emitted with the visual pipeline.
 
-1. inside the scene layer, above DRP2,
-2. alongside visuals, resources, and controllers as scene-owned objects,
-3. consumed by visual families that declare lighting support (`mesh`, `sphere`, `volume`).
+Current supported concepts:
 
-Families that do not declare lighting support (`point`, `path`, `glyph`, `image`, etc.) ignore
-scene lights entirely.
+1. per-visual material state,
+2. Phong/Blinn-Phong coefficients for lit primitive/mesh/sphere-style shader paths,
+3. depth cueing for point, pixel, primitive, mesh, and sphere visuals,
+4. shader selection based on the visual family, material state, and available attributes.
 
 
 ## Core Rule
 
-Light sources are first-class scene-owned handles.
-They are created, configured, and destroyed through the scene layer.
-Visual families consume them through the scene's light state, not through per-visual bindings.
+Lighting is currently visual-owned, not scene-owned. Scene-owned ambient, directional, and point
+lights are future API work and must not be described as required for the active v0.4 slice.
 
 
-## Light Source Types
+## Future Scene-Owned Lights
+
+The following model remains the planned direction once the scene grows first-class light handles.
+
+
+### Light Source Types
 
 Three types cover v0.4 scientific visualization needs.
 
 
-### Ambient Light
+#### Ambient Light
 
 Global fill light with no direction.
 
@@ -53,7 +58,7 @@ light = dvz_light_ambient(scene, color, intensity)
 One ambient light is created by default at `intensity = 0.15`.
 
 
-### Directional Light
+#### Directional Light
 
 Parallel rays from a fixed direction, as if from a distant source.
 
@@ -72,7 +77,7 @@ One directional light is created by default at direction `{1, 1, 1}` (normalized
 This gives a reasonable default appearance for 3D visuals without any user configuration.
 
 
-### Point Light
+#### Point Light
 
 Radiates equally in all directions from a position in scene space.
 
@@ -88,7 +93,7 @@ light = dvz_light_point(scene, position, color, intensity, attenuation)
 | `attenuation` | `float` | distance falloff coefficient |
 
 
-## Default Lighting
+### Default Lighting
 
 A newly created scene has one ambient and one directional light at neutral settings.
 3D visuals are usable without any lighting configuration.
@@ -101,7 +106,7 @@ dvz_scene_default_directional(scene)  // returns the default directional handle
 ```
 
 
-## Light Count Limit
+### Light Count Limit
 
 The scene supports up to a fixed maximum number of simultaneous light sources.
 The minimum guaranteed limit is 8.
@@ -109,7 +114,7 @@ This bound exists to keep GPU uniform buffers simple and predictable.
 Exceeding the limit produces a diagnostic and the excess lights are ignored.
 
 
-## Lifecycle
+### Lifecycle
 
 ```text
 dvz_light_set_intensity(light, intensity)   // update intensity at any time
@@ -127,14 +132,16 @@ Changing any light property marks the scene dirty and triggers a redraw for affe
 
 | Family | Lighting support |
 |---|---|
-| `mesh` | yes — Phong/Blinn-Phong in v0.4, PBR-ready material fields reserved |
-| `sphere` | yes — impostor shading uses scene lights |
-| `volume` | optional — shading mode uses scene lights when enabled |
-| `point`, `marker`, `path`, `segment`, `glyph`, `image`, `pixel`, `primitive` | no |
+| `primitive` | active when normals/material shader path are present |
+| `mesh` | active — per-visual Phong/Blinn-Phong material state |
+| `sphere` | planned/partial — impostor shading uses the same material direction |
+| `volume` | active first slice for volume state; gradient/transfer lighting remains spec work |
+| `point`, `pixel` | active depth cueing |
+| `marker`, `path`, `segment`, `glyph`, `image` | no current light contribution |
 
 Visual families declare their lighting participation in their family contracts.
-A family that does not declare lighting support receives no light contribution regardless of
-what lights exist in the scene.
+A family that does not declare lighting support receives no light contribution. Depth cueing is a
+separate material effect and may apply to families that do not consume Phong lighting.
 
 
 ## Future Development: Physically-Based Rendering (PBR)

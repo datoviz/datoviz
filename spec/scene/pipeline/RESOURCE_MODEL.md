@@ -323,11 +323,13 @@ But it should already preserve this stronger rule:
 
 ## User-Facing Resource Constructors
 
-The only user-facing resource constructors in the v0.4 API are `dvz_texture_2d` and
-`dvz_texture_3d`, which create `SampledField` resources. All other resource classes
-(`ItemTable`, `GroupedItemTable`, `IndexedGeometry`, `DerivedField`, etc.) are internal
-resources managed by the scene through `dvz_visual_set_data` and `dvz_visual_alloc`. The user
-never constructs them directly.
+The primary user-facing sampled-data constructor in the v0.4 API is `dvz_sampled_field`.
+Texture convenience calls such as `dvz_texture_2d` and `dvz_texture_3d` are transitional wrappers
+that create `SampledField` resources and bind them to visual field slots.
+
+All other resource classes (`ItemTable`, `GroupedItemTable`, `IndexedGeometry`, `DerivedField`,
+etc.) are internal resources managed by the scene through `dvz_visual_set_data` and
+`dvz_visual_alloc`. The user never constructs them directly.
 
 The scene provides two user-visible readback surfaces: `DvzPickResult` (picking, polled via
 `dvz_scene_poll_pick_result` or the `DVZ_EVENT_PICK_RESULT` callback) and the `DvzSelection`
@@ -370,8 +372,8 @@ The active implementation-direction proposal is:
 3. one geometry descriptor with axis metadata and optional physical metadata,
 4. full replace and subregion update entry points,
 5. semantic visual binding through a field slot such as `"field"`,
-6. existing image texture convenience calls treated as transitional wrappers rather than the long-term
-   center of the API.
+6. existing image/texture convenience calls treated as transitional wrappers rather than the
+   long-term center of the API.
 
 See [../proposals/SAMPLED_FIELD_API_DESIGN.md](../proposals/SAMPLED_FIELD_API_DESIGN.md) for the
 current implementation-grade API and validation direction.
@@ -445,17 +447,17 @@ The first scene model should also recognize common resource facets that recur ac
 1. attribute stream,
 2. index stream,
 3. parameter block,
-4. sampled texture input,
+4. sampled field input,
 5. grouping descriptor,
 6. derived target or readback payload.
 
 For example:
 
 1. point and marker visuals are mostly attribute streams plus parameter blocks,
-2. mesh visuals add indices and optional texture inputs,
+2. mesh visuals add indices and optional sampled-field inputs,
 3. path visuals add grouped sequence interpretation,
 4. glyph visuals combine instance-like records with atlas sampling,
-5. image and volume visuals rely heavily on sampled texture resources plus small parameter blocks.
+5. image and volume visuals rely heavily on sampled fields plus small parameter blocks.
 
 This separation lets the future scene model stay close to the proven v0.3 visual shapes without
 copying the old API one-to-one.
@@ -465,7 +467,7 @@ These facets are intentionally close to the `v0.3` mental model:
 1. attribute stream is the scene-side successor to per-visual vertex attribute arrays,
 2. index stream is the successor to optional indexed visuals,
 3. parameter block is the successor to visual params slots,
-4. sampled texture input is the successor to texture-plus-sampler visual bindings,
+4. sampled field input is the successor to texture-plus-sampler visual bindings,
 5. grouping descriptor is the successor to grouped path and glyph data.
 
 The relation between classes and facets is:
@@ -809,11 +811,11 @@ The resource model should allow clear producer-side diagnostics such as:
 The first resource model is acceptable only if it can cleanly represent:
 
 1. marker-like structured arrays,
-2. mesh-like vertex and index data with optional texture input,
+2. mesh-like vertex and index data with optional sampled-field input,
 3. path-like grouped sequences,
 4. text-like grouped glyph instance data plus atlas sampling,
-5. image-like 2D texture input,
-6. volume-like 3D texture input,
+5. image-like 2D sampled-field input,
+6. volume-like 3D sampled-field input,
 7. panel-local picking and export targets,
 8. shared parameter blocks reused across visuals or panels.
 

@@ -9,6 +9,13 @@ It refines `../semantics/VISUAL_FAMILIES.md`, `../semantics/VISUAL_FAMILY_RULES.
 Shared attribute and behavioral definitions are in `SHARED_ATTRIBUTES.md`.
 
 
+## Active Implementation Status
+
+The active first slice supports retained `volume` visuals backed by `SampledField` resources,
+volume opacity/sampling/render-mode/slice/bounds/clipping state, and scene -> DRP2 emission. The
+full transfer-function, isosurface, and MPR surfaces described below remain spec work.
+
+
 ## Semantic Purpose
 
 `volume` renders a 3D scalar or RGBA voxel field using ray-casting direct volume rendering (DVR),
@@ -23,16 +30,16 @@ scalar field visualization, orthographic slice viewers.
 
 ## Visual-Wide Parameters
 
-### `texture`
+### `field`
 
 | Property | Value |
 |---|---|
-| Type | `SampledField` scene resource — 3D texture |
+| Type | `SampledField` scene resource — 3D sampled field |
 | Mutability | `dynamic` |
 
 The 3D voxel data. Format must match the declared `texture_mode`:
-- `scalar`: single-channel `f32` texture
-- `rgba`: RGBA `u8` texture
+- `scalar`: single-channel `f32` field
+- `rgba`: RGBA `u8` field
 
 
 ### `bounds_min`, `bounds_max`
@@ -175,8 +182,8 @@ When `true`, the scene estimates the local gradient of the scalar field at each 
 and uses it as a surface normal for Phong shading. This gives strong depth cues that make the
 volume appear three-dimensional rather than a flat transparent cloud.
 
-Standard lighting parameters (see `SHARED_ATTRIBUTES.md`) apply when gradient shading is
-enabled. Requires slightly more GPU work per sample.
+Current shading is per-visual material/Phong/depth-cue state rather than scene-owned lights.
+Requires slightly more GPU work per sample.
 
 
 ### `clip_planes`
@@ -367,7 +374,7 @@ hit position. The returned item identity is the isosurface level index (0-based 
 
 | v0.3 | v0.4 |
 |---|---|
-| `dvz_volume_texture` | `texture` resource |
+| `dvz_volume_texture` | `field` (`SampledField`) resource |
 | `dvz_volume_bounds` | `bounds_min`, `bounds_max` |
 | `dvz_volume_texcoords` (uvw0/uvw1) | `crop_min`, `crop_max` (data space) |
 | `dvz_volume_permutation` | `axis_order` + `axis_flip` |
