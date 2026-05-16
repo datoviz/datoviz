@@ -62,6 +62,7 @@ typedef struct SsaoExampleState
     bool msaa_alpha_to_coverage;
     bool spin_enabled;
     bool raycast_mode;
+    bool standard_material;
     float radius;
     float strength;
     float bias;
@@ -73,6 +74,12 @@ typedef struct SsaoExampleState
     float sample_count;
     float msaa_sample_count;
     float size_scale;
+    float ambient;
+    float diffuse;
+    float specular;
+    float shininess;
+    float roughness;
+    float rim_strength;
     bool blur_enabled;
     bool debug_view;
 } SsaoExampleState;
@@ -311,6 +318,41 @@ static void _apply_sphere_mode(SsaoExampleState* state)
 
 
 /**
+ * Apply the current material controls to the retained sphere visual.
+ *
+ * @param state example state
+ */
+static void _apply_material(SsaoExampleState* state)
+{
+    ANN(state);
+    if (state->sphere == NULL)
+        return;
+    DvzMaterialDesc material = dvz_material_desc();
+    material.light_direction[0] = 0.35f;
+    material.light_direction[1] = 0.70f;
+    material.light_direction[2] = 0.62f;
+    if (state->standard_material)
+    {
+        material.model = DVZ_MATERIAL_MODEL_STANDARD;
+        material.standard.roughness = state->roughness;
+        material.standard.specular = state->specular;
+        material.standard.rim_strength = state->rim_strength;
+    }
+    else
+    {
+        material.model = DVZ_MATERIAL_MODEL_PHONG;
+        material.phong.ambient = state->ambient;
+        material.phong.diffuse = state->diffuse;
+        material.phong.specular = state->specular;
+        material.phong.shininess = state->shininess;
+    }
+    if (dvz_visual_set_material(state->sphere, &material) != 0)
+        dvz_fprintf(stderr, "dvz_visual_set_material() failed\n");
+}
+
+
+
+/**
  * Apply the retained spin control to the scene animation.
  *
  * @param state example state
@@ -341,6 +383,7 @@ static void _reset_controls(SsaoExampleState* state)
     state->msaa_alpha_to_coverage = true;
     state->spin_enabled = false;
     state->raycast_mode = true;
+    state->standard_material = true;
     state->radius = 0.374f;
     state->strength = 1.061f;
     state->bias = 0.037f;
@@ -352,10 +395,17 @@ static void _reset_controls(SsaoExampleState* state)
     state->sample_count = 32.0f;
     state->msaa_sample_count = 8.0f;
     state->size_scale = 0.607f;
+    state->ambient = 0.18f;
+    state->diffuse = 0.76f;
+    state->specular = 0.85f;
+    state->shininess = 96.0f;
+    state->roughness = 0.30f;
+    state->rim_strength = 0.12f;
     state->blur_enabled = true;
     state->debug_view = false;
     _apply_sphere_sizes(state);
     _apply_sphere_mode(state);
+    _apply_material(state);
     _apply_msaa(state);
     _apply_ssao(state);
     _apply_spin(state);
@@ -382,10 +432,31 @@ static void _ssao_gui(DvzGui* gui, DvzAppWindow* win, void* user_data)
     bool spin_changed = false;
     bool size_changed = false;
     bool mode_changed = false;
+    bool material_changed = false;
     if (dvz_gui_begin(gui, "SSAO", NULL, 0))
     {
         spin_changed |= dvz_gui_checkbox(gui, "Auto rotate", &state->spin_enabled);
         mode_changed |= dvz_gui_checkbox(gui, "Raycast impostor", &state->raycast_mode);
+        material_changed |= dvz_gui_checkbox(gui, "Standard material", &state->standard_material);
+        if (state->standard_material)
+        {
+            material_changed |=
+                dvz_gui_slider_float(gui, "Roughness", &state->roughness, 0.02f, 1.0f);
+            material_changed |=
+                dvz_gui_slider_float(gui, "Specular", &state->specular, 0.0f, 1.5f);
+            material_changed |= dvz_gui_slider_float(gui, "Rim", &state->rim_strength, 0.0f, 1.0f);
+        }
+        else
+        {
+            material_changed |=
+                dvz_gui_slider_float(gui, "Ambient", &state->ambient, 0.0f, 1.0f);
+            material_changed |=
+                dvz_gui_slider_float(gui, "Diffuse", &state->diffuse, 0.0f, 1.5f);
+            material_changed |=
+                dvz_gui_slider_float(gui, "Specular", &state->specular, 0.0f, 1.5f);
+            material_changed |=
+                dvz_gui_slider_float(gui, "Shininess", &state->shininess, 1.0f, 160.0f);
+        }
         msaa_changed |= dvz_gui_checkbox(gui, "Enable MSAA", &state->msaa_enabled);
         msaa_changed |=
             dvz_gui_slider_float(gui, "MSAA samples", &state->msaa_sample_count, 2.0f, 8.0f);
@@ -415,12 +486,15 @@ static void _ssao_gui(DvzGui* gui, DvzAppWindow* win, void* user_data)
             spin_changed = false;
             size_changed = false;
             mode_changed = false;
+            material_changed = false;
         }
     }
     dvz_gui_end(gui);
 
     if (mode_changed)
         _apply_sphere_mode(state);
+    if (material_changed)
+        _apply_material(state);
     if (size_changed)
         _apply_sphere_sizes(state);
     if (ssao_changed)
@@ -525,15 +599,6 @@ int main(int argc, char** argv)
         dvz_scene_destroy(scene);
         return 1;
     }
-    dvz_visual_set_primitive_shading(
-        visual,
-        &(DvzPrimitiveShadingDesc){
-            .light_direction = {0.35f, 0.70f, 0.62f},
-            .ambient = 0.18f,
-            .diffuse = 0.76f,
-            .specular = 0.85f,
-            .shininess = 96.0f,
-        });
     dvz_panel_set_background_color(panel, 0.035f, 0.040f, 0.052f, 1.0f);
 
     DvzApp* app = dvz_app(scene);
