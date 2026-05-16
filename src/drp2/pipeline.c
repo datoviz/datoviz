@@ -498,6 +498,113 @@ DvzDrp2ValidationResult _vklite_create_bind_group_layout(
 
 
 /**
+ * Build vklite descriptors from one saved bind-group declaration.
+ *
+ * @param state vklite runtime state
+ * @param bind_group bind-group object carrying saved entries
+ * @param command_index command index used for validation reporting
+ * @return DRP2 validation result
+ */
+DvzDrp2ValidationResult _vklite_build_bind_group_descriptors(
+    Drp2VkliteState* state, const Drp2VkliteObject* bind_group, uint32_t command_index,
+    DvzDescriptors** out)
+{
+    ANN(state);
+    ANN(bind_group);
+    ANN(out);
+    *out = NULL;
+
+    Drp2VkliteObject* layout = _vklite_find(state, bind_group->bind_group_layout_id);
+    if (layout == NULL || layout->kind != DRP2_OBJECT_BIND_GROUP_LAYOUT || layout->slots == NULL)
+        return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+
+    DvzDescriptors* descriptors = dvz_descriptors_create_wrapper();
+    if (descriptors == NULL)
+        return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+    dvz_descriptors(layout->slots, descriptors);
+
+    for (uint32_t i = 0; i < bind_group->bind_group_entry_count; i++)
+    {
+        const DvzDrp2BindGroupEntry* entry = &bind_group->bind_group_entries[i];
+        if (entry->binding_type == DVZ_DRP2_BINDING_TYPE_UNIFORM_BUFFER ||
+            entry->binding_type == DVZ_DRP2_BINDING_TYPE_STORAGE_BUFFER)
+        {
+            Drp2VkliteObject* buffer = _vklite_find(state, entry->resource_id);
+            if (buffer == NULL || buffer->buffer == NULL)
+            {
+                dvz_descriptors_free(descriptors);
+                return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+            }
+            dvz_descriptors_buffer(
+                descriptors, 0, entry->binding, 0, dvz_buffer_handle(buffer->buffer),
+                entry->offset, entry->size);
+        }
+        else if (entry->binding_type == DVZ_DRP2_BINDING_TYPE_SAMPLED_TEXTURE ||
+                 entry->binding_type == DVZ_DRP2_BINDING_TYPE_STORAGE_TEXTURE)
+        {
+            Drp2VkliteObject* texture = _vklite_find(state, entry->resource_id);
+            VkImageView texture_view = _vklite_object_image_view(texture);
+            if (texture_view == VK_NULL_HANDLE)
+            {
+                dvz_descriptors_free(descriptors);
+                return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+            }
+
+            VkSampler sampler_handle = VK_NULL_HANDLE;
+            if (entry->binding_type == DVZ_DRP2_BINDING_TYPE_SAMPLED_TEXTURE)
+            {
+                const DvzDrp2BindGroupEntry* sampler_entry = NULL;
+                for (uint32_t j = 0; j < bind_group->bind_group_entry_count; j++)
+                {
+                    if (bind_group->bind_group_entries[j].binding_type ==
+                        DVZ_DRP2_BINDING_TYPE_SAMPLER)
+                    {
+                        sampler_entry = &bind_group->bind_group_entries[j];
+                        break;
+                    }
+                }
+                if (sampler_entry == NULL)
+                {
+                    dvz_descriptors_free(descriptors);
+                    return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+                }
+                Drp2VkliteObject* sampler = _vklite_find(state, sampler_entry->resource_id);
+                if (sampler == NULL || sampler->sampler == NULL)
+                {
+                    dvz_descriptors_free(descriptors);
+                    return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+                }
+                sampler_handle = dvz_sampler_handle(sampler->sampler);
+            }
+            VkImageLayout image_layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+            if (entry->binding_type == DVZ_DRP2_BINDING_TYPE_STORAGE_TEXTURE)
+                image_layout = VK_IMAGE_LAYOUT_GENERAL;
+            else if (_vklite_pipeline_format_has_depth(texture->format))
+                image_layout = VK_IMAGE_LAYOUT_READ_ONLY_OPTIMAL;
+            dvz_descriptors_image(
+                descriptors, 0, entry->binding, 0, image_layout, texture_view, sampler_handle);
+        }
+        else if (entry->binding_type == DVZ_DRP2_BINDING_TYPE_SAMPLER)
+        {
+            Drp2VkliteObject* sampler = _vklite_find(state, entry->resource_id);
+            if (sampler == NULL || sampler->sampler == NULL)
+            {
+                dvz_descriptors_free(descriptors);
+                return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+            }
+            dvz_descriptors_image(
+                descriptors, 0, entry->binding, 0, VK_IMAGE_LAYOUT_UNDEFINED, VK_NULL_HANDLE,
+                dvz_sampler_handle(sampler->sampler));
+        }
+    }
+
+    *out = descriptors;
+    return _drp2_ok();
+}
+
+
+
+/**
  * Create vklite descriptors from a DRP2 CreateBindGroup command.
  *
  * @param state vklite runtime state
@@ -535,16 +642,6 @@ DvzDrp2ValidationResult _vklite_create_bind_group(
     if (object == NULL)
         return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
 
-    layout = _vklite_find(state, command->u.create_bind_group.bind_group_layout_id);
-    if (layout == NULL || layout->kind != DRP2_OBJECT_BIND_GROUP_LAYOUT || layout->slots == NULL)
-        return _vklite_fail_destroy_object(
-            object, DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
-
-    DvzDescriptors* descriptors = dvz_descriptors_create_wrapper();
-    if (descriptors == NULL)
-        return _vklite_fail_destroy_object(
-            object, DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
-    object->descriptors = descriptors;
     object->bind_group_layout_id = command->u.create_bind_group.bind_group_layout_id;
     object->bind_group_entry_count = command->u.create_bind_group.entry_count;
     dvz_memcpy(
@@ -552,72 +649,16 @@ DvzDrp2ValidationResult _vklite_create_bind_group(
         command->u.create_bind_group.entries,
         command->u.create_bind_group.entry_count *
             sizeof(command->u.create_bind_group.entries[0]));
-    dvz_descriptors(layout->slots, descriptors);
 
-    for (uint32_t i = 0; i < command->u.create_bind_group.entry_count; i++)
+    DvzDescriptors* descriptors = NULL;
+    DvzDrp2ValidationResult result =
+        _vklite_build_bind_group_descriptors(state, object, command_index, &descriptors);
+    if (!result.ok)
     {
-        const DvzDrp2BindGroupEntry* entry = &command->u.create_bind_group.entries[i];
-        if (entry->binding_type == DVZ_DRP2_BINDING_TYPE_UNIFORM_BUFFER ||
-            entry->binding_type == DVZ_DRP2_BINDING_TYPE_STORAGE_BUFFER)
-        {
-            Drp2VkliteObject* buffer = _vklite_find(state, entry->resource_id);
-            if (buffer == NULL || buffer->buffer == NULL)
-                return _vklite_fail_destroy_object(
-                    object, DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
-            dvz_descriptors_buffer(
-                descriptors, 0, entry->binding, 0, dvz_buffer_handle(buffer->buffer),
-                entry->offset, entry->size);
-        }
-        else if (entry->binding_type == DVZ_DRP2_BINDING_TYPE_SAMPLED_TEXTURE ||
-                 entry->binding_type == DVZ_DRP2_BINDING_TYPE_STORAGE_TEXTURE)
-        {
-            Drp2VkliteObject* texture = _vklite_find(state, entry->resource_id);
-            VkImageView texture_view = _vklite_object_image_view(texture);
-            if (texture_view == VK_NULL_HANDLE)
-                return _vklite_fail_destroy_object(
-                    object, DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
-
-            VkSampler sampler_handle = VK_NULL_HANDLE;
-            if (entry->binding_type == DVZ_DRP2_BINDING_TYPE_SAMPLED_TEXTURE)
-            {
-                const DvzDrp2BindGroupEntry* sampler_entry = NULL;
-                for (uint32_t j = 0; j < command->u.create_bind_group.entry_count; j++)
-                {
-                    if (command->u.create_bind_group.entries[j].binding_type ==
-                        DVZ_DRP2_BINDING_TYPE_SAMPLER)
-                    {
-                        sampler_entry = &command->u.create_bind_group.entries[j];
-                        break;
-                    }
-                }
-                if (sampler_entry == NULL)
-                    return _vklite_fail_destroy_object(
-                        object, DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
-                Drp2VkliteObject* sampler = _vklite_find(state, sampler_entry->resource_id);
-                if (sampler == NULL || sampler->sampler == NULL)
-                    return _vklite_fail_destroy_object(
-                        object, DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
-                sampler_handle = dvz_sampler_handle(sampler->sampler);
-            }
-            VkImageLayout image_layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-            if (entry->binding_type == DVZ_DRP2_BINDING_TYPE_STORAGE_TEXTURE)
-                image_layout = VK_IMAGE_LAYOUT_GENERAL;
-            else if (_vklite_pipeline_format_has_depth(texture->format))
-                image_layout = VK_IMAGE_LAYOUT_READ_ONLY_OPTIMAL;
-            dvz_descriptors_image(
-                descriptors, 0, entry->binding, 0, image_layout, texture_view, sampler_handle);
-        }
-        else if (entry->binding_type == DVZ_DRP2_BINDING_TYPE_SAMPLER)
-        {
-            Drp2VkliteObject* sampler = _vklite_find(state, entry->resource_id);
-            if (sampler == NULL || sampler->sampler == NULL)
-                return _vklite_fail_destroy_object(
-                    object, DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
-            dvz_descriptors_image(
-                descriptors, 0, entry->binding, 0, VK_IMAGE_LAYOUT_UNDEFINED, VK_NULL_HANDLE,
-                dvz_sampler_handle(sampler->sampler));
-        }
+        _vklite_destroy_object(object);
+        return result;
     }
+    object->descriptors = descriptors;
     return _drp2_ok();
 }
 

@@ -314,6 +314,9 @@ DvzDrp2ValidationResult _vklite_create_sampler(
     Drp2VkliteState* state, const DvzDrp2Command* command, uint32_t command_index);
 DvzDrp2ValidationResult _vklite_create_bind_group_layout(
     Drp2VkliteState* state, const DvzDrp2Command* command, uint32_t command_index);
+DvzDrp2ValidationResult _vklite_build_bind_group_descriptors(
+    Drp2VkliteState* state, const Drp2VkliteObject* bind_group, uint32_t command_index,
+    DvzDescriptors** out);
 DvzDrp2ValidationResult _vklite_create_bind_group(
     Drp2VkliteState* state, const DvzDrp2Command* command, uint32_t command_index);
 DvzDrp2ValidationResult _vklite_create_render_pipeline(
