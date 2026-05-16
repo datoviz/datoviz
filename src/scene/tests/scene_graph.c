@@ -931,9 +931,7 @@ int test_scene_mesh_emits_depth_attachment(TstSuite* suite, TstItem* item)
 
     bool found_depth_pass = false;
     bool found_named_depth_pass = false;
-    bool found_named_depth_write = false;
     bool found_named_depth_texture = false;
-    bool found_named_depth_usage = false;
     bool found_depth_pipeline = false;
     for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
     {
@@ -945,20 +943,12 @@ int test_scene_mesh_emits_depth_attachment(TstSuite* suite, TstItem* item)
                 found_named_depth_texture ||
                 (label != NULL && strcmp(label, "fig0_p0.depth") == 0 &&
                  cmd->u.create_texture.format == VK_FORMAT_D32_SFLOAT);
-            found_named_depth_usage =
-                found_named_depth_usage ||
-                (label != NULL && strcmp(label, "fig0_p0.depth") == 0 &&
-                 (cmd->u.create_texture.usage & DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT) != 0);
         }
         if (cmd->type == DVZ_DRP2_COMMAND_BEGIN_RENDER_PASS)
         {
             found_depth_pass = found_depth_pass || cmd->u.begin_render_pass.has_depth_attachment;
             found_named_depth_pass =
                 found_named_depth_pass || cmd->u.begin_render_pass.depth_texture_id != 0;
-            found_named_depth_write =
-                found_named_depth_write ||
-                (cmd->u.begin_render_pass.depth_texture_id != 0 &&
-                 cmd->u.begin_render_pass.depth_access == DVZ_DRP2_ATTACHMENT_ACCESS_WRITE);
         }
         if (cmd->type == DVZ_DRP2_COMMAND_CREATE_RENDER_PIPELINE)
         {
@@ -970,10 +960,8 @@ int test_scene_mesh_emits_depth_attachment(TstSuite* suite, TstItem* item)
         }
     }
     AT(found_depth_pass);
-    AT(found_named_depth_pass);
-    AT(found_named_depth_write);
-    AT(found_named_depth_texture);
-    AT(found_named_depth_usage);
+    AT(!found_named_depth_pass);
+    AT(!found_named_depth_texture);
     AT(found_depth_pipeline);
 
     dvz_drp2_stream_destroy(stream);
@@ -4203,7 +4191,9 @@ int test_scene_visual_pass_capabilities(TstSuite* suite, TstItem* item)
     AT(caps.kind == DVZ_SCENE_VISUAL_DESC_POINT);
     AT(caps.draws_in_wboit_pass);
     AT(!caps.draws_in_opaque_pass);
-    AT(!caps.needs_depth_attachment);
+    AT(caps.can_write_depth);
+    AT(caps.can_depth_test);
+    AT(caps.needs_depth_attachment);
     AT(caps.uses_common_set);
     AT(!caps.uses_material_set);
     AT(!_scene_technique_gbuffer_plan_add_visual(&gbuffer, point, &panel->visuals[0]));
@@ -4752,17 +4742,22 @@ int test_scene_visual_alpha_mode_splits_frame_plan_passes(TstSuite* suite, TstIt
     AT(strcmp(opaque_node->u.render.render_target_id, "rt") == 0);
     AT(strcmp(accum_node->u.render.render_target_id, "rt.wboit_accum") == 0);
     AT(strcmp(resolve_node->u.render.render_target_id, "rt") == 0);
-    AT(dvz_frame_plan_graph_resource_count(plan) == 3);
+    AT(dvz_frame_plan_graph_resource_count(plan) == 4);
     AT(dvz_frame_plan_graph_pass_count(plan) == 3);
 
     const DvzFrameGraphResource* accum_resource = dvz_frame_plan_graph_resource_get(plan, 1);
     const DvzFrameGraphResource* weight_resource = dvz_frame_plan_graph_resource_get(plan, 2);
+    const DvzFrameGraphResource* depth_resource = dvz_frame_plan_graph_resource_get(plan, 3);
     ANN(accum_resource);
     ANN(weight_resource);
+    ANN(depth_resource);
     AT(strcmp(accum_resource->id, "figure_0_p0.wboit.accum") == 0);
     AT(strcmp(weight_resource->id, "figure_0_p0.wboit.weight") == 0);
+    AT(strcmp(depth_resource->id, "figure_0_p0.depth") == 0);
     AT(accum_resource->usage_flags & DVZ_FRAME_GRAPH_RESOURCE_USAGE_COLOR_ATTACHMENT);
     AT(accum_resource->usage_flags & DVZ_FRAME_GRAPH_RESOURCE_USAGE_SAMPLED);
+    AT(depth_resource->usage_flags & DVZ_FRAME_GRAPH_RESOURCE_USAGE_DEPTH_ATTACHMENT);
+    AT(depth_resource->usage_flags & DVZ_FRAME_GRAPH_RESOURCE_USAGE_SAMPLED);
 
     const DvzFrameGraphPass* opaque_pass = dvz_frame_plan_graph_pass_get(plan, 0);
     const DvzFrameGraphPass* accum_pass = dvz_frame_plan_graph_pass_get(plan, 1);
@@ -4773,14 +4768,30 @@ int test_scene_visual_alpha_mode_splits_frame_plan_passes(TstSuite* suite, TstIt
     AT(strcmp(opaque_pass->work_label, "opaque") == 0);
     AT(strcmp(accum_pass->work_label, "wboit_accum") == 0);
     AT(strcmp(resolve_pass->work_label, "wboit_resolve") == 0);
+    AT(opaque_pass->has_depth_attachment);
     AT(accum_pass->color_attachment_count == 2);
+    AT(accum_pass->has_depth_attachment);
     AT(resolve_pass->read_count == 2);
     AT(resolve_pass->color_attachment_count == 1);
-    AT(dvz_frame_plan_graph_dependency_count(plan) == 3);
-    DvzFrameGraphDependency dep = {0};
-    AT(dvz_frame_plan_graph_dependency_get(plan, 0, &dep));
-    AT(strcmp(dep.producer_pass_id, "figure_0_p0.wboit.accum") == 0);
-    AT(strcmp(dep.consumer_pass_id, "figure_0_p0.wboit.resolve") == 0);
+    AT(dvz_frame_plan_graph_dependency_count(plan) == 4);
+    bool has_accum_resolve_dependency = false;
+    bool has_depth_dependency = false;
+    for (uint32_t i = 0; i < dvz_frame_plan_graph_dependency_count(plan); i++)
+    {
+        DvzFrameGraphDependency dep = {0};
+        AT(dvz_frame_plan_graph_dependency_get(plan, i, &dep));
+        if (
+            strcmp(dep.producer_pass_id, "figure_0_p0.wboit.accum") == 0 &&
+            strcmp(dep.consumer_pass_id, "figure_0_p0.wboit.resolve") == 0)
+            has_accum_resolve_dependency = true;
+        if (
+            strcmp(dep.producer_pass_id, "figure_0_p0.opaque") == 0 &&
+            strcmp(dep.consumer_pass_id, "figure_0_p0.wboit.accum") == 0 &&
+            strcmp(dep.resource_id, "figure_0_p0.depth") == 0)
+            has_depth_dependency = true;
+    }
+    AT(has_accum_resolve_dependency);
+    AT(has_depth_dependency);
 
     DvzDiagnosticReport report = {0};
     dvz_diagnostic_report_init(&report);

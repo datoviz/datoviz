@@ -51,6 +51,32 @@ static bool _scene_frame_graph_has_resource(const DvzFramePlan* plan, const char
 }
 
 
+/**
+ * Return whether a graph pass already writes a color attachment.
+ *
+ * @param plan the frame plan
+ * @param resource_id the color attachment resource id
+ * @return whether the color attachment is already written
+ */
+static bool _scene_frame_graph_color_written(const DvzFramePlan* plan, const char* resource_id)
+{
+    ANN(plan);
+    ANN(resource_id);
+    for (uint32_t i = 0; i < dvz_frame_plan_graph_pass_count(plan); i++)
+    {
+        const DvzFrameGraphPass* pass = dvz_frame_plan_graph_pass_get(plan, i);
+        if (pass == NULL)
+            continue;
+        for (uint32_t j = 0; j < pass->color_attachment_count; j++)
+        {
+            if (strcmp(pass->color_attachments[j].resource_id, resource_id) == 0)
+                return true;
+        }
+    }
+    return false;
+}
+
+
 
 /**
  * Add a graph resource unless it already exists.
@@ -471,8 +497,12 @@ bool _scene_technique_emit_wboit_frame_graph(
     dvz_strlcpy(opaque.panel_id, panel_id, sizeof(opaque.panel_id));
     dvz_strlcpy(opaque.work_label, "opaque", sizeof(opaque.work_label));
     opaque.kind = DVZ_FRAME_GRAPH_PASS_RENDER;
+    bool color_written = _scene_frame_graph_color_written(plan, "rt");
     _scene_frame_graph_color_attachment(
-        &color, "rt", DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_CLEAR, true);
+        &color, "rt",
+        color_written ? DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_LOAD :
+                        DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_CLEAR,
+        !color_written);
     if (!dvz_frame_graph_pass_color_attachment(&opaque, &color))
         return false;
     if (shared_depth)
@@ -582,8 +612,12 @@ bool _scene_technique_emit_blended_frame_graph(
     dvz_strlcpy(opaque.panel_id, panel_id, sizeof(opaque.panel_id));
     dvz_strlcpy(opaque.work_label, "opaque", sizeof(opaque.work_label));
     opaque.kind = DVZ_FRAME_GRAPH_PASS_RENDER;
+    bool color_written = _scene_frame_graph_color_written(plan, "rt");
     _scene_frame_graph_color_attachment(
-        &color, "rt", DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_CLEAR, true);
+        &color, "rt",
+        color_written ? DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_LOAD :
+                        DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_CLEAR,
+        !color_written);
     if (!dvz_frame_graph_pass_color_attachment(&opaque, &color))
         return false;
     if (shared_depth)

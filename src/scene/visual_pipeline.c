@@ -878,6 +878,8 @@ static void _scene_visual_pass_caps_resolve(
     dvz_memset(out, sizeof(DvzSceneVisualPassCaps), 0, sizeof(DvzSceneVisualPassCaps));
 
     bool primitive = _visual_desc_is_primitive(kind);
+    bool point_like = kind == DVZ_SCENE_VISUAL_DESC_POINT ||
+                      kind == DVZ_SCENE_VISUAL_DESC_PIXEL;
     bool image = _visual_desc_is_image(kind);
     bool volume = _visual_desc_is_volume(kind);
     bool fixed = controller_mode == DVZ_CONTROLLER_FIXED;
@@ -895,8 +897,8 @@ static void _scene_visual_pass_caps_resolve(
     out->draws_in_transparent_blend_pass = transparent_blend;
     out->draws_in_opaque_pass = !wboit && !depth_peel && !transparent_blend;
     out->uses_source_over_blend = _alpha_mode_uses_source_over(alpha_mode);
-    out->can_write_depth = primitive && !fixed;
-    out->can_depth_test = primitive && !fixed;
+    out->can_write_depth = (primitive || point_like) && !fixed;
+    out->can_depth_test = (primitive || point_like) && !fixed;
     out->samples_depth = volume && !fixed;
     out->needs_depth_attachment = out->can_depth_test || out->samples_depth;
     out->uses_common_set = kind != DVZ_SCENE_VISUAL_DESC_NONE;
@@ -1195,6 +1197,13 @@ bool _scene_visual_pipeline_desc(
         out->formats[1] = picking ? VK_FORMAT_R32_SFLOAT : VK_FORMAT_R8G8B8A8_UNORM;
         out->formats[2] = VK_FORMAT_R32_SFLOAT;
         out->needs_common_layout = caps.uses_common_set;
+        if (pass_needs_depth)
+        {
+            out->depth_write_enabled =
+                caps.can_write_depth && !wboit_accumulation && alpha_mode != DVZ_ALPHA_BLENDED;
+            out->depth_compare_op =
+                caps.can_depth_test ? VK_COMPARE_OP_LESS_OR_EQUAL : VK_COMPARE_OP_ALWAYS;
+        }
         return true;
 
     case DVZ_SCENE_VISUAL_DESC_PRIMITIVE:
@@ -1349,14 +1358,21 @@ bool _scene_render_needs_depth(DvzFramePlanEmitter* emitter, const DvzFramePlanN
         const DvzFramePlanVisualMeta* meta = &render->u.render.visual_metadata[i];
         if (meta->has_metadata)
         {
-            if (!_visual_meta_is_primitive(meta->visual_type))
-                continue;
             uint64_t pos_buf = _resource_lookup_label(&emitter->resources, meta->position_id);
             if (pos_buf == 0)
                 continue;
+            bool has_color = _resource_lookup_label(&emitter->resources, meta->color_id) != 0;
+            DvzScenePointLikeKind point_like_kind = DVZ_SCENE_POINT_LIKE_POINT;
+            if (_visual_meta_point_like_kind(meta->visual_type, &point_like_kind))
+            {
+                if (has_color)
+                    return true;
+                continue;
+            }
+            if (!_visual_meta_is_primitive(meta->visual_type))
+                continue;
             bool has_topology = _resource_topology(&emitter->resources, pos_buf) != UINT32_MAX ||
                                 meta->topology != UINT32_MAX;
-            bool has_color = _resource_lookup_label(&emitter->resources, meta->color_id) != 0;
             if (has_color && has_topology)
                 return true;
             continue;

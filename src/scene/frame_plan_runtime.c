@@ -2633,12 +2633,13 @@ static bool _emitter_emit_render_multi(
  * @param plan the FramePlan
  * @param readback the optional readback copy node
  * @param cfg the emission config
+ * @param needs_depth whether the figure pass needs a transient depth attachment
  * @return whether the commands were emitted
  */
 static bool _emitter_emit_scene_figure_renders(
     DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, const DvzFramePlan* plan,
     const DvzFramePlanNode* readback, const DvzFramePlanEmitConfig* cfg,
-    DvzDiagnosticReport* report)
+    bool needs_depth, DvzDiagnosticReport* report)
 {
     ANN(emitter);
     ANN(stream);
@@ -2679,7 +2680,7 @@ static bool _emitter_emit_scene_figure_renders(
         SceneRenderBatch* batch = &batches[batch_count];
         batch->render = render;
         ok = _emitter_prepare_render_multi(
-            emitter, stream, render, cfg, false, false, 0, report, batch->draws,
+            emitter, stream, render, cfg, needs_depth, false, 0, report, batch->draws,
             &batch->draw_count);
         if (ok)
             batch_count++;
@@ -2694,6 +2695,8 @@ static bool _emitter_emit_scene_figure_renders(
          dvz_drp2_stream_begin_render_pass_region_clear(
              stream, render_pass_id, encoder_id, color_id, cr, cg, cb, ca, 0.0f, 0.0f, 1.0f,
              1.0f, true);
+    if (ok && needs_depth)
+        ok = dvz_drp2_stream_begin_render_pass_set_depth(stream, 1.0f);
 
     SceneRenderStateCache scene_cache = {0};
     for (uint32_t i = 0; ok && i < batch_count; i++)
@@ -2713,14 +2716,16 @@ static bool _emitter_emit_scene_figure_renders(
 
 
 /**
- * Return whether the plan contains graph-backed technique render-pass roles.
+ * Return whether the plan contains graph-backed render passes.
  *
  * @param plan the FramePlan.
- * @return whether graph-backed scene technique nodes are present.
+ * @return whether graph-backed scene render nodes are present.
  */
-static bool _plan_has_graph_technique_roles(const DvzFramePlan* plan)
+static bool _plan_has_graph_render_passes(const DvzFramePlan* plan)
 {
     ANN(plan);
+    if (dvz_frame_plan_graph_pass_count(plan) > 0)
+        return true;
     for (uint32_t i = 0; i < plan->count; i++)
     {
         const DvzFramePlanNode* node = &plan->nodes[i];
@@ -3022,13 +3027,23 @@ static bool _emitter_emit_scene_graph_renders(
             const DvzFrameGraphPass* graph_pass = ordered_graph_pass != NULL
                                                       ? ordered_graph_pass
                                                       : _graph_pass_for_render(plan, render);
+            if (ok && graph_depth_id == 0 && graph_pass != NULL &&
+                graph_pass->has_depth_attachment)
+            {
+                if (!_graph_resolve_render_depth(
+                        emitter, stream, plan, render, cfg, &graph_pass, &graph_depth_id))
+                {
+                    ok = false;
+                    break;
+                }
+            }
             uint64_t target_id =
                 _graph_color_attachment_texture_id(
                     graph_pass, 0, color_id, graph_targets, color_id);
             uint64_t pass_id = _emitter_next_transient_id(emitter);
             const SceneRenderBatch* batch = _render_batch_for_node(batches, batch_count, render);
             bool has_draws = batch != NULL;
-            ok = dvz_drp2_stream_begin_render_pass_region_clear(
+            ok = ok && dvz_drp2_stream_begin_render_pass_region_clear(
                      stream, pass_id, encoder_id, target_id, cr, cg, cb, ca, 0.0f, 0.0f,
                      1.0f, 1.0f, clear_final);
             ok = ok && _stream_apply_graph_color_ops(stream, graph_pass);
@@ -3039,10 +3054,14 @@ static bool _emitter_emit_scene_graph_renders(
                 ok = dvz_drp2_stream_begin_render_pass_set_depth(stream, 1.0f);
             if (ok && has_draws)
             {
+                scene_cache.pipeline_id = 0;
+                scene_cache.bg_set0 = 0;
                 ok = _emitter_emit_render_multi_draws(
                     stream, render, pass_id, batch->draws, batch->draw_count, &scene_cache);
             }
             ok = ok && dvz_drp2_stream_end_render_pass(stream, pass_id);
+            scene_cache.pipeline_id = 0;
+            scene_cache.bg_set0 = 0;
             clear_final = false;
         }
         else if (render->u.render.pass_role == DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_ACCUMULATION)
@@ -3715,7 +3734,7 @@ static bool _emitter_emit_plain_renders(
     ANN(plan);
 
     if (cfg != NULL && cfg->shader_format == DVZ_SCENE_SHADER_FORMAT_GLSL &&
-        _plan_has_graph_technique_roles(plan))
+        _plan_has_graph_render_passes(plan))
         return _emitter_emit_scene_graph_renders(emitter, stream, plan, readback, cfg, report);
 
     uint32_t render_node_count = 0;
@@ -3739,9 +3758,9 @@ static bool _emitter_emit_plain_renders(
         }
     }
     if (dvz_frame_plan_graph_pass_count(plan) == 0 && render_node_count > 0 &&
-        render_node_count == scene_render_node_count &&
-        !any_scene_render_needs_depth)
-        return _emitter_emit_scene_figure_renders(emitter, stream, plan, readback, cfg, report);
+        render_node_count == scene_render_node_count)
+        return _emitter_emit_scene_figure_renders(
+            emitter, stream, plan, readback, cfg, any_scene_render_needs_depth, report);
 
     bool ok = true;
     uint32_t render_count = 0;
@@ -3780,12 +3799,12 @@ static bool _emitter_emit_plain_renders(
                 for (uint32_t j = 0; j < vertex_buffer_count; j++)
                     vertex_buffer_ids[j] = fallback_vertex_buffer_ids[j];
             }
-            scene_cache.pipeline_id = 0;
-            scene_cache.bg_set0 = 0;
         }
 
         if (ok)
         {
+            scene_cache.pipeline_id = 0;
+            scene_cache.bg_set0 = 0;
             ok = _emitter_emit_render(
                 emitter, stream, plan, render, vertex_buffer_ids, vertex_buffer_count,
                 render_count == 0 ? readback : NULL, render_count == 0, cfg,

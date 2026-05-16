@@ -562,6 +562,82 @@ int test_app_offscreen_panel_three_visuals_all_drawn(TstSuite* suite, TstItem* i
 }
 
 
+/**
+ * Ensure overlapping point visuals use depth testing in a normal non-EDL pass.
+ *
+ * @param suite test suite
+ * @param item test item
+ * @return 0 on success
+ */
+int test_app_offscreen_point_depth_orders_overlap(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    if (!_scene_vklite_runtime_available())
+        return 0;
+
+    DvzScene* scene = dvz_scene();
+    AT(scene != NULL);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    AT(figure != NULL);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    AT(panel != NULL);
+
+    DvzVisual* near_visual = dvz_point(scene, 0);
+    DvzVisual* far_visual = dvz_point(scene, 0);
+    AT(near_visual != NULL);
+    AT(far_visual != NULL);
+
+    float near_pos[3] = {0.0f, 0.0f, 0.1f};
+    float far_pos[3] = {0.0f, 0.0f, 0.8f};
+    DvzColor near_color = {32, 64, 255, 255};
+    DvzColor far_color = {255, 32, 32, 255};
+    float size = 36.0f;
+
+    AT(dvz_visual_set_data(near_visual, "position", near_pos, 1) == 0);
+    AT(dvz_visual_set_data(near_visual, "color", &near_color, 1) == 0);
+    AT(dvz_visual_set_data(near_visual, "size", &size, 1) == 0);
+    AT(dvz_panel_add_visual(panel, near_visual, NULL) == 0);
+
+    AT(dvz_visual_set_data(far_visual, "position", far_pos, 1) == 0);
+    AT(dvz_visual_set_data(far_visual, "color", &far_color, 1) == 0);
+    AT(dvz_visual_set_data(far_visual, "size", &size, 1) == 0);
+    AT(dvz_panel_add_visual(panel, far_visual, NULL) == 0);
+
+    DvzApp* app = dvz_app(scene);
+    if (app == NULL)
+    {
+        log_warn(
+            "test_app_offscreen_point_depth_orders_overlap skipped: GPU context creation failed");
+        dvz_scene_destroy(scene);
+        return 0;
+    }
+    DvzAppWindow* win = dvz_app_window(app, figure, 64, 64);
+    AT(win != NULL);
+    DvzCanvas* canvas = dvz_app_window_canvas(win);
+    ANN(canvas);
+
+    dvz_app_run(app, 1);
+
+    uint32_t width = 0, height = 0;
+    uint8_t* rgba = NULL;
+    AT(dvz_canvas_capture_rgba(canvas, &width, &height, &rgba) == 0);
+    ANN(rgba);
+    AT(width == 64);
+    AT(height == 64);
+
+    const uint8_t* center = _pixel_at(rgba, width, height, width / 2, height / 2);
+    AT(center[2] > 180);
+    AT(center[2] > center[0] + 40);
+
+    dvz_free(rgba);
+    dvz_app_destroy(app);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
 int test_app_offscreen_has_nonblank_pixels(TstSuite* suite, TstItem* item)
 {
     ANN(suite);
@@ -2809,6 +2885,7 @@ int test_scene_app(TstSuite* suite)
     TEST_SIMPLE(test_app_external_surface_release_waits);
 #endif
     TEST_SIMPLE(test_app_offscreen_panel_three_visuals_all_drawn);
+    TEST_SIMPLE(test_app_offscreen_point_depth_orders_overlap);
     TEST_SIMPLE(test_app_offscreen_has_nonblank_pixels);
     TEST_SIMPLE(test_app_offscreen_points_edl_renders);
     TEST_SIMPLE(test_app_offscreen_records_dvzr_frames);

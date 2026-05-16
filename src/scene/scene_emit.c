@@ -918,7 +918,8 @@ void _scene_emit_panel_render(
                 !_scene_technique_emit_edl_frame_graph(plan, panel_id))
                 log_error("failed to emit EDL FramePlan graph for panel %s", panel_id);
         }
-        else if (!_scene_technique_emit_opaque_frame_graph(plan, panel_id, opaque_needs_depth))
+        else if (gbuffer_node != NULL &&
+                 !_scene_technique_emit_opaque_frame_graph(plan, panel_id, opaque_needs_depth))
             log_error("failed to emit opaque FramePlan graph for panel %s", panel_id);
     }
 }
