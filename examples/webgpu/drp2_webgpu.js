@@ -1672,8 +1672,11 @@ export async function executeDrp2Stream(device, context, canvasFormat, stream, o
           required(commandBuffers.get(id), `unknown command buffer ${id}`),
         );
         device.queue.submit(submitBuffers);
-        await device.queue.onSubmittedWorkDone();
-        for (const readback of command.readbacks ?? []) {
+        const readbacks = command.readbacks ?? [];
+        if (readbacks.length > 0) {
+          await device.queue.onSubmittedWorkDone();
+        }
+        for (const readback of readbacks) {
           const buffer = required(
             buffers.get(readback.buffer_id),
             `unknown readback buffer ${readback.buffer_id}`,
@@ -1746,6 +1749,7 @@ async function main() {
     let frameIndex = 0;
     let playing = false;
     let playbackRequest = 0;
+    let playbackStartMs = 0;
 
     for (const item of STREAMS) {
       const option = document.createElement("option");
@@ -1773,6 +1777,28 @@ async function main() {
     };
 
     const frameCount = () => runtime?.frames?.length ?? 0;
+
+    const frameTime = (index) => Number(runtime?.frames?.[index]?.t ?? 0);
+
+    const frameIndexAtTime = (timeSeconds) => {
+      const frames = runtime?.frames ?? [];
+      if (frames.length <= 1) {
+        return 0;
+      }
+      const duration = frameTime(frames.length - 1);
+      const t = duration > 0 ? timeSeconds % duration : 0;
+      let lo = 0;
+      let hi = frames.length - 1;
+      while (lo < hi) {
+        const mid = Math.ceil((lo + hi) / 2);
+        if (frameTime(mid) <= t) {
+          lo = mid;
+        } else {
+          hi = mid - 1;
+        }
+      }
+      return lo;
+    };
 
     const updatePlaybackUi = () => {
       const count = frameCount();
@@ -1866,7 +1892,7 @@ async function main() {
           stopPlayback();
           return;
         }
-        frameIndex = (frameIndex + 1) % count;
+        frameIndex = frameIndexAtTime((performance.now() - playbackStartMs) / 1000);
         try {
           await render();
         } catch (error) {
@@ -1889,6 +1915,7 @@ async function main() {
         return;
       }
       playing = true;
+      playbackStartMs = performance.now() - frameTime(frameIndex) * 1000;
       updatePlaybackUi();
       schedulePlayback();
     });
