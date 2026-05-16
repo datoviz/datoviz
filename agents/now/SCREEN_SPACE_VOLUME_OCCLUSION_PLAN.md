@@ -385,3 +385,16 @@ Use a short feature series rather than one large commit:
 5. Should unsupported visual families fail hard or silently render without occlusion?
 6. Should this be public API in the first landing or private/internal until validated in the Allen
    example?
+
+## Implementation status - 2026-05-16
+
+The first implementation is now split across focused commits:
+
+- `35cff902 Add retained volume occlusion state` adds the retained API and frame-plan metadata.
+- `849be6e9 Plan volume occlusion prepass` emits the prepass resource, graph pass, render node, and sampled reads.
+- `791010b3 Lower volume occlusion prepass at runtime` lowers the prepass to DRP2/Vulkan runtime resources and shaders.
+- `8c8aeb44 Enable volume occlusion for Allen slice` opts the Allen mouse brain slice into volume occlusion.
+
+The Allen example now treats the full 3D volume visual as the panel volume occluder and the slice visual as
+an embedded ordinary visual. The prepass writes the first screen-space volume hit depth into an `R32_SFLOAT`
+attachment, and opted-in volume visuals sample that texture through the existing volume depth binding.
