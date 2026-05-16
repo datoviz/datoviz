@@ -61,6 +61,9 @@ static void _material_state_default(DvzMaterialState* material, DvzVisualType vi
 static void _material_sync_primitive_shading(
     DvzMaterialState* material, const DvzPrimitiveShadingState* shading);
 
+static void _primitive_shading_sync_material(
+    DvzPrimitiveShadingState* shading, const DvzMaterialState* material);
+
 static void _volume_state_default(DvzVolumeState* state);
 
 static bool _mesh_ensure_default_color(DvzVisual* visual, uint32_t item_count);
@@ -353,6 +356,7 @@ static DvzVisual* _scene_alloc_visual(DvzScene* scene, DvzVisualType type, uint3
     _material_state_default(&visual->material, type);
     _primitive_shading_default(&visual->primitive_shading);
     _material_sync_primitive_shading(&visual->material, &visual->primitive_shading);
+    _primitive_shading_sync_material(&visual->primitive_shading, &visual->material);
     _volume_state_default(&visual->volume);
     return visual;
 }
@@ -620,6 +624,8 @@ static void _primitive_shading_default(DvzPrimitiveShadingState* shading)
     shading->light_direction[2] = 1.0f;
     shading->params[0] = 0.2f;
     shading->params[1] = 0.8f;
+    shading->depth_cue[1] = 1.0f;
+    shading->depth_cue[2] = 1.0f;
 }
 
 
@@ -639,6 +645,9 @@ static void _material_state_default(DvzMaterialState* material, DvzVisualType vi
     material->light_direction[2] = 1.0f;
     material->ambient = 0.2f;
     material->diffuse = 0.8f;
+    material->depth_cue_far = 1.0f;
+    material->depth_cue_strength = 1.0f;
+    material->depth_cue_background[3] = 1.0f;
     material->scalar_scale = 1.0f;
 
     switch (visual_type)
@@ -676,6 +685,36 @@ static void _material_sync_primitive_shading(
     material->light_direction[3] = shading->light_direction[3];
     material->ambient = shading->params[0];
     material->diffuse = shading->params[1];
+}
+
+
+/**
+ * Mirror internal material state into the primitive shading shader payload.
+ *
+ * @param shading the primitive shading state
+ * @param material the material state
+ */
+static void _primitive_shading_sync_material(
+    DvzPrimitiveShadingState* shading, const DvzMaterialState* material)
+{
+    ANN(shading);
+    ANN(material);
+    shading->light_direction[0] = material->light_direction[0];
+    shading->light_direction[1] = material->light_direction[1];
+    shading->light_direction[2] = material->light_direction[2];
+    shading->light_direction[3] = material->light_direction[3];
+    shading->params[0] = material->ambient;
+    shading->params[1] = material->diffuse;
+    shading->params[2] = material->specular;
+    shading->params[3] = material->shininess;
+    shading->depth_cue[0] = material->depth_cue_near;
+    shading->depth_cue[1] = material->depth_cue_far;
+    shading->depth_cue[2] = material->depth_cue_enabled ? material->depth_cue_strength : 0.0f;
+    shading->depth_cue[3] = (float)material->depth_cue_mode;
+    shading->depth_cue_color[0] = material->depth_cue_background[0];
+    shading->depth_cue_color[1] = material->depth_cue_background[1];
+    shading->depth_cue_color[2] = material->depth_cue_background[2];
+    shading->depth_cue_color[3] = material->depth_cue_background[3];
 }
 
 
@@ -955,6 +994,82 @@ int dvz_visual_set_primitive_shading(
         visual->primitive_shading.params[1] = desc->diffuse;
     }
     _material_sync_primitive_shading(&visual->material, &visual->primitive_shading);
+    _primitive_shading_sync_material(&visual->primitive_shading, &visual->material);
+    _visual_bump_version(&visual->material.version);
+    visual->primitive_shading_dirty = true;
+    return 0;
+}
+
+
+/**
+ * Configure depth cueing for a primitive or mesh visual.
+ *
+ * @param visual the visual
+ * @param desc the depth-cue descriptor, or NULL to disable depth cueing
+ * @return 0 on success, -1 on error
+ */
+int dvz_visual_set_depth_cue(DvzVisual* visual, const DvzDepthCueDesc* desc)
+{
+    ANN(visual);
+    if (visual->type != DVZ_VISUAL_TYPE_PRIMITIVE && visual->type != DVZ_VISUAL_TYPE_MESH)
+    {
+        log_error("depth cueing is only supported for primitive and mesh visuals");
+        return -1;
+    }
+    if (!_scene_visual_mutation_allowed(visual->scene, "update visual depth cue"))
+        return -1;
+
+    if (desc == NULL)
+    {
+        visual->material.depth_cue_enabled = false;
+        visual->material.depth_cue_mode = DVZ_DEPTH_CUE_NONE;
+        visual->material.depth_cue_near = 0.0f;
+        visual->material.depth_cue_far = 1.0f;
+        visual->material.depth_cue_strength = 1.0f;
+        visual->material.depth_cue_background[0] = 0.0f;
+        visual->material.depth_cue_background[1] = 0.0f;
+        visual->material.depth_cue_background[2] = 0.0f;
+        visual->material.depth_cue_background[3] = 1.0f;
+    }
+    else
+    {
+        if (desc->mode <= DVZ_DEPTH_CUE_NONE || desc->mode > DVZ_DEPTH_CUE_DARKEN)
+        {
+            log_error("invalid depth cue mode %d", (int)desc->mode);
+            return -1;
+        }
+        if (!isfinite(desc->near_depth) || !isfinite(desc->far_depth) ||
+            desc->far_depth <= desc->near_depth)
+        {
+            log_error("depth cue near/far values must be finite and strictly increasing");
+            return -1;
+        }
+        if (!isfinite(desc->strength) || desc->strength < 0.0f || desc->strength > 1.0f)
+        {
+            log_error("depth cue strength must be finite and in [0, 1]");
+            return -1;
+        }
+        for (uint32_t i = 0; i < 4; i++)
+        {
+            if (!isfinite(desc->background_color[i]) || desc->background_color[i] < 0.0f ||
+                desc->background_color[i] > 1.0f)
+            {
+                log_error("depth cue background color values must be finite and in [0, 1]");
+                return -1;
+            }
+        }
+        visual->material.depth_cue_enabled = true;
+        visual->material.depth_cue_mode = desc->mode;
+        visual->material.depth_cue_near = desc->near_depth;
+        visual->material.depth_cue_far = desc->far_depth;
+        visual->material.depth_cue_strength = desc->strength;
+        visual->material.depth_cue_background[0] = desc->background_color[0];
+        visual->material.depth_cue_background[1] = desc->background_color[1];
+        visual->material.depth_cue_background[2] = desc->background_color[2];
+        visual->material.depth_cue_background[3] = desc->background_color[3];
+    }
+
+    _primitive_shading_sync_material(&visual->primitive_shading, &visual->material);
     _visual_bump_version(&visual->material.version);
     visual->primitive_shading_dirty = true;
     return 0;

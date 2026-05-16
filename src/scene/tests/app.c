@@ -1000,6 +1000,107 @@ int test_app_offscreen_lit_primitive_depth_orders_overlap(TstSuite* suite, TstIt
 }
 
 
+/**
+ * Ensure lit primitive depth cueing darkens farther geometry in an offscreen render.
+ *
+ * @param suite the test suite
+ * @param item the test item
+ * @return 0 on success
+ */
+int test_app_offscreen_lit_primitive_depth_cue_darkens_far(
+    TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    if (!_scene_vklite_runtime_available())
+        return 0;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    ANN(panel);
+    DvzVisual* visual = dvz_primitive(scene, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 0);
+    ANN(visual);
+
+    float positions[12][3] = {
+        {-0.9f, -0.8f, 0.0f}, {-0.9f, 0.8f, 0.0f}, {-0.1f, -0.8f, 0.0f},
+        {-0.1f, -0.8f, 0.0f}, {-0.9f, 0.8f, 0.0f}, {-0.1f, 0.8f, 0.0f},
+        {0.1f, -0.8f, 0.8f},  {0.1f, 0.8f, 0.8f},  {0.9f, -0.8f, 0.8f},
+        {0.9f, -0.8f, 0.8f},  {0.1f, 0.8f, 0.8f},  {0.9f, 0.8f, 0.8f},
+    };
+    float normals[12][3];
+    DvzColor colors[12];
+    for (uint32_t i = 0; i < 12; i++)
+    {
+        normals[i][0] = 0.0f;
+        normals[i][1] = 0.0f;
+        normals[i][2] = 1.0f;
+        colors[i][0] = 255;
+        colors[i][1] = 48;
+        colors[i][2] = 48;
+        colors[i][3] = 255;
+    }
+
+    AT(dvz_visual_set_data(visual, "position", positions, 12) == 0);
+    AT(dvz_visual_set_data(visual, "color", colors, 12) == 0);
+    AT(dvz_visual_set_data(visual, "normal", normals, 12) == 0);
+    AT(dvz_visual_set_primitive_shading(
+           visual,
+           &(DvzPrimitiveShadingDesc){
+               .light_direction = {0.0f, 0.0f, 1.0f},
+               .ambient = 1.0f,
+               .diffuse = 0.0f,
+           }) == 0);
+    AT(dvz_visual_set_depth_cue(
+           visual,
+           &(DvzDepthCueDesc){
+               .mode = DVZ_DEPTH_CUE_DARKEN,
+               .near_depth = 0.50f,
+               .far_depth = 0.95f,
+               .strength = 1.0f,
+               .background_color = {0.0f, 0.0f, 0.0f, 1.0f},
+           }) == 0);
+    AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
+
+    DvzApp* app = dvz_app(scene);
+    if (app == NULL)
+    {
+        log_warn(
+            "test_app_offscreen_lit_primitive_depth_cue_darkens_far skipped: GPU context "
+            "creation failed");
+        dvz_scene_destroy(scene);
+        return 0;
+    }
+    DvzAppWindow* win = dvz_app_window(app, figure, 64, 64);
+    ANN(win);
+    DvzCanvas* canvas = dvz_app_window_canvas(win);
+    ANN(canvas);
+
+    dvz_app_run(app, 1);
+
+    uint32_t width = 0, height = 0;
+    uint8_t* rgba = NULL;
+    AT(dvz_canvas_capture_rgba(canvas, &width, &height, &rgba) == 0);
+    ANN(rgba);
+    AT(width == 64);
+    AT(height == 64);
+
+    const uint8_t* near_px = _pixel_at(rgba, width, height, width / 4, height / 2);
+    const uint8_t* far_px = _pixel_at(rgba, width, height, (3 * width) / 4, height / 2);
+    AT(near_px[0] > 180);
+    AT(far_px[0] + 80 < near_px[0]);
+    AT(far_px[1] + 20 < near_px[1]);
+
+    dvz_free(rgba);
+    dvz_app_destroy(app);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
 
 /**
  * Ensure an indexed mesh contributes visible pixels through the app offscreen path.
@@ -2629,6 +2730,7 @@ int test_scene_app(TstSuite* suite)
     TEST_SIMPLE(test_app_offscreen_image_has_nonblank_pixels);
     TEST_SIMPLE(test_app_offscreen_image_field_partial_update_changes_region);
     TEST_SIMPLE(test_app_offscreen_lit_primitive_depth_orders_overlap);
+    TEST_SIMPLE(test_app_offscreen_lit_primitive_depth_cue_darkens_far);
     TEST_SIMPLE(test_app_offscreen_mesh_renders_nonblank);
     TEST_SIMPLE(test_app_offscreen_rotated_mesh_depth_orders_faces);
     TEST_SIMPLE(test_app_offscreen_camera_arcball_mesh_renders_cube);

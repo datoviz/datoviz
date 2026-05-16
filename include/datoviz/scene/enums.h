@@ -114,6 +114,15 @@ typedef enum
 
 typedef enum
 {
+    DVZ_DEPTH_CUE_NONE = 0,
+    DVZ_DEPTH_CUE_FADE_TO_BACKGROUND,
+    DVZ_DEPTH_CUE_DESATURATE,
+    DVZ_DEPTH_CUE_DARKEN,
+} DvzDepthCueMode;
+
+
+typedef enum
+{
     DVZ_VOLUME_SAMPLING_LINEAR = 0,
     DVZ_VOLUME_SAMPLING_NEAREST,
 } DvzVolumeSamplingMode;

@@ -135,6 +135,17 @@ struct DvzPrimitiveShadingDesc
 typedef struct DvzPrimitiveShadingDesc DvzPrimitiveShadingDesc;
 
 
+struct DvzDepthCueDesc
+{
+    DvzDepthCueMode mode;
+    float near_depth;
+    float far_depth;
+    float strength;
+    float background_color[4];
+};
+typedef struct DvzDepthCueDesc DvzDepthCueDesc;
+
+
 struct DvzVolumeState
 {
     float opacity;

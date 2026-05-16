@@ -221,6 +221,8 @@ int test_app_external_surface_release_waits(TstSuite* suite, TstItem* item);
 
 int test_app_offscreen_lit_primitive_depth_orders_overlap(TstSuite* suite, TstItem* item);
 
+int test_app_offscreen_lit_primitive_depth_cue_darkens_far(TstSuite* suite, TstItem* item);
+
 int test_app_offscreen_mesh_renders_nonblank(TstSuite* suite, TstItem* item);
 
 int test_app_offscreen_rotated_mesh_depth_orders_faces(TstSuite* suite, TstItem* item);

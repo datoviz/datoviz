@@ -435,6 +435,8 @@ struct DvzPrimitiveShadingState
 {
     float light_direction[4];
     float params[4];
+    float depth_cue[4];
+    float depth_cue_color[4];
 };
 
 
@@ -445,15 +447,6 @@ typedef enum
     DVZ_MATERIAL_KIND_SCIENTIFIC,
     DVZ_MATERIAL_KIND_VOLUME,
 } DvzMaterialKind;
-
-
-typedef enum
-{
-    DVZ_DEPTH_CUE_NONE = 0,
-    DVZ_DEPTH_CUE_FADE_TO_BACKGROUND,
-    DVZ_DEPTH_CUE_DESATURATE,
-    DVZ_DEPTH_CUE_DARKEN,
-} DvzDepthCueMode;
 
 
 typedef struct DvzMaterialState DvzMaterialState;
@@ -473,6 +466,7 @@ struct DvzMaterialState
     float depth_cue_near;
     float depth_cue_far;
     float depth_cue_strength;
+    float depth_cue_background[4];
     bool scalar_modulation_enabled;
     char scalar_slot[32];
     float scalar_scale;

@@ -4066,6 +4066,14 @@ int test_scene_visual_internal_material_state(TstSuite* suite, TstItem* item)
     AT(mesh->material.light_direction[2] == 1.0f);
     AT(mesh->material.ambient == 0.2f);
     AT(mesh->material.diffuse == 0.8f);
+    AT(!mesh->material.depth_cue_enabled);
+    AT(mesh->material.depth_cue_mode == DVZ_DEPTH_CUE_NONE);
+    AT(mesh->material.depth_cue_near == 0.0f);
+    AT(mesh->material.depth_cue_far == 1.0f);
+    AT(mesh->material.depth_cue_strength == 1.0f);
+    AT(mesh->material.depth_cue_background[3] == 1.0f);
+    AT(mesh->primitive_shading.depth_cue[1] == 1.0f);
+    AT(mesh->primitive_shading.depth_cue[2] == 0.0f);
     AT(mesh->material.scalar_scale == 1.0f);
 
     AT(dvz_visual_set_alpha_mode(mesh, DVZ_ALPHA_WBOIT) == 0);
@@ -4091,6 +4099,36 @@ int test_scene_visual_internal_material_state(TstSuite* suite, TstItem* item)
     AT(mesh->material.light_direction[2] == 3.0f);
     AT(mesh->material.ambient == 0.35f);
     AT(mesh->material.diffuse == 0.65f);
+    AT(mesh->material.version > material_version);
+    material_version = mesh->material.version;
+
+    AT(dvz_visual_set_depth_cue(
+           mesh,
+           &(DvzDepthCueDesc){
+               .mode = DVZ_DEPTH_CUE_DESATURATE,
+               .near_depth = 0.25f,
+               .far_depth = 0.9f,
+               .strength = 0.75f,
+               .background_color = {0.1f, 0.2f, 0.3f, 1.0f},
+           }) == 0);
+    AT(mesh->material.depth_cue_enabled);
+    AT(mesh->material.depth_cue_mode == DVZ_DEPTH_CUE_DESATURATE);
+    AT(mesh->material.depth_cue_near == 0.25f);
+    AT(mesh->material.depth_cue_far == 0.9f);
+    AT(mesh->material.depth_cue_strength == 0.75f);
+    AT(mesh->material.depth_cue_background[2] == 0.3f);
+    AT(mesh->primitive_shading.depth_cue[0] == 0.25f);
+    AT(mesh->primitive_shading.depth_cue[1] == 0.9f);
+    AT(mesh->primitive_shading.depth_cue[2] == 0.75f);
+    AT(mesh->primitive_shading.depth_cue[3] == (float)DVZ_DEPTH_CUE_DESATURATE);
+    AT(mesh->primitive_shading.depth_cue_color[1] == 0.2f);
+    AT(mesh->material.version > material_version);
+
+    material_version = mesh->material.version;
+    AT(dvz_visual_set_depth_cue(mesh, NULL) == 0);
+    AT(!mesh->material.depth_cue_enabled);
+    AT(mesh->material.depth_cue_mode == DVZ_DEPTH_CUE_NONE);
+    AT(mesh->primitive_shading.depth_cue[2] == 0.0f);
     AT(mesh->material.version > material_version);
 
     dvz_scene_destroy(scene);
