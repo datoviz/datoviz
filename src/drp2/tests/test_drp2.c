@@ -4619,6 +4619,167 @@ int test_drp2_runtime_vklite_refreshes_bind_group_after_texture_recreate(
 
 
 /**
+ * Ensure buffer and sampler recreation refresh descriptors for existing bind groups.
+ *
+ * @param suite test suite
+ * @param item test item
+ * @return 0 on success
+ */
+int test_drp2_runtime_vklite_refreshes_bind_group_after_buffer_sampler_recreate(
+    TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    if (!_drp2_vklite_runtime_available())
+        return 0;
+
+    DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
+    VkPhysicalDeviceVulkan13Features features13 = {
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES};
+    features13.dynamicRendering = true;
+    features13.synchronization2 = true;
+    dvz_gpu_ctx_config_features13(&gpu_cfg, &features13);
+    DvzGpuCtx* ctx = dvz_gpu_ctx(&gpu_cfg);
+    if (ctx == NULL)
+    {
+        log_warn("DRP2 buffer/sampler descriptor refresh test skipped because GPU context failed");
+        return 0;
+    }
+
+    DvzDrp2RuntimeConfig cfg =
+        dvz_drp2_runtime_vklite_config(dvz_gpu_ctx_device(ctx), dvz_gpu_ctx_alloc(ctx));
+    DvzDrp2Runtime* runtime = dvz_drp2_runtime_vklite(&cfg);
+    ANN(runtime);
+
+    DvzDrp2BindGroupLayoutEntry storage_layout = {
+        .binding = 0,
+        .binding_type = DVZ_DRP2_BINDING_TYPE_STORAGE_BUFFER,
+        .visibility = DVZ_DRP2_SHADER_STAGE_FRAGMENT,
+        .access = DVZ_DRP2_BINDING_ACCESS_READ,
+    };
+    DvzDrp2BindGroupEntry storage_entry = {
+        .binding = 0,
+        .binding_type = DVZ_DRP2_BINDING_TYPE_STORAGE_BUFFER,
+        .resource_kind = DVZ_DRP2_BINDING_RESOURCE_BUFFER,
+        .resource_id = 6,
+        .offset = 0,
+        .size = 16,
+    };
+    const uint64_t bind_group_layouts[3] = {3, 4, 10};
+
+    float zero[4] = {0};
+    uint8_t blue_texture[16] = {0};
+    for (uint32_t i = 0; i < sizeof(blue_texture); i += 4)
+    {
+        blue_texture[i + 2] = 255;
+        blue_texture[i + 3] = 255;
+    }
+
+    DvzDrp2CommandStream* setup = dvz_drp2_stream();
+    ANN(setup);
+    AT(dvz_drp2_stream_hello_renderer(setup, "test-client"));
+    AT(dvz_drp2_stream_renderer_hello_reply(setup, "test-renderer"));
+    AT(dvz_drp2_stream_create_shader_module_format(
+        setup, 1, "VERTEX", "glsl",
+        "#version 450\nvec2 p[3]=vec2[](vec2(-1,-1),vec2(3,-1),vec2(-1,3));"
+        "void main(){gl_Position=vec4(p[gl_VertexIndex],0,1);}"));
+    AT(dvz_drp2_stream_create_shader_module_format(
+        setup, 2, "FRAGMENT", "glsl",
+        "#version 450\n"
+        "layout(set=0,binding=0)uniform Ubo{vec4 u_color;}ubo;"
+        "layout(set=1,binding=0)readonly buffer Sbo{vec4 s_color;}sbo;"
+        "layout(set=2,binding=0)uniform sampler2D tex;"
+        "layout(location=0)out vec4 color;"
+        "void main(){vec4 t=texture(tex,vec2(0.5));"
+        "color=vec4(ubo.u_color.r,sbo.s_color.g,t.b,1.0);}"));
+    AT(dvz_drp2_stream_create_uniform_bind_group_layout(setup, 3));
+    AT(dvz_drp2_stream_create_bind_group_layout_entries(setup, 4, 1, &storage_layout));
+    AT(dvz_drp2_stream_create_texture_sampler_bind_group_layout(setup, 10));
+    AT(dvz_drp2_stream_create_render_pipeline_with_bind_group_layout(setup, 11, 1, 2, 0, 3));
+    AT(dvz_drp2_stream_pipeline_set_bind_group_layouts(setup, 3, bind_group_layouts));
+    AT(dvz_drp2_stream_create_buffer(
+        setup, 5, 16, DVZ_DRP2_BUFFER_USAGE_UNIFORM | DVZ_DRP2_BUFFER_USAGE_COPY_DST));
+    AT(dvz_drp2_stream_write_buffer_bytes(setup, 5, 0, sizeof(zero), zero));
+    AT(dvz_drp2_stream_create_buffer(
+        setup, 6, 16, DVZ_DRP2_BUFFER_USAGE_STORAGE | DVZ_DRP2_BUFFER_USAGE_COPY_DST));
+    AT(dvz_drp2_stream_write_buffer_bytes(setup, 6, 0, sizeof(zero), zero));
+    AT(dvz_drp2_stream_create_sampler(setup, 7));
+    AT(dvz_drp2_stream_create_texture_2d_usage(
+        setup, 8, 2, 2,
+        DVZ_DRP2_TEXTURE_USAGE_COPY_DST | DVZ_DRP2_TEXTURE_USAGE_TEXTURE_BINDING));
+    AT(dvz_drp2_stream_write_texture_2d_bytes(setup, 8, 0, 2, 2, 8, 2, blue_texture));
+    AT(dvz_drp2_stream_create_uniform_bind_group(setup, 12, 3, 5, 0, 16));
+    AT(dvz_drp2_stream_create_bind_group_entries(setup, 13, 4, 1, &storage_entry));
+    AT(dvz_drp2_stream_create_texture_sampler_bind_group(setup, 14, 10, 8, 7));
+    AT(dvz_drp2_stream_create_texture_2d_usage(
+        setup, 15, 2, 2, DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT));
+    AT(dvz_drp2_stream_begin_command_encoder(setup, 16));
+    AT(dvz_drp2_stream_begin_render_pass(setup, 17, 16, 15));
+    AT(dvz_drp2_stream_set_pipeline(setup, 17, 11));
+    AT(dvz_drp2_stream_set_bind_group(setup, 17, 0, 12));
+    AT(dvz_drp2_stream_set_bind_group(setup, 17, 1, 13));
+    AT(dvz_drp2_stream_set_bind_group(setup, 17, 2, 14));
+    AT(dvz_drp2_stream_draw(setup, 17, 3, 1, 0, 0));
+    AT(dvz_drp2_stream_end_render_pass(setup, 17));
+    AT(dvz_drp2_stream_finish_command_encoder(setup, 16, 18));
+    AT(dvz_drp2_stream_queue_submit(setup, 18, 19));
+
+    DvzDrp2ValidationResult result = dvz_drp2_runtime_execute(runtime, setup);
+    AT(result.ok);
+    AT(result.code == DVZ_DRP2_VALIDATION_OK);
+
+    float red[4] = {1, 0, 0, 1};
+    float green[4] = {0, 1, 0, 1};
+
+    DvzDrp2CommandStream* recreated = dvz_drp2_stream();
+    ANN(recreated);
+    AT(dvz_drp2_stream_create_buffer(
+        recreated, 5, 16, DVZ_DRP2_BUFFER_USAGE_UNIFORM | DVZ_DRP2_BUFFER_USAGE_COPY_DST));
+    AT(dvz_drp2_stream_write_buffer_bytes(recreated, 5, 0, sizeof(red), red));
+    AT(dvz_drp2_stream_create_buffer(
+        recreated, 6, 16, DVZ_DRP2_BUFFER_USAGE_STORAGE | DVZ_DRP2_BUFFER_USAGE_COPY_DST));
+    AT(dvz_drp2_stream_write_buffer_bytes(recreated, 6, 0, sizeof(green), green));
+    AT(dvz_drp2_stream_create_sampler(recreated, 7));
+    AT(dvz_drp2_stream_create_texture_2d_usage(
+        recreated, 20, 2, 2,
+        DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT | DVZ_DRP2_TEXTURE_USAGE_COPY_SRC));
+    AT(dvz_drp2_stream_create_buffer(
+        recreated, 21, 4, DVZ_DRP2_BUFFER_USAGE_COPY_DST | DVZ_DRP2_BUFFER_USAGE_MAP_READ));
+    AT(dvz_drp2_stream_begin_command_encoder(recreated, 30));
+    AT(dvz_drp2_stream_begin_render_pass(recreated, 31, 30, 20));
+    AT(dvz_drp2_stream_set_pipeline(recreated, 31, 11));
+    AT(dvz_drp2_stream_set_bind_group(recreated, 31, 0, 12));
+    AT(dvz_drp2_stream_set_bind_group(recreated, 31, 1, 13));
+    AT(dvz_drp2_stream_set_bind_group(recreated, 31, 2, 14));
+    AT(dvz_drp2_stream_draw(recreated, 31, 3, 1, 0, 0));
+    AT(dvz_drp2_stream_end_render_pass(recreated, 31));
+    AT(dvz_drp2_stream_copy_texture_to_buffer(recreated, 30, 20, 21, 0, 1, 1, 4, 1));
+    AT(dvz_drp2_stream_finish_command_encoder(recreated, 30, 32));
+    AT(dvz_drp2_stream_queue_submit(recreated, 32, 33));
+
+    result = dvz_drp2_runtime_execute(runtime, recreated);
+    AT(result.ok);
+    AT(result.code == DVZ_DRP2_VALIDATION_OK);
+    AT(dvz_gpu_ctx_error_count(ctx) == 0);
+
+    uint8_t downloaded[4] = {0};
+    AT(_dvz_drp2_runtime_vklite_download_buffer(runtime, 21, 0, sizeof(downloaded), downloaded));
+    AT(downloaded[0] == 255);
+    AT(downloaded[1] == 255);
+    AT(downloaded[2] == 255);
+    AT(downloaded[3] == 255);
+
+    dvz_drp2_stream_destroy(recreated);
+    dvz_drp2_stream_destroy(setup);
+    dvz_drp2_runtime_destroy(runtime);
+    dvz_gpu_ctx_destroy(ctx);
+    return 0;
+}
+
+
+
+/**
  * Ensure descriptor refresh defers retired descriptors while a borrowed frame is active.
  *
  * @param suite test suite
@@ -6266,6 +6427,7 @@ int test_drp2(TstSuite* suite)
     TEST_SIMPLE(test_drp2_runtime_vklite_samples_3d_texture);
     TEST_SIMPLE(test_drp2_runtime_vklite_samples_then_copies_texture);
     TEST_SIMPLE(test_drp2_runtime_vklite_refreshes_bind_group_after_texture_recreate);
+    TEST_SIMPLE(test_drp2_runtime_vklite_refreshes_bind_group_after_buffer_sampler_recreate);
     TEST_SIMPLE(test_drp2_runtime_vklite_refresh_defers_retired_descriptors);
 #endif
 
