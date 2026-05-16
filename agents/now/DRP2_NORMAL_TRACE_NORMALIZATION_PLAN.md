@@ -183,3 +183,42 @@ Expected live trace behavior after warmup:
   populated.
 - Once the ring is populated, stable frames should report `unchanged` unless the user toggles EDL,
   depth cueing, point size, resize, or navigation state.
+
+## Implementation Status
+
+Implemented on `2026-05-16`:
+
+- Normalized snapshot ids now prefer DRP2 stream labels over numeric ids.
+- Labels ending in `_scope_<16 hex digits>` are compared and printed without the frame-scope
+  suffix.
+- EDL and WBOIT bind-group labels derived from rotating texture ids are collapsed to stable resolve
+  roles in normal trace snapshots.
+- Normal-mode changed-frame dumps now print the normalized snapshot; `DVZ_DRP2_TRACE=full` remains
+  the raw command/id stream.
+- App trace tests cover scoped EDL target/bind-group normalization and still catch real draw-count
+  changes.
+
+Validation run:
+
+```bash
+cmake --build build --target showcase_lidar_glfw dvztest -j2
+./build/testing/dvztest app
+DVZ_DRP2_TRACE=normal DVZ_DRP2_TRACE_COLOR=0 NO_COLOR=1 \
+  ./build/examples/c/showcase_lidar_glfw 20
+```
+
+Observed LIDAR normal trace:
+
+```text
+frame 00000000 | changed   | 69 cmds | 58 semantic
+frame 00000001 | changed   | 34 cmds | 25 semantic
+frame 00000002 | unchanged | 34 cmds | 25 semantic
+frame 00000003 | unchanged | 34 cmds | 25 semantic
+frame 00000004 | changed   | 31 cmds | 22 semantic
+frame 00000005 | unchanged | 31 cmds | 22 semantic
+...
+frame 00000019 | unchanged | 31 cmds | 22 semantic
+```
+
+Frame 4 is a real normalized-shape change because the frame-resource creation commands disappear
+after the ring is populated; frames after that stay unchanged for the stable view.
