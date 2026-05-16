@@ -221,6 +221,12 @@ int test_drp2_runtime_vklite_draws_depth_peeling_shape(TstSuite* suite, TstItem*
 int test_drp2_runtime_vklite_samples_3d_texture(TstSuite* suite, TstItem* item);
 
 int test_drp2_runtime_vklite_samples_then_copies_texture(TstSuite* suite, TstItem* item);
+
+int test_drp2_runtime_vklite_refreshes_bind_group_after_texture_recreate(
+    TstSuite* suite, TstItem* item);
+
+int test_drp2_runtime_vklite_refresh_defers_retired_descriptors(
+    TstSuite* suite, TstItem* item);
 #endif
 
 
