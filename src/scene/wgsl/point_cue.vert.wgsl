@@ -20,7 +20,7 @@ struct VertexOut {
     @builtin(position) position: vec4f,
     @location(0) color: vec4f,
     @location(1) corner: vec2f,
-    @location(2) depth: f32,
+    @location(2) cue: vec3f,
 }
 
 @group(0) @binding(0) var<uniform> mvp: MVP;
@@ -41,13 +41,15 @@ fn quad_corner(vertex_id: u32) -> vec2f {
 @vertex
 fn main(@builtin(vertex_index) vertex_id: u32, input: VertexIn) -> VertexOut {
     let corner = quad_corner(vertex_id);
-    let center = mvp.proj * mvp.view * mvp.model * vec4f(input.position, 1.0);
+    let world = mvp.model * vec4f(input.position, 1.0);
+    let view = mvp.view * world;
+    let center = mvp.proj * view;
     let radius = vec2f(input.size / viewport.rect.z, input.size / viewport.rect.w);
 
     var output: VertexOut;
     output.position = vec4f(center.xy + corner * radius * center.w, center.zw);
     output.color = input.color;
     output.corner = corner;
-    output.depth = center.z / max(abs(center.w), 1e-6);
+    output.cue = vec3f(center.z / max(abs(center.w), 1e-6), length(view.xyz), length(world.xyz));
     return output;
 }

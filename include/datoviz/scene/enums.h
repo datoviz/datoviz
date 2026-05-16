@@ -125,6 +125,21 @@ typedef enum
 
 typedef enum
 {
+    DVZ_DEPTH_CUE_METRIC_CLIP_DEPTH = 0,
+    DVZ_DEPTH_CUE_METRIC_EYE_DISTANCE,
+    DVZ_DEPTH_CUE_METRIC_WORLD_DISTANCE,
+} DvzDepthCueMetric;
+
+
+typedef enum
+{
+    DVZ_DEPTH_CUE_FALLOFF_LINEAR = 0,
+    DVZ_DEPTH_CUE_FALLOFF_EXPONENTIAL,
+} DvzDepthCueFalloff;
+
+
+typedef enum
+{
     DVZ_VOLUME_SAMPLING_LINEAR = 0,
     DVZ_VOLUME_SAMPLING_NEAREST,
 } DvzVolumeSamplingMode;

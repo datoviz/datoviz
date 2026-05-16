@@ -4057,12 +4057,16 @@ int test_scene_visual_internal_material_state(TstSuite* suite, TstItem* item)
     AT(mesh->material.diffuse == 0.8f);
     AT(!mesh->material.depth_cue_enabled);
     AT(mesh->material.depth_cue_mode == DVZ_DEPTH_CUE_NONE);
+    AT(mesh->material.depth_cue_metric == DVZ_DEPTH_CUE_METRIC_CLIP_DEPTH);
+    AT(mesh->material.depth_cue_falloff == DVZ_DEPTH_CUE_FALLOFF_LINEAR);
     AT(mesh->material.depth_cue_near == 0.0f);
     AT(mesh->material.depth_cue_far == 1.0f);
     AT(mesh->material.depth_cue_strength == 1.0f);
+    AT(mesh->material.depth_cue_density == 3.0f);
     AT(mesh->material.depth_cue_background[3] == 1.0f);
     AT(mesh->material_params.depth_cue[1] == 1.0f);
     AT(mesh->material_params.depth_cue[2] == 0.0f);
+    AT(mesh->material_params.depth_cue_extra[2] == 3.0f);
     AT(mesh->material.scalar_scale == 1.0f);
 
     uint64_t point_material_version = point->material.version;
@@ -4070,17 +4074,25 @@ int test_scene_visual_internal_material_state(TstSuite* suite, TstItem* item)
            point,
            &(DvzDepthCueDesc){
                .mode = DVZ_DEPTH_CUE_FADE_TO_BACKGROUND,
+               .metric = DVZ_DEPTH_CUE_METRIC_EYE_DISTANCE,
+               .falloff = DVZ_DEPTH_CUE_FALLOFF_EXPONENTIAL,
                .near_depth = 0.1f,
                .far_depth = 0.8f,
                .strength = 0.5f,
+               .density = 2.0f,
                .background_color = {0.02f, 0.04f, 0.06f, 1.0f},
            }) == 0);
     AT(point->material.depth_cue_enabled);
     AT(point->material.depth_cue_mode == DVZ_DEPTH_CUE_FADE_TO_BACKGROUND);
+    AT(point->material.depth_cue_metric == DVZ_DEPTH_CUE_METRIC_EYE_DISTANCE);
+    AT(point->material.depth_cue_falloff == DVZ_DEPTH_CUE_FALLOFF_EXPONENTIAL);
     AT(point->material_params.depth_cue[0] == 0.1f);
     AT(point->material_params.depth_cue[1] == 0.8f);
     AT(point->material_params.depth_cue[2] == 0.5f);
     AT(point->material_params.depth_cue[3] == (float)DVZ_DEPTH_CUE_FADE_TO_BACKGROUND);
+    AT(point->material_params.depth_cue_extra[0] == (float)DVZ_DEPTH_CUE_METRIC_EYE_DISTANCE);
+    AT(point->material_params.depth_cue_extra[1] == (float)DVZ_DEPTH_CUE_FALLOFF_EXPONENTIAL);
+    AT(point->material_params.depth_cue_extra[2] == 2.0f);
     AT(point->material_params.depth_cue_color[2] == 0.06f);
     AT(point->material.version > point_material_version);
     AT(dvz_visual_set_depth_cue(point, NULL) == 0);

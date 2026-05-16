@@ -17,7 +17,7 @@ layout(location = 1) in vec4 inColor;
 layout(location = 2) in float inSize;
 
 layout(location = 0) out vec4 fragColor;
-layout(location = 1) out float fragDepth;
+layout(location = 1) out vec3 fragCue;
 
 vec4 transform(vec3 pos)
 {
@@ -29,9 +29,13 @@ vec4 transform(vec3 pos)
 
 void main()
 {
+    vec4 world = mvp.model * vec4(inPos, 1.0);
     vec4 tr = transform(inPos);
     gl_Position = tr;
     gl_PointSize = inSize;
     fragColor = inColor;
-    fragDepth = tr.z / max(abs(tr.w), 1e-6);
+    fragCue = vec3(
+        tr.z / max(abs(tr.w), 1e-6),
+        length((mvp.view * world).xyz),
+        length(world.xyz));
 }

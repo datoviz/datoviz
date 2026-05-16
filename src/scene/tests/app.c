@@ -674,9 +674,12 @@ int test_app_offscreen_point_depth_cue_darkens_far(TstSuite* suite, TstItem* ite
            visual,
            &(DvzDepthCueDesc){
                .mode = DVZ_DEPTH_CUE_DARKEN,
+               .metric = DVZ_DEPTH_CUE_METRIC_EYE_DISTANCE,
+               .falloff = DVZ_DEPTH_CUE_FALLOFF_EXPONENTIAL,
                .near_depth = 0.50f,
-               .far_depth = 0.95f,
+               .far_depth = 1.0f,
                .strength = 1.0f,
+               .density = 3.0f,
                .background_color = {0.0f, 0.0f, 0.0f, 1.0f},
            }) == 0);
     AT(dvz_panel_add_visual(panel, visual, NULL) == 0);

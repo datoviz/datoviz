@@ -51,9 +51,12 @@ typedef struct DepthCueExampleState
     bool depth_cue_enabled;
     bool spin_enabled;
     DvzDepthCueMode depth_cue_mode;
+    DvzDepthCueMetric depth_cue_metric;
+    DvzDepthCueFalloff depth_cue_falloff;
     float depth_cue_near;
     float depth_cue_far;
     float depth_cue_strength;
+    float depth_cue_density;
     float depth_cue_background[4];
     float point_size;
 } DepthCueExampleState;
@@ -210,6 +213,84 @@ static DvzDepthCueMode _depth_cue_mode_next(DvzDepthCueMode mode)
 
 
 /**
+ * Return a short label for a depth-cue metric.
+ *
+ * @param metric depth-cue metric
+ * @return display label
+ */
+static const char* _depth_cue_metric_label(DvzDepthCueMetric metric)
+{
+    switch (metric)
+    {
+    case DVZ_DEPTH_CUE_METRIC_EYE_DISTANCE:
+        return "Eye distance";
+    case DVZ_DEPTH_CUE_METRIC_WORLD_DISTANCE:
+        return "World distance";
+    case DVZ_DEPTH_CUE_METRIC_CLIP_DEPTH:
+    default:
+        return "Clip depth";
+    }
+}
+
+
+
+/**
+ * Cycle to the next supported depth-cue metric.
+ *
+ * @param metric current depth-cue metric
+ * @return next depth-cue metric
+ */
+static DvzDepthCueMetric _depth_cue_metric_next(DvzDepthCueMetric metric)
+{
+    switch (metric)
+    {
+    case DVZ_DEPTH_CUE_METRIC_CLIP_DEPTH:
+        return DVZ_DEPTH_CUE_METRIC_EYE_DISTANCE;
+    case DVZ_DEPTH_CUE_METRIC_EYE_DISTANCE:
+        return DVZ_DEPTH_CUE_METRIC_WORLD_DISTANCE;
+    case DVZ_DEPTH_CUE_METRIC_WORLD_DISTANCE:
+    default:
+        return DVZ_DEPTH_CUE_METRIC_CLIP_DEPTH;
+    }
+}
+
+
+
+/**
+ * Return a short label for a depth-cue falloff.
+ *
+ * @param falloff depth-cue falloff
+ * @return display label
+ */
+static const char* _depth_cue_falloff_label(DvzDepthCueFalloff falloff)
+{
+    switch (falloff)
+    {
+    case DVZ_DEPTH_CUE_FALLOFF_EXPONENTIAL:
+        return "Exponential";
+    case DVZ_DEPTH_CUE_FALLOFF_LINEAR:
+    default:
+        return "Linear";
+    }
+}
+
+
+
+/**
+ * Cycle to the next supported depth-cue falloff.
+ *
+ * @param falloff current depth-cue falloff
+ * @return next depth-cue falloff
+ */
+static DvzDepthCueFalloff _depth_cue_falloff_next(DvzDepthCueFalloff falloff)
+{
+    return falloff == DVZ_DEPTH_CUE_FALLOFF_LINEAR ? DVZ_DEPTH_CUE_FALLOFF_EXPONENTIAL :
+                                                     DVZ_DEPTH_CUE_FALLOFF_LINEAR;
+}
+
+
+
+/**
  * Apply the retained depth-cue state to the point visual.
  *
  * @param state example state
@@ -231,9 +312,12 @@ static void _apply_depth_cue(DepthCueExampleState* state)
 
     DvzDepthCueDesc desc = {
         .mode = state->depth_cue_mode,
+        .metric = state->depth_cue_metric,
+        .falloff = state->depth_cue_falloff,
         .near_depth = state->depth_cue_near,
         .far_depth = state->depth_cue_far,
         .strength = state->depth_cue_strength,
+        .density = state->depth_cue_density,
         .background_color = {
             state->depth_cue_background[0],
             state->depth_cue_background[1],
@@ -257,9 +341,12 @@ static void _reset_controls(DepthCueExampleState* state)
     ANN(state);
     state->depth_cue_enabled = true;
     state->depth_cue_mode = DVZ_DEPTH_CUE_FADE_TO_BACKGROUND;
+    state->depth_cue_metric = DVZ_DEPTH_CUE_METRIC_CLIP_DEPTH;
+    state->depth_cue_falloff = DVZ_DEPTH_CUE_FALLOFF_LINEAR;
     state->depth_cue_near = 0.42f;
     state->depth_cue_far = 0.98f;
     state->depth_cue_strength = 0.62f;
+    state->depth_cue_density = 3.0f;
     state->depth_cue_background[0] = 0.035f;
     state->depth_cue_background[1] = 0.045f;
     state->depth_cue_background[2] = 0.055f;
@@ -303,12 +390,34 @@ static void _depth_cue_gui(DvzGui* gui, DvzAppWindow* win, void* user_data)
             state->depth_cue_mode = _depth_cue_mode_next(state->depth_cue_mode);
             cue_changed = true;
         }
+        char metric_label[64];
+        dvz_snprintf(
+            metric_label, sizeof(metric_label), "Metric: %s",
+            _depth_cue_metric_label(state->depth_cue_metric));
+        if (dvz_gui_button(gui, metric_label))
+        {
+            state->depth_cue_metric = _depth_cue_metric_next(state->depth_cue_metric);
+            cue_changed = true;
+        }
+        char falloff_label[64];
+        dvz_snprintf(
+            falloff_label, sizeof(falloff_label), "Falloff: %s",
+            _depth_cue_falloff_label(state->depth_cue_falloff));
+        if (dvz_gui_button(gui, falloff_label))
+        {
+            state->depth_cue_falloff = _depth_cue_falloff_next(state->depth_cue_falloff);
+            cue_changed = true;
+        }
+        float range_max =
+            state->depth_cue_metric == DVZ_DEPTH_CUE_METRIC_CLIP_DEPTH ? 1.0f : 4.0f;
         cue_changed |=
-            dvz_gui_slider_float(gui, "Cue near", &state->depth_cue_near, 0.0f, 1.0f);
+            dvz_gui_slider_float(gui, "Cue near", &state->depth_cue_near, 0.0f, range_max);
         cue_changed |=
-            dvz_gui_slider_float(gui, "Cue far", &state->depth_cue_far, 0.0f, 1.0f);
+            dvz_gui_slider_float(gui, "Cue far", &state->depth_cue_far, 0.0f, range_max);
         cue_changed |=
             dvz_gui_slider_float(gui, "Cue strength", &state->depth_cue_strength, 0.0f, 1.0f);
+        cue_changed |=
+            dvz_gui_slider_float(gui, "Fog density", &state->depth_cue_density, 0.1f, 8.0f);
         if (dvz_gui_button(gui, "Reset"))
         {
             _reset_controls(state);

@@ -635,6 +635,7 @@ static void _material_params_default(DvzSceneMaterialParams* params)
     params->params[1] = 0.8f;
     params->depth_cue[1] = 1.0f;
     params->depth_cue[2] = 1.0f;
+    params->depth_cue_extra[2] = 3.0f;
 }
 
 
@@ -656,6 +657,7 @@ static void _material_state_default(DvzSceneMaterialState* material, DvzVisualTy
     material->diffuse = 0.8f;
     material->depth_cue_far = 1.0f;
     material->depth_cue_strength = 1.0f;
+    material->depth_cue_density = 3.0f;
     material->depth_cue_background[3] = 1.0f;
     material->scalar_scale = 1.0f;
 
@@ -724,6 +726,10 @@ static void _material_params_sync_state(
     params->depth_cue_color[1] = material->depth_cue_background[1];
     params->depth_cue_color[2] = material->depth_cue_background[2];
     params->depth_cue_color[3] = material->depth_cue_background[3];
+    params->depth_cue_extra[0] = (float)material->depth_cue_metric;
+    params->depth_cue_extra[1] = (float)material->depth_cue_falloff;
+    params->depth_cue_extra[2] = material->depth_cue_density;
+    params->depth_cue_extra[3] = 0.0f;
 }
 
 
@@ -758,9 +764,12 @@ static int _material_apply_depth_cue(
     {
         material->depth_cue_enabled = false;
         material->depth_cue_mode = DVZ_DEPTH_CUE_NONE;
+        material->depth_cue_metric = DVZ_DEPTH_CUE_METRIC_CLIP_DEPTH;
+        material->depth_cue_falloff = DVZ_DEPTH_CUE_FALLOFF_LINEAR;
         material->depth_cue_near = 0.0f;
         material->depth_cue_far = 1.0f;
         material->depth_cue_strength = 1.0f;
+        material->depth_cue_density = 3.0f;
         material->depth_cue_background[0] = 0.0f;
         material->depth_cue_background[1] = 0.0f;
         material->depth_cue_background[2] = 0.0f;
@@ -773,6 +782,20 @@ static int _material_apply_depth_cue(
         log_error("invalid depth cue mode %d", (int)desc->mode);
         return -1;
     }
+    if (
+        desc->metric < DVZ_DEPTH_CUE_METRIC_CLIP_DEPTH ||
+        desc->metric > DVZ_DEPTH_CUE_METRIC_WORLD_DISTANCE)
+    {
+        log_error("invalid depth cue metric %d", (int)desc->metric);
+        return -1;
+    }
+    if (
+        desc->falloff < DVZ_DEPTH_CUE_FALLOFF_LINEAR ||
+        desc->falloff > DVZ_DEPTH_CUE_FALLOFF_EXPONENTIAL)
+    {
+        log_error("invalid depth cue falloff %d", (int)desc->falloff);
+        return -1;
+    }
     if (!isfinite(desc->near_depth) || !isfinite(desc->far_depth) ||
         desc->far_depth <= desc->near_depth)
     {
@@ -782,6 +805,11 @@ static int _material_apply_depth_cue(
     if (!isfinite(desc->strength) || desc->strength < 0.0f || desc->strength > 1.0f)
     {
         log_error("depth cue strength must be finite and in [0, 1]");
+        return -1;
+    }
+    if (desc->density < 0.0f || !isfinite(desc->density))
+    {
+        log_error("depth cue density must be finite and non-negative");
         return -1;
     }
     for (uint32_t i = 0; i < 4; i++)
@@ -796,9 +824,12 @@ static int _material_apply_depth_cue(
 
     material->depth_cue_enabled = true;
     material->depth_cue_mode = desc->mode;
+    material->depth_cue_metric = desc->metric;
+    material->depth_cue_falloff = desc->falloff;
     material->depth_cue_near = desc->near_depth;
     material->depth_cue_far = desc->far_depth;
     material->depth_cue_strength = desc->strength;
+    material->depth_cue_density = desc->density > 0.0f ? desc->density : 3.0f;
     material->depth_cue_background[0] = desc->background_color[0];
     material->depth_cue_background[1] = desc->background_color[1];
     material->depth_cue_background[2] = desc->background_color[2];

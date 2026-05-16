@@ -147,9 +147,12 @@ typedef struct DvzPrimitiveShadingDesc DvzPrimitiveShadingDesc;
 struct DvzDepthCueDesc
 {
     DvzDepthCueMode mode;
+    DvzDepthCueMetric metric;
+    DvzDepthCueFalloff falloff;
     float near_depth;
     float far_depth;
     float strength;
+    float density;
     float background_color[4];
 };
 typedef struct DvzDepthCueDesc DvzDepthCueDesc;

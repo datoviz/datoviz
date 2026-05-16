@@ -442,6 +442,7 @@ struct DvzSceneMaterialParams
     float params[4];
     float depth_cue[4];
     float depth_cue_color[4];
+    float depth_cue_extra[4];
 };
 
 
@@ -468,9 +469,12 @@ struct DvzSceneMaterialState
     float shininess;
     bool depth_cue_enabled;
     DvzDepthCueMode depth_cue_mode;
+    DvzDepthCueMetric depth_cue_metric;
+    DvzDepthCueFalloff depth_cue_falloff;
     float depth_cue_near;
     float depth_cue_far;
     float depth_cue_strength;
+    float depth_cue_density;
     float depth_cue_background[4];
     bool scalar_modulation_enabled;
     char scalar_slot[32];

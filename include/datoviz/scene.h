@@ -562,8 +562,8 @@ dvz_visual_set_primitive_shading(DvzVisual* visual, const DvzPrimitiveShadingDes
  *
  * Primitive/mesh visuals use depth cueing through the material shader path. Point/pixel visuals
  * use the same cue parameters without lighting. The `near_depth` and `far_depth` values are
- * normalized clip-depth values after the visual's scene transform, where lower values are closer
- * to the camera. Pass NULL to disable depth cueing.
+ * interpreted in the descriptor metric, where lower values are closer. The default metric is
+ * normalized clip depth after the visual's scene transform. Pass NULL to disable depth cueing.
  *
  * @param visual the visual
  * @param desc the depth-cue descriptor, or NULL to disable depth cueing

@@ -22,7 +22,8 @@ void main()
     float spec = pow(max(dot(n, h), 0.0), 32.0);
     vec3 rgb = fragColor.rgb * (material.params.x + material.params.y * lambert) + vec3(0.18 * spec);
     float a = clamp(fragColor.a, 0.0, 1.0);
-    vec3 lit = applyDepthCue(clamp(rgb, 0.0, 1.0), fragDepth);
+    vec3 cue = vec3(fragDepth, length(fragCameraPos - fragWorldPos), length(fragWorldPos));
+    vec3 lit = applyDepthCue(clamp(rgb, 0.0, 1.0), cue);
     outAccum = vec4(lit * a, a);
     outWeight = -log(max(1.0 - a, 1e-4));
 }
