@@ -628,6 +628,88 @@ int test_app_offscreen_has_nonblank_pixels(TstSuite* suite, TstItem* item)
 }
 
 
+/**
+ * Ensure panel EDL renders an offscreen point scene through the app runtime path.
+ *
+ * @param suite the test suite
+ * @param item the test item
+ * @return 0 on success
+ */
+int test_app_offscreen_points_edl_renders(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    if (!_scene_vklite_runtime_available())
+        return 0;
+
+    DvzScene* scene = dvz_scene();
+    AT(scene != NULL);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    AT(figure != NULL);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    AT(panel != NULL);
+
+    DvzVisual* visual = dvz_point(scene, 0);
+    AT(visual != NULL);
+    float positions[4][3] = {
+        {-0.25f, -0.15f, -0.20f},
+        {+0.20f, -0.05f, +0.15f},
+        {-0.05f, +0.20f, +0.35f},
+        {+0.18f, +0.18f, -0.35f},
+    };
+    DvzColor colors[4] = {
+        {255, 90, 80, 255},
+        {80, 220, 130, 255},
+        {80, 140, 255, 255},
+        {240, 220, 80, 255},
+    };
+    float sizes[4] = {28.0f, 30.0f, 26.0f, 24.0f};
+    AT(dvz_visual_set_data(visual, "position", positions, 4) == 0);
+    AT(dvz_visual_set_data(visual, "color", colors, 4) == 0);
+    AT(dvz_visual_set_data(visual, "size", sizes, 4) == 0);
+    AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
+    dvz_panel_set_background_color(panel, 0.0f, 0.0f, 0.0f, 1.0f);
+    AT(dvz_panel_set_edl(
+        panel, &(DvzEdlDesc){.radius = 2.0f, .strength = 65.0f, .depth_scale = 1.0f}));
+
+    DvzApp* app = dvz_app(scene);
+    if (app == NULL)
+    {
+        log_warn("test_app_offscreen_points_edl_renders skipped: GPU context creation failed");
+        dvz_scene_destroy(scene);
+        return 0;
+    }
+    DvzAppWindow* win = dvz_app_window(app, figure, 64, 64);
+    ANN(win);
+    DvzCanvas* canvas = dvz_app_window_canvas(win);
+    ANN(canvas);
+
+    dvz_app_run(app, 1);
+
+    uint32_t width = 0, height = 0;
+    uint8_t* rgba = NULL;
+    AT(dvz_canvas_capture_rgba(canvas, &width, &height, &rgba) == 0);
+    ANN(rgba);
+    AT(width == 64);
+    AT(height == 64);
+
+    uint32_t lit_count = 0;
+    for (uint32_t i = 0; i < width * height; i++)
+    {
+        const uint8_t* px = &rgba[4 * i];
+        if (px[0] > 40 || px[1] > 40 || px[2] > 40)
+            lit_count++;
+    }
+    AT(lit_count > 0);
+
+    dvz_free(rgba);
+    dvz_app_destroy(app);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
 int test_app_offscreen_records_dvzr_frames(TstSuite* suite, TstItem* item)
 {
     ANN(suite);
@@ -2726,6 +2808,7 @@ int test_scene_app(TstSuite* suite)
 #endif
     TEST_SIMPLE(test_app_offscreen_panel_three_visuals_all_drawn);
     TEST_SIMPLE(test_app_offscreen_has_nonblank_pixels);
+    TEST_SIMPLE(test_app_offscreen_points_edl_renders);
     TEST_SIMPLE(test_app_offscreen_records_dvzr_frames);
     TEST_SIMPLE(test_app_offscreen_image_has_nonblank_pixels);
     TEST_SIMPLE(test_app_offscreen_image_field_partial_update_changes_region);

@@ -451,6 +451,8 @@ int test_scene_text_annotation_bookkeeping(TstSuite* suite, TstItem* item);
 #if defined(DVZ_HAS_APP) && DVZ_HAS_APP
 int test_app_offscreen_has_nonblank_pixels(TstSuite* suite, TstItem* item);
 
+int test_app_offscreen_points_edl_renders(TstSuite* suite, TstItem* item);
+
 int test_app_offscreen_image_has_nonblank_pixels(TstSuite* suite, TstItem* item);
 
 int test_app_offscreen_image_field_partial_update_changes_region(

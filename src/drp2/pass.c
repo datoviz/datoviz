@@ -169,6 +169,30 @@ static DvzDrp2AttachmentAccess _attachment_effective_access(
 
 
 /**
+ * Return whether a Vulkan format carries a depth aspect.
+ *
+ * @param format backend-native texture format enum value
+ * @return whether the format is a depth format
+ */
+static bool _vklite_pass_format_has_depth(uint32_t format)
+{
+    switch ((VkFormat)format)
+    {
+    case VK_FORMAT_D16_UNORM:
+    case VK_FORMAT_X8_D24_UNORM_PACK32:
+    case VK_FORMAT_D32_SFLOAT:
+    case VK_FORMAT_D16_UNORM_S8_UINT:
+    case VK_FORMAT_D24_UNORM_S8_UINT:
+    case VK_FORMAT_D32_SFLOAT_S8_UINT:
+        return true;
+    default:
+        return false;
+    }
+}
+
+
+
+/**
  * Find the layout entry that declares one bind-group binding's access.
  *
  * @param layout vklite bind-group layout object
@@ -194,13 +218,17 @@ _bind_group_layout_entry(const Drp2VkliteObject* layout, uint32_t binding)
  *
  * @param binding_type DRP2 binding type
  * @param access declared binding access
+ * @param format backend-native texture format enum value
  * @return vklite texture access, or none when the binding does not imply image access
  */
 static Drp2TextureAccess _binding_texture_access(
-    DvzDrp2BindingType binding_type, DvzDrp2BindingAccess access)
+    DvzDrp2BindingType binding_type, DvzDrp2BindingAccess access, uint32_t format)
 {
     if (binding_type == DVZ_DRP2_BINDING_TYPE_SAMPLED_TEXTURE)
-        return DRP2_TEXTURE_ACCESS_SAMPLED_READ;
+    {
+        return _vklite_pass_format_has_depth(format) ? DRP2_TEXTURE_ACCESS_DEPTH_ATTACHMENT_READ :
+                                                       DRP2_TEXTURE_ACCESS_SAMPLED_READ;
+    }
     if (binding_type == DVZ_DRP2_BINDING_TYPE_STORAGE_TEXTURE)
     {
         return access == DVZ_DRP2_BINDING_ACCESS_READ ?
@@ -238,9 +266,8 @@ static DvzDrp2ValidationResult _transition_bind_group_textures(
     for (uint32_t i = 0; i < bind_group->bind_group_entry_count; i++)
     {
         const DvzDrp2BindGroupEntry* entry = &bind_group->bind_group_entries[i];
-        Drp2TextureAccess texture_access = _binding_texture_access(
-            entry->binding_type, DVZ_DRP2_BINDING_ACCESS_READ);
-        if (texture_access == DRP2_TEXTURE_ACCESS_NONE)
+        if (entry->binding_type != DVZ_DRP2_BINDING_TYPE_SAMPLED_TEXTURE &&
+            entry->binding_type != DVZ_DRP2_BINDING_TYPE_STORAGE_TEXTURE)
             continue;
         bool skip = false;
         for (uint32_t j = 0; j < skip_count; j++)
@@ -256,14 +283,17 @@ static DvzDrp2ValidationResult _transition_bind_group_textures(
 
         const DvzDrp2BindGroupLayoutEntry* layout_entry =
             _bind_group_layout_entry(layout, entry->binding);
-        if (layout_entry != NULL)
-        {
-            texture_access =
-                _binding_texture_access(layout_entry->binding_type, layout_entry->access);
-        }
         Drp2VkliteObject* texture = _vklite_find(state, entry->resource_id);
         if (texture == NULL || texture->images == NULL)
             return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+        DvzDrp2BindingType binding_type =
+            layout_entry != NULL ? layout_entry->binding_type : entry->binding_type;
+        DvzDrp2BindingAccess access =
+            layout_entry != NULL ? layout_entry->access : DVZ_DRP2_BINDING_ACCESS_READ;
+        Drp2TextureAccess texture_access =
+            _binding_texture_access(binding_type, access, texture->format);
+        if (texture_access == DRP2_TEXTURE_ACCESS_NONE)
+            continue;
         _vklite_transition_image_access(cmds, texture, texture_access);
     }
     return _drp2_ok();
