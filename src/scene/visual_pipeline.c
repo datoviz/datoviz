@@ -30,6 +30,31 @@
 
 
 /*************************************************************************************************/
+/*  Typedefs                                                                                     */
+/*************************************************************************************************/
+
+typedef enum
+{
+    DVZ_SCENE_SHADER_FEATURE_NONE             = 0,
+    DVZ_SCENE_SHADER_FEATURE_PICKING          = 1u << 0,
+    DVZ_SCENE_SHADER_FEATURE_DEPTH_CUE        = 1u << 1,
+    DVZ_SCENE_SHADER_FEATURE_LIGHTING         = 1u << 2,
+    DVZ_SCENE_SHADER_FEATURE_WBOIT_ACCUM      = 1u << 3,
+    DVZ_SCENE_SHADER_FEATURE_VOLUME_MIP       = 1u << 4,
+    DVZ_SCENE_SHADER_FEATURE_VOLUME_COMPOSITE = 1u << 5,
+} DvzSceneShaderFeatureFlag;
+
+
+typedef struct DvzSceneShaderFeatures
+{
+    DvzSceneVisualDescKind kind;
+    uint32_t topology;
+    uint32_t flags;
+} DvzSceneShaderFeatures;
+
+
+
+/*************************************************************************************************/
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
@@ -999,6 +1024,201 @@ bool _scene_visual_pass_caps_from_desc(
 
 
 /**
+ * Return whether one shader-feature flag is set.
+ *
+ * @param features the shader feature descriptor
+ * @param flag the feature flag
+ * @return whether the flag is present
+ */
+static bool _shader_features_has(
+    const DvzSceneShaderFeatures* features, DvzSceneShaderFeatureFlag flag)
+{
+    ANN(features);
+    return (features->flags & (uint32_t)flag) != 0;
+}
+
+
+
+/**
+ * Resolve shader feature flags from a visual descriptor and pass mode.
+ *
+ * @param visual the visual descriptor
+ * @param picking whether the pass writes pick ids
+ * @param wboit_accumulation whether the pass is the WBOIT accumulation pass
+ * @param out the output feature descriptor
+ */
+static void _scene_shader_features_resolve(
+    const DvzSceneVisualDesc* visual, bool picking, bool wboit_accumulation,
+    DvzSceneShaderFeatures* out)
+{
+    ANN(visual);
+    ANN(out);
+    dvz_memset(out, sizeof(DvzSceneShaderFeatures), 0, sizeof(DvzSceneShaderFeatures));
+
+    out->kind = visual->kind;
+    out->topology = visual->topology;
+    if (picking)
+        out->flags |= DVZ_SCENE_SHADER_FEATURE_PICKING;
+    if (wboit_accumulation)
+        out->flags |= DVZ_SCENE_SHADER_FEATURE_WBOIT_ACCUM;
+    if (
+        visual->material_buffer_id != 0 &&
+        (visual->kind == DVZ_SCENE_VISUAL_DESC_POINT ||
+         visual->kind == DVZ_SCENE_VISUAL_DESC_PIXEL))
+        out->flags |= DVZ_SCENE_SHADER_FEATURE_DEPTH_CUE;
+    if (visual->has_normal)
+        out->flags |= DVZ_SCENE_SHADER_FEATURE_LIGHTING;
+    if (visual->volume_state.render_mode == DVZ_VOLUME_RENDER_MIP)
+        out->flags |= DVZ_SCENE_SHADER_FEATURE_VOLUME_MIP;
+    if (visual->volume_state.render_mode == DVZ_VOLUME_RENDER_COMPOSITE)
+        out->flags |= DVZ_SCENE_SHADER_FEATURE_VOLUME_COMPOSITE;
+}
+
+
+
+/**
+ * Attach built-in shader source pointers to a shader descriptor.
+ *
+ * @param out the output shader descriptor
+ * @param shader the built-in shader id
+ */
+static void _scene_shader_desc_set_builtin(
+    DvzSceneVisualShaderDesc* out, DvzSceneBuiltinShader shader)
+{
+    ANN(out);
+    out->vertex_glsl = _builtin_shader_glsl(shader, false);
+    out->fragment_glsl = _builtin_shader_glsl(shader, true);
+    out->vertex_wgsl = _builtin_shader_wgsl(shader, false);
+    out->fragment_wgsl = _builtin_shader_wgsl(shader, true);
+}
+
+
+
+/**
+ * Resolve point-like shader metadata from feature flags.
+ *
+ * @param visual_name the visual key stem
+ * @param features the shader features
+ * @param format_tag the shader-format cache-key suffix
+ * @param out the output shader descriptor
+ * @return whether a shader descriptor was resolved
+ */
+static bool _scene_shader_desc_point_like(
+    const char* visual_name, const DvzSceneShaderFeatures* features, const char* format_tag,
+    DvzSceneVisualShaderDesc* out)
+{
+    ANN(visual_name);
+    ANN(features);
+    ANN(format_tag);
+    ANN(out);
+
+    bool picking = _shader_features_has(features, DVZ_SCENE_SHADER_FEATURE_PICKING);
+    bool depth_cue = _shader_features_has(features, DVZ_SCENE_SHADER_FEATURE_DEPTH_CUE);
+    if (features->kind == DVZ_SCENE_VISUAL_DESC_PIXEL && picking)
+        return false;
+
+    const char* suffix = picking ? "_pick" : depth_cue ? "_cue" : "";
+    dvz_snprintf(
+        out->vertex_key, sizeof(out->vertex_key), "_vs_%s%s%s", visual_name, suffix, format_tag);
+    dvz_snprintf(
+        out->fragment_key, sizeof(out->fragment_key), "_fs_%s%s%s", visual_name, suffix,
+        format_tag);
+    dvz_snprintf(
+        out->pipeline_key, sizeof(out->pipeline_key), "_pipe_%s%s%s", visual_name, suffix,
+        format_tag);
+
+    DvzSceneBuiltinShader shader = DVZ_SCENE_BUILTIN_SHADER_POINT;
+    if (features->kind == DVZ_SCENE_VISUAL_DESC_PIXEL)
+        shader = depth_cue ? DVZ_SCENE_BUILTIN_SHADER_PIXEL_DEPTH_CUE :
+                             DVZ_SCENE_BUILTIN_SHADER_PIXEL;
+    else if (picking)
+        shader = DVZ_SCENE_BUILTIN_SHADER_POINT_PICK;
+    else
+        shader = depth_cue ? DVZ_SCENE_BUILTIN_SHADER_POINT_DEPTH_CUE :
+                             DVZ_SCENE_BUILTIN_SHADER_POINT;
+
+    _scene_shader_desc_set_builtin(out, shader);
+    if (!picking)
+    {
+        out->vertex_spirv_key = depth_cue ?
+                                    (features->kind == DVZ_SCENE_VISUAL_DESC_PIXEL ?
+                                         "pixel_cue_vert" :
+                                         "point_cue_vert") :
+                                    (features->kind == DVZ_SCENE_VISUAL_DESC_PIXEL ?
+                                         "pixel_vert" :
+                                         "point_vert");
+        out->fragment_spirv_key = depth_cue ?
+                                      (features->kind == DVZ_SCENE_VISUAL_DESC_PIXEL ?
+                                           "pixel_cue_frag" :
+                                           "point_cue_frag") :
+                                      (features->kind == DVZ_SCENE_VISUAL_DESC_PIXEL ?
+                                           "pixel_frag" :
+                                           "point_frag");
+    }
+    return true;
+}
+
+
+
+/**
+ * Resolve primitive shader metadata from feature flags.
+ *
+ * @param features the shader features
+ * @param format_tag the shader-format cache-key suffix
+ * @param out the output shader descriptor
+ * @return whether a shader descriptor was resolved
+ */
+static bool _scene_shader_desc_primitive(
+    const DvzSceneShaderFeatures* features, const char* format_tag,
+    DvzSceneVisualShaderDesc* out)
+{
+    ANN(features);
+    ANN(format_tag);
+    ANN(out);
+
+    bool lit = _shader_features_has(features, DVZ_SCENE_SHADER_FEATURE_LIGHTING);
+    if (_shader_features_has(features, DVZ_SCENE_SHADER_FEATURE_WBOIT_ACCUM))
+    {
+        DvzSceneBuiltinShader shader = lit ? DVZ_SCENE_BUILTIN_SHADER_WBOIT_ACCUM_LIT :
+                                             DVZ_SCENE_BUILTIN_SHADER_WBOIT_ACCUM;
+        dvz_snprintf(
+            out->vertex_key, sizeof(out->vertex_key), "_vs_wboit_accum_n%u%s", lit ? 1u : 0u,
+            format_tag);
+        dvz_snprintf(
+            out->fragment_key, sizeof(out->fragment_key), "_fs_wboit_accum_n%u%s", lit ? 1u : 0u,
+            format_tag);
+        dvz_snprintf(
+            out->pipeline_key, sizeof(out->pipeline_key), "_pipe_wboit_accum_t%u_n%u%s",
+            features->topology, lit ? 1u : 0u, format_tag);
+        _scene_shader_desc_set_builtin(out, shader);
+        return true;
+    }
+
+    if (lit)
+    {
+        dvz_snprintf(out->vertex_key, sizeof(out->vertex_key), "_vs_prim_lit%s", format_tag);
+        dvz_snprintf(out->fragment_key, sizeof(out->fragment_key), "_fs_prim_lit%s", format_tag);
+        dvz_snprintf(
+            out->pipeline_key, sizeof(out->pipeline_key), "_pipe_prim_lit_t%u%s",
+            features->topology, format_tag);
+        _scene_shader_desc_set_builtin(out, DVZ_SCENE_BUILTIN_SHADER_PRIMITIVE_LIT);
+        return true;
+    }
+
+    dvz_snprintf(out->vertex_key, sizeof(out->vertex_key), "_vs_prim%s", format_tag);
+    dvz_snprintf(out->fragment_key, sizeof(out->fragment_key), "_fs_prim%s", format_tag);
+    dvz_snprintf(
+        out->pipeline_key, sizeof(out->pipeline_key), "_pipe_prim_t%u%s", features->topology,
+        format_tag);
+    _scene_shader_desc_set_builtin(out, DVZ_SCENE_BUILTIN_SHADER_PRIMITIVE);
+    out->vertex_spirv_key = "primitive_vert";
+    out->fragment_spirv_key = "primitive_frag";
+    return true;
+}
+
+
+
+/**
  * Resolve shader and pipeline cache-key metadata for one visual descriptor.
  *
  * @param visual the visual descriptor
@@ -1017,133 +1237,34 @@ bool _scene_visual_shader_desc(
     ANN(out);
     dvz_memset(out, sizeof(DvzSceneVisualShaderDesc), 0, sizeof(DvzSceneVisualShaderDesc));
 
+    DvzSceneShaderFeatures features = {0};
+    _scene_shader_features_resolve(visual, picking, wboit_accumulation, &features);
+
     switch (visual->kind)
     {
     case DVZ_SCENE_VISUAL_DESC_PIXEL:
-    {
-        bool depth_cue = visual->material_buffer_id != 0;
-        dvz_snprintf(
-            out->vertex_key, sizeof(out->vertex_key), "_vs_pixel%s%s",
-            depth_cue ? "_cue" : "", format_tag);
-        dvz_snprintf(
-            out->fragment_key, sizeof(out->fragment_key), "_fs_pixel%s%s",
-            depth_cue ? "_cue" : "", format_tag);
-        dvz_snprintf(
-            out->pipeline_key, sizeof(out->pipeline_key), "_pipe_pixel%s%s",
-            depth_cue ? "_cue" : "", format_tag);
-        DvzSceneBuiltinShader shader =
-            depth_cue ? DVZ_SCENE_BUILTIN_SHADER_PIXEL_DEPTH_CUE :
-                        DVZ_SCENE_BUILTIN_SHADER_PIXEL;
-        out->vertex_glsl = _builtin_shader_glsl(shader, false);
-        out->fragment_glsl = _builtin_shader_glsl(shader, true);
-        out->vertex_wgsl = _builtin_shader_wgsl(shader, false);
-        out->fragment_wgsl = _builtin_shader_wgsl(shader, true);
-        out->vertex_spirv_key = depth_cue ? "pixel_cue_vert" : "pixel_vert";
-        out->fragment_spirv_key = depth_cue ? "pixel_cue_frag" : "pixel_frag";
-        return true;
-    }
+        return _scene_shader_desc_point_like("pixel", &features, format_tag, out);
 
     case DVZ_SCENE_VISUAL_DESC_POINT:
-        if (picking)
-        {
-            dvz_snprintf(out->vertex_key, sizeof(out->vertex_key), "_vs_point_pick%s", format_tag);
-            dvz_snprintf(
-                out->fragment_key, sizeof(out->fragment_key), "_fs_point_pick%s", format_tag);
-            dvz_snprintf(
-                out->pipeline_key, sizeof(out->pipeline_key), "_pipe_point_pick%s", format_tag);
-            out->vertex_glsl =
-                _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_POINT_PICK, false);
-            out->fragment_glsl =
-                _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_POINT_PICK, true);
-        }
-        else
-        {
-            bool depth_cue = visual->material_buffer_id != 0;
-            dvz_snprintf(
-                out->vertex_key, sizeof(out->vertex_key), "_vs_point%s%s",
-                depth_cue ? "_cue" : "", format_tag);
-            dvz_snprintf(
-                out->fragment_key, sizeof(out->fragment_key), "_fs_point%s%s",
-                depth_cue ? "_cue" : "", format_tag);
-            dvz_snprintf(
-                out->pipeline_key, sizeof(out->pipeline_key), "_pipe_point%s%s",
-                depth_cue ? "_cue" : "", format_tag);
-            DvzSceneBuiltinShader shader =
-                depth_cue ? DVZ_SCENE_BUILTIN_SHADER_POINT_DEPTH_CUE :
-                            DVZ_SCENE_BUILTIN_SHADER_POINT;
-            out->vertex_glsl = _builtin_shader_glsl(shader, false);
-            out->fragment_glsl = _builtin_shader_glsl(shader, true);
-            out->vertex_wgsl = _builtin_shader_wgsl(shader, false);
-            out->fragment_wgsl = _builtin_shader_wgsl(shader, true);
-            out->vertex_spirv_key = depth_cue ? "point_cue_vert" : "point_vert";
-            out->fragment_spirv_key = depth_cue ? "point_cue_frag" : "point_frag";
-        }
-        return true;
+        return _scene_shader_desc_point_like("point", &features, format_tag, out);
 
     case DVZ_SCENE_VISUAL_DESC_PRIMITIVE:
-        if (wboit_accumulation)
-        {
-            DvzSceneBuiltinShader shader = visual->has_normal
-                                               ? DVZ_SCENE_BUILTIN_SHADER_WBOIT_ACCUM_LIT
-                                               : DVZ_SCENE_BUILTIN_SHADER_WBOIT_ACCUM;
-            dvz_snprintf(
-                out->vertex_key, sizeof(out->vertex_key), "_vs_wboit_accum_n%u%s",
-                visual->has_normal ? 1u : 0u, format_tag);
-            dvz_snprintf(
-                out->fragment_key, sizeof(out->fragment_key), "_fs_wboit_accum_n%u%s",
-                visual->has_normal ? 1u : 0u, format_tag);
-            dvz_snprintf(
-                out->pipeline_key, sizeof(out->pipeline_key), "_pipe_wboit_accum_t%u_n%u%s",
-                visual->topology, visual->has_normal ? 1u : 0u, format_tag);
-            out->vertex_glsl = _builtin_shader_glsl(shader, false);
-            out->fragment_glsl = _builtin_shader_glsl(shader, true);
-            return true;
-        }
-        if (visual->has_normal)
-        {
-            dvz_snprintf(out->vertex_key, sizeof(out->vertex_key), "_vs_prim_lit%s", format_tag);
-            dvz_snprintf(
-                out->fragment_key, sizeof(out->fragment_key), "_fs_prim_lit%s", format_tag);
-            dvz_snprintf(
-                out->pipeline_key, sizeof(out->pipeline_key), "_pipe_prim_lit_t%u%s",
-                visual->topology, format_tag);
-            out->vertex_glsl =
-                _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_PRIMITIVE_LIT, false);
-            out->fragment_glsl =
-                _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_PRIMITIVE_LIT, true);
-        }
-        else
-        {
-            dvz_snprintf(out->vertex_key, sizeof(out->vertex_key), "_vs_prim%s", format_tag);
-            dvz_snprintf(out->fragment_key, sizeof(out->fragment_key), "_fs_prim%s", format_tag);
-            dvz_snprintf(
-                out->pipeline_key, sizeof(out->pipeline_key), "_pipe_prim_t%u%s",
-                visual->topology, format_tag);
-            out->vertex_glsl = _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_PRIMITIVE, false);
-            out->fragment_glsl = _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_PRIMITIVE, true);
-            out->vertex_wgsl = _builtin_shader_wgsl(DVZ_SCENE_BUILTIN_SHADER_PRIMITIVE, false);
-            out->fragment_wgsl = _builtin_shader_wgsl(DVZ_SCENE_BUILTIN_SHADER_PRIMITIVE, true);
-            out->vertex_spirv_key = "primitive_vert";
-            out->fragment_spirv_key = "primitive_frag";
-        }
-        return true;
+        return _scene_shader_desc_primitive(&features, format_tag, out);
 
     case DVZ_SCENE_VISUAL_DESC_IMAGE:
         dvz_snprintf(out->vertex_key, sizeof(out->vertex_key), "_vs_img%s", format_tag);
         dvz_snprintf(out->fragment_key, sizeof(out->fragment_key), "_fs_img%s", format_tag);
         dvz_snprintf(out->pipeline_key, sizeof(out->pipeline_key), "_pipe_img%s", format_tag);
-        out->vertex_glsl = _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_IMAGE, false);
-        out->fragment_glsl = _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_IMAGE, true);
-        out->vertex_wgsl = _builtin_shader_wgsl(DVZ_SCENE_BUILTIN_SHADER_IMAGE, false);
-        out->fragment_wgsl = _builtin_shader_wgsl(DVZ_SCENE_BUILTIN_SHADER_IMAGE, true);
+        _scene_shader_desc_set_builtin(out, DVZ_SCENE_BUILTIN_SHADER_IMAGE);
         out->vertex_spirv_key = "image_vert";
         out->fragment_spirv_key = "image_frag";
         return true;
 
     case DVZ_SCENE_VISUAL_DESC_VOLUME:
     {
-        bool mip = visual->volume_state.render_mode == DVZ_VOLUME_RENDER_MIP;
-        bool composite = visual->volume_state.render_mode == DVZ_VOLUME_RENDER_COMPOSITE;
+        bool mip = _shader_features_has(&features, DVZ_SCENE_SHADER_FEATURE_VOLUME_MIP);
+        bool composite =
+            _shader_features_has(&features, DVZ_SCENE_SHADER_FEATURE_VOLUME_COMPOSITE);
         dvz_snprintf(out->vertex_key, sizeof(out->vertex_key), "_vs_vol_slice%s", format_tag);
         dvz_snprintf(
             out->fragment_key, sizeof(out->fragment_key),
@@ -1156,8 +1277,7 @@ bool _scene_visual_shader_desc(
         DvzSceneBuiltinShader shader = composite ? DVZ_SCENE_BUILTIN_SHADER_VOLUME_COMPOSITE :
                                      mip       ? DVZ_SCENE_BUILTIN_SHADER_VOLUME_MIP :
                                                  DVZ_SCENE_BUILTIN_SHADER_VOLUME_SLICE;
-        out->vertex_glsl = _builtin_shader_glsl(shader, false);
-        out->fragment_glsl = _builtin_shader_glsl(shader, true);
+        _scene_shader_desc_set_builtin(out, shader);
         out->vertex_spirv_key = "volume_slice_vert";
         out->fragment_spirv_key =
             composite ? "volume_composite_frag" : mip ? "volume_mip_frag" : "volume_slice_frag";
