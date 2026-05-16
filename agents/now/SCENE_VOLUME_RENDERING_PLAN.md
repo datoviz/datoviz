@@ -2,7 +2,7 @@
 
 > **Execution Status**
 > - **Status:** `PLANNING NOTE`
-> - **Updated on:** `2026-05-15`
+> - **Updated on:** `2026-05-16`
 > - **Purpose:** define the v0.4 implementation path for the napari-style 3D volume clipping demo
 >   without porting the v0.3 volume visual directly.
 
@@ -94,6 +94,35 @@ Defer these until the base path is stable:
 4. multi-volume intermixing,
 5. out-of-core bricking,
 6. empty-space skipping acceleration structures.
+
+
+## Categorical Label Volumes
+
+napari `Labels` layers can also be displayed in 3D, but that should be a follow-up after scalar
+volume rendering is stable. The image/labels 2D plan deliberately keeps these requirements out of
+the 2D image visual path.
+
+Required semantics:
+
+1. integer 3D `DvzSampledField` with `DVZ_FIELD_SEMANTIC_LABEL`,
+2. nearest sampling or integer texel fetch only,
+3. categorical palette lookup using the same direct-palette/hash-color policy as 2D labels,
+4. background label `0` transparent by default,
+5. probe/readback returning the raw label id,
+6. selected-label-only display where practical,
+7. no interpolation between neighboring label ids.
+
+Render modes to consider after scalar MIP/alpha/plane/clipping are stable:
+
+1. translucent categorical volume rendering,
+2. categorical plane slice using the same field and palette,
+3. categorical isosurface rendering,
+4. optional fast/smooth gradient modes for label-surface lighting.
+
+Implementation note: label volumes should reuse the sampled-field, palette, and blend-mode
+infrastructure from `SCENE_NAPARI_IMAGE_LABELS_PLAN.md`, but they should not broaden the 2D image
+shader into a volume renderer. Keep the 3D raymarch/proxy-cube and clipping behavior in the volume
+visual path.
 
 
 ## Step-By-Step Implementation
