@@ -321,14 +321,18 @@ void _scene_emit_visual_uploads(DvzFigure* figure, DvzFramePlan* plan)
                     dvz_frame_plan_upload_set_topology(plan, (uint32_t)visual->topology);
                 }
             }
-            if (visual->type == DVZ_VISUAL_TYPE_PRIMITIVE ||
+            if (
+                visual->type == DVZ_VISUAL_TYPE_POINT || visual->type == DVZ_VISUAL_TYPE_PIXEL ||
+                visual->type == DVZ_VISUAL_TYPE_PRIMITIVE ||
                 visual->type == DVZ_VISUAL_TYPE_MESH)
             {
                 int normal_idx = _attr_index(visual, "normal");
                 bool has_normals =
                     normal_idx >= 0 && visual->attrs[normal_idx].data != NULL &&
                     visual->attrs[normal_idx].item_count > 0;
-                if (has_normals && visual->primitive_shading_dirty)
+                bool point_like = visual->type == DVZ_VISUAL_TYPE_POINT ||
+                                  visual->type == DVZ_VISUAL_TYPE_PIXEL;
+                if ((point_like || has_normals) && visual->primitive_shading_dirty)
                 {
                     char shading_resource_id[128];
                     if (!_scene_resource_key_visual_attr(

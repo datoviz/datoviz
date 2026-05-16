@@ -638,6 +638,83 @@ int test_app_offscreen_point_depth_orders_overlap(TstSuite* suite, TstItem* item
 }
 
 
+/**
+ * Ensure point depth cueing darkens farther points in an offscreen render.
+ *
+ * @param suite test suite
+ * @param item test item
+ * @return 0 on success
+ */
+int test_app_offscreen_point_depth_cue_darkens_far(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    if (!_scene_vklite_runtime_available())
+        return 0;
+
+    DvzScene* scene = dvz_scene();
+    AT(scene != NULL);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    AT(figure != NULL);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    AT(panel != NULL);
+
+    DvzVisual* visual = dvz_point(scene, 0);
+    AT(visual != NULL);
+
+    float positions[2][3] = {{-0.45f, 0.0f, 0.0f}, {0.45f, 0.0f, 0.8f}};
+    DvzColor colors[2] = {{255, 64, 64, 255}, {255, 64, 64, 255}};
+    float sizes[2] = {20.0f, 20.0f};
+
+    AT(dvz_visual_set_data(visual, "position", positions, 2) == 0);
+    AT(dvz_visual_set_data(visual, "color", colors, 2) == 0);
+    AT(dvz_visual_set_data(visual, "size", sizes, 2) == 0);
+    AT(dvz_visual_set_depth_cue(
+           visual,
+           &(DvzDepthCueDesc){
+               .mode = DVZ_DEPTH_CUE_DARKEN,
+               .near_depth = 0.50f,
+               .far_depth = 0.95f,
+               .strength = 1.0f,
+               .background_color = {0.0f, 0.0f, 0.0f, 1.0f},
+           }) == 0);
+    AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
+
+    DvzApp* app = dvz_app(scene);
+    if (app == NULL)
+    {
+        log_warn(
+            "test_app_offscreen_point_depth_cue_darkens_far skipped: GPU context creation failed");
+        dvz_scene_destroy(scene);
+        return 0;
+    }
+    DvzAppWindow* win = dvz_app_window(app, figure, 64, 64);
+    AT(win != NULL);
+    DvzCanvas* canvas = dvz_app_window_canvas(win);
+    ANN(canvas);
+
+    dvz_app_run(app, 1);
+
+    uint32_t width = 0, height = 0;
+    uint8_t* rgba = NULL;
+    AT(dvz_canvas_capture_rgba(canvas, &width, &height, &rgba) == 0);
+    ANN(rgba);
+    AT(width == 64);
+    AT(height == 64);
+
+    const uint8_t* near_px = _pixel_at(rgba, width, height, width / 4, height / 2);
+    const uint8_t* far_px = _pixel_at(rgba, width, height, (3 * width) / 4, height / 2);
+    AT(near_px[0] > 180);
+    AT(far_px[0] + 80 < near_px[0]);
+
+    dvz_free(rgba);
+    dvz_app_destroy(app);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
 int test_app_offscreen_has_nonblank_pixels(TstSuite* suite, TstItem* item)
 {
     ANN(suite);
@@ -2886,6 +2963,7 @@ int test_scene_app(TstSuite* suite)
 #endif
     TEST_SIMPLE(test_app_offscreen_panel_three_visuals_all_drawn);
     TEST_SIMPLE(test_app_offscreen_point_depth_orders_overlap);
+    TEST_SIMPLE(test_app_offscreen_point_depth_cue_darkens_far);
     TEST_SIMPLE(test_app_offscreen_has_nonblank_pixels);
     TEST_SIMPLE(test_app_offscreen_points_edl_renders);
     TEST_SIMPLE(test_app_offscreen_records_dvzr_frames);

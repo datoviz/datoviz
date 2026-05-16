@@ -1002,7 +1002,7 @@ int dvz_visual_set_primitive_shading(
 
 
 /**
- * Configure depth cueing for a primitive or mesh visual.
+ * Configure depth cueing for a point, pixel, primitive, or mesh visual.
  *
  * @param visual the visual
  * @param desc the depth-cue descriptor, or NULL to disable depth cueing
@@ -1011,9 +1011,11 @@ int dvz_visual_set_primitive_shading(
 int dvz_visual_set_depth_cue(DvzVisual* visual, const DvzDepthCueDesc* desc)
 {
     ANN(visual);
-    if (visual->type != DVZ_VISUAL_TYPE_PRIMITIVE && visual->type != DVZ_VISUAL_TYPE_MESH)
+    if (
+        visual->type != DVZ_VISUAL_TYPE_POINT && visual->type != DVZ_VISUAL_TYPE_PIXEL &&
+        visual->type != DVZ_VISUAL_TYPE_PRIMITIVE && visual->type != DVZ_VISUAL_TYPE_MESH)
     {
-        log_error("depth cueing is only supported for primitive and mesh visuals");
+        log_error("depth cueing is only supported for point, pixel, primitive, and mesh visuals");
         return -1;
     }
     if (!_scene_visual_mutation_allowed(visual->scene, "update visual depth cue"))

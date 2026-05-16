@@ -4065,6 +4065,28 @@ int test_scene_visual_internal_material_state(TstSuite* suite, TstItem* item)
     AT(mesh->primitive_shading.depth_cue[2] == 0.0f);
     AT(mesh->material.scalar_scale == 1.0f);
 
+    uint64_t point_material_version = point->material.version;
+    AT(dvz_visual_set_depth_cue(
+           point,
+           &(DvzDepthCueDesc){
+               .mode = DVZ_DEPTH_CUE_FADE_TO_BACKGROUND,
+               .near_depth = 0.1f,
+               .far_depth = 0.8f,
+               .strength = 0.5f,
+               .background_color = {0.02f, 0.04f, 0.06f, 1.0f},
+           }) == 0);
+    AT(point->material.depth_cue_enabled);
+    AT(point->material.depth_cue_mode == DVZ_DEPTH_CUE_FADE_TO_BACKGROUND);
+    AT(point->primitive_shading.depth_cue[0] == 0.1f);
+    AT(point->primitive_shading.depth_cue[1] == 0.8f);
+    AT(point->primitive_shading.depth_cue[2] == 0.5f);
+    AT(point->primitive_shading.depth_cue[3] == (float)DVZ_DEPTH_CUE_FADE_TO_BACKGROUND);
+    AT(point->primitive_shading.depth_cue_color[2] == 0.06f);
+    AT(point->material.version > point_material_version);
+    AT(dvz_visual_set_depth_cue(point, NULL) == 0);
+    AT(!point->material.depth_cue_enabled);
+    AT(point->primitive_shading.depth_cue[2] == 0.0f);
+
     AT(dvz_visual_set_alpha_mode(mesh, DVZ_ALPHA_WBOIT) == 0);
     AT(mesh->alpha_mode == DVZ_ALPHA_WBOIT);
     AT(mesh->material.alpha_mode == DVZ_ALPHA_WBOIT);
@@ -4162,6 +4184,15 @@ int test_scene_visual_pass_capabilities(TstSuite* suite, TstItem* item)
     };
     AT(dvz_visual_set_data(mesh, "normal", normals, 3) == 0);
     AT(dvz_visual_set_depth_cue(
+           point,
+           &(DvzDepthCueDesc){
+               .mode = DVZ_DEPTH_CUE_DARKEN,
+               .near_depth = 0.1f,
+               .far_depth = 0.9f,
+               .strength = 0.5f,
+               .background_color = {0.0f, 0.0f, 0.0f, 1.0f},
+           }) == 0);
+    AT(dvz_visual_set_depth_cue(
            mesh,
            &(DvzDepthCueDesc){
                .mode = DVZ_DEPTH_CUE_DARKEN,
@@ -4195,7 +4226,9 @@ int test_scene_visual_pass_capabilities(TstSuite* suite, TstItem* item)
     AT(caps.can_depth_test);
     AT(caps.needs_depth_attachment);
     AT(caps.uses_common_set);
-    AT(!caps.uses_material_set);
+    AT(caps.uses_material_set);
+    AT(caps.supports_depth_cue);
+    AT(caps.depth_cue_enabled);
     AT(!_scene_technique_gbuffer_plan_add_visual(&gbuffer, point, &panel->visuals[0]));
 
     AT(_scene_visual_pass_caps_from_visual(primitive, &panel->visuals[1], &caps));

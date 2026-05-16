@@ -385,6 +385,7 @@ static bool _scene_visual_desc_from_metadata(
         out->vbuf_ids[out->vbuf_count++] = color_id;
         out->vbuf_ids[out->vbuf_count++] = size_id;
         out->topology = VK_PRIMITIVE_TOPOLOGY_POINT_LIST;
+        out->shading_buffer_id = _resource_lookup_label(&emitter->resources, meta->shading_id);
         return true;
     }
 
@@ -902,11 +903,11 @@ static void _scene_visual_pass_caps_resolve(
     out->samples_depth = volume && !fixed;
     out->needs_depth_attachment = out->can_depth_test || out->samples_depth;
     out->uses_common_set = kind != DVZ_SCENE_VISUAL_DESC_NONE;
-    out->needs_material_layout = primitive && has_normals;
+    out->needs_material_layout = (primitive && has_normals) || (point_like && depth_cue_enabled);
     out->uses_material_set = out->needs_material_layout && has_material_resource;
     out->uses_image_set = image;
     out->uses_volume_set = volume;
-    out->supports_depth_cue = primitive && has_normals;
+    out->supports_depth_cue = (primitive && has_normals) || point_like;
     out->depth_cue_enabled = out->supports_depth_cue && depth_cue_enabled;
 }
 
@@ -960,8 +961,10 @@ bool _scene_visual_pass_caps_from_visual(
                       visual->attrs[normal_idx].item_count > 0;
     }
 
+    bool point_like = kind == DVZ_SCENE_VISUAL_DESC_POINT || kind == DVZ_SCENE_VISUAL_DESC_PIXEL;
+    bool has_material_resource = has_normals || (point_like && visual->material.depth_cue_enabled);
     _scene_visual_pass_caps_resolve(
-        kind, visual->alpha_mode, attach->controller_mode, has_normals, has_normals,
+        kind, visual->alpha_mode, attach->controller_mode, has_normals, has_material_resource,
         visual->material.depth_cue_enabled, out);
     return true;
 }
@@ -988,7 +991,7 @@ bool _scene_visual_pass_caps_from_desc(
 
     _scene_visual_pass_caps_resolve(
         visual->kind, alpha_mode, controller_mode, visual->has_normal,
-        visual->shading_buffer_id != 0, false, out);
+        visual->shading_buffer_id != 0, visual->shading_buffer_id != 0, out);
     return true;
 }
 
@@ -1016,16 +1019,28 @@ bool _scene_visual_shader_desc(
     switch (visual->kind)
     {
     case DVZ_SCENE_VISUAL_DESC_PIXEL:
-        dvz_snprintf(out->vertex_key, sizeof(out->vertex_key), "_vs_pixel%s", format_tag);
-        dvz_snprintf(out->fragment_key, sizeof(out->fragment_key), "_fs_pixel%s", format_tag);
-        dvz_snprintf(out->pipeline_key, sizeof(out->pipeline_key), "_pipe_pixel%s", format_tag);
-        out->vertex_glsl = _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_PIXEL, false);
-        out->fragment_glsl = _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_PIXEL, true);
-        out->vertex_wgsl = _builtin_shader_wgsl(DVZ_SCENE_BUILTIN_SHADER_PIXEL, false);
-        out->fragment_wgsl = _builtin_shader_wgsl(DVZ_SCENE_BUILTIN_SHADER_PIXEL, true);
-        out->vertex_spirv_key = "pixel_vert";
-        out->fragment_spirv_key = "pixel_frag";
+    {
+        bool depth_cue = visual->shading_buffer_id != 0;
+        dvz_snprintf(
+            out->vertex_key, sizeof(out->vertex_key), "_vs_pixel%s%s",
+            depth_cue ? "_cue" : "", format_tag);
+        dvz_snprintf(
+            out->fragment_key, sizeof(out->fragment_key), "_fs_pixel%s%s",
+            depth_cue ? "_cue" : "", format_tag);
+        dvz_snprintf(
+            out->pipeline_key, sizeof(out->pipeline_key), "_pipe_pixel%s%s",
+            depth_cue ? "_cue" : "", format_tag);
+        DvzSceneBuiltinShader shader =
+            depth_cue ? DVZ_SCENE_BUILTIN_SHADER_PIXEL_DEPTH_CUE :
+                        DVZ_SCENE_BUILTIN_SHADER_PIXEL;
+        out->vertex_glsl = _builtin_shader_glsl(shader, false);
+        out->fragment_glsl = _builtin_shader_glsl(shader, true);
+        out->vertex_wgsl = _builtin_shader_wgsl(shader, false);
+        out->fragment_wgsl = _builtin_shader_wgsl(shader, true);
+        out->vertex_spirv_key = depth_cue ? "pixel_cue_vert" : "pixel_vert";
+        out->fragment_spirv_key = depth_cue ? "pixel_cue_frag" : "pixel_frag";
         return true;
+    }
 
     case DVZ_SCENE_VISUAL_DESC_POINT:
         if (picking)
@@ -1042,15 +1057,25 @@ bool _scene_visual_shader_desc(
         }
         else
         {
-            dvz_snprintf(out->vertex_key, sizeof(out->vertex_key), "_vs_point%s", format_tag);
-            dvz_snprintf(out->fragment_key, sizeof(out->fragment_key), "_fs_point%s", format_tag);
-            dvz_snprintf(out->pipeline_key, sizeof(out->pipeline_key), "_pipe_point%s", format_tag);
-            out->vertex_glsl = _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_POINT, false);
-            out->fragment_glsl = _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_POINT, true);
-            out->vertex_wgsl = _builtin_shader_wgsl(DVZ_SCENE_BUILTIN_SHADER_POINT, false);
-            out->fragment_wgsl = _builtin_shader_wgsl(DVZ_SCENE_BUILTIN_SHADER_POINT, true);
-            out->vertex_spirv_key = "point_vert";
-            out->fragment_spirv_key = "point_frag";
+            bool depth_cue = visual->shading_buffer_id != 0;
+            dvz_snprintf(
+                out->vertex_key, sizeof(out->vertex_key), "_vs_point%s%s",
+                depth_cue ? "_cue" : "", format_tag);
+            dvz_snprintf(
+                out->fragment_key, sizeof(out->fragment_key), "_fs_point%s%s",
+                depth_cue ? "_cue" : "", format_tag);
+            dvz_snprintf(
+                out->pipeline_key, sizeof(out->pipeline_key), "_pipe_point%s%s",
+                depth_cue ? "_cue" : "", format_tag);
+            DvzSceneBuiltinShader shader =
+                depth_cue ? DVZ_SCENE_BUILTIN_SHADER_POINT_DEPTH_CUE :
+                            DVZ_SCENE_BUILTIN_SHADER_POINT;
+            out->vertex_glsl = _builtin_shader_glsl(shader, false);
+            out->fragment_glsl = _builtin_shader_glsl(shader, true);
+            out->vertex_wgsl = _builtin_shader_wgsl(shader, false);
+            out->fragment_wgsl = _builtin_shader_wgsl(shader, true);
+            out->vertex_spirv_key = depth_cue ? "point_cue_vert" : "point_vert";
+            out->fragment_spirv_key = depth_cue ? "point_cue_frag" : "point_frag";
         }
         return true;
 
@@ -1197,6 +1222,7 @@ bool _scene_visual_pipeline_desc(
         out->formats[1] = picking ? VK_FORMAT_R32_SFLOAT : VK_FORMAT_R8G8B8A8_UNORM;
         out->formats[2] = VK_FORMAT_R32_SFLOAT;
         out->needs_common_layout = caps.uses_common_set;
+        out->needs_shading_layout = caps.needs_material_layout;
         if (pass_needs_depth)
         {
             out->depth_write_enabled =
@@ -1303,6 +1329,8 @@ bool _scene_visual_bind_desc(
     case DVZ_SCENE_VISUAL_DESC_POINT:
         out->uses_common_set0 = caps.uses_common_set;
         out->uses_fixed_common = caps.fixed_controller;
+        out->uses_shading_set1 = caps.uses_material_set;
+        out->shading_buffer_id = visual->shading_buffer_id;
         return true;
 
     case DVZ_SCENE_VISUAL_DESC_PRIMITIVE:

@@ -50,10 +50,16 @@ typedef struct EdlExampleState
     float* sizes;
     uint32_t point_count;
     bool edl_enabled;
+    bool depth_cue_enabled;
     bool spin_enabled;
+    DvzDepthCueMode depth_cue_mode;
     float radius;
     float strength;
     float depth_scale;
+    float depth_cue_near;
+    float depth_cue_far;
+    float depth_cue_strength;
+    float depth_cue_background[4];
     float point_size;
 } EdlExampleState;
 
@@ -189,9 +195,91 @@ static void _apply_edl(EdlExampleState* state)
 }
 
 
+/**
+ * Return a short label for a depth-cue mode.
+ *
+ * @param mode depth-cue mode
+ * @return display label
+ */
+static const char* _depth_cue_mode_label(DvzDepthCueMode mode)
+{
+    switch (mode)
+    {
+    case DVZ_DEPTH_CUE_FADE_TO_BACKGROUND:
+        return "Fade";
+    case DVZ_DEPTH_CUE_DESATURATE:
+        return "Desaturate";
+    case DVZ_DEPTH_CUE_DARKEN:
+        return "Darken";
+    case DVZ_DEPTH_CUE_NONE:
+    default:
+        return "None";
+    }
+}
+
 
 /**
- * Reset the example EDL controls to useful point-cloud defaults.
+ * Cycle to the next supported depth-cue mode.
+ *
+ * @param mode current depth-cue mode
+ * @return next depth-cue mode
+ */
+static DvzDepthCueMode _depth_cue_mode_next(DvzDepthCueMode mode)
+{
+    switch (mode)
+    {
+    case DVZ_DEPTH_CUE_FADE_TO_BACKGROUND:
+        return DVZ_DEPTH_CUE_DESATURATE;
+    case DVZ_DEPTH_CUE_DESATURATE:
+        return DVZ_DEPTH_CUE_DARKEN;
+    case DVZ_DEPTH_CUE_DARKEN:
+    case DVZ_DEPTH_CUE_NONE:
+    default:
+        return DVZ_DEPTH_CUE_FADE_TO_BACKGROUND;
+    }
+}
+
+
+/**
+ * Apply the retained depth-cue state to the point visual.
+ *
+ * @param state example state
+ */
+static void _apply_depth_cue(EdlExampleState* state)
+{
+    ANN(state);
+    ANN(state->visual);
+
+    if (!state->depth_cue_enabled)
+    {
+        if (dvz_visual_set_depth_cue(state->visual, NULL) != 0)
+            dvz_fprintf(stderr, "dvz_visual_set_depth_cue(NULL) failed\n");
+        return;
+    }
+
+    if (state->depth_cue_far <= state->depth_cue_near + 1e-4f)
+        state->depth_cue_far = state->depth_cue_near + 1e-4f;
+
+    DvzDepthCueDesc desc = {
+        .mode = state->depth_cue_mode,
+        .near_depth = state->depth_cue_near,
+        .far_depth = state->depth_cue_far,
+        .strength = state->depth_cue_strength,
+        .background_color = {
+            state->depth_cue_background[0],
+            state->depth_cue_background[1],
+            state->depth_cue_background[2],
+            state->depth_cue_background[3],
+        },
+    };
+    if (dvz_visual_set_depth_cue(state->visual, &desc) != 0)
+        dvz_fprintf(stderr, "dvz_visual_set_depth_cue() failed\n");
+}
+
+
+
+/**
+ * Reset the example controls to useful point-cloud defaults.
  *
  * @param state example state
  */
@@ -199,11 +287,21 @@ static void _reset_edl(EdlExampleState* state)
 {
     ANN(state);
     state->edl_enabled = true;
+    state->depth_cue_enabled = true;
+    state->depth_cue_mode = DVZ_DEPTH_CUE_FADE_TO_BACKGROUND;
     state->radius = 2.0f;
     state->strength = 70.0f;
     state->depth_scale = 1.0f;
+    state->depth_cue_near = 0.45f;
+    state->depth_cue_far = 0.95f;
+    state->depth_cue_strength = 0.35f;
+    state->depth_cue_background[0] = 0.035f;
+    state->depth_cue_background[1] = 0.045f;
+    state->depth_cue_background[2] = 0.055f;
+    state->depth_cue_background[3] = 1.0f;
     state->point_size = 5.5f;
     _apply_edl(state);
+    _apply_depth_cue(state);
     _apply_point_size(state);
 }
 
@@ -224,6 +322,7 @@ static void _edl_gui(DvzGui* gui, DvzAppWindow* win, void* user_data)
         return;
 
     bool changed = false;
+    bool cue_changed = false;
     bool point_changed = false;
     bool spin_changed = false;
     if (dvz_gui_begin(gui, "Eye-Dome Lighting", NULL, 0))
@@ -235,16 +334,35 @@ static void _edl_gui(DvzGui* gui, DvzAppWindow* win, void* user_data)
         changed |= dvz_gui_slider_float(gui, "Radius", &state->radius, 1.0f, 8.0f);
         changed |= dvz_gui_slider_float(gui, "Strength", &state->strength, 0.0f, 160.0f);
         changed |= dvz_gui_slider_float(gui, "Depth scale", &state->depth_scale, 0.1f, 8.0f);
+        cue_changed |= dvz_gui_checkbox(gui, "Depth cue", &state->depth_cue_enabled);
+        char mode_label[64];
+        dvz_snprintf(
+            mode_label, sizeof(mode_label), "Mode: %s",
+            _depth_cue_mode_label(state->depth_cue_mode));
+        if (dvz_gui_button(gui, mode_label))
+        {
+            state->depth_cue_mode = _depth_cue_mode_next(state->depth_cue_mode);
+            cue_changed = true;
+        }
+        cue_changed |=
+            dvz_gui_slider_float(gui, "Cue near", &state->depth_cue_near, 0.0f, 1.0f);
+        cue_changed |=
+            dvz_gui_slider_float(gui, "Cue far", &state->depth_cue_far, 0.0f, 1.0f);
+        cue_changed |=
+            dvz_gui_slider_float(gui, "Cue strength", &state->depth_cue_strength, 0.0f, 1.0f);
         if (dvz_gui_button(gui, "Reset"))
         {
             _reset_edl(state);
             changed = false;
+            cue_changed = false;
         }
     }
     dvz_gui_end(gui);
 
     if (changed)
         _apply_edl(state);
+    if (cue_changed)
+        _apply_depth_cue(state);
     if (point_changed)
         _apply_point_size(state);
     if (spin_changed)
