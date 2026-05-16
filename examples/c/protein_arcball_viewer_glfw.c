@@ -4,12 +4,12 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* protein_sphere_ssao_glfw - preprocessed protein atoms rendered as SSAO sphere impostors.
+/* protein_arcball_viewer_glfw - preprocessed protein atoms rendered with an arcball camera.
  *
- * Prepare: python tools/preprocess_protein.py 1UBQ
- * Build:   just example-c protein_sphere_ssao_glfw
- * Run:     ./build/examples/c/protein_sphere_ssao_glfw
- * Smoke:   ./build/examples/c/protein_sphere_ssao_glfw ~/.cache/datoviz/proteins/1ubq 60
+ * Prepare: uv run --with rs-dssp tools/preprocess_protein.py 1UBQ --dssp
+ * Build:   cmake --build build --target protein_arcball_viewer_glfw
+ * Run:     ./build/examples/c/protein_arcball_viewer_glfw
+ * Smoke:   ./build/examples/c/protein_arcball_viewer_glfw ~/.cache/datoviz/proteins/1ubq 60
  */
 
 
@@ -501,7 +501,7 @@ static void _print_prepare_hint(const char* path)
 /*************************************************************************************************/
 
 /**
- * Run the protein sphere SSAO example.
+ * Run the protein arcball viewer example.
  *
  * @param argc command-line argument count
  * @param argv command-line argument vector
@@ -611,7 +611,7 @@ int main(int argc, char** argv)
     }
 
     DvzAppWindow* win =
-        dvz_app_window_glfw(app, figure, WIDTH, HEIGHT, "protein_sphere_ssao_glfw");
+        dvz_app_window_glfw(app, figure, WIDTH, HEIGHT, "protein_arcball_viewer_glfw");
     if (win == NULL)
     {
         dvz_fprintf(stderr, "dvz_app_window_glfw() failed (GLFW unavailable?)\n");
