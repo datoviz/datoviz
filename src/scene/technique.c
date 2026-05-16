@@ -1092,7 +1092,7 @@ bool _scene_technique_emit_opaque_frame_graph(
     if (multisample)
     {
         dvz_strlcpy(color.resolve_resource_id, "rt", sizeof(color.resolve_resource_id));
-        color.resolve_mode = 1;
+        color.resolve_mode = VK_RESOLVE_MODE_AVERAGE_BIT;
     }
     if (!dvz_frame_graph_pass_color_attachment(&opaque, &color))
         return false;

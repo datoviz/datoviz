@@ -4837,7 +4837,7 @@ int test_scene_msaa_runtime_lowering(TstSuite* suite, TstItem* item)
     AT(pass->color_attachment_count == 1);
     AT(strcmp(pass->color_attachments[0].resource_id, "figure_0_p0.msaa.color") == 0);
     AT(strcmp(pass->color_attachments[0].resolve_resource_id, "rt") == 0);
-    AT(pass->color_attachments[0].resolve_mode == 1);
+    AT(pass->color_attachments[0].resolve_mode == VK_RESOLVE_MODE_AVERAGE_BIT);
     AT(pass->has_depth_attachment);
     AT(strcmp(pass->depth_attachment.resource_id, "figure_0_p0.depth") == 0);
 
@@ -4888,7 +4888,9 @@ int test_scene_msaa_runtime_lowering(TstSuite* suite, TstItem* item)
                 (cmd->u.begin_render_pass.texture_id == msaa_texture_id &&
                  cmd->u.begin_render_pass.color_attachments[0].resolve_texture_id != 0 &&
                  cmd->u.begin_render_pass.color_attachments[0].resolve_texture_id !=
-                     msaa_texture_id);
+                     msaa_texture_id &&
+                 cmd->u.begin_render_pass.color_attachments[0].resolve_mode ==
+                     VK_RESOLVE_MODE_AVERAGE_BIT);
         }
         else if (cmd->type == DVZ_DRP2_COMMAND_CREATE_RENDER_PIPELINE)
         {
