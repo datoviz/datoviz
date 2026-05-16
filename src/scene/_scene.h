@@ -558,6 +558,25 @@ struct DvzVisual
 
 
 /*************************************************************************************************/
+/*  Scene techniques                                                                            */
+/*************************************************************************************************/
+
+typedef struct DvzSceneGBufferTechniqueState
+{
+    bool enabled;
+    bool object_id_enabled;
+} DvzSceneGBufferTechniqueState;
+
+
+
+typedef struct DvzSceneTechniqueState
+{
+    DvzSceneGBufferTechniqueState gbuffer;
+} DvzSceneTechniqueState;
+
+
+
+/*************************************************************************************************/
 /*  DvzPanel                                                                                    */
 /*************************************************************************************************/
 
@@ -577,6 +596,7 @@ struct DvzPanel
 {
     DvzFigure*  figure;
     DvzPanelDesc desc; /* normalized position and size */
+    DvzSceneTechniqueState techniques;
 
     uint32_t       visual_count;
     DvzPanelAttach visuals[DVZ_SCENE_MAX_VISUALS];
@@ -624,8 +644,7 @@ struct DvzFigure
 struct DvzScene
 {
     DvzCapabilitySnapshot caps;
-
-    bool gbuffer_enabled;
+    DvzSceneTechniqueState techniques;
 
     DvzSceneClock clock;
 

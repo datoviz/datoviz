@@ -4283,7 +4283,6 @@ int test_scene_gbuffer_runtime_lowering(TstSuite* suite, TstItem* item)
 
     DvzScene* scene = dvz_scene();
     AT(scene != NULL);
-    scene->gbuffer_enabled = true;
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
     AT(figure != NULL);
     DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
@@ -4317,6 +4316,19 @@ int test_scene_gbuffer_runtime_lowering(TstSuite* suite, TstItem* item)
     AT(dvz_visual_set_data(mesh, "normal", normals, 4) == 0);
     AT(dvz_visual_set_buffer(mesh, "index", index_buffer));
     AT(dvz_panel_add_visual(panel, mesh, NULL) == 0);
+
+    AT(!_scene_technique_gbuffer_enabled(scene, panel));
+    DvzFramePlan* default_plan = dvz_frame_plan("figure.gbuffer.default", 0);
+    ANN(default_plan);
+    _scene_emit_panel_render(figure, 0, default_plan, "figure_0");
+    AT(dvz_frame_plan_node_count(default_plan) == 1);
+    const DvzFramePlanNode* default_node = dvz_frame_plan_node_get(default_plan, 0);
+    ANN(default_node);
+    AT(dvz_frame_plan_render_pass_role(default_node) == DVZ_FRAME_PLAN_RENDER_PASS_OPAQUE);
+    dvz_frame_plan_destroy(default_plan);
+
+    _scene_technique_state_enable_gbuffer(&panel->techniques, true);
+    AT(_scene_technique_gbuffer_enabled(scene, panel));
 
     DvzFramePlan* plan = dvz_frame_plan("figure.gbuffer", 0);
     ANN(plan);

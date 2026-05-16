@@ -682,7 +682,7 @@ void _scene_emit_panel_render(
     DvzFramePlanNode* blended_node = NULL;
     DvzSceneGBufferPlan gbuffer = {0};
     _scene_technique_gbuffer_plan_init(&gbuffer);
-    bool gbuffer_enabled = figure->scene != NULL && figure->scene->gbuffer_enabled;
+    bool gbuffer_enabled = _scene_technique_gbuffer_enabled(figure->scene, panel);
     bool has_transparent = false;
     bool opaque_needs_depth = false;
     bool transparent_needs_depth = false;

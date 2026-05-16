@@ -28,6 +28,7 @@
 #include "datoviz/math/_cglm.h"
 #include "../drp2/_stream.h"
 #include "_scene.h"
+#include "_technique.h"
 
 
 
@@ -748,6 +749,7 @@ DvzScene* dvz_scene(void)
     if (scene == NULL)
         return NULL;
     dvz_capability_snapshot_default(&scene->caps);
+    _scene_technique_state_init(&scene->techniques);
     scene->clock.mode = DVZ_CLOCK_REALTIME;
     scene->clock.fps = 60.0;
     scene->emitter = dvz_frame_plan_emitter();
@@ -921,6 +923,7 @@ DvzPanel* dvz_panel(DvzFigure* figure, DvzPanelDesc desc)
     DvzPanel* panel     = &figure->panels[figure->panel_count++];
     panel->figure       = figure;
     panel->desc         = desc;
+    _scene_technique_state_init(&panel->techniques);
     panel->visual_count = 0;
     return panel;
 }

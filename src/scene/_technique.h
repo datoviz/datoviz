@@ -52,6 +52,14 @@ bool _scene_visual_writes_depth(const DvzVisual* visual, const DvzPanelAttach* a
 bool _scene_transparent_visual_needs_depth(
     const DvzVisual* visual, const DvzPanelAttach* attach);
 
+void _scene_technique_state_init(DvzSceneTechniqueState* state);
+
+void _scene_technique_state_enable_gbuffer(DvzSceneTechniqueState* state, bool enabled);
+
+bool _scene_technique_state_gbuffer_enabled(const DvzSceneTechniqueState* state);
+
+bool _scene_technique_gbuffer_enabled(const DvzScene* scene, const DvzPanel* panel);
+
 bool _scene_technique_emit_wboit_frame_graph(
     DvzFramePlan* plan, const char* panel_id, bool opaque_needs_depth,
     bool transparent_needs_depth);

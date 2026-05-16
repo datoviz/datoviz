@@ -139,6 +139,61 @@ static bool _scene_caps_support_gbuffer(const DvzSceneVisualPassCaps* caps)
 /*************************************************************************************************/
 
 /**
+ * Reset internal scene technique activation state.
+ *
+ * @param state the technique state
+ */
+void _scene_technique_state_init(DvzSceneTechniqueState* state)
+{
+    ANN(state);
+    dvz_memset(state, sizeof(DvzSceneTechniqueState), 0, sizeof(DvzSceneTechniqueState));
+}
+
+
+
+/**
+ * Enable or disable the internal G-buffer technique.
+ *
+ * @param state the technique state
+ * @param enabled whether the G-buffer technique is enabled
+ */
+void _scene_technique_state_enable_gbuffer(DvzSceneTechniqueState* state, bool enabled)
+{
+    ANN(state);
+    state->gbuffer.enabled = enabled;
+}
+
+
+
+/**
+ * Return whether a technique state enables the G-buffer technique.
+ *
+ * @param state the technique state
+ * @return whether G-buffer is enabled
+ */
+bool _scene_technique_state_gbuffer_enabled(const DvzSceneTechniqueState* state)
+{
+    return state != NULL && state->gbuffer.enabled;
+}
+
+
+
+/**
+ * Return whether the effective scene/panel state enables the G-buffer technique.
+ *
+ * @param scene the scene-level state owner
+ * @param panel the panel-level state owner
+ * @return whether G-buffer is enabled for this panel
+ */
+bool _scene_technique_gbuffer_enabled(const DvzScene* scene, const DvzPanel* panel)
+{
+    return (scene != NULL && _scene_technique_state_gbuffer_enabled(&scene->techniques)) ||
+           (panel != NULL && _scene_technique_state_gbuffer_enabled(&panel->techniques));
+}
+
+
+
+/**
  * Return whether an alpha mode belongs in the transparent WBOIT accumulation pass.
  *
  * @param mode the visual alpha mode
