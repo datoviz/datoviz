@@ -8,6 +8,16 @@
 > - **Validation:** Header/API review plus focused scene tests when the sketch is promoted.
 
 
+## Summary
+
+Use this API sketch to pressure-test a scene-owned `SampledField` handle shared by scalar images, direct
+RGBA images, and volumetric scalar data. No external data is required; the usage flow should rely on inline
+placeholder buffers supplied by the caller. The first practical slice is header/API review plus a focused
+scene test that binds deterministic field data to image and volume visuals while keeping scale and colormap
+semantics separate from field storage. Validation remains API review until promoted, then follows focused
+scene tests for descriptor lifetime, geometry/data views, and visual binding.
+
+
 This example pressure-tests the proposed shared `SampledField` API against three immediate scene
 use cases:
 

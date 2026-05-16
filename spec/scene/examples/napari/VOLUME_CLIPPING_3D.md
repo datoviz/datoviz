@@ -8,6 +8,17 @@
 > - **Validation:** Stage-specific acceptance criteria covering current v0.4 behavior and the richer napari-class target.
 
 
+## Summary
+
+Build a napari-like 3D microscopy volume demo with camera interaction, transfer-function style
+rendering, clipping controls, and a plane-slice mode. The primary data is scikit-image `cells3d`,
+cached as a compact prepared volume; an IDR OME-Zarr source is optional, and deterministic
+`binary_blobs` data is the development fallback. The first practical slice should load the prepared
+volume, render it through the active v0.4 scene path, and expose at least the bounded controls
+needed for MIP or slice-plane inspection before adding larger-data behavior. Validation follows the
+acceptance criteria in this spec: interactive 3D navigation, correct clipping or slice movement, and
+stable performance on the cached volume.
+
 ## Purpose
 
 This demo shows a 3D microscopy volume rendered with transfer function, clipping plane, and optional label/point overlays. It should resemble napari's 3D image/volume workflows while demonstrating why a modern explicit GPU backend is useful for volume rendering, plane rendering, and large 3D data.

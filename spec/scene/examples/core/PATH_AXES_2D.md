@@ -8,6 +8,16 @@
 > - **Validation:** Bounded smoke run plus screenshot/readback or fixture coverage when practical.
 
 
+## Summary
+
+Build a small scene example that renders grouped 2D path data with x/y axes whose ticks and labels
+regenerate as the panel panzoom changes. The first implementation slice should use deterministic inline
+or synthetic grouped sequences, with no preprocessing, and should focus on the path resource flow plus
+axis-derived segment/glyph contributions. Keep panzoom as a panel-local transform so navigation does not
+renormalize the path resource. Validation should follow the existing bounded smoke path, adding screenshot,
+readback, or fixture coverage when practical to confirm both the visible path and refreshed axes.
+
+
 This example combines grouped path data with axis regeneration under panzoom.
 
 

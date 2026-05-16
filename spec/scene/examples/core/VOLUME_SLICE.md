@@ -8,6 +8,17 @@
 > - **Validation:** Bounded smoke run plus screenshot/readback or fixture coverage when practical.
 
 
+## Summary
+
+Build a minimal 3D scene that exercises the `volume` family in `render_mode = slice`, backed by a
+volumetric sampled field and viewed through a camera controller. Because no external dataset is named, the
+first slice should use deterministic inline or synthetic voxel values and no preprocessing. Focus first on
+the sampled-field resource, slice placement parameters, VisualSpace placement, and one render contribution;
+defer compute-assisted extraction unless the runtime path already requires it. Validation should use the
+existing bounded smoke or fixture path, with screenshot/readback coverage when practical to confirm the
+slice appears in the expected placement and color mode.
+
+
 This example instantiates `volume.render_mode = slice`.
 
 

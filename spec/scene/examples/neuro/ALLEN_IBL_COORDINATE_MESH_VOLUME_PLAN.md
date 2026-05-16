@@ -8,6 +8,17 @@
 > - **Validation:** Manual visual checklist plus bounded smoke command; add screenshot/readback validation when feasible.
 
 
+## Summary
+
+Build the next Allen mouse-brain atlas slice by aligning the existing RGBA volume and slice example
+with selected Allen CCF structure meshes in IBL `xyz` scene coordinates. The data combines
+`data/volumes/allen_mouse_brain_rgba.npy.gz` with public Allen structure meshes, prepared by a small
+Python asset step that converts coordinates, applies display normalization, splits or decimates where
+needed, and writes explicit cache metadata. The first implementation slice should avoid a full C
+coordinate-conversion stack and instead load a root mesh plus a few selected regions beside the
+existing volume/slice view. Validate with the bounded smoke command and the visual alignment
+checklist for mesh, volume, and anatomical slice movement.
+
 > **Execution Status**
 > - **Status:** `PLANNING NOTE`
 > - **Updated on:** `2026-05-16`

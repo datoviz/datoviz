@@ -7,6 +7,17 @@
 > - **Preprocessing:** Document any data conversion script, output schema, coordinate normalization, and cache validation.
 > - **Validation:** Smoke run plus domain-specific visual, picking/probe, and performance acceptance criteria.
 
+## Architecture Summary
+
+Build a Datoviz v0.4 Python protein viewer with a 3D arcball camera, ImGui controls, molecular
+rendering modes, and SSAO integrated as an early multi-pass scene requirement. Runtime should use
+precomputed protein geometry from a compact local cache, downloading curated bundles from
+`datoviz/data` when missing, rather than parsing raw PDB or mmCIF files or generating surfaces
+interactively. The first practical slice should load a small molecule such as `1CRN` or `1UBQ`,
+render one chosen mode with element or chain coloring, provide arcball navigation and basic controls,
+and keep the framegraph ready for SSAO/offscreen resources. Validate with a smoke run, molecular
+visual checks, picking or probe checks when available, and the staged performance criteria.
+
 
 ## Purpose
 

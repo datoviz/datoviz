@@ -7,6 +7,18 @@
 > - **Preprocessing:** Document any data conversion script, output schema, coordinate normalization, and cache validation.
 > - **Validation:** Smoke run plus domain-specific visual, picking/probe, and performance acceptance criteria.
 
+## Summary
+
+Build a materials-science scene example that animates a periodic crystal supercell with
+phonon-like lattice motion, unit-cell overlays, optional coordination geometry, and linked mode or
+frequency controls. Stage 1 should use deterministic simulated data for an idealized perovskite
+soft-mode scenario, producing reproducible lattice, basis, species, rest positions, mode
+displacements, phases, colors, radii, and optional bond, cell-edge, arrow, or octahedra arrays;
+prepared real phonon data can later target the same cache schema. The first practical slice should
+render an arcball 3D panel with animated atoms, a supercell wireframe, amplitude/frequency controls,
+and atom hover or click readout. Validate with smoke execution, materials-specific visual checks,
+picking/probe checks, and staged performance criteria.
+
 
 ## Example Name
 

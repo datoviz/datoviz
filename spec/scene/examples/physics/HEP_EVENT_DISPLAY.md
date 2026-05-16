@@ -7,6 +7,18 @@
 > - **Preprocessing:** Document any data conversion script, output schema, coordinate normalization, and cache validation.
 > - **Validation:** Smoke run plus domain-specific visual, picking/probe, and performance acceptance criteria.
 
+## Summary
+
+Build a high-energy physics event-display scene example using CMS Open Data event-display JSON that
+has been converted into compact Datoviz-ready arrays. The prepared cache should preserve provenance
+and contain flattened event offsets, track paths, calorimeter deposits, hits or segments, jets,
+missing transverse energy, and optional semantic object indices; runtime should not require ROOT,
+CMSSW, or arbitrary CERN JSON parsing. The first practical slice should load the CMS SingleElectron
+sample cache, show simplified transparent detector geometry in one 3D arcball panel, render tracks
+and calorimeter objects, provide previous/next event controls, and expose selected-object readout.
+Validate with smoke execution, CMS event-display visual checks, picking/probe checks, provenance
+checks, and staged performance criteria.
+
 
 ## Example Name
 

@@ -8,6 +8,17 @@
 > - **Validation:** Manual visual checklist plus bounded smoke command; add screenshot/readback validation when feasible.
 
 
+## Summary
+
+Build a staged animation example around a 3D scatter scene with opacity transition, camera fly-through,
+and per-frame point updates, then export the offline-clock sequence to video. The brief describes 50,000
+scatter points and camera keyframes, but the first practical slice should use deterministic synthetic point
+data and bounded resource counts before any larger asset or cache path is introduced. Start by proving the
+scene clock, animation handles, dirty updates, and frame emission path; then add the video export workflow.
+Validation should combine the manual visual checklist with a bounded smoke command, plus screenshot or
+readback checks where the runtime supports them.
+
+
 This example traces the animation system through a 3D scatter scene with a camera fly-through
 exported to video, combining all three animation types.
 

@@ -8,6 +8,18 @@
 > - **Validation:** Smoke command, camera/interaction checklist, and visual checks for projection or coordinate correctness.
 
 
+## Summary
+
+Build a cinematic terrain flyover over a recognizable Grand Canyon patch, exercising large indexed
+mesh rendering, texturing, depth, and animated 3D cameras. Runtime should load a preprocessed
+terrain bundle from the Datoviz cache or data repository rather than querying GIS services; use a
+reduced prepared or deterministic synthetic terrain fixture until the real bundle is available.
+The first slice should render one bounded textured or color-relief mesh with a perspective camera
+following a simple path. Validate with a smoke launch and manual visual checks for terrain
+recognizability, texture or relief alignment, stable camera motion, near/far depth behavior, and
+scene -> DRP2 execution.
+
+
 ## Purpose
 
 This example specifies a Datoviz v0.4 Python demo showing a cinematic flyover above a real-world terrain patch, ideally the Grand Canyon. It is intended as a high-value test of the upcoming v0.4 scene architecture without depending on the exact final Python API.

@@ -8,6 +8,17 @@
 > - **Validation:** Bounded smoke run plus screenshot/readback or fixture coverage when practical.
 
 
+## Summary
+
+Build a two-panel 2D scene that proves shared-x and independent-y panzoom behavior while keeping each
+panel's axis resources separate. Use deterministic inline or synthetic scatter/time-series data, with no
+preprocessing, so the first slice can focus on controller binding, visual normalization, tick regeneration,
+and frame-plan contributions. The shared X controller should act only as a visible-domain source; each
+panel still owns its own x/y axis geometry and labels. Validation should follow the bounded smoke or
+fixture path, with screenshot/readback checks when practical to confirm linked X navigation, independent Y
+navigation, and axis updates without visual-data renormalization.
+
+
 This example traces the full axis pipeline — domain source, tick generation, covered-domain
 check, and `FramePlan` contribution — across two panels that share a panzoom X controller and
 have independent Y controllers.

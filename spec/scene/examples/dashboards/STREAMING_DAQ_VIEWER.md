@@ -10,11 +10,18 @@
 
 ## Summary
 
-This example demonstrates a real-time, high-density data acquisition (DAQ) viewer for Datoviz v0.4. It shows many digital and analog time series updating continuously in a fixed-size ring buffer, with a moving write cursor and optional scrolling display mode.
+This example demonstrates a real-time, high-density data acquisition (DAQ) viewer for Datoviz v0.4.
+It shows many digital and analog time series updating continuously in a fixed-size ring buffer, with
+a moving write cursor and optional scrolling display mode.
 
-The example should be implemented in Python and should work out of the box. It should not depend on external data by default. It should generate deterministic, realistic synthetic DAQ data that resembles a neuroscience or behavioral acquisition session. If a prepared replay dataset is later added to the `datoviz/data` repository, the example may optionally download and use it, but synthetic data must remain the default and fallback.
+The example should be implemented in Python and should work out of the box. It should not depend on
+external data by default. It should generate deterministic, realistic synthetic DAQ data that
+resembles a neuroscience or behavioral acquisition session. If a prepared replay dataset is later
+added to the `datoviz/data` repository, the example may optionally download and use it, but
+synthetic data must remain the default and fallback.
 
-The purpose is to stress the v0.4 scene API and rendering architecture in a realistic, update-heavy visualization workload:
+The purpose is to stress the v0.4 scene API and rendering architecture in a realistic, update-heavy
+visualization workload:
 
 - many stacked time series;
 - frequent partial data updates;
@@ -24,7 +31,10 @@ The purpose is to stress the v0.4 scene API and rendering architecture in a real
 - overlays, labels, cursor, and event markers;
 - stable frame rate without recreating resources every frame.
 
-The exact Datoviz v0.4 Python API is not yet fixed, so this document describes required behavior and data flow without relying on specific function names.
+The exact Datoviz v0.4 Python API is not yet fixed, so this document describes required behavior and
+data flow without relying on specific function names. The first practical slice should implement
+ring-buffer mode only, generate bounded chunks each frame, update just the dirty sample ranges, and
+draw readable digital step traces plus analog lines.
 
 ## Example name
 

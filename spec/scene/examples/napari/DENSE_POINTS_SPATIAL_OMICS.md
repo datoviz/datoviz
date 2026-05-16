@@ -8,6 +8,17 @@
 > - **Validation:** Stage-specific acceptance criteria covering current v0.4 behavior and the richer napari-class target.
 
 
+## Summary
+
+Build a dense napari Points-style spatial-omics demo that renders many biological coordinates over
+a tissue or atlas context with categorical or continuous coloring and level-of-detail controls. Stage
+1 should use a prepared Datoviz-ready cache derived from the lightweight SpatialData MERFISH mouse
+brain dataset, with MIBI-TOF or deterministic prepared data as fallbacks; Stage 2 can pivot to the
+larger ABC/Zhuang MERFISH showcase. The first practical slice is a C example using the current
+v0.4 scene -> DRP2 -> app path and `dvz_point()` with precomputed positions, colors, sizes, and LOD
+subsets. Validate with the Stage 1 acceptance criteria before claiming the richer point-renderer
+target.
+
 ## Purpose
 
 This demo shows a high-density `Points`-like napari workflow: millions of detected cells, transcript spots, molecular coordinates, or spatial-omics features over a tissue image. The goal is to demonstrate that a modern GPU backend can render dense biological point data with smooth pan/zoom, categorical coloring, opacity controls, and zoom-dependent level-of-detail.

@@ -8,6 +8,17 @@
 > - **Validation:** Smoke run plus domain-specific visual, picking/probe, and performance acceptance criteria.
 
 
+## Summary
+
+Build a polished neuroimaging example that displays 3D diffusion MRI tractography streamlines as
+large collections of variable-length paths, with interactive arcball navigation, color modes, depth
+handling, optional picking, and a path toward tubes or ribbons. The first data path should use a
+prepared compact Datoviz cache derived from DIPY's fornix example or another small bundle dataset;
+if real data is not available, start from deterministic synthetic/prepared streamlines and keep
+license notes for later downloads. The first implementation slice can use the current path or line
+fallbacks before introducing a dedicated tractography visual. Validate with the existing smoke,
+visual, picking/probe, and performance acceptance criteria.
+
 ## Goal
 
 Create a polished Datoviz v0.4 Python example showing **3D diffusion MRI tractography streamlines** as colored paths, tubes, or ribbons.

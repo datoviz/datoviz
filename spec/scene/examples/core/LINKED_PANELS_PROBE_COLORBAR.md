@@ -8,6 +8,17 @@
 > - **Validation:** Bounded smoke run plus screenshot/readback or fixture coverage when practical.
 
 
+## Summary
+
+Build a multi-panel image example that shares one scalar field, probe semantics, transient annotations,
+and a consolidated colorbar across two independently viewed panels. The first slice should use
+deterministic inline or synthetic scalar-field data and optional marker overlays, with no preprocessing.
+Start by proving shared field binding, per-panel panzoom, panel-local pick/readback requests,
+latest-request-wins probe state, and a single scene-level colorbar tied to the shared scalar mapping.
+Validation should use bounded smoke or focused fixture coverage, adding screenshot/readback checks when
+practical for panel views, accepted probe updates, stale-result rejection, and colorbar consistency.
+
+
 This example instantiates a multi-panel scene with shared data, linked interaction, transient
 annotations, and one consolidated explanatory object.
 

@@ -8,6 +8,17 @@
 > - **Validation:** Manual visual checklist plus bounded smoke command; add screenshot/readback validation when feasible.
 
 
+## Summary
+
+Build a Mars terrain assessment demo that renders a real DEM as a 3D mesh with a registered image
+or derived science layer draped over it. The preferred assets are public USGS Mars Human
+Exploration Zone DEM products, preprocessed offline from GeoTIFF DEM, orthoimage, and mask files
+into a compact mesh and texture cache; use a reduced prepared or synthetic fixture for the first
+slice. Start with one bounded, decimated tile, an arcball or turntable camera, elevation relief,
+and a texture or hillshade layer. Validate with a smoke launch and manual checks for DEM/image
+registration, depth, normals, camera behavior, and mask alignment.
+
+
 > **Execution Status**
 > - **Status:** `PROPOSAL`
 > - **Updated on:** `2026-05-16`

@@ -8,6 +8,18 @@
 > - **Validation:** Bounded smoke run plus manual interaction checklist for linked panels, picking, and updates.
 
 
+## Summary
+
+Build a toy medical-volume viewer with three synchronized orthogonal slice panels and one 3D volume
+rendering panel sharing cursor, slice, window/level, opacity, and sampling state. The preferred data
+path is a cached small medical volume from `datoviz/data`; if it is missing or unavailable, generate
+a deterministic synthetic phantom volume with realistic enough intensity structure for demos. The
+first practical slice should upload one 3D texture, render axial/sagittal/coronal slices in a 2x2
+layout, and update crosshairs from shared state before adding full raymarch controls. Validate with
+the existing bounded smoke/manual checklist path, covering startup, linked slice changes, crosshair
+updates, basic picking or dragging, and nonblank volume/slice rendering.
+
+
 ## Goal
 
 Create a Python example for the Datoviz v0.4 branch demonstrating an interactive medical volume viewer with:

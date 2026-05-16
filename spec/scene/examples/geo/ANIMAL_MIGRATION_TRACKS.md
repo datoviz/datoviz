@@ -8,6 +8,18 @@
 > - **Validation:** Smoke command, camera/interaction checklist, and visual checks for projection or coordinate correctness.
 
 
+## Summary
+
+Build a movement-ecology trajectory demo with individual animal tracks, time replay, selected
+animal highlighting, and optional environmental context. The preferred data is a curated public
+Movebank or Movebank Data Repository dataset converted offline into a compact cache with license,
+citation, species, and source metadata; use deterministic synthetic or prepared tracks for the
+first slice if the dataset is not finalized. Start with a regional map, colored paths per
+individual, current-position markers, and simple playback before linked metric panels. Validate
+with a smoke command plus manual checks for coordinate alignment, replay continuity, selection
+highlighting, trajectory readability, and cache metadata completeness.
+
+
 ## Example Name
 
 `ANIMAL_MIGRATION_TRACKS`

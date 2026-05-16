@@ -7,6 +7,17 @@
 > - **Preprocessing:** Document any data conversion script, output schema, coordinate normalization, and cache validation.
 > - **Validation:** Smoke run plus domain-specific visual, picking/probe, and performance acceptance criteria.
 
+## Summary
+
+Build a CFD visualization scene example showing a von Karman vortex street as a coupled scalar and
+particle-advection view: vorticity image, velocity-driven tracers, obstacle geometry, optional
+streamlines, and probes or diagnostics. Stage 1 should use deterministic synthetic flow generated
+from an analytic or semi-analytic vortex-street model, with a later prepared-cache path for real CFD
+frames using velocity, vorticity, obstacle, and diagnostics arrays. The first practical slice should
+create one 2D panzoom flow panel, animate the vorticity field and tracer particles, render the
+circular cylinder, provide play/pause, and expose a hover probe for velocity and vorticity. Validate
+with smoke execution, fluid-specific visual checks, probe checks, and staged performance criteria.
+
 
 ## Example Name
 

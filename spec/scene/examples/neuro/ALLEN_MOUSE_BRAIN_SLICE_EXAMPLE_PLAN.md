@@ -8,6 +8,16 @@
 > - **Validation:** Manual visual checklist plus bounded smoke command; add screenshot/readback validation when feasible.
 
 
+## Summary
+
+Build a native GLFW C example that loads the bundled Allen Mouse Brain RGBA volume and displays a
+movable antero-posterior slice through the active v0.4 scene -> DRP2 -> vklite/app path. The asset
+is `data/volumes/allen_mouse_brain_rgba.npy.gz`, interpreted as the documented C-order RGBA volume;
+no new public download is required for the first slice. The practical starting point is explicit
+retained volume slice state, a shader path driven by slice axis and normalized position, an AP GUI
+slider, and a bounded-frame command-line mode. Validate with the listed smoke command and manual
+checks that the slice appears, moves live, and does not require rebuilding the scene.
+
 > **Execution Status**
 > - **Status:** `PLANNING NOTE`
 > - **Updated on:** `2026-05-16`

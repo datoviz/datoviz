@@ -8,6 +8,17 @@
 > - **Validation:** Bounded smoke run plus screenshot/readback or fixture coverage when practical.
 
 
+## Summary
+
+Build an offscreen volume-rendering example that renders a volumetric sampled field into an export-oriented
+target and performs deterministic readback. Since the brief names no external dataset, the first slice
+should use deterministic inline or synthetic volume values and no preprocessing. Focus first on the volume
+resource, transfer/traversal parameters, offscreen render target, and readback target wiring through the
+scene -> DRP2 -> runtime path. Compute preprocessing should remain optional unless a future variant needs
+it. Validation should use the bounded smoke or fixture path, with screenshot/readback comparison as the
+main target because deterministic export is the point of the example.
+
+
 This example pressure-tests the `volume` family together with offscreen targets and deterministic
 readback.
 

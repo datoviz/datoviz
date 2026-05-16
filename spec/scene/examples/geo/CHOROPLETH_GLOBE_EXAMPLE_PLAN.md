@@ -8,6 +8,17 @@
 > - **Validation:** Manual visual checklist plus bounded smoke command; add screenshot/readback validation when feasible.
 
 
+## Summary
+
+Build an interactive choropleth globe with filled regional polygons, scalar color mapping, and
+crisp borders slightly above the Earth surface. Use a public polygon dataset and scalar attributes
+through a preprocessed cache once selected; if the source remains vague, begin with deterministic
+prepared or synthetic regions and values. The first slice should triangulate a small country,
+state, or fixture set onto a sphere, render colormapped fills, draw offset border paths, and use an
+arcball camera. Validate with a bounded smoke command and manual checks for recognizable regions,
+correct color assignment, depth behavior, border antialiasing, and absence of z-fighting.
+
+
 Date: 2026-05-16
 
 ## Goal

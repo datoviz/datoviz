@@ -8,6 +8,17 @@
 > - **Validation:** Bounded smoke run plus screenshot/readback or fixture coverage when practical.
 
 
+## Summary
+
+Build this as a realistic neuroscience pressure test in stages: a 3D atlas scene with transparent outer
+mesh, interior region meshes, a volume slice, picking/probe state, annotations, and a linked 2D subplot.
+No concrete external atlas cache is named, so the first implementation slice should use deterministic
+inline or synthetic meshes, region identities, and volume samples rather than inventing a dataset URL. Start
+with the mesh/volume scene resources, selection/probe request state, and one linked subplot update before
+adding richer UI controls. Validation should use bounded smoke plus fixture, screenshot, or readback
+coverage for rendering, region identity, and stale-result rejection where practical.
+
+
 This example pressure-tests a realistic neuroscience scene with nested anatomical regions, a
 transparent enclosing surface, interior region meshes, one volume slice backed by volumetric
 sampling, picking-driven selection, and one linked 2D subplot.

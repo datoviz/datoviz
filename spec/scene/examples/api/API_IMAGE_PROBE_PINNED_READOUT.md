@@ -8,6 +8,16 @@
 > - **Validation:** Header/API review plus focused scene tests when the sketch is promoted.
 
 
+## Summary
+
+Use this API sketch to pressure-test image probing and pinned readout annotations. It needs no external
+data; the first promoted slice should use deterministic inline image pixels and a simple continuous scale.
+Start with header/API review for probe requests/results, coordinate and scalar payloads, scale references,
+format descriptors, and retained pinned readout handles. Validation should remain API review until the
+surface is ready, then move to focused scene tests that verify probe result plumbing and annotation
+creation without exposing texture or readback implementation details.
+
+
 This example pressure-tests the public API shape for image sampling, semantic probe payloads, and
 pinned readout annotations.
 

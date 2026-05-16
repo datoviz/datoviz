@@ -7,6 +7,17 @@
 > - **Preprocessing:** Usually required; specify source download, conversion, decimation/packing, and generated cache files.
 > - **Validation:** Manual visual checklist plus bounded smoke command; add screenshot/readback validation when feasible.
 
+## Summary
+
+Build a C scene example that stress-tests astronomical label rendering by showing a dense Gaia DR3
+star field with many small source labels anchored to plotted points. The data path is a prepared
+Gaia field cache generated from a bounded TAP query, with render-ready binary arrays for positions,
+colors, point sizes, source IDs, magnitudes, proper motion, packed labels, and LOD index lists. The
+first practical slice should implement `gaia_many_labels_glfw.c` with one panzoom panel, a point
+layer, source-id labels at a bounded label budget, and basic hover or selection readout. Validate
+with the existing staged acceptance criteria: bounded smoke execution, visual checks for stable
+screen-space labels while panning and zooming, and performance checks for culling and label budgets.
+
 
 ## Purpose
 

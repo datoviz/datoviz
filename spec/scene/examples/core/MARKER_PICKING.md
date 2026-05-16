@@ -8,6 +8,17 @@
 > - **Validation:** Bounded smoke run plus screenshot/readback or fixture coverage when practical.
 
 
+## Summary
+
+Build a 2D `marker` scatter example that exercises the picking-enabled point-like path. Use deterministic
+inline or synthetic marker positions and styles, with no preprocessing, so the first slice can focus on
+normalized marker resources, style parameter uploads, the visible color pass, the picking pass, and a
+readback target. The interaction path should demonstrate latest-request-wins hover behavior and reject
+stale results using request and generation state. Validation should follow the bounded smoke or fixture
+path, with screenshot/readback checks when practical to confirm visible markers, pick identity routing, and
+correct handling of fast pointer-motion requests.
+
+
 This example instantiates a richer point-like family with a picking path.
 
 

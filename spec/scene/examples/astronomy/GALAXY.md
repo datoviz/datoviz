@@ -7,6 +7,17 @@
 > - **Preprocessing:** Usually required; specify source download, conversion, decimation/packing, and generated cache files.
 > - **Validation:** Manual visual checklist plus bounded smoke command; add screenshot/readback validation when feasible.
 
+## Summary
+
+Build a polished Python scene example that renders a Gaia-derived Milky Way star sample as an
+interactive 3D transparent point-sprite cloud with per-star color, size, arcball/orbit control, and
+slow default rotation. The intended data path is a preprocessed Gaia DR3 `.npz` stored in
+`datoviz/data`, downloaded into the normal local cache when missing, with a deterministic synthetic
+spiral-galaxy fallback if download or validation fails. The first practical slice should load the
+bounded dataset or fallback arrays, create one 3D panel through the scene layer, upload positions,
+colors, and sizes, and animate the camera or model. Validate with a bounded smoke run, cache/fallback
+checks, the visual checklist, and screenshot or readback validation when feasible.
+
 
 ## Goal
 

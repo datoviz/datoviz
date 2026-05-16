@@ -8,6 +8,17 @@
 > - **Validation:** Smoke command, camera/interaction checklist, and visual checks for projection or coordinate correctness.
 
 
+## Summary
+
+Build a projection-aware global wind visualization with antialiased vector glyphs over a map. The
+preferred data is a small preprocessed ERA5 10 m wind cache, with no live Copernicus or ECMWF API
+request at runtime and a deterministic synthetic fallback until that bundle exists. The first
+slice should be a static equirectangular or orthographic view with a wind-speed image, a simple
+coastline or land/ocean background, and projection-transformed arrows. Validate with a smoke run,
+camera/projection interaction checks, and visual inspection that vector orientation, density, and
+map coordinates remain correct under the selected projection.
+
+
 ## Example name
 
 `GLOBAL_WIND_PROJECTIONS`

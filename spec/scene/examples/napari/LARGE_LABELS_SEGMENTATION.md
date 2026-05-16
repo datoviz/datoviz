@@ -8,6 +8,17 @@
 > - **Validation:** Stage-specific acceptance criteria covering current v0.4 behavior and the richer napari-class target.
 
 
+## Summary
+
+Build a napari Labels-style segmentation viewer with a microscopy image underlay and an integer
+instance-label overlay supporting opacity, random label coloring, boundaries, and selected-label
+highlighting. The preferred data is BBBC038 / Kaggle 2018 nuclei segmentation, converted into a
+cached image plus label-map representation; development may use `human_mitosis`, `cells3d`, or
+deterministic generated labels when the download is unavailable. The first implementation slice
+should use prepared data and the closest current v0.4 image/label path while preserving the staged
+plan for a first-class `LabelsVisual`. Validation should follow the existing staged acceptance
+criteria, especially visual alignment, stable pan/zoom, and correct label coloring semantics.
+
 ## Purpose
 
 This demo shows the most napari-relevant rendering problem: a large microscopy image with a large instance-segmentation label map on top, rendered interactively with opacity, boundary rendering, random label coloring, and selected-label highlighting.

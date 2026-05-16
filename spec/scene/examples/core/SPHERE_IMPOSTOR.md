@@ -8,6 +8,17 @@
 > - **Validation:** Bounded smoke run plus screenshot/readback or fixture coverage when practical.
 
 
+## Summary
+
+Build a 3D `sphere` family example that uses the default impostor-first rendering direction with a camera
+controller. The input should be deterministic inline or synthetic sphere centers, radii, and appearance
+parameters; no preprocessing is needed for the first slice. Start by proving the scene resource contract:
+source item data, normalized sphere instance data, parameter block updates, and one render contribution.
+Mesh-backed fallback and advanced lighting can remain later variants. Validation should follow the bounded
+smoke or focused fixture path, adding screenshot/readback checks when practical to confirm sphere placement,
+radius handling, and the selected impostor path.
+
+
 This example instantiates the first-class `sphere` family with its default impostor-first direction.
 
 

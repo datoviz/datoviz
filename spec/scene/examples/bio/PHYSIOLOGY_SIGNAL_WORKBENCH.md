@@ -7,6 +7,17 @@
 > - **Preprocessing:** Document any data conversion script, output schema, coordinate normalization, and cache validation.
 > - **Validation:** Smoke run plus domain-specific visual, picking/probe, and performance acceptance criteria.
 
+## Summary
+
+Build an offline biomedical signal-analysis scene example centered on ECG inspection, with linked
+time-series panels, annotation markers, derived analysis views, and probe readouts. The preferred
+data path is a compact prepared PhysioNet-style ECG cache, such as an MIT-BIH or PTB-XL excerpt,
+containing signals, channel metadata, annotations, optional LOD envelopes, and derived RR data; a
+deterministic ECG-like synthetic fallback should remain annotation-aware if no cache is present. The
+first practical slice should render an overview timeline, stacked trace panel, annotation raster or
+overlay, linked time-axis panzoom, and hover/click sample or event readout. Validate with a bounded
+smoke run, domain visual checks, probe accuracy checks, and the staged performance criteria.
+
 
 ## Example Name
 

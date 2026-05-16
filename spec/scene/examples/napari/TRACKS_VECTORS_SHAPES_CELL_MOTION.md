@@ -8,6 +8,17 @@
 > - **Validation:** Stage-specific acceptance criteria covering current v0.4 behavior and the richer napari-class target.
 
 
+## Summary
+
+Build a napari-style time-lapse cell-motion scene combining image frames, segmentation masks,
+tracks, instantaneous motion vectors, and optional path or skeleton overlays. The preferred data is
+the Fluo-N2DH-SIM+ Cell Tracking Challenge dataset, with precomputed cached frames, labels, and
+track arrays; development may fall back to deterministic synthetic motion data when downloads or
+model-generated tracks are unavailable. The first practical slice should use the current v0.4 scene
+path to animate a small prepared frame range with retained image data plus point, line/path, and
+vector-like overlays. Validate against the staged acceptance criteria: smooth time updates, stable
+track tails and overlays, and a clear path toward the richer napari-class target.
+
 ## Purpose
 
 This demo shows dynamic cell-tracking data with image frames, segmentation masks, tracks, motion vectors, and optional path/shape overlays. It mirrors napari's `Tracks`, `Vectors`, and `Shapes` workflows while stressing the rendering of many time-dependent geometric primitives.

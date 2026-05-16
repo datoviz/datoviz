@@ -7,6 +7,18 @@
 > - **Preprocessing:** Document any data conversion script, output schema, coordinate normalization, and cache validation.
 > - **Validation:** Smoke run plus domain-specific visual, picking/probe, and performance acceptance criteria.
 
+## Summary
+
+Build an engineering post-processing scene example that displays a finite-element result as an
+interactive deformed 3D mesh with stress coloring, undeformed reference geometry, load controls,
+and element or node readout. The first data path should use a generated or prepared cantilever or
+bracket cache with rest nodes, stable surface indices, displacement, stress, boundary flags, load
+vectors, and optional diagnostics; real solver exports can be converted later into the same schema.
+The first practical slice should render one arcball 3D viewport, update deformed positions and
+stress colors without rebuilding indices, expose load/deformation controls, and report a picked face
+or element. Validate with smoke execution, FEA-specific visual checks, picking/probe checks, and
+staged performance criteria.
+
 
 ## Example Name
 

@@ -8,6 +8,17 @@
 > - **Validation:** Manual visual checklist plus bounded smoke command; add screenshot/readback validation when feasible.
 
 
+## Summary
+
+Build the text/math rendering example as a staged scene feature, not a one-shot full TeX engine. The target
+is bundled text, glyph, and LaTeX-style math rendering through scene resources that can feed DRP buffers,
+textures, samplers, shaders, and pipelines without relying on a system LaTeX installation. The first slice
+should use deterministic inline strings and a bounded bundled or generated font/atlas path, with any
+preprocessing documented and cacheable. Start with visible labels or bitmap math fallback before richer
+glyph-box layout. Validation should use a manual visual checklist and bounded smoke command, with
+screenshot/readback checks when feasible.
+
+
 ## Goal
 
 Add a bundled text and math rendering subsystem to Datoviz v0.4 that supports:

@@ -10,11 +10,20 @@
 
 ## Summary
 
-Create a Python example demonstrating high-density financial time-series visualization with Datoviz v0.4. The example should show a realistic market microstructure dashboard combining price, trades, volume, spread, and order-book liquidity over time.
+Create a Python example demonstrating high-density financial time-series visualization with Datoviz
+v0.4. The example should show a realistic market microstructure dashboard combining price, trades,
+volume, spread, and order-book liquidity over time.
 
-The example is intended to stress-test the new Datoviz scene architecture with dense 2D rendering, linked panels, camera interaction, overlays, picking, dynamic data updates, and level-of-detail logic. It should work out of the box by downloading a prepared dataset from the `datoviz/data` GitHub repository if the dataset is not already cached locally.
+The example is intended to stress-test the new Datoviz scene architecture with dense 2D rendering,
+linked panels, camera interaction, overlays, picking, dynamic data updates, and level-of-detail
+logic. It should work out of the box by downloading a prepared dataset from the `datoviz/data`
+GitHub repository if the dataset is not already cached locally.
 
-The exact Datoviz v0.4 Python API is not yet fixed. The implementation should therefore use the actual available v0.4 API while preserving the structure and behavior described here. The API is expected to be conceptually close to Datoviz v0.3 and to GSP-style scene abstractions.
+The exact Datoviz v0.4 Python API is not yet fixed. The implementation should therefore use the
+actual available v0.4 API while preserving the structure and behavior described here. The API is
+expected to be conceptually close to Datoviz v0.3 and to GSP-style scene abstractions. The first
+practical slice should load or generate one bounded session, draw the three core panels with shared
+horizontal navigation, and add a simple hover or crosshair before replay and advanced LOD.
 
 Suggested example name:
 

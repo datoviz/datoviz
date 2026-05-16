@@ -8,6 +8,17 @@
 > - **Validation:** Stage-specific acceptance criteria covering current v0.4 behavior and the richer napari-class target.
 
 
+## Summary
+
+Build a renderer/dataflow demo where a GPU-side processing step writes a probability map or
+segmentation-like texture and the scene renders it immediately as a napari-style overlay. The
+preferred input reuses BBBC038 nuclei images from the labels demo, with `cells3d` or a small local
+image as a fallback; the generated output should be deterministic and does not need a real neural
+network. The first slice should implement one simple compute-produced probability or mask texture
+over a prepared image and expose threshold, opacity, and colormap-like controls where supported.
+Validation targets the existing acceptance criteria: the output updates repeatedly, the overlay is
+visually aligned with the raw image, and the design demonstrates GPU-to-render interop.
+
 ## Purpose
 
 This demo illustrates a future napari workflow where an AI or GPU image-processing step produces an output that is immediately visualized without a CPU readback/reupload cycle. It does not need to run a real neural network; the point is to demonstrate renderer architecture: compute writes a probability map or segmentation-like texture, and render consumes it directly.

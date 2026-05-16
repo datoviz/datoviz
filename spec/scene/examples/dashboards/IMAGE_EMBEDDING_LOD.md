@@ -26,7 +26,8 @@ requiring an out-of-core streaming system on day one.
 
 This is an informative worked example, not a normative API proposal. It pressure-tests the scene
 image visual, panzoom/camera controllers, retained sampled fields, texture-array or atlas resource
-management, and item picking.
+management, and item picking. Validate through the smoke/manual checklist path by checking startup,
+LOD changes under zoom, nonblank rendering, culling behavior, and stable item picking.
 
 
 ## Example Name

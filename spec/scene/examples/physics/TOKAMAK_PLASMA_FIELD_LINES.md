@@ -7,6 +7,17 @@
 > - **Preprocessing:** Document any data conversion script, output schema, coordinate normalization, and cache validation.
 > - **Validation:** Smoke run plus domain-specific visual, picking/probe, and performance acceptance criteria.
 
+## Summary
+
+Build a fusion/plasma scene example that visualizes a tokamak equilibrium with transparent flux
+surfaces, helical magnetic field lines, a scalar slice or surface coloring, optional tracer motion,
+and linked radial profiles. Stage 1 should use deterministic synthetic toroidal geometry driven by
+major/minor radius, safety-factor profile, flux surfaces, and radial scalar profiles; later prepared
+equilibrium data can export the same field-line, surface, slice, and profile cache arrays. The first
+practical slice should render one 3D arcball viewport with flux-surface meshes, colored field-line
+paths, one scalar cross-section, and selected-line or surface readout. Validate with smoke execution,
+plasma-specific visual checks, picking/probe checks, and staged performance criteria.
+
 
 ## Example Name
 

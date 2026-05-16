@@ -8,6 +8,16 @@
 > - **Validation:** Header/API review plus focused scene tests when the sketch is promoted.
 
 
+## Summary
+
+Use this API sketch to pressure-test shared scale objects, colormaps, panel-attached colorbars, and retained
+annotation labels. No external data is required; the first promoted slice can use the inline depth scale,
+builtin colormap handle, and one deterministic label placement shown in the flow. Start with header/API
+review of ownership, formatting descriptors, and data-anchored placement before adding a focused scene
+test. Validation should confirm the public object relationships first, then exercise colorbar and label
+creation without depending on backend-specific runtime details.
+
+
 This example pressure-tests the public API shape for shared scale objects, colormap objects,
 panel-attached colorbars, and retained annotation labels.
 

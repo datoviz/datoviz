@@ -8,6 +8,17 @@
 > - **Validation:** Manual visual checklist plus bounded smoke command; add screenshot/readback validation when feasible.
 
 
+## Summary
+
+Build a deterministic air-traffic trajectory demo with regional map context, path rendering, and
+animated aircraft positions. The real-data path should preprocess OpenSky-style ADS-B tracks and
+optional OurAirports metadata into a compact cache; the runtime example must not call a live API,
+and the first slice can use prepared or synthetic tracks if access is unresolved. Start with a 2D
+panzoom regional view showing a few hours of trajectories, moving oriented markers, and color by
+altitude, speed, or time. Validate with a smoke run plus manual checks for map alignment, track
+splitting, replay continuity, marker orientation, and stable scene updates.
+
+
 Date: 2026-05-16
 
 ## Goal

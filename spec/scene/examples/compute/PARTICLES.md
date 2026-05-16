@@ -8,6 +8,18 @@
 > - **Validation:** Bounded smoke run, deterministic seed, and visual/readback criteria for the simulation state.
 
 
+## Summary
+
+Build a GPU particle-system example that uses a compute pass to update a persistent particle
+storage buffer and renders the same buffer as a dense galaxy, vortex, or nebula-like scene. The
+default data should be generated deterministically: particle positions, velocities, colors, sizes,
+and optional palette or preset values must work without external downloads. The first practical
+slice should use an O(N) analytic force field with a safe particle count, direct compute-to-render
+resource flow, and a simple camera before adding stress presets, trails, or mouse forces. Validate
+with a bounded smoke run using a fixed seed, confirming that particles move, remain finite, render
+non-empty frames, and avoid GPU-to-CPU copies during animation.
+
+
 See also [../../proposals/PARTICLE_SYSTEM_DESIGN.md](../../proposals/PARTICLE_SYSTEM_DESIGN.md) for the
 scene-level particle-system design that separates GPU-updated simulation state, render views,
 CUDA/CuPy producers, and optional track/trail consumers.

@@ -8,6 +8,16 @@
 > - **Validation:** Header/API review plus focused scene tests when the sketch is promoted.
 
 
+## Summary
+
+Use this API sketch to pressure-test mesh selection, face/object identity, and linked highlighting across
+two panels. It requires no external data; the first promoted slice should use deterministic inline mesh
+buffers and link keys. Start with header/API review of retained mesh resources, pick requests/results,
+selection state, and link-channel handles before implementing a focused scene test. Validation should
+confirm the public data flow without backend-specific handles, then exercise pick application and linked
+highlight propagation when the sketch is promoted.
+
+
 This example pressure-tests the public API shape for mesh object/face selection and linked
 highlighting.
 

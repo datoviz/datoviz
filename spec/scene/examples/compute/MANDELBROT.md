@@ -8,6 +8,19 @@
 > - **Validation:** Bounded smoke run, deterministic seed, and visual/readback criteria for the simulation state.
 
 
+## Summary
+
+Build a GPU Mandelbrot deep-zoom example that renders a fullscreen procedural fractal through
+Datoviz scene/DRP resources, with smooth pan/zoom interaction and a deterministic animated path.
+The example uses generated shader inputs only: uniforms for center, scale, aspect, iteration count,
+precision mode, and palette parameters, plus any generated buffers needed by the chosen fullscreen
+visual. The first practical slice should render one fixed deep-zoom location with double-single
+arithmetic and a bounded scripted zoom before adding richer interaction or optional perturbation
+math. Validate with a bounded smoke run using deterministic defaults, checking that the frame
+renders, navigation updates shader state, and readback or screenshot criteria catch a blank or
+obviously incorrect fractal.
+
+
 ## Goal
 
 Create a Datoviz v0.4 example showing a high-precision, deeply zoomable Mandelbrot fractal rendered interactively on the GPU.

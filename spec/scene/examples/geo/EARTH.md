@@ -11,6 +11,10 @@
 ## Summary
 
 Create a self-contained Python example for the Datoviz v0.4 branch that demonstrates **cubemap rendering** with an interactive **3D globe** in front of a **universe / deep-space background**.
+Use bundled or cached cubemap and Earth texture assets, with deterministic generated placeholders
+if assets are missing. The first practical slice is the fake-sphere Earth, skybox, orbit camera,
+and slow spin; validation follows a smoke launch plus manual checks for background rotation, globe
+animation, interaction, and stable rendering.
 
 The example must open a window and immediately display:
 

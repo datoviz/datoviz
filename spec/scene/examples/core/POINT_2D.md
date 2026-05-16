@@ -8,6 +8,17 @@
 > - **Validation:** Bounded smoke run plus screenshot/readback or fixture coverage when practical.
 
 
+## Summary
+
+Build the smallest useful retained scene path for a 2D `point` visual in one panel with panzoom. The data
+should be deterministic inline or synthetic coordinates, sizes, and colors, with no preprocessing. The
+first implementation slice should prove the source `ItemTable`, normalized VisualSpace item resource,
+style/default parameter handling, and a single color-pass render node. Keep the panzoom transform panel
+local so navigation does not trigger point renormalization or data upload. Validate with a bounded smoke
+run and, when practical, screenshot/readback or fixture coverage for both the initial render and a simple
+data-change frame.
+
+
 This example instantiates the simplest meaningful `point` scene path.
 
 

@@ -8,6 +8,18 @@
 > - **Validation:** Bounded smoke run, deterministic seed, and visual/readback criteria for the simulation state.
 
 
+## Summary
+
+Build a Datoviz v0.4 compute example where a Gray-Scott reaction-diffusion simulation updates a
+GPU ping-pong state texture or buffer every frame and the render pass samples that state directly.
+No external data is required; the initial concentrations, perturbation patch, palette, and parameter
+presets should be generated deterministically, with any optional palette asset cached and backed by
+a fallback. The first practical slice should run a fixed 512x512 simulation with one preset, a
+single render panel, and no CPU readback during animation. Validate with a bounded smoke run that
+advances a deterministic number of steps and checks visual output or readback statistics for a
+non-static, finite concentration field.
+
+
 ## Purpose
 
 This example demonstrates how a Datoviz v0.4 scene can combine a GPU compute simulation with rendering in the same frame, without any GPU-to-CPU readback or CPU-mediated texture updates.

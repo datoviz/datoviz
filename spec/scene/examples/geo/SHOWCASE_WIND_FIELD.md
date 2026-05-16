@@ -8,6 +8,17 @@
 > - **Validation:** Smoke command, camera/interaction checklist, and visual checks for projection or coordinate correctness.
 
 
+## Summary
+
+Build a C GLFW showcase that renders a global 2D wind field through the active scene -> DRP2 ->
+app path. The default data should be deterministic synthetic climate-like wind, with optional later
+support for a prepared ERA5 bundle rather than a live download. The first practical slice is one
+equirectangular panzoom panel with a wind-speed background, CPU-generated arrow geometry, and
+optional path-based streamlines using existing visuals. Validate it with a bounded smoke command
+once the example exists, plus manual visual checks for plausible circulation bands, arrow
+orientation, projection coordinates, and stable frame execution.
+
+
 ## Purpose
 
 Create a polished scientific showcase that renders a large 2D vector field with arrows and

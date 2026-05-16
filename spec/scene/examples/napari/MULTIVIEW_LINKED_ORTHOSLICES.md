@@ -8,6 +8,17 @@
 > - **Validation:** Stage-specific acceptance criteria covering current v0.4 behavior and the richer napari-class target.
 
 
+## Summary
+
+Build a linked multiview volume viewer with XY, XZ, YZ, and 3D overview panels sharing one
+underlying dataset and synchronized cursor or slice state. The main data source is the cached
+`cells3d` volume reused from the volume-clipping demo; optional OME-Zarr data is only a stretch path
+when already cached. The first implementation slice should load the prepared 3D volume, derive three
+2D slice textures from the current coordinate, render them in separate panels, and propagate
+crosshair or scroll updates across views. Validation should follow the file's acceptance criteria:
+all panels remain synchronized, the 3D overview reflects the active slice planes, and interaction
+does not duplicate the underlying volume state.
+
 ## Purpose
 
 This demo shows a multi-panel viewer with linked orthogonal slice views and a 3D overview: XY, XZ, YZ, and 3D. It is meant to connect directly to napari's architectural discussions around multiple canvases, linked layers, shared data, and synchronized state.

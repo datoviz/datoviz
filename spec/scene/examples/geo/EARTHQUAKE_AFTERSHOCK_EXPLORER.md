@@ -8,6 +8,18 @@
 > - **Validation:** Smoke command, camera/interaction checklist, and visual checks for projection or coordinate correctness.
 
 
+## Summary
+
+Build a geophysical event-catalog explorer for an earthquake aftershock sequence, with linked map,
+depth, and time views as later stages. The preferred data is a prepared Ridgecrest 2019 aftershock
+cache derived offline from USGS ComCat, with a deterministic synthetic strike-slip sequence as the
+fallback and no runtime network dependency. The first practical slice is a local-kilometer 3D crust
+panel with magnitude-scaled points, elapsed-time color, depth-positive-down coordinates, and an
+optional fault-trace path. Validate with a smoke command, camera/interaction checklist, and manual
+visual checks for coordinate projection, depth orientation, event encodings, and selection
+highlighting once picking is added.
+
+
 ## Example Name
 
 `EARTHQUAKE_AFTERSHOCK_EXPLORER`
