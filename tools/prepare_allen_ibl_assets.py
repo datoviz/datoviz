@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import struct
 import urllib.error
 import urllib.request
 from dataclasses import dataclass
@@ -94,45 +95,70 @@ def _load_obj(path: Path) -> MeshData:
     )
 
 
-def _load_ascii_ply(path: Path) -> MeshData:
-    """Load a simple ASCII PLY triangle mesh."""
-    with path.open("r", encoding="utf8", errors="replace") as stream:
-        if stream.readline().strip() != "ply":
-            raise ValueError(f"{path} is not a PLY file")
+def _load_ply(path: Path) -> MeshData:
+    """Load a simple ASCII or binary-little-endian PLY triangle mesh."""
+    raw = path.read_bytes()
+    header_end = raw.find(b"end_header\n")
+    if header_end < 0:
+        raise ValueError(f"{path} has no PLY end_header")
+    header_text = raw[:header_end].decode("ascii", errors="replace")
+    header_lines = header_text.splitlines()
+    if not header_lines or header_lines[0] != "ply":
+        raise ValueError(f"{path} is not a PLY file")
 
-        vertex_count = 0
-        face_count = 0
-        is_ascii = False
-        while True:
-            line = stream.readline()
-            if not line:
-                raise ValueError(f"{path} has no PLY end_header")
-            stripped = line.strip()
-            if stripped == "format ascii 1.0":
-                is_ascii = True
-            elif stripped.startswith("element vertex "):
-                vertex_count = int(stripped.split()[2])
-            elif stripped.startswith("element face "):
-                face_count = int(stripped.split()[2])
-            elif stripped == "end_header":
-                break
-        if not is_ascii:
-            raise ValueError(f"{path} is not an ASCII PLY file")
+    fmt = ""
+    vertex_count = 0
+    face_count = 0
+    vertex_properties = 0
+    in_vertex = False
+    for line in header_lines:
+        if line.startswith("format "):
+            fmt = line.split()[1]
+        elif line.startswith("element vertex "):
+            vertex_count = int(line.split()[2])
+            in_vertex = True
+        elif line.startswith("element face "):
+            face_count = int(line.split()[2])
+            in_vertex = False
+        elif in_vertex and line.startswith("property "):
+            vertex_properties += 1
 
+    if fmt == "ascii":
+        text = raw[header_end + len(b"end_header\n") :].decode("ascii", errors="replace")
+        lines = iter(text.splitlines())
         vertices = []
         for _ in range(vertex_count):
-            parts = stream.readline().split()
+            parts = next(lines).split()
             vertices.append((float(parts[0]), float(parts[1]), float(parts[2])))
 
         faces = []
         for _ in range(face_count):
-            parts = stream.readline().split()
+            parts = next(lines).split()
             if not parts:
                 continue
             count = int(parts[0])
             idx = [int(value) for value in parts[1 : 1 + count]]
             for i in range(1, len(idx) - 1):
                 faces.append((idx[0], idx[i], idx[i + 1]))
+    elif fmt == "binary_little_endian":
+        offset = header_end + len(b"end_header\n")
+        vertex_stride = 4 * vertex_properties
+        vertices = []
+        for i in range(vertex_count):
+            vertices.append(struct.unpack_from("<fff", raw, offset + i * vertex_stride))
+        offset += vertex_count * vertex_stride
+
+        faces = []
+        for _ in range(face_count):
+            count = raw[offset]
+            offset += 1
+            idx = struct.unpack_from("<" + "i" * count, raw, offset)
+            offset += 4 * count
+            for i in range(1, len(idx) - 1):
+                faces.append((idx[0], idx[i], idx[i + 1]))
+    else:
+        raise ValueError(f"{path} has unsupported PLY format {fmt!r}")
+
     return MeshData(
         np.ascontiguousarray(vertices, dtype=np.float64),
         np.ascontiguousarray(faces, dtype=np.uint32),
@@ -145,7 +171,7 @@ def _load_region_mesh(region: RegionSpec, cache_dir: Path) -> MeshData:
     if path.suffix == ".obj":
         mesh = _load_obj(path)
     elif path.suffix == ".ply":
-        mesh = _load_ascii_ply(path)
+        mesh = _load_ply(path)
     else:
         raise ValueError(f"unsupported mesh suffix: {path.suffix}")
     if mesh.vertices.size == 0 or mesh.faces.size == 0:
