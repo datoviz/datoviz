@@ -95,6 +95,7 @@ typedef struct ProteinExampleState
     int render_mode;
     int atom_color_mode;
     int ribbon_color_mode;
+    bool standard_material;
     bool ssao_enabled;
     bool msaa_enabled;
     bool msaa_alpha_to_coverage;
@@ -107,6 +108,12 @@ typedef struct ProteinExampleState
     float ssao_min_visibility;
     float ssao_samples;
     float msaa_samples;
+    float ambient;
+    float diffuse;
+    float specular;
+    float shininess;
+    float roughness;
+    float rim_strength;
     bool ssao_blur;
 } ProteinExampleState;
 
@@ -554,6 +561,43 @@ static void _apply_render_mode(ProteinExampleState* state)
 
 
 /**
+ * Update sphere and ribbon materials from the current material controls.
+ *
+ * @param state example state
+ */
+static void _apply_material(ProteinExampleState* state)
+{
+    ANN(state);
+
+    DvzMaterialDesc material = dvz_material_desc();
+    material.light_direction[0] = 0.25f;
+    material.light_direction[1] = 0.65f;
+    material.light_direction[2] = 0.72f;
+    if (state->standard_material)
+    {
+        material.model = DVZ_MATERIAL_MODEL_STANDARD;
+        material.standard.roughness = state->roughness;
+        material.standard.specular = state->specular;
+        material.standard.rim_strength = state->rim_strength;
+    }
+    else
+    {
+        material.model = DVZ_MATERIAL_MODEL_PHONG;
+        material.phong.ambient = state->ambient;
+        material.phong.diffuse = state->diffuse;
+        material.phong.specular = state->specular;
+        material.phong.shininess = state->shininess;
+    }
+
+    if (state->spheres != NULL && dvz_visual_set_material(state->spheres, &material) != 0)
+        dvz_fprintf(stderr, "dvz_visual_set_material() failed for spheres\n");
+    if (state->ribbon != NULL && dvz_visual_set_material(state->ribbon, &material) != 0)
+        dvz_fprintf(stderr, "dvz_visual_set_material() failed for ribbon\n");
+}
+
+
+
+/**
  * Update the panel SSAO state from live controls.
  *
  * @param state example state
@@ -682,6 +726,30 @@ static void _protein_gui(DvzGui* gui, DvzAppWindow* win, void* user_data)
             if (igCombo_Str_arr("Coloring", &state->atom_color_mode, color_modes, 3, 3))
                 _apply_atom_color(state);
         }
+
+        bool material_changed = false;
+        material_changed |= dvz_gui_checkbox(gui, "Standard material", &state->standard_material);
+        if (state->standard_material)
+        {
+            material_changed |=
+                dvz_gui_slider_float(gui, "Roughness", &state->roughness, 0.02f, 1.0f);
+            material_changed |=
+                dvz_gui_slider_float(gui, "Specular", &state->specular, 0.0f, 1.5f);
+            material_changed |= dvz_gui_slider_float(gui, "Rim", &state->rim_strength, 0.0f, 1.0f);
+        }
+        else
+        {
+            material_changed |=
+                dvz_gui_slider_float(gui, "Ambient", &state->ambient, 0.0f, 1.0f);
+            material_changed |=
+                dvz_gui_slider_float(gui, "Diffuse", &state->diffuse, 0.0f, 1.5f);
+            material_changed |=
+                dvz_gui_slider_float(gui, "Specular", &state->specular, 0.0f, 1.5f);
+            material_changed |=
+                dvz_gui_slider_float(gui, "Shininess", &state->shininess, 1.0f, 160.0f);
+        }
+        if (material_changed)
+            _apply_material(state);
 
         bool spin_changed = false;
         spin_changed |= dvz_gui_checkbox(gui, "Auto rotate", &state->spin_enabled);
@@ -944,6 +1012,7 @@ int main(int argc, char** argv)
         .render_mode = PROTEIN_RENDER_SPHERES,
         .atom_color_mode = PROTEIN_ATOM_COLOR_ELEMENT,
         .ribbon_color_mode = PROTEIN_RIBBON_COLOR_CHAIN,
+        .standard_material = true,
         .ssao_enabled = true,
         .msaa_enabled = true,
         .msaa_alpha_to_coverage = true,
@@ -956,8 +1025,15 @@ int main(int argc, char** argv)
         .ssao_min_visibility = 0.582f,
         .ssao_samples = 32.0f,
         .msaa_samples = 8.0f,
+        .ambient = 0.20f,
+        .diffuse = 0.76f,
+        .specular = 0.55f,
+        .shininess = 80.0f,
+        .roughness = 0.30f,
+        .rim_strength = 0.12f,
         .ssao_blur = true,
     };
+    _apply_material(&state);
     _apply_msaa(&state);
     _apply_ssao(&state);
 
