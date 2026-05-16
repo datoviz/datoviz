@@ -11,5 +11,6 @@ void main()
 {
     vec4 keepAlive = fragColor + vec4(fragWorldPos + fragCameraPos, fragDepth);
     vec3 n = normalize(fragNormal);
-    outNormal = vec4(n * 0.5 + 0.5, 1.0) + keepAlive * 0.0;
+    float viewDistance = length(fragCameraPos - fragWorldPos);
+    outNormal = vec4(n * 0.5 + 0.5, viewDistance) + keepAlive * 0.0;
 }

@@ -24,13 +24,18 @@ vec4 projectDepth(vec4 viewPos)
     return clip;
 }
 
+float coverageThreshold(vec2 fragCoord)
+{
+    return fract(52.9829189 * fract(0.06711056 * fragCoord.x + 0.00583715 * fragCoord.y));
+}
+
 void main()
 {
     vec2 coord = (2.0 * gl_PointCoord - 1.0) * fragSpriteScale;
     coord.y = -coord.y;
     float dist = length(coord);
     float coverage = clamp((1.0 - dist) / max(fwidth(dist), 1e-6) + 0.5, 0.0, 1.0);
-    if (coverage <= 0.0)
+    if (coverage <= coverageThreshold(gl_FragCoord.xy))
         discard;
 
     vec2 surfaceCoord = dist > 1.0 ? coord / max(dist, 1e-6) : coord;
@@ -53,5 +58,5 @@ void main()
     vec3 rgb = fragColor.rgb * (material.params.x + material.params.y * lambert) +
                vec3(material.params.z * spec);
     vec3 cue = vec3(gl_FragDepth, length(cameraWorld - surfaceWorld), length(surfaceWorld));
-    outColor = vec4(applyDepthCue(clamp(rgb, 0.0, 1.0), cue), fragColor.a * coverage);
+    outColor = vec4(applyDepthCue(clamp(rgb, 0.0, 1.0), cue), fragColor.a);
 }

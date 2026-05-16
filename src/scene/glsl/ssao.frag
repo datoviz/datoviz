@@ -22,8 +22,10 @@ void main()
         return;
     }
 
-    vec3 centerNormal = texelFetch(sampler2D(normalTex, samp), p, 0).xyz * 2.0 - 1.0;
+    vec4 centerSample = texelFetch(sampler2D(normalTex, samp), p, 0);
+    vec3 centerNormal = centerSample.xyz * 2.0 - 1.0;
     centerNormal = normalize(centerNormal);
+    float centerViewDepth = max(centerSample.a, 1e-6);
 
     vec2 kernel[16] = vec2[](
         vec2(+1.0, 0.0), vec2(-1.0, 0.0), vec2(0.0, +1.0), vec2(0.0, -1.0),
@@ -36,7 +38,7 @@ void main()
     float bias = max(ssao.params.z, 0.0);
     int sampleCount = int(clamp(round(ssao.params.w), 4.0, 16.0));
     float pixelRadius = clamp(radius * 8.0, 1.0, 64.0);
-    float depthRadius = max(radius * 0.05, 1e-5);
+    float viewRadius = max(radius * 0.12, 1e-4);
 
     float occlusion = 0.0;
     for (int i = 0; i < sampleCount; i++)
@@ -45,12 +47,15 @@ void main()
         float sampleDepth = texelFetch(sampler2D(depthTex, samp), q, 0).r;
         if (sampleDepth >= 0.999999)
             continue;
-        vec3 sampleNormal = texelFetch(sampler2D(normalTex, samp), q, 0).xyz * 2.0 - 1.0;
+        vec4 sampleNormalDepth = texelFetch(sampler2D(normalTex, samp), q, 0);
+        vec3 sampleNormal = sampleNormalDepth.xyz * 2.0 - 1.0;
         sampleNormal = normalize(sampleNormal);
-        float closer = centerDepth - sampleDepth - bias;
-        float depthWeight = smoothstep(0.0, depthRadius, closer);
+        float sampleViewDepth = max(sampleNormalDepth.a, 1e-6);
+        float delta = centerViewDepth - sampleViewDepth;
+        float depthWeight = smoothstep(0.0, viewRadius, delta - bias);
+        float rangeWeight = 1.0 - smoothstep(viewRadius, 8.0 * viewRadius, abs(delta));
         float normalWeight = clamp(1.0 - dot(centerNormal, sampleNormal), 0.0, 1.0);
-        occlusion += depthWeight * (0.35 + 0.65 * normalWeight);
+        occlusion += depthWeight * rangeWeight * (0.35 + 0.65 * normalWeight);
     }
 
     float visibility = 1.0 - occlusion / float(sampleCount);

@@ -775,15 +775,6 @@ static bool _emitter_prepare_render_multi(
                 ok = dvz_drp2_stream_pipeline_set_color_target(
                     stream, 0, VK_FORMAT_R16G16B16A16_SFLOAT);
             }
-            else if (ok && desc.kind == DVZ_SCENE_VISUAL_DESC_SPHERE)
-            {
-                ok = dvz_drp2_stream_pipeline_set_color_blend(
-                    stream, 0, VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,
-                    VK_BLEND_OP_ADD, VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,
-                    VK_BLEND_OP_ADD,
-                    VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |
-                        VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT);
-            }
             else if (ok && _alpha_mode_is_standard_blend(alpha_mode))
             {
                 ok = dvz_drp2_stream_pipeline_set_color_blend(

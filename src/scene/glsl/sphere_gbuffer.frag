@@ -22,13 +22,18 @@ vec4 projectDepth(vec4 viewPos)
     return clip;
 }
 
+float coverageThreshold(vec2 fragCoord)
+{
+    return fract(52.9829189 * fract(0.06711056 * fragCoord.x + 0.00583715 * fragCoord.y));
+}
+
 void main()
 {
     vec2 coord = (2.0 * gl_PointCoord - 1.0) * fragSpriteScale;
     coord.y = -coord.y;
     float dist = length(coord);
     float coverage = clamp((1.0 - dist) / max(fwidth(dist), 1e-6) + 0.5, 0.0, 1.0);
-    if (coverage <= 0.5)
+    if (coverage <= coverageThreshold(gl_FragCoord.xy))
         discard;
 
     vec2 surfaceCoord = dist > 1.0 ? coord / max(dist, 1e-6) : coord;
@@ -40,5 +45,5 @@ void main()
     gl_FragDepth = clamp(depthClip.z / max(abs(depthClip.w), 1e-6), 0.0, 1.0);
 
     vec3 normalWorld = normalize(mat3(inverse(mvp.view)) * normalView);
-    outNormal = vec4(normalWorld * 0.5 + 0.5, coverage) + fragColor * 0.0;
+    outNormal = vec4(normalWorld * 0.5 + 0.5, length(surfaceView.xyz)) + fragColor * 0.0;
 }
