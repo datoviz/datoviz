@@ -35,6 +35,10 @@ dvz_panel_add_visual(panel, visual)
 
 ## Descriptor Fields
 
+Status on 2026-05-17: this section is the focused home for the useful custom-visual descriptor
+sketch from the retired broad scene API draft. The exact installed C names are still future API
+work; the semantic fields below are the design contract.
+
 ### Attribute Schema
 
 ```text
@@ -95,7 +99,7 @@ automatically by the scene's shader preprocessor using standard insertion points
 ```text
 desc.topology        — primitive topology: DVZ_TOPOLOGY_POINT_LIST, _LINE_LIST,
                        _TRIANGLE_LIST, _TRIANGLE_STRIP, etc.
-desc.alpha_mode      — DVZ_ALPHA_OPAQUE, _BLENDED, _BLENDED_EXACT, or _MASK
+desc.alpha_mode      — DVZ_ALPHA_OPAQUE, _BLENDED, _WBOIT, _DEPTH_PEEL, or _MASK
 desc.depth_test      — bool (default true)
 desc.cull_mode       — DVZ_CULL_NONE, _BACK, _FRONT
 ```
@@ -164,16 +168,19 @@ dvz_visual_set_uniform(visual, slot_index, data, size)
 ### Texture Slots
 
 ```text
-desc.textures        — array of DvzTextureSlotDesc
-desc.texture_count   — number of texture slots
+desc.sampled_fields      — array of sampled-field slot descriptors
+desc.sampled_field_count — number of sampled-field slots
 ```
 
-Each `DvzTextureSlotDesc` declares the slot index and sampler type.
-Textures are set via:
+Each sampled-field slot descriptor declares the semantic slot name, shader binding, dimensionality,
+format expectations, and sampler type. Fields are set via the ordinary visual field-binding API:
 
 ```text
-dvz_visual_set_texture(visual, slot_index, texture)
+dvz_visual_set_field(visual, "slot_name", field)
 ```
+
+Backend texture and sampler objects remain runtime materialization details, not custom-visual API
+objects.
 
 
 ### Capability Requirements

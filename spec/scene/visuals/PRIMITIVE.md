@@ -40,7 +40,8 @@ Topology is the **second argument** to the constructor:
 DvzVisual* vis = dvz_primitive(scene, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, flags);
 ```
 
-The full `DvzPrimitiveTopology` enum is defined in `scene_api.h`.
+The full `DvzPrimitiveTopology` enum is imported by `include/datoviz/scene/enums.h` from the shared
+Vulkan/vklite enum surface.
 
 | Topology | Description |
 |---|---|

@@ -36,6 +36,10 @@ Set at visual creation time.
 
 ## Built-In Shapes (`code` mode)
 
+The shape vocabulary below preserves the useful enum sketch from the retired broad scene API draft.
+Final installed enum names may differ, but the semantic set should remain stable unless the marker
+family spec is revised.
+
 | Shape | | Shape | | Shape | |
 |---|---|---|---|---|---|
 | `disc` | filled circle | `square` | axis-aligned square | `diamond` | rotated square |

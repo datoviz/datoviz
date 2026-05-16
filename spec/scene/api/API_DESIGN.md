@@ -123,11 +123,11 @@ The preferred binding model is:
 Conceptually:
 
 ```c
-dvz_visual_set_texture(visual, "texture", tex);   // bind a DvzTexture* to a named slot
-dvz_visual_set_scale(visual,   "colormap", scale); // bind a DvzScale* to a named slot
+dvz_visual_set_field(visual, "field", field);      // bind a DvzSampledField* to a named slot
+dvz_visual_set_scale(visual, "colormap", scale);   // bind a DvzScale* to a named slot
 ```
 
-Resource roles are identified by the slot name string from the per-family spec (e.g. `"texture"`,
+Resource roles are identified by the slot name string from the per-family spec (e.g. `"field"`,
 `"colormap"`). There is no numeric role enum or public parameter-block struct.
 Item and indexed-geometry resources are managed internally through `dvz_visual_set_data`.
 
@@ -247,8 +247,9 @@ The public API may wrap conversion and submission in `dvz_runtime_submit_frame_p
 primary runtime boundary is the DRP2 command stream.
 
 **Terminology note**: `canvas` (from `core/RUNTIME_BOUNDARY.md`) is the application-owned window +
-swapchain object. The scene never holds a canvas reference. A `DvzRenderTarget` is the
-scene-facing logical output handle resolved by the runtime — not a canvas.
+swapchain object. The scene never holds a canvas reference. Earlier drafts used a public
+`DvzRenderTarget`; the active v0.4 path carries logical output size through `DvzFigure` and resolves
+native targets in `DvzAppWindow` / `DvzDrp2Runtime`.
 
 
 ## Preferred Error And Diagnostics Surface
@@ -315,4 +316,4 @@ This document should be read together with:
 4. `../validation/VALIDATION.md` and `../validation/ADAPTATION.md` for stage ordering and failure semantics,
 5. `../core/RUNTIME_BOUNDARY.md` for the lower execution boundary and service model,
 6. `IMPLEMENTATION_NOTES.md` for the current implementation-facing translation of this profile,
-7. `../headers/scene_api.h` only as legacy scratch material for ideas not yet promoted.
+7. `../headers/README.md` for historical sketch status.

@@ -281,6 +281,10 @@ with `dvz_visual_set_param(visual, attr_name, value)`.
 Every visual family has defined default values for all optional attributes and visual-wide
 parameters. These defaults are documented in each family's spec.
 
+Status on 2026-05-17: `DvzStyle` remains a future convenience layer, not an installed public API.
+The active implementation uses direct per-visual data, parameter, material, and technique setters.
+Keep style semantics here as the retained design target for shared defaults.
+
 When the user does not set an optional attribute or parameter:
 
 1. the visual uses the documented default value,

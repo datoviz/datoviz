@@ -111,9 +111,7 @@ Unless a document says otherwise, this directory should be read with the followi
 6. `decisions/` records are historical ADR-style records and should explain rationale, not hold
    current implementation-facing rules on their own,
 7. `api/API_SURFACE.md` is the normative bridge from scene semantics to public C API shape policy,
-8. installed headers under `include/datoviz/scene*.h` are authoritative for names already drafted;
-   `headers/scene_api.h` is legacy auxiliary scratch material only where it covers ideas not yet in
-   installed headers.
+8. installed headers under `include/datoviz/scene*.h` are authoritative for names already drafted.
 
 ## Status Vocabulary
 
@@ -138,8 +136,7 @@ For cross-tree overlap, use this source-of-truth order:
 5. historical scene decision records for rationale behind older choices,
 6. installed scene headers for public names and signatures that already exist,
 7. `spec/scene/api/API_SURFACE.md` for public API shape policy and not-yet-implemented groups,
-8. `spec/scene/headers/scene_api.h` for legacy auxiliary draft C sketches not yet promoted,
-9. examples and deferred trackers as informative material.
+8. examples, deferred trackers, and historical header sketches as informative material.
 
 
 ## Recommended Reading Order
@@ -315,7 +312,7 @@ Proposals, history, and examples:
 - [proposals/README.md](proposals/README.md): active addenda, promotion targets, and absorbed
   proposal status.
 - [decisions/README.md](decisions/README.md): historical ADR-style policy.
-- [headers/README.md](headers/README.md): legacy scratch header notes; installed headers remain
+- [headers/README.md](headers/README.md): historical header-sketch notes; installed headers remain
   authoritative for active names.
 - [core/USE_CASES.md](core/USE_CASES.md): pressure-test scenarios.
 - [examples/README.md](examples/README.md): worked examples and API pressure tests.

@@ -27,8 +27,9 @@ The public scene API should use this split:
    make `scene.h` hard to scan.
 3. Shared public descriptors, enums, and result structs belong in `include/datoviz/scene/types.h`
    or focused sibling subheaders.
-4. `spec/scene/headers/scene_api.h` remains auxiliary implementation-facing scratch material for
-   ideas not yet promoted into installed public headers.
+4. Historical sketches under `spec/scene/headers/` are informative only; do not use them as public
+   API source material without first promoting the relevant idea into this document or a specialized
+   spec.
 
 
 ## Current Header And Implementation Boundary

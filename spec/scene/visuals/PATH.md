@@ -82,6 +82,10 @@ Use `segment` if per-segment width variation is needed.
 Cap styles applied to the start and end of each open path independently.
 Ignored for closed paths.
 
+The cap and join vocabulary below is the focused home for the useful path enum sketch from the
+retired broad scene API draft. Arrow-style caps may be added here when the `path` or `segment`
+families grow rendered caps.
+
 | Cap | Description |
 |---|---|
 | `none` | no cap |
