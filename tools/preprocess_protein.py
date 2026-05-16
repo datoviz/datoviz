@@ -120,6 +120,8 @@ SS_COLORS = {
     SS_TURN: (85, 155, 225, 255),
 }
 
+RIBBON_CROSS_SECTION_COUNT = 16
+
 
 def _default_cache_dir(pdb_id: str) -> Path:
     return Path.home() / ".cache" / "datoviz" / "proteins" / pdb_id.lower()
@@ -400,6 +402,36 @@ def _catmull_rom(
     )
 
 
+def _catmull_rom_tangent(
+    p0: Vec3,
+    p1: Vec3,
+    p2: Vec3,
+    p3: Vec3,
+    t: float,
+) -> Vec3:
+    t2 = t * t
+    return (
+        0.5
+        * (
+            (-p0[0] + p2[0])
+            + 2 * (2 * p0[0] - 5 * p1[0] + 4 * p2[0] - p3[0]) * t
+            + 3 * (-p0[0] + 3 * p1[0] - 3 * p2[0] + p3[0]) * t2
+        ),
+        0.5
+        * (
+            (-p0[1] + p2[1])
+            + 2 * (2 * p0[1] - 5 * p1[1] + 4 * p2[1] - p3[1]) * t
+            + 3 * (-p0[1] + 3 * p1[1] - 3 * p2[1] + p3[1]) * t2
+        ),
+        0.5
+        * (
+            (-p0[2] + p2[2])
+            + 2 * (2 * p0[2] - 5 * p1[2] + 4 * p2[2] - p3[2]) * t
+            + 3 * (-p0[2] + 3 * p1[2] - 3 * p2[2] + p3[2]) * t2
+        ),
+    )
+
+
 def _residue_frame(residue: Residue, tangent: Vec3, previous_up: Vec3) -> tuple[Vec3, Vec3]:
     n = residue.atoms.get("N")
     ca = residue.atoms.get("CA")
@@ -416,19 +448,51 @@ def _residue_frame(residue: Residue, tangent: Vec3, previous_up: Vec3) -> tuple[
     return side, up
 
 
-def _ribbon_corner(
-    p: Vec3, side: Vec3, up: Vec3, half_w: float, half_t: float
+def _ribbon_section(
+    p: Vec3, side: Vec3, up: Vec3, half_w: float, half_t: float, count: int
 ) -> list[tuple[Vec3, Vec3]]:
-    return [
-        (_v_add(_v_add(p, _v_mul(side, -half_w)), _v_mul(up, +half_t)), up),
-        (_v_add(_v_add(p, _v_mul(side, +half_w)), _v_mul(up, +half_t)), up),
-        (_v_add(_v_add(p, _v_mul(side, -half_w)), _v_mul(up, -half_t)), _v_mul(up, -1.0)),
-        (_v_add(_v_add(p, _v_mul(side, +half_w)), _v_mul(up, -half_t)), _v_mul(up, -1.0)),
-        (_v_add(_v_add(p, _v_mul(side, -half_w)), _v_mul(up, +half_t)), _v_mul(side, -1.0)),
-        (_v_add(_v_add(p, _v_mul(side, -half_w)), _v_mul(up, -half_t)), _v_mul(side, -1.0)),
-        (_v_add(_v_add(p, _v_mul(side, +half_w)), _v_mul(up, +half_t)), side),
-        (_v_add(_v_add(p, _v_mul(side, +half_w)), _v_mul(up, -half_t)), side),
-    ]
+    section: list[tuple[Vec3, Vec3]] = []
+    inv_w = 1.0 / max(half_w, 1e-6)
+    inv_t = 1.0 / max(half_t, 1e-6)
+    for i in range(count):
+        angle = 2.0 * math.pi * i / float(count)
+        c = math.cos(angle)
+        s = math.sin(angle)
+        pos = _v_add(_v_add(p, _v_mul(side, half_w * c)), _v_mul(up, half_t * s))
+        normal = _v_norm(_v_add(_v_mul(side, c * inv_w), _v_mul(up, s * inv_t)))
+        section.append((pos, normal))
+    return section
+
+
+def _append_ribbon_section(
+    positions: list[float],
+    normals: list[float],
+    colors_chain: list[tuple[int, int, int, int]],
+    colors_ss: list[tuple[int, int, int, int]],
+    p: Vec3,
+    side: Vec3,
+    up: Vec3,
+    half_w: float,
+    half_t: float,
+    chain_color: tuple[int, int, int, int],
+    ss_color: tuple[int, int, int, int],
+) -> None:
+    for pos, normal in _ribbon_section(
+        p, side, up, half_w, half_t, RIBBON_CROSS_SECTION_COUNT):
+        positions.extend(pos)
+        normals.extend(normal)
+        colors_chain.append(chain_color)
+        colors_ss.append(ss_color)
+
+
+def _append_ribbon_section_indices(indices: list[int], previous: int, current: int) -> None:
+    for i in range(RIBBON_CROSS_SECTION_COUNT):
+        j = (i + 1) % RIBBON_CROSS_SECTION_COUNT
+        q0 = previous + i
+        q1 = previous + j
+        q2 = current + j
+        q3 = current + i
+        indices.extend([q0, q1, q2, q0, q2, q3])
 
 
 def _ribbon_shape(ss: int, radius: float) -> tuple[float, float]:
@@ -479,7 +543,7 @@ def _ribbon_mesh(
                 p2 = ca[i + 1]
                 p3 = ca[min(i + 2, len(ca) - 1)]
                 p = _catmull_rom(p0, p1, p2, p3, t)
-                tangent = _v_norm(_v_sub(p2, p1), (0.0, 0.0, 1.0))
+                tangent = _v_norm(_catmull_rom_tangent(p0, p1, p2, p3, t), (0.0, 0.0, 1.0))
                 residue = chain_residues[i if t < 0.5 else i + 1]
                 side, up = _residue_frame(residue, tangent, up)
                 width, thickness = _ribbon_shape(residue.ss, radius)
@@ -492,23 +556,14 @@ def _ribbon_mesh(
                 half_t = 0.5 * thickness
                 chain_color = CHAIN_PALETTE[chains[chain] % len(CHAIN_PALETTE)]
                 ss_color = SS_COLORS.get(residue.ss, SS_COLORS[SS_COIL])
-                for pos, normal in _ribbon_corner(p_norm, side, up, half_w, half_t):
-                    positions.extend(pos)
-                    normals.extend(_v_norm(normal))
-                    colors_chain.append(chain_color)
-                    colors_ss.append(ss_color)
+                _append_ribbon_section(
+                    positions, normals, colors_chain, colors_ss, p_norm, side, up, half_w, half_t,
+                    chain_color, ss_color)
                 if section_count > 0:
-                    a = vertex_count - 8
+                    a = vertex_count - RIBBON_CROSS_SECTION_COUNT
                     b = vertex_count
-                    quads = [
-                        (a + 0, a + 1, b + 1, b + 0),
-                        (a + 2, b + 2, b + 3, a + 3),
-                        (a + 4, b + 4, b + 5, a + 5),
-                        (a + 6, a + 7, b + 7, b + 6),
-                    ]
-                    for q0, q1, q2, q3 in quads:
-                        indices.extend([q0, q1, q2, q0, q2, q3])
-                vertex_count += 8
+                    _append_ribbon_section_indices(indices, a, b)
+                vertex_count += RIBBON_CROSS_SECTION_COUNT
                 section_count += 1
         # Add an explicit final section at the last C-alpha.
         p = ca[-1]
@@ -525,22 +580,14 @@ def _ribbon_mesh(
         half_t = 0.5 * thickness
         chain_color = CHAIN_PALETTE[chains[chain] % len(CHAIN_PALETTE)]
         ss_color = SS_COLORS.get(residue.ss, SS_COLORS[SS_COIL])
-        for pos, normal in _ribbon_corner(p_norm, side, up, half_w, half_t):
-            positions.extend(pos)
-            normals.extend(_v_norm(normal))
-            colors_chain.append(chain_color)
-            colors_ss.append(ss_color)
+        _append_ribbon_section(
+            positions, normals, colors_chain, colors_ss, p_norm, side, up, half_w, half_t,
+            chain_color, ss_color)
         if section_count > 0:
-            a = vertex_count - 8
+            a = vertex_count - RIBBON_CROSS_SECTION_COUNT
             b = vertex_count
-            for q0, q1, q2, q3 in [
-                (a + 0, a + 1, b + 1, b + 0),
-                (a + 2, b + 2, b + 3, a + 3),
-                (a + 4, b + 4, b + 5, a + 5),
-                (a + 6, a + 7, b + 7, b + 6),
-            ]:
-                indices.extend([q0, q1, q2, q0, q2, q3])
-        vertex_count += 8
+            _append_ribbon_section_indices(indices, a, b)
+        vertex_count += RIBBON_CROSS_SECTION_COUNT
 
     return {
         "position": positions,
@@ -671,6 +718,8 @@ def _export_bundle(
             "2": "sheet",
             "3": "turn",
         },
+        "ribbon_samples_per_segment": max(1, ribbon_samples),
+        "ribbon_cross_section_count": RIBBON_CROSS_SECTION_COUNT,
         "ribbon_vertex_count": ribbon_vertex_count,
         "ribbon_index_count": ribbon_index_count,
         "files": {
@@ -713,7 +762,7 @@ def _parse_args(argv: list[str]) -> argparse.Namespace:
     parser.add_argument(
         "--ribbon-samples",
         type=int,
-        default=4,
+        default=10,
         help="interpolated ribbon sections per residue segment",
     )
     parser.add_argument("--bond-scale", type=float, default=1.25, help="covalent radius scale")
