@@ -816,7 +816,7 @@ static void _allen_mouse_brain_gui(DvzGui* gui, DvzAppWindow* win, void* user_da
         changed |= dvz_gui_checkbox(gui, "Show full volume", &state->show_volume);
         if (dvz_gui_button(gui, "MIP volume"))
         {
-            state->render_mode = DVZ_VOLUME_RENDER_MIP;
+            state->render_mode = DVZ_VOLUME_RENDER_COMPOSITE;
             changed = true;
         }
         if (dvz_gui_button(gui, "Composite volume"))
@@ -1035,7 +1035,7 @@ int main(int argc, char** argv)
         .show_slice = true,
         .show_volume = true,
         .linear_sampling = true,
-        .render_mode = DVZ_VOLUME_RENDER_MIP,
+        .render_mode = DVZ_VOLUME_RENDER_COMPOSITE,
         .slice_opacity = DEFAULT_SLICE_OPACITY,
         .volume_opacity = DEFAULT_VOLUME_OPACITY,
         .volume_steps = DEFAULT_VOLUME_STEPS,
