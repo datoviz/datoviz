@@ -4,10 +4,48 @@
 layout(set = 1, binding = 0) uniform SceneMaterial {
     vec4 lightDir;
     vec4 params;
+    vec4 model;
+    vec4 baseColorFactor;
+    vec4 standardParams;
+    vec4 emissiveRim;
     vec4 depthCue;
     vec4 depthCueColor;
     vec4 depthCueExtra;
 } material;
+
+vec4 evaluateSceneMaterial(vec4 itemColor, vec3 normal, vec3 worldPos, vec3 cameraPos)
+{
+    int model = int(material.model.x + 0.5);
+    float opacity = clamp(material.model.y, 0.0, 1.0);
+    vec3 base = itemColor.rgb * material.baseColorFactor.rgb;
+    float alpha = itemColor.a * material.baseColorFactor.a * opacity;
+    if (model == 0)
+        return vec4(clamp(base + material.emissiveRim.rgb, 0.0, 1.0), alpha);
+
+    vec3 n = normalize(normal);
+    vec3 l = normalize(material.lightDir.xyz);
+    vec3 v = normalize(cameraPos - worldPos);
+    vec3 h = normalize(l + v);
+    float lambert = max(dot(n, l), 0.0);
+    if (model == 2)
+    {
+        float roughness = clamp(material.standardParams.x, 0.0, 1.0);
+        float specularStrength = max(material.standardParams.y, 0.0);
+        float metallic = clamp(material.standardParams.z, 0.0, 1.0);
+        float rimStrength = max(material.standardParams.w, 0.0);
+        float shininess = max(1.0, 128.0 * (1.0 - roughness) + 1.0);
+        float spec = pow(max(dot(n, h), 0.0), shininess) * specularStrength;
+        float rim = pow(1.0 - max(dot(n, v), 0.0), 2.0) * rimStrength;
+        vec3 diffuse = base * (0.04 + (1.0 - metallic) * lambert);
+        vec3 rgb = diffuse + vec3(spec + rim) + material.emissiveRim.rgb;
+        return vec4(clamp(rgb, 0.0, 1.0), alpha);
+    }
+
+    float spec = pow(max(dot(n, h), 0.0), max(material.params.w, 1.0));
+    vec3 rgb = base * (material.params.x + material.params.y * lambert) +
+               vec3(material.params.z * spec);
+    return vec4(clamp(rgb, 0.0, 1.0), alpha);
+}
 
 float depthCueCoordinate(vec3 cue)
 {

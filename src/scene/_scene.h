@@ -445,6 +445,10 @@ struct DvzSceneMaterialParams
 {
     float light_direction[4];
     float params[4];
+    float model[4];
+    float base_color_factor[4];
+    float standard_params[4];
+    float emissive_rim[4];
     float depth_cue[4];
     float depth_cue_color[4];
     float depth_cue_extra[4];

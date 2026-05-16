@@ -645,6 +645,14 @@ static void _material_params_default(DvzSceneMaterialParams* params)
     params->params[1] = 0.8f;
     params->params[2] = 0.25f;
     params->params[3] = 32.0f;
+    params->model[0] = (float)DVZ_MATERIAL_MODEL_PHONG;
+    params->model[1] = 1.0f;
+    params->base_color_factor[0] = 1.0f;
+    params->base_color_factor[1] = 1.0f;
+    params->base_color_factor[2] = 1.0f;
+    params->base_color_factor[3] = 1.0f;
+    params->standard_params[0] = 0.5f;
+    params->standard_params[1] = 0.5f;
     params->depth_cue[1] = 1.0f;
     params->depth_cue[2] = 1.0f;
     params->depth_cue_extra[2] = 3.0f;
@@ -891,6 +899,20 @@ static void _material_params_sync_state(
     params->light_direction[1] = material->light_direction[1];
     params->light_direction[2] = material->light_direction[2];
     params->light_direction[3] = material->light_direction[3];
+    params->model[0] = (float)material->model;
+    params->model[1] = material->opacity;
+    params->base_color_factor[0] = material->base_color_factor[0];
+    params->base_color_factor[1] = material->base_color_factor[1];
+    params->base_color_factor[2] = material->base_color_factor[2];
+    params->base_color_factor[3] = material->base_color_factor[3];
+    params->standard_params[0] = material->roughness;
+    params->standard_params[1] = material->standard_specular;
+    params->standard_params[2] = material->metallic;
+    params->standard_params[3] = material->rim_strength;
+    params->emissive_rim[0] = material->emissive[0];
+    params->emissive_rim[1] = material->emissive[1];
+    params->emissive_rim[2] = material->emissive[2];
+    params->emissive_rim[3] = material->rim_strength;
     if (material->model == DVZ_MATERIAL_MODEL_STANDARD)
     {
         float roughness = fminf(fmaxf(material->roughness, 0.0f), 1.0f);

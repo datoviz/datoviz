@@ -13,15 +13,9 @@ layout(location = 2) out vec4 depthPair;
 
 vec4 shade()
 {
-    vec3 n = normalize(fragNormal);
-    vec3 l = normalize(material.lightDir.xyz);
-    vec3 v = normalize(fragCameraPos - fragWorldPos);
-    vec3 h = normalize(l + v);
-    float lambert = max(dot(n, l), 0.0);
-    float spec = pow(max(dot(n, h), 0.0), 32.0);
-    vec3 rgb = fragColor.rgb * (material.params.x + material.params.y * lambert) + vec3(0.18 * spec);
+    vec4 shaded = evaluateSceneMaterial(fragColor, fragNormal, fragWorldPos, fragCameraPos);
     vec3 cue = vec3(fragDepth, length(fragCameraPos - fragWorldPos), length(fragWorldPos));
-    return vec4(applyDepthCue(clamp(rgb, 0.0, 1.0), cue), fragColor.a);
+    return vec4(applyDepthCue(shaded.rgb, cue), shaded.a);
 }
 
 void main()

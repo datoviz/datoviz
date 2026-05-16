@@ -15,15 +15,10 @@ void main()
     vec3 n = normalize(fragNormal);
     if (!gl_FrontFacing)
         n = -n;
-    vec3 l = normalize(material.lightDir.xyz);
-    vec3 v = normalize(fragCameraPos - fragWorldPos);
-    vec3 h = normalize(l + v);
-    float lambert = max(dot(n, l), 0.0);
-    float spec = pow(max(dot(n, h), 0.0), 32.0);
-    vec3 rgb = fragColor.rgb * (material.params.x + material.params.y * lambert) + vec3(0.18 * spec);
-    float a = clamp(fragColor.a, 0.0, 1.0);
+    vec4 shaded = evaluateSceneMaterial(fragColor, n, fragWorldPos, fragCameraPos);
+    float a = clamp(shaded.a, 0.0, 1.0);
     vec3 cue = vec3(fragDepth, length(fragCameraPos - fragWorldPos), length(fragWorldPos));
-    vec3 lit = applyDepthCue(clamp(rgb, 0.0, 1.0), cue);
+    vec3 lit = applyDepthCue(shaded.rgb, cue);
     outAccum = vec4(lit * a, a);
     outWeight = -log(max(1.0 - a, 1e-4));
 }

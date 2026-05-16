@@ -1,12 +1,54 @@
 struct SceneMaterial {
     light_direction: vec4f,
     params: vec4f,
+    model: vec4f,
+    base_color_factor: vec4f,
+    standard_params: vec4f,
+    emissive_rim: vec4f,
     depth_cue: vec4f,
     depth_cue_color: vec4f,
     depth_cue_extra: vec4f,
 }
 
 @group(1) @binding(0) var<uniform> material: SceneMaterial;
+
+fn evaluate_scene_material(
+    item_color: vec4f,
+    normal: vec3f,
+    world_position: vec3f,
+    camera_position: vec3f,
+) -> vec4f {
+    let model = i32(material.model.x + 0.5);
+    let opacity = clamp(material.model.y, 0.0, 1.0);
+    let base = item_color.rgb * material.base_color_factor.rgb;
+    let alpha = item_color.a * material.base_color_factor.a * opacity;
+    if (model == 0) {
+        return vec4f(clamp(base + material.emissive_rim.rgb, vec3f(0.0), vec3f(1.0)), alpha);
+    }
+
+    let n = normalize(normal);
+    let l = normalize(material.light_direction.xyz);
+    let v = normalize(camera_position - world_position);
+    let h = normalize(l + v);
+    let lambert = max(dot(n, l), 0.0);
+    if (model == 2) {
+        let roughness = clamp(material.standard_params.x, 0.0, 1.0);
+        let specular_strength = max(material.standard_params.y, 0.0);
+        let metallic = clamp(material.standard_params.z, 0.0, 1.0);
+        let rim_strength = max(material.standard_params.w, 0.0);
+        let shininess = max(1.0, 128.0 * (1.0 - roughness) + 1.0);
+        let specular = pow(max(dot(n, h), 0.0), shininess) * specular_strength;
+        let rim = pow(1.0 - max(dot(n, v), 0.0), 2.0) * rim_strength;
+        let diffuse = base * (0.04 + (1.0 - metallic) * lambert);
+        let rgb = diffuse + vec3f(specular + rim) + material.emissive_rim.rgb;
+        return vec4f(clamp(rgb, vec3f(0.0), vec3f(1.0)), alpha);
+    }
+
+    let specular = pow(max(dot(n, h), 0.0), max(material.params.w, 1.0));
+    let rgb = base * (material.params.x + material.params.y * lambert) +
+        vec3f(material.params.z * specular);
+    return vec4f(clamp(rgb, vec3f(0.0), vec3f(1.0)), alpha);
+}
 
 fn depth_cue_coordinate(cue: vec3f) -> f32 {
     let metric = i32(material.depth_cue_extra.x + 0.5);

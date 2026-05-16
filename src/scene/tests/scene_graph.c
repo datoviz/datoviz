@@ -661,6 +661,12 @@ static int _scene_mesh_emit_executes(void)
     AT(dvz_visual_set_data(visual, "position", positions, 4) == 0);
     AT(dvz_visual_set_data(visual, "normal", normals, 4) == 0);
     AT(dvz_visual_set_buffer(visual, "index", index_buffer));
+    DvzMaterialDesc material = dvz_material_desc();
+    material.model = DVZ_MATERIAL_MODEL_STANDARD;
+    material.standard.roughness = 0.35f;
+    material.standard.specular = 0.5f;
+    material.standard.rim_strength = 0.15f;
+    AT(dvz_visual_set_material(visual, &material) == 0);
     AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
 
     DvzCapabilitySnapshot caps;
@@ -4380,6 +4386,9 @@ int test_scene_visual_material_setter(TstSuite* suite, TstItem* item)
     AT(mesh->material_params.params[1] == 0.70f);
     AT(mesh->material_params.params[2] == 0.40f);
     AT(mesh->material_params.params[3] == 48.0f);
+    AT(mesh->material_params.model[0] == (float)DVZ_MATERIAL_MODEL_PHONG);
+    AT(mesh->material_params.model[1] == 0.5f);
+    AT(mesh->material_params.base_color_factor[0] == 0.75f);
     AT(mesh->material.version > version);
 
     DvzMaterialDesc standard = dvz_material_desc();
@@ -4403,6 +4412,13 @@ int test_scene_visual_material_setter(TstSuite* suite, TstItem* item)
     AT(mesh->material_params.params[1] > 0.0f);
     AT(mesh->material_params.params[2] == 0.6f);
     AT(mesh->material_params.params[3] > 1.0f);
+    AT(mesh->material_params.model[0] == (float)DVZ_MATERIAL_MODEL_STANDARD);
+    AT(mesh->material_params.model[1] == 0.9f);
+    AT(mesh->material_params.standard_params[0] == 0.25f);
+    AT(mesh->material_params.standard_params[1] == 0.6f);
+    AT(mesh->material_params.standard_params[2] == 0.2f);
+    AT(mesh->material_params.standard_params[3] == 0.3f);
+    AT(mesh->material_params.emissive_rim[1] == 0.05f);
     AT(mesh->material.version > version);
 
     AT(dvz_visual_set_depth_cue(
