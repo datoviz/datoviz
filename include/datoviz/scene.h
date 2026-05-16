@@ -404,6 +404,29 @@ DVZ_EXPORT void dvz_visual_set_visible(DvzVisual* visual, bool visible);
 
 
 /**
+ * Enable or disable depth testing for the visual.
+ *
+ * Depth-tested opaque visuals write and test against scene depth. Transparent visuals use depth
+ * testing to decide whether transparent fragments are occluded by previously rendered opaque
+ * geometry. Disabling it is primarily useful for diagnostics and overlays.
+ *
+ * @param visual the visual
+ * @param enabled true to depth-test, false to ignore scene depth
+ * @return 0 on success, -1 on error
+ */
+DVZ_EXPORT int dvz_visual_set_depth_test(DvzVisual* visual, bool enabled);
+
+
+/**
+ * Return whether depth testing is enabled for the visual.
+ *
+ * @param visual the visual
+ * @return whether depth testing is enabled
+ */
+DVZ_EXPORT bool dvz_visual_depth_test(const DvzVisual* visual);
+
+
+/**
  * Set the visual alpha handling mode.
  *
  * This controls which transparency path the scene planner should use for the visual. Use

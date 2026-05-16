@@ -4321,6 +4321,34 @@ int test_scene_visual_alpha_mode(TstSuite* suite, TstItem* item)
 
 
 /**
+ * Verify visual depth-test storage and mutation.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_visual_depth_test(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    AT(scene != NULL);
+    DvzVisual* visual = dvz_mesh(scene, 0);
+    AT(visual != NULL);
+
+    AT(dvz_visual_depth_test(visual));
+    AT(dvz_visual_set_depth_test(visual, false) == 0);
+    AT(!dvz_visual_depth_test(visual));
+    AT(dvz_visual_set_depth_test(visual, true) == 0);
+    AT(dvz_visual_depth_test(visual));
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+/**
  * Verify internal material state defaults and compatibility setter synchronization.
  *
  * @param suite the active test suite
@@ -7431,6 +7459,7 @@ int test_scene_graph(TstSuite* suite)
     TEST_SIMPLE(test_scene_rejects_cross_scene_visual);
     TEST_SIMPLE(test_scene_rejects_unsupported_point_attribute);
     TEST_SIMPLE(test_scene_visual_alpha_mode);
+    TEST_SIMPLE(test_scene_visual_depth_test);
     TEST_SIMPLE(test_scene_visual_internal_material_state);
     TEST_SIMPLE(test_scene_visual_material_setter);
     TEST_SIMPLE(test_scene_pixel_depth_cue_toggle_switches_pipeline);

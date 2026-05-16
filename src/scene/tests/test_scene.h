@@ -382,6 +382,8 @@ int test_scene_rejects_unsupported_point_attribute(TstSuite* suite, TstItem* ite
 
 int test_scene_visual_alpha_mode(TstSuite* suite, TstItem* item);
 
+int test_scene_visual_depth_test(TstSuite* suite, TstItem* item);
+
 int test_scene_visual_internal_material_state(TstSuite* suite, TstItem* item);
 
 int test_scene_visual_material_setter(TstSuite* suite, TstItem* item);

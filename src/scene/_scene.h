@@ -554,6 +554,7 @@ struct DvzVisual
     bool         visible;
     int32_t      z_layer;
     DvzAlphaMode alpha_mode;
+    bool         depth_test_enabled;
     DvzSceneMaterialState material;
 
     DvzPrimitiveTopology topology; /* used by DVZ_VISUAL_TYPE_PRIMITIVE */

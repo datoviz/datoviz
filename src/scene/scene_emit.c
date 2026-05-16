@@ -541,6 +541,7 @@ bool _scene_visual_frame_plan_metadata(
     metadata->buffer_index = UINT32_MAX;
     metadata->topology = (uint32_t)visual->topology;
     metadata->alpha_mode = visual->alpha_mode;
+    metadata->depth_test_enabled = visual->depth_test_enabled;
     metadata->scale_index = _scene_scale_index(figure->scene, visual->scale);
 
     if (!_scene_attr_resource_key(

@@ -604,6 +604,13 @@ static bool _emitter_prepare_render_multi(
             dvz_snprintf(
                 shader.pipeline_key + key_len, sizeof(shader.pipeline_key) - key_len, "_blend");
         }
+        if (!desc.depth_test_enabled)
+        {
+            size_t key_len = strlen(shader.pipeline_key);
+            dvz_snprintf(
+                shader.pipeline_key + key_len, sizeof(shader.pipeline_key) - key_len,
+                "_no_depth_test");
+        }
         if (_alpha_mode_is_depth_peel(alpha_mode))
         {
             size_t key_len = strlen(shader.pipeline_key);

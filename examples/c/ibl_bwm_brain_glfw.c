@@ -90,6 +90,7 @@ typedef struct BwmExampleState
     BwmTechnique technique;
     bool show_points;
     bool show_shell;
+    bool shell_depth_test;
     bool spin_enabled;
     float point_size;
     float mesh_alpha;
@@ -464,6 +465,22 @@ static void _apply_visibility(BwmExampleState* state)
 
 
 /**
+ * Apply the retained shell depth-test control.
+ *
+ * @param state example state
+ */
+static void _apply_shell_depth_test(BwmExampleState* state)
+{
+    ANN(state);
+    if (state->mesh == NULL)
+        return;
+    if (dvz_visual_set_depth_test(state->mesh, state->shell_depth_test) != 0)
+        dvz_fprintf(stderr, "failed to update BWM shell depth test\n");
+}
+
+
+
+/**
  * Apply the retained spin control.
  *
  * @param state example state
@@ -489,10 +506,11 @@ static void _apply_spin(BwmExampleState* state)
 static void _reset_controls(BwmExampleState* state)
 {
     ANN(state);
-    state->technique = BWM_TECHNIQUE_DEPTH_PEEL;
+    state->technique = BWM_TECHNIQUE_WBOIT;
     state->show_points = true;
     state->show_shell = true;
-    state->spin_enabled = true;
+    state->shell_depth_test = true;
+    state->spin_enabled = false;
     state->point_size = BWM_DEFAULT_POINT_SIZE;
     state->mesh_alpha = BWM_DEFAULT_MESH_ALPHA;
     state->ambient = 0.20f;
@@ -504,6 +522,7 @@ static void _reset_controls(BwmExampleState* state)
     _apply_shell_material(state);
     _apply_technique(state);
     _apply_visibility(state);
+    _apply_shell_depth_test(state);
     _apply_spin(state);
 }
 
@@ -524,6 +543,7 @@ static void _bwm_gui(DvzGui* gui, DvzAppWindow* win, void* user_data)
         return;
 
     bool visibility_changed = false;
+    bool depth_test_changed = false;
     bool technique_changed = false;
     bool point_changed = false;
     bool material_changed = false;
@@ -541,6 +561,8 @@ static void _bwm_gui(DvzGui* gui, DvzAppWindow* win, void* user_data)
         }
         visibility_changed |= dvz_gui_checkbox(gui, "Show clusters", &state->show_points);
         visibility_changed |= dvz_gui_checkbox(gui, "Show shell", &state->show_shell);
+        depth_test_changed |=
+            dvz_gui_checkbox(gui, "Shell depth-tests clusters", &state->shell_depth_test);
         spin_changed |= dvz_gui_checkbox(gui, "Auto rotate", &state->spin_enabled);
         point_changed |=
             dvz_gui_slider_float(gui, "Cluster size", &state->point_size, 1.0f, 12.0f);
@@ -561,6 +583,8 @@ static void _bwm_gui(DvzGui* gui, DvzAppWindow* win, void* user_data)
 
     if (visibility_changed)
         _apply_visibility(state);
+    if (depth_test_changed)
+        _apply_shell_depth_test(state);
     if (technique_changed)
         _apply_technique(state);
     if (point_changed)
@@ -664,10 +688,11 @@ int main(void)
         .point = point,
         .mesh = mesh,
         .dataset = &dataset,
-        .technique = BWM_TECHNIQUE_DEPTH_PEEL,
+        .technique = BWM_TECHNIQUE_WBOIT,
         .show_points = true,
         .show_shell = true,
-        .spin_enabled = true,
+        .shell_depth_test = true,
+        .spin_enabled = false,
         .point_size = BWM_DEFAULT_POINT_SIZE,
         .mesh_alpha = BWM_DEFAULT_MESH_ALPHA,
         .ambient = 0.20f,
@@ -690,6 +715,7 @@ int main(void)
 
     _apply_shell_material(&state);
     _apply_technique(&state);
+    _apply_shell_depth_test(&state);
 
     dvz_panel_add_visual(panel, point, NULL);
     dvz_panel_add_visual(panel, mesh, NULL);

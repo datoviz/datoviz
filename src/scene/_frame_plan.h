@@ -267,6 +267,7 @@ typedef struct DvzFramePlanVisualMeta
     uint32_t buffer_index;
     uint32_t topology;
     DvzAlphaMode alpha_mode;
+    bool depth_test_enabled;
     bool has_volume;
     uint32_t field_format;
     uint32_t field_width;

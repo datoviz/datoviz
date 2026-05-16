@@ -373,6 +373,7 @@ static DvzVisual* _scene_alloc_visual(DvzScene* scene, DvzVisualType type, uint3
     visual->visible = true;
     visual->z_layer = 0;
     visual->alpha_mode = DVZ_ALPHA_OPAQUE;
+    visual->depth_test_enabled = true;
     _material_state_default(&visual->material, type);
     _material_params_default(&visual->material_params);
     _material_params_sync_state(&visual->material_params, &visual->material);
@@ -1446,6 +1447,39 @@ void dvz_visual_set_visible(DvzVisual* visual, bool visible)
 {
     ANN(visual);
     visual->visible = visible;
+}
+
+
+
+/**
+ * Enable or disable depth testing for the visual.
+ *
+ * @param visual the visual
+ * @param enabled whether depth testing is enabled
+ * @return 0 on success, -1 on error
+ */
+int dvz_visual_set_depth_test(DvzVisual* visual, bool enabled)
+{
+    ANN(visual);
+    if (!_scene_visual_mutation_allowed(visual->scene, "mutate scene visual depth test"))
+        return -1;
+    visual->depth_test_enabled = enabled;
+    _visual_bump_version(&visual->material.version);
+    return 0;
+}
+
+
+
+/**
+ * Return whether depth testing is enabled for the visual.
+ *
+ * @param visual the visual
+ * @return whether depth testing is enabled
+ */
+bool dvz_visual_depth_test(const DvzVisual* visual)
+{
+    ANN(visual);
+    return visual->depth_test_enabled;
 }
 
 

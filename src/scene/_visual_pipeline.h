@@ -62,6 +62,7 @@ typedef struct DvzSceneVisualDesc
     DvzSceneVisualDescKind kind;
     DvzScenePointLikeKind point_like_kind;
     bool has_normal;
+    bool depth_test_enabled;
     uint32_t topology;
     uint64_t vbuf_ids[DVZ_SCENE_MAX_NODE_RESOURCES];
     uint32_t vbuf_count;
@@ -84,6 +85,7 @@ typedef struct DvzSceneVisualPassCaps
     DvzControllerMode controller_mode;
     bool fixed_controller;
     bool has_normals;
+    bool depth_test_enabled;
     bool draws_in_opaque_pass;
     bool draws_in_wboit_pass;
     bool draws_in_depth_peel_pass;

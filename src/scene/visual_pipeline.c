@@ -379,6 +379,8 @@ static bool _scene_visual_desc_from_metadata(
     ANN(meta);
     ANN(out);
 
+    out->depth_test_enabled = meta->depth_test_enabled;
+
     if (error != NULL)
         *error = NULL;
 
@@ -811,6 +813,7 @@ bool _scene_visual_desc_from_render(
     if (render->type != DVZ_FRAME_PLAN_NODE_RENDER || visual_index >= render->u.render.visual_count)
         return false;
 
+    out->depth_test_enabled = true;
     const DvzFramePlanVisualMeta* meta = &render->u.render.visual_metadata[visual_index];
     if (meta->has_metadata)
         return _scene_visual_desc_from_metadata(emitter, meta, out, error);
@@ -928,7 +931,7 @@ bool _scene_visual_desc_from_render(
  */
 static void _scene_visual_pass_caps_resolve(
     DvzSceneVisualDescKind kind, DvzAlphaMode alpha_mode, DvzControllerMode controller_mode,
-    bool has_normals, bool has_material_resource, bool depth_cue_enabled,
+    bool has_normals, bool has_material_resource, bool depth_cue_enabled, bool depth_test_enabled,
     DvzSceneVisualPassCaps* out)
 {
     ANN(out);
@@ -950,15 +953,18 @@ static void _scene_visual_pass_caps_resolve(
     out->controller_mode = controller_mode;
     out->fixed_controller = fixed;
     out->has_normals = has_normals;
+    out->depth_test_enabled = depth_test_enabled;
     out->draws_in_wboit_pass = wboit;
     out->draws_in_depth_peel_pass = depth_peel;
     out->draws_in_transparent_blend_pass = transparent_blend;
     out->draws_in_opaque_pass = !wboit && !depth_peel && !transparent_blend;
     out->uses_source_over_blend = _alpha_mode_uses_source_over(alpha_mode);
     out->writes_color = kind != DVZ_SCENE_VISUAL_DESC_NONE;
-    out->writes_depth = out->draws_in_opaque_pass && (primitive || point_like || sphere) && !fixed;
-    out->can_write_depth = (primitive || point_like || sphere) && !fixed;
-    out->can_depth_test = (primitive || point_like || sphere) && !fixed;
+    out->writes_depth =
+        out->draws_in_opaque_pass && (primitive || point_like || sphere) && !fixed &&
+        depth_test_enabled;
+    out->can_write_depth = (primitive || point_like || sphere) && !fixed && depth_test_enabled;
+    out->can_depth_test = (primitive || point_like || sphere) && !fixed && depth_test_enabled;
     out->samples_depth = volume && !fixed;
     out->needs_depth_attachment = out->can_depth_test || out->samples_depth;
     out->eligible_for_depth_postprocess = out->draws_in_opaque_pass && out->writes_depth;
@@ -1032,7 +1038,7 @@ bool _scene_visual_pass_caps_from_visual(
                                  (point_like && visual->material.depth_cue_enabled);
     _scene_visual_pass_caps_resolve(
         kind, visual->alpha_mode, attach->controller_mode, has_normals, has_material_resource,
-        visual->material.depth_cue_enabled, out);
+        visual->material.depth_cue_enabled, visual->depth_test_enabled, out);
     return true;
 }
 
@@ -1058,7 +1064,8 @@ bool _scene_visual_pass_caps_from_desc(
 
     _scene_visual_pass_caps_resolve(
         visual->kind, alpha_mode, controller_mode, visual->has_normal,
-        visual->material_buffer_id != 0, visual->material_buffer_id != 0, out);
+        visual->material_buffer_id != 0, visual->material_buffer_id != 0,
+        visual->depth_test_enabled, out);
     return true;
 }
 
