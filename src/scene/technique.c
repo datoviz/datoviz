@@ -154,8 +154,7 @@ static void _scene_frame_graph_depth_attachment(
 static bool _scene_caps_support_gbuffer(const DvzSceneVisualPassCaps* caps)
 {
     ANN(caps);
-    return caps->draws_in_opaque_pass && caps->kind == DVZ_SCENE_VISUAL_DESC_PRIMITIVE &&
-           caps->can_write_depth && caps->has_normals;
+    return caps->eligible_for_gbuffer;
 }
 
 
@@ -372,7 +371,7 @@ bool _scene_visual_writes_depth(const DvzVisual* visual, const DvzPanelAttach* a
     DvzSceneVisualPassCaps caps = {0};
     if (!_scene_visual_pass_caps_from_visual(visual, attach, &caps))
         return false;
-    return caps.can_write_depth;
+    return caps.writes_depth;
 }
 
 
@@ -408,8 +407,10 @@ bool _scene_transparent_visual_needs_depth(
 {
     ANN(visual);
     ANN(attach);
-    return _scene_visual_writes_depth(visual, attach) ||
-           _scene_visual_samples_depth(visual, attach);
+    DvzSceneVisualPassCaps caps = {0};
+    if (!_scene_visual_pass_caps_from_visual(visual, attach, &caps))
+        return false;
+    return caps.can_depth_test || _scene_visual_samples_depth(visual, attach);
 }
 
 

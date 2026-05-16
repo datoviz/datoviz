@@ -4179,14 +4179,20 @@ int test_scene_visual_pass_capabilities(TstSuite* suite, TstItem* item)
     AT(panel != NULL);
 
     DvzVisual* point = dvz_point(scene, 0);
+    DvzVisual* pixel = dvz_pixel(scene, 0);
     DvzVisual* primitive = dvz_primitive(scene, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 0);
+    DvzVisual* path = dvz_path(scene, 0);
     DvzVisual* fixed_primitive = dvz_primitive(scene, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 0);
     DvzVisual* mesh = dvz_mesh(scene, 0);
+    DvzVisual* image = dvz_image(scene, 0);
     DvzVisual* volume = dvz_volume(scene, 0);
     AT(point != NULL);
+    AT(pixel != NULL);
     AT(primitive != NULL);
+    AT(path != NULL);
     AT(fixed_primitive != NULL);
     AT(mesh != NULL);
+    AT(image != NULL);
     AT(volume != NULL);
 
     float normals[3][3] = {
@@ -4221,9 +4227,12 @@ int test_scene_visual_pass_capabilities(TstSuite* suite, TstItem* item)
         .controller_mode = DVZ_CONTROLLER_FIXED,
     };
     AT(dvz_panel_add_visual(panel, point, NULL) == 0);
+    AT(dvz_panel_add_visual(panel, pixel, NULL) == 0);
     AT(dvz_panel_add_visual(panel, primitive, NULL) == 0);
+    AT(dvz_panel_add_visual(panel, path, NULL) == 0);
     AT(dvz_panel_add_visual(panel, fixed_primitive, &fixed) == 0);
     AT(dvz_panel_add_visual(panel, mesh, NULL) == 0);
+    AT(dvz_panel_add_visual(panel, image, NULL) == 0);
     AT(dvz_panel_add_visual(panel, volume, NULL) == 0);
 
     DvzSceneVisualPassCaps caps = {0};
@@ -4234,56 +4243,111 @@ int test_scene_visual_pass_capabilities(TstSuite* suite, TstItem* item)
     AT(caps.kind == DVZ_SCENE_VISUAL_DESC_POINT);
     AT(caps.draws_in_wboit_pass);
     AT(!caps.draws_in_opaque_pass);
+    AT(caps.writes_color);
+    AT(!caps.writes_depth);
     AT(caps.can_write_depth);
     AT(caps.can_depth_test);
     AT(caps.needs_depth_attachment);
+    AT(!caps.eligible_for_depth_postprocess);
+    AT(!caps.eligible_for_gbuffer);
     AT(caps.uses_common_set);
     AT(caps.uses_material_set);
     AT(caps.supports_depth_cue);
     AT(caps.depth_cue_enabled);
     AT(!_scene_technique_gbuffer_plan_add_visual(&gbuffer, point, &panel->visuals[0]));
 
-    AT(_scene_visual_pass_caps_from_visual(primitive, &panel->visuals[1], &caps));
+    AT(_scene_visual_pass_caps_from_visual(pixel, &panel->visuals[1], &caps));
+    AT(caps.kind == DVZ_SCENE_VISUAL_DESC_PIXEL);
+    AT(caps.draws_in_opaque_pass);
+    AT(caps.writes_color);
+    AT(caps.writes_depth);
+    AT(caps.can_depth_test);
+    AT(caps.needs_depth_attachment);
+    AT(caps.eligible_for_depth_postprocess);
+    AT(!caps.eligible_for_gbuffer);
+    AT(caps.uses_common_set);
+    AT(!caps.uses_material_set);
+    AT(caps.supports_depth_cue);
+    AT(!caps.depth_cue_enabled);
+    AT(!_scene_technique_gbuffer_plan_add_visual(&gbuffer, pixel, &panel->visuals[1]));
+
+    AT(_scene_visual_pass_caps_from_visual(primitive, &panel->visuals[2], &caps));
     AT(caps.kind == DVZ_SCENE_VISUAL_DESC_PRIMITIVE);
     AT(caps.draws_in_opaque_pass);
+    AT(caps.writes_color);
+    AT(caps.writes_depth);
     AT(caps.can_write_depth);
     AT(caps.can_depth_test);
     AT(caps.needs_depth_attachment);
+    AT(caps.eligible_for_depth_postprocess);
+    AT(!caps.eligible_for_gbuffer);
     AT(!caps.has_normals);
     AT(!caps.supports_depth_cue);
-    AT(!_scene_technique_gbuffer_plan_add_visual(&gbuffer, primitive, &panel->visuals[1]));
+    AT(!_scene_technique_gbuffer_plan_add_visual(&gbuffer, primitive, &panel->visuals[2]));
 
-    AT(_scene_visual_pass_caps_from_visual(fixed_primitive, &panel->visuals[2], &caps));
+    AT(_scene_visual_pass_caps_from_visual(path, &panel->visuals[3], &caps));
+    AT(caps.kind == DVZ_SCENE_VISUAL_DESC_PRIMITIVE);
+    AT(caps.draws_in_opaque_pass);
+    AT(caps.writes_depth);
+    AT(caps.eligible_for_depth_postprocess);
+    AT(!caps.has_normals);
+    AT(!caps.eligible_for_gbuffer);
+    AT(!_scene_technique_gbuffer_plan_add_visual(&gbuffer, path, &panel->visuals[3]));
+
+    AT(_scene_visual_pass_caps_from_visual(fixed_primitive, &panel->visuals[4], &caps));
     AT(caps.fixed_controller);
+    AT(caps.writes_color);
+    AT(!caps.writes_depth);
     AT(!caps.can_write_depth);
     AT(!caps.can_depth_test);
     AT(!caps.needs_depth_attachment);
+    AT(!caps.eligible_for_depth_postprocess);
+    AT(!caps.eligible_for_gbuffer);
     AT(!_scene_technique_gbuffer_plan_add_visual(
-        &gbuffer, fixed_primitive, &panel->visuals[2]));
+        &gbuffer, fixed_primitive, &panel->visuals[4]));
 
-    AT(_scene_visual_pass_caps_from_visual(mesh, &panel->visuals[3], &caps));
+    AT(_scene_visual_pass_caps_from_visual(mesh, &panel->visuals[5], &caps));
     AT(caps.kind == DVZ_SCENE_VISUAL_DESC_PRIMITIVE);
     AT(caps.has_normals);
+    AT(caps.writes_depth);
+    AT(caps.eligible_for_depth_postprocess);
+    AT(caps.eligible_for_gbuffer);
     AT(caps.needs_material_layout);
     AT(caps.uses_material_set);
     AT(caps.supports_depth_cue);
     AT(caps.depth_cue_enabled);
-    AT(_scene_technique_gbuffer_plan_add_visual(&gbuffer, mesh, &panel->visuals[3]));
+    AT(_scene_technique_gbuffer_plan_add_visual(&gbuffer, mesh, &panel->visuals[5]));
     AT(gbuffer.enabled);
     AT(gbuffer.needs_depth);
     AT(gbuffer.needs_normal);
     AT(!gbuffer.needs_object_id);
     AT(gbuffer.producer_count == 1);
 
-    AT(_scene_visual_pass_caps_from_visual(volume, &panel->visuals[4], &caps));
+    AT(_scene_visual_pass_caps_from_visual(image, &panel->visuals[6], &caps));
+    AT(caps.kind == DVZ_SCENE_VISUAL_DESC_IMAGE);
+    AT(caps.draws_in_opaque_pass);
+    AT(caps.writes_color);
+    AT(!caps.writes_depth);
+    AT(!caps.needs_depth_attachment);
+    AT(!caps.eligible_for_depth_postprocess);
+    AT(!caps.eligible_for_gbuffer);
+    AT(caps.uses_image_set);
+    AT(!_scene_technique_gbuffer_plan_add_visual(&gbuffer, image, &panel->visuals[6]));
+    AT(gbuffer.producer_count == 1);
+
+    AT(_scene_visual_pass_caps_from_visual(volume, &panel->visuals[7], &caps));
     AT(caps.kind == DVZ_SCENE_VISUAL_DESC_VOLUME);
     AT(caps.draws_in_transparent_blend_pass);
     AT(!caps.draws_in_opaque_pass);
     AT(caps.uses_source_over_blend);
+    AT(caps.writes_color);
+    AT(!caps.writes_depth);
     AT(caps.samples_depth);
     AT(caps.needs_depth_attachment);
+    AT(!caps.eligible_for_depth_postprocess);
+    AT(!caps.eligible_for_gbuffer);
     AT(caps.uses_volume_set);
-    AT(!_scene_technique_gbuffer_plan_add_visual(&gbuffer, volume, &panel->visuals[4]));
+    AT(!_scene_technique_gbuffer_plan_add_visual(&gbuffer, volume, &panel->visuals[7]));
     AT(gbuffer.producer_count == 1);
 
     DvzSceneVisualDesc desc = {
@@ -4295,6 +4359,9 @@ int test_scene_visual_pass_capabilities(TstSuite* suite, TstItem* item)
         &desc, DVZ_ALPHA_BLENDED, DVZ_CONTROLLER_APPLY, &caps));
     AT(caps.draws_in_opaque_pass);
     AT(caps.uses_source_over_blend);
+    AT(caps.writes_depth);
+    AT(caps.eligible_for_depth_postprocess);
+    AT(caps.eligible_for_gbuffer);
     AT(caps.needs_material_layout);
     AT(caps.uses_material_set);
     AT(caps.supports_depth_cue);

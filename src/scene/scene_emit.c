@@ -764,11 +764,8 @@ void _scene_emit_panel_render(
         }
         (void)_scene_append_visual_to_render_pass(
             figure, plan, opaque_node, visual, attach, vidx);
-        bool edl_depth_visual =
-            edl_enabled && caps.draws_in_opaque_pass && !caps.fixed_controller &&
-            (caps.can_write_depth || caps.kind == DVZ_SCENE_VISUAL_DESC_POINT ||
-             caps.kind == DVZ_SCENE_VISUAL_DESC_PIXEL);
-        opaque_needs_depth = opaque_needs_depth || caps.can_write_depth || edl_depth_visual;
+        bool edl_depth_visual = edl_enabled && caps.eligible_for_depth_postprocess;
+        opaque_needs_depth = opaque_needs_depth || caps.writes_depth || edl_depth_visual;
         edl_has_depth_producer = edl_has_depth_producer || edl_depth_visual;
     }
 

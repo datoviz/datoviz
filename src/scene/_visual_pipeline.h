@@ -88,10 +88,14 @@ typedef struct DvzSceneVisualPassCaps
     bool draws_in_depth_peel_pass;
     bool draws_in_transparent_blend_pass;
     bool uses_source_over_blend;
+    bool writes_color;
+    bool writes_depth;
     bool can_write_depth;
     bool can_depth_test;
     bool samples_depth;
     bool needs_depth_attachment;
+    bool eligible_for_depth_postprocess;
+    bool eligible_for_gbuffer;
     bool uses_common_set;
     bool needs_material_layout;
     bool uses_material_set;

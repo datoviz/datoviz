@@ -924,10 +924,15 @@ static void _scene_visual_pass_caps_resolve(
     out->draws_in_transparent_blend_pass = transparent_blend;
     out->draws_in_opaque_pass = !wboit && !depth_peel && !transparent_blend;
     out->uses_source_over_blend = _alpha_mode_uses_source_over(alpha_mode);
+    out->writes_color = kind != DVZ_SCENE_VISUAL_DESC_NONE;
+    out->writes_depth = out->draws_in_opaque_pass && (primitive || point_like) && !fixed;
     out->can_write_depth = (primitive || point_like) && !fixed;
     out->can_depth_test = (primitive || point_like) && !fixed;
     out->samples_depth = volume && !fixed;
     out->needs_depth_attachment = out->can_depth_test || out->samples_depth;
+    out->eligible_for_depth_postprocess = out->draws_in_opaque_pass && out->writes_depth;
+    out->eligible_for_gbuffer = out->draws_in_opaque_pass && primitive && out->writes_depth &&
+                                has_normals;
     out->uses_common_set = kind != DVZ_SCENE_VISUAL_DESC_NONE;
     out->needs_material_layout = (primitive && has_normals) || (point_like && depth_cue_enabled);
     out->uses_material_set = out->needs_material_layout && has_material_resource;
