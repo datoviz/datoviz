@@ -118,6 +118,32 @@ _stream_bind_group_layout_id(const DvzDrp2CommandStream* stream, uint64_t bind_g
 
 
 
+/**
+ * Return whether an emitted stream contains one render pipeline debug label.
+ *
+ * @param stream the emitted DRP2 stream
+ * @param label expected pipeline label
+ * @return whether the pipeline label was found
+ */
+static bool _stream_has_render_pipeline_label(const DvzDrp2CommandStream* stream, const char* label)
+{
+    ANN(stream);
+    ANN(label);
+    for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
+    {
+        const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream, i);
+        if (cmd == NULL || cmd->type != DVZ_DRP2_COMMAND_CREATE_RENDER_PIPELINE)
+            continue;
+        const char* pipeline_label =
+            dvz_drp2_stream_label(stream, cmd->u.create_render_pipeline.id);
+        if (pipeline_label != NULL && strcmp(pipeline_label, label) == 0)
+            return true;
+    }
+    return false;
+}
+
+
+
 /*************************************************************************************************/
 /*  Tests                                                                                        */
 /*************************************************************************************************/
@@ -4160,6 +4186,79 @@ int test_scene_visual_internal_material_state(TstSuite* suite, TstItem* item)
 
 
 /**
+ * Verify disabling pixel depth cueing returns to the plain pixel pipeline.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_pixel_depth_cue_toggle_switches_pipeline(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    ANN(item);
+
+    DvzScene* scene = dvz_scene();
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    DvzVisual* pixel = dvz_pixel(scene, 0);
+    AT(scene != NULL);
+    AT(figure != NULL);
+    AT(panel != NULL);
+    AT(pixel != NULL);
+
+    float positions[3][3] = {
+        {-0.5f, -0.5f, 0.0f},
+        {+0.5f, -0.5f, 0.0f},
+        {+0.0f, +0.5f, 0.0f},
+    };
+    DvzColor colors[3] = {{255, 0, 0, 255}, {0, 255, 0, 255}, {0, 0, 255, 255}};
+    float sizes[3] = {2.0f, 2.0f, 2.0f};
+    AT(dvz_visual_set_data(pixel, "position", positions, 3) == 0);
+    AT(dvz_visual_set_data(pixel, "color", colors, 3) == 0);
+    AT(dvz_visual_set_data(pixel, "size", sizes, 3) == 0);
+    AT(dvz_panel_add_visual(panel, pixel, NULL) == 0);
+
+    DvzCapabilitySnapshot caps;
+    dvz_capability_snapshot_default(&caps);
+    caps.shader_format_glsl = true;
+
+    DvzFramePlanEmitConfig cfg = dvz_frame_plan_emit_config();
+    cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
+
+    AT(dvz_visual_set_depth_cue(
+           pixel,
+           &(DvzDepthCueDesc){
+               .mode = DVZ_DEPTH_CUE_DARKEN,
+               .near_depth = 0.0f,
+               .far_depth = 1.0f,
+               .strength = 0.5f,
+               .background_color = {0.0f, 0.0f, 0.0f, 1.0f},
+           }) == 0);
+
+    DvzDiagnosticReport report;
+    dvz_diagnostic_report_init(&report);
+    DvzDrp2CommandStream* cue_stream = dvz_figure_emit_ex(figure, &caps, &report, &cfg);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+    ANN(cue_stream);
+    AT(_stream_has_render_pipeline_label(cue_stream, "_pipe_pixel_cueg_depth"));
+    AT(!_stream_has_render_pipeline_label(cue_stream, "_pipe_pixelg_depth"));
+    dvz_drp2_stream_destroy(cue_stream);
+
+    AT(dvz_visual_set_depth_cue(pixel, NULL) == 0);
+    dvz_diagnostic_report_init(&report);
+    DvzDrp2CommandStream* plain_stream = dvz_figure_emit_ex(figure, &caps, &report, &cfg);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+    ANN(plain_stream);
+    AT(_stream_has_render_pipeline_label(plain_stream, "_pipe_pixelg_depth"));
+    AT(!_stream_has_render_pipeline_label(plain_stream, "_pipe_pixel_cueg_depth"));
+
+    dvz_drp2_stream_destroy(plain_stream);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+/**
  * Verify internal pass capability resolution for current retained visual families.
  *
  * @param suite the active test suite
@@ -6600,6 +6699,7 @@ int test_scene_graph(TstSuite* suite)
     TEST_SIMPLE(test_scene_rejects_unsupported_point_attribute);
     TEST_SIMPLE(test_scene_visual_alpha_mode);
     TEST_SIMPLE(test_scene_visual_internal_material_state);
+    TEST_SIMPLE(test_scene_pixel_depth_cue_toggle_switches_pipeline);
     TEST_SIMPLE(test_scene_visual_pass_capabilities);
     TEST_SIMPLE(test_scene_gbuffer_runtime_lowering);
     TEST_SIMPLE(test_scene_edl_runtime_lowering);

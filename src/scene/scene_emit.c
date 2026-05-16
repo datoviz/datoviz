@@ -83,6 +83,44 @@ static uint32_t _scene_attr_buffer_index(
 
 
 /**
+ * Return whether one visual has CPU-side data for an attribute.
+ *
+ * @param visual the visual
+ * @param attr_name the attribute name
+ * @return whether the attribute exists and has data
+ */
+static bool _scene_visual_has_attr_data(const DvzVisual* visual, const char* attr_name)
+{
+    ANN(visual);
+    ANN(attr_name);
+    int attr_idx = _attr_index(visual, attr_name);
+    return attr_idx >= 0 && visual->attrs[attr_idx].data != NULL &&
+           visual->attrs[attr_idx].item_count > 0;
+}
+
+
+
+/**
+ * Return whether one visual should expose material params to the renderer.
+ *
+ * @param visual the visual
+ * @return whether render metadata should include the material params resource
+ */
+static bool _scene_visual_needs_material_params(const DvzVisual* visual)
+{
+    ANN(visual);
+    bool point_like =
+        visual->type == DVZ_VISUAL_TYPE_POINT || visual->type == DVZ_VISUAL_TYPE_PIXEL;
+    if (point_like)
+        return visual->material.depth_cue_enabled;
+    if (visual->type == DVZ_VISUAL_TYPE_PRIMITIVE || visual->type == DVZ_VISUAL_TYPE_MESH)
+        return _scene_visual_has_attr_data(visual, "normal");
+    return false;
+}
+
+
+
+/**
  * Resolve the resource key used by one visual attribute.
  *
  * @param figure the parent figure
@@ -347,13 +385,7 @@ void _scene_emit_visual_uploads(DvzFigure* figure, DvzFramePlan* plan)
                 visual->type == DVZ_VISUAL_TYPE_PRIMITIVE ||
                 visual->type == DVZ_VISUAL_TYPE_MESH)
             {
-                int normal_idx = _attr_index(visual, "normal");
-                bool has_normals =
-                    normal_idx >= 0 && visual->attrs[normal_idx].data != NULL &&
-                    visual->attrs[normal_idx].item_count > 0;
-                bool point_like = visual->type == DVZ_VISUAL_TYPE_POINT ||
-                                  visual->type == DVZ_VISUAL_TYPE_PIXEL;
-                if ((point_like || has_normals) && visual->material_params_dirty)
+                if (_scene_visual_needs_material_params(visual) && visual->material_params_dirty)
                 {
                     char material_resource_id[128];
                     if (!_scene_resource_key_visual_attr(
@@ -543,9 +575,13 @@ bool _scene_visual_frame_plan_metadata(
             figure, visual, visual_index, "normal", metadata->normal_id,
             sizeof(metadata->normal_id)))
         return false;
-    if (!_scene_resource_key_visual_attr(
-            visual_index, "material_params", metadata->material_id, sizeof(metadata->material_id)))
-        return false;
+    if (_scene_visual_needs_material_params(visual))
+    {
+        if (!_scene_resource_key_visual_attr(
+                visual_index, "material_params", metadata->material_id,
+                sizeof(metadata->material_id)))
+            return false;
+    }
 
     uint32_t buffer_index = _scene_buffer_index(figure->scene, visual->buffer);
     if (buffer_index != UINT32_MAX)
