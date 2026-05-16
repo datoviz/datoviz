@@ -1101,6 +1101,8 @@ static void _volume_state_default(DvzVolumeState* state)
     state->opacity = 1.0f;
     state->sampling = DVZ_VOLUME_SAMPLING_LINEAR;
     state->render_mode = DVZ_VOLUME_RENDER_SLICE;
+    state->slice_axis = DVZ_VOLUME_AXIS_Z;
+    state->slice_position = 0.5;
     state->step_count = 64;
     state->clip_min[0] = 0.0;
     state->clip_min[1] = 0.0;
@@ -2584,8 +2586,64 @@ int dvz_volume_set_render_mode(DvzVisual* visual, DvzVolumeRenderMode mode)
 
 
 /**
- * Set the volume raymarch step count used by MIP rendering.
+ * Set the slice axis used by slice rendering.
  *
+ * @param visual the volume visual
+ * @param axis axis normal for slice plane selection
+ * @return 0 on success, -1 on error
+ */
+int dvz_volume_set_slice_axis(DvzVisual* visual, DvzVolumeAxis axis)
+{
+    ANN(visual);
+    if (visual->type != DVZ_VISUAL_TYPE_VOLUME)
+    {
+        log_error("dvz_volume_set_slice_axis requires a volume visual");
+        return -1;
+    }
+    if (axis < DVZ_VOLUME_AXIS_X || axis > DVZ_VOLUME_AXIS_Z)
+    {
+        log_error("unsupported volume slice axis %d", (int)axis);
+        return -1;
+    }
+    if (!_scene_visual_mutation_allowed(visual->scene, "set volume slice axis"))
+        return -1;
+    visual->volume.slice_axis = axis;
+    _visual_bump_version(&visual->volume.version);
+    return 0;
+}
+
+
+/**
+ * Set the normalized slice position for slice rendering.
+ *
+ * @param visual the volume visual
+ * @param position normalized slice coordinate in [0, 1]
+ * @return 0 on success, -1 on error
+ */
+int dvz_volume_set_slice_position(DvzVisual* visual, double position)
+{
+    ANN(visual);
+    if (visual->type != DVZ_VISUAL_TYPE_VOLUME)
+    {
+        log_error("dvz_volume_set_slice_position requires a volume visual");
+        return -1;
+    }
+    if (!isfinite(position) || position < 0.0 || position > 1.0)
+    {
+        log_error("volume slice position must be finite and in [0, 1]");
+        return -1;
+    }
+    if (!_scene_visual_mutation_allowed(visual->scene, "set volume slice position"))
+        return -1;
+    visual->volume.slice_position = position;
+    _visual_bump_version(&visual->volume.version);
+    return 0;
+}
+
+
+/**
+ * Set the volume raymarch step count used by MIP rendering.
+*
  * @param visual the volume visual
  * @param step_count number of raymarch samples
  * @return 0 on success, -1 on error

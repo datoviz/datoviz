@@ -908,6 +908,26 @@ DVZ_EXPORT int dvz_volume_set_render_mode(DvzVisual* visual, DvzVolumeRenderMode
 
 
 /**
+ * Set the volume slice axis.
+ *
+ * @param visual the volume visual
+ * @param axis axis normal for slicing planes (X/Y/Z)
+ * @return 0 on success, -1 on error
+ */
+DVZ_EXPORT int dvz_volume_set_slice_axis(DvzVisual* visual, DvzVolumeAxis axis);
+
+
+/**
+ * Set the normalized volume slice position.
+ *
+ * @param visual the volume visual
+ * @param position slice position in [0, 1], where 0 is the minimum axis coordinate
+ * @return 0 on success, -1 on error
+ */
+DVZ_EXPORT int dvz_volume_set_slice_position(DvzVisual* visual, double position);
+
+
+/**
  * Set the volume raymarch step count used by MIP and composite rendering.
  *
  * @param visual the volume visual

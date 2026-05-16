@@ -66,6 +66,7 @@ struct DvzSceneVolumeUniform
     float clip_min[4];
     float clip_max[4];
     float params[4];
+    float slice[4];
 };
 
 struct ResourceId

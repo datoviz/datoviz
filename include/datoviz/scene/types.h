@@ -225,6 +225,8 @@ struct DvzVolumeState
     float opacity;
     DvzVolumeSamplingMode sampling;
     DvzVolumeRenderMode render_mode;
+    DvzVolumeAxis slice_axis;
+    double slice_position;
     bool clipping_enabled;
     double clip_min[3];
     double clip_max[3];

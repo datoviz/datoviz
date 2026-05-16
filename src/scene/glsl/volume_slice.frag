@@ -15,6 +15,7 @@ layout(set = 1, binding = 2) uniform VolumeParams {
     vec4 clip_min;
     vec4 clip_max;
     vec4 params;
+    vec4 slice;
 } volume;
 
 layout(location = 0) in vec3 fragUVW;
@@ -58,6 +59,11 @@ float projected_depth(vec3 uvw)
     return clamp(0.5 * (clip.z / clip.w) + 0.5, 0.0, 1.0);
 }
 
+float axis_value(int axis, vec3 value)
+{
+    return axis == 0 ? value.x : (axis == 1 ? value.y : value.z);
+}
+
 bool occluded_by_scene_depth(vec3 uvw)
 {
     vec2 size = vec2(textureSize(depthTex, 0));
@@ -82,12 +88,16 @@ void main()
 
     vec3 box_min = volume.clip_min.xyz;
     vec3 box_max = volume.clip_max.xyz;
-    float slice_z = 0.5 * (box_min.z + box_max.z);
-    if (abs(rd.z) < 1e-6) {
+
+    int axis = int(clamp(volume.slice.x, 0.0, 2.0));
+    float axis_pos = clamp(volume.slice.y, 0.0, 1.0);
+    float slice_coord = mix(axis_value(axis, box_min), axis_value(box_max, axis), axis_pos);
+    float axis_rd = (axis == 0 ? rd.x : (axis == 1 ? rd.y : rd.z));
+    if (abs(axis_rd) < 1e-6) {
         discard;
     }
 
-    float slice_t = (slice_z - ro.z) / rd.z;
+    float slice_t = (slice_coord - axis_value(axis, ro)) / axis_rd;
     if (slice_t < max(proxy_t0, 0.0) || slice_t > proxy_t1) {
         discard;
     }

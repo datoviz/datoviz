@@ -345,6 +345,10 @@ static void _volume_uniform_from_state(
     out->params[1] = state->clipping_enabled ? 1.0f : 0.0f;
     out->params[2] = (float)state->step_count;
     out->params[3] = (float)state->render_mode;
+    out->slice[0] = (float)state->slice_axis;
+    out->slice[1] = (float)state->slice_position;
+    out->slice[2] = 0.0f;
+    out->slice[3] = 1.0f;
 }
 
 

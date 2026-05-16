@@ -182,6 +182,15 @@ typedef enum
 
 typedef enum
 {
+    DVZ_VOLUME_AXIS_X = 0,
+    DVZ_VOLUME_AXIS_Y = 1,
+    DVZ_VOLUME_AXIS_Z = 2,
+} DvzVolumeAxis;
+
+
+
+typedef enum
+{
     DVZ_SCENE_TARGET_NONE = 0,
     DVZ_SCENE_TARGET_OBJECT,
     DVZ_SCENE_TARGET_ITEM,
