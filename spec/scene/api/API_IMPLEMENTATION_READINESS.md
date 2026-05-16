@@ -5,7 +5,7 @@ This document summarizes the current spec-to-implementation boundary for the pub
 
 ## Status
 
-Status: informative implementation checklist, updated after the first installed header split landed.
+Status: informative implementation checklist, updated for the active v0.4 scene/app slice.
 
 The normative sources remain:
 
@@ -24,9 +24,9 @@ The normative sources remain:
 
 These boundaries are now explicit enough to start public API drafting:
 
-1. `headers/scene_api.h` is authoritative only for the API groups it already covers; `API_SURFACE.md`
-   owns next interaction, scale/colorbar, text, and annotation additions until the header sketch is
-   updated.
+1. The active construction path is `dvz_scene()` -> `dvz_figure()` -> `dvz_app()` ->
+   `DvzAppWindow`. App windows may be Datoviz-owned GLFW/offscreen windows or hosted windows
+   backed by an external surface.
 2. Text is a retained semantic object (`DvzText`) or annotation object that may lower to `glyph`
    visual contributions. `glyph` remains the visual-family contract for shaped glyph runs.
 3. Mesh visuals reference scene-owned mesh geometry resources. Vertex/index data belongs to the
@@ -39,18 +39,24 @@ These boundaries are now explicit enough to start public API drafting:
    scales; they do not own the scale or colormap.
 7. `SampledField` is the active shared scene-owned regular-grid resource for image paths and future
    volume/probe/readout consumers.
+8. The active rendering path is scene -> `FramePlan` -> `DvzDrp2CommandStream` ->
+   `DvzDrp2Runtime` -> vklite/canvas/app. Scene code emits backend-agnostic DRP2 work and does
+   not own swapchains, command-buffer lifetimes, or native host event loops.
+9. App capture is active through `DvzAppWindow`/canvas PNG capture. DRP2 linear `.dvzr`
+   recording and replay are active app-window capabilities.
 
 
 ## Implementation Work Still Needed
 
-The installed headers now spell the first versions of interaction, scale/colorbar, text/annotation,
-and sampled-field APIs. Remaining implementation work should focus on:
+The installed headers now spell the first versions of scene, figure, app-window, interaction,
+scale/colorbar, text/annotation, and sampled-field APIs. Remaining implementation work should focus
+on:
 
-1. implementing `DvzInteractionPolicy`, request/freshness handling, deterministic pick/probe result
+1. hardening `DvzInteractionPolicy`, request/freshness handling, deterministic pick/probe result
    queues, and panel binding,
 2. implementing `DvzSelection`, `DvzLinkChannel`, stable link-key storage, and selection mutation
    rules,
-3. wiring pick/probe execution to DRP2 readback for the first point/image paths,
+3. broadening pick/probe coverage beyond the first point/image DRP2 readback paths,
 4. implementing `DvzFont`, `DvzText`, and `DvzAnnotation` retained-object lifecycle and invalidation,
 5. rendering colorbar ticks/labels and text/annotation geometry after retained bookkeeping exists,
 6. deciding whether mesh needs a separate public geometry resource beyond current scene buffers,

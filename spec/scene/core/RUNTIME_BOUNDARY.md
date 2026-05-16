@@ -40,9 +40,12 @@ The intended relationship is:
 
 1. scene owns authored semantics, dirty tracking, validation, and adaptation,
 2. scene builds one scene-level `FramePlan` for the frame,
-3. the scene-to-DRP2 converter translates that plan into a DRP2 command stream,
-4. the runtime consumes the DRP2 command stream,
-5. the runtime reports execution outcomes without redefining scene meaning.
+3. the scene-to-DRP2 converter translates that plan into a `DvzDrp2CommandStream`,
+4. `DvzDrp2Runtime` consumes the command stream and executes through vklite/canvas,
+5. the app layer owns presentation, capture, hosted surfaces, and event-loop stepping.
+
+The active public flow is `dvz_scene()` -> `dvz_figure()` -> `dvz_app()` ->
+`DvzAppWindow`, with the app window driving render-once or run-loop execution.
 
 
 ## Core Rules
@@ -92,16 +95,17 @@ The minimum conceptual runtime surface includes:
 4. `CompletionEvent` — typed completion for readback, picking, export, or execution failure,
 5. `RuntimeDiagnostic` — runtime failures mapped back to scene-visible identities.
 
-The scene layer interacts through a single opaque `DvzRuntime*` handle for submission and
-completion. There is no split device/encoder/queue model exposed to the scene. Encoder lifecycle
-and DRP2 session management are hidden inside the runtime.
+The scene layer interacts with the runtime through app-owned opaque objects. In the active
+implementation, `DvzAppWindow` owns the canvas target and `DvzDrp2Runtime` reuse needed for a
+figure. There is no split device/encoder/queue model exposed to the scene. Encoder lifecycle and
+DRP2 session management are hidden inside the runtime/app boundary.
 
 ```c
-DvzRuntime* rt = dvz_runtime_create(/* backend init */);
-dvz_runtime_submit_commands(rt, command_stream);
-dvz_runtime_submit_frame_plan(rt, frame_plan);  // convenience: converts then submits
-dvz_runtime_get_capabilities(rt, &caps);
-dvz_runtime_destroy(rt);
+DvzScene* scene = dvz_scene();
+DvzFigure* figure = dvz_figure(scene, width, height, 0);
+DvzApp* app = dvz_app(scene);
+DvzAppWindow* win = dvz_app_window(app, figure, width, height);
+dvz_app_window_render_once(win);
 ```
 
 
@@ -131,6 +135,9 @@ commands   = scene_convert_frame_plan(frame_plan, caps)
 submission = runtime_submit_commands(runtime, commands)
 event      = runtime_poll_completion(runtime)
 ```
+
+The concrete active command object is `DvzDrp2CommandStream`; the concrete active executor is
+`DvzDrp2Runtime`.
 
 
 ## `SubmissionResult`
@@ -233,6 +240,10 @@ submissions, with internal caching or deferred object creation. A convenience
 does not make `FramePlan` the primary runtime contract. Internal details must not alter the meaning
 of the submitted frame, the identity route for diagnostics, or the identity route for completions.
 
+`DvzAppWindow` is the active owner of repeated submissions for a figure. It may reuse request and
+frame runtimes, resize the canvas to match the figure, render once for hosted loops, or run a
+Datoviz-owned loop through `dvz_app_run()`.
+
 
 ## Readback Contract
 
@@ -244,6 +255,10 @@ At minimum:
 2. single-pixel or equivalent picking readback,
 3. typed completion routing back to scene-visible request or target identity,
 4. stale-result rejection where the scene model requires it (e.g. hover picking).
+
+The active app layer exposes PNG capture through `dvz_app_window_capture_png()` and lower-level
+canvas capture access through `dvz_app_window_canvas()`. DRP2 linear `.dvzr` recording and replay
+belong to the app-window/runtime boundary, not to scene semantics.
 
 Completion delivery: v0.4 uses polling — `dvz_scene_poll_pick_result` and the
 `DVZ_EVENT_PICK_RESULT` callback cover the primary readback use case. DRP2 does not expose
@@ -269,24 +284,26 @@ for the shared scene-facing diagnostic record shape.
 
 The scene layer does not own or reference the canvas, window, swapchain, or stream/sink objects.
 
-The intended ownership model is:
+The active ownership model is:
 
-1. the application creates a canvas (window + device + swapchain + stream + sinks),
-2. the application creates a DRP2 runtime, which plugs into the canvas draw callback,
-3. the application creates a scene, passing it the DRP2 runtime as its submission target,
-4. the scene never references canvas, stream, sink, or swapchain directly.
+1. the user creates `DvzScene` and one or more `DvzFigure` objects,
+2. the user creates `DvzApp` for the scene,
+3. the user creates `DvzAppWindow` objects for figures,
+4. each app window owns or borrows the canvas target and owns runtime reuse for rendering,
+5. the scene never references canvas, stream, sink, swapchain, or host surfaces directly.
 
 Per-frame flow:
 
 ```text
-canvas fires draw callback
-  → application asks scene to build frame → FramePlan
-  → scene-to-DRP2 converter emits a command stream
-  → DRP2 runtime executes the command stream through the active backend
-  → canvas submits → stream routes to sinks (swapchain, video, etc.)
+DvzAppWindow render step
+  -> app synchronizes figure size and input state
+  -> scene builds FramePlan
+  -> scene-to-DRP2 converter emits DvzDrp2CommandStream
+  -> DvzDrp2Runtime executes through vklite/canvas
+  -> app presents, captures, records, or replays as requested
 ```
 
-Video and offscreen sinks are attached to the canvas stream by the application.
+Video, capture, and live-image sinks remain app/canvas concerns.
 
 
 ## Logical Render Target
@@ -294,24 +311,14 @@ Video and offscreen sinks are attached to the canvas stream by the application.
 The scene needs to know the logical output dimensions and format for a frame — but not the backend
 object behind them.
 
-This is expressed as a `DvzRenderTarget`, a scene-level logical handle resolved by the DRP2
-runtime to actual backend resources.
+In the active implementation this is carried by `DvzFigure` and `DvzAppWindow`, not by a public
+`DvzRenderTarget` handle. The figure carries logical dimensions and panel layout; the app window
+maps those dimensions to a concrete canvas target, hosted external surface, capture target, or
+replay target.
 
-Two variants:
-
-```c
-// Interactive: target backed by application/canvas presentation resources
-DvzRenderTarget* target = dvz_runtime_target_canvas(runtime, app_canvas_token);
-
-// Offscreen/export: target backed by a readback-capable image
-DvzRenderTarget* target = dvz_runtime_target_offscreen(runtime, width, height, format);
-
-dvz_figure_set_target(fig, target);
-```
-
-The scene holds a `DvzRenderTarget` and uses it when building the `FramePlan`.
-It does not know whether the target is a swapchain image or an export buffer.
-The canvas is not a scene concept — the scene API never takes a `DvzCanvas*` argument directly.
+The scene does not know whether the target is a swapchain image, an external surface, an export
+buffer, or a replayed stream. The canvas is not a scene concept — the scene API never takes a
+`DvzCanvas*` argument directly.
 
 
 ## Render-Pass Attachments And Texture Views
@@ -320,15 +327,16 @@ In the active DRP2 `2.0` surface, render-pass attachments reference textures dir
 `texture_id`, not via texture-view objects. Texture views (`CreateTextureView`) are used only
 for bind-group bindings, not for render-pass attachment slots.
 
-Scene-layer code that constructs render passes should therefore reference `DvzRenderTarget`
-logical handles and let the runtime resolve them to the correct texture id — it should not
-assume texture-view ids are needed on the attachment path.
+Scene-layer code that constructs render passes should therefore reference the logical frame target
+selected by the figure/app-window path and let the runtime resolve it to the correct texture id. It
+should not assume texture-view ids are needed on the attachment path.
 
 
 ## Export Helpers
 
-`dvz_figure_export_png` and `dvz_figure_export_svg` live in the scene layer and drive the
-runtime via a standard offline frame sequence. They are not part of the runtime surface.
+PNG capture is active at the app/canvas layer through `dvz_app_window_capture_png()` and
+`dvz_app_window_canvas()`. DRP2 `.dvzr` recording/replay is also app-window owned. Figure-level
+export helpers are not the current active scene/runtime boundary.
 
 
 ## Service Boundaries

@@ -1,21 +1,23 @@
 # Scene Frame Lifecycle
 
-This document defines the logical frame flow for the future scene layer.
+This document defines the logical frame flow for the active v0.4 scene layer.
 
 
 ## What Drives The Lifecycle
 
-The frame lifecycle is triggered by the canvas draw callback.
+The frame lifecycle is triggered by the app-window render step.
 
-Each frame, the canvas fires a draw callback that the application routes to the scene.
-The scene then runs the full lifecycle — events through DRP2 emission — and returns a filled
-command buffer to the DRP2 runtime, which passes it back to the canvas for submission.
+Each frame, `DvzAppWindow` routes pending input and size state to the figure, asks the scene to
+produce a `FramePlan`, emits a `DvzDrp2CommandStream`, and submits it to the app window's
+`DvzDrp2Runtime`. The runtime executes through vklite/canvas and presents or captures through the
+app layer.
 
 The scene does not own the event loop, the canvas, or the swapchain.
 It receives a "build a frame" signal and produces DRP2 work in response.
 
-In offline (video export) mode the application drives the loop directly, calling the scene's
-frame-advance function once per step rather than waiting for a canvas callback.
+In hosted or offline modes the application drives the loop directly with
+`dvz_app_window_render_once()` / `dvz_app_render_once()` rather than waiting for a Datoviz-owned
+GLFW loop.
 
 
 ## High-Level Flow
@@ -29,8 +31,8 @@ frame-advance function once per step rather than waiting for a canvas callback.
 7. validate the affected scene state,
 8. apply capability adaptation,
 9. build the scene-level `FramePlan`,
-10. emit DRP2,
-11. submit through the runtime,
+10. emit a `DvzDrp2CommandStream`,
+11. submit through `DvzDrp2Runtime`,
 12. optionally render external UI overlay,
 13. process readback or picking results.
 
@@ -147,9 +149,13 @@ It should not rediscover upload work outside the plan.
 
 ### 9. Runtime Submission
 
-Submit the emitted work through the runtime-facing boundary.
+Submit the emitted `DvzDrp2CommandStream` through the runtime-facing boundary.
 
 This stage should treat the runtime as an execution service, not as a second planner.
+
+In the active app path, `DvzAppWindow` owns the per-window canvas target and runtime reuse. Hosted
+loops call `dvz_app_window_render_once()` when their external surface is drawable; Datoviz-owned
+loops call the same path from `dvz_app_run()`.
 
 
 ### 10. External UI Overlay

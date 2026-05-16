@@ -1,7 +1,7 @@
 # Image Export And Offscreen Rendering
 
-This document defines the scene-level contract for still image capture, render scale
-(supersampling), and panel-as-texture offscreen rendering.
+This document defines the scene-level contract for still image capture and records future
+render-scale and panel-as-texture directions.
 
 Video export is covered in `interaction/ANIMATION.md`.
 
@@ -15,27 +15,49 @@ The canvas and runtime are responsible for capturing the rendered output.
 
 The scene-level contract for still image capture is:
 
-1. the application may drive the scene in offline clock mode for a single frame,
-2. the scene builds and emits a `FramePlan` as usual,
-3. the runtime executes the plan and makes the rendered output available to the canvas,
-4. the canvas performs the readback and delivers it to the image sink (file, buffer, callback).
+1. the application creates `dvz_scene()`, `dvz_figure()`, `dvz_app()`, and a `DvzAppWindow`,
+2. `DvzAppWindow` drives one frame with `dvz_app_window_render_once()` or `dvz_app_run()`,
+3. the scene builds a `FramePlan` as usual,
+4. the app layer emits a `DvzDrp2CommandStream`,
+5. `DvzDrp2Runtime` executes the stream through vklite/canvas,
+6. the app/canvas layer performs readback and delivers it to the image sink.
 
 The scene has no knowledge of whether the rendered frame is displayed, saved, or discarded.
 
 **Programmatic single-frame render:**
 
 ```text
-dvz_scene_frame_advance(scene)   // step the scene by one frame (offline mode)
-// canvas/runtime captures the result
+dvz_app_window_render_once(win)
+dvz_app_window_capture_png(win, "frame.png")
 ```
 
-No special scene API is needed.
-The offline clock mode (`DVZ_CLOCK_OFFLINE`) already expresses this correctly.
+No special scene API is needed. The lower-level canvas capture API remains available through
+`dvz_app_window_canvas(win)` when callers need RGBA buffers instead of PNG files.
 
 
-## Render Scale (Supersampling)
+## DRP2 Recording And Replay
 
-A render scale multiplies the logical canvas size to produce a higher-resolution output.
+The active app layer can record and replay the DRP2 command stream for an app window:
+
+```text
+dvz_app_window_record_start(win, "capture.dvzr")
+dvz_app_window_render_once(win)
+dvz_app_window_record_stop(win)
+
+dvz_app_window_replay_start(win, "capture.dvzr")
+dvz_app_window_render_once(win)
+dvz_app_window_replay_stop(win)
+```
+
+A `.dvzr` recording is an app/runtime artifact. It records backend-agnostic DRP2 command streams;
+it does not make scene semantics depend on export or replay.
+
+
+## Future Render Scale (Supersampling)
+
+A render scale would multiply the logical canvas size to produce a higher-resolution output. This
+is not active in the current app-window path and should remain a future API direction until runtime
+allocation, downsampling, capture, and hosted-surface behavior are implemented together.
 
 ```text
 dvz_figure_set_render_scale(figure, scale)
@@ -43,7 +65,7 @@ dvz_figure_set_render_scale(figure, scale)
 
 `scale` is a positive `float32`, typically `2.0` or `4.0` for publication-quality output.
 
-**Effect:**
+**Intended effect:**
 
 1. the runtime allocates render targets at `scale × logical_size`,
 2. the scene emits a `FramePlan` as usual — it does not change its coordinate model,
@@ -54,17 +76,20 @@ dvz_figure_set_render_scale(figure, scale)
 
 Render scale stacks with device pixel ratio (see `integration/HIGH_DPI.md`).
 The effective physical resolution is `dpi_scale × render_scale × logical_size`.
-Both scale factors are applied by the runtime, not the scene.
+Both scale factors should be applied by the runtime, not the scene.
 
-**Render scale scope:** `dvz_figure_set_render_scale` is a figure-level call in v0.4. All
-panels in a figure scale together. Per-panel render scale is deferred to v0.4+.
+**Render scale scope:** if activated, `dvz_figure_set_render_scale` should be a figure-level call.
+All panels in a figure should scale together. Per-panel render scale remains deferred.
 
-**Downsampling filter:** bilinear for v0.4. Lanczos and other high-quality filters are v0.4+.
+**Downsampling filter:** bilinear remains the first expected filter. Lanczos and other
+high-quality filters are later work.
 
 
-## Panel-As-Texture
+## Future Panel-As-Texture
 
-A panel can be designated as an offscreen texture source.
+A panel-as-texture path is not active in the current scene/app implementation. The intended design
+is preserved here for later implementation: a panel can be designated as an offscreen texture
+source.
 Its rendered output is available as a logical texture handle that can be used as a
 visual attribute anywhere a texture is accepted.
 
@@ -75,36 +100,36 @@ visual attribute anywhere a texture is accepted.
 DvzTexture* tex = dvz_panel_set_offscreen(panel, flags)
 ```
 
-`dvz_panel_set_offscreen` designates `panel` as an offscreen render source and returns
+`dvz_panel_set_offscreen` would designate `panel` as an offscreen render source and return
 a logical texture handle owned by the scene.
 
-`flags` controls compositing behaviour:
+`flags` would control compositing behaviour:
 
 | Flag | Effect |
 |---|---|
 | `DVZ_PANEL_OFFSCREEN_DEFAULT` (0) | exclusive — panel renders to texture only, not to the main framebuffer |
 | `DVZ_PANEL_OFFSCREEN_PIP` | picture-in-picture — panel renders to both the texture and the main framebuffer |
 
-The default (exclusive) mode is the right choice when the offscreen texture is consumed by
+The default (exclusive) mode would be the right choice when the offscreen texture is consumed by
 another visual or ImGui widget. Use `DVZ_PANEL_OFFSCREEN_PIP` when you want the offscreen
 panel to also appear in its normal position on screen.
 
-The returned handle can be passed to any visual that accepts a texture attribute:
+The returned handle would be passed to any visual that accepts a texture attribute:
 
 ```text
 dvz_visual_set_texture(image_visual, tex)
 ```
 
-This allows the rendered output of one panel to appear as a texture in another visual,
+This would allow the rendered output of one panel to appear as a texture in another visual,
 in another panel, or in an ImGui image widget (`dvz_gui_image`).
 
 
 ### FramePlan Ordering
 
-The scene tracks the dependency between the offscreen panel and any downstream visual
+The scene would track the dependency between the offscreen panel and any downstream visual
 that references its texture.
 
-The `FramePlan` orders their render nodes correctly:
+The `FramePlan` would order their render nodes correctly:
 
 ```text
 FramePlan:
@@ -112,25 +137,24 @@ FramePlan:
   RenderNode  — downstream panel (samples the texture)
 ```
 
-This ordering is mandatory.
-The scene enforces it during frame planning.
-The user does not need to specify it explicitly.
+This ordering would be mandatory.
+The scene would enforce it during frame planning.
+The user would not need to specify it explicitly.
 
 
 ### Constraints
 
 1. **No cycles** — a panel may not (directly or transitively) depend on its own texture.
-   The scene detects cycles during validation and reports an error.
-2. **Texture size** — by default the offscreen panel renders at its declared logical size.
+   The scene should detect cycles during validation and report an error.
+2. **Texture size** — by default the offscreen panel would render at its declared logical size.
    A separate size may be declared:
 
    ```text
    dvz_panel_set_offscreen_size(panel, width, height)
    ```
 
-3. **Format** — the texture format is `rgba_u8` by default.
-   Passing a `DvzTexture*` created with a float format (e.g., `VK_FORMAT_R32G32B32A32_SFLOAT`
-   via `dvz_texture_2d`) gives an HDR-capable offscreen target.
+3. **Format** — the texture format should be `rgba_u8` by default.
+   Passing a `DvzTexture*` created with a float format should give an HDR-capable offscreen target.
 4. **Multiple consumers** — a single offscreen panel texture may be referenced by multiple
    downstream visuals.
 5. **Recursion depth** — more than one level of indirection (A → B → C) is allowed as long
@@ -139,23 +163,24 @@ The user does not need to specify it explicitly.
 
 ### Relationship To `dvz_gui_image`
 
-`dvz_gui_image(tex, w, h)` already accepts a logical texture handle (see `integration/EXTERNAL_UI.md`).
-An offscreen panel texture obtained from `dvz_panel_set_offscreen` is a valid input:
+If `dvz_gui_image(tex, w, h)` accepts a logical texture handle (see
+`integration/EXTERNAL_UI.md`), a future offscreen panel texture obtained from
+`dvz_panel_set_offscreen` should be a valid input:
 
 ```text
 DvzTexture* tex = dvz_panel_set_offscreen(panel)
 dvz_gui_image(tex, width, height)
 ```
 
-This is the scene-native path for embedding a rendered panel inside an ImGui window.
+This remains the intended scene-native path for embedding a rendered panel inside an ImGui window.
 
 
 ## Relationship To Other Documents
 
 | Document | Relationship |
 |---|---|
-| `interaction/ANIMATION.md` | video export workflow using offline clock mode |
-| `integration/HIGH_DPI.md` | render scale stacks with device pixel ratio |
-| `pipeline/FRAME_PLAN.md` | offscreen panel ordering in FramePlan |
-| `integration/EXTERNAL_UI.md` | `dvz_gui_image` accepts offscreen panel textures |
-| `pipeline/RESOURCE_MODEL.md` | offscreen texture is a scene-owned `TextureResource` |
+| `interaction/ANIMATION.md` | video/export timing context |
+| `integration/HIGH_DPI.md` | future render scale should stack with device pixel ratio |
+| `pipeline/FRAME_PLAN.md` | future offscreen panel ordering in FramePlan |
+| `integration/EXTERNAL_UI.md` | future `dvz_gui_image` offscreen-panel consumption |
+| `pipeline/RESOURCE_MODEL.md` | future offscreen texture as a scene-owned `TextureResource` |

@@ -56,11 +56,13 @@ Preferred descriptor structs:
 8. `DvzSceneColorbarDesc`
 9. `DvzSceneScaleDesc`
 
-The scene-facing constructor layer uses descriptor-style creation:
+The active public constructor layer uses direct scene/figure helpers, with descriptors reserved for
+lower-level or future grouped creation:
 
 ```text
 dvz_scene()
-dvz_scene_panel(scene, &panel_desc)
+dvz_figure(scene, width, height, flags)
+dvz_panel(figure, ...)
 dvz_scene_visual(scene, &visual_desc)
 dvz_scene_resource(scene, &resource_desc)
 ```
@@ -114,27 +116,31 @@ These steps must be encapsulated inside each type's write path and triggered by 
 Implementors targeting non-rasterization backends should define their own preparation steps.
 
 
-## Canvas And Render Target Wiring
+## App, Canvas, And Runtime Wiring
 
-The application owns three cooperating objects and wires them together:
-
-```c
-canvas  = dvz_canvas_create(...)                        // window + swapchain + stream
-runtime = dvz_runtime_create(canvas, ...)               // DRP2 runtime
-target  = dvz_render_target_canvas(canvas)              // logical scene-level output handle
-scene   = dvz_scene_create(runtime, target, ...)        // scene holds runtime + target, not canvas
-```
-
-For offscreen or export:
+The active application path owns the presentation objects and wires them to the scene:
 
 ```c
-runtime = dvz_runtime_create_offscreen(...)
-target  = dvz_render_target_offscreen(runtime, width, height, format)
-scene   = dvz_scene_create(runtime, target, ...)
+scene  = dvz_scene();
+figure = dvz_figure(scene, width, height, 0);
+app    = dvz_app(scene);
+win    = dvz_app_window(app, figure, width, height);
+dvz_app_run(app, 0);
 ```
 
-The scene API never takes a `DvzCanvas*` argument directly. See `core/RUNTIME_BOUNDARY.md` for the
-normative ownership rules.
+`DvzAppWindow` owns or borrows the concrete target: a GLFW/offscreen canvas for Datoviz-owned
+presentation, or an externally supplied Vulkan surface for hosted presentation. It creates and
+reuses the canvas/vklite/DRP2 runtime objects needed to execute frames for the figure.
+
+The active execution flow is:
+
+```text
+scene -> FramePlan -> DvzDrp2CommandStream -> DvzDrp2Runtime -> vklite/canvas/app
+```
+
+The scene API does not take a `DvzCanvas*` argument directly. App-window helpers expose the canvas
+for capture, sinks, and integration services after the app layer has established ownership. See
+`core/RUNTIME_BOUNDARY.md` for the normative ownership rules.
 
 
 ## Validation, Adaptation, And Build Mapping
@@ -146,7 +152,9 @@ dvz_scene_adapt(scene, &report)
 dvz_scene_build_frame(scene, &frame_plan)
 ```
 
-The implementation may fuse these operationally, but the semantic stages should remain visible.
+The implementation may fuse these operationally, and the current app path does so inside
+`dvz_app_window_render_once()` / `dvz_app_render_once()`: figure state is synchronized, a frame plan
+is emitted to DRP2, and the runtime executes through the app window's canvas target.
 
 
 ## Diagnostics
