@@ -9,6 +9,7 @@
  * Build:   just example-c allen_mouse_brain_slice_glfw
  * Run:     ./build/examples/c/allen_mouse_brain_slice_glfw [frames] [--downsample=2]
  * Data:    data/volumes/allen_mouse_brain_rgba.npy.gz
+ * Meshes:  data/allen_ibl_assets, prepared with tools/prepare_allen_ibl_assets.py
  */
 
 
@@ -44,11 +45,13 @@
 
 #define DEFAULT_DATA_PATH "data/volumes/allen_mouse_brain_rgba.npy.gz"
 #define DEFAULT_VOLUME_FILE "allen_mouse_brain_rgba.npy.gz"
+#define DEFAULT_IBL_ASSET_DIR "data/allen_ibl_assets"
 #define DEFAULT_AXIS          DVZ_VOLUME_AXIS_Z
 #define DEFAULT_SLICE_POS     0.5f
 #define DEFAULT_SLICE_OPACITY 1.0f
 #define DEFAULT_VOLUME_OPACITY 0.85f
 #define DEFAULT_VOLUME_STEPS  192.0f
+#define DEFAULT_ATLAS_ALPHA   (72.0f / 255.0f)
 #define MOUSE_BRAIN_WIDTH 320
 #define MOUSE_BRAIN_HEIGHT 456
 #define MOUSE_BRAIN_DEPTH 528
@@ -72,12 +75,30 @@ typedef struct AllenMouseBrainVolume
 
 
 
+typedef struct AllenIblAtlasMesh
+{
+    float (*pos)[3];
+    float (*normal)[3];
+    DvzColor* color;
+    DvzIndex* idx;
+    uint32_t vertex_count;
+    uint32_t index_count;
+    double volume_bounds_min[3];
+    double volume_bounds_max[3];
+    bool has_volume_bounds;
+} AllenIblAtlasMesh;
+
+
+
 typedef struct AllenMouseBrainState
 {
     DvzVisual* slice_visual;
     DvzVisual* volume_visual;
+    DvzVisual* atlas_mesh_visual;
+    AllenIblAtlasMesh* atlas_mesh;
     bool show_slice;
     bool show_volume;
+    bool show_atlas_mesh;
     bool clip_volume_at_slice;
     bool keep_positive_side;
     bool linear_sampling;
@@ -85,6 +106,10 @@ typedef struct AllenMouseBrainState
     float slice_opacity;
     float volume_opacity;
     float volume_steps;
+    float atlas_alpha;
+    float atlas_ambient;
+    float atlas_diffuse;
+    float atlas_light_direction[3];
     float slice_position;
     DvzVolumeAxis axis;
 } AllenMouseBrainState;
@@ -268,6 +293,207 @@ static bool _data_path(int argc, char** argv, char* out, size_t out_size)
         strlen(out) >= out_size)
         return false;
     return true;
+}
+
+
+
+/**
+ * Read a prepared Allen/IBL asset NPY payload.
+ *
+ * @param data_dir asset directory
+ * @param basename array filename
+ * @param size output payload size in bytes
+ * @return payload pointer owned by the caller, or NULL on failure
+ */
+static char* _read_ibl_asset_npy(const char* data_dir, const char* basename, DvzSize* size)
+{
+    ANN(data_dir);
+    ANN(basename);
+    ANN(size);
+
+    char path[1024] = {0};
+    if (!_join_path(data_dir, basename, path, sizeof(path)))
+        return NULL;
+    return dvz_read_npy(path, size);
+}
+
+
+
+/**
+ * Parse six JSON numbers following a metadata key.
+ *
+ * @param text metadata JSON text
+ * @param size metadata JSON byte size
+ * @param key JSON key to find
+ * @param values output values
+ * @param value_count expected number of output values
+ * @return whether all values were parsed
+ */
+static bool _parse_json_number_array(
+    const char* text, DvzSize size, const char* key, double* values, uint32_t value_count)
+{
+    ANN(text);
+    ANN(key);
+    ANN(values);
+
+    const char* end = text + size;
+    const char* p = strstr(text, key);
+    if (p == NULL || p >= end)
+        return false;
+    p += strlen(key);
+
+    uint32_t count = 0;
+    while (p < end && count < value_count)
+    {
+        if (*p == '-' || *p == '+' || *p == '.' || isdigit((uint8_t)(*p)))
+        {
+            char* next = NULL;
+            values[count] = strtod(p, &next);
+            if (next == NULL || next == p || next > end)
+                return false;
+            count++;
+            p = next;
+            continue;
+        }
+        p++;
+    }
+    return count == value_count;
+}
+
+
+
+/**
+ * Load scene-space volume bounds from the prepared Allen/IBL metadata file.
+ *
+ * @param data_dir asset directory
+ * @param atlas atlas mesh state receiving the bounds
+ */
+static void _load_ibl_volume_bounds(const char* data_dir, AllenIblAtlasMesh* atlas)
+{
+    ANN(data_dir);
+    ANN(atlas);
+
+    char path[1024] = {0};
+    if (!_join_path(data_dir, "metadata.json", path, sizeof(path)))
+        return;
+
+    DvzSize size = 0;
+    char* text = (char*)dvz_read_file(path, &size);
+    if (text == NULL || size == 0)
+        return;
+
+    double values[6] = {0};
+    if (_parse_json_number_array(text, size, "volume_bounds_scene", values, 6))
+    {
+        atlas->volume_bounds_min[0] = values[0];
+        atlas->volume_bounds_min[1] = values[1];
+        atlas->volume_bounds_min[2] = values[2];
+        atlas->volume_bounds_max[0] = values[3];
+        atlas->volume_bounds_max[1] = values[4];
+        atlas->volume_bounds_max[2] = values[5];
+        atlas->has_volume_bounds = true;
+    }
+    dvz_free(text);
+}
+
+
+
+/**
+ * Load the prepared combined Allen/IBL atlas mesh bundle when present.
+ *
+ * @param data_dir asset directory
+ * @param atlas output atlas mesh storage
+ * @return whether loading succeeded
+ */
+static bool _load_ibl_atlas_mesh(const char* data_dir, AllenIblAtlasMesh* atlas)
+{
+    ANN(data_dir);
+    ANN(atlas);
+
+    DvzSize pos_size = 0;
+    DvzSize normal_size = 0;
+    DvzSize color_size = 0;
+    DvzSize idx_size = 0;
+    char* pos = _read_ibl_asset_npy(data_dir, "allen_ibl_mesh_pos.npy", &pos_size);
+    char* normal = _read_ibl_asset_npy(data_dir, "allen_ibl_mesh_normal.npy", &normal_size);
+    char* color = _read_ibl_asset_npy(data_dir, "allen_ibl_mesh_color.npy", &color_size);
+    char* idx = _read_ibl_asset_npy(data_dir, "allen_ibl_mesh_idx.npy", &idx_size);
+
+    if (pos == NULL || normal == NULL || color == NULL || idx == NULL)
+    {
+        dvz_free(idx);
+        dvz_free(color);
+        dvz_free(normal);
+        dvz_free(pos);
+        return false;
+    }
+
+    if (pos_size == 0 || pos_size % (3 * sizeof(float)) != 0 ||
+        normal_size % (3 * sizeof(float)) != 0 || color_size % sizeof(DvzColor) != 0 ||
+        idx_size == 0 || idx_size % sizeof(DvzIndex) != 0)
+    {
+        dvz_fprintf(stderr, "invalid Allen/IBL atlas asset payload sizes\n");
+        goto error;
+    }
+
+    DvzSize vertex_count = pos_size / (3 * sizeof(float));
+    DvzSize index_count = idx_size / sizeof(DvzIndex);
+    if (vertex_count == 0 || vertex_count > UINT32_MAX ||
+        normal_size / (3 * sizeof(float)) != vertex_count ||
+        color_size / sizeof(DvzColor) != vertex_count || index_count == 0 ||
+        index_count > UINT32_MAX || index_count % 3 != 0)
+    {
+        dvz_fprintf(stderr, "inconsistent Allen/IBL atlas asset sizes\n");
+        goto error;
+    }
+
+    DvzIndex* indices = (DvzIndex*)idx;
+    for (DvzSize i = 0; i < index_count; i++)
+    {
+        if (indices[i] >= vertex_count)
+        {
+            dvz_fprintf(stderr, "Allen/IBL atlas mesh index out of range\n");
+            goto error;
+        }
+    }
+
+    atlas->pos = (float(*)[3])pos;
+    atlas->normal = (float(*)[3])normal;
+    atlas->color = (DvzColor*)color;
+    atlas->idx = (DvzIndex*)idx;
+    atlas->vertex_count = (uint32_t)vertex_count;
+    atlas->index_count = (uint32_t)index_count;
+    _load_ibl_volume_bounds(data_dir, atlas);
+
+    dvz_fprintf(
+        stderr, "loaded Allen/IBL atlas mesh: %u vertices, %u triangles\n",
+        atlas->vertex_count, atlas->index_count / 3);
+    return true;
+
+error:
+    dvz_free(idx);
+    dvz_free(color);
+    dvz_free(normal);
+    dvz_free(pos);
+    return false;
+}
+
+
+
+/**
+ * Free prepared Allen/IBL atlas mesh storage.
+ *
+ * @param atlas atlas mesh storage
+ */
+static void _ibl_atlas_mesh_destroy(AllenIblAtlasMesh* atlas)
+{
+    if (atlas == NULL)
+        return;
+    dvz_free(atlas->idx);
+    dvz_free(atlas->color);
+    dvz_free(atlas->normal);
+    dvz_free(atlas->pos);
+    dvz_memset(atlas, sizeof(AllenIblAtlasMesh), 0, sizeof(AllenIblAtlasMesh));
 }
 
 
@@ -801,6 +1027,64 @@ static void _volume_aspect_bounds(
 
 
 /**
+ * Convert a normalized alpha value to an 8-bit color channel.
+ *
+ * @param value normalized alpha value
+ * @return clamped 8-bit alpha channel
+ */
+static uint8_t _alpha_u8(float value)
+{
+    if (value < 0.0f)
+        value = 0.0f;
+    if (value > 1.0f)
+        value = 1.0f;
+    return (uint8_t)(255.0f * value + 0.5f);
+}
+
+
+
+/**
+ * Upload retained atlas mesh controls.
+ *
+ * @param state example state
+ */
+static void _apply_atlas_mesh_controls(AllenMouseBrainState* state)
+{
+    ANN(state);
+    if (state->atlas_mesh_visual == NULL || state->atlas_mesh == NULL)
+        return;
+
+    dvz_visual_set_visible(state->atlas_mesh_visual, state->show_atlas_mesh);
+    uint8_t alpha = _alpha_u8(state->atlas_alpha);
+    for (uint32_t i = 0; i < state->atlas_mesh->vertex_count; i++)
+        state->atlas_mesh->color[i][3] = alpha;
+
+    if (dvz_visual_set_data(
+            state->atlas_mesh_visual, "color", state->atlas_mesh->color,
+            state->atlas_mesh->vertex_count) != 0)
+    {
+        dvz_fprintf(stderr, "failed to update Allen/IBL atlas mesh color\n");
+    }
+
+    if (dvz_visual_set_primitive_shading(
+            state->atlas_mesh_visual,
+            &(DvzPrimitiveShadingDesc){
+                .light_direction = {
+                    state->atlas_light_direction[0],
+                    state->atlas_light_direction[1],
+                    state->atlas_light_direction[2],
+                },
+                .ambient = state->atlas_ambient,
+                .diffuse = state->atlas_diffuse,
+            }) != 0)
+    {
+        dvz_fprintf(stderr, "failed to update Allen/IBL atlas mesh material\n");
+    }
+}
+
+
+
+/**
  * Apply retained volume controls.
  *
  * @param state example state
@@ -870,15 +1154,18 @@ static void _allen_mouse_brain_gui(DvzGui* gui, DvzAppWindow* win, void* user_da
         return;
 
     bool changed = false;
+    bool atlas_changed = false;
     if (dvz_gui_begin(gui, "Allen Mouse Brain", NULL, 0))
     {
         changed |= dvz_gui_checkbox(gui, "Show slice", &state->show_slice);
         changed |= dvz_gui_checkbox(gui, "Show full volume", &state->show_volume);
+        if (state->atlas_mesh_visual != NULL)
+            atlas_changed |= dvz_gui_checkbox(gui, "Show atlas mesh", &state->show_atlas_mesh);
         changed |= dvz_gui_checkbox(gui, "Clip volume at slice", &state->clip_volume_at_slice);
         changed |= dvz_gui_checkbox(gui, "Keep positive side", &state->keep_positive_side);
         if (dvz_gui_button(gui, "MIP volume"))
         {
-            state->render_mode = DVZ_VOLUME_RENDER_COMPOSITE;
+            state->render_mode = DVZ_VOLUME_RENDER_MIP;
             changed = true;
         }
         if (dvz_gui_button(gui, "Composite volume"))
@@ -886,19 +1173,19 @@ static void _allen_mouse_brain_gui(DvzGui* gui, DvzAppWindow* win, void* user_da
             state->render_mode = DVZ_VOLUME_RENDER_COMPOSITE;
             changed = true;
         }
-        if (dvz_gui_button(gui, "Axis X"))
-        {
-            state->axis = DVZ_VOLUME_AXIS_X;
-            changed = true;
-        }
-        if (dvz_gui_button(gui, "Axis Y"))
+        if (dvz_gui_button(gui, "Slice axis ML"))
         {
             state->axis = DVZ_VOLUME_AXIS_Y;
             changed = true;
         }
-        if (dvz_gui_button(gui, "Axis Z"))
+        if (dvz_gui_button(gui, "Slice axis AP"))
         {
             state->axis = DVZ_VOLUME_AXIS_Z;
+            changed = true;
+        }
+        if (dvz_gui_button(gui, "Slice axis DV"))
+        {
+            state->axis = DVZ_VOLUME_AXIS_X;
             changed = true;
         }
         changed |= dvz_gui_checkbox(gui, "Linear sampling", &state->linear_sampling);
@@ -906,10 +1193,20 @@ static void _allen_mouse_brain_gui(DvzGui* gui, DvzAppWindow* win, void* user_da
         changed |= dvz_gui_slider_float(gui, "Slice opacity", &state->slice_opacity, 0.0f, 1.0f);
         changed |= dvz_gui_slider_float(gui, "Volume opacity", &state->volume_opacity, 0.0f, 1.0f);
         changed |= dvz_gui_slider_float(gui, "Volume steps", &state->volume_steps, 8.0f, 512.0f);
+        if (state->atlas_mesh_visual != NULL)
+        {
+            atlas_changed |=
+                dvz_gui_slider_float(gui, "Atlas alpha", &state->atlas_alpha, 0.02f, 0.80f);
+            atlas_changed |=
+                dvz_gui_slider_float(gui, "Atlas ambient", &state->atlas_ambient, 0.0f, 1.0f);
+            atlas_changed |=
+                dvz_gui_slider_float(gui, "Atlas diffuse", &state->atlas_diffuse, 0.0f, 1.5f);
+        }
         if (dvz_gui_button(gui, "Reset"))
         {
             state->show_slice = true;
             state->show_volume = true;
+            state->show_atlas_mesh = state->atlas_mesh_visual != NULL;
             state->clip_volume_at_slice = false;
             state->keep_positive_side = true;
             state->linear_sampling = true;
@@ -917,15 +1214,21 @@ static void _allen_mouse_brain_gui(DvzGui* gui, DvzAppWindow* win, void* user_da
             state->slice_opacity = DEFAULT_SLICE_OPACITY;
             state->volume_opacity = DEFAULT_VOLUME_OPACITY;
             state->volume_steps = DEFAULT_VOLUME_STEPS;
+            state->atlas_alpha = DEFAULT_ATLAS_ALPHA;
+            state->atlas_ambient = 0.22f;
+            state->atlas_diffuse = 0.95f;
             state->slice_position = DEFAULT_SLICE_POS;
             state->axis = DEFAULT_AXIS;
             changed = true;
+            atlas_changed = true;
         }
     }
     dvz_gui_end(gui);
 
     if (changed)
         _apply_volume_controls(state);
+    if (atlas_changed)
+        _apply_atlas_mesh_controls(state);
 }
 
 
@@ -977,6 +1280,14 @@ int main(int argc, char** argv)
         _allen_mouse_brain_destroy(&volume_data);
         return 1;
     }
+    DvzCapabilitySnapshot caps;
+    dvz_capability_snapshot_default(&caps);
+    caps.max_color_attachments = 3;
+    caps.render_target_format_rgba16float = true;
+    caps.render_target_format_r16float = true;
+    caps.supports_render_target_sampling = true;
+    caps.supports_color_blending = true;
+    dvz_scene_set_capabilities(scene, &caps);
 
     DvzFigure* figure = dvz_figure(scene, WIDTH, HEIGHT, 0);
     if (figure == NULL)
@@ -1065,17 +1376,69 @@ int main(int argc, char** argv)
         dvz_scene_destroy(scene);
         return 1;
     }
+
+    AllenIblAtlasMesh atlas_mesh = {0};
+    bool atlas_loaded = _load_ibl_atlas_mesh(DEFAULT_IBL_ASSET_DIR, &atlas_mesh);
+    if (!atlas_loaded)
+    {
+        dvz_fprintf(
+            stderr,
+            "Allen/IBL atlas mesh assets not found in %s; continuing with volume only\n"
+            "prepare them with: python tools/prepare_allen_ibl_assets.py\n",
+            DEFAULT_IBL_ASSET_DIR);
+    }
+
     double bounds_min[3] = {0};
     double bounds_max[3] = {0};
     _volume_aspect_bounds(&volume_data, bounds_min, bounds_max);
+    if (atlas_mesh.has_volume_bounds)
+    {
+        bounds_min[0] = atlas_mesh.volume_bounds_min[0];
+        bounds_min[1] = atlas_mesh.volume_bounds_min[1];
+        bounds_min[2] = atlas_mesh.volume_bounds_min[2];
+        bounds_max[0] = atlas_mesh.volume_bounds_max[0];
+        bounds_max[1] = atlas_mesh.volume_bounds_max[1];
+        bounds_max[2] = atlas_mesh.volume_bounds_max[2];
+    }
     if (dvz_volume_set_bounds(volume_3d, bounds_min, bounds_max) != 0 ||
         dvz_volume_set_bounds(volume_slice, bounds_min, bounds_max) != 0)
     {
         dvz_fprintf(stderr, "dvz_volume_set_bounds() failed\n");
+        _ibl_atlas_mesh_destroy(&atlas_mesh);
         _allen_mouse_brain_destroy(&volume_data);
         dvz_scene_destroy(scene);
         return 1;
     }
+
+    DvzVisual* atlas_mesh_visual = NULL;
+    DvzSceneBuffer* atlas_index_buffer = NULL;
+    if (atlas_loaded)
+    {
+        atlas_mesh_visual = dvz_mesh(scene, 0);
+        atlas_index_buffer = dvz_scene_buffer(
+            scene, &(DvzSceneBufferDesc){
+                       .usage = DVZ_SCENE_BUFFER_USAGE_INDEX,
+                       .stride = sizeof(DvzIndex),
+                   });
+        if (atlas_mesh_visual == NULL || atlas_index_buffer == NULL ||
+            !dvz_scene_buffer_set_data(
+                atlas_index_buffer, atlas_mesh.idx, atlas_mesh.index_count * sizeof(DvzIndex)) ||
+            dvz_visual_set_data(
+                atlas_mesh_visual, "position", atlas_mesh.pos, atlas_mesh.vertex_count) != 0 ||
+            dvz_visual_set_data(
+                atlas_mesh_visual, "normal", atlas_mesh.normal, atlas_mesh.vertex_count) != 0 ||
+            !dvz_visual_set_buffer(atlas_mesh_visual, "index", atlas_index_buffer) ||
+            dvz_visual_set_alpha_mode(atlas_mesh_visual, DVZ_ALPHA_BLENDED) != 0 ||
+            dvz_visual_set_depth_test(atlas_mesh_visual, true) != 0)
+        {
+            dvz_fprintf(stderr, "Allen/IBL atlas mesh visual setup failed\n");
+            _ibl_atlas_mesh_destroy(&atlas_mesh);
+            _allen_mouse_brain_destroy(&volume_data);
+            dvz_scene_destroy(scene);
+            return 1;
+        }
+    }
+
     DvzVisualAttachDesc volume_attach = {
         .z_layer = 0,
         .controller_mode = DVZ_CONTROLLER_APPLY,
@@ -1084,10 +1447,23 @@ int main(int argc, char** argv)
         .z_layer = 1,
         .controller_mode = DVZ_CONTROLLER_APPLY,
     };
+    DvzVisualAttachDesc atlas_attach = {
+        .z_layer = 2,
+        .controller_mode = DVZ_CONTROLLER_APPLY,
+    };
     if (dvz_panel_add_visual(panel, volume_3d, &volume_attach) != 0 ||
         dvz_panel_add_visual(panel, volume_slice, &slice_attach) != 0)
     {
         dvz_fprintf(stderr, "dvz_panel_add_visual() failed\n");
+        _ibl_atlas_mesh_destroy(&atlas_mesh);
+        _allen_mouse_brain_destroy(&volume_data);
+        dvz_scene_destroy(scene);
+        return 1;
+    }
+    if (atlas_mesh_visual != NULL && dvz_panel_add_visual(panel, atlas_mesh_visual, &atlas_attach) != 0)
+    {
+        dvz_fprintf(stderr, "dvz_panel_add_visual() failed for Allen/IBL atlas mesh\n");
+        _ibl_atlas_mesh_destroy(&atlas_mesh);
         _allen_mouse_brain_destroy(&volume_data);
         dvz_scene_destroy(scene);
         return 1;
@@ -1097,8 +1473,11 @@ int main(int argc, char** argv)
     AllenMouseBrainState state = {
         .slice_visual = volume_slice,
         .volume_visual = volume_3d,
+        .atlas_mesh_visual = atlas_mesh_visual,
+        .atlas_mesh = atlas_loaded ? &atlas_mesh : NULL,
         .show_slice = true,
         .show_volume = true,
+        .show_atlas_mesh = atlas_loaded,
         .clip_volume_at_slice = false,
         .keep_positive_side = true,
         .linear_sampling = true,
@@ -1106,15 +1485,21 @@ int main(int argc, char** argv)
         .slice_opacity = DEFAULT_SLICE_OPACITY,
         .volume_opacity = DEFAULT_VOLUME_OPACITY,
         .volume_steps = DEFAULT_VOLUME_STEPS,
+        .atlas_alpha = DEFAULT_ATLAS_ALPHA,
+        .atlas_ambient = 0.22f,
+        .atlas_diffuse = 0.95f,
+        .atlas_light_direction = {0.20f, 0.70f, 0.45f},
         .slice_position = DEFAULT_SLICE_POS,
         .axis = DEFAULT_AXIS,
     };
     _apply_volume_controls(&state);
+    _apply_atlas_mesh_controls(&state);
 
     DvzApp* app = dvz_app(scene);
     if (app == NULL)
     {
         dvz_fprintf(stderr, "dvz_app() failed (no GPU or display?)\n");
+        _ibl_atlas_mesh_destroy(&atlas_mesh);
         _allen_mouse_brain_destroy(&volume_data);
         dvz_scene_destroy(scene);
         return 1;
@@ -1125,6 +1510,7 @@ int main(int argc, char** argv)
     if (win == NULL)
     {
         dvz_fprintf(stderr, "dvz_app_window_glfw() failed (GLFW unavailable?)\n");
+        _ibl_atlas_mesh_destroy(&atlas_mesh);
         _allen_mouse_brain_destroy(&volume_data);
         dvz_app_destroy(app);
         dvz_scene_destroy(scene);
@@ -1135,6 +1521,7 @@ int main(int argc, char** argv)
     if (arcball == NULL)
     {
         dvz_fprintf(stderr, "dvz_panel_set_arcball() failed\n");
+        _ibl_atlas_mesh_destroy(&atlas_mesh);
         _allen_mouse_brain_destroy(&volume_data);
         dvz_app_destroy(app);
         dvz_scene_destroy(scene);
@@ -1146,6 +1533,7 @@ int main(int argc, char** argv)
     if (gui == NULL)
     {
         dvz_fprintf(stderr, "dvz_app_window_gui() failed\n");
+        _ibl_atlas_mesh_destroy(&atlas_mesh);
         _allen_mouse_brain_destroy(&volume_data);
         dvz_app_destroy(app);
         dvz_scene_destroy(scene);
@@ -1158,6 +1546,7 @@ int main(int argc, char** argv)
 
     dvz_app_run(app, frame_count);
 
+    _ibl_atlas_mesh_destroy(&atlas_mesh);
     _allen_mouse_brain_destroy(&volume_data);
     dvz_app_destroy(app);
     dvz_scene_destroy(scene);

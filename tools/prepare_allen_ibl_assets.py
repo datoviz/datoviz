@@ -1,0 +1,246 @@
+"""Prepare Allen mouse brain atlas meshes in Datoviz/IBL display coordinates."""
+
+from __future__ import annotations
+
+import argparse
+import json
+import urllib.error
+import urllib.request
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Iterable
+
+import numpy as np
+import trimesh
+from iblatlas.atlas import AllenAtlas
+
+
+DEFAULT_OUTPUT = Path("data/allen_ibl_assets")
+DEFAULT_CACHE = DEFAULT_OUTPUT / "cache"
+DEFAULT_SCALE = 200.0
+DEFAULT_RES_UM = 25.0
+DEFAULT_VOLUME_SHAPE_AP_ML_DV = (528, 456, 320)
+ALLEN_MESH_URL = (
+    "https://download.alleninstitute.org/informatics-archive/current-release/"
+    "mouse_ccf/annotation/ccf_2017/structure_meshes/{suffix}/{region_id}.{suffix}"
+)
+
+
+@dataclass(frozen=True)
+class RegionSpec:
+    """Selected Allen atlas mesh metadata used by the first C viewer bundle."""
+
+    region_id: int
+    acronym: str
+    name: str
+    color: tuple[int, int, int, int]
+
+
+DEFAULT_REGIONS = (
+    RegionSpec(997, "root", "Whole brain", (214, 214, 214, 48)),
+    RegionSpec(315, "Isocortex", "Isocortex", (112, 185, 102, 112)),
+    RegionSpec(1089, "HPF", "Hippocampal formation", (126, 208, 75, 120)),
+    RegionSpec(549, "TH", "Thalamus", (255, 144, 159, 120)),
+    RegionSpec(294, "SC", "Superior colliculus", (255, 153, 0, 120)),
+)
+
+
+def _download_mesh(region_id: int, cache_dir: Path) -> Path:
+    """Download one Allen CCF structure mesh into the local cache."""
+    cache_dir.mkdir(parents=True, exist_ok=True)
+    last_error: Exception | None = None
+    for suffix in ("ply", "obj"):
+        path = cache_dir / f"{region_id}.{suffix}"
+        if path.exists() and path.stat().st_size > 0:
+            return path
+        url = ALLEN_MESH_URL.format(region_id=region_id, suffix=suffix)
+        try:
+            print(f"downloading {url}")
+            urllib.request.urlretrieve(url, path)
+            if path.stat().st_size > 0:
+                return path
+        except (urllib.error.URLError, OSError) as exc:
+            last_error = exc
+            path.unlink(missing_ok=True)
+    raise RuntimeError(f"could not download mesh {region_id}") from last_error
+
+
+def _as_mesh(loaded: trimesh.Trimesh | trimesh.Scene) -> trimesh.Trimesh:
+    """Return a single mesh from a trimesh loader result."""
+    if isinstance(loaded, trimesh.Trimesh):
+        return loaded
+    if isinstance(loaded, trimesh.Scene):
+        meshes = [geom for geom in loaded.geometry.values() if isinstance(geom, trimesh.Trimesh)]
+        if not meshes:
+            raise ValueError("loaded scene does not contain triangle meshes")
+        return trimesh.util.concatenate(meshes)
+    raise TypeError(f"unsupported mesh payload type: {type(loaded)!r}")
+
+
+def _load_region_mesh(region: RegionSpec, cache_dir: Path) -> trimesh.Trimesh:
+    """Load one cached or downloaded Allen CCF region mesh."""
+    path = _download_mesh(region.region_id, cache_dir)
+    mesh = _as_mesh(trimesh.load(path, process=False))
+    if mesh.vertices.size == 0 or mesh.faces.size == 0:
+        raise ValueError(f"empty mesh for region {region.region_id}")
+    return mesh
+
+
+def _compute_vertex_normals(positions: np.ndarray, indices: np.ndarray) -> np.ndarray:
+    """Compute area-weighted vertex normals for an indexed triangle mesh."""
+    normals = np.zeros_like(positions, dtype=np.float64)
+    triangles = indices.reshape(-1, 3)
+    p0 = positions[triangles[:, 0]]
+    p1 = positions[triangles[:, 1]]
+    p2 = positions[triangles[:, 2]]
+    face_normals = np.cross(p1 - p0, p2 - p0)
+    np.add.at(normals, triangles[:, 0], face_normals)
+    np.add.at(normals, triangles[:, 1], face_normals)
+    np.add.at(normals, triangles[:, 2], face_normals)
+
+    lengths = np.linalg.norm(normals, axis=1)
+    valid = lengths > 0
+    normals[valid] /= lengths[valid, None]
+    normals[~valid] = (0.0, 0.0, 1.0)
+    return np.ascontiguousarray(normals, dtype=np.float32)
+
+
+def _scene_volume_bounds(ba: AllenAtlas, offset_xyz_m: np.ndarray, scale: float) -> list[list[float]]:
+    """Return scene-space bounds for the 25um Allen RGBA volume."""
+    ap, ml, dv = DEFAULT_VOLUME_SHAPE_AP_ML_DV
+    corners = np.array(
+        [
+            [0.0, 0.0, 0.0],
+            [ap * DEFAULT_RES_UM, 0.0, 0.0],
+            [0.0, dv * DEFAULT_RES_UM, 0.0],
+            [0.0, 0.0, ml * DEFAULT_RES_UM],
+            [ap * DEFAULT_RES_UM, dv * DEFAULT_RES_UM, 0.0],
+            [ap * DEFAULT_RES_UM, 0.0, ml * DEFAULT_RES_UM],
+            [0.0, dv * DEFAULT_RES_UM, ml * DEFAULT_RES_UM],
+            [ap * DEFAULT_RES_UM, dv * DEFAULT_RES_UM, ml * DEFAULT_RES_UM],
+        ],
+        dtype=np.float64,
+    )
+    xyz = ba.ccf2xyz(corners, ccf_order="apdvml")
+    scene = (xyz - offset_xyz_m) * scale
+    return [scene.min(axis=0).tolist(), scene.max(axis=0).tolist()]
+
+
+def _region_specs(region_ids: Iterable[int] | None) -> tuple[RegionSpec, ...]:
+    """Return region specifications, optionally filtered by id."""
+    if region_ids is None:
+        return DEFAULT_REGIONS
+    by_id = {region.region_id: region for region in DEFAULT_REGIONS}
+    missing = [region_id for region_id in region_ids if region_id not in by_id]
+    if missing:
+        raise ValueError(f"region ids need explicit color metadata first: {missing}")
+    return tuple(by_id[region_id] for region_id in region_ids)
+
+
+def prepare(output_dir: Path, cache_dir: Path, scale: float, region_ids: Iterable[int] | None) -> None:
+    """Prepare the combined atlas mesh bundle consumed by the C example."""
+    output_dir.mkdir(parents=True, exist_ok=True)
+    regions = _region_specs(region_ids)
+    ba = AllenAtlas(res_um=int(DEFAULT_RES_UM))
+
+    root_mesh = _load_region_mesh(regions[0], cache_dir)
+    root_xyz = ba.ccf2xyz(np.asarray(root_mesh.vertices, dtype=np.float64), ccf_order="apdvml")
+    offset_xyz_m = root_xyz.mean(axis=0)
+
+    pos_chunks: list[np.ndarray] = []
+    idx_chunks: list[np.ndarray] = []
+    color_chunks: list[np.ndarray] = []
+    metadata_regions = []
+    vertex_offset = 0
+
+    for region in regions:
+        mesh = _load_region_mesh(region, cache_dir)
+        ccf = np.asarray(mesh.vertices, dtype=np.float64)
+        xyz = ba.ccf2xyz(ccf, ccf_order="apdvml")
+        pos = np.ascontiguousarray((xyz - offset_xyz_m) * scale, dtype=np.float32)
+        idx = np.ascontiguousarray(np.asarray(mesh.faces, dtype=np.uint32).reshape(-1) + vertex_offset)
+        color = np.empty((pos.shape[0], 4), dtype=np.uint8)
+        color[:] = np.asarray(region.color, dtype=np.uint8)
+
+        pos_chunks.append(pos)
+        idx_chunks.append(idx)
+        color_chunks.append(color)
+        metadata_regions.append(
+            {
+                "id": region.region_id,
+                "acronym": region.acronym,
+                "name": region.name,
+                "rgba": list(region.color),
+                "vertex_start": vertex_offset,
+                "vertex_count": int(pos.shape[0]),
+                "index_start": int(sum(chunk.size for chunk in idx_chunks[:-1])),
+                "index_count": int(idx.size),
+            }
+        )
+        vertex_offset += pos.shape[0]
+
+    atlas_pos = np.ascontiguousarray(np.concatenate(pos_chunks, axis=0), dtype=np.float32)
+    atlas_idx = np.ascontiguousarray(np.concatenate(idx_chunks, axis=0), dtype=np.uint32)
+    atlas_color = np.ascontiguousarray(np.concatenate(color_chunks, axis=0), dtype=np.uint8)
+    atlas_normal = _compute_vertex_normals(atlas_pos.astype(np.float64), atlas_idx)
+
+    np.save(output_dir / "allen_ibl_mesh_pos.npy", atlas_pos)
+    np.save(output_dir / "allen_ibl_mesh_normal.npy", atlas_normal)
+    np.save(output_dir / "allen_ibl_mesh_color.npy", atlas_color)
+    np.save(output_dir / "allen_ibl_mesh_idx.npy", atlas_idx)
+
+    metadata = {
+        "coordinate_system": "IBL_ML_AP_DV",
+        "source_ccf_order": "apdvml",
+        "res_um": DEFAULT_RES_UM,
+        "offset_xyz_m": offset_xyz_m.tolist(),
+        "scale": scale,
+        "volume_shape_ap_ml_dv": list(DEFAULT_VOLUME_SHAPE_AP_ML_DV),
+        "texture_axis_for_ml_ap_dv": {"ML": "Y", "AP": "Z", "DV": "X"},
+        "volume_bounds_scene": _scene_volume_bounds(ba, offset_xyz_m, scale),
+        "mesh_files": {
+            "position": "allen_ibl_mesh_pos.npy",
+            "normal": "allen_ibl_mesh_normal.npy",
+            "color": "allen_ibl_mesh_color.npy",
+            "index": "allen_ibl_mesh_idx.npy",
+        },
+        "regions": metadata_regions,
+    }
+    (output_dir / "metadata.json").write_text(json.dumps(metadata, indent=2) + "\n")
+
+    print(f"wrote {output_dir}")
+    print(f"mesh: {atlas_pos.shape[0]} vertices, {atlas_idx.size // 3} triangles")
+    print(f"offset_xyz_m: {offset_xyz_m.tolist()}")
+
+
+def main() -> None:
+    """Run the Allen/IBL mesh asset preparation command."""
+    parser = argparse.ArgumentParser(
+        description="Prepare selected Allen atlas meshes in IBL display coordinates."
+    )
+    parser.add_argument(
+        "--output-dir",
+        type=Path,
+        default=DEFAULT_OUTPUT,
+        help=f"output directory, default: {DEFAULT_OUTPUT}",
+    )
+    parser.add_argument(
+        "--cache-dir",
+        type=Path,
+        default=DEFAULT_CACHE,
+        help=f"download cache directory, default: {DEFAULT_CACHE}",
+    )
+    parser.add_argument("--scale", type=float, default=DEFAULT_SCALE, help="display scale")
+    parser.add_argument(
+        "--regions",
+        type=int,
+        nargs="+",
+        default=None,
+        help="subset of supported region ids, default: root/isocortex/HPF/TH/SC",
+    )
+    args = parser.parse_args()
+    prepare(args.output_dir, args.cache_dir, args.scale, args.regions)
+
+
+if __name__ == "__main__":
+    main()
