@@ -1554,20 +1554,15 @@ static bool _graph_resolve_render_depth(
  * @param accum_id accumulation texture id.
  * @param weight_id weight texture id.
  * @param sampler_id sampler id.
- * @param width target width.
- * @param height target height.
  * @return dependency fingerprint.
  */
 static uint64_t _wboit_bind_group_fingerprint(
-    uint64_t accum_id, uint64_t weight_id, uint64_t sampler_id, uint32_t width,
-    uint32_t height)
+    uint64_t accum_id, uint64_t weight_id, uint64_t sampler_id)
 {
     uint64_t hash = UINT64_C(1469598103934665603);
     hash = (hash ^ accum_id) * UINT64_C(1099511628211);
     hash = (hash ^ weight_id) * UINT64_C(1099511628211);
     hash = (hash ^ sampler_id) * UINT64_C(1099511628211);
-    hash = (hash ^ width) * UINT64_C(1099511628211);
-    hash = (hash ^ height) * UINT64_C(1099511628211);
     return hash != 0 ? hash : UINT64_C(1);
 }
 
@@ -1709,8 +1704,8 @@ static bool _emitter_prepare_wboit_targets(
         return false;
     out->resolve_bg_id = bg_resource->id;
 
-    uint64_t bg_fingerprint = _wboit_bind_group_fingerprint(
-        out->accum_id, out->weight_id, out->sampler_id, width, height);
+    uint64_t bg_fingerprint =
+        _wboit_bind_group_fingerprint(out->accum_id, out->weight_id, out->sampler_id);
     if (!is_new && bg_resource->byte_size != bg_fingerprint)
         is_new = true;
     bg_resource->byte_size = bg_fingerprint;
@@ -1800,21 +1795,16 @@ static bool _emitter_prepare_wboit_targets(
  * @param back_id back accumulation texture id.
  * @param depth_id depth pair texture id.
  * @param sampler_id sampler id.
- * @param width target width.
- * @param height target height.
  * @return dependency fingerprint.
  */
 static uint64_t _depth_peel_bind_group_fingerprint(
-    uint64_t front_id, uint64_t back_id, uint64_t depth_id, uint64_t sampler_id, uint32_t width,
-    uint32_t height)
+    uint64_t front_id, uint64_t back_id, uint64_t depth_id, uint64_t sampler_id)
 {
     uint64_t hash = UINT64_C(1469598103934665603);
     hash = (hash ^ front_id) * UINT64_C(1099511628211);
     hash = (hash ^ back_id) * UINT64_C(1099511628211);
     hash = (hash ^ depth_id) * UINT64_C(1099511628211);
     hash = (hash ^ sampler_id) * UINT64_C(1099511628211);
-    hash = (hash ^ width) * UINT64_C(1099511628211);
-    hash = (hash ^ height) * UINT64_C(1099511628211);
     return hash != 0 ? hash : UINT64_C(1);
 }
 
@@ -1830,15 +1820,13 @@ static uint64_t _depth_peel_bind_group_fingerprint(
  * @param key bind group cache key.
  * @param bgl_id sampled bind group layout id.
  * @param sampler_id sampler id.
- * @param width target width.
- * @param height target height.
  * @param out_bg_id output bind group id.
  * @return whether the bind group is available.
  */
 static bool _depth_peel_resolve_sampled_bind_group(
     DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, const DvzFrameGraphPass* pass,
     const SceneGraphRuntimeTargets* targets, const char* key, uint64_t bgl_id,
-    uint64_t sampler_id, uint32_t width, uint32_t height, uint64_t* out_bg_id)
+    uint64_t sampler_id, uint64_t* out_bg_id)
 {
     ANN(emitter);
     ANN(stream);
@@ -1861,7 +1849,7 @@ static bool _depth_peel_resolve_sampled_bind_group(
         return false;
     uint64_t bg_id = resource->id;
     uint64_t fingerprint =
-        _depth_peel_bind_group_fingerprint(front_id, back_id, depth_id, sampler_id, width, height);
+        _depth_peel_bind_group_fingerprint(front_id, back_id, depth_id, sampler_id);
     if (!is_new && resource->byte_size != fingerprint)
         is_new = true;
     resource->byte_size = fingerprint;
@@ -2007,7 +1995,7 @@ static bool _emitter_prepare_depth_peel_targets(
             cfg, "_bg_depth_peel_composite", composite_bg_key, sizeof(composite_bg_key));
         ok = ok && _depth_peel_resolve_sampled_bind_group(
             emitter, stream, composite_pass, &out->graph, composite_bg_key,
-            out->sampled_bgl_id, out->sampler_id, width, height, &out->composite_bg_id);
+            out->sampled_bgl_id, out->sampler_id, &out->composite_bg_id);
     }
 
     const char* fmt = _shader_format_tag(cfg);

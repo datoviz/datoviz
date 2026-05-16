@@ -4560,7 +4560,7 @@ int test_scene_visual_alpha_mode_emits_depth_peel_drp2(TstSuite* suite, TstItem*
         }
     }
     AT(resized_front_ping);
-    AT(rebuilt_composite_bind_group);
+    AT(!rebuilt_composite_bind_group);
 
     DvzDrp2RuntimeConfig runtime_cfg = dvz_drp2_runtime_vklite_config(NULL, NULL);
     runtime_cfg.semantic_only = true;
@@ -4996,7 +4996,7 @@ int test_scene_visual_alpha_mode_emits_wboit_drp2(TstSuite* suite, TstItem* item
             (command->u.create_bind_group.entries[0].resource_id == resized_accum_texture_id &&
              command->u.create_bind_group.entries[1].resource_id == resized_weight_texture_id);
     }
-    AT(rebuilt_resolve_bind_group);
+    AT(!rebuilt_resolve_bind_group);
 
     DvzDrp2RuntimeConfig runtime_cfg = dvz_drp2_runtime_vklite_config(NULL, NULL);
     runtime_cfg.semantic_only = true;
