@@ -1081,7 +1081,7 @@ static const DvzVisualAttr* _text_visual_attr(const DvzVisual* visual, const cha
 static uint64_t _text_visual_version(const DvzVisual* visual)
 {
     ANN(visual);
-    uint64_t version = visual->text.strings_version;
+    uint64_t version = visual->text.strings_version + visual->text.renderer_version;
     for (uint32_t i = 0; i < visual->attr_count; i++)
         version += visual->attrs[i].version;
     return version;
@@ -1214,9 +1214,12 @@ static bool _text_visual_prepare(
 
     for (uint32_t i = 0; i < count; i++)
     {
+        DvzTextRenderer renderer = visual->text.renderer;
+        if (renderer == DVZ_TEXT_RENDERER_AUTO)
+            renderer = DVZ_TEXT_RENDERER_SMALL_BITMAP_ATLAS;
         DvzTextStyle style = {
             .size_pts = sizes != NULL ? sizes[i] : 12.0f,
-            .renderer = DVZ_TEXT_RENDERER_SMALL_BITMAP_ATLAS,
+            .renderer = renderer,
             .color = {255, 255, 255, 255},
         };
         if (item_colors != NULL)

@@ -647,6 +647,8 @@ struct DvzTextVisualState
     char** strings;
     uint32_t string_count;
     uint64_t strings_version;
+    DvzTextRenderer renderer;
+    uint64_t renderer_version;
     DvzTextGlyphSpan* spans;
     uint32_t span_count;
     DvzVisual* glyph_visual;

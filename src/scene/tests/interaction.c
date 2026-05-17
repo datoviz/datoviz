@@ -143,6 +143,12 @@ int test_scene_text_annotation_bookkeeping(TstSuite* suite, TstItem* item)
 
     DvzVisual* text = dvz_text(scene, 0);
     ANN(text);
+    AT(text->text.renderer == DVZ_TEXT_RENDERER_SMALL_BITMAP_ATLAS);
+    AT(dvz_text_set_renderer(text, DVZ_TEXT_RENDERER_AUTO) == 0);
+    AT(text->text.renderer == DVZ_TEXT_RENDERER_AUTO);
+    AT(text->text.renderer_version == 1);
+    AT(dvz_text_set_renderer(text, DVZ_TEXT_RENDERER_MSDF_ATLAS) < 0);
+    AT(text->text.renderer == DVZ_TEXT_RENDERER_AUTO);
     const char* strings[2] = {"hello", "world"};
     float positions[2][3] = {{10.0f, 20.0f, 0.0f}, {80.0f, 24.0f, 0.0f}};
     float text_anchors[2][2] = {{0.0f, 0.0f}, {0.5f, 0.5f}};

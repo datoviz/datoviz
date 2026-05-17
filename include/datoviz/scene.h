@@ -1211,6 +1211,19 @@ DVZ_EXPORT DvzVisual* dvz_text(DvzScene* scene, uint32_t flags);
 
 
 /**
+ * Select the renderer used by a batched text visual.
+ *
+ * The current retained text visual path supports the built-in bitmap atlas renderers. MSDF/MTSDF
+ * renderer metadata will be added in a later slice.
+ *
+ * @param visual text visual
+ * @param renderer renderer selection
+ * @return 0 on success, -1 on error
+ */
+DVZ_EXPORT int dvz_text_set_renderer(DvzVisual* visual, DvzTextRenderer renderer);
+
+
+/**
  * Create a glyph visual.
  *
  * Renders atlas-backed glyph quads with `position` (vec3), `texcoords` (vec2), `color` (RGBA8),

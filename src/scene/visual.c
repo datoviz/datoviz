@@ -3070,9 +3070,45 @@ DvzVisual* dvz_text(DvzScene* scene, uint32_t flags)
     {
         visual->alpha_mode = DVZ_ALPHA_BLENDED;
         visual->depth_test_enabled = false;
+        visual->text.renderer = DVZ_TEXT_RENDERER_SMALL_BITMAP_ATLAS;
     }
     return visual;
 }
+
+
+
+/**
+ * Select the renderer used by a batched text visual.
+ *
+ * @param visual text visual
+ * @param renderer renderer selection
+ * @return 0 on success, -1 on error
+ */
+int dvz_text_set_renderer(DvzVisual* visual, DvzTextRenderer renderer)
+{
+    ANN(visual);
+    if (visual->type != DVZ_VISUAL_TYPE_TEXT)
+    {
+        log_error("dvz_text_set_renderer requires a text visual");
+        return -1;
+    }
+    if (!_scene_visual_mutation_allowed(visual->scene, "mutate text renderer"))
+        return -1;
+    if (renderer != DVZ_TEXT_RENDERER_AUTO &&
+        renderer != DVZ_TEXT_RENDERER_SMALL_BITMAP_ATLAS &&
+        renderer != DVZ_TEXT_RENDERER_BITMAP_ATLAS)
+    {
+        log_error("text renderer %d is not implemented for batched text visuals yet", renderer);
+        return -1;
+    }
+    if (visual->text.renderer != renderer)
+    {
+        visual->text.renderer = renderer;
+        visual->text.renderer_version++;
+    }
+    return 0;
+}
+
 
 
 /**
