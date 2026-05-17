@@ -120,6 +120,7 @@ int test_axis_panzoom_visible_domain(TstSuite* suite, TstItem* item)
     AT(axis->tick_count >= 3);
     AT(axis->ticks[0] >= -1e-9);
     AT(axis->ticks[axis->tick_count - 1] <= 50.0 + 1e-9);
+    double step = axis->tick_lstep;
 
     AT(dvz_axis_set_grid(axis, true));
     _scene_prepare_axis_visuals(figure);
@@ -142,6 +143,10 @@ int test_axis_panzoom_visible_domain(TstSuite* suite, TstItem* item)
     }
     AT(has_left_grid);
     AT(has_right_grid);
+
+    dvz_panzoom_pan(pz, (vec2){0.25f, 0.0f});
+    _scene_prepare_axis_visuals(figure);
+    AT(fabs(axis->tick_lstep - step) < 1e-9);
 
     dvz_scene_destroy(scene);
     return 0;

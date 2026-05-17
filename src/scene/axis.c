@@ -128,25 +128,38 @@ static void _axis_init(DvzAxis* axis, DvzPanel* panel, DvzDim dim)
 
 
 /**
- * Return a nice step size with a 1/2/5 ladder.
+ * Return a nice step size with the v0.3 1/2/5 ladder.
  *
- * @param x raw step size
+ * @param range raw step size
+ * @param round whether to round to the nearest nice value
  * @return nice step size
  */
-static double _axis_nice_step(double x)
+static double _axis_nice_number(double range, bool round)
 {
-    if (!(x > 0.0) || !isfinite(x))
+    if (!(range > 0.0) || !isfinite(range))
         return 1.0;
-    double exponent = floor(log10(x));
-    double fraction = x / pow(10.0, exponent);
-    double nice = 10.0;
-    if (fraction <= 1.0)
-        nice = 1.0;
-    else if (fraction <= 2.0)
-        nice = 2.0;
-    else if (fraction <= 5.0)
-        nice = 5.0;
-    return nice * pow(10.0, exponent);
+    double exponent = floor(log10(range));
+    double fraction = range / pow(10.0, exponent);
+    double nice_fraction = 10.0;
+    if (round)
+    {
+        if (fraction < 1.5)
+            nice_fraction = 1.0;
+        else if (fraction < 3.0)
+            nice_fraction = 2.0;
+        else if (fraction < 7.0)
+            nice_fraction = 5.0;
+    }
+    else
+    {
+        if (fraction <= 1.0)
+            nice_fraction = 1.0;
+        else if (fraction <= 2.0)
+            nice_fraction = 2.0;
+        else if (fraction <= 5.0)
+            nice_fraction = 5.0;
+    }
+    return nice_fraction * pow(10.0, exponent);
 }
 
 
@@ -245,9 +258,23 @@ static void _axis_compute_ticks(DvzAxis* axis)
         target = 2;
     if (target > DVZ_SCENE_MAX_AXIS_TICKS)
         target = DVZ_SCENE_MAX_AXIS_TICKS;
-    double step = _axis_nice_step((max - min) / (double)(target - 1));
-    double first = ceil(min / step) * step;
-    for (double value = first; value <= max + 0.5 * step; value += step)
+
+    double range = max - min;
+    double raw_step = range / (double)target;
+    double step = _axis_nice_number(raw_step, true);
+    if (axis->tick_lstep > 0.0 && isfinite(axis->tick_lstep))
+    {
+        double current_density = range / axis->tick_lstep;
+        if (current_density >= 0.5 * (double)target && current_density <= 2.0 * (double)target)
+            step = axis->tick_lstep;
+    }
+
+    double lmin = floor(min / step) * step;
+    double lmax = ceil(max / step) * step;
+    axis->tick_lmin = lmin;
+    axis->tick_lmax = lmax;
+    axis->tick_lstep = step;
+    for (double value = lmin; value <= lmax + 0.5 * step; value += step)
     {
         if (axis->tick_count >= DVZ_SCENE_MAX_AXIS_TICKS)
             break;
@@ -396,6 +423,7 @@ int dvz_panel_set_domain(DvzPanel* panel, DvzDim dim, double min, double max)
         return -1;
     _axis_init(axis, panel, dim);
     axis->domain = (DvzDataDomain){.min = min, .max = max};
+    axis->tick_lstep = 0.0;
     axis->dirty = true;
     axis->version++;
     return 0;
@@ -506,6 +534,7 @@ bool dvz_axis_set_tick_policy(DvzAxis* axis, const DvzAxisTickPolicy* policy)
     if (axis == NULL)
         return false;
     axis->tick_policy = policy != NULL ? *policy : _axis_default_tick_policy();
+    axis->tick_lstep = 0.0;
     axis->dirty = true;
     axis->version++;
     return true;

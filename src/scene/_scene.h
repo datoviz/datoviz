@@ -824,6 +824,9 @@ struct DvzAxis
     DvzAxisStyle style;
     char label[DVZ_SCENE_LABEL_SIZE];
     uint32_t tick_count;
+    double tick_lmin;
+    double tick_lmax;
+    double tick_lstep;
     double ticks[DVZ_SCENE_MAX_AXIS_TICKS];
     DvzVisual* visual;
 };
