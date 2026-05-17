@@ -175,6 +175,30 @@ static uint32_t _text_bitmap_scale(const DvzTextStyle* style)
 
 
 /**
+ * Return the continuous layout scale for atlas-backed bitmap glyph quads.
+ *
+ * @param style the text style
+ * @return the floating-point layout scale
+ */
+static float _text_bitmap_layout_scale(const DvzTextStyle* style)
+{
+    ANN(style);
+    float size_pts = style->size_pts;
+    if (size_pts <= 0 && style->font != NULL)
+        size_pts = style->font->size_pts;
+    if (size_pts <= 0)
+        size_pts = 12.0f;
+    float scale = size_pts / 8.0f;
+    if (scale < 0.25f)
+        scale = 0.25f;
+    if (scale > 32.0f)
+        scale = 32.0f;
+    return scale;
+}
+
+
+
+/**
  * Return whether a built-in font glyph bit is set.
  *
  * @param ascii the ASCII codepoint
@@ -765,23 +789,18 @@ static bool _text_prepare_visual(DvzFigure* figure, DvzText* text)
     if (atlas == NULL)
         return false;
 
-    uint32_t scale = _text_bitmap_scale(&text->style);
-    uint32_t glyph_w = DVZ_TEXT_BITMAP_GLYPH_WIDTH * scale;
-    uint32_t glyph_h = DVZ_TEXT_BITMAP_GLYPH_HEIGHT * scale;
-    uint32_t line_h = DVZ_TEXT_BITMAP_LINE_HEIGHT * scale;
-    uint64_t width64 = 0;
-    uint64_t height64 = 0;
-    uint64_t height_base = 0;
-    if (_dvz_mul_u64_overflows(columns, glyph_w, &width64) ||
-        _dvz_mul_u64_overflows(lines - 1u, line_h, &height_base) ||
-        _dvz_add_u64_overflows(height_base, glyph_h, &height64) ||
-        width64 > UINT32_MAX || height64 > UINT32_MAX)
+    float scale = _text_bitmap_layout_scale(&text->style);
+    float glyph_w = (float)DVZ_TEXT_BITMAP_GLYPH_WIDTH * scale;
+    float glyph_h = (float)DVZ_TEXT_BITMAP_GLYPH_HEIGHT * scale;
+    float line_h = (float)DVZ_TEXT_BITMAP_LINE_HEIGHT * scale;
+    float width = (float)columns * glyph_w;
+    float height = (float)(lines - 1u) * line_h + glyph_h;
+    if (!isfinite(width) || !isfinite(height) || width <= 0.0f || height <= 0.0f ||
+        width > (float)UINT32_MAX || height > (float)UINT32_MAX)
     {
         log_error("text glyph dimensions overflow");
         return false;
     }
-    uint32_t width = (uint32_t)width64;
-    uint32_t height = (uint32_t)height64;
 
     uint64_t max_vertices = 0;
     uint64_t position_bytes = 0;
@@ -841,10 +860,10 @@ static bool _text_prepare_visual(DvzFigure* figure, DvzText* text)
             continue;
         }
 
-        float x0 = align_x + (float)(column * glyph_w);
-        float y0 = align_y + (float)(row * line_h);
-        float x1 = x0 + (float)glyph_w;
-        float y1 = y0 + (float)glyph_h;
+        float x0 = align_x + (float)column * glyph_w;
+        float y0 = align_y + (float)row * line_h;
+        float x1 = x0 + glyph_w;
+        float y1 = y0 + glyph_h;
         float uv[4] = {0};
         _text_bitmap_atlas_uv(cp, uv);
         const float xy[6][2] = {{x0, y0}, {x0, y1}, {x1, y0}, {x1, y0}, {x0, y1}, {x1, y1}};
@@ -928,11 +947,10 @@ static bool _text_prepare_visual(DvzFigure* figure, DvzText* text)
         text->metrics.layout_bounds[1] = 0;
         text->metrics.layout_bounds[2] = (float)width;
         text->metrics.layout_bounds[3] = (float)height;
-        text->metrics.baseline = 7.0f * (float)_text_bitmap_scale(&text->style);
+        text->metrics.baseline = 7.0f * scale;
         text->metrics.ascender = text->metrics.baseline;
-        text->metrics.descender = 1.0f * (float)_text_bitmap_scale(&text->style);
-        text->metrics.line_height = DVZ_TEXT_BITMAP_LINE_HEIGHT *
-                                    (float)_text_bitmap_scale(&text->style);
+        text->metrics.descender = 1.0f * scale;
+        text->metrics.line_height = (float)DVZ_TEXT_BITMAP_LINE_HEIGHT * scale;
         text->dirty_flags = DVZ_TEXT_DIRTY_NONE;
         text->visual_version = text->version;
         text->visual_figure_width = figure->width;
