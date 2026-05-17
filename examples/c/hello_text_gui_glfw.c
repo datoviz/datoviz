@@ -397,14 +397,10 @@ static void update_text_scene(TextLabState* state)
             positions[i][0] = left + (float)i * step;
             positions[i][1] = 0.5f * height;
             positions[i][2] = 0.0f;
-            crosshair_positions[i][0] = positions[i][0];
-            crosshair_positions[i][1] = positions[i][1];
-            crosshair_positions[i][2] = positions[i][2];
         }
         set_text_items(
             state->ticks, strings, tick_count, positions, state->tick_size_pts, color, text_anchor,
             NULL);
-        crosshair_count = tick_count;
     }
     else if (state->mode == TEXT_LAB_MODE_MULTILINE)
     {
