@@ -1,10 +1,22 @@
 # Scene Sphere Visual Plan
 
 > **Execution Status**
-> - **Status:** `PICKUP PLAN`
-> - **Updated on:** `2026-05-16`
-> - **Purpose:** define the v0.4 port of the v0.3 ray-traced sphere impostor visual and its
+> - **Status:** `ACTIVE / PARTIALLY IMPLEMENTED`
+> - **Updated on:** `2026-05-17`
+> - **Purpose:** track the remaining work for the v0.4 sphere impostor visual and its
 >   integration with materials, G-buffer output, SSAO, and antialiased borders.
+
+## Current State
+
+The core sphere visual slice is already present in the codebase:
+
+1. `DVZ_VISUAL_TYPE_SPHERE` exists and is wired into the scene runtime.
+2. `dvz_sphere()`, `dvz_sphere_mode()`, and the typed position/color/size setters exist.
+3. GLSL color, A2C, and G-buffer shader variants are already registered and emitted.
+4. Scene tests cover sphere emit execution, mode retention, and SSAO usage.
+5. The interactive GLFW sphere SSAO example already exercises the retained visual.
+
+The remaining work is therefore narrower than the original pickup plan.
 
 
 ## Decision
@@ -45,7 +57,8 @@ struct DvzSphereVertex
 ```
 
 The v0.3 flags covered texturing, lighting, pixel-size mode, and equirectangular texture
-projection. Port those incrementally after the core untextured lit path is stable.
+projection. The core untextured lit path is already stable enough in v0.4; the remaining
+porting work is mainly feature completion and documentation alignment.
 
 
 ## Target v0.4 Visual Shape
@@ -61,13 +74,14 @@ int dvz_sphere_size(DvzVisual* visual, uint32_t first, uint32_t count, const flo
 
 Keep the API typed. Do not introduce a generic material or binding API just to support sphere.
 
-Recommended first flags:
+Current first-slice flags:
 
 1. `DVZ_SPHERE_FLAGS_NONE`
 2. `DVZ_SPHERE_FLAGS_LIGHTING`
-3. `DVZ_SPHERE_FLAGS_SIZE_PIXELS`, only if the projection math remains simple in the first port
+3. `DVZ_SPHERE_FLAGS_SIZE_PIXELS`, if and when pixel-sized spheres are wired through the
+   runtime/shader path
 
-Defer texture flags until the core visual, G-buffer path, and SSAO example are validated:
+Still deferred:
 
 1. `DVZ_SPHERE_FLAGS_TEXTURED`
 2. `DVZ_SPHERE_FLAGS_EQUAL_RECTANGULAR`
@@ -85,7 +99,7 @@ Sphere should be a lit material-capable visual family:
    cueing;
 3. sphere-specific optional fields later: texture projection mode, texture binding, and size unit.
 
-The first implementation can reuse the existing `DvzSceneMaterialState` and
+The first implementation already reuses the existing `DvzSceneMaterialState` and
 `DvzSceneMaterialParams` path used by primitive/mesh lighting. Add fields only when the sphere
 shader genuinely needs data that is not already represented there.
 
@@ -168,40 +182,32 @@ should show contact shadows and cavity darkening far more clearly than the curre
 height-field mesh example.
 
 
-## Implementation Order
+## Remaining Work
 
-Recommended commits:
+Recommended follow-up commits:
 
-1. Add the retained visual type, public declarations, internal attribute layout, and basic tests
-   that frame-plan metadata recognizes sphere as its own family.
-2. Add GLSL color-pass shaders with lighting and analytic antialiased silhouettes.
-3. Add runtime shader/pipeline selection and a bounded offscreen smoke that renders several
-   overlapping spheres without SSAO.
-4. Add sphere G-buffer shaders and visual pass capabilities.
-5. Extend SSAO tests so sphere visuals feed the normal/depth path.
-6. Add a new interactive GLFW example with many spheres, arcball auto-rotation, SSAO controls, and
-   material/size controls.
-7. Port texture/equirectangular support if the untextured lit path is stable and the example proves
-   useful.
+1. Wire `DVZ_SPHERE_FLAGS_SIZE_PIXELS` through the runtime and shaders, or remove it if the
+   feature is no longer desired.
+2. Port the remaining texture/equirectangular sphere support from v0.3.
+3. Update the public visuals docs so they match the actual v0.4 implementation and API.
+4. Add or refresh focused regression tests for the remaining sphere-specific feature slices.
+
+## Notes
+
+1. Keep sphere separate from marker and primitive semantics.
+2. Reuse the existing material path rather than introducing a sphere-private material system.
+3. Preserve the current shader/runtime split: retained sphere data in scene state, shader-defined
+   impostor reconstruction in the GLSL path, and SSAO/G-buffer integration through the scene
+   pipeline.
 
 
 ## Validation
 
-For the first implementation slice:
+For the remaining sphere work:
 
 ```text
 just build
 just test scene
-./build/examples/c/<new_sphere_example> 2
+./build/examples/c/hello_sphere_ssao_glfw 2
 git diff --check
 ```
-
-For G-buffer/SSAO support:
-
-```text
-just test test_scene_ssao
-just test test_app_offscreen_<sphere_ssao_test_name>
-./build/examples/c/<new_sphere_ssao_example> 2
-git diff --check
-```
-
