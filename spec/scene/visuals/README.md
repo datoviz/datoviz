@@ -23,12 +23,12 @@ broader than the current implementation.
 
 | Family | Spec | Public constructor/API | Retained state | Native rendering | GPU request/readback | Remaining gaps |
 |---|---|---|---|---|---|---|
-| `pixel` | [PIXEL.md](PIXEL.md) | `dvz_pixel()` | position/color/size, depth-cue state | emission and pipeline-selection coverage; no separate app readback smoke recorded | no family-specific path | pixel picking/styling beyond the first point-like slice |
+| `pixel` | [PIXEL.md](PIXEL.md) | `dvz_pixel()` | position/color/size, depth-cue state | square pixel marks, GLSL native points, WGSL instanced quads | square GPU picking | constant/scalar/grouped sources, shift, data-space size |
 | `primitive` | [PRIMITIVE.md](PRIMITIVE.md) | `dvz_primitive()` | topology, position/color, optional normal/index, material/depth/alpha | point/line/triangle primitives and indexed draws | no family-specific path | intentionally narrow low-level family |
-| `point` | [POINT.md](POINT.md) | `dvz_point()` | position/color/size, external position buffers, depth-cue/alpha | native retained point rendering | point pick readback | richer payloads and rendered selection highlights |
-| `marker` | [MARKER.md](MARKER.md) | none installed | none | no | no | spec only |
-| `segment` | [SEGMENT.md](SEGMENT.md) | none installed | none | no | no | spec only |
-| `path` | [PATH.md](PATH.md) | `dvz_path()` | line-strip position/color | primitive-backed line strip | no | widths, caps, joins, grouping, tapered lines, picking |
+| `point` | [POINT.md](POINT.md) | `dvz_point()` | position/color/size, external buffers, style/depth-cue/alpha | circular AA points, GLSL native points, WGSL instanced quads | circular GPU picking | scalar/grouped sources, shift, data-space size, richer selection |
+| `marker` | [MARKER.md](MARKER.md) | `dvz_marker()` | position/color/size/angle/shape, style | code-SDF marker sprites in GLSL | bounding-box GPU picking | exact SDF picking, bitmap/SDF atlas, WGSL parity |
+| `segment` | [SEGMENT.md](SEGMENT.md) | `dvz_segment()` | endpoint positions/color/line_width/caps | analytic screen-space stroke quads in GLSL | no | dashes, arrows, gradients, picking, WGSL parity |
+| `path` | [PATH.md](PATH.md) | `dvz_path()` | line-strip plus optional subpaths/line_width | primitive line-strip or stroked segment lowering | no | joins, closed subpaths, dashes, picking, WGSL parity |
 | `glyph` | [GLYPH.md](GLYPH.md) | no visual constructor; `DvzText`/`DvzAnnotation` bookkeeping exists | retained semantic text/annotation objects only | no rendered glyph path | no | atlas/shaping/rendering, labels, glyph/text picking |
 | `image` | [IMAGE.md](IMAGE.md) | `dvz_image()`, field binding, texture wrappers | 2D `SampledField`, scale/colormap binding, partial updates | textured quad path | basic image probe readback | richer probe payloads, labels/categorical fields, rectangles/anchors/tinting |
 | `mesh` | [MESH.md](MESH.md) | `dvz_mesh()` | vertex attributes, optional indices/normals, material/depth/alpha | indexed triangle mesh, depth, Phong/material, WBOIT/depth-peel, EDL/SSAO/G-buffer eligibility | no mesh picking path | broader mesh/object picking, geometry-resource API, full PBR |
@@ -51,3 +51,4 @@ The granularity vocabulary (`CONSTANT`, `PER_ITEM`, `PER_SPAN`, `PER_GROUP`) and
 2. [../proposals/MESH_SHADING_DESIGN.md](../proposals/MESH_SHADING_DESIGN.md)
 3. [../proposals/MATERIAL_LIGHTING_API.md](../proposals/MATERIAL_LIGHTING_API.md)
 4. [../proposals/VOLUME_DESIGN.md](../proposals/VOLUME_DESIGN.md)
+5. [../implementation/VISUAL_SHADER_REFACTOR.md](../implementation/VISUAL_SHADER_REFACTOR.md)
