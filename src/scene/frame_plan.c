@@ -208,6 +208,8 @@ static const char* _render_pass_role_name(DvzFramePlanRenderPassRole role)
         return "gbuffer";
     case DVZ_FRAME_PLAN_RENDER_PASS_VOLUME_OCCLUSION:
         return "volume_occlusion";
+    case DVZ_FRAME_PLAN_RENDER_PASS_SCENE_OCCLUSION:
+        return "scene_occlusion";
     case DVZ_FRAME_PLAN_RENDER_PASS_SSAO:
         return "ssao";
     case DVZ_FRAME_PLAN_RENDER_PASS_SSAO_BLUR:

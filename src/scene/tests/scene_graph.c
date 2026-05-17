@@ -4407,6 +4407,99 @@ int test_scene_visual_scene_occlusion_flags(TstSuite* suite, TstItem* item)
 
 
 /**
+ * Verify scene occlusion prepass ordering and graph sampled reads.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_visual_scene_occlusion_frame_plan(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    AT(scene != NULL);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    AT(figure != NULL);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    AT(panel != NULL);
+
+    DvzVisual* occluder = dvz_primitive(scene, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 0);
+    DvzVisual* occluded = dvz_point(scene, 0);
+    AT(occluder != NULL);
+    AT(occluded != NULL);
+
+    float positions[] = {
+        -0.5f, -0.5f, 0.0f,
+         0.5f, -0.5f, 0.0f,
+         0.0f,  0.5f, 0.0f,
+    };
+    DvzColor colors[3] = {{255, 0, 0, 255}, {0, 255, 0, 255}, {0, 0, 255, 255}};
+    float sizes[3] = {10.0f, 10.0f, 10.0f};
+
+    AT(dvz_visual_set_data(occluder, "position", positions, 3) == 0);
+    AT(dvz_visual_set_data(occluder, "color", colors, 3) == 0);
+    AT(dvz_visual_set_data(occluded, "position", positions, 3) == 0);
+    AT(dvz_visual_set_data(occluded, "color", colors, 3) == 0);
+    AT(dvz_visual_set_data(occluded, "size", sizes, 3) == 0);
+    AT(dvz_visual_set_scene_occluder(occluder, true) == 0);
+    AT(dvz_visual_set_scene_occluded(occluded, true) == 0);
+    AT(dvz_panel_add_visual(panel, occluder, NULL) == 0);
+    AT(dvz_panel_add_visual(panel, occluded, NULL) == 0);
+    AT(dvz_panel_set_scene_occlusion(
+           panel,
+           &(DvzSceneOcclusionDesc){
+               .enabled = true,
+               .depth_bias = 0.001f,
+               .soft_edge = 0.01f,
+               .hidden_alpha = 0.2f,
+           }) == 0);
+
+    DvzFramePlan* plan = dvz_frame_plan("figure.scene_occlusion", 0);
+    ANN(plan);
+    _scene_emit_panel_render(figure, 0, plan, "figure_0");
+
+    AT(dvz_frame_plan_node_count(plan) == 2);
+    const DvzFramePlanNode* occlusion_node = dvz_frame_plan_node_get(plan, 0);
+    const DvzFramePlanNode* opaque_node = dvz_frame_plan_node_get(plan, 1);
+    ANN(occlusion_node);
+    ANN(opaque_node);
+    AT(
+        dvz_frame_plan_render_pass_role(occlusion_node) ==
+        DVZ_FRAME_PLAN_RENDER_PASS_SCENE_OCCLUSION);
+    AT(dvz_frame_plan_render_pass_role(opaque_node) == DVZ_FRAME_PLAN_RENDER_PASS_OPAQUE);
+    AT(occlusion_node->u.render.visual_count == 1);
+    AT(opaque_node->u.render.visual_count == 2);
+    AT(occlusion_node->u.render.visual_metadata[0].scene_occluder);
+    AT(opaque_node->u.render.visual_metadata[1].scene_occluded);
+    AT(opaque_node->u.render.visual_metadata[1].has_scene_occlusion);
+
+    AT(dvz_frame_plan_graph_pass_count(plan) == 2);
+    const DvzFrameGraphPass* occlusion_pass = dvz_frame_plan_graph_pass_get(plan, 0);
+    const DvzFrameGraphPass* opaque_pass = dvz_frame_plan_graph_pass_get(plan, 1);
+    ANN(occlusion_pass);
+    ANN(opaque_pass);
+    AT(strcmp(occlusion_pass->work_label, "scene_occlusion") == 0);
+    AT(occlusion_pass->color_attachment_count == 1);
+    AT(strcmp(occlusion_pass->color_attachments[0].resource_id,
+              "figure_0_p0.scene_occlusion.depth") == 0);
+    AT(strcmp(opaque_pass->work_label, "opaque") == 0);
+    AT(opaque_pass->read_count == 1);
+    AT(strcmp(opaque_pass->reads[0].resource_id, "figure_0_p0.scene_occlusion.depth") == 0);
+    AT(opaque_pass->reads[0].usage == DVZ_FRAME_GRAPH_ACCESS_SAMPLED);
+
+    DvzDiagnosticReport report;
+    dvz_diagnostic_report_init(&report);
+    AT(dvz_frame_plan_graph_validate(plan, &report));
+
+    dvz_frame_plan_destroy(plan);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+/**
  * Verify internal material state defaults and compatibility setter synchronization.
  *
  * @param suite the active test suite
@@ -7629,6 +7722,7 @@ int test_scene_graph(TstSuite* suite)
     TEST_SIMPLE(test_scene_visual_alpha_mode);
     TEST_SIMPLE(test_scene_visual_depth_test);
     TEST_SIMPLE(test_scene_visual_scene_occlusion_flags);
+    TEST_SIMPLE(test_scene_visual_scene_occlusion_frame_plan);
     TEST_SIMPLE(test_scene_visual_internal_material_state);
     TEST_SIMPLE(test_scene_visual_material_setter);
     TEST_SIMPLE(test_scene_pixel_depth_cue_toggle_switches_pipeline);

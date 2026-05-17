@@ -665,7 +665,7 @@ static DvzFramePlanNode* _scene_begin_panel_render_pass(
  * @param pass the graph pass
  * @return whether the pass renders ordinary visual fragments
  */
-static bool _scene_graph_pass_can_sample_volume_occlusion(const DvzFrameGraphPass* pass)
+static bool _scene_graph_pass_can_sample_visual_occlusion(const DvzFrameGraphPass* pass)
 {
     ANN(pass);
     return strcmp(pass->work_label, "opaque") == 0 ||
@@ -694,7 +694,38 @@ static bool _scene_add_volume_occlusion_reads(DvzFramePlan* plan, const char* pa
     {
         DvzFrameGraphPass* pass = &plan->graph_passes[i];
         if (strcmp(pass->panel_id, panel_id) != 0 ||
-            !_scene_graph_pass_can_sample_volume_occlusion(pass))
+            !_scene_graph_pass_can_sample_visual_occlusion(pass))
+            continue;
+        bool already = false;
+        for (uint32_t j = 0; j < pass->read_count; j++)
+            already = already || strcmp(pass->reads[j].resource_id, depth_id) == 0;
+        if (!already &&
+            !dvz_frame_graph_pass_read(pass, depth_id, DVZ_FRAME_GRAPH_ACCESS_SAMPLED))
+            return false;
+    }
+    return true;
+}
+
+
+/**
+ * Add sampled scene-occlusion reads to panel visual render passes.
+ *
+ * @param plan the frame plan
+ * @param panel_id the panel id
+ * @return whether all required reads were added
+ */
+static bool _scene_add_scene_occlusion_reads(DvzFramePlan* plan, const char* panel_id)
+{
+    ANN(plan);
+    ANN(panel_id);
+    char depth_id[DVZ_SCENE_LABEL_SIZE];
+    dvz_snprintf(depth_id, sizeof(depth_id), "%s.scene_occlusion.depth", panel_id);
+
+    for (uint32_t i = 0; i < plan->graph_pass_count; i++)
+    {
+        DvzFrameGraphPass* pass = &plan->graph_passes[i];
+        if (strcmp(pass->panel_id, panel_id) != 0 ||
+            !_scene_graph_pass_can_sample_visual_occlusion(pass))
             continue;
         bool already = false;
         for (uint32_t j = 0; j < pass->read_count; j++)
@@ -734,6 +765,47 @@ static bool _scene_panel_has_visible_volume_occlusion_target(const DvzPanel* pan
 }
 
 
+/**
+ * Return whether one panel visual is visible and drawable.
+ *
+ * @param visual the visual
+ * @return whether the visual has position data
+ */
+static bool _scene_visual_is_visible_drawable(const DvzVisual* visual)
+{
+    if (visual == NULL || !visual->visible)
+        return false;
+    int pos_idx = _attr_index(visual, "position");
+    return pos_idx >= 0 && visual->attrs[pos_idx].item_count > 0;
+}
+
+
+/**
+ * Return whether the panel has visible scene occluder and occluded targets.
+ *
+ * @param panel the panel
+ * @return whether a scene occlusion prepass should be emitted
+ */
+static bool _scene_panel_has_visible_scene_occlusion_target(const DvzPanel* panel)
+{
+    ANN(panel);
+    if (!panel->scene_occlusion_enabled || !panel->scene_occlusion.enabled)
+        return false;
+
+    bool has_occluder = false;
+    bool has_occluded = false;
+    for (uint32_t i = 0; i < panel->visual_count; i++)
+    {
+        const DvzVisual* visual = panel->visuals[i].visual;
+        if (!_scene_visual_is_visible_drawable(visual))
+            continue;
+        has_occluder = has_occluder || visual->scene_occluder;
+        has_occluded = has_occluded || visual->scene_occluded;
+    }
+    return has_occluder && has_occluded;
+}
+
+
 
 /**
  * Append one visual to the active render pass.
@@ -749,7 +821,7 @@ static bool _scene_panel_has_visible_volume_occlusion_target(const DvzPanel* pan
 static bool _scene_append_visual_to_render_pass(
     const DvzFigure* figure, DvzFramePlan* plan, DvzFramePlanNode* node, const DvzVisual* visual,
     const DvzPanelAttach* attach, uint32_t visual_index,
-    const DvzVolumeOcclusionDesc* volume_occlusion)
+    const DvzSceneOcclusionDesc* scene_occlusion, const DvzVolumeOcclusionDesc* volume_occlusion)
 {
     ANN(figure);
     ANN(plan);
@@ -783,6 +855,11 @@ static bool _scene_append_visual_to_render_pass(
         {
             metadata.has_volume_occlusion = true;
             metadata.volume_occlusion = *volume_occlusion;
+        }
+        if (metadata.scene_occluded && scene_occlusion != NULL)
+        {
+            metadata.has_scene_occlusion = true;
+            metadata.scene_occlusion = *scene_occlusion;
         }
         dvz_memcpy(
             &node->u.render.visual_metadata[slot], sizeof(DvzFramePlanVisualMeta), &metadata,
@@ -848,6 +925,32 @@ void _scene_emit_panel_render(
         panel, &panel_viewport.x, &panel_viewport.y, &panel_viewport.width,
         &panel_viewport.height);
 
+    DvzFramePlanNode* scene_occlusion_node = NULL;
+    bool scene_occlusion_enabled = _scene_panel_has_visible_scene_occlusion_target(panel);
+    if (scene_occlusion_enabled)
+    {
+        scene_occlusion_node = _scene_begin_panel_render_pass(
+            plan, panel_id, "rt.scene_occlusion.depth", panel->desc,
+            DVZ_FRAME_PLAN_RENDER_PASS_SCENE_OCCLUSION, &panel_apply_mvp, &panel_viewport);
+        if (scene_occlusion_node != NULL)
+        {
+            for (uint32_t k = 0; k < panel->visual_count; k++)
+            {
+                uint32_t vi = order[k];
+                DvzPanelAttach* attach = &panel->visuals[vi];
+                DvzVisual* visual = attach->visual;
+                if (!_scene_visual_is_visible_drawable(visual) || !visual->scene_occluder)
+                    continue;
+                uint32_t vidx = 0;
+                if (!_figure_visual_index(figure, visual, &vidx))
+                    continue;
+                (void)_scene_append_visual_to_render_pass(
+                    figure, plan, scene_occlusion_node, visual, attach, vidx,
+                    &panel->scene_occlusion, NULL);
+            }
+        }
+    }
+
     DvzFramePlanNode* volume_occlusion_node = NULL;
     bool volume_occlusion_enabled = _scene_panel_has_visible_volume_occlusion_target(panel);
     if (volume_occlusion_enabled)
@@ -868,7 +971,7 @@ void _scene_emit_panel_render(
                 };
                 (void)_scene_append_visual_to_render_pass(
                     figure, plan, volume_occlusion_node, panel->volume_occluder_visual, &attach,
-                    occluder_index, &panel->volume_occlusion);
+                    occluder_index, NULL, &panel->volume_occlusion);
             }
         }
     }
@@ -936,6 +1039,7 @@ void _scene_emit_panel_render(
             }
             (void)_scene_append_visual_to_render_pass(
                 figure, plan, gbuffer_node, visual, attach, vidx,
+                scene_occlusion_enabled ? &panel->scene_occlusion : NULL,
                 volume_occlusion_enabled ? &panel->volume_occlusion : NULL);
         }
 
@@ -949,6 +1053,7 @@ void _scene_emit_panel_render(
         }
         (void)_scene_append_visual_to_render_pass(
             figure, plan, opaque_node, visual, attach, vidx,
+            scene_occlusion_enabled ? &panel->scene_occlusion : NULL,
             volume_occlusion_enabled ? &panel->volume_occlusion : NULL);
         bool edl_depth_visual = edl_enabled && caps.eligible_for_depth_postprocess;
         opaque_needs_depth = opaque_needs_depth || caps.writes_depth || edl_depth_visual;
@@ -994,6 +1099,7 @@ void _scene_emit_panel_render(
             }
             (void)_scene_append_visual_to_render_pass(
                 figure, plan, blended_node, visual, attach, vidx,
+                scene_occlusion_enabled ? &panel->scene_occlusion : NULL,
                 volume_occlusion_enabled ? &panel->volume_occlusion : NULL);
             transparent_needs_depth = transparent_needs_depth || caps.needs_depth_attachment;
             continue;
@@ -1028,9 +1134,11 @@ void _scene_emit_panel_render(
             }
             (void)_scene_append_visual_to_render_pass(
                 figure, plan, depth_peel_init_node, visual, attach, vidx,
+                scene_occlusion_enabled ? &panel->scene_occlusion : NULL,
                 volume_occlusion_enabled ? &panel->volume_occlusion : NULL);
             (void)_scene_append_visual_to_render_pass(
                 figure, plan, depth_peel_iter_node, visual, attach, vidx,
+                scene_occlusion_enabled ? &panel->scene_occlusion : NULL,
                 volume_occlusion_enabled ? &panel->volume_occlusion : NULL);
             transparent_needs_depth = transparent_needs_depth || caps.needs_depth_attachment;
             continue;
@@ -1047,9 +1155,14 @@ void _scene_emit_panel_render(
         }
         (void)_scene_append_visual_to_render_pass(
             figure, plan, transparent_node, visual, attach, vidx,
+            scene_occlusion_enabled ? &panel->scene_occlusion : NULL,
             volume_occlusion_enabled ? &panel->volume_occlusion : NULL);
         transparent_needs_depth = transparent_needs_depth || caps.needs_depth_attachment;
     }
+
+    if (scene_occlusion_node != NULL &&
+        !_scene_technique_emit_scene_occlusion_frame_graph(plan, panel_id))
+        log_error("failed to emit scene occlusion FramePlan graph for panel %s", panel_id);
 
     if (transparent_node != NULL)
     {
@@ -1110,7 +1223,9 @@ void _scene_emit_panel_render(
                 plan, panel_id, opaque_needs_depth, transparent_needs_depth))
             log_error("failed to emit blended FramePlan graph for panel %s", panel_id);
     }
-    else if (opaque_node != NULL && (opaque_needs_depth || volume_occlusion_node != NULL))
+    else if (
+        opaque_node != NULL &&
+        (opaque_needs_depth || volume_occlusion_node != NULL || scene_occlusion_node != NULL))
     {
         if (volume_occlusion_node != NULL &&
             !_scene_technique_emit_volume_occlusion_frame_graph(plan, panel_id))
@@ -1142,6 +1257,7 @@ void _scene_emit_panel_render(
                 log_error("failed to emit EDL FramePlan graph for panel %s", panel_id);
         }
         else if ((gbuffer_node != NULL || volume_occlusion_node != NULL ||
+                  scene_occlusion_node != NULL ||
                   (!ssao_enabled && msaa_state != NULL)) &&
                  !_scene_technique_emit_opaque_frame_graph(
                      plan, panel_id, opaque_needs_depth, msaa_state))
@@ -1185,4 +1301,7 @@ void _scene_emit_panel_render(
     if (volume_occlusion_node != NULL &&
         !_scene_add_volume_occlusion_reads(plan, panel_id))
         log_error("failed to add volume occlusion FramePlan reads for panel %s", panel_id);
+    if (scene_occlusion_node != NULL &&
+        !_scene_add_scene_occlusion_reads(plan, panel_id))
+        log_error("failed to add scene occlusion FramePlan reads for panel %s", panel_id);
 }
