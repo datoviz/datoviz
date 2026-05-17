@@ -22,6 +22,7 @@
 #include "_compat.h"
 #include "_frame_plan_emit.h"
 #include "_scene_common_bindings.h"
+#include "_scene_shader_abi.h"
 #include "datoviz/drp2.h"
 #include "datoviz/drp2/stream.h"
 #include "datoviz/math/_cglm.h"
@@ -48,12 +49,12 @@ static bool _create_common_bind_group_layout(DvzDrp2CommandStream* stream, uint6
         DVZ_DRP2_SHADER_STAGE_VERTEX | DVZ_DRP2_SHADER_STAGE_FRAGMENT;
     DvzDrp2BindGroupLayoutEntry entries[2] = {
         {
-            .binding = 0,
+            .binding = DVZ_SCENE_SHADER_BINDING_COMMON_MVP,
             .binding_type = DVZ_DRP2_BINDING_TYPE_UNIFORM_BUFFER,
             .visibility = visibility,
         },
         {
-            .binding = 1,
+            .binding = DVZ_SCENE_SHADER_BINDING_COMMON_VIEWPORT,
             .binding_type = DVZ_DRP2_BINDING_TYPE_UNIFORM_BUFFER,
             .visibility = visibility,
         },
@@ -194,7 +195,7 @@ static bool _resolve_common_set(
     {
         DvzDrp2BindGroupEntry entries[2] = {
             {
-                .binding = 0,
+                .binding = DVZ_SCENE_SHADER_BINDING_COMMON_MVP,
                 .binding_type = DVZ_DRP2_BINDING_TYPE_UNIFORM_BUFFER,
                 .resource_kind = DVZ_DRP2_BINDING_RESOURCE_BUFFER,
                 .resource_id = mvp_buf_id,
@@ -202,7 +203,7 @@ static bool _resolve_common_set(
                 .size = sizeof(DvzMVP),
             },
             {
-                .binding = 1,
+                .binding = DVZ_SCENE_SHADER_BINDING_COMMON_VIEWPORT,
                 .binding_type = DVZ_DRP2_BINDING_TYPE_UNIFORM_BUFFER,
                 .resource_kind = DVZ_DRP2_BINDING_RESOURCE_BUFFER,
                 .resource_id = viewport_buf_id,

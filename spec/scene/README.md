@@ -45,9 +45,10 @@ The scene spec is split by kind of authority:
 9. [export](export/README.md): image and vector export semantics.
 10. [slices](slices/README.md): implementation-ready work packets for mature spec areas.
 11. [headers](headers/README.md): implementation-facing draft C header sketches.
-12. [proposals](proposals/README.md): active design addenda awaiting promotion into specialized specs.
-13. [decisions](decisions/README.md): historical ADR-style decision records.
-14. [examples](examples/README.md): worked examples and API-shape pressure tests.
+12. [implementation](implementation/README.md): concise notes for active implementation wiring.
+13. [proposals](proposals/README.md): active design addenda awaiting promotion into specialized specs.
+14. [decisions](decisions/README.md): historical ADR-style decision records.
+15. [examples](examples/README.md): worked examples and API-shape pressure tests.
 
 
 ## Relationship To The DRP2 Spec

@@ -1,14 +1,4 @@
-struct MVP {
-    model: mat4x4f,
-    view: mat4x4f,
-    proj: mat4x4f,
-    time: f32,
-    flags: u32,
-}
-
-struct Viewport {
-    rect: vec4f,
-}
+#include "common.wgsl"
 
 struct VertexIn {
     @location(0) position: vec3f,
@@ -21,9 +11,6 @@ struct VertexOut {
     @location(0) color: vec4f,
     @location(1) cue: vec3f,
 }
-
-@group(0) @binding(0) var<uniform> mvp: MVP;
-@group(0) @binding(1) var<uniform> viewport: Viewport;
 
 fn quad_corner(vertex_id: u32) -> vec2f {
     let corners = array<vec2f, 6>(
