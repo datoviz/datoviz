@@ -1,8 +1,8 @@
 > **Execution Status**
-> - **Status:** `PROPOSAL`
+> - **Status:** `ACTIVE IMPLEMENTATION PLAN`
 > - **Updated on:** `2026-05-17`
-> - **Purpose:** define a long-term scene render-contract resolver that prevents transparency,
->   occlusion, depth, and DRP2 lowering regressions.
+> - **Purpose:** track the active scene render-contract resolver refactor that prevents
+>   transparency, occlusion, depth, and DRP2 lowering regressions.
 
 # Scene Render Contract Resolver
 
@@ -13,6 +13,67 @@ The immediate motivation is the recent class of regressions around volume render
 occlusion, source-over transparency, scene occlusion, and transparent mesh shells. The same visual
 facts are currently inferred in several layers, which makes pass, pipeline, attachment, and bind
 group behavior easy to desynchronize.
+
+
+## Current Implementation State
+
+As of `2026-05-17`, this is no longer just a design sketch. The repository has an
+initial passive contract layer:
+
+1. `src/scene/render_contract.h` defines internal draw, attachment, and pass contract structs.
+2. `src/scene/render_contract.c` resolves retained visual draws into passive contracts and
+   validates generic pass invariants.
+3. `src/scene/scene.c` runs FramePlan contract validation after scene emission.
+4. `src/scene/scene_emit.c` now asks draw contracts whether source-over transparent draws need a
+   depth attachment instead of relying only on local pass-capability flags.
+5. `src/scene/technique.c` has graph emitters for WBOIT, depth peeling, ordinary source-over
+   blending, volume occlusion, scene occlusion, G-buffer, EDL, SSAO, and MSAA-oriented paths.
+6. `src/scene/frame_plan_runtime.c` has ordinal matching between repeated render nodes and repeated
+   graph passes with the same `work_label`, which matters for split technique passes.
+7. `src/scene/tests/scene_graph.c` contains the first contract-focused fixtures for WBOIT,
+   depth peeling, source-over blend, volume occlusion, scene occlusion, G-buffer, EDL, SSAO, and
+   several mixed transparent cases.
+
+The refactor is therefore in the middle of Phase 2 and Phase 3 below. Keep new transparency,
+occlusion, and depth work aligned with this document rather than adding new independent inference
+paths.
+
+
+## Current Guardrails
+
+The following rules are active design constraints, not optional preferences:
+
+1. `DVZ_ALPHA_BLENDED` means ordinary source-over color blending. It depth-tests when the visual
+   requests depth testing, but it does not write normal depth.
+2. If transparent geometry must create depth for a later operation, model that as an explicit
+   prepass, occlusion pass, depth-peeling path, WBOIT path, or future named technique. Do not make
+   ordinary source-over blending write normal depth implicitly.
+3. A graph pass may allocate or clear a transient depth attachment so blended draws can depth-test
+   against a well-defined buffer. That is separate from pipeline depth writes.
+4. Lowering code may assert contract facts and fill mechanical DRP2 details. It should not silently
+   choose a different alpha, depth, blend, attachment, or bind-group policy.
+5. When a test and this document disagree, update the test or implementation so the contract model
+   is the authority, then record any intentional semantic change here.
+
+
+## Immediate Next Steps
+
+The highest-value next steps are:
+
+1. Add a small resolver-matrix test helper so mixed visual cases can assert draw/pass contracts
+   without repeating long scene setup and graph scans.
+2. Extend `DvzSceneDrawContract` with explicit blend and pipeline policy fields so the contract
+   covers source-over, segment coverage blend, WBOIT accumulation blend, and future additive or
+   premultiplied modes.
+3. Make DRP2 stream validation compare emitted pipeline depth/blend state against the resolved
+   contract, not only against the active render-pass attachment shape.
+4. Move WBOIT and depth-peeling attachment/blend details into named pass-contract builders, while
+   keeping the technique-specific shaders and formats explicit.
+5. Add offscreen readback tests for dense blended point sprites, volume + source-over mesh,
+   volume + WBOIT mesh, and volume + depth-peel mesh so stream-shape correctness is not mistaken
+   for visual correctness.
+6. Remove remaining duplicated lower-layer decisions once the contract layer owns the corresponding
+   facts.
 
 
 ## Problem

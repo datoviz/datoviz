@@ -710,10 +710,7 @@ bool _scene_draw_contract_from_visual(
     out->alpha_mode = visual->alpha_mode;
     out->pass_role = pass_role;
     out->depth_test = caps.can_depth_test && (ordinary_visual_pass || scene_depth_pass);
-    out->depth_write = caps.writes_depth ||
-                       (pass_role == DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_BLEND &&
-                        caps.can_write_depth) ||
-                       (scene_depth_pass && caps.can_write_depth);
+    out->depth_write = caps.writes_depth || (scene_depth_pass && caps.can_write_depth);
     out->samples_depth =
         caps.samples_depth && ordinary_visual_pass &&
         pass_role != DVZ_FRAME_PLAN_RENDER_PASS_OPAQUE;
@@ -848,6 +845,11 @@ bool _scene_pass_contract_validate(
         if (!_draw_pass_role_matches(draw))
         {
             _contract_report(report, "draw alpha mode does not match render pass role");
+            ok = false;
+        }
+        if (contract->source_over_blend && draw->depth_write)
+        {
+            _contract_report(report, "source-over draw must not write depth");
             ok = false;
         }
         needs_depth = needs_depth || draw->depth_test || draw->samples_depth ||

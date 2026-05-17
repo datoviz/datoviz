@@ -6579,8 +6579,8 @@ int test_scene_render_contract_validation_errors(TstSuite* suite, TstItem* item)
     contract.attachments[0].role = DVZ_SCENE_ATTACHMENT_DEPTH;
     contract.attachments[0].write = true;
     dvz_diagnostic_report_init(&report);
-    AT(_scene_pass_contract_validate(&contract, &report));
-    AT(dvz_diagnostic_report_count(&report) == 0);
+    AT(!_scene_pass_contract_validate(&contract, &report));
+    AT(dvz_diagnostic_report_count(&report) > 0);
 
     dvz_memset(&contract, sizeof(contract), 0, sizeof(contract));
     contract.role = DVZ_FRAME_PLAN_RENDER_PASS_OPAQUE;
@@ -8008,7 +8008,7 @@ int test_scene_visual_alpha_mode_standard_blend(TstSuite* suite, TstItem* item)
     AT(validation.ok);
 
     bool has_standard_blend_pipeline = false;
-    bool has_standard_blend_depth_pipeline = false;
+    bool has_standard_blend_depth_test_pipeline = false;
     uint32_t begin_pass_count = 0;
     for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
     {
@@ -8023,11 +8023,11 @@ int test_scene_visual_alpha_mode_standard_blend(TstSuite* suite, TstItem* item)
                      VK_BLEND_FACTOR_SRC_ALPHA &&
                  command->u.create_render_pipeline.color_targets[0].dst_color_blend_factor ==
                      VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA);
-            has_standard_blend_depth_pipeline =
-                has_standard_blend_depth_pipeline ||
+            has_standard_blend_depth_test_pipeline =
+                has_standard_blend_depth_test_pipeline ||
                 (command->u.create_render_pipeline.color_targets[0].blend_enabled &&
                  command->u.create_render_pipeline.has_depth_attachment &&
-                 command->u.create_render_pipeline.depth_write_enabled &&
+                 !command->u.create_render_pipeline.depth_write_enabled &&
                  command->u.create_render_pipeline.depth_compare_op ==
                      VK_COMPARE_OP_LESS_OR_EQUAL);
         }
@@ -8035,7 +8035,7 @@ int test_scene_visual_alpha_mode_standard_blend(TstSuite* suite, TstItem* item)
             begin_pass_count++;
     }
     AT(has_standard_blend_pipeline);
-    AT(has_standard_blend_depth_pipeline);
+    AT(has_standard_blend_depth_test_pipeline);
     AT(begin_pass_count == 2);
 
     dvz_drp2_stream_destroy(stream);
@@ -8129,52 +8129,40 @@ int test_scene_blended_mesh_orders_after_volume_slice(TstSuite* suite, TstItem* 
     ANN(plan);
     _scene_emit_panel_render(figure, 0, plan, "figure_0");
 
-    const DvzFramePlanNode* transparent_nodes[2] = {0};
-    uint32_t transparent_node_count = 0;
+    const DvzFramePlanNode* transparent_node = NULL;
     for (uint32_t i = 0; i < dvz_frame_plan_node_count(plan); i++)
     {
         const DvzFramePlanNode* node = dvz_frame_plan_node_get(plan, i);
         ANN(node);
         if (dvz_frame_plan_render_pass_role(node) ==
-            DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_BLEND &&
-            transparent_node_count < DVZ_ARRAY_COUNT(transparent_nodes))
+            DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_BLEND)
         {
-            transparent_nodes[transparent_node_count++] = node;
+            transparent_node = node;
+            break;
         }
     }
-    AT(transparent_node_count == 2);
-    ANN(transparent_nodes[0]);
-    ANN(transparent_nodes[1]);
-    AT(transparent_nodes[0]->u.render.visual_count == 2);
-    AT(transparent_nodes[1]->u.render.visual_count == 1);
-    AT(transparent_nodes[0]->u.render.visual_metadata[0].visual_index == 0);
-    AT(transparent_nodes[0]->u.render.visual_metadata[1].visual_index == 1);
-    AT(transparent_nodes[1]->u.render.visual_metadata[0].visual_index == 2);
-    AT(transparent_nodes[0]->u.render.visual_metadata[0].visual_type == DVZ_VISUAL_TYPE_VOLUME);
-    AT(transparent_nodes[0]->u.render.visual_metadata[1].visual_type == DVZ_VISUAL_TYPE_VOLUME);
-    AT(transparent_nodes[1]->u.render.visual_metadata[0].visual_type == DVZ_VISUAL_TYPE_MESH);
+    ANN(transparent_node);
+    AT(transparent_node->u.render.visual_count == 3);
+    AT(transparent_node->u.render.visual_metadata[0].visual_index == 0);
+    AT(transparent_node->u.render.visual_metadata[1].visual_index == 1);
+    AT(transparent_node->u.render.visual_metadata[2].visual_index == 2);
+    AT(transparent_node->u.render.visual_metadata[0].visual_type == DVZ_VISUAL_TYPE_VOLUME);
+    AT(transparent_node->u.render.visual_metadata[1].visual_type == DVZ_VISUAL_TYPE_VOLUME);
+    AT(transparent_node->u.render.visual_metadata[2].visual_type == DVZ_VISUAL_TYPE_MESH);
 
-    const DvzFrameGraphPass* blend_passes[2] = {0};
-    uint32_t blend_pass_count = 0;
+    const DvzFrameGraphPass* blend_pass = NULL;
     for (uint32_t i = 0; i < dvz_frame_plan_graph_pass_count(plan); i++)
     {
         const DvzFrameGraphPass* pass = dvz_frame_plan_graph_pass_get(plan, i);
         ANN(pass);
-        if (strcmp(pass->work_label, "transparent_blend") == 0 &&
-            blend_pass_count < DVZ_ARRAY_COUNT(blend_passes))
-            blend_passes[blend_pass_count++] = pass;
+        if (strcmp(pass->work_label, "transparent_blend") == 0)
+            blend_pass = pass;
     }
-    AT(blend_pass_count == 2);
-    ANN(blend_passes[0]);
-    ANN(blend_passes[1]);
-    AT(blend_passes[0]->has_depth_attachment);
-    AT(blend_passes[1]->has_depth_attachment);
-    AT(strcmp(blend_passes[0]->depth_attachment.resource_id, "figure_0_p0.depth") == 0);
-    AT(strcmp(blend_passes[1]->depth_attachment.resource_id, "figure_0_p0.depth") == 0);
-    AT(blend_passes[0]->depth_attachment.load_op == DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_CLEAR);
-    AT(blend_passes[1]->depth_attachment.load_op == DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_CLEAR);
-    AT(blend_passes[0]->depth_attachment.access == DVZ_FRAME_GRAPH_ATTACHMENT_ACCESS_WRITE);
-    AT(blend_passes[1]->depth_attachment.access == DVZ_FRAME_GRAPH_ATTACHMENT_ACCESS_WRITE);
+    ANN(blend_pass);
+    AT(blend_pass->has_depth_attachment);
+    AT(strcmp(blend_pass->depth_attachment.resource_id, "figure_0_p0.depth") == 0);
+    AT(blend_pass->depth_attachment.load_op == DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_CLEAR);
+    AT(blend_pass->depth_attachment.access == DVZ_FRAME_GRAPH_ATTACHMENT_ACCESS_WRITE);
 
     DvzDiagnosticReport graph_report;
     dvz_diagnostic_report_init(&graph_report);
@@ -8183,31 +8171,19 @@ int test_scene_blended_mesh_orders_after_volume_slice(TstSuite* suite, TstItem* 
     AT(_scene_frame_plan_contracts_validate(figure, plan, &graph_report));
     AT(dvz_diagnostic_report_count(&graph_report) == 0);
 
-    DvzScenePassContract volume_contract = {0};
-    AT(_scene_pass_contract_from_render(
-        plan, panel, transparent_nodes[0], blend_passes[0], &volume_contract));
-    AT(volume_contract.source_over_blend);
-    AT(volume_contract.draw_count == 2);
-    AT(volume_contract.color_attachment_count == 1);
-    AT(volume_contract.has_depth_attachment);
-    AT(volume_contract.needs_common_set);
-    AT(volume_contract.needs_volume_set);
-    AT(volume_contract.draws[0].samples_depth);
+    DvzScenePassContract contract = {0};
+    AT(_scene_pass_contract_from_render(plan, panel, transparent_node, blend_pass, &contract));
+    AT(contract.source_over_blend);
+    AT(contract.draw_count == 3);
+    AT(contract.color_attachment_count == 1);
+    AT(contract.has_depth_attachment);
+    AT(contract.needs_common_set);
+    AT(contract.needs_volume_set);
+    AT(contract.draws[0].samples_depth);
+    AT(contract.draws[2].depth_test);
+    AT(!contract.draws[2].depth_write);
     dvz_diagnostic_report_init(&graph_report);
-    AT(_scene_pass_contract_validate(&volume_contract, &graph_report));
-    AT(dvz_diagnostic_report_count(&graph_report) == 0);
-
-    DvzScenePassContract mesh_contract = {0};
-    AT(_scene_pass_contract_from_render(
-        plan, panel, transparent_nodes[1], blend_passes[1], &mesh_contract));
-    AT(mesh_contract.source_over_blend);
-    AT(mesh_contract.draw_count == 1);
-    AT(mesh_contract.color_attachment_count == 1);
-    AT(mesh_contract.has_depth_attachment);
-    AT(mesh_contract.draws[0].depth_test);
-    AT(mesh_contract.draws[0].depth_write);
-    dvz_diagnostic_report_init(&graph_report);
-    AT(_scene_pass_contract_validate(&mesh_contract, &graph_report));
+    AT(_scene_pass_contract_validate(&contract, &graph_report));
     AT(dvz_diagnostic_report_count(&graph_report) == 0);
 
     DvzCapabilitySnapshot caps;
@@ -8345,29 +8321,22 @@ int test_scene_blended_mesh_occlusion_contracts(TstSuite* suite, TstItem* item)
     ANN(plan);
     _scene_emit_panel_render(figure, 0, plan, "figure_0");
 
-    const DvzFramePlanNode* blend_nodes[2] = {0};
-    uint32_t blend_node_count = 0;
+    const DvzFramePlanNode* blend_node = NULL;
     for (uint32_t i = 0; i < dvz_frame_plan_node_count(plan); i++)
     {
         const DvzFramePlanNode* node = dvz_frame_plan_node_get(plan, i);
         ANN(node);
-        if (dvz_frame_plan_render_pass_role(node) ==
-            DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_BLEND &&
-            blend_node_count < DVZ_ARRAY_COUNT(blend_nodes))
-            blend_nodes[blend_node_count++] = node;
+        if (dvz_frame_plan_render_pass_role(node) == DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_BLEND)
+            blend_node = node;
     }
-    AT(blend_node_count == 2);
-    ANN(blend_nodes[0]);
-    ANN(blend_nodes[1]);
-    AT(blend_nodes[0]->u.render.visual_count == 2);
-    AT(blend_nodes[1]->u.render.visual_count == 1);
-    AT(blend_nodes[0]->u.render.visual_metadata[1].has_volume_occlusion);
-    AT(blend_nodes[0]->u.render.visual_metadata[1].has_scene_occlusion);
+    ANN(blend_node);
+    AT(blend_node->u.render.visual_count == 3);
+    AT(blend_node->u.render.visual_metadata[1].has_volume_occlusion);
+    AT(blend_node->u.render.visual_metadata[1].has_scene_occlusion);
 
     const DvzFrameGraphPass* volume_pass = NULL;
     const DvzFrameGraphPass* scene_pass = NULL;
-    const DvzFrameGraphPass* blend_passes[2] = {0};
-    uint32_t blend_pass_count = 0;
+    const DvzFrameGraphPass* blend_pass = NULL;
     for (uint32_t i = 0; i < dvz_frame_plan_graph_pass_count(plan); i++)
     {
         const DvzFrameGraphPass* pass = dvz_frame_plan_graph_pass_get(plan, i);
@@ -8376,29 +8345,25 @@ int test_scene_blended_mesh_occlusion_contracts(TstSuite* suite, TstItem* item)
             volume_pass = pass;
         else if (strcmp(pass->work_label, "scene_occlusion") == 0)
             scene_pass = pass;
-        else if (strcmp(pass->work_label, "transparent_blend") == 0 &&
-                 blend_pass_count < DVZ_ARRAY_COUNT(blend_passes))
-            blend_passes[blend_pass_count++] = pass;
+        else if (strcmp(pass->work_label, "transparent_blend") == 0)
+            blend_pass = pass;
     }
     ANN(volume_pass);
     ANN(scene_pass);
-    AT(blend_pass_count == 2);
-    ANN(blend_passes[0]);
-    ANN(blend_passes[1]);
-    AT(blend_passes[0]->has_depth_attachment);
-    AT(blend_passes[1]->has_depth_attachment);
+    ANN(blend_pass);
+    AT(blend_pass->has_depth_attachment);
 
     bool reads_volume_occlusion = false;
     bool reads_scene_occlusion = false;
-    for (uint32_t i = 0; i < blend_passes[0]->read_count; i++)
+    for (uint32_t i = 0; i < blend_pass->read_count; i++)
     {
         reads_volume_occlusion =
             reads_volume_occlusion ||
-            strcmp(blend_passes[0]->reads[i].resource_id,
+            strcmp(blend_pass->reads[i].resource_id,
                    "figure_0_p0.volume_occlusion.depth") == 0;
         reads_scene_occlusion =
             reads_scene_occlusion ||
-            strcmp(blend_passes[0]->reads[i].resource_id,
+            strcmp(blend_pass->reads[i].resource_id,
                    "figure_0_p0.scene_occlusion.depth") == 0;
     }
     AT(reads_volume_occlusion);
@@ -8408,28 +8373,18 @@ int test_scene_blended_mesh_occlusion_contracts(TstSuite* suite, TstItem* item)
     dvz_diagnostic_report_init(&graph_report);
     AT(dvz_frame_plan_graph_validate(plan, &graph_report));
 
-    DvzScenePassContract volume_contract = {0};
-    AT(_scene_pass_contract_from_render(
-        plan, panel, blend_nodes[0], blend_passes[0], &volume_contract));
-    AT(volume_contract.source_over_blend);
-    AT(volume_contract.draw_count == 2);
-    AT(volume_contract.draws[1].samples_volume_occlusion);
-    AT(volume_contract.draws[1].samples_scene_occlusion);
-    AT(volume_contract.draws[1].needs_volume_set);
-    AT(volume_contract.draws[1].needs_scene_occlusion_set);
+    DvzScenePassContract contract = {0};
+    AT(_scene_pass_contract_from_render(plan, panel, blend_node, blend_pass, &contract));
+    AT(contract.source_over_blend);
+    AT(contract.draw_count == 3);
+    AT(contract.draws[1].samples_volume_occlusion);
+    AT(contract.draws[1].samples_scene_occlusion);
+    AT(contract.draws[1].needs_volume_set);
+    AT(contract.draws[1].needs_scene_occlusion_set);
+    AT(contract.draws[2].depth_test);
+    AT(!contract.draws[2].depth_write);
     dvz_diagnostic_report_init(&graph_report);
-    AT(_scene_pass_contract_validate(&volume_contract, &graph_report));
-    AT(dvz_diagnostic_report_count(&graph_report) == 0);
-
-    DvzScenePassContract mesh_contract = {0};
-    AT(_scene_pass_contract_from_render(
-        plan, panel, blend_nodes[1], blend_passes[1], &mesh_contract));
-    AT(mesh_contract.source_over_blend);
-    AT(mesh_contract.draw_count == 1);
-    AT(mesh_contract.draws[0].depth_test);
-    AT(mesh_contract.draws[0].depth_write);
-    dvz_diagnostic_report_init(&graph_report);
-    AT(_scene_pass_contract_validate(&mesh_contract, &graph_report));
+    AT(_scene_pass_contract_validate(&contract, &graph_report));
     AT(dvz_diagnostic_report_count(&graph_report) == 0);
 
     DvzCapabilitySnapshot caps;
