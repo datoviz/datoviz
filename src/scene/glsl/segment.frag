@@ -25,7 +25,7 @@ layout(set = 1, binding = 0) uniform SceneMaterial {
 
 float strokeAlpha(float distance, float lineWidth)
 {
-    float aa = max(fwidth(distance), 1e-6);
+    float aa = 1.0;
     float halfWidth = max(lineWidth, 0.0) * 0.5;
     return 1.0 - smoothstep(halfWidth - aa, halfWidth + aa, abs(distance));
 }
