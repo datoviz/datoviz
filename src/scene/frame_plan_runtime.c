@@ -28,6 +28,7 @@
 #include "_frame_plan.h"
 #include "_frame_plan_runtime_upload.h"
 #include "_scene_common_bindings.h"
+#include "_scene_shader_abi.h"
 #include "_render_pass.h"
 #include "_shader_registry.h"
 #include "_visual_pipeline.h"
@@ -251,6 +252,33 @@ static const char* _depth_peel_fragment_spirv_key(DvzSceneBuiltinShader shader)
 
 
 /**
+ * Resolve the shared material-parameter bind group layout.
+ *
+ * @param emitter frame-plan emitter carrying persistent object ids
+ * @param stream destination DRP2 command stream
+ * @param out_id resolved bind group layout id
+ * @return whether the layout exists or was appended
+ */
+static bool _resolve_material_bind_group_layout(
+    DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, uint64_t* out_id)
+{
+    ANN(emitter);
+    ANN(stream);
+    ANN(out_id);
+
+    bool is_new = false;
+    uint64_t id = _obj_id(emitter, "_bgl_material_params", &is_new);
+    if (id == 0)
+        return false;
+    if (is_new && !dvz_drp2_stream_create_uniform_bind_group_layout(stream, id))
+        return false;
+    *out_id = id;
+    return true;
+}
+
+
+
+/**
  * Create the volume bind group layout used by slice/raymarch shaders.
  *
  * @param stream destination DRP2 command stream.
@@ -263,25 +291,25 @@ static bool _create_volume_bind_group_layout(DvzDrp2CommandStream* stream, uint6
 
     DvzDrp2BindGroupLayoutEntry entries[4] = {
         {
-            .binding = 0,
+            .binding = DVZ_SCENE_SHADER_BINDING_VOLUME_TEXTURE,
             .binding_type = DVZ_DRP2_BINDING_TYPE_SAMPLED_TEXTURE,
             .visibility = DVZ_DRP2_SHADER_STAGE_FRAGMENT,
             .access = DVZ_DRP2_BINDING_ACCESS_READ,
         },
         {
-            .binding = 1,
+            .binding = DVZ_SCENE_SHADER_BINDING_VOLUME_SAMPLER,
             .binding_type = DVZ_DRP2_BINDING_TYPE_SAMPLER,
             .visibility = DVZ_DRP2_SHADER_STAGE_FRAGMENT,
             .access = DVZ_DRP2_BINDING_ACCESS_READ,
         },
         {
-            .binding = 2,
+            .binding = DVZ_SCENE_SHADER_BINDING_VOLUME_PARAMS,
             .binding_type = DVZ_DRP2_BINDING_TYPE_UNIFORM_BUFFER,
             .visibility = DVZ_DRP2_SHADER_STAGE_FRAGMENT,
             .access = DVZ_DRP2_BINDING_ACCESS_READ,
         },
         {
-            .binding = 3,
+            .binding = DVZ_SCENE_SHADER_BINDING_VOLUME_DEPTH_TEXTURE,
             .binding_type = DVZ_DRP2_BINDING_TYPE_SAMPLED_TEXTURE,
             .visibility = DVZ_DRP2_SHADER_STAGE_FRAGMENT,
             .access = DVZ_DRP2_BINDING_ACCESS_READ,
@@ -305,19 +333,19 @@ static bool _create_scene_occlusion_bind_group_layout(DvzDrp2CommandStream* stre
 
     DvzDrp2BindGroupLayoutEntry entries[3] = {
         {
-            .binding = 0,
+            .binding = DVZ_SCENE_SHADER_BINDING_OCCLUSION_DEPTH_TEXTURE,
             .binding_type = DVZ_DRP2_BINDING_TYPE_SAMPLED_TEXTURE,
             .visibility = DVZ_DRP2_SHADER_STAGE_FRAGMENT,
             .access = DVZ_DRP2_BINDING_ACCESS_READ,
         },
         {
-            .binding = 1,
+            .binding = DVZ_SCENE_SHADER_BINDING_OCCLUSION_SAMPLER,
             .binding_type = DVZ_DRP2_BINDING_TYPE_SAMPLER,
             .visibility = DVZ_DRP2_SHADER_STAGE_FRAGMENT,
             .access = DVZ_DRP2_BINDING_ACCESS_READ,
         },
         {
-            .binding = 2,
+            .binding = DVZ_SCENE_SHADER_BINDING_OCCLUSION_PARAMS,
             .binding_type = DVZ_DRP2_BINDING_TYPE_UNIFORM_BUFFER,
             .visibility = DVZ_DRP2_SHADER_STAGE_FRAGMENT,
             .access = DVZ_DRP2_BINDING_ACCESS_READ,
@@ -1090,12 +1118,11 @@ static bool _emitter_prepare_render_multi(
             uint64_t material_bgl_id = 0;
             if (pipeline.needs_material_layout)
             {
-                bool material_bgl_new = false;
-                material_bgl_id = _obj_id(emitter, "_bgl_material_params", &material_bgl_new);
-                if (material_bgl_id == 0) { ok = false; break; }
-                if (material_bgl_new)
-                    ok = ok &&
-                         dvz_drp2_stream_create_uniform_bind_group_layout(stream, material_bgl_id);
+                if (!_resolve_material_bind_group_layout(emitter, stream, &material_bgl_id))
+                {
+                    ok = false;
+                    break;
+                }
             }
             if (pipeline.needs_image_layout && img_bgl_id == 0)
             {
@@ -1270,13 +1297,12 @@ static bool _emitter_prepare_render_multi(
             vis_bg_set0 = bind.uses_fixed_common ? fixed_bg_id : apply_bg_id;
         if (bind.uses_material_set1)
         {
-            bool material_bgl_new = false;
-            uint64_t material_bgl_id =
-                _obj_id(emitter, "_bgl_material_params", &material_bgl_new);
-            if (material_bgl_id == 0) { ok = false; break; }
-            if (material_bgl_new)
-                ok = ok && dvz_drp2_stream_create_uniform_bind_group_layout(
-                               stream, material_bgl_id);
+            uint64_t material_bgl_id = 0;
+            if (!_resolve_material_bind_group_layout(emitter, stream, &material_bgl_id))
+            {
+                ok = false;
+                break;
+            }
             char material_bg_key[64];
             dvz_snprintf(
                 material_bg_key, sizeof(material_bg_key), "_bg_material_params_%" PRIu64,
