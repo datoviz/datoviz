@@ -15,6 +15,7 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
+#include <math.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -223,16 +224,54 @@ static void pixel_to_clip(float width, float height, float x, float y, float out
 
 
 /**
+ * Append one fixed-space rectangle to the primitive crosshair geometry.
+ *
+ * @param count current vertex count
+ * @param vertices output primitive positions
+ * @param colors output primitive colors
+ * @param width figure width
+ * @param height figure height
+ * @param x0 rectangle left in figure pixels
+ * @param y0 rectangle top in figure pixels
+ * @param x1 rectangle right in figure pixels
+ * @param y1 rectangle bottom in figure pixels
+ * @param color rectangle color
+ */
+static void append_crosshair_rect(
+    uint32_t* count, float vertices[][3], DvzColor colors[], float width, float height, float x0,
+    float y0, float x1, float y1, const DvzColor color)
+{
+    ANN(count);
+    ANN(vertices);
+    ANN(colors);
+    ANN(color);
+    if (*count + 6 > 12 * TEXT_LAB_MAX_TICKS)
+        return;
+    uint32_t idx = *count;
+    pixel_to_clip(width, height, x0, y0, vertices[idx + 0]);
+    pixel_to_clip(width, height, x1, y0, vertices[idx + 1]);
+    pixel_to_clip(width, height, x1, y1, vertices[idx + 2]);
+    pixel_to_clip(width, height, x0, y0, vertices[idx + 3]);
+    pixel_to_clip(width, height, x1, y1, vertices[idx + 4]);
+    pixel_to_clip(width, height, x0, y1, vertices[idx + 5]);
+    for (uint32_t i = 0; i < 6; i++)
+        dvz_memcpy(colors[idx + i], sizeof(DvzColor), color, sizeof(DvzColor));
+    *count = idx + 6;
+}
+
+
+
+/**
  * Update the position crosshair visual.
  *
- * @param visual segment visual
+ * @param visual primitive visual
  * @param count number of crosshairs
  * @param positions figure-pixel positions
  * @param width figure width
  * @param height figure height
  */
 static void set_crosshair_items(
-    DvzVisual* visual, uint32_t count, const float positions[][3], float width, float height)
+    DvzVisual* visual, uint32_t count, float positions[][3], float width, float height)
 {
     ANN(visual);
     if (count > TEXT_LAB_MAX_TICKS)
@@ -243,39 +282,30 @@ static void set_crosshair_items(
         return;
     }
 
-    const float half_px = 4.0f;
-    float starts[2 * TEXT_LAB_MAX_TICKS][3] = {{0}};
-    float ends[2 * TEXT_LAB_MAX_TICKS][3] = {{0}};
-    float stroke_widths[2 * TEXT_LAB_MAX_TICKS] = {0};
-    DvzColor colors[2 * TEXT_LAB_MAX_TICKS] = {{0}};
+    const float half_length_px = 3.5f;
+    const float half_width_px = 0.5f;
+    const DvzColor crosshair_color = {120, 220, 255, 180};
+    float vertices[12 * TEXT_LAB_MAX_TICKS][3] = {{0}};
+    DvzColor colors[12 * TEXT_LAB_MAX_TICKS] = {{0}};
+    uint32_t vertex_count = 0;
     for (uint32_t i = 0; i < count; i++)
     {
-        float x = positions[i][0];
-        float y = positions[i][1];
-        pixel_to_clip(width, height, x - half_px, y, starts[2u * i + 0]);
-        pixel_to_clip(width, height, x + half_px, y, ends[2u * i + 0]);
-        pixel_to_clip(width, height, x, y - half_px, starts[2u * i + 1]);
-        pixel_to_clip(width, height, x, y + half_px, ends[2u * i + 1]);
-        for (uint32_t j = 0; j < 2; j++)
-        {
-            uint32_t idx = 2u * i + j;
-            colors[idx][0] = 120;
-            colors[idx][1] = 220;
-            colors[idx][2] = 255;
-            colors[idx][3] = 150;
-            stroke_widths[idx] = 1.0f;
-        }
+        float x = floorf(positions[i][0]) + 0.5f;
+        float y = floorf(positions[i][1]) + 0.5f;
+        append_crosshair_rect(
+            &vertex_count, vertices, colors, width, height, x - half_length_px, y - half_width_px,
+            x + half_length_px, y + half_width_px, crosshair_color);
+        append_crosshair_rect(
+            &vertex_count, vertices, colors, width, height, x - half_width_px, y - half_length_px,
+            x + half_width_px, y + half_length_px, crosshair_color);
     }
 
-    uint32_t segment_count = 2u * count;
-    DvzVisualDataUpdate updates[4] = {
-        {.attr_name = "position_start", .data = starts, .item_count = segment_count},
-        {.attr_name = "position_end", .data = ends, .item_count = segment_count},
-        {.attr_name = "color", .data = colors, .item_count = segment_count},
-        {.attr_name = "stroke_width", .data = stroke_widths, .item_count = segment_count},
+    DvzVisualDataUpdate updates[2] = {
+        {.attr_name = "position", .data = vertices, .item_count = vertex_count},
+        {.attr_name = "color", .data = colors, .item_count = vertex_count},
     };
     dvz_visual_set_visible(visual, true);
-    dvz_visual_set_data_many(visual, updates, 4);
+    dvz_visual_set_data_many(visual, updates, 2);
 }
 
 
@@ -652,10 +682,10 @@ int main(int argc, char** argv)
         }
     }
 
-    state.crosshair = dvz_segment(scene, 0);
+    state.crosshair = dvz_primitive(scene, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 0);
     if (state.crosshair == NULL)
     {
-        dvz_fprintf(stderr, "dvz_segment() failed\n");
+        dvz_fprintf(stderr, "dvz_primitive() failed\n");
         dvz_scene_destroy(scene);
         return 1;
     }
