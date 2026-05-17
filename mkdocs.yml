@@ -104,6 +104,9 @@ nav:
   - Gallery:
     - Overview: 'gallery/index.md'
 
+  - Blog:
+    - Overview: 'blog/index.md'
+
   - Reference:
     - Python API Reference: 'reference/api_py.md'
     - C API Reference: 'reference/api_c.md'
