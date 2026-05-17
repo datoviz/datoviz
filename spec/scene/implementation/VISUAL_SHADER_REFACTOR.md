@@ -59,6 +59,26 @@ Each built-in shader variant needs:
 Do not reuse a cache key for a different ABI, bind layout, topology, blending, depth state, or shader
 format.
 
+
+## WGSL parity lanes
+
+Current committed WGSL coverage is intentionally narrower than GLSL runtime coverage. Treat this
+table as the implementation queue for portable visual work:
+
+| Lane | Current status | Next implementation step |
+| --- | --- | --- |
+| Pixel/point | WGSL instanced-quads path is active | Keep parity when changing style, cue, or picking ABI |
+| Primitive/image | WGSL default/lit/image paths are active | Keep texture/sampler and material ABI aligned with GLSL |
+| Marker | GLSL runtime path is active; WGSL source/lowering is deferred | Add instanced-quad WGSL lowering, material style binding, and fixture tests |
+| Segment/path stroke | GLSL analytic stroke path is active; WGSL is deferred | Port stroke vertex math and cap/style material binding to WGSL |
+| Sphere | GLSL impostor path is active; WGSL is deferred | Decide WebGPU impostor lowering and depth behavior before adding source |
+| Volume | GLSL slice/MIP/composite paths are active; WGSL is deferred | Align split 3D texture/sampler/params/depth bindings first |
+| Advanced passes | WBOIT, depth peel, SSAO, EDL are GLSL/native only | Add capability-gated WGSL variants only when backend support exists |
+
+When adding a WGSL lane, do not silently fall back to GLSL or browser-side shader replacement. Add
+committed WGSL source, registry coverage, DRP2 emission tests, and a runtime or fixture smoke when
+the backend can execute it.
+
 ## Add a visual family
 
 1. Add/extend the retained visual state and public API only if the family is in the active v0.4 slice.
