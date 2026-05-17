@@ -304,6 +304,11 @@ int test_scene_text_bitmap_visual_realization(TstSuite* suite, TstItem* item)
     AT(text->visual_version == old_visual_version);
     AT(panel->visual_count == 1);
 
+    dvz_text_set_string(text, "A" "\xCE" "\xA9" "B");
+    _scene_prepare_text_visuals(figure);
+    AT(text->visual->field->desc.width == 18);
+    AT(text->visual->field->desc.height == 8);
+
     dvz_text_set_string(text, "");
     _scene_prepare_text_visuals(figure);
     AT(!text->visual->visible);

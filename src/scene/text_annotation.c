@@ -196,12 +196,88 @@ static bool _text_font_bit(uint32_t ascii, uint32_t x, uint32_t y)
  * @param byte the input byte
  * @return the printable ASCII codepoint
  */
-static uint32_t _text_printable_ascii(uint8_t byte)
+static uint32_t _text_printable_ascii(uint32_t codepoint)
 {
-    if (byte >= DVZ_TEXT_BITMAP_FIRST_CHAR &&
-        byte < DVZ_TEXT_BITMAP_FIRST_CHAR + DVZ_TEXT_BITMAP_GLYPH_COUNT)
-        return byte;
+    if (codepoint >= DVZ_TEXT_BITMAP_FIRST_CHAR &&
+        codepoint < DVZ_TEXT_BITMAP_FIRST_CHAR + DVZ_TEXT_BITMAP_GLYPH_COUNT)
+        return codepoint;
     return DVZ_TEXT_BITMAP_FALLBACK;
+}
+
+
+
+/**
+ * Decode one UTF-8 codepoint, replacing malformed input with '?'.
+ *
+ * @param string the UTF-8 string
+ * @param inout_index byte index, advanced by the consumed sequence
+ * @param out_codepoint output Unicode codepoint
+ * @return whether a codepoint was decoded
+ */
+static bool _text_utf8_next(
+    const char* string, uint32_t* inout_index, uint32_t* out_codepoint)
+{
+    ANN(string);
+    ANN(inout_index);
+    ANN(out_codepoint);
+    uint32_t i = *inout_index;
+    if (i >= DVZ_SCENE_LABEL_SIZE || string[i] == '\0')
+        return false;
+
+    const uint8_t* s = (const uint8_t*)string;
+    uint8_t b0 = s[i];
+    if (b0 < 0x80u)
+    {
+        *out_codepoint = b0;
+        *inout_index = i + 1;
+        return true;
+    }
+
+    uint32_t needed = 0;
+    uint32_t cp = 0;
+    uint32_t min_cp = 0;
+    if ((b0 & 0xE0u) == 0xC0u)
+    {
+        needed = 2;
+        cp = b0 & 0x1Fu;
+        min_cp = 0x80u;
+    }
+    else if ((b0 & 0xF0u) == 0xE0u)
+    {
+        needed = 3;
+        cp = b0 & 0x0Fu;
+        min_cp = 0x800u;
+    }
+    else if ((b0 & 0xF8u) == 0xF0u)
+    {
+        needed = 4;
+        cp = b0 & 0x07u;
+        min_cp = 0x10000u;
+    }
+    else
+    {
+        *out_codepoint = DVZ_TEXT_BITMAP_FALLBACK;
+        *inout_index = i + 1;
+        return true;
+    }
+
+    for (uint32_t j = 1; j < needed; j++)
+    {
+        if (i + j >= DVZ_SCENE_LABEL_SIZE || string[i + j] == '\0' ||
+            (s[i + j] & 0xC0u) != 0x80u)
+        {
+            *out_codepoint = DVZ_TEXT_BITMAP_FALLBACK;
+            *inout_index = i + 1;
+            return true;
+        }
+        cp = (cp << 6) | (uint32_t)(s[i + j] & 0x3Fu);
+    }
+
+    if (cp < min_cp || cp > 0x10FFFFu || (cp >= 0xD800u && cp <= 0xDFFFu))
+        cp = DVZ_TEXT_BITMAP_FALLBACK;
+    *out_codepoint = cp;
+    *inout_index = i + needed;
+    return true;
 }
 
 
@@ -226,9 +302,11 @@ static void _text_measure_cells(
     uint32_t visible = 0;
     if (string != NULL)
     {
-        for (uint32_t i = 0; i < DVZ_SCENE_LABEL_SIZE && string[i] != '\0'; i++)
+        uint32_t i = 0;
+        uint32_t cp = 0;
+        while (_text_utf8_next(string, &i, &cp))
         {
-            if (string[i] == '\n')
+            if (cp == '\n')
             {
                 if (columns > max_columns)
                     max_columns = columns;
@@ -236,7 +314,7 @@ static void _text_measure_cells(
                 lines++;
                 continue;
             }
-            uint32_t advance = string[i] == '\t' ? 4u : 1u;
+            uint32_t advance = cp == '\t' ? 4u : 1u;
             columns += advance;
             visible += advance;
         }
@@ -354,23 +432,24 @@ static bool _text_build_bitmap(
 
     uint32_t column = 0;
     uint32_t row = 0;
-    for (uint32_t i = 0; i < DVZ_SCENE_LABEL_SIZE && text->string[i] != '\0'; i++)
+    uint32_t i = 0;
+    uint32_t cp = 0;
+    while (_text_utf8_next(text->string, &i, &cp))
     {
-        uint8_t byte = (uint8_t)text->string[i];
-        if (byte == '\n')
+        if (cp == '\n')
         {
             column = 0;
             row++;
             continue;
         }
-        if (byte == '\t')
+        if (cp == '\t')
         {
             column += 4u;
             continue;
         }
         _text_paint_glyph(
             rgba, width, column * DVZ_TEXT_BITMAP_GLYPH_WIDTH * scale,
-            row * DVZ_TEXT_BITMAP_LINE_HEIGHT * scale, scale, _text_printable_ascii(byte), color);
+            row * DVZ_TEXT_BITMAP_LINE_HEIGHT * scale, scale, _text_printable_ascii(cp), color);
         column++;
     }
 
