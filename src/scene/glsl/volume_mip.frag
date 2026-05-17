@@ -10,6 +10,7 @@ layout(set = 0, binding = 0) uniform MVP {
 
 layout(set = 1, binding = 0) uniform sampler3D tex;
 layout(set = 1, binding = 3) uniform sampler2D depthTex;
+layout(set = 1, binding = 4) uniform sampler2D transferTex;
 
 layout(set = 1, binding = 2) uniform VolumeParams {
     vec4 clip_min;
@@ -20,6 +21,7 @@ layout(set = 1, binding = 2) uniform VolumeParams {
     vec4 bounds_max;
     vec4 axis_order;
     vec4 axis_flip;
+    vec4 value_range;
 } volume;
 
 layout(location = 0) in vec3 fragUVW;
@@ -85,6 +87,12 @@ vec3 texture_uvw(vec3 uvw)
     return clamp(out_uvw, vec3(0.0), vec3(1.0));
 }
 
+float transfer_t(float value)
+{
+    float denom = max(volume.value_range.y - volume.value_range.x, 1e-12);
+    return clamp((value - volume.value_range.x) / denom, 0.0, 1.0);
+}
+
 float projected_depth(vec3 uvw)
 {
     vec3 pos = uvw_to_object(uvw);
@@ -147,10 +155,10 @@ void main()
             break;
         }
         vec4 sample_value = texture(tex, texture_uvw(uvw));
-        float density = transfer ? sample_value.a : sample_value.r;
+        float density = transfer ? sample_value.a : transfer_t(sample_value.r);
         if (density > value) {
             value = density;
-            color = transfer ? sample_value.rgb : vec3(sample_value.r);
+            color = transfer ? sample_value.rgb : texture(transferTex, vec2(density, 0.5)).rgb;
         }
     }
     outColor = vec4(color, value * volume.params.x);

@@ -265,6 +265,14 @@ struct DvzMarkerStyle
 typedef struct DvzMarkerStyle DvzMarkerStyle;
 
 
+struct DvzVolumeAlphaStop
+{
+    double position;
+    float alpha;
+};
+typedef struct DvzVolumeAlphaStop DvzVolumeAlphaStop;
+
+
 struct DvzVolumeState
 {
     float opacity;
@@ -279,6 +287,10 @@ struct DvzVolumeState
     double bounds_max[3];
     uint32_t axis_order[3];
     bool axis_flip[3];
+    double value_min;
+    double value_max;
+    DvzVolumeAlphaStop alpha_stops[8];
+    uint32_t alpha_stop_count;
     uint32_t step_count;
     uint64_t version;
 };

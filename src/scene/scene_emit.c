@@ -713,6 +713,107 @@ bool _scene_emit_sampled_field_texture_upload(
 }
 
 
+/**
+ * Format the per-volume transfer texture resource id.
+ *
+ * @param visual_index figure-local visual index
+ * @param out output buffer
+ * @param out_size output buffer size
+ * @return whether the key was written
+ */
+static bool _scene_resource_key_volume_transfer(uint32_t visual_index, char* out, size_t out_size)
+{
+    return dvz_snprintf(out, out_size, "visual.%u.volume_transfer", visual_index) > 0;
+}
+
+
+/**
+ * Interpolate retained volume alpha stops at one normalized value.
+ *
+ * @param state volume state
+ * @param t normalized transfer coordinate
+ * @return alpha in [0, 1]
+ */
+static float _volume_alpha_at(const DvzVolumeState* state, double t)
+{
+    ANN(state);
+    if (state->alpha_stop_count == 0)
+        return (float)t;
+    if (t <= state->alpha_stops[0].position)
+        return state->alpha_stops[0].alpha;
+    uint32_t last = state->alpha_stop_count - 1;
+    if (t >= state->alpha_stops[last].position)
+        return state->alpha_stops[last].alpha;
+    for (uint32_t i = 1; i < state->alpha_stop_count; i++)
+    {
+        const DvzVolumeAlphaStop* lo = &state->alpha_stops[i - 1];
+        const DvzVolumeAlphaStop* hi = &state->alpha_stops[i];
+        if (t <= hi->position)
+        {
+            double denom = hi->position - lo->position;
+            double u = denom > 0.0 ? (t - lo->position) / denom : 0.0;
+            return (float)((1.0 - u) * lo->alpha + u * hi->alpha);
+        }
+    }
+    return state->alpha_stops[last].alpha;
+}
+
+
+/**
+ * Build the 256x1 RGBA transfer texture for a scalar volume.
+ *
+ * @param visual the volume visual
+ * @param out_data transfer texture bytes
+ * @return whether transfer bytes are available
+ */
+static bool _scene_prepare_volume_transfer_texture(DvzVisual* visual, const void** out_data)
+{
+    ANN(visual);
+    ANN(out_data);
+    *out_data = NULL;
+    if (visual->type != DVZ_VISUAL_TYPE_VOLUME || visual->field == NULL ||
+        !_field_format_is_scalar(visual->field->desc.format))
+        return false;
+
+    const uint64_t size = 256ull * 4ull;
+    if (visual->texture.rgba == NULL || visual->texture.rgba_size != size)
+    {
+        if (visual->texture.rgba != NULL)
+            dvz_free(visual->texture.rgba);
+        visual->texture.rgba = dvz_calloc(size, 1);
+        if (visual->texture.rgba == NULL)
+        {
+            visual->texture.rgba_size = 0;
+            log_error("volume transfer texture allocation failed");
+            return false;
+        }
+        visual->texture.rgba_size = size;
+    }
+
+    uint8_t* rgba = (uint8_t*)visual->texture.rgba;
+    const DvzColormap* colormap =
+        visual->scale != NULL && visual->scale->colormap != NULL ? visual->scale->colormap : NULL;
+    for (uint32_t i = 0; i < 256; i++)
+    {
+        double t = (double)i / 255.0;
+        if (colormap != NULL)
+            _scene_color_from_colormap(colormap, t, &rgba[4 * i]);
+        else
+        {
+            uint8_t v = (uint8_t)i;
+            rgba[4 * i + 0] = v;
+            rgba[4 * i + 1] = v;
+            rgba[4 * i + 2] = v;
+            rgba[4 * i + 3] = 255;
+        }
+        float alpha = _volume_alpha_at(&visual->volume, t);
+        rgba[4 * i + 3] = (uint8_t)((float)rgba[4 * i + 3] * alpha + 0.5f);
+    }
+    *out_data = visual->texture.rgba;
+    return true;
+}
+
+
 
 /**
  * Emit dirty uploads for all panel-visible visuals in one figure.
@@ -973,6 +1074,35 @@ void _scene_emit_visual_uploads(DvzFigure* figure, DvzFramePlan* plan)
                     plan, visual, vidx, DVZ_FRAME_PLAN_RESOURCE_ROLE_TEXTURE,
                     DVZ_FRAME_PLAN_RESOURCE_KIND_TEXTURE_3D, UINT32_MAX);
             }
+            if (visual->type == DVZ_VISUAL_TYPE_VOLUME && visual->field != NULL &&
+                _field_format_is_scalar(visual->field->desc.format))
+            {
+                char transfer_resource_id[128];
+                const void* transfer_data = NULL;
+                if (!_scene_resource_key_volume_transfer(
+                        vidx, transfer_resource_id, sizeof(transfer_resource_id)) ||
+                    !_scene_prepare_volume_transfer_texture(visual, &transfer_data) ||
+                    !dvz_frame_plan_upload_bytes(
+                        plan, transfer_resource_id, 0, 256ull * 4ull, "volume_transfer",
+                        transfer_data) ||
+                    !dvz_frame_plan_upload_metadata(
+                        plan,
+                        &(DvzFramePlanUploadMeta){
+                            .kind = DVZ_FRAME_PLAN_RESOURCE_KIND_TEXTURE_2D,
+                            .role = DVZ_FRAME_PLAN_RESOURCE_ROLE_TEXTURE,
+                            .visual_index = UINT32_MAX,
+                            .buffer_index = UINT32_MAX,
+                        }) ||
+                    !dvz_frame_plan_upload_set_texture_format(
+                        plan, VK_FORMAT_R8G8B8A8_UNORM, 4) ||
+                    !dvz_frame_plan_upload_set_texture_extent(plan, 256, 1) ||
+                    !dvz_frame_plan_upload_set_texture_allocation_extent(plan, 256, 1) ||
+                    !dvz_frame_plan_upload_set_texture_region(plan, 0, 0))
+                {
+                    log_error("volume transfer texture upload failed");
+                    continue;
+                }
+            }
         }
     }
 }
@@ -1060,9 +1190,6 @@ bool _scene_visual_frame_plan_metadata(
         metadata->volume_occluded = visual->volume_occluded;
         metadata->volume_transfer_rgba =
             visual->field != NULL && visual->field->desc.format == DVZ_FIELD_FORMAT_RGBA8_UNORM;
-        metadata->volume_transfer_rgba =
-            metadata->volume_transfer_rgba ||
-            (visual->scale != NULL && visual->scale->colormap != NULL);
         if (visual->field != NULL)
         {
             metadata->field_format = (uint32_t)visual->field->desc.format;
@@ -1072,6 +1199,10 @@ bool _scene_visual_frame_plan_metadata(
         }
         dvz_strlcpy(
             metadata->volume_texture_id, metadata->texture_id, sizeof(metadata->volume_texture_id));
+        if (!_scene_resource_key_volume_transfer(
+                visual_index, metadata->volume_transfer_texture_id,
+                sizeof(metadata->volume_transfer_texture_id)))
+            return false;
     }
     if (!_scene_attr_resource_key(
             figure, visual, visual_index, "normal", metadata->normal_id,

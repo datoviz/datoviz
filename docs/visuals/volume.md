@@ -16,7 +16,7 @@ visual backed by `DvzSampledField`, lowered through the scene -> DRP2 -> vklite 
 - Slice and MIP modes are selected explicitly.
 - Bounds place the volume proxy in object/scene space.
 - Slice position is normalized in `[0, 1]`.
-- Scalar fields can render directly or through a colormap-backed transfer path.
+- Scalar fields use a value range plus a 256x1 RGBA transfer texture.
 - RGBA8 fields render directly from voxel color.
 
 ---
@@ -42,6 +42,11 @@ dvz_visual_set_field(volume, "field", field);
 dvz_volume_set_render_mode(volume, DVZ_VOLUME_RENDER_COMPOSITE);
 dvz_volume_set_opacity(volume, 0.75f);
 dvz_volume_set_step_count(volume, 128);
+dvz_volume_set_value_range(volume, 0.0, 4096.0);
+dvz_volume_set_alpha_stops(
+    volume,
+    (DvzVolumeAlphaStop[]){{0.0, 0.0f}, {0.2, 0.0f}, {1.0, 0.8f}},
+    3);
 ```
 
 Available render modes:
@@ -61,6 +66,9 @@ Current controls:
 | `dvz_volume_set_slice_position()` | Normalized slice position in `[0, 1]` |
 | `dvz_volume_set_sampling()` | Nearest or linear sampling |
 | `dvz_volume_set_clipping_box()` | Normalized axis-aligned clipping box |
+| `dvz_volume_set_axis_mapping()` | Texture axis order and flips without CPU swizzling |
+| `dvz_volume_set_value_range()` | Raw scalar range mapped to transfer coordinate `[0, 1]` |
+| `dvz_volume_set_alpha_stops()` | Up to 8 normalized opacity stops |
 | `dvz_visual_set_scale(..., "colormap", scale)` | Scalar colormap/transfer binding |
 
 ---
@@ -78,11 +86,8 @@ dvz_visual_set_field(volume, "field", field);
 dvz_panel_add_visual(panel, volume, NULL);
 ```
 
-## Planned v0.4 Hardening
+## Remaining v0.4 Hardening
 
-- Shader-side axis order and axis flip.
-- Real sampler filtering selection in the runtime.
-- Value range plus a 1D RGBA transfer texture.
 - One arbitrary clipping plane.
 - Slice probe/readout returning UVW, object coordinate, and sampled value.
 

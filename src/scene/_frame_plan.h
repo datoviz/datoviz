@@ -302,6 +302,7 @@ typedef struct DvzFramePlanVisualMeta
     char instance_transform_id[DVZ_SCENE_LABEL_SIZE];
     char texture_id[DVZ_SCENE_LABEL_SIZE];
     char volume_texture_id[DVZ_SCENE_LABEL_SIZE];
+    char volume_transfer_texture_id[DVZ_SCENE_LABEL_SIZE];
     char normal_id[DVZ_SCENE_LABEL_SIZE];
     char index_id[DVZ_SCENE_LABEL_SIZE];
     char material_id[DVZ_SCENE_LABEL_SIZE];

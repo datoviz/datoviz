@@ -72,6 +72,7 @@ typedef struct DvzSceneVisualDesc
     uint64_t material_buffer_id;
     uint64_t image_texture_id;
     uint64_t volume_texture_id;
+    uint64_t volume_transfer_texture_id;
     uint32_t volume_visual_index;
     bool depth_cue_enabled;
     bool point_style_enabled;
@@ -175,6 +176,7 @@ typedef struct DvzSceneVisualBindDesc
     uint64_t image_texture_id;
     bool uses_volume_set1;
     uint64_t volume_texture_id;
+    uint64_t volume_transfer_texture_id;
     uint64_t volume_depth_texture_id;
     uint32_t volume_visual_index;
     uint32_t volume_bind_variant;

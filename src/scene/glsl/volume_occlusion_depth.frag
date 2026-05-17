@@ -9,6 +9,7 @@ layout(set = 0, binding = 0) uniform MVP {
 } mvp;
 
 layout(set = 1, binding = 0) uniform sampler3D tex;
+layout(set = 1, binding = 4) uniform sampler2D transferTex;
 
 layout(set = 1, binding = 2) uniform VolumeParams {
     vec4 clip_min;
@@ -19,6 +20,7 @@ layout(set = 1, binding = 2) uniform VolumeParams {
     vec4 bounds_max;
     vec4 axis_order;
     vec4 axis_flip;
+    vec4 value_range;
     vec4 occlusion;
 } volume;
 
@@ -86,6 +88,13 @@ vec3 texture_uvw(vec3 uvw)
     return clamp(out_uvw, vec3(0.0), vec3(1.0));
 }
 
+float transfer_alpha(float value)
+{
+    float denom = max(volume.value_range.y - volume.value_range.x, 1e-12);
+    float t = clamp((value - volume.value_range.x) / denom, 0.0, 1.0);
+    return texture(transferTex, vec2(t, 0.5)).a;
+}
+
 float projected_depth(vec3 uvw)
 {
     vec3 pos = uvw_to_object(uvw);
@@ -143,7 +152,7 @@ void main()
         float t = (float(i) + 0.5) / float(steps);
         vec3 uvw = ro + rd * mix(start_t, end_t, t);
         vec4 sample_value = texture(tex, texture_uvw(uvw));
-        float density = clamp(transfer ? sample_value.a : sample_value.r, 0.0, 1.0);
+        float density = clamp(transfer ? sample_value.a : transfer_alpha(sample_value.r), 0.0, 1.0);
         float sample_alpha =
             1.0 - exp(-density * volume.params.x * EXTINCTION_SCALE * step_len);
         sample_alpha = clamp(sample_alpha, 0.0, 1.0);

@@ -1390,6 +1390,11 @@ static void _volume_state_default(DvzVolumeState* state)
     state->axis_order[0] = 0;
     state->axis_order[1] = 1;
     state->axis_order[2] = 2;
+    state->value_min = 0.0;
+    state->value_max = 1.0;
+    state->alpha_stops[0] = (DvzVolumeAlphaStop){.position = 0.0, .alpha = 0.0f};
+    state->alpha_stops[1] = (DvzVolumeAlphaStop){.position = 1.0, .alpha = 1.0f};
+    state->alpha_stop_count = 2;
 }
 
 
@@ -3246,6 +3251,92 @@ int dvz_volume_set_axis_mapping(
         visual->volume.axis_order[i] = axis_order[i];
         visual->volume.axis_flip[i] = axis_flip != NULL ? axis_flip[i] : false;
     }
+    _visual_bump_version(&visual->volume.version);
+    return 0;
+}
+
+
+/**
+ * Set the scalar value range used before transfer texture lookup.
+ *
+ * @param visual the volume visual
+ * @param min minimum scalar value mapped to 0
+ * @param max maximum scalar value mapped to 1
+ * @return 0 on success, -1 on error
+ */
+int dvz_volume_set_value_range(DvzVisual* visual, double min, double max)
+{
+    ANN(visual);
+    if (visual->type != DVZ_VISUAL_TYPE_VOLUME)
+    {
+        log_error("dvz_volume_set_value_range requires a volume visual");
+        return -1;
+    }
+    if (!isfinite(min) || !isfinite(max) || min >= max)
+    {
+        log_error("volume value range must be finite and satisfy min < max");
+        return -1;
+    }
+    if (!_scene_visual_mutation_allowed(visual->scene, "set volume value range"))
+        return -1;
+    visual->volume.value_min = min;
+    visual->volume.value_max = max;
+    _visual_bump_version(&visual->volume.version);
+    return 0;
+}
+
+
+/**
+ * Set piecewise-linear opacity stops for scalar volume transfer.
+ *
+ * @param visual the volume visual
+ * @param stops alpha stops
+ * @param count number of stops
+ * @return 0 on success, -1 on error
+ */
+int dvz_volume_set_alpha_stops(
+    DvzVisual* visual, const DvzVolumeAlphaStop* stops, uint32_t count)
+{
+    ANN(visual);
+    ANN(stops);
+    if (visual->type != DVZ_VISUAL_TYPE_VOLUME)
+    {
+        log_error("dvz_volume_set_alpha_stops requires a volume visual");
+        return -1;
+    }
+    if (count == 0 || count > 8)
+    {
+        log_error("volume alpha stop count must be in [1, 8]");
+        return -1;
+    }
+    DvzVolumeAlphaStop sorted[8] = {0};
+    for (uint32_t i = 0; i < count; i++)
+    {
+        if (!isfinite(stops[i].position) || !isfinite(stops[i].alpha) ||
+            stops[i].position < 0.0 || stops[i].position > 1.0 || stops[i].alpha < 0.0f ||
+            stops[i].alpha > 1.0f)
+        {
+            log_error("volume alpha stops require finite position and alpha in [0, 1]");
+            return -1;
+        }
+        sorted[i] = stops[i];
+    }
+    for (uint32_t i = 1; i < count; i++)
+    {
+        DvzVolumeAlphaStop stop = sorted[i];
+        uint32_t j = i;
+        while (j > 0 && sorted[j - 1].position > stop.position)
+        {
+            sorted[j] = sorted[j - 1];
+            j--;
+        }
+        sorted[j] = stop;
+    }
+    if (!_scene_visual_mutation_allowed(visual->scene, "set volume alpha stops"))
+        return -1;
+    for (uint32_t i = 0; i < count; i++)
+        visual->volume.alpha_stops[i] = sorted[i];
+    visual->volume.alpha_stop_count = count;
     _visual_bump_version(&visual->volume.version);
     return 0;
 }

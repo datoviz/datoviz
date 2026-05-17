@@ -1110,6 +1110,29 @@ DVZ_EXPORT int dvz_volume_set_axis_mapping(
 
 
 /**
+ * Set the scalar value range used before transfer texture lookup.
+ *
+ * @param visual the volume visual
+ * @param min minimum scalar value mapped to 0
+ * @param max maximum scalar value mapped to 1
+ * @return 0 on success, -1 on error
+ */
+DVZ_EXPORT int dvz_volume_set_value_range(DvzVisual* visual, double min, double max);
+
+
+/**
+ * Set piecewise-linear opacity stops for scalar volume transfer.
+ *
+ * @param visual the volume visual
+ * @param stops alpha stops sorted or unsorted by position
+ * @param count number of stops, at most 8
+ * @return 0 on success, -1 on error
+ */
+DVZ_EXPORT int dvz_volume_set_alpha_stops(
+    DvzVisual* visual, const DvzVolumeAlphaStop* stops, uint32_t count);
+
+
+/**
  * Enable axis-aligned clipping on a volume visual.
  *
  * @param visual the volume visual

@@ -879,6 +879,13 @@ int test_scene_volume_retained_controls(TstSuite* suite, TstItem* item)
     AT(state->axis_order[1] == 1);
     AT(state->axis_order[2] == 2);
     AT(!state->axis_flip[0]);
+    AT(state->value_min == 0.0);
+    AT(state->value_max == 1.0);
+    AT(state->alpha_stop_count == 2);
+    AT(state->alpha_stops[0].position == 0.0);
+    AT(state->alpha_stops[0].alpha == 0.0f);
+    AT(state->alpha_stops[1].position == 1.0);
+    AT(state->alpha_stops[1].alpha == 1.0f);
     uint64_t version0 = state->version;
 
     AT(dvz_volume_set_opacity(volume, 0.35f) == 0);
@@ -937,6 +944,30 @@ int test_scene_volume_retained_controls(TstSuite* suite, TstItem* item)
     AT(!state->axis_flip[1]);
     AT(state->axis_flip[2]);
     AT(state->version != version6);
+    uint64_t version7 = state->version;
+
+    AT(dvz_volume_set_value_range(volume, -1000.0, 3000.0) == 0);
+    state = dvz_volume_state(volume);
+    ANN(state);
+    AT(state->value_min == -1000.0);
+    AT(state->value_max == 3000.0);
+    AT(state->version != version7);
+    uint64_t version8 = state->version;
+
+    DvzVolumeAlphaStop alpha_stops[3] = {
+        {.position = 1.0, .alpha = 0.2f},
+        {.position = 0.0, .alpha = 0.0f},
+        {.position = 0.5, .alpha = 1.0f},
+    };
+    AT(dvz_volume_set_alpha_stops(volume, alpha_stops, 3) == 0);
+    state = dvz_volume_state(volume);
+    ANN(state);
+    AT(state->alpha_stop_count == 3);
+    AT(state->alpha_stops[0].position == 0.0);
+    AT(state->alpha_stops[1].position == 0.5);
+    AT(state->alpha_stops[2].position == 1.0);
+    AT(state->alpha_stops[1].alpha == 1.0f);
+    AT(state->version != version8);
 
     AT(dvz_volume_set_slice_axis(volume, DVZ_VOLUME_AXIS_X) == 0);
     AT(dvz_volume_state(volume)->slice_axis == DVZ_VOLUME_AXIS_X);
@@ -993,6 +1024,11 @@ int test_scene_volume_retained_controls(TstSuite* suite, TstItem* item)
     uint32_t invalid_order[3] = {0, 0, 2};
     AT(dvz_volume_set_axis_mapping(volume, invalid_order, NULL) != 0);
     AT(_captured_log_contains(suite, "volume axis order must be a permutation"));
+    AT(dvz_volume_set_value_range(volume, 1.0, 1.0) != 0);
+    AT(_captured_log_contains(suite, "volume value range must be finite"));
+    DvzVolumeAlphaStop invalid_alpha_stops[1] = {{.position = 1.5, .alpha = 0.5f}};
+    AT(dvz_volume_set_alpha_stops(volume, invalid_alpha_stops, 1) != 0);
+    AT(_captured_log_contains(suite, "volume alpha stops require finite"));
 
     dvz_scene_destroy(scene);
     return 0;
@@ -1053,7 +1089,7 @@ int test_scene_volume_visual_metadata_lowering(TstSuite* suite, TstItem* item)
     AT(metadata.field_height == 6);
     AT(metadata.field_depth == 4);
     AT(metadata.scale_index == 0);
-    AT(metadata.volume_transfer_rgba);
+    AT(!metadata.volume_transfer_rgba);
     AT(metadata.volume_state.opacity == 0.5f);
     AT(metadata.volume_state.sampling == DVZ_VOLUME_SAMPLING_NEAREST);
     AT(metadata.volume_state.slice_axis == DVZ_VOLUME_AXIS_Y);
@@ -1064,6 +1100,7 @@ int test_scene_volume_visual_metadata_lowering(TstSuite* suite, TstItem* item)
     AT(metadata.volume_state.axis_order[0] == 0);
     AT(metadata.texture_id[0] != '\0');
     AT(strcmp(metadata.volume_texture_id, metadata.texture_id) == 0);
+    AT(metadata.volume_transfer_texture_id[0] != '\0');
 
     DvzFramePlan* plan = dvz_frame_plan("figure.volume.metadata", 0);
     ANN(plan);
@@ -1078,6 +1115,7 @@ int test_scene_volume_visual_metadata_lowering(TstSuite* suite, TstItem* item)
     AT(node->u.render.visual_metadata[0].volume_state.slice_axis == DVZ_VOLUME_AXIS_Y);
     AT(node->u.render.visual_metadata[0].volume_state.slice_position == 0.35);
     AT(strcmp(node->u.render.visual_metadata[0].volume_texture_id, metadata.texture_id) == 0);
+    AT(node->u.render.visual_metadata[0].volume_transfer_texture_id[0] != '\0');
 
     dvz_frame_plan_destroy(plan);
     dvz_scene_destroy(scene);
@@ -1273,43 +1311,72 @@ int test_scene_volume_scalar_transfer_function_uploads_rgba(TstSuite* suite, Tst
     ANN(stream);
     AT(dvz_diagnostic_report_count(&report) == 0);
 
-    bool created_rgba_texture = false;
-    bool wrote_rgba_texture = false;
+    bool created_scalar_texture = false;
+    bool created_transfer_texture = false;
+    bool wrote_scalar_texture = false;
+    bool wrote_transfer_texture = false;
     bool wrote_transfer_alpha = false;
     uint64_t texture_id = 0;
+    uint64_t transfer_texture_id = 0;
     for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
     {
         const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream, i);
         if (cmd->type == DVZ_DRP2_COMMAND_WRITE_TEXTURE && cmd->u.write_texture.width == 2 &&
             cmd->u.write_texture.height == 2 && cmd->u.write_texture.depth == 2)
             texture_id = cmd->u.write_texture.texture_id;
+        if (cmd->type == DVZ_DRP2_COMMAND_WRITE_TEXTURE && cmd->u.write_texture.width == 256 &&
+            cmd->u.write_texture.height == 1 && cmd->u.write_texture.depth == 1)
+            transfer_texture_id = cmd->u.write_texture.texture_id;
     }
     for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
     {
         const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream, i);
         if (cmd->type == DVZ_DRP2_COMMAND_CREATE_TEXTURE && cmd->u.create_texture.id == texture_id)
         {
-            created_rgba_texture = true;
-            AT(cmd->u.create_texture.format == VK_FORMAT_R8G8B8A8_UNORM);
+            created_scalar_texture = true;
+            AT(cmd->u.create_texture.format == VK_FORMAT_R8_UNORM);
             AT(cmd->u.create_texture.depth == 2);
+        }
+        if (cmd->type == DVZ_DRP2_COMMAND_CREATE_TEXTURE &&
+            cmd->u.create_texture.id == transfer_texture_id)
+        {
+            created_transfer_texture = true;
+            AT(cmd->u.create_texture.format == VK_FORMAT_R8G8B8A8_UNORM);
+            AT(cmd->u.create_texture.width == 256);
+            AT(cmd->u.create_texture.height == 1);
+            AT(cmd->u.create_texture.depth == 1);
         }
         if (cmd->type == DVZ_DRP2_COMMAND_WRITE_TEXTURE &&
             cmd->u.write_texture.texture_id == texture_id)
         {
             const uint8_t* upload = (const uint8_t*)cmd->u.write_texture.data_raw;
             ANN(upload);
-            wrote_rgba_texture = true;
-            AT(cmd->u.write_texture.bytes_per_row == 2 * 4);
+            wrote_scalar_texture = true;
+            AT(cmd->u.write_texture.bytes_per_row == 2);
+            AT(upload[0] == 0);
+            AT(upload[3] == 255);
+        }
+        if (cmd->type == DVZ_DRP2_COMMAND_WRITE_TEXTURE &&
+            cmd->u.write_texture.texture_id == transfer_texture_id)
+        {
+            const uint8_t* upload = (const uint8_t*)cmd->u.write_texture.data_raw;
+            ANN(upload);
+            wrote_transfer_texture = true;
+            AT(cmd->u.write_texture.bytes_per_row == 256 * 4);
+            AT(cmd->u.write_texture.rows_per_image == 1);
+            AT(upload[0] == 0);
             AT(upload[2] == 255);
             AT(upload[3] == 0);
-            AT(upload[4] > 0);
-            AT(upload[4] < 255);
-            AT(upload[7] > 0);
-            wrote_transfer_alpha = upload[15] == 255;
+            AT(upload[4 * 128 + 0] > 0);
+            AT(upload[4 * 128 + 0] < 255);
+            AT(upload[4 * 128 + 3] > 0);
+            wrote_transfer_alpha = upload[4 * 255 + 3] == 255;
         }
     }
-    AT(created_rgba_texture);
-    AT(wrote_rgba_texture);
+    AT(created_scalar_texture);
+    AT(created_transfer_texture);
+    AT(wrote_scalar_texture);
+    AT(wrote_transfer_texture);
     AT(wrote_transfer_alpha);
     AT(volume->texture.rgba != NULL);
     AT(!field->dirty);

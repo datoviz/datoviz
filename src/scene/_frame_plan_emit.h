@@ -71,6 +71,7 @@ struct DvzSceneVolumeUniform
     float bounds_max[4];
     float axis_order[4];
     float axis_flip[4];
+    float value_range[4];
     float occlusion[4];
 };
 

@@ -643,8 +643,12 @@ static bool _scene_visual_desc_from_metadata(
     {
         uint64_t uvw_id = _resource_lookup_label(&emitter->resources, meta->texcoords_id);
         uint64_t tex_id = _resource_lookup_label(&emitter->resources, meta->volume_texture_id);
+        uint64_t transfer_tex_id =
+            _resource_lookup_label(&emitter->resources, meta->volume_transfer_texture_id);
         if (tex_id == 0)
             tex_id = _resource_lookup_label(&emitter->resources, meta->texture_id);
+        if (transfer_tex_id == 0)
+            transfer_tex_id = tex_id;
         if (uvw_id == 0 || tex_id == 0)
         {
             if (error != NULL)
@@ -654,6 +658,7 @@ static bool _scene_visual_desc_from_metadata(
         out->kind = DVZ_SCENE_VISUAL_DESC_VOLUME;
         out->vbuf_ids[out->vbuf_count++] = uvw_id;
         out->volume_texture_id = tex_id;
+        out->volume_transfer_texture_id = transfer_tex_id;
         out->volume_visual_index = meta->visual_index;
         out->volume_transfer_rgba = meta->volume_transfer_rgba;
         out->volume_occluded = meta->volume_occluded;
@@ -1967,6 +1972,7 @@ bool _scene_visual_bind_desc(
         out->uses_fixed_common = caps.fixed_controller;
         out->uses_volume_set1 = caps.uses_volume_set;
         out->volume_texture_id = visual->volume_texture_id;
+        out->volume_transfer_texture_id = visual->volume_transfer_texture_id;
         out->volume_visual_index = visual->volume_visual_index;
         out->volume_transfer_rgba = visual->volume_transfer_rgba;
         out->volume_occluded = visual->volume_occluded;

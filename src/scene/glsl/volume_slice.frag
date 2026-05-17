@@ -14,6 +14,7 @@ layout(set = 0, binding = 0) uniform MVP {
 
 layout(set = 1, binding = 0) uniform sampler3D tex;
 layout(set = 1, binding = 3) uniform sampler2D depthTex;
+layout(set = 1, binding = 4) uniform sampler2D transferTex;
 
 layout(set = 1, binding = 2) uniform VolumeParams {
     vec4 clip_min;
@@ -24,6 +25,7 @@ layout(set = 1, binding = 2) uniform VolumeParams {
     vec4 bounds_max;
     vec4 axis_order;
     vec4 axis_flip;
+    vec4 value_range;
     vec4 occlusion;
 } volume;
 
@@ -117,6 +119,13 @@ vec3 texture_uvw(vec3 uvw)
     vec3 out_uvw = vec3(axis_value(ax0, uvw), axis_value(ax1, uvw), axis_value(ax2, uvw));
     out_uvw = mix(out_uvw, vec3(1.0) - out_uvw, step(vec3(0.5), volume.axis_flip.xyz));
     return clamp(out_uvw, vec3(0.0), vec3(1.0));
+}
+
+vec4 transfer_value(float value)
+{
+    float denom = max(volume.value_range.y - volume.value_range.x, 1e-12);
+    float t = clamp((value - volume.value_range.x) / denom, 0.0, 1.0);
+    return texture(transferTex, vec2(t, 0.5));
 }
 
 float depth_visibility(vec3 uvw)
@@ -221,8 +230,8 @@ void main()
     if (volume.clip_min.w > 0.5) {
         outColor = vec4(sample_value.rgb, sample_value.a * volume.params.x * visibility);
     } else {
-        float value = sample_value.r;
-        outColor = vec4(value, value, value, value * volume.params.x * visibility);
+        outColor = transfer_value(sample_value.r);
+        outColor.a *= volume.params.x * visibility;
     }
 #ifdef DVZ_SCENE_OCCLUSION
     outColor.a *= scene_occlusion_visibility_linear(uvw);

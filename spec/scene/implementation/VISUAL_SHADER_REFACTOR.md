@@ -41,7 +41,7 @@ Set ordering is part of the scene shader ABI and is mirrored by `src/scene/_scen
 | `0` | Scene common | `0`: `DvzMVP` uniform, `1`: `DvzSceneViewportUniform` uniform |
 | `1` | Material | `0`: `DvzSceneMaterialParams` uniform |
 | `1` | Image | `0`: sampled texture, `1`: sampler |
-| `1` | Volume | `0`: volume texture, `1`: sampler, `2`: volume/state uniform, `3`: optional depth texture |
+| `1` | Volume | `0`: volume texture, `1`: sampler, `2`: volume/state uniform, `3`: optional depth texture, `4`: scalar transfer texture |
 | `2` | Scene occlusion | `0`: depth texture, `1`: sampler, `2`: occlusion uniform |
 
 Only one set-1 layout is used by a visual pipeline. Scene occlusion moves to set `2` when another set
@@ -72,7 +72,7 @@ table as the implementation queue for portable visual work:
 | Marker | GLSL runtime path is active; WGSL source/lowering is deferred | Add instanced-quad WGSL lowering, material style binding, and fixture tests |
 | Segment/path stroke | GLSL analytic stroke path is active; WGSL is deferred | Port stroke vertex math and cap/style material binding to WGSL |
 | Sphere | GLSL impostor path is active; WGSL is deferred | Decide WebGPU impostor lowering and depth behavior before adding source |
-| Volume | GLSL slice/MIP/composite paths are active; WGSL is deferred | Align split 3D texture/sampler/params/depth bindings first |
+| Volume | GLSL slice/MIP/composite paths are active; WGSL is deferred | Port transfer-texture and clipping-plane ABI once GLSL semantics settle |
 | Advanced passes | WBOIT, depth peel, SSAO, EDL are GLSL/native only | Add capability-gated WGSL variants only when backend support exists |
 
 When adding a WGSL lane, do not silently fall back to GLSL or browser-side shader replacement. Add

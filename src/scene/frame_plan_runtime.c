@@ -347,7 +347,7 @@ static bool _create_volume_bind_group_layout(DvzDrp2CommandStream* stream, uint6
 {
     ANN(stream);
 
-    DvzDrp2BindGroupLayoutEntry entries[4] = {
+    DvzDrp2BindGroupLayoutEntry entries[5] = {
         {
             .binding = DVZ_SCENE_SHADER_BINDING_VOLUME_TEXTURE,
             .binding_type = DVZ_DRP2_BINDING_TYPE_SAMPLED_TEXTURE,
@@ -372,8 +372,14 @@ static bool _create_volume_bind_group_layout(DvzDrp2CommandStream* stream, uint6
             .visibility = DVZ_DRP2_SHADER_STAGE_FRAGMENT,
             .access = DVZ_DRP2_BINDING_ACCESS_READ,
         },
+        {
+            .binding = DVZ_SCENE_SHADER_BINDING_VOLUME_TRANSFER_TEXTURE,
+            .binding_type = DVZ_DRP2_BINDING_TYPE_SAMPLED_TEXTURE,
+            .visibility = DVZ_DRP2_SHADER_STAGE_FRAGMENT,
+            .access = DVZ_DRP2_BINDING_ACCESS_READ,
+        },
     };
-    return dvz_drp2_stream_create_bind_group_layout_entries(stream, id, 4, entries);
+    return dvz_drp2_stream_create_bind_group_layout_entries(stream, id, 5, entries);
 }
 
 
@@ -596,6 +602,10 @@ static void _volume_uniform_from_state(
     out->bounds_max[3] = 1.0f;
     out->axis_order[3] = 0.0f;
     out->axis_flip[3] = 0.0f;
+    out->value_range[0] = (float)state->value_min;
+    out->value_range[1] = (float)state->value_max;
+    out->value_range[2] = 0.0f;
+    out->value_range[3] = 1.0f;
     if (occlusion != NULL && occlusion->enabled)
     {
         out->occlusion[0] = occlusion->alpha_threshold > 0.0f ? occlusion->alpha_threshold : 0.08f;
@@ -643,15 +653,18 @@ static bool _resolve_volume_bind_group(
     bool is_new = false;
     char params_buf_key[96], params_slot_key[96], bg_key[128];
     dvz_snprintf(
-        params_buf_key, sizeof(params_buf_key), "_buf_volume_params_%u_%u_%" PRIu64,
-        bind->volume_visual_index, bind->volume_bind_variant, bind->volume_texture_id);
-    dvz_snprintf(
-        params_slot_key, sizeof(params_slot_key), "_slot_volume_params_%u_%u_%" PRIu64,
-        bind->volume_visual_index, bind->volume_bind_variant, bind->volume_texture_id);
-    dvz_snprintf(
-        bg_key, sizeof(bg_key), "_bg_volume_%u_%u_%" PRIu64 "_depth_%" PRIu64,
+        params_buf_key, sizeof(params_buf_key), "_buf_volume_params_%u_%u_%" PRIu64 "_tf_%" PRIu64,
         bind->volume_visual_index, bind->volume_bind_variant, bind->volume_texture_id,
-        depth_texture_id);
+        bind->volume_transfer_texture_id);
+    dvz_snprintf(
+        params_slot_key, sizeof(params_slot_key), "_slot_volume_params_%u_%u_%" PRIu64
+                                               "_tf_%" PRIu64,
+        bind->volume_visual_index, bind->volume_bind_variant, bind->volume_texture_id,
+        bind->volume_transfer_texture_id);
+    dvz_snprintf(
+        bg_key, sizeof(bg_key), "_bg_volume_%u_%u_%" PRIu64 "_tf_%" PRIu64 "_depth_%" PRIu64,
+        bind->volume_visual_index, bind->volume_bind_variant, bind->volume_texture_id,
+        bind->volume_transfer_texture_id, depth_texture_id);
 
     uint32_t usage = DVZ_DRP2_BUFFER_USAGE_UNIFORM | DVZ_DRP2_BUFFER_USAGE_MAP_WRITE |
                      DVZ_DRP2_BUFFER_USAGE_COPY_DST;
@@ -667,7 +680,7 @@ static bool _resolve_volume_bind_group(
         return false;
     if (is_new)
     {
-        DvzDrp2BindGroupEntry entries[4] = {
+        DvzDrp2BindGroupEntry entries[5] = {
             {
                 .binding = 0,
                 .binding_type = DVZ_DRP2_BINDING_TYPE_SAMPLED_TEXTURE,
@@ -694,8 +707,16 @@ static bool _resolve_volume_bind_group(
                 .resource_kind = DVZ_DRP2_BINDING_RESOURCE_TEXTURE,
                 .resource_id = depth_texture_id,
             },
+            {
+                .binding = 4,
+                .binding_type = DVZ_DRP2_BINDING_TYPE_SAMPLED_TEXTURE,
+                .resource_kind = DVZ_DRP2_BINDING_RESOURCE_TEXTURE,
+                .resource_id = bind->volume_transfer_texture_id != 0 ?
+                                   bind->volume_transfer_texture_id :
+                                   bind->volume_texture_id,
+            },
         };
-        if (!dvz_drp2_stream_create_bind_group_entries(stream, bg_id, bgl_id, 4, entries))
+        if (!dvz_drp2_stream_create_bind_group_entries(stream, bg_id, bgl_id, 5, entries))
             return false;
     }
 
