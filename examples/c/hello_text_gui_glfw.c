@@ -34,12 +34,24 @@
 
 #define TEXT_LAB_MAX_TICKS 64u
 #define TEXT_LAB_RAW_TEX_SIZE 32u
+#define TEXT_LAB_FIGURE_WIDTH 1100.0f
 
 
 
 /*************************************************************************************************/
 /*  Structs                                                                                      */
 /*************************************************************************************************/
+
+typedef enum TextLabMode
+{
+    TEXT_LAB_MODE_SAMPLE = 0,
+    TEXT_LAB_MODE_TICKS,
+    TEXT_LAB_MODE_MULTILINE,
+    TEXT_LAB_MODE_UTF8,
+    TEXT_LAB_MODE_GLYPH,
+} TextLabMode;
+
+
 
 typedef struct TextLabState
 {
@@ -57,11 +69,9 @@ typedef struct TextLabState
     float offset_y;
     float color[4];
     float tick_count_value;
-    int preset;
+    int mode;
     int anchor_index;
     int renderer_index;
-    bool show_multiline;
-    bool show_ticks;
     bool show_raw_glyph;
     bool animate;
     bool show_demo;
@@ -103,24 +113,18 @@ static DvzSceneAnchor selected_anchor(int index)
 
 
 /**
- * Return one text preset string.
+ * Return one display string for the selected mode.
  *
- * @param index GUI preset index
- * @return preset string
+ * @param mode GUI mode index
+ * @return mode text string
  */
-static const char* selected_preset(int index)
+static const char* mode_sample_text(int mode)
 {
-    static const char* const presets[] = {
-        "ASCII small text: 0 1 2 5 10 20 50 100",
-        "A" "\xCE" "\xA9" "B cafe" "\xCC" "\x81" " -> UTF-8 fallback",
-        "0123456789 +-.eE tick labels",
-        "The quick brown fox jumps over 13 lazy glyphs.",
-    };
-    if (index < 0)
-        index = 0;
-    if ((uint32_t)index >= (uint32_t)(sizeof(presets) / sizeof(presets[0])))
-        index = 0;
-    return presets[index];
+    if (mode == TEXT_LAB_MODE_UTF8)
+        return "UTF-8 fallback: A" "\xCE" "\xA9" "B cafe" "\xCC" "\x81" " -> ?";
+    if (mode == TEXT_LAB_MODE_GLYPH)
+        return "Raw glyph shader probe";
+    return "The quick brown fox jumps over 13 lazy glyphs.";
 }
 
 
@@ -221,11 +225,12 @@ static void update_raw_glyph(TextLabState* state)
     ANN(state);
     ANN(state->raw_glyph);
 
-    float y = -0.72f;
-    float h = 0.24f;
-    float w = 0.24f;
-    float x = -0.90f;
-    if (!state->show_raw_glyph)
+    float y = -0.18f;
+    float h = 0.36f;
+    float w = 0.36f;
+    float x = -0.18f;
+    bool visible = state->mode == TEXT_LAB_MODE_GLYPH || state->show_raw_glyph;
+    if (!visible)
     {
         w = 0.0f;
         h = 0.0f;
@@ -312,39 +317,66 @@ static void update_text_scene(TextLabState* state)
     DvzTextRenderer renderer = selected_renderer(state->renderer_index);
     DvzSceneAnchor anchor = selected_anchor(state->anchor_index);
 
-    dvz_text_set_string(state->title, "Datoviz text");
-    apply_text_style(state->title, state->size_pts + 6.0f, renderer, color);
+    dvz_text_set_string(state->title, "Text lab");
+    apply_text_style(state->title, 22.0f, renderer, color);
     apply_text_placement(state->title, DVZ_SCENE_ANCHOR_PANEL_TOP_LEFT, 24.0f, 24.0f, 0.0f);
 
-    dvz_text_set_string(state->sample, selected_preset(state->preset));
-    apply_text_style(state->sample, state->size_pts, renderer, color);
-    apply_text_placement(
-        state->sample, anchor, state->offset_x, state->offset_y, state->angle);
-
-    const char* multiline = state->show_multiline ? "line one\nline two\nline three" : "";
-    dvz_text_set_string(state->multiline, multiline);
+    dvz_text_set_string(state->sample, "");
+    dvz_text_set_string(state->multiline, "");
+    dvz_text_set_string(state->anchor_probe, "");
     apply_text_style(state->multiline, state->size_pts, renderer, color);
-    apply_text_placement(
-        state->multiline, DVZ_SCENE_ANCHOR_PANEL_LEFT, 36.0f, -40.0f, 0.0f);
-
-    DvzColor probe_color = {96, 220, 255, 220};
-    dvz_text_set_string(state->anchor_probe, "anchor");
-    apply_text_style(state->anchor_probe, 8.0f, renderer, probe_color);
-    apply_text_placement(state->anchor_probe, anchor, 0.0f, 0.0f, 0.0f);
 
     uint32_t tick_count = (uint32_t)(state->tick_count_value + 0.5f);
     if (tick_count > TEXT_LAB_MAX_TICKS)
         tick_count = TEXT_LAB_MAX_TICKS;
     for (uint32_t i = 0; i < TEXT_LAB_MAX_TICKS; i++)
     {
-        char label[32] = {0};
-        if (state->show_ticks && i < tick_count)
-            dvz_snprintf(label, sizeof(label), "%u", i);
-        dvz_text_set_string(state->ticks[i], label);
+        dvz_text_set_string(state->ticks[i], "");
         apply_text_style(state->ticks[i], state->tick_size_pts, renderer, color);
-        float x = 24.0f + (float)i * 18.0f;
+        apply_text_placement(state->ticks[i], DVZ_SCENE_ANCHOR_PANEL_BOTTOM_LEFT, 0.0f, 0.0f, 0.0f);
+    }
+
+    if (state->mode == TEXT_LAB_MODE_TICKS)
+    {
+        dvz_text_set_string(state->sample, "Tick labels");
+        apply_text_style(state->sample, 18.0f, renderer, color);
         apply_text_placement(
-            state->ticks[i], DVZ_SCENE_ANCHOR_PANEL_BOTTOM_LEFT, x, -26.0f, -0.55f);
+            state->sample, DVZ_SCENE_ANCHOR_PANEL_TOP, 0.0f, 96.0f, 0.0f);
+
+        float left = 110.0f;
+        float usable = TEXT_LAB_FIGURE_WIDTH - 2.0f * left;
+        float step = tick_count > 1 ? usable / (float)(tick_count - 1u) : 0.0f;
+        for (uint32_t i = 0; i < tick_count; i++)
+        {
+            char label[32] = {0};
+            dvz_snprintf(label, sizeof(label), "%u", i);
+            dvz_text_set_string(state->ticks[i], label);
+            float x = left + (float)i * step;
+            apply_text_placement(
+                state->ticks[i], DVZ_SCENE_ANCHOR_PANEL_BOTTOM_LEFT, x, -96.0f, -0.35f);
+        }
+    }
+    else if (state->mode == TEXT_LAB_MODE_MULTILINE)
+    {
+        dvz_text_set_string(state->multiline, "line one\nline two\nline three");
+        apply_text_style(state->multiline, state->size_pts, renderer, color);
+        apply_text_placement(
+            state->multiline, DVZ_SCENE_ANCHOR_PANEL_CENTER, -180.0f, -20.0f, 0.0f);
+    }
+    else
+    {
+        dvz_text_set_string(state->sample, mode_sample_text(state->mode));
+        apply_text_style(state->sample, state->size_pts, renderer, color);
+        if (state->mode == TEXT_LAB_MODE_GLYPH)
+        {
+            apply_text_placement(
+                state->sample, DVZ_SCENE_ANCHOR_PANEL_TOP, 0.0f, 96.0f, 0.0f);
+        }
+        else
+        {
+            apply_text_placement(
+                state->sample, anchor, state->offset_x, state->offset_y, state->angle);
+        }
     }
 
     update_raw_glyph(state);
@@ -362,22 +394,20 @@ static void update_text_scene(TextLabState* state)
 static void reset_text_state(TextLabState* state)
 {
     ANN(state);
-    state->size_pts = 12.0f;
+    state->size_pts = 18.0f;
     state->tick_size_pts = 8.0f;
     state->angle = 0.0f;
-    state->offset_x = 140.0f;
-    state->offset_y = 120.0f;
+    state->offset_x = 0.0f;
+    state->offset_y = 0.0f;
     state->color[0] = 0.85f;
     state->color[1] = 0.92f;
     state->color[2] = 1.00f;
     state->color[3] = 1.00f;
-    state->tick_count_value = 24.0f;
-    state->preset = 0;
+    state->tick_count_value = 12.0f;
+    state->mode = TEXT_LAB_MODE_SAMPLE;
     state->anchor_index = 4;
     state->renderer_index = 1;
-    state->show_multiline = true;
-    state->show_ticks = true;
-    state->show_raw_glyph = true;
+    state->show_raw_glyph = false;
     state->animate = false;
 }
 
@@ -404,11 +434,12 @@ static void gui_callback(DvzGui* gui, DvzAppWindow* win, void* user_data)
             "small bitmap atlas",
             "bitmap atlas",
         };
-        static const char* const preset_items[] = {
+        static const char* const mode_items[] = {
+            "sample",
             "ticks",
-            "UTF-8 fallback",
-            "numeric",
-            "sentence",
+            "multiline",
+            "UTF-8",
+            "glyph probe",
         };
         static const char* const anchor_items[] = {
             "top left",
@@ -422,23 +453,27 @@ static void gui_callback(DvzGui* gui, DvzAppWindow* win, void* user_data)
             "bottom right",
         };
 
+        changed |= dvz_gui_combo(gui, "Mode", &state->mode, mode_items, 5);
         changed |= dvz_gui_combo(gui, "Renderer", &state->renderer_index, renderer_items, 3);
-        changed |= dvz_gui_combo(gui, "Preset", &state->preset, preset_items, 4);
-        changed |= dvz_gui_combo(gui, "Anchor", &state->anchor_index, anchor_items, 9);
         changed |= dvz_gui_slider_float(gui, "Size", &state->size_pts, 6.0f, 64.0f);
-        changed |= dvz_gui_slider_float(gui, "Tick size", &state->tick_size_pts, 5.0f, 18.0f);
-        changed |= dvz_gui_slider_float(gui, "Angle", &state->angle, -1.57f, 1.57f);
-        changed |= dvz_gui_slider_float(gui, "Offset X", &state->offset_x, -360.0f, 360.0f);
-        changed |= dvz_gui_slider_float(gui, "Offset Y", &state->offset_y, -260.0f, 260.0f);
+        if (state->mode == TEXT_LAB_MODE_SAMPLE || state->mode == TEXT_LAB_MODE_UTF8)
+        {
+            changed |= dvz_gui_combo(gui, "Anchor", &state->anchor_index, anchor_items, 9);
+            changed |= dvz_gui_slider_float(gui, "Angle", &state->angle, -1.57f, 1.57f);
+            changed |= dvz_gui_slider_float(gui, "Offset X", &state->offset_x, -360.0f, 360.0f);
+            changed |= dvz_gui_slider_float(gui, "Offset Y", &state->offset_y, -260.0f, 260.0f);
+        }
+        if (state->mode == TEXT_LAB_MODE_TICKS)
+        {
+            changed |= dvz_gui_slider_float(gui, "Tick size", &state->tick_size_pts, 5.0f, 18.0f);
+            changed |= dvz_gui_slider_float(
+                gui, "Tick count", &state->tick_count_value, 2.0f, (float)TEXT_LAB_MAX_TICKS);
+        }
         changed |= dvz_gui_slider_float(gui, "Red", &state->color[0], 0.0f, 1.0f);
         changed |= dvz_gui_slider_float(gui, "Green", &state->color[1], 0.0f, 1.0f);
         changed |= dvz_gui_slider_float(gui, "Blue", &state->color[2], 0.0f, 1.0f);
         changed |= dvz_gui_slider_float(gui, "Alpha", &state->color[3], 0.05f, 1.0f);
-        changed |= dvz_gui_checkbox(gui, "Multiline", &state->show_multiline);
-        changed |= dvz_gui_checkbox(gui, "Ticks", &state->show_ticks);
-        changed |= dvz_gui_slider_float(
-            gui, "Tick count", &state->tick_count_value, 0.0f, (float)TEXT_LAB_MAX_TICKS);
-        changed |= dvz_gui_checkbox(gui, "Raw glyph", &state->show_raw_glyph);
+        changed |= dvz_gui_checkbox(gui, "Glyph probe overlay", &state->show_raw_glyph);
         changed |= dvz_gui_checkbox(gui, "Animate", &state->animate);
         (void)dvz_gui_checkbox(gui, "ImGui demo", &state->show_demo);
         if (dvz_gui_button(gui, "Reset"))
