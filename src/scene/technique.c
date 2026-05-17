@@ -1016,8 +1016,8 @@ bool _scene_technique_emit_depth_peel_frame_graph(
     if (!_scene_frame_graph_resource_once(plan, &rt))
         return false;
 
-    bool shared_depth = opaque_needs_depth && transparent_needs_depth;
-    if (shared_depth)
+    bool depth_required = opaque_needs_depth || transparent_needs_depth;
+    if (depth_required)
     {
         DvzFrameGraphResource depth = {0};
         dvz_strlcpy(depth.id, opaque_depth_id, sizeof(depth.id));
@@ -1057,7 +1057,7 @@ bool _scene_technique_emit_depth_peel_frame_graph(
         &color, "rt", DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_CLEAR, true);
     if (!dvz_frame_graph_pass_color_attachment(&opaque, &color))
         return false;
-    if (shared_depth)
+    if (opaque_needs_depth)
     {
         _scene_frame_graph_depth_attachment(
             &depth, opaque_depth_id, DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_CLEAR,
@@ -1080,11 +1080,14 @@ bool _scene_technique_emit_depth_peel_frame_graph(
         if (!dvz_frame_graph_pass_color_attachment(&init, &color))
             return false;
     }
-    if (shared_depth)
+    if (transparent_needs_depth)
     {
         _scene_frame_graph_depth_attachment(
-            &depth, opaque_depth_id, DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_LOAD,
-            DVZ_FRAME_GRAPH_ATTACHMENT_ACCESS_READ);
+            &depth, opaque_depth_id,
+            opaque_needs_depth ? DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_LOAD :
+                                 DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_CLEAR,
+            opaque_needs_depth ? DVZ_FRAME_GRAPH_ATTACHMENT_ACCESS_READ :
+                                 DVZ_FRAME_GRAPH_ATTACHMENT_ACCESS_WRITE);
         depth.store_op = DVZ_FRAME_GRAPH_ATTACHMENT_STORE_DONT_CARE;
         if (!dvz_frame_graph_pass_depth_attachment(&init, &depth))
             return false;
@@ -1104,11 +1107,14 @@ bool _scene_technique_emit_depth_peel_frame_graph(
         if (!dvz_frame_graph_pass_color_attachment(&iter, &color))
             return false;
     }
-    if (shared_depth)
+    if (transparent_needs_depth)
     {
         _scene_frame_graph_depth_attachment(
-            &depth, opaque_depth_id, DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_LOAD,
-            DVZ_FRAME_GRAPH_ATTACHMENT_ACCESS_READ);
+            &depth, opaque_depth_id,
+            opaque_needs_depth ? DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_LOAD :
+                                 DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_CLEAR,
+            opaque_needs_depth ? DVZ_FRAME_GRAPH_ATTACHMENT_ACCESS_READ :
+                                 DVZ_FRAME_GRAPH_ATTACHMENT_ACCESS_WRITE);
         depth.store_op = DVZ_FRAME_GRAPH_ATTACHMENT_STORE_DONT_CARE;
         if (!dvz_frame_graph_pass_depth_attachment(&iter, &depth))
             return false;
