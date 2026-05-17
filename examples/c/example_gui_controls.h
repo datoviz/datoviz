@@ -56,6 +56,8 @@ typedef struct DvzExampleGuiSsaoControls
     bool enabled;
     bool blur;
     bool debug_view;
+    bool show_blur_sigmas;
+    bool show_debug_view;
     float radius;
     float strength;
     float bias;

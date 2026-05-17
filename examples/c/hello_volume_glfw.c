@@ -28,6 +28,7 @@
 #include "datoviz/app.h"
 #include "datoviz/gui.h"
 #include "datoviz/scene.h"
+#include "example_gui_controls.h"
 
 
 
@@ -351,26 +352,14 @@ static void _volume_glfw_gui(DvzGui* gui, DvzAppWindow* win, void* user_data)
         changed |= dvz_gui_slider_float(gui, "TF ramp", &state->tf_ramp, 0.05f, 1.0f);
         changed |= dvz_gui_slider_float(gui, "TF alpha", &state->tf_alpha, 0.0f, 1.0f);
         changed |= dvz_gui_checkbox(gui, "Clip", &state->clipping);
-        changed |= dvz_gui_slider_float(gui, "Clip X min", &state->clip_min[0], 0.0f, 0.95f);
-        changed |= dvz_gui_slider_float(gui, "Clip X max", &state->clip_max[0], 0.05f, 1.0f);
-        changed |= dvz_gui_slider_float(gui, "Clip Y min", &state->clip_min[1], 0.0f, 0.95f);
-        changed |= dvz_gui_slider_float(gui, "Clip Y max", &state->clip_max[1], 0.05f, 1.0f);
-        changed |= dvz_gui_slider_float(gui, "Clip Z min", &state->clip_min[2], 0.0f, 0.95f);
-        changed |= dvz_gui_slider_float(gui, "Clip Z max", &state->clip_max[2], 0.05f, 1.0f);
+        changed |= dvz_example_gui_clip_box(gui, "Clip box", state->clip_min, state->clip_max);
         changed |= dvz_gui_checkbox(gui, "Clip plane", &state->clip_plane);
         changed |= dvz_gui_checkbox(gui, "Keep positive side", &state->plane_keep_positive);
-        changed |= dvz_gui_slider_float(
-            gui, "Plane X", &state->clip_plane_point[0], 0.0f, 1.0f);
-        changed |= dvz_gui_slider_float(
-            gui, "Plane Y", &state->clip_plane_point[1], 0.0f, 1.0f);
-        changed |= dvz_gui_slider_float(
-            gui, "Plane Z", &state->clip_plane_point[2], 0.0f, 1.0f);
-        changed |= dvz_gui_slider_float(
-            gui, "Plane NX", &state->clip_plane_normal[0], -1.0f, 1.0f);
-        changed |= dvz_gui_slider_float(
-            gui, "Plane NY", &state->clip_plane_normal[1], -1.0f, 1.0f);
-        changed |= dvz_gui_slider_float(
-            gui, "Plane NZ", &state->clip_plane_normal[2], -1.0f, 1.0f);
+        dvz_gui_separator_text(gui, "Clip plane");
+        changed |= dvz_example_gui_vec3(
+            gui, "Plane point", state->clip_plane_point, 0.0f, 1.0f, "%.2f");
+        changed |= dvz_example_gui_vec3(
+            gui, "Plane normal", state->clip_plane_normal, -1.0f, 1.0f, "%.2f");
         if (dvz_gui_button(gui, "Reset"))
         {
             state->render_mode = DVZ_VOLUME_RENDER_COMPOSITE;

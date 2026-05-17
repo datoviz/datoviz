@@ -1568,7 +1568,7 @@ static void _allen_mouse_brain_gui(DvzGui* gui, DvzAppWindow* win, void* user_da
     bool occlusion_changed = false;
     if (dvz_gui_begin(gui, "Allen Mouse Brain", NULL, 0))
     {
-        dvz_gui_text(gui, "Slice");
+        dvz_gui_separator_text(gui, "Slice");
         changed |= dvz_gui_checkbox(gui, "Show slice", &state->show_slice);
         changed |= dvz_gui_slider_float(gui, "Slice position", &state->slice_position, 0.0f, 1.0f);
         changed |= dvz_gui_slider_float(gui, "Slice opacity", &state->slice_opacity, 0.0f, 1.0f);
@@ -1588,7 +1588,7 @@ static void _allen_mouse_brain_gui(DvzGui* gui, DvzAppWindow* win, void* user_da
             changed = true;
         }
 
-        dvz_gui_text(gui, "Volume");
+        dvz_gui_separator_text(gui, "Volume");
         changed |= dvz_gui_checkbox(gui, "Show full volume", &state->show_volume);
         changed |= dvz_gui_checkbox(gui, "Split volume at slice", &state->clip_volume_at_slice);
         bool show_other_side = !state->keep_positive_side;
@@ -1609,7 +1609,7 @@ static void _allen_mouse_brain_gui(DvzGui* gui, DvzAppWindow* win, void* user_da
         changed |= dvz_gui_slider_float(gui, "Volume opacity", &state->volume_opacity, 0.0f, 1.0f);
         changed |= dvz_gui_slider_float(gui, "Volume steps", &state->volume_steps, 8.0f, 512.0f);
 
-        dvz_gui_text(gui, "Volume occlusion");
+        dvz_gui_separator_text(gui, "Volume occlusion");
         occlusion_changed |= dvz_gui_checkbox(
             gui, "Enable occlusion", &state->volume_occlusion_enabled);
         occlusion_changed |= dvz_gui_slider_float_format(
@@ -1630,7 +1630,7 @@ static void _allen_mouse_brain_gui(DvzGui* gui, DvzAppWindow* win, void* user_da
 
         if (state->atlas_mesh_visual != NULL)
         {
-            dvz_gui_text(gui, "Atlas mesh");
+            dvz_gui_separator_text(gui, "Atlas mesh");
             atlas_visibility_changed |=
                 dvz_gui_checkbox(gui, "Show atlas mesh", &state->show_atlas_mesh);
             atlas_changed |=
@@ -1642,20 +1642,20 @@ static void _allen_mouse_brain_gui(DvzGui* gui, DvzAppWindow* win, void* user_da
                 dvz_gui_slider_float(gui, "Atlas diffuse", &state->atlas_diffuse, 0.0f, 1.5f);
             if (state->atlas_mesh != NULL && state->atlas_mesh->region_count > 0)
             {
-                dvz_gui_text(gui, "Atlas regions");
-                if (dvz_gui_button(gui, "Show all regions"))
+                const bool show_regions = dvz_gui_collapsing_header(gui, "Atlas regions", 0);
+                if (show_regions && dvz_gui_button(gui, "Show all regions"))
                 {
                     for (uint32_t r = 0; r < state->atlas_mesh->region_count; r++)
                         state->atlas_mesh->regions[r].visible = true;
                     atlas_changed = true;
                 }
-                if (dvz_gui_button(gui, "Hide all regions"))
+                if (show_regions && dvz_gui_button(gui, "Hide all regions"))
                 {
                     for (uint32_t r = 0; r < state->atlas_mesh->region_count; r++)
                         state->atlas_mesh->regions[r].visible = false;
                     atlas_changed = true;
                 }
-                for (uint32_t r = 0; r < state->atlas_mesh->region_count; r++)
+                for (uint32_t r = 0; show_regions && r < state->atlas_mesh->region_count; r++)
                 {
                     AllenIblAtlasRegion* region = &state->atlas_mesh->regions[r];
                     char label[160] = {0};

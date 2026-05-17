@@ -555,10 +555,8 @@ static void gui_callback(DvzGui* gui, DvzAppWindow* win, void* user_data)
             changed |= dvz_gui_slider_float_format(
                 gui, "Tick size", &state->tick_size_pts, 5.0f, 18.0f, "%.1f pt");
         }
-        changed |= dvz_gui_slider_float(gui, "Red", &state->color[0], 0.0f, 1.0f);
-        changed |= dvz_gui_slider_float(gui, "Green", &state->color[1], 0.0f, 1.0f);
-        changed |= dvz_gui_slider_float(gui, "Blue", &state->color[2], 0.0f, 1.0f);
-        changed |= dvz_gui_slider_float(gui, "Alpha", &state->color[3], 0.05f, 1.0f);
+        dvz_gui_separator_text(gui, "Appearance");
+        changed |= dvz_gui_color_edit4(gui, "Text color", state->color, 0);
         changed |= dvz_gui_checkbox(gui, "Animate", &state->animate);
         (void)dvz_gui_checkbox(gui, "ImGui demo", &state->show_demo);
         if (dvz_gui_button(gui, "Reset"))

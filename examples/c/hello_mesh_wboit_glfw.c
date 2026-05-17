@@ -33,6 +33,7 @@
 #include "datoviz/app.h"
 #include "datoviz/gui.h"
 #include "datoviz/scene.h"
+#include "example_gui_controls.h"
 
 
 
@@ -245,18 +246,24 @@ static void _mesh_wboit_gui(DvzGui* gui, DvzAppWindow* win, void* user_data)
     {
         background_changed |=
             dvz_gui_checkbox(gui, "Light background", &state->light_background);
-        changed |= dvz_gui_slider_float(gui, "Red", &state->cube_rgb[0], 0.0f, 1.0f);
-        changed |= dvz_gui_slider_float(gui, "Green", &state->cube_rgb[1], 0.0f, 1.0f);
-        changed |= dvz_gui_slider_float(gui, "Blue", &state->cube_rgb[2], 0.0f, 1.0f);
-        changed |= dvz_gui_slider_float(gui, "Alpha", &state->cube_alpha, 0.02f, 0.65f);
+
+        float cube_rgba[4] = {
+            state->cube_rgb[0],
+            state->cube_rgb[1],
+            state->cube_rgb[2],
+            state->cube_alpha,
+        };
+        changed |= dvz_gui_color_edit4(gui, "Cube color", cube_rgba, 0);
+        state->cube_rgb[0] = cube_rgba[0];
+        state->cube_rgb[1] = cube_rgba[1];
+        state->cube_rgb[2] = cube_rgba[2];
+        state->cube_alpha = cube_rgba[3];
+
+        dvz_gui_separator_text(gui, "Lighting");
         changed |= dvz_gui_slider_float(gui, "Ambient", &state->cube_ambient, 0.0f, 1.0f);
         changed |= dvz_gui_slider_float(gui, "Diffuse", &state->cube_diffuse, 0.0f, 1.5f);
-        changed |=
-            dvz_gui_slider_float(gui, "Light X", &state->cube_light_direction[0], -1.0f, 1.0f);
-        changed |=
-            dvz_gui_slider_float(gui, "Light Y", &state->cube_light_direction[1], -1.0f, 1.0f);
-        changed |=
-            dvz_gui_slider_float(gui, "Light Z", &state->cube_light_direction[2], -1.0f, 1.0f);
+        changed |= dvz_example_gui_vec3(
+            gui, "Light direction", state->cube_light_direction, -1.0f, 1.0f, "%.2f");
         if (dvz_gui_button(gui, "Reset"))
         {
             state->light_background = false;

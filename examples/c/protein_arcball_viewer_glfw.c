@@ -35,6 +35,7 @@
 #include "datoviz/gui.h"
 #include "datoviz/imgui.h"
 #include "datoviz/scene.h"
+#include "example_gui_controls.h"
 
 
 
@@ -1087,27 +1088,24 @@ static void _protein_gui(DvzGui* gui, DvzAppWindow* win, void* user_data)
                 _apply_atom_color(state);
         }
 
-        bool material_changed = false;
-        material_changed |= dvz_gui_checkbox(gui, "Standard material", &state->standard_material);
-        if (state->standard_material)
-        {
-            material_changed |=
-                dvz_gui_slider_float(gui, "Roughness", &state->roughness, 0.02f, 1.0f);
-            material_changed |=
-                dvz_gui_slider_float(gui, "Specular", &state->specular, 0.0f, 1.5f);
-            material_changed |= dvz_gui_slider_float(gui, "Rim", &state->rim_strength, 0.0f, 1.0f);
-        }
-        else
-        {
-            material_changed |=
-                dvz_gui_slider_float(gui, "Ambient", &state->ambient, 0.0f, 1.0f);
-            material_changed |=
-                dvz_gui_slider_float(gui, "Diffuse", &state->diffuse, 0.0f, 1.5f);
-            material_changed |=
-                dvz_gui_slider_float(gui, "Specular", &state->specular, 0.0f, 1.5f);
-            material_changed |=
-                dvz_gui_slider_float(gui, "Shininess", &state->shininess, 1.0f, 160.0f);
-        }
+        dvz_gui_separator_text(gui, "Material");
+        DvzExampleGuiMaterialControls material = {
+            .standard_material = state->standard_material,
+            .ambient = state->ambient,
+            .diffuse = state->diffuse,
+            .specular = state->specular,
+            .shininess = state->shininess,
+            .roughness = state->roughness,
+            .rim_strength = state->rim_strength,
+        };
+        bool material_changed = dvz_example_gui_material(gui, &material);
+        state->standard_material = material.standard_material;
+        state->ambient = material.ambient;
+        state->diffuse = material.diffuse;
+        state->specular = material.specular;
+        state->shininess = material.shininess;
+        state->roughness = material.roughness;
+        state->rim_strength = material.rim_strength;
         if (material_changed)
             _apply_material(state);
 
@@ -1121,30 +1119,46 @@ static void _protein_gui(DvzGui* gui, DvzAppWindow* win, void* user_data)
         if (atom_changed)
             _apply_atom_scale(state);
 
-        bool msaa_changed = false;
-        msaa_changed |= dvz_gui_checkbox(gui, "Enable MSAA", &state->msaa_enabled);
-        msaa_changed |=
-            dvz_gui_slider_float(gui, "MSAA samples", &state->msaa_samples, 2.0f, 16.0f);
-        msaa_changed |=
-            dvz_gui_checkbox(gui, "Alpha-to-coverage", &state->msaa_alpha_to_coverage);
+        dvz_gui_separator_text(gui, "MSAA");
+        DvzExampleGuiMsaaControls msaa = {
+            .enabled = state->msaa_enabled,
+            .alpha_to_coverage = state->msaa_alpha_to_coverage,
+            .samples = state->msaa_samples,
+            .min_samples = 2.0f,
+            .max_samples = 16.0f,
+        };
+        bool msaa_changed = dvz_example_gui_msaa(gui, &msaa);
+        state->msaa_enabled = msaa.enabled;
+        state->msaa_alpha_to_coverage = msaa.alpha_to_coverage;
+        state->msaa_samples = msaa.samples;
         if (msaa_changed)
             _apply_msaa(state);
 
-        bool ssao_changed = false;
-        ssao_changed |= dvz_gui_checkbox(gui, "SSAO", &state->ssao_enabled);
-        ssao_changed |= dvz_gui_slider_float(gui, "Radius", &state->ssao_radius, 0.05f, 4.0f);
-        ssao_changed |= dvz_gui_slider_float(gui, "Strength", &state->ssao_strength, 0.0f, 6.0f);
-        ssao_changed |= dvz_gui_slider_float(gui, "Bias", &state->ssao_bias, 0.0f, 0.12f);
-        ssao_changed |= dvz_gui_slider_float(gui, "Power", &state->ssao_power, 0.1f, 8.0f);
-        ssao_changed |= dvz_gui_slider_float(
-            gui, "Min visibility", &state->ssao_min_visibility, 0.0f, 1.0f);
-        ssao_changed |= dvz_gui_slider_float(gui, "Samples", &state->ssao_samples, 4.0f, 32.0f);
-        ssao_changed |= dvz_gui_checkbox(gui, "Blur", &state->ssao_blur);
-        if (state->ssao_blur)
-        {
-            ssao_changed |=
-                dvz_gui_slider_float(gui, "Blur radius", &state->ssao_blur_radius, 1.0f, 16.0f);
-        }
+        dvz_gui_separator_text(gui, "SSAO");
+        DvzExampleGuiSsaoControls ssao = {
+            .enabled = state->ssao_enabled,
+            .blur = state->ssao_blur,
+            .radius = state->ssao_radius,
+            .strength = state->ssao_strength,
+            .bias = state->ssao_bias,
+            .power = state->ssao_power,
+            .min_visibility = state->ssao_min_visibility,
+            .samples = state->ssao_samples,
+            .min_samples = 4.0f,
+            .max_samples = 32.0f,
+            .blur_radius = state->ssao_blur_radius,
+            .blur_radius_max = 16.0f,
+        };
+        bool ssao_changed = dvz_example_gui_ssao(gui, &ssao);
+        state->ssao_enabled = ssao.enabled;
+        state->ssao_blur = ssao.blur;
+        state->ssao_radius = ssao.radius;
+        state->ssao_strength = ssao.strength;
+        state->ssao_bias = ssao.bias;
+        state->ssao_power = ssao.power;
+        state->ssao_min_visibility = ssao.min_visibility;
+        state->ssao_samples = ssao.samples;
+        state->ssao_blur_radius = ssao.blur_radius;
         if (ssao_changed)
             _apply_ssao(state);
 

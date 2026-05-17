@@ -94,7 +94,8 @@ bool dvz_example_gui_msaa(DvzGui* gui, DvzExampleGuiMsaaControls* controls)
     const float max_samples = _control_max(controls->max_samples, 16.0f);
 
     changed |= dvz_gui_checkbox(gui, "Enable MSAA", &controls->enabled);
-    changed |= dvz_gui_slider_float(gui, "MSAA samples", &controls->samples, min_samples, max_samples);
+    changed |=
+        dvz_gui_slider_float(gui, "MSAA samples", &controls->samples, min_samples, max_samples);
     changed |= dvz_gui_checkbox(gui, "Alpha-to-coverage", &controls->alpha_to_coverage);
     return changed;
 }
@@ -125,12 +126,17 @@ bool dvz_example_gui_ssao(DvzGui* gui, DvzExampleGuiSsaoControls* controls)
     changed |= dvz_gui_slider_float(gui, "Min visibility", &controls->min_visibility, 0.0f, 1.0f);
     changed |= dvz_gui_slider_float(gui, "Samples", &controls->samples, min_samples, max_samples);
     changed |= dvz_gui_checkbox(gui, "Blur", &controls->blur);
-    changed |= dvz_gui_slider_float(gui, "Blur radius", &controls->blur_radius, 1.0f, blur_radius_max);
     changed |=
-        dvz_gui_slider_float(gui, "Depth sigma", &controls->blur_depth_sigma, 0.01f, 2.5f);
-    changed |=
-        dvz_gui_slider_float(gui, "Normal sigma", &controls->blur_normal_sigma, 0.01f, 1.0f);
-    changed |= dvz_gui_checkbox(gui, "Raw SSAO", &controls->debug_view);
+        dvz_gui_slider_float(gui, "Blur radius", &controls->blur_radius, 1.0f, blur_radius_max);
+    if (controls->show_blur_sigmas)
+    {
+        changed |=
+            dvz_gui_slider_float(gui, "Depth sigma", &controls->blur_depth_sigma, 0.01f, 2.5f);
+        changed |=
+            dvz_gui_slider_float(gui, "Normal sigma", &controls->blur_normal_sigma, 0.01f, 1.0f);
+    }
+    if (controls->show_debug_view)
+        changed |= dvz_gui_checkbox(gui, "Raw SSAO", &controls->debug_view);
     return changed;
 }
 
