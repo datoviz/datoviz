@@ -57,11 +57,10 @@ typedef enum TextLabMode
 typedef struct TextLabState
 {
     DvzAppWindow* win;
-    DvzText* title;
-    DvzText* sample;
-    DvzText* multiline;
-    DvzText* anchor_probe;
-    DvzText* ticks[TEXT_LAB_MAX_TICKS];
+    DvzVisual* title;
+    DvzVisual* sample;
+    DvzVisual* multiline;
+    DvzVisual* ticks;
     DvzVisual* raw_glyph;
     float size_pts;
     float tick_size_pts;
@@ -74,7 +73,6 @@ typedef struct TextLabState
     float tick_count_value;
     int mode;
     int anchor_index;
-    int renderer_index;
     bool show_raw_glyph;
     bool animate;
     bool show_demo;
@@ -133,23 +131,6 @@ static const char* mode_sample_text(int mode)
 
 
 /**
- * Return the retained text renderer selected by the GUI.
- *
- * @param index GUI renderer index
- * @return selected text renderer
- */
-static DvzTextRenderer selected_renderer(int index)
-{
-    if (index == 0)
-        return DVZ_TEXT_RENDERER_AUTO;
-    if (index == 2)
-        return DVZ_TEXT_RENDERER_BITMAP_ATLAS;
-    return DVZ_TEXT_RENDERER_SMALL_BITMAP_ATLAS;
-}
-
-
-
-/**
  * Convert GUI float RGBA channels to one DvzColor.
  *
  * @param rgba float RGBA channels in [0, 1]
@@ -173,54 +154,102 @@ static void gui_color_to_dvz(const float rgba[4], DvzColor out)
 
 
 /**
- * Apply one retained text style.
+ * Resolve a panel target anchor in figure pixels.
  *
- * @param text retained text object
- * @param size_pts text size
- * @param renderer retained renderer
- * @param color text color
+ * @param anchor panel target anchor
+ * @param out output x/y figure pixels
  */
-static void apply_text_style(
-    DvzText* text, float size_pts, DvzTextRenderer renderer, const DvzColor color)
+static void target_anchor_pixels(DvzSceneAnchor anchor, float out[2])
 {
-    ANN(text);
-    DvzTextStyle style = {
-        .size_pts = size_pts,
-        .renderer = renderer,
-        .color = {color[0], color[1], color[2], color[3]},
-    };
-    dvz_text_set_style(text, &style);
+    ANN(out);
+    out[0] = 0.0f;
+    out[1] = 0.0f;
+    switch (anchor)
+    {
+    case DVZ_SCENE_ANCHOR_PANEL_TOP:
+        out[0] = 0.5f * TEXT_LAB_FIGURE_WIDTH;
+        return;
+    case DVZ_SCENE_ANCHOR_PANEL_TOP_RIGHT:
+        out[0] = TEXT_LAB_FIGURE_WIDTH;
+        return;
+    case DVZ_SCENE_ANCHOR_PANEL_LEFT:
+        out[1] = 0.5f * TEXT_LAB_FIGURE_HEIGHT;
+        return;
+    case DVZ_SCENE_ANCHOR_PANEL_CENTER:
+        out[0] = 0.5f * TEXT_LAB_FIGURE_WIDTH;
+        out[1] = 0.5f * TEXT_LAB_FIGURE_HEIGHT;
+        return;
+    case DVZ_SCENE_ANCHOR_PANEL_RIGHT:
+        out[0] = TEXT_LAB_FIGURE_WIDTH;
+        out[1] = 0.5f * TEXT_LAB_FIGURE_HEIGHT;
+        return;
+    case DVZ_SCENE_ANCHOR_PANEL_BOTTOM_LEFT:
+        out[1] = TEXT_LAB_FIGURE_HEIGHT;
+        return;
+    case DVZ_SCENE_ANCHOR_PANEL_BOTTOM:
+        out[0] = 0.5f * TEXT_LAB_FIGURE_WIDTH;
+        out[1] = TEXT_LAB_FIGURE_HEIGHT;
+        return;
+    case DVZ_SCENE_ANCHOR_PANEL_BOTTOM_RIGHT:
+        out[0] = TEXT_LAB_FIGURE_WIDTH;
+        out[1] = TEXT_LAB_FIGURE_HEIGHT;
+        return;
+    case DVZ_SCENE_ANCHOR_PANEL_TOP_LEFT:
+    case DVZ_SCENE_ANCHOR_NONE:
+    default:
+        return;
+    }
 }
 
 
 
 /**
- * Apply one retained screen placement.
+ * Update a batched text visual with constant style attributes.
  *
- * @param text retained text object
- * @param anchor panel anchor
- * @param x horizontal offset in pixels
- * @param y vertical offset in pixels
- * @param angle rotation angle in radians
- * @param pivot optional normalized text-box pivot
+ * @param visual text visual
+ * @param strings text strings
+ * @param count number of text strings
+ * @param positions figure-pixel text positions
+ * @param size_pts text size in points
+ * @param color text color
+ * @param pivot normalized text-box pivot
+ * @param angles per-string angles, or NULL for zero
  */
-static void apply_text_placement(
-    DvzText* text, DvzSceneAnchor anchor, float x, float y, float angle, const float* pivot)
+static void set_text_items(
+    DvzVisual* visual, const char* const* strings, uint32_t count, float positions[][3],
+    float size_pts, const DvzColor color, const float pivot[2], const float* angles)
 {
-    ANN(text);
-    DvzTextPlacement placement = {
-        .mode = DVZ_TEXT_PLACEMENT_SCREEN,
-        .anchor = anchor,
-        .offset = {x, y},
-        .angle = angle,
-    };
-    if (pivot != NULL)
+    ANN(visual);
+    ANN(strings);
+    ANN(positions);
+    ANN(pivot);
+    if (count > TEXT_LAB_MAX_TICKS)
+        count = TEXT_LAB_MAX_TICKS;
+    float sizes[TEXT_LAB_MAX_TICKS] = {0};
+    float pivots[TEXT_LAB_MAX_TICKS][2] = {0};
+    float angle_values[TEXT_LAB_MAX_TICKS] = {0};
+    DvzColor colors[TEXT_LAB_MAX_TICKS] = {0};
+    for (uint32_t i = 0; i < count && i < TEXT_LAB_MAX_TICKS; i++)
     {
-        placement.pivot[0] = pivot[0];
-        placement.pivot[1] = pivot[1];
-        placement.has_pivot = true;
+        sizes[i] = size_pts;
+        pivots[i][0] = pivot[0];
+        pivots[i][1] = pivot[1];
+        angle_values[i] = angles != NULL ? angles[i] : 0.0f;
+        colors[i][0] = color[0];
+        colors[i][1] = color[1];
+        colors[i][2] = color[2];
+        colors[i][3] = color[3];
     }
-    dvz_text_set_placement(text, &placement);
+    dvz_visual_set_visible(visual, true);
+    dvz_visual_set_strings(visual, "text", strings, count);
+    DvzVisualDataUpdate updates[5] = {
+        {.attr_name = "position", .data = positions, .item_count = count},
+        {.attr_name = "pivot", .data = pivots, .item_count = count},
+        {.attr_name = "size", .data = sizes, .item_count = count},
+        {.attr_name = "color", .data = colors, .item_count = count},
+        {.attr_name = "angle", .data = angle_values, .item_count = count},
+    };
+    dvz_visual_set_data_many(visual, updates, 5);
 }
 
 
@@ -316,7 +345,7 @@ static void upload_raw_glyph_texture(DvzVisual* visual)
 
 
 /**
- * Update every retained text object from the current GUI state.
+ * Update every batched text visual from the current GUI state.
  *
  * @param state example state
  */
@@ -325,73 +354,83 @@ static void update_text_scene(TextLabState* state)
     ANN(state);
     DvzColor color = {0};
     gui_color_to_dvz(state->color, color);
-    DvzTextRenderer renderer = selected_renderer(state->renderer_index);
     DvzSceneAnchor anchor = selected_anchor(state->anchor_index);
     float pivot[2] = {state->pivot_x, state->pivot_y};
+    float target[2] = {0};
+    target_anchor_pixels(anchor, target);
 
-    dvz_text_set_string(state->title, "Text lab");
-    apply_text_style(state->title, 22.0f, renderer, color);
-    apply_text_placement(
-        state->title, DVZ_SCENE_ANCHOR_PANEL_TOP_LEFT, 24.0f, 24.0f, 0.0f, NULL);
+    dvz_visual_set_visible(state->sample, false);
+    dvz_visual_set_visible(state->multiline, false);
+    dvz_visual_set_visible(state->ticks, false);
 
-    dvz_text_set_string(state->sample, "");
-    dvz_text_set_string(state->multiline, "");
-    dvz_text_set_string(state->anchor_probe, "");
-    apply_text_style(state->multiline, state->size_pts, renderer, color);
+    const char* title_string = "Text Lab";
+    float title_pos[1][3] = {{24.0f, 24.0f, 0.0f}};
+    const float title_pivot[2] = {0.0f, 0.0f};
+    set_text_items(state->title, &title_string, 1, title_pos, 22.0f, color, title_pivot, NULL);
+
+    const char* sample_string = NULL;
+    float sample_pos[1][3] = {{target[0] + state->offset_x, target[1] + state->offset_y, 0.0f}};
+    float sample_angle[1] = {state->angle};
 
     uint32_t tick_count = (uint32_t)(state->tick_count_value + 0.5f);
     if (tick_count > TEXT_LAB_MAX_TICKS)
         tick_count = TEXT_LAB_MAX_TICKS;
-    for (uint32_t i = 0; i < TEXT_LAB_MAX_TICKS; i++)
-    {
-        dvz_text_set_string(state->ticks[i], "");
-        apply_text_style(state->ticks[i], state->tick_size_pts, renderer, color);
-        apply_text_placement(
-            state->ticks[i], DVZ_SCENE_ANCHOR_PANEL_BOTTOM_LEFT, 0.0f, 0.0f, 0.0f, NULL);
-    }
 
     if (state->mode == TEXT_LAB_MODE_TICKS)
     {
-        dvz_text_set_string(state->sample, "Tick labels");
-        apply_text_style(state->sample, 18.0f, renderer, color);
-        apply_text_placement(
-            state->sample, DVZ_SCENE_ANCHOR_PANEL_TOP, 0.0f, 96.0f, 0.0f, NULL);
+        sample_string = "Tick Labels";
+        float heading_pos[1][3] = {
+            {0.5f * TEXT_LAB_FIGURE_WIDTH, 76.0f, 0.0f},
+        };
+        const float heading_pivot[2] = {0.5f, 0.5f};
+        set_text_items(
+            state->sample, &sample_string, 1, heading_pos, 18.0f, color, heading_pivot, NULL);
 
         float usable = 0.72f * TEXT_LAB_FIGURE_WIDTH;
-        float left = -0.5f * usable;
+        float left = 0.5f * (TEXT_LAB_FIGURE_WIDTH - usable);
         float step = tick_count > 1 ? usable / (float)(tick_count - 1u) : 0.0f;
+        char labels[TEXT_LAB_MAX_TICKS][32] = {{0}};
+        const char* strings[TEXT_LAB_MAX_TICKS] = {0};
+        float positions[TEXT_LAB_MAX_TICKS][3] = {{0}};
         for (uint32_t i = 0; i < tick_count; i++)
         {
-            char label[32] = {0};
-            dvz_snprintf(label, sizeof(label), "%u", i);
-            dvz_text_set_string(state->ticks[i], label);
-            float x = left + (float)i * step;
-            apply_text_placement(
-                state->ticks[i], DVZ_SCENE_ANCHOR_PANEL_CENTER, x, 0.0f, 0.0f,
-                pivot);
+            dvz_snprintf(labels[i], sizeof(labels[i]), "%u", i);
+            strings[i] = labels[i];
+            positions[i][0] = left + (float)i * step;
+            positions[i][1] = 0.5f * TEXT_LAB_FIGURE_HEIGHT;
+            positions[i][2] = 0.0f;
         }
+        set_text_items(
+            state->ticks, strings, tick_count, positions, state->tick_size_pts, color, pivot, NULL);
     }
     else if (state->mode == TEXT_LAB_MODE_MULTILINE)
     {
-        dvz_text_set_string(state->multiline, "line one\nline two\nline three");
-        apply_text_style(state->multiline, state->size_pts, renderer, color);
-        apply_text_placement(
-            state->multiline, DVZ_SCENE_ANCHOR_PANEL_CENTER, -180.0f, -20.0f, 0.0f,
-            pivot);
+        const char* multiline_string = "line one\nline two\nline three";
+        float multiline_pos[1][3] = {
+            {0.5f * TEXT_LAB_FIGURE_WIDTH - 180.0f, 0.5f * TEXT_LAB_FIGURE_HEIGHT - 20.0f, 0.0f},
+        };
+        set_text_items(
+            state->multiline, &multiline_string, 1, multiline_pos, state->size_pts, color, pivot,
+            NULL);
     }
     else
     {
-        dvz_text_set_string(state->sample, mode_sample_text(state->mode));
-        apply_text_style(state->sample, state->size_pts, renderer, color);
+        sample_string = mode_sample_text(state->mode);
         if (state->mode == TEXT_LAB_MODE_GLYPH)
         {
-            apply_text_placement(
-                state->sample, DVZ_SCENE_ANCHOR_PANEL_TOP, 0.0f, 96.0f, 0.0f, NULL);
+            float glyph_heading_pos[1][3] = {
+                {0.5f * TEXT_LAB_FIGURE_WIDTH, 76.0f, 0.0f},
+            };
+            const float glyph_heading_pivot[2] = {0.5f, 0.5f};
+            set_text_items(
+                state->sample, &sample_string, 1, glyph_heading_pos, state->size_pts, color,
+                glyph_heading_pivot, NULL);
         }
         else
         {
-            apply_text_placement(
-                state->sample, anchor, state->offset_x, state->offset_y, state->angle, pivot);
+            set_text_items(
+                state->sample, &sample_string, 1, sample_pos, state->size_pts, color, pivot,
+                sample_angle);
         }
     }
 
@@ -424,7 +463,6 @@ static void reset_text_state(TextLabState* state)
     state->tick_count_value = 12.0f;
     state->mode = TEXT_LAB_MODE_SAMPLE;
     state->anchor_index = 4;
-    state->renderer_index = 1;
     state->show_raw_glyph = false;
     state->animate = false;
 }
@@ -447,11 +485,6 @@ static void gui_callback(DvzGui* gui, DvzAppWindow* win, void* user_data)
 
     if (dvz_gui_begin(gui, "Text", NULL, 0))
     {
-        static const char* const renderer_items[] = {
-            "auto",
-            "small bitmap atlas",
-            "bitmap atlas",
-        };
         static const char* const mode_items[] = {
             "sample",
             "ticks",
@@ -472,7 +505,6 @@ static void gui_callback(DvzGui* gui, DvzAppWindow* win, void* user_data)
         };
 
         changed |= dvz_gui_combo(gui, "Mode", &state->mode, mode_items, 5);
-        changed |= dvz_gui_combo(gui, "Renderer", &state->renderer_index, renderer_items, 3);
         if (state->mode == TEXT_LAB_MODE_SAMPLE || state->mode == TEXT_LAB_MODE_UTF8)
         {
             changed |= dvz_gui_slider_float_format(
@@ -497,8 +529,8 @@ static void gui_callback(DvzGui* gui, DvzAppWindow* win, void* user_data)
         }
         if (state->mode != TEXT_LAB_MODE_GLYPH)
         {
-            changed |= dvz_gui_slider_float(gui, "Pivot X", &state->pivot_x, 0.0f, 1.0f);
-            changed |= dvz_gui_slider_float(gui, "Pivot Y", &state->pivot_y, 0.0f, 1.0f);
+            changed |= dvz_gui_slider_float(gui, "Text anchor X", &state->pivot_x, 0.0f, 1.0f);
+            changed |= dvz_gui_slider_float(gui, "Text anchor Y", &state->pivot_y, 0.0f, 1.0f);
         }
         if (state->mode == TEXT_LAB_MODE_TICKS)
         {
@@ -604,39 +636,27 @@ int main(int argc, char** argv)
     TextLabState state = {0};
     reset_text_state(&state);
 
-    DvzTextStyle style = {
-        .size_pts = state.size_pts,
-        .renderer = DVZ_TEXT_RENDERER_SMALL_BITMAP_ATLAS,
-        .color = {220, 235, 255, 255},
-    };
-    DvzTextPlacement placement = {
-        .mode = DVZ_TEXT_PLACEMENT_SCREEN,
-        .anchor = DVZ_SCENE_ANCHOR_PANEL_TOP_LEFT,
-        .offset = {24.0f, 24.0f},
-    };
-    state.title =
-        dvz_text(panel, &(DvzTextDesc){.string = "", .style = style, .placement = placement});
-    state.sample =
-        dvz_text(panel, &(DvzTextDesc){.string = "", .style = style, .placement = placement});
-    state.multiline =
-        dvz_text(panel, &(DvzTextDesc){.string = "", .style = style, .placement = placement});
-    state.anchor_probe =
-        dvz_text(panel, &(DvzTextDesc){.string = "", .style = style, .placement = placement});
+    state.title = dvz_text(scene, 0);
+    state.sample = dvz_text(scene, 0);
+    state.multiline = dvz_text(scene, 0);
+    state.ticks = dvz_text(scene, 0);
     if (state.title == NULL || state.sample == NULL || state.multiline == NULL ||
-        state.anchor_probe == NULL)
+        state.ticks == NULL)
     {
         dvz_fprintf(stderr, "dvz_text() failed\n");
         dvz_scene_destroy(scene);
         return 1;
     }
-
-    for (uint32_t i = 0; i < TEXT_LAB_MAX_TICKS; i++)
+    DvzVisual* text_visuals[] = {state.title, state.sample, state.multiline, state.ticks};
+    DvzVisualAttachDesc text_attach = {
+        .z_layer = 4,
+        .controller_mode = DVZ_CONTROLLER_FIXED,
+    };
+    for (uint32_t i = 0; i < (uint32_t)(sizeof(text_visuals) / sizeof(text_visuals[0])); i++)
     {
-        state.ticks[i] =
-            dvz_text(panel, &(DvzTextDesc){.string = "", .style = style, .placement = placement});
-        if (state.ticks[i] == NULL)
+        if (dvz_panel_add_visual(panel, text_visuals[i], &text_attach) != 0)
         {
-            dvz_fprintf(stderr, "dvz_text() failed for tick %u\n", i);
+            dvz_fprintf(stderr, "dvz_panel_add_visual() failed for text visual %u\n", i);
             dvz_scene_destroy(scene);
             return 1;
         }
