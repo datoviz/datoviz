@@ -1709,6 +1709,23 @@ static bool _scene_panel_has_visible_scene_occlusion_target(const DvzPanel* pane
 
 
 /**
+ * Return whether a draw contract requires any depth resource.
+ *
+ * @param contract the resolved draw contract
+ * @return whether the draw uses fixed-function or sampled depth
+ */
+static bool _scene_draw_contract_needs_depth(const DvzSceneDrawContract* contract)
+{
+    ANN(contract);
+    return (
+        contract->depth_policy &
+        (DVZ_SCENE_DEPTH_POLICY_TEST | DVZ_SCENE_DEPTH_POLICY_WRITE |
+         DVZ_SCENE_DEPTH_POLICY_SAMPLE)) != 0;
+}
+
+
+
+/**
  * Resolve whether a transparent draw contract requires a pass depth attachment.
  *
  * @param visual the retained visual
@@ -1726,7 +1743,7 @@ static bool _scene_transparent_contract_needs_depth(
     DvzSceneDrawContract contract = {0};
     if (!_scene_draw_contract_from_visual(visual, attach, pass_role, &contract))
         return false;
-    *out = contract.depth_test || contract.samples_depth || contract.depth_write;
+    *out = _scene_draw_contract_needs_depth(&contract);
     return true;
 }
 
@@ -1991,19 +2008,26 @@ bool _scene_emit_panel_render(
         if (!caps.draws_in_opaque_pass)
         {
             has_transparent = true;
+            DvzFramePlanRenderPassRole pass_role =
+                DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_BLEND;
             if (caps.draws_in_transparent_blend_pass)
             {
-                bool contract_needs_depth = false;
-                if (_scene_transparent_contract_needs_depth(
-                        visual, attach, DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_BLEND,
-                        &contract_needs_depth))
-                {
-                    transparent_needs_depth = transparent_needs_depth || contract_needs_depth;
-                }
+                pass_role = DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_BLEND;
             }
-            else
-                transparent_needs_depth =
-                    transparent_needs_depth || caps.needs_depth_attachment;
+            else if (caps.draws_in_wboit_pass)
+            {
+                pass_role = DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_ACCUMULATION;
+            }
+            else if (caps.draws_in_depth_peel_pass)
+            {
+                pass_role = DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_INIT;
+            }
+            bool contract_needs_depth = false;
+            if (_scene_transparent_contract_needs_depth(
+                    visual, attach, pass_role, &contract_needs_depth))
+            {
+                transparent_needs_depth = transparent_needs_depth || contract_needs_depth;
+            }
             continue;
         }
 
@@ -2077,16 +2101,13 @@ bool _scene_emit_panel_render(
         if (caps.draws_in_transparent_blend_pass)
         {
             DvzSceneDrawContract draw_contract = {0};
-            bool have_contract = _scene_draw_contract_from_visual(
-                visual, attach, DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_BLEND, &draw_contract);
-            bool draw_needs_depth = caps.needs_depth_attachment;
-            bool draw_writes_depth = false;
-            if (have_contract)
-            {
-                draw_needs_depth = draw_contract.depth_test || draw_contract.samples_depth ||
-                                   draw_contract.depth_write;
-                draw_writes_depth = draw_contract.depth_write;
-            }
+            if (!_scene_draw_contract_from_visual(
+                    visual, attach, DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_BLEND,
+                    &draw_contract))
+                continue;
+            bool draw_needs_depth = _scene_draw_contract_needs_depth(&draw_contract);
+            bool draw_writes_depth =
+                (draw_contract.depth_policy & DVZ_SCENE_DEPTH_POLICY_WRITE) != 0;
 
             bool start_blended_pass = blended_count == 0;
             if (!start_blended_pass)

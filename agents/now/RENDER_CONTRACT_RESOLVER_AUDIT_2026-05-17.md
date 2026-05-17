@@ -233,6 +233,30 @@ Validation:
 6. `git diff --check -- src/scene/_frame_plan.h src/scene/scene_emit.c src/scene/tests/scene_graph.c agents/now/RENDER_CONTRACT_RESOLVER_AUDIT_2026-05-17.md`
 
 
+### 2026-05-17: Phase 1 / Transparent depth decisions from contracts
+
+Completed the first fallback-removal slice in scene emission.
+
+Changes:
+
+1. Added a local helper that interprets `DvzSceneDrawContract.depth_policy` as the source of truth
+   for transparent depth needs.
+2. Replaced transparent depth pre-scan fallback logic with resolved draw contracts for source-over,
+   WBOIT, and depth-peel roles.
+3. Replaced source-over split/grouping fallback logic with resolved draw contracts; contract
+   resolution failure now skips the draw instead of falling back to visual caps.
+
+Validation:
+
+1. `cmake --build build --target dvztest_scene -j2`
+2. `./build/testing/dvztest_scene test_scene_visual_alpha_mode_splits_frame_plan_passes`
+3. `./build/testing/dvztest_scene test_scene_visual_alpha_mode_standard_blend`
+4. `./build/testing/dvztest_scene test_scene_visual_alpha_mode_emits_wboit_drp2`
+5. `./build/testing/dvztest_scene test_scene_visual_alpha_mode_depth_peel_frame_plan`
+6. `./build/testing/dvztest_scene test_scene_blended_mesh_orders_after_volume_slice`
+7. `git diff --check -- src/scene/scene_emit.c agents/now/RENDER_CONTRACT_RESOLVER_AUDIT_2026-05-17.md`
+
+
 ## Executive Assessment
 
 The direction is correct and worth continuing. The proposal identifies the right failure mode:
