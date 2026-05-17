@@ -100,6 +100,10 @@ Completed phase records. These are useful context, but they are not current exec
 
 Backlog, strategic direction, or secondary cleanup tracks.
 
+API design backlog:
+
+1. [later/SCENE_SHARED_VISUAL_DATA_API.md](later/SCENE_SHARED_VISUAL_DATA_API.md)
+
 
 ## Maintenance Rules
 
