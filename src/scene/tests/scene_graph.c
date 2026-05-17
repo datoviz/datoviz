@@ -10007,6 +10007,30 @@ int test_scene_drp2_contract_checker_rejects_pipeline_drift(TstSuite* suite, Tst
     AT(!_scene_frame_plan_drp2_contracts_validate(plan, stream, &report));
     AT(dvz_diagnostic_report_count(&report) > 0);
 
+    wboit_pipeline->u.create_render_pipeline = original_pipeline_command.u.create_render_pipeline;
+
+    DvzDrp2Command* resolve_bind_group = NULL;
+    for (uint32_t i = 0; i < stream->count; i++)
+    {
+        DvzDrp2Command* command = &stream->commands[i];
+        if (command->type == DVZ_DRP2_COMMAND_CREATE_BIND_GROUP &&
+            command->u.create_bind_group.entry_count == 3 &&
+            command->u.create_bind_group.entries[0].binding_type ==
+                DVZ_DRP2_BINDING_TYPE_SAMPLED_TEXTURE &&
+            command->u.create_bind_group.entries[1].binding_type ==
+                DVZ_DRP2_BINDING_TYPE_SAMPLED_TEXTURE)
+        {
+            resolve_bind_group = command;
+            break;
+        }
+    }
+    ANN(resolve_bind_group);
+    resolve_bind_group->u.create_bind_group.entries[0].resource_id =
+        resolve_bind_group->u.create_bind_group.entries[1].resource_id;
+    dvz_diagnostic_report_init(&report);
+    AT(!_scene_frame_plan_drp2_contracts_validate(plan, stream, &report));
+    AT(dvz_diagnostic_report_count(&report) > 0);
+
     dvz_drp2_stream_destroy(stream);
     dvz_frame_plan_emitter_destroy(emitter);
     dvz_frame_plan_destroy(plan);

@@ -336,6 +336,32 @@ Validation:
 9. `git diff --check -- src/scene/render_contract.c src/scene/tests/scene_graph.c`
 
 
+### 2026-05-17: Phase 2 / DRP2 sampled-read binding checks
+
+Completed the sampled-resource checker slice.
+
+Changes:
+
+1. The scene DRP2 checker now inspects emitted bind groups when their creation commands are present
+   in the current stream.
+2. Active graph sampled reads are matched against sampled texture entries by DRP2 object label,
+   including scoped runtime resource labels.
+3. The checker rejects observed sampled bind groups that fail to cover the active graph pass's
+   sampled-read resources while still allowing persistent bind groups created by earlier streams.
+4. `test_scene_drp2_contract_checker_rejects_pipeline_drift` now mutates the WBOIT resolve sampled
+   bind group so both sampled entries reference the same texture and verifies the checker rejects it.
+
+Validation:
+
+1. `cmake --build build --target dvztest_scene -j2`
+2. `./build/testing/dvztest_scene test_scene_drp2_contract_checker_rejects_pipeline_drift`
+3. `./build/testing/dvztest_scene test_scene_visual_alpha_mode_emits_wboit_drp2`
+4. `./build/testing/dvztest_scene test_scene_visual_alpha_mode_emits_depth_peel_drp2`
+5. `./build/testing/dvztest_scene test_scene_blended_mesh_occlusion_contracts`
+6. `./build/testing/dvztest_scene test_scene_ssao_runtime_lowering`
+7. `./build/testing/dvztest_scene test_scene_alpha_mode_toggle_refreshes_drp2_contracts`
+
+
 ### 2026-05-17: Phase 3 / Central render-role semantics
 
 Completed the first technique-centralization slice.

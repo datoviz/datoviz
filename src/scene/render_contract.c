@@ -35,6 +35,8 @@ typedef struct ContractDrp2PassState
     bool color_format_known[DVZ_DRP2_MAX_COLOR_ATTACHMENTS];
     bool has_sample_count;
     uint32_t sample_count;
+    bool saw_sampled_bind_group;
+    bool sampled_reads_matched[DVZ_FRAME_PLAN_MAX_GRAPH_ACCESSES];
 } ContractDrp2PassState;
 
 
@@ -801,6 +803,49 @@ static const DvzDrp2Command* _contract_drp2_texture_for_id(
 
 
 /**
+ * Return the DRP2 CreateBindGroup command for a bind-group id.
+ *
+ * @param stream the DRP2 command stream
+ * @param bind_group_id the bind-group id
+ * @return the bind-group creation command, or NULL when it was created by an earlier stream
+ */
+static const DvzDrp2Command* _contract_drp2_bind_group_for_id(
+    const DvzDrp2CommandStream* stream, uint64_t bind_group_id)
+{
+    ANN(stream);
+    if (bind_group_id == 0)
+        return NULL;
+    for (uint32_t i = 0; i < stream->count; i++)
+    {
+        const DvzDrp2Command* command = &stream->commands[i];
+        if (command->type == DVZ_DRP2_COMMAND_CREATE_BIND_GROUP &&
+            command->u.create_bind_group.id == bind_group_id)
+            return command;
+    }
+    return NULL;
+}
+
+
+
+/**
+ * Return whether a DRP2 label names one graph resource, with optional runtime scope suffix.
+ *
+ * @param label emitted runtime object label
+ * @param resource_id graph resource id
+ * @return whether the label matches the graph resource
+ */
+static bool _contract_resource_label_matches(const char* label, const char* resource_id)
+{
+    if (label == NULL || resource_id == NULL || resource_id[0] == '\0')
+        return false;
+    size_t len = strlen(resource_id);
+    return strncmp(label, resource_id, len) == 0 &&
+           (label[len] == '\0' || strncmp(&label[len], "_scope_", 7) == 0);
+}
+
+
+
+/**
  * Return the effective DRP2 color format when a command omits it.
  *
  * @param format emitted VkFormat value, where zero means DRP2's default color format
@@ -1060,6 +1105,78 @@ static bool _contract_validate_drp2_pipeline_color_targets(
         if (pipeline_format != pass_state->color_formats[i])
         {
             _contract_report(report, "DRP2 pipeline color target format mismatches render pass");
+            ok = false;
+        }
+    }
+    return ok;
+}
+
+
+
+/**
+ * Record graph sampled reads satisfied by one emitted bind group.
+ *
+ * @param stream the DRP2 command stream
+ * @param graph_pass active graph pass
+ * @param bind_group the CreateBindGroup command
+ * @param state active render-pass checker state
+ */
+static void _contract_mark_drp2_sampled_reads(
+    const DvzDrp2CommandStream* stream, const DvzFrameGraphPass* graph_pass,
+    const DvzDrp2Command* bind_group, ContractDrp2PassState* state)
+{
+    ANN(stream);
+    ANN(graph_pass);
+    ANN(bind_group);
+    ANN(state);
+
+    for (uint32_t i = 0; i < bind_group->u.create_bind_group.entry_count; i++)
+    {
+        const DvzDrp2BindGroupEntry* entry = &bind_group->u.create_bind_group.entries[i];
+        if (entry->binding_type != DVZ_DRP2_BINDING_TYPE_SAMPLED_TEXTURE &&
+            entry->binding_type != DVZ_DRP2_BINDING_TYPE_STORAGE_TEXTURE)
+            continue;
+        if (entry->resource_kind != DVZ_DRP2_BINDING_RESOURCE_TEXTURE &&
+            entry->resource_kind != DVZ_DRP2_BINDING_RESOURCE_TEXTURE_VIEW)
+            continue;
+
+        state->saw_sampled_bind_group = true;
+        const char* label = dvz_drp2_stream_label(stream, entry->resource_id);
+        for (uint32_t j = 0; j < graph_pass->read_count; j++)
+        {
+            if (graph_pass->reads[j].usage != DVZ_FRAME_GRAPH_ACCESS_SAMPLED)
+                continue;
+            if (_contract_resource_label_matches(label, graph_pass->reads[j].resource_id))
+                state->sampled_reads_matched[j] = true;
+        }
+    }
+}
+
+
+
+/**
+ * Validate that observed sampled bind groups cover the active graph pass sampled reads.
+ *
+ * @param graph_pass active graph pass
+ * @param state active render-pass checker state
+ * @param report optional diagnostic report
+ * @return whether all observed sampled-read contracts were satisfied
+ */
+static bool _contract_validate_drp2_sampled_reads(
+    const DvzFrameGraphPass* graph_pass, const ContractDrp2PassState* state,
+    DvzDiagnosticReport* report)
+{
+    if (graph_pass == NULL || state == NULL || !state->saw_sampled_bind_group)
+        return true;
+
+    bool ok = true;
+    for (uint32_t i = 0; i < graph_pass->read_count; i++)
+    {
+        if (graph_pass->reads[i].usage != DVZ_FRAME_GRAPH_ACCESS_SAMPLED)
+            continue;
+        if (!state->sampled_reads_matched[i])
+        {
+            _contract_report(report, "DRP2 sampled bind group misses graph read resource");
             ok = false;
         }
     }
@@ -1645,6 +1762,17 @@ bool _scene_frame_plan_drp2_contracts_validate(
                     _contract_drp2_pipeline_for_id(stream, command->u.set_pipeline.pipeline_id);
             }
             break;
+        case DVZ_DRP2_COMMAND_SET_BIND_GROUP:
+            if (active_render != NULL && active_graph_pass != NULL)
+            {
+                uint64_t bind_group_id = command->u.set_bind_group.bind_group_id;
+                const DvzDrp2Command* bind_group =
+                    _contract_drp2_bind_group_for_id(stream, bind_group_id);
+                if (bind_group != NULL)
+                    _contract_mark_drp2_sampled_reads(
+                        stream, active_graph_pass, bind_group, &active_pass_state);
+            }
+            break;
         case DVZ_DRP2_COMMAND_DRAW:
         case DVZ_DRP2_COMMAND_DRAW_INDEXED:
             if (active_render == NULL)
@@ -1670,6 +1798,9 @@ bool _scene_frame_plan_drp2_contracts_validate(
             active_draw_index++;
             break;
         case DVZ_DRP2_COMMAND_END_RENDER_PASS:
+            if (!_contract_validate_drp2_sampled_reads(
+                    active_graph_pass, &active_pass_state, report))
+                ok = false;
             if (active_render != NULL && active_render->u.render.visual_count > 0 &&
                 active_draw_index != active_render->u.render.visual_count)
             {
