@@ -1272,6 +1272,85 @@ int test_app_offscreen_image_has_nonblank_pixels(TstSuite* suite, TstItem* item)
 }
 
 
+/**
+ * Ensure retained text renders visible pixels through the offscreen app path.
+ *
+ * @param suite the test suite
+ * @param item the test item
+ * @return 0 on success
+ */
+int test_app_offscreen_text_has_nonblank_pixels(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    if (!_scene_vklite_runtime_available())
+        return 0;
+
+    DvzScene* scene = dvz_scene();
+    AT(scene != NULL);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    AT(figure != NULL);
+    DvzPanel* panel = dvz_panel(
+        figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+    AT(panel != NULL);
+
+    DvzText* text = dvz_text(
+        panel,
+        &(DvzTextDesc){
+            .string = "HI",
+            .style = {
+                .size_pts = 16.0f,
+                .renderer = DVZ_TEXT_RENDERER_SMALL_BITMAP_ATLAS,
+                .color = {0, 255, 0, 255},
+            },
+            .placement = {
+                .mode = DVZ_TEXT_PLACEMENT_SCREEN,
+                .anchor = DVZ_SCENE_ANCHOR_PANEL_TOP_LEFT,
+                .offset = {8.0f, 8.0f},
+            },
+        });
+    AT(text != NULL);
+
+    DvzApp* app = dvz_app(scene);
+    if (app == NULL)
+    {
+        log_warn("test_app_offscreen_text_has_nonblank_pixels skipped: GPU context creation failed");
+        dvz_scene_destroy(scene);
+        return 0;
+    }
+    DvzAppWindow* win = dvz_app_window(app, figure, 64, 64);
+    AT(win != NULL);
+
+    dvz_app_run(app, 1);
+
+    DvzCanvas* canvas = dvz_app_window_canvas(win);
+    ANN(canvas);
+
+    uint32_t width = 0;
+    uint32_t height = 0;
+    uint8_t* rgba = NULL;
+    AT(dvz_canvas_capture_rgba(canvas, &width, &height, &rgba) == 0);
+    ANN(rgba);
+    AT(width == 64);
+    AT(height == 64);
+
+    uint32_t green_count = 0;
+    for (uint32_t i = 0; i < width * height; i++)
+    {
+        const uint8_t* pixel = &rgba[4 * i];
+        if (pixel[1] > 120 && pixel[0] < 80 && pixel[2] < 80)
+            green_count++;
+    }
+    AT(green_count > 0);
+
+    dvz_free(rgba);
+    dvz_app_destroy(app);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
 int test_app_offscreen_image_field_partial_update_changes_region(TstSuite* suite, TstItem* item)
 {
     ANN(suite);
@@ -3232,6 +3311,7 @@ int test_scene_app(TstSuite* suite)
     TEST_SIMPLE(test_app_offscreen_mesh_ssao_changes_pixels);
     TEST_SIMPLE(test_app_offscreen_records_dvzr_frames);
     TEST_SIMPLE(test_app_offscreen_image_has_nonblank_pixels);
+    TEST_SIMPLE(test_app_offscreen_text_has_nonblank_pixels);
     TEST_SIMPLE(test_app_offscreen_image_field_partial_update_changes_region);
     TEST_SIMPLE(test_app_offscreen_lit_primitive_depth_orders_overlap);
     TEST_SIMPLE(test_app_offscreen_lit_primitive_depth_cue_darkens_far);
