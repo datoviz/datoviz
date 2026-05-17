@@ -6,6 +6,10 @@
 > - **Purpose:** give future agents the practical next steps after the first scene -> DRP2 ->
 >   vklite/canvas slice.
 
+For ranked scene/example priorities and the capability matrix that connects examples to core
+feature work, see
+[`SCENE_EXAMPLE_PRIORITIZATION.md`](../soon/SCENE_EXAMPLE_PRIORITIZATION.md).
+
 
 ## Current Position
 
