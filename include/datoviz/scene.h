@@ -569,12 +569,15 @@ dvz_visual_attr_mutability(const DvzVisual* visual, const char* attr_name);
  * Write attribute data to a visual.
  *
  * First-slice visual families currently accept:
- * point: `"position"` (vec3f), `"color"` (RGBA8), `"size"` (float)
- * sphere: `"position"` (vec3f), `"color"` (RGBA8), `"size"` (float radius)
+ * point: `"position"` (vec3f), `"color"` (RGBA8), `"diameter"` (float pixels)
+ * pixel: `"position"` (vec3f), `"color"` (RGBA8), `"pixel_size"` (float pixels)
+ * marker: `"position"` (vec3f), `"color"` (RGBA8), `"diameter"` (float pixels),
+ *         `"angle"` (float radians), `"shape"` (uint32_t DvzMarkerShape)
+ * sphere: `"position"` (vec3f), `"color"` (RGBA8), `"radius"` (float scene units)
  * segment: `"position_start"` (vec3f), `"position_end"` (vec3f), `"color"` (RGBA8),
- *          `"line_width"` (float pixels)
+ *          `"stroke_width"` (float pixels)
  * primitive: `"position"` (vec3f), `"color"` (RGBA8)
- * path: `"position"` (vec3f), `"color"` (RGBA8), optional `"line_width"` (float pixels)
+ * path: `"position"` (vec3f), `"color"` (RGBA8), optional `"stroke_width"` (float pixels)
  * mesh: `"position"` (vec3f), optional `"color"` (RGBA8), optional `"normal"` (vec3f)
  * primitive only: `"normal"` (vec3f)
  * image: `"position"` (vec3f), `"texcoords"` (vec2f)
@@ -772,7 +775,7 @@ DVZ_EXPORT int dvz_visual_set_depth_cue(DvzVisual* visual, const DvzDepthCueDesc
  * Return default point styling.
  *
  * The default point style renders filled circular points with no stroke. The `color` visual
- * attribute remains the fill color; `edge_color` and `line_width` apply only when `stroke` or
+ * attribute remains the fill color; `edge_color` and `stroke_width` apply only when `stroke` or
  * `outline` is enabled.
  *
  * @return default point style descriptor
@@ -797,7 +800,7 @@ DVZ_EXPORT int dvz_point_set_style(DvzVisual* visual, const DvzPointStyleDesc* d
  * Return default marker styling.
  *
  * The default marker style renders filled markers with no stroke. The `color` visual attribute
- * remains the fill color; `edge_color` and `line_width` apply when `stroke` or `outline` is
+ * remains the fill color; `edge_color` and `stroke_width` apply when `stroke` or `outline` is
  * enabled.
  *
  * @return default marker style descriptor
@@ -827,8 +830,8 @@ DVZ_EXPORT int dvz_marker_set_style(DvzVisual* visual, const DvzMarkerStyle* sty
  * Create a point visual.
  *
  * Renders screen-space antialiased circular sprites with `position` (vec3), `color` (RGBA8),
- * and `size` (float diameter, in pixels). `dvz_point_set_style()` controls optional edge
- * styling with `edge_color`, `line_width`, and filled/stroke/outline aspects.
+ * and `diameter` (float, in pixels). `dvz_point_set_style()` controls optional edge styling with
+ * `edge_color`, `stroke_width`, and filled/stroke/outline aspects.
  *
  * @param scene the scene
  * @param flags variant flags
@@ -841,7 +844,7 @@ DVZ_EXPORT DvzVisual* dvz_point(DvzScene* scene, uint32_t flags);
  * Create a pixel visual.
  *
  * Renders screen-space square sprites with `position` (vec3), `color` (RGBA8), and
- * `size` (float, in pixels). WGSL/WebGPU emission lowers each item to an instanced quad.
+ * `pixel_size` (float, in pixels). WGSL/WebGPU emission lowers each item to an instanced quad.
  *
  * @param scene the scene
  * @param flags variant flags
@@ -854,7 +857,7 @@ DVZ_EXPORT DvzVisual* dvz_pixel(DvzScene* scene, uint32_t flags);
  * Create a marker visual.
  *
  * Renders screen-space code-SDF marker sprites with dense `position` (vec3), `color` (RGBA8),
- * `size` (float diameter in pixels), `angle` (float radians), and `shape` (uint32_t
+ * `diameter` (float in pixels), `angle` (float radians), and `shape` (uint32_t
  * DvzMarkerShape) attributes. First-slice shapes are disc, square, triangle, diamond, cross, and
  * ring.
  *
@@ -869,7 +872,7 @@ DVZ_EXPORT DvzVisual* dvz_marker(DvzScene* scene, uint32_t flags);
  * Create a sphere impostor visual.
  *
  * Sphere visuals render one analytic 3D sphere per item from `position` (vec3 center), `color`
- * (RGBA8), and `size` (float radius). The GLSL backend reconstructs the sphere surface in the
+ * (RGBA8), and `radius` (float). The GLSL backend reconstructs the sphere surface in the
  * fragment shader, writes sphere-surface depth, and uses analytic antialiasing at the silhouette.
  *
  * @param scene the scene
@@ -894,50 +897,11 @@ DVZ_EXPORT int dvz_sphere_mode(DvzVisual* visual, DvzSphereMode mode);
 
 
 /**
- * Set sphere centers.
- *
- * @param visual the sphere visual
- * @param first first item index
- * @param count number of centers
- * @param pos packed vec3 center data
- * @return 0 on success, -1 on error
- */
-DVZ_EXPORT int
-dvz_sphere_position(DvzVisual* visual, uint32_t first, uint32_t count, const float* pos);
-
-
-/**
- * Set sphere colors.
- *
- * @param visual the sphere visual
- * @param first first item index
- * @param count number of colors
- * @param color packed RGBA8 color data
- * @return 0 on success, -1 on error
- */
-DVZ_EXPORT int
-dvz_sphere_color(DvzVisual* visual, uint32_t first, uint32_t count, DvzColor* color);
-
-
-/**
- * Set sphere radii.
- *
- * @param visual the sphere visual
- * @param first first item index
- * @param count number of radii
- * @param size packed radius data
- * @return 0 on success, -1 on error
- */
-DVZ_EXPORT int
-dvz_sphere_size(DvzVisual* visual, uint32_t first, uint32_t count, const float* size);
-
-
-/**
  * Create a segment visual.
  *
  * First-slice segment visuals render independent endpoint pairs as analytic screen-space
  * stroked line segments. Dense attributes are `position_start` (vec3), `position_end` (vec3),
- * `color` (RGBA8), and `line_width` (float width in pixels). Segment caps default to butt at
+ * `color` (RGBA8), and `stroke_width` (float width in pixels). Segment caps default to butt at
  * both ends.
  *
  * @param scene the scene
@@ -995,9 +959,9 @@ DVZ_EXPORT DvzVisual* dvz_mesh(DvzScene* scene, uint32_t flags);
 /**
  * Create a path visual.
  *
- * A path accepts `position` (vec3), `color` (RGBA8), and optional per-point `line_width`
- * (float, pixels). Without `line_width`, paths use the primitive line-strip pipeline. With
- * `line_width`, paths are lowered to screen-space stroked segments built from consecutive points.
+ * A path accepts `position` (vec3), `color` (RGBA8), and optional per-point `stroke_width`
+ * (float, pixels). Without `stroke_width`, paths use the primitive line-strip pipeline. With
+ * `stroke_width`, paths are lowered to screen-space stroked segments built from consecutive points.
  *
  * @param scene the scene
  * @param flags variant flags

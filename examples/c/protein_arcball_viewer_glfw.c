@@ -681,8 +681,8 @@ static void _apply_atom_scale(ProteinExampleState* state)
         state->atom_scale = 2.5f;
     for (uint32_t i = 0; i < state->bundle->atom_count; i++)
         state->live_radii[i] = state->bundle->radii[i] * state->atom_scale;
-    if (dvz_sphere_size(state->spheres, 0, state->bundle->atom_count, state->live_radii) != 0)
-        dvz_fprintf(stderr, "dvz_sphere_size() failed\n");
+    if (dvz_visual_set_data(state->spheres, "radius", state->live_radii, state->bundle->atom_count) != 0)
+        dvz_fprintf(stderr, "sphere radius update failed\n");
 }
 
 
@@ -733,8 +733,8 @@ static void _apply_atom_color(ProteinExampleState* state)
     ANN(state);
     ANN(state->bundle);
     DvzColor* colors = _atom_colors(state->bundle, state->atom_color_mode);
-    if (dvz_sphere_color(state->spheres, 0, state->bundle->atom_count, colors) != 0)
-        dvz_fprintf(stderr, "dvz_sphere_color() failed\n");
+    if (dvz_visual_set_data(state->spheres, "color", colors, state->bundle->atom_count) != 0)
+        dvz_fprintf(stderr, "sphere color update failed\n");
 }
 
 
@@ -1254,9 +1254,9 @@ int main(int argc, char** argv)
     }
 
     if (dvz_sphere_mode(spheres, DVZ_SPHERE_MODE_RAYCAST_IMPOSTOR) != 0 ||
-        dvz_sphere_position(spheres, 0, bundle.atom_count, bundle.positions) != 0 ||
-        dvz_sphere_color(spheres, 0, bundle.atom_count, bundle.atom_colors_element) != 0 ||
-        dvz_sphere_size(spheres, 0, bundle.atom_count, scaled_radii) != 0 ||
+        dvz_visual_set_data(spheres, "position", bundle.positions, bundle.atom_count) != 0 ||
+        dvz_visual_set_data(spheres, "color", bundle.atom_colors_element, bundle.atom_count) != 0 ||
+        dvz_visual_set_data(spheres, "radius", scaled_radii, bundle.atom_count) != 0 ||
         dvz_panel_add_visual(panel, spheres, NULL) != 0)
     {
         dvz_fprintf(stderr, "sphere visual setup failed\n");

@@ -273,9 +273,9 @@ int test_scene_sphere_emit_glsl_executes(TstSuite* suite, TstItem* item)
     };
     float sizes[3] = {0.22f, 0.26f, 0.20f};
 
-    AT(dvz_sphere_position(sphere, 0, 3, &positions[0][0]) == 0);
-    AT(dvz_sphere_color(sphere, 0, 3, colors) == 0);
-    AT(dvz_sphere_size(sphere, 0, 3, sizes) == 0);
+    AT(dvz_visual_set_data(sphere, "position", &positions[0][0], 3) == 0);
+    AT(dvz_visual_set_data(sphere, "color", colors, 3) == 0);
+    AT(dvz_visual_set_data(sphere, "radius", sizes, 3) == 0);
     AT(dvz_panel_add_visual(panel, sphere, NULL) == 0);
 
     DvzCapabilitySnapshot caps;
@@ -413,12 +413,12 @@ int test_scene_segment_emit_glsl(TstSuite* suite, TstItem* item)
          0.8f,  0.4f, 0.0f,
     };
     DvzColor colors[2] = {{255, 64, 32, 255}, {64, 160, 255, 255}};
-    float line_widths[2] = {8.0f, 4.0f};
+    float stroke_widths[2] = {8.0f, 4.0f};
 
     AT(dvz_visual_set_data(visual, "position_start", position_start, 2) == 0);
     AT(dvz_visual_set_data(visual, "position_end", position_end, 2) == 0);
     AT(dvz_visual_set_data(visual, "color", colors, 2) == 0);
-    AT(dvz_visual_set_data(visual, "line_width", line_widths, 2) == 0);
+    AT(dvz_visual_set_data(visual, "stroke_width", stroke_widths, 2) == 0);
     AT(dvz_segment_set_caps(visual, DVZ_SEGMENT_CAP_BUTT, DVZ_SEGMENT_CAP_ROUND) == 0);
     AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
 
@@ -622,7 +622,7 @@ int test_scene_point_style_emits_glsl_and_wgsl(TstSuite* suite, TstItem* item)
            visual,
            &(DvzPointStyleDesc){
                .edge_color = {0, 0, 0, 255},
-               .line_width = 3.0f,
+               .stroke_width = 3.0f,
                .filled = true,
                .stroke = true,
            }) == 0);
@@ -717,7 +717,7 @@ int test_scene_marker_api_and_emit_glsl(TstSuite* suite, TstItem* item)
            visual,
            &(DvzMarkerStyle){
                .edge_color = {0, 0, 0, 255},
-               .line_width = 2.0f,
+               .stroke_width = 2.0f,
                .filled = true,
                .stroke = true,
            }) == 0);
@@ -1699,12 +1699,12 @@ int test_scene_path_line_width_emit_glsl(TstSuite* suite, TstItem* item)
         {0, 128, 255, 255},
         {255, 255, 255, 255},
     };
-    float line_widths[5] = {3.0f, 6.0f, 9.0f, 5.0f, 2.0f};
+    float stroke_widths[5] = {3.0f, 6.0f, 9.0f, 5.0f, 2.0f};
     uint32_t subpaths[2] = {3, 2};
 
     AT(dvz_visual_set_data(visual, "position", positions, 5) == 0);
     AT(dvz_visual_set_data(visual, "color", colors, 5) == 0);
-    AT(dvz_visual_set_data(visual, "line_width", line_widths, 5) == 0);
+    AT(dvz_visual_set_data(visual, "stroke_width", stroke_widths, 5) == 0);
     AT(dvz_path_set_subpaths(visual, 2, subpaths) == 0);
     AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
 
@@ -7237,9 +7237,9 @@ int test_scene_sphere_ssao_glsl_executes(TstSuite* suite, TstItem* item)
     };
     float sizes[4] = {0.28f, 0.28f, 0.26f, 0.24f};
 
-    AT(dvz_sphere_position(sphere, 0, 4, &positions[0][0]) == 0);
-    AT(dvz_sphere_color(sphere, 0, 4, colors) == 0);
-    AT(dvz_sphere_size(sphere, 0, 4, sizes) == 0);
+    AT(dvz_visual_set_data(sphere, "position", &positions[0][0], 4) == 0);
+    AT(dvz_visual_set_data(sphere, "color", colors, 4) == 0);
+    AT(dvz_visual_set_data(sphere, "radius", sizes, 4) == 0);
     AT(dvz_panel_add_visual(panel, sphere, NULL) == 0);
     AT(_scene_technique_state_set_ssao(
         &panel->techniques,

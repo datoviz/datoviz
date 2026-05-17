@@ -217,8 +217,8 @@ static void _apply_sphere_sizes(SsaoExampleState* state)
         state->size_scale = 2.5f;
     for (uint32_t i = 0; i < state->sphere_count; i++)
         state->live_sizes[i] = state->base_sizes[i] * state->size_scale;
-    if (dvz_sphere_size(state->sphere, 0, state->sphere_count, state->live_sizes) != 0)
-        dvz_fprintf(stderr, "dvz_sphere_size() failed\n");
+    if (dvz_visual_set_data(state->sphere, "radius", state->live_sizes, state->sphere_count) != 0)
+        dvz_fprintf(stderr, "sphere radius update failed\n");
 }
 
 
@@ -587,8 +587,9 @@ int main(int argc, char** argv)
         dvz_scene_destroy(scene);
         return 1;
     }
-    if (dvz_sphere_position(visual, 0, sphere_count, &positions[0][0]) != 0 ||
-        dvz_sphere_color(visual, 0, sphere_count, colors) != 0 ||
+    if (dvz_visual_set_data(visual, "position", &positions[0][0], sphere_count) != 0 ||
+        dvz_visual_set_data(visual, "color", colors, sphere_count) != 0 ||
+        dvz_visual_set_data(visual, "radius", live_sizes, sphere_count) != 0 ||
         dvz_panel_add_visual(panel, visual, NULL) != 0)
     {
         dvz_fprintf(stderr, "sphere visual setup failed\n");

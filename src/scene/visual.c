@@ -45,7 +45,8 @@ static bool _attr_source_supported(
     DvzVisualType type, const char* name, DvzVisualAttrSource source);
 
 static bool _visual_data_update_contains_attr(
-    const DvzVisualDataUpdate* updates, uint32_t update_count, const char* attr_name);
+    DvzVisualType type, const DvzVisualDataUpdate* updates, uint32_t update_count,
+    const char* attr_name);
 
 static DvzVisualAttr* _attr_get_or_create(DvzVisual* visual, const char* name, uint32_t item_size);
 
@@ -103,11 +104,44 @@ static int _volume_apply_bounds_geometry(DvzVisual* visual);
 
 static bool _mesh_ensure_default_color(DvzVisual* visual, uint32_t item_count);
 
+static const char* _attr_storage_name(DvzVisualType type, const char* name);
+
 
 
 /*************************************************************************************************/
 /*  Helpers                                                                                      */
 /*************************************************************************************************/
+
+/**
+ * Return the retained storage name for a public visual attribute name.
+ *
+ * @param type the visual type
+ * @param name the public attribute name
+ * @return the internal storage name
+ */
+static const char* _attr_storage_name(DvzVisualType type, const char* name)
+{
+    ANN(name);
+    if (strcmp(name, "size") == 0)
+        return "size";
+    if ((type == DVZ_VISUAL_TYPE_POINT || type == DVZ_VISUAL_TYPE_MARKER) &&
+        strcmp(name, "diameter") == 0)
+    {
+        return "size";
+    }
+    if (type == DVZ_VISUAL_TYPE_PIXEL && strcmp(name, "pixel_size") == 0)
+        return "size";
+    if (type == DVZ_VISUAL_TYPE_SPHERE && strcmp(name, "radius") == 0)
+        return "size";
+    if ((type == DVZ_VISUAL_TYPE_SEGMENT || type == DVZ_VISUAL_TYPE_PATH) &&
+        strcmp(name, "stroke_width") == 0)
+    {
+        return "line_width";
+    }
+    return name;
+}
+
+
 
 /**
  * Return the byte size of one supported visual attribute item.
@@ -118,6 +152,7 @@ static bool _mesh_ensure_default_color(DvzVisual* visual, uint32_t item_count);
  */
 static uint32_t _attr_item_size(DvzVisualType type, const char* name)
 {
+    name = _attr_storage_name(type, name);
     switch (type)
     {
     case DVZ_VISUAL_TYPE_POINT:
@@ -181,17 +216,21 @@ static bool _attr_supported(DvzVisualType type, const char* name, uint32_t* item
     if (*item_size != 0)
         return true;
 
-    const char* expected = "position, color, size";
+    const char* expected = "position, color, diameter";
     if (type == DVZ_VISUAL_TYPE_MARKER)
-        expected = "position, color, size, angle, shape";
+        expected = "position, color, diameter, angle, shape";
+    else if (type == DVZ_VISUAL_TYPE_PIXEL)
+        expected = "position, color, pixel_size";
+    else if (type == DVZ_VISUAL_TYPE_SPHERE)
+        expected = "position, color, radius";
     else if (type == DVZ_VISUAL_TYPE_PRIMITIVE)
         expected = "position, color, normal";
     else if (type == DVZ_VISUAL_TYPE_MESH)
         expected = "position, color, normal";
     else if (type == DVZ_VISUAL_TYPE_PATH)
-        expected = "position, color, line_width";
+        expected = "position, color, stroke_width";
     else if (type == DVZ_VISUAL_TYPE_SEGMENT)
-        expected = "position_start, position_end, color, line_width";
+        expected = "position_start, position_end, color, stroke_width";
     else if (type == DVZ_VISUAL_TYPE_IMAGE)
         expected = "position, texcoords";
     else if (type == DVZ_VISUAL_TYPE_VOLUME)
@@ -220,6 +259,7 @@ static bool _attr_source_supported(
     uint32_t item_size = 0;
     if (!_attr_supported(type, name, &item_size))
         return false;
+    name = _attr_storage_name(type, name);
 
     if (source == DVZ_VISUAL_ATTR_SOURCE_PER_ITEM)
         return true;
@@ -253,13 +293,15 @@ static bool _attr_source_supported(
  * @return whether the attribute is present
  */
 static bool _visual_data_update_contains_attr(
-    const DvzVisualDataUpdate* updates, uint32_t update_count, const char* attr_name)
+    DvzVisualType type, const DvzVisualDataUpdate* updates, uint32_t update_count,
+    const char* attr_name)
 {
     ANN(updates);
     ANN(attr_name);
     for (uint32_t i = 0; i < update_count; i++)
     {
-        if (updates[i].attr_name != NULL && strcmp(updates[i].attr_name, attr_name) == 0)
+        if (updates[i].attr_name != NULL &&
+            strcmp(_attr_storage_name(type, updates[i].attr_name), attr_name) == 0)
             return true;
     }
     return false;
@@ -278,6 +320,7 @@ int _attr_index(const DvzVisual* visual, const char* name)
 {
     ANN(visual);
     ANN(name);
+    name = _attr_storage_name(visual->type, name);
     for (uint32_t i = 0; i < visual->attr_count; i++)
     {
         if (strcmp(visual->attrs[i].name, name) == 0)
@@ -300,6 +343,7 @@ static DvzVisualAttr* _attr_get_or_create(DvzVisual* visual, const char* name, u
 {
     ANN(visual);
     ANN(name);
+    name = _attr_storage_name(visual->type, name);
     int idx = _attr_index(visual, name);
     if (idx >= 0)
         return &visual->attrs[idx];
@@ -328,6 +372,7 @@ static bool _visual_attr_count_consistent(
 {
     ANN(visual);
     ANN(attr_name);
+    attr_name = _attr_storage_name(visual->type, attr_name);
     if (item_count == 0)
         return false;
 
@@ -736,7 +781,7 @@ DvzPointStyleDesc dvz_point_style_desc(void)
 {
     DvzPointStyleDesc desc = {
         .edge_color = {0, 0, 0, 255},
-        .line_width = 0.0f,
+        .stroke_width = 0.0f,
         .filled = true,
         .stroke = false,
         .outline = false,
@@ -754,7 +799,7 @@ DvzMarkerStyle dvz_marker_style(void)
 {
     DvzMarkerStyle style = {
         .edge_color = {0, 0, 0, 255},
-        .line_width = 0.0f,
+        .stroke_width = 0.0f,
         .filled = true,
         .stroke = false,
         .outline = false,
@@ -772,7 +817,7 @@ DvzMarkerStyle dvz_marker_style(void)
 static bool _point_style_enabled(const DvzPointStyleDesc* style)
 {
     ANN(style);
-    return style->outline || !style->filled || style->stroke || style->line_width > 0.0f;
+    return style->outline || !style->filled || style->stroke || style->stroke_width > 0.0f;
 }
 
 
@@ -792,7 +837,7 @@ static DvzPointStyleDesc _marker_style_to_point_style(const DvzMarkerStyle* styl
             style->edge_color[2],
             style->edge_color[3],
         },
-        .line_width = style->line_width,
+        .stroke_width = style->stroke_width,
         .filled = style->filled,
         .stroke = style->stroke,
         .outline = style->outline,
@@ -811,7 +856,7 @@ static void _point_style_sync_params(DvzSceneMaterialParams* params, const DvzPo
 {
     ANN(params);
     ANN(style);
-    params->params[0] = style->line_width > 0.0f ? style->line_width : 0.0f;
+    params->params[0] = style->stroke_width > 0.0f ? style->stroke_width : 0.0f;
     params->params[1] = style->filled ? 1.0f : 0.0f;
     params->params[2] = style->stroke ? 1.0f : 0.0f;
     params->params[3] = style->outline ? 1.0f : 0.0f;
@@ -1656,9 +1701,9 @@ int dvz_point_set_style(DvzVisual* visual, const DvzPointStyleDesc* desc)
         return -1;
 
     DvzPointStyleDesc style = desc != NULL ? *desc : dvz_point_style_desc();
-    if (!isfinite(style.line_width) || style.line_width < 0.0f)
+    if (!isfinite(style.stroke_width) || style.stroke_width < 0.0f)
     {
-        log_error("point line_width must be finite and nonnegative");
+        log_error("point stroke_width must be finite and nonnegative");
         return -1;
     }
 
@@ -1688,9 +1733,9 @@ int dvz_marker_set_style(DvzVisual* visual, const DvzMarkerStyle* style)
         return -1;
 
     DvzMarkerStyle marker_style = style != NULL ? *style : dvz_marker_style();
-    if (!isfinite(marker_style.line_width) || marker_style.line_width < 0.0f)
+    if (!isfinite(marker_style.stroke_width) || marker_style.stroke_width < 0.0f)
     {
-        log_error("marker line_width must be finite and nonnegative");
+        log_error("marker stroke_width must be finite and nonnegative");
         return -1;
     }
 
@@ -1869,6 +1914,7 @@ int dvz_visual_set_attr_source(
 {
     ANN(visual);
     ANN(attr_name);
+    attr_name = _attr_storage_name(visual->type, attr_name);
     if (!_scene_visual_mutation_allowed(visual->scene, "mutate scene visual metadata"))
         return -1;
     if (source < DVZ_VISUAL_ATTR_SOURCE_PER_ITEM || source > DVZ_VISUAL_ATTR_SOURCE_PER_GROUP)
@@ -1914,6 +1960,7 @@ DvzVisualAttrSource dvz_visual_attr_source(const DvzVisual* visual, const char* 
 {
     ANN(visual);
     ANN(attr_name);
+    attr_name = _attr_storage_name(visual->type, attr_name);
     int idx = _attr_index(visual, attr_name);
     if (idx < 0)
         return DVZ_VISUAL_ATTR_SOURCE_PER_ITEM;
@@ -1935,6 +1982,7 @@ int dvz_visual_set_attr_mutability(
 {
     ANN(visual);
     ANN(attr_name);
+    attr_name = _attr_storage_name(visual->type, attr_name);
     if (!_scene_visual_mutation_allowed(visual->scene, "mutate scene visual metadata"))
         return -1;
     if (mutability < DVZ_VISUAL_ATTR_MUTABILITY_DYNAMIC ||
@@ -1973,6 +2021,7 @@ dvz_visual_attr_mutability(const DvzVisual* visual, const char* attr_name)
 {
     ANN(visual);
     ANN(attr_name);
+    attr_name = _attr_storage_name(visual->type, attr_name);
     int idx = _attr_index(visual, attr_name);
     if (idx < 0)
         return DVZ_VISUAL_ATTR_MUTABILITY_DYNAMIC;
@@ -1997,6 +2046,7 @@ bool dvz_visual_set_attr_buffer(
 {
     ANN(visual);
     ANN(attr_name);
+    attr_name = _attr_storage_name(visual->type, attr_name);
     if (buffer != NULL && buffer->scene != visual->scene)
     {
         log_error("cannot bind an attribute buffer from a different scene");
@@ -2100,6 +2150,7 @@ int dvz_visual_set_data(
     ANN(visual);
     ANN(attr_name);
     ANN(data);
+    attr_name = _attr_storage_name(visual->type, attr_name);
     if (!_scene_visual_mutation_allowed(visual->scene, "mutate scene visual data"))
         return -1;
     if (item_count == 0)
@@ -2219,6 +2270,7 @@ int dvz_visual_set_data_many(
         int attr_idx;
         uint32_t item_size;
         uint64_t byte_size;
+        const char* attr_name;
         void* data;
     } PreparedUpdate;
 
@@ -2235,6 +2287,8 @@ int dvz_visual_set_data_many(
     for (uint32_t i = 0; i < update_count; i++)
     {
         const DvzVisualDataUpdate* update = &updates[i];
+        const char* attr_name =
+            update->attr_name != NULL ? _attr_storage_name(visual->type, update->attr_name) : NULL;
         if (update->attr_name == NULL || update->data == NULL || update->item_count == 0)
         {
             log_error("visual batch data update contains an invalid descriptor");
@@ -2244,7 +2298,7 @@ int dvz_visual_set_data_many(
 
         for (uint32_t j = 0; j < i; j++)
         {
-            if (strcmp(updates[j].attr_name, update->attr_name) == 0)
+            if (strcmp(prepared[j].attr_name, attr_name) == 0)
             {
                 log_error("visual batch data update repeats attribute '%s'", update->attr_name);
                 dvz_free(prepared);
@@ -2309,6 +2363,7 @@ int dvz_visual_set_data_many(
         prepared[i].attr_idx = attr_idx;
         prepared[i].item_size = item_size;
         prepared[i].byte_size = byte_size;
+        prepared[i].attr_name = attr_name;
     }
 
     if (visual->attr_count + new_attr_count > DVZ_SCENE_MAX_ITEM_ATTRS)
@@ -2324,11 +2379,11 @@ int dvz_visual_set_data_many(
         bool attr_has_payload = attr->data != NULL || attr->buffer != NULL;
         if (attr->item_count == 0 || !attr_has_payload)
             continue;
-        if (_visual_data_update_contains_attr(updates, update_count, attr->name))
+        if (_visual_data_update_contains_attr(visual->type, updates, update_count, attr->name))
             continue;
         if (visual->type == DVZ_VISUAL_TYPE_MESH && visual->mesh_default_color &&
             strcmp(attr->name, "color") == 0 &&
-            _visual_data_update_contains_attr(updates, update_count, "position"))
+            _visual_data_update_contains_attr(visual->type, updates, update_count, "position"))
         {
             continue;
         }
@@ -2350,7 +2405,7 @@ int dvz_visual_set_data_many(
         {
             log_error(
                 "visual attribute '%s' allocation failed for %" PRIu64 " bytes",
-                updates[i].attr_name, prepared[i].byte_size);
+                prepared[i].attr_name, prepared[i].byte_size);
             for (uint32_t j = 0; j < i; j++)
                 dvz_free(prepared[j].data);
             dvz_free(prepared);
@@ -2367,7 +2422,7 @@ int dvz_visual_set_data_many(
         DvzVisualAttr* attr = prepared[i].attr_idx >= 0 ?
                                   &visual->attrs[prepared[i].attr_idx] :
                                   _attr_get_or_create(
-                                      visual, updates[i].attr_name, prepared[i].item_size);
+                                      visual, prepared[i].attr_name, prepared[i].item_size);
         if (attr == NULL)
         {
             for (uint32_t j = i; j < update_count; j++)
@@ -2384,12 +2439,12 @@ int dvz_visual_set_data_many(
         attr->dirty_item_count = updates[i].item_count;
         _visual_bump_version(&attr->version);
 
-        if (visual->type == DVZ_VISUAL_TYPE_MESH && strcmp(updates[i].attr_name, "position") == 0)
+        if (visual->type == DVZ_VISUAL_TYPE_MESH && strcmp(prepared[i].attr_name, "position") == 0)
             mesh_position_updated = true;
-        if (visual->type == DVZ_VISUAL_TYPE_MESH && strcmp(updates[i].attr_name, "color") == 0)
+        if (visual->type == DVZ_VISUAL_TYPE_MESH && strcmp(prepared[i].attr_name, "color") == 0)
             mesh_color_updated = true;
         if (visual->type == DVZ_VISUAL_TYPE_PATH &&
-            strcmp(updates[i].attr_name, "line_width") == 0)
+            strcmp(prepared[i].attr_name, "line_width") == 0)
             path_line_width_updated = true;
     }
 
@@ -2439,6 +2494,7 @@ int dvz_visual_set_data_range(
     ANN(visual);
     ANN(attr_name);
     ANN(data);
+    attr_name = _attr_storage_name(visual->type, attr_name);
     if (!_scene_visual_mutation_allowed(visual->scene, "mutate scene visual data"))
         return -1;
     if (item_count == 0)
@@ -2708,79 +2764,6 @@ int dvz_sphere_mode(DvzVisual* visual, DvzSphereMode mode)
     visual->material_params_dirty = true;
     return 0;
 }
-
-
-/**
- * Set sphere centers.
- *
- * @param visual the sphere visual
- * @param first first item index
- * @param count number of centers
- * @param pos packed vec3 center data
- * @return 0 on success, -1 on error
- */
-int dvz_sphere_position(DvzVisual* visual, uint32_t first, uint32_t count, const float* pos)
-{
-    ANN(visual);
-    ANN(pos);
-    if (visual->type != DVZ_VISUAL_TYPE_SPHERE)
-    {
-        log_error("dvz_sphere_position requires a sphere visual");
-        return -1;
-    }
-    if (first == 0)
-        return dvz_visual_set_data(visual, "position", pos, count);
-    return dvz_visual_set_data_range(visual, "position", pos, first, count);
-}
-
-
-/**
- * Set sphere colors.
- *
- * @param visual the sphere visual
- * @param first first item index
- * @param count number of colors
- * @param color packed RGBA8 color data
- * @return 0 on success, -1 on error
- */
-int dvz_sphere_color(DvzVisual* visual, uint32_t first, uint32_t count, DvzColor* color)
-{
-    ANN(visual);
-    ANN(color);
-    if (visual->type != DVZ_VISUAL_TYPE_SPHERE)
-    {
-        log_error("dvz_sphere_color requires a sphere visual");
-        return -1;
-    }
-    if (first == 0)
-        return dvz_visual_set_data(visual, "color", color, count);
-    return dvz_visual_set_data_range(visual, "color", color, first, count);
-}
-
-
-/**
- * Set sphere radii.
- *
- * @param visual the sphere visual
- * @param first first item index
- * @param count number of radii
- * @param size packed radius data
- * @return 0 on success, -1 on error
- */
-int dvz_sphere_size(DvzVisual* visual, uint32_t first, uint32_t count, const float* size)
-{
-    ANN(visual);
-    ANN(size);
-    if (visual->type != DVZ_VISUAL_TYPE_SPHERE)
-    {
-        log_error("dvz_sphere_size requires a sphere visual");
-        return -1;
-    }
-    if (first == 0)
-        return dvz_visual_set_data(visual, "size", size, count);
-    return dvz_visual_set_data_range(visual, "size", size, first, count);
-}
-
 
 
 /**

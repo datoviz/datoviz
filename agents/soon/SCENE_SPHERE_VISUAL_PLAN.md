@@ -67,12 +67,13 @@ First public slice:
 
 ```c
 DvzVisual* dvz_sphere(DvzScene* scene, uint32_t flags);
-int dvz_sphere_position(DvzVisual* visual, uint32_t first, uint32_t count, const vec3* pos);
-int dvz_sphere_color(DvzVisual* visual, uint32_t first, uint32_t count, const DvzColor* color);
-int dvz_sphere_size(DvzVisual* visual, uint32_t first, uint32_t count, const float* size);
+dvz_visual_set_data(sphere, "position", positions, count);
+dvz_visual_set_data(sphere, "color", colors, count);
+dvz_visual_set_data(sphere, "radius", radii, count);
 ```
 
-Keep the API typed. Do not introduce a generic material or binding API just to support sphere.
+Keep sphere data upload on the generic visual API. Typed sphere entry points are reserved for
+behavioral configuration such as `dvz_sphere_mode()`, not position/color/radius payloads.
 
 Current first-slice flags:
 

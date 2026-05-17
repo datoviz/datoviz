@@ -139,11 +139,11 @@ intersection, so picking is geometrically accurate (not bounding-box based).
 
 ## Minimum Cases This Spec Must Support
 
-1. atom positions with per-element color — `color` `PER_ITEM` rgba, `size` `CONSTANT`,
-2. per-sphere radius — `size` `PER_ITEM`, `size_space = data`,
+1. atom positions with per-element color — `color` `PER_ITEM` rgba, `radius` `CONSTANT`,
+2. per-sphere radius — `radius` `PER_ITEM`, `radius_space = data`,
 3. activity-colored cell bodies — `color_mode = scalar` with colormap Scale,
 4. flat-shaded spheres — `lighting = flat`,
-5. electrode contacts by group — `color` `PER_GROUP`, `size` `PER_GROUP`,
+5. electrode contacts by group — `color` `PER_GROUP`, `radius` `PER_GROUP`,
 6. globe with equirectangular texture — `color_mode = texture`, `texture_projection = equirectangular`,
 7. mixed-material populations — `emissive` `PER_GROUP`, `shininess` `PER_GROUP`.
 
@@ -152,9 +152,9 @@ intersection, so picking is geometrically accurate (not bounding-box based).
 
 | v0.3 | v0.4 |
 |---|---|
-| `dvz_sphere_position` | `position` `PER_ITEM` |
-| `dvz_sphere_color` | `color`, extended sources and scalar mode |
-| `dvz_sphere_size` | `size`, extended sources and scalar mode |
+| generic visual data `"position"` | `position` `PER_ITEM` |
+| generic visual data `"color"` | `color`, extended sources and scalar mode |
+| generic visual data `"radius"` | `radius`, extended sources and scalar mode |
 | `dvz_sphere_texture` | `texture` + `texture_projection` |
 | `SPHERE_RECTANGULAR` specialization constant | `texture_projection = equirectangular` |
 | `dvz_sphere_light_pos/color` | standard lighting — see `SHARED_ATTRIBUTES.md` |
@@ -162,8 +162,8 @@ intersection, so picking is geometrically accurate (not bounding-box based).
 | `dvz_sphere_shine` | `shininess`, now also `PER_GROUP` |
 | `dvz_sphere_emit` | `emissive`, now also `PER_GROUP` |
 
-v0.4 adds: `PER_GROUP` sources, `scalar` and `texture` color modes, `size_space`,
-`size_mode`, `lighting` variant axis, `texture_projection` parameter.
+v0.4 adds: `PER_GROUP` sources, `scalar` and `texture` color modes, `radius_space`,
+`radius_mode`, `lighting` variant axis, `texture_projection` parameter.
 v0.4 renames: `emit` → `emissive`.
 
 

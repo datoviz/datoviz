@@ -246,7 +246,7 @@ typedef struct DvzDepthCueDesc DvzDepthCueDesc;
 struct DvzPointStyleDesc
 {
     DvzColor edge_color;
-    float line_width;
+    float stroke_width;
     bool filled;
     bool stroke;
     bool outline;
@@ -257,7 +257,7 @@ typedef struct DvzPointStyleDesc DvzPointStyleDesc;
 struct DvzMarkerStyle
 {
     DvzColor edge_color;
-    float line_width;
+    float stroke_width;
     bool filled;
     bool stroke;
     bool outline;
