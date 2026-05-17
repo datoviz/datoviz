@@ -584,6 +584,7 @@ dvz_visual_attr_mutability(const DvzVisual* visual, const char* attr_name);
  * image: legacy `"position"` (vec3f) + `"texcoords"` (vec2f) corner vertices, or
  *        per-item `"position"` (vec3f) + `"extent"` (vec2f) with optional `"tex_rect"`
  *        (vec4f) and `"anchor"` (vec2f)
+ * glyph: `"position"` (vec3f), `"texcoords"` (vec2f), `"color"` (RGBA8)
  *
  * All configured attributes on one visual must use the same item_count. This
  * call is rejected while any emitted scene stream is still live.
@@ -1007,6 +1008,19 @@ DVZ_EXPORT DvzVisual* dvz_image(DvzScene* scene, uint32_t flags);
 
 
 /**
+ * Create a glyph visual.
+ *
+ * Renders atlas-backed glyph quads with `position` (vec3), `texcoords` (vec2), `color` (RGBA8),
+ * and a bound 2D sampled field.
+ *
+ * @param scene the scene
+ * @param flags variant flags
+ * @return the visual
+ */
+DVZ_EXPORT DvzVisual* dvz_glyph(DvzScene* scene, uint32_t flags);
+
+
+/**
  * Create a volume visual.
  *
  * Volume visuals retain a 3D sampled field bound through
@@ -1191,13 +1205,13 @@ DVZ_EXPORT const DvzVolumeState* dvz_volume_state(const DvzVisual* visual);
 
 
 /**
- * Attach a 2D RGBA8 texture to an image visual.
+ * Attach a 2D RGBA8 texture to an image or glyph visual.
  *
  * Transitional convenience wrapper: this creates or updates a scene-owned sampled field and
- * binds it to the image visual's `"field"` slot. Prefer `dvz_sampled_field()` plus
+ * binds it to the visual's `"field"` slot. Prefer `dvz_sampled_field()` plus
  * `dvz_visual_set_field()` in new code.
  *
- * @param visual the visual (must be of type IMAGE)
+ * @param visual the visual (must be of type IMAGE or GLYPH)
  * @param rgba RGBA8 pixel data, tightly packed, row-major (`width * height * 4` bytes)
  * @param width the texture width in pixels
  * @param height the texture height in pixels
@@ -1208,14 +1222,14 @@ DVZ_EXPORT int dvz_visual_set_texture(
 
 
 /**
- * Attach a 2D scalar F32 texture to an image visual.
+ * Attach a 2D scalar F32 texture to an image or glyph visual.
  *
  * Transitional convenience wrapper: this creates or updates a scene-owned sampled field and
- * binds it to the image visual's `"field"` slot. The bound scale and colormap are applied
+ * binds it to the visual's `"field"` slot. The bound scale and colormap are applied
  * on the CPU during emit to produce the RGBA texture used by the current first-slice image
  * runtime path. Prefer `dvz_sampled_field()` plus `dvz_visual_set_field()` in new code.
  *
- * @param visual the visual (must be of type IMAGE)
+ * @param visual the visual (must be of type IMAGE or GLYPH)
  * @param values scalar F32 pixel data, tightly packed, row-major
  * @param width the texture width in pixels
  * @param height the texture height in pixels

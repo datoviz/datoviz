@@ -567,9 +567,9 @@ static bool _field_ensure_upload(DvzSampledField* field, uint64_t byte_size)
 
 
 /**
- * Ensure one image visual owns a compatible sampled field.
+ * Ensure one image-like visual owns a compatible sampled field.
  *
- * @param visual the image visual
+ * @param visual the image or glyph visual
  * @param format the field format
  * @param semantic the field semantic
  * @param width the field width
@@ -976,9 +976,10 @@ bool dvz_visual_set_field(DvzVisual* visual, const char* slot_name, DvzSampledFi
         log_error("cannot bind a sampled field from a different scene");
         return false;
     }
-    if (visual->type != DVZ_VISUAL_TYPE_IMAGE && visual->type != DVZ_VISUAL_TYPE_VOLUME)
+    if (visual->type != DVZ_VISUAL_TYPE_IMAGE && visual->type != DVZ_VISUAL_TYPE_GLYPH &&
+        visual->type != DVZ_VISUAL_TYPE_VOLUME)
     {
-        log_error("dvz_visual_set_field is only supported for image and volume visuals");
+        log_error("dvz_visual_set_field is only supported for image, glyph, and volume visuals");
         return false;
     }
     if (strcmp(slot_name, "field") != 0)
@@ -986,10 +987,11 @@ bool dvz_visual_set_field(DvzVisual* visual, const char* slot_name, DvzSampledFi
         log_error("unsupported visual field slot '%s' (expected 'field')", slot_name);
         return false;
     }
-    if (field != NULL && visual->type == DVZ_VISUAL_TYPE_IMAGE &&
+    if (field != NULL &&
+        (visual->type == DVZ_VISUAL_TYPE_IMAGE || visual->type == DVZ_VISUAL_TYPE_GLYPH) &&
         field->desc.dim != DVZ_FIELD_DIM_2D)
     {
-        log_error("image visuals require a 2D sampled field");
+        log_error("image and glyph visuals require a 2D sampled field");
         return false;
     }
     if (field != NULL && visual->type == DVZ_VISUAL_TYPE_VOLUME &&
@@ -1212,9 +1214,9 @@ int dvz_visual_set_texture(
     DvzVisual* visual, const void* rgba, uint32_t width, uint32_t height)
 {
     ANN(visual);
-    if (visual->type != DVZ_VISUAL_TYPE_IMAGE)
+    if (visual->type != DVZ_VISUAL_TYPE_IMAGE && visual->type != DVZ_VISUAL_TYPE_GLYPH)
     {
-        log_error("dvz_visual_set_texture is only supported for image visuals");
+        log_error("dvz_visual_set_texture is only supported for image and glyph visuals");
         return -1;
     }
     if (rgba == NULL || width == 0 || height == 0)
@@ -1243,13 +1245,13 @@ int dvz_visual_set_texture(
 
 
 /**
- * Attach a 2D scalar F32 texture to an image visual.
+ * Attach a 2D scalar F32 texture to an image or glyph visual.
  *
  * The scalar data must remain valid until emit time. The bound scale and
  * colormap are applied on the CPU during emit to produce the RGBA texture used
  * by the current first-slice image runtime path.
  *
- * @param visual the visual (must be of type IMAGE)
+ * @param visual the visual (must be of type IMAGE or GLYPH)
  * @param values scalar F32 pixel data, tightly packed, row-major
  * @param width the texture width in pixels
  * @param height the texture height in pixels
@@ -1259,9 +1261,9 @@ int dvz_visual_set_texture_f32(
     DvzVisual* visual, const float* values, uint32_t width, uint32_t height)
 {
     ANN(visual);
-    if (visual->type != DVZ_VISUAL_TYPE_IMAGE)
+    if (visual->type != DVZ_VISUAL_TYPE_IMAGE && visual->type != DVZ_VISUAL_TYPE_GLYPH)
     {
-        log_error("dvz_visual_set_texture_f32 is only supported for image visuals");
+        log_error("dvz_visual_set_texture_f32 is only supported for image and glyph visuals");
         return -1;
     }
     if (values == NULL || width == 0 || height == 0)
@@ -1641,27 +1643,27 @@ bool _scene_prepare_image_texture(
     ANN(visual);
     ANN(out_region);
     ANN(out_data);
-    if (visual->type != DVZ_VISUAL_TYPE_IMAGE)
+    if (visual->type != DVZ_VISUAL_TYPE_IMAGE && visual->type != DVZ_VISUAL_TYPE_GLYPH)
         return false;
     if (visual->field == NULL)
     {
-        log_error("image visual requires a bound sampled field");
+        log_error("image or glyph visual requires a bound sampled field");
         return false;
     }
     const DvzSampledField* field = visual->field;
     if (field->scene != visual->scene)
     {
-        log_error("image visual field belongs to a different scene");
+        log_error("image or glyph visual field belongs to a different scene");
         return false;
     }
     if (field->desc.dim != DVZ_FIELD_DIM_2D)
     {
-        log_error("image visuals require a 2D sampled field");
+        log_error("image and glyph visuals require a 2D sampled field");
         return false;
     }
     if (field->data == NULL || field->desc.width == 0 || field->desc.height == 0)
     {
-        log_error("image visual sampled field has no uploaded data");
+        log_error("image or glyph visual sampled field has no uploaded data");
         return false;
     }
 
@@ -1706,7 +1708,7 @@ bool _scene_prepare_image_texture(
     }
     if (!_field_format_is_scalar(field->desc.format))
     {
-        log_error("image visual does not support sampled field format %d", (int)field->desc.format);
+        log_error("image or glyph visual does not support sampled field format %d", (int)field->desc.format);
         return false;
     }
     if (visual->scale == NULL || visual->scale->colormap == NULL)

@@ -177,7 +177,7 @@ static bool _visual_desc_is_primitive(DvzSceneVisualDescKind kind)
  */
 static bool _visual_desc_is_image(DvzSceneVisualDescKind kind)
 {
-    return kind == DVZ_SCENE_VISUAL_DESC_IMAGE;
+    return kind == DVZ_SCENE_VISUAL_DESC_IMAGE || kind == DVZ_SCENE_VISUAL_DESC_GLYPH;
 }
 
 
@@ -624,7 +624,8 @@ static bool _scene_visual_desc_from_metadata(
         out->index_buffer_id = _resource_lookup_label(&emitter->resources, meta->index_id);
         out->material_buffer_id = _resource_lookup_label(&emitter->resources, meta->material_id);
     }
-    else if (meta->visual_type == DVZ_VISUAL_TYPE_IMAGE)
+    else if (meta->visual_type == DVZ_VISUAL_TYPE_IMAGE ||
+             meta->visual_type == DVZ_VISUAL_TYPE_GLYPH)
     {
         uint64_t uv_id = _resource_lookup_label(&emitter->resources, meta->texcoords_id);
         uint64_t tex_id = _resource_lookup_label(&emitter->resources, meta->texture_id);
@@ -634,12 +635,26 @@ static bool _scene_visual_desc_from_metadata(
                 *error = "typed image metadata missing texcoords/texture resource";
             return false;
         }
-        out->kind = DVZ_SCENE_VISUAL_DESC_IMAGE;
+        out->kind = meta->visual_type == DVZ_VISUAL_TYPE_GLYPH ? DVZ_SCENE_VISUAL_DESC_GLYPH :
+                                                                 DVZ_SCENE_VISUAL_DESC_IMAGE;
         out->vbuf_ids[out->vbuf_count++] = uv_id;
+        if (meta->visual_type == DVZ_VISUAL_TYPE_GLYPH)
+        {
+            uint64_t color_id = _resource_lookup_label(&emitter->resources, meta->color_id);
+            if (color_id == 0)
+            {
+                if (error != NULL)
+                    *error = "typed glyph metadata missing color resource";
+                return false;
+            }
+            out->vbuf_ids[out->vbuf_count++] = color_id;
+        }
         out->image_texture_id = tex_id;
         out->topology = _resource_topology(&emitter->resources, pos_buf);
         if (out->topology == UINT32_MAX)
-            out->topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP;
+            out->topology = meta->visual_type == DVZ_VISUAL_TYPE_GLYPH ?
+                                VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST :
+                                VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP;
     }
     else if (meta->visual_type == DVZ_VISUAL_TYPE_VOLUME)
     {
@@ -649,12 +664,16 @@ static bool _scene_visual_desc_from_metadata(
             _resource_lookup_label(&emitter->resources, meta->volume_transfer_texture_id);
         if (tex_id == 0)
             tex_id = _resource_lookup_label(&emitter->resources, meta->texture_id);
-        if (transfer_tex_id == 0)
-            transfer_tex_id = tex_id;
         if (uvw_id == 0 || tex_id == 0)
         {
             if (error != NULL)
                 *error = "typed volume metadata missing texcoords/texture resource";
+            return false;
+        }
+        if (!meta->volume_transfer_rgba && transfer_tex_id == 0)
+        {
+            if (error != NULL)
+                *error = "typed scalar volume metadata missing transfer texture resource";
             return false;
         }
         out->kind = DVZ_SCENE_VISUAL_DESC_VOLUME;
@@ -1215,6 +1234,9 @@ bool _scene_visual_pass_caps_from_visual(
     case DVZ_VISUAL_TYPE_IMAGE:
         kind = DVZ_SCENE_VISUAL_DESC_IMAGE;
         break;
+    case DVZ_VISUAL_TYPE_GLYPH:
+        kind = DVZ_SCENE_VISUAL_DESC_GLYPH;
+        break;
     case DVZ_VISUAL_TYPE_VOLUME:
         kind = DVZ_SCENE_VISUAL_DESC_VOLUME;
         break;
@@ -1661,6 +1683,16 @@ bool _scene_visual_shader_desc(
         out->fragment_spirv_key = "image_frag";
         return true;
 
+    case DVZ_SCENE_VISUAL_DESC_GLYPH:
+        dvz_snprintf(out->vertex_key, sizeof(out->vertex_key), "_vs_glyph%s", format_tag);
+        dvz_snprintf(out->fragment_key, sizeof(out->fragment_key), "_fs_glyph%s", format_tag);
+        dvz_snprintf(out->pipeline_key, sizeof(out->pipeline_key), "_pipe_glyph%s", format_tag);
+        _scene_shader_desc_set_builtin(out, DVZ_SCENE_BUILTIN_SHADER_GLYPH);
+        _scene_shader_desc_set_identity(out, "scene.glyph", "msdf");
+        out->vertex_spirv_key = "glyph_vert";
+        out->fragment_spirv_key = "glyph_frag";
+        return true;
+
     case DVZ_SCENE_VISUAL_DESC_VOLUME:
     {
         bool mip = _shader_features_has(&features, DVZ_SCENE_SHADER_FEATURE_VOLUME_MIP);
@@ -1892,6 +1924,17 @@ bool _scene_visual_pipeline_desc(
         out->needs_image_layout = caps.uses_image_set;
         return true;
 
+    case DVZ_SCENE_VISUAL_DESC_GLYPH:
+        out->vertex_buffer_count = 3;
+        out->binding_count = 3;
+        out->attr_count = 3;
+        _pipeline_attr(out, 0, 0, 0, VK_FORMAT_R32G32B32_SFLOAT, 3 * sizeof(float));
+        _pipeline_attr(out, 1, 1, 1, VK_FORMAT_R32G32_SFLOAT, 2 * sizeof(float));
+        _pipeline_attr(out, 2, 2, 2, VK_FORMAT_R8G8B8A8_UNORM, 4 * sizeof(uint8_t));
+        out->needs_common_layout = caps.uses_common_set;
+        out->needs_image_layout = caps.uses_image_set;
+        return true;
+
     case DVZ_SCENE_VISUAL_DESC_VOLUME:
         out->vertex_buffer_count = 2;
         out->binding_count = 2;
@@ -1963,6 +2006,7 @@ bool _scene_visual_bind_desc(
         return true;
 
     case DVZ_SCENE_VISUAL_DESC_IMAGE:
+    case DVZ_SCENE_VISUAL_DESC_GLYPH:
         out->uses_common_set0 = caps.uses_common_set;
         out->uses_fixed_common = caps.fixed_controller;
         out->uses_image_set1 = caps.uses_image_set;

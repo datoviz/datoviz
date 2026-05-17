@@ -78,6 +78,7 @@ typedef enum
     DVZ_VISUAL_TYPE_VOLUME    = 8,
     DVZ_VISUAL_TYPE_PRIMITIVE = 9,
     DVZ_VISUAL_TYPE_SPHERE    = 10,
+    DVZ_VISUAL_TYPE_GLYPH     = 11,
 } DvzVisualType;
 
 
@@ -950,6 +951,7 @@ struct DvzScene
     DvzRequestFreshnessScope pick_scopes[DVZ_SCENE_MAX_REQUEST_SCOPES];
     uint32_t probe_scope_count;
     DvzRequestFreshnessScope probe_scopes[DVZ_SCENE_MAX_REQUEST_SCOPES];
+    DvzSampledField* text_bitmap_atlas;
 
     struct
     {

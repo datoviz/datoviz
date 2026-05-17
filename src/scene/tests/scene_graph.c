@@ -3557,6 +3557,131 @@ int test_scene_image_multi_item_emit(TstSuite* suite, TstItem* item)
 }
 
 
+/**
+ * Verify glyph visuals emit an MSDF-capable textured triangle pipeline.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_glyph_emit_glsl(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    ANN(panel);
+    DvzVisual* visual = dvz_glyph(scene, 0);
+    ANN(visual);
+
+    float positions[6][3] = {
+        {-0.5f, -0.5f, 0.0f}, {-0.5f, 0.5f, 0.0f}, {0.5f, -0.5f, 0.0f},
+        { 0.5f, -0.5f, 0.0f}, {-0.5f, 0.5f, 0.0f}, {0.5f,  0.5f, 0.0f},
+    };
+    float texcoords[6][2] = {
+        {0.0f, 0.0f}, {0.0f, 1.0f}, {1.0f, 0.0f},
+        {1.0f, 0.0f}, {0.0f, 1.0f}, {1.0f, 1.0f},
+    };
+    DvzColor colors[6] = {
+        {255, 255, 255, 255}, {255, 255, 255, 255}, {255, 255, 255, 255},
+        {255, 255, 255, 255}, {255, 255, 255, 255}, {255, 255, 255, 255},
+    };
+    uint8_t pixels[4 * 4 * 4];
+    dvz_memset(pixels, sizeof(pixels), 255, sizeof(pixels));
+
+    AT(dvz_visual_set_data(visual, "position", positions, 6) == 0);
+    AT(dvz_visual_set_data(visual, "texcoords", texcoords, 6) == 0);
+    AT(dvz_visual_set_data(visual, "color", colors, 6) == 0);
+    AT(dvz_visual_set_texture(visual, pixels, 4, 4) == 0);
+    AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
+
+    DvzCapabilitySnapshot caps;
+    dvz_capability_snapshot_default(&caps);
+    DvzDiagnosticReport report;
+    dvz_diagnostic_report_init(&report);
+    DvzFramePlanEmitConfig emit_cfg = dvz_frame_plan_emit_config();
+    emit_cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
+
+    DvzDrp2CommandStream* stream = dvz_figure_emit_ex(figure, &caps, &report, &emit_cfg);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+    ANN(stream);
+    AT(_stream_has_render_pipeline_label(stream, "_pipe_glyphg"));
+
+    uint64_t position_buffer_id = 0;
+    uint64_t uv_buffer_id = 0;
+    uint64_t color_buffer_id = 0;
+    bool found_pipeline = false;
+    bool found_draw = false;
+    bool found_texture_bind = false;
+    bool found_position_upload = false;
+    bool found_uv_upload = false;
+    bool found_color_upload = false;
+    for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
+    {
+        const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream, i);
+        ANN(cmd);
+        if (cmd->type == DVZ_DRP2_COMMAND_CREATE_RENDER_PIPELINE)
+        {
+            found_pipeline =
+                cmd->u.create_render_pipeline.vertex_buffer_slots == 3 &&
+                cmd->u.create_render_pipeline.topology == VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST &&
+                cmd->u.create_render_pipeline.binding_count == 3 &&
+                cmd->u.create_render_pipeline.attr_count == 3 &&
+                cmd->u.create_render_pipeline.bind_group_layout_count == 2;
+        }
+        else if (cmd->type == DVZ_DRP2_COMMAND_SET_VERTEX_BUFFER)
+        {
+            if (cmd->u.set_vertex_buffer.slot == 0)
+                position_buffer_id = cmd->u.set_vertex_buffer.buffer_id;
+            else if (cmd->u.set_vertex_buffer.slot == 1)
+                uv_buffer_id = cmd->u.set_vertex_buffer.buffer_id;
+            else if (cmd->u.set_vertex_buffer.slot == 2)
+                color_buffer_id = cmd->u.set_vertex_buffer.buffer_id;
+        }
+        else if (cmd->type == DVZ_DRP2_COMMAND_SET_BIND_GROUP)
+        {
+            found_texture_bind = found_texture_bind || cmd->u.set_bind_group.slot == 1;
+        }
+        else if (cmd->type == DVZ_DRP2_COMMAND_DRAW)
+        {
+            found_draw = cmd->u.draw.vertex_count == 6 && cmd->u.draw.instance_count == 1;
+        }
+    }
+    AT(position_buffer_id != 0);
+    AT(uv_buffer_id != 0);
+    AT(color_buffer_id != 0);
+
+    for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
+    {
+        const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream, i);
+        ANN(cmd);
+        if (cmd->type != DVZ_DRP2_COMMAND_WRITE_BUFFER)
+            continue;
+        if (cmd->u.write_buffer.buffer_id == position_buffer_id)
+            found_position_upload = cmd->u.write_buffer.size == 6 * 3 * sizeof(float);
+        if (cmd->u.write_buffer.buffer_id == uv_buffer_id)
+            found_uv_upload = cmd->u.write_buffer.size == 6 * 2 * sizeof(float);
+        if (cmd->u.write_buffer.buffer_id == color_buffer_id)
+            found_color_upload = cmd->u.write_buffer.size == 6 * sizeof(DvzColor);
+    }
+
+    AT(found_pipeline);
+    AT(found_draw);
+    AT(found_texture_bind);
+    AT(found_position_upload);
+    AT(found_uv_upload);
+    AT(found_color_upload);
+
+    dvz_drp2_stream_destroy(stream);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
 int test_scene_image_emit_wgsl(TstSuite* suite, TstItem* item)
 {
     ANN(suite);
@@ -8878,6 +9003,7 @@ int test_scene_graph(TstSuite* suite)
     TEST_SIMPLE(test_scene_path_emit);
     TEST_SIMPLE(test_scene_image_emit);
     TEST_SIMPLE(test_scene_image_multi_item_emit);
+    TEST_SIMPLE(test_scene_glyph_emit_glsl);
     TEST_SIMPLE(test_scene_image_emit_wgsl);
     TEST_SIMPLE(test_scene_image_emit_uses_common_and_texture_sets);
     TEST_SIMPLE(test_scene_visual_common_binding_layout_order);

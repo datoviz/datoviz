@@ -243,6 +243,8 @@ int test_scene_image_glsl_executes(TstSuite* suite, TstItem* item);
 
 int test_scene_image_emit_wgsl(TstSuite* suite, TstItem* item);
 
+int test_scene_glyph_emit_glsl(TstSuite* suite, TstItem* item);
+
 int test_scene_image_emit_uses_common_and_texture_sets(TstSuite* suite, TstItem* item);
 
 int test_scene_visual_common_binding_layout_order(TstSuite* suite, TstItem* item);

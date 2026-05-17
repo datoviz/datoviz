@@ -272,7 +272,7 @@ int test_scene_text_bitmap_visual_realization(TstSuite* suite, TstItem* item)
     AT(panel->visual_count == 1);
     AT(panel->visuals[0].visual == text->visual);
     AT(panel->visuals[0].controller_mode == DVZ_CONTROLLER_FIXED);
-    AT(text->visual->type == DVZ_VISUAL_TYPE_IMAGE);
+    AT(text->visual->type == DVZ_VISUAL_TYPE_GLYPH);
     AT(text->visual->visible);
     AT(text->visual->alpha_mode == DVZ_ALPHA_BLENDED);
     AT(!text->visual->depth_test_enabled);
@@ -283,20 +283,30 @@ int test_scene_text_bitmap_visual_realization(TstSuite* suite, TstItem* item)
 
     int pos_idx = _attr_index(text->visual, "position");
     int uv_idx = _attr_index(text->visual, "texcoords");
+    int color_idx = _attr_index(text->visual, "color");
     AT(pos_idx >= 0);
     AT(uv_idx >= 0);
-    AT(text->visual->attrs[pos_idx].item_count == 4);
-    AT(text->visual->attrs[uv_idx].item_count == 4);
+    AT(color_idx >= 0);
+    AT(text->visual->attrs[pos_idx].item_count == 12);
+    AT(text->visual->attrs[uv_idx].item_count == 12);
+    AT(text->visual->attrs[color_idx].item_count == 12);
     const float(*positions)[3] = (const float(*)[3])text->visual->attrs[pos_idx].data;
     ANN(positions);
     AC(positions[0][0], -0.96875f, 1e-6f);
     AC(positions[0][1], 0.9166667f, 1e-6f);
-    AC(positions[3][0], -0.93125f, 1e-6f);
-    AC(positions[3][1], 0.8833333f, 1e-6f);
+    AC(positions[11][0], -0.93125f, 1e-6f);
+    AC(positions[11][1], 0.8833333f, 1e-6f);
+    const uint8_t* colors = (const uint8_t*)text->visual->attrs[color_idx].data;
+    ANN(colors);
+    AT(colors[0] == 64);
+    AT(colors[1] == 128);
+    AT(colors[2] == 255);
+    AT(colors[3] == 255);
 
     ANN(text->visual->field);
-    AT(text->visual->field->desc.width == 12);
-    AT(text->visual->field->desc.height == 8);
+    DvzSampledField* atlas = text->visual->field;
+    AT(atlas->desc.width == 96);
+    AT(atlas->desc.height == 48);
     AT(text->visual->field->dirty);
 
     uint64_t old_visual_version = text->visual_version;
@@ -306,8 +316,13 @@ int test_scene_text_bitmap_visual_realization(TstSuite* suite, TstItem* item)
 
     dvz_text_set_string(text, "A" "\xCE" "\xA9" "B");
     _scene_prepare_text_visuals(figure);
-    AT(text->visual->field->desc.width == 18);
-    AT(text->visual->field->desc.height == 8);
+    AT(text->visual->type == DVZ_VISUAL_TYPE_GLYPH);
+    AT(text->visual->attrs[pos_idx].item_count == 18);
+    AT(text->visual->attrs[uv_idx].item_count == 18);
+    AT(text->visual->attrs[color_idx].item_count == 18);
+    AT(text->visual->field == atlas);
+    AC(text->metrics.advance[0], 18.0f, 1e-6f);
+    AC(text->metrics.layout_bounds[3], 8.0f, 1e-6f);
 
     dvz_text_set_string(text, "");
     _scene_prepare_text_visuals(figure);
@@ -331,9 +346,10 @@ int test_scene_text_bitmap_visual_realization(TstSuite* suite, TstItem* item)
     ANN(annotation);
     _scene_prepare_text_visuals(figure);
     ANN(annotation->visual);
-    AT(annotation->visual->type == DVZ_VISUAL_TYPE_IMAGE);
+    AT(annotation->visual->type == DVZ_VISUAL_TYPE_GLYPH);
     AT(annotation->visual->visible);
     AT(annotation->visual->alpha_mode == DVZ_ALPHA_BLENDED);
+    AT(annotation->visual->field == atlas);
     AT(annotation->dirty_flags == DVZ_TEXT_DIRTY_NONE);
     AT(panel->visual_count == 2);
 

@@ -37,6 +37,8 @@
 #define DVZ_TEXT_BITMAP_FIRST_CHAR   32u
 #define DVZ_TEXT_BITMAP_GLYPH_COUNT  96u
 #define DVZ_TEXT_BITMAP_FALLBACK     63u
+#define DVZ_TEXT_BITMAP_ATLAS_COLS   16u
+#define DVZ_TEXT_BITMAP_ATLAS_ROWS   6u
 
 
 
@@ -371,6 +373,97 @@ static void _text_paint_glyph(
 
 
 /**
+ * Return the shared scene-owned bitmap glyph atlas field.
+ *
+ * @param scene the scene
+ * @return the atlas field, or NULL on failure
+ */
+static DvzSampledField* _text_bitmap_atlas_field(DvzScene* scene)
+{
+    ANN(scene);
+    if (scene->text_bitmap_atlas != NULL)
+        return scene->text_bitmap_atlas;
+
+    uint32_t width = DVZ_TEXT_BITMAP_ATLAS_COLS * DVZ_TEXT_BITMAP_GLYPH_WIDTH;
+    uint32_t height = DVZ_TEXT_BITMAP_ATLAS_ROWS * DVZ_TEXT_BITMAP_GLYPH_HEIGHT;
+    uint64_t pixel_count = 0;
+    uint64_t byte_size = 0;
+    if (_dvz_mul_u64_overflows(width, height, &pixel_count) ||
+        _dvz_mul_u64_overflows(pixel_count, 4u, &byte_size) || byte_size > SIZE_MAX)
+    {
+        log_error("text bitmap atlas size overflow");
+        return NULL;
+    }
+    uint8_t* rgba = (uint8_t*)dvz_calloc((DvzSize)byte_size, 1);
+    if (rgba == NULL)
+    {
+        log_error("text bitmap atlas allocation failed");
+        return NULL;
+    }
+
+    const uint8_t white[4] = {255, 255, 255, 255};
+    for (uint32_t glyph = 0; glyph < DVZ_TEXT_BITMAP_GLYPH_COUNT; glyph++)
+    {
+        uint32_t col = glyph % DVZ_TEXT_BITMAP_ATLAS_COLS;
+        uint32_t row = glyph / DVZ_TEXT_BITMAP_ATLAS_COLS;
+        _text_paint_glyph(
+            rgba, width, col * DVZ_TEXT_BITMAP_GLYPH_WIDTH,
+            row * DVZ_TEXT_BITMAP_GLYPH_HEIGHT, 1,
+            glyph + DVZ_TEXT_BITMAP_FIRST_CHAR, white);
+    }
+
+    DvzSampledField* field = dvz_sampled_field(
+        scene, &(DvzSampledFieldDesc){
+                   .dim = DVZ_FIELD_DIM_2D,
+                   .format = DVZ_FIELD_FORMAT_RGBA8_UNORM,
+                   .semantic = DVZ_FIELD_SEMANTIC_COLOR,
+                   .width = width,
+                   .height = height,
+                   .depth = 1,
+               });
+    if (field == NULL ||
+        !dvz_sampled_field_set_data(
+            field, &(DvzFieldDataView){
+                       .data = rgba,
+                       .bytes_per_row = (uint64_t)width * 4u,
+                       .rows_per_image = height,
+                   }))
+    {
+        dvz_free(rgba);
+        return NULL;
+    }
+
+    scene->text_bitmap_atlas = field;
+    dvz_free(rgba);
+    return field;
+}
+
+
+
+/**
+ * Resolve bitmap atlas UVs for one printable ASCII glyph.
+ *
+ * @param ascii the printable ASCII codepoint
+ * @param out output u0, v0, u1, v1
+ */
+static void _text_bitmap_atlas_uv(uint32_t ascii, float out[4])
+{
+    ANN(out);
+    ascii = _text_printable_ascii(ascii);
+    uint32_t glyph = ascii - DVZ_TEXT_BITMAP_FIRST_CHAR;
+    uint32_t col = glyph % DVZ_TEXT_BITMAP_ATLAS_COLS;
+    uint32_t row = glyph / DVZ_TEXT_BITMAP_ATLAS_COLS;
+    float width = (float)(DVZ_TEXT_BITMAP_ATLAS_COLS * DVZ_TEXT_BITMAP_GLYPH_WIDTH);
+    float height = (float)(DVZ_TEXT_BITMAP_ATLAS_ROWS * DVZ_TEXT_BITMAP_GLYPH_HEIGHT);
+    out[0] = (float)(col * DVZ_TEXT_BITMAP_GLYPH_WIDTH) / width;
+    out[1] = (float)(row * DVZ_TEXT_BITMAP_GLYPH_HEIGHT) / height;
+    out[2] = (float)((col + 1u) * DVZ_TEXT_BITMAP_GLYPH_WIDTH) / width;
+    out[3] = (float)((row + 1u) * DVZ_TEXT_BITMAP_GLYPH_HEIGHT) / height;
+}
+
+
+
+/**
  * Build an RGBA bitmap texture for a retained text string.
  *
  * @param text the text object
@@ -628,7 +721,7 @@ static void _text_corner_position(
 
 
 /**
- * Update or create the internal image visual for one retained text object.
+ * Update or create the internal glyph visual for one retained text object.
  *
  * @param figure the figure being emitted
  * @param text the text object
@@ -653,20 +746,142 @@ static bool _text_prepare_visual(DvzFigure* figure, DvzText* text)
         return true;
     }
 
-    uint8_t* rgba = NULL;
-    uint32_t width = 0;
-    uint32_t height = 0;
-    if (!_text_build_bitmap(text, &rgba, &width, &height))
+    uint32_t columns = 0;
+    uint32_t lines = 0;
+    uint32_t visible = 0;
+    _text_measure_cells(text->string, &columns, &lines, &visible);
+    if (columns == 0 || visible == 0)
     {
+        if (text->visual != NULL)
+            dvz_visual_set_visible(text->visual, false);
+        return true;
+    }
+    DvzSampledField* atlas = _text_bitmap_atlas_field(text->scene);
+    if (atlas == NULL)
+        return false;
+
+    uint32_t scale = _text_bitmap_scale(&text->style);
+    uint32_t glyph_w = DVZ_TEXT_BITMAP_GLYPH_WIDTH * scale;
+    uint32_t glyph_h = DVZ_TEXT_BITMAP_GLYPH_HEIGHT * scale;
+    uint32_t line_h = DVZ_TEXT_BITMAP_LINE_HEIGHT * scale;
+    uint64_t width64 = 0;
+    uint64_t height64 = 0;
+    uint64_t height_base = 0;
+    if (_dvz_mul_u64_overflows(columns, glyph_w, &width64) ||
+        _dvz_mul_u64_overflows(lines - 1u, line_h, &height_base) ||
+        _dvz_add_u64_overflows(height_base, glyph_h, &height64) ||
+        width64 > UINT32_MAX || height64 > UINT32_MAX)
+    {
+        log_error("text glyph dimensions overflow");
+        return false;
+    }
+    uint32_t width = (uint32_t)width64;
+    uint32_t height = (uint32_t)height64;
+
+    uint64_t max_vertices = 0;
+    uint64_t position_bytes = 0;
+    uint64_t texcoord_bytes = 0;
+    uint64_t color_bytes = 0;
+    if (_dvz_mul_u64_overflows(visible, 6u, &max_vertices) ||
+        _dvz_mul_u64_overflows(max_vertices, 3u * sizeof(float), &position_bytes) ||
+        _dvz_mul_u64_overflows(max_vertices, 2u * sizeof(float), &texcoord_bytes) ||
+        _dvz_mul_u64_overflows(max_vertices, 4u * sizeof(uint8_t), &color_bytes) ||
+        max_vertices > UINT32_MAX || position_bytes > SIZE_MAX || texcoord_bytes > SIZE_MAX ||
+        color_bytes > SIZE_MAX)
+    {
+        log_error("text glyph vertex buffer size overflow");
+        return false;
+    }
+
+    float* positions = (float*)dvz_calloc((DvzSize)position_bytes, 1);
+    float* texcoords = (float*)dvz_calloc((DvzSize)texcoord_bytes, 1);
+    uint8_t* colors = (uint8_t*)dvz_calloc((DvzSize)color_bytes, 1);
+    if (positions == NULL || texcoords == NULL || colors == NULL)
+    {
+        dvz_free(positions);
+        dvz_free(texcoords);
+        dvz_free(colors);
+        log_error("text glyph vertex allocation failed");
+        return false;
+    }
+
+    uint8_t color[4] = {0};
+    _text_style_color(&text->style, color);
+    float anchor_x = 0;
+    float anchor_y = 0;
+    _text_anchor_pixels(text, &anchor_x, &anchor_y);
+    float align_x = 0;
+    float align_y = 0;
+    _text_anchor_alignment(
+        text->placement.anchor, (float)width, (float)height, &align_x, &align_y);
+    align_x += text->placement.offset[0];
+    align_y += text->placement.offset[1];
+
+    uint32_t column = 0;
+    uint32_t row = 0;
+    uint32_t byte_index = 0;
+    uint32_t cp = 0;
+    uint32_t vertex_count = 0;
+    while (_text_utf8_next(text->string, &byte_index, &cp))
+    {
+        if (cp == '\n')
+        {
+            column = 0;
+            row++;
+            continue;
+        }
+        if (cp == '\t')
+        {
+            column += 4u;
+            continue;
+        }
+
+        float x0 = align_x + (float)(column * glyph_w);
+        float y0 = align_y + (float)(row * line_h);
+        float x1 = x0 + (float)glyph_w;
+        float y1 = y0 + (float)glyph_h;
+        float uv[4] = {0};
+        _text_bitmap_atlas_uv(cp, uv);
+        const float xy[6][2] = {{x0, y0}, {x0, y1}, {x1, y0}, {x1, y0}, {x0, y1}, {x1, y1}};
+        const float st[6][2] = {
+            {uv[0], uv[1]}, {uv[0], uv[3]}, {uv[2], uv[1]},
+            {uv[2], uv[1]}, {uv[0], uv[3]}, {uv[2], uv[3]},
+        };
+        float z = (float)text->placement.position[2];
+        for (uint32_t j = 0; j < 6; j++)
+        {
+            _text_corner_position(
+                figure, anchor_x, anchor_y, xy[j][0], xy[j][1], text->placement.angle, z,
+                &positions[3 * vertex_count]);
+            texcoords[2 * vertex_count + 0] = st[j][0];
+            texcoords[2 * vertex_count + 1] = st[j][1];
+            colors[4 * vertex_count + 0] = color[0];
+            colors[4 * vertex_count + 1] = color[1];
+            colors[4 * vertex_count + 2] = color[2];
+            colors[4 * vertex_count + 3] = color[3];
+            vertex_count++;
+        }
+        column++;
+    }
+    if (vertex_count == 0)
+    {
+        dvz_free(positions);
+        dvz_free(texcoords);
+        dvz_free(colors);
         if (text->visual != NULL)
             dvz_visual_set_visible(text->visual, false);
         return true;
     }
 
     bool ok = true;
+    if (text->visual != NULL && text->visual->type != DVZ_VISUAL_TYPE_GLYPH)
+    {
+        dvz_visual_set_visible(text->visual, false);
+        text->visual = NULL;
+    }
     if (text->visual == NULL)
     {
-        text->visual = dvz_image(text->scene, 0);
+        text->visual = dvz_glyph(text->scene, 0);
         if (text->visual == NULL)
             ok = false;
         DvzVisualAttachDesc attach = {
@@ -683,35 +898,13 @@ static bool _text_prepare_visual(DvzFigure* figure, DvzText* text)
 
     if (ok)
     {
-        float anchor_x = 0;
-        float anchor_y = 0;
-        _text_anchor_pixels(text, &anchor_x, &anchor_y);
-
-        float align_x = 0;
-        float align_y = 0;
-        _text_anchor_alignment(
-            text->placement.anchor, (float)width, (float)height, &align_x, &align_y);
-        align_x += text->placement.offset[0];
-        align_y += text->placement.offset[1];
-
-        float positions[4][3] = {0};
-        float z = (float)text->placement.position[2];
-        _text_corner_position(
-            figure, anchor_x, anchor_y, align_x, align_y, text->placement.angle, z, positions[0]);
-        _text_corner_position(
-            figure, anchor_x, anchor_y, align_x, align_y + (float)height,
-            text->placement.angle, z, positions[1]);
-        _text_corner_position(
-            figure, anchor_x, anchor_y, align_x + (float)width, align_y,
-            text->placement.angle, z, positions[2]);
-        _text_corner_position(
-            figure, anchor_x, anchor_y, align_x + (float)width, align_y + (float)height,
-            text->placement.angle, z, positions[3]);
-
-        const float texcoords[4][2] = {{0, 0}, {0, 1}, {1, 0}, {1, 1}};
-        if (dvz_visual_set_data(text->visual, "position", positions, 4) != 0 ||
-            dvz_visual_set_data(text->visual, "texcoords", texcoords, 4) != 0 ||
-            dvz_visual_set_texture(text->visual, rgba, width, height) != 0)
+        DvzVisualDataUpdate updates[3] = {
+            {.attr_name = "position", .data = positions, .item_count = vertex_count},
+            {.attr_name = "texcoords", .data = texcoords, .item_count = vertex_count},
+            {.attr_name = "color", .data = colors, .item_count = vertex_count},
+        };
+        if (dvz_visual_set_data_many(text->visual, updates, 3) != 0 ||
+            !dvz_visual_set_field(text->visual, "field", atlas))
         {
             ok = false;
         }
@@ -745,14 +938,16 @@ static bool _text_prepare_visual(DvzFigure* figure, DvzText* text)
         dvz_visual_set_visible(text->visual, false);
     }
 
-    dvz_free(rgba);
+    dvz_free(positions);
+    dvz_free(texcoords);
+    dvz_free(colors);
     return ok;
 }
 
 
 
 /**
- * Update or create the internal image visual for one retained annotation label.
+ * Update or create the internal glyph visual for one retained annotation label.
  *
  * @param figure the figure being emitted
  * @param annotation the annotation object

@@ -211,6 +211,11 @@ static uint32_t _attr_item_size(DvzVisualType type, const char* name)
         if (strcmp(name, "tex_rect") == 0)  return 4 * sizeof(float);
         if (strcmp(name, "texcoords") == 0) return 2 * sizeof(float);
         break;
+    case DVZ_VISUAL_TYPE_GLYPH:
+        if (strcmp(name, "position") == 0)  return 3 * sizeof(float);
+        if (strcmp(name, "texcoords") == 0) return 2 * sizeof(float);
+        if (strcmp(name, "color") == 0)     return 4 * sizeof(uint8_t);
+        break;
     case DVZ_VISUAL_TYPE_VOLUME:
         if (strcmp(name, "position") == 0)  return 3 * sizeof(float);
         if (strcmp(name, "texcoords") == 0) return 3 * sizeof(float);
@@ -256,6 +261,8 @@ static bool _attr_supported(DvzVisualType type, const char* name, uint32_t* item
         expected = "position_start, position_end, color, stroke_width";
     else if (type == DVZ_VISUAL_TYPE_IMAGE)
         expected = "position, extent, anchor, tex_rect, texcoords";
+    else if (type == DVZ_VISUAL_TYPE_GLYPH)
+        expected = "position, texcoords, color, plus a bound 2D field";
     else if (type == DVZ_VISUAL_TYPE_VOLUME)
         expected = "position, texcoords, plus a bound 3D field";
 
@@ -2961,6 +2968,23 @@ DvzVisual* dvz_image(DvzScene* scene, uint32_t flags)
 
 
 /**
+ * Create a glyph visual.
+ *
+ * @param scene the scene
+ * @param flags variant flags
+ * @return the visual, or NULL on allocation failure
+ */
+DvzVisual* dvz_glyph(DvzScene* scene, uint32_t flags)
+{
+    ANN(scene);
+    DvzVisual* visual = _scene_alloc_visual(scene, DVZ_VISUAL_TYPE_GLYPH, flags);
+    if (visual != NULL)
+        visual->topology = DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+    return visual;
+}
+
+
+/**
  * Apply the current retained volume bounds to the proxy cube attributes.
  *
  * @param visual the volume visual
@@ -3613,6 +3637,8 @@ const char* _visual_type_name(DvzVisualType type)
         return "path";
     case DVZ_VISUAL_TYPE_IMAGE:
         return "image";
+    case DVZ_VISUAL_TYPE_GLYPH:
+        return "glyph";
     case DVZ_VISUAL_TYPE_MESH:
         return "mesh";
     case DVZ_VISUAL_TYPE_VOLUME:

@@ -144,6 +144,8 @@ static const char* _builtin_shader_resource_key(DvzSceneBuiltinShader shader, bo
         return fragment ? "gbuffer_normal_frag" : "primitive_lit_vert";
     case DVZ_SCENE_BUILTIN_SHADER_IMAGE:
         return fragment ? "image_frag" : "image_vert";
+    case DVZ_SCENE_BUILTIN_SHADER_GLYPH:
+        return fragment ? "glyph_frag" : "glyph_vert";
     case DVZ_SCENE_BUILTIN_SHADER_VOLUME_SLICE:
         return fragment ? "volume_slice_frag" : "volume_slice_vert";
     case DVZ_SCENE_BUILTIN_SHADER_VOLUME_MIP:

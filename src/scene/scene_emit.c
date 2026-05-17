@@ -1079,7 +1079,8 @@ void _scene_emit_visual_uploads(DvzFigure* figure, DvzFramePlan* plan)
                         if ((visual->type == DVZ_VISUAL_TYPE_PRIMITIVE ||
                              visual->type == DVZ_VISUAL_TYPE_MESH ||
                              visual->type == DVZ_VISUAL_TYPE_PATH ||
-                             visual->type == DVZ_VISUAL_TYPE_SPHERE) &&
+                             visual->type == DVZ_VISUAL_TYPE_SPHERE ||
+                             visual->type == DVZ_VISUAL_TYPE_GLYPH) &&
                             strcmp(attr->name, "position") == 0)
                         {
                             dvz_frame_plan_upload_set_topology(plan, (uint32_t)visual->topology);
@@ -1105,7 +1106,8 @@ void _scene_emit_visual_uploads(DvzFigure* figure, DvzFramePlan* plan)
                 if ((visual->type == DVZ_VISUAL_TYPE_PRIMITIVE ||
                      visual->type == DVZ_VISUAL_TYPE_MESH ||
                      visual->type == DVZ_VISUAL_TYPE_PATH ||
-                     visual->type == DVZ_VISUAL_TYPE_SPHERE) &&
+                     visual->type == DVZ_VISUAL_TYPE_SPHERE ||
+                     visual->type == DVZ_VISUAL_TYPE_GLYPH) &&
                     strcmp(attr->name, "position") == 0)
                 {
                     dvz_frame_plan_upload_set_topology(plan, (uint32_t)visual->topology);
@@ -1159,7 +1161,9 @@ void _scene_emit_visual_uploads(DvzFigure* figure, DvzFramePlan* plan)
                     emitted_buffers[buffer_idx] = true;
                 }
             }
-            if (visual->type == DVZ_VISUAL_TYPE_IMAGE && visual->field != NULL &&
+            if ((visual->type == DVZ_VISUAL_TYPE_IMAGE ||
+                 visual->type == DVZ_VISUAL_TYPE_GLYPH) &&
+                visual->field != NULL &&
                 (visual->texture.dirty || visual->field->dirty))
             {
                 DvzFieldRegion upload_region = {0};
