@@ -424,6 +424,18 @@ For scene/DRP2 code changes:
 3. use Vulkan validation smoke tests for changes touching `vk`, `vklite`, `canvas`, `scene`,
    `drp2`, command buffers, frame lifetimes, render targets, swapchains, or synchronization.
 
+GLFW validation note after the `2026-05-17` lifetime cleanup:
+
+1. in the unified `dvztest` process, tests must not call raw `glfwTerminate()` after initializing
+   GLFW through Datoviz; `backend_glfw.c` owns GLFW process lifetime,
+2. GLFW-using fixtures should still isolate per-test resources by destroying all `GLFWwindow`,
+   Vulkan surface, `DvzWindow`, `DvzCanvas`, and app/runtime objects they create,
+3. future cleanup should reset process-global GLFW window hints with `glfwDefaultWindowHints()`
+   before every Datoviz-backed or raw GLFW test window creation, then explicitly set the required
+   hints such as `GLFW_CLIENT_API`, visibility, and resizability,
+4. true init/terminate isolation belongs in subprocess-style GLFW tests or separate focused
+   executables, not in the shared-process runner.
+
 
 ## Request Slice Status
 
