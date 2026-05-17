@@ -2,7 +2,7 @@
 
 > **Execution Status**
 > - **Status:** `ACTIVE DEVELOPMENT GUIDE`
-> - **Updated on:** `2026-05-16`
+> - **Updated on:** `2026-05-17`
 > - **Purpose:** give future agents the practical next steps after the first scene -> DRP2 ->
 >   vklite/canvas slice.
 
@@ -28,13 +28,13 @@ The active higher layer exists:
 2. `scene` owns early scene graph objects, capability snapshots, diagnostic reports, frame plans,
    DRP2 emission, and request/result state; `app` owns the small presentation loop over scene,
    canvas, and the DRP2 runtime.
-3. Built-in visual families currently implemented are `point`, `primitive`, `mesh`, path-as-line/strip,
-   and `image`.
-4. Panel controllers are live: panzoom and arcball feed per-panel transforms.
+3. Built-in visual families currently implemented are `point`, `pixel`, `marker`, `primitive`,
+   `mesh`, path/segment, `image`, `volume`, and `sphere`.
+4. Panel controllers are live: panzoom, arcball, fly, and turntable feed per-panel transforms.
 5. Per-panel viewport/scissor and offscreen multi-panel preservation work through the emitted DRP2
    path.
-6. Retained sampled fields, scales, scene buffers, and primitive/mesh shading uniforms now share the
-   scene -> frame-plan -> DRP2 binding path.
+6. Retained sampled fields, scales, scene buffers, material uniforms, volume state, and visual
+   resource bindings now share the scene -> frame-plan -> DRP2 binding path.
 7. Interaction bookkeeping, queued pick/probe requests, result polling, selection/link objects,
    pinned readouts, and text/annotation retained objects now have first source implementations and
    focused bookkeeping tests.
@@ -252,6 +252,15 @@ opt-in. Validation: `just build`, `just test test_scene_gbuffer_runtime_lowering
 (`210/210`), `just test drp2` (`119/119`), `clang-tidy -p build --quiet` on the touched scene files,
 and `git diff --check`.
 
+Follow-up implementation through `2026-05-17`: the descriptor-refresh lane is now a runtime
+invariant rather than a per-technique workaround. Recreated stable DRP2 texture, buffer, and sampler
+ids refresh dependent vklite bind-group descriptors, and WBOIT/depth-peeling resize paths no longer
+need extent fingerprints for sampled bind-group freshness. The scene techniques/materials lane has
+advanced through public `DvzMaterialDesc`, shared material shader evaluation, EDL, SSAO, sphere
+impostors, and graph-backed MSAA. The shader-ABI lane now has `_scene_shader_abi.h`, shared
+GLSL/WGSL common ABI helpers, centralized runtime bind layout ordering, centralized visual vertex
+attribute descriptor writes, consolidated depth-state selection, and `just shader-abi-check`.
+
 
 ## Immediate Task
 
@@ -332,40 +341,30 @@ Deliver the next implementation slices in this order unless the user redirects:
     versus render-pass attachment formats. Use
     [WBOIT_MESH_INTERACTIVE_PLAN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/WBOIT_MESH_INTERACTIVE_PLAN.md)
     as the implementation checklist.
-11. DRP2/vklite descriptor-refresh follow-up: implement a generic runtime invalidation/refresh path
-    for bind groups that reference stable resource ids whose backend handles are recreated. This
-    should supersede the recent WBOIT and depth-peeling extent-fingerprint guardrails once validated,
-    so future multi-pass techniques do not each need custom resize descriptor logic. The plan is
-    recorded in
+11. Done: DRP2/vklite descriptor refresh is implemented. Future work should treat it as a runtime
+    invariant and add focused coverage only when a new resource kind or backend handle lifetime can
+    stale existing bind groups. The completion record is
     [DRP2_DESCRIPTOR_REFRESH_PLAN.md](/home/cyrille/GIT/Viz/datoviz/agents/done/DRP2_DESCRIPTOR_REFRESH_PLAN.md).
-12. SSAO planning note: early scene-level SSAO should follow the active scene -> FramePlan -> DRP2
-    -> vklite path and reuse the WBOIT-style multi-pass resource pattern. The implementation plan
-    is recorded in [SCENE_SSAO_IMPLEMENTATION_PLAN.md](/home/cyrille/GIT/Viz/datoviz/agents/soon/SCENE_SSAO_IMPLEMENTATION_PLAN.md).
-13. Multi-pass FramePlan graph direction: before adding dual depth peeling or more one-off
-    transparency modes, add a small internal FramePlan graph skeleton around typed resources,
-    typed passes, explicit attachments, and resource access declarations. The first slice should be
-    schema, validation, deterministic debug output, and tests only, with no emitted-command
-    behavior change. After that schema exists, upgrade the DRP2 foundation in this order: named
-    depth resources, explicit color/depth attachment load/store ops, declared-access-driven
-    layout transitions, then render-pipeline raster state for cull mode and front-face winding.
-    Only then convert WBOIT lowering to the graph-backed path and use the same path for the next
-    transparency technique. The plan is recorded in
-    [FRAME_PLAN_GRAPH_TRANSPARENCY_PLAN.md](/home/cyrille/GIT/Viz/datoviz/agents/soon/FRAME_PLAN_GRAPH_TRANSPARENCY_PLAN.md).
-14. Scene techniques/materials architecture: before adding EDL, SSAO, outlines, or
-    curvature/cavity shading as isolated effects, route them through the technique-builder layer,
-    internal material state, visual pass capability descriptors, and the internal scene/panel
-    technique activation state. G-buffer runtime lowering is opt-in and currently internal. The next
-    effect slice should start with a narrow depth-based technique such as EDL, or add object-id
-    G-buffer output first if selected outlines are prioritized. The architecture note is
-    [../../docs/architecture/scene_techniques_materials.md](/home/cyrille/GIT/Viz/datoviz/docs/architecture/scene_techniques_materials.md),
-    and the pickup plan is
-    [SCENE_TECHNIQUES_MATERIALS_PLAN.md](/home/cyrille/GIT/Viz/datoviz/agents/soon/SCENE_TECHNIQUES_MATERIALS_PLAN.md).
-15. Sphere visual family: add a dedicated v0.4 sphere impostor visual before using SSAO demos for
-    dense atom/particle scenes. This should follow the v0.3 conceptual model: center/color/size
-    payload, hard-coded sphere reconstruction in the fragment shader, material lighting, optional
-    texturing later, correct `gl_FragDepth`, G-buffer normal/depth support, and always-on analytic
-    antialiased silhouettes. Do not fold sphere into marker. The plan is recorded in
-    [SCENE_SPHERE_VISUAL_PLAN.md](/home/cyrille/GIT/Viz/datoviz/agents/soon/SCENE_SPHERE_VISUAL_PLAN.md).
+12. Scene shader ABI / WGSL parity: keep `just shader-abi-check` green whenever shader files,
+    bind layouts, vertex attributes, material/image/volume bindings, or pipeline keys move. The
+    remaining portable shader work is now specific parity lanes: marker, segment/path stroke,
+    sphere, volume, and capability-gated advanced passes. Use
+    [VISUAL_SHADER_REFACTOR.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/implementation/VISUAL_SHADER_REFACTOR.md)
+    as the active checklist.
+13. Scene techniques/materials polish: the architecture is implemented through the current
+    material, EDL, SSAO, sphere, and MSAA slices. Remaining work is narrower: improve the standard
+    material look without turning it into full PBR, decide family-specific material policy for
+    point/pixel/image/volume, add material-aware G-buffer fields only when a concrete effect needs
+    them, and update examples/docs that still present primitive-specific shading as primary.
+14. Multi-pass graph / transparency follow-up: keep WBOIT, depth peeling, blended volume, G-buffer,
+    EDL, SSAO, SSAO blur, and MSAA on the shared FramePlan graph path. The next transparency work
+    should tighten DRP2 validation around pipeline color-target formats versus render-pass
+    attachment formats, add any missing offscreen readback/capture coverage, and continue explicit
+    resource-access/layout-transition cleanup before adding another transparency mode.
+15. Sphere and dense-particle follow-up: sphere is now a standalone retained visual with material
+    lighting, antialiased silhouettes, raycast mode, G-buffer output, and SSAO coverage. Remaining
+    sphere work belongs in targeted follow-ups such as texture/equirectangular mapping, render-mode
+    quality tuning, and WGSL parity rather than in the original "add sphere" lane.
 
 Implementation-level checklists for these lanes are recorded in
 [../../docs/tasks/2026-05-13-next-implementation-priorities/NEXT_STEPS.md](/home/cyrille/GIT/Viz/datoviz/docs/tasks/2026-05-13-next-implementation-priorities/NEXT_STEPS.md).

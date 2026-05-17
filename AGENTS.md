@@ -23,24 +23,27 @@ maintainability.
 When refactoring, do NOT delete existing comments, keep them and update them if needed, but do not delete them.
 
 
-### Current branch snapshot (2026-05-13)
+### Current branch snapshot (2026-05-17)
 
 * The low-level graphics stack (`vk`, `vklite`, `canvas`, `stream`, `video`, `window`) has completed
   its main ownership/boundary cleanup pass and remains the runtime foundation for v0.4.
 * `drp2`, `scene`, and `app` are active v0.4 modules, not future scaffolding. The current vertical
   slice exists: scene/frame-plan emission -> DRP2 command stream -> vklite runtime -> canvas/stream
   frame execution, plus a small app presentation layer for offscreen and GLFW windows.
-* Built-in scene visuals now include point, primitive, mesh, path-as-line/strip, and image. Scene
-  support also covers retained sampled fields, image colormap scale binding, colorbar bookkeeping,
-  panzoom/arcball controllers, narrow text/annotation bookkeeping, and a first GPU-backed point
-  pick / image probe request path.
-* Recent commits on `2026-05-13` hardened the app trace/status output, request-runtime reuse,
-  figure-size synchronization before app frame emission, and panel-coordinate mapping for hover
-  picking.
-* Current recorded focused validation: `just spec-check` last passed with `119/119` DRP2 fixtures
-  and `52` fixture-runner tests; `just test drp2` last passed with `73/73`; `just test scene` last
-  recorded `127/127` before the latest pick-hover and app trace follow-up commits. Re-run the
-  narrow target before relying on those newer slices.
+* Built-in scene visuals now include point, pixel, marker, primitive, mesh, path/segment, image,
+  volume, and sphere impostors. Scene support also covers retained sampled fields, image colormap
+  scale binding, colorbar bookkeeping, panzoom/arcball/fly/turntable controllers, narrow
+  text/annotation bookkeeping, GPU-backed point pick / image probe request paths, and graph-backed
+  panel techniques.
+* Recent commits through `2026-05-17` hardened descriptor refresh for recreated DRP2 resources,
+  added graph-backed EDL, SSAO, MSAA, sphere, and material-model paths, and centralized the active
+  scene shader ABI, vertex attribute descriptor writes, depth-state decisions, and runtime bind
+  layout ordering.
+* Current recorded focused validation includes `just spec-check` with `123/123` DRP2 fixtures,
+  `35/35` WebGPU preflight fixtures, `52` fixture-runner tests, and `7` schema/generation tests;
+  `just test drp2` has passed `119/119`; `just test scene` has passed beyond the first
+  EDL/material slices, with later focused shader/visual-family checks recorded in
+  `agents/now/V0_4_NEXT_STEPS.md`. Re-run the narrow target before relying on a newer slice.
 * For the current execution summary and next-step guidance, start with
   `agents/now/V0_4_NEXT_STEPS.md`, then use `agents/README.md` to find completed phase records.
 
@@ -51,11 +54,13 @@ When refactoring, do NOT delete existing comments, keep them and update them if 
   `scene`, and `app`.
 * ✅ The active low-level graphics stack is the stable foundation; use it rather than creating a
   parallel presentation, frame-stream, or Vulkan wrapper path.
-* 🚧 The highest-value remaining work has moved up a layer: harden the scene -> DRP2 -> runtime path,
-  pressure the native 2D/3D retained scene path, and keep examples/tests in lockstep with that path.
+* 🚧 The highest-value remaining work is now targeted hardening: WebGPU/WGSL parity lanes,
+  material/technique polish, richer picking/selection payloads, rendered text/annotations, and
+  example/gallery pressure tests on the existing scene -> DRP2 -> runtime path.
 * ✅ The active scene slice now covers retained visual rendering, repeated partial updates,
-  multi-panel figures, per-panel runtime viewport/scissor handling, depth-enabled mesh/primitive
-  passes, and first pick/probe readback requests through the scene -> DRP2 -> vklite/canvas path.
+  multi-panel figures, per-panel runtime viewport/scissor handling, depth-enabled 2D/3D passes,
+  request readbacks, descriptor refresh after stable resource recreation, and graph-backed
+  postprocess / transparency / MSAA techniques through the scene -> DRP2 -> vklite/canvas path.
 * ⏭️ Several other directories/headers remain scaffolding (for example `color`, `wasm`, text/gui,
   and richer renderer/client layers); keep them untouched unless explicitly requested.
 

@@ -1,6 +1,6 @@
 # Scene Techniques And Materials
 
-Date: 2026-05-16
+Date: 2026-05-17
 
 This note records the target architecture for advanced scene visual effects in v0.4. The immediate
 goal is not to add another rendering effect. The goal is to keep depth cueing, EDL, SSAO, outlines,
@@ -18,28 +18,35 @@ retained scene -> FramePlan graph -> DRP2 command stream -> vklite/canvas runtim
 
 Current implemented pieces that advanced techniques should reuse:
 
-1. retained visual families: point, pixel, primitive, mesh, path-as-line/strip, image, and volume;
+1. retained visual families: point, pixel, marker, primitive, mesh, path/segment, image, volume,
+   and sphere impostors;
 2. retained data objects: sampled fields, scene buffers, scales, colormaps, and colorbars;
 3. per-panel controllers: panzoom, arcball, and camera;
 4. graph-backed FramePlan resources, passes, attachments, reads/writes, dependencies, validation,
    and deterministic dumps;
-5. graph-backed opaque-depth, WBOIT, depth-peeling, and blended-volume paths;
+5. graph-backed opaque-depth, WBOIT, depth-peeling, blended-volume, G-buffer, EDL, SSAO, SSAO blur,
+   and MSAA paths;
 6. request-time point picking and image probing through auxiliary DRP2 streams;
 7. built-in GLSL/WGSL shader registry support, with visual-family shader selection centralized in
-   `src/scene/visual_pipeline.c`.
+   `src/scene/visual_pipeline.c`;
+8. public `DvzMaterialDesc` material values for primitive, mesh, and sphere visuals, backed by
+   shared material shader evaluation.
 
-The missing piece is not Vulkan capability. The missing piece is a consistent scene-level policy
-layer. There is no `DvzMaterial` object today. The closest current concepts are:
+The missing piece is no longer basic Vulkan capability or the first material/technique foundation.
+The remaining work is consistent scene-level policy for the next effects and visual families. There
+is no heap-allocated public `DvzMaterial` object today. The closest current concepts are:
 
 1. `DvzAlphaMode` on `DvzVisual`;
-2. `DvzPrimitiveShadingDesc` and the internal primitive shading uniform buffer;
-3. `DvzVolumeState` for volume-specific opacity, sampling, render mode, steps, and clipping;
-4. `DvzScale` / `DvzColormap` bindings for scalar-to-color mapping;
-5. per-family shader and pipeline descriptors in `visual_pipeline.c`.
+2. `DvzMaterialDesc`, `DvzSceneMaterialState`, and `DvzSceneMaterialParams`;
+3. `DvzPrimitiveShadingDesc` as compatibility scaffolding that forwards through the material path;
+4. `DvzVolumeState` for volume-specific opacity, sampling, render mode, steps, and clipping;
+5. `DvzScale` / `DvzColormap` bindings for scalar-to-color mapping;
+6. per-family shader and pipeline descriptors in `visual_pipeline.c`.
 
-Those pieces are useful, but they are not a material system. They also do not describe whether a
-visual can participate in a depth-only pass, normal/depth G-buffer pass, object-id pass, EDL source
-pass, SSAO receiver path, or selected-outline pass.
+Those pieces now form the first material system, but they are deliberately narrow. The remaining
+policy questions are where material fields apply beyond primitive/mesh/sphere, when G-buffer output
+needs material-aware channels, and how selected outlines or scalar modulation should use object-id
+and material state without hardcoding domain-specific semantics.
 
 
 ## Target Layering
@@ -106,15 +113,16 @@ object-id / picking builder
 volume blend/raymarch policy builder
 ```
 
-The first implementation slice should be behavior-preserving: move the current opaque-depth,
-blended, WBOIT, and depth-peeling graph construction behind builder-like helpers without changing
-the emitted DRP2 command shape.
+The first implementation slice is complete: graph construction has moved behind builder-like
+helpers, and new effects should continue to append generic FramePlan resources and passes rather
+than adding scene-private runtime paths.
 
 
 ## Material State
 
-Start with internal material state, not a broad public API. Public API can stay typed while the
-scene lowers old and new setters into one internal material representation.
+The branch started with internal material state and now has a narrow public value descriptor.
+Continue to keep public API typed while the scene lowers old and new setters into one internal
+material representation.
 
 Target internal shape:
 
@@ -224,24 +232,26 @@ long-term direction is "visual family + material + pass kind -> shader/pipeline/
 
 ## Near-Term Effects
 
-Prioritize effects by infrastructure value and scientific usefulness.
+Prioritize remaining effects by infrastructure value and scientific usefulness. Depth cueing,
+G-buffer, EDL, SSAO, sphere impostors, and MSAA now have active slices, so the list below separates
+implemented foundations from next policy work.
 
-1. **Depth cueing.** Implement as material/pipeline shader behavior, not a postprocess. It is cheap,
-   broadly useful for 3D scientific scenes, and a good first test of material state.
-2. **Depth/normal/object-id G-buffer.** Treat this as infrastructure. It enables EDL, SSAO,
-   outlines, depth-aware labels, and richer picking/highlighting.
-3. **Eye-dome lighting.** Implement before SSAO for point-heavy scenes. It only needs depth and is
-   robust for point clouds, particles, and sparse 3D samples.
-4. **ID-based selected outlines.** Prefer an object/group-id buffer for stable semantic outlines.
+1. **Depth cueing.** Implemented as material/pipeline shader behavior, not a postprocess.
+2. **Depth/normal G-buffer.** Implemented as graph-backed infrastructure for eligible
+   primitive/mesh/sphere paths. Object-id output remains deferred until a concrete outline or
+   selection effect needs it.
+3. **Eye-dome lighting.** Implemented as a panel-local graph-backed technique for opaque
+   depth-producing visuals.
+4. **SSAO/GTAO.** SSAO is implemented through the G-buffer foundation with optional bilateral blur.
+   Future work should focus on quality, capability policy, and composition with other techniques.
+5. **ID-based selected outlines.** Prefer an object/group-id buffer for stable semantic outlines.
    Do not permanently overload pick payloads for this role.
-5. **SSAO/GTAO.** Target primitive/mesh/sphere-impostor-like visuals that provide meaningful
-   normals and depth.
 6. **Curvature/cavity scalar modulation.** Keep it generic. Molecular surfaces can use it, but the
    same slot should support any meaningful scalar modulation channel.
 
 Additional high-value visual lanes:
 
-1. sphere impostors with analytic depth and normals for atoms and dense particles;
+1. sphere impostor texture/equirectangular follow-ups and WGSL parity;
 2. tube/path rendering for streamlines, fibers, trajectories, and skeletons;
 3. depth-aware labels and annotations;
 4. transfer-function improvements for volumes and scalar fields;
@@ -250,22 +260,22 @@ Additional high-value visual lanes:
 
 ## Implementation Order
 
-Recommended implementation sequence:
+Original implementation sequence and current status:
 
-1. Add internal technique-builder files/types and move current opaque-depth, blended, WBOIT, and
-   depth-peeling graph setup behind them without behavior change.
-2. Add internal `DvzMaterialState` to `DvzVisual`, initialize defaults, and route
-   `dvz_visual_set_primitive_shading()` through material-backed state while preserving current
-   emitted uniforms.
-3. Add material-driven depth cueing for primitive/mesh first, then point/pixel and volume where
-   appropriate.
-4. Add visual pass capability descriptors and tests for the existing visual families.
-5. Add a G-buffer technique builder for depth, normal, and object id resources. Start with
-   primitive/mesh normals and depth.
-6. Implement EDL through the graph-backed fullscreen pass path.
-7. Implement object-id selected outlines through the same graph path.
-8. Implement SSAO using the existing SSAO plan and the G-buffer foundation.
-9. Add generic scalar material modulation, then use it for curvature/cavity demos.
+1. Done: add internal technique-builder files/types and move current opaque-depth, blended, WBOIT,
+   and depth-peeling graph setup behind them without behavior change.
+2. Done: add internal material state and route primitive shading through the shared material path.
+3. Done: add material-driven depth cueing for primitive/mesh and point/pixel where supported.
+4. Done: add visual pass capability descriptors and tests for existing visual families.
+5. Done: add a G-buffer technique builder for normal/depth resources, starting with eligible
+   primitive/mesh/sphere visuals.
+6. Done: implement EDL through the graph-backed fullscreen pass path.
+7. Deferred: implement object-id selected outlines through the same graph path.
+8. Done: implement SSAO using the G-buffer foundation.
+9. Deferred: add generic scalar material modulation, then use it for curvature/cavity demos.
+10. Current polish: improve standard-material appearance, decide material policy for
+    point/pixel/image/volume, keep graph-backed technique composition explicit, and update examples
+    that still present primitive-specific shading as the primary route.
 
 
 ## Non-Goals For The First Slice

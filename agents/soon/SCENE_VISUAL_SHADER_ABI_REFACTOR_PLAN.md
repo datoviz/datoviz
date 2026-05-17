@@ -1,8 +1,9 @@
 # Scene Visual Shader ABI Refactor Plan
 
 > **Execution Status**
-> - **Status:** `PICKUP PLAN`
+> - **Status:** `FIRST ABI PASS LANDED; WGSL PARITY CONTINUES`
 > - **Created on:** `2026-05-16`
+> - **Updated on:** `2026-05-17`
 > - **Scope:** built-in scene visual shaders, common visual bindings, visual pipeline descriptors,
 >   and GLSL/WGSL alignment for the scene -> FramePlan -> DRP2 path.
 
@@ -21,6 +22,28 @@ stream shape.
 This plan is intentionally behavior-preserving at first. It should not fork scene semantics for
 WebGPU, should not introduce a public generic binding API, and should not create a parallel renderer
 contract.
+
+
+## Progress Update
+
+The first behavior-preserving ABI cleanup pass has landed:
+
+1. `_scene_shader_abi.h` records the common, visual, image, volume, and occlusion set/binding
+   constants used by runtime emission;
+2. `src/scene/glsl/common.glsl` and `src/scene/wgsl/common.wgsl` share the common MVP/viewport
+   transform ABI across the active point, pixel, primitive, image, sphere, marker, segment, and
+   volume vertex paths;
+3. image shaders now use split texture/sampler bindings in both GLSL and WGSL;
+4. `visual_pipeline.c` centralizes visual vertex attribute descriptor writes and consolidated
+   depth-state decisions;
+5. `frame_plan_runtime.c` centralizes runtime pipeline bind-layout ordering for common/material,
+   image, volume, and occlusion layouts;
+6. `just shader-abi-check` validates the documented shader ABI and should stay green whenever
+   shader source, bind layouts, vertex attributes, or cache keys move.
+
+The remaining work is no longer the initial ABI extraction. It is WGSL parity and incremental
+descriptor-driven cleanup for visual families and techniques that still have native GLSL-only
+runtime coverage.
 
 
 ## Current State
@@ -50,28 +73,16 @@ contract.
    translating GLSL in the browser.
 
 
-### Main Problems
+### Remaining Problems
 
-1. `src/scene/glsl/common.glsl` defines the common MVP/viewport transform ABI, but most GLSL vertex
-   shaders still redeclare the same uniform blocks and `transform()` helper.
-2. There is no matching `src/scene/wgsl/common.wgsl`, so WGSL shaders duplicate `MVP`, `Viewport`,
-   set 0 bindings, and transform helpers directly.
-3. Shader ABI constants are split across shader source, C helper code, and convention:
-   - set numbers,
-   - binding numbers,
-   - vertex locations,
-   - semantic resource roles,
-   - material/image/volume bind-group shape.
-4. The image shader ABI is not fully aligned across languages:
-   - WGSL uses split texture/sampler bindings.
-   - GLSL image still uses a combined `sampler2D` in the current visual shader.
-5. `src/scene/frame_plan_runtime.c` still creates material, image, volume, and technique bind groups
-   inline, so visual-specific binding details remain spread across runtime emission.
-6. `visual_pipeline.c` is a good centralization point, but parts of it are now table-shaped switch
+1. `src/scene/frame_plan_runtime.c` still creates some material, image, volume, and technique bind
+   groups inline, so visual-specific binding details remain partly spread across runtime emission.
+2. `visual_pipeline.c` is a good centralization point, but parts of it are now table-shaped switch
    logic. That makes every new visual family or shader variant more likely to duplicate cache-key,
    shader-key, layout, and bind-role code.
-7. WGSL coverage is intentionally incomplete for advanced passes. That is acceptable, but the
-   unsupported surface should be explicit and capability-gated.
+3. WGSL coverage is intentionally incomplete for marker, segment/path stroke, sphere, volume, and
+   advanced passes. That is acceptable, but the unsupported surface should be explicit and
+   capability-gated.
 
 
 ## Non-Goals

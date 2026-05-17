@@ -1,6 +1,6 @@
 > **Execution Status**
-> - **Status:** `SCENE SPEC PROPOSAL`
-> - **Updated on:** `2026-05-09`
+> - **Status:** `PARTIALLY IMPLEMENTED MATERIAL SLICE; LIGHT OBJECTS STILL PROPOSED`
+> - **Updated on:** `2026-05-17`
 > - **Purpose:** define the intended v0.4 scene-facing material and lighting object model for mesh
 >   and future lit visual families.
 
@@ -8,6 +8,14 @@
 
 This note narrows the larger lighting and mesh-shading discussion into the active scene-facing API
 decisions needed before the first mesh family lands.
+
+Implementation status on `2026-05-17`: the first material slice is active. `DvzMaterialDesc` and
+`dvz_visual_set_material()` provide a value-descriptor material API for primitive, mesh, and sphere
+visuals; Phong and standard models lower through shared material shader helpers; and
+`dvz_visual_set_primitive_shading()` now forwards through the unified material path. Depth cueing
+remains a separate typed setter that composes with the material payload. Scene-owned light objects
+and panel light sets described below remain future design; the current runtime still uses compact
+material/light-direction fields rather than a full reusable light-object API.
 
 
 ## Objective

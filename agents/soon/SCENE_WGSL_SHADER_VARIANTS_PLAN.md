@@ -1,8 +1,8 @@
 # Scene WGSL Shader Variant Plan
 
 > **Execution Status**
-> - **Status:** `PICKUP PLAN`
-> - **Updated on:** `2026-05-14`
+> - **Status:** `INITIAL REGISTRY/EMISSION SLICE LANDED; PARITY LANES REMAIN`
+> - **Updated on:** `2026-05-17`
 > - **Purpose:** document how scene-owned GLSL/WGSL shader variants should feed DRP2 WebGPU
 >   emission without moving shader semantics into the browser replay prototype.
 
@@ -32,9 +32,16 @@ The scene side already has a shader registry boundary:
 1. `src/scene/shader_registry.c` owns current fallback GLSL strings and fixture WGSL helpers.
 2. `src/scene/_shader_registry.h` exposes internal shader registry helpers.
 3. `src/scene/visual_pipeline.c` resolves `DvzSceneVisualShaderDesc` for built-in visuals and
-   currently fills GLSL fields for the retained visual path.
-4. `agents/now/SCENE_CONVERTER_REFACTOR_PLAN.md` already recommends file-backed runtime visual
+   fills format-aware shader fields for the retained visual path.
+4. `spec/scene/implementation/VISUAL_SHADER_REFACTOR.md` is now the active shader ABI and WGSL
+   parity checklist.
+5. `agents/now/SCENE_CONVERTER_REFACTOR_PLAN.md` already recommends file-backed runtime visual
    shaders under `src/scene/glsl/` and extending the existing root CMake shader pipeline.
+
+The first retained-scene WGSL emission slice is implemented for the active point/pixel,
+primitive/lit primitive, image, texture, fixture, fullscreen, and shared material/common helper
+paths. The current parity gaps are tracked per visual family in the implementation note rather than
+as one broad "add WGSL" item.
 
 
 ## Ownership Decision
@@ -328,6 +335,10 @@ set.
 
 ## First Implementation Slice
 
+Status on `2026-05-17`: this first implementation slice has landed for more than the original
+primitive proof. Keep the steps below as historical shape for future parity lanes, but use
+`spec/scene/implementation/VISUAL_SHADER_REFACTOR.md` for the current source of truth.
+
 Start with one simple retained visual and prove the format selection path end to end.
 
 Recommended visual: `primitive` triangle-list. It is lower risk than point sprites and should map
@@ -355,7 +366,7 @@ Steps:
 
 ## Acceptance Criteria
 
-The first slice is done when:
+The first slice was done when:
 
 1. native GLSL/SPIR-V scene tests still pass,
 2. one retained scene visual can emit a WGSL DRP2 stream,
@@ -367,13 +378,17 @@ The first slice is done when:
 
 ## Follow-Up Work
 
-After the first visual works:
+Current follow-up work:
 
-1. Add WGSL variants for point, image, mesh/depth, picking, and probe/readback support in that
-   order.
-2. Add the deterministic GLSL-to-WGSL generation script and an up-to-date check.
-3. Decide whether DRP2 should ever carry multiple shader variants in one stream. The current
+1. Keep point/pixel and primitive/image parity intact when changing style, cue, picking, material,
+   texture, or common bind ABI.
+2. Add WGSL variants for marker, segment/path stroke, sphere, volume, and advanced passes only with
+   committed source, registry coverage, DRP2 emission tests, and runtime or fixture smoke where the
+   backend can execute them.
+3. Keep `tools/generate_missing_scene_wgsl.py` conservative and add an up-to-date check only after
+   the remaining parity lanes justify it.
+4. Decide whether DRP2 should ever carry multiple shader variants in one stream. The current
    recommendation is no: emit a target-specific stream with one selected shader format until a real
    multi-backend stream use case appears.
-4. Promote the storage and translation rules into `spec/scene/` once more than one built-in visual
-   uses them.
+5. Keep storage and translation rules in `spec/scene/implementation/VISUAL_SHADER_REFACTOR.md` as
+   the promoted implementation-facing contract.
