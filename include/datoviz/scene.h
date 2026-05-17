@@ -356,6 +356,22 @@ DVZ_EXPORT int dvz_panel_set_domain(DvzPanel* panel, DvzDim dim, double min, dou
 
 
 /**
+ * Return the current visible data domain for one panel dimension.
+ *
+ * The panel's domain is combined with the current panzoom extent. When no explicit domain has
+ * been configured, the default visual domain [-1, +1] is used.
+ *
+ * @param panel the panel
+ * @param dim axis dimension
+ * @param out_min output visible data minimum
+ * @param out_max output visible data maximum
+ * @return whether the visible domain was written
+ */
+DVZ_EXPORT bool
+dvz_panel_visible_domain(DvzPanel* panel, DvzDim dim, double* out_min, double* out_max);
+
+
+/**
  * Normalize tightly packed 3D data positions through the panel X/Y domains.
  *
  * X and Y are mapped from data coordinates into panel visual coordinates in [-1, +1]. Z is copied

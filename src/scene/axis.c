@@ -124,6 +124,7 @@ static void _axis_init(DvzAxis* axis, DvzPanel* panel, DvzDim dim)
     axis->dim = dim;
     axis->enabled = false;
     axis->dirty = true;
+    axis->domain_set = false;
     axis->domain = (DvzDataDomain){.min = -1.0, .max = +1.0};
     axis->tick_policy = _axis_default_tick_policy();
     axis->style = _axis_default_style();
@@ -480,10 +481,41 @@ int dvz_panel_set_domain(DvzPanel* panel, DvzDim dim, double min, double max)
         return -1;
     _axis_init(axis, panel, dim);
     axis->domain = (DvzDataDomain){.min = min, .max = max};
+    axis->domain_set = true;
     axis->tick_lstep = 0.0;
     axis->dirty = true;
     axis->version++;
     return 0;
+}
+
+
+/**
+ * Return the current visible data domain for one panel dimension.
+ *
+ * @param panel the panel
+ * @param dim axis dimension
+ * @param out_min output visible data minimum
+ * @param out_max output visible data maximum
+ * @return whether the visible domain was written
+ */
+bool dvz_panel_visible_domain(DvzPanel* panel, DvzDim dim, double* out_min, double* out_max)
+{
+    DvzAxis* axis = _panel_axis_slot(panel, dim);
+    if (axis == NULL || out_min == NULL || out_max == NULL)
+        return false;
+    _axis_init(axis, panel, dim);
+    if (!axis->domain_set)
+    {
+        float extent[4] = {-1.0f, +1.0f, -1.0f, +1.0f};
+        if (panel->panzoom != NULL)
+            (void)dvz_panzoom_extent(panel->panzoom, extent);
+        uint32_t lo_idx = dim == DVZ_DIM_X ? 0 : 2;
+        uint32_t hi_idx = dim == DVZ_DIM_X ? 1 : 3;
+        *out_min = fmin((double)extent[lo_idx], (double)extent[hi_idx]);
+        *out_max = fmax((double)extent[lo_idx], (double)extent[hi_idx]);
+        return isfinite(*out_min) && isfinite(*out_max) && *out_max > *out_min;
+    }
+    return _axis_visible_domain(axis, out_min, out_max);
 }
 
 
@@ -503,8 +535,8 @@ int dvz_panel_data_to_visual_positions(
         return -1;
     DvzAxis* x_axis = _panel_axis_slot(panel, DVZ_DIM_X);
     DvzAxis* y_axis = _panel_axis_slot(panel, DVZ_DIM_Y);
-    bool has_x = x_axis != NULL && x_axis->panel != NULL;
-    bool has_y = y_axis != NULL && y_axis->panel != NULL;
+    bool has_x = x_axis != NULL && x_axis->panel != NULL && x_axis->domain_set;
+    bool has_y = y_axis != NULL && y_axis->panel != NULL && y_axis->domain_set;
     if (has_x && fabs(x_axis->domain.max - x_axis->domain.min) < AXIS_EPS)
         return -1;
     if (has_y && fabs(y_axis->domain.max - y_axis->domain.min) < AXIS_EPS)

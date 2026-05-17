@@ -818,6 +818,7 @@ struct DvzAxis
     DvzDim dim;
     bool enabled;
     bool dirty;
+    bool domain_set;
     uint64_t version;
     DvzDataDomain domain;
     DvzAxisTickPolicy tick_policy;
