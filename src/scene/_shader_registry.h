@@ -49,6 +49,7 @@ typedef enum
     DVZ_SCENE_BUILTIN_SHADER_VOLUME_MIP,
     DVZ_SCENE_BUILTIN_SHADER_VOLUME_COMPOSITE,
     DVZ_SCENE_BUILTIN_SHADER_VOLUME_OCCLUSION_DEPTH,
+    DVZ_SCENE_BUILTIN_SHADER_SCENE_OCCLUSION_DEPTH,
     DVZ_SCENE_BUILTIN_SHADER_WBOIT_ACCUM,
     DVZ_SCENE_BUILTIN_SHADER_WBOIT_ACCUM_LIT,
     DVZ_SCENE_BUILTIN_SHADER_WBOIT_RESOLVE,
@@ -86,6 +87,10 @@ bool _emit_shader(
 bool _emit_shader_spirv(
     DvzDrp2CommandStream* stream, uint64_t id, const char* stage,
     const char* spirv_key, const char* glsl, const DvzFramePlanEmitConfig* cfg);
+
+char* _shader_glsl_variant(const char* glsl, const char* defines);
+
+void _shader_glsl_variant_destroy(char* glsl);
 
 const char* _builtin_shader_glsl(DvzSceneBuiltinShader shader, bool fragment);
 

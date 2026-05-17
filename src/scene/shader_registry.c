@@ -14,8 +14,12 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include "_shader_registry.h"
+#include <string.h>
 
+#include "_alloc.h"
+#include "_assertions.h"
+#include "_compat.h"
+#include "_shader_registry.h"
 #include "datoviz/drp2/stream.h"
 #include "datoviz/fileio/fileio.h"
 
@@ -134,6 +138,8 @@ static const char* _builtin_shader_resource_key(DvzSceneBuiltinShader shader, bo
         return fragment ? "volume_composite_frag" : "volume_slice_vert";
     case DVZ_SCENE_BUILTIN_SHADER_VOLUME_OCCLUSION_DEPTH:
         return fragment ? "volume_occlusion_depth_frag" : "volume_slice_vert";
+    case DVZ_SCENE_BUILTIN_SHADER_SCENE_OCCLUSION_DEPTH:
+        return fragment ? "scene_occlusion_depth_frag" : "primitive_vert";
     case DVZ_SCENE_BUILTIN_SHADER_WBOIT_ACCUM:
         return fragment ? "wboit_accum_frag" : "primitive_vert";
     case DVZ_SCENE_BUILTIN_SHADER_WBOIT_ACCUM_LIT:
@@ -163,6 +169,169 @@ static const char* _builtin_shader_resource_key(DvzSceneBuiltinShader shader, bo
     }
 }
 
+
+
+/**
+ * Append bytes to an owned shader source buffer.
+ *
+ * @param dst the source buffer pointer
+ * @param len current byte length
+ * @param cap current buffer capacity
+ * @param src bytes to append
+ * @param src_len number of bytes to append
+ * @return whether the append succeeded
+ */
+static bool
+_shader_builder_append(char** dst, size_t* len, size_t* cap, const char* src, size_t src_len)
+{
+    ANN(dst);
+    ANN(len);
+    ANN(cap);
+    ANN(src);
+    if (src_len == 0)
+        return true;
+    if (src_len > SIZE_MAX - *len - 1)
+        return false;
+    size_t need = *len + src_len + 1;
+    if (need > *cap)
+    {
+        size_t next = *cap == 0 ? 4096 : *cap;
+        while (next < need)
+        {
+            if (next > SIZE_MAX / 2)
+                return false;
+            next *= 2;
+        }
+        char* grown = (char*)dvz_realloc(*dst, next);
+        if (grown == NULL)
+            return false;
+        *dst = grown;
+        *cap = next;
+    }
+    dvz_memcpy(*dst + *len, *cap - *len, src, src_len);
+    *len += src_len;
+    (*dst)[*len] = '\0';
+    return true;
+}
+
+
+/**
+ * Return an embedded GLSL include source from an include filename.
+ *
+ * @param include_name include filename such as scene_material.glsl
+ * @return embedded source, or NULL when unavailable
+ */
+static const char* _shader_include_source(const char* include_name)
+{
+    ANN(include_name);
+    char key[128] = {0};
+    dvz_strlcpy(key, include_name, sizeof(key));
+    char* dot = strrchr(key, '.');
+    if (dot != NULL)
+        *dot = '\0';
+    return _resource_glsl(key);
+}
+
+
+/**
+ * Recursively append a GLSL source with local includes resolved.
+ *
+ * @param dst the source buffer pointer
+ * @param len current byte length
+ * @param cap current buffer capacity
+ * @param glsl input GLSL source
+ * @param defines optional top-level defines inserted after #version
+ * @param top_level whether this source is the top-level shader
+ * @param depth include recursion depth
+ * @return whether preprocessing succeeded
+ */
+static bool _shader_preprocess_into(
+    char** dst, size_t* len, size_t* cap, const char* glsl, const char* defines, bool top_level,
+    uint32_t depth)
+{
+    ANN(dst);
+    ANN(len);
+    ANN(cap);
+    ANN(glsl);
+    if (depth > 8)
+        return false;
+
+    const char* cursor = glsl;
+    bool inserted_defines = !top_level || defines == NULL || defines[0] == '\0';
+    while (*cursor != '\0')
+    {
+        const char* line_end = strchr(cursor, '\n');
+        size_t line_len = line_end != NULL ? (size_t)(line_end - cursor + 1) : strlen(cursor);
+
+        if (strncmp(cursor, "#include \"", 10) == 0)
+        {
+            const char* name_start = cursor + 10;
+            const char* name_end = strchr(name_start, '"');
+            if (name_end == NULL || (line_end != NULL && name_end > line_end))
+                return false;
+            char include_name[128] = {0};
+            size_t name_len = (size_t)(name_end - name_start);
+            if (name_len >= sizeof(include_name))
+                return false;
+            dvz_memcpy(include_name, sizeof(include_name), name_start, name_len);
+            const char* include_source = _shader_include_source(include_name);
+            if (include_source == NULL)
+                return false;
+            if (!_shader_preprocess_into(
+                    dst, len, cap, include_source, NULL, false, depth + 1))
+                return false;
+        }
+        else
+        {
+            if (!_shader_builder_append(dst, len, cap, cursor, line_len))
+                return false;
+            if (!inserted_defines && strncmp(cursor, "#version", 8) == 0)
+            {
+                if (!_shader_builder_append(dst, len, cap, defines, strlen(defines)))
+                    return false;
+                inserted_defines = true;
+            }
+        }
+        cursor += line_len;
+    }
+    if (!inserted_defines)
+        return _shader_builder_append(dst, len, cap, defines, strlen(defines));
+    return true;
+}
+
+
+/**
+ * Create an owned GLSL variant with local includes resolved and optional defines inserted.
+ *
+ * @param glsl input GLSL source
+ * @param defines defines to insert after #version, or NULL
+ * @return owned preprocessed source, or NULL on failure
+ */
+char* _shader_glsl_variant(const char* glsl, const char* defines)
+{
+    if (glsl == NULL)
+        return NULL;
+    char* out = NULL;
+    size_t len = 0;
+    size_t cap = 0;
+    if (!_shader_preprocess_into(&out, &len, &cap, glsl, defines, true, 0))
+    {
+        dvz_free(out);
+        return NULL;
+    }
+    return out;
+}
+
+
+/**
+ * Destroy an owned GLSL variant returned by _shader_glsl_variant().
+ *
+ * @param glsl owned GLSL source
+ */
+void _shader_glsl_variant_destroy(char* glsl)
+{
+    dvz_free(glsl);
+}
 
 
 /**

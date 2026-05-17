@@ -909,8 +909,10 @@ bool _scene_technique_emit_scene_occlusion_frame_graph(DvzFramePlan* plan, const
     ANN(panel_id);
 
     char depth_id[DVZ_SCENE_LABEL_SIZE];
+    char z_id[DVZ_SCENE_LABEL_SIZE];
     char pass_id[DVZ_SCENE_LABEL_SIZE];
     dvz_snprintf(depth_id, sizeof(depth_id), "%s.scene_occlusion.depth", panel_id);
+    dvz_snprintf(z_id, sizeof(z_id), "%s.scene_occlusion.z", panel_id);
     dvz_snprintf(pass_id, sizeof(pass_id), "%s.scene_occlusion", panel_id);
 
     DvzFrameGraphResource depth = {0};
@@ -924,7 +926,18 @@ bool _scene_technique_emit_scene_occlusion_frame_graph(DvzFramePlan* plan, const
     if (!_scene_frame_graph_resource_once(plan, &depth))
         return false;
 
+    DvzFrameGraphResource z = {0};
+    dvz_strlcpy(z.id, z_id, sizeof(z.id));
+    z.kind = DVZ_FRAME_GRAPH_RESOURCE_TEXTURE;
+    z.format = VK_FORMAT_D32_SFLOAT;
+    z.extent_kind = DVZ_FRAME_GRAPH_EXTENT_FIGURE;
+    z.usage_flags = DVZ_FRAME_GRAPH_RESOURCE_USAGE_DEPTH_ATTACHMENT;
+    z.lifetime = DVZ_FRAME_GRAPH_RESOURCE_LIFETIME_PER_FRAME;
+    if (!_scene_frame_graph_resource_once(plan, &z))
+        return false;
+
     DvzFrameGraphAttachment color = {0};
+    DvzFrameGraphAttachment z_attachment = {0};
     DvzFrameGraphPass pass = {0};
     dvz_strlcpy(pass.id, pass_id, sizeof(pass.id));
     dvz_strlcpy(pass.panel_id, panel_id, sizeof(pass.panel_id));
@@ -937,6 +950,11 @@ bool _scene_technique_emit_scene_occlusion_frame_graph(DvzFramePlan* plan, const
     color.clear_color[2] = 1.0f;
     color.clear_color[3] = 1.0f;
     if (!dvz_frame_graph_pass_color_attachment(&pass, &color))
+        return false;
+    _scene_frame_graph_depth_attachment(
+        &z_attachment, z_id, DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_CLEAR,
+        DVZ_FRAME_GRAPH_ATTACHMENT_ACCESS_WRITE);
+    if (!dvz_frame_graph_pass_depth_attachment(&pass, &z_attachment))
         return false;
     return dvz_frame_plan_graph_pass(plan, &pass);
 }

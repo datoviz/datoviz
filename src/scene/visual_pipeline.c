@@ -380,6 +380,8 @@ static bool _scene_visual_desc_from_metadata(
     ANN(out);
 
     out->depth_test_enabled = meta->depth_test_enabled;
+    out->scene_occluded = meta->scene_occluded;
+    out->scene_occlusion = meta->scene_occlusion;
 
     if (error != NULL)
         *error = NULL;
@@ -1429,6 +1431,7 @@ bool _scene_visual_pipeline_desc(
 
     out->topology = visual->topology;
     out->has_depth_state = pass_needs_depth;
+    out->needs_scene_occlusion_layout = visual->scene_occluded;
     if (pass_needs_depth)
     {
         out->depth_write_enabled = false;
@@ -1553,6 +1556,8 @@ bool _scene_visual_bind_desc(
     ANN(visual);
     ANN(out);
     dvz_memset(out, sizeof(DvzSceneVisualBindDesc), 0, sizeof(DvzSceneVisualBindDesc));
+    out->uses_scene_occlusion_set2 = visual->scene_occluded;
+    out->scene_occlusion = visual->scene_occlusion;
 
     DvzSceneVisualPassCaps caps = {0};
     if (!_scene_visual_pass_caps_from_desc(

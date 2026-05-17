@@ -4500,6 +4500,148 @@ int test_scene_visual_scene_occlusion_frame_plan(TstSuite* suite, TstItem* item)
 
 
 /**
+ * Verify scene occlusion lowers to executable DRP2 resources, passes, and bind groups.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_visual_scene_occlusion_emits_drp2(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    AT(scene != NULL);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    AT(figure != NULL);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    AT(panel != NULL);
+
+    DvzVisual* occluder = dvz_primitive(scene, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 0);
+    DvzVisual* occluded = dvz_point(scene, 0);
+    AT(occluder != NULL);
+    AT(occluded != NULL);
+
+    float positions[3][3] = {
+        {-0.5f, -0.5f, 0.0f},
+        {0.5f, -0.5f, 0.0f},
+        {0.0f, 0.5f, 0.0f},
+    };
+    DvzColor colors[3] = {{255, 0, 0, 255}, {0, 255, 0, 255}, {0, 0, 255, 255}};
+    float sizes[3] = {10.0f, 10.0f, 10.0f};
+
+    AT(dvz_visual_set_data(occluder, "position", positions, 3) == 0);
+    AT(dvz_visual_set_data(occluder, "color", colors, 3) == 0);
+    AT(dvz_visual_set_data(occluded, "position", positions, 3) == 0);
+    AT(dvz_visual_set_data(occluded, "color", colors, 3) == 0);
+    AT(dvz_visual_set_data(occluded, "size", sizes, 3) == 0);
+    AT(dvz_visual_set_scene_occluder(occluder, true) == 0);
+    AT(dvz_visual_set_scene_occluded(occluded, true) == 0);
+    AT(dvz_panel_add_visual(panel, occluder, NULL) == 0);
+    AT(dvz_panel_add_visual(panel, occluded, NULL) == 0);
+    AT(dvz_panel_set_scene_occlusion(
+           panel,
+           &(DvzSceneOcclusionDesc){
+               .enabled = true,
+               .depth_bias = 0.001f,
+               .soft_edge = 0.01f,
+               .hidden_alpha = 0.2f,
+           }) == 0);
+
+    DvzCapabilitySnapshot caps;
+    dvz_capability_snapshot_default(&caps);
+    caps.supports_render_target_sampling = true;
+    DvzDiagnosticReport report;
+    dvz_diagnostic_report_init(&report);
+    DvzFramePlanEmitConfig cfg = dvz_frame_plan_emit_config();
+    cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
+    cfg.target_width = 64;
+    cfg.target_height = 64;
+
+    DvzDrp2CommandStream* stream = dvz_figure_emit_ex(figure, &caps, &report, &cfg);
+    ANN(stream);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+    DvzDrp2ValidationResult validation = dvz_drp2_validate_stream(stream);
+    AT(validation.ok);
+
+    bool has_scene_depth = false;
+    bool has_scene_z = false;
+    bool has_scene_depth_pass = false;
+    bool has_scene_occluded_pipeline = false;
+    bool has_scene_occlusion_bind_group = false;
+    bool binds_scene_occlusion_group = false;
+    for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
+    {
+        const DvzDrp2Command* command = dvz_drp2_stream_get(stream, i);
+        ANN(command);
+        if (command->type == DVZ_DRP2_COMMAND_CREATE_TEXTURE)
+        {
+            const char* label = dvz_drp2_stream_label(stream, command->u.create_texture.id);
+            has_scene_depth =
+                has_scene_depth ||
+                (label != NULL && strcmp(label, "fig0_p0.scene_occlusion.depth") == 0 &&
+                 command->u.create_texture.format == VK_FORMAT_R32_SFLOAT);
+            has_scene_z =
+                has_scene_z ||
+                (label != NULL && strcmp(label, "fig0_p0.scene_occlusion.z") == 0 &&
+                 command->u.create_texture.format == VK_FORMAT_D32_SFLOAT);
+        }
+        else if (command->type == DVZ_DRP2_COMMAND_BEGIN_RENDER_PASS)
+        {
+            has_scene_depth_pass =
+                has_scene_depth_pass ||
+                (command->u.begin_render_pass.color_attachment_count == 1 &&
+                 command->u.begin_render_pass.has_depth_attachment &&
+                 command->u.begin_render_pass.clear_color[0] == 1.0f);
+        }
+        else if (command->type == DVZ_DRP2_COMMAND_CREATE_RENDER_PIPELINE)
+        {
+            const char* label = dvz_drp2_stream_label(stream, command->u.create_render_pipeline.id);
+            has_scene_occluded_pipeline =
+                has_scene_occluded_pipeline ||
+                (label != NULL && strstr(label, "scene_occ") != NULL &&
+                 command->u.create_render_pipeline.bind_group_layout_count >= 2);
+        }
+        else if (command->type == DVZ_DRP2_COMMAND_CREATE_BIND_GROUP)
+        {
+            const char* label = dvz_drp2_stream_label(stream, command->u.create_bind_group.id);
+            has_scene_occlusion_bind_group =
+                has_scene_occlusion_bind_group ||
+                (label != NULL && strstr(label, "_bg_scene_occ_depth_") != NULL);
+        }
+        else if (command->type == DVZ_DRP2_COMMAND_SET_BIND_GROUP)
+        {
+            const char* label =
+                dvz_drp2_stream_label(stream, command->u.set_bind_group.bind_group_id);
+            binds_scene_occlusion_group =
+                binds_scene_occlusion_group ||
+                (command->u.set_bind_group.slot == 1 && label != NULL &&
+                 strstr(label, "_bg_scene_occ_depth_") != NULL);
+        }
+    }
+    AT(has_scene_depth);
+    AT(has_scene_z);
+    AT(has_scene_depth_pass);
+    AT(has_scene_occluded_pipeline);
+    AT(has_scene_occlusion_bind_group);
+    AT(binds_scene_occlusion_group);
+
+    DvzDrp2RuntimeConfig runtime_cfg = dvz_drp2_runtime_vklite_config(NULL, NULL);
+    runtime_cfg.semantic_only = true;
+    DvzDrp2Runtime* runtime = dvz_drp2_runtime_vklite(&runtime_cfg);
+    ANN(runtime);
+    DvzDrp2ValidationResult result = dvz_drp2_runtime_execute(runtime, stream);
+    AT(result.ok);
+    dvz_drp2_runtime_destroy(runtime);
+
+    dvz_drp2_stream_destroy(stream);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+/**
  * Verify internal material state defaults and compatibility setter synchronization.
  *
  * @param suite the active test suite
@@ -7723,6 +7865,7 @@ int test_scene_graph(TstSuite* suite)
     TEST_SIMPLE(test_scene_visual_depth_test);
     TEST_SIMPLE(test_scene_visual_scene_occlusion_flags);
     TEST_SIMPLE(test_scene_visual_scene_occlusion_frame_plan);
+    TEST_SIMPLE(test_scene_visual_scene_occlusion_emits_drp2);
     TEST_SIMPLE(test_scene_visual_internal_material_state);
     TEST_SIMPLE(test_scene_visual_material_setter);
     TEST_SIMPLE(test_scene_pixel_depth_cue_toggle_switches_pipeline);

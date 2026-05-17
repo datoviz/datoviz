@@ -1,6 +1,9 @@
 #version 450
 
 #include "scene_material.glsl"
+#ifdef DVZ_SCENE_OCCLUSION
+#include "scene_occlusion.glsl"
+#endif
 
 layout(location = 0) in vec4 fragColor;
 layout(location = 1) in vec3 fragNormal;
@@ -14,4 +17,7 @@ void main()
     vec4 shaded = evaluateSceneMaterial(fragColor, fragNormal, fragWorldPos, fragCameraPos);
     vec3 cue = vec3(fragDepth, length(fragCameraPos - fragWorldPos), length(fragWorldPos));
     outColor = vec4(applyDepthCue(shaded.rgb, cue), shaded.a);
+#ifdef DVZ_SCENE_OCCLUSION
+    applySceneOcclusion(outColor);
+#endif
 }

@@ -392,6 +392,8 @@ int test_scene_visual_scene_occlusion_flags(TstSuite* suite, TstItem* item);
 
 int test_scene_visual_scene_occlusion_frame_plan(TstSuite* suite, TstItem* item);
 
+int test_scene_visual_scene_occlusion_emits_drp2(TstSuite* suite, TstItem* item);
+
 int test_scene_visual_internal_material_state(TstSuite* suite, TstItem* item);
 
 int test_scene_visual_material_setter(TstSuite* suite, TstItem* item);

@@ -72,6 +72,8 @@ typedef struct DvzSceneVisualDesc
     uint64_t volume_texture_id;
     uint32_t volume_visual_index;
     bool volume_transfer_rgba;
+    bool scene_occluded;
+    DvzSceneOcclusionDesc scene_occlusion;
     bool volume_occluded;
     DvzVolumeOcclusionDesc volume_occlusion;
     DvzVolumeState volume_state;
@@ -146,6 +148,7 @@ typedef struct DvzSceneVisualPipelineDesc
     bool needs_image_layout;
     bool needs_volume_layout;
     bool needs_material_layout;
+    bool needs_scene_occlusion_layout;
     bool has_depth_state;
     bool depth_write_enabled;
     uint32_t depth_compare_op;
@@ -174,6 +177,9 @@ typedef struct DvzSceneVisualBindDesc
     DvzVolumeState volume_state;
     bool uses_material_set1;
     uint64_t material_buffer_id;
+    bool uses_scene_occlusion_set2;
+    uint64_t scene_occlusion_depth_texture_id;
+    DvzSceneOcclusionDesc scene_occlusion;
 } DvzSceneVisualBindDesc;
 
 
