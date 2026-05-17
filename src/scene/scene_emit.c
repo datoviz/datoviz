@@ -1302,6 +1302,7 @@ bool _scene_visual_frame_plan_metadata(
     metadata->visual_index = visual_index;
     metadata->buffer_index = UINT32_MAX;
     metadata->topology = (uint32_t)visual->topology;
+    metadata->instance_count = 1;
     metadata->alpha_mode = visual->alpha_mode;
     metadata->depth_test_enabled = visual->depth_test_enabled;
     metadata->depth_cue_enabled = visual->material.depth_cue_enabled;
@@ -1400,6 +1401,14 @@ bool _scene_visual_frame_plan_metadata(
         if (!_scene_resource_key_visual_attr(
                 visual_index, "index", metadata->index_id, sizeof(metadata->index_id)))
             return false;
+        if (visual->type == DVZ_VISUAL_TYPE_SEGMENT)
+        {
+            if (visual->segment.gpu.vertex_count > UINT32_MAX ||
+                visual->segment.gpu.index_count > UINT32_MAX)
+                return false;
+            metadata->vertex_count = (uint32_t)visual->segment.gpu.vertex_count;
+            metadata->index_count = (uint32_t)visual->segment.gpu.index_count;
+        }
     }
     return true;
 }

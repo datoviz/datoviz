@@ -541,6 +541,8 @@ static bool _scene_visual_desc_from_metadata(
         out->topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
         out->index_buffer_id = index_id;
         out->material_buffer_id = material_id;
+        if (meta->vertex_count > 0)
+            out->vertex_count = meta->vertex_count;
         if (_resource_item_stride(&emitter->resources, index_id) != 0)
         {
             uint64_t index_count =
@@ -554,6 +556,8 @@ static bool _scene_visual_desc_from_metadata(
             }
             out->index_count = (uint32_t)index_count;
         }
+        if (meta->index_count > 0)
+            out->index_count = meta->index_count;
         out->index_format =
             _resource_item_stride(&emitter->resources, index_id) == sizeof(uint16_t)
                 ? "uint16"

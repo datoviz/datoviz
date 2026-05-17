@@ -271,6 +271,9 @@ typedef struct DvzFramePlanVisualMeta
     uint32_t visual_index;
     uint32_t buffer_index;
     uint32_t topology;
+    uint32_t vertex_count;
+    uint32_t index_count;
+    uint32_t instance_count;
     DvzAlphaMode alpha_mode;
     bool depth_test_enabled;
     bool depth_cue_enabled;

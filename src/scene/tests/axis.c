@@ -18,8 +18,10 @@
 #include <string.h>
 
 #include "_assertions.h"
+#include "../../drp2/_stream.h"
 #include "../_scene.h"
 #include "../_scene_emit.h"
+#include "datoviz/drp2/stream.h"
 #include "datoviz/scene.h"
 #include "test_scene.h"
 #include "testing.h"
@@ -47,6 +49,25 @@ static DvzVisualAttr* _axis_test_attr(DvzVisual* visual, const char* name)
             return &visual->attrs[i];
     }
     return NULL;
+}
+
+
+/**
+ * Return the first indexed draw count in a command stream.
+ *
+ * @param stream the command stream
+ * @return the indexed draw count, or 0
+ */
+static uint32_t _axis_test_draw_index_count(const DvzDrp2CommandStream* stream)
+{
+    ANN(stream);
+    for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
+    {
+        const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream, i);
+        if (cmd->type == DVZ_DRP2_COMMAND_DRAW_INDEXED)
+            return cmd->u.draw_indexed.index_count;
+    }
+    return 0;
 }
 
 
@@ -153,6 +174,53 @@ int test_axis_panzoom_visible_domain(TstSuite* suite, TstItem* item)
 }
 
 
+int test_axis_dynamic_segment_draw_count(TstSuite* suite, TstItem* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 800, 600, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
+    ANN(panel);
+
+    AT(dvz_panel_set_domain(panel, DVZ_DIM_X, 0.0, 100.0) == 0);
+    DvzAxis* axis = dvz_panel_axis(panel, DVZ_DIM_X);
+    ANN(axis);
+    AT(dvz_axis_set_grid(axis, true));
+
+    DvzCapabilitySnapshot caps;
+    dvz_capability_snapshot_default(&caps);
+    DvzDiagnosticReport report;
+    dvz_diagnostic_report_init(&report);
+    DvzFramePlanEmitConfig cfg = dvz_frame_plan_emit_config();
+    cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
+
+    AT(dvz_axis_set_tick_policy(
+        axis, &(DvzAxisTickPolicy){.target_count = 12, .min_pixel_spacing = 0.0f}));
+    DvzDrp2CommandStream* stream0 = dvz_figure_emit_ex(figure, &caps, &report, &cfg);
+    ANN(stream0);
+    uint32_t draw0 = _axis_test_draw_index_count(stream0);
+    AT(draw0 > 0);
+    dvz_drp2_stream_destroy(stream0);
+
+    dvz_diagnostic_report_init(&report);
+    AT(dvz_axis_set_tick_policy(
+        axis, &(DvzAxisTickPolicy){.target_count = 2, .min_pixel_spacing = 0.0f}));
+    DvzDrp2CommandStream* stream1 = dvz_figure_emit_ex(figure, &caps, &report, &cfg);
+    ANN(stream1);
+    uint32_t draw1 = _axis_test_draw_index_count(stream1);
+    AT(draw1 > 0);
+    AT(draw1 < draw0);
+    dvz_drp2_stream_destroy(stream1);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
 int test_scene_axis(TstSuite* suite)
 {
     ANN(suite);
@@ -160,5 +228,6 @@ int test_scene_axis(TstSuite* suite)
 
     TEST_SIMPLE(test_axis_domain_and_ticks);
     TEST_SIMPLE(test_axis_panzoom_visible_domain);
+    TEST_SIMPLE(test_axis_dynamic_segment_draw_count);
     return 0;
 }
