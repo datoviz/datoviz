@@ -455,7 +455,10 @@ typedef struct DvzColorbarDesc DvzColorbarDesc;
 struct DvzFontDesc
 {
     const char* path;
+    const char* family;
+    const char* style;
     float size_pts;
+    uint32_t face_index;
     uint32_t flags;
 };
 typedef struct DvzFontDesc DvzFontDesc;
@@ -465,6 +468,7 @@ struct DvzTextStyle
 {
     DvzFont* font;
     float size_pts;
+    DvzTextRenderer renderer;
     uint8_t color[4];
     uint32_t flags;
     bool bold;
@@ -480,6 +484,8 @@ struct DvzTextPlacement
     DvzSceneAnchor anchor;
     double position[3];
     float offset[2];
+    float angle;
+    bool depth_test;
 };
 typedef struct DvzTextPlacement DvzTextPlacement;
 

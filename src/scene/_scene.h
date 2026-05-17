@@ -122,6 +122,9 @@ typedef struct DvzFont DvzFont;
 typedef struct DvzText DvzText;
 typedef struct DvzAnnotation DvzAnnotation;
 typedef struct DvzAnimation DvzAnimation;
+typedef struct DvzTextShapedGlyph DvzTextShapedGlyph;
+typedef struct DvzTextLayoutMetrics DvzTextLayoutMetrics;
+typedef struct DvzTextGlyphInstance DvzTextGlyphInstance;
 
 
 
@@ -149,6 +152,53 @@ struct DvzSceneFormatState
     char unit[32];
     char prefix[DVZ_SCENE_LABEL_SIZE];
     char suffix[DVZ_SCENE_LABEL_SIZE];
+};
+
+
+typedef enum
+{
+    DVZ_TEXT_DIRTY_NONE = 0x00u,
+    DVZ_TEXT_DIRTY_STRING = 0x01u,
+    DVZ_TEXT_DIRTY_STYLE = 0x02u,
+    DVZ_TEXT_DIRTY_PLACEMENT = 0x04u,
+    DVZ_TEXT_DIRTY_LAYOUT = 0x08u,
+    DVZ_TEXT_DIRTY_RENDER = 0x10u,
+    DVZ_TEXT_DIRTY_ALL = 0x1fu,
+} DvzTextDirtyFlag;
+
+
+struct DvzTextShapedGlyph
+{
+    uint32_t glyph_id;
+    uint32_t cluster;
+    uint32_t font_index;
+    float advance[2];
+    float offset[2];
+};
+
+
+struct DvzTextLayoutMetrics
+{
+    float advance[2];
+    float ink_bounds[4];
+    float layout_bounds[4];
+    float baseline;
+    float ascender;
+    float descender;
+    float line_height;
+};
+
+
+struct DvzTextGlyphInstance
+{
+    double anchor[3];
+    float offset[2];
+    float size[2];
+    float uv[4];
+    float angle;
+    uint8_t color[4];
+    uint32_t text_index;
+    uint32_t glyph_index;
 };
 
 
@@ -304,8 +354,12 @@ struct DvzFont
 {
     DvzScene* scene;
     char path[512];
+    char family[DVZ_SCENE_LABEL_SIZE];
+    char style[DVZ_SCENE_LABEL_SIZE];
     float size_pts;
+    uint32_t face_index;
     uint32_t flags;
+    uint64_t version;
 };
 
 
@@ -317,6 +371,9 @@ struct DvzText
     DvzTextStyle style;
     DvzTextPlacement placement;
     uint32_t flags;
+    uint32_t dirty_flags;
+    uint64_t version;
+    DvzTextLayoutMetrics metrics;
 };
 
 
@@ -331,6 +388,9 @@ struct DvzAnnotation
     uint32_t flags;
     bool has_format;
     DvzSceneFormatState format;
+    uint32_t dirty_flags;
+    uint64_t version;
+    DvzTextLayoutMetrics metrics;
 };
 
 

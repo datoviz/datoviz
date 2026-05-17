@@ -122,43 +122,108 @@ int test_scene_text_annotation_bookkeeping(TstSuite* suite, TstItem* item)
     DvzFigure* figure = dvz_figure(scene, 640, 480, 0);
     DvzPanel* panel = dvz_panel(
         figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
-    DvzFont* font = dvz_font(scene, &(DvzFontDesc){.path = "Demo.ttf", .size_pts = 14.0f});
+    DvzFont* font = dvz_font(
+        scene,
+        &(DvzFontDesc){
+            .path = "Demo.ttf",
+            .family = "Demo",
+            .style = "Regular",
+            .size_pts = 14.0f,
+            .face_index = 2});
     ANN(font);
     AT(strcmp(font->path, "Demo.ttf") == 0);
+    AT(strcmp(font->family, "Demo") == 0);
+    AT(strcmp(font->style, "Regular") == 0);
+    AT(font->face_index == 2);
+    AT(font->version == 1);
 
     DvzText* text = dvz_text(
         panel,
         &(DvzTextDesc){
             .string = "hello",
-            .style = {.font = font, .size_pts = 14.0f},
-            .placement = {.mode = DVZ_TEXT_PLACEMENT_SCREEN, .anchor = DVZ_SCENE_ANCHOR_PANEL_TOP_LEFT},
+            .style = {
+                .font = font,
+                .size_pts = 14.0f,
+                .renderer = DVZ_TEXT_RENDERER_AUTO,
+                .color = {255, 255, 255, 255},
+            },
+            .placement = {
+                .mode = DVZ_TEXT_PLACEMENT_SCREEN,
+                .anchor = DVZ_SCENE_ANCHOR_PANEL_TOP_LEFT,
+                .angle = 0.25f,
+            },
         });
     ANN(text);
     AT(text->style.font == font);
+    AT(text->style.renderer == DVZ_TEXT_RENDERER_AUTO);
     AT(strcmp(text->string, "hello") == 0);
+    AT(text->dirty_flags == DVZ_TEXT_DIRTY_ALL);
+    AT(text->version == 1);
 
+    text->dirty_flags = DVZ_TEXT_DIRTY_NONE;
     dvz_text_set_string(text, "world");
-    dvz_text_set_style(text, &(DvzTextStyle){.font = font, .size_pts = 18.0f});
+    AT(text->dirty_flags ==
+       (DVZ_TEXT_DIRTY_STRING | DVZ_TEXT_DIRTY_LAYOUT | DVZ_TEXT_DIRTY_RENDER));
+    AT(text->version == 2);
+
+    text->dirty_flags = DVZ_TEXT_DIRTY_NONE;
+    dvz_text_set_style(
+        text,
+        &(DvzTextStyle){
+            .font = font,
+            .size_pts = 18.0f,
+            .renderer = DVZ_TEXT_RENDERER_SMALL_BITMAP_ATLAS,
+            .color = {255, 255, 255, 255},
+        });
+    AT(text->dirty_flags == (DVZ_TEXT_DIRTY_STYLE | DVZ_TEXT_DIRTY_LAYOUT | DVZ_TEXT_DIRTY_RENDER));
+    AT(text->version == 3);
+
+    text->dirty_flags = DVZ_TEXT_DIRTY_NONE;
     dvz_text_set_placement(
-        text, &(DvzTextPlacement){.mode = DVZ_TEXT_PLACEMENT_DATA, .anchor = DVZ_SCENE_ANCHOR_DATA});
+        text,
+        &(DvzTextPlacement){
+            .mode = DVZ_TEXT_PLACEMENT_DATA,
+            .anchor = DVZ_SCENE_ANCHOR_DATA,
+            .angle = -0.5f,
+            .depth_test = true,
+        });
     AT(strcmp(text->string, "world") == 0);
     AT(text->style.size_pts == 18.0f);
+    AT(text->style.renderer == DVZ_TEXT_RENDERER_SMALL_BITMAP_ATLAS);
     AT(text->placement.mode == DVZ_TEXT_PLACEMENT_DATA);
+    AT(text->placement.depth_test);
+    AT(text->dirty_flags ==
+       (DVZ_TEXT_DIRTY_PLACEMENT | DVZ_TEXT_DIRTY_LAYOUT | DVZ_TEXT_DIRTY_RENDER));
+    AT(text->version == 4);
 
     DvzAnnotation* annotation = dvz_annotation_label(
         panel,
         &(DvzLabelDesc){
             .text = "peak",
-            .style = {.font = font, .size_pts = 12.0f},
-            .placement = {.mode = DVZ_TEXT_PLACEMENT_SCREEN, .anchor = DVZ_SCENE_ANCHOR_PANEL_RIGHT},
+            .style = {
+                .font = font,
+                .size_pts = 12.0f,
+                .renderer = DVZ_TEXT_RENDERER_MSDF_ATLAS,
+            },
+            .placement = {
+                .mode = DVZ_TEXT_PLACEMENT_SCREEN,
+                .anchor = DVZ_SCENE_ANCHOR_PANEL_RIGHT,
+            },
         });
     ANN(annotation);
     AT(annotation->kind == DVZ_ANNOTATION_LABEL);
     AT(strcmp(annotation->text, "peak") == 0);
+    AT(annotation->style.renderer == DVZ_TEXT_RENDERER_MSDF_ATLAS);
+    AT(annotation->dirty_flags == DVZ_TEXT_DIRTY_ALL);
+    AT(annotation->version == 1);
 
+    annotation->dirty_flags = DVZ_TEXT_DIRTY_NONE;
     dvz_annotation_set_format(annotation, &(DvzFormatDesc){.precision = 3, .suffix = " ms"});
     AT(annotation->has_format);
     AT(strcmp(annotation->format.suffix, " ms") == 0);
+    AT(annotation->dirty_flags ==
+       (DVZ_TEXT_DIRTY_STRING | DVZ_TEXT_DIRTY_LAYOUT | DVZ_TEXT_DIRTY_RENDER));
+    AT(annotation->version == 2);
 
     dvz_annotation_destroy(annotation);
     dvz_text_destroy(text);

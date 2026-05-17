@@ -46,9 +46,15 @@ DvzFont* dvz_font(DvzScene* scene, const DvzFontDesc* desc)
     dvz_memset(font, sizeof(DvzFont), 0, sizeof(DvzFont));
     font->scene = scene;
     font->size_pts = desc->size_pts;
+    font->face_index = desc->face_index;
     font->flags = desc->flags;
+    font->version = 1;
     if (desc->path != NULL)
         dvz_strlcpy(font->path, desc->path, sizeof(font->path));
+    if (desc->family != NULL)
+        dvz_strlcpy(font->family, desc->family, sizeof(font->family));
+    if (desc->style != NULL)
+        dvz_strlcpy(font->style, desc->style, sizeof(font->style));
     return font;
 }
 
@@ -103,6 +109,8 @@ DvzText* dvz_text(DvzPanel* panel, const DvzTextDesc* desc)
     text->style = desc->style;
     text->placement = desc->placement;
     text->flags = desc->flags;
+    text->dirty_flags = DVZ_TEXT_DIRTY_ALL;
+    text->version = 1;
     if (desc->string != NULL)
         dvz_strlcpy(text->string, desc->string, sizeof(text->string));
     return text;
@@ -137,6 +145,8 @@ void dvz_text_set_string(DvzText* text, const char* string)
     text->string[0] = '\0';
     if (string != NULL)
         dvz_strlcpy(text->string, string, sizeof(text->string));
+    text->dirty_flags |= DVZ_TEXT_DIRTY_STRING | DVZ_TEXT_DIRTY_LAYOUT | DVZ_TEXT_DIRTY_RENDER;
+    text->version++;
 }
 
 
@@ -157,6 +167,8 @@ void dvz_text_set_style(DvzText* text, const DvzTextStyle* style)
         return;
     }
     text->style = *style;
+    text->dirty_flags |= DVZ_TEXT_DIRTY_STYLE | DVZ_TEXT_DIRTY_LAYOUT | DVZ_TEXT_DIRTY_RENDER;
+    text->version++;
 }
 
 
@@ -172,6 +184,8 @@ void dvz_text_set_placement(DvzText* text, const DvzTextPlacement* placement)
     ANN(text);
     ANN(placement);
     text->placement = *placement;
+    text->dirty_flags |= DVZ_TEXT_DIRTY_PLACEMENT | DVZ_TEXT_DIRTY_LAYOUT | DVZ_TEXT_DIRTY_RENDER;
+    text->version++;
 }
 
 
@@ -212,6 +226,8 @@ DvzAnnotation* dvz_annotation(DvzPanel* panel, const DvzAnnotationDesc* desc)
     annotation->style = desc->style;
     annotation->placement = desc->placement;
     annotation->flags = desc->flags;
+    annotation->dirty_flags = DVZ_TEXT_DIRTY_ALL;
+    annotation->version = 1;
     if (desc->text != NULL)
         dvz_strlcpy(annotation->text, desc->text, sizeof(annotation->text));
     return annotation;
@@ -267,4 +283,7 @@ void dvz_annotation_set_format(DvzAnnotation* annotation, const DvzFormatDesc* f
     ANN(annotation);
     annotation->has_format = format != NULL;
     _scene_format_state_copy(&annotation->format, format);
+    annotation->dirty_flags |=
+        DVZ_TEXT_DIRTY_STRING | DVZ_TEXT_DIRTY_LAYOUT | DVZ_TEXT_DIRTY_RENDER;
+    annotation->version++;
 }
