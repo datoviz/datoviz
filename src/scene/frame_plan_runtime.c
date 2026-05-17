@@ -15,6 +15,7 @@
 /*************************************************************************************************/
 
 #include <inttypes.h>
+#include <stdarg.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <string.h>
@@ -822,6 +823,67 @@ static void _emitter_label_stream_ids(
 
 
 /**
+ * Append one suffix to a runtime object key, reporting truncation as an emission error.
+ *
+ * @param key key buffer to append to
+ * @param size key buffer size
+ * @param suffix suffix to append
+ * @param report optional diagnostic report
+ * @return whether the suffix was appended without truncation
+ */
+static bool _runtime_key_append(
+    char* key, size_t size, const char* suffix, DvzDiagnosticReport* report)
+{
+    ANN(key);
+    ANN(suffix);
+    size_t key_len = strlen(key);
+    size_t suffix_len = strlen(suffix);
+    if (key_len >= size || suffix_len >= size - key_len)
+    {
+        _diagnostic(report, "runtime pipeline key suffix would be truncated");
+        return false;
+    }
+    int written = dvz_snprintf(key + key_len, size - key_len, "%s", suffix);
+    if (written < 0 || (size_t)written != suffix_len)
+    {
+        _diagnostic(report, "runtime pipeline key suffix append failed");
+        return false;
+    }
+    return true;
+}
+
+
+
+/**
+ * Append a formatted suffix to a runtime object key, reporting truncation as an emission error.
+ *
+ * @param key key buffer to append to
+ * @param size key buffer size
+ * @param report optional diagnostic report
+ * @param format suffix format string
+ * @return whether the suffix was appended without truncation
+ */
+static bool _runtime_key_appendf(
+    char* key, size_t size, DvzDiagnosticReport* report, const char* format, ...)
+{
+    ANN(key);
+    ANN(format);
+    char suffix[32];
+    va_list args;
+    va_start(args, format);
+    int written = dvz_vsnprintf(suffix, sizeof(suffix), format, args);
+    va_end(args);
+    if (written < 0 || (size_t)written >= sizeof(suffix))
+    {
+        _diagnostic(report, "runtime pipeline key formatted suffix would be truncated");
+        return false;
+    }
+    return _runtime_key_append(key, size, suffix, report);
+}
+
+
+
+/**
  * Prepare resources for one panel's draws before opening the render pass.
  *
  * @param emitter frame-plan emitter carrying scene/runtime state.
@@ -1066,38 +1128,37 @@ static bool _emitter_prepare_render_multi(
             desc.kind == DVZ_SCENE_VISUAL_DESC_MARKER;
         if (_alpha_mode_is_standard_blend(alpha_mode))
         {
-            size_t key_len = strlen(shader.pipeline_key);
-            dvz_snprintf(
-                shader.pipeline_key + key_len, sizeof(shader.pipeline_key) - key_len, "_blend");
+            ok = _runtime_key_append(
+                shader.pipeline_key, sizeof(shader.pipeline_key), "_blend", report);
+            if (!ok)
+                break;
         }
         if (segment_coverage_blend)
         {
-            size_t key_len = strlen(shader.pipeline_key);
-            dvz_snprintf(
-                shader.pipeline_key + key_len, sizeof(shader.pipeline_key) - key_len,
-                "_coverage_blend");
+            ok = _runtime_key_append(
+                shader.pipeline_key, sizeof(shader.pipeline_key), "_coverage_blend", report);
+            if (!ok)
+                break;
         }
         if (!desc.depth_test_enabled)
         {
-            size_t key_len = strlen(shader.pipeline_key);
-            dvz_snprintf(
-                shader.pipeline_key + key_len, sizeof(shader.pipeline_key) - key_len,
-                "_no_depth_test");
+            ok = _runtime_key_append(
+                shader.pipeline_key, sizeof(shader.pipeline_key), "_no_depth_test", report);
+            if (!ok)
+                break;
         }
         if (_alpha_mode_is_depth_peel(alpha_mode))
         {
-            size_t key_len = strlen(shader.pipeline_key);
-            dvz_snprintf(
-                shader.pipeline_key + key_len, sizeof(shader.pipeline_key) - key_len,
+            const char* peel_suffix =
                 render->u.render.pass_role == DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_INIT
                     ? "_peel_init"
-                    : "_peel_iter");
-            key_len = strlen(shader.fragment_key);
-            dvz_snprintf(
-                shader.fragment_key + key_len, sizeof(shader.fragment_key) - key_len,
-                render->u.render.pass_role == DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_INIT
-                    ? "_peel_init"
-                    : "_peel_iter");
+                    : "_peel_iter";
+            ok = _runtime_key_append(
+                     shader.pipeline_key, sizeof(shader.pipeline_key), peel_suffix, report) &&
+                 _runtime_key_append(
+                     shader.fragment_key, sizeof(shader.fragment_key), peel_suffix, report);
+            if (!ok)
+                break;
             bool back_pass =
                 render->u.render.pass_role == DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_ITER;
             DvzSceneBuiltinShader peel_shader =
@@ -1107,36 +1168,39 @@ static bool _emitter_prepare_render_multi(
         }
         if (render->u.render.controller_modes[i] == DVZ_CONTROLLER_FIXED)
         {
-            size_t key_len = strlen(shader.pipeline_key);
-            dvz_snprintf(
-                shader.pipeline_key + key_len, sizeof(shader.pipeline_key) - key_len, "_fixed");
+            ok = _runtime_key_append(
+                shader.pipeline_key, sizeof(shader.pipeline_key), "_fixed", report);
+            if (!ok)
+                break;
         }
         if (pass_has_depth_attachment && !gbuffer_pass && !wboit_accumulation && !depth_peel_pass)
         {
-            size_t key_len = strlen(shader.pipeline_key);
-            dvz_snprintf(
-                shader.pipeline_key + key_len, sizeof(shader.pipeline_key) - key_len,
-                force_point_depth ? "_zwrite" : "_depth");
+            ok = _runtime_key_append(
+                shader.pipeline_key, sizeof(shader.pipeline_key),
+                force_point_depth ? "_zwrite" : "_depth", report);
+            if (!ok)
+                break;
         }
         if (pass_sample_count > 1)
         {
-            size_t key_len = strlen(shader.pipeline_key);
-            dvz_snprintf(
-                shader.pipeline_key + key_len, sizeof(shader.pipeline_key) - key_len,
-                "_msaa%" PRIu32, pass_sample_count);
+            ok = _runtime_key_appendf(
+                shader.pipeline_key, sizeof(shader.pipeline_key), report, "_msaa%" PRIu32,
+                pass_sample_count);
+            if (!ok)
+                break;
             if ((desc.kind == DVZ_SCENE_VISUAL_DESC_SPHERE || point_like_desc) &&
                 pass_alpha_to_coverage)
             {
-                key_len = strlen(shader.pipeline_key);
-                dvz_snprintf(
-                    shader.pipeline_key + key_len, sizeof(shader.pipeline_key) - key_len,
-                    "_a2c");
+                ok = _runtime_key_append(
+                    shader.pipeline_key, sizeof(shader.pipeline_key), "_a2c", report);
+                if (!ok)
+                    break;
                 if (desc.kind == DVZ_SCENE_VISUAL_DESC_SPHERE)
                 {
-                    key_len = strlen(shader.fragment_key);
-                    dvz_snprintf(
-                        shader.fragment_key + key_len, sizeof(shader.fragment_key) - key_len,
-                        "_a2c");
+                    ok = _runtime_key_append(
+                        shader.fragment_key, sizeof(shader.fragment_key), "_a2c", report);
+                    if (!ok)
+                        break;
                     shader.fragment_glsl =
                         _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_SPHERE_A2C, true);
                     shader.fragment_spirv_key = "sphere_a2c_frag";
@@ -1150,14 +1214,12 @@ static bool _emitter_prepare_render_multi(
             (desc.material_buffer_id != 0 && !gbuffer_pass);
         if (scene_occluded_shader)
         {
-            size_t key_len = strlen(shader.pipeline_key);
-            dvz_snprintf(
-                shader.pipeline_key + key_len, sizeof(shader.pipeline_key) - key_len,
-                "_scene_occ");
-            key_len = strlen(shader.fragment_key);
-            dvz_snprintf(
-                shader.fragment_key + key_len, sizeof(shader.fragment_key) - key_len,
-                "_scene_occ");
+            ok = _runtime_key_append(
+                     shader.pipeline_key, sizeof(shader.pipeline_key), "_scene_occ", report) &&
+                 _runtime_key_append(
+                     shader.fragment_key, sizeof(shader.fragment_key), "_scene_occ", report);
+            if (!ok)
+                break;
             char scene_occlusion_defines[96];
             dvz_snprintf(
                 scene_occlusion_defines, sizeof(scene_occlusion_defines),

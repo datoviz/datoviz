@@ -113,6 +113,30 @@ Validation:
 7. `git diff --check -- src/scene/render_contract.h src/scene/render_contract.c src/scene/scene_emit.c src/scene/tests/scene_graph.c`
 
 
+### 2026-05-17: Phase 0 / Checked runtime key appends
+
+Completed the pipeline-key truncation hardening slice.
+
+Changes:
+
+1. Added checked runtime key append helpers in `src/scene/frame_plan_runtime.c`.
+2. Replaced suffix appends for source-over blend, segment coverage blend, disabled depth test,
+   depth peel, fixed-controller variants, depth/zwrite variants, MSAA, alpha-to-coverage, and scene
+   occlusion.
+3. Key suffix truncation now reports a diagnostic and aborts emission instead of silently aliasing a
+   pipeline or shader key.
+
+Validation:
+
+1. `cmake --build build --target dvztest_scene -j2`
+2. `./build/testing/dvztest_scene test_scene_visual_alpha_mode_standard_blend`
+3. `./build/testing/dvztest_scene test_scene_visual_alpha_mode_emits_depth_peel_drp2`
+4. `./build/testing/dvztest_scene test_scene_msaa_runtime_lowering`
+5. `./build/testing/dvztest_scene test_scene_visual_scene_occlusion_emits_drp2`
+6. `./build/testing/dvztest_scene test_scene_sphere_ssao_glsl_executes`
+7. `git diff --check -- src/scene/frame_plan_runtime.c`
+
+
 ## Executive Assessment
 
 The direction is correct and worth continuing. The proposal identifies the right failure mode:
