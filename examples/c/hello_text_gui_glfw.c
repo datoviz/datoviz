@@ -473,7 +473,21 @@ static void gui_callback(DvzGui* gui, DvzAppWindow* win, void* user_data)
 
         changed |= dvz_gui_combo(gui, "Mode", &state->mode, mode_items, 5);
         changed |= dvz_gui_combo(gui, "Renderer", &state->renderer_index, renderer_items, 3);
-        changed |= dvz_gui_slider_float(gui, "Size", &state->size_pts, 6.0f, 64.0f);
+        if (state->mode == TEXT_LAB_MODE_SAMPLE || state->mode == TEXT_LAB_MODE_UTF8)
+        {
+            changed |= dvz_gui_slider_float_format(
+                gui, "Text size", &state->size_pts, 6.0f, 64.0f, "%.1f pt");
+        }
+        else if (state->mode == TEXT_LAB_MODE_MULTILINE)
+        {
+            changed |= dvz_gui_slider_float_format(
+                gui, "Multiline text size", &state->size_pts, 6.0f, 64.0f, "%.1f pt");
+        }
+        else if (state->mode == TEXT_LAB_MODE_GLYPH)
+        {
+            changed |= dvz_gui_slider_float_format(
+                gui, "Probe label size", &state->size_pts, 6.0f, 64.0f, "%.1f pt");
+        }
         if (state->mode == TEXT_LAB_MODE_SAMPLE || state->mode == TEXT_LAB_MODE_UTF8)
         {
             changed |= dvz_gui_combo(gui, "Target", &state->anchor_index, anchor_items, 9);

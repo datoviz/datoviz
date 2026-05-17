@@ -17,7 +17,10 @@
 #include <string.h>
 
 #include "_assertions.h"
+#include "_compat.h"
+#include "../_frame_plan.h"
 #include "../_scene.h"
+#include "../_scene_emit.h"
 #include "datoviz/scene.h"
 #include "test_scene.h"
 #include "testing.h"
@@ -387,6 +390,64 @@ int test_scene_text_bitmap_visual_realization(TstSuite* suite, TstItem* item)
 
 
 /**
+ * Verify retained text can emit more labels than the original small render-node cap.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_text_many_labels_render_plan(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    ANN(item);
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 640, 480, 0);
+    DvzPanel* panel = dvz_panel(
+        figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+    ANN(panel);
+
+    const uint32_t label_count = 16;
+    DvzTextStyle style = {
+        .size_pts = 8.0f,
+        .renderer = DVZ_TEXT_RENDERER_SMALL_BITMAP_ATLAS,
+        .color = {255, 255, 255, 255},
+    };
+    for (uint32_t i = 0; i < label_count; i++)
+    {
+        char label[16] = {0};
+        dvz_snprintf(label, sizeof(label), "%u", i);
+        DvzTextPlacement placement = {
+            .mode = DVZ_TEXT_PLACEMENT_SCREEN,
+            .anchor = DVZ_SCENE_ANCHOR_PANEL_CENTER,
+            .offset = {(float)i * 8.0f, 0.0f},
+            .pivot = {0.5f, 0.5f},
+            .has_pivot = true,
+        };
+        DvzText* text =
+            dvz_text(panel, &(DvzTextDesc){.string = label, .style = style, .placement = placement});
+        ANN(text);
+    }
+
+    DvzFramePlan* plan = dvz_frame_plan("figure.text.labels", 0);
+    ANN(plan);
+    _scene_emit_panel_render(figure, 0, plan, "figure_0");
+
+    uint32_t visual_count = 0;
+    for (uint32_t i = 0; i < plan->count; i++)
+    {
+        if (plan->nodes[i].type == DVZ_FRAME_PLAN_NODE_RENDER)
+            visual_count += plan->nodes[i].u.render.visual_count;
+    }
+    AT(visual_count == label_count);
+
+    dvz_frame_plan_destroy(plan);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+/**
  * Register scene interaction tests.
  *
  * @param suite the active test suite
@@ -401,6 +462,7 @@ int test_scene_interaction(TstSuite* suite)
     TEST_SIMPLE(test_scene_selection_apply_pick_and_link_keys);
     TEST_SIMPLE(test_scene_text_annotation_bookkeeping);
     TEST_SIMPLE(test_scene_text_bitmap_visual_realization);
+    TEST_SIMPLE(test_scene_text_many_labels_render_plan);
 
     return 0;
 }
