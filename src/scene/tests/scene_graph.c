@@ -9973,7 +9973,7 @@ int test_scene_drp2_contract_checker_rejects_pipeline_drift(TstSuite* suite, Tst
     AT(dvz_diagnostic_report_count(&report) == 0);
     AT(_scene_frame_plan_drp2_contracts_validate(plan, stream, &report));
 
-    bool mutated = false;
+    DvzDrp2Command* wboit_pipeline = NULL;
     for (uint32_t i = 0; i < stream->count; i++)
     {
         DvzDrp2Command* command = &stream->commands[i];
@@ -9981,13 +9981,28 @@ int test_scene_drp2_contract_checker_rejects_pipeline_drift(TstSuite* suite, Tst
             command->u.create_render_pipeline.color_target_count == 2 &&
             command->u.create_render_pipeline.color_targets[0].blend_enabled)
         {
-            command->u.create_render_pipeline.color_targets[0].blend_enabled = false;
-            mutated = true;
+            wboit_pipeline = command;
             break;
         }
     }
-    AT(mutated);
+    ANN(wboit_pipeline);
 
+    const DvzDrp2Command original_pipeline_command = *wboit_pipeline;
+
+    wboit_pipeline->u.create_render_pipeline.color_targets[0].blend_enabled = false;
+    dvz_diagnostic_report_init(&report);
+    AT(!_scene_frame_plan_drp2_contracts_validate(plan, stream, &report));
+    AT(dvz_diagnostic_report_count(&report) > 0);
+
+    wboit_pipeline->u.create_render_pipeline = original_pipeline_command.u.create_render_pipeline;
+    wboit_pipeline->u.create_render_pipeline.sample_count =
+        original_pipeline_command.u.create_render_pipeline.sample_count == 1 ? 2 : 1;
+    dvz_diagnostic_report_init(&report);
+    AT(!_scene_frame_plan_drp2_contracts_validate(plan, stream, &report));
+    AT(dvz_diagnostic_report_count(&report) > 0);
+
+    wboit_pipeline->u.create_render_pipeline = original_pipeline_command.u.create_render_pipeline;
+    wboit_pipeline->u.create_render_pipeline.bind_group_layout_count = 0;
     dvz_diagnostic_report_init(&report);
     AT(!_scene_frame_plan_drp2_contracts_validate(plan, stream, &report));
     AT(dvz_diagnostic_report_count(&report) > 0);

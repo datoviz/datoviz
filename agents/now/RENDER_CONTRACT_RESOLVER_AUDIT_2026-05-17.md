@@ -308,6 +308,34 @@ Validation:
 8. `git diff --check -- src/scene/render_contract.h src/scene/render_contract.c src/scene/frame_plan_runtime.c src/scene/tests/scene_graph.c src/scene/tests/test_scene.h agents/now/RENDER_CONTRACT_RESOLVER_AUDIT_2026-05-17.md`
 
 
+### 2026-05-17: Phase 2 / DRP2 pipeline state expansion
+
+Completed the next post-emit checker expansion slice.
+
+Changes:
+
+1. The scene DRP2 checker now resolves known emitted render-pass attachment formats and sample
+   counts from the command stream.
+2. Per-draw pipeline validation now checks color-target count/format, raster sample count, and
+   required scene bind-group layouts against stored draw-contract metadata.
+3. Draw-contract resolution now mirrors runtime producer-pass layout policy for non-sphere G-buffer
+   and scene-occlusion depth passes, avoiding stale material/image layout requirements.
+4. `test_scene_drp2_contract_checker_rejects_pipeline_drift` now mutates WBOIT blend, sample-count,
+   and bind-group layout state and verifies the checker rejects each drift.
+
+Validation:
+
+1. `cmake --build build --target dvztest_scene -j2`
+2. `./build/testing/dvztest_scene test_scene_drp2_contract_checker_rejects_pipeline_drift`
+3. `./build/testing/dvztest_scene test_scene_visual_alpha_mode_emits_wboit_drp2`
+4. `./build/testing/dvztest_scene test_scene_visual_alpha_mode_emits_depth_peel_drp2`
+5. `./build/testing/dvztest_scene test_scene_blended_mesh_occlusion_contracts`
+6. `./build/testing/dvztest_scene test_scene_msaa_runtime_lowering`
+7. `./build/testing/dvztest_scene test_scene_ssao_runtime_lowering`
+8. `./build/testing/dvztest_scene test_scene_alpha_mode_toggle_refreshes_drp2_contracts`
+9. `git diff --check -- src/scene/render_contract.c src/scene/tests/scene_graph.c`
+
+
 ### 2026-05-17: Phase 3 / Central render-role semantics
 
 Completed the first technique-centralization slice.
