@@ -9,6 +9,33 @@ It refines `../semantics/VISUAL_FAMILIES.md`, `../semantics/VISUAL_FAMILY_RULES.
 Shared attribute and behavioral definitions are in `SHARED_ATTRIBUTES.md`.
 
 
+## Implementation Status
+
+Status on 2026-05-17: this file is the target contract for the v0.4 `image` visual family, not a
+description of everything currently implemented.
+
+The active native implementation is a first slice:
+
+- one textured quad per visual,
+- `position` is provided as four `vec3` corner vertices in triangle-strip order,
+- `texcoords` is provided as four matching `vec2` UV vertices,
+- texture data comes from a 2D `SampledField` bound through `dvz_visual_set_field()`, or from the
+  transitional `dvz_visual_set_texture()` / `dvz_visual_set_texture_f32()` helpers,
+- RGBA8 image fields upload directly, while scalar fields are currently mapped through the bound
+  `Scale`/`Colormap` into an RGBA staging texture before emission,
+- image probing uses the same quad vertex/UV contract and must be updated alongside any geometry
+  contract change.
+
+The following parts of this target contract are intentionally deferred: per-item rectangles,
+`size`, `anchor`, `color`, `color_tint`, `angle`, `shift`, `size_space`, `transpose`, border/radius
+parameters, `texture_mode = none`, native shader-side scalar colormap sampling, heatmap isolines,
+and label-contour rendering.
+
+Before expanding this visual family, finish the image probe recovery slice for GPU-only readback,
+non-fullscreen quads, panzoom/keep-aspect transforms, hidden pick-capable segmentation images, and
+the live napari label-hover path.
+
+
 ## Semantic Purpose
 
 `image` renders textured rectangles anchored at data-space positions.
