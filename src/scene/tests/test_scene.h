@@ -442,6 +442,8 @@ int test_scene_pixel_depth_cue_toggle_switches_pipeline(TstSuite* suite, TstItem
 
 int test_scene_visual_pass_capabilities(TstSuite* suite, TstItem* item);
 
+int test_scene_render_contract_validation_errors(TstSuite* suite, TstItem* item);
+
 int test_scene_gbuffer_runtime_lowering(TstSuite* suite, TstItem* item);
 
 int test_scene_msaa_runtime_lowering(TstSuite* suite, TstItem* item);

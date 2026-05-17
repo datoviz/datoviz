@@ -13,6 +13,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <vulkan/vulkan_core.h>
+
 #include "_alloc.h"
 #include "_assertions.h"
 #include "_compat.h"
@@ -23,6 +25,10 @@
 /*************************************************************************************************/
 /*  Helpers                                                                                      */
 /*************************************************************************************************/
+
+static void _contract_report(DvzDiagnosticReport* report, const char* message);
+
+
 
 /**
  * Return whether one render-pass role carries retained scene visual draws.
@@ -124,28 +130,78 @@ static DvzSceneAttachmentUse* _contract_append_attachment(
 }
 
 
+/**
+ * Return the graph resource with a given id.
+ *
+ * @param plan the FramePlan
+ * @param resource_id the graph resource id
+ * @return the graph resource, or NULL when absent
+ */
+static const DvzFrameGraphResource* _contract_resource_by_id(
+    const DvzFramePlan* plan, const char* resource_id)
+{
+    ANN(plan);
+    ANN(resource_id);
+    for (uint32_t i = 0; i < dvz_frame_plan_graph_resource_count(plan); i++)
+    {
+        const DvzFrameGraphResource* resource = dvz_frame_plan_graph_resource_get(plan, i);
+        if (resource != NULL && strcmp(resource->id, resource_id) == 0)
+            return resource;
+    }
+    return NULL;
+}
+
+
+
+/**
+ * Copy graph resource facts into an attachment use.
+ *
+ * @param plan the FramePlan
+ * @param use the attachment use
+ */
+static void _contract_apply_resource_facts(
+    const DvzFramePlan* plan, DvzSceneAttachmentUse* use)
+{
+    ANN(plan);
+    ANN(use);
+    const DvzFrameGraphResource* resource = _contract_resource_by_id(plan, use->resource_id);
+    if (resource == NULL)
+        return;
+    use->format = resource->format;
+    use->sample_count = resource->sample_count == 0 ? 1 : resource->sample_count;
+}
+
+
 
 /**
  * Append one color attachment to a pass contract.
  *
+ * @param plan the FramePlan
  * @param contract the pass contract
  * @param attachment the graph attachment
  * @return whether the attachment was appended
  */
 static bool _contract_append_color_attachment(
-    DvzScenePassContract* contract, const DvzFrameGraphAttachment* attachment)
+    const DvzFramePlan* plan, DvzScenePassContract* contract,
+    const DvzFrameGraphAttachment* attachment)
 {
+    ANN(plan);
     ANN(contract);
     ANN(attachment);
     DvzSceneAttachmentUse* use = _contract_append_attachment(
         contract, attachment->resource_id, DVZ_SCENE_ATTACHMENT_COLOR);
     if (use == NULL)
         return false;
+    use->load_op = attachment->load_op;
+    use->store_op = attachment->store_op;
+    use->access = attachment->access;
     use->read = _attachment_access_reads(attachment->access);
     use->write = _attachment_access_writes(attachment->access);
     use->clear = attachment->load_op == DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_CLEAR;
     use->preserve = attachment->load_op == DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_LOAD ||
                     attachment->store_op == DVZ_FRAME_GRAPH_ATTACHMENT_STORE_STORE;
+    _contract_apply_resource_facts(plan, use);
+    contract->color_attachment_count++;
     return true;
 }
 
@@ -154,24 +210,32 @@ static bool _contract_append_color_attachment(
 /**
  * Append one depth attachment to a pass contract.
  *
+ * @param plan the FramePlan
  * @param contract the pass contract
  * @param attachment the graph attachment
  * @return whether the attachment was appended
  */
 static bool _contract_append_depth_attachment(
-    DvzScenePassContract* contract, const DvzFrameGraphAttachment* attachment)
+    const DvzFramePlan* plan, DvzScenePassContract* contract,
+    const DvzFrameGraphAttachment* attachment)
 {
+    ANN(plan);
     ANN(contract);
     ANN(attachment);
     DvzSceneAttachmentUse* use = _contract_append_attachment(
         contract, attachment->resource_id, DVZ_SCENE_ATTACHMENT_DEPTH);
     if (use == NULL)
         return false;
+    use->load_op = attachment->load_op;
+    use->store_op = attachment->store_op;
+    use->access = attachment->access;
     use->read = _attachment_access_reads(attachment->access);
     use->write = _attachment_access_writes(attachment->access);
     use->clear = attachment->load_op == DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_CLEAR;
     use->preserve = attachment->load_op == DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_LOAD ||
                     attachment->store_op == DVZ_FRAME_GRAPH_ATTACHMENT_STORE_STORE;
+    _contract_apply_resource_facts(plan, use);
+    contract->has_depth_attachment = true;
     return true;
 }
 
@@ -180,13 +244,15 @@ static bool _contract_append_depth_attachment(
 /**
  * Append one sampled read edge to a pass contract.
  *
+ * @param plan the FramePlan
  * @param contract the pass contract
  * @param read the graph read edge
  * @return whether the read was appended
  */
 static bool _contract_append_read(
-    DvzScenePassContract* contract, const DvzFrameGraphAccess* read)
+    const DvzFramePlan* plan, DvzScenePassContract* contract, const DvzFrameGraphAccess* read)
 {
+    ANN(plan);
     ANN(contract);
     ANN(read);
     DvzSceneAttachmentUse* use = _contract_append_attachment(
@@ -194,6 +260,8 @@ static bool _contract_append_read(
     if (use == NULL)
         return false;
     use->read = true;
+    _contract_apply_resource_facts(plan, use);
+    contract->sampled_read_count++;
     return true;
 }
 
@@ -214,6 +282,51 @@ static bool _contract_has_depth_attachment(const DvzScenePassContract* contract)
             return true;
     }
     return false;
+}
+
+
+/**
+ * Count attachment uses with a given role.
+ *
+ * @param contract the pass contract
+ * @param role the attachment role
+ * @return number of matching attachments
+ */
+static uint32_t _contract_attachment_count(
+    const DvzScenePassContract* contract, DvzSceneAttachmentRole role)
+{
+    ANN(contract);
+    uint32_t count = 0;
+    for (uint32_t i = 0; i < contract->attachment_count; i++)
+    {
+        if (contract->attachments[i].role == role)
+            count++;
+    }
+    return count;
+}
+
+
+
+/**
+ * Return the first attachment matching a role and resource suffix.
+ *
+ * @param contract the pass contract
+ * @param role the attachment role
+ * @param suffix the expected resource id suffix
+ * @return the matching attachment, or NULL
+ */
+static const DvzSceneAttachmentUse* _contract_attachment_suffix(
+    const DvzScenePassContract* contract, DvzSceneAttachmentRole role, const char* suffix)
+{
+    ANN(contract);
+    ANN(suffix);
+    for (uint32_t i = 0; i < contract->attachment_count; i++)
+    {
+        const DvzSceneAttachmentUse* use = &contract->attachments[i];
+        if (use->role == role && strstr(use->resource_id, suffix) != NULL)
+            return use;
+    }
+    return NULL;
 }
 
 
@@ -239,6 +352,155 @@ static bool _contract_reads_resource_suffix(
             return true;
     }
     return false;
+}
+
+
+/**
+ * Return whether any draw in a contract tests or samples depth.
+ *
+ * @param contract the pass contract
+ * @return whether a depth attachment is required
+ */
+static bool _contract_needs_depth(const DvzScenePassContract* contract)
+{
+    ANN(contract);
+    for (uint32_t i = 0; i < contract->draw_count; i++)
+    {
+        const DvzSceneDrawContract* draw = &contract->draws[i];
+        if (draw->depth_test || draw->samples_depth)
+            return true;
+    }
+    return false;
+}
+
+
+
+/**
+ * Validate technique-specific attachment facts for one pass contract.
+ *
+ * @param contract the pass contract
+ * @param report optional diagnostic report
+ * @return whether technique-specific facts are internally consistent
+ */
+static bool _scene_pass_contract_validate_technique(
+    const DvzScenePassContract* contract, DvzDiagnosticReport* report)
+{
+    ANN(contract);
+    bool ok = true;
+    const DvzSceneAttachmentUse* attachment = NULL;
+
+    switch (contract->role)
+    {
+    case DVZ_FRAME_PLAN_RENDER_PASS_VOLUME_OCCLUSION:
+        attachment = _contract_attachment_suffix(
+            contract, DVZ_SCENE_ATTACHMENT_COLOR, ".volume_occlusion.depth");
+        if (contract->color_attachment_count != 1 || attachment == NULL ||
+            attachment->format != VK_FORMAT_R32_SFLOAT || !attachment->write ||
+            !attachment->clear)
+        {
+            _contract_report(report, "volume occlusion pass has invalid output attachment");
+            ok = false;
+        }
+        break;
+
+    case DVZ_FRAME_PLAN_RENDER_PASS_SCENE_OCCLUSION:
+        attachment = _contract_attachment_suffix(
+            contract, DVZ_SCENE_ATTACHMENT_COLOR, ".scene_occlusion.depth");
+        if (contract->color_attachment_count != 1 || attachment == NULL ||
+            attachment->format != VK_FORMAT_R32_SFLOAT || !attachment->write ||
+            !attachment->clear)
+        {
+            _contract_report(report, "scene occlusion pass has invalid color attachment");
+            ok = false;
+        }
+        attachment = _contract_attachment_suffix(
+            contract, DVZ_SCENE_ATTACHMENT_DEPTH, ".scene_occlusion.z");
+        if (attachment == NULL || attachment->format != VK_FORMAT_D32_SFLOAT ||
+            !attachment->write || !attachment->clear)
+        {
+            _contract_report(report, "scene occlusion pass has invalid depth attachment");
+            ok = false;
+        }
+        break;
+
+    case DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_ACCUMULATION:
+        attachment = _contract_attachment_suffix(
+            contract, DVZ_SCENE_ATTACHMENT_COLOR, ".wboit.accum");
+        if (attachment == NULL || attachment->format != VK_FORMAT_R16G16B16A16_SFLOAT ||
+            attachment->sample_count != 1)
+        {
+            _contract_report(report, "WBOIT accumulation pass has invalid accumulation target");
+            ok = false;
+        }
+        attachment = _contract_attachment_suffix(
+            contract, DVZ_SCENE_ATTACHMENT_COLOR, ".wboit.weight");
+        if (attachment == NULL || attachment->format != VK_FORMAT_R16_SFLOAT ||
+            attachment->sample_count != 1)
+        {
+            _contract_report(report, "WBOIT accumulation pass has invalid weight target");
+            ok = false;
+        }
+        if (contract->color_attachment_count != 2)
+        {
+            _contract_report(report, "WBOIT accumulation pass must have two color attachments");
+            ok = false;
+        }
+        if (_contract_needs_depth(contract) && !contract->has_depth_attachment)
+        {
+            _contract_report(report, "WBOIT accumulation pass is missing required depth");
+            ok = false;
+        }
+        break;
+
+    case DVZ_FRAME_PLAN_RENDER_PASS_WBOIT_RESOLVE:
+        if (contract->draw_count != 0 || contract->color_attachment_count != 1 ||
+            contract->sampled_read_count != 2 || !contract->needs_wboit_resolve_layout ||
+            contract->sampled_texture_binding_count != 2)
+        {
+            _contract_report(report, "WBOIT resolve pass has invalid attachment shape");
+            ok = false;
+        }
+        break;
+
+    case DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_INIT:
+    case DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_ITER:
+        for (uint32_t i = 0; i < contract->attachment_count; i++)
+        {
+            attachment = &contract->attachments[i];
+            if (attachment->role == DVZ_SCENE_ATTACHMENT_COLOR &&
+                attachment->format != VK_FORMAT_R16G16B16A16_SFLOAT)
+            {
+                _contract_report(report, "depth peel color attachment has invalid format");
+                ok = false;
+            }
+        }
+        if (contract->color_attachment_count != 3)
+        {
+            _contract_report(report, "depth peel raster pass must have three color attachments");
+            ok = false;
+        }
+        if (_contract_needs_depth(contract) && !contract->has_depth_attachment)
+        {
+            _contract_report(report, "depth peel raster pass is missing required depth");
+            ok = false;
+        }
+        break;
+
+    case DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_COMPOSITE:
+        if (contract->draw_count != 0 || contract->color_attachment_count != 1 ||
+            contract->sampled_read_count != 3 || !contract->needs_depth_peel_sampled_layout ||
+            contract->sampled_texture_binding_count != 3)
+        {
+            _contract_report(report, "depth peel composite pass has invalid attachment shape");
+            ok = false;
+        }
+        break;
+
+    default:
+        break;
+    }
+
+    return ok;
 }
 
 
@@ -459,9 +721,10 @@ bool _scene_draw_contract_from_visual(
  * @return whether the pass contract was resolved
  */
 bool _scene_pass_contract_from_render(
-    const DvzPanel* panel, const DvzFramePlanNode* render, const DvzFrameGraphPass* graph_pass,
-    DvzScenePassContract* out)
+    const DvzFramePlan* plan, const DvzPanel* panel, const DvzFramePlanNode* render,
+    const DvzFrameGraphPass* graph_pass, DvzScenePassContract* out)
 {
+    ANN(plan);
     ANN(panel);
     ANN(render);
     ANN(out);
@@ -486,6 +749,14 @@ bool _scene_pass_contract_from_render(
                               out->role == DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_COMPOSITE ||
                               out->role == DVZ_FRAME_PLAN_RENDER_PASS_EDL_RESOLVE ||
                               out->role == DVZ_FRAME_PLAN_RENDER_PASS_SSAO_COMPOSITE;
+    out->needs_wboit_resolve_layout =
+        out->role == DVZ_FRAME_PLAN_RENDER_PASS_WBOIT_RESOLVE;
+    out->needs_depth_peel_sampled_layout =
+        out->role == DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_COMPOSITE;
+    if (out->needs_wboit_resolve_layout)
+        out->sampled_texture_binding_count = 2;
+    else if (out->needs_depth_peel_sampled_layout)
+        out->sampled_texture_binding_count = 3;
 
     for (uint32_t i = 0; i < render->u.render.visual_count; i++)
     {
@@ -501,6 +772,13 @@ bool _scene_pass_contract_from_render(
         if (!_scene_draw_contract_from_visual(
                 attach->visual, attach, out->role, &out->draws[out->draw_count]))
             return false;
+        const DvzSceneDrawContract* draw = &out->draws[out->draw_count];
+        out->needs_common_set = out->needs_common_set || draw->needs_common_set;
+        out->needs_material_set = out->needs_material_set || draw->needs_material_set;
+        out->needs_image_set = out->needs_image_set || draw->needs_image_set;
+        out->needs_volume_set = out->needs_volume_set || draw->needs_volume_set;
+        out->needs_scene_occlusion_set =
+            out->needs_scene_occlusion_set || draw->needs_scene_occlusion_set;
         out->draw_count++;
     }
 
@@ -508,15 +786,15 @@ bool _scene_pass_contract_from_render(
     {
         for (uint32_t i = 0; i < graph_pass->color_attachment_count; i++)
         {
-            if (!_contract_append_color_attachment(out, &graph_pass->color_attachments[i]))
+            if (!_contract_append_color_attachment(plan, out, &graph_pass->color_attachments[i]))
                 return false;
         }
         if (graph_pass->has_depth_attachment &&
-            !_contract_append_depth_attachment(out, &graph_pass->depth_attachment))
+            !_contract_append_depth_attachment(plan, out, &graph_pass->depth_attachment))
             return false;
         for (uint32_t i = 0; i < graph_pass->read_count; i++)
         {
-            if (!_contract_append_read(out, &graph_pass->reads[i]))
+            if (!_contract_append_read(plan, out, &graph_pass->reads[i]))
                 return false;
         }
     }
@@ -576,6 +854,7 @@ bool _scene_pass_contract_validate(
         _contract_report(report, "scene-occluded draw has no scene occlusion read edge");
         ok = false;
     }
+    ok = _scene_pass_contract_validate_technique(contract, report) && ok;
     return ok;
 }
 
@@ -614,7 +893,7 @@ bool _scene_frame_plan_contracts_validate(
         }
 
         DvzScenePassContract contract = {0};
-        if (!_scene_pass_contract_from_render(panel, render, graph_pass, &contract))
+        if (!_scene_pass_contract_from_render(plan, panel, render, graph_pass, &contract))
         {
             _contract_report(report, "render contract resolution failed");
             ok = false;

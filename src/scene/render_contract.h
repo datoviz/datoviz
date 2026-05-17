@@ -64,6 +64,9 @@ typedef struct DvzSceneAttachmentUse
     DvzSceneAttachmentRole role;
     uint32_t format;
     uint32_t sample_count;
+    DvzFrameGraphAttachmentLoadOp load_op;
+    DvzFrameGraphAttachmentStoreOp store_op;
+    DvzFrameGraphAttachmentAccess access;
     bool read;
     bool write;
     bool clear;
@@ -106,6 +109,19 @@ typedef struct DvzScenePassContract
     DvzSceneDrawContract draws[DVZ_SCENE_MAX_RENDER_VISUALS];
     uint32_t draw_count;
 
+    uint32_t color_attachment_count;
+    uint32_t sampled_read_count;
+    bool has_depth_attachment;
+
+    bool needs_common_set;
+    bool needs_material_set;
+    bool needs_image_set;
+    bool needs_volume_set;
+    bool needs_scene_occlusion_set;
+    bool needs_wboit_resolve_layout;
+    bool needs_depth_peel_sampled_layout;
+    uint32_t sampled_texture_binding_count;
+
     bool source_over_blend;
     bool wboit_accumulation;
     bool depth_peel;
@@ -123,8 +139,8 @@ bool _scene_draw_contract_from_visual(
     DvzSceneDrawContract* out);
 
 bool _scene_pass_contract_from_render(
-    const DvzPanel* panel, const DvzFramePlanNode* render, const DvzFrameGraphPass* graph_pass,
-    DvzScenePassContract* out);
+    const DvzFramePlan* plan, const DvzPanel* panel, const DvzFramePlanNode* render,
+    const DvzFrameGraphPass* graph_pass, DvzScenePassContract* out);
 
 bool _scene_pass_contract_validate(
     const DvzScenePassContract* contract, DvzDiagnosticReport* report);
