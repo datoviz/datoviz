@@ -108,6 +108,21 @@ float linearize_depth(float depth)
     return b / denom;
 }
 
+float occlusion_delta_depth(vec3 uvw, float scene_depth, float self_depth)
+{
+    float delta_depth = self_depth - scene_depth;
+    if (delta_depth <= 0.0) {
+        return delta_depth;
+    }
+
+    if (abs(mvp.proj[3][3]) > 0.5) {
+        return delta_depth;
+    }
+
+    float delta = view_depth_from_uvw(uvw) - linearize_depth(scene_depth);
+    return delta > 0.0 ? delta : delta_depth;
+}
+
 float axis_value(int axis, vec3 value)
 {
     return axis == 0 ? value.x : (axis == 1 ? value.y : value.z);
@@ -153,7 +168,7 @@ float depth_visibility(vec3 uvw)
         if (delta_depth <= 0.0) {
             return 1.0;
         }
-        float delta = view_depth_from_uvw(uvw) - linearize_depth(scene_depth);
+        float delta = occlusion_delta_depth(uvw, scene_depth, self_depth);
         if (delta <= 0.0) {
             return 1.0;
         }
@@ -187,7 +202,7 @@ float scene_occlusion_visibility_linear(vec3 uvw)
         return 1.0;
     }
 
-    float delta = view_depth_from_uvw(uvw) - linearize_depth(scene_depth);
+    float delta = occlusion_delta_depth(uvw, scene_depth, self_depth);
     if (delta <= 0.0) {
         return 1.0;
     }

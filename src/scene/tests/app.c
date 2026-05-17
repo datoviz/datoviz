@@ -4355,7 +4355,7 @@ static AppVolumeOcclusionCapture _app_volume_occlusion_capture(bool enabled)
 
 
 /**
- * Ensure volume-occluded slices render with and without an active occlusion pass.
+ * Ensure volume-occluded slices render dimmer with an active occlusion pass.
  *
  * @param suite the test suite
  * @param item the test item
@@ -4392,6 +4392,9 @@ int test_app_offscreen_volume_occlusion_slice_renders(TstSuite* suite, TstItem* 
     AT(disabled.right_sum > 0);
     AT(enabled.left_sum > 0);
     AT(enabled.right_sum > 0);
+    AT(enabled.total_sum + 64ull * 64ull * 24ull < disabled.total_sum);
+    AT(enabled.left_sum + 12ull * 16ull * 24ull < disabled.left_sum);
+    AT(enabled.right_sum + 12ull * 16ull * 24ull < disabled.right_sum);
     return 0;
 }
 
