@@ -557,6 +557,40 @@ static uint64_t _app_rgb_region_sum(
 
 
 /**
+ * Sum one RGB channel over one captured image region.
+ *
+ * @param rgba captured RGBA8 buffer
+ * @param width captured image width
+ * @param height captured image height
+ * @param x0 inclusive region x origin
+ * @param y0 inclusive region y origin
+ * @param x1 exclusive region x end
+ * @param y1 exclusive region y end
+ * @param channel RGB channel index
+ * @return channel sum for the region
+ */
+static uint64_t _app_rgb_region_channel_sum(
+    const uint8_t* rgba, uint32_t width, uint32_t height, uint32_t x0, uint32_t y0, uint32_t x1,
+    uint32_t y1, uint32_t channel)
+{
+    ANN(rgba);
+    if (channel >= 3 || x0 >= x1 || y0 >= y1 || x1 > width || y1 > height)
+        return 0;
+
+    uint64_t sum = 0;
+    for (uint32_t y = y0; y < y1; y++)
+    {
+        for (uint32_t x = x0; x < x1; x++)
+        {
+            const uint8_t* px = _pixel_at(rgba, width, height, x, y);
+            sum += (uint64_t)px[channel];
+        }
+    }
+    return sum;
+}
+
+
+/**
  * Render the deterministic EDL point fixture and return its captured RGBA pixels.
  *
  * @param enabled whether EDL should be enabled for the panel
@@ -2336,16 +2370,29 @@ int test_app_offscreen_depth_peel_mesh_two_layers(TstSuite* suite, TstItem* item
     AT(width == 64);
     AT(height == 64);
 
-    const uint8_t* red_px = _pixel_at(rgba, width, height, width / 4, height / 2);
-    const uint8_t* blue_px = _pixel_at(rgba, width, height, width / 2, height / 2);
-    const uint8_t* occluded = _pixel_at(rgba, width, height, (5 * width) / 8, height / 2);
-    AT(red_px[0] > background[0] + 45);
-    AT(red_px[0] > red_px[2] + 30);
-    AT(blue_px[2] > background[2] + 45);
-    AT(blue_px[2] > blue_px[0] + 30);
-    AT(occluded[1] > 160);
-    AT(occluded[1] > occluded[0] + 80);
-    AT(occluded[1] > occluded[2] + 80);
+    const uint32_t region_pixels = 8 * 8;
+    uint64_t red_region_r =
+        _app_rgb_region_channel_sum(rgba, width, height, 12, 28, 20, 36, 0);
+    uint64_t red_region_b =
+        _app_rgb_region_channel_sum(rgba, width, height, 12, 28, 20, 36, 2);
+    uint64_t blue_region_r =
+        _app_rgb_region_channel_sum(rgba, width, height, 28, 28, 36, 36, 0);
+    uint64_t blue_region_b =
+        _app_rgb_region_channel_sum(rgba, width, height, 28, 28, 36, 36, 2);
+    uint64_t occluded_region_r =
+        _app_rgb_region_channel_sum(rgba, width, height, 40, 28, 48, 36, 0);
+    uint64_t occluded_region_g =
+        _app_rgb_region_channel_sum(rgba, width, height, 40, 28, 48, 36, 1);
+    uint64_t occluded_region_b =
+        _app_rgb_region_channel_sum(rgba, width, height, 40, 28, 48, 36, 2);
+
+    AT(red_region_r > ((uint64_t)background[0] + 45) * region_pixels);
+    AT(red_region_r > red_region_b + 30 * region_pixels);
+    AT(blue_region_b > ((uint64_t)background[2] + 45) * region_pixels);
+    AT(blue_region_b > blue_region_r + 30 * region_pixels);
+    AT(occluded_region_g > 160 * region_pixels);
+    AT(occluded_region_g > occluded_region_r + 80 * region_pixels);
+    AT(occluded_region_g > occluded_region_b + 80 * region_pixels);
 
     dvz_free(rgba);
     dvz_app_destroy(app);

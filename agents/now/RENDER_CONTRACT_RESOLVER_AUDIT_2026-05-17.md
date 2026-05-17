@@ -490,6 +490,26 @@ Validation:
 4. `git diff --check -- src/scene/tests/app.c src/scene/tests/test_scene.h agents/now/RENDER_CONTRACT_RESOLVER_AUDIT_2026-05-17.md`
 
 
+### 2026-05-17: Phase 4 / Depth-peel region readback
+
+Completed the depth-peel offscreen readback hardening slice.
+
+Changes:
+
+1. Added a small RGB channel region-sum helper for app offscreen readback tests.
+2. Replaced single-pixel assertions in `test_app_offscreen_depth_peel_mesh_two_layers` with 8x8
+   region-channel checks for the red transparent layer, blue transparent layer, and opaque occluder.
+3. The test still verifies that both transparent colors contribute where expected and that the
+   opaque occluder wins in its region.
+
+Validation:
+
+1. `cmake --build build --target dvztest_scene -j2`
+2. `direnv exec . ./build/testing/dvztest_scene test_app_offscreen_depth_peel_mesh_two_layers`
+3. `direnv exec . ./build/testing/dvztest_scene test_app_offscreen_source_over_mesh_depth_and_blend`
+4. `git diff --check -- src/scene/tests/app.c agents/now/RENDER_CONTRACT_RESOLVER_AUDIT_2026-05-17.md`
+
+
 ## Executive Assessment
 
 The direction is correct and worth continuing. The proposal identifies the right failure mode:
