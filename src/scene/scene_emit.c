@@ -29,6 +29,7 @@
 #include "_scene_resource_key.h"
 #include "_technique.h"
 #include "_visual_pipeline.h"
+#include "render_contract.h"
 #include "datoviz/drp2/runtime.h"
 
 
@@ -1639,6 +1640,29 @@ static bool _scene_panel_has_visible_scene_occlusion_target(const DvzPanel* pane
 }
 
 
+/**
+ * Resolve whether a transparent draw contract requires a pass depth attachment.
+ *
+ * @param visual the retained visual
+ * @param attach the panel attachment
+ * @param pass_role the transparent render-pass role
+ * @param out whether the draw requires depth
+ * @return whether the draw contract was resolved
+ */
+static bool _scene_transparent_contract_needs_depth(
+    const DvzVisual* visual, const DvzPanelAttach* attach, DvzFramePlanRenderPassRole pass_role,
+    bool* out)
+{
+    ANN(out);
+    *out = false;
+    DvzSceneDrawContract contract = {0};
+    if (!_scene_draw_contract_from_visual(visual, attach, pass_role, &contract))
+        return false;
+    *out = contract.depth_test || contract.samples_depth;
+    return true;
+}
+
+
 
 /**
  * Append one visual to the active render pass.
@@ -1868,7 +1892,20 @@ void _scene_emit_panel_render(
         if (!caps.draws_in_opaque_pass)
         {
             has_transparent = true;
-            transparent_needs_depth = transparent_needs_depth || caps.needs_depth_attachment;
+            if (caps.draws_in_transparent_blend_pass)
+            {
+                bool contract_needs_depth = false;
+                if (_scene_transparent_contract_needs_depth(
+                        visual, attach, DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_BLEND,
+                        &contract_needs_depth))
+                {
+                    ASSERT(contract_needs_depth == caps.needs_depth_attachment);
+                    transparent_needs_depth = transparent_needs_depth || contract_needs_depth;
+                }
+            }
+            else
+                transparent_needs_depth =
+                    transparent_needs_depth || caps.needs_depth_attachment;
             continue;
         }
 
@@ -1949,7 +1986,14 @@ void _scene_emit_panel_render(
                 figure, plan, blended_node, visual, attach, vidx,
                 scene_occlusion_enabled ? &panel->scene_occlusion : NULL,
                 volume_occlusion_enabled ? &panel->volume_occlusion : NULL);
-            transparent_needs_depth = transparent_needs_depth || caps.needs_depth_attachment;
+            bool contract_needs_depth = false;
+            if (_scene_transparent_contract_needs_depth(
+                    visual, attach, DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_BLEND,
+                    &contract_needs_depth))
+            {
+                ASSERT(contract_needs_depth == caps.needs_depth_attachment);
+                transparent_needs_depth = transparent_needs_depth || contract_needs_depth;
+            }
             continue;
         }
 
