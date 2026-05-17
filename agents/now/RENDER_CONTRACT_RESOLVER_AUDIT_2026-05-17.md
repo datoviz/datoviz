@@ -137,6 +137,31 @@ Validation:
 7. `git diff --check -- src/scene/frame_plan_runtime.c`
 
 
+### 2026-05-17: Phase 0 / DRP2 attachment format classes
+
+Completed the DRP2 format-class validation slice.
+
+Changes:
+
+1. Added an explicit DRP2 depth-format classifier for currently supported depth attachments.
+2. Semantic validation now rejects depth formats used as render-pipeline color targets before a
+   pipeline object is registered.
+3. Render-pass validation now rejects depth textures used as color or resolve attachments, and
+   rejects non-depth textures used as named depth attachments.
+4. Added focused DRP2 regressions for invalid pipeline color targets, invalid color attachments,
+   and invalid named depth attachments.
+
+Validation:
+
+1. `cmake --build build --target dvztest_drp2 -j2`
+2. `./build/testing/dvztest_drp2 test_drp2_render_pipeline_rejects_depth_color_target`
+3. `./build/testing/dvztest_drp2 test_drp2_render_pass_rejects_attachment_format_classes`
+4. `./build/testing/dvztest_drp2 test_drp2_render_pipeline_attachment_validation`
+5. `./build/testing/dvztest_drp2 test_drp2_begin_render_pass_named_depth_validation`
+6. `./build/testing/dvztest_drp2 test_drp2_wboit_accumulation_resolve_stream`
+7. `git diff --check -- src/drp2/semantic.c src/drp2/tests/test_drp2.c src/drp2/tests/test_drp2.h agents/now/RENDER_CONTRACT_RESOLVER_AUDIT_2026-05-17.md`
+
+
 ## Executive Assessment
 
 The direction is correct and worth continuing. The proposal identifies the right failure mode:

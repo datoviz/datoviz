@@ -5310,6 +5310,76 @@ int test_drp2_begin_render_pass_named_depth_validation(TstSuite* suite, TstItem*
 
 
 
+int test_drp2_render_pipeline_rejects_depth_color_target(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzDrp2CommandStream* stream = dvz_drp2_stream();
+    ANN(stream);
+
+    AT(dvz_drp2_stream_hello_renderer(stream, "test-client"));
+    AT(dvz_drp2_stream_renderer_hello_reply(stream, "test-renderer"));
+    AT(dvz_drp2_stream_create_shader_module(stream, 10, "vertex", "@vertex fn main() {}"));
+    AT(dvz_drp2_stream_create_shader_module(stream, 11, "fragment", "@fragment fn main() {}"));
+    AT(dvz_drp2_stream_create_render_pipeline(stream, 12, 10, 11, 0));
+    AT(dvz_drp2_stream_pipeline_set_color_target(stream, 0, VK_FORMAT_D32_SFLOAT));
+
+    DvzDrp2ValidationResult result = dvz_drp2_validate_stream(stream);
+    AT(!result.ok);
+    AT(result.code == DVZ_DRP2_VALIDATION_USAGE);
+    AT(result.command_index == 4);
+
+    dvz_drp2_stream_destroy(stream);
+    return 0;
+}
+
+
+
+int test_drp2_render_pass_rejects_attachment_format_classes(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzDrp2CommandStream* stream = dvz_drp2_stream();
+    ANN(stream);
+
+    AT(dvz_drp2_stream_hello_renderer(stream, "test-client"));
+    AT(dvz_drp2_stream_renderer_hello_reply(stream, "test-renderer"));
+    AT(dvz_drp2_stream_create_texture_2d_format_usage(
+        stream, 1, 4, 4, VK_FORMAT_D32_SFLOAT, DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT));
+    AT(dvz_drp2_stream_begin_command_encoder(stream, 2));
+    AT(dvz_drp2_stream_begin_render_pass(stream, 3, 2, 1));
+
+    DvzDrp2ValidationResult result = dvz_drp2_validate_stream(stream);
+    AT(!result.ok);
+    AT(result.code == DVZ_DRP2_VALIDATION_USAGE);
+    AT(result.command_index == 4);
+
+    dvz_drp2_stream_destroy(stream);
+
+    stream = dvz_drp2_stream();
+    ANN(stream);
+    AT(dvz_drp2_stream_hello_renderer(stream, "test-client"));
+    AT(dvz_drp2_stream_renderer_hello_reply(stream, "test-renderer"));
+    AT(dvz_drp2_stream_create_texture_2d_format_usage(
+        stream, 1, 4, 4, VK_FORMAT_R8G8B8A8_UNORM, DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT));
+    AT(dvz_drp2_stream_create_texture_2d_format_usage(
+        stream, 2, 4, 4, VK_FORMAT_R8G8B8A8_UNORM, DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT));
+    AT(dvz_drp2_stream_begin_command_encoder(stream, 3));
+    AT(dvz_drp2_stream_begin_render_pass(stream, 4, 3, 1));
+    AT(dvz_drp2_stream_begin_render_pass_set_depth_texture(stream, 2, 1.0f));
+    result = dvz_drp2_validate_stream(stream);
+    AT(!result.ok);
+    AT(result.code == DVZ_DRP2_VALIDATION_USAGE);
+    AT(result.command_index == 5);
+
+    dvz_drp2_stream_destroy(stream);
+    return 0;
+}
+
+
+
 int test_drp2_render_pipeline_attachment_validation(TstSuite* suite, TstItem* item)
 {
     ANN(suite);
@@ -6430,6 +6500,8 @@ int test_drp2(TstSuite* suite)
     TEST_SIMPLE(test_drp2_begin_render_pass_attachment_ops);
     TEST_SIMPLE(test_drp2_begin_render_pass_attachment_ops_validation);
     TEST_SIMPLE(test_drp2_begin_render_pass_named_depth_validation);
+    TEST_SIMPLE(test_drp2_render_pipeline_rejects_depth_color_target);
+    TEST_SIMPLE(test_drp2_render_pass_rejects_attachment_format_classes);
     TEST_SIMPLE(test_drp2_render_pipeline_attachment_validation);
     TEST_SIMPLE(test_drp2_recording_preserves_attachment_ops);
     TEST_SIMPLE(test_drp2_recording_preserves_named_depth);

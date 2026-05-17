@@ -179,6 +179,19 @@ static uint32_t _effective_depth_format(void)
 
 
 
+/**
+ * Return whether a format belongs to DRP2's supported depth attachment class.
+ *
+ * @param format texture or attachment format, using VkFormat values
+ * @return whether the format is a supported depth format
+ */
+static bool _format_is_depth(uint32_t format)
+{
+    return format == VK_FORMAT_D32_SFLOAT;
+}
+
+
+
 static bool _binding_type_is_buffer(DvzDrp2BindingType type)
 {
     return type == DVZ_DRP2_BINDING_TYPE_UNIFORM_BUFFER ||
@@ -798,6 +811,16 @@ static DvzDrp2ValidationResult _validate_create_render_pipeline(
         return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_ARGUMENT, command_index);
     if (command->u.create_render_pipeline.alpha_to_coverage_enabled && sample_count <= 1)
         return _drp2_fail(DVZ_DRP2_VALIDATION_USAGE, command_index);
+    uint32_t color_target_count = command->u.create_render_pipeline.color_target_count;
+    if (color_target_count == 0)
+        color_target_count = 1;
+    for (uint32_t i = 0; i < color_target_count; i++)
+    {
+        uint32_t format =
+            _effective_color_format(command->u.create_render_pipeline.color_targets[i].format);
+        if (_format_is_depth(format))
+            return _drp2_fail(DVZ_DRP2_VALIDATION_USAGE, command_index);
+    }
     for (uint32_t i = 0; i < command->u.create_render_pipeline.bind_group_layout_count; i++)
     {
         if (!_has_object_kind(
@@ -821,9 +844,6 @@ static DvzDrp2ValidationResult _validate_create_render_pipeline(
             object->bind_group_layout_count * sizeof(uint64_t));
     }
     object->has_depth_attachment = command->u.create_render_pipeline.has_depth_attachment;
-    uint32_t color_target_count = command->u.create_render_pipeline.color_target_count;
-    if (color_target_count == 0)
-        color_target_count = 1;
     object->color_attachment_count = color_target_count;
     for (uint32_t i = 0; i < color_target_count; i++)
     {
@@ -1238,6 +1258,8 @@ static DvzDrp2ValidationResult _validate_begin_render_pass(
         const Drp2Object* texture = _find_object(state, texture_id);
         if (texture == NULL || texture->kind != DRP2_OBJECT_TEXTURE)
             return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+        if (_format_is_depth(_effective_color_format(texture->format)))
+            return _drp2_fail(DVZ_DRP2_VALIDATION_USAGE, command_index);
         uint32_t color_sample_count = _effective_sample_count(texture->sample_count);
         if (i == 0)
             pass_sample_count = color_sample_count;
@@ -1248,6 +1270,8 @@ static DvzDrp2ValidationResult _validate_begin_render_pass(
             const Drp2Object* resolve = _find_object(state, attachment->resolve_texture_id);
             if (resolve == NULL || resolve->kind != DRP2_OBJECT_TEXTURE)
                 return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+            if (_format_is_depth(_effective_color_format(resolve->format)))
+                return _drp2_fail(DVZ_DRP2_VALIDATION_USAGE, command_index);
             if (_effective_sample_count(resolve->sample_count) != 1 ||
                 color_sample_count <= 1 || resolve->width != texture->width ||
                 resolve->height != texture->height ||
@@ -1269,6 +1293,8 @@ static DvzDrp2ValidationResult _validate_begin_render_pass(
             _find_object(state, command->u.begin_render_pass.depth_texture_id);
         if (depth == NULL || depth->kind != DRP2_OBJECT_TEXTURE)
             return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+        if (!_format_is_depth(depth->format))
+            return _drp2_fail(DVZ_DRP2_VALIDATION_USAGE, command_index);
         if ((depth->usage & DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT) == 0)
             return _drp2_fail(DVZ_DRP2_VALIDATION_USAGE, command_index);
         if (first_color == NULL || depth->width != first_color->width ||

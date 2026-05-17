@@ -255,6 +255,10 @@ int test_drp2_begin_render_pass_attachment_ops_validation(TstSuite* suite, TstIt
 
 int test_drp2_begin_render_pass_named_depth_validation(TstSuite* suite, TstItem* item);
 
+int test_drp2_render_pipeline_rejects_depth_color_target(TstSuite* suite, TstItem* item);
+
+int test_drp2_render_pass_rejects_attachment_format_classes(TstSuite* suite, TstItem* item);
+
 int test_drp2_render_pipeline_attachment_validation(TstSuite* suite, TstItem* item);
 
 int test_drp2_recording_preserves_attachment_ops(TstSuite* suite, TstItem* item);
