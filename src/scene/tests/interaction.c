@@ -296,6 +296,22 @@ int test_scene_text_bitmap_visual_realization(TstSuite* suite, TstItem* item)
     AC(positions[0][1], 0.9166667f, 1e-6f);
     AC(positions[11][0], -0.93125f, 1e-6f);
     AC(positions[11][1], 0.8833333f, 1e-6f);
+
+    dvz_text_set_placement(
+        text,
+        &(DvzTextPlacement){
+            .mode = DVZ_TEXT_PLACEMENT_SCREEN,
+            .anchor = DVZ_SCENE_ANCHOR_PANEL_TOP_LEFT,
+            .offset = {10.0f, 20.0f},
+            .pivot = {0.5f, 0.5f},
+            .has_pivot = true,
+        });
+    _scene_prepare_text_visuals(figure);
+    positions = (const float(*)[3])text->visual->attrs[pos_idx].data;
+    ANN(positions);
+    AC(positions[0][0], -0.9875f, 1e-6f);
+    AC(positions[0][1], 0.9333333f, 1e-6f);
+
     const uint8_t* colors = (const uint8_t*)text->visual->attrs[color_idx].data;
     ANN(colors);
     AT(colors[0] == 64);
@@ -323,6 +339,15 @@ int test_scene_text_bitmap_visual_realization(TstSuite* suite, TstItem* item)
     AT(text->visual->field == atlas);
     AC(text->metrics.advance[0], 18.0f, 1e-6f);
     AC(text->metrics.layout_bounds[3], 8.0f, 1e-6f);
+
+    dvz_text_set_string(text, "A");
+    _scene_prepare_text_visuals(figure);
+    AT(text->visual->attrs[pos_idx].item_count == 6);
+    AT(text->visual->attrs[uv_idx].item_count == 6);
+    AT(text->visual->attrs[color_idx].item_count == 6);
+    DvzFramePlanVisualMeta metadata = {0};
+    AT(_scene_visual_frame_plan_metadata(figure, text->visual, 0, &metadata));
+    AT(metadata.vertex_count == 6);
 
     dvz_text_set_string(text, "");
     _scene_prepare_text_visuals(figure);

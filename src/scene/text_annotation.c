@@ -673,32 +673,27 @@ static void _text_anchor_pixels(const DvzText* text, float* out_x, float* out_y)
 
 
 /**
- * Resolve text box alignment for an anchor.
+ * Resolve the default text-box pivot for a target anchor.
  *
  * @param anchor the scene anchor
- * @param width the text box width
- * @param height the text box height
- * @param out_x output local x offset
- * @param out_y output local y offset
+ * @param out output pivot in top-left text-box coordinates
  */
-static void _text_anchor_alignment(
-    DvzSceneAnchor anchor, float width, float height, float* out_x, float* out_y)
+static void _text_anchor_pivot(DvzSceneAnchor anchor, float out[2])
 {
-    ANN(out_x);
-    ANN(out_y);
-    *out_x = 0;
-    *out_y = 0;
+    ANN(out);
+    out[0] = 0.0f;
+    out[1] = 0.0f;
     switch (anchor)
     {
     case DVZ_SCENE_ANCHOR_PANEL_TOP:
     case DVZ_SCENE_ANCHOR_PANEL_CENTER:
     case DVZ_SCENE_ANCHOR_PANEL_BOTTOM:
-        *out_x = -.5f * width;
+        out[0] = 0.5f;
         break;
     case DVZ_SCENE_ANCHOR_PANEL_TOP_RIGHT:
     case DVZ_SCENE_ANCHOR_PANEL_RIGHT:
     case DVZ_SCENE_ANCHOR_PANEL_BOTTOM_RIGHT:
-        *out_x = -width;
+        out[0] = 1.0f;
         break;
     default:
         break;
@@ -708,16 +703,56 @@ static void _text_anchor_alignment(
     case DVZ_SCENE_ANCHOR_PANEL_LEFT:
     case DVZ_SCENE_ANCHOR_PANEL_CENTER:
     case DVZ_SCENE_ANCHOR_PANEL_RIGHT:
-        *out_y = -.5f * height;
+        out[1] = 0.5f;
         break;
     case DVZ_SCENE_ANCHOR_PANEL_BOTTOM_LEFT:
     case DVZ_SCENE_ANCHOR_PANEL_BOTTOM:
     case DVZ_SCENE_ANCHOR_PANEL_BOTTOM_RIGHT:
-        *out_y = -height;
+        out[1] = 1.0f;
         break;
     default:
         break;
     }
+}
+
+
+
+/**
+ * Resolve text box alignment for a placement.
+ *
+ * @param placement the text placement
+ * @param width the text box width
+ * @param height the text box height
+ * @param out_x output local x offset
+ * @param out_y output local y offset
+ */
+static void _text_placement_alignment(
+    const DvzTextPlacement* placement, float width, float height, float* out_x, float* out_y)
+{
+    ANN(placement);
+    ANN(out_x);
+    ANN(out_y);
+    float pivot[2] = {0.0f, 0.0f};
+    if (placement->has_pivot)
+    {
+        pivot[0] = placement->pivot[0];
+        pivot[1] = placement->pivot[1];
+        if (pivot[0] < 0.0f)
+            pivot[0] = 0.0f;
+        if (pivot[0] > 1.0f)
+            pivot[0] = 1.0f;
+        if (pivot[1] < 0.0f)
+            pivot[1] = 0.0f;
+        if (pivot[1] > 1.0f)
+            pivot[1] = 1.0f;
+    }
+    else
+    {
+        _text_anchor_pivot(placement->anchor, pivot);
+    }
+
+    *out_x = -pivot[0] * width;
+    *out_y = -pivot[1] * height;
 }
 
 
@@ -836,8 +871,7 @@ static bool _text_prepare_visual(DvzFigure* figure, DvzText* text)
     _text_anchor_pixels(text, &anchor_x, &anchor_y);
     float align_x = 0;
     float align_y = 0;
-    _text_anchor_alignment(
-        text->placement.anchor, (float)width, (float)height, &align_x, &align_y);
+    _text_placement_alignment(&text->placement, (float)width, (float)height, &align_x, &align_y);
     align_x += text->placement.offset[0];
     align_y += text->placement.offset[1];
 

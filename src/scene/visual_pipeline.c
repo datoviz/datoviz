@@ -474,6 +474,8 @@ static bool _scene_visual_desc_from_metadata(
         return false;
     }
     out->vertex_count = (uint32_t)vertex_count;
+    if (meta->vertex_count > 0)
+        out->vertex_count = meta->vertex_count;
 
     DvzScenePointLikeKind point_like_kind = DVZ_SCENE_POINT_LIKE_POINT;
     if (_visual_meta_point_like_kind(meta->visual_type, &point_like_kind))

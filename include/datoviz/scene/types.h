@@ -551,6 +551,8 @@ struct DvzTextPlacement
     DvzSceneAnchor anchor;
     double position[3];
     float offset[2];
+    float pivot[2];
+    bool has_pivot;
     float angle;
     bool depth_test;
 };

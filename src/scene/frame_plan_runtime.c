@@ -5097,6 +5097,8 @@ static bool _emitter_emit_render(
             if (sz > 0)
                 vertex_count = (uint32_t)(sz / (3 * sizeof(float)));
         }
+        if (visual_meta != NULL && visual_meta->vertex_count > 0)
+            vertex_count = visual_meta->vertex_count;
         DvzSceneShaderFormat shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
         if (cfg != NULL && cfg->shader_format == DVZ_SCENE_SHADER_FORMAT_WGSL)
             shader_format = DVZ_SCENE_SHADER_FORMAT_WGSL;
@@ -5120,6 +5122,8 @@ static bool _emitter_emit_render(
                 vertex_count = (uint32_t)(sz / (3 * sizeof(float)));
             topology = _resource_topology(&emitter->resources, pos_id);
         }
+        if (visual_meta != NULL && visual_meta->vertex_count > 0)
+            vertex_count = visual_meta->vertex_count;
         /* Primitive visual: pass-through shaders with visual-selected topology. */
         dvz_snprintf(vs_key, sizeof(vs_key), "_vs_prim%s", fmt);
         dvz_snprintf(fs_key, sizeof(fs_key), "_fs_prim%s", fmt);
@@ -5134,6 +5138,8 @@ static bool _emitter_emit_render(
         uint64_t pos_size = _resource_byte_size(&emitter->resources, image_pos);
         if (pos_size > 0)
             vertex_count = (uint32_t)(pos_size / (3 * sizeof(float)));
+        if (visual_meta != NULL && visual_meta->vertex_count > 0)
+            vertex_count = visual_meta->vertex_count;
         topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP;
         dvz_snprintf(vs_key, sizeof(vs_key), "_vs_img%s", fmt);
         dvz_snprintf(fs_key, sizeof(fs_key), "_fs_img%s", fmt);

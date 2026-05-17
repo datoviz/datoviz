@@ -1312,6 +1312,16 @@ bool _scene_visual_frame_plan_metadata(
     metadata->scene_occluder = visual->scene_occluder;
     metadata->scene_occluded = visual->scene_occluded;
 
+    const char* vertex_count_attr =
+        visual->type == DVZ_VISUAL_TYPE_SEGMENT ? "position_start" : "position";
+    int vertex_count_idx = _attr_index(visual, vertex_count_attr);
+    if (vertex_count_idx >= 0)
+    {
+        if (visual->attrs[vertex_count_idx].item_count > UINT32_MAX)
+            return false;
+        metadata->vertex_count = (uint32_t)visual->attrs[vertex_count_idx].item_count;
+    }
+
     if (!_scene_attr_resource_key(
             figure, visual, visual_index, "position", metadata->position_id,
             sizeof(metadata->position_id)))

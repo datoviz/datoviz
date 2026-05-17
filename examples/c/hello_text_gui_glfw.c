@@ -67,6 +67,8 @@ typedef struct TextLabState
     float angle;
     float offset_x;
     float offset_y;
+    float pivot_x;
+    float pivot_y;
     float color[4];
     float tick_count_value;
     int mode;
@@ -199,9 +201,10 @@ static void apply_text_style(
  * @param x horizontal offset in pixels
  * @param y vertical offset in pixels
  * @param angle rotation angle in radians
+ * @param pivot optional normalized text-box pivot
  */
 static void apply_text_placement(
-    DvzText* text, DvzSceneAnchor anchor, float x, float y, float angle)
+    DvzText* text, DvzSceneAnchor anchor, float x, float y, float angle, const float* pivot)
 {
     ANN(text);
     DvzTextPlacement placement = {
@@ -210,6 +213,12 @@ static void apply_text_placement(
         .offset = {x, y},
         .angle = angle,
     };
+    if (pivot != NULL)
+    {
+        placement.pivot[0] = pivot[0];
+        placement.pivot[1] = pivot[1];
+        placement.has_pivot = true;
+    }
     dvz_text_set_placement(text, &placement);
 }
 
@@ -316,10 +325,12 @@ static void update_text_scene(TextLabState* state)
     gui_color_to_dvz(state->color, color);
     DvzTextRenderer renderer = selected_renderer(state->renderer_index);
     DvzSceneAnchor anchor = selected_anchor(state->anchor_index);
+    float pivot[2] = {state->pivot_x, state->pivot_y};
 
     dvz_text_set_string(state->title, "Text lab");
     apply_text_style(state->title, 22.0f, renderer, color);
-    apply_text_placement(state->title, DVZ_SCENE_ANCHOR_PANEL_TOP_LEFT, 24.0f, 24.0f, 0.0f);
+    apply_text_placement(
+        state->title, DVZ_SCENE_ANCHOR_PANEL_TOP_LEFT, 24.0f, 24.0f, 0.0f, NULL);
 
     dvz_text_set_string(state->sample, "");
     dvz_text_set_string(state->multiline, "");
@@ -333,7 +344,8 @@ static void update_text_scene(TextLabState* state)
     {
         dvz_text_set_string(state->ticks[i], "");
         apply_text_style(state->ticks[i], state->tick_size_pts, renderer, color);
-        apply_text_placement(state->ticks[i], DVZ_SCENE_ANCHOR_PANEL_BOTTOM_LEFT, 0.0f, 0.0f, 0.0f);
+        apply_text_placement(
+            state->ticks[i], DVZ_SCENE_ANCHOR_PANEL_BOTTOM_LEFT, 0.0f, 0.0f, 0.0f, NULL);
     }
 
     if (state->mode == TEXT_LAB_MODE_TICKS)
@@ -341,7 +353,7 @@ static void update_text_scene(TextLabState* state)
         dvz_text_set_string(state->sample, "Tick labels");
         apply_text_style(state->sample, 18.0f, renderer, color);
         apply_text_placement(
-            state->sample, DVZ_SCENE_ANCHOR_PANEL_TOP, 0.0f, 96.0f, 0.0f);
+            state->sample, DVZ_SCENE_ANCHOR_PANEL_TOP, 0.0f, 96.0f, 0.0f, NULL);
 
         float left = 110.0f;
         float usable = TEXT_LAB_FIGURE_WIDTH - 2.0f * left;
@@ -353,7 +365,8 @@ static void update_text_scene(TextLabState* state)
             dvz_text_set_string(state->ticks[i], label);
             float x = left + (float)i * step;
             apply_text_placement(
-                state->ticks[i], DVZ_SCENE_ANCHOR_PANEL_BOTTOM_LEFT, x, -96.0f, -0.35f);
+                state->ticks[i], DVZ_SCENE_ANCHOR_PANEL_BOTTOM_LEFT, x, -96.0f, -0.35f,
+                pivot);
         }
     }
     else if (state->mode == TEXT_LAB_MODE_MULTILINE)
@@ -361,7 +374,8 @@ static void update_text_scene(TextLabState* state)
         dvz_text_set_string(state->multiline, "line one\nline two\nline three");
         apply_text_style(state->multiline, state->size_pts, renderer, color);
         apply_text_placement(
-            state->multiline, DVZ_SCENE_ANCHOR_PANEL_CENTER, -180.0f, -20.0f, 0.0f);
+            state->multiline, DVZ_SCENE_ANCHOR_PANEL_CENTER, -180.0f, -20.0f, 0.0f,
+            pivot);
     }
     else
     {
@@ -370,12 +384,12 @@ static void update_text_scene(TextLabState* state)
         if (state->mode == TEXT_LAB_MODE_GLYPH)
         {
             apply_text_placement(
-                state->sample, DVZ_SCENE_ANCHOR_PANEL_TOP, 0.0f, 96.0f, 0.0f);
+                state->sample, DVZ_SCENE_ANCHOR_PANEL_TOP, 0.0f, 96.0f, 0.0f, NULL);
         }
         else
         {
             apply_text_placement(
-                state->sample, anchor, state->offset_x, state->offset_y, state->angle);
+                state->sample, anchor, state->offset_x, state->offset_y, state->angle, pivot);
         }
     }
 
@@ -399,6 +413,8 @@ static void reset_text_state(TextLabState* state)
     state->angle = 0.0f;
     state->offset_x = 0.0f;
     state->offset_y = 0.0f;
+    state->pivot_x = 0.5f;
+    state->pivot_y = 0.5f;
     state->color[0] = 0.85f;
     state->color[1] = 0.92f;
     state->color[2] = 1.00f;
@@ -458,10 +474,15 @@ static void gui_callback(DvzGui* gui, DvzAppWindow* win, void* user_data)
         changed |= dvz_gui_slider_float(gui, "Size", &state->size_pts, 6.0f, 64.0f);
         if (state->mode == TEXT_LAB_MODE_SAMPLE || state->mode == TEXT_LAB_MODE_UTF8)
         {
-            changed |= dvz_gui_combo(gui, "Anchor", &state->anchor_index, anchor_items, 9);
+            changed |= dvz_gui_combo(gui, "Target", &state->anchor_index, anchor_items, 9);
             changed |= dvz_gui_slider_float(gui, "Angle", &state->angle, -1.57f, 1.57f);
             changed |= dvz_gui_slider_float(gui, "Offset X", &state->offset_x, -360.0f, 360.0f);
             changed |= dvz_gui_slider_float(gui, "Offset Y", &state->offset_y, -260.0f, 260.0f);
+        }
+        if (state->mode != TEXT_LAB_MODE_GLYPH)
+        {
+            changed |= dvz_gui_slider_float(gui, "Pivot X", &state->pivot_x, 0.0f, 1.0f);
+            changed |= dvz_gui_slider_float(gui, "Pivot Y", &state->pivot_y, 0.0f, 1.0f);
         }
         if (state->mode == TEXT_LAB_MODE_TICKS)
         {
