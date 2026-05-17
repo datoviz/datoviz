@@ -71,6 +71,40 @@ static uint32_t _axis_test_draw_index_count(const DvzDrp2CommandStream* stream)
 }
 
 
+/**
+ * Return the number of inward major tick lines emitted by one axis visual.
+ *
+ * @param axis the axis
+ * @return inward tick line count
+ */
+static uint32_t _axis_test_inward_tick_line_count(DvzAxis* axis)
+{
+    ANN(axis);
+    ANN(axis->visual);
+    DvzVisualAttr* starts_attr = _axis_test_attr(axis->visual, "position_start");
+    DvzVisualAttr* ends_attr = _axis_test_attr(axis->visual, "position_end");
+    ANN(starts_attr);
+    ANN(ends_attr);
+    const float* starts = (const float*)starts_attr->data;
+    const float* ends = (const float*)ends_attr->data;
+    uint32_t count = 0;
+    for (uint32_t i = 0; i < starts_attr->item_count; i++)
+    {
+        float sx = starts[3 * i + 0];
+        float sy = starts[3 * i + 1];
+        float ex = ends[3 * i + 0];
+        float ey = ends[3 * i + 1];
+        if (axis->dim == DVZ_DIM_X && fabsf(sx - ex) < 1e-5f && fabsf(sy + 1.0f) < 1e-5f &&
+            ey > sy + 1e-5f && ey < sy + 0.10f)
+            count++;
+        if (axis->dim == DVZ_DIM_Y && fabsf(sy - ey) < 1e-5f && fabsf(sx + 1.0f) < 1e-5f &&
+            ex > sx + 1e-5f && ex < sx + 0.10f)
+            count++;
+    }
+    return count;
+}
+
+
 
 /*************************************************************************************************/
 /*  Tests                                                                                        */
@@ -100,12 +134,51 @@ int test_axis_domain_and_ticks(TstSuite* suite, TstItem* item)
     AT(axis->tick_count >= 5);
     AT(axis->visual->visible);
     AT(axis->visual->attrs[0].item_count > 0);
+    AT(_axis_test_inward_tick_line_count(axis) >= 8);
 
     AT(dvz_axis_set_grid(axis, true));
     _scene_prepare_axis_visuals(figure);
     AT(axis->visual->attrs[0].item_count > 0);
 
     dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+static int test_axis_tick_density_tracks_panel_size(TstSuite* suite, TstItem* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzScene* narrow_scene = dvz_scene();
+    ANN(narrow_scene);
+    DvzFigure* narrow_figure = dvz_figure(narrow_scene, 300, 400, 0);
+    ANN(narrow_figure);
+    DvzPanel* narrow_panel = dvz_panel(narrow_figure, (DvzPanelDesc){0, 0, 1, 1});
+    ANN(narrow_panel);
+    AT(dvz_panel_set_domain(narrow_panel, DVZ_DIM_X, 0.0, 10.0) == 0);
+    DvzAxis* narrow_axis = dvz_panel_axis(narrow_panel, DVZ_DIM_X);
+    ANN(narrow_axis);
+    _scene_prepare_axis_visuals(narrow_figure);
+    uint32_t narrow_count = _axis_test_inward_tick_line_count(narrow_axis);
+
+    DvzScene* wide_scene = dvz_scene();
+    ANN(wide_scene);
+    DvzFigure* wide_figure = dvz_figure(wide_scene, 1300, 400, 0);
+    ANN(wide_figure);
+    DvzPanel* wide_panel = dvz_panel(wide_figure, (DvzPanelDesc){0, 0, 1, 1});
+    ANN(wide_panel);
+    AT(dvz_panel_set_domain(wide_panel, DVZ_DIM_X, 0.0, 10.0) == 0);
+    DvzAxis* wide_axis = dvz_panel_axis(wide_panel, DVZ_DIM_X);
+    ANN(wide_axis);
+    _scene_prepare_axis_visuals(wide_figure);
+    uint32_t wide_count = _axis_test_inward_tick_line_count(wide_axis);
+
+    AT(wide_count > narrow_count);
+    AT(wide_count >= 8);
+
+    dvz_scene_destroy(wide_scene);
+    dvz_scene_destroy(narrow_scene);
     return 0;
 }
 
@@ -342,6 +415,7 @@ int test_scene_axis(TstSuite* suite)
     const char* tags = "scene,axis";
 
     TEST_SIMPLE(test_axis_domain_and_ticks);
+    TEST_SIMPLE(test_axis_tick_density_tracks_panel_size);
     TEST_SIMPLE(test_panel_data_to_visual_positions);
     TEST_SIMPLE(test_axis_plot_margins);
     TEST_SIMPLE(test_panel_visible_domain);

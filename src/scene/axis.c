@@ -46,7 +46,7 @@
  */
 static DvzAxisTickPolicy _axis_default_tick_policy(void)
 {
-    return (DvzAxisTickPolicy){.target_count = 6, .min_pixel_spacing = 50.0f};
+    return (DvzAxisTickPolicy){.target_count = 6, .min_pixel_spacing = 100.0f};
 }
 
 
@@ -62,7 +62,7 @@ static DvzAxisStyle _axis_default_style(void)
         .spine_width = 1.0f,
         .major_tick_width = 1.0f,
         .grid_width = 1.0f,
-        .major_tick_length = 0.035f,
+        .major_tick_length = 9.0f,
         .plot_margin_left = 0.0f,
         .plot_margin_right = 0.0f,
         .plot_margin_bottom = 0.0f,
@@ -200,6 +200,81 @@ static double _axis_nice_number(double range, bool round)
 }
 
 
+/**
+ * Return the approximate pixel span available to one axis.
+ *
+ * @param axis the axis
+ * @return pixel span
+ */
+static float _axis_pixel_span(const DvzAxis* axis)
+{
+    ANN(axis);
+    if (axis->panel == NULL)
+        return 0.0f;
+    float panel_x = 0.0f;
+    float panel_y = 0.0f;
+    float panel_width = 0.0f;
+    float panel_height = 0.0f;
+    _scene_panel_pixel_rect(axis->panel, &panel_x, &panel_y, &panel_width, &panel_height);
+    return axis->dim == DVZ_DIM_X ? panel_width : panel_height;
+}
+
+
+
+/**
+ * Return the visible-domain target tick count for one axis.
+ *
+ * @param axis the axis
+ * @param pixel_span output pixel span used for the target
+ * @return target visible tick count
+ */
+static uint32_t _axis_target_tick_count(const DvzAxis* axis, float* pixel_span)
+{
+    ANN(axis);
+    ANN(pixel_span);
+    *pixel_span = _axis_pixel_span(axis);
+    uint32_t target = axis->tick_policy.target_count;
+    if (*pixel_span > 0.0f && axis->tick_policy.min_pixel_spacing > 0.0f)
+    {
+        uint32_t pixel_target =
+            (uint32_t)floorf(*pixel_span / axis->tick_policy.min_pixel_spacing) + 1;
+        if (pixel_target > target)
+            target = pixel_target;
+    }
+    if (target < 2)
+        target = 2;
+    if (target > DVZ_SCENE_MAX_AXIS_TICKS)
+        target = DVZ_SCENE_MAX_AXIS_TICKS;
+    return target;
+}
+
+
+
+/**
+ * Return a major tick length in visual units, with the style length interpreted as pixels.
+ *
+ * @param axis the axis
+ * @return major tick length in visual units
+ */
+static float _axis_major_tick_length(const DvzAxis* axis)
+{
+    ANN(axis);
+    if (!(axis->style.major_tick_length > 0.0f) || !isfinite(axis->style.major_tick_length))
+        return 0.0f;
+    if (axis->panel == NULL)
+        return 0.0f;
+    float panel_x = 0.0f;
+    float panel_y = 0.0f;
+    float panel_width = 0.0f;
+    float panel_height = 0.0f;
+    _scene_panel_pixel_rect(axis->panel, &panel_x, &panel_y, &panel_width, &panel_height);
+    float span = axis->dim == DVZ_DIM_X ? panel_height : panel_width;
+    if (!(span > 0.0f) || !isfinite(span))
+        return 0.0f;
+    return 2.0f * axis->style.major_tick_length / span;
+}
+
+
 
 /**
  * Map one data coordinate to fixed visual coordinates for an interval.
@@ -278,55 +353,37 @@ static bool _axis_visible_domain(const DvzAxis* axis, double* out_min, double* o
 static void _axis_compute_ticks(DvzAxis* axis)
 {
     ANN(axis);
-    axis->tick_count = 0;
     double min = 0.0;
     double max = 0.0;
     if (!_axis_visible_domain(axis, &min, &max))
         return;
+
+    float pixel_span = 0.0f;
+    uint32_t target = _axis_target_tick_count(axis, &pixel_span);
     if (!axis->dirty && axis->tick_cache_valid && axis->tick_count > 0 &&
         min >= axis->tick_covered_min && max <= axis->tick_covered_max)
         return;
 
-    uint32_t target = axis->tick_policy.target_count;
-    if (axis->panel != NULL && axis->tick_policy.min_pixel_spacing > 0.0f)
-    {
-        float panel_x = 0.0f;
-        float panel_y = 0.0f;
-        float panel_width = 0.0f;
-        float panel_height = 0.0f;
-        _scene_panel_pixel_rect(
-            axis->panel, &panel_x, &panel_y, &panel_width, &panel_height);
-        float pixels = axis->dim == DVZ_DIM_X ? panel_width : panel_height;
-        uint32_t pixel_target = (uint32_t)floorf(pixels / axis->tick_policy.min_pixel_spacing) + 1;
-        if (pixel_target > 0 && pixel_target < target)
-            target = pixel_target;
-    }
-    if (target < 2)
-        target = 2;
-    if (target > DVZ_SCENE_MAX_AXIS_TICKS)
-        target = DVZ_SCENE_MAX_AXIS_TICKS;
-
+    axis->tick_count = 0;
     double range = max - min;
     if (!isfinite(range) || range <= AXIS_EPS)
         return;
-    double covered_min = min - 0.5 * range;
-    double covered_max = max + 0.5 * range;
-    double covered_range = covered_max - covered_min;
-    if (!isfinite(covered_range) || covered_range <= AXIS_EPS)
-        return;
-    double raw_step = covered_range / (double)target;
+    double raw_step = range / (double)(target - 1);
     double step = _axis_nice_number(raw_step, true);
     if (axis->tick_lstep > 0.0 && isfinite(axis->tick_lstep))
     {
-        double current_density = covered_range / axis->tick_lstep;
+        double current_density = range / axis->tick_lstep + 1.0;
         if (current_density >= 0.5 * (double)target && current_density <= 2.0 * (double)target)
             step = axis->tick_lstep;
     }
     if (!isfinite(step) || step <= AXIS_EPS)
         return;
 
-    double lmin = floor(covered_min / step) * step;
-    double lmax = ceil(covered_max / step) * step;
+    const double margin_steps = 4.0;
+    double visible_lmin = floor(min / step) * step;
+    double visible_lmax = ceil(max / step) * step;
+    double lmin = visible_lmin - margin_steps * step;
+    double lmax = visible_lmax + margin_steps * step;
     if (!isfinite(lmin) || !isfinite(lmax) || !(lmax >= lmin))
         return;
     axis->tick_lmin = lmin;
@@ -444,16 +501,16 @@ static void _axis_update_visual(DvzAxis* axis)
         }
         if (axis->style.show_major_ticks)
         {
-            float len = axis->style.major_tick_length;
+            float len = _axis_major_tick_length(axis);
             if (axis->dim == DVZ_DIM_X)
                 _axis_append_line(
                     &count, starts, ends, colors, widths, (float[3]){p, y0, z},
-                    (float[3]){p, y0 - len, z}, axis->style.major_tick_color,
+                    (float[3]){p, y0 + len, z}, axis->style.major_tick_color,
                     axis->style.major_tick_width);
             else
                 _axis_append_line(
                     &count, starts, ends, colors, widths, (float[3]){x0, p, z},
-                    (float[3]){x0 - len, p, z}, axis->style.major_tick_color,
+                    (float[3]){x0 + len, p, z}, axis->style.major_tick_color,
                     axis->style.major_tick_width);
         }
     }
