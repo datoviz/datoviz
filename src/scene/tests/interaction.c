@@ -324,6 +324,19 @@ int test_scene_text_bitmap_visual_realization(TstSuite* suite, TstItem* item)
     AT(_scene_visual_frame_plan_metadata(figure, glyph, glyph_index, &metadata));
     AT(metadata.vertex_count == 6);
 
+    text_anchors[0][0] = 0.0f;
+    text_anchors[0][1] = 0.0f;
+    AT(dvz_visual_set_data(text, "anchor", text_anchors, 1) == 0);
+    _scene_prepare_text_visuals(figure);
+    dvz_figure_resize(figure, 320, 240);
+    _scene_prepare_text_visuals(figure);
+    positions = (const float(*)[3])glyph->attrs[pos_idx].data;
+    ANN(positions);
+    AC(positions[0][0], -0.9375f, 1e-6f);
+    AC(positions[0][1], 0.8333333f, 1e-6f);
+    AT(text->text.visual_figure_width == 320);
+    AT(text->text.visual_figure_height == 240);
+
     dvz_visual_set_visible(text, false);
     _scene_prepare_text_visuals(figure);
     AT(!glyph->visible);
