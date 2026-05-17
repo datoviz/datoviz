@@ -394,7 +394,7 @@ static void _axis_compute_ticks(DvzAxis* axis)
                                  : 0.0;
     if (!axis->dirty && axis->tick_cache_valid && min >= axis->tick_covered_min &&
         max <= axis->tick_covered_max &&
-        current_density >= 0.5 * (double)target && current_density <= 2.0 * (double)target)
+        current_density >= 0.5 * (double)target && current_density <= 1.5 * (double)target)
     {
         _axis_fill_visible_ticks(axis, min, max, axis->tick_lstep);
         return;
@@ -408,7 +408,7 @@ static void _axis_compute_ticks(DvzAxis* axis)
     if (axis->tick_lstep > 0.0 && isfinite(axis->tick_lstep))
     {
         current_density = range / axis->tick_lstep + 1.0;
-        if (current_density >= 0.5 * (double)target && current_density <= 2.0 * (double)target)
+        if (current_density >= 0.5 * (double)target && current_density <= 1.5 * (double)target)
             step = axis->tick_lstep;
     }
     if (!isfinite(step) || step <= AXIS_EPS)

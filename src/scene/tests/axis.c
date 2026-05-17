@@ -204,6 +204,12 @@ static int test_axis_tick_density_tracks_panel_size(TstSuite* suite, TstItem* it
     AT(wide_count > narrow_count);
     AT(wide_count >= 8);
 
+    dvz_figure_resize(wide_figure, 300, 400);
+    _scene_prepare_axis_visuals(wide_figure);
+    uint32_t resized_count = _axis_test_inward_tick_line_count(wide_axis);
+    AT(resized_count < wide_count);
+    AT(resized_count == narrow_count);
+
     dvz_scene_destroy(wide_scene);
     dvz_scene_destroy(narrow_scene);
     return 0;
