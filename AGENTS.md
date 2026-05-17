@@ -621,6 +621,8 @@ When generating or editing code:
 
 4. **Tests:**
 
+   * For scene visual/shader work, read `spec/scene/implementation/VISUAL_SHADER_REFACTOR.md` first.
+   * Run `just shader-abi-check` whenever changing `src/scene/glsl`, `src/scene/wgsl`, shader registry entries, visual pipeline bind/layout rules, or visual shader ABI docs.
    * Use the `testing.h` suite/item API (`TEST_SIMPLE`, `TEST`, `AT`, …).
    * Expose a `test_<module>(TstSuite* suite)` helper that appends your cases; invoke it from `dvztest` (no constructors).
    * Keep `dvztest` as the unified aggregation point, while using the narrower `dvztest_*` binaries for focused validation loops when available.
@@ -669,6 +671,8 @@ Before submitting a PR or automated refactor:
 * [ ] No new includes inside `include/datoviz/` unless public API
 * [ ] `external/` unchanged unless explicitly requested in the task
 * [ ] Test added under `src/<module>/tests/`
+* [ ] Scene visual/shader changes follow `spec/scene/implementation/VISUAL_SHADER_REFACTOR.md`
+* [ ] Scene shader ABI changes pass `just shader-abi-check`
 * [ ] Builds with `cmake -B build && cmake --build build`
 * [ ] Relevant validation passes (`just test` and/or the narrowest relevant `dvztest_*` target)
 * [ ] C changes reviewed for UB, ownership, bounds, lifetime, and partial-failure cleanup risks
