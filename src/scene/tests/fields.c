@@ -1249,6 +1249,7 @@ int test_scene_volume_rgba_field_no_transfer(TstSuite* suite, TstItem* item)
     bool wrote_rgba_texture = false;
     bool matched_start_value = false;
     uint64_t texture_id = 0;
+    uint64_t transfer_binding_id = 0;
 
     for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
     {
@@ -1273,6 +1274,9 @@ int test_scene_volume_rgba_field_no_transfer(TstSuite* suite, TstItem* item)
     AT(texture_id != 0);
 
     bool created_rgba_texture = false;
+    bool created_dummy_transfer_texture = false;
+    bool wrote_dummy_transfer_texture = false;
+    bool found_volume_bind_group = false;
     for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
     {
         const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream, i);
@@ -1285,8 +1289,59 @@ int test_scene_volume_rgba_field_no_transfer(TstSuite* suite, TstItem* item)
             AT(cmd->u.create_texture.height == height);
             AT(cmd->u.create_texture.depth == depth);
         }
+        if (cmd->type == DVZ_DRP2_COMMAND_CREATE_BIND_GROUP &&
+            cmd->u.create_bind_group.entry_count == 5)
+        {
+            bool binds_volume_texture = false;
+            uint64_t binding4_id = 0;
+            for (uint32_t j = 0; j < cmd->u.create_bind_group.entry_count; j++)
+            {
+                const DvzDrp2BindGroupEntry* entry = &cmd->u.create_bind_group.entries[j];
+                if (entry->binding == 0 && entry->resource_id == texture_id)
+                    binds_volume_texture = true;
+                if (entry->binding == 4)
+                    binding4_id = entry->resource_id;
+            }
+            if (binds_volume_texture && binding4_id != 0)
+            {
+                found_volume_bind_group = true;
+                transfer_binding_id = binding4_id;
+                AT(transfer_binding_id != texture_id);
+            }
+        }
+    }
+    AT(found_volume_bind_group);
+    AT(transfer_binding_id != 0);
+    for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
+    {
+        const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream, i);
+        if (cmd->type == DVZ_DRP2_COMMAND_CREATE_TEXTURE &&
+            cmd->u.create_texture.id == transfer_binding_id)
+        {
+            created_dummy_transfer_texture = true;
+            AT(cmd->u.create_texture.format == VK_FORMAT_R8G8B8A8_UNORM);
+            AT(cmd->u.create_texture.width == 1);
+            AT(cmd->u.create_texture.height == 1);
+            AT(cmd->u.create_texture.depth == 1);
+        }
+        if (cmd->type == DVZ_DRP2_COMMAND_WRITE_TEXTURE &&
+            cmd->u.write_texture.texture_id == transfer_binding_id)
+        {
+            const uint8_t* upload = (const uint8_t*)cmd->u.write_texture.data_raw;
+            ANN(upload);
+            wrote_dummy_transfer_texture = true;
+            AT(cmd->u.write_texture.width == 1);
+            AT(cmd->u.write_texture.height == 1);
+            AT(cmd->u.write_texture.depth == 1);
+            AT(upload[0] == 255);
+            AT(upload[1] == 255);
+            AT(upload[2] == 255);
+            AT(upload[3] == 255);
+        }
     }
     AT(created_rgba_texture);
+    AT(created_dummy_transfer_texture);
+    AT(wrote_dummy_transfer_texture);
     AT(matched_start_value);
     AT(volume->texture.rgba == NULL);
 

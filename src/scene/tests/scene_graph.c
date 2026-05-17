@@ -5593,6 +5593,132 @@ int test_scene_visual_scene_occlusion_emits_drp2(TstSuite* suite, TstItem* item)
 
 
 /**
+ * Verify a volume front-depth producer can occlude a volume slice through volume occlusion.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_volume_slice_uses_volume_occlusion(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    AT(scene != NULL);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    AT(figure != NULL);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    AT(panel != NULL);
+
+    DvzSampledField* field = dvz_sampled_field(
+        scene, &(DvzSampledFieldDesc){
+                   .dim = DVZ_FIELD_DIM_3D,
+                   .format = DVZ_FIELD_FORMAT_R8_UNORM,
+                   .semantic = DVZ_FIELD_SEMANTIC_SCALAR,
+                   .width = 2,
+                   .height = 2,
+                   .depth = 2,
+               });
+    ANN(field);
+    const uint8_t voxels[8] = {255, 255, 255, 255, 255, 255, 255, 255};
+    AT(dvz_sampled_field_set_data(
+        field, &(DvzFieldDataView){.data = voxels, .bytes_per_row = 2, .rows_per_image = 2}));
+
+    DvzVisual* volume = dvz_volume(scene, 0);
+    DvzVisual* slice = dvz_volume(scene, 0);
+    AT(volume != NULL);
+    AT(slice != NULL);
+    AT(dvz_visual_set_field(volume, "field", field));
+    AT(dvz_visual_set_field(slice, "field", field));
+    AT(dvz_volume_set_render_mode(volume, DVZ_VOLUME_RENDER_MIP) == 0);
+    AT(dvz_volume_set_step_count(volume, 16) == 0);
+    AT(dvz_volume_set_render_mode(slice, DVZ_VOLUME_RENDER_SLICE) == 0);
+    AT(dvz_visual_set_volume_occluded(slice, true) == 0);
+    AT(dvz_panel_add_visual(panel, volume, NULL) == 0);
+    AT(dvz_panel_add_visual(panel, slice, NULL) == 0);
+    AT(dvz_panel_set_volume_occluder(
+           panel, volume,
+           &(DvzVolumeOcclusionDesc){
+               .enabled = true,
+               .alpha_threshold = 0.01f,
+               .fade_distance = 0.04f,
+               .occluded_alpha = 0.2f,
+           }) == 0);
+
+    DvzCapabilitySnapshot caps;
+    dvz_capability_snapshot_default(&caps);
+    caps.supports_render_target_sampling = true;
+    DvzDiagnosticReport report;
+    dvz_diagnostic_report_init(&report);
+    DvzFramePlanEmitConfig cfg = dvz_frame_plan_emit_config();
+    cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
+    cfg.target_width = 64;
+    cfg.target_height = 64;
+
+    DvzDrp2CommandStream* stream = dvz_figure_emit_ex(figure, &caps, &report, &cfg);
+    ANN(stream);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+    DvzDrp2ValidationResult validation = dvz_drp2_validate_stream(stream);
+    AT(validation.ok);
+
+    uint64_t volume_occlusion_depth_id = 0;
+    bool has_volume_occlusion_pipeline = false;
+    bool has_volume_slice_pipeline = false;
+    bool has_scene_occlusion_pipeline = false;
+    bool binds_volume_occlusion_depth = false;
+    for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
+    {
+        const DvzDrp2Command* command = dvz_drp2_stream_get(stream, i);
+        ANN(command);
+        if (command->type == DVZ_DRP2_COMMAND_CREATE_TEXTURE)
+        {
+            const char* label = dvz_drp2_stream_label(stream, command->u.create_texture.id);
+            if (label != NULL && strstr(label, ".volume_occlusion.depth") != NULL)
+                volume_occlusion_depth_id = command->u.create_texture.id;
+        }
+        if (command->type == DVZ_DRP2_COMMAND_CREATE_RENDER_PIPELINE)
+        {
+            const char* label = dvz_drp2_stream_label(stream, command->u.create_render_pipeline.id);
+            has_volume_occlusion_pipeline =
+                has_volume_occlusion_pipeline ||
+                (label != NULL && strstr(label, "_pipe_vol_occ") != NULL);
+            has_volume_slice_pipeline =
+                has_volume_slice_pipeline ||
+                (label != NULL && strstr(label, "_pipe_vol_slice") != NULL &&
+                 strstr(label, "_scene_occ") == NULL &&
+                 command->u.create_render_pipeline.bind_group_layout_count == 2);
+            has_scene_occlusion_pipeline =
+                has_scene_occlusion_pipeline ||
+                (label != NULL && strstr(label, "_pipe_scene_occ") != NULL);
+        }
+        if (command->type == DVZ_DRP2_COMMAND_CREATE_BIND_GROUP)
+        {
+            for (uint32_t j = 0; j < command->u.create_bind_group.entry_count; j++)
+            {
+                const DvzDrp2BindGroupEntry* entry =
+                    &command->u.create_bind_group.entries[j];
+                binds_volume_occlusion_depth =
+                    binds_volume_occlusion_depth ||
+                    (volume_occlusion_depth_id != 0 && entry->binding == 3 &&
+                     entry->resource_id == volume_occlusion_depth_id);
+            }
+        }
+    }
+    AT(volume_occlusion_depth_id != 0);
+    AT(has_volume_occlusion_pipeline);
+    AT(has_volume_slice_pipeline);
+    AT(!has_scene_occlusion_pipeline);
+    AT(binds_volume_occlusion_depth);
+
+    dvz_drp2_stream_destroy(stream);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
+/**
  * Verify a volume front-depth producer can occlude a volume slice through generic scene occlusion.
  *
  * @param suite the active test suite
@@ -8959,6 +9085,7 @@ int test_scene_graph(TstSuite* suite)
     TEST_SIMPLE(test_scene_visual_scene_occlusion_flags);
     TEST_SIMPLE(test_scene_visual_scene_occlusion_frame_plan);
     TEST_SIMPLE(test_scene_visual_scene_occlusion_emits_drp2);
+    TEST_SIMPLE(test_scene_volume_slice_uses_volume_occlusion);
     TEST_SIMPLE(test_scene_volume_slice_uses_generic_scene_occlusion);
     TEST_SIMPLE(test_scene_visual_internal_material_state);
     TEST_SIMPLE(test_scene_visual_material_setter);

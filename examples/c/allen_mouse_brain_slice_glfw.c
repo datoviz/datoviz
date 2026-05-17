@@ -1466,15 +1466,16 @@ static void _apply_volume_controls(AllenMouseBrainState* state)
 
     if (state->clip_volume_at_slice)
     {
-        double plane_point[3] = {0.5, 0.5, 0.5};
-        double plane_normal[3] = {0.0, 0.0, 0.0};
+        double clip_min[3] = {0.0, 0.0, 0.0};
+        double clip_max[3] = {1.0, 1.0, 1.0};
         uint32_t axis = (uint32_t)state->axis;
         if (axis > 2)
             axis = 2;
-        plane_point[axis] = (double)state->slice_position;
-        plane_normal[axis] = 1.0;
-        (void)dvz_volume_set_clipping_plane(
-            state->volume_visual, plane_point, plane_normal, state->keep_positive_side);
+        if (state->keep_positive_side)
+            clip_min[axis] = (double)state->slice_position;
+        else
+            clip_max[axis] = (double)state->slice_position;
+        (void)dvz_volume_set_clipping_box(state->volume_visual, clip_min, clip_max);
     }
     else
     {
@@ -1485,7 +1486,7 @@ static void _apply_volume_controls(AllenMouseBrainState* state)
 
 
 /**
- * Apply retained screen-space scene occlusion controls.
+ * Apply retained volume and scene occlusion controls.
  *
  * @param state example state
  */
@@ -1508,25 +1509,27 @@ static void _apply_volume_occlusion_controls(AllenMouseBrainState* state)
         .hidden_alpha = state->occlusion_hidden_alpha,
     };
 
+    bool atlas_visible = false;
     if (state->volume_visual != NULL)
     {
         (void)dvz_panel_set_volume_occluder(
             state->panel, state->volume_occlusion_enabled ? state->volume_visual : NULL,
             state->volume_occlusion_enabled ? &volume_occlusion : NULL);
-        (void)dvz_visual_set_scene_occluder(
-            state->volume_visual, state->volume_occlusion_enabled);
+        (void)dvz_visual_set_scene_occluder(state->volume_visual, false);
     }
     if (state->atlas_mesh_visual != NULL)
     {
-        bool atlas_visible = _atlas_mesh_effectively_visible(state);
+        atlas_visible = _atlas_mesh_effectively_visible(state);
         (void)dvz_visual_set_scene_occluder(
             state->atlas_mesh_visual, state->volume_occlusion_enabled && atlas_visible);
     }
-    (void)dvz_visual_set_volume_occluded(state->slice_visual, false);
-    (void)dvz_visual_set_scene_occluded(
-        state->slice_visual, state->volume_occlusion_enabled);
+
+    bool scene_occlusion_enabled = state->volume_occlusion_enabled && atlas_visible;
+    (void)dvz_visual_set_volume_occluded(
+        state->slice_visual, state->volume_occlusion_enabled && state->volume_visual != NULL);
+    (void)dvz_visual_set_scene_occluded(state->slice_visual, scene_occlusion_enabled);
     (void)dvz_panel_set_scene_occlusion(
-        state->panel, state->volume_occlusion_enabled ? &scene_occlusion : NULL);
+        state->panel, scene_occlusion_enabled ? &scene_occlusion : NULL);
 }
 
 
@@ -1651,8 +1654,8 @@ static void _allen_mouse_brain_gui(DvzGui* gui, DvzAppWindow* win, void* user_da
             state->show_slice = true;
             state->show_volume = true;
             state->show_atlas_mesh = false;
-            state->clip_volume_at_slice = true;
-            state->keep_positive_side = false;
+            state->clip_volume_at_slice = false;
+            state->keep_positive_side = true;
             state->linear_sampling = true;
             state->volume_occlusion_enabled = true;
             state->render_mode = DVZ_VOLUME_RENDER_MIP;
@@ -1684,12 +1687,12 @@ static void _allen_mouse_brain_gui(DvzGui* gui, DvzAppWindow* win, void* user_da
 
     if (changed)
         _apply_volume_controls(state);
-    if (occlusion_changed)
-        _apply_volume_occlusion_controls(state);
     if (atlas_visibility_changed)
         _apply_atlas_mesh_visibility(state);
     if (atlas_changed)
         _apply_atlas_mesh_controls(state);
+    if (occlusion_changed || atlas_visibility_changed || atlas_changed)
+        _apply_volume_occlusion_controls(state);
 }
 
 
@@ -1957,8 +1960,8 @@ int main(int argc, char** argv)
         .show_slice = true,
         .show_volume = true,
         .show_atlas_mesh = false,
-        .clip_volume_at_slice = true,
-        .keep_positive_side = false,
+        .clip_volume_at_slice = false,
+        .keep_positive_side = true,
         .linear_sampling = true,
         .volume_occlusion_enabled = true,
         .render_mode = DVZ_VOLUME_RENDER_COMPOSITE,
@@ -1976,9 +1979,9 @@ int main(int argc, char** argv)
         .axis = DEFAULT_AXIS,
     };
     _apply_volume_controls(&state);
+    _apply_atlas_mesh_controls(&state);
     _apply_volume_occlusion_controls(&state);
     _apply_transparency_modes(&state);
-    _apply_atlas_mesh_controls(&state);
 
     DvzApp* app = dvz_app(scene);
     if (app == NULL)
