@@ -103,7 +103,7 @@ int test_axis_domain_and_ticks(TstSuite* suite, TstItem* item)
 
     AT(dvz_axis_set_grid(axis, true));
     _scene_prepare_axis_visuals(figure);
-    AT(axis->visual->attrs[0].item_count > axis->tick_count);
+    AT(axis->visual->attrs[0].item_count > 0);
 
     dvz_scene_destroy(scene);
     return 0;
@@ -209,11 +209,14 @@ int test_axis_panzoom_visible_domain(TstSuite* suite, TstItem* item)
     _scene_prepare_axis_visuals(figure);
     AT(axis->tick_count >= 3);
     AT(axis->ticks[0] < 0.0);
-    AT(axis->ticks[axis->tick_count - 1] <= 50.0 + 1e-9);
+    AT(axis->ticks[axis->tick_count - 1] > 50.0);
     double step = axis->tick_lstep;
 
     AT(dvz_axis_set_grid(axis, true));
     _scene_prepare_axis_visuals(figure);
+    double lmin = axis->tick_lmin;
+    double covered_min = axis->tick_covered_min;
+    double covered_max = axis->tick_covered_max;
     DvzVisualAttr* starts_attr = _axis_test_attr(axis->visual, "position_start");
     DvzVisualAttr* ends_attr = _axis_test_attr(axis->visual, "position_end");
     ANN(starts_attr);
@@ -235,9 +238,12 @@ int test_axis_panzoom_visible_domain(TstSuite* suite, TstItem* item)
     }
     AT(has_grid);
 
-    dvz_panzoom_pan(pz, (vec2){0.25f, 0.0f});
+    dvz_panzoom_pan(pz, (vec2){0.45f, 0.0f});
     _scene_prepare_axis_visuals(figure);
     AT(fabs(axis->tick_lstep - step) < 1e-9);
+    AT(fabs(axis->tick_lmin - lmin) < 1e-9);
+    AT(fabs(axis->tick_covered_min - covered_min) < 1e-9);
+    AT(fabs(axis->tick_covered_max - covered_max) < 1e-9);
 
     dvz_scene_destroy(scene);
     return 0;

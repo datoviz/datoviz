@@ -828,6 +828,9 @@ struct DvzAxis
     double tick_lmin;
     double tick_lmax;
     double tick_lstep;
+    double tick_covered_min;
+    double tick_covered_max;
+    bool tick_cache_valid;
     double ticks[DVZ_SCENE_MAX_AXIS_TICKS];
     DvzVisual* visual;
 };

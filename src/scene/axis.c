@@ -128,6 +128,7 @@ static void _axis_init(DvzAxis* axis, DvzPanel* panel, DvzDim dim)
     axis->domain = (DvzDataDomain){.min = -1.0, .max = +1.0};
     axis->tick_policy = _axis_default_tick_policy();
     axis->style = _axis_default_style();
+    axis->tick_cache_valid = false;
 }
 
 
@@ -282,6 +283,9 @@ static void _axis_compute_ticks(DvzAxis* axis)
     double max = 0.0;
     if (!_axis_visible_domain(axis, &min, &max))
         return;
+    if (!axis->dirty && axis->tick_cache_valid && axis->tick_count > 0 &&
+        min >= axis->tick_covered_min && max <= axis->tick_covered_max)
+        return;
 
     uint32_t target = axis->tick_policy.target_count;
     if (axis->panel != NULL && axis->tick_policy.min_pixel_spacing > 0.0f)
@@ -305,24 +309,32 @@ static void _axis_compute_ticks(DvzAxis* axis)
     double range = max - min;
     if (!isfinite(range) || range <= AXIS_EPS)
         return;
-    double raw_step = range / (double)target;
+    double covered_min = min - 0.5 * range;
+    double covered_max = max + 0.5 * range;
+    double covered_range = covered_max - covered_min;
+    if (!isfinite(covered_range) || covered_range <= AXIS_EPS)
+        return;
+    double raw_step = covered_range / (double)target;
     double step = _axis_nice_number(raw_step, true);
     if (axis->tick_lstep > 0.0 && isfinite(axis->tick_lstep))
     {
-        double current_density = range / axis->tick_lstep;
+        double current_density = covered_range / axis->tick_lstep;
         if (current_density >= 0.5 * (double)target && current_density <= 2.0 * (double)target)
             step = axis->tick_lstep;
     }
     if (!isfinite(step) || step <= AXIS_EPS)
         return;
 
-    double lmin = floor(min / step) * step;
-    double lmax = ceil(max / step) * step;
+    double lmin = floor(covered_min / step) * step;
+    double lmax = ceil(covered_max / step) * step;
     if (!isfinite(lmin) || !isfinite(lmax) || !(lmax >= lmin))
         return;
     axis->tick_lmin = lmin;
     axis->tick_lmax = lmax;
     axis->tick_lstep = step;
+    axis->tick_covered_min = lmin;
+    axis->tick_covered_max = lmax;
+    axis->tick_cache_valid = true;
     for (double value = lmin; value <= lmax + 0.5 * step; value += step)
     {
         if (axis->tick_count >= DVZ_SCENE_MAX_AXIS_TICKS)
@@ -483,6 +495,7 @@ int dvz_panel_set_domain(DvzPanel* panel, DvzDim dim, double min, double max)
     axis->domain = (DvzDataDomain){.min = min, .max = max};
     axis->domain_set = true;
     axis->tick_lstep = 0.0;
+    axis->tick_cache_valid = false;
     axis->dirty = true;
     axis->version++;
     return 0;
@@ -684,6 +697,7 @@ bool dvz_axis_set_tick_policy(DvzAxis* axis, const DvzAxisTickPolicy* policy)
         return false;
     axis->tick_policy = policy != NULL ? *policy : _axis_default_tick_policy();
     axis->tick_lstep = 0.0;
+    axis->tick_cache_valid = false;
     axis->dirty = true;
     axis->version++;
     return true;
@@ -703,6 +717,7 @@ bool dvz_axis_set_style(DvzAxis* axis, const DvzAxisStyle* style)
     if (axis == NULL)
         return false;
     axis->style = style != NULL ? *style : _axis_default_style();
+    axis->tick_cache_valid = false;
     axis->dirty = true;
     axis->version++;
     return true;
