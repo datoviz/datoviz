@@ -8334,6 +8334,106 @@ int test_scene_visual_alpha_mode_splits_frame_plan_passes(TstSuite* suite, TstIt
 }
 
 
+
+/**
+ * Verify WBOIT transparent-only depth-tested draws still declare pass depth.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_visual_alpha_mode_wboit_transparent_only_depth(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    AT(scene != NULL);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    AT(figure != NULL);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    AT(panel != NULL);
+
+    DvzVisual* transparent = dvz_point(scene, 0);
+    AT(transparent != NULL);
+
+    float positions[] = {
+        -0.5f, -0.5f, 0.0f,
+         0.5f, -0.5f, 0.0f,
+         0.0f,  0.5f, 0.0f,
+    };
+    DvzColor colors[3] = {{255, 0, 0, 128}, {0, 255, 0, 128}, {0, 0, 255, 128}};
+    float sizes[3] = {10.0f, 12.0f, 14.0f};
+
+    AT(dvz_visual_set_data(transparent, "position", positions, 3) == 0);
+    AT(dvz_visual_set_data(transparent, "color", colors, 3) == 0);
+    AT(dvz_visual_set_data(transparent, "size", sizes, 3) == 0);
+    AT(dvz_visual_set_alpha_mode(transparent, DVZ_ALPHA_WBOIT) == 0);
+    AT(dvz_panel_add_visual(panel, transparent, NULL) == 0);
+
+    DvzFramePlan* plan = dvz_frame_plan("figure.alpha.wboit.transparent_only", 0);
+    ANN(plan);
+    _scene_emit_panel_render(figure, 0, plan, "figure_0");
+
+    AT(dvz_frame_plan_node_count(plan) == 3);
+    const DvzFramePlanNode* opaque_node = dvz_frame_plan_node_get(plan, 0);
+    const DvzFramePlanNode* accum_node = dvz_frame_plan_node_get(plan, 1);
+    const DvzFramePlanNode* resolve_node = dvz_frame_plan_node_get(plan, 2);
+    ANN(opaque_node);
+    ANN(accum_node);
+    ANN(resolve_node);
+    AT(dvz_frame_plan_render_pass_role(opaque_node) == DVZ_FRAME_PLAN_RENDER_PASS_OPAQUE);
+    AT(
+        dvz_frame_plan_render_pass_role(accum_node) ==
+        DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_ACCUMULATION);
+    AT(dvz_frame_plan_render_pass_role(resolve_node) == DVZ_FRAME_PLAN_RENDER_PASS_WBOIT_RESOLVE);
+    AT(opaque_node->u.render.visual_count == 0);
+    AT(accum_node->u.render.visual_count == 1);
+
+    const DvzFrameGraphPass* opaque_pass = dvz_frame_plan_graph_pass_get(plan, 0);
+    const DvzFrameGraphPass* accum_pass = dvz_frame_plan_graph_pass_get(plan, 1);
+    ANN(opaque_pass);
+    ANN(accum_pass);
+    AT(strcmp(opaque_pass->work_label, "opaque") == 0);
+    AT(strcmp(accum_pass->work_label, "wboit_accum") == 0);
+    AT(!opaque_pass->has_depth_attachment);
+    AT(accum_pass->has_depth_attachment);
+    AT(strcmp(accum_pass->depth_attachment.resource_id, "figure_0_p0.depth") == 0);
+    AT(accum_pass->depth_attachment.load_op == DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_CLEAR);
+    AT(accum_pass->depth_attachment.access == DVZ_FRAME_GRAPH_ATTACHMENT_ACCESS_WRITE);
+
+    DvzDiagnosticReport graph_report;
+    dvz_diagnostic_report_init(&graph_report);
+    AT(dvz_frame_plan_graph_validate(plan, &graph_report));
+
+    DvzCapabilitySnapshot caps;
+    dvz_capability_snapshot_default(&caps);
+    caps.max_color_attachments = 2;
+    caps.render_target_format_rgba16float = true;
+    caps.render_target_format_r16float = true;
+    caps.supports_render_target_sampling = true;
+    caps.supports_color_blending = true;
+    DvzDiagnosticReport report;
+    dvz_diagnostic_report_init(&report);
+    DvzFramePlanEmitConfig cfg = dvz_frame_plan_emit_config();
+    cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
+    cfg.target_width = 64;
+    cfg.target_height = 64;
+
+    DvzDrp2CommandStream* stream = dvz_figure_emit_ex(figure, &caps, &report, &cfg);
+    ANN(stream);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+    DvzDrp2ValidationResult validation = dvz_drp2_validate_stream(stream);
+    AT(validation.ok);
+
+    dvz_drp2_stream_destroy(stream);
+    dvz_frame_plan_destroy(plan);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
 /**
  * Verify depth-peel alpha mode expands retained panel rendering into graph passes.
  *
@@ -9451,6 +9551,7 @@ int test_scene_graph(TstSuite* suite)
     TEST_SIMPLE(test_scene_ssao_ignores_ineligible_visuals);
     TEST_SIMPLE(test_scene_visual_alpha_mode_standard_blend);
     TEST_SIMPLE(test_scene_visual_alpha_mode_splits_frame_plan_passes);
+    TEST_SIMPLE(test_scene_visual_alpha_mode_wboit_transparent_only_depth);
     TEST_SIMPLE(test_scene_visual_alpha_mode_depth_peel_frame_plan);
     TEST_SIMPLE(test_scene_visual_alpha_mode_emits_depth_peel_drp2);
     TEST_SIMPLE(test_scene_visual_alpha_mode_requires_wboit_capabilities);

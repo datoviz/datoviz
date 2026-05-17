@@ -472,6 +472,9 @@ int test_scene_blended_mesh_occlusion_contracts(TstSuite* suite, TstItem* item);
 
 int test_scene_visual_alpha_mode_splits_frame_plan_passes(TstSuite* suite, TstItem* item);
 
+int test_scene_visual_alpha_mode_wboit_transparent_only_depth(
+    TstSuite* suite, TstItem* item);
+
 int test_scene_visual_alpha_mode_depth_peel_frame_plan(TstSuite* suite, TstItem* item);
 
 int test_scene_visual_alpha_mode_emits_depth_peel_drp2(TstSuite* suite, TstItem* item);
