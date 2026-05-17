@@ -18,6 +18,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include <math.h>
 
 #include "_alloc.h"
 #include "_compat.h"
@@ -33,7 +34,7 @@
 /*************************************************************************************************/
 
 #define TEXT_LAB_MAX_TICKS 64u
-#define TEXT_LAB_RAW_TEX_SIZE 32u
+#define TEXT_LAB_RAW_TEX_SIZE 128u
 #define TEXT_LAB_FIGURE_WIDTH 1100.0f
 #define TEXT_LAB_FIGURE_HEIGHT 760.0f
 
@@ -124,7 +125,7 @@ static const char* mode_sample_text(int mode)
     if (mode == TEXT_LAB_MODE_UTF8)
         return "UTF-8 fallback: A" "\xCE" "\xA9" "B cafe" "\xCC" "\x81" " -> ?";
     if (mode == TEXT_LAB_MODE_GLYPH)
-        return "Raw glyph shader probe";
+        return "Procedural SDF glyph probe";
     return "The quick brown fox jumps over 13 lazy glyphs.";
 }
 
@@ -309,7 +310,68 @@ static void update_raw_glyph(TextLabState* state)
 
 
 /**
- * Upload a synthetic SDF-like texture for the raw glyph visual.
+ * Return a signed distance to an axis-aligned box.
+ *
+ * @param x x coordinate
+ * @param y y coordinate
+ * @param cx box center x
+ * @param cy box center y
+ * @param hx box half-width
+ * @param hy box half-height
+ * @return signed distance, negative inside
+ */
+static float sdf_box(float x, float y, float cx, float cy, float hx, float hy)
+{
+    float qx = fabsf(x - cx) - hx;
+    float qy = fabsf(y - cy) - hy;
+    float ox = fmaxf(qx, 0.0f);
+    float oy = fmaxf(qy, 0.0f);
+    float outside = sqrtf(ox * ox + oy * oy);
+    float inside = fminf(fmaxf(qx, qy), 0.0f);
+    return outside + inside;
+}
+
+
+
+/**
+ * Return a signed distance to a circle.
+ *
+ * @param x x coordinate
+ * @param y y coordinate
+ * @param cx circle center x
+ * @param cy circle center y
+ * @param radius circle radius
+ * @return signed distance, negative inside
+ */
+static float sdf_circle(float x, float y, float cx, float cy, float radius)
+{
+    float dx = x - cx;
+    float dy = y - cy;
+    return sqrtf(dx * dx + dy * dy) - radius;
+}
+
+
+
+/**
+ * Return a signed distance to a simple analytic D-shaped outline.
+ *
+ * @param x x coordinate
+ * @param y y coordinate
+ * @return signed distance, negative inside the glyph stroke
+ */
+static float sdf_probe_glyph(float x, float y)
+{
+    float outer = fminf(
+        sdf_box(x, y, -0.32f, 0.0f, 0.34f, 0.62f), sdf_circle(x, y, -0.04f, 0.0f, 0.62f));
+    float inner = fminf(
+        sdf_box(x, y, -0.28f, 0.0f, 0.24f, 0.34f), sdf_circle(x, y, -0.08f, 0.0f, 0.34f));
+    return fmaxf(outer, -inner);
+}
+
+
+
+/**
+ * Upload a procedural distance-field texture for the raw glyph visual.
  *
  * @param visual glyph visual
  */
@@ -317,21 +379,20 @@ static void upload_raw_glyph_texture(DvzVisual* visual)
 {
     ANN(visual);
     uint8_t pixels[TEXT_LAB_RAW_TEX_SIZE * TEXT_LAB_RAW_TEX_SIZE * 4] = {0};
+    const float spread = 0.075f;
     for (uint32_t y = 0; y < TEXT_LAB_RAW_TEX_SIZE; y++)
     {
         for (uint32_t x = 0; x < TEXT_LAB_RAW_TEX_SIZE; x++)
         {
-            int32_t ix = (int32_t)x;
-            int32_t iy = (int32_t)y;
-            bool left = ix >= 7 && ix <= 10 && iy >= 6 && iy <= 25;
-            bool top = ix >= 9 && ix <= 20 && iy >= 6 && iy <= 9;
-            bool bottom = ix >= 9 && ix <= 20 && iy >= 22 && iy <= 25;
-            int32_t dx = ix - 19;
-            int32_t dy = iy - 16;
-            uint32_t d2 = (uint32_t)(dx * dx + dy * dy);
-            bool curve = ix >= 17 && d2 >= 54u && d2 <= 92u;
-            bool inside = left || top || bottom || curve;
-            uint8_t v = inside ? 255u : 0u;
+            float px = 2.0f * ((float)x + 0.5f) / (float)TEXT_LAB_RAW_TEX_SIZE - 1.0f;
+            float py = 2.0f * ((float)y + 0.5f) / (float)TEXT_LAB_RAW_TEX_SIZE - 1.0f;
+            float sd = sdf_probe_glyph(px, py);
+            float value = 0.5f - sd / spread;
+            if (value < 0.0f)
+                value = 0.0f;
+            if (value > 1.0f)
+                value = 1.0f;
+            uint8_t v = (uint8_t)(255.0f * value + 0.5f);
             uint64_t i = ((uint64_t)y * TEXT_LAB_RAW_TEX_SIZE + x) * 4u;
             pixels[i + 0] = v;
             pixels[i + 1] = v;
@@ -490,7 +551,7 @@ static void gui_callback(DvzGui* gui, DvzAppWindow* win, void* user_data)
             "ticks",
             "multiline",
             "UTF-8",
-            "glyph probe",
+            "SDF quad",
         };
         static const char* const anchor_items[] = {
             "top left",
@@ -544,7 +605,7 @@ static void gui_callback(DvzGui* gui, DvzAppWindow* win, void* user_data)
         changed |= dvz_gui_slider_float(gui, "Green", &state->color[1], 0.0f, 1.0f);
         changed |= dvz_gui_slider_float(gui, "Blue", &state->color[2], 0.0f, 1.0f);
         changed |= dvz_gui_slider_float(gui, "Alpha", &state->color[3], 0.05f, 1.0f);
-        changed |= dvz_gui_checkbox(gui, "Glyph probe overlay", &state->show_raw_glyph);
+        changed |= dvz_gui_checkbox(gui, "SDF quad overlay", &state->show_raw_glyph);
         changed |= dvz_gui_checkbox(gui, "Animate", &state->animate);
         (void)dvz_gui_checkbox(gui, "ImGui demo", &state->show_demo);
         if (dvz_gui_button(gui, "Reset"))
@@ -553,7 +614,7 @@ static void gui_callback(DvzGui* gui, DvzAppWindow* win, void* user_data)
             changed = true;
         }
         igSeparator();
-        igTextUnformatted("MSDF/MTSDF shader path: raw glyph quad", NULL);
+        igTextUnformatted("Diagnostic: procedural distance-field quad", NULL);
     }
     dvz_gui_end(gui);
 
