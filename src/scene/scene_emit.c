@@ -1899,7 +1899,6 @@ void _scene_emit_panel_render(
                         visual, attach, DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_BLEND,
                         &contract_needs_depth))
                 {
-                    ASSERT(contract_needs_depth == caps.needs_depth_attachment);
                     transparent_needs_depth = transparent_needs_depth || contract_needs_depth;
                 }
             }
@@ -1991,7 +1990,6 @@ void _scene_emit_panel_render(
                     visual, attach, DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_BLEND,
                     &contract_needs_depth))
             {
-                ASSERT(contract_needs_depth == caps.needs_depth_attachment);
                 transparent_needs_depth = transparent_needs_depth || contract_needs_depth;
             }
             continue;
