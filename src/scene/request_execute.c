@@ -462,7 +462,7 @@ static bool _scene_probe_request_has_image_candidate(
  *
  * @param figure figure whose request queue is being processed
  * @param pending pending pick request
- * @return true when a matching point or pixel visual exists
+ * @return true when a matching point, pixel, or marker visual exists
  */
 static bool _scene_pick_request_has_point_like_candidate(
     const DvzFigure* figure, const DvzPendingPickRequest* pending)
@@ -478,7 +478,9 @@ static bool _scene_pick_request_has_point_like_candidate(
         const DvzVisual* visual = panel->visuals[i].visual;
         if (visual == NULL || !visual->visible)
             continue;
-        if (visual->type != DVZ_VISUAL_TYPE_POINT && visual->type != DVZ_VISUAL_TYPE_PIXEL)
+        if (
+            visual->type != DVZ_VISUAL_TYPE_POINT && visual->type != DVZ_VISUAL_TYPE_PIXEL &&
+            visual->type != DVZ_VISUAL_TYPE_MARKER)
             continue;
         if ((visual->pick_capabilities & DVZ_PICK_CAPABILITY_ITEM) == 0)
             continue;
@@ -599,7 +601,9 @@ static bool _scene_point_like_pick_plan(
 
     DvzFramePlanVisualMeta metadata = {0};
     metadata.has_metadata = true;
-    metadata.visual_type = (uint32_t)visual->type;
+    metadata.visual_type =
+        visual->type == DVZ_VISUAL_TYPE_MARKER ? (uint32_t)DVZ_VISUAL_TYPE_PIXEL :
+                                                 (uint32_t)visual->type;
     metadata.alpha_mode = DVZ_ALPHA_OPAQUE;
     metadata.depth_test_enabled = visual->depth_test_enabled;
     dvz_strlcpy(metadata.position_id, "pick0_position", sizeof(metadata.position_id));
@@ -697,7 +701,9 @@ static bool _scene_process_point_pick_request(
         DvzVisual* visual = attach->visual;
         if (visual == NULL || !visual->visible)
             continue;
-        if (visual->type != DVZ_VISUAL_TYPE_POINT && visual->type != DVZ_VISUAL_TYPE_PIXEL)
+        if (
+            visual->type != DVZ_VISUAL_TYPE_POINT && visual->type != DVZ_VISUAL_TYPE_PIXEL &&
+            visual->type != DVZ_VISUAL_TYPE_MARKER)
             continue;
         if ((visual->pick_capabilities & DVZ_PICK_CAPABILITY_ITEM) == 0)
             continue;

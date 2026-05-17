@@ -207,6 +207,8 @@ int test_scene_point_emit_glsl_native_points(TstSuite* suite, TstItem* item);
 
 int test_scene_point_style_emits_glsl_and_wgsl(TstSuite* suite, TstItem* item);
 
+int test_scene_marker_api_and_emit_glsl(TstSuite* suite, TstItem* item);
+
 int test_scene_point_emit_wgsl_instanced_quads(TstSuite* suite, TstItem* item);
 
 int test_scene_pixel_emit_glsl_native_square_points(TstSuite* suite, TstItem* item);
@@ -248,6 +250,8 @@ int test_scene_point_pick_quadrants(TstSuite* suite, TstItem* item);
 int test_scene_point_pick_rejects_disc_corner(TstSuite* suite, TstItem* item);
 
 int test_scene_pixel_pick_accepts_square_corner(TstSuite* suite, TstItem* item);
+
+int test_scene_marker_pick_accepts_bbox_corner(TstSuite* suite, TstItem* item);
 
 int test_scene_process_requests_preserves_caller_runtime(TstSuite* suite, TstItem* item);
 

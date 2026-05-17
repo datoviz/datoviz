@@ -672,6 +672,109 @@ int test_scene_point_style_emits_glsl_and_wgsl(TstSuite* suite, TstItem* item)
 
 
 /**
+ * Verify marker dense attributes, style validation, and GLSL pipeline emission.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_marker_api_and_emit_glsl(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    AT(scene != NULL);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    AT(figure != NULL);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    AT(panel != NULL);
+    DvzVisual* visual = dvz_marker(scene, 0);
+    AT(visual != NULL);
+    AT(visual->type == DVZ_VISUAL_TYPE_MARKER);
+
+    float positions[3][3] = {
+        {-0.35f, 0.0f, 0.0f},
+        {+0.00f, 0.0f, 0.0f},
+        {+0.35f, 0.0f, 0.0f},
+    };
+    DvzColor colors[3] = {{255, 80, 40, 255}, {80, 255, 120, 255}, {80, 120, 255, 255}};
+    float sizes[3] = {18.0f, 22.0f, 26.0f};
+    float angles[3] = {0.0f, 0.25f, 0.5f};
+    uint32_t shapes[3] = {
+        DVZ_MARKER_SHAPE_DISC,
+        DVZ_MARKER_SHAPE_DIAMOND,
+        DVZ_MARKER_SHAPE_RING,
+    };
+    AT(dvz_visual_set_data(visual, "position", positions, 3) == 0);
+    AT(dvz_visual_set_data(visual, "color", colors, 3) == 0);
+    AT(dvz_visual_set_data(visual, "size", sizes, 3) == 0);
+    AT(dvz_visual_set_data(visual, "angle", angles, 3) == 0);
+    AT(dvz_visual_set_data(visual, "shape", shapes, 3) == 0);
+    AT(visual->attr_count == 5);
+    AT(dvz_marker_set_style(
+           visual,
+           &(DvzMarkerStyle){
+               .edge_color = {0, 0, 0, 255},
+               .line_width = 2.0f,
+               .filled = true,
+               .stroke = true,
+           }) == 0);
+    tst_log_capture_begin(suite);
+    AT_EXPECTED_ERROR_STRICT(
+        suite, dvz_visual_set_data(visual, "shape", shapes, 2) == -1);
+    AT(_captured_log_contains(suite, "item_count"));
+    AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
+
+    DvzCapabilitySnapshot caps;
+    dvz_capability_snapshot_default(&caps);
+    DvzDiagnosticReport report;
+    dvz_diagnostic_report_init(&report);
+    DvzFramePlanEmitConfig cfg = dvz_frame_plan_emit_config();
+    cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
+    DvzDrp2CommandStream* stream = dvz_figure_emit_ex(figure, &caps, &report, &cfg);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+    ANN(stream);
+    AT(_stream_has_render_pipeline_label(stream, "_pipe_markerg_depth"));
+
+    bool found_pipeline = false;
+    bool found_material_bg = false;
+    bool found_draw = false;
+    for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
+    {
+        const DvzDrp2Command* command = dvz_drp2_stream_get(stream, i);
+        ANN(command);
+        if (command->type == DVZ_DRP2_COMMAND_CREATE_RENDER_PIPELINE &&
+            command->u.create_render_pipeline.binding_count == 5)
+        {
+            found_pipeline = true;
+            AT(command->u.create_render_pipeline.attr_count == 5);
+            AT(command->u.create_render_pipeline.topology == VK_PRIMITIVE_TOPOLOGY_POINT_LIST);
+            AT(command->u.create_render_pipeline.attr_locations[4] == 4);
+            AT(command->u.create_render_pipeline.attr_formats[4] == VK_FORMAT_R32_UINT);
+        }
+        else if (command->type == DVZ_DRP2_COMMAND_SET_BIND_GROUP)
+        {
+            found_material_bg = found_material_bg || command->u.set_bind_group.slot == 1;
+        }
+        else if (command->type == DVZ_DRP2_COMMAND_DRAW)
+        {
+            found_draw = true;
+            AT(command->u.draw.vertex_count == 3);
+            AT(command->u.draw.instance_count == 1);
+        }
+    }
+    AT(found_pipeline);
+    AT(found_material_bg);
+    AT(found_draw);
+
+    dvz_drp2_stream_destroy(stream);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+/**
  * Verify GLSL pixel visuals keep native square point-list draw semantics.
  *
  * @param suite the active test suite
@@ -8433,6 +8536,7 @@ int test_scene_graph(TstSuite* suite)
     TEST_SIMPLE(test_scene_point_like_lowering_policy);
     TEST_SIMPLE(test_scene_point_emit_glsl_native_points);
     TEST_SIMPLE(test_scene_point_style_emits_glsl_and_wgsl);
+    TEST_SIMPLE(test_scene_marker_api_and_emit_glsl);
     TEST_SIMPLE(test_scene_pixel_emit_glsl_native_square_points);
     TEST_SIMPLE(test_scene_point_emit_wgsl_instanced_quads);
     TEST_SIMPLE(test_scene_pixel_emit_wgsl_instanced_quads);

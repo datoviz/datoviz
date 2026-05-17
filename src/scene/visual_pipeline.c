@@ -305,6 +305,10 @@ static const char* _resource_role_tag(DvzFramePlanResourceRole role)
         return "color";
     case DVZ_FRAME_PLAN_RESOURCE_ROLE_SIZE:
         return "size";
+    case DVZ_FRAME_PLAN_RESOURCE_ROLE_ANGLE:
+        return "angle";
+    case DVZ_FRAME_PLAN_RESOURCE_ROLE_SHAPE:
+        return "shape";
     case DVZ_FRAME_PLAN_RESOURCE_ROLE_LINE_WIDTH:
         return "line_width";
     case DVZ_FRAME_PLAN_RESOURCE_ROLE_TEXCOORDS:
@@ -436,6 +440,8 @@ static bool _scene_visual_desc_from_metadata(
     {
         uint64_t color_id = _resource_lookup_label(&emitter->resources, meta->color_id);
         uint64_t size_id = _resource_lookup_label(&emitter->resources, meta->size_id);
+        uint64_t angle_id = _resource_lookup_label(&emitter->resources, meta->angle_id);
+        uint64_t shape_id = _resource_lookup_label(&emitter->resources, meta->shape_id);
         if (color_id == 0 || size_id == 0)
         {
             if (error != NULL)
@@ -446,12 +452,25 @@ static bool _scene_visual_desc_from_metadata(
             }
             return false;
         }
-        out->kind = point_like_kind == DVZ_SCENE_POINT_LIKE_PIXEL
-                        ? DVZ_SCENE_VISUAL_DESC_PIXEL
-                        : DVZ_SCENE_VISUAL_DESC_POINT;
+        if (point_like_kind == DVZ_SCENE_POINT_LIKE_MARKER && (angle_id == 0 || shape_id == 0))
+        {
+            if (error != NULL)
+                *error = "typed marker metadata missing angle/shape resource";
+            return false;
+        }
+        out->kind = point_like_kind == DVZ_SCENE_POINT_LIKE_PIXEL ?
+                        DVZ_SCENE_VISUAL_DESC_PIXEL :
+                    point_like_kind == DVZ_SCENE_POINT_LIKE_MARKER ?
+                        DVZ_SCENE_VISUAL_DESC_MARKER :
+                        DVZ_SCENE_VISUAL_DESC_POINT;
         out->point_like_kind = point_like_kind;
         out->vbuf_ids[out->vbuf_count++] = color_id;
         out->vbuf_ids[out->vbuf_count++] = size_id;
+        if (point_like_kind == DVZ_SCENE_POINT_LIKE_MARKER)
+        {
+            out->vbuf_ids[out->vbuf_count++] = angle_id;
+            out->vbuf_ids[out->vbuf_count++] = shape_id;
+        }
         out->topology = VK_PRIMITIVE_TOPOLOGY_POINT_LIST;
         out->material_buffer_id = _resource_lookup_label(&emitter->resources, meta->material_id);
         return true;
@@ -805,6 +824,12 @@ bool _emitter_resolve_render_vertex_buffers(
                     &emitter->resources, meta->size_id, out_ids, out_count, false))
                 return false;
             if (!_append_resource_key(
+                    &emitter->resources, meta->angle_id, out_ids, out_count, false))
+                return false;
+            if (!_append_resource_key(
+                    &emitter->resources, meta->shape_id, out_ids, out_count, false))
+                return false;
+            if (!_append_resource_key(
                     &emitter->resources, meta->line_width_id, out_ids, out_count, false))
                 return false;
             if (!_append_resource_key(
@@ -1028,7 +1053,8 @@ static void _scene_visual_pass_caps_resolve(
     bool segment = _visual_desc_is_segment(kind);
     bool sphere = _visual_desc_is_sphere(kind);
     bool point_like = kind == DVZ_SCENE_VISUAL_DESC_POINT ||
-                      kind == DVZ_SCENE_VISUAL_DESC_PIXEL;
+                      kind == DVZ_SCENE_VISUAL_DESC_PIXEL ||
+                      kind == DVZ_SCENE_VISUAL_DESC_MARKER;
     bool image = _visual_desc_is_image(kind);
     bool volume = _visual_desc_is_volume(kind);
     bool fixed = controller_mode == DVZ_CONTROLLER_FIXED;
@@ -1093,8 +1119,11 @@ bool _scene_visual_pass_caps_from_visual(
     case DVZ_VISUAL_TYPE_POINT:
     case DVZ_VISUAL_TYPE_PIXEL:
     case DVZ_VISUAL_TYPE_MARKER:
-        kind = visual->type == DVZ_VISUAL_TYPE_PIXEL ? DVZ_SCENE_VISUAL_DESC_PIXEL :
-                                                       DVZ_SCENE_VISUAL_DESC_POINT;
+        kind = visual->type == DVZ_VISUAL_TYPE_PIXEL ?
+                   DVZ_SCENE_VISUAL_DESC_PIXEL :
+               visual->type == DVZ_VISUAL_TYPE_MARKER ?
+                   DVZ_SCENE_VISUAL_DESC_MARKER :
+                   DVZ_SCENE_VISUAL_DESC_POINT;
         break;
     case DVZ_VISUAL_TYPE_SPHERE:
         kind = DVZ_SCENE_VISUAL_DESC_SPHERE;
@@ -1126,12 +1155,15 @@ bool _scene_visual_pass_caps_from_visual(
                       visual->attrs[normal_idx].item_count > 0;
     }
 
-    bool point_like = kind == DVZ_SCENE_VISUAL_DESC_POINT || kind == DVZ_SCENE_VISUAL_DESC_PIXEL;
+    bool point_like = kind == DVZ_SCENE_VISUAL_DESC_POINT ||
+                      kind == DVZ_SCENE_VISUAL_DESC_PIXEL ||
+                      kind == DVZ_SCENE_VISUAL_DESC_MARKER;
     bool has_material_resource = has_normals || visual->type == DVZ_VISUAL_TYPE_SEGMENT ||
                                  visual->type == DVZ_VISUAL_TYPE_SPHERE ||
                                  (point_like && visual->material.depth_cue_enabled) ||
                                  (visual->type == DVZ_VISUAL_TYPE_POINT &&
-                                  visual->material.point_style_enabled);
+                                  visual->material.point_style_enabled) ||
+                                 visual->type == DVZ_VISUAL_TYPE_MARKER;
     _scene_visual_pass_caps_resolve(
         kind, visual->alpha_mode, attach->controller_mode, has_normals, has_material_resource,
         visual->material.depth_cue_enabled, visual->depth_test_enabled, out);
@@ -1293,7 +1325,9 @@ static bool _scene_shader_desc_point_like(
         format_tag);
 
     DvzSceneBuiltinShader shader = DVZ_SCENE_BUILTIN_SHADER_POINT;
-    if (features->kind == DVZ_SCENE_VISUAL_DESC_PIXEL)
+    if (features->kind == DVZ_SCENE_VISUAL_DESC_MARKER)
+        shader = picking ? DVZ_SCENE_BUILTIN_SHADER_PIXEL_PICK : DVZ_SCENE_BUILTIN_SHADER_MARKER;
+    else if (features->kind == DVZ_SCENE_VISUAL_DESC_PIXEL)
         shader = picking ? DVZ_SCENE_BUILTIN_SHADER_PIXEL_PICK :
                  depth_cue ? DVZ_SCENE_BUILTIN_SHADER_PIXEL_DEPTH_CUE :
                              DVZ_SCENE_BUILTIN_SHADER_PIXEL;
@@ -1309,6 +1343,8 @@ static bool _scene_shader_desc_point_like(
     _scene_shader_desc_set_builtin(out, shader);
     _scene_shader_desc_set_identity(out, features->kind == DVZ_SCENE_VISUAL_DESC_PIXEL ?
                                              "scene.pixel" :
+                                         features->kind == DVZ_SCENE_VISUAL_DESC_MARKER ?
+                                             "scene.marker" :
                                              "scene.point",
                                     picking ? "pick" :
                                     point_style && depth_cue ? "style_depth_cue" :
@@ -1316,7 +1352,12 @@ static bool _scene_shader_desc_point_like(
                                     depth_cue ? "depth_cue" : "default");
     if (!picking)
     {
-        if (features->kind == DVZ_SCENE_VISUAL_DESC_PIXEL)
+        if (features->kind == DVZ_SCENE_VISUAL_DESC_MARKER)
+        {
+            out->vertex_spirv_key = "marker_vert";
+            out->fragment_spirv_key = "marker_frag";
+        }
+        else if (features->kind == DVZ_SCENE_VISUAL_DESC_PIXEL)
         {
             out->vertex_spirv_key = depth_cue ? "pixel_cue_vert" : "pixel_vert";
             out->fragment_spirv_key = depth_cue ? "pixel_cue_frag" : "pixel_frag";
@@ -1335,10 +1376,15 @@ static bool _scene_shader_desc_point_like(
     else
     {
         out->vertex_spirv_key =
-            features->kind == DVZ_SCENE_VISUAL_DESC_PIXEL ? "pixel_pick_vert" : "point_pick_vert";
+            features->kind == DVZ_SCENE_VISUAL_DESC_PIXEL ||
+                    features->kind == DVZ_SCENE_VISUAL_DESC_MARKER ?
+                "pixel_pick_vert" :
+                "point_pick_vert";
         out->fragment_spirv_key =
-            features->kind == DVZ_SCENE_VISUAL_DESC_PIXEL ? "pixel_pick_frag" :
-                                                            "point_pick_frag";
+            features->kind == DVZ_SCENE_VISUAL_DESC_PIXEL ||
+                    features->kind == DVZ_SCENE_VISUAL_DESC_MARKER ?
+                "pixel_pick_frag" :
+                "point_pick_frag";
     }
     return true;
 }
@@ -1489,6 +1535,9 @@ bool _scene_visual_shader_desc(
     case DVZ_SCENE_VISUAL_DESC_POINT:
         return _scene_shader_desc_point_like("point", &features, format_tag, out);
 
+    case DVZ_SCENE_VISUAL_DESC_MARKER:
+        return _scene_shader_desc_point_like("marker", &features, format_tag, out);
+
     case DVZ_SCENE_VISUAL_DESC_SPHERE:
         return _scene_shader_desc_sphere(&features, format_tag, out);
 
@@ -1579,6 +1628,44 @@ bool _scene_visual_pipeline_desc(
     case DVZ_SCENE_VISUAL_DESC_PIXEL:
     case DVZ_SCENE_VISUAL_DESC_POINT:
     case DVZ_SCENE_VISUAL_DESC_SPHERE:
+    case DVZ_SCENE_VISUAL_DESC_MARKER:
+        if (visual->kind == DVZ_SCENE_VISUAL_DESC_MARKER)
+        {
+            out->vertex_buffer_count = 5;
+            out->binding_count = 5;
+            out->attr_count = picking ? 2 : 5;
+            out->strides[0] = 3 * sizeof(float);
+            out->strides[1] = 4 * sizeof(uint8_t);
+            out->strides[2] = sizeof(float);
+            out->strides[3] = sizeof(float);
+            out->strides[4] = sizeof(uint32_t);
+            out->bindings[0] = 0;
+            out->bindings[1] = picking ? 2 : 1;
+            out->bindings[2] = 2;
+            out->bindings[3] = 3;
+            out->bindings[4] = 4;
+            out->locations[0] = 0;
+            out->locations[1] = picking ? 2 : 1;
+            out->locations[2] = 2;
+            out->locations[3] = 3;
+            out->locations[4] = 4;
+            out->formats[0] = VK_FORMAT_R32G32B32_SFLOAT;
+            out->formats[1] = picking ? VK_FORMAT_R32_SFLOAT : VK_FORMAT_R8G8B8A8_UNORM;
+            out->formats[2] = VK_FORMAT_R32_SFLOAT;
+            out->formats[3] = VK_FORMAT_R32_SFLOAT;
+            out->formats[4] = VK_FORMAT_R32_UINT;
+            out->needs_common_layout = caps.uses_common_set;
+            out->needs_material_layout = caps.needs_material_layout && !picking;
+            if (pass_needs_depth)
+            {
+                out->depth_write_enabled =
+                    caps.can_write_depth && !wboit_accumulation && alpha_mode != DVZ_ALPHA_BLENDED;
+                out->depth_compare_op =
+                    caps.can_depth_test ? VK_COMPARE_OP_LESS_OR_EQUAL : VK_COMPARE_OP_ALWAYS;
+            }
+            return true;
+        }
+
         out->vertex_buffer_count = 3;
         out->binding_count = 3;
         out->attr_count = visual->kind == DVZ_SCENE_VISUAL_DESC_SPHERE ? 3 : picking ? 2 : 3;
@@ -1735,6 +1822,7 @@ bool _scene_visual_bind_desc(
     {
     case DVZ_SCENE_VISUAL_DESC_PIXEL:
     case DVZ_SCENE_VISUAL_DESC_POINT:
+    case DVZ_SCENE_VISUAL_DESC_MARKER:
     case DVZ_SCENE_VISUAL_DESC_SPHERE:
         out->uses_common_set0 = caps.uses_common_set;
         out->uses_fixed_common = caps.fixed_controller;

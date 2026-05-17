@@ -65,6 +65,8 @@ static void _point_style_sync_params(DvzSceneMaterialParams* params, const DvzPo
 
 static bool _point_style_enabled(const DvzPointStyleDesc* style);
 
+static DvzPointStyleDesc _marker_style_to_point_style(const DvzMarkerStyle* style);
+
 static bool _segment_cap_valid(DvzSegmentCap cap);
 
 static void _segment_sync_params(DvzVisual* visual);
@@ -123,6 +125,10 @@ static uint32_t _attr_item_size(DvzVisualType type, const char* name)
         if (strcmp(name, "position") == 0) return 3 * sizeof(float);
         if (strcmp(name, "color") == 0)    return 4 * sizeof(uint8_t);
         if (strcmp(name, "size") == 0)     return sizeof(float);
+        if (type == DVZ_VISUAL_TYPE_MARKER && strcmp(name, "angle") == 0)
+            return sizeof(float);
+        if (type == DVZ_VISUAL_TYPE_MARKER && strcmp(name, "shape") == 0)
+            return sizeof(uint32_t);
         break;
     case DVZ_VISUAL_TYPE_PRIMITIVE:
     case DVZ_VISUAL_TYPE_MESH:
@@ -173,7 +179,9 @@ static bool _attr_supported(DvzVisualType type, const char* name, uint32_t* item
         return true;
 
     const char* expected = "position, color, size";
-    if (type == DVZ_VISUAL_TYPE_PRIMITIVE)
+    if (type == DVZ_VISUAL_TYPE_MARKER)
+        expected = "position, color, size, angle, shape";
+    else if (type == DVZ_VISUAL_TYPE_PRIMITIVE)
         expected = "position, color, normal";
     else if (type == DVZ_VISUAL_TYPE_MESH)
         expected = "position, color, normal";
@@ -399,7 +407,7 @@ static DvzVisual* _scene_alloc_visual(DvzScene* scene, DvzVisualType type, uint3
     _material_state_default(&visual->material, type);
     _material_params_default(&visual->material_params);
     _material_params_sync_state(&visual->material_params, &visual->material);
-    if (type == DVZ_VISUAL_TYPE_POINT)
+    if (type == DVZ_VISUAL_TYPE_POINT || type == DVZ_VISUAL_TYPE_MARKER)
         _point_style_sync_params(&visual->material_params, &visual->material.point_style);
     if (type == DVZ_VISUAL_TYPE_SEGMENT)
     {
@@ -731,6 +739,24 @@ DvzPointStyleDesc dvz_point_style_desc(void)
 
 
 /**
+ * Return default marker styling.
+ *
+ * @return default marker style descriptor
+ */
+DvzMarkerStyle dvz_marker_style(void)
+{
+    DvzMarkerStyle style = {
+        .edge_color = {0, 0, 0, 255},
+        .line_width = 0.0f,
+        .filled = true,
+        .stroke = false,
+        .outline = false,
+    };
+    return style;
+}
+
+
+/**
  * Return whether one point style needs the style shader path.
  *
  * @param style the point style descriptor
@@ -740,6 +766,31 @@ static bool _point_style_enabled(const DvzPointStyleDesc* style)
 {
     ANN(style);
     return style->outline || !style->filled || style->stroke || style->line_width > 0.0f;
+}
+
+
+/**
+ * Convert a marker style to the shared point-like material payload.
+ *
+ * @param style the marker style
+ * @return equivalent point style descriptor
+ */
+static DvzPointStyleDesc _marker_style_to_point_style(const DvzMarkerStyle* style)
+{
+    ANN(style);
+    DvzPointStyleDesc out = {
+        .edge_color = {
+            style->edge_color[0],
+            style->edge_color[1],
+            style->edge_color[2],
+            style->edge_color[3],
+        },
+        .line_width = style->line_width,
+        .filled = style->filled,
+        .stroke = style->stroke,
+        .outline = style->outline,
+    };
+    return out;
 }
 
 
@@ -1195,7 +1246,7 @@ static void _visual_material_mark_dirty(DvzVisual* visual)
 {
     ANN(visual);
     _material_params_sync_state(&visual->material_params, &visual->material);
-    if (visual->type == DVZ_VISUAL_TYPE_POINT)
+    if (visual->type == DVZ_VISUAL_TYPE_POINT || visual->type == DVZ_VISUAL_TYPE_MARKER)
         _point_style_sync_params(&visual->material_params, &visual->material.point_style);
     _sphere_params_sync_mode(visual);
     _visual_bump_version(&visual->material.version);
@@ -1585,6 +1636,39 @@ int dvz_point_set_style(DvzVisual* visual, const DvzPointStyleDesc* desc)
 
     visual->material.point_style = style;
     visual->material.point_style_enabled = _point_style_enabled(&style);
+    _visual_material_mark_dirty(visual);
+    return 0;
+}
+
+
+/**
+ * Configure marker fill/stroke styling.
+ *
+ * @param visual the marker visual
+ * @param style the marker style descriptor, or NULL to restore defaults
+ * @return 0 on success, -1 on error
+ */
+int dvz_marker_set_style(DvzVisual* visual, const DvzMarkerStyle* style)
+{
+    ANN(visual);
+    if (visual->type != DVZ_VISUAL_TYPE_MARKER)
+    {
+        log_error("dvz_marker_set_style requires a marker visual");
+        return -1;
+    }
+    if (!_scene_visual_mutation_allowed(visual->scene, "update marker style"))
+        return -1;
+
+    DvzMarkerStyle marker_style = style != NULL ? *style : dvz_marker_style();
+    if (!isfinite(marker_style.line_width) || marker_style.line_width < 0.0f)
+    {
+        log_error("marker line_width must be finite and nonnegative");
+        return -1;
+    }
+
+    DvzPointStyleDesc point_style = _marker_style_to_point_style(&marker_style);
+    visual->material.point_style = point_style;
+    visual->material.point_style_enabled = _point_style_enabled(&point_style);
     _visual_material_mark_dirty(visual);
     return 0;
 }
@@ -2456,6 +2540,25 @@ DvzVisual* dvz_pixel(DvzScene* scene, uint32_t flags)
     DvzVisual* visual = _scene_alloc_visual(scene, DVZ_VISUAL_TYPE_PIXEL, flags);
     if (visual == NULL)
         return NULL;
+    return visual;
+}
+
+
+/**
+ * Create a marker visual.
+ *
+ * @param scene the scene
+ * @param flags variant flags
+ * @return the visual, or NULL on allocation failure
+ */
+DvzVisual* dvz_marker(DvzScene* scene, uint32_t flags)
+{
+    ANN(scene);
+    DvzVisual* visual = _scene_alloc_visual(scene, DVZ_VISUAL_TYPE_MARKER, flags);
+    if (visual == NULL)
+        return NULL;
+    visual->topology = DVZ_PRIMITIVE_TOPOLOGY_POINT_LIST;
+    visual->material_params_dirty = true;
     return visual;
 }
 

@@ -792,6 +792,31 @@ DVZ_EXPORT DvzPointStyleDesc dvz_point_style_desc(void);
 DVZ_EXPORT int dvz_point_set_style(DvzVisual* visual, const DvzPointStyleDesc* desc);
 
 
+/**
+ * Return default marker styling.
+ *
+ * The default marker style renders filled markers with no stroke. The `color` visual attribute
+ * remains the fill color; `edge_color` and `line_width` apply when `stroke` or `outline` is
+ * enabled.
+ *
+ * @return default marker style descriptor
+ */
+DVZ_EXPORT DvzMarkerStyle dvz_marker_style(void);
+
+
+/**
+ * Configure marker fill/stroke styling.
+ *
+ * Pass NULL to restore the default filled/no-stroke style. `outline` renders only the stroke;
+ * otherwise `filled` controls whether the marker interior is drawn.
+ *
+ * @param visual the marker visual
+ * @param style the marker style descriptor, or NULL to restore defaults
+ * @return 0 on success, -1 on error
+ */
+DVZ_EXPORT int dvz_marker_set_style(DvzVisual* visual, const DvzMarkerStyle* style);
+
+
 
 /*************************************************************************************************/
 /*  Visual family constructors                                                                   */
@@ -822,6 +847,21 @@ DVZ_EXPORT DvzVisual* dvz_point(DvzScene* scene, uint32_t flags);
  * @return the visual
  */
 DVZ_EXPORT DvzVisual* dvz_pixel(DvzScene* scene, uint32_t flags);
+
+
+/**
+ * Create a marker visual.
+ *
+ * Renders screen-space code-SDF marker sprites with dense `position` (vec3), `color` (RGBA8),
+ * `size` (float diameter in pixels), `angle` (float radians), and `shape` (uint32_t
+ * DvzMarkerShape) attributes. First-slice shapes are disc, square, triangle, diamond, cross, and
+ * ring.
+ *
+ * @param scene the scene
+ * @param flags variant flags
+ * @return the visual
+ */
+DVZ_EXPORT DvzVisual* dvz_marker(DvzScene* scene, uint32_t flags);
 
 
 /**

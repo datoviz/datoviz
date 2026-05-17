@@ -839,6 +839,12 @@ static bool _emitter_prepare_render_multi(
                     vertex_spirv_key = "pixel_vert";
                     vertex_shader = DVZ_SCENE_BUILTIN_SHADER_PIXEL;
                 }
+                else if (desc.kind == DVZ_SCENE_VISUAL_DESC_MARKER)
+                {
+                    stem = "marker";
+                    vertex_spirv_key = "marker_vert";
+                    vertex_shader = DVZ_SCENE_BUILTIN_SHADER_MARKER;
+                }
                 else if (desc.kind == DVZ_SCENE_VISUAL_DESC_IMAGE)
                 {
                     stem = "image";
@@ -1070,7 +1076,8 @@ static bool _emitter_prepare_render_multi(
             if (
                 force_point_depth &&
                 (desc.kind == DVZ_SCENE_VISUAL_DESC_POINT ||
-                 desc.kind == DVZ_SCENE_VISUAL_DESC_PIXEL))
+                 desc.kind == DVZ_SCENE_VISUAL_DESC_PIXEL ||
+                 desc.kind == DVZ_SCENE_VISUAL_DESC_MARKER))
             {
                 pipeline.has_depth_state = true;
                 pipeline.depth_write_enabled = true;
@@ -4890,6 +4897,7 @@ static bool _emitter_emit_render(
     /* Detect point-like visual data (position + color + size attributes). */
     bool is_point = _is_point_visual(&emitter->resources, vertex_buffer_ids, vertex_buffer_count);
     bool is_pixel = is_point && visual_type == DVZ_VISUAL_TYPE_PIXEL;
+    bool is_marker = is_point && visual_type == DVZ_VISUAL_TYPE_MARKER;
     bool is_point_like = is_point;
     bool is_primitive =
         !is_point_like && _is_primitive_visual(&emitter->resources, vertex_buffer_ids, vertex_buffer_count);
@@ -4941,13 +4949,17 @@ static bool _emitter_emit_render(
         bool depth_cue =
             visual_meta != NULL && visual_meta->depth_cue_enabled && !picking;
         bool point_style =
-            visual_meta != NULL && visual_meta->point_style_enabled && !is_pixel && !picking;
+            visual_meta != NULL && visual_meta->point_style_enabled && !is_pixel && !is_marker &&
+            !picking;
         const char* suffix =
             picking ? "_pick" : point_style && depth_cue ? "_cue_style" :
             point_style ? "_style" : depth_cue ? "_cue" : "";
 
         DvzSceneBuiltinShader shader = DVZ_SCENE_BUILTIN_SHADER_POINT;
-        if (is_pixel)
+        if (is_marker)
+            shader = picking ? DVZ_SCENE_BUILTIN_SHADER_PIXEL_PICK :
+                               DVZ_SCENE_BUILTIN_SHADER_MARKER;
+        else if (is_pixel)
             shader = picking ? DVZ_SCENE_BUILTIN_SHADER_PIXEL_PICK :
                      depth_cue ? DVZ_SCENE_BUILTIN_SHADER_PIXEL_DEPTH_CUE :
                                  DVZ_SCENE_BUILTIN_SHADER_PIXEL;
@@ -4960,7 +4972,7 @@ static bool _emitter_emit_render(
             shader = depth_cue ? DVZ_SCENE_BUILTIN_SHADER_POINT_DEPTH_CUE :
                                  DVZ_SCENE_BUILTIN_SHADER_POINT;
 
-        const char* key = is_pixel ? "pixel" : "point";
+        const char* key = is_marker ? "marker" : is_pixel ? "pixel" : "point";
         dvz_snprintf(vs_key, sizeof(vs_key), "_vs_%s%s%s", key, suffix, fmt);
         dvz_snprintf(fs_key, sizeof(fs_key), "_fs_%s%s%s", key, suffix, fmt);
         vs_glsl = _builtin_shader_glsl(shader, false);
@@ -4981,6 +4993,7 @@ static bool _emitter_emit_render(
         if (cfg != NULL && cfg->shader_format == DVZ_SCENE_SHADER_FORMAT_WGSL)
             shader_format = DVZ_SCENE_SHADER_FORMAT_WGSL;
         has_point_like_lowering = _scene_point_like_lowering_desc(
+            is_marker ? DVZ_SCENE_POINT_LIKE_MARKER :
             is_pixel ? DVZ_SCENE_POINT_LIKE_PIXEL : DVZ_SCENE_POINT_LIKE_POINT,
             shader_format, vertex_count, &point_like_lowering);
         if (!has_point_like_lowering)
@@ -5075,11 +5088,17 @@ static bool _emitter_emit_render(
         bool depth_cue =
             visual_meta != NULL && visual_meta->depth_cue_enabled && !picking;
         bool point_style =
-            visual_meta != NULL && visual_meta->point_style_enabled && !is_pixel && !picking;
+            visual_meta != NULL && visual_meta->point_style_enabled && !is_pixel && !is_marker &&
+            !picking;
         if (picking)
         {
-            vs_spirv_key = is_pixel ? "pixel_pick_vert" : "point_pick_vert";
-            fs_spirv_key = is_pixel ? "pixel_pick_frag" : "point_pick_frag";
+            vs_spirv_key = (is_pixel || is_marker) ? "pixel_pick_vert" : "point_pick_vert";
+            fs_spirv_key = (is_pixel || is_marker) ? "pixel_pick_frag" : "point_pick_frag";
+        }
+        else if (is_marker)
+        {
+            vs_spirv_key = "marker_vert";
+            fs_spirv_key = "marker_frag";
         }
         else if (is_pixel)
         {
@@ -5166,12 +5185,14 @@ static bool _emitter_emit_render(
         bool depth_cue =
             visual_meta != NULL && visual_meta->depth_cue_enabled && !picking;
         bool point_style =
-            visual_meta != NULL && visual_meta->point_style_enabled && !is_pixel && !picking;
+            visual_meta != NULL && visual_meta->point_style_enabled && !is_pixel && !is_marker &&
+            !picking;
         const char* suffix =
             picking ? "_pick" : point_style && depth_cue ? "_cue_style" :
             point_style ? "_style" : depth_cue ? "_cue" : "";
         dvz_snprintf(
-            pipe_key, sizeof(pipe_key), "_pipe_%s%s%s", is_pixel ? "pixel" : "point",
+            pipe_key, sizeof(pipe_key), "_pipe_%s%s%s",
+            is_marker ? "marker" : is_pixel ? "pixel" : "point",
             suffix, fmt);
     }
     else if (is_primitive)
@@ -5188,34 +5209,38 @@ static bool _emitter_emit_render(
     {
         if (is_point_like)
         {
-            /* Explicit vertex layout: binding0=position(vec3), binding1=color(u8vec4), binding2=size(float) */
-            uint32_t strides[3]   = {3*sizeof(float), 4*sizeof(uint8_t), sizeof(float)};
-            uint32_t bindings[3]  = {0, 1, 2};
-            uint32_t locations[3] = {0, 1, 2};
-            uint32_t formats[3]   = {VK_FORMAT_R32G32B32_SFLOAT,
-                                     VK_FORMAT_R8G8B8A8_UNORM,
-                                     VK_FORMAT_R32_SFLOAT};
-            uint32_t offsets[3]   = {0, 0, 0};
+            uint32_t strides[5] = {
+                3 * sizeof(float), 4 * sizeof(uint8_t), sizeof(float), sizeof(float),
+                sizeof(uint32_t)};
+            uint32_t bindings[5] = {0, 1, 2, 3, 4};
+            uint32_t locations[5] = {0, 1, 2, 3, 4};
+            uint32_t formats[5] = {
+                VK_FORMAT_R32G32B32_SFLOAT, VK_FORMAT_R8G8B8A8_UNORM, VK_FORMAT_R32_SFLOAT,
+                VK_FORMAT_R32_SFLOAT, VK_FORMAT_R32_UINT};
+            uint32_t offsets[5] = {0, 0, 0, 0, 0};
+            uint32_t point_like_attr_count = is_marker && !render->u.render.picking ? 5 : 3;
             if (point_like_lowering.lowering ==
                 DVZ_SCENE_POINT_LIKE_LOWERING_INSTANCED_QUADS)
             {
-                uint32_t step_modes[3] = {
+                uint32_t step_modes[5] = {
+                    point_like_lowering.vertex_step_mode,
+                    point_like_lowering.vertex_step_mode,
                     point_like_lowering.vertex_step_mode,
                     point_like_lowering.vertex_step_mode,
                     point_like_lowering.vertex_step_mode,
                 };
                 ok = ok && dvz_drp2_stream_create_render_pipeline_ex2(
                                stream, pipe_id, vs_id, fs_id, vertex_buffer_count,
-                               topology, 3, strides, step_modes,
-                               3, bindings, locations, formats, offsets);
+                               topology, point_like_attr_count, strides, step_modes,
+                               point_like_attr_count, bindings, locations, formats, offsets);
             }
             else
             {
                 ok = ok && dvz_drp2_stream_create_render_pipeline_ex(
                                stream, pipe_id, vs_id, fs_id, vertex_buffer_count,
                                topology,
-                               3, strides,
-                               3, bindings, locations, formats, offsets);
+                               point_like_attr_count, strides,
+                               point_like_attr_count, bindings, locations, formats, offsets);
             }
             if (ok && uses_common && common_bgl_id != 0)
                 ok = dvz_drp2_stream_pipeline_set_bind_group_layout(stream, common_bgl_id);

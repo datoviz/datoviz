@@ -32,6 +32,7 @@ typedef enum
     DVZ_SCENE_VISUAL_DESC_NONE = 0,
     DVZ_SCENE_VISUAL_DESC_POINT,
     DVZ_SCENE_VISUAL_DESC_PIXEL,
+    DVZ_SCENE_VISUAL_DESC_MARKER,
     DVZ_SCENE_VISUAL_DESC_SPHERE,
     DVZ_SCENE_VISUAL_DESC_SEGMENT,
     DVZ_SCENE_VISUAL_DESC_PRIMITIVE,
@@ -142,11 +143,11 @@ typedef struct DvzSceneVisualPipelineDesc
     uint32_t topology;
     uint32_t binding_count;
     uint32_t attr_count;
-    uint32_t strides[3];
-    uint32_t bindings[3];
-    uint32_t locations[3];
-    uint32_t formats[3];
-    uint32_t offsets[3];
+    uint32_t strides[DVZ_SCENE_MAX_NODE_RESOURCES];
+    uint32_t bindings[DVZ_SCENE_MAX_NODE_RESOURCES];
+    uint32_t locations[DVZ_SCENE_MAX_NODE_RESOURCES];
+    uint32_t formats[DVZ_SCENE_MAX_NODE_RESOURCES];
+    uint32_t offsets[DVZ_SCENE_MAX_NODE_RESOURCES];
     bool needs_common_layout;
     bool needs_image_layout;
     bool needs_volume_layout;

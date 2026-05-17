@@ -55,6 +55,10 @@ static DvzFramePlanResourceRole _scene_attr_frame_plan_role(const char* attr_nam
         return DVZ_FRAME_PLAN_RESOURCE_ROLE_COLOR;
     if (strcmp(attr_name, "size") == 0)
         return DVZ_FRAME_PLAN_RESOURCE_ROLE_SIZE;
+    if (strcmp(attr_name, "angle") == 0)
+        return DVZ_FRAME_PLAN_RESOURCE_ROLE_ANGLE;
+    if (strcmp(attr_name, "shape") == 0)
+        return DVZ_FRAME_PLAN_RESOURCE_ROLE_SHAPE;
     if (strcmp(attr_name, "line_width") == 0)
         return DVZ_FRAME_PLAN_RESOURCE_ROLE_LINE_WIDTH;
     if (strcmp(attr_name, "texcoords") == 0)
@@ -117,12 +121,14 @@ static bool _scene_visual_needs_material_params(const DvzVisual* visual)
 {
     ANN(visual);
     bool point_like =
-        visual->type == DVZ_VISUAL_TYPE_POINT || visual->type == DVZ_VISUAL_TYPE_PIXEL;
+        visual->type == DVZ_VISUAL_TYPE_POINT || visual->type == DVZ_VISUAL_TYPE_PIXEL ||
+        visual->type == DVZ_VISUAL_TYPE_MARKER;
     if (point_like)
     {
         return visual->material.depth_cue_enabled ||
                (visual->type == DVZ_VISUAL_TYPE_POINT &&
-                visual->material.point_style_enabled);
+                visual->material.point_style_enabled) ||
+               visual->type == DVZ_VISUAL_TYPE_MARKER;
     }
     if (visual->type == DVZ_VISUAL_TYPE_SPHERE)
         return true;
@@ -612,6 +618,7 @@ void _scene_emit_visual_uploads(DvzFigure* figure, DvzFramePlan* plan)
             }
             if (
                 visual->type == DVZ_VISUAL_TYPE_POINT || visual->type == DVZ_VISUAL_TYPE_PIXEL ||
+                visual->type == DVZ_VISUAL_TYPE_MARKER ||
                 visual->type == DVZ_VISUAL_TYPE_PRIMITIVE ||
                 visual->type == DVZ_VISUAL_TYPE_MESH ||
                 visual->type == DVZ_VISUAL_TYPE_SPHERE)
@@ -792,6 +799,14 @@ bool _scene_visual_frame_plan_metadata(
         return false;
     if (!_scene_attr_resource_key(
             figure, visual, visual_index, "size", metadata->size_id, sizeof(metadata->size_id)))
+        return false;
+    if (!_scene_attr_resource_key(
+            figure, visual, visual_index, "angle", metadata->angle_id,
+            sizeof(metadata->angle_id)))
+        return false;
+    if (!_scene_attr_resource_key(
+            figure, visual, visual_index, "shape", metadata->shape_id,
+            sizeof(metadata->shape_id)))
         return false;
     if (!_scene_attr_resource_key(
             figure, visual, visual_index, "line_width", metadata->line_width_id,

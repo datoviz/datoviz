@@ -254,6 +254,17 @@ struct DvzPointStyleDesc
 typedef struct DvzPointStyleDesc DvzPointStyleDesc;
 
 
+struct DvzMarkerStyle
+{
+    DvzColor edge_color;
+    float line_width;
+    bool filled;
+    bool stroke;
+    bool outline;
+};
+typedef struct DvzMarkerStyle DvzMarkerStyle;
+
+
 struct DvzVolumeState
 {
     float opacity;
