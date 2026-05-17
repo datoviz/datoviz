@@ -102,6 +102,14 @@ typedef struct
 } AppRgbaCapture;
 
 
+typedef enum
+{
+    APP_VOLUME_OCCLUSION_MODE_DISABLED,
+    APP_VOLUME_OCCLUSION_MODE_VOLUME,
+    APP_VOLUME_OCCLUSION_MODE_SCENE,
+} AppVolumeOcclusionMode;
+
+
 
 /**
  * Record one app-driven timer callback.
@@ -740,7 +748,6 @@ static bool _app_capture_rgb_sum(
     dvz_free(rgba);
     return true;
 }
-
 
 
 #if defined(DVZ_HAS_GLFW) && DVZ_HAS_GLFW
@@ -4211,10 +4218,12 @@ int test_app_offscreen_volume_composite_renders_field(TstSuite* suite, TstItem* 
 /**
  * Render the deterministic volume-occlusion fixture and return region sums.
  *
- * @param enabled whether volume occlusion should be enabled
+ * @param mode occlusion mode used by the fixture
+ * @param perspective_camera whether to attach a perspective camera to the panel
  * @return captured image sums, or skipped=true when no app context is available
  */
-static AppVolumeOcclusionCapture _app_volume_occlusion_capture(bool enabled)
+static AppVolumeOcclusionCapture _app_volume_occlusion_capture(
+    AppVolumeOcclusionMode mode, bool perspective_camera)
 {
     AppVolumeOcclusionCapture out = {0};
     DvzScene* scene = dvz_scene();
@@ -4231,6 +4240,22 @@ static AppVolumeOcclusionCapture _app_volume_occlusion_capture(bool enabled)
     {
         dvz_scene_destroy(scene);
         return out;
+    }
+    if (perspective_camera)
+    {
+        DvzCameraDesc camera_desc = dvz_camera_desc();
+        camera_desc.eye[0] = 0.5f;
+        camera_desc.eye[1] = 0.5f;
+        camera_desc.eye[2] = 3.0f;
+        camera_desc.target[0] = 0.5f;
+        camera_desc.target[1] = 0.5f;
+        camera_desc.target[2] = 0.5f;
+        camera_desc.fov_y = GLM_PI_4f;
+        if (dvz_panel_set_camera(panel, &camera_desc) == NULL)
+        {
+            dvz_scene_destroy(scene);
+            return out;
+        }
     }
 
     DvzSampledField* field = dvz_sampled_field(
@@ -4278,13 +4303,15 @@ static AppVolumeOcclusionCapture _app_volume_occlusion_capture(bool enabled)
         dvz_volume_set_opacity(slice, 0.55f) != 0 ||
         dvz_visual_set_alpha_mode(slice, DVZ_ALPHA_BLENDED) != 0 ||
         dvz_visual_set_volume_occluded(slice, true) != 0 ||
+        dvz_visual_set_scene_occluded(slice, true) != 0 ||
+        dvz_visual_set_scene_occluder(volume, true) != 0 ||
         dvz_panel_add_visual(panel, volume, NULL) != 0 ||
         dvz_panel_add_visual(panel, slice, NULL) != 0)
     {
         dvz_scene_destroy(scene);
         return out;
     }
-    if (enabled &&
+    if (mode == APP_VOLUME_OCCLUSION_MODE_VOLUME &&
         dvz_panel_set_volume_occluder(
             panel, volume,
             &(DvzVolumeOcclusionDesc){
@@ -4293,6 +4320,18 @@ static AppVolumeOcclusionCapture _app_volume_occlusion_capture(bool enabled)
                 .fade_distance = 0.02f,
                 .occluded_alpha = 0.05f,
             }) != 0)
+    {
+        dvz_scene_destroy(scene);
+        return out;
+    }
+    if (mode == APP_VOLUME_OCCLUSION_MODE_SCENE &&
+        dvz_panel_set_scene_occlusion(
+            panel, &(DvzSceneOcclusionDesc){
+                       .enabled = true,
+                       .depth_bias = 0.0f,
+                       .soft_edge = 0.02f,
+                       .hidden_alpha = 0.05f,
+                   }) != 0)
     {
         dvz_scene_destroy(scene);
         return out;
@@ -4355,7 +4394,7 @@ static AppVolumeOcclusionCapture _app_volume_occlusion_capture(bool enabled)
 
 
 /**
- * Ensure volume-occluded slices render dimmer with an active occlusion pass.
+ * Ensure volume-occluded slices render dimmer with an active volume occlusion pass.
  *
  * @param suite the test suite
  * @param item the test item
@@ -4369,13 +4408,15 @@ int test_app_offscreen_volume_occlusion_slice_renders(TstSuite* suite, TstItem* 
     if (!_scene_vklite_runtime_available())
         return 0;
 
-    AppVolumeOcclusionCapture disabled = _app_volume_occlusion_capture(false);
+    AppVolumeOcclusionCapture disabled =
+        _app_volume_occlusion_capture(APP_VOLUME_OCCLUSION_MODE_DISABLED, false);
     if (disabled.skipped)
     {
         log_warn("test_app_offscreen_volume_occlusion_slice_renders skipped: GPU context failed");
         return 0;
     }
-    AppVolumeOcclusionCapture enabled = _app_volume_occlusion_capture(true);
+    AppVolumeOcclusionCapture enabled =
+        _app_volume_occlusion_capture(APP_VOLUME_OCCLUSION_MODE_VOLUME, false);
     if (enabled.skipped)
     {
         log_warn("test_app_offscreen_volume_occlusion_slice_renders skipped: GPU context failed");
@@ -4395,6 +4436,92 @@ int test_app_offscreen_volume_occlusion_slice_renders(TstSuite* suite, TstItem* 
     AT(enabled.total_sum + 64ull * 64ull * 24ull < disabled.total_sum);
     AT(enabled.left_sum + 12ull * 16ull * 24ull < disabled.left_sum);
     AT(enabled.right_sum + 12ull * 16ull * 24ull < disabled.right_sum);
+    return 0;
+}
+
+
+/**
+ * Ensure volume occlusion remains visible when rendered through a perspective camera.
+ *
+ * @param suite the test suite
+ * @param item the test item
+ * @return 0 on success
+ */
+int test_app_offscreen_volume_occlusion_perspective_camera(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    if (!_scene_vklite_runtime_available())
+        return 0;
+
+    AppVolumeOcclusionCapture disabled =
+        _app_volume_occlusion_capture(APP_VOLUME_OCCLUSION_MODE_DISABLED, true);
+    if (disabled.skipped)
+    {
+        log_warn(
+            "test_app_offscreen_volume_occlusion_perspective_camera skipped: GPU context failed");
+        return 0;
+    }
+    AppVolumeOcclusionCapture enabled =
+        _app_volume_occlusion_capture(APP_VOLUME_OCCLUSION_MODE_VOLUME, true);
+    if (enabled.skipped)
+    {
+        log_warn(
+            "test_app_offscreen_volume_occlusion_perspective_camera skipped: GPU context failed");
+        return 0;
+    }
+
+    AT(disabled.width == 64);
+    AT(disabled.height == 64);
+    AT(enabled.width == 64);
+    AT(enabled.height == 64);
+    AT(disabled.total_sum > 64 * 64 * 24);
+    AT(enabled.total_sum > 64 * 64 * 24);
+    AT(enabled.total_sum + 64ull * 64ull * 12ull < disabled.total_sum);
+    return 0;
+}
+
+
+/**
+ * Ensure generic scene occlusion dims volume slices when the occluder is a volume.
+ *
+ * @param suite the test suite
+ * @param item the test item
+ * @return 0 on success
+ */
+int test_app_offscreen_volume_slice_scene_occlusion_dimming(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    if (!_scene_vklite_runtime_available())
+        return 0;
+
+    AppVolumeOcclusionCapture disabled =
+        _app_volume_occlusion_capture(APP_VOLUME_OCCLUSION_MODE_DISABLED, false);
+    if (disabled.skipped)
+    {
+        log_warn(
+            "test_app_offscreen_volume_slice_scene_occlusion_dimming skipped: GPU context failed");
+        return 0;
+    }
+    AppVolumeOcclusionCapture enabled =
+        _app_volume_occlusion_capture(APP_VOLUME_OCCLUSION_MODE_SCENE, false);
+    if (enabled.skipped)
+    {
+        log_warn(
+            "test_app_offscreen_volume_slice_scene_occlusion_dimming skipped: GPU context failed");
+        return 0;
+    }
+
+    AT(disabled.width == 64);
+    AT(disabled.height == 64);
+    AT(enabled.width == 64);
+    AT(enabled.height == 64);
+    AT(disabled.total_sum > 64 * 64 * 24);
+    AT(enabled.total_sum > 64 * 64 * 24);
+    AT(enabled.total_sum + 64ull * 64ull * 12ull < disabled.total_sum);
     return 0;
 }
 
@@ -4561,6 +4688,8 @@ int test_scene_app(TstSuite* suite)
     TEST_SIMPLE(test_app_offscreen_volume_mip_renders_bright_slice);
     TEST_SIMPLE(test_app_offscreen_volume_composite_renders_field);
     TEST_SIMPLE(test_app_offscreen_volume_occlusion_slice_renders);
+    TEST_SIMPLE(test_app_offscreen_volume_occlusion_perspective_camera);
+    TEST_SIMPLE(test_app_offscreen_volume_slice_scene_occlusion_dimming);
     TEST_SIMPLE(test_app_offscreen_volume_depth_occluded_by_primitive);
     TEST_SIMPLE(test_app_capture_rejects_wrong_dimensions);
     TEST_SIMPLE(test_app_capture_rejects_undersized_buffer);
