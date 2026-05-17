@@ -39,6 +39,9 @@
 #define DVZ_TEXT_BITMAP_FALLBACK     63u
 #define DVZ_TEXT_BITMAP_ATLAS_COLS   16u
 #define DVZ_TEXT_BITMAP_ATLAS_ROWS   6u
+#define DVZ_TEXT_BITMAP_ATLAS_PAD    1u
+#define DVZ_TEXT_BITMAP_ATLAS_CELL_W (DVZ_TEXT_BITMAP_GLYPH_WIDTH + 2u * DVZ_TEXT_BITMAP_ATLAS_PAD)
+#define DVZ_TEXT_BITMAP_ATLAS_CELL_H (DVZ_TEXT_BITMAP_GLYPH_HEIGHT + 2u * DVZ_TEXT_BITMAP_ATLAS_PAD)
 
 
 
@@ -384,8 +387,8 @@ static DvzSampledField* _text_bitmap_atlas_field(DvzScene* scene)
     if (scene->text_bitmap_atlas != NULL)
         return scene->text_bitmap_atlas;
 
-    uint32_t width = DVZ_TEXT_BITMAP_ATLAS_COLS * DVZ_TEXT_BITMAP_GLYPH_WIDTH;
-    uint32_t height = DVZ_TEXT_BITMAP_ATLAS_ROWS * DVZ_TEXT_BITMAP_GLYPH_HEIGHT;
+    uint32_t width = DVZ_TEXT_BITMAP_ATLAS_COLS * DVZ_TEXT_BITMAP_ATLAS_CELL_W;
+    uint32_t height = DVZ_TEXT_BITMAP_ATLAS_ROWS * DVZ_TEXT_BITMAP_ATLAS_CELL_H;
     uint64_t pixel_count = 0;
     uint64_t byte_size = 0;
     if (_dvz_mul_u64_overflows(width, height, &pixel_count) ||
@@ -407,8 +410,8 @@ static DvzSampledField* _text_bitmap_atlas_field(DvzScene* scene)
         uint32_t col = glyph % DVZ_TEXT_BITMAP_ATLAS_COLS;
         uint32_t row = glyph / DVZ_TEXT_BITMAP_ATLAS_COLS;
         _text_paint_glyph(
-            rgba, width, col * DVZ_TEXT_BITMAP_GLYPH_WIDTH,
-            row * DVZ_TEXT_BITMAP_GLYPH_HEIGHT, 1,
+            rgba, width, col * DVZ_TEXT_BITMAP_ATLAS_CELL_W + DVZ_TEXT_BITMAP_ATLAS_PAD,
+            row * DVZ_TEXT_BITMAP_ATLAS_CELL_H + DVZ_TEXT_BITMAP_ATLAS_PAD, 1,
             glyph + DVZ_TEXT_BITMAP_FIRST_CHAR, white);
     }
 
@@ -453,12 +456,14 @@ static void _text_bitmap_atlas_uv(uint32_t ascii, float out[4])
     uint32_t glyph = ascii - DVZ_TEXT_BITMAP_FIRST_CHAR;
     uint32_t col = glyph % DVZ_TEXT_BITMAP_ATLAS_COLS;
     uint32_t row = glyph / DVZ_TEXT_BITMAP_ATLAS_COLS;
-    float width = (float)(DVZ_TEXT_BITMAP_ATLAS_COLS * DVZ_TEXT_BITMAP_GLYPH_WIDTH);
-    float height = (float)(DVZ_TEXT_BITMAP_ATLAS_ROWS * DVZ_TEXT_BITMAP_GLYPH_HEIGHT);
-    out[0] = (float)(col * DVZ_TEXT_BITMAP_GLYPH_WIDTH) / width;
-    out[1] = (float)(row * DVZ_TEXT_BITMAP_GLYPH_HEIGHT) / height;
-    out[2] = (float)((col + 1u) * DVZ_TEXT_BITMAP_GLYPH_WIDTH) / width;
-    out[3] = (float)((row + 1u) * DVZ_TEXT_BITMAP_GLYPH_HEIGHT) / height;
+    float width = (float)(DVZ_TEXT_BITMAP_ATLAS_COLS * DVZ_TEXT_BITMAP_ATLAS_CELL_W);
+    float height = (float)(DVZ_TEXT_BITMAP_ATLAS_ROWS * DVZ_TEXT_BITMAP_ATLAS_CELL_H);
+    uint32_t x0 = col * DVZ_TEXT_BITMAP_ATLAS_CELL_W + DVZ_TEXT_BITMAP_ATLAS_PAD;
+    uint32_t y0 = row * DVZ_TEXT_BITMAP_ATLAS_CELL_H + DVZ_TEXT_BITMAP_ATLAS_PAD;
+    out[0] = (float)x0 / width;
+    out[1] = (float)y0 / height;
+    out[2] = (float)(x0 + DVZ_TEXT_BITMAP_GLYPH_WIDTH) / width;
+    out[3] = (float)(y0 + DVZ_TEXT_BITMAP_GLYPH_HEIGHT) / height;
 }
 
 

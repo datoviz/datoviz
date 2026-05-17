@@ -305,8 +305,8 @@ int test_scene_text_bitmap_visual_realization(TstSuite* suite, TstItem* item)
 
     ANN(text->visual->field);
     DvzSampledField* atlas = text->visual->field;
-    AT(atlas->desc.width == 96);
-    AT(atlas->desc.height == 48);
+    AT(atlas->desc.width == 128);
+    AT(atlas->desc.height == 60);
     AT(text->visual->field->dirty);
 
     uint64_t old_visual_version = text->visual_version;

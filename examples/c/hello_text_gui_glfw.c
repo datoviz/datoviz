@@ -327,9 +327,10 @@ static void update_text_scene(TextLabState* state)
     apply_text_placement(
         state->multiline, DVZ_SCENE_ANCHOR_PANEL_LEFT, 36.0f, -40.0f, 0.0f);
 
+    DvzColor probe_color = {96, 220, 255, 220};
     dvz_text_set_string(state->anchor_probe, "anchor");
-    apply_text_style(state->anchor_probe, state->size_pts + 2.0f, renderer, color);
-    apply_text_placement(state->anchor_probe, anchor, state->offset_x, state->offset_y, 0.0f);
+    apply_text_style(state->anchor_probe, 8.0f, renderer, probe_color);
+    apply_text_placement(state->anchor_probe, anchor, 0.0f, 0.0f, 0.0f);
 
     uint32_t tick_count = (uint32_t)(state->tick_count_value + 0.5f);
     if (tick_count > TEXT_LAB_MAX_TICKS)
@@ -575,6 +576,8 @@ int main(int argc, char** argv)
     }
     upload_raw_glyph_texture(state.raw_glyph);
     update_raw_glyph(&state);
+    dvz_visual_set_alpha_mode(state.raw_glyph, DVZ_ALPHA_BLENDED);
+    dvz_visual_set_depth_test(state.raw_glyph, false);
     DvzVisualAttachDesc raw_attach = {.z_layer = 2, .controller_mode = DVZ_CONTROLLER_FIXED};
     if (dvz_panel_add_visual(panel, state.raw_glyph, &raw_attach) != 0)
     {
