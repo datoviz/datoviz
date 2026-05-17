@@ -552,6 +552,8 @@ int test_scene_image_probe_plan_rejects_size_overflow(TstSuite* suite, TstItem* 
 
 int test_scene_text_annotation_bookkeeping(TstSuite* suite, TstItem* item);
 
+int test_scene_text_bitmap_visual_realization(TstSuite* suite, TstItem* item);
+
 #if defined(DVZ_HAS_APP) && DVZ_HAS_APP
 int test_app_offscreen_has_nonblank_pixels(TstSuite* suite, TstItem* item);
 

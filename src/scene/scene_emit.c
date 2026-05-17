@@ -725,6 +725,7 @@ void _scene_emit_visual_uploads(DvzFigure* figure, DvzFramePlan* plan)
     ANN(figure);
     ANN(figure->scene);
     ANN(plan);
+    _scene_prepare_text_visuals(figure);
     bool emitted_buffers[DVZ_SCENE_MAX_BUFFERS] = {0};
     for (uint32_t pi = 0; pi < figure->panel_count; pi++)
     {
@@ -1381,6 +1382,7 @@ void _scene_emit_panel_render(
     ANN(figure);
     ANN(plan);
     ANN(figure_id);
+    _scene_prepare_text_visuals(figure);
     ASSERT(panel_index < figure->panel_count);
     DvzPanel* panel = &figure->panels[panel_index];
 

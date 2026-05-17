@@ -374,6 +374,10 @@ struct DvzText
     uint32_t dirty_flags;
     uint64_t version;
     DvzTextLayoutMetrics metrics;
+    DvzVisual* visual;
+    uint64_t visual_version;
+    uint32_t visual_figure_width;
+    uint32_t visual_figure_height;
 };
 
 
@@ -1044,6 +1048,8 @@ bool _scene_color_from_colormap(const DvzColormap* colormap, double t, uint8_t o
 void _scene_visual_texture_mark_clean(DvzVisual* visual);
 
 void _scene_refresh_field_dirty_state(DvzScene* scene, DvzSampledField* field);
+
+void _scene_prepare_text_visuals(DvzFigure* figure);
 
 void _scene_release_visual_field(DvzVisual* visual);
 

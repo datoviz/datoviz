@@ -237,6 +237,81 @@ int test_scene_text_annotation_bookkeeping(TstSuite* suite, TstItem* item)
 }
 
 
+int test_scene_text_bitmap_visual_realization(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    ANN(item);
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 640, 480, 0);
+    DvzPanel* panel = dvz_panel(
+        figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+    ANN(panel);
+
+    DvzText* text = dvz_text(
+        panel,
+        &(DvzTextDesc){
+            .string = "Hi",
+            .style = {
+                .size_pts = 8.0f,
+                .renderer = DVZ_TEXT_RENDERER_SMALL_BITMAP_ATLAS,
+                .color = {64, 128, 255, 255},
+            },
+            .placement = {
+                .mode = DVZ_TEXT_PLACEMENT_SCREEN,
+                .anchor = DVZ_SCENE_ANCHOR_PANEL_TOP_LEFT,
+                .offset = {10.0f, 20.0f},
+            },
+        });
+    ANN(text);
+    AT(panel->visual_count == 0);
+
+    _scene_prepare_text_visuals(figure);
+    ANN(text->visual);
+    AT(panel->visual_count == 1);
+    AT(panel->visuals[0].visual == text->visual);
+    AT(panel->visuals[0].controller_mode == DVZ_CONTROLLER_FIXED);
+    AT(text->visual->type == DVZ_VISUAL_TYPE_IMAGE);
+    AT(text->visual->visible);
+    AT(text->visual->alpha_mode == DVZ_ALPHA_BLENDED);
+    AT(!text->visual->depth_test_enabled);
+    AT(text->visual_version == text->version);
+    AT(text->dirty_flags == DVZ_TEXT_DIRTY_NONE);
+    AC(text->metrics.advance[0], 12.0f, 1e-6f);
+    AC(text->metrics.layout_bounds[3], 8.0f, 1e-6f);
+
+    int pos_idx = _attr_index(text->visual, "position");
+    int uv_idx = _attr_index(text->visual, "texcoords");
+    AT(pos_idx >= 0);
+    AT(uv_idx >= 0);
+    AT(text->visual->attrs[pos_idx].item_count == 4);
+    AT(text->visual->attrs[uv_idx].item_count == 4);
+    const float(*positions)[3] = (const float(*)[3])text->visual->attrs[pos_idx].data;
+    ANN(positions);
+    AC(positions[0][0], -0.96875f, 1e-6f);
+    AC(positions[0][1], 0.9166667f, 1e-6f);
+    AC(positions[3][0], -0.93125f, 1e-6f);
+    AC(positions[3][1], 0.8833333f, 1e-6f);
+
+    ANN(text->visual->field);
+    AT(text->visual->field->desc.width == 12);
+    AT(text->visual->field->desc.height == 8);
+    AT(text->visual->field->dirty);
+
+    uint64_t old_visual_version = text->visual_version;
+    _scene_prepare_text_visuals(figure);
+    AT(text->visual_version == old_visual_version);
+    AT(panel->visual_count == 1);
+
+    dvz_text_set_string(text, "");
+    _scene_prepare_text_visuals(figure);
+    AT(!text->visual->visible);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
 /**
  * Register scene interaction tests.
  *
@@ -251,6 +326,7 @@ int test_scene_interaction(TstSuite* suite)
     TEST_SIMPLE(test_scene_interaction_core);
     TEST_SIMPLE(test_scene_selection_apply_pick_and_link_keys);
     TEST_SIMPLE(test_scene_text_annotation_bookkeeping);
+    TEST_SIMPLE(test_scene_text_bitmap_visual_realization);
 
     return 0;
 }
