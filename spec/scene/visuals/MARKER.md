@@ -9,6 +9,27 @@ It refines `../semantics/VISUAL_FAMILIES.md`, `../semantics/VISUAL_FAMILY_RULES.
 Shared attribute and behavioral definitions are in `SHARED_ATTRIBUTES.md`.
 
 
+## Current Implementation Status
+
+Status on 2026-05-17: the active v0.4 runtime implements the first code-SDF marker slice.
+
+The implemented path supports:
+
+1. retained `marker` visual construction via `dvz_marker()`;
+2. dense `position`, `color`, `size`, `angle`, and `shape` attributes;
+3. `shape` values stored as `uint32_t` `DvzMarkerShape` values;
+4. built-in code-SDF shapes `disc`, `square`, `triangle`, `diamond`, `cross`, and `ring`;
+5. `dvz_marker_style()` and `dvz_marker_set_style()` with `edge_color`, `line_width`, `filled`,
+   `stroke`, and `outline`;
+6. GLSL/Vulkan native point-list lowering with marker SDF coverage;
+7. WGSL/WebGPU instanced-quad lowering through the point-like lowering policy;
+8. GPU-backed marker picking using the marker sprite bounding box.
+
+The following sections describe the target marker contract. Bitmap, SDF, MSDF, atlas-backed custom
+symbols, scalar color/size modes, `shift`, aspect-ratio/magnitude helpers, data-space sizing, and
+exact SDF-mask picking are planned capabilities unless explicitly marked as implemented above.
+
+
 ## Semantic Purpose
 
 `marker` renders shaped point-like marks with full visual styling: shape, rotation, fill, stroke,
@@ -50,8 +71,12 @@ family spec is revised.
 | `vbar` | vertical bar | `ring` | thick ring | `pin` | map pin |
 | `tag` | label shape | `rounded_rect` | rounded rectangle | | |
 
-Shape is visual-wide by default in `code` mode.
-Per-item shape is supported via the optional `shape_index` attribute (see Per-Item Attributes).
+Shape is visual-wide by default in the target `code` mode.
+Per-item shape is supported via the `shape` attribute (see Per-Item Attributes).
+
+Status on 2026-05-17: the active first slice implements the subset `disc`, `square`, `triangle`,
+`diamond`, `cross`, and `ring`, and uses a dense per-item `shape` attribute instead of a visual-wide
+shape parameter.
 
 
 ## Per-Item Attributes
@@ -89,34 +114,36 @@ Applied in screen space after the panel transform — markers always face the vi
 Standard `vec2` — see `SHARED_ATTRIBUTES.md`.
 
 
-### `shape_index`
+### `shape`
 
 | Property | Value |
 |---|---|
-| Type | `uint8` — index into the built-in shape table |
-| Accepted sources | `PER_ITEM`, `PER_GROUP` |
+| Type | `uint32` — `DvzMarkerShape` |
+| Accepted sources | `PER_ITEM` in the active first slice |
 | Typical mutability | `dynamic` |
-| Optional | yes — when absent, the visual-wide `shape` applies to all items |
+| Optional | no in the active first slice |
 | Applies to | `code` mode only |
 
-Per-item shape override. When set, each item renders with the shape at this index in the
-built-in shape table (same ordering as the `shape` enum). Overrides the visual-wide `shape`
-for each item independently. Enables categorical scatter plots with different symbols per
-category in a single visual.
+Per-item shape selector. Each item renders with the requested built-in code-SDF shape.
+
+The target contract may later add a visual-wide default shape and grouped/atlas symbol sources.
 
 
-### `edgecolor` (per-item)
+### `edge_color` (per-item)
 
 | Property | Value |
 |---|---|
 | Type | `rgba_u8` |
 | Accepted sources | `PER_ITEM`, `PER_GROUP` |
 | Typical mutability | `dynamic` |
-| Optional | yes — when absent, the visual-wide `edgecolor` applies |
+| Optional | yes — when absent, the visual-wide `edge_color` applies |
 | Applies to | `aspect = outline` or `aspect = stroke` |
 
 Per-item edge color override. Only allocated when explicitly set — no memory cost when not used.
-Overrides the visual-wide `edgecolor` per item.
+Overrides the visual-wide `edge_color` per item.
+
+Status on 2026-05-17: per-item `edge_color` is not implemented. The active style API uses a
+visual-wide `edge_color` field in `DvzMarkerStyle`.
 
 
 ### `aspect_ratio`
@@ -128,7 +155,7 @@ Overrides the visual-wide `edgecolor` per item.
 | Default | `1.0` (circle) |
 | Typical mutability | `dynamic` |
 | Optional | yes — ignored when `shape ≠ ellipse` |
-| Applies to | `shape = ellipse` (visual-wide or via `shape_index`) |
+| Applies to | `shape = ellipse` (visual-wide or via per-item `shape`) |
 
 Per-item ellipse aspect ratio. Values > 1 produce tall ellipses; values < 1 produce wide ones.
 Combined with `angle` `PER_ITEM` for oriented ellipses.
@@ -161,6 +188,9 @@ field visualization.
 | Mutability | `dynamic` |
 | Applies to | `code` mode only |
 
+Status on 2026-05-17: not implemented as a visual-wide parameter. Use the dense per-item `shape`
+attribute in the active first slice.
+
 
 ### `aspect`
 
@@ -171,11 +201,11 @@ field visualization.
 | Mutability | `dynamic` |
 
 - `filled`: solid fill, no visible edge.
-- `stroke`: edge only, no fill. Width controlled by `linewidth`.
-- `outline`: filled body with edge on top. Uses both `color` (fill) and `edgecolor` (edge).
+- `stroke`: edge only, no fill. Width controlled by `line_width`.
+- `outline`: filled body with edge on top. Uses both `color` (fill) and `edge_color` (edge).
 
 
-### `edgecolor`
+### `edge_color`
 
 | Property | Value |
 |---|---|
@@ -186,7 +216,7 @@ field visualization.
 Edge color for `aspect = stroke` or `aspect = outline`. Visual-wide.
 
 
-### `linewidth`
+### `line_width`
 
 | Property | Value |
 |---|---|
@@ -259,7 +289,7 @@ Must match the declared render mode format.
 | Field | Default | Missing-value policy | `DvzStyle` override |
 |---|---|---|---|
 | `position` | required | NaN/Inf item skipped and not pickable | no |
-| `color`, `edgecolor` | fill white, edge transparent | scalar NaN uses scale missing color | yes |
+| `color`, `edge_color` | fill white, edge transparent | scalar NaN uses scale missing color | yes |
 | `size`, `scale` | family-defined screen size, scale `1` | scalar NaN uses fallback size | yes |
 | `angle`, `aspect`, `shape` | defaults described above | invalid value is validation error | yes |
 | `shift` | `(0, 0)` | NaN component treated as zero shift | yes |
@@ -326,7 +356,7 @@ and emits a diagnostic. `color_mode = scalar` and `size_mode = scalar` follow st
 | `dvz_marker_aspect` | `aspect` parameter |
 | `dvz_marker_shape` | `shape` parameter |
 | `dvz_marker_position/size/color/angle` | same attributes, extended sources and modes |
-| `dvz_marker_edgecolor/linewidth` | unchanged |
+| `dvz_marker_edgecolor/linewidth` | `edge_color` and `line_width` style fields |
 | `dvz_marker_texture/tex_scale` | unchanged |
 
 v0.4 adds: `size_space`, `shift`, `color_mode = scalar`, `size_mode = scalar`.

@@ -9,12 +9,34 @@ It refines `../semantics/VISUAL_FAMILIES.md`, `../semantics/VISUAL_FAMILY_RULES.
 Shared attribute and behavioral definitions are in `SHARED_ATTRIBUTES.md`.
 
 
+## Current Implementation Status
+
+Status on 2026-05-17: the active v0.4 runtime implements the first styled point slice.
+
+The implemented path supports:
+
+1. retained `point` visual construction via `dvz_point()`;
+2. dense `position`, `color`, and `size` attributes, where `size` is the screen-space diameter;
+3. antialiased circular rendering;
+4. `dvz_point_style_desc()` and `dvz_point_set_style()` with `edge_color`, `line_width`,
+   `filled`, `stroke`, and `outline`;
+5. GLSL/Vulkan native point-list lowering using point-coordinate coverage;
+6. WGSL/WebGPU instanced-quad lowering;
+7. GPU-backed circular picking that rejects points outside the disc;
+8. existing depth cueing, EDL, alpha-mode, WBOIT/depth-peel, and app/offscreen coverage for point
+   visuals.
+
+The following sections describe the target point contract. Constant and grouped attribute sources,
+scalar color/size modes, `shift`, and data-space size are planned capabilities unless explicitly
+marked as implemented above.
+
+
 ## Semantic Purpose
 
 `point` renders circular point-like marks with per-item size control.
 
-It is richer than `pixel` (per-item size) and simpler than `marker` (no shape, rotation, or edge
-treatment).
+It is richer than `pixel` (circular coverage and optional edge/stroke styling) and simpler than
+`marker` (no shape selection or rotation).
 
 Right for scatter plots, particle systems, and similar data where items need independent sizes but
 do not require shaped or styled marks.
@@ -48,6 +70,8 @@ Per-item size is the defining attribute of `point` relative to `pixel`.
 
 Standard `vec2` — see `SHARED_ATTRIBUTES.md`.
 Useful for jitter plots and zoom-invariant nudging.
+
+Status on 2026-05-17: not implemented in the active point slice.
 
 
 ## Visual-Wide Parameters
@@ -149,12 +173,12 @@ v0.4 adds: `CONSTANT`/`PER_GROUP` sources for `color` and `size`, `scalar` modes
 
 ## Rendering Model
 
-`point` always renders as a smooth disc using an SDF impostor (circle SDF in the fragment
-shader), not as a hardware point sprite. Hardware point sprites are square on many drivers
-and not supported in WebGPU; they are never exposed.
+`point` exposes smooth circular marks regardless of backend. The active GLSL/Vulkan path keeps
+native point-list lowering and evaluates circular coverage from point coordinates. The active
+WGSL/WebGPU lowering uses instanced quads because WebGPU has no native point-size equivalent.
 
-Each point occupies a quad (two triangles); the fragment shader discards corners outside the
-circle. This is the same approach used by `marker` without the shape or rotation machinery.
+A later slice may move GLSL to instanced quads too if exact GLSL/WGSL parity becomes more important
+than native point-list throughput.
 
 Depth sorting of semi-transparent points uses the scene's transparency path
 (see `semantics/TRANSPARENCY.md`). `point` declares `alpha_mode` like any other visual.

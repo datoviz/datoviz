@@ -1,18 +1,31 @@
 # Scene Vector Visuals Plan
 
 > **Execution Status**
-> - **Status:** `PICKUP PLAN`
-> - **Updated on:** `2026-05-16`
+> - **Status:** `PARTIALLY IMPLEMENTED / FOLLOW-UP PLAN`
+> - **Updated on:** `2026-05-17`
 > - **Purpose:** stage the implementation of segment, stroked path, dashed line, arrow/vector, tube,
 >   and SVG-subset visuals on the existing scene -> FramePlan -> DRP2 -> vklite runtime path.
 
 
 ## Current Position
 
-The active scene slice already has a minimal `dvz_path()` visual, but it is intentionally only a
-line-strip convenience wrapper over the primitive pipeline. It does not yet model stroke width,
-screen-space antialiasing, joins, caps, dashes, markers, arrowheads, vector fields, curve flattening,
-or SVG path semantics.
+The active scene slice now has:
+
+1. a retained `dvz_segment()` visual for independent endpoint pairs;
+2. `position_start` and `position_end` endpoint attributes;
+3. per-item `line_width` in screen pixels;
+4. RGBA color;
+5. analytic GLSL stroked segment lowering based on the v0.3 four-vertex/six-index technique;
+6. first-slice segment caps `none`, `round`, `triangle_in`, `triangle_out`, `square`, and `butt`;
+7. `dvz_segment_set_caps()`;
+8. the existing `dvz_path()` primitive line-strip path when no `line_width` is present;
+9. a stroked `dvz_path()` lane when per-point `line_width` is present;
+10. open subpath lengths via `dvz_path_set_subpaths()`;
+11. stroked path lowering through derived segment-style resources.
+
+It does not yet model dashes, arrowheads, path-specific joins, path-specific miter-limit behavior,
+closed subpaths, filled paths, vector fields, curve flattening, or SVG path semantics. Segment/path
+picking and WGSL segment/path lowering are also still follow-up work.
 
 This is not greenfield. The `v0.3/` tree already contains dedicated segment, path, marker, SVG-SDF,
 and 3D arrow work that should be mined and ported selectively:
@@ -104,12 +117,11 @@ SVG references for the compatibility target:
 
 `segment` is the narrow foundation. It represents independent 2D or 3D line segments with no joins:
 
-1. per-item attributes: `position0`, `position1`, optional `shift`, optional `color`, optional
-   `width`;
+1. per-item attributes: `position_start`, `position_end`, `color`, and `line_width`;
 2. visual-level stroke style: start cap, end cap, antialias radius, dash style, coordinate mode;
 3. one segment is one independent primitive, so caps and arrowheads are unambiguous;
-4. v0.3 already validates the four-vertex/six-index analytic-cap model; the first v0.4 task is a
-   careful port into retained scene/DRP2, not invention of a new segment renderer;
+4. v0.3 already validates the four-vertex/six-index analytic-cap model; the first v0.4 port into
+   retained scene/DRP2 has landed for solid strokes and non-arrow caps;
 5. useful immediately for plot ticks, grid lines, rulers, annotations, graph edges, and vector-field
    shafts.
 
@@ -121,16 +133,16 @@ screen-space extrusion without join complexity.
 
 `path` is an ordered set of one or more subpaths:
 
-1. per-vertex attributes: `position`, optional `color`, optional `width`;
-2. structural metadata: subpath start/count, closed/open bit, cumulative arc length;
+1. per-vertex attributes: `position`, optional `color`, optional `line_width`;
+2. structural metadata: subpath lengths first, closed/open bit and cumulative arc length later;
 3. visual-level stroke style: cap mode, join mode, miter limit, dash style, antialias radius;
 4. derived adjacency data equivalent to the v0.3 `(p0, p1, p2, p3)` vertex payload;
 5. optional fill style for closed paths in later stages.
 
-The current line-strip path should become a retained stroked path, not a raw hardware line-strip.
-The primitive line-strip path can remain available internally for tests or debug fixtures. The v0.3
-path shader is the baseline for miter/round joins, caps, and pixel-width strokes; dashing and SVG
-subpaths are the main missing features.
+The current line-strip path remains available when `line_width` is absent. When `line_width` is
+present, the first stroked path slice derives segment-style resources and uses the segment stroke
+pipeline. The v0.3 path shader remains the baseline for later miter/round joins, caps, and
+path-native pixel-width strokes; dashing, closed subpaths, and SVG subpaths are still missing.
 
 
 ### Arrow And Marker
@@ -356,11 +368,15 @@ git diff --check
 
 Scope: first true stroked primitive, ported from v0.3.
 
+Status on 2026-05-17: implemented for GLSL/native rendering with solid strokes and non-arrow caps.
+WGSL lowering, endpoint `shift`, dashes, arrow caps, scalar/grouped color, and picking remain
+follow-up work.
+
 Expected work:
 
 1. add `DVZ_VISUAL_TYPE_SEGMENT`;
-2. add `dvz_segment()` with dense attributes matching v0.3 intent: `position0`, `position1`,
-   optional `shift`, `color`, and `width`;
+2. add `dvz_segment()` with dense attributes matching v0.4 naming: `position_start`,
+   `position_end`, `color`, and `line_width`;
 3. port `graphics_segment.vert`, `graphics_segment.frag`, and the relevant `antialias.glsl`
    functions into the v0.4 built-in shader registry;
 4. lower segment visuals through FramePlan like other retained visuals;
@@ -383,6 +399,11 @@ git diff --check
 ### Stage 2. Port Path Geometry And Joins
 
 Scope: replace line-strip path rendering with a retained stroked polyline, ported from v0.3.
+
+Status on 2026-05-17: partially implemented. Paths without `line_width` still use the primitive
+line-strip path. Paths with per-point `line_width` derive segment-style stroke resources and support
+open subpath lengths. Path-native joins, miter limits, closed subpaths, dashes, and picking remain
+follow-up work.
 
 Expected work:
 

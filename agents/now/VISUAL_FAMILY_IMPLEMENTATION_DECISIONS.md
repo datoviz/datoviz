@@ -37,18 +37,49 @@ It is authoritative for the first implementation pass when those documents disag
    relevant tests pass.
 
 
+## Current Landed Status
+
+Status on 2026-05-17: the first implementation batch for the five families has landed.
+
+Implemented:
+
+1. `pixel`: dense `position`/`color`/`size`, GLSL native square points, WGSL instanced quads,
+   offscreen nonblank smoke, and GPU square picking.
+2. `point`: dense `position`/`color`/`size`, antialiased circular coverage, edge/stroke styling via
+   `dvz_point_set_style()`, GLSL native point-coordinate rendering, WGSL instanced quads, and GPU
+   circular picking.
+3. `marker`: public `dvz_marker()`, code-SDF shapes `disc`, `square`, `triangle`, `diamond`,
+   `cross`, and `ring`, dense `position`/`color`/`size`/`angle`/`shape`, marker style API, GLSL
+   marker rendering, WGSL point-like lowering, and GPU bounding-box picking.
+4. `segment`: public `dvz_segment()`, `position_start`/`position_end` endpoint attributes,
+   per-item `line_width`, RGBA color, analytic GLSL stroke quads, non-arrow caps, and cap
+   validation/API.
+5. `path`: existing primitive line-strip path plus a stroked path lane when per-point `line_width`
+   is present, open subpath lengths via `dvz_path_set_subpaths()`, and GLSL lowering through the
+   segment stroke pipeline.
+
+Validation recorded after the batch:
+
+1. `just test app` passed `58/58`.
+2. `just spec-check` passed all DRP2 fixture and pytest phases.
+3. Full `just test` passed `563/563`.
+
+Remaining work should start from the deferred lists below rather than re-opening these first-slice
+decisions.
+
+
 ## Pixel
 
-First slice:
+Implemented first slice:
 
 1. Keep the current retained API shape: `position`, `color`, and `size` are dense attributes.
 2. `size` remains a per-item attribute in the first slice, matching current implementation and tests.
 3. Colors are RGBA only.
 4. Sizes are screen-space pixels only.
 5. No `shift`, scalar color, `PER_GROUP`, default-size optimization, or `size_space = data` yet.
-6. Add or tighten GLSL and WGSL emission coverage.
-7. Add one runtime/offscreen smoke proving pixel draws nonblank square marks.
-8. Add GPU-backed square picking if the request executor work remains contained.
+6. GLSL and WGSL emission coverage is in place.
+7. Runtime/offscreen smoke proves pixel draws nonblank square marks.
+8. GPU-backed square picking is in place.
 
 Deferred:
 
@@ -61,16 +92,16 @@ Deferred:
 
 ## Point
 
-First slice:
+Implemented first slice:
 
 1. Keep current dense `position`, `color`, and `size` attributes.
 2. `size` is the point diameter in screen pixels.
 3. Colors are RGBA only.
-4. Add antialiased circular point rendering.
-5. Add point edge/stroke styling.
-6. Add GPU-backed circular picking.
-7. Keep EDL, depth-cue, alpha-mode, WBOIT, and depth-peel eligibility consistent with the existing
-   point visual unless a focused test proves the old behavior was wrong.
+4. Antialiased circular point rendering is in place.
+5. Point edge/stroke styling is in place.
+6. GPU-backed circular picking is in place.
+7. EDL, depth-cue, alpha-mode, WBOIT, and depth-peel eligibility remain routed through the existing
+   point visual pass-capability path.
 
 Naming:
 
@@ -97,21 +128,21 @@ Deferred:
 
 ## Marker
 
-First slice:
+Implemented first slice:
 
-1. Implement `marker` as code-SDF only.
-2. Add public marker enums and `dvz_marker()`.
-3. Add `DvzMarkerStyle` and `dvz_marker_set_style()`.
-4. Initial built-in shapes: `disc`, `square`, `triangle`, `diamond`, `cross`, and `ring`.
+1. `marker` is implemented as code-SDF only.
+2. Public marker enums and `dvz_marker()` are in place.
+3. `DvzMarkerStyle` and `dvz_marker_set_style()` are in place.
+4. Initial built-in shapes are `disc`, `square`, `triangle`, `diamond`, `cross`, and `ring`.
 5. Use v0.3 marker GLSL SDF code as design prior art and port selectively into the v0.4 shader
    registry and runtime path.
 6. Attributes: `position`, `color`, `size`, and `angle`.
 7. Optional per-item shape attribute name: `shape`.
 8. The `shape` attribute uses `uint32_t`, not `uint8_t`, for alignment and future symbol/atlas
    consistency.
-9. Add GPU-backed marker picking in the first marker lane if contained.
-10. Picking may start with the marker sprite bounding box. Exact code-SDF shape-mask picking may be
-    a follow-up in the same lane after rendering is stable.
+9. GPU-backed marker picking is in place.
+10. Picking currently uses the marker sprite bounding box. Exact code-SDF shape-mask picking remains
+    deferred.
 
 Style naming:
 
@@ -132,9 +163,9 @@ Deferred:
 
 ## Segment
 
-First slice:
+Implemented first slice:
 
-1. Implement a retained `segment` visual for independent endpoint pairs.
+1. A retained `segment` visual for independent endpoint pairs is in place.
 2. Endpoint attribute names are `position_start` and `position_end`.
 3. Use screen-space stroked segments based on the v0.3 analytic four-vertex/six-index technique.
 4. Support non-arrow caps needed by the v0.3 segment cap model.
@@ -142,9 +173,8 @@ First slice:
 6. Width is screen-space only in the first slice.
 7. Do not implement dashes in the first slice.
 8. Do not implement arrow caps in the first slice; arrows belong to the later marker/attachment lane.
-9. Do not implement scalar color, `color_end`, grouped attributes, or segment picking in the first
-   slice.
-10. GLSL/native runtime support comes first; WGSL may follow after the GLSL resource shape is stable.
+9. Scalar color, `color_end`, grouped attributes, and segment picking remain deferred.
+10. GLSL/native runtime support is in place; WGSL segment lowering remains deferred.
 
 Deferred:
 
@@ -162,22 +192,20 @@ Deferred:
 
 Ordering:
 
-1. Stroked path work waits until the segment first slice has landed.
-2. Segment should establish the stroke vocabulary, shader conventions, runtime resource shape, and
-   initial offscreen tests before path replaces the current primitive-backed line strip.
+1. The segment first slice has landed.
+2. The current path implementation keeps primitive line-strip rendering when `line_width` is absent
+   and lowers to the segment stroke pipeline when `line_width` is present.
 
-First stroked path slice:
+Implemented first stroked path slice:
 
-1. Replace the current line-strip convenience path deliberately, not opportunistically.
-2. Add explicit subpath/span metadata with a public helper such as
-   `dvz_path_set_subpaths(visual, path_count, span_sizes, closed_flags_or_NULL)`.
-3. Do not overload `dvz_visual_set_data("span_sizes", ...)` as the primary public API.
-4. Default caps are `butt`.
-5. Default join is `miter`.
-6. Default miter limit is `4.0`.
-7. Support per-point/per-vertex path width in the first stroked path implementation because v0.3
-   supported it and it is needed for tapered paths.
-8. Preserve open and closed path semantics explicitly through subpath metadata.
+1. The current line-strip convenience path is preserved for paths without `line_width`.
+2. Explicit open subpath metadata is provided by `dvz_path_set_subpaths()`.
+3. `dvz_visual_set_data("span_sizes", ...)` is not used as the primary public API.
+4. Default caps are `butt` through the segment stroke pipeline.
+5. Path-specific joins remain deferred.
+6. Path-specific miter limit remains deferred.
+7. Per-point/per-vertex path width is implemented.
+8. Open subpath lengths are preserved explicitly; closed path metadata remains deferred.
 
 Deferred:
 
@@ -186,15 +214,19 @@ Deferred:
 3. Filled paths/polygons.
 4. Path picking unless explicitly scoped after rendering is stable.
 5. Data-space line width unless a separate implementation note defines the 2D/3D projection rules.
+6. Closed subpaths.
+7. Path-specific joins and miter-limit handling.
 
 
-## Suggested Worker Lanes
+## Remaining Worker Lanes
 
-1. Pixel hardening and GPU square picking.
-2. Point antialiased disc, edge/stroke styling, and GPU circular picking.
-3. Segment first slice.
-4. Marker code-SDF and GPU bounding-box picking.
-5. Path stroked polyline after segment lands.
+1. Exact marker SDF-mask picking, if the bounding-box pick area is too broad for examples.
+2. Segment and path WGSL lowering.
+3. Segment/path picking based on screen-space stroke width.
+4. Path closed-subpath, join, and miter-limit support.
+5. Scalar/grouped/constant-source attribute modes shared across these families.
+6. Bitmap/SDF/MSDF marker modes and shared marker/glyph atlas infrastructure.
+7. Dashes, arrow caps, and marker attachments for segment/path.
 
 Workers are not alone in the codebase. Each lane must preserve unrelated user edits, avoid reverting
 other workers' changes, and coordinate around shared files such as `include/datoviz/scene.h`,

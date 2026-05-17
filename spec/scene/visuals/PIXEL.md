@@ -9,6 +9,26 @@ It refines `../semantics/VISUAL_FAMILIES.md`, `../semantics/VISUAL_FAMILY_RULES.
 Shared attribute and behavioral definitions are in `SHARED_ATTRIBUTES.md`.
 
 
+## Current Implementation Status
+
+Status on 2026-05-17: the active v0.4 runtime implements the first retained pixel slice.
+
+The implemented path supports:
+
+1. retained `pixel` visual construction via `dvz_pixel()`;
+2. dense `position`, `color`, and `size` attributes, where `size` is per item and measured in
+   screen pixels;
+3. GLSL/Vulkan lowering as native square point-list sprites;
+4. WGSL/WebGPU lowering as instanced quads, preserving the same public visual contract;
+5. depth-cue pipeline switching for pixel visuals;
+6. GPU-backed square picking through the scene request path;
+7. offscreen/app smoke coverage proving square marks render nonblank pixels.
+
+The following sections describe the target pixel contract. Constant/default size storage, `shift`,
+scalar color and scale binding, grouped color, and data-space pixel size are planned capabilities
+unless explicitly marked as implemented above.
+
+
 ## Semantic Purpose
 
 `pixel` renders filled square pixel-like marks at given positions.
@@ -18,11 +38,11 @@ It is intentionally the simplest mark family:
 1. no shape selection,
 2. no per-item rotation,
 3. no edge or stroke treatment,
-4. one size shared by all items.
+4. no antialiased or analytic non-square coverage.
 
 `pixel` is the right choice when the user needs to render many items efficiently and uniform mark
 shape is acceptable.
-For per-item size, shape, or edge treatment, use `point` or `marker`.
+For circular, shaped, rotated, or edge-styled marks, use `point` or `marker`.
 
 
 ## Per-Item Attributes
@@ -51,6 +71,19 @@ Accepted sources: `CONSTANT`, `PER_ITEM`, `PER_GROUP`.
 
 Standard `vec2` — see `SHARED_ATTRIBUTES.md`.
 
+Status on 2026-05-17: not implemented in the active pixel slice.
+
+
+### `size`
+
+| Property | Value |
+|---|---|
+| Type | `float32`, screen pixels |
+| Accepted sources | `PER_ITEM` only in the active first slice |
+| Typical mutability | `dynamic` or `streaming` |
+
+Side length of each square mark.
+
 
 ## Visual-Wide Parameters
 
@@ -64,7 +97,9 @@ Standard `vec2` — see `SHARED_ATTRIBUTES.md`.
 
 Size of every pixel mark. All items share the same size.
 Minimum supported size: 1 physical pixel. Maximum: unspecified, backend-dependent.
-For per-item size, use `point`.
+
+Status on 2026-05-17: this visual-wide/default size convenience is not implemented yet. The active
+slice uses dense per-item `size` data.
 
 ### `size_space`
 

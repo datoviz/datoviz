@@ -1,8 +1,8 @@
 # Scene Pixel, Point, Marker Implementation Plan
 
 > **Execution Status**
-> - **Status:** `PLANNING NOTE`
-> - **Updated on:** `2026-05-16`
+> - **Status:** `PARTIALLY IMPLEMENTED / FOLLOW-UP PLAN`
+> - **Updated on:** `2026-05-17`
 > - **Purpose:** define the staged v0.4 path for full pixel, point, marker, bitmap-marker,
 >   MSDF-marker, and glyph/MSDF support through the active scene -> DRP2 -> runtime stack.
 
@@ -20,9 +20,9 @@ Bitmap markers belong in the marker visual as a marker mode, not as a separate v
 and MSDF markers should share atlas/MSDF infrastructure, but glyph/text should remain a separate
 visual because text layout has different semantics from scatter-symbol rendering.
 
-Implementation should happen in small slices. Pixels and points already have v0.4 scaffolding and
-should be hardened first. Marker should start with code-SDF shapes, then bitmap mode, then atlas mode,
-then shared MSDF infrastructure used by both marker and glyph/text.
+Implementation is happening in small slices. The first pixel, point, and code-SDF marker slices have
+landed. Remaining marker work should move to exact picking, bitmap mode, atlas mode, then shared
+MSDF infrastructure used by both marker and glyph/text.
 
 
 ## Current v0.4 Position
@@ -31,29 +31,39 @@ Already present:
 
 1. `dvz_point()` and `dvz_pixel()` are public scene constructors.
 2. Point-like visuals already use `position`, `color`, and `size` attributes.
-3. Scene frame-plan metadata already recognizes point-like visual types internally, including
+3. `dvz_marker()` is a public scene constructor for code-SDF markers.
+4. Scene frame-plan metadata recognizes point-like visual types, including
    `DVZ_VISUAL_TYPE_MARKER`.
-4. GLSL and WGSL shader files already exist for `point`, `pixel`, and depth-cue variants.
-5. WGSL point/pixel lowering already uses instanced quads because WebGPU has no native point-list
-   size equivalent.
-6. GLSL point/pixel lowering currently uses native point-list semantics.
-7. Point picking exists for `DVZ_VISUAL_TYPE_POINT` through the scene request path.
-8. Depth cueing, EDL, alpha-mode planning, WBOIT/depth-peel graph routing, and runtime reuse already
-   know about point-like visuals in some form.
+5. GLSL and WGSL shader files exist for `point`, `pixel`, and depth-cue variants.
+6. GLSL marker shader files exist for the code-SDF marker slice.
+7. WGSL point/pixel lowering uses instanced quads because WebGPU has no native point-list size
+   equivalent.
+8. GLSL point/pixel/marker lowering currently uses native point-list semantics.
+9. Point picking exists for `DVZ_VISUAL_TYPE_POINT` through the scene request path.
+10. Pixel picking exists with square hit areas.
+11. Marker picking exists with marker sprite bounding-box hit areas.
+12. Depth cueing, EDL, alpha-mode planning, WBOIT/depth-peel graph routing, and runtime reuse
+    already know about point-like visuals in some form.
+
+First-slice marker capabilities:
+
+1. dense `position`, `color`, `size`, `angle`, and `shape`;
+2. `DvzMarkerShape` values stored as `uint32_t`;
+3. built-in shapes `disc`, `square`, `triangle`, `diamond`, `cross`, and `ring`;
+4. `DvzMarkerStyle` with `edge_color`, `line_width`, `filled`, `stroke`, and `outline`;
+5. code-SDF mode only.
 
 Gaps:
 
-1. GLSL `point` and `pixel` are visually too close: both currently draw native square points unless
-   backend-specific point rendering happens to help.
-2. Point lacks a first-class antialiased disc shader and stroke/edge styling.
-3. Pixel needs a deliberately simple public contract and narrow tests that prove it stays simple.
-4. Marker has an internal type but no public v0.4 constructor, no shader registry entries, no public
-   marker enums, no marker state, and no runtime tests.
-5. Picking is point-only and should become point-like with family-specific shape masks.
-6. Bitmap/SDF/MSDF marker support does not yet have an atlas/resource substrate in the active v0.4
+1. Exact marker shape-mask picking is not implemented yet; the active pick area is the marker sprite
+   bounding box.
+2. Bitmap/SDF/MSDF marker support does not yet have an atlas/resource substrate in the active v0.4
    scene path.
-7. Glyph/text bookkeeping exists, but GPU-backed glyph rendering and shared MSDF atlas support are
+3. Glyph/text bookkeeping exists, but GPU-backed glyph rendering and shared MSDF atlas support are
    not active yet.
+4. Constant/grouped/scalar attribute-source variants are still target-contract work for these
+   families.
+5. Data-space sizing and `shift` are still target-contract work.
 
 
 ## Design Principles
