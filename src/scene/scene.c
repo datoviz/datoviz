@@ -25,6 +25,7 @@
 #include "_log.h"
 #include "_overflow.h"
 #include "_scene_emit.h"
+#include "render_contract.h"
 #include "datoviz/drp2/runtime.h"
 #include "datoviz/math/_cglm.h"
 #include "../drp2/_stream.h"
@@ -935,6 +936,20 @@ DvzDrp2CommandStream* dvz_figure_emit_ex(
 
     for (uint32_t pi = 0; pi < figure->panel_count; pi++)
         _scene_emit_panel_render(figure, pi, plan, figure_id);
+
+    DvzDiagnosticReport contract_report;
+    dvz_diagnostic_report_init(&contract_report);
+    bool contracts_ok = _scene_frame_plan_contracts_validate(figure, plan, &contract_report);
+    if (!contracts_ok)
+    {
+        for (uint32_t i = 0; i < dvz_diagnostic_report_count(&contract_report); i++)
+        {
+            const char* message = dvz_diagnostic_report_get(&contract_report, i);
+            if (message != NULL)
+                log_error("scene render contract validation failed: %s", message);
+        }
+    }
+    ASSERT(contracts_ok);
 
     DvzCapabilitySnapshot default_caps;
     DvzDiagnosticReport local_report;
