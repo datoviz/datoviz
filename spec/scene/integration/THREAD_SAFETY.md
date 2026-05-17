@@ -103,6 +103,28 @@ This is the general-purpose escape hatch for operations that do not fit the type
 transfer variants above.
 
 
+## Async User Callbacks
+
+The transfer queue remains the scene-level data handoff mechanism for typed attribute and uniform
+updates. User-facing async callbacks should additionally follow the proposal in
+`../proposals/ASYNC_CALLBACKS.md`:
+
+```text
+prepare(event, scene) -> snapshot   # render thread, optional
+work(snapshot)        -> result     # worker thread
+apply(result, scene)  -> void       # render thread
+```
+
+This pattern is the recommended answer when a click, hover, selection change, or Python callback
+starts slow work such as `time.sleep(5)`, file I/O, or scientific computation. If the worker needs
+scene data, the prepare phase must copy that data into a snapshot on the render thread first. The
+worker must not retain pointers into scene-owned visual buffers or callback event structs.
+
+An app/window-level post queue, proposed as `dvz_app_window_post()`, should complement the scene
+transfer queue by letting worker threads schedule arbitrary apply callbacks on the Datoviz/UI thread.
+Those callbacks may then use normal scene mutation APIs at a documented safe drain point.
+
+
 ## Background Computation Pattern
 
 The intended pattern for background computation → scene update:
@@ -212,3 +234,4 @@ Sharing resources across multiple scenes or across threads is not supported in v
 | `pipeline/INVALIDATION_AND_CACHING.md` | drained transfers mark affected attributes dirty |
 | `pipeline/RESOURCE_MODEL.md` | staging pool and zero-copy upload path |
 | `pipeline/FRAME_PLAN.md` | dirty attributes resolved into UploadNodes in the same frame |
+| `../proposals/ASYNC_CALLBACKS.md` | prepare/work/apply callback model and app-window post primitive |

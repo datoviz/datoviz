@@ -122,6 +122,26 @@ This keeps widget focus, typing, dragging, and menu interaction out of scene-nat
 policy.
 
 
+## Async Work And Main-Thread Dispatch
+
+External UI integrations should use the same main-thread dispatch model as scene callbacks. Slow
+work triggered by widget input, pointer events, or scene notifications should run off-thread, but
+live scene reads and mutations should happen on the host/UI thread that owns Datoviz rendering.
+
+The proposed async callback model is:
+
+```text
+prepare(event, scene) -> snapshot   # host UI / Datoviz render thread
+work(snapshot)        -> result     # worker, QThreadPool, Python executor, etc.
+apply(result, scene)  -> void       # host UI / Datoviz render thread
+```
+
+For Qt-hosted applications, host-native worker mechanisms such as `QThreadPool`, queued signals, or
+`QtConcurrent` remain appropriate. A Datoviz app-window post primitive should integrate with the
+hosted request-frame callback so a worker result can schedule `QWindow::requestUpdate()` or
+`QWidget::update()` without requiring another input event.
+
+
 ## Rendering Relationship
 
 External UI rendering is outside the scene plan.

@@ -22,3 +22,4 @@ selection state, or animation timing.
 3. [../proposals/PROBE_READOUT_DESIGN.md](../proposals/PROBE_READOUT_DESIGN.md)
 4. [../proposals/SELECTION_HIGHLIGHT_DESIGN.md](../proposals/SELECTION_HIGHLIGHT_DESIGN.md)
 5. [../proposals/TRANSFORM_CONTROLLER_DESIGN.md](../proposals/TRANSFORM_CONTROLLER_DESIGN.md)
+6. [../proposals/ASYNC_CALLBACKS.md](../proposals/ASYNC_CALLBACKS.md)

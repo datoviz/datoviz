@@ -56,8 +56,9 @@ slices once the specialized specs and proposals already agree on behavior.
 
 Use this map when turning proposals into implementation-ready spec changes.
 
-1. `PICKING_DESIGN.md`, `SELECTION_HIGHLIGHT_DESIGN.md`, `INTERACTION_API_DESIGN.md`, and
-   `PROBE_READOUT_DESIGN.md` promote into `../interaction/PICKING.md`,
+1. `PICKING_DESIGN.md`, `SELECTION_HIGHLIGHT_DESIGN.md`, `INTERACTION_API_DESIGN.md`,
+   `ASYNC_CALLBACKS.md`, and `PROBE_READOUT_DESIGN.md` promote into
+   `../interaction/PICKING.md`,
    `../interaction/SELECTION.md`, `../interaction/CONTROLLERS.md`,
    `../interaction/EVENT_CALLBACKS.md`, and `../api/API_SURFACE.md`.
    `CONTROLLER_INSPECTORS_AND_GIZMOS.md` promotes into `../integration/EXTERNAL_UI.md`,
@@ -94,11 +95,12 @@ Use this map when turning proposals into implementation-ready spec changes.
 Interaction and event behavior:
 
 1. [INTERACTION_API_DESIGN.md](INTERACTION_API_DESIGN.md)
-2. [CONTROLLER_INSPECTORS_AND_GIZMOS.md](CONTROLLER_INSPECTORS_AND_GIZMOS.md)
-3. [PICKING_DESIGN.md](PICKING_DESIGN.md)
-4. [PROBE_READOUT_DESIGN.md](PROBE_READOUT_DESIGN.md)
-5. [SELECTION_HIGHLIGHT_DESIGN.md](SELECTION_HIGHLIGHT_DESIGN.md)
-6. [TRANSFORM_CONTROLLER_DESIGN.md](TRANSFORM_CONTROLLER_DESIGN.md)
+2. [ASYNC_CALLBACKS.md](ASYNC_CALLBACKS.md)
+3. [CONTROLLER_INSPECTORS_AND_GIZMOS.md](CONTROLLER_INSPECTORS_AND_GIZMOS.md)
+4. [PICKING_DESIGN.md](PICKING_DESIGN.md)
+5. [PROBE_READOUT_DESIGN.md](PROBE_READOUT_DESIGN.md)
+6. [SELECTION_HIGHLIGHT_DESIGN.md](SELECTION_HIGHLIGHT_DESIGN.md)
+7. [TRANSFORM_CONTROLLER_DESIGN.md](TRANSFORM_CONTROLLER_DESIGN.md)
 
 Text, axes, scales, annotations, and explanatory objects:
 
