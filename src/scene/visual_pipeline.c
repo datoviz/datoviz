@@ -1644,6 +1644,34 @@ bool _scene_visual_shader_desc(
 
 
 
+
+
+/**
+ * Apply the standard depth-state rules shared by raster visual descriptors.
+ *
+ * @param caps resolved pass capabilities for the visual
+ * @param pass_needs_depth whether the containing pass has a depth attachment
+ * @param wboit_accumulation whether the pass is an order-independent transparency pass
+ * @param alpha_mode visual alpha mode
+ * @param out pipeline descriptor to update
+ */
+static void _pipeline_apply_standard_depth_state(
+    const DvzSceneVisualPassCaps* caps, bool pass_needs_depth, bool wboit_accumulation,
+    DvzAlphaMode alpha_mode, DvzSceneVisualPipelineDesc* out)
+{
+    ANN(caps);
+    ANN(out);
+
+    if (!pass_needs_depth)
+        return;
+
+    out->depth_write_enabled =
+        caps->can_write_depth && !wboit_accumulation && alpha_mode != DVZ_ALPHA_BLENDED;
+    out->depth_compare_op =
+        caps->can_depth_test ? VK_COMPARE_OP_LESS_OR_EQUAL : VK_COMPARE_OP_ALWAYS;
+}
+
+
 /**
  * Resolve vertex-layout and depth-state metadata for one visual descriptor.
  *
@@ -1709,13 +1737,8 @@ bool _scene_visual_pipeline_desc(
             out->formats[4] = VK_FORMAT_R32_UINT;
             out->needs_common_layout = caps.uses_common_set;
             out->needs_material_layout = caps.needs_material_layout && !picking;
-            if (pass_needs_depth)
-            {
-                out->depth_write_enabled =
-                    caps.can_write_depth && !wboit_accumulation && alpha_mode != DVZ_ALPHA_BLENDED;
-                out->depth_compare_op =
-                    caps.can_depth_test ? VK_COMPARE_OP_LESS_OR_EQUAL : VK_COMPARE_OP_ALWAYS;
-            }
+            _pipeline_apply_standard_depth_state(
+                &caps, pass_needs_depth, wboit_accumulation, alpha_mode, out);
             return true;
         }
 
@@ -1738,13 +1761,8 @@ bool _scene_visual_pipeline_desc(
         out->formats[2] = VK_FORMAT_R32_SFLOAT;
         out->needs_common_layout = caps.uses_common_set;
         out->needs_material_layout = caps.needs_material_layout;
-        if (pass_needs_depth)
-        {
-            out->depth_write_enabled =
-                caps.can_write_depth && !wboit_accumulation && alpha_mode != DVZ_ALPHA_BLENDED;
-            out->depth_compare_op =
-                caps.can_depth_test ? VK_COMPARE_OP_LESS_OR_EQUAL : VK_COMPARE_OP_ALWAYS;
-        }
+        _pipeline_apply_standard_depth_state(
+            &caps, pass_needs_depth, wboit_accumulation, alpha_mode, out);
         return true;
 
     case DVZ_SCENE_VISUAL_DESC_PRIMITIVE:
@@ -1765,13 +1783,8 @@ bool _scene_visual_pipeline_desc(
         out->formats[2] = VK_FORMAT_R32G32B32_SFLOAT;
         out->needs_common_layout = caps.uses_common_set;
         out->needs_material_layout = caps.needs_material_layout;
-        if (pass_needs_depth)
-        {
-            out->depth_write_enabled =
-                caps.can_write_depth && !wboit_accumulation && alpha_mode != DVZ_ALPHA_BLENDED;
-            out->depth_compare_op =
-                caps.can_depth_test ? VK_COMPARE_OP_LESS_OR_EQUAL : VK_COMPARE_OP_ALWAYS;
-        }
+        _pipeline_apply_standard_depth_state(
+            &caps, pass_needs_depth, wboit_accumulation, alpha_mode, out);
         return true;
 
     case DVZ_SCENE_VISUAL_DESC_SEGMENT:
@@ -1796,13 +1809,8 @@ bool _scene_visual_pipeline_desc(
         out->formats[3] = VK_FORMAT_R32_SFLOAT;
         out->needs_common_layout = caps.uses_common_set;
         out->needs_material_layout = caps.needs_material_layout;
-        if (pass_needs_depth)
-        {
-            out->depth_write_enabled =
-                caps.can_write_depth && !wboit_accumulation && alpha_mode != DVZ_ALPHA_BLENDED;
-            out->depth_compare_op =
-                caps.can_depth_test ? VK_COMPARE_OP_LESS_OR_EQUAL : VK_COMPARE_OP_ALWAYS;
-        }
+        _pipeline_apply_standard_depth_state(
+            &caps, pass_needs_depth, wboit_accumulation, alpha_mode, out);
         return true;
 
     case DVZ_SCENE_VISUAL_DESC_IMAGE:
