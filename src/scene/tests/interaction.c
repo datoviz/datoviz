@@ -88,10 +88,11 @@ int test_scene_selection_apply_pick_and_link_keys(TstSuite* suite, TstItem* item
 
     DvzPickResult pick = {
         .request_id = 1,
+        .status = DVZ_PICK_STATUS_HIT,
         .hit = true,
         .visual_id = 7,
         .resolved_target = DVZ_SCENE_TARGET_ITEM,
-        .resolved_id = 42,
+        .resolved_id = 0,
     };
     AT(dvz_selection_apply_pick(selection, &pick) == 0);
     AT(dvz_selection_count(selection) == 1);

@@ -670,6 +670,7 @@ static bool _scene_process_point_pick_request(
     DvzPanel* panel = pending->panel;
     DvzPickResult miss = {
         .request_id = pending->request.request_id,
+        .status = DVZ_PICK_STATUS_NO_CAPABLE_VISUAL,
         .hit = false,
         .panel_id = _scene_panel_public_id(figure, panel),
         .panel_position = {pending->x, pending->y},
@@ -678,6 +679,7 @@ static bool _scene_process_point_pick_request(
     vec2 request_ndc = {0};
     if (!_scene_pick_request_ndc(figure, panel, pending->x, pending->y, request_ndc))
     {
+        miss.status = DVZ_PICK_STATUS_OUTSIDE_PANEL;
         _scene_pick_trace(
             "picker_request request=%llu x=%.3f y=%.3f panel=%p figure=%ux%u outside_panel=1\n",
             (unsigned long long)pending->request.request_id, pending->x, pending->y,
@@ -710,9 +712,13 @@ static bool _scene_process_point_pick_request(
         if (attach->controller_mode == DVZ_CONTROLLER_FIXED)
             continue;
 
+        if (miss.status == DVZ_PICK_STATUS_NO_CAPABLE_VISUAL)
+            miss.status = DVZ_PICK_STATUS_MISS;
+
         if (executor == NULL || executor->runtime == NULL || executor->emitter == NULL)
         {
             log_error("point-like pick request requires a DRP2 runtime");
+            miss.status = DVZ_PICK_STATUS_GPU_EXEC_FAILED;
             continue;
         }
 
@@ -738,6 +744,9 @@ static bool _scene_process_point_pick_request(
         uint64_t picked_id = 0;
         if (!readback_ok || !_scene_decode_pick_rgba(rgba, &picked_id))
         {
+            if (!readback_ok)
+                miss.status = executed ? DVZ_PICK_STATUS_READBACK_FAILED :
+                                         DVZ_PICK_STATUS_GPU_EXEC_FAILED;
             _scene_pick_trace(
                 "picker_visual_miss request=%llu visual=%p order_index=%d attach_slot=%u "
                 "readback_ok=%d executed=%d rgba=%u,%u,%u,%u\n",
@@ -747,6 +756,7 @@ static bool _scene_process_point_pick_request(
         }
 
         DvzPickResult resolved = miss;
+        resolved.status = DVZ_PICK_STATUS_HIT;
         resolved.hit = true;
         resolved.visual_id = _scene_visual_public_id(scene, visual);
         resolved.raw_target = DVZ_SCENE_TARGET_ITEM;

@@ -356,6 +356,7 @@ typedef struct DvzPickRequest DvzPickRequest;
 struct DvzPickResult
 {
     uint64_t request_id;
+    DvzPickStatus status;
     bool hit;
     uint64_t panel_id;
     uint64_t visual_id;

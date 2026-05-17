@@ -50,7 +50,7 @@ static bool _selection_matches_pick(
     ANN(out_item);
     if (!pick->hit)
         return false;
-    if (pick->resolved_target == DVZ_SCENE_TARGET_NONE || pick->resolved_id == 0)
+    if (pick->resolved_target == DVZ_SCENE_TARGET_NONE)
         return false;
     if (selection->desc.target != DVZ_SCENE_TARGET_NONE &&
         selection->desc.target != pick->resolved_target)
