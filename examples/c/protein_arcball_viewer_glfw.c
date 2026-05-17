@@ -6,10 +6,10 @@
 
 /* protein_arcball_viewer_glfw - preprocessed protein atoms rendered with an arcball camera.
  *
- * Prepare: uv run --with rs-dssp tools/preprocess_protein.py 1UBQ --dssp
+ * Prepare: python tools/data/prepare_protein_arcball.py 1UBQ --regenerate
  * Build:   cmake --build build --target protein_arcball_viewer_glfw
  * Run:     ./build/examples/c/protein_arcball_viewer_glfw
- * Smoke:   ./build/examples/c/protein_arcball_viewer_glfw ~/.cache/datoviz/proteins/1ubq 60
+ * Smoke:   ./build/examples/c/protein_arcball_viewer_glfw data/examples/proteins/1ubq/prepared 60
  */
 
 
@@ -46,6 +46,7 @@
 #define HEIGHT 760u
 
 #define DEFAULT_PDB_ID "1ubq"
+#define DEFAULT_BUNDLE_PATH "data/examples/proteins/1ubq/prepared"
 
 #define ROTATION_SPEED_RAD_PER_SEC 0.22f
 #define PROTEIN_RIBBON_WIDTH_SCALE 1.75f
@@ -163,7 +164,7 @@ static uint32_t _frame_count(const char* text)
 
 
 /**
- * Return the default user-cache bundle path.
+ * Return the default repository bundle path.
  *
  * @param out output path buffer
  * @param out_size output path buffer size
@@ -172,11 +173,7 @@ static uint32_t _frame_count(const char* text)
 static bool _default_bundle_path(char* out, size_t out_size)
 {
     ANN(out);
-    const char* home = getenv("HOME");
-    if (home == NULL || home[0] == '\0')
-        return false;
-    int n = dvz_snprintf(
-        out, out_size, "%s/.cache/datoviz/proteins/%s", home, DEFAULT_PDB_ID);
+    int n = dvz_snprintf(out, out_size, "%s", DEFAULT_BUNDLE_PATH);
     return n > 0 && (size_t)n < out_size;
 }
 

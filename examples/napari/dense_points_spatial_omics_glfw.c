@@ -11,8 +11,8 @@
  * precomputed color buffers. A prepared binary cache is required at runtime.
  *
  * Build:  cmake --build build --target dense_points_spatial_omics_glfw
- * Run:    ./build/examples/napari/dense_points_spatial_omics_glfw --dataset merfish
- * Smoke:  ./build/examples/napari/dense_points_spatial_omics_glfw --dataset merfish --frames 2
+ * Run:    ./build/examples/napari/dense_points_spatial_omics_glfw
+ * Smoke:  ./build/examples/napari/dense_points_spatial_omics_glfw --frames 2
  */
 
 
@@ -49,6 +49,7 @@
 #define HEIGHT                  800
 #define MAX_PATH_LENGTH         1024
 #define FPS_PRINT_INTERVAL      2.0
+#define DENSE_DEFAULT_CACHE     "data/examples/napari/spatial_points/synthetic"
 
 
 
@@ -246,11 +247,8 @@ static bool _dataset_cache_path(DenseDatasetChoice choice, char* out, size_t out
     if (out == NULL || out_size == 0)
         return false;
 
-    const char* name = "merfish";
-    if (choice == DENSE_DATASET_MIBITOF)
-        name = "mibitof";
-
-    (void)snprintf(out, out_size, ".cache/datoviz-napari-demos/spatial_points/%s", name);
+    (void)choice;
+    (void)snprintf(out, out_size, "%s", DENSE_DEFAULT_CACHE);
     return true;
 }
 
@@ -806,7 +804,7 @@ int main(int argc, char** argv)
         dvz_fprintf(
             stderr,
             "dense_points: prepare data first, for example with "
-            "examples/napari/prepare_spatial_points.py --dataset merfish --zarr <path>\n");
+            "python tools/data/prepare_napari_synthetic_spatial.py\n");
         return 1;
     }
 

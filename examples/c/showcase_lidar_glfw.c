@@ -6,9 +6,9 @@
 
 /* showcase_lidar_glfw - local full-resolution LIDAR point-cloud EDL demo.
  *
- * Prepare: python examples/c/prepare_lidar_npy.py
+ * Prepare: python tools/data/prepare_lidar.py --force
  * Build:   just example-c showcase_lidar_glfw
- * Run:     ./build/examples/c/showcase_lidar_glfw --data-dir build/local_data/lidar
+ * Run:     ./build/examples/c/showcase_lidar_glfw
  */
 
 
@@ -41,6 +41,7 @@
 #define WIDTH  800u
 #define HEIGHT 600u
 #define LIDAR_POSITION_SCALE 5.0f
+#define LIDAR_DATA_DIR "data/examples/lidar/prepared"
 #define LIDAR_DEFAULT_POINT_SIZE 2.0f
 #define LIDAR_DEFAULT_STRIDE 2u
 #define CUE_DISTANCE_MIN 0.0f
@@ -146,7 +147,7 @@ static const char* _data_dir(int argc, char** argv)
         if (strcmp(argv[i], "--data-dir") == 0 && i + 1 < argc && argv[i + 1] != NULL)
             return argv[i + 1];
     }
-    return "build/local_data/lidar";
+    return LIDAR_DATA_DIR;
 }
 
 
@@ -216,8 +217,8 @@ static void _print_prepare_hint(const char* data_dir)
     dvz_fprintf(
         stderr,
         "missing local LIDAR .npy data in %s\n"
-        "prepare it with: python examples/c/prepare_lidar_npy.py\n",
-        data_dir != NULL ? data_dir : "build/local_data/lidar");
+        "prepare it with: python tools/data/prepare_lidar.py --force\n",
+        data_dir != NULL ? data_dir : LIDAR_DATA_DIR);
 }
 
 
