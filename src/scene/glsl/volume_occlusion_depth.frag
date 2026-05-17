@@ -14,6 +14,8 @@ layout(set = 1, binding = 4) uniform sampler2D transferTex;
 layout(set = 1, binding = 2) uniform VolumeParams {
     vec4 clip_min;
     vec4 clip_max;
+    vec4 clip_plane;
+    vec4 clip_plane_params;
     vec4 params;
     vec4 slice;
     vec4 bounds_min;
@@ -95,6 +97,15 @@ float transfer_alpha(float value)
     return texture(transferTex, vec2(t, 0.5)).a;
 }
 
+bool inside_clip_plane(vec3 uvw)
+{
+    if (volume.clip_plane_params.x < 0.5) {
+        return true;
+    }
+    float side = dot(volume.clip_plane.xyz, uvw) + volume.clip_plane.w;
+    return volume.clip_plane_params.y > 0.5 ? side >= -1e-6 : side <= 1e-6;
+}
+
 float projected_depth(vec3 uvw)
 {
     vec3 pos = uvw_to_object(uvw);
@@ -151,6 +162,9 @@ void main()
         }
         float t = (float(i) + 0.5) / float(steps);
         vec3 uvw = ro + rd * mix(start_t, end_t, t);
+        if (!inside_clip_plane(uvw)) {
+            continue;
+        }
         vec4 sample_value = texture(tex, texture_uvw(uvw));
         float density = clamp(transfer ? sample_value.a : transfer_alpha(sample_value.r), 0.0, 1.0);
         float sample_alpha =

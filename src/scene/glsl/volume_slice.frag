@@ -19,6 +19,8 @@ layout(set = 1, binding = 4) uniform sampler2D transferTex;
 layout(set = 1, binding = 2) uniform VolumeParams {
     vec4 clip_min;
     vec4 clip_max;
+    vec4 clip_plane;
+    vec4 clip_plane_params;
     vec4 params;
     vec4 slice;
     vec4 bounds_min;
@@ -128,6 +130,15 @@ vec4 transfer_value(float value)
     return texture(transferTex, vec2(t, 0.5));
 }
 
+bool inside_clip_plane(vec3 uvw)
+{
+    if (volume.clip_plane_params.x < 0.5) {
+        return true;
+    }
+    float side = dot(volume.clip_plane.xyz, uvw) + volume.clip_plane.w;
+    return volume.clip_plane_params.y > 0.5 ? side >= -1e-6 : side <= 1e-6;
+}
+
 float depth_visibility(vec3 uvw)
 {
     vec2 size = vec2(textureSize(depthTex, 0));
@@ -219,6 +230,9 @@ void main()
 
     vec3 uvw = ro + rd * slice_t;
     if (any(lessThan(uvw, box_min)) || any(greaterThan(uvw, box_max))) {
+        discard;
+    }
+    if (!inside_clip_plane(uvw)) {
         discard;
     }
     float visibility = depth_visibility(uvw);

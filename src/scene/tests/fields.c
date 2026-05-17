@@ -871,8 +871,11 @@ int test_scene_volume_retained_controls(TstSuite* suite, TstItem* item)
     AT(state->slice_position == 0.5);
     AT(state->step_count == 64);
     AT(!state->clipping_enabled);
+    AT(!state->clip_plane_enabled);
     AT(state->clip_min[0] == 0.0);
     AT(state->clip_max[2] == 1.0);
+    AT(state->clip_plane_point[0] == 0.5);
+    AT(state->clip_plane_normal[0] == 1.0);
     AT(state->bounds_min[0] == -1.0);
     AT(state->bounds_max[2] == +1.0);
     AT(state->axis_order[0] == 0);
@@ -968,6 +971,23 @@ int test_scene_volume_retained_controls(TstSuite* suite, TstItem* item)
     AT(state->alpha_stops[2].position == 1.0);
     AT(state->alpha_stops[1].alpha == 1.0f);
     AT(state->version != version8);
+    uint64_t version9 = state->version;
+
+    double plane_point[3] = {0.25, 0.5, 0.75};
+    double plane_normal[3] = {0.0, 0.0, 2.0};
+    AT(dvz_volume_set_clipping_plane(volume, plane_point, plane_normal, true) == 0);
+    state = dvz_volume_state(volume);
+    ANN(state);
+    AT(state->clip_plane_enabled);
+    AT(state->clip_plane_keep_positive);
+    AT(state->clip_plane_point[0] == 0.25);
+    AT(state->clip_plane_point[2] == 0.75);
+    AT(state->clip_plane_normal[0] == 0.0);
+    AT(state->clip_plane_normal[2] == 1.0);
+    AT(state->version != version9);
+    AT(dvz_volume_clear_clipping_plane(volume) == 0);
+    AT(!dvz_volume_state(volume)->clip_plane_enabled);
+    AT(dvz_volume_set_clipping_plane(volume, plane_point, plane_normal, true) == 0);
 
     AT(dvz_volume_set_slice_axis(volume, DVZ_VOLUME_AXIS_X) == 0);
     AT(dvz_volume_state(volume)->slice_axis == DVZ_VOLUME_AXIS_X);
@@ -978,8 +998,11 @@ int test_scene_volume_retained_controls(TstSuite* suite, TstItem* item)
     state = dvz_volume_state(volume);
     ANN(state);
     AT(!state->clipping_enabled);
+    AT(!state->clip_plane_enabled);
     AT(state->clip_min[0] == 0.0);
     AT(state->clip_max[2] == 1.0);
+    AT(state->clip_plane_point[0] == 0.5);
+    AT(state->clip_plane_normal[0] == 1.0);
 
     AT(dvz_volume_set_opacity(volume, -0.1f) != 0);
     AT(_captured_log_contains(suite, "volume opacity must be finite"));
@@ -1029,6 +1052,14 @@ int test_scene_volume_retained_controls(TstSuite* suite, TstItem* item)
     DvzVolumeAlphaStop invalid_alpha_stops[1] = {{.position = 1.5, .alpha = 0.5f}};
     AT(dvz_volume_set_alpha_stops(volume, invalid_alpha_stops, 1) != 0);
     AT(_captured_log_contains(suite, "volume alpha stops require finite"));
+    double invalid_plane_point[3] = {0.5, 0.5, 1.2};
+    double valid_plane_normal[3] = {1.0, 0.0, 0.0};
+    AT(dvz_volume_set_clipping_plane(volume, invalid_plane_point, valid_plane_normal, true) != 0);
+    AT(_captured_log_contains(suite, "volume clipping plane point"));
+    double valid_plane_point[3] = {0.5, 0.5, 0.5};
+    double invalid_plane_normal[3] = {0.0, 0.0, 0.0};
+    AT(dvz_volume_set_clipping_plane(volume, valid_plane_point, invalid_plane_normal, true) != 0);
+    AT(_captured_log_contains(suite, "volume clipping plane normal"));
 
     dvz_scene_destroy(scene);
     return 0;
@@ -1074,9 +1105,12 @@ int test_scene_volume_visual_metadata_lowering(TstSuite* suite, TstItem* item)
     AT(dvz_volume_set_sampling(volume, DVZ_VOLUME_SAMPLING_NEAREST) == 0);
     double clip_min[3] = {0.1, 0.2, 0.3};
     double clip_max[3] = {0.9, 0.8, 0.7};
+    double clip_plane_point[3] = {0.5, 0.5, 0.25};
+    double clip_plane_normal[3] = {0.0, 1.0, 0.0};
     AT(dvz_volume_set_slice_axis(volume, DVZ_VOLUME_AXIS_Y) == 0);
     AT(dvz_volume_set_slice_position(volume, 0.35) == 0);
     AT(dvz_volume_set_clipping_box(volume, clip_min, clip_max) == 0);
+    AT(dvz_volume_set_clipping_plane(volume, clip_plane_point, clip_plane_normal, false) == 0);
 
     DvzFramePlanVisualMeta metadata = {0};
     AT(_scene_visual_frame_plan_metadata(figure, volume, 0, &metadata));
@@ -1095,8 +1129,12 @@ int test_scene_volume_visual_metadata_lowering(TstSuite* suite, TstItem* item)
     AT(metadata.volume_state.slice_axis == DVZ_VOLUME_AXIS_Y);
     AT(metadata.volume_state.slice_position == 0.35);
     AT(metadata.volume_state.clipping_enabled);
+    AT(metadata.volume_state.clip_plane_enabled);
+    AT(!metadata.volume_state.clip_plane_keep_positive);
     AT(metadata.volume_state.clip_min[2] == 0.3);
     AT(metadata.volume_state.clip_max[1] == 0.8);
+    AT(metadata.volume_state.clip_plane_point[2] == 0.25);
+    AT(metadata.volume_state.clip_plane_normal[1] == 1.0);
     AT(metadata.volume_state.axis_order[0] == 0);
     AT(metadata.texture_id[0] != '\0');
     AT(strcmp(metadata.volume_texture_id, metadata.texture_id) == 0);

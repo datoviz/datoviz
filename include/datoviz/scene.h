@@ -1145,7 +1145,32 @@ dvz_volume_set_clipping_box(DvzVisual* visual, const double clip_min[3], const d
 
 
 /**
- * Disable axis-aligned clipping on a volume visual.
+ * Enable arbitrary plane clipping on a volume visual.
+ *
+ * The plane is defined in normalized volume coordinates. Voxels for which
+ * `dot(normal, uvw - point)` has the selected sign are kept.
+ *
+ * @param visual the volume visual
+ * @param point point on the clipping plane, in normalized volume coordinates
+ * @param normal non-zero clipping plane normal
+ * @param keep_positive whether to keep the positive side of the plane
+ * @return 0 on success, -1 on error
+ */
+DVZ_EXPORT int dvz_volume_set_clipping_plane(
+    DvzVisual* visual, const double point[3], const double normal[3], bool keep_positive);
+
+
+/**
+ * Disable arbitrary plane clipping on a volume visual.
+ *
+ * @param visual the volume visual
+ * @return 0 on success, -1 on error
+ */
+DVZ_EXPORT int dvz_volume_clear_clipping_plane(DvzVisual* visual);
+
+
+/**
+ * Disable all clipping on a volume visual.
  *
  * @param visual the volume visual
  * @return 0 on success, -1 on error

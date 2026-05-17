@@ -583,6 +583,18 @@ static void _volume_uniform_from_state(
     }
     out->clip_min[3] = transfer_rgba ? 1.0f : 0.0f;
     out->clip_max[3] = 1.0f;
+    double plane_d = -(
+        state->clip_plane_normal[0] * state->clip_plane_point[0] +
+        state->clip_plane_normal[1] * state->clip_plane_point[1] +
+        state->clip_plane_normal[2] * state->clip_plane_point[2]);
+    out->clip_plane[0] = (float)state->clip_plane_normal[0];
+    out->clip_plane[1] = (float)state->clip_plane_normal[1];
+    out->clip_plane[2] = (float)state->clip_plane_normal[2];
+    out->clip_plane[3] = (float)plane_d;
+    out->clip_plane_params[0] = state->clip_plane_enabled ? 1.0f : 0.0f;
+    out->clip_plane_params[1] = state->clip_plane_keep_positive ? 1.0f : 0.0f;
+    out->clip_plane_params[2] = 0.0f;
+    out->clip_plane_params[3] = 1.0f;
     out->params[0] = state->opacity;
     out->params[1] = state->clipping_enabled ? 1.0f : 0.0f;
     out->params[2] = (float)state->step_count;

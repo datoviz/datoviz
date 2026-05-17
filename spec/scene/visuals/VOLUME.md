@@ -21,10 +21,10 @@ The active v0.4 volume contract is intentionally powerful but bounded:
 1. normalized `[0, 1]` slice positions for the public setter;
 2. shader-side axis order and axis flip so examples do not swizzle large volumes on the CPU;
 3. real nearest/linear sampler selection in the DRP2/vklite runtime;
-4. a 256x1 RGBA transfer texture built from shared colormap state plus volume opacity stops.
+4. a 256x1 RGBA transfer texture built from shared colormap state plus volume opacity stops;
+5. one arbitrary clipping plane in addition to the normalized clipping box.
 
-The remaining v0.4 hardening targets are one arbitrary clipping plane in addition to the current
-normalized clipping box, and slice probe/readout before MIP or DVR picking.
+The remaining v0.4 hardening target is slice probe/readout before MIP or DVR picking.
 
 Isosurfaces, gradient lighting, categorical label volumes, bricking/out-of-core streaming, full MPR,
 and WebGPU/WGSL parity remain follow-up work unless a specific v0.4 task activates them.
@@ -200,17 +200,18 @@ Current shading is per-visual material/Phong/depth-cue state rather than scene-o
 Requires slightly more GPU work per sample.
 
 
-### `clip_planes`
+### `clip_plane`
 
 | Property | Value |
 |---|---|
-| Type | `vec4[4]` — up to 4 planes, each `(a, b, c, d)` defining `ax + by + cz + d = 0` |
-| Default | all disabled |
+| Type | one plane defined by normalized `point`, `normal`, and kept side |
+| Default | disabled |
 | Mutability | `dynamic` |
 
-Up to 4 simultaneous clipping planes. Each plane discards voxels on its negative side.
-Set a plane to `(0,0,0,0)` to disable it.
-Multiple planes can be combined for wedge cuts, cross-sections, and "cut-away" anatomy views.
+One arbitrary clipping plane in normalized volume coordinates. The plane discards one side of
+`dot(normal, uvw - point)` and keeps either the positive or negative side. It combines with
+`crop_min`/`crop_max` for simple cut-away anatomy and oblique cross-sections without requiring
+CPU-side resampling.
 
 
 ### `isosurface_levels`

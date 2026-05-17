@@ -65,6 +65,8 @@ struct DvzSceneVolumeUniform
 {
     float clip_min[4];
     float clip_max[4];
+    float clip_plane[4];
+    float clip_plane_params[4];
     float params[4];
     float slice[4];
     float bounds_min[4];

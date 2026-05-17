@@ -283,6 +283,10 @@ struct DvzVolumeState
     bool clipping_enabled;
     double clip_min[3];
     double clip_max[3];
+    bool clip_plane_enabled;
+    bool clip_plane_keep_positive;
+    double clip_plane_point[3];
+    double clip_plane_normal[3];
     double bounds_min[3];
     double bounds_max[3];
     uint32_t axis_order[3];

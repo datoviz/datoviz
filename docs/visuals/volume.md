@@ -66,6 +66,7 @@ Current controls:
 | `dvz_volume_set_slice_position()` | Normalized slice position in `[0, 1]` |
 | `dvz_volume_set_sampling()` | Nearest or linear sampling |
 | `dvz_volume_set_clipping_box()` | Normalized axis-aligned clipping box |
+| `dvz_volume_set_clipping_plane()` | One arbitrary normalized clipping plane |
 | `dvz_volume_set_axis_mapping()` | Texture axis order and flips without CPU swizzling |
 | `dvz_volume_set_value_range()` | Raw scalar range mapped to transfer coordinate `[0, 1]` |
 | `dvz_volume_set_alpha_stops()` | Up to 8 normalized opacity stops |
@@ -88,7 +89,6 @@ dvz_panel_add_visual(panel, volume, NULL);
 
 ## Remaining v0.4 Hardening
 
-- One arbitrary clipping plane.
 - Slice probe/readout returning UVW, object coordinate, and sampled value.
 
 See also:

@@ -76,6 +76,8 @@ static void _segment_gpu_cache_free(DvzSegmentGpuCache* cache);
 
 static void _path_gpu_cache_free(DvzPathGpuCache* cache);
 
+static void _image_gpu_cache_free(DvzImageGpuCache* cache);
+
 static bool _material_depth_cue_supported(DvzVisualType visual_type);
 
 static bool _material_visual_supported(DvzVisualType visual_type);
@@ -204,6 +206,9 @@ static uint32_t _attr_item_size(DvzVisualType type, const char* name)
         break;
     case DVZ_VISUAL_TYPE_IMAGE:
         if (strcmp(name, "position") == 0)  return 3 * sizeof(float);
+        if (strcmp(name, "extent") == 0)    return 2 * sizeof(float);
+        if (strcmp(name, "anchor") == 0)    return 2 * sizeof(float);
+        if (strcmp(name, "tex_rect") == 0)  return 4 * sizeof(float);
         if (strcmp(name, "texcoords") == 0) return 2 * sizeof(float);
         break;
     case DVZ_VISUAL_TYPE_VOLUME:
@@ -250,7 +255,7 @@ static bool _attr_supported(DvzVisualType type, const char* name, uint32_t* item
     else if (type == DVZ_VISUAL_TYPE_SEGMENT)
         expected = "position_start, position_end, color, stroke_width";
     else if (type == DVZ_VISUAL_TYPE_IMAGE)
-        expected = "position, texcoords";
+        expected = "position, extent, anchor, tex_rect, texcoords";
     else if (type == DVZ_VISUAL_TYPE_VOLUME)
         expected = "position, texcoords, plus a bound 3D field";
 
@@ -501,6 +506,7 @@ void _scene_visual_reset(DvzVisual* visual, bool release_owned_resources)
         return;
     _segment_gpu_cache_free(&visual->segment.gpu);
     _path_gpu_cache_free(&visual->path.gpu);
+    _image_gpu_cache_free(&visual->image_gpu);
     dvz_free(visual->path.subpath_lengths);
     visual->path.subpath_lengths = NULL;
     visual->path.subpath_count = 0;
@@ -948,6 +954,21 @@ static void _path_gpu_cache_free(DvzPathGpuCache* cache)
 }
 
 
+/**
+ * Release one image visual's derived rectangle upload cache.
+ *
+ * @param cache the image GPU cache
+ */
+static void _image_gpu_cache_free(DvzImageGpuCache* cache)
+{
+    if (cache == NULL)
+        return;
+    dvz_free(cache->position);
+    dvz_free(cache->texcoords);
+    dvz_memset(cache, sizeof(DvzImageGpuCache), 0, sizeof(DvzImageGpuCache));
+}
+
+
 
 /**
  * Initialize material defaults for one visual family.
@@ -1381,6 +1402,10 @@ static void _volume_state_default(DvzVolumeState* state)
     state->clip_max[0] = 1.0;
     state->clip_max[1] = 1.0;
     state->clip_max[2] = 1.0;
+    state->clip_plane_point[0] = 0.5;
+    state->clip_plane_point[1] = 0.5;
+    state->clip_plane_point[2] = 0.5;
+    state->clip_plane_normal[0] = 1.0;
     state->bounds_min[0] = -1.0;
     state->bounds_min[1] = -1.0;
     state->bounds_min[2] = -1.0;
@@ -3384,9 +3409,88 @@ int dvz_volume_set_clipping_box(
 }
 
 
+/**
+ * Enable arbitrary plane clipping on a volume visual.
+ *
+ * @param visual the volume visual
+ * @param point point on the clipping plane, in normalized volume coordinates
+ * @param normal non-zero clipping plane normal
+ * @param keep_positive whether to keep the positive side of the plane
+ * @return 0 on success, -1 on error
+ */
+int dvz_volume_set_clipping_plane(
+    DvzVisual* visual, const double point[3], const double normal[3], bool keep_positive)
+{
+    ANN(visual);
+    ANN(point);
+    ANN(normal);
+    if (visual->type != DVZ_VISUAL_TYPE_VOLUME)
+    {
+        log_error("dvz_volume_set_clipping_plane requires a volume visual");
+        return -1;
+    }
+    double norm2 = 0.0;
+    for (uint32_t i = 0; i < 3; i++)
+    {
+        if (!isfinite(point[i]) || !isfinite(normal[i]) || point[i] < 0.0 || point[i] > 1.0)
+        {
+            log_error("volume clipping plane point must be finite and in [0, 1]");
+            return -1;
+        }
+        norm2 += normal[i] * normal[i];
+    }
+    if (norm2 <= 0.0 || !isfinite(norm2))
+    {
+        log_error("volume clipping plane normal must be finite and non-zero");
+        return -1;
+    }
+    if (!_scene_visual_mutation_allowed(visual->scene, "set volume clipping plane"))
+        return -1;
+    double inv_norm = 1.0 / sqrt(norm2);
+    for (uint32_t i = 0; i < 3; i++)
+    {
+        visual->volume.clip_plane_point[i] = point[i];
+        visual->volume.clip_plane_normal[i] = normal[i] * inv_norm;
+    }
+    visual->volume.clip_plane_keep_positive = keep_positive;
+    visual->volume.clip_plane_enabled = true;
+    _visual_bump_version(&visual->volume.version);
+    return 0;
+}
+
 
 /**
- * Disable axis-aligned clipping on a volume visual.
+ * Disable arbitrary plane clipping on a volume visual.
+ *
+ * @param visual the volume visual
+ * @return 0 on success, -1 on error
+ */
+int dvz_volume_clear_clipping_plane(DvzVisual* visual)
+{
+    ANN(visual);
+    if (visual->type != DVZ_VISUAL_TYPE_VOLUME)
+    {
+        log_error("dvz_volume_clear_clipping_plane requires a volume visual");
+        return -1;
+    }
+    if (!_scene_visual_mutation_allowed(visual->scene, "clear volume clipping plane"))
+        return -1;
+    visual->volume.clip_plane_enabled = false;
+    visual->volume.clip_plane_keep_positive = false;
+    visual->volume.clip_plane_point[0] = 0.5;
+    visual->volume.clip_plane_point[1] = 0.5;
+    visual->volume.clip_plane_point[2] = 0.5;
+    visual->volume.clip_plane_normal[0] = 1.0;
+    visual->volume.clip_plane_normal[1] = 0.0;
+    visual->volume.clip_plane_normal[2] = 0.0;
+    _visual_bump_version(&visual->volume.version);
+    return 0;
+}
+
+
+
+/**
+ * Disable all clipping on a volume visual.
  *
  * @param visual the volume visual
  * @return 0 on success, -1 on error
@@ -3408,6 +3512,14 @@ int dvz_volume_clear_clipping(DvzVisual* visual)
     visual->volume.clip_max[0] = 1.0;
     visual->volume.clip_max[1] = 1.0;
     visual->volume.clip_max[2] = 1.0;
+    visual->volume.clip_plane_enabled = false;
+    visual->volume.clip_plane_keep_positive = false;
+    visual->volume.clip_plane_point[0] = 0.5;
+    visual->volume.clip_plane_point[1] = 0.5;
+    visual->volume.clip_plane_point[2] = 0.5;
+    visual->volume.clip_plane_normal[0] = 1.0;
+    visual->volume.clip_plane_normal[1] = 0.0;
+    visual->volume.clip_plane_normal[2] = 0.0;
     _visual_bump_version(&visual->volume.version);
     return 0;
 }
