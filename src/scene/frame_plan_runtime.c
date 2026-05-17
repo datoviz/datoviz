@@ -733,6 +733,7 @@ static bool _emitter_prepare_render_multi(
         }
 
         DvzSceneVisualShaderDesc shader = {0};
+        char* scene_occlusion_fragment_glsl = NULL;
         if (gbuffer_pass)
         {
             if (desc.kind == DVZ_SCENE_VISUAL_DESC_PRIMITIVE && !desc.has_normal)
@@ -811,7 +812,15 @@ static bool _emitter_prepare_render_multi(
                 shader.fragment_glsl =
                     _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_VOLUME_OCCLUSION_DEPTH, true);
                 shader.vertex_spirv_key = "volume_slice_vert";
-                shader.fragment_spirv_key = "volume_occlusion_depth_frag";
+                scene_occlusion_fragment_glsl = _shader_glsl_variant(
+                    shader.fragment_glsl, "#define DVZ_SCENE_OCCLUSION_DEPTH_FAR 1\n");
+                shader.fragment_glsl = scene_occlusion_fragment_glsl;
+                shader.fragment_spirv_key = NULL;
+                if (shader.fragment_glsl == NULL)
+                {
+                    ok = false;
+                    break;
+                }
             }
             else
             {
@@ -929,7 +938,6 @@ static bool _emitter_prepare_render_multi(
                 shader.fragment_spirv_key = "sphere_a2c_frag";
             }
         }
-        char* scene_occlusion_fragment_glsl = NULL;
         bool scene_occluded_shader =
             desc.scene_occluded && scene_occlusion_depth_id != 0 && !scene_occlusion_pass;
         bool scene_occlusion_uses_set2 =
@@ -1038,6 +1046,12 @@ static bool _emitter_prepare_render_multi(
                 pipeline.needs_image_layout = false;
                 pipeline.needs_material_layout = false;
                 pipeline.needs_scene_occlusion_layout = false;
+                if (desc.kind == DVZ_SCENE_VISUAL_DESC_VOLUME)
+                {
+                    pipeline.has_depth_state = true;
+                    pipeline.depth_write_enabled = true;
+                    pipeline.depth_compare_op = VK_COMPARE_OP_LESS_OR_EQUAL;
+                }
             }
             if (
                 force_point_depth &&

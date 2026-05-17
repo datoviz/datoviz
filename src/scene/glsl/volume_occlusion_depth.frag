@@ -81,7 +81,12 @@ float projected_depth(vec3 uvw)
 
 void main()
 {
+#ifdef DVZ_SCENE_OCCLUSION_DEPTH_FAR
+    outDepth = 1.0;
+    gl_FragDepth = 1.0;
+#else
     outDepth = 0.0;
+#endif
 
     vec3 ro_obj = camera_object();
     vec3 rd_obj = normalize(fragObj - ro_obj);
@@ -128,7 +133,13 @@ void main()
         accum += (1.0 - accum) * sample_alpha;
         if (accum > alpha_threshold) {
             outDepth = projected_depth(uvw);
+#ifdef DVZ_SCENE_OCCLUSION_DEPTH_FAR
+            gl_FragDepth = outDepth;
+#endif
             return;
         }
     }
+#ifdef DVZ_SCENE_OCCLUSION_DEPTH_FAR
+    discard;
+#endif
 }
