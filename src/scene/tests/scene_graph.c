@@ -10001,6 +10001,139 @@ int test_scene_drp2_contract_checker_rejects_pipeline_drift(TstSuite* suite, Tst
 
 
 /**
+ * Verify retained alpha-mode toggles refresh the semantic DRP2 runtime contract shape.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_alpha_mode_toggle_refreshes_drp2_contracts(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    AT(scene != NULL);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    AT(figure != NULL);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    AT(panel != NULL);
+
+    DvzVisual* opaque = dvz_primitive(scene, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 0);
+    DvzVisual* transparent = dvz_primitive(scene, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 0);
+    AT(opaque != NULL);
+    AT(transparent != NULL);
+
+    float positions[3][3] = {
+        {-0.5f, -0.5f, 0.0f},
+        {0.5f, -0.5f, 0.0f},
+        {0.0f, 0.5f, 0.0f},
+    };
+    float shifted[3][3] = {
+        {-0.45f, -0.45f, -0.1f},
+        {0.55f, -0.45f, -0.1f},
+        {0.05f, 0.55f, -0.1f},
+    };
+    DvzColor opaque_colors[3] = {
+        {255, 255, 255, 255}, {255, 255, 255, 255}, {255, 255, 255, 255}};
+    DvzColor transparent_colors[3] = {
+        {255, 0, 0, 128}, {0, 255, 0, 128}, {0, 0, 255, 128}};
+
+    AT(dvz_visual_set_data(opaque, "position", positions, 3) == 0);
+    AT(dvz_visual_set_data(opaque, "color", opaque_colors, 3) == 0);
+    AT(dvz_visual_set_data(transparent, "position", shifted, 3) == 0);
+    AT(dvz_visual_set_data(transparent, "color", transparent_colors, 3) == 0);
+    AT(dvz_visual_set_alpha_mode(transparent, DVZ_ALPHA_BLENDED) == 0);
+    AT(dvz_panel_add_visual(panel, opaque, NULL) == 0);
+    AT(dvz_panel_add_visual(panel, transparent, NULL) == 0);
+
+    DvzCapabilitySnapshot caps;
+    dvz_capability_snapshot_default(&caps);
+    caps.max_color_attachments = 2;
+    caps.render_target_format_rgba16float = true;
+    caps.render_target_format_r16float = true;
+    caps.supports_render_target_sampling = true;
+    caps.supports_color_blending = true;
+
+    DvzFramePlanEmitConfig cfg = dvz_frame_plan_emit_config();
+    cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
+    cfg.target_width = 64;
+    cfg.target_height = 64;
+
+    DvzDiagnosticReport report;
+    dvz_diagnostic_report_init(&report);
+    DvzDrp2RuntimeConfig runtime_cfg = dvz_drp2_runtime_vklite_config(NULL, NULL);
+    runtime_cfg.semantic_only = true;
+    DvzDrp2Runtime* runtime = dvz_drp2_runtime_vklite(&runtime_cfg);
+    ANN(runtime);
+
+    DvzDrp2CommandStream* source_over0 = dvz_figure_emit_ex(figure, &caps, &report, &cfg);
+    ANN(source_over0);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+
+    bool source_over0_has_wboit = false;
+    for (uint32_t i = 0; i < dvz_drp2_stream_count(source_over0); i++)
+    {
+        const DvzDrp2Command* command = dvz_drp2_stream_get(source_over0, i);
+        ANN(command);
+        source_over0_has_wboit =
+            source_over0_has_wboit ||
+            (command->type == DVZ_DRP2_COMMAND_BEGIN_RENDER_PASS &&
+             command->u.begin_render_pass.color_attachment_count == 2);
+    }
+    AT(!source_over0_has_wboit);
+    DvzDrp2ValidationResult result = dvz_drp2_runtime_execute(runtime, source_over0);
+    AT(result.ok);
+    dvz_drp2_stream_destroy(source_over0);
+
+    AT(dvz_visual_set_alpha_mode(transparent, DVZ_ALPHA_WBOIT) == 0);
+    dvz_diagnostic_report_init(&report);
+    DvzDrp2CommandStream* wboit = dvz_figure_emit_ex(figure, &caps, &report, &cfg);
+    ANN(wboit);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+
+    bool wboit_has_accum_pass = false;
+    for (uint32_t i = 0; i < dvz_drp2_stream_count(wboit); i++)
+    {
+        const DvzDrp2Command* command = dvz_drp2_stream_get(wboit, i);
+        ANN(command);
+        wboit_has_accum_pass =
+            wboit_has_accum_pass ||
+            (command->type == DVZ_DRP2_COMMAND_BEGIN_RENDER_PASS &&
+             command->u.begin_render_pass.color_attachment_count == 2);
+    }
+    AT(wboit_has_accum_pass);
+    result = dvz_drp2_runtime_execute(runtime, wboit);
+    AT(result.ok);
+    dvz_drp2_stream_destroy(wboit);
+
+    AT(dvz_visual_set_alpha_mode(transparent, DVZ_ALPHA_BLENDED) == 0);
+    dvz_diagnostic_report_init(&report);
+    DvzDrp2CommandStream* source_over1 = dvz_figure_emit_ex(figure, &caps, &report, &cfg);
+    ANN(source_over1);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+
+    bool source_over1_has_wboit = false;
+    for (uint32_t i = 0; i < dvz_drp2_stream_count(source_over1); i++)
+    {
+        const DvzDrp2Command* command = dvz_drp2_stream_get(source_over1, i);
+        ANN(command);
+        source_over1_has_wboit =
+            source_over1_has_wboit ||
+            (command->type == DVZ_DRP2_COMMAND_BEGIN_RENDER_PASS &&
+             command->u.begin_render_pass.color_attachment_count == 2);
+    }
+    AT(!source_over1_has_wboit);
+    result = dvz_drp2_runtime_execute(runtime, source_over1);
+    AT(result.ok);
+    dvz_drp2_stream_destroy(source_over1);
+    dvz_drp2_runtime_destroy(runtime);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+/**
  * Execute the scene WBOIT DRP2 path through the vklite runtime when a GPU is available.
  *
  * @param suite the active test suite
@@ -10355,6 +10488,7 @@ int test_scene_graph(TstSuite* suite)
     TEST_SIMPLE(test_scene_visual_alpha_mode_requires_wboit_capabilities);
     TEST_SIMPLE(test_scene_visual_alpha_mode_emits_wboit_drp2);
     TEST_SIMPLE(test_scene_drp2_contract_checker_rejects_pipeline_drift);
+    TEST_SIMPLE(test_scene_alpha_mode_toggle_refreshes_drp2_contracts);
     TEST_SIMPLE(test_scene_visual_alpha_mode_wboit_glsl_executes);
     TEST_SIMPLE(test_scene_visual_alpha_mode_depth_peel_glsl_executes);
     TEST_SIMPLE(test_scene_blended_mesh_orders_after_volume_slice);

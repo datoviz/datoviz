@@ -333,6 +333,28 @@ Validation:
 6. `git diff --check -- src/scene/_technique.h src/scene/technique.c src/scene/render_contract.c src/scene/frame_plan_runtime.c src/scene/tests/scene_graph.c src/scene/tests/test_scene.h agents/now/RENDER_CONTRACT_RESOLVER_AUDIT_2026-05-17.md`
 
 
+### 2026-05-17: Phase 4 / Alpha-mode semantic churn
+
+Completed the first semantic runtime toggle slice.
+
+Changes:
+
+1. Added `test_scene_alpha_mode_toggle_refreshes_drp2_contracts`.
+2. The test emits and semantically executes a retained primitive scene as source-over, WBOIT, then
+   source-over again, destroying each live stream before mutating the retained visual.
+3. It asserts the WBOIT accumulation pass appears only for the WBOIT frame and disappears again
+   after toggling back to source-over, while the semantic runtime accepts all three emitted streams
+   with the post-emit contract checker active.
+
+Validation:
+
+1. `cmake --build build --target dvztest_scene -j2`
+2. `./build/testing/dvztest_scene test_scene_alpha_mode_toggle_refreshes_drp2_contracts`
+3. `./build/testing/dvztest_scene test_scene_visual_alpha_mode_emits_wboit_drp2`
+4. `./build/testing/dvztest_scene test_scene_drp2_contract_checker_rejects_pipeline_drift`
+5. `git diff --check -- src/scene/tests/scene_graph.c src/scene/tests/test_scene.h agents/now/RENDER_CONTRACT_RESOLVER_AUDIT_2026-05-17.md`
+
+
 ## Executive Assessment
 
 The direction is correct and worth continuing. The proposal identifies the right failure mode:
