@@ -46,7 +46,7 @@
 #define WIDTH  1000u
 #define HEIGHT 760u
 
-#define DEFAULT_PDB_ID "1ubq"
+#define DEFAULT_PDB_ID "6m0j"
 #define DEFAULT_BUNDLE_PATH "data/examples/proteins/1ubq/prepared"
 
 #define ROTATION_SPEED_RAD_PER_SEC 0.22f
@@ -134,6 +134,7 @@ typedef struct ProteinExampleState
 
 
 static void _apply_render_mode(ProteinExampleState* state);
+static bool _cache_bundle_path(const char* pdb_id, char* out, size_t out_size);
 
 
 
@@ -164,7 +165,7 @@ static uint32_t _frame_count(const char* text)
 
 
 /**
- * Return the default repository bundle path.
+ * Return the default bundle path.
  *
  * @param out output path buffer
  * @param out_size output path buffer size
@@ -173,6 +174,8 @@ static uint32_t _frame_count(const char* text)
 static bool _default_bundle_path(char* out, size_t out_size)
 {
     ANN(out);
+    if (_cache_bundle_path(DEFAULT_PDB_ID, out, out_size))
+        return true;
     int n = dvz_snprintf(out, out_size, "%s", DEFAULT_BUNDLE_PATH);
     return n > 0 && (size_t)n < out_size;
 }
@@ -1104,7 +1107,7 @@ static void _print_prepare_hint(const char* path)
 {
     dvz_fprintf(stderr, "failed to load protein bundle at '%s'\n", path);
     dvz_fprintf(stderr, "prepare one with:\n");
-    dvz_fprintf(stderr, "  uv run --with rs-dssp tools/preprocess_protein.py 1UBQ --dssp\n");
+    dvz_fprintf(stderr, "  tools/preprocess_protein.py 6M0J\n");
 }
 
 
@@ -1317,31 +1320,32 @@ int main(int argc, char** argv)
         .live_radii = scaled_radii,
         .ribbon_index_upload_count = bundle.ribbon_index_count,
         .selected_molecule = _pdb_preset_index(bundle.path),
-        .render_mode = PROTEIN_RENDER_SPHERES,
+        .render_mode = PROTEIN_RENDER_RIBBON,
         .atom_color_mode = PROTEIN_ATOM_COLOR_ELEMENT,
-        .ribbon_color_mode = PROTEIN_RIBBON_COLOR_CHAIN,
+        .ribbon_color_mode = PROTEIN_RIBBON_COLOR_SS,
         .standard_material = true,
         .ssao_enabled = true,
         .msaa_enabled = true,
         .msaa_alpha_to_coverage = true,
         .spin_enabled = false,
         .atom_scale = atom_scale,
-        .ssao_radius = 0.520f,
-        .ssao_strength = 1.925f,
-        .ssao_bias = 0.004f,
-        .ssao_power = 2.153f,
-        .ssao_min_visibility = 0.450f,
+        .ssao_radius = 0.609f,
+        .ssao_strength = 1.557f,
+        .ssao_bias = 0.008f,
+        .ssao_power = 2.261f,
+        .ssao_min_visibility = 0.476f,
         .ssao_samples = 32.0f,
-        .ssao_blur_radius = 4.0f,
+        .ssao_blur_radius = 11.259f,
         .msaa_samples = 16.0f,
         .ambient = 0.20f,
         .diffuse = 0.76f,
         .specular = 0.572f,
         .shininess = 80.0f,
-        .roughness = 0.474f,
-        .rim_strength = 0.035f,
+        .roughness = 0.409f,
+        .rim_strength = 0.024f,
         .ssao_blur = true,
     };
+    _apply_render_mode(&state);
     _apply_material(&state);
     _apply_msaa(&state);
     _apply_ssao(&state);

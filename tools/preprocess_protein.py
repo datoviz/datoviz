@@ -133,7 +133,7 @@ SS_COLORS = {
 
 DEFAULT_RIBBON_SAMPLES = 32
 DEFAULT_RIBBON_CROSS_SECTION_COUNT = 24
-DEFAULT_RIBBON_WIDTH_SCALE = 1.75
+DEFAULT_RIBBON_WIDTH_SCALE = 1.50
 DEFAULT_RIBBON_CENTERLINE_SMOOTHING = 0.18
 DEFAULT_RIBBON_SPLINE = "bspline"
 DEFAULT_RIBBON_SAMPLE_SMOOTHING = 0.55
@@ -257,6 +257,51 @@ def _residues_from_atoms(atoms: list[Atom]) -> list[Residue]:
     return sorted(residues.values(), key=lambda r: (r.chain, r.residue_index, r.insertion_code))
 
 
+def _assign_pdb_secondary_structure(residues: list[Residue], pdb_text: str) -> int:
+    lookup = {(residue.chain, residue.residue_index): residue for residue in residues}
+    assigned = 0
+
+    def assign_range(chain: str, start: int, end: int, ss: int) -> None:
+        nonlocal assigned
+        if not chain:
+            chain = "_"
+        if end < start:
+            start, end = end, start
+        for index in range(start, end + 1):
+            residue = lookup.get((chain, index))
+            if residue is None:
+                continue
+            if residue.ss == ss:
+                continue
+            residue.ss = ss
+            assigned += 1
+
+    for line in pdb_text.splitlines():
+        record = line[0:6].strip()
+        if record == "HELIX":
+            assign_range(
+                line[19:20].strip(),
+                _parse_int(line[21:25]),
+                _parse_int(line[33:37]),
+                SS_HELIX,
+            )
+        elif record == "SHEET":
+            assign_range(
+                line[21:22].strip(),
+                _parse_int(line[22:26]),
+                _parse_int(line[33:37]),
+                SS_SHEET,
+            )
+        elif record == "TURN":
+            assign_range(
+                line[19:20].strip(),
+                _parse_int(line[20:24]),
+                _parse_int(line[31:35]),
+                SS_TURN,
+            )
+    return assigned
+
+
 def _ss_category(code: str) -> int:
     code = (code or " ").strip().upper()
     if code in {"H", "G", "I"}:
@@ -301,6 +346,19 @@ def _assign_dssp(residues: list[Residue], pdb_text: str, enabled: bool) -> bool:
         residue.ss = ss
         assigned += 1
     return assigned > 0
+
+
+def _assign_secondary_structure(
+    residues: list[Residue], pdb_text: str, use_dssp: bool
+) -> tuple[bool, int, str]:
+    dssp_assigned = _assign_dssp(residues, pdb_text, use_dssp)
+    if dssp_assigned:
+        return True, sum(1 for residue in residues if residue.ss != SS_COIL), "dssp"
+
+    pdb_assigned = _assign_pdb_secondary_structure(residues, pdb_text)
+    if pdb_assigned > 0:
+        return False, pdb_assigned, "pdb"
+    return False, 0, "none"
 
 
 def _center_and_radius(atoms: list[Atom]) -> tuple[Vec3, float, list[float], list[float]]:
@@ -890,7 +948,9 @@ def _export_bundle(
     center, radius, bbox_min, bbox_max = _center_and_radius(atoms)
     chains = _chain_map(atoms)
     residues = _residues_from_atoms(atoms)
-    dssp_assigned = _assign_dssp(residues, pdb_text, use_dssp)
+    dssp_assigned, secondary_structure_count, secondary_structure_source = _assign_secondary_structure(
+        residues, pdb_text, use_dssp
+    )
     ribbon = _ribbon_mesh(
         residues,
         chains,
@@ -980,6 +1040,8 @@ def _export_bundle(
         "has_surface": False,
         "has_ribbon": ribbon_vertex_count > 0 and ribbon_index_count > 0,
         "dssp_assigned": dssp_assigned,
+        "secondary_structure_source": secondary_structure_source,
+        "secondary_structure_count": secondary_structure_count,
         "secondary_structure_encoding": {
             "0": "coil",
             "1": "helix",
