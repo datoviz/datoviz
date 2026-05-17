@@ -152,19 +152,19 @@ static double _axis_nice_step(double x)
 
 
 /**
- * Map one data coordinate to visual coordinates for an axis.
+ * Map one data coordinate to fixed visual coordinates for an interval.
  *
- * @param axis the axis
  * @param value data value
+ * @param min interval minimum
+ * @param max interval maximum
  * @return visual coordinate
  */
-static float _axis_data_to_visual(const DvzAxis* axis, double value)
+static float _axis_data_to_visual(double value, double min, double max)
 {
-    ANN(axis);
-    double denom = axis->domain.max - axis->domain.min;
+    double denom = max - min;
     if (fabs(denom) < AXIS_EPS)
         return 0.0f;
-    double t = (value - axis->domain.min) / denom;
+    double t = (value - min) / denom;
     return (float)(-1.0 + 2.0 * t);
 }
 
@@ -322,10 +322,14 @@ static void _axis_update_visual(DvzAxis* axis)
                 axis->style.spine_width);
     }
 
+    double visible_min = 0.0;
+    double visible_max = 0.0;
+    if (!_axis_visible_domain(axis, &visible_min, &visible_max))
+        return;
     _axis_compute_ticks(axis);
     for (uint32_t i = 0; i < axis->tick_count; i++)
     {
-        float p = _axis_data_to_visual(axis, axis->ticks[i]);
+        float p = _axis_data_to_visual(axis->ticks[i], visible_min, visible_max);
         if (p < -1.0001f || p > +1.0001f)
             continue;
         if (axis->style.show_grid)

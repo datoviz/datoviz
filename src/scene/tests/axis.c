@@ -15,6 +15,7 @@
 /*************************************************************************************************/
 
 #include <math.h>
+#include <string.h>
 
 #include "_assertions.h"
 #include "../_scene.h"
@@ -22,6 +23,31 @@
 #include "datoviz/scene.h"
 #include "test_scene.h"
 #include "testing.h"
+
+
+
+/*************************************************************************************************/
+/*  Helpers                                                                                      */
+/*************************************************************************************************/
+
+/**
+ * Return one visual attribute by name.
+ *
+ * @param visual the visual
+ * @param name the attribute name
+ * @return the visual attribute, or NULL
+ */
+static DvzVisualAttr* _axis_test_attr(DvzVisual* visual, const char* name)
+{
+    ANN(visual);
+    ANN(name);
+    for (uint32_t i = 0; i < visual->attr_count; i++)
+    {
+        if (strcmp(visual->attrs[i].name, name) == 0)
+            return &visual->attrs[i];
+    }
+    return NULL;
+}
 
 
 
@@ -94,6 +120,28 @@ int test_axis_panzoom_visible_domain(TstSuite* suite, TstItem* item)
     AT(axis->tick_count >= 3);
     AT(axis->ticks[0] >= -1e-9);
     AT(axis->ticks[axis->tick_count - 1] <= 50.0 + 1e-9);
+
+    AT(dvz_axis_set_grid(axis, true));
+    _scene_prepare_axis_visuals(figure);
+    DvzVisualAttr* starts_attr = _axis_test_attr(axis->visual, "position_start");
+    DvzVisualAttr* ends_attr = _axis_test_attr(axis->visual, "position_end");
+    ANN(starts_attr);
+    ANN(ends_attr);
+    const float* starts = (const float*)starts_attr->data;
+    const float* ends = (const float*)ends_attr->data;
+    bool has_left_grid = false;
+    bool has_right_grid = false;
+    for (uint32_t i = 0; i < starts_attr->item_count; i++)
+    {
+        if (fabsf(starts[3 * i + 1] + 1.0f) < 1e-5f &&
+            fabsf(ends[3 * i + 1] - 1.0f) < 1e-5f)
+        {
+            has_left_grid = has_left_grid || fabsf(starts[3 * i + 0] + 1.0f) < 1e-5f;
+            has_right_grid = has_right_grid || fabsf(starts[3 * i + 0] - 1.0f) < 1e-5f;
+        }
+    }
+    AT(has_left_grid);
+    AT(has_right_grid);
 
     dvz_scene_destroy(scene);
     return 0;
