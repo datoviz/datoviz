@@ -112,6 +112,13 @@ static void _gui_viewport_resize_callback(DvzGui* gui, DvzAppWindow* win, void* 
     GuiViewportSmoke* smoke = (GuiViewportSmoke*)user_data;
     ANN(smoke);
 
+    if (igBegin("Raw cimgui smoke", NULL, 0))
+    {
+        igTextUnformatted("ig* raw calls are available", NULL);
+        (void)igButton("raw button", ImVec2{0, 0});
+    }
+    igEnd();
+
     if (smoke->frame == 0)
     {
         igSetNextWindowSize(ImVec2{360, 260}, ImGuiCond_Always);
@@ -124,13 +131,6 @@ static void _gui_viewport_resize_callback(DvzGui* gui, DvzAppWindow* win, void* 
     {
         igSetNextWindowCollapsed(true, ImGuiCond_Always);
     }
-
-    if (igBegin("Raw cimgui smoke", NULL, 0))
-    {
-        igTextUnformatted("ig* raw calls are available", NULL);
-        (void)igButton("raw button", ImVec2{0, 0});
-    }
-    igEnd();
 
     bool shown = dvz_gui_viewport_window(smoke->viewport, "GUI viewport smoke", NULL, 0);
     if (shown)
