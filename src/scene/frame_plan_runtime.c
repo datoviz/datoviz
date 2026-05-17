@@ -252,6 +252,64 @@ static const char* _depth_peel_fragment_spirv_key(DvzSceneBuiltinShader shader)
 
 
 /**
+ * Fill pipeline bind-group layout ids from a visual pipeline descriptor.
+ *
+ * @param pipeline visual pipeline descriptor
+ * @param common_bgl_id scene-common bind group layout id
+ * @param image_bgl_id image bind group layout id
+ * @param volume_bgl_id volume bind group layout id
+ * @param material_bgl_id material bind group layout id
+ * @param scene_occlusion_bgl_id scene occlusion bind group layout id
+ * @param scene_occlusion_uses_set2 whether scene occlusion must occupy set 2
+ * @param out_layouts output bind group layout ids
+ * @param out_count number of layout ids written
+ */
+static void _pipeline_bind_group_layouts(
+    const DvzSceneVisualPipelineDesc* pipeline, uint64_t common_bgl_id, uint64_t image_bgl_id,
+    uint64_t volume_bgl_id, uint64_t material_bgl_id, uint64_t scene_occlusion_bgl_id,
+    bool scene_occlusion_uses_set2, uint64_t* out_layouts, uint32_t* out_count)
+{
+    ANN(pipeline);
+    ANN(out_layouts);
+    ANN(out_count);
+
+    uint32_t count = 0;
+    uint64_t set1_layout = 0;
+    if (pipeline->needs_common_layout && common_bgl_id != 0)
+        out_layouts[count++] = common_bgl_id;
+    if (pipeline->needs_image_layout && image_bgl_id != 0)
+        set1_layout = image_bgl_id;
+    if (pipeline->needs_volume_layout && volume_bgl_id != 0)
+        set1_layout = volume_bgl_id;
+    if (pipeline->needs_material_layout && material_bgl_id != 0)
+        set1_layout = material_bgl_id;
+
+    bool scene_occlusion_layout_set2 =
+        pipeline->needs_scene_occlusion_layout && scene_occlusion_bgl_id != 0 &&
+        scene_occlusion_uses_set2;
+    if (
+        pipeline->needs_scene_occlusion_layout && scene_occlusion_bgl_id != 0 &&
+        !scene_occlusion_layout_set2)
+        set1_layout = scene_occlusion_bgl_id;
+
+    if (set1_layout != 0)
+    {
+        while (count < DVZ_SCENE_SHADER_SET_VISUAL)
+            out_layouts[count++] = 0;
+        out_layouts[count++] = set1_layout;
+    }
+    if (scene_occlusion_layout_set2)
+    {
+        while (count < DVZ_SCENE_SHADER_SET_SCENE_OCCLUSION)
+            out_layouts[count++] = 0;
+        out_layouts[count++] = scene_occlusion_bgl_id;
+    }
+    *out_count = count;
+}
+
+
+
+/**
  * Resolve the shared material-parameter bind group layout.
  *
  * @param emitter frame-plan emitter carrying persistent object ids
@@ -1162,35 +1220,9 @@ static bool _emitter_prepare_render_multi(
             {
                 uint64_t layouts[DVZ_DRP2_MAX_BIND_GROUPS] = {0};
                 uint32_t layout_count = 0;
-                if (pipeline.needs_common_layout && common_bgl_id != 0)
-                    layouts[layout_count++] = common_bgl_id;
-                uint64_t set1_layout = 0;
-                if (pipeline.needs_image_layout && img_bgl_id != 0)
-                    set1_layout = img_bgl_id;
-                if (pipeline.needs_volume_layout && volume_bgl_id != 0)
-                    set1_layout = volume_bgl_id;
-                if (pipeline.needs_material_layout)
-                    set1_layout = material_bgl_id;
-                bool scene_occlusion_layout_set2 =
-                    pipeline.needs_scene_occlusion_layout && scene_occlusion_bgl_id != 0 &&
-                    scene_occlusion_uses_set2;
-                if (
-                    pipeline.needs_scene_occlusion_layout && scene_occlusion_bgl_id != 0 &&
-                    !scene_occlusion_layout_set2)
-                    set1_layout = scene_occlusion_bgl_id;
-                if (set1_layout != 0)
-                {
-                    if (layout_count == 0)
-                        layouts[layout_count++] = set1_layout;
-                    else
-                    {
-                        while (layout_count < 1)
-                            layouts[layout_count++] = 0;
-                        layouts[layout_count++] = set1_layout;
-                    }
-                }
-                if (scene_occlusion_layout_set2)
-                    layouts[layout_count++] = scene_occlusion_bgl_id;
+                _pipeline_bind_group_layouts(
+                    &pipeline, common_bgl_id, img_bgl_id, volume_bgl_id, material_bgl_id,
+                    scene_occlusion_bgl_id, scene_occlusion_uses_set2, layouts, &layout_count);
                 if (layout_count > 0)
                     ok = dvz_drp2_stream_pipeline_set_bind_group_layouts(
                         stream, layout_count, layouts);
