@@ -103,6 +103,9 @@ static void _scene_emit_defaults(
 static bool _scene_figure_validate_transparency_modes(
     const DvzFigure* figure, const char* figure_id, DvzDiagnosticReport* report);
 
+static void _scene_report_capability_fallbacks(
+    const DvzFramePlan* plan, const DvzCapabilitySnapshot* caps, DvzDiagnosticReport* report);
+
 static void _scene_commit_emit_success(DvzFigure* figure);
 
 /**
@@ -725,6 +728,97 @@ static bool _scene_figure_validate_transparency_modes(
 
 
 /**
+ * Clamp a requested sample count to a supported power-of-two sample count.
+ *
+ * @param sample_count requested sample count
+ * @param max_sample_count maximum supported sample count
+ * @return supported sample count
+ */
+static uint32_t _scene_lowered_sample_count(uint32_t sample_count, uint32_t max_sample_count)
+{
+    if (sample_count <= 1 || max_sample_count <= 1)
+        return 1;
+    if (sample_count >= 16 && max_sample_count >= 16)
+        return 16;
+    if (sample_count >= 8 && max_sample_count >= 8)
+        return 8;
+    if (sample_count >= 4 && max_sample_count >= 4)
+        return 4;
+    if (sample_count >= 2 && max_sample_count >= 2)
+        return 2;
+    return 1;
+}
+
+
+
+/**
+ * Return the sample-count limit for one graph resource.
+ *
+ * @param resource the graph resource
+ * @param caps the active capability snapshot
+ * @return maximum supported sample count for the resource
+ */
+static uint32_t _scene_resource_sample_limit(
+    const DvzFrameGraphResource* resource, const DvzCapabilitySnapshot* caps)
+{
+    ANN(resource);
+    ANN(caps);
+    uint32_t max_sample_count = 16;
+    bool color = (resource->usage_flags & DVZ_FRAME_GRAPH_RESOURCE_USAGE_COLOR_ATTACHMENT) != 0;
+    bool depth = (resource->usage_flags & DVZ_FRAME_GRAPH_RESOURCE_USAGE_DEPTH_ATTACHMENT) != 0;
+    if (color || depth)
+    {
+        uint32_t color_max = caps->max_color_sample_count != 0 ? caps->max_color_sample_count : 1;
+        uint32_t depth_max = caps->max_depth_sample_count != 0 ? caps->max_depth_sample_count : 1;
+        max_sample_count = color_max < depth_max ? color_max : depth_max;
+    }
+    return max_sample_count != 0 ? max_sample_count : 1;
+}
+
+
+
+/**
+ * Report capability fallbacks that the runtime emitter will apply.
+ *
+ * @param plan the emitted FramePlan
+ * @param caps the active capability snapshot
+ * @param report optional diagnostic report
+ */
+static void _scene_report_capability_fallbacks(
+    const DvzFramePlan* plan, const DvzCapabilitySnapshot* caps, DvzDiagnosticReport* report)
+{
+    if (plan == NULL || caps == NULL || report == NULL)
+        return;
+
+    for (uint32_t i = 0; i < dvz_frame_plan_graph_resource_count(plan); i++)
+    {
+        const DvzFrameGraphResource* resource = dvz_frame_plan_graph_resource_get(plan, i);
+        if (resource == NULL)
+            continue;
+        uint32_t sample_count = resource->sample_count != 0 ? resource->sample_count : 1;
+        if (sample_count <= 1)
+            continue;
+        uint32_t max_sample_count = _scene_resource_sample_limit(resource, caps);
+        uint32_t lowered = _scene_lowered_sample_count(sample_count, max_sample_count);
+        if (lowered >= sample_count)
+            continue;
+
+        char message[DVZ_SCENE_DIAGNOSTIC_SIZE];
+        int ret = dvz_snprintf(
+            message, sizeof(message),
+            "scene capability fallback: graph resource '%s' sample count lowered from %u to %u",
+            resource->id, sample_count, lowered);
+        if (ret >= 0 && (size_t)ret < sizeof(message))
+            (void)dvz_diagnostic_report_add(report, message);
+        else
+            (void)dvz_diagnostic_report_add(
+                report, "scene capability fallback: sample count lowered");
+    }
+}
+
+
+
+/**
  * Clear dirty scene state after one successful figure emit.
  *
  * @param figure the emitted figure
@@ -1050,6 +1144,8 @@ DvzDrp2CommandStream* dvz_figure_emit_ex(
         dvz_frame_plan_destroy(plan);
         return NULL;
     }
+
+    _scene_report_capability_fallbacks(plan, caps, report);
 
     DvzDrp2CommandStream* stream =
         dvz_frame_plan_emitter_emit_drp2(emitter, plan, caps, report, cfg);

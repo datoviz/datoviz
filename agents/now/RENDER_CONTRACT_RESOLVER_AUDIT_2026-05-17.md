@@ -257,6 +257,29 @@ Validation:
 7. `git diff --check -- src/scene/scene_emit.c agents/now/RENDER_CONTRACT_RESOLVER_AUDIT_2026-05-17.md`
 
 
+### 2026-05-17: Phase 1 / Capability fallback diagnostics
+
+Completed the first capability-fallback diagnostic slice.
+
+Changes:
+
+1. Added a scene-level pre-emit diagnostic pass that scans FramePlan graph resources against the
+   active capability snapshot.
+2. Reported MSAA sample-count lowering before runtime DRP2 emission, matching the runtime's
+   supported power-of-two lowering policy.
+3. Updated `test_scene_msaa_runtime_capability_lowering` to require the diagnostic while still
+   asserting that DRP2 textures and pipelines use the lowered sample count.
+
+Validation:
+
+1. `cmake --build build --target dvztest_scene -j2`
+2. `./build/testing/dvztest_scene test_scene_msaa_runtime_capability_lowering`
+3. `./build/testing/dvztest_scene test_scene_msaa_runtime_lowering`
+4. `./build/testing/dvztest_scene test_scene_visual_scene_occlusion_emits_drp2`
+5. `./build/testing/dvztest_scene test_scene_render_contract_validation_errors`
+6. `git diff --check -- src/scene/scene.c src/scene/tests/scene_graph.c agents/now/RENDER_CONTRACT_RESOLVER_AUDIT_2026-05-17.md`
+
+
 ## Executive Assessment
 
 The direction is correct and worth continuing. The proposal identifies the right failure mode:

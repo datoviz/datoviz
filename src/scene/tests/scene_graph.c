@@ -7234,7 +7234,10 @@ int test_scene_msaa_runtime_capability_lowering(TstSuite* suite, TstItem* item)
 
     DvzDrp2CommandStream* stream = dvz_figure_emit_ex(figure, &caps, &report, &cfg);
     ANN(stream);
-    AT(dvz_diagnostic_report_count(&report) == 0);
+    AT(dvz_diagnostic_report_count(&report) >= 2);
+    const char* fallback_message = dvz_diagnostic_report_get(&report, 0);
+    ANN(fallback_message);
+    AT(strstr(fallback_message, "sample count lowered from 16 to 8") != NULL);
     DvzDrp2ValidationResult validation = dvz_drp2_validate_stream(stream);
     AT(validation.ok);
 
