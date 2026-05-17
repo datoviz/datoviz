@@ -474,6 +474,20 @@ static bool _parse_json_string_in_object(
 
 
 /**
+ * Return whether a prepared atlas region is the whole-brain root shell.
+ *
+ * @param region atlas region metadata
+ * @return whether the region is the root
+ */
+static bool _ibl_region_is_root(const AllenIblAtlasRegion* region)
+{
+    ANN(region);
+    return region->id == 997 || strcmp(region->acronym, "root") == 0;
+}
+
+
+
+/**
  * Load prepared atlas region metadata from the JSON sidecar.
  *
  * @param data_dir asset directory
@@ -535,7 +549,7 @@ static void _load_ibl_region_metadata(const char* data_dir, AllenIblAtlasMesh* a
             region.index_start <= atlas->index_count &&
             region.index_count <= atlas->index_count - region.index_start)
         {
-            region.visible = true;
+            region.visible = _ibl_region_is_root(&region);
             region.alpha = 1.0f;
             atlas->regions[atlas->region_count++] = region;
         }
@@ -1576,8 +1590,13 @@ static void _allen_mouse_brain_gui(DvzGui* gui, DvzAppWindow* win, void* user_da
 
         dvz_gui_text(gui, "Volume");
         changed |= dvz_gui_checkbox(gui, "Show full volume", &state->show_volume);
-        changed |= dvz_gui_checkbox(gui, "Clip volume at slice", &state->clip_volume_at_slice);
-        changed |= dvz_gui_checkbox(gui, "Keep positive side", &state->keep_positive_side);
+        changed |= dvz_gui_checkbox(gui, "Split volume at slice", &state->clip_volume_at_slice);
+        bool show_other_side = !state->keep_positive_side;
+        if (dvz_gui_checkbox(gui, "Show other side", &show_other_side))
+        {
+            state->keep_positive_side = !show_other_side;
+            changed = true;
+        }
         changed |= dvz_gui_checkbox(gui, "Linear sampling", &state->linear_sampling);
         const char* render_modes[] = {"MIP volume", "Composite volume"};
         int render_mode = state->render_mode == DVZ_VOLUME_RENDER_COMPOSITE ? 1 : 0;
@@ -1654,8 +1673,8 @@ static void _allen_mouse_brain_gui(DvzGui* gui, DvzAppWindow* win, void* user_da
             state->show_slice = true;
             state->show_volume = true;
             state->show_atlas_mesh = false;
-            state->clip_volume_at_slice = false;
-            state->keep_positive_side = true;
+            state->clip_volume_at_slice = true;
+            state->keep_positive_side = false;
             state->linear_sampling = true;
             state->volume_occlusion_enabled = true;
             state->render_mode = DVZ_VOLUME_RENDER_MIP;
@@ -1674,7 +1693,8 @@ static void _allen_mouse_brain_gui(DvzGui* gui, DvzAppWindow* win, void* user_da
             {
                 for (uint32_t r = 0; r < state->atlas_mesh->region_count; r++)
                 {
-                    state->atlas_mesh->regions[r].visible = true;
+                    state->atlas_mesh->regions[r].visible =
+                        _ibl_region_is_root(&state->atlas_mesh->regions[r]);
                     state->atlas_mesh->regions[r].alpha = 1.0f;
                 }
             }
@@ -1960,8 +1980,8 @@ int main(int argc, char** argv)
         .show_slice = true,
         .show_volume = true,
         .show_atlas_mesh = false,
-        .clip_volume_at_slice = false,
-        .keep_positive_side = true,
+        .clip_volume_at_slice = true,
+        .keep_positive_side = false,
         .linear_sampling = true,
         .volume_occlusion_enabled = true,
         .render_mode = DVZ_VOLUME_RENDER_COMPOSITE,
