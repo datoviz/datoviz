@@ -17,6 +17,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <string.h>
+#include <math.h>
 
 #include "_alloc.h"
 #include "_assertions.h"
@@ -37,6 +38,25 @@
 /*************************************************************************************************/
 
 static void _scene_stream_release(void* owner);
+
+
+/**
+ * Return whether a panel layout reservation is finite and leaves non-empty plot space.
+ *
+ * @param reserve the reservation descriptor
+ * @return whether the reservation is valid
+ */
+static bool _panel_layout_reserve_valid(const DvzPanelLayoutReserve* reserve)
+{
+    ANN(reserve);
+    if (!isfinite(reserve->left) || !isfinite(reserve->right) || !isfinite(reserve->bottom) ||
+        !isfinite(reserve->top))
+        return false;
+    if (reserve->left < 0.0f || reserve->right < 0.0f || reserve->bottom < 0.0f ||
+        reserve->top < 0.0f)
+        return false;
+    return reserve->left + reserve->right < 2.0f && reserve->bottom + reserve->top < 2.0f;
+}
 
 static bool _scene_stream_register(DvzScene* scene, DvzDrp2CommandStream* stream);
 
@@ -981,12 +1001,68 @@ DvzPanel* dvz_panel(DvzFigure* figure, DvzPanelDesc desc)
     ANN(figure);
     if (figure->panel_count >= DVZ_SCENE_MAX_PANELS)
         return NULL;
-    DvzPanel* panel     = &figure->panels[figure->panel_count++];
-    panel->figure       = figure;
-    panel->desc         = desc;
+    DvzPanel* panel       = &figure->panels[figure->panel_count++];
+    panel->figure         = figure;
+    panel->desc           = desc;
+    panel->layout_reserve = dvz_panel_layout_reserve();
     _scene_technique_state_init(&panel->techniques);
     panel->visual_count = 0;
     return panel;
+}
+
+
+/**
+ * Return the default panel layout reservation.
+ *
+ * @return default panel layout reservation
+ */
+DvzPanelLayoutReserve dvz_panel_layout_reserve(void)
+{
+    return (DvzPanelLayoutReserve){0};
+}
+
+
+/**
+ * Reserve visual-space room around one panel's plot area for future adornments.
+ *
+ * @param panel the panel
+ * @param reserve reservation descriptor, or NULL for defaults
+ * @return whether the reservation was accepted
+ */
+bool dvz_panel_set_layout_reserve(DvzPanel* panel, const DvzPanelLayoutReserve* reserve)
+{
+    if (panel == NULL)
+        return false;
+    DvzPanelLayoutReserve next = reserve != NULL ? *reserve : dvz_panel_layout_reserve();
+    if (!_panel_layout_reserve_valid(&next))
+        return false;
+    panel->layout_reserve = next;
+    for (uint32_t dim = 0; dim < 2; dim++)
+    {
+        DvzAxis* axis = &panel->axes[dim];
+        if (axis->panel == NULL)
+            continue;
+        axis->tick_cache_valid = false;
+        axis->dirty = true;
+        axis->version++;
+    }
+    return true;
+}
+
+
+/**
+ * Return one panel's layout reservation.
+ *
+ * @param panel the panel
+ * @param out output reservation
+ * @return whether the reservation was written
+ */
+bool dvz_panel_get_layout_reserve(DvzPanel* panel, DvzPanelLayoutReserve* out)
+{
+    if (panel == NULL || out == NULL)
+        return false;
+    *out = panel->layout_reserve;
+    return true;
 }
 
 

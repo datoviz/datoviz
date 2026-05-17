@@ -890,6 +890,7 @@ struct DvzPanel
 
     uint32_t       visual_count;
     DvzPanelAttach visuals[DVZ_SCENE_MAX_VISUALS];
+    DvzPanelLayoutReserve layout_reserve;
 
     DvzPanzoom* panzoom; /* optional pan/zoom controller (owned) */
     DvzArcball* arcball; /* optional arcball controller (owned) */

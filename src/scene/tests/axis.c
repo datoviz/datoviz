@@ -377,6 +377,50 @@ static int test_axis_plot_margins(TstSuite* suite, TstItem* item)
 }
 
 
+static int test_axis_layout_reserve(TstSuite* suite, TstItem* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 800, 600, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
+    ANN(panel);
+
+    DvzPanelLayoutReserve reserve = dvz_panel_layout_reserve();
+    AT(reserve.left == 0.0f);
+    AT(dvz_panel_set_layout_reserve(
+        panel, &(DvzPanelLayoutReserve){.left = 0.20f, .right = 0.10f, .bottom = 0.05f,
+                                        .top = 0.15f}));
+    AT(dvz_panel_get_layout_reserve(panel, &reserve));
+    AT(fabsf(reserve.left - 0.20f) < 1e-6f);
+    AT(fabsf(reserve.right - 0.10f) < 1e-6f);
+    AT(fabsf(reserve.bottom - 0.05f) < 1e-6f);
+    AT(fabsf(reserve.top - 0.15f) < 1e-6f);
+
+    AT(dvz_panel_set_domain(panel, DVZ_DIM_X, 0.0, 10.0) == 0);
+    AT(dvz_panel_set_domain(panel, DVZ_DIM_Y, -5.0, 5.0) == 0);
+    float data[] = {0.0f, -5.0f, 0.0f, 10.0f, 5.0f, 0.0f};
+    float visual[6] = {0};
+    AT(dvz_panel_data_to_visual_positions(panel, data, visual, 2) == 0);
+    AT(fabsf(visual[0] + 0.80f) < 1e-6f);
+    AT(fabsf(visual[1] + 0.95f) < 1e-6f);
+    AT(fabsf(visual[3] - 0.90f) < 1e-6f);
+    AT(fabsf(visual[4] - 0.85f) < 1e-6f);
+
+    AT(!dvz_panel_set_layout_reserve(
+        panel, &(DvzPanelLayoutReserve){.left = 1.50f, .right = 0.60f}));
+    AT(dvz_panel_set_layout_reserve(panel, NULL));
+    AT(dvz_panel_get_layout_reserve(panel, &reserve));
+    AT(reserve.left == 0.0f && reserve.right == 0.0f);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
 int test_panel_visible_domain(TstSuite* suite, TstItem* item)
 {
     (void)suite;
@@ -622,6 +666,7 @@ int test_scene_axis(TstSuite* suite)
     TEST_SIMPLE(test_axis_tick_density_tracks_panel_size);
     TEST_SIMPLE(test_panel_data_to_visual_positions);
     TEST_SIMPLE(test_axis_plot_margins);
+    TEST_SIMPLE(test_axis_layout_reserve);
     TEST_SIMPLE(test_panel_visible_domain);
     TEST_SIMPLE(test_axis_panzoom_visible_domain);
     TEST_SIMPLE(test_axis_zoom_out_in_grid_regression);

@@ -150,15 +150,17 @@ static void _axis_plot_interval(const DvzAxis* axis, float* out_min, float* out_
     ANN(out_min);
     ANN(out_max);
     const DvzAxisStyle* style = &axis->style;
+    const DvzPanelLayoutReserve reserve =
+        axis->panel != NULL ? axis->panel->layout_reserve : dvz_panel_layout_reserve();
     if (axis->dim == DVZ_DIM_X)
     {
-        *out_min = -1.0f + style->plot_margin_left;
-        *out_max = +1.0f - style->plot_margin_right;
+        *out_min = -1.0f + reserve.left + style->plot_margin_left;
+        *out_max = +1.0f - reserve.right - style->plot_margin_right;
     }
     else
     {
-        *out_min = -1.0f + style->plot_margin_bottom;
-        *out_max = +1.0f - style->plot_margin_top;
+        *out_min = -1.0f + reserve.bottom + style->plot_margin_bottom;
+        *out_max = +1.0f - reserve.top - style->plot_margin_top;
     }
     if (*out_max <= *out_min)
     {

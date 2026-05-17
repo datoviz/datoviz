@@ -203,6 +203,40 @@ DVZ_EXPORT DvzPanel* dvz_panel(DvzFigure* figure, DvzPanelDesc desc);
 
 
 /**
+ * Return the default panel layout reservation.
+ *
+ * The default is zero on every side so plot panels remain edge-to-edge unless callers opt in.
+ *
+ * @return default panel layout reservation
+ */
+DVZ_EXPORT DvzPanelLayoutReserve dvz_panel_layout_reserve(void);
+
+
+/**
+ * Reserve visual-space room around one panel's plot area for future adornments.
+ *
+ * Reservations are in panel visual-space units. Defaults are zero. Nonzero values are intended for
+ * tick labels, axis labels, legends, colorbars, or other panel-level adornments.
+ *
+ * @param panel the panel
+ * @param reserve reservation descriptor, or NULL for defaults
+ * @return whether the reservation was accepted
+ */
+DVZ_EXPORT bool dvz_panel_set_layout_reserve(
+    DvzPanel* panel, const DvzPanelLayoutReserve* reserve);
+
+
+/**
+ * Return one panel's layout reservation.
+ *
+ * @param panel the panel
+ * @param out output reservation
+ * @return whether the reservation was written
+ */
+DVZ_EXPORT bool dvz_panel_get_layout_reserve(DvzPanel* panel, DvzPanelLayoutReserve* out);
+
+
+/**
  * Destroy a panel.
  *
  * @param panel the panel
