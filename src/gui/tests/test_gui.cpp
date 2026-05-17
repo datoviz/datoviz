@@ -209,6 +209,48 @@ static int test_gui_viewport_config_defaults(TstSuite* suite, TstItem* item)
 
 
 /**
+ * Check that the curated GUI widget wrappers are exported with C-callable signatures.
+ *
+ * @param suite test suite
+ * @param item test item
+ * @return 0 on success
+ */
+static int test_gui_widget_wrapper_symbols(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    bool (*slider_int)(DvzGui*, const char*, int*, int, int) = dvz_gui_slider_int;
+    bool (*slider_float2)(DvzGui*, const char*, float*, float, float) = dvz_gui_slider_float2;
+    bool (*slider_float3)(DvzGui*, const char*, float*, float, float) = dvz_gui_slider_float3;
+    bool (*slider_float4)(DvzGui*, const char*, float*, float, float) = dvz_gui_slider_float4;
+    bool (*range_float)(
+        DvzGui*, const char*, float*, float*, float, float, float, const char*) =
+        dvz_gui_range_float;
+    bool (*color_edit4)(DvzGui*, const char*, float*, int) = dvz_gui_color_edit4;
+    bool (*color_edit_dvz)(DvzGui*, const char*, DvzColor, int) = dvz_gui_color_edit_dvz;
+    bool (*color_picker4)(DvzGui*, const char*, float*, int) = dvz_gui_color_picker4;
+    void (*separator_text)(DvzGui*, const char*) = dvz_gui_separator_text;
+    bool (*collapsing_header)(DvzGui*, const char*, int) = dvz_gui_collapsing_header;
+    void (*same_line)(DvzGui*, float, float) = dvz_gui_same_line;
+
+    AT(slider_int != NULL);
+    AT(slider_float2 != NULL);
+    AT(slider_float3 != NULL);
+    AT(slider_float4 != NULL);
+    AT(range_float != NULL);
+    AT(color_edit4 != NULL);
+    AT(color_edit_dvz != NULL);
+    AT(color_picker4 != NULL);
+    AT(separator_text != NULL);
+    AT(collapsing_header != NULL);
+    AT(same_line != NULL);
+    return 0;
+}
+
+
+
+/**
  * Smoke viewport resize handling and hidden-window render gating.
  *
  * @param suite test suite
@@ -391,6 +433,7 @@ int test_gui(TstSuite* suite)
     const char* tags = "gui";
     TEST_SIMPLE(test_gui_imgui_public_header);
     TEST_SIMPLE(test_gui_viewport_config_defaults);
+    TEST_SIMPLE(test_gui_widget_wrapper_symbols);
     TEST_SIMPLE(test_gui_viewport_resize_hidden_smoke);
     TEST_SIMPLE(test_gui_multi_viewport_input_routers);
     return 0;

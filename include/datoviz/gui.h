@@ -21,6 +21,7 @@
 
 #include "datoviz/app.h"
 #include "datoviz/common/macros.h"
+#include "datoviz/math/types.h"
 
 
 
@@ -245,6 +246,66 @@ dvz_gui_slider_float(DvzGui* gui, const char* label, float* value, float min, fl
 
 
 /**
+ * Show an integer slider.
+ *
+ * @param gui the GUI overlay
+ * @param label slider label
+ * @param value value edited in place
+ * @param min minimum value
+ * @param max maximum value
+ * @return whether the value changed
+ */
+DVZ_EXPORT bool
+dvz_gui_slider_int(DvzGui* gui, const char* label, int* value, int min, int max);
+
+
+
+/**
+ * Show a two-component float slider.
+ *
+ * @param gui the GUI overlay
+ * @param label slider label
+ * @param value two values edited in place
+ * @param min minimum value
+ * @param max maximum value
+ * @return whether the value changed
+ */
+DVZ_EXPORT bool
+dvz_gui_slider_float2(DvzGui* gui, const char* label, float value[2], float min, float max);
+
+
+
+/**
+ * Show a three-component float slider.
+ *
+ * @param gui the GUI overlay
+ * @param label slider label
+ * @param value three values edited in place
+ * @param min minimum value
+ * @param max maximum value
+ * @return whether the value changed
+ */
+DVZ_EXPORT bool
+dvz_gui_slider_float3(DvzGui* gui, const char* label, float value[3], float min, float max);
+
+
+
+/**
+ * Show a four-component float slider.
+ *
+ * @param gui the GUI overlay
+ * @param label slider label
+ * @param value four values edited in place
+ * @param min minimum value
+ * @param max maximum value
+ * @return whether the value changed
+ */
+DVZ_EXPORT bool
+dvz_gui_slider_float4(DvzGui* gui, const char* label, float value[4], float min, float max);
+
+
+
+/**
  * Show a float slider with an explicit display format.
  *
  * @param gui the GUI overlay
@@ -257,6 +318,97 @@ dvz_gui_slider_float(DvzGui* gui, const char* label, float* value, float min, fl
  */
 DVZ_EXPORT bool dvz_gui_slider_float_format(
     DvzGui* gui, const char* label, float* value, float min, float max, const char* format);
+
+
+
+/**
+ * Show a float min/max range editor.
+ *
+ * @param gui the GUI overlay
+ * @param label range label
+ * @param current_min minimum value edited in place
+ * @param current_max maximum value edited in place
+ * @param speed drag speed
+ * @param min lower clamp value
+ * @param max upper clamp value
+ * @param format printf-style value format
+ * @return whether either value changed
+ */
+DVZ_EXPORT bool dvz_gui_range_float(
+    DvzGui* gui, const char* label, float* current_min, float* current_max, float speed,
+    float min, float max, const char* format);
+
+
+
+/**
+ * Show an RGBA color editor using float channels in [0, 1].
+ *
+ * @param gui the GUI overlay
+ * @param label color label
+ * @param rgba RGBA channels edited in place
+ * @param flags Dear ImGui color edit flags
+ * @return whether the value changed
+ */
+DVZ_EXPORT bool dvz_gui_color_edit4(DvzGui* gui, const char* label, float rgba[4], int flags);
+
+
+
+/**
+ * Show an RGBA color editor using a DvzColor value.
+ *
+ * @param gui the GUI overlay
+ * @param label color label
+ * @param color color edited in place
+ * @param flags Dear ImGui color edit flags
+ * @return whether the value changed
+ */
+DVZ_EXPORT bool dvz_gui_color_edit_dvz(DvzGui* gui, const char* label, DvzColor color, int flags);
+
+
+
+/**
+ * Show an RGBA color picker using float channels in [0, 1].
+ *
+ * @param gui the GUI overlay
+ * @param label color label
+ * @param rgba RGBA channels edited in place
+ * @param flags Dear ImGui color edit flags
+ * @return whether the value changed
+ */
+DVZ_EXPORT bool dvz_gui_color_picker4(DvzGui* gui, const char* label, float rgba[4], int flags);
+
+
+
+/**
+ * Show a labeled separator.
+ *
+ * @param gui the GUI overlay
+ * @param label separator label
+ */
+DVZ_EXPORT void dvz_gui_separator_text(DvzGui* gui, const char* label);
+
+
+
+/**
+ * Show a collapsible section header.
+ *
+ * @param gui the GUI overlay
+ * @param label section label
+ * @param flags Dear ImGui tree node flags
+ * @return whether the section is open
+ */
+DVZ_EXPORT bool dvz_gui_collapsing_header(DvzGui* gui, const char* label, int flags);
+
+
+
+/**
+ * Place the next item on the same line.
+ *
+ * @param gui the GUI overlay
+ * @param offset_from_start_x x offset from start, or 0
+ * @param spacing spacing between items, or -1 for default
+ */
+DVZ_EXPORT void dvz_gui_same_line(DvzGui* gui, float offset_from_start_x, float spacing);
 
 
 
