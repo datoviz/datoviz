@@ -16,6 +16,19 @@ Their role is narrower:
 3. show how resources feed `FramePlan`,
 4. show which DRP2 command categories are implied.
 
+
+
+## Feature Fixture Matrix
+
+The compact one-feature fixture inventory lives in
+[FEATURE_FIXTURE_MATRIX.md](FEATURE_FIXTURE_MATRIX.md). That matrix is the canonical planning list for
+minimal C examples, generated DRP2/WebGPU fixtures, GUI/cimgui fixtures, video fixtures, and advanced
+low-level `vk`/`vklite`/`canvas`/`stream` examples.
+
+Fixture examples should stay smaller than the worked examples in this directory: one primary feature,
+synthetic in-file data where possible, deterministic offscreen artifacts when practical, and explicit
+CMake/backend gates for GLFW, GUI, CUDA/NVENC, Kvazaar, WebGPU, or platform interop requirements.
+
 Use [TEMPLATE.md](TEMPLATE.md) for new example specs. Existing examples should keep their
 domain-specific detail, but each file should provide enough information for an agent to pick up the
 implementation without asking for missing data-planning context. In practice, every example should

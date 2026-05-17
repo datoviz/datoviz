@@ -52,8 +52,8 @@
 #define DEFAULT_VOLUME_OPACITY 0.85f
 #define DEFAULT_VOLUME_STEPS  192.0f
 #define DEFAULT_ATLAS_ALPHA_SCALE 1.0f
-#define DEFAULT_OCCLUSION_THRESHOLD 0.0001f
-#define DEFAULT_OCCLUSION_FADE 0.0001f
+#define DEFAULT_OCCLUSION_THRESHOLD 0.000001f
+#define DEFAULT_OCCLUSION_FADE 0.000001f
 #define DEFAULT_OCCLUSION_HIDDEN_ALPHA 0.097f
 #define MAX_ATLAS_REGIONS 32
 #define MOUSE_BRAIN_WIDTH 320
@@ -1577,10 +1577,10 @@ static void _allen_mouse_brain_gui(DvzGui* gui, DvzAppWindow* win, void* user_da
         occlusion_changed |= dvz_gui_checkbox(
             gui, "Enable occlusion", &state->volume_occlusion_enabled);
         occlusion_changed |= dvz_gui_slider_float_format(
-            gui, "Volume front threshold", &state->occlusion_threshold, 0.0001f, 0.30f,
-            "%.4f");
+            gui, "Volume front threshold", &state->occlusion_threshold, 0.000001f, 0.30f,
+            "%.6f");
         occlusion_changed |= dvz_gui_slider_float_format(
-            gui, "Soft edge", &state->occlusion_fade, 0.0001f, 0.25f, "%.4f");
+            gui, "Soft edge", &state->occlusion_fade, 0.000001f, 0.25f, "%.6f");
         occlusion_changed |= dvz_gui_slider_float(
             gui, "Hidden slice visibility", &state->occlusion_hidden_alpha, 0.0f, 0.60f);
         if (dvz_gui_button(gui, "Reset occlusion"))

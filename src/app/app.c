@@ -82,6 +82,16 @@
 /*  Structs                                                                                      */
 /*************************************************************************************************/
 
+typedef struct DvzAppRuntimeFailure
+{
+    DvzDrp2ValidationCode code;
+    DvzDrp2CommandType type;
+    uint32_t command_index;
+    uint32_t command_count;
+} DvzAppRuntimeFailure;
+
+
+
 struct DvzAppWindow
 {
     DvzApp*    app;
@@ -100,6 +110,9 @@ struct DvzAppWindow
     void* request_frame_user_data;
     DvzAppTraceSnapshot last_trace_snapshot;
     bool has_last_trace_snapshot;
+    DvzAppRuntimeFailure last_runtime_failure;
+    bool has_last_runtime_failure;
+    uint32_t runtime_failure_repeat_count;
     DvzDrp2Recorder* recorder;
     DvzClock recording_clock;
     bool recording_target_created;
@@ -1284,15 +1297,160 @@ static uint64_t _app_frame_runtime_scope(const DvzStreamFrame* frame)
 
 
 /**
- * Report one failed DRP2 runtime execution.
+ * Return a readable label for one DRP2 validation code.
  *
+ * @param code validation result code
+ * @return static validation label
+ */
+static const char* _app_validation_name(DvzDrp2ValidationCode code)
+{
+    switch (code)
+    {
+    case DVZ_DRP2_VALIDATION_OK:
+        return "OK";
+    case DVZ_DRP2_VALIDATION_INVALID_ARGUMENT:
+        return "InvalidArgument";
+    case DVZ_DRP2_VALIDATION_INVALID_STATE:
+        return "InvalidState";
+    case DVZ_DRP2_VALIDATION_OUT_OF_RANGE:
+        return "OutOfRange";
+    case DVZ_DRP2_VALIDATION_USAGE:
+        return "Usage";
+    default:
+        return "Unknown";
+    }
+}
+
+
+
+/**
+ * Return the primary object id referenced by one command.
+ *
+ * @param command DRP2 command
+ * @return the command's most useful object id, or zero when none applies
+ */
+static uint64_t _app_command_primary_id(const DvzDrp2Command* command)
+{
+    if (command == NULL)
+        return 0;
+
+    switch (command->type)
+    {
+    case DVZ_DRP2_COMMAND_CREATE_BUFFER:
+        return command->u.create_buffer.id;
+    case DVZ_DRP2_COMMAND_DESTROY_BUFFER:
+        return command->u.destroy_buffer.buffer_id;
+    case DVZ_DRP2_COMMAND_CREATE_TEXTURE:
+        return command->u.create_texture.id;
+    case DVZ_DRP2_COMMAND_DESTROY_TEXTURE:
+        return command->u.destroy_texture.texture_id;
+    case DVZ_DRP2_COMMAND_CREATE_SHADER_MODULE:
+        return command->u.create_shader_module.id;
+    case DVZ_DRP2_COMMAND_DESTROY_SHADER_MODULE:
+        return command->u.destroy_shader_module.shader_module_id;
+    case DVZ_DRP2_COMMAND_CREATE_RENDER_PIPELINE:
+        return command->u.create_render_pipeline.id;
+    case DVZ_DRP2_COMMAND_DESTROY_RENDER_PIPELINE:
+        return command->u.destroy_render_pipeline.render_pipeline_id;
+    case DVZ_DRP2_COMMAND_CREATE_COMPUTE_PIPELINE:
+        return command->u.create_compute_pipeline.id;
+    case DVZ_DRP2_COMMAND_DESTROY_COMPUTE_PIPELINE:
+        return command->u.destroy_compute_pipeline.compute_pipeline_id;
+    case DVZ_DRP2_COMMAND_CREATE_SAMPLER:
+        return command->u.create_sampler.id;
+    case DVZ_DRP2_COMMAND_CREATE_BIND_GROUP_LAYOUT:
+        return command->u.create_bind_group_layout.id;
+    case DVZ_DRP2_COMMAND_CREATE_BIND_GROUP:
+        return command->u.create_bind_group.id;
+    case DVZ_DRP2_COMMAND_DESTROY_BIND_GROUP_LAYOUT:
+        return command->u.destroy_bind_group_layout.bind_group_layout_id;
+    case DVZ_DRP2_COMMAND_DESTROY_BIND_GROUP:
+        return command->u.destroy_bind_group.bind_group_id;
+    case DVZ_DRP2_COMMAND_WRITE_BUFFER:
+        return command->u.write_buffer.buffer_id;
+    case DVZ_DRP2_COMMAND_WRITE_TEXTURE:
+        return command->u.write_texture.texture_id;
+    case DVZ_DRP2_COMMAND_BEGIN_COMMAND_ENCODER:
+        return command->u.begin_command_encoder.id;
+    case DVZ_DRP2_COMMAND_BEGIN_RENDER_PASS:
+        return command->u.begin_render_pass.id;
+    case DVZ_DRP2_COMMAND_BEGIN_COMPUTE_PASS:
+        return command->u.begin_compute_pass.id;
+    case DVZ_DRP2_COMMAND_SET_PIPELINE:
+        return command->u.set_pipeline.pipeline_id;
+    case DVZ_DRP2_COMMAND_SET_BIND_GROUP:
+        return command->u.set_bind_group.bind_group_id;
+    case DVZ_DRP2_COMMAND_SET_VERTEX_BUFFER:
+        return command->u.set_vertex_buffer.buffer_id;
+    case DVZ_DRP2_COMMAND_SET_INDEX_BUFFER:
+        return command->u.set_index_buffer.buffer_id;
+    case DVZ_DRP2_COMMAND_COPY_TEXTURE_TO_BUFFER:
+        return command->u.copy_texture_to_buffer.src_texture_id;
+    case DVZ_DRP2_COMMAND_COPY_BUFFER_TO_TEXTURE:
+        return command->u.copy_buffer_to_texture.dst_texture_id;
+    case DVZ_DRP2_COMMAND_COPY_TEXTURE_TO_TEXTURE:
+        return command->u.copy_texture_to_texture.dst_texture_id;
+    default:
+        return 0;
+    }
+}
+
+
+
+/**
+ * Return whether two app runtime failure signatures match.
+ *
+ * @param a first failure signature
+ * @param b second failure signature
+ * @return whether both signatures describe the same repeated runtime failure
+ */
+static bool
+_app_runtime_failure_equal(const DvzAppRuntimeFailure* a, const DvzAppRuntimeFailure* b)
+{
+    ANN(a);
+    ANN(b);
+    return a->code == b->code && a->type == b->type &&
+           a->command_index == b->command_index && a->command_count == b->command_count;
+}
+
+
+
+/**
+ * Clear repeated runtime-failure state after a successful frame.
+ *
+ * @param win app-window carrying failure state
+ * @param context short recovery context
+ */
+static void _app_runtime_failure_reset(DvzAppWindow* win, const char* context)
+{
+    ANN(win);
+    ANN(context);
+    if (win->has_last_runtime_failure && win->runtime_failure_repeat_count > 0)
+    {
+        log_warn(
+            "%s recovered; suppressed %" PRIu32 " repeated runtime failure%s", context,
+            win->runtime_failure_repeat_count,
+            win->runtime_failure_repeat_count == 1 ? "" : "s");
+    }
+    win->has_last_runtime_failure = false;
+    win->runtime_failure_repeat_count = 0;
+}
+
+
+
+/**
+ * Report one failed DRP2 runtime execution, suppressing exact repeats.
+ *
+ * @param win app-window carrying failure state
  * @param prefix short failure context
  * @param stream the emitted command stream
  * @param result the failed validation result
  */
 static void _app_log_runtime_failure(
-    const char* prefix, const DvzDrp2CommandStream* stream, DvzDrp2ValidationResult result)
+    DvzAppWindow* win, const char* prefix, const DvzDrp2CommandStream* stream,
+    DvzDrp2ValidationResult result)
 {
+    ANN(win);
     ANN(prefix);
     ANN(stream);
 
@@ -1300,36 +1458,47 @@ static void _app_log_runtime_failure(
     const DvzDrp2Command* failed = dvz_drp2_stream_get(stream, result.command_index);
     if (failed != NULL)
         type = dvz_drp2_command_type(failed);
-    uint64_t id = 0;
-    if (failed != NULL)
+    uint32_t command_count = dvz_drp2_stream_count(stream);
+    uint64_t id = _app_command_primary_id(failed);
+    DvzAppRuntimeFailure signature = {
+        .code = result.code,
+        .type = type,
+        .command_index = result.command_index,
+        .command_count = command_count,
+    };
+
+    if (win->has_last_runtime_failure &&
+        _app_runtime_failure_equal(&win->last_runtime_failure, &signature))
     {
-        switch (type)
-        {
-        case DVZ_DRP2_COMMAND_CREATE_TEXTURE:
-            id = failed->u.create_texture.id;
-            break;
-        case DVZ_DRP2_COMMAND_DESTROY_TEXTURE:
-            id = failed->u.destroy_texture.texture_id;
-            break;
-        case DVZ_DRP2_COMMAND_CREATE_BIND_GROUP:
-            id = failed->u.create_bind_group.id;
-            break;
-        case DVZ_DRP2_COMMAND_DESTROY_BIND_GROUP:
-            id = failed->u.destroy_bind_group.bind_group_id;
-            break;
-        case DVZ_DRP2_COMMAND_BEGIN_COMMAND_ENCODER:
-            id = failed->u.begin_command_encoder.id;
-            break;
-        case DVZ_DRP2_COMMAND_BEGIN_RENDER_PASS:
-            id = failed->u.begin_render_pass.id;
-            break;
-        default:
-            break;
-        }
+        if (win->runtime_failure_repeat_count < UINT32_MAX)
+            win->runtime_failure_repeat_count++;
+        return;
     }
+
+    if (win->has_last_runtime_failure && win->runtime_failure_repeat_count > 0)
+    {
+        log_warn(
+            "%s: suppressed %" PRIu32 " repeated runtime failure%s", prefix,
+            win->runtime_failure_repeat_count,
+            win->runtime_failure_repeat_count == 1 ? "" : "s");
+    }
+
+    char id_text[DVZ_DRP2_LABEL_SIZE + 64];
+    if (id != 0)
+        _trace_format_id(stream, id, id_text, sizeof(id_text));
+    else
+        dvz_snprintf(id_text, sizeof(id_text), "0");
+
     log_error(
-        "%s: code=%d command=%" PRIu32 " type=%d (%s) id=%" PRIu64, prefix,
-        (int)result.code, result.command_index, (int)type, _trace_command_name(type), id);
+        "%s: code=%d (%s) command=%" PRIu32 "/%" PRIu32 " type=%d (%s) id=%s",
+        prefix, (int)result.code, _app_validation_name(result.code), result.command_index,
+        command_count, (int)type, _trace_command_name(type), id_text);
+    if (failed != NULL)
+        (void)_app_trace_print_command_detail(stream, failed, result.command_index, true);
+
+    win->last_runtime_failure = signature;
+    win->has_last_runtime_failure = true;
+    win->runtime_failure_repeat_count = 0;
 }
 
 
@@ -1597,11 +1766,13 @@ static void _app_draw_replay(DvzAppWindow* win, const DvzStreamFrame* frame)
     DvzDrp2ValidationResult result = dvz_drp2_runtime_execute(win->app->runtime, stream);
     if (!result.ok)
     {
-        _app_log_runtime_failure("_app_draw_replay runtime execution failed", stream, result);
+        _app_log_runtime_failure(
+            win, "_app_draw_replay runtime execution failed", stream, result);
         win->render_enabled = false;
     }
     else
     {
+        _app_runtime_failure_reset(win, "_app_draw_replay runtime execution");
         win->replay_frame_index++;
         win->frame_index++;
     }
@@ -1712,10 +1883,13 @@ static void _app_draw(DvzCanvas* canvas, const DvzStreamFrame* frame, void* user
 
     DvzDrp2ValidationResult result = dvz_drp2_runtime_execute(app->runtime, stream);
     if (!result.ok)
-        _app_log_runtime_failure("_app_draw runtime execution failed", stream, result);
+        _app_log_runtime_failure(win, "_app_draw runtime execution failed", stream, result);
     else
+    {
+        _app_runtime_failure_reset(win, "_app_draw runtime execution");
         (void)_dvz_figure_process_requests_with_executor(
             win->figure, app->runtime, &app->request_executor, &caps);
+    }
 
     if (result.ok)
         _app_record_stream(win, frame, stream);

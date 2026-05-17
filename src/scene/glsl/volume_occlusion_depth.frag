@@ -117,7 +117,7 @@ void main()
     float ray_length = end_t - start_t;
     float step_len = ray_length / float(steps);
     bool transfer = volume.clip_min.w > 0.5;
-    float alpha_threshold = max(volume.occlusion.x, 0.0001);
+    float alpha_threshold = max(volume.occlusion.x, 0.000001);
     float accum = 0.0;
     for (int i = 0; i < 1024; i++) {
         if (i >= steps) {

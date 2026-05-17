@@ -505,6 +505,9 @@ int test_scene_hidden_visual_first_visible_later_uploads(TstSuite* suite, TstIte
 
 int test_scene_hidden_indexed_mesh_first_visible_later_uploads(TstSuite* suite, TstItem* item);
 
+int test_scene_hidden_wboit_mesh_scene_occlusion_two_frames_glsl_executes(
+    TstSuite* suite, TstItem* item);
+
 int test_scene_partial_update_uploads_only_range(TstSuite* suite, TstItem* item);
 
 int test_scene_repeated_partial_updates_across_frames(TstSuite* suite, TstItem* item);

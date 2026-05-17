@@ -862,6 +862,10 @@ static bool _emitter_prepare_render_multi(
                     _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_SCENE_OCCLUSION_DEPTH, true);
                 shader.vertex_spirv_key = vertex_spirv_key;
                 shader.fragment_spirv_key = "scene_occlusion_depth_frag";
+                desc.has_normal = false;
+                desc.material_buffer_id = 0;
+                if (desc.kind == DVZ_SCENE_VISUAL_DESC_PRIMITIVE && desc.vbuf_count > 2)
+                    desc.vbuf_count = 2;
             }
         }
         else if (!_scene_visual_shader_desc(
@@ -1216,6 +1220,15 @@ static bool _emitter_prepare_render_multi(
         {
             ok = false;
             break;
+        }
+        if (scene_occlusion_pass)
+        {
+            bind.uses_image_set1 = false;
+            bind.image_texture_id = 0;
+            bind.uses_material_set1 = false;
+            bind.material_buffer_id = 0;
+            bind.uses_scene_occlusion_set2 = false;
+            bind.scene_occlusion_depth_texture_id = 0;
         }
         bool volume_depth_producer_pass = volume_occlusion_pass || scene_occlusion_pass;
         if (bind.uses_volume_set1 && !volume_depth_producer_pass && !bind.volume_occluded)

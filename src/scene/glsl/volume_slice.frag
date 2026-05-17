@@ -126,7 +126,7 @@ float depth_visibility(vec3 uvw)
             return 1.0;
         }
         float hidden_alpha = clamp(volume.occlusion.z, 0.0, 1.0);
-        float fade_distance = max(volume.occlusion.y, 0.0001);
+        float fade_distance = max(volume.occlusion.y, 0.000001);
         float fade = smoothstep(0.0, fade_distance, delta);
         return mix(1.0, hidden_alpha, fade);
     }
@@ -135,6 +135,37 @@ float depth_visibility(vec3 uvw)
     }
     return self_depth > scene_depth + 0.0005 ? 0.0 : 1.0;
 }
+
+#ifdef DVZ_SCENE_OCCLUSION
+float scene_occlusion_visibility_linear(vec3 uvw)
+{
+    if (sceneOcclusion.params.w < 0.5) {
+        return 1.0;
+    }
+
+    vec2 size = vec2(textureSize(sceneOcclusionDepth, 0));
+    vec2 uv = clamp(gl_FragCoord.xy / size, vec2(0.0), vec2(1.0));
+    float scene_depth = texture(sceneOcclusionDepth, uv).r;
+    if (scene_depth >= 0.999999) {
+        return 1.0;
+    }
+
+    float self_depth = projected_depth(uvw);
+    if (self_depth <= scene_depth) {
+        return 1.0;
+    }
+
+    float delta = view_depth_from_uvw(uvw) - linearize_depth(scene_depth);
+    if (delta <= 0.0) {
+        return 1.0;
+    }
+
+    float hidden_alpha = clamp(sceneOcclusion.params.z, 0.0, 1.0);
+    float soft_edge = max(sceneOcclusion.params.y, 0.000001);
+    float fade = smoothstep(0.0, soft_edge, delta);
+    return mix(1.0, hidden_alpha, fade);
+}
+#endif
 
 void main()
 {
@@ -182,6 +213,9 @@ void main()
         outColor = vec4(value, value, value, value * volume.params.x * visibility);
     }
 #ifdef DVZ_SCENE_OCCLUSION
-    applySceneOcclusionDepth(outColor, projected_depth(uvw));
+    outColor.a *= scene_occlusion_visibility_linear(uvw);
+    if (outColor.a <= 0.0) {
+        discard;
+    }
 #endif
 }
