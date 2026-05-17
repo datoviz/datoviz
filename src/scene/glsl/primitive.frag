@@ -10,6 +10,9 @@ layout(location = 0) out vec4 outColor;
 void main()
 {
     outColor = fragColor;
+    if (outColor.a <= 0.0) {
+        discard;
+    }
 #ifdef DVZ_SCENE_OCCLUSION
     applySceneOcclusion(outColor);
 #endif

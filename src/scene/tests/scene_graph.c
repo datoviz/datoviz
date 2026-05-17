@@ -4741,8 +4741,10 @@ int test_scene_visual_scene_occlusion_emits_drp2(TstSuite* suite, TstItem* item)
     bool has_scene_z = false;
     bool has_scene_depth_pass = false;
     bool has_scene_occluded_pipeline = false;
+    bool has_scene_occluder_depth_pipeline = false;
     bool has_scene_occlusion_bind_group = false;
     bool binds_scene_occlusion_group = false;
+    bool has_alpha_aware_depth_shader = false;
     for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
     {
         const DvzDrp2Command* command = dvz_drp2_stream_get(stream, i);
@@ -4774,6 +4776,20 @@ int test_scene_visual_scene_occlusion_emits_drp2(TstSuite* suite, TstItem* item)
                 has_scene_occluded_pipeline ||
                 (label != NULL && strstr(label, "scene_occ") != NULL &&
                  command->u.create_render_pipeline.bind_group_layout_count >= 2);
+            has_scene_occluder_depth_pipeline =
+                has_scene_occluder_depth_pipeline ||
+                (label != NULL && strstr(label, "_pipe_scene_occ_prim") != NULL &&
+                 command->u.create_render_pipeline.depth_write_enabled &&
+                 command->u.create_render_pipeline.depth_compare_op == VK_COMPARE_OP_LESS_OR_EQUAL);
+        }
+        else if (command->type == DVZ_DRP2_COMMAND_CREATE_SHADER_MODULE)
+        {
+            has_alpha_aware_depth_shader =
+                has_alpha_aware_depth_shader ||
+                (command->u.create_shader_module.code != NULL &&
+                 strstr(
+                     command->u.create_shader_module.code,
+                     "DVZ_SCENE_OCCLUSION_DEPTH_COLOR") != NULL);
         }
         else if (command->type == DVZ_DRP2_COMMAND_CREATE_BIND_GROUP)
         {
@@ -4796,6 +4812,8 @@ int test_scene_visual_scene_occlusion_emits_drp2(TstSuite* suite, TstItem* item)
     AT(has_scene_z);
     AT(has_scene_depth_pass);
     AT(has_scene_occluded_pipeline);
+    AT(has_scene_occluder_depth_pipeline);
+    AT(has_alpha_aware_depth_shader);
     AT(has_scene_occlusion_bind_group);
     AT(binds_scene_occlusion_group);
 

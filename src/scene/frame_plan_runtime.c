@@ -862,6 +862,19 @@ static bool _emitter_prepare_render_multi(
                     _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_SCENE_OCCLUSION_DEPTH, true);
                 shader.vertex_spirv_key = vertex_spirv_key;
                 shader.fragment_spirv_key = "scene_occlusion_depth_frag";
+                if (desc.kind != DVZ_SCENE_VISUAL_DESC_IMAGE)
+                {
+                    scene_occlusion_fragment_glsl = _shader_glsl_variant(
+                        shader.fragment_glsl,
+                        "#define DVZ_SCENE_OCCLUSION_DEPTH_COLOR 1\n");
+                    shader.fragment_glsl = scene_occlusion_fragment_glsl;
+                    shader.fragment_spirv_key = NULL;
+                    if (shader.fragment_glsl == NULL)
+                    {
+                        ok = false;
+                        break;
+                    }
+                }
                 desc.has_normal = false;
                 desc.material_buffer_id = 0;
                 if (desc.kind == DVZ_SCENE_VISUAL_DESC_PRIMITIVE && desc.vbuf_count > 2)
@@ -1050,12 +1063,9 @@ static bool _emitter_prepare_render_multi(
                 pipeline.needs_image_layout = false;
                 pipeline.needs_material_layout = false;
                 pipeline.needs_scene_occlusion_layout = false;
-                if (desc.kind == DVZ_SCENE_VISUAL_DESC_VOLUME)
-                {
-                    pipeline.has_depth_state = true;
-                    pipeline.depth_write_enabled = true;
-                    pipeline.depth_compare_op = VK_COMPARE_OP_LESS_OR_EQUAL;
-                }
+                pipeline.has_depth_state = true;
+                pipeline.depth_write_enabled = true;
+                pipeline.depth_compare_op = VK_COMPARE_OP_LESS_OR_EQUAL;
             }
             if (
                 force_point_depth &&

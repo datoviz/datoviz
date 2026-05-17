@@ -1302,6 +1302,20 @@ static void _volume_aspect_bounds(
 
 
 /**
+ * Return whether the 3D volume contributes visible color.
+ *
+ * @param state example state
+ * @return whether the full volume is effectively visible
+ */
+static bool _volume_effectively_visible(const AllenMouseBrainState* state)
+{
+    ANN(state);
+    return state->volume_visual != NULL && state->show_volume && state->volume_opacity > 0.0f;
+}
+
+
+
+/**
  * Apply the transparency technique required by the currently visible visual set.
  *
  * @param state example state
@@ -1309,33 +1323,69 @@ static void _volume_aspect_bounds(
 static void _apply_transparency_modes(AllenMouseBrainState* state)
 {
     ANN(state);
-    if (state->slice_visual == NULL || state->volume_visual == NULL)
-        return;
 
-    (void)dvz_visual_set_alpha_mode(state->volume_visual, DVZ_ALPHA_BLENDED);
-    (void)dvz_visual_set_alpha_mode(state->slice_visual, DVZ_ALPHA_BLENDED);
+    bool has_volume = _volume_effectively_visible(state);
+    if (state->volume_visual != NULL)
+        (void)dvz_visual_set_alpha_mode(state->volume_visual, DVZ_ALPHA_BLENDED);
+    if (state->slice_visual != NULL)
+        (void)dvz_visual_set_alpha_mode(state->slice_visual, DVZ_ALPHA_BLENDED);
     if (state->atlas_mesh_visual != NULL)
     {
         bool atlas_opaque = state->show_atlas_mesh && state->atlas_mesh != NULL;
         if (atlas_opaque && state->atlas_mesh->region_count > 0)
         {
+            bool has_visible_region = false;
             for (uint32_t r = 0; r < state->atlas_mesh->region_count; r++)
             {
                 const AllenIblAtlasRegion* region = &state->atlas_mesh->regions[r];
-                float alpha = region->visible ? region->alpha * state->atlas_alpha_scale : 0.0f;
+                if (!region->visible)
+                    continue;
+                has_visible_region = true;
+                float alpha = region->alpha * state->atlas_alpha_scale;
                 if (alpha < 0.999f)
                 {
                     atlas_opaque = false;
                     break;
                 }
             }
+            if (!has_visible_region)
+                atlas_opaque = false;
         }
         else if (state->atlas_alpha_scale < 0.999f)
             atlas_opaque = false;
-        (void)dvz_visual_set_alpha_mode(
-            state->atlas_mesh_visual, atlas_opaque ? DVZ_ALPHA_OPAQUE : DVZ_ALPHA_WBOIT);
+
+        DvzAlphaMode atlas_alpha_mode = atlas_opaque ? DVZ_ALPHA_OPAQUE :
+                                                       has_volume ? DVZ_ALPHA_BLENDED :
+                                                                    DVZ_ALPHA_WBOIT;
+        (void)dvz_visual_set_alpha_mode(state->atlas_mesh_visual, atlas_alpha_mode);
     }
 }
+
+
+
+/**
+ * Return whether the atlas mesh has any region that should draw.
+ *
+ * @param state example state
+ * @return whether the atlas mesh should be visible and participate in occlusion
+ */
+static bool _atlas_mesh_effectively_visible(const AllenMouseBrainState* state)
+{
+    ANN(state);
+    if (!state->show_atlas_mesh || state->atlas_mesh_visual == NULL)
+        return false;
+    if (state->atlas_mesh == NULL || state->atlas_mesh->region_count == 0)
+        return true;
+
+    for (uint32_t r = 0; r < state->atlas_mesh->region_count; r++)
+    {
+        const AllenIblAtlasRegion* region = &state->atlas_mesh->regions[r];
+        if (region->visible && region->alpha * state->atlas_alpha_scale > 0.0f)
+            return true;
+    }
+    return false;
+}
+
 
 
 /**
@@ -1349,7 +1399,10 @@ static void _apply_atlas_mesh_visibility(AllenMouseBrainState* state)
     if (state->atlas_mesh_visual == NULL)
         return;
 
-    dvz_visual_set_visible(state->atlas_mesh_visual, state->show_atlas_mesh);
+    bool visible = _atlas_mesh_effectively_visible(state);
+    dvz_visual_set_visible(state->atlas_mesh_visual, visible);
+    (void)dvz_visual_set_scene_occluder(
+        state->atlas_mesh_visual, state->volume_occlusion_enabled && visible);
     _apply_transparency_modes(state);
 }
 
@@ -1468,6 +1521,7 @@ static void _apply_volume_controls(AllenMouseBrainState* state)
     {
         (void)dvz_volume_clear_clipping(state->volume_visual);
     }
+    _apply_transparency_modes(state);
 }
 
 
@@ -1505,8 +1559,9 @@ static void _apply_volume_occlusion_controls(AllenMouseBrainState* state)
     }
     if (state->atlas_mesh_visual != NULL)
     {
+        bool atlas_visible = _atlas_mesh_effectively_visible(state);
         (void)dvz_visual_set_scene_occluder(
-            state->atlas_mesh_visual, state->volume_occlusion_enabled);
+            state->atlas_mesh_visual, state->volume_occlusion_enabled && atlas_visible);
     }
     (void)dvz_visual_set_volume_occluded(state->slice_visual, false);
     (void)dvz_visual_set_scene_occluded(
@@ -1881,7 +1936,7 @@ int main(int argc, char** argv)
             dvz_visual_set_data(
                 atlas_mesh_visual, "normal", atlas_mesh.normal, atlas_mesh.vertex_count) != 0 ||
             !dvz_visual_set_buffer(atlas_mesh_visual, "index", atlas_index_buffer) ||
-            dvz_visual_set_alpha_mode(atlas_mesh_visual, DVZ_ALPHA_WBOIT) != 0 ||
+            dvz_visual_set_alpha_mode(atlas_mesh_visual, DVZ_ALPHA_BLENDED) != 0 ||
             dvz_visual_set_depth_test(atlas_mesh_visual, true) != 0)
         {
             dvz_fprintf(stderr, "Allen/IBL atlas mesh visual setup failed\n");

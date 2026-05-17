@@ -17,6 +17,9 @@ void main()
     vec4 shaded = evaluateSceneMaterial(fragColor, fragNormal, fragWorldPos, fragCameraPos);
     vec3 cue = vec3(fragDepth, length(fragCameraPos - fragWorldPos), length(fragWorldPos));
     outColor = vec4(applyDepthCue(shaded.rgb, cue), shaded.a);
+    if (outColor.a <= 0.0) {
+        discard;
+    }
 #ifdef DVZ_SCENE_OCCLUSION
     applySceneOcclusion(outColor);
 #endif
