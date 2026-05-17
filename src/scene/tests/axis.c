@@ -53,26 +53,51 @@ static DvzVisualAttr* _axis_test_attr(DvzVisual* visual, const char* name)
 
 
 /**
- * Return the first indexed draw count in a command stream.
+ * Return the first draw vertex count in a command stream.
  *
  * @param stream the command stream
- * @return the indexed draw count, or 0
+ * @return the draw vertex count, or 0
  */
-static uint32_t _axis_test_draw_index_count(const DvzDrp2CommandStream* stream)
+static uint32_t _axis_test_draw_vertex_count(const DvzDrp2CommandStream* stream)
 {
     ANN(stream);
     for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
     {
         const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream, i);
-        if (cmd->type == DVZ_DRP2_COMMAND_DRAW_INDEXED)
-            return cmd->u.draw_indexed.index_count;
+        if (cmd->type == DVZ_DRP2_COMMAND_DRAW)
+            return cmd->u.draw.vertex_count;
     }
     return 0;
 }
 
 
 /**
- * Return the number of inward major tick lines emitted by one axis visual.
+ * Return the number of axis decoration rectangles with one color.
+ *
+ * @param axis the axis
+ * @param color the rectangle color
+ * @return rectangle count
+ */
+static uint32_t _axis_test_rect_color_count(DvzAxis* axis, const uint8_t color[4])
+{
+    ANN(axis);
+    ANN(axis->visual);
+    ANN(color);
+    DvzVisualAttr* colors_attr = _axis_test_attr(axis->visual, "color");
+    ANN(colors_attr);
+    const uint8_t* colors = (const uint8_t*)colors_attr->data;
+    uint32_t count = 0;
+    for (uint32_t i = 0; i + 5 < colors_attr->item_count; i += 6)
+    {
+        if (memcmp(&colors[4 * i], color, 4) == 0)
+            count++;
+    }
+    return count;
+}
+
+
+/**
+ * Return the number of inward major tick rectangles emitted by one axis visual.
  *
  * @param axis the axis
  * @return inward tick line count
@@ -80,33 +105,7 @@ static uint32_t _axis_test_draw_index_count(const DvzDrp2CommandStream* stream)
 static uint32_t _axis_test_inward_tick_line_count(DvzAxis* axis)
 {
     ANN(axis);
-    ANN(axis->visual);
-    DvzVisualAttr* starts_attr = _axis_test_attr(axis->visual, "position_start");
-    DvzVisualAttr* ends_attr = _axis_test_attr(axis->visual, "position_end");
-    DvzVisualAttr* colors_attr = _axis_test_attr(axis->visual, "color");
-    ANN(starts_attr);
-    ANN(ends_attr);
-    ANN(colors_attr);
-    const float* starts = (const float*)starts_attr->data;
-    const float* ends = (const float*)ends_attr->data;
-    const uint8_t* colors = (const uint8_t*)colors_attr->data;
-    uint32_t count = 0;
-    for (uint32_t i = 0; i < starts_attr->item_count; i++)
-    {
-        float sx = starts[3 * i + 0];
-        float sy = starts[3 * i + 1];
-        float ex = ends[3 * i + 0];
-        float ey = ends[3 * i + 1];
-        if (memcmp(&colors[4 * i], axis->style.major_tick_color, 4) != 0)
-            continue;
-        if (axis->dim == DVZ_DIM_X && fabsf(sx - ex) < 1e-5f && fabsf(sy + 1.0f) < 1e-5f &&
-            ey > sy + 1e-5f && ey < sy + 0.10f)
-            count++;
-        if (axis->dim == DVZ_DIM_Y && fabsf(sy - ey) < 1e-5f && fabsf(sx + 1.0f) < 1e-5f &&
-            ex > sx + 1e-5f && ex < sx + 0.10f)
-            count++;
-    }
-    return count;
+    return _axis_test_rect_color_count(axis, axis->style.major_tick_color);
 }
 
 
@@ -119,17 +118,7 @@ static uint32_t _axis_test_inward_tick_line_count(DvzAxis* axis)
 static uint32_t _axis_test_inward_minor_tick_line_count(DvzAxis* axis)
 {
     ANN(axis);
-    ANN(axis->visual);
-    DvzVisualAttr* colors_attr = _axis_test_attr(axis->visual, "color");
-    ANN(colors_attr);
-    const uint8_t* colors = (const uint8_t*)colors_attr->data;
-    uint32_t count = 0;
-    for (uint32_t i = 0; i < colors_attr->item_count; i++)
-    {
-        if (memcmp(&colors[4 * i], axis->style.minor_tick_color, 4) == 0)
-            count++;
-    }
-    return count;
+    return _axis_test_rect_color_count(axis, axis->style.minor_tick_color);
 }
 
 
@@ -143,17 +132,25 @@ static uint32_t _axis_test_vertical_grid_line_count(DvzAxis* axis)
 {
     ANN(axis);
     ANN(axis->visual);
-    DvzVisualAttr* starts_attr = _axis_test_attr(axis->visual, "position_start");
-    DvzVisualAttr* ends_attr = _axis_test_attr(axis->visual, "position_end");
-    ANN(starts_attr);
-    ANN(ends_attr);
-    const float* starts = (const float*)starts_attr->data;
-    const float* ends = (const float*)ends_attr->data;
+    DvzVisualAttr* positions_attr = _axis_test_attr(axis->visual, "position");
+    DvzVisualAttr* colors_attr = _axis_test_attr(axis->visual, "color");
+    ANN(positions_attr);
+    ANN(colors_attr);
+    const float* positions = (const float*)positions_attr->data;
+    const uint8_t* colors = (const uint8_t*)colors_attr->data;
     uint32_t count = 0;
-    for (uint32_t i = 0; i < starts_attr->item_count; i++)
+    for (uint32_t i = 0; i + 5 < positions_attr->item_count; i += 6)
     {
-        if (fabsf(starts[3 * i + 1] + 1.0f) < 1e-5f &&
-            fabsf(ends[3 * i + 1] - 1.0f) < 1e-5f)
+        if (memcmp(&colors[4 * i], axis->style.grid_color, 4) != 0)
+            continue;
+        float min_y = positions[3 * i + 1];
+        float max_y = positions[3 * i + 1];
+        for (uint32_t j = 1; j < 6; j++)
+        {
+            min_y = fminf(min_y, positions[3 * (i + j) + 1]);
+            max_y = fmaxf(max_y, positions[3 * (i + j) + 1]);
+        }
+        if (min_y <= -1.0f + 1e-4f && max_y >= +1.0f - 1e-4f)
             count++;
     }
     return count;
@@ -170,17 +167,25 @@ static uint32_t _axis_test_horizontal_grid_line_count(DvzAxis* axis)
 {
     ANN(axis);
     ANN(axis->visual);
-    DvzVisualAttr* starts_attr = _axis_test_attr(axis->visual, "position_start");
-    DvzVisualAttr* ends_attr = _axis_test_attr(axis->visual, "position_end");
-    ANN(starts_attr);
-    ANN(ends_attr);
-    const float* starts = (const float*)starts_attr->data;
-    const float* ends = (const float*)ends_attr->data;
+    DvzVisualAttr* positions_attr = _axis_test_attr(axis->visual, "position");
+    DvzVisualAttr* colors_attr = _axis_test_attr(axis->visual, "color");
+    ANN(positions_attr);
+    ANN(colors_attr);
+    const float* positions = (const float*)positions_attr->data;
+    const uint8_t* colors = (const uint8_t*)colors_attr->data;
     uint32_t count = 0;
-    for (uint32_t i = 0; i < starts_attr->item_count; i++)
+    for (uint32_t i = 0; i + 5 < positions_attr->item_count; i += 6)
     {
-        if (fabsf(starts[3 * i + 0] + 1.0f) < 1e-5f &&
-            fabsf(ends[3 * i + 0] - 1.0f) < 1e-5f)
+        if (memcmp(&colors[4 * i], axis->style.grid_color, 4) != 0)
+            continue;
+        float min_x = positions[3 * i + 0];
+        float max_x = positions[3 * i + 0];
+        for (uint32_t j = 1; j < 6; j++)
+        {
+            min_x = fminf(min_x, positions[3 * (i + j) + 0]);
+            max_x = fmaxf(max_x, positions[3 * (i + j) + 0]);
+        }
+        if (min_x <= -1.0f + 1e-4f && max_x >= +1.0f - 1e-4f)
             count++;
     }
     return count;
@@ -209,6 +214,7 @@ int test_axis_domain_and_ticks(TstSuite* suite, TstItem* item)
     ANN(axis);
     AT(axis->enabled);
     AT(axis->visual != NULL);
+    AT(axis->visual->type == DVZ_VISUAL_TYPE_PRIMITIVE);
     AT(panel->visual_count == 1);
     AT(panel->visuals[0].controller_mode == DVZ_CONTROLLER_FIXED);
 
@@ -447,8 +453,8 @@ int test_panel_visible_domain(TstSuite* suite, TstItem* item)
     dvz_panzoom_pan(pz, (vec2){0.5f, 0.0f});
 
     AT(dvz_panel_visible_domain(panel, DVZ_DIM_X, &min, &max));
-    AT(min < 0.0);
-    AT(max > 45.0 && max < 50.0);
+    AT(fabs(min) < 1e-9);
+    AT(fabs(max - 50.0) < 1e-9);
 
     dvz_scene_destroy(scene);
     return 0;
@@ -493,26 +499,7 @@ int test_axis_panzoom_visible_domain(TstSuite* suite, TstItem* item)
     double lmin = axis->tick_lmin;
     double covered_min = axis->tick_covered_min;
     double covered_max = axis->tick_covered_max;
-    DvzVisualAttr* starts_attr = _axis_test_attr(axis->visual, "position_start");
-    DvzVisualAttr* ends_attr = _axis_test_attr(axis->visual, "position_end");
-    ANN(starts_attr);
-    ANN(ends_attr);
-    const float* starts = (const float*)starts_attr->data;
-    const float* ends = (const float*)ends_attr->data;
-    const float x0 = -1.00f;
-    const float x1 = +1.00f;
-    bool has_grid = false;
-    for (uint32_t i = 0; i < starts_attr->item_count; i++)
-    {
-        if (fabsf(starts[3 * i + 1] + 1.0f) < 1e-5f &&
-            fabsf(ends[3 * i + 1] - 1.0f) < 1e-5f)
-        {
-            has_grid = true;
-            AT(starts[3 * i + 0] >= x0 - 1e-5f);
-            AT(starts[3 * i + 0] <= x1 + 1e-5f);
-        }
-    }
-    AT(has_grid);
+    AT(_axis_test_vertical_grid_line_count(axis) > 0);
 
     dvz_panzoom_pan(pz, (vec2){0.45f, 0.0f});
     _scene_prepare_axis_visuals(figure);
@@ -637,7 +624,7 @@ int test_axis_dynamic_segment_draw_count(TstSuite* suite, TstItem* item)
         axis, &(DvzAxisTickPolicy){.target_count = 12, .min_pixel_spacing = 0.0f}));
     DvzDrp2CommandStream* stream0 = dvz_figure_emit_ex(figure, &caps, &report, &cfg);
     ANN(stream0);
-    uint32_t draw0 = _axis_test_draw_index_count(stream0);
+    uint32_t draw0 = _axis_test_draw_vertex_count(stream0);
     AT(draw0 > 0);
     dvz_drp2_stream_destroy(stream0);
 
@@ -646,7 +633,7 @@ int test_axis_dynamic_segment_draw_count(TstSuite* suite, TstItem* item)
         axis, &(DvzAxisTickPolicy){.target_count = 2, .min_pixel_spacing = 0.0f}));
     DvzDrp2CommandStream* stream1 = dvz_figure_emit_ex(figure, &caps, &report, &cfg);
     ANN(stream1);
-    uint32_t draw1 = _axis_test_draw_index_count(stream1);
+    uint32_t draw1 = _axis_test_draw_vertex_count(stream1);
     AT(draw1 > 0);
     AT(draw1 < draw0);
     dvz_drp2_stream_destroy(stream1);

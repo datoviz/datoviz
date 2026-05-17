@@ -283,6 +283,56 @@ static float _axis_tick_length(const DvzAxis* axis, float length_px)
 
 
 /**
+ * Return the visual-space size of one pixel for one screen axis.
+ *
+ * @param axis the axis
+ * @param dim the visual dimension
+ * @return visual-space pixel size
+ */
+static float _axis_visual_pixel_size(const DvzAxis* axis, DvzDim dim)
+{
+    ANN(axis);
+    if (axis->panel == NULL)
+        return 0.0f;
+    float panel_x = 0.0f;
+    float panel_y = 0.0f;
+    float panel_width = 0.0f;
+    float panel_height = 0.0f;
+    _scene_panel_pixel_rect(axis->panel, &panel_x, &panel_y, &panel_width, &panel_height);
+    float span = dim == DVZ_DIM_X ? panel_width : panel_height;
+    if (!(span > 0.0f) || !isfinite(span))
+        return 0.0f;
+    return 2.0f / span;
+}
+
+
+/**
+ * Snap one visual coordinate to a pixel center.
+ *
+ * @param axis the axis
+ * @param value visual coordinate
+ * @param dim the visual dimension
+ * @return snapped visual coordinate
+ */
+static float _axis_snap_visual_pixel_center(const DvzAxis* axis, float value, DvzDim dim)
+{
+    ANN(axis);
+    if (axis->panel == NULL)
+        return value;
+    float panel_x = 0.0f;
+    float panel_y = 0.0f;
+    float panel_width = 0.0f;
+    float panel_height = 0.0f;
+    _scene_panel_pixel_rect(axis->panel, &panel_x, &panel_y, &panel_width, &panel_height);
+    float span = dim == DVZ_DIM_X ? panel_width : panel_height;
+    if (!(span > 0.0f) || !isfinite(span))
+        return value;
+    float pixel = (value + 1.0f) * 0.5f * span;
+    return 2.0f * (floorf(pixel) + 0.5f) / span - 1.0f;
+}
+
+
+/**
  * Return the clamped minor tick count for one major interval.
  *
  * @param axis the axis
@@ -456,76 +506,112 @@ static void _axis_compute_ticks(DvzAxis* axis)
 
 
 /**
- * Append one segment line to stack arrays.
+ * Append one axis-aligned rectangle as two triangles to stack arrays.
  *
- * @param count current line count
- * @param starts start positions
- * @param ends end positions
- * @param colors line colors
- * @param widths line widths
- * @param start line start
- * @param end line end
- * @param color line color
- * @param width line width
+ * @param count current vertex count
+ * @param positions vertex positions
+ * @param colors vertex colors
+ * @param x0 left
+ * @param y0 bottom
+ * @param x1 right
+ * @param y1 top
+ * @param z visual z coordinate
+ * @param color rectangle color
  */
-static void _axis_append_line(
-    uint32_t* count, float starts[][3], float ends[][3], uint8_t colors[][4], float widths[],
-    const float start[3], const float end[3], const uint8_t color[4], float width)
+static void _axis_append_rect(
+    uint32_t* count, float positions[][3], uint8_t colors[][4], float x0, float y0, float x1,
+    float y1, float z, const uint8_t color[4])
 {
     ANN(count);
-    if (*count >= DVZ_SCENE_MAX_AXIS_LINES)
+    if (*count + 6 > 6 * DVZ_SCENE_MAX_AXIS_LINES)
         return;
-    uint32_t i = (*count)++;
-    for (uint32_t j = 0; j < 3; j++)
+    float vertices[6][3] = {
+        {x0, y0, z}, {x1, y0, z}, {x1, y1, z},
+        {x0, y0, z}, {x1, y1, z}, {x0, y1, z},
+    };
+    for (uint32_t i = 0; i < 6; i++)
     {
-        starts[i][j] = start[j];
-        ends[i][j] = end[j];
+        uint32_t k = (*count)++;
+        for (uint32_t j = 0; j < 3; j++)
+            positions[k][j] = vertices[i][j];
+        for (uint32_t j = 0; j < 4; j++)
+            colors[k][j] = color[j];
     }
-    for (uint32_t j = 0; j < 4; j++)
-        colors[i][j] = color[j];
-    widths[i] = width;
 }
 
 
 /**
- * Append one tick mark to stack arrays.
+ * Append one axis-aligned line rectangle to stack arrays.
  *
  * @param axis the axis
- * @param count current line count
- * @param starts start positions
- * @param ends end positions
- * @param colors line colors
- * @param widths line widths
+ * @param count current vertex count
+ * @param positions vertex positions
+ * @param colors vertex colors
+ * @param a0 line start x
+ * @param b0 line start y
+ * @param a1 line end x
+ * @param b1 line end y
+ * @param z visual z coordinate
+ * @param width_px line thickness in pixels
+ * @param color line color
+ */
+static void _axis_append_line_rect(
+    const DvzAxis* axis, uint32_t* count, float positions[][3], uint8_t colors[][4], float a0,
+    float b0, float a1, float b1, float z, float width_px, const uint8_t color[4])
+{
+    ANN(axis);
+    if (!(width_px > 0.0f) || !isfinite(width_px))
+        return;
+    float half_x = 0.5f * width_px * _axis_visual_pixel_size(axis, DVZ_DIM_X);
+    float half_y = 0.5f * width_px * _axis_visual_pixel_size(axis, DVZ_DIM_Y);
+    if (fabsf(a1 - a0) < fabsf(b1 - b0))
+    {
+        float x = _axis_snap_visual_pixel_center(axis, a0, DVZ_DIM_X);
+        _axis_append_rect(count, positions, colors, x - half_x, b0, x + half_x, b1, z, color);
+    }
+    else
+    {
+        float y = _axis_snap_visual_pixel_center(axis, b0, DVZ_DIM_Y);
+        _axis_append_rect(count, positions, colors, a0, y - half_y, a1, y + half_y, z, color);
+    }
+}
+
+
+
+/**
+ * Append one tick mark as an axis-aligned rectangle.
+ *
+ * @param axis the axis
+ * @param count current vertex count
+ * @param positions vertex positions
+ * @param colors vertex colors
  * @param p tick anchor in visual coordinates
  * @param x0 plot left
  * @param y0 plot bottom
  * @param z visual z coordinate
  * @param length tick length in visual units
  * @param color tick color
- * @param width tick width
+ * @param width tick width in pixels
  */
 static void _axis_append_tick(
-    const DvzAxis* axis, uint32_t* count, float starts[][3], float ends[][3],
-    uint8_t colors[][4], float widths[], float p, float x0, float y0, float z, float length,
-    const uint8_t color[4], float width)
+    const DvzAxis* axis, uint32_t* count, float positions[][3], uint8_t colors[][4], float p,
+    float x0, float y0, float z, float length, const uint8_t color[4], float width)
 {
     ANN(axis);
     if (!(length > 0.0f))
         return;
     if (axis->dim == DVZ_DIM_X)
-        _axis_append_line(
-            count, starts, ends, colors, widths, (float[3]){p, y0, z},
-            (float[3]){p, y0 + length, z}, color, width);
+        _axis_append_line_rect(
+            axis, count, positions, colors, p, y0, p, y0 + length, z, width, color);
     else
-        _axis_append_line(
-            count, starts, ends, colors, widths, (float[3]){x0, p, z},
-            (float[3]){x0 + length, p, z}, color, width);
+        _axis_append_line_rect(
+            axis, count, positions, colors, x0, p, x0 + length, p, z, width, color);
 }
 
 
 
 /**
- * Rebuild the fixed-space segment visual backing one axis.
+ * Rebuild the fixed-space primitive visual backing one axis.
  *
  * @param axis the axis
  */
@@ -535,11 +621,9 @@ static void _axis_update_visual(DvzAxis* axis)
     if (axis->visual == NULL)
         return;
 
-    uint32_t count = 0;
-    float starts[DVZ_SCENE_MAX_AXIS_LINES][3] = {{0}};
-    float ends[DVZ_SCENE_MAX_AXIS_LINES][3] = {{0}};
-    uint8_t colors[DVZ_SCENE_MAX_AXIS_LINES][4] = {{0}};
-    float widths[DVZ_SCENE_MAX_AXIS_LINES] = {0};
+    uint32_t vertex_count = 0;
+    float positions[6 * DVZ_SCENE_MAX_AXIS_LINES][3] = {{0}};
+    uint8_t colors[6 * DVZ_SCENE_MAX_AXIS_LINES][4] = {{0}};
     const float z = 0.0f;
     float x0 = -1.0f;
     float x1 = +1.0f;
@@ -551,15 +635,13 @@ static void _axis_update_visual(DvzAxis* axis)
     if (axis->style.show_spine)
     {
         if (axis->dim == DVZ_DIM_X)
-            _axis_append_line(
-                &count, starts, ends, colors, widths, (float[3]){x0, y0, z},
-                (float[3]){x1, y0, z}, axis->style.spine_color,
-                axis->style.spine_width);
+            _axis_append_line_rect(
+                axis, &vertex_count, positions, colors, x0, y0, x1, y0, z,
+                axis->style.spine_width, axis->style.spine_color);
         else
-            _axis_append_line(
-                &count, starts, ends, colors, widths, (float[3]){x0, y0, z},
-                (float[3]){x0, y1, z}, axis->style.spine_color,
-                axis->style.spine_width);
+            _axis_append_line_rect(
+                axis, &vertex_count, positions, colors, x0, y0, x0, y1, z,
+                axis->style.spine_width, axis->style.spine_color);
     }
 
     double visible_min = 0.0;
@@ -578,21 +660,19 @@ static void _axis_update_visual(DvzAxis* axis)
         if (axis->style.show_grid)
         {
             if (axis->dim == DVZ_DIM_X)
-                _axis_append_line(
-                    &count, starts, ends, colors, widths, (float[3]){p, y0, z},
-                    (float[3]){p, y1, z}, axis->style.grid_color,
-                    axis->style.grid_width);
+                _axis_append_line_rect(
+                    axis, &vertex_count, positions, colors, p, y0, p, y1, z,
+                    axis->style.grid_width, axis->style.grid_color);
             else
-                _axis_append_line(
-                    &count, starts, ends, colors, widths, (float[3]){x0, p, z},
-                    (float[3]){x1, p, z}, axis->style.grid_color,
-                    axis->style.grid_width);
+                _axis_append_line_rect(
+                    axis, &vertex_count, positions, colors, x0, p, x1, p, z,
+                    axis->style.grid_width, axis->style.grid_color);
         }
         if (axis->style.show_major_ticks)
         {
             float len = _axis_tick_length(axis, axis->style.major_tick_length);
             _axis_append_tick(
-                axis, &count, starts, ends, colors, widths, p, x0, y0, z, len,
+                axis, &vertex_count, positions, colors, p, x0, y0, z, len,
                 axis->style.major_tick_color, axis->style.major_tick_width);
         }
         if (axis->style.show_minor_ticks && i + 1 < axis->tick_count)
@@ -607,22 +687,20 @@ static void _axis_update_visual(DvzAxis* axis)
                 if (mp < plot_min - 0.0001f || mp > plot_max + 0.0001f)
                     continue;
                 _axis_append_tick(
-                    axis, &count, starts, ends, colors, widths, mp, x0, y0, z, len,
+                    axis, &vertex_count, positions, colors, mp, x0, y0, z, len,
                     axis->style.minor_tick_color, axis->style.minor_tick_width);
             }
         }
     }
 
-    axis->visual->visible = axis->enabled && count > 0;
-    if (count == 0)
+    axis->visual->visible = axis->enabled && vertex_count > 0;
+    if (vertex_count == 0)
         return;
     DvzVisualDataUpdate updates[] = {
-        {.attr_name = "position_start", .data = starts, .item_count = count},
-        {.attr_name = "position_end", .data = ends, .item_count = count},
-        {.attr_name = "color", .data = colors, .item_count = count},
-        {.attr_name = "stroke_width", .data = widths, .item_count = count},
+        {.attr_name = "position", .data = positions, .item_count = vertex_count},
+        {.attr_name = "color", .data = colors, .item_count = vertex_count},
     };
-    (void)dvz_visual_set_data_many(axis->visual, updates, 4);
+    (void)dvz_visual_set_data_many(axis->visual, updates, 2);
     axis->dirty = false;
 }
 
@@ -749,7 +827,7 @@ int dvz_panel_data_to_visual_positions(
 
 
 /**
- * Return a panel-owned axis, creating its fixed segment visual on first use.
+ * Return a panel-owned axis, creating its fixed primitive visual on first use.
  *
  * @param panel the panel
  * @param dim axis dimension
@@ -763,7 +841,8 @@ DvzAxis* dvz_panel_axis(DvzPanel* panel, DvzDim dim)
     _axis_init(axis, panel, dim);
     if (axis->visual == NULL)
     {
-        axis->visual = dvz_segment(panel->figure->scene, 0);
+        axis->visual =
+            dvz_primitive(panel->figure->scene, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 0);
         if (axis->visual == NULL)
             return NULL;
         axis->visual->visible = false;
