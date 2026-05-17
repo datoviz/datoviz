@@ -19,6 +19,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "datoviz/drp2/types.h"
 #include "_frame_plan.h"
 #include "_scene.h"
 
@@ -218,3 +219,6 @@ bool _scene_pass_contract_validate(
 
 bool _scene_frame_plan_contracts_validate(
     const DvzFigure* figure, const DvzFramePlan* plan, DvzDiagnosticReport* report);
+
+bool _scene_frame_plan_drp2_contracts_validate(
+    const DvzFramePlan* plan, const DvzDrp2CommandStream* stream, DvzDiagnosticReport* report);

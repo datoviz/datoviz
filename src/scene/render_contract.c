@@ -19,6 +19,7 @@
 #include "_assertions.h"
 #include "_compat.h"
 #include "_visual_pipeline.h"
+#include "../drp2/_stream.h"
 
 
 
@@ -790,6 +791,254 @@ static const DvzPanel* _contract_panel_for_render(
 
 
 
+/**
+ * Return the FramePlan render node tagged with one pass-contract id.
+ *
+ * @param plan the FramePlan
+ * @param pass_contract_id the pass-contract id
+ * @return the render node, or NULL when no node matches
+ */
+static const DvzFramePlanNode* _contract_render_for_pass_id(
+    const DvzFramePlan* plan, const char* pass_contract_id)
+{
+    ANN(plan);
+    ANN(pass_contract_id);
+    if (pass_contract_id[0] == '\0')
+        return NULL;
+    for (uint32_t i = 0; i < plan->count; i++)
+    {
+        const DvzFramePlanNode* node = &plan->nodes[i];
+        if (node->type == DVZ_FRAME_PLAN_NODE_RENDER && node->u.render.has_pass_contract &&
+            strcmp(node->u.render.pass_contract_id, pass_contract_id) == 0)
+            return node;
+    }
+    return NULL;
+}
+
+
+
+/**
+ * Return the DRP2 CreateRenderPipeline command for a pipeline id.
+ *
+ * @param stream the DRP2 command stream
+ * @param pipeline_id the render pipeline id
+ * @return the pipeline creation command, or NULL when it was created by an earlier stream
+ */
+static const DvzDrp2Command* _contract_drp2_pipeline_for_id(
+    const DvzDrp2CommandStream* stream, uint64_t pipeline_id)
+{
+    ANN(stream);
+    if (pipeline_id == 0)
+        return NULL;
+    for (uint32_t i = 0; i < stream->count; i++)
+    {
+        const DvzDrp2Command* command = &stream->commands[i];
+        if (command->type == DVZ_DRP2_COMMAND_CREATE_RENDER_PIPELINE &&
+            command->u.create_render_pipeline.id == pipeline_id)
+            return command;
+    }
+    return NULL;
+}
+
+
+
+/**
+ * Validate a source-over DRP2 color target.
+ *
+ * @param target the emitted color-target state
+ * @return whether the target uses source-over blending
+ */
+static bool _contract_drp2_source_over_blend(const DvzDrp2ColorTarget* target)
+{
+    ANN(target);
+    return target->blend_enabled &&
+           target->src_color_blend_factor == VK_BLEND_FACTOR_SRC_ALPHA &&
+           target->dst_color_blend_factor == VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA &&
+           target->color_blend_op == VK_BLEND_OP_ADD &&
+           target->src_alpha_blend_factor == VK_BLEND_FACTOR_ONE &&
+           target->dst_alpha_blend_factor == VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA &&
+           target->alpha_blend_op == VK_BLEND_OP_ADD;
+}
+
+
+
+/**
+ * Validate one DRP2 pipeline against one draw-contract metadata snapshot.
+ *
+ * @param command the CreateRenderPipeline command
+ * @param meta the draw metadata snapshot
+ * @param graph_pass the matching graph pass, or NULL for non-graph rendering
+ * @param report optional diagnostic report
+ * @return whether the emitted pipeline matches the stored draw contract
+ */
+static bool _contract_validate_drp2_pipeline(
+    const DvzDrp2Command* command, const DvzFramePlanVisualMeta* meta,
+    const DvzFrameGraphPass* graph_pass, DvzDiagnosticReport* report)
+{
+    ANN(command);
+    ANN(meta);
+    bool ok = true;
+    uint32_t depth_policy = meta->draw_depth_policy;
+    DvzSceneBlendPolicy blend_policy = (DvzSceneBlendPolicy)meta->draw_blend_policy;
+
+    if ((depth_policy & (DVZ_SCENE_DEPTH_POLICY_TEST | DVZ_SCENE_DEPTH_POLICY_WRITE)) != 0 &&
+        !command->u.create_render_pipeline.has_depth_attachment)
+    {
+        _contract_report(report, "DRP2 pipeline missing contracted depth attachment state");
+        ok = false;
+    }
+    if ((depth_policy & DVZ_SCENE_DEPTH_POLICY_WRITE) != 0 &&
+        !command->u.create_render_pipeline.depth_write_enabled)
+    {
+        _contract_report(report, "DRP2 pipeline missing contracted depth write");
+        ok = false;
+    }
+    if ((depth_policy & DVZ_SCENE_DEPTH_POLICY_WRITE) == 0 &&
+        (blend_policy == DVZ_SCENE_BLEND_POLICY_SOURCE_OVER ||
+         blend_policy == DVZ_SCENE_BLEND_POLICY_WBOIT ||
+         blend_policy == DVZ_SCENE_BLEND_POLICY_DEPTH_PEEL) &&
+        command->u.create_render_pipeline.depth_write_enabled)
+    {
+        _contract_report(report, "transparent DRP2 pipeline writes depth");
+        ok = false;
+    }
+
+    if (blend_policy == DVZ_SCENE_BLEND_POLICY_SOURCE_OVER)
+    {
+        if (command->u.create_render_pipeline.color_target_count < 1 ||
+            !_contract_drp2_source_over_blend(&command->u.create_render_pipeline.color_targets[0]))
+        {
+            _contract_report(report, "DRP2 pipeline missing source-over blend state");
+            ok = false;
+        }
+    }
+    else if (blend_policy == DVZ_SCENE_BLEND_POLICY_WBOIT)
+    {
+        if (command->u.create_render_pipeline.color_target_count < 2 ||
+            command->u.create_render_pipeline.color_targets[0].format !=
+                VK_FORMAT_R16G16B16A16_SFLOAT ||
+            command->u.create_render_pipeline.color_targets[1].format != VK_FORMAT_R16_SFLOAT ||
+            !command->u.create_render_pipeline.color_targets[0].blend_enabled ||
+            !command->u.create_render_pipeline.color_targets[1].blend_enabled)
+        {
+            _contract_report(report, "DRP2 pipeline missing WBOIT accumulation targets");
+            ok = false;
+        }
+    }
+    else if (blend_policy == DVZ_SCENE_BLEND_POLICY_DEPTH_PEEL)
+    {
+        if (command->u.create_render_pipeline.color_target_count < 3 ||
+            command->u.create_render_pipeline.color_targets[0].format !=
+                VK_FORMAT_R16G16B16A16_SFLOAT ||
+            command->u.create_render_pipeline.color_targets[1].format !=
+                VK_FORMAT_R16G16B16A16_SFLOAT ||
+            command->u.create_render_pipeline.color_targets[2].format !=
+                VK_FORMAT_R16G16B16A16_SFLOAT)
+        {
+            _contract_report(report, "DRP2 pipeline missing depth-peel color targets");
+            ok = false;
+        }
+    }
+    else if (
+        blend_policy == DVZ_SCENE_BLEND_POLICY_OPAQUE &&
+        command->u.create_render_pipeline.color_target_count > 0 &&
+        command->u.create_render_pipeline.color_targets[0].blend_enabled)
+    {
+        _contract_report(report, "opaque DRP2 pipeline unexpectedly enables blending");
+        ok = false;
+    }
+
+    (void)graph_pass;
+    return ok;
+}
+
+
+
+/**
+ * Validate an emitted BeginRenderPass command against a FramePlan render node.
+ *
+ * @param plan the FramePlan
+ * @param render the matching render node
+ * @param command the BeginRenderPass command
+ * @param report optional diagnostic report
+ * @return whether the emitted render-pass attachment shape matches the contract
+ */
+static bool _contract_validate_drp2_begin_render_pass(
+    const DvzFramePlan* plan, const DvzFramePlanNode* render, const DvzDrp2Command* command,
+    DvzDiagnosticReport* report)
+{
+    ANN(plan);
+    ANN(render);
+    ANN(command);
+    bool ok = true;
+    const DvzFrameGraphPass* graph_pass = _contract_graph_pass_for_render(plan, render);
+    if (graph_pass != NULL)
+    {
+        if (command->u.begin_render_pass.color_attachment_count !=
+            graph_pass->color_attachment_count)
+        {
+            _contract_report(report, "DRP2 render pass color attachment count mismatch");
+            ok = false;
+        }
+        if (command->u.begin_render_pass.has_depth_attachment != graph_pass->has_depth_attachment)
+        {
+            _contract_report(report, "DRP2 render pass depth attachment mismatch");
+            ok = false;
+        }
+    }
+
+    bool needs_fixed_depth = false;
+    for (uint32_t i = 0; i < render->u.render.visual_count; i++)
+    {
+        const DvzFramePlanVisualMeta* meta = &render->u.render.visual_metadata[i];
+        if (meta->has_draw_contract &&
+            (meta->draw_depth_policy &
+             (DVZ_SCENE_DEPTH_POLICY_TEST | DVZ_SCENE_DEPTH_POLICY_WRITE)) != 0)
+            needs_fixed_depth = true;
+    }
+    if (needs_fixed_depth && !command->u.begin_render_pass.has_depth_attachment)
+    {
+        _contract_report(report, "DRP2 render pass missing contracted depth attachment");
+        ok = false;
+    }
+    return ok;
+}
+
+
+
+/**
+ * Validate that graph dependencies are already in topological pass order.
+ *
+ * @param plan the FramePlan
+ * @param report optional diagnostic report
+ * @return whether every producer appears before its consumer
+ */
+static bool _contract_validate_graph_topology(
+    const DvzFramePlan* plan, DvzDiagnosticReport* report)
+{
+    ANN(plan);
+    bool ok = true;
+    uint32_t count = dvz_frame_plan_graph_dependency_count(plan);
+    for (uint32_t i = 0; i < count; i++)
+    {
+        DvzFrameGraphDependency dependency = {0};
+        if (!dvz_frame_plan_graph_dependency_get(plan, i, &dependency))
+        {
+            _contract_report(report, "FramePlan graph dependency lookup failed");
+            ok = false;
+            continue;
+        }
+        if (dependency.producer_pass_index >= dependency.consumer_pass_index)
+        {
+            _contract_report(report, "FramePlan graph pass order is not topological");
+            ok = false;
+        }
+    }
+    return ok;
+}
+
+
+
 /*************************************************************************************************/
 /*  Functions                                                                                    */
 /*************************************************************************************************/
@@ -1105,6 +1354,98 @@ bool _scene_frame_plan_contracts_validate(
         }
         if (!_scene_pass_contract_validate(&contract, report))
             ok = false;
+    }
+    return ok;
+}
+
+
+
+/**
+ * Validate an emitted DRP2 stream against stored FramePlan render contracts.
+ *
+ * @param plan the completed FramePlan
+ * @param stream the emitted DRP2 command stream
+ * @param report optional diagnostic report
+ * @return whether labeled DRP2 render passes and draws match their stored contracts
+ */
+bool _scene_frame_plan_drp2_contracts_validate(
+    const DvzFramePlan* plan, const DvzDrp2CommandStream* stream, DvzDiagnosticReport* report)
+{
+    ANN(plan);
+    ANN(stream);
+    bool ok = _contract_validate_graph_topology(plan, report);
+    const DvzFramePlanNode* active_render = NULL;
+    const DvzFrameGraphPass* active_graph_pass = NULL;
+    uint32_t active_draw_index = 0;
+    const DvzDrp2Command* active_pipeline = NULL;
+
+    for (uint32_t i = 0; i < stream->count; i++)
+    {
+        const DvzDrp2Command* command = &stream->commands[i];
+        switch (command->type)
+        {
+        case DVZ_DRP2_COMMAND_BEGIN_RENDER_PASS:
+        {
+            active_render = NULL;
+            active_graph_pass = NULL;
+            active_draw_index = 0;
+            active_pipeline = NULL;
+            const char* label = dvz_drp2_stream_label(stream, command->u.begin_render_pass.id);
+            if (label == NULL)
+                break;
+            active_render = _contract_render_for_pass_id(plan, label);
+            if (active_render == NULL)
+                break;
+            active_graph_pass = _contract_graph_pass_for_render(plan, active_render);
+            if (!_contract_validate_drp2_begin_render_pass(plan, active_render, command, report))
+                ok = false;
+            break;
+        }
+        case DVZ_DRP2_COMMAND_SET_PIPELINE:
+            if (active_render != NULL)
+            {
+                active_pipeline =
+                    _contract_drp2_pipeline_for_id(stream, command->u.set_pipeline.pipeline_id);
+            }
+            break;
+        case DVZ_DRP2_COMMAND_DRAW:
+        case DVZ_DRP2_COMMAND_DRAW_INDEXED:
+            if (active_render == NULL)
+                break;
+            if (active_render->u.render.visual_count == 0)
+                break;
+            if (active_draw_index >= active_render->u.render.visual_count)
+            {
+                _contract_report(report, "DRP2 render pass has more draws than its contract");
+                ok = false;
+                break;
+            }
+            if (active_pipeline != NULL)
+            {
+                const DvzFramePlanVisualMeta* meta =
+                    &active_render->u.render.visual_metadata[active_draw_index];
+                if (meta->has_draw_contract &&
+                    !_contract_validate_drp2_pipeline(
+                        active_pipeline, meta, active_graph_pass, report))
+                    ok = false;
+            }
+            active_draw_index++;
+            break;
+        case DVZ_DRP2_COMMAND_END_RENDER_PASS:
+            if (active_render != NULL && active_render->u.render.visual_count > 0 &&
+                active_draw_index != active_render->u.render.visual_count)
+            {
+                _contract_report(report, "DRP2 render pass draw count does not match contract");
+                ok = false;
+            }
+            active_render = NULL;
+            active_graph_pass = NULL;
+            active_draw_index = 0;
+            active_pipeline = NULL;
+            break;
+        default:
+            break;
+        }
     }
     return ok;
 }

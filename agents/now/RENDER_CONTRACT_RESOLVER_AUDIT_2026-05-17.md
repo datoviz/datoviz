@@ -280,6 +280,34 @@ Validation:
 6. `git diff --check -- src/scene/scene.c src/scene/tests/scene_graph.c agents/now/RENDER_CONTRACT_RESOLVER_AUDIT_2026-05-17.md`
 
 
+### 2026-05-17: Phase 2 / DRP2 contract checker
+
+Completed the first scene-level post-emit DRP2 checker slice.
+
+Changes:
+
+1. Runtime FramePlan emission now labels emitted DRP2 render-pass ids with their FramePlan
+   pass-contract ids.
+2. Added `_scene_frame_plan_drp2_contracts_validate()`, which walks an emitted DRP2 stream,
+   correlates labeled render passes to FramePlan render nodes, checks graph pass ordering,
+   validates render-pass attachment shape, and compares emitted per-draw pipeline depth/blend
+   policy against stored draw-contract metadata when the pipeline is present in the stream.
+3. Runtime-mode emission now rejects streams that fail the scene DRP2 contract checker.
+4. Added `test_scene_drp2_contract_checker_rejects_pipeline_drift`, which mutates an emitted WBOIT
+   accumulation pipeline and verifies the checker catches the mismatch.
+
+Validation:
+
+1. `cmake --build build --target dvztest_scene -j2`
+2. `./build/testing/dvztest_scene test_scene_drp2_contract_checker_rejects_pipeline_drift`
+3. `./build/testing/dvztest_scene test_scene_visual_alpha_mode_emits_wboit_drp2`
+4. `./build/testing/dvztest_scene test_scene_visual_alpha_mode_emits_depth_peel_drp2`
+5. `./build/testing/dvztest_scene test_scene_blended_mesh_occlusion_contracts`
+6. `./build/testing/dvztest_scene test_scene_ssao_runtime_lowering`
+7. `./build/testing/dvztest_scene test_scene_msaa_runtime_lowering`
+8. `git diff --check -- src/scene/render_contract.h src/scene/render_contract.c src/scene/frame_plan_runtime.c src/scene/tests/scene_graph.c src/scene/tests/test_scene.h agents/now/RENDER_CONTRACT_RESOLVER_AUDIT_2026-05-17.md`
+
+
 ## Executive Assessment
 
 The direction is correct and worth continuing. The proposal identifies the right failure mode:

@@ -493,6 +493,8 @@ int test_scene_visual_alpha_mode_requires_wboit_capabilities(TstSuite* suite, Ts
 
 int test_scene_visual_alpha_mode_emits_wboit_drp2(TstSuite* suite, TstItem* item);
 
+int test_scene_drp2_contract_checker_rejects_pipeline_drift(TstSuite* suite, TstItem* item);
+
 int test_scene_visual_alpha_mode_wboit_glsl_executes(TstSuite* suite, TstItem* item);
 
 int test_scene_visual_alpha_mode_depth_peel_glsl_executes(TstSuite* suite, TstItem* item);

@@ -33,6 +33,7 @@
 #include "_render_pass.h"
 #include "_shader_registry.h"
 #include "_visual_pipeline.h"
+#include "render_contract.h"
 #include "datoviz/drp2.h"
 #include "datoviz/drp2/stream.h"
 #include "datoviz/scene.h"
@@ -178,6 +179,9 @@ static bool _graph_resolve_texture_2d(
 
 static bool _graph_runtime_targets_add(
     SceneGraphRuntimeTargets* targets, const char* resource_id, uint64_t texture_id);
+
+static void _label_render_pass_contract(
+    DvzDrp2CommandStream* stream, uint64_t pass_id, const DvzFramePlanNode* render);
 
 
 
@@ -818,6 +822,27 @@ static void _emitter_label_stream_ids(
 
     if (cfg != NULL && cfg->color_target_id != 0)
         dvz_drp2_stream_set_label(stream, cfg->color_target_id, "rt");
+}
+
+
+
+/**
+ * Attach the FramePlan pass-contract id to an emitted DRP2 render-pass id.
+ *
+ * @param stream emitted DRP2 command stream
+ * @param pass_id the emitted DRP2 render-pass id
+ * @param render the source FramePlan render node
+ */
+static void _label_render_pass_contract(
+    DvzDrp2CommandStream* stream, uint64_t pass_id, const DvzFramePlanNode* render)
+{
+    ANN(stream);
+    ANN(render);
+    if (pass_id != 0 && render->type == DVZ_FRAME_PLAN_NODE_RENDER &&
+        render->u.render.has_pass_contract && render->u.render.pass_contract_id[0] != '\0')
+    {
+        dvz_drp2_stream_set_label(stream, pass_id, render->u.render.pass_contract_id);
+    }
 }
 
 
@@ -4222,6 +4247,7 @@ static bool _emitter_emit_render_multi(
          dvz_drp2_stream_begin_render_pass_region_clear(
              stream, render_pass_id, encoder_id, color_id, cr, cg, cb, ca, 0.0f, 0.0f, 1.0f,
              1.0f, clear);
+    _label_render_pass_contract(stream, render_pass_id, render);
     ok = ok && _stream_apply_graph_color_ops(stream, graph_pass, color_id, NULL);
     ok = ok && _stream_apply_graph_depth(stream, graph_pass, graph_depth_id);
     if (ok && needs_depth && graph_depth_id == 0)
@@ -4620,6 +4646,7 @@ static bool _emitter_emit_scene_graph_renders(
             uint64_t target_id = _graph_color_attachment_texture_id(
                 graph_pass, 0, color_id, &targets->graph, targets->normal_id);
             uint64_t pass_id = _emitter_next_transient_id(emitter);
+            _label_render_pass_contract(stream, pass_id, render);
             const SceneRenderBatch* batch = _render_batch_for_node(batches, batch_count, render);
             bool has_draws = batch != NULL;
             ok = dvz_drp2_stream_begin_render_pass_region_clear(
@@ -4677,6 +4704,7 @@ static bool _emitter_emit_scene_graph_renders(
                 }
             }
             uint64_t pass_id = _emitter_next_transient_id(emitter);
+            _label_render_pass_contract(stream, pass_id, render);
             const SceneRenderBatch* batch = _render_batch_for_node(batches, batch_count, render);
             bool has_draws = batch != NULL;
             bool scene_depth =
@@ -4748,6 +4776,7 @@ static bool _emitter_emit_scene_graph_renders(
                 _graph_color_attachment_texture_id(
                     graph_pass, 0, color_id, graph_targets, color_id);
             uint64_t pass_id = _emitter_next_transient_id(emitter);
+            _label_render_pass_contract(stream, pass_id, render);
             const SceneRenderBatch* batch = _render_batch_for_node(batches, batch_count, render);
             bool has_draws = batch != NULL;
             ok = ok && dvz_drp2_stream_begin_render_pass_region_clear(
@@ -4783,6 +4812,7 @@ static bool _emitter_emit_scene_graph_renders(
                 break;
             }
             uint64_t pass_id = _emitter_next_transient_id(emitter);
+            _label_render_pass_contract(stream, pass_id, render);
             const DvzFrameGraphPass* graph_pass = ordered_graph_pass != NULL
                                                       ? ordered_graph_pass
                                                       : _graph_pass_for_render(plan, render);
@@ -4813,6 +4843,7 @@ static bool _emitter_emit_scene_graph_renders(
         else if (render->u.render.pass_role == DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_BLEND)
         {
             uint64_t pass_id = _emitter_next_transient_id(emitter);
+            _label_render_pass_contract(stream, pass_id, render);
             const DvzFrameGraphPass* graph_pass = ordered_graph_pass != NULL
                                                       ? ordered_graph_pass
                                                       : _graph_pass_for_render(plan, render);
@@ -4870,6 +4901,7 @@ static bool _emitter_emit_scene_graph_renders(
                 break;
             }
             uint64_t pass_id = _emitter_next_transient_id(emitter);
+            _label_render_pass_contract(stream, pass_id, render);
             const DvzFrameGraphPass* graph_pass = ordered_graph_pass != NULL
                                                       ? ordered_graph_pass
                                                       : _graph_pass_for_render(plan, render);
@@ -4913,6 +4945,7 @@ static bool _emitter_emit_scene_graph_renders(
                 break;
             }
             uint64_t pass_id = _emitter_next_transient_id(emitter);
+            _label_render_pass_contract(stream, pass_id, render);
             const DvzFrameGraphPass* graph_pass = ordered_graph_pass != NULL
                                                       ? ordered_graph_pass
                                                       : _graph_pass_for_render(plan, render);
@@ -4949,6 +4982,7 @@ static bool _emitter_emit_scene_graph_renders(
                 break;
             }
             uint64_t pass_id = _emitter_next_transient_id(emitter);
+            _label_render_pass_contract(stream, pass_id, render);
             const DvzFrameGraphPass* graph_pass = ordered_graph_pass != NULL
                                                       ? ordered_graph_pass
                                                       : _graph_pass_for_render(plan, render);
@@ -4981,6 +5015,7 @@ static bool _emitter_emit_scene_graph_renders(
                 break;
             }
             uint64_t pass_id = _emitter_next_transient_id(emitter);
+            _label_render_pass_contract(stream, pass_id, render);
             const DvzFrameGraphPass* graph_pass = ordered_graph_pass != NULL
                                                       ? ordered_graph_pass
                                                       : _graph_pass_for_render(plan, render);
@@ -5013,6 +5048,7 @@ static bool _emitter_emit_scene_graph_renders(
                 break;
             }
             uint64_t pass_id = _emitter_next_transient_id(emitter);
+            _label_render_pass_contract(stream, pass_id, render);
             const DvzFrameGraphPass* graph_pass = ordered_graph_pass != NULL
                                                       ? ordered_graph_pass
                                                       : _graph_pass_for_render(plan, render);
@@ -5049,6 +5085,7 @@ static bool _emitter_emit_scene_graph_renders(
                 break;
             }
             uint64_t pass_id = _emitter_next_transient_id(emitter);
+            _label_render_pass_contract(stream, pass_id, render);
             const DvzFrameGraphPass* graph_pass = ordered_graph_pass != NULL
                                                       ? ordered_graph_pass
                                                       : _graph_pass_for_render(plan, render);
@@ -5085,6 +5122,7 @@ static bool _emitter_emit_scene_graph_renders(
                 break;
             }
             uint64_t pass_id = _emitter_next_transient_id(emitter);
+            _label_render_pass_contract(stream, pass_id, render);
             const DvzFrameGraphPass* graph_pass = ordered_graph_pass != NULL
                                                       ? ordered_graph_pass
                                                       : _graph_pass_for_render(plan, render);
@@ -6122,5 +6160,11 @@ DvzDrp2CommandStream* dvz_frame_plan_emitter_emit_drp2(
         return NULL;
     }
     _emitter_label_stream_ids(emitter, stream, cfg);
+    if (!_scene_frame_plan_drp2_contracts_validate(plan, stream, report))
+    {
+        _diagnostic(report, "emitted runtime DRP2 stream failed scene contract validation");
+        dvz_drp2_stream_destroy(stream);
+        return NULL;
+    }
     return stream;
 }

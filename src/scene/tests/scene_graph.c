@@ -9861,6 +9861,103 @@ int test_scene_visual_alpha_mode_emits_wboit_drp2(TstSuite* suite, TstItem* item
 
 
 /**
+ * Verify scene DRP2 contract validation catches emitted pipeline policy drift.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_drp2_contract_checker_rejects_pipeline_drift(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    AT(scene != NULL);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    AT(figure != NULL);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    AT(panel != NULL);
+
+    DvzVisual* opaque = dvz_primitive(scene, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 0);
+    DvzVisual* transparent = dvz_primitive(scene, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 0);
+    AT(opaque != NULL);
+    AT(transparent != NULL);
+    float positions[3][3] = {
+        {-0.5f, -0.5f, 0.0f},
+        {0.5f, -0.5f, 0.0f},
+        {0.0f, 0.5f, 0.0f},
+    };
+    DvzColor opaque_colors[3] = {
+        {255, 255, 255, 255}, {255, 255, 255, 255}, {255, 255, 255, 255}};
+    DvzColor colors[3] = {{255, 0, 0, 128}, {0, 255, 0, 128}, {0, 0, 255, 128}};
+    AT(dvz_visual_set_data(opaque, "position", positions, 3) == 0);
+    AT(dvz_visual_set_data(opaque, "color", opaque_colors, 3) == 0);
+    AT(dvz_visual_set_data(transparent, "position", positions, 3) == 0);
+    AT(dvz_visual_set_data(transparent, "color", colors, 3) == 0);
+    AT(dvz_visual_set_alpha_mode(transparent, DVZ_ALPHA_WBOIT) == 0);
+    AT(dvz_panel_add_visual(panel, opaque, NULL) == 0);
+    AT(dvz_panel_add_visual(panel, transparent, NULL) == 0);
+
+    DvzFramePlan* plan = dvz_frame_plan("figure.contract.drp2", 0);
+    ANN(plan);
+    _scene_emit_visual_uploads(figure, plan);
+    AT(_scene_emit_panel_render(figure, 0, plan, "figure_0"));
+
+    DvzDiagnosticReport report;
+    dvz_diagnostic_report_init(&report);
+    AT(_scene_frame_plan_contracts_validate(figure, plan, &report));
+    AT(dvz_diagnostic_report_count(&report) == 0);
+
+    DvzCapabilitySnapshot caps;
+    dvz_capability_snapshot_default(&caps);
+    caps.max_color_attachments = 2;
+    caps.render_target_format_rgba16float = true;
+    caps.render_target_format_r16float = true;
+    caps.supports_render_target_sampling = true;
+    caps.supports_color_blending = true;
+
+    DvzFramePlanEmitConfig cfg = dvz_frame_plan_emit_config();
+    cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
+    cfg.target_width = 64;
+    cfg.target_height = 64;
+
+    DvzFramePlanEmitter* emitter = dvz_frame_plan_emitter();
+    ANN(emitter);
+    DvzDrp2CommandStream* stream =
+        dvz_frame_plan_emitter_emit_drp2(emitter, plan, &caps, &report, &cfg);
+    ANN(stream);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+    AT(_scene_frame_plan_drp2_contracts_validate(plan, stream, &report));
+
+    bool mutated = false;
+    for (uint32_t i = 0; i < stream->count; i++)
+    {
+        DvzDrp2Command* command = &stream->commands[i];
+        if (command->type == DVZ_DRP2_COMMAND_CREATE_RENDER_PIPELINE &&
+            command->u.create_render_pipeline.color_target_count == 2 &&
+            command->u.create_render_pipeline.color_targets[0].blend_enabled)
+        {
+            command->u.create_render_pipeline.color_targets[0].blend_enabled = false;
+            mutated = true;
+            break;
+        }
+    }
+    AT(mutated);
+
+    dvz_diagnostic_report_init(&report);
+    AT(!_scene_frame_plan_drp2_contracts_validate(plan, stream, &report));
+    AT(dvz_diagnostic_report_count(&report) > 0);
+
+    dvz_drp2_stream_destroy(stream);
+    dvz_frame_plan_emitter_destroy(emitter);
+    dvz_frame_plan_destroy(plan);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+/**
  * Execute the scene WBOIT DRP2 path through the vklite runtime when a GPU is available.
  *
  * @param suite the active test suite
@@ -10213,6 +10310,7 @@ int test_scene_graph(TstSuite* suite)
     TEST_SIMPLE(test_scene_visual_alpha_mode_emits_depth_peel_drp2);
     TEST_SIMPLE(test_scene_visual_alpha_mode_requires_wboit_capabilities);
     TEST_SIMPLE(test_scene_visual_alpha_mode_emits_wboit_drp2);
+    TEST_SIMPLE(test_scene_drp2_contract_checker_rejects_pipeline_drift);
     TEST_SIMPLE(test_scene_visual_alpha_mode_wboit_glsl_executes);
     TEST_SIMPLE(test_scene_visual_alpha_mode_depth_peel_glsl_executes);
     TEST_SIMPLE(test_scene_blended_mesh_orders_after_volume_slice);
