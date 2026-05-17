@@ -252,7 +252,7 @@ int main(int argc, char** argv)
     float sizes[5] = {36.0f, 42.0f, 48.0f, 40.0f, 28.0f};
     dvz_visual_set_data(visual, "position", positions, 5);
     dvz_visual_set_data(visual, "color", colors, 5);
-    dvz_visual_set_data(visual, "size", sizes, 5);
+    dvz_visual_set_data(visual, "diameter", sizes, 5);
     dvz_panel_add_visual(panel, visual, NULL);
 
     DvzApp* app = dvz_app(scene);

@@ -390,7 +390,7 @@ static void _apply_point_size(BwmExampleState* state)
     for (uint32_t i = 0; i < state->dataset->cluster_count; i++)
         state->dataset->cluster_size[i] = state->point_size;
     if (dvz_visual_set_data(
-            state->point, "size", state->dataset->cluster_size,
+            state->point, "diameter", state->dataset->cluster_size,
             state->dataset->cluster_count) != 0)
         dvz_fprintf(stderr, "failed to update BWM point size\n");
 }
@@ -702,7 +702,7 @@ int main(void)
 
     if (dvz_visual_set_data(point, "position", dataset.cluster_pos, dataset.cluster_count) != 0 ||
         dvz_visual_set_data(point, "color", dataset.cluster_color, dataset.cluster_count) != 0 ||
-        dvz_visual_set_data(point, "size", dataset.cluster_size, dataset.cluster_count) != 0 ||
+        dvz_visual_set_data(point, "diameter", dataset.cluster_size, dataset.cluster_count) != 0 ||
         dvz_visual_set_data(mesh, "position", dataset.mesh_pos, dataset.mesh_vertex_count) != 0 ||
         dvz_visual_set_data(mesh, "normal", dataset.mesh_normal, dataset.mesh_vertex_count) != 0 ||
         !dvz_visual_set_buffer(mesh, "index", index_buffer))

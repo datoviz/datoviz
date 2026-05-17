@@ -114,7 +114,7 @@ static bool _add_point_grid(
 
     if (dvz_visual_set_data(visual, "position", positions, POINT_COUNT) != 0 ||
         dvz_visual_set_data(visual, "color", colors, POINT_COUNT) != 0 ||
-        dvz_visual_set_data(visual, "size", sizes, POINT_COUNT) != 0)
+        dvz_visual_set_data(visual, "diameter", sizes, POINT_COUNT) != 0)
     {
         return false;
     }

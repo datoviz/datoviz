@@ -52,7 +52,7 @@ static void update_visual(GuiState* state)
         state->sizes[i] = size;
     }
     dvz_visual_set_data(state->visual, "position", state->positions, 3);
-    dvz_visual_set_data(state->visual, "size", state->sizes, 3);
+    dvz_visual_set_data(state->visual, "diameter", state->sizes, 3);
 }
 
 

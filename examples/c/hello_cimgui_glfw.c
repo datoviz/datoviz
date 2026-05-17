@@ -53,7 +53,7 @@ static void update_visual(CimguiState* state)
         state->sizes[i] = size;
     }
     dvz_visual_set_data(state->visual, "position", state->positions, 4);
-    dvz_visual_set_data(state->visual, "size", state->sizes, 4);
+    dvz_visual_set_data(state->visual, "diameter", state->sizes, 4);
 }
 
 

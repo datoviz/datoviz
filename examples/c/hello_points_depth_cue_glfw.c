@@ -148,7 +148,7 @@ static void _apply_point_size(DepthCueExampleState* state)
 
     for (uint32_t i = 0; i < state->point_count; i++)
         state->sizes[i] = state->point_size;
-    if (dvz_visual_set_data(state->visual, "size", state->sizes, state->point_count) != 0)
+    if (dvz_visual_set_data(state->visual, "diameter", state->sizes, state->point_count) != 0)
         dvz_fprintf(stderr, "failed to update point size\n");
 }
 
@@ -579,7 +579,7 @@ int main(int argc, char** argv)
 
     if (dvz_visual_set_data(visual, "position", positions, POINT_COUNT) != 0 ||
         dvz_visual_set_data(visual, "color", colors, POINT_COUNT) != 0 ||
-        dvz_visual_set_data(visual, "size", sizes, POINT_COUNT) != 0 ||
+        dvz_visual_set_data(visual, "diameter", sizes, POINT_COUNT) != 0 ||
         dvz_panel_add_visual(panel, visual, NULL) != 0)
     {
         dvz_fprintf(stderr, "point visual setup failed\n");

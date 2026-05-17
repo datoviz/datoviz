@@ -78,8 +78,8 @@ static void _set_point_size(HoverPickState* state, uint32_t index, float size)
         return;
 
     state->sizes[index] = size;
-    if (dvz_visual_set_data_range(state->visual, "size", &state->sizes[index], index, 1) != 0)
-        fprintf(stderr, "dvz_visual_set_data_range(size, %u) failed\n", index);
+    if (dvz_visual_set_data_range(state->visual, "diameter", &state->sizes[index], index, 1) != 0)
+        fprintf(stderr, "dvz_visual_set_data_range(diameter, %u) failed\n", index);
 }
 
 
@@ -228,7 +228,7 @@ int main(void)
 
     if (dvz_visual_set_data(visual, "position", positions, POINT_COUNT) != 0 ||
         dvz_visual_set_data(visual, "color", colors, POINT_COUNT) != 0 ||
-        dvz_visual_set_data(visual, "size", state.sizes, POINT_COUNT) != 0)
+        dvz_visual_set_data(visual, "diameter", state.sizes, POINT_COUNT) != 0)
     {
         fprintf(stderr, "dvz_visual_set_data() failed\n");
         dvz_scene_destroy(scene);

@@ -66,7 +66,7 @@ int main(void)
 
     dvz_visual_set_data(visual, "position", positions, 3);
     dvz_visual_set_data(visual, "color",    colors,    3);
-    dvz_visual_set_data(visual, "size",     sizes,     3);
+    dvz_visual_set_data(visual, "diameter", sizes,     3);
     dvz_panel_add_visual(panel, visual, NULL);
 
     /* Solid panel background; stays anchored even when panning/zooming. */

@@ -790,7 +790,7 @@ static bool _reload_bundle(ProteinExampleState* state, const char* bundle_path)
         {.attr_name = "color",
          .data = _atom_colors(&next, state->atom_color_mode),
          .item_count = next.atom_count},
-        {.attr_name = "size", .data = next_radii, .item_count = next.atom_count},
+        {.attr_name = "radius", .data = next_radii, .item_count = next.atom_count},
     };
     if (dvz_visual_set_data_many(state->spheres, sphere_updates, 3) != 0)
     {
