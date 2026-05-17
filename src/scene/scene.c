@@ -887,6 +887,24 @@ void dvz_figure_resize(DvzFigure* figure, uint32_t width, uint32_t height)
 
 
 
+/**
+ * Return a figure logical size.
+ *
+ * @param figure the figure
+ * @param out_width output width in logical pixels, may be NULL
+ * @param out_height output height in logical pixels, may be NULL
+ */
+void dvz_figure_size(const DvzFigure* figure, uint32_t* out_width, uint32_t* out_height)
+{
+    ANN(figure);
+    if (out_width != NULL)
+        *out_width = figure->width;
+    if (out_height != NULL)
+        *out_height = figure->height;
+}
+
+
+
 
 void dvz_figure_destroy(DvzFigure* figure)
 {

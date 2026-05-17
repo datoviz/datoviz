@@ -117,6 +117,17 @@ DVZ_EXPORT void dvz_figure_resize(DvzFigure* figure, uint32_t width, uint32_t he
 
 
 /**
+ * Return a figure logical size.
+ *
+ * @param figure the figure
+ * @param out_width output width in logical pixels, may be NULL
+ * @param out_height output height in logical pixels, may be NULL
+ */
+DVZ_EXPORT void
+dvz_figure_size(const DvzFigure* figure, uint32_t* out_width, uint32_t* out_height);
+
+
+/**
  * Destroy a figure.
  *
  * @param figure the figure

@@ -55,10 +55,14 @@ typedef enum TextLabMode
 typedef struct TextLabState
 {
     DvzAppWindow* win;
+    DvzFigure* figure;
     DvzVisual* title;
     DvzVisual* sample;
     DvzVisual* multiline;
     DvzVisual* ticks;
+    DvzVisual* crosshair;
+    uint32_t figure_width;
+    uint32_t figure_height;
     float size_pts;
     float tick_size_pts;
     float angle;
@@ -151,9 +155,11 @@ static void gui_color_to_dvz(const float rgba[4], DvzColor out)
  * Resolve a panel target anchor in figure pixels.
  *
  * @param anchor panel target anchor
+ * @param width figure width
+ * @param height figure height
  * @param out output x/y figure pixels
  */
-static void target_anchor_pixels(DvzSceneAnchor anchor, float out[2])
+static void target_anchor_pixels(DvzSceneAnchor anchor, float width, float height, float out[2])
 {
     ANN(out);
     out[0] = 0.0f;
@@ -161,38 +167,115 @@ static void target_anchor_pixels(DvzSceneAnchor anchor, float out[2])
     switch (anchor)
     {
     case DVZ_SCENE_ANCHOR_PANEL_TOP:
-        out[0] = 0.5f * TEXT_LAB_FIGURE_WIDTH;
+        out[0] = 0.5f * width;
         return;
     case DVZ_SCENE_ANCHOR_PANEL_TOP_RIGHT:
-        out[0] = TEXT_LAB_FIGURE_WIDTH;
+        out[0] = width;
         return;
     case DVZ_SCENE_ANCHOR_PANEL_LEFT:
-        out[1] = 0.5f * TEXT_LAB_FIGURE_HEIGHT;
+        out[1] = 0.5f * height;
         return;
     case DVZ_SCENE_ANCHOR_PANEL_CENTER:
-        out[0] = 0.5f * TEXT_LAB_FIGURE_WIDTH;
-        out[1] = 0.5f * TEXT_LAB_FIGURE_HEIGHT;
+        out[0] = 0.5f * width;
+        out[1] = 0.5f * height;
         return;
     case DVZ_SCENE_ANCHOR_PANEL_RIGHT:
-        out[0] = TEXT_LAB_FIGURE_WIDTH;
-        out[1] = 0.5f * TEXT_LAB_FIGURE_HEIGHT;
+        out[0] = width;
+        out[1] = 0.5f * height;
         return;
     case DVZ_SCENE_ANCHOR_PANEL_BOTTOM_LEFT:
-        out[1] = TEXT_LAB_FIGURE_HEIGHT;
+        out[1] = height;
         return;
     case DVZ_SCENE_ANCHOR_PANEL_BOTTOM:
-        out[0] = 0.5f * TEXT_LAB_FIGURE_WIDTH;
-        out[1] = TEXT_LAB_FIGURE_HEIGHT;
+        out[0] = 0.5f * width;
+        out[1] = height;
         return;
     case DVZ_SCENE_ANCHOR_PANEL_BOTTOM_RIGHT:
-        out[0] = TEXT_LAB_FIGURE_WIDTH;
-        out[1] = TEXT_LAB_FIGURE_HEIGHT;
+        out[0] = width;
+        out[1] = height;
         return;
     case DVZ_SCENE_ANCHOR_PANEL_TOP_LEFT:
     case DVZ_SCENE_ANCHOR_NONE:
     default:
         return;
     }
+}
+
+
+
+/**
+ * Convert figure pixels to fixed clip coordinates.
+ *
+ * @param width figure width
+ * @param height figure height
+ * @param x x coordinate in figure pixels
+ * @param y y coordinate in figure pixels
+ * @param out output clip coordinates
+ */
+static void pixel_to_clip(float width, float height, float x, float y, float out[3])
+{
+    ANN(out);
+    out[0] = width > 0.0f ? 2.0f * x / width - 1.0f : -1.0f;
+    out[1] = height > 0.0f ? 1.0f - 2.0f * y / height : 1.0f;
+    out[2] = 0.0f;
+}
+
+
+
+/**
+ * Update the position crosshair visual.
+ *
+ * @param visual segment visual
+ * @param count number of crosshairs
+ * @param positions figure-pixel positions
+ * @param width figure width
+ * @param height figure height
+ */
+static void set_crosshair_items(
+    DvzVisual* visual, uint32_t count, const float positions[][3], float width, float height)
+{
+    ANN(visual);
+    if (count > TEXT_LAB_MAX_TICKS)
+        count = TEXT_LAB_MAX_TICKS;
+    if (count == 0 || positions == NULL)
+    {
+        dvz_visual_set_visible(visual, false);
+        return;
+    }
+
+    const float half_px = 4.0f;
+    float starts[2 * TEXT_LAB_MAX_TICKS][3] = {{0}};
+    float ends[2 * TEXT_LAB_MAX_TICKS][3] = {{0}};
+    float stroke_widths[2 * TEXT_LAB_MAX_TICKS] = {0};
+    DvzColor colors[2 * TEXT_LAB_MAX_TICKS] = {{0}};
+    for (uint32_t i = 0; i < count; i++)
+    {
+        float x = positions[i][0];
+        float y = positions[i][1];
+        pixel_to_clip(width, height, x - half_px, y, starts[2u * i + 0]);
+        pixel_to_clip(width, height, x + half_px, y, ends[2u * i + 0]);
+        pixel_to_clip(width, height, x, y - half_px, starts[2u * i + 1]);
+        pixel_to_clip(width, height, x, y + half_px, ends[2u * i + 1]);
+        for (uint32_t j = 0; j < 2; j++)
+        {
+            uint32_t idx = 2u * i + j;
+            colors[idx][0] = 120;
+            colors[idx][1] = 220;
+            colors[idx][2] = 255;
+            colors[idx][3] = 150;
+            stroke_widths[idx] = 1.0f;
+        }
+    }
+
+    uint32_t segment_count = 2u * count;
+    DvzVisualDataUpdate updates[4] = {
+        {.attr_name = "position_start", .data = starts, .item_count = segment_count},
+        {.attr_name = "position_end", .data = ends, .item_count = segment_count},
+        {.attr_name = "color", .data = colors, .item_count = segment_count},
+        {.attr_name = "stroke_width", .data = stroke_widths, .item_count = segment_count},
+    };
+    dvz_visual_set_visible(visual, true);
+    dvz_visual_set_data_many(visual, updates, 4);
 }
 
 
@@ -256,12 +339,23 @@ static void set_text_items(
 static void update_text_scene(TextLabState* state)
 {
     ANN(state);
+    uint32_t figure_width = (uint32_t)TEXT_LAB_FIGURE_WIDTH;
+    uint32_t figure_height = (uint32_t)TEXT_LAB_FIGURE_HEIGHT;
+    if (state->figure != NULL)
+        dvz_figure_size(state->figure, &figure_width, &figure_height);
+    state->figure_width = figure_width;
+    state->figure_height = figure_height;
+    float width = (float)figure_width;
+    float height = (float)figure_height;
+
     DvzColor color = {0};
     gui_color_to_dvz(state->color, color);
     DvzSceneAnchor anchor = selected_anchor(state->anchor_index);
     float text_anchor[2] = {state->text_anchor_x, state->text_anchor_y};
     float target[2] = {0};
-    target_anchor_pixels(anchor, target);
+    target_anchor_pixels(anchor, width, height, target);
+    float crosshair_positions[TEXT_LAB_MAX_TICKS][3] = {{0}};
+    uint32_t crosshair_count = 0;
 
     dvz_visual_set_visible(state->sample, false);
     dvz_visual_set_visible(state->multiline, false);
@@ -284,14 +378,14 @@ static void update_text_scene(TextLabState* state)
     {
         sample_string = "Tick Labels";
         float heading_pos[1][3] = {
-            {0.5f * TEXT_LAB_FIGURE_WIDTH, 76.0f, 0.0f},
+            {0.5f * width, 76.0f, 0.0f},
         };
         const float heading_anchor[2] = {0.5f, 0.5f};
         set_text_items(
             state->sample, &sample_string, 1, heading_pos, 18.0f, color, heading_anchor, NULL);
 
-        float usable = 0.72f * TEXT_LAB_FIGURE_WIDTH;
-        float left = 0.5f * (TEXT_LAB_FIGURE_WIDTH - usable);
+        float usable = 0.72f * width;
+        float left = 0.5f * (width - usable);
         float step = tick_count > 1 ? usable / (float)(tick_count - 1u) : 0.0f;
         char labels[TEXT_LAB_MAX_TICKS][32] = {{0}};
         const char* strings[TEXT_LAB_MAX_TICKS] = {0};
@@ -301,21 +395,30 @@ static void update_text_scene(TextLabState* state)
             dvz_snprintf(labels[i], sizeof(labels[i]), "%u", i);
             strings[i] = labels[i];
             positions[i][0] = left + (float)i * step;
-            positions[i][1] = 0.5f * TEXT_LAB_FIGURE_HEIGHT;
+            positions[i][1] = 0.5f * height;
             positions[i][2] = 0.0f;
+            crosshair_positions[i][0] = positions[i][0];
+            crosshair_positions[i][1] = positions[i][1];
+            crosshair_positions[i][2] = positions[i][2];
         }
         set_text_items(
-            state->ticks, strings, tick_count, positions, state->tick_size_pts, color, text_anchor, NULL);
+            state->ticks, strings, tick_count, positions, state->tick_size_pts, color, text_anchor,
+            NULL);
+        crosshair_count = tick_count;
     }
     else if (state->mode == TEXT_LAB_MODE_MULTILINE)
     {
         const char* multiline_string = "line one\nline two\nline three";
         float multiline_pos[1][3] = {
-            {0.5f * TEXT_LAB_FIGURE_WIDTH - 180.0f, 0.5f * TEXT_LAB_FIGURE_HEIGHT - 20.0f, 0.0f},
+            {0.5f * width - 180.0f, 0.5f * height - 20.0f, 0.0f},
         };
         set_text_items(
-            state->multiline, &multiline_string, 1, multiline_pos, state->size_pts, color, text_anchor,
-            NULL);
+            state->multiline, &multiline_string, 1, multiline_pos, state->size_pts, color,
+            text_anchor, NULL);
+        crosshair_positions[0][0] = multiline_pos[0][0];
+        crosshair_positions[0][1] = multiline_pos[0][1];
+        crosshair_positions[0][2] = multiline_pos[0][2];
+        crosshair_count = 1;
     }
     else
     {
@@ -323,8 +426,14 @@ static void update_text_scene(TextLabState* state)
         set_text_items(
             state->sample, &sample_string, 1, sample_pos, state->size_pts, color, text_anchor,
             sample_angle);
+        crosshair_positions[0][0] = sample_pos[0][0];
+        crosshair_positions[0][1] = sample_pos[0][1];
+        crosshair_positions[0][2] = sample_pos[0][2];
+        crosshair_count = 1;
     }
 
+    if (state->crosshair != NULL)
+        set_crosshair_items(state->crosshair, crosshair_count, crosshair_positions, width, height);
     if (state->win != NULL)
         dvz_app_window_request_frame(state->win);
 }
@@ -443,6 +552,12 @@ static void gui_callback(DvzGui* gui, DvzAppWindow* win, void* user_data)
         state->angle = 0.65f * (float)((int32_t)(state->frame_index % 240u) - 120) / 120.0f;
         changed = true;
     }
+    uint32_t figure_width = 0;
+    uint32_t figure_height = 0;
+    if (state->figure != NULL)
+        dvz_figure_size(state->figure, &figure_width, &figure_height);
+    if (figure_width != state->figure_width || figure_height != state->figure_height)
+        changed = true;
     if (changed)
         update_text_scene(state);
 }
@@ -512,6 +627,8 @@ int main(int argc, char** argv)
 
     TextLabState state = {0};
     reset_text_state(&state);
+    state.figure = figure;
+    dvz_figure_size(figure, &state.figure_width, &state.figure_height);
 
     state.title = dvz_text(scene, 0);
     state.sample = dvz_text(scene, 0);
@@ -537,6 +654,24 @@ int main(int argc, char** argv)
             dvz_scene_destroy(scene);
             return 1;
         }
+    }
+
+    state.crosshair = dvz_segment(scene, 0);
+    if (state.crosshair == NULL)
+    {
+        dvz_fprintf(stderr, "dvz_segment() failed\n");
+        dvz_scene_destroy(scene);
+        return 1;
+    }
+    DvzVisualAttachDesc crosshair_attach = {
+        .z_layer = 5,
+        .controller_mode = DVZ_CONTROLLER_FIXED,
+    };
+    if (dvz_panel_add_visual(panel, state.crosshair, &crosshair_attach) != 0)
+    {
+        dvz_fprintf(stderr, "dvz_panel_add_visual() failed for crosshair\n");
+        dvz_scene_destroy(scene);
+        return 1;
     }
 
     update_text_scene(&state);
