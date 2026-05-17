@@ -21,6 +21,26 @@ Typical uses: brain surfaces, terrain, 3D anatomical models, procedural geometry
 isosurfaces, polyhedral shapes.
 
 
+## Current Implementation Status
+
+Status on 2026-05-17: the active v0.4 runtime implements the first retained mesh slice only.
+
+The implemented path supports:
+
+1. retained `mesh` visual construction via `dvz_mesh()`;
+2. triangle-list rendering through the scene -> FramePlan -> DRP2 -> vklite path;
+3. `position` per-vertex data;
+4. optional `color` per-vertex data, with an opaque-white default when omitted;
+5. optional `normal` per-vertex data for the current lit material shader path;
+6. optional scene-owned `"index"` buffer bindings for indexed draws;
+7. depth-tested rendering, arcball/camera transforms, WBOIT/depth-peeling participation, SSAO
+   G-buffer participation when normals are present, and offscreen/app execution coverage.
+
+The following sections describe the target mesh contract. Texture material slots, scalar colormap
+mode, automatic normal generation, edge overlay, isolines, shape-builder integration, and mesh
+face/region picking are planned capabilities unless explicitly marked as implemented above.
+
+
 ## Surface Plot Contract
 
 A surface plot is a structured-grid mesh convenience, not a separate baseline visual family.
@@ -150,6 +170,10 @@ validated frame plan.
 | Applies to | `color_mode = texture` only |
 
 2D texture applied via per-vertex `texcoords`. Must be RGBA `u8`.
+
+Status on 2026-05-17: this is not implemented for mesh visuals yet. The active texture binding
+path is image-only; mesh texture support should add a mesh material texture slot rather than reuse
+the image-only convenience setter directly.
 
 
 ### `colormap`
@@ -328,6 +352,9 @@ useful for mesh interaction (the user clicks a surface region, not a vertex). Th
 is the index of the first vertex of the triangle divided by 3 (i.e., `vertex_index / 3` for
 non-indexed triangles, or the index into the index buffer triplet for indexed geometry).
 
+Status on 2026-05-17: mesh face picking is specified here but not implemented. The current
+GPU-backed request path covers point picking and image probing first.
+
 
 ## Relationship To Other Families
 
@@ -372,9 +399,11 @@ non-indexed triangles, or the index into the index buffer triplet for indexed ge
 | `dvz_mesh_alloc` | not needed — visual resizes automatically |
 | `dvz_mesh_shape` / `dvz_mesh_reshape` | shape builder integration |
 
-v0.4 adds: `color_mode` variant axis, `lighting` variant axis, `backface_culling`,
-`isoline_range`, auto-computed normals, `colormap` as Scale reference, `CONSTANT` color source,
-empty visual support, dynamic index buffer.
+The target v0.4 contract adds: `color_mode` variant axis, `lighting` variant axis,
+`backface_culling`, `isoline_range`, auto-computed normals, `colormap` as Scale reference,
+`CONSTANT` color source, empty visual support, and dynamic index buffer updates. The active
+first slice currently covers empty visual construction, dense per-vertex uploads, default color
+generation, normals when supplied, and scene-owned index buffers.
 v0.4 renames: `emit` → `emissive`.
 v0.4 hides `left`/`right`/`contour` — edge distance data is computed internally.
 
@@ -391,9 +420,10 @@ The visual parameter block reserves two additional fields for future PBR support
 | `metallic` | metallic factor `[0, 1]` | zero-initialized, ignored |
 | `roughness` | roughness factor `[0, 1]` | zero-initialized, ignored |
 
-A `normal_map` texture slot is supported in v0.4 alongside the diffuse `texture`.
-When `normal_map` is set, the fragment shader perturbs the surface normal using the tangent-space
-normal map before Phong shading. `texcoords` are shared between `texture` and `normal_map`.
+A `normal_map` texture slot is reserved in the target v0.4 contract alongside the diffuse
+`texture`. When `normal_map` is set, the fragment shader perturbs the surface normal using the
+tangent-space normal map before Phong shading. `texcoords` are shared between `texture` and
+`normal_map`.
 
 ```text
 dvz_visual_set_texture(mesh, 0, diffuse_tex)    // slot 0: diffuse color
