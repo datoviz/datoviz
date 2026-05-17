@@ -653,6 +653,165 @@ static void _scene_emit_path_uploads(DvzFramePlan* plan, DvzVisual* visual, uint
 
 
 /**
+ * Return whether an image visual uses per-item rectangles.
+ *
+ * @param visual the image visual
+ * @return whether the visual has an extent attribute
+ */
+static bool _scene_image_uses_generated_quads(const DvzVisual* visual)
+{
+    ANN(visual);
+    return visual->type == DVZ_VISUAL_TYPE_IMAGE && _scene_visual_has_attr_data(visual, "extent");
+}
+
+
+/**
+ * Rebuild one image visual's derived six-vertex rectangle upload cache.
+ *
+ * @param visual the image visual
+ * @return whether the cache is ready for upload
+ */
+static bool _image_cache_rebuild(DvzVisual* visual)
+{
+    ANN(visual);
+    if (!_scene_image_uses_generated_quads(visual) ||
+        !_scene_visual_has_attr_data(visual, "position"))
+    {
+        log_error("image visual per-item rectangles require position and extent attributes");
+        return false;
+    }
+
+    DvzVisualAttr* position_attr = &visual->attrs[_attr_index(visual, "position")];
+    DvzVisualAttr* extent_attr = &visual->attrs[_attr_index(visual, "extent")];
+    const uint64_t item_count = position_attr->item_count;
+    if (item_count == 0 || extent_attr->item_count != item_count)
+    {
+        log_error("image visual position and extent item counts must match");
+        return false;
+    }
+
+    uint64_t vertex_count = 0;
+    if (_dvz_mul_u64_overflows(item_count, 6, &vertex_count) || vertex_count > UINT32_MAX)
+    {
+        log_error("image visual item count is too large");
+        return false;
+    }
+
+    DvzImageGpuCache* cache = &visual->image_gpu;
+    if (!_segment_cache_resize((void**)&cache->position, vertex_count, 3 * sizeof(float)) ||
+        !_segment_cache_resize((void**)&cache->texcoords, vertex_count, 2 * sizeof(float)))
+    {
+        log_error("failed to allocate image visual derived GPU cache");
+        return false;
+    }
+
+    const float* position = (const float*)position_attr->data;
+    const float* extent = (const float*)extent_attr->data;
+    const int anchor_idx = _attr_index(visual, "anchor");
+    const int tex_rect_idx = _attr_index(visual, "tex_rect");
+    const float* anchor = anchor_idx >= 0 ? (const float*)visual->attrs[anchor_idx].data : NULL;
+    const float* tex_rect =
+        tex_rect_idx >= 0 ? (const float*)visual->attrs[tex_rect_idx].data : NULL;
+
+    for (uint64_t i = 0; i < item_count; i++)
+    {
+        const float x = position[3 * i + 0];
+        const float y = position[3 * i + 1];
+        const float z = position[3 * i + 2];
+        const float w = extent[2 * i + 0];
+        const float h = extent[2 * i + 1];
+        const float ax = anchor != NULL ? anchor[2 * i + 0] : 0.0f;
+        const float ay = anchor != NULL ? anchor[2 * i + 1] : 0.0f;
+
+        const float x0 = x - 0.5f * (ax + 1.0f) * w;
+        const float x1 = x0 + w;
+        const float y0 = y - 0.5f * (ay + 1.0f) * h;
+        const float y1 = y0 + h;
+
+        const float u0 = tex_rect != NULL ? tex_rect[4 * i + 0] : 0.0f;
+        const float v0 = tex_rect != NULL ? tex_rect[4 * i + 1] : 0.0f;
+        const float u1 = tex_rect != NULL ? tex_rect[4 * i + 2] : 1.0f;
+        const float v1 = tex_rect != NULL ? tex_rect[4 * i + 3] : 1.0f;
+
+        const float quad_pos[6][3] = {
+            {x0, y0, z}, {x0, y1, z}, {x1, y0, z},
+            {x1, y0, z}, {x0, y1, z}, {x1, y1, z},
+        };
+        const float quad_uv[6][2] = {
+            {u0, v0}, {u0, v1}, {u1, v0}, {u1, v0}, {u0, v1}, {u1, v1},
+        };
+
+        for (uint32_t j = 0; j < 6; j++)
+        {
+            uint64_t dst = 6 * i + j;
+            dvz_memcpy(
+                &cache->position[3 * dst], 3 * sizeof(float), quad_pos[j],
+                3 * sizeof(float));
+            dvz_memcpy(
+                &cache->texcoords[2 * dst], 2 * sizeof(float), quad_uv[j],
+                2 * sizeof(float));
+        }
+    }
+
+    cache->item_count = item_count;
+    cache->vertex_count = vertex_count;
+    cache->dirty = false;
+    return true;
+}
+
+
+/**
+ * Emit derived GPU uploads for one per-item image visual.
+ *
+ * @param plan the destination frame plan
+ * @param visual the image visual
+ * @param visual_index the scene visual index
+ */
+static void _scene_emit_image_uploads(DvzFramePlan* plan, DvzVisual* visual, uint32_t visual_index)
+{
+    ANN(plan);
+    ANN(visual);
+    DvzImageGpuCache* cache = &visual->image_gpu;
+    bool dirty = cache->dirty;
+    for (uint32_t i = 0; i < visual->attr_count; i++)
+        dirty = dirty || visual->attrs[i].dirty_item_count > 0;
+    if (!dirty)
+        return;
+    if (!_image_cache_rebuild(visual))
+        return;
+
+    const struct
+    {
+        const char* name;
+        const void* data;
+        uint32_t item_size;
+        DvzFramePlanResourceRole role;
+    } uploads[] = {
+        {"position", cache->position, 3 * sizeof(float), DVZ_FRAME_PLAN_RESOURCE_ROLE_POSITION},
+        {"texcoords", cache->texcoords, 2 * sizeof(float), DVZ_FRAME_PLAN_RESOURCE_ROLE_TEXCOORDS},
+    };
+
+    for (uint32_t i = 0; i < 2; i++)
+    {
+        char resource_id[128];
+        if (!_scene_resource_key_visual_attr(
+                visual_index, uploads[i].name, resource_id, sizeof(resource_id)))
+            continue;
+        uint64_t byte_size = 0;
+        if (_dvz_mul_u64_overflows(cache->vertex_count, uploads[i].item_size, &byte_size))
+            continue;
+        dvz_frame_plan_upload_bytes(
+            plan, resource_id, 0, byte_size, uploads[i].name, uploads[i].data);
+        _scene_attach_upload_metadata(
+            plan, visual, visual_index, uploads[i].role, DVZ_FRAME_PLAN_RESOURCE_KIND_BUFFER,
+            UINT32_MAX);
+        if (strcmp(uploads[i].name, "position") == 0)
+            dvz_frame_plan_upload_set_topology(plan, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
+    }
+}
+
+
+/**
  * Emit one sampled field as a texture upload node.
  *
  * @param plan the destination frame plan
@@ -886,9 +1045,14 @@ void _scene_emit_visual_uploads(DvzFigure* figure, DvzFramePlan* plan)
                 }
                 continue;
             }
+            bool image_generated = _scene_image_uses_generated_quads(visual);
+            if (image_generated)
+                _scene_emit_image_uploads(plan, visual, vidx);
             for (uint32_t ai = 0; ai < visual->attr_count; ai++)
             {
                 DvzVisualAttr* attr = &visual->attrs[ai];
+                if (image_generated)
+                    continue;
                 if (attr->buffer != NULL)
                 {
                     uint32_t buffer_idx = _scene_buffer_index(figure->scene, attr->buffer);

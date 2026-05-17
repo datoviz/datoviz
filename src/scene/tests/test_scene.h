@@ -515,6 +515,8 @@ int test_scene_path_emit(TstSuite* suite, TstItem* item);
 
 int test_scene_image_emit(TstSuite* suite, TstItem* item);
 
+int test_scene_image_multi_item_emit(TstSuite* suite, TstItem* item);
+
 int test_scene_empty_figure_emit_clear_only(TstSuite* suite, TstItem* item);
 
 int test_scene_point_emit_has_vertex_layout(TstSuite* suite, TstItem* item);

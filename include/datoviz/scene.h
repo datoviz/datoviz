@@ -581,7 +581,9 @@ dvz_visual_attr_mutability(const DvzVisual* visual, const char* attr_name);
  * mesh: `"position"` (vec3f), optional `"color"` (RGBA8), optional `"normal"` (vec3f),
  *       optional `"instance_transform"` (mat4f, one per instance)
  * primitive only: `"normal"` (vec3f)
- * image: `"position"` (vec3f), `"texcoords"` (vec2f)
+ * image: legacy `"position"` (vec3f) + `"texcoords"` (vec2f) corner vertices, or
+ *        per-item `"position"` (vec3f) + `"extent"` (vec2f) with optional `"tex_rect"`
+ *        (vec4f) and `"anchor"` (vec2f)
  *
  * All configured attributes on one visual must use the same item_count. This
  * call is rejected while any emitted scene stream is still live.
@@ -990,11 +992,12 @@ DVZ_EXPORT int dvz_path_set_subpaths(
 /**
  * Create an image visual.
  *
- * First-slice scope: one textured quad per visual. Accepts `position` (vec3, 4 corner
- * vertices in TRIANGLE_STRIP order: TL, BL, TR, BR) and `texcoords` (vec2, matching UVs).
- * Bind a sampled field via `dvz_visual_set_field()`. The legacy texture convenience wrappers
- * remain available and lower to scene-owned sampled fields internally. Per-item rectangles,
- * anchors, sizes, and color tinting from `spec/scene/visuals/IMAGE.md` are deferred.
+ * First-slice scope: one sampled 2D texture per visual. The legacy path accepts `position`
+ * (vec3, 4 corner vertices in triangle-strip order) and `texcoords` (vec2, matching UVs).
+ * The retained per-item path accepts one anchor `position` and `extent` per image item, with
+ * optional `tex_rect` atlas rectangles and per-item `anchor`. Bind a sampled field via
+ * `dvz_visual_set_field()`. The legacy texture convenience wrappers remain available and lower
+ * to scene-owned sampled fields internally.
  *
  * @param scene the scene
  * @param flags variant flags

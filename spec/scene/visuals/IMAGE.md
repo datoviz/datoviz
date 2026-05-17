@@ -14,11 +14,12 @@ Shared attribute and behavioral definitions are in `SHARED_ATTRIBUTES.md`.
 Status on 2026-05-17: this file is the target contract for the v0.4 `image` visual family, not a
 description of everything currently implemented.
 
-The active native implementation is a first slice:
+The active native implementation is a first slice with two geometry paths:
 
-- one textured quad per visual,
-- `position` is provided as four `vec3` corner vertices in triangle-strip order,
-- `texcoords` is provided as four matching `vec2` UV vertices,
+- legacy single-quad geometry: `position` is provided as four `vec3` corner vertices in
+  triangle-strip order and `texcoords` as four matching `vec2` UV vertices,
+- per-item rectangle geometry: `position` is one item anchor, `extent` is one `vec2`
+  display rectangle size, and optional `tex_rect` supplies one atlas UV rectangle per item,
 - texture data comes from a 2D `SampledField` bound through `dvz_visual_set_field()`, or from the
   transitional `dvz_visual_set_texture()` / `dvz_visual_set_texture_f32()` helpers,
 - RGBA8 image fields upload directly, while scalar fields are currently mapped through the bound
@@ -26,10 +27,9 @@ The active native implementation is a first slice:
 - image probing uses the same quad vertex/UV contract and must be updated alongside any geometry
   contract change.
 
-The following parts of this target contract are intentionally deferred: per-item rectangles,
-`size`, `anchor`, `color`, `color_tint`, `angle`, `shift`, `size_space`, `transpose`, border/radius
-parameters, `texture_mode = none`, native shader-side scalar colormap sampling, heatmap isolines,
-and label-contour rendering.
+The following parts of this target contract are intentionally deferred: `color`, `color_tint`,
+`angle`, `shift`, `extent_space`, `transpose`, border/radius parameters, `texture_mode = none`,
+native shader-side scalar colormap sampling, heatmap isolines, and label-contour rendering.
 
 Before expanding this visual family, finish the image probe recovery slice for GPU-only readback,
 non-fullscreen quads, panzoom/keep-aspect transforms, hidden pick-capable segmentation images, and
@@ -62,23 +62,23 @@ Anchor position of the image in visual space. Which part of the image aligns to 
 controlled by `anchor`.
 
 
-### `size`
+### `extent`
 
 | Property | Value |
 |---|---|
-| Type | `vec2`, `(width, height)`, unit determined by `size_space` |
-| Accepted sources | `CONSTANT`, `PER_ITEM` |
+| Type | `vec2`, `(width, height)`, unit determined by `extent_space` |
+| Accepted sources | `PER_ITEM` |
 | Typical mutability | `dynamic` |
 
 Display size of the image rectangle.
 
 
-### `texcoords`
+### `tex_rect`
 
 | Property | Value |
 |---|---|
 | Type | `vec4`, `(u0, v0, u1, v1)` — UV rectangle, top-left to bottom-right |
-| Accepted sources | `CONSTANT`, `PER_ITEM` |
+| Accepted sources | `PER_ITEM` |
 | Typical mutability | `dynamic` |
 | Applies to | `texture_mode = rgba` or `scalar` only |
 
@@ -222,7 +222,7 @@ Rounded corner radius. `0` means rectangular.
 `PER_ITEM` allows independently rounded images in the same visual.
 
 
-### `size_space`
+### `extent_space`
 
 Standard — see `SHARED_ATTRIBUTES.md`. Default: `screen`.
 Use `data` when the image should cover a fixed data-space region and scale with zoom
@@ -303,7 +303,7 @@ reuploads.
 | Field | Default | Missing-value policy | `DvzStyle` override |
 |---|---|---|---|
 | `position` | required | NaN/Inf image instance skipped and not pickable | no |
-| `size`, `anchor`, `texcoords` | defaults described above | invalid geometry is validation error | yes |
+| `extent`, `anchor`, `tex_rect` | defaults described above | invalid geometry is validation error | yes |
 | `tint`, `alpha` | white tint, alpha `1` | NaN alpha falls back to default | yes |
 | scalar texture samples | n/a | NaN maps through scale missing color | scale-owned |
 | `texture` / sampled field | required for `rgba` and `scalar` modes | missing texture is validation error | no |
@@ -345,20 +345,20 @@ Picking returns the image index as item identity.
 
 | Situation | Preferred family |
 |---|---|
-| Full-panel heatmap covering axes | `image` with `size_space = data`, `texture_mode = heatmap` |
+| Full-panel heatmap covering axes | `image` with `extent_space = data`, `texture_mode = heatmap` |
 | Scalar field, no isolines needed | `image` with `texture_mode = scalar` |
-| Sprite icons | `image` with `texture_mode = rgba`, per-item `texcoords` |
+| Sprite icons | `image` with `texture_mode = rgba`, per-item `tex_rect` |
 | Colored rectangles without texture | `image` with `texture_mode = none` |
 | 3D volume rendering | `volume` |
 
 
 ## Minimum Cases This Spec Must Support
 
-1. single RGBA image overlay — `texture_mode = rgba`, `CONSTANT` size and texcoords,
+1. single RGBA image overlay — `texture_mode = rgba`, one `position` and `extent`,
 2. brain activity colormap — `texture_mode = scalar` with colormap Scale,
-3. texture atlas sprite sheet — `texture_mode = rgba`, `texcoords` `PER_ITEM`,
+3. texture atlas sprite sheet — `texture_mode = rgba`, `tex_rect` `PER_ITEM`,
 4. colored rectangle annotations — `texture_mode = none`, `color` `PER_ITEM`,
-5. data-aligned heatmap tile — `size_space = data`,
+5. data-aligned heatmap tile — `extent_space = data`,
 6. rotated image annotations — `angle` `PER_ITEM`,
 7. transposed scientific array — `transpose = true`,
 8. heatmap with isoline contours — `texture_mode = heatmap`, `isoline_count > 0`.
@@ -369,9 +369,9 @@ Picking returns the image index as item identity.
 | v0.3 | v0.4 |
 |---|---|
 | `dvz_image_position` | `position` `PER_ITEM` |
-| `dvz_image_size` | `size` `PER_ITEM`, now also `CONSTANT` |
-| `dvz_image_anchor` | `anchor` visual-wide |
-| `dvz_image_texcoords` | `texcoords` `PER_ITEM`, now also `CONSTANT` |
+| `dvz_image_size` | `extent` `PER_ITEM` |
+| `dvz_image_anchor` | `anchor` `PER_ITEM` or omitted for centered |
+| `dvz_image_texcoords` | `tex_rect` `PER_ITEM`; legacy corner UVs remain `texcoords` |
 | `dvz_image_facecolor` | `color` `PER_ITEM` when `texture_mode = none` |
 | `dvz_image_texture` | `texture` resource reference |
 | `dvz_image_colormap` | `colormap` Scale reference |
@@ -380,8 +380,8 @@ Picking returns the image index as item identity.
 | `dvz_image_linewidth` | `linewidth` |
 | `dvz_image_radius` | `radius` |
 
-v0.4 adds: `angle`, `shift`, `size_space`, `texture_mode` and `color_mode` variant axes,
-`CONSTANT` sources for `size` and `texcoords`, `colormap` as Scale reference instead of enum,
+v0.4 adds: `angle`, `shift`, `extent_space`, `texture_mode` and `color_mode` variant axes,
+`colormap` as Scale reference instead of enum,
 `transpose` replacing `permutation`.
 v0.4 adds per-item `anchor`, `color_tint`, and per-item `radius`.
 

@@ -624,6 +624,18 @@ struct DvzPathState
 };
 
 
+typedef struct DvzImageGpuCache DvzImageGpuCache;
+
+struct DvzImageGpuCache
+{
+    float* position;
+    float* texcoords;
+    uint64_t item_count;
+    uint64_t vertex_count;
+    bool dirty;
+};
+
+
 
 /*************************************************************************************************/
 /*  Visual attribute slot                                                                        */
@@ -699,6 +711,7 @@ struct DvzVisual
     bool                   material_params_dirty;
     DvzSegmentState        segment;
     DvzPathState           path;
+    DvzImageGpuCache       image_gpu;
     DvzSphereMode          sphere_mode;
     bool                   mesh_default_color;
     bool                   scene_occluder;

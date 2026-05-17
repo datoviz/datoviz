@@ -637,7 +637,9 @@ static bool _scene_visual_desc_from_metadata(
         out->kind = DVZ_SCENE_VISUAL_DESC_IMAGE;
         out->vbuf_ids[out->vbuf_count++] = uv_id;
         out->image_texture_id = tex_id;
-        out->topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP;
+        out->topology = _resource_topology(&emitter->resources, pos_buf);
+        if (out->topology == UINT32_MAX)
+            out->topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP;
     }
     else if (meta->visual_type == DVZ_VISUAL_TYPE_VOLUME)
     {

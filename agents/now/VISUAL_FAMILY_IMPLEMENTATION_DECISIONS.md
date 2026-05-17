@@ -53,8 +53,9 @@ It is authoritative for the first implementation pass when those documents disag
 2. `point` and `marker` use `diameter`, not `size`.
 3. `sphere` uses `radius`, not `size`, and should stop using typed data setters as the primary API.
 4. `segment` and stroked `path` use `stroke_width`, not `line_width`.
-5. `image` is a multi-item visual with per-item `position`, `extent`, `anchor`, `tex_rect`,
-   `angle`, and `tint`, sampling one shared field/texture/atlas in the first coherent slice.
+5. `image` is a multi-item visual with per-item `position`, `extent`, optional `anchor`, and
+   optional `tex_rect`, sampling one shared field/texture/atlas in the first coherent slice.
+   `angle` and tint remain follow-up attributes.
 6. `mesh` supports instancing through per-instance attributes such as `instance_transform`,
    `instance_color`, and optional authored `instance_id`; instance identity must be preserved in
    picking.
@@ -66,6 +67,19 @@ It is authoritative for the first implementation pass when those documents disag
 ## Current Landed Status
 
 Status on 2026-05-17: the first implementation batch for the five families has landed.
+
+Additional visual-consistency updates landed on 2026-05-17:
+
+1. Public visual attribute names now use `diameter`, `pixel_size`, `radius`, and `stroke_width`
+   while preserving the current internal storage names.
+2. `sphere` now uses the generic `dvz_visual_set_data()` path and no longer exposes duplicate
+   typed data setters.
+3. `DvzPickResult` has an explicit `DvzPickStatus` so misses, unsupported visuals, outside-panel
+   requests, GPU execution failures, and readback failures are distinguishable.
+4. `mesh` accepts per-instance `instance_transform` data, emits instanced vertex input layouts, and
+   lowers draws with the retained instance count.
+5. `image` supports multi-item sampled rectangles through per-item `position` + `extent` and
+   optional `tex_rect` atlas coordinates, while keeping the legacy four-corner `texcoords` path.
 
 Implemented:
 
