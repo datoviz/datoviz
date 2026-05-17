@@ -395,6 +395,10 @@ struct DvzAnnotation
     uint32_t dirty_flags;
     uint64_t version;
     DvzTextLayoutMetrics metrics;
+    DvzVisual* visual;
+    uint64_t visual_version;
+    uint32_t visual_figure_width;
+    uint32_t visual_figure_height;
 };
 
 

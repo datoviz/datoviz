@@ -672,6 +672,55 @@ static bool _text_prepare_visual(DvzFigure* figure, DvzText* text)
 
 
 
+/**
+ * Update or create the internal image visual for one retained annotation label.
+ *
+ * @param figure the figure being emitted
+ * @param annotation the annotation object
+ * @return whether preparation succeeded
+ */
+static bool _annotation_prepare_visual(DvzFigure* figure, DvzAnnotation* annotation)
+{
+    ANN(figure);
+    ANN(annotation);
+    if (annotation->scene == NULL || annotation->panel == NULL ||
+        annotation->panel->figure != figure)
+        return true;
+    if (annotation->kind != DVZ_ANNOTATION_LABEL)
+    {
+        if (annotation->visual != NULL)
+            dvz_visual_set_visible(annotation->visual, false);
+        return true;
+    }
+
+    DvzText proxy = {0};
+    proxy.scene = annotation->scene;
+    proxy.panel = annotation->panel;
+    dvz_strlcpy(proxy.string, annotation->text, sizeof(proxy.string));
+    proxy.style = annotation->style;
+    proxy.placement = annotation->placement;
+    proxy.flags = annotation->flags;
+    proxy.dirty_flags = annotation->dirty_flags;
+    proxy.version = annotation->version;
+    proxy.metrics = annotation->metrics;
+    proxy.visual = annotation->visual;
+    proxy.visual_version = annotation->visual_version;
+    proxy.visual_figure_width = annotation->visual_figure_width;
+    proxy.visual_figure_height = annotation->visual_figure_height;
+
+    bool ok = _text_prepare_visual(figure, &proxy);
+    annotation->metrics = proxy.metrics;
+    annotation->visual = proxy.visual;
+    annotation->visual_version = proxy.visual_version;
+    annotation->visual_figure_width = proxy.visual_figure_width;
+    annotation->visual_figure_height = proxy.visual_figure_height;
+    if (ok)
+        annotation->dirty_flags = proxy.dirty_flags;
+    return ok;
+}
+
+
+
 /*************************************************************************************************/
 /*  Internal text realization                                                                    */
 /*************************************************************************************************/
@@ -690,6 +739,11 @@ void _scene_prepare_text_visuals(DvzFigure* figure)
     {
         if (!_text_prepare_visual(figure, &scene->texts[i]))
             log_error("failed to prepare retained text visual %u", i);
+    }
+    for (uint32_t i = 0; i < scene->annotation_count; i++)
+    {
+        if (!_annotation_prepare_visual(figure, &scene->annotations[i]))
+            log_error("failed to prepare retained annotation visual %u", i);
     }
 }
 
@@ -800,6 +854,8 @@ void dvz_text_destroy(DvzText* text)
 {
     if (text == NULL)
         return;
+    if (text->visual != NULL)
+        dvz_visual_set_visible(text->visual, false);
     text->scene = NULL;
     text->panel = NULL;
 }
@@ -938,6 +994,8 @@ void dvz_annotation_destroy(DvzAnnotation* annotation)
 {
     if (annotation == NULL)
         return;
+    if (annotation->visual != NULL)
+        dvz_visual_set_visible(annotation->visual, false);
     annotation->scene = NULL;
     annotation->panel = NULL;
     annotation->has_format = false;

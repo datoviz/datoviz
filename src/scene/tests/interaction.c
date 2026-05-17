@@ -307,6 +307,33 @@ int test_scene_text_bitmap_visual_realization(TstSuite* suite, TstItem* item)
     _scene_prepare_text_visuals(figure);
     AT(!text->visual->visible);
 
+    DvzAnnotation* annotation = dvz_annotation_label(
+        panel,
+        &(DvzLabelDesc){
+            .text = "A",
+            .style = {
+                .size_pts = 8.0f,
+                .renderer = DVZ_TEXT_RENDERER_SMALL_BITMAP_ATLAS,
+                .color = {255, 255, 255, 255},
+            },
+            .placement = {
+                .mode = DVZ_TEXT_PLACEMENT_SCREEN,
+                .anchor = DVZ_SCENE_ANCHOR_PANEL_BOTTOM_RIGHT,
+                .offset = {-4.0f, -4.0f},
+            },
+        });
+    ANN(annotation);
+    _scene_prepare_text_visuals(figure);
+    ANN(annotation->visual);
+    AT(annotation->visual->type == DVZ_VISUAL_TYPE_IMAGE);
+    AT(annotation->visual->visible);
+    AT(annotation->visual->alpha_mode == DVZ_ALPHA_BLENDED);
+    AT(annotation->dirty_flags == DVZ_TEXT_DIRTY_NONE);
+    AT(panel->visual_count == 2);
+
+    dvz_annotation_destroy(annotation);
+    AT(!annotation->visual->visible);
+
     dvz_scene_destroy(scene);
     return 0;
 }
