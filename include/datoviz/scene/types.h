@@ -277,6 +277,8 @@ struct DvzVolumeState
     double clip_max[3];
     double bounds_min[3];
     double bounds_max[3];
+    uint32_t axis_order[3];
+    bool axis_flip[3];
     uint32_t step_count;
     uint64_t version;
 };

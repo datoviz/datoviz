@@ -18,6 +18,8 @@ layout(set = 1, binding = 2) uniform VolumeParams {
     vec4 slice;
     vec4 bounds_min;
     vec4 bounds_max;
+    vec4 axis_order;
+    vec4 axis_flip;
     vec4 occlusion;
 } volume;
 
@@ -69,6 +71,21 @@ vec3 object_dir_to_uvw(vec3 dir)
 vec3 uvw_to_object(vec3 uvw)
 {
     return mix(volume.bounds_min.xyz, volume.bounds_max.xyz, uvw);
+}
+
+float axis_value(int axis, vec3 value)
+{
+    return axis == 0 ? value.x : (axis == 1 ? value.y : value.z);
+}
+
+vec3 texture_uvw(vec3 uvw)
+{
+    int ax0 = int(clamp(volume.axis_order.x, 0.0, 2.0));
+    int ax1 = int(clamp(volume.axis_order.y, 0.0, 2.0));
+    int ax2 = int(clamp(volume.axis_order.z, 0.0, 2.0));
+    vec3 out_uvw = vec3(axis_value(ax0, uvw), axis_value(ax1, uvw), axis_value(ax2, uvw));
+    out_uvw = mix(out_uvw, vec3(1.0) - out_uvw, step(vec3(0.5), volume.axis_flip.xyz));
+    return clamp(out_uvw, vec3(0.0), vec3(1.0));
 }
 
 float projected_depth(vec3 uvw)
@@ -136,7 +153,7 @@ void main()
         if (occluded_by_scene_depth(uvw)) {
             break;
         }
-        vec4 sample_value = texture(tex, uvw);
+        vec4 sample_value = texture(tex, texture_uvw(uvw));
         float density = clamp(transfer ? sample_value.a : sample_value.r, 0.0, 1.0);
         vec3 color = transfer ? sample_value.rgb : vec3(sample_value.r);
         float sample_alpha =

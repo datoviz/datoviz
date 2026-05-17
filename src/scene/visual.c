@@ -1322,6 +1322,9 @@ static void _volume_state_default(DvzVolumeState* state)
     state->bounds_max[0] = +1.0;
     state->bounds_max[1] = +1.0;
     state->bounds_max[2] = +1.0;
+    state->axis_order[0] = 0;
+    state->axis_order[1] = 1;
+    state->axis_order[2] = 2;
 }
 
 
@@ -3198,6 +3201,46 @@ int dvz_volume_set_bounds(
     }
     if (_volume_apply_bounds_geometry(visual) != 0)
         return -1;
+    _visual_bump_version(&visual->volume.version);
+    return 0;
+}
+
+
+/**
+ * Set the mapping from normalized volume coordinates to texture UVW coordinates.
+ *
+ * @param visual the volume visual
+ * @param axis_order texture-axis source order
+ * @param axis_flip optional per-texture-axis flips
+ * @return 0 on success, -1 on error
+ */
+int dvz_volume_set_axis_mapping(
+    DvzVisual* visual, const uint32_t axis_order[3], const bool axis_flip[3])
+{
+    ANN(visual);
+    ANN(axis_order);
+    if (visual->type != DVZ_VISUAL_TYPE_VOLUME)
+    {
+        log_error("dvz_volume_set_axis_mapping requires a volume visual");
+        return -1;
+    }
+    bool seen[3] = {false, false, false};
+    for (uint32_t i = 0; i < 3; i++)
+    {
+        if (axis_order[i] > 2 || seen[axis_order[i]])
+        {
+            log_error("volume axis order must be a permutation of 0, 1, 2");
+            return -1;
+        }
+        seen[axis_order[i]] = true;
+    }
+    if (!_scene_visual_mutation_allowed(visual->scene, "set volume axis mapping"))
+        return -1;
+    for (uint32_t i = 0; i < 3; i++)
+    {
+        visual->volume.axis_order[i] = axis_order[i];
+        visual->volume.axis_flip[i] = axis_flip != NULL ? axis_flip[i] : false;
+    }
     _visual_bump_version(&visual->volume.version);
     return 0;
 }

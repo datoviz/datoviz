@@ -1128,6 +1128,22 @@ dvz_volume_set_bounds(DvzVisual* visual, const double bounds_min[3], const doubl
 
 
 /**
+ * Set the mapping from normalized volume coordinates to texture UVW coordinates.
+ *
+ * `axis_order[i]` selects the normalized volume coordinate used for texture axis `i`.
+ * `axis_flip[i]` flips texture axis `i` after reordering. Pass NULL for `axis_flip` to disable
+ * all flips.
+ *
+ * @param visual the volume visual
+ * @param axis_order texture-axis source order, a permutation of 0, 1, 2
+ * @param axis_flip optional per-texture-axis flips
+ * @return 0 on success, -1 on error
+ */
+DVZ_EXPORT int dvz_volume_set_axis_mapping(
+    DvzVisual* visual, const uint32_t axis_order[3], const bool axis_flip[3]);
+
+
+/**
  * Enable axis-aligned clipping on a volume visual.
  *
  * @param visual the volume visual

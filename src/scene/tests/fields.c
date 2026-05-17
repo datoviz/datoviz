@@ -875,6 +875,10 @@ int test_scene_volume_retained_controls(TstSuite* suite, TstItem* item)
     AT(state->clip_max[2] == 1.0);
     AT(state->bounds_min[0] == -1.0);
     AT(state->bounds_max[2] == +1.0);
+    AT(state->axis_order[0] == 0);
+    AT(state->axis_order[1] == 1);
+    AT(state->axis_order[2] == 2);
+    AT(!state->axis_flip[0]);
     uint64_t version0 = state->version;
 
     AT(dvz_volume_set_opacity(volume, 0.35f) == 0);
@@ -919,6 +923,20 @@ int test_scene_volume_retained_controls(TstSuite* suite, TstItem* item)
     AT(state->clipping_enabled);
     AT(state->clip_min[1] == 0.2);
     AT(state->clip_max[2] == 0.7);
+    uint64_t version6 = state->version;
+
+    uint32_t axis_order[3] = {2, 0, 1};
+    bool axis_flip[3] = {true, false, true};
+    AT(dvz_volume_set_axis_mapping(volume, axis_order, axis_flip) == 0);
+    state = dvz_volume_state(volume);
+    ANN(state);
+    AT(state->axis_order[0] == 2);
+    AT(state->axis_order[1] == 0);
+    AT(state->axis_order[2] == 1);
+    AT(state->axis_flip[0]);
+    AT(!state->axis_flip[1]);
+    AT(state->axis_flip[2]);
+    AT(state->version != version6);
 
     AT(dvz_volume_set_slice_axis(volume, DVZ_VOLUME_AXIS_X) == 0);
     AT(dvz_volume_state(volume)->slice_axis == DVZ_VOLUME_AXIS_X);
@@ -972,6 +990,9 @@ int test_scene_volume_retained_controls(TstSuite* suite, TstItem* item)
     AT(_captured_log_contains(suite, "volume step count must be in"));
     AT(dvz_volume_set_render_mode(volume, (DvzVolumeRenderMode)999) != 0);
     AT(_captured_log_contains(suite, "unsupported volume render mode"));
+    uint32_t invalid_order[3] = {0, 0, 2};
+    AT(dvz_volume_set_axis_mapping(volume, invalid_order, NULL) != 0);
+    AT(_captured_log_contains(suite, "volume axis order must be a permutation"));
 
     dvz_scene_destroy(scene);
     return 0;
@@ -1040,6 +1061,7 @@ int test_scene_volume_visual_metadata_lowering(TstSuite* suite, TstItem* item)
     AT(metadata.volume_state.clipping_enabled);
     AT(metadata.volume_state.clip_min[2] == 0.3);
     AT(metadata.volume_state.clip_max[1] == 0.8);
+    AT(metadata.volume_state.axis_order[0] == 0);
     AT(metadata.texture_id[0] != '\0');
     AT(strcmp(metadata.volume_texture_id, metadata.texture_id) == 0);
 

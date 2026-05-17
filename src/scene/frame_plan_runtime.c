@@ -589,9 +589,13 @@ static void _volume_uniform_from_state(
     {
         out->bounds_min[i] = (float)state->bounds_min[i];
         out->bounds_max[i] = (float)state->bounds_max[i];
+        out->axis_order[i] = (float)state->axis_order[i];
+        out->axis_flip[i] = state->axis_flip[i] ? 1.0f : 0.0f;
     }
     out->bounds_min[3] = 1.0f;
     out->bounds_max[3] = 1.0f;
+    out->axis_order[3] = 0.0f;
+    out->axis_flip[3] = 0.0f;
     if (occlusion != NULL && occlusion->enabled)
     {
         out->occlusion[0] = occlusion->alpha_threshold > 0.0f ? occlusion->alpha_threshold : 0.08f;
