@@ -156,6 +156,10 @@ struct DvzAxisStyle
     float major_tick_width;
     float grid_width;
     float major_tick_length;
+    float plot_margin_left;
+    float plot_margin_right;
+    float plot_margin_bottom;
+    float plot_margin_top;
     uint8_t spine_color[4];
     uint8_t major_tick_color[4];
     uint8_t grid_color[4];

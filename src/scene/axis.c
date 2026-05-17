@@ -63,6 +63,10 @@ static DvzAxisStyle _axis_default_style(void)
         .major_tick_width = 1.0f,
         .grid_width = 1.0f,
         .major_tick_length = 0.035f,
+        .plot_margin_left = 0.10f,
+        .plot_margin_right = 0.04f,
+        .plot_margin_bottom = 0.10f,
+        .plot_margin_top = 0.04f,
         .spine_color = {220, 220, 220, 255},
         .major_tick_color = {220, 220, 220, 255},
         .grid_color = {90, 95, 105, 180},
@@ -126,6 +130,37 @@ static void _axis_init(DvzAxis* axis, DvzPanel* panel, DvzDim dim)
 }
 
 
+/**
+ * Return the visual-space plot interval for one axis dimension.
+ *
+ * @param axis the axis
+ * @param out_min output plot minimum
+ * @param out_max output plot maximum
+ */
+static void _axis_plot_interval(const DvzAxis* axis, float* out_min, float* out_max)
+{
+    ANN(axis);
+    ANN(out_min);
+    ANN(out_max);
+    const DvzAxisStyle* style = &axis->style;
+    if (axis->dim == DVZ_DIM_X)
+    {
+        *out_min = -1.0f + style->plot_margin_left;
+        *out_max = +1.0f - style->plot_margin_right;
+    }
+    else
+    {
+        *out_min = -1.0f + style->plot_margin_bottom;
+        *out_max = +1.0f - style->plot_margin_top;
+    }
+    if (*out_max <= *out_min)
+    {
+        *out_min = -1.0f;
+        *out_max = +1.0f;
+    }
+}
+
+
 
 /**
  * Return a nice step size with the v0.3 1/2/5 ladder.
@@ -172,13 +207,14 @@ static double _axis_nice_number(double range, bool round)
  * @param max interval maximum
  * @return visual coordinate
  */
-static float _axis_data_to_visual(double value, double min, double max)
+static float _axis_data_to_visual(
+    double value, double min, double max, float visual_min, float visual_max)
 {
     double denom = max - min;
     if (fabs(denom) < AXIS_EPS)
         return 0.0f;
     double t = (value - min) / denom;
-    return (float)(-1.0 + 2.0 * t);
+    return (float)((double)visual_min + ((double)visual_max - (double)visual_min) * t);
 }
 
 
@@ -193,7 +229,13 @@ static float _axis_data_to_visual(double value, double min, double max)
 static double _axis_visual_to_data(const DvzAxis* axis, float value)
 {
     ANN(axis);
-    double t = ((double)value + 1.0) * 0.5;
+    float visual_min = -1.0f;
+    float visual_max = +1.0f;
+    _axis_plot_interval(axis, &visual_min, &visual_max);
+    double denom = (double)visual_max - (double)visual_min;
+    if (fabs(denom) < AXIS_EPS)
+        return axis->domain.min;
+    double t = ((double)value - (double)visual_min) / denom;
     return axis->domain.min + t * (axis->domain.max - axis->domain.min);
 }
 
@@ -340,18 +382,24 @@ static void _axis_update_visual(DvzAxis* axis)
     uint8_t colors[DVZ_SCENE_MAX_AXIS_LINES][4] = {{0}};
     float widths[DVZ_SCENE_MAX_AXIS_LINES] = {0};
     const float z = 0.0f;
+    float x0 = -1.0f;
+    float x1 = +1.0f;
+    float y0 = -1.0f;
+    float y1 = +1.0f;
+    _axis_plot_interval(&axis->panel->axes[DVZ_DIM_X], &x0, &x1);
+    _axis_plot_interval(&axis->panel->axes[DVZ_DIM_Y], &y0, &y1);
 
     if (axis->style.show_spine)
     {
         if (axis->dim == DVZ_DIM_X)
             _axis_append_line(
-                &count, starts, ends, colors, widths, (float[3]){-1.0f, -1.0f, z},
-                (float[3]){+1.0f, -1.0f, z}, axis->style.spine_color,
+                &count, starts, ends, colors, widths, (float[3]){x0, y0, z},
+                (float[3]){x1, y0, z}, axis->style.spine_color,
                 axis->style.spine_width);
         else
             _axis_append_line(
-                &count, starts, ends, colors, widths, (float[3]){-1.0f, -1.0f, z},
-                (float[3]){-1.0f, +1.0f, z}, axis->style.spine_color,
+                &count, starts, ends, colors, widths, (float[3]){x0, y0, z},
+                (float[3]){x0, y1, z}, axis->style.spine_color,
                 axis->style.spine_width);
     }
 
@@ -362,20 +410,23 @@ static void _axis_update_visual(DvzAxis* axis)
     _axis_compute_ticks(axis);
     for (uint32_t i = 0; i < axis->tick_count; i++)
     {
-        float p = _axis_data_to_visual(axis->ticks[i], visible_min, visible_max);
-        if (p < -1.0001f || p > +1.0001f)
+        float plot_min = axis->dim == DVZ_DIM_X ? x0 : y0;
+        float plot_max = axis->dim == DVZ_DIM_X ? x1 : y1;
+        float p =
+            _axis_data_to_visual(axis->ticks[i], visible_min, visible_max, plot_min, plot_max);
+        if (p < plot_min - 0.0001f || p > plot_max + 0.0001f)
             continue;
         if (axis->style.show_grid)
         {
             if (axis->dim == DVZ_DIM_X)
                 _axis_append_line(
-                    &count, starts, ends, colors, widths, (float[3]){p, -1.0f, z},
-                    (float[3]){p, +1.0f, z}, axis->style.grid_color,
+                    &count, starts, ends, colors, widths, (float[3]){p, y0, z},
+                    (float[3]){p, y1, z}, axis->style.grid_color,
                     axis->style.grid_width);
             else
                 _axis_append_line(
-                    &count, starts, ends, colors, widths, (float[3]){-1.0f, p, z},
-                    (float[3]){+1.0f, p, z}, axis->style.grid_color,
+                    &count, starts, ends, colors, widths, (float[3]){x0, p, z},
+                    (float[3]){x1, p, z}, axis->style.grid_color,
                     axis->style.grid_width);
         }
         if (axis->style.show_major_ticks)
@@ -383,13 +434,13 @@ static void _axis_update_visual(DvzAxis* axis)
             float len = axis->style.major_tick_length;
             if (axis->dim == DVZ_DIM_X)
                 _axis_append_line(
-                    &count, starts, ends, colors, widths, (float[3]){p, -1.0f, z},
-                    (float[3]){p, -1.0f + len, z}, axis->style.major_tick_color,
+                    &count, starts, ends, colors, widths, (float[3]){p, y0, z},
+                    (float[3]){p, y0 - len, z}, axis->style.major_tick_color,
                     axis->style.major_tick_width);
             else
                 _axis_append_line(
-                    &count, starts, ends, colors, widths, (float[3]){-1.0f, p, z},
-                    (float[3]){-1.0f + len, p, z}, axis->style.major_tick_color,
+                    &count, starts, ends, colors, widths, (float[3]){x0, p, z},
+                    (float[3]){x0 - len, p, z}, axis->style.major_tick_color,
                     axis->style.major_tick_width);
         }
     }
@@ -466,14 +517,30 @@ int dvz_panel_data_to_visual_positions(
         float z = data_positions[3 * i + 2];
         if (!isfinite(x) || !isfinite(y) || !isfinite(z))
             return -1;
-        visual_positions[3 * i + 0] = has_x ?
-                                          _axis_data_to_visual(
-                                              (double)x, x_axis->domain.min, x_axis->domain.max) :
-                                          x;
-        visual_positions[3 * i + 1] = has_y ?
-                                          _axis_data_to_visual(
-                                              (double)y, y_axis->domain.min, y_axis->domain.max) :
-                                          y;
+        if (has_x)
+        {
+            float x0 = -1.0f;
+            float x1 = +1.0f;
+            _axis_plot_interval(x_axis, &x0, &x1);
+            visual_positions[3 * i + 0] =
+                _axis_data_to_visual((double)x, x_axis->domain.min, x_axis->domain.max, x0, x1);
+        }
+        else
+        {
+            visual_positions[3 * i + 0] = x;
+        }
+        if (has_y)
+        {
+            float y0 = -1.0f;
+            float y1 = +1.0f;
+            _axis_plot_interval(y_axis, &y0, &y1);
+            visual_positions[3 * i + 1] =
+                _axis_data_to_visual((double)y, y_axis->domain.min, y_axis->domain.max, y0, y1);
+        }
+        else
+        {
+            visual_positions[3 * i + 1] = y;
+        }
         visual_positions[3 * i + 2] = z;
     }
     return 0;
