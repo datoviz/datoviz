@@ -73,6 +73,8 @@ static void _segment_sync_params(DvzVisual* visual);
 
 static void _segment_gpu_cache_free(DvzSegmentGpuCache* cache);
 
+static void _path_gpu_cache_free(DvzPathGpuCache* cache);
+
 static bool _material_depth_cue_supported(DvzVisualType visual_type);
 
 static bool _material_visual_supported(DvzVisualType visual_type);
@@ -139,6 +141,7 @@ static uint32_t _attr_item_size(DvzVisualType type, const char* name)
     case DVZ_VISUAL_TYPE_PATH:
         if (strcmp(name, "position") == 0) return 3 * sizeof(float);
         if (strcmp(name, "color") == 0)    return 4 * sizeof(uint8_t);
+        if (strcmp(name, "line_width") == 0) return sizeof(float);
         break;
     case DVZ_VISUAL_TYPE_SEGMENT:
         if (strcmp(name, "position_start") == 0) return 3 * sizeof(float);
@@ -186,7 +189,7 @@ static bool _attr_supported(DvzVisualType type, const char* name, uint32_t* item
     else if (type == DVZ_VISUAL_TYPE_MESH)
         expected = "position, color, normal";
     else if (type == DVZ_VISUAL_TYPE_PATH)
-        expected = "position, color";
+        expected = "position, color, line_width";
     else if (type == DVZ_VISUAL_TYPE_SEGMENT)
         expected = "position_start, position_end, color, line_width";
     else if (type == DVZ_VISUAL_TYPE_IMAGE)
@@ -432,6 +435,10 @@ void _scene_visual_reset(DvzVisual* visual, bool release_owned_resources)
     if (visual == NULL)
         return;
     _segment_gpu_cache_free(&visual->segment.gpu);
+    _path_gpu_cache_free(&visual->path.gpu);
+    dvz_free(visual->path.subpath_lengths);
+    visual->path.subpath_lengths = NULL;
+    visual->path.subpath_count = 0;
     for (uint32_t i = 0; i < visual->attr_count; i++)
     {
         if (visual->attrs[i].data != NULL)
@@ -855,6 +862,24 @@ static void _segment_gpu_cache_free(DvzSegmentGpuCache* cache)
     dvz_free(cache->line_width);
     dvz_free(cache->indices);
     dvz_memset(cache, sizeof(DvzSegmentGpuCache), 0, sizeof(DvzSegmentGpuCache));
+}
+
+
+/**
+ * Release one path visual's derived GPU upload cache.
+ *
+ * @param cache the path GPU cache
+ */
+static void _path_gpu_cache_free(DvzPathGpuCache* cache)
+{
+    if (cache == NULL)
+        return;
+    dvz_free(cache->position_start);
+    dvz_free(cache->position_end);
+    dvz_free(cache->color);
+    dvz_free(cache->line_width);
+    dvz_free(cache->indices);
+    dvz_memset(cache, sizeof(DvzPathGpuCache), 0, sizeof(DvzPathGpuCache));
 }
 
 
@@ -2158,6 +2183,8 @@ int dvz_visual_set_data(
     {
         visual->mesh_default_color = false;
     }
+    if (visual->type == DVZ_VISUAL_TYPE_PATH && strcmp(attr_name, "line_width") == 0)
+        visual->material_params_dirty = true;
     return 0;
 }
 
@@ -2331,6 +2358,7 @@ int dvz_visual_set_data_many(
 
     bool mesh_position_updated = false;
     bool mesh_color_updated = false;
+    bool path_line_width_updated = false;
     for (uint32_t i = 0; i < update_count; i++)
     {
         DvzVisualAttr* attr = prepared[i].attr_idx >= 0 ?
@@ -2357,10 +2385,15 @@ int dvz_visual_set_data_many(
             mesh_position_updated = true;
         if (visual->type == DVZ_VISUAL_TYPE_MESH && strcmp(updates[i].attr_name, "color") == 0)
             mesh_color_updated = true;
+        if (visual->type == DVZ_VISUAL_TYPE_PATH &&
+            strcmp(updates[i].attr_name, "line_width") == 0)
+            path_line_width_updated = true;
     }
 
     if (mesh_color_updated)
         visual->mesh_default_color = false;
+    if (path_line_width_updated)
+        visual->material_params_dirty = true;
     if (mesh_position_updated)
     {
         DvzVisualAttr* color = _attr_get_or_create(visual, "color", 4 * sizeof(uint8_t));
@@ -2499,6 +2532,8 @@ int dvz_visual_set_data_range(
     }
     if (visual->type == DVZ_VISUAL_TYPE_MESH && strcmp(attr_name, "color") == 0)
         visual->mesh_default_color = false;
+    if (visual->type == DVZ_VISUAL_TYPE_PATH && strcmp(attr_name, "line_width") == 0)
+        visual->material_params_dirty = true;
     _visual_bump_version(&attr->version);
     return 0;
 }
@@ -2804,7 +2839,70 @@ DvzVisual* dvz_path(DvzScene* scene, uint32_t flags)
     if (visual == NULL)
         return NULL;
     visual->topology = DVZ_PRIMITIVE_TOPOLOGY_LINE_STRIP;
+    visual->material_params.params[0] = (float)DVZ_SEGMENT_CAP_BUTT;
+    visual->material_params.params[1] = (float)DVZ_SEGMENT_CAP_BUTT;
+    visual->material_params_dirty = true;
     return visual;
+}
+
+
+/**
+ * Set explicit subpath lengths for a path visual.
+ *
+ * @param visual the path visual
+ * @param subpath_count number of subpaths
+ * @param lengths point count for each subpath
+ * @return 0 on success, -1 on error
+ */
+int dvz_path_set_subpaths(DvzVisual* visual, uint32_t subpath_count, const uint32_t* lengths)
+{
+    ANN(visual);
+    if (visual->type != DVZ_VISUAL_TYPE_PATH)
+    {
+        log_error("dvz_path_set_subpaths requires a path visual");
+        return -1;
+    }
+    if (!_scene_visual_mutation_allowed(visual->scene, "update path subpaths"))
+        return -1;
+    if (subpath_count > 0 && lengths == NULL)
+    {
+        log_error("path subpath lengths are required when subpath_count > 0");
+        return -1;
+    }
+
+    uint32_t* copy = NULL;
+    if (subpath_count > 0)
+    {
+        uint64_t byte_size = 0;
+        if (_dvz_mul_u64_overflows(subpath_count, sizeof(uint32_t), &byte_size) ||
+            byte_size > SIZE_MAX)
+        {
+            log_error("path subpath length byte size overflow");
+            return -1;
+        }
+        copy = dvz_malloc((size_t)byte_size);
+        if (copy == NULL)
+        {
+            log_error("path subpath length allocation failed");
+            return -1;
+        }
+        dvz_memcpy(copy, (size_t)byte_size, lengths, (size_t)byte_size);
+        for (uint32_t i = 0; i < subpath_count; i++)
+        {
+            if (copy[i] == 0)
+            {
+                dvz_free(copy);
+                log_error("path subpath lengths must be greater than zero");
+                return -1;
+            }
+        }
+    }
+
+    dvz_free(visual->path.subpath_lengths);
+    visual->path.subpath_lengths = copy;
+    visual->path.subpath_count = subpath_count;
+    visual->path.gpu.dirty = true;
+    return 0;
 }
 
 

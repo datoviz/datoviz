@@ -436,6 +436,7 @@ int test_scene_segment_emit_glsl(TstSuite* suite, TstItem* item)
     bool found_pipeline = false;
     bool found_set_index = false;
     bool found_draw_indexed = false;
+    bool found_material_bg = false;
     uint32_t set_vertex_buffer_count = 0;
     for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
     {
@@ -1660,6 +1661,103 @@ int test_scene_path_glsl_executes(TstSuite* suite, TstItem* item)
     ANN(suite);
     (void)item;
     return _scene_path_emit_executes(4);
+}
+
+
+/**
+ * Verify line-width path visuals lower to the stroked segment pipeline.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_path_line_width_emit_glsl(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    AT(scene != NULL);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    AT(figure != NULL);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    AT(panel != NULL);
+    DvzVisual* visual = dvz_path(scene, 0);
+    AT(visual != NULL);
+
+    float positions[5][3] = {
+        {-0.75f, -0.25f, 0.0f},
+        {-0.35f,  0.25f, 0.0f},
+        { 0.00f, -0.10f, 0.0f},
+        { 0.35f,  0.35f, 0.0f},
+        { 0.75f, -0.25f, 0.0f},
+    };
+    DvzColor colors[5] = {
+        {255, 0, 0, 255},
+        {255, 255, 0, 255},
+        {0, 255, 255, 255},
+        {0, 128, 255, 255},
+        {255, 255, 255, 255},
+    };
+    float line_widths[5] = {3.0f, 6.0f, 9.0f, 5.0f, 2.0f};
+    uint32_t subpaths[2] = {3, 2};
+
+    AT(dvz_visual_set_data(visual, "position", positions, 5) == 0);
+    AT(dvz_visual_set_data(visual, "color", colors, 5) == 0);
+    AT(dvz_visual_set_data(visual, "line_width", line_widths, 5) == 0);
+    AT(dvz_path_set_subpaths(visual, 2, subpaths) == 0);
+    AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
+
+    DvzCapabilitySnapshot caps;
+    dvz_capability_snapshot_default(&caps);
+    DvzDiagnosticReport report;
+    dvz_diagnostic_report_init(&report);
+    DvzFramePlanEmitConfig emit_cfg = dvz_frame_plan_emit_config();
+    emit_cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
+
+    DvzDrp2CommandStream* stream = dvz_figure_emit_ex(figure, &caps, &report, &emit_cfg);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+    ANN(stream);
+
+    bool found_pipeline = false;
+    bool found_set_index = false;
+    bool found_draw_indexed = false;
+    bool found_material_bg = false;
+    uint32_t set_vertex_buffer_count = 0;
+    for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
+    {
+        const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream, i);
+        ANN(cmd);
+        if (cmd->type == DVZ_DRP2_COMMAND_CREATE_RENDER_PIPELINE)
+        {
+            const char* label = dvz_drp2_stream_label(stream, cmd->u.create_render_pipeline.id);
+            if (label != NULL && strstr(label, "_pipe_segmentg") == label)
+            {
+                found_pipeline = true;
+                AT(cmd->u.create_render_pipeline.topology == VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
+                AT(cmd->u.create_render_pipeline.binding_count == 4);
+                AT(cmd->u.create_render_pipeline.attr_count == 4);
+            }
+        }
+        else if (cmd->type == DVZ_DRP2_COMMAND_SET_VERTEX_BUFFER)
+            set_vertex_buffer_count++;
+        else if (cmd->type == DVZ_DRP2_COMMAND_SET_INDEX_BUFFER)
+            found_set_index = strcmp(cmd->u.set_index_buffer.index_format, "uint32") == 0;
+        else if (cmd->type == DVZ_DRP2_COMMAND_DRAW_INDEXED)
+            found_draw_indexed = cmd->u.draw_indexed.index_count == 18;
+        else if (cmd->type == DVZ_DRP2_COMMAND_SET_BIND_GROUP)
+            found_material_bg = found_material_bg || cmd->u.set_bind_group.slot == 1;
+    }
+
+    AT(found_pipeline);
+    AT(found_set_index);
+    AT(found_draw_indexed);
+    AT(found_material_bg);
+    AT(set_vertex_buffer_count == 4);
+
+    dvz_drp2_stream_destroy(stream);
+    dvz_scene_destroy(scene);
+    return 0;
 }
 
 
@@ -8549,6 +8647,7 @@ int test_scene_graph(TstSuite* suite)
     TEST_SIMPLE(test_scene_shared_index_buffer_emits_one_upload);
     TEST_SIMPLE(test_scene_mesh_glsl_executes);
     TEST_SIMPLE(test_scene_path_glsl_executes);
+    TEST_SIMPLE(test_scene_path_line_width_emit_glsl);
     TEST_SIMPLE(test_scene_image_glsl_executes);
     TEST_SIMPLE(test_scene_json);
     TEST_SIMPLE(test_scene_json_includes_field_dirty_metadata);

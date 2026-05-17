@@ -235,6 +235,8 @@ int test_scene_indexed_primitive_shading_updates_runtime(TstSuite* suite, TstIte
 
 int test_scene_path_glsl_executes(TstSuite* suite, TstItem* item);
 
+int test_scene_path_line_width_emit_glsl(TstSuite* suite, TstItem* item);
+
 int test_scene_image_glsl_executes(TstSuite* suite, TstItem* item);
 
 int test_scene_image_emit_wgsl(TstSuite* suite, TstItem* item);

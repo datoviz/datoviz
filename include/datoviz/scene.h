@@ -994,15 +994,30 @@ DVZ_EXPORT DvzVisual* dvz_mesh(DvzScene* scene, uint32_t flags);
 /**
  * Create a path visual.
  *
- * First-slice scope: a path is a convenience wrapper over the primitive line-strip
- * pipeline. Accepts `position` (vec3) and `color` (RGBA8) attributes and always uses
- * `DVZ_PRIMITIVE_TOPOLOGY_LINE_STRIP`.
+ * A path accepts `position` (vec3), `color` (RGBA8), and optional per-point `line_width`
+ * (float, pixels). Without `line_width`, paths use the primitive line-strip pipeline. With
+ * `line_width`, paths are lowered to screen-space stroked segments built from consecutive points.
  *
  * @param scene the scene
  * @param flags variant flags
  * @return the visual
  */
 DVZ_EXPORT DvzVisual* dvz_path(DvzScene* scene, uint32_t flags);
+
+
+/**
+ * Set explicit subpath lengths for a path visual.
+ *
+ * When unset, all points belong to one open subpath. Lengths are consumed in order and must sum to
+ * the path position count at emission time.
+ *
+ * @param visual the path visual
+ * @param subpath_count number of subpaths
+ * @param lengths point count for each subpath
+ * @return 0 on success, -1 on error
+ */
+DVZ_EXPORT int dvz_path_set_subpaths(
+    DvzVisual* visual, uint32_t subpath_count, const uint32_t* lengths);
 
 
 /**

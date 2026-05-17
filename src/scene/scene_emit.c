@@ -132,6 +132,8 @@ static bool _scene_visual_needs_material_params(const DvzVisual* visual)
     }
     if (visual->type == DVZ_VISUAL_TYPE_SPHERE)
         return true;
+    if (visual->type == DVZ_VISUAL_TYPE_PATH)
+        return _scene_visual_has_attr_data(visual, "line_width");
     if (visual->type == DVZ_VISUAL_TYPE_PRIMITIVE || visual->type == DVZ_VISUAL_TYPE_MESH)
         return _scene_visual_has_attr_data(visual, "normal");
     return false;
@@ -448,6 +450,209 @@ static void _scene_emit_segment_uploads(DvzFramePlan* plan, DvzVisual* visual, u
 
 
 /**
+ * Return whether one path visual has dense attributes for stroked lowering.
+ *
+ * @param visual the path visual
+ * @param out_count output point count
+ * @return whether all stroked path attributes are present
+ */
+static bool _path_required_attrs(const DvzVisual* visual, uint64_t* out_count)
+{
+    ANN(visual);
+    ANN(out_count);
+    *out_count = 0;
+    const char* names[] = {"position", "color", "line_width"};
+    uint64_t count = 0;
+    for (uint32_t i = 0; i < 3; i++)
+    {
+        int idx = _attr_index(visual, names[i]);
+        if (idx < 0 || visual->attrs[idx].data == NULL || visual->attrs[idx].item_count == 0)
+            return false;
+        if (i == 0)
+            count = visual->attrs[idx].item_count;
+        else if (visual->attrs[idx].item_count != count)
+            return false;
+    }
+    *out_count = count;
+    return true;
+}
+
+
+/**
+ * Rebuild one path visual's derived segment upload cache.
+ *
+ * @param visual the path visual
+ * @return whether the cache is ready for upload
+ */
+static bool _path_cache_rebuild(DvzVisual* visual)
+{
+    ANN(visual);
+    uint64_t point_count = 0;
+    if (!_path_required_attrs(visual, &point_count) || point_count < 2)
+        return false;
+
+    uint64_t segment_count = 0;
+    uint64_t consumed = 0;
+    if (visual->path.subpath_count > 0)
+    {
+        for (uint32_t i = 0; i < visual->path.subpath_count; i++)
+        {
+            uint32_t length = visual->path.subpath_lengths[i];
+            consumed += length;
+            if (length >= 2)
+                segment_count += length - 1;
+        }
+        if (consumed != point_count)
+        {
+            log_error("path subpath lengths must sum to the path point count");
+            return false;
+        }
+    }
+    else
+    {
+        segment_count = point_count - 1;
+    }
+
+    uint64_t vertex_count = 0;
+    uint64_t index_count = 0;
+    if (_dvz_mul_u64_overflows(segment_count, 4, &vertex_count) ||
+        _dvz_mul_u64_overflows(segment_count, 6, &index_count) ||
+        vertex_count > UINT32_MAX)
+    {
+        log_error("path visual segment count is too large");
+        return false;
+    }
+
+    DvzPathGpuCache* cache = &visual->path.gpu;
+    if (!_segment_cache_resize((void**)&cache->position_start, vertex_count, 3 * sizeof(float)) ||
+        !_segment_cache_resize((void**)&cache->position_end, vertex_count, 3 * sizeof(float)) ||
+        !_segment_cache_resize((void**)&cache->color, vertex_count, sizeof(DvzColor)) ||
+        !_segment_cache_resize((void**)&cache->line_width, vertex_count, sizeof(float)) ||
+        !_segment_cache_resize((void**)&cache->indices, index_count, sizeof(uint32_t)))
+    {
+        log_error("failed to allocate path visual derived GPU cache");
+        return false;
+    }
+
+    const float* position = (const float*)visual->attrs[_attr_index(visual, "position")].data;
+    const DvzColor* color = (const DvzColor*)visual->attrs[_attr_index(visual, "color")].data;
+    const float* line_width =
+        (const float*)visual->attrs[_attr_index(visual, "line_width")].data;
+
+    uint64_t segment = 0;
+    uint64_t offset = 0;
+    uint32_t subpath_count = visual->path.subpath_count > 0 ? visual->path.subpath_count : 1;
+    for (uint32_t sp = 0; sp < subpath_count; sp++)
+    {
+        uint32_t length = visual->path.subpath_count > 0 ?
+                              visual->path.subpath_lengths[sp] :
+                              (uint32_t)point_count;
+        for (uint32_t i = 0; i + 1 < length; i++)
+        {
+            uint64_t i0 = offset + i;
+            uint64_t i1 = i0 + 1;
+            for (uint32_t j = 0; j < 4; j++)
+            {
+                uint64_t dst = 4 * segment + j;
+                dvz_memcpy(
+                    &cache->position_start[3 * dst], 3 * sizeof(float), &position[3 * i0],
+                    3 * sizeof(float));
+                dvz_memcpy(
+                    &cache->position_end[3 * dst], 3 * sizeof(float), &position[3 * i1],
+                    3 * sizeof(float));
+                dvz_memcpy(&cache->color[dst], sizeof(DvzColor), &color[i0], sizeof(DvzColor));
+                cache->line_width[dst] = 0.5f * (line_width[i0] + line_width[i1]);
+            }
+            cache->indices[6 * segment + 0] = (uint32_t)(4 * segment + 0);
+            cache->indices[6 * segment + 1] = (uint32_t)(4 * segment + 1);
+            cache->indices[6 * segment + 2] = (uint32_t)(4 * segment + 2);
+            cache->indices[6 * segment + 3] = (uint32_t)(4 * segment + 0);
+            cache->indices[6 * segment + 4] = (uint32_t)(4 * segment + 2);
+            cache->indices[6 * segment + 5] = (uint32_t)(4 * segment + 3);
+            segment++;
+        }
+        offset += length;
+    }
+    cache->point_count = point_count;
+    cache->segment_count = segment_count;
+    cache->vertex_count = vertex_count;
+    cache->index_count = index_count;
+    cache->dirty = false;
+    return true;
+}
+
+
+/**
+ * Emit derived GPU uploads for one stroked path visual.
+ *
+ * @param plan the destination frame plan
+ * @param visual the path visual
+ * @param visual_index the scene visual index
+ */
+static void _scene_emit_path_uploads(DvzFramePlan* plan, DvzVisual* visual, uint32_t visual_index)
+{
+    ANN(plan);
+    ANN(visual);
+    DvzPathGpuCache* cache = &visual->path.gpu;
+    bool dirty = cache->dirty;
+    for (uint32_t i = 0; i < visual->attr_count; i++)
+        dirty = dirty || visual->attrs[i].dirty_item_count > 0;
+    if (!dirty)
+        return;
+    if (!_path_cache_rebuild(visual))
+        return;
+
+    const struct
+    {
+        const char* name;
+        const void* data;
+        uint32_t item_size;
+        DvzFramePlanResourceRole role;
+    } uploads[] = {
+        {"position_start", cache->position_start, 3 * sizeof(float),
+         DVZ_FRAME_PLAN_RESOURCE_ROLE_POSITION_START},
+        {"position_end", cache->position_end, 3 * sizeof(float),
+         DVZ_FRAME_PLAN_RESOURCE_ROLE_POSITION_END},
+        {"color", cache->color, sizeof(DvzColor), DVZ_FRAME_PLAN_RESOURCE_ROLE_COLOR},
+        {"line_width", cache->line_width, sizeof(float), DVZ_FRAME_PLAN_RESOURCE_ROLE_LINE_WIDTH},
+    };
+
+    for (uint32_t i = 0; i < 4; i++)
+    {
+        char resource_id[128];
+        if (!_scene_resource_key_visual_attr(
+                visual_index, uploads[i].name, resource_id, sizeof(resource_id)))
+            continue;
+        uint64_t byte_size = 0;
+        if (_dvz_mul_u64_overflows(cache->vertex_count, uploads[i].item_size, &byte_size))
+            continue;
+        dvz_frame_plan_upload_bytes(
+            plan, resource_id, 0, byte_size, uploads[i].name, uploads[i].data);
+        _scene_attach_upload_metadata(
+            plan, visual, visual_index, uploads[i].role, DVZ_FRAME_PLAN_RESOURCE_KIND_BUFFER,
+            UINT32_MAX);
+    }
+
+    char index_id[128];
+    if (_scene_resource_key_visual_attr(visual_index, "index", index_id, sizeof(index_id)))
+    {
+        uint64_t byte_size = 0;
+        if (!_dvz_mul_u64_overflows(cache->index_count, sizeof(uint32_t), &byte_size))
+        {
+            dvz_frame_plan_upload_bytes(plan, index_id, 0, byte_size, "index", cache->indices);
+            _scene_attach_upload_metadata(
+                plan, visual, visual_index, DVZ_FRAME_PLAN_RESOURCE_ROLE_INDEX,
+                DVZ_FRAME_PLAN_RESOURCE_KIND_BUFFER, UINT32_MAX);
+            DvzFramePlanNode* node = &plan->nodes[plan->count - 1];
+            node->u.upload.buffer_usage =
+                DVZ_DRP2_BUFFER_USAGE_COPY_DST | DVZ_DRP2_BUFFER_USAGE_INDEX;
+            node->u.upload.item_stride = sizeof(uint32_t);
+        }
+    }
+}
+
+
+/**
  * Emit one sampled field as a texture upload node.
  *
  * @param plan the destination frame plan
@@ -535,6 +740,30 @@ void _scene_emit_visual_uploads(DvzFigure* figure, DvzFramePlan* plan)
             if (visual->type == DVZ_VISUAL_TYPE_SEGMENT)
             {
                 _scene_emit_segment_uploads(plan, visual, vidx);
+                if (visual->material_params_dirty)
+                {
+                    char material_resource_id[128];
+                    if (!_scene_resource_key_visual_attr(
+                            vidx, "material_params", material_resource_id,
+                            sizeof(material_resource_id)))
+                        continue;
+                    dvz_frame_plan_upload_bytes(
+                        plan, material_resource_id, 0, sizeof(DvzSceneMaterialParams),
+                        "material_params", &visual->material_params);
+                    _scene_attach_upload_metadata(
+                        plan, visual, vidx, DVZ_FRAME_PLAN_RESOURCE_ROLE_MATERIAL_PARAMS,
+                        DVZ_FRAME_PLAN_RESOURCE_KIND_BUFFER, UINT32_MAX);
+                    DvzFramePlanNode* node = &plan->nodes[plan->count - 1];
+                    node->u.upload.buffer_usage = DVZ_DRP2_BUFFER_USAGE_UNIFORM |
+                                                  DVZ_DRP2_BUFFER_USAGE_MAP_WRITE |
+                                                  DVZ_DRP2_BUFFER_USAGE_COPY_DST;
+                }
+                continue;
+            }
+            if (visual->type == DVZ_VISUAL_TYPE_PATH &&
+                _scene_visual_has_attr_data(visual, "line_width"))
+            {
+                _scene_emit_path_uploads(plan, visual, vidx);
                 if (visual->material_params_dirty)
                 {
                     char material_resource_id[128];
@@ -859,7 +1088,9 @@ bool _scene_visual_frame_plan_metadata(
                 buffer_index, metadata->index_id, sizeof(metadata->index_id)))
             return false;
     }
-    if (visual->type == DVZ_VISUAL_TYPE_SEGMENT)
+    if (visual->type == DVZ_VISUAL_TYPE_SEGMENT ||
+        (visual->type == DVZ_VISUAL_TYPE_PATH &&
+         _scene_visual_has_attr_data(visual, "line_width")))
     {
         if (!_scene_resource_key_visual_attr(
                 visual_index, "index", metadata->index_id, sizeof(metadata->index_id)))
