@@ -308,14 +308,16 @@ bool _scene_draw_contract_from_visual(
     if (!_scene_visual_pass_caps_from_visual(visual, attach, &caps))
         return false;
 
+    bool scene_depth_pass = pass_role == DVZ_FRAME_PLAN_RENDER_PASS_SCENE_OCCLUSION;
+    bool ordinary_visual_pass = _role_is_visual_pass(pass_role);
     out->visual_type = (uint32_t)visual->type;
     out->alpha_mode = visual->alpha_mode;
     out->pass_role = pass_role;
-    out->depth_test = caps.can_depth_test;
-    out->depth_write = caps.writes_depth;
-    out->samples_depth = caps.samples_depth;
-    out->samples_volume_occlusion = visual->volume_occluded && _role_is_visual_pass(pass_role);
-    out->samples_scene_occlusion = visual->scene_occluded && _role_is_visual_pass(pass_role);
+    out->depth_test = caps.can_depth_test && (ordinary_visual_pass || scene_depth_pass);
+    out->depth_write = caps.writes_depth || (scene_depth_pass && caps.can_write_depth);
+    out->samples_depth = caps.samples_depth && ordinary_visual_pass;
+    out->samples_volume_occlusion = visual->volume_occluded && ordinary_visual_pass;
+    out->samples_scene_occlusion = visual->scene_occluded && ordinary_visual_pass;
     out->writes_volume_occlusion_depth =
         pass_role == DVZ_FRAME_PLAN_RENDER_PASS_VOLUME_OCCLUSION &&
         visual->type == DVZ_VISUAL_TYPE_VOLUME;

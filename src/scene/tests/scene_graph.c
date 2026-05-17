@@ -5427,6 +5427,26 @@ int test_scene_visual_scene_occlusion_frame_plan(TstSuite* suite, TstItem* item)
     dvz_diagnostic_report_init(&report);
     AT(dvz_frame_plan_graph_validate(plan, &report));
 
+    DvzScenePassContract occlusion_contract = {0};
+    AT(_scene_pass_contract_from_render(
+        panel, occlusion_node, occlusion_pass, &occlusion_contract));
+    AT(occlusion_contract.draw_count == 1);
+    AT(occlusion_contract.draws[0].writes_scene_occlusion_depth);
+    AT(occlusion_contract.draws[0].depth_test);
+    AT(occlusion_contract.draws[0].depth_write);
+    dvz_diagnostic_report_init(&report);
+    AT(_scene_pass_contract_validate(&occlusion_contract, &report));
+    AT(dvz_diagnostic_report_count(&report) == 0);
+
+    DvzScenePassContract opaque_contract = {0};
+    AT(_scene_pass_contract_from_render(panel, opaque_node, opaque_pass, &opaque_contract));
+    AT(opaque_contract.draw_count == 2);
+    AT(opaque_contract.draws[1].samples_scene_occlusion);
+    AT(opaque_contract.draws[1].needs_scene_occlusion_set);
+    dvz_diagnostic_report_init(&report);
+    AT(_scene_pass_contract_validate(&opaque_contract, &report));
+    AT(dvz_diagnostic_report_count(&report) == 0);
+
     dvz_frame_plan_destroy(plan);
     dvz_scene_destroy(scene);
     return 0;
@@ -5647,6 +5667,45 @@ int test_scene_volume_slice_uses_volume_occlusion(TstSuite* suite, TstItem* item
                .occluded_alpha = 0.2f,
            }) == 0);
 
+    DvzFramePlan* plan = dvz_frame_plan("figure.volume_occlusion", 0);
+    ANN(plan);
+    _scene_emit_panel_render(figure, 0, plan, "figure_0");
+
+    const DvzFramePlanNode* occlusion_node = dvz_frame_plan_node_get(plan, 0);
+    const DvzFramePlanNode* opaque_node = dvz_frame_plan_node_get(plan, 1);
+    ANN(occlusion_node);
+    ANN(opaque_node);
+    AT(
+        dvz_frame_plan_render_pass_role(occlusion_node) ==
+        DVZ_FRAME_PLAN_RENDER_PASS_VOLUME_OCCLUSION);
+    AT(dvz_frame_plan_render_pass_role(opaque_node) == DVZ_FRAME_PLAN_RENDER_PASS_OPAQUE);
+
+    const DvzFrameGraphPass* volume_pass = dvz_frame_plan_graph_pass_get(plan, 0);
+    const DvzFrameGraphPass* opaque_pass = dvz_frame_plan_graph_pass_get(plan, 1);
+    ANN(volume_pass);
+    ANN(opaque_pass);
+    AT(strcmp(volume_pass->work_label, "volume_occlusion") == 0);
+    AT(strcmp(opaque_pass->work_label, "opaque") == 0);
+
+    DvzDiagnosticReport graph_report;
+    dvz_diagnostic_report_init(&graph_report);
+    AT(dvz_frame_plan_graph_validate(plan, &graph_report));
+
+    DvzScenePassContract volume_contract = {0};
+    AT(_scene_pass_contract_from_render(panel, occlusion_node, volume_pass, &volume_contract));
+    AT(volume_contract.draw_count == 1);
+    AT(volume_contract.draws[0].writes_volume_occlusion_depth);
+    AT(!volume_contract.draws[0].samples_depth);
+    dvz_diagnostic_report_init(&graph_report);
+    AT(_scene_pass_contract_validate(&volume_contract, &graph_report));
+    AT(dvz_diagnostic_report_count(&graph_report) == 0);
+
+    DvzScenePassContract opaque_contract = {0};
+    AT(_scene_pass_contract_from_render(panel, opaque_node, opaque_pass, &opaque_contract));
+    AT(opaque_contract.draw_count == 2);
+    AT(opaque_contract.draws[1].samples_volume_occlusion);
+    AT(opaque_contract.draws[1].needs_volume_set);
+
     DvzCapabilitySnapshot caps;
     dvz_capability_snapshot_default(&caps);
     caps.supports_render_target_sampling = true;
@@ -5713,6 +5772,7 @@ int test_scene_volume_slice_uses_volume_occlusion(TstSuite* suite, TstItem* item
     AT(binds_volume_occlusion_depth);
 
     dvz_drp2_stream_destroy(stream);
+    dvz_frame_plan_destroy(plan);
     dvz_scene_destroy(scene);
     return 0;
 }
@@ -8368,6 +8428,34 @@ int test_scene_visual_alpha_mode_splits_frame_plan_passes(TstSuite* suite, TstIt
     AT(dvz_frame_plan_graph_validate(plan, &report));
     AT(dvz_diagnostic_report_count(&report) == 0);
 
+    DvzScenePassContract opaque_contract = {0};
+    AT(_scene_pass_contract_from_render(panel, opaque_node, opaque_pass, &opaque_contract));
+    AT(opaque_contract.draw_count == 1);
+    AT(opaque_contract.draws[0].depth_write);
+    dvz_diagnostic_report_init(&report);
+    AT(_scene_pass_contract_validate(&opaque_contract, &report));
+    AT(dvz_diagnostic_report_count(&report) == 0);
+
+    DvzScenePassContract accum_contract = {0};
+    AT(_scene_pass_contract_from_render(panel, accum_node, accum_pass, &accum_contract));
+    AT(accum_contract.wboit_accumulation);
+    AT(accum_contract.draw_count == 1);
+    AT(accum_contract.draws[0].alpha_mode == DVZ_ALPHA_WBOIT);
+    AT(accum_contract.draws[0].depth_test);
+    AT(!accum_contract.draws[0].depth_write);
+    dvz_diagnostic_report_init(&report);
+    AT(_scene_pass_contract_validate(&accum_contract, &report));
+    AT(dvz_diagnostic_report_count(&report) == 0);
+
+    DvzScenePassContract resolve_contract = {0};
+    AT(_scene_pass_contract_from_render(panel, resolve_node, resolve_pass, &resolve_contract));
+    AT(resolve_contract.fullscreen_resolve);
+    AT(resolve_contract.draw_count == 0);
+    AT(resolve_contract.attachment_count == 3);
+    dvz_diagnostic_report_init(&report);
+    AT(_scene_pass_contract_validate(&resolve_contract, &report));
+    AT(dvz_diagnostic_report_count(&report) == 0);
+
     dvz_frame_plan_destroy(plan);
     dvz_scene_destroy(scene);
     return 0;
@@ -8445,6 +8533,16 @@ int test_scene_visual_alpha_mode_wboit_transparent_only_depth(TstSuite* suite, T
     DvzDiagnosticReport graph_report;
     dvz_diagnostic_report_init(&graph_report);
     AT(dvz_frame_plan_graph_validate(plan, &graph_report));
+
+    DvzScenePassContract accum_contract = {0};
+    AT(_scene_pass_contract_from_render(panel, accum_node, accum_pass, &accum_contract));
+    AT(accum_contract.wboit_accumulation);
+    AT(accum_contract.draw_count == 1);
+    AT(accum_contract.draws[0].depth_test);
+    AT(!accum_contract.draws[0].depth_write);
+    dvz_diagnostic_report_init(&graph_report);
+    AT(_scene_pass_contract_validate(&accum_contract, &graph_report));
+    AT(dvz_diagnostic_report_count(&graph_report) == 0);
 
     DvzCapabilitySnapshot caps;
     dvz_capability_snapshot_default(&caps);
@@ -8572,6 +8670,38 @@ int test_scene_visual_alpha_mode_depth_peel_frame_plan(TstSuite* suite, TstItem*
     DvzDiagnosticReport report = {0};
     dvz_diagnostic_report_init(&report);
     AT(dvz_frame_plan_graph_validate(plan, &report));
+    AT(dvz_diagnostic_report_count(&report) == 0);
+
+    DvzScenePassContract init_contract = {0};
+    AT(_scene_pass_contract_from_render(panel, init_node, init_pass, &init_contract));
+    AT(init_contract.depth_peel);
+    AT(init_contract.draw_count == 1);
+    AT(init_contract.draws[0].alpha_mode == DVZ_ALPHA_DEPTH_PEEL);
+    AT(init_contract.draws[0].depth_test);
+    AT(!init_contract.draws[0].depth_write);
+    dvz_diagnostic_report_init(&report);
+    AT(_scene_pass_contract_validate(&init_contract, &report));
+    AT(dvz_diagnostic_report_count(&report) == 0);
+
+    DvzScenePassContract iter_contract = {0};
+    AT(_scene_pass_contract_from_render(panel, iter_node, iter_pass, &iter_contract));
+    AT(iter_contract.depth_peel);
+    AT(iter_contract.draw_count == 1);
+    AT(iter_contract.draws[0].alpha_mode == DVZ_ALPHA_DEPTH_PEEL);
+    AT(iter_contract.draws[0].depth_test);
+    AT(!iter_contract.draws[0].depth_write);
+    dvz_diagnostic_report_init(&report);
+    AT(_scene_pass_contract_validate(&iter_contract, &report));
+    AT(dvz_diagnostic_report_count(&report) == 0);
+
+    DvzScenePassContract composite_contract = {0};
+    AT(_scene_pass_contract_from_render(
+        panel, composite_node, composite_pass, &composite_contract));
+    AT(composite_contract.fullscreen_resolve);
+    AT(composite_contract.draw_count == 0);
+    AT(composite_contract.attachment_count == 4);
+    dvz_diagnostic_report_init(&report);
+    AT(_scene_pass_contract_validate(&composite_contract, &report));
     AT(dvz_diagnostic_report_count(&report) == 0);
 
     dvz_frame_plan_destroy(plan);
