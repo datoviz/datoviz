@@ -131,10 +131,12 @@ SS_COLORS = {
     SS_TURN: (85, 155, 225, 255),
 }
 
-DEFAULT_RIBBON_SAMPLES = 16
+DEFAULT_RIBBON_SAMPLES = 32
 DEFAULT_RIBBON_CROSS_SECTION_COUNT = 24
 DEFAULT_RIBBON_WIDTH_SCALE = 1.75
 DEFAULT_RIBBON_CENTERLINE_SMOOTHING = 0.18
+DEFAULT_RIBBON_SAMPLE_SMOOTHING = 0.30
+DEFAULT_RIBBON_SAMPLE_SMOOTHING_PASSES = 2
 DEFAULT_RIBBON_FRAME_SMOOTHING = 0.35
 
 
@@ -624,6 +626,46 @@ def _smooth_ribbon_frames(samples: list[RibbonSample], strength: float) -> list[
     return smoothed
 
 
+def _smooth_ribbon_sample_centers(
+    samples: list[RibbonSample], strength: float, passes: int
+) -> list[RibbonSample]:
+    if len(samples) <= 2 or strength <= 0.0 or passes <= 0:
+        return samples
+
+    strength = max(0.0, min(0.75, strength))
+    passes = max(0, min(8, passes))
+    centers = [sample.center for sample in samples]
+    for _ in range(passes):
+        next_centers = list(centers)
+        for i in range(1, len(samples) - 1):
+            target = _v_mul(_v_add(centers[i - 1], centers[i + 1]), 0.5)
+            t = strength * _centerline_smoothing_factor(samples[i].residue.ss)
+            next_centers[i] = _v_lerp(centers[i], target, t)
+        centers = next_centers
+
+    smoothed: list[RibbonSample] = []
+    for i, sample in enumerate(samples):
+        if i == 0:
+            tangent = _v_sub(centers[1], centers[0])
+        elif i + 1 == len(samples):
+            tangent = _v_sub(centers[-1], centers[-2])
+        else:
+            tangent = _v_sub(centers[i + 1], centers[i - 1])
+        tangent = _v_norm(tangent, sample.tangent)
+        smoothed.append(
+            RibbonSample(
+                centers[i],
+                tangent,
+                sample.side,
+                sample.up,
+                sample.residue,
+                sample.chain_color,
+                sample.ss_color,
+            )
+        )
+    return smoothed
+
+
 def _ribbon_mesh(
     residues: list[Residue],
     chains: dict[str, int],
@@ -633,6 +675,8 @@ def _ribbon_mesh(
     cross_section_count: int,
     width_scale: float,
     centerline_smoothing: float,
+    sample_smoothing: float,
+    sample_smoothing_passes: int,
     frame_smoothing: float,
 ) -> dict[str, list]:
     positions: list[float] = []
@@ -698,6 +742,9 @@ def _ribbon_mesh(
         ss_color = SS_COLORS.get(residue.ss, SS_COLORS[SS_COIL])
         chain_samples.append(RibbonSample(p_norm, tangent, side, up, residue, chain_color, ss_color))
 
+        chain_samples = _smooth_ribbon_sample_centers(
+            chain_samples, sample_smoothing, sample_smoothing_passes
+        )
         chain_samples = _smooth_ribbon_frames(chain_samples, frame_smoothing)
         chain_section_count = 0
         for sample in chain_samples:
@@ -768,6 +815,8 @@ def _export_bundle(
     ribbon_cross_section_count: int,
     ribbon_width_scale: float,
     ribbon_centerline_smoothing: float,
+    ribbon_sample_smoothing: float,
+    ribbon_sample_smoothing_passes: int,
     ribbon_frame_smoothing: float,
 ) -> None:
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -784,6 +833,8 @@ def _export_bundle(
         max(3, ribbon_cross_section_count),
         max(1e-6, ribbon_width_scale),
         max(0.0, min(0.75, ribbon_centerline_smoothing)),
+        max(0.0, min(0.75, ribbon_sample_smoothing)),
+        max(0, min(8, ribbon_sample_smoothing_passes)),
         max(0.0, min(1.0, ribbon_frame_smoothing)),
     )
 
@@ -870,6 +921,8 @@ def _export_bundle(
         "ribbon_cross_section_count": max(3, ribbon_cross_section_count),
         "ribbon_width_scale": max(1e-6, ribbon_width_scale),
         "ribbon_centerline_smoothing": max(0.0, min(0.75, ribbon_centerline_smoothing)),
+        "ribbon_sample_smoothing": max(0.0, min(0.75, ribbon_sample_smoothing)),
+        "ribbon_sample_smoothing_passes": max(0, min(8, ribbon_sample_smoothing_passes)),
         "ribbon_frame_smoothing": max(0.0, min(1.0, ribbon_frame_smoothing)),
         "ribbon_vertex_count": ribbon_vertex_count,
         "ribbon_index_count": ribbon_index_count,
@@ -935,6 +988,18 @@ def _parse_args(argv: list[str]) -> argparse.Namespace:
         help="C-alpha centerline smoothing strength in [0, 0.75]",
     )
     parser.add_argument(
+        "--ribbon-sample-smoothing",
+        type=float,
+        default=DEFAULT_RIBBON_SAMPLE_SMOOTHING,
+        help="post-sampling ribbon path smoothing strength in [0, 0.75]",
+    )
+    parser.add_argument(
+        "--ribbon-sample-smoothing-passes",
+        type=int,
+        default=DEFAULT_RIBBON_SAMPLE_SMOOTHING_PASSES,
+        help="number of post-sampling ribbon path smoothing passes",
+    )
+    parser.add_argument(
         "--ribbon-frame-smoothing",
         type=float,
         default=DEFAULT_RIBBON_FRAME_SMOOTHING,
@@ -977,6 +1042,8 @@ def main(argv: list[str]) -> int:
         args.ribbon_cross_section_count,
         args.ribbon_width_scale,
         args.ribbon_centerline_smoothing,
+        args.ribbon_sample_smoothing,
+        args.ribbon_sample_smoothing_passes,
         args.ribbon_frame_smoothing,
     )
     print(
