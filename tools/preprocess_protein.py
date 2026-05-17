@@ -122,6 +122,7 @@ SS_COLORS = {
 
 DEFAULT_RIBBON_SAMPLES = 16
 DEFAULT_RIBBON_CROSS_SECTION_COUNT = 24
+DEFAULT_RIBBON_WIDTH_SCALE = 1.75
 
 
 def _default_cache_dir(pdb_id: str) -> Path:
@@ -518,15 +519,15 @@ def _append_ribbon_section_indices(
         indices.extend([q0, q1, q2, q0, q2, q3])
 
 
-def _ribbon_shape(ss: int, radius: float) -> tuple[float, float]:
+def _ribbon_shape(ss: int, radius: float, width_scale: float) -> tuple[float, float]:
     scale = 1.0 / radius
     if ss == SS_HELIX:
-        return 1.05 * scale, 0.22 * scale
+        return 1.05 * scale * width_scale, 0.22 * scale
     if ss == SS_SHEET:
-        return 1.35 * scale, 0.16 * scale
+        return 1.35 * scale * width_scale, 0.16 * scale
     if ss == SS_TURN:
-        return 0.62 * scale, 0.13 * scale
-    return 0.46 * scale, 0.11 * scale
+        return 0.62 * scale * width_scale, 0.13 * scale
+    return 0.46 * scale * width_scale, 0.11 * scale
 
 
 def _ribbon_mesh(
@@ -536,6 +537,7 @@ def _ribbon_mesh(
     radius: float,
     samples_per_segment: int,
     cross_section_count: int,
+    width_scale: float,
 ) -> dict[str, list]:
     positions: list[float] = []
     normals: list[float] = []
@@ -576,7 +578,7 @@ def _ribbon_mesh(
                 residue = chain_residues[i if t < 0.5 else i + 1]
                 if section_count > 0:
                     side, up = _transport_ribbon_frame(tangent, side, up)
-                width, thickness = _ribbon_shape(residue.ss, radius)
+                width, thickness = _ribbon_shape(residue.ss, radius, width_scale)
                 p_norm = (
                     (p[0] - center[0]) / radius,
                     (p[1] - center[1]) / radius,
@@ -600,7 +602,7 @@ def _ribbon_mesh(
         tangent = _v_norm(_v_sub(ca[-1], ca[-2]), (0.0, 0.0, 1.0))
         residue = chain_residues[-1]
         side, up = _transport_ribbon_frame(tangent, side, up)
-        width, thickness = _ribbon_shape(residue.ss, radius)
+        width, thickness = _ribbon_shape(residue.ss, radius, width_scale)
         p_norm = (
             (p[0] - center[0]) / radius,
             (p[1] - center[1]) / radius,
@@ -662,6 +664,7 @@ def _export_bundle(
     use_dssp: bool,
     ribbon_samples: int,
     ribbon_cross_section_count: int,
+    ribbon_width_scale: float,
 ) -> None:
     output_dir.mkdir(parents=True, exist_ok=True)
     center, radius, bbox_min, bbox_max = _center_and_radius(atoms)
@@ -675,6 +678,7 @@ def _export_bundle(
         radius,
         max(1, ribbon_samples),
         max(3, ribbon_cross_section_count),
+        max(1e-6, ribbon_width_scale),
     )
 
     positions: list[float] = []
@@ -758,6 +762,7 @@ def _export_bundle(
         },
         "ribbon_samples_per_segment": max(1, ribbon_samples),
         "ribbon_cross_section_count": max(3, ribbon_cross_section_count),
+        "ribbon_width_scale": max(1e-6, ribbon_width_scale),
         "ribbon_vertex_count": ribbon_vertex_count,
         "ribbon_index_count": ribbon_index_count,
         "files": {
@@ -809,6 +814,12 @@ def _parse_args(argv: list[str]) -> argparse.Namespace:
         default=DEFAULT_RIBBON_CROSS_SECTION_COUNT,
         help="ribbon cross-section sample count",
     )
+    parser.add_argument(
+        "--ribbon-width-scale",
+        type=float,
+        default=DEFAULT_RIBBON_WIDTH_SCALE,
+        help="scale applied to the ribbon cross-section width before normal generation",
+    )
     parser.add_argument("--bond-scale", type=float, default=1.25, help="covalent radius scale")
     parser.add_argument(
         "--max-bond-distance",
@@ -844,6 +855,7 @@ def main(argv: list[str]) -> int:
         args.dssp,
         args.ribbon_samples,
         args.ribbon_cross_section_count,
+        args.ribbon_width_scale,
     )
     print(
         f"wrote {output_dir} ({len(atoms)} atoms, {len(bonds)} inferred bonds, "

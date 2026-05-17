@@ -50,7 +50,6 @@
 #define DEFAULT_BUNDLE_PATH "data/examples/proteins/1ubq/prepared"
 
 #define ROTATION_SPEED_RAD_PER_SEC 0.22f
-#define PROTEIN_RIBBON_WIDTH_SCALE 1.75f
 #define PROTEIN_RIBBON_DEFAULT_CROSS_SECTION_COUNT 24u
 
 #define PROTEIN_RENDER_SPHERES 0
@@ -337,79 +336,6 @@ static uint32_t _infer_ribbon_cross_section_count(
 
 
 /**
- * Widen ribbon cross-sections around their local centroid.
- *
- * @param bundle protein bundle containing ribbon geometry
- * @param scale scale applied along the inferred cross-section major axis
- */
-static void _protein_bundle_widen_ribbon(ProteinBundle* bundle, float scale)
-{
-    ANN(bundle);
-    if (!bundle->has_ribbon || bundle->ribbon_positions == NULL ||
-        bundle->ribbon_cross_section_count == 0 || scale <= 0.0f)
-    {
-        return;
-    }
-    uint32_t cross = bundle->ribbon_cross_section_count;
-    if (bundle->ribbon_vertex_count < cross || bundle->ribbon_vertex_count % cross != 0)
-        return;
-
-    for (uint32_t first = 0; first < bundle->ribbon_vertex_count; first += cross)
-    {
-        float center[3] = {0};
-        for (uint32_t i = 0; i < cross; i++)
-        {
-            const float* p = &bundle->ribbon_positions[(first + i) * 3u];
-            center[0] += p[0];
-            center[1] += p[1];
-            center[2] += p[2];
-        }
-        center[0] /= (float)cross;
-        center[1] /= (float)cross;
-        center[2] /= (float)cross;
-
-        float axis[3] = {1.0f, 0.0f, 0.0f};
-        float max_len2 = 0.0f;
-        for (uint32_t i = 0; i < cross; i++)
-        {
-            const float* p = &bundle->ribbon_positions[(first + i) * 3u];
-            float dx = p[0] - center[0];
-            float dy = p[1] - center[1];
-            float dz = p[2] - center[2];
-            float len2 = dx * dx + dy * dy + dz * dz;
-            if (len2 > max_len2)
-            {
-                max_len2 = len2;
-                axis[0] = dx;
-                axis[1] = dy;
-                axis[2] = dz;
-            }
-        }
-        if (max_len2 <= 1e-12f)
-            continue;
-        float inv_len = 1.0f / sqrtf(max_len2);
-        axis[0] *= inv_len;
-        axis[1] *= inv_len;
-        axis[2] *= inv_len;
-
-        for (uint32_t i = 0; i < cross; i++)
-        {
-            float* p = &bundle->ribbon_positions[(first + i) * 3u];
-            float dx = p[0] - center[0];
-            float dy = p[1] - center[1];
-            float dz = p[2] - center[2];
-            float projection = dx * axis[0] + dy * axis[1] + dz * axis[2];
-            float delta = projection * (scale - 1.0f);
-            p[0] += axis[0] * delta;
-            p[1] += axis[1] * delta;
-            p[2] += axis[2] * delta;
-        }
-    }
-}
-
-
-
-/**
  * Prepare a padded index upload so stale GPU index tails only draw degenerate triangles.
  *
  * @param state example state
@@ -557,7 +483,6 @@ static void _protein_bundle_load_ribbon(const char* dir, ProteinBundle* out)
     out->has_ribbon = true;
     out->ribbon_cross_section_count = _infer_ribbon_cross_section_count(
         out->ribbon_indices, out->ribbon_index_count, out->ribbon_vertex_count);
-    _protein_bundle_widen_ribbon(out, PROTEIN_RIBBON_WIDTH_SCALE);
 }
 
 
