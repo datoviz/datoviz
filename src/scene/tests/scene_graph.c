@@ -8399,12 +8399,30 @@ int test_scene_blended_mesh_orders_after_volume_slice(TstSuite* suite, TstItem* 
     }
     ANN(transparent_node);
     AT(transparent_node->u.render.visual_count == 3);
+    AT(transparent_node->u.render.has_pass_contract);
+    AT(strlen(transparent_node->u.render.pass_contract_id) > 0);
     AT(transparent_node->u.render.visual_metadata[0].visual_index == 0);
     AT(transparent_node->u.render.visual_metadata[1].visual_index == 1);
     AT(transparent_node->u.render.visual_metadata[2].visual_index == 2);
     AT(transparent_node->u.render.visual_metadata[0].visual_type == DVZ_VISUAL_TYPE_VOLUME);
     AT(transparent_node->u.render.visual_metadata[1].visual_type == DVZ_VISUAL_TYPE_VOLUME);
     AT(transparent_node->u.render.visual_metadata[2].visual_type == DVZ_VISUAL_TYPE_MESH);
+    AT(transparent_node->u.render.visual_metadata[0].has_draw_contract);
+    AT(transparent_node->u.render.visual_metadata[1].has_draw_contract);
+    AT(transparent_node->u.render.visual_metadata[2].has_draw_contract);
+    AT(strlen(transparent_node->u.render.visual_metadata[0].draw_contract_id) > 0);
+    AT(
+        transparent_node->u.render.visual_metadata[0].draw_depth_policy ==
+        DVZ_SCENE_DEPTH_POLICY_SAMPLE);
+    AT(
+        transparent_node->u.render.visual_metadata[0].draw_blend_policy ==
+        DVZ_SCENE_BLEND_POLICY_SOURCE_OVER);
+    AT(
+        transparent_node->u.render.visual_metadata[0].draw_bind_group_layout_mask &
+        DVZ_SCENE_BIND_GROUP_REQUIREMENT_VOLUME);
+    AT(
+        transparent_node->u.render.visual_metadata[2].draw_depth_policy ==
+        DVZ_SCENE_DEPTH_POLICY_TEST);
 
     const DvzFrameGraphPass* blend_pass = NULL;
     for (uint32_t i = 0; i < dvz_frame_plan_graph_pass_count(plan); i++)

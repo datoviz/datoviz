@@ -1477,6 +1477,46 @@ static DvzFramePlanNode* _scene_frame_plan_node_mut(DvzFramePlan* plan, uint32_t
 
 
 /**
+ * Build a stable pass-contract id for one render node.
+ *
+ * @param panel_id the panel id
+ * @param pass_role the render-pass role
+ * @param out output contract id
+ * @param out_size output buffer size
+ * @return whether the id was written without truncation
+ */
+static bool _scene_pass_contract_id(
+    const char* panel_id, DvzFramePlanRenderPassRole pass_role, char* out, size_t out_size)
+{
+    ANN(panel_id);
+    ANN(out);
+    int ret = dvz_snprintf(out, out_size, "%s.pass.%u", panel_id, (uint32_t)pass_role);
+    return ret >= 0 && (size_t)ret < out_size;
+}
+
+
+
+/**
+ * Build a stable draw-contract id for one visual in one render pass.
+ *
+ * @param pass_contract_id the owning pass-contract id
+ * @param visual_index the visual index within the figure
+ * @param out output contract id
+ * @param out_size output buffer size
+ * @return whether the id was written without truncation
+ */
+static bool _scene_draw_contract_id(
+    const char* pass_contract_id, uint32_t visual_index, char* out, size_t out_size)
+{
+    ANN(pass_contract_id);
+    ANN(out);
+    int ret = dvz_snprintf(out, out_size, "%s.draw.%u", pass_contract_id, visual_index);
+    return ret >= 0 && (size_t)ret < out_size;
+}
+
+
+
+/**
  * Append a panel render pass with common panel transform metadata.
  *
  * @param plan the destination frame plan
@@ -1503,7 +1543,14 @@ static bool _scene_begin_panel_render_pass(
         return false;
     DvzFramePlanNode* node = _scene_frame_plan_node_mut(plan, node_index);
     if (node != NULL)
+    {
         _scene_configure_panel_render_node(node, panel_apply_mvp, panel_viewport);
+        if (!_scene_pass_contract_id(
+                panel_id, pass_role, node->u.render.pass_contract_id,
+                sizeof(node->u.render.pass_contract_id)))
+            return false;
+        node->u.render.has_pass_contract = true;
+    }
     *out_index = node_index;
     return node != NULL;
 }
@@ -1723,11 +1770,10 @@ static bool _scene_append_visual_to_render_pass(
     (void)plan;
     if (node->u.render.visual_count >= DVZ_SCENE_MAX_RENDER_VISUALS)
         return false;
-    uint32_t slot = node->u.render.visual_count++;
-    dvz_strlcpy(node->u.render.visuals[slot], visual_id, sizeof(node->u.render.visuals[slot]));
 
     DvzFramePlanVisualMeta metadata = {0};
-    if (_scene_visual_frame_plan_metadata(figure, visual, visual_index, &metadata))
+    bool has_metadata = _scene_visual_frame_plan_metadata(figure, visual, visual_index, &metadata);
+    if (has_metadata)
     {
         if (metadata.has_volume && volume_occlusion != NULL)
         {
@@ -1739,6 +1785,25 @@ static bool _scene_append_visual_to_render_pass(
             metadata.has_scene_occlusion = true;
             metadata.scene_occlusion = *scene_occlusion;
         }
+        DvzSceneDrawContract draw_contract = {0};
+        if (!_scene_draw_contract_from_visual(
+                visual, attach, node->u.render.pass_role, &draw_contract))
+            return false;
+        if (!_scene_draw_contract_id(
+                node->u.render.pass_contract_id, visual_index, metadata.draw_contract_id,
+                sizeof(metadata.draw_contract_id)))
+            return false;
+        metadata.has_draw_contract = true;
+        metadata.draw_depth_policy = draw_contract.depth_policy;
+        metadata.draw_blend_policy = (uint32_t)draw_contract.blend_policy;
+        metadata.draw_shader_feature_mask = draw_contract.shader_feature_mask;
+        metadata.draw_bind_group_layout_mask = draw_contract.bind_group_layout_mask;
+    }
+
+    uint32_t slot = node->u.render.visual_count++;
+    dvz_strlcpy(node->u.render.visuals[slot], visual_id, sizeof(node->u.render.visuals[slot]));
+    if (has_metadata)
+    {
         dvz_memcpy(
             &node->u.render.visual_metadata[slot], sizeof(DvzFramePlanVisualMeta), &metadata,
             sizeof(DvzFramePlanVisualMeta));

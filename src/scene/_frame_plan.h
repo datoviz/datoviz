@@ -293,6 +293,12 @@ typedef struct DvzFramePlanVisualMeta
     bool has_volume_occlusion;
     DvzVolumeOcclusionDesc volume_occlusion;
     DvzVolumeState volume_state;
+    bool has_draw_contract;
+    char draw_contract_id[DVZ_SCENE_LABEL_SIZE];
+    uint32_t draw_depth_policy;
+    uint32_t draw_blend_policy;
+    uint32_t draw_shader_feature_mask;
+    uint32_t draw_bind_group_layout_mask;
     char position_id[DVZ_SCENE_LABEL_SIZE];
     char position_start_id[DVZ_SCENE_LABEL_SIZE];
     char position_end_id[DVZ_SCENE_LABEL_SIZE];
@@ -375,6 +381,8 @@ struct DvzFramePlanNode
             DvzFramePlanVisualMeta visual_metadata[DVZ_SCENE_MAX_RENDER_VISUALS];
             bool picking;
             DvzFramePlanRenderPassRole pass_role;
+            bool has_pass_contract;
+            char pass_contract_id[DVZ_SCENE_LABEL_SIZE];
             DvzPanelDesc desc;
             bool has_viewport;
             DvzSceneViewportUniform viewport;

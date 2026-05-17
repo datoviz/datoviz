@@ -210,6 +210,29 @@ Validation:
 6. `git diff --check -- src/scene/render_contract.h src/scene/render_contract.c src/scene/tests/scene_graph.c agents/now/RENDER_CONTRACT_RESOLVER_AUDIT_2026-05-17.md`
 
 
+### 2026-05-17: Phase 1 / FramePlan contract metadata
+
+Completed the first contract-correlation slice.
+
+Changes:
+
+1. Added pass-contract ids to FramePlan render nodes.
+2. Added draw-contract ids and resolved draw policy masks to `DvzFramePlanVisualMeta`.
+3. Scene emission now resolves each visual's draw contract before appending it to the render node,
+   stores the policy snapshot in metadata, and avoids leaving a partially appended visual on
+   contract-id failure.
+4. Extended the source-over volume/slice/mesh fixture to assert pass ids and draw policy snapshots.
+
+Validation:
+
+1. `cmake --build build --target dvztest_scene -j2`
+2. `./build/testing/dvztest_scene test_scene_blended_mesh_orders_after_volume_slice`
+3. `./build/testing/dvztest_scene test_scene_blended_mesh_occlusion_contracts`
+4. `./build/testing/dvztest_scene test_scene_draw_contract_resolver_matrix`
+5. `./build/testing/dvztest_scene test_scene_render_contract_validation_errors`
+6. `git diff --check -- src/scene/_frame_plan.h src/scene/scene_emit.c src/scene/tests/scene_graph.c agents/now/RENDER_CONTRACT_RESOLVER_AUDIT_2026-05-17.md`
+
+
 ## Executive Assessment
 
 The direction is correct and worth continuing. The proposal identifies the right failure mode:
