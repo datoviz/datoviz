@@ -108,6 +108,17 @@ class Residue:
     ss: int = 0
 
 
+@dataclass
+class RibbonSample:
+    center: Vec3
+    tangent: Vec3
+    side: Vec3
+    up: Vec3
+    residue: Residue
+    chain_color: tuple[int, int, int, int]
+    ss_color: tuple[int, int, int, int]
+
+
 SS_COIL = 0
 SS_HELIX = 1
 SS_SHEET = 2
@@ -124,6 +135,7 @@ DEFAULT_RIBBON_SAMPLES = 16
 DEFAULT_RIBBON_CROSS_SECTION_COUNT = 24
 DEFAULT_RIBBON_WIDTH_SCALE = 1.75
 DEFAULT_RIBBON_CENTERLINE_SMOOTHING = 0.18
+DEFAULT_RIBBON_FRAME_SMOOTHING = 0.35
 
 
 def _default_cache_dir(pdb_id: str) -> Path:
@@ -375,6 +387,12 @@ def _v_norm(a: Vec3, fallback: Vec3 = (0.0, 0.0, 1.0)) -> Vec3:
     return (a[0] / length, a[1] / length, a[2] / length)
 
 
+def _v_aligned(a: Vec3, reference: Vec3) -> Vec3:
+    if _v_dot(a, reference) < 0.0:
+        return _v_mul(a, -1.0)
+    return a
+
+
 def _atom_pos(atom: Atom) -> Vec3:
     return (atom.x, atom.y, atom.z)
 
@@ -561,6 +579,51 @@ def _smooth_centerline(points: list[Vec3], residues: list[Residue], strength: fl
     return smoothed
 
 
+def _orthonormal_ribbon_frame(tangent: Vec3, side: Vec3, up: Vec3) -> tuple[Vec3, Vec3]:
+    side = _v_sub(side, _v_mul(tangent, _v_dot(side, tangent)))
+    if _v_len(side) <= 1e-8:
+        side = _v_cross(tangent, up)
+    side = _v_norm(side, (1.0, 0.0, 0.0))
+    up = _v_norm(_v_cross(side, tangent), up)
+    return side, up
+
+
+def _smooth_ribbon_frames(samples: list[RibbonSample], strength: float) -> list[RibbonSample]:
+    if len(samples) <= 2 or strength <= 0.0:
+        return samples
+
+    strength = max(0.0, min(1.0, strength))
+    smoothed: list[RibbonSample] = []
+    for i, sample in enumerate(samples):
+        side = _v_mul(sample.side, 1.0 - strength)
+        up = _v_mul(sample.up, 1.0 - strength)
+        neighbor_count = 0
+        if i > 0:
+            side = _v_add(side, _v_mul(_v_aligned(samples[i - 1].side, sample.side), 0.5 * strength))
+            up = _v_add(up, _v_mul(_v_aligned(samples[i - 1].up, sample.up), 0.5 * strength))
+            neighbor_count += 1
+        if i + 1 < len(samples):
+            side = _v_add(side, _v_mul(_v_aligned(samples[i + 1].side, sample.side), 0.5 * strength))
+            up = _v_add(up, _v_mul(_v_aligned(samples[i + 1].up, sample.up), 0.5 * strength))
+            neighbor_count += 1
+        if neighbor_count == 1:
+            side = _v_add(side, _v_mul(sample.side, 0.5 * strength))
+            up = _v_add(up, _v_mul(sample.up, 0.5 * strength))
+        side, up = _orthonormal_ribbon_frame(sample.tangent, side, up)
+        smoothed.append(
+            RibbonSample(
+                sample.center,
+                sample.tangent,
+                side,
+                up,
+                sample.residue,
+                sample.chain_color,
+                sample.ss_color,
+            )
+        )
+    return smoothed
+
+
 def _ribbon_mesh(
     residues: list[Residue],
     chains: dict[str, int],
@@ -570,6 +633,7 @@ def _ribbon_mesh(
     cross_section_count: int,
     width_scale: float,
     centerline_smoothing: float,
+    frame_smoothing: float,
 ) -> dict[str, list]:
     positions: list[float] = []
     normals: list[float] = []
@@ -597,7 +661,8 @@ def _ribbon_mesh(
         p3 = ca[min(2, len(ca) - 1)]
         tangent = _v_norm(_catmull_rom_tangent(p0, p1, p2, p3, 0.0), (0.0, 0.0, 1.0))
         side, up = _initial_ribbon_frame(chain_residues[0], tangent)
-        section_count = 0
+        chain_color = CHAIN_PALETTE[chains[chain] % len(CHAIN_PALETTE)]
+        chain_samples: list[RibbonSample] = []
         for i in range(len(chain_residues) - 1):
             segment_samples = samples_per_segment
             for s in range(segment_samples):
@@ -609,50 +674,54 @@ def _ribbon_mesh(
                 p = _catmull_rom(p0, p1, p2, p3, t)
                 tangent = _v_norm(_catmull_rom_tangent(p0, p1, p2, p3, t), (0.0, 0.0, 1.0))
                 residue = chain_residues[i if t < 0.5 else i + 1]
-                if section_count > 0:
+                if chain_samples:
                     side, up = _transport_ribbon_frame(tangent, side, up)
-                width, thickness = _ribbon_shape(residue.ss, radius, width_scale)
                 p_norm = (
                     (p[0] - center[0]) / radius,
                     (p[1] - center[1]) / radius,
                     (p[2] - center[2]) / radius,
                 )
-                half_w = 0.5 * width
-                half_t = 0.5 * thickness
-                chain_color = CHAIN_PALETTE[chains[chain] % len(CHAIN_PALETTE)]
                 ss_color = SS_COLORS.get(residue.ss, SS_COLORS[SS_COIL])
-                _append_ribbon_section(
-                    positions, normals, colors_chain, colors_ss, p_norm, side, up, half_w, half_t,
-                    cross_section_count, chain_color, ss_color)
-                if section_count > 0:
-                    a = vertex_count - cross_section_count
-                    b = vertex_count
-                    _append_ribbon_section_indices(indices, a, b, cross_section_count)
-                vertex_count += cross_section_count
-                section_count += 1
+                chain_samples.append(
+                    RibbonSample(p_norm, tangent, side, up, residue, chain_color, ss_color)
+                )
         # Add an explicit final section at the last C-alpha.
         p = ca[-1]
         tangent = _v_norm(_v_sub(ca[-1], ca[-2]), (0.0, 0.0, 1.0))
         residue = chain_residues[-1]
         side, up = _transport_ribbon_frame(tangent, side, up)
-        width, thickness = _ribbon_shape(residue.ss, radius, width_scale)
         p_norm = (
             (p[0] - center[0]) / radius,
             (p[1] - center[1]) / radius,
             (p[2] - center[2]) / radius,
         )
-        half_w = 0.5 * width
-        half_t = 0.5 * thickness
-        chain_color = CHAIN_PALETTE[chains[chain] % len(CHAIN_PALETTE)]
         ss_color = SS_COLORS.get(residue.ss, SS_COLORS[SS_COIL])
-        _append_ribbon_section(
-            positions, normals, colors_chain, colors_ss, p_norm, side, up, half_w, half_t,
-            cross_section_count, chain_color, ss_color)
-        if section_count > 0:
-            a = vertex_count - cross_section_count
-            b = vertex_count
-            _append_ribbon_section_indices(indices, a, b, cross_section_count)
-        vertex_count += cross_section_count
+        chain_samples.append(RibbonSample(p_norm, tangent, side, up, residue, chain_color, ss_color))
+
+        chain_samples = _smooth_ribbon_frames(chain_samples, frame_smoothing)
+        chain_section_count = 0
+        for sample in chain_samples:
+            width, thickness = _ribbon_shape(sample.residue.ss, radius, width_scale)
+            _append_ribbon_section(
+                positions,
+                normals,
+                colors_chain,
+                colors_ss,
+                sample.center,
+                sample.side,
+                sample.up,
+                0.5 * width,
+                0.5 * thickness,
+                cross_section_count,
+                sample.chain_color,
+                sample.ss_color,
+            )
+            if chain_section_count > 0:
+                a = vertex_count - cross_section_count
+                b = vertex_count
+                _append_ribbon_section_indices(indices, a, b, cross_section_count)
+            vertex_count += cross_section_count
+            chain_section_count += 1
 
     return {
         "position": positions,
@@ -699,6 +768,7 @@ def _export_bundle(
     ribbon_cross_section_count: int,
     ribbon_width_scale: float,
     ribbon_centerline_smoothing: float,
+    ribbon_frame_smoothing: float,
 ) -> None:
     output_dir.mkdir(parents=True, exist_ok=True)
     center, radius, bbox_min, bbox_max = _center_and_radius(atoms)
@@ -714,6 +784,7 @@ def _export_bundle(
         max(3, ribbon_cross_section_count),
         max(1e-6, ribbon_width_scale),
         max(0.0, min(0.75, ribbon_centerline_smoothing)),
+        max(0.0, min(1.0, ribbon_frame_smoothing)),
     )
 
     positions: list[float] = []
@@ -799,6 +870,7 @@ def _export_bundle(
         "ribbon_cross_section_count": max(3, ribbon_cross_section_count),
         "ribbon_width_scale": max(1e-6, ribbon_width_scale),
         "ribbon_centerline_smoothing": max(0.0, min(0.75, ribbon_centerline_smoothing)),
+        "ribbon_frame_smoothing": max(0.0, min(1.0, ribbon_frame_smoothing)),
         "ribbon_vertex_count": ribbon_vertex_count,
         "ribbon_index_count": ribbon_index_count,
         "files": {
@@ -862,6 +934,12 @@ def _parse_args(argv: list[str]) -> argparse.Namespace:
         default=DEFAULT_RIBBON_CENTERLINE_SMOOTHING,
         help="C-alpha centerline smoothing strength in [0, 0.75]",
     )
+    parser.add_argument(
+        "--ribbon-frame-smoothing",
+        type=float,
+        default=DEFAULT_RIBBON_FRAME_SMOOTHING,
+        help="parallel-transport frame smoothing strength in [0, 1]",
+    )
     parser.add_argument("--bond-scale", type=float, default=1.25, help="covalent radius scale")
     parser.add_argument(
         "--max-bond-distance",
@@ -899,6 +977,7 @@ def main(argv: list[str]) -> int:
         args.ribbon_cross_section_count,
         args.ribbon_width_scale,
         args.ribbon_centerline_smoothing,
+        args.ribbon_frame_smoothing,
     )
     print(
         f"wrote {output_dir} ({len(atoms)} atoms, {len(bonds)} inferred bonds, "
