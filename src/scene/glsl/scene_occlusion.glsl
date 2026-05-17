@@ -36,12 +36,17 @@ float sceneOcclusionVisibility(float selfDepth)
     return mix(1.0, hiddenAlpha, fade);
 }
 
-void applySceneOcclusion(inout vec4 color)
+void applySceneOcclusionDepth(inout vec4 color, float selfDepth)
 {
-    color.a *= sceneOcclusionVisibility(gl_FragCoord.z);
+    color.a *= sceneOcclusionVisibility(selfDepth);
     if (color.a <= 0.0) {
         discard;
     }
+}
+
+void applySceneOcclusion(inout vec4 color)
+{
+    applySceneOcclusionDepth(color, gl_FragCoord.z);
 }
 
 #endif

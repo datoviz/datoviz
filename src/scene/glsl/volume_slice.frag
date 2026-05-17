@@ -1,5 +1,9 @@
 #version 450
 
+#ifdef DVZ_SCENE_OCCLUSION
+#include "scene_occlusion.glsl"
+#endif
+
 layout(set = 0, binding = 0) uniform MVP {
     mat4 model;
     mat4 view;
@@ -177,4 +181,7 @@ void main()
         float value = sample_value.r;
         outColor = vec4(value, value, value, value * volume.params.x * visibility);
     }
+#ifdef DVZ_SCENE_OCCLUSION
+    applySceneOcclusionDepth(outColor, projected_depth(uvw));
+#endif
 }

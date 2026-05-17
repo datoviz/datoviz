@@ -1203,13 +1203,14 @@ static bool _emitter_prepare_render_multi(
             ok = false;
             break;
         }
-        if (bind.uses_volume_set1 && !volume_occlusion_pass && !bind.volume_occluded)
+        bool volume_depth_producer_pass = volume_occlusion_pass || scene_occlusion_pass;
+        if (bind.uses_volume_set1 && !volume_depth_producer_pass && !bind.volume_occluded)
             bind.volume_occlusion.enabled = false;
-        if (bind.uses_volume_set1 && volume_occlusion_pass)
+        if (bind.uses_volume_set1 && volume_depth_producer_pass)
             bind.volume_occlusion.enabled = true;
         if (bind.uses_volume_set1)
         {
-            if (volume_occlusion_pass)
+            if (volume_depth_producer_pass)
                 bind.volume_bind_variant = 2;
             else if (sampled_depth_is_volume_occlusion && bind.volume_occluded)
                 bind.volume_bind_variant = 1;

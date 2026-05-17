@@ -1472,14 +1472,14 @@ static void _apply_volume_controls(AllenMouseBrainState* state)
 
 
 /**
- * Apply retained screen-space volume occlusion controls.
+ * Apply retained screen-space scene occlusion controls.
  *
  * @param state example state
  */
 static void _apply_volume_occlusion_controls(AllenMouseBrainState* state)
 {
     ANN(state);
-    if (state->panel == NULL || state->slice_visual == NULL || state->volume_visual == NULL)
+    if (state->panel == NULL || state->slice_visual == NULL)
         return;
 
     DvzVolumeOcclusionDesc volume_occlusion = {
@@ -1488,10 +1488,31 @@ static void _apply_volume_occlusion_controls(AllenMouseBrainState* state)
         .fade_distance = state->occlusion_fade,
         .occluded_alpha = state->occlusion_hidden_alpha,
     };
-    (void)dvz_panel_set_volume_occluder(
-        state->panel, state->volume_visual, &volume_occlusion);
-    (void)dvz_visual_set_volume_occluded(
+    DvzSceneOcclusionDesc scene_occlusion = {
+        .enabled = state->volume_occlusion_enabled,
+        .depth_bias = 0.0005f,
+        .soft_edge = state->occlusion_fade,
+        .hidden_alpha = state->occlusion_hidden_alpha,
+    };
+
+    if (state->volume_visual != NULL)
+    {
+        (void)dvz_panel_set_volume_occluder(
+            state->panel, state->volume_occlusion_enabled ? state->volume_visual : NULL,
+            state->volume_occlusion_enabled ? &volume_occlusion : NULL);
+        (void)dvz_visual_set_scene_occluder(
+            state->volume_visual, state->volume_occlusion_enabled);
+    }
+    if (state->atlas_mesh_visual != NULL)
+    {
+        (void)dvz_visual_set_scene_occluder(
+            state->atlas_mesh_visual, state->volume_occlusion_enabled);
+    }
+    (void)dvz_visual_set_volume_occluded(state->slice_visual, false);
+    (void)dvz_visual_set_scene_occluded(
         state->slice_visual, state->volume_occlusion_enabled);
+    (void)dvz_panel_set_scene_occlusion(
+        state->panel, state->volume_occlusion_enabled ? &scene_occlusion : NULL);
 }
 
 
@@ -1887,21 +1908,6 @@ int main(int argc, char** argv)
         dvz_panel_add_visual(panel, volume_slice, &slice_attach) != 0)
     {
         dvz_fprintf(stderr, "dvz_panel_add_visual() failed\n");
-        _ibl_atlas_mesh_destroy(&atlas_mesh);
-        _allen_mouse_brain_destroy(&volume_data);
-        dvz_scene_destroy(scene);
-        return 1;
-    }
-    DvzVolumeOcclusionDesc volume_occlusion = {
-        .enabled = true,
-        .alpha_threshold = DEFAULT_OCCLUSION_THRESHOLD,
-        .fade_distance = DEFAULT_OCCLUSION_FADE,
-        .occluded_alpha = DEFAULT_OCCLUSION_HIDDEN_ALPHA,
-    };
-    if (dvz_panel_set_volume_occluder(panel, volume_3d, &volume_occlusion) != 0 ||
-        dvz_visual_set_volume_occluded(volume_slice, true) != 0)
-    {
-        dvz_fprintf(stderr, "volume occlusion setup failed\n");
         _ibl_atlas_mesh_destroy(&atlas_mesh);
         _allen_mouse_brain_destroy(&volume_data);
         dvz_scene_destroy(scene);

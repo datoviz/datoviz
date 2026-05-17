@@ -944,9 +944,13 @@ void _scene_emit_panel_render(
                 uint32_t vidx = 0;
                 if (!_figure_visual_index(figure, visual, &vidx))
                     continue;
+                const DvzVolumeOcclusionDesc* volume_occlusion =
+                    visual == panel->volume_occluder_visual && panel->volume_occlusion_enabled
+                        ? &panel->volume_occlusion
+                        : NULL;
                 (void)_scene_append_visual_to_render_pass(
                     figure, plan, scene_occlusion_node, visual, attach, vidx,
-                    &panel->scene_occlusion, NULL);
+                    &panel->scene_occlusion, volume_occlusion);
             }
         }
     }
