@@ -18,7 +18,6 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
-#include <math.h>
 
 #include "_alloc.h"
 #include "_compat.h"
@@ -34,7 +33,6 @@
 /*************************************************************************************************/
 
 #define TEXT_LAB_MAX_TICKS 64u
-#define TEXT_LAB_RAW_TEX_SIZE 128u
 #define TEXT_LAB_FIGURE_WIDTH 1100.0f
 #define TEXT_LAB_FIGURE_HEIGHT 760.0f
 
@@ -50,7 +48,6 @@ typedef enum TextLabMode
     TEXT_LAB_MODE_TICKS,
     TEXT_LAB_MODE_MULTILINE,
     TEXT_LAB_MODE_UTF8,
-    TEXT_LAB_MODE_GLYPH,
 } TextLabMode;
 
 
@@ -62,7 +59,6 @@ typedef struct TextLabState
     DvzVisual* sample;
     DvzVisual* multiline;
     DvzVisual* ticks;
-    DvzVisual* raw_glyph;
     float size_pts;
     float tick_size_pts;
     float angle;
@@ -74,7 +70,6 @@ typedef struct TextLabState
     float tick_count_value;
     int mode;
     int anchor_index;
-    bool show_raw_glyph;
     bool animate;
     bool show_demo;
     uint32_t frame_index;
@@ -124,8 +119,6 @@ static const char* mode_sample_text(int mode)
 {
     if (mode == TEXT_LAB_MODE_UTF8)
         return "UTF-8 fallback: A" "\xCE" "\xA9" "B cafe" "\xCC" "\x81" " -> ?";
-    if (mode == TEXT_LAB_MODE_GLYPH)
-        return "Procedural SDF glyph probe";
     return "The quick brown fox jumps over 13 lazy glyphs.";
 }
 
@@ -256,156 +249,6 @@ static void set_text_items(
 
 
 /**
- * Update the raw glyph shader-probe quad.
- *
- * @param state example state
- */
-static void update_raw_glyph(TextLabState* state)
-{
-    ANN(state);
-    ANN(state->raw_glyph);
-
-    float y = -0.18f;
-    float h = 0.36f;
-    float w = h * TEXT_LAB_FIGURE_HEIGHT / TEXT_LAB_FIGURE_WIDTH;
-    float x = -0.5f * w;
-    bool visible = state->mode == TEXT_LAB_MODE_GLYPH || state->show_raw_glyph;
-    if (!visible)
-    {
-        w = 0.0f;
-        h = 0.0f;
-    }
-
-    float positions[6][3] = {
-        {x,     y,     0.0f},
-        {x,     y + h, 0.0f},
-        {x + w, y,     0.0f},
-        {x + w, y,     0.0f},
-        {x,     y + h, 0.0f},
-        {x + w, y + h, 0.0f},
-    };
-    float texcoords[6][2] = {
-        {0.0f, 0.0f},
-        {0.0f, 1.0f},
-        {1.0f, 0.0f},
-        {1.0f, 0.0f},
-        {0.0f, 1.0f},
-        {1.0f, 1.0f},
-    };
-    DvzColor color = {255, 220, 96, 230};
-    DvzColor colors[6] = {
-        {color[0], color[1], color[2], color[3]},
-        {color[0], color[1], color[2], color[3]},
-        {color[0], color[1], color[2], color[3]},
-        {color[0], color[1], color[2], color[3]},
-        {color[0], color[1], color[2], color[3]},
-        {color[0], color[1], color[2], color[3]},
-    };
-
-    dvz_visual_set_data(state->raw_glyph, "position", positions, 6);
-    dvz_visual_set_data(state->raw_glyph, "texcoords", texcoords, 6);
-    dvz_visual_set_data(state->raw_glyph, "color", colors, 6);
-}
-
-
-
-/**
- * Return a signed distance to an axis-aligned box.
- *
- * @param x x coordinate
- * @param y y coordinate
- * @param cx box center x
- * @param cy box center y
- * @param hx box half-width
- * @param hy box half-height
- * @return signed distance, negative inside
- */
-static float sdf_box(float x, float y, float cx, float cy, float hx, float hy)
-{
-    float qx = fabsf(x - cx) - hx;
-    float qy = fabsf(y - cy) - hy;
-    float ox = fmaxf(qx, 0.0f);
-    float oy = fmaxf(qy, 0.0f);
-    float outside = sqrtf(ox * ox + oy * oy);
-    float inside = fminf(fmaxf(qx, qy), 0.0f);
-    return outside + inside;
-}
-
-
-
-/**
- * Return a signed distance to a circle.
- *
- * @param x x coordinate
- * @param y y coordinate
- * @param cx circle center x
- * @param cy circle center y
- * @param radius circle radius
- * @return signed distance, negative inside
- */
-static float sdf_circle(float x, float y, float cx, float cy, float radius)
-{
-    float dx = x - cx;
-    float dy = y - cy;
-    return sqrtf(dx * dx + dy * dy) - radius;
-}
-
-
-
-/**
- * Return a signed distance to a simple analytic D-shaped outline.
- *
- * @param x x coordinate
- * @param y y coordinate
- * @return signed distance, negative inside the glyph stroke
- */
-static float sdf_probe_glyph(float x, float y)
-{
-    float outer = fminf(
-        sdf_box(x, y, -0.32f, 0.0f, 0.34f, 0.62f), sdf_circle(x, y, -0.04f, 0.0f, 0.62f));
-    float inner = fminf(
-        sdf_box(x, y, -0.28f, 0.0f, 0.24f, 0.34f), sdf_circle(x, y, -0.08f, 0.0f, 0.34f));
-    return fmaxf(outer, -inner);
-}
-
-
-
-/**
- * Upload a procedural distance-field texture for the raw glyph visual.
- *
- * @param visual glyph visual
- */
-static void upload_raw_glyph_texture(DvzVisual* visual)
-{
-    ANN(visual);
-    uint8_t pixels[TEXT_LAB_RAW_TEX_SIZE * TEXT_LAB_RAW_TEX_SIZE * 4] = {0};
-    const float spread = 0.075f;
-    for (uint32_t y = 0; y < TEXT_LAB_RAW_TEX_SIZE; y++)
-    {
-        for (uint32_t x = 0; x < TEXT_LAB_RAW_TEX_SIZE; x++)
-        {
-            float px = 2.0f * ((float)x + 0.5f) / (float)TEXT_LAB_RAW_TEX_SIZE - 1.0f;
-            float py = 2.0f * ((float)y + 0.5f) / (float)TEXT_LAB_RAW_TEX_SIZE - 1.0f;
-            float sd = sdf_probe_glyph(px, py);
-            float value = 0.5f - sd / spread;
-            if (value < 0.0f)
-                value = 0.0f;
-            if (value > 1.0f)
-                value = 1.0f;
-            uint8_t v = (uint8_t)(255.0f * value + 0.5f);
-            uint64_t i = ((uint64_t)y * TEXT_LAB_RAW_TEX_SIZE + x) * 4u;
-            pixels[i + 0] = v;
-            pixels[i + 1] = v;
-            pixels[i + 2] = v;
-            pixels[i + 3] = v;
-        }
-    }
-    dvz_visual_set_texture(visual, pixels, TEXT_LAB_RAW_TEX_SIZE, TEXT_LAB_RAW_TEX_SIZE);
-}
-
-
-
-/**
  * Update every batched text visual from the current GUI state.
  *
  * @param state example state
@@ -477,25 +320,11 @@ static void update_text_scene(TextLabState* state)
     else
     {
         sample_string = mode_sample_text(state->mode);
-        if (state->mode == TEXT_LAB_MODE_GLYPH)
-        {
-            float glyph_heading_pos[1][3] = {
-                {0.5f * TEXT_LAB_FIGURE_WIDTH, 76.0f, 0.0f},
-            };
-            const float glyph_heading_pivot[2] = {0.5f, 0.5f};
-            set_text_items(
-                state->sample, &sample_string, 1, glyph_heading_pos, state->size_pts, color,
-                glyph_heading_pivot, NULL);
-        }
-        else
-        {
-            set_text_items(
-                state->sample, &sample_string, 1, sample_pos, state->size_pts, color, pivot,
-                sample_angle);
-        }
+        set_text_items(
+            state->sample, &sample_string, 1, sample_pos, state->size_pts, color, pivot,
+            sample_angle);
     }
 
-    update_raw_glyph(state);
     if (state->win != NULL)
         dvz_app_window_request_frame(state->win);
 }
@@ -524,7 +353,6 @@ static void reset_text_state(TextLabState* state)
     state->tick_count_value = 12.0f;
     state->mode = TEXT_LAB_MODE_SAMPLE;
     state->anchor_index = 4;
-    state->show_raw_glyph = false;
     state->animate = false;
 }
 
@@ -551,7 +379,6 @@ static void gui_callback(DvzGui* gui, DvzAppWindow* win, void* user_data)
             "ticks",
             "multiline",
             "UTF-8",
-            "SDF quad",
         };
         static const char* const anchor_items[] = {
             "top left",
@@ -565,7 +392,7 @@ static void gui_callback(DvzGui* gui, DvzAppWindow* win, void* user_data)
             "bottom right",
         };
 
-        changed |= dvz_gui_combo(gui, "Mode", &state->mode, mode_items, 5);
+        changed |= dvz_gui_combo(gui, "Mode", &state->mode, mode_items, 4);
         if (state->mode == TEXT_LAB_MODE_SAMPLE || state->mode == TEXT_LAB_MODE_UTF8)
         {
             changed |= dvz_gui_slider_float_format(
@@ -576,11 +403,6 @@ static void gui_callback(DvzGui* gui, DvzAppWindow* win, void* user_data)
             changed |= dvz_gui_slider_float_format(
                 gui, "Multiline text size", &state->size_pts, 6.0f, 64.0f, "%.1f pt");
         }
-        else if (state->mode == TEXT_LAB_MODE_GLYPH)
-        {
-            changed |= dvz_gui_slider_float_format(
-                gui, "Probe label size", &state->size_pts, 6.0f, 64.0f, "%.1f pt");
-        }
         if (state->mode == TEXT_LAB_MODE_SAMPLE || state->mode == TEXT_LAB_MODE_UTF8)
         {
             changed |= dvz_gui_combo(gui, "Target", &state->anchor_index, anchor_items, 9);
@@ -588,11 +410,8 @@ static void gui_callback(DvzGui* gui, DvzAppWindow* win, void* user_data)
             changed |= dvz_gui_slider_float(gui, "Offset X", &state->offset_x, -360.0f, 360.0f);
             changed |= dvz_gui_slider_float(gui, "Offset Y", &state->offset_y, -260.0f, 260.0f);
         }
-        if (state->mode != TEXT_LAB_MODE_GLYPH)
-        {
-            changed |= dvz_gui_slider_float(gui, "Text anchor X", &state->pivot_x, 0.0f, 1.0f);
-            changed |= dvz_gui_slider_float(gui, "Text anchor Y", &state->pivot_y, 0.0f, 1.0f);
-        }
+        changed |= dvz_gui_slider_float(gui, "Text anchor X", &state->pivot_x, 0.0f, 1.0f);
+        changed |= dvz_gui_slider_float(gui, "Text anchor Y", &state->pivot_y, 0.0f, 1.0f);
         if (state->mode == TEXT_LAB_MODE_TICKS)
         {
             changed |= dvz_gui_slider_float_format(
@@ -605,7 +424,6 @@ static void gui_callback(DvzGui* gui, DvzAppWindow* win, void* user_data)
         changed |= dvz_gui_slider_float(gui, "Green", &state->color[1], 0.0f, 1.0f);
         changed |= dvz_gui_slider_float(gui, "Blue", &state->color[2], 0.0f, 1.0f);
         changed |= dvz_gui_slider_float(gui, "Alpha", &state->color[3], 0.05f, 1.0f);
-        changed |= dvz_gui_checkbox(gui, "SDF quad overlay", &state->show_raw_glyph);
         changed |= dvz_gui_checkbox(gui, "Animate", &state->animate);
         (void)dvz_gui_checkbox(gui, "ImGui demo", &state->show_demo);
         if (dvz_gui_button(gui, "Reset"))
@@ -613,8 +431,6 @@ static void gui_callback(DvzGui* gui, DvzAppWindow* win, void* user_data)
             reset_text_state(state);
             changed = true;
         }
-        igSeparator();
-        igTextUnformatted("Diagnostic: procedural distance-field quad", NULL);
     }
     dvz_gui_end(gui);
 
@@ -721,25 +537,6 @@ int main(int argc, char** argv)
             dvz_scene_destroy(scene);
             return 1;
         }
-    }
-
-    state.raw_glyph = dvz_glyph(scene, 0);
-    if (state.raw_glyph == NULL)
-    {
-        dvz_fprintf(stderr, "dvz_glyph() failed\n");
-        dvz_scene_destroy(scene);
-        return 1;
-    }
-    upload_raw_glyph_texture(state.raw_glyph);
-    update_raw_glyph(&state);
-    dvz_visual_set_alpha_mode(state.raw_glyph, DVZ_ALPHA_BLENDED);
-    dvz_visual_set_depth_test(state.raw_glyph, false);
-    DvzVisualAttachDesc raw_attach = {.z_layer = 2, .controller_mode = DVZ_CONTROLLER_FIXED};
-    if (dvz_panel_add_visual(panel, state.raw_glyph, &raw_attach) != 0)
-    {
-        dvz_fprintf(stderr, "dvz_panel_add_visual() failed\n");
-        dvz_scene_destroy(scene);
-        return 1;
     }
 
     update_text_scene(&state);
