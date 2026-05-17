@@ -232,14 +232,119 @@ function mapTextureUsage(usage) {
 
 function mapTextureFormat(format) {
   switch (format) {
+    case "r16float":
     case "r32uint":
     case "rgba8unorm":
     case "bgra8unorm":
+    case "rgba16float":
     case "depth32float":
       return format;
     default:
       throw new Error(`unsupported texture format: ${format}`);
   }
+}
+
+
+
+function mapBlendFactor(factor) {
+  switch (factor) {
+    case "zero":
+    case "one":
+    case "src":
+    case "one-minus-src":
+    case "src-alpha":
+    case "one-minus-src-alpha":
+    case "dst":
+    case "one-minus-dst":
+    case "dst-alpha":
+    case "one-minus-dst-alpha":
+    case "src-alpha-saturated":
+    case "constant":
+    case "one-minus-constant":
+      return factor;
+    default:
+      throw new Error(`unsupported blend factor: ${factor}`);
+  }
+}
+
+
+
+function mapBlendOperation(operation) {
+  switch (operation) {
+    case "add":
+    case "subtract":
+    case "reverse-subtract":
+    case "min":
+    case "max":
+      return operation;
+    default:
+      throw new Error(`unsupported blend operation: ${operation}`);
+  }
+}
+
+
+
+function mapBlendComponent(component) {
+  return {
+    srcFactor: mapBlendFactor(required(component.src_factor, "blend component needs src_factor")),
+    dstFactor: mapBlendFactor(required(component.dst_factor, "blend component needs dst_factor")),
+    operation: mapBlendOperation(required(component.operation, "blend component needs operation")),
+  };
+}
+
+
+
+function mapBlendState(blend) {
+  if (blend === undefined) {
+    return undefined;
+  }
+  return {
+    color: mapBlendComponent(required(blend.color, "blend needs color component")),
+    alpha: mapBlendComponent(required(blend.alpha, "blend needs alpha component")),
+  };
+}
+
+
+
+function mapColorWriteMask(writeMask) {
+  if (writeMask === undefined) {
+    return GPUColorWrite.ALL;
+  }
+  let flags = 0;
+  for (const item of writeMask) {
+    switch (item) {
+      case "red":
+        flags |= GPUColorWrite.RED;
+        break;
+      case "green":
+        flags |= GPUColorWrite.GREEN;
+        break;
+      case "blue":
+        flags |= GPUColorWrite.BLUE;
+        break;
+      case "alpha":
+        flags |= GPUColorWrite.ALPHA;
+        break;
+      case "all":
+        flags |= GPUColorWrite.ALL;
+        break;
+      default:
+        throw new Error(`unsupported color write mask: ${item}`);
+    }
+  }
+  return flags;
+}
+
+
+
+function makeColorTarget(canvasFormat, target) {
+  const streamFormat = required(target.format, "color target needs format");
+  const format = streamFormat === "canvas" ? canvasFormat : mapTextureFormat(streamFormat);
+  return {
+    format,
+    blend: mapBlendState(target.blend),
+    writeMask: mapColorWriteMask(target.write_mask),
+  };
 }
 
 
@@ -886,12 +991,6 @@ function makePipeline(device, canvasFormat, shaders, bindGroupLayouts, command, 
   }
 
   const colorTargets = command.color_targets ?? [defaultColorTarget(fragmentShader)];
-  if (colorTargets.length !== 1) {
-    throw new Error("only one color target is supported by this PoC");
-  }
-
-  const streamFormat = colorTargets[0].format;
-  const targetFormat = streamFormat === "canvas" ? canvasFormat : mapTextureFormat(streamFormat);
   const bindGroupLayoutIds = command.bind_group_layout_ids ?? [];
   const pipelineBindGroupLayouts = bindGroupLayoutIds.map((id) =>
     required(bindGroupLayouts.get(id), `unknown bind-group layout ${id}`),
@@ -915,7 +1014,7 @@ function makePipeline(device, canvasFormat, shaders, bindGroupLayouts, command, 
       fragment: {
         module: fragmentShader.module,
         entryPoint: fragmentShader.entryPoint,
-        targets: [{ format: targetFormat }],
+        targets: colorTargets.map((target) => makeColorTarget(canvasFormat, target)),
       },
       primitive: {
         topology: mapTopology(command.topology),
@@ -980,6 +1079,21 @@ function makeDepthStencilAttachment(textures, attachment) {
 
 
 
+function makeColorAttachment(context, textures, attachment) {
+  const textureView = attachment.texture_id === 0
+    ? context.getCurrentTexture().createView()
+    : required(textures.get(attachment.texture_id), `unknown texture ${attachment.texture_id}`)
+        .createView();
+  return {
+    view: textureView,
+    loadOp: mapLoadOp(attachment.load_op),
+    storeOp: mapStoreOp(attachment.store_op),
+    clearValue: clearValue(attachment.clear_value),
+  };
+}
+
+
+
 function beginRenderPass(context, textures, encoders, command) {
   const encoder = required(
     encoders.get(command.encoder_id),
@@ -987,26 +1101,11 @@ function beginRenderPass(context, textures, encoders, command) {
   );
   const attachments = required(command.color_attachments, "BeginRenderPass needs color_attachments");
 
-  if (attachments.length !== 1) {
-    throw new Error("only one color attachment is supported by this PoC");
-  }
-
-  const attachment = attachments[0];
-  const textureView = attachment.texture_id === 0
-    ? context.getCurrentTexture().createView()
-    : required(textures.get(attachment.texture_id), `unknown texture ${attachment.texture_id}`)
-        .createView();
-
   return encoder.beginRenderPass({
     label: command.label,
-    colorAttachments: [
-      {
-        view: textureView,
-        loadOp: mapLoadOp(attachment.load_op),
-        storeOp: mapStoreOp(attachment.store_op),
-        clearValue: clearValue(attachment.clear_value),
-      },
-    ],
+    colorAttachments: attachments.map((attachment) =>
+      makeColorAttachment(context, textures, attachment),
+    ),
     depthStencilAttachment: makeDepthStencilAttachment(
       textures,
       command.depth_stencil_attachment,
