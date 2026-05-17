@@ -13,7 +13,7 @@ Up to **10,000x faster than matplotlib**, it delivers highly efficient **high-qu
 
 [![](https://raw.githubusercontent.com/datoviz/data/master/hero.jpg)](https://raw.githubusercontent.com/datoviz/data/master/hero.jpg)
 
-Built from the ground up with performance in mind, Datoviz is written primarily in **C** and **C++**, leveraging the [**Khronos Vulkan graphics API**](https://www.vulkan.org/). It offers a C API, low-level Python bindings via `ctypes`, and a higher-level, idiomatic **Python API 🐍**.
+Built from the ground up with performance in mind, Datoviz is written primarily in **C** and **C++**, leveraging the [**Khronos Vulkan graphics API**](https://www.vulkan.org/). For v0.4, it focuses on the C API and low-level Python bindings via `ctypes`; the higher-level Python object-oriented and plotting APIs are expected to live in the VisPy2/GSP stack.
 
 Written by one of the original creators of [VisPy](https://vispy.org), a GPU-based Python scientific visualization library, Datoviz aims to serve as the default backend for the upcoming **VisPy 2.0**.
 
@@ -40,7 +40,7 @@ The library is lightweight with minimal dependencies: mostly Vulkan, [**GLFW**](
 
 Datoviz does **not** use high-level plotting functions like `plot()`, `scatter()`, or `imshow()`. Instead, it exposes flexible visual primitives—markers, images, meshes, and more—that can be added to a scene and customized directly with data. This approach offers fine-grained control and high performance, while remaining concise enough for quick plots.
 
-A [higher-level plotting interface is under development as part of **VisPy 2.0**](https://github.com/vispy/vispy/discussions/2661), which will use Datoviz as its rendering backend. An intermediate layer called **GSP** (Graphics Specification Protocol) will provide a backend-agnostic API for declarative plotting.
+A [higher-level plotting interface is under development as part of **VisPy 2.0**](https://github.com/vispy/vispy/discussions/2661), which will use Datoviz as one rendering backend. An intermediate layer called **GSP** (Graphics Specification Protocol) will provide a backend-agnostic API for declarative plotting. The intended split is complementary: Datoviz is the fast interactive GPU backend, while Matplotlib can serve as the publication-oriented backend for static PDF/SVG/vector export from the same GSP-level scene description.
 
 
 
@@ -52,7 +52,7 @@ A [higher-level plotting interface is under development as part of **VisPy 2.0**
 
 **Datoviz**, in contrast, is a younger, GPU-based library designed for fast, interactive visualization. It lacks Matplotlib’s high-level API but excels at rendering millions of points in real time.
 
-Use **Matplotlib** for polished static plots, **Datoviz** for responsive data exploration.
+Use **Matplotlib** for polished static plots and PDF/SVG/vector export, **Datoviz** for responsive data exploration.
 
 #### Preliminary performance benchmark
 

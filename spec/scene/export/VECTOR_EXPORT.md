@@ -110,6 +110,18 @@ The logical panel size in the scene maps to the SVG `viewBox`.
    available in browser-embedded Datoviz without a server-side render step.
 
 
+## Relationship To GSP And Matplotlib Export
+
+Datoviz-native vector export is limited to structural SVG and selected CPU-redrawable visual
+families. Full publication-oriented PDF/SVG export from a semantic scene description is expected to
+be provided by a GSP Matplotlib backend, not by converting arbitrary Datoviz GPU output back to
+vector geometry.
+
+The Datoviz backend should be treated as the interactive and raster-output backend. The Matplotlib
+backend should be treated as the publication and vector-output backend when a GSP-level scene can be
+faithfully or approximately lowered to Matplotlib artists.
+
+
 ## Relationship To Other Documents
 
 | Document | Relationship |

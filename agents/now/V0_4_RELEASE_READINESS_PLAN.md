@@ -89,8 +89,11 @@ Work:
 6. Review error/status behavior: assertion-only invariants vs recoverable runtime failures.
 7. Decide whether lower-level APIs are officially supported in v0.4 or documented as advanced
    unstable surfaces.
-8. Add or normalize Doxygen-style docstrings for public and module-level functions.
-9. Generate a public API inventory and compare it with the intended v0.4 narrative.
+8. Decide and document the v0.4 Python API policy: Datoviz ships raw/generated `ctypes`
+   bindings only, the v0.3-style Python OO API is out of scope, GSP/VisPy2 owns the future
+   object-oriented and plotting APIs, and Matplotlib is the publication/vector-export backend.
+9. Add or normalize Doxygen-style docstrings for public and module-level functions.
+10. Generate a public API inventory and compare it with the intended v0.4 narrative.
 
 Exit criteria:
 
