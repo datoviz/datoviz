@@ -355,6 +355,27 @@ Validation:
 5. `git diff --check -- src/scene/tests/scene_graph.c src/scene/tests/test_scene.h agents/now/RENDER_CONTRACT_RESOLVER_AUDIT_2026-05-17.md`
 
 
+### 2026-05-17: Phase 4 / WBOIT offscreen order check
+
+Completed the first targeted offscreen visual correctness slice.
+
+Changes:
+
+1. Added `test_app_offscreen_wboit_mesh_order_independent_layers`.
+2. Added a small offscreen helper that renders two overlapping WBOIT primitive layers in forward
+   and reversed visual order and captures the center pixel.
+3. The test compares captured RGB values with a tight tolerance and verifies the blended region is
+   nonblank, skipping cleanly when the app/vklite context is unavailable.
+
+Validation:
+
+1. `cmake --build build --target dvztest_scene -j2`
+2. `./build/testing/dvztest_scene test_app_offscreen_wboit_mesh_order_independent_layers`
+3. `./build/testing/dvztest_scene test_app_offscreen_point_depth_orders_overlap`
+4. `./build/testing/dvztest_scene test_scene_alpha_mode_toggle_refreshes_drp2_contracts`
+5. `git diff --check -- src/scene/tests/app.c src/scene/tests/test_scene.h agents/now/RENDER_CONTRACT_RESOLVER_AUDIT_2026-05-17.md`
+
+
 ## Executive Assessment
 
 The direction is correct and worth continuing. The proposal identifies the right failure mode:

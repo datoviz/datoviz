@@ -68,6 +68,13 @@ typedef struct
 } AppSsaoQuad;
 
 
+typedef struct
+{
+    uint8_t rgb[3];
+    bool skipped;
+} AppWboitCapture;
+
+
 
 /**
  * Record one app-driven timer callback.
@@ -167,6 +174,139 @@ static AppSsaoQuad _app_ssao_add_quad(
         out.visual = NULL;
         return out;
     }
+    return out;
+}
+
+
+
+/**
+ * Add one full-panel transparent WBOIT primitive triangle.
+ *
+ * @param scene scene owner
+ * @param panel destination panel
+ * @param color per-vertex color
+ * @return created visual, or NULL on failure
+ */
+static DvzVisual*
+_app_wboit_add_layer(DvzScene* scene, DvzPanel* panel, DvzColor color)
+{
+    ANN(scene);
+    ANN(panel);
+    DvzVisual* visual = dvz_primitive(scene, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 0);
+    if (visual == NULL)
+        return NULL;
+
+    float positions[3][3] = {
+        {-0.9f, -0.9f, 0.0f},
+        {0.9f, -0.9f, 0.0f},
+        {0.0f, 0.9f, 0.0f},
+    };
+    DvzColor colors[3] = {0};
+    for (uint32_t i = 0; i < 3; i++)
+        dvz_memcpy(colors[i], sizeof(DvzColor), color, sizeof(DvzColor));
+
+    if (dvz_visual_set_data(visual, "position", positions, 3) != 0 ||
+        dvz_visual_set_data(visual, "color", colors, 3) != 0 ||
+        dvz_visual_set_alpha_mode(visual, DVZ_ALPHA_WBOIT) != 0 ||
+        dvz_panel_add_visual(panel, visual, NULL) != 0)
+    {
+        return NULL;
+    }
+    return visual;
+}
+
+
+
+/**
+ * Render two WBOIT layers and capture the center pixel.
+ *
+ * @param reverse_order whether the blue layer is added before the red layer
+ * @return captured RGB values, or skipped=true when no app context is available
+ */
+static AppWboitCapture _app_wboit_capture_center(bool reverse_order)
+{
+    AppWboitCapture out = {0};
+    DvzScene* scene = dvz_scene();
+    if (scene == NULL)
+        return out;
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    if (figure == NULL)
+    {
+        dvz_scene_destroy(scene);
+        return out;
+    }
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    if (panel == NULL)
+    {
+        dvz_scene_destroy(scene);
+        return out;
+    }
+    dvz_panel_set_background_color(panel, 0.0f, 0.0f, 0.0f, 1.0f);
+
+    DvzColor red = {255, 0, 0, 128};
+    DvzColor blue = {0, 0, 255, 128};
+    DvzVisual* first =
+        reverse_order ? _app_wboit_add_layer(scene, panel, blue) :
+                        _app_wboit_add_layer(scene, panel, red);
+    DvzVisual* second =
+        reverse_order ? _app_wboit_add_layer(scene, panel, red) :
+                        _app_wboit_add_layer(scene, panel, blue);
+    if (first == NULL || second == NULL)
+    {
+        dvz_scene_destroy(scene);
+        return out;
+    }
+
+    DvzApp* app = dvz_app(scene);
+    if (app == NULL)
+    {
+        out.skipped = true;
+        dvz_scene_destroy(scene);
+        return out;
+    }
+    DvzAppWindow* win = dvz_app_window(app, figure, 64, 64);
+    if (win == NULL)
+    {
+        out.skipped = true;
+        dvz_app_destroy(app);
+        dvz_scene_destroy(scene);
+        return out;
+    }
+    DvzCanvas* canvas = dvz_app_window_canvas(win);
+    if (canvas == NULL)
+    {
+        out.skipped = true;
+        dvz_app_destroy(app);
+        dvz_scene_destroy(scene);
+        return out;
+    }
+
+    uint32_t width = 0, height = 0;
+    uint8_t* rgba = NULL;
+    for (uint32_t frame = 0; frame < 3; frame++)
+    {
+        dvz_app_run(app, 1);
+        if (rgba != NULL)
+            dvz_free(rgba);
+        rgba = NULL;
+        if (dvz_canvas_capture_rgba(canvas, &width, &height, &rgba) != 0)
+        {
+            out.skipped = true;
+            dvz_app_destroy(app);
+            dvz_scene_destroy(scene);
+            return out;
+        }
+    }
+    if (rgba != NULL && width == 64 && height == 64)
+    {
+        const uint8_t* center = _pixel_at(rgba, width, height, width / 2, height / 2);
+        out.rgb[0] = center[0];
+        out.rgb[1] = center[1];
+        out.rgb[2] = center[2];
+    }
+    dvz_free(rgba);
+    dvz_app_destroy(app);
+    dvz_scene_destroy(scene);
     return out;
 }
 
@@ -1518,6 +1658,47 @@ int test_app_offscreen_image_field_partial_update_changes_region(TstSuite* suite
     dvz_free(rgba0);
     dvz_app_destroy(app);
     dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+/**
+ * Ensure WBOIT transparent layers are stable when visual order changes.
+ *
+ * @param suite test suite
+ * @param item test item
+ * @return 0 on success
+ */
+int test_app_offscreen_wboit_mesh_order_independent_layers(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    if (!_scene_vklite_runtime_available())
+        return 0;
+
+    AppWboitCapture forward = _app_wboit_capture_center(false);
+    if (forward.skipped)
+    {
+        log_warn(
+            "test_app_offscreen_wboit_mesh_order_independent_layers skipped: GPU context failed");
+        return 0;
+    }
+    AppWboitCapture reverse = _app_wboit_capture_center(true);
+    if (reverse.skipped)
+    {
+        log_warn(
+            "test_app_offscreen_wboit_mesh_order_independent_layers skipped: GPU context failed");
+        return 0;
+    }
+
+    uint32_t diff = 0;
+    for (uint32_t i = 0; i < 3; i++)
+        diff += forward.rgb[i] > reverse.rgb[i] ? forward.rgb[i] - reverse.rgb[i] :
+                                                  reverse.rgb[i] - forward.rgb[i];
+    AT(diff <= 6);
+    AT(forward.rgb[0] > 20 || forward.rgb[2] > 20);
+    AT(reverse.rgb[0] > 20 || reverse.rgb[2] > 20);
     return 0;
 }
 
@@ -3447,6 +3628,7 @@ int test_scene_app(TstSuite* suite)
 #endif
     TEST_SIMPLE(test_app_offscreen_panel_three_visuals_all_drawn);
     TEST_SIMPLE(test_app_offscreen_point_depth_orders_overlap);
+    TEST_SIMPLE(test_app_offscreen_wboit_mesh_order_independent_layers);
     TEST_SIMPLE(test_app_offscreen_point_depth_cue_darkens_far);
     TEST_SIMPLE(test_app_offscreen_has_nonblank_pixels);
     TEST_SIMPLE(test_app_offscreen_pixel_square_has_nonblank_pixels);
