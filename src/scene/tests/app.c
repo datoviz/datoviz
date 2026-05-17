@@ -887,7 +887,6 @@ int test_app_external_surface_release_waits(TstSuite* suite, TstItem* item)
     {
         log_warn(
             "test_app_external_surface_release_waits skipped: GLFW returned no Vulkan extensions");
-        glfwTerminate();
         return 0;
     }
 
@@ -906,7 +905,6 @@ int test_app_external_surface_release_waits(TstSuite* suite, TstItem* item)
     {
         log_warn("test_app_external_surface_release_waits skipped: GPU context creation failed");
         dvz_scene_destroy(scene);
-        glfwTerminate();
         return 0;
     }
 
@@ -923,7 +921,6 @@ int test_app_external_surface_release_waits(TstSuite* suite, TstItem* item)
         log_warn("test_app_external_surface_release_waits skipped: GLFW window creation failed");
         dvz_app_destroy(app);
         dvz_scene_destroy(scene);
-        glfwTerminate();
         return 0;
     }
 
@@ -937,7 +934,6 @@ int test_app_external_surface_release_waits(TstSuite* suite, TstItem* item)
         glfwDestroyWindow(glfw_window);
         dvz_app_destroy(app);
         dvz_scene_destroy(scene);
-        glfwTerminate();
         return 0;
     }
 
@@ -958,7 +954,6 @@ int test_app_external_surface_release_waits(TstSuite* suite, TstItem* item)
     glfwDestroyWindow(glfw_window);
     dvz_app_destroy(app);
     dvz_scene_destroy(scene);
-    glfwTerminate();
     return 0;
 }
 #endif
