@@ -1804,8 +1804,8 @@ static void _pipeline_apply_standard_depth_state(
     if (!pass_needs_depth)
         return;
 
-    out->depth_write_enabled =
-        caps->can_write_depth && !wboit_accumulation && alpha_mode != DVZ_ALPHA_BLENDED;
+    (void)alpha_mode;
+    out->depth_write_enabled = caps->can_write_depth && !wboit_accumulation;
     out->depth_compare_op =
         caps->can_depth_test ? VK_COMPARE_OP_LESS_OR_EQUAL : VK_COMPARE_OP_ALWAYS;
 }

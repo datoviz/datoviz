@@ -1658,7 +1658,7 @@ static bool _scene_transparent_contract_needs_depth(
     DvzSceneDrawContract contract = {0};
     if (!_scene_draw_contract_from_visual(visual, attach, pass_role, &contract))
         return false;
-    *out = contract.depth_test || contract.samples_depth;
+    *out = contract.depth_test || contract.samples_depth || contract.depth_write;
     return true;
 }
 
@@ -1848,7 +1848,10 @@ void _scene_emit_panel_render(
     DvzFramePlanNode* depth_peel_init_node = NULL;
     DvzFramePlanNode* depth_peel_iter_node = NULL;
     DvzFramePlanNode* depth_peel_composite_node = NULL;
-    DvzFramePlanNode* blended_node = NULL;
+    DvzFramePlanNode* blended_nodes[DVZ_SCENE_MAX_RENDER_VISUALS] = {0};
+    bool blended_needs_depth[DVZ_SCENE_MAX_RENDER_VISUALS] = {0};
+    bool blended_writes_depth[DVZ_SCENE_MAX_RENDER_VISUALS] = {0};
+    uint32_t blended_count = 0;
     DvzFramePlanNode* edl_node = NULL;
     DvzFramePlanNode* ssao_node = NULL;
     DvzFramePlanNode* ssao_blur_node = NULL;
@@ -1972,26 +1975,45 @@ void _scene_emit_panel_render(
 
         if (caps.draws_in_transparent_blend_pass)
         {
-            if (blended_node == NULL)
+            DvzSceneDrawContract draw_contract = {0};
+            bool have_contract = _scene_draw_contract_from_visual(
+                visual, attach, DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_BLEND, &draw_contract);
+            bool draw_needs_depth = caps.needs_depth_attachment;
+            bool draw_writes_depth = false;
+            if (have_contract)
             {
-                blended_node = _scene_begin_panel_render_pass(
+                draw_needs_depth = draw_contract.depth_test || draw_contract.samples_depth ||
+                                   draw_contract.depth_write;
+                draw_writes_depth = draw_contract.depth_write;
+            }
+
+            bool start_blended_pass = blended_count == 0;
+            if (!start_blended_pass)
+            {
+                uint32_t prev = blended_count - 1;
+                start_blended_pass = blended_writes_depth[prev] != draw_writes_depth;
+            }
+            if (start_blended_pass)
+            {
+                if (blended_count >= DVZ_SCENE_MAX_RENDER_VISUALS)
+                    continue;
+                DvzFramePlanNode* node = _scene_begin_panel_render_pass(
                     plan, panel_id, "rt", panel->desc,
                     DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_BLEND, &panel_apply_mvp,
                     &panel_viewport);
-                if (blended_node == NULL)
+                if (node == NULL)
                     continue;
+                blended_nodes[blended_count] = node;
+                blended_count++;
             }
+            uint32_t blend_idx = blended_count - 1;
             (void)_scene_append_visual_to_render_pass(
-                figure, plan, blended_node, visual, attach, vidx,
+                figure, plan, blended_nodes[blend_idx], visual, attach, vidx,
                 scene_occlusion_enabled ? &panel->scene_occlusion : NULL,
                 volume_occlusion_enabled ? &panel->volume_occlusion : NULL);
-            bool contract_needs_depth = false;
-            if (_scene_transparent_contract_needs_depth(
-                    visual, attach, DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_BLEND,
-                    &contract_needs_depth))
-            {
-                transparent_needs_depth = transparent_needs_depth || contract_needs_depth;
-            }
+            blended_needs_depth[blend_idx] = blended_needs_depth[blend_idx] || draw_needs_depth;
+            blended_writes_depth[blend_idx] = blended_writes_depth[blend_idx] || draw_writes_depth;
+            transparent_needs_depth = transparent_needs_depth || draw_needs_depth;
             continue;
         }
 
@@ -2068,26 +2090,12 @@ void _scene_emit_panel_render(
         if (!_scene_technique_emit_wboit_frame_graph(
                 plan, panel_id, opaque_needs_depth, transparent_needs_depth))
             log_error("failed to emit WBOIT FramePlan graph for panel %s", panel_id);
-        if (blended_node != NULL)
-        {
-            char blend_pass_id[DVZ_SCENE_LABEL_SIZE];
-            dvz_snprintf(
-                blend_pass_id, sizeof(blend_pass_id), "%s.transparent_blend", panel_id);
-            DvzFrameGraphAttachment color = {0};
-            dvz_strlcpy(color.resource_id, "rt", sizeof(color.resource_id));
-            color.load_op = DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_LOAD;
-            color.store_op = DVZ_FRAME_GRAPH_ATTACHMENT_STORE_STORE;
-            color.access = DVZ_FRAME_GRAPH_ATTACHMENT_ACCESS_WRITE;
-            color.clear_color[3] = 1.0f;
-            DvzFrameGraphPass blend = {0};
-            dvz_strlcpy(blend.id, blend_pass_id, sizeof(blend.id));
-            dvz_strlcpy(blend.panel_id, panel_id, sizeof(blend.panel_id));
-            dvz_strlcpy(blend.work_label, "transparent_blend", sizeof(blend.work_label));
-            blend.kind = DVZ_FRAME_GRAPH_PASS_RENDER;
-            if (!dvz_frame_graph_pass_color_attachment(&blend, &color) ||
-                !dvz_frame_plan_graph_pass(plan, &blend))
-                log_error("failed to emit blended FramePlan graph for panel %s", panel_id);
-        }
+        if (blended_count > 0 &&
+            !_scene_technique_emit_blended_frame_graph(
+                plan, panel_id, false, opaque_needs_depth,
+                opaque_needs_depth || transparent_needs_depth, blended_count, blended_needs_depth,
+                blended_writes_depth))
+            log_error("failed to emit blended FramePlan graph for panel %s", panel_id);
     }
     else if (depth_peel_init_node != NULL)
     {
@@ -2101,7 +2109,7 @@ void _scene_emit_panel_render(
                 plan, panel_id, opaque_needs_depth, transparent_needs_depth))
             log_error("failed to emit depth-peeling FramePlan graph for panel %s", panel_id);
     }
-    else if (blended_node != NULL)
+    else if (blended_count > 0)
     {
         if (volume_occlusion_node != NULL &&
             !_scene_technique_emit_volume_occlusion_frame_graph(plan, panel_id))
@@ -2110,7 +2118,8 @@ void _scene_emit_panel_render(
             !_scene_technique_emit_gbuffer_frame_graph(plan, panel_id, &gbuffer))
             log_error("failed to emit G-buffer FramePlan graph for panel %s", panel_id);
         if (!_scene_technique_emit_blended_frame_graph(
-                plan, panel_id, opaque_needs_depth, transparent_needs_depth))
+                plan, panel_id, true, opaque_needs_depth, opaque_needs_depth, blended_count,
+                blended_needs_depth, blended_writes_depth))
             log_error("failed to emit blended FramePlan graph for panel %s", panel_id);
     }
     else if (

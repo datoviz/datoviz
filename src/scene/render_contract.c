@@ -356,7 +356,7 @@ static bool _contract_reads_resource_suffix(
 
 
 /**
- * Return whether any draw in a contract tests or samples depth.
+ * Return whether any draw in a contract tests, samples, or writes depth.
  *
  * @param contract the pass contract
  * @return whether a depth attachment is required
@@ -367,7 +367,7 @@ static bool _contract_needs_depth(const DvzScenePassContract* contract)
     for (uint32_t i = 0; i < contract->draw_count; i++)
     {
         const DvzSceneDrawContract* draw = &contract->draws[i];
-        if (draw->depth_test || draw->samples_depth)
+        if (draw->depth_test || draw->samples_depth || draw->depth_write)
             return true;
     }
     return false;
@@ -611,12 +611,32 @@ static const DvzFrameGraphPass* _contract_graph_pass_for_render(
     if (work_label[0] == '\0')
         return NULL;
 
+    uint32_t ordinal = 0;
+    for (uint32_t i = 0; i < plan->count; i++)
+    {
+        const DvzFramePlanNode* candidate = &plan->nodes[i];
+        if (candidate == render)
+            break;
+        if (candidate->type != DVZ_FRAME_PLAN_NODE_RENDER)
+            continue;
+        const char* candidate_label =
+            _contract_work_label_for_render_role(candidate->u.render.pass_role);
+        if (candidate_label[0] != '\0' &&
+            strcmp(candidate->u.render.panel_id, render->u.render.panel_id) == 0 &&
+            strcmp(candidate_label, work_label) == 0)
+            ordinal++;
+    }
+
+    uint32_t seen = 0;
     for (uint32_t i = 0; i < dvz_frame_plan_graph_pass_count(plan); i++)
     {
         const DvzFrameGraphPass* pass = dvz_frame_plan_graph_pass_get(plan, i);
-        if (pass != NULL && strcmp(pass->panel_id, render->u.render.panel_id) == 0 &&
-            strcmp(pass->work_label, work_label) == 0)
+        if (pass == NULL || strcmp(pass->panel_id, render->u.render.panel_id) != 0 ||
+            strcmp(pass->work_label, work_label) != 0)
+            continue;
+        if (seen == ordinal)
             return pass;
+        seen++;
     }
     return NULL;
 }
@@ -690,7 +710,10 @@ bool _scene_draw_contract_from_visual(
     out->alpha_mode = visual->alpha_mode;
     out->pass_role = pass_role;
     out->depth_test = caps.can_depth_test && (ordinary_visual_pass || scene_depth_pass);
-    out->depth_write = caps.writes_depth || (scene_depth_pass && caps.can_write_depth);
+    out->depth_write = caps.writes_depth ||
+                       (pass_role == DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_BLEND &&
+                        caps.can_write_depth) ||
+                       (scene_depth_pass && caps.can_write_depth);
     out->samples_depth =
         caps.samples_depth && ordinary_visual_pass &&
         pass_role != DVZ_FRAME_PLAN_RENDER_PASS_OPAQUE;
@@ -827,12 +850,8 @@ bool _scene_pass_contract_validate(
             _contract_report(report, "draw alpha mode does not match render pass role");
             ok = false;
         }
-        if (contract->source_over_blend && draw->depth_write)
-        {
-            _contract_report(report, "source-over draw must not write depth");
-            ok = false;
-        }
-        needs_depth = needs_depth || draw->depth_test || draw->samples_depth;
+        needs_depth = needs_depth || draw->depth_test || draw->samples_depth ||
+                      draw->depth_write;
         samples_volume_occlusion = samples_volume_occlusion || draw->samples_volume_occlusion;
         samples_scene_occlusion = samples_scene_occlusion || draw->samples_scene_occlusion;
     }

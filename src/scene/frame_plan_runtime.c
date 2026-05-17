@@ -1771,7 +1771,35 @@ _graph_pass_for_render(const DvzFramePlan* plan, const DvzFramePlanNode* render)
     const char* work_label = _graph_work_label_for_render_role(render->u.render.pass_role);
     if (work_label[0] == '\0')
         return NULL;
-    return _graph_pass_by_panel_work(plan, render->u.render.panel_id, work_label);
+
+    uint32_t ordinal = 0;
+    for (uint32_t i = 0; i < plan->count; i++)
+    {
+        const DvzFramePlanNode* candidate = &plan->nodes[i];
+        if (candidate == render)
+            break;
+        if (candidate->type != DVZ_FRAME_PLAN_NODE_RENDER)
+            continue;
+        const char* candidate_label =
+            _graph_work_label_for_render_role(candidate->u.render.pass_role);
+        if (candidate_label[0] != '\0' &&
+            strcmp(candidate->u.render.panel_id, render->u.render.panel_id) == 0 &&
+            strcmp(candidate_label, work_label) == 0)
+            ordinal++;
+    }
+
+    uint32_t seen = 0;
+    for (uint32_t i = 0; i < dvz_frame_plan_graph_pass_count(plan); i++)
+    {
+        const DvzFrameGraphPass* pass = dvz_frame_plan_graph_pass_get(plan, i);
+        if (pass == NULL || strcmp(pass->panel_id, render->u.render.panel_id) != 0 ||
+            strcmp(pass->work_label, work_label) != 0)
+            continue;
+        if (seen == ordinal)
+            return pass;
+        seen++;
+    }
+    return NULL;
 }
 
 
@@ -1788,6 +1816,18 @@ _graph_render_for_pass(const DvzFramePlan* plan, const DvzFrameGraphPass* pass)
 {
     ANN(plan);
     ANN(pass);
+    uint32_t ordinal = 0;
+    for (uint32_t i = 0; i < dvz_frame_plan_graph_pass_count(plan); i++)
+    {
+        const DvzFrameGraphPass* candidate = dvz_frame_plan_graph_pass_get(plan, i);
+        if (candidate == pass)
+            break;
+        if (candidate != NULL && strcmp(candidate->panel_id, pass->panel_id) == 0 &&
+            strcmp(candidate->work_label, pass->work_label) == 0)
+            ordinal++;
+    }
+
+    uint32_t seen = 0;
     for (uint32_t i = 0; i < plan->count; i++)
     {
         const DvzFramePlanNode* render = &plan->nodes[i];
@@ -1796,7 +1836,11 @@ _graph_render_for_pass(const DvzFramePlan* plan, const DvzFrameGraphPass* pass)
         const char* work_label = _graph_work_label_for_render_role(render->u.render.pass_role);
         if (work_label[0] != '\0' && strcmp(render->u.render.panel_id, pass->panel_id) == 0 &&
             strcmp(work_label, pass->work_label) == 0)
-            return render;
+        {
+            if (seen == ordinal)
+                return render;
+            seen++;
+        }
     }
     return NULL;
 }
