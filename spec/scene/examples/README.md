@@ -16,6 +16,10 @@ Their role is narrower:
 3. show how resources feed `FramePlan`,
 4. show which DRP2 command categories are implied.
 
+Cross-cutting lessons that come out of several examples can live at this level. The current note on
+volume, slice, and transparent mesh composition is
+[TRANSPARENCY_OCCLUSION.md](TRANSPARENCY_OCCLUSION.md).
+
 
 
 ## Feature Fixture Matrix
