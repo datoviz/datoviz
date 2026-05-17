@@ -7,8 +7,9 @@
 /* visual_point_stress_glfw - live point-visual parameter stress example.
  *
  * Opens a GLFW window with a deterministic high-count point cloud. A GUI overlay exercises point
- * count rebinding, diameter and alpha uploads, circular fill/stroke/outline styling, edge-color
- * material updates, depth cueing, arcball animation, and optional per-frame full reuploads.
+ * count rebinding, diameter and alpha uploads, circular fill/edge/both styling, edge-color
+ * material updates, depth testing, MSAA alpha-to-coverage, depth cueing, arcball animation, and
+ * optional per-frame full reuploads.
  *
  * Build:  just example-c visual_point_stress_glfw
  * Run:    ./build/examples/c/visual_point_stress_glfw
@@ -62,6 +63,15 @@ static const float TAU = 6.28318530718f;
 
 typedef struct PointStressState PointStressState;
 
+typedef enum PointStressStyleMode
+{
+    POINT_STRESS_STYLE_FILL = 0,
+    POINT_STRESS_STYLE_EDGE = 1,
+    POINT_STRESS_STYLE_BOTH = 2,
+} PointStressStyleMode;
+
+
+
 struct PointStressState
 {
     DvzPanel* panel;
@@ -79,9 +89,12 @@ struct PointStressState
     float alpha;
     float stroke_width;
     float edge_rgb[3];
-    bool filled;
-    bool stroke;
-    bool outline;
+    int style_mode;
+    int alpha_mode;
+    bool depth_test_enabled;
+    bool msaa_enabled;
+    bool msaa_alpha_to_coverage;
+    float msaa_sample_count;
     bool depth_cue_enabled;
     float depth_cue_near;
     float depth_cue_far;
@@ -264,7 +277,7 @@ static bool _upload_points(PointStressState* state)
 
 
 /**
- * Apply point fill, stroke, outline, and edge color styling.
+ * Apply point fill, edge, or fill-and-edge styling.
  *
  * @param state point stress state
  */
@@ -274,9 +287,25 @@ static void _apply_style(PointStressState* state)
     ANN(state->visual);
 
     DvzPointStyleDesc style = dvz_point_style_desc();
-    style.filled = state->filled;
-    style.stroke = state->stroke;
-    style.outline = state->outline;
+    switch ((PointStressStyleMode)state->style_mode)
+    {
+    case POINT_STRESS_STYLE_EDGE:
+        style.filled = false;
+        style.stroke = true;
+        style.outline = true;
+        break;
+    case POINT_STRESS_STYLE_BOTH:
+        style.filled = true;
+        style.stroke = true;
+        style.outline = false;
+        break;
+    case POINT_STRESS_STYLE_FILL:
+    default:
+        style.filled = true;
+        style.stroke = false;
+        style.outline = false;
+        break;
+    }
     style.stroke_width = state->stroke_width;
     style.edge_color[0] = _u8_from_unit(state->edge_rgb[0]);
     style.edge_color[1] = _u8_from_unit(state->edge_rgb[1]);
@@ -285,6 +314,50 @@ static void _apply_style(PointStressState* state)
 
     if (dvz_point_set_style(state->visual, &style) != 0)
         dvz_fprintf(stderr, "dvz_point_set_style() failed\n");
+}
+
+
+
+/**
+ * Apply the depth, alpha, and MSAA controls that affect point occlusion and edge coverage.
+ *
+ * @param state point stress state
+ */
+static void _apply_depth_and_msaa(PointStressState* state)
+{
+    ANN(state);
+    ANN(state->panel);
+    ANN(state->visual);
+
+    if (dvz_visual_set_depth_test(state->visual, state->depth_test_enabled) != 0)
+        dvz_fprintf(stderr, "dvz_visual_set_depth_test() failed\n");
+
+    DvzAlphaMode alpha_mode =
+        state->alpha_mode == 1 ? DVZ_ALPHA_BLENDED : DVZ_ALPHA_OPAQUE;
+    if (dvz_visual_set_alpha_mode(state->visual, alpha_mode) != 0)
+        dvz_fprintf(stderr, "dvz_visual_set_alpha_mode() failed\n");
+
+    if (!state->msaa_enabled)
+    {
+        if (!dvz_panel_set_msaa(state->panel, NULL))
+            dvz_fprintf(stderr, "dvz_panel_set_msaa(NULL) failed\n");
+        return;
+    }
+
+    uint32_t sample_count = (uint32_t)(state->msaa_sample_count + 0.5f);
+    if (sample_count < 2)
+        sample_count = 2;
+    if (sample_count > 8)
+        sample_count = 8;
+    state->msaa_sample_count = (float)sample_count;
+
+    DvzMsaaDesc msaa = {
+        .enabled = true,
+        .sample_count = sample_count,
+        .alpha_to_coverage = state->msaa_alpha_to_coverage,
+    };
+    if (!dvz_panel_set_msaa(state->panel, &msaa))
+        dvz_fprintf(stderr, "dvz_panel_set_msaa() failed\n");
 }
 
 
@@ -372,9 +445,12 @@ static void _reset_controls(PointStressState* state)
     state->edge_rgb[0] = 0.03f;
     state->edge_rgb[1] = 0.04f;
     state->edge_rgb[2] = 0.05f;
-    state->filled = true;
-    state->stroke = true;
-    state->outline = false;
+    state->style_mode = POINT_STRESS_STYLE_BOTH;
+    state->alpha_mode = 0;
+    state->depth_test_enabled = true;
+    state->msaa_enabled = true;
+    state->msaa_alpha_to_coverage = true;
+    state->msaa_sample_count = 4.0f;
     state->depth_cue_enabled = true;
     state->depth_cue_near = 2.0f;
     state->depth_cue_far = 4.8f;
@@ -386,6 +462,7 @@ static void _reset_controls(PointStressState* state)
     _apply_alpha_to_colors(state);
     _apply_diameter_to_points(state);
     _apply_style(state);
+    _apply_depth_and_msaa(state);
     _apply_depth_cue(state);
     _apply_spin(state);
     (void)_upload_points(state);
@@ -441,6 +518,7 @@ static void _point_stress_gui(DvzGui* gui, DvzAppWindow* win, void* user_data)
     bool count_changed = false;
     bool data_changed = false;
     bool style_changed = false;
+    bool depth_changed = false;
     bool cue_changed = false;
     bool spin_changed = false;
     if (dvz_gui_begin(gui, "Point stress", NULL, 0))
@@ -456,15 +534,29 @@ static void _point_stress_gui(DvzGui* gui, DvzAppWindow* win, void* user_data)
 
         data_changed |= dvz_gui_slider_float(gui, "Diameter", &state->diameter, 1.0f, 32.0f);
         data_changed |= dvz_gui_slider_float(gui, "Alpha", &state->alpha, 0.02f, 1.0f);
-        style_changed |= dvz_gui_checkbox(gui, "Filled", &state->filled);
-        style_changed |= dvz_gui_checkbox(gui, "Stroke", &state->stroke);
-        style_changed |= dvz_gui_checkbox(gui, "Outline", &state->outline);
+        static const char* const style_labels[] = {
+            "fill",
+            "edge",
+            "both",
+        };
+        style_changed |= dvz_gui_combo(gui, "Style", &state->style_mode, style_labels, 3);
         style_changed |=
             dvz_gui_slider_float(gui, "Stroke width", &state->stroke_width, 0.0f, 8.0f);
         style_changed |= dvz_gui_slider_float(gui, "Edge red", &state->edge_rgb[0], 0.0f, 1.0f);
         style_changed |=
             dvz_gui_slider_float(gui, "Edge green", &state->edge_rgb[1], 0.0f, 1.0f);
         style_changed |= dvz_gui_slider_float(gui, "Edge blue", &state->edge_rgb[2], 0.0f, 1.0f);
+        static const char* const alpha_labels[] = {
+            "opaque",
+            "blended",
+        };
+        depth_changed |= dvz_gui_combo(gui, "Alpha mode", &state->alpha_mode, alpha_labels, 2);
+        depth_changed |= dvz_gui_checkbox(gui, "Depth test", &state->depth_test_enabled);
+        depth_changed |= dvz_gui_checkbox(gui, "MSAA", &state->msaa_enabled);
+        depth_changed |=
+            dvz_gui_slider_float(gui, "MSAA samples", &state->msaa_sample_count, 2.0f, 8.0f);
+        depth_changed |=
+            dvz_gui_checkbox(gui, "Alpha-to-coverage", &state->msaa_alpha_to_coverage);
         cue_changed |= dvz_gui_checkbox(gui, "Depth cue", &state->depth_cue_enabled);
         cue_changed |= dvz_gui_slider_float(
             gui, "Cue near", &state->depth_cue_near, CUE_DISTANCE_MIN, CUE_DISTANCE_MAX);
@@ -481,6 +573,7 @@ static void _point_stress_gui(DvzGui* gui, DvzAppWindow* win, void* user_data)
             count_changed = false;
             data_changed = false;
             style_changed = false;
+            depth_changed = false;
             cue_changed = false;
             spin_changed = false;
         }
@@ -500,6 +593,8 @@ static void _point_stress_gui(DvzGui* gui, DvzAppWindow* win, void* user_data)
     }
     if (style_changed)
         _apply_style(state);
+    if (depth_changed)
+        _apply_depth_and_msaa(state);
     if (cue_changed)
         _apply_depth_cue(state);
     if (spin_changed)
@@ -617,8 +712,7 @@ int main(int argc, char** argv)
     state.alpha = 0.78f;
     _apply_alpha_to_colors(&state);
     _apply_diameter_to_points(&state);
-    if (!_upload_points(&state) || dvz_visual_set_alpha_mode(visual, DVZ_ALPHA_BLENDED) != 0 ||
-        dvz_panel_add_visual(panel, visual, NULL) != 0)
+    if (!_upload_points(&state) || dvz_panel_add_visual(panel, visual, NULL) != 0)
     {
         dvz_fprintf(stderr, "point visual setup failed\n");
         dvz_free(state.diameters);

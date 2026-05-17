@@ -1056,6 +1056,10 @@ static bool _emitter_prepare_render_multi(
         DvzAlphaMode alpha_mode = render->u.render.visual_metadata[i].has_metadata
                                       ? render->u.render.visual_metadata[i].alpha_mode
                                       : DVZ_ALPHA_OPAQUE;
+        bool point_like_desc =
+            desc.kind == DVZ_SCENE_VISUAL_DESC_POINT ||
+            desc.kind == DVZ_SCENE_VISUAL_DESC_PIXEL ||
+            desc.kind == DVZ_SCENE_VISUAL_DESC_MARKER;
         if (_alpha_mode_is_standard_blend(alpha_mode))
         {
             size_t key_len = strlen(shader.pipeline_key);
@@ -1109,19 +1113,23 @@ static bool _emitter_prepare_render_multi(
             dvz_snprintf(
                 shader.pipeline_key + key_len, sizeof(shader.pipeline_key) - key_len,
                 "_msaa%" PRIu32, pass_sample_count);
-            if (desc.kind == DVZ_SCENE_VISUAL_DESC_SPHERE && pass_alpha_to_coverage)
+            if ((desc.kind == DVZ_SCENE_VISUAL_DESC_SPHERE || point_like_desc) &&
+                pass_alpha_to_coverage)
             {
                 key_len = strlen(shader.pipeline_key);
                 dvz_snprintf(
                     shader.pipeline_key + key_len, sizeof(shader.pipeline_key) - key_len,
                     "_a2c");
-                key_len = strlen(shader.fragment_key);
-                dvz_snprintf(
-                    shader.fragment_key + key_len, sizeof(shader.fragment_key) - key_len,
-                    "_a2c");
-                shader.fragment_glsl =
-                    _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_SPHERE_A2C, true);
-                shader.fragment_spirv_key = "sphere_a2c_frag";
+                if (desc.kind == DVZ_SCENE_VISUAL_DESC_SPHERE)
+                {
+                    key_len = strlen(shader.fragment_key);
+                    dvz_snprintf(
+                        shader.fragment_key + key_len, sizeof(shader.fragment_key) - key_len,
+                        "_a2c");
+                    shader.fragment_glsl =
+                        _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_SPHERE_A2C, true);
+                    shader.fragment_spirv_key = "sphere_a2c_frag";
+                }
             }
         }
         bool scene_occluded_shader =
@@ -1236,18 +1244,15 @@ static bool _emitter_prepare_render_multi(
                 pipeline.depth_write_enabled = true;
                 pipeline.depth_compare_op = VK_COMPARE_OP_LESS_OR_EQUAL;
             }
-            if (
-                force_point_depth &&
-                (desc.kind == DVZ_SCENE_VISUAL_DESC_POINT ||
-                 desc.kind == DVZ_SCENE_VISUAL_DESC_PIXEL ||
-                 desc.kind == DVZ_SCENE_VISUAL_DESC_MARKER))
+            if (force_point_depth && point_like_desc)
             {
                 pipeline.has_depth_state = true;
                 pipeline.depth_write_enabled = true;
                 pipeline.depth_compare_op = VK_COMPARE_OP_LESS_OR_EQUAL;
             }
             if (
-                pass_sample_count > 1 && desc.kind == DVZ_SCENE_VISUAL_DESC_SPHERE &&
+                pass_sample_count > 1 &&
+                (desc.kind == DVZ_SCENE_VISUAL_DESC_SPHERE || point_like_desc) &&
                 pass_alpha_to_coverage)
                 pipeline.alpha_to_coverage = true;
             uint64_t material_bgl_id = 0;
