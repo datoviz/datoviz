@@ -141,64 +141,31 @@ int test_scene_text_annotation_bookkeeping(TstSuite* suite, TstItem* item)
     AT(font->face_index == 2);
     AT(font->version == 1);
 
-    DvzText* text = dvz_text(
-        panel,
-        &(DvzTextDesc){
-            .string = "hello",
-            .style = {
-                .font = font,
-                .size_pts = 14.0f,
-                .renderer = DVZ_TEXT_RENDERER_AUTO,
-                .color = {255, 255, 255, 255},
-            },
-            .placement = {
-                .mode = DVZ_TEXT_PLACEMENT_SCREEN,
-                .anchor = DVZ_SCENE_ANCHOR_PANEL_TOP_LEFT,
-                .angle = 0.25f,
-            },
-        });
+    DvzVisual* text = dvz_text(scene, 0);
     ANN(text);
-    AT(text->style.font == font);
-    AT(text->style.renderer == DVZ_TEXT_RENDERER_AUTO);
-    AT(strcmp(text->string, "hello") == 0);
-    AT(text->dirty_flags == DVZ_TEXT_DIRTY_ALL);
-    AT(text->version == 1);
-
-    text->dirty_flags = DVZ_TEXT_DIRTY_NONE;
-    dvz_text_set_string(text, "world");
-    AT(text->dirty_flags ==
-       (DVZ_TEXT_DIRTY_STRING | DVZ_TEXT_DIRTY_LAYOUT | DVZ_TEXT_DIRTY_RENDER));
-    AT(text->version == 2);
-
-    text->dirty_flags = DVZ_TEXT_DIRTY_NONE;
-    dvz_text_set_style(
-        text,
-        &(DvzTextStyle){
-            .font = font,
-            .size_pts = 18.0f,
-            .renderer = DVZ_TEXT_RENDERER_SMALL_BITMAP_ATLAS,
-            .color = {255, 255, 255, 255},
-        });
-    AT(text->dirty_flags == (DVZ_TEXT_DIRTY_STYLE | DVZ_TEXT_DIRTY_LAYOUT | DVZ_TEXT_DIRTY_RENDER));
-    AT(text->version == 3);
-
-    text->dirty_flags = DVZ_TEXT_DIRTY_NONE;
-    dvz_text_set_placement(
-        text,
-        &(DvzTextPlacement){
-            .mode = DVZ_TEXT_PLACEMENT_DATA,
-            .anchor = DVZ_SCENE_ANCHOR_DATA,
-            .angle = -0.5f,
-            .depth_test = true,
-        });
-    AT(strcmp(text->string, "world") == 0);
-    AT(text->style.size_pts == 18.0f);
-    AT(text->style.renderer == DVZ_TEXT_RENDERER_SMALL_BITMAP_ATLAS);
-    AT(text->placement.mode == DVZ_TEXT_PLACEMENT_DATA);
-    AT(text->placement.depth_test);
-    AT(text->dirty_flags ==
-       (DVZ_TEXT_DIRTY_PLACEMENT | DVZ_TEXT_DIRTY_LAYOUT | DVZ_TEXT_DIRTY_RENDER));
-    AT(text->version == 4);
+    const char* strings[2] = {"hello", "world"};
+    float positions[2][3] = {{10.0f, 20.0f, 0.0f}, {80.0f, 24.0f, 0.0f}};
+    float pivots[2][2] = {{0.0f, 0.0f}, {0.5f, 0.5f}};
+    float sizes[2] = {14.0f, 18.0f};
+    float angles[2] = {0.25f, -0.5f};
+    DvzColor colors[2] = {{255, 255, 255, 255}, {128, 200, 255, 255}};
+    DvzVisualDataUpdate updates[5] = {
+        {.attr_name = "position", .data = positions, .item_count = 2},
+        {.attr_name = "pivot", .data = pivots, .item_count = 2},
+        {.attr_name = "size", .data = sizes, .item_count = 2},
+        {.attr_name = "color", .data = colors, .item_count = 2},
+        {.attr_name = "angle", .data = angles, .item_count = 2},
+    };
+    AT(dvz_visual_set_strings(text, "text", strings, 2) == 0);
+    AT(dvz_visual_set_data_many(text, updates, 5) == 0);
+    AT(text->type == DVZ_VISUAL_TYPE_TEXT);
+    AT(text->text.string_count == 2);
+    AT(strcmp(text->text.strings[0], "hello") == 0);
+    AT(strcmp(text->text.strings[1], "world") == 0);
+    AT(text->text.strings_version == 1);
+    AT(dvz_panel_add_visual(
+           panel, text,
+           &(DvzVisualAttachDesc){.z_layer = 1, .controller_mode = DVZ_CONTROLLER_FIXED}) == 0);
 
     DvzAnnotation* annotation = dvz_annotation_label(
         panel,
@@ -230,10 +197,8 @@ int test_scene_text_annotation_bookkeeping(TstSuite* suite, TstItem* item)
     AT(annotation->version == 2);
 
     dvz_annotation_destroy(annotation);
-    dvz_text_destroy(text);
     dvz_font_destroy(font);
     AT(annotation->scene == NULL);
-    AT(text->scene == NULL);
     AT(font->scene == NULL);
 
     dvz_scene_destroy(scene);
@@ -252,109 +217,110 @@ int test_scene_text_bitmap_visual_realization(TstSuite* suite, TstItem* item)
         figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
     ANN(panel);
 
-    DvzText* text = dvz_text(
-        panel,
-        &(DvzTextDesc){
-            .string = "Hi",
-            .style = {
-                .size_pts = 8.0f,
-                .renderer = DVZ_TEXT_RENDERER_SMALL_BITMAP_ATLAS,
-                .color = {64, 128, 255, 255},
-            },
-            .placement = {
-                .mode = DVZ_TEXT_PLACEMENT_SCREEN,
-                .anchor = DVZ_SCENE_ANCHOR_PANEL_TOP_LEFT,
-                .offset = {10.0f, 20.0f},
-            },
-        });
+    DvzVisual* text = dvz_text(scene, 0);
     ANN(text);
-    AT(panel->visual_count == 0);
+    const char* strings[1] = {"Hi"};
+    float positions_text[1][3] = {{10.0f, 20.0f, 0.0f}};
+    float pivots[1][2] = {{0.0f, 0.0f}};
+    float sizes[1] = {8.0f};
+    float angles[1] = {0.0f};
+    DvzColor colors_text[1] = {{64, 128, 255, 255}};
+    DvzVisualDataUpdate updates[5] = {
+        {.attr_name = "position", .data = positions_text, .item_count = 1},
+        {.attr_name = "pivot", .data = pivots, .item_count = 1},
+        {.attr_name = "size", .data = sizes, .item_count = 1},
+        {.attr_name = "color", .data = colors_text, .item_count = 1},
+        {.attr_name = "angle", .data = angles, .item_count = 1},
+    };
+    AT(dvz_visual_set_strings(text, "text", strings, 1) == 0);
+    AT(dvz_visual_set_data_many(text, updates, 5) == 0);
+    AT(dvz_panel_add_visual(
+           panel, text,
+           &(DvzVisualAttachDesc){.z_layer = 1, .controller_mode = DVZ_CONTROLLER_FIXED}) == 0);
+    AT(panel->visual_count == 1);
 
     _scene_prepare_text_visuals(figure);
-    ANN(text->visual);
-    AT(panel->visual_count == 1);
-    AT(panel->visuals[0].visual == text->visual);
-    AT(panel->visuals[0].controller_mode == DVZ_CONTROLLER_FIXED);
-    AT(text->visual->type == DVZ_VISUAL_TYPE_GLYPH);
-    AT(text->visual->visible);
-    AT(text->visual->alpha_mode == DVZ_ALPHA_BLENDED);
-    AT(!text->visual->depth_test_enabled);
-    AT(text->visual_version == text->version);
-    AT(text->dirty_flags == DVZ_TEXT_DIRTY_NONE);
-    AC(text->metrics.advance[0], 12.0f, 1e-6f);
-    AC(text->metrics.layout_bounds[3], 8.0f, 1e-6f);
+    DvzVisual* glyph = text->text.glyph_visual;
+    ANN(glyph);
+    AT(panel->visual_count == 2);
+    AT(panel->visuals[1].visual == glyph);
+    AT(panel->visuals[1].controller_mode == DVZ_CONTROLLER_FIXED);
+    AT(glyph->type == DVZ_VISUAL_TYPE_GLYPH);
+    AT(glyph->visible);
+    AT(glyph->alpha_mode == DVZ_ALPHA_BLENDED);
+    AT(!glyph->depth_test_enabled);
+    AT(text->text.realized_version > 0);
+    AT(text->text.span_count == 1);
+    AT(text->text.spans[0].glyph_count == 2);
 
-    int pos_idx = _attr_index(text->visual, "position");
-    int uv_idx = _attr_index(text->visual, "texcoords");
-    int color_idx = _attr_index(text->visual, "color");
+    int pos_idx = _attr_index(glyph, "position");
+    int uv_idx = _attr_index(glyph, "texcoords");
+    int color_idx = _attr_index(glyph, "color");
     AT(pos_idx >= 0);
     AT(uv_idx >= 0);
     AT(color_idx >= 0);
-    AT(text->visual->attrs[pos_idx].item_count == 12);
-    AT(text->visual->attrs[uv_idx].item_count == 12);
-    AT(text->visual->attrs[color_idx].item_count == 12);
-    const float(*positions)[3] = (const float(*)[3])text->visual->attrs[pos_idx].data;
+    AT(glyph->attrs[pos_idx].item_count == 12);
+    AT(glyph->attrs[uv_idx].item_count == 12);
+    AT(glyph->attrs[color_idx].item_count == 12);
+    const float(*positions)[3] = (const float(*)[3])glyph->attrs[pos_idx].data;
     ANN(positions);
     AC(positions[0][0], -0.96875f, 1e-6f);
     AC(positions[0][1], 0.9166667f, 1e-6f);
     AC(positions[11][0], -0.93125f, 1e-6f);
     AC(positions[11][1], 0.8833333f, 1e-6f);
 
-    dvz_text_set_placement(
-        text,
-        &(DvzTextPlacement){
-            .mode = DVZ_TEXT_PLACEMENT_SCREEN,
-            .anchor = DVZ_SCENE_ANCHOR_PANEL_TOP_LEFT,
-            .offset = {10.0f, 20.0f},
-            .pivot = {0.5f, 0.5f},
-            .has_pivot = true,
-        });
+    pivots[0][0] = 0.5f;
+    pivots[0][1] = 0.5f;
+    AT(dvz_visual_set_data(text, "pivot", pivots, 1) == 0);
     _scene_prepare_text_visuals(figure);
-    positions = (const float(*)[3])text->visual->attrs[pos_idx].data;
+    positions = (const float(*)[3])glyph->attrs[pos_idx].data;
     ANN(positions);
     AC(positions[0][0], -0.9875f, 1e-6f);
     AC(positions[0][1], 0.9333333f, 1e-6f);
 
-    const uint8_t* colors = (const uint8_t*)text->visual->attrs[color_idx].data;
+    const uint8_t* colors = (const uint8_t*)glyph->attrs[color_idx].data;
     ANN(colors);
     AT(colors[0] == 64);
     AT(colors[1] == 128);
     AT(colors[2] == 255);
     AT(colors[3] == 255);
 
-    ANN(text->visual->field);
-    DvzSampledField* atlas = text->visual->field;
+    ANN(glyph->field);
+    DvzSampledField* atlas = glyph->field;
     AT(atlas->desc.width == 128);
     AT(atlas->desc.height == 60);
-    AT(text->visual->field->dirty);
+    AT(glyph->field->dirty);
 
-    uint64_t old_visual_version = text->visual_version;
+    uint64_t old_visual_version = text->text.realized_version;
     _scene_prepare_text_visuals(figure);
-    AT(text->visual_version == old_visual_version);
-    AT(panel->visual_count == 1);
+    AT(text->text.realized_version == old_visual_version);
+    AT(panel->visual_count == 2);
 
-    dvz_text_set_string(text, "A" "\xCE" "\xA9" "B");
+    strings[0] = "A" "\xCE" "\xA9" "B";
+    AT(dvz_visual_set_strings(text, "text", strings, 1) == 0);
     _scene_prepare_text_visuals(figure);
-    AT(text->visual->type == DVZ_VISUAL_TYPE_GLYPH);
-    AT(text->visual->attrs[pos_idx].item_count == 18);
-    AT(text->visual->attrs[uv_idx].item_count == 18);
-    AT(text->visual->attrs[color_idx].item_count == 18);
-    AT(text->visual->field == atlas);
-    AC(text->metrics.advance[0], 18.0f, 1e-6f);
-    AC(text->metrics.layout_bounds[3], 8.0f, 1e-6f);
+    AT(glyph->type == DVZ_VISUAL_TYPE_GLYPH);
+    AT(glyph->attrs[pos_idx].item_count == 18);
+    AT(glyph->attrs[uv_idx].item_count == 18);
+    AT(glyph->attrs[color_idx].item_count == 18);
+    AT(glyph->field == atlas);
+    AT(text->text.spans[0].glyph_count == 3);
 
-    dvz_text_set_string(text, "A");
+    strings[0] = "A";
+    AT(dvz_visual_set_strings(text, "text", strings, 1) == 0);
     _scene_prepare_text_visuals(figure);
-    AT(text->visual->attrs[pos_idx].item_count == 6);
-    AT(text->visual->attrs[uv_idx].item_count == 6);
-    AT(text->visual->attrs[color_idx].item_count == 6);
+    AT(glyph->attrs[pos_idx].item_count == 6);
+    AT(glyph->attrs[uv_idx].item_count == 6);
+    AT(glyph->attrs[color_idx].item_count == 6);
     DvzFramePlanVisualMeta metadata = {0};
-    AT(_scene_visual_frame_plan_metadata(figure, text->visual, 0, &metadata));
+    uint32_t glyph_index = 0;
+    AT(_figure_visual_index(figure, glyph, &glyph_index));
+    AT(_scene_visual_frame_plan_metadata(figure, glyph, glyph_index, &metadata));
     AT(metadata.vertex_count == 6);
 
-    dvz_text_set_string(text, "");
+    dvz_visual_set_visible(text, false);
     _scene_prepare_text_visuals(figure);
-    AT(!text->visual->visible);
+    AT(!glyph->visible);
 
     DvzAnnotation* annotation = dvz_annotation_label(
         panel,
@@ -379,7 +345,7 @@ int test_scene_text_bitmap_visual_realization(TstSuite* suite, TstItem* item)
     AT(annotation->visual->alpha_mode == DVZ_ALPHA_BLENDED);
     AT(annotation->visual->field == atlas);
     AT(annotation->dirty_flags == DVZ_TEXT_DIRTY_NONE);
-    AT(panel->visual_count == 2);
+    AT(panel->visual_count == 3);
 
     dvz_annotation_destroy(annotation);
     AT(!annotation->visual->visible);
@@ -390,7 +356,7 @@ int test_scene_text_bitmap_visual_realization(TstSuite* suite, TstItem* item)
 
 
 /**
- * Verify retained text can emit more labels than the original small render-node cap.
+ * Verify batched text emits many labels through one glyph visual.
  *
  * @param suite the active test suite
  * @param item the active test item
@@ -408,26 +374,43 @@ int test_scene_text_many_labels_render_plan(TstSuite* suite, TstItem* item)
     ANN(panel);
 
     const uint32_t label_count = 16;
-    DvzTextStyle style = {
-        .size_pts = 8.0f,
-        .renderer = DVZ_TEXT_RENDERER_SMALL_BITMAP_ATLAS,
-        .color = {255, 255, 255, 255},
-    };
+    DvzVisual* text = dvz_text(scene, 0);
+    ANN(text);
+    char labels[16][16] = {{0}};
+    const char* strings[16] = {0};
+    float positions[16][3] = {{0}};
+    float pivots[16][2] = {{0}};
+    float sizes[16] = {0};
+    float angles[16] = {0};
+    DvzColor colors[16] = {{0}};
     for (uint32_t i = 0; i < label_count; i++)
     {
-        char label[16] = {0};
-        dvz_snprintf(label, sizeof(label), "%u", i);
-        DvzTextPlacement placement = {
-            .mode = DVZ_TEXT_PLACEMENT_SCREEN,
-            .anchor = DVZ_SCENE_ANCHOR_PANEL_CENTER,
-            .offset = {(float)i * 8.0f, 0.0f},
-            .pivot = {0.5f, 0.5f},
-            .has_pivot = true,
-        };
-        DvzText* text =
-            dvz_text(panel, &(DvzTextDesc){.string = label, .style = style, .placement = placement});
-        ANN(text);
+        dvz_snprintf(labels[i], sizeof(labels[i]), "%u", i);
+        strings[i] = labels[i];
+        positions[i][0] = 320.0f + (float)i * 8.0f;
+        positions[i][1] = 240.0f;
+        pivots[i][0] = 0.5f;
+        pivots[i][1] = 0.5f;
+        sizes[i] = 8.0f;
+        colors[i][0] = 255;
+        colors[i][1] = 255;
+        colors[i][2] = 255;
+        colors[i][3] = 255;
     }
+    DvzVisualDataUpdate updates[5] = {
+        {.attr_name = "position", .data = positions, .item_count = label_count},
+        {.attr_name = "pivot", .data = pivots, .item_count = label_count},
+        {.attr_name = "size", .data = sizes, .item_count = label_count},
+        {.attr_name = "color", .data = colors, .item_count = label_count},
+        {.attr_name = "angle", .data = angles, .item_count = label_count},
+    };
+    AT(dvz_visual_set_strings(text, "text", strings, label_count) == 0);
+    AT(dvz_visual_set_data_many(text, updates, 5) == 0);
+    AT(dvz_panel_add_visual(
+           panel, text,
+           &(DvzVisualAttachDesc){.z_layer = 1, .controller_mode = DVZ_CONTROLLER_FIXED}) == 0);
+    _scene_prepare_text_visuals(figure);
+    ANN(text->text.glyph_visual);
 
     DvzFramePlan* plan = dvz_frame_plan("figure.text.labels", 0);
     ANN(plan);
@@ -439,7 +422,7 @@ int test_scene_text_many_labels_render_plan(TstSuite* suite, TstItem* item)
         if (plan->nodes[i].type == DVZ_FRAME_PLAN_NODE_RENDER)
             visual_count += plan->nodes[i].u.render.visual_count;
     }
-    AT(visual_count == label_count);
+    AT(visual_count == 1);
 
     dvz_frame_plan_destroy(plan);
     dvz_scene_destroy(scene);

@@ -1273,7 +1273,7 @@ int test_app_offscreen_image_has_nonblank_pixels(TstSuite* suite, TstItem* item)
 
 
 /**
- * Ensure retained text renders visible pixels through the offscreen app path.
+ * Ensure batched text renders visible pixels through the offscreen app path.
  *
  * @param suite the test suite
  * @param item the test item
@@ -1295,22 +1295,26 @@ int test_app_offscreen_text_has_nonblank_pixels(TstSuite* suite, TstItem* item)
         figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
     AT(panel != NULL);
 
-    DvzText* text = dvz_text(
-        panel,
-        &(DvzTextDesc){
-            .string = "HI",
-            .style = {
-                .size_pts = 16.0f,
-                .renderer = DVZ_TEXT_RENDERER_SMALL_BITMAP_ATLAS,
-                .color = {0, 255, 0, 255},
-            },
-            .placement = {
-                .mode = DVZ_TEXT_PLACEMENT_SCREEN,
-                .anchor = DVZ_SCENE_ANCHOR_PANEL_TOP_LEFT,
-                .offset = {8.0f, 8.0f},
-            },
-        });
+    DvzVisual* text = dvz_text(scene, 0);
     AT(text != NULL);
+    const char* strings[1] = {"HI"};
+    float positions[1][3] = {{8.0f, 8.0f, 0.0f}};
+    float pivots[1][2] = {{0.0f, 0.0f}};
+    float sizes[1] = {16.0f};
+    float angles[1] = {0.0f};
+    DvzColor colors[1] = {{0, 255, 0, 255}};
+    DvzVisualDataUpdate updates[5] = {
+        {.attr_name = "position", .data = positions, .item_count = 1},
+        {.attr_name = "pivot", .data = pivots, .item_count = 1},
+        {.attr_name = "size", .data = sizes, .item_count = 1},
+        {.attr_name = "color", .data = colors, .item_count = 1},
+        {.attr_name = "angle", .data = angles, .item_count = 1},
+    };
+    AT(dvz_visual_set_strings(text, "text", strings, 1) == 0);
+    AT(dvz_visual_set_data_many(text, updates, 5) == 0);
+    AT(dvz_panel_add_visual(
+           panel, text,
+           &(DvzVisualAttachDesc){.z_layer = 1, .controller_mode = DVZ_CONTROLLER_FIXED}) == 0);
 
     DvzApp* app = dvz_app(scene);
     if (app == NULL)
