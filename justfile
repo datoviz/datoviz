@@ -1054,7 +1054,11 @@ webgpu-fixture-preflight *args='':
     @python3 tools/webgpu_fixture_preflight.py {{args}}
 #
 
-spec-check:
+shader-abi-check:
+    @python3 tools/check_scene_shader_abi.py
+#
+
+spec-check: shader-abi-check
     @python3 tools/drp2_fixture_runner.py
     @python3 tools/webgpu_fixture_preflight.py
     @.venv/bin/pytest -q testing/test_drp2_fixture_runner.py
