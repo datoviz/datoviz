@@ -6605,6 +6605,46 @@ int test_scene_render_contract_validation_errors(TstSuite* suite, TstItem* item)
 }
 
 
+
+/**
+ * Verify graph-backed render roles fail contract validation when their graph pass is missing.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_frame_plan_missing_graph_pass_fails_contract(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    AT(scene != NULL);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    AT(figure != NULL);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    AT(panel != NULL);
+
+    DvzFramePlan* plan = dvz_frame_plan("figure_0", 0);
+    ANN(plan);
+    AT(dvz_frame_plan_render_panel_role(
+        plan, "figure_0_p0", "rt.gbuffer.normal", false, panel->desc,
+        DVZ_FRAME_PLAN_RENDER_PASS_GBUFFER));
+
+    DvzDiagnosticReport report = {0};
+    dvz_diagnostic_report_init(&report);
+    AT(!_scene_frame_plan_contracts_validate(figure, plan, &report));
+    AT(dvz_diagnostic_report_count(&report) == 1);
+    const char* message = dvz_diagnostic_report_get(&report, 0);
+    ANN(message);
+    AT(strstr(message, "no matching graph pass") != NULL);
+
+    dvz_frame_plan_destroy(plan);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
 /**
  * Verify eligible mesh visuals lower an internal G-buffer graph pass to DRP2.
  *
@@ -9925,6 +9965,7 @@ int test_scene_graph(TstSuite* suite)
     TEST_SIMPLE(test_scene_pixel_depth_cue_toggle_switches_pipeline);
     TEST_SIMPLE(test_scene_visual_pass_capabilities);
     TEST_SIMPLE(test_scene_render_contract_validation_errors);
+    TEST_SIMPLE(test_scene_frame_plan_missing_graph_pass_fails_contract);
     TEST_SIMPLE(test_scene_gbuffer_runtime_lowering);
     TEST_SIMPLE(test_scene_frame_plan_node_reallocation_safe);
     TEST_SIMPLE(test_scene_msaa_runtime_lowering);

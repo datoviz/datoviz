@@ -444,6 +444,8 @@ int test_scene_visual_pass_capabilities(TstSuite* suite, TstItem* item);
 
 int test_scene_render_contract_validation_errors(TstSuite* suite, TstItem* item);
 
+int test_scene_frame_plan_missing_graph_pass_fails_contract(TstSuite* suite, TstItem* item);
+
 int test_scene_gbuffer_runtime_lowering(TstSuite* suite, TstItem* item);
 
 int test_scene_frame_plan_node_reallocation_safe(TstSuite* suite, TstItem* item);

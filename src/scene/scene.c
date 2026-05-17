@@ -925,6 +925,11 @@ DvzDrp2CommandStream* dvz_figure_emit_ex(
     ANN(figure->scene->emitter);
     DvzFramePlanEmitter* emitter = figure->scene->emitter;
 
+    DvzCapabilitySnapshot default_caps;
+    DvzDiagnosticReport local_report;
+    DvzFramePlanEmitConfig default_cfg;
+    _scene_emit_defaults(&caps, &default_caps, &report, &local_report, &cfg, &default_cfg);
+
     char figure_id[64];
     _scene_figure_id(figure, figure_id, sizeof(figure_id));
 
@@ -934,8 +939,15 @@ DvzDrp2CommandStream* dvz_figure_emit_ex(
 
     _scene_emit_visual_uploads(figure, plan);
 
+    bool panels_ok = true;
     for (uint32_t pi = 0; pi < figure->panel_count; pi++)
-        _scene_emit_panel_render(figure, pi, plan, figure_id);
+        panels_ok = _scene_emit_panel_render(figure, pi, plan, figure_id) && panels_ok;
+    if (!panels_ok)
+    {
+        (void)dvz_diagnostic_report_add(report, "scene FramePlan graph emission failed");
+        dvz_frame_plan_destroy(plan);
+        return NULL;
+    }
 
     DvzDiagnosticReport contract_report;
     dvz_diagnostic_report_init(&contract_report);
@@ -946,15 +958,14 @@ DvzDrp2CommandStream* dvz_figure_emit_ex(
         {
             const char* message = dvz_diagnostic_report_get(&contract_report, i);
             if (message != NULL)
+            {
                 log_error("scene render contract validation failed: %s", message);
+                (void)dvz_diagnostic_report_add(report, message);
+            }
         }
+        dvz_frame_plan_destroy(plan);
+        return NULL;
     }
-    ASSERT(contracts_ok);
-
-    DvzCapabilitySnapshot default_caps;
-    DvzDiagnosticReport local_report;
-    DvzFramePlanEmitConfig default_cfg;
-    _scene_emit_defaults(&caps, &default_caps, &report, &local_report, &cfg, &default_cfg);
 
     DvzDrp2CommandStream* stream =
         dvz_frame_plan_emitter_emit_drp2(emitter, plan, caps, report, cfg);

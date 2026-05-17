@@ -36,6 +36,32 @@ Validation:
 4. `git diff --check -- src/scene/scene_emit.c src/scene/tests/scene_graph.c src/scene/tests/test_scene.h`
 
 
+### 2026-05-17: Phase 0 / Graph failure diagnostics
+
+Completed the graph-emission hardening slice.
+
+Changes:
+
+1. `_scene_emit_panel_render()` now returns a success flag for panel graph emission instead of only
+   logging technique-builder failures.
+2. `dvz_figure_emit_ex()` now normalizes diagnostics before FramePlan construction, reports graph
+   emission failure, propagates contract-validation diagnostics, and returns `NULL` instead of
+   asserting after a failed contract check.
+3. `_scene_frame_plan_contracts_validate()` now reports graph-backed render roles that do not have
+   a matching FramePlan graph pass.
+4. Added `test_scene_frame_plan_missing_graph_pass_fails_contract` to lock the missing-pass
+   diagnostic behavior.
+
+Validation:
+
+1. `cmake --build build --target dvztest_scene -j2`
+2. `./build/testing/dvztest_scene test_scene_frame_plan_missing_graph_pass_fails_contract`
+3. `./build/testing/dvztest_scene test_scene_render_contract_validation_errors`
+4. `./build/testing/dvztest_scene test_scene_visual_alpha_mode_splits_frame_plan_passes`
+5. `./build/testing/dvztest_scene test_scene_gbuffer_runtime_lowering`
+6. `git diff --check -- src/scene/_scene_emit.h src/scene/scene.c src/scene/scene_emit.c src/scene/render_contract.c src/scene/tests/scene_graph.c src/scene/tests/test_scene.h`
+
+
 ## Executive Assessment
 
 The direction is correct and worth continuing. The proposal identifies the right failure mode:
