@@ -18,6 +18,8 @@
 
 #include <stdint.h>
 
+#include "datoviz/gpu/enums.h"
+
 
 
 /*************************************************************************************************/
@@ -59,20 +61,6 @@ typedef enum
 /*  Vulkan wrapper enums, avoiding dependency to vulkan.h                                        */
 /*  WARNING: they must match exactly the corresponding Vulkan enums.                             */
 /*************************************************************************************************/
-
-// VkPrimitiveTopology wrapper.
-typedef enum
-{
-    DVZ_PRIMITIVE_TOPOLOGY_POINT_LIST = 0,
-    DVZ_PRIMITIVE_TOPOLOGY_LINE_LIST = 1,
-    DVZ_PRIMITIVE_TOPOLOGY_LINE_STRIP = 2,
-    DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST = 3,
-    DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP = 4,
-    DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_FAN = 5,
-
-} DvzPrimitiveTopology;
-
-
 
 // VkFormat wrapper.
 // NOTE: we only included the most common ones, this list can be completed as needed.

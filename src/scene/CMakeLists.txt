@@ -17,6 +17,16 @@ endif()
 
 add_library(datoviz_scene OBJECT ${SCENE_SRC})
 
+if(DVZ_HAS_PRECOMPILED_SHADERS AND TARGET datoviz_shaders)
+    add_dependencies(datoviz_scene datoviz_shaders)
+endif()
+if(DVZ_HAS_GLSL_SHADERS AND TARGET datoviz_glsl_shaders)
+    add_dependencies(datoviz_scene datoviz_glsl_shaders)
+endif()
+if(DVZ_HAS_WGSL_SHADERS AND TARGET datoviz_wgsl_shaders)
+    add_dependencies(datoviz_scene datoviz_wgsl_shaders)
+endif()
+
 target_include_directories(datoviz_scene
     PUBLIC
     ${PROJECT_SOURCE_DIR}/include

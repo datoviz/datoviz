@@ -66,7 +66,7 @@ typedef enum
 
 
 // Stream frame descriptor.
-typedef struct
+typedef struct DvzStreamFrame
 {
     VkImage image;
     VkDeviceMemory memory;

@@ -10,7 +10,7 @@
 
 #pragma once
 
-#include "datoviz/vk/enums.h" /* DvzPrimitiveTopology — shared with vklite/DRP2 */
+#include "datoviz/gpu/enums.h" /* DvzPrimitiveTopology shared with DRP2 backends. */
 
 
 

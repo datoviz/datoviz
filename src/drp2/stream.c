@@ -17,6 +17,8 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include <vulkan/vulkan_core.h>
+
 #include "_alloc.h"
 #include "_assertions.h"
 #include "_log.h"

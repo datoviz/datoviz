@@ -21,7 +21,6 @@
 
 #include "datoviz/common/macros.h"
 #include "datoviz/drp2/types.h"
-#include "datoviz/stream/frame_stream.h"
 
 
 
@@ -33,6 +32,11 @@ EXTERN_C_ON
 
 typedef struct DvzDrp2ValidationResult DvzDrp2ValidationResult;
 typedef struct DvzDrp2RuntimeConfig DvzDrp2RuntimeConfig;
+typedef struct DvzDrp2ExternalBufferDesc DvzDrp2ExternalBufferDesc;
+typedef struct DvzDevice DvzDevice;
+typedef struct DvzStreamFrame DvzStreamFrame;
+typedef struct DvzVma DvzVma;
+typedef struct DvzBuffer DvzBuffer;
 
 struct DvzDrp2ValidationResult
 {
@@ -47,6 +51,14 @@ struct DvzDrp2RuntimeConfig
     DvzDevice* device;
     DvzVma* allocator;
     bool semantic_only;
+};
+
+
+struct DvzDrp2ExternalBufferDesc
+{
+    DvzBuffer* buffer;
+    uint64_t size;
+    uint32_t usage;
 };
 
 

@@ -380,9 +380,18 @@ endif()
 # Add subdirectories
 add_subdirectory(src)
 add_subdirectory(testing)
-add_subdirectory(examples/c)
-add_subdirectory(examples/napari)
-add_subdirectory(examples/qt)
+
+if(DVZ_BUILD_CANVAS)
+    add_subdirectory(examples/c)
+endif()
+
+if(DVZ_BUILD_APP AND DVZ_BUILD_GUI AND DVZ_HAS_GLFW)
+    add_subdirectory(examples/napari)
+endif()
+
+if(DVZ_BUILD_APP)
+    add_subdirectory(examples/qt)
+endif()
 
 get_property(_dvz_targets GLOBAL PROPERTY DVZ_ALL_TARGETS)
 list(REMOVE_DUPLICATES _dvz_targets)

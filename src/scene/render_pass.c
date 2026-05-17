@@ -17,6 +17,8 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include <vulkan/vulkan_core.h>
+
 #include "_assertions.h"
 #include "_frame_plan_emit.h"
 #include "_render_pass.h"

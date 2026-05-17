@@ -23,6 +23,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <vulkan/vulkan_core.h>
+
 #if defined(_WIN32)
 #include <direct.h>
 #else

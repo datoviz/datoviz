@@ -29,12 +29,11 @@
 #include "_overflow.h"
 #include "_runtime.h"
 #include "_stream.h"
-#include "datoviz/stream/frame_stream.h"
-#include "datoviz/vklite/descriptors.h"
-#include "datoviz/vk/gpu_ctx.h"
 
 #if DVZ_DRP2_HAS_VKLITE
+#include "datoviz/stream/frame_stream.h"
 #include "datoviz/vk/device.h"
+#include "datoviz/vk/gpu_ctx.h"
 #include "datoviz/vklite/buffers.h"
 #include "datoviz/vklite/compute.h"
 #include "datoviz/vklite/commands.h"
@@ -126,6 +125,7 @@ static void _runtime_wait_backend_idle(DvzDrp2Runtime* runtime)
  * @param frame the borrowed stream frame
  * @return whether the frame has the required target handles and extent
  */
+#if DVZ_DRP2_HAS_VKLITE
 bool _drp2_frame_target_valid(uint64_t texture_id, const DvzStreamFrame* frame)
 {
     if (texture_id == 0 || frame == NULL)
@@ -145,6 +145,7 @@ bool _drp2_frame_target_valid(uint64_t texture_id, const DvzStreamFrame* frame)
         return false;
     return frame->extent.width != 0 && frame->extent.height != 0;
 }
+#endif
 
 
 
@@ -450,6 +451,7 @@ dvz_drp2_runtime_execute(DvzDrp2Runtime* runtime, const DvzDrp2CommandStream* st
 bool dvz_drp2_runtime_attach_frame_target(
     DvzDrp2Runtime* runtime, uint64_t texture_id, const DvzStreamFrame* frame)
 {
+#if DVZ_DRP2_HAS_VKLITE
     if (runtime == NULL || !_drp2_frame_target_valid(texture_id, frame))
         return false;
 
@@ -490,6 +492,12 @@ bool dvz_drp2_runtime_attach_frame_target(
     object->sample_count = 1;
     object->usage = DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT | DVZ_DRP2_TEXTURE_USAGE_COPY_SRC;
     return true;
+#else
+    (void)runtime;
+    (void)texture_id;
+    (void)frame;
+    return false;
+#endif
 }
 
 
@@ -588,12 +596,18 @@ uint32_t* dvz_compile_glsl(const char* stage, const char* glsl, uint64_t* out_si
     ANN(glsl);
     ANN(out_size);
     *out_size = 0;
+#if DVZ_DRP2_HAS_VKLITE
     uint32_t* spv = NULL;
     uint64_t spv_size = 0;
     if (!_vklite_compile_glsl(stage, glsl, &spv, &spv_size))
         return NULL;
     *out_size = spv_size;
     return spv;
+#else
+    (void)stage;
+    (void)glsl;
+    return NULL;
+#endif
 }
 
 
