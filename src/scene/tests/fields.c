@@ -866,7 +866,7 @@ int test_scene_volume_retained_controls(TstSuite* suite, TstItem* item)
     ANN(state);
     AT(state->opacity == 1.0f);
     AT(state->sampling == DVZ_VOLUME_SAMPLING_LINEAR);
-    AT(state->render_mode == DVZ_VOLUME_RENDER_SLICE);
+    AT(state->render_mode == DVZ_VOLUME_RENDER_COMPOSITE);
     AT(state->slice_axis == DVZ_VOLUME_AXIS_Z);
     AT(state->slice_position == 0.5);
     AT(state->step_count == 64);

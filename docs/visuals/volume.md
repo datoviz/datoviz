@@ -1,6 +1,7 @@
 # Volume Visual
 
-The **volume** visual displays 3D scalar fields using ray-based volume rendering. It supports NDC-aligned bounding boxes, axis permutation, basic colormapping, and limited transfer functions.
+The **volume** visual displays one 3D scalar or RGBA sampled field. In v0.4 it is a retained scene
+visual backed by `DvzSampledField`, lowered through the scene -> DRP2 -> vklite runtime path.
 
 <figure markdown="span">
 ![Volume visual](https://raw.githubusercontent.com/datoviz/data/main/gallery/visuals/volume.png)
@@ -8,16 +9,15 @@ The **volume** visual displays 3D scalar fields using ray-based volume rendering
 
 ---
 
-## Overview
+## Current v0.4 Scope
 
-- Renders 3D scalar data in a box defined by NDC bounds
-- Basic support for colormapping and transfer functions
-- Texture-based rendering with customizable axis permutation
-- Useful for initial previews of volumetric data
-
-!!! warning
-
-    Volume rendering is currently a basic implementation. It is neither highly efficient nor visually polished yet. Slicing, advanced transfer functions, and performance improvements are planned for future versions.
+- One volume visual renders one 3D field.
+- The default mode is full-volume composite rendering.
+- Slice and MIP modes are selected explicitly.
+- Bounds place the volume proxy in object/scene space.
+- Slice position is normalized in `[0, 1]`.
+- Scalar fields can render directly or through a colormap-backed transfer path.
+- RGBA8 fields render directly from voxel color.
 
 ---
 
@@ -26,34 +26,42 @@ The **volume** visual displays 3D scalar fields using ray-based volume rendering
 Use the volume visual when:
 
 - You want to visualize 3D data like MRI, CT, simulations
-- You need a fast volumetric rendering preview
-- You are working within NDC and want basic shading support
+- You need an interactive 3D volume preview
+- You want a movable orthogonal slice through a 3D field
+- You need volume, mesh, and slice visuals in one shared 3D scene
 
 ---
 
 ## Properties
 
-### Options
+### Public C API
 
-| Option        | Type     | Description                                        |
-|---------------|----------|----------------------------------------------------|
-| `mode`    | `enum`   | Color mode             |
+```c
+DvzVisual* volume = dvz_volume(scene, 0);
+dvz_visual_set_field(volume, "field", field);
+dvz_volume_set_render_mode(volume, DVZ_VOLUME_RENDER_COMPOSITE);
+dvz_volume_set_opacity(volume, 0.75f);
+dvz_volume_set_step_count(volume, 128);
+```
 
-### Per-item
+Available render modes:
 
-| Attribute     | Type             | Description                                           |
-|---------------|------------------|-------------------------------------------------------|
-| `bounds`      | 3 × `(2,) float` | Bounding box in NDC: `xlim`, `ylim`, `zlim`          |
-| `texcoords`   | 2 × `(3,) float` | UVW texture coordinates at volume corners            |
+| Mode | Behavior |
+|---|---|
+| `DVZ_VOLUME_RENDER_COMPOSITE` | Full-volume front-to-back alpha compositing |
+| `DVZ_VOLUME_RENDER_MIP` | Maximum intensity projection |
+| `DVZ_VOLUME_RENDER_SLICE` | One orthogonal slice through the 3D field |
 
-### Per-visual (uniform)
+Current controls:
 
-| Parameter     | Type             | Description                                           |
-|---------------|------------------|-------------------------------------------------------|
-| `permutation` | `(3,) int`       | Axis order of the 3D volume texture (default `(0,1,2)`) |
-| `slice`       | `int`            | Slice index (**not implemented yet**)                |
-| `transfer`    | `vec4`           | Transfer function parameters (limited)               |
-| `texture`     | texture          | 3D volume data (e.g. density, intensity)             |
+| Control | Description |
+|---|---|
+| `dvz_volume_set_bounds()` | Object-space proxy bounds |
+| `dvz_volume_set_slice_axis()` | X/Y/Z orthogonal slice axis |
+| `dvz_volume_set_slice_position()` | Normalized slice position in `[0, 1]` |
+| `dvz_volume_set_sampling()` | Nearest or linear sampling |
+| `dvz_volume_set_clipping_box()` | Normalized axis-aligned clipping box |
+| `dvz_visual_set_scale(..., "colormap", scale)` | Scalar colormap/transfer binding |
 
 ---
 
@@ -61,77 +69,22 @@ Use the volume visual when:
 
 To create a volume visual:
 
-```python
-visual = app.volume(mode='colormap')
+```c
+DvzSampledField* field = dvz_sampled_field(scene, &desc);
+dvz_sampled_field_set_data(field, &view);
+
+DvzVisual* volume = dvz_volume(scene, 0);
+dvz_visual_set_field(volume, "field", field);
+dvz_panel_add_visual(panel, volume, NULL);
 ```
 
-Supported modes:
+## Planned v0.4 Hardening
 
-| Mode       | Description                                     |
-| ---------- | ----------------------------------------------- |
-| `colormap` | Apply a colormap to a single-channel 3D texture |
-| `rgba`     | Use a 4D texture (RGBA channels for each voxel) |
-
----
-
-## Bounds and texture mapping
-
-You must define the bounds of the volume in NDC:
-
-```python
-visual.set_bounds(xlim, ylim, zlim)
-```
-
-Then set the texture coordinates:
-
-```python
-visual.set_texcoords(uvw0, uvw1)
-```
-
-This maps the 3D texture onto the NDC bounding box.
-
----
-
-## Axis permutation
-
-To reorder the axes of the 3D texture (e.g. for `wvu`-ordered data), set:
-
-```python
-visual.set_permutation((2, 1, 0))  # wvu
-```
-
-This ensures correct alignment of the volume with your data orientation.
-
----
-
-## Transfer function
-
-You can supply a transfer function parameter (currently very limited):
-
-```python
-visual.set_transfer((0.3, 0.5, 0.8, 1.0))  # placeholder values
-```
-
-More expressive transfer functions (e.g. opacity maps, histograms) are planned.
-
----
-
-## Example
-
-```python
---8<-- "cleaned/visuals/volume.py"
-```
-
----
-
-## Summary
-
-The volume visual provides a starting point for 3D scalar field rendering.
-
-* ✔️ Bounding box in NDC
-* ✔️ Texture mapping with colormap
-* ✔️ Axis reordering support
-* ❌ No slicing or rich transfer functions (yet)
+- Shader-side axis order and axis flip.
+- Real sampler filtering selection in the runtime.
+- Value range plus a 1D RGBA transfer texture.
+- One arbitrary clipping plane.
+- Slice probe/readout returning UVW, object coordinate, and sampled value.
 
 See also:
 

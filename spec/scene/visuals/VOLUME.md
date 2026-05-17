@@ -11,9 +11,22 @@ Shared attribute and behavioral definitions are in `SHARED_ATTRIBUTES.md`.
 
 ## Active Implementation Status
 
-The active first slice supports retained `volume` visuals backed by `SampledField` resources,
-volume opacity/sampling/render-mode/slice/bounds/clipping state, and scene -> DRP2 emission. The
-full transfer-function, isosurface, and MPR surfaces described below remain spec work.
+The active v0.4 path supports retained `volume` visuals backed by 3D `SampledField` resources,
+volume opacity/sampling/render-mode/slice/bounds/box-clipping state, and scene -> DRP2 emission.
+The default public mode is full-volume composite rendering. Slice rendering is explicit through
+`render_mode = slice`.
+
+The next v0.4 hardening target is intentionally powerful but bounded:
+
+1. normalized `[0, 1]` slice positions for the public setter;
+2. shader-side axis order and axis flip so examples do not swizzle large volumes on the CPU;
+3. a 1D RGBA transfer texture built from shared colormap state plus volume opacity stops;
+4. one arbitrary clipping plane in addition to the current normalized clipping box;
+5. real nearest/linear sampler selection in the DRP2/vklite runtime;
+6. slice probe/readout before MIP or DVR picking.
+
+Isosurfaces, gradient lighting, categorical label volumes, bricking/out-of-core streaming, full MPR,
+and WebGPU/WGSL parity remain follow-up work unless a specific v0.4 task activates them.
 
 
 ## Semantic Purpose
@@ -47,7 +60,7 @@ The 3D voxel data. Format must match the declared `texture_mode`:
 | Property | Value |
 |---|---|
 | Type | `vec3` each, in visual space |
-| Default | `(0,0,0)` and `(1,1,1)` — unit cube |
+| Default | `(-1,-1,-1)` and `(1,1,1)` — centered cube |
 | Mutability | `dynamic` |
 
 Data-space bounding box corners of the volume. Aligns the voxel grid to scene coordinates.
@@ -278,13 +291,14 @@ Which data-space axis the slice plane is perpendicular to.
 
 | Property | Value |
 |---|---|
-| Type | `float32`, in data-space coordinates (same units as `bounds`) |
-| Default | midpoint of the corresponding `bounds` axis |
+| Type | `float32`, normalized in `[0, 1]` |
+| Default | `0.5` |
 | Mutability | `dynamic` |
 | Applies to | `render_mode = slice` only |
 
-Position of the slice plane along `slice_axis`. Animating this produces a slice-through
-effect.
+Position of the slice plane along `slice_axis`, normalized from the minimum to maximum coordinate
+of the selected axis. Animating this produces a slice-through effect. Data-space helper conversion
+can be added later without changing the retained shader state.
 
 
 ## Defaults And Missing Values

@@ -1306,7 +1306,7 @@ static void _volume_state_default(DvzVolumeState* state)
     dvz_memset(state, sizeof(DvzVolumeState), 0, sizeof(DvzVolumeState));
     state->opacity = 1.0f;
     state->sampling = DVZ_VOLUME_SAMPLING_LINEAR;
-    state->render_mode = DVZ_VOLUME_RENDER_SLICE;
+    state->render_mode = DVZ_VOLUME_RENDER_COMPOSITE;
     state->slice_axis = DVZ_VOLUME_AXIS_Z;
     state->slice_position = 0.5;
     state->step_count = 64;

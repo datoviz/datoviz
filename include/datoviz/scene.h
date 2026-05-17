@@ -1042,7 +1042,7 @@ DVZ_EXPORT DvzVisual* dvz_image(DvzScene* scene, uint32_t flags);
  *
  * Volume visuals retain a 3D sampled field bound through
  * `dvz_visual_set_field(volume, "field", field)`. The native runtime renders a box proxy and
- * supports slice and MIP rendering for scalar 3D fields.
+ * supports full-volume composite rendering by default, plus slice and MIP modes.
  *
  * @param scene the scene
  * @param flags variant flags
