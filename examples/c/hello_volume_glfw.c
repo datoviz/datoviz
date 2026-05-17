@@ -57,6 +57,8 @@ struct VolumeGlfwState
     int render_mode;
     bool transfer;
     bool clipping;
+    bool clip_plane;
+    bool plane_keep_positive;
     float opacity;
     float tf_threshold;
     float tf_window;
@@ -64,6 +66,8 @@ struct VolumeGlfwState
     float tf_alpha;
     float clip_min[3];
     float clip_max[3];
+    float clip_plane_point[3];
+    float clip_plane_normal[3];
     float step_count;
 };
 
@@ -217,17 +221,26 @@ static void _update_transfer_function(VolumeGlfwState* state)
     float low = state->tf_threshold;
     float high = _clamp_float(low + state->tf_window, low + 0.01f, 1.0f);
     float mid = low + (high - low) * state->tf_ramp;
-    uint8_t mid_alpha = (uint8_t)(state->tf_alpha * 128.0f + 0.5f);
-    uint8_t high_alpha = (uint8_t)(state->tf_alpha * 255.0f + 0.5f);
-
     DvzColormapStop transfer_stops[5] = {
-        {.position = 0.00, .rgba = {0, 0, 0, 0}},
-        {.position = low, .rgba = {0, 0, 0, 0}},
-        {.position = mid, .rgba = {30, 120, 220, mid_alpha}},
-        {.position = high, .rgba = {230, 230, 245, high_alpha}},
-        {.position = 1.00, .rgba = {255, 190, 80, high_alpha}},
+        {.position = 0.00, .rgba = {0, 0, 0, 255}},
+        {.position = low, .rgba = {0, 0, 0, 255}},
+        {.position = mid, .rgba = {30, 120, 220, 255}},
+        {.position = high, .rgba = {230, 230, 245, 255}},
+        {.position = 1.00, .rgba = {255, 190, 80, 255}},
     };
     dvz_colormap_set_stops(state->transfer_map, transfer_stops, 5);
+
+    if (state->volume != NULL)
+    {
+        DvzVolumeAlphaStop alpha_stops[5] = {
+            {.position = 0.00, .alpha = 0.0f},
+            {.position = low, .alpha = 0.0f},
+            {.position = mid, .alpha = 0.5f * state->tf_alpha},
+            {.position = high, .alpha = state->tf_alpha},
+            {.position = 1.00, .alpha = state->tf_alpha},
+        };
+        (void)dvz_volume_set_alpha_stops(state->volume, alpha_stops, 5);
+    }
 }
 
 
@@ -257,6 +270,10 @@ static void _apply_volume_controls(VolumeGlfwState* state)
     (void)dvz_visual_set_scale(
         state->volume, "colormap", state->transfer ? state->transfer_scale : NULL);
 
+    if (!state->clipping && !state->clip_plane)
+    {
+        (void)dvz_volume_clear_clipping(state->volume);
+    }
     if (state->clipping)
     {
         double clip_min[3] = {
@@ -271,9 +288,24 @@ static void _apply_volume_controls(VolumeGlfwState* state)
         };
         (void)dvz_volume_set_clipping_box(state->volume, clip_min, clip_max);
     }
+    if (state->clip_plane)
+    {
+        double point[3] = {
+            state->clip_plane_point[0],
+            state->clip_plane_point[1],
+            state->clip_plane_point[2],
+        };
+        double normal[3] = {
+            state->clip_plane_normal[0],
+            state->clip_plane_normal[1],
+            state->clip_plane_normal[2],
+        };
+        (void)dvz_volume_set_clipping_plane(
+            state->volume, point, normal, state->plane_keep_positive);
+    }
     else
     {
-        (void)dvz_volume_clear_clipping(state->volume);
+        (void)dvz_volume_clear_clipping_plane(state->volume);
     }
 }
 
@@ -325,11 +357,27 @@ static void _volume_glfw_gui(DvzGui* gui, DvzAppWindow* win, void* user_data)
         changed |= dvz_gui_slider_float(gui, "Clip Y max", &state->clip_max[1], 0.05f, 1.0f);
         changed |= dvz_gui_slider_float(gui, "Clip Z min", &state->clip_min[2], 0.0f, 0.95f);
         changed |= dvz_gui_slider_float(gui, "Clip Z max", &state->clip_max[2], 0.05f, 1.0f);
+        changed |= dvz_gui_checkbox(gui, "Clip plane", &state->clip_plane);
+        changed |= dvz_gui_checkbox(gui, "Keep positive side", &state->plane_keep_positive);
+        changed |= dvz_gui_slider_float(
+            gui, "Plane X", &state->clip_plane_point[0], 0.0f, 1.0f);
+        changed |= dvz_gui_slider_float(
+            gui, "Plane Y", &state->clip_plane_point[1], 0.0f, 1.0f);
+        changed |= dvz_gui_slider_float(
+            gui, "Plane Z", &state->clip_plane_point[2], 0.0f, 1.0f);
+        changed |= dvz_gui_slider_float(
+            gui, "Plane NX", &state->clip_plane_normal[0], -1.0f, 1.0f);
+        changed |= dvz_gui_slider_float(
+            gui, "Plane NY", &state->clip_plane_normal[1], -1.0f, 1.0f);
+        changed |= dvz_gui_slider_float(
+            gui, "Plane NZ", &state->clip_plane_normal[2], -1.0f, 1.0f);
         if (dvz_gui_button(gui, "Reset"))
         {
             state->render_mode = DVZ_VOLUME_RENDER_COMPOSITE;
             state->transfer = true;
             state->clipping = false;
+            state->clip_plane = false;
+            state->plane_keep_positive = true;
             state->opacity = 1.0f;
             state->step_count = 128.0f;
             state->tf_threshold = 0.25f;
@@ -342,6 +390,12 @@ static void _volume_glfw_gui(DvzGui* gui, DvzAppWindow* win, void* user_data)
             state->clip_max[0] = 1.0f;
             state->clip_max[1] = 1.0f;
             state->clip_max[2] = 1.0f;
+            state->clip_plane_point[0] = 0.5f;
+            state->clip_plane_point[1] = 0.5f;
+            state->clip_plane_point[2] = 0.5f;
+            state->clip_plane_normal[0] = 1.0f;
+            state->clip_plane_normal[1] = 1.0f;
+            state->clip_plane_normal[2] = 0.0f;
             changed = true;
         }
     }
@@ -486,6 +540,7 @@ int main(int argc, char** argv)
         return 1;
     }
     dvz_scale_set_colormap(transfer_scale, transfer_map);
+    (void)dvz_volume_set_value_range(volume, 0.0, 1.0);
     if (dvz_panel_add_visual(panel, volume, NULL) != 0)
     {
         dvz_fprintf(stderr, "dvz_panel_add_visual() failed\n");
@@ -500,6 +555,7 @@ int main(int argc, char** argv)
         .transfer_map = transfer_map,
         .render_mode = DVZ_VOLUME_RENDER_COMPOSITE,
         .transfer = true,
+        .plane_keep_positive = true,
         .opacity = 1.0f,
         .step_count = 128.0f,
         .tf_threshold = 0.25f,
@@ -508,6 +564,8 @@ int main(int argc, char** argv)
         .tf_alpha = 1.0f,
         .clip_min = {0.0f, 0.0f, 0.0f},
         .clip_max = {1.0f, 1.0f, 1.0f},
+        .clip_plane_point = {0.5f, 0.5f, 0.5f},
+        .clip_plane_normal = {1.0f, 1.0f, 0.0f},
     };
     _update_transfer_function(&state);
     _apply_volume_controls(&state);

@@ -1148,63 +1148,23 @@ static bool _downsample_allen_mouse_brain(AllenMouseBrainVolume* volume, uint32_
 
 
 /**
- * Swizzle the loaded Allen volume from raw storage axes to IBL scene axes.
+ * Return the raw Allen texture-axis mapping into IBL scene axes.
  *
- * @param volume volume metadata and storage
- * @return whether swizzling succeeded
+ * The raw texture is stored as DV, ML, AP. The IBL scene axes are ML, reversed AP, reversed DV.
+ *
+ * @param axis_order output texture-axis source order
+ * @param axis_flip output per-texture-axis flip flags
  */
-static bool _swizzle_allen_mouse_brain_to_ibl_axes(AllenMouseBrainVolume* volume)
+static void _allen_mouse_brain_axis_mapping(uint32_t axis_order[3], bool axis_flip[3])
 {
-    ANN(volume);
-    if (volume->voxels == NULL || volume->width == 0 || volume->height == 0 || volume->depth == 0)
-        return false;
-
-    uint32_t src_width = volume->width;
-    uint32_t src_height = volume->height;
-    uint32_t src_depth = volume->depth;
-    uint32_t out_width = src_height;
-    uint32_t out_height = src_depth;
-    uint32_t out_depth = src_width;
-
-    uint64_t voxel_count = 0;
-    uint64_t byte_count = 0;
-    if (_dvz_mul_u64_overflows(out_width, out_height, &voxel_count) ||
-        _dvz_mul_u64_overflows(voxel_count, out_depth, &voxel_count) ||
-        _dvz_mul_u64_overflows(voxel_count, 4, &byte_count))
-    {
-        return false;
-    }
-
-    uint8_t* dst = (uint8_t*)dvz_calloc(byte_count, 1);
-    if (dst == NULL)
-        return false;
-
-    const uint8_t* src = volume->voxels;
-    for (uint32_t ap = 0; ap < src_depth; ap++)
-    {
-        for (uint32_t ml = 0; ml < src_height; ml++)
-        {
-            for (uint32_t dv = 0; dv < src_width; dv++)
-            {
-                uint64_t src_index = (((uint64_t)ap * src_height + ml) * src_width + dv) * 4u;
-                uint32_t ibl_dv = out_depth - 1u - dv;
-                uint32_t ibl_ap = out_height - 1u - ap;
-                uint64_t dst_index =
-                    (((uint64_t)ibl_dv * out_height + ibl_ap) * out_width + ml) * 4u;
-                dvz_memcpy(dst + dst_index, 4, src + src_index, 4);
-            }
-        }
-    }
-
-    uint8_t* previous_downsampled = volume->downsampled_data;
-    volume->downsampled_data = dst;
-    volume->voxels = dst;
-    volume->width = out_width;
-    volume->height = out_height;
-    volume->depth = out_depth;
-    if (previous_downsampled != NULL)
-        dvz_free(previous_downsampled);
-    return true;
+    ANN(axis_order);
+    ANN(axis_flip);
+    axis_order[0] = 2;  /* texture DV samples scene Z. */
+    axis_order[1] = 0;  /* texture ML samples scene X. */
+    axis_order[2] = 1;  /* texture AP samples scene Y. */
+    axis_flip[0] = true;
+    axis_flip[1] = false;
+    axis_flip[2] = true;
 }
 
 
@@ -1506,16 +1466,15 @@ static void _apply_volume_controls(AllenMouseBrainState* state)
 
     if (state->clip_volume_at_slice)
     {
-        double clip_min[3] = {0.0, 0.0, 0.0};
-        double clip_max[3] = {1.0, 1.0, 1.0};
+        double plane_point[3] = {0.5, 0.5, 0.5};
+        double plane_normal[3] = {0.0, 0.0, 0.0};
         uint32_t axis = (uint32_t)state->axis;
         if (axis > 2)
             axis = 2;
-        if (state->keep_positive_side)
-            clip_min[axis] = (double)state->slice_position;
-        else
-            clip_max[axis] = (double)state->slice_position;
-        (void)dvz_volume_set_clipping_box(state->volume_visual, clip_min, clip_max);
+        plane_point[axis] = (double)state->slice_position;
+        plane_normal[axis] = 1.0;
+        (void)dvz_volume_set_clipping_plane(
+            state->volume_visual, plane_point, plane_normal, state->keep_positive_side);
     }
     else
     {
@@ -1767,12 +1726,6 @@ int main(int argc, char** argv)
         _allen_mouse_brain_destroy(&volume_data);
         return 1;
     }
-    if (!_swizzle_allen_mouse_brain_to_ibl_axes(&volume_data))
-    {
-        dvz_fprintf(stderr, "failed to swizzle Allen mouse brain volume into IBL axes\n");
-        _allen_mouse_brain_destroy(&volume_data);
-        return 1;
-    }
     _normalize_allen_alpha(&volume_data);
     if (volume_data.downsample > 1)
     {
@@ -1896,9 +1849,13 @@ int main(int argc, char** argv)
             DEFAULT_IBL_ASSET_DIR);
     }
 
+    AllenMouseBrainVolume display_volume = volume_data;
+    display_volume.width = volume_data.height;
+    display_volume.height = volume_data.depth;
+    display_volume.depth = volume_data.width;
     double bounds_min[3] = {0};
     double bounds_max[3] = {0};
-    _volume_aspect_bounds(&volume_data, bounds_min, bounds_max);
+    _volume_aspect_bounds(&display_volume, bounds_min, bounds_max);
     if (atlas_mesh.has_volume_bounds)
     {
         bounds_min[0] = atlas_mesh.volume_bounds_min[0];
@@ -1912,6 +1869,18 @@ int main(int argc, char** argv)
         dvz_volume_set_bounds(volume_slice, bounds_min, bounds_max) != 0)
     {
         dvz_fprintf(stderr, "dvz_volume_set_bounds() failed\n");
+        _ibl_atlas_mesh_destroy(&atlas_mesh);
+        _allen_mouse_brain_destroy(&volume_data);
+        dvz_scene_destroy(scene);
+        return 1;
+    }
+    uint32_t axis_order[3] = {0};
+    bool axis_flip[3] = {0};
+    _allen_mouse_brain_axis_mapping(axis_order, axis_flip);
+    if (dvz_volume_set_axis_mapping(volume_3d, axis_order, axis_flip) != 0 ||
+        dvz_volume_set_axis_mapping(volume_slice, axis_order, axis_flip) != 0)
+    {
+        dvz_fprintf(stderr, "dvz_volume_set_axis_mapping() failed\n");
         _ibl_atlas_mesh_destroy(&atlas_mesh);
         _allen_mouse_brain_destroy(&volume_data);
         dvz_scene_destroy(scene);
