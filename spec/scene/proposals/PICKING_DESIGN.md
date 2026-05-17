@@ -177,18 +177,40 @@ Do not expose raw backend resource ids or encoded attachment integers as the pub
 
 Recommended conceptual pick result:
 
-1. panel id
-2. visual id
-3. optional instance id
-4. optional parent payload kind
-5. optional parent payload-local id
-6. payload kind
-7. payload-local id
-8. optional world or local hit position later
-9. optional extra metadata later if needed
+1. request id
+2. explicit status (`hit`, true miss, unsupported target, GPU execution failure, readback failure)
+3. panel id
+4. panel pixel position
+5. visual id
+6. optional instance id
+7. optional parent payload kind
+8. optional parent payload-local id
+9. payload kind
+10. payload-local id
+11. optional depth
+12. optional world/data or local hit position
+13. optional image UV/texel coordinate
+14. optional mesh barycentric coordinate
+15. optional extra metadata later if needed
 
 Payload kind should be explicit rather than inferred by the caller from which visual family was
 clicked.
+
+`hit = false` must not be the only failure channel. A false hit may mean a real empty-space miss,
+an unsupported visual/target precision, or a GPU/runtime failure. These cases have different UI and
+debugging meaning, so public results should expose a status enum.
+
+Recommended initial statuses:
+
+1. `HIT`
+2. `MISS`
+3. `OUTSIDE_PANEL`
+4. `UNSUPPORTED_TARGET`
+5. `NO_CAPABLE_VISUAL`
+6. `GPU_EXEC_FAILED`
+7. `READBACK_FAILED`
+8. `STALE_DROPPED` if stale drops are surfaced publicly
+9. `INVALID_RESULT`
 
 Useful payload kinds to reserve now:
 
@@ -200,6 +222,14 @@ Useful payload kinds to reserve now:
 6. strip_group
 7. line_segment
 8. triangle_item
+
+Visual-family target conventions for the consistency pass:
+
+1. `pixel`, `point`, `marker`, and `sphere`: target `ITEM`;
+2. `segment`: target `SEGMENT`;
+3. `path`: parent target `STRIP` or subpath when available, target `SEGMENT` or `VERTEX`;
+4. `image`: target `ITEM` for image rectangles, `PIXEL`/`SAMPLE` when texel identity is requested;
+5. `mesh`: target `FACE` or `TRIANGLE`, with `instance_id` filled when instanced.
 
 
 ## Scene-Owned Resolution Tables

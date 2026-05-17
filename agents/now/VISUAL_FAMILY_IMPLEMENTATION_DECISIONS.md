@@ -3,9 +3,9 @@
 > **Execution Status**
 > - **Status:** `ACTIVE IMPLEMENTATION CONTRACT`
 > - **Updated on:** `2026-05-17`
-> - **Purpose:** lock the first-slice implementation decisions for the pixel, point, marker,
->   segment, and path visual families so independent workers can proceed without making API or
->   semantic decisions mid-implementation.
+> - **Purpose:** lock the implementation decisions for the pixel, point, marker, segment, path,
+>   image, sphere, and mesh visual-family consistency pass so independent workers can proceed
+>   without making API or semantic decisions mid-implementation.
 
 
 ## Scope
@@ -17,8 +17,11 @@ This note refines:
 3. `spec/scene/visuals/MARKER.md`
 4. `spec/scene/visuals/SEGMENT.md`
 5. `spec/scene/visuals/PATH.md`
-6. `agents/soon/SCENE_POINT_PIXEL_MARKER_PLAN.md`
-7. `agents/soon/SCENE_VECTOR_VISUALS_PLAN.md`
+6. `spec/scene/visuals/IMAGE.md`
+7. `spec/scene/visuals/SPHERE.md`
+8. `spec/scene/visuals/MESH.md`
+9. `agents/soon/SCENE_POINT_PIXEL_MARKER_PLAN.md`
+10. `agents/soon/SCENE_VECTOR_VISUALS_PLAN.md`
 
 It is authoritative for the first implementation pass when those documents disagree.
 
@@ -33,8 +36,31 @@ It is authoritative for the first implementation pass when those documents disag
    sizing unless explicitly included below.
 6. Prefer GPU-backed picking because the request path already executes point/image readbacks through
    DRP2/runtime auxiliary streams.
-7. Workers may commit after coherent slices once `git diff --check`, `just build`, and the narrow
+7. Do not add CPU fallback picking. Unsupported GPU pick precision should return an explicit
+   request/result failure status rather than pretending to be a miss.
+8. Avoid vague `size` attributes in new or refactored API. Use `pixel_size`, `diameter`, `radius`,
+   `stroke_width`, and `extent` according to the family contract.
+9. Data upload should use generic `dvz_visual_set_data()` attributes. Typed public setters should
+   configure behavior, style, material, or render modes rather than duplicate per-attribute data
+   upload.
+10. Workers may commit after coherent slices once `git diff --check`, `just build`, and the narrow
    relevant tests pass.
+
+
+## Consistency Pass Decisions
+
+1. `pixel` uses `pixel_size`, not `size`.
+2. `point` and `marker` use `diameter`, not `size`.
+3. `sphere` uses `radius`, not `size`, and should stop using typed data setters as the primary API.
+4. `segment` and stroked `path` use `stroke_width`, not `line_width`.
+5. `image` is a multi-item visual with per-item `position`, `extent`, `anchor`, `tex_rect`,
+   `angle`, and `tint`, sampling one shared field/texture/atlas in the first coherent slice.
+6. `mesh` supports instancing through per-instance attributes such as `instance_transform`,
+   `instance_color`, and optional authored `instance_id`; instance identity must be preserved in
+   picking.
+7. Point/marker share a fill/stroke style descriptor; segment/path share a stroke descriptor.
+8. Picking results should distinguish real misses from unsupported target precision and GPU
+   execution/readback failures through `DvzPickStatus`.
 
 
 ## Current Landed Status
