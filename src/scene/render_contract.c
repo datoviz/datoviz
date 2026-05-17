@@ -1186,6 +1186,51 @@ static bool _contract_validate_drp2_sampled_reads(
 
 
 /**
+ * Apply a stored FramePlan draw-contract snapshot to a resolved draw contract.
+ *
+ * @param meta stored visual metadata snapshot
+ * @param draw draw contract to update
+ */
+static void _contract_apply_draw_metadata(
+    const DvzFramePlanVisualMeta* meta, DvzSceneDrawContract* draw)
+{
+    ANN(meta);
+    ANN(draw);
+    if (!meta->has_draw_contract)
+        return;
+
+    draw->depth_policy = meta->draw_depth_policy;
+    draw->blend_policy = (DvzSceneBlendPolicy)meta->draw_blend_policy;
+    draw->shader_feature_mask = meta->draw_shader_feature_mask;
+    draw->bind_group_layout_mask = meta->draw_bind_group_layout_mask;
+
+    draw->depth_test = (draw->depth_policy & DVZ_SCENE_DEPTH_POLICY_TEST) != 0;
+    draw->depth_write = (draw->depth_policy & DVZ_SCENE_DEPTH_POLICY_WRITE) != 0;
+    draw->samples_depth = (draw->depth_policy & DVZ_SCENE_DEPTH_POLICY_SAMPLE) != 0;
+    draw->samples_volume_occlusion =
+        (draw->shader_feature_mask & DVZ_SCENE_SHADER_FEATURE_SAMPLE_VOLUME_OCCLUSION) != 0;
+    draw->samples_scene_occlusion =
+        (draw->shader_feature_mask & DVZ_SCENE_SHADER_FEATURE_SAMPLE_SCENE_OCCLUSION) != 0;
+    draw->writes_volume_occlusion_depth =
+        (draw->shader_feature_mask & DVZ_SCENE_SHADER_FEATURE_WRITE_VOLUME_OCCLUSION) != 0;
+    draw->writes_scene_occlusion_depth =
+        (draw->shader_feature_mask & DVZ_SCENE_SHADER_FEATURE_WRITE_SCENE_OCCLUSION) != 0;
+
+    draw->needs_common_set =
+        (draw->bind_group_layout_mask & DVZ_SCENE_BIND_GROUP_REQUIREMENT_COMMON) != 0;
+    draw->needs_material_set =
+        (draw->bind_group_layout_mask & DVZ_SCENE_BIND_GROUP_REQUIREMENT_MATERIAL) != 0;
+    draw->needs_image_set =
+        (draw->bind_group_layout_mask & DVZ_SCENE_BIND_GROUP_REQUIREMENT_IMAGE) != 0;
+    draw->needs_volume_set =
+        (draw->bind_group_layout_mask & DVZ_SCENE_BIND_GROUP_REQUIREMENT_VOLUME) != 0;
+    draw->needs_scene_occlusion_set =
+        (draw->bind_group_layout_mask & DVZ_SCENE_BIND_GROUP_REQUIREMENT_SCENE_OCCLUSION) != 0;
+}
+
+
+
+/**
  * Validate one DRP2 pipeline against one draw-contract metadata snapshot.
  *
  * @param stream the DRP2 command stream
@@ -1559,6 +1604,7 @@ bool _scene_pass_contract_from_render(
         if (!_scene_draw_contract_from_visual(
                 attach->visual, attach, out->role, &out->draws[out->draw_count]))
             return false;
+        _contract_apply_draw_metadata(meta, &out->draws[out->draw_count]);
         const DvzSceneDrawContract* draw = &out->draws[out->draw_count];
         out->needs_common_set = out->needs_common_set || draw->needs_common_set;
         out->needs_material_set = out->needs_material_set || draw->needs_material_set;

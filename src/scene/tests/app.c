@@ -75,6 +75,13 @@ typedef struct
 } AppWboitCapture;
 
 
+typedef struct
+{
+    uint8_t rgb[3];
+    bool skipped;
+} AppSceneOcclusionCapture;
+
+
 
 /**
  * Record one app-driven timer callback.
@@ -264,6 +271,113 @@ static DvzVisual* _app_primitive_add_quad(
         return NULL;
     }
     return visual;
+}
+
+
+
+/**
+ * Render one scene-occlusion case and capture the center pixel.
+ *
+ * @param occluder_hidden whether the occluder visual is hidden
+ * @param occluder_alpha alpha channel used by the visible occluder
+ * @return captured RGB values, or skipped=true when no app context is available
+ */
+static AppSceneOcclusionCapture _app_scene_occlusion_capture_center(
+    bool occluder_hidden, uint8_t occluder_alpha)
+{
+    AppSceneOcclusionCapture out = {0};
+    DvzScene* scene = dvz_scene();
+    if (scene == NULL)
+        return out;
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    if (figure == NULL)
+    {
+        dvz_scene_destroy(scene);
+        return out;
+    }
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    if (panel == NULL)
+    {
+        dvz_scene_destroy(scene);
+        return out;
+    }
+    dvz_panel_set_background_color(panel, 0.0f, 0.0f, 0.0f, 1.0f);
+
+    DvzColor red = {240, 20, 20, 220};
+    DvzColor green = {20, 220, 40, occluder_alpha};
+    DvzVisual* occluded = _app_primitive_add_quad(
+        scene, panel, -0.95f, 0.95f, -0.95f, 0.95f, 0.6f, red, DVZ_ALPHA_BLENDED, true);
+    DvzVisual* occluder = _app_primitive_add_quad(
+        scene, panel, -0.45f, 0.45f, -0.45f, 0.45f, 0.2f, green, DVZ_ALPHA_BLENDED, true);
+    if (occluded == NULL || occluder == NULL ||
+        dvz_visual_set_scene_occluded(occluded, true) != 0 ||
+        dvz_visual_set_scene_occluder(occluder, true) != 0 ||
+        dvz_panel_set_scene_occlusion(
+            panel, &(DvzSceneOcclusionDesc){
+                       .enabled = true,
+                       .depth_bias = 0.0f,
+                       .soft_edge = 0.001f,
+                       .hidden_alpha = 0.05f,
+                   }) != 0)
+    {
+        dvz_scene_destroy(scene);
+        return out;
+    }
+    if (occluder_hidden)
+        dvz_visual_set_visible(occluder, false);
+
+    DvzApp* app = dvz_app(scene);
+    if (app == NULL)
+    {
+        out.skipped = true;
+        dvz_scene_destroy(scene);
+        return out;
+    }
+    DvzAppWindow* win = dvz_app_window(app, figure, 64, 64);
+    if (win == NULL)
+    {
+        out.skipped = true;
+        dvz_app_destroy(app);
+        dvz_scene_destroy(scene);
+        return out;
+    }
+    DvzCanvas* canvas = dvz_app_window_canvas(win);
+    if (canvas == NULL)
+    {
+        out.skipped = true;
+        dvz_app_destroy(app);
+        dvz_scene_destroy(scene);
+        return out;
+    }
+
+    uint32_t width = 0, height = 0;
+    uint8_t* rgba = NULL;
+    for (uint32_t frame = 0; frame < 3; frame++)
+    {
+        dvz_app_run(app, 1);
+        if (rgba != NULL)
+            dvz_free(rgba);
+        rgba = NULL;
+        if (dvz_canvas_capture_rgba(canvas, &width, &height, &rgba) != 0)
+        {
+            out.skipped = true;
+            dvz_app_destroy(app);
+            dvz_scene_destroy(scene);
+            return out;
+        }
+    }
+    if (rgba != NULL && width == 64 && height == 64)
+    {
+        const uint8_t* center = _pixel_at(rgba, width, height, width / 2, height / 2);
+        out.rgb[0] = center[0];
+        out.rgb[1] = center[1];
+        out.rgb[2] = center[2];
+    }
+
+    dvz_free(rgba);
+    dvz_app_destroy(app);
+    dvz_scene_destroy(scene);
+    return out;
 }
 
 
@@ -1908,6 +2022,58 @@ int test_app_offscreen_depth_peel_mesh_two_layers(TstSuite* suite, TstItem* item
     dvz_free(rgba);
     dvz_app_destroy(app);
     dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+/**
+ * Ensure hidden and zero-alpha scene occluders do not attenuate sampled visuals.
+ *
+ * @param suite test suite
+ * @param item test item
+ * @return 0 on success
+ */
+int test_app_offscreen_scene_occlusion_hidden_alpha(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    if (!_scene_vklite_runtime_available())
+        return 0;
+
+    AppSceneOcclusionCapture hidden = _app_scene_occlusion_capture_center(true, 255);
+    if (hidden.skipped)
+    {
+        log_warn("test_app_offscreen_scene_occlusion_hidden_alpha skipped: GPU context failed");
+        return 0;
+    }
+    AppSceneOcclusionCapture zero = _app_scene_occlusion_capture_center(false, 0);
+    if (zero.skipped)
+    {
+        log_warn("test_app_offscreen_scene_occlusion_hidden_alpha skipped: GPU context failed");
+        return 0;
+    }
+    AppSceneOcclusionCapture positive = _app_scene_occlusion_capture_center(false, 64);
+    if (positive.skipped)
+    {
+        log_warn("test_app_offscreen_scene_occlusion_hidden_alpha skipped: GPU context failed");
+        return 0;
+    }
+
+    uint32_t hidden_sum =
+        (uint32_t)hidden.rgb[0] + (uint32_t)hidden.rgb[1] + (uint32_t)hidden.rgb[2];
+    uint32_t zero_sum = (uint32_t)zero.rgb[0] + (uint32_t)zero.rgb[1] + (uint32_t)zero.rgb[2];
+    AT(hidden.rgb[0] > 140);
+    AT(zero.rgb[0] > 140);
+    AT(hidden_sum > 150);
+    AT(zero_sum > 150);
+    AT(hidden_sum > zero_sum ? hidden_sum - zero_sum <= 24 : zero_sum - hidden_sum <= 24);
+    AT(hidden.rgb[0] > zero.rgb[0] ? hidden.rgb[0] - zero.rgb[0] <= 24
+                                    : zero.rgb[0] - hidden.rgb[0] <= 24);
+    AT(hidden.rgb[1] > zero.rgb[1] ? hidden.rgb[1] - zero.rgb[1] <= 24
+                                    : zero.rgb[1] - hidden.rgb[1] <= 24);
+    AT(positive.rgb[1] > zero.rgb[1] + 30);
+    AT(positive.rgb[0] + 20 < zero.rgb[0]);
     return 0;
 }
 
@@ -3840,6 +4006,7 @@ int test_scene_app(TstSuite* suite)
     TEST_SIMPLE(test_app_offscreen_wboit_mesh_order_independent_layers);
     TEST_SIMPLE(test_app_offscreen_source_over_mesh_depth_and_blend);
     TEST_SIMPLE(test_app_offscreen_depth_peel_mesh_two_layers);
+    TEST_SIMPLE(test_app_offscreen_scene_occlusion_hidden_alpha);
     TEST_SIMPLE(test_app_offscreen_point_depth_cue_darkens_far);
     TEST_SIMPLE(test_app_offscreen_has_nonblank_pixels);
     TEST_SIMPLE(test_app_offscreen_pixel_square_has_nonblank_pixels);

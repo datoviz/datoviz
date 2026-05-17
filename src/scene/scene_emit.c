@@ -1797,6 +1797,8 @@ static bool _scene_append_visual_to_render_pass(
             metadata.has_volume_occlusion = true;
             metadata.volume_occlusion = *volume_occlusion;
         }
+        if (scene_occlusion == NULL)
+            metadata.scene_occluded = false;
         if (metadata.scene_occluded && scene_occlusion != NULL)
         {
             metadata.has_scene_occlusion = true;
@@ -1806,6 +1808,15 @@ static bool _scene_append_visual_to_render_pass(
         if (!_scene_draw_contract_from_visual(
                 visual, attach, node->u.render.pass_role, &draw_contract))
             return false;
+        if (scene_occlusion == NULL)
+        {
+            draw_contract.samples_scene_occlusion = false;
+            draw_contract.needs_scene_occlusion_set = false;
+            draw_contract.shader_feature_mask &=
+                ~((uint32_t)DVZ_SCENE_SHADER_FEATURE_SAMPLE_SCENE_OCCLUSION);
+            draw_contract.bind_group_layout_mask &=
+                ~((uint32_t)DVZ_SCENE_BIND_GROUP_REQUIREMENT_SCENE_OCCLUSION);
+        }
         if (!_scene_draw_contract_id(
                 node->u.render.pass_contract_id, visual_index, metadata.draw_contract_id,
                 sizeof(metadata.draw_contract_id)))

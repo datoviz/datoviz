@@ -364,6 +364,8 @@ int test_app_offscreen_source_over_mesh_depth_and_blend(TstSuite* suite, TstItem
 
 int test_app_offscreen_depth_peel_mesh_two_layers(TstSuite* suite, TstItem* item);
 
+int test_app_offscreen_scene_occlusion_hidden_alpha(TstSuite* suite, TstItem* item);
+
 int test_app_offscreen_point_depth_cue_darkens_far(TstSuite* suite, TstItem* item);
 
 int test_app_offscreen_records_dvzr_frames(TstSuite* suite, TstItem* item);
