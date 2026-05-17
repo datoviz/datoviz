@@ -45,6 +45,7 @@
 #define MARKER_STRESS_X1        +0.96f
 #define MARKER_STRESS_Y0        -0.86f
 #define MARKER_STRESS_Y1        +0.86f
+#define MARKER_STRESS_ROTATION_SPEED_RAD_PER_SEC 1.35f
 
 
 
@@ -52,8 +53,18 @@
 /*  Structs                                                                                      */
 /*************************************************************************************************/
 
+typedef enum MarkerStressStyleMode
+{
+    MARKER_STRESS_STYLE_FILL = 0,
+    MARKER_STRESS_STYLE_OUTLINE = 1,
+    MARKER_STRESS_STYLE_BOTH = 2,
+} MarkerStressStyleMode;
+
+
+
 typedef struct MarkerStressState
 {
+    DvzAnimation* rotation_animation;
     DvzVisual* visual;
 
     float(*positions)[3];
@@ -68,14 +79,13 @@ typedef struct MarkerStressState
     float diameter;
     float base_angle;
     float phase;
+    float rotation_speed_rad_per_sec;
     float fill_alpha;
     float edge_color[4];
     float stroke_width;
+    int style_mode;
     bool animate;
     bool mixed_shapes;
-    bool filled;
-    bool stroke;
-    bool outline;
     int shape_index;
 } MarkerStressState;
 
@@ -148,6 +158,81 @@ static uint8_t _u8_from_float(float value)
 
 
 /**
+ * Wrap an angle to the slider-friendly [-pi, pi] interval.
+ *
+ * @param angle input angle in radians
+ * @return wrapped angle in radians
+ */
+static float _wrap_angle(float angle)
+{
+    while (angle > MARKER_STRESS_PI)
+        angle -= 2.0f * MARKER_STRESS_PI;
+    while (angle < -MARKER_STRESS_PI)
+        angle += 2.0f * MARKER_STRESS_PI;
+    return angle;
+}
+
+
+
+/**
+ * Apply the current fill alpha to the active marker color prefix.
+ *
+ * @param state marker stress state
+ */
+static void _apply_fill_alpha(MarkerStressState* state)
+{
+    uint8_t alpha = _u8_from_float(state->fill_alpha);
+    for (uint32_t i = 0; i < state->active_count; i++)
+        state->colors[i][3] = alpha;
+}
+
+
+
+/**
+ * Apply the current marker diameter to the active marker prefix.
+ *
+ * @param state marker stress state
+ */
+static void _apply_diameters(MarkerStressState* state)
+{
+    for (uint32_t i = 0; i < state->active_count; i++)
+        state->diameters[i] = state->diameter;
+}
+
+
+
+/**
+ * Apply the current marker angle field to the active marker prefix.
+ *
+ * @param state marker stress state
+ */
+static void _apply_angles(MarkerStressState* state)
+{
+    float phase = state->base_angle + state->phase;
+    for (uint32_t i = 0; i < state->active_count; i++)
+    {
+        float offset = state->mixed_shapes ? 0.19f * (float)(i % 17u) : 0.0f;
+        state->angles[i] = phase + offset;
+    }
+}
+
+
+
+/**
+ * Apply the current marker shape field to the active marker prefix.
+ *
+ * @param state marker stress state
+ */
+static void _apply_shapes(MarkerStressState* state)
+{
+    DvzMarkerShape shape = _shape_from_index(state->shape_index);
+    for (uint32_t i = 0; i < state->active_count; i++)
+        state->shapes[i] = state->mixed_shapes ? (uint32_t)(i % 6u) : (uint32_t)shape;
+}
+
+
+
+/**
  * Fill active marker positions and base colors with deterministic synthetic data.
  *
  * @param state marker stress state
@@ -190,14 +275,13 @@ static void _make_active_marker_data(MarkerStressState* state)
             state->colors[i][0] = (uint8_t)(40.0f + 205.0f * u);
             state->colors[i][1] = (uint8_t)(220.0f - 140.0f * v);
             state->colors[i][2] = (uint8_t)(90.0f + 120.0f * (0.5f + 0.5f * wave));
-            state->colors[i][3] = 230;
-
-            state->diameters[i] = state->diameter;
-            state->angles[i] = 0.0f;
-            state->shapes[i] = (uint32_t)(i % 6u);
             i++;
         }
     }
+    _apply_fill_alpha(state);
+    _apply_diameters(state);
+    _apply_angles(state);
+    _apply_shapes(state);
 }
 
 
@@ -209,10 +293,7 @@ static void _make_active_marker_data(MarkerStressState* state)
  */
 static void _upload_colors(MarkerStressState* state)
 {
-    uint8_t alpha = _u8_from_float(state->fill_alpha);
-    for (uint32_t i = 0; i < state->active_count; i++)
-        state->colors[i][3] = alpha;
-
+    _apply_fill_alpha(state);
     (void)dvz_visual_set_data(state->visual, "color", state->colors, state->active_count);
 }
 
@@ -225,9 +306,7 @@ static void _upload_colors(MarkerStressState* state)
  */
 static void _upload_diameters(MarkerStressState* state)
 {
-    for (uint32_t i = 0; i < state->active_count; i++)
-        state->diameters[i] = state->diameter;
-
+    _apply_diameters(state);
     (void)dvz_visual_set_data(state->visual, "diameter", state->diameters, state->active_count);
 }
 
@@ -240,13 +319,7 @@ static void _upload_diameters(MarkerStressState* state)
  */
 static void _upload_angles(MarkerStressState* state)
 {
-    float phase = state->base_angle + state->phase;
-    for (uint32_t i = 0; i < state->active_count; i++)
-    {
-        float offset = state->mixed_shapes ? 0.19f * (float)(i % 17u) : 0.0f;
-        state->angles[i] = phase + offset;
-    }
-
+    _apply_angles(state);
     (void)dvz_visual_set_data(state->visual, "angle", state->angles, state->active_count);
 }
 
@@ -259,10 +332,7 @@ static void _upload_angles(MarkerStressState* state)
  */
 static void _upload_shapes(MarkerStressState* state)
 {
-    DvzMarkerShape shape = _shape_from_index(state->shape_index);
-    for (uint32_t i = 0; i < state->active_count; i++)
-        state->shapes[i] = state->mixed_shapes ? (uint32_t)(i % 6u) : (uint32_t)shape;
-
+    _apply_shapes(state);
     (void)dvz_visual_set_data(state->visual, "shape", state->shapes, state->active_count);
 }
 
@@ -276,11 +346,15 @@ static void _upload_shapes(MarkerStressState* state)
 static void _upload_marker_attributes(MarkerStressState* state)
 {
     _make_active_marker_data(state);
-    (void)dvz_visual_set_data(state->visual, "position", state->positions, state->active_count);
-    _upload_colors(state);
-    _upload_diameters(state);
-    _upload_angles(state);
-    _upload_shapes(state);
+    const DvzVisualDataUpdate updates[] = {
+        {.attr_name = "position", .data = state->positions, .item_count = state->active_count},
+        {.attr_name = "color", .data = state->colors, .item_count = state->active_count},
+        {.attr_name = "diameter", .data = state->diameters, .item_count = state->active_count},
+        {.attr_name = "angle", .data = state->angles, .item_count = state->active_count},
+        {.attr_name = "shape", .data = state->shapes, .item_count = state->active_count},
+    };
+    if (dvz_visual_set_data_many(state->visual, updates, 5) != 0)
+        dvz_fprintf(stderr, "marker visual data upload failed\n");
 }
 
 
@@ -293,15 +367,60 @@ static void _upload_marker_attributes(MarkerStressState* state)
 static void _apply_marker_style(MarkerStressState* state)
 {
     DvzMarkerStyle style = dvz_marker_style();
+    switch ((MarkerStressStyleMode)state->style_mode)
+    {
+    case MARKER_STRESS_STYLE_OUTLINE:
+        style.filled = false;
+        style.stroke = true;
+        style.outline = true;
+        break;
+    case MARKER_STRESS_STYLE_BOTH:
+        style.filled = true;
+        style.stroke = true;
+        style.outline = false;
+        break;
+    case MARKER_STRESS_STYLE_FILL:
+    default:
+        style.filled = true;
+        style.stroke = false;
+        style.outline = false;
+        break;
+    }
     style.edge_color[0] = _u8_from_float(state->edge_color[0]);
     style.edge_color[1] = _u8_from_float(state->edge_color[1]);
     style.edge_color[2] = _u8_from_float(state->edge_color[2]);
     style.edge_color[3] = _u8_from_float(state->edge_color[3]);
     style.stroke_width = state->stroke_width;
-    style.filled = state->filled;
-    style.stroke = state->stroke;
-    style.outline = state->outline;
     (void)dvz_marker_set_style(state->visual, &style);
+}
+
+
+
+/**
+ * Apply the retained animation toggle to the scene timer.
+ *
+ * @param state marker stress state
+ * @param animate whether marker rotation should animate
+ */
+static void _set_animation_enabled(MarkerStressState* state, bool animate)
+{
+    if (state == NULL || state->animate == animate)
+        return;
+
+    if (!animate)
+    {
+        state->base_angle = _wrap_angle(state->base_angle + state->phase);
+        state->phase = 0.0f;
+        _upload_angles(state);
+    }
+
+    state->animate = animate;
+    if (state->rotation_animation == NULL)
+        return;
+    if (state->animate)
+        dvz_anim_start(state->rotation_animation, 0.0);
+    else
+        dvz_anim_stop(state->rotation_animation);
 }
 
 
@@ -399,6 +518,7 @@ static void _marker_stress_gui(DvzGui* gui, DvzAppWindow* win, void* user_data)
     bool upload_angle = false;
     bool upload_shape = false;
     bool style_changed = false;
+    bool animate = state->animate;
 
     static const char* const shape_items[] = {
         "disc",
@@ -436,25 +556,27 @@ static void _marker_stress_gui(DvzGui* gui, DvzAppWindow* win, void* user_data)
         upload_shape |= dvz_gui_checkbox(gui, "Mixed shapes", &state->mixed_shapes);
 
         upload_diameter |=
-            dvz_gui_slider_float(gui, "Diameter", &state->diameter, 2.0f, 54.0f);
+            dvz_gui_slider_float(gui, "Diameter", &state->diameter, 2.0f, 256.0f);
         upload_angle |= dvz_gui_slider_float_format(
-            gui, "Angle", &state->base_angle, -MARKER_STRESS_PI, MARKER_STRESS_PI, "%.2f rad");
-        (void)dvz_gui_checkbox(gui, "Animate rotation", &state->animate);
+            gui, "Base angle", &state->base_angle, -MARKER_STRESS_PI, MARKER_STRESS_PI,
+            "%.2f rad");
+        if (dvz_gui_checkbox(gui, "Animate rotation", &animate))
+            _set_animation_enabled(state, animate);
+        (void)dvz_gui_slider_float_format(
+            gui, "Rotation speed", &state->rotation_speed_rad_per_sec, 0.0f, 8.0f,
+            "%.2f rad/s");
 
-        style_changed |= dvz_gui_checkbox(gui, "Fill", &state->filled);
-        style_changed |= dvz_gui_checkbox(gui, "Stroke", &state->stroke);
-        style_changed |= dvz_gui_checkbox(gui, "Outline", &state->outline);
+        static const char* const style_labels[] = {
+            "fill",
+            "outline",
+            "both",
+        };
+        style_changed |= dvz_gui_combo(gui, "Style", &state->style_mode, style_labels, 3);
         style_changed |=
             dvz_gui_slider_float(gui, "Stroke width", &state->stroke_width, 0.0f, 10.0f);
 
         upload_color |= dvz_gui_slider_float(gui, "Fill alpha", &state->fill_alpha, 0.02f, 1.0f);
-        style_changed |= dvz_gui_slider_float(gui, "Edge red", &state->edge_color[0], 0.0f, 1.0f);
-        style_changed |=
-            dvz_gui_slider_float(gui, "Edge green", &state->edge_color[1], 0.0f, 1.0f);
-        style_changed |=
-            dvz_gui_slider_float(gui, "Edge blue", &state->edge_color[2], 0.0f, 1.0f);
-        style_changed |=
-            dvz_gui_slider_float(gui, "Edge alpha", &state->edge_color[3], 0.0f, 1.0f);
+        style_changed |= dvz_gui_color_edit4(gui, "Edge color", state->edge_color, 0);
     }
     dvz_gui_end(gui);
 
@@ -483,23 +605,26 @@ static void _marker_stress_gui(DvzGui* gui, DvzAppWindow* win, void* user_data)
 
 
 /**
- * Advance animated marker rotation after each completed app frame.
+ * Advance animated marker rotation from the scene clock.
  *
- * @param win app window
+ * @param animation timer animation
+ * @param t scene-clock time in seconds
+ * @param dt scene-clock delta in seconds
  * @param user_data marker stress state
  */
-static void _marker_stress_frame(DvzAppWindow* win, void* user_data)
+static void _marker_rotation_timer(
+    DvzAnimation* animation, double t, double dt, void* user_data)
 {
+    (void)animation;
+    (void)t;
     MarkerStressState* state = (MarkerStressState*)user_data;
-    if (!state->animate)
+    if (state == NULL || !state->animate || dt <= 0.0)
         return;
 
-    state->phase += 0.035f;
-    if (state->phase > 2.0f * MARKER_STRESS_PI)
-        state->phase -= 2.0f * MARKER_STRESS_PI;
+    state->phase += state->rotation_speed_rad_per_sec * (float)dt;
+    state->phase = _wrap_angle(state->phase);
 
     _upload_angles(state);
-    dvz_app_window_request_frame(win);
 }
 
 
@@ -560,15 +685,14 @@ int main(int argc, char** argv)
         .max_count = MARKER_STRESS_MAX_COUNT,
         .active_count = 8192u,
         .active_count_value = 8192.0f,
-        .diameter = 11.0f,
+        .diameter = 22.0f,
+        .rotation_speed_rad_per_sec = MARKER_STRESS_ROTATION_SPEED_RAD_PER_SEC,
         .fill_alpha = 0.88f,
         .edge_color = {0.02f, 0.025f, 0.035f, 1.0f},
-        .stroke_width = 1.5f,
-        .animate = true,
+        .stroke_width = 2.0f,
+        .style_mode = MARKER_STRESS_STYLE_BOTH,
+        .animate = false,
         .mixed_shapes = true,
-        .filled = true,
-        .stroke = true,
-        .outline = false,
     };
 
     if (_marker_stress_alloc(&state) != 0)
@@ -580,6 +704,14 @@ int main(int argc, char** argv)
 
     _upload_marker_attributes(&state);
     _apply_marker_style(&state);
+    state.rotation_animation = dvz_anim_timer(scene, 0.0, _marker_rotation_timer, &state);
+    if (state.rotation_animation == NULL)
+    {
+        dvz_fprintf(stderr, "dvz_anim_timer() failed\n");
+        _marker_stress_free(&state);
+        dvz_scene_destroy(scene);
+        return 1;
+    }
     if (dvz_panel_add_visual(panel, visual, NULL) != 0)
     {
         dvz_fprintf(stderr, "dvz_panel_add_visual() failed\n");
@@ -623,7 +755,8 @@ int main(int argc, char** argv)
     }
 
     dvz_app_window_set_gui_callback(win, _marker_stress_gui, &state);
-    dvz_app_window_set_frame_callback(win, _marker_stress_frame, &state);
+    dvz_scene_set_clock_mode(scene, DVZ_CLOCK_REALTIME);
+    dvz_scene_set_fps(scene, 60.0);
     dvz_app_run(app, _frame_count(argc, argv));
 
     dvz_app_destroy(app);

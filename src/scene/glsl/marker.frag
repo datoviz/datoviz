@@ -10,6 +10,7 @@ layout(location = 0) in vec4 fragColor;
 layout(location = 1) in float fragSize;
 layout(location = 2) in float fragAngle;
 layout(location = 3) flat in uint fragShape;
+layout(location = 4) in float fragSpriteScale;
 
 layout(location = 0) out vec4 outColor;
 
@@ -47,7 +48,7 @@ float markerDistance(vec2 p, uint shape)
 
 void main()
 {
-    vec2 uv = gl_PointCoord * 2.0 - 1.0;
+    vec2 uv = (gl_PointCoord * 2.0 - 1.0) * max(fragSpriteScale, 1.0);
     float c = cos(fragAngle);
     float s = sin(fragAngle);
     vec2 p = mat2(c, -s, s, c) * uv;
