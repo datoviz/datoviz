@@ -17,7 +17,7 @@ fn main(input: FragmentIn) -> @location(0) vec4f {
 
     let line_width = max(material.params.x, 0.0);
     let filled = material.params.y > 0.5;
-    let stroke = material.params.z > 0.5 || material.params.w > 0.5 || line_width > 0.0;
+    let stroke = material.params.z > 0.5 || material.params.w > 0.5;
     let outline = material.params.w > 0.5;
     let stroke_width = select(0.0, max(line_width, 1.0), stroke);
     let inner_radius = max(1.0 - 2.0 * stroke_width / max(input.size, 1.0), 0.0);

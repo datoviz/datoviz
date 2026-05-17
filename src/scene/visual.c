@@ -870,7 +870,7 @@ DvzMarkerStyle dvz_marker_style(void)
 static bool _point_style_enabled(const DvzPointStyleDesc* style)
 {
     ANN(style);
-    return style->outline || !style->filled || style->stroke || style->stroke_width > 0.0f;
+    return style->outline || !style->filled || style->stroke;
 }
 
 
@@ -909,7 +909,9 @@ static void _point_style_sync_params(DvzSceneMaterialParams* params, const DvzPo
 {
     ANN(params);
     ANN(style);
-    params->params[0] = style->stroke_width > 0.0f ? style->stroke_width : 0.0f;
+    const bool stroke_enabled = style->stroke || style->outline;
+    params->params[0] =
+        stroke_enabled && style->stroke_width > 0.0f ? style->stroke_width : 0.0f;
     params->params[1] = style->filled ? 1.0f : 0.0f;
     params->params[2] = style->stroke ? 1.0f : 0.0f;
     params->params[3] = style->outline ? 1.0f : 0.0f;
