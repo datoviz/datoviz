@@ -137,6 +137,16 @@ DVZ_EXPORT void dvz_panzoom_pan(DvzPanzoom* pz, vec2 pan);
 DVZ_EXPORT void dvz_panzoom_zoom(DvzPanzoom* pz, vec2 zoom);
 
 
+/**
+ * Return the visible extent in visual coordinates.
+ *
+ * @param pz the panzoom controller
+ * @param out extent as xmin, xmax, ymin, ymax
+ * @return whether the extent was written
+ */
+DVZ_EXPORT bool dvz_panzoom_extent(const DvzPanzoom* pz, float out[4]);
+
+
 
 /**
  * Apply a pan shift (pixel delta).

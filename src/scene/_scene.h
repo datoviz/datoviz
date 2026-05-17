@@ -58,6 +58,8 @@
 #define DVZ_SCENE_MAX_PENDING_REQUESTS 128
 #define DVZ_SCENE_MAX_REQUEST_SCOPES 256
 #define DVZ_SCENE_MAX_ANIMATIONS 128
+#define DVZ_SCENE_MAX_AXIS_TICKS 64
+#define DVZ_SCENE_MAX_AXIS_LINES (2 * DVZ_SCENE_MAX_AXIS_TICKS + 1)
 
 
 
@@ -122,6 +124,7 @@ typedef struct DvzPinnedReadout DvzPinnedReadout;
 typedef struct DvzFont DvzFont;
 typedef struct DvzText DvzText;
 typedef struct DvzAnnotation DvzAnnotation;
+typedef struct DvzAxis DvzAxis;
 typedef struct DvzAnimation DvzAnimation;
 typedef struct DvzTextShapedGlyph DvzTextShapedGlyph;
 typedef struct DvzTextLayoutMetrics DvzTextLayoutMetrics;
@@ -806,6 +809,28 @@ typedef struct DvzSceneTechniqueState
 
 
 /*************************************************************************************************/
+/*  Axis                                                                                         */
+/*************************************************************************************************/
+
+struct DvzAxis
+{
+    DvzPanel* panel;
+    DvzDim dim;
+    bool enabled;
+    bool dirty;
+    uint64_t version;
+    DvzDataDomain domain;
+    DvzAxisTickPolicy tick_policy;
+    DvzAxisStyle style;
+    char label[DVZ_SCENE_LABEL_SIZE];
+    uint32_t tick_count;
+    double ticks[DVZ_SCENE_MAX_AXIS_TICKS];
+    DvzVisual* visual;
+};
+
+
+
+/*************************************************************************************************/
 /*  DvzPanel                                                                                    */
 /*************************************************************************************************/
 
@@ -835,6 +860,7 @@ struct DvzPanel
     DvzCamera* camera;   /* optional camera (owned) */
     DvzFly* fly;         /* optional fly camera controller (owned) */
     DvzTurntable* turntable; /* optional turntable camera controller (owned) */
+    DvzAxis axes[2];
     DvzInteractionPolicy* interaction;
     DvzHoverState hover;
     DvzVisual* volume_occluder_visual;

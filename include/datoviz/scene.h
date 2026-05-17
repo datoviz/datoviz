@@ -341,6 +341,83 @@ DVZ_EXPORT DvzPanzoom* dvz_panel_panzoom(DvzPanel* panel);
 
 
 /**
+ * Set a panel data domain for one axis dimension.
+ *
+ * The first WIP axis slice supports finite linear X/Y domains. Axis geometry is derived from this
+ * domain and the panel panzoom extent during frame emission.
+ *
+ * @param panel the panel
+ * @param dim axis dimension
+ * @param min data minimum
+ * @param max data maximum
+ * @return 0 on success, -1 on validation error
+ */
+DVZ_EXPORT int dvz_panel_set_domain(DvzPanel* panel, DvzDim dim, double min, double max);
+
+
+/**
+ * Return a panel-owned axis, creating its WIP geometry visual on first use.
+ *
+ * @param panel the panel
+ * @param dim axis dimension
+ * @return the panel-owned axis, or NULL on validation/allocation error
+ */
+DVZ_EXPORT DvzAxis* dvz_panel_axis(DvzPanel* panel, DvzDim dim);
+
+
+/**
+ * Show or hide one panel-owned axis.
+ *
+ * @param axis the axis
+ * @param visible whether the axis is visible
+ * @return whether the axis was updated
+ */
+DVZ_EXPORT bool dvz_axis_set_visible(DvzAxis* axis, bool visible);
+
+
+/**
+ * Enable or disable grid lines for one panel-owned axis.
+ *
+ * @param axis the axis
+ * @param visible whether grid lines are visible
+ * @return whether the axis was updated
+ */
+DVZ_EXPORT bool dvz_axis_set_grid(DvzAxis* axis, bool visible);
+
+
+/**
+ * Set the label stored on one panel-owned axis.
+ *
+ * Text rendering is not part of this WIP slice; the label is retained for future text requests.
+ *
+ * @param axis the axis
+ * @param label label string, or NULL to clear
+ * @return whether the axis was updated
+ */
+DVZ_EXPORT bool dvz_axis_set_label(DvzAxis* axis, const char* label);
+
+
+/**
+ * Set the tick policy for one panel-owned axis.
+ *
+ * @param axis the axis
+ * @param policy tick policy, or NULL for defaults
+ * @return whether the axis was updated
+ */
+DVZ_EXPORT bool dvz_axis_set_tick_policy(DvzAxis* axis, const DvzAxisTickPolicy* policy);
+
+
+/**
+ * Set the line style for one panel-owned axis.
+ *
+ * @param axis the axis
+ * @param style axis style, or NULL for defaults
+ * @return whether the axis was updated
+ */
+DVZ_EXPORT bool dvz_axis_set_style(DvzAxis* axis, const DvzAxisStyle* style);
+
+
+/**
  * Attach an arcball controller to a panel and connect it to an input router.
  *
  * Rotate: left-drag. Pan rotation center: right-drag or middle-drag. Zoom: scroll wheel.

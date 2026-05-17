@@ -347,6 +347,27 @@ void dvz_panzoom_zoom(DvzPanzoom* pz, vec2 zoom)
 }
 
 
+/**
+ * Return the visible VisualSpace extent from the current pan/zoom state.
+ *
+ * @param pz the panzoom controller
+ * @param out extent as xmin, xmax, ymin, ymax
+ * @return whether the extent was written
+ */
+bool dvz_panzoom_extent(const DvzPanzoom* pz, float out[4])
+{
+    ANN(pz);
+    ANN(out);
+    if (pz->zoom[0] <= 0.0f || pz->zoom[1] <= 0.0f)
+        return false;
+    out[0] = -pz->pan[0] - 1.0f / pz->zoom[0];
+    out[1] = -pz->pan[0] + 1.0f / pz->zoom[0];
+    out[2] = -pz->pan[1] - 1.0f / pz->zoom[1];
+    out[3] = -pz->pan[1] + 1.0f / pz->zoom[1];
+    return true;
+}
+
+
 
 void dvz_panzoom_pan_shift(DvzPanzoom* pz, vec2 shift_px, vec2 center_px)
 {

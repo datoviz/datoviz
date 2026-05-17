@@ -65,6 +65,20 @@ typedef struct DvzColorbar          DvzColorbar;
 typedef struct DvzFont              DvzFont;
 typedef struct DvzText              DvzText;
 typedef struct DvzAnnotation        DvzAnnotation;
+typedef struct DvzAxis              DvzAxis;
+
+
+
+/*************************************************************************************************/
+/*  Enums                                                                                        */
+/*************************************************************************************************/
+
+typedef enum
+{
+    DVZ_DIM_X = 0,
+    DVZ_DIM_Y = 1,
+    DVZ_DIM_Z = 2,
+} DvzDim;
 
 
 
@@ -118,6 +132,38 @@ struct DvzPanelDesc
     float width, height;  /* extent in normalized figure coords */
 };
 typedef struct DvzPanelDesc DvzPanelDesc;
+
+
+struct DvzDataDomain
+{
+    double min;
+    double max;
+};
+typedef struct DvzDataDomain DvzDataDomain;
+
+
+struct DvzAxisTickPolicy
+{
+    uint32_t target_count;
+    float min_pixel_spacing;
+};
+typedef struct DvzAxisTickPolicy DvzAxisTickPolicy;
+
+
+struct DvzAxisStyle
+{
+    float spine_width;
+    float major_tick_width;
+    float grid_width;
+    float major_tick_length;
+    uint8_t spine_color[4];
+    uint8_t major_tick_color[4];
+    uint8_t grid_color[4];
+    bool show_spine;
+    bool show_major_ticks;
+    bool show_grid;
+};
+typedef struct DvzAxisStyle DvzAxisStyle;
 
 
 struct DvzEdlDesc

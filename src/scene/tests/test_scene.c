@@ -30,6 +30,7 @@ int test_scene(TstSuite* suite)
 
     test_scene_animation(suite);
     test_scene_panzoom_arcball(suite);
+    test_scene_axis(suite);
     test_scene_fly(suite);
     test_scene_turntable(suite);
     test_scene_frame_plan(suite);
