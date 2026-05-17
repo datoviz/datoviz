@@ -8,9 +8,20 @@ layout(location = 0) in vec4 fragColor;
 layout(location = 1) in vec2 fragCoord;
 layout(location = 2) in float fragLength;
 layout(location = 3) in float fragLineWidth;
-layout(location = 4) in float fragCap;
 
 layout(location = 0) out vec4 outColor;
+
+layout(set = 1, binding = 0) uniform SceneMaterial {
+    vec4 lightDir;
+    vec4 params;
+    vec4 model;
+    vec4 baseColorFactor;
+    vec4 standardParams;
+    vec4 emissiveRim;
+    vec4 depthCue;
+    vec4 depthCueColor;
+    vec4 depthCueExtra;
+} material;
 
 float strokeAlpha(float distance, float lineWidth)
 {
@@ -47,12 +58,13 @@ void main()
     float distance = fragCoord.y;
     if (fragCoord.x < 0.0)
     {
-        distance = capDistance(int(round(fragCap)), fragCoord.x, fragCoord.y, fragLineWidth);
+        distance =
+            capDistance(int(round(material.params.x)), fragCoord.x, fragCoord.y, fragLineWidth);
     }
     else if (fragCoord.x > fragLength)
     {
         distance = capDistance(
-            int(round(fragCap)), fragCoord.x - fragLength, fragCoord.y, fragLineWidth);
+            int(round(material.params.y)), fragCoord.x - fragLength, fragCoord.y, fragLineWidth);
     }
 
     float alpha = strokeAlpha(distance, fragLineWidth);

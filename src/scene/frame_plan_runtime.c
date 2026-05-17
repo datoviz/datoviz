@@ -1056,6 +1056,10 @@ static bool _emitter_prepare_render_multi(
         DvzAlphaMode alpha_mode = render->u.render.visual_metadata[i].has_metadata
                                       ? render->u.render.visual_metadata[i].alpha_mode
                                       : DVZ_ALPHA_OPAQUE;
+        bool segment_coverage_blend =
+            !render->u.render.picking && desc.kind == DVZ_SCENE_VISUAL_DESC_SEGMENT &&
+            !_alpha_mode_is_standard_blend(alpha_mode) && !wboit_accumulation &&
+            !depth_peel_pass;
         bool point_like_desc =
             desc.kind == DVZ_SCENE_VISUAL_DESC_POINT ||
             desc.kind == DVZ_SCENE_VISUAL_DESC_PIXEL ||
@@ -1065,6 +1069,13 @@ static bool _emitter_prepare_render_multi(
             size_t key_len = strlen(shader.pipeline_key);
             dvz_snprintf(
                 shader.pipeline_key + key_len, sizeof(shader.pipeline_key) - key_len, "_blend");
+        }
+        if (segment_coverage_blend)
+        {
+            size_t key_len = strlen(shader.pipeline_key);
+            dvz_snprintf(
+                shader.pipeline_key + key_len, sizeof(shader.pipeline_key) - key_len,
+                "_coverage_blend");
         }
         if (!desc.depth_test_enabled)
         {
@@ -1359,7 +1370,9 @@ static bool _emitter_prepare_render_multi(
                 ok = dvz_drp2_stream_pipeline_set_color_target(
                     stream, 0, VK_FORMAT_R32_SFLOAT);
             }
-            else if (ok && _alpha_mode_is_standard_blend(alpha_mode))
+            else if (
+                ok &&
+                (_alpha_mode_is_standard_blend(alpha_mode) || segment_coverage_blend))
             {
                 ok = dvz_drp2_stream_pipeline_set_color_blend(
                     stream, 0, VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,
@@ -1861,7 +1874,6 @@ _graph_depth_attachment_usage(const DvzFrameGraphAttachment* attachment)
         return DVZ_FRAME_GRAPH_ACCESS_NONE;
     return DVZ_FRAME_GRAPH_ACCESS_DEPTH_ATTACHMENT_WRITE;
 }
-
 
 
 /**

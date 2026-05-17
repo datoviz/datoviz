@@ -452,6 +452,13 @@ int test_scene_segment_emit_glsl(TstSuite* suite, TstItem* item)
                 AT(cmd->u.create_render_pipeline.topology == VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
                 AT(cmd->u.create_render_pipeline.binding_count == 4);
                 AT(cmd->u.create_render_pipeline.attr_count == 4);
+                AT(cmd->u.create_render_pipeline.color_targets[0].blend_enabled);
+                AT(
+                    cmd->u.create_render_pipeline.color_targets[0].src_color_blend_factor ==
+                    VK_BLEND_FACTOR_SRC_ALPHA);
+                AT(
+                    cmd->u.create_render_pipeline.color_targets[0].dst_color_blend_factor ==
+                    VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA);
             }
         }
         else if (cmd->type == DVZ_DRP2_COMMAND_SET_VERTEX_BUFFER)

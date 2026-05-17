@@ -23,7 +23,6 @@ layout(location = 0) out vec4 fragColor;
 layout(location = 1) out vec2 fragCoord;
 layout(location = 2) out float fragLength;
 layout(location = 3) out float fragLineWidth;
-layout(location = 4) out float fragCap;
 
 vec2 clipToPixel(vec4 clip)
 {
@@ -62,27 +61,23 @@ void main()
     {
         pixel = startPx - tangent * halfWidth + normal * halfWidth;
         fragCoord = vec2(-halfWidth, halfWidth);
-        fragCap = material.params.x;
     }
     else if (vertex == 1)
     {
         pixel = startPx - tangent * halfWidth - normal * halfWidth;
         fragCoord = vec2(-halfWidth, -halfWidth);
-        fragCap = material.params.x;
     }
     else if (vertex == 2)
     {
         pixel = endPx + tangent * halfWidth - normal * halfWidth;
         fragCoord = vec2(lengthPx + halfWidth, -halfWidth);
         depth = endClip.z / max(abs(endClip.w), 1e-6);
-        fragCap = material.params.y;
     }
     else
     {
         pixel = endPx + tangent * halfWidth + normal * halfWidth;
         fragCoord = vec2(lengthPx + halfWidth, halfWidth);
         depth = endClip.z / max(abs(endClip.w), 1e-6);
-        fragCap = material.params.y;
     }
 
     gl_Position = pixelToClip(pixel, depth);
