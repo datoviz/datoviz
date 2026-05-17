@@ -263,10 +263,12 @@ static bool _upload_points(PointStressState* state)
     if (state->active_count == 0 || state->active_count > state->max_count)
         return false;
 
-    if (dvz_visual_set_data(state->visual, "position", state->positions, state->active_count) !=
-            0 ||
-        dvz_visual_set_data(state->visual, "color", state->colors, state->active_count) != 0 ||
-        dvz_visual_set_data(state->visual, "diameter", state->diameters, state->active_count) != 0)
+    const DvzVisualDataUpdate updates[] = {
+        {.attr_name = "position", .data = state->positions, .item_count = state->active_count},
+        {.attr_name = "color", .data = state->colors, .item_count = state->active_count},
+        {.attr_name = "diameter", .data = state->diameters, .item_count = state->active_count},
+    };
+    if (dvz_visual_set_data_many(state->visual, updates, 3) != 0)
     {
         dvz_fprintf(stderr, "point visual data upload failed\n");
         return false;
