@@ -35,6 +35,7 @@
 #define TEXT_LAB_MAX_TICKS 64u
 #define TEXT_LAB_RAW_TEX_SIZE 32u
 #define TEXT_LAB_FIGURE_WIDTH 1100.0f
+#define TEXT_LAB_FIGURE_HEIGHT 760.0f
 
 
 
@@ -236,8 +237,8 @@ static void update_raw_glyph(TextLabState* state)
 
     float y = -0.18f;
     float h = 0.36f;
-    float w = 0.36f;
-    float x = -0.18f;
+    float w = h * TEXT_LAB_FIGURE_HEIGHT / TEXT_LAB_FIGURE_WIDTH;
+    float x = -0.5f * w;
     bool visible = state->mode == TEXT_LAB_MODE_GLYPH || state->show_raw_glyph;
     if (!visible)
     {
@@ -287,20 +288,21 @@ static void upload_raw_glyph_texture(DvzVisual* visual)
 {
     ANN(visual);
     uint8_t pixels[TEXT_LAB_RAW_TEX_SIZE * TEXT_LAB_RAW_TEX_SIZE * 4] = {0};
-    const float center = ((float)TEXT_LAB_RAW_TEX_SIZE - 1.0f) * 0.5f;
     for (uint32_t y = 0; y < TEXT_LAB_RAW_TEX_SIZE; y++)
     {
         for (uint32_t x = 0; x < TEXT_LAB_RAW_TEX_SIZE; x++)
         {
-            float dx = ((float)x - center) / center;
-            float dy = ((float)y - center) / center;
-            float d2 = dx * dx + dy * dy;
-            float sd = 0.70f - d2;
-            if (sd < 0.0f)
-                sd = 0.0f;
-            if (sd > 1.0f)
-                sd = 1.0f;
-            uint8_t v = (uint8_t)(sd * 255.0f + 0.5f);
+            int32_t ix = (int32_t)x;
+            int32_t iy = (int32_t)y;
+            bool left = ix >= 7 && ix <= 10 && iy >= 6 && iy <= 25;
+            bool top = ix >= 9 && ix <= 20 && iy >= 6 && iy <= 9;
+            bool bottom = ix >= 9 && ix <= 20 && iy >= 22 && iy <= 25;
+            int32_t dx = ix - 19;
+            int32_t dy = iy - 16;
+            uint32_t d2 = (uint32_t)(dx * dx + dy * dy);
+            bool curve = ix >= 17 && d2 >= 54u && d2 <= 92u;
+            bool inside = left || top || bottom || curve;
+            uint8_t v = inside ? 255u : 0u;
             uint64_t i = ((uint64_t)y * TEXT_LAB_RAW_TEX_SIZE + x) * 4u;
             pixels[i + 0] = v;
             pixels[i + 1] = v;
@@ -355,8 +357,8 @@ static void update_text_scene(TextLabState* state)
         apply_text_placement(
             state->sample, DVZ_SCENE_ANCHOR_PANEL_TOP, 0.0f, 96.0f, 0.0f, NULL);
 
-        float left = 110.0f;
-        float usable = TEXT_LAB_FIGURE_WIDTH - 2.0f * left;
+        float usable = 0.72f * TEXT_LAB_FIGURE_WIDTH;
+        float left = -0.5f * usable;
         float step = tick_count > 1 ? usable / (float)(tick_count - 1u) : 0.0f;
         for (uint32_t i = 0; i < tick_count; i++)
         {
@@ -365,7 +367,7 @@ static void update_text_scene(TextLabState* state)
             dvz_text_set_string(state->ticks[i], label);
             float x = left + (float)i * step;
             apply_text_placement(
-                state->ticks[i], DVZ_SCENE_ANCHOR_PANEL_BOTTOM_LEFT, x, -96.0f, -0.35f,
+                state->ticks[i], DVZ_SCENE_ANCHOR_PANEL_CENTER, x, 0.0f, 0.0f,
                 pivot);
         }
     }
@@ -486,9 +488,11 @@ static void gui_callback(DvzGui* gui, DvzAppWindow* win, void* user_data)
         }
         if (state->mode == TEXT_LAB_MODE_TICKS)
         {
-            changed |= dvz_gui_slider_float(gui, "Tick size", &state->tick_size_pts, 5.0f, 18.0f);
-            changed |= dvz_gui_slider_float(
-                gui, "Tick count", &state->tick_count_value, 2.0f, (float)TEXT_LAB_MAX_TICKS);
+            changed |= dvz_gui_slider_float_format(
+                gui, "Tick count", &state->tick_count_value, 2.0f, (float)TEXT_LAB_MAX_TICKS,
+                "%.0f");
+            changed |= dvz_gui_slider_float_format(
+                gui, "Tick size", &state->tick_size_pts, 5.0f, 18.0f, "%.1f pt");
         }
         changed |= dvz_gui_slider_float(gui, "Red", &state->color[0], 0.0f, 1.0f);
         changed |= dvz_gui_slider_float(gui, "Green", &state->color[1], 0.0f, 1.0f);
@@ -564,7 +568,8 @@ int main(int argc, char** argv)
         return 1;
     }
 
-    DvzFigure* figure = dvz_figure(scene, 1100, 760, 0);
+    DvzFigure* figure =
+        dvz_figure(scene, (uint32_t)TEXT_LAB_FIGURE_WIDTH, (uint32_t)TEXT_LAB_FIGURE_HEIGHT, 0);
     if (figure == NULL)
     {
         dvz_fprintf(stderr, "dvz_figure() failed\n");
@@ -652,7 +657,9 @@ int main(int argc, char** argv)
         return 1;
     }
 
-    DvzAppWindow* win = dvz_app_window_glfw(app, figure, 1100, 760, "hello_text_gui_glfw");
+    DvzAppWindow* win = dvz_app_window_glfw(
+        app, figure, (uint32_t)TEXT_LAB_FIGURE_WIDTH, (uint32_t)TEXT_LAB_FIGURE_HEIGHT,
+        "hello_text_gui_glfw");
     if (win == NULL)
     {
         dvz_fprintf(stderr, "dvz_app_window_glfw() failed (GLFW unavailable?)\n");
