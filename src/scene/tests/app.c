@@ -1691,6 +1691,113 @@ int test_app_offscreen_mesh_ssao_changes_pixels(TstSuite* suite, TstItem* item)
 }
 
 
+/**
+ * Ensure SSAO darkens an offscreen sphere and mesh contact scene.
+ *
+ * @param suite the test suite
+ * @param item the test item
+ * @return 0 on success
+ */
+int test_app_offscreen_sphere_ssao_darkens_contact(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    if (!_scene_vklite_runtime_available())
+        return 0;
+
+    DvzScene* scene = dvz_scene();
+    AT(scene != NULL);
+    DvzFigure* figure = dvz_figure(scene, 96, 96, 0);
+    AT(figure != NULL);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    AT(panel != NULL);
+
+    DvzColor back_color = {184, 192, 202, 255};
+    AppSsaoQuad back =
+        _app_ssao_add_quad(scene, panel, -0.86f, +0.86f, -0.74f, +0.70f, 0.70f, back_color);
+    AT(back.visual != NULL);
+
+    DvzVisual* sphere = dvz_sphere(scene, DVZ_SPHERE_FLAGS_LIGHTING);
+    AT(sphere != NULL);
+    AT(dvz_sphere_mode(sphere, DVZ_SPHERE_MODE_RAYCAST_IMPOSTOR) == 0);
+    float positions[4][3] = {
+        {-0.22f, -0.08f, 0.20f},
+        {+0.10f, -0.06f, 0.24f},
+        {-0.05f, +0.16f, 0.28f},
+        {+0.30f, +0.10f, 0.22f},
+    };
+    DvzColor colors[4] = {
+        {220, 95, 80, 255},
+        {80, 190, 125, 255},
+        {85, 130, 225, 255},
+        {230, 190, 75, 255},
+    };
+    float radii[4] = {0.28f, 0.27f, 0.25f, 0.23f};
+    AT(dvz_visual_set_data(sphere, "position", &positions[0][0], 4) == 0);
+    AT(dvz_visual_set_data(sphere, "color", colors, 4) == 0);
+    AT(dvz_visual_set_data(sphere, "radius", radii, 4) == 0);
+    AT(dvz_panel_add_visual(panel, sphere, NULL) == 0);
+    dvz_panel_set_background_color(panel, 0.03f, 0.035f, 0.045f, 1.0f);
+
+    DvzApp* app = dvz_app(scene);
+    if (app == NULL)
+    {
+        log_warn(
+            "test_app_offscreen_sphere_ssao_darkens_contact skipped: GPU context creation failed");
+        dvz_scene_destroy(scene);
+        return 0;
+    }
+    DvzAppWindow* win = dvz_app_window(app, figure, 96, 96);
+    ANN(win);
+    DvzCanvas* canvas = dvz_app_window_canvas(win);
+    ANN(canvas);
+
+    dvz_app_run(app, 1);
+    uint32_t width0 = 0, height0 = 0;
+    uint8_t* rgba0 = NULL;
+    AT(dvz_canvas_capture_rgba(canvas, &width0, &height0, &rgba0) == 0);
+    ANN(rgba0);
+    AT(width0 == 96);
+    AT(height0 == 96);
+
+    AT(dvz_panel_set_ssao(
+        panel, &(DvzSsaoDesc){.radius = 3.0f, .strength = 8.0f, .bias = 0.0f,
+                              .sample_count = 16}));
+    dvz_app_run(app, 1);
+    uint32_t width1 = 0, height1 = 0;
+    uint8_t* rgba1 = NULL;
+    AT(dvz_canvas_capture_rgba(canvas, &width1, &height1, &rgba1) == 0);
+    ANN(rgba1);
+    AT(width1 == width0);
+    AT(height1 == height0);
+
+    uint32_t darkened_count = 0;
+    uint32_t changed_count = 0;
+    const uint32_t pixel_count = width0 * height0;
+    for (uint32_t i = 0; i < pixel_count; i++)
+    {
+        const uint8_t* a = &rgba0[4 * i];
+        const uint8_t* b = &rgba1[4 * i];
+        int lum0 = (int)a[0] + (int)a[1] + (int)a[2];
+        int lum1 = (int)b[0] + (int)b[1] + (int)b[2];
+        if (lum0 != lum1)
+            changed_count++;
+        if (lum0 > 80 && lum1 + 24 < lum0)
+            darkened_count++;
+    }
+    AT(changed_count > 0);
+    AT(darkened_count > 8);
+    AT(_app_rgb_sum(rgba1, pixel_count) < _app_rgb_sum(rgba0, pixel_count));
+
+    dvz_free(rgba1);
+    dvz_free(rgba0);
+    dvz_app_destroy(app);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
 int test_app_offscreen_records_dvzr_frames(TstSuite* suite, TstItem* item)
 {
     ANN(suite);
@@ -4321,6 +4428,7 @@ int test_scene_app(TstSuite* suite)
     TEST_SIMPLE(test_app_offscreen_points_edl_renders);
     TEST_SIMPLE(test_app_offscreen_points_edl_changes_pixels);
     TEST_SIMPLE(test_app_offscreen_mesh_ssao_changes_pixels);
+    TEST_SIMPLE(test_app_offscreen_sphere_ssao_darkens_contact);
     TEST_SIMPLE(test_app_offscreen_records_dvzr_frames);
     TEST_SIMPLE(test_app_offscreen_image_has_nonblank_pixels);
     TEST_SIMPLE(test_app_offscreen_text_has_nonblank_pixels);

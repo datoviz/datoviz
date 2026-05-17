@@ -449,6 +449,26 @@ Validation:
 3. `git diff --check -- src/scene/tests/app.c src/scene/tests/test_scene.h agents/now/RENDER_CONTRACT_RESOLVER_AUDIT_2026-05-17.md`
 
 
+### 2026-05-17: Phase 4 / Sphere SSAO contact check
+
+Completed the targeted sphere/mesh SSAO offscreen visual correctness slice.
+
+Changes:
+
+1. Added `test_app_offscreen_sphere_ssao_darkens_contact`.
+2. The test renders a sphere-impostor cluster over a normal-producing mesh quad, captures a disabled
+   SSAO baseline, then enables SSAO and captures the same retained scene.
+3. The assertion checks for changed pixels, darkened pixels, and lower total RGB luminance with SSAO
+   enabled.
+
+Validation:
+
+1. `cmake --build build --target dvztest_scene -j2`
+2. `direnv exec . ./build/testing/dvztest_scene test_app_offscreen_sphere_ssao_darkens_contact`
+3. `direnv exec . ./build/testing/dvztest_scene test_app_offscreen_mesh_ssao_changes_pixels`
+4. `git diff --check -- src/scene/tests/app.c src/scene/tests/test_scene.h agents/now/RENDER_CONTRACT_RESOLVER_AUDIT_2026-05-17.md`
+
+
 ## Executive Assessment
 
 The direction is correct and worth continuing. The proposal identifies the right failure mode:

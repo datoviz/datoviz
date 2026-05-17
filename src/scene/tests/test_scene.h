@@ -620,6 +620,8 @@ int test_app_offscreen_points_edl_changes_pixels(TstSuite* suite, TstItem* item)
 
 int test_app_offscreen_mesh_ssao_changes_pixels(TstSuite* suite, TstItem* item);
 
+int test_app_offscreen_sphere_ssao_darkens_contact(TstSuite* suite, TstItem* item);
+
 int test_app_offscreen_image_has_nonblank_pixels(TstSuite* suite, TstItem* item);
 
 int test_app_offscreen_text_has_nonblank_pixels(TstSuite* suite, TstItem* item);
