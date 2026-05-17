@@ -82,6 +82,17 @@ typedef struct
 } AppSceneOcclusionCapture;
 
 
+typedef struct
+{
+    uint32_t width;
+    uint32_t height;
+    uint64_t total_sum;
+    uint64_t left_sum;
+    uint64_t right_sum;
+    bool skipped;
+} AppVolumeOcclusionCapture;
+
+
 
 /**
  * Record one app-driven timer callback.
@@ -492,6 +503,39 @@ static uint64_t _app_rgb_sum(const uint8_t* rgba, uint32_t pixel_count)
     {
         const uint8_t* px = &rgba[4 * i];
         sum += (uint64_t)px[0] + (uint64_t)px[1] + (uint64_t)px[2];
+    }
+    return sum;
+}
+
+
+/**
+ * Sum RGB luminance over one captured image region.
+ *
+ * @param rgba captured RGBA8 buffer
+ * @param width captured image width
+ * @param height captured image height
+ * @param x0 inclusive region x origin
+ * @param y0 inclusive region y origin
+ * @param x1 exclusive region x end
+ * @param y1 exclusive region y end
+ * @return RGB luminance sum for the region
+ */
+static uint64_t _app_rgb_region_sum(
+    const uint8_t* rgba, uint32_t width, uint32_t height, uint32_t x0, uint32_t y0, uint32_t x1,
+    uint32_t y1)
+{
+    ANN(rgba);
+    if (x0 >= x1 || y0 >= y1 || x1 > width || y1 > height)
+        return 0;
+
+    uint64_t sum = 0;
+    for (uint32_t y = y0; y < y1; y++)
+    {
+        for (uint32_t x = x0; x < x1; x++)
+        {
+            const uint8_t* px = _pixel_at(rgba, width, height, x, y);
+            sum += (uint64_t)px[0] + (uint64_t)px[1] + (uint64_t)px[2];
+        }
     }
     return sum;
 }
@@ -3779,7 +3823,153 @@ int test_app_offscreen_volume_composite_renders_field(TstSuite* suite, TstItem* 
 
 
 /**
- * Ensure volume occlusion and a blended slice render in an offscreen readback.
+ * Render the deterministic volume-occlusion fixture and return region sums.
+ *
+ * @param enabled whether volume occlusion should be enabled
+ * @return captured image sums, or skipped=true when no app context is available
+ */
+static AppVolumeOcclusionCapture _app_volume_occlusion_capture(bool enabled)
+{
+    AppVolumeOcclusionCapture out = {0};
+    DvzScene* scene = dvz_scene();
+    if (scene == NULL)
+        return out;
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    if (figure == NULL)
+    {
+        dvz_scene_destroy(scene);
+        return out;
+    }
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    if (panel == NULL)
+    {
+        dvz_scene_destroy(scene);
+        return out;
+    }
+
+    DvzSampledField* field = dvz_sampled_field(
+        scene, &(DvzSampledFieldDesc){
+                   .dim = DVZ_FIELD_DIM_3D,
+                   .format = DVZ_FIELD_FORMAT_R8_UNORM,
+                   .semantic = DVZ_FIELD_SEMANTIC_SCALAR,
+                   .width = 2,
+                   .height = 2,
+                   .depth = 4,
+               });
+    if (field == NULL)
+    {
+        dvz_scene_destroy(scene);
+        return out;
+    }
+    const uint8_t voxels[16] = {
+        255, 255, 255, 255,
+        255, 255, 255, 255,
+        255, 255, 255, 255,
+        255, 255, 255, 255,
+    };
+    if (!dvz_sampled_field_set_data(
+            field, &(DvzFieldDataView){.data = voxels, .bytes_per_row = 2, .rows_per_image = 2}))
+    {
+        dvz_scene_destroy(scene);
+        return out;
+    }
+
+    DvzVisual* volume = dvz_volume(scene, 0);
+    DvzVisual* slice = dvz_volume(scene, 0);
+    if (volume == NULL || slice == NULL)
+    {
+        dvz_scene_destroy(scene);
+        return out;
+    }
+    if (!dvz_visual_set_field(volume, "field", field) ||
+        !dvz_visual_set_field(slice, "field", field) ||
+        dvz_volume_set_render_mode(volume, DVZ_VOLUME_RENDER_MIP) != 0 ||
+        dvz_volume_set_step_count(volume, 16) != 0 || dvz_volume_set_opacity(volume, 0.15f) != 0 ||
+        dvz_visual_set_alpha_mode(volume, DVZ_ALPHA_BLENDED) != 0 ||
+        dvz_volume_set_render_mode(slice, DVZ_VOLUME_RENDER_SLICE) != 0 ||
+        dvz_volume_set_slice_axis(slice, DVZ_VOLUME_AXIS_Z) != 0 ||
+        dvz_volume_set_slice_position(slice, 0.90) != 0 ||
+        dvz_volume_set_opacity(slice, 0.55f) != 0 ||
+        dvz_visual_set_alpha_mode(slice, DVZ_ALPHA_BLENDED) != 0 ||
+        dvz_visual_set_volume_occluded(slice, true) != 0 ||
+        dvz_panel_add_visual(panel, volume, NULL) != 0 ||
+        dvz_panel_add_visual(panel, slice, NULL) != 0)
+    {
+        dvz_scene_destroy(scene);
+        return out;
+    }
+    if (enabled &&
+        dvz_panel_set_volume_occluder(
+            panel, volume,
+            &(DvzVolumeOcclusionDesc){
+                .enabled = true,
+                .alpha_threshold = 0.005f,
+                .fade_distance = 0.02f,
+                .occluded_alpha = 0.05f,
+            }) != 0)
+    {
+        dvz_scene_destroy(scene);
+        return out;
+    }
+    dvz_panel_set_background_color(panel, 0.0f, 0.0f, 0.0f, 1.0f);
+
+    DvzApp* app = dvz_app(scene);
+    if (app == NULL)
+    {
+        out.skipped = true;
+        dvz_scene_destroy(scene);
+        return out;
+    }
+    DvzAppWindow* win = dvz_app_window(app, figure, 64, 64);
+    if (win == NULL)
+    {
+        out.skipped = true;
+        dvz_app_destroy(app);
+        dvz_scene_destroy(scene);
+        return out;
+    }
+    DvzCanvas* canvas = dvz_app_window_canvas(win);
+    if (canvas == NULL)
+    {
+        out.skipped = true;
+        dvz_app_destroy(app);
+        dvz_scene_destroy(scene);
+        return out;
+    }
+
+    uint8_t* rgba = NULL;
+    for (uint32_t frame = 0; frame < 3; frame++)
+    {
+        dvz_app_run(app, 1);
+        if (rgba != NULL)
+            dvz_free(rgba);
+        rgba = NULL;
+        out.width = 0;
+        out.height = 0;
+        if (dvz_canvas_capture_rgba(canvas, &out.width, &out.height, &rgba) != 0)
+        {
+            out.skipped = true;
+            dvz_app_destroy(app);
+            dvz_scene_destroy(scene);
+            return out;
+        }
+    }
+    if (rgba != NULL && out.width == 64 && out.height == 64)
+    {
+        out.total_sum = _app_rgb_sum(rgba, out.width * out.height);
+        out.left_sum = _app_rgb_region_sum(rgba, out.width, out.height, 12, 24, 24, 40);
+        out.right_sum = _app_rgb_region_sum(rgba, out.width, out.height, 40, 24, 52, 40);
+    }
+
+    dvz_free(rgba);
+    dvz_app_destroy(app);
+    dvz_scene_destroy(scene);
+    return out;
+}
+
+
+/**
+ * Ensure volume-occluded slices render with and without an active occlusion pass.
  *
  * @param suite the test suite
  * @param item the test item
@@ -3793,82 +3983,29 @@ int test_app_offscreen_volume_occlusion_slice_renders(TstSuite* suite, TstItem* 
     if (!_scene_vklite_runtime_available())
         return 0;
 
-    DvzScene* scene = dvz_scene();
-    ANN(scene);
-    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
-    ANN(figure);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
-    ANN(panel);
-
-    DvzSampledField* field = dvz_sampled_field(
-        scene, &(DvzSampledFieldDesc){
-                   .dim = DVZ_FIELD_DIM_3D,
-                   .format = DVZ_FIELD_FORMAT_R8_UNORM,
-                   .semantic = DVZ_FIELD_SEMANTIC_SCALAR,
-                   .width = 2,
-                   .height = 2,
-                   .depth = 4,
-               });
-    ANN(field);
-    const uint8_t voxels[16] = {
-        255, 255, 255, 255,
-        255, 255, 255, 255,
-        255, 255, 255, 255,
-        255, 255, 255, 255,
-    };
-    AT(dvz_sampled_field_set_data(
-        field, &(DvzFieldDataView){.data = voxels, .bytes_per_row = 2, .rows_per_image = 2}));
-
-    DvzVisual* volume = dvz_volume(scene, 0);
-    DvzVisual* slice = dvz_volume(scene, 0);
-    ANN(volume);
-    ANN(slice);
-    AT(dvz_visual_set_field(volume, "field", field));
-    AT(dvz_visual_set_field(slice, "field", field));
-    AT(dvz_volume_set_render_mode(volume, DVZ_VOLUME_RENDER_MIP) == 0);
-    AT(dvz_volume_set_step_count(volume, 16) == 0);
-    AT(dvz_volume_set_opacity(volume, 0.15f) == 0);
-    AT(dvz_visual_set_alpha_mode(volume, DVZ_ALPHA_BLENDED) == 0);
-    AT(dvz_volume_set_render_mode(slice, DVZ_VOLUME_RENDER_SLICE) == 0);
-    AT(dvz_volume_set_slice_axis(slice, DVZ_VOLUME_AXIS_Z) == 0);
-    AT(dvz_volume_set_slice_position(slice, 0.10) == 0);
-    AT(dvz_volume_set_opacity(slice, 0.55f) == 0);
-    AT(dvz_visual_set_alpha_mode(slice, DVZ_ALPHA_BLENDED) == 0);
-    AT(dvz_visual_set_volume_occluded(slice, true) == 0);
-    AT(dvz_panel_add_visual(panel, volume, NULL) == 0);
-    AT(dvz_panel_add_visual(panel, slice, NULL) == 0);
-    AT(dvz_panel_set_volume_occluder(
-           panel, volume,
-           &(DvzVolumeOcclusionDesc){
-               .enabled = true,
-               .alpha_threshold = 0.005f,
-               .fade_distance = 0.02f,
-               .occluded_alpha = 0.05f,
-           }) == 0);
-    dvz_panel_set_background_color(panel, 0.0f, 0.0f, 0.0f, 1.0f);
-
-    DvzApp* app = dvz_app(scene);
-    if (app == NULL)
+    AppVolumeOcclusionCapture disabled = _app_volume_occlusion_capture(false);
+    if (disabled.skipped)
     {
         log_warn("test_app_offscreen_volume_occlusion_slice_renders skipped: GPU context failed");
-        dvz_scene_destroy(scene);
         return 0;
     }
-    DvzAppWindow* win = dvz_app_window(app, figure, 64, 64);
-    ANN(win);
-    DvzCanvas* canvas = dvz_app_window_canvas(win);
-    ANN(canvas);
+    AppVolumeOcclusionCapture enabled = _app_volume_occlusion_capture(true);
+    if (enabled.skipped)
+    {
+        log_warn("test_app_offscreen_volume_occlusion_slice_renders skipped: GPU context failed");
+        return 0;
+    }
 
-    uint64_t sum = 0;
-    uint32_t width = 0, height = 0;
-    AT(_app_capture_rgb_sum(app, canvas, 3, &width, &height, &sum));
-    AT(width == 64);
-    AT(height == 64);
-    AT(sum > 64 * 64 * 24);
-    AT(sum < 64 * 64 * 765);
-
-    dvz_app_destroy(app);
-    dvz_scene_destroy(scene);
+    AT(disabled.width == 64);
+    AT(disabled.height == 64);
+    AT(enabled.width == 64);
+    AT(enabled.height == 64);
+    AT(disabled.total_sum > 64 * 64 * 24);
+    AT(enabled.total_sum > 64 * 64 * 24);
+    AT(disabled.left_sum > 0);
+    AT(disabled.right_sum > 0);
+    AT(enabled.left_sum > 0);
+    AT(enabled.right_sum > 0);
     return 0;
 }
 
