@@ -69,7 +69,7 @@ void* dvz_read_file(const char* filename, DvzSize* size)
 
 
 
-char* dvz_read_npy(const char* filename, DvzSize* size)
+void* dvz_read_npy(const char* filename, DvzSize* size)
 {
     /* Tiny NPY reader that requires the user to know in advance the data type of the file. */
 
@@ -138,7 +138,7 @@ error:
 
 
 
-char* dvz_parse_npy(DvzSize size, char* npy_bytes)
+void* dvz_parse_npy(DvzSize size, char* npy_bytes)
 {
     // Ensure the buffer is valid
     if (size < 10 || npy_bytes == NULL)

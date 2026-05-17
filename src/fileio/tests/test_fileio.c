@@ -102,7 +102,7 @@ int test_parse_npy(TstSuite* suite, TstItem* tstitem)
     double value = 42.0;
     dvz_memcpy(buffer + 10 + header_padded_len, data_size, &value, data_size);
 
-    char* parsed = dvz_parse_npy((DvzSize)total_size, (char*)buffer);
+    void* parsed = dvz_parse_npy((DvzSize)total_size, (char*)buffer);
     AT(parsed != NULL);
 
     double parsed_value = 0.0;

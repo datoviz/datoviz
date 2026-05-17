@@ -249,12 +249,12 @@ static bool _load_lidar_dataset(const char* data_dir, uint32_t stride, LidarData
 
     DvzSize pos_size = 0;
     DvzSize color_size = 0;
-    char* pos = dvz_read_npy(pos_path, &pos_size);
-    char* color = dvz_read_npy(color_path, &color_size);
-    if (pos == NULL || color == NULL)
+    float(*positions)[3] = dvz_read_npy(pos_path, &pos_size);
+    DvzColor* colors = dvz_read_npy(color_path, &color_size);
+    if (positions == NULL || colors == NULL)
     {
-        dvz_free(color);
-        dvz_free(pos);
+        dvz_free(colors);
+        dvz_free(positions);
         _print_prepare_hint(data_dir);
         return false;
     }
@@ -263,15 +263,15 @@ static bool _load_lidar_dataset(const char* data_dir, uint32_t stride, LidarData
         color_size % sizeof(DvzColor) != 0)
     {
         dvz_fprintf(stderr, "invalid LIDAR .npy payload sizes\n");
-        dvz_free(color);
-        dvz_free(pos);
+        dvz_free(colors);
+        dvz_free(positions);
         return false;
     }
     if (sizeof(DvzColor) != 4)
     {
         dvz_fprintf(stderr, "unexpected DvzColor size\n");
-        dvz_free(color);
-        dvz_free(pos);
+        dvz_free(colors);
+        dvz_free(positions);
         return false;
     }
 
@@ -280,8 +280,8 @@ static bool _load_lidar_dataset(const char* data_dir, uint32_t stride, LidarData
     if (pos_count != color_count || pos_count > UINT32_MAX)
     {
         dvz_fprintf(stderr, "LIDAR position/color counts do not match or exceed uint32 range\n");
-        dvz_free(color);
-        dvz_free(pos);
+        dvz_free(colors);
+        dvz_free(positions);
         return false;
     }
 
@@ -289,13 +289,10 @@ static bool _load_lidar_dataset(const char* data_dir, uint32_t stride, LidarData
     if (sampled_count > UINT32_MAX)
     {
         dvz_fprintf(stderr, "sampled LIDAR point count exceeds uint32 range\n");
-        dvz_free(color);
-        dvz_free(pos);
+        dvz_free(colors);
+        dvz_free(positions);
         return false;
     }
-
-    float(*positions)[3] = (float(*)[3])pos;
-    DvzColor* colors = (DvzColor*)color;
     if (stride > 1)
     {
         for (DvzSize dst = 0, src = 0; src < pos_count; dst++, src += stride)
@@ -314,8 +311,8 @@ static bool _load_lidar_dataset(const char* data_dir, uint32_t stride, LidarData
     if (sizes == NULL)
     {
         dvz_fprintf(stderr, "unable to allocate LIDAR point sizes\n");
-        dvz_free(color);
-        dvz_free(pos);
+        dvz_free(colors);
+        dvz_free(positions);
         return false;
     }
 

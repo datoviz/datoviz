@@ -134,7 +134,7 @@ static bool _join_path(const char* dir, const char* basename, char* out, size_t 
  * @param size output payload size in bytes
  * @return payload pointer owned by the caller, or NULL on failure
  */
-static char* _read_bwm_npy(const char* data_dir, const char* basename, DvzSize* size)
+static void* _read_bwm_npy(const char* data_dir, const char* basename, DvzSize* size)
 {
     ANN(data_dir);
     ANN(basename);
@@ -187,13 +187,13 @@ static bool _load_bwm_dataset(const char* data_dir, BwmDataset* dataset)
     DvzSize mesh_color_size = 0;
     DvzSize mesh_idx_size = 0;
 
-    char* cluster_pos = _read_bwm_npy(data_dir, "bwm_cluster_pos.npy", &cluster_pos_size);
-    char* cluster_color = _read_bwm_npy(data_dir, "bwm_cluster_color.npy", &cluster_color_size);
-    char* cluster_size = _read_bwm_npy(data_dir, "bwm_cluster_size.npy", &cluster_size_size);
-    char* mesh_pos = _read_bwm_npy(data_dir, "bwm_mesh_pos.npy", &mesh_pos_size);
-    char* mesh_normal = _read_bwm_npy(data_dir, "bwm_mesh_normal.npy", &mesh_normal_size);
-    char* mesh_color = _read_bwm_npy(data_dir, "bwm_mesh_color.npy", &mesh_color_size);
-    char* mesh_idx = _read_bwm_npy(data_dir, "bwm_mesh_idx.npy", &mesh_idx_size);
+    float(*cluster_pos)[3] = _read_bwm_npy(data_dir, "bwm_cluster_pos.npy", &cluster_pos_size);
+    DvzColor* cluster_color = _read_bwm_npy(data_dir, "bwm_cluster_color.npy", &cluster_color_size);
+    float* cluster_size = _read_bwm_npy(data_dir, "bwm_cluster_size.npy", &cluster_size_size);
+    float(*mesh_pos)[3] = _read_bwm_npy(data_dir, "bwm_mesh_pos.npy", &mesh_pos_size);
+    float(*mesh_normal)[3] = _read_bwm_npy(data_dir, "bwm_mesh_normal.npy", &mesh_normal_size);
+    DvzColor* mesh_color = _read_bwm_npy(data_dir, "bwm_mesh_color.npy", &mesh_color_size);
+    DvzIndex* mesh_idx = _read_bwm_npy(data_dir, "bwm_mesh_idx.npy", &mesh_idx_size);
 
     if (cluster_pos == NULL || cluster_color == NULL || cluster_size == NULL || mesh_pos == NULL ||
         mesh_normal == NULL || mesh_color == NULL || mesh_idx == NULL)
@@ -233,7 +233,7 @@ static bool _load_bwm_dataset(const char* data_dir, BwmDataset* dataset)
         goto error;
     }
 
-    DvzIndex* indices = (DvzIndex*)mesh_idx;
+    DvzIndex* indices = mesh_idx;
     for (DvzSize i = 0; i < mesh_index_count; i++)
     {
         if (indices[i] >= mesh_vertex_count)
@@ -243,14 +243,14 @@ static bool _load_bwm_dataset(const char* data_dir, BwmDataset* dataset)
         }
     }
 
-    dataset->cluster_pos = (float(*)[3])cluster_pos;
-    dataset->cluster_color = (DvzColor*)cluster_color;
-    dataset->cluster_size = (float*)cluster_size;
+    dataset->cluster_pos = cluster_pos;
+    dataset->cluster_color = cluster_color;
+    dataset->cluster_size = cluster_size;
     dataset->cluster_count = (uint32_t)cluster_count;
-    dataset->mesh_pos = (float(*)[3])mesh_pos;
-    dataset->mesh_normal = (float(*)[3])mesh_normal;
-    dataset->mesh_color = (DvzColor*)mesh_color;
-    dataset->mesh_idx = (DvzIndex*)mesh_idx;
+    dataset->mesh_pos = mesh_pos;
+    dataset->mesh_normal = mesh_normal;
+    dataset->mesh_color = mesh_color;
+    dataset->mesh_idx = mesh_idx;
     dataset->mesh_vertex_count = (uint32_t)mesh_vertex_count;
     dataset->mesh_index_count = (uint32_t)mesh_index_count;
 

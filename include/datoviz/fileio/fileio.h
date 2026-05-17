@@ -61,7 +61,7 @@ void* dvz_read_file(const char* filename, DvzSize* size);
  * @param[out] size of the file
  * @returns pointer to a buffer containing the array elements
  */
-char* dvz_read_npy(const char* filename, DvzSize* size);
+void* dvz_read_npy(const char* filename, DvzSize* size);
 
 
 
@@ -72,7 +72,7 @@ char* dvz_read_npy(const char* filename, DvzSize* size);
  * @param npy_bytes the contents of the NPY file
  * @returns pointer to a buffer containing the array elements
  */
-char* dvz_parse_npy(DvzSize size, char* npy_bytes);
+void* dvz_parse_npy(DvzSize size, char* npy_bytes);
 
 
 

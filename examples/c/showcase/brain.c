@@ -336,7 +336,7 @@ static bool _data_path(int argc, char** argv, char* out, size_t out_size)
  * @param size output payload size in bytes
  * @return payload pointer owned by the caller, or NULL on failure
  */
-static char* _read_ibl_asset_npy(const char* data_dir, const char* basename, DvzSize* size)
+static void* _read_ibl_asset_npy(const char* data_dir, const char* basename, DvzSize* size)
 {
     ANN(data_dir);
     ANN(basename);
@@ -619,10 +619,10 @@ static bool _load_ibl_atlas_mesh(const char* data_dir, AllenIblAtlasMesh* atlas)
     DvzSize normal_size = 0;
     DvzSize color_size = 0;
     DvzSize idx_size = 0;
-    char* pos = _read_ibl_asset_npy(data_dir, "allen_ibl_mesh_pos.npy", &pos_size);
-    char* normal = _read_ibl_asset_npy(data_dir, "allen_ibl_mesh_normal.npy", &normal_size);
-    char* color = _read_ibl_asset_npy(data_dir, "allen_ibl_mesh_color.npy", &color_size);
-    char* idx = _read_ibl_asset_npy(data_dir, "allen_ibl_mesh_idx.npy", &idx_size);
+    float(*pos)[3] = _read_ibl_asset_npy(data_dir, "allen_ibl_mesh_pos.npy", &pos_size);
+    float(*normal)[3] = _read_ibl_asset_npy(data_dir, "allen_ibl_mesh_normal.npy", &normal_size);
+    DvzColor* color = _read_ibl_asset_npy(data_dir, "allen_ibl_mesh_color.npy", &color_size);
+    DvzIndex* idx = _read_ibl_asset_npy(data_dir, "allen_ibl_mesh_idx.npy", &idx_size);
 
     if (pos == NULL || normal == NULL || color == NULL || idx == NULL)
     {
@@ -652,7 +652,7 @@ static bool _load_ibl_atlas_mesh(const char* data_dir, AllenIblAtlasMesh* atlas)
         goto error;
     }
 
-    DvzIndex* indices = (DvzIndex*)idx;
+    DvzIndex* indices = idx;
     for (DvzSize i = 0; i < index_count; i++)
     {
         if (indices[i] >= vertex_count)
@@ -662,10 +662,10 @@ static bool _load_ibl_atlas_mesh(const char* data_dir, AllenIblAtlasMesh* atlas)
         }
     }
 
-    atlas->pos = (float(*)[3])pos;
-    atlas->normal = (float(*)[3])normal;
-    atlas->color = (DvzColor*)color;
-    atlas->idx = (DvzIndex*)idx;
+    atlas->pos = pos;
+    atlas->normal = normal;
+    atlas->color = color;
+    atlas->idx = idx;
     atlas->vertex_count = (uint32_t)vertex_count;
     atlas->index_count = (uint32_t)index_count;
     atlas->draw_index_count = (uint32_t)index_count;
