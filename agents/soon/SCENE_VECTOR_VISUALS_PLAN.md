@@ -415,7 +415,9 @@ git diff --check
 
 ### Stage 2. Port Path Geometry And Joins
 
-Scope: replace line-strip path rendering with a retained stroked polyline, ported from v0.3.
+Scope: replace the current segment-lowered stroked path with a retained stroked polyline,
+ported from v0.3. Keep the primitive line-strip path available for paths without `line_width`
+until the path-native stroke path is stable and benchmarked.
 
 Status on 2026-05-17: partially implemented. Paths without `line_width` still use the primitive
 line-strip path. Paths with per-point `line_width` derive segment-style stroke resources and support
@@ -435,6 +437,45 @@ Expected work:
 8. preserve fixed-panel/controller modes and z-layer ordering;
 9. keep alpha/WBOIT interactions explicit: ordinary alpha blend first, WBOIT only after the opaque
    path is stable.
+
+Focused implementation checklist:
+
+1. Add path-native derived resources in `src/scene/scene_emit.c` instead of reusing segment
+   endpoint resources for stroked paths. The first derived payload should mirror the v0.3
+   `DvzPathVertex` inputs: previous point `p0`, current point `p1`, next point `p2`, next-next
+   point `p3`, per-point color, and per-point `line_width`.
+2. Rebuild that payload from retained `position`, `color`, `line_width`, and
+   `dvz_path_set_subpaths()` metadata. Open subpaths should duplicate endpoint neighbours exactly
+   as v0.3 does; closed subpaths should wrap neighbours once closed-path metadata is added.
+3. Preserve the existing public `stroke_width` alias, but keep the internal storage name
+   `line_width` unless the whole visual attribute vocabulary is deliberately renamed.
+4. Add a path-stroke shader family under `src/scene/glsl/`, adapted from
+   `v0.3/src/scene/glsl/graphics_path.vert` and `graphics_path.frag`. The port should use v0.4
+   `common.glsl`, viewport, material, clipping, depth, and shader registry conventions rather than
+   legacy v0.3 include/binding conventions.
+5. Add a distinct built-in shader identity and pipeline path for stroked paths in
+   `src/scene/visual_pipeline.c`. A stroked path should no longer be described as
+   `DVZ_SCENE_VISUAL_DESC_SEGMENT` once path-native joins are active.
+6. Add material or stroke parameters for cap mode, join mode, miter limit, and antialias radius.
+   The first port should make round joins and miter-limit fallback match v0.3 before adding dashes.
+7. Keep the current segment-lowered path as a temporary fallback while the new shader is being
+   tested. Remove or gate the fallback only after offscreen path-join tests and the live path example
+   show no cracks at acute joins.
+8. Update `include/datoviz/scene.h`, `spec/scene/visuals/PATH.md`, and examples only when the
+   supported public surface changes. Do not expose `dvz_path_join()` or closed-path flags until the
+   retained state, shader path, and tests all agree on the semantics.
+
+Regression targets:
+
+1. A focused scene emission test should verify that a stroked path binds path-native adjacency
+   resources and the path-stroke pipeline rather than the segment pipeline.
+2. An offscreen pixel test should render a thick acute polyline on a contrasting background and
+   assert that the join region has continuous coverage. This should fail on the current
+   segment-lowered path.
+3. Add cases for open endpoints, single subpath, multiple subpaths, repeated partial updates, and
+   per-point width changes.
+4. Add a live-example pressure check using `./build/examples/c/visuals/path` with a thick stroked
+   zigzag, because that is the easiest manual way to catch join cracks and miter spikes.
 
 Validation:
 
