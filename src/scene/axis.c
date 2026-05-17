@@ -275,6 +275,34 @@ static float _axis_major_tick_length(const DvzAxis* axis)
 }
 
 
+/**
+ * Fill the visible tick values for the current tick step.
+ *
+ * @param axis the axis
+ * @param min visible domain minimum
+ * @param max visible domain maximum
+ * @param step major tick step
+ */
+static void _axis_fill_visible_ticks(DvzAxis* axis, double min, double max, double step)
+{
+    ANN(axis);
+    axis->tick_count = 0;
+    if (!isfinite(min) || !isfinite(max) || !isfinite(step) || !(max > min) || step <= AXIS_EPS)
+        return;
+
+    double first = floor(min / step) * step;
+    double last = ceil(max / step) * step;
+    if (!isfinite(first) || !isfinite(last) || !(last >= first))
+        return;
+    for (double value = first; value <= last + 0.5 * step; value += step)
+    {
+        if (axis->tick_count >= DVZ_SCENE_MAX_AXIS_TICKS)
+            break;
+        axis->ticks[axis->tick_count++] = value;
+    }
+}
+
+
 
 /**
  * Map one data coordinate to fixed visual coordinates for an interval.
@@ -353,6 +381,7 @@ static bool _axis_visible_domain(const DvzAxis* axis, double* out_min, double* o
 static void _axis_compute_ticks(DvzAxis* axis)
 {
     ANN(axis);
+    axis->tick_count = 0;
     double min = 0.0;
     double max = 0.0;
     if (!_axis_visible_domain(axis, &min, &max))
@@ -360,11 +389,17 @@ static void _axis_compute_ticks(DvzAxis* axis)
 
     float pixel_span = 0.0f;
     uint32_t target = _axis_target_tick_count(axis, &pixel_span);
-    if (!axis->dirty && axis->tick_cache_valid && axis->tick_count > 0 &&
-        min >= axis->tick_covered_min && max <= axis->tick_covered_max)
+    double current_density = axis->tick_lstep > 0.0 && isfinite(axis->tick_lstep)
+                                 ? (max - min) / axis->tick_lstep + 1.0
+                                 : 0.0;
+    if (!axis->dirty && axis->tick_cache_valid && min >= axis->tick_covered_min &&
+        max <= axis->tick_covered_max &&
+        current_density >= 0.5 * (double)target && current_density <= 2.0 * (double)target)
+    {
+        _axis_fill_visible_ticks(axis, min, max, axis->tick_lstep);
         return;
+    }
 
-    axis->tick_count = 0;
     double range = max - min;
     if (!isfinite(range) || range <= AXIS_EPS)
         return;
@@ -372,7 +407,7 @@ static void _axis_compute_ticks(DvzAxis* axis)
     double step = _axis_nice_number(raw_step, true);
     if (axis->tick_lstep > 0.0 && isfinite(axis->tick_lstep))
     {
-        double current_density = range / axis->tick_lstep + 1.0;
+        current_density = range / axis->tick_lstep + 1.0;
         if (current_density >= 0.5 * (double)target && current_density <= 2.0 * (double)target)
             step = axis->tick_lstep;
     }
@@ -392,12 +427,7 @@ static void _axis_compute_ticks(DvzAxis* axis)
     axis->tick_covered_min = lmin;
     axis->tick_covered_max = lmax;
     axis->tick_cache_valid = true;
-    for (double value = lmin; value <= lmax + 0.5 * step; value += step)
-    {
-        if (axis->tick_count >= DVZ_SCENE_MAX_AXIS_TICKS)
-            break;
-        axis->ticks[axis->tick_count++] = value;
-    }
+    _axis_fill_visible_ticks(axis, min, max, step);
 }
 
 
