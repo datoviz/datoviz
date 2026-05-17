@@ -145,6 +145,7 @@ struct DvzAxisTickPolicy
 {
     uint32_t target_count;
     float min_pixel_spacing;
+    uint32_t minor_per_interval;
 };
 typedef struct DvzAxisTickPolicy DvzAxisTickPolicy;
 
@@ -153,17 +154,21 @@ struct DvzAxisStyle
 {
     float spine_width;
     float major_tick_width;
+    float minor_tick_width;
     float grid_width;
     float major_tick_length;
+    float minor_tick_length;
     float plot_margin_left;
     float plot_margin_right;
     float plot_margin_bottom;
     float plot_margin_top;
     uint8_t spine_color[4];
     uint8_t major_tick_color[4];
+    uint8_t minor_tick_color[4];
     uint8_t grid_color[4];
     bool show_spine;
     bool show_major_ticks;
+    bool show_minor_ticks;
     bool show_grid;
 };
 typedef struct DvzAxisStyle DvzAxisStyle;

@@ -46,7 +46,8 @@
  */
 static DvzAxisTickPolicy _axis_default_tick_policy(void)
 {
-    return (DvzAxisTickPolicy){.target_count = 6, .min_pixel_spacing = 100.0f};
+    return (DvzAxisTickPolicy){
+        .target_count = 6, .min_pixel_spacing = 100.0f, .minor_per_interval = 4};
 }
 
 
@@ -61,17 +62,21 @@ static DvzAxisStyle _axis_default_style(void)
     return (DvzAxisStyle){
         .spine_width = 1.0f,
         .major_tick_width = 1.0f,
+        .minor_tick_width = 1.0f,
         .grid_width = 1.0f,
         .major_tick_length = 9.0f,
+        .minor_tick_length = 5.0f,
         .plot_margin_left = 0.0f,
         .plot_margin_right = 0.0f,
         .plot_margin_bottom = 0.0f,
         .plot_margin_top = 0.0f,
         .spine_color = {220, 220, 220, 255},
         .major_tick_color = {220, 220, 220, 255},
+        .minor_tick_color = {170, 170, 170, 220},
         .grid_color = {90, 95, 105, 180},
         .show_spine = true,
         .show_major_ticks = true,
+        .show_minor_ticks = true,
         .show_grid = false,
     };
 }
@@ -256,10 +261,10 @@ static uint32_t _axis_target_tick_count(const DvzAxis* axis, float* pixel_span)
  * @param axis the axis
  * @return major tick length in visual units
  */
-static float _axis_major_tick_length(const DvzAxis* axis)
+static float _axis_tick_length(const DvzAxis* axis, float length_px)
 {
     ANN(axis);
-    if (!(axis->style.major_tick_length > 0.0f) || !isfinite(axis->style.major_tick_length))
+    if (!(length_px > 0.0f) || !isfinite(length_px))
         return 0.0f;
     if (axis->panel == NULL)
         return 0.0f;
@@ -271,7 +276,23 @@ static float _axis_major_tick_length(const DvzAxis* axis)
     float span = axis->dim == DVZ_DIM_X ? panel_height : panel_width;
     if (!(span > 0.0f) || !isfinite(span))
         return 0.0f;
-    return 2.0f * axis->style.major_tick_length / span;
+    return 2.0f * length_px / span;
+}
+
+
+/**
+ * Return the clamped minor tick count for one major interval.
+ *
+ * @param axis the axis
+ * @return minor tick count per major interval
+ */
+static uint32_t _axis_minor_count(const DvzAxis* axis)
+{
+    ANN(axis);
+    uint32_t count = axis->tick_policy.minor_per_interval;
+    if (count > DVZ_SCENE_MAX_AXIS_MINOR_TICKS)
+        count = DVZ_SCENE_MAX_AXIS_MINOR_TICKS;
+    return count;
 }
 
 
@@ -464,6 +485,42 @@ static void _axis_append_line(
 }
 
 
+/**
+ * Append one tick mark to stack arrays.
+ *
+ * @param axis the axis
+ * @param count current line count
+ * @param starts start positions
+ * @param ends end positions
+ * @param colors line colors
+ * @param widths line widths
+ * @param p tick anchor in visual coordinates
+ * @param x0 plot left
+ * @param y0 plot bottom
+ * @param z visual z coordinate
+ * @param length tick length in visual units
+ * @param color tick color
+ * @param width tick width
+ */
+static void _axis_append_tick(
+    const DvzAxis* axis, uint32_t* count, float starts[][3], float ends[][3],
+    uint8_t colors[][4], float widths[], float p, float x0, float y0, float z, float length,
+    const uint8_t color[4], float width)
+{
+    ANN(axis);
+    if (!(length > 0.0f))
+        return;
+    if (axis->dim == DVZ_DIM_X)
+        _axis_append_line(
+            count, starts, ends, colors, widths, (float[3]){p, y0, z},
+            (float[3]){p, y0 + length, z}, color, width);
+    else
+        _axis_append_line(
+            count, starts, ends, colors, widths, (float[3]){x0, p, z},
+            (float[3]){x0 + length, p, z}, color, width);
+}
+
+
 
 /**
  * Rebuild the fixed-space segment visual backing one axis.
@@ -531,17 +588,26 @@ static void _axis_update_visual(DvzAxis* axis)
         }
         if (axis->style.show_major_ticks)
         {
-            float len = _axis_major_tick_length(axis);
-            if (axis->dim == DVZ_DIM_X)
-                _axis_append_line(
-                    &count, starts, ends, colors, widths, (float[3]){p, y0, z},
-                    (float[3]){p, y0 + len, z}, axis->style.major_tick_color,
-                    axis->style.major_tick_width);
-            else
-                _axis_append_line(
-                    &count, starts, ends, colors, widths, (float[3]){x0, p, z},
-                    (float[3]){x0 + len, p, z}, axis->style.major_tick_color,
-                    axis->style.major_tick_width);
+            float len = _axis_tick_length(axis, axis->style.major_tick_length);
+            _axis_append_tick(
+                axis, &count, starts, ends, colors, widths, p, x0, y0, z, len,
+                axis->style.major_tick_color, axis->style.major_tick_width);
+        }
+        if (axis->style.show_minor_ticks && i + 1 < axis->tick_count)
+        {
+            uint32_t minor_count = _axis_minor_count(axis);
+            float len = _axis_tick_length(axis, axis->style.minor_tick_length);
+            double delta = (axis->ticks[i + 1] - axis->ticks[i]) / (double)(minor_count + 1);
+            for (uint32_t j = 1; j <= minor_count; j++)
+            {
+                double value = axis->ticks[i] + (double)j * delta;
+                float mp = _axis_data_to_visual(value, visible_min, visible_max, plot_min, plot_max);
+                if (mp < plot_min - 0.0001f || mp > plot_max + 0.0001f)
+                    continue;
+                _axis_append_tick(
+                    axis, &count, starts, ends, colors, widths, mp, x0, y0, z, len,
+                    axis->style.minor_tick_color, axis->style.minor_tick_width);
+            }
         }
     }
 

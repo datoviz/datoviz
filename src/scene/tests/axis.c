@@ -83,10 +83,13 @@ static uint32_t _axis_test_inward_tick_line_count(DvzAxis* axis)
     ANN(axis->visual);
     DvzVisualAttr* starts_attr = _axis_test_attr(axis->visual, "position_start");
     DvzVisualAttr* ends_attr = _axis_test_attr(axis->visual, "position_end");
+    DvzVisualAttr* colors_attr = _axis_test_attr(axis->visual, "color");
     ANN(starts_attr);
     ANN(ends_attr);
+    ANN(colors_attr);
     const float* starts = (const float*)starts_attr->data;
     const float* ends = (const float*)ends_attr->data;
+    const uint8_t* colors = (const uint8_t*)colors_attr->data;
     uint32_t count = 0;
     for (uint32_t i = 0; i < starts_attr->item_count; i++)
     {
@@ -94,11 +97,36 @@ static uint32_t _axis_test_inward_tick_line_count(DvzAxis* axis)
         float sy = starts[3 * i + 1];
         float ex = ends[3 * i + 0];
         float ey = ends[3 * i + 1];
+        if (memcmp(&colors[4 * i], axis->style.major_tick_color, 4) != 0)
+            continue;
         if (axis->dim == DVZ_DIM_X && fabsf(sx - ex) < 1e-5f && fabsf(sy + 1.0f) < 1e-5f &&
             ey > sy + 1e-5f && ey < sy + 0.10f)
             count++;
         if (axis->dim == DVZ_DIM_Y && fabsf(sy - ey) < 1e-5f && fabsf(sx + 1.0f) < 1e-5f &&
             ex > sx + 1e-5f && ex < sx + 0.10f)
+            count++;
+    }
+    return count;
+}
+
+
+/**
+ * Return the number of inward minor tick lines emitted by one axis visual.
+ *
+ * @param axis the axis
+ * @return inward minor tick line count
+ */
+static uint32_t _axis_test_inward_minor_tick_line_count(DvzAxis* axis)
+{
+    ANN(axis);
+    ANN(axis->visual);
+    DvzVisualAttr* colors_attr = _axis_test_attr(axis->visual, "color");
+    ANN(colors_attr);
+    const uint8_t* colors = (const uint8_t*)colors_attr->data;
+    uint32_t count = 0;
+    for (uint32_t i = 0; i < colors_attr->item_count; i++)
+    {
+        if (memcmp(&colors[4 * i], axis->style.minor_tick_color, 4) == 0)
             count++;
     }
     return count;
@@ -189,10 +217,42 @@ int test_axis_domain_and_ticks(TstSuite* suite, TstItem* item)
     AT(axis->visual->visible);
     AT(axis->visual->attrs[0].item_count > 0);
     AT(_axis_test_inward_tick_line_count(axis) >= 8);
+    AT(_axis_test_inward_minor_tick_line_count(axis) > 0);
 
     AT(dvz_axis_set_grid(axis, true));
     _scene_prepare_axis_visuals(figure);
     AT(axis->visual->attrs[0].item_count > 0);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+static int test_axis_minor_ticks(TstSuite* suite, TstItem* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 800, 600, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
+    ANN(panel);
+
+    AT(dvz_panel_set_domain(panel, DVZ_DIM_X, 0.0, 10.0) == 0);
+    DvzAxis* axis = dvz_panel_axis(panel, DVZ_DIM_X);
+    ANN(axis);
+
+    _scene_prepare_axis_visuals(figure);
+    uint32_t minor_count = _axis_test_inward_minor_tick_line_count(axis);
+    AT(minor_count > 0);
+
+    DvzAxisStyle style = axis->style;
+    style.show_minor_ticks = false;
+    AT(dvz_axis_set_style(axis, &style));
+    _scene_prepare_axis_visuals(figure);
+    AT(_axis_test_inward_minor_tick_line_count(axis) == 0);
 
     dvz_scene_destroy(scene);
     return 0;
@@ -558,6 +618,7 @@ int test_scene_axis(TstSuite* suite)
     const char* tags = "scene,axis";
 
     TEST_SIMPLE(test_axis_domain_and_ticks);
+    TEST_SIMPLE(test_axis_minor_ticks);
     TEST_SIMPLE(test_axis_tick_density_tracks_panel_size);
     TEST_SIMPLE(test_panel_data_to_visual_positions);
     TEST_SIMPLE(test_axis_plot_margins);

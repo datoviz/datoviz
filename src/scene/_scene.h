@@ -59,7 +59,9 @@
 #define DVZ_SCENE_MAX_REQUEST_SCOPES 256
 #define DVZ_SCENE_MAX_ANIMATIONS 128
 #define DVZ_SCENE_MAX_AXIS_TICKS 64
-#define DVZ_SCENE_MAX_AXIS_LINES (2 * DVZ_SCENE_MAX_AXIS_TICKS + 1)
+#define DVZ_SCENE_MAX_AXIS_MINOR_TICKS 8
+#define DVZ_SCENE_MAX_AXIS_LINES                                                                  \
+    ((2 + DVZ_SCENE_MAX_AXIS_MINOR_TICKS) * DVZ_SCENE_MAX_AXIS_TICKS + 1)
 
 
 
