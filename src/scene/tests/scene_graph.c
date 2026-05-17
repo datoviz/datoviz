@@ -6569,6 +6569,15 @@ int test_scene_draw_contract_resolver_matrix(TstSuite* suite, TstItem* item)
     AT(contract.depth_test);
     AT(contract.depth_write);
     AT(!contract.samples_depth);
+    AT(
+        contract.depth_policy ==
+        (DVZ_SCENE_DEPTH_POLICY_TEST | DVZ_SCENE_DEPTH_POLICY_WRITE));
+    AT(contract.blend_policy == DVZ_SCENE_BLEND_POLICY_OPAQUE);
+    AT(contract.shader_feature_mask == 0);
+    AT(
+        contract.bind_group_layout_mask ==
+        (DVZ_SCENE_BIND_GROUP_REQUIREMENT_COMMON |
+         DVZ_SCENE_BIND_GROUP_REQUIREMENT_MATERIAL));
     AT(contract.needs_common_set);
     AT(contract.needs_material_set);
 
@@ -6590,6 +6599,18 @@ int test_scene_draw_contract_resolver_matrix(TstSuite* suite, TstItem* item)
     AT(contract.samples_depth);
     AT(contract.samples_volume_occlusion);
     AT(contract.samples_scene_occlusion);
+    AT(contract.depth_policy == DVZ_SCENE_DEPTH_POLICY_SAMPLE);
+    AT(contract.blend_policy == DVZ_SCENE_BLEND_POLICY_SOURCE_OVER);
+    AT(
+        contract.shader_feature_mask ==
+        (DVZ_SCENE_SHADER_FEATURE_SAMPLE_DEPTH |
+         DVZ_SCENE_SHADER_FEATURE_SAMPLE_VOLUME_OCCLUSION |
+         DVZ_SCENE_SHADER_FEATURE_SAMPLE_SCENE_OCCLUSION));
+    AT(
+        contract.bind_group_layout_mask ==
+        (DVZ_SCENE_BIND_GROUP_REQUIREMENT_COMMON |
+         DVZ_SCENE_BIND_GROUP_REQUIREMENT_VOLUME |
+         DVZ_SCENE_BIND_GROUP_REQUIREMENT_SCENE_OCCLUSION));
     AT(contract.needs_common_set);
     AT(contract.needs_volume_set);
     AT(contract.needs_scene_occlusion_set);
@@ -6608,6 +6629,8 @@ int test_scene_draw_contract_resolver_matrix(TstSuite* suite, TstItem* item)
     AT(contract.depth_test);
     AT(!contract.depth_write);
     AT(!contract.samples_depth);
+    AT(contract.depth_policy == DVZ_SCENE_DEPTH_POLICY_TEST);
+    AT(contract.blend_policy == DVZ_SCENE_BLEND_POLICY_WBOIT);
     AT(contract.needs_material_set);
 
     facts = (DvzSceneDrawFacts){
@@ -6623,6 +6646,13 @@ int test_scene_draw_contract_resolver_matrix(TstSuite* suite, TstItem* item)
     AT(contract.depth_test);
     AT(contract.depth_write);
     AT(contract.writes_scene_occlusion_depth);
+    AT(
+        contract.depth_policy ==
+        (DVZ_SCENE_DEPTH_POLICY_TEST | DVZ_SCENE_DEPTH_POLICY_WRITE));
+    AT(contract.blend_policy == DVZ_SCENE_BLEND_POLICY_NONE);
+    AT(
+        contract.shader_feature_mask ==
+        DVZ_SCENE_SHADER_FEATURE_WRITE_SCENE_OCCLUSION);
     AT(!contract.samples_scene_occlusion);
     AT(!contract.needs_scene_occlusion_set);
 

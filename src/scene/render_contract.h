@@ -53,6 +53,47 @@ typedef enum
 } DvzSceneAttachmentRole;
 
 
+typedef enum
+{
+    DVZ_SCENE_DEPTH_POLICY_NONE = 0,
+    DVZ_SCENE_DEPTH_POLICY_TEST = 1u << 0,
+    DVZ_SCENE_DEPTH_POLICY_WRITE = 1u << 1,
+    DVZ_SCENE_DEPTH_POLICY_SAMPLE = 1u << 2,
+} DvzSceneDepthPolicy;
+
+
+typedef enum
+{
+    DVZ_SCENE_BLEND_POLICY_NONE = 0,
+    DVZ_SCENE_BLEND_POLICY_OPAQUE,
+    DVZ_SCENE_BLEND_POLICY_SOURCE_OVER,
+    DVZ_SCENE_BLEND_POLICY_WBOIT,
+    DVZ_SCENE_BLEND_POLICY_DEPTH_PEEL,
+} DvzSceneBlendPolicy;
+
+
+typedef enum
+{
+    DVZ_SCENE_SHADER_FEATURE_NONE = 0,
+    DVZ_SCENE_SHADER_FEATURE_SAMPLE_DEPTH = 1u << 0,
+    DVZ_SCENE_SHADER_FEATURE_SAMPLE_VOLUME_OCCLUSION = 1u << 1,
+    DVZ_SCENE_SHADER_FEATURE_SAMPLE_SCENE_OCCLUSION = 1u << 2,
+    DVZ_SCENE_SHADER_FEATURE_WRITE_VOLUME_OCCLUSION = 1u << 3,
+    DVZ_SCENE_SHADER_FEATURE_WRITE_SCENE_OCCLUSION = 1u << 4,
+} DvzSceneShaderFeature;
+
+
+typedef enum
+{
+    DVZ_SCENE_BIND_GROUP_REQUIREMENT_NONE = 0,
+    DVZ_SCENE_BIND_GROUP_REQUIREMENT_COMMON = 1u << 0,
+    DVZ_SCENE_BIND_GROUP_REQUIREMENT_MATERIAL = 1u << 1,
+    DVZ_SCENE_BIND_GROUP_REQUIREMENT_IMAGE = 1u << 2,
+    DVZ_SCENE_BIND_GROUP_REQUIREMENT_VOLUME = 1u << 3,
+    DVZ_SCENE_BIND_GROUP_REQUIREMENT_SCENE_OCCLUSION = 1u << 4,
+} DvzSceneBindGroupRequirement;
+
+
 
 /*************************************************************************************************/
 /*  Structs                                                                                      */
@@ -99,6 +140,11 @@ typedef struct DvzSceneDrawContract
     uint32_t visual_type;
     DvzAlphaMode alpha_mode;
     DvzFramePlanRenderPassRole pass_role;
+
+    uint32_t depth_policy;
+    DvzSceneBlendPolicy blend_policy;
+    uint32_t shader_feature_mask;
+    uint32_t bind_group_layout_mask;
 
     bool depth_test;
     bool depth_write;

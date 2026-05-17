@@ -79,6 +79,58 @@ static bool _draw_pass_role_matches(const DvzSceneDrawContract* draw)
 
 
 /**
+ * Resolve a draw depth policy from its component depth requirements.
+ *
+ * @param depth_test whether fixed-function depth testing is required
+ * @param depth_write whether fixed-function depth writes are required
+ * @param samples_depth whether the shader samples a produced depth resource
+ * @return depth-policy bit mask
+ */
+static uint32_t _draw_depth_policy(bool depth_test, bool depth_write, bool samples_depth)
+{
+    uint32_t policy = DVZ_SCENE_DEPTH_POLICY_NONE;
+    if (depth_test)
+        policy |= DVZ_SCENE_DEPTH_POLICY_TEST;
+    if (depth_write)
+        policy |= DVZ_SCENE_DEPTH_POLICY_WRITE;
+    if (samples_depth)
+        policy |= DVZ_SCENE_DEPTH_POLICY_SAMPLE;
+    return policy;
+}
+
+
+
+/**
+ * Resolve a draw blend policy from alpha mode and render-pass role.
+ *
+ * @param alpha_mode the visual alpha mode
+ * @param pass_role the render-pass role carrying the draw
+ * @return resolved blend policy
+ */
+static DvzSceneBlendPolicy _draw_blend_policy(
+    DvzAlphaMode alpha_mode, DvzFramePlanRenderPassRole pass_role)
+{
+    switch (pass_role)
+    {
+    case DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_BLEND:
+        return DVZ_SCENE_BLEND_POLICY_SOURCE_OVER;
+    case DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_ACCUMULATION:
+        return DVZ_SCENE_BLEND_POLICY_WBOIT;
+    case DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_INIT:
+    case DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_ITER:
+        return DVZ_SCENE_BLEND_POLICY_DEPTH_PEEL;
+    case DVZ_FRAME_PLAN_RENDER_PASS_OPAQUE:
+        return alpha_mode == DVZ_ALPHA_OPAQUE || alpha_mode == DVZ_ALPHA_MASK
+                   ? DVZ_SCENE_BLEND_POLICY_OPAQUE
+                   : DVZ_SCENE_BLEND_POLICY_NONE;
+    default:
+        return DVZ_SCENE_BLEND_POLICY_NONE;
+    }
+}
+
+
+
+/**
  * Return whether a graph attachment access includes reads.
  *
  * @param access the attachment access mode
@@ -780,6 +832,29 @@ bool _scene_draw_contract_resolve(
     out->needs_image_set = facts->uses_image_set;
     out->needs_volume_set = facts->uses_volume_set;
     out->needs_scene_occlusion_set = out->samples_scene_occlusion;
+    out->depth_policy =
+        _draw_depth_policy(out->depth_test, out->depth_write, out->samples_depth);
+    out->blend_policy = _draw_blend_policy(facts->alpha_mode, pass_role);
+    if (out->samples_depth)
+        out->shader_feature_mask |= DVZ_SCENE_SHADER_FEATURE_SAMPLE_DEPTH;
+    if (out->samples_volume_occlusion)
+        out->shader_feature_mask |= DVZ_SCENE_SHADER_FEATURE_SAMPLE_VOLUME_OCCLUSION;
+    if (out->samples_scene_occlusion)
+        out->shader_feature_mask |= DVZ_SCENE_SHADER_FEATURE_SAMPLE_SCENE_OCCLUSION;
+    if (out->writes_volume_occlusion_depth)
+        out->shader_feature_mask |= DVZ_SCENE_SHADER_FEATURE_WRITE_VOLUME_OCCLUSION;
+    if (out->writes_scene_occlusion_depth)
+        out->shader_feature_mask |= DVZ_SCENE_SHADER_FEATURE_WRITE_SCENE_OCCLUSION;
+    if (out->needs_common_set)
+        out->bind_group_layout_mask |= DVZ_SCENE_BIND_GROUP_REQUIREMENT_COMMON;
+    if (out->needs_material_set)
+        out->bind_group_layout_mask |= DVZ_SCENE_BIND_GROUP_REQUIREMENT_MATERIAL;
+    if (out->needs_image_set)
+        out->bind_group_layout_mask |= DVZ_SCENE_BIND_GROUP_REQUIREMENT_IMAGE;
+    if (out->needs_volume_set)
+        out->bind_group_layout_mask |= DVZ_SCENE_BIND_GROUP_REQUIREMENT_VOLUME;
+    if (out->needs_scene_occlusion_set)
+        out->bind_group_layout_mask |= DVZ_SCENE_BIND_GROUP_REQUIREMENT_SCENE_OCCLUSION;
     return true;
 }
 

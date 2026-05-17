@@ -186,6 +186,30 @@ Validation:
 6. `git diff --check -- src/scene/render_contract.h src/scene/render_contract.c src/scene/tests/scene_graph.c src/scene/tests/test_scene.h agents/now/RENDER_CONTRACT_RESOLVER_AUDIT_2026-05-17.md`
 
 
+### 2026-05-17: Phase 1 / Explicit draw policy fields
+
+Completed the first draw-contract policy extension slice.
+
+Changes:
+
+1. Extended `DvzSceneDrawContract` with explicit depth-policy, blend-policy, shader-feature, and
+   bind-group-layout masks while preserving the existing compatibility booleans.
+2. Added internal helpers that resolve depth and blend policy from the facts matrix and pass role.
+3. The resolver now populates shader-feature and bind-layout masks from sampled-depth, occlusion,
+   material, image, volume, and scene-occlusion requirements.
+4. Expanded `test_scene_draw_contract_resolver_matrix` to assert the new policy fields for opaque,
+   source-over volume, WBOIT, and scene-occluder rows.
+
+Validation:
+
+1. `cmake --build build --target dvztest_scene -j2`
+2. `./build/testing/dvztest_scene test_scene_draw_contract_resolver_matrix`
+3. `./build/testing/dvztest_scene test_scene_visual_pass_capabilities`
+4. `./build/testing/dvztest_scene test_scene_render_contract_validation_errors`
+5. `./build/testing/dvztest_scene test_scene_visual_alpha_mode_splits_frame_plan_passes`
+6. `git diff --check -- src/scene/render_contract.h src/scene/render_contract.c src/scene/tests/scene_graph.c agents/now/RENDER_CONTRACT_RESOLVER_AUDIT_2026-05-17.md`
+
+
 ## Executive Assessment
 
 The direction is correct and worth continuing. The proposal identifies the right failure mode:
