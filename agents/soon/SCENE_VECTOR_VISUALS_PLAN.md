@@ -27,6 +27,23 @@ It does not yet model dashes, arrowheads, path-specific joins, path-specific mit
 closed subpaths, filled paths, vector fields, curve flattening, or SVG path semantics. Segment/path
 picking and WGSL segment/path lowering are also still follow-up work.
 
+## Next Concrete Steps
+
+Immediate vector follow-up should happen in this order:
+
+1. Add segment picking against the visible screen-space stroke. The hit area should use
+   `line_width / 2` plus a small tolerance, account for endpoint caps where supported, and return
+   the segment item index.
+2. Add stroked path picking by reusing the segment stroke hit logic over each derived path edge.
+   Return the path/subpath identity, not the derived edge vertex.
+3. Add WGSL lowering for segment and stroked path so WebGPU keeps the same public
+   `position_start`/`position_end` and `line_width` semantics as GLSL.
+4. After picking and WGSL parity, move to closed subpaths, path-native joins, and miter-limit
+   behavior before dashes or arrow caps.
+
+The cross-family execution order is recorded in
+`agents/now/VISUAL_FAMILY_IMPLEMENTATION_DECISIONS.md`.
+
 This is not greenfield. The `v0.3/` tree already contains dedicated segment, path, marker, SVG-SDF,
 and 3D arrow work that should be mined and ported selectively:
 

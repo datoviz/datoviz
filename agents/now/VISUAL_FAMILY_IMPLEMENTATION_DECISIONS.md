@@ -68,6 +68,26 @@ Remaining work should start from the deferred lists below rather than re-opening
 decisions.
 
 
+## Next Implementation Batch
+
+The next batch should focus on picking and backend parity, in this order:
+
+1. Segment/path picking. Add GPU-backed hit requests for screen-space stroked segments first, then
+   reuse the same distance-to-stroke logic for stroked paths. A hit should use the visible
+   `line_width / 2` region plus a small tolerance; return the segment index for `segment` and the
+   subpath/path identity for `path`.
+2. Exact marker SDF-mask picking. Keep the current marker bounding-box picker as the broad first
+   pass, then reject hits outside the active code-SDF shape so triangles, crosses, rings, and
+   diamonds do not pick in transparent corners.
+3. Segment/path WGSL lowering. Preserve the same public visual contract as GLSL; WebGPU should lower
+   the analytic stroke representation transparently rather than exposing a backend-specific API.
+4. Visual-family showcase. Add one compact example or smoke scene containing `pixel`, `point`,
+   `marker`, `segment`, and stroked `path` together so future regressions are easier to spot.
+
+Marker-specific follow-up details live in `agents/soon/SCENE_POINT_PIXEL_MARKER_PLAN.md`. Segment,
+path, dash, arrow, and SVG follow-up details live in `agents/soon/SCENE_VECTOR_VISUALS_PLAN.md`.
+
+
 ## Pixel
 
 Implemented first slice:

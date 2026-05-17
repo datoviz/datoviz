@@ -66,6 +66,24 @@ Gaps:
 5. Data-space sizing and `shift` are still target-contract work.
 
 
+## Next Concrete Steps
+
+Immediate point-like follow-up should prioritize marker picking quality, then marker resource modes:
+
+1. Add exact code-SDF marker picking. Reuse the current GPU-backed marker bounding-box path as the
+   broad hit area, then apply the same built-in shape SDF used by rendering before returning a hit.
+   Keep the request result identity as the marker item index.
+2. Add focused tests for false positives at transparent marker corners and holes, especially
+   triangle, diamond, cross, and ring.
+3. Keep pixel square picking and point circular picking as the reference behavior for point-like
+   family-specific hit masks.
+4. Defer bitmap/SDF/MSDF marker picking until those render modes have real texture/atlas resource
+   paths.
+
+The cross-family execution order is recorded in
+`agents/now/VISUAL_FAMILY_IMPLEMENTATION_DECISIONS.md`.
+
+
 ## Design Principles
 
 1. Keep `pixel` fast and visually plain.
