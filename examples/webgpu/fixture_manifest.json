@@ -34,6 +34,7 @@
     "/spec/drp2/fixtures/positive/session_handshake_basic.json",
     "/spec/drp2/fixtures/positive/shader_module_create_basic.json",
     "/spec/drp2/fixtures/positive/texture_view_create_basic.json",
+    "/spec/drp2/fixtures/positive/wboit_accumulation_resolve.json",
     "/spec/drp2/fixtures/positive/write_buffer_basic.json",
     "/spec/drp2/fixtures/positive/write_texture_basic.json"
   ]

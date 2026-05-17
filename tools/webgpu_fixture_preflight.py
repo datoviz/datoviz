@@ -40,6 +40,15 @@ INDEX_FORMAT_BYTES = {
     'uint32': 4,
 }
 
+SUPPORTED_TEXTURE_FORMATS = {
+    'bgra8unorm',
+    'depth32float',
+    'r16float',
+    'r32uint',
+    'rgba8unorm',
+    'rgba16float',
+}
+
 WGSL_BINDING_RE = re.compile(
     r'@group\(\s*(?P<group>\d+)\s*\)\s*'
     r'@binding\(\s*(?P<binding>\d+)\s*\)\s*'
@@ -149,6 +158,8 @@ class WebGPUFixturePreflight:
             cmd = command['cmd']
             if cmd == 'CreateBuffer':
                 buffers[command['id']] = command
+            elif cmd == 'CreateTexture':
+                self._check_texture_format(index, command.get('format'))
             elif cmd == 'CreateBindGroupLayout':
                 self._check_bind_group_layout(index, command)
                 bind_group_layouts[command['id']] = command
@@ -214,6 +225,10 @@ class WebGPUFixturePreflight:
                     f'bind-group layout {command["id"]} storage binding {entry["binding"]} needs access',
                 )
 
+    def _check_texture_format(self, index: int, fmt: Optional[str]) -> None:
+        if fmt not in SUPPORTED_TEXTURE_FORMATS:
+            raise WebGPUPreflightFailure(index, f'unsupported texture format {fmt}')
+
     def _check_render_pipeline(
         self,
         index: int,
@@ -249,6 +264,11 @@ class WebGPUFixturePreflight:
                         index,
                         f'render pipeline {command["id"]} vertex attribute exceeds stride',
                     )
+        for color_target in command['color_targets']:
+            self._check_texture_format(index, color_target.get('format'))
+        depth_stencil = command.get('depth_stencil')
+        if depth_stencil is not None:
+            self._check_texture_format(index, depth_stencil.get('format'))
         self._check_pipeline_shader_bindings(
             index,
             f'render pipeline {command["id"]}',
