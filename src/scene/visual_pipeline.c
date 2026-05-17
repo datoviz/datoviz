@@ -1647,6 +1647,31 @@ bool _scene_visual_shader_desc(
 
 
 /**
+ * Set one vertex attribute slot in a visual pipeline descriptor.
+ *
+ * @param out pipeline descriptor to update
+ * @param index descriptor attribute index
+ * @param binding vertex buffer binding index
+ * @param location shader input location
+ * @param format vertex input format
+ * @param stride vertex buffer stride in bytes
+ */
+static void _pipeline_attr(
+    DvzSceneVisualPipelineDesc* out, uint32_t index, uint32_t binding, uint32_t location,
+    uint32_t format, uint32_t stride)
+{
+    ANN(out);
+    ASSERT(index < DVZ_SCENE_MAX_NODE_RESOURCES);
+
+    out->bindings[index] = binding;
+    out->locations[index] = location;
+    out->formats[index] = format;
+    out->strides[index] = stride;
+}
+
+
+
+/**
  * Apply the standard depth-state rules shared by raster visual descriptors.
  *
  * @param caps resolved pass capabilities for the visual
@@ -1715,26 +1740,14 @@ bool _scene_visual_pipeline_desc(
             out->vertex_buffer_count = 5;
             out->binding_count = 5;
             out->attr_count = picking ? 2 : 5;
-            out->strides[0] = 3 * sizeof(float);
-            out->strides[1] = 4 * sizeof(uint8_t);
-            out->strides[2] = sizeof(float);
-            out->strides[3] = sizeof(float);
-            out->strides[4] = sizeof(uint32_t);
-            out->bindings[0] = 0;
-            out->bindings[1] = picking ? 2 : 1;
-            out->bindings[2] = 2;
-            out->bindings[3] = 3;
-            out->bindings[4] = 4;
-            out->locations[0] = 0;
-            out->locations[1] = picking ? 2 : 1;
-            out->locations[2] = 2;
-            out->locations[3] = 3;
-            out->locations[4] = 4;
-            out->formats[0] = VK_FORMAT_R32G32B32_SFLOAT;
-            out->formats[1] = picking ? VK_FORMAT_R32_SFLOAT : VK_FORMAT_R8G8B8A8_UNORM;
-            out->formats[2] = VK_FORMAT_R32_SFLOAT;
-            out->formats[3] = VK_FORMAT_R32_SFLOAT;
-            out->formats[4] = VK_FORMAT_R32_UINT;
+            _pipeline_attr(out, 0, 0, 0, VK_FORMAT_R32G32B32_SFLOAT, 3 * sizeof(float));
+            _pipeline_attr(
+                out, 1, picking ? 2 : 1, picking ? 2 : 1,
+                picking ? VK_FORMAT_R32_SFLOAT : VK_FORMAT_R8G8B8A8_UNORM,
+                4 * sizeof(uint8_t));
+            _pipeline_attr(out, 2, 2, 2, VK_FORMAT_R32_SFLOAT, sizeof(float));
+            _pipeline_attr(out, 3, 3, 3, VK_FORMAT_R32_SFLOAT, sizeof(float));
+            _pipeline_attr(out, 4, 4, 4, VK_FORMAT_R32_UINT, sizeof(uint32_t));
             out->needs_common_layout = caps.uses_common_set;
             out->needs_material_layout = caps.needs_material_layout && !picking;
             _pipeline_apply_standard_depth_state(
@@ -1745,20 +1758,13 @@ bool _scene_visual_pipeline_desc(
         out->vertex_buffer_count = 3;
         out->binding_count = 3;
         out->attr_count = visual->kind == DVZ_SCENE_VISUAL_DESC_SPHERE ? 3 : picking ? 2 : 3;
-        out->strides[0] = 3 * sizeof(float);
-        out->strides[1] = 4 * sizeof(uint8_t);
-        out->strides[2] = sizeof(float);
-        out->bindings[0] = 0;
-        out->bindings[1] = picking && visual->kind != DVZ_SCENE_VISUAL_DESC_SPHERE ? 2 : 1;
-        out->bindings[2] = 2;
-        out->locations[0] = 0;
-        out->locations[1] = picking && visual->kind != DVZ_SCENE_VISUAL_DESC_SPHERE ? 2 : 1;
-        out->locations[2] = 2;
-        out->formats[0] = VK_FORMAT_R32G32B32_SFLOAT;
-        out->formats[1] = picking && visual->kind != DVZ_SCENE_VISUAL_DESC_SPHERE ?
-                              VK_FORMAT_R32_SFLOAT :
-                              VK_FORMAT_R8G8B8A8_UNORM;
-        out->formats[2] = VK_FORMAT_R32_SFLOAT;
+        uint32_t color_binding = picking && visual->kind != DVZ_SCENE_VISUAL_DESC_SPHERE ? 2 : 1;
+        uint32_t color_format = picking && visual->kind != DVZ_SCENE_VISUAL_DESC_SPHERE ?
+                                    VK_FORMAT_R32_SFLOAT :
+                                    VK_FORMAT_R8G8B8A8_UNORM;
+        _pipeline_attr(out, 0, 0, 0, VK_FORMAT_R32G32B32_SFLOAT, 3 * sizeof(float));
+        _pipeline_attr(out, 1, color_binding, color_binding, color_format, 4 * sizeof(uint8_t));
+        _pipeline_attr(out, 2, 2, 2, VK_FORMAT_R32_SFLOAT, sizeof(float));
         out->needs_common_layout = caps.uses_common_set;
         out->needs_material_layout = caps.needs_material_layout;
         _pipeline_apply_standard_depth_state(
@@ -1769,18 +1775,9 @@ bool _scene_visual_pipeline_desc(
         out->vertex_buffer_count = visual->has_normal ? 3 : 2;
         out->binding_count = out->vertex_buffer_count;
         out->attr_count = out->vertex_buffer_count;
-        out->strides[0] = 3 * sizeof(float);
-        out->strides[1] = 4 * sizeof(uint8_t);
-        out->strides[2] = 3 * sizeof(float);
-        out->bindings[0] = 0;
-        out->bindings[1] = 1;
-        out->bindings[2] = 2;
-        out->locations[0] = 0;
-        out->locations[1] = 1;
-        out->locations[2] = 2;
-        out->formats[0] = VK_FORMAT_R32G32B32_SFLOAT;
-        out->formats[1] = VK_FORMAT_R8G8B8A8_UNORM;
-        out->formats[2] = VK_FORMAT_R32G32B32_SFLOAT;
+        _pipeline_attr(out, 0, 0, 0, VK_FORMAT_R32G32B32_SFLOAT, 3 * sizeof(float));
+        _pipeline_attr(out, 1, 1, 1, VK_FORMAT_R8G8B8A8_UNORM, 4 * sizeof(uint8_t));
+        _pipeline_attr(out, 2, 2, 2, VK_FORMAT_R32G32B32_SFLOAT, 3 * sizeof(float));
         out->needs_common_layout = caps.uses_common_set;
         out->needs_material_layout = caps.needs_material_layout;
         _pipeline_apply_standard_depth_state(
@@ -1791,22 +1788,10 @@ bool _scene_visual_pipeline_desc(
         out->vertex_buffer_count = 4;
         out->binding_count = 4;
         out->attr_count = 4;
-        out->strides[0] = 3 * sizeof(float);
-        out->strides[1] = 3 * sizeof(float);
-        out->strides[2] = 4 * sizeof(uint8_t);
-        out->strides[3] = sizeof(float);
-        out->bindings[0] = 0;
-        out->bindings[1] = 1;
-        out->bindings[2] = 2;
-        out->bindings[3] = 3;
-        out->locations[0] = 0;
-        out->locations[1] = 1;
-        out->locations[2] = 2;
-        out->locations[3] = 3;
-        out->formats[0] = VK_FORMAT_R32G32B32_SFLOAT;
-        out->formats[1] = VK_FORMAT_R32G32B32_SFLOAT;
-        out->formats[2] = VK_FORMAT_R8G8B8A8_UNORM;
-        out->formats[3] = VK_FORMAT_R32_SFLOAT;
+        _pipeline_attr(out, 0, 0, 0, VK_FORMAT_R32G32B32_SFLOAT, 3 * sizeof(float));
+        _pipeline_attr(out, 1, 1, 1, VK_FORMAT_R32G32B32_SFLOAT, 3 * sizeof(float));
+        _pipeline_attr(out, 2, 2, 2, VK_FORMAT_R8G8B8A8_UNORM, 4 * sizeof(uint8_t));
+        _pipeline_attr(out, 3, 3, 3, VK_FORMAT_R32_SFLOAT, sizeof(float));
         out->needs_common_layout = caps.uses_common_set;
         out->needs_material_layout = caps.needs_material_layout;
         _pipeline_apply_standard_depth_state(
@@ -1817,14 +1802,8 @@ bool _scene_visual_pipeline_desc(
         out->vertex_buffer_count = 2;
         out->binding_count = 2;
         out->attr_count = 2;
-        out->strides[0] = 3 * sizeof(float);
-        out->strides[1] = 2 * sizeof(float);
-        out->bindings[0] = 0;
-        out->bindings[1] = 1;
-        out->locations[0] = 0;
-        out->locations[1] = 1;
-        out->formats[0] = VK_FORMAT_R32G32B32_SFLOAT;
-        out->formats[1] = VK_FORMAT_R32G32_SFLOAT;
+        _pipeline_attr(out, 0, 0, 0, VK_FORMAT_R32G32B32_SFLOAT, 3 * sizeof(float));
+        _pipeline_attr(out, 1, 1, 1, VK_FORMAT_R32G32_SFLOAT, 2 * sizeof(float));
         out->needs_common_layout = caps.uses_common_set;
         out->needs_image_layout = caps.uses_image_set;
         return true;
@@ -1833,14 +1812,8 @@ bool _scene_visual_pipeline_desc(
         out->vertex_buffer_count = 2;
         out->binding_count = 2;
         out->attr_count = 2;
-        out->strides[0] = 3 * sizeof(float);
-        out->strides[1] = 3 * sizeof(float);
-        out->bindings[0] = 0;
-        out->bindings[1] = 1;
-        out->locations[0] = 0;
-        out->locations[1] = 1;
-        out->formats[0] = VK_FORMAT_R32G32B32_SFLOAT;
-        out->formats[1] = VK_FORMAT_R32G32B32_SFLOAT;
+        _pipeline_attr(out, 0, 0, 0, VK_FORMAT_R32G32B32_SFLOAT, 3 * sizeof(float));
+        _pipeline_attr(out, 1, 1, 1, VK_FORMAT_R32G32B32_SFLOAT, 3 * sizeof(float));
         out->needs_common_layout = caps.uses_common_set;
         out->needs_volume_layout = caps.uses_volume_set;
         out->has_raster_state = true;
