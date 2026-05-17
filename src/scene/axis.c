@@ -63,10 +63,10 @@ static DvzAxisStyle _axis_default_style(void)
         .major_tick_width = 1.0f,
         .grid_width = 1.0f,
         .major_tick_length = 0.035f,
-        .plot_margin_left = 0.10f,
-        .plot_margin_right = 0.04f,
-        .plot_margin_bottom = 0.10f,
-        .plot_margin_top = 0.04f,
+        .plot_margin_left = 0.0f,
+        .plot_margin_right = 0.0f,
+        .plot_margin_bottom = 0.0f,
+        .plot_margin_top = 0.0f,
         .spine_color = {220, 220, 220, 255},
         .major_tick_color = {220, 220, 220, 255},
         .grid_color = {90, 95, 105, 180},
@@ -717,6 +717,36 @@ bool dvz_axis_set_style(DvzAxis* axis, const DvzAxisStyle* style)
     if (axis == NULL)
         return false;
     axis->style = style != NULL ? *style : _axis_default_style();
+    axis->tick_cache_valid = false;
+    axis->dirty = true;
+    axis->version++;
+    return true;
+}
+
+
+/**
+ * Set plot-area margins for one panel-owned axis.
+ *
+ * @param axis the axis
+ * @param left left margin
+ * @param right right margin
+ * @param bottom bottom margin
+ * @param top top margin
+ * @return whether the margins were updated
+ */
+bool dvz_axis_set_plot_margins(
+    DvzAxis* axis, float left, float right, float bottom, float top)
+{
+    if (axis == NULL)
+        return false;
+    if (!isfinite(left) || !isfinite(right) || !isfinite(bottom) || !isfinite(top) ||
+        left < 0.0f || right < 0.0f || bottom < 0.0f || top < 0.0f ||
+        left + right >= 2.0f || bottom + top >= 2.0f)
+        return false;
+    axis->style.plot_margin_left = left;
+    axis->style.plot_margin_right = right;
+    axis->style.plot_margin_bottom = bottom;
+    axis->style.plot_margin_top = top;
     axis->tick_cache_valid = false;
     axis->dirty = true;
     axis->version++;

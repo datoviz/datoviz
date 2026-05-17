@@ -450,6 +450,24 @@ DVZ_EXPORT bool dvz_axis_set_style(DvzAxis* axis, const DvzAxisStyle* style);
 
 
 /**
+ * Set plot-area margins for one panel-owned axis.
+ *
+ * Margins are in visual-space units relative to the panel bounds. Defaults are zero to preserve
+ * edge-to-edge Datoviz behavior. Nonzero values can reserve space for future tick labels, legends,
+ * or other panel adornments.
+ *
+ * @param axis the axis
+ * @param left left margin
+ * @param right right margin
+ * @param bottom bottom margin
+ * @param top top margin
+ * @return whether the margins were updated
+ */
+DVZ_EXPORT bool dvz_axis_set_plot_margins(
+    DvzAxis* axis, float left, float right, float bottom, float top);
+
+
+/**
  * Attach an arcball controller to a panel and connect it to an input router.
  *
  * Rotate: left-drag. Pan rotation center: right-drag or middle-drag. Zoom: scroll wheel.
