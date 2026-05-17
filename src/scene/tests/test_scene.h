@@ -197,11 +197,19 @@ int test_scene_point_emit_glsl_executes(TstSuite* suite, TstItem* item);
 int test_scene_sphere_emit_glsl_executes(TstSuite* suite, TstItem* item);
 int test_scene_sphere_mode(TstSuite* suite, TstItem* item);
 
+int test_scene_segment_emit_glsl(TstSuite* suite, TstItem* item);
+
+int test_scene_segment_caps(TstSuite* suite, TstItem* item);
+
 int test_scene_point_like_lowering_policy(TstSuite* suite, TstItem* item);
 
 int test_scene_point_emit_glsl_native_points(TstSuite* suite, TstItem* item);
 
+int test_scene_point_style_emits_glsl_and_wgsl(TstSuite* suite, TstItem* item);
+
 int test_scene_point_emit_wgsl_instanced_quads(TstSuite* suite, TstItem* item);
+
+int test_scene_pixel_emit_glsl_native_square_points(TstSuite* suite, TstItem* item);
 
 int test_scene_pixel_emit_wgsl_instanced_quads(TstSuite* suite, TstItem* item);
 
@@ -236,6 +244,10 @@ int test_scene_visual_common_binding_layout_order(TstSuite* suite, TstItem* item
 int test_scene_process_pick_probe_requests(TstSuite* suite, TstItem* item);
 
 int test_scene_point_pick_quadrants(TstSuite* suite, TstItem* item);
+
+int test_scene_point_pick_rejects_disc_corner(TstSuite* suite, TstItem* item);
+
+int test_scene_pixel_pick_accepts_square_corner(TstSuite* suite, TstItem* item);
 
 int test_scene_process_requests_preserves_caller_runtime(TstSuite* suite, TstItem* item);
 
@@ -536,6 +548,8 @@ int test_scene_text_annotation_bookkeeping(TstSuite* suite, TstItem* item);
 
 #if defined(DVZ_HAS_APP) && DVZ_HAS_APP
 int test_app_offscreen_has_nonblank_pixels(TstSuite* suite, TstItem* item);
+
+int test_app_offscreen_pixel_square_has_nonblank_pixels(TstSuite* suite, TstItem* item);
 
 int test_app_offscreen_points_edl_renders(TstSuite* suite, TstItem* item);
 

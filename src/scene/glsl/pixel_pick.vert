@@ -23,7 +23,6 @@ vec4 transform(vec3 pos)
     tr.z = 0.5 * (tr.z + tr.w);
     return tr;
 }
-
 void main()
 {
     gl_Position = transform(inPos);

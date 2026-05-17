@@ -881,6 +881,79 @@ int test_app_offscreen_has_nonblank_pixels(TstSuite* suite, TstItem* item)
 
 
 /**
+ * Ensure pixel visuals render nonblank square marks through the offscreen app path.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_app_offscreen_pixel_square_has_nonblank_pixels(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    if (!_scene_vklite_runtime_available())
+        return 0;
+
+    DvzScene* scene = dvz_scene();
+    AT(scene != NULL);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    AT(figure != NULL);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    AT(panel != NULL);
+    DvzVisual* visual = dvz_pixel(scene, 0);
+    AT(visual != NULL);
+
+    float position[3] = {0.0f, 0.0f, 0.0f};
+    DvzColor color = {255, 0, 255, 255};
+    float size = 18.0f;
+    AT(dvz_visual_set_data(visual, "position", position, 1) == 0);
+    AT(dvz_visual_set_data(visual, "color", &color, 1) == 0);
+    AT(dvz_visual_set_data(visual, "size", &size, 1) == 0);
+    AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
+
+    DvzApp* app = dvz_app(scene);
+    if (app == NULL)
+    {
+        log_warn("test_app_offscreen_pixel_square_has_nonblank_pixels skipped: GPU context failed");
+        dvz_scene_destroy(scene);
+        return 0;
+    }
+    DvzAppWindow* win = dvz_app_window(app, figure, 64, 64);
+    AT(win != NULL);
+
+    dvz_app_run(app, 1);
+
+    DvzCanvas* canvas = dvz_app_window_canvas(win);
+    ANN(canvas);
+
+    uint32_t width = 0, height = 0;
+    uint8_t* rgba = NULL;
+    AT(dvz_canvas_capture_rgba(canvas, &width, &height, &rgba) == 0);
+    ANN(rgba);
+    AT(width == 64);
+    AT(height == 64);
+
+    uint32_t magenta_count = 0;
+    for (uint32_t i = 0; i < width * height; i++)
+    {
+        uint8_t* pixel = &rgba[4 * i];
+        if (pixel[0] > 200 && pixel[2] > 200)
+            magenta_count++;
+    }
+    AT(magenta_count > 0);
+
+    const uint8_t* corner = _pixel_at(rgba, width, height, 40, 40);
+    AT(corner[0] > 200 && corner[2] > 200);
+
+    dvz_free(rgba);
+    dvz_app_destroy(app);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+/**
  * Ensure panel EDL renders an offscreen point scene through the app runtime path.
  *
  * @param suite the test suite
@@ -3154,6 +3227,7 @@ int test_scene_app(TstSuite* suite)
     TEST_SIMPLE(test_app_offscreen_point_depth_orders_overlap);
     TEST_SIMPLE(test_app_offscreen_point_depth_cue_darkens_far);
     TEST_SIMPLE(test_app_offscreen_has_nonblank_pixels);
+    TEST_SIMPLE(test_app_offscreen_pixel_square_has_nonblank_pixels);
     TEST_SIMPLE(test_app_offscreen_points_edl_renders);
     TEST_SIMPLE(test_app_offscreen_mesh_ssao_changes_pixels);
     TEST_SIMPLE(test_app_offscreen_records_dvzr_frames);

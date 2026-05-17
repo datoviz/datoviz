@@ -42,6 +42,7 @@ typedef enum
     DVZ_SCENE_SHADER_FEATURE_WBOIT_ACCUM      = 1u << 3,
     DVZ_SCENE_SHADER_FEATURE_VOLUME_MIP       = 1u << 4,
     DVZ_SCENE_SHADER_FEATURE_VOLUME_COMPOSITE = 1u << 5,
+    DVZ_SCENE_SHADER_FEATURE_POINT_STYLE      = 1u << 6,
 } DvzSceneShaderFeatureFlag;
 
 
@@ -166,6 +167,18 @@ static bool _visual_desc_is_sphere(DvzSceneVisualDescKind kind)
 }
 
 
+/**
+ * Return whether a visual descriptor uses the segment analytic stroke pipeline family.
+ *
+ * @param kind the visual descriptor kind
+ * @return whether the descriptor is segment-like
+ */
+static bool _visual_desc_is_segment(DvzSceneVisualDescKind kind)
+{
+    return kind == DVZ_SCENE_VISUAL_DESC_SEGMENT;
+}
+
+
 
 /**
  * Return whether an alpha mode uses source-over color blending.
@@ -284,10 +297,16 @@ static const char* _resource_role_tag(DvzFramePlanResourceRole role)
     {
     case DVZ_FRAME_PLAN_RESOURCE_ROLE_POSITION:
         return "position";
+    case DVZ_FRAME_PLAN_RESOURCE_ROLE_POSITION_START:
+        return "position_start";
+    case DVZ_FRAME_PLAN_RESOURCE_ROLE_POSITION_END:
+        return "position_end";
     case DVZ_FRAME_PLAN_RESOURCE_ROLE_COLOR:
         return "color";
     case DVZ_FRAME_PLAN_RESOURCE_ROLE_SIZE:
         return "size";
+    case DVZ_FRAME_PLAN_RESOURCE_ROLE_LINE_WIDTH:
+        return "line_width";
     case DVZ_FRAME_PLAN_RESOURCE_ROLE_TEXCOORDS:
         return "texcoords";
     case DVZ_FRAME_PLAN_RESOURCE_ROLE_TEXTURE:
@@ -380,17 +399,24 @@ static bool _scene_visual_desc_from_metadata(
     ANN(out);
 
     out->depth_test_enabled = meta->depth_test_enabled;
+    out->depth_cue_enabled = meta->depth_cue_enabled;
+    out->point_style_enabled = meta->point_style_enabled;
     out->scene_occluded = meta->scene_occluded;
     out->scene_occlusion = meta->scene_occlusion;
 
     if (error != NULL)
         *error = NULL;
 
-    uint64_t pos_buf = _resource_lookup_label(&emitter->resources, meta->position_id);
+    const char* primary_position_id = meta->visual_type == DVZ_VISUAL_TYPE_SEGMENT
+                                          ? meta->position_start_id
+                                          : meta->position_id;
+    uint64_t pos_buf = _resource_lookup_label(&emitter->resources, primary_position_id);
     if (pos_buf == 0)
     {
         if (error != NULL)
-            *error = "typed visual metadata missing position resource";
+            *error = meta->visual_type == DVZ_VISUAL_TYPE_SEGMENT
+                         ? "typed segment metadata missing position_start resource"
+                         : "typed visual metadata missing position resource";
         return false;
     }
     out->vbuf_ids[out->vbuf_count++] = pos_buf;
@@ -428,6 +454,47 @@ static bool _scene_visual_desc_from_metadata(
         out->vbuf_ids[out->vbuf_count++] = size_id;
         out->topology = VK_PRIMITIVE_TOPOLOGY_POINT_LIST;
         out->material_buffer_id = _resource_lookup_label(&emitter->resources, meta->material_id);
+        return true;
+    }
+
+    if (meta->visual_type == DVZ_VISUAL_TYPE_SEGMENT)
+    {
+        uint64_t end_id = _resource_lookup_label(&emitter->resources, meta->position_end_id);
+        uint64_t color_id = _resource_lookup_label(&emitter->resources, meta->color_id);
+        uint64_t line_width_id = _resource_lookup_label(&emitter->resources, meta->line_width_id);
+        uint64_t index_id = _resource_lookup_label(&emitter->resources, meta->index_id);
+        uint64_t material_id = _resource_lookup_label(&emitter->resources, meta->material_id);
+        if (end_id == 0 || color_id == 0 || line_width_id == 0 || index_id == 0 ||
+            material_id == 0)
+        {
+            if (error != NULL)
+                *error = "typed segment metadata missing endpoint/color/width/index/cap resource";
+            return false;
+        }
+        out->kind = DVZ_SCENE_VISUAL_DESC_SEGMENT;
+        out->vbuf_ids[out->vbuf_count++] = end_id;
+        out->vbuf_ids[out->vbuf_count++] = color_id;
+        out->vbuf_ids[out->vbuf_count++] = line_width_id;
+        out->topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+        out->index_buffer_id = index_id;
+        out->material_buffer_id = material_id;
+        if (_resource_item_stride(&emitter->resources, index_id) != 0)
+        {
+            uint64_t index_count =
+                _resource_byte_size(&emitter->resources, index_id) /
+                _resource_item_stride(&emitter->resources, index_id);
+            if (index_count > UINT32_MAX)
+            {
+                if (error != NULL)
+                    *error = "typed segment index count exceeds uint32";
+                return false;
+            }
+            out->index_count = (uint32_t)index_count;
+        }
+        out->index_format =
+            _resource_item_stride(&emitter->resources, index_id) == sizeof(uint16_t)
+                ? "uint16"
+                : "uint32";
         return true;
     }
 
@@ -719,14 +786,26 @@ bool _emitter_resolve_render_vertex_buffers(
         const DvzFramePlanVisualMeta* meta = &render->u.render.visual_metadata[i];
         if (meta->has_metadata)
         {
-            if (!_append_resource_key(
-                    &emitter->resources, meta->position_id, out_ids, out_count, true))
+            if (meta->visual_type == DVZ_VISUAL_TYPE_SEGMENT)
+            {
+                if (!_append_resource_key(
+                        &emitter->resources, meta->position_start_id, out_ids, out_count, true))
+                    return false;
+                if (!_append_resource_key(
+                        &emitter->resources, meta->position_end_id, out_ids, out_count, true))
+                    return false;
+            }
+            else if (!_append_resource_key(
+                         &emitter->resources, meta->position_id, out_ids, out_count, true))
                 return false;
             if (!_append_resource_key(
                     &emitter->resources, meta->color_id, out_ids, out_count, false))
                 return false;
             if (!_append_resource_key(
                     &emitter->resources, meta->size_id, out_ids, out_count, false))
+                return false;
+            if (!_append_resource_key(
+                    &emitter->resources, meta->line_width_id, out_ids, out_count, false))
                 return false;
             if (!_append_resource_key(
                     &emitter->resources, meta->texcoords_id, out_ids, out_count, false))
@@ -787,7 +866,10 @@ bool _scene_render_visual_has_position_resource(
 
     const DvzFramePlanVisualMeta* meta = &render->u.render.visual_metadata[visual_index];
     if (meta->has_metadata)
-        return _resource_lookup_label(&emitter->resources, meta->position_id) != 0;
+        return _resource_lookup_label(
+                   &emitter->resources,
+                   meta->visual_type == DVZ_VISUAL_TYPE_SEGMENT ? meta->position_start_id :
+                                                                  meta->position_id) != 0;
 
     return _render_visual_resource_id(
                emitter, render->u.render.visuals[visual_index],
@@ -943,6 +1025,7 @@ static void _scene_visual_pass_caps_resolve(
     dvz_memset(out, sizeof(DvzSceneVisualPassCaps), 0, sizeof(DvzSceneVisualPassCaps));
 
     bool primitive = _visual_desc_is_primitive(kind);
+    bool segment = _visual_desc_is_segment(kind);
     bool sphere = _visual_desc_is_sphere(kind);
     bool point_like = kind == DVZ_SCENE_VISUAL_DESC_POINT ||
                       kind == DVZ_SCENE_VISUAL_DESC_PIXEL;
@@ -966,18 +1049,20 @@ static void _scene_visual_pass_caps_resolve(
     out->uses_source_over_blend = _alpha_mode_uses_source_over(alpha_mode);
     out->writes_color = kind != DVZ_SCENE_VISUAL_DESC_NONE;
     out->writes_depth =
-        out->draws_in_opaque_pass && (primitive || point_like || sphere) && !fixed &&
+        out->draws_in_opaque_pass && (primitive || segment || point_like || sphere) && !fixed &&
         depth_test_enabled;
-    out->can_write_depth = (primitive || point_like || sphere) && !fixed && depth_test_enabled;
-    out->can_depth_test = (primitive || point_like || sphere) && !fixed && depth_test_enabled;
+    out->can_write_depth =
+        (primitive || segment || point_like || sphere) && !fixed && depth_test_enabled;
+    out->can_depth_test =
+        (primitive || segment || point_like || sphere) && !fixed && depth_test_enabled;
     out->samples_depth = volume && !fixed;
     out->needs_depth_attachment = out->can_depth_test || out->samples_depth;
     out->eligible_for_depth_postprocess = out->draws_in_opaque_pass && out->writes_depth;
     out->eligible_for_gbuffer = out->draws_in_opaque_pass &&
                                 ((primitive && has_normals) || sphere) && out->writes_depth;
     out->uses_common_set = kind != DVZ_SCENE_VISUAL_DESC_NONE;
-    out->needs_material_layout =
-        (primitive && has_normals) || sphere || (point_like && depth_cue_enabled);
+    out->needs_material_layout = (primitive && has_normals) || segment || sphere ||
+                                 (point_like && has_material_resource);
     out->uses_material_set = out->needs_material_layout && has_material_resource;
     out->uses_image_set = image;
     out->uses_volume_set = volume;
@@ -1014,6 +1099,9 @@ bool _scene_visual_pass_caps_from_visual(
     case DVZ_VISUAL_TYPE_SPHERE:
         kind = DVZ_SCENE_VISUAL_DESC_SPHERE;
         break;
+    case DVZ_VISUAL_TYPE_SEGMENT:
+        kind = DVZ_SCENE_VISUAL_DESC_SEGMENT;
+        break;
     case DVZ_VISUAL_TYPE_PRIMITIVE:
     case DVZ_VISUAL_TYPE_MESH:
     case DVZ_VISUAL_TYPE_PATH:
@@ -1039,8 +1127,11 @@ bool _scene_visual_pass_caps_from_visual(
     }
 
     bool point_like = kind == DVZ_SCENE_VISUAL_DESC_POINT || kind == DVZ_SCENE_VISUAL_DESC_PIXEL;
-    bool has_material_resource = has_normals || visual->type == DVZ_VISUAL_TYPE_SPHERE ||
-                                 (point_like && visual->material.depth_cue_enabled);
+    bool has_material_resource = has_normals || visual->type == DVZ_VISUAL_TYPE_SEGMENT ||
+                                 visual->type == DVZ_VISUAL_TYPE_SPHERE ||
+                                 (point_like && visual->material.depth_cue_enabled) ||
+                                 (visual->type == DVZ_VISUAL_TYPE_POINT &&
+                                  visual->material.point_style_enabled);
     _scene_visual_pass_caps_resolve(
         kind, visual->alpha_mode, attach->controller_mode, has_normals, has_material_resource,
         visual->material.depth_cue_enabled, visual->depth_test_enabled, out);
@@ -1069,7 +1160,7 @@ bool _scene_visual_pass_caps_from_desc(
 
     _scene_visual_pass_caps_resolve(
         visual->kind, alpha_mode, controller_mode, visual->has_normal,
-        visual->material_buffer_id != 0, visual->material_buffer_id != 0,
+        visual->material_buffer_id != 0, visual->depth_cue_enabled,
         visual->depth_test_enabled, out);
     return true;
 }
@@ -1115,10 +1206,12 @@ static void _scene_shader_features_resolve(
     if (wboit_accumulation)
         out->flags |= DVZ_SCENE_SHADER_FEATURE_WBOIT_ACCUM;
     if (
-        visual->material_buffer_id != 0 &&
+        visual->depth_cue_enabled &&
         (visual->kind == DVZ_SCENE_VISUAL_DESC_POINT ||
          visual->kind == DVZ_SCENE_VISUAL_DESC_PIXEL))
         out->flags |= DVZ_SCENE_SHADER_FEATURE_DEPTH_CUE;
+    if (visual->point_style_enabled && visual->kind == DVZ_SCENE_VISUAL_DESC_POINT)
+        out->flags |= DVZ_SCENE_SHADER_FEATURE_POINT_STYLE;
     if (visual->kind == DVZ_SCENE_VISUAL_DESC_SPHERE && visual->material_buffer_id != 0)
         out->flags |= DVZ_SCENE_SHADER_FEATURE_LIGHTING;
     if (visual->has_normal)
@@ -1186,10 +1279,10 @@ static bool _scene_shader_desc_point_like(
 
     bool picking = _shader_features_has(features, DVZ_SCENE_SHADER_FEATURE_PICKING);
     bool depth_cue = _shader_features_has(features, DVZ_SCENE_SHADER_FEATURE_DEPTH_CUE);
-    if (features->kind == DVZ_SCENE_VISUAL_DESC_PIXEL && picking)
-        return false;
+    bool point_style = _shader_features_has(features, DVZ_SCENE_SHADER_FEATURE_POINT_STYLE);
 
-    const char* suffix = picking ? "_pick" : depth_cue ? "_cue" : "";
+    const char* suffix = picking ? "_pick" : point_style && depth_cue ? "_cue_style" :
+                         point_style ? "_style" : depth_cue ? "_cue" : "";
     dvz_snprintf(
         out->vertex_key, sizeof(out->vertex_key), "_vs_%s%s%s", visual_name, suffix, format_tag);
     dvz_snprintf(
@@ -1201,10 +1294,14 @@ static bool _scene_shader_desc_point_like(
 
     DvzSceneBuiltinShader shader = DVZ_SCENE_BUILTIN_SHADER_POINT;
     if (features->kind == DVZ_SCENE_VISUAL_DESC_PIXEL)
-        shader = depth_cue ? DVZ_SCENE_BUILTIN_SHADER_PIXEL_DEPTH_CUE :
+        shader = picking ? DVZ_SCENE_BUILTIN_SHADER_PIXEL_PICK :
+                 depth_cue ? DVZ_SCENE_BUILTIN_SHADER_PIXEL_DEPTH_CUE :
                              DVZ_SCENE_BUILTIN_SHADER_PIXEL;
     else if (picking)
         shader = DVZ_SCENE_BUILTIN_SHADER_POINT_PICK;
+    else if (point_style)
+        shader = depth_cue ? DVZ_SCENE_BUILTIN_SHADER_POINT_STYLE_DEPTH_CUE :
+                             DVZ_SCENE_BUILTIN_SHADER_POINT_STYLE;
     else
         shader = depth_cue ? DVZ_SCENE_BUILTIN_SHADER_POINT_DEPTH_CUE :
                              DVZ_SCENE_BUILTIN_SHADER_POINT;
@@ -1213,23 +1310,35 @@ static bool _scene_shader_desc_point_like(
     _scene_shader_desc_set_identity(out, features->kind == DVZ_SCENE_VISUAL_DESC_PIXEL ?
                                              "scene.pixel" :
                                              "scene.point",
-                                    picking ? "pick" : depth_cue ? "depth_cue" : "default");
+                                    picking ? "pick" :
+                                    point_style && depth_cue ? "style_depth_cue" :
+                                    point_style ? "style" :
+                                    depth_cue ? "depth_cue" : "default");
     if (!picking)
     {
-        out->vertex_spirv_key = depth_cue ?
-                                    (features->kind == DVZ_SCENE_VISUAL_DESC_PIXEL ?
-                                         "pixel_cue_vert" :
-                                         "point_cue_vert") :
-                                    (features->kind == DVZ_SCENE_VISUAL_DESC_PIXEL ?
-                                         "pixel_vert" :
-                                         "point_vert");
-        out->fragment_spirv_key = depth_cue ?
-                                      (features->kind == DVZ_SCENE_VISUAL_DESC_PIXEL ?
-                                           "pixel_cue_frag" :
-                                           "point_cue_frag") :
-                                      (features->kind == DVZ_SCENE_VISUAL_DESC_PIXEL ?
-                                           "pixel_frag" :
-                                           "point_frag");
+        if (features->kind == DVZ_SCENE_VISUAL_DESC_PIXEL)
+        {
+            out->vertex_spirv_key = depth_cue ? "pixel_cue_vert" : "pixel_vert";
+            out->fragment_spirv_key = depth_cue ? "pixel_cue_frag" : "pixel_frag";
+        }
+        else if (point_style)
+        {
+            out->vertex_spirv_key = depth_cue ? "point_cue_style_vert" : "point_style_vert";
+            out->fragment_spirv_key = depth_cue ? "point_cue_style_frag" : "point_style_frag";
+        }
+        else
+        {
+            out->vertex_spirv_key = depth_cue ? "point_cue_vert" : "point_vert";
+            out->fragment_spirv_key = depth_cue ? "point_cue_frag" : "point_frag";
+        }
+    }
+    else
+    {
+        out->vertex_spirv_key =
+            features->kind == DVZ_SCENE_VISUAL_DESC_PIXEL ? "pixel_pick_vert" : "point_pick_vert";
+        out->fragment_spirv_key =
+            features->kind == DVZ_SCENE_VISUAL_DESC_PIXEL ? "pixel_pick_frag" :
+                                                            "point_pick_frag";
     }
     return true;
 }
@@ -1298,6 +1407,30 @@ static bool _scene_shader_desc_primitive(
 
 
 /**
+ * Resolve segment shader metadata.
+ *
+ * @param format_tag the shader-format cache-key suffix
+ * @param out the output shader descriptor
+ * @return whether a shader descriptor was resolved
+ */
+static bool
+_scene_shader_desc_segment(const char* format_tag, DvzSceneVisualShaderDesc* out)
+{
+    ANN(format_tag);
+    ANN(out);
+
+    dvz_snprintf(out->vertex_key, sizeof(out->vertex_key), "_vs_segment%s", format_tag);
+    dvz_snprintf(out->fragment_key, sizeof(out->fragment_key), "_fs_segment%s", format_tag);
+    dvz_snprintf(out->pipeline_key, sizeof(out->pipeline_key), "_pipe_segment%s", format_tag);
+    _scene_shader_desc_set_builtin(out, DVZ_SCENE_BUILTIN_SHADER_SEGMENT);
+    _scene_shader_desc_set_identity(out, "scene.segment", "default");
+    out->vertex_spirv_key = "segment_vert";
+    out->fragment_spirv_key = "segment_frag";
+    return true;
+}
+
+
+/**
  * Resolve sphere shader metadata from feature flags.
  *
  * @param features the shader features
@@ -1358,6 +1491,9 @@ bool _scene_visual_shader_desc(
 
     case DVZ_SCENE_VISUAL_DESC_SPHERE:
         return _scene_shader_desc_sphere(&features, format_tag, out);
+
+    case DVZ_SCENE_VISUAL_DESC_SEGMENT:
+        return _scene_shader_desc_segment(format_tag, out);
 
     case DVZ_SCENE_VISUAL_DESC_PRIMITIVE:
         return _scene_shader_desc_primitive(&features, format_tag, out);
@@ -1498,6 +1634,37 @@ bool _scene_visual_pipeline_desc(
         }
         return true;
 
+    case DVZ_SCENE_VISUAL_DESC_SEGMENT:
+        out->vertex_buffer_count = 4;
+        out->binding_count = 4;
+        out->attr_count = 4;
+        out->strides[0] = 3 * sizeof(float);
+        out->strides[1] = 3 * sizeof(float);
+        out->strides[2] = 4 * sizeof(uint8_t);
+        out->strides[3] = sizeof(float);
+        out->bindings[0] = 0;
+        out->bindings[1] = 1;
+        out->bindings[2] = 2;
+        out->bindings[3] = 3;
+        out->locations[0] = 0;
+        out->locations[1] = 1;
+        out->locations[2] = 2;
+        out->locations[3] = 3;
+        out->formats[0] = VK_FORMAT_R32G32B32_SFLOAT;
+        out->formats[1] = VK_FORMAT_R32G32B32_SFLOAT;
+        out->formats[2] = VK_FORMAT_R8G8B8A8_UNORM;
+        out->formats[3] = VK_FORMAT_R32_SFLOAT;
+        out->needs_common_layout = caps.uses_common_set;
+        out->needs_material_layout = caps.needs_material_layout;
+        if (pass_needs_depth)
+        {
+            out->depth_write_enabled =
+                caps.can_write_depth && !wboit_accumulation && alpha_mode != DVZ_ALPHA_BLENDED;
+            out->depth_compare_op =
+                caps.can_depth_test ? VK_COMPARE_OP_LESS_OR_EQUAL : VK_COMPARE_OP_ALWAYS;
+        }
+        return true;
+
     case DVZ_SCENE_VISUAL_DESC_IMAGE:
         out->vertex_buffer_count = 2;
         out->binding_count = 2;
@@ -1582,6 +1749,13 @@ bool _scene_visual_bind_desc(
         out->material_buffer_id = visual->material_buffer_id;
         return true;
 
+    case DVZ_SCENE_VISUAL_DESC_SEGMENT:
+        out->uses_common_set0 = caps.uses_common_set;
+        out->uses_fixed_common = caps.fixed_controller;
+        out->uses_material_set1 = caps.uses_material_set;
+        out->material_buffer_id = visual->material_buffer_id;
+        return true;
+
     case DVZ_SCENE_VISUAL_DESC_IMAGE:
         out->uses_common_set0 = caps.uses_common_set;
         out->uses_fixed_common = caps.fixed_controller;
@@ -1631,7 +1805,10 @@ bool _scene_render_needs_depth(DvzFramePlanEmitter* emitter, const DvzFramePlanN
         const DvzFramePlanVisualMeta* meta = &render->u.render.visual_metadata[i];
         if (meta->has_metadata)
         {
-            uint64_t pos_buf = _resource_lookup_label(&emitter->resources, meta->position_id);
+            uint64_t pos_buf = _resource_lookup_label(
+                &emitter->resources,
+                meta->visual_type == DVZ_VISUAL_TYPE_SEGMENT ? meta->position_start_id :
+                                                               meta->position_id);
             if (pos_buf == 0)
                 continue;
             bool has_color = _resource_lookup_label(&emitter->resources, meta->color_id) != 0;
@@ -1646,6 +1823,18 @@ bool _scene_render_needs_depth(DvzFramePlanEmitter* emitter, const DvzFramePlanN
             {
                 bool has_size = _resource_lookup_label(&emitter->resources, meta->size_id) != 0;
                 if (has_color && has_size)
+                    return true;
+                continue;
+            }
+            if (meta->visual_type == DVZ_VISUAL_TYPE_SEGMENT)
+            {
+                bool has_end =
+                    _resource_lookup_label(&emitter->resources, meta->position_end_id) != 0;
+                bool has_line_width =
+                    _resource_lookup_label(&emitter->resources, meta->line_width_id) != 0;
+                bool has_index =
+                    _resource_lookup_label(&emitter->resources, meta->index_id) != 0;
+                if (has_end && has_color && has_line_width && has_index)
                     return true;
                 continue;
             }

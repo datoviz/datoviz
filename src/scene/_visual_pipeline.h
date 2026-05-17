@@ -33,6 +33,7 @@ typedef enum
     DVZ_SCENE_VISUAL_DESC_POINT,
     DVZ_SCENE_VISUAL_DESC_PIXEL,
     DVZ_SCENE_VISUAL_DESC_SPHERE,
+    DVZ_SCENE_VISUAL_DESC_SEGMENT,
     DVZ_SCENE_VISUAL_DESC_PRIMITIVE,
     DVZ_SCENE_VISUAL_DESC_IMAGE,
     DVZ_SCENE_VISUAL_DESC_VOLUME,
@@ -71,6 +72,8 @@ typedef struct DvzSceneVisualDesc
     uint64_t image_texture_id;
     uint64_t volume_texture_id;
     uint32_t volume_visual_index;
+    bool depth_cue_enabled;
+    bool point_style_enabled;
     bool volume_transfer_rgba;
     bool scene_occluded;
     DvzSceneOcclusionDesc scene_occlusion;

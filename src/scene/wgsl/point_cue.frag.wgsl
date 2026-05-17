@@ -8,8 +8,11 @@ struct FragmentIn {
 
 @fragment
 fn main(input: FragmentIn) -> @location(0) vec4f {
-    if (dot(input.corner, input.corner) > 1.0) {
+    let dist = length(input.corner);
+    let aa = max(fwidth(dist), 1e-6);
+    let alpha = 1.0 - smoothstep(1.0 - aa, 1.0 + aa, dist);
+    if (alpha <= 0.0) {
         discard;
     }
-    return vec4f(apply_depth_cue(input.color.rgb, input.cue), input.color.a);
+    return vec4f(apply_depth_cue(input.color.rgb, input.cue), input.color.a * alpha);
 }

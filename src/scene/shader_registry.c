@@ -110,12 +110,20 @@ static const char* _builtin_shader_resource_key(DvzSceneBuiltinShader shader, bo
         return fragment ? "point_frag" : "point_vert";
     case DVZ_SCENE_BUILTIN_SHADER_POINT_DEPTH_CUE:
         return fragment ? "point_cue_frag" : "point_cue_vert";
+    case DVZ_SCENE_BUILTIN_SHADER_POINT_STYLE:
+        return fragment ? "point_style_frag" : "point_style_vert";
+    case DVZ_SCENE_BUILTIN_SHADER_POINT_STYLE_DEPTH_CUE:
+        return fragment ? "point_cue_style_frag" : "point_cue_style_vert";
     case DVZ_SCENE_BUILTIN_SHADER_PIXEL:
         return fragment ? "pixel_frag" : "pixel_vert";
     case DVZ_SCENE_BUILTIN_SHADER_PIXEL_DEPTH_CUE:
         return fragment ? "pixel_cue_frag" : "pixel_cue_vert";
     case DVZ_SCENE_BUILTIN_SHADER_POINT_PICK:
         return fragment ? "point_pick_frag" : "point_pick_vert";
+    case DVZ_SCENE_BUILTIN_SHADER_PIXEL_PICK:
+        return fragment ? "pixel_pick_frag" : "pixel_pick_vert";
+    case DVZ_SCENE_BUILTIN_SHADER_SEGMENT:
+        return fragment ? "segment_frag" : "segment_vert";
     case DVZ_SCENE_BUILTIN_SHADER_SPHERE:
         return fragment ? "sphere_frag" : "sphere_vert";
     case DVZ_SCENE_BUILTIN_SHADER_SPHERE_A2C:

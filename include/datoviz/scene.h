@@ -571,6 +571,8 @@ dvz_visual_attr_mutability(const DvzVisual* visual, const char* attr_name);
  * First-slice visual families currently accept:
  * point: `"position"` (vec3f), `"color"` (RGBA8), `"size"` (float)
  * sphere: `"position"` (vec3f), `"color"` (RGBA8), `"size"` (float radius)
+ * segment: `"position_start"` (vec3f), `"position_end"` (vec3f), `"color"` (RGBA8),
+ *          `"line_width"` (float pixels)
  * primitive/path: `"position"` (vec3f), `"color"` (RGBA8)
  * mesh: `"position"` (vec3f), optional `"color"` (RGBA8), optional `"normal"` (vec3f)
  * primitive only: `"normal"` (vec3f)
@@ -765,6 +767,31 @@ dvz_visual_set_primitive_shading(DvzVisual* visual, const DvzPrimitiveShadingDes
 DVZ_EXPORT int dvz_visual_set_depth_cue(DvzVisual* visual, const DvzDepthCueDesc* desc);
 
 
+/**
+ * Return default point styling.
+ *
+ * The default point style renders filled circular points with no stroke. The `color` visual
+ * attribute remains the fill color; `edge_color` and `line_width` apply only when `stroke` or
+ * `outline` is enabled.
+ *
+ * @return default point style descriptor
+ */
+DVZ_EXPORT DvzPointStyleDesc dvz_point_style_desc(void);
+
+
+/**
+ * Configure circular point fill/stroke styling.
+ *
+ * Pass NULL to restore the default filled/no-stroke style. `outline` renders only the stroke ring;
+ * otherwise `filled` controls whether the disc interior is drawn.
+ *
+ * @param visual the point visual
+ * @param desc the point style descriptor, or NULL to restore defaults
+ * @return 0 on success, -1 on error
+ */
+DVZ_EXPORT int dvz_point_set_style(DvzVisual* visual, const DvzPointStyleDesc* desc);
+
+
 
 /*************************************************************************************************/
 /*  Visual family constructors                                                                   */
@@ -772,6 +799,10 @@ DVZ_EXPORT int dvz_visual_set_depth_cue(DvzVisual* visual, const DvzDepthCueDesc
 
 /**
  * Create a point visual.
+ *
+ * Renders screen-space antialiased circular sprites with `position` (vec3), `color` (RGBA8),
+ * and `size` (float diameter, in pixels). `dvz_point_set_style()` controls optional edge
+ * styling with `edge_color`, `line_width`, and filled/stroke/outline aspects.
  *
  * @param scene the scene
  * @param flags variant flags
@@ -858,6 +889,36 @@ dvz_sphere_color(DvzVisual* visual, uint32_t first, uint32_t count, DvzColor* co
  */
 DVZ_EXPORT int
 dvz_sphere_size(DvzVisual* visual, uint32_t first, uint32_t count, const float* size);
+
+
+/**
+ * Create a segment visual.
+ *
+ * First-slice segment visuals render independent endpoint pairs as analytic screen-space
+ * stroked line segments. Dense attributes are `position_start` (vec3), `position_end` (vec3),
+ * `color` (RGBA8), and `line_width` (float width in pixels). Segment caps default to butt at
+ * both ends.
+ *
+ * @param scene the scene
+ * @param flags variant flags
+ * @return the visual
+ */
+DVZ_EXPORT DvzVisual* dvz_segment(DvzScene* scene, uint32_t flags);
+
+
+/**
+ * Configure segment endpoint caps.
+ *
+ * Arrow caps, dashes, scalar color, and per-item cap attributes are deferred. Supported first
+ * slice caps are none, round, triangle-in, triangle-out, square, and butt.
+ *
+ * @param visual the segment visual
+ * @param start_cap cap applied to `position_start`
+ * @param end_cap cap applied to `position_end`
+ * @return 0 on success, -1 on error
+ */
+DVZ_EXPORT int
+dvz_segment_set_caps(DvzVisual* visual, DvzSegmentCap start_cap, DvzSegmentCap end_cap);
 
 
 /**

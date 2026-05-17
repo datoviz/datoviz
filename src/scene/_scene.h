@@ -392,6 +392,7 @@ struct DvzSceneProbePlan
     DvzFramePlan* plan;
     vec3* probe_positions;
     vec2* probe_texcoords;
+    DvzColor* pick_colors;
 };
 
 
@@ -496,7 +497,35 @@ struct DvzSceneMaterialState
     char scalar_slot[32];
     float scalar_scale;
     float scalar_bias;
+    DvzPointStyleDesc point_style;
+    bool point_style_enabled;
     uint64_t version;
+};
+
+
+typedef struct DvzSegmentGpuCache DvzSegmentGpuCache;
+
+struct DvzSegmentGpuCache
+{
+    float* position_start;
+    float* position_end;
+    DvzColor* color;
+    float* line_width;
+    uint32_t* indices;
+    uint64_t item_count;
+    uint64_t vertex_count;
+    uint64_t index_count;
+    bool dirty;
+};
+
+
+typedef struct DvzSegmentState DvzSegmentState;
+
+struct DvzSegmentState
+{
+    DvzSegmentCap start_cap;
+    DvzSegmentCap end_cap;
+    DvzSegmentGpuCache gpu;
 };
 
 
@@ -573,6 +602,7 @@ struct DvzVisual
     uint32_t        link_key_count;
     DvzSceneMaterialParams material_params;
     bool                   material_params_dirty;
+    DvzSegmentState        segment;
     DvzSphereMode          sphere_mode;
     bool                   mesh_default_color;
     bool                   scene_occluder;

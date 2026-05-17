@@ -61,6 +61,16 @@ static void _material_state_default(DvzSceneMaterialState* material, DvzVisualTy
 static void _material_params_sync_state(
     DvzSceneMaterialParams* params, const DvzSceneMaterialState* material);
 
+static void _point_style_sync_params(DvzSceneMaterialParams* params, const DvzPointStyleDesc* style);
+
+static bool _point_style_enabled(const DvzPointStyleDesc* style);
+
+static bool _segment_cap_valid(DvzSegmentCap cap);
+
+static void _segment_sync_params(DvzVisual* visual);
+
+static void _segment_gpu_cache_free(DvzSegmentGpuCache* cache);
+
 static bool _material_depth_cue_supported(DvzVisualType visual_type);
 
 static bool _material_visual_supported(DvzVisualType visual_type);
@@ -124,6 +134,12 @@ static uint32_t _attr_item_size(DvzVisualType type, const char* name)
         if (strcmp(name, "position") == 0) return 3 * sizeof(float);
         if (strcmp(name, "color") == 0)    return 4 * sizeof(uint8_t);
         break;
+    case DVZ_VISUAL_TYPE_SEGMENT:
+        if (strcmp(name, "position_start") == 0) return 3 * sizeof(float);
+        if (strcmp(name, "position_end") == 0)   return 3 * sizeof(float);
+        if (strcmp(name, "color") == 0)          return 4 * sizeof(uint8_t);
+        if (strcmp(name, "line_width") == 0)     return sizeof(float);
+        break;
     case DVZ_VISUAL_TYPE_IMAGE:
         if (strcmp(name, "position") == 0)  return 3 * sizeof(float);
         if (strcmp(name, "texcoords") == 0) return 2 * sizeof(float);
@@ -163,6 +179,8 @@ static bool _attr_supported(DvzVisualType type, const char* name, uint32_t* item
         expected = "position, color, normal";
     else if (type == DVZ_VISUAL_TYPE_PATH)
         expected = "position, color";
+    else if (type == DVZ_VISUAL_TYPE_SEGMENT)
+        expected = "position_start, position_end, color, line_width";
     else if (type == DVZ_VISUAL_TYPE_IMAGE)
         expected = "position, texcoords";
     else if (type == DVZ_VISUAL_TYPE_VOLUME)
@@ -197,10 +215,12 @@ static bool _attr_source_supported(
 
     bool is_color = strcmp(name, "color") == 0;
     bool is_size = strcmp(name, "size") == 0;
+    bool is_line_width = strcmp(name, "line_width") == 0;
 
-    if (source == DVZ_VISUAL_ATTR_SOURCE_CONSTANT && (is_color || is_size))
+    if (source == DVZ_VISUAL_ATTR_SOURCE_CONSTANT && (is_color || is_size || is_line_width))
         return true;
-    if (source == DVZ_VISUAL_ATTR_SOURCE_PER_GROUP && (is_color || is_size))
+    if (source == DVZ_VISUAL_ATTR_SOURCE_PER_GROUP && type != DVZ_VISUAL_TYPE_SEGMENT &&
+        (is_color || is_size))
         return true;
     if (source == DVZ_VISUAL_ATTR_SOURCE_PER_SPAN && type == DVZ_VISUAL_TYPE_PATH && is_color)
         return true;
@@ -379,6 +399,14 @@ static DvzVisual* _scene_alloc_visual(DvzScene* scene, DvzVisualType type, uint3
     _material_state_default(&visual->material, type);
     _material_params_default(&visual->material_params);
     _material_params_sync_state(&visual->material_params, &visual->material);
+    if (type == DVZ_VISUAL_TYPE_POINT)
+        _point_style_sync_params(&visual->material_params, &visual->material.point_style);
+    if (type == DVZ_VISUAL_TYPE_SEGMENT)
+    {
+        visual->segment.start_cap = DVZ_SEGMENT_CAP_BUTT;
+        visual->segment.end_cap = DVZ_SEGMENT_CAP_BUTT;
+        _segment_sync_params(visual);
+    }
     _volume_state_default(&visual->volume);
     return visual;
 }
@@ -395,6 +423,7 @@ void _scene_visual_reset(DvzVisual* visual, bool release_owned_resources)
 {
     if (visual == NULL)
         return;
+    _segment_gpu_cache_free(&visual->segment.gpu);
     for (uint32_t i = 0; i < visual->attr_count; i++)
     {
         if (visual->attrs[i].data != NULL)
@@ -683,6 +712,101 @@ DvzMaterialDesc dvz_material_desc(void)
 }
 
 
+/**
+ * Return default circular point styling.
+ *
+ * @return default point style descriptor
+ */
+DvzPointStyleDesc dvz_point_style_desc(void)
+{
+    DvzPointStyleDesc desc = {
+        .edge_color = {0, 0, 0, 255},
+        .line_width = 0.0f,
+        .filled = true,
+        .stroke = false,
+        .outline = false,
+    };
+    return desc;
+}
+
+
+/**
+ * Return whether one point style needs the style shader path.
+ *
+ * @param style the point style descriptor
+ * @return whether style parameters differ from the shader defaults
+ */
+static bool _point_style_enabled(const DvzPointStyleDesc* style)
+{
+    ANN(style);
+    return style->outline || !style->filled || style->stroke || style->line_width > 0.0f;
+}
+
+
+/**
+ * Store point style data into the shared material payload used by point shaders.
+ *
+ * @param params the material parameter payload
+ * @param style the point style descriptor
+ */
+static void _point_style_sync_params(DvzSceneMaterialParams* params, const DvzPointStyleDesc* style)
+{
+    ANN(params);
+    ANN(style);
+    params->params[0] = style->line_width > 0.0f ? style->line_width : 0.0f;
+    params->params[1] = style->filled ? 1.0f : 0.0f;
+    params->params[2] = style->stroke ? 1.0f : 0.0f;
+    params->params[3] = style->outline ? 1.0f : 0.0f;
+    params->base_color_factor[0] = (float)style->edge_color[0] / 255.0f;
+    params->base_color_factor[1] = (float)style->edge_color[1] / 255.0f;
+    params->base_color_factor[2] = (float)style->edge_color[2] / 255.0f;
+    params->base_color_factor[3] = (float)style->edge_color[3] / 255.0f;
+}
+
+
+/**
+ * Return whether one segment cap enum value is supported by the first slice.
+ *
+ * @param cap the segment cap
+ * @return whether the cap is valid
+ */
+static bool _segment_cap_valid(DvzSegmentCap cap)
+{
+    return cap >= DVZ_SEGMENT_CAP_NONE && cap <= DVZ_SEGMENT_CAP_BUTT;
+}
+
+
+/**
+ * Store segment cap state into the shared material payload used by segment shaders.
+ *
+ * @param visual the segment visual
+ */
+static void _segment_sync_params(DvzVisual* visual)
+{
+    ANN(visual);
+    visual->material_params.params[0] = (float)visual->segment.start_cap;
+    visual->material_params.params[1] = (float)visual->segment.end_cap;
+}
+
+
+/**
+ * Release one segment visual's derived GPU upload cache.
+ *
+ * @param cache the segment GPU cache
+ */
+static void _segment_gpu_cache_free(DvzSegmentGpuCache* cache)
+{
+    if (cache == NULL)
+        return;
+    dvz_free(cache->position_start);
+    dvz_free(cache->position_end);
+    dvz_free(cache->color);
+    dvz_free(cache->line_width);
+    dvz_free(cache->indices);
+    dvz_memset(cache, sizeof(DvzSegmentGpuCache), 0, sizeof(DvzSegmentGpuCache));
+}
+
+
 
 /**
  * Initialize material defaults for one visual family.
@@ -698,6 +822,8 @@ static void _material_state_default(DvzSceneMaterialState* material, DvzVisualTy
     _material_state_apply_desc(material, &desc);
     material->alpha_mode = DVZ_ALPHA_OPAQUE;
     material->scalar_scale = 1.0f;
+    material->point_style = dvz_point_style_desc();
+    material->point_style_enabled = false;
 
     switch (visual_type)
     {
@@ -1069,6 +1195,8 @@ static void _visual_material_mark_dirty(DvzVisual* visual)
 {
     ANN(visual);
     _material_params_sync_state(&visual->material_params, &visual->material);
+    if (visual->type == DVZ_VISUAL_TYPE_POINT)
+        _point_style_sync_params(&visual->material_params, &visual->material.point_style);
     _sphere_params_sync_mode(visual);
     _visual_bump_version(&visual->material.version);
     visual->material_params_dirty = true;
@@ -1425,6 +1553,38 @@ int dvz_visual_set_depth_cue(DvzVisual* visual, const DvzDepthCueDesc* desc)
 
     if (_material_apply_depth_cue(&visual->material, desc) != 0)
         return -1;
+    _visual_material_mark_dirty(visual);
+    return 0;
+}
+
+
+/**
+ * Configure circular point fill/stroke styling.
+ *
+ * @param visual the point visual
+ * @param desc the point style descriptor, or NULL to restore defaults
+ * @return 0 on success, -1 on error
+ */
+int dvz_point_set_style(DvzVisual* visual, const DvzPointStyleDesc* desc)
+{
+    ANN(visual);
+    if (visual->type != DVZ_VISUAL_TYPE_POINT)
+    {
+        log_error("dvz_point_set_style requires a point visual");
+        return -1;
+    }
+    if (!_scene_visual_mutation_allowed(visual->scene, "update point style"))
+        return -1;
+
+    DvzPointStyleDesc style = desc != NULL ? *desc : dvz_point_style_desc();
+    if (!isfinite(style.line_width) || style.line_width < 0.0f)
+    {
+        log_error("point line_width must be finite and nonnegative");
+        return -1;
+    }
+
+    visual->material.point_style = style;
+    visual->material.point_style_enabled = _point_style_enabled(&style);
     _visual_material_mark_dirty(visual);
     return 0;
 }
@@ -2318,6 +2478,61 @@ DvzVisual* dvz_sphere(DvzScene* scene, uint32_t flags)
     _sphere_params_sync_mode(visual);
     visual->material_params_dirty = true;
     return visual;
+}
+
+
+/**
+ * Create a segment visual.
+ *
+ * @param scene the scene
+ * @param flags variant flags
+ * @return the visual, or NULL on allocation failure
+ */
+DvzVisual* dvz_segment(DvzScene* scene, uint32_t flags)
+{
+    ANN(scene);
+    DvzVisual* visual = _scene_alloc_visual(scene, DVZ_VISUAL_TYPE_SEGMENT, flags);
+    if (visual == NULL)
+        return NULL;
+    visual->topology = DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+    visual->material_params_dirty = true;
+    visual->segment.gpu.dirty = true;
+    return visual;
+}
+
+
+/**
+ * Configure segment endpoint caps.
+ *
+ * @param visual the segment visual
+ * @param start_cap cap applied to the start endpoint
+ * @param end_cap cap applied to the end endpoint
+ * @return 0 on success, -1 on validation error
+ */
+int dvz_segment_set_caps(DvzVisual* visual, DvzSegmentCap start_cap, DvzSegmentCap end_cap)
+{
+    ANN(visual);
+    if (visual->type != DVZ_VISUAL_TYPE_SEGMENT)
+    {
+        log_error("dvz_segment_set_caps requires a segment visual");
+        return -1;
+    }
+    if (!_segment_cap_valid(start_cap) || !_segment_cap_valid(end_cap))
+    {
+        log_error("invalid segment cap");
+        return -1;
+    }
+    if (!_scene_visual_mutation_allowed(visual->scene, "update segment caps"))
+        return -1;
+
+    if (visual->segment.start_cap == start_cap && visual->segment.end_cap == end_cap)
+        return 0;
+    visual->segment.start_cap = start_cap;
+    visual->segment.end_cap = end_cap;
+    _segment_sync_params(visual);
+    _visual_bump_version(&visual->material.version);
+    visual->material_params_dirty = true;
+    return 0;
 }
 
 

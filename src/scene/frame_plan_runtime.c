@@ -4878,10 +4878,14 @@ static bool _emitter_emit_render(
     bool is_new = false;
     const char* fmt = _shader_format_tag(cfg);
 
+    const DvzFramePlanVisualMeta* visual_meta = NULL;
     uint32_t visual_type = DVZ_VISUAL_TYPE_NONE;
     if (render->u.render.visual_count == 1 &&
         render->u.render.visual_metadata[0].has_metadata)
-        visual_type = render->u.render.visual_metadata[0].visual_type;
+    {
+        visual_meta = &render->u.render.visual_metadata[0];
+        visual_type = visual_meta->visual_type;
+    }
 
     /* Detect point-like visual data (position + color + size attributes). */
     bool is_point = _is_point_visual(&emitter->resources, vertex_buffer_ids, vertex_buffer_count);
@@ -4933,11 +4937,32 @@ static bool _emitter_emit_render(
     if (is_point_like)
     {
         /* Point-like visuals: native points for GLSL, instanced quads for WGSL. */
-        DvzSceneBuiltinShader shader =
-            is_pixel ? DVZ_SCENE_BUILTIN_SHADER_PIXEL : DVZ_SCENE_BUILTIN_SHADER_POINT;
+        bool picking = render->u.render.picking;
+        bool depth_cue =
+            visual_meta != NULL && visual_meta->depth_cue_enabled && !picking;
+        bool point_style =
+            visual_meta != NULL && visual_meta->point_style_enabled && !is_pixel && !picking;
+        const char* suffix =
+            picking ? "_pick" : point_style && depth_cue ? "_cue_style" :
+            point_style ? "_style" : depth_cue ? "_cue" : "";
+
+        DvzSceneBuiltinShader shader = DVZ_SCENE_BUILTIN_SHADER_POINT;
+        if (is_pixel)
+            shader = picking ? DVZ_SCENE_BUILTIN_SHADER_PIXEL_PICK :
+                     depth_cue ? DVZ_SCENE_BUILTIN_SHADER_PIXEL_DEPTH_CUE :
+                                 DVZ_SCENE_BUILTIN_SHADER_PIXEL;
+        else if (picking)
+            shader = DVZ_SCENE_BUILTIN_SHADER_POINT_PICK;
+        else if (point_style)
+            shader = depth_cue ? DVZ_SCENE_BUILTIN_SHADER_POINT_STYLE_DEPTH_CUE :
+                                 DVZ_SCENE_BUILTIN_SHADER_POINT_STYLE;
+        else
+            shader = depth_cue ? DVZ_SCENE_BUILTIN_SHADER_POINT_DEPTH_CUE :
+                                 DVZ_SCENE_BUILTIN_SHADER_POINT;
+
         const char* key = is_pixel ? "pixel" : "point";
-        dvz_snprintf(vs_key, sizeof(vs_key), "_vs_%s%s", key, fmt);
-        dvz_snprintf(fs_key, sizeof(fs_key), "_fs_%s%s", key, fmt);
+        dvz_snprintf(vs_key, sizeof(vs_key), "_vs_%s%s%s", key, suffix, fmt);
+        dvz_snprintf(fs_key, sizeof(fs_key), "_fs_%s%s%s", key, suffix, fmt);
         vs_glsl = _builtin_shader_glsl(shader, false);
         fs_glsl = _builtin_shader_glsl(shader, true);
         vs_wgsl = _builtin_shader_wgsl(shader, false);
@@ -5046,8 +5071,31 @@ static bool _emitter_emit_render(
     const char* fs_spirv_key = NULL;
     if (is_point_like)
     {
-        vs_spirv_key = is_pixel ? "pixel_vert" : "point_vert";
-        fs_spirv_key = is_pixel ? "pixel_frag" : "point_frag";
+        bool picking = render->u.render.picking;
+        bool depth_cue =
+            visual_meta != NULL && visual_meta->depth_cue_enabled && !picking;
+        bool point_style =
+            visual_meta != NULL && visual_meta->point_style_enabled && !is_pixel && !picking;
+        if (picking)
+        {
+            vs_spirv_key = is_pixel ? "pixel_pick_vert" : "point_pick_vert";
+            fs_spirv_key = is_pixel ? "pixel_pick_frag" : "point_pick_frag";
+        }
+        else if (is_pixel)
+        {
+            vs_spirv_key = depth_cue ? "pixel_cue_vert" : "pixel_vert";
+            fs_spirv_key = depth_cue ? "pixel_cue_frag" : "pixel_frag";
+        }
+        else if (point_style)
+        {
+            vs_spirv_key = depth_cue ? "point_cue_style_vert" : "point_style_vert";
+            fs_spirv_key = depth_cue ? "point_cue_style_frag" : "point_style_frag";
+        }
+        else
+        {
+            vs_spirv_key = depth_cue ? "point_cue_vert" : "point_vert";
+            fs_spirv_key = depth_cue ? "point_cue_frag" : "point_frag";
+        }
     }
     else if (is_primitive)
     {
@@ -5113,7 +5161,19 @@ static bool _emitter_emit_render(
     }
 
     if (is_point_like)
-        dvz_snprintf(pipe_key, sizeof(pipe_key), "_pipe_%s%s", is_pixel ? "pixel" : "point", fmt);
+    {
+        bool picking = render->u.render.picking;
+        bool depth_cue =
+            visual_meta != NULL && visual_meta->depth_cue_enabled && !picking;
+        bool point_style =
+            visual_meta != NULL && visual_meta->point_style_enabled && !is_pixel && !picking;
+        const char* suffix =
+            picking ? "_pick" : point_style && depth_cue ? "_cue_style" :
+            point_style ? "_style" : depth_cue ? "_cue" : "";
+        dvz_snprintf(
+            pipe_key, sizeof(pipe_key), "_pipe_%s%s%s", is_pixel ? "pixel" : "point",
+            suffix, fmt);
+    }
     else if (is_primitive)
         dvz_snprintf(pipe_key, sizeof(pipe_key), "_pipe_prim_t%u%s", topology, fmt);
     else if (is_image)

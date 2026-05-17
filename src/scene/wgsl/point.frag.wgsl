@@ -5,8 +5,11 @@ struct FragmentIn {
 
 @fragment
 fn main(input: FragmentIn) -> @location(0) vec4f {
-    if (dot(input.corner, input.corner) > 1.0) {
+    let dist = length(input.corner);
+    let aa = max(fwidth(dist), 1e-6);
+    let alpha = 1.0 - smoothstep(1.0 - aa, 1.0 + aa, dist);
+    if (alpha <= 0.0) {
         discard;
     }
-    return input.color;
+    return vec4f(input.color.rgb, input.color.a * alpha);
 }

@@ -13,8 +13,12 @@ layout(set = 0, binding = 1) uniform Viewport {
 } viewport;
 
 layout(location = 0) in vec3 inPos;
+layout(location = 1) in vec4 inColor;
 layout(location = 2) in float inSize;
-layout(location = 0) flat out uint fragId;
+
+layout(location = 0) out vec4 fragColor;
+layout(location = 1) out vec3 fragCue;
+layout(location = 2) out float fragSize;
 
 vec4 transform(vec3 pos)
 {
@@ -23,10 +27,16 @@ vec4 transform(vec3 pos)
     tr.z = 0.5 * (tr.z + tr.w);
     return tr;
 }
-
 void main()
 {
-    gl_Position = transform(inPos);
+    vec4 world = mvp.model * vec4(inPos, 1.0);
+    vec4 tr = transform(inPos);
+    gl_Position = tr;
     gl_PointSize = inSize;
-    fragId = uint(gl_VertexIndex) + 1u;
+    fragColor = inColor;
+    fragCue = vec3(
+        tr.z / max(abs(tr.w), 1e-6),
+        length((mvp.view * world).xyz),
+        length(world.xyz));
+    fragSize = inSize;
 }

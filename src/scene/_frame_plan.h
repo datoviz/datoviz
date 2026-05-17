@@ -40,8 +40,11 @@ typedef enum
 {
     DVZ_FRAME_PLAN_RESOURCE_ROLE_NONE = 0,
     DVZ_FRAME_PLAN_RESOURCE_ROLE_POSITION,
+    DVZ_FRAME_PLAN_RESOURCE_ROLE_POSITION_START,
+    DVZ_FRAME_PLAN_RESOURCE_ROLE_POSITION_END,
     DVZ_FRAME_PLAN_RESOURCE_ROLE_COLOR,
     DVZ_FRAME_PLAN_RESOURCE_ROLE_SIZE,
+    DVZ_FRAME_PLAN_RESOURCE_ROLE_LINE_WIDTH,
     DVZ_FRAME_PLAN_RESOURCE_ROLE_TEXCOORDS,
     DVZ_FRAME_PLAN_RESOURCE_ROLE_TEXTURE,
     DVZ_FRAME_PLAN_RESOURCE_ROLE_NORMAL,
@@ -268,6 +271,8 @@ typedef struct DvzFramePlanVisualMeta
     uint32_t topology;
     DvzAlphaMode alpha_mode;
     bool depth_test_enabled;
+    bool depth_cue_enabled;
+    bool point_style_enabled;
     bool has_volume;
     uint32_t field_format;
     uint32_t field_width;
@@ -284,8 +289,11 @@ typedef struct DvzFramePlanVisualMeta
     DvzVolumeOcclusionDesc volume_occlusion;
     DvzVolumeState volume_state;
     char position_id[DVZ_SCENE_LABEL_SIZE];
+    char position_start_id[DVZ_SCENE_LABEL_SIZE];
+    char position_end_id[DVZ_SCENE_LABEL_SIZE];
     char color_id[DVZ_SCENE_LABEL_SIZE];
     char size_id[DVZ_SCENE_LABEL_SIZE];
+    char line_width_id[DVZ_SCENE_LABEL_SIZE];
     char texcoords_id[DVZ_SCENE_LABEL_SIZE];
     char texture_id[DVZ_SCENE_LABEL_SIZE];
     char volume_texture_id[DVZ_SCENE_LABEL_SIZE];

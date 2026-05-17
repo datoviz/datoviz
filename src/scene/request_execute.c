@@ -25,6 +25,7 @@
 #include "_assertions.h"
 #include "_compat.h"
 #include "_log.h"
+#include "_overflow.h"
 #include "_scene.h"
 
 
@@ -35,7 +36,8 @@
 
 static bool _scene_execute_readback_plan(
     const DvzScene* scene, DvzSceneRequestExecutor* executor, const DvzCapabilitySnapshot* caps,
-    DvzFramePlan* plan, uint8_t rgba[4], bool* out_executed);
+    DvzFramePlan* plan, uint32_t target_width, uint32_t target_height, uint8_t rgba[4],
+    bool* out_executed);
 
 static bool _scene_runtime_config_matches(
     const DvzDrp2RuntimeConfig* a, const DvzDrp2RuntimeConfig* b);
@@ -58,8 +60,16 @@ static void _scene_image_probe_mark_static_uploaded(
 static bool _scene_probe_request_has_image_candidate(
     const DvzFigure* figure, const DvzPendingProbeRequest* pending);
 
+static bool _scene_pick_request_has_point_like_candidate(
+    const DvzFigure* figure, const DvzPendingPickRequest* pending);
+
+static bool _scene_point_like_pick_plan(
+    const DvzFigure* figure, const DvzPanel* panel, DvzVisual* visual,
+    const DvzPendingPickRequest* pending, const vec2 request_ndc, DvzSceneProbePlan* out_plan,
+    uint32_t* out_target_width, uint32_t* out_target_height);
+
 static bool _scene_process_point_pick_request(
-    DvzFigure* figure, DvzDrp2Runtime* runtime, const DvzCapabilitySnapshot* caps,
+    DvzFigure* figure, DvzSceneRequestExecutor* executor, const DvzCapabilitySnapshot* caps,
     const DvzPendingPickRequest* pending);
 
 static bool _scene_process_image_probe_request(
@@ -131,7 +141,9 @@ uint32_t _dvz_figure_process_requests_with_executor(
             i++;
             continue;
         }
-        (void)_scene_process_point_pick_request(figure, NULL, caps, &pending);
+        if (_scene_pick_request_has_point_like_candidate(figure, &pending))
+            (void)_scene_request_executor_prepare(executor, runtime);
+        (void)_scene_process_point_pick_request(figure, executor, caps, &pending);
         _scene_remove_pending_pick_at(scene, i);
         processed++;
     }
@@ -200,7 +212,8 @@ void _scene_request_executor_destroy(DvzSceneRequestExecutor* executor)
  */
 static bool _scene_execute_readback_plan(
     const DvzScene* scene, DvzSceneRequestExecutor* executor, const DvzCapabilitySnapshot* caps,
-    DvzFramePlan* plan, uint8_t rgba[4], bool* out_executed)
+    DvzFramePlan* plan, uint32_t target_width, uint32_t target_height, uint8_t rgba[4],
+    bool* out_executed)
 {
     ANN(executor);
     ANN(caps);
@@ -217,8 +230,8 @@ static bool _scene_execute_readback_plan(
     dvz_diagnostic_report_init(&report);
     DvzFramePlanEmitConfig cfg = dvz_frame_plan_emit_config();
     cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
-    cfg.target_width = 1;
-    cfg.target_height = 1;
+    cfg.target_width = target_width > 0 ? target_width : 1;
+    cfg.target_height = target_height > 0 ? target_height : 1;
     DvzDrp2CommandStream* stream =
         dvz_frame_plan_emitter_emit_drp2(executor->emitter, plan, caps, &report, &cfg);
     if (stream == NULL)
@@ -444,12 +457,206 @@ static bool _scene_probe_request_has_image_candidate(
 }
 
 
+/**
+ * Return whether one pending pick has a visible point-like GPU candidate.
+ *
+ * @param figure figure whose request queue is being processed
+ * @param pending pending pick request
+ * @return true when a matching point or pixel visual exists
+ */
+static bool _scene_pick_request_has_point_like_candidate(
+    const DvzFigure* figure, const DvzPendingPickRequest* pending)
+{
+    ANN(figure);
+    ANN(pending);
+    if (pending->panel == NULL || pending->panel->figure != figure)
+        return false;
+
+    const DvzPanel* panel = pending->panel;
+    for (uint32_t i = 0; i < panel->visual_count; i++)
+    {
+        const DvzVisual* visual = panel->visuals[i].visual;
+        if (visual == NULL || !visual->visible)
+            continue;
+        if (visual->type != DVZ_VISUAL_TYPE_POINT && visual->type != DVZ_VISUAL_TYPE_PIXEL)
+            continue;
+        if ((visual->pick_capabilities & DVZ_PICK_CAPABILITY_ITEM) == 0)
+            continue;
+        if (panel->visuals[i].controller_mode == DVZ_CONTROLLER_FIXED)
+            continue;
+        return true;
+    }
+    return false;
+}
+
+
+/**
+ * Decode a little-endian RGBA8 item id payload.
+ *
+ * @param rgba encoded pick pixel
+ * @param out_item_id decoded zero-based item id
+ * @return true when the pixel contains a non-zero id
+ */
+static bool _scene_decode_pick_rgba(const uint8_t rgba[4], uint64_t* out_item_id)
+{
+    ANN(rgba);
+    ANN(out_item_id);
+    uint32_t encoded =
+        (uint32_t)rgba[0] | ((uint32_t)rgba[1] << 8) | ((uint32_t)rgba[2] << 16);
+    if (encoded == 0)
+        return false;
+    *out_item_id = (uint64_t)encoded - 1;
+    return true;
+}
+
+
+/**
+ * Build a synthetic GPU readback frame plan for one point-like pick request.
+ *
+ * @param figure the parent figure
+ * @param panel the panel receiving the request
+ * @param visual the point or pixel visual to pick
+ * @param pending the pending pick request
+ * @param request_ndc the request coordinate in panel-local NDC
+ * @param out_plan the output plan wrapper
+ * @param out_target_width output offscreen target width
+ * @param out_target_height output offscreen target height
+ * @return true when the plan was assembled
+ */
+static bool _scene_point_like_pick_plan(
+    const DvzFigure* figure, const DvzPanel* panel, DvzVisual* visual,
+    const DvzPendingPickRequest* pending, const vec2 request_ndc, DvzSceneProbePlan* out_plan,
+    uint32_t* out_target_width, uint32_t* out_target_height)
+{
+    ANN(figure);
+    ANN(panel);
+    ANN(visual);
+    ANN(pending);
+    ANN(request_ndc);
+    ANN(out_plan);
+    ANN(out_target_width);
+    ANN(out_target_height);
+
+    int pos_idx = _attr_index(visual, "position");
+    int color_idx = _attr_index(visual, "color");
+    int size_idx = _attr_index(visual, "size");
+    if (pos_idx < 0 || color_idx < 0 || size_idx < 0)
+        return false;
+
+    DvzVisualAttr* pos_attr = &visual->attrs[pos_idx];
+    DvzVisualAttr* color_attr = &visual->attrs[color_idx];
+    DvzVisualAttr* size_attr = &visual->attrs[size_idx];
+    if (pos_attr->data == NULL || color_attr->data == NULL || size_attr->data == NULL ||
+        pos_attr->item_count == 0 || color_attr->item_count != pos_attr->item_count ||
+        size_attr->item_count != pos_attr->item_count || pos_attr->item_size != sizeof(vec3) ||
+        color_attr->item_size != sizeof(DvzColor) || size_attr->item_size != sizeof(float))
+    {
+        return false;
+    }
+
+    uint64_t position_bytes = 0;
+    uint64_t color_bytes = 0;
+    uint64_t size_bytes = 0;
+    if (_dvz_mul_u64_overflows(pos_attr->item_count, pos_attr->item_size, &position_bytes) ||
+        _dvz_mul_u64_overflows(color_attr->item_count, color_attr->item_size, &color_bytes) ||
+        _dvz_mul_u64_overflows(size_attr->item_count, size_attr->item_size, &size_bytes))
+    {
+        log_error("point-like pick request buffer size overflow");
+        return false;
+    }
+
+    double panel_width = panel->desc.width * (double)figure->width;
+    double panel_height = panel->desc.height * (double)figure->height;
+    if (panel_width <= 0.0 || panel_height <= 0.0)
+        return false;
+    uint32_t target_width = (uint32_t)(panel_width + 0.5);
+    uint32_t target_height = (uint32_t)(panel_height + 0.5);
+    if (target_width == 0)
+        target_width = 1;
+    if (target_height == 0)
+        target_height = 1;
+
+    DvzColor* pick_colors = (DvzColor*)dvz_calloc(pos_attr->item_count, sizeof(DvzColor));
+    if (pick_colors == NULL)
+        return false;
+    for (uint64_t i = 0; i < pos_attr->item_count; i++)
+    {
+        uint32_t encoded = (uint32_t)i + 1u;
+        pick_colors[i][0] = (uint8_t)(encoded & 0xFFu);
+        pick_colors[i][1] = (uint8_t)((encoded >> 8u) & 0xFFu);
+        pick_colors[i][2] = (uint8_t)((encoded >> 16u) & 0xFFu);
+        pick_colors[i][3] = 255;
+    }
+
+    DvzFramePlan* plan = dvz_frame_plan("figure.pick", pending->request.request_id);
+    bool ok = plan != NULL;
+    ok = ok && dvz_frame_plan_upload_bytes(
+                   plan, "pick0_position", 0, position_bytes, "position", pos_attr->data) &&
+         dvz_frame_plan_upload_bytes(
+             plan, "pick0_color", 0, color_bytes, "color", pick_colors) &&
+         dvz_frame_plan_upload_bytes(
+             plan, "pick0_size", 0, size_bytes, "size", size_attr->data);
+
+    DvzFramePlanVisualMeta metadata = {0};
+    metadata.has_metadata = true;
+    metadata.visual_type = (uint32_t)visual->type;
+    metadata.alpha_mode = DVZ_ALPHA_OPAQUE;
+    metadata.depth_test_enabled = visual->depth_test_enabled;
+    dvz_strlcpy(metadata.position_id, "pick0_position", sizeof(metadata.position_id));
+    dvz_strlcpy(metadata.color_id, "pick0_color", sizeof(metadata.color_id));
+    dvz_strlcpy(metadata.size_id, "pick0_size", sizeof(metadata.size_id));
+
+    ok = ok && dvz_frame_plan_render_panel(
+                   plan, "panel.pick", "target.pick", true,
+                   (DvzPanelDesc){.x = 0, .y = 0, .width = 1, .height = 1}) &&
+         dvz_frame_plan_render_visual(plan, "pick0") &&
+         dvz_frame_plan_render_visual_metadata(plan, &metadata);
+
+    DvzFramePlanNode* render = plan != NULL ? dvz_frame_plan_last_render_node(plan) : NULL;
+    if (render != NULL)
+    {
+        DvzMVP mvp = {0};
+        _scene_panel_apply_mvp(panel, &mvp);
+        vec2 target_ndc = {
+            -1.0f + 1.0f / (float)target_width,
+            1.0f - 1.0f / (float)target_height,
+        };
+        vec2 delta = {request_ndc[0] - target_ndc[0], request_ndc[1] - target_ndc[1]};
+        mvp.proj[3][0] -= delta[0];
+        mvp.proj[3][1] -= delta[1];
+        render->u.render.has_mvp = true;
+        render->u.render.apply_mvp = mvp;
+        render->u.render.has_viewport = true;
+        render->u.render.viewport =
+            (DvzSceneViewportUniform){0.0f, 0.0f, (float)target_width, (float)target_height};
+        render->u.render.controller_modes[0] = DVZ_CONTROLLER_APPLY;
+    }
+
+    ok = ok && dvz_frame_plan_copy(plan, "target.pick", "buf.pick", 4) &&
+         dvz_frame_plan_readback(plan, "buf.pick", "request.pick");
+    if (!ok)
+    {
+        log_error(
+            "point-like pick request %" PRIu64 " failed to assemble the GPU readback plan",
+            pending->request.request_id);
+        dvz_frame_plan_destroy(plan);
+        dvz_free(pick_colors);
+        return false;
+    }
+
+    out_plan->plan = plan;
+    out_plan->pick_colors = pick_colors;
+    *out_target_width = target_width;
+    *out_target_height = target_height;
+    return true;
+}
+
+
 
 static bool _scene_process_point_pick_request(
-    DvzFigure* figure, DvzDrp2Runtime* runtime, const DvzCapabilitySnapshot* caps,
+    DvzFigure* figure, DvzSceneRequestExecutor* executor, const DvzCapabilitySnapshot* caps,
     const DvzPendingPickRequest* pending)
 {
-    (void)runtime;
     ANN(figure);
     ANN(caps);
     ANN(pending);
@@ -488,19 +695,48 @@ static bool _scene_process_point_pick_request(
     {
         DvzPanelAttach* attach = &panel->visuals[order[oi]];
         DvzVisual* visual = attach->visual;
-        if (visual == NULL || !visual->visible || visual->type != DVZ_VISUAL_TYPE_POINT)
+        if (visual == NULL || !visual->visible)
+            continue;
+        if (visual->type != DVZ_VISUAL_TYPE_POINT && visual->type != DVZ_VISUAL_TYPE_PIXEL)
             continue;
         if ((visual->pick_capabilities & DVZ_PICK_CAPABILITY_ITEM) == 0)
             continue;
         if (attach->controller_mode == DVZ_CONTROLLER_FIXED)
             continue;
 
-        uint64_t picked_id = 0;
-        if (!_scene_point_pick_cpu(figure, panel, visual, pending->x, pending->y, &picked_id))
+        if (executor == NULL || executor->runtime == NULL || executor->emitter == NULL)
+        {
+            log_error("point-like pick request requires a DRP2 runtime");
+            continue;
+        }
+
+        DvzSceneProbePlan pick_plan = {0};
+        uint32_t target_width = 0;
+        uint32_t target_height = 0;
+        if (!_scene_point_like_pick_plan(
+                figure, panel, visual, pending, request_ndc, &pick_plan, &target_width,
+                &target_height))
         {
             _scene_pick_trace(
                 "picker_visual_miss request=%llu visual=%p order_index=%d attach_slot=%u\n",
                 (unsigned long long)pending->request.request_id, (void*)visual, oi, order[oi]);
+            continue;
+        }
+
+        uint8_t rgba[4] = {0};
+        bool executed = false;
+        bool readback_ok = _scene_execute_readback_plan(
+            scene, executor, caps, pick_plan.plan, target_width, target_height, rgba, &executed);
+        _scene_probe_plan_destroy(&pick_plan);
+
+        uint64_t picked_id = 0;
+        if (!readback_ok || !_scene_decode_pick_rgba(rgba, &picked_id))
+        {
+            _scene_pick_trace(
+                "picker_visual_miss request=%llu visual=%p order_index=%d attach_slot=%u "
+                "readback_ok=%d executed=%d rgba=%u,%u,%u,%u\n",
+                (unsigned long long)pending->request.request_id, (void*)visual, oi, order[oi],
+                readback_ok ? 1 : 0, executed ? 1 : 0, rgba[0], rgba[1], rgba[2], rgba[3]);
             continue;
         }
 
@@ -594,7 +830,7 @@ static bool _scene_process_image_probe_request(
         uint8_t rgba[4] = {0};
         bool executed = false;
         bool readback_ok = _scene_execute_readback_plan(
-            scene, executor, caps, probe_plan.plan, rgba, &executed);
+            scene, executor, caps, probe_plan.plan, 1, 1, rgba, &executed);
         if (executed && include_static_uploads)
         {
             _scene_image_probe_mark_static_uploaded(

@@ -19,6 +19,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "datoviz/math/types.h"
 #include "datoviz/scene/enums.h"
 
 
@@ -240,6 +241,17 @@ struct DvzDepthCueDesc
     float background_color[4];
 };
 typedef struct DvzDepthCueDesc DvzDepthCueDesc;
+
+
+struct DvzPointStyleDesc
+{
+    DvzColor edge_color;
+    float line_width;
+    bool filled;
+    bool stroke;
+    bool outline;
+};
+typedef struct DvzPointStyleDesc DvzPointStyleDesc;
 
 
 struct DvzVolumeState
