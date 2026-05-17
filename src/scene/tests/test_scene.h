@@ -625,6 +625,8 @@ int test_app_offscreen_volume_mip_renders_bright_slice(TstSuite* suite, TstItem*
 
 int test_app_offscreen_volume_composite_renders_field(TstSuite* suite, TstItem* item);
 
+int test_app_offscreen_volume_occlusion_slice_renders(TstSuite* suite, TstItem* item);
+
 int test_app_offscreen_volume_depth_occluded_by_primitive(TstSuite* suite, TstItem* item);
 
 int test_app_capture_rejects_wrong_dimensions(TstSuite* suite, TstItem* item);

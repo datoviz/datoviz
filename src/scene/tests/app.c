@@ -192,6 +192,50 @@ static uint64_t _app_rgb_sum(const uint8_t* rgba, uint32_t pixel_count)
 }
 
 
+/**
+ * Render a few app frames and return the last captured RGB luminance sum.
+ *
+ * @param app the offscreen app
+ * @param canvas the app-window canvas
+ * @param frame_count number of frames to render before returning
+ * @param out_width captured width
+ * @param out_height captured height
+ * @param out_sum RGB luminance sum for the final frame
+ * @return whether the capture succeeded
+ */
+static bool _app_capture_rgb_sum(
+    DvzApp* app, DvzCanvas* canvas, uint32_t frame_count, uint32_t* out_width,
+    uint32_t* out_height, uint64_t* out_sum)
+{
+    ANN(app);
+    ANN(canvas);
+    ANN(out_width);
+    ANN(out_height);
+    ANN(out_sum);
+
+    uint32_t width = 0, height = 0;
+    uint8_t* rgba = NULL;
+    for (uint32_t frame = 0; frame < frame_count; frame++)
+    {
+        dvz_app_run(app, 1);
+        if (rgba != NULL)
+            dvz_free(rgba);
+        rgba = NULL;
+        width = 0;
+        height = 0;
+        if (dvz_canvas_capture_rgba(canvas, &width, &height, &rgba) != 0)
+            return false;
+        ANN(rgba);
+    }
+
+    *out_width = width;
+    *out_height = height;
+    *out_sum = _app_rgb_sum(rgba, width * height);
+    dvz_free(rgba);
+    return true;
+}
+
+
 
 #if defined(DVZ_HAS_GLFW) && DVZ_HAS_GLFW
 /**
@@ -3179,6 +3223,101 @@ int test_app_offscreen_volume_composite_renders_field(TstSuite* suite, TstItem* 
 
 
 /**
+ * Ensure volume occlusion and a blended slice render in an offscreen readback.
+ *
+ * @param suite the test suite
+ * @param item the test item
+ * @return 0 on success
+ */
+int test_app_offscreen_volume_occlusion_slice_renders(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    if (!_scene_vklite_runtime_available())
+        return 0;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    ANN(panel);
+
+    DvzSampledField* field = dvz_sampled_field(
+        scene, &(DvzSampledFieldDesc){
+                   .dim = DVZ_FIELD_DIM_3D,
+                   .format = DVZ_FIELD_FORMAT_R8_UNORM,
+                   .semantic = DVZ_FIELD_SEMANTIC_SCALAR,
+                   .width = 2,
+                   .height = 2,
+                   .depth = 4,
+               });
+    ANN(field);
+    const uint8_t voxels[16] = {
+        255, 255, 255, 255,
+        255, 255, 255, 255,
+        255, 255, 255, 255,
+        255, 255, 255, 255,
+    };
+    AT(dvz_sampled_field_set_data(
+        field, &(DvzFieldDataView){.data = voxels, .bytes_per_row = 2, .rows_per_image = 2}));
+
+    DvzVisual* volume = dvz_volume(scene, 0);
+    DvzVisual* slice = dvz_volume(scene, 0);
+    ANN(volume);
+    ANN(slice);
+    AT(dvz_visual_set_field(volume, "field", field));
+    AT(dvz_visual_set_field(slice, "field", field));
+    AT(dvz_volume_set_render_mode(volume, DVZ_VOLUME_RENDER_MIP) == 0);
+    AT(dvz_volume_set_step_count(volume, 16) == 0);
+    AT(dvz_volume_set_opacity(volume, 0.15f) == 0);
+    AT(dvz_visual_set_alpha_mode(volume, DVZ_ALPHA_BLENDED) == 0);
+    AT(dvz_volume_set_render_mode(slice, DVZ_VOLUME_RENDER_SLICE) == 0);
+    AT(dvz_volume_set_slice_axis(slice, DVZ_VOLUME_AXIS_Z) == 0);
+    AT(dvz_volume_set_slice_position(slice, 0.10) == 0);
+    AT(dvz_volume_set_opacity(slice, 0.55f) == 0);
+    AT(dvz_visual_set_alpha_mode(slice, DVZ_ALPHA_BLENDED) == 0);
+    AT(dvz_visual_set_volume_occluded(slice, true) == 0);
+    AT(dvz_panel_add_visual(panel, volume, NULL) == 0);
+    AT(dvz_panel_add_visual(panel, slice, NULL) == 0);
+    AT(dvz_panel_set_volume_occluder(
+           panel, volume,
+           &(DvzVolumeOcclusionDesc){
+               .enabled = true,
+               .alpha_threshold = 0.005f,
+               .fade_distance = 0.02f,
+               .occluded_alpha = 0.05f,
+           }) == 0);
+    dvz_panel_set_background_color(panel, 0.0f, 0.0f, 0.0f, 1.0f);
+
+    DvzApp* app = dvz_app(scene);
+    if (app == NULL)
+    {
+        log_warn("test_app_offscreen_volume_occlusion_slice_renders skipped: GPU context failed");
+        dvz_scene_destroy(scene);
+        return 0;
+    }
+    DvzAppWindow* win = dvz_app_window(app, figure, 64, 64);
+    ANN(win);
+    DvzCanvas* canvas = dvz_app_window_canvas(win);
+    ANN(canvas);
+
+    uint64_t sum = 0;
+    uint32_t width = 0, height = 0;
+    AT(_app_capture_rgb_sum(app, canvas, 3, &width, &height, &sum));
+    AT(width == 64);
+    AT(height == 64);
+    AT(sum > 64 * 64 * 24);
+    AT(sum < 64 * 64 * 765);
+
+    dvz_app_destroy(app);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+/**
  * Ensure alpha-blended volume rays stop behind an opaque primitive depth buffer.
  *
  * @param suite the test suite
@@ -3332,6 +3471,7 @@ int test_scene_app(TstSuite* suite)
     TEST_SIMPLE(test_app_offscreen_volume_slice_renders_field);
     TEST_SIMPLE(test_app_offscreen_volume_mip_renders_bright_slice);
     TEST_SIMPLE(test_app_offscreen_volume_composite_renders_field);
+    TEST_SIMPLE(test_app_offscreen_volume_occlusion_slice_renders);
     TEST_SIMPLE(test_app_offscreen_volume_depth_occluded_by_primitive);
     TEST_SIMPLE(test_app_capture_rejects_wrong_dimensions);
     TEST_SIMPLE(test_app_capture_rejects_undersized_buffer);
