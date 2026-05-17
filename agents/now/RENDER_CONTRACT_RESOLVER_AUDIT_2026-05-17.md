@@ -12,6 +12,30 @@ This report audits whether the proposed render-contract resolver is robust enoug
 authority for the difficult transparency, depth, volume, occlusion, MSAA, EDL, and SSAO cases.
 
 
+## Implementation Progress Log
+
+### 2026-05-17: Phase 0 / FramePlan node-index safety
+
+Completed the first immediate safety slice from the improvement plan.
+
+Changes:
+
+1. Replaced long-lived render-node pointers in `src/scene/scene_emit.c` with node indices for panel
+   render emission.
+2. Added a local mutable-node lookup helper and reacquires `DvzFramePlanNode*` immediately before
+   appending visual metadata.
+3. Added `test_scene_frame_plan_node_reallocation_safe`, which pre-fills a FramePlan to one slot
+   before `DVZ_FRAME_PLAN_INITIAL_NODE_CAPACITY`, then emits a G-buffer panel with two mesh visuals
+   to force node-array growth while preserving visual assignments.
+
+Validation:
+
+1. `cmake --build build --target dvztest_scene -j2`
+2. `./build/testing/dvztest_scene test_scene_frame_plan_node_reallocation_safe`
+3. `./build/testing/dvztest_scene test_scene_gbuffer_runtime_lowering`
+4. `git diff --check -- src/scene/scene_emit.c src/scene/tests/scene_graph.c src/scene/tests/test_scene.h`
+
+
 ## Executive Assessment
 
 The direction is correct and worth continuing. The proposal identifies the right failure mode:

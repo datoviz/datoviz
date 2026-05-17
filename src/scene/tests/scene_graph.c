@@ -6767,6 +6767,84 @@ int test_scene_gbuffer_runtime_lowering(TstSuite* suite, TstItem* item)
 }
 
 
+
+/**
+ * Verify render-node indices survive FramePlan node storage growth during panel emission.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_frame_plan_node_reallocation_safe(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    AT(scene != NULL);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    AT(figure != NULL);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    AT(panel != NULL);
+    _scene_technique_state_enable_gbuffer(&panel->techniques, true);
+
+    float positions[4][3] = {
+        {-0.5f, -0.5f, 0.0f},
+        {0.5f, -0.5f, 0.0f},
+        {-0.5f, 0.5f, 0.0f},
+        {0.5f, 0.5f, 0.0f},
+    };
+    float normals[4][3] = {
+        {0.0f, 0.0f, 1.0f},
+        {0.0f, 0.0f, 1.0f},
+        {0.0f, 0.0f, 1.0f},
+        {0.0f, 0.0f, 1.0f},
+    };
+    DvzIndex indices[6] = {0, 1, 2, 2, 1, 3};
+    DvzSceneBuffer* index_buffer = dvz_scene_buffer(
+        scene, &(DvzSceneBufferDesc){
+                   .usage = DVZ_SCENE_BUFFER_USAGE_INDEX,
+                   .stride = sizeof(DvzIndex),
+               });
+    ANN(index_buffer);
+    AT(dvz_scene_buffer_set_data(index_buffer, indices, sizeof(indices)));
+
+    for (uint32_t i = 0; i < 2; i++)
+    {
+        DvzVisual* mesh = dvz_mesh(scene, 0);
+        AT(mesh != NULL);
+        AT(dvz_visual_set_data(mesh, "position", positions, 4) == 0);
+        AT(dvz_visual_set_data(mesh, "normal", normals, 4) == 0);
+        AT(dvz_visual_set_buffer(mesh, "index", index_buffer));
+        AT(dvz_panel_add_visual(panel, mesh, NULL) == 0);
+    }
+
+    DvzFramePlan* plan = dvz_frame_plan("figure.gbuffer.realloc", 0);
+    ANN(plan);
+    for (uint32_t i = 0; i + 1 < DVZ_FRAME_PLAN_INITIAL_NODE_CAPACITY; i++)
+        AT(dvz_frame_plan_clear_panel(plan, "prefill", "rt", panel->desc));
+    AT(dvz_frame_plan_node_count(plan) == DVZ_FRAME_PLAN_INITIAL_NODE_CAPACITY - 1);
+
+    _scene_emit_panel_render(figure, 0, plan, "figure_0");
+    AT(dvz_frame_plan_node_count(plan) == DVZ_FRAME_PLAN_INITIAL_NODE_CAPACITY + 1);
+
+    const DvzFramePlanNode* gbuffer_node =
+        dvz_frame_plan_node_get(plan, DVZ_FRAME_PLAN_INITIAL_NODE_CAPACITY - 1);
+    const DvzFramePlanNode* opaque_node =
+        dvz_frame_plan_node_get(plan, DVZ_FRAME_PLAN_INITIAL_NODE_CAPACITY);
+    ANN(gbuffer_node);
+    ANN(opaque_node);
+    AT(dvz_frame_plan_render_pass_role(gbuffer_node) == DVZ_FRAME_PLAN_RENDER_PASS_GBUFFER);
+    AT(dvz_frame_plan_render_pass_role(opaque_node) == DVZ_FRAME_PLAN_RENDER_PASS_OPAQUE);
+    AT(gbuffer_node->u.render.visual_count == 2);
+    AT(opaque_node->u.render.visual_count == 2);
+
+    dvz_frame_plan_destroy(plan);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
 /**
  * Verify panel MSAA lowers through graph resources, resolves, and DRP2 pipeline samples.
  *
@@ -9848,6 +9926,7 @@ int test_scene_graph(TstSuite* suite)
     TEST_SIMPLE(test_scene_visual_pass_capabilities);
     TEST_SIMPLE(test_scene_render_contract_validation_errors);
     TEST_SIMPLE(test_scene_gbuffer_runtime_lowering);
+    TEST_SIMPLE(test_scene_frame_plan_node_reallocation_safe);
     TEST_SIMPLE(test_scene_msaa_runtime_lowering);
     TEST_SIMPLE(test_scene_msaa_runtime_capability_lowering);
     TEST_SIMPLE(test_scene_edl_runtime_lowering);
