@@ -672,8 +672,8 @@ bool _scene_technique_emit_wboit_frame_graph(
     if (!_scene_frame_graph_resource_once(plan, &weight))
         return false;
 
-    bool shared_depth = opaque_needs_depth && transparent_needs_depth;
-    if (shared_depth)
+    bool depth_required = opaque_needs_depth || transparent_needs_depth;
+    if (depth_required)
     {
         DvzFrameGraphResource depth = {0};
         dvz_strlcpy(depth.id, depth_id, sizeof(depth.id));
@@ -702,7 +702,7 @@ bool _scene_technique_emit_wboit_frame_graph(
         !color_written);
     if (!dvz_frame_graph_pass_color_attachment(&opaque, &color))
         return false;
-    if (shared_depth)
+    if (opaque_needs_depth)
     {
         _scene_frame_graph_depth_attachment(
             &depth, depth_id, DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_CLEAR,
@@ -726,11 +726,14 @@ bool _scene_technique_emit_wboit_frame_graph(
         &color, weight_id, DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_CLEAR, true);
     if (!dvz_frame_graph_pass_color_attachment(&accum_pass, &color))
         return false;
-    if (shared_depth)
+    if (transparent_needs_depth)
     {
         _scene_frame_graph_depth_attachment(
-            &depth, depth_id, DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_LOAD,
-            DVZ_FRAME_GRAPH_ATTACHMENT_ACCESS_READ);
+            &depth, depth_id,
+            opaque_needs_depth ? DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_LOAD :
+                                 DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_CLEAR,
+            opaque_needs_depth ? DVZ_FRAME_GRAPH_ATTACHMENT_ACCESS_READ :
+                                 DVZ_FRAME_GRAPH_ATTACHMENT_ACCESS_WRITE);
         if (!dvz_frame_graph_pass_depth_attachment(&accum_pass, &depth))
             return false;
     }
@@ -787,8 +790,8 @@ bool _scene_technique_emit_blended_frame_graph(
     if (!_scene_frame_graph_resource_once(plan, &rt))
         return false;
 
-    bool shared_depth = opaque_needs_depth && transparent_needs_depth;
-    if (shared_depth)
+    bool depth_required = opaque_needs_depth || transparent_needs_depth;
+    if (depth_required)
     {
         DvzFrameGraphResource depth = {0};
         dvz_strlcpy(depth.id, depth_id, sizeof(depth.id));
@@ -817,7 +820,7 @@ bool _scene_technique_emit_blended_frame_graph(
         !color_written);
     if (!dvz_frame_graph_pass_color_attachment(&opaque, &color))
         return false;
-    if (shared_depth)
+    if (opaque_needs_depth)
     {
         _scene_frame_graph_depth_attachment(
             &depth, depth_id, DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_CLEAR,
@@ -837,11 +840,14 @@ bool _scene_technique_emit_blended_frame_graph(
         &color, "rt", DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_LOAD, false);
     if (!dvz_frame_graph_pass_color_attachment(&blend, &color))
         return false;
-    if (shared_depth)
+    if (transparent_needs_depth)
     {
         _scene_frame_graph_depth_attachment(
-            &depth, depth_id, DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_LOAD,
-            DVZ_FRAME_GRAPH_ATTACHMENT_ACCESS_READ);
+            &depth, depth_id,
+            opaque_needs_depth ? DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_LOAD :
+                                 DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_CLEAR,
+            opaque_needs_depth ? DVZ_FRAME_GRAPH_ATTACHMENT_ACCESS_READ :
+                                 DVZ_FRAME_GRAPH_ATTACHMENT_ACCESS_WRITE);
         if (!dvz_frame_graph_pass_depth_attachment(&blend, &depth))
             return false;
     }

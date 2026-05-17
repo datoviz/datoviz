@@ -1158,7 +1158,7 @@ static void _scene_visual_pass_caps_resolve(
     bool fixed = controller_mode == DVZ_CONTROLLER_FIXED;
     bool wboit = _alpha_mode_routes_wboit(alpha_mode);
     bool depth_peel = _alpha_mode_routes_depth_peel(alpha_mode);
-    bool transparent_blend = _alpha_mode_uses_source_over(alpha_mode) && volume;
+    bool transparent_blend = _alpha_mode_uses_source_over(alpha_mode);
 
     out->kind = kind;
     out->alpha_mode = alpha_mode;

@@ -4711,15 +4711,18 @@ static bool _emitter_emit_scene_graph_renders(
             uint64_t target_id =
                 _graph_color_attachment_texture_id(
                     graph_pass, 0, color_id, &graph_targets, color_id);
+            const SceneRenderBatch* batch = _render_batch_for_node(batches, batch_count, render);
+            bool has_draws = batch != NULL;
             ok = dvz_drp2_stream_begin_render_pass_region_clear(
                 stream, pass_id, encoder_id, target_id, cr, cg, cb, ca,
                 render->u.render.desc.x, render->u.render.desc.y, render->u.render.desc.width,
                 render->u.render.desc.height, false);
             ok = ok && _stream_apply_graph_color_ops(
                            stream, graph_pass, color_id, &graph_targets);
-            ok = ok && _stream_apply_graph_depth(stream, graph_pass, graph_depth_id);
-            const SceneRenderBatch* batch = _render_batch_for_node(batches, batch_count, render);
-            bool has_draws = batch != NULL;
+            if (ok && graph_depth_id != 0)
+                ok = _stream_apply_graph_depth(stream, graph_pass, graph_depth_id);
+            else if (ok && has_draws && _scene_render_needs_depth(emitter, render))
+                ok = dvz_drp2_stream_begin_render_pass_set_depth(stream, 1.0f);
             if (ok && has_draws)
             {
                 scene_cache.pipeline_id = 0;

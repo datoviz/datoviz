@@ -466,6 +466,10 @@ int test_scene_ssao_ignores_ineligible_visuals(TstSuite* suite, TstItem* item);
 
 int test_scene_visual_alpha_mode_standard_blend(TstSuite* suite, TstItem* item);
 
+int test_scene_blended_mesh_orders_after_volume_slice(TstSuite* suite, TstItem* item);
+
+int test_scene_blended_mesh_occlusion_contracts(TstSuite* suite, TstItem* item);
+
 int test_scene_visual_alpha_mode_splits_frame_plan_passes(TstSuite* suite, TstItem* item);
 
 int test_scene_visual_alpha_mode_depth_peel_frame_plan(TstSuite* suite, TstItem* item);

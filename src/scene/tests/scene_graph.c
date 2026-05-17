@@ -6418,11 +6418,14 @@ int test_scene_visual_pass_capabilities(TstSuite* suite, TstItem* item)
     };
     AT(_scene_visual_pass_caps_from_desc(
         &desc, DVZ_ALPHA_BLENDED, DVZ_CONTROLLER_APPLY, &caps));
-    AT(caps.draws_in_opaque_pass);
+    AT(caps.draws_in_transparent_blend_pass);
+    AT(!caps.draws_in_opaque_pass);
     AT(caps.uses_source_over_blend);
-    AT(caps.writes_depth);
-    AT(caps.eligible_for_depth_postprocess);
-    AT(caps.eligible_for_gbuffer);
+    AT(!caps.writes_depth);
+    AT(caps.can_depth_test);
+    AT(caps.needs_depth_attachment);
+    AT(!caps.eligible_for_depth_postprocess);
+    AT(!caps.eligible_for_gbuffer);
     AT(caps.needs_material_layout);
     AT(caps.uses_material_set);
     AT(caps.supports_depth_cue);
@@ -7797,12 +7800,17 @@ int test_scene_visual_alpha_mode_standard_blend(TstSuite* suite, TstItem* item)
     DvzFramePlan* plan = dvz_frame_plan("figure.alpha.standard", 0);
     ANN(plan);
     _scene_emit_panel_render(figure, 0, plan, "figure_0");
-    AT(dvz_frame_plan_node_count(plan) == 1);
-    const DvzFramePlanNode* render_node = dvz_frame_plan_node_get(plan, 0);
-    ANN(render_node);
-    AT(dvz_frame_plan_render_pass_role(render_node) == DVZ_FRAME_PLAN_RENDER_PASS_OPAQUE);
-    AT(render_node->u.render.visual_count == 2);
-    AT(render_node->u.render.visual_metadata[1].alpha_mode == DVZ_ALPHA_BLENDED);
+    AT(dvz_frame_plan_node_count(plan) == 2);
+    const DvzFramePlanNode* opaque_node = dvz_frame_plan_node_get(plan, 0);
+    const DvzFramePlanNode* transparent_node = dvz_frame_plan_node_get(plan, 1);
+    ANN(opaque_node);
+    ANN(transparent_node);
+    AT(dvz_frame_plan_render_pass_role(opaque_node) == DVZ_FRAME_PLAN_RENDER_PASS_OPAQUE);
+    AT(dvz_frame_plan_render_pass_role(transparent_node) ==
+       DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_BLEND);
+    AT(opaque_node->u.render.visual_count == 1);
+    AT(transparent_node->u.render.visual_count == 1);
+    AT(transparent_node->u.render.visual_metadata[0].alpha_mode == DVZ_ALPHA_BLENDED);
 
     DvzCapabilitySnapshot caps;
     dvz_capability_snapshot_default(&caps);
@@ -7849,13 +7857,352 @@ int test_scene_visual_alpha_mode_standard_blend(TstSuite* suite, TstItem* item)
             begin_pass_count++;
     }
     AT(has_standard_blend_pipeline);
-    AT(begin_pass_count == 1);
+    AT(begin_pass_count == 2);
 
     dvz_drp2_stream_destroy(stream);
     dvz_frame_plan_destroy(plan);
     dvz_scene_destroy(scene);
     return 0;
 }
+
+
+
+/**
+ * Verify source-over blended geometry is ordered with blended volume visuals by z layer.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_blended_mesh_orders_after_volume_slice(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    AT(scene != NULL);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    AT(figure != NULL);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    AT(panel != NULL);
+
+    DvzSampledField* field = dvz_sampled_field(
+        scene, &(DvzSampledFieldDesc){
+                   .dim = DVZ_FIELD_DIM_3D,
+                   .format = DVZ_FIELD_FORMAT_R8_UNORM,
+                   .semantic = DVZ_FIELD_SEMANTIC_SCALAR,
+                   .width = 2,
+                   .height = 2,
+                   .depth = 2,
+               });
+    ANN(field);
+    const uint8_t voxels[8] = {255, 255, 255, 255, 255, 255, 255, 255};
+    AT(dvz_sampled_field_set_data(
+        field, &(DvzFieldDataView){.data = voxels, .bytes_per_row = 2, .rows_per_image = 2}));
+
+    DvzVisual* volume = dvz_volume(scene, 0);
+    DvzVisual* slice = dvz_volume(scene, 0);
+    DvzVisual* mesh = dvz_mesh(scene, 0);
+    AT(volume != NULL);
+    AT(slice != NULL);
+    AT(mesh != NULL);
+
+    float positions[4][3] = {
+        {-0.5f, -0.5f, 0.0f},
+        {0.5f, -0.5f, 0.0f},
+        {-0.5f, 0.5f, 0.0f},
+        {0.5f, 0.5f, 0.0f},
+    };
+    float normals[4][3] = {
+        {0.0f, 0.0f, 1.0f},
+        {0.0f, 0.0f, 1.0f},
+        {0.0f, 0.0f, 1.0f},
+        {0.0f, 0.0f, 1.0f},
+    };
+    DvzIndex indices[6] = {0, 1, 2, 2, 1, 3};
+    DvzSceneBuffer* index_buffer = dvz_scene_buffer(
+        scene, &(DvzSceneBufferDesc){
+                   .usage = DVZ_SCENE_BUFFER_USAGE_INDEX,
+                   .stride = sizeof(DvzIndex),
+               });
+    ANN(index_buffer);
+    AT(dvz_scene_buffer_set_data(index_buffer, indices, sizeof(indices)));
+
+    AT(dvz_visual_set_field(volume, "field", field));
+    AT(dvz_visual_set_field(slice, "field", field));
+    AT(dvz_volume_set_render_mode(volume, DVZ_VOLUME_RENDER_MIP) == 0);
+    AT(dvz_volume_set_render_mode(slice, DVZ_VOLUME_RENDER_SLICE) == 0);
+    AT(dvz_visual_set_alpha_mode(volume, DVZ_ALPHA_BLENDED) == 0);
+    AT(dvz_visual_set_alpha_mode(slice, DVZ_ALPHA_BLENDED) == 0);
+    AT(dvz_visual_set_data(mesh, "position", positions, 4) == 0);
+    AT(dvz_visual_set_data(mesh, "normal", normals, 4) == 0);
+    AT(dvz_visual_set_buffer(mesh, "index", index_buffer));
+    AT(dvz_visual_set_alpha_mode(mesh, DVZ_ALPHA_BLENDED) == 0);
+
+    AT(dvz_panel_add_visual(
+           panel, volume, &(DvzVisualAttachDesc){.z_layer = 0}) == 0);
+    AT(dvz_panel_add_visual(
+           panel, slice, &(DvzVisualAttachDesc){.z_layer = 1}) == 0);
+    AT(dvz_panel_add_visual(
+           panel, mesh, &(DvzVisualAttachDesc){.z_layer = 2}) == 0);
+
+    DvzFramePlan* plan = dvz_frame_plan("figure.alpha.volume_mesh", 0);
+    ANN(plan);
+    _scene_emit_panel_render(figure, 0, plan, "figure_0");
+
+    const DvzFramePlanNode* transparent_node = NULL;
+    for (uint32_t i = 0; i < dvz_frame_plan_node_count(plan); i++)
+    {
+        const DvzFramePlanNode* node = dvz_frame_plan_node_get(plan, i);
+        ANN(node);
+        if (dvz_frame_plan_render_pass_role(node) ==
+            DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_BLEND)
+        {
+            transparent_node = node;
+            break;
+        }
+    }
+    ANN(transparent_node);
+    AT(transparent_node->u.render.visual_count == 3);
+    AT(transparent_node->u.render.visual_metadata[0].visual_index == 0);
+    AT(transparent_node->u.render.visual_metadata[1].visual_index == 1);
+    AT(transparent_node->u.render.visual_metadata[2].visual_index == 2);
+    AT(transparent_node->u.render.visual_metadata[0].visual_type == DVZ_VISUAL_TYPE_VOLUME);
+    AT(transparent_node->u.render.visual_metadata[1].visual_type == DVZ_VISUAL_TYPE_VOLUME);
+    AT(transparent_node->u.render.visual_metadata[2].visual_type == DVZ_VISUAL_TYPE_MESH);
+
+    const DvzFrameGraphPass* blend_pass = NULL;
+    for (uint32_t i = 0; i < dvz_frame_plan_graph_pass_count(plan); i++)
+    {
+        const DvzFrameGraphPass* pass = dvz_frame_plan_graph_pass_get(plan, i);
+        ANN(pass);
+        if (strcmp(pass->work_label, "transparent_blend") == 0)
+            blend_pass = pass;
+    }
+    ANN(blend_pass);
+    AT(blend_pass->has_depth_attachment);
+    AT(strcmp(blend_pass->depth_attachment.resource_id, "figure_0_p0.depth") == 0);
+    AT(blend_pass->depth_attachment.load_op == DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_CLEAR);
+    AT(blend_pass->depth_attachment.access == DVZ_FRAME_GRAPH_ATTACHMENT_ACCESS_WRITE);
+
+    DvzDiagnosticReport graph_report;
+    dvz_diagnostic_report_init(&graph_report);
+    AT(dvz_frame_plan_graph_validate(plan, &graph_report));
+
+    DvzCapabilitySnapshot caps;
+    dvz_capability_snapshot_default(&caps);
+    caps.supports_render_target_sampling = true;
+    caps.supports_color_blending = true;
+    DvzDiagnosticReport report;
+    dvz_diagnostic_report_init(&report);
+    DvzFramePlanEmitConfig cfg = dvz_frame_plan_emit_config();
+    cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
+    cfg.target_width = 64;
+    cfg.target_height = 64;
+    DvzDrp2CommandStream* stream = dvz_figure_emit_ex(figure, &caps, &report, &cfg);
+    ANN(stream);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+    DvzDrp2ValidationResult validation = dvz_drp2_validate_stream(stream);
+    AT(validation.ok);
+    dvz_drp2_stream_destroy(stream);
+
+    dvz_frame_plan_destroy(plan);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
+/**
+ * Verify the volume + slice + source-over mesh occlusion fixture emits consistent contracts.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_blended_mesh_occlusion_contracts(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    AT(scene != NULL);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    AT(figure != NULL);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    AT(panel != NULL);
+
+    DvzSampledField* field = dvz_sampled_field(
+        scene, &(DvzSampledFieldDesc){
+                   .dim = DVZ_FIELD_DIM_3D,
+                   .format = DVZ_FIELD_FORMAT_R8_UNORM,
+                   .semantic = DVZ_FIELD_SEMANTIC_SCALAR,
+                   .width = 2,
+                   .height = 2,
+                   .depth = 2,
+               });
+    ANN(field);
+    const uint8_t voxels[8] = {255, 255, 255, 255, 255, 255, 255, 255};
+    AT(dvz_sampled_field_set_data(
+        field, &(DvzFieldDataView){.data = voxels, .bytes_per_row = 2, .rows_per_image = 2}));
+
+    DvzVisual* volume = dvz_volume(scene, 0);
+    DvzVisual* slice = dvz_volume(scene, 0);
+    DvzVisual* mesh = dvz_mesh(scene, 0);
+    AT(volume != NULL);
+    AT(slice != NULL);
+    AT(mesh != NULL);
+
+    float positions[4][3] = {
+        {-0.5f, -0.5f, 0.1f},
+        {+0.5f, -0.5f, 0.1f},
+        {-0.5f, +0.5f, 0.1f},
+        {+0.5f, +0.5f, 0.1f},
+    };
+    float normals[4][3] = {
+        {0.0f, 0.0f, 1.0f},
+        {0.0f, 0.0f, 1.0f},
+        {0.0f, 0.0f, 1.0f},
+        {0.0f, 0.0f, 1.0f},
+    };
+    DvzColor colors[4] = {
+        {255, 0, 0, 128},
+        {0, 255, 0, 128},
+        {0, 0, 255, 128},
+        {255, 255, 0, 128},
+    };
+    DvzIndex indices[6] = {0, 1, 2, 2, 1, 3};
+    DvzSceneBuffer* index_buffer = dvz_scene_buffer(
+        scene, &(DvzSceneBufferDesc){
+                   .usage = DVZ_SCENE_BUFFER_USAGE_INDEX,
+                   .stride = sizeof(DvzIndex),
+               });
+    ANN(index_buffer);
+    AT(dvz_scene_buffer_set_data(index_buffer, indices, sizeof(indices)));
+
+    AT(dvz_visual_set_field(volume, "field", field));
+    AT(dvz_visual_set_field(slice, "field", field));
+    AT(dvz_volume_set_render_mode(volume, DVZ_VOLUME_RENDER_COMPOSITE) == 0);
+    AT(dvz_volume_set_step_count(volume, 16) == 0);
+    AT(dvz_volume_set_render_mode(slice, DVZ_VOLUME_RENDER_SLICE) == 0);
+    AT(dvz_visual_set_alpha_mode(volume, DVZ_ALPHA_BLENDED) == 0);
+    AT(dvz_visual_set_alpha_mode(slice, DVZ_ALPHA_BLENDED) == 0);
+    AT(dvz_visual_set_volume_occluded(slice, true) == 0);
+    AT(dvz_visual_set_scene_occluded(slice, true) == 0);
+    AT(dvz_visual_set_data(mesh, "position", positions, 4) == 0);
+    AT(dvz_visual_set_data(mesh, "normal", normals, 4) == 0);
+    AT(dvz_visual_set_data(mesh, "color", colors, 4) == 0);
+    AT(dvz_visual_set_buffer(mesh, "index", index_buffer));
+    AT(dvz_visual_set_alpha_mode(mesh, DVZ_ALPHA_BLENDED) == 0);
+    AT(dvz_visual_set_depth_test(mesh, true) == 0);
+    AT(dvz_visual_set_scene_occluder(mesh, true) == 0);
+
+    AT(dvz_panel_add_visual(
+           panel, volume, &(DvzVisualAttachDesc){.z_layer = 0}) == 0);
+    AT(dvz_panel_add_visual(
+           panel, slice, &(DvzVisualAttachDesc){.z_layer = 1}) == 0);
+    AT(dvz_panel_add_visual(
+           panel, mesh, &(DvzVisualAttachDesc){.z_layer = 2}) == 0);
+    AT(dvz_panel_set_volume_occluder(
+           panel, volume,
+           &(DvzVolumeOcclusionDesc){
+               .enabled = true,
+               .alpha_threshold = 0.01f,
+               .fade_distance = 0.04f,
+               .occluded_alpha = 0.2f,
+           }) == 0);
+    AT(dvz_panel_set_scene_occlusion(
+           panel,
+           &(DvzSceneOcclusionDesc){
+               .enabled = true,
+               .depth_bias = 0.0005f,
+               .soft_edge = 0.01f,
+               .hidden_alpha = 0.2f,
+           }) == 0);
+
+    DvzFramePlan* plan = dvz_frame_plan("figure.alpha.volume_mesh_occlusion", 0);
+    ANN(plan);
+    _scene_emit_panel_render(figure, 0, plan, "figure_0");
+
+    const DvzFramePlanNode* blend_node = NULL;
+    for (uint32_t i = 0; i < dvz_frame_plan_node_count(plan); i++)
+    {
+        const DvzFramePlanNode* node = dvz_frame_plan_node_get(plan, i);
+        ANN(node);
+        if (dvz_frame_plan_render_pass_role(node) ==
+            DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_BLEND)
+            blend_node = node;
+    }
+    ANN(blend_node);
+    AT(blend_node->u.render.visual_count == 3);
+    AT(blend_node->u.render.visual_metadata[1].has_volume_occlusion);
+    AT(blend_node->u.render.visual_metadata[1].has_scene_occlusion);
+
+    const DvzFrameGraphPass* volume_pass = NULL;
+    const DvzFrameGraphPass* scene_pass = NULL;
+    const DvzFrameGraphPass* blend_pass = NULL;
+    for (uint32_t i = 0; i < dvz_frame_plan_graph_pass_count(plan); i++)
+    {
+        const DvzFrameGraphPass* pass = dvz_frame_plan_graph_pass_get(plan, i);
+        ANN(pass);
+        if (strcmp(pass->work_label, "volume_occlusion") == 0)
+            volume_pass = pass;
+        else if (strcmp(pass->work_label, "scene_occlusion") == 0)
+            scene_pass = pass;
+        else if (strcmp(pass->work_label, "transparent_blend") == 0)
+            blend_pass = pass;
+    }
+    ANN(volume_pass);
+    ANN(scene_pass);
+    ANN(blend_pass);
+    AT(blend_pass->has_depth_attachment);
+
+    bool reads_volume_occlusion = false;
+    bool reads_scene_occlusion = false;
+    for (uint32_t i = 0; i < blend_pass->read_count; i++)
+    {
+        reads_volume_occlusion =
+            reads_volume_occlusion ||
+            strcmp(blend_pass->reads[i].resource_id,
+                   "figure_0_p0.volume_occlusion.depth") == 0;
+        reads_scene_occlusion =
+            reads_scene_occlusion ||
+            strcmp(blend_pass->reads[i].resource_id,
+                   "figure_0_p0.scene_occlusion.depth") == 0;
+    }
+    AT(reads_volume_occlusion);
+    AT(reads_scene_occlusion);
+
+    DvzDiagnosticReport graph_report;
+    dvz_diagnostic_report_init(&graph_report);
+    AT(dvz_frame_plan_graph_validate(plan, &graph_report));
+
+    DvzCapabilitySnapshot caps;
+    dvz_capability_snapshot_default(&caps);
+    caps.max_color_attachments = 3;
+    caps.render_target_format_rgba16float = true;
+    caps.render_target_format_r16float = true;
+    caps.supports_color_blending = true;
+    caps.supports_render_target_sampling = true;
+    DvzFramePlanEmitConfig cfg = dvz_frame_plan_emit_config();
+    cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
+    cfg.target_width = 64;
+    cfg.target_height = 64;
+
+    DvzDiagnosticReport report;
+    dvz_diagnostic_report_init(&report);
+    DvzDrp2CommandStream* stream = dvz_figure_emit_ex(figure, &caps, &report, &cfg);
+    ANN(stream);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+    DvzDrp2ValidationResult validation = dvz_drp2_validate_stream(stream);
+    AT(validation.ok);
+
+    dvz_drp2_stream_destroy(stream);
+    dvz_frame_plan_destroy(plan);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
 
 
 /**
@@ -9110,6 +9457,8 @@ int test_scene_graph(TstSuite* suite)
     TEST_SIMPLE(test_scene_visual_alpha_mode_emits_wboit_drp2);
     TEST_SIMPLE(test_scene_visual_alpha_mode_wboit_glsl_executes);
     TEST_SIMPLE(test_scene_visual_alpha_mode_depth_peel_glsl_executes);
+    TEST_SIMPLE(test_scene_blended_mesh_orders_after_volume_slice);
+    TEST_SIMPLE(test_scene_blended_mesh_occlusion_contracts);
     TEST_SIMPLE(test_scene_visual_attr_source_and_mutability_metadata);
     TEST_SIMPLE(test_scene_point_external_position_buffer_emits_no_upload);
     TEST_SIMPLE(test_scene_point_external_position_buffer_executes);
