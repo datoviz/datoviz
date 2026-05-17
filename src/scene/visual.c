@@ -211,6 +211,13 @@ static uint32_t _attr_item_size(DvzVisualType type, const char* name)
         if (strcmp(name, "tex_rect") == 0)  return 4 * sizeof(float);
         if (strcmp(name, "texcoords") == 0) return 2 * sizeof(float);
         break;
+    case DVZ_VISUAL_TYPE_TEXT:
+        if (strcmp(name, "position") == 0) return 3 * sizeof(float);
+        if (strcmp(name, "pivot") == 0)    return 2 * sizeof(float);
+        if (strcmp(name, "size") == 0)     return sizeof(float);
+        if (strcmp(name, "color") == 0)    return 4 * sizeof(uint8_t);
+        if (strcmp(name, "angle") == 0)    return sizeof(float);
+        break;
     case DVZ_VISUAL_TYPE_GLYPH:
         if (strcmp(name, "position") == 0)  return 3 * sizeof(float);
         if (strcmp(name, "texcoords") == 0) return 2 * sizeof(float);
@@ -261,6 +268,8 @@ static bool _attr_supported(DvzVisualType type, const char* name, uint32_t* item
         expected = "position_start, position_end, color, stroke_width";
     else if (type == DVZ_VISUAL_TYPE_IMAGE)
         expected = "position, extent, anchor, tex_rect, texcoords";
+    else if (type == DVZ_VISUAL_TYPE_TEXT)
+        expected = "text strings plus position, pivot, size, color, angle";
     else if (type == DVZ_VISUAL_TYPE_GLYPH)
         expected = "position, texcoords, color, plus a bound 2D field";
     else if (type == DVZ_VISUAL_TYPE_VOLUME)
@@ -511,6 +520,8 @@ void _scene_visual_reset(DvzVisual* visual, bool release_owned_resources)
 {
     if (visual == NULL)
         return;
+    if (visual->type == DVZ_VISUAL_TYPE_TEXT && visual->text.glyph_visual != NULL)
+        dvz_visual_set_visible(visual->text.glyph_visual, false);
     _segment_gpu_cache_free(&visual->segment.gpu);
     _path_gpu_cache_free(&visual->path.gpu);
     _image_gpu_cache_free(&visual->image_gpu);
@@ -555,6 +566,15 @@ void _scene_visual_reset(DvzVisual* visual, bool release_owned_resources)
         visual->texture.rgba = NULL;
         visual->texture.rgba_size = 0;
     }
+    if (visual->text.strings != NULL)
+    {
+        for (uint32_t i = 0; i < visual->text.string_count; i++)
+            dvz_free(visual->text.strings[i]);
+        dvz_free(visual->text.strings);
+        visual->text.strings = NULL;
+    }
+    dvz_free(visual->text.spans);
+    visual->text.spans = NULL;
     dvz_memset(visual, sizeof(DvzVisual), 0, sizeof(DvzVisual));
 }
 
@@ -2302,6 +2322,73 @@ int dvz_visual_set_data(
 
 
 /**
+ * Replace one variable-length string attribute on a visual.
+ *
+ * @param visual the visual
+ * @param attr_name the string attribute name
+ * @param strings string array
+ * @param item_count number of strings
+ * @return 0 on success, -1 on error
+ */
+int dvz_visual_set_strings(
+    DvzVisual* visual, const char* attr_name, const char* const* strings, uint32_t item_count)
+{
+    ANN(visual);
+    ANN(attr_name);
+    ANN(strings);
+    if (visual->type != DVZ_VISUAL_TYPE_TEXT || strcmp(attr_name, "text") != 0)
+    {
+        log_error("visual string attribute '%s' is only supported on text visuals", attr_name);
+        return -1;
+    }
+    if (!_scene_visual_mutation_allowed(visual->scene, "mutate scene visual strings"))
+        return -1;
+    if (item_count == 0)
+    {
+        log_error("visual string attribute '%s' requires item_count > 0", attr_name);
+        return -1;
+    }
+
+    char** copy = (char**)dvz_calloc(item_count, sizeof(char*));
+    if (copy == NULL)
+    {
+        log_error("text visual string table allocation failed");
+        return -1;
+    }
+    for (uint32_t i = 0; i < item_count; i++)
+    {
+        const char* src = strings[i] != NULL ? strings[i] : "";
+        size_t len = strlen(src);
+        if (len >= DVZ_SCENE_LABEL_SIZE)
+            len = DVZ_SCENE_LABEL_SIZE - 1u;
+        copy[i] = (char*)dvz_calloc((DvzSize)len + 1u, 1);
+        if (copy[i] == NULL)
+        {
+            for (uint32_t j = 0; j < i; j++)
+                dvz_free(copy[j]);
+            dvz_free(copy);
+            log_error("text visual string allocation failed");
+            return -1;
+        }
+        dvz_memcpy(copy[i], len, src, len);
+        copy[i][len] = '\0';
+    }
+
+    if (visual->text.strings != NULL)
+    {
+        for (uint32_t i = 0; i < visual->text.string_count; i++)
+            dvz_free(visual->text.strings[i]);
+        dvz_free(visual->text.strings);
+    }
+    visual->text.strings = copy;
+    visual->text.string_count = item_count;
+    visual->text.strings_version++;
+    return 0;
+}
+
+
+
+/**
  * Atomically replace several dense visual attribute payloads.
  *
  * @param visual the visual
@@ -2964,6 +3051,27 @@ DvzVisual* dvz_image(DvzScene* scene, uint32_t flags)
 {
     ANN(scene);
     return _scene_alloc_visual(scene, DVZ_VISUAL_TYPE_IMAGE, flags);
+}
+
+
+
+/**
+ * Create a batched text visual.
+ *
+ * @param scene the scene
+ * @param flags variant flags
+ * @return the visual, or NULL on allocation failure
+ */
+DvzVisual* dvz_text(DvzScene* scene, uint32_t flags)
+{
+    ANN(scene);
+    DvzVisual* visual = _scene_alloc_visual(scene, DVZ_VISUAL_TYPE_TEXT, flags);
+    if (visual != NULL)
+    {
+        visual->alpha_mode = DVZ_ALPHA_BLENDED;
+        visual->depth_test_enabled = false;
+    }
+    return visual;
 }
 
 
@@ -3637,6 +3745,8 @@ const char* _visual_type_name(DvzVisualType type)
         return "path";
     case DVZ_VISUAL_TYPE_IMAGE:
         return "image";
+    case DVZ_VISUAL_TYPE_TEXT:
+        return "text";
     case DVZ_VISUAL_TYPE_GLYPH:
         return "glyph";
     case DVZ_VISUAL_TYPE_MESH:

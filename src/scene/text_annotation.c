@@ -1052,6 +1052,311 @@ static bool _annotation_prepare_visual(DvzFigure* figure, DvzAnnotation* annotat
 
 
 
+/**
+ * Return a dense per-item attribute from a visual.
+ *
+ * @param visual the visual
+ * @param name the attribute name
+ * @return the attribute, or NULL when absent
+ */
+static const DvzVisualAttr* _text_visual_attr(const DvzVisual* visual, const char* name)
+{
+    ANN(visual);
+    ANN(name);
+    int idx = _attr_index(visual, name);
+    if (idx < 0)
+        return NULL;
+    const DvzVisualAttr* attr = &visual->attrs[idx];
+    return attr->data != NULL && attr->item_count > 0 ? attr : NULL;
+}
+
+
+
+/**
+ * Resolve a text-visual realization version from strings and per-item attributes.
+ *
+ * @param visual the text visual
+ * @return the realization version
+ */
+static uint64_t _text_visual_version(const DvzVisual* visual)
+{
+    ANN(visual);
+    uint64_t version = visual->text.strings_version;
+    for (uint32_t i = 0; i < visual->attr_count; i++)
+        version += visual->attrs[i].version;
+    return version;
+}
+
+
+
+/**
+ * Update or create the internal glyph visual for one batched text visual.
+ *
+ * @param figure the figure being emitted
+ * @param panel the panel carrying the text visual
+ * @param attach the panel attachment for the text visual
+ * @param visual the batched text visual
+ * @return whether preparation succeeded
+ */
+static bool _text_visual_prepare(
+    DvzFigure* figure, DvzPanel* panel, const DvzPanelAttach* attach, DvzVisual* visual)
+{
+    ANN(figure);
+    ANN(panel);
+    ANN(attach);
+    ANN(visual);
+    if (visual->type != DVZ_VISUAL_TYPE_TEXT)
+        return true;
+    if (!visual->visible)
+    {
+        if (visual->text.glyph_visual != NULL)
+            dvz_visual_set_visible(visual->text.glyph_visual, false);
+        return true;
+    }
+
+    const uint32_t count = visual->text.string_count;
+    const DvzVisualAttr* position_attr = _text_visual_attr(visual, "position");
+    if (count == 0 || visual->text.strings == NULL || position_attr == NULL ||
+        position_attr->item_count != count)
+    {
+        if (visual->text.glyph_visual != NULL)
+            dvz_visual_set_visible(visual->text.glyph_visual, false);
+        return true;
+    }
+
+    const DvzVisualAttr* pivot_attr = _text_visual_attr(visual, "pivot");
+    const DvzVisualAttr* size_attr = _text_visual_attr(visual, "size");
+    const DvzVisualAttr* color_attr = _text_visual_attr(visual, "color");
+    const DvzVisualAttr* angle_attr = _text_visual_attr(visual, "angle");
+    if ((pivot_attr != NULL && pivot_attr->item_count != count) ||
+        (size_attr != NULL && size_attr->item_count != count) ||
+        (color_attr != NULL && color_attr->item_count != count) ||
+        (angle_attr != NULL && angle_attr->item_count != count))
+    {
+        log_error("text visual attributes must match string count");
+        return false;
+    }
+
+    uint64_t version = _text_visual_version(visual);
+    if (visual->text.glyph_visual != NULL && visual->text.realized_version == version &&
+        visual->text.visual_figure_width == figure->width &&
+        visual->text.visual_figure_height == figure->height)
+    {
+        return true;
+    }
+
+    uint64_t vertex_count64 = 0;
+    for (uint32_t i = 0; i < count; i++)
+    {
+        uint32_t columns = 0;
+        uint32_t lines = 0;
+        uint32_t visible = 0;
+        _text_measure_cells(visual->text.strings[i], &columns, &lines, &visible);
+        (void)columns;
+        (void)lines;
+        uint64_t vertices = 0;
+        uint64_t next_vertex_count = 0;
+        if (_dvz_mul_u64_overflows(visible, 6u, &vertices) ||
+            _dvz_add_u64_overflows(vertex_count64, vertices, &next_vertex_count))
+        {
+            log_error("text visual glyph vertex count overflow");
+            return false;
+        }
+        vertex_count64 = next_vertex_count;
+    }
+    if (vertex_count64 == 0)
+    {
+        if (visual->text.glyph_visual != NULL)
+            dvz_visual_set_visible(visual->text.glyph_visual, false);
+        return true;
+    }
+    if (vertex_count64 > UINT32_MAX)
+    {
+        log_error("text visual glyph vertex count exceeds uint32");
+        return false;
+    }
+    uint32_t vertex_count_max = (uint32_t)vertex_count64;
+
+    uint64_t position_bytes = 0;
+    uint64_t texcoord_bytes = 0;
+    uint64_t color_bytes = 0;
+    if (_dvz_mul_u64_overflows(vertex_count_max, 3u * sizeof(float), &position_bytes) ||
+        _dvz_mul_u64_overflows(vertex_count_max, 2u * sizeof(float), &texcoord_bytes) ||
+        _dvz_mul_u64_overflows(vertex_count_max, 4u * sizeof(uint8_t), &color_bytes) ||
+        position_bytes > SIZE_MAX || texcoord_bytes > SIZE_MAX || color_bytes > SIZE_MAX)
+    {
+        log_error("text visual glyph buffer size overflow");
+        return false;
+    }
+
+    float* positions = (float*)dvz_calloc((DvzSize)position_bytes, 1);
+    float* texcoords = (float*)dvz_calloc((DvzSize)texcoord_bytes, 1);
+    uint8_t* colors = (uint8_t*)dvz_calloc((DvzSize)color_bytes, 1);
+    DvzTextGlyphSpan* spans = (DvzTextGlyphSpan*)dvz_calloc(count, sizeof(DvzTextGlyphSpan));
+    if (positions == NULL || texcoords == NULL || colors == NULL || spans == NULL)
+    {
+        dvz_free(positions);
+        dvz_free(texcoords);
+        dvz_free(colors);
+        dvz_free(spans);
+        log_error("text visual glyph allocation failed");
+        return false;
+    }
+
+    const float(*target)[3] = (const float(*)[3])position_attr->data;
+    const float(*pivots)[2] = pivot_attr != NULL ? (const float(*)[2])pivot_attr->data : NULL;
+    const float* sizes = size_attr != NULL ? (const float*)size_attr->data : NULL;
+    const uint8_t(*item_colors)[4] =
+        color_attr != NULL ? (const uint8_t(*)[4])color_attr->data : NULL;
+    const float* angles = angle_attr != NULL ? (const float*)angle_attr->data : NULL;
+    uint32_t vertex_count = 0;
+
+    for (uint32_t i = 0; i < count; i++)
+    {
+        DvzTextStyle style = {
+            .size_pts = sizes != NULL ? sizes[i] : 12.0f,
+            .renderer = DVZ_TEXT_RENDERER_SMALL_BITMAP_ATLAS,
+            .color = {255, 255, 255, 255},
+        };
+        if (item_colors != NULL)
+        {
+            style.color[0] = item_colors[i][0];
+            style.color[1] = item_colors[i][1];
+            style.color[2] = item_colors[i][2];
+            style.color[3] = item_colors[i][3];
+        }
+        uint8_t color[4] = {0};
+        _text_style_color(&style, color);
+
+        uint32_t columns = 0;
+        uint32_t lines = 0;
+        uint32_t visible = 0;
+        _text_measure_cells(visual->text.strings[i], &columns, &lines, &visible);
+        if (columns == 0 || visible == 0)
+        {
+            spans[i].first_glyph = vertex_count / 6u;
+            spans[i].glyph_count = 0;
+            continue;
+        }
+
+        float scale = _text_bitmap_layout_scale(&style);
+        float glyph_w = (float)DVZ_TEXT_BITMAP_GLYPH_WIDTH * scale;
+        float glyph_h = (float)DVZ_TEXT_BITMAP_GLYPH_HEIGHT * scale;
+        float line_h = (float)DVZ_TEXT_BITMAP_LINE_HEIGHT * scale;
+        float width = (float)columns * glyph_w;
+        float height = (float)(lines - 1u) * line_h + glyph_h;
+        float pivot[2] = {0.0f, 0.0f};
+        if (pivots != NULL)
+        {
+            pivot[0] = pivots[i][0];
+            pivot[1] = pivots[i][1];
+        }
+        float align_x = -pivot[0] * width;
+        float align_y = -pivot[1] * height;
+        float angle = angles != NULL ? angles[i] : 0.0f;
+        spans[i].first_glyph = vertex_count / 6u;
+
+        uint32_t column = 0;
+        uint32_t row = 0;
+        uint32_t byte_index = 0;
+        uint32_t cp = 0;
+        while (_text_utf8_next(visual->text.strings[i], &byte_index, &cp))
+        {
+            if (cp == '\n')
+            {
+                column = 0;
+                row++;
+                continue;
+            }
+            if (cp == '\t')
+            {
+                column += 4u;
+                continue;
+            }
+
+            float x0 = align_x + (float)column * glyph_w;
+            float y0 = align_y + (float)row * line_h;
+            float x1 = x0 + glyph_w;
+            float y1 = y0 + glyph_h;
+            float uv[4] = {0};
+            _text_bitmap_atlas_uv(cp, uv);
+            const float xy[6][2] = {
+                {x0, y0}, {x0, y1}, {x1, y0}, {x1, y0}, {x0, y1}, {x1, y1}};
+            const float st[6][2] = {
+                {uv[0], uv[1]}, {uv[0], uv[3]}, {uv[2], uv[1]},
+                {uv[2], uv[1]}, {uv[0], uv[3]}, {uv[2], uv[3]},
+            };
+            for (uint32_t j = 0; j < 6; j++)
+            {
+                _text_corner_position(
+                    figure, target[i][0], target[i][1], xy[j][0], xy[j][1], angle,
+                    target[i][2], &positions[3 * vertex_count]);
+                texcoords[2 * vertex_count + 0] = st[j][0];
+                texcoords[2 * vertex_count + 1] = st[j][1];
+                colors[4 * vertex_count + 0] = color[0];
+                colors[4 * vertex_count + 1] = color[1];
+                colors[4 * vertex_count + 2] = color[2];
+                colors[4 * vertex_count + 3] = color[3];
+                vertex_count++;
+            }
+            column++;
+        }
+        spans[i].glyph_count = vertex_count / 6u - spans[i].first_glyph;
+    }
+
+    DvzSampledField* atlas = _text_bitmap_atlas_field(visual->scene);
+    bool ok = atlas != NULL;
+    if (ok && visual->text.glyph_visual == NULL)
+    {
+        visual->text.glyph_visual = dvz_glyph(visual->scene, 0);
+        if (visual->text.glyph_visual == NULL)
+            ok = false;
+        DvzVisualAttachDesc glyph_attach = {
+            .z_layer = attach->z_layer,
+            .controller_mode = DVZ_CONTROLLER_FIXED,
+        };
+        if (ok && dvz_panel_add_visual(panel, visual->text.glyph_visual, &glyph_attach) != 0)
+            ok = false;
+        if (ok && dvz_visual_set_alpha_mode(visual->text.glyph_visual, DVZ_ALPHA_BLENDED) != 0)
+            ok = false;
+        if (ok && dvz_visual_set_depth_test(visual->text.glyph_visual, false) != 0)
+            ok = false;
+    }
+    if (ok)
+    {
+        DvzVisualDataUpdate updates[3] = {
+            {.attr_name = "position", .data = positions, .item_count = vertex_count},
+            {.attr_name = "texcoords", .data = texcoords, .item_count = vertex_count},
+            {.attr_name = "color", .data = colors, .item_count = vertex_count},
+        };
+        ok = dvz_visual_set_data_many(visual->text.glyph_visual, updates, 3) == 0 &&
+             dvz_visual_set_field(visual->text.glyph_visual, "field", atlas);
+    }
+    if (ok)
+    {
+        dvz_visual_set_visible(visual->text.glyph_visual, true);
+        dvz_free(visual->text.spans);
+        visual->text.spans = spans;
+        visual->text.span_count = count;
+        spans = NULL;
+        visual->text.realized_version = version;
+        visual->text.visual_figure_width = figure->width;
+        visual->text.visual_figure_height = figure->height;
+    }
+    else if (visual->text.glyph_visual != NULL)
+    {
+        dvz_visual_set_visible(visual->text.glyph_visual, false);
+    }
+
+    dvz_free(positions);
+    dvz_free(texcoords);
+    dvz_free(colors);
+    dvz_free(spans);
+    return ok;
+}
+
+
+
 /*************************************************************************************************/
 /*  Internal text realization                                                                    */
 /*************************************************************************************************/
@@ -1066,10 +1371,20 @@ void _scene_prepare_text_visuals(DvzFigure* figure)
     ANN(figure);
     ANN(figure->scene);
     DvzScene* scene = figure->scene;
-    for (uint32_t i = 0; i < scene->text_count; i++)
+    for (uint32_t pi = 0; pi < figure->panel_count; pi++)
     {
-        if (!_text_prepare_visual(figure, &scene->texts[i]))
-            log_error("failed to prepare retained text visual %u", i);
+        DvzPanel* panel = &figure->panels[pi];
+        uint32_t visual_count = panel->visual_count;
+        for (uint32_t vi = 0; vi < visual_count; vi++)
+        {
+            DvzPanelAttach* attach = &panel->visuals[vi];
+            DvzVisual* visual = attach->visual;
+            if (visual != NULL && visual->type == DVZ_VISUAL_TYPE_TEXT &&
+                !_text_visual_prepare(figure, panel, attach, visual))
+            {
+                log_error("failed to prepare batched text visual %u", vi);
+            }
+        }
     }
     for (uint32_t i = 0; i < scene->annotation_count; i++)
     {
@@ -1128,124 +1443,6 @@ void dvz_font_destroy(DvzFont* font)
     if (font == NULL)
         return;
     font->scene = NULL;
-}
-
-
-
-/*************************************************************************************************/
-/*  Text                                                                                         */
-/*************************************************************************************************/
-
-/**
- * Create a retained text object attached to a panel.
- *
- * @param panel the panel
- * @param desc the text descriptor
- * @return the text object, or NULL on allocation failure
- */
-DvzText* dvz_text(DvzPanel* panel, const DvzTextDesc* desc)
-{
-    ANN(panel);
-    ANN(desc);
-    if (panel->figure == NULL || panel->figure->scene == NULL)
-        return NULL;
-    DvzScene* scene = panel->figure->scene;
-    if (scene->text_count >= DVZ_SCENE_MAX_TEXTS)
-    {
-        log_error("maximum text count reached");
-        return NULL;
-    }
-    if (desc->style.font != NULL && desc->style.font->scene != scene)
-    {
-        log_error("cannot bind a font from a different scene");
-        return NULL;
-    }
-    DvzText* text = &scene->texts[scene->text_count++];
-    dvz_memset(text, sizeof(DvzText), 0, sizeof(DvzText));
-    text->scene = scene;
-    text->panel = panel;
-    text->style = desc->style;
-    text->placement = desc->placement;
-    text->flags = desc->flags;
-    text->dirty_flags = DVZ_TEXT_DIRTY_ALL;
-    text->version = 1;
-    if (desc->string != NULL)
-        dvz_strlcpy(text->string, desc->string, sizeof(text->string));
-    return text;
-}
-
-
-
-/**
- * Destroy a retained text object.
- *
- * @param text the text
- */
-void dvz_text_destroy(DvzText* text)
-{
-    if (text == NULL)
-        return;
-    if (text->visual != NULL)
-        dvz_visual_set_visible(text->visual, false);
-    text->scene = NULL;
-    text->panel = NULL;
-}
-
-
-
-/**
- * Update the content string on a retained text object.
- *
- * @param text the text
- * @param string the new string
- */
-void dvz_text_set_string(DvzText* text, const char* string)
-{
-    ANN(text);
-    text->string[0] = '\0';
-    if (string != NULL)
-        dvz_strlcpy(text->string, string, sizeof(text->string));
-    text->dirty_flags |= DVZ_TEXT_DIRTY_STRING | DVZ_TEXT_DIRTY_LAYOUT | DVZ_TEXT_DIRTY_RENDER;
-    text->version++;
-}
-
-
-
-/**
- * Update the style on a retained text object.
- *
- * @param text the text
- * @param style the new style
- */
-void dvz_text_set_style(DvzText* text, const DvzTextStyle* style)
-{
-    ANN(text);
-    ANN(style);
-    if (style->font != NULL && (text->scene == NULL || style->font->scene != text->scene))
-    {
-        log_error("cannot bind a font from a different scene");
-        return;
-    }
-    text->style = *style;
-    text->dirty_flags |= DVZ_TEXT_DIRTY_STYLE | DVZ_TEXT_DIRTY_LAYOUT | DVZ_TEXT_DIRTY_RENDER;
-    text->version++;
-}
-
-
-
-/**
- * Update the placement on a retained text object.
- *
- * @param text the text
- * @param placement the new placement
- */
-void dvz_text_set_placement(DvzText* text, const DvzTextPlacement* placement)
-{
-    ANN(text);
-    ANN(placement);
-    text->placement = *placement;
-    text->dirty_flags |= DVZ_TEXT_DIRTY_PLACEMENT | DVZ_TEXT_DIRTY_LAYOUT | DVZ_TEXT_DIRTY_RENDER;
-    text->version++;
 }
 
 

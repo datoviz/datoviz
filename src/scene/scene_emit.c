@@ -996,6 +996,8 @@ void _scene_emit_visual_uploads(DvzFigure* figure, DvzFramePlan* plan)
             DvzVisual* visual = panel->visuals[vi].visual;
             if (visual == NULL || !visual->visible)
                 continue;
+            if (visual->type == DVZ_VISUAL_TYPE_TEXT)
+                continue;
             uint32_t vidx = 0;
             if (!_figure_visual_index(figure, visual, &vidx))
                 continue;
@@ -1571,7 +1573,8 @@ static bool _scene_panel_has_visible_volume_occlusion_target(const DvzPanel* pan
     for (uint32_t i = 0; i < panel->visual_count; i++)
     {
         const DvzVisual* visual = panel->visuals[i].visual;
-        if (visual == NULL || !visual->visible || !visual->volume_occluded ||
+        if (visual == NULL || !visual->visible || visual->type == DVZ_VISUAL_TYPE_TEXT ||
+            !visual->volume_occluded ||
             visual == panel->volume_occluder_visual)
             continue;
         int pos_idx = _attr_index(
@@ -1592,6 +1595,8 @@ static bool _scene_panel_has_visible_volume_occlusion_target(const DvzPanel* pan
 static bool _scene_visual_is_visible_drawable(const DvzVisual* visual)
 {
     if (visual == NULL || !visual->visible)
+        return false;
+    if (visual->type == DVZ_VISUAL_TYPE_TEXT)
         return false;
     int pos_idx = _attr_index(
         visual, visual->type == DVZ_VISUAL_TYPE_SEGMENT ? "position_start" : "position");
@@ -1717,6 +1722,8 @@ void _scene_emit_panel_render(
         DvzVisual* visual = panel->visuals[vi].visual;
         if (visual == NULL || !visual->visible)
             continue;
+        if (visual->type == DVZ_VISUAL_TYPE_TEXT)
+            continue;
         uint32_t vidx = 0;
         if (!_figure_visual_index(figure, visual, &vidx))
             continue;
@@ -1836,6 +1843,8 @@ void _scene_emit_panel_render(
         DvzVisual* visual = attach->visual;
         if (visual == NULL || !visual->visible)
             continue;
+        if (visual->type == DVZ_VISUAL_TYPE_TEXT)
+            continue;
         uint32_t vidx = 0;
         if (!_figure_visual_index(figure, visual, &vidx))
             continue;
@@ -1900,6 +1909,8 @@ void _scene_emit_panel_render(
         DvzPanelAttach* attach = &panel->visuals[vi];
         DvzVisual* visual = attach->visual;
         if (visual == NULL || !visual->visible)
+            continue;
+        if (visual->type == DVZ_VISUAL_TYPE_TEXT)
             continue;
         DvzSceneVisualPassCaps caps = {0};
         if (!_scene_visual_pass_caps_from_visual(visual, attach, &caps))

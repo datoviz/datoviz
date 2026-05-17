@@ -63,7 +63,6 @@ typedef struct DvzScale             DvzScale;
 typedef struct DvzColormap          DvzColormap;
 typedef struct DvzColorbar          DvzColorbar;
 typedef struct DvzFont              DvzFont;
-typedef struct DvzText              DvzText;
 typedef struct DvzAnnotation        DvzAnnotation;
 typedef struct DvzAxis              DvzAxis;
 
@@ -561,16 +560,6 @@ struct DvzTextPlacement
     bool depth_test;
 };
 typedef struct DvzTextPlacement DvzTextPlacement;
-
-
-struct DvzTextDesc
-{
-    const char* string;
-    DvzTextStyle style;
-    DvzTextPlacement placement;
-    uint32_t flags;
-};
-typedef struct DvzTextDesc DvzTextDesc;
 
 
 struct DvzAnnotationDesc

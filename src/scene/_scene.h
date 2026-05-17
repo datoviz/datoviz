@@ -81,6 +81,7 @@ typedef enum
     DVZ_VISUAL_TYPE_PRIMITIVE = 9,
     DVZ_VISUAL_TYPE_SPHERE    = 10,
     DVZ_VISUAL_TYPE_GLYPH     = 11,
+    DVZ_VISUAL_TYPE_TEXT      = 12,
 } DvzVisualType;
 
 
@@ -628,6 +629,31 @@ struct DvzPathState
 };
 
 
+typedef struct DvzTextGlyphSpan DvzTextGlyphSpan;
+
+struct DvzTextGlyphSpan
+{
+    uint32_t first_glyph;
+    uint32_t glyph_count;
+};
+
+
+typedef struct DvzTextVisualState DvzTextVisualState;
+
+struct DvzTextVisualState
+{
+    char** strings;
+    uint32_t string_count;
+    uint64_t strings_version;
+    DvzTextGlyphSpan* spans;
+    uint32_t span_count;
+    DvzVisual* glyph_visual;
+    uint64_t realized_version;
+    uint32_t visual_figure_width;
+    uint32_t visual_figure_height;
+};
+
+
 typedef struct DvzImageGpuCache DvzImageGpuCache;
 
 struct DvzImageGpuCache
@@ -715,6 +741,7 @@ struct DvzVisual
     bool                   material_params_dirty;
     DvzSegmentState        segment;
     DvzPathState           path;
+    DvzTextVisualState     text;
     DvzImageGpuCache       image_gpu;
     DvzSphereMode          sphere_mode;
     bool                   mesh_default_color;
@@ -959,9 +986,6 @@ struct DvzScene
 
     uint32_t font_count;
     DvzFont fonts[DVZ_SCENE_MAX_FONTS];
-
-    uint32_t text_count;
-    DvzText texts[DVZ_SCENE_MAX_TEXTS];
 
     uint32_t annotation_count;
     DvzAnnotation annotations[DVZ_SCENE_MAX_ANNOTATIONS];

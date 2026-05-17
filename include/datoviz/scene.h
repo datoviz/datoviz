@@ -711,6 +711,8 @@ dvz_visual_attr_mutability(const DvzVisual* visual, const char* attr_name);
  * image: legacy `"position"` (vec3f) + `"texcoords"` (vec2f) corner vertices, or
  *        per-item `"position"` (vec3f) + `"extent"` (vec2f) with optional `"tex_rect"`
  *        (vec4f) and `"anchor"` (vec2f)
+ * text: string attribute `"text"` plus per-string `"position"` (vec3f pixels), optional
+ *       `"pivot"` (vec2f), `"size"` (float points), `"color"` (RGBA8), `"angle"` (float radians)
  * glyph: `"position"` (vec3f), `"texcoords"` (vec2f), `"color"` (RGBA8)
  *
  * All configured attributes on one visual must use the same item_count. This
@@ -724,6 +726,22 @@ dvz_visual_attr_mutability(const DvzVisual* visual, const char* attr_name);
  */
 DVZ_EXPORT int dvz_visual_set_data(DvzVisual* visual, const char* attr_name, const void* data,
                                     uint32_t item_count);
+
+
+/**
+ * Write variable-length string data to a visual.
+ *
+ * Text visuals accept the `"text"` string attribute. The item count must match any configured
+ * per-item dense attributes.
+ *
+ * @param visual the visual
+ * @param attr_name string attribute name
+ * @param strings string array
+ * @param item_count number of strings
+ * @return 0 on success, -1 on error
+ */
+DVZ_EXPORT int dvz_visual_set_strings(
+    DvzVisual* visual, const char* attr_name, const char* const* strings, uint32_t item_count);
 
 
 /**
@@ -1132,6 +1150,19 @@ DVZ_EXPORT int dvz_path_set_subpaths(
  * @return the visual
  */
 DVZ_EXPORT DvzVisual* dvz_image(DvzScene* scene, uint32_t flags);
+
+
+/**
+ * Create a batched text visual.
+ *
+ * Text visuals render one string per item. Use `dvz_visual_set_strings(text, "text", ...)` and
+ * regular visual data attributes for positions, pivots, sizes, colors, and angles.
+ *
+ * @param scene the scene
+ * @param flags variant flags
+ * @return the visual
+ */
+DVZ_EXPORT DvzVisual* dvz_text(DvzScene* scene, uint32_t flags);
 
 
 /**
