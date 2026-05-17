@@ -110,6 +110,41 @@ int test_axis_domain_and_ticks(TstSuite* suite, TstItem* item)
 }
 
 
+int test_panel_data_to_visual_positions(TstSuite* suite, TstItem* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 800, 600, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
+    ANN(panel);
+
+    float data[] = {0.0f, -5.0f, 2.0f, 5.0f, 5.0f, 3.0f, 10.0f, 0.0f, 4.0f};
+    float visual[9] = {0};
+    AT(dvz_panel_data_to_visual_positions(panel, data, visual, 3) == 0);
+    AT(fabsf(visual[0] - 0.0f) < 1e-6f);
+    AT(fabsf(visual[1] + 5.0f) < 1e-6f);
+    AT(fabsf(visual[2] - 2.0f) < 1e-6f);
+
+    AT(dvz_panel_set_domain(panel, DVZ_DIM_X, 0.0, 10.0) == 0);
+    AT(dvz_panel_set_domain(panel, DVZ_DIM_Y, -5.0, 5.0) == 0);
+    AT(dvz_panel_data_to_visual_positions(panel, data, visual, 3) == 0);
+    AT(fabsf(visual[0] + 1.0f) < 1e-6f);
+    AT(fabsf(visual[1] + 1.0f) < 1e-6f);
+    AT(fabsf(visual[3] - 0.0f) < 1e-6f);
+    AT(fabsf(visual[4] - 1.0f) < 1e-6f);
+    AT(fabsf(visual[6] - 1.0f) < 1e-6f);
+    AT(fabsf(visual[7] - 0.0f) < 1e-6f);
+    AT(fabsf(visual[8] - 4.0f) < 1e-6f);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
 int test_axis_panzoom_visible_domain(TstSuite* suite, TstItem* item)
 {
     (void)suite;
@@ -227,6 +262,7 @@ int test_scene_axis(TstSuite* suite)
     const char* tags = "scene,axis";
 
     TEST_SIMPLE(test_axis_domain_and_ticks);
+    TEST_SIMPLE(test_panel_data_to_visual_positions);
     TEST_SIMPLE(test_axis_panzoom_visible_domain);
     TEST_SIMPLE(test_axis_dynamic_segment_draw_count);
     return 0;

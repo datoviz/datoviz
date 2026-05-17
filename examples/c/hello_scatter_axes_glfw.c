@@ -39,34 +39,14 @@ static float _randf(void)
 
 
 /**
- * Map a data coordinate to visual coordinates for the current WIP axis slice.
- *
- * @param value data value
- * @param min data-domain minimum
- * @param max data-domain maximum
- * @return visual coordinate in [-1, +1]
- */
-static float _data_to_visual(float value, float min, float max)
-{
-    return -1.0f + 2.0f * (value - min) / (max - min);
-}
-
-
-
-/**
  * Fill scatter arrays with synthetic clustered points.
  *
- * @param positions output visual-space positions
+ * @param positions output data-space positions
  * @param colors output RGBA colors
  * @param sizes output diameters in pixels
  */
 static void _make_scatter(float positions[N][3], uint8_t colors[N][4], float sizes[N])
 {
-    const float xmin = -5.0f;
-    const float xmax = +5.0f;
-    const float ymin = -3.0f;
-    const float ymax = +3.0f;
-
     for (uint32_t i = 0; i < N; i++)
     {
         float t = (float)i / (float)(N - 1);
@@ -75,8 +55,8 @@ static void _make_scatter(float positions[N][3], uint8_t colors[N][4], float siz
         float x = radius * cosf(angle) + 0.35f * (_randf() - 0.5f);
         float y = radius * sinf(angle) + 0.35f * (_randf() - 0.5f);
 
-        positions[i][0] = _data_to_visual(x, xmin, xmax);
-        positions[i][1] = _data_to_visual(y, ymin, ymax);
+        positions[i][0] = x;
+        positions[i][1] = y;
         positions[i][2] = 0.0f;
 
         colors[i][0] = (uint8_t)(40.0f + 215.0f * t);
@@ -126,18 +106,27 @@ int main(void)
         return 1;
     }
 
-    float positions[N][3];
+    float data_positions[N][3];
+    float visual_positions[N][3];
     uint8_t colors[N][4];
     float sizes[N];
-    _make_scatter(positions, colors, sizes);
+    _make_scatter(data_positions, colors, sizes);
 
-    dvz_visual_set_data(visual, "position", positions, N);
+    dvz_panel_set_domain(panel, DVZ_DIM_X, -5.0, +5.0);
+    dvz_panel_set_domain(panel, DVZ_DIM_Y, -3.0, +3.0);
+    if (dvz_panel_data_to_visual_positions(panel, &data_positions[0][0], &visual_positions[0][0], N)
+        != 0)
+    {
+        fprintf(stderr, "dvz_panel_data_to_visual_positions() failed\n");
+        dvz_scene_destroy(scene);
+        return 1;
+    }
+
+    dvz_visual_set_data(visual, "position", visual_positions, N);
     dvz_visual_set_data(visual, "color", colors, N);
     dvz_visual_set_data(visual, "diameter", sizes, N);
     dvz_panel_add_visual(panel, visual, NULL);
 
-    dvz_panel_set_domain(panel, DVZ_DIM_X, -5.0, +5.0);
-    dvz_panel_set_domain(panel, DVZ_DIM_Y, -3.0, +3.0);
     DvzAxis* x_axis = dvz_panel_axis(panel, DVZ_DIM_X);
     DvzAxis* y_axis = dvz_panel_axis(panel, DVZ_DIM_Y);
     dvz_axis_set_grid(x_axis, true);

@@ -436,6 +436,50 @@ int dvz_panel_set_domain(DvzPanel* panel, DvzDim dim, double min, double max)
 }
 
 
+/**
+ * Normalize tightly packed 3D data positions through the panel X/Y domains.
+ *
+ * @param panel the panel
+ * @param data_positions tightly packed input positions, 3 floats per item
+ * @param visual_positions tightly packed output positions, 3 floats per item
+ * @param count number of positions
+ * @return 0 on success, -1 on validation error
+ */
+int dvz_panel_data_to_visual_positions(
+    DvzPanel* panel, const float* data_positions, float* visual_positions, uint32_t count)
+{
+    if (panel == NULL || data_positions == NULL || visual_positions == NULL)
+        return -1;
+    DvzAxis* x_axis = _panel_axis_slot(panel, DVZ_DIM_X);
+    DvzAxis* y_axis = _panel_axis_slot(panel, DVZ_DIM_Y);
+    bool has_x = x_axis != NULL && x_axis->panel != NULL;
+    bool has_y = y_axis != NULL && y_axis->panel != NULL;
+    if (has_x && fabs(x_axis->domain.max - x_axis->domain.min) < AXIS_EPS)
+        return -1;
+    if (has_y && fabs(y_axis->domain.max - y_axis->domain.min) < AXIS_EPS)
+        return -1;
+
+    for (uint32_t i = 0; i < count; i++)
+    {
+        float x = data_positions[3 * i + 0];
+        float y = data_positions[3 * i + 1];
+        float z = data_positions[3 * i + 2];
+        if (!isfinite(x) || !isfinite(y) || !isfinite(z))
+            return -1;
+        visual_positions[3 * i + 0] = has_x ?
+                                          _axis_data_to_visual(
+                                              (double)x, x_axis->domain.min, x_axis->domain.max) :
+                                          x;
+        visual_positions[3 * i + 1] = has_y ?
+                                          _axis_data_to_visual(
+                                              (double)y, y_axis->domain.min, y_axis->domain.max) :
+                                          y;
+        visual_positions[3 * i + 2] = z;
+    }
+    return 0;
+}
+
+
 
 /**
  * Return a panel-owned axis, creating its fixed segment visual on first use.

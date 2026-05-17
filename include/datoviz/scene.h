@@ -356,6 +356,22 @@ DVZ_EXPORT int dvz_panel_set_domain(DvzPanel* panel, DvzDim dim, double min, dou
 
 
 /**
+ * Normalize tightly packed 3D data positions through the panel X/Y domains.
+ *
+ * X and Y are mapped from data coordinates into panel visual coordinates in [-1, +1]. Z is copied
+ * unchanged. Unset domains fall back to pass-through visual coordinates for that dimension.
+ *
+ * @param panel the panel
+ * @param data_positions tightly packed input positions, 3 floats per item
+ * @param visual_positions tightly packed output positions, 3 floats per item
+ * @param count number of positions
+ * @return 0 on success, -1 on validation error
+ */
+DVZ_EXPORT int dvz_panel_data_to_visual_positions(
+    DvzPanel* panel, const float* data_positions, float* visual_positions, uint32_t count);
+
+
+/**
  * Return a panel-owned axis, creating its WIP geometry visual on first use.
  *
  * @param panel the panel

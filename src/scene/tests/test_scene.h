@@ -30,6 +30,8 @@ int test_scene_axis(TstSuite* suite);
 
 int test_axis_domain_and_ticks(TstSuite* suite, TstItem* item);
 
+int test_panel_data_to_visual_positions(TstSuite* suite, TstItem* item);
+
 int test_axis_panzoom_visible_domain(TstSuite* suite, TstItem* item);
 
 int test_axis_dynamic_segment_draw_count(TstSuite* suite, TstItem* item);
