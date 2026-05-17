@@ -99,6 +99,33 @@ int test_panzoom_zoom_wheel(TstSuite* suite, TstItem* item)
 }
 
 
+int test_panzoom_zoom_limits(TstSuite* suite, TstItem* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzPanzoom* pz = dvz_panzoom(800.0f, 800.0f, 0);
+    ANN(pz);
+
+    AT(dvz_panzoom_zoom_limits(pz, (vec2){0.5f, 0.25f}, (vec2){4.0f, 8.0f}));
+    dvz_panzoom_zoom(pz, (vec2){0.01f, 100.0f});
+    AT(fabsf(pz->zoom[0] - 0.5f) < 1e-6f);
+    AT(fabsf(pz->zoom[1] - 8.0f) < 1e-6f);
+
+    dvz_panzoom_zoom(pz, (vec2){1.0f, 1.0f});
+    dvz_panzoom_end(pz);
+    dvz_panzoom_zoom_shift(pz, (vec2){100000.0f, -100000.0f}, (vec2){400.0f, 400.0f});
+    AT(pz->zoom[0] <= 4.0f);
+    AT(pz->zoom[1] >= 0.25f);
+
+    AT(!dvz_panzoom_zoom_limits(pz, (vec2){0.0f, 0.25f}, (vec2){4.0f, 8.0f}));
+    AT(!dvz_panzoom_zoom_limits(pz, (vec2){2.0f, 0.25f}, (vec2){1.0f, 8.0f}));
+
+    dvz_panzoom_destroy(pz);
+    return 0;
+}
+
+
 int test_panzoom_viewport_filters_pointer_events(TstSuite* suite, TstItem* item)
 {
     (void)suite;
@@ -549,6 +576,7 @@ int test_scene_panzoom_arcball(TstSuite* suite)
     TEST_SIMPLE(test_panzoom_create_reset);
     TEST_SIMPLE(test_panzoom_pan_shift);
     TEST_SIMPLE(test_panzoom_zoom_wheel);
+    TEST_SIMPLE(test_panzoom_zoom_limits);
     TEST_SIMPLE(test_panzoom_viewport_filters_pointer_events);
     TEST_SIMPLE(test_panzoom_double_click_resets);
     TEST_SIMPLE(test_panzoom_mvp_identity);

@@ -260,6 +260,8 @@ static void _axis_compute_ticks(DvzAxis* axis)
         target = DVZ_SCENE_MAX_AXIS_TICKS;
 
     double range = max - min;
+    if (!isfinite(range) || range <= AXIS_EPS)
+        return;
     double raw_step = range / (double)target;
     double step = _axis_nice_number(raw_step, true);
     if (axis->tick_lstep > 0.0 && isfinite(axis->tick_lstep))
@@ -268,9 +270,13 @@ static void _axis_compute_ticks(DvzAxis* axis)
         if (current_density >= 0.5 * (double)target && current_density <= 2.0 * (double)target)
             step = axis->tick_lstep;
     }
+    if (!isfinite(step) || step <= AXIS_EPS)
+        return;
 
     double lmin = floor(min / step) * step;
     double lmax = ceil(max / step) * step;
+    if (!isfinite(lmin) || !isfinite(lmax) || !(lmax >= lmin))
+        return;
     axis->tick_lmin = lmin;
     axis->tick_lmax = lmax;
     axis->tick_lstep = step;

@@ -77,6 +77,9 @@ struct DvzPanzoom
     vec2 pan_center;
     vec2 zoom;
     vec2 zoom_center;
+    vec2 zoom_min;
+    vec2 zoom_max;
+    bool has_zoom_limits;
 
     vec2 pan_lock;
     vec2 zoom_lock;
@@ -135,6 +138,17 @@ DVZ_EXPORT void dvz_panzoom_pan(DvzPanzoom* pz, vec2 pan);
  * Set the zoom factors.
  */
 DVZ_EXPORT void dvz_panzoom_zoom(DvzPanzoom* pz, vec2 zoom);
+
+
+/**
+ * Set zoom limits.
+ *
+ * @param pz the panzoom controller
+ * @param min_zoom minimum zoom factors
+ * @param max_zoom maximum zoom factors
+ * @return whether the limits were accepted
+ */
+DVZ_EXPORT bool dvz_panzoom_zoom_limits(DvzPanzoom* pz, vec2 min_zoom, vec2 max_zoom);
 
 
 /**

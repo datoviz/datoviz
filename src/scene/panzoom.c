@@ -32,6 +32,8 @@
 #define FLOAT_MIN +1e-5f
 #define FLOAT_MAX +1e+5f
 #define BOX_MIN   +1e-12
+#define DVZ_PANZOOM_ZOOM_MIN_DEFAULT 1e-3f
+#define DVZ_PANZOOM_ZOOM_MAX_DEFAULT 1e+4f
 
 #if defined(__APPLE__)
 #define DVZ_PANZOOM_ZOOM_DRAG_COEF  .003
@@ -50,6 +52,46 @@
 static inline bool _too_small(float v) { return fabsf(v) < FLOAT_MIN; }
 static inline bool _too_large(float v) { return fabsf(v) > FLOAT_MAX; }
 static inline bool _out_of_range(float v) { return _too_small(v) || _too_large(v); }
+
+
+/**
+ * Clamp one zoom factor to the configured limits.
+ *
+ * @param pz the panzoom controller
+ * @param dim axis dimension
+ * @param value requested zoom
+ * @return clamped zoom
+ */
+static float _clamp_zoom_value(const DvzPanzoom* pz, uint32_t dim, float value)
+{
+    ANN(pz);
+    if (!isfinite(value) || value <= 0.0f)
+        value = 1.0f;
+    if (!pz->has_zoom_limits || dim >= 2)
+        return value;
+    if (value < pz->zoom_min[dim])
+        return pz->zoom_min[dim];
+    if (value > pz->zoom_max[dim])
+        return pz->zoom_max[dim];
+    return value;
+}
+
+
+
+/**
+ * Clamp current zoom and drag baseline to the configured limits.
+ *
+ * @param pz the panzoom controller
+ */
+static void _clamp_zoom(DvzPanzoom* pz)
+{
+    ANN(pz);
+    for (uint32_t dim = 0; dim < 2; dim++)
+    {
+        pz->zoom[dim] = _clamp_zoom_value(pz, dim, pz->zoom[dim]);
+        pz->zoom_center[dim] = _clamp_zoom_value(pz, dim, pz->zoom_center[dim]);
+    }
+}
 
 
 
@@ -276,9 +318,12 @@ DvzPanzoom* dvz_panzoom(float width, float height, int flags)
     ASSERT(width > 0);
     ASSERT(height > 0);
 
-    DvzPanzoom* pz = (DvzPanzoom*)calloc(1, sizeof(DvzPanzoom));
+    DvzPanzoom* pz = (DvzPanzoom*)dvz_calloc(1, sizeof(DvzPanzoom));
     pz->viewport_size[0] = width;
     pz->viewport_size[1] = height;
+    pz->zoom_min[0] = pz->zoom_min[1] = DVZ_PANZOOM_ZOOM_MIN_DEFAULT;
+    pz->zoom_max[0] = pz->zoom_max[1] = DVZ_PANZOOM_ZOOM_MAX_DEFAULT;
+    pz->has_zoom_limits = true;
     pz->flags = flags;
     dvz_panzoom_reset(pz);
     return pz;
@@ -293,6 +338,7 @@ void dvz_panzoom_reset(DvzPanzoom* pz)
     memset(pz->pan_center, 0, sizeof(pz->pan_center));
     pz->zoom[0] = pz->zoom[1] = 1.0f;
     pz->zoom_center[0] = pz->zoom_center[1] = 1.0f;
+    _clamp_zoom(pz);
     memset(pz->pan_locked, 0, sizeof(pz->pan_locked));
     memset(pz->zoom_locked, 0, sizeof(pz->zoom_locked));
 }
@@ -343,7 +389,33 @@ void dvz_panzoom_pan(DvzPanzoom* pz, vec2 pan)
 void dvz_panzoom_zoom(DvzPanzoom* pz, vec2 zoom)
 {
     ANN(pz);
-    glm_vec2_copy(zoom, pz->zoom);
+    pz->zoom[0] = _clamp_zoom_value(pz, 0, zoom[0]);
+    pz->zoom[1] = _clamp_zoom_value(pz, 1, zoom[1]);
+}
+
+
+/**
+ * Set zoom limits.
+ *
+ * @param pz the panzoom controller
+ * @param min_zoom minimum zoom factors
+ * @param max_zoom maximum zoom factors
+ * @return whether the limits were accepted
+ */
+bool dvz_panzoom_zoom_limits(DvzPanzoom* pz, vec2 min_zoom, vec2 max_zoom)
+{
+    ANN(pz);
+    for (uint32_t dim = 0; dim < 2; dim++)
+    {
+        if (!isfinite(min_zoom[dim]) || !isfinite(max_zoom[dim]) || min_zoom[dim] <= 0.0f ||
+            max_zoom[dim] < min_zoom[dim])
+            return false;
+    }
+    glm_vec2_copy(min_zoom, pz->zoom_min);
+    glm_vec2_copy(max_zoom, pz->zoom_max);
+    pz->has_zoom_limits = true;
+    _clamp_zoom(pz);
+    return true;
 }
 
 
@@ -358,7 +430,8 @@ bool dvz_panzoom_extent(const DvzPanzoom* pz, float out[4])
 {
     ANN(pz);
     ANN(out);
-    if (pz->zoom[0] <= 0.0f || pz->zoom[1] <= 0.0f)
+    if (!isfinite(pz->zoom[0]) || !isfinite(pz->zoom[1]) || pz->zoom[0] <= 0.0f ||
+        pz->zoom[1] <= 0.0f)
         return false;
     out[0] = -pz->pan[0] - 1.0f / pz->zoom[0];
     out[1] = -pz->pan[0] + 1.0f / pz->zoom[0];
@@ -408,9 +481,11 @@ void dvz_panzoom_zoom_shift(DvzPanzoom* pz, vec2 shift_px, vec2 center_px)
     float a = .5f * (w + h);
 
     if (!(pz->flags & DVZ_PANZOOM_FLAGS_FIXED_X))
-        pz->zoom[0] = zx0 * expf((float)(DVZ_PANZOOM_ZOOM_DRAG_COEF) * a * shift[0]);
+        pz->zoom[0] = _clamp_zoom_value(
+            pz, 0, zx0 * expf((float)(DVZ_PANZOOM_ZOOM_DRAG_COEF) * a * shift[0]));
     if (!(pz->flags & DVZ_PANZOOM_FLAGS_FIXED_Y))
-        pz->zoom[1] = zy0 * expf((float)(DVZ_PANZOOM_ZOOM_DRAG_COEF) * a * shift[1]);
+        pz->zoom[1] = _clamp_zoom_value(
+            pz, 1, zy0 * expf((float)(DVZ_PANZOOM_ZOOM_DRAG_COEF) * a * shift[1]));
 
     float zx = pz->zoom[0];
     float zy = pz->zoom[1];
