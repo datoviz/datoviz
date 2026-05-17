@@ -430,6 +430,25 @@ Validation:
 5. `git diff --check -- src/scene/tests/app.c src/scene/tests/test_scene.h agents/now/RENDER_CONTRACT_RESOLVER_AUDIT_2026-05-17.md`
 
 
+### 2026-05-17: Phase 4 / EDL enabled-pixel check
+
+Completed the targeted EDL offscreen visual correctness slice.
+
+Changes:
+
+1. Added `test_app_offscreen_points_edl_changes_pixels`.
+2. Added a deterministic point-scene capture helper that renders the same fixture with EDL disabled
+   and enabled while capturing with EDL still active.
+3. The test compares captured pixels, requires changed and darkened samples, and asserts the EDL
+   frame has lower total RGB luminance than the disabled baseline.
+
+Validation:
+
+1. `cmake --build build --target dvztest_scene -j2`
+2. `direnv exec . ./build/testing/dvztest_scene test_app_offscreen_points_edl_changes_pixels`
+3. `git diff --check -- src/scene/tests/app.c src/scene/tests/test_scene.h agents/now/RENDER_CONTRACT_RESOLVER_AUDIT_2026-05-17.md`
+
+
 ## Executive Assessment
 
 The direction is correct and worth continuing. The proposal identifies the right failure mode:

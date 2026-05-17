@@ -93,6 +93,15 @@ typedef struct
 } AppVolumeOcclusionCapture;
 
 
+typedef struct
+{
+    uint32_t width;
+    uint32_t height;
+    uint8_t* rgba;
+    bool skipped;
+} AppRgbaCapture;
+
+
 
 /**
  * Record one app-driven timer callback.
@@ -538,6 +547,114 @@ static uint64_t _app_rgb_region_sum(
         }
     }
     return sum;
+}
+
+
+/**
+ * Render the deterministic EDL point fixture and return its captured RGBA pixels.
+ *
+ * @param enabled whether EDL should be enabled for the panel
+ * @return captured RGBA buffer, or skipped=true when no app context is available
+ */
+static AppRgbaCapture _app_edl_point_capture(bool enabled)
+{
+    AppRgbaCapture out = {0};
+    DvzScene* scene = dvz_scene();
+    if (scene == NULL)
+        return out;
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    if (figure == NULL)
+    {
+        dvz_scene_destroy(scene);
+        return out;
+    }
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    if (panel == NULL)
+    {
+        dvz_scene_destroy(scene);
+        return out;
+    }
+
+    DvzVisual* visual = dvz_point(scene, 0);
+    if (visual == NULL)
+    {
+        dvz_scene_destroy(scene);
+        return out;
+    }
+    float positions[6][3] = {
+        {-0.24f, -0.18f, -0.30f},
+        {+0.18f, -0.12f, +0.10f},
+        {-0.05f, +0.18f, +0.36f},
+        {+0.23f, +0.22f, -0.38f},
+        {-0.30f, +0.16f, +0.08f},
+        {+0.04f, -0.30f, +0.42f},
+    };
+    DvzColor colors[6] = {
+        {255, 90, 80, 255},  {80, 220, 130, 255}, {80, 140, 255, 255},
+        {240, 220, 80, 255}, {220, 80, 230, 255}, {80, 230, 230, 255},
+    };
+    float sizes[6] = {30.0f, 32.0f, 28.0f, 26.0f, 30.0f, 28.0f};
+    if (dvz_visual_set_data(visual, "position", positions, 6) != 0 ||
+        dvz_visual_set_data(visual, "color", colors, 6) != 0 ||
+        dvz_visual_set_data(visual, "size", sizes, 6) != 0 ||
+        dvz_panel_add_visual(panel, visual, NULL) != 0)
+    {
+        dvz_scene_destroy(scene);
+        return out;
+    }
+    dvz_panel_set_background_color(panel, 0.0f, 0.0f, 0.0f, 1.0f);
+    if (enabled &&
+        !dvz_panel_set_edl(
+            panel, &(DvzEdlDesc){.radius = 2.0f, .strength = 90.0f, .depth_scale = 1.0f}))
+    {
+        dvz_scene_destroy(scene);
+        return out;
+    }
+
+    DvzApp* app = dvz_app(scene);
+    if (app == NULL)
+    {
+        out.skipped = true;
+        dvz_scene_destroy(scene);
+        return out;
+    }
+    DvzAppWindow* win = dvz_app_window(app, figure, 64, 64);
+    if (win == NULL)
+    {
+        out.skipped = true;
+        dvz_app_destroy(app);
+        dvz_scene_destroy(scene);
+        return out;
+    }
+    DvzCanvas* canvas = dvz_app_window_canvas(win);
+    if (canvas == NULL)
+    {
+        out.skipped = true;
+        dvz_app_destroy(app);
+        dvz_scene_destroy(scene);
+        return out;
+    }
+
+    for (uint32_t frame = 0; frame < 3; frame++)
+    {
+        dvz_app_run(app, 1);
+        if (out.rgba != NULL)
+            dvz_free(out.rgba);
+        out.rgba = NULL;
+        out.width = 0;
+        out.height = 0;
+        if (dvz_canvas_capture_rgba(canvas, &out.width, &out.height, &out.rgba) != 0)
+        {
+            out.skipped = true;
+            dvz_app_destroy(app);
+            dvz_scene_destroy(scene);
+            return out;
+        }
+    }
+
+    dvz_app_destroy(app);
+    dvz_scene_destroy(scene);
+    return out;
 }
 
 
@@ -1421,6 +1538,65 @@ int test_app_offscreen_points_edl_renders(TstSuite* suite, TstItem* item)
     dvz_free(rgba);
     dvz_app_destroy(app);
     dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+/**
+ * Ensure EDL changes captured point pixels while it remains enabled.
+ *
+ * @param suite the test suite
+ * @param item the test item
+ * @return 0 on success
+ */
+int test_app_offscreen_points_edl_changes_pixels(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    if (!_scene_vklite_runtime_available())
+        return 0;
+
+    AppRgbaCapture disabled = _app_edl_point_capture(false);
+    if (disabled.skipped)
+    {
+        log_warn("test_app_offscreen_points_edl_changes_pixels skipped: GPU context failed");
+        return 0;
+    }
+    AppRgbaCapture enabled = _app_edl_point_capture(true);
+    if (enabled.skipped)
+    {
+        log_warn("test_app_offscreen_points_edl_changes_pixels skipped: GPU context failed");
+        dvz_free(disabled.rgba);
+        return 0;
+    }
+    ANN(disabled.rgba);
+    ANN(enabled.rgba);
+    AT(disabled.width == 64);
+    AT(disabled.height == 64);
+    AT(enabled.width == disabled.width);
+    AT(enabled.height == disabled.height);
+
+    uint32_t changed_count = 0;
+    uint32_t darkened_count = 0;
+    const uint32_t pixel_count = disabled.width * disabled.height;
+    for (uint32_t i = 0; i < pixel_count; i++)
+    {
+        const uint8_t* a = &disabled.rgba[4 * i];
+        const uint8_t* b = &enabled.rgba[4 * i];
+        const int lum0 = (int)a[0] + (int)a[1] + (int)a[2];
+        const int lum1 = (int)b[0] + (int)b[1] + (int)b[2];
+        if (abs(lum0 - lum1) > 8)
+            changed_count++;
+        if (lum0 > 80 && lum1 + 12 < lum0)
+            darkened_count++;
+    }
+    AT(changed_count > 16);
+    AT(darkened_count > 8);
+    AT(_app_rgb_sum(enabled.rgba, pixel_count) < _app_rgb_sum(disabled.rgba, pixel_count));
+
+    dvz_free(enabled.rgba);
+    dvz_free(disabled.rgba);
     return 0;
 }
 
@@ -4143,6 +4319,7 @@ int test_scene_app(TstSuite* suite)
     TEST_SIMPLE(test_app_offscreen_has_nonblank_pixels);
     TEST_SIMPLE(test_app_offscreen_pixel_square_has_nonblank_pixels);
     TEST_SIMPLE(test_app_offscreen_points_edl_renders);
+    TEST_SIMPLE(test_app_offscreen_points_edl_changes_pixels);
     TEST_SIMPLE(test_app_offscreen_mesh_ssao_changes_pixels);
     TEST_SIMPLE(test_app_offscreen_records_dvzr_frames);
     TEST_SIMPLE(test_app_offscreen_image_has_nonblank_pixels);
