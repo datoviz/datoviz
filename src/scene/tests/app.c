@@ -218,6 +218,57 @@ _app_wboit_add_layer(DvzScene* scene, DvzPanel* panel, DvzColor color)
 
 
 /**
+ * Add one unlit primitive quad to a panel.
+ *
+ * @param scene scene owner
+ * @param panel destination panel
+ * @param xmin minimum X coordinate
+ * @param xmax maximum X coordinate
+ * @param ymin minimum Y coordinate
+ * @param ymax maximum Y coordinate
+ * @param z scene depth coordinate
+ * @param color per-vertex color
+ * @param alpha_mode alpha mode for the visual
+ * @param depth_test whether the visual should depth-test
+ * @return created visual, or NULL on failure
+ */
+static DvzVisual* _app_primitive_add_quad(
+    DvzScene* scene, DvzPanel* panel, float xmin, float xmax, float ymin, float ymax, float z,
+    DvzColor color, DvzAlphaMode alpha_mode, bool depth_test)
+{
+    ANN(scene);
+    ANN(panel);
+
+    DvzVisual* visual = dvz_primitive(scene, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 0);
+    if (visual == NULL)
+        return NULL;
+
+    float positions[6][3] = {
+        {xmin, ymin, z},
+        {xmax, ymin, z},
+        {xmin, ymax, z},
+        {xmax, ymin, z},
+        {xmax, ymax, z},
+        {xmin, ymax, z},
+    };
+    DvzColor colors[6] = {0};
+    for (uint32_t i = 0; i < 6; i++)
+        dvz_memcpy(colors[i], sizeof(DvzColor), color, sizeof(DvzColor));
+
+    if (dvz_visual_set_data(visual, "position", positions, 6) != 0 ||
+        dvz_visual_set_data(visual, "color", colors, 6) != 0 ||
+        dvz_visual_set_alpha_mode(visual, alpha_mode) != 0 ||
+        dvz_visual_set_depth_test(visual, depth_test) != 0 ||
+        dvz_panel_add_visual(panel, visual, NULL) != 0)
+    {
+        return NULL;
+    }
+    return visual;
+}
+
+
+
+/**
  * Render two WBOIT layers and capture the center pixel.
  *
  * @param reverse_order whether the blue layer is added before the red layer
@@ -1699,6 +1750,82 @@ int test_app_offscreen_wboit_mesh_order_independent_layers(TstSuite* suite, TstI
     AT(diff <= 6);
     AT(forward.rgb[0] > 20 || forward.rgb[2] > 20);
     AT(reverse.rgb[0] > 20 || reverse.rgb[2] > 20);
+    return 0;
+}
+
+
+/**
+ * Ensure source-over transparency blends with background but respects opaque depth.
+ *
+ * @param suite test suite
+ * @param item test item
+ * @return 0 on success
+ */
+int test_app_offscreen_source_over_mesh_depth_and_blend(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    if (!_scene_vklite_runtime_available())
+        return 0;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    ANN(panel);
+    dvz_panel_set_background_color(panel, 0.0f, 0.0f, 0.0f, 1.0f);
+
+    DvzColor background = {20, 30, 180, 255};
+    DvzColor transparent = {240, 20, 20, 128};
+    DvzColor occluder = {20, 220, 40, 255};
+    DvzVisual* background_visual = _app_primitive_add_quad(
+        scene, panel, -0.95f, 0.95f, -0.95f, 0.95f, 0.8f, background, DVZ_ALPHA_OPAQUE, true);
+    DvzVisual* transparent_visual = _app_primitive_add_quad(
+        scene, panel, -0.95f, 0.95f, -0.95f, 0.95f, 0.4f, transparent, DVZ_ALPHA_BLENDED,
+        true);
+    DvzVisual* occluder_visual = _app_primitive_add_quad(
+        scene, panel, 0.15f, 0.75f, -0.45f, 0.45f, 0.1f, occluder, DVZ_ALPHA_OPAQUE, true);
+    ANN(background_visual);
+    ANN(transparent_visual);
+    ANN(occluder_visual);
+
+    DvzApp* app = dvz_app(scene);
+    if (app == NULL)
+    {
+        log_warn(
+            "test_app_offscreen_source_over_mesh_depth_and_blend skipped: GPU context failed");
+        dvz_scene_destroy(scene);
+        return 0;
+    }
+    DvzAppWindow* win = dvz_app_window(app, figure, 64, 64);
+    ANN(win);
+    DvzCanvas* canvas = dvz_app_window_canvas(win);
+    ANN(canvas);
+
+    for (uint32_t frame = 0; frame < 3; frame++)
+        dvz_app_run(app, 1);
+
+    uint32_t width = 0, height = 0;
+    uint8_t* rgba = NULL;
+    AT(dvz_canvas_capture_rgba(canvas, &width, &height, &rgba) == 0);
+    ANN(rgba);
+    AT(width == 64);
+    AT(height == 64);
+
+    const uint8_t* blended = _pixel_at(rgba, width, height, width / 4, height / 2);
+    const uint8_t* occluded = _pixel_at(rgba, width, height, (5 * width) / 8, height / 2);
+    AT(blended[0] > background[0] + 60);
+    AT(blended[2] > 70);
+    AT(blended[1] < 80);
+    AT(occluded[1] > 160);
+    AT(occluded[1] > occluded[0] + 80);
+    AT(occluded[1] > occluded[2] + 80);
+
+    dvz_free(rgba);
+    dvz_app_destroy(app);
+    dvz_scene_destroy(scene);
     return 0;
 }
 
@@ -3629,6 +3756,7 @@ int test_scene_app(TstSuite* suite)
     TEST_SIMPLE(test_app_offscreen_panel_three_visuals_all_drawn);
     TEST_SIMPLE(test_app_offscreen_point_depth_orders_overlap);
     TEST_SIMPLE(test_app_offscreen_wboit_mesh_order_independent_layers);
+    TEST_SIMPLE(test_app_offscreen_source_over_mesh_depth_and_blend);
     TEST_SIMPLE(test_app_offscreen_point_depth_cue_darkens_far);
     TEST_SIMPLE(test_app_offscreen_has_nonblank_pixels);
     TEST_SIMPLE(test_app_offscreen_pixel_square_has_nonblank_pixels);

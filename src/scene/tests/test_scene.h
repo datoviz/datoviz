@@ -360,6 +360,8 @@ int test_app_offscreen_point_depth_orders_overlap(TstSuite* suite, TstItem* item
 
 int test_app_offscreen_wboit_mesh_order_independent_layers(TstSuite* suite, TstItem* item);
 
+int test_app_offscreen_source_over_mesh_depth_and_blend(TstSuite* suite, TstItem* item);
+
 int test_app_offscreen_point_depth_cue_darkens_far(TstSuite* suite, TstItem* item);
 
 int test_app_offscreen_records_dvzr_frames(TstSuite* suite, TstItem* item);
