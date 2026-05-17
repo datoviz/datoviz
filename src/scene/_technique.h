@@ -63,6 +63,10 @@ bool _scene_alpha_mode_is_depth_peel(DvzAlphaMode mode);
 
 bool _scene_alpha_mode_is_blended(DvzAlphaMode mode);
 
+const char* _scene_render_role_work_label(DvzFramePlanRenderPassRole role);
+
+bool _scene_render_role_requires_graph_pass(DvzFramePlanRenderPassRole role);
+
 bool _scene_visual_writes_depth(const DvzVisual* visual, const DvzPanelAttach* attach);
 
 bool _scene_transparent_visual_needs_depth(

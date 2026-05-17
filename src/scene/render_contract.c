@@ -18,6 +18,7 @@
 #include "_alloc.h"
 #include "_assertions.h"
 #include "_compat.h"
+#include "_technique.h"
 #include "_visual_pipeline.h"
 #include "../drp2/_stream.h"
 
@@ -628,84 +629,6 @@ static void _contract_report(DvzDiagnosticReport* report, const char* message)
 
 
 /**
- * Return the graph work label used by one render-pass role.
- *
- * @param role the FramePlan render-pass role
- * @return the graph work label, or an empty string when none is expected
- */
-static const char* _contract_work_label_for_render_role(DvzFramePlanRenderPassRole role)
-{
-    switch (role)
-    {
-    case DVZ_FRAME_PLAN_RENDER_PASS_OPAQUE:
-        return "opaque";
-    case DVZ_FRAME_PLAN_RENDER_PASS_GBUFFER:
-        return "gbuffer";
-    case DVZ_FRAME_PLAN_RENDER_PASS_VOLUME_OCCLUSION:
-        return "volume_occlusion";
-    case DVZ_FRAME_PLAN_RENDER_PASS_SCENE_OCCLUSION:
-        return "scene_occlusion";
-    case DVZ_FRAME_PLAN_RENDER_PASS_SSAO:
-        return "ssao";
-    case DVZ_FRAME_PLAN_RENDER_PASS_SSAO_BLUR:
-        return "ssao_blur";
-    case DVZ_FRAME_PLAN_RENDER_PASS_SSAO_COMPOSITE:
-        return "ssao_composite";
-    case DVZ_FRAME_PLAN_RENDER_PASS_EDL_RESOLVE:
-        return "edl_resolve";
-    case DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_ACCUMULATION:
-        return "wboit_accum";
-    case DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_BLEND:
-        return "transparent_blend";
-    case DVZ_FRAME_PLAN_RENDER_PASS_WBOIT_RESOLVE:
-        return "wboit_resolve";
-    case DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_INIT:
-        return "depth_peel_init";
-    case DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_ITER:
-        return "depth_peel_iter";
-    case DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_COMPOSITE:
-        return "depth_peel_composite";
-    case DVZ_FRAME_PLAN_RENDER_PASS_PICKING:
-        return "picking";
-    default:
-        return "";
-    }
-}
-
-
-
-/**
- * Return whether one render-pass role must have a matching graph pass.
- *
- * @param role the FramePlan render-pass role
- * @return whether the role is graph-backed
- */
-static bool _contract_render_role_requires_graph_pass(DvzFramePlanRenderPassRole role)
-{
-    switch (role)
-    {
-    case DVZ_FRAME_PLAN_RENDER_PASS_GBUFFER:
-    case DVZ_FRAME_PLAN_RENDER_PASS_VOLUME_OCCLUSION:
-    case DVZ_FRAME_PLAN_RENDER_PASS_SCENE_OCCLUSION:
-    case DVZ_FRAME_PLAN_RENDER_PASS_SSAO:
-    case DVZ_FRAME_PLAN_RENDER_PASS_SSAO_BLUR:
-    case DVZ_FRAME_PLAN_RENDER_PASS_SSAO_COMPOSITE:
-    case DVZ_FRAME_PLAN_RENDER_PASS_EDL_RESOLVE:
-    case DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_ACCUMULATION:
-    case DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_BLEND:
-    case DVZ_FRAME_PLAN_RENDER_PASS_WBOIT_RESOLVE:
-    case DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_INIT:
-    case DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_ITER:
-    case DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_COMPOSITE:
-        return true;
-    default:
-        return false;
-    }
-}
-
-
-
-/**
  * Return the graph pass matching one render node.
  *
  * @param plan the FramePlan
@@ -719,8 +642,7 @@ static const DvzFrameGraphPass* _contract_graph_pass_for_render(
     ANN(render);
     if (render->type != DVZ_FRAME_PLAN_NODE_RENDER)
         return NULL;
-    const char* work_label =
-        _contract_work_label_for_render_role(render->u.render.pass_role);
+    const char* work_label = _scene_render_role_work_label(render->u.render.pass_role);
     if (work_label[0] == '\0')
         return NULL;
 
@@ -733,7 +655,7 @@ static const DvzFrameGraphPass* _contract_graph_pass_for_render(
         if (candidate->type != DVZ_FRAME_PLAN_NODE_RENDER)
             continue;
         const char* candidate_label =
-            _contract_work_label_for_render_role(candidate->u.render.pass_role);
+            _scene_render_role_work_label(candidate->u.render.pass_role);
         if (candidate_label[0] != '\0' &&
             strcmp(candidate->u.render.panel_id, render->u.render.panel_id) == 0 &&
             strcmp(candidate_label, work_label) == 0)
@@ -1329,7 +1251,7 @@ bool _scene_frame_plan_contracts_validate(
         const DvzFrameGraphPass* graph_pass = _contract_graph_pass_for_render(plan, render);
         if (graph_pass == NULL)
         {
-            if (_contract_render_role_requires_graph_pass(render->u.render.pass_role))
+            if (_scene_render_role_requires_graph_pass(render->u.render.pass_role))
             {
                 _contract_report(report, "graph-backed render node has no matching graph pass");
                 ok = false;

@@ -554,6 +554,84 @@ bool _scene_alpha_mode_is_blended(DvzAlphaMode mode)
 
 
 /**
+ * Return the graph work label used by one render-pass role.
+ *
+ * @param role the FramePlan render-pass role
+ * @return the graph work label, or an empty string when none is expected
+ */
+const char* _scene_render_role_work_label(DvzFramePlanRenderPassRole role)
+{
+    switch (role)
+    {
+    case DVZ_FRAME_PLAN_RENDER_PASS_OPAQUE:
+        return "opaque";
+    case DVZ_FRAME_PLAN_RENDER_PASS_GBUFFER:
+        return "gbuffer";
+    case DVZ_FRAME_PLAN_RENDER_PASS_VOLUME_OCCLUSION:
+        return "volume_occlusion";
+    case DVZ_FRAME_PLAN_RENDER_PASS_SCENE_OCCLUSION:
+        return "scene_occlusion";
+    case DVZ_FRAME_PLAN_RENDER_PASS_SSAO:
+        return "ssao";
+    case DVZ_FRAME_PLAN_RENDER_PASS_SSAO_BLUR:
+        return "ssao_blur";
+    case DVZ_FRAME_PLAN_RENDER_PASS_SSAO_COMPOSITE:
+        return "ssao_composite";
+    case DVZ_FRAME_PLAN_RENDER_PASS_EDL_RESOLVE:
+        return "edl_resolve";
+    case DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_ACCUMULATION:
+        return "wboit_accum";
+    case DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_BLEND:
+        return "transparent_blend";
+    case DVZ_FRAME_PLAN_RENDER_PASS_WBOIT_RESOLVE:
+        return "wboit_resolve";
+    case DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_INIT:
+        return "depth_peel_init";
+    case DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_ITER:
+        return "depth_peel_iter";
+    case DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_COMPOSITE:
+        return "depth_peel_composite";
+    case DVZ_FRAME_PLAN_RENDER_PASS_PICKING:
+        return "picking";
+    default:
+        return "";
+    }
+}
+
+
+
+/**
+ * Return whether one render-pass role must have a matching graph pass.
+ *
+ * @param role the FramePlan render-pass role
+ * @return whether the role is graph-backed
+ */
+bool _scene_render_role_requires_graph_pass(DvzFramePlanRenderPassRole role)
+{
+    switch (role)
+    {
+    case DVZ_FRAME_PLAN_RENDER_PASS_GBUFFER:
+    case DVZ_FRAME_PLAN_RENDER_PASS_VOLUME_OCCLUSION:
+    case DVZ_FRAME_PLAN_RENDER_PASS_SCENE_OCCLUSION:
+    case DVZ_FRAME_PLAN_RENDER_PASS_SSAO:
+    case DVZ_FRAME_PLAN_RENDER_PASS_SSAO_BLUR:
+    case DVZ_FRAME_PLAN_RENDER_PASS_SSAO_COMPOSITE:
+    case DVZ_FRAME_PLAN_RENDER_PASS_EDL_RESOLVE:
+    case DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_ACCUMULATION:
+    case DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_BLEND:
+    case DVZ_FRAME_PLAN_RENDER_PASS_WBOIT_RESOLVE:
+    case DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_INIT:
+    case DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_ITER:
+    case DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_COMPOSITE:
+        return true;
+    default:
+        return false;
+    }
+}
+
+
+
+/**
  * Return whether one retained visual writes scene depth.
  *
  * @param visual the retained visual

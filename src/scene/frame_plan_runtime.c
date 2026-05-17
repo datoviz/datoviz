@@ -32,6 +32,7 @@
 #include "_scene_shader_abi.h"
 #include "_render_pass.h"
 #include "_shader_registry.h"
+#include "_technique.h"
 #include "_visual_pipeline.h"
 #include "render_contract.h"
 #include "datoviz/drp2.h"
@@ -188,30 +189,6 @@ static void _label_render_pass_contract(
 /*************************************************************************************************/
 /*  Helpers                                                                                      */
 /*************************************************************************************************/
-
-/**
- * Return whether an alpha mode uses ordinary source-over blending.
- *
- * @param mode the visual alpha mode
- * @return whether the mode needs a blended final-target pipeline
- */
-static bool _alpha_mode_is_standard_blend(DvzAlphaMode mode)
-{
-    return mode == DVZ_ALPHA_BLENDED;
-}
-
-
-/**
- * Return whether an alpha mode uses the retained depth-peeling path.
- *
- * @param mode the visual alpha mode
- * @return whether the mode needs depth-peeling pipeline state
- */
-static bool _alpha_mode_is_depth_peel(DvzAlphaMode mode)
-{
-    return mode == DVZ_ALPHA_DEPTH_PEEL;
-}
-
 
 /**
  * Select the depth-peeling fragment shader variant.
@@ -1145,13 +1122,13 @@ static bool _emitter_prepare_render_multi(
                                       : DVZ_ALPHA_OPAQUE;
         bool segment_coverage_blend =
             !render->u.render.picking && desc.kind == DVZ_SCENE_VISUAL_DESC_SEGMENT &&
-            !_alpha_mode_is_standard_blend(alpha_mode) && !wboit_accumulation &&
+            !_scene_alpha_mode_is_blended(alpha_mode) && !wboit_accumulation &&
             !depth_peel_pass;
         bool point_like_desc =
             desc.kind == DVZ_SCENE_VISUAL_DESC_POINT ||
             desc.kind == DVZ_SCENE_VISUAL_DESC_PIXEL ||
             desc.kind == DVZ_SCENE_VISUAL_DESC_MARKER;
-        if (_alpha_mode_is_standard_blend(alpha_mode))
+        if (_scene_alpha_mode_is_blended(alpha_mode))
         {
             ok = _runtime_key_append(
                 shader.pipeline_key, sizeof(shader.pipeline_key), "_blend", report);
@@ -1172,7 +1149,7 @@ static bool _emitter_prepare_render_multi(
             if (!ok)
                 break;
         }
-        if (_alpha_mode_is_depth_peel(alpha_mode))
+        if (_scene_alpha_mode_is_depth_peel(alpha_mode))
         {
             const char* peel_suffix =
                 render->u.render.pass_role == DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_INIT
@@ -1459,7 +1436,7 @@ static bool _emitter_prepare_render_multi(
             }
             else if (
                 ok &&
-                (_alpha_mode_is_standard_blend(alpha_mode) || segment_coverage_blend))
+                (_scene_alpha_mode_is_blended(alpha_mode) || segment_coverage_blend))
             {
                 ok = dvz_drp2_stream_pipeline_set_color_blend(
                     stream, 0, VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,
@@ -1795,53 +1772,6 @@ static const DvzFrameGraphPass* _graph_pass_by_panel_work(
 
 
 /**
- * Return the graph work label used for a render pass role.
- *
- * @param role the FramePlan render pass role.
- * @return the graph work label.
- */
-static const char* _graph_work_label_for_render_role(DvzFramePlanRenderPassRole role)
-{
-    switch (role)
-    {
-    case DVZ_FRAME_PLAN_RENDER_PASS_OPAQUE:
-        return "opaque";
-    case DVZ_FRAME_PLAN_RENDER_PASS_GBUFFER:
-        return "gbuffer";
-    case DVZ_FRAME_PLAN_RENDER_PASS_VOLUME_OCCLUSION:
-        return "volume_occlusion";
-    case DVZ_FRAME_PLAN_RENDER_PASS_SCENE_OCCLUSION:
-        return "scene_occlusion";
-    case DVZ_FRAME_PLAN_RENDER_PASS_SSAO:
-        return "ssao";
-    case DVZ_FRAME_PLAN_RENDER_PASS_SSAO_BLUR:
-        return "ssao_blur";
-    case DVZ_FRAME_PLAN_RENDER_PASS_SSAO_COMPOSITE:
-        return "ssao_composite";
-    case DVZ_FRAME_PLAN_RENDER_PASS_EDL_RESOLVE:
-        return "edl_resolve";
-    case DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_ACCUMULATION:
-        return "wboit_accum";
-    case DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_BLEND:
-        return "transparent_blend";
-    case DVZ_FRAME_PLAN_RENDER_PASS_WBOIT_RESOLVE:
-        return "wboit_resolve";
-    case DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_INIT:
-        return "depth_peel_init";
-    case DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_ITER:
-        return "depth_peel_iter";
-    case DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_COMPOSITE:
-        return "depth_peel_composite";
-    case DVZ_FRAME_PLAN_RENDER_PASS_PICKING:
-        return "picking";
-    default:
-        return "";
-    }
-}
-
-
-
-/**
  * Return the graph pass associated with a render node.
  *
  * @param plan the FramePlan.
@@ -1855,7 +1785,7 @@ _graph_pass_for_render(const DvzFramePlan* plan, const DvzFramePlanNode* render)
     ANN(render);
     if (render->type != DVZ_FRAME_PLAN_NODE_RENDER)
         return NULL;
-    const char* work_label = _graph_work_label_for_render_role(render->u.render.pass_role);
+    const char* work_label = _scene_render_role_work_label(render->u.render.pass_role);
     if (work_label[0] == '\0')
         return NULL;
 
@@ -1868,7 +1798,7 @@ _graph_pass_for_render(const DvzFramePlan* plan, const DvzFramePlanNode* render)
         if (candidate->type != DVZ_FRAME_PLAN_NODE_RENDER)
             continue;
         const char* candidate_label =
-            _graph_work_label_for_render_role(candidate->u.render.pass_role);
+            _scene_render_role_work_label(candidate->u.render.pass_role);
         if (candidate_label[0] != '\0' &&
             strcmp(candidate->u.render.panel_id, render->u.render.panel_id) == 0 &&
             strcmp(candidate_label, work_label) == 0)
@@ -1920,7 +1850,7 @@ _graph_render_for_pass(const DvzFramePlan* plan, const DvzFrameGraphPass* pass)
         const DvzFramePlanNode* render = &plan->nodes[i];
         if (render->type != DVZ_FRAME_PLAN_NODE_RENDER)
             continue;
-        const char* work_label = _graph_work_label_for_render_role(render->u.render.pass_role);
+        const char* work_label = _scene_render_role_work_label(render->u.render.pass_role);
         if (work_label[0] != '\0' && strcmp(render->u.render.panel_id, pass->panel_id) == 0 &&
             strcmp(work_label, pass->work_label) == 0)
         {

@@ -444,6 +444,8 @@ int test_scene_visual_pass_capabilities(TstSuite* suite, TstItem* item);
 
 int test_scene_draw_contract_resolver_matrix(TstSuite* suite, TstItem* item);
 
+int test_scene_role_work_label_mapping_complete(TstSuite* suite, TstItem* item);
+
 int test_scene_render_contract_validation_errors(TstSuite* suite, TstItem* item);
 
 int test_scene_frame_plan_missing_graph_pass_fails_contract(TstSuite* suite, TstItem* item);

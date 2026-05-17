@@ -6661,6 +6661,49 @@ int test_scene_draw_contract_resolver_matrix(TstSuite* suite, TstItem* item)
 
 
 /**
+ * Verify every render-pass role has one centralized graph work-label mapping.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_role_work_label_mapping_complete(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    const struct
+    {
+        DvzFramePlanRenderPassRole role;
+        const char* label;
+        bool graph_required;
+    } rows[] = {
+        {DVZ_FRAME_PLAN_RENDER_PASS_OPAQUE, "opaque", false},
+        {DVZ_FRAME_PLAN_RENDER_PASS_GBUFFER, "gbuffer", true},
+        {DVZ_FRAME_PLAN_RENDER_PASS_VOLUME_OCCLUSION, "volume_occlusion", true},
+        {DVZ_FRAME_PLAN_RENDER_PASS_SCENE_OCCLUSION, "scene_occlusion", true},
+        {DVZ_FRAME_PLAN_RENDER_PASS_SSAO, "ssao", true},
+        {DVZ_FRAME_PLAN_RENDER_PASS_SSAO_BLUR, "ssao_blur", true},
+        {DVZ_FRAME_PLAN_RENDER_PASS_SSAO_COMPOSITE, "ssao_composite", true},
+        {DVZ_FRAME_PLAN_RENDER_PASS_EDL_RESOLVE, "edl_resolve", true},
+        {DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_ACCUMULATION, "wboit_accum", true},
+        {DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_BLEND, "transparent_blend", true},
+        {DVZ_FRAME_PLAN_RENDER_PASS_WBOIT_RESOLVE, "wboit_resolve", true},
+        {DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_INIT, "depth_peel_init", true},
+        {DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_ITER, "depth_peel_iter", true},
+        {DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_COMPOSITE, "depth_peel_composite", true},
+        {DVZ_FRAME_PLAN_RENDER_PASS_PICKING, "picking", false},
+    };
+    for (uint32_t i = 0; i < sizeof(rows) / sizeof(rows[0]); i++)
+    {
+        AT(strcmp(_scene_render_role_work_label(rows[i].role), rows[i].label) == 0);
+        AT(_scene_render_role_requires_graph_pass(rows[i].role) == rows[i].graph_required);
+    }
+    return 0;
+}
+
+
+/**
  * Verify invalid passive render contracts are rejected before runtime lowering.
  *
  * @param suite the active test suite
@@ -10288,6 +10331,7 @@ int test_scene_graph(TstSuite* suite)
     TEST_SIMPLE(test_scene_pixel_depth_cue_toggle_switches_pipeline);
     TEST_SIMPLE(test_scene_visual_pass_capabilities);
     TEST_SIMPLE(test_scene_draw_contract_resolver_matrix);
+    TEST_SIMPLE(test_scene_role_work_label_mapping_complete);
     TEST_SIMPLE(test_scene_render_contract_validation_errors);
     TEST_SIMPLE(test_scene_frame_plan_missing_graph_pass_fails_contract);
     TEST_SIMPLE(test_scene_gbuffer_runtime_lowering);

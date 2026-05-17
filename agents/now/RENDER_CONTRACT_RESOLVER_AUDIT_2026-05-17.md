@@ -308,6 +308,31 @@ Validation:
 8. `git diff --check -- src/scene/render_contract.h src/scene/render_contract.c src/scene/frame_plan_runtime.c src/scene/tests/scene_graph.c src/scene/tests/test_scene.h agents/now/RENDER_CONTRACT_RESOLVER_AUDIT_2026-05-17.md`
 
 
+### 2026-05-17: Phase 3 / Central render-role semantics
+
+Completed the first technique-centralization slice.
+
+Changes:
+
+1. Moved render-pass-role to graph-work-label mapping into `_scene_render_role_work_label()`.
+2. Moved graph-backed role classification into `_scene_render_role_requires_graph_pass()`.
+3. Replaced duplicate role-label helpers in runtime and render-contract validation with the
+   centralized technique helpers.
+4. Reused the existing centralized alpha-mode helpers in runtime pipeline-key and depth-peel
+   decisions.
+5. Added `test_scene_role_work_label_mapping_complete` to lock all active render-pass roles to one
+   label and graph-required classification.
+
+Validation:
+
+1. `cmake --build build --target dvztest_scene -j2`
+2. `./build/testing/dvztest_scene test_scene_role_work_label_mapping_complete`
+3. `./build/testing/dvztest_scene test_scene_drp2_contract_checker_rejects_pipeline_drift`
+4. `./build/testing/dvztest_scene test_scene_visual_alpha_mode_emits_wboit_drp2`
+5. `./build/testing/dvztest_scene test_scene_ssao_runtime_lowering`
+6. `git diff --check -- src/scene/_technique.h src/scene/technique.c src/scene/render_contract.c src/scene/frame_plan_runtime.c src/scene/tests/scene_graph.c src/scene/tests/test_scene.h agents/now/RENDER_CONTRACT_RESOLVER_AUDIT_2026-05-17.md`
+
+
 ## Executive Assessment
 
 The direction is correct and worth continuing. The proposal identifies the right failure mode:
