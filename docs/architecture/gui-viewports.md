@@ -45,8 +45,9 @@ context before invoking user GUI code. The raw layer should not own Datoviz conc
 `DvzGuiViewport`; those remain in `datoviz/gui.h`.
 
 Use `datoviz/gui.h` for the stable Datoviz-facing layer: `DvzGui`, `DvzGuiViewport`, fonts,
-viewport images, and compact convenience widgets. Use `datoviz/imgui.h` when code needs direct
-Dear ImGui coverage and accepts the upstream/cimgui naming and version coupling.
+viewport images, color editors, range controls, section headers, and compact convenience widgets.
+Use `datoviz/imgui.h` when code needs direct Dear ImGui coverage and accepts the upstream/cimgui
+naming and version coupling.
 
 The C examples make the split explicit:
 
@@ -55,6 +56,10 @@ The C examples make the split explicit:
 | `hello_gui_glfw` | Datoviz `dvz_gui_*` helpers, with occasional raw calls as an escape hatch |
 | `hello_cimgui_glfw` | raw cimgui `ig*` calls inside the Datoviz GUI callback |
 | `gui_viewport_glfw` | `DvzGuiViewport`, for a dockable Datoviz render target inside ImGui |
+
+Reusable example control groups that combine these widgets live in
+`examples/c/example_gui_controls.{h,c}`. Keep those helpers example-facing until a control block
+maps cleanly to a stable Datoviz scene concept rather than to one demo's state struct.
 
 
 ## Input

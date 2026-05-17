@@ -14,7 +14,7 @@ The v0.4 C API has two Dear ImGui entry points:
 
 | Header | Purpose |
 | ------ | ------- |
-| `datoviz/gui.h` | Datoviz-owned GUI objects and convenience helpers such as `DvzGui`, `DvzGuiViewport`, `dvz_gui_begin()`, sliders, checkboxes, fonts, and dockable Datoviz viewports. |
+| `datoviz/gui.h` | Datoviz-owned GUI objects and convenience helpers such as `DvzGui`, `DvzGuiViewport`, `dvz_gui_begin()`, sliders, range editors, color editors, sections, fonts, and dockable Datoviz viewports. |
 | `datoviz/imgui.h` | Raw generated cimgui bindings with upstream `ig*` names such as `igBegin()`, `igButton()`, and `igShowDemoWindow()`. |
 
 Raw `ig*` calls are intended for advanced C code that needs full Dear ImGui expressiveness beyond
@@ -82,6 +82,20 @@ Also supports `vec2`, `vec3`, `vec4` versions for multi-axis sliders.
 
 There are also integer versions: `dvz.gui_slider_int`, `dvz.gui_slider_ivec2`, etc.
 
+In C, use `dvz_gui_slider_float()`, `dvz_gui_slider_float_format()`,
+`dvz_gui_slider_int()`, and the `dvz_gui_slider_float2/3/4()` variants.
+
+### Ranges
+
+```c
+float xmin = 0.1f;
+float xmax = 0.9f;
+bool changed = dvz_gui_range_float(gui, "X range", &xmin, &xmax, 0.01f, 0.0f, 1.0f, "%.2f");
+```
+
+The range helper wraps Dear ImGui's two-value drag range control, which is useful for
+clip boxes, data windows, and near/far depth-cue ranges.
+
 ### Checkboxes
 
 ```python
@@ -113,6 +127,24 @@ Use `dvz.gui_clicked()` to detect clicks on selectable items.
 color = dvz.vec3(0.5, 0.2, 0.7)
 dvz.gui_colorpicker('Color', color, 0)
 ```
+
+The C wrapper exposes `dvz_gui_color_edit4()`, `dvz_gui_color_picker4()`, and
+`dvz_gui_color_edit_dvz()`. The first two edit normalized float RGBA arrays; the
+`DvzColor` variant performs the float-to-8-bit conversion for scene colors.
+
+### Sections
+
+```c
+dvz_gui_separator_text(gui, "Material");
+if (dvz_gui_collapsing_header(gui, "Advanced", 0))
+{
+    /* widgets */
+}
+```
+
+Use `dvz_gui_separator_text()` for labeled groups and `dvz_gui_collapsing_header()` for
+larger optional subsections. Raw `igTreeNode*()`, tab bars, tables, and child windows remain
+available from `datoviz/imgui.h` when a panel needs full Dear ImGui coverage.
 
 ---
 
