@@ -162,6 +162,30 @@ Validation:
 7. `git diff --check -- src/drp2/semantic.c src/drp2/tests/test_drp2.c src/drp2/tests/test_drp2.h agents/now/RENDER_CONTRACT_RESOLVER_AUDIT_2026-05-17.md`
 
 
+### 2026-05-17: Phase 1 / Draw-contract resolver matrix
+
+Completed the first authoritative-contract extraction slice.
+
+Changes:
+
+1. Added `DvzSceneDrawFacts` as the explicit resolver input row for visual draw policy.
+2. Added `_scene_draw_contract_resolve()`, which maps visual facts plus render-pass role into a
+   `DvzSceneDrawContract`.
+3. Rewired `_scene_draw_contract_from_visual()` to derive facts from visual pass capabilities and
+   delegate policy decisions to the resolver helper.
+4. Added `test_scene_draw_contract_resolver_matrix` to cover opaque, source-over volume, WBOIT,
+   and scene-occluder contract rows without requiring FramePlan emission.
+
+Validation:
+
+1. `cmake --build build --target dvztest_scene -j2`
+2. `./build/testing/dvztest_scene test_scene_draw_contract_resolver_matrix`
+3. `./build/testing/dvztest_scene test_scene_visual_pass_capabilities`
+4. `./build/testing/dvztest_scene test_scene_render_contract_validation_errors`
+5. `./build/testing/dvztest_scene test_scene_blended_mesh_occlusion_contracts`
+6. `git diff --check -- src/scene/render_contract.h src/scene/render_contract.c src/scene/tests/scene_graph.c src/scene/tests/test_scene.h agents/now/RENDER_CONTRACT_RESOLVER_AUDIT_2026-05-17.md`
+
+
 ## Executive Assessment
 
 The direction is correct and worth continuing. The proposal identifies the right failure mode:

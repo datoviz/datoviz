@@ -743,6 +743,49 @@ static const DvzPanel* _contract_panel_for_render(
 /*************************************************************************************************/
 
 /**
+ * Resolve one visual-facts row and pass role into an explicit draw contract.
+ *
+ * @param facts visual facts used by the resolver matrix
+ * @param pass_role the render pass role that will carry the draw
+ * @param out the output draw contract
+ * @return whether the draw contract was resolved
+ */
+bool _scene_draw_contract_resolve(
+    const DvzSceneDrawFacts* facts, DvzFramePlanRenderPassRole pass_role,
+    DvzSceneDrawContract* out)
+{
+    ANN(facts);
+    ANN(out);
+    dvz_memset(out, sizeof(DvzSceneDrawContract), 0, sizeof(DvzSceneDrawContract));
+
+    bool scene_depth_pass = pass_role == DVZ_FRAME_PLAN_RENDER_PASS_SCENE_OCCLUSION;
+    bool ordinary_visual_pass = _role_is_visual_pass(pass_role);
+    out->visual_type = facts->visual_type;
+    out->alpha_mode = facts->alpha_mode;
+    out->pass_role = pass_role;
+    out->depth_test = facts->can_depth_test && (ordinary_visual_pass || scene_depth_pass);
+    out->depth_write = facts->writes_depth || (scene_depth_pass && facts->can_write_depth);
+    out->samples_depth =
+        facts->samples_depth && ordinary_visual_pass &&
+        pass_role != DVZ_FRAME_PLAN_RENDER_PASS_OPAQUE;
+    out->samples_volume_occlusion = facts->volume_occluded && ordinary_visual_pass;
+    out->samples_scene_occlusion = facts->scene_occluded && ordinary_visual_pass;
+    out->writes_volume_occlusion_depth =
+        pass_role == DVZ_FRAME_PLAN_RENDER_PASS_VOLUME_OCCLUSION &&
+        facts->visual_type == DVZ_VISUAL_TYPE_VOLUME;
+    out->writes_scene_occlusion_depth =
+        pass_role == DVZ_FRAME_PLAN_RENDER_PASS_SCENE_OCCLUSION && facts->scene_occluder;
+    out->needs_common_set = facts->uses_common_set;
+    out->needs_material_set = facts->uses_material_set;
+    out->needs_image_set = facts->uses_image_set;
+    out->needs_volume_set = facts->uses_volume_set;
+    out->needs_scene_occlusion_set = out->samples_scene_occlusion;
+    return true;
+}
+
+
+
+/**
  * Resolve one retained visual draw into a passive render contract.
  *
  * @param visual the retained visual
@@ -758,35 +801,27 @@ bool _scene_draw_contract_from_visual(
     ANN(visual);
     ANN(attach);
     ANN(out);
-    dvz_memset(out, sizeof(DvzSceneDrawContract), 0, sizeof(DvzSceneDrawContract));
 
     DvzSceneVisualPassCaps caps = {0};
     if (!_scene_visual_pass_caps_from_visual(visual, attach, &caps))
         return false;
 
-    bool scene_depth_pass = pass_role == DVZ_FRAME_PLAN_RENDER_PASS_SCENE_OCCLUSION;
-    bool ordinary_visual_pass = _role_is_visual_pass(pass_role);
-    out->visual_type = (uint32_t)visual->type;
-    out->alpha_mode = visual->alpha_mode;
-    out->pass_role = pass_role;
-    out->depth_test = caps.can_depth_test && (ordinary_visual_pass || scene_depth_pass);
-    out->depth_write = caps.writes_depth || (scene_depth_pass && caps.can_write_depth);
-    out->samples_depth =
-        caps.samples_depth && ordinary_visual_pass &&
-        pass_role != DVZ_FRAME_PLAN_RENDER_PASS_OPAQUE;
-    out->samples_volume_occlusion = visual->volume_occluded && ordinary_visual_pass;
-    out->samples_scene_occlusion = visual->scene_occluded && ordinary_visual_pass;
-    out->writes_volume_occlusion_depth =
-        pass_role == DVZ_FRAME_PLAN_RENDER_PASS_VOLUME_OCCLUSION &&
-        visual->type == DVZ_VISUAL_TYPE_VOLUME;
-    out->writes_scene_occlusion_depth =
-        pass_role == DVZ_FRAME_PLAN_RENDER_PASS_SCENE_OCCLUSION && visual->scene_occluder;
-    out->needs_common_set = caps.uses_common_set;
-    out->needs_material_set = caps.uses_material_set;
-    out->needs_image_set = caps.uses_image_set;
-    out->needs_volume_set = caps.uses_volume_set;
-    out->needs_scene_occlusion_set = out->samples_scene_occlusion;
-    return true;
+    DvzSceneDrawFacts facts = {
+        .visual_type = (uint32_t)visual->type,
+        .alpha_mode = visual->alpha_mode,
+        .can_depth_test = caps.can_depth_test,
+        .can_write_depth = caps.can_write_depth,
+        .writes_depth = caps.writes_depth,
+        .samples_depth = caps.samples_depth,
+        .volume_occluded = visual->volume_occluded,
+        .scene_occluded = visual->scene_occluded,
+        .scene_occluder = visual->scene_occluder,
+        .uses_common_set = caps.uses_common_set,
+        .uses_material_set = caps.uses_material_set,
+        .uses_image_set = caps.uses_image_set,
+        .uses_volume_set = caps.uses_volume_set,
+    };
+    return _scene_draw_contract_resolve(&facts, pass_role, out);
 }
 
 

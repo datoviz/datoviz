@@ -6539,6 +6539,98 @@ int test_scene_visual_pass_capabilities(TstSuite* suite, TstItem* item)
 
 
 /**
+ * Verify the draw-contract resolver matrix maps visual facts and pass roles consistently.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_draw_contract_resolver_matrix(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzSceneDrawContract contract = {0};
+    DvzSceneDrawFacts facts = {
+        .visual_type = DVZ_VISUAL_TYPE_MESH,
+        .alpha_mode = DVZ_ALPHA_OPAQUE,
+        .can_depth_test = true,
+        .can_write_depth = true,
+        .writes_depth = true,
+        .samples_depth = true,
+        .uses_common_set = true,
+        .uses_material_set = true,
+    };
+    AT(_scene_draw_contract_resolve(
+        &facts, DVZ_FRAME_PLAN_RENDER_PASS_OPAQUE, &contract));
+    AT(contract.visual_type == DVZ_VISUAL_TYPE_MESH);
+    AT(contract.alpha_mode == DVZ_ALPHA_OPAQUE);
+    AT(contract.pass_role == DVZ_FRAME_PLAN_RENDER_PASS_OPAQUE);
+    AT(contract.depth_test);
+    AT(contract.depth_write);
+    AT(!contract.samples_depth);
+    AT(contract.needs_common_set);
+    AT(contract.needs_material_set);
+
+    facts = (DvzSceneDrawFacts){
+        .visual_type = DVZ_VISUAL_TYPE_VOLUME,
+        .alpha_mode = DVZ_ALPHA_BLENDED,
+        .samples_depth = true,
+        .volume_occluded = true,
+        .scene_occluded = true,
+        .uses_common_set = true,
+        .uses_volume_set = true,
+    };
+    AT(_scene_draw_contract_resolve(
+        &facts, DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_BLEND, &contract));
+    AT(contract.visual_type == DVZ_VISUAL_TYPE_VOLUME);
+    AT(contract.alpha_mode == DVZ_ALPHA_BLENDED);
+    AT(!contract.depth_test);
+    AT(!contract.depth_write);
+    AT(contract.samples_depth);
+    AT(contract.samples_volume_occlusion);
+    AT(contract.samples_scene_occlusion);
+    AT(contract.needs_common_set);
+    AT(contract.needs_volume_set);
+    AT(contract.needs_scene_occlusion_set);
+
+    facts = (DvzSceneDrawFacts){
+        .visual_type = DVZ_VISUAL_TYPE_MESH,
+        .alpha_mode = DVZ_ALPHA_WBOIT,
+        .can_depth_test = true,
+        .can_write_depth = true,
+        .uses_common_set = true,
+        .uses_material_set = true,
+    };
+    AT(_scene_draw_contract_resolve(
+        &facts, DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_ACCUMULATION, &contract));
+    AT(contract.alpha_mode == DVZ_ALPHA_WBOIT);
+    AT(contract.depth_test);
+    AT(!contract.depth_write);
+    AT(!contract.samples_depth);
+    AT(contract.needs_material_set);
+
+    facts = (DvzSceneDrawFacts){
+        .visual_type = DVZ_VISUAL_TYPE_MESH,
+        .alpha_mode = DVZ_ALPHA_OPAQUE,
+        .can_depth_test = true,
+        .can_write_depth = true,
+        .scene_occluder = true,
+        .uses_common_set = true,
+    };
+    AT(_scene_draw_contract_resolve(
+        &facts, DVZ_FRAME_PLAN_RENDER_PASS_SCENE_OCCLUSION, &contract));
+    AT(contract.depth_test);
+    AT(contract.depth_write);
+    AT(contract.writes_scene_occlusion_depth);
+    AT(!contract.samples_scene_occlusion);
+    AT(!contract.needs_scene_occlusion_set);
+
+    return 0;
+}
+
+
+/**
  * Verify invalid passive render contracts are rejected before runtime lowering.
  *
  * @param suite the active test suite
@@ -10047,6 +10139,7 @@ int test_scene_graph(TstSuite* suite)
     TEST_SIMPLE(test_scene_visual_material_setter);
     TEST_SIMPLE(test_scene_pixel_depth_cue_toggle_switches_pipeline);
     TEST_SIMPLE(test_scene_visual_pass_capabilities);
+    TEST_SIMPLE(test_scene_draw_contract_resolver_matrix);
     TEST_SIMPLE(test_scene_render_contract_validation_errors);
     TEST_SIMPLE(test_scene_frame_plan_missing_graph_pass_fails_contract);
     TEST_SIMPLE(test_scene_gbuffer_runtime_lowering);

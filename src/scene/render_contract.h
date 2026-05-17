@@ -74,6 +74,26 @@ typedef struct DvzSceneAttachmentUse
 } DvzSceneAttachmentUse;
 
 
+typedef struct DvzSceneDrawFacts
+{
+    uint32_t visual_type;
+    DvzAlphaMode alpha_mode;
+
+    bool can_depth_test;
+    bool can_write_depth;
+    bool writes_depth;
+    bool samples_depth;
+    bool volume_occluded;
+    bool scene_occluded;
+    bool scene_occluder;
+
+    bool uses_common_set;
+    bool uses_material_set;
+    bool uses_image_set;
+    bool uses_volume_set;
+} DvzSceneDrawFacts;
+
+
 typedef struct DvzSceneDrawContract
 {
     uint32_t visual_type;
@@ -134,6 +154,10 @@ typedef struct DvzScenePassContract
 /*************************************************************************************************/
 /*  Functions                                                                                    */
 /*************************************************************************************************/
+
+bool _scene_draw_contract_resolve(
+    const DvzSceneDrawFacts* facts, DvzFramePlanRenderPassRole pass_role,
+    DvzSceneDrawContract* out);
 
 bool _scene_draw_contract_from_visual(
     const DvzVisual* visual, const DvzPanelAttach* attach, DvzFramePlanRenderPassRole pass_role,
