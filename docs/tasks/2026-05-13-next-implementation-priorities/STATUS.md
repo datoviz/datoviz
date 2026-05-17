@@ -20,7 +20,7 @@ This task records implementation-level next steps for:
 The next branch work should not treat these as one large mixed refactor. They should be separate
 lanes with separate validation gates.
 
-The native 3D example is now represented by `examples/c/hello_mesh_glfw.c`, and the manual scene
+The native 3D example is now represented by `examples/c/visuals/mesh.c`, and the manual scene
 smoke matrix is recorded in `docs/architecture/manual_scene_smoke.md`. The `hello_*` C example
 smoke set was reported successful on `2026-05-14`, including the paired offscreen capture examples
 that cover the readback side of the mesh smoke path. The next implementation work should therefore

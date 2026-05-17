@@ -34,8 +34,8 @@ Developer DVZR recordings can be adapted to the browser stream shape:
 
 ```bash
 python3 tools/dvzr_to_webgpu_stream.py \
-    build/examples/c/hello_mesh_glfw.dvzr \
-    examples/webgpu/streams/hello_mesh_dvzr_wgsl.json \
+    build/examples/c/visuals/mesh.dvzr \
+    examples/webgpu/streams/mesh_dvzr_wgsl.json \
     --frames 1:600 \
     --frame-stride 25
 ```
@@ -49,9 +49,9 @@ with a `frames` table can be played with the page's Play button.
 The earlier smoke streams remain available:
 
 ```text
-http://localhost:8765/examples/webgpu/?stream=hello_mesh_dvzr_wgsl
+http://localhost:8765/examples/webgpu/?stream=mesh_dvzr_wgsl
 http://localhost:8765/examples/webgpu/?stream=scene_point_panzoom_wgsl
-http://localhost:8765/examples/webgpu/?stream=hello_triangle_wgsl
+http://localhost:8765/examples/webgpu/?stream=triangle_wgsl
 http://localhost:8765/examples/webgpu/?stream=triangle_vertex_buffer_wgsl
 http://localhost:8765/examples/webgpu/?stream=triangle_offscreen_readback_wgsl
 http://localhost:8765/examples/webgpu/?stream=depth_overlap_wgsl

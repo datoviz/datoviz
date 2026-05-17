@@ -1515,7 +1515,7 @@ analyze:
 # Examples
 # -------------------------------------------------------------------------------------------------
 
-example-c name: build
+example-c name *args: build
     #!/usr/bin/env bash
     set -euo pipefail
     if [[ "$(uname)" == "Darwin" ]]; then
@@ -1525,7 +1525,14 @@ example-c name: build
             export DYLD_FALLBACK_LIBRARY_PATH="${fallback_path}"
         fi
     fi
-    ./build/examples/c/{{name}}
+    exe="./build/examples/c/{{name}}"
+    if [[ ! -x "${exe}" && "{{name}}" != */* ]]; then
+        matches=(./build/examples/c/*/{{name}})
+        if [[ ${#matches[@]} -eq 1 && -x "${matches[0]}" ]]; then
+            exe="${matches[0]}"
+        fi
+    fi
+    "${exe}" {{args}}
 #
 
 # Tests
@@ -1709,7 +1716,7 @@ python *args:
 # #
 
 # example name="":
-#     gcc -o build/example_{{name}} examples/c/{{name}}.c -Iinclude/ -Lbuild/ -Wl,-rpath,build -lm -ldatoviz
+#     gcc -o build/example_{{name}} examples/c/<group>/{{name}}.c -Iinclude/ -Lbuild/ -Wl,-rpath,build -lm -ldatoviz
 #     just runexample {{name}}
 # #
 

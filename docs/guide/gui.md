@@ -25,9 +25,9 @@ The C examples show the intended split:
 
 | Example | Use |
 | ------- | --- |
-| `hello_gui_glfw` | regular Datoviz GUI helper API |
-| `hello_cimgui_glfw` | raw cimgui calls from `datoviz/imgui.h` |
-| `gui_viewport_glfw` | dockable Datoviz render target inside an ImGui window |
+| `visuals/point` | regular Datoviz GUI helper API in a visual stress workbench |
+| `techniques/gui_viewport` | dockable Datoviz render target inside an ImGui window |
+| `techniques/gui_multi_viewport` | multiple dockable Datoviz render targets |
 
 ---
 

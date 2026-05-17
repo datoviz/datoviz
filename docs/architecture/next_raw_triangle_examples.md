@@ -3,19 +3,19 @@
 **Status: DONE as of 2026-05-05.** All items below have been implemented.
 
 This document describes two C examples to be added under `examples/c/`, plus one small API
-addition needed to support them.  The existing `examples/c/hello_point.c` and
+addition needed to support them.  The existing `examples/c/visuals/point.c` and
 `examples/c/CMakeLists.txt` are already in place; these two files extend that set.
 
 ---
 
 ## Context
 
-`hello_point.c` shows the highest-level path: scene → DvzApp → offscreen canvas.  The two
+`visuals/point.c` shows the highest-level path: scene → DvzApp → offscreen canvas.  The two
 new examples sit below that, showing progressively rawer APIs:
 
 | Example              | Layer used for rendering  | Canvas / presentation |
 |----------------------|---------------------------|-----------------------|
-| `hello_point.c`      | Scene + DvzApp            | handled by DvzApp     |
+| `visuals/point.c`      | Scene + DvzApp            | handled by DvzApp     |
 | `raw_triangle.c`     | vklite draw commands      | DvzCanvas (explicit)  |
 | `raw_triangle_drp2.c`| DRP2 stream commands      | DvzGpuCtx only (no canvas) |
 

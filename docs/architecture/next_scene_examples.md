@@ -11,17 +11,17 @@ This note tracks the next scene examples after the first point/scatter slice. Al
 
 | Example             | Visual needed         | New API required?            | Status  |
 |---------------------|-----------------------|------------------------------|---------|
-| `hello_scatter.c`   | `dvz_point` (exists)  | None — richer use of existing | Done    |
-| `hello_triangle.c`  | `dvz_primitive`       | New topology-parametric family | Done    |
-| `hello_texture.c`   | `dvz_image`           | New visual constructor        | Done    |
-| `hello_mesh.c`      | `dvz_mesh`            | Existing mesh visual          | Done    |
-| `hello_path.c`      | path-as-line/strip    | Existing path helper          | Done    |
-| `hello_field.c`     | sampled field + image | Existing field/image path     | Done    |
-| `hello_pick_hover_glfw.c` | point picking + app | Existing request/app path | Done    |
-| `hello_image_probe_glfw.c` | image probe + app | Existing request/app path | Done    |
-| `hello_texture_update_glfw.c` | sampled-field update + app | Existing field update path | Done |
-| `hello_multi_panel_glfw.c` | multi-panel + app | Existing panel/controller path | Done |
-| `hello_linked_panels_glfw.c` | linked panzoom panels + app | Existing panel/controller path | Done |
+| `visuals/point.c`   | `dvz_point` (exists)  | None — richer use of existing | Done    |
+| `visuals/primitive.c`  | `dvz_primitive`       | New topology-parametric family | Done    |
+| `visuals/image.c`   | `dvz_image`           | New visual constructor        | Done    |
+| `visuals/mesh.c`      | `dvz_mesh`            | Existing mesh visual          | Done    |
+| `visuals/path.c`      | path-as-line/strip    | Existing path helper          | Done    |
+| `visuals/image.c`     | sampled field + image | Existing field/image path     | Done    |
+| `techniques/pick_hover.c` | point picking + app | Existing request/app path | Done    |
+| `techniques/image_probe.c` | image probe + app | Existing request/app path | Done    |
+| `visuals/image.c` | sampled-field update + app | Existing field update path | Done |
+| `techniques/multi_panel.c` | multi-panel + app | Existing panel/controller path | Done |
+| `techniques/linked_panels.c` | linked panzoom panels + app | Existing panel/controller path | Done |
 
 The first scene example wave now exists under `examples/c/`. The next example work should focus less
 on adding another visual constructor and more on native pressure tests: an interactive 3D mesh/depth
@@ -29,11 +29,11 @@ scene, clearer manual request smoke tests, and resize/capture/status behavior.
 
 ---
 
-## Part 1 — `hello_scatter.c` (scene + app, many points)
+## Part 1 — `visuals/point.c` (scene + app, many points)
 
 ### Status
 
-Done. `examples/c/hello_scatter.c` renders 1 000 random colored points through the scene/app path.
+Done. `examples/c/visuals/point.c` renders 1 000 random colored points through the scene/app path.
 
 ### Goal
 
@@ -67,7 +67,7 @@ dvz_panel_add_visual(panel, visual);
 
 DvzApp* app = dvz_app(scene);
 dvz_app_run(app, 1);
-dvz_app_window_capture_png(dvz_app_window(app, fig), "hello_scatter.png");
+dvz_app_window_capture_png(dvz_app_window(app, fig), "visuals/point.png");
 
 dvz_app_destroy(app);
 dvz_visual_destroy(visual);
@@ -75,22 +75,22 @@ dvz_figure_destroy(fig);
 dvz_scene_destroy(scene);
 ```
 
-Check `hello_point.c`, `hello_scatter.c`, and `src/scene/tests/test_scene.c` for the current
+Check `visuals/point.c`, `visuals/point.c`, and `src/scene/tests/test_scene.c` for the current
 attribute names accepted by `dvz_point`.
 
 ### CMakeLists addition
 
 ```cmake
-dvz_add_example(hello_scatter)
+dvz_add_example(visuals/point)
 ```
 
 ---
 
-## Part 2 — `hello_triangle.c` (scene + app, primitive visual)
+## Part 2 — `visuals/primitive.c` (scene + app, primitive visual)
 
 ### Status
 
-Done. `examples/c/hello_triangle.c` renders a single colored triangle through `dvz_primitive`
+Done. `examples/c/visuals/primitive.c` renders a single colored triangle through `dvz_primitive`
 with `DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST`. The visual family supports POINT_LIST, LINE_LIST,
 LINE_STRIP, TRIANGLE_LIST, TRIANGLE_STRIP. Scene tests cover triangle-list and line-strip emit.
 
@@ -167,7 +167,7 @@ to relearn the API.)
 
 ### Example
 
-`hello_triangle.c` itself is then a few lines: hard-code three vertices, call
+`visuals/primitive.c` itself is then a few lines: hard-code three vertices, call
 `dvz_primitive(scene, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 0)`, set data, run one
 offscreen frame, save PNG.
 
@@ -176,11 +176,11 @@ same constructor with a different topology — no new visual code required.
 
 ---
 
-## Part 3 — `hello_texture.c` (scene + app, image visual)
+## Part 3 — `visuals/image.c` (scene + app, image visual)
 
 ### Status
 
-Done. `examples/c/hello_texture.c` renders a 16×16 procedural RGBA texture on a quad covering
+Done. `examples/c/visuals/image.c` renders a 16×16 procedural RGBA texture on a quad covering
 most of the panel. The visual accepts `"position"` (four clip-space corners, TRIANGLE_STRIP
 order TL/BL/TR/BR), `"texcoords"` (four UV pairs), and a texture supplied via
 `dvz_visual_set_texture(visual, pixels, width, height)`.
@@ -196,8 +196,8 @@ creation, texture upload emission) lives in `src/scene/converter.c`.
 
 ## Existing code to read before starting
 
-- `examples/c/hello_point.c` — minimal scene+app skeleton
-- `examples/c/hello_scatter.c` — non-trivial point data through the same path
+- `examples/c/visuals/point.c` — minimal scene+app skeleton
+- `examples/c/visuals/point.c` — non-trivial point data through the same path
 - `src/scene/tests/test_scene.c` — shows attribute names, data shapes, and the full
   scene→figure→panel→visual→app flow used in tests
 - `src/scene/scene.c` and `src/scene/converter.c` — existing point visual implementation/emission path
@@ -210,7 +210,7 @@ creation, texture upload emission) lives in `src/scene/converter.c`.
 
 Follow-up guide updates should add or refresh sections in `docs/guide/c.md`:
 
-- Add `just example-c hello_scatter` etc. to the build snippet
+- Add `just example-c visuals/point` etc. to the build snippet
 - Add sections for the current scene examples with `--8<--` source includes.
 - Extend the *Key public APIs* table with scene/app request, field, mesh, and controller functions.
 - Add one manual-interactive subsection for GLFW examples so expected mouse/hover behavior is clear.

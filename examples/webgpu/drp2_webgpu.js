@@ -19,13 +19,13 @@ export const STREAMS = [
   },
   { name: "scene_primitive_wgsl", label: "Scene primitive (WGSL)" },
   { name: "scene_point_wgsl", label: "Scene points (WGSL)" },
-  { name: "hello_mesh_dvzr_wgsl", label: "DVZR mesh replay (WGSL)" },
+  { name: "mesh_dvzr_wgsl", label: "DVZR mesh replay (WGSL)" },
   { name: "indexed_quad_wgsl", label: "Indexed quad" },
   { name: "texture_sampling_wgsl", label: "Texture sampling" },
   { name: "depth_overlap_wgsl", label: "Depth overlap" },
   { name: "triangle_offscreen_readback_wgsl", label: "Offscreen readback" },
   { name: "triangle_vertex_buffer_wgsl", label: "Vertex-buffer triangle" },
-  { name: "hello_triangle_wgsl", label: "No-buffer triangle" },
+  { name: "triangle_wgsl", label: "No-buffer triangle" },
 ];
 
 

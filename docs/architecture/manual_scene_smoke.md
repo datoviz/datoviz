@@ -4,8 +4,8 @@ This checklist records the manual validation surface for the active v0.4 scene -
 path. It complements focused tests; it should stay short enough to run before broadening scene,
 request, or app behavior.
 
-Latest recorded smoke note: on `2026-05-14`, the `hello_*` C example smoke set and
-`hello_image_probe_glfw 300` were reported to run successfully. OS/GPU/backend details were not
+Latest recorded smoke note: on `2026-05-14`, the previous C example smoke set and
+`techniques/image_probe 300` were reported to run successfully. OS/GPU/backend details were not
 recorded; add them here if a later run exposes a platform-specific anomaly.
 
 Run from the repository root after a successful build:
@@ -30,7 +30,7 @@ direnv exec . ./build/examples/c/<name>
 Command:
 
 ```bash
-./build/examples/c/hello_point_glfw
+./build/examples/c/visuals/point
 ```
 
 Expected behavior: three points render. Left-drag pans, right-drag or scroll zooms,
@@ -47,7 +47,7 @@ Current gap: no automated live GLFW gesture test.
 Command:
 
 ```bash
-./build/examples/c/hello_pick_hover_glfw
+./build/examples/c/techniques/pick_hover
 ```
 
 Expected behavior: a point grid renders. Moving the cursor over points grows the frontmost hovered
@@ -65,7 +65,7 @@ Current gap: manual check is still needed for real pointer coordinates and visib
 Command:
 
 ```bash
-./build/examples/c/hello_mesh_glfw
+./build/examples/c/visuals/mesh
 ```
 
 Expected behavior: a lit cube renders with correct depth ordering. Idle rotation advances through
@@ -76,7 +76,7 @@ Automated coverage: `test_app_offscreen_lit_primitive_depth_orders_overlap`,
 `test_app_offscreen_mesh_renders_nonblank`, `test_app_offscreen_rotated_mesh_depth_orders_faces`,
 `test_app_offscreen_camera_arcball_mesh_renders_cube`, and the `test_arcball_*` group.
 
-Current gap: live capture/readback is not part of this GLFW example; offscreen `hello_mesh.c`
+Current gap: live capture/readback is not part of this GLFW example; offscreen `visuals/mesh.c`
 covers capture.
 
 
@@ -85,13 +85,13 @@ covers capture.
 Command:
 
 ```bash
-./build/examples/c/hello_mesh_wboit_glfw
+./build/examples/c/techniques/wboit
 ```
 
 Bounded validation smoke:
 
 ```bash
-./build/examples/c/hello_mesh_wboit_glfw 2
+./build/examples/c/techniques/wboit 2
 ```
 
 Expected behavior: one lit, transparent teal WBOIT cube renders on a dark background between opaque
@@ -105,7 +105,7 @@ remains interactive, and Vulkan validation stays quiet for the bounded smoke.
 For command inspection, run the bounded smoke with full labeled DRP2 trace:
 
 ```bash
-DVZ_DRP2_TRACE=full DVZ_DRP2_TRACE_COLOR=0 ./build/examples/c/hello_mesh_wboit_glfw 2
+DVZ_DRP2_TRACE=full DVZ_DRP2_TRACE_COLOR=0 ./build/examples/c/techniques/wboit 2
 ```
 
 The trace should show scene labels on ids. The opaque pass targets `rt` with `depth=yes`; the fixed
@@ -126,7 +126,7 @@ Current gap: visual polish and offscreen WBOIT capture/readback coverage are sti
 Command:
 
 ```bash
-DVZ_DRP2_TRACE=normal ./build/examples/c/hello_mesh_glfw 120
+DVZ_DRP2_TRACE=normal ./build/examples/c/visuals/mesh 120
 ```
 
 Expected behavior: changed frames print a full command stream, unchanged repeated frames stay to a
@@ -152,10 +152,10 @@ Current gap: manual terminal inspection is still the easiest way to catch noisy 
 Command:
 
 ```bash
-./build/examples/c/hello_point
+./build/examples/c/visuals/point
 ```
 
-Expected behavior: saves `hello_point.png`; image is nonblank and contains the three colored
+Expected behavior: saves `visuals/point.png`; image is nonblank and contains the three colored
 points.
 
 Automated coverage: `test_app_offscreen_has_nonblank_pixels`.
@@ -168,10 +168,10 @@ Current gap: manual PNG inspection only; no example-level verifier.
 Command:
 
 ```bash
-./build/examples/c/hello_texture
+./build/examples/c/visuals/image
 ```
 
-Expected behavior: saves `hello_texture.png`; procedural image is visible on a quad.
+Expected behavior: saves `visuals/image.png`; procedural image is visible on a quad.
 
 Automated coverage: `test_app_offscreen_image_has_nonblank_pixels`,
 `test_app_offscreen_image_retained_render_second_frame`.
@@ -184,10 +184,10 @@ Current gap: no manual partial-field-update example yet.
 Command:
 
 ```bash
-./build/examples/c/hello_field
+./build/examples/c/visuals/image
 ```
 
-Expected behavior: saves `hello_field.png`; scalar field appears with the bound colormap.
+Expected behavior: saves `visuals/image.png`; scalar field appears with the bound colormap.
 
 Automated coverage: `test_scene_image_visual_binds_colormap_scale`,
 `test_scene_image_scalar_texture_uses_bound_scale`,
@@ -201,10 +201,10 @@ Current gap: no manual partial-field-update example yet.
 Command:
 
 ```bash
-./build/examples/c/hello_mesh
+./build/examples/c/visuals/mesh
 ```
 
-Expected behavior: saves `hello_mesh.png`; cube is visible with perspective, arcball transform,
+Expected behavior: saves `visuals/mesh.png`; cube is visible with perspective, arcball transform,
 shading, and depth.
 
 Automated coverage: `test_app_offscreen_mesh_renders_nonblank`,
@@ -219,7 +219,7 @@ Current gap: separate from live GLFW arcball smoke.
 Command:
 
 ```bash
-./build/examples/c/hello_multi_panel_glfw 300
+./build/examples/c/techniques/multi_panel 300
 ```
 
 Expected behavior: four panels render in their own quadrants with separate backgrounds and visual
@@ -238,7 +238,7 @@ Current gap: manual gesture inspection is still needed for live per-panel contro
 Command:
 
 ```bash
-./build/examples/c/hello_linked_panels_glfw 300
+./build/examples/c/techniques/linked_panels 300
 ```
 
 Expected behavior: the two top panels render different point grids but share pan/zoom state.
@@ -257,7 +257,7 @@ Current gap: manual gesture inspection is still needed to confirm live linked-pa
 Command:
 
 ```bash
-./build/examples/c/hello_texture_update_glfw 300
+./build/examples/c/visuals/image 300
 ```
 
 Expected behavior: a scalar sampled field renders as a colormapped image. A bright square patch
@@ -275,7 +275,7 @@ Current gap: manual inspection is still needed to confirm the visible live patch
 Command:
 
 ```bash
-./build/examples/c/hello_image_probe_glfw 300
+./build/examples/c/techniques/image_probe 300
 ```
 
 Expected behavior: a non-uniform image renders. Moving the cursor across quadrants prints changing
@@ -299,17 +299,17 @@ For a normal scene/app smoke pass, run:
 just build
 just test test_app_offscreen_lit_primitive_depth_orders_overlap
 just test test_scene_process_pick_probe_requests
-./build/examples/c/hello_point
-./build/examples/c/hello_scatter
-./build/examples/c/hello_triangle
-./build/examples/c/hello_path
-./build/examples/c/hello_texture
-./build/examples/c/hello_field
-./build/examples/c/hello_mesh
-./build/examples/c/hello_point_glfw
-./build/examples/c/hello_pick_hover_glfw
-./build/examples/c/hello_mesh_glfw
-./build/examples/c/hello_mesh_wboit_glfw 2
+./build/examples/c/visuals/point
+./build/examples/c/visuals/point
+./build/examples/c/visuals/primitive
+./build/examples/c/visuals/path
+./build/examples/c/visuals/image
+./build/examples/c/visuals/image
+./build/examples/c/visuals/mesh
+./build/examples/c/visuals/point
+./build/examples/c/techniques/pick_hover
+./build/examples/c/visuals/mesh
+./build/examples/c/techniques/wboit 2
 ```
 
 Record OS, GPU, backend, command, observed behavior, and whether Vulkan validation layers were

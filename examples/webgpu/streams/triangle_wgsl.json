@@ -1,0 +1,91 @@
+{
+  "name": "triangle_wgsl",
+  "description": "Minimal DRP2 stream replayed by the experimental browser WebGPU runner.",
+  "version": { "major": 2, "minor": 0 },
+  "commands": [
+    {
+      "cmd": "HelloRenderer",
+      "version": { "major": 2, "minor": 0 },
+      "client_name": "drp2-webgpu-poc"
+    },
+    {
+      "cmd": "RendererHelloReply",
+      "version": { "major": 2, "minor": 0 },
+      "status": "ok",
+      "renderer_name": "webgpu-poc"
+    },
+    {
+      "cmd": "CreateShaderModule",
+      "id": 10,
+      "stage": "VERTEX",
+      "format": "wgsl",
+      "entry_point": "vs_main",
+      "code": "struct VsOut {\n    @builtin(position) pos: vec4f,\n    @location(0) color: vec3f,\n};\n\n@vertex\nfn vs_main(@builtin(vertex_index) vertex_index: u32) -> VsOut {\n    var positions = array<vec2f, 3>(\n        vec2f(0.0, 0.6),\n        vec2f(-0.6, -0.6),\n        vec2f(0.6, -0.6)\n    );\n\n    var colors = array<vec3f, 3>(\n        vec3f(1.0, 0.2, 0.2),\n        vec3f(0.2, 1.0, 0.2),\n        vec3f(0.2, 0.2, 1.0)\n    );\n\n    var out: VsOut;\n    out.pos = vec4f(positions[vertex_index], 0.0, 1.0);\n    out.color = colors[vertex_index];\n    return out;\n}"
+    },
+    {
+      "cmd": "CreateShaderModule",
+      "id": 11,
+      "stage": "FRAGMENT",
+      "format": "wgsl",
+      "entry_point": "fs_main",
+      "code": "struct FsIn {\n    @location(0) color: vec3f,\n};\n\n@fragment\nfn fs_main(in: FsIn) -> @location(0) vec4f {\n    return vec4f(in.color, 1.0);\n}"
+    },
+    {
+      "cmd": "CreateRenderPipeline",
+      "id": 20,
+      "vertex_shader_module_id": 10,
+      "fragment_shader_module_id": 11,
+      "vertex_buffer_slots": 0,
+      "topology": "triangle-list",
+      "color_targets": [
+        { "format": "canvas" }
+      ]
+    },
+    {
+      "cmd": "BeginCommandEncoder",
+      "id": 30
+    },
+    {
+      "cmd": "BeginRenderPass",
+      "id": 31,
+      "encoder_id": 30,
+      "color_attachments": [
+        {
+          "texture_id": 0,
+          "load_op": "clear",
+          "store_op": "store",
+          "clear_value": { "r": 0.02, "g": 0.03, "b": 0.05, "a": 1.0 }
+        }
+      ]
+    },
+    {
+      "cmd": "SetPipeline",
+      "pass_id": 31,
+      "pipeline_id": 20
+    },
+    {
+      "cmd": "Draw",
+      "pass_id": 31,
+      "vertex_count": 3,
+      "instance_count": 1,
+      "first_vertex": 0,
+      "first_instance": 0
+    },
+    {
+      "cmd": "EndRenderPass",
+      "pass_id": 31
+    },
+    {
+      "cmd": "FinishCommandEncoder",
+      "encoder_id": 30,
+      "command_buffer_id": 32
+    },
+    {
+      "cmd": "QueueSubmit",
+      "command_buffer_ids": [32]
+    }
+  ],
+  "expected": {
+    "outcome": "visible_triangle"
+  }
+}

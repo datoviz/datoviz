@@ -385,10 +385,6 @@ if(DVZ_BUILD_CANVAS)
     add_subdirectory(examples/c)
 endif()
 
-if(DVZ_BUILD_APP AND DVZ_BUILD_GUI AND DVZ_HAS_GLFW)
-    add_subdirectory(examples/napari)
-endif()
-
 if(DVZ_BUILD_APP)
     add_subdirectory(examples/qt)
 endif()

@@ -53,8 +53,8 @@ The C examples make the split explicit:
 
 | Example | API layer |
 | ------- | --------- |
-| `hello_gui_glfw` | Datoviz `dvz_gui_*` helpers, with occasional raw calls as an escape hatch |
-| `hello_cimgui_glfw` | raw cimgui `ig*` calls inside the Datoviz GUI callback |
+| `visuals/point` | Datoviz `dvz_gui_*` helpers in a retained-visual stress workbench |
+| `techniques/gui_viewport` | Datoviz render target embedded in a dockable GUI viewport |
 | `gui_viewport_glfw` | `DvzGuiViewport`, for a dockable Datoviz render target inside ImGui |
 
 Reusable example control groups that combine these widgets live in

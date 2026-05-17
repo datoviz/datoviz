@@ -31,7 +31,7 @@ Build this demo in two stages.
 
 Stage 1 should be a **C-rendered MVP** using the current v0.4 `scene -> DRP2 -> app` path. The
 preparation tool may be Python, but the interactive demo should be a C example under
-`examples/napari/` so it exercises the same retained scene, app window, GUI, panzoom, and Vulkan
+`examples/c/showcase/` so it exercises the same retained scene, app window, GUI, panzoom, and Vulkan
 runtime path as the other active v0.4 examples.
 
 Stage 1 should not depend on the full SpatialData runtime at rendering time and should not require
@@ -388,7 +388,7 @@ Suggested message:
 1. Write `prepare_spatial_points.py` to extract and cache coordinates from SpatialData MERFISH or
    MIBI-TOF.
 2. Export Datoviz-ready binary arrays and `metadata.json`.
-3. Implement `examples/napari/dense_points_spatial_omics_glfw.c`.
+3. Implement `examples/c/showcase/showcase/spatial_omics.c`.
 4. Load the binary cache, or fall back to a synthetic stress dataset when the cache is missing.
 5. Render the optional image background plus one point visual.
 6. Precompute or load color buffers for categorical, continuous, and density modes.

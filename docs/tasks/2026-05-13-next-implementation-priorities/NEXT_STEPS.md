@@ -11,22 +11,22 @@ the current scene -> DRP2 -> app path.
 
 Current status:
 
-1. `examples/c/hello_mesh_glfw.c` already covers the intended native 3D example shape:
+1. `examples/c/visuals/mesh.c` already covers the intended native 3D example shape:
    `dvz_mesh()`, indexed cube geometry, per-face normals/colours, depth testing, perspective camera,
    `dvz_panel_set_arcball()` through `dvz_app_window_input()`, app resize synchronization, and
    `dvz_app_window_set_frame_callback()` for continuous motion.
 2. Do not add a near-duplicate `hello_3d_arcball_depth_glfw.c` unless the example surface is being
    deliberately reorganized.
 3. The remaining deliverable is to make capture/readback part of the smoke path, either by extending
-   `hello_mesh_glfw` with a small bounded-frame capture option or by documenting a paired capture
+   `visuals/mesh` with a small bounded-frame capture option or by documenting a paired capture
    command that proves the same rendered path produces nonblank pixels.
 
 Files to inspect first:
 
-1. `examples/c/hello_mesh.c`,
-2. `examples/c/hello_mesh_glfw.c`,
-3. `examples/c/hello_point_glfw.c`,
-4. `examples/c/hello_pick_hover_glfw.c`,
+1. `examples/c/visuals/mesh.c`,
+2. `examples/c/visuals/mesh.c`,
+3. `examples/c/visuals/point.c`,
+4. `examples/c/techniques/pick_hover.c`,
 5. `src/scene/tests/app.c` depth and app offscreen tests,
 6. `src/app/app.c`.
 
@@ -35,7 +35,7 @@ Validation:
 1. `just build`,
 2. a focused scene/app test that already covers depth, for example
    `just test test_app_offscreen_lit_primitive_depth_orders_overlap`,
-3. manual run of `./build/examples/c/hello_mesh_glfw`,
+3. manual run of `./build/examples/c/visuals/mesh`,
 4. manual resize, arcball drag, and capture check,
 5. `git diff --check`.
 
@@ -178,7 +178,7 @@ Current status:
 
 Smoke cases:
 
-1. `hello_pick_hover_glfw`: hover point picking, panel-coordinate mapping, stale hover suppression,
+1. `techniques/pick_hover`: hover point picking, panel-coordinate mapping, stale hover suppression,
 2. image probe example or new variant: probe four quadrants of a non-uniform image,
 3. panzoom point scene: drag, wheel zoom, double-click reset,
 4. arcball 3D scene from priority lane 1: rotate, resize, capture,
