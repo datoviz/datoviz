@@ -1422,6 +1422,13 @@ bool _scene_visual_frame_plan_metadata(
             metadata->index_count = (uint32_t)visual->segment.gpu.index_count;
         }
     }
+    if (visual->type == DVZ_VISUAL_TYPE_IMAGE && _scene_image_uses_generated_quads(visual))
+    {
+        if (visual->image_gpu.vertex_count > UINT32_MAX)
+            return false;
+        if (visual->image_gpu.vertex_count > 0)
+            metadata->vertex_count = (uint32_t)visual->image_gpu.vertex_count;
+    }
     return true;
 }
 
