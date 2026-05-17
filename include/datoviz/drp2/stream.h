@@ -610,6 +610,20 @@ DVZ_EXPORT bool dvz_drp2_stream_destroy_compute_pipeline(
 DVZ_EXPORT bool dvz_drp2_stream_create_sampler(DvzDrp2CommandStream* stream, uint64_t id);
 
 
+/**
+ * Append a CreateSampler command with explicit min/mag filters.
+ *
+ * @param stream the command stream
+ * @param id the sampler id
+ * @param mag_filter magnification filter
+ * @param min_filter minification filter
+ * @return whether the command was appended
+ */
+DVZ_EXPORT bool dvz_drp2_stream_create_sampler_filter(
+    DvzDrp2CommandStream* stream, uint64_t id, DvzDrp2FilterMode mag_filter,
+    DvzDrp2FilterMode min_filter);
+
+
 
 /**
  * Append a CreateBindGroupLayout command for one sampled texture and one sampler.

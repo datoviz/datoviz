@@ -2312,6 +2312,14 @@ static bool _recording_read_portable_command(
         command.type = DVZ_DRP2_COMMAND_CREATE_SAMPLER;
         if (!_recording_line_u64(line, "\"id\":", &command.u.create_sampler.id))
             return false;
+        command.u.create_sampler.mag_filter = strstr(line, "\"mag_filter\":\"nearest\"") != NULL ||
+                                                     strstr(line, "\"mag_filter\": \"nearest\"") != NULL ?
+                                                 DVZ_DRP2_FILTER_NEAREST :
+                                                 DVZ_DRP2_FILTER_LINEAR;
+        command.u.create_sampler.min_filter = strstr(line, "\"min_filter\":\"nearest\"") != NULL ||
+                                                     strstr(line, "\"min_filter\": \"nearest\"") != NULL ?
+                                                 DVZ_DRP2_FILTER_NEAREST :
+                                                 DVZ_DRP2_FILTER_LINEAR;
     }
     else if (strcmp(op, "CreateBindGroupLayout") == 0)
     {

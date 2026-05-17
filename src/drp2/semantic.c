@@ -953,6 +953,11 @@ static DvzDrp2ValidationResult _validate_create_sampler(
     uint64_t id = command->u.create_sampler.id;
     if (id == 0)
         return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_ARGUMENT, command_index);
+    if ((command->u.create_sampler.mag_filter != DVZ_DRP2_FILTER_LINEAR &&
+         command->u.create_sampler.mag_filter != DVZ_DRP2_FILTER_NEAREST) ||
+        (command->u.create_sampler.min_filter != DVZ_DRP2_FILTER_LINEAR &&
+         command->u.create_sampler.min_filter != DVZ_DRP2_FILTER_NEAREST))
+        return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_ARGUMENT, command_index);
     Drp2Object* object = _drp2_find_any_object(state, id);
     if (object != NULL)
     {

@@ -90,6 +90,13 @@ typedef enum
 } DvzDrp2BindingType;
 
 
+typedef enum
+{
+    DVZ_DRP2_FILTER_LINEAR = 0,
+    DVZ_DRP2_FILTER_NEAREST = 1,
+} DvzDrp2FilterMode;
+
+
 
 typedef enum
 {

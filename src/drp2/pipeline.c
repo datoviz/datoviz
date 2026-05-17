@@ -452,8 +452,14 @@ _vklite_create_sampler(Drp2VkliteState* state, const DvzDrp2Command* command, ui
     object->sampler = sampler;
 
     dvz_sampler(state->runtime->device, sampler);
-    dvz_sampler_min_filter(sampler, VK_FILTER_LINEAR);
-    dvz_sampler_mag_filter(sampler, VK_FILTER_LINEAR);
+    VkFilter min_filter = command->u.create_sampler.min_filter == DVZ_DRP2_FILTER_NEAREST ?
+                              VK_FILTER_NEAREST :
+                              VK_FILTER_LINEAR;
+    VkFilter mag_filter = command->u.create_sampler.mag_filter == DVZ_DRP2_FILTER_NEAREST ?
+                              VK_FILTER_NEAREST :
+                              VK_FILTER_LINEAR;
+    dvz_sampler_min_filter(sampler, min_filter);
+    dvz_sampler_mag_filter(sampler, mag_filter);
     dvz_sampler_address_mode(sampler, DVZ_SAMPLER_AXIS_U, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE);
     dvz_sampler_address_mode(sampler, DVZ_SAMPLER_AXIS_V, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE);
     dvz_sampler_address_mode(sampler, DVZ_SAMPLER_AXIS_W, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE);

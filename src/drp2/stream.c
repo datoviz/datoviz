@@ -1050,10 +1050,33 @@ bool dvz_drp2_stream_destroy_compute_pipeline(
  */
 bool dvz_drp2_stream_create_sampler(DvzDrp2CommandStream* stream, uint64_t id)
 {
+    return dvz_drp2_stream_create_sampler_filter(
+        stream, id, DVZ_DRP2_FILTER_LINEAR, DVZ_DRP2_FILTER_LINEAR);
+}
+
+
+/**
+ * Append a CreateSampler command with explicit min/mag filters.
+ *
+ * @param stream the command stream
+ * @param id the sampler id
+ * @param mag_filter magnification filter
+ * @param min_filter minification filter
+ * @return whether the command was appended
+ */
+bool dvz_drp2_stream_create_sampler_filter(
+    DvzDrp2CommandStream* stream, uint64_t id, DvzDrp2FilterMode mag_filter,
+    DvzDrp2FilterMode min_filter)
+{
+    if ((mag_filter != DVZ_DRP2_FILTER_LINEAR && mag_filter != DVZ_DRP2_FILTER_NEAREST) ||
+        (min_filter != DVZ_DRP2_FILTER_LINEAR && min_filter != DVZ_DRP2_FILTER_NEAREST))
+        return false;
     DvzDrp2Command* command = _append_command(stream, DVZ_DRP2_COMMAND_CREATE_SAMPLER);
     if (command == NULL)
         return false;
     command->u.create_sampler.id = id;
+    command->u.create_sampler.mag_filter = mag_filter;
+    command->u.create_sampler.min_filter = min_filter;
     return true;
 }
 

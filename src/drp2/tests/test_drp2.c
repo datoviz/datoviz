@@ -1151,7 +1151,8 @@ int test_drp2_runtime_validate_texture_sampler_bind_group(TstSuite* suite, TstIt
 
     AT(dvz_drp2_stream_hello_renderer(stream, "test-client"));
     AT(dvz_drp2_stream_renderer_hello_reply(stream, "test-renderer"));
-    AT(dvz_drp2_stream_create_sampler(stream, 200));
+    AT(dvz_drp2_stream_create_sampler_filter(
+        stream, 200, DVZ_DRP2_FILTER_NEAREST, DVZ_DRP2_FILTER_NEAREST));
     AT(dvz_drp2_stream_create_texture_sampler_bind_group_layout(stream, 100));
     AT(dvz_drp2_stream_create_shader_module(
         stream, 9000, "VERTEX", "@vertex fn main() -> @builtin(position) vec4f { return vec4f(); }"));
@@ -1184,6 +1185,8 @@ int test_drp2_runtime_validate_texture_sampler_bind_group(TstSuite* suite, TstIt
     char* json = dvz_drp2_stream_json(stream, "texture_sampler_bind_group_from_c");
     ANN(json);
     AT(strstr(json, "\"cmd\": \"CreateSampler\"") != NULL);
+    AT(strstr(json, "\"mag_filter\": \"nearest\"") != NULL);
+    AT(strstr(json, "\"min_filter\": \"nearest\"") != NULL);
     AT(strstr(json, "\"cmd\": \"CreateBindGroupLayout\"") != NULL);
     AT(strstr(json, "\"cmd\": \"CreateBindGroup\"") != NULL);
     AT(strstr(json, "\"cmd\": \"SetBindGroup\"") != NULL);

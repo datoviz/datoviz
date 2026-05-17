@@ -800,7 +800,7 @@ static bool _emitter_prepare_render_multi(
 
     /* Image BGL + sampler (shared, created lazily on first image visual). */
     uint64_t img_bgl_id = 0, img_sampler_id = 0;
-    uint64_t volume_bgl_id = 0, volume_sampler_id = 0;
+    uint64_t volume_bgl_id = 0, volume_sampler_linear_id = 0, volume_sampler_nearest_id = 0;
     uint64_t scene_occlusion_bgl_id = 0, scene_occlusion_sampler_id = 0;
 
     uint32_t draw_count = 0;
@@ -1390,16 +1390,26 @@ static bool _emitter_prepare_render_multi(
                 if (is_new)
                     ok = ok && _create_volume_bind_group_layout(stream, volume_bgl_id);
             }
-            if (volume_sampler_id == 0)
+            bool nearest = bind.volume_state.sampling == DVZ_VOLUME_SAMPLING_NEAREST;
+            uint64_t* volume_sampler_id =
+                nearest ? &volume_sampler_nearest_id : &volume_sampler_linear_id;
+            if (*volume_sampler_id == 0)
             {
-                volume_sampler_id = _obj_id(emitter, "_sampler_volume", &is_new);
-                if (volume_sampler_id == 0) { ok = false; break; }
+                *volume_sampler_id =
+                    _obj_id(emitter, nearest ? "_sampler_volume_nearest" : "_sampler_volume_linear",
+                            &is_new);
+                if (*volume_sampler_id == 0) { ok = false; break; }
                 if (ok && is_new)
-                    ok = ok && dvz_drp2_stream_create_sampler(stream, volume_sampler_id);
+                {
+                    DvzDrp2FilterMode filter =
+                        nearest ? DVZ_DRP2_FILTER_NEAREST : DVZ_DRP2_FILTER_LINEAR;
+                    ok = ok && dvz_drp2_stream_create_sampler_filter(
+                                   stream, *volume_sampler_id, filter, filter);
+                }
             }
             uint64_t volume_bg_id = 0;
             ok = ok && _resolve_volume_bind_group(
-                           emitter, stream, volume_bgl_id, volume_sampler_id, &bind,
+                           emitter, stream, volume_bgl_id, *volume_sampler_id, &bind,
                            &volume_bg_id);
             vis_bg_set1 = volume_bg_id;
         }

@@ -141,6 +141,8 @@ struct DvzDrp2Command
         struct
         {
             uint64_t id;
+            DvzDrp2FilterMode mag_filter;
+            DvzDrp2FilterMode min_filter;
         } create_sampler;
         struct
         {

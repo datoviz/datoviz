@@ -768,14 +768,22 @@ static void _json_append_command(JsonBuilder* builder, const DvzDrp2Command* com
             command->u.destroy_compute_pipeline.compute_pipeline_id);
         break;
     case DVZ_DRP2_COMMAND_CREATE_SAMPLER:
+    {
+        const char* mag_filter = command->u.create_sampler.mag_filter == DVZ_DRP2_FILTER_NEAREST ?
+                                     "nearest" :
+                                     "linear";
+        const char* min_filter = command->u.create_sampler.min_filter == DVZ_DRP2_FILTER_NEAREST ?
+                                     "nearest" :
+                                     "linear";
         _json_append(
             builder,
             "{ \"cmd\": \"%s\", \"id\": %" PRIu64
-            ", \"mag_filter\": \"linear\", \"min_filter\": \"linear\", "
+            ", \"mag_filter\": \"%s\", \"min_filter\": \"%s\", "
             "\"mipmap_filter\": \"nearest\", \"address_mode_u\": \"clamp-to-edge\", "
             "\"address_mode_v\": \"clamp-to-edge\" }",
-            _command_name(command->type), command->u.create_sampler.id);
+            _command_name(command->type), command->u.create_sampler.id, mag_filter, min_filter);
         break;
+    }
     case DVZ_DRP2_COMMAND_CREATE_BIND_GROUP_LAYOUT:
         _json_append(
             builder, "{ \"cmd\": \"%s\", \"id\": %" PRIu64 ", \"entries\": [",
