@@ -37,6 +37,14 @@
 #define MARKER_STRESS_WIDTH     1100u
 #define MARKER_STRESS_HEIGHT    760u
 #define MARKER_STRESS_PI        3.14159265358979323846f
+#define MARKER_STRESS_PANEL_X   0.03f
+#define MARKER_STRESS_PANEL_Y   0.04f
+#define MARKER_STRESS_PANEL_W   0.94f
+#define MARKER_STRESS_PANEL_H   0.90f
+#define MARKER_STRESS_X0        -0.96f
+#define MARKER_STRESS_X1        +0.96f
+#define MARKER_STRESS_Y0        -0.86f
+#define MARKER_STRESS_Y1        +0.86f
 
 
 
@@ -140,37 +148,55 @@ static uint8_t _u8_from_float(float value)
 
 
 /**
- * Fill the marker position and base color arrays with deterministic synthetic data.
+ * Fill active marker positions and base colors with deterministic synthetic data.
  *
  * @param state marker stress state
  */
-static void _make_marker_data(MarkerStressState* state)
+static void _make_active_marker_data(MarkerStressState* state)
 {
-    const uint32_t columns = 256u;
-    const float inv_columns = 1.0f / (float)(columns - 1u);
-    const float rows = (float)((state->max_count + columns - 1u) / columns);
-    const float inv_rows = rows > 1.0f ? 1.0f / (rows - 1.0f) : 1.0f;
+    if (state == NULL || state->active_count == 0 || state->active_count > state->max_count)
+        return;
 
-    for (uint32_t i = 0; i < state->max_count; i++)
+    const float panel_aspect =
+        ((float)MARKER_STRESS_WIDTH * MARKER_STRESS_PANEL_W) /
+        ((float)MARKER_STRESS_HEIGHT * MARKER_STRESS_PANEL_H);
+    const float data_aspect =
+        (MARKER_STRESS_X1 - MARKER_STRESS_X0) / (MARKER_STRESS_Y1 - MARKER_STRESS_Y0);
+    const float target_aspect = panel_aspect / data_aspect;
+
+    uint32_t columns = (uint32_t)ceilf(sqrtf((float)state->active_count * target_aspect));
+    columns = columns == 0 ? 1 : columns;
+    uint32_t rows = (state->active_count + columns - 1u) / columns;
+    rows = rows == 0 ? 1 : rows;
+
+    const uint32_t base_row_count = state->active_count / rows;
+    const uint32_t extra_rows = state->active_count % rows;
+
+    uint32_t i = 0;
+    for (uint32_t row = 0; row < rows; row++)
     {
-        uint32_t col = i % columns;
-        uint32_t row = i / columns;
-        float u = (float)col * inv_columns;
-        float v = (float)row * inv_rows;
-        float wave = sinf(18.0f * u + 7.0f * v);
+        const uint32_t row_count = base_row_count + (row < extra_rows ? 1u : 0u);
+        const float v = rows > 1 ? (float)row / (float)(rows - 1u) : 0.5f;
 
-        state->positions[i][0] = -0.96f + 1.92f * u;
-        state->positions[i][1] = -0.86f + 1.72f * v;
-        state->positions[i][2] = 0.035f * wave;
+        for (uint32_t col = 0; col < row_count; col++)
+        {
+            const float u = row_count > 1 ? (float)col / (float)(row_count - 1u) : 0.5f;
+            const float wave = sinf(18.0f * u + 7.0f * v);
 
-        state->colors[i][0] = (uint8_t)(40.0f + 205.0f * u);
-        state->colors[i][1] = (uint8_t)(220.0f - 140.0f * v);
-        state->colors[i][2] = (uint8_t)(90.0f + 120.0f * (0.5f + 0.5f * wave));
-        state->colors[i][3] = 230;
+            state->positions[i][0] = MARKER_STRESS_X0 + (MARKER_STRESS_X1 - MARKER_STRESS_X0) * u;
+            state->positions[i][1] = MARKER_STRESS_Y0 + (MARKER_STRESS_Y1 - MARKER_STRESS_Y0) * v;
+            state->positions[i][2] = 0.035f * wave;
 
-        state->diameters[i] = state->diameter;
-        state->angles[i] = 0.0f;
-        state->shapes[i] = (uint32_t)(i % 6u);
+            state->colors[i][0] = (uint8_t)(40.0f + 205.0f * u);
+            state->colors[i][1] = (uint8_t)(220.0f - 140.0f * v);
+            state->colors[i][2] = (uint8_t)(90.0f + 120.0f * (0.5f + 0.5f * wave));
+            state->colors[i][3] = 230;
+
+            state->diameters[i] = state->diameter;
+            state->angles[i] = 0.0f;
+            state->shapes[i] = (uint32_t)(i % 6u);
+            i++;
+        }
     }
 }
 
@@ -249,6 +275,7 @@ static void _upload_shapes(MarkerStressState* state)
  */
 static void _upload_marker_attributes(MarkerStressState* state)
 {
+    _make_active_marker_data(state);
     (void)dvz_visual_set_data(state->visual, "position", state->positions, state->active_count);
     _upload_colors(state);
     _upload_diameters(state);
@@ -505,7 +532,13 @@ int main(int argc, char** argv)
         return 1;
     }
 
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.03f, 0.04f, 0.94f, 0.90f});
+    DvzPanel* panel =
+        dvz_panel(figure, (DvzPanelDesc){
+                              MARKER_STRESS_PANEL_X,
+                              MARKER_STRESS_PANEL_Y,
+                              MARKER_STRESS_PANEL_W,
+                              MARKER_STRESS_PANEL_H,
+                          });
     if (panel == NULL)
     {
         dvz_fprintf(stderr, "dvz_panel() failed\n");
@@ -545,7 +578,6 @@ int main(int argc, char** argv)
         return 1;
     }
 
-    _make_marker_data(&state);
     _upload_marker_attributes(&state);
     _apply_marker_style(&state);
     if (dvz_panel_add_visual(panel, visual, NULL) != 0)
