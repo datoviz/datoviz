@@ -573,7 +573,8 @@ dvz_visual_attr_mutability(const DvzVisual* visual, const char* attr_name);
  * sphere: `"position"` (vec3f), `"color"` (RGBA8), `"size"` (float radius)
  * segment: `"position_start"` (vec3f), `"position_end"` (vec3f), `"color"` (RGBA8),
  *          `"line_width"` (float pixels)
- * primitive/path: `"position"` (vec3f), `"color"` (RGBA8)
+ * primitive: `"position"` (vec3f), `"color"` (RGBA8)
+ * path: `"position"` (vec3f), `"color"` (RGBA8), optional `"line_width"` (float pixels)
  * mesh: `"position"` (vec3f), optional `"color"` (RGBA8), optional `"normal"` (vec3f)
  * primitive only: `"normal"` (vec3f)
  * image: `"position"` (vec3f), `"texcoords"` (vec2f)

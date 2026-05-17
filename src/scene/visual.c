@@ -2826,7 +2826,8 @@ DvzVisual* dvz_mesh(DvzScene* scene, uint32_t flags)
 /**
  * Create a path visual.
  *
- * First-slice path visuals reuse the primitive line-strip execution path.
+ * Path visuals use primitive line-strip rendering unless a per-point `line_width` attribute is
+ * present, in which case scene emission lowers them to stroked screen-space segments.
  *
  * @param scene the scene
  * @param flags variant flags
