@@ -315,7 +315,9 @@ bool _scene_draw_contract_from_visual(
     out->pass_role = pass_role;
     out->depth_test = caps.can_depth_test && (ordinary_visual_pass || scene_depth_pass);
     out->depth_write = caps.writes_depth || (scene_depth_pass && caps.can_write_depth);
-    out->samples_depth = caps.samples_depth && ordinary_visual_pass;
+    out->samples_depth =
+        caps.samples_depth && ordinary_visual_pass &&
+        pass_role != DVZ_FRAME_PLAN_RENDER_PASS_OPAQUE;
     out->samples_volume_occlusion = visual->volume_occluded && ordinary_visual_pass;
     out->samples_scene_occlusion = visual->scene_occluded && ordinary_visual_pass;
     out->writes_volume_occlusion_depth =

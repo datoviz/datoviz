@@ -5705,6 +5705,9 @@ int test_scene_volume_slice_uses_volume_occlusion(TstSuite* suite, TstItem* item
     AT(opaque_contract.draw_count == 2);
     AT(opaque_contract.draws[1].samples_volume_occlusion);
     AT(opaque_contract.draws[1].needs_volume_set);
+    dvz_diagnostic_report_init(&graph_report);
+    AT(_scene_pass_contract_validate(&opaque_contract, &graph_report));
+    AT(dvz_diagnostic_report_count(&graph_report) == 0);
 
     DvzCapabilitySnapshot caps;
     dvz_capability_snapshot_default(&caps);
