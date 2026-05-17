@@ -89,7 +89,9 @@ dvz_panel_add_visual(panel, volume, NULL);
 
 ## Remaining v0.4 Hardening
 
-- Slice probe/readout returning UVW, object coordinate, and sampled value.
+The active slice probe path resolves `dvz_panel_probe()` requests against retained slice volumes and
+returns object coordinates, normalized UVW, and the nearest retained voxel value. MIP/DVR picking is
+still deferred.
 
 See also:
 

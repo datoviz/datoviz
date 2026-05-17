@@ -411,6 +411,8 @@ struct DvzProbeResult
     uint64_t target_id;
     bool has_coordinate;
     double coordinate[3];
+    bool has_uvw;
+    double uvw[3];
     DvzProbeValueKind value_kind;
     double scalar;
     double vector[4];

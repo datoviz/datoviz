@@ -15,6 +15,7 @@
 /*************************************************************************************************/
 
 #include <inttypes.h>
+#include <math.h>
 #include <stdbool.h>
 #include <stdint.h>
 
@@ -60,6 +61,9 @@ static void _scene_image_probe_mark_static_uploaded(
 static bool _scene_probe_request_has_image_candidate(
     const DvzFigure* figure, const DvzPendingProbeRequest* pending);
 
+static bool _scene_probe_request_has_volume_slice_candidate(
+    const DvzFigure* figure, const DvzPendingProbeRequest* pending);
+
 static bool _scene_pick_request_has_point_like_candidate(
     const DvzFigure* figure, const DvzPendingPickRequest* pending);
 
@@ -75,6 +79,9 @@ static bool _scene_process_point_pick_request(
 static bool _scene_process_image_probe_request(
     DvzFigure* figure, DvzSceneRequestExecutor* executor, const DvzCapabilitySnapshot* caps,
     const DvzPendingProbeRequest* pending);
+
+static bool _scene_process_volume_slice_probe_request(
+    DvzFigure* figure, const DvzPendingProbeRequest* pending);
 
 
 
@@ -154,6 +161,13 @@ uint32_t _dvz_figure_process_requests_with_executor(
         if (pending.panel == NULL || pending.panel->figure != figure)
         {
             i++;
+            continue;
+        }
+        if (_scene_probe_request_has_volume_slice_candidate(figure, &pending))
+        {
+            (void)_scene_process_volume_slice_probe_request(figure, &pending);
+            _scene_remove_pending_probe_at(scene, i);
+            processed++;
             continue;
         }
         if (_scene_probe_request_has_image_candidate(figure, &pending))
@@ -417,6 +431,250 @@ static void _scene_image_probe_mark_static_uploaded(
     executor->image_probe_position_version = position_version;
     executor->image_probe_texcoord_version = texcoord_version;
     executor->image_probe_texture_version = texture_version;
+}
+
+
+/**
+ * Return one axis component from a volume coordinate.
+ *
+ * @param axis axis index
+ * @param value coordinate
+ * @return selected component
+ */
+static double _volume_axis_value(uint32_t axis, const double value[3])
+{
+    return axis == 0 ? value[0] : (axis == 1 ? value[1] : value[2]);
+}
+
+
+/**
+ * Intersect a ray with an axis-aligned box.
+ *
+ * @param ro ray origin
+ * @param rd ray direction
+ * @param box_min minimum box coordinate
+ * @param box_max maximum box coordinate
+ * @param out_t0 near ray parameter
+ * @param out_t1 far ray parameter
+ * @return whether the ray intersects the box
+ */
+static bool _volume_ray_box(
+    const double ro[3], const double rd[3], const double box_min[3], const double box_max[3],
+    double* out_t0, double* out_t1)
+{
+    ANN(ro);
+    ANN(rd);
+    ANN(box_min);
+    ANN(box_max);
+    ANN(out_t0);
+    ANN(out_t1);
+    double t0 = -INFINITY;
+    double t1 = +INFINITY;
+    for (uint32_t i = 0; i < 3; i++)
+    {
+        if (fabs(rd[i]) < 1e-12)
+        {
+            if (ro[i] < box_min[i] || ro[i] > box_max[i])
+                return false;
+            continue;
+        }
+        double a = (box_min[i] - ro[i]) / rd[i];
+        double b = (box_max[i] - ro[i]) / rd[i];
+        if (a > b)
+        {
+            double tmp = a;
+            a = b;
+            b = tmp;
+        }
+        if (a > t0)
+            t0 = a;
+        if (b < t1)
+            t1 = b;
+    }
+    *out_t0 = t0;
+    *out_t1 = t1;
+    return t1 >= fmax(t0, 0.0);
+}
+
+
+/**
+ * Return whether a normalized coordinate survives the arbitrary clipping plane.
+ *
+ * @param state volume state
+ * @param uvw normalized volume coordinate
+ * @return whether the coordinate is inside the plane half-space
+ */
+static bool _volume_inside_clip_plane(const DvzVolumeState* state, const double uvw[3])
+{
+    ANN(state);
+    ANN(uvw);
+    if (!state->clip_plane_enabled)
+        return true;
+    double side = 0.0;
+    for (uint32_t i = 0; i < 3; i++)
+        side += state->clip_plane_normal[i] * (uvw[i] - state->clip_plane_point[i]);
+    return state->clip_plane_keep_positive ? side >= -1e-12 : side <= 1e-12;
+}
+
+
+/**
+ * Map normalized volume coordinates to texture coordinates.
+ *
+ * @param state volume state
+ * @param uvw normalized volume coordinate
+ * @param out_texture_uvw texture coordinate after axis mapping
+ */
+static void _volume_texture_uvw(
+    const DvzVolumeState* state, const double uvw[3], double out_texture_uvw[3])
+{
+    ANN(state);
+    ANN(uvw);
+    ANN(out_texture_uvw);
+    for (uint32_t i = 0; i < 3; i++)
+    {
+        double v = uvw[state->axis_order[i]];
+        out_texture_uvw[i] = state->axis_flip[i] ? 1.0 - v : v;
+        if (out_texture_uvw[i] < 0.0)
+            out_texture_uvw[i] = 0.0;
+        if (out_texture_uvw[i] > 1.0)
+            out_texture_uvw[i] = 1.0;
+    }
+}
+
+
+/**
+ * Read one scalar sample for CPU-side volume probing.
+ *
+ * @param field retained sampled field
+ * @param sample_index flat sample index
+ * @param out_value scalar value
+ * @return whether the scalar format is supported
+ */
+static bool _volume_read_scalar_sample(
+    const DvzSampledField* field, uint64_t sample_index, double* out_value)
+{
+    ANN(field);
+    ANN(field->data);
+    ANN(out_value);
+    switch (field->desc.format)
+    {
+    case DVZ_FIELD_FORMAT_R8_UNORM:
+        *out_value = (double)((const uint8_t*)field->data)[sample_index] / 255.0;
+        return true;
+    case DVZ_FIELD_FORMAT_R8_UINT:
+        *out_value = (double)((const uint8_t*)field->data)[sample_index];
+        return true;
+    case DVZ_FIELD_FORMAT_R8_SINT:
+        *out_value = (double)((const int8_t*)field->data)[sample_index];
+        return true;
+    case DVZ_FIELD_FORMAT_R16_UNORM:
+        *out_value = (double)((const uint16_t*)field->data)[sample_index] / 65535.0;
+        return true;
+    case DVZ_FIELD_FORMAT_R16_UINT:
+        *out_value = (double)((const uint16_t*)field->data)[sample_index];
+        return true;
+    case DVZ_FIELD_FORMAT_R16_SINT:
+        *out_value = (double)((const int16_t*)field->data)[sample_index];
+        return true;
+    case DVZ_FIELD_FORMAT_R32_UINT:
+        *out_value = (double)((const uint32_t*)field->data)[sample_index];
+        return true;
+    case DVZ_FIELD_FORMAT_R32_SINT:
+        *out_value = (double)((const int32_t*)field->data)[sample_index];
+        return true;
+    case DVZ_FIELD_FORMAT_R32_FLOAT:
+        *out_value = (double)((const float*)field->data)[sample_index];
+        return true;
+    default:
+        return false;
+    }
+}
+
+
+/**
+ * Sample one retained field at nearest texture coordinates.
+ *
+ * @param field retained sampled field
+ * @param texture_uvw normalized texture coordinate
+ * @param out_index flat voxel index
+ * @param out_probe probe payload to fill
+ * @return whether the sample was read
+ */
+static bool _volume_probe_sample_nearest(
+    const DvzSampledField* field, const double texture_uvw[3], uint64_t* out_index,
+    DvzProbeResult* out_probe)
+{
+    ANN(field);
+    ANN(texture_uvw);
+    ANN(out_index);
+    ANN(out_probe);
+    if (field->data == NULL || field->desc.width == 0 || field->desc.height == 0 ||
+        field->desc.depth == 0)
+        return false;
+
+    uint32_t x = (uint32_t)llround(texture_uvw[0] * (double)(field->desc.width - 1));
+    uint32_t y = (uint32_t)llround(texture_uvw[1] * (double)(field->desc.height - 1));
+    uint32_t z = (uint32_t)llround(texture_uvw[2] * (double)(field->desc.depth - 1));
+    if (x >= field->desc.width)
+        x = field->desc.width - 1;
+    if (y >= field->desc.height)
+        y = field->desc.height - 1;
+    if (z >= field->desc.depth)
+        z = field->desc.depth - 1;
+    uint64_t index = ((uint64_t)z * field->desc.height + y) * field->desc.width + x;
+    *out_index = index;
+
+    if (_field_format_is_scalar(field->desc.format))
+    {
+        double value = 0.0;
+        if (!_volume_read_scalar_sample(field, index, &value))
+            return false;
+        out_probe->value_kind = DVZ_PROBE_VALUE_SCALAR;
+        out_probe->scalar = value;
+        dvz_strlcpy(out_probe->label, "scalar", sizeof(out_probe->label));
+        return true;
+    }
+    if (field->desc.format == DVZ_FIELD_FORMAT_RGBA8_UNORM)
+    {
+        const uint8_t* rgba = (const uint8_t*)field->data + 4 * index;
+        out_probe->value_kind = DVZ_PROBE_VALUE_VEC4;
+        for (uint32_t i = 0; i < 4; i++)
+            out_probe->vector[i] = (double)rgba[i] / 255.0;
+        dvz_strlcpy(out_probe->label, "rgba", sizeof(out_probe->label));
+        return true;
+    }
+    return false;
+}
+
+
+/**
+ * Return whether one pending probe has a visible slice-volume CPU candidate.
+ *
+ * @param figure figure whose request queue is being processed
+ * @param pending pending probe request
+ * @return true when a matching slice volume visual exists
+ */
+static bool _scene_probe_request_has_volume_slice_candidate(
+    const DvzFigure* figure, const DvzPendingProbeRequest* pending)
+{
+    ANN(figure);
+    ANN(pending);
+    if (pending->panel == NULL || pending->panel->figure != figure)
+        return false;
+    if (pending->request.target != DVZ_SCENE_TARGET_NONE &&
+        pending->request.target != DVZ_SCENE_TARGET_SAMPLE)
+        return false;
+
+    const DvzPanel* panel = pending->panel;
+    for (uint32_t i = 0; i < panel->visual_count; i++)
+    {
+        const DvzVisual* visual = panel->visuals[i].visual;
+        if (visual == NULL || !visual->visible || visual->type != DVZ_VISUAL_TYPE_VOLUME)
+            continue;
+        if (visual->volume.render_mode == DVZ_VOLUME_RENDER_SLICE && visual->field != NULL)
+            return true;
+    }
+    return false;
 }
 
 
@@ -774,6 +1032,163 @@ static bool _scene_process_point_pick_request(
         "picker_request_miss request=%llu x=%.3f y=%.3f\n",
         (unsigned long long)pending->request.request_id, pending->x, pending->y);
     return _scene_push_pick_result(scene, panel, pending->freshness_serial, &miss);
+}
+
+
+/**
+ * Resolve one slice-volume probe directly from retained CPU field data.
+ *
+ * @param figure figure whose request queue is being processed
+ * @param pending pending probe request
+ * @return whether a result was queued
+ */
+static bool _scene_process_volume_slice_probe_request(
+    DvzFigure* figure, const DvzPendingProbeRequest* pending)
+{
+    ANN(figure);
+    ANN(pending);
+    ANN(pending->panel);
+
+    DvzScene* scene = figure->scene;
+    DvzPanel* panel = pending->panel;
+    DvzProbeResult miss = {
+        .request_id = pending->request.request_id,
+        .hit = false,
+        .panel_id = _scene_panel_public_id(figure, panel),
+        .source_request_id = pending->request.request_id,
+    };
+
+    vec2 request_ndc = {0};
+    if (!_scene_pick_request_ndc(figure, panel, pending->x, pending->y, request_ndc))
+        return _scene_push_probe_result(scene, panel, pending->freshness_serial, &miss);
+
+    uint32_t order[DVZ_SCENE_MAX_VISUALS] = {0};
+    _scene_panel_visual_order(panel, order);
+    for (int32_t oi = (int32_t)panel->visual_count - 1; oi >= 0; oi--)
+    {
+        DvzPanelAttach* attach = &panel->visuals[order[oi]];
+        DvzVisual* visual = attach->visual;
+        if (visual == NULL || !visual->visible || visual->type != DVZ_VISUAL_TYPE_VOLUME ||
+            visual->field == NULL || visual->volume.render_mode != DVZ_VOLUME_RENDER_SLICE)
+            continue;
+
+        DvzMVP mvp = {0};
+        _scene_panel_apply_mvp(panel, &mvp);
+        mat4 mv = {0};
+        mat4 mvp_mat = {0};
+        mat4 inv_mvp = {0};
+        glm_mat4_mul(mvp.view, mvp.model, mv);
+        glm_mat4_mul(mvp.proj, mv, mvp_mat);
+        glm_mat4_inv(mvp_mat, inv_mvp);
+
+        vec4 near_clip = {request_ndc[0], request_ndc[1], -1.0f, 1.0f};
+        vec4 far_clip = {request_ndc[0], request_ndc[1], +1.0f, 1.0f};
+        vec4 near_obj = {0};
+        vec4 far_obj = {0};
+        glm_mat4_mulv(inv_mvp, near_clip, near_obj);
+        glm_mat4_mulv(inv_mvp, far_clip, far_obj);
+        if (fabsf(near_obj[3]) < 1e-12f || fabsf(far_obj[3]) < 1e-12f)
+            continue;
+
+        double ro_obj[3] = {
+            (double)(near_obj[0] / near_obj[3]),
+            (double)(near_obj[1] / near_obj[3]),
+            (double)(near_obj[2] / near_obj[3]),
+        };
+        double far_point[3] = {
+            (double)(far_obj[0] / far_obj[3]),
+            (double)(far_obj[1] / far_obj[3]),
+            (double)(far_obj[2] / far_obj[3]),
+        };
+        double rd_obj[3] = {
+            far_point[0] - ro_obj[0],
+            far_point[1] - ro_obj[1],
+            far_point[2] - ro_obj[2],
+        };
+        double rd_len = sqrt(
+            rd_obj[0] * rd_obj[0] + rd_obj[1] * rd_obj[1] + rd_obj[2] * rd_obj[2]);
+        if (rd_len <= 0.0)
+            continue;
+        for (uint32_t i = 0; i < 3; i++)
+            rd_obj[i] /= rd_len;
+
+        const DvzVolumeState* state = &visual->volume;
+        double extent[3] = {
+            state->bounds_max[0] - state->bounds_min[0],
+            state->bounds_max[1] - state->bounds_min[1],
+            state->bounds_max[2] - state->bounds_min[2],
+        };
+        if (extent[0] <= 0.0 || extent[1] <= 0.0 || extent[2] <= 0.0)
+            continue;
+        double ro[3] = {
+            (ro_obj[0] - state->bounds_min[0]) / extent[0],
+            (ro_obj[1] - state->bounds_min[1]) / extent[1],
+            (ro_obj[2] - state->bounds_min[2]) / extent[2],
+        };
+        double rd[3] = {rd_obj[0] / extent[0], rd_obj[1] / extent[1], rd_obj[2] / extent[2]};
+
+        double proxy_min[3] = {0.0, 0.0, 0.0};
+        double proxy_max[3] = {1.0, 1.0, 1.0};
+        double proxy_t0 = 0.0;
+        double proxy_t1 = 0.0;
+        if (!_volume_ray_box(ro, rd, proxy_min, proxy_max, &proxy_t0, &proxy_t1))
+            continue;
+
+        double box_min[3] = {0.0, 0.0, 0.0};
+        double box_max[3] = {1.0, 1.0, 1.0};
+        if (state->clipping_enabled)
+        {
+            for (uint32_t i = 0; i < 3; i++)
+            {
+                box_min[i] = state->clip_min[i];
+                box_max[i] = state->clip_max[i];
+            }
+        }
+
+        uint32_t axis = (uint32_t)state->slice_axis;
+        double slice_coord =
+            box_min[axis] + state->slice_position * (box_max[axis] - box_min[axis]);
+        double axis_rd = _volume_axis_value(axis, rd);
+        if (fabs(axis_rd) < 1e-12)
+            continue;
+        double slice_t = (slice_coord - _volume_axis_value(axis, ro)) / axis_rd;
+        if (slice_t < fmax(proxy_t0, 0.0) || slice_t > proxy_t1)
+            continue;
+
+        double uvw[3] = {
+            ro[0] + rd[0] * slice_t,
+            ro[1] + rd[1] * slice_t,
+            ro[2] + rd[2] * slice_t,
+        };
+        if (
+            uvw[0] < box_min[0] || uvw[0] > box_max[0] || uvw[1] < box_min[1] ||
+            uvw[1] > box_max[1] || uvw[2] < box_min[2] || uvw[2] > box_max[2] ||
+            !_volume_inside_clip_plane(state, uvw))
+        {
+            continue;
+        }
+
+        double texture_uvw[3] = {0};
+        _volume_texture_uvw(state, uvw, texture_uvw);
+        DvzProbeResult resolved = miss;
+        uint64_t voxel_index = 0;
+        if (!_volume_probe_sample_nearest(visual->field, texture_uvw, &voxel_index, &resolved))
+            continue;
+        resolved.hit = true;
+        resolved.visual_id = _scene_visual_public_id(scene, visual);
+        resolved.target = DVZ_SCENE_TARGET_SAMPLE;
+        resolved.target_id = voxel_index;
+        resolved.has_coordinate = true;
+        resolved.has_uvw = true;
+        for (uint32_t i = 0; i < 3; i++)
+        {
+            resolved.uvw[i] = uvw[i];
+            resolved.coordinate[i] = state->bounds_min[i] + uvw[i] * extent[i];
+        }
+        return _scene_push_probe_result(scene, panel, pending->freshness_serial, &resolved);
+    }
+
+    return _scene_push_probe_result(scene, panel, pending->freshness_serial, &miss);
 }
 
 

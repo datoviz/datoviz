@@ -22,9 +22,10 @@ The active v0.4 volume contract is intentionally powerful but bounded:
 2. shader-side axis order and axis flip so examples do not swizzle large volumes on the CPU;
 3. real nearest/linear sampler selection in the DRP2/vklite runtime;
 4. a 256x1 RGBA transfer texture built from shared colormap state plus volume opacity stops;
-5. one arbitrary clipping plane in addition to the normalized clipping box.
+5. one arbitrary clipping plane in addition to the normalized clipping box;
+6. CPU slice probe/readout returning UVW, object coordinate, and sampled value.
 
-The remaining v0.4 hardening target is slice probe/readout before MIP or DVR picking.
+MIP and DVR picking remain follow-up work.
 
 Isosurfaces, gradient lighting, categorical label volumes, bricking/out-of-core streaming, full MPR,
 and WebGPU/WGSL parity remain follow-up work unless a specific v0.4 task activates them.

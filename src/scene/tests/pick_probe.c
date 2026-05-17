@@ -645,6 +645,75 @@ int test_scene_image_probe_gpu_readback_failure_misses(TstSuite* suite, TstItem*
 }
 
 
+static int test_scene_volume_slice_probe_cpu_sample(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    ANN(item);
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
+    ANN(panel);
+
+    float values[27] = {0};
+    for (uint32_t i = 0; i < 27; i++)
+        values[i] = (float)i;
+
+    DvzSampledField* field = dvz_sampled_field(
+        scene, &(DvzSampledFieldDesc){
+                   .dim = DVZ_FIELD_DIM_3D,
+                   .format = DVZ_FIELD_FORMAT_R32_FLOAT,
+                   .semantic = DVZ_FIELD_SEMANTIC_SCALAR,
+                   .width = 3,
+                   .height = 3,
+                   .depth = 3,
+               });
+    ANN(field);
+    AT(dvz_sampled_field_set_data(
+        field,
+        &(DvzFieldDataView){
+            .data = values,
+            .bytes_per_row = 3 * sizeof(float),
+            .rows_per_image = 3,
+        }));
+
+    DvzVisual* volume = dvz_volume(scene, 0);
+    ANN(volume);
+    AT(dvz_visual_set_field(volume, "field", field));
+    AT(dvz_volume_set_render_mode(volume, DVZ_VOLUME_RENDER_SLICE) == 0);
+    AT(dvz_panel_add_visual(panel, volume, NULL) == 0);
+
+    AT(dvz_panel_probe(
+           panel, 32.0, 32.0,
+           &(DvzProbeRequest){.request_id = 71, .target = DVZ_SCENE_TARGET_SAMPLE}) == 0);
+    AT(dvz_figure_process_requests(figure, (DvzDrp2Runtime*)scene, NULL) == 1);
+
+    DvzProbeResult probe = {0};
+    AT(dvz_scene_poll_probe(scene, &probe));
+    AT(probe.hit);
+    AT(probe.request_id == 71);
+    AT(probe.visual_id == _scene_visual_public_id(scene, volume));
+    AT(probe.target == DVZ_SCENE_TARGET_SAMPLE);
+    AT(probe.target_id == 13);
+    AT(probe.value_kind == DVZ_PROBE_VALUE_SCALAR);
+    AC(probe.scalar, 13.0, 1e-12);
+    AT(probe.has_coordinate);
+    AT(probe.has_uvw);
+    AC(probe.coordinate[0], 0.0, 1e-12);
+    AC(probe.coordinate[1], 0.0, 1e-12);
+    AC(probe.coordinate[2], 0.0, 1e-12);
+    AC(probe.uvw[0], 0.5, 1e-12);
+    AC(probe.uvw[1], 0.5, 1e-12);
+    AC(probe.uvw[2], 0.5, 1e-12);
+    AT(!dvz_scene_poll_probe(scene, &probe));
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
 int test_scene_process_pick_probe_requests(TstSuite* suite, TstItem* item)
 {
     ANN(suite);
@@ -1599,6 +1668,7 @@ int test_scene_pick_probe(TstSuite* suite)
     TEST_SIMPLE(test_scene_probe_request_zero_id_rejects_late_result_after_newer_poll);
     TEST_SIMPLE(test_scene_image_probe_transparent_pixel_misses);
     TEST_SIMPLE(test_scene_image_probe_gpu_readback_failure_misses);
+    TEST_SIMPLE(test_scene_volume_slice_probe_cpu_sample);
     TEST_SIMPLE(test_scene_process_pick_probe_requests);
     TEST_SIMPLE(test_scene_point_pick_quadrants);
     TEST_SIMPLE(test_scene_point_pick_rejects_disc_corner);
