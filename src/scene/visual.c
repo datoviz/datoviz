@@ -213,7 +213,7 @@ static uint32_t _attr_item_size(DvzVisualType type, const char* name)
         break;
     case DVZ_VISUAL_TYPE_TEXT:
         if (strcmp(name, "position") == 0) return 3 * sizeof(float);
-        if (strcmp(name, "pivot") == 0)    return 2 * sizeof(float);
+        if (strcmp(name, "anchor") == 0)   return 2 * sizeof(float);
         if (strcmp(name, "size") == 0)     return sizeof(float);
         if (strcmp(name, "color") == 0)    return 4 * sizeof(uint8_t);
         if (strcmp(name, "angle") == 0)    return sizeof(float);
@@ -269,7 +269,7 @@ static bool _attr_supported(DvzVisualType type, const char* name, uint32_t* item
     else if (type == DVZ_VISUAL_TYPE_IMAGE)
         expected = "position, extent, anchor, tex_rect, texcoords";
     else if (type == DVZ_VISUAL_TYPE_TEXT)
-        expected = "text strings plus position, pivot, size, color, angle";
+        expected = "text strings plus position, anchor, size, color, angle";
     else if (type == DVZ_VISUAL_TYPE_GLYPH)
         expected = "position, texcoords, color, plus a bound 2D field";
     else if (type == DVZ_VISUAL_TYPE_VOLUME)

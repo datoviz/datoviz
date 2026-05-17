@@ -145,13 +145,13 @@ int test_scene_text_annotation_bookkeeping(TstSuite* suite, TstItem* item)
     ANN(text);
     const char* strings[2] = {"hello", "world"};
     float positions[2][3] = {{10.0f, 20.0f, 0.0f}, {80.0f, 24.0f, 0.0f}};
-    float pivots[2][2] = {{0.0f, 0.0f}, {0.5f, 0.5f}};
+    float text_anchors[2][2] = {{0.0f, 0.0f}, {0.5f, 0.5f}};
     float sizes[2] = {14.0f, 18.0f};
     float angles[2] = {0.25f, -0.5f};
     DvzColor colors[2] = {{255, 255, 255, 255}, {128, 200, 255, 255}};
     DvzVisualDataUpdate updates[5] = {
         {.attr_name = "position", .data = positions, .item_count = 2},
-        {.attr_name = "pivot", .data = pivots, .item_count = 2},
+        {.attr_name = "anchor", .data = text_anchors, .item_count = 2},
         {.attr_name = "size", .data = sizes, .item_count = 2},
         {.attr_name = "color", .data = colors, .item_count = 2},
         {.attr_name = "angle", .data = angles, .item_count = 2},
@@ -221,13 +221,13 @@ int test_scene_text_bitmap_visual_realization(TstSuite* suite, TstItem* item)
     ANN(text);
     const char* strings[1] = {"Hi"};
     float positions_text[1][3] = {{10.0f, 20.0f, 0.0f}};
-    float pivots[1][2] = {{0.0f, 0.0f}};
+    float text_anchors[1][2] = {{0.0f, 0.0f}};
     float sizes[1] = {8.0f};
     float angles[1] = {0.0f};
     DvzColor colors_text[1] = {{64, 128, 255, 255}};
     DvzVisualDataUpdate updates[5] = {
         {.attr_name = "position", .data = positions_text, .item_count = 1},
-        {.attr_name = "pivot", .data = pivots, .item_count = 1},
+        {.attr_name = "anchor", .data = text_anchors, .item_count = 1},
         {.attr_name = "size", .data = sizes, .item_count = 1},
         {.attr_name = "color", .data = colors_text, .item_count = 1},
         {.attr_name = "angle", .data = angles, .item_count = 1},
@@ -269,9 +269,9 @@ int test_scene_text_bitmap_visual_realization(TstSuite* suite, TstItem* item)
     AC(positions[11][0], -0.93125f, 1e-6f);
     AC(positions[11][1], 0.8833333f, 1e-6f);
 
-    pivots[0][0] = 0.5f;
-    pivots[0][1] = 0.5f;
-    AT(dvz_visual_set_data(text, "pivot", pivots, 1) == 0);
+    text_anchors[0][0] = 0.5f;
+    text_anchors[0][1] = 0.5f;
+    AT(dvz_visual_set_data(text, "anchor", text_anchors, 1) == 0);
     _scene_prepare_text_visuals(figure);
     positions = (const float(*)[3])glyph->attrs[pos_idx].data;
     ANN(positions);
@@ -379,7 +379,7 @@ int test_scene_text_many_labels_render_plan(TstSuite* suite, TstItem* item)
     char labels[16][16] = {{0}};
     const char* strings[16] = {0};
     float positions[16][3] = {{0}};
-    float pivots[16][2] = {{0}};
+    float text_anchors[16][2] = {{0}};
     float sizes[16] = {0};
     float angles[16] = {0};
     DvzColor colors[16] = {{0}};
@@ -389,8 +389,8 @@ int test_scene_text_many_labels_render_plan(TstSuite* suite, TstItem* item)
         strings[i] = labels[i];
         positions[i][0] = 320.0f + (float)i * 8.0f;
         positions[i][1] = 240.0f;
-        pivots[i][0] = 0.5f;
-        pivots[i][1] = 0.5f;
+        text_anchors[i][0] = 0.5f;
+        text_anchors[i][1] = 0.5f;
         sizes[i] = 8.0f;
         colors[i][0] = 255;
         colors[i][1] = 255;
@@ -399,7 +399,7 @@ int test_scene_text_many_labels_render_plan(TstSuite* suite, TstItem* item)
     }
     DvzVisualDataUpdate updates[5] = {
         {.attr_name = "position", .data = positions, .item_count = label_count},
-        {.attr_name = "pivot", .data = pivots, .item_count = label_count},
+        {.attr_name = "anchor", .data = text_anchors, .item_count = label_count},
         {.attr_name = "size", .data = sizes, .item_count = label_count},
         {.attr_name = "color", .data = colors, .item_count = label_count},
         {.attr_name = "angle", .data = angles, .item_count = label_count},

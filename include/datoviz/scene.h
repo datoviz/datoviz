@@ -746,7 +746,7 @@ dvz_visual_attr_mutability(const DvzVisual* visual, const char* attr_name);
  *        per-item `"position"` (vec3f) + `"extent"` (vec2f) with optional `"tex_rect"`
  *        (vec4f) and `"anchor"` (vec2f)
  * text: string attribute `"text"` plus per-string `"position"` (vec3f pixels), optional
- *       `"pivot"` (vec2f), `"size"` (float points), `"color"` (RGBA8), `"angle"` (float radians)
+ *       `"anchor"` (vec2f), `"size"` (float points), `"color"` (RGBA8), `"angle"` (float radians)
  * glyph: `"position"` (vec3f), `"texcoords"` (vec2f), `"color"` (RGBA8)
  *
  * All configured attributes on one visual must use the same item_count. This
@@ -1190,7 +1190,7 @@ DVZ_EXPORT DvzVisual* dvz_image(DvzScene* scene, uint32_t flags);
  * Create a batched text visual.
  *
  * Text visuals render one string per item. Use `dvz_visual_set_strings(text, "text", ...)` and
- * regular visual data attributes for positions, pivots, sizes, colors, and angles.
+ * regular visual data attributes for positions, text-box anchors, sizes, colors, and angles.
  *
  * @param scene the scene
  * @param flags variant flags

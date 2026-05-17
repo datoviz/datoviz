@@ -64,8 +64,8 @@ typedef struct TextLabState
     float angle;
     float offset_x;
     float offset_y;
-    float pivot_x;
-    float pivot_y;
+    float text_anchor_x;
+    float text_anchor_y;
     float color[4];
     float tick_count_value;
     int mode;
@@ -206,28 +206,28 @@ static void target_anchor_pixels(DvzSceneAnchor anchor, float out[2])
  * @param positions figure-pixel text positions
  * @param size_pts text size in points
  * @param color text color
- * @param pivot normalized text-box pivot
+ * @param text_anchor normalized text-box anchor
  * @param angles per-string angles, or NULL for zero
  */
 static void set_text_items(
     DvzVisual* visual, const char* const* strings, uint32_t count, float positions[][3],
-    float size_pts, const DvzColor color, const float pivot[2], const float* angles)
+    float size_pts, const DvzColor color, const float text_anchor[2], const float* angles)
 {
     ANN(visual);
     ANN(strings);
     ANN(positions);
-    ANN(pivot);
+    ANN(text_anchor);
     if (count > TEXT_LAB_MAX_TICKS)
         count = TEXT_LAB_MAX_TICKS;
     float sizes[TEXT_LAB_MAX_TICKS] = {0};
-    float pivots[TEXT_LAB_MAX_TICKS][2] = {0};
+    float text_anchors[TEXT_LAB_MAX_TICKS][2] = {0};
     float angle_values[TEXT_LAB_MAX_TICKS] = {0};
     DvzColor colors[TEXT_LAB_MAX_TICKS] = {0};
     for (uint32_t i = 0; i < count && i < TEXT_LAB_MAX_TICKS; i++)
     {
         sizes[i] = size_pts;
-        pivots[i][0] = pivot[0];
-        pivots[i][1] = pivot[1];
+        text_anchors[i][0] = text_anchor[0];
+        text_anchors[i][1] = text_anchor[1];
         angle_values[i] = angles != NULL ? angles[i] : 0.0f;
         colors[i][0] = color[0];
         colors[i][1] = color[1];
@@ -238,7 +238,7 @@ static void set_text_items(
     dvz_visual_set_strings(visual, "text", strings, count);
     DvzVisualDataUpdate updates[5] = {
         {.attr_name = "position", .data = positions, .item_count = count},
-        {.attr_name = "pivot", .data = pivots, .item_count = count},
+        {.attr_name = "anchor", .data = text_anchors, .item_count = count},
         {.attr_name = "size", .data = sizes, .item_count = count},
         {.attr_name = "color", .data = colors, .item_count = count},
         {.attr_name = "angle", .data = angle_values, .item_count = count},
@@ -259,7 +259,7 @@ static void update_text_scene(TextLabState* state)
     DvzColor color = {0};
     gui_color_to_dvz(state->color, color);
     DvzSceneAnchor anchor = selected_anchor(state->anchor_index);
-    float pivot[2] = {state->pivot_x, state->pivot_y};
+    float text_anchor[2] = {state->text_anchor_x, state->text_anchor_y};
     float target[2] = {0};
     target_anchor_pixels(anchor, target);
 
@@ -269,8 +269,8 @@ static void update_text_scene(TextLabState* state)
 
     const char* title_string = "Text Lab";
     float title_pos[1][3] = {{24.0f, 24.0f, 0.0f}};
-    const float title_pivot[2] = {0.0f, 0.0f};
-    set_text_items(state->title, &title_string, 1, title_pos, 22.0f, color, title_pivot, NULL);
+    const float title_anchor[2] = {0.0f, 0.0f};
+    set_text_items(state->title, &title_string, 1, title_pos, 22.0f, color, title_anchor, NULL);
 
     const char* sample_string = NULL;
     float sample_pos[1][3] = {{target[0] + state->offset_x, target[1] + state->offset_y, 0.0f}};
@@ -286,9 +286,9 @@ static void update_text_scene(TextLabState* state)
         float heading_pos[1][3] = {
             {0.5f * TEXT_LAB_FIGURE_WIDTH, 76.0f, 0.0f},
         };
-        const float heading_pivot[2] = {0.5f, 0.5f};
+        const float heading_anchor[2] = {0.5f, 0.5f};
         set_text_items(
-            state->sample, &sample_string, 1, heading_pos, 18.0f, color, heading_pivot, NULL);
+            state->sample, &sample_string, 1, heading_pos, 18.0f, color, heading_anchor, NULL);
 
         float usable = 0.72f * TEXT_LAB_FIGURE_WIDTH;
         float left = 0.5f * (TEXT_LAB_FIGURE_WIDTH - usable);
@@ -305,7 +305,7 @@ static void update_text_scene(TextLabState* state)
             positions[i][2] = 0.0f;
         }
         set_text_items(
-            state->ticks, strings, tick_count, positions, state->tick_size_pts, color, pivot, NULL);
+            state->ticks, strings, tick_count, positions, state->tick_size_pts, color, text_anchor, NULL);
     }
     else if (state->mode == TEXT_LAB_MODE_MULTILINE)
     {
@@ -314,14 +314,14 @@ static void update_text_scene(TextLabState* state)
             {0.5f * TEXT_LAB_FIGURE_WIDTH - 180.0f, 0.5f * TEXT_LAB_FIGURE_HEIGHT - 20.0f, 0.0f},
         };
         set_text_items(
-            state->multiline, &multiline_string, 1, multiline_pos, state->size_pts, color, pivot,
+            state->multiline, &multiline_string, 1, multiline_pos, state->size_pts, color, text_anchor,
             NULL);
     }
     else
     {
         sample_string = mode_sample_text(state->mode);
         set_text_items(
-            state->sample, &sample_string, 1, sample_pos, state->size_pts, color, pivot,
+            state->sample, &sample_string, 1, sample_pos, state->size_pts, color, text_anchor,
             sample_angle);
     }
 
@@ -344,8 +344,8 @@ static void reset_text_state(TextLabState* state)
     state->angle = 0.0f;
     state->offset_x = 0.0f;
     state->offset_y = 0.0f;
-    state->pivot_x = 0.5f;
-    state->pivot_y = 0.5f;
+    state->text_anchor_x = 0.5f;
+    state->text_anchor_y = 0.5f;
     state->color[0] = 0.85f;
     state->color[1] = 0.92f;
     state->color[2] = 1.00f;
@@ -410,8 +410,8 @@ static void gui_callback(DvzGui* gui, DvzAppWindow* win, void* user_data)
             changed |= dvz_gui_slider_float(gui, "Offset X", &state->offset_x, -360.0f, 360.0f);
             changed |= dvz_gui_slider_float(gui, "Offset Y", &state->offset_y, -260.0f, 260.0f);
         }
-        changed |= dvz_gui_slider_float(gui, "Text anchor X", &state->pivot_x, 0.0f, 1.0f);
-        changed |= dvz_gui_slider_float(gui, "Text anchor Y", &state->pivot_y, 0.0f, 1.0f);
+        changed |= dvz_gui_slider_float(gui, "Text anchor X", &state->text_anchor_x, 0.0f, 1.0f);
+        changed |= dvz_gui_slider_float(gui, "Text anchor Y", &state->text_anchor_y, 0.0f, 1.0f);
         if (state->mode == TEXT_LAB_MODE_TICKS)
         {
             changed |= dvz_gui_slider_float_format(

@@ -673,12 +673,12 @@ static void _text_anchor_pixels(const DvzText* text, float* out_x, float* out_y)
 
 
 /**
- * Resolve the default text-box pivot for a target anchor.
+ * Resolve the default text-box anchor for a target anchor.
  *
  * @param anchor the scene anchor
- * @param out output pivot in top-left text-box coordinates
+ * @param out output anchor in top-left text-box coordinates
  */
-static void _text_anchor_pivot(DvzSceneAnchor anchor, float out[2])
+static void _text_default_box_anchor(DvzSceneAnchor anchor, float out[2])
 {
     ANN(out);
     out[0] = 0.0f;
@@ -732,27 +732,27 @@ static void _text_placement_alignment(
     ANN(placement);
     ANN(out_x);
     ANN(out_y);
-    float pivot[2] = {0.0f, 0.0f};
-    if (placement->has_pivot)
+    float text_anchor[2] = {0.0f, 0.0f};
+    if (placement->has_text_anchor)
     {
-        pivot[0] = placement->pivot[0];
-        pivot[1] = placement->pivot[1];
-        if (pivot[0] < 0.0f)
-            pivot[0] = 0.0f;
-        if (pivot[0] > 1.0f)
-            pivot[0] = 1.0f;
-        if (pivot[1] < 0.0f)
-            pivot[1] = 0.0f;
-        if (pivot[1] > 1.0f)
-            pivot[1] = 1.0f;
+        text_anchor[0] = placement->text_anchor[0];
+        text_anchor[1] = placement->text_anchor[1];
+        if (text_anchor[0] < 0.0f)
+            text_anchor[0] = 0.0f;
+        if (text_anchor[0] > 1.0f)
+            text_anchor[0] = 1.0f;
+        if (text_anchor[1] < 0.0f)
+            text_anchor[1] = 0.0f;
+        if (text_anchor[1] > 1.0f)
+            text_anchor[1] = 1.0f;
     }
     else
     {
-        _text_anchor_pivot(placement->anchor, pivot);
+        _text_default_box_anchor(placement->anchor, text_anchor);
     }
 
-    *out_x = -pivot[0] * width;
-    *out_y = -pivot[1] * height;
+    *out_x = -text_anchor[0] * width;
+    *out_y = -text_anchor[1] * height;
 }
 
 
@@ -1124,11 +1124,11 @@ static bool _text_visual_prepare(
         return true;
     }
 
-    const DvzVisualAttr* pivot_attr = _text_visual_attr(visual, "pivot");
+    const DvzVisualAttr* anchor_attr = _text_visual_attr(visual, "anchor");
     const DvzVisualAttr* size_attr = _text_visual_attr(visual, "size");
     const DvzVisualAttr* color_attr = _text_visual_attr(visual, "color");
     const DvzVisualAttr* angle_attr = _text_visual_attr(visual, "angle");
-    if ((pivot_attr != NULL && pivot_attr->item_count != count) ||
+    if ((anchor_attr != NULL && anchor_attr->item_count != count) ||
         (size_attr != NULL && size_attr->item_count != count) ||
         (color_attr != NULL && color_attr->item_count != count) ||
         (angle_attr != NULL && angle_attr->item_count != count))
@@ -1204,7 +1204,8 @@ static bool _text_visual_prepare(
     }
 
     const float(*target)[3] = (const float(*)[3])position_attr->data;
-    const float(*pivots)[2] = pivot_attr != NULL ? (const float(*)[2])pivot_attr->data : NULL;
+    const float(*text_anchors)[2] =
+        anchor_attr != NULL ? (const float(*)[2])anchor_attr->data : NULL;
     const float* sizes = size_attr != NULL ? (const float*)size_attr->data : NULL;
     const uint8_t(*item_colors)[4] =
         color_attr != NULL ? (const uint8_t(*)[4])color_attr->data : NULL;
@@ -1245,14 +1246,14 @@ static bool _text_visual_prepare(
         float line_h = (float)DVZ_TEXT_BITMAP_LINE_HEIGHT * scale;
         float width = (float)columns * glyph_w;
         float height = (float)(lines - 1u) * line_h + glyph_h;
-        float pivot[2] = {0.0f, 0.0f};
-        if (pivots != NULL)
+        float text_anchor[2] = {0.0f, 0.0f};
+        if (text_anchors != NULL)
         {
-            pivot[0] = pivots[i][0];
-            pivot[1] = pivots[i][1];
+            text_anchor[0] = text_anchors[i][0];
+            text_anchor[1] = text_anchors[i][1];
         }
-        float align_x = -pivot[0] * width;
-        float align_y = -pivot[1] * height;
+        float align_x = -text_anchor[0] * width;
+        float align_y = -text_anchor[1] * height;
         float angle = angles != NULL ? angles[i] : 0.0f;
         spans[i].first_glyph = vertex_count / 6u;
 

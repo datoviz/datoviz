@@ -1299,13 +1299,13 @@ int test_app_offscreen_text_has_nonblank_pixels(TstSuite* suite, TstItem* item)
     AT(text != NULL);
     const char* strings[1] = {"HI"};
     float positions[1][3] = {{8.0f, 8.0f, 0.0f}};
-    float pivots[1][2] = {{0.0f, 0.0f}};
+    float text_anchors[1][2] = {{0.0f, 0.0f}};
     float sizes[1] = {16.0f};
     float angles[1] = {0.0f};
     DvzColor colors[1] = {{0, 255, 0, 255}};
     DvzVisualDataUpdate updates[5] = {
         {.attr_name = "position", .data = positions, .item_count = 1},
-        {.attr_name = "pivot", .data = pivots, .item_count = 1},
+        {.attr_name = "anchor", .data = text_anchors, .item_count = 1},
         {.attr_name = "size", .data = sizes, .item_count = 1},
         {.attr_name = "color", .data = colors, .item_count = 1},
         {.attr_name = "angle", .data = angles, .item_count = 1},
