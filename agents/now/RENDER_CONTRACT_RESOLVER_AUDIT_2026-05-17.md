@@ -469,6 +469,27 @@ Validation:
 4. `git diff --check -- src/scene/tests/app.c src/scene/tests/test_scene.h agents/now/RENDER_CONTRACT_RESOLVER_AUDIT_2026-05-17.md`
 
 
+### 2026-05-17: Phase 4 / Source-over scene-occlusion matrix
+
+Completed the narrow source-over scene-occlusion matrix slice.
+
+Changes:
+
+1. Refactored the scene-occlusion offscreen capture helper so it can render with scene occlusion
+   disabled or enabled.
+2. Added `test_app_offscreen_source_over_scene_occlusion_matrix`.
+3. The test locks the current source-over policy: hidden scene occluders do not attenuate the
+   occluded visual, and enabling scene occlusion with the same visible source-over occluder does not
+   double-attenuate beyond ordinary source-over composition.
+
+Validation:
+
+1. `cmake --build build --target dvztest_scene -j2`
+2. `direnv exec . ./build/testing/dvztest_scene test_app_offscreen_source_over_scene_occlusion_matrix`
+3. `direnv exec . ./build/testing/dvztest_scene test_app_offscreen_scene_occlusion_hidden_alpha`
+4. `git diff --check -- src/scene/tests/app.c src/scene/tests/test_scene.h agents/now/RENDER_CONTRACT_RESOLVER_AUDIT_2026-05-17.md`
+
+
 ## Executive Assessment
 
 The direction is correct and worth continuing. The proposal identifies the right failure mode:

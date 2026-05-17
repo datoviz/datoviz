@@ -296,14 +296,15 @@ static DvzVisual* _app_primitive_add_quad(
 
 
 /**
- * Render one scene-occlusion case and capture the center pixel.
+ * Render one source-over scene-occlusion case and capture the center pixel.
  *
+ * @param scene_occlusion_enabled whether scene occlusion should be enabled on the panel
  * @param occluder_hidden whether the occluder visual is hidden
  * @param occluder_alpha alpha channel used by the visible occluder
  * @return captured RGB values, or skipped=true when no app context is available
  */
-static AppSceneOcclusionCapture _app_scene_occlusion_capture_center(
-    bool occluder_hidden, uint8_t occluder_alpha)
+static AppSceneOcclusionCapture _app_source_over_scene_occlusion_capture_center(
+    bool scene_occlusion_enabled, bool occluder_hidden, uint8_t occluder_alpha)
 {
     AppSceneOcclusionCapture out = {0};
     DvzScene* scene = dvz_scene();
@@ -331,7 +332,12 @@ static AppSceneOcclusionCapture _app_scene_occlusion_capture_center(
         scene, panel, -0.45f, 0.45f, -0.45f, 0.45f, 0.2f, green, DVZ_ALPHA_BLENDED, true);
     if (occluded == NULL || occluder == NULL ||
         dvz_visual_set_scene_occluded(occluded, true) != 0 ||
-        dvz_visual_set_scene_occluder(occluder, true) != 0 ||
+        dvz_visual_set_scene_occluder(occluder, true) != 0)
+    {
+        dvz_scene_destroy(scene);
+        return out;
+    }
+    if (scene_occlusion_enabled &&
         dvz_panel_set_scene_occlusion(
             panel, &(DvzSceneOcclusionDesc){
                        .enabled = true,
@@ -2363,19 +2369,22 @@ int test_app_offscreen_scene_occlusion_hidden_alpha(TstSuite* suite, TstItem* it
     if (!_scene_vklite_runtime_available())
         return 0;
 
-    AppSceneOcclusionCapture hidden = _app_scene_occlusion_capture_center(true, 255);
+    AppSceneOcclusionCapture hidden =
+        _app_source_over_scene_occlusion_capture_center(true, true, 255);
     if (hidden.skipped)
     {
         log_warn("test_app_offscreen_scene_occlusion_hidden_alpha skipped: GPU context failed");
         return 0;
     }
-    AppSceneOcclusionCapture zero = _app_scene_occlusion_capture_center(false, 0);
+    AppSceneOcclusionCapture zero =
+        _app_source_over_scene_occlusion_capture_center(true, false, 0);
     if (zero.skipped)
     {
         log_warn("test_app_offscreen_scene_occlusion_hidden_alpha skipped: GPU context failed");
         return 0;
     }
-    AppSceneOcclusionCapture positive = _app_scene_occlusion_capture_center(false, 64);
+    AppSceneOcclusionCapture positive =
+        _app_source_over_scene_occlusion_capture_center(true, false, 64);
     if (positive.skipped)
     {
         log_warn("test_app_offscreen_scene_occlusion_hidden_alpha skipped: GPU context failed");
@@ -2396,6 +2405,58 @@ int test_app_offscreen_scene_occlusion_hidden_alpha(TstSuite* suite, TstItem* it
                                     : zero.rgb[1] - hidden.rgb[1] <= 24);
     AT(positive.rgb[1] > zero.rgb[1] + 30);
     AT(positive.rgb[0] + 20 < zero.rgb[0]);
+    return 0;
+}
+
+
+/**
+ * Ensure source-over scene occlusion respects visible and hidden occluder policy.
+ *
+ * @param suite test suite
+ * @param item test item
+ * @return 0 on success
+ */
+int test_app_offscreen_source_over_scene_occlusion_matrix(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    if (!_scene_vklite_runtime_available())
+        return 0;
+
+    AppSceneOcclusionCapture disabled =
+        _app_source_over_scene_occlusion_capture_center(false, false, 64);
+    if (disabled.skipped)
+    {
+        log_warn("test_app_offscreen_source_over_scene_occlusion_matrix skipped: GPU context failed");
+        return 0;
+    }
+    AppSceneOcclusionCapture hidden =
+        _app_source_over_scene_occlusion_capture_center(true, true, 255);
+    if (hidden.skipped)
+    {
+        log_warn("test_app_offscreen_source_over_scene_occlusion_matrix skipped: GPU context failed");
+        return 0;
+    }
+    AppSceneOcclusionCapture enabled =
+        _app_source_over_scene_occlusion_capture_center(true, false, 64);
+    if (enabled.skipped)
+    {
+        log_warn("test_app_offscreen_source_over_scene_occlusion_matrix skipped: GPU context failed");
+        return 0;
+    }
+
+    AT(disabled.rgb[0] > 120);
+    AT(hidden.rgb[0] > 140);
+    AT(disabled.rgb[1] > 50);
+    AT(hidden.rgb[0] > disabled.rgb[0] + 30);
+    AT(hidden.rgb[1] + 25 < disabled.rgb[1]);
+
+    uint32_t diff = 0;
+    for (uint32_t i = 0; i < 3; i++)
+        diff += disabled.rgb[i] > enabled.rgb[i] ? disabled.rgb[i] - enabled.rgb[i] :
+                                                   enabled.rgb[i] - disabled.rgb[i];
+    AT(diff <= 6);
     return 0;
 }
 
@@ -4422,6 +4483,7 @@ int test_scene_app(TstSuite* suite)
     TEST_SIMPLE(test_app_offscreen_source_over_mesh_depth_and_blend);
     TEST_SIMPLE(test_app_offscreen_depth_peel_mesh_two_layers);
     TEST_SIMPLE(test_app_offscreen_scene_occlusion_hidden_alpha);
+    TEST_SIMPLE(test_app_offscreen_source_over_scene_occlusion_matrix);
     TEST_SIMPLE(test_app_offscreen_point_depth_cue_darkens_far);
     TEST_SIMPLE(test_app_offscreen_has_nonblank_pixels);
     TEST_SIMPLE(test_app_offscreen_pixel_square_has_nonblank_pixels);
