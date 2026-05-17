@@ -85,6 +85,34 @@ Validation:
 7. `git diff --check -- src/scene/scene.c src/scene/tests/scene_graph.c src/scene/tests/test_scene.h`
 
 
+### 2026-05-17: Phase 0 / Sampled-depth contract split
+
+Completed the first sampled-depth semantic split.
+
+Changes:
+
+1. Contract validation now separates fixed-function depth attachment needs from shader sampled-depth
+   needs; `draw->samples_depth` no longer satisfies or creates the generic depth-attachment
+   requirement by itself.
+2. Pass contracts now count sampled depth reads and also treat a depth attachment loaded with read
+   access as a producer-backed depth resource.
+3. Source-over graph emission now creates an explicit producer depth attachment in the opaque graph
+   pass when later blended draws need depth but the opaque visuals themselves would not otherwise
+   write depth.
+4. Added a regression in `test_scene_render_contract_validation_errors` showing that a same-pass
+   clear/write depth attachment is not enough proof for sampled-depth semantics.
+
+Validation:
+
+1. `cmake --build build --target dvztest_scene -j2`
+2. `./build/testing/dvztest_scene test_scene_render_contract_validation_errors`
+3. `./build/testing/dvztest_scene test_scene_blended_mesh_orders_after_volume_slice`
+4. `./build/testing/dvztest_scene test_scene_blended_mesh_occlusion_contracts`
+5. `./build/testing/dvztest_scene test_scene_visual_alpha_mode_standard_blend`
+6. `./build/testing/dvztest_scene test_scene_visual_alpha_mode_splits_frame_plan_passes`
+7. `git diff --check -- src/scene/render_contract.h src/scene/render_contract.c src/scene/scene_emit.c src/scene/tests/scene_graph.c`
+
+
 ## Executive Assessment
 
 The direction is correct and worth continuing. The proposal identifies the right failure mode:

@@ -111,6 +111,7 @@ typedef struct DvzScenePassContract
 
     uint32_t color_attachment_count;
     uint32_t sampled_read_count;
+    uint32_t sampled_depth_read_count;
     bool has_depth_attachment;
 
     bool needs_common_set;

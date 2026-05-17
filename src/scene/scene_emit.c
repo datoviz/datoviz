@@ -2188,9 +2188,10 @@ bool _scene_emit_panel_render(
             log_error("failed to emit G-buffer FramePlan graph for panel %s", panel_id);
             graph_ok = false;
         }
+        bool blended_depth_producer = opaque_needs_depth || transparent_needs_depth;
         if (!_scene_technique_emit_blended_frame_graph(
-                plan, panel_id, true, opaque_needs_depth, opaque_needs_depth, blended_count,
-                blended_needs_depth, blended_writes_depth))
+                plan, panel_id, true, blended_depth_producer, blended_depth_producer,
+                blended_count, blended_needs_depth, blended_writes_depth))
         {
             log_error("failed to emit blended FramePlan graph for panel %s", panel_id);
             graph_ok = false;

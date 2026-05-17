@@ -262,6 +262,8 @@ static bool _contract_append_read(
     use->read = true;
     _contract_apply_resource_facts(plan, use);
     contract->sampled_read_count++;
+    if (strstr(read->resource_id, ".depth") != NULL)
+        contract->sampled_depth_read_count++;
     return true;
 }
 
@@ -279,6 +281,33 @@ static bool _contract_has_depth_attachment(const DvzScenePassContract* contract)
     for (uint32_t i = 0; i < contract->attachment_count; i++)
     {
         if (contract->attachments[i].role == DVZ_SCENE_ATTACHMENT_DEPTH)
+            return true;
+    }
+    return false;
+}
+
+
+
+/**
+ * Return whether one pass has a sampled or producer-backed depth resource.
+ *
+ * @param contract the pass contract
+ * @return whether sampled-depth draws can resolve a produced depth resource
+ */
+static bool _contract_has_sampled_depth_resource(const DvzScenePassContract* contract)
+{
+    ANN(contract);
+    if (contract->sampled_depth_read_count > 0)
+        return true;
+    for (uint32_t i = 0; i < contract->attachment_count; i++)
+    {
+        const DvzSceneAttachmentUse* attachment = &contract->attachments[i];
+        if (attachment->role != DVZ_SCENE_ATTACHMENT_DEPTH)
+            continue;
+        if (
+            attachment->load_op == DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_LOAD &&
+            (attachment->access == DVZ_FRAME_GRAPH_ATTACHMENT_ACCESS_READ ||
+             attachment->access == DVZ_FRAME_GRAPH_ATTACHMENT_ACCESS_READ_WRITE))
             return true;
     }
     return false;
@@ -356,7 +385,7 @@ static bool _contract_reads_resource_suffix(
 
 
 /**
- * Return whether any draw in a contract tests, samples, or writes depth.
+ * Return whether any draw in a contract tests or writes fixed-function depth.
  *
  * @param contract the pass contract
  * @return whether a depth attachment is required
@@ -367,7 +396,7 @@ static bool _contract_needs_depth(const DvzScenePassContract* contract)
     for (uint32_t i = 0; i < contract->draw_count; i++)
     {
         const DvzSceneDrawContract* draw = &contract->draws[i];
-        if (draw->depth_test || draw->samples_depth || draw->depth_write)
+        if (draw->depth_test || draw->depth_write)
             return true;
     }
     return false;
@@ -867,6 +896,7 @@ bool _scene_pass_contract_validate(
     ANN(contract);
     bool ok = true;
     bool needs_depth = false;
+    bool samples_depth = false;
     bool samples_volume_occlusion = false;
     bool samples_scene_occlusion = false;
 
@@ -883,8 +913,8 @@ bool _scene_pass_contract_validate(
             _contract_report(report, "source-over draw must not write depth");
             ok = false;
         }
-        needs_depth = needs_depth || draw->depth_test || draw->samples_depth ||
-                      draw->depth_write;
+        needs_depth = needs_depth || draw->depth_test || draw->depth_write;
+        samples_depth = samples_depth || draw->samples_depth;
         samples_volume_occlusion = samples_volume_occlusion || draw->samples_volume_occlusion;
         samples_scene_occlusion = samples_scene_occlusion || draw->samples_scene_occlusion;
     }
@@ -892,6 +922,11 @@ bool _scene_pass_contract_validate(
     if (needs_depth && !_contract_has_depth_attachment(contract))
     {
         _contract_report(report, "depth-capable draw is in a pass without depth attachment");
+        ok = false;
+    }
+    if (samples_depth && !_contract_has_sampled_depth_resource(contract))
+    {
+        _contract_report(report, "sampled-depth draw has no produced depth resource");
         ok = false;
     }
     if (samples_volume_occlusion &&

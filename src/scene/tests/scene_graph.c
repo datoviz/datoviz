@@ -6583,6 +6583,22 @@ int test_scene_render_contract_validation_errors(TstSuite* suite, TstItem* item)
     AT(dvz_diagnostic_report_count(&report) > 0);
 
     dvz_memset(&contract, sizeof(contract), 0, sizeof(contract));
+    contract.role = DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_BLEND;
+    contract.source_over_blend = true;
+    contract.draw_count = 1;
+    contract.draws[0].alpha_mode = DVZ_ALPHA_BLENDED;
+    contract.draws[0].pass_role = DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_BLEND;
+    contract.draws[0].samples_depth = true;
+    contract.has_depth_attachment = true;
+    contract.attachment_count = 1;
+    contract.attachments[0].role = DVZ_SCENE_ATTACHMENT_DEPTH;
+    contract.attachments[0].load_op = DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_CLEAR;
+    contract.attachments[0].access = DVZ_FRAME_GRAPH_ATTACHMENT_ACCESS_WRITE;
+    dvz_diagnostic_report_init(&report);
+    AT(!_scene_pass_contract_validate(&contract, &report));
+    AT(dvz_diagnostic_report_count(&report) > 0);
+
+    dvz_memset(&contract, sizeof(contract), 0, sizeof(contract));
     contract.role = DVZ_FRAME_PLAN_RENDER_PASS_OPAQUE;
     contract.draw_count = 1;
     contract.draws[0].alpha_mode = DVZ_ALPHA_OPAQUE;
@@ -8279,8 +8295,8 @@ int test_scene_blended_mesh_orders_after_volume_slice(TstSuite* suite, TstItem* 
     ANN(blend_pass);
     AT(blend_pass->has_depth_attachment);
     AT(strcmp(blend_pass->depth_attachment.resource_id, "figure_0_p0.depth") == 0);
-    AT(blend_pass->depth_attachment.load_op == DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_CLEAR);
-    AT(blend_pass->depth_attachment.access == DVZ_FRAME_GRAPH_ATTACHMENT_ACCESS_WRITE);
+    AT(blend_pass->depth_attachment.load_op == DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_LOAD);
+    AT(blend_pass->depth_attachment.access == DVZ_FRAME_GRAPH_ATTACHMENT_ACCESS_READ);
 
     DvzDiagnosticReport graph_report;
     dvz_diagnostic_report_init(&graph_report);
