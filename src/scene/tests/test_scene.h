@@ -655,6 +655,8 @@ int test_app_offscreen_volume_composite_renders_field(TstSuite* suite, TstItem* 
 
 int test_app_offscreen_volume_occlusion_slice_renders(TstSuite* suite, TstItem* item);
 
+int test_app_offscreen_volume_occlusion_region_delta(TstSuite* suite, TstItem* item);
+
 int test_app_offscreen_volume_occlusion_perspective_camera(TstSuite* suite, TstItem* item);
 
 int test_app_offscreen_volume_slice_scene_occlusion_dimming(TstSuite* suite, TstItem* item);
