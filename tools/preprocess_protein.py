@@ -135,8 +135,10 @@ DEFAULT_RIBBON_SAMPLES = 32
 DEFAULT_RIBBON_CROSS_SECTION_COUNT = 24
 DEFAULT_RIBBON_WIDTH_SCALE = 1.75
 DEFAULT_RIBBON_CENTERLINE_SMOOTHING = 0.18
-DEFAULT_RIBBON_SAMPLE_SMOOTHING = 0.30
-DEFAULT_RIBBON_SAMPLE_SMOOTHING_PASSES = 2
+DEFAULT_RIBBON_SPLINE = "bspline"
+DEFAULT_RIBBON_SAMPLE_SMOOTHING = 0.55
+DEFAULT_RIBBON_SAMPLE_SMOOTHING_PASSES = 3
+DEFAULT_RIBBON_SAMPLE_SMOOTHING_RADIUS = 12
 DEFAULT_RIBBON_FRAME_SMOOTHING = 0.35
 
 
@@ -463,6 +465,57 @@ def _catmull_rom_tangent(
     )
 
 
+def _bspline(
+    p0: Vec3,
+    p1: Vec3,
+    p2: Vec3,
+    p3: Vec3,
+    t: float,
+) -> Vec3:
+    t2 = t * t
+    t3 = t2 * t
+    b0 = (1.0 - 3.0 * t + 3.0 * t2 - t3) / 6.0
+    b1 = (4.0 - 6.0 * t2 + 3.0 * t3) / 6.0
+    b2 = (1.0 + 3.0 * t + 3.0 * t2 - 3.0 * t3) / 6.0
+    b3 = t3 / 6.0
+    return (
+        p0[0] * b0 + p1[0] * b1 + p2[0] * b2 + p3[0] * b3,
+        p0[1] * b0 + p1[1] * b1 + p2[1] * b2 + p3[1] * b3,
+        p0[2] * b0 + p1[2] * b1 + p2[2] * b2 + p3[2] * b3,
+    )
+
+
+def _bspline_tangent(
+    p0: Vec3,
+    p1: Vec3,
+    p2: Vec3,
+    p3: Vec3,
+    t: float,
+) -> Vec3:
+    t2 = t * t
+    b0 = (-3.0 + 6.0 * t - 3.0 * t2) / 6.0
+    b1 = (-12.0 * t + 9.0 * t2) / 6.0
+    b2 = (3.0 + 6.0 * t - 9.0 * t2) / 6.0
+    b3 = (3.0 * t2) / 6.0
+    return (
+        p0[0] * b0 + p1[0] * b1 + p2[0] * b2 + p3[0] * b3,
+        p0[1] * b0 + p1[1] * b1 + p2[1] * b2 + p3[1] * b3,
+        p0[2] * b0 + p1[2] * b1 + p2[2] * b2 + p3[2] * b3,
+    )
+
+
+def _ribbon_curve(spline: str, p0: Vec3, p1: Vec3, p2: Vec3, p3: Vec3, t: float) -> Vec3:
+    if spline == "bspline":
+        return _bspline(p0, p1, p2, p3, t)
+    return _catmull_rom(p0, p1, p2, p3, t)
+
+
+def _ribbon_curve_tangent(spline: str, p0: Vec3, p1: Vec3, p2: Vec3, p3: Vec3, t: float) -> Vec3:
+    if spline == "bspline":
+        return _bspline_tangent(p0, p1, p2, p3, t)
+    return _catmull_rom_tangent(p0, p1, p2, p3, t)
+
+
 def _residue_up(residue: Residue, tangent: Vec3, fallback: Vec3) -> Vec3:
     n = residue.atoms.get("N")
     ca = residue.atoms.get("CA")
@@ -627,18 +680,28 @@ def _smooth_ribbon_frames(samples: list[RibbonSample], strength: float) -> list[
 
 
 def _smooth_ribbon_sample_centers(
-    samples: list[RibbonSample], strength: float, passes: int
+    samples: list[RibbonSample], strength: float, passes: int, radius: int
 ) -> list[RibbonSample]:
-    if len(samples) <= 2 or strength <= 0.0 or passes <= 0:
+    if len(samples) <= 2 or strength <= 0.0 or passes <= 0 or radius <= 0:
         return samples
 
     strength = max(0.0, min(0.75, strength))
     passes = max(0, min(8, passes))
+    radius = max(1, min(64, radius))
     centers = [sample.center for sample in samples]
     for _ in range(passes):
         next_centers = list(centers)
         for i in range(1, len(samples) - 1):
-            target = _v_mul(_v_add(centers[i - 1], centers[i + 1]), 0.5)
+            acc = (0.0, 0.0, 0.0)
+            weight_sum = 0.0
+            lo = max(0, i - radius)
+            hi = min(len(samples) - 1, i + radius)
+            for j in range(lo, hi + 1):
+                dist = abs(j - i)
+                weight = float(radius + 1 - dist)
+                acc = _v_add(acc, _v_mul(centers[j], weight))
+                weight_sum += weight
+            target = _v_mul(acc, 1.0 / max(weight_sum, 1e-6))
             t = strength * _centerline_smoothing_factor(samples[i].residue.ss)
             next_centers[i] = _v_lerp(centers[i], target, t)
         centers = next_centers
@@ -673,10 +736,12 @@ def _ribbon_mesh(
     radius: float,
     samples_per_segment: int,
     cross_section_count: int,
+    spline: str,
     width_scale: float,
     centerline_smoothing: float,
     sample_smoothing: float,
     sample_smoothing_passes: int,
+    sample_smoothing_radius: int,
     frame_smoothing: float,
 ) -> dict[str, list]:
     positions: list[float] = []
@@ -703,7 +768,7 @@ def _ribbon_mesh(
         p1 = ca[0]
         p2 = ca[1]
         p3 = ca[min(2, len(ca) - 1)]
-        tangent = _v_norm(_catmull_rom_tangent(p0, p1, p2, p3, 0.0), (0.0, 0.0, 1.0))
+        tangent = _v_norm(_ribbon_curve_tangent(spline, p0, p1, p2, p3, 0.0), (0.0, 0.0, 1.0))
         side, up = _initial_ribbon_frame(chain_residues[0], tangent)
         chain_color = CHAIN_PALETTE[chains[chain] % len(CHAIN_PALETTE)]
         chain_samples: list[RibbonSample] = []
@@ -715,8 +780,8 @@ def _ribbon_mesh(
                 p1 = ca[i]
                 p2 = ca[i + 1]
                 p3 = ca[min(i + 2, len(ca) - 1)]
-                p = _catmull_rom(p0, p1, p2, p3, t)
-                tangent = _v_norm(_catmull_rom_tangent(p0, p1, p2, p3, t), (0.0, 0.0, 1.0))
+                p = _ribbon_curve(spline, p0, p1, p2, p3, t)
+                tangent = _v_norm(_ribbon_curve_tangent(spline, p0, p1, p2, p3, t), (0.0, 0.0, 1.0))
                 residue = chain_residues[i if t < 0.5 else i + 1]
                 if chain_samples:
                     side, up = _transport_ribbon_frame(tangent, side, up)
@@ -743,7 +808,7 @@ def _ribbon_mesh(
         chain_samples.append(RibbonSample(p_norm, tangent, side, up, residue, chain_color, ss_color))
 
         chain_samples = _smooth_ribbon_sample_centers(
-            chain_samples, sample_smoothing, sample_smoothing_passes
+            chain_samples, sample_smoothing, sample_smoothing_passes, sample_smoothing_radius
         )
         chain_samples = _smooth_ribbon_frames(chain_samples, frame_smoothing)
         chain_section_count = 0
@@ -813,10 +878,12 @@ def _export_bundle(
     use_dssp: bool,
     ribbon_samples: int,
     ribbon_cross_section_count: int,
+    ribbon_spline: str,
     ribbon_width_scale: float,
     ribbon_centerline_smoothing: float,
     ribbon_sample_smoothing: float,
     ribbon_sample_smoothing_passes: int,
+    ribbon_sample_smoothing_radius: int,
     ribbon_frame_smoothing: float,
 ) -> None:
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -831,10 +898,12 @@ def _export_bundle(
         radius,
         max(1, ribbon_samples),
         max(3, ribbon_cross_section_count),
+        ribbon_spline,
         max(1e-6, ribbon_width_scale),
         max(0.0, min(0.75, ribbon_centerline_smoothing)),
         max(0.0, min(0.75, ribbon_sample_smoothing)),
         max(0, min(8, ribbon_sample_smoothing_passes)),
+        max(0, min(64, ribbon_sample_smoothing_radius)),
         max(0.0, min(1.0, ribbon_frame_smoothing)),
     )
 
@@ -919,10 +988,12 @@ def _export_bundle(
         },
         "ribbon_samples_per_segment": max(1, ribbon_samples),
         "ribbon_cross_section_count": max(3, ribbon_cross_section_count),
+        "ribbon_spline": ribbon_spline,
         "ribbon_width_scale": max(1e-6, ribbon_width_scale),
         "ribbon_centerline_smoothing": max(0.0, min(0.75, ribbon_centerline_smoothing)),
         "ribbon_sample_smoothing": max(0.0, min(0.75, ribbon_sample_smoothing)),
         "ribbon_sample_smoothing_passes": max(0, min(8, ribbon_sample_smoothing_passes)),
+        "ribbon_sample_smoothing_radius": max(0, min(64, ribbon_sample_smoothing_radius)),
         "ribbon_frame_smoothing": max(0.0, min(1.0, ribbon_frame_smoothing)),
         "ribbon_vertex_count": ribbon_vertex_count,
         "ribbon_index_count": ribbon_index_count,
@@ -976,6 +1047,12 @@ def _parse_args(argv: list[str]) -> argparse.Namespace:
         help="ribbon cross-section sample count",
     )
     parser.add_argument(
+        "--ribbon-spline",
+        choices=("bspline", "catmull-rom"),
+        default=DEFAULT_RIBBON_SPLINE,
+        help="centerline spline used to sample the ribbon cartoon",
+    )
+    parser.add_argument(
         "--ribbon-width-scale",
         type=float,
         default=DEFAULT_RIBBON_WIDTH_SCALE,
@@ -998,6 +1075,12 @@ def _parse_args(argv: list[str]) -> argparse.Namespace:
         type=int,
         default=DEFAULT_RIBBON_SAMPLE_SMOOTHING_PASSES,
         help="number of post-sampling ribbon path smoothing passes",
+    )
+    parser.add_argument(
+        "--ribbon-sample-smoothing-radius",
+        type=int,
+        default=DEFAULT_RIBBON_SAMPLE_SMOOTHING_RADIUS,
+        help="sample radius for post-sampling ribbon path smoothing",
     )
     parser.add_argument(
         "--ribbon-frame-smoothing",
@@ -1040,10 +1123,12 @@ def main(argv: list[str]) -> int:
         args.dssp,
         args.ribbon_samples,
         args.ribbon_cross_section_count,
+        args.ribbon_spline,
         args.ribbon_width_scale,
         args.ribbon_centerline_smoothing,
         args.ribbon_sample_smoothing,
         args.ribbon_sample_smoothing_passes,
+        args.ribbon_sample_smoothing_radius,
         args.ribbon_frame_smoothing,
     )
     print(
