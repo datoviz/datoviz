@@ -123,6 +123,7 @@ SS_COLORS = {
 DEFAULT_RIBBON_SAMPLES = 16
 DEFAULT_RIBBON_CROSS_SECTION_COUNT = 24
 DEFAULT_RIBBON_WIDTH_SCALE = 1.75
+DEFAULT_RIBBON_CENTERLINE_SMOOTHING = 0.18
 
 
 def _default_cache_dir(pdb_id: str) -> Path:
@@ -343,6 +344,14 @@ def _v_mul(a: Vec3, s: float) -> Vec3:
     return (a[0] * s, a[1] * s, a[2] * s)
 
 
+def _v_lerp(a: Vec3, b: Vec3, t: float) -> Vec3:
+    return (
+        a[0] + (b[0] - a[0]) * t,
+        a[1] + (b[1] - a[1]) * t,
+        a[2] + (b[2] - a[2]) * t,
+    )
+
+
 def _v_dot(a: Vec3, b: Vec3) -> float:
     return a[0] * b[0] + a[1] * b[1] + a[2] * b[2]
 
@@ -530,6 +539,28 @@ def _ribbon_shape(ss: int, radius: float, width_scale: float) -> tuple[float, fl
     return 0.46 * scale * width_scale, 0.11 * scale
 
 
+def _centerline_smoothing_factor(ss: int) -> float:
+    if ss in {SS_HELIX, SS_SHEET}:
+        return 1.0
+    if ss == SS_TURN:
+        return 0.65
+    return 0.45
+
+
+def _smooth_centerline(points: list[Vec3], residues: list[Residue], strength: float) -> list[Vec3]:
+    if len(points) <= 2 or strength <= 0.0:
+        return list(points)
+
+    strength = max(0.0, min(0.75, strength))
+    smoothed = list(points)
+    for i in range(1, len(points) - 1):
+        target = _v_mul(_v_add(points[i - 1], points[i + 1]), 0.5)
+        ss = residues[i].ss if i < len(residues) else SS_COIL
+        t = strength * _centerline_smoothing_factor(ss)
+        smoothed[i] = _v_lerp(points[i], target, t)
+    return smoothed
+
+
 def _ribbon_mesh(
     residues: list[Residue],
     chains: dict[str, int],
@@ -538,6 +569,7 @@ def _ribbon_mesh(
     samples_per_segment: int,
     cross_section_count: int,
     width_scale: float,
+    centerline_smoothing: float,
 ) -> dict[str, list]:
     positions: list[float] = []
     normals: list[float] = []
@@ -557,7 +589,8 @@ def _ribbon_mesh(
     for chain, chain_residues in sorted(by_chain.items()):
         if len(chain_residues) < 2:
             continue
-        ca = [_atom_pos(residue.atoms["CA"]) for residue in chain_residues]
+        ca_raw = [_atom_pos(residue.atoms["CA"]) for residue in chain_residues]
+        ca = _smooth_centerline(ca_raw, chain_residues, centerline_smoothing)
         p0 = ca[0]
         p1 = ca[0]
         p2 = ca[1]
@@ -665,6 +698,7 @@ def _export_bundle(
     ribbon_samples: int,
     ribbon_cross_section_count: int,
     ribbon_width_scale: float,
+    ribbon_centerline_smoothing: float,
 ) -> None:
     output_dir.mkdir(parents=True, exist_ok=True)
     center, radius, bbox_min, bbox_max = _center_and_radius(atoms)
@@ -679,6 +713,7 @@ def _export_bundle(
         max(1, ribbon_samples),
         max(3, ribbon_cross_section_count),
         max(1e-6, ribbon_width_scale),
+        max(0.0, min(0.75, ribbon_centerline_smoothing)),
     )
 
     positions: list[float] = []
@@ -763,6 +798,7 @@ def _export_bundle(
         "ribbon_samples_per_segment": max(1, ribbon_samples),
         "ribbon_cross_section_count": max(3, ribbon_cross_section_count),
         "ribbon_width_scale": max(1e-6, ribbon_width_scale),
+        "ribbon_centerline_smoothing": max(0.0, min(0.75, ribbon_centerline_smoothing)),
         "ribbon_vertex_count": ribbon_vertex_count,
         "ribbon_index_count": ribbon_index_count,
         "files": {
@@ -820,6 +856,12 @@ def _parse_args(argv: list[str]) -> argparse.Namespace:
         default=DEFAULT_RIBBON_WIDTH_SCALE,
         help="scale applied to the ribbon cross-section width before normal generation",
     )
+    parser.add_argument(
+        "--ribbon-centerline-smoothing",
+        type=float,
+        default=DEFAULT_RIBBON_CENTERLINE_SMOOTHING,
+        help="C-alpha centerline smoothing strength in [0, 0.75]",
+    )
     parser.add_argument("--bond-scale", type=float, default=1.25, help="covalent radius scale")
     parser.add_argument(
         "--max-bond-distance",
@@ -856,6 +898,7 @@ def main(argv: list[str]) -> int:
         args.ribbon_samples,
         args.ribbon_cross_section_count,
         args.ribbon_width_scale,
+        args.ribbon_centerline_smoothing,
     )
     print(
         f"wrote {output_dir} ({len(atoms)} atoms, {len(bonds)} inferred bonds, "
