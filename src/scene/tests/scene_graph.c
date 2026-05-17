@@ -26,6 +26,7 @@
 #include "../_scene_emit.h"
 #include "../_technique.h"
 #include "../_visual_pipeline.h"
+#include "../render_contract.h"
 #include "../../drp2/_stream.h"
 #include "datoviz/drp2.h"
 #include "datoviz/math/_cglm.h"
@@ -6410,6 +6411,20 @@ int test_scene_visual_pass_capabilities(TstSuite* suite, TstItem* item)
     AT(!_scene_technique_gbuffer_plan_add_visual(&gbuffer, volume, &panel->visuals[8]));
     AT(gbuffer.producer_count == 2);
 
+    DvzSceneDrawContract draw_contract = {0};
+    AT(_scene_draw_contract_from_visual(
+        volume, &panel->visuals[8], DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_BLEND,
+        &draw_contract));
+    AT(draw_contract.visual_type == DVZ_VISUAL_TYPE_VOLUME);
+    AT(draw_contract.alpha_mode == DVZ_ALPHA_BLENDED);
+    AT(draw_contract.pass_role == DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_BLEND);
+    AT(!draw_contract.depth_test);
+    AT(!draw_contract.depth_write);
+    AT(draw_contract.samples_depth);
+    AT(draw_contract.needs_common_set);
+    AT(draw_contract.needs_volume_set);
+    AT(!draw_contract.needs_scene_occlusion_set);
+
     DvzSceneVisualDesc desc = {
         .kind = DVZ_SCENE_VISUAL_DESC_PRIMITIVE,
         .has_normal = true,
@@ -7989,6 +8004,17 @@ int test_scene_blended_mesh_orders_after_volume_slice(TstSuite* suite, TstItem* 
     dvz_diagnostic_report_init(&graph_report);
     AT(dvz_frame_plan_graph_validate(plan, &graph_report));
 
+    DvzScenePassContract contract = {0};
+    AT(_scene_pass_contract_from_render(panel, transparent_node, blend_pass, &contract));
+    AT(contract.source_over_blend);
+    AT(contract.draw_count == 3);
+    AT(contract.draws[0].samples_depth);
+    AT(contract.draws[2].depth_test);
+    AT(!contract.draws[2].depth_write);
+    dvz_diagnostic_report_init(&graph_report);
+    AT(_scene_pass_contract_validate(&contract, &graph_report));
+    AT(dvz_diagnostic_report_count(&graph_report) == 0);
+
     DvzCapabilitySnapshot caps;
     dvz_capability_snapshot_default(&caps);
     caps.supports_render_target_sampling = true;
@@ -8176,6 +8202,20 @@ int test_scene_blended_mesh_occlusion_contracts(TstSuite* suite, TstItem* item)
     DvzDiagnosticReport graph_report;
     dvz_diagnostic_report_init(&graph_report);
     AT(dvz_frame_plan_graph_validate(plan, &graph_report));
+
+    DvzScenePassContract contract = {0};
+    AT(_scene_pass_contract_from_render(panel, blend_node, blend_pass, &contract));
+    AT(contract.source_over_blend);
+    AT(contract.draw_count == 3);
+    AT(contract.draws[1].samples_volume_occlusion);
+    AT(contract.draws[1].samples_scene_occlusion);
+    AT(contract.draws[1].needs_volume_set);
+    AT(contract.draws[1].needs_scene_occlusion_set);
+    AT(contract.draws[2].depth_test);
+    AT(!contract.draws[2].depth_write);
+    dvz_diagnostic_report_init(&graph_report);
+    AT(_scene_pass_contract_validate(&contract, &graph_report));
+    AT(dvz_diagnostic_report_count(&graph_report) == 0);
 
     DvzCapabilitySnapshot caps;
     dvz_capability_snapshot_default(&caps);
