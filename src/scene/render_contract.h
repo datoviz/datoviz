@@ -128,3 +128,6 @@ bool _scene_pass_contract_from_render(
 
 bool _scene_pass_contract_validate(
     const DvzScenePassContract* contract, DvzDiagnosticReport* report);
+
+bool _scene_frame_plan_contracts_validate(
+    const DvzFigure* figure, const DvzFramePlan* plan, DvzDiagnosticReport* report);

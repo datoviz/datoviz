@@ -10,6 +10,7 @@
 
 #include "render_contract.h"
 
+#include <stdlib.h>
 #include <string.h>
 
 #include "_alloc.h"
@@ -282,6 +283,119 @@ static void _contract_report(DvzDiagnosticReport* report, const char* message)
 
 
 
+/**
+ * Return the graph work label used by one render-pass role.
+ *
+ * @param role the FramePlan render-pass role
+ * @return the graph work label, or an empty string when none is expected
+ */
+static const char* _contract_work_label_for_render_role(DvzFramePlanRenderPassRole role)
+{
+    switch (role)
+    {
+    case DVZ_FRAME_PLAN_RENDER_PASS_OPAQUE:
+        return "opaque";
+    case DVZ_FRAME_PLAN_RENDER_PASS_GBUFFER:
+        return "gbuffer";
+    case DVZ_FRAME_PLAN_RENDER_PASS_VOLUME_OCCLUSION:
+        return "volume_occlusion";
+    case DVZ_FRAME_PLAN_RENDER_PASS_SCENE_OCCLUSION:
+        return "scene_occlusion";
+    case DVZ_FRAME_PLAN_RENDER_PASS_SSAO:
+        return "ssao";
+    case DVZ_FRAME_PLAN_RENDER_PASS_SSAO_BLUR:
+        return "ssao_blur";
+    case DVZ_FRAME_PLAN_RENDER_PASS_SSAO_COMPOSITE:
+        return "ssao_composite";
+    case DVZ_FRAME_PLAN_RENDER_PASS_EDL_RESOLVE:
+        return "edl_resolve";
+    case DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_ACCUMULATION:
+        return "wboit_accum";
+    case DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_BLEND:
+        return "transparent_blend";
+    case DVZ_FRAME_PLAN_RENDER_PASS_WBOIT_RESOLVE:
+        return "wboit_resolve";
+    case DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_INIT:
+        return "depth_peel_init";
+    case DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_ITER:
+        return "depth_peel_iter";
+    case DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_COMPOSITE:
+        return "depth_peel_composite";
+    case DVZ_FRAME_PLAN_RENDER_PASS_PICKING:
+        return "picking";
+    default:
+        return "";
+    }
+}
+
+
+
+/**
+ * Return the graph pass matching one render node.
+ *
+ * @param plan the FramePlan
+ * @param render the render node
+ * @return the graph pass, or NULL when the render node has no graph pass
+ */
+static const DvzFrameGraphPass* _contract_graph_pass_for_render(
+    const DvzFramePlan* plan, const DvzFramePlanNode* render)
+{
+    ANN(plan);
+    ANN(render);
+    if (render->type != DVZ_FRAME_PLAN_NODE_RENDER)
+        return NULL;
+    const char* work_label =
+        _contract_work_label_for_render_role(render->u.render.pass_role);
+    if (work_label[0] == '\0')
+        return NULL;
+
+    for (uint32_t i = 0; i < dvz_frame_plan_graph_pass_count(plan); i++)
+    {
+        const DvzFrameGraphPass* pass = dvz_frame_plan_graph_pass_get(plan, i);
+        if (pass != NULL && strcmp(pass->panel_id, render->u.render.panel_id) == 0 &&
+            strcmp(pass->work_label, work_label) == 0)
+            return pass;
+    }
+    return NULL;
+}
+
+
+
+/**
+ * Return the figure panel that owns one render node.
+ *
+ * @param figure the figure
+ * @param plan the FramePlan
+ * @param render the render node
+ * @return the panel, or NULL when no panel id matches
+ */
+static const DvzPanel* _contract_panel_for_render(
+    const DvzFigure* figure, const DvzFramePlan* plan, const DvzFramePlanNode* render)
+{
+    ANN(figure);
+    ANN(plan);
+    ANN(render);
+    char panel_id[DVZ_SCENE_LABEL_SIZE];
+    for (uint32_t i = 0; i < figure->panel_count; i++)
+    {
+        dvz_snprintf(panel_id, sizeof(panel_id), "%s_p%u", plan->figure_id, i);
+        if (strcmp(panel_id, render->u.render.panel_id) == 0)
+            return &figure->panels[i];
+    }
+
+    const char* suffix = strrchr(render->u.render.panel_id, '_');
+    if (suffix != NULL && suffix[1] == 'p')
+    {
+        char* end = NULL;
+        unsigned long index = strtoul(&suffix[2], &end, 10);
+        if (end != &suffix[2] && *end == '\0' && index < figure->panel_count)
+            return &figure->panels[index];
+    }
+    return NULL;
+}
+
+
+
 /*************************************************************************************************/
 /*  Functions                                                                                    */
 /*************************************************************************************************/
@@ -461,6 +575,53 @@ bool _scene_pass_contract_validate(
     {
         _contract_report(report, "scene-occluded draw has no scene occlusion read edge");
         ok = false;
+    }
+    return ok;
+}
+
+
+
+/**
+ * Validate all graph-backed render contracts in one FramePlan.
+ *
+ * @param figure the figure that produced the FramePlan
+ * @param plan the completed FramePlan
+ * @param report optional diagnostic report
+ * @return whether all graph-backed render contracts are valid
+ */
+bool _scene_frame_plan_contracts_validate(
+    const DvzFigure* figure, const DvzFramePlan* plan, DvzDiagnosticReport* report)
+{
+    ANN(figure);
+    ANN(plan);
+    bool ok = true;
+    for (uint32_t i = 0; i < plan->count; i++)
+    {
+        const DvzFramePlanNode* render = &plan->nodes[i];
+        if (render->type != DVZ_FRAME_PLAN_NODE_RENDER)
+            continue;
+
+        const DvzFrameGraphPass* graph_pass = _contract_graph_pass_for_render(plan, render);
+        if (graph_pass == NULL)
+            continue;
+
+        const DvzPanel* panel = _contract_panel_for_render(figure, plan, render);
+        if (panel == NULL)
+        {
+            _contract_report(report, "render contract has no matching panel");
+            ok = false;
+            continue;
+        }
+
+        DvzScenePassContract contract = {0};
+        if (!_scene_pass_contract_from_render(panel, render, graph_pass, &contract))
+        {
+            _contract_report(report, "render contract resolution failed");
+            ok = false;
+            continue;
+        }
+        if (!_scene_pass_contract_validate(&contract, report))
+            ok = false;
     }
     return ok;
 }
