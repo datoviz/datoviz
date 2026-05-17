@@ -100,6 +100,9 @@ static void _scene_emit_defaults(
     DvzDiagnosticReport** report, DvzDiagnosticReport* local_report,
     const DvzFramePlanEmitConfig** cfg, DvzFramePlanEmitConfig* default_cfg);
 
+static bool _scene_figure_validate_transparency_modes(
+    const DvzFigure* figure, const char* figure_id, DvzDiagnosticReport* report);
+
 static void _scene_commit_emit_success(DvzFigure* figure);
 
 /**
@@ -644,6 +647,84 @@ static void _scene_emit_defaults(
 
 
 /**
+ * Return whether one visual can contribute a drawable panel item.
+ *
+ * @param visual the visual
+ * @return whether the visual is visible and has position data
+ */
+static bool _scene_emit_visual_drawable(const DvzVisual* visual)
+{
+    if (visual == NULL || !visual->visible || visual->type == DVZ_VISUAL_TYPE_TEXT)
+        return false;
+    const char* position_attr =
+        visual->type == DVZ_VISUAL_TYPE_SEGMENT ? "position_start" : "position";
+    int pos_idx = _attr_index(visual, position_attr);
+    return pos_idx >= 0 && visual->attrs[pos_idx].item_count > 0;
+}
+
+
+
+/**
+ * Validate per-panel transparency mode combinations before FramePlan emission.
+ *
+ * @param figure the figure
+ * @param figure_id the stable emitted figure identifier
+ * @param report the diagnostic report
+ * @return whether transparency mode combinations are supported
+ */
+static bool _scene_figure_validate_transparency_modes(
+    const DvzFigure* figure, const char* figure_id, DvzDiagnosticReport* report)
+{
+    ANN(figure);
+    ANN(figure_id);
+    bool ok = true;
+    char panel_id[DVZ_SCENE_LABEL_SIZE];
+    char message[DVZ_SCENE_DIAGNOSTIC_SIZE];
+    for (uint32_t pi = 0; pi < figure->panel_count; pi++)
+    {
+        const DvzPanel* panel = &figure->panels[pi];
+        bool has_wboit = false;
+        bool has_depth_peel = false;
+        uint32_t wboit_visual = UINT32_MAX;
+        uint32_t depth_peel_visual = UINT32_MAX;
+        for (uint32_t vi = 0; vi < panel->visual_count; vi++)
+        {
+            const DvzVisual* visual = panel->visuals[vi].visual;
+            if (!_scene_emit_visual_drawable(visual))
+                continue;
+            uint32_t visual_index = UINT32_MAX;
+            (void)_figure_visual_index(figure, visual, &visual_index);
+            if (_scene_alpha_mode_is_wboit(visual->alpha_mode))
+            {
+                has_wboit = true;
+                if (wboit_visual == UINT32_MAX)
+                    wboit_visual = visual_index;
+            }
+            if (_scene_alpha_mode_is_depth_peel(visual->alpha_mode))
+            {
+                has_depth_peel = true;
+                if (depth_peel_visual == UINT32_MAX)
+                    depth_peel_visual = visual_index;
+            }
+        }
+        if (has_wboit && has_depth_peel)
+        {
+            dvz_snprintf(panel_id, sizeof(panel_id), "%s_p%u", figure_id, pi);
+            dvz_snprintf(
+                message, sizeof(message),
+                "panel %s mixes WBOIT visual %u and depth-peel visual %u; mixed OIT "
+                "composition is not specified",
+                panel_id, wboit_visual, depth_peel_visual);
+            (void)dvz_diagnostic_report_add(report, message);
+            ok = false;
+        }
+    }
+    return ok;
+}
+
+
+
+/**
  * Clear dirty scene state after one successful figure emit.
  *
  * @param figure the emitted figure
@@ -932,6 +1013,9 @@ DvzDrp2CommandStream* dvz_figure_emit_ex(
 
     char figure_id[64];
     _scene_figure_id(figure, figure_id, sizeof(figure_id));
+
+    if (!_scene_figure_validate_transparency_modes(figure, figure_id, report))
+        return NULL;
 
     DvzFramePlan* plan = dvz_frame_plan(figure_id, 0);
     if (plan == NULL)

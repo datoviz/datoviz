@@ -483,6 +483,8 @@ int test_scene_visual_alpha_mode_wboit_transparent_only_depth(
 
 int test_scene_visual_alpha_mode_depth_peel_frame_plan(TstSuite* suite, TstItem* item);
 
+int test_scene_visual_alpha_mode_mixed_oit_rejected(TstSuite* suite, TstItem* item);
+
 int test_scene_visual_alpha_mode_emits_depth_peel_drp2(TstSuite* suite, TstItem* item);
 
 int test_scene_visual_alpha_mode_requires_wboit_capabilities(TstSuite* suite, TstItem* item);

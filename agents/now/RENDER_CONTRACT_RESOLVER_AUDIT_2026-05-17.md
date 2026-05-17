@@ -62,6 +62,29 @@ Validation:
 6. `git diff --check -- src/scene/_scene_emit.h src/scene/scene.c src/scene/scene_emit.c src/scene/render_contract.c src/scene/tests/scene_graph.c src/scene/tests/test_scene.h`
 
 
+### 2026-05-17: Phase 0 / Mixed OIT rejection
+
+Completed the immediate mixed-transparency policy slice.
+
+Changes:
+
+1. Added a pre-FramePlan validation step in `dvz_figure_emit_ex()` that rejects a panel containing
+   both WBOIT and depth-peeling visuals.
+2. The diagnostic names the emitted panel id and the first conflicting visual indices, making the
+   rejection explicit instead of falling through to missing graph-pass validation.
+3. Added `test_scene_visual_alpha_mode_mixed_oit_rejected`.
+
+Validation:
+
+1. `cmake --build build --target dvztest_scene -j2`
+2. `./build/testing/dvztest_scene test_scene_visual_alpha_mode_mixed_oit_rejected`
+3. `./build/testing/dvztest_scene test_scene_visual_alpha_mode_depth_peel_frame_plan`
+4. `./build/testing/dvztest_scene test_scene_visual_alpha_mode_splits_frame_plan_passes`
+5. `./build/testing/dvztest_scene test_scene_visual_alpha_mode_emits_depth_peel_drp2`
+6. `./build/testing/dvztest_scene test_scene_visual_alpha_mode_emits_wboit_drp2`
+7. `git diff --check -- src/scene/scene.c src/scene/tests/scene_graph.c src/scene/tests/test_scene.h`
+
+
 ## Executive Assessment
 
 The direction is correct and worth continuing. The proposal identifies the right failure mode:
