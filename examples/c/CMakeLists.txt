@@ -19,6 +19,10 @@ endif()
 function(dvz_add_example name)
     add_executable(${name} ${name}.c)
 
+    if(TARGET datoviz_gui)
+        target_sources(${name} PRIVATE example_gui_controls.c)
+    endif()
+
     target_link_libraries(${name}
         PRIVATE
         datoviz_common
@@ -58,6 +62,7 @@ function(dvz_add_example name)
         PRIVATE
         ${PROJECT_SOURCE_DIR}/include
         ${PROJECT_SOURCE_DIR}/src/common
+        ${CMAKE_CURRENT_SOURCE_DIR}
         ${PROJECT_SOURCE_DIR}/external/volk
     )
 
