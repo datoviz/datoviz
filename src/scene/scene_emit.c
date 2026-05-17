@@ -543,6 +543,8 @@ bool _scene_visual_frame_plan_metadata(
     metadata->alpha_mode = visual->alpha_mode;
     metadata->depth_test_enabled = visual->depth_test_enabled;
     metadata->scale_index = _scene_scale_index(figure->scene, visual->scale);
+    metadata->scene_occluder = visual->scene_occluder;
+    metadata->scene_occluded = visual->scene_occluded;
 
     if (!_scene_attr_resource_key(
             figure, visual, visual_index, "position", metadata->position_id,

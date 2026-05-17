@@ -575,6 +575,8 @@ struct DvzVisual
     bool                   material_params_dirty;
     DvzSphereMode          sphere_mode;
     bool                   mesh_default_color;
+    bool                   scene_occluder;
+    bool                   scene_occluded;
     bool                   volume_occluded;
     DvzVolumeState         volume;
 
@@ -698,6 +700,8 @@ struct DvzPanel
     DvzVisual* volume_occluder_visual;
     DvzVolumeOcclusionDesc volume_occlusion;
     bool volume_occlusion_enabled;
+    DvzSceneOcclusionDesc scene_occlusion;
+    bool scene_occlusion_enabled;
 
     /* Optional background visual created by dvz_panel_set_background_*. The visual itself
      * lives in scene->visuals[] (weak ref); this pointer lets repeat calls update the

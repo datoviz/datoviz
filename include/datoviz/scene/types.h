@@ -164,6 +164,16 @@ struct DvzVolumeOcclusionDesc
 typedef struct DvzVolumeOcclusionDesc DvzVolumeOcclusionDesc;
 
 
+struct DvzSceneOcclusionDesc
+{
+    bool enabled;
+    float depth_bias;
+    float soft_edge;
+    float hidden_alpha;
+};
+typedef struct DvzSceneOcclusionDesc DvzSceneOcclusionDesc;
+
+
 struct DvzSceneBufferDesc
 {
     uint32_t usage;

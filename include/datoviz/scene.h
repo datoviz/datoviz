@@ -305,6 +305,21 @@ DVZ_EXPORT int dvz_panel_set_volume_occluder(
 
 
 /**
+ * Configure generic screen-space scene occlusion for one panel.
+ *
+ * Scene occlusion is active only when the panel contains at least one visible visual marked as a
+ * scene occluder and at least one visible visual marked as scene-occluded. Pass NULL or a disabled
+ * descriptor to disable the panel path.
+ *
+ * @param panel the panel
+ * @param desc scene occlusion descriptor, or NULL to disable
+ * @return 0 on success, -1 on validation error
+ */
+DVZ_EXPORT int
+dvz_panel_set_scene_occlusion(DvzPanel* panel, const DvzSceneOcclusionDesc* desc);
+
+
+/**
  * Attach a panzoom controller to a panel and connect it to an input router.
  *
  * Pan: left-drag. Zoom: right-drag or scroll wheel. Double-click: reset.
@@ -462,6 +477,26 @@ DVZ_EXPORT int dvz_visual_set_alpha_mode(DvzVisual* visual, DvzAlphaMode mode);
  * @return 0 on success, -1 on validation error
  */
 DVZ_EXPORT int dvz_visual_set_volume_occluded(DvzVisual* visual, bool enabled);
+
+
+/**
+ * Mark a visual as contributing front depth to panel scene occlusion.
+ *
+ * @param visual the visual
+ * @param enabled whether the visual should act as a scene occluder
+ * @return 0 on success, -1 on validation error
+ */
+DVZ_EXPORT int dvz_visual_set_scene_occluder(DvzVisual* visual, bool enabled);
+
+
+/**
+ * Mark a visual as sampling panel scene occlusion.
+ *
+ * @param visual the visual
+ * @param enabled whether the visual should be attenuated by scene occlusion
+ * @return 0 on success, -1 on validation error
+ */
+DVZ_EXPORT int dvz_visual_set_scene_occluded(DvzVisual* visual, bool enabled);
 
 
 /**

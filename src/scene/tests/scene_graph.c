@@ -4349,6 +4349,64 @@ int test_scene_visual_depth_test(TstSuite* suite, TstItem* item)
 
 
 /**
+ * Verify generic scene occlusion flag storage and FramePlan metadata propagation.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_visual_scene_occlusion_flags(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    AT(scene != NULL);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    AT(figure != NULL);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
+    AT(panel != NULL);
+
+    DvzVisual* occluder = dvz_mesh(scene, 0);
+    DvzVisual* occluded = dvz_point(scene, 0);
+    AT(occluder != NULL);
+    AT(occluded != NULL);
+
+    AT(dvz_visual_set_scene_occluder(occluder, true) == 0);
+    AT(dvz_visual_set_scene_occluded(occluded, true) == 0);
+    AT(occluder->scene_occluder);
+    AT(!occluder->scene_occluded);
+    AT(!occluded->scene_occluder);
+    AT(occluded->scene_occluded);
+
+    DvzFramePlanVisualMeta occluder_meta = {0};
+    DvzFramePlanVisualMeta occluded_meta = {0};
+    AT(_scene_visual_frame_plan_metadata(figure, occluder, 0, &occluder_meta));
+    AT(_scene_visual_frame_plan_metadata(figure, occluded, 1, &occluded_meta));
+    AT(occluder_meta.scene_occluder);
+    AT(!occluder_meta.scene_occluded);
+    AT(!occluded_meta.scene_occluder);
+    AT(occluded_meta.scene_occluded);
+
+    AT(dvz_panel_set_scene_occlusion(
+           panel,
+           &(DvzSceneOcclusionDesc){
+               .enabled = true,
+               .depth_bias = 0.001f,
+               .soft_edge = 0.01f,
+               .hidden_alpha = 0.25f,
+           }) == 0);
+    AT(panel->scene_occlusion_enabled);
+    AT(panel->scene_occlusion.hidden_alpha == 0.25f);
+    AT(dvz_panel_set_scene_occlusion(panel, NULL) == 0);
+    AT(!panel->scene_occlusion_enabled);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+/**
  * Verify internal material state defaults and compatibility setter synchronization.
  *
  * @param suite the active test suite
@@ -7570,6 +7628,7 @@ int test_scene_graph(TstSuite* suite)
     TEST_SIMPLE(test_scene_rejects_unsupported_point_attribute);
     TEST_SIMPLE(test_scene_visual_alpha_mode);
     TEST_SIMPLE(test_scene_visual_depth_test);
+    TEST_SIMPLE(test_scene_visual_scene_occlusion_flags);
     TEST_SIMPLE(test_scene_visual_internal_material_state);
     TEST_SIMPLE(test_scene_visual_material_setter);
     TEST_SIMPLE(test_scene_pixel_depth_cue_toggle_switches_pipeline);

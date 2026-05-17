@@ -1031,6 +1031,38 @@ bool dvz_panel_set_ssao(DvzPanel* panel, const DvzSsaoDesc* desc)
 
 
 /**
+ * Configure generic screen-space scene occlusion for one panel.
+ *
+ * @param panel the panel
+ * @param desc scene occlusion descriptor, or NULL to disable
+ * @return 0 on success, -1 on validation error
+ */
+int dvz_panel_set_scene_occlusion(DvzPanel* panel, const DvzSceneOcclusionDesc* desc)
+{
+    ANN(panel);
+    if (desc == NULL || !desc->enabled)
+    {
+        panel->scene_occlusion_enabled = false;
+        dvz_memset(
+            &panel->scene_occlusion, sizeof(DvzSceneOcclusionDesc), 0,
+            sizeof(DvzSceneOcclusionDesc));
+        return 0;
+    }
+
+    panel->scene_occlusion = *desc;
+    panel->scene_occlusion.enabled = true;
+    if (panel->scene_occlusion.soft_edge <= 0.0f)
+        panel->scene_occlusion.soft_edge = 0.002f;
+    if (panel->scene_occlusion.hidden_alpha < 0.0f)
+        panel->scene_occlusion.hidden_alpha = 0.0f;
+    if (panel->scene_occlusion.hidden_alpha > 1.0f)
+        panel->scene_occlusion.hidden_alpha = 1.0f;
+    panel->scene_occlusion_enabled = true;
+    return 0;
+}
+
+
+/**
  * Configure a panel volume visual as the screen-space occluder for embedded visuals.
  *
  * @param panel the panel

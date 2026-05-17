@@ -275,6 +275,10 @@ typedef struct DvzFramePlanVisualMeta
     uint32_t field_depth;
     uint32_t scale_index;
     bool volume_transfer_rgba;
+    bool scene_occluder;
+    bool scene_occluded;
+    bool has_scene_occlusion;
+    DvzSceneOcclusionDesc scene_occlusion;
     bool volume_occluded;
     bool has_volume_occlusion;
     DvzVolumeOcclusionDesc volume_occlusion;

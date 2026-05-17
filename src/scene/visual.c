@@ -1549,6 +1549,40 @@ int dvz_visual_set_volume_occluded(DvzVisual* visual, bool enabled)
 }
 
 
+/**
+ * Mark a visual as contributing front depth to panel scene occlusion.
+ *
+ * @param visual the visual
+ * @param enabled whether the visual should act as a scene occluder
+ * @return 0 on success, -1 on validation error
+ */
+int dvz_visual_set_scene_occluder(DvzVisual* visual, bool enabled)
+{
+    ANN(visual);
+    if (!_scene_visual_mutation_allowed(visual->scene, "set scene occluder"))
+        return -1;
+    visual->scene_occluder = enabled;
+    return 0;
+}
+
+
+/**
+ * Mark a visual as sampling panel scene occlusion.
+ *
+ * @param visual the visual
+ * @param enabled whether the visual should be attenuated by scene occlusion
+ * @return 0 on success, -1 on validation error
+ */
+int dvz_visual_set_scene_occluded(DvzVisual* visual, bool enabled)
+{
+    ANN(visual);
+    if (!_scene_visual_mutation_allowed(visual->scene, "set scene occluded"))
+        return -1;
+    visual->scene_occluded = enabled;
+    return 0;
+}
+
+
 
 /**
  * Declare the semantic source for one visual attribute.

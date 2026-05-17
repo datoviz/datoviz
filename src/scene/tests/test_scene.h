@@ -388,6 +388,8 @@ int test_scene_visual_alpha_mode(TstSuite* suite, TstItem* item);
 
 int test_scene_visual_depth_test(TstSuite* suite, TstItem* item);
 
+int test_scene_visual_scene_occlusion_flags(TstSuite* suite, TstItem* item);
+
 int test_scene_visual_internal_material_state(TstSuite* suite, TstItem* item);
 
 int test_scene_visual_material_setter(TstSuite* suite, TstItem* item);
