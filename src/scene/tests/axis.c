@@ -132,6 +132,33 @@ static uint32_t _axis_test_vertical_grid_line_count(DvzAxis* axis)
 }
 
 
+/**
+ * Return the number of horizontal grid lines emitted by one Y axis visual.
+ *
+ * @param axis the Y axis
+ * @return horizontal grid line count
+ */
+static uint32_t _axis_test_horizontal_grid_line_count(DvzAxis* axis)
+{
+    ANN(axis);
+    ANN(axis->visual);
+    DvzVisualAttr* starts_attr = _axis_test_attr(axis->visual, "position_start");
+    DvzVisualAttr* ends_attr = _axis_test_attr(axis->visual, "position_end");
+    ANN(starts_attr);
+    ANN(ends_attr);
+    const float* starts = (const float*)starts_attr->data;
+    const float* ends = (const float*)ends_attr->data;
+    uint32_t count = 0;
+    for (uint32_t i = 0; i < starts_attr->item_count; i++)
+    {
+        if (fabsf(starts[3 * i + 0] + 1.0f) < 1e-5f &&
+            fabsf(ends[3 * i + 0] - 1.0f) < 1e-5f)
+            count++;
+    }
+    return count;
+}
+
+
 
 /*************************************************************************************************/
 /*  Tests                                                                                        */
@@ -431,6 +458,53 @@ static int test_axis_zoom_out_in_grid_regression(TstSuite* suite, TstItem* item)
 }
 
 
+static int test_axis_panzoom_resize_visual_smoke(TstSuite* suite, TstItem* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 1000, 700, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
+    ANN(panel);
+
+    AT(dvz_panel_set_domain(panel, DVZ_DIM_X, -10.0, 10.0) == 0);
+    AT(dvz_panel_set_domain(panel, DVZ_DIM_Y, -10.0, 10.0) == 0);
+    DvzAxis* x_axis = dvz_panel_axis(panel, DVZ_DIM_X);
+    DvzAxis* y_axis = dvz_panel_axis(panel, DVZ_DIM_Y);
+    ANN(x_axis);
+    ANN(y_axis);
+    AT(dvz_axis_set_grid(x_axis, true));
+    AT(dvz_axis_set_grid(y_axis, true));
+
+    dvz_panel_set_panzoom(panel, NULL, 0);
+    DvzPanzoom* pz = dvz_panel_panzoom(panel);
+    ANN(pz);
+
+    const uint32_t widths[] = {1000, 320, 900};
+    const float zooms[] = {1.0f, 0.25f, 12.0f, 1.5f};
+    for (uint32_t wi = 0; wi < 3; wi++)
+    {
+        dvz_figure_resize(figure, widths[wi], 700);
+        for (uint32_t zi = 0; zi < 4; zi++)
+        {
+            dvz_panzoom_zoom(pz, (vec2){zooms[zi], zooms[zi]});
+            dvz_panzoom_pan(pz, (vec2){0.15f * (float)zi, -0.05f * (float)wi});
+            _scene_prepare_axis_visuals(figure);
+            AT(x_axis->tick_count >= 2);
+            AT(y_axis->tick_count >= 2);
+            AT(_axis_test_vertical_grid_line_count(x_axis) > 0);
+            AT(_axis_test_horizontal_grid_line_count(y_axis) > 0);
+        }
+    }
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
 int test_axis_dynamic_segment_draw_count(TstSuite* suite, TstItem* item)
 {
     (void)suite;
@@ -490,6 +564,7 @@ int test_scene_axis(TstSuite* suite)
     TEST_SIMPLE(test_panel_visible_domain);
     TEST_SIMPLE(test_axis_panzoom_visible_domain);
     TEST_SIMPLE(test_axis_zoom_out_in_grid_regression);
+    TEST_SIMPLE(test_axis_panzoom_resize_visual_smoke);
     TEST_SIMPLE(test_axis_dynamic_segment_draw_count);
     return 0;
 }
