@@ -299,6 +299,7 @@ typedef struct DvzFramePlanVisualMeta
     char shape_id[DVZ_SCENE_LABEL_SIZE];
     char line_width_id[DVZ_SCENE_LABEL_SIZE];
     char texcoords_id[DVZ_SCENE_LABEL_SIZE];
+    char instance_transform_id[DVZ_SCENE_LABEL_SIZE];
     char texture_id[DVZ_SCENE_LABEL_SIZE];
     char volume_texture_id[DVZ_SCENE_LABEL_SIZE];
     char normal_id[DVZ_SCENE_LABEL_SIZE];

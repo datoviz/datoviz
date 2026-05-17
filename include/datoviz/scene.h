@@ -578,7 +578,8 @@ dvz_visual_attr_mutability(const DvzVisual* visual, const char* attr_name);
  *          `"stroke_width"` (float pixels)
  * primitive: `"position"` (vec3f), `"color"` (RGBA8)
  * path: `"position"` (vec3f), `"color"` (RGBA8), optional `"stroke_width"` (float pixels)
- * mesh: `"position"` (vec3f), optional `"color"` (RGBA8), optional `"normal"` (vec3f)
+ * mesh: `"position"` (vec3f), optional `"color"` (RGBA8), optional `"normal"` (vec3f),
+ *       optional `"instance_transform"` (mat4f, one per instance)
  * primitive only: `"normal"` (vec3f)
  * image: `"position"` (vec3f), `"texcoords"` (vec2f)
  *
@@ -946,8 +947,9 @@ DVZ_EXPORT DvzVisual* dvz_primitive(
  * Create a mesh visual.
  *
  * First retained slice: meshes use a triangle-list topology with `position` (vec3), optional
- * `color` (RGBA8, defaulting to opaque white when omitted), optional `normal` (vec3), and
- * optional `"index"` buffer bindings for indexed draws.
+ * `color` (RGBA8, defaulting to opaque white when omitted), optional `normal` (vec3), optional
+ * `instance_transform` (mat4, one per instance), and optional `"index"` buffer bindings for
+ * indexed draws.
  *
  * @param scene the scene
  * @param flags variant flags

@@ -1046,6 +1046,10 @@ bool _scene_visual_frame_plan_metadata(
             figure, visual, visual_index, "texcoords", metadata->texcoords_id,
             sizeof(metadata->texcoords_id)))
         return false;
+    if (!_scene_attr_resource_key(
+            figure, visual, visual_index, "instance_transform", metadata->instance_transform_id,
+            sizeof(metadata->instance_transform_id)))
+        return false;
     if (!_scene_resource_key_visual_texture(
             visual_index, metadata->texture_id, sizeof(metadata->texture_id)))
         return false;

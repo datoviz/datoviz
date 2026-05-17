@@ -83,6 +83,8 @@ typedef struct DvzSceneVisualDesc
     DvzVolumeState volume_state;
     uint32_t vertex_count;
     uint32_t index_count;
+    uint32_t instance_count;
+    bool has_instance_transform;
     const char* index_format;
 } DvzSceneVisualDesc;
 
@@ -144,6 +146,7 @@ typedef struct DvzSceneVisualPipelineDesc
     uint32_t binding_count;
     uint32_t attr_count;
     uint32_t strides[DVZ_SCENE_MAX_NODE_RESOURCES];
+    uint32_t step_modes[DVZ_SCENE_MAX_NODE_RESOURCES];
     uint32_t bindings[DVZ_SCENE_MAX_NODE_RESOURCES];
     uint32_t locations[DVZ_SCENE_MAX_NODE_RESOURCES];
     uint32_t formats[DVZ_SCENE_MAX_NODE_RESOURCES];

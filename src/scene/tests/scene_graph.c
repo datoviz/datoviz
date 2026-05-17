@@ -1403,6 +1403,82 @@ int test_scene_mesh_indexed_default_color_emits_draw_indexed(TstSuite* suite, Ts
 }
 
 
+int test_scene_mesh_instance_transform_emits_instanced_draw(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    ANN(panel);
+    DvzVisual* visual = dvz_mesh(scene, 0);
+    ANN(visual);
+
+    float positions[4][3] = {
+        {-0.25f, -0.25f, 0.0f}, {-0.25f, 0.25f, 0.0f},
+        {0.25f, -0.25f, 0.0f},  {0.25f, 0.25f, 0.0f},
+    };
+    DvzIndex indices[6] = {0, 1, 2, 2, 1, 3};
+    float transforms[2][16] = {
+        {1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, -0.4f, 0, 0, 1},
+        {1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, +0.4f, 0, 0, 1},
+    };
+
+    DvzSceneBuffer* index_buffer = dvz_scene_buffer(
+        scene, &(DvzSceneBufferDesc){
+                   .usage = DVZ_SCENE_BUFFER_USAGE_INDEX,
+                   .stride = sizeof(DvzIndex),
+               });
+    ANN(index_buffer);
+    AT(dvz_scene_buffer_set_data(index_buffer, indices, sizeof(indices)));
+
+    AT(dvz_visual_set_data(visual, "position", positions, 4) == 0);
+    AT(dvz_visual_set_data(visual, "instance_transform", transforms, 2) == 0);
+    AT(dvz_visual_set_buffer(visual, "index", index_buffer));
+    AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
+
+    DvzCapabilitySnapshot caps;
+    dvz_capability_snapshot_default(&caps);
+    DvzDiagnosticReport report;
+    dvz_diagnostic_report_init(&report);
+    DvzFramePlanEmitConfig emit_cfg = dvz_frame_plan_emit_config();
+    emit_cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
+
+    DvzDrp2CommandStream* stream = dvz_figure_emit_ex(figure, &caps, &report, &emit_cfg);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+    ANN(stream);
+
+    bool found_instance_pipeline = false;
+    bool found_instanced_draw = false;
+    for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
+    {
+        const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream, i);
+        if (cmd->type == DVZ_DRP2_COMMAND_CREATE_RENDER_PIPELINE)
+        {
+            const uint32_t transform_binding = 2;
+            found_instance_pipeline =
+                cmd->u.create_render_pipeline.binding_count >= 3 &&
+                cmd->u.create_render_pipeline.binding_step_modes[transform_binding] ==
+                    DVZ_DRP2_VERTEX_STEP_MODE_INSTANCE;
+        }
+        if (cmd->type == DVZ_DRP2_COMMAND_DRAW_INDEXED)
+        {
+            found_instanced_draw = cmd->u.draw_indexed.index_count == 6 &&
+                                   cmd->u.draw_indexed.instance_count == 2;
+        }
+    }
+    AT(found_instance_pipeline);
+    AT(found_instanced_draw);
+
+    dvz_drp2_stream_destroy(stream);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
 
 /**
  * Ensure lit mesh scene renders request depth attachments and depth-enabled pipelines.
@@ -8642,6 +8718,7 @@ int test_scene_graph(TstSuite* suite)
     TEST_SIMPLE(test_scene_primitive_line_strip_glsl_executes);
     TEST_SIMPLE(test_scene_primitive_triangle_list_emit_wgsl);
     TEST_SIMPLE(test_scene_mesh_indexed_default_color_emits_draw_indexed);
+    TEST_SIMPLE(test_scene_mesh_instance_transform_emits_instanced_draw);
     TEST_SIMPLE(test_scene_mesh_emits_depth_attachment);
     TEST_SIMPLE(test_scene_indexed_primitive_emits_draw_indexed);
     TEST_SIMPLE(test_scene_shared_index_buffer_emits_one_upload);

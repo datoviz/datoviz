@@ -106,6 +106,8 @@ static bool _mesh_ensure_default_color(DvzVisual* visual, uint32_t item_count);
 
 static const char* _attr_storage_name(DvzVisualType type, const char* name);
 
+static bool _attr_is_instance_attribute(const char* name);
+
 
 
 /*************************************************************************************************/
@@ -142,6 +144,20 @@ static const char* _attr_storage_name(DvzVisualType type, const char* name)
 }
 
 
+/**
+ * Return whether an attribute advances per mesh instance instead of per vertex.
+ *
+ * @param name the retained attribute name
+ * @return whether the attribute is per-instance
+ */
+static bool _attr_is_instance_attribute(const char* name)
+{
+    ANN(name);
+    return strcmp(name, "instance_transform") == 0 || strcmp(name, "instance_color") == 0 ||
+           strcmp(name, "instance_id") == 0;
+}
+
+
 
 /**
  * Return the byte size of one supported visual attribute item.
@@ -172,6 +188,8 @@ static uint32_t _attr_item_size(DvzVisualType type, const char* name)
         if (strcmp(name, "position") == 0) return 3 * sizeof(float);
         if (strcmp(name, "color") == 0)    return 4 * sizeof(uint8_t);
         if (strcmp(name, "normal") == 0)   return 3 * sizeof(float);
+        if (type == DVZ_VISUAL_TYPE_MESH && strcmp(name, "instance_transform") == 0)
+            return 16 * sizeof(float);
         break;
     case DVZ_VISUAL_TYPE_PATH:
         if (strcmp(name, "position") == 0) return 3 * sizeof(float);
@@ -226,7 +244,7 @@ static bool _attr_supported(DvzVisualType type, const char* name, uint32_t* item
     else if (type == DVZ_VISUAL_TYPE_PRIMITIVE)
         expected = "position, color, normal";
     else if (type == DVZ_VISUAL_TYPE_MESH)
-        expected = "position, color, normal";
+        expected = "position, color, normal, instance_transform";
     else if (type == DVZ_VISUAL_TYPE_PATH)
         expected = "position, color, stroke_width";
     else if (type == DVZ_VISUAL_TYPE_SEGMENT)
@@ -380,6 +398,8 @@ static bool _visual_attr_count_consistent(
     {
         const DvzVisualAttr* attr = &visual->attrs[i];
         bool attr_has_payload = attr->data != NULL || attr->buffer != NULL;
+        if (_attr_is_instance_attribute(attr_name) || _attr_is_instance_attribute(attr->name))
+            continue;
         if (visual->type == DVZ_VISUAL_TYPE_MESH && visual->mesh_default_color &&
             strcmp(attr_name, "position") == 0 && strcmp(attr->name, "color") == 0)
         {
@@ -2378,6 +2398,8 @@ int dvz_visual_set_data_many(
         const DvzVisualAttr* attr = &visual->attrs[i];
         bool attr_has_payload = attr->data != NULL || attr->buffer != NULL;
         if (attr->item_count == 0 || !attr_has_payload)
+            continue;
+        if (_attr_is_instance_attribute(attr->name))
             continue;
         if (_visual_data_update_contains_attr(visual->type, updates, update_count, attr->name))
             continue;

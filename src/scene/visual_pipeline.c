@@ -43,6 +43,7 @@ typedef enum
     DVZ_SCENE_SHADER_FEATURE_VOLUME_MIP       = 1u << 4,
     DVZ_SCENE_SHADER_FEATURE_VOLUME_COMPOSITE = 1u << 5,
     DVZ_SCENE_SHADER_FEATURE_POINT_STYLE      = 1u << 6,
+    DVZ_SCENE_SHADER_FEATURE_INSTANCING       = 1u << 7,
 } DvzSceneShaderFeatureFlag;
 
 
@@ -445,6 +446,7 @@ static bool _scene_visual_desc_from_metadata(
     out->point_style_enabled = meta->point_style_enabled;
     out->scene_occluded = meta->scene_occluded;
     out->scene_occlusion = meta->scene_occlusion;
+    out->instance_count = 1;
 
     if (error != NULL)
         *error = NULL;
@@ -593,6 +595,22 @@ static bool _scene_visual_desc_from_metadata(
         {
             out->vbuf_ids[out->vbuf_count++] = normal_id;
             out->has_normal = true;
+        }
+        uint64_t instance_transform_id =
+            _resource_lookup_label(&emitter->resources, meta->instance_transform_id);
+        if (meta->visual_type == DVZ_VISUAL_TYPE_MESH && instance_transform_id != 0)
+        {
+            out->vbuf_ids[out->vbuf_count++] = instance_transform_id;
+            out->has_instance_transform = true;
+            uint64_t transform_bytes = _resource_byte_size(&emitter->resources, instance_transform_id);
+            uint64_t instance_count = transform_bytes / (16 * sizeof(float));
+            if (instance_count == 0 || instance_count > UINT32_MAX)
+            {
+                if (error != NULL)
+                    *error = "typed mesh instance_transform count is invalid";
+                return false;
+            }
+            out->instance_count = (uint32_t)instance_count;
         }
         out->topology = _resource_topology(&emitter->resources, pos_buf);
         if (out->topology == UINT32_MAX)
@@ -973,6 +991,7 @@ bool _scene_visual_desc_from_render(
         return false;
 
     out->depth_test_enabled = true;
+    out->instance_count = 1;
     const DvzFramePlanVisualMeta* meta = &render->u.render.visual_metadata[visual_index];
     if (meta->has_metadata)
         return _scene_visual_desc_from_metadata(emitter, meta, out, error);
@@ -1301,6 +1320,8 @@ static void _scene_shader_features_resolve(
         out->flags |= DVZ_SCENE_SHADER_FEATURE_LIGHTING;
     if (visual->has_normal)
         out->flags |= DVZ_SCENE_SHADER_FEATURE_LIGHTING;
+    if (visual->has_instance_transform)
+        out->flags |= DVZ_SCENE_SHADER_FEATURE_INSTANCING;
     if (visual->volume_state.render_mode == DVZ_VOLUME_RENDER_MIP)
         out->flags |= DVZ_SCENE_SHADER_FEATURE_VOLUME_MIP;
     if (visual->volume_state.render_mode == DVZ_VOLUME_RENDER_COMPOSITE)
@@ -1461,6 +1482,7 @@ static bool _scene_shader_desc_primitive(
     ANN(out);
 
     bool lit = _shader_features_has(features, DVZ_SCENE_SHADER_FEATURE_LIGHTING);
+    bool instanced = _shader_features_has(features, DVZ_SCENE_SHADER_FEATURE_INSTANCING);
     if (_shader_features_has(features, DVZ_SCENE_SHADER_FEATURE_WBOIT_ACCUM))
     {
         DvzSceneBuiltinShader shader = lit ? DVZ_SCENE_BUILTIN_SHADER_WBOIT_ACCUM_LIT :
@@ -1475,31 +1497,53 @@ static bool _scene_shader_desc_primitive(
             out->pipeline_key, sizeof(out->pipeline_key), "_pipe_wboit_accum_t%u_n%u%s",
             features->topology, lit ? 1u : 0u, format_tag);
         _scene_shader_desc_set_builtin(out, shader);
+        if (instanced)
+        {
+            DvzSceneBuiltinShader vertex_shader =
+                lit ? DVZ_SCENE_BUILTIN_SHADER_PRIMITIVE_LIT_INSTANCED :
+                      DVZ_SCENE_BUILTIN_SHADER_PRIMITIVE_INSTANCED;
+            out->vertex_glsl = _builtin_shader_glsl(vertex_shader, false);
+            out->vertex_wgsl = _builtin_shader_wgsl(vertex_shader, false);
+            out->vertex_spirv_key = lit ? "primitive_lit_instanced_vert" :
+                                          "primitive_instanced_vert";
+        }
         _scene_shader_desc_set_identity(
-            out, "scene.primitive", lit ? "wboit_lit" : "wboit");
+            out, "scene.primitive",
+            instanced ? (lit ? "wboit_lit_instanced" : "wboit_instanced") :
+                        (lit ? "wboit_lit" : "wboit"));
         return true;
     }
 
     if (lit)
     {
-        dvz_snprintf(out->vertex_key, sizeof(out->vertex_key), "_vs_prim_lit%s", format_tag);
+        dvz_snprintf(
+            out->vertex_key, sizeof(out->vertex_key), "_vs_prim_lit%s%s",
+            instanced ? "_inst" : "", format_tag);
         dvz_snprintf(out->fragment_key, sizeof(out->fragment_key), "_fs_prim_lit%s", format_tag);
         dvz_snprintf(
-            out->pipeline_key, sizeof(out->pipeline_key), "_pipe_prim_lit_t%u%s",
-            features->topology, format_tag);
-        _scene_shader_desc_set_builtin(out, DVZ_SCENE_BUILTIN_SHADER_PRIMITIVE_LIT);
-        _scene_shader_desc_set_identity(out, "scene.primitive", "lit");
+            out->pipeline_key, sizeof(out->pipeline_key), "_pipe_prim_lit_t%u%s%s",
+            features->topology, instanced ? "_inst" : "", format_tag);
+        _scene_shader_desc_set_builtin(
+            out, instanced ? DVZ_SCENE_BUILTIN_SHADER_PRIMITIVE_LIT_INSTANCED :
+                             DVZ_SCENE_BUILTIN_SHADER_PRIMITIVE_LIT);
+        _scene_shader_desc_set_identity(
+            out, "scene.primitive", instanced ? "lit_instanced" : "lit");
         return true;
     }
 
-    dvz_snprintf(out->vertex_key, sizeof(out->vertex_key), "_vs_prim%s", format_tag);
+    dvz_snprintf(
+        out->vertex_key, sizeof(out->vertex_key), "_vs_prim%s%s", instanced ? "_inst" : "",
+        format_tag);
     dvz_snprintf(out->fragment_key, sizeof(out->fragment_key), "_fs_prim%s", format_tag);
     dvz_snprintf(
-        out->pipeline_key, sizeof(out->pipeline_key), "_pipe_prim_t%u%s", features->topology,
-        format_tag);
-    _scene_shader_desc_set_builtin(out, DVZ_SCENE_BUILTIN_SHADER_PRIMITIVE);
-    _scene_shader_desc_set_identity(out, "scene.primitive", "default");
-    out->vertex_spirv_key = "primitive_vert";
+        out->pipeline_key, sizeof(out->pipeline_key), "_pipe_prim_t%u%s%s", features->topology,
+        instanced ? "_inst" : "", format_tag);
+    _scene_shader_desc_set_builtin(
+        out, instanced ? DVZ_SCENE_BUILTIN_SHADER_PRIMITIVE_INSTANCED :
+                         DVZ_SCENE_BUILTIN_SHADER_PRIMITIVE);
+    _scene_shader_desc_set_identity(
+        out, "scene.primitive", instanced ? "instanced" : "default");
+    out->vertex_spirv_key = instanced ? "primitive_instanced_vert" : "primitive_vert";
     out->fragment_spirv_key = "primitive_frag";
     return true;
 }
@@ -1667,6 +1711,31 @@ static void _pipeline_attr(
     out->locations[index] = location;
     out->formats[index] = format;
     out->strides[index] = stride;
+    out->strides[binding] = stride;
+    if (out->step_modes[binding] == 0)
+        out->step_modes[binding] = DVZ_DRP2_VERTEX_STEP_MODE_VERTEX;
+}
+
+
+/**
+ * Set one mat4 instance transform vertex input.
+ *
+ * @param out pipeline descriptor to update
+ * @param first_attr first descriptor attribute index
+ * @param binding vertex buffer binding index
+ */
+static void _pipeline_instance_transform(
+    DvzSceneVisualPipelineDesc* out, uint32_t first_attr, uint32_t binding)
+{
+    ANN(out);
+    for (uint32_t i = 0; i < 4; i++)
+    {
+        _pipeline_attr(
+            out, first_attr + i, binding, 3 + i, VK_FORMAT_R32G32B32A32_SFLOAT,
+            16 * sizeof(float));
+        out->offsets[first_attr + i] = i * 4 * sizeof(float);
+    }
+    out->step_modes[binding] = DVZ_DRP2_VERTEX_STEP_MODE_INSTANCE;
 }
 
 
@@ -1772,12 +1841,20 @@ bool _scene_visual_pipeline_desc(
         return true;
 
     case DVZ_SCENE_VISUAL_DESC_PRIMITIVE:
-        out->vertex_buffer_count = visual->has_normal ? 3 : 2;
+        out->vertex_buffer_count =
+            (visual->has_normal ? 3u : 2u) + (visual->has_instance_transform ? 1u : 0u);
         out->binding_count = out->vertex_buffer_count;
-        out->attr_count = out->vertex_buffer_count;
+        out->attr_count = (visual->has_normal ? 3u : 2u) +
+                          (visual->has_instance_transform ? 4u : 0u);
         _pipeline_attr(out, 0, 0, 0, VK_FORMAT_R32G32B32_SFLOAT, 3 * sizeof(float));
         _pipeline_attr(out, 1, 1, 1, VK_FORMAT_R8G8B8A8_UNORM, 4 * sizeof(uint8_t));
-        _pipeline_attr(out, 2, 2, 2, VK_FORMAT_R32G32B32_SFLOAT, 3 * sizeof(float));
+        if (visual->has_normal)
+            _pipeline_attr(out, 2, 2, 2, VK_FORMAT_R32G32B32_SFLOAT, 3 * sizeof(float));
+        if (visual->has_instance_transform)
+        {
+            uint32_t transform_binding = visual->has_normal ? 3 : 2;
+            _pipeline_instance_transform(out, transform_binding, transform_binding);
+        }
         out->needs_common_layout = caps.uses_common_set;
         out->needs_material_layout = caps.needs_material_layout;
         _pipeline_apply_standard_depth_state(

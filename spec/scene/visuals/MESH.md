@@ -23,7 +23,8 @@ isosurfaces, polyhedral shapes.
 
 ## Current Implementation Status
 
-Status on 2026-05-17: the active v0.4 runtime implements the first retained mesh slice only.
+Status on 2026-05-17: the active v0.4 runtime implements the first retained mesh slice plus
+GPU instanced draws through `instance_transform`.
 
 The implemented path supports:
 
@@ -33,7 +34,8 @@ The implemented path supports:
 4. optional `color` per-vertex data, with an opaque-white default when omitted;
 5. optional `normal` per-vertex data for the current lit material shader path;
 6. optional scene-owned `"index"` buffer bindings for indexed draws;
-7. depth-tested rendering, arcball/camera transforms, WBOIT/depth-peeling participation, SSAO
+7. optional `instance_transform` mat4 data, one transform per mesh instance;
+8. depth-tested rendering, arcball/camera transforms, WBOIT/depth-peeling participation, SSAO
    G-buffer participation when normals are present, and offscreen/app execution coverage.
 
 The following sections describe the target mesh contract. Texture material slots, scalar colormap
@@ -76,7 +78,9 @@ The resource owns:
 3. dirty ranges for partial vertex/index updates,
 4. resource identity used for sharing across visuals and panels.
 
-The visual owns material, transform, visibility, picking policy, and other instance state.
+The visual owns material, transform, visibility, picking policy, and other instance state. A mesh
+with `instance_transform` renders the same vertex/index payload once per transform with a DRP2
+instanced draw instead of duplicating vertices.
 Convenience APIs may upload geometry directly when constructing a mesh visual, but semantically that
 creates or replaces a scene mesh resource rather than making the visual privately own geometry.
 

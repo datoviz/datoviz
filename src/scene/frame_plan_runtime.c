@@ -1209,9 +1209,10 @@ static bool _emitter_prepare_render_multi(
                     ok = ok && _create_scene_occlusion_bind_group_layout(
                                    stream, scene_occlusion_bgl_id);
             }
-            ok = ok && dvz_drp2_stream_create_render_pipeline_ex(
+            ok = ok && dvz_drp2_stream_create_render_pipeline_ex2(
                            stream, pipe_id, vs_id, fs_id, pipeline.vertex_buffer_count,
                            pipeline.topology, pipeline.binding_count, pipeline.strides,
+                           pipeline.step_modes,
                            pipeline.attr_count, pipeline.bindings, pipeline.locations,
                            pipeline.formats, pipeline.offsets);
             if (ok && pass_sample_count > 1)
@@ -1526,13 +1527,15 @@ static bool _emitter_emit_render_multi_draws(
                      stream, render_pass_id, draws[d].visual.index_buffer_id,
                      draws[d].visual.index_format, 0) &&
                  dvz_drp2_stream_draw_indexed(
-                     stream, render_pass_id, draws[d].visual.index_count, 1, 0, 0, 0);
+                     stream, render_pass_id, draws[d].visual.index_count,
+                     draws[d].visual.instance_count, 0, 0, 0);
         }
         else
         {
             ok = ok &&
                  dvz_drp2_stream_draw(
-                     stream, render_pass_id, draws[d].visual.vertex_count, 1, 0, 0);
+                     stream, render_pass_id, draws[d].visual.vertex_count,
+                     draws[d].visual.instance_count, 0, 0);
         }
     }
 
