@@ -30,6 +30,32 @@
 
 
 
+/*************************************************************************************************/
+/*  Macros                                                                                       */
+/*************************************************************************************************/
+
+#define TST_SCENE_PICK_PROBE_GPU_CASE(test)                                                       \
+    do                                                                                            \
+    {                                                                                             \
+        TstCaseDesc _tst_desc = tst_case_desc(#test, #test, (test));                              \
+        _tst_desc.tags = tags;                                                                    \
+        _tst_desc.resources = TST_RES_CPU | TST_RES_GPU | TST_RES_VULKAN;                         \
+        _tst_desc.isolation = TST_ISOLATION_PROCESS;                                              \
+        tst_suite_add_case((suite), _tst_desc);                                                   \
+    } while (0)
+
+#define TST_SCENE_PICK_PROBE_REQUIRE_VKLITE(ctx)                                                  \
+    do                                                                                            \
+    {                                                                                             \
+        if (!_scene_vklite_runtime_available())                                                   \
+        {                                                                                         \
+            tst_skip((ctx), "Vulkan instance creation failed");                                   \
+            return 0;                                                                             \
+        }                                                                                         \
+    } while (0)
+
+
+
 
 /*************************************************************************************************/
 /*  Tests                                                                                        */
@@ -476,8 +502,7 @@ int test_scene_image_probe_transparent_pixel_misses(TstContext* suite, const Tst
 {
     ANN(suite);
     ANN(item);
-    if (!_scene_vklite_runtime_available())
-        return 0;
+    TST_SCENE_PICK_PROBE_REQUIRE_VKLITE(suite);
 
     DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
     VkPhysicalDeviceVulkan13Features features13 = {
@@ -489,6 +514,7 @@ int test_scene_image_probe_transparent_pixel_misses(TstContext* suite, const Tst
     if (ctx == NULL)
     {
         log_warn("transparent image probe test skipped because GPU context creation failed");
+        tst_skip(suite, "GPU context creation failed");
         return 0;
     }
 
@@ -567,8 +593,7 @@ int test_scene_image_probe_gpu_readback_failure_misses(TstContext* suite, const 
 {
     ANN(suite);
     ANN(item);
-    if (!_scene_vklite_runtime_available())
-        return 0;
+    TST_SCENE_PICK_PROBE_REQUIRE_VKLITE(suite);
 
     DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
     VkPhysicalDeviceVulkan13Features features13 = {
@@ -580,6 +605,7 @@ int test_scene_image_probe_gpu_readback_failure_misses(TstContext* suite, const 
     if (ctx == NULL)
     {
         log_warn("image probe GPU failure test skipped because GPU context creation failed");
+        tst_skip(suite, "GPU context creation failed");
         return 0;
     }
 
@@ -719,8 +745,7 @@ int test_scene_process_pick_probe_requests(TstContext* suite, const TstCase* ite
 {
     ANN(suite);
     ANN(item);
-    if (!_scene_vklite_runtime_available())
-        return 0;
+    TST_SCENE_PICK_PROBE_REQUIRE_VKLITE(suite);
 
     DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
     VkPhysicalDeviceVulkan13Features features13 = {
@@ -732,6 +757,7 @@ int test_scene_process_pick_probe_requests(TstContext* suite, const TstCase* ite
     if (ctx == NULL)
     {
         log_warn("scene pick/probe processing test skipped because GPU context creation failed");
+        tst_skip(suite, "GPU context creation failed");
         return 0;
     }
 
@@ -830,8 +856,7 @@ int test_scene_point_pick_quadrants(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     ANN(item);
-    if (!_scene_vklite_runtime_available())
-        return 0;
+    TST_SCENE_PICK_PROBE_REQUIRE_VKLITE(suite);
 
     DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
     VkPhysicalDeviceVulkan13Features features13 = {
@@ -843,6 +868,7 @@ int test_scene_point_pick_quadrants(TstContext* suite, const TstCase* item)
     if (ctx == NULL)
     {
         log_warn("scene point-pick quadrant test skipped because GPU context creation failed");
+        tst_skip(suite, "GPU context creation failed");
         return 0;
     }
 
@@ -935,8 +961,7 @@ int test_scene_point_pick_rejects_disc_corner(TstContext* suite, const TstCase* 
 {
     ANN(suite);
     ANN(item);
-    if (!_scene_vklite_runtime_available())
-        return 0;
+    TST_SCENE_PICK_PROBE_REQUIRE_VKLITE(suite);
 
     DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
     VkPhysicalDeviceVulkan13Features features13 = {
@@ -948,6 +973,7 @@ int test_scene_point_pick_rejects_disc_corner(TstContext* suite, const TstCase* 
     if (ctx == NULL)
     {
         log_warn("scene circular point-pick test skipped because GPU context creation failed");
+        tst_skip(suite, "GPU context creation failed");
         return 0;
     }
 
@@ -1006,8 +1032,7 @@ int test_scene_pixel_pick_accepts_square_corner(TstContext* suite, const TstCase
 {
     ANN(suite);
     ANN(item);
-    if (!_scene_vklite_runtime_available())
-        return 0;
+    TST_SCENE_PICK_PROBE_REQUIRE_VKLITE(suite);
 
     DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
     VkPhysicalDeviceVulkan13Features features13 = {
@@ -1019,6 +1044,7 @@ int test_scene_pixel_pick_accepts_square_corner(TstContext* suite, const TstCase
     if (ctx == NULL)
     {
         log_warn("scene square pixel-pick test skipped because GPU context creation failed");
+        tst_skip(suite, "GPU context creation failed");
         return 0;
     }
 
@@ -1079,8 +1105,7 @@ int test_scene_marker_pick_accepts_bbox_corner(TstContext* suite, const TstCase*
 {
     ANN(suite);
     ANN(item);
-    if (!_scene_vklite_runtime_available())
-        return 0;
+    TST_SCENE_PICK_PROBE_REQUIRE_VKLITE(suite);
 
     DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
     VkPhysicalDeviceVulkan13Features features13 = {
@@ -1092,6 +1117,7 @@ int test_scene_marker_pick_accepts_bbox_corner(TstContext* suite, const TstCase*
     if (ctx == NULL)
     {
         log_warn("scene marker bbox-pick test skipped because GPU context creation failed");
+        tst_skip(suite, "GPU context creation failed");
         return 0;
     }
 
@@ -1330,8 +1356,7 @@ int test_scene_image_probe_respects_panel_request_position(TstContext* suite, co
 {
     ANN(suite);
     ANN(item);
-    if (!_scene_vklite_runtime_available())
-        return 0;
+    TST_SCENE_PICK_PROBE_REQUIRE_VKLITE(suite);
 
     DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
     VkPhysicalDeviceVulkan13Features features13 = {
@@ -1343,6 +1368,7 @@ int test_scene_image_probe_respects_panel_request_position(TstContext* suite, co
     if (ctx == NULL)
     {
         log_warn("image probe position test skipped because GPU context creation failed");
+        tst_skip(suite, "GPU context creation failed");
         return 0;
     }
 
@@ -1464,8 +1490,7 @@ int test_scene_image_probe_segment_rgba_hidden_visual(TstContext* suite, const T
 {
     ANN(suite);
     ANN(item);
-    if (!_scene_vklite_runtime_available())
-        return 0;
+    TST_SCENE_PICK_PROBE_REQUIRE_VKLITE(suite);
 
     DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
     VkPhysicalDeviceVulkan13Features features13 = {
@@ -1477,6 +1502,7 @@ int test_scene_image_probe_segment_rgba_hidden_visual(TstContext* suite, const T
     if (ctx == NULL)
     {
         log_warn("segment probe test skipped because GPU context creation failed");
+        tst_skip(suite, "GPU context creation failed");
         return 0;
     }
 
@@ -1670,18 +1696,18 @@ int test_scene_pick_probe(TstSuite* suite)
     TST_CASE(test_scene_pick_request_distinct_ids_keep_independent_pending_and_results);
     TST_CASE(test_scene_pick_request_same_id_rejects_late_result_after_newer_poll);
     TST_CASE(test_scene_probe_request_zero_id_rejects_late_result_after_newer_poll);
-    TST_CASE(test_scene_image_probe_transparent_pixel_misses);
-    TST_CASE(test_scene_image_probe_gpu_readback_failure_misses);
+    TST_SCENE_PICK_PROBE_GPU_CASE(test_scene_image_probe_transparent_pixel_misses);
+    TST_SCENE_PICK_PROBE_GPU_CASE(test_scene_image_probe_gpu_readback_failure_misses);
     TST_CASE(test_scene_volume_slice_probe_cpu_sample);
-    TST_CASE(test_scene_process_pick_probe_requests);
-    TST_CASE(test_scene_point_pick_quadrants);
-    TST_CASE(test_scene_point_pick_rejects_disc_corner);
-    TST_CASE(test_scene_pixel_pick_accepts_square_corner);
-    TST_CASE(test_scene_marker_pick_accepts_bbox_corner);
+    TST_SCENE_PICK_PROBE_GPU_CASE(test_scene_process_pick_probe_requests);
+    TST_SCENE_PICK_PROBE_GPU_CASE(test_scene_point_pick_quadrants);
+    TST_SCENE_PICK_PROBE_GPU_CASE(test_scene_point_pick_rejects_disc_corner);
+    TST_SCENE_PICK_PROBE_GPU_CASE(test_scene_pixel_pick_accepts_square_corner);
+    TST_SCENE_PICK_PROBE_GPU_CASE(test_scene_marker_pick_accepts_bbox_corner);
     TST_CASE(test_scene_process_requests_preserves_caller_runtime);
     TST_CASE(test_scene_image_probe_reuses_retained_request_executor);
-    TST_CASE(test_scene_image_probe_respects_panel_request_position);
-    TST_CASE(test_scene_image_probe_segment_rgba_hidden_visual);
+    TST_SCENE_PICK_PROBE_GPU_CASE(test_scene_image_probe_respects_panel_request_position);
+    TST_SCENE_PICK_PROBE_GPU_CASE(test_scene_image_probe_segment_rgba_hidden_visual);
     TST_CASE(test_scene_image_probe_plan_rejects_size_overflow);
 
     return 0;
