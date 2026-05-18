@@ -57,6 +57,14 @@ isolation metadata, so `dvztest_canvas --list` exposes the resource shape of eac
 validation covered `dvztest_canvas` rebuilds, a CPU-only case, and representative Vulkan/GLFW
 unavailable paths.
 
+Fourth follow-up update on `2026-05-18`: the scene runtime slices now expose GPU/Vulkan skip
+results and metadata for frame-plan emission, pick/probe GPU requests, scene-graph runtime smoke
+tests, and app-offscreen shared Vulkan-runtime gates. Focused validation covered `dvztest_scene`
+rebuilds, representative scene GPU cases reporting `SKIP` when Vulkan is unavailable, and `--list`
+output showing GPU/Vulkan/process metadata for the migrated scene cases. Remaining scene app
+helper-level capture skips still need a narrower helper refactor so internal `skipped` result
+structs can carry skip reasons back to the runner context.
+
 Two boundaries should stay clean:
 
 1. `testing/testing.h` and `testing/testing.cpp` should remain a generic C/C++ test framework.
