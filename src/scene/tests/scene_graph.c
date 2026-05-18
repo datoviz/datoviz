@@ -48,6 +48,33 @@ bool _dvz_drp2_runtime_vklite_download_buffer(
 
 
 /*************************************************************************************************/
+/*  Macros                                                                                       */
+/*************************************************************************************************/
+
+#define TST_SCENE_GRAPH_GPU_CASE(test)                                                            \
+    do                                                                                            \
+    {                                                                                             \
+        TstCaseDesc _tst_desc = tst_case_desc(#test, #test, (test));                              \
+        _tst_desc.tags = tags;                                                                    \
+        _tst_desc.resources = TST_RES_CPU | TST_RES_GPU | TST_RES_VULKAN;                         \
+        _tst_desc.isolation = TST_ISOLATION_PROCESS;                                              \
+        tst_suite_add_case((suite), _tst_desc);                                                   \
+    } while (0)
+
+#define TST_SCENE_GRAPH_REQUIRE_VKLITE(ctx)                                                       \
+    do                                                                                            \
+    {                                                                                             \
+        if (!_scene_vklite_runtime_available())                                                   \
+        {                                                                                         \
+            tst_skip((ctx), "Vulkan instance creation failed");                                   \
+            return 0;                                                                             \
+        }                                                                                         \
+    } while (0)
+
+
+
+
+/*************************************************************************************************/
 /*  Helpers                                                                                      */
 /*************************************************************************************************/
 
@@ -156,8 +183,7 @@ int test_scene_point_emit_glsl_executes(TstContext* suite, const TstCase* item)
     ANN(suite);
     (void)item;
 
-    if (!_scene_vklite_runtime_available())
-        return 0;
+    TST_SCENE_GRAPH_REQUIRE_VKLITE(suite);
 
     DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
     VkPhysicalDeviceVulkan13Features features13 = {
@@ -169,6 +195,7 @@ int test_scene_point_emit_glsl_executes(TstContext* suite, const TstCase* item)
     if (ctx == NULL)
     {
         log_warn("test_scene_point_emit_glsl_executes skipped: GPU context creation failed");
+        tst_skip(suite, "GPU context creation failed");
         return 0;
     }
 
@@ -239,8 +266,7 @@ int test_scene_sphere_emit_glsl_executes(TstContext* suite, const TstCase* item)
     ANN(suite);
     (void)item;
 
-    if (!_scene_vklite_runtime_available())
-        return 0;
+    TST_SCENE_GRAPH_REQUIRE_VKLITE(suite);
 
     DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
     VkPhysicalDeviceVulkan13Features features13 = {
@@ -252,6 +278,7 @@ int test_scene_sphere_emit_glsl_executes(TstContext* suite, const TstCase* item)
     if (ctx == NULL)
     {
         log_warn("test_scene_sphere_emit_glsl_executes skipped: GPU context creation failed");
+        tst_skip(suite, "GPU context creation failed");
         return 0;
     }
 
@@ -2692,8 +2719,7 @@ int test_scene_point_external_position_buffer_executes(TstContext* suite, const 
     ANN(suite);
     (void)item;
 
-    if (!_scene_vklite_runtime_available())
-        return 0;
+    TST_SCENE_GRAPH_REQUIRE_VKLITE(suite);
 
     DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
     VkPhysicalDeviceVulkan13Features features13 = {
@@ -2707,6 +2733,7 @@ int test_scene_point_external_position_buffer_executes(TstContext* suite, const 
         log_warn(
             "test_scene_point_external_position_buffer_executes skipped: GPU context creation "
             "failed");
+        tst_skip(suite, "GPU context creation failed");
         return 0;
     }
 
@@ -4355,8 +4382,7 @@ int test_scene_point_large_count_executes(TstContext* suite, const TstCase* item
     ANN(suite);
     (void)item;
 
-    if (!_scene_vklite_runtime_available())
-        return 0;
+    TST_SCENE_GRAPH_REQUIRE_VKLITE(suite);
 
     DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
     VkPhysicalDeviceVulkan13Features features13 = {
@@ -4368,6 +4394,7 @@ int test_scene_point_large_count_executes(TstContext* suite, const TstCase* item
     if (ctx == NULL)
     {
         log_warn("test_scene_point_large_count_executes skipped: GPU context creation failed");
+        tst_skip(suite, "GPU context creation failed");
         return 0;
     }
 
@@ -11050,8 +11077,8 @@ int test_scene_graph(TstSuite* suite)
     TST_MODULE(suite, "scene");
     TST_GROUP("scene-graph");
 
-    TST_CASE(test_scene_point_emit_glsl_executes);
-    TST_CASE(test_scene_sphere_emit_glsl_executes);
+    TST_SCENE_GRAPH_GPU_CASE(test_scene_point_emit_glsl_executes);
+    TST_SCENE_GRAPH_GPU_CASE(test_scene_sphere_emit_glsl_executes);
     TST_CASE(test_scene_sphere_mode);
     TST_CASE(test_scene_segment_caps);
     TST_CASE(test_scene_segment_emit_glsl);
@@ -11130,7 +11157,7 @@ int test_scene_graph(TstSuite* suite)
     TST_CASE(test_scene_blended_mesh_occlusion_contracts);
     TST_CASE(test_scene_visual_attr_source_and_mutability_metadata);
     TST_CASE(test_scene_point_external_position_buffer_emits_no_upload);
-    TST_CASE(test_scene_point_external_position_buffer_executes);
+    TST_SCENE_GRAPH_GPU_CASE(test_scene_point_external_position_buffer_executes);
     TST_CASE(test_scene_point_rejects_texcoords_attribute);
     TST_CASE(test_scene_primitive_rejects_size_attribute);
     TST_CASE(test_scene_path_rejects_size_attribute);
@@ -11156,7 +11183,7 @@ int test_scene_graph(TstSuite* suite)
     TST_CASE(test_scene_point_emit_has_vertex_layout);
     TST_CASE(test_scene_point_visual_resizes_existing_attributes);
     TST_CASE(test_scene_indexed_primitive_shading_updates_runtime);
-    TST_CASE(test_scene_point_large_count_executes);
+    TST_SCENE_GRAPH_GPU_CASE(test_scene_point_large_count_executes);
     TST_CASE(test_scene_second_emit_no_uploads_when_not_dirty);
     TST_CASE(test_scene_hidden_visual_first_visible_later_uploads);
     TST_CASE(test_scene_hidden_indexed_mesh_first_visible_later_uploads);
