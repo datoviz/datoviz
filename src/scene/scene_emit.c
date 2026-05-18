@@ -1610,7 +1610,9 @@ static bool _scene_add_volume_occlusion_reads(DvzFramePlan* plan, const char* pa
     ANN(plan);
     ANN(panel_id);
     char depth_id[DVZ_SCENE_LABEL_SIZE];
-    dvz_snprintf(depth_id, sizeof(depth_id), "%s.volume_occlusion.depth", panel_id);
+    if (!_scene_resource_key_panel_graph(
+            panel_id, "volume_occlusion.depth", depth_id, sizeof(depth_id)))
+        return false;
 
     for (uint32_t i = 0; i < plan->graph_pass_count; i++)
     {
@@ -1641,7 +1643,9 @@ static bool _scene_add_scene_occlusion_reads(DvzFramePlan* plan, const char* pan
     ANN(plan);
     ANN(panel_id);
     char depth_id[DVZ_SCENE_LABEL_SIZE];
-    dvz_snprintf(depth_id, sizeof(depth_id), "%s.scene_occlusion.depth", panel_id);
+    if (!_scene_resource_key_panel_graph(
+            panel_id, "scene_occlusion.depth", depth_id, sizeof(depth_id)))
+        return false;
 
     for (uint32_t i = 0; i < plan->graph_pass_count; i++)
     {
@@ -1864,38 +1868,30 @@ static bool _scene_append_visual_to_render_pass(
         metadata.draw_bind_group_layout_mask = draw_contract.bind_group_layout_mask;
         if (draw_contract.samples_volume_occlusion)
         {
-            int ret = dvz_snprintf(
-                metadata.draw_volume_occlusion_resource_id,
-                sizeof(metadata.draw_volume_occlusion_resource_id), "%s.volume_occlusion.depth",
-                node->u.render.panel_id);
-            if (ret < 0 || (size_t)ret >= sizeof(metadata.draw_volume_occlusion_resource_id))
+            if (!_scene_resource_key_panel_graph(
+                    node->u.render.panel_id, "volume_occlusion.depth",
+                    metadata.draw_volume_occlusion_resource_id,
+                    sizeof(metadata.draw_volume_occlusion_resource_id)))
                 return false;
-            ret = dvz_snprintf(
-                metadata.draw_volume_occlusion_producer_pass_id,
-                sizeof(metadata.draw_volume_occlusion_producer_pass_id), "%s.volume_occlusion",
-                node->u.render.panel_id);
-            if (
-                ret < 0 ||
-                (size_t)ret >= sizeof(metadata.draw_volume_occlusion_producer_pass_id))
+            if (!_scene_resource_key_panel_graph(
+                    node->u.render.panel_id, "volume_occlusion",
+                    metadata.draw_volume_occlusion_producer_pass_id,
+                    sizeof(metadata.draw_volume_occlusion_producer_pass_id)))
                 return false;
             metadata.draw_volume_occlusion_bind_set = DVZ_SCENE_SHADER_SET_VISUAL;
             metadata.draw_volume_occlusion_bind_binding = 3;
         }
         if (draw_contract.samples_scene_occlusion)
         {
-            int ret = dvz_snprintf(
-                metadata.draw_scene_occlusion_resource_id,
-                sizeof(metadata.draw_scene_occlusion_resource_id), "%s.scene_occlusion.depth",
-                node->u.render.panel_id);
-            if (ret < 0 || (size_t)ret >= sizeof(metadata.draw_scene_occlusion_resource_id))
+            if (!_scene_resource_key_panel_graph(
+                    node->u.render.panel_id, "scene_occlusion.depth",
+                    metadata.draw_scene_occlusion_resource_id,
+                    sizeof(metadata.draw_scene_occlusion_resource_id)))
                 return false;
-            ret = dvz_snprintf(
-                metadata.draw_scene_occlusion_producer_pass_id,
-                sizeof(metadata.draw_scene_occlusion_producer_pass_id), "%s.scene_occlusion",
-                node->u.render.panel_id);
-            if (
-                ret < 0 ||
-                (size_t)ret >= sizeof(metadata.draw_scene_occlusion_producer_pass_id))
+            if (!_scene_resource_key_panel_graph(
+                    node->u.render.panel_id, "scene_occlusion",
+                    metadata.draw_scene_occlusion_producer_pass_id,
+                    sizeof(metadata.draw_scene_occlusion_producer_pass_id)))
                 return false;
             bool scene_occlusion_uses_set2 =
                 draw_contract.needs_image_set || draw_contract.needs_volume_set ||

@@ -183,6 +183,25 @@ bool _scene_resource_key_visual_indexed(
 
 
 /**
+ * Format a panel-scoped graph resource or pass id.
+ *
+ * @param panel_id the encoded panel id
+ * @param suffix the graph resource/pass suffix without a leading dot
+ * @param out the output key buffer
+ * @param out_size the output buffer capacity
+ * @return whether the key was written without truncation
+ */
+bool _scene_resource_key_panel_graph(
+    const char* panel_id, const char* suffix, char* out, size_t out_size)
+{
+    ANN(panel_id);
+    ANN(suffix);
+    return _format_key(out, out_size, "%s.%s", panel_id, suffix);
+}
+
+
+
+/**
  * Split an encoded visual id with an optional shared index-buffer suffix.
  *
  * @param encoded the encoded visual id
@@ -218,4 +237,38 @@ void _scene_resource_key_split_visual(
         dvz_memcpy(visual_id, visual_id_size, encoded, visual_len);
     visual_id[visual_len] = '\0';
     dvz_strlcpy(index_id, marker + strlen("#index="), index_id_size);
+}
+
+
+
+/**
+ * Return whether a graph resource id ends with an exact suffix.
+ *
+ * @param resource_id the graph resource id
+ * @param suffix the expected suffix, including its leading separator
+ * @return whether the resource id has the suffix
+ */
+bool _scene_resource_id_has_suffix(const char* resource_id, const char* suffix)
+{
+    ANN(suffix);
+    if (resource_id == NULL)
+        return false;
+    size_t resource_len = strlen(resource_id);
+    size_t suffix_len = strlen(suffix);
+    if (suffix_len == 0 || suffix_len > resource_len)
+        return false;
+    return strcmp(resource_id + resource_len - suffix_len, suffix) == 0;
+}
+
+
+
+/**
+ * Return whether a graph resource id uses the scene depth naming marker.
+ *
+ * @param resource_id the graph resource id
+ * @return whether the resource id denotes a depth-family graph resource
+ */
+bool _scene_resource_id_has_depth_marker(const char* resource_id)
+{
+    return resource_id != NULL && strstr(resource_id, ".depth") != NULL;
 }

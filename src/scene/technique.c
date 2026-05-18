@@ -21,6 +21,7 @@
 #include "_alloc.h"
 #include "_assertions.h"
 #include "_compat.h"
+#include "_scene_resource_key.h"
 #include "_technique.h"
 #include "_visual_pipeline.h"
 
@@ -1057,8 +1058,11 @@ bool _scene_technique_emit_volume_occlusion_frame_graph(
 
     char depth_id[DVZ_SCENE_LABEL_SIZE];
     char pass_id[DVZ_SCENE_LABEL_SIZE];
-    dvz_snprintf(depth_id, sizeof(depth_id), "%s.volume_occlusion.depth", panel_id);
-    dvz_snprintf(pass_id, sizeof(pass_id), "%s.volume_occlusion", panel_id);
+    if (!_scene_resource_key_panel_graph(
+            panel_id, "volume_occlusion.depth", depth_id, sizeof(depth_id)))
+        return false;
+    if (!_scene_resource_key_panel_graph(panel_id, "volume_occlusion", pass_id, sizeof(pass_id)))
+        return false;
 
     DvzFrameGraphResource depth = {0};
     dvz_strlcpy(depth.id, depth_id, sizeof(depth.id));
@@ -1104,9 +1108,13 @@ bool _scene_technique_emit_scene_occlusion_frame_graph(DvzFramePlan* plan, const
     char depth_id[DVZ_SCENE_LABEL_SIZE];
     char z_id[DVZ_SCENE_LABEL_SIZE];
     char pass_id[DVZ_SCENE_LABEL_SIZE];
-    dvz_snprintf(depth_id, sizeof(depth_id), "%s.scene_occlusion.depth", panel_id);
-    dvz_snprintf(z_id, sizeof(z_id), "%s.scene_occlusion.z", panel_id);
-    dvz_snprintf(pass_id, sizeof(pass_id), "%s.scene_occlusion", panel_id);
+    if (!_scene_resource_key_panel_graph(
+            panel_id, "scene_occlusion.depth", depth_id, sizeof(depth_id)))
+        return false;
+    if (!_scene_resource_key_panel_graph(panel_id, "scene_occlusion.z", z_id, sizeof(z_id)))
+        return false;
+    if (!_scene_resource_key_panel_graph(panel_id, "scene_occlusion", pass_id, sizeof(pass_id)))
+        return false;
 
     DvzFrameGraphResource depth = {0};
     dvz_strlcpy(depth.id, depth_id, sizeof(depth.id));

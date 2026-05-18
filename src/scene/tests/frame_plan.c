@@ -249,15 +249,25 @@ int test_scene_resource_keys(TstSuite* suite, TstItem* item)
     AT(strcmp(key, "v3_texture") == 0);
     AT(_scene_resource_key_visual_indexed(3, 7, key, sizeof(key)));
     AT(strcmp(key, "v3#index=b7") == 0);
+    char indexed_key[DVZ_SCENE_LABEL_SIZE] = {0};
+    AT(_scene_resource_key_visual_indexed(3, 7, indexed_key, sizeof(indexed_key)));
+    AT(_scene_resource_key_panel_graph("figure_0_p1", "scene_occlusion.depth", key, sizeof(key)));
+    AT(strcmp(key, "figure_0_p1.scene_occlusion.depth") == 0);
+    AT(_scene_resource_id_has_suffix(key, ".scene_occlusion.depth"));
+    AT(!_scene_resource_id_has_suffix(key, ".volume_occlusion.depth"));
+    AT(_scene_resource_id_has_depth_marker(key));
 
     char visual_id[DVZ_SCENE_LABEL_SIZE] = {0};
     char index_id[DVZ_SCENE_LABEL_SIZE] = {0};
-    _scene_resource_key_split_visual(key, visual_id, sizeof(visual_id), index_id, sizeof(index_id));
+    _scene_resource_key_split_visual(
+        indexed_key, visual_id, sizeof(visual_id), index_id, sizeof(index_id));
     AT(strcmp(visual_id, "v3") == 0);
     AT(strcmp(index_id, "b7") == 0);
 
     char tiny[4] = {0};
     AT(!_scene_resource_key_visual_indexed(123, 456, tiny, sizeof(tiny)));
+    AT(tiny[0] == '\0');
+    AT(!_scene_resource_key_panel_graph("figure_0_p1", "scene_occlusion.depth", tiny, sizeof(tiny)));
     AT(tiny[0] == '\0');
     return 0;
 }

@@ -914,6 +914,29 @@ Validation:
 3. `./build/testing/dvztest_scene test_scene_role_work_label_mapping_complete`
 
 
+### 2026-05-18: Phase 3 / Graph resource key helper centralization
+
+Completed the first graph resource-id cleanup slice.
+
+Changes:
+
+1. Added shared scene resource-key helpers for panel-scoped graph ids, exact graph resource suffix
+   checks, and the current depth-marker naming convention.
+2. Reused the helper for volume-occlusion and scene-occlusion graph resource/pass ids in scene
+   emission and technique graph construction.
+3. Replaced contract/runtime `strstr()` suffix checks for sampled occlusion and EDL graph depth
+   resources with the shared exact suffix helper.
+4. Extended `test_scene_resource_keys` to lock the panel graph id and suffix/depth-marker helper
+   behavior.
+
+Validation:
+
+1. `cmake --build build --target dvztest_scene -j2`
+2. `./build/testing/dvztest_scene test_scene_resource_keys`
+3. `./build/testing/dvztest_scene test_scene_blended_mesh_occlusion_contracts`
+4. `./build/testing/dvztest_scene test_app_offscreen_volume_slice_mesh_scene_occlusion_toggle`
+
+
 ## Executive Assessment
 
 The direction is correct and worth continuing. The proposal identifies the right failure mode:
@@ -1223,15 +1246,17 @@ Status:
 ### Low: role, label, and resource-id predicates are partly centralized
 
 Role-to-work-label mapping and alpha-mode predicates now flow through scene technique helpers for
-the active FramePlan, contract, runtime, and visual-pipeline paths. Resource suffix interpretation
-still appears in both contract and runtime paths.
+the active FramePlan, contract, runtime, and visual-pipeline paths. The current panel graph resource
+id and exact suffix helpers are centralized in `scene_resource_key.c`.
 
-Impact: the original duplicate role/alpha maintenance risk is closed. Resource-id and suffix policy
-still needs centralization before custom graph resources or backend-specific resource naming become
-active.
+Impact: the original duplicate role/alpha maintenance risk is closed, and the sampled occlusion/EDL
+suffix checks now share one exact-suffix helper. Some broader graph resource construction still
+lives in individual technique builders and can be promoted later if a backend needs serialized
+resource contracts.
 
-Recommendation: centralize graph resource-id construction and suffix interpretation in
-scene-internal helpers, then keep testing every `DvzFramePlanRenderPassRole`.
+Recommendation: continue using the shared resource-key helpers for new graph resources, and promote
+the remaining technique-local graph ids only when they need to be serialized or shared across
+backends.
 
 
 ## Semantic Case Assessment
@@ -1311,8 +1336,8 @@ in this pass, using this attachment/resource/pipeline state" belongs in the reso
 1. Move WBOIT, depth-peel, source-over, volume occlusion, scene occlusion, G-buffer, EDL, SSAO, and
    MSAA pass-contract construction into named builders.
 2. Have builders emit both graph passes and expected runtime policy from the same data.
-3. Partly done: centralize role labels and alpha-mode class predicates. Resource-id construction and
-   suffix interpretation still need one shared helper path.
+3. Partly done: centralize role labels, alpha-mode class predicates, and panel graph resource suffix
+   checks. Broader graph resource construction remains technique-local.
 4. Delete dead or confusing source-over depth-write branches once tests prove they are unreachable.
 
 ### Phase 4: broaden visual correctness tests

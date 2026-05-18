@@ -31,6 +31,7 @@
 #include "_scene_common_bindings.h"
 #include "_scene_shader_abi.h"
 #include "_render_pass.h"
+#include "_scene_resource_key.h"
 #include "_shader_registry.h"
 #include "_technique.h"
 #include "_visual_pipeline.h"
@@ -2360,8 +2361,9 @@ static bool _graph_volume_occlusion_read_index(
         return false;
     for (uint32_t i = 0; i < pass->read_count; i++)
     {
-        if (pass->reads[i].usage == DVZ_FRAME_GRAPH_ACCESS_SAMPLED &&
-            strstr(pass->reads[i].resource_id, ".volume_occlusion.depth") != NULL)
+        if (
+            pass->reads[i].usage == DVZ_FRAME_GRAPH_ACCESS_SAMPLED &&
+            _scene_resource_id_has_suffix(pass->reads[i].resource_id, ".volume_occlusion.depth"))
         {
             *out_read_index = i;
             return true;
@@ -2419,8 +2421,9 @@ static bool _graph_scene_occlusion_read_index(
         return false;
     for (uint32_t i = 0; i < pass->read_count; i++)
     {
-        if (pass->reads[i].usage == DVZ_FRAME_GRAPH_ACCESS_SAMPLED &&
-            strstr(pass->reads[i].resource_id, ".scene_occlusion.depth") != NULL)
+        if (
+            pass->reads[i].usage == DVZ_FRAME_GRAPH_ACCESS_SAMPLED &&
+            _scene_resource_id_has_suffix(pass->reads[i].resource_id, ".scene_occlusion.depth"))
         {
             *out_read_index = i;
             return true;
@@ -4513,7 +4516,8 @@ static bool _emitter_emit_scene_graph_renders(
             batch->render = render;
             bool force_point_depth =
                 render_graph_pass != NULL && render_graph_pass->has_depth_attachment &&
-                strstr(render_graph_pass->depth_attachment.resource_id, ".edl.depth") != NULL;
+                _scene_resource_id_has_suffix(
+                    render_graph_pass->depth_attachment.resource_id, ".edl.depth");
             ok = _emitter_prepare_render_multi(
                 emitter, stream, render, cfg, pass_has_depth_attachment, force_point_depth,
                 sampled_depth_id, sampled_depth_is_volume_occlusion, scene_occlusion_depth_id,

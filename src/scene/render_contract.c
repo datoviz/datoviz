@@ -18,6 +18,7 @@
 #include "_alloc.h"
 #include "_assertions.h"
 #include "_compat.h"
+#include "_scene_resource_key.h"
 #include "_technique.h"
 #include "_visual_pipeline.h"
 #include "../drp2/_stream.h"
@@ -577,7 +578,7 @@ static bool _contract_append_read(
     _contract_apply_resource_facts(plan, caps, use);
     _contract_apply_read_dependency(plan, consumer_pass_id, use);
     contract->sampled_read_count++;
-    if (strstr(read->resource_id, ".depth") != NULL)
+    if (_scene_resource_id_has_depth_marker(read->resource_id))
         contract->sampled_depth_read_count++;
     return true;
 }
@@ -667,7 +668,7 @@ static const DvzSceneAttachmentUse* _contract_attachment_suffix(
     for (uint32_t i = 0; i < contract->attachment_count; i++)
     {
         const DvzSceneAttachmentUse* use = &contract->attachments[i];
-        if (use->role == role && strstr(use->resource_id, suffix) != NULL)
+        if (use->role == role && _scene_resource_id_has_suffix(use->resource_id, suffix))
             return use;
     }
     return NULL;
@@ -692,7 +693,7 @@ static bool _contract_reads_resource_suffix(
         const DvzSceneAttachmentUse* use = &contract->attachments[i];
         if (use->role != DVZ_SCENE_ATTACHMENT_SAMPLED || !use->read)
             continue;
-        if (strstr(use->resource_id, suffix) != NULL)
+        if (_scene_resource_id_has_suffix(use->resource_id, suffix))
             return true;
     }
     return false;

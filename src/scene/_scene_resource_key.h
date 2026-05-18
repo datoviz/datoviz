@@ -41,6 +41,13 @@ bool _scene_resource_key_visual_texture(uint32_t visual_index, char* out, size_t
 bool _scene_resource_key_visual_indexed(
     uint32_t visual_index, uint32_t buffer_index, char* out, size_t out_size);
 
+bool _scene_resource_key_panel_graph(
+    const char* panel_id, const char* suffix, char* out, size_t out_size);
+
 void _scene_resource_key_split_visual(
     const char* encoded, char* visual_id, size_t visual_id_size, char* index_id,
     size_t index_id_size);
+
+bool _scene_resource_id_has_suffix(const char* resource_id, const char* suffix);
+
+bool _scene_resource_id_has_depth_marker(const char* resource_id);
