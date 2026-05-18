@@ -133,6 +133,93 @@ static std::string _tst_case_id(const TstCase* test)
 
 
 
+/**
+ * Remove a fixed prefix from a display label when it is present.
+ *
+ * @param label display label to trim.
+ * @param prefix prefix to remove.
+ */
+static void _tst_drop_display_prefix(std::string* label, const std::string& prefix)
+{
+    ANN(label);
+    if (prefix.empty())
+    {
+        return;
+    }
+    if (label->rfind(prefix, 0) == 0)
+    {
+        label->erase(0, prefix.size());
+    }
+}
+
+
+
+/**
+ * Convert a test metadata field to the token prefix used by C fixture names.
+ *
+ * @param value metadata string.
+ * @return Normalized token prefix, including the trailing underscore.
+ */
+static std::string _tst_display_token_prefix(const char* value)
+{
+    if (value == NULL || value[0] == '\0')
+    {
+        return "";
+    }
+
+    std::string token = value;
+    for (char& ch : token)
+    {
+        const bool lower = ch >= 'a' && ch <= 'z';
+        const bool upper = ch >= 'A' && ch <= 'Z';
+        const bool digit = ch >= '0' && ch <= '9';
+        if (!lower && !upper && !digit)
+        {
+            ch = '_';
+        }
+    }
+    return token + "_";
+}
+
+
+
+/**
+ * Build the compact case label used by normal console output.
+ *
+ * @param test test case.
+ * @return Display name with redundant C symbol prefixes removed.
+ */
+static std::string _tst_case_display_name(const TstCase* test)
+{
+    ANN(test);
+    std::string name = test->name != NULL ? test->name : "unnamed";
+    _tst_drop_display_prefix(&name, "test_");
+    _tst_drop_display_prefix(&name, _tst_display_token_prefix(test->module));
+    if (test->group != NULL && !_tst_streq(test->group, "default"))
+    {
+        _tst_drop_display_prefix(&name, _tst_display_token_prefix(test->group));
+    }
+    return name.empty() ? "unnamed" : name;
+}
+
+
+
+/**
+ * Build the compact case identifier used by normal console output.
+ *
+ * @param test test case.
+ * @return Display identifier in module/group/name form.
+ */
+static std::string _tst_case_display_id(const TstCase* test)
+{
+    ANN(test);
+    std::string module = test->module != NULL ? test->module : "default";
+    std::string group = test->group != NULL ? test->group : "default";
+    return module + "/" + group + "/" + _tst_case_display_name(test);
+}
+
+
+
 static std::string _tst_duration(uint64_t ns)
 {
     char buffer[64] = {0};
@@ -593,7 +680,7 @@ static void _tst_print_case(const TstCase* result, const TstOptions* options)
         reset = "\x1b[0m";
     }
 
-    const std::string id = _tst_case_id(result);
+    const std::string id = _tst_case_display_id(result);
     dvz_fprintf(
         stdout, "%s%-4s%s  %-68s %10s", code, status, reset, id.c_str(),
         _tst_duration(result->elapsed_ns).c_str());
@@ -686,7 +773,7 @@ static void _tst_print_summary(
         {
             if (result.status == TST_STATUS_FAIL)
             {
-                dvz_fprintf(stdout, "  - %s\n", _tst_case_id(&result).c_str());
+                dvz_fprintf(stdout, "  - %s\n", _tst_case_display_id(&result).c_str());
             }
         }
     }
@@ -718,7 +805,7 @@ static void _tst_print_slow_cases(const std::vector<TstCase>& results, uint64_t 
     for (uint64_t i = 0; i < count; ++i)
     {
         dvz_fprintf(
-            stdout, "  %-68s %10s\n", _tst_case_id(&sorted[(size_t)i]).c_str(),
+            stdout, "  %-68s %10s\n", _tst_case_display_id(&sorted[(size_t)i]).c_str(),
             _tst_duration(sorted[(size_t)i].elapsed_ns).c_str());
     }
 }
@@ -813,7 +900,7 @@ static void _tst_print_list(TstSuite* suite, const TstOptions* options)
             continue;
         }
         dvz_fprintf(
-            stdout, "%s  function=%s resources=%s isolation=%s\n", _tst_case_id(test).c_str(),
+            stdout, "%s  function=%s resources=%s isolation=%s\n", _tst_case_display_id(test).c_str(),
             test->function_name != NULL ? test->function_name : "",
             _tst_resources_string(test->resources).c_str(),
             _tst_isolation_name(test->isolation));
@@ -1160,6 +1247,17 @@ void tst_expect_error_begin(TstContext* ctx)
     ANN(ctx);
     ctx->expect_error_active = true;
     ctx->expect_error_seen = false;
+    ctx->expect_log_level = ctx->suite != NULL ? ctx->suite->log_adapter.error_level : 3;
+}
+
+
+
+void tst_expect_log_begin(TstContext* ctx, int level)
+{
+    ANN(ctx);
+    ctx->expect_error_active = true;
+    ctx->expect_error_seen = false;
+    ctx->expect_log_level = level;
 }
 
 
@@ -1201,13 +1299,13 @@ int tst_context_log(TstContext* ctx, int level, const char* file, int line, cons
     }
     _tst_log_capture_append(ctx, level, file, line, message);
     const int error_level = ctx->suite != NULL ? ctx->suite->log_adapter.error_level : 3;
+    if (ctx->expect_error_active && level >= ctx->expect_log_level)
+    {
+        ctx->expect_error_seen = true;
+        return ctx->suppress_expected_error_output ? 1 : 0;
+    }
     if (level >= error_level)
     {
-        if (ctx->expect_error_active)
-        {
-            ctx->expect_error_seen = true;
-            return ctx->suppress_expected_error_output ? 1 : 0;
-        }
         if (ctx->strict_unexpected_errors)
         {
             ctx->unexpected_error_seen = true;

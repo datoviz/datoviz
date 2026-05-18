@@ -109,6 +109,14 @@ EXTERN_C_ON
         AT(tst_expect_error_end((suite)) == 0);                                                   \
     } while (0)
 
+#define AT_EXPECTED_LOG_STRICT(suite, level, x)                                                   \
+    do                                                                                            \
+    {                                                                                             \
+        tst_expect_log_begin((suite), (level));                                                    \
+        AT((x));                                                                                  \
+        AT(tst_expect_error_end((suite)) == 0);                                                   \
+    } while (0)
+
 
 
 /*************************************************************************************************/
@@ -246,6 +254,7 @@ struct TstContext
     bool capture_logs;
     bool expect_error_active;
     bool expect_error_seen;
+    int expect_log_level;
     bool unexpected_error_seen;
     bool suppress_expected_error_output;
     bool strict_unexpected_errors;
@@ -314,6 +323,8 @@ uint32_t tst_log_capture_count(const TstContext* ctx);
 const TstLogRecord* tst_log_capture_get(const TstContext* ctx, uint32_t index);
 
 void tst_expect_error_begin(TstContext* ctx);
+
+void tst_expect_log_begin(TstContext* ctx, int level);
 
 int tst_expect_error_end(TstContext* ctx);
 
