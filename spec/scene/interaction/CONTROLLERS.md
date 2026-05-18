@@ -18,6 +18,11 @@ The controller model should:
 4. separate event interpretation from visual rendering,
 5. fit naturally with invalidation, redraw, and `FramePlan` rebuild rules.
 
+Controller public APIs must also follow the scene API WASM portability contract in
+[`../api/WASM_PORTABILITY.md`](../api/WASM_PORTABILITY.md). Controllers should be exposed as opaque
+scene-owned handles with typed state accessors, not as public structs, public unions, or
+layout-dependent casts between controller families.
+
 
 ## Position
 

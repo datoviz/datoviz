@@ -42,6 +42,11 @@ It must be designed as an FFI target:
 3. explicit lifecycle with paired create/destroy where ownership is not scene-scoped,
 4. no raw function pointers in public structs.
 
+The public scene API must also satisfy the WASM portability contract in
+[WASM_PORTABILITY.md](WASM_PORTABILITY.md). In particular, new public headers should avoid
+anonymous unions, layout-dependent handle casts, native platform types, and signatures that make
+generated bindings depend on native pointer width.
+
 Python binds to the C API through an auto-generated ctypes binding layer (`datoviz/_ctypes.py`),
 produced by `tools/parse_headers.py` and `tools/build_ctypes.py` — the same pipeline used in
 v0.3, updated for v0.4 headers.

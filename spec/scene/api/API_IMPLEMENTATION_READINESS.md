@@ -10,14 +10,15 @@ Status: informative implementation checklist, updated for the active v0.4 scene/
 The normative sources remain:
 
 1. [API_SURFACE.md](API_SURFACE.md),
-2. [../semantics/TEXT.md](../semantics/TEXT.md),
-3. [../semantics/SCALES.md](../semantics/SCALES.md),
-4. [../semantics/LEGENDS_AND_COLORBARS.md](../semantics/LEGENDS_AND_COLORBARS.md),
-5. [../interaction/PICKING.md](../interaction/PICKING.md),
-6. [../interaction/SELECTION.md](../interaction/SELECTION.md),
-7. [../visuals/MESH.md](../visuals/MESH.md),
-8. [../visuals/VOLUME.md](../visuals/VOLUME.md),
-9. installed headers under `include/datoviz/scene*.h` for active public names and signatures.
+2. [WASM_PORTABILITY.md](WASM_PORTABILITY.md),
+3. [../semantics/TEXT.md](../semantics/TEXT.md),
+4. [../semantics/SCALES.md](../semantics/SCALES.md),
+5. [../semantics/LEGENDS_AND_COLORBARS.md](../semantics/LEGENDS_AND_COLORBARS.md),
+6. [../interaction/PICKING.md](../interaction/PICKING.md),
+7. [../interaction/SELECTION.md](../interaction/SELECTION.md),
+8. [../visuals/MESH.md](../visuals/MESH.md),
+9. [../visuals/VOLUME.md](../visuals/VOLUME.md),
+10. installed headers under `include/datoviz/scene*.h` for active public names and signatures.
 
 
 ## Ready Boundaries
