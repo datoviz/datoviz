@@ -103,6 +103,7 @@ typedef struct
 {
     uint8_t rgb[3];
     bool skipped;
+    const char* skip_reason;
 } AppWboitCapture;
 
 
@@ -110,6 +111,7 @@ typedef struct
 {
     uint8_t rgb[3];
     bool skipped;
+    const char* skip_reason;
 } AppSceneOcclusionCapture;
 
 
@@ -121,6 +123,7 @@ typedef struct
     uint64_t left_sum;
     uint64_t right_sum;
     bool skipped;
+    const char* skip_reason;
 } AppVolumeOcclusionCapture;
 
 
@@ -130,6 +133,7 @@ typedef struct
     uint32_t height;
     uint8_t* rgba;
     bool skipped;
+    const char* skip_reason;
 } AppRgbaCapture;
 
 
@@ -431,6 +435,7 @@ static AppSceneOcclusionCapture _app_source_over_scene_occlusion_capture_center(
     if (app == NULL)
     {
         out.skipped = true;
+        out.skip_reason = "app offscreen capture unavailable";
         dvz_scene_destroy(scene);
         return out;
     }
@@ -438,6 +443,7 @@ static AppSceneOcclusionCapture _app_source_over_scene_occlusion_capture_center(
     if (win == NULL)
     {
         out.skipped = true;
+        out.skip_reason = "app offscreen capture unavailable";
         dvz_app_destroy(app);
         dvz_scene_destroy(scene);
         return out;
@@ -446,6 +452,7 @@ static AppSceneOcclusionCapture _app_source_over_scene_occlusion_capture_center(
     if (canvas == NULL)
     {
         out.skipped = true;
+        out.skip_reason = "app offscreen capture unavailable";
         dvz_app_destroy(app);
         dvz_scene_destroy(scene);
         return out;
@@ -462,6 +469,7 @@ static AppSceneOcclusionCapture _app_source_over_scene_occlusion_capture_center(
         if (dvz_canvas_capture_rgba(canvas, &width, &height, &rgba) != 0)
         {
             out.skipped = true;
+            out.skip_reason = "app offscreen capture unavailable";
             dvz_app_destroy(app);
             dvz_scene_destroy(scene);
             return out;
@@ -527,6 +535,7 @@ static AppWboitCapture _app_wboit_capture_center(bool reverse_order)
     if (app == NULL)
     {
         out.skipped = true;
+        out.skip_reason = "app offscreen capture unavailable";
         dvz_scene_destroy(scene);
         return out;
     }
@@ -534,6 +543,7 @@ static AppWboitCapture _app_wboit_capture_center(bool reverse_order)
     if (win == NULL)
     {
         out.skipped = true;
+        out.skip_reason = "app offscreen capture unavailable";
         dvz_app_destroy(app);
         dvz_scene_destroy(scene);
         return out;
@@ -542,6 +552,7 @@ static AppWboitCapture _app_wboit_capture_center(bool reverse_order)
     if (canvas == NULL)
     {
         out.skipped = true;
+        out.skip_reason = "app offscreen capture unavailable";
         dvz_app_destroy(app);
         dvz_scene_destroy(scene);
         return out;
@@ -558,6 +569,7 @@ static AppWboitCapture _app_wboit_capture_center(bool reverse_order)
         if (dvz_canvas_capture_rgba(canvas, &width, &height, &rgba) != 0)
         {
             out.skipped = true;
+            out.skip_reason = "app offscreen capture unavailable";
             dvz_app_destroy(app);
             dvz_scene_destroy(scene);
             return out;
@@ -730,6 +742,7 @@ static AppRgbaCapture _app_edl_point_capture(bool enabled)
     if (app == NULL)
     {
         out.skipped = true;
+        out.skip_reason = "app offscreen capture unavailable";
         dvz_scene_destroy(scene);
         return out;
     }
@@ -737,6 +750,7 @@ static AppRgbaCapture _app_edl_point_capture(bool enabled)
     if (win == NULL)
     {
         out.skipped = true;
+        out.skip_reason = "app offscreen capture unavailable";
         dvz_app_destroy(app);
         dvz_scene_destroy(scene);
         return out;
@@ -745,6 +759,7 @@ static AppRgbaCapture _app_edl_point_capture(bool enabled)
     if (canvas == NULL)
     {
         out.skipped = true;
+        out.skip_reason = "app offscreen capture unavailable";
         dvz_app_destroy(app);
         dvz_scene_destroy(scene);
         return out;
@@ -761,6 +776,7 @@ static AppRgbaCapture _app_edl_point_capture(bool enabled)
         if (dvz_canvas_capture_rgba(canvas, &out.width, &out.height, &out.rgba) != 0)
         {
             out.skipped = true;
+            out.skip_reason = "app offscreen capture unavailable";
             dvz_app_destroy(app);
             dvz_scene_destroy(scene);
             return out;
@@ -1663,6 +1679,7 @@ int test_app_offscreen_points_edl_changes_pixels(TstContext* suite, const TstCas
     if (disabled.skipped)
     {
         log_warn("test_app_offscreen_points_edl_changes_pixels skipped: GPU context failed");
+        tst_skip(suite, disabled.skip_reason);
         return 0;
     }
     AppRgbaCapture enabled = _app_edl_point_capture(true);
@@ -1670,6 +1687,7 @@ int test_app_offscreen_points_edl_changes_pixels(TstContext* suite, const TstCas
     {
         log_warn("test_app_offscreen_points_edl_changes_pixels skipped: GPU context failed");
         dvz_free(disabled.rgba);
+        tst_skip(suite, enabled.skip_reason);
         return 0;
     }
     ANN(disabled.rgba);
@@ -2275,6 +2293,7 @@ int test_app_offscreen_wboit_mesh_order_independent_layers(TstContext* suite, co
     {
         log_warn(
             "test_app_offscreen_wboit_mesh_order_independent_layers skipped: GPU context failed");
+        tst_skip(suite, forward.skip_reason);
         return 0;
     }
     AppWboitCapture reverse = _app_wboit_capture_center(true);
@@ -2282,6 +2301,7 @@ int test_app_offscreen_wboit_mesh_order_independent_layers(TstContext* suite, co
     {
         log_warn(
             "test_app_offscreen_wboit_mesh_order_independent_layers skipped: GPU context failed");
+        tst_skip(suite, reverse.skip_reason);
         return 0;
     }
 
@@ -2484,6 +2504,7 @@ int test_app_offscreen_scene_occlusion_hidden_alpha(TstContext* suite, const Tst
     if (hidden.skipped)
     {
         log_warn("test_app_offscreen_scene_occlusion_hidden_alpha skipped: GPU context failed");
+        tst_skip(suite, hidden.skip_reason);
         return 0;
     }
     AppSceneOcclusionCapture zero =
@@ -2491,6 +2512,7 @@ int test_app_offscreen_scene_occlusion_hidden_alpha(TstContext* suite, const Tst
     if (zero.skipped)
     {
         log_warn("test_app_offscreen_scene_occlusion_hidden_alpha skipped: GPU context failed");
+        tst_skip(suite, zero.skip_reason);
         return 0;
     }
     AppSceneOcclusionCapture positive =
@@ -2498,6 +2520,7 @@ int test_app_offscreen_scene_occlusion_hidden_alpha(TstContext* suite, const Tst
     if (positive.skipped)
     {
         log_warn("test_app_offscreen_scene_occlusion_hidden_alpha skipped: GPU context failed");
+        tst_skip(suite, positive.skip_reason);
         return 0;
     }
 
@@ -2538,6 +2561,7 @@ int test_app_offscreen_source_over_scene_occlusion_matrix(TstContext* suite, con
     if (disabled.skipped)
     {
         log_warn("test_app_offscreen_source_over_scene_occlusion_matrix skipped: GPU context failed");
+        tst_skip(suite, disabled.skip_reason);
         return 0;
     }
     AppSceneOcclusionCapture hidden =
@@ -2545,6 +2569,7 @@ int test_app_offscreen_source_over_scene_occlusion_matrix(TstContext* suite, con
     if (hidden.skipped)
     {
         log_warn("test_app_offscreen_source_over_scene_occlusion_matrix skipped: GPU context failed");
+        tst_skip(suite, hidden.skip_reason);
         return 0;
     }
     AppSceneOcclusionCapture enabled =
@@ -2552,6 +2577,7 @@ int test_app_offscreen_source_over_scene_occlusion_matrix(TstContext* suite, con
     if (enabled.skipped)
     {
         log_warn("test_app_offscreen_source_over_scene_occlusion_matrix skipped: GPU context failed");
+        tst_skip(suite, enabled.skip_reason);
         return 0;
     }
 
@@ -4385,6 +4411,7 @@ static AppVolumeOcclusionCapture _app_volume_occlusion_capture(
     if (app == NULL)
     {
         out.skipped = true;
+        out.skip_reason = "app offscreen capture unavailable";
         dvz_scene_destroy(scene);
         return out;
     }
@@ -4392,6 +4419,7 @@ static AppVolumeOcclusionCapture _app_volume_occlusion_capture(
     if (win == NULL)
     {
         out.skipped = true;
+        out.skip_reason = "app offscreen capture unavailable";
         dvz_app_destroy(app);
         dvz_scene_destroy(scene);
         return out;
@@ -4400,6 +4428,7 @@ static AppVolumeOcclusionCapture _app_volume_occlusion_capture(
     if (canvas == NULL)
     {
         out.skipped = true;
+        out.skip_reason = "app offscreen capture unavailable";
         dvz_app_destroy(app);
         dvz_scene_destroy(scene);
         return out;
@@ -4417,6 +4446,7 @@ static AppVolumeOcclusionCapture _app_volume_occlusion_capture(
         if (dvz_canvas_capture_rgba(canvas, &out.width, &out.height, &rgba) != 0)
         {
             out.skipped = true;
+            out.skip_reason = "app offscreen capture unavailable";
             dvz_app_destroy(app);
             dvz_scene_destroy(scene);
             return out;
@@ -4455,6 +4485,7 @@ int test_app_offscreen_volume_occlusion_slice_renders(TstContext* suite, const T
     if (disabled.skipped)
     {
         log_warn("test_app_offscreen_volume_occlusion_slice_renders skipped: GPU context failed");
+        tst_skip(suite, disabled.skip_reason);
         return 0;
     }
     AppVolumeOcclusionCapture enabled =
@@ -4462,6 +4493,7 @@ int test_app_offscreen_volume_occlusion_slice_renders(TstContext* suite, const T
     if (enabled.skipped)
     {
         log_warn("test_app_offscreen_volume_occlusion_slice_renders skipped: GPU context failed");
+        tst_skip(suite, enabled.skip_reason);
         return 0;
     }
 
@@ -4501,6 +4533,7 @@ int test_app_offscreen_volume_occlusion_region_delta(TstContext* suite, const Ts
     if (disabled.skipped)
     {
         log_warn("test_app_offscreen_volume_occlusion_region_delta skipped: GPU context failed");
+        tst_skip(suite, disabled.skip_reason);
         return 0;
     }
     AppVolumeOcclusionCapture enabled =
@@ -4508,6 +4541,7 @@ int test_app_offscreen_volume_occlusion_region_delta(TstContext* suite, const Ts
     if (enabled.skipped)
     {
         log_warn("test_app_offscreen_volume_occlusion_region_delta skipped: GPU context failed");
+        tst_skip(suite, enabled.skip_reason);
         return 0;
     }
 
@@ -4552,6 +4586,7 @@ int test_app_offscreen_volume_occlusion_perspective_camera(TstContext* suite, co
     {
         log_warn(
             "test_app_offscreen_volume_occlusion_perspective_camera skipped: GPU context failed");
+        tst_skip(suite, disabled.skip_reason);
         return 0;
     }
     AppVolumeOcclusionCapture enabled =
@@ -4560,6 +4595,7 @@ int test_app_offscreen_volume_occlusion_perspective_camera(TstContext* suite, co
     {
         log_warn(
             "test_app_offscreen_volume_occlusion_perspective_camera skipped: GPU context failed");
+        tst_skip(suite, enabled.skip_reason);
         return 0;
     }
 
@@ -4594,6 +4630,7 @@ int test_app_offscreen_volume_slice_scene_occlusion_dimming(TstContext* suite, c
     {
         log_warn(
             "test_app_offscreen_volume_slice_scene_occlusion_dimming skipped: GPU context failed");
+        tst_skip(suite, disabled.skip_reason);
         return 0;
     }
     AppVolumeOcclusionCapture enabled =
@@ -4602,6 +4639,7 @@ int test_app_offscreen_volume_slice_scene_occlusion_dimming(TstContext* suite, c
     {
         log_warn(
             "test_app_offscreen_volume_slice_scene_occlusion_dimming skipped: GPU context failed");
+        tst_skip(suite, enabled.skip_reason);
         return 0;
     }
 
