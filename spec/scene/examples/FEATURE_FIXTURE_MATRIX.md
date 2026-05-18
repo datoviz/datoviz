@@ -97,7 +97,7 @@ example is `v0.4 required`, `v0.4 experimental`, `v0.4 fixture-only`, `v0.5`, `l
 | Interaction | Hover picking | Implemented live example | `fixture_pick_hover_glfw.c` | bounded GLFW | scene+app+GLFW | Minimal live hover-pick point scene. |
 | Text | Font resource | Implemented bookkeeping | `fixture_font_resource.c` | stdout | scene | Create/destroy a scene-owned font resource. |
 | Text | Retained text | Implemented bookkeeping | `fixture_text_bookkeeping.c` | JSON/stdout | scene | Create text, update string/style/placement. |
-| Text | Rendered text | Planned | `fixture_text_rendered.c` | PNG | scene+app | Fixed top-left label once glyph rendering lands. |
+| Text | Rendered text | Partial/example exists | `fixture_text_rendered.c` | PNG | scene+app | Promote `examples/c/visuals/text.c` behavior into a deterministic offscreen fixture. |
 | Annotation | Retained label | Implemented bookkeeping | `fixture_annotation_bookkeeping.c` | JSON/stdout | scene | Create a label annotation and update format. |
 | Annotation | Rendered label | Planned | `fixture_annotation_rendered.c` | PNG | scene+app | One point with one label/callout. |
 | App | Offscreen render | Implemented | `fixture_app_offscreen.c` | PNG | scene+app | Render one point scene offscreen. |

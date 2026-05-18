@@ -79,6 +79,10 @@ update behavior.
 
 ### Rendered Text MVP
 
+Basic rendered text already exists in the C examples and scene visual path. The v0.4 MVP is the
+first release-quality, tested, and integrated slice of that capability, not the first proof that
+glyphs can appear on screen.
+
 The v0.4 text slice should include:
 
 1. visible single-line UTF-8 text attached to panels,

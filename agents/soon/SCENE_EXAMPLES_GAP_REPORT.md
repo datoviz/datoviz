@@ -34,10 +34,11 @@ semantics, visual families, framegraph construction, UI integration, or Python-f
 
 ## Highest-Value Missing Capabilities
 
-1. **Rendered text, axes, ticks, labels, legends, and colorbars.**
-   The scene has retained text, annotation, and colorbar handles, but the examples need glyph
-   layout, atlas generation, shaders, text placement, formatted tick generation, colorbar ramp/tick
-   geometry, and actual draw nodes. This blocks `PATH_AXES_2D`,
+1. **Text/axes release integration, labels, legends, and colorbars.**
+   The scene now has a basic rendered-text example and an axes/grid API example, plus retained
+   annotation and colorbar handles. The examples still need release-quality text behavior, formatted
+   tick generation, axis/tick label rendering, colorbar ramp/tick geometry, layout, and draw-node
+   coverage. This blocks `PATH_AXES_2D`,
    `LINKED_PANELS_AXES_PANZOOM`, `API_SCALE_COLORBAR_ANNOTATION`,
    `LINKED_PANELS_PROBE_COLORBAR`, `MARKET_MICROSTRUCTURE`, and all polished gallery examples.
 
@@ -129,8 +130,9 @@ semantics, visual families, framegraph construction, UI integration, or Python-f
 ## Cross-Cutting Work Queue
 
 1. **Text and explanatory objects first.**
-   Implement rendered glyph/text, formatted ticks, axes, labels, annotations, and colorbars. This
-   unlocks many 2D examples and improves every gallery scene.
+   Harden the existing rendered text path, finish formatted ticks and axes, then wire labels,
+   annotations, and colorbars on top. This unlocks many 2D examples and improves every gallery
+   scene.
 
 2. **Complete the point-like family.**
    Add public marker and point-sprite/impostor variants with shape, edge, size, alpha, and item-id

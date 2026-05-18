@@ -651,17 +651,18 @@ Axis output for text should include:
 7. alignment hint,
 8. preferred style.
 
-The text workstream should later decide:
+The text integration workstream should finalize:
 
 1. glyph atlas implementation,
 2. label collision/measurement,
 3. rotated Y-axis label support,
 4. DPI behavior,
 5. multiline and rich text,
-6. final lowering to DRP2.
+6. final release-quality lowering to DRP2.
 
-Axes should not block on text rendering. Until text lands, tests should verify the generated text
-requests and rendered geometry separately.
+Axes should not block on perfect text polish. Basic text rendering exists, so tests should verify
+generated text requests, rendered geometry, and label integration separately while the final text
+hardening work continues.
 
 
 ## Stage 12 - Cleanup And Consolidation

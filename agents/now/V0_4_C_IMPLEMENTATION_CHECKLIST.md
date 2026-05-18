@@ -42,11 +42,14 @@ Status vocabulary:
 
 ## Current Next Pickup
 
-**Next critical-path item:** rendered text first slice.
+**Next critical-path item:** text and axes release integration.
 
-Reason: text unlocks axes, tick labels, colorbars, annotations, pinned readouts, legends, and most
-polished 2D examples. v0.3 already exposed visible glyph/text and axes/colorbars; v0.4 should avoid
-regressing those visible capabilities even though source compatibility is not required.
+Reason: basic retained/rendered text already exists through `examples/c/visuals/text.c`, and the
+axes API/example path has started through `examples/c/techniques/scatter_axes.c`. The remaining
+v0.4 blocker is to make that prototype-level functionality release-quality and integrated with
+generated ticks, labels, colorbars, annotations, pinned readouts, legends, and polished 2D examples.
+v0.3 already exposed visible glyph/text and axes/colorbars; v0.4 should avoid regressing those
+visible capabilities even though source compatibility is not required.
 
 Primary specs:
 
@@ -74,13 +77,21 @@ Last validation:
 1. `git diff --check` passed before commit `10d87091`.
 
 
-### 1. Rendered Text First Slice
+### 1. Text Release-Hardening And Integration
 
 Status: `Next`
 
 Goal:
 
-Implement visible retained text through scene -> FramePlan -> DRP2 -> vklite/canvas.
+Turn the existing retained/rendered text path into a dependable v0.4 explanatory-object primitive.
+
+Current state:
+
+1. `examples/c/visuals/text.c` exercises basic `dvz_text()` rendering, strings, size, color,
+   anchor, angle, multiline text, tick-like labels, and UTF-8 fallback behavior.
+2. The scene visual path already has text/glyph state and a bitmap-atlas renderer lane.
+3. The remaining work is integration, validation, and release-quality behavior rather than first
+   proof of visibility.
 
 Required v0.4 slice:
 
@@ -92,7 +103,8 @@ Required v0.4 slice:
 6. panel viewport/scissor clipping,
 7. offscreen and GLFW rendering,
 8. retained update and destroy behavior,
-9. focused scene tests plus one app/offscreen smoke.
+9. focused scene tests plus one app/offscreen smoke,
+10. documented behavior for unsupported glyphs and renderer choices.
 
 Non-goals for v0.4:
 
@@ -116,11 +128,18 @@ Suggested validation:
 
 ### 2. 2D Axes And Ticks
 
-Status: `Blocked` on rendered text for visible labels; geometry/tick work can begin in parallel.
+Status: `Partial`; axis API/example state exists, but visible generated ticks/labels are incomplete.
 
 Goal:
 
 Restore visible 2D axes quality without copying v0.3 API shape.
+
+Current state:
+
+1. `examples/c/techniques/scatter_axes.c` already uses panel-owned axes, domains, grid enablement,
+   labels, panzoom, and normalized data positions.
+2. Treat that example as an axes API smoke until generated tick geometry and tick/axis labels render
+   through the text path.
 
 Required v0.4 slice:
 
@@ -141,7 +160,8 @@ Primary specs:
 
 ### 3. Continuous Colorbars
 
-Status: `Blocked` on rendered text for title/tick labels; ramp layout can begin in parallel.
+Status: `Parallel`; retained colorbar bookkeeping exists, ramp work can proceed, and final
+title/tick labels depend on the text integration pass.
 
 Goal:
 
@@ -164,7 +184,8 @@ Primary spec:
 
 ### 4. Basic Annotations And Readouts
 
-Status: `Blocked` on rendered text.
+Status: `Parallel`; retained annotation/readout bookkeeping exists, visible labels depend on the
+text integration pass.
 
 Goal:
 
@@ -226,7 +247,7 @@ Required v0.4 checks:
 6. `mesh`: material/depth/transparency basics and example coverage.
 7. `sphere`: impostor mode, lighting/material controls, SSAO/MSAA composition.
 8. `volume`: slice/raymarch mode, transfer/value range, clipping basics.
-9. `text`/`glyph`: covered by the rendered text first slice.
+9. `text`/`glyph`: covered by the text release-hardening and integration slice.
 
 Primary docs:
 
@@ -352,24 +373,60 @@ Primary doc:
 
 Good parallel lanes right now:
 
-1. **Text implementation:** `src/scene`, `include/datoviz/scene/text.h`, scene shaders, focused
-   text tests.
-2. **Axes geometry/tick planning:** axis tick generation, semantic state, tests that do not require
-   glyph rendering yet.
-3. **Colorbar ramp planning:** scale/colormap/ramp layout and diagnostics, excluding final text
-   labels until text lands.
+1. **Text release-hardening:** `src/scene`, scene shaders, `examples/c/visuals/text.c`, focused text
+   tests, and app/offscreen visible-text smoke.
+2. **Axes/tick integration:** axis tick generation, semantic state, grid/line geometry, and tests
+   that can use current text as labels mature.
+3. **Colorbar ramp planning:** scale/colormap/ramp layout and diagnostics, with label emission wired
+   once the text integration pass is stable.
 4. **WebGPU command parity:** `examples/webgpu`, DRP2 fixture/preflight work, no scene API churn.
 5. **Example audit/polish:** C examples and gallery harnesses that use already-implemented
    features.
 6. **Runtime hardening:** DRP2/vklite/app lifetime bugs with focused tests.
 7. **API inventory/docs:** read-only or markdown-only work that does not alter active C code.
+8. **DRP2 contract and fixture maintenance:** `spec/drp2`, `agents/now/DRP2_SPEC.md`,
+   `tools/drp2_fixture_runner.py`, schema docs, and fixture updates that keep the active command
+   surface aligned with native and WebGPU pressure.
+9. **DVZR recording/replay portability:** `src/drp2` recording/replay code, `src/app` recording
+   hooks, replay/player examples, and raw-fallback diagnostics. Keep this coordinated with DRP2
+   schema/fixture work when portable command coverage changes.
+10. **Render-contract and technique hardening:** scene FramePlan contracts, technique builders,
+    post-emit DRP2 validation, and deterministic offscreen readback coverage for source-over,
+    WBOIT, depth peeling, MSAA, EDL, SSAO, volume occlusion, and scene occlusion.
+11. **Material and shader ABI polish:** active scene shader ABI, material uniforms, vertex
+    attribute descriptors, generated shader variants, GLSL/WGSL parity checks, and material-model
+    examples.
+12. **Selection and request payload widening:** richer point/marker/image pick/probe payloads,
+    highlight state, linked-panel request propagation, and explicit deferrals for mesh/path/volume
+    picking.
+13. **Test-runner modernization:** metadata, skip/resource reporting, component runners, timing,
+    JSON output, and later process-level scheduling as tracked in
+    [`TEST_RUNNER_MODERNIZATION.md`](TEST_RUNNER_MODERNIZATION.md).
+14. **Performance and long-run smoke:** immediate-presentation FPS preservation, repeated-frame
+    allocation/destructor pressure, descriptor churn, bounded live GLFW loops, and trace-assisted
+    investigation of unexpected stream changes.
+15. **Capture/video/export support for examples:** offscreen screenshots, frame-sequence/video
+    paths, gallery artifact generation, and codec/backend skip behavior. Keep publication/vector
+    export out of Datoviz v0.4 scope.
+16. **GUI-driven example controls:** ImGui/example-side controls that exercise existing scene/app
+    parameters without promoting the GUI module into a broad public API surface.
+17. **Release documentation and website staging:** user-facing docs, example staging tables,
+    capability matrix updates, public/private/experimental labels, and known-gap notes.
 
 Avoid parallel edits that touch the same write scope:
 
 1. two agents both changing the same scene visual emission code,
 2. text and axes both rewriting the same FramePlan contribution structures,
 3. WebGPU and DRP2 schema/native validation changes to the same command without coordination,
-4. app/runtime hardening and feature emission changing the same request or frame loop.
+4. app/runtime hardening and feature emission changing the same request or frame loop,
+5. DRP2 contract/schema updates and DVZR portable-command updates changing the same command
+   serialization without a shared compatibility decision,
+6. render-contract technique work and visual-family polish both changing pass roles, resource ids,
+   or shader-variant selection in `src/scene`,
+7. material/shader ABI work and WebGPU/WGSL parity work changing the same binding layout without a
+   fixture/spec update,
+8. test-runner metadata migration and subsystem feature tests rewriting the same test registration
+   blocks at the same time.
 
 
 ## Definition Of Done For A Slice

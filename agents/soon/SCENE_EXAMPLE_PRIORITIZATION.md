@@ -91,8 +91,8 @@ materials, and large-data policies.
 | Sphere visual | Implemented. | Protein atoms, sphere SSAO, crystal lattice. | Tune SSAO/material quality; add textured/equirectangular sphere later. |
 | Volume visual | Implemented first slice. | Volume slice/offscreen, DICOM, Allen brain, volume clipping. | Add arbitrary slice plane semantics, richer transfer functions, and volume probes. |
 | Vector glyphs/arrows | Missing as a semantic visual. | Wind, CFD, trajectories, cell motion, tokamak. | Implement a vector/arrow visual instead of relying on primitive triangles. |
-| Text/glyph rendering | Bookkeeping only. | Axes, annotations, labels, colorbars, LaTeX/math, dashboards. | Highest-value missing capability for 2D and gallery polish. |
-| Axes/ticks | Missing. | Path axes, linked panels, DAQ, physiology, market dashboard. | Build axis objects on top of text and panzoom domain state. |
+| Text/glyph rendering | Partial: basic rendered text example and glyph path exist. | Axes, annotations, labels, colorbars, LaTeX/math, dashboards. | Highest-value release-hardening and integration capability for 2D and gallery polish. |
+| Axes/ticks | Partial: axis API/grid example exists. | Path axes, linked panels, DAQ, physiology, market dashboard. | Finish generated ticks, labels, layout, and update policy on top of text and panzoom domain state. |
 | Colorbars/annotations/readouts | Retained bookkeeping exists; rendering incomplete. | Probe/colorbar panels, image probe readout, volume/DICOM, dashboards. | Render colorbar ramp, ticks, labels, anchored annotations, and pinned readouts. |
 | Panzoom | Implemented. | Wind, probe panels, DAQ, physiology, market, image viewers. | Add shared x/y controller semantics and linked crosshair/probe state. |
 | Arcball/camera/fly/turntable | Implemented. | Protein, brain, volume, LiDAR, terrain, sphere SSAO. | Add camera-path animation helpers for cinematic examples. |
@@ -111,9 +111,10 @@ materials, and large-data policies.
 
 ## Core Feature Priority
 
-1. **Rendered text, axes, ticks, annotations, and colorbars.**
-   This unlocks nearly every polished 2D example and improves 3D examples through labels, legends,
-   readouts, and scale displays.
+1. **Text/axes integration, ticks, annotations, and colorbars.**
+   Basic text rendering and axes API usage already exist; hardening that path unlocks nearly every
+   polished 2D example and improves 3D examples through labels, legends, readouts, and scale
+   displays.
 
 2. **First-class vector/arrow visual.**
    `SHOWCASE_WIND_FIELD` is the best near-term 2D showcase and should not permanently rely on

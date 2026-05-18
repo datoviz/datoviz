@@ -47,7 +47,8 @@ Each example also has a separate **current readiness**:
 | `blocked-by-v0.5-feature` | Should not be forced into v0.4 because it needs a deferred feature. |
 
 This distinction avoids a common confusion: `PATH_AXES_2D` is a `v0.4 required` release target, but
-it is currently `blocked-by-v0.4-critical-path` until rendered text and axes land.
+it is currently `blocked-by-v0.4-critical-path` until the existing text and axes prototypes become a
+release-quality integrated axes/tick/label path.
 
 
 ## Feature Milestone Map
@@ -55,8 +56,8 @@ it is currently `blocked-by-v0.4-critical-path` until rendered text and axes lan
 | Feature group | v0.4 target | v0.5 target | Later / external |
 |---|---|---|---|
 | Scene/app basics | Retained scene, figures, panels, offscreen/GLFW app, capture, frame callbacks. | Broader hosted/integration polish. | Application frameworks owned above Datoviz. |
-| Core visuals | Point, pixel, marker, primitive, segment/path, image, mesh, sphere, volume, text first slice. | Vector/arrow visual, richer path grouping, textured mesh/sphere, stronger volume slices. | Tubes/ribbons, skybox/cubemap, advanced domain visuals. |
-| Text/explanatory objects | Single-line rendered text, 2D axes/ticks, continuous colorbars, labels/readouts. | Legends, categorical scales, richer annotation/callout and label layout. | Full math/TeX, complex shaping, publication typography in GSP/Matplotlib. |
+| Core visuals | Point, pixel, marker, primitive, segment/path, image, mesh, sphere, volume, basic text visual hardening. | Vector/arrow visual, richer path grouping, textured mesh/sphere, stronger volume slices. | Tubes/ribbons, skybox/cubemap, advanced domain visuals. |
+| Text/explanatory objects | Release-quality basic rendered text, 2D axes/ticks, continuous colorbars, labels/readouts. | Legends, categorical scales, richer annotation/callout and label layout. | Full math/TeX, complex shaping, publication typography in GSP/Matplotlib. |
 | Interaction | Point pick, image probe, marker pick, basic selection highlight, linked crosshair/probe. | Mesh/region, path, label, volume pick/probe; lasso/box selection. | Full dashboard interaction models in GSP/VisPy2. |
 | Layout/linking | Grid/subplot layout, linked panzoom x/y, panel reservations. | Dashboard layout helpers, shared legends/colorbars. | Full application/dashboard framework in GSP/VisPy2. |
 | Large data | Stable high-count point/pixel/path updates and basic partial updates. | LOD, ring buffers, visible-range policies, tiled images. | Out-of-core and distributed data policies. |
@@ -169,7 +170,7 @@ These are valuable pressure tests, but they should not shape the v0.4 release ga
 | `geo/CHOROPLETH_GLOBE_EXAMPLE_PLAN.md` | `later` | Needs geographic projection/topology helpers and region picking. |
 | `geo/EARTHQUAKE_AFTERSHOCK_EXPLORER.md` | `later` | Needs geographic transforms, temporal controls, selection/dashboard UI. |
 | `geo/FLIGHT_TRAJECTORIES_DEMO_PLAN.md` | `later` | Needs globe/projection, trajectory paths, large-data/LOD policies. |
-| `astronomy/ASTRONOMY_MANY_LABELS.md` | `later` | Needs label LOD/collision policy beyond v0.4 text first slice. |
+| `astronomy/ASTRONOMY_MANY_LABELS.md` | `later` | Needs label LOD/collision policy beyond v0.4 basic text hardening. |
 | `napari/GPU_AI_SEGMENTATION_INTEROP.md` | `later` | Needs external GPU/AI interop and richer label/selection workflow. |
 
 
@@ -196,8 +197,8 @@ the worked-spec tables above; exact fixture names remain in
 | Path / family | Stage | Decision |
 |---|---|---|
 | `examples/c/visuals/point.c`, `pixel.c`, `marker.c`, `primitive.c`, `segment.c`, `path.c`, `mesh.c`, `image.c`, `volume.c`, `sphere.c` | `v0.4 fixture-only` | Keep buildable as active visual-family smoke examples. |
-| `examples/c/visuals/text.c` | `v0.4 fixture-only` now; `v0.4 required` after text renders | Keep as retained/rendered text smoke once the text first slice lands. |
-| `examples/c/techniques/scatter_axes.c` | `v0.4 required` / `blocked-by-v0.4-critical-path` | Promote after rendered axes/tick labels land; until then it is an axes API smoke. |
+| `examples/c/visuals/text.c` | `v0.4 required` / `partial-now` | Existing basic rendered-text smoke; harden as the canonical v0.4 text example. |
+| `examples/c/techniques/scatter_axes.c` | `v0.4 required` / `blocked-by-v0.4-critical-path` | Existing axes API/grid smoke; promote after generated ticks and axis/tick labels render reliably. |
 | `examples/c/techniques/linked_panels.c`, `multi_panel.c` | `v0.4 required` | Keep as layout and linked-panel smoke targets. |
 | `examples/c/techniques/image_probe.c`, `pick_hover.c` | `v0.4 required` | Keep as request/readback interaction targets. |
 | `examples/c/techniques/depth_cue.c`, `edl.c`, `depth_peel.c`, `wboit.c` | `v0.4 fixture-only` | Keep as technique regression examples; polished screenshots may be gallery material. |
@@ -216,8 +217,11 @@ the worked-spec tables above; exact fixture names remain in
 
 These decisions refine the feature roadmap:
 
-1. **Rendered text is the next hard blocker.** It gates axes, colorbars, annotations, readouts,
-   dashboards, labels, and almost every polished 2D example.
+1. **Text and axes are partial, not absent.** Basic text rendering exists in
+   `examples/c/visuals/text.c`, and axes/grid API usage exists in
+   `examples/c/techniques/scatter_axes.c`; the next hard blocker is release-quality integration
+   with generated ticks, labels, colorbars, annotations, readouts, dashboards, and polished 2D
+   examples.
 2. **Axes/colorbars should be v0.4 required, but narrow.** Linear 2D axes and continuous colorbars
    are enough for v0.4; log/date/categorical/geographic axes and rich legends can wait.
 3. **Vector/arrow visual can slip to v0.5 only if `SHOWCASE_WIND_FIELD` uses primitive arrows in
@@ -256,5 +260,5 @@ These decisions refine the feature roadmap:
 12. LiDAR/dense point cloud with EDL
 13. WebGPU/WASM minimal browser subset
 
-This order follows the C implementation critical path: text -> axes/colorbars -> linked panels and
-readouts -> picking/selection -> volume/3D/showcases -> experimental browser path.
+This order follows the C implementation critical path: text/axes integration -> colorbars -> linked
+panels and readouts -> picking/selection -> volume/3D/showcases -> experimental browser path.
