@@ -603,6 +603,55 @@ Note: `clang-tidy -p build --quiet src/drp2/semantic.c --` is still blocked by t
 database/include setup because `semantic.c` cannot resolve `<volk.h>`.
 
 
+### 2026-05-18: Phase 3 / Central pass-policy table
+
+Completed the first pass-policy centralization slice for render-role semantics.
+
+Changes:
+
+1. Added `DvzSceneTechniquePassPolicy` and `_scene_technique_pass_policy()` in the scene technique
+   layer as the single internal source for render-role work labels, graph-required status,
+   source-over/WBOIT/depth-peel flags, fullscreen resolve flags, and sampled texture binding counts.
+2. Rewired `_scene_render_role_work_label()` and `_scene_render_role_requires_graph_pass()` to read the
+   centralized policy table instead of owning separate switch statements.
+3. Rewired `_scene_pass_contract_from_render()` to derive passive pass-contract role flags from the
+   centralized technique policy rather than re-inferring them locally.
+4. Extended `test_scene_role_work_label_mapping_complete` to lock the policy table fields used by
+   graph matching and passive contract construction.
+
+Validation:
+
+1. `cmake --build build --target dvztest_scene -j2`
+2. `./build/testing/dvztest_scene test_scene_role_work_label_mapping_complete`
+3. `./build/testing/dvztest_scene test_scene_drp2_contract_checker_rejects_pipeline_drift`
+4. `./build/testing/dvztest_scene test_scene_visual_alpha_mode_emits_wboit_drp2`
+5. `./build/testing/dvztest_scene test_scene_visual_alpha_mode_emits_depth_peel_drp2`
+6. `direnv exec . just test scene` (`307/307`)
+
+
+### 2026-05-18: Full-suite retained app regression test cleanup
+
+The full `dvztest` runner initially reported later `stream`, `canvas`, `vk`, and `vklite` failures after
+the retained offscreen volume-slice/mesh scene-occlusion toggle test had passed. The failing tests all
+used expected-error capture; the new app regression test had installed a direct `log_set_intercept()`
+hook and then cleared it with `log_set_intercept(NULL, NULL)`, removing the suite-level test runner
+interceptor for subsequent tests.
+
+Changes:
+
+1. Replaced the app regression test's direct log interceptor with `tst_log_capture_begin()` /
+   `tst_log_capture_end()`.
+2. Added a small local helper that summarizes the suite-owned captured log records and checks for the
+   previous scene-occlusion contract failure signatures without mutating global log interception state.
+
+Validation:
+
+1. `cmake --build build --target dvztest_scene -j2`
+2. `direnv exec . ./build/testing/dvztest_scene test_app_offscreen_volume_slice_mesh_scene_occlusion_toggle`
+3. `cmake --build build --target dvztest -j2`
+4. `direnv exec . just test` (`609/609`)
+
+
 ## Executive Assessment
 
 The direction is correct and worth continuing. The proposal identifies the right failure mode:

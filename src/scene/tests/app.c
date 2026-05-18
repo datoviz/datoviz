@@ -157,35 +157,30 @@ static void _app_request_frame_probe_callback(DvzAppWindow* win, void* user_data
 
 
 /**
- * Capture app draw errors during retained offscreen regression tests.
+ * Summarize captured app draw errors during retained offscreen regression tests.
  *
- * @param user_data log capture storage
- * @param level log level
- * @param file source file that emitted the log
- * @param line source line that emitted the log
- * @param message formatted log message
- * @return nonzero to suppress the intercepted log line
+ * @param suite the active test suite with log capture enabled
+ * @param capture output log summary
  */
-static int _app_log_capture_intercept(
-    void* user_data, int level, const char* file, int line, const char* message)
+static void _app_log_capture_from_suite(TstSuite* suite, AppLogCapture* capture)
 {
-    (void)file;
-    (void)line;
-    AppLogCapture* capture = (AppLogCapture*)user_data;
-    if (capture == NULL || message == NULL)
-        return 0;
-
-    if (level >= LOG_ERROR)
+    ANN(suite);
+    ANN(capture);
+    dvz_memset(capture, sizeof(AppLogCapture), 0, sizeof(AppLogCapture));
+    uint32_t count = tst_log_capture_count(suite);
+    for (uint32_t i = 0; i < count; i++)
     {
+        const TstLogRecord* record = tst_log_capture_get(suite, i);
+        if (record == NULL || record->level < LOG_ERROR)
+            continue;
         capture->error_count++;
         capture->sampled_bind_group_miss =
             capture->sampled_bind_group_miss ||
-            strstr(message, "DRP2 sampled bind group misses graph read resource") != NULL;
+            strstr(record->message, "DRP2 sampled bind group misses graph read resource") != NULL;
         capture->contract_validation_failed =
             capture->contract_validation_failed ||
-            strstr(message, "emitted runtime DRP2 stream failed scene contract validation") != NULL;
+            strstr(record->message, "emitted runtime DRP2 stream failed scene contract validation") != NULL;
     }
-    return 0;
 }
 
 
@@ -4763,10 +4758,11 @@ int test_app_offscreen_volume_slice_mesh_scene_occlusion_toggle(TstSuite* suite,
         return 0;
     }
 
-    AppLogCapture first = {0};
-    log_set_intercept(_app_log_capture_intercept, &first);
+    tst_log_capture_begin(suite);
     int rc = dvz_app_window_render_once(win);
-    log_set_intercept(NULL, NULL);
+    AppLogCapture first = {0};
+    _app_log_capture_from_suite(suite, &first);
+    tst_log_capture_end(suite);
     AT(rc == DVZ_CANVAS_FRAME_READY);
     AT(first.error_count == 0);
 
@@ -4781,10 +4777,11 @@ int test_app_offscreen_volume_slice_mesh_scene_occlusion_toggle(TstSuite* suite,
                       .hidden_alpha = 0.05f,
                   }) == 0);
 
-    AppLogCapture second = {0};
-    log_set_intercept(_app_log_capture_intercept, &second);
+    tst_log_capture_begin(suite);
     rc = dvz_app_window_render_once(win);
-    log_set_intercept(NULL, NULL);
+    AppLogCapture second = {0};
+    _app_log_capture_from_suite(suite, &second);
+    tst_log_capture_end(suite);
     AT(rc == DVZ_CANVAS_FRAME_READY);
     AT(!second.sampled_bind_group_miss);
     AT(!second.contract_validation_failed);

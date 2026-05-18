@@ -1619,23 +1619,16 @@ bool _scene_pass_contract_from_render(
     else
         dvz_strlcpy(out->id, render->u.render.render_target_id, sizeof(out->id));
 
-    out->source_over_blend = out->role == DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_BLEND;
-    out->wboit_accumulation =
-        out->role == DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_ACCUMULATION;
-    out->depth_peel = out->role == DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_INIT ||
-                      out->role == DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_ITER;
-    out->fullscreen_resolve = out->role == DVZ_FRAME_PLAN_RENDER_PASS_WBOIT_RESOLVE ||
-                              out->role == DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_COMPOSITE ||
-                              out->role == DVZ_FRAME_PLAN_RENDER_PASS_EDL_RESOLVE ||
-                              out->role == DVZ_FRAME_PLAN_RENDER_PASS_SSAO_COMPOSITE;
-    out->needs_wboit_resolve_layout =
-        out->role == DVZ_FRAME_PLAN_RENDER_PASS_WBOIT_RESOLVE;
-    out->needs_depth_peel_sampled_layout =
-        out->role == DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_COMPOSITE;
-    if (out->needs_wboit_resolve_layout)
-        out->sampled_texture_binding_count = 2;
-    else if (out->needs_depth_peel_sampled_layout)
-        out->sampled_texture_binding_count = 3;
+    DvzSceneTechniquePassPolicy policy = {0};
+    if (!_scene_technique_pass_policy(out->role, &policy))
+        return false;
+    out->source_over_blend = policy.source_over_blend;
+    out->wboit_accumulation = policy.wboit_accumulation;
+    out->depth_peel = policy.depth_peel;
+    out->fullscreen_resolve = policy.fullscreen_resolve;
+    out->needs_wboit_resolve_layout = policy.needs_wboit_resolve_layout;
+    out->needs_depth_peel_sampled_layout = policy.needs_depth_peel_sampled_layout;
+    out->sampled_texture_binding_count = policy.sampled_texture_binding_count;
 
     for (uint32_t i = 0; i < render->u.render.visual_count; i++)
     {

@@ -380,9 +380,10 @@ Deliver the next implementation slices in this order unless the user redirects:
     point/pixel/image/volume, add material-aware G-buffer fields only when a concrete effect needs
     them, and update examples/docs that still present primitive-specific shading as primary.
 14. Multi-pass graph / transparency follow-up: keep WBOIT, depth peeling, blended volume, G-buffer,
-    EDL, SSAO, SSAO blur, scene occlusion, and MSAA on the shared FramePlan graph path. The next
-    transparency work should add any missing offscreen readback/capture coverage and continue
-    explicit resource-access/layout-transition cleanup before adding another transparency mode.
+    EDL, SSAO, SSAO blur, scene occlusion, and MSAA on the shared FramePlan graph path. Render-role
+    pass policy is now centralized in the technique layer; the next transparency work should add any
+    missing offscreen readback/capture coverage and continue explicit resource-access/layout-transition
+    cleanup before adding another transparency mode.
 15. Sphere and dense-particle follow-up: sphere is now a standalone retained visual with material
     lighting, antialiased silhouettes, raycast mode, G-buffer output, and SSAO coverage. Remaining
     sphere work belongs in targeted follow-ups such as texture/equirectangular mapping, render-mode

@@ -27,6 +27,100 @@
 
 
 /*************************************************************************************************/
+/*  Constants                                                                                    */
+/*************************************************************************************************/
+
+static const DvzSceneTechniquePassPolicy TECHNIQUE_PASS_POLICIES[] = {
+    {
+        .role = DVZ_FRAME_PLAN_RENDER_PASS_OPAQUE,
+        .work_label = "opaque",
+    },
+    {
+        .role = DVZ_FRAME_PLAN_RENDER_PASS_GBUFFER,
+        .work_label = "gbuffer",
+        .graph_required = true,
+    },
+    {
+        .role = DVZ_FRAME_PLAN_RENDER_PASS_VOLUME_OCCLUSION,
+        .work_label = "volume_occlusion",
+        .graph_required = true,
+    },
+    {
+        .role = DVZ_FRAME_PLAN_RENDER_PASS_SCENE_OCCLUSION,
+        .work_label = "scene_occlusion",
+        .graph_required = true,
+    },
+    {
+        .role = DVZ_FRAME_PLAN_RENDER_PASS_SSAO,
+        .work_label = "ssao",
+        .graph_required = true,
+    },
+    {
+        .role = DVZ_FRAME_PLAN_RENDER_PASS_SSAO_BLUR,
+        .work_label = "ssao_blur",
+        .graph_required = true,
+    },
+    {
+        .role = DVZ_FRAME_PLAN_RENDER_PASS_SSAO_COMPOSITE,
+        .work_label = "ssao_composite",
+        .graph_required = true,
+        .fullscreen_resolve = true,
+    },
+    {
+        .role = DVZ_FRAME_PLAN_RENDER_PASS_EDL_RESOLVE,
+        .work_label = "edl_resolve",
+        .graph_required = true,
+        .fullscreen_resolve = true,
+    },
+    {
+        .role = DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_ACCUMULATION,
+        .work_label = "wboit_accum",
+        .graph_required = true,
+        .wboit_accumulation = true,
+    },
+    {
+        .role = DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_BLEND,
+        .work_label = "transparent_blend",
+        .graph_required = true,
+        .source_over_blend = true,
+    },
+    {
+        .role = DVZ_FRAME_PLAN_RENDER_PASS_WBOIT_RESOLVE,
+        .work_label = "wboit_resolve",
+        .graph_required = true,
+        .fullscreen_resolve = true,
+        .needs_wboit_resolve_layout = true,
+        .sampled_texture_binding_count = 2,
+    },
+    {
+        .role = DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_INIT,
+        .work_label = "depth_peel_init",
+        .graph_required = true,
+        .depth_peel = true,
+    },
+    {
+        .role = DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_ITER,
+        .work_label = "depth_peel_iter",
+        .graph_required = true,
+        .depth_peel = true,
+    },
+    {
+        .role = DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_COMPOSITE,
+        .work_label = "depth_peel_composite",
+        .graph_required = true,
+        .fullscreen_resolve = true,
+        .needs_depth_peel_sampled_layout = true,
+        .sampled_texture_binding_count = 3,
+    },
+    {
+        .role = DVZ_FRAME_PLAN_RENDER_PASS_PICKING,
+        .work_label = "picking",
+    },
+};
+
+
+
+/*************************************************************************************************/
 /*  Helpers                                                                                      */
 /*************************************************************************************************/
 
@@ -554,6 +648,34 @@ bool _scene_alpha_mode_is_blended(DvzAlphaMode mode)
 
 
 /**
+ * Return the centralized policy for one render-pass role.
+ *
+ * @param role the FramePlan render-pass role
+ * @param out output pass policy
+ * @return whether the role has a registered policy
+ */
+bool _scene_technique_pass_policy(
+    DvzFramePlanRenderPassRole role, DvzSceneTechniquePassPolicy* out)
+{
+    ANN(out);
+    for (uint32_t i = 0; i < sizeof(TECHNIQUE_PASS_POLICIES) / sizeof(TECHNIQUE_PASS_POLICIES[0]);
+         i++)
+    {
+        if (TECHNIQUE_PASS_POLICIES[i].role == role)
+        {
+            *out = TECHNIQUE_PASS_POLICIES[i];
+            return true;
+        }
+    }
+    dvz_memset(out, sizeof(DvzSceneTechniquePassPolicy), 0, sizeof(DvzSceneTechniquePassPolicy));
+    out->role = role;
+    out->work_label = "";
+    return false;
+}
+
+
+
+/**
  * Return the graph work label used by one render-pass role.
  *
  * @param role the FramePlan render-pass role
@@ -561,41 +683,10 @@ bool _scene_alpha_mode_is_blended(DvzAlphaMode mode)
  */
 const char* _scene_render_role_work_label(DvzFramePlanRenderPassRole role)
 {
-    switch (role)
-    {
-    case DVZ_FRAME_PLAN_RENDER_PASS_OPAQUE:
-        return "opaque";
-    case DVZ_FRAME_PLAN_RENDER_PASS_GBUFFER:
-        return "gbuffer";
-    case DVZ_FRAME_PLAN_RENDER_PASS_VOLUME_OCCLUSION:
-        return "volume_occlusion";
-    case DVZ_FRAME_PLAN_RENDER_PASS_SCENE_OCCLUSION:
-        return "scene_occlusion";
-    case DVZ_FRAME_PLAN_RENDER_PASS_SSAO:
-        return "ssao";
-    case DVZ_FRAME_PLAN_RENDER_PASS_SSAO_BLUR:
-        return "ssao_blur";
-    case DVZ_FRAME_PLAN_RENDER_PASS_SSAO_COMPOSITE:
-        return "ssao_composite";
-    case DVZ_FRAME_PLAN_RENDER_PASS_EDL_RESOLVE:
-        return "edl_resolve";
-    case DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_ACCUMULATION:
-        return "wboit_accum";
-    case DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_BLEND:
-        return "transparent_blend";
-    case DVZ_FRAME_PLAN_RENDER_PASS_WBOIT_RESOLVE:
-        return "wboit_resolve";
-    case DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_INIT:
-        return "depth_peel_init";
-    case DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_ITER:
-        return "depth_peel_iter";
-    case DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_COMPOSITE:
-        return "depth_peel_composite";
-    case DVZ_FRAME_PLAN_RENDER_PASS_PICKING:
-        return "picking";
-    default:
+    DvzSceneTechniquePassPolicy policy = {0};
+    if (!_scene_technique_pass_policy(role, &policy))
         return "";
-    }
+    return policy.work_label;
 }
 
 
@@ -608,25 +699,10 @@ const char* _scene_render_role_work_label(DvzFramePlanRenderPassRole role)
  */
 bool _scene_render_role_requires_graph_pass(DvzFramePlanRenderPassRole role)
 {
-    switch (role)
-    {
-    case DVZ_FRAME_PLAN_RENDER_PASS_GBUFFER:
-    case DVZ_FRAME_PLAN_RENDER_PASS_VOLUME_OCCLUSION:
-    case DVZ_FRAME_PLAN_RENDER_PASS_SCENE_OCCLUSION:
-    case DVZ_FRAME_PLAN_RENDER_PASS_SSAO:
-    case DVZ_FRAME_PLAN_RENDER_PASS_SSAO_BLUR:
-    case DVZ_FRAME_PLAN_RENDER_PASS_SSAO_COMPOSITE:
-    case DVZ_FRAME_PLAN_RENDER_PASS_EDL_RESOLVE:
-    case DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_ACCUMULATION:
-    case DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_BLEND:
-    case DVZ_FRAME_PLAN_RENDER_PASS_WBOIT_RESOLVE:
-    case DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_INIT:
-    case DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_ITER:
-    case DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_COMPOSITE:
-        return true;
-    default:
+    DvzSceneTechniquePassPolicy policy = {0};
+    if (!_scene_technique_pass_policy(role, &policy))
         return false;
-    }
+    return policy.graph_required;
 }
 
 

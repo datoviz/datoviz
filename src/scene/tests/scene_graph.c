@@ -6696,9 +6696,56 @@ int test_scene_role_work_label_mapping_complete(TstSuite* suite, TstItem* item)
     };
     for (uint32_t i = 0; i < sizeof(rows) / sizeof(rows[0]); i++)
     {
+        DvzSceneTechniquePassPolicy policy = {0};
+        AT(_scene_technique_pass_policy(rows[i].role, &policy));
+        AT(policy.role == rows[i].role);
+        AT(strcmp(policy.work_label, rows[i].label) == 0);
+        AT(policy.graph_required == rows[i].graph_required);
         AT(strcmp(_scene_render_role_work_label(rows[i].role), rows[i].label) == 0);
         AT(_scene_render_role_requires_graph_pass(rows[i].role) == rows[i].graph_required);
     }
+    DvzSceneTechniquePassPolicy policy = {0};
+    AT(_scene_technique_pass_policy(DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_BLEND, &policy));
+    AT(policy.source_over_blend);
+    AT(!policy.wboit_accumulation);
+    AT(!policy.depth_peel);
+    AT(!policy.fullscreen_resolve);
+    AT(policy.sampled_texture_binding_count == 0);
+
+    AT(_scene_technique_pass_policy(DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_ACCUMULATION, &policy));
+    AT(!policy.source_over_blend);
+    AT(policy.wboit_accumulation);
+    AT(!policy.depth_peel);
+    AT(!policy.fullscreen_resolve);
+    AT(policy.sampled_texture_binding_count == 0);
+
+    AT(_scene_technique_pass_policy(DVZ_FRAME_PLAN_RENDER_PASS_WBOIT_RESOLVE, &policy));
+    AT(policy.fullscreen_resolve);
+    AT(policy.needs_wboit_resolve_layout);
+    AT(!policy.needs_depth_peel_sampled_layout);
+    AT(policy.sampled_texture_binding_count == 2);
+
+    AT(_scene_technique_pass_policy(DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_INIT, &policy));
+    AT(policy.depth_peel);
+    AT(!policy.fullscreen_resolve);
+
+    AT(_scene_technique_pass_policy(DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_ITER, &policy));
+    AT(policy.depth_peel);
+    AT(!policy.fullscreen_resolve);
+
+    AT(_scene_technique_pass_policy(DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_COMPOSITE, &policy));
+    AT(!policy.depth_peel);
+    AT(policy.fullscreen_resolve);
+    AT(!policy.needs_wboit_resolve_layout);
+    AT(policy.needs_depth_peel_sampled_layout);
+    AT(policy.sampled_texture_binding_count == 3);
+
+    AT(_scene_technique_pass_policy(DVZ_FRAME_PLAN_RENDER_PASS_EDL_RESOLVE, &policy));
+    AT(policy.fullscreen_resolve);
+
+    AT(_scene_technique_pass_policy(DVZ_FRAME_PLAN_RENDER_PASS_SSAO_COMPOSITE, &policy));
+    AT(policy.fullscreen_resolve);
+
     return 0;
 }
 

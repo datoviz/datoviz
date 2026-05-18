@@ -49,6 +49,21 @@ typedef struct DvzSceneDepthPostProcessGraphDesc
 } DvzSceneDepthPostProcessGraphDesc;
 
 
+typedef struct DvzSceneTechniquePassPolicy
+{
+    DvzFramePlanRenderPassRole role;
+    const char* work_label;
+    bool graph_required;
+    bool source_over_blend;
+    bool wboit_accumulation;
+    bool depth_peel;
+    bool fullscreen_resolve;
+    bool needs_wboit_resolve_layout;
+    bool needs_depth_peel_sampled_layout;
+    uint32_t sampled_texture_binding_count;
+} DvzSceneTechniquePassPolicy;
+
+
 typedef DvzSsaoDesc DvzSceneSsaoDesc;
 
 
@@ -66,6 +81,9 @@ bool _scene_alpha_mode_is_blended(DvzAlphaMode mode);
 const char* _scene_render_role_work_label(DvzFramePlanRenderPassRole role);
 
 bool _scene_render_role_requires_graph_pass(DvzFramePlanRenderPassRole role);
+
+bool _scene_technique_pass_policy(
+    DvzFramePlanRenderPassRole role, DvzSceneTechniquePassPolicy* out);
 
 bool _scene_visual_writes_depth(const DvzVisual* visual, const DvzPanelAttach* attach);
 
