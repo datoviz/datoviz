@@ -325,6 +325,53 @@ Avoid live progress spinners or TUI-style output. GPU/window tests can hang; the
 should always identify the currently running or most recently started test.
 
 
+## Timing And Duration Reporting
+
+Timing should be first-class runner data, not formatting-only output. The runner should measure and
+store durations for every executed case and for every aggregate level derived from selected cases.
+
+Required timing records:
+
+1. Per case:
+   - wall-clock start time,
+   - wall-clock end time,
+   - elapsed duration,
+   - timeout limit when one is configured,
+   - repeat index when `--repeat` is used.
+2. Per group:
+   - number of selected, passed, failed, and skipped cases,
+   - summed elapsed duration for cases in the group,
+   - wall-clock span for the group when cases are executed contiguously by the serial scheduler.
+3. Per module:
+   - number of selected, passed, failed, and skipped cases,
+   - summed elapsed duration for cases in the module,
+   - wall-clock span for the module when cases are executed contiguously by the serial scheduler.
+4. Entire suite:
+   - total selected, passed, failed, and skipped cases,
+   - summed test-case duration,
+   - full runner wall-clock duration, including setup, teardown, listing/filtering overhead, and
+     scheduler overhead.
+
+The distinction between summed case duration and full runner wall-clock duration matters. In the
+serial runner they should usually be close, but they will diverge once process-level scheduling,
+timeouts, fixture setup/teardown, JSON writing, or future parallel execution are added.
+
+Terminal output should show per-case duration in compact mode and aggregate duration in summaries.
+Verbose output should also show group and module timing breakdowns. JSON output should include raw
+duration values in a stable unit, preferably nanoseconds or microseconds as integers, plus any
+human-readable formatted strings only as optional convenience fields.
+
+Slow-test diagnostics should be added before parallel execution:
+
+1. `--slow <count>` prints the slowest selected cases.
+2. `--slow-groups <count>` prints the slowest groups by summed case duration.
+3. `--timeout <ms>` optionally sets a default timeout for cases without explicit `timeout_ms`.
+
+Timing should use a monotonic clock for elapsed durations. Wall-clock timestamps may be included in
+JSON for CI correlation, but pass/fail decisions and elapsed durations must not depend on system
+clock changes.
+
+
 ## Independent Test Compilation
 
 Focused component tests should be independently buildable. A broken test source in component `X`
@@ -431,11 +478,13 @@ The first implementation slice should deliver:
 5. module/group/case filtering,
 6. `--list` and `--list-groups`,
 7. compact color-aware terminal output,
-8. generic log adapter interface with Datoviz-specific installation outside the generic framework,
-9. independently buildable CPU component runners,
-10. migrated `common`, `ds`, `fileio`, `math`, and selected `thread` tests,
-11. serial execution only,
-12. passing `git diff --check`, focused component builds, and focused CPU test runs.
+8. per-case, per-group, per-module, and full-suite timing records,
+9. slow-test summary support for the selected serial run,
+10. generic log adapter interface with Datoviz-specific installation outside the generic framework,
+11. independently buildable CPU component runners,
+12. migrated `common`, `ds`, `fileio`, `math`, and selected `thread` tests,
+13. serial execution only,
+14. passing `git diff --check`, focused component builds, and focused CPU test runs.
 
 This establishes the architecture without destabilizing the active scene/DRP2/Vulkan validation
 lanes.
