@@ -6867,6 +6867,16 @@ int test_scene_frame_plan_missing_graph_pass_fails_contract(TstSuite* suite, Tst
     ANN(message);
     AT(strstr(message, "no matching graph pass") != NULL);
 
+    DvzDrp2CommandStream* stream = dvz_drp2_stream();
+    ANN(stream);
+    dvz_diagnostic_report_init(&report);
+    AT(!_scene_frame_plan_drp2_contracts_validate(plan, stream, &report));
+    AT(dvz_diagnostic_report_count(&report) == 1);
+    message = dvz_diagnostic_report_get(&report, 0);
+    ANN(message);
+    AT(strstr(message, "no matching graph pass") != NULL);
+
+    dvz_drp2_stream_destroy(stream);
     dvz_frame_plan_destroy(plan);
     dvz_scene_destroy(scene);
     return 0;

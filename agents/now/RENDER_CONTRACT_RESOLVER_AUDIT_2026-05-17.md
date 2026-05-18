@@ -652,6 +652,33 @@ Validation:
 4. `direnv exec . just test` (`609/609`)
 
 
+### 2026-05-18: Phase 3 / Shared missing-graph-pass contract preflight
+
+Completed the missing-graph-pass guardrail for both FramePlan and DRP2 contract validation.
+
+Changes:
+
+1. Added a shared render-contract preflight that checks every graph-backed render role has a matching
+   graph pass.
+2. Reused that preflight from `_scene_frame_plan_contracts_validate()` so the existing plan-level
+   missing-pass diagnostic stays centralized.
+3. Reused the same preflight from `_scene_frame_plan_drp2_contracts_validate()` so DRP2 contract
+   validation cannot pass a broken plan before seeing stream commands.
+4. Extended `test_scene_frame_plan_missing_graph_pass_fails_contract` to cover the DRP2 contract
+   validator; this assertion failed before the shared preflight was added.
+5. Stabilized `test_app_offscreen_records_dvzr_frames` by disabling the app DVZR recording FPS cap for
+   that test's `record_start()` call; otherwise two immediate `render_once()` calls can legitimately
+   collapse to one recorded scene frame under the developer recording cap.
+
+Validation:
+
+1. `cmake --build build --target dvztest_scene -j2`
+2. `./build/testing/dvztest_scene test_scene_frame_plan_missing_graph_pass_fails_contract`
+3. `direnv exec . ./build/testing/dvztest_scene test_app_offscreen_records_dvzr_frames`
+4. `cmake --build build --target dvztest -j2`
+5. `direnv exec . just test scene` (`307/307`)
+
+
 ## Executive Assessment
 
 The direction is correct and worth continuing. The proposal identifies the right failure mode:
@@ -802,22 +829,24 @@ The first option is safer and should be the immediate implementation until a vis
 mixed OIT composition.
 
 
-### High: graph-emission failures are logged but not made fatal
+### High: graph-emission failure reporting remains coarse
 
-Several graph-builder failures in `scene_emit.c` call `log_error()` and continue. Contract validation
-then calls `_contract_graph_pass_for_render()` and continues when it returns `NULL`.
+Several graph-builder failures in `scene_emit.c` call `log_error()` and return a panel-level failure.
+`dvz_figure_emit_ex()` now treats that panel failure as fatal, and missing graph-backed render passes
+are reported by both FramePlan and DRP2 contract validation. The remaining weakness is diagnostic
+precision: graph-builder failures still mostly surface as a generic "scene FramePlan graph emission
+failed" report entry unless the contract validator can infer a more specific missing-pass problem.
 
-Impact: the graph can be incomplete, the DRP2 emitter can later run graph order with missing passes,
-and the contract layer will not report the missing graph-backed render role. This directly weakens
-the contract as a guardrail.
+Impact: runtime execution is now guarded against incomplete graph-backed render roles, but users and
+tests may still need log capture rather than the diagnostic report to identify which graph builder
+failed.
 
 Recommendation:
 
-1. Track a hard graph-emission failure in the FramePlan or emit report.
-2. Make `_scene_frame_plan_contracts_validate()` report missing graph passes for every role that is
-   expected to be graph-backed.
-3. Add a regression that intentionally creates a graph-backed render node without a graph pass and
-   asserts a diagnostic.
+1. Keep the shared missing-graph-pass preflight as a required invariant for all contract validation.
+2. Thread graph-builder-specific diagnostic messages into the emit report so callers do not need to
+   inspect logs to identify the failing technique.
+3. Add targeted graph-builder failure tests when a deterministic non-OOM failure trigger exists.
 
 
 ### High: FramePlan render-node pointers can go stale

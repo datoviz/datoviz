@@ -20,10 +20,12 @@
 #endif
 
 #include <math.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "_alloc.h"
 #include "_assertions.h"
+#include "_compat.h"
 #include "_log.h"
 #include "../_scene.h"
 #include "../_technique.h"
@@ -1918,7 +1920,18 @@ int test_app_offscreen_records_dvzr_frames(TstSuite* suite, TstItem* item)
     AT(win != NULL);
 
     const char* path = "/tmp/dvz_app_offscreen_recording.dvzr";
-    AT(dvz_app_window_record_start(win, path) == 0);
+    const char* old_record_fps = getenv("DVZ_DRP2_RECORD_FPS");
+    bool had_record_fps = old_record_fps != NULL;
+    char saved_record_fps[64] = {0};
+    if (had_record_fps)
+        dvz_strlcpy(saved_record_fps, old_record_fps, sizeof(saved_record_fps));
+    AT(setenv("DVZ_DRP2_RECORD_FPS", "0", 1) == 0);
+    int record_start = dvz_app_window_record_start(win, path);
+    if (had_record_fps)
+        (void)setenv("DVZ_DRP2_RECORD_FPS", saved_record_fps, 1);
+    else
+        (void)unsetenv("DVZ_DRP2_RECORD_FPS");
+    AT(record_start == 0);
     AT(dvz_app_window_render_once(win) == DVZ_CANVAS_FRAME_READY);
     AT(dvz_app_window_render_once(win) == DVZ_CANVAS_FRAME_READY);
     AT(dvz_app_window_record_stop(win) == 0);

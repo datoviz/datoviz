@@ -692,6 +692,35 @@ static const DvzFrameGraphPass* _contract_graph_pass_for_render(
 
 
 /**
+ * Validate that every graph-backed render node has a matching graph pass.
+ *
+ * @param plan the FramePlan to inspect
+ * @param report optional diagnostic report
+ * @return whether every graph-backed render role has a graph pass
+ */
+static bool _contract_validate_graph_backed_render_nodes(
+    const DvzFramePlan* plan, DvzDiagnosticReport* report)
+{
+    ANN(plan);
+    bool ok = true;
+    for (uint32_t i = 0; i < plan->count; i++)
+    {
+        const DvzFramePlanNode* render = &plan->nodes[i];
+        if (render->type != DVZ_FRAME_PLAN_NODE_RENDER)
+            continue;
+        if (!_scene_render_role_requires_graph_pass(render->u.render.pass_role))
+            continue;
+        if (_contract_graph_pass_for_render(plan, render) != NULL)
+            continue;
+        _contract_report(report, "graph-backed render node has no matching graph pass");
+        ok = false;
+    }
+    return ok;
+}
+
+
+
+/**
  * Return the figure panel that owns one render node.
  *
  * @param figure the figure
@@ -1753,7 +1782,7 @@ bool _scene_frame_plan_contracts_validate(
 {
     ANN(figure);
     ANN(plan);
-    bool ok = true;
+    bool ok = _contract_validate_graph_backed_render_nodes(plan, report);
     for (uint32_t i = 0; i < plan->count; i++)
     {
         const DvzFramePlanNode* render = &plan->nodes[i];
@@ -1762,14 +1791,7 @@ bool _scene_frame_plan_contracts_validate(
 
         const DvzFrameGraphPass* graph_pass = _contract_graph_pass_for_render(plan, render);
         if (graph_pass == NULL)
-        {
-            if (_scene_render_role_requires_graph_pass(render->u.render.pass_role))
-            {
-                _contract_report(report, "graph-backed render node has no matching graph pass");
-                ok = false;
-            }
             continue;
-        }
 
         const DvzPanel* panel = _contract_panel_for_render(figure, plan, render);
         if (panel == NULL)
@@ -1808,6 +1830,7 @@ bool _scene_frame_plan_drp2_contracts_validate(
     ANN(plan);
     ANN(stream);
     bool ok = _contract_validate_graph_topology(plan, report);
+    ok = _contract_validate_graph_backed_render_nodes(plan, report) && ok;
     const DvzFramePlanNode* active_render = NULL;
     const DvzFrameGraphPass* active_graph_pass = NULL;
     ContractDrp2PassState active_pass_state = {0};
