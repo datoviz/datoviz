@@ -423,6 +423,27 @@ int test_scene_segment_emit_glsl(TstSuite* suite, TstItem* item)
     AT(dvz_segment_set_caps(visual, DVZ_SEGMENT_CAP_BUTT, DVZ_SEGMENT_CAP_ROUND) == 0);
     AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
 
+    DvzFramePlan* plan = dvz_frame_plan("figure.segment.contract", 0);
+    ANN(plan);
+    AT(_scene_emit_panel_render(figure, 0, plan, "figure_0"));
+    const DvzFramePlanNode* render = dvz_frame_plan_node_get(plan, 0);
+    ANN(render);
+    AT(dvz_frame_plan_render_pass_role(render) == DVZ_FRAME_PLAN_RENDER_PASS_OPAQUE);
+    AT(render->u.render.visual_count == 1);
+    AT(
+        render->u.render.visual_metadata[0].draw_blend_policy ==
+        DVZ_SCENE_BLEND_POLICY_SEGMENT_COVERAGE);
+
+    DvzScenePassContract pass_contract = {0};
+    AT(_scene_pass_contract_from_render(plan, panel, render, NULL, &pass_contract));
+    AT(pass_contract.draw_count == 1);
+    AT(pass_contract.draws[0].blend_policy == DVZ_SCENE_BLEND_POLICY_SEGMENT_COVERAGE);
+    AT(pass_contract.draws[0].blend_target_count == 1);
+    AT(pass_contract.draws[0].blend_targets[0].blend_enabled);
+    AT(
+        pass_contract.draws[0].blend_targets[0].src_color_blend_factor ==
+        VK_BLEND_FACTOR_SRC_ALPHA);
+
     DvzCapabilitySnapshot caps;
     dvz_capability_snapshot_default(&caps);
     DvzDiagnosticReport report;
@@ -475,6 +496,7 @@ int test_scene_segment_emit_glsl(TstSuite* suite, TstItem* item)
     AT(set_vertex_buffer_count == 4);
     AT(_stream_write_buffer_range_count(stream, 0, sizeof(DvzSceneMaterialParams)) == 1);
 
+    dvz_frame_plan_destroy(plan);
     dvz_drp2_stream_destroy(stream);
     dvz_scene_destroy(scene);
     return 0;
@@ -6580,6 +6602,31 @@ int test_scene_draw_contract_resolver_matrix(TstSuite* suite, TstItem* item)
          DVZ_SCENE_BIND_GROUP_REQUIREMENT_MATERIAL));
     AT(contract.needs_common_set);
     AT(contract.needs_material_set);
+
+    facts = (DvzSceneDrawFacts){
+        .visual_type = DVZ_VISUAL_TYPE_SEGMENT,
+        .alpha_mode = DVZ_ALPHA_OPAQUE,
+        .can_depth_test = true,
+        .can_write_depth = true,
+        .writes_depth = true,
+        .uses_segment_pipeline = true,
+        .uses_common_set = true,
+        .uses_material_set = true,
+    };
+    AT(_scene_draw_contract_resolve(
+        &facts, DVZ_FRAME_PLAN_RENDER_PASS_OPAQUE, &contract));
+    AT(contract.visual_type == DVZ_VISUAL_TYPE_SEGMENT);
+    AT(contract.depth_test);
+    AT(contract.depth_write);
+    AT(contract.blend_policy == DVZ_SCENE_BLEND_POLICY_SEGMENT_COVERAGE);
+    AT(contract.blend_target_count == 1);
+    AT(contract.blend_targets[0].blend_enabled);
+    AT(
+        contract.blend_targets[0].src_color_blend_factor ==
+        VK_BLEND_FACTOR_SRC_ALPHA);
+    AT(
+        contract.blend_targets[0].dst_color_blend_factor ==
+        VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA);
 
     facts = (DvzSceneDrawFacts){
         .visual_type = DVZ_VISUAL_TYPE_VOLUME,

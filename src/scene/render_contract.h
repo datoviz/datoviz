@@ -68,6 +68,7 @@ typedef enum
     DVZ_SCENE_BLEND_POLICY_NONE = 0,
     DVZ_SCENE_BLEND_POLICY_OPAQUE,
     DVZ_SCENE_BLEND_POLICY_SOURCE_OVER,
+    DVZ_SCENE_BLEND_POLICY_SEGMENT_COVERAGE,
     DVZ_SCENE_BLEND_POLICY_WBOIT,
     DVZ_SCENE_BLEND_POLICY_DEPTH_PEEL,
 } DvzSceneBlendPolicy;
@@ -143,6 +144,7 @@ typedef struct DvzSceneDrawFacts
     bool volume_occluded;
     bool scene_occluded;
     bool scene_occluder;
+    bool uses_segment_pipeline;
 
     bool uses_common_set;
     bool uses_material_set;

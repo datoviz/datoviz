@@ -118,13 +118,14 @@ static uint32_t _draw_depth_policy(bool depth_test, bool depth_write, bool sampl
 /**
  * Resolve a draw blend policy from alpha mode and render-pass role.
  *
- * @param alpha_mode the visual alpha mode
+ * @param facts visual facts used by the resolver matrix
  * @param pass_role the render-pass role carrying the draw
  * @return resolved blend policy
  */
 static DvzSceneBlendPolicy _draw_blend_policy(
-    DvzAlphaMode alpha_mode, DvzFramePlanRenderPassRole pass_role)
+    const DvzSceneDrawFacts* facts, DvzFramePlanRenderPassRole pass_role)
 {
+    ANN(facts);
     switch (pass_role)
     {
     case DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_BLEND:
@@ -135,7 +136,10 @@ static DvzSceneBlendPolicy _draw_blend_policy(
     case DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_ITER:
         return DVZ_SCENE_BLEND_POLICY_DEPTH_PEEL;
     case DVZ_FRAME_PLAN_RENDER_PASS_OPAQUE:
-        return alpha_mode == DVZ_ALPHA_OPAQUE || alpha_mode == DVZ_ALPHA_MASK
+        if (facts->uses_segment_pipeline &&
+            (facts->alpha_mode == DVZ_ALPHA_OPAQUE || facts->alpha_mode == DVZ_ALPHA_MASK))
+            return DVZ_SCENE_BLEND_POLICY_SEGMENT_COVERAGE;
+        return facts->alpha_mode == DVZ_ALPHA_OPAQUE || facts->alpha_mode == DVZ_ALPHA_MASK
                    ? DVZ_SCENE_BLEND_POLICY_OPAQUE
                    : DVZ_SCENE_BLEND_POLICY_NONE;
     default:
@@ -160,7 +164,9 @@ static void _draw_blend_target_contracts(
     ANN(target_count);
     *target_count = 0;
 
-    if (blend_policy == DVZ_SCENE_BLEND_POLICY_SOURCE_OVER)
+    if (
+        blend_policy == DVZ_SCENE_BLEND_POLICY_SOURCE_OVER ||
+        blend_policy == DVZ_SCENE_BLEND_POLICY_SEGMENT_COVERAGE)
     {
         targets[0] = (DvzSceneBlendTargetContract){
             .target_index = 0,
@@ -1771,7 +1777,7 @@ bool _scene_draw_contract_resolve(
     out->needs_scene_occlusion_set = out->samples_scene_occlusion;
     out->depth_policy =
         _draw_depth_policy(out->depth_test, out->depth_write, out->samples_depth);
-    out->blend_policy = _draw_blend_policy(facts->alpha_mode, pass_role);
+    out->blend_policy = _draw_blend_policy(facts, pass_role);
     _draw_blend_target_contracts(
         out->blend_policy, out->blend_targets, &out->blend_target_count);
     _draw_raster_state_contract(
@@ -1832,6 +1838,7 @@ bool _scene_draw_contract_from_visual(
         .volume_occluded = visual->volume_occluded,
         .scene_occluded = visual->scene_occluded,
         .scene_occluder = visual->scene_occluder,
+        .uses_segment_pipeline = caps.kind == DVZ_SCENE_VISUAL_DESC_SEGMENT,
         .uses_common_set = caps.uses_common_set,
         .uses_material_set = caps.uses_material_set,
         .uses_image_set = caps.uses_image_set,

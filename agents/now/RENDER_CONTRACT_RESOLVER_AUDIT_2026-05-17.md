@@ -728,6 +728,29 @@ Validation:
 4. `./build/testing/dvztest_scene test_scene_drp2_contract_checker_rejects_pipeline_drift`
 
 
+### 2026-05-18: Phase 1 / Segment coverage blend contract
+
+Completed the segment coverage blend policy slice.
+
+Changes:
+
+1. Added `DVZ_SCENE_BLEND_POLICY_SEGMENT_COVERAGE` as the explicit draw policy for segment-like
+   opaque-pass analytic stroke pipelines.
+2. Extended draw-contract facts with `uses_segment_pipeline` so retained segment visuals and
+   line-width path visuals can resolve the same coverage blend contract.
+3. Reused the source-over blend target equation for segment coverage while keeping it distinct from
+   ordinary transparent source-over alpha.
+4. Extended resolver and segment GLSL tests to assert the segment coverage contract and emitted
+   blend target.
+
+Validation:
+
+1. `cmake --build build --target dvztest_scene -j2`
+2. `./build/testing/dvztest_scene test_scene_draw_contract_resolver_matrix`
+3. `./build/testing/dvztest_scene test_scene_segment_emit_glsl`
+4. `./build/testing/dvztest_scene test_scene_path_line_width_emit_glsl`
+
+
 ## Executive Assessment
 
 The direction is correct and worth continuing. The proposal identifies the right failure mode:
@@ -917,23 +940,22 @@ Status:
 
 ### Medium: blend and pipeline policy are only partly contract-owned
 
-The first explicit blend-target and raster-state slices are complete: draw contracts now include
-exact per-target source-over, WBOIT, depth-peel, and opaque blend expectations plus contracted
-volume/depth-peel raster state. DRP2 contract validation rejects emitted pipeline drift in target
-format, blend enable, blend factors/ops, write masks, cull mode, and front face.
+The first explicit blend-target, raster-state, and segment-coverage slices are complete: draw
+contracts now include exact per-target source-over, segment coverage, WBOIT, depth-peel, and opaque
+blend expectations plus contracted volume/depth-peel raster state. DRP2 contract validation rejects
+emitted pipeline drift in target format, blend enable, blend factors/ops, write masks, cull mode,
+and front face.
 
 Remaining runtime-owned policy:
 
-1. Segment coverage reuses source-over-like blending but is not yet represented as a distinct draw
-   contract policy.
-2. Occlusion and G-buffer passes set target formats in runtime even though the DRP2 validator checks
+1. Occlusion and G-buffer passes set target formats in runtime even though the DRP2 validator checks
    them against graph pass attachment formats.
-3. Fullscreen resolve pipelines still have technique-specific blend/sample/layout details that are
+2. Fullscreen resolve pipelines still have technique-specific blend/sample/layout details that are
    not modelled as standalone pass/pipeline contracts because they have no visual draw metadata.
 
 Impact: ordinary visual draw blend and raster state are now contract-checked, but future runtime
-changes can still alter non-draw fullscreen pipeline state or segment coverage policy without
-changing an explicit contract object.
+changes can still alter non-draw fullscreen pipeline state without changing an explicit contract
+object.
 
 Completed recommendation: add an explicit per-target blend contract:
 
@@ -953,9 +975,9 @@ typedef struct DvzSceneBlendTargetContract
 } DvzSceneBlendTargetContract;
 ```
 
-Remaining recommendation: extend the same explicit-contract pattern to segment coverage and
-fullscreen technique pipelines, then compare those emitted DRP2 `CreateRenderPipeline` and
-pipeline-mutator commands against contract-owned expectations.
+Remaining recommendation: extend the same explicit-contract pattern to fullscreen technique
+pipelines, then compare those emitted DRP2 `CreateRenderPipeline` and pipeline-mutator commands
+against contract-owned expectations.
 
 
 ### Medium: occlusion resources are suffix heuristics, not exact draw contracts
@@ -1093,7 +1115,7 @@ in this pass, using this attachment/resource/pipeline state" belongs in the reso
    contract.
 2. Partly done: extend draw contracts with depth policy, blend policy, blend target formats/equations,
    raster state, shader features, and bind-group layout requirements. Sample-count, fullscreen
-   pipeline, segment coverage, and remaining pipeline-feature contracts are still open.
+   pipeline, and remaining pipeline-feature contracts are still open.
 3. Done: attach contract ids or resolved contract snapshots to FramePlan render nodes.
 4. Partly done: remove fallback decisions in `scene_emit.c` that recompute caps after contract
    resolution for transparent depth and source-over grouping.
