@@ -1,7 +1,7 @@
 # Test Runner Modernization Plan
 
 > **Execution Status**
-> - **Status:** `CANVAS SKIP/METADATA SLICE LANDED`
+> - **Status:** `SCENE APP SKIP SLICE LANDED`
 > - **Updated on:** `2026-05-18`
 > - **Purpose:** document the current C test-runner limitations and a staged refactor path toward
 >   explicit grouping, cleaner filtering, and safe future parallelism.
@@ -61,9 +61,13 @@ Fourth follow-up update on `2026-05-18`: the scene runtime slices now expose GPU
 results and metadata for frame-plan emission, pick/probe GPU requests, scene-graph runtime smoke
 tests, and app-offscreen shared Vulkan-runtime gates. Focused validation covered `dvztest_scene`
 rebuilds, representative scene GPU cases reporting `SKIP` when Vulkan is unavailable, and `--list`
-output showing GPU/Vulkan/process metadata for the migrated scene cases. Remaining scene app
-helper-level capture skips still need a narrower helper refactor so internal `skipped` result
-structs can carry skip reasons back to the runner context.
+output showing GPU/Vulkan/process metadata for the migrated scene cases.
+
+Fifth follow-up update on `2026-05-18`: the scene app-offscreen helper and direct setup skip
+branches now report explicit `SKIP` results. Helper capture structs carry skip reasons back to the
+runner context, and direct app, GLFW, surface, and offscreen window setup exits call `tst_skip()`
+before cleanup. Focused validation covered `dvztest_scene` rebuilds and representative
+app-offscreen cases reporting Vulkan-unavailable skips in this environment.
 
 Two boundaries should stay clean:
 
