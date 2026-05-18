@@ -55,6 +55,129 @@ documentation, a strong gallery, and a credible quality audit.
    reference, and explanation. Each page should have one primary job: teach a first experience,
    solve a specific task, state technical facts, or explain architecture and tradeoffs.
 
+7. **Keep WebGPU/WASM in v0.4 as experimental portability work.**
+   The v0.4 release should include the browser/WebGPU/WASM lane even if it supports only a narrow
+   subset of native scene features. The release promise is an experimental portability path over
+   scene-emitted WGSL DRP2 streams, not full feature parity with the Vulkan runtime.
+
+8. **Keep the high-level OO plotting layer outside Datoviz.**
+   Datoviz v0.4 remains a C implementation plus low-level/generated binding surface. The
+   object-oriented plotting API is expected to live in the external GSP/VisPy2 stack, either
+   alongside v0.4 or shortly after it.
+
+9. **Treat vector export as a GSP/backend concern, not a Datoviz v0.4 feature.**
+   Publication-oriented PDF/SVG/vector output should be produced by a GSP Matplotlib backend.
+   Datoviz is the interactive GPU/raster backend for the GSP protocol. Datoviz-native image
+   capture remains in scope; Datoviz-native structural vector export is not a v0.4 requirement.
+
+
+## Feature-Scope Terms
+
+In this plan, "MVP" means the first release-quality slice that prevents obvious v0.3 regressions
+and unblocks core examples. It does not mean a prototype without tests, diagnostics, or repeated
+update behavior.
+
+### Rendered Text MVP
+
+The v0.4 text slice should include:
+
+1. visible single-line UTF-8 text attached to panels,
+2. a built-in fallback font and one user-supplied font path or font-byte path if practical,
+3. run-level size and color,
+4. screen-space placement for labels, axes, legends, colorbars, HUD/readouts, and annotations,
+5. data-space anchoring for simple point/image annotations,
+6. panel clipping, DPI-aware sizing, offscreen capture, and GLFW rendering,
+7. retained updates for string, style, placement, and destroy.
+
+The v0.4 text slice may defer:
+
+1. paragraph layout and wrapping,
+2. bidirectional and complex-script shaping,
+3. rich text with mixed style runs,
+4. full TeX/math layout inside Datoviz,
+5. color emoji,
+6. glyph-level picking or substring selection,
+7. public glyph-atlas manipulation APIs,
+8. collision avoidance and label-placement solving.
+
+### 2D Axes, Colorbar, Legend, And Annotation MVP
+
+The v0.4 explanatory-object slice should include:
+
+1. 2D x/y axes for panzoom panels,
+2. deterministic linear numeric ticks with "nice" spacing,
+3. tick labels, axis labels, and units,
+4. axis lines, tick marks, and optional grid lines,
+5. axes that update correctly after pan/zoom and resize,
+6. one continuous colorbar per panel or visual scale,
+7. vertical and horizontal colorbar orientation,
+8. colorbar title, units, deterministic tick labels, and a visible ramp,
+9. simple panel-attached text labels and pinned readout annotations,
+10. explicit diagnostics when a requested explanatory object is unsupported.
+
+The v0.4 explanatory-object slice may defer:
+
+1. log, datetime, categorical, geographic, and nonlinear axes,
+2. multiple coordinated axes on the same side,
+3. automatic label collision avoidance,
+4. interactive axis or colorbar range editing,
+5. categorical legends beyond a small documented first slice,
+6. grouped legends, multi-scale legends, and symbol/line-style legend composition,
+7. callout leader lines, dimension annotations, scale bars, and measurement tools,
+8. vector/PDF/SVG preservation of text and axes inside Datoviz.
+
+
+## v0.3 Regression Checklist
+
+v0.4 does not need source or ABI compatibility with v0.3. It should still avoid losing the visible
+capabilities users already associate with Datoviz unless a capability is explicitly moved to
+GSP/VisPy2 or deferred with a release note.
+
+### Avoid Regressing In v0.4
+
+1. Core retained-scene workflow: create a figure, create panels, attach visuals, run offscreen or
+   GLFW, resize, capture images, and drive frame callbacks.
+2. Active visual families at a user-visible level: point, pixel, marker, primitive/basic, segment,
+   path, image, mesh, sphere, volume, and text/glyph.
+3. Full and partial data updates for visuals, including repeated updates across live frames.
+4. Texture-backed image and volume workflows, including sampled fields and colormap-like scalar
+   interpretation where supported.
+5. 2D axes, ticks, labels, scale/range handling, colormaps, and continuous colorbars.
+6. Interaction controllers: panzoom, arcball, camera, fly, turntable, and input routing through the
+   app layer.
+7. Multi-panel figures, linked-panel behavior, per-panel viewport/scissor, layout reservation, and
+   stable resize behavior.
+8. User-visible render controls: depth testing, transparency/alpha modes, mesh lighting/material
+   controls, marker styling, segment/path width and cap/join behavior, image filtering, sphere
+   modes, and volume render/slice/clipping controls.
+9. GUI-backed examples where GUI state drives scene parameters, even if the GUI API itself remains
+   an advanced/native example layer.
+10. Offscreen screenshot/gallery capture and enough video/frame-sequence capture to support release
+    examples.
+
+### Acceptable v0.4 Deferrals
+
+1. Exact v0.3 API compatibility, including old `DvzBatch`, `DvzViewset`, `DvzDual`, `DvzBaker`,
+   `dvz_panel_default()`, `dvz_panel_visual()`, `dvz_scene_run()`, and per-visual allocation helper
+   names.
+2. Python OO wrappers that mirror v0.3 ergonomics.
+3. Convenience/demo helpers such as demo panels, gizmos, quick horizontal grids, and old
+   figure/panel update helpers when the underlying C capability exists through the new scene/app
+   path.
+4. Niche v0.3 visuals and variants such as `wiggle`, standalone `slice`, `monoglyph`, rounded image
+   borders, full marker texture modes, and exact image anchor/permutation parity.
+5. Python-side GUI wrappers, data download helpers, shape collections, and gallery data-preparation
+   conveniences.
+6. Full publication/static/vector export from Datoviz; this belongs to GSP/Matplotlib.
+
+### Moved Out Of Datoviz Core
+
+1. High-level object-oriented Python plotting APIs.
+2. Declarative plotting grammar and backend-agnostic scene descriptions.
+3. Publication-oriented PDF/SVG/vector export.
+4. Python-first data loading, preprocessing, shape collections, and example asset orchestration,
+   except for small helper scripts needed by Datoviz's own C examples.
+
 
 ## Proposed Milestones
 
@@ -68,9 +191,11 @@ Exit criteria:
 2. Text, axes, ticks, labels, colorbars, annotations, GUI docs, video export, IPython use, WebGPU
    status, and gallery-critical examples have an owner and a completion state.
 3. Unsupported or experimental features are explicitly marked as such.
-4. The feature implementation plans in `agents/now/` have either been completed, deferred, or
+4. WebGPU/WASM is present as an experimental v0.4 lane with its supported DRP2 command subset,
+   scene visual subset, browser runtime status, and known gaps documented.
+5. The feature implementation plans in `agents/now/` have either been completed, deferred, or
    reduced to known release-blocking issues.
-5. A first pass of examples exercises every intended public feature at least once.
+6. A first pass of examples exercises every intended public feature at least once.
 
 
 ### M1: API Shape Review
@@ -92,8 +217,11 @@ Work:
 8. Decide and document the v0.4 Python API policy: Datoviz ships raw/generated `ctypes`
    bindings only, the v0.3-style Python OO API is out of scope, GSP/VisPy2 owns the future
    object-oriented and plotting APIs, and Matplotlib is the publication/vector-export backend.
-9. Add or normalize Doxygen-style docstrings for public and module-level functions.
-10. Generate a public API inventory and compare it with the intended v0.4 narrative.
+9. Decide and document that Datoviz-native vector export is not part of the v0.4 backend promise;
+   Datoviz should provide raster image capture while GSP/Matplotlib owns publication-oriented
+   vector output.
+10. Add or normalize Doxygen-style docstrings for public and module-level functions.
+11. Generate a public API inventory and compare it with the intended v0.4 narrative.
 
 Exit criteria:
 

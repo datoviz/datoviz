@@ -12,6 +12,9 @@ Datoviz renderer module. It lives under `examples/webgpu/`, executes the committ
 fixture manifest, and supports the narrow command subset needed by the current browser streams and
 fixtures.
 
+For v0.4, this path is intentionally experimental but in scope. The release target is a clear,
+tested subset with explicit unsupported-feature diagnostics, not native Vulkan feature parity.
+
 Active DRP2 does not require explicit `CreatePipelineLayout` support. Pipeline-layout information is
 carried directly on `CreateRenderPipeline.bind_group_layout_ids` and
 `CreateComputePipeline.bind_group_layout_ids`. Backends synthesize their native pipeline-layout

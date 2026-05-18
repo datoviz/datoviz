@@ -1,133 +1,68 @@
-# Vector And SVG Export
+# Vector Export Scope
 
-This document defines the scene-layer contract for vector and SVG export.
-
-
-## Scope And Philosophy
-
-True GPU-to-vector export is not feasible for arbitrary rendered content: GPU fragment
-output is rasterized by definition and cannot be back-converted to vector geometry.
-
-The scene supports **structural SVG export**: scene elements that have an inherently
-vector nature are emitted as real SVG elements; GPU-rendered visual content is embedded
-as a raster image inside the SVG document.
-
-The result is a hybrid SVG that:
-1. is scalable for structural elements (axes, tick labels, annotations, colorbars),
-2. contains a raster embed for visual content (points, lines, meshes, volumes),
-3. can be post-processed in Inkscape, Illustrator, or similar tools.
+This document records the current v0.4 scope decision for vector export.
 
 
-## What Is Emitted As True Vector
+## Decision
 
-The following scene elements are emitted as native SVG elements:
+Datoviz v0.4 does not implement a native SVG/PDF/vector exporter.
 
-| Scene element | SVG representation |
-|---|---|
-| Axis lines | `<line>` |
-| Tick marks | `<line>` |
-| Tick labels | `<text>` |
-| Axis titles | `<text>` |
-| Colorbar gradient | `<linearGradient>` + `<rect>` |
-| Colorbar tick labels | `<text>` |
-| Annotation text labels | `<text>` |
-| Guide lines (horizontal, vertical, diagonal) | `<line>` |
-| Panel borders | `<rect>` |
-| Figure background | `<rect>` |
-
-SVG text uses the same font family and size as the scene font declarations.
-Exact font rendering may differ from the GPU path when fonts are not embedded in the SVG.
+Datoviz is the interactive GPU backend and raster-output backend for the GSP protocol. Publication
+oriented PDF/SVG/vector output should be produced outside Datoviz by the GSP layer, with Matplotlib
+as the intended vector/export backend.
 
 
-## What Is Emitted As Vector (Visual Families)
+## Rationale
 
-`path` and `segment` visuals are emitted as native SVG elements via a CPU re-draw path:
+Arbitrary Datoviz output is produced by GPU rasterization. Converting that output back into
+faithful vector geometry is not a reliable backend-level operation, especially for shaders,
+volumes, transparency, postprocess effects, images, text atlases, and future WebGPU execution.
 
-| Visual family | SVG representation |
-|---|---|
-| `path` | `<polyline>` per path |
-| `segment` | `<line>` per segment |
+The correct source for vector export is the semantic scene description above the renderer. GSP can
+lower that semantic description to different backends:
 
-This covers the most common line-based scientific visualization output (signal traces,
-contours, error bars) at true vector quality.
+1. Datoviz for interactive GPU rendering and raster capture,
+2. Matplotlib for publication-oriented static PDF/SVG/vector export.
 
-PDF export is not supported in v0.4. SVG output can be converted to PDF externally
-(Inkscape, CairoSVG).
-
-
-## What Is Embedded As Raster
-
-Visual content rendered by GPU shaders is captured as a high-resolution raster image
-and embedded in the SVG as a `<image>` element with `preserveAspectRatio="none"`.
-
-This includes all other visual families: markers, pixels, points, glyphs, images, spheres,
-volumes, meshes, etc. `path` and `segment` are excepted (see above).
-
-The raster resolution for the embed is controlled by the render scale
-(see `export/IMAGE_EXPORT.md`): a higher render scale produces a sharper embed at the cost
-of a larger SVG file.
+This keeps Datoviz from growing a second, partial CPU renderer for vector output and keeps the
+publication path aligned with the backend-agnostic GSP contract.
 
 
-## Export API
+## Datoviz v0.4 Scope
 
-```text
-dvz_figure_export_svg(figure, "output.svg", &opts)
-```
+In scope for Datoviz v0.4:
 
-Options (`DvzSVGExportOptions`):
+1. offscreen image capture,
+2. screenshot/gallery capture,
+3. video or frame-sequence capture where supported by the active app/video path,
+4. DVZR-style recording/replay for renderer/runtime debugging and reproducibility,
+5. diagnostics that make it clear when a caller asks Datoviz for unsupported vector export.
 
-| Field | Type | Default | Description |
-|---|---|---|---|
-| `render_scale` | `float32` | `2.0` | raster resolution multiplier for visual embeds |
-| `embed_fonts` | `bool` | `true` | embed font data as base64 data URIs (fully self-contained SVG); set to `false` to use `@font-face` references for a smaller file |
-| `dpi` | `float32` | `96.0` | nominal DPI for `px`-to-`pt` conversion in SVG units |
+Out of scope for Datoviz v0.4:
 
-`dvz_figure_export_svg` drives one offline frame at the requested render scale,
-captures the raster output, and assembles the SVG document on the CPU.
-The call is synchronous from the application's perspective.
-
-
-## Coordinate Mapping
-
-SVG uses a top-left origin with Y pointing down.
-The scene uses a bottom-left origin with Y pointing up internally.
-The exporter handles the Y-flip transparently.
-
-All SVG coordinates are in `pt` units at the declared `dpi`.
-The logical panel size in the scene maps to the SVG `viewBox`.
+1. `dvz_figure_export_svg()` or equivalent native Datoviz SVG export,
+2. native PDF export,
+3. structural SVG export of axes, labels, legends, or colorbars,
+4. CPU redraw paths for `path`, `segment`, or other visual families,
+5. SVG preservation of text, glyphs, or annotation objects.
 
 
-## Limitations
+## Relationship To Scene Semantics
 
-1. **No per-item vector output** — individual data points, lines, or polygons from GPU
-   visuals are not emitted as SVG path elements.
-   This is a fundamental limitation of the raster-embed approach.
-2. **Annotation shapes** — annotation anchors and callout lines may be emitted as vector
-   in a future extension; deferred.
-3. **Multi-panel figures** — all panels in the figure are exported into a single SVG
-   document, maintaining their relative positions.
-4. **No WebGL/WebGPU path** — SVG export requires a local offline render; it is not
-   available in browser-embedded Datoviz without a server-side render step.
+Scene semantics should still preserve enough information for GSP or another higher layer to export
+the same intended figure through a vector backend. Axes, labels, legends, colorbars, units,
+annotations, and visual mappings should remain semantic scene objects rather than backend-only draw
+commands.
 
-
-## Relationship To GSP And Matplotlib Export
-
-Datoviz-native vector export is limited to structural SVG and selected CPU-redrawable visual
-families. Full publication-oriented PDF/SVG export from a semantic scene description is expected to
-be provided by a GSP Matplotlib backend, not by converting arbitrary Datoviz GPU output back to
-vector geometry.
-
-The Datoviz backend should be treated as the interactive and raster-output backend. The Matplotlib
-backend should be treated as the publication and vector-output backend when a GSP-level scene can be
-faithfully or approximately lowered to Matplotlib artists.
+Datoviz does not need to expose or implement vector export to keep those semantics clean.
 
 
 ## Relationship To Other Documents
 
 | Document | Relationship |
 |---|---|
-| `export/IMAGE_EXPORT.md` | render scale for the raster embed; offline frame driving |
-| `semantics/AXES.md` | axes emit vector SVG elements |
-| `semantics/ANNOTATIONS.md` | text annotations emit vector SVG elements |
-| `semantics/LEGENDS_AND_COLORBARS.md` | colorbar emits gradient and tick SVG elements |
-| `integration/HIGH_DPI.md` | DPI scale affects raster embed resolution |
+| `export/IMAGE_EXPORT.md` | Datoviz-native raster image capture remains in scope. |
+| `semantics/AXES.md` | Axes remain semantic objects for rendering and for GSP export. |
+| `semantics/ANNOTATIONS.md` | Annotations remain semantic objects for rendering and for GSP export. |
+| `semantics/LEGENDS_AND_COLORBARS.md` | Legends and colorbars remain semantic objects for rendering and for GSP export. |
+| `integration/CUSTOM_VISUALS.md` | Custom Datoviz visuals are renderer/backend features, not vector export promises. |

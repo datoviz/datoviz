@@ -198,12 +198,14 @@ Rules:
 
 ## Export and Readback
 
-Export paths should preserve semantic text when possible.
+Export paths above Datoviz should preserve semantic text when possible. Datoviz v0.4 itself is
+raster-output focused; publication-oriented vector export is expected to happen through
+GSP/Matplotlib rather than a Datoviz-native exporter.
 
 Rules:
 
-1. vector export should prefer text or structured glyph/run output over raster-only atlas quads
-   when the target format supports it,
+1. GSP-level vector export should prefer text or structured glyph/run output over raster-only atlas
+   quads when the target format supports it,
 2. image export may use the runtime rasterization path,
 3. readback and diagnostics should report semantic text object identity, not glyph atlas internals.
 

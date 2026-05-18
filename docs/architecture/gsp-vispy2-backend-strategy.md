@@ -76,9 +76,9 @@ The Datoviz backend is optimized for interactive GPU rendering:
 - high-DPI raster screenshots and video/capture workflows,
 - low overhead when data or camera state changes frequently.
 
-Datoviz-native export should be treated as raster-first. Hybrid structural SVG
-export may be useful for selected scene decorations, but arbitrary GPU output
-should not be expected to become true vector geometry after rendering.
+Datoviz-native export should be treated as raster-first. Datoviz v0.4 should not
+grow a native structural SVG/PDF exporter; publication-oriented vector output
+belongs to the GSP Matplotlib backend.
 
 ### Matplotlib Backend
 

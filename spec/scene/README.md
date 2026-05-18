@@ -42,7 +42,7 @@ The scene spec is split by kind of authority:
 6. [visuals](visuals/README.md): per-family data contracts.
 7. [validation](validation/README.md): validation, adaptation, diagnostics, and deferred items.
 8. [integration](integration/README.md): host UI, threading, high-DPI, and custom visuals.
-9. [export](export/README.md): image and vector export semantics.
+9. [export](export/README.md): image export semantics and the current vector-export scope decision.
 10. [slices](slices/README.md): implementation-ready work packets for mature spec areas.
 11. [headers](headers/README.md): implementation-facing draft C header sketches.
 12. [implementation](implementation/README.md): concise notes for active implementation wiring.
@@ -203,7 +203,8 @@ Read the scene spec in this order during review.
 10. [integration/HIGH_DPI.md](integration/HIGH_DPI.md) — device pixel ratio, logical vs physical pixels, DPI change handling
 11. [semantics/TRANSPARENCY.md](semantics/TRANSPARENCY.md) — alpha modes and render pass structure
 12. [semantics/NONLINEAR_TRANSFORMS.md](semantics/NONLINEAR_TRANSFORMS.md) — non-linear coordinate transforms
-13. [export/VECTOR_EXPORT.md](export/VECTOR_EXPORT.md) — structural SVG export
+13. [export/VECTOR_EXPORT.md](export/VECTOR_EXPORT.md) — v0.4 decision to leave
+    publication-oriented vector export to GSP/Matplotlib
 14. [integration/CUSTOM_VISUALS.md](integration/CUSTOM_VISUALS.md) — user-defined visual families
 15. [integration/THREAD_SAFETY.md](integration/THREAD_SAFETY.md) — threading model and async data handoff
 16. [interaction/EVENT_CALLBACKS.md](interaction/EVENT_CALLBACKS.md) — scene event observer system
@@ -312,7 +313,7 @@ Integration and export:
 - [integration/napari/README.md](integration/napari/README.md): informative napari adapter notes.
 - [export/IMAGE_EXPORT.md](export/IMAGE_EXPORT.md): app capture, DVZR recording/replay, and future
   render-scale/panel-as-texture directions.
-- [export/VECTOR_EXPORT.md](export/VECTOR_EXPORT.md): structural SVG export.
+- [export/VECTOR_EXPORT.md](export/VECTOR_EXPORT.md): v0.4 vector-export scope decision.
 
 Proposals, history, and examples:
 

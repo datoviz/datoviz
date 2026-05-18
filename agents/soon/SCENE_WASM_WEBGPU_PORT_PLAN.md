@@ -13,6 +13,10 @@
 Run the active retained scene path in the browser without porting the native Vulkan presentation
 stack.
 
+This lane is part of the v0.4 scope as an experimental portability path. Its v0.4 success criterion
+is a documented, narrow scene/DRP2/WGSL/WebGPU subset that can run in the browser, not complete
+feature parity with the native Vulkan runtime.
+
 The intended architecture is:
 
 ```text
