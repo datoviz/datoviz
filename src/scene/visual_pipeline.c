@@ -24,6 +24,7 @@
 #include "_compat.h"
 #include "_scene_resource_key.h"
 #include "_shader_registry.h"
+#include "_technique.h"
 #include "_visual_pipeline.h"
 #include "datoviz/drp2/enums.h"
 
@@ -215,45 +216,6 @@ static bool _visual_desc_is_sphere(DvzSceneVisualDescKind kind)
 static bool _visual_desc_is_segment(DvzSceneVisualDescKind kind)
 {
     return kind == DVZ_SCENE_VISUAL_DESC_SEGMENT;
-}
-
-
-
-/**
- * Return whether an alpha mode uses source-over color blending.
- *
- * @param mode the visual alpha mode
- * @return whether source-over blending is requested
- */
-static bool _alpha_mode_uses_source_over(DvzAlphaMode mode)
-{
-    return mode == DVZ_ALPHA_BLENDED;
-}
-
-
-
-/**
- * Return whether an alpha mode routes a visual through WBOIT.
- *
- * @param mode the visual alpha mode
- * @return whether WBOIT was requested
- */
-static bool _alpha_mode_routes_wboit(DvzAlphaMode mode)
-{
-    return mode == DVZ_ALPHA_WBOIT;
-}
-
-
-
-/**
- * Return whether an alpha mode routes a visual through depth peeling.
- *
- * @param mode the visual alpha mode
- * @return whether depth peeling was requested
- */
-static bool _alpha_mode_routes_depth_peel(DvzAlphaMode mode)
-{
-    return mode == DVZ_ALPHA_DEPTH_PEEL;
 }
 
 
@@ -1156,9 +1118,9 @@ static void _scene_visual_pass_caps_resolve(
     bool image = _visual_desc_is_image(kind);
     bool volume = _visual_desc_is_volume(kind);
     bool fixed = controller_mode == DVZ_CONTROLLER_FIXED;
-    bool wboit = _alpha_mode_routes_wboit(alpha_mode);
-    bool depth_peel = _alpha_mode_routes_depth_peel(alpha_mode);
-    bool transparent_blend = _alpha_mode_uses_source_over(alpha_mode);
+    bool wboit = _scene_alpha_mode_is_wboit(alpha_mode);
+    bool depth_peel = _scene_alpha_mode_is_depth_peel(alpha_mode);
+    bool transparent_blend = _scene_alpha_mode_is_blended(alpha_mode);
 
     out->kind = kind;
     out->alpha_mode = alpha_mode;
@@ -1170,7 +1132,7 @@ static void _scene_visual_pass_caps_resolve(
     out->draws_in_depth_peel_pass = depth_peel;
     out->draws_in_transparent_blend_pass = transparent_blend;
     out->draws_in_opaque_pass = !wboit && !depth_peel && !transparent_blend;
-    out->uses_source_over_blend = _alpha_mode_uses_source_over(alpha_mode);
+    out->uses_source_over_blend = _scene_alpha_mode_is_blended(alpha_mode);
     out->writes_color = kind != DVZ_SCENE_VISUAL_DESC_NONE;
     out->writes_depth =
         out->draws_in_opaque_pass && (primitive || segment || point_like || sphere) && !fixed &&

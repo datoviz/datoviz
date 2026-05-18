@@ -894,6 +894,26 @@ Validation:
 3. `./build/testing/dvztest_scene test_scene_frame_plan_missing_graph_pass_fails_contract`
 
 
+### 2026-05-18: Phase 3 / Visual-pipeline alpha predicate centralization
+
+Completed the visual-pipeline alpha-mode cleanup slice.
+
+Changes:
+
+1. Reused the scene technique-layer `_scene_alpha_mode_is_*()` helpers from
+   `src/scene/visual_pipeline.c`.
+2. Removed the duplicate visual-pipeline-local source-over, WBOIT, and depth-peel alpha-mode
+   predicates.
+3. Kept visual pass capability behavior unchanged while reducing one remaining role/alpha semantic
+   split called out by the audit.
+
+Validation:
+
+1. `cmake --build build --target dvztest_scene -j2`
+2. `./build/testing/dvztest_scene test_scene_visual_pass_capabilities`
+3. `./build/testing/dvztest_scene test_scene_role_work_label_mapping_complete`
+
+
 ## Executive Assessment
 
 The direction is correct and worth continuing. The proposal identifies the right failure mode:
@@ -1200,16 +1220,18 @@ Status:
 3. Focused DRP2 tests cover the invalid format-class and attachment-target cases.
 
 
-### Low: role, label, and alpha-mode predicates are duplicated
+### Low: role, label, and resource-id predicates are partly centralized
 
-Role-to-work-label mapping and alpha-mode predicates exist in more than one scene file. Resource
-suffix interpretation also appears in both contract and runtime paths.
+Role-to-work-label mapping and alpha-mode predicates now flow through scene technique helpers for
+the active FramePlan, contract, runtime, and visual-pipeline paths. Resource suffix interpretation
+still appears in both contract and runtime paths.
 
-Impact: low immediate risk, but high maintenance drag. Contract work will be less effective if the
-same semantic mapping remains duplicated.
+Impact: the original duplicate role/alpha maintenance risk is closed. Resource-id and suffix policy
+still needs centralization before custom graph resources or backend-specific resource naming become
+active.
 
-Recommendation: centralize render-role labels, alpha-mode class predicates, and graph resource-id
-construction in scene-internal helpers, then test every `DvzFramePlanRenderPassRole`.
+Recommendation: centralize graph resource-id construction and suffix interpretation in
+scene-internal helpers, then keep testing every `DvzFramePlanRenderPassRole`.
 
 
 ## Semantic Case Assessment
@@ -1289,7 +1311,8 @@ in this pass, using this attachment/resource/pipeline state" belongs in the reso
 1. Move WBOIT, depth-peel, source-over, volume occlusion, scene occlusion, G-buffer, EDL, SSAO, and
    MSAA pass-contract construction into named builders.
 2. Have builders emit both graph passes and expected runtime policy from the same data.
-3. Centralize role labels, resource-id construction, and alpha-mode class predicates.
+3. Partly done: centralize role labels and alpha-mode class predicates. Resource-id construction and
+   suffix interpretation still need one shared helper path.
 4. Delete dead or confusing source-over depth-write branches once tests prove they are unreachable.
 
 ### Phase 4: broaden visual correctness tests
