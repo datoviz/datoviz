@@ -570,6 +570,9 @@ Controllers must be first-class scene objects with stable handles for this model
 `interaction/CONTROLLERS.md` already implies this; the axis binding model depends on it being made explicit
 there.
 
+The accepted controller handle and panel-binding model is recorded in
+`../decisions/CONTROLLER_BINDING_MODEL.md`.
+
 
 ## Rules (Updated)
 

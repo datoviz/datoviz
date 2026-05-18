@@ -23,6 +23,11 @@ Controller public APIs must also follow the scene API WASM portability contract 
 scene-owned handles with typed state accessors, not as public structs, public unions, or
 layout-dependent casts between controller families.
 
+The accepted controller ownership and panel-binding model is recorded in
+[`../decisions/CONTROLLER_BINDING_MODEL.md`](../decisions/CONTROLLER_BINDING_MODEL.md). This
+document defines broader controller behavior; that decision record fixes the public handle,
+ownership, linking, and dimension-binding rules for the v0.4 refactor.
+
 
 ## Position
 
