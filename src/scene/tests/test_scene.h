@@ -661,6 +661,8 @@ int test_app_offscreen_volume_occlusion_perspective_camera(TstSuite* suite, TstI
 
 int test_app_offscreen_volume_slice_scene_occlusion_dimming(TstSuite* suite, TstItem* item);
 
+int test_app_offscreen_volume_slice_mesh_scene_occlusion_toggle(TstSuite* suite, TstItem* item);
+
 int test_app_offscreen_volume_depth_occluded_by_primitive(TstSuite* suite, TstItem* item);
 
 int test_app_capture_rejects_wrong_dimensions(TstSuite* suite, TstItem* item);

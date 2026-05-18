@@ -1153,6 +1153,53 @@ static void _contract_mark_drp2_sampled_reads(
 }
 
 
+/**
+ * Record graph sampled reads inferred from a persistent bind-group label.
+ *
+ * @param stream the DRP2 command stream
+ * @param graph_pass active graph pass
+ * @param bind_group_label emitted bind-group label containing dependency ids
+ * @param state active render-pass checker state
+ */
+static void _contract_mark_drp2_sampled_reads_from_label(
+    const DvzDrp2CommandStream* stream, const DvzFrameGraphPass* graph_pass,
+    const char* bind_group_label, ContractDrp2PassState* state)
+{
+    ANN(stream);
+    ANN(graph_pass);
+    ANN(state);
+    if (bind_group_label == NULL)
+        return;
+
+    const char* p = bind_group_label;
+    while (*p != '\0')
+    {
+        while (*p != '\0' && (*p < '0' || *p > '9'))
+            p++;
+        if (*p == '\0')
+            break;
+
+        char* end = NULL;
+        unsigned long long parsed = strtoull(p, &end, 10);
+        if (end == p)
+        {
+            p++;
+            continue;
+        }
+
+        const char* label = dvz_drp2_stream_label(stream, (uint64_t)parsed);
+        for (uint32_t j = 0; j < graph_pass->read_count; j++)
+        {
+            if (graph_pass->reads[j].usage != DVZ_FRAME_GRAPH_ACCESS_SAMPLED)
+                continue;
+            if (_contract_resource_label_matches(label, graph_pass->reads[j].resource_id))
+                state->sampled_reads_matched[j] = true;
+        }
+        p = end;
+    }
+}
+
+
 
 /**
  * Validate that observed sampled bind groups cover the active graph pass sampled reads.
@@ -1815,8 +1862,16 @@ bool _scene_frame_plan_drp2_contracts_validate(
                 const DvzDrp2Command* bind_group =
                     _contract_drp2_bind_group_for_id(stream, bind_group_id);
                 if (bind_group != NULL)
+                {
                     _contract_mark_drp2_sampled_reads(
                         stream, active_graph_pass, bind_group, &active_pass_state);
+                }
+                else
+                {
+                    const char* label = dvz_drp2_stream_label(stream, bind_group_id);
+                    _contract_mark_drp2_sampled_reads_from_label(
+                        stream, active_graph_pass, label, &active_pass_state);
+                }
             }
             break;
         case DVZ_DRP2_COMMAND_DRAW:

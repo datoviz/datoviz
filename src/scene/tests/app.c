@@ -24,6 +24,7 @@
 
 #include "_alloc.h"
 #include "_assertions.h"
+#include "_log.h"
 #include "../_scene.h"
 #include "../_technique.h"
 #include "datoviz/app.h"
@@ -102,6 +103,14 @@ typedef struct
 } AppRgbaCapture;
 
 
+typedef struct
+{
+    uint32_t error_count;
+    bool sampled_bind_group_miss;
+    bool contract_validation_failed;
+} AppLogCapture;
+
+
 typedef enum
 {
     APP_VOLUME_OCCLUSION_MODE_DISABLED,
@@ -144,6 +153,39 @@ static void _app_request_frame_probe_callback(DvzAppWindow* win, void* user_data
     ANN(probe);
     probe->calls++;
     probe->last_window = win;
+}
+
+
+/**
+ * Capture app draw errors during retained offscreen regression tests.
+ *
+ * @param user_data log capture storage
+ * @param level log level
+ * @param file source file that emitted the log
+ * @param line source line that emitted the log
+ * @param message formatted log message
+ * @return nonzero to suppress the intercepted log line
+ */
+static int _app_log_capture_intercept(
+    void* user_data, int level, const char* file, int line, const char* message)
+{
+    (void)file;
+    (void)line;
+    AppLogCapture* capture = (AppLogCapture*)user_data;
+    if (capture == NULL || message == NULL)
+        return 0;
+
+    if (level >= LOG_ERROR)
+    {
+        capture->error_count++;
+        capture->sampled_bind_group_miss =
+            capture->sampled_bind_group_miss ||
+            strstr(message, "DRP2 sampled bind group misses graph read resource") != NULL;
+        capture->contract_validation_failed =
+            capture->contract_validation_failed ||
+            strstr(message, "emitted runtime DRP2 stream failed scene contract validation") != NULL;
+    }
+    return 0;
 }
 
 
@@ -4590,6 +4632,171 @@ int test_app_offscreen_volume_slice_scene_occlusion_dimming(TstSuite* suite, Tst
 
 
 /**
+ * Ensure toggling a hidden mesh into a scene occluder keeps retained volume bindings valid.
+ *
+ * @param suite the test suite
+ * @param item the test item
+ * @return 0 on success
+ */
+int test_app_offscreen_volume_slice_mesh_scene_occlusion_toggle(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    if (!_scene_vklite_runtime_available())
+        return 0;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    ANN(panel);
+
+    DvzSampledField* field = dvz_sampled_field(
+        scene, &(DvzSampledFieldDesc){
+                   .dim = DVZ_FIELD_DIM_3D,
+                   .format = DVZ_FIELD_FORMAT_R8_UNORM,
+                   .semantic = DVZ_FIELD_SEMANTIC_SCALAR,
+                   .width = 2,
+                   .height = 2,
+                   .depth = 4,
+               });
+    ANN(field);
+    const uint8_t voxels[16] = {
+        255, 255, 255, 255,
+        255, 255, 255, 255,
+        255, 255, 255, 255,
+        255, 255, 255, 255,
+    };
+    AT(dvz_sampled_field_set_data(
+        field, &(DvzFieldDataView){.data = voxels, .bytes_per_row = 2, .rows_per_image = 2}));
+
+    DvzVisual* volume = dvz_volume(scene, 0);
+    DvzVisual* slice = dvz_volume(scene, 0);
+    DvzVisual* mesh = dvz_mesh(scene, 0);
+    ANN(volume);
+    ANN(slice);
+    ANN(mesh);
+
+    float positions[4][3] = {
+        {-0.5f, -0.5f, 0.1f},
+        {+0.5f, -0.5f, 0.1f},
+        {-0.5f, +0.5f, 0.1f},
+        {+0.5f, +0.5f, 0.1f},
+    };
+    float normals[4][3] = {
+        {0.0f, 0.0f, 1.0f},
+        {0.0f, 0.0f, 1.0f},
+        {0.0f, 0.0f, 1.0f},
+        {0.0f, 0.0f, 1.0f},
+    };
+    DvzColor colors[4] = {
+        {255, 64, 64, 255},
+        {255, 64, 64, 255},
+        {255, 64, 64, 255},
+        {255, 64, 64, 255},
+    };
+    DvzIndex indices[6] = {0, 1, 2, 2, 1, 3};
+    DvzSceneBuffer* index_buffer = dvz_scene_buffer(
+        scene, &(DvzSceneBufferDesc){
+                   .usage = DVZ_SCENE_BUFFER_USAGE_INDEX,
+                   .stride = sizeof(DvzIndex),
+               });
+    ANN(index_buffer);
+    AT(dvz_scene_buffer_set_data(index_buffer, indices, sizeof(indices)));
+
+    AT(dvz_visual_set_field(volume, "field", field));
+    AT(dvz_visual_set_field(slice, "field", field));
+    AT(dvz_volume_set_render_mode(volume, DVZ_VOLUME_RENDER_COMPOSITE) == 0);
+    AT(dvz_volume_set_step_count(volume, 16) == 0);
+    AT(dvz_volume_set_opacity(volume, 0.15f) == 0);
+    AT(dvz_visual_set_alpha_mode(volume, DVZ_ALPHA_BLENDED) == 0);
+    AT(dvz_volume_set_render_mode(slice, DVZ_VOLUME_RENDER_SLICE) == 0);
+    AT(dvz_volume_set_slice_axis(slice, DVZ_VOLUME_AXIS_Z) == 0);
+    AT(dvz_volume_set_slice_position(slice, 0.90) == 0);
+    AT(dvz_volume_set_opacity(slice, 0.55f) == 0);
+    AT(dvz_visual_set_alpha_mode(slice, DVZ_ALPHA_BLENDED) == 0);
+    AT(dvz_visual_set_volume_occluded(slice, true) == 0);
+    AT(dvz_visual_set_scene_occluded(slice, false) == 0);
+    AT(dvz_visual_set_data(mesh, "position", positions, 4) == 0);
+    AT(dvz_visual_set_data(mesh, "normal", normals, 4) == 0);
+    AT(dvz_visual_set_data(mesh, "color", colors, 4) == 0);
+    AT(dvz_visual_set_buffer(mesh, "index", index_buffer));
+    AT(dvz_visual_set_depth_test(mesh, true) == 0);
+    AT(dvz_visual_set_scene_occluder(mesh, false) == 0);
+    dvz_visual_set_visible(mesh, false);
+
+    AT(dvz_panel_add_visual(
+           panel, volume, &(DvzVisualAttachDesc){.z_layer = 0}) == 0);
+    AT(dvz_panel_add_visual(
+           panel, slice, &(DvzVisualAttachDesc){.z_layer = 1}) == 0);
+    AT(dvz_panel_add_visual(
+           panel, mesh, &(DvzVisualAttachDesc){.z_layer = 2}) == 0);
+    AT(dvz_panel_set_volume_occluder(
+           panel, volume,
+           &(DvzVolumeOcclusionDesc){
+               .enabled = true,
+               .alpha_threshold = 0.005f,
+               .fade_distance = 0.02f,
+               .occluded_alpha = 0.05f,
+           }) == 0);
+    dvz_panel_set_background_color(panel, 0.0f, 0.0f, 0.0f, 1.0f);
+
+    DvzApp* app = dvz_app(scene);
+    if (app == NULL)
+    {
+        log_warn(
+            "test_app_offscreen_volume_slice_mesh_scene_occlusion_toggle skipped: GPU context "
+            "failed");
+        dvz_scene_destroy(scene);
+        return 0;
+    }
+    DvzAppWindow* win = dvz_app_window(app, figure, 64, 64);
+    if (win == NULL)
+    {
+        log_warn(
+            "test_app_offscreen_volume_slice_mesh_scene_occlusion_toggle skipped: app window "
+            "failed");
+        dvz_app_destroy(app);
+        dvz_scene_destroy(scene);
+        return 0;
+    }
+
+    AppLogCapture first = {0};
+    log_set_intercept(_app_log_capture_intercept, &first);
+    int rc = dvz_app_window_render_once(win);
+    log_set_intercept(NULL, NULL);
+    AT(rc == DVZ_CANVAS_FRAME_READY);
+    AT(first.error_count == 0);
+
+    dvz_visual_set_visible(mesh, true);
+    AT(dvz_visual_set_scene_occluder(mesh, true) == 0);
+    AT(dvz_visual_set_scene_occluded(slice, true) == 0);
+    AT(dvz_panel_set_scene_occlusion(
+           panel, &(DvzSceneOcclusionDesc){
+                      .enabled = true,
+                      .depth_bias = 0.0005f,
+                      .soft_edge = 0.02f,
+                      .hidden_alpha = 0.05f,
+                  }) == 0);
+
+    AppLogCapture second = {0};
+    log_set_intercept(_app_log_capture_intercept, &second);
+    rc = dvz_app_window_render_once(win);
+    log_set_intercept(NULL, NULL);
+    AT(rc == DVZ_CANVAS_FRAME_READY);
+    AT(!second.sampled_bind_group_miss);
+    AT(!second.contract_validation_failed);
+    AT(second.error_count == 0);
+
+    dvz_app_destroy(app);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+/**
  * Ensure alpha-blended volume rays stop behind an opaque primitive depth buffer.
  *
  * @param suite the test suite
@@ -4754,6 +4961,7 @@ int test_scene_app(TstSuite* suite)
     TEST_SIMPLE(test_app_offscreen_volume_occlusion_region_delta);
     TEST_SIMPLE(test_app_offscreen_volume_occlusion_perspective_camera);
     TEST_SIMPLE(test_app_offscreen_volume_slice_scene_occlusion_dimming);
+    TEST_SIMPLE(test_app_offscreen_volume_slice_mesh_scene_occlusion_toggle);
     TEST_SIMPLE(test_app_offscreen_volume_depth_occluded_by_primitive);
     TEST_SIMPLE(test_app_capture_rejects_wrong_dimensions);
     TEST_SIMPLE(test_app_capture_rejects_undersized_buffer);
