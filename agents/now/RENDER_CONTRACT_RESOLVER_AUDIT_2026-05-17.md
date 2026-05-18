@@ -751,6 +751,25 @@ Validation:
 4. `./build/testing/dvztest_scene test_scene_path_line_width_emit_glsl`
 
 
+### 2026-05-18: Phase 1 / Fullscreen technique pipeline contracts
+
+Completed the fullscreen technique pipeline checker slice.
+
+Changes:
+
+1. Added pass-role fullscreen pipeline validation for graph-backed zero-visual DRP2 draws.
+2. The DRP2 contract checker now validates fullscreen-triangle draw shape, no vertex inputs, one
+   sampled bind-group layout, render-pass target format/count, sample count, depth-state absence,
+   and pass-role blend policy for SSAO, EDL, WBOIT resolve, and depth-peel composite pipelines.
+3. Extended `test_scene_drp2_contract_checker_rejects_pipeline_drift` to mutate the WBOIT resolve
+   fullscreen pipeline blend equation, layout count, and vertex-input state.
+
+Validation:
+
+1. `cmake --build build --target dvztest_scene -j2`
+2. `./build/testing/dvztest_scene test_scene_drp2_contract_checker_rejects_pipeline_drift`
+
+
 ## Executive Assessment
 
 The direction is correct and worth continuing. The proposal identifies the right failure mode:
@@ -940,22 +959,23 @@ Status:
 
 ### Medium: blend and pipeline policy are only partly contract-owned
 
-The first explicit blend-target, raster-state, and segment-coverage slices are complete: draw
-contracts now include exact per-target source-over, segment coverage, WBOIT, depth-peel, and opaque
-blend expectations plus contracted volume/depth-peel raster state. DRP2 contract validation rejects
-emitted pipeline drift in target format, blend enable, blend factors/ops, write masks, cull mode,
-and front face.
+The first explicit blend-target, raster-state, segment-coverage, and fullscreen checker slices are
+complete: draw contracts now include exact per-target source-over, segment coverage, WBOIT,
+depth-peel, and opaque blend expectations plus contracted volume/depth-peel raster state. DRP2
+contract validation rejects emitted pipeline drift in target format, blend enable, blend
+factors/ops, write masks, cull mode, front face, sample count, visual bind-group layouts, and the
+fullscreen pipeline shape used by SSAO, EDL, WBOIT resolve, and depth-peel composite passes.
 
 Remaining runtime-owned policy:
 
 1. Occlusion and G-buffer passes set target formats in runtime even though the DRP2 validator checks
    them against graph pass attachment formats.
-2. Fullscreen resolve pipelines still have technique-specific blend/sample/layout details that are
-   not modelled as standalone pass/pipeline contracts because they have no visual draw metadata.
+2. Fullscreen resolve pipelines are now DRP2-checked by pass role, but they are still represented as
+   validator-owned role tables rather than standalone serialized pass/pipeline contract objects.
 
-Impact: ordinary visual draw blend and raster state are now contract-checked, but future runtime
-changes can still alter non-draw fullscreen pipeline state without changing an explicit contract
-object.
+Impact: ordinary visual draw blend/raster state and fullscreen technique pipeline shape are now
+contract-checked, but future runtime changes can still alter some non-draw pass policy without
+changing an explicit contract object.
 
 Completed recommendation: add an explicit per-target blend contract:
 
@@ -975,9 +995,8 @@ typedef struct DvzSceneBlendTargetContract
 } DvzSceneBlendTargetContract;
 ```
 
-Remaining recommendation: extend the same explicit-contract pattern to fullscreen technique
-pipelines, then compare those emitted DRP2 `CreateRenderPipeline` and pipeline-mutator commands
-against contract-owned expectations.
+Remaining recommendation: promote the fullscreen role table into explicit pass/pipeline contract
+fields if these passes need to be serialized, exported, or shared with another backend.
 
 
 ### Medium: occlusion resources are suffix heuristics, not exact draw contracts
@@ -1114,8 +1133,8 @@ in this pass, using this attachment/resource/pipeline state" belongs in the reso
 1. Done: add a resolver-matrix helper that maps visual facts plus pass role into an explicit draw
    contract.
 2. Partly done: extend draw contracts with depth policy, blend policy, blend target formats/equations,
-   raster state, shader features, and bind-group layout requirements. Sample-count, fullscreen
-   pipeline, and remaining pipeline-feature contracts are still open.
+   raster state, shader features, and bind-group layout requirements. Sample-count and fullscreen
+   pipelines are DRP2-checked; remaining pipeline-feature contracts are still open.
 3. Done: attach contract ids or resolved contract snapshots to FramePlan render nodes.
 4. Partly done: remove fallback decisions in `scene_emit.c` that recompute caps after contract
    resolution for transparent depth and source-over grouping.

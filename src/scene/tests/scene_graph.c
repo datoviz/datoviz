@@ -10191,6 +10191,24 @@ int test_scene_drp2_contract_checker_rejects_pipeline_drift(TstSuite* suite, Tst
 
     const DvzDrp2Command original_pipeline_command = *wboit_pipeline;
 
+    DvzDrp2Command* resolve_pipeline = NULL;
+    for (uint32_t i = 0; i < stream->count; i++)
+    {
+        DvzDrp2Command* command = &stream->commands[i];
+        if (command->type == DVZ_DRP2_COMMAND_CREATE_RENDER_PIPELINE &&
+            command->u.create_render_pipeline.color_target_count == 1 &&
+            command->u.create_render_pipeline.vertex_buffer_slots == 0 &&
+            command->u.create_render_pipeline.bind_group_layout_count == 1 &&
+            command->u.create_render_pipeline.color_targets[0].blend_enabled)
+        {
+            resolve_pipeline = command;
+            break;
+        }
+    }
+    ANN(resolve_pipeline);
+
+    const DvzDrp2Command original_resolve_pipeline_command = *resolve_pipeline;
+
     wboit_pipeline->u.create_render_pipeline.color_targets[0].blend_enabled = false;
     dvz_diagnostic_report_init(&report);
     AT(!_scene_frame_plan_drp2_contracts_validate(plan, stream, &report));
@@ -10224,6 +10242,29 @@ int test_scene_drp2_contract_checker_rejects_pipeline_drift(TstSuite* suite, Tst
     AT(dvz_diagnostic_report_count(&report) > 0);
 
     wboit_pipeline->u.create_render_pipeline = original_pipeline_command.u.create_render_pipeline;
+
+    resolve_pipeline->u.create_render_pipeline.color_targets[0].dst_color_blend_factor =
+        VK_BLEND_FACTOR_ZERO;
+    dvz_diagnostic_report_init(&report);
+    AT(!_scene_frame_plan_drp2_contracts_validate(plan, stream, &report));
+    AT(dvz_diagnostic_report_count(&report) > 0);
+
+    resolve_pipeline->u.create_render_pipeline =
+        original_resolve_pipeline_command.u.create_render_pipeline;
+    resolve_pipeline->u.create_render_pipeline.bind_group_layout_count = 0;
+    dvz_diagnostic_report_init(&report);
+    AT(!_scene_frame_plan_drp2_contracts_validate(plan, stream, &report));
+    AT(dvz_diagnostic_report_count(&report) > 0);
+
+    resolve_pipeline->u.create_render_pipeline =
+        original_resolve_pipeline_command.u.create_render_pipeline;
+    resolve_pipeline->u.create_render_pipeline.vertex_buffer_slots = 1;
+    dvz_diagnostic_report_init(&report);
+    AT(!_scene_frame_plan_drp2_contracts_validate(plan, stream, &report));
+    AT(dvz_diagnostic_report_count(&report) > 0);
+
+    resolve_pipeline->u.create_render_pipeline =
+        original_resolve_pipeline_command.u.create_render_pipeline;
 
     DvzDrp2Command* resolve_bind_group = NULL;
     for (uint32_t i = 0; i < stream->count; i++)

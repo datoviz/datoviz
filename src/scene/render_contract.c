@@ -1403,6 +1403,109 @@ static bool _contract_validate_drp2_pipeline_color_targets(
 
 
 /**
+ * Resolve the pipeline blend policy for a graph-backed fullscreen technique pass.
+ *
+ * @param role the active render-pass role
+ * @param out_policy output blend policy
+ * @return whether the pass role owns a fullscreen pipeline contract
+ */
+static bool _contract_fullscreen_pipeline_blend_policy(
+    DvzFramePlanRenderPassRole role, DvzSceneBlendPolicy* out_policy)
+{
+    ANN(out_policy);
+    *out_policy = DVZ_SCENE_BLEND_POLICY_NONE;
+
+    switch (role)
+    {
+    case DVZ_FRAME_PLAN_RENDER_PASS_SSAO:
+    case DVZ_FRAME_PLAN_RENDER_PASS_SSAO_BLUR:
+    case DVZ_FRAME_PLAN_RENDER_PASS_EDL_RESOLVE:
+        *out_policy = DVZ_SCENE_BLEND_POLICY_OPAQUE;
+        return true;
+    case DVZ_FRAME_PLAN_RENDER_PASS_SSAO_COMPOSITE:
+    case DVZ_FRAME_PLAN_RENDER_PASS_WBOIT_RESOLVE:
+    case DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_COMPOSITE:
+        *out_policy = DVZ_SCENE_BLEND_POLICY_SOURCE_OVER;
+        return true;
+    default:
+        return false;
+    }
+}
+
+
+
+/**
+ * Validate one graph-backed fullscreen pipeline draw against its pass-role contract.
+ *
+ * @param command the Draw command using the fullscreen pipeline
+ * @param pipeline the active CreateRenderPipeline command, or NULL for a persistent pipeline
+ * @param role the active render-pass role
+ * @param pass_state resolved DRP2 render-pass state
+ * @param report optional diagnostic report
+ * @return whether the fullscreen draw and pipeline match the pass contract
+ */
+static bool _contract_validate_drp2_fullscreen_pipeline(
+    const DvzDrp2Command* command, const DvzDrp2Command* pipeline,
+    DvzFramePlanRenderPassRole role, const ContractDrp2PassState* pass_state,
+    DvzDiagnosticReport* report)
+{
+    ANN(command);
+    ANN(pass_state);
+    DvzSceneBlendPolicy blend_policy = DVZ_SCENE_BLEND_POLICY_NONE;
+    if (!_contract_fullscreen_pipeline_blend_policy(role, &blend_policy))
+        return true;
+
+    if (pipeline == NULL)
+        return true;
+
+    bool ok = true;
+    if (command->type != DVZ_DRP2_COMMAND_DRAW || command->u.draw.vertex_count != 3 ||
+        command->u.draw.instance_count != 1 || command->u.draw.first_vertex != 0 ||
+        command->u.draw.first_instance != 0)
+    {
+        _contract_report(report, "DRP2 fullscreen pass must draw one fullscreen triangle");
+        ok = false;
+    }
+    if (pipeline->u.create_render_pipeline.vertex_buffer_slots != 0 ||
+        pipeline->u.create_render_pipeline.binding_count != 0 ||
+        pipeline->u.create_render_pipeline.attr_count != 0)
+    {
+        _contract_report(report, "DRP2 fullscreen pipeline must not use vertex buffers");
+        ok = false;
+    }
+    if (pipeline->u.create_render_pipeline.bind_group_layout_count != 1)
+    {
+        _contract_report(report, "DRP2 fullscreen pipeline must use one bind-group layout");
+        ok = false;
+    }
+    if (pipeline->u.create_render_pipeline.has_depth_attachment ||
+        pipeline->u.create_render_pipeline.depth_write_enabled)
+    {
+        _contract_report(report, "DRP2 fullscreen pipeline must not use depth state");
+        ok = false;
+    }
+    if (pipeline->u.create_render_pipeline.topology != 0 &&
+        pipeline->u.create_render_pipeline.topology != VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST)
+    {
+        _contract_report(report, "DRP2 fullscreen pipeline topology mismatches contract");
+        ok = false;
+    }
+
+    ok = _contract_validate_drp2_pipeline_color_targets(pipeline, pass_state, report) && ok;
+    if (pass_state->has_sample_count &&
+        _contract_effective_sample_count(pipeline->u.create_render_pipeline.sample_count) !=
+            pass_state->sample_count)
+    {
+        _contract_report(report, "DRP2 fullscreen pipeline sample count mismatches render pass");
+        ok = false;
+    }
+    ok = _contract_validate_drp2_blend_targets(pipeline, blend_policy, report) && ok;
+    return ok;
+}
+
+
+
+/**
  * Record graph sampled reads satisfied by one emitted bind group.
  *
  * @param stream the DRP2 command stream
@@ -2125,7 +2228,13 @@ bool _scene_frame_plan_drp2_contracts_validate(
             if (active_render == NULL)
                 break;
             if (active_render->u.render.visual_count == 0)
+            {
+                if (!_contract_validate_drp2_fullscreen_pipeline(
+                        command, active_pipeline, active_render->u.render.pass_role,
+                        &active_pass_state, report))
+                    ok = false;
                 break;
+            }
             if (active_draw_index >= active_render->u.render.visual_count)
             {
                 _contract_report(report, "DRP2 render pass has more draws than its contract");
