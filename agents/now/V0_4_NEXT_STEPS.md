@@ -14,6 +14,9 @@ For the current C test-runner audit and staged modernization plan toward explici
 resource metadata, and safe future parallelism, see
 [`TEST_RUNNER_MODERNIZATION.md`](TEST_RUNNER_MODERNIZATION.md).
 
+For the proposed retained grid/subplot layout layer, resize behavior, and dashboard boundary, see
+[`SCENE_GRID_LAYOUT_SPEC.md`](../soon/SCENE_GRID_LAYOUT_SPEC.md).
+
 
 ## Current Position
 
