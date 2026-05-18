@@ -263,7 +263,10 @@ static int test_gui_viewport_resize_hidden_smoke(TstContext* suite, const TstCas
     (void)item;
 
     if (!_gui_smoke_available())
+    {
+        tst_skip(suite, "GUI/GLFW support unavailable");
         return 0;
+    }
 
     DvzScene* scene = dvz_scene();
     AT(scene != NULL);
@@ -276,6 +279,7 @@ static int test_gui_viewport_resize_hidden_smoke(TstContext* suite, const TstCas
     if (app == NULL)
     {
         log_warn("test_gui_viewport_resize_hidden_smoke skipped: GPU context creation failed");
+        tst_skip(suite, "GPU context creation failed");
         dvz_scene_destroy(scene);
         return 0;
     }
@@ -286,6 +290,7 @@ static int test_gui_viewport_resize_hidden_smoke(TstContext* suite, const TstCas
     if (source_win == NULL || host_win == NULL)
     {
         log_warn("test_gui_viewport_resize_hidden_smoke skipped: app-window creation failed");
+        tst_skip(suite, "app-window creation failed");
         dvz_app_destroy(app);
         dvz_scene_destroy(scene);
         return 0;
@@ -295,6 +300,7 @@ static int test_gui_viewport_resize_hidden_smoke(TstContext* suite, const TstCas
     if (gui == NULL)
     {
         log_warn("test_gui_viewport_resize_hidden_smoke skipped: GUI creation failed");
+        tst_skip(suite, "GUI creation failed");
         dvz_app_destroy(app);
         dvz_scene_destroy(scene);
         return 0;
@@ -343,7 +349,10 @@ static int test_gui_multi_viewport_input_routers(TstContext* suite, const TstCas
     (void)item;
 
     if (!_gui_smoke_available())
+    {
+        tst_skip(suite, "GUI/GLFW support unavailable");
         return 0;
+    }
 
     DvzScene* scene = dvz_scene();
     AT(scene != NULL);
@@ -358,6 +367,7 @@ static int test_gui_multi_viewport_input_routers(TstContext* suite, const TstCas
     if (app == NULL)
     {
         log_warn("test_gui_multi_viewport_input_routers skipped: GPU context creation failed");
+        tst_skip(suite, "GPU context creation failed");
         dvz_scene_destroy(scene);
         return 0;
     }
@@ -367,6 +377,7 @@ static int test_gui_multi_viewport_input_routers(TstContext* suite, const TstCas
     if (host_win == NULL)
     {
         log_warn("test_gui_multi_viewport_input_routers skipped: GLFW window creation failed");
+        tst_skip(suite, "app-window creation failed");
         dvz_app_destroy(app);
         dvz_scene_destroy(scene);
         return 0;
@@ -376,6 +387,7 @@ static int test_gui_multi_viewport_input_routers(TstContext* suite, const TstCas
     if (gui == NULL)
     {
         log_warn("test_gui_multi_viewport_input_routers skipped: GUI creation failed");
+        tst_skip(suite, "GUI creation failed");
         dvz_app_destroy(app);
         dvz_scene_destroy(scene);
         return 0;
