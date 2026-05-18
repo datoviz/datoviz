@@ -19,6 +19,10 @@ layout, and update crosshairs from shared state before adding full raymarch cont
 the existing bounded smoke/manual checklist path, covering startup, linked slice changes, crosshair
 updates, basic picking or dragging, and nonblank volume/slice rendering.
 
+For broader v0.5+ dashboard architecture ideas that may eventually simplify this example's linked
+panels, shared interaction state, cursor overlays, telemetry, and retained texture/resource update
+paths, see `spec/scene/dashboards/DASHBOARD_RENDERING_ROADMAP.md`.
+
 
 ## Goal
 

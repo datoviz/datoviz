@@ -29,6 +29,10 @@ image visual, panzoom/camera controllers, retained sampled fields, texture-array
 management, and item picking. Validate through the smoke/manual checklist path by checking startup,
 LOD changes under zoom, nonblank rendering, culling behavior, and stable item picking.
 
+For broader v0.5+ dashboard architecture ideas that may eventually simplify this example's LOD,
+linked interaction, telemetry, and retained-resource update paths, see
+`spec/scene/dashboards/DASHBOARD_RENDERING_ROADMAP.md`.
+
 
 ## Example Name
 

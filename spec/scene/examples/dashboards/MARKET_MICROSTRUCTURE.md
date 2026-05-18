@@ -25,6 +25,10 @@ expected to be conceptually close to Datoviz v0.3 and to GSP-style scene abstrac
 practical slice should load or generate one bounded session, draw the three core panels with shared
 horizontal navigation, and add a simple hover or crosshair before replay and advanced LOD.
 
+For broader v0.5+ dashboard architecture ideas that may eventually simplify linked panels,
+streaming traces, cursor overlays, telemetry, and high-density LOD paths, see
+`spec/scene/dashboards/DASHBOARD_RENDERING_ROADMAP.md`.
+
 Suggested example name:
 
 ```text
