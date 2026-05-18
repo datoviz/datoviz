@@ -10,9 +10,10 @@
 
 ## Summary
 
-This example demonstrates an interactive image embedding explorer for Datoviz v0.4. A set of
-images is embedded into a high-dimensional feature space, reduced to 2-D or 3-D coordinates, and
-shown as image sprites at their projected positions.
+This example demonstrates an interactive image embedding explorer for Datoviz v0.4. A sampled
+subset of the PD12M image-caption dataset is loaded with its high-dimensional CLIP image
+embeddings, reduced to 2-D or 3-D coordinates during preprocessing, and shown as image sprites at
+their projected positions.
 
 The core rendering feature is level of detail (LOD): when the view is zoomed out, each image is
 shown as a rectangle filled with its mean color; as the user zooms in, the same item progressively
@@ -20,9 +21,9 @@ uses precomputed 2x2, 4x4, 8x8, 16x16, 32x32, and optionally 64x64 thumbnails. T
 only choose and draw the appropriate LOD. Expensive embedding, resizing, color conversion, packing,
 and optional PCA reconstruction belong in preprocessing.
 
-The first implementation target is at most 10,000 images. That size is large enough to pressure-test
-scene image batching, texture arrays, interaction, culling, picking, and LOD selection without
-requiring an out-of-core streaming system on day one.
+The first implementation target is at most 10,000 images sampled from PD12M. That size is large
+enough to pressure-test scene image batching, texture arrays, interaction, culling, picking, and LOD
+selection without requiring an out-of-core streaming system on day one.
 
 This is an informative worked example, not a normative API proposal. It pressure-tests the scene
 image visual, panzoom/camera controllers, retained sampled fields, texture-array or atlas resource
@@ -61,19 +62,51 @@ Image Embedding LOD Explorer
 ```
 
 
+## Dataset
+
+The default real-world dataset is
+[Spawning/PD12M](https://huggingface.co/datasets/Spawning/PD12M), a 12.4M image-caption dataset of
+public-domain and CC0-licensed images for generative image-model training. PD12M includes captions,
+image URLs, filtering metadata, and provided CLIP ViT-L/14 embeddings. The example should use only
+PD12M as its public dataset source so the data story stays current, visually rich, and easy to
+explain.
+
+The preprocessing script should build a deterministic <=10,000-item cache from PD12M. The cache owns
+the downloaded/resized image thumbnails, metadata rows, original N-dimensional embeddings when
+enabled, and Datoviz-generated 2-D/3-D reduced coordinates. Runtime positions are not geographic,
+source-native, or caption-native coordinates; they are dimensionality-reduction results computed
+from the image embeddings.
+
+The public-source cache must record enough provenance to rebuild or audit the sample:
+
+```text
+dataset_id      Spawning/PD12M
+dataset_revision optional Hugging Face revision or commit
+sample_seed     integer
+source_row_id   original PD12M row id or shard/local row pair
+source_url      image URL used for download
+license         public domain or CC0 metadata from PD12M
+caption         PD12M caption
+embedding_model CLIP ViT-L/14 for the default PD12M vectors
+```
+
+A tiny offline fixture may be generated synthetically for CI and smoke tests, but it should be
+labeled as a fixture. It is not a second public dataset choice.
+
+
 ## User-Facing Behavior
 
 The application opens a Datoviz window with one main embedding panel.
 
 By default:
 
-1. up to 10,000 images are displayed in a 2-D embedding;
+1. up to 10,000 PD12M images are displayed in a 2-D embedding;
 2. images use data-space anchors and screen-space sprite sizes;
 3. panzoom controls move through the embedding;
 4. coarse zoom levels show colored rectangles derived from image mean color;
 5. intermediate zoom levels show progressively finer thumbnails;
 6. high zoom levels show recognizable 32x32 or 64x64 thumbnails;
-7. hovering or clicking an item reports the image id and metadata;
+7. hovering or clicking an item reports the image id, caption, and source metadata;
 8. the runtime does not resize images, recompute embeddings, or repack texture data.
 
 An optional 3-D variant may use an arcball/camera controller and billboard sprites, but the first
@@ -129,14 +162,14 @@ extractors.
 
 The preprocessing script should:
 
-1. load a directory or manifest of source images;
+1. load a deterministic PD12M sample manifest;
 2. decode images and apply EXIF orientation when available;
 3. convert to a consistent RGBA8 color space;
 4. preserve aspect ratio by fitting into a square thumbnail with transparent or edge-color padding;
 5. compute per-image mean color from valid pixels;
 6. generate all requested LOD thumbnails using high-quality area or Lanczos resampling;
-7. compute or load high-dimensional feature vectors;
-8. reduce features to 2-D or 3-D coordinates;
+7. load PD12M-provided CLIP ViT-L/14 high-dimensional image embeddings;
+8. reduce embeddings to 2-D or 3-D coordinates;
 9. normalize coordinates to a stable scene-space extent;
 10. pack thumbnails into texture-array pages or atlas pages;
 11. write a compact manifest and binary payloads;
@@ -146,33 +179,35 @@ The preprocessing script should:
 
 ## Embedding Policy
 
-The example should support two preprocessing modes.
+The example should support two preprocessing modes. Both modes are PD12M-only; they differ only in
+whether the bundle uses the provided vectors or recomputes features for development experiments.
 
-### Features Provided
+### PD12M Features Provided
 
-If a feature array is provided, preprocessing uses it directly:
+The default mode uses the PD12M-provided CLIP ViT-L/14 embedding array directly:
 
 ```text
-features float32[n_images, feature_dim]
+embeddings float32[n_images, embedding_dim]
 ```
 
-The script may then run PCA, UMAP, t-SNE, or a caller-selected reducer. PCA should be the default
-because it is deterministic, cheap, and does not add heavy dependencies unless already available.
+The script may then run PCA, UMAP, t-SNE, or a caller-selected reducer. PCA should be the deterministic
+fallback because it is cheap and does not add heavy dependencies unless already available. UMAP is
+the preferred gallery projection when the preprocessing environment includes the dependency and the
+random seed is recorded.
 
-### Images Only
+### Recomputed PD12M Image Features
 
-If only images are provided, the first implementation may use simple deterministic features:
+If the provided PD12M embeddings are unavailable in a local cache, the first development-only path
+may recompute simple deterministic image features from the sampled PD12M images:
 
 1. downsample each image to 16x16 or 32x32 RGB;
 2. flatten to a float32 vector;
 3. standardize features;
 4. run PCA to 2-D or 3-D.
 
-This mode is not meant to be state-of-the-art semantic embedding. Its purpose is to make the example
-run from a local image folder without a model download.
-
-Future variants may accept CLIP, DINO, ResNet, or externally generated embeddings, but those model
-dependencies should stay outside the default runtime path.
+This mode is not meant to be state-of-the-art semantic embedding. Its purpose is to keep fixture and
+development bundles reproducible when the full PD12M embedding payload is not present. Model
+downloads and heavyweight image-feature extraction should stay outside the C runtime path.
 
 
 ## Runtime Bundle Format
@@ -203,6 +238,20 @@ The manifest owns shape, type, and page metadata:
   "embedding_dim": 2,
   "position_dtype": "float32",
   "position_shape": [10000, 3],
+  "embedding": {
+    "source": "Spawning/PD12M",
+    "model": "CLIP ViT-L/14",
+    "stored": true,
+    "dtype": "float32",
+    "shape": [10000, 768],
+    "file": "embeddings.f32"
+  },
+  "reduction": {
+    "method": "umap",
+    "source": "embeddings.f32",
+    "seed": 12345,
+    "output_dim": 2
+  },
   "sprite_size_dtype": "float32",
   "mean_color_dtype": "rgba8",
   "lods": [
@@ -231,6 +280,10 @@ The manifest owns shape, type, and page metadata:
 
 The exact container can evolve later into a single binary file. The first requirement is that the
 runtime loader can validate sizes without guessing.
+
+For small bundles, storing `embeddings.f32` enables query-by-example and nearest-neighbor inspection.
+For the default image LOD runtime path, embeddings are optional after preprocessing because rendering
+uses only positions, thumbnails, colors, ids, and metadata.
 
 
 ## Texture Packing
@@ -388,8 +441,10 @@ Expected hover/click payload:
 ```text
 image_id uint32
 position float32[3]
-filename string, optional
-label string, optional
+caption string
+source_url string, optional
+source_row_id string, optional
+license string, optional
 score float32, optional
 lod uint32, current selected display LOD
 ```
@@ -458,7 +513,7 @@ The first implementation is acceptable when:
 ### Phase 1: Static Bundle and Mean-Color Rectangles
 
 1. Write the preprocessing script and bundle manifest.
-2. Generate positions, mean colors, and metadata.
+2. Generate positions from PD12M CLIP embeddings, mean colors, and metadata.
 3. Render all images as colored rectangles through the scene path.
 4. Add panzoom and CPU hover identification.
 
