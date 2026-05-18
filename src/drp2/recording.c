@@ -22,6 +22,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 #include <vulkan/vulkan_core.h>
 
@@ -30,6 +31,7 @@
 #else
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <sys/utsname.h>
 #endif
 
 #include "_alloc.h"
@@ -40,6 +42,7 @@
 #include "_overflow.h"
 #include "_stream.h"
 #include "_time_utils.h"
+#include "datoviz/common/version.h"
 #include "datoviz/drp2/recording.h"
 
 
@@ -50,6 +53,7 @@
 
 #define DVZ_DRP2_RECORDING_PATH_SIZE 4096
 #define DVZ_DRP2_RECORDING_LINE_SIZE 4096
+#define DVZ_DRP2_RECORDING_INLINE_PAYLOAD_MAX_SIZE 1024
 
 
 
@@ -82,6 +86,7 @@ struct DvzDrp2Recorder
 {
     char path[DVZ_DRP2_RECORDING_PATH_SIZE];
     FILE* stream_fp;
+    DvzDrp2RecordingInfo info;
     uint32_t blob_index;
     uint64_t command_count;
     bool closed;
@@ -636,6 +641,37 @@ static bool _recording_write_payload_ref(
 
 
 /**
+ * Return an owned base64 string for a small inline payload.
+ *
+ * @param raw raw payload bytes, if available
+ * @param base64 existing base64 payload, if available
+ * @param size expected payload byte size
+ * @return owned base64 payload, or NULL on error
+ */
+static char* _recording_inline_payload_base64(const void* raw, const char* base64, uint64_t size)
+{
+    if (size == 0)
+        return _recording_strdup("");
+    if (base64 != NULL)
+        return _recording_strdup(base64);
+    if (raw == NULL)
+        return NULL;
+
+    uint64_t encoded_size = _dvz_b64_encoded_len(size) + 1;
+    char* encoded = (char*)dvz_calloc((size_t)encoded_size, 1);
+    if (encoded == NULL)
+        return NULL;
+    if (!_dvz_b64_encode((const uint8_t*)raw, size, encoded, encoded_size))
+    {
+        dvz_free(encoded);
+        return NULL;
+    }
+    return encoded;
+}
+
+
+
+/**
  * Return whether a string can be emitted as a simple unescaped JSON string.
  *
  * @param str string to inspect
@@ -652,6 +688,70 @@ static bool _recording_json_string_safe(const char* str)
         p++;
     }
     return true;
+}
+
+
+
+/**
+ * Copy a best-effort UTC timestamp string.
+ *
+ * @param out output buffer
+ * @param out_size output buffer size
+ */
+static void _recording_created_at(char* out, uint64_t out_size)
+{
+    ANN(out);
+    if (out_size == 0)
+        return;
+    out[0] = '\0';
+    time_t now = time(NULL);
+    struct tm tm_utc = {0};
+#if defined(_WIN32)
+    if (gmtime_s(&tm_utc, &now) != 0)
+        return;
+#else
+    if (gmtime_r(&now, &tm_utc) == NULL)
+        return;
+#endif
+    strftime(out, (size_t)out_size, "%Y-%m-%dT%H:%M:%SZ", &tm_utc);
+}
+
+
+
+/**
+ * Copy the first line of a command's stdout.
+ *
+ * @param command shell command
+ * @param out output buffer
+ * @param out_size output buffer size
+ * @return whether a non-empty line was copied
+ */
+static bool _recording_command_first_line(const char* command, char* out, uint64_t out_size)
+{
+    ANN(command);
+    ANN(out);
+    if (out_size == 0)
+        return false;
+    out[0] = '\0';
+#if defined(_WIN32)
+    FILE* fp = _popen(command, "r");
+#else
+    FILE* fp = popen(command, "r");
+#endif
+    if (fp == NULL)
+        return false;
+    bool ok = fgets(out, (int)out_size, fp) != NULL;
+#if defined(_WIN32)
+    (void)_pclose(fp);
+#else
+    (void)pclose(fp);
+#endif
+    if (!ok)
+        return false;
+    size_t len = strlen(out);
+    while (len > 0 && (out[len - 1] == '\n' || out[len - 1] == '\r'))
+        out[--len] = '\0';
+    return len > 0 && _recording_json_string_safe(out);
 }
 
 
@@ -1125,12 +1225,37 @@ static bool _recording_write_portable_command(
     {
         char payload_rel[128] = {0};
         uint64_t payload_size = command->u.write_buffer.size;
+        char* inline_payload = NULL;
+        if (payload_size <= DVZ_DRP2_RECORDING_INLINE_PAYLOAD_MAX_SIZE)
+        {
+            inline_payload = _recording_inline_payload_base64(
+                command->u.write_buffer.data_raw, command->u.write_buffer.data_base64,
+                payload_size);
+            if (inline_payload == NULL)
+                return false;
+        }
         if (payload_size > 0 &&
+            inline_payload == NULL &&
             !_recording_write_payload_ref(
                 root, blob_index, command->u.write_buffer.data_raw,
                 command->u.write_buffer.data_base64, payload_size, payload_rel,
                 sizeof(payload_rel)))
             return false;
+        bool ok = false;
+        if (inline_payload != NULL)
+        {
+            ok = dvz_fprintf(
+                     stream_fp,
+                     "{\"type\":\"command\",\"index\":%" PRIu32 ",\"cmd_type\":%d,"
+                     "\"op\":\"WriteBuffer\",\"buffer_id\":%" PRIu64 ",\"offset\":%" PRIu64
+                     ",\"size\":%" PRIu64 ",\"payload_base64\":\"%s\","
+                     "\"payload_size\":%" PRIu64 "}\n",
+                     index, (int)command->type, command->u.write_buffer.buffer_id,
+                     command->u.write_buffer.offset, payload_size, inline_payload,
+                     payload_size) > 0;
+            dvz_free(inline_payload);
+            return ok;
+        }
         return dvz_fprintf(
                    stream_fp,
                    "{\"type\":\"command\",\"index\":%" PRIu32 ",\"cmd_type\":%d,"
@@ -1146,12 +1271,44 @@ static bool _recording_write_portable_command(
         if (!_recording_texture_payload_size(command, &payload_size))
             return false;
         char payload_rel[128] = {0};
+        char* inline_payload = NULL;
+        if (payload_size <= DVZ_DRP2_RECORDING_INLINE_PAYLOAD_MAX_SIZE)
+        {
+            inline_payload = _recording_inline_payload_base64(
+                command->u.write_texture.data_raw, command->u.write_texture.data_base64,
+                payload_size);
+            if (inline_payload == NULL)
+                return false;
+        }
         if (payload_size > 0 &&
+            inline_payload == NULL &&
             !_recording_write_payload_ref(
                 root, blob_index, command->u.write_texture.data_raw,
                 command->u.write_texture.data_base64, payload_size, payload_rel,
                 sizeof(payload_rel)))
             return false;
+        if (inline_payload != NULL)
+        {
+            bool ok = dvz_fprintf(
+                          stream_fp,
+                          "{\"type\":\"command\",\"index\":%" PRIu32 ",\"cmd_type\":%d,"
+                          "\"op\":\"WriteTexture\",\"texture_id\":%" PRIu64
+                          ",\"mip_level\":%" PRIu32 ",\"origin_x\":%" PRIu32
+                          ",\"origin_y\":%" PRIu32 ",\"origin_z\":%" PRIu32
+                          ",\"width\":%" PRIu32 ",\"height\":%" PRIu32
+                          ",\"depth\":%" PRIu32 ",\"bytes_per_row\":%" PRIu32
+                          ",\"rows_per_image\":%" PRIu32 ",\"payload_base64\":\"%s\","
+                          "\"payload_size\":%" PRIu64 "}\n",
+                          index, (int)command->type, command->u.write_texture.texture_id,
+                          command->u.write_texture.mip_level, command->u.write_texture.origin_x,
+                          command->u.write_texture.origin_y, command->u.write_texture.origin_z,
+                          command->u.write_texture.width, command->u.write_texture.height,
+                          command->u.write_texture.depth, command->u.write_texture.bytes_per_row,
+                          command->u.write_texture.rows_per_image, inline_payload, payload_size) >
+                      0;
+            dvz_free(inline_payload);
+            return ok;
+        }
         return dvz_fprintf(
                    stream_fp,
                    "{\"type\":\"command\",\"index\":%" PRIu32 ",\"cmd_type\":%d,"
@@ -1891,6 +2048,17 @@ static bool _recording_read_payload_ref(
         return false;
     if (*out_payload_size == 0)
         return true;
+
+    char payload_base64[DVZ_DRP2_RECORDING_LINE_SIZE] = {0};
+    if (_recording_line_string(
+            line, "\"payload_base64\":\"", payload_base64, sizeof(payload_base64)))
+    {
+        uint8_t* decoded = NULL;
+        if (!_dvz_b64_decode_exact(payload_base64, *out_payload_size, &decoded))
+            return false;
+        *out_payload = decoded;
+        return true;
+    }
 
     char payload_rel[128] = {0};
     char payload_path[DVZ_DRP2_RECORDING_PATH_SIZE] = {0};
@@ -2752,7 +2920,59 @@ static bool _recording_write_manifest(const char* path, const DvzDrp2RecordingIn
     uint32_t width = info != NULL ? info->width : 0;
     uint32_t height = info != NULL ? info->height : 0;
     double duration_s = info != NULL ? info->duration_s : 0.0;
+    double fps_cap = info != NULL ? info->fps_cap : 0.0;
     const char* backend_hint = info != NULL && info->backend_hint != NULL ? info->backend_hint : "";
+    if (!_recording_json_string_safe(backend_hint))
+        backend_hint = "";
+
+    char created_at[32] = {0};
+    char git_commit[64] = {0};
+    char git_dirty[8] = {0};
+    char os_name[128] = {0};
+    char arch[128] = {0};
+    _recording_created_at(created_at, sizeof(created_at));
+    (void)_recording_command_first_line(
+        "git rev-parse --short=12 HEAD 2>/dev/null", git_commit, sizeof(git_commit));
+    (void)_recording_command_first_line(
+        "git diff --quiet 2>/dev/null && git diff --cached --quiet 2>/dev/null && echo false || "
+        "echo true",
+        git_dirty, sizeof(git_dirty));
+#if defined(_WIN32)
+    dvz_snprintf(os_name, sizeof(os_name), "Windows");
+#if defined(_M_X64) || defined(_M_AMD64)
+    dvz_snprintf(arch, sizeof(arch), "x86_64");
+#elif defined(_M_ARM64)
+    dvz_snprintf(arch, sizeof(arch), "arm64");
+#else
+    dvz_snprintf(arch, sizeof(arch), "unknown");
+#endif
+#else
+    struct utsname uts = {0};
+    if (uname(&uts) == 0)
+    {
+        dvz_snprintf(os_name, sizeof(os_name), "%s %s", uts.sysname, uts.release);
+        dvz_snprintf(arch, sizeof(arch), "%s", uts.machine);
+    }
+#endif
+#if defined(__clang__)
+    const char* compiler = "clang " __clang_version__;
+#elif defined(__GNUC__)
+    const char* compiler = "gcc " __VERSION__;
+#elif defined(_MSC_VER)
+    const char* compiler = "msvc";
+#else
+    const char* compiler = "unknown";
+#endif
+    const char* version = dvz_version();
+    if (version == NULL || !_recording_json_string_safe(version))
+        version = "";
+    if (!_recording_json_string_safe(os_name))
+        os_name[0] = '\0';
+    if (!_recording_json_string_safe(arch))
+        arch[0] = '\0';
+    if (!_recording_json_string_safe(compiler))
+        compiler = "";
+
     bool ok = dvz_fprintf(
                   manifest,
                   "{\n"
@@ -2763,9 +2983,25 @@ static bool _recording_write_manifest(const char* path, const DvzDrp2RecordingIn
                   "  \"width\": %" PRIu32 ",\n"
                   "  \"height\": %" PRIu32 ",\n"
                   "  \"duration_s\": %.17g,\n"
-                  "  \"backend_hint\": \"%s\"\n"
+                  "  \"backend_hint\": \"%s\",\n"
+                  "  \"recording\": {\n"
+                  "    \"created_at\": \"%s\",\n"
+                  "    \"fps_cap\": %.17g\n"
+                  "  },\n"
+                  "  \"datoviz\": {\n"
+                  "    \"version\": \"%s\",\n"
+                  "    \"git_commit\": \"%s\",\n"
+                  "    \"git_dirty\": %s\n"
+                  "  },\n"
+                  "  \"system\": {\n"
+                  "    \"os\": \"%s\",\n"
+                  "    \"arch\": \"%s\",\n"
+                  "    \"compiler\": \"%s\"\n"
+                  "  }\n"
                   "}\n",
-                  width, height, duration_s, backend_hint) > 0;
+                  width, height, duration_s, backend_hint, created_at, fps_cap, version,
+                  git_commit, strcmp(git_dirty, "true") == 0 ? "true" : "false", os_name, arch,
+                  compiler) > 0;
     fclose(manifest);
     return ok;
 }
@@ -2811,6 +3047,8 @@ DvzDrp2Recorder* dvz_drp2_recorder_open(
         return NULL;
     }
     dvz_strlcpy(recorder->path, path, sizeof(recorder->path));
+    if (info != NULL)
+        recorder->info = *info;
     recorder->stream_fp = stream_fp;
     bool ok = dvz_fprintf(
                   stream_fp,
@@ -2853,6 +3091,9 @@ bool dvz_drp2_recorder_write_stream(
     }
     if (!ok)
         return false;
+    if (t_present > recorder->info.duration_s)
+        recorder->info.duration_s = t_present;
+    recorder->info.t_present = t_present;
     return dvz_fprintf(
                recorder->stream_fp,
                "{\"type\":\"frame\",\"t_present\":%.17g,\"first_command\":%" PRIu64
@@ -2877,6 +3118,7 @@ bool dvz_drp2_recorder_close(DvzDrp2Recorder* recorder)
         ok = dvz_fprintf(recorder->stream_fp, "{\"type\":\"end\"}\n") > 0;
     if (recorder->stream_fp != NULL)
         fclose(recorder->stream_fp);
+    ok = _recording_write_manifest(recorder->path, &recorder->info) && ok;
     recorder->stream_fp = NULL;
     recorder->closed = true;
     dvz_free(recorder);

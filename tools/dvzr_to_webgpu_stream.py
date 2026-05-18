@@ -206,6 +206,9 @@ def _shader_stage(stage: str) -> str:
 
 
 def _read_blob(recording: Path, command: dict[str, Any]) -> bytes:
+    inline = command.get("payload_base64")
+    if isinstance(inline, str):
+        return base64.b64decode(inline)
     blob = command.get("payload_blob")
     if not blob:
         return b""
