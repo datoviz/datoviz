@@ -556,6 +556,7 @@ int test_vklite_surface_query(TstContext* suite, const TstCase* tstitem)
     DvzVklitePresentFixture fixture = {0};
     if (!_present_fixture_create(&fixture))
     {
+        tst_skip(suite, "vklite present fixture unavailable");
         _present_fixture_destroy(&fixture);
         return 0;
     }
@@ -567,6 +568,7 @@ int test_vklite_surface_query(TstContext* suite, const TstCase* tstitem)
     if (window_surface == NULL || window_surface->surface == VK_NULL_HANDLE)
     {
         log_warn("vklite surface query test skipped because native surface is unavailable");
+        tst_skip(suite, "native surface unavailable");
         dvz_surface_free(surface);
         _present_fixture_destroy(&fixture);
         return 0;
@@ -611,6 +613,7 @@ int test_vklite_swapchain_recreate(TstContext* suite, const TstCase* tstitem)
     DvzVklitePresentFixture fixture = {0};
     if (!_present_fixture_create(&fixture))
     {
+        tst_skip(suite, "vklite present fixture unavailable");
         _present_fixture_destroy(&fixture);
         return 0;
     }
@@ -624,6 +627,7 @@ int test_vklite_swapchain_recreate(TstContext* suite, const TstCase* tstitem)
     if (window_surface == NULL || window_surface->surface == VK_NULL_HANDLE)
     {
         log_warn("vklite swapchain recreate test skipped because native surface is unavailable");
+        tst_skip(suite, "native surface unavailable");
         dvz_swapchain_free(swapchain);
         dvz_surface_free(surface);
         _present_fixture_destroy(&fixture);
@@ -640,6 +644,7 @@ int test_vklite_swapchain_recreate(TstContext* suite, const TstCase* tstitem)
     if (status == DVZ_PRESENT_STATUS_SKIP_ZERO_EXTENT)
     {
         log_warn("vklite swapchain recreate test skipped because window extent is zero");
+        tst_skip(suite, "window extent is zero");
         dvz_swapchain_destroy(swapchain);
         dvz_surface_destroy(surface);
         dvz_swapchain_free(swapchain);
@@ -684,6 +689,7 @@ int test_vklite_surface_swapchain_destroy_idempotent(TstContext* suite, const Ts
     DvzVklitePresentFixture fixture = {0};
     if (!_present_fixture_create(&fixture))
     {
+        tst_skip(suite, "vklite present fixture unavailable");
         _present_fixture_destroy(&fixture);
         return 0;
     }
@@ -697,6 +703,7 @@ int test_vklite_surface_swapchain_destroy_idempotent(TstContext* suite, const Ts
     if (window_surface == NULL || window_surface->surface == VK_NULL_HANDLE)
     {
         log_warn("vklite destroy-idempotent test skipped because native surface is unavailable");
+        tst_skip(suite, "native surface unavailable");
         dvz_swapchain_free(swapchain);
         dvz_surface_free(surface);
         _present_fixture_destroy(&fixture);
@@ -712,6 +719,7 @@ int test_vklite_surface_swapchain_destroy_idempotent(TstContext* suite, const Ts
     if (status == DVZ_PRESENT_STATUS_SKIP_ZERO_EXTENT)
     {
         log_warn("vklite destroy-idempotent test skipped because window extent is zero");
+        tst_skip(suite, "window extent is zero");
         dvz_swapchain_destroy(swapchain);
         dvz_surface_destroy(surface);
         dvz_swapchain_free(swapchain);
@@ -761,6 +769,7 @@ int test_vklite_swapchain_config_present_mode_immediate(TstContext* suite, const
     DvzVklitePresentFixture fixture = {0};
     if (!_present_fixture_create(&fixture))
     {
+        tst_skip(suite, "vklite present fixture unavailable");
         _present_fixture_destroy(&fixture);
         return 0;
     }
@@ -774,6 +783,7 @@ int test_vklite_swapchain_config_present_mode_immediate(TstContext* suite, const
     if (window_surface == NULL || window_surface->surface == VK_NULL_HANDLE)
     {
         log_warn("vklite swapchain config test skipped because native surface is unavailable");
+        tst_skip(suite, "native surface unavailable");
         dvz_swapchain_free(swapchain);
         dvz_surface_free(surface);
         _present_fixture_destroy(&fixture);
@@ -883,6 +893,7 @@ int test_vklite_swapchain_recreate_resolved_state(TstContext* suite, const TstCa
     DvzVklitePresentFixture fixture = {0};
     if (!_present_fixture_create(&fixture))
     {
+        tst_skip(suite, "vklite present fixture unavailable");
         _present_fixture_destroy(&fixture);
         return 0;
     }
@@ -896,6 +907,7 @@ int test_vklite_swapchain_recreate_resolved_state(TstContext* suite, const TstCa
     if (window_surface == NULL || window_surface->surface == VK_NULL_HANDLE)
     {
         log_warn("vklite resolved state test skipped because native surface is unavailable");
+        tst_skip(suite, "native surface unavailable");
         dvz_swapchain_free(swapchain);
         dvz_surface_free(surface);
         _present_fixture_destroy(&fixture);
@@ -920,6 +932,7 @@ int test_vklite_swapchain_recreate_resolved_state(TstContext* suite, const TstCa
     if (status == DVZ_PRESENT_STATUS_SKIP_ZERO_EXTENT)
     {
         log_warn("vklite resolved state test skipped because window extent is zero");
+        tst_skip(suite, "window extent is zero");
         dvz_swapchain_destroy(swapchain);
         dvz_surface_destroy(surface);
         dvz_swapchain_free(swapchain);
@@ -960,6 +973,7 @@ int test_vklite_swapchain_recreate_repeat_state(TstContext* suite, const TstCase
     DvzVklitePresentFixture fixture = {0};
     if (!_present_fixture_create(&fixture))
     {
+        tst_skip(suite, "vklite present fixture unavailable");
         _present_fixture_destroy(&fixture);
         return 0;
     }
@@ -967,6 +981,7 @@ int test_vklite_swapchain_recreate_repeat_state(TstContext* suite, const TstCase
     const DvzWindowSurface* window_surface = dvz_window_surface(fixture.window);
     if (window_surface == NULL)
     {
+        tst_skip(suite, "native surface unavailable");
         _present_fixture_destroy(&fixture);
         return 0;
     }
@@ -976,6 +991,7 @@ int test_vklite_swapchain_recreate_repeat_state(TstContext* suite, const TstCase
     DvzSwapchain* swapchain = NULL;
     if (!_present_ready_swapchain(&fixture, &surface, &swapchain, size))
     {
+        tst_skip(suite, "vklite present swapchain unavailable");
         dvz_swapchain_free(swapchain);
         dvz_surface_free(surface);
         _present_fixture_destroy(&fixture);
@@ -998,6 +1014,7 @@ int test_vklite_swapchain_recreate_repeat_state(TstContext* suite, const TstCase
     if (status == DVZ_PRESENT_STATUS_SKIP_ZERO_EXTENT)
     {
         log_warn("vklite repeat-recreate test skipped because extent became zero");
+        tst_skip(suite, "window extent is zero");
         dvz_swapchain_destroy(swapchain);
         dvz_surface_destroy(surface);
         dvz_swapchain_free(swapchain);
@@ -1046,6 +1063,7 @@ int test_vklite_swapchain_destroy_clears_cached_state(TstContext* suite, const T
     DvzVklitePresentFixture fixture = {0};
     if (!_present_fixture_create(&fixture))
     {
+        tst_skip(suite, "vklite present fixture unavailable");
         _present_fixture_destroy(&fixture);
         return 0;
     }
@@ -1053,6 +1071,7 @@ int test_vklite_swapchain_destroy_clears_cached_state(TstContext* suite, const T
     const DvzWindowSurface* window_surface = dvz_window_surface(fixture.window);
     if (window_surface == NULL)
     {
+        tst_skip(suite, "native surface unavailable");
         _present_fixture_destroy(&fixture);
         return 0;
     }
@@ -1062,6 +1081,7 @@ int test_vklite_swapchain_destroy_clears_cached_state(TstContext* suite, const T
     DvzSwapchain* swapchain = NULL;
     if (!_present_ready_swapchain(&fixture, &surface, &swapchain, size))
     {
+        tst_skip(suite, "vklite present swapchain unavailable");
         dvz_swapchain_free(swapchain);
         dvz_surface_free(surface);
         _present_fixture_destroy(&fixture);
@@ -1106,6 +1126,7 @@ int test_vklite_swapchain_acquire_present_cycle(TstContext* suite, const TstCase
     DvzVklitePresentFixture fixture = {0};
     if (!_present_fixture_create(&fixture))
     {
+        tst_skip(suite, "vklite present fixture unavailable");
         _present_fixture_destroy(&fixture);
         return 0;
     }
@@ -1113,6 +1134,7 @@ int test_vklite_swapchain_acquire_present_cycle(TstContext* suite, const TstCase
     const DvzWindowSurface* window_surface = dvz_window_surface(fixture.window);
     if (window_surface == NULL)
     {
+        tst_skip(suite, "native surface unavailable");
         _present_fixture_destroy(&fixture);
         return 0;
     }
@@ -1122,6 +1144,7 @@ int test_vklite_swapchain_acquire_present_cycle(TstContext* suite, const TstCase
     DvzSwapchain* swapchain = NULL;
     if (!_present_ready_swapchain(&fixture, &surface, &swapchain, size))
     {
+        tst_skip(suite, "vklite present swapchain unavailable");
         dvz_swapchain_free(swapchain);
         dvz_surface_free(surface);
         _present_fixture_destroy(&fixture);
@@ -1138,6 +1161,7 @@ int test_vklite_swapchain_acquire_present_cycle(TstContext* suite, const TstCase
     if (status == DVZ_PRESENT_STATUS_RECREATE || status == DVZ_PRESENT_STATUS_SKIP_ZERO_EXTENT)
     {
         log_warn("vklite acquire/present cycle test skipped because acquire requested recreate");
+        tst_skip(suite, "acquire requested recreate");
         dvz_semaphore_destroy(image_available);
         dvz_semaphore_free(image_available);
         dvz_swapchain_destroy(swapchain);
@@ -1196,6 +1220,7 @@ int test_vklite_wrap_backend_external_surface_present(TstContext* suite, const T
     DvzVklitePresentFixture fixture = {0};
     if (!_present_fixture_create(&fixture))
     {
+        tst_skip(suite, "vklite present fixture unavailable");
         _present_fixture_destroy(&fixture);
         return 0;
     }
@@ -1215,6 +1240,7 @@ int test_vklite_wrap_backend_external_surface_present(TstContext* suite, const T
     DvzVkliteWrapSurfaceFixture wrap = {0};
     if (!_wrap_surface_fixture_create(&fixture, &cfg, &wrap))
     {
+        tst_skip(suite, "vklite wrap surface unavailable");
         _wrap_surface_fixture_destroy(&fixture, &wrap);
         _present_fixture_destroy(&fixture);
         return 0;
@@ -1233,6 +1259,7 @@ int test_vklite_wrap_backend_external_surface_present(TstContext* suite, const T
     if (status == DVZ_PRESENT_STATUS_SKIP_ZERO_EXTENT)
     {
         log_warn("vklite wrap present test skipped because wrap-window extent is zero");
+        tst_skip(suite, "window extent is zero");
         dvz_swapchain_destroy(swapchain);
         dvz_surface_destroy(surface);
         dvz_swapchain_free(swapchain);
@@ -1267,6 +1294,7 @@ int test_vklite_wrap_backend_external_surface_present(TstContext* suite, const T
     if (status == DVZ_PRESENT_STATUS_SKIP_ZERO_EXTENT)
     {
         log_warn("vklite wrap present test skipped during restore because extent is zero");
+        tst_skip(suite, "window extent is zero");
         dvz_swapchain_destroy(swapchain);
         dvz_surface_destroy(surface);
         dvz_swapchain_free(swapchain);
@@ -1297,6 +1325,7 @@ int test_vklite_wrap_backend_external_surface_present(TstContext* suite, const T
     ANN(suite);
     ANN(tstitem);
     log_warn("vklite wrap present test skipped because Datoviz was built without GLFW support");
+    tst_skip(suite, "GLFW support unavailable");
     return 0;
 }
 #endif
