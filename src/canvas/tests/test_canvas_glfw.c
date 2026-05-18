@@ -501,6 +501,7 @@ int test_canvas_swapchain_failfast_slot_init(TstContext* suite, const TstCase* i
     if (skipped)
     {
         canvas_glfw_fixture_destroy(&fixture);
+        tst_skip(suite, "GLFW fixture unavailable");
         return 0;
     }
 
@@ -559,6 +560,7 @@ int test_canvas_glfw_present_recovery(TstContext* suite, const TstCase* item)
     if (skipped)
     {
         canvas_glfw_fixture_destroy(&fixture);
+        tst_skip(suite, "GLFW fixture unavailable");
         return 0;
     }
 
@@ -625,6 +627,7 @@ int test_canvas_handle_refresh_order(TstContext* suite, const TstCase* item)
     if (skipped)
     {
         canvas_glfw_fixture_destroy(&fixture);
+        tst_skip(suite, "GLFW fixture unavailable");
         return 0;
     }
 
@@ -717,6 +720,7 @@ int test_canvas_video_wait_value_propagation(TstContext* suite, const TstCase* i
     if (skipped)
     {
         canvas_glfw_fixture_destroy(&fixture);
+        tst_skip(suite, "GLFW fixture unavailable");
         return 0;
     }
 
@@ -778,6 +782,7 @@ int test_canvas_video_wait_handle_ready_on_first_start(TstContext* suite, const 
     if (skipped)
     {
         canvas_glfw_fixture_destroy(&fixture);
+        tst_skip(suite, "GLFW fixture unavailable");
         return 0;
     }
 
@@ -788,6 +793,7 @@ int test_canvas_video_wait_handle_ready_on_first_start(TstContext* suite, const 
     {
         log_warn("canvas wait-handle readiness test skipped (no exportable external semaphore)");
         canvas_glfw_fixture_destroy(&fixture);
+        tst_skip(suite, "no exportable external semaphore");
         return 0;
     }
 
@@ -851,6 +857,7 @@ int test_canvas_video_wait_handle_export_fallback(TstContext* suite, const TstCa
     if (skipped)
     {
         canvas_glfw_fixture_destroy(&fixture);
+        tst_skip(suite, "GLFW fixture unavailable");
         return 0;
     }
 
@@ -861,6 +868,7 @@ int test_canvas_video_wait_handle_export_fallback(TstContext* suite, const TstCa
     {
         log_warn("canvas wait-handle fallback test skipped (no exportable external semaphore)");
         canvas_glfw_fixture_destroy(&fixture);
+        tst_skip(suite, "no exportable external semaphore");
         return 0;
     }
 
@@ -926,6 +934,7 @@ int test_canvas_video_wait_handle_export_fallback_after_recreate(TstContext* sui
     if (skipped)
     {
         canvas_glfw_fixture_destroy(&fixture);
+        tst_skip(suite, "GLFW fixture unavailable");
         return 0;
     }
 
@@ -936,6 +945,7 @@ int test_canvas_video_wait_handle_export_fallback_after_recreate(TstContext* sui
     {
         log_warn("canvas recreate fallback test skipped (no exportable external semaphore)");
         canvas_glfw_fixture_destroy(&fixture);
+        tst_skip(suite, "no exportable external semaphore");
         return 0;
     }
 
@@ -1101,6 +1111,7 @@ cleanup:
     if (skip_reason != NULL)
     {
         log_warn("canvas video sink integration skipped (%s)", skip_reason);
+        tst_skip(suite, skip_reason);
     }
     else
     {
@@ -1231,6 +1242,7 @@ cleanup:
     if (skip_reason != NULL)
     {
         log_warn("canvas video sink disable test skipped (%s)", skip_reason);
+        tst_skip(suite, skip_reason);
     }
     else
     {
@@ -1260,6 +1272,7 @@ int test_canvas_capture_api(TstContext* suite, const TstCase* item)
     if (skipped)
     {
         canvas_glfw_fixture_destroy(&fixture);
+        tst_skip(suite, "GLFW fixture unavailable");
         return 0;
     }
 
@@ -1355,6 +1368,7 @@ int test_canvas_video_handle_refresh_after_recreate(TstContext* suite, const Tst
     if (skipped)
     {
         canvas_glfw_fixture_destroy(&fixture);
+        tst_skip(suite, "GLFW fixture unavailable");
         return 0;
     }
 
@@ -1446,6 +1460,7 @@ int test_canvas_device_lost_fatal_transition(TstContext* suite, const TstCase* i
     if (skipped)
     {
         canvas_glfw_fixture_destroy(&fixture);
+        tst_skip(suite, "GLFW fixture unavailable");
         return 0;
     }
 
@@ -1522,6 +1537,7 @@ int test_canvas_glfw_wrap_surface_present_recovery(TstContext* suite, const TstC
     if (skipped)
     {
         canvas_glfw_fixture_destroy(&fixture);
+        tst_skip(suite, "GLFW fixture unavailable");
         return 0;
     }
 
@@ -1554,6 +1570,7 @@ int test_canvas_glfw_wrap_surface_present_recovery(TstContext* suite, const TstC
     {
         _canvas_wrap_surface_fixture_destroy(&fixture, &wrap);
         canvas_glfw_fixture_destroy(&fixture);
+        tst_skip(suite, "wrap-surface fixture unavailable");
         return 0;
     }
 
@@ -1568,6 +1585,7 @@ int test_canvas_glfw_wrap_surface_present_recovery(TstContext* suite, const TstC
         log_warn("canvas wrap test skipped because canvas creation failed");
         _canvas_wrap_surface_fixture_destroy(&fixture, &wrap);
         canvas_glfw_fixture_destroy(&fixture);
+        tst_skip(suite, "canvas creation failed");
         return 0;
     }
 
@@ -1650,6 +1668,7 @@ int test_canvas_glfw_wrap_surface_present_recovery(TstContext* suite, const TstC
     return 0;
 #else
     log_warn("canvas wrap test skipped because Datoviz was not build with glfw support");
+    tst_skip(suite, "Datoviz was not built with GLFW support");
     return 0;
 #endif
 }
@@ -1668,6 +1687,7 @@ int test_canvas_glfw_wrap_surface_resize_recreate_refreshes_state(TstContext* su
     if (skipped)
     {
         canvas_glfw_fixture_destroy(&fixture);
+        tst_skip(suite, "GLFW fixture unavailable");
         return 0;
     }
 
@@ -1700,6 +1720,7 @@ int test_canvas_glfw_wrap_surface_resize_recreate_refreshes_state(TstContext* su
     {
         _canvas_wrap_surface_fixture_destroy(&fixture, &wrap);
         canvas_glfw_fixture_destroy(&fixture);
+        tst_skip(suite, "wrap-surface fixture unavailable");
         return 0;
     }
 
@@ -1714,6 +1735,7 @@ int test_canvas_glfw_wrap_surface_resize_recreate_refreshes_state(TstContext* su
         log_warn("canvas wrap resize test skipped because canvas creation failed");
         _canvas_wrap_surface_fixture_destroy(&fixture, &wrap);
         canvas_glfw_fixture_destroy(&fixture);
+        tst_skip(suite, "canvas creation failed");
         return 0;
     }
 
@@ -1783,6 +1805,7 @@ int test_canvas_glfw_wrap_surface_resize_recreate_refreshes_state(TstContext* su
         }
         _canvas_wrap_surface_fixture_destroy(&fixture, &wrap);
         canvas_glfw_fixture_destroy(&fixture);
+        tst_skip(suite, "external GLFW window did not reach target resize");
         return 0;
     }
     resized.extent.width = (uint32_t)observed_w;
@@ -1837,6 +1860,7 @@ int test_canvas_glfw_wrap_surface_resize_recreate_refreshes_state(TstContext* su
     return 0;
 #else
     log_warn("canvas wrap resize test skipped because Datoviz was not build with glfw support");
+    tst_skip(suite, "Datoviz was not built with GLFW support");
     return 0;
 #endif
 }
@@ -1863,6 +1887,7 @@ int test_canvas_glfw(TstContext* suite, const TstCase* item)
     DvzDevice* device = NULL;
     DvzWindow* window = NULL;
     DvzCanvas* canvas = NULL;
+    const char* skip_reason = NULL;
     DvzInstanceConfig icfg = dvz_instance_default_config();
     icfg.flags = DVZ_INSTANCE_VALIDATION_FLAGS;
     dvz_instance_config_request_extension(&icfg, VK_KHR_SURFACE_EXTENSION_NAME);
@@ -1870,6 +1895,7 @@ int test_canvas_glfw(TstContext* suite, const TstCase* item)
     // Additional ones for glfw.
     if (!dvz_window_glfw_init())
     {
+        skip_reason = "GLFW could not initialize";
         log_warn("canvas glfw test skipped because GLFW could not initialize");
         goto canvas_glfw_cleanup;
     }
@@ -1877,12 +1903,14 @@ int test_canvas_glfw(TstContext* suite, const TstCase* item)
     uint32_t ext_count = dvz_window_host_required_extension_count(host, DVZ_BACKEND_GLFW);
     if (ext_count == 0)
     {
+        skip_reason = "GLFW returned no Vulkan instance extensions";
         log_warn("canvas glfw test skipped because GLFW returned no Vulkan instance extensions");
         goto canvas_glfw_cleanup;
     }
     const char** extensions = dvz_calloc(ext_count, sizeof(char*));
     if (extensions == NULL)
     {
+        skip_reason = "extension-list allocation failed";
         log_warn("canvas glfw test skipped because extension-list allocation failed");
         goto canvas_glfw_cleanup;
     }
@@ -1890,6 +1918,7 @@ int test_canvas_glfw(TstContext* suite, const TstCase* item)
     if (written != (int)ext_count)
     {
         dvz_free((void*)extensions);
+        skip_reason = "required-extension query failed";
         log_warn("canvas glfw test skipped because required-extension query failed");
         goto canvas_glfw_cleanup;
     }
@@ -1903,6 +1932,7 @@ int test_canvas_glfw(TstContext* suite, const TstCase* item)
     instance = dvz_instance_create(&icfg);
     if (instance == NULL)
     {
+        skip_reason = "Vulkan instance creation failed";
         log_warn("canvas glfw test skipped because Vulkan instance creation failed");
         goto canvas_glfw_cleanup;
     }
@@ -1912,6 +1942,7 @@ int test_canvas_glfw(TstContext* suite, const TstCase* item)
     uint32_t gpu_count = dvz_instance_gpu_count(instance);
     if (gpu_count == 0)
     {
+        skip_reason = "no Vulkan GPU was found";
         log_warn("canvas glfw test skipped because no Vulkan GPU was found");
         goto canvas_glfw_cleanup;
     }
@@ -1944,6 +1975,7 @@ int test_canvas_glfw(TstContext* suite, const TstCase* item)
     device = dvz_device_create(&dcfg);
     if (device == NULL)
     {
+        skip_reason = "Vulkan device creation failed";
         log_warn("canvas glfw test skipped because Vulkan device creation failed");
         goto canvas_glfw_cleanup;
     }
@@ -1955,6 +1987,7 @@ int test_canvas_glfw(TstContext* suite, const TstCase* item)
     window = dvz_window_create(host, DVZ_BACKEND_GLFW, &window_cfg);
     if (window == NULL || dvz_window_backend_type(window) != DVZ_BACKEND_GLFW)
     {
+        skip_reason = "GLFW window creation failed";
         log_warn("canvas glfw test skipped because GLFW window creation failed");
         goto canvas_glfw_cleanup;
     }
@@ -1971,6 +2004,7 @@ int test_canvas_glfw(TstContext* suite, const TstCase* item)
     canvas = dvz_canvas_create(&cfg);
     if (canvas == NULL)
     {
+        skip_reason = "canvas creation failed";
         log_warn("canvas glfw test skipped because canvas creation failed");
         goto canvas_glfw_cleanup;
     }
@@ -2108,9 +2142,14 @@ canvas_glfw_cleanup:
     {
         dvz_instance_destroy(instance);
     }
+    if (skip_reason != NULL)
+    {
+        tst_skip(suite, skip_reason);
+    }
 
 #else
     log_warn("canvas glfw test skipped because Datoviz was not build with glfw support");
+    tst_skip(suite, "Datoviz was not built with GLFW support");
 #endif
 
 
