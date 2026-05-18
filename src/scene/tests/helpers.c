@@ -85,7 +85,7 @@ bool _scene_vklite_runtime_available(void)
     DvzInstance* instance = dvz_instance_create(&cfg);
     if (instance == NULL)
     {
-        log_warn("scene vklite runtime test skipped because Vulkan instance creation failed");
+        log_warn("scene vklite runtime unavailable because Vulkan instance creation failed");
         return false;
     }
     dvz_instance_destroy(instance);

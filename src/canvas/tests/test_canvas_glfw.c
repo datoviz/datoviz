@@ -196,7 +196,7 @@ static int canvas_glfw_fixture_create(CanvasGlfwFixture* fixture, bool* skipped)
 
 #if !DVZ_HAS_GLFW
     *skipped = true;
-    log_warn("canvas glfw fixture skipped because Datoviz was not build with glfw support");
+    log_warn("canvas glfw fixture unavailable because Datoviz was not build with glfw support");
     return 0;
 #else
     DvzInstanceConfig icfg = dvz_instance_default_config();
@@ -209,7 +209,7 @@ static int canvas_glfw_fixture_create(CanvasGlfwFixture* fixture, bool* skipped)
     if (!dvz_window_glfw_init())
     {
         *skipped = true;
-        log_warn("canvas glfw fixture skipped because GLFW could not initialize");
+        log_warn("canvas glfw fixture unavailable because GLFW could not initialize");
         return 0;
     }
 
@@ -217,14 +217,14 @@ static int canvas_glfw_fixture_create(CanvasGlfwFixture* fixture, bool* skipped)
     if (ext_count == 0)
     {
         *skipped = true;
-        log_warn("canvas glfw fixture skipped because GLFW returned no Vulkan instance extensions");
+        log_warn("canvas glfw fixture unavailable because GLFW returned no Vulkan instance extensions");
         return 0;
     }
     const char** extensions = dvz_calloc(ext_count, sizeof(char*));
     if (extensions == NULL)
     {
         *skipped = true;
-        log_warn("canvas glfw fixture skipped because extension-list allocation failed");
+        log_warn("canvas glfw fixture unavailable because extension-list allocation failed");
         return 0;
     }
     int written =
@@ -233,7 +233,7 @@ static int canvas_glfw_fixture_create(CanvasGlfwFixture* fixture, bool* skipped)
     {
         dvz_free((void*)extensions);
         *skipped = true;
-        log_warn("canvas glfw fixture skipped because required-extension query failed");
+        log_warn("canvas glfw fixture unavailable because required-extension query failed");
         return 0;
     }
     for (uint32_t i = 0; i < ext_count; i++)
@@ -246,7 +246,7 @@ static int canvas_glfw_fixture_create(CanvasGlfwFixture* fixture, bool* skipped)
     if (fixture->instance == NULL)
     {
         *skipped = true;
-        log_warn("canvas glfw fixture skipped because Vulkan instance creation failed");
+        log_warn("canvas glfw fixture unavailable because Vulkan instance creation failed");
         return 0;
     }
 
@@ -254,7 +254,7 @@ static int canvas_glfw_fixture_create(CanvasGlfwFixture* fixture, bool* skipped)
     if (gpu_count == 0)
     {
         *skipped = true;
-        log_warn("canvas glfw fixture skipped because no Vulkan GPU was found");
+        log_warn("canvas glfw fixture unavailable because no Vulkan GPU was found");
         return 0;
     }
 
@@ -262,7 +262,7 @@ static int canvas_glfw_fixture_create(CanvasGlfwFixture* fixture, bool* skipped)
     if (!dvz_instance_gpu_queue_caps(fixture->instance, 0, &caps))
     {
         *skipped = true;
-        log_warn("canvas glfw fixture skipped because queue capability query failed");
+        log_warn("canvas glfw fixture unavailable because queue capability query failed");
         return 0;
     }
 
@@ -287,7 +287,7 @@ static int canvas_glfw_fixture_create(CanvasGlfwFixture* fixture, bool* skipped)
     if (fixture->device == NULL)
     {
         *skipped = true;
-        log_warn("canvas glfw fixture skipped because Vulkan device creation failed");
+        log_warn("canvas glfw fixture unavailable because Vulkan device creation failed");
         return 0;
     }
 
@@ -298,7 +298,7 @@ static int canvas_glfw_fixture_create(CanvasGlfwFixture* fixture, bool* skipped)
     if (fixture->window == NULL || dvz_window_backend_type(fixture->window) != DVZ_BACKEND_GLFW)
     {
         *skipped = true;
-        log_warn("canvas glfw fixture skipped because GLFW window creation failed");
+        log_warn("canvas glfw fixture unavailable because GLFW window creation failed");
         return 0;
     }
 
@@ -314,7 +314,7 @@ static int canvas_glfw_fixture_create(CanvasGlfwFixture* fixture, bool* skipped)
     if (fixture->canvas == NULL)
     {
         *skipped = true;
-        log_warn("canvas glfw fixture skipped because canvas creation failed");
+        log_warn("canvas glfw fixture unavailable because canvas creation failed");
         return 0;
     }
     return 0;
@@ -387,7 +387,7 @@ static bool _canvas_wrap_surface_fixture_create(
     wrap->wrap_window = dvz_window_create(fixture->host, DVZ_BACKEND_WRAP, cfg);
     if (wrap->wrap_window == NULL || dvz_window_backend_type(wrap->wrap_window) != DVZ_BACKEND_WRAP)
     {
-        log_warn("canvas wrap test skipped because wrap window creation failed");
+        log_warn("canvas wrap fixture unavailable because wrap window creation failed");
         return false;
     }
 
@@ -397,7 +397,7 @@ static bool _canvas_wrap_surface_fixture_create(
         glfwCreateWindow((int)cfg->width, (int)cfg->height, cfg->title, NULL, NULL);
     if (wrap->external_handle == NULL)
     {
-        log_warn("canvas wrap test skipped because external GLFW window creation failed");
+        log_warn("canvas wrap fixture unavailable because external GLFW window creation failed");
         return false;
     }
 
@@ -407,7 +407,7 @@ static bool _canvas_wrap_surface_fixture_create(
     if (surface_res != VK_SUCCESS || wrap->external_surface == VK_NULL_HANDLE)
     {
         log_warn(
-            "canvas wrap test skipped because external GLFW surface creation failed (%d)",
+            "canvas wrap fixture unavailable because external GLFW surface creation failed (%d)",
             (int)surface_res);
         return false;
     }
@@ -435,7 +435,7 @@ static bool _canvas_wrap_surface_fixture_create(
         scale_y, false);
     if (dvz_window_wrap_attach_surface(wrap->wrap_window, &wrap->info) != 0)
     {
-        log_warn("canvas wrap test skipped because wrap attach_surface() failed");
+        log_warn("canvas wrap fixture unavailable because wrap attach_surface() failed");
         return false;
     }
     return true;
