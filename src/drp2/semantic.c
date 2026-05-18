@@ -818,6 +818,10 @@ static DvzDrp2ValidationResult _validate_create_render_pipeline(
     {
         uint32_t format =
             _effective_color_format(command->u.create_render_pipeline.color_targets[i].format);
+        uint32_t bytes_per_texel = 0;
+        if (!_drp2_texture_format_bytes_per_texel(format, &bytes_per_texel) ||
+            bytes_per_texel == 0)
+            return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_ARGUMENT, command_index);
         if (_format_is_depth(format))
             return _drp2_fail(DVZ_DRP2_VALIDATION_USAGE, command_index);
     }

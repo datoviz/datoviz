@@ -358,9 +358,10 @@ Deliver the next implementation slices in this order unless the user redirects:
    native 3D and manual-smoke gaps are clearer.
 9. Picking payload widening after the hardened slice: richer ids, mesh targets, and less ad-hoc RGBA
    payload encoding.
-10. WBOIT follow-up slice: add any missing offscreen WBOIT readback/capture coverage, and tighten
-    DRP2 validation around pipeline color-target formats
-    versus render-pass attachment formats. Use
+10. WBOIT follow-up slice: DRP2 validation now rejects unsupported non-depth pipeline color-target
+    formats and has explicit negative coverage for pipeline/render-pass color-target count,
+    nonzero-index format, depth-presence, and depth/color class mismatches. Remaining work is any
+    missing offscreen WBOIT readback/capture coverage. Use
     [WBOIT_MESH_INTERACTIVE_PLAN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/WBOIT_MESH_INTERACTIVE_PLAN.md)
     as the implementation checklist.
 11. Done: DRP2/vklite descriptor refresh is implemented. Future work should treat it as a runtime
@@ -380,10 +381,8 @@ Deliver the next implementation slices in this order unless the user redirects:
     them, and update examples/docs that still present primitive-specific shading as primary.
 14. Multi-pass graph / transparency follow-up: keep WBOIT, depth peeling, blended volume, G-buffer,
     EDL, SSAO, SSAO blur, scene occlusion, and MSAA on the shared FramePlan graph path. The next
-    transparency work should tighten DRP2 validation around pipeline color-target formats versus
-    render-pass attachment formats, add any missing offscreen readback/capture coverage, and
-    continue explicit resource-access/layout-transition cleanup before adding another transparency
-    mode.
+    transparency work should add any missing offscreen readback/capture coverage and continue
+    explicit resource-access/layout-transition cleanup before adding another transparency mode.
 15. Sphere and dense-particle follow-up: sphere is now a standalone retained visual with material
     lighting, antialiased silhouettes, raycast mode, G-buffer output, and SSAO coverage. Remaining
     sphere work belongs in targeted follow-ups such as texture/equirectangular mapping, render-mode

@@ -573,6 +573,36 @@ Validation:
     filters, `just test scene`, and the full `just tests` run passed after the fix.
 
 
+### 2026-05-18: Phase 4 / DRP2 attachment target validation
+
+Completed the DRP2 semantic hardening slice for pipeline color targets versus render-pass
+attachments.
+
+Changes:
+
+1. Render-pipeline validation now rejects unsupported non-depth pipeline color-target formats before
+   the stream can reach backend pipeline creation.
+2. Expanded `test_drp2_render_pipeline_rejects_depth_color_target` to cover an unsupported
+   non-depth color-target format.
+3. Expanded `test_drp2_render_pipeline_attachment_validation` to cover pipeline/render-pass
+   color-target count mismatch, nonzero color-target format mismatch, and pass depth attachment
+   without matching pipeline depth state.
+4. Rechecked the WBOIT accumulation/resolve stream so inherited encoder render state remains valid
+   when a new pass replaces the pipeline before drawing.
+
+Validation:
+
+1. `cmake --build build --target dvztest_drp2 -j2`
+2. `./build/testing/dvztest_drp2 test_drp2_render_pipeline_rejects_depth_color_target`
+3. `./build/testing/dvztest_drp2 test_drp2_render_pipeline_attachment_validation`
+4. `./build/testing/dvztest_drp2 test_drp2_wboit_accumulation_resolve_stream`
+5. `direnv exec . just test drp2`
+6. `git diff --check`
+
+Note: `clang-tidy -p build --quiet src/drp2/semantic.c --` is still blocked by the current compile
+database/include setup because `semantic.c` cannot resolve `<volk.h>`.
+
+
 ## Executive Assessment
 
 The direction is correct and worth continuing. The proposal identifies the right failure mode:
