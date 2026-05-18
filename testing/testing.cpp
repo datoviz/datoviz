@@ -42,7 +42,7 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define TST_RESULT_NAME_WIDTH 92
+#define TST_RESULT_NAME_WIDTH 80
 #define TST_RESULT_TIME_WIDTH 10
 #define TST_RESULT_SEPARATOR_WIDTH                                                               \
     (4 + 2 + TST_RESULT_NAME_WIDTH + 1 + TST_RESULT_TIME_WIDTH)
