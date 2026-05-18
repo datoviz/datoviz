@@ -927,6 +927,7 @@ int test_app_offscreen(TstContext* suite, const TstCase* item)
     if (app == NULL)
     {
         log_warn("test_app_offscreen skipped: GPU context creation failed");
+        tst_skip(suite, "GPU context creation failed");
         dvz_scene_destroy(scene);
         return 0;
     }
@@ -977,6 +978,7 @@ int test_app_offscreen_timer_advances_in_app_run(TstContext* suite, const TstCas
     if (app == NULL)
     {
         log_warn("test_app_offscreen_timer_advances_in_app_run skipped: GPU context creation failed");
+        tst_skip(suite, "GPU context creation failed");
         dvz_scene_destroy(scene);
         return 0;
     }
@@ -1022,6 +1024,7 @@ int test_app_offscreen_timer_advances_in_render_once(TstContext* suite, const Ts
     {
         log_warn(
             "test_app_offscreen_timer_advances_in_render_once skipped: GPU context creation failed");
+        tst_skip(suite, "GPU context creation failed");
         dvz_scene_destroy(scene);
         return 0;
     }
@@ -1078,6 +1081,7 @@ int test_app_offscreen_render_enabled_gate(TstContext* suite, const TstCase* ite
     if (app == NULL)
     {
         log_warn("test_app_offscreen_render_enabled_gate skipped: GPU context creation failed");
+        tst_skip(suite, "GPU context creation failed");
         dvz_scene_destroy(scene);
         return 0;
     }
@@ -1120,6 +1124,7 @@ int test_app_external_surface_release_waits(TstContext* suite, const TstCase* it
     if (!dvz_window_glfw_init())
     {
         log_warn("test_app_external_surface_release_waits skipped: GLFW could not initialize");
+        tst_skip(suite, "GLFW could not initialize");
         return 0;
     }
 
@@ -1129,6 +1134,7 @@ int test_app_external_surface_release_waits(TstContext* suite, const TstCase* it
     {
         log_warn(
             "test_app_external_surface_release_waits skipped: GLFW returned no Vulkan extensions");
+        tst_skip(suite, "GLFW returned no Vulkan extensions");
         return 0;
     }
 
@@ -1146,6 +1152,7 @@ int test_app_external_surface_release_waits(TstContext* suite, const TstCase* it
     if (app == NULL)
     {
         log_warn("test_app_external_surface_release_waits skipped: GPU context creation failed");
+        tst_skip(suite, "GPU context creation failed");
         dvz_scene_destroy(scene);
         return 0;
     }
@@ -1161,6 +1168,7 @@ int test_app_external_surface_release_waits(TstContext* suite, const TstCase* it
     if (glfw_window == NULL)
     {
         log_warn("test_app_external_surface_release_waits skipped: GLFW window creation failed");
+        tst_skip(suite, "GLFW window creation failed");
         dvz_app_destroy(app);
         dvz_scene_destroy(scene);
         return 0;
@@ -1173,6 +1181,7 @@ int test_app_external_surface_release_waits(TstContext* suite, const TstCase* it
         log_warn(
             "test_app_external_surface_release_waits skipped: surface creation failed (%d)",
             (int)surface_res);
+        tst_skip(suite, "Vulkan surface creation failed");
         glfwDestroyWindow(glfw_window);
         dvz_app_destroy(app);
         dvz_scene_destroy(scene);
@@ -1244,6 +1253,7 @@ int test_app_offscreen_panel_three_visuals_all_drawn(TstContext* suite, const Ts
     if (app == NULL)
     {
         log_warn("test_app_offscreen_panel_three_visuals_all_drawn skipped: GPU context creation failed");
+        tst_skip(suite, "GPU context creation failed");
         dvz_scene_destroy(scene);
         return 0;
     }
@@ -1334,6 +1344,7 @@ int test_app_offscreen_point_depth_orders_overlap(TstContext* suite, const TstCa
     {
         log_warn(
             "test_app_offscreen_point_depth_orders_overlap skipped: GPU context creation failed");
+        tst_skip(suite, "GPU context creation failed");
         dvz_scene_destroy(scene);
         return 0;
     }
@@ -1412,6 +1423,7 @@ int test_app_offscreen_point_depth_cue_darkens_far(TstContext* suite, const TstC
     {
         log_warn(
             "test_app_offscreen_point_depth_cue_darkens_far skipped: GPU context creation failed");
+        tst_skip(suite, "GPU context creation failed");
         dvz_scene_destroy(scene);
         return 0;
     }
@@ -1471,6 +1483,7 @@ int test_app_offscreen_has_nonblank_pixels(TstContext* suite, const TstCase* ite
     if (app == NULL)
     {
         log_warn("test_app_offscreen_has_nonblank_pixels skipped: GPU context creation failed");
+        tst_skip(suite, "GPU context creation failed");
         dvz_scene_destroy(scene);
         return 0;
     }
@@ -1541,6 +1554,7 @@ int test_app_offscreen_pixel_square_has_nonblank_pixels(TstContext* suite, const
     if (app == NULL)
     {
         log_warn("test_app_offscreen_pixel_square_has_nonblank_pixels skipped: GPU context failed");
+        tst_skip(suite, "GPU context failed");
         dvz_scene_destroy(scene);
         return 0;
     }
@@ -1626,6 +1640,7 @@ int test_app_offscreen_points_edl_renders(TstContext* suite, const TstCase* item
     if (app == NULL)
     {
         log_warn("test_app_offscreen_points_edl_renders skipped: GPU context creation failed");
+        tst_skip(suite, "GPU context creation failed");
         dvz_scene_destroy(scene);
         return 0;
     }
@@ -1756,6 +1771,7 @@ int test_app_offscreen_mesh_ssao_changes_pixels(TstContext* suite, const TstCase
     if (app == NULL)
     {
         log_warn("test_app_offscreen_mesh_ssao_changes_pixels skipped: GPU context creation failed");
+        tst_skip(suite, "GPU context creation failed");
         dvz_scene_destroy(scene);
         return 0;
     }
@@ -1863,6 +1879,7 @@ int test_app_offscreen_sphere_ssao_darkens_contact(TstContext* suite, const TstC
     {
         log_warn(
             "test_app_offscreen_sphere_ssao_darkens_contact skipped: GPU context creation failed");
+        tst_skip(suite, "GPU context creation failed");
         dvz_scene_destroy(scene);
         return 0;
     }
@@ -1944,6 +1961,7 @@ int test_app_offscreen_records_dvzr_frames(TstContext* suite, const TstCase* ite
     if (app == NULL)
     {
         log_warn("test_app_offscreen_records_dvzr_frames skipped: GPU context creation failed");
+        tst_skip(suite, "GPU context creation failed");
         dvz_scene_destroy(scene);
         return 0;
     }
@@ -2035,6 +2053,7 @@ int test_app_offscreen_image_has_nonblank_pixels(TstContext* suite, const TstCas
     if (app == NULL)
     {
         log_warn("test_app_offscreen_image_has_nonblank_pixels skipped: GPU context creation failed");
+        tst_skip(suite, "GPU context creation failed");
         dvz_scene_destroy(scene);
         return 0;
     }
@@ -2117,6 +2136,7 @@ int test_app_offscreen_text_has_nonblank_pixels(TstContext* suite, const TstCase
     if (app == NULL)
     {
         log_warn("test_app_offscreen_text_has_nonblank_pixels skipped: GPU context creation failed");
+        tst_skip(suite, "GPU context creation failed");
         dvz_scene_destroy(scene);
         return 0;
     }
@@ -2217,6 +2237,7 @@ int test_app_offscreen_image_field_partial_update_changes_region(TstContext* sui
         log_warn(
             "test_app_offscreen_image_field_partial_update_changes_region skipped: GPU context "
             "creation failed");
+        tst_skip(suite, "GPU context creation failed");
         dvz_scene_destroy(scene);
         return 0;
     }
@@ -2357,6 +2378,7 @@ int test_app_offscreen_source_over_mesh_depth_and_blend(TstContext* suite, const
     {
         log_warn(
             "test_app_offscreen_source_over_mesh_depth_and_blend skipped: GPU context failed");
+        tst_skip(suite, "GPU context failed");
         dvz_scene_destroy(scene);
         return 0;
     }
@@ -2436,6 +2458,7 @@ int test_app_offscreen_depth_peel_mesh_two_layers(TstContext* suite, const TstCa
     if (app == NULL)
     {
         log_warn("test_app_offscreen_depth_peel_mesh_two_layers skipped: GPU context failed");
+        tst_skip(suite, "GPU context failed");
         dvz_scene_destroy(scene);
         return 0;
     }
@@ -2671,6 +2694,7 @@ int test_app_offscreen_lit_primitive_depth_orders_overlap(TstContext* suite, con
         log_warn(
             "test_app_offscreen_lit_primitive_depth_orders_overlap skipped: GPU context "
             "creation failed");
+        tst_skip(suite, "GPU context creation failed");
         dvz_scene_destroy(scene);
         return 0;
     }
@@ -2769,6 +2793,7 @@ int test_app_offscreen_lit_primitive_depth_cue_darkens_far(
         log_warn(
             "test_app_offscreen_lit_primitive_depth_cue_darkens_far skipped: GPU context "
             "creation failed");
+        tst_skip(suite, "GPU context creation failed");
         dvz_scene_destroy(scene);
         return 0;
     }
@@ -2866,6 +2891,7 @@ int test_app_offscreen_mesh_renders_nonblank(TstContext* suite, const TstCase* i
     if (app == NULL)
     {
         log_warn("test_app_offscreen_mesh_renders_nonblank skipped: GPU context creation failed");
+        tst_skip(suite, "GPU context creation failed");
         dvz_scene_destroy(scene);
         return 0;
     }
@@ -3125,6 +3151,7 @@ int test_app_offscreen_rotated_mesh_depth_orders_faces(TstContext* suite, const 
         log_warn(
             "test_app_offscreen_rotated_mesh_depth_orders_faces skipped: GPU context "
             "creation failed");
+        tst_skip(suite, "GPU context creation failed");
         dvz_scene_destroy(scene);
         return 0;
     }
@@ -3225,6 +3252,7 @@ int test_app_offscreen_camera_arcball_mesh_renders_cube(TstContext* suite, const
         log_warn(
             "test_app_offscreen_camera_arcball_mesh_renders_cube skipped: GPU context "
             "creation failed");
+        tst_skip(suite, "GPU context creation failed");
         dvz_scene_destroy(scene);
         return 0;
     }
@@ -3343,6 +3371,7 @@ int test_app_offscreen_shared_field_mixed_runtime_updates(TstContext* suite, con
         log_warn(
             "test_app_offscreen_shared_field_mixed_runtime_updates skipped: GPU context "
             "creation failed");
+        tst_skip(suite, "GPU context creation failed");
         dvz_scene_destroy(scene);
         return 0;
     }
@@ -3437,6 +3466,7 @@ int test_app_offscreen_retained_render_second_frame(TstContext* suite, const Tst
     if (app == NULL)
     {
         log_warn("test_app_offscreen_retained_render_second_frame skipped: GPU context creation failed");
+        tst_skip(suite, "GPU context creation failed");
         dvz_scene_destroy(scene);
         return 0;
     }
@@ -3513,6 +3543,7 @@ int test_app_offscreen_image_retained_render_second_frame(TstContext* suite, con
     if (app == NULL)
     {
         log_warn("test_app_offscreen_image_retained_render_second_frame skipped: GPU context creation failed");
+        tst_skip(suite, "GPU context creation failed");
         dvz_scene_destroy(scene);
         return 0;
     }
@@ -3641,6 +3672,7 @@ int test_app_offscreen_resize_reuses_runtime_with_mesh_and_image(TstContext* sui
         log_warn(
             "test_app_offscreen_resize_reuses_runtime_with_mesh_and_image skipped: GPU context "
             "creation failed");
+        tst_skip(suite, "GPU context creation failed");
         dvz_scene_destroy(scene);
         return 0;
     }
@@ -3753,6 +3785,7 @@ int test_app_offscreen_pick_probe_request_steady_state(TstContext* suite, const 
     if (app == NULL)
     {
         log_warn("test_app_offscreen_pick_probe_request_steady_state skipped: GPU context failed");
+        tst_skip(suite, "GPU context failed");
         dvz_scene_destroy(scene);
         return 0;
     }
@@ -3842,6 +3875,7 @@ int test_app_offscreen_two_panel_points_light_both_halves(TstContext* suite, con
     {
         log_warn(
             "test_app_offscreen_two_panel_points_light_both_halves skipped: GPU context creation failed");
+        tst_skip(suite, "GPU context creation failed");
         dvz_scene_destroy(scene);
         return 0;
     }
@@ -3911,6 +3945,7 @@ int test_app_offscreen_clear_color(TstContext* suite, const TstCase* item)
     if (app == NULL)
     {
         log_warn("test_app_offscreen_clear_color skipped: GPU context creation failed");
+        tst_skip(suite, "GPU context creation failed");
         dvz_scene_destroy(scene);
         return 0;
     }
@@ -3965,6 +4000,7 @@ int test_app_capture_rejects_wrong_dimensions(TstContext* suite, const TstCase* 
     if (app == NULL)
     {
         log_warn("test_app_capture_rejects_wrong_dimensions skipped: GPU context creation failed");
+        tst_skip(suite, "GPU context creation failed");
         dvz_scene_destroy(scene);
         return 0;
     }
@@ -4006,6 +4042,7 @@ int test_app_capture_rejects_undersized_buffer(TstContext* suite, const TstCase*
     if (app == NULL)
     {
         log_warn("test_app_capture_rejects_undersized_buffer skipped: GPU context creation failed");
+        tst_skip(suite, "GPU context creation failed");
         dvz_scene_destroy(scene);
         return 0;
     }
@@ -4074,6 +4111,7 @@ int test_app_offscreen_volume_slice_renders_field(TstContext* suite, const TstCa
     if (app == NULL)
     {
         log_warn("test_app_offscreen_volume_slice_renders_field skipped: GPU context failed");
+        tst_skip(suite, "GPU context failed");
         dvz_scene_destroy(scene);
         return 0;
     }
@@ -4161,6 +4199,7 @@ int test_app_offscreen_volume_mip_renders_bright_slice(TstContext* suite, const 
     if (app == NULL)
     {
         log_warn("test_app_offscreen_volume_mip_renders_bright_slice skipped: GPU context failed");
+        tst_skip(suite, "GPU context failed");
         dvz_scene_destroy(scene);
         return 0;
     }
@@ -4243,6 +4282,7 @@ int test_app_offscreen_volume_composite_renders_field(TstContext* suite, const T
     if (app == NULL)
     {
         log_warn("test_app_offscreen_volume_composite_renders_field skipped: GPU context failed");
+        tst_skip(suite, "GPU context failed");
         dvz_scene_destroy(scene);
         return 0;
     }
@@ -4778,6 +4818,7 @@ int test_app_offscreen_volume_slice_mesh_scene_occlusion_toggle(TstContext* suit
         log_warn(
             "test_app_offscreen_volume_slice_mesh_scene_occlusion_toggle skipped: GPU context "
             "failed");
+        tst_skip(suite, "GPU context failed");
         dvz_scene_destroy(scene);
         return 0;
     }
@@ -4787,6 +4828,7 @@ int test_app_offscreen_volume_slice_mesh_scene_occlusion_toggle(TstContext* suit
         log_warn(
             "test_app_offscreen_volume_slice_mesh_scene_occlusion_toggle skipped: app window "
             "failed");
+        tst_skip(suite, "app window creation failed");
         dvz_app_destroy(app);
         dvz_scene_destroy(scene);
         return 0;
@@ -4898,6 +4940,7 @@ int test_app_offscreen_volume_depth_occluded_by_primitive(TstContext* suite, con
     if (app == NULL)
     {
         log_warn("test_app_offscreen_volume_depth_occluded_by_primitive skipped: GPU context failed");
+        tst_skip(suite, "GPU context failed");
         dvz_scene_destroy(scene);
         return 0;
     }
