@@ -1,11 +1,10 @@
 # Scene Visual Family Implementation Decisions
 
 > **Execution Status**
-> - **Status:** `ACTIVE IMPLEMENTATION CONTRACT`
-> - **Updated on:** `2026-05-17`
-> - **Purpose:** lock the implementation decisions for the pixel, point, marker, segment, path,
->   image, sphere, and mesh visual-family consistency pass so independent workers can proceed
->   without making API or semantic decisions mid-implementation.
+> - **Status:** `ACTIVE FOLLOW-UP CONTRACT`
+> - **Updated on:** `2026-05-18`
+> - **Purpose:** preserve the landed first-slice visual-family decisions and define the remaining
+>   follow-up lanes for pixel, point, marker, segment, path, image, sphere, and mesh consistency.
 
 
 ## Scope
@@ -83,20 +82,20 @@ Additional visual-consistency updates landed on 2026-05-17:
 
 Implemented:
 
-1. `pixel`: dense `position`/`color`/`size`, GLSL native square points, WGSL instanced quads,
-   offscreen nonblank smoke, and GPU square picking.
-2. `point`: dense `position`/`color`/`size`, antialiased circular coverage, edge/stroke styling via
-   `dvz_point_set_style()`, GLSL native point-coordinate rendering, WGSL instanced quads, and GPU
-   circular picking.
+1. `pixel`: public `position`/`color`/`pixel_size`, GLSL native square points, WGSL instanced
+   quads, offscreen nonblank smoke, and GPU square picking.
+2. `point`: public `position`/`color`/`diameter`, antialiased circular coverage, edge/stroke
+   styling via `dvz_point_set_style()`, GLSL native point-coordinate rendering, WGSL instanced
+   quads, and GPU circular picking.
 3. `marker`: public `dvz_marker()`, code-SDF shapes `disc`, `square`, `triangle`, `diamond`,
-   `cross`, and `ring`, dense `position`/`color`/`size`/`angle`/`shape`, marker style API, GLSL
+   `cross`, and `ring`, public `position`/`color`/`diameter`/`angle`/`shape`, marker style API, GLSL
    marker rendering, WGSL point-like lowering, and GPU bounding-box picking.
 4. `segment`: public `dvz_segment()`, `position_start`/`position_end` endpoint attributes,
-   per-item `line_width`, RGBA color, analytic GLSL stroke quads, non-arrow caps, and cap
+   per-item `stroke_width`, RGBA color, analytic GLSL stroke quads, non-arrow caps, and cap
    validation/API.
-5. `path`: existing primitive line-strip path plus a stroked path lane when per-point `line_width`
-   is present, open subpath lengths via `dvz_path_set_subpaths()`, and GLSL lowering through the
-   segment stroke pipeline.
+5. `path`: existing primitive line-strip path plus a stroked path lane when per-point
+   `stroke_width` is present, open subpath lengths via `dvz_path_set_subpaths()`, and GLSL lowering
+   through the segment stroke pipeline.
 
 Validation recorded after the batch:
 
@@ -114,7 +113,7 @@ The next batch should focus on picking and backend parity, in this order:
 
 1. Segment/path picking. Add GPU-backed hit requests for screen-space stroked segments first, then
    reuse the same distance-to-stroke logic for stroked paths. A hit should use the visible
-   `line_width / 2` region plus a small tolerance; return the segment index for `segment` and the
+   `stroke_width / 2` region plus a small tolerance; return the segment index for `segment` and the
    subpath/path identity for `path`.
 2. Exact marker SDF-mask picking. Keep the current marker bounding-box picker as the broad first
    pass, then reject hits outside the active code-SDF shape so triangles, crosses, rings, and
@@ -132,8 +131,10 @@ path, dash, arrow, and SVG follow-up details live in `agents/soon/SCENE_VECTOR_V
 
 Implemented first slice:
 
-1. Keep the current retained API shape: `position`, `color`, and `size` are dense attributes.
-2. `size` remains a per-item attribute in the first slice, matching current implementation and tests.
+1. Keep the current retained API shape: `position`, `color`, and `pixel_size` are dense public
+   attributes.
+2. Internal storage may still reuse the historical `size` slot, but public code should use
+   `pixel_size`.
 3. Colors are RGBA only.
 4. Sizes are screen-space pixels only.
 5. No `shift`, scalar color, `PER_GROUP`, default-size optimization, or `size_space = data` yet.
@@ -154,8 +155,9 @@ Deferred:
 
 Implemented first slice:
 
-1. Keep current dense `position`, `color`, and `size` attributes.
-2. `size` is the point diameter in screen pixels.
+1. Keep current dense `position`, `color`, and `diameter` public attributes.
+2. `diameter` is the point diameter in screen pixels. Internal storage may still reuse the
+   historical `size` slot.
 3. Colors are RGBA only.
 4. Antialiased circular point rendering is in place.
 5. Point edge/stroke styling is in place.
@@ -167,7 +169,7 @@ Naming:
 
 1. `color` remains the face/fill color attribute.
 2. `edge_color` is the stroke/edge color.
-3. `line_width` is the stroke width in screen pixels.
+3. `stroke_width` is the stroke width in screen pixels.
 4. Use marker-compatible style aspects where needed: `filled`, `stroke`, and `outline`.
 
 Backend lowering:
@@ -196,7 +198,7 @@ Implemented first slice:
 4. Initial built-in shapes are `disc`, `square`, `triangle`, `diamond`, `cross`, and `ring`.
 5. Use v0.3 marker GLSL SDF code as design prior art and port selectively into the v0.4 shader
    registry and runtime path.
-6. Attributes: `position`, `color`, `size`, and `angle`.
+6. Attributes: `position`, `color`, `diameter`, and `angle`.
 7. Optional per-item shape attribute name: `shape`.
 8. The `shape` attribute uses `uint32_t`, not `uint8_t`, for alignment and future symbol/atlas
    consistency.
@@ -208,7 +210,7 @@ Style naming:
 
 1. `color` is fill/tint color.
 2. `edge_color` is edge/stroke color.
-3. `line_width` is stroke width in screen pixels.
+3. `stroke_width` is stroke width in screen pixels.
 4. Style aspects are `filled`, `stroke`, and `outline`.
 
 Deferred:
@@ -253,12 +255,12 @@ Deferred:
 Ordering:
 
 1. The segment first slice has landed.
-2. The current path implementation keeps primitive line-strip rendering when `line_width` is absent
-   and lowers to the segment stroke pipeline when `line_width` is present.
+2. The current path implementation keeps primitive line-strip rendering when `stroke_width` is
+   absent and lowers to the segment stroke pipeline when `stroke_width` is present.
 
 Implemented first stroked path slice:
 
-1. The current line-strip convenience path is preserved for paths without `line_width`.
+1. The current line-strip convenience path is preserved for paths without `stroke_width`.
 2. Explicit open subpath metadata is provided by `dvz_path_set_subpaths()`.
 3. `dvz_visual_set_data("span_sizes", ...)` is not used as the primary public API.
 4. Default caps are `butt` through the segment stroke pipeline.

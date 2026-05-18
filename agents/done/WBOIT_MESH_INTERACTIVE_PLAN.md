@@ -1,12 +1,14 @@
 # WBOIT Mesh Interactive Plan
 
 > **Execution Status**
-> - **Status:** `ACTIVE EXECUTION PLAN`
-> - **Updated on:** `2026-05-15`
-> - **Purpose:** implementation entry point for a proper interactive 3D mesh example using
->   weighted blended order-independent transparency through the scene -> DRP2 -> vklite path.
+> - **Status:** `COMPLETED EXECUTION RECORD`
+> - **Updated on:** `2026-05-18`
+> - **Purpose:** preserve the completed weighted blended order-independent transparency scene ->
+>   DRP2 -> vklite implementation and interactive example plan.
+> - **Current location:** `agents/done/`; active transparency follow-ups are tracked from
+>   [../now/V0_4_NEXT_STEPS.md](../now/V0_4_NEXT_STEPS.md).
 
-This document is the practical starting point when resuming WBOIT work.
+This document is the historical implementation record for the first WBOIT scene/app slice.
 
 Normative and proposal context lives in:
 
@@ -24,7 +26,7 @@ Low-level Vulkan/vklite proof material already exists in:
 
 ## Target Outcome
 
-Add a native interactive C example, likely `examples/c/hello_mesh_wboit_glfw.c`, that renders an
+Add a native interactive C example, now `examples/c/techniques/wboit.c`, that renders an
 arcball-controlled 3D scene with at least one transparent mesh visual. The current example uses one
 WBOIT cube between opaque reference cards and includes a GUI overlay for tuning cube RGB, alpha,
 ambient/diffuse strength, and light direction at runtime.
@@ -59,7 +61,7 @@ Current implementation status on `2026-05-15`:
    shaders, RGBA16F/R16F intermediate targets, additive per-target blending, and final resolve.
 7. The DRP2 vklite runtime executes the multi-pass WBOIT path through borrowed app/canvas frame
    command buffers, including intermediate texture transitions and transient depth lifetime handling.
-8. `examples/c/hello_mesh_wboit_glfw.c` exists and validates as a bounded GLFW smoke.
+8. `examples/c/techniques/wboit.c` exists and validates as a bounded GLFW smoke.
 
 ### 1. Public scene transparency API
 
@@ -256,7 +258,7 @@ area. On macOS, use `direnv exec .` for Vulkan-path tests.
 7. Done: add scene WBOIT accumulation and resolve shaders.
 8. Done: lower scene WBOIT FramePlan nodes to explicit DRP2 command streams.
 9. Done: add focused scene/vklite WBOIT regression tests.
-10. Done: add `examples/c/hello_mesh_wboit_glfw.c`.
+10. Done: add `examples/c/techniques/wboit.c`.
 11. Done: add live GUI controls for WBOIT cube color, alpha, ambient/diffuse, and light direction.
 12. Done: add opaque rear/front reference cards and labeled DRP2 trace metadata so the live example
     can diagnose whether opaque geometry writes depth before WBOIT accumulation. The expected stream

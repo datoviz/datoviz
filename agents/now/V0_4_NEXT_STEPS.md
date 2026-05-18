@@ -176,36 +176,36 @@ Executable WBOIT scene/app slice on `2026-05-15`: `DVZ_ALPHA_BLENDED` is now the
 alpha path and `DVZ_ALPHA_WBOIT` is the explicit weighted blended OIT path. Scene lowering emits the
 WBOIT accumulation/resolve DRP2 shape with scene-owned shaders, vklite records all passes into the
 active borrowed frame command buffer, and transient depth/color transitions are synchronized for the
-multi-pass app path. `examples/c/hello_mesh_wboit_glfw.c` now exercises an arcball mesh scene with
+multi-pass app path. `examples/c/techniques/wboit.c` now exercises an arcball mesh scene with
 a single lit WBOIT transparent cube between opaque reference cards. The example also has a GUI panel
 for live cube RGB/alpha,
 ambient/diffuse, and light-direction tuning. Validation before this simplification: `just build`,
 `./build/testing/dvztest_scene test_scene_visual_alpha_mode` (`6/6`),
 `./build/testing/dvztest_drp2 test_drp2` (`86/86`), and
-`./build/examples/c/hello_mesh_wboit_glfw 2` passed without validation output.
+`./build/examples/c/techniques/wboit 2` passed without validation output.
 
 Follow-up WBOIT/depth diagnostic slice on `2026-05-15`: DRP2 streams now carry non-executable debug
 labels for scene resource/object ids, and app full trace prints ids as `id(label)` where available.
-This makes `DVZ_DRP2_TRACE=full DVZ_DRP2_TRACE_COLOR=0 ./build/examples/c/hello_mesh_wboit_glfw 2`
+This makes `DVZ_DRP2_TRACE=full DVZ_DRP2_TRACE_COLOR=0 ./build/examples/c/techniques/wboit 2`
 usable for comparing scene intent to DRP2 commands. The WBOIT example/regression now verifies that
 fixed background primitives do not write depth, opaque unlit reference primitives do write depth,
 WBOIT accumulation depth-tests without writing, and the resolve pass composites into `rt` without a
 depth attachment. Focused validation: `cmake --build build --target dvztest_drp2 dvztest_scene
-hello_mesh_wboit_glfw -j2`, `./build/testing/dvztest_drp2 test_drp2_stream_debug_labels`,
+techniques/wboit -j2`, `./build/testing/dvztest_drp2 test_drp2_stream_debug_labels`,
 `./build/testing/dvztest_scene test_scene_visual_alpha_mode_emits_wboit_drp2`, and bounded labeled
 trace smoke.
 
-WBOIT visual diagnostic follow-up on `2026-05-15`: `hello_mesh_wboit_glfw` keeps the dark background
+WBOIT visual diagnostic follow-up on `2026-05-15`: `techniques/wboit` keeps the dark background
 by default, has a GUI toggle for a light comparison background, and uses tuned cube/reference colors
 so face overlap and front-card occlusion are easier to judge during live rotation.
 
-WBOIT resize follow-up on `2026-05-16` (`e18cca96`): `hello_mesh_wboit_glfw` exposed the same stale
+WBOIT resize follow-up on `2026-05-16` (`e18cca96`): `techniques/wboit` exposed the same stale
 sampled-descriptor class previously seen in the depth-peeling resize path. WBOIT resolve bind-group
 emission now fingerprints the sampled accumulation/weight targets and target extent, so resize
 rebuilds the descriptor set instead of sampling destroyed image views. Validation: `git diff
 --check`, `just build`, `just test test_scene_visual_alpha_mode_emits_wboit_drp2`,
 `just test test_scene_visual_alpha_mode_wboit_glsl_executes`,
-`./build/examples/c/hello_mesh_wboit_glfw 60`, and `just test scene` (`203/203`). This is a
+`./build/examples/c/techniques/wboit 60`, and `just test scene` (`203/203`). This is a
 tactical per-technique guardrail. The preferred generic fix is to make DRP2/vklite refresh
 dependent bind-group descriptors whenever a stable resource id is recreated; see
 [DRP2_DESCRIPTOR_REFRESH_PLAN.md](/home/cyrille/GIT/Viz/datoviz/agents/done/DRP2_DESCRIPTOR_REFRESH_PLAN.md).
@@ -366,7 +366,7 @@ Deliver the next implementation slices in this order unless the user redirects:
     formats and has explicit negative coverage for pipeline/render-pass color-target count,
     nonzero-index format, depth-presence, and depth/color class mismatches. Remaining work is any
     missing offscreen WBOIT readback/capture coverage. Use
-    [WBOIT_MESH_INTERACTIVE_PLAN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/WBOIT_MESH_INTERACTIVE_PLAN.md)
+    [WBOIT_MESH_INTERACTIVE_PLAN.md](/home/cyrille/GIT/Viz/datoviz/agents/done/WBOIT_MESH_INTERACTIVE_PLAN.md)
     as the implementation checklist.
 11. Done: DRP2/vklite descriptor refresh is implemented. Future work should treat it as a runtime
     invariant and add focused coverage only when a new resource kind or backend handle lifetime can

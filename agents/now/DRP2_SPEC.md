@@ -1,11 +1,14 @@
 > **Execution Status**
-> - **Status:** `ACTIVE DRP2 EXECUTION NOTE`
-> - **Updated on:** `2026-05-13`
+> - **Status:** `ACTIVE DRP2 CONTRACT/FIXTURE NOTE`
+> - **Updated on:** `2026-05-18`
 > - **Purpose:** Keep the DRP2 `2.0` contract executable and disciplined while implementation work
 >   proceeds.
 > - **Current branch priority:** DRP2 is now both an executable spec lane and an active C
 >   implementation/runtime lane. Keep prose, schemas, fixtures, stream code, runtime behavior, and
 >   scene emitters aligned.
+> - **Related active lane:** DVZR recording/replay is tracked in
+>   [V0_4_NEXT_STEPS.md](V0_4_NEXT_STEPS.md); keep DRP2 portability changes coordinated with that
+>   lane, but do not turn this file into the DVZR execution checklist.
 
 # DRP2 Spec Phase
 
@@ -25,7 +28,9 @@ The current implementation plan now specifically pressures DRP2 with:
 3. retained sampled-field texture updates and colormap scale binding,
 4. active per-panel depth attachments and depth/stencil state,
 5. active picking/probe readbacks for the first point/image scene request slice,
-6. early browser/WebGPU replay pressure that should stay narrow and contract-oriented.
+6. early browser/WebGPU replay pressure that should stay narrow and contract-oriented,
+7. DVZR recording/replay portability pressure, especially when scene/app streams expose raw
+   fallback commands.
 
 
 ## Current Status
@@ -94,8 +99,10 @@ Verified on this revision:
 
 Current executable DRP2 corpus status:
 
-1. `119/119` fixtures passing
-2. focused runner tests must be kept in lockstep with fixture tag growth
+1. `123/123` DRP2 fixtures passing in the latest recorded `just spec-check` slice
+2. `35/35` WebGPU preflight fixtures passing in the latest recorded `just spec-check` slice
+3. `52` fixture-runner tests and `7` schema/generation tests passing in that recorded slice
+4. focused runner tests must be kept in lockstep with fixture tag growth
 
 Current rule for upcoming work:
 

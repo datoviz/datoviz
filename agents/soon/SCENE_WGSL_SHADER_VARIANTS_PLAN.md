@@ -35,7 +35,7 @@ The scene side already has a shader registry boundary:
    fills format-aware shader fields for the retained visual path.
 4. `spec/scene/implementation/VISUAL_SHADER_REFACTOR.md` is now the active shader ABI and WGSL
    parity checklist.
-5. `agents/now/SCENE_CONVERTER_REFACTOR_PLAN.md` already recommends file-backed runtime visual
+5. `agents/done/SCENE_CONVERTER_REFACTOR_PLAN.md` records the file-backed runtime visual
    shaders under `src/scene/glsl/` and extending the existing root CMake shader pipeline.
 
 The first retained-scene WGSL emission slice is implemented for the active point/pixel,

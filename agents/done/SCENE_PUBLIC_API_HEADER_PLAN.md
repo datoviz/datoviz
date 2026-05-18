@@ -1,10 +1,13 @@
 # Scene Public API Header Plan
 
 > **Execution Status**
-> - **Status:** `HEADER SPLIT LANDED; NARROW IMPLEMENTATIONS ACTIVE`
-> - **Updated on:** `2026-05-13`
-> - **Purpose:** record the current public scene header split and identify which declared API groups
->   still need implementation.
+> - **Status:** `COMPLETED HEADER SPLIT RECORD`
+> - **Updated on:** `2026-05-18`
+> - **Purpose:** preserve the public scene header split history after the broad header-drafting
+>   task landed.
+> - **Current location:** `agents/done/`; current public API work should start from
+>   [../../spec/scene/api/API_SURFACE.md](../../spec/scene/api/API_SURFACE.md),
+>   [../now/V0_4_NEXT_STEPS.md](../now/V0_4_NEXT_STEPS.md), and focused `agents/soon/` plans.
 
 
 ## Current State
@@ -83,7 +86,10 @@ Partially implemented / semantic bookkeeping only:
    for names that already exist.
 
 
-## Recommended Implementation Order
+## Historical Implementation Order
+
+The sequence below is retained as context for the header split and first implementation slices. It
+is not the current active execution order.
 
 1. Native 3D/depth/arcball pressure before adding more API surface.
 2. Manual interactive examples for the implemented point/image pick-probe path.

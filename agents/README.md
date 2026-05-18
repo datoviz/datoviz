@@ -15,6 +15,9 @@ remain after older plans are retired or moved:
 1. [now/V0_4_NEXT_STEPS.md](now/V0_4_NEXT_STEPS.md)
 2. [now/V0_4_RELEASE_READINESS_PLAN.md](now/V0_4_RELEASE_READINESS_PLAN.md)
 3. [now/TEST_RUNNER_MODERNIZATION.md](now/TEST_RUNNER_MODERNIZATION.md)
+4. [now/DRP2_SPEC.md](now/DRP2_SPEC.md)
+5. [now/VISUAL_FAMILY_IMPLEMENTATION_DECISIONS.md](now/VISUAL_FAMILY_IMPLEMENTATION_DECISIONS.md)
+6. [now/IMAGE_PICKING_RECOVERY_PLAN.md](now/IMAGE_PICKING_RECOVERY_PLAN.md)
 
 Near-term work that is expected soon, but should not crowd the active entry-point directory, lives
 in [soon/](soon/). This includes the WebGPU, WASM, dual-depth-peeling, and screen-space volume
@@ -31,16 +34,22 @@ If resuming work on the branch:
    release candidates, or communication planning.
 3. Read [now/TEST_RUNNER_MODERNIZATION.md](now/TEST_RUNNER_MODERNIZATION.md) before changing the
    C test framework, suite registration, test binaries, or filter/reporting behavior.
-4. Read [../spec/scene/README.md](../spec/scene/README.md) before changing scene semantics,
+4. Read [now/VISUAL_FAMILY_IMPLEMENTATION_DECISIONS.md](now/VISUAL_FAMILY_IMPLEMENTATION_DECISIONS.md)
+   before extending pixel, point, marker, segment, path, image, sphere, or mesh first-slice
+   behavior.
+5. Read [now/IMAGE_PICKING_RECOVERY_PLAN.md](now/IMAGE_PICKING_RECOVERY_PLAN.md) before changing
+   image probe coordinates, hidden pick-capable image behavior, panzoom probe mapping, or CPU
+   fallback behavior.
+6. Read [../spec/scene/README.md](../spec/scene/README.md) before changing scene semantics,
    public scene API shape, frame planning, visual families, interaction, annotations, scales, or
    runtime boundaries.
-5. Read [../spec/scene/api/API_SURFACE.md](../spec/scene/api/API_SURFACE.md) before changing public
+7. Read [../spec/scene/api/API_SURFACE.md](../spec/scene/api/API_SURFACE.md) before changing public
    scene API shape or adding new scene object families.
-6. Read [../spec/drp2/README.md](../spec/drp2/README.md) and
+8. Read [../spec/drp2/README.md](../spec/drp2/README.md) and
    [now/DRP2_SPEC.md](now/DRP2_SPEC.md), if it is still present in `now/`, before touching
    `spec/drp2/`, `src/drp2/`, or
    DRP2-emitting scene code.
-7. Read [done/SCENE_DRP2_IMPLEMENTATION.md](done/SCENE_DRP2_IMPLEMENTATION.md) and
+9. Read [done/SCENE_DRP2_IMPLEMENTATION.md](done/SCENE_DRP2_IMPLEMENTATION.md) and
    [done/DRP2_SCENE_SAFETY.md](done/DRP2_SCENE_SAFETY.md) when touching the completed first
    scene -> DRP2 -> runtime slice.
 
@@ -102,6 +111,10 @@ Recently retired or historical notes:
 1. [done/REFACTOR_STATUS_2026-03-23.md](done/REFACTOR_STATUS_2026-03-23.md)
 2. [done/RENDER_CONTRACT_RESOLVER_AUDIT.md](done/RENDER_CONTRACT_RESOLVER_AUDIT.md)
 3. [done/PROTEIN_RIBBON_MESH_IMPROVEMENT.md](done/PROTEIN_RIBBON_MESH_IMPROVEMENT.md)
+4. [done/SCENE_PUBLIC_API_HEADER_PLAN.md](done/SCENE_PUBLIC_API_HEADER_PLAN.md)
+5. [done/SCENE_CONVERTER_REFACTOR_PLAN.md](done/SCENE_CONVERTER_REFACTOR_PLAN.md)
+6. [done/SCENE_DRP2_REFACTOR_OPPORTUNITIES.md](done/SCENE_DRP2_REFACTOR_OPPORTUNITIES.md)
+7. [done/WBOIT_MESH_INTERACTIVE_PLAN.md](done/WBOIT_MESH_INTERACTIVE_PLAN.md)
 
 ### `later/`
 

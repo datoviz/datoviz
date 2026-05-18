@@ -1,10 +1,12 @@
 # Scene Converter Refactor Plan
 
 > **Execution Status**
-> - **Status:** `POST-SPLIT FOLLOW-UP; SCENE.C DOMAIN SPLIT CONTINUES`
-> - **Updated on:** `2026-05-14`
-> - **Scope:** track the remaining scene -> DRP2 emission cleanups after the first
->   behavior-preserving `src/scene/converter.c` split.
+> - **Status:** `DONE; HISTORICAL CONVERTER SPLIT RECORD`
+> - **Updated on:** `2026-05-18`
+> - **Scope:** preserve the completed scene -> DRP2 converter split and follow-up decomposition
+>   history.
+> - **Current location:** `agents/done/`; current scene/runtime pressure work is tracked in
+>   [../now/V0_4_NEXT_STEPS.md](../now/V0_4_NEXT_STEPS.md).
 
 
 ## Current State
@@ -57,9 +59,10 @@ construction; `request_execute.c` owns request runtime execution and readback ha
 `test_scene.c` is now an aggregator, with focused domain files under `src/scene/tests/`. The first
 DRP2 follow-up split is also complete:
 shared runtime structs moved to `src/drp2/_runtime.h`, semantic validation moved to
-`runtime_semantic.c`, the vklite backend is split across object-registry, pipeline, transfer, pass,
-and dispatch files, DRP2 stream JSON serialization lives in `serialization.c`, and the shared JSON
-builder moved to `src/common/_json.h`. The remaining high-payoff work is now implementation
+`semantic.c`, the vklite backend is split across `backend.c`, `objects.c`, `pipeline.c`,
+`transfer.c`, `pass.c`, and dispatch files, DRP2 stream JSON serialization lives in
+`serialization.c`, and the shared JSON builder moved to `src/common/_json.h`. The remaining
+high-payoff work is now implementation
 pressure on the active scene -> DRP2 -> app path rather than mechanical decomposition.
 
 The rest of this document is now a follow-up tracker. Sections describing already-created files are

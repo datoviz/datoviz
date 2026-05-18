@@ -1,10 +1,12 @@
 # Scene / DRP2 Refactor Opportunities
 
 > **Execution Status**
-> - **Status:** `ACTIVE FOLLOW-UP TRACKER; STRUCTURAL SPLITS COMPLETE FOR CURRENT SLICE`
-> - **Updated on:** `2026-05-14`
-> - **Scope:** identify high-payoff cleanup and architecture work outside the active
->   scene -> DRP2 emitter split.
+> - **Status:** `DONE; STRUCTURAL REFACTOR OPPORTUNITIES LANDED`
+> - **Updated on:** `2026-05-18`
+> - **Scope:** preserve the completed scene, request-path, DRP2 runtime, serialization, and test
+>   decomposition record.
+> - **Current location:** `agents/done/`; current follow-up work should be safety- or
+>   behavior-driven and tracked from [../now/V0_4_NEXT_STEPS.md](../now/V0_4_NEXT_STEPS.md).
 
 
 ## Context
@@ -62,8 +64,9 @@ for malformed typed visual metadata, covering the first item in the suggested or
 This lane is now mostly in maintenance mode: add diagnostics/typed metadata only when new
 retained paths expose a concrete gap. The `scene.c` domain split is complete for the currently
 identified slices. The first DRP2 runtime decomposition pass is now complete: shared runtime types
-moved to `_runtime.h`, semantic validation moved to `runtime_semantic.c`, and the vklite backend is
-split across object-registry, pipeline, transfer, pass, and dispatch files. DRP2 stream JSON
+moved to `_runtime.h`, semantic validation moved to `semantic.c`, and the vklite backend is split
+across `backend.c`, `objects.c`, `pipeline.c`, `transfer.c`, `pass.c`, and dispatch files.
+DRP2 stream JSON
 serialization now lives in `serialization.c`, and the generic JSON builder is shared from
 `src/common/_json.h`.
 
@@ -141,22 +144,22 @@ the outward surface.
 implementation. That makes ownership and failure-path review harder than it needs to be.
 
 Status: **done for the first decomposition pass**. The shared runtime types now live in
-`src/drp2/_runtime.h`; semantic validation lives in `runtime_semantic.c`; and the vklite backend is
-split across object-registry, pipeline, transfer, pass, and dispatch files. `runtime.c` is now the
-public facade and runtime lifecycle/configuration owner.
+`src/drp2/_runtime.h`; semantic validation lives in `semantic.c`; and the vklite backend is split
+across object-registry, pipeline, transfer, pass, and dispatch files. `runtime.c` is now the public
+facade and runtime lifecycle/configuration owner.
 
 Current ownership:
 
 1. `runtime.c` - public facade and runtime configuration/lifecycle.
-2. `runtime_semantic.c` - semantic object state, validation, state clone/commit, and command rules.
-3. `runtime_vklite_objects.c` - vklite object registry, destruction, image-view lookup,
-   state cleanup, and deferred destruction.
-4. `runtime_vklite_pipeline.c` - shaderc loading, shader modules, bind group layouts, bind groups,
-   render pipelines, and compute pipelines.
-5. `runtime_vklite_transfer.c` - buffer/texture writes, staging, copies, and buffer download.
-6. `runtime_vklite_pass.c` - command buffers, render passes, compute passes, viewport/scissor,
-   draw/dispatch, and submit handling.
-7. `runtime_vklite.c` - vklite runtime dispatch and backend command routing.
+2. `semantic.c` - semantic object state, validation, state clone/commit, and command rules.
+3. `objects.c` - vklite object registry, destruction, image-view lookup, state cleanup, and
+   deferred destruction.
+4. `pipeline.c` - shaderc loading, shader modules, bind group layouts, bind groups, render
+   pipelines, and compute pipelines.
+5. `transfer.c` - buffer/texture writes, staging, copies, and buffer download.
+6. `pass.c` - command buffers, render passes, compute passes, viewport/scissor, draw/dispatch, and
+   submit handling.
+7. `backend.c` - vklite runtime dispatch and backend command routing.
 
 Further runtime work should now be safety- or behavior-driven rather than mechanical: tighten
 failure paths, transient cleanup, borrowed-frame ownership, and diagnostics only where tests or
