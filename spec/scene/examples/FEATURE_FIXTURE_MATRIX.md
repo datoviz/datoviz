@@ -8,6 +8,11 @@ This matrix is an implementation guide for building a compact example suite. It 
 runtime semantics. It records what each fixture should demonstrate, what layer it should use, and
 which optional capabilities it requires.
 
+Release staging is not decided in this file. Use
+[EXAMPLE_RELEASE_STAGING.md](EXAMPLE_RELEASE_STAGING.md) to decide whether a fixture or worked
+example is `v0.4 required`, `v0.4 experimental`, `v0.4 fixture-only`, `v0.5`, `later`, or
+`external/GSP`. This matrix should stay focused on small, one-feature validation artifacts.
+
 ## Principles
 
 1. **One feature per fixture.** Avoid combining multiple visual families, controllers, effects, GUI
@@ -18,8 +23,9 @@ which optional capabilities it requires.
    field over external datasets.
 4. **Make optional dependencies explicit.** GLFW, GUI/cimgui, CUDA/NVENC, Kvazaar, WebGPU, and
    external-memory fixtures should be gated in CMake and documented in the fixture row.
-5. **Separate fixtures from showcases.** Fixtures prove one API shape; showcase examples may combine
-   features into richer applications.
+5. **Separate fixtures from showcases.** Fixtures prove one API shape; showcase examples may
+   combine features into richer applications. A fixture can be release-critical without becoming a
+   gallery example.
 6. **Keep low-level examples in their own track.** Direct `vk`, `vklite`, `canvas`, `stream`, and
    `drp2` examples are useful, but they target power users and should not obscure the scene examples.
 

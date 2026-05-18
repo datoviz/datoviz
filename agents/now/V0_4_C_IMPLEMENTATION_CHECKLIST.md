@@ -14,6 +14,8 @@ It complements:
    v0.3 regression checklist, and post-feature-completion work.
 3. [`../soon/SCENE_EXAMPLE_PRIORITIZATION.md`](../soon/SCENE_EXAMPLE_PRIORITIZATION.md): example
    priority and capability matrix.
+4. [`../../spec/scene/examples/EXAMPLE_RELEASE_STAGING.md`](../../spec/scene/examples/EXAMPLE_RELEASE_STAGING.md):
+   example release targets, current readiness, and v0.4/v0.5/later classification.
 
 
 ## How To Use This File
@@ -302,6 +304,7 @@ Primary docs:
 
 1. [`../soon/SCENE_EXAMPLE_PRIORITIZATION.md`](../soon/SCENE_EXAMPLE_PRIORITIZATION.md)
 2. [`../../spec/scene/examples/README.md`](../../spec/scene/examples/README.md)
+3. [`../../spec/scene/examples/EXAMPLE_RELEASE_STAGING.md`](../../spec/scene/examples/EXAMPLE_RELEASE_STAGING.md)
 
 
 ### 10. Runtime Hardening

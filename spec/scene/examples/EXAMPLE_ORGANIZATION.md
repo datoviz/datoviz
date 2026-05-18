@@ -11,10 +11,16 @@ repositories. It complements the compact one-feature inventory in
 [FEATURE_FIXTURE_MATRIX.md](FEATURE_FIXTURE_MATRIX.md): that matrix lists fixture ideas, while this
 file defines where each class of example should live and which API layer should own it.
 
-The guiding rule is to split examples by **purpose first**, then by **API layer**. A runnable example
-should make it clear whether it is teaching the native C API, validating a backend/runtime contract,
-showing raw Python access to Datoviz, demonstrating the object-oriented GSP interface, or presenting a
-high-level plotting workflow.
+Release staging is intentionally tracked elsewhere:
+[EXAMPLE_RELEASE_STAGING.md](EXAMPLE_RELEASE_STAGING.md) decides whether an example is
+`v0.4 required`, `v0.4 experimental`, `v0.4 fixture-only`, `v0.5`, `later`, or `external/GSP`.
+This file should not duplicate that release classification; it should stay focused on repository
+ownership and example purpose.
+
+The guiding rule is to split examples by **purpose first**, then by **API layer**. A runnable
+example should make it clear whether it is teaching the native C API, validating a backend/runtime
+contract, showing raw Python access to Datoviz, demonstrating the object-oriented GSP interface, or
+presenting a high-level plotting workflow.
 
 
 ## Goals

@@ -33,6 +33,24 @@ parallel semantics when they grow into those domains.
 
 
 
+## Example Planning Documents
+
+Use the example planning documents for distinct jobs:
+
+1. [EXAMPLE_RELEASE_STAGING.md](EXAMPLE_RELEASE_STAGING.md) classifies examples as
+   `v0.4 required`, `v0.4 experimental`, `v0.4 fixture-only`, `v0.5`, `later`, or
+   `external/GSP`, and records current readiness separately from release target.
+2. [FEATURE_FIXTURE_MATRIX.md](FEATURE_FIXTURE_MATRIX.md) lists compact one-feature fixtures for
+   C examples, generated DRP2/WebGPU streams, GUI/cimgui, video, and low-level backend coverage.
+3. [EXAMPLE_ORGANIZATION.md](EXAMPLE_ORGANIZATION.md) explains which repository and API layer
+   should own each class of example.
+4. [TEMPLATE.md](TEMPLATE.md) is the starting point for new worked example specs.
+
+Do not use worked example files as release commitments by themselves. Promote release commitments
+through [EXAMPLE_RELEASE_STAGING.md](EXAMPLE_RELEASE_STAGING.md) so future agents can tell which
+examples are blocking v0.4, which are v0.5 targets, and which belong outside Datoviz C.
+
+
 ## Feature Fixture Matrix
 
 The compact one-feature fixture inventory lives in

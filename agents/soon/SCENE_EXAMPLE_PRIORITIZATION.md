@@ -11,6 +11,12 @@
 
 ## Summary Recommendation
 
+For authoritative release staging (`v0.4 required`, `v0.4 experimental`,
+`v0.4 fixture-only`, `v0.5`, `later`, or `external/GSP`), use
+[`../../spec/scene/examples/EXAMPLE_RELEASE_STAGING.md`](../../spec/scene/examples/EXAMPLE_RELEASE_STAGING.md).
+This file ranks example candidates by payoff and architecture pressure; it should not be treated as
+the release gate by itself.
+
 The first gallery-quality batch should not be 3D-only. The best near-term mix is:
 
 1. `PROTEIN_ARCBALL_VIEWER`
