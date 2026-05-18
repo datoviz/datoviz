@@ -1,7 +1,7 @@
 # Test Runner Modernization Plan
 
 > **Execution Status**
-> - **Status:** `SCENE APP SKIP SLICE LANDED`
+> - **Status:** `SERIAL RUNNER MODERNIZATION VALIDATED`
 > - **Updated on:** `2026-05-18`
 > - **Purpose:** document the current C test-runner limitations and a staged refactor path toward
 >   explicit grouping, cleaner filtering, and safe future parallelism.
@@ -74,6 +74,19 @@ GPU-context, and CUDA availability exits as explicit `SKIP` results. The shared 
 availability helper now logs runtime availability instead of pretending to own the skip result, and
 each caller records the runner skip reason before returning or entering cleanup. Focused validation
 covered `dvztest_drp2` rebuilds and representative vklite cases reporting Vulkan-unavailable skips.
+
+Seventh follow-up update on `2026-05-18`: the remaining high-value skip and metadata cleanup pass
+has landed. Vklite present tests, vk memory/CUDA interop paths, GUI smoke tests, and canvas/scene
+helper diagnostics now distinguish runner-visible skips from helper availability logs. DRP2 now has
+semantic groups (`stream`, `recording`, `render-pass`, `runtime-validation`, `runtime-lifecycle`,
+and `vklite-runtime`) plus filesystem/GPU/Vulkan/process metadata for the relevant cases. Focused
+validation covered component runner builds, `--list-groups`, `--resource gpu`, JSON skip reasons
+and timing fields, slow-test output, representative CPU passes, and representative
+Vulkan-unavailable skips.
+
+Remaining work after this point is a separate scheduling phase, not required for the serial runner
+modernization baseline: process-level sharding, optional in-process workers for explicitly
+thread-safe tests, and broader CI orchestration can build on the current metadata and JSON output.
 
 Two boundaries should stay clean:
 
