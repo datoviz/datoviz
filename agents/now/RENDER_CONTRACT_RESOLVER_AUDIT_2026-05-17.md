@@ -770,6 +770,27 @@ Validation:
 2. `./build/testing/dvztest_scene test_scene_drp2_contract_checker_rejects_pipeline_drift`
 
 
+### 2026-05-18: Phase 1 / Exact occlusion sampled-resource contracts
+
+Completed the first exact sampled-resource contract slice for occlusion.
+
+Changes:
+
+1. Added expected volume-occlusion and scene-occlusion sampled resource ids to FramePlan visual
+   metadata and resolved draw contracts.
+2. Scene emission now stores the panel-local occlusion depth resource id for each draw that samples
+   volume or scene occlusion.
+3. Pass-contract validation now checks per-draw occlusion sampled resources exactly, retaining the
+   old suffix check only as a compatibility fallback for manually constructed contracts.
+4. Extended `test_scene_blended_mesh_occlusion_contracts` to mutate a sampled read to a different
+   panel resource with the same suffix and require validation to reject it.
+
+Validation:
+
+1. `cmake --build build --target dvztest_scene -j2`
+2. `./build/testing/dvztest_scene test_scene_blended_mesh_occlusion_contracts`
+
+
 ## Executive Assessment
 
 The direction is correct and worth continuing. The proposal identifies the right failure mode:
@@ -999,19 +1020,21 @@ Remaining recommendation: promote the fullscreen role table into explicit pass/p
 fields if these passes need to be serialized, exported, or shared with another backend.
 
 
-### Medium: occlusion resources are suffix heuristics, not exact draw contracts
+### Medium: occlusion resources are partly exact, but bind slots are still implicit
 
-Volume and scene occlusion validation currently searches for resource-id suffixes such as
-`.volume_occlusion.depth` and `.scene_occlusion.depth`, while emission adds reads to broad visual
-pass labels.
+Volume and scene occlusion validation now stores exact panel-local sampled resource ids on the
+FramePlan visual metadata and resolved draw contract, and pass-contract validation rejects read
+edges that only match by suffix. Emission still adds reads to broad visual pass labels, and the
+contract does not yet store producer pass ids or expected bind set/binding per draw.
 
-Impact: this works for one panel-local occlusion resource, but it will not generalize cleanly to
-multiple occluders, layered occlusion maps, custom techniques, or cross-panel resources. It also does
-not prove that the draw binds the same resource that the graph read edge declares.
+Impact: the contract now catches cross-panel/resource-id drift, but it still will not generalize
+cleanly to multiple occluders, layered occlusion maps, custom techniques, or backend-specific bind
+slot remapping. The DRP2 checker proves observed sampled bind groups cover graph reads, not that a
+specific draw uses a specific binding slot.
 
-Recommendation: store exact sampled resource ids, producer pass ids, expected bind set/binding, and
-shader feature flags in the draw contract. Suffix checks can remain as temporary diagnostics, not as
-the authoritative proof.
+Recommendation: extend the exact sampled-resource fields with producer pass ids and expected bind
+set/binding, then make the DRP2 checker correlate those draw-owned expectations with the emitted
+bind-group entries.
 
 
 ### Medium: graph ordering is insertion-order, not dependency-derived

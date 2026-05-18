@@ -1837,6 +1837,24 @@ static bool _scene_append_visual_to_render_pass(
         metadata.draw_blend_policy = (uint32_t)draw_contract.blend_policy;
         metadata.draw_shader_feature_mask = draw_contract.shader_feature_mask;
         metadata.draw_bind_group_layout_mask = draw_contract.bind_group_layout_mask;
+        if (draw_contract.samples_volume_occlusion)
+        {
+            int ret = dvz_snprintf(
+                metadata.draw_volume_occlusion_resource_id,
+                sizeof(metadata.draw_volume_occlusion_resource_id), "%s.volume_occlusion.depth",
+                node->u.render.panel_id);
+            if (ret < 0 || (size_t)ret >= sizeof(metadata.draw_volume_occlusion_resource_id))
+                return false;
+        }
+        if (draw_contract.samples_scene_occlusion)
+        {
+            int ret = dvz_snprintf(
+                metadata.draw_scene_occlusion_resource_id,
+                sizeof(metadata.draw_scene_occlusion_resource_id), "%s.scene_occlusion.depth",
+                node->u.render.panel_id);
+            if (ret < 0 || (size_t)ret >= sizeof(metadata.draw_scene_occlusion_resource_id))
+                return false;
+        }
     }
 
     uint32_t slot = node->u.render.visual_count++;

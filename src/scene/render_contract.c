@@ -581,6 +581,30 @@ static bool _contract_reads_resource_suffix(
 
 
 /**
+ * Return whether a pass contract reads an exact sampled resource id.
+ *
+ * @param contract the pass contract
+ * @param resource_id the expected graph resource id
+ * @return whether a sampled attachment matches exactly
+ */
+static bool _contract_reads_resource_id(
+    const DvzScenePassContract* contract, const char* resource_id)
+{
+    ANN(contract);
+    ANN(resource_id);
+    for (uint32_t i = 0; i < contract->attachment_count; i++)
+    {
+        const DvzSceneAttachmentUse* use = &contract->attachments[i];
+        if (use->role != DVZ_SCENE_ATTACHMENT_SAMPLED || !use->read)
+            continue;
+        if (strcmp(use->resource_id, resource_id) == 0)
+            return true;
+    }
+    return false;
+}
+
+
+/**
  * Return whether any draw in a contract tests or writes fixed-function depth.
  *
  * @param contract the pass contract
@@ -1671,6 +1695,12 @@ static void _contract_apply_draw_metadata(
         (draw->bind_group_layout_mask & DVZ_SCENE_BIND_GROUP_REQUIREMENT_VOLUME) != 0;
     draw->needs_scene_occlusion_set =
         (draw->bind_group_layout_mask & DVZ_SCENE_BIND_GROUP_REQUIREMENT_SCENE_OCCLUSION) != 0;
+    dvz_strlcpy(
+        draw->volume_occlusion_resource_id, meta->draw_volume_occlusion_resource_id,
+        sizeof(draw->volume_occlusion_resource_id));
+    dvz_strlcpy(
+        draw->scene_occlusion_resource_id, meta->draw_scene_occlusion_resource_id,
+        sizeof(draw->scene_occlusion_resource_id));
 }
 
 
@@ -2070,8 +2100,34 @@ bool _scene_pass_contract_validate(
         }
         needs_depth = needs_depth || draw->depth_test || draw->depth_write;
         samples_depth = samples_depth || draw->samples_depth;
-        samples_volume_occlusion = samples_volume_occlusion || draw->samples_volume_occlusion;
-        samples_scene_occlusion = samples_scene_occlusion || draw->samples_scene_occlusion;
+        if (draw->samples_volume_occlusion)
+        {
+            if (draw->volume_occlusion_resource_id[0] != '\0' &&
+                !_contract_reads_resource_id(contract, draw->volume_occlusion_resource_id))
+            {
+                _contract_report(
+                    report, "volume-occluded draw has no exact volume occlusion read edge");
+                ok = false;
+            }
+            else if (draw->volume_occlusion_resource_id[0] == '\0')
+            {
+                samples_volume_occlusion = true;
+            }
+        }
+        if (draw->samples_scene_occlusion)
+        {
+            if (draw->scene_occlusion_resource_id[0] != '\0' &&
+                !_contract_reads_resource_id(contract, draw->scene_occlusion_resource_id))
+            {
+                _contract_report(
+                    report, "scene-occluded draw has no exact scene occlusion read edge");
+                ok = false;
+            }
+            else if (draw->scene_occlusion_resource_id[0] == '\0')
+            {
+                samples_scene_occlusion = true;
+            }
+        }
     }
 
     if (needs_depth && !_contract_has_depth_attachment(contract))

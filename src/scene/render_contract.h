@@ -182,6 +182,9 @@ typedef struct DvzSceneDrawContract
     bool needs_image_set;
     bool needs_volume_set;
     bool needs_scene_occlusion_set;
+
+    char volume_occlusion_resource_id[DVZ_SCENE_LABEL_SIZE];
+    char scene_occlusion_resource_id[DVZ_SCENE_LABEL_SIZE];
 } DvzSceneDrawContract;
 
 

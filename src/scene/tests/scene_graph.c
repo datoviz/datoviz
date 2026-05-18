@@ -8828,6 +8828,12 @@ int test_scene_blended_mesh_occlusion_contracts(TstSuite* suite, TstItem* item)
     AT(blend_node->u.render.visual_count == 3);
     AT(blend_node->u.render.visual_metadata[1].has_volume_occlusion);
     AT(blend_node->u.render.visual_metadata[1].has_scene_occlusion);
+    AT(strcmp(
+           blend_node->u.render.visual_metadata[1].draw_volume_occlusion_resource_id,
+           "figure_0_p0.volume_occlusion.depth") == 0);
+    AT(strcmp(
+           blend_node->u.render.visual_metadata[1].draw_scene_occlusion_resource_id,
+           "figure_0_p0.scene_occlusion.depth") == 0);
 
     const DvzFrameGraphPass* volume_pass = NULL;
     const DvzFrameGraphPass* scene_pass = NULL;
@@ -8876,11 +8882,36 @@ int test_scene_blended_mesh_occlusion_contracts(TstSuite* suite, TstItem* item)
     AT(contract.draws[1].samples_scene_occlusion);
     AT(contract.draws[1].needs_volume_set);
     AT(contract.draws[1].needs_scene_occlusion_set);
+    AT(strcmp(
+           contract.draws[1].volume_occlusion_resource_id,
+           "figure_0_p0.volume_occlusion.depth") == 0);
+    AT(strcmp(
+           contract.draws[1].scene_occlusion_resource_id,
+           "figure_0_p0.scene_occlusion.depth") == 0);
     AT(contract.draws[2].depth_test);
     AT(!contract.draws[2].depth_write);
     dvz_diagnostic_report_init(&graph_report);
     AT(_scene_pass_contract_validate(&contract, &graph_report));
     AT(dvz_diagnostic_report_count(&graph_report) == 0);
+
+    DvzScenePassContract exact_contract = contract;
+    for (uint32_t i = 0; i < exact_contract.attachment_count; i++)
+    {
+        if (exact_contract.attachments[i].role == DVZ_SCENE_ATTACHMENT_SAMPLED &&
+            strcmp(
+                exact_contract.attachments[i].resource_id,
+                "figure_0_p0.volume_occlusion.depth") == 0)
+        {
+            dvz_strlcpy(
+                exact_contract.attachments[i].resource_id,
+                "figure_0_p1.volume_occlusion.depth",
+                sizeof(exact_contract.attachments[i].resource_id));
+            break;
+        }
+    }
+    dvz_diagnostic_report_init(&graph_report);
+    AT(!_scene_pass_contract_validate(&exact_contract, &graph_report));
+    AT(dvz_diagnostic_report_count(&graph_report) > 0);
 
     DvzCapabilitySnapshot caps;
     dvz_capability_snapshot_default(&caps);

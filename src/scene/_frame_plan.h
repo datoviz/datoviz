@@ -299,6 +299,8 @@ typedef struct DvzFramePlanVisualMeta
     uint32_t draw_blend_policy;
     uint32_t draw_shader_feature_mask;
     uint32_t draw_bind_group_layout_mask;
+    char draw_volume_occlusion_resource_id[DVZ_SCENE_LABEL_SIZE];
+    char draw_scene_occlusion_resource_id[DVZ_SCENE_LABEL_SIZE];
     char position_id[DVZ_SCENE_LABEL_SIZE];
     char position_start_id[DVZ_SCENE_LABEL_SIZE];
     char position_end_id[DVZ_SCENE_LABEL_SIZE];
