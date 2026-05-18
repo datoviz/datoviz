@@ -25,7 +25,7 @@ int test_video_nvenc(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
-    log_warn("NVENC backend disabled at build time; skipping nvenc video test");
+    tst_skip(suite, "NVENC backend disabled at build time");
     return 0;
 }
 #endif
@@ -35,10 +35,22 @@ int test_video_kvazaar(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
-    log_warn("kvazaar backend disabled at build time; skipping CPU fallback video test");
+    tst_skip(suite, "kvazaar backend disabled at build time");
     return 0;
 }
 #endif
+
+
+
+#define TST_VIDEO_CASE(test, resource_flags, isolation_mode)                                      \
+    do                                                                                            \
+    {                                                                                             \
+        TstCaseDesc _tst_desc = tst_case_desc(#test, #test, (test));                              \
+        _tst_desc.tags = tags;                                                                    \
+        _tst_desc.resources = (resource_flags);                                                   \
+        _tst_desc.isolation = (isolation_mode);                                                   \
+        tst_suite_add_case((suite), _tst_desc);                                                   \
+    } while (0)
 
 int test_video(TstSuite* suite)
 {
@@ -49,14 +61,15 @@ int test_video(TstSuite* suite)
 
     TST_CASE(test_video_1);
 
-#if defined(DVZ_HAS_CUDA) && DVZ_HAS_CUDA
-    TST_CASE(test_video_nvenc);
-#endif
-
-#if defined(DVZ_HAS_KVZ) && DVZ_HAS_KVZ
-    TST_CASE(test_video_kvazaar);
-#endif
-    TST_CASE(test_video_offline_headless_encode);
+    TST_VIDEO_CASE(
+        test_video_nvenc, TST_RES_GPU | TST_RES_VULKAN | TST_RES_VIDEO | TST_RES_FILESYSTEM,
+        TST_ISOLATION_PROCESS);
+    TST_VIDEO_CASE(
+        test_video_kvazaar, TST_RES_GPU | TST_RES_VULKAN | TST_RES_VIDEO | TST_RES_FILESYSTEM,
+        TST_ISOLATION_PROCESS);
+    TST_VIDEO_CASE(
+        test_video_offline_headless_encode, TST_RES_VIDEO | TST_RES_FILESYSTEM,
+        TST_ISOLATION_PROCESS);
 
     return 0;
 }

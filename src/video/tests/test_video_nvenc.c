@@ -542,6 +542,7 @@ cleanup:
     }
     if (skip_encode)
     {
+        tst_skip(suite, "NVENC encoder start unavailable");
         return 0;
     }
     return rc;

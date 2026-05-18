@@ -9,7 +9,6 @@
 /*************************************************************************************************/
 
 #include "_assertions.h"
-#include "_log.h"
 #include "datoviz/video.h"
 #include "test_video.h"
 #include "testing.h"
@@ -34,9 +33,8 @@ int test_video_offline_headless_encode(TstContext* suite, const TstCase* tstitem
     AT(cfg.fps > 0);
 
 #if !(defined(DVZ_HAS_KVZ) && DVZ_HAS_KVZ) && !(defined(DVZ_HAS_CUDA) && DVZ_HAS_CUDA)
-    log_warn("offline/headless capture contract test skipped (no video backend enabled)");
+    tst_skip(suite, "no video backend enabled");
 #endif
 
     return 0;
 }
-

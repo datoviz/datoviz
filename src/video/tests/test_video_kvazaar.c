@@ -329,7 +329,7 @@ int test_video_kvazaar(TstContext* suite, const TstCase* tstitem)
     KvzCpuCtx ctx = {0};
     if (!kvz_cpu_ctx_init(&ctx))
     {
-        log_warn("kvazaar CPU fallback test skipped (unable to initialize Vulkan)");
+        tst_skip(suite, "unable to initialize Vulkan for kvazaar CPU fallback");
         kvz_cpu_ctx_destroy(&ctx);
         return 0;
     }
