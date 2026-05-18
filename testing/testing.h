@@ -252,6 +252,7 @@ struct TstContext
     uint32_t captured_log_count;
     uint32_t captured_log_capacity;
     TstLogRecord* captured_logs;
+    const char* skip_reason;
     const char* failure_message;
 };
 
@@ -315,6 +316,8 @@ const TstLogRecord* tst_log_capture_get(const TstContext* ctx, uint32_t index);
 void tst_expect_error_begin(TstContext* ctx);
 
 int tst_expect_error_end(TstContext* ctx);
+
+void tst_skip(TstContext* ctx, const char* reason);
 
 void tst_set_strict_unexpected_errors(TstSuite* suite, bool enabled);
 

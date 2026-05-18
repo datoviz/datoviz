@@ -1036,12 +1036,20 @@ int tst_suite_run(TstSuite* suite, int argc, char** argv)
             else if (result.setup != NULL)
             {
                 res = result.setup(&ctx, &result);
+                if (ctx.skip_reason != NULL)
+                {
+                    result.skip_reason = ctx.skip_reason;
+                }
             }
-            if (skip_reason == NULL && res == 0)
+            if (skip_reason == NULL && result.skip_reason == NULL && res == 0)
             {
                 res = result.test(&ctx, &result);
+                if (ctx.skip_reason != NULL)
+                {
+                    result.skip_reason = ctx.skip_reason;
+                }
             }
-            if (skip_reason == NULL && result.teardown != NULL)
+            if (skip_reason == NULL && result.skip_reason == NULL && result.teardown != NULL)
             {
                 int teardown_res = result.teardown(&ctx, &result);
                 if (res == 0)
@@ -1165,6 +1173,14 @@ int tst_expect_error_end(TstContext* ctx)
     }
     ctx->expect_error_active = false;
     return ctx->expect_error_seen ? 0 : 1;
+}
+
+
+
+void tst_skip(TstContext* ctx, const char* reason)
+{
+    ANN(ctx);
+    ctx->skip_reason = reason != NULL ? reason : "skipped";
 }
 
 
