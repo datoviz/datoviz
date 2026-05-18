@@ -146,6 +146,86 @@ static DvzSceneBlendPolicy _draw_blend_policy(
 
 
 /**
+ * Resolve exact color-target blend contracts from a draw blend policy.
+ *
+ * @param blend_policy the resolved draw blend policy
+ * @param targets output color-target contracts
+ * @param target_count output target contract count
+ */
+static void _draw_blend_target_contracts(
+    DvzSceneBlendPolicy blend_policy, DvzSceneBlendTargetContract* targets,
+    uint32_t* target_count)
+{
+    ANN(targets);
+    ANN(target_count);
+    *target_count = 0;
+
+    if (blend_policy == DVZ_SCENE_BLEND_POLICY_SOURCE_OVER)
+    {
+        targets[0] = (DvzSceneBlendTargetContract){
+            .target_index = 0,
+            .blend_enabled = true,
+            .src_color_blend_factor = VK_BLEND_FACTOR_SRC_ALPHA,
+            .dst_color_blend_factor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,
+            .color_blend_op = VK_BLEND_OP_ADD,
+            .src_alpha_blend_factor = VK_BLEND_FACTOR_ONE,
+            .dst_alpha_blend_factor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,
+            .alpha_blend_op = VK_BLEND_OP_ADD,
+            .color_write_mask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |
+                                VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT,
+        };
+        *target_count = 1;
+    }
+    else if (blend_policy == DVZ_SCENE_BLEND_POLICY_WBOIT)
+    {
+        targets[0] = (DvzSceneBlendTargetContract){
+            .target_index = 0,
+            .format = VK_FORMAT_R16G16B16A16_SFLOAT,
+            .blend_enabled = true,
+            .src_color_blend_factor = VK_BLEND_FACTOR_ONE,
+            .dst_color_blend_factor = VK_BLEND_FACTOR_ONE,
+            .color_blend_op = VK_BLEND_OP_ADD,
+            .src_alpha_blend_factor = VK_BLEND_FACTOR_ONE,
+            .dst_alpha_blend_factor = VK_BLEND_FACTOR_ONE,
+            .alpha_blend_op = VK_BLEND_OP_ADD,
+            .color_write_mask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |
+                                VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT,
+        };
+        targets[1] = targets[0];
+        targets[1].target_index = 1;
+        targets[1].format = VK_FORMAT_R16_SFLOAT;
+        targets[1].color_write_mask = VK_COLOR_COMPONENT_R_BIT;
+        *target_count = 2;
+    }
+    else if (blend_policy == DVZ_SCENE_BLEND_POLICY_DEPTH_PEEL)
+    {
+        for (uint32_t i = 0; i < 3; i++)
+        {
+            targets[i] = (DvzSceneBlendTargetContract){
+                .target_index = i,
+                .format = VK_FORMAT_R16G16B16A16_SFLOAT,
+                .blend_enabled = false,
+                .color_write_mask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |
+                                    VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT,
+            };
+        }
+        *target_count = 3;
+    }
+    else if (blend_policy == DVZ_SCENE_BLEND_POLICY_OPAQUE)
+    {
+        targets[0] = (DvzSceneBlendTargetContract){
+            .target_index = 0,
+            .blend_enabled = false,
+            .color_write_mask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |
+                                VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT,
+        };
+        *target_count = 1;
+    }
+}
+
+
+
+/**
  * Return whether a graph attachment access includes reads.
  *
  * @param access the attachment access mode
@@ -1000,21 +1080,99 @@ static bool _contract_resolve_drp2_pass_state(
 
 
 /**
- * Validate a source-over DRP2 color target.
+ * Validate one emitted DRP2 color target against an explicit scene blend target contract.
  *
- * @param target the emitted color-target state
- * @return whether the target uses source-over blending
+ * @param expected the expected color-target contract
+ * @param actual the emitted color-target state
+ * @param report optional diagnostic report
+ * @return whether the emitted target matches the contract
  */
-static bool _contract_drp2_source_over_blend(const DvzDrp2ColorTarget* target)
+static bool _contract_validate_drp2_blend_target(
+    const DvzSceneBlendTargetContract* expected, const DvzDrp2ColorTarget* actual,
+    DvzDiagnosticReport* report)
 {
-    ANN(target);
-    return target->blend_enabled &&
-           target->src_color_blend_factor == VK_BLEND_FACTOR_SRC_ALPHA &&
-           target->dst_color_blend_factor == VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA &&
-           target->color_blend_op == VK_BLEND_OP_ADD &&
-           target->src_alpha_blend_factor == VK_BLEND_FACTOR_ONE &&
-           target->dst_alpha_blend_factor == VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA &&
-           target->alpha_blend_op == VK_BLEND_OP_ADD;
+    ANN(expected);
+    ANN(actual);
+    bool ok = true;
+    if (expected->format != 0 &&
+        _contract_effective_color_format(actual->format) != expected->format)
+    {
+        _contract_report(report, "DRP2 pipeline color target format mismatches blend contract");
+        ok = false;
+    }
+    if (actual->blend_enabled != expected->blend_enabled)
+    {
+        _contract_report(report, "DRP2 pipeline blend enable mismatches contract");
+        ok = false;
+    }
+    if (actual->color_write_mask != expected->color_write_mask)
+    {
+        _contract_report(report, "DRP2 pipeline color write mask mismatches contract");
+        ok = false;
+    }
+    if (!expected->blend_enabled)
+        return ok;
+
+    if (
+        actual->src_color_blend_factor != expected->src_color_blend_factor ||
+        actual->dst_color_blend_factor != expected->dst_color_blend_factor ||
+        actual->color_blend_op != expected->color_blend_op ||
+        actual->src_alpha_blend_factor != expected->src_alpha_blend_factor ||
+        actual->dst_alpha_blend_factor != expected->dst_alpha_blend_factor ||
+        actual->alpha_blend_op != expected->alpha_blend_op)
+    {
+        _contract_report(report, "DRP2 pipeline blend equation mismatches contract");
+        ok = false;
+    }
+    return ok;
+}
+
+
+
+/**
+ * Validate all target blend state for a pipeline against a draw blend policy.
+ *
+ * @param command the CreateRenderPipeline command
+ * @param blend_policy the resolved draw blend policy
+ * @param report optional diagnostic report
+ * @return whether target blend state matches the resolved contract
+ */
+static bool _contract_validate_drp2_blend_targets(
+    const DvzDrp2Command* command, DvzSceneBlendPolicy blend_policy, DvzDiagnosticReport* report)
+{
+    ANN(command);
+    bool ok = true;
+    DvzSceneBlendTargetContract targets[DVZ_DRP2_MAX_COLOR_ATTACHMENTS] = {0};
+    uint32_t target_count = 0;
+    _draw_blend_target_contracts(blend_policy, targets, &target_count);
+    if (target_count == 0)
+        return true;
+
+    uint32_t pipeline_target_count = command->u.create_render_pipeline.color_target_count != 0 ?
+                                         command->u.create_render_pipeline.color_target_count :
+                                         1;
+    if (pipeline_target_count < target_count)
+    {
+        _contract_report(report, "DRP2 pipeline color target count mismatches blend contract");
+        return false;
+    }
+
+    for (uint32_t i = 0; i < target_count; i++)
+    {
+        uint32_t target_index = targets[i].target_index;
+        if (target_index >= pipeline_target_count ||
+            target_index >= DVZ_DRP2_MAX_COLOR_ATTACHMENTS)
+        {
+            _contract_report(report, "DRP2 pipeline blend target index is out of range");
+            ok = false;
+            continue;
+        }
+        ok = _contract_validate_drp2_blend_target(
+                 &targets[i], &command->u.create_render_pipeline.color_targets[target_index],
+                 report) &&
+             ok;
+    }
+    return ok;
 }
 
 
@@ -1277,6 +1435,8 @@ static void _contract_apply_draw_metadata(
 
     draw->depth_policy = meta->draw_depth_policy;
     draw->blend_policy = (DvzSceneBlendPolicy)meta->draw_blend_policy;
+    _draw_blend_target_contracts(
+        draw->blend_policy, draw->blend_targets, &draw->blend_target_count);
     draw->shader_feature_mask = meta->draw_shader_feature_mask;
     draw->bind_group_layout_mask = meta->draw_bind_group_layout_mask;
 
@@ -1364,50 +1524,7 @@ static bool _contract_validate_drp2_pipeline(
         ok = false;
     }
 
-    if (blend_policy == DVZ_SCENE_BLEND_POLICY_SOURCE_OVER)
-    {
-        if (command->u.create_render_pipeline.color_target_count < 1 ||
-            !_contract_drp2_source_over_blend(&command->u.create_render_pipeline.color_targets[0]))
-        {
-            _contract_report(report, "DRP2 pipeline missing source-over blend state");
-            ok = false;
-        }
-    }
-    else if (blend_policy == DVZ_SCENE_BLEND_POLICY_WBOIT)
-    {
-        if (command->u.create_render_pipeline.color_target_count < 2 ||
-            command->u.create_render_pipeline.color_targets[0].format !=
-                VK_FORMAT_R16G16B16A16_SFLOAT ||
-            command->u.create_render_pipeline.color_targets[1].format != VK_FORMAT_R16_SFLOAT ||
-            !command->u.create_render_pipeline.color_targets[0].blend_enabled ||
-            !command->u.create_render_pipeline.color_targets[1].blend_enabled)
-        {
-            _contract_report(report, "DRP2 pipeline missing WBOIT accumulation targets");
-            ok = false;
-        }
-    }
-    else if (blend_policy == DVZ_SCENE_BLEND_POLICY_DEPTH_PEEL)
-    {
-        if (command->u.create_render_pipeline.color_target_count < 3 ||
-            command->u.create_render_pipeline.color_targets[0].format !=
-                VK_FORMAT_R16G16B16A16_SFLOAT ||
-            command->u.create_render_pipeline.color_targets[1].format !=
-                VK_FORMAT_R16G16B16A16_SFLOAT ||
-            command->u.create_render_pipeline.color_targets[2].format !=
-                VK_FORMAT_R16G16B16A16_SFLOAT)
-        {
-            _contract_report(report, "DRP2 pipeline missing depth-peel color targets");
-            ok = false;
-        }
-    }
-    else if (
-        blend_policy == DVZ_SCENE_BLEND_POLICY_OPAQUE &&
-        command->u.create_render_pipeline.color_target_count > 0 &&
-        command->u.create_render_pipeline.color_targets[0].blend_enabled)
-    {
-        _contract_report(report, "opaque DRP2 pipeline unexpectedly enables blending");
-        ok = false;
-    }
+    ok = _contract_validate_drp2_blend_targets(command, blend_policy, report) && ok;
 
     (void)graph_pass;
     return ok;
@@ -1553,6 +1670,8 @@ bool _scene_draw_contract_resolve(
     out->depth_policy =
         _draw_depth_policy(out->depth_test, out->depth_write, out->samples_depth);
     out->blend_policy = _draw_blend_policy(facts->alpha_mode, pass_role);
+    _draw_blend_target_contracts(
+        out->blend_policy, out->blend_targets, &out->blend_target_count);
     if (out->samples_depth)
         out->shader_feature_mask |= DVZ_SCENE_SHADER_FEATURE_SAMPLE_DEPTH;
     if (out->samples_volume_occlusion)

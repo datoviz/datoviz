@@ -679,6 +679,32 @@ Validation:
 5. `direnv exec . just test scene` (`307/307`)
 
 
+### 2026-05-18: Phase 1 / Explicit blend-target contracts
+
+Completed the first blend/pipeline policy ownership slice.
+
+Changes:
+
+1. Added `DvzSceneBlendTargetContract` and attached explicit per-target blend contracts to
+   `DvzSceneDrawContract`.
+2. The draw-contract resolver now records exact source-over, WBOIT, depth-peel, and opaque target
+   blend expectations, including formats where they are technique-owned.
+3. DRP2 contract validation now compares emitted render-pipeline target format, blend enable,
+   blend factors/ops, and write masks against the resolved contract instead of only checking coarse
+   blend-policy flags.
+4. Extended contract tests to assert source-over, WBOIT, opaque, and depth-peel target contracts and
+   to reject WBOIT pipeline drift in blend factors and write masks.
+
+Validation:
+
+1. `cmake --build build --target dvztest_scene -j2`
+2. `./build/testing/dvztest_scene test_scene_draw_contract_resolver_matrix`
+3. `./build/testing/dvztest_scene test_scene_visual_alpha_mode_standard_blend`
+4. `./build/testing/dvztest_scene test_scene_visual_alpha_mode_splits_frame_plan_passes`
+5. `./build/testing/dvztest_scene test_scene_visual_alpha_mode_depth_peel_frame_plan`
+6. `./build/testing/dvztest_scene test_scene_drp2_contract_checker_rejects_pipeline_drift`
+
+
 ## Executive Assessment
 
 The direction is correct and worth continuing. The proposal identifies the right failure mode:
@@ -866,21 +892,27 @@ Status:
    nodes across the reallocation boundary, and validates graph and scene contracts.
 
 
-### Medium: blend and pipeline policy are not contract-owned
+### Medium: blend and pipeline policy are only partly contract-owned
 
-The proposal already lists explicit blend/pipeline fields as an immediate next step. The current code
-still encodes blend details in runtime emission:
+The first explicit blend-target slice is complete: draw contracts now include exact per-target
+source-over, WBOIT, depth-peel, and opaque blend expectations, and DRP2 contract validation rejects
+emitted pipeline drift in target format, blend enable, blend factors/ops, and write masks.
 
-1. Source-over uses `SRC_ALPHA, ONE_MINUS_SRC_ALPHA`.
-2. Segment coverage reuses source-over-like blending.
-3. WBOIT accumulation uses additive blending on RGBA16F and R16F targets.
-4. Depth peeling uses three RGBA16F targets with role-specific raster state.
-5. Occlusion and G-buffer passes set target formats in runtime.
+Remaining runtime-owned policy:
 
-Impact: a future change can alter pipeline blend state without changing the contract, and current
-tests may only notice if a broad shape assertion or nonblank readback happens to fail.
+1. Segment coverage reuses source-over-like blending but is not yet represented as a distinct draw
+   contract policy.
+2. Depth peeling still applies role-specific raster state in runtime.
+3. Occlusion and G-buffer passes set target formats in runtime even though the DRP2 validator checks
+   them against graph pass attachment formats.
+4. Fullscreen resolve pipelines still have technique-specific blend/sample/layout details that are
+   not modelled as standalone pass/pipeline contracts because they have no visual draw metadata.
 
-Recommendation: add an explicit per-target blend contract:
+Impact: ordinary visual draw blend state is now contract-checked, but future runtime changes can
+still alter non-draw fullscreen pipeline state, segment coverage policy, or raster-state policy
+without changing an explicit contract object.
+
+Completed recommendation: add an explicit per-target blend contract:
 
 ```c
 typedef struct DvzSceneBlendTargetContract
@@ -898,7 +930,9 @@ typedef struct DvzSceneBlendTargetContract
 } DvzSceneBlendTargetContract;
 ```
 
-Then compare emitted DRP2 `CreateRenderPipeline` and pipeline-mutator commands against it.
+Remaining recommendation: extend the same explicit-contract pattern to raster state, segment
+coverage, and fullscreen technique pipelines, then compare those emitted DRP2
+`CreateRenderPipeline` and pipeline-mutator commands against contract-owned expectations.
 
 
 ### Medium: occlusion resources are suffix heuristics, not exact draw contracts
@@ -1032,12 +1066,16 @@ in this pass, using this attachment/resource/pipeline state" belongs in the reso
 
 ### Phase 1: make contracts authoritative
 
-1. Add a resolver-matrix helper that maps visual facts plus pass role into an explicit draw contract.
-2. Extend draw contracts with depth policy, blend policy, target formats, sample count, raster state,
-   shader features, pipeline features, and bind-group layout requirements.
-3. Attach contract ids or resolved contract snapshots to FramePlan render nodes.
-4. Remove fallback decisions in `scene_emit.c` that recompute caps after contract resolution.
-5. Treat capability fallback, rejection, and sample-count lowering as contract diagnostics.
+1. Done: add a resolver-matrix helper that maps visual facts plus pass role into an explicit draw
+   contract.
+2. Partly done: extend draw contracts with depth policy, blend policy, blend target formats/equations,
+   shader features, and bind-group layout requirements. Sample-count, raster-state, fullscreen
+   pipeline, and remaining pipeline-feature contracts are still open.
+3. Done: attach contract ids or resolved contract snapshots to FramePlan render nodes.
+4. Partly done: remove fallback decisions in `scene_emit.c` that recompute caps after contract
+   resolution for transparent depth and source-over grouping.
+5. Done for current capability slices: treat capability fallback, rejection, and sample-count
+   lowering as contract diagnostics.
 
 ### Phase 2: validate emitted DRP2 against contracts
 

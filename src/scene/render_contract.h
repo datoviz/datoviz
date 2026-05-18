@@ -116,6 +116,21 @@ typedef struct DvzSceneAttachmentUse
 } DvzSceneAttachmentUse;
 
 
+typedef struct DvzSceneBlendTargetContract
+{
+    uint32_t target_index;
+    uint32_t format;
+    bool blend_enabled;
+    uint32_t src_color_blend_factor;
+    uint32_t dst_color_blend_factor;
+    uint32_t color_blend_op;
+    uint32_t src_alpha_blend_factor;
+    uint32_t dst_alpha_blend_factor;
+    uint32_t alpha_blend_op;
+    uint32_t color_write_mask;
+} DvzSceneBlendTargetContract;
+
+
 typedef struct DvzSceneDrawFacts
 {
     uint32_t visual_type;
@@ -144,6 +159,8 @@ typedef struct DvzSceneDrawContract
 
     uint32_t depth_policy;
     DvzSceneBlendPolicy blend_policy;
+    DvzSceneBlendTargetContract blend_targets[DVZ_DRP2_MAX_COLOR_ATTACHMENTS];
+    uint32_t blend_target_count;
     uint32_t shader_feature_mask;
     uint32_t bind_group_layout_mask;
 

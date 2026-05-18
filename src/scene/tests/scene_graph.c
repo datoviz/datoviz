@@ -8396,6 +8396,22 @@ int test_scene_visual_alpha_mode_standard_blend(TstSuite* suite, TstItem* item)
     AT(transparent_node->u.render.visual_count == 1);
     AT(transparent_node->u.render.visual_metadata[0].alpha_mode == DVZ_ALPHA_BLENDED);
 
+    DvzScenePassContract blend_contract = {0};
+    AT(_scene_pass_contract_from_render(plan, panel, transparent_node, NULL, &blend_contract));
+    AT(blend_contract.draw_count == 1);
+    AT(blend_contract.draws[0].blend_policy == DVZ_SCENE_BLEND_POLICY_SOURCE_OVER);
+    AT(blend_contract.draws[0].blend_target_count == 1);
+    AT(blend_contract.draws[0].blend_targets[0].blend_enabled);
+    AT(
+        blend_contract.draws[0].blend_targets[0].src_color_blend_factor ==
+        VK_BLEND_FACTOR_SRC_ALPHA);
+    AT(
+        blend_contract.draws[0].blend_targets[0].dst_color_blend_factor ==
+        VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA);
+    AT(
+        blend_contract.draws[0].blend_targets[0].src_alpha_blend_factor ==
+        VK_BLEND_FACTOR_ONE);
+
     DvzCapabilitySnapshot caps;
     dvz_capability_snapshot_default(&caps);
     DvzDiagnosticReport report;
@@ -8977,6 +8993,8 @@ int test_scene_visual_alpha_mode_splits_frame_plan_passes(TstSuite* suite, TstIt
     AT(_scene_pass_contract_from_render(plan, panel, opaque_node, opaque_pass, &opaque_contract));
     AT(opaque_contract.draw_count == 1);
     AT(opaque_contract.draws[0].depth_write);
+    AT(opaque_contract.draws[0].blend_target_count == 1);
+    AT(!opaque_contract.draws[0].blend_targets[0].blend_enabled);
     AT(opaque_contract.needs_common_set);
     dvz_diagnostic_report_init(&report);
     AT(_scene_pass_contract_validate(&opaque_contract, &report));
@@ -8989,6 +9007,17 @@ int test_scene_visual_alpha_mode_splits_frame_plan_passes(TstSuite* suite, TstIt
     AT(accum_contract.draws[0].alpha_mode == DVZ_ALPHA_WBOIT);
     AT(accum_contract.draws[0].depth_test);
     AT(!accum_contract.draws[0].depth_write);
+    AT(accum_contract.draws[0].blend_target_count == 2);
+    AT(accum_contract.draws[0].blend_targets[0].format == VK_FORMAT_R16G16B16A16_SFLOAT);
+    AT(accum_contract.draws[0].blend_targets[0].blend_enabled);
+    AT(
+        accum_contract.draws[0].blend_targets[0].dst_color_blend_factor ==
+        VK_BLEND_FACTOR_ONE);
+    AT(accum_contract.draws[0].blend_targets[1].format == VK_FORMAT_R16_SFLOAT);
+    AT(accum_contract.draws[0].blend_targets[1].blend_enabled);
+    AT(
+        accum_contract.draws[0].blend_targets[1].color_write_mask ==
+        VK_COLOR_COMPONENT_R_BIT);
     AT(accum_contract.color_attachment_count == 2);
     AT(accum_contract.has_depth_attachment);
     AT(accum_contract.attachments[0].format == VK_FORMAT_R16G16B16A16_SFLOAT);
@@ -9240,6 +9269,10 @@ int test_scene_visual_alpha_mode_depth_peel_frame_plan(TstSuite* suite, TstItem*
     AT(init_contract.draws[0].alpha_mode == DVZ_ALPHA_DEPTH_PEEL);
     AT(init_contract.draws[0].depth_test);
     AT(!init_contract.draws[0].depth_write);
+    AT(init_contract.draws[0].blend_target_count == 3);
+    AT(init_contract.draws[0].blend_targets[0].format == VK_FORMAT_R16G16B16A16_SFLOAT);
+    AT(!init_contract.draws[0].blend_targets[0].blend_enabled);
+    AT(init_contract.draws[0].blend_targets[2].format == VK_FORMAT_R16G16B16A16_SFLOAT);
     AT(init_contract.color_attachment_count == 3);
     AT(init_contract.has_depth_attachment);
     AT(init_contract.attachments[0].format == VK_FORMAT_R16G16B16A16_SFLOAT);
@@ -9254,6 +9287,10 @@ int test_scene_visual_alpha_mode_depth_peel_frame_plan(TstSuite* suite, TstItem*
     AT(iter_contract.draws[0].alpha_mode == DVZ_ALPHA_DEPTH_PEEL);
     AT(iter_contract.draws[0].depth_test);
     AT(!iter_contract.draws[0].depth_write);
+    AT(iter_contract.draws[0].blend_target_count == 3);
+    AT(iter_contract.draws[0].blend_targets[0].format == VK_FORMAT_R16G16B16A16_SFLOAT);
+    AT(!iter_contract.draws[0].blend_targets[0].blend_enabled);
+    AT(iter_contract.draws[0].blend_targets[2].format == VK_FORMAT_R16G16B16A16_SFLOAT);
     AT(iter_contract.color_attachment_count == 3);
     AT(iter_contract.has_depth_attachment);
     AT(iter_contract.attachments[0].format == VK_FORMAT_R16G16B16A16_SFLOAT);
@@ -10102,6 +10139,20 @@ int test_scene_drp2_contract_checker_rejects_pipeline_drift(TstSuite* suite, Tst
     const DvzDrp2Command original_pipeline_command = *wboit_pipeline;
 
     wboit_pipeline->u.create_render_pipeline.color_targets[0].blend_enabled = false;
+    dvz_diagnostic_report_init(&report);
+    AT(!_scene_frame_plan_drp2_contracts_validate(plan, stream, &report));
+    AT(dvz_diagnostic_report_count(&report) > 0);
+
+    wboit_pipeline->u.create_render_pipeline = original_pipeline_command.u.create_render_pipeline;
+    wboit_pipeline->u.create_render_pipeline.color_targets[0].dst_color_blend_factor =
+        VK_BLEND_FACTOR_ZERO;
+    dvz_diagnostic_report_init(&report);
+    AT(!_scene_frame_plan_drp2_contracts_validate(plan, stream, &report));
+    AT(dvz_diagnostic_report_count(&report) > 0);
+
+    wboit_pipeline->u.create_render_pipeline = original_pipeline_command.u.create_render_pipeline;
+    wboit_pipeline->u.create_render_pipeline.color_targets[1].color_write_mask =
+        VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT;
     dvz_diagnostic_report_init(&report);
     AT(!_scene_frame_plan_drp2_contracts_validate(plan, stream, &report));
     AT(dvz_diagnostic_report_count(&report) > 0);
