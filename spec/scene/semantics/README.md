@@ -25,12 +25,12 @@ transparency, clipping, transforms, or geometry utilities.
 
 ## Active Proposal Inputs
 
-1. [../proposals/ANNOTATION_MEASUREMENT_DESIGN.md](../proposals/ANNOTATION_MEASUREMENT_DESIGN.md)
-2. [../proposals/AXES_DOMAIN_DESIGN.md](../proposals/AXES_DOMAIN_DESIGN.md)
-3. [../proposals/COLORBAR_COLORMAP_DESIGN.md](../proposals/COLORBAR_COLORMAP_DESIGN.md)
-4. [../proposals/GEOM_DESIGN.md](../proposals/GEOM_DESIGN.md)
-5. [../proposals/MESH_SHADING_DESIGN.md](../proposals/MESH_SHADING_DESIGN.md)
-6. [../proposals/RAY_TRACING_FORWARD_COMPAT.md](../proposals/RAY_TRACING_FORWARD_COMPAT.md)
-7. [../proposals/SCIENTIFIC_COORDINATE_NORMALIZATION.md](../proposals/SCIENTIFIC_COORDINATE_NORMALIZATION.md)
-8. [../proposals/TEXT_DESIGN.md](../proposals/TEXT_DESIGN.md)
-9. [../proposals/TRANSPARENCY_WBOIT_DESIGN.md](../proposals/TRANSPARENCY_WBOIT_DESIGN.md)
+1. [../proposals/active/ANNOTATION_MEASUREMENT_DESIGN.md](../proposals/active/ANNOTATION_MEASUREMENT_DESIGN.md)
+2. [../proposals/active/AXES_DOMAIN_DESIGN.md](../proposals/active/AXES_DOMAIN_DESIGN.md)
+3. [../proposals/active/COLORBAR_COLORMAP_DESIGN.md](../proposals/active/COLORBAR_COLORMAP_DESIGN.md)
+4. [../proposals/active/GEOM_DESIGN.md](../proposals/active/GEOM_DESIGN.md)
+5. [../proposals/active/MESH_SHADING_DESIGN.md](../proposals/active/MESH_SHADING_DESIGN.md)
+6. [../proposals/active/RAY_TRACING_FORWARD_COMPAT.md](../proposals/active/RAY_TRACING_FORWARD_COMPAT.md)
+7. [../proposals/active/SCIENTIFIC_COORDINATE_NORMALIZATION.md](../proposals/active/SCIENTIFIC_COORDINATE_NORMALIZATION.md)
+8. [../proposals/active/TEXT_DESIGN.md](../proposals/active/TEXT_DESIGN.md)
+9. [../proposals/promoted/TRANSPARENCY_WBOIT_DESIGN.md](../proposals/promoted/TRANSPARENCY_WBOIT_DESIGN.md)

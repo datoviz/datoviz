@@ -19,7 +19,7 @@ frame planning, or runtime handoff.
 
 ## Active Proposal Inputs
 
-1. [../proposals/ASSET_BOUNDARY_DESIGN.md](../proposals/ASSET_BOUNDARY_DESIGN.md)
-2. [../proposals/RESOURCE_UPDATE_DESIGN.md](../proposals/RESOURCE_UPDATE_DESIGN.md)
-3. [../proposals/SCIENTIFIC_COORDINATE_NORMALIZATION.md](../proposals/SCIENTIFIC_COORDINATE_NORMALIZATION.md)
-4. [../proposals/TRANSFORM_CONTROLLER_DESIGN.md](../proposals/TRANSFORM_CONTROLLER_DESIGN.md)
+1. [../proposals/active/ASSET_BOUNDARY_DESIGN.md](../proposals/active/ASSET_BOUNDARY_DESIGN.md)
+2. [../proposals/promoted/RESOURCE_UPDATE_DESIGN.md](../proposals/promoted/RESOURCE_UPDATE_DESIGN.md)
+3. [../proposals/active/SCIENTIFIC_COORDINATE_NORMALIZATION.md](../proposals/active/SCIENTIFIC_COORDINATE_NORMALIZATION.md)
+4. [../proposals/active/TRANSFORM_CONTROLLER_DESIGN.md](../proposals/active/TRANSFORM_CONTROLLER_DESIGN.md)

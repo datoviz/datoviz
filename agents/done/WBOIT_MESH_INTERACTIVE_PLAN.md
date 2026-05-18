@@ -13,7 +13,7 @@ This document is the historical implementation record for the first WBOIT scene/
 Normative and proposal context lives in:
 
 1. [../../spec/scene/semantics/TRANSPARENCY.md](../../spec/scene/semantics/TRANSPARENCY.md)
-2. [../../spec/scene/proposals/TRANSPARENCY_WBOIT_DESIGN.md](../../spec/scene/proposals/TRANSPARENCY_WBOIT_DESIGN.md)
+2. [../../spec/scene/proposals/promoted/TRANSPARENCY_WBOIT_DESIGN.md](../../spec/scene/proposals/promoted/TRANSPARENCY_WBOIT_DESIGN.md)
 3. [../../spec/drp2/CAPABILITIES.md](../../spec/drp2/CAPABILITIES.md)
 4. [../../spec/drp2/COMMANDS.md](../../spec/drp2/COMMANDS.md)
 

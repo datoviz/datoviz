@@ -29,8 +29,8 @@ Read this against:
 1. `../../api/API_SURFACE.md`
 2. `../../interaction/PICKING.md`
 3. `../../interaction/SELECTION.md`
-4. `../../proposals/MESH_API_DESIGN.md`
-5. `../../proposals/INTERACTION_API_DESIGN.md`
+4. `../../proposals/active/MESH_API_DESIGN.md`
+5. `../../proposals/active/INTERACTION_API_DESIGN.md`
 
 
 ## Desired User Flow

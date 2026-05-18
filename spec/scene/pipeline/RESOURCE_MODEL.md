@@ -182,12 +182,12 @@ They are the scene-level vocabulary that should sit above them.
 Future semantic resources such as graphs, unstructured grids, sparse/bricked fields, track tables,
 ensembles, and molecular structures should initially lower to these classes rather than bypassing
 the resource model. See
-[`../proposals/SCIENTIFIC_VISUALIZATION_ROADMAP.md`](../proposals/SCIENTIFIC_VISUALIZATION_ROADMAP.md),
-[`../proposals/GRAPH_NETWORK_DESIGN.md`](../proposals/GRAPH_NETWORK_DESIGN.md),
-[`../proposals/UNSTRUCTURED_GRID_DESIGN.md`](../proposals/UNSTRUCTURED_GRID_DESIGN.md),
-[`../proposals/FIELD_VISUALIZATION_ROADMAP.md`](../proposals/FIELD_VISUALIZATION_ROADMAP.md),
-[`../proposals/DOMAIN_RESOURCE_ROADMAP.md`](../proposals/DOMAIN_RESOURCE_ROADMAP.md), and
-[`../proposals/OUT_OF_CORE_PROGRESSIVE_DESIGN.md`](../proposals/OUT_OF_CORE_PROGRESSIVE_DESIGN.md).
+[`../proposals/future/SCIENTIFIC_VISUALIZATION_ROADMAP.md`](../proposals/future/SCIENTIFIC_VISUALIZATION_ROADMAP.md),
+[`../proposals/future/GRAPH_NETWORK_DESIGN.md`](../proposals/future/GRAPH_NETWORK_DESIGN.md),
+[`../proposals/future/UNSTRUCTURED_GRID_DESIGN.md`](../proposals/future/UNSTRUCTURED_GRID_DESIGN.md),
+[`../proposals/future/FIELD_VISUALIZATION_ROADMAP.md`](../proposals/future/FIELD_VISUALIZATION_ROADMAP.md),
+[`../proposals/future/DOMAIN_RESOURCE_ROADMAP.md`](../proposals/future/DOMAIN_RESOURCE_ROADMAP.md), and
+[`../proposals/future/OUT_OF_CORE_PROGRESSIVE_DESIGN.md`](../proposals/future/OUT_OF_CORE_PROGRESSIVE_DESIGN.md).
 
 
 ## `ItemTable`
@@ -385,7 +385,7 @@ The active implementation-direction proposal is:
 6. existing image/texture convenience calls treated as transitional wrappers rather than the
    long-term center of the API.
 
-See [../proposals/SAMPLED_FIELD_API_DESIGN.md](../proposals/SAMPLED_FIELD_API_DESIGN.md) for the
+See [../proposals/promoted/SAMPLED_FIELD_API_DESIGN.md](../proposals/promoted/SAMPLED_FIELD_API_DESIGN.md) for the
 current implementation-grade API and validation direction.
 
 

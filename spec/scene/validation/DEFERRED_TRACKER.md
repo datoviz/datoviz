@@ -44,17 +44,17 @@ These items are in scope for v0.4 but deferred beyond the initial implementation
 | Glyph-level, substring-level, and text-object picking | `spec/scene/semantics/TEXT.md`, `spec/scene/visuals/GLYPH.md` |
 | Rendered annotations, annotation labels, guides, and callout geometry | `spec/scene/semantics/ANNOTATIONS.md` |
 | Rendered colorbar ramps, ticks, labels, and layout-realization geometry | `spec/scene/semantics/LEGENDS_AND_COLORBARS.md` |
-| Labels and categorical sampled-field rendering/probe semantics beyond retained descriptors | `spec/scene/proposals/SAMPLED_FIELD_API_DESIGN.md` |
-| Richer probe payloads beyond basic point identity and image RGBA/value readback | `spec/scene/proposals/PROBE_READOUT_DESIGN.md` |
+| Labels and categorical sampled-field rendering/probe semantics beyond retained descriptors | `spec/scene/proposals/promoted/SAMPLED_FIELD_API_DESIGN.md` |
+| Richer probe payloads beyond basic point identity and image RGBA/value readback | `spec/scene/proposals/promoted/PROBE_READOUT_DESIGN.md` |
 | Broader mesh, sphere, volume, object, and grouped-family picking | `spec/scene/interaction/PICKING.md` |
 | Scene-level animation timeline coordination | `spec/scene/interaction/ANIMATION.md` |
 | Multi-scene GPU resource sharing across threads | `spec/scene/integration/THREAD_SAFETY.md` |
 | Polar axis geometry (circular gridlines, radial labels) | `spec/scene/pipeline/TRANSFORM_PIPELINE.md` |
 | Map tile loading and LOD management | `spec/scene/pipeline/TRANSFORM_PIPELINE.md` |
 | Per-item material / PBR lighting for sphere | `spec/scene/visuals/SPHERE.md` |
-| Full PBR material model beyond current material/Phong/depth-cue slices | `spec/scene/semantics/LIGHTING.md`, `spec/scene/proposals/MATERIAL_LIGHTING_API.md` |
+| Full PBR material model beyond current material/Phong/depth-cue slices | `spec/scene/semantics/LIGHTING.md`, `spec/scene/proposals/active/MATERIAL_LIGHTING_API.md` |
 | Selection state synchronization across scenes | `spec/scene/interaction/SELECTION.md` |
-| Rendered selection highlight overlays/effects | `spec/scene/interaction/SELECTION.md`, `spec/scene/proposals/SELECTION_HIGHLIGHT_DESIGN.md` |
+| Rendered selection highlight overlays/effects | `spec/scene/interaction/SELECTION.md`, `spec/scene/proposals/active/SELECTION_HIGHLIGHT_DESIGN.md` |
 | Custom visual dirty-tracking optimization | `spec/scene/integration/CUSTOM_VISUALS.md` |
 | Per-character glyph orientation | `spec/scene/visuals/GLYPH.md` |
 | Vector export tile-based rendering and SVG-level effects | `spec/scene/export/VECTOR_EXPORT.md` |

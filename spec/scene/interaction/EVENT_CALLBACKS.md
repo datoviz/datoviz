@@ -153,7 +153,7 @@ void on_dpi(DvzScene* scene, float dpi_scale, void* user_data)
 ## Async Callback Pattern
 
 Long-running work should not run inside a synchronous scene or input callback. The preferred async
-model is described in `../proposals/ASYNC_CALLBACKS.md` and splits the operation into three phases:
+model is described in `../proposals/active/ASYNC_CALLBACKS.md` and splits the operation into three phases:
 
 ```text
 prepare(event, scene) -> snapshot   # render thread, optional
@@ -194,5 +194,5 @@ coordination.
 | `ANIMATION.md` | `DVZ_EVENT_ANIM_STEP` and `DVZ_EVENT_ANIM_COMPLETE` fire during animation update |
 | `FRAME_LIFECYCLE.md` | each event notes which lifecycle stage it fires in |
 | `integration/THREAD_SAFETY.md` | background threads react via transfer callbacks, not direct registration |
-| `../proposals/ASYNC_CALLBACKS.md` | prepare/work/apply model for long-running callback work |
+| `../proposals/active/ASYNC_CALLBACKS.md` | prepare/work/apply model for long-running callback work |
 | `integration/HIGH_DPI.md` | `DVZ_EVENT_DPI_CHANGED` fires on pixel ratio change |

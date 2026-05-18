@@ -30,7 +30,7 @@ Read this against:
 2. `../../interaction/PICKING.md`
 3. `../../semantics/ANNOTATIONS.md`
 4. `../../semantics/SCALES.md`
-5. `../../proposals/PROBE_READOUT_DESIGN.md`
+5. `../../proposals/promoted/PROBE_READOUT_DESIGN.md`
 
 
 ## Desired User Flow

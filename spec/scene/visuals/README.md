@@ -83,10 +83,10 @@ The granularity vocabulary (`CONSTANT`, `PER_ITEM`, `PER_SPAN`, `PER_GROUP`) and
 
 ## Active Proposal Inputs
 
-1. [../proposals/MESH_API_DESIGN.md](../proposals/MESH_API_DESIGN.md)
-2. [../proposals/MESH_SHADING_DESIGN.md](../proposals/MESH_SHADING_DESIGN.md)
-3. [../proposals/MATERIAL_LIGHTING_API.md](../proposals/MATERIAL_LIGHTING_API.md)
-4. [../proposals/VOLUME_DESIGN.md](../proposals/VOLUME_DESIGN.md)
+1. [../proposals/active/MESH_API_DESIGN.md](../proposals/active/MESH_API_DESIGN.md)
+2. [../proposals/active/MESH_SHADING_DESIGN.md](../proposals/active/MESH_SHADING_DESIGN.md)
+3. [../proposals/active/MATERIAL_LIGHTING_API.md](../proposals/active/MATERIAL_LIGHTING_API.md)
+4. [../proposals/active/VOLUME_DESIGN.md](../proposals/active/VOLUME_DESIGN.md)
 5. [../implementation/VISUAL_SHADER_REFACTOR.md](../implementation/VISUAL_SHADER_REFACTOR.md)
 
 
@@ -102,4 +102,4 @@ They are better understood as semantic resources or compositions that lower to t
 5. tracks, ensembles, and molecular structures lower to multiple coordinated views.
 
 The exploratory roadmap for these directions starts in
-[`../proposals/SCIENTIFIC_VISUALIZATION_ROADMAP.md`](../proposals/SCIENTIFIC_VISUALIZATION_ROADMAP.md).
+[`../proposals/future/SCIENTIFIC_VISUALIZATION_ROADMAP.md`](../proposals/future/SCIENTIFIC_VISUALIZATION_ROADMAP.md).

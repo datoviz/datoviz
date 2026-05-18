@@ -134,7 +134,7 @@ Strategic visual backlog:
 1. Keep `agents/now/` small and practical.
 2. Put imminent but not immediately active implementation plans in `agents/soon/`.
 3. Move stable scene semantics to specialized files under `spec/scene/`.
-4. Keep active not-yet-promoted design addenda in `spec/scene/proposals/`.
+4. Keep active not-yet-promoted design addenda in `spec/scene/proposals/active/`.
 5. Move completed implementation records to `agents/done/`.
 6. Move speculative or long-horizon execution ideas to `agents/later/`.
 7. Keep example and gallery planning out of `agents/`; it belongs under `spec/scene/examples/`.

@@ -216,7 +216,7 @@ geometry, depth, lighting, clipping, picking, and performance policy.
 Particle systems are related but distinct. A particle system owns dynamic GPU-updated state such as
 position, velocity, age, and size; track, streamline, and tube visuals are optional consumers of
 particle history or selected trajectories. The scene-level design lives in
-`spec/scene/proposals/PARTICLE_SYSTEM_DESIGN.md`.
+`spec/scene/proposals/active/PARTICLE_SYSTEM_DESIGN.md`.
 
 For tractography, the practical rendering ladder should be:
 

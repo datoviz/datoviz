@@ -12,7 +12,7 @@ paths must resolve back to semantic scene text objects.
 
 This document is normative for the current v0.4 text model.
 
-[../proposals/TEXT_DESIGN.md](../proposals/TEXT_DESIGN.md) remains the rationale and staging note
+[../proposals/active/TEXT_DESIGN.md](../proposals/active/TEXT_DESIGN.md) remains the rationale and staging note
 for future implementation details such as equation backends, color-font handling, and direct GPU
 outline rendering.
 

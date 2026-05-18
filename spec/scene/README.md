@@ -46,7 +46,7 @@ The scene spec is split by kind of authority:
 10. [slices](slices/README.md): implementation-ready work packets for mature spec areas.
 11. [headers](headers/README.md): implementation-facing draft C header sketches.
 12. [implementation](implementation/README.md): concise notes for active implementation wiring.
-13. [proposals](proposals/README.md): active design addenda awaiting promotion into specialized specs.
+13. [proposals](proposals/README.md): active, promoted, future, and historical proposal notes.
 14. [decisions](decisions/README.md): historical ADR-style decision records.
 15. [examples](examples/README.md): worked examples and API-shape pressure tests.
 
@@ -108,8 +108,8 @@ Unless a document says otherwise, this directory should be read with the followi
    normative behavior,
 4. when two documents overlap, the more specialized contract document should win over a broader
    orientation document,
-5. `proposals/` records are active design addenda used to clarify or extend the normative documents
-   until those rules are promoted into specialized spec files,
+5. `proposals/active/` records are active design addenda used to clarify or extend the normative
+   documents until those rules are promoted into specialized spec files,
 6. `decisions/` records are historical ADR-style records and should explain rationale, not hold
    current implementation-facing rules on their own,
 7. `api/API_SURFACE.md` is the normative bridge from scene semantics to public C API shape policy,
@@ -161,7 +161,7 @@ Read the scene spec in this order during review.
 5. [api/API_IMPLEMENTATION_READINESS.md](api/API_IMPLEMENTATION_READINESS.md) — checklist for the next public API pass
 6. [headers/README.md](headers/README.md) — draft header index for pressure-testing the surface
 7. [slices/README.md](slices/README.md) — implementation-ready work packets and readiness matrix
-8. [proposals/README.md](proposals/README.md) — active scene proposals awaiting promotion
+8. [proposals/README.md](proposals/README.md) — proposal taxonomy, promotion status, and indexes
 9. [api/IMPLEMENTATION_NOTES.md](api/IMPLEMENTATION_NOTES.md) — C-facing mapping, Python binding architecture
 
 ### 3. Visual semantics
@@ -316,7 +316,7 @@ Integration and export:
 
 Proposals, history, and examples:
 
-- [proposals/README.md](proposals/README.md): active addenda, promotion targets, and absorbed
+- [proposals/README.md](proposals/README.md): proposal taxonomy, promotion targets, and absorbed
   proposal status.
 - [decisions/README.md](decisions/README.md): historical ADR-style policy.
 - [headers/README.md](headers/README.md): historical header-sketch notes; installed headers remain

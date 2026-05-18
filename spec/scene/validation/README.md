@@ -16,4 +16,4 @@ promotion/deferment.
 
 ## Active Proposal Inputs
 
-1. [../proposals/CAPABILITY_FALLBACK_DESIGN.md](../proposals/CAPABILITY_FALLBACK_DESIGN.md)
+1. [../proposals/active/CAPABILITY_FALLBACK_DESIGN.md](../proposals/active/CAPABILITY_FALLBACK_DESIGN.md)

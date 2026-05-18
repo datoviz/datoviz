@@ -22,7 +22,7 @@ isosurfaces, polyhedral shapes.
 
 Volumetric cell meshes used by FEM, CFD, and finite-volume solvers are a related but distinct data
 model. They should not be forced into the surface `mesh` family directly. See the exploratory
-[`../proposals/UNSTRUCTURED_GRID_DESIGN.md`](../proposals/UNSTRUCTURED_GRID_DESIGN.md) note for
+[`../proposals/future/UNSTRUCTURED_GRID_DESIGN.md`](../proposals/future/UNSTRUCTURED_GRID_DESIGN.md) note for
 tetra/hexa/wedge cell topology, cell-centered fields, cut planes, and element picking.
 
 

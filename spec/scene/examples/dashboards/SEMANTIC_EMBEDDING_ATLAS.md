@@ -66,8 +66,8 @@ This example exercises:
 
 1. `EMBEDDING_EXPLORER_COMMON.md` for shared embedding-explorer bundle and query policy;
 2. `../../visuals/POINT.md` or marker/pixel visuals for dense item rendering;
-3. `../../semantics/TEXT.md` and `../../proposals/TEXT_DESIGN.md` for labels;
-4. `../../proposals/SCREEN_SPACE_OVERLAY_LAYOUT.md` for selected-item cards;
+3. `../../semantics/TEXT.md` and `../../proposals/active/TEXT_DESIGN.md` for labels;
+4. `../../proposals/active/SCREEN_SPACE_OVERLAY_LAYOUT.md` for selected-item cards;
 5. `../../interaction/CONTROLLERS.md` for panzoom navigation;
 6. `../../interaction/PICKING.md` and `../../interaction/SELECTION.md` for item selection;
 7. `../../pipeline/FRAME_PLAN.md` and `../../pipeline/INVALIDATION_AND_CACHING.md` for retained

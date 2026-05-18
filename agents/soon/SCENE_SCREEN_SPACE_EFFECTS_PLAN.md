@@ -10,7 +10,7 @@
 ## Context
 
 The durable design proposal is
-[spec/scene/proposals/SCREEN_SPACE_EFFECTS_DESIGN.md](../../spec/scene/proposals/SCREEN_SPACE_EFFECTS_DESIGN.md).
+[spec/scene/proposals/active/SCREEN_SPACE_EFFECTS_DESIGN.md](../../spec/scene/proposals/active/SCREEN_SPACE_EFFECTS_DESIGN.md).
 
 Do not add a parallel renderer, visual-private postprocess path, or ad-hoc Vulkan path. These
 effects should use:

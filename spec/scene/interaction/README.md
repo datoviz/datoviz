@@ -17,9 +17,9 @@ selection state, or animation timing.
 
 ## Active Proposal Inputs
 
-1. [../proposals/INTERACTION_API_DESIGN.md](../proposals/INTERACTION_API_DESIGN.md)
-2. [../proposals/PICKING_DESIGN.md](../proposals/PICKING_DESIGN.md)
-3. [../proposals/PROBE_READOUT_DESIGN.md](../proposals/PROBE_READOUT_DESIGN.md)
-4. [../proposals/SELECTION_HIGHLIGHT_DESIGN.md](../proposals/SELECTION_HIGHLIGHT_DESIGN.md)
-5. [../proposals/TRANSFORM_CONTROLLER_DESIGN.md](../proposals/TRANSFORM_CONTROLLER_DESIGN.md)
-6. [../proposals/ASYNC_CALLBACKS.md](../proposals/ASYNC_CALLBACKS.md)
+1. [../proposals/active/INTERACTION_API_DESIGN.md](../proposals/active/INTERACTION_API_DESIGN.md)
+2. [../proposals/promoted/PICKING_DESIGN.md](../proposals/promoted/PICKING_DESIGN.md)
+3. [../proposals/promoted/PROBE_READOUT_DESIGN.md](../proposals/promoted/PROBE_READOUT_DESIGN.md)
+4. [../proposals/active/SELECTION_HIGHLIGHT_DESIGN.md](../proposals/active/SELECTION_HIGHLIGHT_DESIGN.md)
+5. [../proposals/active/TRANSFORM_CONTROLLER_DESIGN.md](../proposals/active/TRANSFORM_CONTROLLER_DESIGN.md)
+6. [../proposals/active/ASYNC_CALLBACKS.md](../proposals/active/ASYNC_CALLBACKS.md)

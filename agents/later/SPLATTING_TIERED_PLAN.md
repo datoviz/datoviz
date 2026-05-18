@@ -167,7 +167,7 @@ compatibility should be an advanced mode or loader path, not the only definition
 ### Patch A: documentation and specs
 
 - Add `spec/scene/visuals/SPLAT.md` for the v0.4 visual contract.
-- Add `spec/scene/proposals/SPLATTING_FRAME_PLAN_REQUIREMENTS.md` for v0.5 pressure on frame-plan
+- Add `spec/scene/proposals/future/SPLATTING_FRAME_PLAN_REQUIREMENTS.md` for v0.5 pressure on frame-plan
   and DRP2 work.
 - Add this planning file for tier sequencing.
 

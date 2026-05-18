@@ -26,11 +26,11 @@ scene concepts into C and language bindings.
 
 ## Active Proposal Inputs
 
-1. [../proposals/INTERACTION_API_DESIGN.md](../proposals/INTERACTION_API_DESIGN.md)
-2. [../proposals/ANNOTATION_TEXT_SCALE_API.md](../proposals/ANNOTATION_TEXT_SCALE_API.md)
-3. [../proposals/MESH_API_DESIGN.md](../proposals/MESH_API_DESIGN.md)
-4. [../proposals/MATERIAL_LIGHTING_API.md](../proposals/MATERIAL_LIGHTING_API.md)
-5. [../proposals/SAMPLED_FIELD_API_DESIGN.md](../proposals/SAMPLED_FIELD_API_DESIGN.md)
+1. [../proposals/active/INTERACTION_API_DESIGN.md](../proposals/active/INTERACTION_API_DESIGN.md)
+2. [../proposals/active/ANNOTATION_TEXT_SCALE_API.md](../proposals/active/ANNOTATION_TEXT_SCALE_API.md)
+3. [../proposals/active/MESH_API_DESIGN.md](../proposals/active/MESH_API_DESIGN.md)
+4. [../proposals/active/MATERIAL_LIGHTING_API.md](../proposals/active/MATERIAL_LIGHTING_API.md)
+5. [../proposals/promoted/SAMPLED_FIELD_API_DESIGN.md](../proposals/promoted/SAMPLED_FIELD_API_DESIGN.md)
 
 
 ## Active Implementation Slice Inputs

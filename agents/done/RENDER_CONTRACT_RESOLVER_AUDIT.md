@@ -3,7 +3,7 @@
 > **Execution Status**
 > - **Status:** `COMPLETED AUDIT AND HARDENING RECORD`
 > - **Updated on:** `2026-05-18`
-> - **Scope:** `spec/scene/proposals/RENDER_CONTRACT_RESOLVER.md` and the active scene ->
+> - **Scope:** `spec/scene/proposals/active/RENDER_CONTRACT_RESOLVER.md` and the active scene ->
 >   DRP2 -> vklite code path.
 > - **Inputs:** local code review plus three parallel subagent audits covering contract semantics,
 >   implementation consistency, and automated test coverage.
@@ -1007,7 +1007,7 @@ The highest-value remaining direction is now:
 
 Primary proposal:
 
-1. [RENDER_CONTRACT_RESOLVER.md](../../spec/scene/proposals/RENDER_CONTRACT_RESOLVER.md)
+1. [RENDER_CONTRACT_RESOLVER.md](../../spec/scene/proposals/active/RENDER_CONTRACT_RESOLVER.md)
 
 Primary implementation paths:
 

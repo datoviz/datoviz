@@ -519,7 +519,7 @@ Datoviz should make layer ordering and coordinate space explicit enough that ove
 through pan, zoom, resize, and high-DPI changes.
 
 The minimal native layout target is tracked in
-[`../proposals/SCREEN_SPACE_OVERLAY_LAYOUT.md`](../proposals/SCREEN_SPACE_OVERLAY_LAYOUT.md). That
+[`../proposals/active/SCREEN_SPACE_OVERLAY_LAYOUT.md`](../proposals/active/SCREEN_SPACE_OVERLAY_LAYOUT.md). That
 proposal keeps dashboard cards and readouts inside the scene path without requiring HTML/CSS or a
 general GUI framework.
 

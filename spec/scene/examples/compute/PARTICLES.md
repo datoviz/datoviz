@@ -20,7 +20,7 @@ with a bounded smoke run using a fixed seed, confirming that particles move, rem
 non-empty frames, and avoid GPU-to-CPU copies during animation.
 
 
-See also [../../proposals/PARTICLE_SYSTEM_DESIGN.md](../../proposals/PARTICLE_SYSTEM_DESIGN.md) for the
+See also [../../proposals/active/PARTICLE_SYSTEM_DESIGN.md](../../proposals/active/PARTICLE_SYSTEM_DESIGN.md) for the
 scene-level particle-system design that separates GPU-updated simulation state, render views,
 CUDA/CuPy producers, and optional track/trail consumers.
 

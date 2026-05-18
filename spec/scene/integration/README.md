@@ -25,5 +25,5 @@ threads, high-DPI windows, or custom user-provided visual families.
 
 ## Active Proposal Inputs
 
-1. [../proposals/UI_BACKEND_INTEGRATION.md](../proposals/UI_BACKEND_INTEGRATION.md)
-2. [../proposals/ASYNC_CALLBACKS.md](../proposals/ASYNC_CALLBACKS.md)
+1. [../proposals/promoted/UI_BACKEND_INTEGRATION.md](../proposals/promoted/UI_BACKEND_INTEGRATION.md)
+2. [../proposals/active/ASYNC_CALLBACKS.md](../proposals/active/ASYNC_CALLBACKS.md)

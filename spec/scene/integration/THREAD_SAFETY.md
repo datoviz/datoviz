@@ -107,7 +107,7 @@ transfer variants above.
 
 The transfer queue remains the scene-level data handoff mechanism for typed attribute and uniform
 updates. User-facing async callbacks should additionally follow the proposal in
-`../proposals/ASYNC_CALLBACKS.md`:
+`../proposals/active/ASYNC_CALLBACKS.md`:
 
 ```text
 prepare(event, scene) -> snapshot   # render thread, optional
@@ -234,4 +234,4 @@ Sharing resources across multiple scenes or across threads is not supported in v
 | `pipeline/INVALIDATION_AND_CACHING.md` | drained transfers mark affected attributes dirty |
 | `pipeline/RESOURCE_MODEL.md` | staging pool and zero-copy upload path |
 | `pipeline/FRAME_PLAN.md` | dirty attributes resolved into UploadNodes in the same frame |
-| `../proposals/ASYNC_CALLBACKS.md` | prepare/work/apply callback model and app-window post primitive |
+| `../proposals/active/ASYNC_CALLBACKS.md` | prepare/work/apply callback model and app-window post primitive |

@@ -26,7 +26,7 @@ when extending the image and semantic embedding atlas examples so their bundle f
 semantics stay aligned.
 
 Future scientific-visualization directions that extend beyond the current example set are tracked in
-[`../proposals/SCIENTIFIC_VISUALIZATION_ROADMAP.md`](../proposals/SCIENTIFIC_VISUALIZATION_ROADMAP.md).
+[`../proposals/future/SCIENTIFIC_VISUALIZATION_ROADMAP.md`](../proposals/future/SCIENTIFIC_VISUALIZATION_ROADMAP.md).
 That roadmap links graph/network, unstructured-grid, field, trajectory, ensemble, molecular, and
 out-of-core resource proposals. Existing examples should reuse those notes instead of inventing
 parallel semantics when they grow into those domains.
