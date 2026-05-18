@@ -854,6 +854,23 @@ Validation:
 3. `./build/testing/dvztest_scene test_scene_msaa_runtime_lowering`
 
 
+### 2026-05-18: Audit reconciliation / Previously completed hardening
+
+Reconciled stale priority findings against the implementation progress log.
+
+Changes:
+
+1. Marked pipeline-key truncation as resolved by the 2026-05-17 checked runtime key append slice.
+2. Marked DRP2 attachment format-class mismatch validation as resolved by the 2026-05-17 DRP2
+   format-class slice and the 2026-05-18 attachment target validation slice.
+3. Updated the Phase 0 checklist and subagent collation wording so completed risks do not remain
+   listed as current open work.
+
+Validation:
+
+1. `git diff --check -- agents/now/RENDER_CONTRACT_RESOLVER_AUDIT_2026-05-17.md`
+
+
 ## Executive Assessment
 
 The direction is correct and worth continuing. The proposal identifies the right failure mode:
@@ -1134,30 +1151,36 @@ state is added, promote this into a dedicated resolved graph contract instead of
 fields.
 
 
-### Medium: pipeline cache keys can silently truncate
+### Resolved: pipeline cache key suffix appends are checked
 
-Runtime appends ABI-changing suffixes such as `_blend`, `_coverage_blend`, `_no_depth_test`,
-`_peel_init`, `_peel_iter`, `_fixed`, `_depth`, `_msaaN`, `_a2c`, and `_scene_occ` into fixed-size
-shader/pipeline key buffers without checking `dvz_snprintf()` truncation.
+Runtime now uses checked key-append helpers for ABI-changing suffixes such as `_blend`,
+`_coverage_blend`, `_no_depth_test`, `_peel_init`, `_peel_iter`, `_fixed`, `_depth`, `_msaaN`,
+`_a2c`, and `_scene_occ`.
 
-Impact: key aliasing can reuse a pipeline with the wrong depth, blend, MSAA, shader variant, or
-occlusion layout. This is exactly the kind of visual regression the contract is supposed to prevent.
+Status:
 
-Recommendation: use checked append helpers or structured pipeline fingerprints and fail emission on
-truncation.
+1. The 2026-05-17 Phase 0 slice added checked runtime key append helpers in
+   `src/scene/frame_plan_runtime.c`.
+2. Truncation now reports a diagnostic and aborts emission instead of silently aliasing shader or
+   pipeline keys.
+3. Structured pipeline fingerprints may still be useful later, but the originally audited
+   truncation hazard is closed for the listed runtime suffixes.
 
 
-### Medium: DRP2 semantic validation should reject attachment format-class mismatches
+### Resolved: DRP2 semantic validation rejects attachment format-class mismatches
 
-DRP2 semantic validation checks existence, usage, size, and sample count for render-pass
-attachments. It does not appear to reject depth formats used as color attachments or non-depth
-formats used as depth attachments before backend creation.
+DRP2 semantic validation now rejects color-vs-depth attachment format-class mismatches before
+backend creation.
 
-Impact: scene contract mistakes can reach vklite/Vulkan, where failures are later and harder to map
-back to semantic intent.
+Status:
 
-Recommendation: add DRP2-level checks for color-vs-depth format classes and add fixture/runtime
-tests for both invalid directions.
+1. The 2026-05-17 Phase 0 slice added a depth-format classifier and rejects depth formats used as
+   render-pipeline color targets, depth textures used as color/resolve attachments, and non-depth
+   textures used as named depth attachments.
+2. The 2026-05-18 Phase 4 slice expanded render-pipeline attachment validation for unsupported
+   non-depth color-target formats, color-target count mismatch, color-target format mismatch, and
+   missing pipeline depth state.
+3. Focused DRP2 tests cover the invalid format-class and attachment-target cases.
 
 
 ### Low: role, label, and alpha-mode predicates are duplicated
@@ -1217,8 +1240,8 @@ in this pass, using this attachment/resource/pipeline state" belongs in the reso
 3. Make contract validation report missing graph passes for all graph-backed render roles.
 4. Reject mixed WBOIT plus depth-peel panels until a total composition order is specified.
 5. Split sampled-depth from depth-attachment semantics in the contract.
-6. Add checked pipeline-key append helpers and fail on truncation.
-7. Add DRP2 semantic validation for color-vs-depth attachment format classes.
+6. Done: add checked pipeline-key append helpers and fail on truncation.
+7. Done: add DRP2 semantic validation for color-vs-depth attachment format classes.
 
 ### Phase 1: make contracts authoritative
 
@@ -1364,10 +1387,12 @@ The semantic audit emphasized that the resolver design is sound, but current con
 for sampled depth, blend equations, exact occlusion resources, mixed transparency composition, and
 dependency-derived graph ordering.
 
-The implementation audit identified concrete robustness risks beyond semantics: stale render-node
-pointers across FramePlan reallocation, graph-emission failures that only log, skipped missing graph
-passes during contract validation, MSAA sample-count drift after validation, pipeline-key truncation,
-and missing DRP2 format-class checks.
+The implementation audit originally identified concrete robustness risks beyond semantics: stale
+render-node pointers across FramePlan reallocation, graph-emission failures that only log, skipped
+missing graph passes during contract validation, MSAA sample-count drift after validation,
+pipeline-key truncation, and missing DRP2 format-class checks. The implementation progress log above
+now records completed hardening slices for each of these risks except the remaining diagnostic
+precision work for graph-builder-specific failures.
 
 The testing audit found that shape coverage is relatively strong, but offscreen visual correctness is
 not yet strong enough. Existing WBOIT and depth-peel runtime tests mostly check nonblank pixels, while
