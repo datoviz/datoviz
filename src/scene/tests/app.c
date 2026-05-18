@@ -40,6 +40,34 @@
 
 
 
+/*************************************************************************************************/
+/*  Macros                                                                                       */
+/*************************************************************************************************/
+
+#define TST_SCENE_APP_GPU_RES (TST_RES_CPU | TST_RES_GPU | TST_RES_VULKAN)
+
+#define TST_SCENE_APP_CASE(test, resource_flags, isolation_mode)                                  \
+    do                                                                                            \
+    {                                                                                             \
+        TstCaseDesc _tst_desc = tst_case_desc(#test, #test, (test));                              \
+        _tst_desc.tags = tags;                                                                    \
+        _tst_desc.resources = (resource_flags);                                                   \
+        _tst_desc.isolation = (isolation_mode);                                                   \
+        tst_suite_add_case((suite), _tst_desc);                                                   \
+    } while (0)
+
+#define TST_SCENE_APP_REQUIRE_VKLITE(ctx)                                                         \
+    do                                                                                            \
+    {                                                                                             \
+        if (!_scene_vklite_runtime_available())                                                   \
+        {                                                                                         \
+            tst_skip((ctx), "Vulkan instance creation failed");                                   \
+            return 0;                                                                             \
+        }                                                                                         \
+    } while (0)
+
+
+
 
 /*************************************************************************************************/
 /*  Tests                                                                                        */
@@ -857,8 +885,7 @@ int test_app_offscreen(TstContext* suite, const TstCase* item)
     ANN(suite);
     (void)item;
 
-    if (!_scene_vklite_runtime_available())
-        return 0;
+    TST_SCENE_APP_REQUIRE_VKLITE(suite);
 
     /* Build scene */
     DvzScene* scene = dvz_scene();
@@ -916,8 +943,7 @@ int test_app_offscreen_timer_advances_in_app_run(TstContext* suite, const TstCas
     ANN(suite);
     (void)item;
 
-    if (!_scene_vklite_runtime_available())
-        return 0;
+    TST_SCENE_APP_REQUIRE_VKLITE(suite);
 
     DvzFigure* figure = NULL;
     DvzScene* scene = _app_timer_test_scene(&figure);
@@ -961,8 +987,7 @@ int test_app_offscreen_timer_advances_in_render_once(TstContext* suite, const Ts
     ANN(suite);
     (void)item;
 
-    if (!_scene_vklite_runtime_available())
-        return 0;
+    TST_SCENE_APP_REQUIRE_VKLITE(suite);
 
     DvzFigure* figure = NULL;
     DvzScene* scene = _app_timer_test_scene(&figure);
@@ -1019,8 +1044,7 @@ int test_app_offscreen_render_enabled_gate(TstContext* suite, const TstCase* ite
     ANN(suite);
     (void)item;
 
-    if (!_scene_vklite_runtime_available())
-        return 0;
+    TST_SCENE_APP_REQUIRE_VKLITE(suite);
 
     DvzFigure* figure = NULL;
     DvzScene* scene = _app_timer_test_scene(&figure);
@@ -1075,8 +1099,7 @@ int test_app_external_surface_release_waits(TstContext* suite, const TstCase* it
     ANN(suite);
     (void)item;
 
-    if (!_scene_vklite_runtime_available())
-        return 0;
+    TST_SCENE_APP_REQUIRE_VKLITE(suite);
 
     if (!dvz_window_glfw_init())
     {
@@ -1167,8 +1190,7 @@ int test_app_offscreen_panel_three_visuals_all_drawn(TstContext* suite, const Ts
     ANN(suite);
     (void)item;
 
-    if (!_scene_vklite_runtime_available())
-        return 0;
+    TST_SCENE_APP_REQUIRE_VKLITE(suite);
 
     DvzScene* scene = dvz_scene();
     AT(scene != NULL);
@@ -1261,8 +1283,7 @@ int test_app_offscreen_point_depth_orders_overlap(TstContext* suite, const TstCa
     ANN(suite);
     (void)item;
 
-    if (!_scene_vklite_runtime_available())
-        return 0;
+    TST_SCENE_APP_REQUIRE_VKLITE(suite);
 
     DvzScene* scene = dvz_scene();
     AT(scene != NULL);
@@ -1337,8 +1358,7 @@ int test_app_offscreen_point_depth_cue_darkens_far(TstContext* suite, const TstC
     ANN(suite);
     (void)item;
 
-    if (!_scene_vklite_runtime_available())
-        return 0;
+    TST_SCENE_APP_REQUIRE_VKLITE(suite);
 
     DvzScene* scene = dvz_scene();
     AT(scene != NULL);
@@ -1410,8 +1430,7 @@ int test_app_offscreen_has_nonblank_pixels(TstContext* suite, const TstCase* ite
     ANN(suite);
     (void)item;
 
-    if (!_scene_vklite_runtime_available())
-        return 0;
+    TST_SCENE_APP_REQUIRE_VKLITE(suite);
 
     /* Build scene with ONE large yellow point at center. */
     DvzScene* scene = dvz_scene();
@@ -1483,8 +1502,7 @@ int test_app_offscreen_pixel_square_has_nonblank_pixels(TstContext* suite, const
     ANN(suite);
     (void)item;
 
-    if (!_scene_vklite_runtime_available())
-        return 0;
+    TST_SCENE_APP_REQUIRE_VKLITE(suite);
 
     DvzScene* scene = dvz_scene();
     AT(scene != NULL);
@@ -1556,8 +1574,7 @@ int test_app_offscreen_points_edl_renders(TstContext* suite, const TstCase* item
     ANN(suite);
     (void)item;
 
-    if (!_scene_vklite_runtime_available())
-        return 0;
+    TST_SCENE_APP_REQUIRE_VKLITE(suite);
 
     DvzScene* scene = dvz_scene();
     AT(scene != NULL);
@@ -1640,8 +1657,7 @@ int test_app_offscreen_points_edl_changes_pixels(TstContext* suite, const TstCas
     ANN(suite);
     (void)item;
 
-    if (!_scene_vklite_runtime_available())
-        return 0;
+    TST_SCENE_APP_REQUIRE_VKLITE(suite);
 
     AppRgbaCapture disabled = _app_edl_point_capture(false);
     if (disabled.skipped)
@@ -1699,8 +1715,7 @@ int test_app_offscreen_mesh_ssao_changes_pixels(TstContext* suite, const TstCase
     ANN(suite);
     (void)item;
 
-    if (!_scene_vklite_runtime_available())
-        return 0;
+    TST_SCENE_APP_REQUIRE_VKLITE(suite);
 
     DvzScene* scene = dvz_scene();
     AT(scene != NULL);
@@ -1789,8 +1804,7 @@ int test_app_offscreen_sphere_ssao_darkens_contact(TstContext* suite, const TstC
     ANN(suite);
     (void)item;
 
-    if (!_scene_vklite_runtime_available())
-        return 0;
+    TST_SCENE_APP_REQUIRE_VKLITE(suite);
 
     DvzScene* scene = dvz_scene();
     AT(scene != NULL);
@@ -1889,8 +1903,7 @@ int test_app_offscreen_records_dvzr_frames(TstContext* suite, const TstCase* ite
     ANN(suite);
     (void)item;
 
-    if (!_scene_vklite_runtime_available())
-        return 0;
+    TST_SCENE_APP_REQUIRE_VKLITE(suite);
 
     DvzScene* scene = dvz_scene();
     AT(scene != NULL);
@@ -1964,8 +1977,7 @@ int test_app_offscreen_image_has_nonblank_pixels(TstContext* suite, const TstCas
     ANN(suite);
     (void)item;
 
-    if (!_scene_vklite_runtime_available())
-        return 0;
+    TST_SCENE_APP_REQUIRE_VKLITE(suite);
 
     DvzScene* scene = dvz_scene();
     AT(scene != NULL);
@@ -2052,8 +2064,7 @@ int test_app_offscreen_text_has_nonblank_pixels(TstContext* suite, const TstCase
     ANN(suite);
     (void)item;
 
-    if (!_scene_vklite_runtime_available())
-        return 0;
+    TST_SCENE_APP_REQUIRE_VKLITE(suite);
 
     DvzScene* scene = dvz_scene();
     AT(scene != NULL);
@@ -2128,8 +2139,7 @@ int test_app_offscreen_image_field_partial_update_changes_region(TstContext* sui
     ANN(suite);
     (void)item;
 
-    if (!_scene_vklite_runtime_available())
-        return 0;
+    TST_SCENE_APP_REQUIRE_VKLITE(suite);
 
     DvzScene* scene = dvz_scene();
     ANN(scene);
@@ -2258,8 +2268,7 @@ int test_app_offscreen_wboit_mesh_order_independent_layers(TstContext* suite, co
     ANN(suite);
     (void)item;
 
-    if (!_scene_vklite_runtime_available())
-        return 0;
+    TST_SCENE_APP_REQUIRE_VKLITE(suite);
 
     AppWboitCapture forward = _app_wboit_capture_center(false);
     if (forward.skipped)
@@ -2299,8 +2308,7 @@ int test_app_offscreen_source_over_mesh_depth_and_blend(TstContext* suite, const
     ANN(suite);
     (void)item;
 
-    if (!_scene_vklite_runtime_available())
-        return 0;
+    TST_SCENE_APP_REQUIRE_VKLITE(suite);
 
     DvzScene* scene = dvz_scene();
     ANN(scene);
@@ -2375,8 +2383,7 @@ int test_app_offscreen_depth_peel_mesh_two_layers(TstContext* suite, const TstCa
     ANN(suite);
     (void)item;
 
-    if (!_scene_vklite_runtime_available())
-        return 0;
+    TST_SCENE_APP_REQUIRE_VKLITE(suite);
 
     DvzScene* scene = dvz_scene();
     ANN(scene);
@@ -2470,8 +2477,7 @@ int test_app_offscreen_scene_occlusion_hidden_alpha(TstContext* suite, const Tst
     ANN(suite);
     (void)item;
 
-    if (!_scene_vklite_runtime_available())
-        return 0;
+    TST_SCENE_APP_REQUIRE_VKLITE(suite);
 
     AppSceneOcclusionCapture hidden =
         _app_source_over_scene_occlusion_capture_center(true, true, 255);
@@ -2525,8 +2531,7 @@ int test_app_offscreen_source_over_scene_occlusion_matrix(TstContext* suite, con
     ANN(suite);
     (void)item;
 
-    if (!_scene_vklite_runtime_available())
-        return 0;
+    TST_SCENE_APP_REQUIRE_VKLITE(suite);
 
     AppSceneOcclusionCapture disabled =
         _app_source_over_scene_occlusion_capture_center(false, false, 64);
@@ -2570,8 +2575,7 @@ int test_app_offscreen_lit_primitive_depth_orders_overlap(TstContext* suite, con
     ANN(suite);
     (void)item;
 
-    if (!_scene_vklite_runtime_available())
-        return 0;
+    TST_SCENE_APP_REQUIRE_VKLITE(suite);
 
     DvzScene* scene = dvz_scene();
     ANN(scene);
@@ -2682,8 +2686,7 @@ int test_app_offscreen_lit_primitive_depth_cue_darkens_far(
     ANN(suite);
     (void)item;
 
-    if (!_scene_vklite_runtime_available())
-        return 0;
+    TST_SCENE_APP_REQUIRE_VKLITE(suite);
 
     DvzScene* scene = dvz_scene();
     ANN(scene);
@@ -2785,8 +2788,7 @@ int test_app_offscreen_mesh_renders_nonblank(TstContext* suite, const TstCase* i
     ANN(suite);
     (void)item;
 
-    if (!_scene_vklite_runtime_available())
-        return 0;
+    TST_SCENE_APP_REQUIRE_VKLITE(suite);
 
     DvzScene* scene = dvz_scene();
     ANN(scene);
@@ -3052,8 +3054,7 @@ int test_app_offscreen_rotated_mesh_depth_orders_faces(TstContext* suite, const 
     ANN(suite);
     (void)item;
 
-    if (!_scene_vklite_runtime_available())
-        return 0;
+    TST_SCENE_APP_REQUIRE_VKLITE(suite);
 
     DvzScene* scene = dvz_scene();
     ANN(scene);
@@ -3142,8 +3143,7 @@ int test_app_offscreen_camera_arcball_mesh_renders_cube(TstContext* suite, const
     ANN(suite);
     (void)item;
 
-    if (!_scene_vklite_runtime_available())
-        return 0;
+    TST_SCENE_APP_REQUIRE_VKLITE(suite);
 
     DvzScene* scene = dvz_scene();
     ANN(scene);
@@ -3236,8 +3236,7 @@ int test_app_offscreen_shared_field_mixed_runtime_updates(TstContext* suite, con
     ANN(suite);
     (void)item;
 
-    if (!_scene_vklite_runtime_available())
-        return 0;
+    TST_SCENE_APP_REQUIRE_VKLITE(suite);
 
     DvzScene* scene = dvz_scene();
     ANN(scene);
@@ -3388,8 +3387,7 @@ int test_app_offscreen_retained_render_second_frame(TstContext* suite, const Tst
     ANN(suite);
     (void)item;
 
-    if (!_scene_vklite_runtime_available())
-        return 0;
+    TST_SCENE_APP_REQUIRE_VKLITE(suite);
 
     DvzScene* scene = dvz_scene();
     AT(scene != NULL);
@@ -3455,8 +3453,7 @@ int test_app_offscreen_image_retained_render_second_frame(TstContext* suite, con
     ANN(suite);
     (void)item;
 
-    if (!_scene_vklite_runtime_available())
-        return 0;
+    TST_SCENE_APP_REQUIRE_VKLITE(suite);
 
     DvzScene* scene = dvz_scene();
     AT(scene != NULL);
@@ -3541,8 +3538,7 @@ int test_app_offscreen_resize_reuses_runtime_with_mesh_and_image(TstContext* sui
     ANN(suite);
     (void)item;
 
-    if (!_scene_vklite_runtime_available())
-        return 0;
+    TST_SCENE_APP_REQUIRE_VKLITE(suite);
 
     DvzScene* scene = dvz_scene();
     AT(scene != NULL);
@@ -3681,8 +3677,7 @@ int test_app_offscreen_pick_probe_request_steady_state(TstContext* suite, const 
     ANN(suite);
     (void)item;
 
-    if (!_scene_vklite_runtime_available())
-        return 0;
+    TST_SCENE_APP_REQUIRE_VKLITE(suite);
 
     DvzScene* scene = dvz_scene();
     AT(scene != NULL);
@@ -3785,8 +3780,7 @@ int test_app_offscreen_two_panel_points_light_both_halves(TstContext* suite, con
     ANN(suite);
     (void)item;
 
-    if (!_scene_vklite_runtime_available())
-        return 0;
+    TST_SCENE_APP_REQUIRE_VKLITE(suite);
 
     DvzScene* scene = dvz_scene();
     AT(scene != NULL);
@@ -3875,8 +3869,7 @@ int test_app_offscreen_clear_color(TstContext* suite, const TstCase* item)
     ANN(suite);
     (void)item;
 
-    if (!_scene_vklite_runtime_available())
-        return 0;
+    TST_SCENE_APP_REQUIRE_VKLITE(suite);
 
     /* Scene with NO visuals — all pixels should show the clear color. */
     DvzScene* scene = dvz_scene();
@@ -3931,8 +3924,7 @@ int test_app_capture_rejects_wrong_dimensions(TstContext* suite, const TstCase* 
     ANN(suite);
     (void)item;
 
-    if (!_scene_vklite_runtime_available())
-        return 0;
+    TST_SCENE_APP_REQUIRE_VKLITE(suite);
 
     DvzScene* scene = dvz_scene();
     AT(scene != NULL);
@@ -3973,8 +3965,7 @@ int test_app_capture_rejects_undersized_buffer(TstContext* suite, const TstCase*
     ANN(suite);
     (void)item;
 
-    if (!_scene_vklite_runtime_available())
-        return 0;
+    TST_SCENE_APP_REQUIRE_VKLITE(suite);
 
     DvzScene* scene = dvz_scene();
     AT(scene != NULL);
@@ -4025,8 +4016,7 @@ int test_app_offscreen_volume_slice_renders_field(TstContext* suite, const TstCa
     ANN(suite);
     (void)item;
 
-    if (!_scene_vklite_runtime_available())
-        return 0;
+    TST_SCENE_APP_REQUIRE_VKLITE(suite);
 
     DvzScene* scene = dvz_scene();
     ANN(scene);
@@ -4106,8 +4096,7 @@ int test_app_offscreen_volume_mip_renders_bright_slice(TstContext* suite, const 
     ANN(suite);
     (void)item;
 
-    if (!_scene_vklite_runtime_available())
-        return 0;
+    TST_SCENE_APP_REQUIRE_VKLITE(suite);
 
     DvzScene* scene = dvz_scene();
     ANN(scene);
@@ -4194,8 +4183,7 @@ int test_app_offscreen_volume_composite_renders_field(TstContext* suite, const T
     ANN(suite);
     (void)item;
 
-    if (!_scene_vklite_runtime_available())
-        return 0;
+    TST_SCENE_APP_REQUIRE_VKLITE(suite);
 
     DvzScene* scene = dvz_scene();
     ANN(scene);
@@ -4460,8 +4448,7 @@ int test_app_offscreen_volume_occlusion_slice_renders(TstContext* suite, const T
     ANN(suite);
     (void)item;
 
-    if (!_scene_vklite_runtime_available())
-        return 0;
+    TST_SCENE_APP_REQUIRE_VKLITE(suite);
 
     AppVolumeOcclusionCapture disabled =
         _app_volume_occlusion_capture(APP_VOLUME_OCCLUSION_MODE_DISABLED, false, false);
@@ -4507,8 +4494,7 @@ int test_app_offscreen_volume_occlusion_region_delta(TstContext* suite, const Ts
     ANN(suite);
     (void)item;
 
-    if (!_scene_vklite_runtime_available())
-        return 0;
+    TST_SCENE_APP_REQUIRE_VKLITE(suite);
 
     AppVolumeOcclusionCapture disabled =
         _app_volume_occlusion_capture(APP_VOLUME_OCCLUSION_MODE_DISABLED, false, true);
@@ -4558,8 +4544,7 @@ int test_app_offscreen_volume_occlusion_perspective_camera(TstContext* suite, co
     ANN(suite);
     (void)item;
 
-    if (!_scene_vklite_runtime_available())
-        return 0;
+    TST_SCENE_APP_REQUIRE_VKLITE(suite);
 
     AppVolumeOcclusionCapture disabled =
         _app_volume_occlusion_capture(APP_VOLUME_OCCLUSION_MODE_DISABLED, true, false);
@@ -4601,8 +4586,7 @@ int test_app_offscreen_volume_slice_scene_occlusion_dimming(TstContext* suite, c
     ANN(suite);
     (void)item;
 
-    if (!_scene_vklite_runtime_available())
-        return 0;
+    TST_SCENE_APP_REQUIRE_VKLITE(suite);
 
     AppVolumeOcclusionCapture disabled =
         _app_volume_occlusion_capture(APP_VOLUME_OCCLUSION_MODE_DISABLED, false, false);
@@ -4651,8 +4635,7 @@ int test_app_offscreen_volume_slice_mesh_scene_occlusion_toggle(TstContext* suit
     ANN(suite);
     (void)item;
 
-    if (!_scene_vklite_runtime_available())
-        return 0;
+    TST_SCENE_APP_REQUIRE_VKLITE(suite);
 
     DvzScene* scene = dvz_scene();
     ANN(scene);
@@ -4818,8 +4801,7 @@ int test_app_offscreen_volume_depth_occluded_by_primitive(TstContext* suite, con
     ANN(suite);
     (void)item;
 
-    if (!_scene_vklite_runtime_available())
-        return 0;
+    TST_SCENE_APP_REQUIRE_VKLITE(suite);
 
     DvzScene* scene = dvz_scene();
     ANN(scene);
@@ -4930,54 +4912,139 @@ int test_scene_app(TstSuite* suite)
     TST_GROUP("app-offscreen");
 
 #if defined(DVZ_HAS_APP) && DVZ_HAS_APP
-    TST_CASE(test_app_offscreen);
-    TST_CASE(test_app_offscreen_timer_advances_in_app_run);
-    TST_CASE(test_app_offscreen_timer_advances_in_render_once);
-    TST_CASE(test_app_offscreen_render_enabled_gate);
+    TST_SCENE_APP_CASE(test_app_offscreen, TST_SCENE_APP_GPU_RES, TST_ISOLATION_PROCESS);
+    TST_SCENE_APP_CASE(
+        test_app_offscreen_timer_advances_in_app_run, TST_SCENE_APP_GPU_RES,
+        TST_ISOLATION_PROCESS);
+    TST_SCENE_APP_CASE(
+        test_app_offscreen_timer_advances_in_render_once, TST_SCENE_APP_GPU_RES,
+        TST_ISOLATION_PROCESS);
+    TST_SCENE_APP_CASE(
+        test_app_offscreen_render_enabled_gate, TST_SCENE_APP_GPU_RES, TST_ISOLATION_PROCESS);
 #if defined(DVZ_HAS_GLFW) && DVZ_HAS_GLFW
-    TST_CASE(test_app_external_surface_release_waits);
+    TST_SCENE_APP_CASE(
+        test_app_external_surface_release_waits, TST_SCENE_APP_GPU_RES | TST_RES_GLFW,
+        TST_ISOLATION_PROCESS);
 #endif
-    TST_CASE(test_app_offscreen_panel_three_visuals_all_drawn);
-    TST_CASE(test_app_offscreen_point_depth_orders_overlap);
-    TST_CASE(test_app_offscreen_wboit_mesh_order_independent_layers);
-    TST_CASE(test_app_offscreen_source_over_mesh_depth_and_blend);
-    TST_CASE(test_app_offscreen_depth_peel_mesh_two_layers);
-    TST_CASE(test_app_offscreen_scene_occlusion_hidden_alpha);
-    TST_CASE(test_app_offscreen_source_over_scene_occlusion_matrix);
-    TST_CASE(test_app_offscreen_point_depth_cue_darkens_far);
-    TST_CASE(test_app_offscreen_has_nonblank_pixels);
-    TST_CASE(test_app_offscreen_pixel_square_has_nonblank_pixels);
-    TST_CASE(test_app_offscreen_points_edl_renders);
-    TST_CASE(test_app_offscreen_points_edl_changes_pixels);
-    TST_CASE(test_app_offscreen_mesh_ssao_changes_pixels);
-    TST_CASE(test_app_offscreen_sphere_ssao_darkens_contact);
-    TST_CASE(test_app_offscreen_records_dvzr_frames);
-    TST_CASE(test_app_offscreen_image_has_nonblank_pixels);
-    TST_CASE(test_app_offscreen_text_has_nonblank_pixels);
-    TST_CASE(test_app_offscreen_image_field_partial_update_changes_region);
-    TST_CASE(test_app_offscreen_lit_primitive_depth_orders_overlap);
-    TST_CASE(test_app_offscreen_lit_primitive_depth_cue_darkens_far);
-    TST_CASE(test_app_offscreen_mesh_renders_nonblank);
-    TST_CASE(test_app_offscreen_rotated_mesh_depth_orders_faces);
-    TST_CASE(test_app_offscreen_camera_arcball_mesh_renders_cube);
-    TST_CASE(test_app_offscreen_shared_field_mixed_runtime_updates);
-    TST_CASE(test_app_offscreen_retained_render_second_frame);
-    TST_CASE(test_app_offscreen_image_retained_render_second_frame);
-    TST_CASE(test_app_offscreen_resize_reuses_runtime_with_mesh_and_image);
-    TST_CASE(test_app_offscreen_pick_probe_request_steady_state);
-    TST_CASE(test_app_offscreen_two_panel_points_light_both_halves);
-    TST_CASE(test_app_offscreen_clear_color);
-    TST_CASE(test_app_offscreen_volume_slice_renders_field);
-    TST_CASE(test_app_offscreen_volume_mip_renders_bright_slice);
-    TST_CASE(test_app_offscreen_volume_composite_renders_field);
-    TST_CASE(test_app_offscreen_volume_occlusion_slice_renders);
-    TST_CASE(test_app_offscreen_volume_occlusion_region_delta);
-    TST_CASE(test_app_offscreen_volume_occlusion_perspective_camera);
-    TST_CASE(test_app_offscreen_volume_slice_scene_occlusion_dimming);
-    TST_CASE(test_app_offscreen_volume_slice_mesh_scene_occlusion_toggle);
-    TST_CASE(test_app_offscreen_volume_depth_occluded_by_primitive);
-    TST_CASE(test_app_capture_rejects_wrong_dimensions);
-    TST_CASE(test_app_capture_rejects_undersized_buffer);
+    TST_SCENE_APP_CASE(
+        test_app_offscreen_panel_three_visuals_all_drawn, TST_SCENE_APP_GPU_RES,
+        TST_ISOLATION_PROCESS);
+    TST_SCENE_APP_CASE(
+        test_app_offscreen_point_depth_orders_overlap, TST_SCENE_APP_GPU_RES,
+        TST_ISOLATION_PROCESS);
+    TST_SCENE_APP_CASE(
+        test_app_offscreen_wboit_mesh_order_independent_layers, TST_SCENE_APP_GPU_RES,
+        TST_ISOLATION_PROCESS);
+    TST_SCENE_APP_CASE(
+        test_app_offscreen_source_over_mesh_depth_and_blend, TST_SCENE_APP_GPU_RES,
+        TST_ISOLATION_PROCESS);
+    TST_SCENE_APP_CASE(
+        test_app_offscreen_depth_peel_mesh_two_layers, TST_SCENE_APP_GPU_RES,
+        TST_ISOLATION_PROCESS);
+    TST_SCENE_APP_CASE(
+        test_app_offscreen_scene_occlusion_hidden_alpha, TST_SCENE_APP_GPU_RES,
+        TST_ISOLATION_PROCESS);
+    TST_SCENE_APP_CASE(
+        test_app_offscreen_source_over_scene_occlusion_matrix, TST_SCENE_APP_GPU_RES,
+        TST_ISOLATION_PROCESS);
+    TST_SCENE_APP_CASE(
+        test_app_offscreen_point_depth_cue_darkens_far, TST_SCENE_APP_GPU_RES,
+        TST_ISOLATION_PROCESS);
+    TST_SCENE_APP_CASE(
+        test_app_offscreen_has_nonblank_pixels, TST_SCENE_APP_GPU_RES, TST_ISOLATION_PROCESS);
+    TST_SCENE_APP_CASE(
+        test_app_offscreen_pixel_square_has_nonblank_pixels, TST_SCENE_APP_GPU_RES,
+        TST_ISOLATION_PROCESS);
+    TST_SCENE_APP_CASE(
+        test_app_offscreen_points_edl_renders, TST_SCENE_APP_GPU_RES, TST_ISOLATION_PROCESS);
+    TST_SCENE_APP_CASE(
+        test_app_offscreen_points_edl_changes_pixels, TST_SCENE_APP_GPU_RES,
+        TST_ISOLATION_PROCESS);
+    TST_SCENE_APP_CASE(
+        test_app_offscreen_mesh_ssao_changes_pixels, TST_SCENE_APP_GPU_RES,
+        TST_ISOLATION_PROCESS);
+    TST_SCENE_APP_CASE(
+        test_app_offscreen_sphere_ssao_darkens_contact, TST_SCENE_APP_GPU_RES,
+        TST_ISOLATION_PROCESS);
+    TST_SCENE_APP_CASE(
+        test_app_offscreen_records_dvzr_frames,
+        TST_SCENE_APP_GPU_RES | TST_RES_FILESYSTEM | TST_RES_ENV, TST_ISOLATION_PROCESS);
+    TST_SCENE_APP_CASE(
+        test_app_offscreen_image_has_nonblank_pixels, TST_SCENE_APP_GPU_RES,
+        TST_ISOLATION_PROCESS);
+    TST_SCENE_APP_CASE(
+        test_app_offscreen_text_has_nonblank_pixels, TST_SCENE_APP_GPU_RES,
+        TST_ISOLATION_PROCESS);
+    TST_SCENE_APP_CASE(
+        test_app_offscreen_image_field_partial_update_changes_region, TST_SCENE_APP_GPU_RES,
+        TST_ISOLATION_PROCESS);
+    TST_SCENE_APP_CASE(
+        test_app_offscreen_lit_primitive_depth_orders_overlap, TST_SCENE_APP_GPU_RES,
+        TST_ISOLATION_PROCESS);
+    TST_SCENE_APP_CASE(
+        test_app_offscreen_lit_primitive_depth_cue_darkens_far, TST_SCENE_APP_GPU_RES,
+        TST_ISOLATION_PROCESS);
+    TST_SCENE_APP_CASE(
+        test_app_offscreen_mesh_renders_nonblank, TST_SCENE_APP_GPU_RES, TST_ISOLATION_PROCESS);
+    TST_SCENE_APP_CASE(
+        test_app_offscreen_rotated_mesh_depth_orders_faces, TST_SCENE_APP_GPU_RES,
+        TST_ISOLATION_PROCESS);
+    TST_SCENE_APP_CASE(
+        test_app_offscreen_camera_arcball_mesh_renders_cube, TST_SCENE_APP_GPU_RES,
+        TST_ISOLATION_PROCESS);
+    TST_SCENE_APP_CASE(
+        test_app_offscreen_shared_field_mixed_runtime_updates, TST_SCENE_APP_GPU_RES,
+        TST_ISOLATION_PROCESS);
+    TST_SCENE_APP_CASE(
+        test_app_offscreen_retained_render_second_frame, TST_SCENE_APP_GPU_RES,
+        TST_ISOLATION_PROCESS);
+    TST_SCENE_APP_CASE(
+        test_app_offscreen_image_retained_render_second_frame, TST_SCENE_APP_GPU_RES,
+        TST_ISOLATION_PROCESS);
+    TST_SCENE_APP_CASE(
+        test_app_offscreen_resize_reuses_runtime_with_mesh_and_image, TST_SCENE_APP_GPU_RES,
+        TST_ISOLATION_PROCESS);
+    TST_SCENE_APP_CASE(
+        test_app_offscreen_pick_probe_request_steady_state, TST_SCENE_APP_GPU_RES,
+        TST_ISOLATION_PROCESS);
+    TST_SCENE_APP_CASE(
+        test_app_offscreen_two_panel_points_light_both_halves, TST_SCENE_APP_GPU_RES,
+        TST_ISOLATION_PROCESS);
+    TST_SCENE_APP_CASE(
+        test_app_offscreen_clear_color, TST_SCENE_APP_GPU_RES, TST_ISOLATION_PROCESS);
+    TST_SCENE_APP_CASE(
+        test_app_offscreen_volume_slice_renders_field, TST_SCENE_APP_GPU_RES,
+        TST_ISOLATION_PROCESS);
+    TST_SCENE_APP_CASE(
+        test_app_offscreen_volume_mip_renders_bright_slice, TST_SCENE_APP_GPU_RES,
+        TST_ISOLATION_PROCESS);
+    TST_SCENE_APP_CASE(
+        test_app_offscreen_volume_composite_renders_field, TST_SCENE_APP_GPU_RES,
+        TST_ISOLATION_PROCESS);
+    TST_SCENE_APP_CASE(
+        test_app_offscreen_volume_occlusion_slice_renders, TST_SCENE_APP_GPU_RES,
+        TST_ISOLATION_PROCESS);
+    TST_SCENE_APP_CASE(
+        test_app_offscreen_volume_occlusion_region_delta, TST_SCENE_APP_GPU_RES,
+        TST_ISOLATION_PROCESS);
+    TST_SCENE_APP_CASE(
+        test_app_offscreen_volume_occlusion_perspective_camera, TST_SCENE_APP_GPU_RES,
+        TST_ISOLATION_PROCESS);
+    TST_SCENE_APP_CASE(
+        test_app_offscreen_volume_slice_scene_occlusion_dimming, TST_SCENE_APP_GPU_RES,
+        TST_ISOLATION_PROCESS);
+    TST_SCENE_APP_CASE(
+        test_app_offscreen_volume_slice_mesh_scene_occlusion_toggle,
+        TST_SCENE_APP_GPU_RES | TST_RES_LOG_CAPTURE, TST_ISOLATION_PROCESS);
+    TST_SCENE_APP_CASE(
+        test_app_offscreen_volume_depth_occluded_by_primitive, TST_SCENE_APP_GPU_RES,
+        TST_ISOLATION_PROCESS);
+    TST_SCENE_APP_CASE(
+        test_app_capture_rejects_wrong_dimensions, TST_SCENE_APP_GPU_RES,
+        TST_ISOLATION_PROCESS);
+    TST_SCENE_APP_CASE(
+        test_app_capture_rejects_undersized_buffer, TST_SCENE_APP_GPU_RES,
+        TST_ISOLATION_PROCESS);
 #endif
 
     return 0;
