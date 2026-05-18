@@ -30,11 +30,18 @@ visualization workload:
 - 2D camera interaction;
 - overlays, labels, cursor, and event markers;
 - stable frame rate without recreating resources every frame.
+- side-by-side investigation of several trace-rendering techniques, including one-draw-call paths.
 
 The exact Datoviz v0.4 Python API is not yet fixed, so this document describes required behavior and
 data flow without relying on specific function names. The first practical slice should implement
 ring-buffer mode only, generate bounded chunks each frame, update just the dirty sample ranges, and
 draw readable digital step traces plus analog lines.
+
+The long-term version of this example should also serve as an interactive benchmark and design
+probe for high-throughput time-series rendering. Users should be able to switch rendering
+techniques at runtime, inspect frame timing and upload costs, and compare the tradeoffs between
+indexed, instanced, multi-draw, shader-driven, and expanded-geometry approaches on the same
+synthetic DAQ stream.
 
 ## Example name
 
@@ -77,9 +84,14 @@ Digital channels are drawn as step traces. Analog channels are drawn as continuo
 
 The display should remain readable and visually attractive on a laptop screen.
 
+The viewer should expose enough runtime statistics to make performance investigation practical:
+current FPS, frame time, number of logical samples generated per frame, uploaded bytes per frame,
+draw count, vertex count, index count, dirty range count, and active rendering technique.
+
 ## Main visualization modes
 
-The example should support at least the first mode. The second mode is optional but recommended.
+The example should support at least the first mode. The scrolling and sweep modes are optional but
+recommended after the ring-buffer path is stable.
 
 ### 1. Ring-buffer mode
 
@@ -101,6 +113,20 @@ Important behavior:
 The x-axis represents recent time, for example the last 10 seconds. New samples enter from the right and old samples disappear on the left.
 
 This mode is visually familiar but may require camera or transform updates every frame. It is optional and can be implemented after ring-buffer mode.
+
+### 3. Sweep cursor mode
+
+The x-axis represents a fixed display buffer. A vertical sweep cursor moves from left to right,
+similar to medical monitors and logic analyzers. Newly written samples appear behind the cursor,
+while older samples remain visible until overwritten by the next sweep.
+
+This mode is similar to ring-buffer mode internally, but the visual emphasis is different:
+
+- the cursor is prominent;
+- the freshly updated region may be highlighted or brighter;
+- stale regions may be dimmed subtly;
+- no trace should connect across the sweep wrap boundary;
+- the implementation should still update only the newly written ring-buffer ranges.
 
 ## Synthetic data model
 
@@ -134,6 +160,16 @@ sample_counter int64
 ```
 
 Digital values may be stored as `uint8` internally, but the renderable buffer may use `float32` for simplicity.
+
+The data should also support an interleaved layout, because this is common in real DAQ systems:
+
+```text
+interleaved_values  float32[n_samples, n_channels]
+```
+
+The example should avoid requiring CPU-side transposition for this layout. Rendering techniques
+should be able to consume interleaved data directly when possible, for example by using
+`sample_index * n_channels + channel_index` addressing in the shader.
 
 ## Simulated channel classes
 
@@ -306,6 +342,172 @@ The renderer may handle this by:
 
 The specification requires correct visual behavior, not a particular implementation.
 
+## Rendering technique comparison
+
+The mature version of this example should allow switching between several rendering techniques
+from the UI. The goal is not to declare one technique universally best, but to make tradeoffs
+visible under realistic streaming conditions.
+
+All techniques should consume the same synthetic generator, channel metadata, camera state, color
+configuration, and ring-buffer state. The architecture should separate the example into:
+
+```text
+data generator -> ring buffer -> rendering technique adapter -> Datoviz resources
+```
+
+Switching techniques should replace or reconfigure the rendering adapter without changing the
+simulated DAQ stream.
+
+### Technique A: instanced line-strip from interleaved data
+
+This is the preferred first technique to prototype for interleaved DAQ data.
+
+Use one draw with a line-strip topology:
+
+```text
+vertex_count   = visible_sample_count
+instance_count = visible_channel_count
+```
+
+The shader derives:
+
+```text
+sample_index  = vertex index
+channel_index = instance index
+physical      = ring_index(sample_index)
+value_index   = physical * n_channels + channel_index
+```
+
+Expected advantages:
+
+- one draw call;
+- no CPU-side transposition;
+- no index buffer;
+- no artificial connector between channels because each instance is a separate strip;
+- natural fit for interleaved acquisition buffers.
+
+Potential limitations:
+
+- shader-side ring-buffer address calculation is required;
+- step traces may require a separate digital path or expanded vertices;
+- backend support for the exact data-buffer access pattern may constrain the first implementation.
+
+### Technique B: indexed line-strip with primitive restart
+
+Use one indexed draw with `LINE_STRIP` topology and primitive-restart markers between channels or
+between wrapped ranges:
+
+```text
+ch0_sample0, ch0_sample1, ..., restart,
+ch1_sample0, ch1_sample1, ..., restart,
+...
+```
+
+Expected advantages:
+
+- one draw call;
+- topology-level breaks, with no fake connector geometry;
+- useful baseline for compact strip rendering;
+- can address interleaved source data without transposition by choosing appropriate indices.
+
+Potential limitations:
+
+- requires indexed rendering;
+- the index buffer may be large for many channels and long histories;
+- ring-buffer wrap may require either shader-side indirection or index-buffer updates;
+- on MoltenVK/Metal, primitive restart is effectively always enabled, so max-value indices must
+  never be used as real sample indices in indexed strip paths.
+
+### Technique C: multi-draw or indirect per-channel strips
+
+Draw one strip per channel, preferably via indirect or multi-draw support when available.
+
+Expected advantages:
+
+- clean topology without primitive restart;
+- no fake connector geometry;
+- no large restart-index buffer;
+- natural place to split ring-buffer wrap into two ranges.
+
+Potential limitations:
+
+- may require backend features that are not uniformly available;
+- regular per-channel draws may be acceptable for 128 channels but should be benchmarked at stress
+  sizes;
+- command generation and state handling need instrumentation.
+
+### Technique D: shader-discard connector masking
+
+This is a useful legacy-style baseline. It draws a single continuous stream with a per-vertex span
+or channel attribute. Connector fragments between spans are detected by interpolated non-integer or
+mismatched span values and discarded in the fragment shader.
+
+Expected advantages:
+
+- simple non-indexed data path;
+- one draw call;
+- useful for comparison with older Datoviz 0.3-style approaches.
+
+Potential limitations:
+
+- artificial connector geometry is still assembled and rasterized;
+- long connectors can waste fragment work;
+- discard can interact poorly with depth, picking, antialiasing, derivatives, transparency, and
+  postprocessing;
+- it should be treated as a benchmark baseline rather than the preferred final path.
+
+### Technique E: expanded segment or quad mesh
+
+Generate line segments or quads explicitly, either on the CPU or through a GPU prepass. This is the
+most flexible path for thick antialiased traces, joins, caps, digital steps, and high-quality
+visual styling.
+
+Expected advantages:
+
+- high visual quality;
+- direct support for linewidth, joins, caps, and digital step traces;
+- can avoid backend-dependent wide-line behavior.
+
+Potential limitations:
+
+- more vertices and larger uploads;
+- CPU expansion may become expensive at high sample rates;
+- GPU expansion requires additional shader or compute infrastructure.
+
+### Technique F: sampled buffer or texture path
+
+Upload raw interleaved samples to a storage buffer, uniform texel buffer, or texture-like resource.
+The shader computes channel/sample addressing and emits positions from the raw data.
+
+Expected advantages:
+
+- raw DAQ memory layout can be preserved;
+- ring-buffer addressing can stay on the GPU;
+- useful foundation for future GPU-side decimation and filtering.
+
+Potential limitations:
+
+- depends on the resource and shader capabilities exposed by the v0.4 stack;
+- line topology still needs a clean way to avoid cross-channel and wrap connectors;
+- may need separate paths for analog lines, digital steps, and event channels.
+
+### Technique G: GPU decimation or envelope path
+
+For very large histories or high sample rates, use a compute or prepass stage to build per-pixel
+min/max envelopes, thresholded event spans, or reduced line vertices before rendering.
+
+Expected advantages:
+
+- scalable for stress presets and long histories;
+- avoids drawing many samples that map to the same screen pixel;
+- can preserve spikes better than naive subsampling.
+
+Potential limitations:
+
+- more complex;
+- requires careful synchronization between streaming updates, compute output, and rendering;
+- best treated as a future high-density extension after simpler techniques are measurable.
+
 ## Resource update requirements
 
 This example is primarily a dynamic resource test.
@@ -404,14 +606,32 @@ Recommended ImGui controls:
 - update chunk size;
 - vertical gain;
 - time window duration;
+- ring buffer capacity;
+- active rendering technique;
 - show/hide labels;
 - show/hide grid;
 - show/hide event markers;
 - ring-buffer versus scrolling mode;
+- sweep cursor mode;
 - synthetic generator preset;
+- interleaved versus channel-major CPU layout;
+- channel color mode;
+- channel reorder/grouping mode;
+- stress preset selector;
 - replay dataset mode, optional.
 
 The UI should remain optional. The example should still run if ImGui is unavailable.
+
+Recommended performance readouts:
+
+- FPS and frame time;
+- generated samples per frame;
+- uploaded bytes per frame;
+- dirty ranges per frame;
+- draw calls per frame;
+- visible vertices and indices;
+- active topology and technique name;
+- ring-buffer write index and wrap count.
 
 ## Performance targets
 
@@ -535,6 +755,10 @@ Create resources for:
 
 Do this once at startup.
 
+Create rendering-technique adapters behind a common interface. Each adapter should own only the
+resources and pipeline choices needed by its technique, while sharing the same `DaqState`,
+configuration, channel metadata, colors, and camera state.
+
 ### 6. Frame update
 
 At each frame:
@@ -545,8 +769,12 @@ At each frame:
 4. write into ring buffer;
 5. update renderable vertex buffers for dirty ranges;
 6. move cursor;
-7. update optional statistics/UI;
-8. ask the scene to render.
+7. update the active rendering-technique adapter;
+8. update optional statistics/UI;
+9. ask the scene to render.
+
+If the active technique changes, destroy or deactivate the old adapter, create or activate the new
+adapter, and keep the ring-buffer contents intact.
 
 ### 7. Cleanup
 
@@ -662,6 +890,8 @@ The example is complete when:
 - binary replay format;
 - GPU-side sample-to-line expansion;
 - compute-shader filtering or thresholding;
+- interactive technique benchmarking presets;
+- saved benchmark traces and screenshots for technique comparisons;
 - trigger-based view mode;
 - channel grouping and collapsing;
 - event search;
