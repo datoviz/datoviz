@@ -7,7 +7,7 @@
 # Particle System Design
 
 
-## Purpose
+## Objective
 
 Particle systems should be modeled as dynamic simulation state with one or more render views, not as
 only another static visual family.

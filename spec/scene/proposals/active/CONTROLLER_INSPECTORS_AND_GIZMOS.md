@@ -7,6 +7,8 @@
 
 # Controller Inspectors, Gizmos, And Surface Plots
 
+## Objective
+
 This proposal records three related but distinct user-facing conveniences:
 
 1. small controller widgets for panzoom, arcball, turntable, fly, and camera state;

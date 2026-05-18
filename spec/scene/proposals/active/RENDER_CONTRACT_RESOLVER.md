@@ -15,6 +15,13 @@ facts are currently inferred in several layers, which makes pass, pipeline, atta
 group behavior easy to desynchronize.
 
 
+## Objective
+
+Resolve visual requirements into one passive contract layer before FramePlan graph building and
+DRP2 lowering, so transparency, occlusion, depth, attachment, and bind-group decisions are derived
+from the same facts.
+
+
 ## Current Implementation State
 
 As of `2026-05-17`, this is no longer just a design sketch. The repository has an
