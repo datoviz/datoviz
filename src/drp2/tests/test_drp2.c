@@ -84,7 +84,7 @@ static bool _drp2_vklite_runtime_available(void)
     DvzInstance* instance = dvz_instance_create(&cfg);
     if (instance == NULL)
     {
-        log_warn("DRP2 vklite execution test skipped because Vulkan instance creation failed");
+        log_warn("DRP2 vklite runtime unavailable because Vulkan instance creation failed");
         return false;
     }
     dvz_instance_destroy(instance);
@@ -1212,7 +1212,10 @@ int test_drp2_runtime_vklite_samples_3d_texture(TstContext* suite, const TstCase
     (void)item;
 
     if (!_drp2_vklite_runtime_available())
+    {
+        tst_skip(suite, "Vulkan instance creation failed");
         return 0;
+    }
 
     DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
     VkPhysicalDeviceVulkan13Features features13 = {
@@ -1224,6 +1227,7 @@ int test_drp2_runtime_vklite_samples_3d_texture(TstContext* suite, const TstCase
     if (ctx == NULL)
     {
         log_warn("DRP2 vklite 3D texture sampling test skipped because GPU context creation failed");
+        tst_skip(suite, "GPU context creation failed");
         return 0;
     }
 
@@ -2555,7 +2559,10 @@ int test_drp2_runtime_vklite_executes_resource_commands(TstContext* suite, const
     (void)item;
 
     if (!_drp2_vklite_runtime_available())
+    {
+        tst_skip(suite, "Vulkan instance creation failed");
         return 0;
+    }
 
     DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
     VkPhysicalDeviceVulkan13Features features13 = {
@@ -2566,6 +2573,7 @@ int test_drp2_runtime_vklite_executes_resource_commands(TstContext* suite, const
     if (ctx == NULL)
     {
         log_warn("DRP2 vklite execution test skipped because GPU context creation failed");
+        tst_skip(suite, "GPU context creation failed");
         return 0;
     }
 
@@ -2606,7 +2614,10 @@ int test_drp2_runtime_vklite_writes_buffer_contents(TstContext* suite, const Tst
     (void)item;
 
     if (!_drp2_vklite_runtime_available())
+    {
+        tst_skip(suite, "Vulkan instance creation failed");
         return 0;
+    }
 
     DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
     VkPhysicalDeviceVulkan13Features features13 = {
@@ -2617,6 +2628,7 @@ int test_drp2_runtime_vklite_writes_buffer_contents(TstContext* suite, const Tst
     if (ctx == NULL)
     {
         log_warn("DRP2 vklite buffer content test skipped because GPU context creation failed");
+        tst_skip(suite, "GPU context creation failed");
         return 0;
     }
 
@@ -2663,7 +2675,10 @@ int test_drp2_runtime_vklite_copies_buffer_contents(TstContext* suite, const Tst
     (void)item;
 
     if (!_drp2_vklite_runtime_available())
+    {
+        tst_skip(suite, "Vulkan instance creation failed");
         return 0;
+    }
 
     DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
     VkPhysicalDeviceVulkan13Features features13 = {
@@ -2674,6 +2689,7 @@ int test_drp2_runtime_vklite_copies_buffer_contents(TstContext* suite, const Tst
     if (ctx == NULL)
     {
         log_warn("DRP2 vklite buffer copy test skipped because GPU context creation failed");
+        tst_skip(suite, "GPU context creation failed");
         return 0;
     }
 
@@ -2725,7 +2741,10 @@ int test_drp2_runtime_vklite_uses_external_buffer(TstContext* suite, const TstCa
     (void)item;
 
     if (!_drp2_vklite_runtime_available())
+    {
+        tst_skip(suite, "Vulkan instance creation failed");
         return 0;
+    }
 
     DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
     VkPhysicalDeviceVulkan13Features features13 = {
@@ -2736,6 +2755,7 @@ int test_drp2_runtime_vklite_uses_external_buffer(TstContext* suite, const TstCa
     if (ctx == NULL)
     {
         log_warn("DRP2 vklite external-buffer test skipped because GPU context creation failed");
+        tst_skip(suite, "GPU context creation failed");
         return 0;
     }
 
@@ -2804,10 +2824,14 @@ int test_drp2_runtime_vklite_draws_cuda_external_vertex_buffer(TstContext* suite
 
 #if !OS_UNIX
     log_warn("DRP2 CUDA external vertex-buffer test skipped: opaque FD path is Unix-only");
+    tst_skip(suite, "opaque FD path is Unix-only");
     return 0;
 #else
     if (!_drp2_vklite_runtime_available())
+    {
+        tst_skip(suite, "Vulkan instance creation failed");
         return 0;
+    }
 
     cudaError_t cerr;
     CUdevice cu_device = 0;
@@ -2818,6 +2842,7 @@ int test_drp2_runtime_vklite_draws_cuda_external_vertex_buffer(TstContext* suite
         log_warn(
             "DRP2 CUDA external vertex-buffer test skipped: no CUDA devices found (%s)",
             cudaGetErrorString(cerr));
+        tst_skip(suite, "no CUDA devices found");
         return 0;
     }
     if (_drp2_cuda_check(cuInit(0), "cuInit"))
@@ -2867,6 +2892,7 @@ int test_drp2_runtime_vklite_draws_cuda_external_vertex_buffer(TstContext* suite
     {
         log_warn(
             "DRP2 CUDA external vertex-buffer test skipped: no Vulkan GPU matches CUDA device 0");
+        tst_skip(suite, "no Vulkan GPU matches CUDA device 0");
         goto cleanup;
     }
 
@@ -2904,6 +2930,7 @@ int test_drp2_runtime_vklite_draws_cuda_external_vertex_buffer(TstContext* suite
     if (!dvz_device_has_extension(device, VK_KHR_EXTERNAL_SEMAPHORE_FD_EXTENSION_NAME))
     {
         log_warn("DRP2 CUDA external vertex-buffer test skipped: external semaphore FD missing");
+        tst_skip(suite, "external semaphore FD missing");
         goto cleanup;
     }
 
@@ -3121,7 +3148,10 @@ int test_drp2_runtime_download_buffer_rejects_out_of_range(TstContext* suite, co
     (void)item;
 
     if (!_drp2_vklite_runtime_available())
+    {
+        tst_skip(suite, "Vulkan instance creation failed");
         return 0;
+    }
 
     DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
     VkPhysicalDeviceVulkan13Features features13 = {
@@ -3133,6 +3163,7 @@ int test_drp2_runtime_download_buffer_rejects_out_of_range(TstContext* suite, co
     {
         log_warn(
             "DRP2 vklite out-of-range download test skipped because GPU context creation failed");
+        tst_skip(suite, "GPU context creation failed");
         return 0;
     }
 
@@ -3183,7 +3214,10 @@ int test_drp2_runtime_vklite_writes_texture_contents(TstContext* suite, const Ts
     (void)item;
 
     if (!_drp2_vklite_runtime_available())
+    {
+        tst_skip(suite, "Vulkan instance creation failed");
         return 0;
+    }
 
     DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
     VkPhysicalDeviceVulkan13Features features13 = {
@@ -3194,6 +3228,7 @@ int test_drp2_runtime_vklite_writes_texture_contents(TstContext* suite, const Ts
     if (ctx == NULL)
     {
         log_warn("DRP2 vklite texture write test skipped because GPU context creation failed");
+        tst_skip(suite, "GPU context creation failed");
         return 0;
     }
 
@@ -3245,7 +3280,10 @@ int test_drp2_runtime_vklite_copies_buffer_to_texture(TstContext* suite, const T
     (void)item;
 
     if (!_drp2_vklite_runtime_available())
+    {
+        tst_skip(suite, "Vulkan instance creation failed");
         return 0;
+    }
 
     DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
     VkPhysicalDeviceVulkan13Features features13 = {
@@ -3256,6 +3294,7 @@ int test_drp2_runtime_vklite_copies_buffer_to_texture(TstContext* suite, const T
     if (ctx == NULL)
     {
         log_warn("DRP2 vklite texture copy test skipped because GPU context creation failed");
+        tst_skip(suite, "GPU context creation failed");
         return 0;
     }
 
@@ -3311,7 +3350,10 @@ int test_drp2_runtime_vklite_copies_texture_to_texture(TstContext* suite, const 
     (void)item;
 
     if (!_drp2_vklite_runtime_available())
+    {
+        tst_skip(suite, "Vulkan instance creation failed");
         return 0;
+    }
 
     DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
     VkPhysicalDeviceVulkan13Features features13 = {
@@ -3322,6 +3364,7 @@ int test_drp2_runtime_vklite_copies_texture_to_texture(TstContext* suite, const 
     if (ctx == NULL)
     {
         log_warn("DRP2 vklite texture-to-texture test skipped because GPU context creation failed");
+        tst_skip(suite, "GPU context creation failed");
         return 0;
     }
 
@@ -3376,7 +3419,10 @@ int test_drp2_runtime_vklite_creates_glsl_shader_modules(TstContext* suite, cons
     (void)item;
 
     if (!_drp2_vklite_runtime_available())
+    {
+        tst_skip(suite, "Vulkan instance creation failed");
         return 0;
+    }
 
     DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
     VkPhysicalDeviceVulkan13Features features13 = {
@@ -3387,6 +3433,7 @@ int test_drp2_runtime_vklite_creates_glsl_shader_modules(TstContext* suite, cons
     if (ctx == NULL)
     {
         log_warn("DRP2 vklite GLSL shader test skipped because GPU context creation failed");
+        tst_skip(suite, "GPU context creation failed");
         return 0;
     }
 
@@ -3427,7 +3474,10 @@ int test_drp2_runtime_vklite_creates_render_pipeline(TstContext* suite, const Ts
     (void)item;
 
     if (!_drp2_vklite_runtime_available())
+    {
+        tst_skip(suite, "Vulkan instance creation failed");
         return 0;
+    }
 
     DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
     VkPhysicalDeviceVulkan13Features features13 = {
@@ -3439,6 +3489,7 @@ int test_drp2_runtime_vklite_creates_render_pipeline(TstContext* suite, const Ts
     if (ctx == NULL)
     {
         log_warn("DRP2 vklite render-pipeline test skipped because GPU context creation failed");
+        tst_skip(suite, "GPU context creation failed");
         return 0;
     }
 
@@ -3481,7 +3532,10 @@ int test_drp2_runtime_vklite_rejects_invalid_glsl_shader(TstContext* suite, cons
     (void)item;
 
     if (!_drp2_vklite_runtime_available())
+    {
+        tst_skip(suite, "Vulkan instance creation failed");
         return 0;
+    }
 
     DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
     VkPhysicalDeviceVulkan13Features features13 = {
@@ -3492,6 +3546,7 @@ int test_drp2_runtime_vklite_rejects_invalid_glsl_shader(TstContext* suite, cons
     if (ctx == NULL)
     {
         log_warn("test_drp2_runtime_vklite_rejects_invalid_glsl_shader skipped: no GPU");
+        tst_skip(suite, "no GPU");
         return 0;
     }
 
@@ -3528,7 +3583,10 @@ int test_drp2_runtime_vklite_rejects_pipeline_with_failed_shader(TstContext* sui
     (void)item;
 
     if (!_drp2_vklite_runtime_available())
+    {
+        tst_skip(suite, "Vulkan instance creation failed");
         return 0;
+    }
 
     DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
     VkPhysicalDeviceVulkan13Features features13 = {
@@ -3541,6 +3599,7 @@ int test_drp2_runtime_vklite_rejects_pipeline_with_failed_shader(TstContext* sui
     {
         log_warn(
             "test_drp2_runtime_vklite_rejects_pipeline_with_failed_shader skipped: no GPU");
+        tst_skip(suite, "no GPU");
         return 0;
     }
 
@@ -3581,7 +3640,10 @@ int test_drp2_runtime_vklite_destroy_after_partial_failure(TstContext* suite, co
     (void)item;
 
     if (!_drp2_vklite_runtime_available())
+    {
+        tst_skip(suite, "Vulkan instance creation failed");
         return 0;
+    }
 
     DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
     VkPhysicalDeviceVulkan13Features features13 = {
@@ -3592,6 +3654,7 @@ int test_drp2_runtime_vklite_destroy_after_partial_failure(TstContext* suite, co
     if (ctx == NULL)
     {
         log_warn("test_drp2_runtime_vklite_destroy_after_partial_failure skipped: no GPU");
+        tst_skip(suite, "no GPU");
         return 0;
     }
 
@@ -3629,7 +3692,10 @@ int test_drp2_runtime_vklite_reallocates_object_table_safely(TstContext* suite, 
     (void)item;
 
     if (!_drp2_vklite_runtime_available())
+    {
+        tst_skip(suite, "Vulkan instance creation failed");
         return 0;
+    }
 
     DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
     VkPhysicalDeviceVulkan13Features features13 = {
@@ -3641,6 +3707,7 @@ int test_drp2_runtime_vklite_reallocates_object_table_safely(TstContext* suite, 
     if (ctx == NULL)
     {
         log_warn("DRP2 vklite object-table realloc test skipped because GPU context creation failed");
+        tst_skip(suite, "GPU context creation failed");
         return 0;
     }
 
@@ -3713,7 +3780,10 @@ int test_drp2_runtime_vklite_draws_render_pass(TstContext* suite, const TstCase*
     (void)item;
 
     if (!_drp2_vklite_runtime_available())
+    {
+        tst_skip(suite, "Vulkan instance creation failed");
         return 0;
+    }
 
     DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
     VkPhysicalDeviceVulkan13Features features13 = {
@@ -3725,6 +3795,7 @@ int test_drp2_runtime_vklite_draws_render_pass(TstContext* suite, const TstCase*
     if (ctx == NULL)
     {
         log_warn("DRP2 vklite render-pass test skipped because GPU context creation failed");
+        tst_skip(suite, "GPU context creation failed");
         return 0;
     }
 
@@ -3784,7 +3855,10 @@ int test_drp2_runtime_vklite_draws_named_depth_render_pass(TstContext* suite, co
     (void)item;
 
     if (!_drp2_vklite_runtime_available())
+    {
+        tst_skip(suite, "Vulkan instance creation failed");
         return 0;
+    }
 
     DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
     VkPhysicalDeviceVulkan13Features features13 = {
@@ -3796,6 +3870,7 @@ int test_drp2_runtime_vklite_draws_named_depth_render_pass(TstContext* suite, co
     if (ctx == NULL)
     {
         log_warn("DRP2 vklite named-depth render-pass test skipped because GPU context failed");
+        tst_skip(suite, "GPU context failed");
         return 0;
     }
 
@@ -3859,7 +3934,10 @@ int test_drp2_runtime_vklite_draws_msaa_resolve_render_pass(TstContext* suite, c
     (void)item;
 
     if (!_drp2_vklite_runtime_available())
+    {
+        tst_skip(suite, "Vulkan instance creation failed");
         return 0;
+    }
 
     DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
     VkPhysicalDeviceVulkan13Features features13 = {
@@ -3871,6 +3949,7 @@ int test_drp2_runtime_vklite_draws_msaa_resolve_render_pass(TstContext* suite, c
     if (ctx == NULL)
     {
         log_warn("DRP2 MSAA resolve render-pass test skipped because GPU context failed");
+        tst_skip(suite, "GPU context failed");
         return 0;
     }
 
@@ -3937,7 +4016,10 @@ int test_drp2_runtime_vklite_draws_multi_color_render_pass(TstContext* suite, co
     (void)item;
 
     if (!_drp2_vklite_runtime_available())
+    {
+        tst_skip(suite, "Vulkan instance creation failed");
         return 0;
+    }
 
     DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
     VkPhysicalDeviceVulkan13Features features13 = {
@@ -3949,6 +4031,7 @@ int test_drp2_runtime_vklite_draws_multi_color_render_pass(TstContext* suite, co
     if (ctx == NULL)
     {
         log_warn("DRP2 multi-color render pass test skipped because GPU context creation failed");
+        tst_skip(suite, "GPU context creation failed");
         return 0;
     }
 
@@ -4028,7 +4111,10 @@ int test_drp2_runtime_vklite_draws_wboit_format_passes(TstContext* suite, const 
     (void)item;
 
     if (!_drp2_vklite_runtime_available())
+    {
+        tst_skip(suite, "Vulkan instance creation failed");
         return 0;
+    }
 
     DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
     VkPhysicalDeviceFeatures features10 = {0};
@@ -4043,6 +4129,7 @@ int test_drp2_runtime_vklite_draws_wboit_format_passes(TstContext* suite, const 
     if (ctx == NULL)
     {
         log_warn("DRP2 WBOIT format pass test skipped because GPU context creation failed");
+        tst_skip(suite, "GPU context creation failed");
         return 0;
     }
 
@@ -4199,7 +4286,10 @@ int test_drp2_runtime_vklite_draws_depth_peeling_shape(TstContext* suite, const 
     (void)item;
 
     if (!_drp2_vklite_runtime_available())
+    {
+        tst_skip(suite, "Vulkan instance creation failed");
         return 0;
+    }
 
     DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
     VkPhysicalDeviceFeatures features10 = {0};
@@ -4214,6 +4304,7 @@ int test_drp2_runtime_vklite_draws_depth_peeling_shape(TstContext* suite, const 
     if (ctx == NULL)
     {
         log_warn("DRP2 depth peeling shape test skipped because GPU context creation failed");
+        tst_skip(suite, "GPU context creation failed");
         return 0;
     }
 
@@ -4497,7 +4588,10 @@ int test_drp2_runtime_vklite_samples_then_copies_texture(TstContext* suite, cons
     (void)item;
 
     if (!_drp2_vklite_runtime_available())
+    {
+        tst_skip(suite, "Vulkan instance creation failed");
         return 0;
+    }
 
     DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
     VkPhysicalDeviceVulkan13Features features13 = {
@@ -4509,6 +4603,7 @@ int test_drp2_runtime_vklite_samples_then_copies_texture(TstContext* suite, cons
     if (ctx == NULL)
     {
         log_warn("DRP2 vklite texture layout test skipped because GPU context creation failed");
+        tst_skip(suite, "GPU context creation failed");
         return 0;
     }
 
@@ -4592,7 +4687,10 @@ int test_drp2_runtime_vklite_refreshes_bind_group_after_texture_recreate(
     (void)item;
 
     if (!_drp2_vklite_runtime_available())
+    {
+        tst_skip(suite, "Vulkan instance creation failed");
         return 0;
+    }
 
     DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
     VkPhysicalDeviceVulkan13Features features13 = {
@@ -4604,6 +4702,7 @@ int test_drp2_runtime_vklite_refreshes_bind_group_after_texture_recreate(
     if (ctx == NULL)
     {
         log_warn("DRP2 descriptor refresh test skipped because GPU context creation failed");
+        tst_skip(suite, "GPU context creation failed");
         return 0;
     }
 
@@ -4722,7 +4821,10 @@ int test_drp2_runtime_vklite_refreshes_bind_group_after_buffer_sampler_recreate(
     (void)item;
 
     if (!_drp2_vklite_runtime_available())
+    {
+        tst_skip(suite, "Vulkan instance creation failed");
         return 0;
+    }
 
     DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
     VkPhysicalDeviceVulkan13Features features13 = {
@@ -4734,6 +4836,7 @@ int test_drp2_runtime_vklite_refreshes_bind_group_after_buffer_sampler_recreate(
     if (ctx == NULL)
     {
         log_warn("DRP2 buffer/sampler descriptor refresh test skipped because GPU context failed");
+        tst_skip(suite, "GPU context failed");
         return 0;
     }
 
@@ -4883,7 +4986,10 @@ int test_drp2_runtime_vklite_refresh_defers_retired_descriptors(
     (void)item;
 
     if (!_drp2_vklite_runtime_available())
+    {
+        tst_skip(suite, "Vulkan instance creation failed");
         return 0;
+    }
 
     DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
     VkPhysicalDeviceVulkan13Features features13 = {
@@ -4894,6 +5000,7 @@ int test_drp2_runtime_vklite_refresh_defers_retired_descriptors(
     if (ctx == NULL)
     {
         log_warn("DRP2 descriptor deferral test skipped because GPU context creation failed");
+        tst_skip(suite, "GPU context creation failed");
         return 0;
     }
 
@@ -5012,7 +5119,10 @@ int test_drp2_write_buffer_bytes_large_payload_executes(TstContext* suite, const
     (void)item;
 
     if (!_drp2_vklite_runtime_available())
+    {
+        tst_skip(suite, "Vulkan instance creation failed");
         return 0;
+    }
 
     DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
     VkPhysicalDeviceVulkan13Features features13 = {
@@ -5023,6 +5133,7 @@ int test_drp2_write_buffer_bytes_large_payload_executes(TstContext* suite, const
     if (ctx == NULL)
     {
         log_warn("large payload test skipped because GPU context creation failed");
+        tst_skip(suite, "GPU context creation failed");
         return 0;
     }
 
