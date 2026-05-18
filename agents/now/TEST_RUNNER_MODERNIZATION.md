@@ -44,6 +44,12 @@ ad-hoc skips that log a warning and return success. They should be migrated grad
 skip predicates or a context-level `tst_skip(ctx, reason)` helper so skip counts become accurate
 across the full suite.
 
+Second follow-up update on `2026-05-18`: the runner now exposes `tst_skip(ctx, reason)` for
+availability checks that can only be resolved inside a test body. The video test slice is the first
+migration: disabled NVENC, unavailable kvazaar/Vulkan setup, and no-backend offline/headless
+conditions now report `SKIP` with JSON reasons, and video registrations carry explicit video,
+filesystem, GPU, and Vulkan resource metadata where appropriate.
+
 Two boundaries should stay clean:
 
 1. `testing/testing.h` and `testing/testing.cpp` should remain a generic C/C++ test framework.
