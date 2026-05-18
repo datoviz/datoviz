@@ -27,12 +27,12 @@ Useful existing context:
 
 1. broad future selection note:
    [spec/scene/interaction/SELECTION.md](../../interaction/SELECTION.md)
-2. active picking note:
-   [spec/scene/proposals/promoted/PICKING_DESIGN.md](../promoted/PICKING_DESIGN.md)
-3. active transparency note:
-   [spec/scene/proposals/promoted/TRANSPARENCY_WBOIT_DESIGN.md](../promoted/TRANSPARENCY_WBOIT_DESIGN.md)
-4. active UI mutation note:
-   [spec/scene/proposals/promoted/UI_BACKEND_INTEGRATION.md](../promoted/UI_BACKEND_INTEGRATION.md)
+2. promoted picking rationale:
+   [PICKING_DESIGN.md](../promoted/PICKING_DESIGN.md)
+3. promoted transparency rationale:
+   [TRANSPARENCY_WBOIT_DESIGN.md](../promoted/TRANSPARENCY_WBOIT_DESIGN.md)
+4. promoted UI mutation rationale:
+   [UI_BACKEND_INTEGRATION.md](../promoted/UI_BACKEND_INTEGRATION.md)
 
 This note records the tighter active recommendation set.
 

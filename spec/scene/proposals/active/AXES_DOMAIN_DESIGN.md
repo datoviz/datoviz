@@ -29,9 +29,9 @@ Relevant context already exists in:
 2. scale and unit-adjacent mappings:
    [spec/scene/semantics/SCALES.md](../../semantics/SCALES.md)
 3. transform/controller direction:
-   [spec/scene/proposals/active/TRANSFORM_CONTROLLER_DESIGN.md](../active/TRANSFORM_CONTROLLER_DESIGN.md)
+   [TRANSFORM_CONTROLLER_DESIGN.md](TRANSFORM_CONTROLLER_DESIGN.md)
 4. measurement overlays:
-   [spec/scene/proposals/active/ANNOTATION_MEASUREMENT_DESIGN.md](../active/ANNOTATION_MEASUREMENT_DESIGN.md)
+   [ANNOTATION_MEASUREMENT_DESIGN.md](ANNOTATION_MEASUREMENT_DESIGN.md)
 
 This note records the active v0.4 recommendation at the level most likely to affect implementation
 soon.

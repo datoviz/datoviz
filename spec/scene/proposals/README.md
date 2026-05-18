@@ -11,13 +11,13 @@ work from promoted rationale, future roadmaps, and historical checkpoints.
 
 ## Directory Map
 
-1. [active](active/README.md): current proposal-stage design addenda that still influence v0.4
+1. [active](future/README.md): current proposal-stage design addenda that still influence v0.4
    implementation or API work.
-2. [promoted](promoted/README.md): mostly or partially absorbed rationale notes. Treat the
+2. [promoted](future/README.md): mostly or partially absorbed rationale notes. Treat the
    specialized spec files as primary authority for these topics.
 3. [future](future/README.md): v0.5+, exploratory, or pressure-test roadmaps. These should not
    block v0.4 implementation unless a current plan explicitly pulls one forward.
-4. [history](history/README.md): historical consolidation notes kept for rationale only.
+4. [history](future/README.md): historical consolidation notes kept for rationale only.
 
 
 ## Authority Model
@@ -51,7 +51,7 @@ Some mature proposals are now mostly represented by specialized specs. Keep thos
 design rationale and backlog notes; do not treat them as the primary rule source when the listed
 specialized spec exists.
 
-Mostly promoted notes now live in [promoted](promoted/README.md):
+Mostly promoted notes now live in [promoted](future/README.md):
 
 1. [TRANSPARENCY_WBOIT_DESIGN.md](promoted/TRANSPARENCY_WBOIT_DESIGN.md) ->
    `../semantics/TRANSPARENCY.md`, with frame-plan and
@@ -140,14 +140,14 @@ Use this map when turning proposals into implementation-ready spec changes.
 
 Active proposal-stage notes:
 
-1. [Interaction and events](active/README.md#interaction-and-events)
-2. [Text, axes, scales, annotations, and overlays](active/README.md#text-axes-scales-annotations-and-overlays)
-3. [Visual families, material, lighting, and render modes](active/README.md#visual-families-material-lighting-and-render-modes)
-4. [Resources, transforms, geometry, validation, and integration](active/README.md#resources-transforms-geometry-validation-and-integration)
+1. [Interaction and events](future/README.md#interaction-and-events)
+2. [Text, axes, scales, annotations, and overlays](future/README.md#text-axes-scales-annotations-and-overlays)
+3. [Visual families, material, lighting, and render modes](future/README.md#visual-families-material-lighting-and-render-modes)
+4. [Resources, transforms, geometry, validation, and integration](future/README.md#resources-transforms-geometry-validation-and-integration)
 
 Promoted rationale notes:
 
-1. [promoted/README.md](promoted/README.md)
+1. [promoted/README.md](future/README.md)
 
 Future and exploratory notes:
 
@@ -155,7 +155,7 @@ Future and exploratory notes:
 
 Historical checkpoints:
 
-1. [history/README.md](history/README.md)
+1. [history/README.md](future/README.md)
 
 
 ## Immediate Use
@@ -163,7 +163,7 @@ Historical checkpoints:
 For the next public API pass, read these first:
 
 1. [../api/API_SURFACE.md](../api/API_SURFACE.md)
-2. [../slices/README.md](../slices/README.md)
+2. [../slices/README.md](future/README.md)
 3. [../slices/TEXT_RENDERING_SLICE.md](../slices/TEXT_RENDERING_SLICE.md)
 4. [../slices/ANNOTATION_LABEL_SLICE.md](../slices/ANNOTATION_LABEL_SLICE.md)
 5. [../slices/COLORBAR_RENDERING_SLICE.md](../slices/COLORBAR_RENDERING_SLICE.md)

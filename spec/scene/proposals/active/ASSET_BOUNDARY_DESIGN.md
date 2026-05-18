@@ -25,11 +25,11 @@ Clarify the boundary between:
 Useful current context:
 
 1. active geometry note:
-   [spec/scene/proposals/active/GEOM_DESIGN.md](../active/GEOM_DESIGN.md)
-2. active resource-update note:
-   [spec/scene/proposals/promoted/RESOURCE_UPDATE_DESIGN.md](../promoted/RESOURCE_UPDATE_DESIGN.md)
+   [GEOM_DESIGN.md](GEOM_DESIGN.md)
+2. promoted resource-update rationale:
+   [RESOURCE_UPDATE_DESIGN.md](../promoted/RESOURCE_UPDATE_DESIGN.md)
 3. active volume note:
-   [spec/scene/proposals/active/VOLUME_DESIGN.md](../active/VOLUME_DESIGN.md)
+   [VOLUME_DESIGN.md](VOLUME_DESIGN.md)
 4. completed offscreen/export context:
    [agents/done/OFFSCREEN.md](../../../../agents/done/OFFSCREEN.md)
 

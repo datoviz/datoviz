@@ -301,6 +301,10 @@ Recommended support:
 
 ## Recommended Spec Priority Order
 
+This sequence is historical. Current priority should come from
+[`../../README.md`](../../README.md), [`../README.md`](../README.md), and the active/future proposal
+indexes, not from this checkpoint.
+
 Given the current active needs, the recommended next spec sequence is:
 
 1. mesh scene API and resource ownership,

@@ -295,7 +295,7 @@ Why:
 3. this fits later transparency and picking overlays better.
 
 Phase-1 material scope is the classic-lit baseline described in
-[spec/scene/proposals/active/MESH_SHADING_DESIGN.md](../active/MESH_SHADING_DESIGN.md):
+[MESH_SHADING_DESIGN.md](MESH_SHADING_DESIGN.md):
 
 1. base color
 2. ambient
@@ -319,7 +319,7 @@ For the active 3D slice:
    application.
 
 This matches the current active decision in
-[spec/scene/proposals/history/HIGH_PRIORITY_SPEC_DECISIONS.md](../history/HIGH_PRIORITY_SPEC_DECISIONS.md).
+[HIGH_PRIORITY_SPEC_DECISIONS.md](../history/HIGH_PRIORITY_SPEC_DECISIONS.md).
 
 The mesh API should not require geometry rewrites just to rotate or reposition an object.
 

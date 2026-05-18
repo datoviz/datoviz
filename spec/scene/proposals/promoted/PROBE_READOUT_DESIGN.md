@@ -39,18 +39,18 @@ Support coherent probe/readout behavior for:
 
 Useful current context:
 
-1. active picking note:
-   [spec/scene/proposals/promoted/PICKING_DESIGN.md](../promoted/PICKING_DESIGN.md)
+1. promoted picking rationale:
+   [PICKING_DESIGN.md](PICKING_DESIGN.md)
 2. active volume note:
-   [spec/scene/proposals/active/VOLUME_DESIGN.md](../active/VOLUME_DESIGN.md)
+   [VOLUME_DESIGN.md](../active/VOLUME_DESIGN.md)
 3. active scientific-coordinate note:
-   [spec/scene/proposals/active/SCIENTIFIC_COORDINATE_NORMALIZATION.md](../active/SCIENTIFIC_COORDINATE_NORMALIZATION.md)
+   [SCIENTIFIC_COORDINATE_NORMALIZATION.md](../active/SCIENTIFIC_COORDINATE_NORMALIZATION.md)
 4. active axes/domain note:
-   [spec/scene/proposals/active/AXES_DOMAIN_DESIGN.md](../active/AXES_DOMAIN_DESIGN.md)
+   [AXES_DOMAIN_DESIGN.md](../active/AXES_DOMAIN_DESIGN.md)
 5. active colorbar/colormap note:
-   [spec/scene/proposals/active/COLORBAR_COLORMAP_DESIGN.md](../active/COLORBAR_COLORMAP_DESIGN.md)
+   [COLORBAR_COLORMAP_DESIGN.md](../active/COLORBAR_COLORMAP_DESIGN.md)
 
-This note defines the active cross-family contract.
+This note preserves the cross-family rationale and remaining backlog for semantic readouts.
 
 
 ## Core Recommendation

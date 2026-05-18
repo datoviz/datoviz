@@ -241,7 +241,7 @@ Useful future DRP2/frame-plan capabilities:
 - optional GPU sorting/binning for large-graph LOD.
 
 These overlap with the generic compute requirements in
-[`SPLATTING_FRAME_PLAN_REQUIREMENTS.md`](../future/SPLATTING_FRAME_PLAN_REQUIREMENTS.md) and
+[`SPLATTING_FRAME_PLAN_REQUIREMENTS.md`](SPLATTING_FRAME_PLAN_REQUIREMENTS.md) and
 [`PARTICLE_SYSTEM_DESIGN.md`](../active/PARTICLE_SYSTEM_DESIGN.md).
 
 Datoviz should ship at most a simple reference layout initially, not a full graph-layout library.

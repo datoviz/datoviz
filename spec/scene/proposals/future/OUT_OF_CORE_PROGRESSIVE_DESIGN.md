@@ -230,7 +230,7 @@ field residency
 - derived coarse representations.
 
 These require the same compute-to-render dataflow discussed in
-[`SPLATTING_FRAME_PLAN_REQUIREMENTS.md`](../future/SPLATTING_FRAME_PLAN_REQUIREMENTS.md).
+[`SPLATTING_FRAME_PLAN_REQUIREMENTS.md`](SPLATTING_FRAME_PLAN_REQUIREMENTS.md).
 
 
 ## Telemetry

@@ -27,12 +27,12 @@ Useful existing context:
 
 1. DRP2 capability model:
    [spec/drp2/CAPABILITIES.md](../../../drp2/CAPABILITIES.md)
-2. active transparency note:
-   [spec/scene/proposals/promoted/TRANSPARENCY_WBOIT_DESIGN.md](../promoted/TRANSPARENCY_WBOIT_DESIGN.md)
-3. active picking note:
-   [spec/scene/proposals/promoted/PICKING_DESIGN.md](../promoted/PICKING_DESIGN.md)
+2. promoted transparency rationale:
+   [TRANSPARENCY_WBOIT_DESIGN.md](../promoted/TRANSPARENCY_WBOIT_DESIGN.md)
+3. promoted picking rationale:
+   [PICKING_DESIGN.md](../promoted/PICKING_DESIGN.md)
 4. active ray-tracing note:
-   [spec/scene/proposals/active/RAY_TRACING_FORWARD_COMPAT.md](../active/RAY_TRACING_FORWARD_COMPAT.md)
+   [RAY_TRACING_FORWARD_COMPAT.md](RAY_TRACING_FORWARD_COMPAT.md)
 5. completed presentation/offscreen notes:
    [agents/done/PRESENTATION.md](../../../../agents/done/PRESENTATION.md)
    and

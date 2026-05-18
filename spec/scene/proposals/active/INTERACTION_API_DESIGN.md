@@ -25,10 +25,10 @@ Define a coherent first API for:
 
 This API note is a consolidation of:
 
-1. [spec/scene/proposals/promoted/PICKING_DESIGN.md](../promoted/PICKING_DESIGN.md)
-2. [spec/scene/proposals/active/SELECTION_HIGHLIGHT_DESIGN.md](../active/SELECTION_HIGHLIGHT_DESIGN.md)
-3. [spec/scene/proposals/promoted/PROBE_READOUT_DESIGN.md](../promoted/PROBE_READOUT_DESIGN.md)
-4. [spec/scene/proposals/active/TRANSFORM_CONTROLLER_DESIGN.md](../active/TRANSFORM_CONTROLLER_DESIGN.md)
+1. [PICKING_DESIGN.md](../promoted/PICKING_DESIGN.md)
+2. [SELECTION_HIGHLIGHT_DESIGN.md](SELECTION_HIGHLIGHT_DESIGN.md)
+3. [PROBE_READOUT_DESIGN.md](../promoted/PROBE_READOUT_DESIGN.md)
+4. [TRANSFORM_CONTROLLER_DESIGN.md](TRANSFORM_CONTROLLER_DESIGN.md)
 
 
 ## Core Recommendation

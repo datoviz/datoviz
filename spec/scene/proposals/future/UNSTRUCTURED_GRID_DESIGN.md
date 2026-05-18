@@ -261,7 +261,7 @@ Future support may need:
 - low-resolution boundary mesh fallback;
 - topology and field arrays loaded independently.
 
-This overlaps with [`OUT_OF_CORE_PROGRESSIVE_DESIGN.md`](../future/OUT_OF_CORE_PROGRESSIVE_DESIGN.md).
+This overlaps with [`OUT_OF_CORE_PROGRESSIVE_DESIGN.md`](OUT_OF_CORE_PROGRESSIVE_DESIGN.md).
 
 
 ## Prepared Cache And Metadata

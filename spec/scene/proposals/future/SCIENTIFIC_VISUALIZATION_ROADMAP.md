@@ -36,7 +36,7 @@ resources that can lower to existing visuals and future compute/render pipelines
 
 Do not duplicate these as unrelated new systems.
 
-### Active Or Planned Visual Building Blocks
+### Existing Active Coverage
 
 - `point`, `pixel`, `marker`, `segment`, `path`, `image`, `mesh`, `sphere`, and `volume` are covered
   by the per-family docs in [`../../visuals/`](../../visuals/).
@@ -49,7 +49,7 @@ Do not duplicate these as unrelated new systems.
   [`../../visuals/VOLUME.md`](../../visuals/VOLUME.md).
 - Particle and compute-to-render dataflow are already represented by
   [`PARTICLE_SYSTEM_DESIGN.md`](../active/PARTICLE_SYSTEM_DESIGN.md),
-  [`SPLATTING_FRAME_PLAN_REQUIREMENTS.md`](../future/SPLATTING_FRAME_PLAN_REQUIREMENTS.md), and
+  [`SPLATTING_FRAME_PLAN_REQUIREMENTS.md`](SPLATTING_FRAME_PLAN_REQUIREMENTS.md), and
   [`../../semantics/NONLINEAR_TRANSFORMS.md`](../../semantics/NONLINEAR_TRANSFORMS.md).
 
 ### Existing Example Pressure Tests
@@ -69,16 +69,16 @@ Future proposals should link to these examples rather than restating them.
 
 | Direction | Current coverage | Missing layer | Preferred next document |
 |---|---|---|---|
-| Graph/network | points, segments, paths | graph topology, layout, node/edge identity | [`GRAPH_NETWORK_DESIGN.md`](../future/GRAPH_NETWORK_DESIGN.md) |
-| Unstructured grid / cell mesh | surface `mesh`, FEM surface example | tetra/hex/wedge cells, cell fields, cuts | [`UNSTRUCTURED_GRID_DESIGN.md`](../future/UNSTRUCTURED_GRID_DESIGN.md) |
-| Vector field | sampled vector data, markers, paths, examples | field-level sampling, streamlines, probes | [`FIELD_VISUALIZATION_ROADMAP.md`](../future/FIELD_VISUALIZATION_ROADMAP.md) |
-| Tensor field | weak adjacent coverage in splats/fields | tensor rank, eigen glyphs, invariants | [`FIELD_VISUALIZATION_ROADMAP.md`](../future/FIELD_VISUALIZATION_ROADMAP.md) |
-| Categorical label volume | categorical scales, 2D labels, deferred volume note | 3D label volume semantics and picking | [`FIELD_VISUALIZATION_ROADMAP.md`](../future/FIELD_VISUALIZATION_ROADMAP.md) |
-| Sparse voxel/grid | dense volume and resource update docs | sparse/bricked/page-resident fields | [`FIELD_VISUALIZATION_ROADMAP.md`](../future/FIELD_VISUALIZATION_ROADMAP.md) |
-| Tracks/trajectories | `path`, particles, many examples | first-class time/identity track resource | [`DOMAIN_RESOURCE_ROADMAP.md`](../future/DOMAIN_RESOURCE_ROADMAP.md) |
-| Ensemble/uncertainty | errorbar, boxplot, splat covariance | ensemble axis, probability/interval resources | [`DOMAIN_RESOURCE_ROADMAP.md`](../future/DOMAIN_RESOURCE_ROADMAP.md) |
-| Molecular/structural biology | protein example, sphere/segment/mesh/volume | molecule semantic object and ids | [`DOMAIN_RESOURCE_ROADMAP.md`](../future/DOMAIN_RESOURCE_ROADMAP.md) |
-| Out-of-core/progressive | dirty updates, LOD examples | page residency, partial-valid rendering | [`OUT_OF_CORE_PROGRESSIVE_DESIGN.md`](../future/OUT_OF_CORE_PROGRESSIVE_DESIGN.md) |
+| Graph/network | points, segments, paths | graph topology, layout, node/edge identity | [`GRAPH_NETWORK_DESIGN.md`](GRAPH_NETWORK_DESIGN.md) |
+| Unstructured grid / cell mesh | surface `mesh`, FEM surface example | tetra/hex/wedge cells, cell fields, cuts | [`UNSTRUCTURED_GRID_DESIGN.md`](UNSTRUCTURED_GRID_DESIGN.md) |
+| Vector field | sampled vector data, markers, paths, examples | field-level sampling, streamlines, probes | [`FIELD_VISUALIZATION_ROADMAP.md`](FIELD_VISUALIZATION_ROADMAP.md) |
+| Tensor field | weak adjacent coverage in splats/fields | tensor rank, eigen glyphs, invariants | [`FIELD_VISUALIZATION_ROADMAP.md`](FIELD_VISUALIZATION_ROADMAP.md) |
+| Categorical label volume | categorical scales, 2D labels, deferred volume note | 3D label volume semantics and picking | [`FIELD_VISUALIZATION_ROADMAP.md`](FIELD_VISUALIZATION_ROADMAP.md) |
+| Sparse voxel/grid | dense volume and resource update docs | sparse/bricked/page-resident fields | [`FIELD_VISUALIZATION_ROADMAP.md`](FIELD_VISUALIZATION_ROADMAP.md) |
+| Tracks/trajectories | `path`, particles, many examples | first-class time/identity track resource | [`DOMAIN_RESOURCE_ROADMAP.md`](DOMAIN_RESOURCE_ROADMAP.md) |
+| Ensemble/uncertainty | errorbar, boxplot, splat covariance | ensemble axis, probability/interval resources | [`DOMAIN_RESOURCE_ROADMAP.md`](DOMAIN_RESOURCE_ROADMAP.md) |
+| Molecular/structural biology | protein example, sphere/segment/mesh/volume | molecule semantic object and ids | [`DOMAIN_RESOURCE_ROADMAP.md`](DOMAIN_RESOURCE_ROADMAP.md) |
+| Out-of-core/progressive | dirty updates, LOD examples | page residency, partial-valid rendering | [`OUT_OF_CORE_PROGRESSIVE_DESIGN.md`](OUT_OF_CORE_PROGRESSIVE_DESIGN.md) |
 
 
 ## Design Principle: Semantic Resources Lower To Existing Visuals
@@ -185,16 +185,14 @@ For each future resource direction, prefer one concrete example that pressure-te
 | Out-of-core | progressive point cloud or chunked volume streaming example |
 
 
-## Candidate Implementation Order
+## Recommended Follow-Up Order
 
-1. Add semantic roadmap/proposal docs for graph, unstructured grid, fields, domain resources, and
-   out-of-core behavior.
-2. Update existing visual/resource/picking docs with short cross-references and future target
+1. Keep existing visual/resource/picking docs cross-referenced with future target
    vocabulary.
-3. Build example-first prototypes for graph and unstructured grid, because they expose genuinely
+2. Build example-first prototypes for graph and unstructured grid, because they expose genuinely
    missing semantic resource models.
-4. Extend `SampledField`/`volume` planning for label volumes and sparse/bricked fields.
-5. Extract only proven generic pieces into public API proposals.
+3. Extend `SampledField`/`volume` planning for label volumes and sparse/bricked fields.
+4. Extract only proven generic pieces into public API proposals.
 
 
 ## Open Questions

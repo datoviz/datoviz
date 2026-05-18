@@ -33,9 +33,9 @@ Define a material and lighting model that:
 Relevant context already exists here:
 
 1. mesh shading direction:
-   [spec/scene/proposals/active/MESH_SHADING_DESIGN.md](../active/MESH_SHADING_DESIGN.md)
+   [MESH_SHADING_DESIGN.md](MESH_SHADING_DESIGN.md)
 2. mesh visual ownership split:
-   [spec/scene/proposals/active/MESH_API_DESIGN.md](../active/MESH_API_DESIGN.md)
+   [MESH_API_DESIGN.md](MESH_API_DESIGN.md)
 3. older broad lighting note:
    [spec/scene/semantics/LIGHTING.md](../../semantics/LIGHTING.md)
 4. v0.3 shader reference:

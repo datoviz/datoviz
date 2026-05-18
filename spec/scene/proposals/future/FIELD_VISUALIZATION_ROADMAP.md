@@ -51,7 +51,7 @@ DvzSampledField
   origin/spacing/axis metadata
 ```
 
-Unstructured case belongs to [`UNSTRUCTURED_GRID_DESIGN.md`](../future/UNSTRUCTURED_GRID_DESIGN.md), with
+Unstructured case belongs to [`UNSTRUCTURED_GRID_DESIGN.md`](UNSTRUCTURED_GRID_DESIGN.md), with
 field location set to point, cell, or face.
 
 
@@ -252,7 +252,7 @@ GPU resources and page metadata.
 - fallback rendering while some chunks are missing;
 - upload telemetry and memory budget reporting.
 
-These requirements overlap with [`OUT_OF_CORE_PROGRESSIVE_DESIGN.md`](../future/OUT_OF_CORE_PROGRESSIVE_DESIGN.md).
+These requirements overlap with [`OUT_OF_CORE_PROGRESSIVE_DESIGN.md`](OUT_OF_CORE_PROGRESSIVE_DESIGN.md).
 
 
 ## Relationship To Existing Specs
@@ -261,7 +261,7 @@ These requirements overlap with [`OUT_OF_CORE_PROGRESSIVE_DESIGN.md`](../future/
 - [`../../visuals/IMAGE.md`](../../visuals/IMAGE.md) owns 2D sampled rendering.
 - [`../../visuals/VOLUME.md`](../../visuals/VOLUME.md) owns dense 3D scalar/RGBA volume rendering.
 - [`../../semantics/SCALES.md`](../../semantics/SCALES.md) owns continuous and categorical scales.
-- [`UNSTRUCTURED_GRID_DESIGN.md`](../future/UNSTRUCTURED_GRID_DESIGN.md) owns fields attached to cell meshes.
+- [`UNSTRUCTURED_GRID_DESIGN.md`](UNSTRUCTURED_GRID_DESIGN.md) owns fields attached to cell meshes.
 
 
 ## Example Plans

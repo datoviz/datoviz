@@ -34,9 +34,9 @@ There is already substantial background context:
 2. legend/colorbar semantics:
    [spec/scene/semantics/LEGENDS_AND_COLORBARS.md](../../semantics/LEGENDS_AND_COLORBARS.md)
 3. annotation/measurement direction:
-   [spec/scene/proposals/active/ANNOTATION_MEASUREMENT_DESIGN.md](../active/ANNOTATION_MEASUREMENT_DESIGN.md)
+   [ANNOTATION_MEASUREMENT_DESIGN.md](ANNOTATION_MEASUREMENT_DESIGN.md)
 4. volume direction:
-   [spec/scene/proposals/active/VOLUME_DESIGN.md](../active/VOLUME_DESIGN.md)
+   [VOLUME_DESIGN.md](VOLUME_DESIGN.md)
 
 This note makes the active decisions more explicit.
 

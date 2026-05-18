@@ -34,11 +34,11 @@ Define a coherent first API for:
 
 This API note consolidates:
 
-1. [spec/scene/proposals/active/TEXT_DESIGN.md](../active/TEXT_DESIGN.md)
-2. [spec/scene/proposals/active/COLORBAR_COLORMAP_DESIGN.md](../active/COLORBAR_COLORMAP_DESIGN.md)
-3. [spec/scene/proposals/active/ANNOTATION_MEASUREMENT_DESIGN.md](../active/ANNOTATION_MEASUREMENT_DESIGN.md)
-4. [spec/scene/proposals/active/AXES_DOMAIN_DESIGN.md](../active/AXES_DOMAIN_DESIGN.md)
-5. [spec/scene/proposals/promoted/PROBE_READOUT_DESIGN.md](../promoted/PROBE_READOUT_DESIGN.md)
+1. [TEXT_DESIGN.md](TEXT_DESIGN.md)
+2. [COLORBAR_COLORMAP_DESIGN.md](COLORBAR_COLORMAP_DESIGN.md)
+3. [ANNOTATION_MEASUREMENT_DESIGN.md](ANNOTATION_MEASUREMENT_DESIGN.md)
+4. [AXES_DOMAIN_DESIGN.md](AXES_DOMAIN_DESIGN.md)
+5. [PROBE_READOUT_DESIGN.md](../promoted/PROBE_READOUT_DESIGN.md)
 
 
 ## Core Recommendation

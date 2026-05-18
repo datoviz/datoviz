@@ -30,9 +30,9 @@ The underlying policy already exists in the broader scene spec:
 2. resource precision policy:
    [spec/scene/pipeline/RESOURCE_MODEL.md](../../pipeline/RESOURCE_MODEL.md)
 3. axes/domain semantics:
-   [spec/scene/proposals/active/AXES_DOMAIN_DESIGN.md](../active/AXES_DOMAIN_DESIGN.md)
+   [AXES_DOMAIN_DESIGN.md](AXES_DOMAIN_DESIGN.md)
 4. volume framing pressure:
-   [spec/scene/proposals/active/VOLUME_DESIGN.md](../active/VOLUME_DESIGN.md)
+   [VOLUME_DESIGN.md](VOLUME_DESIGN.md)
 
 This note is not a new transform model. It is an active consolidation of the decisions that matter
 for implementation.
