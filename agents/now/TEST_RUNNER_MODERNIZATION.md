@@ -1,7 +1,7 @@
 # Test Runner Modernization Plan
 
 > **Execution Status**
-> - **Status:** `ACTIVE DESIGN NOTE`
+> - **Status:** `FIRST SERIAL RUNNER SLICE LANDED`
 > - **Updated on:** `2026-05-18`
 > - **Purpose:** document the current C test-runner limitations and a staged refactor path toward
 >   explicit grouping, cleaner filtering, and safe future parallelism.
@@ -22,6 +22,20 @@ The recommended strategy is still not to immediately parallelize tests. First, m
 runner structurally ready for process scheduling: explicit modules, groups, cases, tags, resource
 requirements, isolation constraints, stable result records, and clear terminal/JSON output. Serial
 execution should remain the default until tests opt into stronger parallel-safety guarantees.
+
+Implementation update on `2026-05-18`: the first serial runner slice has landed. The generic
+framework now has a metadata-first case registry, per-test `TstContext`, context-owned log capture
+and expected-error state, module/group/case filtering, `--list`, `--list-groups`, JSON result
+output, per-case/module/group/suite timing, slow-test summaries, color controls, repeat/shuffle
+options, and a Datoviz-specific log adapter installed by the Datoviz runners. Test functions have
+been migrated to the new `TstContext*` / `const TstCase*` signature, CPU modules have explicit
+groups, and independent CPU runner targets now exist for `common`, `ds`, `fileio`, `math`,
+`thread`, and aggregate `core`.
+
+Remaining follow-up from the first slice: some non-CPU registrations still do availability probes
+while registering tests, so unified-runner listing or CPU filters can print Vulkan/GLFW diagnostics
+before selection. Move those probes into skip predicates or scheduled execution before treating
+listing/filtering as completely side-effect-free.
 
 Two boundaries should stay clean:
 
