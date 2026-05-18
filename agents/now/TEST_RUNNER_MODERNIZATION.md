@@ -69,6 +69,12 @@ runner context, and direct app, GLFW, surface, and offscreen window setup exits 
 before cleanup. Focused validation covered `dvztest_scene` rebuilds and representative
 app-offscreen cases reporting Vulkan-unavailable skips in this environment.
 
+Sixth follow-up update on `2026-05-18`: the DRP2 vklite runtime tests now report Vulkan probe,
+GPU-context, and CUDA availability exits as explicit `SKIP` results. The shared vklite
+availability helper now logs runtime availability instead of pretending to own the skip result, and
+each caller records the runner skip reason before returning or entering cleanup. Focused validation
+covered `dvztest_drp2` rebuilds and representative vklite cases reporting Vulkan-unavailable skips.
+
 Two boundaries should stay clean:
 
 1. `testing/testing.h` and `testing/testing.cpp` should remain a generic C/C++ test framework.
