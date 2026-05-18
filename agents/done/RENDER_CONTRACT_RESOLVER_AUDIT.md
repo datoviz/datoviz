@@ -1,12 +1,14 @@
 # Render Contract Resolver Audit
 
 > **Execution Status**
-> - **Status:** `AUDIT REPORT`
+> - **Status:** `COMPLETED AUDIT AND HARDENING RECORD`
 > - **Updated on:** `2026-05-18`
 > - **Scope:** `spec/scene/proposals/RENDER_CONTRACT_RESOLVER.md` and the active scene ->
 >   DRP2 -> vklite code path.
 > - **Inputs:** local code review plus three parallel subagent audits covering contract semantics,
 >   implementation consistency, and automated test coverage.
+> - **Current location:** `agents/done/`; the active follow-up items are recorded in
+>   [../now/V0_4_NEXT_STEPS.md](../now/V0_4_NEXT_STEPS.md).
 
 This report audits whether the proposed render-contract resolver is robust enough to become the
 authority for the difficult transparency, depth, volume, occlusion, MSAA, EDL, and SSAO cases.

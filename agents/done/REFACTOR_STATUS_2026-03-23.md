@@ -3,6 +3,13 @@
 This note is a re-entry summary for the current `v0.4-dev` branch after the February-March 2026
 refactor burst.
 
+> **Execution Status**
+> - **Status:** `HISTORICAL CHECKPOINT`
+> - **Updated on:** `2026-05-18`
+> - **Purpose:** preserve the March 2026 refactor snapshot as background context.
+> - **Current location:** `agents/done/`; for current work, start with
+>   [../now/V0_4_NEXT_STEPS.md](../now/V0_4_NEXT_STEPS.md).
+
 > **Historical note:** this file is a March checkpoint. For current May 2026 execution guidance,
 > start with [now/V0_4_NEXT_STEPS.md](/home/cyrille/GIT/Viz/datoviz/agents/now/V0_4_NEXT_STEPS.md).
 

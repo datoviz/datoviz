@@ -1,7 +1,11 @@
 # Tiered Gaussian Splatting Plan
 
-Status: planning document. This file records sequencing and implementation strategy; it is not a
-normative visual or DRP2 contract.
+> **Execution Status**
+> - **Status:** `LATER BACKLOG`
+> - **Updated on:** `2026-05-18`
+> - **Purpose:** preserve tiered splatting strategy without making it an active v0.4 execution
+>   entry point.
+> - **Current location:** `agents/later/`; this file is not a normative visual or DRP2 contract.
 
 ## Summary
 

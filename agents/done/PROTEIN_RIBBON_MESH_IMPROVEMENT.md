@@ -1,10 +1,11 @@
 # Protein Ribbon Mesh Improvement Plan
 
 > **Execution Status**
-> - **Status:** `PLANNED`
-> - **Updated on:** `2026-05-17`
-> - **Purpose:** improve the generated protein cartoon/ribbon mesh used by
->   `examples/c/showcase/protein.c` without creating a new renderer path.
+> - **Status:** `HISTORICAL PLAN`
+> - **Updated on:** `2026-05-18`
+> - **Purpose:** preserve the archived protein cartoon/ribbon mesh improvement plan without keeping
+>   it in the active agent entry-point directory.
+> - **Current location:** `agents/done/` because this is no longer an active v0.4 execution lane.
 
 ## Context
 

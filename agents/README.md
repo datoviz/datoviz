@@ -2,22 +2,19 @@
 
 This directory contains execution guidance for automation agents.
 
-Stable scene semantics belong in [../spec/scene](../spec/scene). Completed implementation records
-belong in [done/](done/). Long-horizon backlog belongs in [later/](later/).
+Stable scene semantics belong in [../spec/scene](../spec/scene). Current execution entry points
+belong in [now/](now/). Completed or historical records belong in [done/](done/). Long-horizon
+backlog belongs in [later/](later/).
 
 
 ## Current Priority
 
-Start with the small active set in [now/](now/):
+Start with the small active set in [now/](now/). These are the active entry points that should
+remain after older plans are retired or moved:
 
 1. [now/V0_4_NEXT_STEPS.md](now/V0_4_NEXT_STEPS.md)
-2. [now/DRP2_SPEC.md](now/DRP2_SPEC.md)
-3. [now/SCENE_PUBLIC_API_HEADER_PLAN.md](now/SCENE_PUBLIC_API_HEADER_PLAN.md)
-4. [now/SCENE_CONVERTER_REFACTOR_PLAN.md](now/SCENE_CONVERTER_REFACTOR_PLAN.md)
-5. [now/SCENE_DRP2_REFACTOR_OPPORTUNITIES.md](now/SCENE_DRP2_REFACTOR_OPPORTUNITIES.md)
-6. [now/IMAGE_PICKING_RECOVERY_PLAN.md](now/IMAGE_PICKING_RECOVERY_PLAN.md)
-7. [now/WBOIT_MESH_INTERACTIVE_PLAN.md](now/WBOIT_MESH_INTERACTIVE_PLAN.md)
-8. [now/V0_4_RELEASE_READINESS_PLAN.md](now/V0_4_RELEASE_READINESS_PLAN.md)
+2. [now/V0_4_RELEASE_READINESS_PLAN.md](now/V0_4_RELEASE_READINESS_PLAN.md)
+3. [now/TEST_RUNNER_MODERNIZATION.md](now/TEST_RUNNER_MODERNIZATION.md)
 
 Near-term work that is expected soon, but should not crowd the active entry-point directory, lives
 in [soon/](soon/). This includes the WebGPU, WASM, dual-depth-peeling, and screen-space volume
@@ -32,14 +29,16 @@ If resuming work on the branch:
 2. Read [now/V0_4_RELEASE_READINESS_PLAN.md](now/V0_4_RELEASE_READINESS_PLAN.md) when working on
    post-feature-completion quality, API review, documentation, bindings, gallery, packaging,
    release candidates, or communication planning.
-3. Read [../spec/scene/README.md](../spec/scene/README.md) before changing scene semantics,
+3. Read [now/TEST_RUNNER_MODERNIZATION.md](now/TEST_RUNNER_MODERNIZATION.md) before changing the
+   C test framework, suite registration, test binaries, or filter/reporting behavior.
+4. Read [../spec/scene/README.md](../spec/scene/README.md) before changing scene semantics,
    public scene API shape, frame planning, visual families, interaction, annotations, scales, or
    runtime boundaries.
-4. Read [../spec/scene/api/API_SURFACE.md](../spec/scene/api/API_SURFACE.md) before changing public
+5. Read [../spec/scene/api/API_SURFACE.md](../spec/scene/api/API_SURFACE.md) before changing public
    scene API shape or adding new scene object families.
-5. Read [now/SCENE_PUBLIC_API_HEADER_PLAN.md](now/SCENE_PUBLIC_API_HEADER_PLAN.md) to distinguish
-   implemented public scene APIs from drafted-but-not-yet-implemented APIs.
-6. Read [now/DRP2_SPEC.md](now/DRP2_SPEC.md) if touching `spec/drp2/`, `src/drp2/`, or
+6. Read [../spec/drp2/README.md](../spec/drp2/README.md) and
+   [now/DRP2_SPEC.md](now/DRP2_SPEC.md), if it is still present in `now/`, before touching
+   `spec/drp2/`, `src/drp2/`, or
    DRP2-emitting scene code.
 7. Read [done/SCENE_DRP2_IMPLEMENTATION.md](done/SCENE_DRP2_IMPLEMENTATION.md) and
    [done/DRP2_SCENE_SAFETY.md](done/DRP2_SCENE_SAFETY.md) when touching the completed first
@@ -51,7 +50,8 @@ If resuming work on the branch:
 ### `now/`
 
 Small active execution notes. These files should answer what to do next and where to read the
-normative spec. They should not be the long-term home for scene semantics.
+normative spec. They should not be the long-term home for scene semantics, completed audit logs, or
+plans that describe code already landed.
 
 ### `soon/`
 
@@ -94,7 +94,14 @@ Analysis notes:
 
 ### `done/`
 
-Completed phase records. These are useful context, but they are not current execution plans.
+Completed phase records and historical checkpoints. These are useful context, but they are not
+current execution plans.
+
+Recently retired or historical notes:
+
+1. [done/REFACTOR_STATUS_2026-03-23.md](done/REFACTOR_STATUS_2026-03-23.md)
+2. [done/RENDER_CONTRACT_RESOLVER_AUDIT.md](done/RENDER_CONTRACT_RESOLVER_AUDIT.md)
+3. [done/PROTEIN_RIBBON_MESH_IMPROVEMENT.md](done/PROTEIN_RIBBON_MESH_IMPROVEMENT.md)
 
 ### `later/`
 
@@ -103,6 +110,10 @@ Backlog, strategic direction, or secondary cleanup tracks.
 API design backlog:
 
 1. [later/SCENE_SHARED_VISUAL_DATA_API.md](later/SCENE_SHARED_VISUAL_DATA_API.md)
+
+Strategic visual backlog:
+
+1. [later/SPLATTING_TIERED_PLAN.md](later/SPLATTING_TIERED_PLAN.md)
 
 
 ## Maintenance Rules
