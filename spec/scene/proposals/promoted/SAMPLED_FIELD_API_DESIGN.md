@@ -6,9 +6,11 @@
 
 # SampledField API Design
 
-This note defines the intended active v0.4 direction for a scene-owned `SampledField` object.
+This promoted note preserves `SampledField` rationale, API sketches, and unresolved choices from
+the earlier sampled-field design pass. Current resource, image, volume, validation, and public API
+rules now live in specialized specs.
 
-The goal is to give future implementation work one explicit contract for:
+The original design goal was to give implementation work one explicit contract for:
 
 1. regular 2D and 3D sampled data,
 2. scalar, vector, and multi-channel color-like payloads,
@@ -27,9 +29,11 @@ belong in [`../../visuals/IMAGE.md`](../../visuals/IMAGE.md) and
 
 This proposal remains useful for detailed enum/API sketches, rationale, and open choices. Do not
 copy its long format lists into other specs unless those specs need the normative detail.
+The detailed sections below are historical design material unless the owning specialized specs
+explicitly cite or absorb them.
 
 
-## Objective
+## Historical Objective
 
 `SampledField` should become the scene-owned data object for regularly sampled raster or voxel data.
 

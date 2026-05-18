@@ -6,8 +6,9 @@
 
 # UI and Backend Integration
 
-This note narrows the broader external-UI discussion into the active design decisions that matter
-for scene mutation, embedding, and host-toolkit integration.
+This promoted note preserves external-UI and hosted-backend rationale from the earlier integration
+design pass. Current external-UI, hosted-backend, frame-lifecycle, and runtime-boundary rules now
+live in specialized specs.
 
 
 ## Authority Note
@@ -22,9 +23,11 @@ ownership boundaries belong in [`../../core/RUNTIME_BOUNDARY.md`](../../core/RUN
 This proposal remains a rationale note for the overlap between external widgets, retained scene
 mutation, and hosted presentation. Do not add new Qt- or ImGui-specific normative rules here unless
 the specialized integration docs also receive the rule.
+The detailed sections below are historical design material unless the owning specialized specs
+explicitly cite or absorb them.
 
 
-## Objective
+## Historical Objective
 
 Support application workflows where external UI frameworks and host toolkits coexist with the scene
 system, including:
@@ -188,9 +191,9 @@ The active scene-facing implications are:
 5. no backend-native leak into public scene APIs.
 
 
-## Immediate Scope Recommendation
+## Remaining Scope Notes
 
-The active implementation work should assume:
+The remaining implementation work should assume:
 
 1. external UI is real and important,
 2. ImGui remains a supported native overlay/tool path,

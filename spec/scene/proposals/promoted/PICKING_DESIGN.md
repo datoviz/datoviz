@@ -6,8 +6,8 @@
 
 # Picking Design
 
-This note records the intended v0.4 picking contract before mesh, text, and annotation work
-hardens around inconsistent identity assumptions.
+This promoted note preserves the picking rationale and backlog that existed before the active
+picking rules moved into specialized interaction, visual-family, frame-plan, and API specs.
 
 
 ## Authority Note
@@ -21,9 +21,11 @@ in the relevant `../../visuals/*.md` files, and public result/request shape belo
 
 This proposal remains a rationale and backlog note for precision levels, multi-hit policy, and
 future family extensions. When the active pick path changes, update the specialized specs first.
+The detailed sections below are historical design material unless the owning specialized specs
+explicitly cite or absorb them.
 
 
-## Objective
+## Historical Objective
 
 Support precise scientific picking with a coherent scene-level model for:
 
@@ -51,7 +53,8 @@ There is already meaningful picking-related material in the repo:
 4. visual-family hints, for example mesh face picking in
    [spec/scene/visuals/MESH.md](../../visuals/MESH.md)
 
-This note narrows that larger material into the active implementation contract.
+The detailed sections below preserve the design rationale behind the promoted implementation
+contract.
 
 
 ## Core Recommendation

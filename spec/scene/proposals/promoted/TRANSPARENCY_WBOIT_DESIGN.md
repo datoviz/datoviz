@@ -6,7 +6,9 @@
 
 # Transparency and WBOIT Design
 
-This note records the intended transparency contract for the active v0.4 scene stack.
+This promoted note preserves WBOIT and transparency rationale from the earlier transparency design
+pass. Current alpha-mode, frame-plan, adaptation, and runtime-boundary rules now live in
+specialized specs.
 
 
 ## Authority Note
@@ -20,9 +22,11 @@ in [`../../core/RUNTIME_BOUNDARY.md`](../../core/RUNTIME_BOUNDARY.md).
 This proposal remains a rationale and follow-up note for WBOIT attachment/resolve design. If it
 disagrees with the specialized specs, update the specialized specs first and keep only a concise
 backlog note here.
+The detailed sections below are historical design material unless the owning specialized specs
+explicitly cite or absorb them.
 
 
-## Objective
+## Historical Objective
 
 Support transparent visuals as a first-class scene feature. Ordinary source-over blending,
 weighted blended order-independent transparency (WBOIT), and depth peeling are distinct alpha modes.
@@ -37,7 +41,7 @@ This note is about:
 5. interaction with picking and capability checks.
 
 
-## Why This Is Active Now
+## Historical Motivation
 
 Transparency is a hard architectural pressure point for the active branch.
 
@@ -68,7 +72,7 @@ There is already useful grounding material in the tree:
    [wboit_accum.frag](../../../../src/vklite/tests/shaders/wboit_accum.frag),
    [wboit_comp.frag](../../../../src/vklite/tests/shaders/wboit_comp.frag)
 
-This note narrows those ideas into the active implementation direction.
+This note preserves the rationale behind the promoted implementation direction.
 
 
 ## Public Transparency Model

@@ -6,8 +6,8 @@
 
 # Probe and Readout Design
 
-This note records the active v0.4 direction for turning picks and queries into meaningful semantic
-readouts rather than leaving each visual family to invent its own payload shape.
+This promoted note preserves the rationale for turning picks and queries into meaningful semantic
+readouts. Current routing, annotation, visual-family, and API rules now live in specialized specs.
 
 
 ## Authority Note
@@ -22,9 +22,11 @@ payload rules belong in [`../../visuals/IMAGE.md`](../../visuals/IMAGE.md) and
 This proposal remains the cross-family rationale for semantic values, units, formatting, and
 probe-only versus probe-plus-selection policy until those details are fully split into specialized
 specs.
+The detailed sections below are historical design material unless the owning specialized specs
+explicitly cite or absorb them.
 
 
-## Objective
+## Historical Objective
 
 Support coherent probe/readout behavior for:
 
@@ -75,7 +77,7 @@ Several scene proposals already depend on this contract:
 5. selection/highlight should stay distinct from value readout.
 
 
-## Probe Result Shape
+## Historical Probe Result Shape
 
 Reserve a structured probe payload now.
 
@@ -240,9 +242,9 @@ The exact names can still move, but the conceptual API should support:
    distinction matters.
 
 
-## Immediate Scope Recommendation
+## Remaining Scope Notes
 
-The narrowest useful active implementation target is:
+The narrowest useful remaining implementation target is:
 
 1. image pixel readout,
 2. volume slice readout with sampled value and scientific coordinate,

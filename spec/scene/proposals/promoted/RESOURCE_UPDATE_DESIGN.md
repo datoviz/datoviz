@@ -6,8 +6,9 @@
 
 # Resource Update Design
 
-This note narrows the larger scene resource model into the active update contract needed now for
-mesh, text, image, and picking-related retained resources.
+This promoted note preserves retained-update rationale and API naming examples from the earlier
+resource-update design pass. Current resource ownership, dirty tracking, and frame-plan upload
+rules now live in specialized pipeline and validation specs.
 
 
 ## Authority Note
@@ -21,9 +22,11 @@ diagnostics belong in [`../../validation/VALIDATION.md`](../../validation/VALIDA
 
 This proposal remains as a concise rationale for why partial updates are first-class and as a
 parking place for API naming examples that have not yet moved into the public API spec.
+The detailed sections below are historical design material unless the owning specialized specs
+explicitly cite or absorb them.
 
 
-## Objective
+## Historical Objective
 
 Keep scene resources retained and backend-agnostic while making partial mutation first-class for:
 
@@ -48,7 +51,8 @@ The current branch already has real retained dirty-range behavior:
 4. broader resource-model context in
    [spec/scene/pipeline/RESOURCE_MODEL.md](../../pipeline/RESOURCE_MODEL.md)
 
-This note defines what should remain stable as the system grows beyond point and image visuals.
+The detailed sections below preserve the design rationale for what should remain stable as the
+system grows beyond point and image visuals.
 
 
 ## Core Recommendation
@@ -312,7 +316,7 @@ The point is not the exact spelling. The point is making retained partial mutati
 shared contract across visual families.
 
 
-## Immediate Scope Recommendation
+## Remaining Scope Notes
 
 The first implementation work should explicitly cover:
 
