@@ -15,6 +15,13 @@ own zarr, OME-Zarr, VTK, HDF5, cloud stores, and dataset-specific scheduling. Da
 the retained resource identity, resident GPU payloads, partial uploads, telemetry, and rendering
 behavior when only part of a resource is available.
 
+The first out-of-core implementations may be entirely Python/GSP-level. Datoviz C should grow
+residency primitives only when repeated examples need stable logical identity, GPU memory accounting,
+partial-valid rendering, upload telemetry, or backend-portable chunk upload paths. The C engine does
+not need to know about data that is merely on disk, in a cloud store, or in a Python cache. It only
+needs to know about logical scene resources and the subset of pages currently resident, missing, or
+being updated in GPU-visible form.
+
 
 ## Simple Examples
 
@@ -29,6 +36,20 @@ behavior when only part of a resource is available.
 
 
 ## Core Concepts
+
+The preferred responsibility split is:
+
+```text
+Python / application:
+  file formats, chunk priority, async loading, cache, decompression, data conversion
+
+Datoviz C / runtime:
+  stable scene resource identity, resident GPU slots, uploads, telemetry, partial-valid rendering
+```
+
+This keeps high-level data policy flexible while preventing GPU residency and upload details from
+being reinvented in every large-data example.
+
 
 ### Logical Resource
 
@@ -68,6 +89,11 @@ missing -> requested -> loading -> resident -> evictable -> evicted
 The renderer must be able to draw a partial-valid scene: coarse LOD, stale data, or missing chunks
 should be explicit states, not accidental failures.
 
+For an early prototype, Python may manage residency by creating or updating ordinary visuals for the
+currently visible chunks. That is acceptable and likely preferable for first experiments. C-side
+residency becomes useful when that approach causes resource churn, duplicated slot-management code,
+unclear picking behavior, or backend-specific upload details leaking into applications.
+
 
 ## Candidate C Primitives
 
@@ -83,6 +109,27 @@ Useful Datoviz-side primitives:
 - stable semantic ids across LOD/page replacement.
 
 These should build on the existing resource update and invalidation model, not replace it.
+
+These primitives should be optional and narrow. They should not imply that C owns the global dataset
+or loading policy. A minimal runtime object could track:
+
+```text
+logical resource id
+resident page/chunk ids
+GPU slot, buffer range, texture layer, or brick-pool mapping
+dirty/upload state
+approximate GPU byte size
+validity or missing-data state
+```
+
+Python can then provide explicit commands such as:
+
+```text
+upload chunk (lod=2, i=12, j=5) into logical resource R
+evict chunk K from logical resource R
+mark chunk K dirty
+query resident/missing state for diagnostics
+```
 
 
 ## Python/Application Responsibilities
@@ -100,6 +147,10 @@ Keep high-level policy out of C initially:
 The application can tell Datoviz which chunks are now available and which resident chunks should be
 updated or evicted.
 
+Python may also remain the only out-of-core layer indefinitely for applications that do not need
+shared runtime residency semantics. The main reason to promote a primitive into C is repeated need
+across examples or bindings, not the mere existence of large data.
+
 
 ## Rendering Behavior
 
@@ -112,6 +163,11 @@ Progressive resources should support:
 - stable picking when possible;
 - explicit "not resident" pick/probe result when data is unavailable;
 - no unbounded transient resource creation.
+
+The distinction between "not resident" and "empty/missing value" matters. If a user probes a region
+whose data page is not resident, the result should be different from a valid resident page whose
+sample value is zero, transparent, masked, or empty. This is one of the few semantic facts the
+runtime may need to expose even though it does not know how to load the missing page.
 
 
 ## Data Models
@@ -205,3 +261,5 @@ Useful future examples:
 - How should progressive picking behave when the best-resolution page is missing?
 - Should resource ids remain stable across LOD replacement, or should LOD be a separate semantic id?
 - What is the minimum C API that helps Python/GSP users without turning Datoviz into a data server?
+- Which examples demonstrate enough duplicated Python-side residency logic to justify moving a
+  primitive into C?
