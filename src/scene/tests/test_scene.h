@@ -165,6 +165,8 @@ int test_frame_plan_graph_gbuffer_shape(TstSuite* suite, TstItem* item);
 
 int test_frame_plan_graph_validation_read_before_write(TstSuite* suite, TstItem* item);
 
+int test_frame_plan_graph_validation_topological_order(TstSuite* suite, TstItem* item);
+
 int test_frame_plan_graph_validation_ambiguous_producer(TstSuite* suite, TstItem* item);
 
 int test_frame_plan_graph_validation_missing_usage(TstSuite* suite, TstItem* item);

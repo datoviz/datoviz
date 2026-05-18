@@ -812,6 +812,27 @@ Validation:
 2. `./build/testing/dvztest_scene test_scene_blended_mesh_occlusion_contracts`
 
 
+### 2026-05-18: Phase 2 / Explicit graph topological-order diagnostics
+
+Completed the temporary graph-order contract slice.
+
+Changes:
+
+1. FramePlan graph validation now distinguishes a missing producer from a producer that appears
+   later than its consumer.
+2. Out-of-order per-frame sampled reads now produce a diagnostic naming the consumer pass, resource,
+   later producer pass, and the requirement that graph passes be topological.
+3. Added `test_frame_plan_graph_validation_topological_order`, which first failed against the old
+   generic no-producer diagnostic and now locks the explicit topological-order error.
+
+Validation:
+
+1. `cmake --build build --target dvztest_scene -j2`
+2. `./build/testing/dvztest_scene test_frame_plan_graph_validation_topological_order`
+3. `./build/testing/dvztest_scene test_frame_plan_graph_validation_read_before_write`
+4. `./build/testing/dvztest_scene test_frame_plan_graph_dependencies_dump`
+
+
 ## Executive Assessment
 
 The direction is correct and worth continuing. The proposal identifies the right failure mode:
@@ -1059,19 +1080,21 @@ Recommendation: replace the two hard-coded occlusion fields with a small array o
 contracts before adding multiple occlusion maps or backend-specific binding layouts.
 
 
-### Medium: graph ordering is insertion-order, not dependency-derived
+### Medium: graph ordering is insertion-order, with explicit topological validation
 
 The proposal says pass ordering should be derived from dependencies. Current runtime execution uses
 stored graph-pass order when graph passes exist, and graph builders are responsible for emitting in a
-valid order.
+valid topological order. FramePlan graph validation now reports the specific case where a consumer
+reads a per-frame resource before a later producer pass, so the temporary contract is explicit and
+test-covered.
 
-Impact: a new technique builder can append passes in visually wrong order while still using valid
-resource names. This is especially easy to get wrong for volume occlusion, scene occlusion, WBOIT
-resolve, depth-peel composite, SSAO, EDL, and MSAA resolve.
+Impact: a new technique builder can no longer silently append a consumer before its producer for
+declared per-frame reads, but runtime execution is still insertion-order and there is no scheduler
+that can reorder a valid dependency graph automatically.
 
-Recommendation: either document "graph builders must emit topological order" as a temporary
-contract, or add a graph scheduler that sorts passes from declared reads/writes and reports cycles or
-missing producers.
+Recommendation: keep "graph builders must emit topological order" as the current contract. Add a
+graph scheduler only if graph builders need to emit unordered passes or if cross-backend execution
+needs dependency-derived scheduling.
 
 
 ### Medium: MSAA sample count can drift after validation
@@ -1193,8 +1216,9 @@ in this pass, using this attachment/resource/pipeline state" belongs in the reso
    layouts, and sampled texture bindings against the resolved contracts.
 2. Keep DRP2 semantic validation backend-agnostic, but add enough labels or debug ids for the scene
    checker to correlate pipelines/draws/passes to contract ids.
-3. Assert that graph pass ordering is topological, or add a scheduler that executes declared
-   dependencies instead of insertion order.
+3. Done for the temporary contract: FramePlan graph validation asserts topological order for
+   declared per-frame read dependencies. Add a scheduler later only if unordered graph-builder
+   emission becomes a requirement.
 
 ### Phase 3: centralize technique builders
 

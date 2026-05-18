@@ -692,6 +692,40 @@ static bool _graph_find_last_writer_before(
 
 
 /**
+ * Find the first graph pass that writes a resource after a consumer pass.
+ *
+ * @param plan the FramePlan.
+ * @param resource_id the graph resource id.
+ * @param pass_index the consumer pass index.
+ * @param producer_index output producer pass index.
+ * @param producer_usage optional output producer access usage.
+ * @return whether a producer was found after the consumer.
+ */
+static bool _graph_find_first_writer_after(
+    const DvzFramePlan* plan, const char* resource_id, uint32_t pass_index,
+    uint32_t* producer_index, DvzFrameGraphAccessUsage* producer_usage)
+{
+    ANN(plan);
+    ANN(resource_id);
+    ANN(producer_index);
+    for (uint32_t i = pass_index + 1; i < plan->graph_pass_count; i++)
+    {
+        uint32_t count = 0;
+        DvzFrameGraphAccessUsage usage = DVZ_FRAME_GRAPH_ACCESS_NONE;
+        if (_graph_pass_write_count_resource(&plan->graph_passes[i], resource_id, &count, &usage))
+        {
+            *producer_index = i;
+            if (producer_usage != NULL)
+                *producer_usage = usage;
+            return true;
+        }
+    }
+    return false;
+}
+
+
+
+/**
  * Build a dependency edge for a consumer access when a prior producer exists.
  *
  * @param plan the FramePlan.
@@ -1191,10 +1225,23 @@ static bool _graph_validate_pass_producers(
         if (!_graph_dependency_from_access(
                 plan, pass->reads[i].resource_id, pass->reads[i].usage, pass_index, NULL))
         {
-            _graph_report(
-                report,
-                "FramePlan graph pass '%s' has no producer for resource '%s'",
-                pass->id, pass->reads[i].resource_id);
+            uint32_t producer_index = 0;
+            if (_graph_find_first_writer_after(
+                    plan, pass->reads[i].resource_id, pass_index, &producer_index, NULL))
+            {
+                _graph_report(
+                    report,
+                    "FramePlan graph pass '%s' reads resource '%s' before producer pass '%s'; "
+                    "graph passes must be topological",
+                    pass->id, pass->reads[i].resource_id, plan->graph_passes[producer_index].id);
+            }
+            else
+            {
+                _graph_report(
+                    report,
+                    "FramePlan graph pass '%s' has no producer for resource '%s'",
+                    pass->id, pass->reads[i].resource_id);
+            }
             ok = false;
         }
     }

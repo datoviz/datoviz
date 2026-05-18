@@ -772,6 +772,62 @@ int test_frame_plan_graph_validation_read_before_write(TstSuite* suite, TstItem*
 
 
 /**
+ * Ensure graph validation reports consumers that appear before their producer pass.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_frame_plan_graph_validation_topological_order(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzFramePlan* plan = dvz_frame_plan("figure.graph.order", 20);
+    ANN(plan);
+
+    DvzFrameGraphResource resource = {0};
+    dvz_strlcpy(resource.id, "tex.future", sizeof(resource.id));
+    resource.kind = DVZ_FRAME_GRAPH_RESOURCE_TEXTURE;
+    resource.extent_kind = DVZ_FRAME_GRAPH_EXTENT_PANEL;
+    resource.usage_flags =
+        DVZ_FRAME_GRAPH_RESOURCE_USAGE_SAMPLED | DVZ_FRAME_GRAPH_RESOURCE_USAGE_COLOR_ATTACHMENT;
+    resource.lifetime = DVZ_FRAME_GRAPH_RESOURCE_LIFETIME_PER_FRAME;
+    AT(dvz_frame_plan_graph_resource(plan, &resource));
+
+    DvzFrameGraphPass consumer = {0};
+    dvz_strlcpy(consumer.id, "panel0.resolve", sizeof(consumer.id));
+    consumer.kind = DVZ_FRAME_GRAPH_PASS_COMPUTE;
+    AT(dvz_frame_graph_pass_read(&consumer, "tex.future", DVZ_FRAME_GRAPH_ACCESS_SAMPLED));
+    AT(dvz_frame_plan_graph_pass(plan, &consumer));
+
+    DvzFrameGraphAttachment color = {0};
+    dvz_strlcpy(color.resource_id, "tex.future", sizeof(color.resource_id));
+    color.load_op = DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_CLEAR;
+    color.store_op = DVZ_FRAME_GRAPH_ATTACHMENT_STORE_STORE;
+    color.access = DVZ_FRAME_GRAPH_ATTACHMENT_ACCESS_WRITE;
+
+    DvzFrameGraphPass producer = {0};
+    dvz_strlcpy(producer.id, "panel0.producer", sizeof(producer.id));
+    producer.kind = DVZ_FRAME_GRAPH_PASS_RENDER;
+    AT(dvz_frame_graph_pass_color_attachment(&producer, &color));
+    AT(dvz_frame_plan_graph_pass(plan, &producer));
+
+    DvzDiagnosticReport report = {0};
+    dvz_diagnostic_report_init(&report);
+    AT(!dvz_frame_plan_graph_validate(plan, &report));
+    AT(dvz_diagnostic_report_count(&report) >= 1);
+    AT(strcmp(
+           dvz_diagnostic_report_get(&report, 0),
+           "FramePlan graph pass 'panel0.resolve' reads resource 'tex.future' before producer "
+           "pass 'panel0.producer'; graph passes must be topological") == 0);
+
+    dvz_frame_plan_destroy(plan);
+    return 0;
+}
+
+
+/**
  * Ensure the internal FramePlan graph rejects attachments on non-render passes.
  *
  * @param suite the active test suite
@@ -1487,6 +1543,7 @@ int test_scene_frame_plan(TstSuite* suite)
     TEST_SIMPLE(test_frame_plan_graph_depth_peeling_shape);
     TEST_SIMPLE(test_frame_plan_graph_gbuffer_shape);
     TEST_SIMPLE(test_frame_plan_graph_validation_read_before_write);
+    TEST_SIMPLE(test_frame_plan_graph_validation_topological_order);
     TEST_SIMPLE(test_frame_plan_graph_validation_ambiguous_producer);
     TEST_SIMPLE(test_frame_plan_graph_validation_missing_usage);
     TEST_SIMPLE(test_frame_plan_graph_validation_attachment_kind);
