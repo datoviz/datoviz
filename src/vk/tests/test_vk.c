@@ -58,33 +58,40 @@
 /*************************************************************************************************/
 
 /**
- * Probe whether the current runtime can create a Vulkan instance for vk test coverage.
+ * Skip Vulkan tests when the current runtime cannot create a Vulkan instance.
  *
- * @returns true when the runtime can create a Vulkan instance, false otherwise
+ * @param suite test context
+ * @param item current test case
+ * @returns NULL when Vulkan is available, otherwise a skip reason
  */
-static bool _vk_runtime_available(void)
+static const char* _vk_skip_unless_runtime(TstContext* suite, const TstCase* item)
 {
+    (void)suite;
+    (void)item;
+
     DvzInstanceConfig cfg = dvz_instance_default_config();
     cfg.flags = 0;
     DvzInstance* instance = dvz_instance_create(&cfg);
     if (instance == NULL)
     {
-        log_warn("vk tests skipped because Vulkan instance creation failed");
-        return false;
+        return "requires Vulkan runtime";
     }
     dvz_instance_destroy(instance);
-    return true;
+    return NULL;
 }
 
 
 
-static int test_vk_runtime_unavailable(TstContext* suite, const TstCase* item)
-{
-    ANN(suite);
-    (void)item;
-    log_warn("vk tests skipped because Vulkan runtime is unavailable");
-    return 0;
-}
+#define TST_VK_CASE(test)                                                                         \
+    do                                                                                            \
+    {                                                                                             \
+        TstCaseDesc _tst_desc = tst_case_desc(#test, #test, (test));                              \
+        _tst_desc.tags = tags;                                                                    \
+        _tst_desc.resources = TST_RES_GPU | TST_RES_VULKAN;                                       \
+        _tst_desc.isolation = TST_ISOLATION_PROCESS;                                              \
+        _tst_desc.skip = _vk_skip_unless_runtime;                                                 \
+        tst_suite_add_case((suite), _tst_desc);                                                   \
+    } while (0)
 
 
 
@@ -94,48 +101,43 @@ int test_vk(TstSuite* suite)
 
     const char* tags = "vk";
     TST_MODULE(suite, tags);
-    if (!_vk_runtime_available())
-    {
-        TST_CASE(test_vk_runtime_unavailable);
-        return 0;
-    }
 
-    TST_CASE(test_instance_layers);
-    TST_CASE(test_instance_extensions);
-    TST_CASE(test_instance_creation);
-    TST_CASE(test_instance_invalid_layer);
+    TST_VK_CASE(test_instance_layers);
+    TST_VK_CASE(test_instance_extensions);
+    TST_VK_CASE(test_instance_creation);
+    TST_VK_CASE(test_instance_invalid_layer);
 
-    TST_CASE(test_gpu_props);
-    TST_CASE(test_gpu_memprops);
-    TST_CASE(test_gpu_features);
-    TST_CASE(test_gpu_extensions);
+    TST_VK_CASE(test_gpu_props);
+    TST_VK_CASE(test_gpu_memprops);
+    TST_VK_CASE(test_gpu_features);
+    TST_VK_CASE(test_gpu_extensions);
 
-    TST_CASE(test_queues_caps);
-    TST_CASE(test_queues_basic);
-    TST_CASE(test_queues_single_family);
-    TST_CASE(test_queues_multiple);
-    TST_CASE(test_queues_tie_break);
-    TST_CASE(test_queues_no_optional);
-    TST_CASE(test_queues_video_roles);
-    TST_CASE(test_queues_queue_limits);
-    TST_CASE(test_queue_from_role);
-    TST_CASE(test_queue_supports);
+    TST_VK_CASE(test_queues_caps);
+    TST_VK_CASE(test_queues_basic);
+    TST_VK_CASE(test_queues_single_family);
+    TST_VK_CASE(test_queues_multiple);
+    TST_VK_CASE(test_queues_tie_break);
+    TST_VK_CASE(test_queues_no_optional);
+    TST_VK_CASE(test_queues_video_roles);
+    TST_VK_CASE(test_queues_queue_limits);
+    TST_VK_CASE(test_queue_from_role);
+    TST_VK_CASE(test_queue_supports);
 
-    TST_CASE(test_device_1);
-    TST_CASE(test_device_2);
-    TST_CASE(test_device_3);
-    TST_CASE(test_device_4);
-    TST_CASE(test_device_destroy_rebuild);
-    TST_CASE(test_device_build_requires_destroy);
+    TST_VK_CASE(test_device_1);
+    TST_VK_CASE(test_device_2);
+    TST_VK_CASE(test_device_3);
+    TST_VK_CASE(test_device_4);
+    TST_VK_CASE(test_device_destroy_rebuild);
+    TST_VK_CASE(test_device_build_requires_destroy);
 
 
 
-    TST_CASE(test_memory_1);
-    TST_CASE(test_memory_interop_buffer_export);
+    TST_VK_CASE(test_memory_1);
+    TST_VK_CASE(test_memory_interop_buffer_export);
 
 #if DVZ_HAS_CUDA && !DVZ_ENABLE_ASAN_IN_DEBUG && !DVZ_USING_MSAN && !DVZ_USING_TSAN
     // Skip CUDA interop tests when sanitizers that conflict with CUDA are active.
-    TST_CASE(test_memory_cuda_1);
+    TST_VK_CASE(test_memory_cuda_1);
 #endif
 
 

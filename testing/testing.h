@@ -164,6 +164,7 @@ typedef struct TstRunSummary TstRunSummary;
 typedef struct TstSuite TstSuite;
 
 typedef int (*TstFunction)(TstContext* suite, const TstCase* item);
+typedef const char* (*TstSkipFunction)(TstContext* suite, const TstCase* item);
 typedef void (*TstLogInstall)(TstContext* ctx, void* user_data);
 typedef void (*TstLogUninstall)(void* user_data);
 
@@ -194,6 +195,7 @@ struct TstCaseDesc
     TstFunction test;
     TstFunction setup;
     TstFunction teardown;
+    TstSkipFunction skip;
     void* user_data;
 };
 
@@ -212,6 +214,7 @@ struct TstCase
     TstFunction test;
     TstFunction setup;
     TstFunction teardown;
+    TstSkipFunction skip;
     void* user_data;
 
     TstStatus status;

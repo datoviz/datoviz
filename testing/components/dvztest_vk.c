@@ -30,40 +30,40 @@
 /*************************************************************************************************/
 
 /**
- * Probe whether the current runtime can create a Vulkan instance for vklite tests.
+ * Skip vklite tests when the current runtime cannot create a Vulkan instance.
  *
- * @return true when the runtime can create a Vulkan instance, false otherwise
+ * @param suite test context
+ * @param item current test case
+ * @return NULL when Vulkan is available, otherwise a skip reason
  */
-static bool _vklite_runtime_available(void)
+static const char* _vklite_skip_unless_runtime(TstContext* suite, const TstCase* item)
 {
+    (void)suite;
+    (void)item;
+
     DvzInstanceConfig cfg = dvz_instance_default_config();
     cfg.flags = 0;
     DvzInstance* instance = dvz_instance_create(&cfg);
     if (instance == NULL)
     {
-        log_warn("vklite tests skipped because Vulkan instance creation failed");
-        return false;
+        return "requires Vulkan runtime";
     }
     dvz_instance_destroy(instance);
-    return true;
+    return NULL;
 }
 
 
 
-/**
- * Fallback placeholder when vklite runtime is unavailable.
- *
- * @param suite test suite
- * @param item current test item
- * @return 0
- */
-static int test_vklite_runtime_unavailable(TstContext* suite, const TstCase* item)
-{
-    ANN(suite);
-    (void)item;
-    log_warn("vklite tests skipped because Vulkan runtime is unavailable");
-    return 0;
-}
+#define TST_VKLITE_CASE(test)                                                                     \
+    do                                                                                            \
+    {                                                                                             \
+        TstCaseDesc _tst_desc = tst_case_desc(#test, #test, (test));                              \
+        _tst_desc.tags = tags;                                                                    \
+        _tst_desc.resources = TST_RES_GPU | TST_RES_VULKAN;                                       \
+        _tst_desc.isolation = TST_ISOLATION_PROCESS;                                              \
+        _tst_desc.skip = _vklite_skip_unless_runtime;                                             \
+        tst_suite_add_case((suite), _tst_desc);                                                   \
+    } while (0)
 
 
 
@@ -86,32 +86,25 @@ int main(int argc, char** argv)
 
     const char* tags = "vklite";
     TST_MODULE(suite, tags);
-    if (!_vklite_runtime_available())
-    {
-        TST_CASE(test_vklite_runtime_unavailable);
-    }
-    else
-    {
-        TST_CASE(test_vklite_commands_1);
-        TST_CASE(test_vklite_commands_destroy_without_recording);
-        TST_CASE(test_vklite_sampler_1);
-        TST_CASE(test_vklite_shader_1);
-        TST_CASE(test_vklite_slots_1);
-        TST_CASE(test_vklite_compute_1);
-        TST_CASE(test_vklite_buffers_1);
-        TST_CASE(test_vklite_buffer_views);
-        TST_CASE(test_vklite_images_1);
-        TST_CASE(test_vklite_descriptors_1);
-        TST_CASE(test_vklite_graphics_1);
-        TST_CASE(test_technique_triangle);
-        TST_CASE(test_technique_render_texture);
-        TST_CASE(test_technique_stencil);
-        TST_CASE(test_technique_msaa);
-        TST_CASE(test_technique_compute_graphics);
-        TST_CASE(test_technique_picking);
-        TST_CASE(test_technique_wboit);
-        TST_CASE(test_technique_ssao);
-    }
+    TST_VKLITE_CASE(test_vklite_commands_1);
+    TST_VKLITE_CASE(test_vklite_commands_destroy_without_recording);
+    TST_VKLITE_CASE(test_vklite_sampler_1);
+    TST_VKLITE_CASE(test_vklite_shader_1);
+    TST_VKLITE_CASE(test_vklite_slots_1);
+    TST_VKLITE_CASE(test_vklite_compute_1);
+    TST_VKLITE_CASE(test_vklite_buffers_1);
+    TST_VKLITE_CASE(test_vklite_buffer_views);
+    TST_VKLITE_CASE(test_vklite_images_1);
+    TST_VKLITE_CASE(test_vklite_descriptors_1);
+    TST_VKLITE_CASE(test_vklite_graphics_1);
+    TST_VKLITE_CASE(test_technique_triangle);
+    TST_VKLITE_CASE(test_technique_render_texture);
+    TST_VKLITE_CASE(test_technique_stencil);
+    TST_VKLITE_CASE(test_technique_msaa);
+    TST_VKLITE_CASE(test_technique_compute_graphics);
+    TST_VKLITE_CASE(test_technique_picking);
+    TST_VKLITE_CASE(test_technique_wboit);
+    TST_VKLITE_CASE(test_technique_ssao);
 
     int res = tst_suite_run(suite, argc, argv);
     tst_suite_destroy(suite);

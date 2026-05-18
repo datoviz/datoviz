@@ -595,8 +595,13 @@ static void _tst_print_case(const TstCase* result, const TstOptions* options)
 
     const std::string id = _tst_case_id(result);
     dvz_fprintf(
-        stdout, "%s%-4s%s  %-68s %10s\n", code, status, reset, id.c_str(),
+        stdout, "%s%-4s%s  %-68s %10s", code, status, reset, id.c_str(),
         _tst_duration(result->elapsed_ns).c_str());
+    if (result->status == TST_STATUS_SKIP && result->skip_reason != NULL)
+    {
+        dvz_fprintf(stdout, "  %s", result->skip_reason);
+    }
+    dvz_fprintf(stdout, "\n");
 
     if (options->verbose || result->status == TST_STATUS_FAIL)
     {
@@ -655,8 +660,9 @@ static void _tst_print_summary(
         {
             const TstAggregate& agg = it.second;
             dvz_fprintf(
-                stdout, "  %-16s %3u selected, %3u failed, %10s summed\n", it.first.c_str(),
-                agg.selected_count, agg.failed_count, _tst_duration(agg.summed_case_ns).c_str());
+                stdout, "  %-16s %3u selected, %3u failed, %3u skipped, %10s summed\n",
+                it.first.c_str(), agg.selected_count, agg.failed_count, agg.skipped_count,
+                _tst_duration(agg.summed_case_ns).c_str());
         }
     }
 
@@ -667,8 +673,9 @@ static void _tst_print_summary(
         {
             const TstAggregate& agg = it.second;
             dvz_fprintf(
-                stdout, "  %-32s %3u selected, %3u failed, %10s summed\n", it.first.c_str(),
-                agg.selected_count, agg.failed_count, _tst_duration(agg.summed_case_ns).c_str());
+                stdout, "  %-32s %3u selected, %3u failed, %3u skipped, %10s summed\n",
+                it.first.c_str(), agg.selected_count, agg.failed_count, agg.skipped_count,
+                _tst_duration(agg.summed_case_ns).c_str());
         }
     }
 
@@ -694,6 +701,15 @@ static void _tst_print_slow_cases(const std::vector<TstCase>& results, uint64_t 
         return;
     }
     std::vector<TstCase> sorted = results;
+    sorted.erase(
+        std::remove_if(
+            sorted.begin(), sorted.end(),
+            [](const TstCase& result) { return result.status == TST_STATUS_SKIP; }),
+        sorted.end());
+    if (sorted.empty())
+    {
+        return;
+    }
     std::sort(sorted.begin(), sorted.end(), [](const TstCase& a, const TstCase& b) {
         return a.elapsed_ns > b.elapsed_ns;
     });
@@ -767,6 +783,10 @@ static int _tst_write_json(
         out << "      \"status\": \"" << _tst_status_name(r.status) << "\",\n";
         out << "      \"resources\": \"" << _tst_resources_string(r.resources) << "\",\n";
         out << "      \"isolation\": \"" << _tst_isolation_name(r.isolation) << "\",\n";
+        if (r.skip_reason != NULL)
+            out << "      \"skip_reason\": \"" << _tst_json_escape(r.skip_reason) << "\",\n";
+        else
+            out << "      \"skip_reason\": null,\n";
         out << "      \"repeat_index\": " << r.repeat_index << ",\n";
         out << "      \"timeout_ms\": " << r.timeout_ms << ",\n";
         out << "      \"start_ns\": " << r.start_ns << ",\n";
@@ -911,6 +931,7 @@ void tst_suite_add_case(TstSuite* suite, TstCaseDesc desc)
     test->test = desc.test;
     test->setup = desc.setup;
     test->teardown = desc.teardown;
+    test->skip = desc.skip;
     test->user_data = desc.user_data;
     test->status = TST_STATUS_NOT_RUN;
 }
@@ -994,22 +1015,33 @@ int tst_suite_run(TstSuite* suite, int argc, char** argv)
             ctx.suppress_expected_error_output = true;
             ctx.strict_unexpected_errors = suite->strict_unexpected_errors;
 
-            if (suite->log_adapter.install != NULL)
+            result.start_ns = _tst_now_ns();
+
+            const char* skip_reason = NULL;
+            if (result.skip != NULL)
+            {
+                skip_reason = result.skip(&ctx, &result);
+            }
+
+            if (skip_reason == NULL && suite->log_adapter.install != NULL)
             {
                 suite->log_adapter.install(&ctx, suite->log_adapter.user_data);
             }
 
-            result.start_ns = _tst_now_ns();
             int res = 0;
-            if (result.setup != NULL)
+            if (skip_reason != NULL)
+            {
+                result.skip_reason = skip_reason;
+            }
+            else if (result.setup != NULL)
             {
                 res = result.setup(&ctx, &result);
             }
-            if (res == 0)
+            if (skip_reason == NULL && res == 0)
             {
                 res = result.test(&ctx, &result);
             }
-            if (result.teardown != NULL)
+            if (skip_reason == NULL && result.teardown != NULL)
             {
                 int teardown_res = result.teardown(&ctx, &result);
                 if (res == 0)
@@ -1022,13 +1054,13 @@ int tst_suite_run(TstSuite* suite, int argc, char** argv)
             result.elapsed_ns = result.end_ns - result.start_ns;
             if (result.timeout_ms > 0 && result.elapsed_ns > result.timeout_ms * 1000000ull)
             {
-                result.skip_reason = "timeout exceeded";
                 res = 1;
             }
             result.result = res;
-            result.status = res == 0 ? TST_STATUS_PASS : TST_STATUS_FAIL;
+            result.status = result.skip_reason != NULL ? TST_STATUS_SKIP
+                                                       : (res == 0 ? TST_STATUS_PASS : TST_STATUS_FAIL);
 
-            if (suite->log_adapter.uninstall != NULL)
+            if (skip_reason == NULL && suite->log_adapter.uninstall != NULL)
             {
                 suite->log_adapter.uninstall(suite->log_adapter.user_data);
             }
