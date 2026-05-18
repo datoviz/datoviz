@@ -871,6 +871,29 @@ Validation:
 1. `git diff --check -- agents/now/RENDER_CONTRACT_RESOLVER_AUDIT_2026-05-17.md`
 
 
+### 2026-05-18: Phase 0 / Graph-builder diagnostics in emit reports
+
+Completed the graph-emission diagnostic precision slice.
+
+Changes:
+
+1. Added `_scene_emit_panel_render_ex()` so panel graph-emission failures can report directly into
+   the caller's `DvzDiagnosticReport` while preserving the older internal wrapper.
+2. `dvz_figure_emit_ex()` now passes its diagnostic report into panel emission and only falls back
+   to the generic "scene FramePlan graph emission failed" message when no specific diagnostic was
+   recorded.
+3. Replaced graph-builder failure `log_error()`-only paths in `scene_emit.c` with shared reporting
+   that logs and records the specific failing graph builder or post-graph read-add step.
+4. Added `test_scene_panel_graph_failure_reports_specific_diagnostic`, which saturates a synthetic
+   graph pass read list and verifies the volume-occlusion read-add failure appears in diagnostics.
+
+Validation:
+
+1. `cmake --build build --target dvztest_scene -j2`
+2. `./build/testing/dvztest_scene test_scene_panel_graph_failure_reports_specific_diagnostic`
+3. `./build/testing/dvztest_scene test_scene_frame_plan_missing_graph_pass_fails_contract`
+
+
 ## Executive Assessment
 
 The direction is correct and worth continuing. The proposal identifies the right failure mode:
@@ -1021,24 +1044,18 @@ The first option is safer and should be the immediate implementation until a vis
 mixed OIT composition.
 
 
-### High: graph-emission failure reporting remains coarse
+### Resolved: graph-emission failures report specific diagnostics
 
-Several graph-builder failures in `scene_emit.c` call `log_error()` and return a panel-level failure.
-`dvz_figure_emit_ex()` now treats that panel failure as fatal, and missing graph-backed render passes
-are reported by both FramePlan and DRP2 contract validation. The remaining weakness is diagnostic
-precision: graph-builder failures still mostly surface as a generic "scene FramePlan graph emission
-failed" report entry unless the contract validator can infer a more specific missing-pass problem.
+Graph-builder failures in `scene_emit.c` now log and record specific diagnostics in the caller's
+`DvzDiagnosticReport`. `dvz_figure_emit_ex()` still treats panel graph-emission failure as fatal,
+but only falls back to the generic "scene FramePlan graph emission failed" report entry when no
+specific panel diagnostic was recorded.
 
-Impact: runtime execution is now guarded against incomplete graph-backed render roles, but users and
-tests may still need log capture rather than the diagnostic report to identify which graph builder
-failed.
+Status:
 
-Recommendation:
-
-1. Keep the shared missing-graph-pass preflight as a required invariant for all contract validation.
-2. Thread graph-builder-specific diagnostic messages into the emit report so callers do not need to
-   inspect logs to identify the failing technique.
-3. Add targeted graph-builder failure tests when a deterministic non-OOM failure trigger exists.
+1. The shared missing-graph-pass preflight remains required for all contract validation.
+2. Graph-builder-specific and graph-read-add failures are threaded into the emit report.
+3. A deterministic regression test covers the diagnostic path without relying on log capture.
 
 
 ### Resolved: FramePlan render-node pointers can go stale
@@ -1236,10 +1253,10 @@ in this pass, using this attachment/resource/pipeline state" belongs in the reso
 
 1. Done: replace cached `DvzFramePlanNode*` values in scene emission with node indices or stable
    ids.
-2. Make graph-emission failure fatal to FramePlan emission or recorded in diagnostics.
-3. Make contract validation report missing graph passes for all graph-backed render roles.
-4. Reject mixed WBOIT plus depth-peel panels until a total composition order is specified.
-5. Split sampled-depth from depth-attachment semantics in the contract.
+2. Done: make graph-emission failure fatal to FramePlan emission and recorded in diagnostics.
+3. Done: make contract validation report missing graph passes for all graph-backed render roles.
+4. Done: reject mixed WBOIT plus depth-peel panels until a total composition order is specified.
+5. Done: split sampled-depth from depth-attachment semantics in the contract.
 6. Done: add checked pipeline-key append helpers and fail on truncation.
 7. Done: add DRP2 semantic validation for color-vs-depth attachment format classes.
 
@@ -1391,8 +1408,7 @@ The implementation audit originally identified concrete robustness risks beyond 
 render-node pointers across FramePlan reallocation, graph-emission failures that only log, skipped
 missing graph passes during contract validation, MSAA sample-count drift after validation,
 pipeline-key truncation, and missing DRP2 format-class checks. The implementation progress log above
-now records completed hardening slices for each of these risks except the remaining diagnostic
-precision work for graph-builder-specific failures.
+now records completed hardening slices for each of these risks.
 
 The testing audit found that shape coverage is relatively strong, but offscreen visual correctness is
 not yet strong enough. Existing WBOIT and depth-peel runtime tests mostly check nonblank pixels, while

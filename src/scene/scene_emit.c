@@ -15,6 +15,7 @@
 /*************************************************************************************************/
 
 #include <stdint.h>
+#include <stdarg.h>
 #include <string.h>
 
 #include <vulkan/vulkan_core.h>
@@ -38,6 +39,29 @@
 /*************************************************************************************************/
 /*  Helpers                                                                                      */
 /*************************************************************************************************/
+
+/**
+ * Report a panel graph-emission failure to logs and the optional diagnostic report.
+ *
+ * @param report optional diagnostic report
+ * @param fmt printf-style diagnostic format
+ */
+static void _scene_emit_graph_report(DvzDiagnosticReport* report, const char* fmt, ...)
+{
+    ANN(fmt);
+
+    char message[DVZ_SCENE_DIAGNOSTIC_SIZE] = {0};
+    va_list args;
+    va_start(args, fmt);
+    int written = dvz_vsnprintf(message, sizeof(message), fmt, args);
+    va_end(args);
+    if (written < 0)
+        return;
+
+    log_error("%s", message);
+    if (report != NULL)
+        (void)dvz_diagnostic_report_add(report, message);
+}
 
 /**
  * Return the typed FramePlan role for a visual attribute name.
@@ -1905,9 +1929,12 @@ static bool _scene_append_visual_to_render_pass(
  * @param panel_index the panel index within the figure
  * @param plan the destination frame plan
  * @param figure_id the stable figure identifier
+ * @param report optional diagnostic report
+ * @return whether the panel render graph was emitted
  */
-bool _scene_emit_panel_render(
-    DvzFigure* figure, uint32_t panel_index, DvzFramePlan* plan, const char* figure_id)
+bool _scene_emit_panel_render_ex(
+    DvzFigure* figure, uint32_t panel_index, DvzFramePlan* plan, const char* figure_id,
+    DvzDiagnosticReport* report)
 {
     ANN(figure);
     ANN(plan);
@@ -2267,7 +2294,8 @@ bool _scene_emit_panel_render(
     if (scene_occlusion_node != invalid_node &&
         !_scene_technique_emit_scene_occlusion_frame_graph(plan, panel_id))
     {
-        log_error("failed to emit scene occlusion FramePlan graph for panel %s", panel_id);
+        _scene_emit_graph_report(
+            report, "failed to emit scene occlusion FramePlan graph for panel %s", panel_id);
         graph_ok = false;
     }
 
@@ -2276,7 +2304,8 @@ bool _scene_emit_panel_render(
         if (volume_occlusion_node != invalid_node &&
             !_scene_technique_emit_volume_occlusion_frame_graph(plan, panel_id))
         {
-            log_error("failed to emit volume occlusion FramePlan graph for panel %s", panel_id);
+            _scene_emit_graph_report(
+                report, "failed to emit volume occlusion FramePlan graph for panel %s", panel_id);
             graph_ok = false;
         }
         uint32_t resolve_node = invalid_node;
@@ -2286,13 +2315,15 @@ bool _scene_emit_panel_render(
         if (gbuffer_required && gbuffer_node != invalid_node &&
             !_scene_technique_emit_gbuffer_frame_graph(plan, panel_id, &gbuffer))
         {
-            log_error("failed to emit G-buffer FramePlan graph for panel %s", panel_id);
+            _scene_emit_graph_report(
+                report, "failed to emit G-buffer FramePlan graph for panel %s", panel_id);
             graph_ok = false;
         }
         if (!_scene_technique_emit_wboit_frame_graph(
                 plan, panel_id, opaque_needs_depth, transparent_needs_depth))
         {
-            log_error("failed to emit WBOIT FramePlan graph for panel %s", panel_id);
+            _scene_emit_graph_report(
+                report, "failed to emit WBOIT FramePlan graph for panel %s", panel_id);
             graph_ok = false;
         }
         if (blended_count > 0 &&
@@ -2301,7 +2332,8 @@ bool _scene_emit_panel_render(
                 opaque_needs_depth || transparent_needs_depth, blended_count, blended_needs_depth,
                 blended_writes_depth))
         {
-            log_error("failed to emit blended FramePlan graph for panel %s", panel_id);
+            _scene_emit_graph_report(
+                report, "failed to emit blended FramePlan graph for panel %s", panel_id);
             graph_ok = false;
         }
     }
@@ -2310,19 +2342,22 @@ bool _scene_emit_panel_render(
         if (volume_occlusion_node != invalid_node &&
             !_scene_technique_emit_volume_occlusion_frame_graph(plan, panel_id))
         {
-            log_error("failed to emit volume occlusion FramePlan graph for panel %s", panel_id);
+            _scene_emit_graph_report(
+                report, "failed to emit volume occlusion FramePlan graph for panel %s", panel_id);
             graph_ok = false;
         }
         if (gbuffer_required && gbuffer_node != invalid_node &&
             !_scene_technique_emit_gbuffer_frame_graph(plan, panel_id, &gbuffer))
         {
-            log_error("failed to emit G-buffer FramePlan graph for panel %s", panel_id);
+            _scene_emit_graph_report(
+                report, "failed to emit G-buffer FramePlan graph for panel %s", panel_id);
             graph_ok = false;
         }
         if (!_scene_technique_emit_depth_peel_frame_graph(
                 plan, panel_id, opaque_needs_depth, transparent_needs_depth))
         {
-            log_error("failed to emit depth-peeling FramePlan graph for panel %s", panel_id);
+            _scene_emit_graph_report(
+                report, "failed to emit depth-peeling FramePlan graph for panel %s", panel_id);
             graph_ok = false;
         }
     }
@@ -2331,13 +2366,15 @@ bool _scene_emit_panel_render(
         if (volume_occlusion_node != invalid_node &&
             !_scene_technique_emit_volume_occlusion_frame_graph(plan, panel_id))
         {
-            log_error("failed to emit volume occlusion FramePlan graph for panel %s", panel_id);
+            _scene_emit_graph_report(
+                report, "failed to emit volume occlusion FramePlan graph for panel %s", panel_id);
             graph_ok = false;
         }
         if (gbuffer_required && gbuffer_node != invalid_node &&
             !_scene_technique_emit_gbuffer_frame_graph(plan, panel_id, &gbuffer))
         {
-            log_error("failed to emit G-buffer FramePlan graph for panel %s", panel_id);
+            _scene_emit_graph_report(
+                report, "failed to emit G-buffer FramePlan graph for panel %s", panel_id);
             graph_ok = false;
         }
         bool blended_depth_producer = opaque_needs_depth || transparent_needs_depth;
@@ -2345,7 +2382,8 @@ bool _scene_emit_panel_render(
                 plan, panel_id, true, blended_depth_producer, blended_depth_producer,
                 blended_count, blended_needs_depth, blended_writes_depth))
         {
-            log_error("failed to emit blended FramePlan graph for panel %s", panel_id);
+            _scene_emit_graph_report(
+                report, "failed to emit blended FramePlan graph for panel %s", panel_id);
             graph_ok = false;
         }
     }
@@ -2357,13 +2395,15 @@ bool _scene_emit_panel_render(
         if (volume_occlusion_node != invalid_node &&
             !_scene_technique_emit_volume_occlusion_frame_graph(plan, panel_id))
         {
-            log_error("failed to emit volume occlusion FramePlan graph for panel %s", panel_id);
+            _scene_emit_graph_report(
+                report, "failed to emit volume occlusion FramePlan graph for panel %s", panel_id);
             graph_ok = false;
         }
         if (gbuffer_required && gbuffer_node != invalid_node &&
             !_scene_technique_emit_gbuffer_frame_graph(plan, panel_id, &gbuffer))
         {
-            log_error("failed to emit G-buffer FramePlan graph for panel %s", panel_id);
+            _scene_emit_graph_report(
+                report, "failed to emit G-buffer FramePlan graph for panel %s", panel_id);
             graph_ok = false;
         }
         if (edl_enabled && edl_has_depth_producer)
@@ -2387,7 +2427,8 @@ bool _scene_emit_panel_render(
                 &panel_apply_mvp, &panel_viewport, &edl_node) ||
                 !_scene_technique_emit_edl_frame_graph(plan, panel_id))
             {
-                log_error("failed to emit EDL FramePlan graph for panel %s", panel_id);
+                _scene_emit_graph_report(
+                    report, "failed to emit EDL FramePlan graph for panel %s", panel_id);
                 graph_ok = false;
             }
         }
@@ -2397,7 +2438,8 @@ bool _scene_emit_panel_render(
                  !_scene_technique_emit_opaque_frame_graph(
                      plan, panel_id, opaque_needs_depth, msaa_state))
         {
-            log_error("failed to emit opaque FramePlan graph for panel %s", panel_id);
+            _scene_emit_graph_report(
+                report, "failed to emit opaque FramePlan graph for panel %s", panel_id);
             graph_ok = false;
         }
     }
@@ -2439,21 +2481,41 @@ bool _scene_emit_panel_render(
             ssao_composite_node == invalid_node ||
             !_scene_technique_emit_ssao_frame_graph(plan, panel_id, &gbuffer, ssao_state))
         {
-            log_error("failed to emit SSAO FramePlan graph for panel %s", panel_id);
+            _scene_emit_graph_report(
+                report, "failed to emit SSAO FramePlan graph for panel %s", panel_id);
             graph_ok = false;
         }
     }
     if (volume_occlusion_node != invalid_node &&
         !_scene_add_volume_occlusion_reads(plan, panel_id))
     {
-        log_error("failed to add volume occlusion FramePlan reads for panel %s", panel_id);
+        _scene_emit_graph_report(
+            report, "failed to add volume occlusion FramePlan reads for panel %s", panel_id);
         graph_ok = false;
     }
     if (scene_occlusion_node != invalid_node &&
         !_scene_add_scene_occlusion_reads(plan, panel_id))
     {
-        log_error("failed to add scene occlusion FramePlan reads for panel %s", panel_id);
+        _scene_emit_graph_report(
+            report, "failed to add scene occlusion FramePlan reads for panel %s", panel_id);
         graph_ok = false;
     }
     return graph_ok;
+}
+
+
+
+/**
+ * Emit one panel render node into a frame plan.
+ *
+ * @param figure the parent figure
+ * @param panel_index the panel index within the figure
+ * @param plan the destination frame plan
+ * @param figure_id the stable figure identifier
+ * @return whether the panel render graph was emitted
+ */
+bool _scene_emit_panel_render(
+    DvzFigure* figure, uint32_t panel_index, DvzFramePlan* plan, const char* figure_id)
+{
+    return _scene_emit_panel_render_ex(figure, panel_index, plan, figure_id, NULL);
 }

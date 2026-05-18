@@ -6932,6 +6932,90 @@ int test_scene_frame_plan_missing_graph_pass_fails_contract(TstSuite* suite, Tst
 
 
 /**
+ * Verify panel graph-emission failures are threaded into diagnostics.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_panel_graph_failure_reports_specific_diagnostic(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    AT(scene != NULL);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    AT(figure != NULL);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    AT(panel != NULL);
+
+    DvzSampledField* field = dvz_sampled_field(
+        scene, &(DvzSampledFieldDesc){
+                   .dim = DVZ_FIELD_DIM_3D,
+                   .format = DVZ_FIELD_FORMAT_R8_UNORM,
+                   .semantic = DVZ_FIELD_SEMANTIC_SCALAR,
+                   .width = 2,
+                   .height = 2,
+                   .depth = 2,
+               });
+    ANN(field);
+    const uint8_t voxels[8] = {255, 255, 255, 255, 255, 255, 255, 255};
+    AT(dvz_sampled_field_set_data(
+        field, &(DvzFieldDataView){.data = voxels, .bytes_per_row = 2, .rows_per_image = 2}));
+
+    DvzVisual* volume = dvz_volume(scene, 0);
+    DvzVisual* slice = dvz_volume(scene, 0);
+    AT(volume != NULL);
+    AT(slice != NULL);
+    AT(dvz_visual_set_field(volume, "field", field));
+    AT(dvz_visual_set_field(slice, "field", field));
+    AT(dvz_volume_set_render_mode(volume, DVZ_VOLUME_RENDER_MIP) == 0);
+    AT(dvz_volume_set_render_mode(slice, DVZ_VOLUME_RENDER_SLICE) == 0);
+    AT(dvz_visual_set_volume_occluded(slice, true) == 0);
+    AT(dvz_panel_add_visual(panel, volume, NULL) == 0);
+    AT(dvz_panel_add_visual(panel, slice, NULL) == 0);
+    AT(dvz_panel_set_volume_occluder(
+           panel, volume,
+           &(DvzVolumeOcclusionDesc){
+               .enabled = true,
+               .alpha_threshold = 0.01f,
+               .fade_distance = 0.04f,
+               .occluded_alpha = 0.2f,
+           }) == 0);
+
+    DvzFramePlan* plan = dvz_frame_plan("figure_0", 0);
+    ANN(plan);
+    DvzFrameGraphPass saturated = {0};
+    dvz_strlcpy(saturated.id, "figure_0_p0.synthetic_full_reads", sizeof(saturated.id));
+    dvz_strlcpy(saturated.panel_id, "figure_0_p0", sizeof(saturated.panel_id));
+    dvz_strlcpy(saturated.work_label, "opaque", sizeof(saturated.work_label));
+    saturated.kind = DVZ_FRAME_GRAPH_PASS_COMPUTE;
+    saturated.read_count = DVZ_FRAME_PLAN_MAX_GRAPH_ACCESSES;
+    for (uint32_t i = 0; i < DVZ_FRAME_PLAN_MAX_GRAPH_ACCESSES; i++)
+    {
+        dvz_snprintf(
+            saturated.reads[i].resource_id, sizeof(saturated.reads[i].resource_id),
+            "synthetic.read.%u", i);
+        saturated.reads[i].usage = DVZ_FRAME_GRAPH_ACCESS_SAMPLED;
+    }
+    AT(dvz_frame_plan_graph_pass(plan, &saturated));
+
+    DvzDiagnosticReport report = {0};
+    dvz_diagnostic_report_init(&report);
+    AT(!_scene_emit_panel_render_ex(figure, 0, plan, "figure_0", &report));
+    AT(dvz_diagnostic_report_count(&report) == 1);
+    const char* message = dvz_diagnostic_report_get(&report, 0);
+    ANN(message);
+    AT(strcmp(message, "failed to add volume occlusion FramePlan reads for panel figure_0_p0") == 0);
+
+    dvz_frame_plan_destroy(plan);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+/**
  * Verify eligible mesh visuals lower an internal G-buffer graph pass to DRP2.
  *
  * @param suite the active test suite
@@ -11012,6 +11096,7 @@ int test_scene_graph(TstSuite* suite)
     TEST_SIMPLE(test_scene_role_work_label_mapping_complete);
     TEST_SIMPLE(test_scene_render_contract_validation_errors);
     TEST_SIMPLE(test_scene_frame_plan_missing_graph_pass_fails_contract);
+    TEST_SIMPLE(test_scene_panel_graph_failure_reports_specific_diagnostic);
     TEST_SIMPLE(test_scene_gbuffer_runtime_lowering);
     TEST_SIMPLE(test_scene_frame_plan_node_reallocation_safe);
     TEST_SIMPLE(test_scene_msaa_runtime_lowering);

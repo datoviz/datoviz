@@ -1118,11 +1118,13 @@ DvzDrp2CommandStream* dvz_figure_emit_ex(
     _scene_emit_visual_uploads(figure, plan);
 
     bool panels_ok = true;
+    uint32_t graph_report_start = dvz_diagnostic_report_count(report);
     for (uint32_t pi = 0; pi < figure->panel_count; pi++)
-        panels_ok = _scene_emit_panel_render(figure, pi, plan, figure_id) && panels_ok;
+        panels_ok = _scene_emit_panel_render_ex(figure, pi, plan, figure_id, report) && panels_ok;
     if (!panels_ok)
     {
-        (void)dvz_diagnostic_report_add(report, "scene FramePlan graph emission failed");
+        if (dvz_diagnostic_report_count(report) == graph_report_start)
+            (void)dvz_diagnostic_report_add(report, "scene FramePlan graph emission failed");
         dvz_frame_plan_destroy(plan);
         return NULL;
     }
