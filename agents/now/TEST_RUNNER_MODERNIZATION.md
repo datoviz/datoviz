@@ -32,10 +32,17 @@ been migrated to the new `TstContext*` / `const TstCase*` signature, CPU modules
 groups, and independent CPU runner targets now exist for `common`, `ds`, `fileio`, `math`,
 `thread`, and aggregate `core`.
 
-Remaining follow-up from the first slice: some non-CPU registrations still do availability probes
-while registering tests, so unified-runner listing or CPU filters can print Vulkan/GLFW diagnostics
-before selection. Move those probes into skip predicates or scheduled execution before treating
-listing/filtering as completely side-effect-free.
+Follow-up update on `2026-05-18`: the first registration-time Vulkan/vklite probes have been moved
+to runner-time skip predicates. `vk` and `vklite` cases now register unconditionally with
+`TST_RES_GPU | TST_RES_VULKAN` and process isolation metadata, so `--list`, `--list-groups`, and
+CPU-only filters no longer initialize Vulkan. When the Vulkan runtime is unavailable, selected
+Vulkan/vklite cases are reported as `SKIP` with a JSON `skip_reason` instead of being hidden behind
+placeholder pass cases.
+
+Remaining follow-up: many graphics, scene, canvas, GUI, and video tests still contain in-test
+ad-hoc skips that log a warning and return success. They should be migrated gradually to explicit
+skip predicates or a context-level `tst_skip(ctx, reason)` helper so skip counts become accurate
+across the full suite.
 
 Two boundaries should stay clean:
 
