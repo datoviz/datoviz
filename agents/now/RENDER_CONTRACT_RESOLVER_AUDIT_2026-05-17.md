@@ -833,6 +833,27 @@ Validation:
 4. `./build/testing/dvztest_scene test_frame_plan_graph_dependencies_dump`
 
 
+### 2026-05-18: Phase 1 / MSAA resolved sample-count contracts
+
+Completed the MSAA capability-resolution contract slice.
+
+Changes:
+
+1. Pass attachment contracts now record both requested and capability-resolved sample counts.
+2. `dvz_figure_emit_ex()` validates scene contracts with the same capability snapshot later used
+   for DRP2 emission, so validation observes MSAA lowering before runtime stream creation.
+3. Contract sample-count lowering now matches the runtime policy that clamps attachment resources
+   against the active color/depth sample-count minimum.
+4. Extended `test_scene_msaa_runtime_capability_lowering` to assert the pass contract keeps the
+   requested `16x` sample count while resolving color and depth attachments to `8x`.
+
+Validation:
+
+1. `cmake --build build --target dvztest_scene -j2`
+2. `./build/testing/dvztest_scene test_scene_msaa_runtime_capability_lowering`
+3. `./build/testing/dvztest_scene test_scene_msaa_runtime_lowering`
+
+
 ## Executive Assessment
 
 The direction is correct and worth continuing. The proposal identifies the right failure mode:
@@ -1097,17 +1118,20 @@ graph scheduler only if graph builders need to emit unordered passes or if cross
 needs dependency-derived scheduling.
 
 
-### Medium: MSAA sample count can drift after validation
+### Medium: MSAA sample count drift is contract-visible
 
-Technique graph resources record a requested sample count and the passive contract sees that value.
-Runtime later lowers the sample count based on device capability.
+Technique graph resources still record the requested sample count, but pass attachment contracts now
+also record the capability-resolved sample count. `dvz_figure_emit_ex()` validates those contracts
+with the same capability snapshot that DRP2 emission uses, and the existing diagnostic still reports
+when runtime-visible lowering occurs.
 
-Impact: validation may approve a graph that is not exactly what runtime executes. Silent lowering is
-sometimes desirable, but it should be represented in diagnostics and tests because it changes
-pipeline state and attachments.
+Impact: validation and tests can now distinguish requested graph semantics from the lowered runtime
+sample count. The remaining limitation is that graph resource descriptors themselves are not mutated
+or scheduled from a separate resolved graph object.
 
-Recommendation: resolve sample count before contract validation, or explicitly record a
-`requested_sample_count` and `resolved_sample_count` pair in the contract and diagnostics.
+Recommendation: keep the requested/resolved pair in pass contracts. If more capability-dependent
+state is added, promote this into a dedicated resolved graph contract instead of adding one-off
+fields.
 
 
 ### Medium: pipeline cache keys can silently truncate

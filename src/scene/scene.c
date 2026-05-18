@@ -1129,7 +1129,8 @@ DvzDrp2CommandStream* dvz_figure_emit_ex(
 
     DvzDiagnosticReport contract_report;
     dvz_diagnostic_report_init(&contract_report);
-    bool contracts_ok = _scene_frame_plan_contracts_validate(figure, plan, &contract_report);
+    bool contracts_ok =
+        _scene_frame_plan_contracts_validate_ex(figure, plan, caps, &contract_report);
     if (!contracts_ok)
     {
         for (uint32_t i = 0; i < dvz_diagnostic_report_count(&contract_report); i++)

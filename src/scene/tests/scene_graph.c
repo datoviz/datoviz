@@ -7425,14 +7425,40 @@ int test_scene_msaa_runtime_capability_lowering(TstSuite* suite, TstItem* item)
     AT(depth->sample_count == 16);
 
     DvzCapabilitySnapshot caps = {0};
+    dvz_capability_snapshot_default(&caps);
+    caps.max_color_sample_count = 16;
+    caps.max_depth_sample_count = 8;
+
+    const DvzFramePlanNode* render_node = dvz_frame_plan_node_get(plan, 0);
+    const DvzFrameGraphPass* graph_pass = dvz_frame_plan_graph_pass_get(plan, 0);
+    ANN(render_node);
+    ANN(graph_pass);
+    DvzScenePassContract contract = {0};
+    AT(_scene_pass_contract_from_render_ex(plan, panel, render_node, graph_pass, &caps, &contract));
+    const DvzSceneAttachmentUse* contract_msaa_color = NULL;
+    const DvzSceneAttachmentUse* contract_depth = NULL;
+    for (uint32_t i = 0; i < contract.attachment_count; i++)
+    {
+        const DvzSceneAttachmentUse* use = &contract.attachments[i];
+        if (strcmp(use->resource_id, "figure_0_p0.msaa.color") == 0)
+            contract_msaa_color = use;
+        else if (strcmp(use->resource_id, "figure_0_p0.depth") == 0)
+            contract_depth = use;
+    }
+    ANN(contract_msaa_color);
+    ANN(contract_depth);
+    AT(contract_msaa_color->requested_sample_count == 16);
+    AT(contract_msaa_color->resolved_sample_count == 8);
+    AT(contract_msaa_color->sample_count == 8);
+    AT(contract_depth->requested_sample_count == 16);
+    AT(contract_depth->resolved_sample_count == 8);
+    AT(contract_depth->sample_count == 8);
+
     DvzDiagnosticReport report = {0};
     DvzFramePlanEmitConfig cfg = dvz_frame_plan_emit_config();
     cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
     cfg.target_width = 64;
     cfg.target_height = 64;
-    dvz_capability_snapshot_default(&caps);
-    caps.max_color_sample_count = 16;
-    caps.max_depth_sample_count = 8;
     dvz_diagnostic_report_init(&report);
 
     DvzDrp2CommandStream* stream = dvz_figure_emit_ex(figure, &caps, &report, &cfg);

@@ -382,13 +382,91 @@ static const DvzFrameGraphResource* _contract_resource_by_id(
 
 
 /**
+ * Clamp a requested sample count to a supported power-of-two sample count.
+ *
+ * @param sample_count requested sample count
+ * @param max_sample_count maximum supported sample count
+ * @return supported sample count
+ */
+static uint32_t _contract_lowered_sample_count(uint32_t sample_count, uint32_t max_sample_count)
+{
+    if (sample_count <= 1 || max_sample_count <= 1)
+        return 1;
+    if (sample_count >= 16 && max_sample_count >= 16)
+        return 16;
+    if (sample_count >= 8 && max_sample_count >= 8)
+        return 8;
+    if (sample_count >= 4 && max_sample_count >= 4)
+        return 4;
+    if (sample_count >= 2 && max_sample_count >= 2)
+        return 2;
+    return 1;
+}
+
+
+
+/**
+ * Return the maximum supported sample count for a graph resource under active capabilities.
+ *
+ * @param resource the graph resource descriptor
+ * @param caps the active capability snapshot
+ * @return maximum supported sample count for the resource
+ */
+static uint32_t _contract_resource_sample_limit(
+    const DvzFrameGraphResource* resource, const DvzCapabilitySnapshot* caps)
+{
+    ANN(resource);
+    if (caps == NULL)
+        return 16;
+
+    uint32_t max_sample_count = 16;
+    const bool color =
+        (resource->usage_flags & DVZ_FRAME_GRAPH_RESOURCE_USAGE_COLOR_ATTACHMENT) != 0;
+    const bool depth =
+        (resource->usage_flags & DVZ_FRAME_GRAPH_RESOURCE_USAGE_DEPTH_ATTACHMENT) != 0;
+    if (color || depth)
+    {
+        uint32_t color_max = caps->max_color_sample_count;
+        uint32_t depth_max = caps->max_depth_sample_count;
+        color_max = color_max != 0 ? color_max : 1;
+        depth_max = depth_max != 0 ? depth_max : 1;
+        max_sample_count = color_max < depth_max ? color_max : depth_max;
+    }
+    return max_sample_count != 0 ? max_sample_count : 1;
+}
+
+
+
+/**
+ * Return a graph resource's capability-resolved sample count.
+ *
+ * @param resource the graph resource descriptor
+ * @param caps the active capability snapshot, or NULL to preserve the requested count
+ * @return resolved sample count
+ */
+static uint32_t _contract_resolved_resource_sample_count(
+    const DvzFrameGraphResource* resource, const DvzCapabilitySnapshot* caps)
+{
+    if (resource == NULL)
+        return 1;
+    uint32_t requested = resource->sample_count != 0 ? resource->sample_count : 1;
+    if (caps == NULL)
+        return requested;
+    return _contract_lowered_sample_count(
+        requested, _contract_resource_sample_limit(resource, caps));
+}
+
+
+
+/**
  * Copy graph resource facts into an attachment use.
  *
  * @param plan the FramePlan
+ * @param caps the active capability snapshot, or NULL to preserve requested sample counts
  * @param use the attachment use
  */
 static void _contract_apply_resource_facts(
-    const DvzFramePlan* plan, DvzSceneAttachmentUse* use)
+    const DvzFramePlan* plan, const DvzCapabilitySnapshot* caps, DvzSceneAttachmentUse* use)
 {
     ANN(plan);
     ANN(use);
@@ -396,7 +474,9 @@ static void _contract_apply_resource_facts(
     if (resource == NULL)
         return;
     use->format = resource->format;
-    use->sample_count = resource->sample_count == 0 ? 1 : resource->sample_count;
+    use->requested_sample_count = resource->sample_count == 0 ? 1 : resource->sample_count;
+    use->resolved_sample_count = _contract_resolved_resource_sample_count(resource, caps);
+    use->sample_count = use->resolved_sample_count;
 }
 
 
@@ -407,11 +487,12 @@ static void _contract_apply_resource_facts(
  * @param plan the FramePlan
  * @param contract the pass contract
  * @param attachment the graph attachment
+ * @param caps the active capability snapshot, or NULL to preserve requested sample counts
  * @return whether the attachment was appended
  */
 static bool _contract_append_color_attachment(
     const DvzFramePlan* plan, DvzScenePassContract* contract,
-    const DvzFrameGraphAttachment* attachment)
+    const DvzFrameGraphAttachment* attachment, const DvzCapabilitySnapshot* caps)
 {
     ANN(plan);
     ANN(contract);
@@ -428,7 +509,7 @@ static bool _contract_append_color_attachment(
     use->clear = attachment->load_op == DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_CLEAR;
     use->preserve = attachment->load_op == DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_LOAD ||
                     attachment->store_op == DVZ_FRAME_GRAPH_ATTACHMENT_STORE_STORE;
-    _contract_apply_resource_facts(plan, use);
+    _contract_apply_resource_facts(plan, caps, use);
     contract->color_attachment_count++;
     return true;
 }
@@ -441,11 +522,12 @@ static bool _contract_append_color_attachment(
  * @param plan the FramePlan
  * @param contract the pass contract
  * @param attachment the graph attachment
+ * @param caps the active capability snapshot, or NULL to preserve requested sample counts
  * @return whether the attachment was appended
  */
 static bool _contract_append_depth_attachment(
     const DvzFramePlan* plan, DvzScenePassContract* contract,
-    const DvzFrameGraphAttachment* attachment)
+    const DvzFrameGraphAttachment* attachment, const DvzCapabilitySnapshot* caps)
 {
     ANN(plan);
     ANN(contract);
@@ -462,7 +544,7 @@ static bool _contract_append_depth_attachment(
     use->clear = attachment->load_op == DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_CLEAR;
     use->preserve = attachment->load_op == DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_LOAD ||
                     attachment->store_op == DVZ_FRAME_GRAPH_ATTACHMENT_STORE_STORE;
-    _contract_apply_resource_facts(plan, use);
+    _contract_apply_resource_facts(plan, caps, use);
     contract->has_depth_attachment = true;
     return true;
 }
@@ -476,11 +558,12 @@ static bool _contract_append_depth_attachment(
  * @param contract the pass contract
  * @param consumer_pass_id graph pass id that owns the read
  * @param read the graph read edge
+ * @param caps the active capability snapshot, or NULL to preserve requested sample counts
  * @return whether the read was appended
  */
 static bool _contract_append_read(
     const DvzFramePlan* plan, DvzScenePassContract* contract, const char* consumer_pass_id,
-    const DvzFrameGraphAccess* read)
+    const DvzFrameGraphAccess* read, const DvzCapabilitySnapshot* caps)
 {
     ANN(plan);
     ANN(contract);
@@ -491,7 +574,7 @@ static bool _contract_append_read(
     if (use == NULL)
         return false;
     use->read = true;
-    _contract_apply_resource_facts(plan, use);
+    _contract_apply_resource_facts(plan, caps, use);
     _contract_apply_read_dependency(plan, consumer_pass_id, use);
     contract->sampled_read_count++;
     if (strstr(read->resource_id, ".depth") != NULL)
@@ -2176,12 +2259,14 @@ bool _scene_draw_contract_from_visual(
  * @param panel the panel that owns the render pass
  * @param render the FramePlan render node
  * @param graph_pass the matching graph pass, or NULL when none was emitted
+ * @param caps the active capability snapshot, or NULL to preserve requested sample counts
  * @param out the output pass contract
  * @return whether the pass contract was resolved
  */
-bool _scene_pass_contract_from_render(
+bool _scene_pass_contract_from_render_ex(
     const DvzFramePlan* plan, const DvzPanel* panel, const DvzFramePlanNode* render,
-    const DvzFrameGraphPass* graph_pass, DvzScenePassContract* out)
+    const DvzFrameGraphPass* graph_pass, const DvzCapabilitySnapshot* caps,
+    DvzScenePassContract* out)
 {
     ANN(plan);
     ANN(panel);
@@ -2239,19 +2324,38 @@ bool _scene_pass_contract_from_render(
     {
         for (uint32_t i = 0; i < graph_pass->color_attachment_count; i++)
         {
-            if (!_contract_append_color_attachment(plan, out, &graph_pass->color_attachments[i]))
+            if (!_contract_append_color_attachment(
+                    plan, out, &graph_pass->color_attachments[i], caps))
                 return false;
         }
         if (graph_pass->has_depth_attachment &&
-            !_contract_append_depth_attachment(plan, out, &graph_pass->depth_attachment))
+            !_contract_append_depth_attachment(plan, out, &graph_pass->depth_attachment, caps))
             return false;
         for (uint32_t i = 0; i < graph_pass->read_count; i++)
         {
-            if (!_contract_append_read(plan, out, graph_pass->id, &graph_pass->reads[i]))
+            if (!_contract_append_read(plan, out, graph_pass->id, &graph_pass->reads[i], caps))
                 return false;
         }
     }
     return true;
+}
+
+
+
+/**
+ * Resolve one FramePlan render pass into a passive pass contract.
+ *
+ * @param panel the panel that owns the render pass
+ * @param render the FramePlan render node
+ * @param graph_pass the matching graph pass, or NULL when none was emitted
+ * @param out the output pass contract
+ * @return whether the pass contract was resolved
+ */
+bool _scene_pass_contract_from_render(
+    const DvzFramePlan* plan, const DvzPanel* panel, const DvzFramePlanNode* render,
+    const DvzFrameGraphPass* graph_pass, DvzScenePassContract* out)
+{
+    return _scene_pass_contract_from_render_ex(plan, panel, render, graph_pass, NULL, out);
 }
 
 
@@ -2372,11 +2476,13 @@ bool _scene_pass_contract_validate(
  *
  * @param figure the figure that produced the FramePlan
  * @param plan the completed FramePlan
+ * @param caps the active capability snapshot, or NULL to preserve requested sample counts
  * @param report optional diagnostic report
  * @return whether all graph-backed render contracts are valid
  */
-bool _scene_frame_plan_contracts_validate(
-    const DvzFigure* figure, const DvzFramePlan* plan, DvzDiagnosticReport* report)
+bool _scene_frame_plan_contracts_validate_ex(
+    const DvzFigure* figure, const DvzFramePlan* plan, const DvzCapabilitySnapshot* caps,
+    DvzDiagnosticReport* report)
 {
     ANN(figure);
     ANN(plan);
@@ -2400,7 +2506,7 @@ bool _scene_frame_plan_contracts_validate(
         }
 
         DvzScenePassContract contract = {0};
-        if (!_scene_pass_contract_from_render(plan, panel, render, graph_pass, &contract))
+        if (!_scene_pass_contract_from_render_ex(plan, panel, render, graph_pass, caps, &contract))
         {
             _contract_report(report, "render contract resolution failed");
             ok = false;
@@ -2410,6 +2516,24 @@ bool _scene_frame_plan_contracts_validate(
             ok = false;
     }
     return ok;
+}
+
+
+
+/**
+ * Validate all graph-backed render contracts in one FramePlan.
+ *
+ * @param figure the figure that produced the FramePlan
+ * @param plan the completed FramePlan
+ * @param report optional diagnostic report
+ * @return whether all graph-backed render contracts are valid
+ */
+bool _scene_frame_plan_contracts_validate(
+    const DvzFigure* figure, const DvzFramePlan* plan, DvzDiagnosticReport* report)
+{
+    const DvzCapabilitySnapshot* caps =
+        figure != NULL && figure->scene != NULL ? &figure->scene->caps : NULL;
+    return _scene_frame_plan_contracts_validate_ex(figure, plan, caps, report);
 }
 
 

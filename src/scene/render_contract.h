@@ -108,6 +108,8 @@ typedef struct DvzSceneAttachmentUse
     DvzSceneAttachmentRole role;
     uint32_t format;
     uint32_t sample_count;
+    uint32_t requested_sample_count;
+    uint32_t resolved_sample_count;
     DvzFrameGraphAttachmentLoadOp load_op;
     DvzFrameGraphAttachmentStoreOp store_op;
     DvzFrameGraphAttachmentAccess access;
@@ -246,11 +248,20 @@ bool _scene_pass_contract_from_render(
     const DvzFramePlan* plan, const DvzPanel* panel, const DvzFramePlanNode* render,
     const DvzFrameGraphPass* graph_pass, DvzScenePassContract* out);
 
+bool _scene_pass_contract_from_render_ex(
+    const DvzFramePlan* plan, const DvzPanel* panel, const DvzFramePlanNode* render,
+    const DvzFrameGraphPass* graph_pass, const DvzCapabilitySnapshot* caps,
+    DvzScenePassContract* out);
+
 bool _scene_pass_contract_validate(
     const DvzScenePassContract* contract, DvzDiagnosticReport* report);
 
 bool _scene_frame_plan_contracts_validate(
     const DvzFigure* figure, const DvzFramePlan* plan, DvzDiagnosticReport* report);
+
+bool _scene_frame_plan_contracts_validate_ex(
+    const DvzFigure* figure, const DvzFramePlan* plan, const DvzCapabilitySnapshot* caps,
+    DvzDiagnosticReport* report);
 
 bool _scene_frame_plan_drp2_contracts_validate(
     const DvzFramePlan* plan, const DvzDrp2CommandStream* stream, DvzDiagnosticReport* report);
