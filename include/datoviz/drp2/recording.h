@@ -43,6 +43,7 @@ struct DvzDrp2RecordingInfo
     uint32_t height;
     double duration_s;
     double t_present;
+    double fps_cap;
     const char* backend_hint;
 };
 

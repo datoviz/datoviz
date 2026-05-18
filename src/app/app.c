@@ -76,6 +76,9 @@
 #define DVZ_TRACE_COLOR_BOLD  "\x1b[1m"
 #define DVZ_APP_TRACE_LABEL_PRINT_SIZE ((int)(DVZ_DRP2_LABEL_SIZE - 1))
 
+/* Keep developer DVZR recordings compact by default. Set DVZ_DRP2_RECORD_FPS<=0 to disable. */
+#define DVZ_APP_DEFAULT_RECORD_FPS 30.0
+
 
 
 /*************************************************************************************************/
@@ -115,7 +118,10 @@ struct DvzAppWindow
     uint32_t runtime_failure_repeat_count;
     DvzDrp2Recorder* recorder;
     DvzClock recording_clock;
+    double recording_fps;
+    double recording_last_t_present;
     bool recording_target_created;
+    bool recording_has_last_frame;
     DvzDrp2Recording* replay_recording;
     uint64_t replay_target_id;
     uint32_t replay_frame_index;
@@ -231,6 +237,29 @@ static bool _app_env_flag_enabled(const char* name)
         return false;
     }
     return true;
+}
+
+
+
+/**
+ * Return the app DVZR recording FPS cap from the environment.
+ *
+ * @return requested FPS cap, or 0/negative to disable frame skipping
+ */
+static double _app_record_fps_from_env(void)
+{
+    const char* env = getenv("DVZ_DRP2_RECORD_FPS");
+    if (env == NULL || env[0] == '\0')
+        return DVZ_APP_DEFAULT_RECORD_FPS;
+
+    char* end = NULL;
+    double fps = strtod(env, &end);
+    if (end == env || fps < 0)
+    {
+        log_warn("ignoring DVZ_DRP2_RECORD_FPS='%s' (expected non-negative FPS)", env);
+        return DVZ_APP_DEFAULT_RECORD_FPS;
+    }
+    return fps;
 }
 
 
@@ -1536,6 +1565,13 @@ static void _app_record_stream(
         return;
 
     double t_present = dvz_clock_get(&win->recording_clock);
+    if (
+        win->recording_fps > 0 && win->recording_has_last_frame &&
+        t_present - win->recording_last_t_present < 1.0 / win->recording_fps)
+    {
+        return;
+    }
+
     if (!win->recording_target_created)
     {
         DvzDrp2CommandStream* setup = dvz_drp2_stream();
@@ -1571,6 +1607,11 @@ static void _app_record_stream(
 
     if (!dvz_drp2_recorder_write_stream(win->recorder, t_present, recorded))
         log_error("_app_draw failed to append DRP2 stream to DVZR recording");
+    else
+    {
+        win->recording_last_t_present = t_present;
+        win->recording_has_last_frame = true;
+    }
 }
 
 
@@ -2549,17 +2590,21 @@ int dvz_app_window_record_start(DvzAppWindow* win, const char* path)
     if (win->recorder != NULL)
         return -1;
     DvzDrp2RecordingInfo info = {
-        .width = 0,
-        .height = 0,
+        .width = win->figure != NULL ? win->figure->width : 0,
+        .height = win->figure != NULL ? win->figure->height : 0,
         .duration_s = 0.0,
         .t_present = 0.0,
+        .fps_cap = _app_record_fps_from_env(),
         .backend_hint = "app",
     };
     win->recorder = dvz_drp2_recorder_open(path, &info);
     if (win->recorder == NULL)
         return -1;
     win->recording_clock = dvz_clock();
+    win->recording_fps = info.fps_cap;
+    win->recording_last_t_present = 0.0;
     win->recording_target_created = false;
+    win->recording_has_last_frame = false;
     return 0;
 #else
     return -1;
@@ -2583,6 +2628,7 @@ int dvz_app_window_record_stop(DvzAppWindow* win)
     bool ok = dvz_drp2_recorder_close(win->recorder);
     win->recorder = NULL;
     win->recording_target_created = false;
+    win->recording_has_last_frame = false;
     return ok ? 0 : -1;
 #else
     return -1;
