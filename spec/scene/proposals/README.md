@@ -65,10 +65,11 @@ Use this map when turning proposals into implementation-ready spec changes.
    `../interaction/CONTROLLERS.md`, `../semantics/GEOMETRY_UTILITIES.md`,
    `GEOM_DESIGN.md`, and `../visuals/MESH.md`.
 2. `ANNOTATION_MEASUREMENT_DESIGN.md`, `ANNOTATION_TEXT_SCALE_API.md`,
-   `COLORBAR_COLORMAP_DESIGN.md`, `AXES_DOMAIN_DESIGN.md`, and `TEXT_DESIGN.md` promote into
+   `COLORBAR_COLORMAP_DESIGN.md`, `AXES_DOMAIN_DESIGN.md`, `TEXT_DESIGN.md`, and
+   `SCREEN_SPACE_OVERLAY_LAYOUT.md` promote into
    `../semantics/ANNOTATIONS.md`, `../semantics/SCALES.md`,
    `../semantics/LEGENDS_AND_COLORBARS.md`, `../semantics/AXES.md`, `../semantics/TEXT.md`,
-   and `../api/API_SURFACE.md`.
+   `../pipeline/FRAME_PLAN.md`, and `../api/API_SURFACE.md`.
 3. `MESH_API_DESIGN.md`, `MESH_SHADING_DESIGN.md`, `MATERIAL_LIGHTING_API.md`,
    `PARTICLE_SYSTEM_DESIGN.md`, `SCREEN_SPACE_EFFECTS_DESIGN.md`,
    `TRANSPARENCY_WBOIT_DESIGN.md`, `VOLUME_DESIGN.md`, and
@@ -109,6 +110,7 @@ Text, axes, scales, annotations, and explanatory objects:
 3. [AXES_DOMAIN_DESIGN.md](AXES_DOMAIN_DESIGN.md)
 4. [COLORBAR_COLORMAP_DESIGN.md](COLORBAR_COLORMAP_DESIGN.md)
 5. [TEXT_DESIGN.md](TEXT_DESIGN.md)
+6. [SCREEN_SPACE_OVERLAY_LAYOUT.md](SCREEN_SPACE_OVERLAY_LAYOUT.md)
 
 Visual families, material, lighting, and render modes:
 

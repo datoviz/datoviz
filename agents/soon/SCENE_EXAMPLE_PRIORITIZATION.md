@@ -19,10 +19,13 @@ The first gallery-quality batch should not be 3D-only. The best near-term mix is
 4. Allen/IBL brain volume plus transparent atlas mesh
 5. LiDAR or dense point cloud with EDL
 6. Dense raster, streaming DAQ, or physiology signal workbench
+7. Embedding explorer pair: PD12M image LOD plus Wikipedia semantic atlas
 
-This gives three strong 2D or non-3D examples and three high-impact 3D/volume examples while
-pressuring visuals, controllers, effects, interaction, data updates, and multi-pass runtime
-behavior.
+This keeps the first batch balanced across 2D, 3D, volume, and dashboard workloads while pressuring
+visuals, controllers, effects, interaction, data updates, and multi-pass runtime behavior. The
+embedding pair is a follow-on dashboard showcase track: it is visually and conceptually strong, but
+it depends on rendered text, overlay cards, large-data policies, and preprocessing/cache
+conventions.
 
 The current code is ahead of older gap notes: `dvz_sphere`, `dvz_volume`, EDL, MSAA, SSAO, depth
 peeling-shaped passes, WBOIT, volume occlusion, fly/turntable controllers, and several polished C
@@ -41,6 +44,7 @@ materials, and large-data policies.
 | 4 | Allen/IBL brain volume plus transparent mesh | Domain-specific and visually rich; current examples and data paths already exist. | Volume visual, transparent mesh, WBOIT/depth peel, volume occlusion, arcball, GUI. | Volume slice or MIP with selected atlas mesh overlay and opacity controls; defer region picking and full linked 2D subplot. |
 | 5 | LiDAR or dense point cloud with EDL | High visual payoff and useful pressure on dense point rendering. | Point/pixel visuals, EDL, depth cueing, fly camera, large-buffer upload/update policy. | Combine real or prepared LiDAR with EDL/depth cue and a fly camera; keep LOD as a follow-up. |
 | 6 | Dense raster, streaming DAQ, or physiology workbench | Keeps first batch honest for dense 2D operational views. | Pixel/path visuals, partial updates, ring-buffer behavior, linked x panzoom, overlays, axes/text. | Pick one synthetic-data example and focus on sustained updates plus clear 2D interaction. |
+| 7 | Embedding explorer pair | AI-era showcase pair with one image/thumbnails path and one semantic/text path. | Image LOD, dense points, text labels, picking, selected cards, query/search, preprocessing bundles. | Start with PD12M mean-color image positions and Wikivecs colored points; defer thumbnail LOD and semantic query sidecar. |
 
 
 ## Broader Priority Order
@@ -54,11 +58,13 @@ materials, and large-data policies.
 | 5 | LiDAR / dense point cloud EDL | Medium-high | Large point data, EDL, fly camera, performance. | Good benchmark-style demo. |
 | 6 | Sphere SSAO cloud | Very high | Technique quality, sphere depth/normals, MSAA/SSAO composition. | Beautiful but less domain-specific. |
 | 7 | Dense raster / DAQ / physiology | Medium | 2D streaming, partial updates, linked views, axes. | Important counterweight to 3D demos. |
-| 8 | Toy DICOM / volume clipping | Medium | 3D sampled field, slices, crosshair, window/level, 4-panel layout. | Needs better slice semantics and colorbar/text. |
-| 9 | Large labels segmentation | Medium-low | Integer label textures, random label colors, selection. | CPU RGBA fallback is possible but undersells the goal. |
-| 10 | Earth / terrain / Mars flyover | Medium-low | Textured mesh/sphere, cubemap/skybox, asset cache, camera path. | Great gallery material after material textures land. |
-| 11 | Gray-Scott / Mandelbrot / particles | Low for scene-first | Scene-level compute, custom shaders, ping-pong resources. | Very high eye-candy, but should not be forced through ad hoc DRP-only paths. |
-| 12 | Tractography / tokamak / HEP | Low-medium | Ragged 3D paths, tubes, vector fields, transparency, picking. | Excellent later architecture-pressure demos. |
+| 8 | PD12M image embedding LOD | Medium | Image sprite LOD, large sampled fields, thumbnail packing, panzoom, picking. | Use only PD12M as the public dataset and keep all embedding/reduction work in preprocessing. |
+| 9 | Wikipedia semantic embedding atlas | Medium | Dense points, label LOD, search/query, selected cards, overlay layout. | Use Wikivecs map coordinates first; add N-dimensional vectors and query sidecar later. |
+| 10 | Toy DICOM / volume clipping | Medium | 3D sampled field, slices, crosshair, window/level, 4-panel layout. | Needs better slice semantics and colorbar/text. |
+| 11 | Large labels segmentation | Medium-low | Integer label textures, random label colors, selection. | CPU RGBA fallback is possible but undersells the goal. |
+| 12 | Earth / terrain / Mars flyover | Medium-low | Textured mesh/sphere, cubemap/skybox, asset cache, camera path. | Great gallery material after material textures land. |
+| 13 | Gray-Scott / Mandelbrot / particles | Low for scene-first | Scene-level compute, custom shaders, ping-pong resources. | Very high eye-candy, but should not be forced through ad hoc DRP-only paths. |
+| 14 | Tractography / tokamak / HEP | Low-medium | Ragged 3D paths, tubes, vector fields, transparency, picking. | Excellent later architecture-pressure demos. |
 
 
 ## Capability Matrix

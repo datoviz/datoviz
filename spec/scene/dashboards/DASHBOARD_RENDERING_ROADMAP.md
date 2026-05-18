@@ -3,6 +3,8 @@
 > **Status:** exploratory roadmap for v0.5+.
 > **Scope:** fast retained interactive dashboards built on the Datoviz scene, DRP2, and app stack.
 > **Primary proving ground:** `spec/scene/examples/dashboards/STREAMING_DAQ_VIEWER.md`.
+> **Additional proving grounds:** `spec/scene/examples/dashboards/IMAGE_EMBEDDING_LOD.md` and
+> `spec/scene/examples/dashboards/SEMANTIC_EMBEDDING_ATLAS.md`.
 
 
 ## Summary
@@ -21,7 +23,9 @@ The streaming DAQ viewer is a concrete pressure test, but the underlying problem
 - finance and market data;
 - streaming logs and event timelines;
 - simulation diagnostics;
-- scientific dashboards with many linked panels.
+- scientific dashboards with many linked panels;
+- embedding explorers with large retained point clouds, image thumbnail LOD, semantic labels,
+  search, selection, and metadata cards.
 
 This note collects candidate reusable pieces that could eventually move from examples into Datoviz
 itself. The guiding principle is to prove the abstractions in standalone examples first, then
@@ -513,6 +517,11 @@ UI
 
 Datoviz should make layer ordering and coordinate space explicit enough that overlays remain stable
 through pan, zoom, resize, and high-DPI changes.
+
+The minimal native layout target is tracked in
+[`../proposals/SCREEN_SPACE_OVERLAY_LAYOUT.md`](../proposals/SCREEN_SPACE_OVERLAY_LAYOUT.md). That
+proposal keeps dashboard cards and readouts inside the scene path without requiring HTML/CSS or a
+general GUI framework.
 
 
 ### Stable Object Identity

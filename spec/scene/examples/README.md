@@ -20,6 +20,11 @@ Cross-cutting lessons that come out of several examples can live at this level. 
 volume, slice, and transparent mesh composition is
 [TRANSPARENCY_OCCLUSION.md](TRANSPARENCY_OCCLUSION.md).
 
+Embedding explorer examples share data-model, preprocessing, query, and runtime-boundary guidance in
+[dashboards/EMBEDDING_EXPLORER_COMMON.md](dashboards/EMBEDDING_EXPLORER_COMMON.md). Use that note
+when extending the image and semantic embedding atlas examples so their bundle formats and query
+semantics stay aligned.
+
 Future scientific-visualization directions that extend beyond the current example set are tracked in
 [`../proposals/SCIENTIFIC_VISUALIZATION_ROADMAP.md`](../proposals/SCIENTIFIC_VISUALIZATION_ROADMAP.md).
 That roadmap links graph/network, unstructured-grid, field, trajectory, ensemble, molecular, and
@@ -151,7 +156,11 @@ examples.
 
 Operational or dense-interface examples with multiple coordinated panels.
 
-This includes market, DAQ, DICOM, and image-embedding explorer examples.
+1. [dashboards/IMAGE_EMBEDDING_LOD.md](dashboards/IMAGE_EMBEDDING_LOD.md)
+2. [dashboards/SEMANTIC_EMBEDDING_ATLAS.md](dashboards/SEMANTIC_EMBEDDING_ATLAS.md)
+3. [dashboards/MARKET_MICROSTRUCTURE.md](dashboards/MARKET_MICROSTRUCTURE.md)
+4. [dashboards/STREAMING_DAQ_VIEWER.md](dashboards/STREAMING_DAQ_VIEWER.md)
+5. [dashboards/TOY_DICOM_VIEWER.md](dashboards/TOY_DICOM_VIEWER.md)
 
 
 ## Common Structure

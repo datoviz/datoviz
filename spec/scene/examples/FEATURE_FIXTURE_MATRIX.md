@@ -258,6 +258,17 @@ These rows should remain planned until the corresponding runtime behavior is lan
 | Technique | Selected outline | `fixture_selected_outline.c` | Select one object and render an outline. |
 | Technique | Dual depth peeling | `fixture_dual_depth_peel.c` | Transparent layered geometry after graph-backed path lands. |
 | Technique | Curvature/cavity shading | `fixture_cavity_shading.c` | One lit mesh/sphere with cavity shading. |
+
+
+## Showcase Pressure Tests
+
+These rows are not one-feature fixtures. They record gallery-scale examples that combine several
+features and should be backed by smaller fixtures for the individual capabilities.
+
+| Area | Example | Status | Main pressure | Minimal first slice |
+| ---- | ------- | ------ | ------------- | ------------------- |
+| Embedding dashboard | `IMAGE_EMBEDDING_LOD.md` | Planned showcase | PD12M image thumbnails, texture-array LOD, panzoom, picking, retained resource reuse. | <=10,000 PD12M items rendered as mean-color rectangles from preprocessed embedding positions. |
+| Embedding dashboard | `SEMANTIC_EMBEDDING_ATLAS.md` | Planned showcase | Dense semantic points, label LOD, title search, selection cards, optional query vectors. | <=100,000 Wikivecs articles rendered as colored points with panzoom and stable pick ids. |
 | Frame graph | Debug graph dump | `fixture_frame_plan_graph_debug.c` | Emit deterministic graph debug output with typed resources/passes. |
 | Descriptor refresh | Resize refresh | `fixture_descriptor_refresh_resize.c` | Repeated resize with stable resource ids and refreshed descriptors. |
 | CuPy | Python/CuPy external memory | `fixture_cupy_external_memory.py` | Future Python-facing Vulkan-owned allocation import into CuPy. |

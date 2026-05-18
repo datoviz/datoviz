@@ -268,8 +268,10 @@ Example themes:
 8. DICOM viewer,
 9. market microstructure dashboard,
 10. streaming DAQ viewer,
-11. diffusion tractography,
-12. particle or CFD simulation.
+11. PD12M image embedding LOD explorer,
+12. Wikipedia semantic embedding atlas,
+13. diffusion tractography,
+14. particle or CFD simulation.
 
 ### Regression and golden-output examples
 
@@ -410,6 +412,8 @@ technique.edl.points
 technique.ssao.spheres
 showcase.lidar.edl
 showcase.protein.arcball
+showcase.embedding.image_lod
+showcase.embedding.semantic_atlas
 stress.points.many
 stress.partial_update_churn
 ```
