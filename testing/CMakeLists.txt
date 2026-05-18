@@ -179,6 +179,21 @@ endif()
 set(DVZ_TEST_CORE_SOURCES ${DVZ_MODULE_TEST_SOURCES})
 list(FILTER DVZ_TEST_CORE_SOURCES INCLUDE REGEX "/src/(common|ds|fileio|math|thread)/tests/")
 
+set(DVZ_TEST_COMMON_SOURCES ${DVZ_MODULE_TEST_SOURCES})
+list(FILTER DVZ_TEST_COMMON_SOURCES INCLUDE REGEX "/src/common/tests/")
+
+set(DVZ_TEST_DS_SOURCES ${DVZ_MODULE_TEST_SOURCES})
+list(FILTER DVZ_TEST_DS_SOURCES INCLUDE REGEX "/src/ds/tests/")
+
+set(DVZ_TEST_FILEIO_SOURCES ${DVZ_MODULE_TEST_SOURCES})
+list(FILTER DVZ_TEST_FILEIO_SOURCES INCLUDE REGEX "/src/fileio/tests/")
+
+set(DVZ_TEST_MATH_SOURCES ${DVZ_MODULE_TEST_SOURCES})
+list(FILTER DVZ_TEST_MATH_SOURCES INCLUDE REGEX "/src/math/tests/")
+
+set(DVZ_TEST_THREAD_SOURCES ${DVZ_MODULE_TEST_SOURCES})
+list(FILTER DVZ_TEST_THREAD_SOURCES INCLUDE REGEX "/src/thread/tests/")
+
 set(DVZ_TEST_DRP2_SOURCES ${DVZ_MODULE_TEST_SOURCES})
 list(FILTER DVZ_TEST_DRP2_SOURCES INCLUDE REGEX "/src/drp2/tests/")
 
@@ -196,7 +211,82 @@ list(FILTER DVZ_TEST_CANVAS_SOURCES INCLUDE REGEX "/src/(input|window|stream|vid
 set(DVZ_TEST_GUI_SOURCES ${DVZ_MODULE_TEST_SOURCES})
 list(FILTER DVZ_TEST_GUI_SOURCES INCLUDE REGEX "/src/gui/tests/")
 
+function(dvz_add_cpu_test_runner target source_var)
+    add_executable(${target}
+        ${${source_var}}
+        components/${target}.c
+    )
+
+    target_link_libraries(${target}
+        PRIVATE
+        ${ARGN}
+        testing
+    )
+
+    if(DVZ_THREADING_TARGET)
+        target_link_libraries(${target} PRIVATE ${DVZ_THREADING_TARGET})
+    endif()
+
+    if(DVZ_WITH_MIMALLOC)
+        target_link_libraries(${target} PRIVATE $<$<CONFIG:Release>:mimalloc-static>)
+    endif()
+
+    target_include_directories(${target}
+        PRIVATE
+        ${PROJECT_SOURCE_DIR}/include
+        ${CMAKE_CURRENT_SOURCE_DIR}
+        ${PROJECT_SOURCE_DIR}/src/common
+    )
+
+    if(_dvz_compile_definitions)
+        target_compile_definitions(${target} PRIVATE ${_dvz_compile_definitions})
+    endif()
+
+    if(APPLE)
+        set_target_properties(${target} PROPERTIES
+            BUILD_RPATH "${_dvz_runtime_rpath}"
+            INSTALL_RPATH "${_dvz_runtime_rpath}"
+        )
+    endif()
+
+    add_test(NAME ${target} COMMAND ${target})
+endfunction()
+
 if(_dvz_has_core)
+    dvz_add_cpu_test_runner(
+        dvztest_common
+        DVZ_TEST_COMMON_SOURCES
+        datoviz_common
+    )
+
+    dvz_add_cpu_test_runner(
+        dvztest_ds
+        DVZ_TEST_DS_SOURCES
+        datoviz_common
+        datoviz_ds
+    )
+
+    dvz_add_cpu_test_runner(
+        dvztest_fileio
+        DVZ_TEST_FILEIO_SOURCES
+        datoviz_common
+        datoviz_fileio
+    )
+
+    dvz_add_cpu_test_runner(
+        dvztest_math
+        DVZ_TEST_MATH_SOURCES
+        datoviz_common
+        datoviz_math
+    )
+
+    dvz_add_cpu_test_runner(
+        dvztest_thread
+        DVZ_TEST_THREAD_SOURCES
+        datoviz_common
+        datoviz_thread
+    )
+
     add_executable(dvztest_core
         ${DVZ_TEST_CORE_SOURCES}
         components/dvztest_core.c
