@@ -226,6 +226,49 @@ static void _draw_blend_target_contracts(
 
 
 /**
+ * Resolve fixed-function raster-state requirements from visual facts and pass role.
+ *
+ * @param facts visual facts used by the resolver matrix
+ * @param pass_role the render pass role carrying the draw
+ * @param out_has_raster_state output flag indicating whether raster state is contracted
+ * @param out_cull_mode output Vulkan cull mode when raster state is contracted
+ * @param out_front_face output Vulkan front face when raster state is contracted
+ */
+static void _draw_raster_state_contract(
+    const DvzSceneDrawFacts* facts, DvzFramePlanRenderPassRole pass_role,
+    bool* out_has_raster_state, uint32_t* out_cull_mode, uint32_t* out_front_face)
+{
+    ANN(facts);
+    ANN(out_has_raster_state);
+    ANN(out_cull_mode);
+    ANN(out_front_face);
+    *out_has_raster_state = false;
+    *out_cull_mode = 0;
+    *out_front_face = 0;
+
+    if (pass_role == DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_INIT)
+    {
+        *out_has_raster_state = true;
+        *out_cull_mode = VK_CULL_MODE_BACK_BIT;
+        *out_front_face = VK_FRONT_FACE_COUNTER_CLOCKWISE;
+    }
+    else if (pass_role == DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_ITER)
+    {
+        *out_has_raster_state = true;
+        *out_cull_mode = VK_CULL_MODE_FRONT_BIT;
+        *out_front_face = VK_FRONT_FACE_COUNTER_CLOCKWISE;
+    }
+    else if (facts->visual_type == DVZ_VISUAL_TYPE_VOLUME)
+    {
+        *out_has_raster_state = true;
+        *out_cull_mode = VK_CULL_MODE_BACK_BIT;
+        *out_front_face = VK_FRONT_FACE_CLOCKWISE;
+    }
+}
+
+
+
+/**
  * Return whether a graph attachment access includes reads.
  *
  * @param access the attachment access mode
@@ -1178,6 +1221,59 @@ static bool _contract_validate_drp2_blend_targets(
 
 
 /**
+ * Validate emitted DRP2 raster state against the resolved draw contract.
+ *
+ * @param command the CreateRenderPipeline command
+ * @param meta stored visual metadata snapshot
+ * @param pass_role the active render pass role
+ * @param report optional diagnostic report
+ * @return whether emitted raster state matches the draw contract
+ */
+static bool _contract_validate_drp2_raster_state(
+    const DvzDrp2Command* command, const DvzFramePlanVisualMeta* meta,
+    DvzFramePlanRenderPassRole pass_role, DvzDiagnosticReport* report)
+{
+    ANN(command);
+    ANN(meta);
+    bool has_raster_state = false;
+    uint32_t cull_mode = 0;
+    uint32_t front_face = 0;
+    DvzSceneDrawFacts facts = {.visual_type = meta->visual_type};
+    _draw_raster_state_contract(
+        &facts, pass_role, &has_raster_state, &cull_mode, &front_face);
+
+    if (!has_raster_state)
+    {
+        if (command->u.create_render_pipeline.has_raster_state)
+        {
+            _contract_report(report, "DRP2 pipeline unexpectedly sets raster state");
+            return false;
+        }
+        return true;
+    }
+
+    bool ok = true;
+    if (!command->u.create_render_pipeline.has_raster_state)
+    {
+        _contract_report(report, "DRP2 pipeline missing contracted raster state");
+        return false;
+    }
+    if (command->u.create_render_pipeline.cull_mode != cull_mode)
+    {
+        _contract_report(report, "DRP2 pipeline cull mode mismatches contract");
+        ok = false;
+    }
+    if (command->u.create_render_pipeline.front_face != front_face)
+    {
+        _contract_report(report, "DRP2 pipeline front face mismatches contract");
+        ok = false;
+    }
+    return ok;
+}
+
+
+
+/**
  * Return whether a pipeline has a bind-group layout with a given scene runtime label.
  *
  * @param stream the DRP2 command stream
@@ -1437,6 +1533,10 @@ static void _contract_apply_draw_metadata(
     draw->blend_policy = (DvzSceneBlendPolicy)meta->draw_blend_policy;
     _draw_blend_target_contracts(
         draw->blend_policy, draw->blend_targets, &draw->blend_target_count);
+    DvzSceneDrawFacts facts = {.visual_type = draw->visual_type};
+    _draw_raster_state_contract(
+        &facts, draw->pass_role, &draw->has_raster_state, &draw->cull_mode,
+        &draw->front_face);
     draw->shader_feature_mask = meta->draw_shader_feature_mask;
     draw->bind_group_layout_mask = meta->draw_bind_group_layout_mask;
 
@@ -1480,7 +1580,8 @@ static void _contract_apply_draw_metadata(
 static bool _contract_validate_drp2_pipeline(
     const DvzDrp2CommandStream* stream, const DvzDrp2Command* command,
     const DvzFramePlanVisualMeta* meta, const DvzFrameGraphPass* graph_pass,
-    const ContractDrp2PassState* pass_state, DvzDiagnosticReport* report)
+    DvzFramePlanRenderPassRole pass_role, const ContractDrp2PassState* pass_state,
+    DvzDiagnosticReport* report)
 {
     ANN(stream);
     ANN(command);
@@ -1525,6 +1626,7 @@ static bool _contract_validate_drp2_pipeline(
     }
 
     ok = _contract_validate_drp2_blend_targets(command, blend_policy, report) && ok;
+    ok = _contract_validate_drp2_raster_state(command, meta, pass_role, report) && ok;
 
     (void)graph_pass;
     return ok;
@@ -1672,6 +1774,8 @@ bool _scene_draw_contract_resolve(
     out->blend_policy = _draw_blend_policy(facts->alpha_mode, pass_role);
     _draw_blend_target_contracts(
         out->blend_policy, out->blend_targets, &out->blend_target_count);
+    _draw_raster_state_contract(
+        facts, pass_role, &out->has_raster_state, &out->cull_mode, &out->front_face);
     if (out->samples_depth)
         out->shader_feature_mask |= DVZ_SCENE_SHADER_FEATURE_SAMPLE_DEPTH;
     if (out->samples_volume_occlusion)
@@ -2027,8 +2131,8 @@ bool _scene_frame_plan_drp2_contracts_validate(
                     &active_render->u.render.visual_metadata[active_draw_index];
                 if (meta->has_draw_contract &&
                     !_contract_validate_drp2_pipeline(
-                        stream, active_pipeline, meta, active_graph_pass, &active_pass_state,
-                        report))
+                        stream, active_pipeline, meta, active_graph_pass,
+                        active_render->u.render.pass_role, &active_pass_state, report))
                     ok = false;
             }
             active_draw_index++;

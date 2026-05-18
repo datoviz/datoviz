@@ -507,6 +507,8 @@ int test_scene_visual_alpha_mode_emits_wboit_drp2(TstSuite* suite, TstItem* item
 
 int test_scene_drp2_contract_checker_rejects_pipeline_drift(TstSuite* suite, TstItem* item);
 
+int test_scene_drp2_contract_checker_rejects_raster_drift(TstSuite* suite, TstItem* item);
+
 int test_scene_alpha_mode_toggle_refreshes_drp2_contracts(TstSuite* suite, TstItem* item);
 
 int test_scene_visual_alpha_mode_wboit_glsl_executes(TstSuite* suite, TstItem* item);

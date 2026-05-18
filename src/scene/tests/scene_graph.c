@@ -9273,6 +9273,9 @@ int test_scene_visual_alpha_mode_depth_peel_frame_plan(TstSuite* suite, TstItem*
     AT(init_contract.draws[0].blend_targets[0].format == VK_FORMAT_R16G16B16A16_SFLOAT);
     AT(!init_contract.draws[0].blend_targets[0].blend_enabled);
     AT(init_contract.draws[0].blend_targets[2].format == VK_FORMAT_R16G16B16A16_SFLOAT);
+    AT(init_contract.draws[0].has_raster_state);
+    AT(init_contract.draws[0].cull_mode == VK_CULL_MODE_BACK_BIT);
+    AT(init_contract.draws[0].front_face == VK_FRONT_FACE_COUNTER_CLOCKWISE);
     AT(init_contract.color_attachment_count == 3);
     AT(init_contract.has_depth_attachment);
     AT(init_contract.attachments[0].format == VK_FORMAT_R16G16B16A16_SFLOAT);
@@ -9291,6 +9294,9 @@ int test_scene_visual_alpha_mode_depth_peel_frame_plan(TstSuite* suite, TstItem*
     AT(iter_contract.draws[0].blend_targets[0].format == VK_FORMAT_R16G16B16A16_SFLOAT);
     AT(!iter_contract.draws[0].blend_targets[0].blend_enabled);
     AT(iter_contract.draws[0].blend_targets[2].format == VK_FORMAT_R16G16B16A16_SFLOAT);
+    AT(iter_contract.draws[0].has_raster_state);
+    AT(iter_contract.draws[0].cull_mode == VK_CULL_MODE_FRONT_BIT);
+    AT(iter_contract.draws[0].front_face == VK_FRONT_FACE_COUNTER_CLOCKWISE);
     AT(iter_contract.color_attachment_count == 3);
     AT(iter_contract.has_depth_attachment);
     AT(iter_contract.attachments[0].format == VK_FORMAT_R16G16B16A16_SFLOAT);
@@ -10203,6 +10209,113 @@ int test_scene_drp2_contract_checker_rejects_pipeline_drift(TstSuite* suite, Tst
 
 
 /**
+ * Verify scene DRP2 contract validation catches emitted raster-state policy drift.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_drp2_contract_checker_rejects_raster_drift(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    AT(scene != NULL);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    AT(figure != NULL);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    AT(panel != NULL);
+
+    DvzVisual* opaque = dvz_primitive(scene, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 0);
+    DvzVisual* transparent = dvz_primitive(scene, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 0);
+    AT(opaque != NULL);
+    AT(transparent != NULL);
+    float positions[3][3] = {
+        {-0.5f, -0.5f, 0.0f},
+        {0.5f, -0.5f, 0.0f},
+        {0.0f, 0.5f, 0.0f},
+    };
+    DvzColor opaque_colors[3] = {
+        {255, 255, 255, 255}, {255, 255, 255, 255}, {255, 255, 255, 255}};
+    DvzColor transparent_colors[3] = {
+        {255, 0, 0, 128}, {0, 255, 0, 128}, {0, 0, 255, 128}};
+    AT(dvz_visual_set_data(opaque, "position", positions, 3) == 0);
+    AT(dvz_visual_set_data(opaque, "color", opaque_colors, 3) == 0);
+    AT(dvz_visual_set_data(transparent, "position", positions, 3) == 0);
+    AT(dvz_visual_set_data(transparent, "color", transparent_colors, 3) == 0);
+    AT(dvz_visual_set_alpha_mode(transparent, DVZ_ALPHA_DEPTH_PEEL) == 0);
+    AT(dvz_panel_add_visual(panel, opaque, NULL) == 0);
+    AT(dvz_panel_add_visual(panel, transparent, NULL) == 0);
+
+    DvzFramePlan* plan = dvz_frame_plan("figure.contract.raster", 0);
+    ANN(plan);
+    _scene_emit_visual_uploads(figure, plan);
+    AT(_scene_emit_panel_render(figure, 0, plan, "figure_0"));
+
+    DvzCapabilitySnapshot caps;
+    dvz_capability_snapshot_default(&caps);
+    caps.max_color_attachments = 3;
+    caps.render_target_format_rgba16float = true;
+    caps.supports_render_target_sampling = true;
+
+    DvzDiagnosticReport report;
+    dvz_diagnostic_report_init(&report);
+    DvzFramePlanEmitConfig cfg = dvz_frame_plan_emit_config();
+    cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
+    cfg.target_width = 64;
+    cfg.target_height = 64;
+
+    DvzFramePlanEmitter* emitter = dvz_frame_plan_emitter();
+    ANN(emitter);
+    DvzDrp2CommandStream* stream =
+        dvz_frame_plan_emitter_emit_drp2(emitter, plan, &caps, &report, &cfg);
+    ANN(stream);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+    AT(_scene_frame_plan_drp2_contracts_validate(plan, stream, &report));
+
+    DvzDrp2Command* init_pipeline = NULL;
+    DvzDrp2Command* iter_pipeline = NULL;
+    for (uint32_t i = 0; i < stream->count; i++)
+    {
+        DvzDrp2Command* command = &stream->commands[i];
+        if (
+            command->type != DVZ_DRP2_COMMAND_CREATE_RENDER_PIPELINE ||
+            command->u.create_render_pipeline.color_target_count != 3 ||
+            !command->u.create_render_pipeline.has_raster_state)
+            continue;
+        if (command->u.create_render_pipeline.cull_mode == VK_CULL_MODE_BACK_BIT)
+            init_pipeline = command;
+        else if (command->u.create_render_pipeline.cull_mode == VK_CULL_MODE_FRONT_BIT)
+            iter_pipeline = command;
+    }
+    ANN(init_pipeline);
+    ANN(iter_pipeline);
+
+    const DvzDrp2Command original_init_pipeline = *init_pipeline;
+    init_pipeline->u.create_render_pipeline.cull_mode = VK_CULL_MODE_FRONT_BIT;
+    dvz_diagnostic_report_init(&report);
+    AT(!_scene_frame_plan_drp2_contracts_validate(plan, stream, &report));
+    AT(dvz_diagnostic_report_count(&report) > 0);
+
+    init_pipeline->u.create_render_pipeline = original_init_pipeline.u.create_render_pipeline;
+    const DvzDrp2Command original_iter_pipeline = *iter_pipeline;
+    iter_pipeline->u.create_render_pipeline.front_face = VK_FRONT_FACE_CLOCKWISE;
+    dvz_diagnostic_report_init(&report);
+    AT(!_scene_frame_plan_drp2_contracts_validate(plan, stream, &report));
+    AT(dvz_diagnostic_report_count(&report) > 0);
+
+    iter_pipeline->u.create_render_pipeline = original_iter_pipeline.u.create_render_pipeline;
+
+    dvz_drp2_stream_destroy(stream);
+    dvz_frame_plan_emitter_destroy(emitter);
+    dvz_frame_plan_destroy(plan);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+/**
  * Verify retained alpha-mode toggles refresh the semantic DRP2 runtime contract shape.
  *
  * @param suite the active test suite
@@ -10690,6 +10803,7 @@ int test_scene_graph(TstSuite* suite)
     TEST_SIMPLE(test_scene_visual_alpha_mode_requires_wboit_capabilities);
     TEST_SIMPLE(test_scene_visual_alpha_mode_emits_wboit_drp2);
     TEST_SIMPLE(test_scene_drp2_contract_checker_rejects_pipeline_drift);
+    TEST_SIMPLE(test_scene_drp2_contract_checker_rejects_raster_drift);
     TEST_SIMPLE(test_scene_alpha_mode_toggle_refreshes_drp2_contracts);
     TEST_SIMPLE(test_scene_visual_alpha_mode_wboit_glsl_executes);
     TEST_SIMPLE(test_scene_visual_alpha_mode_depth_peel_glsl_executes);

@@ -163,6 +163,9 @@ typedef struct DvzSceneDrawContract
     uint32_t blend_target_count;
     uint32_t shader_feature_mask;
     uint32_t bind_group_layout_mask;
+    bool has_raster_state;
+    uint32_t cull_mode;
+    uint32_t front_face;
 
     bool depth_test;
     bool depth_write;
