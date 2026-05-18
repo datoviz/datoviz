@@ -146,7 +146,7 @@ The generic testing framework should own:
 5. serial scheduling and future process scheduling,
 6. result collection,
 7. terminal formatting,
-8. JSON/JUnit output,
+8. JSON output,
 9. per-test temporary directories,
 10. timeout/repeat/shuffle mechanics,
 11. generic log-capture and expected-error concepts through a callback adapter.
@@ -234,11 +234,10 @@ Add structured filtering before adding parallel execution:
 7. `--isolation <mode>`
 8. `--list`
 9. `--list-groups`
-10. `--json <path>` for machine-readable results
-11. `--junit <path>` for CI integration
-12. `--fail-fast`
-13. `--repeat <count>`
-14. `--shuffle --seed <seed>`
+10. `--json <path>` for machine-readable results and CI integration
+11. `--fail-fast`
+12. `--repeat <count>`
+13. `--shuffle --seed <seed>`
 
 
 ### Phase 4: Resource-Aware Serial Scheduler
@@ -453,18 +452,46 @@ lanes.
 7. Do not add a rich terminal UI or spinner-based progress display.
 
 
-## Open Questions
+## Design Decisions
 
-1. Should module/group state be stored as mutable registration scope on `TstSuite`, or should each
-   new test registration pass an explicit descriptor?
-2. Should process sharding live inside `dvztest`, or should it be a separate helper script that
-   consumes `dvztest --list --json`?
-3. Should expected-error scopes be supported in thread-safe tests through thread-local log context,
-   or should all log-capture tests remain process-isolated?
-4. Should CTest be taught about semantic groups as individual tests, or should CTest keep invoking
-   component binaries only?
-5. What is the desired result format for CI: JUnit XML, custom JSON, or both?
-6. Which runner targets should be mandatory on every platform, and which should be optional based on
-   graphics/video/backend availability?
-7. Should generic resource names remain simple bit flags, or should they support string-valued
-   resource labels for project-specific extensions?
+1. Use readable scoped registration macros over an explicit descriptor API.
+   - `TST_MODULE(suite, "math")`, `TST_GROUP("array")`, and `TST_CASE(...)` should be the normal
+     test-file style.
+   - Internally, every macro should populate an explicit `TstCaseDesc`.
+   - `TST_CASE_EX(...)` should allow per-case descriptor overrides.
+
+2. Keep process sharding out of the first implementation slice.
+   - First implement stable `--list --json` output and a way to run an exact selected case.
+   - Add parent-process orchestration only after the JSON/listing contract is stable.
+   - The child runner should remain simple and serial.
+
+3. Treat log-capture and expected-error tests as not thread-safe initially.
+   - Tests using these helpers should declare `TST_RES_LOG_CAPTURE`.
+   - `TST_RES_LOG_CAPTURE` should imply serial or process isolation.
+   - Thread-local log contexts can be revisited only if there is a strong later need.
+
+4. Keep CTest at component-binary granularity initially.
+   - CTest should invoke targets such as `dvztest_math`, `dvztest_scene`, and `dvztest_canvas`.
+   - Semantic filtering should live in the runner itself.
+   - Generated CTest entries for individual groups can be added later only if CI benefits.
+
+5. Use custom JSON as the only machine-readable CI result format.
+   - JSON should be the canonical result format for resources, isolation, skip reasons, seeds,
+     repeat indices, elapsed time, and captured logs.
+   - Do not add JUnit XML unless a future CI requirement appears.
+   - Terminal output should remain separate from machine-readable output.
+
+6. Make CPU runners mandatory when their modules are enabled and backend runners optional.
+   - Mandatory CPU-side targets: `testing`, `dvztest_common`, `dvztest_ds`, `dvztest_fileio`,
+     `dvztest_math`, `dvztest_thread`, and aggregate `dvztest_core`.
+   - Optional feature/backend targets: `dvztest_vk`, `dvztest_vklite`, `dvztest_canvas`,
+     `dvztest_drp2`, `dvztest_scene`, `dvztest_app`, `dvztest_video`, and `dvztest_gui`.
+   - Aggregate `dvztest` should exist only when its dependencies are enabled and should not be
+     required for focused CPU testing.
+
+7. Start with built-in resource bit flags.
+   - Use `uint64_t resources` for simple C filtering and scheduling.
+   - Built-ins should cover CPU, GPU, Vulkan, GLFW, filesystem, environment mutation, video, log
+     capture, and global state.
+   - Optional string-valued labels such as `cuda`, `nvenc`, `validation-layers`, or
+     `display-server` can be added later if bit flags become too coarse.
