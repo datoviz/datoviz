@@ -326,6 +326,38 @@ static DvzSceneAttachmentUse* _contract_append_attachment(
 }
 
 
+
+/**
+ * Copy the producer pass id for one graph read into an attachment use.
+ *
+ * @param plan the FramePlan
+ * @param consumer_pass_id the graph pass consuming the read
+ * @param use the sampled attachment use to update
+ */
+static void _contract_apply_read_dependency(
+    const DvzFramePlan* plan, const char* consumer_pass_id, DvzSceneAttachmentUse* use)
+{
+    ANN(plan);
+    ANN(consumer_pass_id);
+    ANN(use);
+    for (uint32_t i = 0; i < dvz_frame_plan_graph_dependency_count(plan); i++)
+    {
+        DvzFrameGraphDependency dependency = {0};
+        if (!dvz_frame_plan_graph_dependency_get(plan, i, &dependency))
+            continue;
+        if (
+            strcmp(dependency.consumer_pass_id, consumer_pass_id) == 0 &&
+            strcmp(dependency.resource_id, use->resource_id) == 0)
+        {
+            dvz_strlcpy(
+                use->producer_pass_id, dependency.producer_pass_id,
+                sizeof(use->producer_pass_id));
+            return;
+        }
+    }
+}
+
+
 /**
  * Return the graph resource with a given id.
  *
@@ -442,14 +474,17 @@ static bool _contract_append_depth_attachment(
  *
  * @param plan the FramePlan
  * @param contract the pass contract
+ * @param consumer_pass_id graph pass id that owns the read
  * @param read the graph read edge
  * @return whether the read was appended
  */
 static bool _contract_append_read(
-    const DvzFramePlan* plan, DvzScenePassContract* contract, const DvzFrameGraphAccess* read)
+    const DvzFramePlan* plan, DvzScenePassContract* contract, const char* consumer_pass_id,
+    const DvzFrameGraphAccess* read)
 {
     ANN(plan);
     ANN(contract);
+    ANN(consumer_pass_id);
     ANN(read);
     DvzSceneAttachmentUse* use = _contract_append_attachment(
         contract, read->resource_id, DVZ_SCENE_ATTACHMENT_SAMPLED);
@@ -457,6 +492,7 @@ static bool _contract_append_read(
         return false;
     use->read = true;
     _contract_apply_resource_facts(plan, use);
+    _contract_apply_read_dependency(plan, consumer_pass_id, use);
     contract->sampled_read_count++;
     if (strstr(read->resource_id, ".depth") != NULL)
         contract->sampled_depth_read_count++;
@@ -581,13 +617,13 @@ static bool _contract_reads_resource_suffix(
 
 
 /**
- * Return whether a pass contract reads an exact sampled resource id.
+ * Return the sampled attachment for an exact resource id.
  *
  * @param contract the pass contract
  * @param resource_id the expected graph resource id
- * @return whether a sampled attachment matches exactly
+ * @return the sampled attachment use, or NULL
  */
-static bool _contract_reads_resource_id(
+static const DvzSceneAttachmentUse* _contract_sampled_resource_use(
     const DvzScenePassContract* contract, const char* resource_id)
 {
     ANN(contract);
@@ -598,9 +634,9 @@ static bool _contract_reads_resource_id(
         if (use->role != DVZ_SCENE_ATTACHMENT_SAMPLED || !use->read)
             continue;
         if (strcmp(use->resource_id, resource_id) == 0)
-            return true;
+            return use;
     }
-    return false;
+    return NULL;
 }
 
 
@@ -1647,6 +1683,147 @@ static bool _contract_validate_drp2_sampled_reads(
 }
 
 
+/**
+ * Return whether a persistent bind-group label references an expected resource id.
+ *
+ * @param stream the DRP2 command stream
+ * @param bind_group_label emitted bind-group label containing dependency ids
+ * @param resource_id expected graph resource id
+ * @return whether one referenced object label matches the resource
+ */
+static bool _contract_bind_group_label_references_resource(
+    const DvzDrp2CommandStream* stream, const char* bind_group_label, const char* resource_id)
+{
+    ANN(stream);
+    ANN(resource_id);
+    if (bind_group_label == NULL)
+        return false;
+
+    const char* p = bind_group_label;
+    while (*p != '\0')
+    {
+        while (*p != '\0' && (*p < '0' || *p > '9'))
+            p++;
+        if (*p == '\0')
+            break;
+
+        char* end = NULL;
+        unsigned long long parsed = strtoull(p, &end, 10);
+        if (end == p)
+        {
+            p++;
+            continue;
+        }
+
+        const char* label = dvz_drp2_stream_label(stream, (uint64_t)parsed);
+        if (_contract_resource_label_matches(label, resource_id))
+            return true;
+        p = end;
+    }
+    return false;
+}
+
+
+/**
+ * Validate one draw-owned sampled-resource binding against active DRP2 bind groups.
+ *
+ * @param stream the DRP2 command stream
+ * @param active_bind_groups bind-group ids currently active by set index
+ * @param set expected shader set
+ * @param binding expected binding within the set
+ * @param resource_id expected graph resource id
+ * @param report optional diagnostic report
+ * @return whether the active bind group satisfies the draw-owned resource contract
+ */
+static bool _contract_validate_drp2_sampled_binding(
+    const DvzDrp2CommandStream* stream, const uint64_t* active_bind_groups, uint32_t set,
+    uint32_t binding, const char* resource_id, DvzDiagnosticReport* report)
+{
+    ANN(stream);
+    ANN(active_bind_groups);
+    ANN(resource_id);
+    if (resource_id[0] == '\0')
+        return true;
+    if (set >= DVZ_DRP2_MAX_BIND_GROUPS)
+    {
+        _contract_report(report, "DRP2 sampled resource bind set is out of range");
+        return false;
+    }
+
+    uint64_t bind_group_id = active_bind_groups[set];
+    if (bind_group_id == 0)
+    {
+        _contract_report(report, "DRP2 draw is missing a contracted sampled bind group");
+        return false;
+    }
+
+    const DvzDrp2Command* bind_group = _contract_drp2_bind_group_for_id(stream, bind_group_id);
+    if (bind_group == NULL)
+    {
+        const char* label = dvz_drp2_stream_label(stream, bind_group_id);
+        if (_contract_bind_group_label_references_resource(stream, label, resource_id))
+            return true;
+        _contract_report(report, "DRP2 persistent bind group misses sampled resource");
+        return false;
+    }
+
+    for (uint32_t i = 0; i < bind_group->u.create_bind_group.entry_count; i++)
+    {
+        const DvzDrp2BindGroupEntry* entry = &bind_group->u.create_bind_group.entries[i];
+        if (entry->binding != binding)
+            continue;
+        if (entry->binding_type != DVZ_DRP2_BINDING_TYPE_SAMPLED_TEXTURE ||
+            (entry->resource_kind != DVZ_DRP2_BINDING_RESOURCE_TEXTURE &&
+             entry->resource_kind != DVZ_DRP2_BINDING_RESOURCE_TEXTURE_VIEW))
+        {
+            _contract_report(report, "DRP2 sampled binding has wrong resource type");
+            return false;
+        }
+        const char* label = dvz_drp2_stream_label(stream, entry->resource_id);
+        if (!_contract_resource_label_matches(label, resource_id))
+        {
+            _contract_report(report, "DRP2 sampled binding resource mismatches contract");
+            return false;
+        }
+        return true;
+    }
+
+    _contract_report(report, "DRP2 bind group misses contracted sampled binding");
+    return false;
+}
+
+
+/**
+ * Validate draw-owned occlusion sampled-resource bindings against active DRP2 state.
+ *
+ * @param stream the DRP2 command stream
+ * @param active_bind_groups bind-group ids currently active by set index
+ * @param meta stored visual metadata snapshot
+ * @param report optional diagnostic report
+ * @return whether all draw-owned occlusion bindings are satisfied
+ */
+static bool _contract_validate_drp2_draw_occlusion_bindings(
+    const DvzDrp2CommandStream* stream, const uint64_t* active_bind_groups,
+    const DvzFramePlanVisualMeta* meta, DvzDiagnosticReport* report)
+{
+    ANN(stream);
+    ANN(active_bind_groups);
+    ANN(meta);
+    bool ok = true;
+    ok = _contract_validate_drp2_sampled_binding(
+             stream, active_bind_groups, meta->draw_volume_occlusion_bind_set,
+             meta->draw_volume_occlusion_bind_binding, meta->draw_volume_occlusion_resource_id,
+             report) &&
+         ok;
+    ok = _contract_validate_drp2_sampled_binding(
+             stream, active_bind_groups, meta->draw_scene_occlusion_bind_set,
+             meta->draw_scene_occlusion_bind_binding, meta->draw_scene_occlusion_resource_id,
+             report) &&
+         ok;
+    return ok;
+}
+
+
 
 /**
  * Apply a stored FramePlan draw-contract snapshot to a resolved draw contract.
@@ -1699,8 +1876,19 @@ static void _contract_apply_draw_metadata(
         draw->volume_occlusion_resource_id, meta->draw_volume_occlusion_resource_id,
         sizeof(draw->volume_occlusion_resource_id));
     dvz_strlcpy(
+        draw->volume_occlusion_producer_pass_id,
+        meta->draw_volume_occlusion_producer_pass_id,
+        sizeof(draw->volume_occlusion_producer_pass_id));
+    draw->volume_occlusion_bind_set = meta->draw_volume_occlusion_bind_set;
+    draw->volume_occlusion_bind_binding = meta->draw_volume_occlusion_bind_binding;
+    dvz_strlcpy(
         draw->scene_occlusion_resource_id, meta->draw_scene_occlusion_resource_id,
         sizeof(draw->scene_occlusion_resource_id));
+    dvz_strlcpy(
+        draw->scene_occlusion_producer_pass_id, meta->draw_scene_occlusion_producer_pass_id,
+        sizeof(draw->scene_occlusion_producer_pass_id));
+    draw->scene_occlusion_bind_set = meta->draw_scene_occlusion_bind_set;
+    draw->scene_occlusion_bind_binding = meta->draw_scene_occlusion_bind_binding;
 }
 
 
@@ -2059,7 +2247,7 @@ bool _scene_pass_contract_from_render(
             return false;
         for (uint32_t i = 0; i < graph_pass->read_count; i++)
         {
-            if (!_contract_append_read(plan, out, &graph_pass->reads[i]))
+            if (!_contract_append_read(plan, out, graph_pass->id, &graph_pass->reads[i]))
                 return false;
         }
     }
@@ -2102,11 +2290,22 @@ bool _scene_pass_contract_validate(
         samples_depth = samples_depth || draw->samples_depth;
         if (draw->samples_volume_occlusion)
         {
-            if (draw->volume_occlusion_resource_id[0] != '\0' &&
-                !_contract_reads_resource_id(contract, draw->volume_occlusion_resource_id))
+            const DvzSceneAttachmentUse* use = NULL;
+            if (draw->volume_occlusion_resource_id[0] != '\0')
+                use = _contract_sampled_resource_use(
+                    contract, draw->volume_occlusion_resource_id);
+            if (draw->volume_occlusion_resource_id[0] != '\0' && use == NULL)
             {
                 _contract_report(
                     report, "volume-occluded draw has no exact volume occlusion read edge");
+                ok = false;
+            }
+            else if (
+                use != NULL && draw->volume_occlusion_producer_pass_id[0] != '\0' &&
+                strcmp(use->producer_pass_id, draw->volume_occlusion_producer_pass_id) != 0)
+            {
+                _contract_report(
+                    report, "volume-occluded draw producer pass mismatches contract");
                 ok = false;
             }
             else if (draw->volume_occlusion_resource_id[0] == '\0')
@@ -2116,11 +2315,21 @@ bool _scene_pass_contract_validate(
         }
         if (draw->samples_scene_occlusion)
         {
-            if (draw->scene_occlusion_resource_id[0] != '\0' &&
-                !_contract_reads_resource_id(contract, draw->scene_occlusion_resource_id))
+            const DvzSceneAttachmentUse* use = NULL;
+            if (draw->scene_occlusion_resource_id[0] != '\0')
+                use = _contract_sampled_resource_use(contract, draw->scene_occlusion_resource_id);
+            if (draw->scene_occlusion_resource_id[0] != '\0' && use == NULL)
             {
                 _contract_report(
                     report, "scene-occluded draw has no exact scene occlusion read edge");
+                ok = false;
+            }
+            else if (
+                use != NULL && draw->scene_occlusion_producer_pass_id[0] != '\0' &&
+                strcmp(use->producer_pass_id, draw->scene_occlusion_producer_pass_id) != 0)
+            {
+                _contract_report(
+                    report, "scene-occluded draw producer pass mismatches contract");
                 ok = false;
             }
             else if (draw->scene_occlusion_resource_id[0] == '\0')
@@ -2225,6 +2434,7 @@ bool _scene_frame_plan_drp2_contracts_validate(
     ContractDrp2PassState active_pass_state = {0};
     uint32_t active_draw_index = 0;
     const DvzDrp2Command* active_pipeline = NULL;
+    uint64_t active_bind_groups[DVZ_DRP2_MAX_BIND_GROUPS] = {0};
 
     for (uint32_t i = 0; i < stream->count; i++)
     {
@@ -2240,6 +2450,8 @@ bool _scene_frame_plan_drp2_contracts_validate(
                 sizeof(ContractDrp2PassState));
             active_draw_index = 0;
             active_pipeline = NULL;
+            dvz_memset(
+                active_bind_groups, sizeof(active_bind_groups), 0, sizeof(active_bind_groups));
             const char* label = dvz_drp2_stream_label(stream, command->u.begin_render_pass.id);
             if (label == NULL)
                 break;
@@ -2263,6 +2475,9 @@ bool _scene_frame_plan_drp2_contracts_validate(
         case DVZ_DRP2_COMMAND_SET_BIND_GROUP:
             if (active_render != NULL && active_graph_pass != NULL)
             {
+                if (command->u.set_bind_group.slot < DVZ_DRP2_MAX_BIND_GROUPS)
+                    active_bind_groups[command->u.set_bind_group.slot] =
+                        command->u.set_bind_group.bind_group_id;
                 uint64_t bind_group_id = command->u.set_bind_group.bind_group_id;
                 const DvzDrp2Command* bind_group =
                     _contract_drp2_bind_group_for_id(stream, bind_group_id);
@@ -2297,10 +2512,14 @@ bool _scene_frame_plan_drp2_contracts_validate(
                 ok = false;
                 break;
             }
+            const DvzFramePlanVisualMeta* meta =
+                &active_render->u.render.visual_metadata[active_draw_index];
+            if (meta->has_draw_contract &&
+                !_contract_validate_drp2_draw_occlusion_bindings(
+                    stream, active_bind_groups, meta, report))
+                ok = false;
             if (active_pipeline != NULL)
             {
-                const DvzFramePlanVisualMeta* meta =
-                    &active_render->u.render.visual_metadata[active_draw_index];
                 if (meta->has_draw_contract &&
                     !_contract_validate_drp2_pipeline(
                         stream, active_pipeline, meta, active_graph_pass,
@@ -2326,6 +2545,8 @@ bool _scene_frame_plan_drp2_contracts_validate(
                 sizeof(ContractDrp2PassState));
             active_draw_index = 0;
             active_pipeline = NULL;
+            dvz_memset(
+                active_bind_groups, sizeof(active_bind_groups), 0, sizeof(active_bind_groups));
             break;
         default:
             break;

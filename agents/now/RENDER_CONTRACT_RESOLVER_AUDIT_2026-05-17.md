@@ -791,6 +791,27 @@ Validation:
 2. `./build/testing/dvztest_scene test_scene_blended_mesh_occlusion_contracts`
 
 
+### 2026-05-18: Phase 1 / Occlusion producer and bind-slot contracts
+
+Completed the draw-owned occlusion producer/bind-location slice.
+
+Changes:
+
+1. Extended FramePlan visual metadata and resolved draw contracts with occlusion producer pass ids,
+   expected shader set, and expected binding index for sampled volume and scene occlusion.
+2. Pass-contract sampled attachments now record their graph producer pass id from inferred graph
+   dependencies, and validation rejects producer-pass drift for draw-owned occlusion samples.
+3. DRP2 contract validation now tracks active bind groups by shader set and checks draw-owned
+   occlusion resources against the expected set/binding and graph resource id.
+4. Extended `test_scene_blended_mesh_occlusion_contracts` to assert producer/bind metadata, mutate
+   a sampled attachment producer pass, and mutate an emitted volume-occlusion bind-group binding.
+
+Validation:
+
+1. `cmake --build build --target dvztest_scene -j2`
+2. `./build/testing/dvztest_scene test_scene_blended_mesh_occlusion_contracts`
+
+
 ## Executive Assessment
 
 The direction is correct and worth continuing. The proposal identifies the right failure mode:
@@ -1020,21 +1041,22 @@ Remaining recommendation: promote the fullscreen role table into explicit pass/p
 fields if these passes need to be serialized, exported, or shared with another backend.
 
 
-### Medium: occlusion resources are partly exact, but bind slots are still implicit
+### Medium: occlusion resources are exact for current built-ins, but multi-source policy is open
 
 Volume and scene occlusion validation now stores exact panel-local sampled resource ids on the
-FramePlan visual metadata and resolved draw contract, and pass-contract validation rejects read
-edges that only match by suffix. Emission still adds reads to broad visual pass labels, and the
-contract does not yet store producer pass ids or expected bind set/binding per draw.
+FramePlan visual metadata and resolved draw contract. The draw contract also records producer pass
+ids and expected shader set/binding for current built-in volume and scene occlusion paths.
+Pass-contract validation rejects read edges that only match by suffix or come from the wrong
+producer, and DRP2 validation checks emitted bind groups against draw-owned set/binding/resource
+expectations.
 
-Impact: the contract now catches cross-panel/resource-id drift, but it still will not generalize
-cleanly to multiple occluders, layered occlusion maps, custom techniques, or backend-specific bind
-slot remapping. The DRP2 checker proves observed sampled bind groups cover graph reads, not that a
-specific draw uses a specific binding slot.
+Impact: the contract now catches cross-panel/resource-id drift, producer drift, and emitted
+set/binding drift for the current built-ins. It still will not generalize cleanly to multiple
+occluders, layered occlusion maps, custom techniques, or backend-specific bind slot remapping
+without turning the single resource fields into an array of sampled-resource contracts.
 
-Recommendation: extend the exact sampled-resource fields with producer pass ids and expected bind
-set/binding, then make the DRP2 checker correlate those draw-owned expectations with the emitted
-bind-group entries.
+Recommendation: replace the two hard-coded occlusion fields with a small array of sampled-resource
+contracts before adding multiple occlusion maps or backend-specific binding layouts.
 
 
 ### Medium: graph ordering is insertion-order, not dependency-derived

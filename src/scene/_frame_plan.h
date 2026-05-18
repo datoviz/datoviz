@@ -300,7 +300,13 @@ typedef struct DvzFramePlanVisualMeta
     uint32_t draw_shader_feature_mask;
     uint32_t draw_bind_group_layout_mask;
     char draw_volume_occlusion_resource_id[DVZ_SCENE_LABEL_SIZE];
+    char draw_volume_occlusion_producer_pass_id[DVZ_SCENE_LABEL_SIZE];
+    uint32_t draw_volume_occlusion_bind_set;
+    uint32_t draw_volume_occlusion_bind_binding;
     char draw_scene_occlusion_resource_id[DVZ_SCENE_LABEL_SIZE];
+    char draw_scene_occlusion_producer_pass_id[DVZ_SCENE_LABEL_SIZE];
+    uint32_t draw_scene_occlusion_bind_set;
+    uint32_t draw_scene_occlusion_bind_binding;
     char position_id[DVZ_SCENE_LABEL_SIZE];
     char position_start_id[DVZ_SCENE_LABEL_SIZE];
     char position_end_id[DVZ_SCENE_LABEL_SIZE];

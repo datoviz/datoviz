@@ -104,6 +104,7 @@ typedef enum
 typedef struct DvzSceneAttachmentUse
 {
     char resource_id[DVZ_SCENE_LABEL_SIZE];
+    char producer_pass_id[DVZ_SCENE_LABEL_SIZE];
     DvzSceneAttachmentRole role;
     uint32_t format;
     uint32_t sample_count;
@@ -184,7 +185,13 @@ typedef struct DvzSceneDrawContract
     bool needs_scene_occlusion_set;
 
     char volume_occlusion_resource_id[DVZ_SCENE_LABEL_SIZE];
+    char volume_occlusion_producer_pass_id[DVZ_SCENE_LABEL_SIZE];
+    uint32_t volume_occlusion_bind_set;
+    uint32_t volume_occlusion_bind_binding;
     char scene_occlusion_resource_id[DVZ_SCENE_LABEL_SIZE];
+    char scene_occlusion_producer_pass_id[DVZ_SCENE_LABEL_SIZE];
+    uint32_t scene_occlusion_bind_set;
+    uint32_t scene_occlusion_bind_binding;
 } DvzSceneDrawContract;
 
 

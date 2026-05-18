@@ -24,6 +24,7 @@
 #include "../_frame_plan.h"
 #include "../_scene.h"
 #include "../_scene_emit.h"
+#include "../_scene_shader_abi.h"
 #include "../_technique.h"
 #include "../_visual_pipeline.h"
 #include "../render_contract.h"
@@ -8814,6 +8815,7 @@ int test_scene_blended_mesh_occlusion_contracts(TstSuite* suite, TstItem* item)
 
     DvzFramePlan* plan = dvz_frame_plan("figure.alpha.volume_mesh_occlusion", 0);
     ANN(plan);
+    _scene_emit_visual_uploads(figure, plan);
     _scene_emit_panel_render(figure, 0, plan, "figure_0");
 
     const DvzFramePlanNode* blend_node = NULL;
@@ -8832,8 +8834,18 @@ int test_scene_blended_mesh_occlusion_contracts(TstSuite* suite, TstItem* item)
            blend_node->u.render.visual_metadata[1].draw_volume_occlusion_resource_id,
            "figure_0_p0.volume_occlusion.depth") == 0);
     AT(strcmp(
+           blend_node->u.render.visual_metadata[1].draw_volume_occlusion_producer_pass_id,
+           "figure_0_p0.volume_occlusion") == 0);
+    AT(blend_node->u.render.visual_metadata[1].draw_volume_occlusion_bind_set == DVZ_SCENE_SHADER_SET_VISUAL);
+    AT(blend_node->u.render.visual_metadata[1].draw_volume_occlusion_bind_binding == 3);
+    AT(strcmp(
            blend_node->u.render.visual_metadata[1].draw_scene_occlusion_resource_id,
            "figure_0_p0.scene_occlusion.depth") == 0);
+    AT(strcmp(
+           blend_node->u.render.visual_metadata[1].draw_scene_occlusion_producer_pass_id,
+           "figure_0_p0.scene_occlusion") == 0);
+    AT(blend_node->u.render.visual_metadata[1].draw_scene_occlusion_bind_set == DVZ_SCENE_SHADER_SET_SCENE_OCCLUSION);
+    AT(blend_node->u.render.visual_metadata[1].draw_scene_occlusion_bind_binding == 0);
 
     const DvzFrameGraphPass* volume_pass = NULL;
     const DvzFrameGraphPass* scene_pass = NULL;
@@ -8886,8 +8898,18 @@ int test_scene_blended_mesh_occlusion_contracts(TstSuite* suite, TstItem* item)
            contract.draws[1].volume_occlusion_resource_id,
            "figure_0_p0.volume_occlusion.depth") == 0);
     AT(strcmp(
+           contract.draws[1].volume_occlusion_producer_pass_id,
+           "figure_0_p0.volume_occlusion") == 0);
+    AT(contract.draws[1].volume_occlusion_bind_set == 1);
+    AT(contract.draws[1].volume_occlusion_bind_binding == 3);
+    AT(strcmp(
            contract.draws[1].scene_occlusion_resource_id,
            "figure_0_p0.scene_occlusion.depth") == 0);
+    AT(strcmp(
+           contract.draws[1].scene_occlusion_producer_pass_id,
+           "figure_0_p0.scene_occlusion") == 0);
+    AT(contract.draws[1].scene_occlusion_bind_set == 2);
+    AT(contract.draws[1].scene_occlusion_bind_binding == 0);
     AT(contract.draws[2].depth_test);
     AT(!contract.draws[2].depth_write);
     dvz_diagnostic_report_init(&graph_report);
@@ -8913,6 +8935,28 @@ int test_scene_blended_mesh_occlusion_contracts(TstSuite* suite, TstItem* item)
     AT(!_scene_pass_contract_validate(&exact_contract, &graph_report));
     AT(dvz_diagnostic_report_count(&graph_report) > 0);
 
+    exact_contract = contract;
+    for (uint32_t i = 0; i < exact_contract.attachment_count; i++)
+    {
+        if (exact_contract.attachments[i].role == DVZ_SCENE_ATTACHMENT_SAMPLED &&
+            strcmp(
+                exact_contract.attachments[i].resource_id,
+                "figure_0_p0.volume_occlusion.depth") == 0)
+        {
+            AT(strcmp(
+                   exact_contract.attachments[i].producer_pass_id,
+                   "figure_0_p0.volume_occlusion") == 0);
+            dvz_strlcpy(
+                exact_contract.attachments[i].producer_pass_id,
+                "figure_0_p1.volume_occlusion",
+                sizeof(exact_contract.attachments[i].producer_pass_id));
+            break;
+        }
+    }
+    dvz_diagnostic_report_init(&graph_report);
+    AT(!_scene_pass_contract_validate(&exact_contract, &graph_report));
+    AT(dvz_diagnostic_report_count(&graph_report) > 0);
+
     DvzCapabilitySnapshot caps;
     dvz_capability_snapshot_default(&caps);
     caps.max_color_attachments = 3;
@@ -8927,13 +8971,54 @@ int test_scene_blended_mesh_occlusion_contracts(TstSuite* suite, TstItem* item)
 
     DvzDiagnosticReport report;
     dvz_diagnostic_report_init(&report);
-    DvzDrp2CommandStream* stream = dvz_figure_emit_ex(figure, &caps, &report, &cfg);
+    DvzFramePlanEmitter* emitter = dvz_frame_plan_emitter();
+    ANN(emitter);
+    DvzDrp2CommandStream* stream =
+        dvz_frame_plan_emitter_emit_drp2(emitter, plan, &caps, &report, &cfg);
     ANN(stream);
     AT(dvz_diagnostic_report_count(&report) == 0);
     DvzDrp2ValidationResult validation = dvz_drp2_validate_stream(stream);
     AT(validation.ok);
+    dvz_diagnostic_report_init(&report);
+    AT(_scene_frame_plan_drp2_contracts_validate(plan, stream, &report));
+    AT(dvz_diagnostic_report_count(&report) == 0);
+
+    DvzDrp2Command* volume_bind_group = NULL;
+    uint32_t volume_binding_index = UINT32_MAX;
+    for (uint32_t i = 0; i < stream->count; i++)
+    {
+        DvzDrp2Command* command = &stream->commands[i];
+        if (command->type != DVZ_DRP2_COMMAND_CREATE_BIND_GROUP)
+            continue;
+        for (uint32_t j = 0; j < command->u.create_bind_group.entry_count; j++)
+        {
+            DvzDrp2BindGroupEntry* entry = &command->u.create_bind_group.entries[j];
+            const char* label = dvz_drp2_stream_label(stream, entry->resource_id);
+            if (
+                entry->binding == 3 && label != NULL &&
+                strcmp(label, "figure_0_p0.volume_occlusion.depth") == 0)
+            {
+                volume_bind_group = command;
+                volume_binding_index = j;
+                break;
+            }
+        }
+        if (volume_bind_group != NULL)
+            break;
+    }
+    ANN(volume_bind_group);
+    AT(volume_binding_index != UINT32_MAX);
+    uint32_t original_binding =
+        volume_bind_group->u.create_bind_group.entries[volume_binding_index].binding;
+    volume_bind_group->u.create_bind_group.entries[volume_binding_index].binding = 4;
+    dvz_diagnostic_report_init(&report);
+    AT(!_scene_frame_plan_drp2_contracts_validate(plan, stream, &report));
+    AT(dvz_diagnostic_report_count(&report) > 0);
+    volume_bind_group->u.create_bind_group.entries[volume_binding_index].binding =
+        original_binding;
 
     dvz_drp2_stream_destroy(stream);
+    dvz_frame_plan_emitter_destroy(emitter);
     dvz_frame_plan_destroy(plan);
     dvz_scene_destroy(scene);
     return 0;

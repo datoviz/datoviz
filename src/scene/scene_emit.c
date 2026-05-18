@@ -27,6 +27,7 @@
 #include "_scene.h"
 #include "_scene_emit.h"
 #include "_scene_resource_key.h"
+#include "_scene_shader_abi.h"
 #include "_technique.h"
 #include "_visual_pipeline.h"
 #include "render_contract.h"
@@ -1845,6 +1846,16 @@ static bool _scene_append_visual_to_render_pass(
                 node->u.render.panel_id);
             if (ret < 0 || (size_t)ret >= sizeof(metadata.draw_volume_occlusion_resource_id))
                 return false;
+            ret = dvz_snprintf(
+                metadata.draw_volume_occlusion_producer_pass_id,
+                sizeof(metadata.draw_volume_occlusion_producer_pass_id), "%s.volume_occlusion",
+                node->u.render.panel_id);
+            if (
+                ret < 0 ||
+                (size_t)ret >= sizeof(metadata.draw_volume_occlusion_producer_pass_id))
+                return false;
+            metadata.draw_volume_occlusion_bind_set = DVZ_SCENE_SHADER_SET_VISUAL;
+            metadata.draw_volume_occlusion_bind_binding = 3;
         }
         if (draw_contract.samples_scene_occlusion)
         {
@@ -1854,6 +1865,21 @@ static bool _scene_append_visual_to_render_pass(
                 node->u.render.panel_id);
             if (ret < 0 || (size_t)ret >= sizeof(metadata.draw_scene_occlusion_resource_id))
                 return false;
+            ret = dvz_snprintf(
+                metadata.draw_scene_occlusion_producer_pass_id,
+                sizeof(metadata.draw_scene_occlusion_producer_pass_id), "%s.scene_occlusion",
+                node->u.render.panel_id);
+            if (
+                ret < 0 ||
+                (size_t)ret >= sizeof(metadata.draw_scene_occlusion_producer_pass_id))
+                return false;
+            bool scene_occlusion_uses_set2 =
+                draw_contract.needs_image_set || draw_contract.needs_volume_set ||
+                draw_contract.needs_material_set;
+            metadata.draw_scene_occlusion_bind_set =
+                scene_occlusion_uses_set2 ? DVZ_SCENE_SHADER_SET_SCENE_OCCLUSION :
+                                            DVZ_SCENE_SHADER_SET_VISUAL;
+            metadata.draw_scene_occlusion_bind_binding = 0;
         }
     }
 
