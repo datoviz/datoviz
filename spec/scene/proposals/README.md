@@ -34,6 +34,17 @@ Use this authority order inside the scene spec:
    authority on their own.
 
 
+## Metadata Convention
+
+Proposal files should start with an `Execution Status` block before the title:
+
+1. `Status` names maturity and authority, not just topic,
+2. `Updated on` records the latest semantic review date,
+3. `Purpose` explains why the file remains in the proposal corpus,
+4. optional fields such as `Scope`, `Primary gap`, or `Primary pressure tests` may follow when they
+   make ownership clearer.
+
+
 ## Promotion Status
 
 Some mature proposals are now mostly represented by specialized specs. Keep those proposals as

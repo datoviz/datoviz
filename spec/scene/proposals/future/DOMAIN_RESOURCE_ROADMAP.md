@@ -1,7 +1,11 @@
-# Domain Resource Roadmap
+> **Execution Status**
+> - **Status:** `FUTURE ROADMAP`
+> - **Updated on:** `2026-05-18`
+> - **Purpose:** preserve exploratory direction for future track, ensemble, uncertainty, and
+>   molecular or structural-biology semantic resources.
+> - **Scope:** tracks/trajectories, ensembles/uncertainty, and molecular/structural-biology data.
 
-> **Status:** exploratory roadmap for future semantic resources.
-> **Scope:** tracks/trajectories, ensembles/uncertainty, and molecular/structural-biology data.
+# Domain Resource Roadmap
 
 
 ## Summary

@@ -1,6 +1,10 @@
-# Splatting Pressure on the Scene Frame Plan
+> **Execution Status**
+> - **Status:** `NON-NORMATIVE FUTURE PRESSURE NOTE`
+> - **Updated on:** `2026-05-18`
+> - **Purpose:** record v0.5 frame-plan pressure from scalable Gaussian splatting without making
+>   those requirements part of the v0.4 splat visual contract.
 
-Status: non-normative proposal input for v0.5 frame-plan work.
+# Splatting Pressure on the Scene Frame Plan
 
 This document records the generic frame-plan, frame-graph, DRP2, and capability features needed to
 move from the v0.4 screen-space anisotropic splat visual to scalable, proper Gaussian splatting. It

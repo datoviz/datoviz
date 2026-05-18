@@ -1,8 +1,12 @@
-# Out-Of-Core And Progressive Rendering Design
+> **Execution Status**
+> - **Status:** `FUTURE RESOURCE-MANAGEMENT PROPOSAL`
+> - **Updated on:** `2026-05-18`
+> - **Purpose:** preserve exploratory direction for page/chunk residency, partial-valid rendering,
+>   and progressive upload behavior for very large datasets.
+> - **Primary gap:** Datoviz has dirty updates and LOD examples, but no explicit page/chunk
+>   residency model for very large datasets.
 
-> **Status:** exploratory future resource-management proposal.
-> **Primary gap:** Datoviz has dirty updates and LOD examples, but no explicit page/chunk
-> residency model for very large datasets.
+# Out-Of-Core And Progressive Rendering Design
 
 
 ## Summary

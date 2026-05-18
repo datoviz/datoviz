@@ -1,9 +1,12 @@
-# Scientific Visualization Roadmap
+> **Execution Status**
+> - **Status:** `FUTURE ROADMAP`
+> - **Updated on:** `2026-05-18`
+> - **Purpose:** preserve future scientific-visualization directions without duplicating existing
+>   v0.4 specs.
+> - **Scope:** scientific data models and visual families not already fully covered by the active
+>   v0.4 scene implementation.
 
-> **Status:** exploratory roadmap for future v0.5+ scene capabilities.
-> **Scope:** scientific data models and visual families not already fully covered by the active
-> v0.4 scene implementation.
-> **Purpose:** preserve future design directions without duplicating existing v0.4 specs.
+# Scientific Visualization Roadmap
 
 
 ## Summary

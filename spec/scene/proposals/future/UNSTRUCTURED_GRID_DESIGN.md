@@ -1,9 +1,13 @@
-# Unstructured Grid And Cell Mesh Design
+> **Execution Status**
+> - **Status:** `FUTURE SCENE-RESOURCE PROPOSAL`
+> - **Updated on:** `2026-05-18`
+> - **Purpose:** preserve exploratory direction for unstructured-grid resources, volumetric cell
+>   topology, attached fields, derived surface views, and probes.
+> - **Primary gap:** `mesh` covers triangle surfaces and `volume` covers regular voxel fields, but
+>   finite-element and finite-volume datasets use volumetric cells with separate topology and field
+>   semantics.
 
-> **Status:** exploratory future scene-resource proposal.
-> **Primary gap:** `mesh` covers triangle surfaces and `volume` covers regular voxel fields, but
-> finite-element and finite-volume datasets use volumetric cells with separate topology and field
-> semantics.
+# Unstructured Grid And Cell Mesh Design
 
 
 ## Summary

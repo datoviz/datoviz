@@ -1,8 +1,12 @@
-# Graph And Network Design
+> **Execution Status**
+> - **Status:** `FUTURE SCENE-RESOURCE PROPOSAL`
+> - **Updated on:** `2026-05-18`
+> - **Purpose:** preserve exploratory direction for semantic graph resources and graph-specific
+>   identity, layout, rendering, and picking behavior.
+> - **Primary gap:** Datoviz has points, segments, and paths, but no semantic graph resource with
+>   node/edge identity, layout state, or graph-specific picking.
 
-> **Status:** exploratory future scene-resource proposal.
-> **Primary gap:** Datoviz has points, segments, and paths, but no semantic graph resource with
-> node/edge identity, layout state, or graph-specific picking.
+# Graph And Network Design
 
 
 ## Summary

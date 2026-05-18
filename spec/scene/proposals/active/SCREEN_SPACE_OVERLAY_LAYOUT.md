@@ -1,11 +1,13 @@
-# Screen-Space Overlay Layout Proposal
+> **Execution Status**
+> - **Status:** `EXPLORATORY SCENE SPEC PROPOSAL`
+> - **Updated on:** `2026-05-18`
+> - **Purpose:** define the proposed retained screen-space overlay layout model for labels, cards,
+>   readouts, legends, and dashboard metadata panels.
+> - **Primary pressure tests:** `../../examples/dashboards/SEMANTIC_EMBEDDING_ATLAS.md`,
+>   `../../examples/dashboards/IMAGE_EMBEDDING_LOD.md`, linked probe/colorbar examples, and
+>   dashboard telemetry.
 
-> **Status:** Exploratory proposal.
-> **Scope:** minimal retained overlay layout for labels, cards, readouts, legends, and dashboard
-> metadata panels.
-> **Primary pressure tests:** `../../examples/dashboards/SEMANTIC_EMBEDDING_ATLAS.md`,
-> `../../examples/dashboards/IMAGE_EMBEDDING_LOD.md`, linked probe/colorbar examples, and dashboard
-> telemetry.
+# Screen-Space Overlay Layout Proposal
 
 
 ## Summary

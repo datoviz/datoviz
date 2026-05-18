@@ -1,9 +1,13 @@
-# Field Visualization Roadmap
+> **Execution Status**
+> - **Status:** `FUTURE ROADMAP`
+> - **Updated on:** `2026-05-18`
+> - **Purpose:** preserve exploratory direction for vector, tensor, categorical-label, sparse, and
+>   bricked field consumers beyond the active sampled-field/image/volume contract.
+> - **Primary gap:** `SampledField`, `image`, and `volume` cover regular scalar/RGBA data, but
+>   vector fields, tensor fields, categorical label volumes, and sparse/bricked fields need clearer
+>   semantics before becoming public APIs.
 
-> **Status:** exploratory roadmap for future field consumers.
-> **Primary gap:** `SampledField`, `image`, and `volume` cover regular scalar/RGBA data, but
-> vector fields, tensor fields, categorical label volumes, and sparse/bricked fields need clearer
-> semantics before becoming public APIs.
+# Field Visualization Roadmap
 
 
 ## Summary

@@ -1,3 +1,9 @@
+> **Execution Status**
+> - **Status:** `SCENE SPEC PROPOSAL`
+> - **Updated on:** `2026-05-18`
+> - **Purpose:** define the intended event-callback dispatch model for long-running interaction
+>   work without implying general retained-scene thread safety.
+
 # Async Callbacks And Main-Thread Dispatch
 
 This proposal defines the target model for long-running user callbacks that are triggered by
