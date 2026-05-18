@@ -2,7 +2,7 @@
 
 > **Execution Status**
 > - **Status:** `ACTIVE DEVELOPMENT GUIDE`
-> - **Updated on:** `2026-05-17`
+> - **Updated on:** `2026-05-18`
 > - **Purpose:** give future agents the practical next steps after the first scene -> DRP2 ->
 >   vklite/canvas slice.
 
@@ -261,6 +261,17 @@ impostors, and graph-backed MSAA. The shader-ABI lane now has `_scene_shader_abi
 GLSL/WGSL common ABI helpers, centralized runtime bind layout ordering, centralized visual vertex
 attribute descriptor writes, consolidated depth-state selection, and `just shader-abi-check`.
 
+Render-contract follow-up on `2026-05-18`: the remaining user-reported `just tests` failure,
+`test_app_offscreen_volume_slice_scene_occlusion_dimming`, is fixed in the focused branch state.
+The volume-slice scene-occlusion shader now relies on the scene-occlusion shader variant plus the
+sampled depth/hidden-alpha parameters instead of an extra `params.w` enable gate, and render runtime
+multi-draw emission now invalidates cached set 1 and set 2 bind groups when the pipeline changes.
+Focused validation passed for the failing app test, nearby volume/scene-occlusion tests, the generic
+volume-slice scene-occlusion structural test, `direnv exec . just test
+test_app_offscreen_volume_slice_scene_occlusion_dimming`, `direnv exec . just test
+test_scene_volume_slice_uses_generic_scene_occlusion`, and `git diff --check`. Broader full-suite
+revalidation remains the next confidence step before treating this as a full green baseline.
+
 
 ## Immediate Task
 
@@ -357,9 +368,10 @@ Deliver the next implementation slices in this order unless the user redirects:
     point/pixel/image/volume, add material-aware G-buffer fields only when a concrete effect needs
     them, and update examples/docs that still present primitive-specific shading as primary.
 14. Multi-pass graph / transparency follow-up: keep WBOIT, depth peeling, blended volume, G-buffer,
-    EDL, SSAO, SSAO blur, and MSAA on the shared FramePlan graph path. The next transparency work
-    should tighten DRP2 validation around pipeline color-target formats versus render-pass
-    attachment formats, add any missing offscreen readback/capture coverage, and continue explicit
+    EDL, SSAO, SSAO blur, scene occlusion, and MSAA on the shared FramePlan graph path. The next
+    transparency work should tighten DRP2 validation around pipeline color-target formats versus
+    render-pass attachment formats, add any missing offscreen readback/capture coverage, rerun a
+    broad suite after the volume-slice scene-occlusion fix, and continue explicit
     resource-access/layout-transition cleanup before adding another transparency mode.
 15. Sphere and dense-particle follow-up: sphere is now a standalone retained visual with material
     lighting, antialiased silhouettes, raycast mode, G-buffer output, and SSAO coverage. Remaining

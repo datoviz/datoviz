@@ -4577,7 +4577,14 @@ int test_app_offscreen_volume_slice_scene_occlusion_dimming(TstSuite* suite, Tst
     AT(enabled.height == 64);
     AT(disabled.total_sum > 64 * 64 * 24);
     AT(enabled.total_sum > 64 * 64 * 24);
-    AT(enabled.total_sum + 64ull * 64ull * 12ull < disabled.total_sum);
+    if (!(enabled.total_sum + 64ull * 64ull * 12ull < disabled.total_sum))
+    {
+        log_error(
+            "volume slice scene occlusion dimming failed: disabled=%" PRIu64
+            " enabled=%" PRIu64 " threshold=%" PRIu64,
+            disabled.total_sum, enabled.total_sum, 64ull * 64ull * 12ull);
+        return 1;
+    }
     return 0;
 }
 

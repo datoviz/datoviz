@@ -1653,6 +1653,8 @@ static bool _emitter_emit_render_multi_draws(
             ok = ok && dvz_drp2_stream_set_pipeline(stream, render_pass_id, draws[d].pipeline_id);
             last_pipeline = draws[d].pipeline_id;
             last_bg_set0  = 0;
+            last_bg_set1  = 0;
+            last_bg_set2  = 0;
         }
         if (draws[d].bg_set0 != 0 && draws[d].bg_set0 != last_bg_set0)
         {

@@ -2,7 +2,7 @@
 
 > **Execution Status**
 > - **Status:** `AUDIT REPORT`
-> - **Updated on:** `2026-05-17`
+> - **Updated on:** `2026-05-18`
 > - **Scope:** `spec/scene/proposals/RENDER_CONTRACT_RESOLVER.md` and the active scene ->
 >   DRP2 -> vklite code path.
 > - **Inputs:** local code review plus three parallel subagent audits covering contract semantics,
@@ -508,6 +508,37 @@ Validation:
 2. `direnv exec . ./build/testing/dvztest_scene test_app_offscreen_depth_peel_mesh_two_layers`
 3. `direnv exec . ./build/testing/dvztest_scene test_app_offscreen_source_over_mesh_depth_and_blend`
 4. `git diff --check -- src/scene/tests/app.c agents/now/RENDER_CONTRACT_RESOLVER_AUDIT_2026-05-17.md`
+
+
+### 2026-05-18: Phase 4 / Volume-slice scene-occlusion dimming
+
+Completed the targeted volume-slice scene-occlusion regression slice after the user reported
+`test_app_offscreen_volume_slice_scene_occlusion_dimming` as the only `just tests` failure.
+
+Changes:
+
+1. Removed the redundant `sceneOcclusion.params.w` enable gate from the volume-slice
+   scene-occlusion shader path. The scene-occlusion shader variant is already selected only for
+   scene-occluded draws, so dimming now depends on the sampled occlusion depth, hidden alpha, and
+   soft-edge parameters.
+2. Invalidated cached set 1 and set 2 bind-group ids when runtime multi-draw emission changes
+   pipelines, matching the set 0 cache behavior and avoiding stale bind reuse across incompatible
+   pipeline layouts.
+3. Replaced the failing app test's final bare luminance assertion with a diagnostic failure block
+   that reports disabled, enabled, and threshold sums.
+
+Validation:
+
+1. `cmake --build build --target dvztest_scene -j2`
+2. `./build/testing/dvztest_scene test_app_offscreen_volume_slice_scene_occlusion_dimming`
+3. `./build/testing/dvztest_scene test_app_offscreen_volume_occlusion_region_delta`
+4. `./build/testing/dvztest_scene test_app_offscreen_volume_depth_occluded_by_primitive`
+5. `./build/testing/dvztest_scene test_app_offscreen_source_over_scene_occlusion_matrix`
+6. `./build/testing/dvztest_scene test_scene_volume_slice_uses_generic_scene_occlusion`
+7. `cmake --build build --target dvztest -j2`
+8. `direnv exec . just test test_app_offscreen_volume_slice_scene_occlusion_dimming`
+9. `direnv exec . just test test_scene_volume_slice_uses_generic_scene_occlusion`
+10. `git diff --check`
 
 
 ## Executive Assessment
@@ -1027,6 +1058,5 @@ This area should be considered solid when all of the following are true:
 
 ## Validation Performed For This Report
 
-This was a read-only architecture and test-coverage audit until this report file was added. No build
-or runtime tests were run for the audit itself. The only required validation for the committed change
-is repository diff hygiene on the report.
+The initial audit report was read-only. Later implementation-log entries record the focused build,
+runtime, and diff-hygiene validation for each follow-up slice.

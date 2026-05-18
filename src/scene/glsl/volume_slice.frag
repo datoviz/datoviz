@@ -186,10 +186,6 @@ float depth_visibility(vec3 uvw)
 #ifdef DVZ_SCENE_OCCLUSION
 float scene_occlusion_visibility_linear(vec3 uvw)
 {
-    if (sceneOcclusion.params.w < 0.5) {
-        return 1.0;
-    }
-
     vec2 size = vec2(textureSize(sceneOcclusionDepth, 0));
     vec2 uv = clamp(gl_FragCoord.xy / size, vec2(0.0), vec2(1.0));
     float scene_depth = texture(sceneOcclusionDepth, uv).r;
