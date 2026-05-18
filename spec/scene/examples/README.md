@@ -33,6 +33,12 @@ Fixture examples should stay smaller than the worked examples in this directory:
 synthetic in-file data where possible, deterministic offscreen artifacts when practical, and explicit
 CMake/backend gates for GLFW, GUI, CUDA/NVENC, Kvazaar, WebGPU, or platform interop requirements.
 
+## Example Suite Organization
+
+The cross-repo organization plan for Datoviz C examples, Datoviz raw Python examples, vispy2
+GSP examples, vispy2 plot examples, fixtures, showcases, regression examples, and stress tests
+lives in [EXAMPLE_ORGANIZATION.md](EXAMPLE_ORGANIZATION.md).
+
 Use [TEMPLATE.md](TEMPLATE.md) for new example specs. Existing examples should keep their
 domain-specific detail, but each file should provide enough information for an agent to pick up the
 implementation without asking for missing data-planning context. In practice, every example should
