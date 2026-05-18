@@ -574,8 +574,8 @@ int test_scene_panzoom_arcball(TstSuite* suite)
     const char* tags = "scene";
 
     TST_MODULE(suite, "scene");
-    TST_GROUP("panzoom-arcball");
 
+    TST_GROUP("panzoom");
     TST_CASE(test_panzoom_create_reset);
     TST_CASE(test_panzoom_pan_shift);
     TST_CASE(test_panzoom_zoom_wheel);
@@ -585,6 +585,7 @@ int test_scene_panzoom_arcball(TstSuite* suite)
     TST_CASE(test_panzoom_mvp_identity);
     TST_CASE(test_panel_panzoom_getter);
 
+    TST_GROUP("arcball");
     TST_CASE(test_arcball_create_reset);
     TST_CASE(test_arcball_rotate_produces_nonidentity_model);
     TST_CASE(test_arcball_end_commits_rotation);

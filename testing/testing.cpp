@@ -55,7 +55,7 @@
 
 typedef struct TstOptions
 {
-    const char* legacy_match;
+    const char* positional_filter;
     const char* module;
     const char* group;
     const char* name;
@@ -166,30 +166,171 @@ static void _tst_drop_display_prefix(std::string* label, const std::string& pref
 
 
 /**
- * Convert a test metadata field to the token prefix used by C fixture names.
+ * Split a metadata field into the token form used by fixture names.
  *
  * @param value metadata string.
- * @return Normalized token prefix, including the trailing underscore.
+ * @return Normalized tokens.
  */
-static std::string _tst_display_token_prefix(const char* value)
+static std::vector<std::string> _tst_display_tokens(const char* value)
 {
+    std::vector<std::string> tokens;
     if (value == NULL || value[0] == '\0')
     {
-        return "";
+        return tokens;
     }
 
-    std::string token = value;
-    for (char& ch : token)
+    std::string token;
+    for (const char* c = value; *c != '\0'; c++)
     {
-        const bool lower = ch >= 'a' && ch <= 'z';
-        const bool upper = ch >= 'A' && ch <= 'Z';
-        const bool digit = ch >= '0' && ch <= '9';
-        if (!lower && !upper && !digit)
+        const bool lower = *c >= 'a' && *c <= 'z';
+        const bool upper = *c >= 'A' && *c <= 'Z';
+        const bool digit = *c >= '0' && *c <= '9';
+        if (lower || upper || digit)
         {
-            ch = '_';
+            token.push_back(*c);
+        }
+        else if (!token.empty())
+        {
+            tokens.push_back(token);
+            token.clear();
         }
     }
-    return token + "_";
+    if (!token.empty())
+    {
+        tokens.push_back(token);
+    }
+    return tokens;
+}
+
+
+
+/**
+ * Return whether a leading display token should be removed.
+ *
+ * @param token leading fixture-name token.
+ * @param drop_tokens metadata tokens that are already shown in the fixture id.
+ * @return true if the leading token is redundant.
+ */
+static bool
+_tst_display_should_drop_token(const std::string& token, const std::vector<std::string>& drop_tokens)
+{
+    for (const std::string& drop_token : drop_tokens)
+    {
+        if (token == drop_token)
+        {
+            return true;
+        }
+        if (drop_token == "validation" && token == "validate")
+        {
+            return true;
+        }
+        if (drop_token == "emit" && token == "emitter")
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+
+
+/**
+ * Remove leading fixture-name tokens that are already present in module/group metadata.
+ *
+ * @param label display label to trim.
+ * @param drop_tokens metadata tokens that are already shown in the fixture id.
+ */
+static void
+_tst_drop_display_token_prefixes(std::string* label, const std::vector<std::string>& drop_tokens)
+{
+    ANN(label);
+    while (!label->empty())
+    {
+        size_t separator = label->find('_');
+        if (separator == std::string::npos)
+        {
+            break;
+        }
+        const std::string token = label->substr(0, separator);
+        if (!_tst_display_should_drop_token(token, drop_tokens))
+        {
+            break;
+        }
+        label->erase(0, separator + 1);
+    }
+}
+
+
+
+/**
+ * Remove group-specific phrase prefixes that duplicate fixture metadata or local conventions.
+ *
+ * @param test test case.
+ * @param label display label to trim.
+ */
+static void _tst_drop_display_phrase_prefixes(const TstCase* test, std::string* label)
+{
+    ANN(test);
+    ANN(label);
+    const std::string module = test->module != NULL ? test->module : "";
+    const std::string group = test->group != NULL ? test->group : "";
+
+    if (module == "scene" && group == "frame-plan")
+    {
+        _tst_drop_display_prefix(label, "graph_");
+    }
+    if (module == "scene" && group == "scene-graph")
+    {
+        _tst_drop_display_prefix(label, "visual_");
+    }
+    if (module == "scene" && group == "pick-probe")
+    {
+        _tst_drop_display_prefix(label, "process_requests_");
+        _tst_drop_display_prefix(label, "process_pick_probe_");
+        _tst_drop_display_prefix(label, "poll_pick_probe_");
+        _tst_drop_display_prefix(label, "pick_request_");
+        _tst_drop_display_prefix(label, "probe_request_");
+        _tst_drop_display_prefix(label, "request_");
+        _tst_drop_display_prefix(label, "image_probe_");
+        _tst_drop_display_prefix(label, "point_pick_");
+        _tst_drop_display_prefix(label, "pixel_pick_");
+        _tst_drop_display_prefix(label, "marker_pick_");
+    }
+    if (module == "scene" && group == "fields")
+    {
+        _tst_drop_display_prefix(label, "image_field_");
+        _tst_drop_display_prefix(label, "image_visual_");
+        _tst_drop_display_prefix(label, "sampled_field_");
+        _tst_drop_display_prefix(label, "visual_buffer_");
+        _tst_drop_display_prefix(label, "visual_field_");
+        _tst_drop_display_prefix(label, "visual_scale_");
+        _tst_drop_display_prefix(label, "volume_field_");
+        _tst_drop_display_prefix(label, "volume_visual_");
+    }
+    if (module == "scene" && group == "panzoom")
+    {
+        _tst_drop_display_prefix(label, "panel_panzoom_");
+    }
+    if (module == "scene" && group == "arcball")
+    {
+        _tst_drop_display_prefix(label, "camera_arcball_");
+    }
+    if (module == "canvas" && group == "default")
+    {
+        _tst_drop_display_prefix(label, "glfw_wrap_surface_");
+    }
+    if (module == "drp2" && group == "runtime-validation")
+    {
+        _tst_drop_display_prefix(label, "rejects_");
+    }
+    if (module == "drp2" && group == "vklite-runtime")
+    {
+        _tst_drop_display_prefix(label, "refreshes_bind_group_after_");
+    }
+    if (module == "drp2" && group == "render-pass")
+    {
+        _tst_drop_display_prefix(label, "begin_render_pass_");
+    }
 }
 
 
@@ -205,11 +346,15 @@ static std::string _tst_case_display_name(const TstCase* test)
     ANN(test);
     std::string name = test->name != NULL ? test->name : "unnamed";
     _tst_drop_display_prefix(&name, "test_");
-    _tst_drop_display_prefix(&name, _tst_display_token_prefix(test->module));
-    if (test->group != NULL && !_tst_streq(test->group, "default"))
+    std::vector<std::string> drop_tokens = _tst_display_tokens(test->module);
+    if (test->group != NULL)
     {
-        _tst_drop_display_prefix(&name, _tst_display_token_prefix(test->group));
+        std::vector<std::string> group_tokens = _tst_display_tokens(test->group);
+        drop_tokens.insert(drop_tokens.end(), group_tokens.begin(), group_tokens.end());
     }
+    _tst_drop_display_token_prefixes(&name, drop_tokens);
+    _tst_drop_display_phrase_prefixes(test, &name);
+    _tst_drop_display_token_prefixes(&name, drop_tokens);
     return name.empty() ? "unnamed" : name;
 }
 
@@ -226,6 +371,10 @@ static std::string _tst_case_display_id(const TstCase* test)
     ANN(test);
     std::string module = test->module != NULL ? test->module : "default";
     std::string group = test->group != NULL ? test->group : "default";
+    if (group == "default")
+    {
+        return module + "/" + _tst_case_display_name(test);
+    }
     return module + "/" + group + "/" + _tst_case_display_name(test);
 }
 
@@ -594,8 +743,8 @@ static int _tst_parse_options(int argc, char** argv, TstOptions* options)
             options->verbose = true;
         else if (_tst_streq(arg, "--shuffle"))
             options->shuffle = true;
-        else if (arg[0] != '-' && options->legacy_match == NULL)
-            options->legacy_match = arg;
+        else if (arg[0] != '-' && options->positional_filter == NULL)
+            options->positional_filter = arg;
         else
         {
             dvz_fprintf(stderr, "unrecognized test option: %s\n", arg);
@@ -628,12 +777,14 @@ static bool _tst_case_matches(const TstCase* test, const TstOptions* options)
     if (!_tst_isolation_matches(test->isolation, options->isolation))
         return false;
 
-    if (options->legacy_match != NULL)
+    if (options->positional_filter != NULL)
     {
         std::string id = _tst_case_id(test);
-        if (!_tst_contains(id.c_str(), options->legacy_match) &&
-            !_tst_contains(test->function_name, options->legacy_match) &&
-            !_tst_contains(test->tags, options->legacy_match))
+        std::string display_id = _tst_case_display_id(test);
+        if (!_tst_contains(id.c_str(), options->positional_filter) &&
+            !_tst_contains(display_id.c_str(), options->positional_filter) &&
+            !_tst_contains(test->function_name, options->positional_filter) &&
+            !_tst_contains(test->tags, options->positional_filter))
         {
             return false;
         }
