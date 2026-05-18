@@ -25,8 +25,8 @@ Changes:
 2. Added a local mutable-node lookup helper and reacquires `DvzFramePlanNode*` immediately before
    appending visual metadata.
 3. Added `test_scene_frame_plan_node_reallocation_safe`, which pre-fills a FramePlan to one slot
-   before `DVZ_FRAME_PLAN_INITIAL_NODE_CAPACITY`, then emits a G-buffer panel with two mesh visuals
-   to force node-array growth while preserving visual assignments.
+   before `DVZ_FRAME_PLAN_INITIAL_NODE_CAPACITY`, then emits a mixed G-buffer, opaque,
+   source-over, and WBOIT panel to force node-array growth while preserving visual assignments.
 
 Validation:
 
@@ -849,22 +849,21 @@ Recommendation:
 3. Add targeted graph-builder failure tests when a deterministic non-OOM failure trigger exists.
 
 
-### High: FramePlan render-node pointers can go stale
+### Resolved: FramePlan render-node pointers can go stale
 
-`frame_plan.c` stores nodes in a reallocating `plan->nodes` array, and `_append_node()` returns
-pointers into that array. `scene_emit.c` caches `DvzFramePlanNode*` values such as `opaque_node`,
-`gbuffer_node`, `transparent_node`, `depth_peel_*_node`, and `blended_nodes[]` across later appends.
+`frame_plan.c` still stores nodes in a reallocating `plan->nodes` array, and `_append_node()` still
+returns pointers into that array. Panel render emission no longer keeps those pointers across later
+appends: `scene_emit.c` stores render-node indices for opaque, G-buffer, source-over, WBOIT, depth
+peel, and graph-backed passes, then reacquires `DvzFramePlanNode*` immediately before mutation.
 
-Impact: once appending render/upload nodes crosses the current capacity, a reallocation can
-invalidate cached node pointers. The contract resolver area is likely to add more generated nodes,
-so this bug becomes more probable as the graph grows.
+Status:
 
-Recommendation:
-
-1. Store node indices or stable ids, not `DvzFramePlanNode*`, across any call that can append.
-2. Reacquire `&plan->nodes[index]` immediately before mutation.
-3. Add a regression that lowers or exceeds `DVZ_FRAME_PLAN_INITIAL_NODE_CAPACITY` with many visuals
-   and mixed techniques, then verifies all visuals land in the expected nodes.
+1. The original stale-pointer risk is closed for panel render emission.
+2. Remaining `DvzFramePlanNode*` uses in `scene_emit.c` are short-lived metadata updates immediately
+   after an append and do not cross another append.
+3. `test_scene_frame_plan_node_reallocation_safe` now pre-fills the FramePlan to one slot before
+   `DVZ_FRAME_PLAN_INITIAL_NODE_CAPACITY`, emits mixed G-buffer/opaque/source-over/WBOIT render
+   nodes across the reallocation boundary, and validates graph and scene contracts.
 
 
 ### Medium: blend and pipeline policy are not contract-owned
@@ -1022,7 +1021,8 @@ in this pass, using this attachment/resource/pipeline state" belongs in the reso
 
 ### Phase 0: immediate safety hardening
 
-1. Replace cached `DvzFramePlanNode*` values in scene emission with node indices or stable ids.
+1. Done: replace cached `DvzFramePlanNode*` values in scene emission with node indices or stable
+   ids.
 2. Make graph-emission failure fatal to FramePlan emission or recorded in diagnostics.
 3. Make contract validation report missing graph passes for all graph-backed render roles.
 4. Reject mixed WBOIT plus depth-peel panels until a total composition order is specified.

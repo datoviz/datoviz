@@ -7087,7 +7087,7 @@ int test_scene_frame_plan_node_reallocation_safe(TstSuite* suite, TstItem* item)
     ANN(index_buffer);
     AT(dvz_scene_buffer_set_data(index_buffer, indices, sizeof(indices)));
 
-    for (uint32_t i = 0; i < 2; i++)
+    for (uint32_t i = 0; i < 3; i++)
     {
         DvzVisual* mesh = dvz_mesh(scene, 0);
         AT(mesh != NULL);
@@ -7097,25 +7097,80 @@ int test_scene_frame_plan_node_reallocation_safe(TstSuite* suite, TstItem* item)
         AT(dvz_panel_add_visual(panel, mesh, NULL) == 0);
     }
 
+    float point_positions[3][3] = {
+        {-0.25f, -0.25f, 0.1f},
+        {0.25f, -0.25f, 0.1f},
+        {0.0f, 0.25f, 0.1f},
+    };
+    DvzColor blended_colors[3] = {{255, 0, 0, 128}, {0, 255, 0, 128}, {0, 0, 255, 128}};
+    float point_sizes[3] = {10.0f, 12.0f, 14.0f};
+    for (uint32_t i = 0; i < 2; i++)
+    {
+        DvzVisual* blended = dvz_point(scene, 0);
+        AT(blended != NULL);
+        AT(dvz_visual_set_data(blended, "position", point_positions, 3) == 0);
+        AT(dvz_visual_set_data(blended, "color", blended_colors, 3) == 0);
+        AT(dvz_visual_set_data(blended, "size", point_sizes, 3) == 0);
+        AT(dvz_visual_set_alpha_mode(blended, DVZ_ALPHA_BLENDED) == 0);
+        AT(dvz_panel_add_visual(panel, blended, NULL) == 0);
+    }
+    for (uint32_t i = 0; i < 2; i++)
+    {
+        DvzVisual* wboit = dvz_point(scene, 0);
+        AT(wboit != NULL);
+        AT(dvz_visual_set_data(wboit, "position", point_positions, 3) == 0);
+        AT(dvz_visual_set_data(wboit, "color", blended_colors, 3) == 0);
+        AT(dvz_visual_set_data(wboit, "size", point_sizes, 3) == 0);
+        AT(dvz_visual_set_alpha_mode(wboit, DVZ_ALPHA_WBOIT) == 0);
+        AT(dvz_panel_add_visual(panel, wboit, NULL) == 0);
+    }
+
     DvzFramePlan* plan = dvz_frame_plan("figure.gbuffer.realloc", 0);
     ANN(plan);
     for (uint32_t i = 0; i + 1 < DVZ_FRAME_PLAN_INITIAL_NODE_CAPACITY; i++)
         AT(dvz_frame_plan_clear_panel(plan, "prefill", "rt", panel->desc));
     AT(dvz_frame_plan_node_count(plan) == DVZ_FRAME_PLAN_INITIAL_NODE_CAPACITY - 1);
 
-    _scene_emit_panel_render(figure, 0, plan, "figure_0");
-    AT(dvz_frame_plan_node_count(plan) == DVZ_FRAME_PLAN_INITIAL_NODE_CAPACITY + 1);
+    AT(_scene_emit_panel_render(figure, 0, plan, "figure_0"));
+    AT(dvz_frame_plan_node_count(plan) == DVZ_FRAME_PLAN_INITIAL_NODE_CAPACITY + 4);
 
     const DvzFramePlanNode* gbuffer_node =
         dvz_frame_plan_node_get(plan, DVZ_FRAME_PLAN_INITIAL_NODE_CAPACITY - 1);
     const DvzFramePlanNode* opaque_node =
         dvz_frame_plan_node_get(plan, DVZ_FRAME_PLAN_INITIAL_NODE_CAPACITY);
+    const DvzFramePlanNode* blended_node =
+        dvz_frame_plan_node_get(plan, DVZ_FRAME_PLAN_INITIAL_NODE_CAPACITY + 1);
+    const DvzFramePlanNode* wboit_node =
+        dvz_frame_plan_node_get(plan, DVZ_FRAME_PLAN_INITIAL_NODE_CAPACITY + 2);
+    const DvzFramePlanNode* resolve_node =
+        dvz_frame_plan_node_get(plan, DVZ_FRAME_PLAN_INITIAL_NODE_CAPACITY + 3);
     ANN(gbuffer_node);
     ANN(opaque_node);
+    ANN(blended_node);
+    ANN(wboit_node);
+    ANN(resolve_node);
     AT(dvz_frame_plan_render_pass_role(gbuffer_node) == DVZ_FRAME_PLAN_RENDER_PASS_GBUFFER);
     AT(dvz_frame_plan_render_pass_role(opaque_node) == DVZ_FRAME_PLAN_RENDER_PASS_OPAQUE);
-    AT(gbuffer_node->u.render.visual_count == 2);
-    AT(opaque_node->u.render.visual_count == 2);
+    AT(
+        dvz_frame_plan_render_pass_role(blended_node) ==
+        DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_BLEND);
+    AT(
+        dvz_frame_plan_render_pass_role(wboit_node) ==
+        DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_ACCUMULATION);
+    AT(dvz_frame_plan_render_pass_role(resolve_node) == DVZ_FRAME_PLAN_RENDER_PASS_WBOIT_RESOLVE);
+    AT(gbuffer_node->u.render.visual_count == 3);
+    AT(opaque_node->u.render.visual_count == 3);
+    AT(blended_node->u.render.visual_count == 2);
+    AT(wboit_node->u.render.visual_count == 2);
+    AT(resolve_node->u.render.visual_count == 0);
+
+    DvzDiagnosticReport report;
+    dvz_diagnostic_report_init(&report);
+    AT(dvz_frame_plan_graph_validate(plan, &report));
+    AT(dvz_diagnostic_report_count(&report) == 0);
+    dvz_diagnostic_report_init(&report);
+    AT(_scene_frame_plan_contracts_validate(figure, plan, &report));
+    AT(dvz_diagnostic_report_count(&report) == 0);
 
     dvz_frame_plan_destroy(plan);
     dvz_scene_destroy(scene);
