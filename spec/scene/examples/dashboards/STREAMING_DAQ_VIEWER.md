@@ -14,6 +14,9 @@ This example demonstrates a real-time, high-density data acquisition (DAQ) viewe
 It shows many digital and analog time series updating continuously in a fixed-size ring buffer, with
 a moving write cursor and optional scrolling display mode.
 
+For broader v0.5+ dashboard architecture ideas that extend beyond this single example, see
+`spec/scene/dashboards/DASHBOARD_RENDERING_ROADMAP.md`.
+
 The example should be implemented in Python and should work out of the box. It should not depend on
 external data by default. It should generate deterministic, realistic synthetic DAQ data that
 resembles a neuroscience or behavioral acquisition session. If a prepared replay dataset is later
