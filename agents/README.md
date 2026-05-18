@@ -13,11 +13,12 @@ Start with the small active set in [now/](now/). These are the active entry poin
 remain after older plans are retired or moved:
 
 1. [now/V0_4_NEXT_STEPS.md](now/V0_4_NEXT_STEPS.md)
-2. [now/V0_4_RELEASE_READINESS_PLAN.md](now/V0_4_RELEASE_READINESS_PLAN.md)
-3. [now/TEST_RUNNER_MODERNIZATION.md](now/TEST_RUNNER_MODERNIZATION.md)
-4. [now/DRP2_SPEC.md](now/DRP2_SPEC.md)
-5. [now/VISUAL_FAMILY_IMPLEMENTATION_DECISIONS.md](now/VISUAL_FAMILY_IMPLEMENTATION_DECISIONS.md)
-6. [now/IMAGE_PICKING_RECOVERY_PLAN.md](now/IMAGE_PICKING_RECOVERY_PLAN.md)
+2. [now/V0_4_C_IMPLEMENTATION_CHECKLIST.md](now/V0_4_C_IMPLEMENTATION_CHECKLIST.md)
+3. [now/V0_4_RELEASE_READINESS_PLAN.md](now/V0_4_RELEASE_READINESS_PLAN.md)
+4. [now/TEST_RUNNER_MODERNIZATION.md](now/TEST_RUNNER_MODERNIZATION.md)
+5. [now/DRP2_SPEC.md](now/DRP2_SPEC.md)
+6. [now/VISUAL_FAMILY_IMPLEMENTATION_DECISIONS.md](now/VISUAL_FAMILY_IMPLEMENTATION_DECISIONS.md)
+7. [now/IMAGE_PICKING_RECOVERY_PLAN.md](now/IMAGE_PICKING_RECOVERY_PLAN.md)
 
 Near-term work that is expected soon, but should not crowd the active entry-point directory, lives
 in [soon/](soon/). This includes the WebGPU, WASM, dual-depth-peeling, and screen-space volume
@@ -29,27 +30,29 @@ occlusion/effects tracks.
 If resuming work on the branch:
 
 1. Read [now/V0_4_NEXT_STEPS.md](now/V0_4_NEXT_STEPS.md) for the current practical task list.
-2. Read [now/V0_4_RELEASE_READINESS_PLAN.md](now/V0_4_RELEASE_READINESS_PLAN.md) when working on
+2. Read [now/V0_4_C_IMPLEMENTATION_CHECKLIST.md](now/V0_4_C_IMPLEMENTATION_CHECKLIST.md) to decide
+   the next C implementation item and see which lanes can run in parallel.
+3. Read [now/V0_4_RELEASE_READINESS_PLAN.md](now/V0_4_RELEASE_READINESS_PLAN.md) when working on
    post-feature-completion quality, API review, documentation, bindings, gallery, packaging,
    release candidates, or communication planning.
-3. Read [now/TEST_RUNNER_MODERNIZATION.md](now/TEST_RUNNER_MODERNIZATION.md) before changing the
+4. Read [now/TEST_RUNNER_MODERNIZATION.md](now/TEST_RUNNER_MODERNIZATION.md) before changing the
    C test framework, suite registration, test binaries, or filter/reporting behavior.
-4. Read [now/VISUAL_FAMILY_IMPLEMENTATION_DECISIONS.md](now/VISUAL_FAMILY_IMPLEMENTATION_DECISIONS.md)
+5. Read [now/VISUAL_FAMILY_IMPLEMENTATION_DECISIONS.md](now/VISUAL_FAMILY_IMPLEMENTATION_DECISIONS.md)
    before extending pixel, point, marker, segment, path, image, sphere, or mesh first-slice
    behavior.
-5. Read [now/IMAGE_PICKING_RECOVERY_PLAN.md](now/IMAGE_PICKING_RECOVERY_PLAN.md) before changing
+6. Read [now/IMAGE_PICKING_RECOVERY_PLAN.md](now/IMAGE_PICKING_RECOVERY_PLAN.md) before changing
    image probe coordinates, hidden pick-capable image behavior, panzoom probe mapping, or CPU
    fallback behavior.
-6. Read [../spec/scene/README.md](../spec/scene/README.md) before changing scene semantics,
+7. Read [../spec/scene/README.md](../spec/scene/README.md) before changing scene semantics,
    public scene API shape, frame planning, visual families, interaction, annotations, scales, or
    runtime boundaries.
-7. Read [../spec/scene/api/API_SURFACE.md](../spec/scene/api/API_SURFACE.md) before changing public
+8. Read [../spec/scene/api/API_SURFACE.md](../spec/scene/api/API_SURFACE.md) before changing public
    scene API shape or adding new scene object families.
-8. Read [../spec/drp2/README.md](../spec/drp2/README.md) and
+9. Read [../spec/drp2/README.md](../spec/drp2/README.md) and
    [now/DRP2_SPEC.md](now/DRP2_SPEC.md), if it is still present in `now/`, before touching
    `spec/drp2/`, `src/drp2/`, or
    DRP2-emitting scene code.
-9. Read [done/SCENE_DRP2_IMPLEMENTATION.md](done/SCENE_DRP2_IMPLEMENTATION.md) and
+10. Read [done/SCENE_DRP2_IMPLEMENTATION.md](done/SCENE_DRP2_IMPLEMENTATION.md) and
    [done/DRP2_SCENE_SAFETY.md](done/DRP2_SCENE_SAFETY.md) when touching the completed first
    scene -> DRP2 -> runtime slice.
 
