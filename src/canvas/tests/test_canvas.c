@@ -664,7 +664,9 @@ int test_canvas_glfw_destroy_recreate(TstContext* suite, const TstCase* item)
     window_cfg.title = "canvas-glfw-destroy-recreate";
     window_cfg.width = 320;
     window_cfg.height = 240;
+    tst_expect_log_begin(suite, LOG_ERROR);
     window = dvz_window_create(host, DVZ_BACKEND_GLFW, &window_cfg);
+    (void)tst_expect_error_end(suite);
     if (window == NULL || dvz_window_backend_type(window) != DVZ_BACKEND_GLFW)
     {
         skip_reason = "GLFW window creation failed";

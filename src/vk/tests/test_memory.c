@@ -190,7 +190,7 @@ _cuda_import_find_vulkan_gpu(DvzInstance* instance, CUdevice cu_device, uint32_t
         if (memcmp(id.deviceUUID, cu_uuid.bytes, VK_UUID_SIZE) == 0)
         {
             *out_gpu_index = i;
-            log_info("matched CUDA device to Vulkan GPU %u (%s)", i, props.properties.deviceName);
+            log_debug("matched CUDA device to Vulkan GPU %u (%s)", i, props.properties.deviceName);
             return true;
         }
     }
@@ -295,7 +295,7 @@ int test_memory_interop_buffer_export(TstContext* suite, const TstCase* tstitem)
     ANN(tstitem);
 
 #if !OS_UNIX
-    log_warn("test_memory_interop_buffer_export skipped: opaque FD path is Unix-only");
+    log_debug("test_memory_interop_buffer_export skipped: opaque FD path is Unix-only");
     tst_skip(suite, "opaque FD path is Unix-only");
     return 0;
 #else
@@ -323,7 +323,7 @@ int test_memory_interop_buffer_export(TstContext* suite, const TstCase* tstitem)
     uint32_t gpu_count = dvz_instance_gpu_count(instance);
     if (gpu_count == 0)
     {
-        log_warn("test_memory_interop_buffer_export skipped: no Vulkan GPU available");
+        log_debug("test_memory_interop_buffer_export skipped: no Vulkan GPU available");
         tst_skip(suite, "no Vulkan GPU available");
         goto cleanup;
     }
@@ -356,7 +356,7 @@ int test_memory_interop_buffer_export(TstContext* suite, const TstCase* tstitem)
     }
     if (!dvz_device_has_extension(device, VK_KHR_EXTERNAL_SEMAPHORE_FD_EXTENSION_NAME))
     {
-        log_warn("test_memory_interop_buffer_export skipped: external semaphore FD unsupported");
+        log_debug("test_memory_interop_buffer_export skipped: external semaphore FD unsupported");
         tst_skip(suite, "external semaphore FD unsupported");
         goto cleanup;
     }
@@ -456,12 +456,12 @@ int test_memory_cuda_1(TstContext* suite, const TstCase* tstitem)
     cerr = cudaGetDeviceCount(&device_count);
     if (cerr != cudaSuccess || device_count == 0)
     {
-        log_warn(
+        log_debug(
             "test_memory_cuda_1 skipped: no CUDA devices found (%s)", cudaGetErrorString(cerr));
         tst_skip(suite, "no CUDA devices found");
         return 0;
     }
-    log_info("CUDA reports %d device(s)", device_count);
+    log_debug("CUDA reports %d device(s)", device_count);
     if (cuda_check(cuInit(0), "cuInit"))
         return 1;
     if (cuda_check(cuDeviceGet(&cu_device, 0), "cuDeviceGet"))
@@ -505,7 +505,7 @@ int test_memory_cuda_1(TstContext* suite, const TstCase* tstitem)
     uint32_t vk_gpu_index = UINT32_MAX;
     if (!_cuda_import_find_vulkan_gpu(instance, cu_device, &vk_gpu_index))
     {
-        log_warn("test_memory_cuda_1 skipped: no Vulkan physical device matches CUDA device 0");
+        log_debug("test_memory_cuda_1 skipped: no Vulkan physical device matches CUDA device 0");
         tst_skip(suite, "no Vulkan physical device matches CUDA device 0");
         out = 0;
         goto cleanup_vulkan;
@@ -545,7 +545,7 @@ int test_memory_cuda_1(TstContext* suite, const TstCase* tstitem)
     }
     if (!dvz_device_has_extension(device, VK_KHR_EXTERNAL_SEMAPHORE_FD_EXTENSION_NAME))
     {
-        log_warn("test_memory_cuda_1 skipped: Vulkan external semaphore FD unsupported");
+        log_debug("test_memory_cuda_1 skipped: Vulkan external semaphore FD unsupported");
         tst_skip(suite, "external semaphore FD unsupported");
         out = 0;
         goto cleanup_vulkan;
@@ -743,7 +743,7 @@ int test_memory_cuda_1(TstContext* suite, const TstCase* tstitem)
     }
     dvz_free(host_verify);
     if (out == 0)
-        log_info("Vulkan->CUDA semaphore path verified OK (CUDA write visible in Vulkan)");
+        log_debug("Vulkan->CUDA semaphore path verified OK (CUDA write visible in Vulkan)");
     else
         goto cleanup_cuda_mem;
 
@@ -807,7 +807,7 @@ int test_memory_cuda_1(TstContext* suite, const TstCase* tstitem)
             }
         }
         if (out == 0)
-            log_info("CUDA->Vulkan->CUDA sync verified OK (Vulkan write visible in CUDA)");
+            log_debug("CUDA->Vulkan->CUDA sync verified OK (Vulkan write visible in CUDA)");
     }
     dvz_free(host_copy);
 
@@ -863,7 +863,7 @@ cleanup_vulkan:
 
     return out;
 #else
-    log_warn("test_memory_cuda skipped because DVZ_HAS_CUDA=0");
+    log_debug("test_memory_cuda skipped because DVZ_HAS_CUDA=0");
     tst_skip(suite, "CUDA support unavailable");
     return 0;
 #endif
@@ -1049,7 +1049,7 @@ int test_memory_cuda_2(TstContext* suite, const TstCase* tstitem)
     uint32_t vk_gpu_index = UINT32_MAX;
     if (!_cuda_import_find_vulkan_gpu(instance, cu_device, &vk_gpu_index))
     {
-        log_warn("test_memory_cuda_2 skipped: no Vulkan physical device matches CUDA device 0");
+        log_debug("test_memory_cuda_2 skipped: no Vulkan physical device matches CUDA device 0");
         tst_skip(suite, "no Vulkan physical device matches CUDA device 0");
         out = 0;
         goto cleanup;
@@ -1086,7 +1086,7 @@ int test_memory_cuda_2(TstContext* suite, const TstCase* tstitem)
     }
     if (!dvz_device_has_extension(device, VK_KHR_EXTERNAL_SEMAPHORE_FD_EXTENSION_NAME))
     {
-        log_warn("test_memory_cuda_2 skipped: Vulkan external semaphore FD unsupported");
+        log_debug("test_memory_cuda_2 skipped: Vulkan external semaphore FD unsupported");
         tst_skip(suite, "external semaphore FD unsupported");
         out = 0;
         goto cleanup_vulkan;
@@ -1126,7 +1126,7 @@ int test_memory_cuda_2(TstContext* suite, const TstCase* tstitem)
         vkGetMemoryFdPropertiesKHR(dvz_device_handle(device), handle_type, fd, &fd_props);
     if (fd_res != VK_SUCCESS)
     {
-        log_warn(
+        log_debug(
             "test_memory_cuda_2 skipped: CUDA exported memory FD is not importable by Vulkan "
             "(vkGetMemoryFdPropertiesKHR=%d)",
             fd_res);
@@ -1318,7 +1318,7 @@ int test_memory_cuda_2(TstContext* suite, const TstCase* tstitem)
         }
     }
     if (out == 0)
-        log_info("CUDA->Vulkan->CUDA import path verified OK");
+        log_debug("CUDA->Vulkan->CUDA import path verified OK");
 
     dvz_free(host_verify);
 
@@ -1377,7 +1377,7 @@ cleanup:
 
     return out;
 #else
-    log_warn("test_memory_cuda_2 skipped because DVZ_HAS_CUDA=0");
+    log_debug("test_memory_cuda_2 skipped because DVZ_HAS_CUDA=0");
     tst_skip(suite, "CUDA support unavailable");
     return 0;
 #endif

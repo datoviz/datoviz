@@ -50,24 +50,24 @@ int test_gpu_props(TstContext* suite, const TstCase* tstitem)
     dvz_gpu_probe_properties(gpu);
 
     VkPhysicalDeviceProperties* props = dvz_gpu_properties10(gpu);
-    log_info("device ID: %u", props->deviceID);
-    log_info("device name: %s", props->deviceName);
-    log_info("device type: %u", props->deviceType);
-    log_info("API version: %u", props->apiVersion);
-    log_info("driver version: %u", props->driverVersion);
-    log_info("vendor ID: %u", props->vendorID);
-    log_info("max image dim 2D: %u", props->limits.maxImageDimension2D);
+    log_debug("device ID: %u", props->deviceID);
+    log_debug("device name: %s", props->deviceName);
+    log_debug("device type: %u", props->deviceType);
+    log_debug("API version: %u", props->apiVersion);
+    log_debug("driver version: %u", props->driverVersion);
+    log_debug("vendor ID: %u", props->vendorID);
+    log_debug("max image dim 2D: %u", props->limits.maxImageDimension2D);
 
     VkPhysicalDeviceVulkan11Properties* props11 = dvz_gpu_properties11(gpu);
-    log_info("max memory allocation size: %s", dvz_pretty_size(props11->maxMemoryAllocationSize));
+    log_debug("max memory allocation size: %s", dvz_pretty_size(props11->maxMemoryAllocationSize));
 
     VkPhysicalDeviceVulkan12Properties* props12 = dvz_gpu_properties12(gpu);
-    log_info(
+    log_debug(
         "max descriptor set update after bind samplers: %u",
         props12->maxDescriptorSetUpdateAfterBindSamplers);
 
     VkPhysicalDeviceVulkan13Properties* props13 = dvz_gpu_properties13(gpu);
-    log_info("max buffer size: %s", dvz_pretty_size(props13->maxBufferSize));
+    log_debug("max buffer size: %s", dvz_pretty_size(props13->maxBufferSize));
 
     dvz_instance_destroy(instance);
     return 0;
@@ -93,16 +93,16 @@ int test_gpu_memprops(TstContext* suite, const TstCase* tstitem)
     dvz_gpu_probe_memprops(gpu);
     VkPhysicalDeviceMemoryProperties* memprops = dvz_gpu_memprops(gpu);
 
-    log_info("========== Memory Heaps ==========");
+    log_debug("========== Memory Heaps ==========");
     for (uint32_t i = 0; i < memprops->memoryHeapCount; i++)
     {
         VkMemoryHeap* h = &memprops->memoryHeaps[i];
-        log_info(
+        log_debug(
             "Heap %u: size=%s %s", i, dvz_pretty_size(h->size),
             (h->flags & VK_MEMORY_HEAP_DEVICE_LOCAL_BIT) ? "DEVICE_LOCAL" : "");
     }
 
-    log_info("========== Memory Types ==========");
+    log_debug("========== Memory Types ==========");
     for (uint32_t i = 0; i < memprops->memoryTypeCount; i++)
     {
         VkMemoryType* t = &memprops->memoryTypes[i];
@@ -118,10 +118,10 @@ int test_gpu_memprops(TstContext* suite, const TstCase* tstitem)
             strlcat(s, "HOST_CACHED ", 64);
         if (f & VK_MEMORY_PROPERTY_LAZILY_ALLOCATED_BIT)
             strlcat(s, "LAZILY_ALLOCATED ", 64);
-        log_info("Type %2u: heap=%u  %s", i, t->heapIndex, s);
+        log_debug("Type %2u: heap=%u  %s", i, t->heapIndex, s);
     }
 
-    log_info("total VRAM: %s", dvz_pretty_size(dvz_gpu_vram(gpu)));
+    log_debug("total VRAM: %s", dvz_pretty_size(dvz_gpu_vram(gpu)));
 
     dvz_instance_destroy(instance);
     return 0;
@@ -147,16 +147,16 @@ int test_gpu_features(TstContext* suite, const TstCase* tstitem)
     dvz_gpu_probe_features(gpu);
 
     VkPhysicalDeviceFeatures* features = dvz_gpu_features10(gpu);
-    log_info("geometry shader: %d", features->geometryShader);
+    log_debug("geometry shader: %d", features->geometryShader);
 
     VkPhysicalDeviceVulkan11Features* features11 = dvz_gpu_features11(gpu);
-    log_info("sampler Ycbcr conversion: %d", features11->samplerYcbcrConversion);
+    log_debug("sampler Ycbcr conversion: %d", features11->samplerYcbcrConversion);
 
     VkPhysicalDeviceVulkan12Features* features12 = dvz_gpu_features12(gpu);
-    log_info("draw indirect count: %d", features12->drawIndirectCount);
+    log_debug("draw indirect count: %d", features12->drawIndirectCount);
 
     VkPhysicalDeviceVulkan13Features* features13 = dvz_gpu_features13(gpu);
-    log_info("dynamic rendering: %d", features13->dynamicRendering);
+    log_debug("dynamic rendering: %d", features13->dynamicRendering);
 
     dvz_instance_destroy(instance);
     return 0;
@@ -185,11 +185,11 @@ int test_gpu_extensions(TstContext* suite, const TstCase* tstitem)
     // Call the function under test.
     uint32_t ext_count = 0;
     char** extensions = dvz_gpu_supported_extensions(gpu, &ext_count);
-    log_info("Found %u supported GPU instance extensions:", ext_count);
+    log_debug("Found %u supported GPU instance extensions:", ext_count);
 
     for (uint32_t i = 0; i < ext_count; i++)
     {
-        log_info("  [%02u] %s", i, extensions[i]);
+        log_debug("  [%02u] %s", i, extensions[i]);
     }
 
     // NOTE: `extensions` is owned by `gpu` and released in dvz_instance_destroy().

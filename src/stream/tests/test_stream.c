@@ -20,6 +20,7 @@
 
 #include "_alloc.h"
 #include "_assertions.h"
+#include "_log.h"
 #include "datoviz/stream.h"
 #include "datoviz/video.h"
 
@@ -461,7 +462,8 @@ int test_stream_attach_sink_name_prefers_requested_then_auto(TstContext* suite, 
 
     AT(dvz_stream_attach_sink_name(stream, "fallback_auto", &primary_state) == 0);
     tst_log_capture_begin(suite);
-    AT(dvz_stream_attach_sink_name(stream, "named_unavailable", &fallback_state) == 0);
+    AT_EXPECTED_LOG_STRICT(
+        suite, LOG_WARN, dvz_stream_attach_sink_name(stream, "named_unavailable", &fallback_state) == 0);
     AT(_stream_log_contains(suite, "falling back to auto"));
     tst_log_capture_end(suite);
 

@@ -48,25 +48,25 @@ int test_queues_caps(TstContext* suite, const TstCase* tstitem)
     // Probe the GPU queues.
     DvzGpuInfo info = {0};
     AT(dvz_instance_gpu_info(instance, 0, &info));
-    log_info("device name: %s", info.name);
+    log_debug("device name: %s", info.name);
     DvzQueueCaps qc = {0};
     AT(dvz_instance_gpu_queue_caps(instance, 0, &qc));
 
     for (uint32_t qf = 0; qf < qc.family_count; qf++)
     {
         VkQueueFlags flags = qc.flags[qf];
-        log_info("Queue family %d (max %d) queues. Flags: 0x%x", qf, qc.queue_count[qf], flags);
+        log_debug("Queue family %d (max %d) queues. Flags: 0x%x", qf, qc.queue_count[qf], flags);
 
         if (flags & VK_QUEUE_GRAPHICS_BIT)
-            log_info("  VK_QUEUE_GRAPHICS_BIT");
+            log_debug("  VK_QUEUE_GRAPHICS_BIT");
         if (flags & VK_QUEUE_COMPUTE_BIT)
-            log_info("  VK_QUEUE_COMPUTE_BIT");
+            log_debug("  VK_QUEUE_COMPUTE_BIT");
         if (flags & VK_QUEUE_TRANSFER_BIT)
-            log_info("  VK_QUEUE_TRANSFER_BIT");
+            log_debug("  VK_QUEUE_TRANSFER_BIT");
         if (flags & VK_QUEUE_VIDEO_DECODE_BIT_KHR)
-            log_info("  VK_QUEUE_VIDEO_DECODE_BIT_KHR");
+            log_debug("  VK_QUEUE_VIDEO_DECODE_BIT_KHR");
         if (flags & VK_QUEUE_VIDEO_ENCODE_BIT_KHR)
-            log_info("  VK_QUEUE_VIDEO_ENCODE_BIT_KHR");
+            log_debug("  VK_QUEUE_VIDEO_ENCODE_BIT_KHR");
     }
 
     dvz_instance_destroy(instance);
@@ -148,8 +148,6 @@ int test_queues_multiple(TstContext* suite, const TstCase* tstitem)
     ASSERT(queues.queues[DVZ_QUEUE_MAIN].family_idx == 0);
     ASSERT(queues.queues[DVZ_QUEUE_COMPUTE].family_idx == 1);
     ASSERT(queues.queues[DVZ_QUEUE_TRANSFER].family_idx == 2);
-
-    dvz_queues_show(&queues);
 
     return 0;
 }

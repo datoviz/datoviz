@@ -31,7 +31,7 @@ int test_prng_1(TstContext* suite, const TstCase* tstitem)
 {
     DvzPrng* prng = dvz_prng();
     uint64_t uuid = dvz_prng_uuid(prng);
-    log_info("random uuid is %" PRIu64, uuid);
+    log_debug("random uuid is %" PRIu64, uuid);
     dvz_prng_destroy(prng);
     return 0;
 }

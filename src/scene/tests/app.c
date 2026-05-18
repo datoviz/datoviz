@@ -1197,9 +1197,12 @@ int test_app_external_surface_release_waits(TstContext* suite, const TstCase* it
     dvz_app_window_set_request_frame_callback(win, _app_request_frame_probe_callback, &request_probe);
     AT(dvz_app_window_render_once(win) == DVZ_CANVAS_FRAME_READY);
 
-    AT(dvz_app_window_release_external_surface(win) == DVZ_CANVAS_FRAME_WAIT_SURFACE);
-    AT(dvz_app_window_render_once(win) == DVZ_CANVAS_FRAME_WAIT_SURFACE);
-    AT(dvz_app_render_once(app) == DVZ_CANVAS_FRAME_WAIT_SURFACE);
+    AT_EXPECTED_LOG_STRICT(
+        suite, LOG_WARN,
+        dvz_app_window_release_external_surface(win) == DVZ_CANVAS_FRAME_WAIT_SURFACE);
+    AT_EXPECTED_LOG_STRICT(
+        suite, LOG_WARN, dvz_app_window_render_once(win) == DVZ_CANVAS_FRAME_WAIT_SURFACE);
+    AT_EXPECTED_LOG_STRICT(suite, LOG_WARN, dvz_app_render_once(app) == DVZ_CANVAS_FRAME_WAIT_SURFACE);
 
     vkDestroySurfaceKHR(instance, surface, NULL);
     glfwDestroyWindow(glfw_window);
@@ -4013,8 +4016,8 @@ int test_app_capture_rejects_wrong_dimensions(TstContext* suite, const TstCase* 
 
     /* Ask for a dimension that doesn't match the 64x64 offscreen canvas. */
     uint8_t buf[128 * 128 * 4];
-    tst_log_capture_begin(suite);
-    AT(dvz_canvas_capture_rgba_into(canvas, 128, 128, buf, sizeof(buf)) != 0);
+    AT_EXPECTED_ERROR_STRICT(
+        suite, dvz_canvas_capture_rgba_into(canvas, 128, 128, buf, sizeof(buf)) != 0);
 
     dvz_app_destroy(app);
     dvz_scene_destroy(scene);
@@ -4057,8 +4060,8 @@ int test_app_capture_rejects_undersized_buffer(TstContext* suite, const TstCase*
     size_t required = 64 * 64 * 4;
     uint8_t* buf = dvz_malloc(required - 1);
     ANN(buf);
-    tst_log_capture_begin(suite);
-    AT(dvz_canvas_capture_rgba_into(canvas, 64, 64, buf, required - 1) != 0);
+    AT_EXPECTED_ERROR_STRICT(
+        suite, dvz_canvas_capture_rgba_into(canvas, 64, 64, buf, required - 1) != 0);
     dvz_free(buf);
 
     dvz_app_destroy(app);

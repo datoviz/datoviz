@@ -564,7 +564,7 @@ int test_scene_image_probe_transparent_pixel_misses(TstContext* suite, const Tst
 
     tst_log_capture_begin(suite);
     AT(dvz_panel_probe(panel, 32.0, 32.0, &(DvzProbeRequest){.request_id = 21}) == 0);
-    AT(dvz_figure_process_requests(figure, runtime, &caps) == 1);
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_figure_process_requests(figure, runtime, &caps) == 1);
 
     DvzProbeResult probe = {0};
     AT(dvz_scene_poll_probe(scene, &probe));
@@ -656,7 +656,7 @@ int test_scene_image_probe_gpu_readback_failure_misses(TstContext* suite, const 
     scene->test.force_readback_download_failure = true;
     tst_log_capture_begin(suite);
     AT(dvz_panel_probe(panel, 32.0, 32.0, &(DvzProbeRequest){.request_id = 22}) == 0);
-    AT(dvz_figure_process_requests(figure, runtime, &caps) == 1);
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_figure_process_requests(figure, runtime, &caps) == 1);
     scene->test.force_readback_download_failure = false;
 
     DvzProbeResult probe = {0};
@@ -1226,7 +1226,7 @@ int test_scene_process_requests_preserves_caller_runtime(TstContext* suite, cons
     caps.shader_format_glsl = true;
     AT(dvz_panel_pick(panel, 32.0, 32.0, &(DvzPickRequest){.request_id = 7}) == 0);
 
-    AT(dvz_figure_process_requests(figure, runtime, &caps) == 1);
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_figure_process_requests(figure, runtime, &caps) == 1);
 
     DvzDrp2CommandStream* cleanup = dvz_drp2_stream();
     ANN(cleanup);
@@ -1304,7 +1304,8 @@ int test_scene_image_probe_reuses_retained_request_executor(TstContext* suite, c
 
     tst_log_capture_begin(suite);
     AT(dvz_panel_probe(panel, 16.0, 16.0, &(DvzProbeRequest){.request_id = 101}) == 0);
-    AT(_dvz_figure_process_requests_with_executor(figure, runtime, &executor, &caps) == 1);
+    AT_EXPECTED_ERROR_STRICT(
+        suite, _dvz_figure_process_requests_with_executor(figure, runtime, &executor, &caps) == 1);
     AT(executor.runtime_create_count == 1);
     AT(executor.emitter_create_count == 1);
     AT(executor.image_probe_static_upload_count == 1);
@@ -1315,7 +1316,8 @@ int test_scene_image_probe_reuses_retained_request_executor(TstContext* suite, c
     AT(!probe.hit);
 
     AT(dvz_panel_probe(panel, 48.0, 48.0, &(DvzProbeRequest){.request_id = 102}) == 0);
-    AT(_dvz_figure_process_requests_with_executor(figure, runtime, &executor, &caps) == 1);
+    AT_EXPECTED_ERROR_STRICT(
+        suite, _dvz_figure_process_requests_with_executor(figure, runtime, &executor, &caps) == 1);
     AT(executor.runtime_create_count == 1);
     AT(executor.emitter_create_count == 1);
     AT(executor.image_probe_static_upload_count == 1);
@@ -1326,7 +1328,8 @@ int test_scene_image_probe_reuses_retained_request_executor(TstContext* suite, c
     pixels[0] = 128;
     AT(dvz_visual_set_texture(image, pixels, 4, 4) == 0);
     AT(dvz_panel_probe(panel, 32.0, 32.0, &(DvzProbeRequest){.request_id = 103}) == 0);
-    AT(_dvz_figure_process_requests_with_executor(figure, runtime, &executor, &caps) == 1);
+    AT_EXPECTED_ERROR_STRICT(
+        suite, _dvz_figure_process_requests_with_executor(figure, runtime, &executor, &caps) == 1);
     AT(executor.runtime_create_count == 1);
     AT(executor.emitter_create_count == 1);
     AT(executor.image_probe_static_upload_count == 2);

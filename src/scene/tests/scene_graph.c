@@ -409,7 +409,8 @@ int test_scene_segment_caps(TstContext* suite, const TstCase* item)
     AT(visual->material_params.params[0] == (float)DVZ_SEGMENT_CAP_ROUND);
     AT(visual->material_params.params[1] == (float)DVZ_SEGMENT_CAP_SQUARE);
 
-    AT(dvz_segment_set_caps(visual, (DvzSegmentCap)99, DVZ_SEGMENT_CAP_BUTT) < 0);
+    AT_EXPECTED_ERROR_STRICT(
+        suite, dvz_segment_set_caps(visual, (DvzSegmentCap)99, DVZ_SEGMENT_CAP_BUTT) < 0);
 
     dvz_scene_destroy(scene);
     return 0;
@@ -2068,7 +2069,8 @@ int test_scene_json_includes_field_dirty_metadata(TstContext* suite, const TstCa
     dvz_capability_snapshot_default(&caps);
     DvzDiagnosticReport report;
     dvz_diagnostic_report_init(&report);
-    DvzDrp2CommandStream* stream = dvz_figure_emit(figure, &caps, &report);
+    DvzDrp2CommandStream* stream = NULL;
+    AT_EXPECTED_ERROR_STRICT(suite, (stream = dvz_figure_emit(figure, &caps, &report)) != NULL);
     ANN(stream);
     dvz_drp2_stream_destroy(stream);
 
@@ -2940,7 +2942,9 @@ int test_scene_emit_warns_visual_with_no_position(TstContext* suite, const TstCa
     DvzDiagnosticReport report;
     dvz_diagnostic_report_init(&report);
     tst_log_capture_begin(suite);
-    DvzDrp2CommandStream* stream = dvz_figure_emit(figure, &caps, &report);
+    DvzDrp2CommandStream* stream = NULL;
+    AT_EXPECTED_LOG_STRICT(
+        suite, LOG_WARN, (stream = dvz_figure_emit(figure, &caps, &report)) != NULL);
     AT(stream != NULL);
     AT(_captured_log_contains(suite, "has no 'position' data"));
 
@@ -7044,7 +7048,8 @@ int test_scene_panel_graph_failure_reports_specific_diagnostic(TstContext* suite
 
     DvzDiagnosticReport report = {0};
     dvz_diagnostic_report_init(&report);
-    AT(!_scene_emit_panel_render_ex(figure, 0, plan, "figure_0", &report));
+    AT_EXPECTED_ERROR_STRICT(
+        suite, !_scene_emit_panel_render_ex(figure, 0, plan, "figure_0", &report));
     AT(dvz_diagnostic_report_count(&report) == 1);
     const char* message = dvz_diagnostic_report_get(&report, 0);
     ANN(message);

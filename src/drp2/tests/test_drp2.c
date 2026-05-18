@@ -155,7 +155,7 @@ static bool _drp2_cuda_find_vulkan_gpu(
         if (memcmp(id.deviceUUID, cu_uuid.bytes, VK_UUID_SIZE) == 0)
         {
             *out_gpu_index = i;
-            log_info("matched CUDA device to Vulkan GPU %u (%s)", i, props.properties.deviceName);
+            log_debug("matched CUDA device to Vulkan GPU %u (%s)", i, props.properties.deviceName);
             return true;
         }
     }
@@ -3564,7 +3564,9 @@ int test_drp2_runtime_vklite_rejects_invalid_glsl_shader(TstContext* suite, cons
         stream, 1, "VERTEX", "glsl", "this is not valid glsl {}}}}}"));
 
     tst_log_capture_begin(suite);
+    tst_expect_error_begin(suite);
     DvzDrp2ValidationResult result = dvz_drp2_runtime_execute(runtime, stream);
+    AT(tst_expect_error_end(suite) == 0);
     AT(!result.ok);
     AT(result.code == DVZ_DRP2_VALIDATION_INVALID_ARGUMENT);
     AT(_captured_log_contains(suite, "GLSL compilation failed"));
@@ -3621,7 +3623,9 @@ int test_drp2_runtime_vklite_rejects_pipeline_with_failed_shader(TstContext* sui
     AT(dvz_drp2_stream_create_render_pipeline(stream, 3, 1, 2, 0));
 
     tst_log_capture_begin(suite);
+    tst_expect_error_begin(suite);
     DvzDrp2ValidationResult result = dvz_drp2_runtime_execute(runtime, stream);
+    AT(tst_expect_error_end(suite) == 0);
     AT(!result.ok);
     /* Runtime must not crash or leave a NULL pipeline object registered. */
     AT(dvz_gpu_ctx_error_count(ctx) == 0);
@@ -3672,7 +3676,9 @@ int test_drp2_runtime_vklite_destroy_after_partial_failure(TstContext* suite, co
         stream, 1, "VERTEX", "glsl", "this is not valid glsl {}}}}}"));
 
     tst_log_capture_begin(suite);
+    tst_expect_error_begin(suite);
     DvzDrp2ValidationResult result = dvz_drp2_runtime_execute(runtime, stream);
+    AT(tst_expect_error_end(suite) == 0);
     AT(!result.ok);
     dvz_drp2_stream_destroy(stream);
 

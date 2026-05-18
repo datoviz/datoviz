@@ -45,11 +45,11 @@ int test_instance_layers(TstContext* suite, const TstCase* tstitem)
     uint32_t count = 0;
     char** layers = dvz_instance_supported_layers(instance, &count);
     AT(count > 0);
-    log_info("Found %u supported Vulkan layers:", count);
+    log_debug("Found %u supported Vulkan layers:", count);
 
     for (uint32_t i = 0; i < count; i++)
     {
-        log_info("  [%02u] %s", i, layers[i]);
+        log_debug("  [%02u] %s", i, layers[i]);
     }
 
     // Free.
@@ -75,11 +75,11 @@ int test_instance_extensions(TstContext* suite, const TstCase* tstitem)
     uint32_t count = 0;
     char** extensions = dvz_instance_supported_extensions(instance, &count);
     AT(count > 0);
-    log_info("Found %u supported Vulkan instance extensions:", count);
+    log_debug("Found %u supported Vulkan instance extensions:", count);
 
     for (uint32_t i = 0; i < count; i++)
     {
-        log_info("  [%02u] %s", i, extensions[i]);
+        log_debug("  [%02u] %s", i, extensions[i]);
     }
 
     // Free the array of strings.

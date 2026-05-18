@@ -93,7 +93,8 @@ int test_device_2(TstContext* suite, const TstCase* tstitem)
     dvz_gpu_probe_extensions(gpu);
     uint32_t extension_count = 0;
     char** extensions = dvz_gpu_supported_extensions(gpu, &extension_count);
-    dvz_strings_show(extension_count, extensions);
+    AT(extensions != NULL);
+    AT(extension_count > 0);
     dvz_device_config_request_extension(&dcfg, "VK_KHR_dynamic_rendering");
 
     // Queue requests.

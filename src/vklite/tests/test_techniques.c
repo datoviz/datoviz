@@ -1147,7 +1147,7 @@ int test_technique_picking(TstContext* suite, const TstCase* tstitem)
     // Step 8: read back picked ID from staging buffer
     uint32_t picked_id = 0;
     dvz_buffer_download(&staging, 0, sizeof(uint32_t), &picked_id);
-    printf("Picked ID at center pixel = %u\n", picked_id);
+    log_debug("Picked ID at center pixel = %u", picked_id);
     AT(picked_id == 42);
 
 

@@ -147,7 +147,7 @@ int test_scene_text_annotation_bookkeeping(TstContext* suite, const TstCase* ite
     AT(dvz_text_set_renderer(text, DVZ_TEXT_RENDERER_AUTO) == 0);
     AT(text->text.renderer == DVZ_TEXT_RENDERER_AUTO);
     AT(text->text.renderer_version == 1);
-    AT(dvz_text_set_renderer(text, DVZ_TEXT_RENDERER_MSDF_ATLAS) < 0);
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_text_set_renderer(text, DVZ_TEXT_RENDERER_MSDF_ATLAS) < 0);
     AT(text->text.renderer == DVZ_TEXT_RENDERER_AUTO);
     const char* strings[2] = {"hello", "world"};
     float positions[2][3] = {{10.0f, 20.0f, 0.0f}, {80.0f, 24.0f, 0.0f}};

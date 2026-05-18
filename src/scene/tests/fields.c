@@ -145,7 +145,8 @@ int test_scene_colorbar_rejects_cross_scene_scale(TstContext* suite, const TstCa
     DvzScale* foreign_scale = dvz_scale(scene1, NULL);
     ANN(foreign_scale);
 
-    DvzColorbar* colorbar = dvz_colorbar(panel, foreign_scale, NULL);
+    DvzColorbar* colorbar = NULL;
+    AT_EXPECTED_ERROR_STRICT(suite, (colorbar = dvz_colorbar(panel, foreign_scale, NULL)) == NULL);
     AT(colorbar == NULL);
     AT(_captured_log_contains(suite, "different scene"));
 
@@ -247,7 +248,7 @@ int test_scene_visual_scale_rejects_cross_scene_scale(TstContext* suite, const T
     DvzVisual* image = dvz_image(scene0, 0);
     ANN(image);
 
-    AT(dvz_visual_set_scale(image, "colormap", foreign_scale) != 0);
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_visual_set_scale(image, "colormap", foreign_scale) != 0);
     AT(_captured_log_contains(suite, "different scene"));
 
     dvz_scene_destroy(scene1);
@@ -272,7 +273,7 @@ int test_scene_visual_buffer_rejects_cross_scene_buffer(TstContext* suite, const
     DvzVisual* visual = dvz_primitive(scene0, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 0);
     ANN(visual);
 
-    AT(!dvz_visual_set_buffer(visual, "index", foreign_buffer));
+    AT_EXPECTED_ERROR_STRICT(suite, !dvz_visual_set_buffer(visual, "index", foreign_buffer));
     AT(_captured_log_contains(suite, "different scene"));
 
     dvz_scene_destroy(scene1);
@@ -521,7 +522,7 @@ int test_scene_visual_field_rejects_cross_scene_field(TstContext* suite, const T
                 });
     ANN(field);
 
-    AT(!dvz_visual_set_field(image, "field", field));
+    AT_EXPECTED_ERROR_STRICT(suite, !dvz_visual_set_field(image, "field", field));
     AT(_captured_log_contains(suite, "different scene"));
 
     dvz_scene_destroy(scene1);
@@ -578,15 +579,18 @@ int test_scene_sampled_field_rejects_unsupported_format(TstContext* suite, const
     DvzScene* scene = dvz_scene();
     ANN(scene);
 
-    DvzSampledField* field = dvz_sampled_field(
-        scene, &(DvzSampledFieldDesc){
-                   .dim = DVZ_FIELD_DIM_2D,
-                   .format = DVZ_FIELD_FORMAT_RG32_FLOAT,
-                   .semantic = DVZ_FIELD_SEMANTIC_VECTOR_2,
-                   .width = 4,
-                   .height = 4,
-                   .depth = 1,
-               });
+    DvzSampledField* field = NULL;
+    AT_EXPECTED_ERROR_STRICT(
+        suite,
+        (field = dvz_sampled_field(
+             scene, &(DvzSampledFieldDesc){
+                        .dim = DVZ_FIELD_DIM_2D,
+                        .format = DVZ_FIELD_FORMAT_RG32_FLOAT,
+                        .semantic = DVZ_FIELD_SEMANTIC_VECTOR_2,
+                        .width = 4,
+                        .height = 4,
+                        .depth = 1,
+                    })) == NULL);
     AT(field == NULL);
     AT(_captured_log_contains(suite, "unsupported sampled field format"));
 
@@ -616,7 +620,7 @@ int test_scene_image_visual_rejects_3d_field(TstContext* suite, const TstCase* i
                });
     ANN(field);
 
-    AT(!dvz_visual_set_field(image, "field", field));
+    AT_EXPECTED_ERROR_STRICT(suite, !dvz_visual_set_field(image, "field", field));
     AT(_captured_log_contains(suite, "require a 2D sampled field"));
 
     dvz_scene_destroy(scene);
@@ -684,7 +688,7 @@ int test_scene_volume_visual_binds_3d_field(TstContext* suite, const TstCase* it
                    .depth = 1,
                });
     ANN(field2d);
-    AT(!dvz_visual_set_field(volume, "field", field2d));
+    AT_EXPECTED_ERROR_STRICT(suite, !dvz_visual_set_field(volume, "field", field2d));
     AT(_captured_log_contains(suite, "require a 3D sampled field"));
 
     AT(dvz_visual_set_field(volume, "field", NULL));
@@ -1004,19 +1008,21 @@ int test_scene_volume_retained_controls(TstContext* suite, const TstCase* item)
     AT(state->clip_plane_point[0] == 0.5);
     AT(state->clip_plane_normal[0] == 1.0);
 
-    AT(dvz_volume_set_opacity(volume, -0.1f) != 0);
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_volume_set_opacity(volume, -0.1f) != 0);
     AT(_captured_log_contains(suite, "volume opacity must be finite"));
-    AT(dvz_volume_set_slice_axis(volume, (DvzVolumeAxis)999) != 0);
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_volume_set_slice_axis(volume, (DvzVolumeAxis)999) != 0);
     AT(_captured_log_contains(suite, "unsupported volume slice axis"));
-    AT(dvz_volume_set_slice_position(volume, -0.5) != 0);
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_volume_set_slice_position(volume, -0.5) != 0);
     AT(_captured_log_contains(suite, "volume slice position must be finite"));
     double invalid_min[3] = {0.0, 0.8, 0.0};
     double invalid_max[3] = {1.0, 0.7, 1.0};
-    AT(dvz_volume_set_clipping_box(volume, invalid_min, invalid_max) != 0);
+    AT_EXPECTED_ERROR_STRICT(
+        suite, dvz_volume_set_clipping_box(volume, invalid_min, invalid_max) != 0);
     AT(_captured_log_contains(suite, "volume clipping box coordinates"));
     double invalid_bounds_min[3] = {0.0, -1.0, -1.0};
     double invalid_bounds_max[3] = {0.0, +1.0, +1.0};
-    AT(dvz_volume_set_bounds(volume, invalid_bounds_min, invalid_bounds_max) != 0);
+    AT_EXPECTED_ERROR_STRICT(
+        suite, dvz_volume_set_bounds(volume, invalid_bounds_min, invalid_bounds_max) != 0);
     AT(_captured_log_contains(suite, "volume bounds must be finite"));
 
     DvzScale* scale = dvz_scale(scene, &(DvzScaleDesc){.kind = DVZ_SCALE_CONTINUOUS});
@@ -1036,29 +1042,35 @@ int test_scene_volume_retained_controls(TstContext* suite, const TstCase* item)
     DvzVisual* image = dvz_image(scene, 0);
     ANN(image);
     AT(dvz_volume_state(image) == NULL);
-    AT(dvz_volume_set_sampling(image, DVZ_VOLUME_SAMPLING_LINEAR) != 0);
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_volume_set_sampling(image, DVZ_VOLUME_SAMPLING_LINEAR) != 0);
     AT(_captured_log_contains(suite, "requires a volume visual"));
-    AT(dvz_volume_set_render_mode(image, DVZ_VOLUME_RENDER_SLICE) != 0);
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_volume_set_render_mode(image, DVZ_VOLUME_RENDER_SLICE) != 0);
     AT(_captured_log_contains(suite, "requires a volume visual"));
-    AT(dvz_volume_set_step_count(volume, 0) != 0);
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_volume_set_step_count(volume, 0) != 0);
     AT(_captured_log_contains(suite, "volume step count must be in"));
-    AT(dvz_volume_set_render_mode(volume, (DvzVolumeRenderMode)999) != 0);
+    AT_EXPECTED_ERROR_STRICT(
+        suite, dvz_volume_set_render_mode(volume, (DvzVolumeRenderMode)999) != 0);
     AT(_captured_log_contains(suite, "unsupported volume render mode"));
     uint32_t invalid_order[3] = {0, 0, 2};
-    AT(dvz_volume_set_axis_mapping(volume, invalid_order, NULL) != 0);
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_volume_set_axis_mapping(volume, invalid_order, NULL) != 0);
     AT(_captured_log_contains(suite, "volume axis order must be a permutation"));
-    AT(dvz_volume_set_value_range(volume, 1.0, 1.0) != 0);
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_volume_set_value_range(volume, 1.0, 1.0) != 0);
     AT(_captured_log_contains(suite, "volume value range must be finite"));
     DvzVolumeAlphaStop invalid_alpha_stops[1] = {{.position = 1.5, .alpha = 0.5f}};
-    AT(dvz_volume_set_alpha_stops(volume, invalid_alpha_stops, 1) != 0);
+    AT_EXPECTED_ERROR_STRICT(
+        suite, dvz_volume_set_alpha_stops(volume, invalid_alpha_stops, 1) != 0);
     AT(_captured_log_contains(suite, "volume alpha stops require finite"));
     double invalid_plane_point[3] = {0.5, 0.5, 1.2};
     double valid_plane_normal[3] = {1.0, 0.0, 0.0};
-    AT(dvz_volume_set_clipping_plane(volume, invalid_plane_point, valid_plane_normal, true) != 0);
+    AT_EXPECTED_ERROR_STRICT(
+        suite,
+        dvz_volume_set_clipping_plane(volume, invalid_plane_point, valid_plane_normal, true) != 0);
     AT(_captured_log_contains(suite, "volume clipping plane point"));
     double valid_plane_point[3] = {0.5, 0.5, 0.5};
     double invalid_plane_normal[3] = {0.0, 0.0, 0.0};
-    AT(dvz_volume_set_clipping_plane(volume, valid_plane_point, invalid_plane_normal, true) != 0);
+    AT_EXPECTED_ERROR_STRICT(
+        suite,
+        dvz_volume_set_clipping_plane(volume, valid_plane_point, invalid_plane_normal, true) != 0);
     AT(_captured_log_contains(suite, "volume clipping plane normal"));
 
     dvz_scene_destroy(scene);
@@ -1656,9 +1668,11 @@ int test_scene_sampled_field_update_region_rejects_out_of_bounds(
     uint8_t patch[4] = {1, 2, 3, 4};
     AT(dvz_sampled_field_set_data(
         field, &(DvzFieldDataView){.data = base, .bytes_per_row = 4, .rows_per_image = 4}));
-    AT(!dvz_sampled_field_update_region(
-        field, (DvzFieldRegion){.x = 3, .y = 3, .z = 0, .width = 2, .height = 2, .depth = 1},
-        &(DvzFieldDataView){.data = patch, .bytes_per_row = 2, .rows_per_image = 2}));
+    AT_EXPECTED_ERROR_STRICT(
+        suite,
+        !dvz_sampled_field_update_region(
+            field, (DvzFieldRegion){.x = 3, .y = 3, .z = 0, .width = 2, .height = 2, .depth = 1},
+            &(DvzFieldDataView){.data = patch, .bytes_per_row = 2, .rows_per_image = 2}));
     AT(_captured_log_contains(suite, "update region exceeds field dimensions"));
 
     dvz_scene_destroy(scene);

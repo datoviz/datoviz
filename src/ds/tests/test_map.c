@@ -15,6 +15,7 @@
 /*************************************************************************************************/
 
 #include "datoviz/ds/map.h"
+#include "_log.h"
 #include "test_ds.h"
 #include "testing.h"
 #include "datoviz/math/types.h"
@@ -45,7 +46,7 @@ int test_map_1(TstContext* suite, const TstCase* tstitem)
 
     // Try to add the same element.
     int data2 = 456;
-    dvz_map_add(map, id, 0, &data2);
+    AT_EXPECTED_LOG_STRICT(suite, LOG_WARN, (dvz_map_add(map, id, 0, &data2), true));
     AT(dvz_map_exists(map, id));
     // The call below should have failed and the data should not have been updated.
     AT(*(int*)dvz_map_get(map, id) == 123);

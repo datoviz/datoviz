@@ -516,8 +516,8 @@ int test_canvas_swapchain_failfast_slot_init(TstContext* suite, const TstCase* i
 
     dvz_canvas_swapchain_test_fail_slot(canvas, 0);
     dvz_window_host_poll(fixture.host);
-    int frame_rc = dvz_canvas_frame(canvas);
-    AT(frame_rc < 0);
+    int frame_rc = 0;
+    AT_EXPECTED_LOG_STRICT(suite, LOG_WARN, (frame_rc = dvz_canvas_frame(canvas)) < 0);
 
     dvz_canvas_swapchain_test_fail_slot(canvas, -1);
     bool resumed = false;
@@ -791,7 +791,7 @@ int test_canvas_video_wait_handle_ready_on_first_start(TstContext* suite, const 
 
     if (!canvas->supports_external_semaphore || dvz_canvas_timeline_handle_type() == 0)
     {
-        log_warn("canvas wait-handle readiness test skipped (no exportable external semaphore)");
+        log_debug("canvas wait-handle readiness test skipped (no exportable external semaphore)");
         canvas_glfw_fixture_destroy(&fixture);
         tst_skip(suite, "no exportable external semaphore");
         return 0;
@@ -866,7 +866,7 @@ int test_canvas_video_wait_handle_export_fallback(TstContext* suite, const TstCa
 
     if (!canvas->supports_external_semaphore || dvz_canvas_timeline_handle_type() == 0)
     {
-        log_warn("canvas wait-handle fallback test skipped (no exportable external semaphore)");
+        log_debug("canvas wait-handle fallback test skipped (no exportable external semaphore)");
         canvas_glfw_fixture_destroy(&fixture);
         tst_skip(suite, "no exportable external semaphore");
         return 0;
@@ -943,7 +943,7 @@ int test_canvas_video_wait_handle_export_fallback_after_recreate(TstContext* sui
 
     if (!canvas->supports_external_semaphore || dvz_canvas_timeline_handle_type() == 0)
     {
-        log_warn("canvas recreate fallback test skipped (no exportable external semaphore)");
+        log_debug("canvas recreate fallback test skipped (no exportable external semaphore)");
         canvas_glfw_fixture_destroy(&fixture);
         tst_skip(suite, "no exportable external semaphore");
         return 0;
@@ -1110,7 +1110,7 @@ cleanup:
     }
     if (skip_reason != NULL)
     {
-        log_warn("canvas video sink integration skipped (%s)", skip_reason);
+        log_debug("canvas video sink integration skipped (%s)", skip_reason);
         tst_skip(suite, skip_reason);
     }
     else
@@ -1241,7 +1241,7 @@ cleanup:
     }
     if (skip_reason != NULL)
     {
-        log_warn("canvas video sink disable test skipped (%s)", skip_reason);
+        log_debug("canvas video sink disable test skipped (%s)", skip_reason);
         tst_skip(suite, skip_reason);
     }
     else
@@ -1489,7 +1489,7 @@ int test_canvas_device_lost_fatal_transition(TstContext* suite, const TstCase* i
     AT(ready);
 
     dvz_canvas_swapchain_test_force_present_status(canvas, DVZ_PRESENT_STATUS_DEVICE_LOST);
-    tst_expect_error_begin(suite);
+    tst_expect_log_begin(suite, LOG_WARN);
     AT(dvz_canvas_submit(canvas) < 0);
     (void)tst_expect_error_end(suite);
     AT(
@@ -1498,10 +1498,10 @@ int test_canvas_device_lost_fatal_transition(TstContext* suite, const TstCase* i
 
     dvz_window_host_poll(fixture.host);
     int frame_rc = 0;
-    tst_expect_error_begin(suite);
+    tst_expect_log_begin(suite, LOG_WARN);
     frame_rc = dvz_canvas_frame(canvas);
-    AT(frame_rc < 0);
     (void)tst_expect_error_end(suite);
+    AT(frame_rc < 0);
 
     dvz_canvas_swapchain_mark_out_of_date(canvas);
     AT(
@@ -1794,7 +1794,7 @@ int test_canvas_glfw_wrap_surface_resize_recreate_refreshes_state(TstContext* su
     }
     if (observed_w != target_w || observed_h != target_h)
     {
-        log_warn(
+        log_debug(
             "wrap external GLFW window did not reach %dx%d (got %dx%d); skipping resize test",
             target_w, target_h, observed_w, observed_h);
         if (fixture.canvas != NULL)
@@ -2115,7 +2115,7 @@ int test_canvas_glfw(TstContext* suite, const TstCase* item)
     {
         double avg_fps = (double)submit_count / elapsed_s;
         const char* frame_label = submit_count == 1 ? "frame" : "frames";
-        log_info(
+        log_debug(
             "canvas GLFW average FPS: %.2f (%zu %s over %.2fs)", avg_fps, submit_count,
             frame_label, elapsed_s);
     }
