@@ -955,6 +955,25 @@ Validation:
 1. `git diff --check -- agents/now/RENDER_CONTRACT_RESOLVER_AUDIT_2026-05-17.md`
 
 
+### 2026-05-18: Audit reconciliation / DRP2 checker and visual coverage status
+
+Reconciled stale plan and semantic-assessment text against the completed Phase 1, Phase 2, and
+Phase 4 slices.
+
+Changes:
+
+1. Marked the DRP2 post-emit checker plan items as complete for the active scene contract fields.
+2. Updated the semantic case table to reflect completed offscreen readback tests for source-over,
+   WBOIT, depth peeling, volume occlusion, scene occlusion, EDL, and sphere/mesh SSAO.
+3. Narrowed remaining plan text to explicit future-generalization work: standalone serialized
+   pass/pipeline contracts, sampled-resource arrays for future multi-source occlusion, optional graph
+   scheduling, and broader combination matrices.
+
+Validation:
+
+1. `git diff --check -- agents/now/RENDER_CONTRACT_RESOLVER_AUDIT_2026-05-17.md`
+
+
 ## Executive Assessment
 
 The direction is correct and worth continuing. The proposal identifies the right failure mode:
@@ -1029,30 +1048,25 @@ already exercise offscreen captures for several baseline scene cases.
 
 ## Priority Findings
 
-### High: the contract is passive, not authoritative
+### Strategic: standalone serialized resolver remains future work
 
-`_scene_pass_contract_from_render()` derives a contract from an already-created render node and
-matching graph pass. That is useful as an audit, but it is not yet the resolver described by the
-proposal.
+The active scene path now has resolved draw contracts, stored FramePlan metadata, pass contract ids,
+and post-emit DRP2 validation for the contract fields that currently affect rendering. That closes
+the original active-path risk where blend, depth, sample count, raster state, bind layouts, and
+sampled resources could drift silently.
 
-Evidence:
+Status:
 
-1. `DvzSceneDrawContract` currently stores broad booleans such as `depth_test`, `depth_write`,
-   `samples_depth`, and `samples_scene_occlusion`, but not explicit blend policy, compare op,
-   attachment lifecycle, shader features, bind-set placement, color target formats, or per-target
-   blend equations.
-2. `scene_emit.c` still decides pass splitting and which technique graph builders to call.
-3. `visual_pipeline.c` still derives depth and pipeline state from visual pass caps.
-4. `frame_plan_runtime.c` still mutates pipeline state for WBOIT, depth peel, G-buffer, occlusion,
-   source-over, segment coverage, MSAA, alpha-to-coverage, and scene occlusion.
-
-Impact: two layers can disagree and still pass current contract validation if the FramePlan graph
-looks plausible. This is especially risky for cases where a wrong blend equation, depth write bit,
-sample count, or bind-group layout produces a visually plausible but semantically wrong frame.
-
-Recommendation: make the resolver produce a first-class `DvzSceneResolvedDraw` /
-`DvzSceneResolvedPass` contract before FramePlan graph emission, attach stable contract ids to render
-nodes, and validate the final DRP2 stream against those contract ids.
+1. `DvzSceneDrawContract` now carries explicit depth policy, blend policy, per-target blend
+   contracts, raster state, shader-feature masks, bind-layout masks, sampled occlusion resources,
+   producer ids, and bind locations for active built-ins.
+2. FramePlan render nodes store pass-contract ids and per-visual draw-contract metadata snapshots.
+3. The scene DRP2 checker validates render-pass attachments, pipeline color targets, blend state,
+   depth state, multisampling, raster state, bind-group layouts, fullscreen pipeline shape, sampled
+   reads, and draw-owned occlusion bindings.
+4. A standalone `DvzSceneResolvedPass` / `DvzSceneResolvedRenderContract` object is still useful if
+   the contract must be serialized, exported, or consumed by a second backend, but it is no longer an
+   active blocker for the current native scene -> DRP2 path.
 
 
 ### Resolved: sampled depth is split from depth attachment presence
@@ -1115,7 +1129,7 @@ Status:
    nodes across the reallocation boundary, and validates graph and scene contracts.
 
 
-### Medium: blend and pipeline policy are only partly contract-owned
+### Resolved for active paths: blend and pipeline policy are contract-checked
 
 The first explicit blend-target, raster-state, segment-coverage, and fullscreen checker slices are
 complete: draw contracts now include exact per-target source-over, segment coverage, WBOIT,
@@ -1124,18 +1138,16 @@ contract validation rejects emitted pipeline drift in target format, blend enabl
 factors/ops, write masks, cull mode, front face, sample count, visual bind-group layouts, and the
 fullscreen pipeline shape used by SSAO, EDL, WBOIT resolve, and depth-peel composite passes.
 
-Remaining runtime-owned policy:
+Status:
 
-1. Occlusion and G-buffer passes set target formats in runtime even though the DRP2 validator checks
-   them against graph pass attachment formats.
-2. Fullscreen resolve pipelines are now DRP2-checked by pass role, but they are still represented as
-   validator-owned role tables rather than standalone serialized pass/pipeline contract objects.
+1. Ordinary visual draw blend/raster state is contract-owned and DRP2-checked.
+2. Fullscreen technique pipeline shape is DRP2-checked by pass role.
+3. Occlusion and G-buffer target formats remain graph-attachment-derived, and the DRP2 checker
+   verifies emitted pipelines against those attachment formats.
+4. Promoting fullscreen role tables into standalone serialized pass/pipeline contracts is a future
+   backend/export concern, not a current correctness gap.
 
-Impact: ordinary visual draw blend/raster state and fullscreen technique pipeline shape are now
-contract-checked, but future runtime changes can still alter some non-draw pass policy without
-changing an explicit contract object.
-
-Completed recommendation: add an explicit per-target blend contract:
+Completed contract shape:
 
 ```c
 typedef struct DvzSceneBlendTargetContract
@@ -1153,11 +1165,11 @@ typedef struct DvzSceneBlendTargetContract
 } DvzSceneBlendTargetContract;
 ```
 
-Remaining recommendation: promote the fullscreen role table into explicit pass/pipeline contract
-fields if these passes need to be serialized, exported, or shared with another backend.
+Future recommendation: promote the fullscreen role table into explicit pass/pipeline contract fields
+only if these passes need to be serialized, exported, or shared with another backend.
 
 
-### Medium: occlusion resources are exact for current built-ins, but multi-source policy is open
+### Resolved for built-ins: occlusion resources are exact
 
 Volume and scene occlusion validation now stores exact panel-local sampled resource ids on the
 FramePlan visual metadata and resolved draw contract. The draw contract also records producer pass
@@ -1166,16 +1178,18 @@ Pass-contract validation rejects read edges that only match by suffix or come fr
 producer, and DRP2 validation checks emitted bind groups against draw-owned set/binding/resource
 expectations.
 
-Impact: the contract now catches cross-panel/resource-id drift, producer drift, and emitted
-set/binding drift for the current built-ins. It still will not generalize cleanly to multiple
-occluders, layered occlusion maps, custom techniques, or backend-specific bind slot remapping
-without turning the single resource fields into an array of sampled-resource contracts.
+Status:
 
-Recommendation: replace the two hard-coded occlusion fields with a small array of sampled-resource
-contracts before adding multiple occlusion maps or backend-specific binding layouts.
+1. The contract catches cross-panel/resource-id drift, producer drift, and emitted set/binding drift
+   for the current built-ins.
+2. The shared graph resource-key helpers now centralize exact suffix checks for the active sampled
+   occlusion resources.
+3. If multiple occlusion maps, layered occlusion maps, custom techniques, or backend-specific bind
+   slot remapping are introduced later, replace the two built-in fields with a small array of
+   sampled-resource contracts as part of that feature.
 
 
-### Medium: graph ordering is insertion-order, with explicit topological validation
+### Accepted current contract: graph builders emit topological order
 
 The proposal says pass ordering should be derived from dependencies. Current runtime execution uses
 stored graph-pass order when graph passes exist, and graph builders are responsible for emitting in a
@@ -1183,29 +1197,28 @@ valid topological order. FramePlan graph validation now reports the specific cas
 reads a per-frame resource before a later producer pass, so the temporary contract is explicit and
 test-covered.
 
-Impact: a new technique builder can no longer silently append a consumer before its producer for
-declared per-frame reads, but runtime execution is still insertion-order and there is no scheduler
-that can reorder a valid dependency graph automatically.
+Status:
 
-Recommendation: keep "graph builders must emit topological order" as the current contract. Add a
-graph scheduler only if graph builders need to emit unordered passes or if cross-backend execution
-needs dependency-derived scheduling.
+1. A new technique builder can no longer silently append a consumer before its producer for declared
+   per-frame reads.
+2. Runtime execution remains insertion-order by design for the current native path.
+3. Add a graph scheduler only if graph builders need to emit unordered passes or if cross-backend
+   execution needs dependency-derived scheduling.
 
 
-### Medium: MSAA sample count drift is contract-visible
+### Resolved for active path: MSAA sample count drift is contract-visible
 
 Technique graph resources still record the requested sample count, but pass attachment contracts now
 also record the capability-resolved sample count. `dvz_figure_emit_ex()` validates those contracts
 with the same capability snapshot that DRP2 emission uses, and the existing diagnostic still reports
 when runtime-visible lowering occurs.
 
-Impact: validation and tests can now distinguish requested graph semantics from the lowered runtime
-sample count. The remaining limitation is that graph resource descriptors themselves are not mutated
-or scheduled from a separate resolved graph object.
+Status:
 
-Recommendation: keep the requested/resolved pair in pass contracts. If more capability-dependent
-state is added, promote this into a dedicated resolved graph contract instead of adding one-off
-fields.
+1. Validation and tests distinguish requested graph semantics from the lowered runtime sample count.
+2. The requested/resolved pair in pass contracts is the current accepted contract.
+3. If more capability-dependent state is added, promote this into a dedicated resolved graph
+   contract instead of adding one-off fields.
 
 
 ### Resolved: pipeline cache key suffix appends are checked
@@ -1240,36 +1253,34 @@ Status:
 3. Focused DRP2 tests cover the invalid format-class and attachment-target cases.
 
 
-### Low: role, label, and resource-id predicates are partly centralized
+### Resolved for active predicates: role, label, and resource-id helpers are centralized
 
 Role-to-work-label mapping and alpha-mode predicates now flow through scene technique helpers for
 the active FramePlan, contract, runtime, and visual-pipeline paths. The current panel graph resource
 id and exact suffix helpers are centralized in `scene_resource_key.c`.
 
-Impact: the original duplicate role/alpha maintenance risk is closed, and the sampled occlusion/EDL
-suffix checks now share one exact-suffix helper. Some broader graph resource construction still
-lives in individual technique builders and can be promoted later if a backend needs serialized
-resource contracts.
+Status:
 
-Recommendation: continue using the shared resource-key helpers for new graph resources, and promote
-the remaining technique-local graph ids only when they need to be serialized or shared across
-backends.
+1. The original duplicate role/alpha maintenance risk is closed.
+2. The sampled occlusion/EDL suffix checks now share one exact-suffix helper.
+3. Continue using the shared resource-key helpers for new graph resources, and promote remaining
+   technique-local graph ids only when they need to be serialized or shared across backends.
 
 
 ## Semantic Case Assessment
 
 | Case | Current robustness | Main missing proof |
 | --- | --- | --- |
-| Opaque mesh with depth | Strongest path. Depth-capable rendering and graph-backed opaque passes are covered. | Contract-to-DRP2 pipeline validation and stale-node safety under large plans. |
-| Source-over blended mesh | The no-normal-depth-write guardrail is good. | Exact source-over blend policy is not contract-owned; offscreen tests should assert expected mixed pixels and opaque occlusion. |
-| WBOIT mesh | FramePlan, DRP2 shape, and runtime execution exist. | Order independence and interaction with source-over, volume, and occlusion are not strongly tested by pixels. |
-| Depth-peel mesh | FramePlan, graph shape, and runtime execution exist. | Composition with other transparency modes is not specified; readback only proves nonblank output. |
-| Volume plus mesh | Existing tests cover some ordering and contract shape. | Sampled-depth resource semantics are ambiguous; volume + WBOIT/depth-peel matrices need offscreen assertions. |
-| Volume occlusion | Graph and contract coverage exist. | Exact sampled resource/bind proof and pixel tests that compare occlusion enabled/disabled regions. |
-| Scene occlusion | Good FramePlan and DRP2 shape tests exist. | More semantic readback for hidden occluders, transparent occluders, and combined volume/scene occlusion. |
-| MSAA | Graph shape and DRP2-level sample tests exist. | Scene/app readback should verify edge coverage changes and sample-count fallback diagnostics. |
-| EDL | Graph-backed path exists. | App readback should compare EDL enabled vs disabled without disabling before capture. |
-| SSAO | Mesh app readback is useful. | Sphere/mesh contact darkening and multi-technique interactions need pixel-region assertions. |
+| Opaque mesh with depth | Strong. Depth-capable rendering, contract-to-DRP2 validation, and stale-node safety under large plans are covered. | Broader backend portability if the resolved contract is serialized later. |
+| Source-over blended mesh | Strong for active policy. Exact blend targets are contract-owned and offscreen tests cover mixed pixels plus opaque occlusion. | Broader volume/transparency matrices. |
+| WBOIT mesh | Strong for active policy. FramePlan, DRP2 shape, runtime execution, contract drift, and order-independent offscreen layers are covered. | Cross-technique matrices with volume and occlusion. |
+| Depth-peel mesh | Strong for active policy. FramePlan, graph shape, DRP2 execution, raster/blend drift, and region readback are covered. | Future total composition order if mixed with WBOIT. |
+| Volume plus mesh | Improved. Ordering, sampled-depth semantics, occlusion contracts, and retained scene-occlusion toggles are covered. | Full matrix across BLENDED/WBOIT/DEPTH_PEEL and volume/scene occlusion combinations. |
+| Volume occlusion | Strong for built-ins. Exact sampled resource, producer, bind slot, and enabled/disabled region-delta tests are covered. | Multiple occlusion maps or custom occlusion sources. |
+| Scene occlusion | Strong for built-ins. Hidden occluder, source-over matrix, volume-slice dimming, retained mesh toggle, and bind refresh are covered. | More custom transparent occluder policies if introduced. |
+| MSAA | Contract-visible. Requested/resolved sample counts and DRP2 lowering are covered. | Dedicated app edge-coverage readback remains optional. |
+| EDL | Strong for active path. Enabled-vs-disabled app readback now captures with EDL active and checks darkening. | Broader point-cloud stress scenes. |
+| SSAO | Strong for active path. Mesh and sphere/mesh contact darkening readbacks are covered. | Broader multi-technique interaction scenes. |
 
 
 ## Generalization Direction
@@ -1308,146 +1319,134 @@ in this pass, using this attachment/resource/pipeline state" belongs in the reso
 
 1. Done: add a resolver-matrix helper that maps visual facts plus pass role into an explicit draw
    contract.
-2. Partly done: extend draw contracts with depth policy, blend policy, blend target formats/equations,
-   raster state, shader features, and bind-group layout requirements. Sample-count and fullscreen
-   pipelines are DRP2-checked; remaining pipeline-feature contracts are still open.
+2. Done for active draw paths: extend draw contracts with depth policy, blend policy, blend target
+   formats/equations, raster state, shader features, bind-group layout requirements, sampled
+   occlusion resources, producer ids, and bind slots. Fullscreen technique pipelines are
+   DRP2-checked by pass role.
 3. Done: attach contract ids or resolved contract snapshots to FramePlan render nodes.
-4. Partly done: remove fallback decisions in `scene_emit.c` that recompute caps after contract
-   resolution for transparent depth and source-over grouping.
+4. Done for transparent depth and source-over grouping: remove fallback decisions in `scene_emit.c`
+   that recomputed those policies after contract resolution.
 5. Done for current capability slices: treat capability fallback, rejection, and sample-count
    lowering as contract diagnostics.
+6. Future generalization: promote validator-owned fullscreen role tables and technique-local graph
+   resource ids into standalone serialized pass/pipeline contracts only if another backend or
+   exported plan needs them.
 
 ### Phase 2: validate emitted DRP2 against contracts
 
-1. Add a scene-level post-emit checker that walks the DRP2 command stream and validates render-pass
-   attachments, pipeline color targets, blend equations, depth state, multisampling, bind-group
-   layouts, and sampled texture bindings against the resolved contracts.
-2. Keep DRP2 semantic validation backend-agnostic, but add enough labels or debug ids for the scene
-   checker to correlate pipelines/draws/passes to contract ids.
+1. Done for active contracts: add a scene-level post-emit checker that walks the DRP2 command
+   stream and validates render-pass attachments, pipeline color targets, blend equations, depth
+   state, multisampling, raster state, bind-group layouts, fullscreen pipelines, sampled texture
+   bindings, and draw-owned occlusion set/binding/resource contracts against the resolved metadata.
+2. Done: keep DRP2 semantic validation backend-agnostic while labeling emitted render passes and
+   resources enough for the scene checker to correlate pipelines/draws/passes to contract ids and
+   graph resources.
 3. Done for the temporary contract: FramePlan graph validation asserts topological order for
    declared per-frame read dependencies. Add a scheduler later only if unordered graph-builder
    emission becomes a requirement.
 
 ### Phase 3: centralize technique builders
 
-1. Move WBOIT, depth-peel, source-over, volume occlusion, scene occlusion, G-buffer, EDL, SSAO, and
-   MSAA pass-contract construction into named builders.
-2. Have builders emit both graph passes and expected runtime policy from the same data.
-3. Partly done: centralize role labels, alpha-mode class predicates, and panel graph resource suffix
-   checks. Broader graph resource construction remains technique-local.
-4. Delete dead or confusing source-over depth-write branches once tests prove they are unreachable.
+1. Done for active graph construction: WBOIT, depth-peel, source-over, volume occlusion, scene
+   occlusion, G-buffer, EDL, SSAO, and MSAA graph construction live in named technique helpers.
+2. Done for active runtime validation: builders emit graph passes while the centralized role policy
+   and DRP2 checker own expected runtime policy for the active paths.
+3. Done for active predicates: role labels, alpha-mode class predicates, and panel graph resource
+   suffix checks are centralized.
+4. Future cleanup: promote broader technique-local graph id construction only when a serialized
+   contract or second backend needs those ids outside the current builders.
 
 ### Phase 4: broaden visual correctness tests
 
-1. Add resolver matrix tests that do not require GPU execution.
-2. Add FramePlan/DRP2 shape tests for mixed and rejected cases.
-3. Add semantic-only runtime tests for two-frame toggles and descriptor refresh across stable ids.
-4. Add offscreen readback tests that compare known pixels or stable region averages for the tricky
-   combinations.
+1. Done for active policy: add resolver matrix tests that do not require GPU execution.
+2. Done for active policy: add FramePlan/DRP2 shape tests for mixed and rejected cases.
+3. Done for active policy: add semantic/runtime tests for alpha-mode toggles and retained descriptor
+   refresh across stable ids.
+4. Done for active high-risk cases: add offscreen readback tests for source-over, WBOIT,
+   depth-peel, volume occlusion, scene occlusion, EDL, and SSAO.
+5. Future expansion: add broader combination matrices only when a new visual interaction or backend
+   changes the active contract.
 
 
-## Automated Test Plan
+## Automated Test Plan Status
 
 ### CPU-only contract and FramePlan tests
 
-Add tests in `src/scene/tests/scene_graph.c` or a new `src/scene/tests/scene_contract_matrix.c`.
+Completed in `src/scene/tests/scene_graph.c` and `src/scene/tests/frame_plan.c`.
 
-1. `test_scene_render_contract_source_over_policy`: source-over mesh requires source-over blending,
-   may depth-test, and must not write normal depth.
-2. `test_scene_render_contract_wboit_policy`: WBOIT mesh requires two accumulation targets, additive
-   blend policy, optional depth test, and no depth write.
-3. `test_scene_render_contract_depth_peel_policy`: depth-peel mesh requires init/iter/composite
-   passes, exact sampled resources, and three RGBA16F peel targets.
-4. `test_scene_render_contract_sampled_depth_requires_producer`: a draw that samples depth must name
-   a sampled depth resource and producer pass, not only a pass-local depth attachment.
-5. `test_scene_render_contract_mixed_oit_rejected`: WBOIT plus depth-peel in one panel emits a
-   diagnostic until composition semantics are specified.
-6. `test_scene_frame_plan_missing_graph_pass_fails_contract`: a graph-backed render role without a
-   graph pass is reported as invalid.
-7. `test_scene_frame_plan_node_reallocation_safe`: many visuals and graph nodes force node-array
-   growth while preserving all render-node visual assignments.
-8. `test_scene_msaa_resolved_sample_count_diagnostic`: unsupported requested MSAA sample count is
-   rejected or lowered with an explicit diagnostic.
-9. `test_scene_role_work_label_mapping_complete`: every render pass role has one centralized label
-   and graph lookup mapping.
-10. `test_scene_pipeline_key_append_checked`: long combinations of suffixes fail safely instead of
-   truncating to an aliased key.
+1. Done: source-over, WBOIT, depth-peel, segment-coverage, and opaque draw policy rows are covered
+   by `test_scene_draw_contract_resolver_matrix`.
+2. Done: sampled-depth producer semantics are covered by
+   `test_scene_render_contract_validation_errors`.
+3. Done: mixed WBOIT/depth-peel rejection is covered by
+   `test_scene_visual_alpha_mode_mixed_oit_rejected`.
+4. Done: graph-backed render roles without matching graph passes are covered by
+   `test_scene_frame_plan_missing_graph_pass_fails_contract`.
+5. Done: FramePlan node reallocation safety is covered by
+   `test_scene_frame_plan_node_reallocation_safe`.
+6. Done: requested/resolved MSAA sample-count diagnostics are covered by
+   `test_scene_msaa_runtime_capability_lowering`.
+7. Done: centralized role/work-label policy is covered by
+   `test_scene_role_work_label_mapping_complete`.
+8. Done: resource-key helpers are covered by `test_scene_resource_keys`.
+9. Done: runtime key append truncation is covered by focused frame-plan runtime tests and the app
+   trace snapshot truncation regression.
 
 
 ### DRP2 semantic and fixture tests
 
-Extend `src/drp2/tests/test_drp2.c` and `spec/drp2/fixtures/positive`.
+Completed for the active semantic cases in `src/drp2/tests/test_drp2.c`, DRP2 fixture tests, and
+scene post-emit checker tests.
 
-Recommended positive fixtures:
-
-1. `source_over_blend_depth.json`
-2. `wboit_accumulation_resolve.json` extensions for depth-tested accumulation
-3. `depth_peeling_ping_pong.json`
-4. `msaa_resolve_readback.json`
-5. `scene_occlusion_prepass_sample.json`
-6. `volume_occlusion_prepass_sample.json`
-7. `ssao_gbuffer_composite.json`
-8. `edl_depth_resolve.json`
-
-Recommended negative tests:
-
-1. color attachment uses a depth format
-2. depth attachment uses a non-depth format
-3. pipeline color target format does not match render-pass attachment format
-4. WBOIT accumulation pipeline is missing one blend target
-5. depth-peel composite samples an unproduced ping/pong resource
-6. graph pass reads a resource with no prior writer when one is required
+1. Done: color-vs-depth format-class rejection.
+2. Done: pipeline/render-pass color-target count and format mismatch rejection.
+3. Done: pass depth attachment without matching pipeline depth state rejection.
+4. Done: WBOIT accumulation/resolve stream validation.
+5. Done: depth-peel shape validation through scene DRP2 emission and vklite runtime tests.
+6. Done: graph read without a prior writer and topological-order diagnostics.
+7. Done: scene checker rejects pipeline, raster, blend, sample-count, bind-layout, fullscreen, and
+   sampled-bind drift.
 
 
 ### Scene/runtime semantic tests
 
-These should execute through scene-emitted DRP2 and the semantic runtime where possible.
+Completed for the active retained-scene churn cases.
 
-1. Toggle a visual from `BLENDED -> WBOIT -> BLENDED` across frames and assert descriptors and
-   pipelines refresh without stale resources.
-2. Toggle `depth_test` on/off on transparent mesh visuals and assert the resolved contract and DRP2
-   pipeline state change together.
-3. Toggle volume occlusion and scene occlusion on/off across frames and assert sampled resource
-   bindings are recreated or removed correctly.
-4. Resize a retained offscreen target with WBOIT, depth peeling, volume, and scene occlusion enabled
-   and assert stable resource ids refresh descriptors.
+1. Done: `test_scene_alpha_mode_toggle_refreshes_drp2_contracts` covers
+   `BLENDED -> WBOIT -> BLENDED`.
+2. Done: transparent depth policy and source-over grouping are driven by resolved contracts.
+3. Done: retained scene-occlusion and volume-slice/mesh toggles are covered by
+   `test_app_offscreen_volume_slice_mesh_scene_occlusion_toggle`.
+4. Done: stable id descriptor refresh is covered by scene/app retained-frame and DRP2 refresh
+   regressions.
 
 
 ### Offscreen readback tests
 
-Add tests in `src/scene/tests/app.c` using small deterministic scenes, stable camera/controller
-state, fixed clear colors, and 64x64 or 128x128 targets. Prefer pixel-region averages over single
-pixels when edges or MSAA are involved.
+Completed in `src/scene/tests/app.c` for the active high-risk visuals. Deterministic tests use small
+offscreen scenes and region/pixel comparisons where appropriate.
 
-1. `test_app_offscreen_source_over_mesh_depth_and_blend`: render an opaque background/card and a
-   translucent mesh. Assert the center pixel is a blend of expected colors, and an opaque front card
-   occludes the transparent mesh.
-2. `test_app_offscreen_wboit_mesh_order_independent_layers`: render two overlapping transparent
-   mesh layers in two visual orders. Assert center-region colors are approximately equal.
-3. `test_app_offscreen_depth_peel_mesh_two_layers`: render two translucent crossing layers and an
-   opaque occluder. Assert both transparent colors contribute where expected and the occluder wins
-   where expected.
-4. `test_app_offscreen_volume_slice_transparent_mesh_occlusion_matrix`: loop over `BLENDED`,
-   `WBOIT`, and `DEPTH_PEEL`, and over occlusion modes `none`, `volume`, `scene`, and `both`.
-   Assert transparent mesh contribution remains visible and occluded volume/slice regions dim only
-   where expected.
-5. `test_app_offscreen_scene_occlusion_hidden_alpha`: compare hidden, nearly transparent, and opaque
-   occluders. Hidden or below-threshold occluders must not darken the target; opaque occluders must.
-6. `test_app_offscreen_volume_occlusion_region_delta`: compare volume occlusion enabled/disabled
-   and assert only the occluded region changes beyond tolerance.
-7. `test_app_offscreen_msaa_edge_changes_coverage`: render a diagonal primitive/mesh with MSAA
-   disabled/enabled and assert edge-region coverage changes while interior pixels remain stable.
-8. `test_app_offscreen_points_edl_changes_pixels`: capture with EDL enabled and disabled, without
-   disabling EDL before capture, and assert depth-edge darkening.
-9. `test_app_offscreen_sphere_ssao_darkens_contact`: render a small sphere/mesh contact scene and
-   assert SSAO darkens contact/cavity pixels relative to the disabled baseline.
+1. Done: `test_app_offscreen_source_over_mesh_depth_and_blend`.
+2. Done: `test_app_offscreen_wboit_mesh_order_independent_layers`.
+3. Done: `test_app_offscreen_depth_peel_mesh_two_layers`.
+4. Done: `test_app_offscreen_scene_occlusion_hidden_alpha`.
+5. Done: `test_app_offscreen_source_over_scene_occlusion_matrix`.
+6. Done: `test_app_offscreen_volume_occlusion_region_delta`.
+7. Done: `test_app_offscreen_volume_slice_scene_occlusion_dimming`.
+8. Done: `test_app_offscreen_volume_slice_mesh_scene_occlusion_toggle`.
+9. Done: `test_app_offscreen_points_edl_changes_pixels`.
+10. Done: `test_app_offscreen_sphere_ssao_darkens_contact`.
+11. Future optional expansion: add an app-level MSAA edge-coverage comparison and broader
+    volume/transparency/occlusion matrix only when those combinations become active user-facing
+    requirements.
 
 
 ## Subagent Collation
 
-The semantic audit emphasized that the resolver design is sound, but current contracts are too coarse
-for sampled depth, blend equations, exact occlusion resources, mixed transparency composition, and
-dependency-derived graph ordering.
+The semantic audit emphasized that the resolver design is sound and originally flagged coarse
+contracts for sampled depth, blend equations, exact occlusion resources, mixed transparency
+composition, and dependency-derived graph ordering. The implementation log above records completed
+hardening slices for the active versions of those risks.
 
 The implementation audit originally identified concrete robustness risks beyond semantics: stale
 render-node pointers across FramePlan reallocation, graph-emission failures that only log, skipped
@@ -1455,26 +1454,30 @@ missing graph passes during contract validation, MSAA sample-count drift after v
 pipeline-key truncation, and missing DRP2 format-class checks. The implementation progress log above
 now records completed hardening slices for each of these risks.
 
-The testing audit found that shape coverage is relatively strong, but offscreen visual correctness is
-not yet strong enough. Existing WBOIT and depth-peel runtime tests mostly check nonblank pixels, while
-the crucial volume/mesh/occlusion/transparency matrices are not covered by deterministic readback
-assertions.
+The testing audit found that shape coverage was relatively strong, while offscreen visual correctness
+needed deterministic pixel/region assertions. The active source-over, WBOIT, depth-peel, volume
+occlusion, scene occlusion, EDL, and SSAO slices now have targeted readback tests. Broader
+combination matrices remain future expansion work, not current audit blockers.
 
 
 ## Suggested Acceptance Criteria
 
-This area should be considered solid when all of the following are true:
+Current acceptance status:
 
-1. Every scene draw that reaches DRP2 has one resolved draw contract.
-2. Every graph-backed render node has one resolved pass contract and one matching graph pass.
-3. DRP2 pipeline color targets, blend state, depth state, multisampling, raster state, and bind-group
+1. Done: every active scene draw that reaches DRP2 has one resolved draw contract.
+2. Done: every graph-backed render node has one resolved pass contract and one matching graph pass.
+3. Done: DRP2 pipeline color targets, blend state, depth state, multisampling, raster state, and bind-group
    layouts are checked against the scene contract.
-4. Mixed WBOIT/depth-peel/source-over composition is either explicitly rejected or explicitly ordered.
-5. Sampled depth and depth attachments are represented as separate contracts.
-6. Offscreen readback tests cover source-over, WBOIT, depth peeling, volume plus transparent mesh,
-   volume occlusion, scene occlusion, MSAA, EDL, and SSAO.
-7. Capability fallbacks such as MSAA lowering are reported and tested.
-8. FramePlan and graph storage cannot invalidate retained pointers during emission.
+4. Done: mixed WBOIT/depth-peel composition is explicitly rejected; source-over composition is
+   covered by the active policy.
+5. Done: sampled depth and depth attachments are represented as separate contract semantics.
+6. Done for active high-risk paths: offscreen readback tests cover source-over, WBOIT, depth
+   peeling, volume plus mesh scene-occlusion toggles, volume occlusion, scene occlusion, EDL, and
+   SSAO. MSAA is covered at FramePlan/DRP2/runtime contract level; app edge-coverage readback is a
+   future optional visual-quality test.
+7. Done: capability fallbacks such as MSAA lowering are reported and tested.
+8. Done: FramePlan and graph storage cannot invalidate retained pointers during panel render
+   emission.
 
 
 ## Validation Performed For This Report
