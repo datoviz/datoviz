@@ -42,8 +42,8 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define WIDTH  800
-#define HEIGHT 600
+#define WIDTH  1600
+#define HEIGHT 1200
 
 #define ROTATION_SPEED_RAD_PER_SEC 0.9f
 
