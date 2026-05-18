@@ -541,6 +541,38 @@ Validation:
 10. `git diff --check`
 
 
+### 2026-05-18: Phase 4 / Retained scene-occlusion toggle
+
+Completed the brain-showcase regression slice for clicking `Show atlas mesh` with volume and scene
+occlusion active.
+
+Changes:
+
+1. Added `test_app_offscreen_volume_slice_mesh_scene_occlusion_toggle`, a minimal retained
+   offscreen app fixture that renders volume occlusion first, then toggles a hidden mesh visible as
+   a scene occluder while the volume slice samples scene occlusion.
+2. Confirmed the new test failed before the fix with `DRP2 sampled bind group misses graph read
+   resource` and `emitted runtime DRP2 stream failed scene contract validation`, matching the
+   original showcase failure mode.
+3. Updated the post-emit DRP2 contract checker so `SetBindGroup` commands that reference persistent
+   bind groups created by earlier retained-frame streams can still satisfy graph sampled-read
+   coverage by using bind-group label dependency ids.
+
+Validation:
+
+1. `cmake --build build --target dvztest_scene -j2`
+2. `direnv exec . ./build/testing/dvztest_scene test_app_offscreen_volume_slice_mesh_scene_occlusion_toggle`
+3. `direnv exec . ./build/testing/dvztest_scene test_app_offscreen_volume_slice_scene_occlusion_dimming`
+4. `direnv exec . ./build/testing/dvztest_scene test_scene_volume_slice_uses_generic_scene_occlusion`
+5. `./build/testing/dvztest_scene test_scene_blended_mesh_occlusion_contracts`
+6. `./build/testing/dvztest_scene test_scene_hidden_wboit_mesh_scene_occlusion_two_frames_glsl_executes`
+7. `cmake --build build --target dvztest -j2`
+8. `direnv exec . just test test_app_offscreen_volume_slice_mesh_scene_occlusion_toggle`
+9. `git diff --check`
+10. User-reported: the original `./build/examples/c/showcase/brain` GUI repro, focused scene/app
+    filters, `just test scene`, and the full `just tests` run passed after the fix.
+
+
 ## Executive Assessment
 
 The direction is correct and worth continuing. The proposal identifies the right failure mode:

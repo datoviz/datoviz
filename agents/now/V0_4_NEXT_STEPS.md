@@ -272,6 +272,17 @@ test_app_offscreen_volume_slice_scene_occlusion_dimming`, `direnv exec . just te
 test_scene_volume_slice_uses_generic_scene_occlusion`, and `git diff --check`. Broader full-suite
 revalidation remains the next confidence step before treating this as a full green baseline.
 
+Retained scene-occlusion toggle follow-up on `2026-05-18` (`ef324c1e`): the brain showcase
+regression from clicking `Show atlas mesh` is covered by
+`test_app_offscreen_volume_slice_mesh_scene_occlusion_toggle`. The regression fixture renders a
+volume/slice scene, then toggles a hidden mesh visible as a scene occluder while the slice samples
+scene occlusion. The test failed first with `DRP2 sampled bind group misses graph read resource`,
+matching the showcase failure. The contract checker now infers sampled graph-read coverage from
+persistent bind-group label dependency ids when a retained frame reuses a bind group created in an
+earlier stream. Focused validation passed for the new regression and adjacent volume/scene-occlusion
+tests. User-reported validation after the fix covered the original `./build/examples/c/showcase/brain`
+GUI repro, focused scene/app filters, `just test scene`, and the full `just tests` run successfully.
+
 
 ## Immediate Task
 
@@ -370,9 +381,9 @@ Deliver the next implementation slices in this order unless the user redirects:
 14. Multi-pass graph / transparency follow-up: keep WBOIT, depth peeling, blended volume, G-buffer,
     EDL, SSAO, SSAO blur, scene occlusion, and MSAA on the shared FramePlan graph path. The next
     transparency work should tighten DRP2 validation around pipeline color-target formats versus
-    render-pass attachment formats, add any missing offscreen readback/capture coverage, rerun a
-    broad suite after the volume-slice scene-occlusion fix, and continue explicit
-    resource-access/layout-transition cleanup before adding another transparency mode.
+    render-pass attachment formats, add any missing offscreen readback/capture coverage, and
+    continue explicit resource-access/layout-transition cleanup before adding another transparency
+    mode.
 15. Sphere and dense-particle follow-up: sphere is now a standalone retained visual with material
     lighting, antialiased silhouettes, raycast mode, G-buffer output, and SSAO coverage. Remaining
     sphere work belongs in targeted follow-ups such as texture/equirectangular mapping, render-mode
