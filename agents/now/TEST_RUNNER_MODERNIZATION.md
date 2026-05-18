@@ -1,7 +1,7 @@
 # Test Runner Modernization Plan
 
 > **Execution Status**
-> - **Status:** `FIRST SERIAL RUNNER SLICE LANDED`
+> - **Status:** `CANVAS SKIP/METADATA SLICE LANDED`
 > - **Updated on:** `2026-05-18`
 > - **Purpose:** document the current C test-runner limitations and a staged refactor path toward
 >   explicit grouping, cleaner filtering, and safe future parallelism.
@@ -39,7 +39,7 @@ CPU-only filters no longer initialize Vulkan. When the Vulkan runtime is unavail
 Vulkan/vklite cases are reported as `SKIP` with a JSON `skip_reason` instead of being hidden behind
 placeholder pass cases.
 
-Remaining follow-up: many graphics, scene, canvas, GUI, and video tests still contain in-test
+Remaining follow-up: some graphics, scene, app, GUI, and integration tests still contain in-test
 ad-hoc skips that log a warning and return success. They should be migrated gradually to explicit
 skip predicates or a context-level `tst_skip(ctx, reason)` helper so skip counts become accurate
 across the full suite.
@@ -49,6 +49,13 @@ availability checks that can only be resolved inside a test body. The video test
 migration: disabled NVENC, unavailable kvazaar/Vulkan setup, and no-backend offline/headless
 conditions now report `SKIP` with JSON reasons, and video registrations carry explicit video,
 filesystem, GPU, and Vulkan resource metadata where appropriate.
+
+Third follow-up update on `2026-05-18`: the canvas slice now reports GLFW/offscreen capability
+exits as explicit `SKIP` results instead of silent pass-style warning returns. Canvas registrations
+also carry CPU, GPU, Vulkan, GLFW, filesystem, environment, video, log-capture, global-state, and
+isolation metadata, so `dvztest_canvas --list` exposes the resource shape of each case. Focused
+validation covered `dvztest_canvas` rebuilds, a CPU-only case, and representative Vulkan/GLFW
+unavailable paths.
 
 Two boundaries should stay clean:
 
