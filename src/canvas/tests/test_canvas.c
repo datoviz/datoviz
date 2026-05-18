@@ -608,7 +608,7 @@ int test_canvas_offscreen_destroy_recreate(TstContext* suite, const TstCase* ite
 offscreen_recreate_cleanup:
     if (skip_reason != NULL)
     {
-        log_warn("canvas offscreen destroy/recreate test skipped (%s)", skip_reason);
+        tst_skip(suite, skip_reason);
     }
     if (canvas != NULL)
     {
@@ -701,7 +701,7 @@ int test_canvas_glfw_destroy_recreate(TstContext* suite, const TstCase* item)
 glfw_recreate_cleanup:
     if (skip_reason != NULL)
     {
-        log_warn("canvas GLFW destroy/recreate test skipped (%s)", skip_reason);
+        tst_skip(suite, skip_reason);
     }
     if (canvas != NULL)
     {
@@ -749,7 +749,7 @@ static int test_canvas_offscreen_mode_headless(TstContext* suite, const TstCase*
     window = dvz_window_create(host, DVZ_BACKEND_OFFSCREEN, &window_cfg);
     if (window == NULL || dvz_window_backend_type(window) != DVZ_BACKEND_OFFSCREEN)
     {
-        log_warn("canvas offscreen test skipped because headless window creation failed");
+        skip_reason = "headless window creation failed";
         goto offscreen_cleanup;
     }
 
@@ -825,7 +825,7 @@ static int test_canvas_offscreen_mode_headless(TstContext* suite, const TstCase*
 offscreen_cleanup:
     if (skip_reason != NULL)
     {
-        log_warn("canvas offscreen test skipped (%s)", skip_reason);
+        tst_skip(suite, skip_reason);
     }
     if (canvas != NULL)
     {
@@ -935,7 +935,7 @@ static int test_canvas_offscreen_video_sink_cpu_readback(TstContext* suite, cons
 offscreen_video_cleanup:
     if (skip_reason != NULL)
     {
-        log_warn("canvas offscreen video sink test skipped (%s)", skip_reason);
+        tst_skip(suite, skip_reason);
     }
     else
     {
@@ -1033,7 +1033,7 @@ static int test_canvas_offscreen_state_on_stream_submit_failure(TstContext* suit
 offscreen_submit_fail_cleanup:
     if (skip_reason != NULL)
     {
-        log_warn("canvas offscreen submit-failure state test skipped (%s)", skip_reason);
+        tst_skip(suite, skip_reason);
     }
     if (canvas != NULL)
     {
@@ -1128,7 +1128,7 @@ offscreen_device_lost_cleanup:
     }
     if (skip_reason != NULL)
     {
-        log_warn("canvas offscreen device-lost state test skipped (%s)", skip_reason);
+        tst_skip(suite, skip_reason);
     }
     if (canvas != NULL)
     {
@@ -1215,7 +1215,7 @@ static int test_canvas_offscreen_handles_clean_after_rebuild(TstContext* suite, 
 offscreen_clean_handles_cleanup:
     if (skip_reason != NULL)
     {
-        log_warn("canvas offscreen clean-handles test skipped (%s)", skip_reason);
+        tst_skip(suite, skip_reason);
     }
     if (canvas != NULL)
     {
@@ -1318,7 +1318,7 @@ static int test_canvas_offscreen_live_wait_monotonic_across_rebuild(TstContext* 
 offscreen_live_wait_cleanup:
     if (skip_reason != NULL)
     {
-        log_warn("canvas offscreen live-wait monotonic test skipped (%s)", skip_reason);
+        tst_skip(suite, skip_reason);
     }
     if (canvas != NULL)
     {
@@ -1438,7 +1438,7 @@ static int test_canvas_offscreen_start_update_order_across_rebuild(TstContext* s
 offscreen_order_cleanup:
     if (skip_reason != NULL)
     {
-        log_warn("canvas offscreen start/update ordering test skipped (%s)", skip_reason);
+        tst_skip(suite, skip_reason);
     }
     if (canvas != NULL)
     {
@@ -1580,7 +1580,7 @@ static int test_canvas_offscreen_video_wait_monotonic_across_rebuild(TstContext*
 offscreen_video_wait_cleanup:
     if (skip_reason != NULL)
     {
-        log_warn("canvas offscreen video-wait monotonic test skipped (%s)", skip_reason);
+        tst_skip(suite, skip_reason);
     }
     if (canvas != NULL)
     {
@@ -1627,7 +1627,7 @@ static int test_canvas_present_mode_rejects_offscreen_window(TstContext* suite, 
     window = dvz_window_create(host, DVZ_BACKEND_OFFSCREEN, &window_cfg);
     if (window == NULL || dvz_window_backend_type(window) != DVZ_BACKEND_OFFSCREEN)
     {
-        log_warn("present/offscreen guard test skipped because headless window creation failed");
+        skip_reason = "headless window creation failed";
         goto guard_cleanup;
     }
 
@@ -1645,7 +1645,7 @@ static int test_canvas_present_mode_rejects_offscreen_window(TstContext* suite, 
 guard_cleanup:
     if (skip_reason != NULL)
     {
-        log_warn("present/offscreen guard test skipped (%s)", skip_reason);
+        tst_skip(suite, skip_reason);
     }
     if (canvas != NULL)
     {
