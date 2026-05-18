@@ -429,6 +429,355 @@ Avoid parallel edits that touch the same write scope:
    blocks at the same time.
 
 
+## Example Agent Prompts For Parallel Lanes
+
+Use these as starting prompts when assigning one lane to an agent. Each prompt should be narrowed to
+one concrete pickup item before execution. Agents should update this checklist and the lane-specific
+planning document when they land a slice.
+
+Common coordination rules:
+
+1. start by reading this checklist, `V0_4_NEXT_STEPS.md`, and the lane-specific docs named below,
+2. state the write scope before editing and avoid files owned by another active lane,
+3. do not rewrite shared scene emission, DRP2 schemas, shader bind layouts, or test registration
+   blocks unless that is the explicit lane objective,
+4. if subagents are authorized, delegate only disjoint read-only audits or disjoint write scopes,
+5. do not delegate the immediate blocker for the lane; keep that work local,
+6. make every subagent report changed files, validation run, and remaining risks,
+7. finish with `git diff --check` and the narrowest relevant build/test command.
+
+
+### Prompt: Text Release-Hardening
+
+```text
+You own the text release-hardening lane for Datoviz v0.4. Read
+agents/now/V0_4_C_IMPLEMENTATION_CHECKLIST.md, spec/scene/slices/TEXT_RENDERING_SLICE.md,
+spec/scene/semantics/TEXT.md, and agents/soon/SCENE_TEXT_GLYPH_PLAN.md.
+
+Goal: make the existing retained/rendered text path release-quality for the next small slice.
+Stay inside src/scene text/glyph code, scene shaders needed for text, examples/c/visuals/text.c,
+and focused scene/app text tests. Do not redesign axes, colorbars, annotations, or shared
+FramePlan contribution structures unless the exact text bug requires it.
+
+Conflict avoidance: coordinate with axes/colorbar/annotation agents by exposing stable text
+behavior and tests, not by changing their semantic state. Avoid shader bind-layout changes unless
+you also update material/WebGPU owners and fixtures.
+
+If subagents are authorized, use one explorer to audit text tests/examples for missing behavior and
+one worker only for a disjoint example or test update. Keep core text implementation local.
+Validate with git diff --check, just build, just test scene, and one focused app/offscreen visible
+text smoke.
+```
+
+
+### Prompt: Axes And Tick Integration
+
+```text
+You own the 2D axes/tick integration lane. Read the checklist, spec/scene/semantics/AXES.md, and
+agents/soon/SCENE_2D_AXES_IMPLEMENTATION_PLAN.md.
+
+Goal: land one narrow axes slice: generated numeric ticks, axis/tick line geometry, label emission,
+or resize/panzoom update behavior. Stay in axes semantic state, panel layout hooks, line/segment
+geometry, examples/c/techniques/scatter_axes.c, and focused scene tests.
+
+Conflict avoidance: do not rewrite text rendering internals; call the current text API and document
+any required text behavior as a dependency. Do not change colorbar scale policy unless the task is
+explicitly shared with that lane.
+
+If subagents are authorized, use an explorer for v0.3-visible axes capability gaps and a worker for
+example-only polish. Keep tick generation and scene state changes local. Validate with git
+diff --check, just build, and focused scene axes/scatter tests.
+```
+
+
+### Prompt: Colorbar Ramp Planning
+
+```text
+You own the continuous colorbar lane. Read the checklist and
+spec/scene/slices/COLORBAR_RENDERING_SLICE.md.
+
+Goal: implement one colorbar slice such as ramp geometry, scale/colormap binding, deterministic
+ticks, orientation layout, diagnostics, or update/destroy behavior. Stay in colorbar state,
+scale/colormap integration, ramp visual emission, examples using image/colormap, and focused tests.
+
+Conflict avoidance: do not change text internals; wire labels through the current text surface and
+leave label-quality blockers documented. Do not alter global scale semantics used by images unless
+the image/visual-family owner is coordinated.
+
+If subagents are authorized, use one explorer for scale/colormap call sites and one worker for a
+disjoint example or doc update. Keep colorbar state and emission local. Validate with git
+diff --check, just build, and focused scene colorbar/image tests.
+```
+
+
+### Prompt: WebGPU Command Parity
+
+```text
+You own the WebGPU/WASM experimental parity lane. Read the checklist,
+agents/soon/DRP2_WEBGPU_SUPPORT_PLAN.md, agents/soon/SCENE_WASM_WEBGPU_PORT_PLAN.md, and
+agents/now/DRP2_SPEC.md.
+
+Goal: advance the narrow browser path for the supported DRP2 subset. Work in examples/webgpu,
+WebGPU preflight fixtures, WGSL emission, and docs for supported/unsupported commands. Do not
+change native scene APIs or invent a second scene renderer contract.
+
+Conflict avoidance: coordinate before changing DRP2 schemas, command semantics, shader bind
+layouts, or fixture expectations used by native DRP2/DVZR. Unsupported native features should
+produce diagnostics rather than browser-only semantics.
+
+If subagents are authorized, use one explorer for fixture/preflight gaps and one worker for
+example/web page polish. Keep command semantics and WGSL/runtime changes local. Validate with git
+diff --check, just spec-check, and the relevant WebGPU preflight/browser runner.
+```
+
+
+### Prompt: Example Audit And Polish
+
+```text
+You own the example audit/polish lane. Read the checklist,
+agents/soon/SCENE_EXAMPLE_PRIORITIZATION.md, spec/scene/examples/README.md, and
+spec/scene/examples/EXAMPLE_RELEASE_STAGING.md.
+
+Goal: improve one release-target C example using already-implemented features. Prefer examples that
+pressure axes, colorbars, linked panels, mesh/sphere/materials, volume, EDL, or WebGPU without
+adding new core semantics.
+
+Conflict avoidance: do not change src/scene, src/drp2, shaders, or public APIs unless fixing a
+confirmed bug with a focused test. File implementation gaps in this checklist rather than solving
+them inside example polish.
+
+If subagents are authorized, split by independent examples or assign one explorer to compare the
+example against the staging matrix. Validate with git diff --check, just build, and bounded runs of
+the touched examples.
+```
+
+
+### Prompt: Runtime Hardening
+
+```text
+You own the runtime hardening lane. Read the checklist, V0_4_NEXT_STEPS.md, and recent runtime
+notes in agents/done that match the suspected subsystem.
+
+Goal: fix one lifetime, resize, descriptor refresh, repeated-frame, destroy-path, or transient
+object accumulation issue in the scene -> DRP2 -> vklite/canvas/app path.
+
+Conflict avoidance: do not change visual feature semantics while fixing runtime behavior. Avoid
+DRP2 schema changes unless the bug proves the command contract is wrong. Coordinate with feature
+agents before touching shared request/frame loops or shader layout decisions.
+
+If subagents are authorized, use explorers for independent audits such as descriptor lifetimes,
+destroy paths, and repeated-frame allocations. Keep the actual fix local unless the write scope is
+clearly isolated. Validate with git diff --check, just build, the narrow subsystem tests, and a
+bounded GLFW/offscreen smoke when graphics paths are touched.
+```
+
+
+### Prompt: API Inventory And Docs
+
+```text
+You own the API inventory/docs lane. Read the checklist and
+agents/now/V0_4_RELEASE_READINESS_PLAN.md.
+
+Goal: classify public/internal/experimental C API surface, document ownership/destroy rules, and
+sync docs with actual v0.4 behavior. Prefer read-only audits and markdown/header comment updates.
+
+Conflict avoidance: do not rename or redesign APIs while feature agents are active unless the task
+explicitly asks for an API cleanup. Record proposed breaking changes separately when they would
+touch active implementation lanes.
+
+If subagents are authorized, use explorers by module: scene/app, DRP2/runtime, low-level graphics,
+and examples/docs. Avoid parallel workers editing the same headers. Validate with git diff --check
+and just build if headers or Doxygen comments changed.
+```
+
+
+### Prompt: DRP2 Contract And Fixture Maintenance
+
+```text
+You own the DRP2 contract/fixture lane. Read agents/now/DRP2_SPEC.md, the checklist, spec/drp2
+docs, schema files, and tools/drp2_fixture_runner.py.
+
+Goal: keep the active DRP2 2.0 command surface, prose, schemas, fixtures, C serialization, and
+fixture runner aligned for one concrete contract gap.
+
+Conflict avoidance: coordinate with WebGPU and DVZR agents before changing command fields,
+serialization, or fixture expectations. Do not introduce Vulkan-specific terms into public DRP2
+definitions, and do not change scene semantics unless a scene pressure fixture requires it.
+
+If subagents are authorized, use one explorer for schema/prose mismatch and one explorer for C
+serialization/validation mismatch. Keep schema or C edits in one local write scope. Validate with
+git diff --check, just spec-check, and just test drp2 when C code changes.
+```
+
+
+### Prompt: DVZR Recording And Replay
+
+```text
+You own the DVZR recording/replay portability lane. Read the DVZR updates in
+agents/now/V0_4_NEXT_STEPS.md, agents/now/DRP2_SPEC.md, and relevant src/drp2 recording code.
+
+Goal: improve one recording/replay slice: portable command coverage, app recording hooks, replay
+target setup, raw-fallback diagnostics, player behavior, or example validation.
+
+Conflict avoidance: coordinate with DRP2 contract/schema owners before changing portable command
+serialization. Do not alter scene visual semantics or app frame loops beyond recording/replay hooks.
+
+If subagents are authorized, use one explorer for raw fallback coverage and one worker for a
+disjoint replay/example update. Keep recording format and loader/runtime changes local. Validate
+with git diff --check, just build, focused drp2_recording tests, and a replay/player smoke.
+```
+
+
+### Prompt: Render-Contract And Technique Hardening
+
+```text
+You own the render-contract/technique hardening lane. Read
+agents/done/RENDER_CONTRACT_RESOLVER_AUDIT.md, the checklist, and the active scene technique tests.
+
+Goal: strengthen one active technique contract or readback case for source-over, WBOIT, depth peel,
+MSAA, EDL, SSAO, volume occlusion, scene occlusion, or G-buffer.
+
+Conflict avoidance: do not polish visual-family public behavior at the same time as changing pass
+roles, resource ids, graph ordering, or shader variants. Coordinate with material/shader and WebGPU
+agents before changing bind layouts or shader ABI.
+
+If subagents are authorized, use explorers for independent contract/readback gaps by technique.
+Delegate implementation only if each worker owns a disjoint technique/test file set. Validate with
+git diff --check, just build, focused scene/drp2 technique tests, and relevant offscreen readbacks.
+```
+
+
+### Prompt: Material And Shader ABI Polish
+
+```text
+You own the material/shader ABI polish lane. Read the checklist, V0_4_NEXT_STEPS.md, shader ABI
+notes in recent commits/docs, and active material-model examples/tests.
+
+Goal: improve one material or shader ABI slice: uniform layout, vertex attribute descriptors,
+generated shader variants, material controls, GLSL/WGSL parity, or example coverage.
+
+Conflict avoidance: coordinate before changing binding layouts used by DRP2, WebGPU, or technique
+contracts. Do not fold unrelated visual-family polish into shader ABI work.
+
+If subagents are authorized, use one explorer for GLSL/WGSL layout parity and one worker for a
+disjoint example/test update. Keep ABI and core shader edits local. Validate with git diff --check,
+just build, focused scene/drp2 tests, shader generation checks if present, and one visible example.
+```
+
+
+### Prompt: Selection And Request Payload Widening
+
+```text
+You own the selection/request payload lane. Read the checklist,
+agents/now/IMAGE_PICKING_RECOVERY_PLAN.md, spec/scene/interaction/PICKING.md, and
+spec/scene/interaction/SELECTION.md.
+
+Goal: improve one interaction slice: point/image request robustness, marker picking, richer payload
+fields, highlight styling, linked-panel probe state, or explicit deferrals for unsupported picking.
+
+Conflict avoidance: do not change the app frame loop or request executor broadly while runtime
+hardening agents are active. Do not add mesh/path/volume/text picking unless explicitly scoped.
+
+If subagents are authorized, use one explorer for request lifecycle tests and one worker for a
+disjoint example/highlight test. Keep request executor or payload structure changes local. Validate
+with git diff --check, just build, focused scene request tests, and app/offscreen pick/probe smoke.
+```
+
+
+### Prompt: Test-Runner Modernization
+
+```text
+You own the test-runner modernization lane. Read agents/now/TEST_RUNNER_MODERNIZATION.md and the
+checklist.
+
+Goal: land one runner slice: metadata migration, skip/resource reporting, component runner wiring,
+timing/JSON output, or preparation for process-level scheduling.
+
+Conflict avoidance: avoid editing the same test registration blocks that feature agents are using.
+Do not change subsystem behavior while migrating test metadata. Keep generic runner logic separate
+from Datoviz-specific Vulkan/GLFW/video skip probes.
+
+If subagents are authorized, split by independent modules or use explorers to audit remaining
+legacy skips. Delegate workers only when each owns a distinct module test file. Validate with git
+diff --check, cmake --build build --target touched runners, --list/JSON smoke, and representative
+focused tests.
+```
+
+
+### Prompt: Performance And Long-Run Smoke
+
+```text
+You own the performance/long-run smoke lane. Read the checklist, V0_4_NEXT_STEPS.md, and any recent
+runtime hardening notes for the target path.
+
+Goal: identify and fix or document one performance or churn issue: immediate-present FPS
+regression, repeated-frame allocations, descriptor churn, unexpected DRP2 stream changes, or
+long-running GLFW/offscreen instability.
+
+Conflict avoidance: do not change feature semantics to improve a benchmark. Coordinate with
+runtime hardening before touching descriptor/resource lifetimes and with app/example agents before
+changing example loops.
+
+If subagents are authorized, use explorers for trace analysis, allocation/churn audit, and benchmark
+comparison. Keep fixes local after the evidence is clear. Validate with git diff --check, just
+build, focused tests, bounded live smoke, and trace/FPS notes.
+```
+
+
+### Prompt: Capture, Video, And Gallery Artifacts
+
+```text
+You own the capture/video/gallery artifact lane. Read the checklist,
+V0_4_RELEASE_READINESS_PLAN.md, and example staging docs.
+
+Goal: improve one raster capture, frame-sequence/video, gallery artifact, or backend skip behavior
+needed for release examples. Keep publication/vector export out of scope.
+
+Conflict avoidance: do not redesign scene/app rendering or video APIs while feature agents are
+active. Treat codec/backend availability as runner-visible skips rather than hard failures.
+
+If subagents are authorized, use one explorer for current capture/video examples and one worker for
+a disjoint gallery artifact script/example. Validate with git diff --check, just build, focused
+video/app tests where available, and one artifact-producing smoke.
+```
+
+
+### Prompt: GUI-Driven Example Controls
+
+```text
+You own the GUI-driven example controls lane. Read the checklist and the staged example docs.
+
+Goal: add or polish ImGui/example-side controls that exercise existing scene/app parameters such as
+materials, EDL, SSAO, volume ranges, transparency, or camera state.
+
+Conflict avoidance: do not promote the GUI module into a broad public API and do not add core
+scene semantics solely for a control panel. Coordinate with material/technique agents before
+changing controlled shader parameters.
+
+If subagents are authorized, split by independent examples or use an explorer to audit existing GUI
+patterns. Keep core implementation changes local and minimal. Validate with git diff --check, just
+build, and bounded runs of touched GUI examples.
+```
+
+
+### Prompt: Release Documentation And Website Staging
+
+```text
+You own the release documentation/website staging lane. Read
+agents/now/V0_4_RELEASE_READINESS_PLAN.md, the checklist, example staging docs, and current docs.
+
+Goal: update user-facing documentation, capability matrices, known-gap notes, public/private labels,
+or website/gallery staging based on behavior already implemented in C.
+
+Conflict avoidance: do not claim unfinished behavior. Do not edit active C implementation while
+feature agents are landing slices unless the doc task explicitly includes small header comments.
+
+If subagents are authorized, use explorers by doc area: API surface, examples/gallery, WebGPU
+status, and release gaps. Delegate markdown-only workers only on disjoint files. Validate with git
+diff --check and any docs/link/gallery checks available in the repo.
+```
+
+
 ## Definition Of Done For A Slice
 
 A C implementation slice is done when:
