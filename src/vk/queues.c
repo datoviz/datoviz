@@ -365,7 +365,7 @@ DvzQueue* dvz_queue_from_role(DvzQueues* queues, DvzQueueRole role)
         return main;
     }
 
-    log_warn("could not find a queue supporting role %d", role);
+    log_debug("could not find a queue supporting role %d", role);
 
     return NULL;
 }

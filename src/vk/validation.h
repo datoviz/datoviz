@@ -16,6 +16,8 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
+#include <string.h>
+
 #include <vulkan/vulkan_core.h>
 
 #include "_assertions.h"
@@ -40,6 +42,7 @@ static const char* DVZ_VALIDATION_IGNORES[] = {
     "BestPractices-vkCreateCommandPool-command-buffer-reset",
     "BestPractices-vkCreateInstance-specialuse-extension",
     "BestPractices-specialuse-extension",
+    "should be sub-allocated from larger memory blocks",
 
     // prevent unnecessary error messages when quickly resizing a window (race condition, fix to be
     // done probably in the validation layers)
@@ -63,6 +66,7 @@ static const char* DVZ_VALIDATION_IGNORES[] = {
     "DebugPrintf logs to the Information message severity",
 
     "Attempting to enable deprecated extension",
+    "Metal does not support disabling primitive restart",
 };
 
 static const VkValidationFeatureEnableEXT DVZ_VALIDATION_FEATURES[] = {
@@ -112,6 +116,29 @@ static inline int _log_level(VkDebugUtilsMessageSeverityFlagBitsEXT sev)
 
 
 
+/**
+ * Return whether a validation callback string matches a known ignored warning.
+ *
+ * @param field optional validation message or message-id string
+ * @return true if the field contains an ignored validation substring
+ */
+static inline bool _validation_ignored_field(const char* field)
+{
+    if (field == NULL)
+        return false;
+
+    for (uint32_t i = 0; i < DVZ_ARRAY_COUNT(DVZ_VALIDATION_IGNORES); i++)
+    {
+        if (strstr(field, DVZ_VALIDATION_IGNORES[i]) != NULL)
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+
+
 static VKAPI_ATTR VkBool32 VKAPI_CALL debug_callback(
     VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
     VkDebugUtilsMessageTypeFlagsEXT messageType,
@@ -125,13 +152,11 @@ static VKAPI_ATTR VkBool32 VKAPI_CALL debug_callback(
     int level = _log_level(messageSeverity);
 
     // NOTE: force TRACE level if ignored message.
-    for (uint32_t i = 0; i < DVZ_ARRAY_COUNT(DVZ_VALIDATION_IGNORES); i++)
+    if (
+        _validation_ignored_field(pCallbackData->pMessageIdName) ||
+        _validation_ignored_field(pCallbackData->pMessage))
     {
-        if (strstr(pCallbackData->pMessage, DVZ_VALIDATION_IGNORES[i]) != NULL)
-        {
-            level = LOG_TRACE;
-            break;
-        }
+        level = LOG_TRACE;
     }
 
     log_log(level, __FILENAME__, __LINE__, "validation layer: %s", pCallbackData->pMessage);

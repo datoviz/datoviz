@@ -807,6 +807,7 @@ static int kvazaar_start(DvzVideoEncoder* enc)
         state->convert_threads);
     cfg->aud_enable = 0;
     cfg->add_encoder_info = 0;
+    cfg->enable_logging_output = 0;
 
     bool use_mapped_source = enc->image != VK_NULL_HANDLE && enc->memory != VK_NULL_HANDLE;
     if (use_mapped_source && kvazaar_map_image(enc, state) != 0)
