@@ -937,6 +937,24 @@ Validation:
 4. `./build/testing/dvztest_scene test_app_offscreen_volume_slice_mesh_scene_occlusion_toggle`
 
 
+### 2026-05-18: Audit reconciliation / Sampled depth and mixed OIT findings
+
+Reconciled stale high-priority findings against the completed Phase 0 hardening slices.
+
+Changes:
+
+1. Marked sampled-depth conflation as resolved by the split sampled-depth contract validation and
+   sampled-depth producer regression.
+2. Marked mixed WBOIT/depth-peel composition as resolved for the current contract by the pre-emit
+   rejection and diagnostic regression.
+3. Updated the executive assessment so the remaining high-risk item is the broader authoritative
+   resolver direction, not already-completed Phase 0 safety issues.
+
+Validation:
+
+1. `git diff --check -- agents/now/RENDER_CONTRACT_RESOLVER_AUDIT_2026-05-17.md`
+
+
 ## Executive Assessment
 
 The direction is correct and worth continuing. The proposal identifies the right failure mode:
@@ -946,21 +964,22 @@ adds useful passive validation in `src/scene/render_contract.*`, and it has mean
 DRP2-shape tests for source-over, WBOIT, depth peeling, scene occlusion, volume occlusion, MSAA, EDL,
 and SSAO.
 
-The contract layer is not yet strong enough to be treated as the source of truth. It mostly observes
-an already-emitted FramePlan and graph, while `scene_emit.c`, `technique.c`,
-`visual_pipeline.c`, and `frame_plan_runtime.c` still make independent decisions about pass shape,
-pipeline state, blend equations, depth state, bind-group layouts, resource suffixes, and capability
-fallbacks. That means the current contract can catch some graph-level mistakes, but it cannot yet
-prove that the emitted DRP2 stream and runtime pipeline state match the semantic intent.
+The contract layer is stronger than the initial audit snapshot: it now owns explicit draw-policy
+fields, stores contract metadata on FramePlan nodes, validates emitted DRP2 state, and covers the
+Phase 0 safety issues. It is still not a complete source-of-truth resolver. `scene_emit.c`,
+`technique.c`, `visual_pipeline.c`, and `frame_plan_runtime.c` still make some independent
+decisions about pass shape, technique-local graph resources, and runtime lowering. That means the
+current contract catches many state drifts, but a future backend would still need a first-class
+resolved pass/pipeline contract object instead of reusing validator-owned tables.
 
-The highest-risk semantic gaps are:
+The highest-value remaining direction is now:
 
-1. Sampled-depth semantics are conflated with "has a depth attachment".
-2. Mixed transparency composition across source-over, WBOIT, and depth peeling is underspecified.
-3. Missing graph passes and graph-emission failures can be skipped after logging.
-4. Cached `DvzFramePlanNode*` pointers can become stale when the FramePlan node array reallocates.
-5. Offscreen readback tests mostly prove "something rendered", not correct ordering, occlusion, or
-   compositing for combined cases.
+1. Continue promoting validator-owned runtime policy tables into explicit resolved pass/pipeline
+   contract fields where another backend or serialized plan would consume them.
+2. Keep broadening deterministic offscreen readback coverage for combined volume, transparency,
+   occlusion, MSAA, EDL, and SSAO cases.
+3. Keep graph builders topological unless a dependency scheduler becomes a real cross-backend
+   requirement.
 
 
 ## Audited Areas
@@ -1036,55 +1055,33 @@ Recommendation: make the resolver produce a first-class `DvzSceneResolvedDraw` /
 nodes, and validate the final DRP2 stream against those contract ids.
 
 
-### High: sampled depth is conflated with depth attachment presence
+### Resolved: sampled depth is split from depth attachment presence
 
-The proposal requires sampled resources to have explicit producer/read edges. The current validation
-treats `samples_depth` as satisfied by a depth attachment on the same pass:
+Sampled-depth validation no longer treats `samples_depth` as satisfied by an arbitrary same-pass
+depth attachment. Fixed-function depth needs are tracked separately from shader sampled-depth needs,
+and validation now requires a produced sampled-depth resource or a loaded read-capable producer depth
+attachment for sampled-depth draws.
 
-```text
-needs_depth = draw->depth_test || draw->samples_depth || draw->depth_write
-```
+Status:
 
-That checks for a depth attachment, not for a sampled depth resource produced by an earlier pass.
-This distinction matters because "the pass has a depth attachment for fixed-function testing" is not
-the same contract as "the fragment shader samples a previous depth texture".
-
-Impact: volume plus transparent mesh and volume raymarching cases can become ambiguous. A shader
-that samples depth needs a concrete sampled resource id, layout, and producer edge; it should not be
-validated only by the presence of a transient depth-test attachment.
-
-Recommendation: split depth into at least these facts:
-
-1. `depth_test_attachment_id`
-2. `depth_write_attachment_id`
-3. `sampled_depth_resource_id`
-4. `depth_attachment_lifecycle`: clear/load/preserve/store
-5. `depth_producer_semantics`: none, test-only transient, writes meaningful depth, sampled prior pass
+1. `needs_depth` now covers only fixed-function depth test/write needs.
+2. `samples_depth` is validated through `_contract_has_sampled_depth_resource()`.
+3. The regression in `test_scene_render_contract_validation_errors` locks the case where a same-pass
+   clear/write depth attachment is not enough proof for sampled-depth semantics.
 
 
-### High: mixed transparency techniques are underspecified
+### Resolved: mixed WBOIT plus depth-peel panels are rejected
 
-Source-over, WBOIT, and depth peeling are each described, but the composition rules between them are
-not explicit enough. Current `scene_emit.c` can create render nodes for more than one transparent
-technique. Graph emission then prioritizes WBOIT with an `if`, depth peeling with an `else if`, and
-source-over as another branch or auxiliary graph. If a panel contains WBOIT and depth-peel visuals,
-the depth-peel render nodes can exist without corresponding graph passes, and current contract
-validation skips render nodes that do not match a graph pass.
+The current contract does not define a total composition order between WBOIT and depth peeling.
+Instead, `dvz_figure_emit_ex()` rejects panels that contain both techniques before FramePlan graph
+construction.
 
-Impact: mixed OIT modes can silently fall into undefined behavior. Even if the current public API
-does not encourage mixing, retained scenes can reach these combinations through per-visual alpha mode
-changes.
+Status:
 
-Recommendation: choose one of two explicit semantics:
-
-1. Reject panels that mix WBOIT and depth peeling, with a diagnostic that names the conflicting
-   visuals and panel.
-2. Define a total composition order such as opaque -> depth-producing prepasses -> WBOIT
-   accumulation/resolve -> depth-peel composite -> source-over, then add contract and offscreen tests
-   for that exact order.
-
-The first option is safer and should be the immediate implementation until a visual use case requires
-mixed OIT composition.
+1. The diagnostic names the panel and the first conflicting WBOIT/depth-peel visual indices.
+2. `test_scene_visual_alpha_mode_mixed_oit_rejected` locks the rejection behavior.
+3. A total mixed-OIT composition order can still be designed later if a concrete visual use case
+   needs it, but the original silent undefined behavior risk is closed.
 
 
 ### Resolved: graph-emission failures report specific diagnostics
