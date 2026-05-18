@@ -10,6 +10,10 @@ For ranked scene/example priorities and the capability matrix that connects exam
 feature work, see
 [`SCENE_EXAMPLE_PRIORITIZATION.md`](../soon/SCENE_EXAMPLE_PRIORITIZATION.md).
 
+For the current C test-runner audit and staged modernization plan toward explicit grouping,
+resource metadata, and safe future parallelism, see
+[`TEST_RUNNER_MODERNIZATION.md`](TEST_RUNNER_MODERNIZATION.md).
+
 
 ## Current Position
 
