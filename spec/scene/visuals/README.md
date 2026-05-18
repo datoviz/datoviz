@@ -88,3 +88,18 @@ The granularity vocabulary (`CONSTANT`, `PER_ITEM`, `PER_SPAN`, `PER_GROUP`) and
 3. [../proposals/MATERIAL_LIGHTING_API.md](../proposals/MATERIAL_LIGHTING_API.md)
 4. [../proposals/VOLUME_DESIGN.md](../proposals/VOLUME_DESIGN.md)
 5. [../implementation/VISUAL_SHADER_REFACTOR.md](../implementation/VISUAL_SHADER_REFACTOR.md)
+
+
+## Future Semantic Resources
+
+Some future scientific data models are intentionally not added to the active v0.4 family table yet.
+They are better understood as semantic resources or compositions that lower to the families above:
+
+1. graphs and networks lower to points/markers, segments/paths, glyphs, and overlays;
+2. unstructured grids lower to boundary meshes, cut meshes, cell-edge segments, and glyphs;
+3. vector and tensor fields lower to arrows, streamlines, glyphs, images, and volumes;
+4. categorical label volumes and sparse voxel fields extend the sampled-field/volume direction;
+5. tracks, ensembles, and molecular structures lower to multiple coordinated views.
+
+The exploratory roadmap for these directions starts in
+[`../proposals/SCIENTIFIC_VISUALIZATION_ROADMAP.md`](../proposals/SCIENTIFIC_VISUALIZATION_ROADMAP.md).

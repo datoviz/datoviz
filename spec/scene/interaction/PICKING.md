@@ -152,6 +152,30 @@ Examples:
 This payload should remain optional and family-defined.
 
 
+### Future Semantic Identity
+
+Future scientific resources may need semantic target names beyond the active generic set. These
+names should resolve to scene/domain identity, not backend ids:
+
+| Target | Typical source |
+|---|---|
+| `node` | graph node, skeleton joint |
+| `edge` | graph edge, molecular bond |
+| `cell` / `element` | FEM/CFD tetrahedron, hexahedron, or finite-volume cell |
+| `voxel` | dense or sparse volume cell |
+| `label` | segmentation or atlas region id |
+| `track` | trajectory id with optional sample/time payload |
+| `atom` | molecular atom |
+| `residue` / `chain` | molecular hierarchy |
+| `member` | ensemble member |
+
+The current public target enums do not need to expose all of these before implementation. The
+important rule is that future pick/probe payloads should preserve the semantic identity and any
+local coordinates needed for readout: barycentric coordinates for cells/faces, UVW and voxel index
+for fields, edge parameter for graph edges, time/sample id for tracks, and hierarchy ids for
+molecules.
+
+
 ## Why Group Identity Matters
 
 The grouped picking case should be explicit in the scene spec.

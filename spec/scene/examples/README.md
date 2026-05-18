@@ -20,6 +20,12 @@ Cross-cutting lessons that come out of several examples can live at this level. 
 volume, slice, and transparent mesh composition is
 [TRANSPARENCY_OCCLUSION.md](TRANSPARENCY_OCCLUSION.md).
 
+Future scientific-visualization directions that extend beyond the current example set are tracked in
+[`../proposals/SCIENTIFIC_VISUALIZATION_ROADMAP.md`](../proposals/SCIENTIFIC_VISUALIZATION_ROADMAP.md).
+That roadmap links graph/network, unstructured-grid, field, trajectory, ensemble, molecular, and
+out-of-core resource proposals. Existing examples should reuse those notes instead of inventing
+parallel semantics when they grow into those domains.
+
 
 
 ## Feature Fixture Matrix

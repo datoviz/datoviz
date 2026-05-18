@@ -30,6 +30,11 @@ MIP and DVR picking remain follow-up work.
 Isosurfaces, gradient lighting, categorical label volumes, bricking/out-of-core streaming, full MPR,
 and WebGPU/WGSL parity remain follow-up work unless a specific v0.4 task activates them.
 
+Categorical label volumes, sparse voxel fields, and bricked/out-of-core volume residency are future
+extensions of the sampled-field/volume direction. Their exploratory requirements are collected in
+[`../proposals/FIELD_VISUALIZATION_ROADMAP.md`](../proposals/FIELD_VISUALIZATION_ROADMAP.md) and
+[`../proposals/OUT_OF_CORE_PROGRESSIVE_DESIGN.md`](../proposals/OUT_OF_CORE_PROGRESSIVE_DESIGN.md).
+
 
 ## Semantic Purpose
 

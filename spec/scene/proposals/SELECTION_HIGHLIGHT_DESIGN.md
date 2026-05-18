@@ -148,7 +148,12 @@ This means one semantic entity can be represented simultaneously as:
 1. one point item,
 2. one mesh face set or one mesh object,
 3. one label or annotation,
-4. one image region or slice sample later.
+4. one image region or slice sample later,
+5. one graph node or edge,
+6. one unstructured-grid cell or element,
+7. one trajectory track or time sample,
+8. one molecular atom, residue, or chain,
+9. one ensemble member or summary statistic.
 
 Image/slice implication:
 
