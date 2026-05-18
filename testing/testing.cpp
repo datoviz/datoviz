@@ -39,6 +39,17 @@
 
 
 /*************************************************************************************************/
+/*  Constants                                                                                    */
+/*************************************************************************************************/
+
+#define TST_RESULT_NAME_WIDTH 92
+#define TST_RESULT_TIME_WIDTH 10
+#define TST_RESULT_SEPARATOR_WIDTH                                                               \
+    (4 + 2 + TST_RESULT_NAME_WIDTH + 1 + TST_RESULT_TIME_WIDTH)
+
+
+
+/*************************************************************************************************/
 /*  Structs                                                                                      */
 /*************************************************************************************************/
 
@@ -229,15 +240,18 @@ static std::string _tst_duration(uint64_t ns)
     }
     else if (ns < 1000000)
     {
-        dvz_snprintf(buffer, sizeof(buffer), "%.2f us", (double)ns / 1000.0);
+        const double us = (double)ns / 1000.0;
+        dvz_snprintf(buffer, sizeof(buffer), us < 10.0 ? "%.1f us" : "%.0f us", us);
     }
     else if (ns < 1000000000)
     {
-        dvz_snprintf(buffer, sizeof(buffer), "%.2f ms", (double)ns / 1000000.0);
+        const double ms = (double)ns / 1000000.0;
+        dvz_snprintf(buffer, sizeof(buffer), ms < 10.0 ? "%.1f ms" : "%.0f ms", ms);
     }
     else
     {
-        dvz_snprintf(buffer, sizeof(buffer), "%.2f s", (double)ns / 1000000000.0);
+        const double s = (double)ns / 1000000000.0;
+        dvz_snprintf(buffer, sizeof(buffer), s < 10.0 ? "%.1f s" : "%.0f s", s);
     }
     return std::string(buffer);
 }
@@ -271,6 +285,50 @@ static bool _tst_use_color(const TstOptions* options)
         return false;
     }
     return _tst_stdout_is_tty();
+}
+
+
+
+static const char* _tst_duration_color(uint64_t ns)
+{
+    if (ns >= 1000000000)
+    {
+        return "\x1b[1;36m";
+    }
+    if (ns >= 100000000)
+    {
+        return "\x1b[36m";
+    }
+    return "\x1b[90m";
+}
+
+
+
+static void _tst_print_duration(FILE* stream, const TstOptions* options, uint64_t ns, int width)
+{
+    ANN(stream);
+    ANN(options);
+    const std::string duration = _tst_duration(ns);
+    if (_tst_use_color(options))
+    {
+        dvz_fprintf(stream, "%s%*s\x1b[0m", _tst_duration_color(ns), width, duration.c_str());
+    }
+    else
+    {
+        dvz_fprintf(stream, "%*s", width, duration.c_str());
+    }
+}
+
+
+
+static void _tst_print_separator(FILE* stream)
+{
+    ANN(stream);
+    for (int i = 0; i < TST_RESULT_SEPARATOR_WIDTH; i++)
+    {
+        dvz_fprintf(stream, "-");
+    }
+    dvz_fprintf(stream, "\n");
 }
 
 
@@ -681,9 +739,8 @@ static void _tst_print_case(const TstCase* result, const TstOptions* options)
     }
 
     const std::string id = _tst_case_display_id(result);
-    dvz_fprintf(
-        stdout, "%s%-4s%s  %-68s %10s", code, status, reset, id.c_str(),
-        _tst_duration(result->elapsed_ns).c_str());
+    dvz_fprintf(stdout, "%s%-4s%s  %-*s ", code, status, reset, TST_RESULT_NAME_WIDTH, id.c_str());
+    _tst_print_duration(stdout, options, result->elapsed_ns, TST_RESULT_TIME_WIDTH);
     if (result->status == TST_STATUS_SKIP && result->skip_reason != NULL)
     {
         dvz_fprintf(stdout, "  %s", result->skip_reason);
@@ -695,7 +752,9 @@ static void _tst_print_case(const TstCase* result, const TstOptions* options)
         dvz_fprintf(stdout, "  function   %s\n", result->function_name);
         dvz_fprintf(stdout, "  resources  %s\n", _tst_resources_string(result->resources).c_str());
         dvz_fprintf(stdout, "  isolation  %s\n", _tst_isolation_name(result->isolation));
-        dvz_fprintf(stdout, "  elapsed    %s\n", _tst_duration(result->elapsed_ns).c_str());
+        dvz_fprintf(stdout, "  elapsed    ");
+        _tst_print_duration(stdout, options, result->elapsed_ns, 0);
+        dvz_fprintf(stdout, "\n");
         if (result->timeout_ms > 0)
             dvz_fprintf(stdout, "  timeout    %" PRIu64 " ms\n", result->timeout_ms);
         if (result->skip_reason != NULL)
@@ -727,18 +786,20 @@ static void _tst_update_aggregate(TstAggregate* agg, const TstCase* result)
 
 static void _tst_print_summary(
     const TstRunSummary* summary, const std::vector<TstCase>& results,
-    const std::map<std::string, TstAggregate>& modules,
+    const std::map<std::string, TstAggregate>& modules, const TstOptions* options,
     const std::map<std::string, TstAggregate>& groups)
 {
     ANN(summary);
-    dvz_fprintf(stdout, "--------------------------------------------------\n");
+    ANN(options);
+    _tst_print_separator(stdout);
     dvz_fprintf(
         stdout, "%u/%u tests passed, %u failed, %u skipped\n", summary->passed_count,
         summary->selected_count, summary->failed_count, summary->skipped_count);
-    dvz_fprintf(
-        stdout, "case time: %s, runner time: %s\n",
-        _tst_duration(summary->summed_case_ns).c_str(),
-        _tst_duration(summary->runner_elapsed_ns).c_str());
+    dvz_fprintf(stdout, "case time: ");
+    _tst_print_duration(stdout, options, summary->summed_case_ns, 0);
+    dvz_fprintf(stdout, ", runner time: ");
+    _tst_print_duration(stdout, options, summary->runner_elapsed_ns, 0);
+    dvz_fprintf(stdout, "\n");
 
     if (!modules.empty())
     {
@@ -747,9 +808,10 @@ static void _tst_print_summary(
         {
             const TstAggregate& agg = it.second;
             dvz_fprintf(
-                stdout, "  %-16s %3u selected, %3u failed, %3u skipped, %10s summed\n",
-                it.first.c_str(), agg.selected_count, agg.failed_count, agg.skipped_count,
-                _tst_duration(agg.summed_case_ns).c_str());
+                stdout, "  %-16s %3u selected, %3u failed, %3u skipped, ",
+                it.first.c_str(), agg.selected_count, agg.failed_count, agg.skipped_count);
+            _tst_print_duration(stdout, options, agg.summed_case_ns, TST_RESULT_TIME_WIDTH);
+            dvz_fprintf(stdout, " summed\n");
         }
     }
 
@@ -760,9 +822,10 @@ static void _tst_print_summary(
         {
             const TstAggregate& agg = it.second;
             dvz_fprintf(
-                stdout, "  %-32s %3u selected, %3u failed, %3u skipped, %10s summed\n",
-                it.first.c_str(), agg.selected_count, agg.failed_count, agg.skipped_count,
-                _tst_duration(agg.summed_case_ns).c_str());
+                stdout, "  %-32s %3u selected, %3u failed, %3u skipped, ",
+                it.first.c_str(), agg.selected_count, agg.failed_count, agg.skipped_count);
+            _tst_print_duration(stdout, options, agg.summed_case_ns, TST_RESULT_TIME_WIDTH);
+            dvz_fprintf(stdout, " summed\n");
         }
     }
 
@@ -781,8 +844,10 @@ static void _tst_print_summary(
 
 
 
-static void _tst_print_slow_cases(const std::vector<TstCase>& results, uint64_t count)
+static void
+_tst_print_slow_cases(const std::vector<TstCase>& results, const TstOptions* options, uint64_t count)
 {
+    ANN(options);
     if (count == 0 || results.empty())
     {
         return;
@@ -805,16 +870,20 @@ static void _tst_print_slow_cases(const std::vector<TstCase>& results, uint64_t 
     for (uint64_t i = 0; i < count; ++i)
     {
         dvz_fprintf(
-            stdout, "  %-68s %10s\n", _tst_case_display_id(&sorted[(size_t)i]).c_str(),
-            _tst_duration(sorted[(size_t)i].elapsed_ns).c_str());
+            stdout, "  %-*s ", TST_RESULT_NAME_WIDTH,
+            _tst_case_display_id(&sorted[(size_t)i]).c_str());
+        _tst_print_duration(stdout, options, sorted[(size_t)i].elapsed_ns, TST_RESULT_TIME_WIDTH);
+        dvz_fprintf(stdout, "\n");
     }
 }
 
 
 
 static void
-_tst_print_slow_groups(const std::map<std::string, TstAggregate>& groups, uint64_t count)
+_tst_print_slow_groups(
+    const std::map<std::string, TstAggregate>& groups, const TstOptions* options, uint64_t count)
 {
+    ANN(options);
     if (count == 0 || groups.empty())
     {
         return;
@@ -827,9 +896,10 @@ _tst_print_slow_groups(const std::map<std::string, TstAggregate>& groups, uint64
     dvz_fprintf(stdout, "\nSlowest groups:\n");
     for (uint64_t i = 0; i < count; ++i)
     {
-        dvz_fprintf(
-            stdout, "  %-32s %10s\n", sorted[(size_t)i].first.c_str(),
-            _tst_duration(sorted[(size_t)i].second.summed_case_ns).c_str());
+        dvz_fprintf(stdout, "  %-32s ", sorted[(size_t)i].first.c_str());
+        _tst_print_duration(
+            stdout, options, sorted[(size_t)i].second.summed_case_ns, TST_RESULT_TIME_WIDTH);
+        dvz_fprintf(stdout, "\n");
     }
 }
 
@@ -1192,9 +1262,9 @@ int tst_suite_run(TstSuite* suite, int argc, char** argv)
     summary.runner_elapsed_ns = _tst_now_ns() - runner_start_ns;
     suite->last_summary = summary;
 
-    _tst_print_summary(&summary, results, modules, groups);
-    _tst_print_slow_cases(results, options.slow_count);
-    _tst_print_slow_groups(groups, options.slow_group_count);
+    _tst_print_summary(&summary, results, modules, &options, groups);
+    _tst_print_slow_cases(results, &options, options.slow_count);
+    _tst_print_slow_groups(groups, &options, options.slow_group_count);
 
     if (_tst_write_json(options.json_path, &summary, results) != 0)
     {
