@@ -56,6 +56,18 @@ typedef enum
 } SceneDvzrVisualKind;
 
 
+
+#define TST_SCENE_GPU_CASE(test)                                                                  \
+    do                                                                                            \
+    {                                                                                             \
+        TstCaseDesc _tst_desc = tst_case_desc(#test, #test, (test));                              \
+        _tst_desc.tags = tags;                                                                    \
+        _tst_desc.resources = TST_RES_CPU | TST_RES_GPU | TST_RES_VULKAN;                         \
+        _tst_desc.isolation = TST_ISOLATION_PROCESS;                                              \
+        tst_suite_add_case((suite), _tst_desc);                                                   \
+    } while (0)
+
+
 #if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
 typedef struct
 {
@@ -1305,7 +1317,10 @@ int test_frame_plan_emit_drp2_static_render_glsl_executes(TstContext* suite, con
     (void)item;
 
     if (!_scene_vklite_runtime_available())
+    {
+        tst_skip(suite, "Vulkan instance creation failed");
         return 0;
+    }
 
     DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
     VkPhysicalDeviceVulkan13Features features13 = {
@@ -1317,6 +1332,7 @@ int test_frame_plan_emit_drp2_static_render_glsl_executes(TstContext* suite, con
     if (ctx == NULL)
     {
         log_warn("scene GLSL DRP2 execution test skipped because GPU context creation failed");
+        tst_skip(suite, "GPU context creation failed");
         return 0;
     }
 
@@ -1360,7 +1376,10 @@ int test_frame_plan_emit_drp2_readback_glsl_executes(TstContext* suite, const Ts
     (void)item;
 
     if (!_scene_vklite_runtime_available())
+    {
+        tst_skip(suite, "Vulkan instance creation failed");
         return 0;
+    }
 
     DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
     VkPhysicalDeviceVulkan13Features features13 = {
@@ -1372,6 +1391,7 @@ int test_frame_plan_emit_drp2_readback_glsl_executes(TstContext* suite, const Ts
     if (ctx == NULL)
     {
         log_warn("scene readback DRP2 execution test skipped because GPU context creation failed");
+        tst_skip(suite, "GPU context creation failed");
         return 0;
     }
 
@@ -1420,7 +1440,10 @@ int test_frame_plan_emitter_runtime_two_frames_glsl_executes(TstContext* suite, 
     (void)item;
 
     if (!_scene_vklite_runtime_available())
+    {
+        tst_skip(suite, "Vulkan instance creation failed");
         return 0;
+    }
 
     DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
     VkPhysicalDeviceVulkan13Features features13 = {
@@ -1433,6 +1456,7 @@ int test_frame_plan_emitter_runtime_two_frames_glsl_executes(TstContext* suite, 
     {
         log_warn(
             "scene runtime-mode DRP2 execution test skipped because GPU context creation failed");
+        tst_skip(suite, "GPU context creation failed");
         return 0;
     }
 
@@ -1503,7 +1527,10 @@ int test_frame_plan_emitter_runtime_dynamic_two_frames_glsl_executes(
     (void)item;
 
     if (!_scene_vklite_runtime_available())
+    {
+        tst_skip(suite, "Vulkan instance creation failed");
         return 0;
+    }
 
     DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
     VkPhysicalDeviceVulkan13Features features13 = {
@@ -1517,6 +1544,7 @@ int test_frame_plan_emitter_runtime_dynamic_two_frames_glsl_executes(
         log_warn(
             "scene dynamic runtime-mode DRP2 execution test skipped because GPU context creation "
             "failed");
+        tst_skip(suite, "GPU context creation failed");
         return 0;
     }
 
@@ -1589,7 +1617,10 @@ int test_frame_plan_emitter_runtime_texture_two_frames_glsl_executes(
     (void)item;
 
     if (!_scene_vklite_runtime_available())
+    {
+        tst_skip(suite, "Vulkan instance creation failed");
         return 0;
+    }
 
     DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
     VkPhysicalDeviceVulkan13Features features13 = {
@@ -1603,6 +1634,7 @@ int test_frame_plan_emitter_runtime_texture_two_frames_glsl_executes(
         log_warn(
             "scene texture runtime-mode DRP2 execution test skipped because GPU context creation "
             "failed");
+        tst_skip(suite, "GPU context creation failed");
         return 0;
     }
 
@@ -1673,7 +1705,10 @@ int test_frame_plan_emitter_runtime_compute_two_frames_glsl_executes(
     (void)item;
 
     if (!_scene_vklite_runtime_available())
+    {
+        tst_skip(suite, "Vulkan instance creation failed");
         return 0;
+    }
 
     DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
     VkPhysicalDeviceVulkan13Features features13 = {
@@ -1687,6 +1722,7 @@ int test_frame_plan_emitter_runtime_compute_two_frames_glsl_executes(
         log_warn(
             "scene compute runtime-mode DRP2 execution test skipped because GPU context creation "
             "failed");
+        tst_skip(suite, "GPU context creation failed");
         return 0;
     }
 
@@ -1763,7 +1799,10 @@ int test_frame_plan_emit_drp2_depth_peeling_graph_executes(TstContext* suite, co
     (void)item;
 
     if (!_scene_vklite_runtime_available())
+    {
+        tst_skip(suite, "Vulkan instance creation failed");
         return 0;
+    }
 
     DvzFramePlan* plan = NULL;
     AT(_depth_peel_frame_plan_graph(&plan) == 0);
@@ -1799,6 +1838,7 @@ int test_frame_plan_emit_drp2_depth_peeling_graph_executes(TstContext* suite, co
         log_warn("scene depth-peeling graph DRP2 test skipped because GPU context creation failed");
         dvz_drp2_stream_destroy(stream);
         dvz_frame_plan_destroy(plan);
+        tst_skip(suite, "GPU context creation failed");
         return 0;
     }
 
@@ -1832,7 +1872,10 @@ int test_scene_drp2_offscreen_canvas_frame(TstContext* suite, const TstCase* ite
     (void)item;
 
     if (!_scene_vklite_runtime_available())
+    {
+        tst_skip(suite, "Vulkan instance creation failed");
         return 0;
+    }
 
     DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
     VkPhysicalDeviceVulkan12Features features12 = {
@@ -1848,6 +1891,7 @@ int test_scene_drp2_offscreen_canvas_frame(TstContext* suite, const TstCase* ite
     if (ctx == NULL)
     {
         log_warn("scene offscreen canvas test skipped because GPU context creation failed");
+        tst_skip(suite, "GPU context creation failed");
         return 0;
     }
 
@@ -1864,6 +1908,7 @@ int test_scene_drp2_offscreen_canvas_frame(TstContext* suite, const TstCase* ite
         log_warn("scene offscreen canvas test skipped because headless window creation failed");
         dvz_window_host_destroy(host);
         dvz_gpu_ctx_destroy(ctx);
+        tst_skip(suite, "headless window creation failed");
         return 0;
     }
 
@@ -2814,14 +2859,14 @@ int test_scene_frame_plan_emit(TstSuite* suite)
     TST_CASE(test_frame_plan_emit_drp2_rejects_unsupported_shader_format);
     TST_CASE(test_frame_plan_emit_drp2_rejects_small_caps);
 #if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
-    TST_CASE(test_frame_plan_emit_drp2_static_render_glsl_executes);
-    TST_CASE(test_frame_plan_emit_drp2_readback_glsl_executes);
-    TST_CASE(test_frame_plan_emitter_runtime_two_frames_glsl_executes);
-    TST_CASE(test_frame_plan_emitter_runtime_dynamic_two_frames_glsl_executes);
-    TST_CASE(test_frame_plan_emitter_runtime_texture_two_frames_glsl_executes);
-    TST_CASE(test_frame_plan_emitter_runtime_compute_two_frames_glsl_executes);
-    TST_CASE(test_frame_plan_emit_drp2_depth_peeling_graph_executes);
-    TST_CASE(test_scene_drp2_offscreen_canvas_frame);
+    TST_SCENE_GPU_CASE(test_frame_plan_emit_drp2_static_render_glsl_executes);
+    TST_SCENE_GPU_CASE(test_frame_plan_emit_drp2_readback_glsl_executes);
+    TST_SCENE_GPU_CASE(test_frame_plan_emitter_runtime_two_frames_glsl_executes);
+    TST_SCENE_GPU_CASE(test_frame_plan_emitter_runtime_dynamic_two_frames_glsl_executes);
+    TST_SCENE_GPU_CASE(test_frame_plan_emitter_runtime_texture_two_frames_glsl_executes);
+    TST_SCENE_GPU_CASE(test_frame_plan_emitter_runtime_compute_two_frames_glsl_executes);
+    TST_SCENE_GPU_CASE(test_frame_plan_emit_drp2_depth_peeling_graph_executes);
+    TST_SCENE_GPU_CASE(test_scene_drp2_offscreen_canvas_frame);
 #endif
     TST_CASE(test_frame_plan_emit_drp2_readback);
     TST_CASE(test_frame_plan_emit_drp2_dynamic_uploads);
