@@ -1532,7 +1532,27 @@ example-c name *args: build
             exe="${matches[0]}"
         fi
     fi
+    dvzr_path=""
+    if [[ "{{name}}" == "visuals/mesh" ]]; then
+        if [[ " {{args}} " =~ (^|[[:space:]])record=([^[:space:]]+) ]]; then
+            dvzr_path="${BASH_REMATCH[2]}"
+        elif [[ " {{args}} " =~ (^|[[:space:]])--record[[:space:]]+([^[:space:]]+) ]]; then
+            dvzr_path="${BASH_REMATCH[2]}"
+        elif [[ " {{args}} " == *" record "* || " {{args}} " == "record" ]]; then
+            dvzr_path="./build/examples/c/visuals/mesh.dvzr"
+        fi
+        if [[ -n "${dvzr_path}" ]]; then
+            rm -rf -- "${dvzr_path}"
+        fi
+    fi
     "${exe}" {{args}}
+    if [[ "{{name}}" == "visuals/mesh" ]]; then
+        if [[ -n "${dvzr_path}" ]]; then
+            python3 tools/dvzr_to_webgpu_stream.py \
+                "${dvzr_path}" \
+                examples/webgpu/streams/mesh_dvzr_wgsl.json
+        fi
+    fi
 #
 
 # Tests
