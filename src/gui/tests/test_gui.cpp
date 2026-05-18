@@ -189,7 +189,7 @@ static void _gui_emit_pointer(DvzInputRouter* router, DvzPointerEventType type)
  * @param item test item
  * @return 0 on success
  */
-static int test_gui_viewport_config_defaults(TstSuite* suite, TstItem* item)
+static int test_gui_viewport_config_defaults(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -215,7 +215,7 @@ static int test_gui_viewport_config_defaults(TstSuite* suite, TstItem* item)
  * @param item test item
  * @return 0 on success
  */
-static int test_gui_widget_wrapper_symbols(TstSuite* suite, TstItem* item)
+static int test_gui_widget_wrapper_symbols(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -257,7 +257,7 @@ static int test_gui_widget_wrapper_symbols(TstSuite* suite, TstItem* item)
  * @param item test item
  * @return 0 on success
  */
-static int test_gui_viewport_resize_hidden_smoke(TstSuite* suite, TstItem* item)
+static int test_gui_viewport_resize_hidden_smoke(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -337,7 +337,7 @@ static int test_gui_viewport_resize_hidden_smoke(TstSuite* suite, TstItem* item)
  * @param item test item
  * @return 0 on success
  */
-static int test_gui_multi_viewport_input_routers(TstSuite* suite, TstItem* item)
+static int test_gui_multi_viewport_input_routers(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -431,10 +431,11 @@ int test_gui(TstSuite* suite)
 {
     ANN(suite);
     const char* tags = "gui";
-    TEST_SIMPLE(test_gui_imgui_public_header);
-    TEST_SIMPLE(test_gui_viewport_config_defaults);
-    TEST_SIMPLE(test_gui_widget_wrapper_symbols);
-    TEST_SIMPLE(test_gui_viewport_resize_hidden_smoke);
-    TEST_SIMPLE(test_gui_multi_viewport_input_routers);
+    TST_MODULE(suite, tags);
+    TST_CASE(test_gui_imgui_public_header);
+    TST_CASE(test_gui_viewport_config_defaults);
+    TST_CASE(test_gui_widget_wrapper_symbols);
+    TST_CASE(test_gui_viewport_resize_hidden_smoke);
+    TST_CASE(test_gui_multi_viewport_input_routers);
     return 0;
 }

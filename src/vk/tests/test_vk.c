@@ -78,7 +78,7 @@ static bool _vk_runtime_available(void)
 
 
 
-static int test_vk_runtime_unavailable(TstSuite* suite, TstItem* item)
+static int test_vk_runtime_unavailable(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -93,48 +93,49 @@ int test_vk(TstSuite* suite)
     ANN(suite);
 
     const char* tags = "vk";
+    TST_MODULE(suite, tags);
     if (!_vk_runtime_available())
     {
-        TEST_SIMPLE(test_vk_runtime_unavailable);
+        TST_CASE(test_vk_runtime_unavailable);
         return 0;
     }
 
-    TEST_SIMPLE(test_instance_layers);
-    TEST_SIMPLE(test_instance_extensions);
-    TEST_SIMPLE(test_instance_creation);
-    TEST_SIMPLE(test_instance_invalid_layer);
+    TST_CASE(test_instance_layers);
+    TST_CASE(test_instance_extensions);
+    TST_CASE(test_instance_creation);
+    TST_CASE(test_instance_invalid_layer);
 
-    TEST_SIMPLE(test_gpu_props);
-    TEST_SIMPLE(test_gpu_memprops);
-    TEST_SIMPLE(test_gpu_features);
-    TEST_SIMPLE(test_gpu_extensions);
+    TST_CASE(test_gpu_props);
+    TST_CASE(test_gpu_memprops);
+    TST_CASE(test_gpu_features);
+    TST_CASE(test_gpu_extensions);
 
-    TEST_SIMPLE(test_queues_caps);
-    TEST_SIMPLE(test_queues_basic);
-    TEST_SIMPLE(test_queues_single_family);
-    TEST_SIMPLE(test_queues_multiple);
-    TEST_SIMPLE(test_queues_tie_break);
-    TEST_SIMPLE(test_queues_no_optional);
-    TEST_SIMPLE(test_queues_video_roles);
-    TEST_SIMPLE(test_queues_queue_limits);
-    TEST_SIMPLE(test_queue_from_role);
-    TEST_SIMPLE(test_queue_supports);
+    TST_CASE(test_queues_caps);
+    TST_CASE(test_queues_basic);
+    TST_CASE(test_queues_single_family);
+    TST_CASE(test_queues_multiple);
+    TST_CASE(test_queues_tie_break);
+    TST_CASE(test_queues_no_optional);
+    TST_CASE(test_queues_video_roles);
+    TST_CASE(test_queues_queue_limits);
+    TST_CASE(test_queue_from_role);
+    TST_CASE(test_queue_supports);
 
-    TEST_SIMPLE(test_device_1);
-    TEST_SIMPLE(test_device_2);
-    TEST_SIMPLE(test_device_3);
-    TEST_SIMPLE(test_device_4);
-    TEST_SIMPLE(test_device_destroy_rebuild);
-    TEST_SIMPLE(test_device_build_requires_destroy);
+    TST_CASE(test_device_1);
+    TST_CASE(test_device_2);
+    TST_CASE(test_device_3);
+    TST_CASE(test_device_4);
+    TST_CASE(test_device_destroy_rebuild);
+    TST_CASE(test_device_build_requires_destroy);
 
 
 
-    TEST_SIMPLE(test_memory_1);
-    TEST_SIMPLE(test_memory_interop_buffer_export);
+    TST_CASE(test_memory_1);
+    TST_CASE(test_memory_interop_buffer_export);
 
 #if DVZ_HAS_CUDA && !DVZ_ENABLE_ASAN_IN_DEBUG && !DVZ_USING_MSAN && !DVZ_USING_TSAN
     // Skip CUDA interop tests when sanitizers that conflict with CUDA are active.
-    TEST_SIMPLE(test_memory_cuda_1);
+    TST_CASE(test_memory_cuda_1);
 #endif
 
 

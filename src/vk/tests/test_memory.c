@@ -223,7 +223,7 @@ static int cuda_check(CUresult res, const char* label)
 /*  Memory tests                                                                                 */
 /*************************************************************************************************/
 
-int test_memory_1(TstSuite* suite, TstItem* tstitem)
+int test_memory_1(TstContext* suite, const TstCase* tstitem)
 {
     ANN(suite);
     ANN(tstitem);
@@ -289,7 +289,7 @@ int test_memory_1(TstSuite* suite, TstItem* tstitem)
  * @param tstitem the test item
  * @return 0 on success
  */
-int test_memory_interop_buffer_export(TstSuite* suite, TstItem* tstitem)
+int test_memory_interop_buffer_export(TstContext* suite, const TstCase* tstitem)
 {
     ANN(suite);
     ANN(tstitem);
@@ -441,7 +441,7 @@ cleanup:
 
 void launch_add1_kernel(uint32_t* dev_ptr, size_t count);
 
-int test_memory_cuda_1(TstSuite* suite, TstItem* tstitem)
+int test_memory_cuda_1(TstContext* suite, const TstCase* tstitem)
 {
     ANN(suite);
     ANN(tstitem);
@@ -864,7 +864,7 @@ cleanup_vulkan:
 
 
 
-int test_memory_cuda_2(TstSuite* suite, TstItem* tstitem)
+int test_memory_cuda_2(TstContext* suite, const TstCase* tstitem)
 {
     ANN(suite);
     ANN(tstitem);

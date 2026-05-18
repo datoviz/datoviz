@@ -27,7 +27,7 @@
 /*  PRNG tests                                                                                   */
 /*************************************************************************************************/
 
-int test_prng_1(TstSuite* suite, TstItem* tstitem)
+int test_prng_1(TstContext* suite, const TstCase* tstitem)
 {
     DvzPrng* prng = dvz_prng();
     uint64_t uuid = dvz_prng_uuid(prng);

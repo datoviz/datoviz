@@ -548,7 +548,7 @@ _wrap_surface_fixture_destroy(DvzVklitePresentFixture* fixture, DvzVkliteWrapSur
  * @param tstitem current test item
  * @return 0 on success
  */
-int test_vklite_surface_query(TstSuite* suite, TstItem* tstitem)
+int test_vklite_surface_query(TstContext* suite, const TstCase* tstitem)
 {
     ANN(suite);
     ANN(tstitem);
@@ -603,7 +603,7 @@ int test_vklite_surface_query(TstSuite* suite, TstItem* tstitem)
  * @param tstitem current test item
  * @return 0 on success
  */
-int test_vklite_swapchain_recreate(TstSuite* suite, TstItem* tstitem)
+int test_vklite_swapchain_recreate(TstContext* suite, const TstCase* tstitem)
 {
     ANN(suite);
     ANN(tstitem);
@@ -676,7 +676,7 @@ int test_vklite_swapchain_recreate(TstSuite* suite, TstItem* tstitem)
  * @param tstitem current test item
  * @return 0 on success
  */
-int test_vklite_surface_swapchain_destroy_idempotent(TstSuite* suite, TstItem* tstitem)
+int test_vklite_surface_swapchain_destroy_idempotent(TstContext* suite, const TstCase* tstitem)
 {
     ANN(suite);
     ANN(tstitem);
@@ -753,7 +753,7 @@ int test_vklite_surface_swapchain_destroy_idempotent(TstSuite* suite, TstItem* t
  * @param tstitem current test item
  * @return 0 on success
  */
-int test_vklite_swapchain_config_present_mode_immediate(TstSuite* suite, TstItem* tstitem)
+int test_vklite_swapchain_config_present_mode_immediate(TstContext* suite, const TstCase* tstitem)
 {
     ANN(suite);
     ANN(tstitem);
@@ -813,7 +813,7 @@ int test_vklite_swapchain_config_present_mode_immediate(TstSuite* suite, TstItem
  * @param tstitem current test item
  * @return 0 on success
  */
-int test_vklite_swapchain_config_defaults_partial(TstSuite* suite, TstItem* tstitem)
+int test_vklite_swapchain_config_defaults_partial(TstContext* suite, const TstCase* tstitem)
 {
     ANN(suite);
     ANN(tstitem);
@@ -848,7 +848,7 @@ int test_vklite_swapchain_config_defaults_partial(TstSuite* suite, TstItem* tsti
  * @param tstitem current test item
  * @return 0 on success
  */
-int test_vklite_swapchain_present_invalid_index(TstSuite* suite, TstItem* tstitem)
+int test_vklite_swapchain_present_invalid_index(TstContext* suite, const TstCase* tstitem)
 {
     ANN(suite);
     ANN(tstitem);
@@ -875,7 +875,7 @@ int test_vklite_swapchain_present_invalid_index(TstSuite* suite, TstItem* tstite
  * @param tstitem current test item
  * @return 0 on success
  */
-int test_vklite_swapchain_recreate_resolved_state(TstSuite* suite, TstItem* tstitem)
+int test_vklite_swapchain_recreate_resolved_state(TstContext* suite, const TstCase* tstitem)
 {
     ANN(suite);
     ANN(tstitem);
@@ -952,7 +952,7 @@ int test_vklite_swapchain_recreate_resolved_state(TstSuite* suite, TstItem* tsti
  * @param tstitem current test item
  * @return 0 on success
  */
-int test_vklite_swapchain_recreate_repeat_state(TstSuite* suite, TstItem* tstitem)
+int test_vklite_swapchain_recreate_repeat_state(TstContext* suite, const TstCase* tstitem)
 {
     ANN(suite);
     ANN(tstitem);
@@ -1038,7 +1038,7 @@ int test_vklite_swapchain_recreate_repeat_state(TstSuite* suite, TstItem* tstite
  * @param tstitem current test item
  * @return 0 on success
  */
-int test_vklite_swapchain_destroy_clears_cached_state(TstSuite* suite, TstItem* tstitem)
+int test_vklite_swapchain_destroy_clears_cached_state(TstContext* suite, const TstCase* tstitem)
 {
     ANN(suite);
     ANN(tstitem);
@@ -1098,7 +1098,7 @@ int test_vklite_swapchain_destroy_clears_cached_state(TstSuite* suite, TstItem* 
  * @param tstitem current test item
  * @return 0 on success
  */
-int test_vklite_swapchain_acquire_present_cycle(TstSuite* suite, TstItem* tstitem)
+int test_vklite_swapchain_acquire_present_cycle(TstContext* suite, const TstCase* tstitem)
 {
     ANN(suite);
     ANN(tstitem);
@@ -1188,7 +1188,7 @@ int test_vklite_swapchain_acquire_present_cycle(TstSuite* suite, TstItem* tstite
  * @return 0 on success
  */
 #if DVZ_HAS_GLFW
-int test_vklite_wrap_backend_external_surface_present(TstSuite* suite, TstItem* tstitem)
+int test_vklite_wrap_backend_external_surface_present(TstContext* suite, const TstCase* tstitem)
 {
     ANN(suite);
     ANN(tstitem);
@@ -1292,7 +1292,7 @@ int test_vklite_wrap_backend_external_surface_present(TstSuite* suite, TstItem* 
     return 0;
 }
 #else
-int test_vklite_wrap_backend_external_surface_present(TstSuite* suite, TstItem* tstitem)
+int test_vklite_wrap_backend_external_surface_present(TstContext* suite, const TstCase* tstitem)
 {
     ANN(suite);
     ANN(tstitem);

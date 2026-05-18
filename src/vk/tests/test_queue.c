@@ -34,7 +34,7 @@
 /*  Queue tests                                                                                  */
 /*************************************************************************************************/
 
-int test_queues_caps(TstSuite* suite, TstItem* tstitem)
+int test_queues_caps(TstContext* suite, const TstCase* tstitem)
 {
     ANN(suite);
     ANN(tstitem);
@@ -75,7 +75,7 @@ int test_queues_caps(TstSuite* suite, TstItem* tstitem)
 
 
 
-int test_queues_basic(TstSuite* suite, TstItem* tstitem)
+int test_queues_basic(TstContext* suite, const TstCase* tstitem)
 {
     ANN(suite);
     ANN(tstitem);
@@ -97,7 +97,7 @@ int test_queues_basic(TstSuite* suite, TstItem* tstitem)
 
 
 
-int test_queues_single_family(TstSuite* suite, TstItem* tstitem)
+int test_queues_single_family(TstContext* suite, const TstCase* tstitem)
 {
     ANN(suite);
     ANN(tstitem);
@@ -126,7 +126,7 @@ int test_queues_single_family(TstSuite* suite, TstItem* tstitem)
 
 
 
-int test_queues_multiple(TstSuite* suite, TstItem* tstitem)
+int test_queues_multiple(TstContext* suite, const TstCase* tstitem)
 {
     ANN(suite);
     ANN(tstitem);
@@ -156,7 +156,7 @@ int test_queues_multiple(TstSuite* suite, TstItem* tstitem)
 
 
 
-int test_queues_tie_break(TstSuite* suite, TstItem* tstitem)
+int test_queues_tie_break(TstContext* suite, const TstCase* tstitem)
 {
     ANN(suite);
     ANN(tstitem);
@@ -180,7 +180,7 @@ int test_queues_tie_break(TstSuite* suite, TstItem* tstitem)
 
 
 
-int test_queues_no_optional(TstSuite* suite, TstItem* tstitem)
+int test_queues_no_optional(TstContext* suite, const TstCase* tstitem)
 {
     ANN(suite);
     ANN(tstitem);
@@ -203,7 +203,7 @@ int test_queues_no_optional(TstSuite* suite, TstItem* tstitem)
 
 
 
-int test_queues_video_roles(TstSuite* suite, TstItem* tstitem)
+int test_queues_video_roles(TstContext* suite, const TstCase* tstitem)
 {
     ANN(suite);
     ANN(tstitem);
@@ -231,7 +231,7 @@ int test_queues_video_roles(TstSuite* suite, TstItem* tstitem)
 
 
 
-int test_queues_queue_limits(TstSuite* suite, TstItem* tstitem)
+int test_queues_queue_limits(TstContext* suite, const TstCase* tstitem)
 {
     ANN(suite);
     ANN(tstitem);
@@ -267,7 +267,7 @@ int test_queues_queue_limits(TstSuite* suite, TstItem* tstitem)
 
 
 
-int test_queue_from_role(TstSuite* suite, TstItem* tstitem)
+int test_queue_from_role(TstContext* suite, const TstCase* tstitem)
 {
     ANN(suite);
     ANN(tstitem);
@@ -312,7 +312,7 @@ int test_queue_from_role(TstSuite* suite, TstItem* tstitem)
 
 
 
-int test_queue_supports(TstSuite* suite, TstItem* tstitem)
+int test_queue_supports(TstContext* suite, const TstCase* tstitem)
 {
     ANN(suite);
     ANN(tstitem);

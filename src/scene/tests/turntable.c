@@ -28,7 +28,7 @@
 /*  Tests                                                                                        */
 /*************************************************************************************************/
 
-int test_turntable_create_default(TstSuite* suite, TstItem* item)
+int test_turntable_create_default(TstContext* suite, const TstCase* item)
 {
     (void)suite;
     (void)item;
@@ -48,7 +48,7 @@ int test_turntable_create_default(TstSuite* suite, TstItem* item)
 
 
 
-int test_turntable_orbit_preserves_distance(TstSuite* suite, TstItem* item)
+int test_turntable_orbit_preserves_distance(TstContext* suite, const TstCase* item)
 {
     (void)suite;
     (void)item;
@@ -67,7 +67,7 @@ int test_turntable_orbit_preserves_distance(TstSuite* suite, TstItem* item)
 
 
 
-int test_turntable_pivot_preserves_eye(TstSuite* suite, TstItem* item)
+int test_turntable_pivot_preserves_eye(TstContext* suite, const TstCase* item)
 {
     (void)suite;
     (void)item;
@@ -87,7 +87,7 @@ int test_turntable_pivot_preserves_eye(TstSuite* suite, TstItem* item)
 
 
 
-int test_turntable_pan_moves_pivot_and_eye(TstSuite* suite, TstItem* item)
+int test_turntable_pan_moves_pivot_and_eye(TstContext* suite, const TstCase* item)
 {
     (void)suite;
     (void)item;
@@ -107,7 +107,7 @@ int test_turntable_pan_moves_pivot_and_eye(TstSuite* suite, TstItem* item)
 
 
 
-int test_panel_turntable_getter(TstSuite* suite, TstItem* item)
+int test_panel_turntable_getter(TstContext* suite, const TstCase* item)
 {
     (void)suite;
     (void)item;
@@ -144,10 +144,12 @@ int test_scene_turntable(TstSuite* suite)
 {
     ANN(suite);
     const char* tags = "scene,turntable";
-    TEST_SIMPLE(test_turntable_create_default);
-    TEST_SIMPLE(test_turntable_orbit_preserves_distance);
-    TEST_SIMPLE(test_turntable_pivot_preserves_eye);
-    TEST_SIMPLE(test_turntable_pan_moves_pivot_and_eye);
-    TEST_SIMPLE(test_panel_turntable_getter);
+    TST_MODULE(suite, "scene");
+    TST_GROUP("turntable");
+    TST_CASE(test_turntable_create_default);
+    TST_CASE(test_turntable_orbit_preserves_distance);
+    TST_CASE(test_turntable_pivot_preserves_eye);
+    TST_CASE(test_turntable_pan_moves_pivot_and_eye);
+    TST_CASE(test_panel_turntable_getter);
     return 0;
 }

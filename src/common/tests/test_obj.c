@@ -18,6 +18,7 @@
 #include <stdint.h>
 
 #include "_assertions.h"
+#include "_log.h"
 #include "datoviz/common/obj.h"
 #include "test_common.h"
 #include "testing.h"
@@ -48,7 +49,7 @@ struct TestObject
 /*  Tests                                                                                        */
 /*************************************************************************************************/
 
-int test_obj_1(TstSuite* suite, TstItem* tstitem)
+int test_obj_1(TstContext* suite, const TstCase* tstitem)
 {
     ANN(suite);
 

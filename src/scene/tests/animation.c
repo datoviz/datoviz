@@ -76,7 +76,7 @@ static void _timer_test_callback(DvzAnimation* animation, double t, double dt, v
  * @param item test item
  * @return 0 on success
  */
-int test_scene_animation_offline_timer_every_frame(TstSuite* suite, TstItem* item)
+int test_scene_animation_offline_timer_every_frame(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     ANN(item);
@@ -119,7 +119,7 @@ int test_scene_animation_offline_timer_every_frame(TstSuite* suite, TstItem* ite
  * @param item test item
  * @return 0 on success
  */
-int test_scene_animation_timer_period_and_stop(TstSuite* suite, TstItem* item)
+int test_scene_animation_timer_period_and_stop(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     ANN(item);
@@ -159,7 +159,7 @@ int test_scene_animation_timer_period_and_stop(TstSuite* suite, TstItem* item)
  * @param item test item
  * @return 0 on success
  */
-int test_scene_animation_realtime_delta_clamp(TstSuite* suite, TstItem* item)
+int test_scene_animation_realtime_delta_clamp(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     ANN(item);
@@ -187,7 +187,7 @@ int test_scene_animation_realtime_delta_clamp(TstSuite* suite, TstItem* item)
  * @param item test item
  * @return 0 on success
  */
-int test_scene_animation_destroy_reuses_slot(TstSuite* suite, TstItem* item)
+int test_scene_animation_destroy_reuses_slot(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     ANN(item);
@@ -219,7 +219,7 @@ int test_scene_animation_destroy_reuses_slot(TstSuite* suite, TstItem* item)
  * @param item test item
  * @return 0 on success
  */
-int test_scene_animation_active_query(TstSuite* suite, TstItem* item)
+int test_scene_animation_active_query(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     ANN(item);
@@ -256,7 +256,7 @@ int test_scene_animation_active_query(TstSuite* suite, TstItem* item)
  * @param item test item
  * @return 0 on success
  */
-int test_scene_animation_arcball_spin(TstSuite* suite, TstItem* item)
+int test_scene_animation_arcball_spin(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     ANN(item);
@@ -313,12 +313,15 @@ int test_scene_animation(TstSuite* suite)
     ANN(suite);
     const char* tags = "scene";
 
-    TEST_SIMPLE(test_scene_animation_offline_timer_every_frame);
-    TEST_SIMPLE(test_scene_animation_timer_period_and_stop);
-    TEST_SIMPLE(test_scene_animation_realtime_delta_clamp);
-    TEST_SIMPLE(test_scene_animation_destroy_reuses_slot);
-    TEST_SIMPLE(test_scene_animation_active_query);
-    TEST_SIMPLE(test_scene_animation_arcball_spin);
+    TST_MODULE(suite, "scene");
+    TST_GROUP("animation");
+
+    TST_CASE(test_scene_animation_offline_timer_every_frame);
+    TST_CASE(test_scene_animation_timer_period_and_stop);
+    TST_CASE(test_scene_animation_realtime_delta_clamp);
+    TST_CASE(test_scene_animation_destroy_reuses_slot);
+    TST_CASE(test_scene_animation_active_query);
+    TST_CASE(test_scene_animation_arcball_spin);
 
     return 0;
 }

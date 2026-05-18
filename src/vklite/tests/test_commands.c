@@ -46,7 +46,7 @@ static DvzGpuCtx* _commands_ctx(void)
     return dvz_gpu_ctx(&cfg);
 }
 
-int test_vklite_commands_1(TstSuite* suite, TstItem* tstitem)
+int test_vklite_commands_1(TstContext* suite, const TstCase* tstitem)
 {
     ANN(suite);
     ANN(tstitem);
@@ -77,7 +77,7 @@ int test_vklite_commands_1(TstSuite* suite, TstItem* tstitem)
 
 
 
-int test_vklite_commands_repeat_submit(TstSuite* suite, TstItem* tstitem)
+int test_vklite_commands_repeat_submit(TstContext* suite, const TstCase* tstitem)
 {
     ANN(suite);
     ANN(tstitem);
@@ -109,7 +109,7 @@ int test_vklite_commands_repeat_submit(TstSuite* suite, TstItem* tstitem)
 
 
 
-int test_vklite_commands_destroy_idempotent(TstSuite* suite, TstItem* tstitem)
+int test_vklite_commands_destroy_idempotent(TstContext* suite, const TstCase* tstitem)
 {
     ANN(suite);
     ANN(tstitem);
@@ -157,7 +157,7 @@ int test_vklite_commands_destroy_idempotent(TstSuite* suite, TstItem* tstitem)
 
 
 
-int test_vklite_commands_destroy_without_recording(TstSuite* suite, TstItem* tstitem)
+int test_vklite_commands_destroy_without_recording(TstContext* suite, const TstCase* tstitem)
 {
     ANN(suite);
     ANN(tstitem);
@@ -194,7 +194,7 @@ int test_vklite_commands_destroy_without_recording(TstSuite* suite, TstItem* tst
 
 
 
-int test_vklite_commands_borrowed_recording_rejects_lifecycle(TstSuite* suite, TstItem* tstitem)
+int test_vklite_commands_borrowed_recording_rejects_lifecycle(TstContext* suite, const TstCase* tstitem)
 {
     ANN(suite);
     ANN(tstitem);
@@ -236,7 +236,7 @@ int test_vklite_commands_borrowed_recording_rejects_lifecycle(TstSuite* suite, T
 
 
 
-int test_vklite_barriers_reset(TstSuite* suite, TstItem* tstitem)
+int test_vklite_barriers_reset(TstContext* suite, const TstCase* tstitem)
 {
     ANN(suite);
     ANN(tstitem);
@@ -275,7 +275,7 @@ int test_vklite_barriers_reset(TstSuite* suite, TstItem* tstitem)
 
 
 
-int test_vklite_submit_reset_reuse(TstSuite* suite, TstItem* tstitem)
+int test_vklite_submit_reset_reuse(TstContext* suite, const TstCase* tstitem)
 {
     ANN(suite);
     ANN(tstitem);

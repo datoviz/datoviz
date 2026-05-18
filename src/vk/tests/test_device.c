@@ -34,7 +34,7 @@
 /*  Queue tests                                                                                  */
 /*************************************************************************************************/
 
-int test_device_1(TstSuite* suite, TstItem* tstitem)
+int test_device_1(TstContext* suite, const TstCase* tstitem)
 {
     ANN(suite);
     ANN(tstitem);
@@ -70,7 +70,7 @@ int test_device_1(TstSuite* suite, TstItem* tstitem)
 
 
 
-int test_device_2(TstSuite* suite, TstItem* tstitem)
+int test_device_2(TstContext* suite, const TstCase* tstitem)
 {
     ANN(suite);
     ANN(tstitem);
@@ -134,7 +134,7 @@ int test_device_2(TstSuite* suite, TstItem* tstitem)
 
 
 
-int test_device_3(TstSuite* suite, TstItem* tstitem)
+int test_device_3(TstContext* suite, const TstCase* tstitem)
 {
     ANN(suite);
     ANN(tstitem);
@@ -160,7 +160,7 @@ int test_device_3(TstSuite* suite, TstItem* tstitem)
 
 
 
-int test_device_4(TstSuite* suite, TstItem* tstitem)
+int test_device_4(TstContext* suite, const TstCase* tstitem)
 {
     ANN(suite);
     ANN(tstitem);
@@ -176,7 +176,7 @@ int test_device_4(TstSuite* suite, TstItem* tstitem)
 
 
 
-int test_device_destroy_rebuild(TstSuite* suite, TstItem* tstitem)
+int test_device_destroy_rebuild(TstContext* suite, const TstCase* tstitem)
 {
     ANN(suite);
     ANN(tstitem);
@@ -229,7 +229,7 @@ int test_device_destroy_rebuild(TstSuite* suite, TstItem* tstitem)
 
 
 
-int test_device_build_requires_destroy(TstSuite* suite, TstItem* tstitem)
+int test_device_build_requires_destroy(TstContext* suite, const TstCase* tstitem)
 {
     ANN(suite);
     ANN(tstitem);

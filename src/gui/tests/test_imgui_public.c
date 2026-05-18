@@ -62,7 +62,7 @@ static void _gui_raw_imgui_public_callback(DvzGui* gui, DvzAppWindow* win, void*
  * @param item test item
  * @return 0 on success
  */
-int test_gui_imgui_public_header(TstSuite* suite, TstItem* item)
+int test_gui_imgui_public_header(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;

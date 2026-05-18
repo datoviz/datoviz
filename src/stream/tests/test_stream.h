@@ -24,23 +24,23 @@
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
-int test_stream_attach_video(TstSuite* suite, TstItem* item);
+int test_stream_attach_video(TstContext* suite, const TstCase* item);
 
 
 
-int test_stream_start_rollback_on_sink_failure(TstSuite* suite, TstItem* item);
+int test_stream_start_rollback_on_sink_failure(TstContext* suite, const TstCase* item);
 
 
 
-int test_stream_submit_returns_first_error(TstSuite* suite, TstItem* item);
+int test_stream_submit_returns_first_error(TstContext* suite, const TstCase* item);
 
 
 
-int test_stream_update_restart_failure_stops_stream(TstSuite* suite, TstItem* item);
+int test_stream_update_restart_failure_stops_stream(TstContext* suite, const TstCase* item);
 
 
 
-int test_stream_attach_sink_name_prefers_requested_then_auto(TstSuite* suite, TstItem* item);
+int test_stream_attach_sink_name_prefers_requested_then_auto(TstContext* suite, const TstCase* item);
 
 
 

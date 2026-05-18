@@ -80,60 +80,60 @@ static inline void* dvz_test_shader_load(const char* filename, DvzSize* size_out
 /*  Tests vklite                                                                                 */
 /*************************************************************************************************/
 
-int test_vklite_commands_1(TstSuite* suite, TstItem* tstitem);
-int test_vklite_commands_repeat_submit(TstSuite* suite, TstItem* tstitem);
-int test_vklite_commands_destroy_idempotent(TstSuite* suite, TstItem* tstitem);
-int test_vklite_commands_destroy_without_recording(TstSuite* suite, TstItem* tstitem);
+int test_vklite_commands_1(TstContext* suite, const TstCase* tstitem);
+int test_vklite_commands_repeat_submit(TstContext* suite, const TstCase* tstitem);
+int test_vklite_commands_destroy_idempotent(TstContext* suite, const TstCase* tstitem);
+int test_vklite_commands_destroy_without_recording(TstContext* suite, const TstCase* tstitem);
 int test_vklite_commands_borrowed_recording_rejects_lifecycle(
-    TstSuite* suite, TstItem* tstitem);
-int test_vklite_barriers_reset(TstSuite* suite, TstItem* tstitem);
-int test_vklite_submit_reset_reuse(TstSuite* suite, TstItem* tstitem);
+    TstContext* suite, const TstCase* tstitem);
+int test_vklite_barriers_reset(TstContext* suite, const TstCase* tstitem);
+int test_vklite_submit_reset_reuse(TstContext* suite, const TstCase* tstitem);
 
-int test_vklite_sampler_1(TstSuite* suite, TstItem* tstitem);
+int test_vklite_sampler_1(TstContext* suite, const TstCase* tstitem);
 
-int test_vklite_shader_1(TstSuite* suite, TstItem* tstitem);
-int test_vklite_shader_create_requires_destroy(TstSuite* suite, TstItem* tstitem);
+int test_vklite_shader_1(TstContext* suite, const TstCase* tstitem);
+int test_vklite_shader_create_requires_destroy(TstContext* suite, const TstCase* tstitem);
 
-int test_vklite_slots_1(TstSuite* suite, TstItem* tstitem);
-int test_vklite_slots_create_failure_unwinds_layouts(TstSuite* suite, TstItem* tstitem);
+int test_vklite_slots_1(TstContext* suite, const TstCase* tstitem);
+int test_vklite_slots_create_failure_unwinds_layouts(TstContext* suite, const TstCase* tstitem);
 
-int test_vklite_compute_1(TstSuite* suite, TstItem* tstitem);
-int test_vklite_compute_create_requires_destroy(TstSuite* suite, TstItem* tstitem);
+int test_vklite_compute_1(TstContext* suite, const TstCase* tstitem);
+int test_vklite_compute_create_requires_destroy(TstContext* suite, const TstCase* tstitem);
 
-int test_vklite_buffers_1(TstSuite* suite, TstItem* tstitem);
+int test_vklite_buffers_1(TstContext* suite, const TstCase* tstitem);
 
-int test_vklite_buffer_views(TstSuite* suite, TstItem* tstitem);
+int test_vklite_buffer_views(TstContext* suite, const TstCase* tstitem);
 
-int test_vklite_buffer_create_requires_destroy(TstSuite* suite, TstItem* tstitem);
+int test_vklite_buffer_create_requires_destroy(TstContext* suite, const TstCase* tstitem);
 
-int test_vklite_images_1(TstSuite* suite, TstItem* tstitem);
+int test_vklite_images_1(TstContext* suite, const TstCase* tstitem);
 
-int test_vklite_images_create_requires_destroy(TstSuite* suite, TstItem* tstitem);
+int test_vklite_images_create_requires_destroy(TstContext* suite, const TstCase* tstitem);
 
-int test_vklite_descriptors_1(TstSuite* suite, TstItem* tstitem);
-int test_vklite_rendering_reset(TstSuite* suite, TstItem* tstitem);
+int test_vklite_descriptors_1(TstContext* suite, const TstCase* tstitem);
+int test_vklite_rendering_reset(TstContext* suite, const TstCase* tstitem);
 
-int test_vklite_graphics_1(TstSuite* suite, TstItem* tstitem);
-int test_vklite_graphics_create_requires_destroy(TstSuite* suite, TstItem* tstitem);
-int test_vklite_fixture_screenshot_repeat(TstSuite* suite, TstItem* tstitem);
+int test_vklite_graphics_1(TstContext* suite, const TstCase* tstitem);
+int test_vklite_graphics_create_requires_destroy(TstContext* suite, const TstCase* tstitem);
+int test_vklite_fixture_screenshot_repeat(TstContext* suite, const TstCase* tstitem);
 
-int test_vklite_surface_query(TstSuite* suite, TstItem* tstitem);
+int test_vklite_surface_query(TstContext* suite, const TstCase* tstitem);
 
-int test_vklite_swapchain_recreate(TstSuite* suite, TstItem* tstitem);
-int test_vklite_surface_swapchain_destroy_idempotent(TstSuite* suite, TstItem* tstitem);
+int test_vklite_swapchain_recreate(TstContext* suite, const TstCase* tstitem);
+int test_vklite_surface_swapchain_destroy_idempotent(TstContext* suite, const TstCase* tstitem);
 
-int test_vklite_swapchain_config_present_mode_immediate(TstSuite* suite, TstItem* tstitem);
+int test_vklite_swapchain_config_present_mode_immediate(TstContext* suite, const TstCase* tstitem);
 
-int test_vklite_swapchain_config_defaults_partial(TstSuite* suite, TstItem* tstitem);
+int test_vklite_swapchain_config_defaults_partial(TstContext* suite, const TstCase* tstitem);
 
-int test_vklite_swapchain_present_invalid_index(TstSuite* suite, TstItem* tstitem);
+int test_vklite_swapchain_present_invalid_index(TstContext* suite, const TstCase* tstitem);
 
-int test_vklite_swapchain_recreate_resolved_state(TstSuite* suite, TstItem* tstitem);
-int test_vklite_swapchain_recreate_repeat_state(TstSuite* suite, TstItem* tstitem);
-int test_vklite_swapchain_destroy_clears_cached_state(TstSuite* suite, TstItem* tstitem);
-int test_vklite_swapchain_acquire_present_cycle(TstSuite* suite, TstItem* tstitem);
+int test_vklite_swapchain_recreate_resolved_state(TstContext* suite, const TstCase* tstitem);
+int test_vklite_swapchain_recreate_repeat_state(TstContext* suite, const TstCase* tstitem);
+int test_vklite_swapchain_destroy_clears_cached_state(TstContext* suite, const TstCase* tstitem);
+int test_vklite_swapchain_acquire_present_cycle(TstContext* suite, const TstCase* tstitem);
 
-int test_vklite_wrap_backend_external_surface_present(TstSuite* suite, TstItem* tstitem);
+int test_vklite_wrap_backend_external_surface_present(TstContext* suite, const TstCase* tstitem);
 
 
 
@@ -141,21 +141,21 @@ int test_vklite_wrap_backend_external_surface_present(TstSuite* suite, TstItem* 
 /*  Tests techniques                                                                             */
 /*************************************************************************************************/
 
-int test_technique_triangle(TstSuite* suite, TstItem* tstitem);
+int test_technique_triangle(TstContext* suite, const TstCase* tstitem);
 
-int test_technique_render_texture(TstSuite* suite, TstItem* tstitem);
+int test_technique_render_texture(TstContext* suite, const TstCase* tstitem);
 
-int test_technique_stencil(TstSuite* suite, TstItem* tstitem);
+int test_technique_stencil(TstContext* suite, const TstCase* tstitem);
 
-int test_technique_msaa(TstSuite* suite, TstItem* tstitem);
+int test_technique_msaa(TstContext* suite, const TstCase* tstitem);
 
-int test_technique_compute_graphics(TstSuite* suite, TstItem* tstitem);
+int test_technique_compute_graphics(TstContext* suite, const TstCase* tstitem);
 
-int test_technique_picking(TstSuite* suite, TstItem* tstitem);
+int test_technique_picking(TstContext* suite, const TstCase* tstitem);
 
-int test_technique_wboit(TstSuite* suite, TstItem* tstitem);
+int test_technique_wboit(TstContext* suite, const TstCase* tstitem);
 
-int test_technique_ssao(TstSuite* suite, TstItem* tstitem);
+int test_technique_ssao(TstContext* suite, const TstCase* tstitem);
 
 
 

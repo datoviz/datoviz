@@ -32,7 +32,7 @@
 /*************************************************************************************************/
 
 
-int test_png_1(TstSuite* suite, TstItem* tstitem)
+int test_png_1(TstContext* suite, const TstCase* tstitem)
 {
     ANN(suite);
 
@@ -76,7 +76,7 @@ int test_png_1(TstSuite* suite, TstItem* tstitem)
 
 
 
-int test_parse_npy(TstSuite* suite, TstItem* tstitem)
+int test_parse_npy(TstContext* suite, const TstCase* tstitem)
 {
     ANN(suite);
 
@@ -126,8 +126,12 @@ int test_fileio(TstSuite* suite)
 
     const char* tags = "fileio";
 
-    TEST_SIMPLE(test_png_1);
-    TEST_SIMPLE(test_parse_npy);
+    TST_MODULE(suite, "fileio");
+    TST_GROUP("png");
+    TST_CASE(test_png_1);
+
+    TST_GROUP("npy");
+    TST_CASE(test_parse_npy);
 
     return 0;
 }

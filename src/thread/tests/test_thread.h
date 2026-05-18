@@ -24,31 +24,31 @@
 /*  Tests                                                                                        */
 /*************************************************************************************************/
 
-int test_thread_1(TstSuite* suite, TstItem* tstitem);
+int test_thread_1(TstContext* suite, const TstCase* tstitem);
 
-int test_mutex_1(TstSuite* suite, TstItem* tstitem);
+int test_mutex_1(TstContext* suite, const TstCase* tstitem);
 
-int test_cond_1(TstSuite* suite, TstItem* tstitem);
+int test_cond_1(TstContext* suite, const TstCase* tstitem);
 
-int test_atomic_1(TstSuite* suite, TstItem* tstitem);
+int test_atomic_1(TstContext* suite, const TstCase* tstitem);
 
 
 
-int test_fifo_1(TstSuite* suite, TstItem* tstitem);
+int test_fifo_1(TstContext* suite, const TstCase* tstitem);
 
-int test_fifo_2(TstSuite* suite, TstItem* tstitem);
+int test_fifo_2(TstContext* suite, const TstCase* tstitem);
 
-int test_fifo_resize(TstSuite* suite, TstItem* tstitem);
+int test_fifo_resize(TstContext* suite, const TstCase* tstitem);
 
-int test_fifo_discard(TstSuite* suite, TstItem* tstitem);
+int test_fifo_discard(TstContext* suite, const TstCase* tstitem);
 
-int test_fifo_first(TstSuite* suite, TstItem* tstitem);
+int test_fifo_first(TstContext* suite, const TstCase* tstitem);
 
-int test_deq_1(TstSuite* suite, TstItem* tstitem);
+int test_deq_1(TstContext* suite, const TstCase* tstitem);
 
-int test_deq_2(TstSuite* suite, TstItem* tstitem);
+int test_deq_2(TstContext* suite, const TstCase* tstitem);
 
-int test_deq_3(TstSuite* suite, TstItem* tstitem);
+int test_deq_3(TstContext* suite, const TstCase* tstitem);
 
 
 

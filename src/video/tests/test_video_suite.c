@@ -13,7 +13,7 @@
 #include "_log.h"
 #include "testing.h"
 
-int test_video_1(TstSuite* suite, TstItem* item)
+int test_video_1(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -21,7 +21,7 @@ int test_video_1(TstSuite* suite, TstItem* item)
 }
 
 #if !(defined(DVZ_HAS_CUDA) && DVZ_HAS_CUDA)
-int test_video_nvenc(TstSuite* suite, TstItem* item)
+int test_video_nvenc(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -31,7 +31,7 @@ int test_video_nvenc(TstSuite* suite, TstItem* item)
 #endif
 
 #if !(defined(DVZ_HAS_KVZ) && DVZ_HAS_KVZ)
-int test_video_kvazaar(TstSuite* suite, TstItem* item)
+int test_video_kvazaar(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -44,18 +44,19 @@ int test_video(TstSuite* suite)
 {
     ANN(suite);
     const char* tags = "video";
+    TST_MODULE(suite, tags);
     (void)tags;
 
-    TEST_SIMPLE(test_video_1);
+    TST_CASE(test_video_1);
 
 #if defined(DVZ_HAS_CUDA) && DVZ_HAS_CUDA
-    TEST_SIMPLE(test_video_nvenc);
+    TST_CASE(test_video_nvenc);
 #endif
 
 #if defined(DVZ_HAS_KVZ) && DVZ_HAS_KVZ
-    TEST_SIMPLE(test_video_kvazaar);
+    TST_CASE(test_video_kvazaar);
 #endif
-    TEST_SIMPLE(test_video_offline_headless_encode);
+    TST_CASE(test_video_offline_headless_encode);
 
     return 0;
 }

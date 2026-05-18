@@ -21,6 +21,7 @@
 #include "_alloc.h"
 #include "_assertions.h"
 #include "_compat.h"
+#include "_log.h"
 #include "../_frame_plan.h"
 #include "../_scene.h"
 #include "../_scene_emit.h"
@@ -150,7 +151,7 @@ static bool _stream_has_render_pipeline_label(const DvzDrp2CommandStream* stream
 /*  Tests                                                                                        */
 /*************************************************************************************************/
 
-int test_scene_point_emit_glsl_executes(TstSuite* suite, TstItem* item)
+int test_scene_point_emit_glsl_executes(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -233,7 +234,7 @@ int test_scene_point_emit_glsl_executes(TstSuite* suite, TstItem* item)
  * @param item the active test item
  * @return 0 on success
  */
-int test_scene_sphere_emit_glsl_executes(TstSuite* suite, TstItem* item)
+int test_scene_sphere_emit_glsl_executes(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -319,7 +320,7 @@ int test_scene_sphere_emit_glsl_executes(TstSuite* suite, TstItem* item)
  * @param item the active test item
  * @return 0 on success
  */
-int test_scene_sphere_mode(TstSuite* suite, TstItem* item)
+int test_scene_sphere_mode(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -362,7 +363,7 @@ int test_scene_sphere_mode(TstSuite* suite, TstItem* item)
  * @param item the active test item
  * @return 0 on success
  */
-int test_scene_segment_caps(TstSuite* suite, TstItem* item)
+int test_scene_segment_caps(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -395,7 +396,7 @@ int test_scene_segment_caps(TstSuite* suite, TstItem* item)
  * @param item the active test item
  * @return 0 on success
  */
-int test_scene_segment_emit_glsl(TstSuite* suite, TstItem* item)
+int test_scene_segment_emit_glsl(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -512,7 +513,7 @@ int test_scene_segment_emit_glsl(TstSuite* suite, TstItem* item)
  * @param item the active test item
  * @return 0 on success
  */
-int test_scene_point_like_lowering_policy(TstSuite* suite, TstItem* item)
+int test_scene_point_like_lowering_policy(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -548,7 +549,7 @@ int test_scene_point_like_lowering_policy(TstSuite* suite, TstItem* item)
  * @param item the active test item
  * @return 0 on success
  */
-int test_scene_point_emit_glsl_native_points(TstSuite* suite, TstItem* item)
+int test_scene_point_emit_glsl_native_points(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -629,7 +630,7 @@ int test_scene_point_emit_glsl_native_points(TstSuite* suite, TstItem* item)
  * @param item the active test item
  * @return 0 on success
  */
-int test_scene_point_style_emits_glsl_and_wgsl(TstSuite* suite, TstItem* item)
+int test_scene_point_style_emits_glsl_and_wgsl(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -710,7 +711,7 @@ int test_scene_point_style_emits_glsl_and_wgsl(TstSuite* suite, TstItem* item)
  * @param item the active test item
  * @return 0 on success
  */
-int test_scene_marker_api_and_emit_glsl(TstSuite* suite, TstItem* item)
+int test_scene_marker_api_and_emit_glsl(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -813,7 +814,7 @@ int test_scene_marker_api_and_emit_glsl(TstSuite* suite, TstItem* item)
  * @param item the active test item
  * @return 0 on success
  */
-int test_scene_pixel_emit_glsl_native_square_points(TstSuite* suite, TstItem* item)
+int test_scene_pixel_emit_glsl_native_square_points(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -1100,7 +1101,7 @@ static int _scene_mesh_emit_executes(void)
 }
 
 
-int test_scene_primitive_triangle_list_glsl_executes(TstSuite* suite, TstItem* item)
+int test_scene_primitive_triangle_list_glsl_executes(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -1108,7 +1109,7 @@ int test_scene_primitive_triangle_list_glsl_executes(TstSuite* suite, TstItem* i
 }
 
 
-int test_scene_point_emit_wgsl_instanced_quads(TstSuite* suite, TstItem* item)
+int test_scene_point_emit_wgsl_instanced_quads(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -1200,7 +1201,7 @@ int test_scene_point_emit_wgsl_instanced_quads(TstSuite* suite, TstItem* item)
 }
 
 
-int test_scene_pixel_emit_wgsl_instanced_quads(TstSuite* suite, TstItem* item)
+int test_scene_pixel_emit_wgsl_instanced_quads(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -1290,7 +1291,7 @@ int test_scene_pixel_emit_wgsl_instanced_quads(TstSuite* suite, TstItem* item)
 }
 
 
-int test_scene_primitive_line_strip_glsl_executes(TstSuite* suite, TstItem* item)
+int test_scene_primitive_line_strip_glsl_executes(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -1298,7 +1299,7 @@ int test_scene_primitive_line_strip_glsl_executes(TstSuite* suite, TstItem* item
 }
 
 
-int test_scene_primitive_triangle_list_emit_wgsl(TstSuite* suite, TstItem* item)
+int test_scene_primitive_triangle_list_emit_wgsl(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -1360,7 +1361,7 @@ int test_scene_primitive_triangle_list_emit_wgsl(TstSuite* suite, TstItem* item)
 }
 
 
-int test_scene_mesh_indexed_default_color_emits_draw_indexed(TstSuite* suite, TstItem* item)
+int test_scene_mesh_indexed_default_color_emits_draw_indexed(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -1434,7 +1435,7 @@ int test_scene_mesh_indexed_default_color_emits_draw_indexed(TstSuite* suite, Ts
 }
 
 
-int test_scene_mesh_instance_transform_emits_instanced_draw(TstSuite* suite, TstItem* item)
+int test_scene_mesh_instance_transform_emits_instanced_draw(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -1520,7 +1521,7 @@ int test_scene_mesh_instance_transform_emits_instanced_draw(TstSuite* suite, Tst
  */
 
 
-int test_scene_mesh_emits_depth_attachment(TstSuite* suite, TstItem* item)
+int test_scene_mesh_emits_depth_attachment(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -1609,7 +1610,7 @@ int test_scene_mesh_emits_depth_attachment(TstSuite* suite, TstItem* item)
 }
 
 
-int test_scene_indexed_primitive_emits_draw_indexed(TstSuite* suite, TstItem* item)
+int test_scene_indexed_primitive_emits_draw_indexed(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -1684,7 +1685,7 @@ int test_scene_indexed_primitive_emits_draw_indexed(TstSuite* suite, TstItem* it
 }
 
 
-int test_scene_shared_index_buffer_emits_one_upload(TstSuite* suite, TstItem* item)
+int test_scene_shared_index_buffer_emits_one_upload(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -1755,7 +1756,7 @@ int test_scene_shared_index_buffer_emits_one_upload(TstSuite* suite, TstItem* it
 }
 
 
-int test_scene_mesh_glsl_executes(TstSuite* suite, TstItem* item)
+int test_scene_mesh_glsl_executes(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -1763,7 +1764,7 @@ int test_scene_mesh_glsl_executes(TstSuite* suite, TstItem* item)
 }
 
 
-int test_scene_path_glsl_executes(TstSuite* suite, TstItem* item)
+int test_scene_path_glsl_executes(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -1778,7 +1779,7 @@ int test_scene_path_glsl_executes(TstSuite* suite, TstItem* item)
  * @param item the active test item
  * @return 0 on success
  */
-int test_scene_path_line_width_emit_glsl(TstSuite* suite, TstItem* item)
+int test_scene_path_line_width_emit_glsl(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -1868,7 +1869,7 @@ int test_scene_path_line_width_emit_glsl(TstSuite* suite, TstItem* item)
 }
 
 
-int test_scene_image_glsl_executes(TstSuite* suite, TstItem* item)
+int test_scene_image_glsl_executes(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -1955,7 +1956,7 @@ int test_scene_image_glsl_executes(TstSuite* suite, TstItem* item)
 }
 
 
-int test_scene_json(TstSuite* suite, TstItem* item)
+int test_scene_json(TstContext* suite, const TstCase* item)
 {
     (void)suite;
     (void)item;
@@ -1984,7 +1985,7 @@ int test_scene_json(TstSuite* suite, TstItem* item)
 }
 
 
-int test_scene_json_includes_field_dirty_metadata(TstSuite* suite, TstItem* item)
+int test_scene_json_includes_field_dirty_metadata(TstContext* suite, const TstCase* item)
 {
     (void)suite;
     (void)item;
@@ -2048,7 +2049,7 @@ int test_scene_json_includes_field_dirty_metadata(TstSuite* suite, TstItem* item
 }
 
 
-int test_scene_json_includes_buffer_binding_metadata(TstSuite* suite, TstItem* item)
+int test_scene_json_includes_buffer_binding_metadata(TstContext* suite, const TstCase* item)
 {
     (void)suite;
     (void)item;
@@ -2099,7 +2100,7 @@ int test_scene_json_includes_buffer_binding_metadata(TstSuite* suite, TstItem* i
 }
 
 
-int test_scene_z_layer_orders_emit(TstSuite* suite, TstItem* item)
+int test_scene_z_layer_orders_emit(TstContext* suite, const TstCase* item)
 {
     (void)suite;
     (void)item;
@@ -2164,7 +2165,7 @@ int test_scene_z_layer_orders_emit(TstSuite* suite, TstItem* item)
 }
 
 
-int test_scene_background_color_creates_fixed_quad(TstSuite* suite, TstItem* item)
+int test_scene_background_color_creates_fixed_quad(TstContext* suite, const TstCase* item)
 {
     (void)suite;
     (void)item;
@@ -2210,7 +2211,7 @@ int test_scene_background_color_creates_fixed_quad(TstSuite* suite, TstItem* ite
 }
 
 
-int test_scene_controller_mode_fixed_emits_separate_mvp(TstSuite* suite, TstItem* item)
+int test_scene_controller_mode_fixed_emits_separate_mvp(TstContext* suite, const TstCase* item)
 {
     (void)suite;
     (void)item;
@@ -2279,7 +2280,7 @@ int test_scene_controller_mode_fixed_emits_separate_mvp(TstSuite* suite, TstItem
 }
 
 
-int test_scene_panel_one_pass_per_panel(TstSuite* suite, TstItem* item)
+int test_scene_panel_one_pass_per_panel(TstContext* suite, const TstCase* item)
 {
     (void)suite;
     (void)item;
@@ -2344,7 +2345,7 @@ int test_scene_panel_one_pass_per_panel(TstSuite* suite, TstItem* item)
 
 
 int test_scene_multi_panel_reuses_fixed_pipeline_and_bind_group_state(
-    TstSuite* suite, TstItem* item)
+    TstContext* suite, const TstCase* item)
 {
     (void)suite;
     (void)item;
@@ -2420,7 +2421,7 @@ int test_scene_multi_panel_reuses_fixed_pipeline_and_bind_group_state(
 
 
 int test_scene_multi_panel_glsl_emits_viewport_scissor_commands(
-    TstSuite* suite, TstItem* item)
+    TstContext* suite, const TstCase* item)
 {
     (void)suite;
     (void)item;
@@ -2523,7 +2524,7 @@ int test_scene_multi_panel_glsl_emits_viewport_scissor_commands(
 }
 
 
-int test_scene_rejects_cross_scene_visual(TstSuite* suite, TstItem* item)
+int test_scene_rejects_cross_scene_visual(TstContext* suite, const TstCase* item)
 {
     (void)suite;
     (void)item;
@@ -2548,7 +2549,7 @@ int test_scene_rejects_cross_scene_visual(TstSuite* suite, TstItem* item)
 }
 
 
-int test_scene_rejects_unsupported_point_attribute(TstSuite* suite, TstItem* item)
+int test_scene_rejects_unsupported_point_attribute(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -2568,7 +2569,7 @@ int test_scene_rejects_unsupported_point_attribute(TstSuite* suite, TstItem* ite
 }
 
 
-int test_scene_visual_attr_source_and_mutability_metadata(TstSuite* suite, TstItem* item)
+int test_scene_visual_attr_source_and_mutability_metadata(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -2607,7 +2608,7 @@ int test_scene_visual_attr_source_and_mutability_metadata(TstSuite* suite, TstIt
 }
 
 
-int test_scene_point_external_position_buffer_emits_no_upload(TstSuite* suite, TstItem* item)
+int test_scene_point_external_position_buffer_emits_no_upload(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -2686,7 +2687,7 @@ int test_scene_point_external_position_buffer_emits_no_upload(TstSuite* suite, T
 }
 
 
-int test_scene_point_external_position_buffer_executes(TstSuite* suite, TstItem* item)
+int test_scene_point_external_position_buffer_executes(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -2799,7 +2800,7 @@ int test_scene_point_external_position_buffer_executes(TstSuite* suite, TstItem*
 }
 
 
-int test_scene_point_rejects_texcoords_attribute(TstSuite* suite, TstItem* item)
+int test_scene_point_rejects_texcoords_attribute(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -2819,7 +2820,7 @@ int test_scene_point_rejects_texcoords_attribute(TstSuite* suite, TstItem* item)
 }
 
 
-int test_scene_primitive_rejects_size_attribute(TstSuite* suite, TstItem* item)
+int test_scene_primitive_rejects_size_attribute(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -2839,7 +2840,7 @@ int test_scene_primitive_rejects_size_attribute(TstSuite* suite, TstItem* item)
 }
 
 
-int test_scene_path_rejects_size_attribute(TstSuite* suite, TstItem* item)
+int test_scene_path_rejects_size_attribute(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -2859,7 +2860,7 @@ int test_scene_path_rejects_size_attribute(TstSuite* suite, TstItem* item)
 }
 
 
-int test_scene_image_rejects_size_attribute(TstSuite* suite, TstItem* item)
+int test_scene_image_rejects_size_attribute(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -2879,7 +2880,7 @@ int test_scene_image_rejects_size_attribute(TstSuite* suite, TstItem* item)
 }
 
 
-int test_scene_emit_warns_visual_with_no_position(TstSuite* suite, TstItem* item)
+int test_scene_emit_warns_visual_with_no_position(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -2910,7 +2911,7 @@ int test_scene_emit_warns_visual_with_no_position(TstSuite* suite, TstItem* item
 }
 
 
-int test_scene_rejects_mismatched_point_attribute_counts(TstSuite* suite, TstItem* item)
+int test_scene_rejects_mismatched_point_attribute_counts(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -2937,7 +2938,7 @@ int test_scene_rejects_mismatched_point_attribute_counts(TstSuite* suite, TstIte
 }
 
 
-int test_scene_point_visual_resizes_existing_attributes(TstSuite* suite, TstItem* item)
+int test_scene_point_visual_resizes_existing_attributes(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -2992,7 +2993,7 @@ int test_scene_point_visual_resizes_existing_attributes(TstSuite* suite, TstItem
 }
 
 
-int test_scene_rejects_range_update_without_full_allocation(TstSuite* suite, TstItem* item)
+int test_scene_rejects_range_update_without_full_allocation(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -3014,7 +3015,7 @@ int test_scene_rejects_range_update_without_full_allocation(TstSuite* suite, Tst
 }
 
 
-int test_scene_rejects_mutation_while_emitted_stream_is_live(TstSuite* suite, TstItem* item)
+int test_scene_rejects_mutation_while_emitted_stream_is_live(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -3061,7 +3062,7 @@ int test_scene_rejects_mutation_while_emitted_stream_is_live(TstSuite* suite, Ts
 }
 
 
-int test_scene_rejects_scale_binding_while_emitted_stream_is_live(TstSuite* suite, TstItem* item)
+int test_scene_rejects_scale_binding_while_emitted_stream_is_live(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -3120,7 +3121,7 @@ int test_scene_rejects_scale_binding_while_emitted_stream_is_live(TstSuite* suit
 }
 
 
-int test_scene_rejects_range_mutation_while_emitted_stream_is_live(TstSuite* suite, TstItem* item)
+int test_scene_rejects_range_mutation_while_emitted_stream_is_live(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -3167,7 +3168,7 @@ int test_scene_rejects_range_mutation_while_emitted_stream_is_live(TstSuite* sui
 }
 
 
-int test_scene_rejects_destroy_while_emitted_stream_is_live(TstSuite* suite, TstItem* item)
+int test_scene_rejects_destroy_while_emitted_stream_is_live(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -3214,7 +3215,7 @@ int test_scene_rejects_destroy_while_emitted_stream_is_live(TstSuite* suite, Tst
 
 
 static int
-test_scene_rejects_visual_destroy_while_emitted_stream_is_live(TstSuite* suite, TstItem* item)
+test_scene_rejects_visual_destroy_while_emitted_stream_is_live(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -3273,7 +3274,7 @@ test_scene_rejects_visual_destroy_while_emitted_stream_is_live(TstSuite* suite, 
 }
 
 
-int test_scene_live_stream_count_tracks_multiple_emits(TstSuite* suite, TstItem* item)
+int test_scene_live_stream_count_tracks_multiple_emits(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -3326,7 +3327,7 @@ int test_scene_live_stream_count_tracks_multiple_emits(TstSuite* suite, TstItem*
 }
 
 
-int test_scene_point_emit(TstSuite* suite, TstItem* item)
+int test_scene_point_emit(TstContext* suite, const TstCase* item)
 {
     (void)suite;
     (void)item;
@@ -3386,7 +3387,7 @@ int test_scene_point_emit(TstSuite* suite, TstItem* item)
 }
 
 
-int test_scene_path_emit(TstSuite* suite, TstItem* item)
+int test_scene_path_emit(TstContext* suite, const TstCase* item)
 {
     (void)suite;
     (void)item;
@@ -3450,7 +3451,7 @@ int test_scene_path_emit(TstSuite* suite, TstItem* item)
 }
 
 
-int test_scene_image_emit(TstSuite* suite, TstItem* item)
+int test_scene_image_emit(TstContext* suite, const TstCase* item)
 {
     (void)suite;
     (void)item;
@@ -3496,7 +3497,7 @@ int test_scene_image_emit(TstSuite* suite, TstItem* item)
 }
 
 
-int test_scene_image_multi_item_emit(TstSuite* suite, TstItem* item)
+int test_scene_image_multi_item_emit(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -3595,7 +3596,7 @@ int test_scene_image_multi_item_emit(TstSuite* suite, TstItem* item)
  * @param item the active test item
  * @return 0 on success
  */
-int test_scene_glyph_emit_glsl(TstSuite* suite, TstItem* item)
+int test_scene_glyph_emit_glsl(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -3713,7 +3714,7 @@ int test_scene_glyph_emit_glsl(TstSuite* suite, TstItem* item)
 }
 
 
-int test_scene_image_emit_wgsl(TstSuite* suite, TstItem* item)
+int test_scene_image_emit_wgsl(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -3780,7 +3781,7 @@ int test_scene_image_emit_wgsl(TstSuite* suite, TstItem* item)
 }
 
 
-int test_scene_image_emit_uses_common_and_texture_sets(TstSuite* suite, TstItem* item)
+int test_scene_image_emit_uses_common_and_texture_sets(TstContext* suite, const TstCase* item)
 {
     (void)suite;
     (void)item;
@@ -3895,7 +3896,7 @@ int test_scene_image_emit_uses_common_and_texture_sets(TstSuite* suite, TstItem*
  * @param item the test item
  * @return 0 on success
  */
-int test_scene_visual_common_binding_layout_order(TstSuite* suite, TstItem* item)
+int test_scene_visual_common_binding_layout_order(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -4096,7 +4097,7 @@ int test_scene_visual_common_binding_layout_order(TstSuite* suite, TstItem* item
  */
 
 
-int test_scene_empty_figure_emit_clear_only(TstSuite* suite, TstItem* item)
+int test_scene_empty_figure_emit_clear_only(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -4169,7 +4170,7 @@ int test_scene_empty_figure_emit_clear_only(TstSuite* suite, TstItem* item)
 /* ---- New regression tests ---- */
 
 
-int test_scene_point_emit_has_vertex_layout(TstSuite* suite, TstItem* item)
+int test_scene_point_emit_has_vertex_layout(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -4226,7 +4227,7 @@ int test_scene_point_emit_has_vertex_layout(TstSuite* suite, TstItem* item)
 }
 
 
-int test_scene_indexed_primitive_shading_updates_runtime(TstSuite* suite, TstItem* item)
+int test_scene_indexed_primitive_shading_updates_runtime(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -4349,7 +4350,7 @@ int test_scene_indexed_primitive_shading_updates_runtime(TstSuite* suite, TstIte
 }
 
 
-int test_scene_point_large_count_executes(TstSuite* suite, TstItem* item)
+int test_scene_point_large_count_executes(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -4437,7 +4438,7 @@ int test_scene_point_large_count_executes(TstSuite* suite, TstItem* item)
 }
 
 
-int test_scene_second_emit_no_uploads_when_not_dirty(TstSuite* suite, TstItem* item)
+int test_scene_second_emit_no_uploads_when_not_dirty(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -4504,7 +4505,7 @@ int test_scene_second_emit_no_uploads_when_not_dirty(TstSuite* suite, TstItem* i
 }
 
 
-int test_scene_hidden_visual_first_visible_later_uploads(TstSuite* suite, TstItem* item)
+int test_scene_hidden_visual_first_visible_later_uploads(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -4561,7 +4562,7 @@ int test_scene_hidden_visual_first_visible_later_uploads(TstSuite* suite, TstIte
 }
 
 
-int test_scene_hidden_indexed_mesh_first_visible_later_uploads(TstSuite* suite, TstItem* item)
+int test_scene_hidden_indexed_mesh_first_visible_later_uploads(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -4645,7 +4646,7 @@ int test_scene_hidden_indexed_mesh_first_visible_later_uploads(TstSuite* suite, 
  * @return 0 on success
  */
 int test_scene_hidden_wboit_mesh_scene_occlusion_two_frames_glsl_executes(
-    TstSuite* suite, TstItem* item)
+    TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -4809,7 +4810,7 @@ int test_scene_hidden_wboit_mesh_scene_occlusion_two_frames_glsl_executes(
 }
 
 
-int test_scene_partial_update_uploads_only_range(TstSuite* suite, TstItem* item)
+int test_scene_partial_update_uploads_only_range(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -4891,7 +4892,7 @@ int test_scene_partial_update_uploads_only_range(TstSuite* suite, TstItem* item)
 }
 
 
-int test_scene_repeated_partial_updates_across_frames(TstSuite* suite, TstItem* item)
+int test_scene_repeated_partial_updates_across_frames(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -4978,7 +4979,7 @@ int test_scene_repeated_partial_updates_across_frames(TstSuite* suite, TstItem* 
 }
 
 
-int test_scene_partial_update_merges_ranges_before_emit(TstSuite* suite, TstItem* item)
+int test_scene_partial_update_merges_ranges_before_emit(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -5053,7 +5054,7 @@ int test_scene_partial_update_merges_ranges_before_emit(TstSuite* suite, TstItem
 }
 
 
-int test_scene_multiple_panels_multiple_point_visuals_emit(TstSuite* suite, TstItem* item)
+int test_scene_multiple_panels_multiple_point_visuals_emit(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -5177,7 +5178,7 @@ static bool _command_allowed_inside_render_pass(DvzDrp2CommandType type)
 }
 
 
-int test_scene_render_pass_scope_excludes_resource_commands(TstSuite* suite, TstItem* item)
+int test_scene_render_pass_scope_excludes_resource_commands(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -5251,7 +5252,7 @@ int test_scene_render_pass_scope_excludes_resource_commands(TstSuite* suite, Tst
  * @param item the active test item
  * @return 0 on success
  */
-int test_scene_visual_alpha_mode(TstSuite* suite, TstItem* item)
+int test_scene_visual_alpha_mode(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -5291,7 +5292,7 @@ int test_scene_visual_alpha_mode(TstSuite* suite, TstItem* item)
  * @param item the active test item
  * @return 0 on success
  */
-int test_scene_visual_depth_test(TstSuite* suite, TstItem* item)
+int test_scene_visual_depth_test(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -5319,7 +5320,7 @@ int test_scene_visual_depth_test(TstSuite* suite, TstItem* item)
  * @param item the active test item
  * @return 0 on success
  */
-int test_scene_visual_scene_occlusion_flags(TstSuite* suite, TstItem* item)
+int test_scene_visual_scene_occlusion_flags(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -5377,7 +5378,7 @@ int test_scene_visual_scene_occlusion_flags(TstSuite* suite, TstItem* item)
  * @param item the active test item
  * @return 0 on success
  */
-int test_scene_visual_scene_occlusion_frame_plan(TstSuite* suite, TstItem* item)
+int test_scene_visual_scene_occlusion_frame_plan(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -5500,7 +5501,7 @@ int test_scene_visual_scene_occlusion_frame_plan(TstSuite* suite, TstItem* item)
  * @param item the active test item
  * @return 0 on success
  */
-int test_scene_visual_scene_occlusion_emits_drp2(TstSuite* suite, TstItem* item)
+int test_scene_visual_scene_occlusion_emits_drp2(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -5660,7 +5661,7 @@ int test_scene_visual_scene_occlusion_emits_drp2(TstSuite* suite, TstItem* item)
  * @param item the active test item
  * @return 0 on success
  */
-int test_scene_volume_slice_uses_volume_occlusion(TstSuite* suite, TstItem* item)
+int test_scene_volume_slice_uses_volume_occlusion(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -5837,7 +5838,7 @@ int test_scene_volume_slice_uses_volume_occlusion(TstSuite* suite, TstItem* item
  * @param item the active test item
  * @return 0 on success
  */
-int test_scene_volume_slice_uses_generic_scene_occlusion(TstSuite* suite, TstItem* item)
+int test_scene_volume_slice_uses_generic_scene_occlusion(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -5972,7 +5973,7 @@ int test_scene_volume_slice_uses_generic_scene_occlusion(TstSuite* suite, TstIte
  * @param item the active test item
  * @return 0 on success
  */
-int test_scene_visual_internal_material_state(TstSuite* suite, TstItem* item)
+int test_scene_visual_internal_material_state(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -6105,7 +6106,7 @@ int test_scene_visual_internal_material_state(TstSuite* suite, TstItem* item)
  * @param item the active test item
  * @return 0 on success
  */
-int test_scene_visual_material_setter(TstSuite* suite, TstItem* item)
+int test_scene_visual_material_setter(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -6249,7 +6250,7 @@ int test_scene_visual_material_setter(TstSuite* suite, TstItem* item)
  * @param item the active test item
  * @return 0 on success
  */
-int test_scene_pixel_depth_cue_toggle_switches_pipeline(TstSuite* suite, TstItem* item)
+int test_scene_pixel_depth_cue_toggle_switches_pipeline(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     ANN(item);
@@ -6322,7 +6323,7 @@ int test_scene_pixel_depth_cue_toggle_switches_pipeline(TstSuite* suite, TstItem
  * @param item the active test item
  * @return 0 on success
  */
-int test_scene_visual_pass_capabilities(TstSuite* suite, TstItem* item)
+int test_scene_visual_pass_capabilities(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -6568,7 +6569,7 @@ int test_scene_visual_pass_capabilities(TstSuite* suite, TstItem* item)
  * @param item the active test item
  * @return 0 on success
  */
-int test_scene_draw_contract_resolver_matrix(TstSuite* suite, TstItem* item)
+int test_scene_draw_contract_resolver_matrix(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -6715,7 +6716,7 @@ int test_scene_draw_contract_resolver_matrix(TstSuite* suite, TstItem* item)
  * @param item the active test item
  * @return 0 on success
  */
-int test_scene_role_work_label_mapping_complete(TstSuite* suite, TstItem* item)
+int test_scene_role_work_label_mapping_complete(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -6805,7 +6806,7 @@ int test_scene_role_work_label_mapping_complete(TstSuite* suite, TstItem* item)
  * @param item the active test item
  * @return 0 on success
  */
-int test_scene_render_contract_validation_errors(TstSuite* suite, TstItem* item)
+int test_scene_render_contract_validation_errors(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -6889,7 +6890,7 @@ int test_scene_render_contract_validation_errors(TstSuite* suite, TstItem* item)
  * @param item the active test item
  * @return 0 on success
  */
-int test_scene_frame_plan_missing_graph_pass_fails_contract(TstSuite* suite, TstItem* item)
+int test_scene_frame_plan_missing_graph_pass_fails_contract(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -6938,7 +6939,7 @@ int test_scene_frame_plan_missing_graph_pass_fails_contract(TstSuite* suite, Tst
  * @param item the active test item
  * @return 0 on success
  */
-int test_scene_panel_graph_failure_reports_specific_diagnostic(TstSuite* suite, TstItem* item)
+int test_scene_panel_graph_failure_reports_specific_diagnostic(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -7022,7 +7023,7 @@ int test_scene_panel_graph_failure_reports_specific_diagnostic(TstSuite* suite, 
  * @param item the active test item
  * @return 0 on success
  */
-int test_scene_gbuffer_runtime_lowering(TstSuite* suite, TstItem* item)
+int test_scene_gbuffer_runtime_lowering(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -7185,7 +7186,7 @@ int test_scene_gbuffer_runtime_lowering(TstSuite* suite, TstItem* item)
  * @param item the active test item
  * @return 0 on success
  */
-int test_scene_frame_plan_node_reallocation_safe(TstSuite* suite, TstItem* item)
+int test_scene_frame_plan_node_reallocation_safe(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -7317,7 +7318,7 @@ int test_scene_frame_plan_node_reallocation_safe(TstSuite* suite, TstItem* item)
  * @param item the active test item
  * @return 0 on success
  */
-int test_scene_msaa_runtime_lowering(TstSuite* suite, TstItem* item)
+int test_scene_msaa_runtime_lowering(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -7463,7 +7464,7 @@ int test_scene_msaa_runtime_lowering(TstSuite* suite, TstItem* item)
  * @param item the active test item
  * @return 0 on success
  */
-int test_scene_msaa_runtime_capability_lowering(TstSuite* suite, TstItem* item)
+int test_scene_msaa_runtime_capability_lowering(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -7601,7 +7602,7 @@ int test_scene_msaa_runtime_capability_lowering(TstSuite* suite, TstItem* item)
  * @param item the active test item
  * @return 0 on success
  */
-int test_scene_edl_runtime_lowering(TstSuite* suite, TstItem* item)
+int test_scene_edl_runtime_lowering(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -7748,7 +7749,7 @@ int test_scene_edl_runtime_lowering(TstSuite* suite, TstItem* item)
  * @param item the active test item
  * @return 0 on success
  */
-int test_scene_edl_depth_producer_capabilities(TstSuite* suite, TstItem* item)
+int test_scene_edl_depth_producer_capabilities(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -7856,7 +7857,7 @@ int test_scene_edl_depth_producer_capabilities(TstSuite* suite, TstItem* item)
  * @param item the active test item
  * @return 0 on success
  */
-int test_scene_edl_ignores_ineligible_passes(TstSuite* suite, TstItem* item)
+int test_scene_edl_ignores_ineligible_passes(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -7940,7 +7941,7 @@ int test_scene_edl_ignores_ineligible_passes(TstSuite* suite, TstItem* item)
  * @param item the active test item
  * @return 0 on success
  */
-int test_scene_ssao_graph_foundation(TstSuite* suite, TstItem* item)
+int test_scene_ssao_graph_foundation(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -8114,7 +8115,7 @@ int test_scene_ssao_graph_foundation(TstSuite* suite, TstItem* item)
  * @param item the active test item
  * @return 0 on success
  */
-int test_scene_ssao_runtime_lowering(TstSuite* suite, TstItem* item)
+int test_scene_ssao_runtime_lowering(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -8263,7 +8264,7 @@ int test_scene_ssao_runtime_lowering(TstSuite* suite, TstItem* item)
  * @param item the active test item
  * @return 0 on success
  */
-int test_scene_ssao_glsl_executes(TstSuite* suite, TstItem* item)
+int test_scene_ssao_glsl_executes(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -8359,7 +8360,7 @@ int test_scene_ssao_glsl_executes(TstSuite* suite, TstItem* item)
  * @param item the active test item
  * @return 0 on success
  */
-int test_scene_sphere_ssao_glsl_executes(TstSuite* suite, TstItem* item)
+int test_scene_sphere_ssao_glsl_executes(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -8450,7 +8451,7 @@ int test_scene_sphere_ssao_glsl_executes(TstSuite* suite, TstItem* item)
  * @param item the active test item
  * @return 0 on success
  */
-int test_scene_ssao_ignores_ineligible_visuals(TstSuite* suite, TstItem* item)
+int test_scene_ssao_ignores_ineligible_visuals(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -8503,7 +8504,7 @@ int test_scene_ssao_ignores_ineligible_visuals(TstSuite* suite, TstItem* item)
  * @param item the active test item
  * @return 0 on success
  */
-int test_scene_visual_alpha_mode_standard_blend(TstSuite* suite, TstItem* item)
+int test_scene_visual_alpha_mode_standard_blend(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -8641,7 +8642,7 @@ int test_scene_visual_alpha_mode_standard_blend(TstSuite* suite, TstItem* item)
  * @param item the active test item
  * @return 0 on success
  */
-int test_scene_blended_mesh_orders_after_volume_slice(TstSuite* suite, TstItem* item)
+int test_scene_blended_mesh_orders_after_volume_slice(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -8823,7 +8824,7 @@ int test_scene_blended_mesh_orders_after_volume_slice(TstSuite* suite, TstItem* 
  * @param item the active test item
  * @return 0 on success
  */
-int test_scene_blended_mesh_occlusion_contracts(TstSuite* suite, TstItem* item)
+int test_scene_blended_mesh_occlusion_contracts(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -9143,7 +9144,7 @@ int test_scene_blended_mesh_occlusion_contracts(TstSuite* suite, TstItem* item)
  * @param item the active test item
  * @return 0 on success
  */
-int test_scene_visual_alpha_mode_splits_frame_plan_passes(TstSuite* suite, TstItem* item)
+int test_scene_visual_alpha_mode_splits_frame_plan_passes(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -9325,7 +9326,7 @@ int test_scene_visual_alpha_mode_splits_frame_plan_passes(TstSuite* suite, TstIt
  * @param item the active test item
  * @return 0 on success
  */
-int test_scene_visual_alpha_mode_wboit_transparent_only_depth(TstSuite* suite, TstItem* item)
+int test_scene_visual_alpha_mode_wboit_transparent_only_depth(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -9439,7 +9440,7 @@ int test_scene_visual_alpha_mode_wboit_transparent_only_depth(TstSuite* suite, T
  * @param item the active test item
  * @return 0 on success
  */
-int test_scene_visual_alpha_mode_depth_peel_frame_plan(TstSuite* suite, TstItem* item)
+int test_scene_visual_alpha_mode_depth_peel_frame_plan(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -9604,7 +9605,7 @@ int test_scene_visual_alpha_mode_depth_peel_frame_plan(TstSuite* suite, TstItem*
  * @param item the active test item
  * @return 0 on success
  */
-int test_scene_visual_alpha_mode_mixed_oit_rejected(TstSuite* suite, TstItem* item)
+int test_scene_visual_alpha_mode_mixed_oit_rejected(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -9670,7 +9671,7 @@ int test_scene_visual_alpha_mode_mixed_oit_rejected(TstSuite* suite, TstItem* it
  * @param item the active test item
  * @return 0 on success
  */
-int test_scene_visual_alpha_mode_emits_depth_peel_drp2(TstSuite* suite, TstItem* item)
+int test_scene_visual_alpha_mode_emits_depth_peel_drp2(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -9902,7 +9903,7 @@ int test_scene_visual_alpha_mode_emits_depth_peel_drp2(TstSuite* suite, TstItem*
  * @param item the active test item
  * @return 0 on success
  */
-int test_scene_visual_alpha_mode_requires_wboit_capabilities(TstSuite* suite, TstItem* item)
+int test_scene_visual_alpha_mode_requires_wboit_capabilities(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -9967,7 +9968,7 @@ int test_scene_visual_alpha_mode_requires_wboit_capabilities(TstSuite* suite, Ts
  * @param item the active test item
  * @return 0 on success
  */
-int test_scene_visual_alpha_mode_emits_wboit_drp2(TstSuite* suite, TstItem* item)
+int test_scene_visual_alpha_mode_emits_wboit_drp2(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -10338,7 +10339,7 @@ int test_scene_visual_alpha_mode_emits_wboit_drp2(TstSuite* suite, TstItem* item
  * @param item the active test item
  * @return 0 on success
  */
-int test_scene_drp2_contract_checker_rejects_pipeline_drift(TstSuite* suite, TstItem* item)
+int test_scene_drp2_contract_checker_rejects_pipeline_drift(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -10529,7 +10530,7 @@ int test_scene_drp2_contract_checker_rejects_pipeline_drift(TstSuite* suite, Tst
  * @param item the active test item
  * @return 0 on success
  */
-int test_scene_drp2_contract_checker_rejects_raster_drift(TstSuite* suite, TstItem* item)
+int test_scene_drp2_contract_checker_rejects_raster_drift(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -10636,7 +10637,7 @@ int test_scene_drp2_contract_checker_rejects_raster_drift(TstSuite* suite, TstIt
  * @param item the active test item
  * @return 0 on success
  */
-int test_scene_alpha_mode_toggle_refreshes_drp2_contracts(TstSuite* suite, TstItem* item)
+int test_scene_alpha_mode_toggle_refreshes_drp2_contracts(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -10769,7 +10770,7 @@ int test_scene_alpha_mode_toggle_refreshes_drp2_contracts(TstSuite* suite, TstIt
  * @param item the active test item
  * @return 0 on success
  */
-int test_scene_visual_alpha_mode_wboit_glsl_executes(TstSuite* suite, TstItem* item)
+int test_scene_visual_alpha_mode_wboit_glsl_executes(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -10920,7 +10921,7 @@ int test_scene_visual_alpha_mode_wboit_glsl_executes(TstSuite* suite, TstItem* i
  * @param item the active test item
  * @return 0 on success
  */
-int test_scene_visual_alpha_mode_depth_peel_glsl_executes(TstSuite* suite, TstItem* item)
+int test_scene_visual_alpha_mode_depth_peel_glsl_executes(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -11046,122 +11047,125 @@ int test_scene_graph(TstSuite* suite)
     ANN(suite);
     const char* tags = "scene";
 
-    TEST_SIMPLE(test_scene_point_emit_glsl_executes);
-    TEST_SIMPLE(test_scene_sphere_emit_glsl_executes);
-    TEST_SIMPLE(test_scene_sphere_mode);
-    TEST_SIMPLE(test_scene_segment_caps);
-    TEST_SIMPLE(test_scene_segment_emit_glsl);
-    TEST_SIMPLE(test_scene_point_like_lowering_policy);
-    TEST_SIMPLE(test_scene_point_emit_glsl_native_points);
-    TEST_SIMPLE(test_scene_point_style_emits_glsl_and_wgsl);
-    TEST_SIMPLE(test_scene_marker_api_and_emit_glsl);
-    TEST_SIMPLE(test_scene_pixel_emit_glsl_native_square_points);
-    TEST_SIMPLE(test_scene_point_emit_wgsl_instanced_quads);
-    TEST_SIMPLE(test_scene_pixel_emit_wgsl_instanced_quads);
-    TEST_SIMPLE(test_scene_primitive_triangle_list_glsl_executes);
-    TEST_SIMPLE(test_scene_primitive_line_strip_glsl_executes);
-    TEST_SIMPLE(test_scene_primitive_triangle_list_emit_wgsl);
-    TEST_SIMPLE(test_scene_mesh_indexed_default_color_emits_draw_indexed);
-    TEST_SIMPLE(test_scene_mesh_instance_transform_emits_instanced_draw);
-    TEST_SIMPLE(test_scene_mesh_emits_depth_attachment);
-    TEST_SIMPLE(test_scene_indexed_primitive_emits_draw_indexed);
-    TEST_SIMPLE(test_scene_shared_index_buffer_emits_one_upload);
-    TEST_SIMPLE(test_scene_mesh_glsl_executes);
-    TEST_SIMPLE(test_scene_path_glsl_executes);
-    TEST_SIMPLE(test_scene_path_line_width_emit_glsl);
-    TEST_SIMPLE(test_scene_image_glsl_executes);
-    TEST_SIMPLE(test_scene_json);
-    TEST_SIMPLE(test_scene_json_includes_field_dirty_metadata);
-    TEST_SIMPLE(test_scene_json_includes_buffer_binding_metadata);
-    TEST_SIMPLE(test_scene_z_layer_orders_emit);
-    TEST_SIMPLE(test_scene_background_color_creates_fixed_quad);
-    TEST_SIMPLE(test_scene_controller_mode_fixed_emits_separate_mvp);
-    TEST_SIMPLE(test_scene_panel_one_pass_per_panel);
-    TEST_SIMPLE(test_scene_multi_panel_reuses_fixed_pipeline_and_bind_group_state);
-    TEST_SIMPLE(test_scene_multi_panel_glsl_emits_viewport_scissor_commands);
-    TEST_SIMPLE(test_scene_rejects_cross_scene_visual);
-    TEST_SIMPLE(test_scene_rejects_unsupported_point_attribute);
-    TEST_SIMPLE(test_scene_visual_alpha_mode);
-    TEST_SIMPLE(test_scene_visual_depth_test);
-    TEST_SIMPLE(test_scene_visual_scene_occlusion_flags);
-    TEST_SIMPLE(test_scene_visual_scene_occlusion_frame_plan);
-    TEST_SIMPLE(test_scene_visual_scene_occlusion_emits_drp2);
-    TEST_SIMPLE(test_scene_volume_slice_uses_volume_occlusion);
-    TEST_SIMPLE(test_scene_volume_slice_uses_generic_scene_occlusion);
-    TEST_SIMPLE(test_scene_visual_internal_material_state);
-    TEST_SIMPLE(test_scene_visual_material_setter);
-    TEST_SIMPLE(test_scene_pixel_depth_cue_toggle_switches_pipeline);
-    TEST_SIMPLE(test_scene_visual_pass_capabilities);
-    TEST_SIMPLE(test_scene_draw_contract_resolver_matrix);
-    TEST_SIMPLE(test_scene_role_work_label_mapping_complete);
-    TEST_SIMPLE(test_scene_render_contract_validation_errors);
-    TEST_SIMPLE(test_scene_frame_plan_missing_graph_pass_fails_contract);
-    TEST_SIMPLE(test_scene_panel_graph_failure_reports_specific_diagnostic);
-    TEST_SIMPLE(test_scene_gbuffer_runtime_lowering);
-    TEST_SIMPLE(test_scene_frame_plan_node_reallocation_safe);
-    TEST_SIMPLE(test_scene_msaa_runtime_lowering);
-    TEST_SIMPLE(test_scene_msaa_runtime_capability_lowering);
-    TEST_SIMPLE(test_scene_edl_runtime_lowering);
-    TEST_SIMPLE(test_scene_edl_depth_producer_capabilities);
-    TEST_SIMPLE(test_scene_edl_ignores_ineligible_passes);
-    TEST_SIMPLE(test_scene_ssao_graph_foundation);
-    TEST_SIMPLE(test_scene_ssao_runtime_lowering);
-    TEST_SIMPLE(test_scene_ssao_glsl_executes);
-    TEST_SIMPLE(test_scene_sphere_ssao_glsl_executes);
-    TEST_SIMPLE(test_scene_ssao_ignores_ineligible_visuals);
-    TEST_SIMPLE(test_scene_visual_alpha_mode_standard_blend);
-    TEST_SIMPLE(test_scene_visual_alpha_mode_splits_frame_plan_passes);
-    TEST_SIMPLE(test_scene_visual_alpha_mode_wboit_transparent_only_depth);
-    TEST_SIMPLE(test_scene_visual_alpha_mode_depth_peel_frame_plan);
-    TEST_SIMPLE(test_scene_visual_alpha_mode_mixed_oit_rejected);
-    TEST_SIMPLE(test_scene_visual_alpha_mode_emits_depth_peel_drp2);
-    TEST_SIMPLE(test_scene_visual_alpha_mode_requires_wboit_capabilities);
-    TEST_SIMPLE(test_scene_visual_alpha_mode_emits_wboit_drp2);
-    TEST_SIMPLE(test_scene_drp2_contract_checker_rejects_pipeline_drift);
-    TEST_SIMPLE(test_scene_drp2_contract_checker_rejects_raster_drift);
-    TEST_SIMPLE(test_scene_alpha_mode_toggle_refreshes_drp2_contracts);
-    TEST_SIMPLE(test_scene_visual_alpha_mode_wboit_glsl_executes);
-    TEST_SIMPLE(test_scene_visual_alpha_mode_depth_peel_glsl_executes);
-    TEST_SIMPLE(test_scene_blended_mesh_orders_after_volume_slice);
-    TEST_SIMPLE(test_scene_blended_mesh_occlusion_contracts);
-    TEST_SIMPLE(test_scene_visual_attr_source_and_mutability_metadata);
-    TEST_SIMPLE(test_scene_point_external_position_buffer_emits_no_upload);
-    TEST_SIMPLE(test_scene_point_external_position_buffer_executes);
-    TEST_SIMPLE(test_scene_point_rejects_texcoords_attribute);
-    TEST_SIMPLE(test_scene_primitive_rejects_size_attribute);
-    TEST_SIMPLE(test_scene_path_rejects_size_attribute);
-    TEST_SIMPLE(test_scene_image_rejects_size_attribute);
-    TEST_SIMPLE(test_scene_emit_warns_visual_with_no_position);
-    TEST_SIMPLE(test_scene_rejects_mismatched_point_attribute_counts);
-    TEST_SIMPLE(test_scene_rejects_range_update_without_full_allocation);
-    TEST_SIMPLE(test_scene_rejects_mutation_while_emitted_stream_is_live);
-    TEST_SIMPLE(test_scene_rejects_scale_binding_while_emitted_stream_is_live);
-    TEST_SIMPLE(test_scene_rejects_range_mutation_while_emitted_stream_is_live);
-    TEST_SIMPLE(test_scene_rejects_destroy_while_emitted_stream_is_live);
-    TEST_SIMPLE(test_scene_rejects_visual_destroy_while_emitted_stream_is_live);
-    TEST_SIMPLE(test_scene_live_stream_count_tracks_multiple_emits);
-    TEST_SIMPLE(test_scene_point_emit);
-    TEST_SIMPLE(test_scene_path_emit);
-    TEST_SIMPLE(test_scene_image_emit);
-    TEST_SIMPLE(test_scene_image_multi_item_emit);
-    TEST_SIMPLE(test_scene_glyph_emit_glsl);
-    TEST_SIMPLE(test_scene_image_emit_wgsl);
-    TEST_SIMPLE(test_scene_image_emit_uses_common_and_texture_sets);
-    TEST_SIMPLE(test_scene_visual_common_binding_layout_order);
-    TEST_SIMPLE(test_scene_empty_figure_emit_clear_only);
-    TEST_SIMPLE(test_scene_point_emit_has_vertex_layout);
-    TEST_SIMPLE(test_scene_point_visual_resizes_existing_attributes);
-    TEST_SIMPLE(test_scene_indexed_primitive_shading_updates_runtime);
-    TEST_SIMPLE(test_scene_point_large_count_executes);
-    TEST_SIMPLE(test_scene_second_emit_no_uploads_when_not_dirty);
-    TEST_SIMPLE(test_scene_hidden_visual_first_visible_later_uploads);
-    TEST_SIMPLE(test_scene_hidden_indexed_mesh_first_visible_later_uploads);
-    TEST_SIMPLE(test_scene_hidden_wboit_mesh_scene_occlusion_two_frames_glsl_executes);
-    TEST_SIMPLE(test_scene_partial_update_uploads_only_range);
-    TEST_SIMPLE(test_scene_repeated_partial_updates_across_frames);
-    TEST_SIMPLE(test_scene_partial_update_merges_ranges_before_emit);
-    TEST_SIMPLE(test_scene_multiple_panels_multiple_point_visuals_emit);
-    TEST_SIMPLE(test_scene_render_pass_scope_excludes_resource_commands);
+    TST_MODULE(suite, "scene");
+    TST_GROUP("scene-graph");
+
+    TST_CASE(test_scene_point_emit_glsl_executes);
+    TST_CASE(test_scene_sphere_emit_glsl_executes);
+    TST_CASE(test_scene_sphere_mode);
+    TST_CASE(test_scene_segment_caps);
+    TST_CASE(test_scene_segment_emit_glsl);
+    TST_CASE(test_scene_point_like_lowering_policy);
+    TST_CASE(test_scene_point_emit_glsl_native_points);
+    TST_CASE(test_scene_point_style_emits_glsl_and_wgsl);
+    TST_CASE(test_scene_marker_api_and_emit_glsl);
+    TST_CASE(test_scene_pixel_emit_glsl_native_square_points);
+    TST_CASE(test_scene_point_emit_wgsl_instanced_quads);
+    TST_CASE(test_scene_pixel_emit_wgsl_instanced_quads);
+    TST_CASE(test_scene_primitive_triangle_list_glsl_executes);
+    TST_CASE(test_scene_primitive_line_strip_glsl_executes);
+    TST_CASE(test_scene_primitive_triangle_list_emit_wgsl);
+    TST_CASE(test_scene_mesh_indexed_default_color_emits_draw_indexed);
+    TST_CASE(test_scene_mesh_instance_transform_emits_instanced_draw);
+    TST_CASE(test_scene_mesh_emits_depth_attachment);
+    TST_CASE(test_scene_indexed_primitive_emits_draw_indexed);
+    TST_CASE(test_scene_shared_index_buffer_emits_one_upload);
+    TST_CASE(test_scene_mesh_glsl_executes);
+    TST_CASE(test_scene_path_glsl_executes);
+    TST_CASE(test_scene_path_line_width_emit_glsl);
+    TST_CASE(test_scene_image_glsl_executes);
+    TST_CASE(test_scene_json);
+    TST_CASE(test_scene_json_includes_field_dirty_metadata);
+    TST_CASE(test_scene_json_includes_buffer_binding_metadata);
+    TST_CASE(test_scene_z_layer_orders_emit);
+    TST_CASE(test_scene_background_color_creates_fixed_quad);
+    TST_CASE(test_scene_controller_mode_fixed_emits_separate_mvp);
+    TST_CASE(test_scene_panel_one_pass_per_panel);
+    TST_CASE(test_scene_multi_panel_reuses_fixed_pipeline_and_bind_group_state);
+    TST_CASE(test_scene_multi_panel_glsl_emits_viewport_scissor_commands);
+    TST_CASE(test_scene_rejects_cross_scene_visual);
+    TST_CASE(test_scene_rejects_unsupported_point_attribute);
+    TST_CASE(test_scene_visual_alpha_mode);
+    TST_CASE(test_scene_visual_depth_test);
+    TST_CASE(test_scene_visual_scene_occlusion_flags);
+    TST_CASE(test_scene_visual_scene_occlusion_frame_plan);
+    TST_CASE(test_scene_visual_scene_occlusion_emits_drp2);
+    TST_CASE(test_scene_volume_slice_uses_volume_occlusion);
+    TST_CASE(test_scene_volume_slice_uses_generic_scene_occlusion);
+    TST_CASE(test_scene_visual_internal_material_state);
+    TST_CASE(test_scene_visual_material_setter);
+    TST_CASE(test_scene_pixel_depth_cue_toggle_switches_pipeline);
+    TST_CASE(test_scene_visual_pass_capabilities);
+    TST_CASE(test_scene_draw_contract_resolver_matrix);
+    TST_CASE(test_scene_role_work_label_mapping_complete);
+    TST_CASE(test_scene_render_contract_validation_errors);
+    TST_CASE(test_scene_frame_plan_missing_graph_pass_fails_contract);
+    TST_CASE(test_scene_panel_graph_failure_reports_specific_diagnostic);
+    TST_CASE(test_scene_gbuffer_runtime_lowering);
+    TST_CASE(test_scene_frame_plan_node_reallocation_safe);
+    TST_CASE(test_scene_msaa_runtime_lowering);
+    TST_CASE(test_scene_msaa_runtime_capability_lowering);
+    TST_CASE(test_scene_edl_runtime_lowering);
+    TST_CASE(test_scene_edl_depth_producer_capabilities);
+    TST_CASE(test_scene_edl_ignores_ineligible_passes);
+    TST_CASE(test_scene_ssao_graph_foundation);
+    TST_CASE(test_scene_ssao_runtime_lowering);
+    TST_CASE(test_scene_ssao_glsl_executes);
+    TST_CASE(test_scene_sphere_ssao_glsl_executes);
+    TST_CASE(test_scene_ssao_ignores_ineligible_visuals);
+    TST_CASE(test_scene_visual_alpha_mode_standard_blend);
+    TST_CASE(test_scene_visual_alpha_mode_splits_frame_plan_passes);
+    TST_CASE(test_scene_visual_alpha_mode_wboit_transparent_only_depth);
+    TST_CASE(test_scene_visual_alpha_mode_depth_peel_frame_plan);
+    TST_CASE(test_scene_visual_alpha_mode_mixed_oit_rejected);
+    TST_CASE(test_scene_visual_alpha_mode_emits_depth_peel_drp2);
+    TST_CASE(test_scene_visual_alpha_mode_requires_wboit_capabilities);
+    TST_CASE(test_scene_visual_alpha_mode_emits_wboit_drp2);
+    TST_CASE(test_scene_drp2_contract_checker_rejects_pipeline_drift);
+    TST_CASE(test_scene_drp2_contract_checker_rejects_raster_drift);
+    TST_CASE(test_scene_alpha_mode_toggle_refreshes_drp2_contracts);
+    TST_CASE(test_scene_visual_alpha_mode_wboit_glsl_executes);
+    TST_CASE(test_scene_visual_alpha_mode_depth_peel_glsl_executes);
+    TST_CASE(test_scene_blended_mesh_orders_after_volume_slice);
+    TST_CASE(test_scene_blended_mesh_occlusion_contracts);
+    TST_CASE(test_scene_visual_attr_source_and_mutability_metadata);
+    TST_CASE(test_scene_point_external_position_buffer_emits_no_upload);
+    TST_CASE(test_scene_point_external_position_buffer_executes);
+    TST_CASE(test_scene_point_rejects_texcoords_attribute);
+    TST_CASE(test_scene_primitive_rejects_size_attribute);
+    TST_CASE(test_scene_path_rejects_size_attribute);
+    TST_CASE(test_scene_image_rejects_size_attribute);
+    TST_CASE(test_scene_emit_warns_visual_with_no_position);
+    TST_CASE(test_scene_rejects_mismatched_point_attribute_counts);
+    TST_CASE(test_scene_rejects_range_update_without_full_allocation);
+    TST_CASE(test_scene_rejects_mutation_while_emitted_stream_is_live);
+    TST_CASE(test_scene_rejects_scale_binding_while_emitted_stream_is_live);
+    TST_CASE(test_scene_rejects_range_mutation_while_emitted_stream_is_live);
+    TST_CASE(test_scene_rejects_destroy_while_emitted_stream_is_live);
+    TST_CASE(test_scene_rejects_visual_destroy_while_emitted_stream_is_live);
+    TST_CASE(test_scene_live_stream_count_tracks_multiple_emits);
+    TST_CASE(test_scene_point_emit);
+    TST_CASE(test_scene_path_emit);
+    TST_CASE(test_scene_image_emit);
+    TST_CASE(test_scene_image_multi_item_emit);
+    TST_CASE(test_scene_glyph_emit_glsl);
+    TST_CASE(test_scene_image_emit_wgsl);
+    TST_CASE(test_scene_image_emit_uses_common_and_texture_sets);
+    TST_CASE(test_scene_visual_common_binding_layout_order);
+    TST_CASE(test_scene_empty_figure_emit_clear_only);
+    TST_CASE(test_scene_point_emit_has_vertex_layout);
+    TST_CASE(test_scene_point_visual_resizes_existing_attributes);
+    TST_CASE(test_scene_indexed_primitive_shading_updates_runtime);
+    TST_CASE(test_scene_point_large_count_executes);
+    TST_CASE(test_scene_second_emit_no_uploads_when_not_dirty);
+    TST_CASE(test_scene_hidden_visual_first_visible_later_uploads);
+    TST_CASE(test_scene_hidden_indexed_mesh_first_visible_later_uploads);
+    TST_CASE(test_scene_hidden_wboit_mesh_scene_occlusion_two_frames_glsl_executes);
+    TST_CASE(test_scene_partial_update_uploads_only_range);
+    TST_CASE(test_scene_repeated_partial_updates_across_frames);
+    TST_CASE(test_scene_partial_update_merges_ranges_before_emit);
+    TST_CASE(test_scene_multiple_panels_multiple_point_visuals_emit);
+    TST_CASE(test_scene_render_pass_scope_excludes_resource_commands);
 
     return 0;
 }

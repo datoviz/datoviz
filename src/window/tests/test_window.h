@@ -24,29 +24,29 @@
 /*  Tests                                                                                        */
 /*************************************************************************************************/
 
-int test_window_headless(TstSuite* suite, TstItem* item);
+int test_window_headless(TstContext* suite, const TstCase* item);
 
-int test_window_resize_events(TstSuite* suite, TstItem* item);
+int test_window_resize_events(TstContext* suite, const TstCase* item);
 
-int test_window_frame_requests(TstSuite* suite, TstItem* item);
+int test_window_frame_requests(TstContext* suite, const TstCase* item);
 
-int test_window_fallback(TstSuite* suite, TstItem* item);
+int test_window_fallback(TstContext* suite, const TstCase* item);
 
-int test_window_wrap_create(TstSuite* suite, TstItem* item);
+int test_window_wrap_create(TstContext* suite, const TstCase* item);
 
-int test_window_wrap_attach_detach(TstSuite* suite, TstItem* item);
+int test_window_wrap_attach_detach(TstContext* suite, const TstCase* item);
 
-int test_window_required_extensions_headless(TstSuite* suite, TstItem* item);
+int test_window_required_extensions_headless(TstContext* suite, const TstCase* item);
 
-int test_window_required_extensions_wrap(TstSuite* suite, TstItem* item);
+int test_window_required_extensions_wrap(TstContext* suite, const TstCase* item);
 
-int test_window_wrap_invalid_args(TstSuite* suite, TstItem* item);
+int test_window_wrap_invalid_args(TstContext* suite, const TstCase* item);
 
-int test_window_required_extensions_invalid_args(TstSuite* suite, TstItem* item);
+int test_window_required_extensions_invalid_args(TstContext* suite, const TstCase* item);
 
-int test_window_wrap_replace_surface(TstSuite* suite, TstItem* item);
+int test_window_wrap_replace_surface(TstContext* suite, const TstCase* item);
 
-int test_window_wrap_owned_surface_null_lifecycle(TstSuite* suite, TstItem* item);
+int test_window_wrap_owned_surface_null_lifecycle(TstContext* suite, const TstCase* item);
 
 
 

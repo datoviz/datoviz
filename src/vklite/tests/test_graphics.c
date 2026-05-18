@@ -46,7 +46,7 @@
 /*  Graphics tests                                                                               */
 /*************************************************************************************************/
 
-int test_vklite_graphics_1(TstSuite* suite, TstItem* tstitem)
+int test_vklite_graphics_1(TstContext* suite, const TstCase* tstitem)
 {
     ANN(suite);
     ANN(tstitem);
@@ -272,7 +272,7 @@ int test_vklite_graphics_1(TstSuite* suite, TstItem* tstitem)
 
 
 
-int test_vklite_graphics_create_requires_destroy(TstSuite* suite, TstItem* tstitem)
+int test_vklite_graphics_create_requires_destroy(TstContext* suite, const TstCase* tstitem)
 {
     ANN(suite);
     ANN(tstitem);
@@ -353,7 +353,7 @@ int test_vklite_graphics_create_requires_destroy(TstSuite* suite, TstItem* tstit
 
 
 
-int test_vklite_fixture_screenshot_repeat(TstSuite* suite, TstItem* tstitem)
+int test_vklite_fixture_screenshot_repeat(TstContext* suite, const TstCase* tstitem)
 {
     ANN(suite);
     ANN(tstitem);

@@ -24,13 +24,13 @@
 /*  Tests                                                                                        */
 /*************************************************************************************************/
 
-int test_map_1(TstSuite* suite, TstItem* tstitem);
+int test_map_1(TstContext* suite, const TstCase* tstitem);
 
-int test_map_2(TstSuite* suite, TstItem* tstitem);
+int test_map_2(TstContext* suite, const TstCase* tstitem);
 
-int test_list_1(TstSuite* suite, TstItem* tstitem);
+int test_list_1(TstContext* suite, const TstCase* tstitem);
 
-int test_list_remove_pointer(TstSuite* suite, TstItem* tstitem);
+int test_list_remove_pointer(TstContext* suite, const TstCase* tstitem);
 
 
 

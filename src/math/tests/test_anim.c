@@ -26,7 +26,7 @@
 /*  Anim tests                                                                                   */
 /*************************************************************************************************/
 
-int test_anim_1(TstSuite* suite, TstItem* tstitem)
+int test_anim_1(TstContext* suite, const TstCase* tstitem)
 {
     ANN(suite);
     double t = 0;

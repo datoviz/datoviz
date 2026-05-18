@@ -35,7 +35,7 @@
 /*  Descriptors tests                                                                            */
 /*************************************************************************************************/
 
-int test_vklite_descriptors_1(TstSuite* suite, TstItem* tstitem)
+int test_vklite_descriptors_1(TstContext* suite, const TstCase* tstitem)
 {
     ANN(suite);
     ANN(tstitem);
@@ -146,7 +146,7 @@ int test_vklite_descriptors_1(TstSuite* suite, TstItem* tstitem)
 
 
 
-int test_vklite_rendering_reset(TstSuite* suite, TstItem* tstitem)
+int test_vklite_rendering_reset(TstContext* suite, const TstCase* tstitem)
 {
     ANN(suite);
     ANN(tstitem);

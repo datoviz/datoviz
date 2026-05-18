@@ -43,7 +43,7 @@
 /*  Tests                                                                                        */
 /*************************************************************************************************/
 
-int test_vklite_buffers_1(TstSuite* suite, TstItem* tstitem)
+int test_vklite_buffers_1(TstContext* suite, const TstCase* tstitem)
 {
     ANN(suite);
     ANN(tstitem);
@@ -127,7 +127,7 @@ int test_vklite_buffers_1(TstSuite* suite, TstItem* tstitem)
 
 
 
-int test_vklite_buffer_views(TstSuite* suite, TstItem* tstitem)
+int test_vklite_buffer_views(TstContext* suite, const TstCase* tstitem)
 {
     // Bootstrap.
     DvzGpuCtxConfig cfg = dvz_gpu_ctx_config();
@@ -172,7 +172,7 @@ int test_vklite_buffer_views(TstSuite* suite, TstItem* tstitem)
 
 
 
-int test_vklite_buffer_create_requires_destroy(TstSuite* suite, TstItem* tstitem)
+int test_vklite_buffer_create_requires_destroy(TstContext* suite, const TstCase* tstitem)
 {
     ANN(suite);
     ANN(tstitem);

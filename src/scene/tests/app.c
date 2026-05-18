@@ -164,7 +164,7 @@ static void _app_request_frame_probe_callback(DvzAppWindow* win, void* user_data
  * @param suite the active test suite with log capture enabled
  * @param capture output log summary
  */
-static void _app_log_capture_from_suite(TstSuite* suite, AppLogCapture* capture)
+static void _app_log_capture_from_suite(TstContext* suite, AppLogCapture* capture)
 {
     ANN(suite);
     ANN(capture);
@@ -852,7 +852,7 @@ static DvzScene* _app_timer_test_scene(DvzFigure** out_figure)
 
 
 
-int test_app_offscreen(TstSuite* suite, TstItem* item)
+int test_app_offscreen(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -911,7 +911,7 @@ int test_app_offscreen(TstSuite* suite, TstItem* item)
 }
 
 
-int test_app_offscreen_timer_advances_in_app_run(TstSuite* suite, TstItem* item)
+int test_app_offscreen_timer_advances_in_app_run(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -956,7 +956,7 @@ int test_app_offscreen_timer_advances_in_app_run(TstSuite* suite, TstItem* item)
 }
 
 
-int test_app_offscreen_timer_advances_in_render_once(TstSuite* suite, TstItem* item)
+int test_app_offscreen_timer_advances_in_render_once(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -1014,7 +1014,7 @@ int test_app_offscreen_timer_advances_in_render_once(TstSuite* suite, TstItem* i
 }
 
 
-int test_app_offscreen_render_enabled_gate(TstSuite* suite, TstItem* item)
+int test_app_offscreen_render_enabled_gate(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -1070,7 +1070,7 @@ int test_app_offscreen_render_enabled_gate(TstSuite* suite, TstItem* item)
 
 
 #if defined(DVZ_HAS_GLFW) && DVZ_HAS_GLFW
-int test_app_external_surface_release_waits(TstSuite* suite, TstItem* item)
+int test_app_external_surface_release_waits(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -1162,7 +1162,7 @@ int test_app_external_surface_release_waits(TstSuite* suite, TstItem* item)
 #endif
 
 
-int test_app_offscreen_panel_three_visuals_all_drawn(TstSuite* suite, TstItem* item)
+int test_app_offscreen_panel_three_visuals_all_drawn(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -1256,7 +1256,7 @@ int test_app_offscreen_panel_three_visuals_all_drawn(TstSuite* suite, TstItem* i
  * @param item test item
  * @return 0 on success
  */
-int test_app_offscreen_point_depth_orders_overlap(TstSuite* suite, TstItem* item)
+int test_app_offscreen_point_depth_orders_overlap(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -1332,7 +1332,7 @@ int test_app_offscreen_point_depth_orders_overlap(TstSuite* suite, TstItem* item
  * @param item test item
  * @return 0 on success
  */
-int test_app_offscreen_point_depth_cue_darkens_far(TstSuite* suite, TstItem* item)
+int test_app_offscreen_point_depth_cue_darkens_far(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -1405,7 +1405,7 @@ int test_app_offscreen_point_depth_cue_darkens_far(TstSuite* suite, TstItem* ite
 }
 
 
-int test_app_offscreen_has_nonblank_pixels(TstSuite* suite, TstItem* item)
+int test_app_offscreen_has_nonblank_pixels(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -1478,7 +1478,7 @@ int test_app_offscreen_has_nonblank_pixels(TstSuite* suite, TstItem* item)
  * @param item the active test item
  * @return 0 on success
  */
-int test_app_offscreen_pixel_square_has_nonblank_pixels(TstSuite* suite, TstItem* item)
+int test_app_offscreen_pixel_square_has_nonblank_pixels(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -1551,7 +1551,7 @@ int test_app_offscreen_pixel_square_has_nonblank_pixels(TstSuite* suite, TstItem
  * @param item the test item
  * @return 0 on success
  */
-int test_app_offscreen_points_edl_renders(TstSuite* suite, TstItem* item)
+int test_app_offscreen_points_edl_renders(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -1635,7 +1635,7 @@ int test_app_offscreen_points_edl_renders(TstSuite* suite, TstItem* item)
  * @param item the test item
  * @return 0 on success
  */
-int test_app_offscreen_points_edl_changes_pixels(TstSuite* suite, TstItem* item)
+int test_app_offscreen_points_edl_changes_pixels(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -1694,7 +1694,7 @@ int test_app_offscreen_points_edl_changes_pixels(TstSuite* suite, TstItem* item)
  * @param item the test item
  * @return 0 on success
  */
-int test_app_offscreen_mesh_ssao_changes_pixels(TstSuite* suite, TstItem* item)
+int test_app_offscreen_mesh_ssao_changes_pixels(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -1784,7 +1784,7 @@ int test_app_offscreen_mesh_ssao_changes_pixels(TstSuite* suite, TstItem* item)
  * @param item the test item
  * @return 0 on success
  */
-int test_app_offscreen_sphere_ssao_darkens_contact(TstSuite* suite, TstItem* item)
+int test_app_offscreen_sphere_ssao_darkens_contact(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -1884,7 +1884,7 @@ int test_app_offscreen_sphere_ssao_darkens_contact(TstSuite* suite, TstItem* ite
 }
 
 
-int test_app_offscreen_records_dvzr_frames(TstSuite* suite, TstItem* item)
+int test_app_offscreen_records_dvzr_frames(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -1959,7 +1959,7 @@ int test_app_offscreen_records_dvzr_frames(TstSuite* suite, TstItem* item)
 }
 
 
-int test_app_offscreen_image_has_nonblank_pixels(TstSuite* suite, TstItem* item)
+int test_app_offscreen_image_has_nonblank_pixels(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -2047,7 +2047,7 @@ int test_app_offscreen_image_has_nonblank_pixels(TstSuite* suite, TstItem* item)
  * @param item the test item
  * @return 0 on success
  */
-int test_app_offscreen_text_has_nonblank_pixels(TstSuite* suite, TstItem* item)
+int test_app_offscreen_text_has_nonblank_pixels(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -2123,7 +2123,7 @@ int test_app_offscreen_text_has_nonblank_pixels(TstSuite* suite, TstItem* item)
 }
 
 
-int test_app_offscreen_image_field_partial_update_changes_region(TstSuite* suite, TstItem* item)
+int test_app_offscreen_image_field_partial_update_changes_region(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -2253,7 +2253,7 @@ int test_app_offscreen_image_field_partial_update_changes_region(TstSuite* suite
  * @param item test item
  * @return 0 on success
  */
-int test_app_offscreen_wboit_mesh_order_independent_layers(TstSuite* suite, TstItem* item)
+int test_app_offscreen_wboit_mesh_order_independent_layers(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -2294,7 +2294,7 @@ int test_app_offscreen_wboit_mesh_order_independent_layers(TstSuite* suite, TstI
  * @param item test item
  * @return 0 on success
  */
-int test_app_offscreen_source_over_mesh_depth_and_blend(TstSuite* suite, TstItem* item)
+int test_app_offscreen_source_over_mesh_depth_and_blend(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -2370,7 +2370,7 @@ int test_app_offscreen_source_over_mesh_depth_and_blend(TstSuite* suite, TstItem
  * @param item test item
  * @return 0 on success
  */
-int test_app_offscreen_depth_peel_mesh_two_layers(TstSuite* suite, TstItem* item)
+int test_app_offscreen_depth_peel_mesh_two_layers(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -2465,7 +2465,7 @@ int test_app_offscreen_depth_peel_mesh_two_layers(TstSuite* suite, TstItem* item
  * @param item test item
  * @return 0 on success
  */
-int test_app_offscreen_scene_occlusion_hidden_alpha(TstSuite* suite, TstItem* item)
+int test_app_offscreen_scene_occlusion_hidden_alpha(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -2520,7 +2520,7 @@ int test_app_offscreen_scene_occlusion_hidden_alpha(TstSuite* suite, TstItem* it
  * @param item test item
  * @return 0 on success
  */
-int test_app_offscreen_source_over_scene_occlusion_matrix(TstSuite* suite, TstItem* item)
+int test_app_offscreen_source_over_scene_occlusion_matrix(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -2565,7 +2565,7 @@ int test_app_offscreen_source_over_scene_occlusion_matrix(TstSuite* suite, TstIt
 }
 
 
-int test_app_offscreen_lit_primitive_depth_orders_overlap(TstSuite* suite, TstItem* item)
+int test_app_offscreen_lit_primitive_depth_orders_overlap(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -2677,7 +2677,7 @@ int test_app_offscreen_lit_primitive_depth_orders_overlap(TstSuite* suite, TstIt
  * @return 0 on success
  */
 int test_app_offscreen_lit_primitive_depth_cue_darkens_far(
-    TstSuite* suite, TstItem* item)
+    TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -2780,7 +2780,7 @@ int test_app_offscreen_lit_primitive_depth_cue_darkens_far(
  */
 
 
-int test_app_offscreen_mesh_renders_nonblank(TstSuite* suite, TstItem* item)
+int test_app_offscreen_mesh_renders_nonblank(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -3047,7 +3047,7 @@ static void _mesh_build_cube_object_space(
  */
 
 
-int test_app_offscreen_rotated_mesh_depth_orders_faces(TstSuite* suite, TstItem* item)
+int test_app_offscreen_rotated_mesh_depth_orders_faces(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -3137,7 +3137,7 @@ int test_app_offscreen_rotated_mesh_depth_orders_faces(TstSuite* suite, TstItem*
  */
 
 
-int test_app_offscreen_camera_arcball_mesh_renders_cube(TstSuite* suite, TstItem* item)
+int test_app_offscreen_camera_arcball_mesh_renders_cube(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -3231,7 +3231,7 @@ int test_app_offscreen_camera_arcball_mesh_renders_cube(TstSuite* suite, TstItem
 }
 
 
-int test_app_offscreen_shared_field_mixed_runtime_updates(TstSuite* suite, TstItem* item)
+int test_app_offscreen_shared_field_mixed_runtime_updates(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -3383,7 +3383,7 @@ int test_app_offscreen_shared_field_mixed_runtime_updates(TstSuite* suite, TstIt
 }
 
 
-int test_app_offscreen_retained_render_second_frame(TstSuite* suite, TstItem* item)
+int test_app_offscreen_retained_render_second_frame(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -3450,7 +3450,7 @@ int test_app_offscreen_retained_render_second_frame(TstSuite* suite, TstItem* it
 }
 
 
-int test_app_offscreen_image_retained_render_second_frame(TstSuite* suite, TstItem* item)
+int test_app_offscreen_image_retained_render_second_frame(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -3536,7 +3536,7 @@ int test_app_offscreen_image_retained_render_second_frame(TstSuite* suite, TstIt
  * @param item the test item
  * @return 0 on success
  */
-int test_app_offscreen_resize_reuses_runtime_with_mesh_and_image(TstSuite* suite, TstItem* item)
+int test_app_offscreen_resize_reuses_runtime_with_mesh_and_image(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -3676,7 +3676,7 @@ int test_app_offscreen_resize_reuses_runtime_with_mesh_and_image(TstSuite* suite
  * @param item the test item
  * @return 0 on success
  */
-int test_app_offscreen_pick_probe_request_steady_state(TstSuite* suite, TstItem* item)
+int test_app_offscreen_pick_probe_request_steady_state(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -3780,7 +3780,7 @@ int test_app_offscreen_pick_probe_request_steady_state(TstSuite* suite, TstItem*
 
 
 
-int test_app_offscreen_two_panel_points_light_both_halves(TstSuite* suite, TstItem* item)
+int test_app_offscreen_two_panel_points_light_both_halves(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -3870,7 +3870,7 @@ int test_app_offscreen_two_panel_points_light_both_halves(TstSuite* suite, TstIt
 }
 
 
-int test_app_offscreen_clear_color(TstSuite* suite, TstItem* item)
+int test_app_offscreen_clear_color(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -3926,7 +3926,7 @@ int test_app_offscreen_clear_color(TstSuite* suite, TstItem* item)
 }
 
 
-int test_app_capture_rejects_wrong_dimensions(TstSuite* suite, TstItem* item)
+int test_app_capture_rejects_wrong_dimensions(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -3968,7 +3968,7 @@ int test_app_capture_rejects_wrong_dimensions(TstSuite* suite, TstItem* item)
 }
 
 
-int test_app_capture_rejects_undersized_buffer(TstSuite* suite, TstItem* item)
+int test_app_capture_rejects_undersized_buffer(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -4020,7 +4020,7 @@ int test_app_capture_rejects_undersized_buffer(TstSuite* suite, TstItem* item)
  * @param item the test item
  * @return 0 on success
  */
-int test_app_offscreen_volume_slice_renders_field(TstSuite* suite, TstItem* item)
+int test_app_offscreen_volume_slice_renders_field(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -4101,7 +4101,7 @@ int test_app_offscreen_volume_slice_renders_field(TstSuite* suite, TstItem* item
  * @param item the test item
  * @return 0 on success
  */
-int test_app_offscreen_volume_mip_renders_bright_slice(TstSuite* suite, TstItem* item)
+int test_app_offscreen_volume_mip_renders_bright_slice(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -4189,7 +4189,7 @@ int test_app_offscreen_volume_mip_renders_bright_slice(TstSuite* suite, TstItem*
  * @param item the test item
  * @return 0 on success
  */
-int test_app_offscreen_volume_composite_renders_field(TstSuite* suite, TstItem* item)
+int test_app_offscreen_volume_composite_renders_field(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -4455,7 +4455,7 @@ static AppVolumeOcclusionCapture _app_volume_occlusion_capture(
  * @param item the test item
  * @return 0 on success
  */
-int test_app_offscreen_volume_occlusion_slice_renders(TstSuite* suite, TstItem* item)
+int test_app_offscreen_volume_occlusion_slice_renders(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -4502,7 +4502,7 @@ int test_app_offscreen_volume_occlusion_slice_renders(TstSuite* suite, TstItem* 
  * @param item the test item
  * @return 0 on success
  */
-int test_app_offscreen_volume_occlusion_region_delta(TstSuite* suite, TstItem* item)
+int test_app_offscreen_volume_occlusion_region_delta(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -4553,7 +4553,7 @@ int test_app_offscreen_volume_occlusion_region_delta(TstSuite* suite, TstItem* i
  * @param item the test item
  * @return 0 on success
  */
-int test_app_offscreen_volume_occlusion_perspective_camera(TstSuite* suite, TstItem* item)
+int test_app_offscreen_volume_occlusion_perspective_camera(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -4596,7 +4596,7 @@ int test_app_offscreen_volume_occlusion_perspective_camera(TstSuite* suite, TstI
  * @param item the test item
  * @return 0 on success
  */
-int test_app_offscreen_volume_slice_scene_occlusion_dimming(TstSuite* suite, TstItem* item)
+int test_app_offscreen_volume_slice_scene_occlusion_dimming(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -4646,7 +4646,7 @@ int test_app_offscreen_volume_slice_scene_occlusion_dimming(TstSuite* suite, Tst
  * @param item the test item
  * @return 0 on success
  */
-int test_app_offscreen_volume_slice_mesh_scene_occlusion_toggle(TstSuite* suite, TstItem* item)
+int test_app_offscreen_volume_slice_mesh_scene_occlusion_toggle(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -4813,7 +4813,7 @@ int test_app_offscreen_volume_slice_mesh_scene_occlusion_toggle(TstSuite* suite,
  * @param item the test item
  * @return 0 on success
  */
-int test_app_offscreen_volume_depth_occluded_by_primitive(TstSuite* suite, TstItem* item)
+int test_app_offscreen_volume_depth_occluded_by_primitive(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -4926,55 +4926,58 @@ int test_scene_app(TstSuite* suite)
     ANN(suite);
     const char* tags = "scene";
 
+    TST_MODULE(suite, "scene");
+    TST_GROUP("app-offscreen");
+
 #if defined(DVZ_HAS_APP) && DVZ_HAS_APP
-    TEST_SIMPLE(test_app_offscreen);
-    TEST_SIMPLE(test_app_offscreen_timer_advances_in_app_run);
-    TEST_SIMPLE(test_app_offscreen_timer_advances_in_render_once);
-    TEST_SIMPLE(test_app_offscreen_render_enabled_gate);
+    TST_CASE(test_app_offscreen);
+    TST_CASE(test_app_offscreen_timer_advances_in_app_run);
+    TST_CASE(test_app_offscreen_timer_advances_in_render_once);
+    TST_CASE(test_app_offscreen_render_enabled_gate);
 #if defined(DVZ_HAS_GLFW) && DVZ_HAS_GLFW
-    TEST_SIMPLE(test_app_external_surface_release_waits);
+    TST_CASE(test_app_external_surface_release_waits);
 #endif
-    TEST_SIMPLE(test_app_offscreen_panel_three_visuals_all_drawn);
-    TEST_SIMPLE(test_app_offscreen_point_depth_orders_overlap);
-    TEST_SIMPLE(test_app_offscreen_wboit_mesh_order_independent_layers);
-    TEST_SIMPLE(test_app_offscreen_source_over_mesh_depth_and_blend);
-    TEST_SIMPLE(test_app_offscreen_depth_peel_mesh_two_layers);
-    TEST_SIMPLE(test_app_offscreen_scene_occlusion_hidden_alpha);
-    TEST_SIMPLE(test_app_offscreen_source_over_scene_occlusion_matrix);
-    TEST_SIMPLE(test_app_offscreen_point_depth_cue_darkens_far);
-    TEST_SIMPLE(test_app_offscreen_has_nonblank_pixels);
-    TEST_SIMPLE(test_app_offscreen_pixel_square_has_nonblank_pixels);
-    TEST_SIMPLE(test_app_offscreen_points_edl_renders);
-    TEST_SIMPLE(test_app_offscreen_points_edl_changes_pixels);
-    TEST_SIMPLE(test_app_offscreen_mesh_ssao_changes_pixels);
-    TEST_SIMPLE(test_app_offscreen_sphere_ssao_darkens_contact);
-    TEST_SIMPLE(test_app_offscreen_records_dvzr_frames);
-    TEST_SIMPLE(test_app_offscreen_image_has_nonblank_pixels);
-    TEST_SIMPLE(test_app_offscreen_text_has_nonblank_pixels);
-    TEST_SIMPLE(test_app_offscreen_image_field_partial_update_changes_region);
-    TEST_SIMPLE(test_app_offscreen_lit_primitive_depth_orders_overlap);
-    TEST_SIMPLE(test_app_offscreen_lit_primitive_depth_cue_darkens_far);
-    TEST_SIMPLE(test_app_offscreen_mesh_renders_nonblank);
-    TEST_SIMPLE(test_app_offscreen_rotated_mesh_depth_orders_faces);
-    TEST_SIMPLE(test_app_offscreen_camera_arcball_mesh_renders_cube);
-    TEST_SIMPLE(test_app_offscreen_shared_field_mixed_runtime_updates);
-    TEST_SIMPLE(test_app_offscreen_retained_render_second_frame);
-    TEST_SIMPLE(test_app_offscreen_image_retained_render_second_frame);
-    TEST_SIMPLE(test_app_offscreen_resize_reuses_runtime_with_mesh_and_image);
-    TEST_SIMPLE(test_app_offscreen_pick_probe_request_steady_state);
-    TEST_SIMPLE(test_app_offscreen_two_panel_points_light_both_halves);
-    TEST_SIMPLE(test_app_offscreen_clear_color);
-    TEST_SIMPLE(test_app_offscreen_volume_slice_renders_field);
-    TEST_SIMPLE(test_app_offscreen_volume_mip_renders_bright_slice);
-    TEST_SIMPLE(test_app_offscreen_volume_composite_renders_field);
-    TEST_SIMPLE(test_app_offscreen_volume_occlusion_slice_renders);
-    TEST_SIMPLE(test_app_offscreen_volume_occlusion_region_delta);
-    TEST_SIMPLE(test_app_offscreen_volume_occlusion_perspective_camera);
-    TEST_SIMPLE(test_app_offscreen_volume_slice_scene_occlusion_dimming);
-    TEST_SIMPLE(test_app_offscreen_volume_slice_mesh_scene_occlusion_toggle);
-    TEST_SIMPLE(test_app_offscreen_volume_depth_occluded_by_primitive);
-    TEST_SIMPLE(test_app_capture_rejects_wrong_dimensions);
-    TEST_SIMPLE(test_app_capture_rejects_undersized_buffer);
+    TST_CASE(test_app_offscreen_panel_three_visuals_all_drawn);
+    TST_CASE(test_app_offscreen_point_depth_orders_overlap);
+    TST_CASE(test_app_offscreen_wboit_mesh_order_independent_layers);
+    TST_CASE(test_app_offscreen_source_over_mesh_depth_and_blend);
+    TST_CASE(test_app_offscreen_depth_peel_mesh_two_layers);
+    TST_CASE(test_app_offscreen_scene_occlusion_hidden_alpha);
+    TST_CASE(test_app_offscreen_source_over_scene_occlusion_matrix);
+    TST_CASE(test_app_offscreen_point_depth_cue_darkens_far);
+    TST_CASE(test_app_offscreen_has_nonblank_pixels);
+    TST_CASE(test_app_offscreen_pixel_square_has_nonblank_pixels);
+    TST_CASE(test_app_offscreen_points_edl_renders);
+    TST_CASE(test_app_offscreen_points_edl_changes_pixels);
+    TST_CASE(test_app_offscreen_mesh_ssao_changes_pixels);
+    TST_CASE(test_app_offscreen_sphere_ssao_darkens_contact);
+    TST_CASE(test_app_offscreen_records_dvzr_frames);
+    TST_CASE(test_app_offscreen_image_has_nonblank_pixels);
+    TST_CASE(test_app_offscreen_text_has_nonblank_pixels);
+    TST_CASE(test_app_offscreen_image_field_partial_update_changes_region);
+    TST_CASE(test_app_offscreen_lit_primitive_depth_orders_overlap);
+    TST_CASE(test_app_offscreen_lit_primitive_depth_cue_darkens_far);
+    TST_CASE(test_app_offscreen_mesh_renders_nonblank);
+    TST_CASE(test_app_offscreen_rotated_mesh_depth_orders_faces);
+    TST_CASE(test_app_offscreen_camera_arcball_mesh_renders_cube);
+    TST_CASE(test_app_offscreen_shared_field_mixed_runtime_updates);
+    TST_CASE(test_app_offscreen_retained_render_second_frame);
+    TST_CASE(test_app_offscreen_image_retained_render_second_frame);
+    TST_CASE(test_app_offscreen_resize_reuses_runtime_with_mesh_and_image);
+    TST_CASE(test_app_offscreen_pick_probe_request_steady_state);
+    TST_CASE(test_app_offscreen_two_panel_points_light_both_halves);
+    TST_CASE(test_app_offscreen_clear_color);
+    TST_CASE(test_app_offscreen_volume_slice_renders_field);
+    TST_CASE(test_app_offscreen_volume_mip_renders_bright_slice);
+    TST_CASE(test_app_offscreen_volume_composite_renders_field);
+    TST_CASE(test_app_offscreen_volume_occlusion_slice_renders);
+    TST_CASE(test_app_offscreen_volume_occlusion_region_delta);
+    TST_CASE(test_app_offscreen_volume_occlusion_perspective_camera);
+    TST_CASE(test_app_offscreen_volume_slice_scene_occlusion_dimming);
+    TST_CASE(test_app_offscreen_volume_slice_mesh_scene_occlusion_toggle);
+    TST_CASE(test_app_offscreen_volume_depth_occluded_by_primitive);
+    TST_CASE(test_app_capture_rejects_wrong_dimensions);
+    TST_CASE(test_app_capture_rejects_undersized_buffer);
 #endif
 
     return 0;

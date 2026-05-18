@@ -321,7 +321,7 @@ static bool kvz_cpu_record_clear(KvzCpuCtx* ctx, const VkClearColorValue* clr)
 /*  Test                                                                                         */
 /*************************************************************************************************/
 
-int test_video_kvazaar(TstSuite* suite, TstItem* tstitem)
+int test_video_kvazaar(TstContext* suite, const TstCase* tstitem)
 {
     ANN(suite);
     ANN(tstitem);

@@ -24,9 +24,9 @@
 /*  Tests                                                                                        */
 /*************************************************************************************************/
 
-int test_obj_1(TstSuite* suite, TstItem* tstitem);
-int test_alloc_basic(TstSuite* suite, TstItem* tstitem);
-int test_alloc_aligned(TstSuite* suite, TstItem* tstitem);
+int test_obj_1(TstContext* suite, const TstCase* tstitem);
+int test_alloc_basic(TstContext* suite, const TstCase* tstitem);
+int test_alloc_aligned(TstContext* suite, const TstCase* tstitem);
 
 
 

@@ -48,7 +48,7 @@ static bool _vklite_runtime_available(void)
 
 
 
-static int test_vklite_runtime_unavailable(TstSuite* suite, TstItem* item)
+static int test_vklite_runtime_unavailable(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -63,56 +63,57 @@ int test_vklite(TstSuite* suite)
     ANN(suite);
 
     const char* tags = "vklite";
+    TST_MODULE(suite, tags);
     if (!_vklite_runtime_available())
     {
-        TEST_SIMPLE(test_vklite_runtime_unavailable);
+        TST_CASE(test_vklite_runtime_unavailable);
         return 0;
     }
 
-    TEST_SIMPLE(test_vklite_commands_1);
-    TEST_SIMPLE(test_vklite_commands_repeat_submit);
-    TEST_SIMPLE(test_vklite_commands_destroy_idempotent);
-    TEST_SIMPLE(test_vklite_commands_destroy_without_recording);
-    TEST_SIMPLE(test_vklite_commands_borrowed_recording_rejects_lifecycle);
-    TEST_SIMPLE(test_vklite_barriers_reset);
-    TEST_SIMPLE(test_vklite_submit_reset_reuse);
-    TEST_SIMPLE(test_vklite_sampler_1);
-    TEST_SIMPLE(test_vklite_shader_1);
-    TEST_SIMPLE(test_vklite_shader_create_requires_destroy);
-    TEST_SIMPLE(test_vklite_slots_1);
-    TEST_SIMPLE(test_vklite_slots_create_failure_unwinds_layouts);
-    TEST_SIMPLE(test_vklite_compute_1);
-    TEST_SIMPLE(test_vklite_compute_create_requires_destroy);
-    TEST_SIMPLE(test_vklite_buffers_1);
-    TEST_SIMPLE(test_vklite_buffer_views);
-    TEST_SIMPLE(test_vklite_buffer_create_requires_destroy);
-    TEST_SIMPLE(test_vklite_images_1);
-    TEST_SIMPLE(test_vklite_images_create_requires_destroy);
-    TEST_SIMPLE(test_vklite_descriptors_1);
-    TEST_SIMPLE(test_vklite_rendering_reset);
-    TEST_SIMPLE(test_vklite_graphics_1);
-    TEST_SIMPLE(test_vklite_graphics_create_requires_destroy);
-    TEST_SIMPLE(test_vklite_fixture_screenshot_repeat);
-    TEST_SIMPLE(test_vklite_surface_query);
-    TEST_SIMPLE(test_vklite_swapchain_recreate);
-    TEST_SIMPLE(test_vklite_surface_swapchain_destroy_idempotent);
-    TEST_SIMPLE(test_vklite_swapchain_config_present_mode_immediate);
-    TEST_SIMPLE(test_vklite_swapchain_config_defaults_partial);
-    TEST_SIMPLE(test_vklite_swapchain_present_invalid_index);
-    TEST_SIMPLE(test_vklite_swapchain_recreate_resolved_state);
-    TEST_SIMPLE(test_vklite_swapchain_recreate_repeat_state);
-    TEST_SIMPLE(test_vklite_swapchain_destroy_clears_cached_state);
-    TEST_SIMPLE(test_vklite_swapchain_acquire_present_cycle);
-    TEST_SIMPLE(test_vklite_wrap_backend_external_surface_present);
+    TST_CASE(test_vklite_commands_1);
+    TST_CASE(test_vklite_commands_repeat_submit);
+    TST_CASE(test_vklite_commands_destroy_idempotent);
+    TST_CASE(test_vklite_commands_destroy_without_recording);
+    TST_CASE(test_vklite_commands_borrowed_recording_rejects_lifecycle);
+    TST_CASE(test_vklite_barriers_reset);
+    TST_CASE(test_vklite_submit_reset_reuse);
+    TST_CASE(test_vklite_sampler_1);
+    TST_CASE(test_vklite_shader_1);
+    TST_CASE(test_vklite_shader_create_requires_destroy);
+    TST_CASE(test_vklite_slots_1);
+    TST_CASE(test_vklite_slots_create_failure_unwinds_layouts);
+    TST_CASE(test_vklite_compute_1);
+    TST_CASE(test_vklite_compute_create_requires_destroy);
+    TST_CASE(test_vklite_buffers_1);
+    TST_CASE(test_vklite_buffer_views);
+    TST_CASE(test_vklite_buffer_create_requires_destroy);
+    TST_CASE(test_vklite_images_1);
+    TST_CASE(test_vklite_images_create_requires_destroy);
+    TST_CASE(test_vklite_descriptors_1);
+    TST_CASE(test_vklite_rendering_reset);
+    TST_CASE(test_vklite_graphics_1);
+    TST_CASE(test_vklite_graphics_create_requires_destroy);
+    TST_CASE(test_vklite_fixture_screenshot_repeat);
+    TST_CASE(test_vklite_surface_query);
+    TST_CASE(test_vklite_swapchain_recreate);
+    TST_CASE(test_vklite_surface_swapchain_destroy_idempotent);
+    TST_CASE(test_vklite_swapchain_config_present_mode_immediate);
+    TST_CASE(test_vklite_swapchain_config_defaults_partial);
+    TST_CASE(test_vklite_swapchain_present_invalid_index);
+    TST_CASE(test_vklite_swapchain_recreate_resolved_state);
+    TST_CASE(test_vklite_swapchain_recreate_repeat_state);
+    TST_CASE(test_vklite_swapchain_destroy_clears_cached_state);
+    TST_CASE(test_vklite_swapchain_acquire_present_cycle);
+    TST_CASE(test_vklite_wrap_backend_external_surface_present);
 
-    TEST_SIMPLE(test_technique_triangle);
-    TEST_SIMPLE(test_technique_render_texture);
-    TEST_SIMPLE(test_technique_stencil);
-    TEST_SIMPLE(test_technique_msaa);
-    TEST_SIMPLE(test_technique_compute_graphics);
-    TEST_SIMPLE(test_technique_picking);
-    TEST_SIMPLE(test_technique_wboit);
-    TEST_SIMPLE(test_technique_ssao);
+    TST_CASE(test_technique_triangle);
+    TST_CASE(test_technique_render_texture);
+    TST_CASE(test_technique_stencil);
+    TST_CASE(test_technique_msaa);
+    TST_CASE(test_technique_compute_graphics);
+    TST_CASE(test_technique_picking);
+    TST_CASE(test_technique_wboit);
+    TST_CASE(test_technique_ssao);
 
 
 

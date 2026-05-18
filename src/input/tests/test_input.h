@@ -24,17 +24,17 @@
 /*  Tests input                                                                                  */
 /*************************************************************************************************/
 
-int test_router_callbacks(TstSuite* suite, TstItem* item);
+int test_router_callbacks(TstContext* suite, const TstCase* item);
 
-int test_router_unsubscribe(TstSuite* suite, TstItem* item);
+int test_router_unsubscribe(TstContext* suite, const TstCase* item);
 
-int test_keyboard_modifiers(TstSuite* suite, TstItem* item);
+int test_keyboard_modifiers(TstContext* suite, const TstCase* item);
 
-int test_pointer_gestures(TstSuite* suite, TstItem* item);
+int test_pointer_gestures(TstContext* suite, const TstCase* item);
 
-int test_pointer_wheel(TstSuite* suite, TstItem* item);
+int test_pointer_wheel(TstContext* suite, const TstCase* item);
 
-int test_resize_scale_events(TstSuite* suite, TstItem* item);
+int test_resize_scale_events(TstContext* suite, const TstCase* item);
 
 
 

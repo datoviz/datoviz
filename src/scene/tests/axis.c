@@ -197,7 +197,7 @@ static uint32_t _axis_test_horizontal_grid_line_count(DvzAxis* axis)
 /*  Tests                                                                                        */
 /*************************************************************************************************/
 
-int test_axis_domain_and_ticks(TstSuite* suite, TstItem* item)
+int test_axis_domain_and_ticks(TstContext* suite, const TstCase* item)
 {
     (void)suite;
     (void)item;
@@ -234,7 +234,7 @@ int test_axis_domain_and_ticks(TstSuite* suite, TstItem* item)
 }
 
 
-static int test_axis_minor_ticks(TstSuite* suite, TstItem* item)
+static int test_axis_minor_ticks(TstContext* suite, const TstCase* item)
 {
     (void)suite;
     (void)item;
@@ -265,7 +265,7 @@ static int test_axis_minor_ticks(TstSuite* suite, TstItem* item)
 }
 
 
-static int test_axis_tick_density_tracks_panel_size(TstSuite* suite, TstItem* item)
+static int test_axis_tick_density_tracks_panel_size(TstContext* suite, const TstCase* item)
 {
     (void)suite;
     (void)item;
@@ -309,7 +309,7 @@ static int test_axis_tick_density_tracks_panel_size(TstSuite* suite, TstItem* it
 }
 
 
-int test_panel_data_to_visual_positions(TstSuite* suite, TstItem* item)
+int test_panel_data_to_visual_positions(TstContext* suite, const TstCase* item)
 {
     (void)suite;
     (void)item;
@@ -344,7 +344,7 @@ int test_panel_data_to_visual_positions(TstSuite* suite, TstItem* item)
 }
 
 
-static int test_axis_plot_margins(TstSuite* suite, TstItem* item)
+static int test_axis_plot_margins(TstContext* suite, const TstCase* item)
 {
     (void)suite;
     (void)item;
@@ -383,7 +383,7 @@ static int test_axis_plot_margins(TstSuite* suite, TstItem* item)
 }
 
 
-static int test_axis_layout_reserve(TstSuite* suite, TstItem* item)
+static int test_axis_layout_reserve(TstContext* suite, const TstCase* item)
 {
     (void)suite;
     (void)item;
@@ -427,7 +427,7 @@ static int test_axis_layout_reserve(TstSuite* suite, TstItem* item)
 }
 
 
-int test_panel_visible_domain(TstSuite* suite, TstItem* item)
+int test_panel_visible_domain(TstContext* suite, const TstCase* item)
 {
     (void)suite;
     (void)item;
@@ -461,7 +461,7 @@ int test_panel_visible_domain(TstSuite* suite, TstItem* item)
 }
 
 
-int test_axis_panzoom_visible_domain(TstSuite* suite, TstItem* item)
+int test_axis_panzoom_visible_domain(TstContext* suite, const TstCase* item)
 {
     (void)suite;
     (void)item;
@@ -513,7 +513,7 @@ int test_axis_panzoom_visible_domain(TstSuite* suite, TstItem* item)
 }
 
 
-static int test_axis_zoom_out_in_grid_regression(TstSuite* suite, TstItem* item)
+static int test_axis_zoom_out_in_grid_regression(TstContext* suite, const TstCase* item)
 {
     (void)suite;
     (void)item;
@@ -549,7 +549,7 @@ static int test_axis_zoom_out_in_grid_regression(TstSuite* suite, TstItem* item)
 }
 
 
-static int test_axis_panzoom_resize_visual_smoke(TstSuite* suite, TstItem* item)
+static int test_axis_panzoom_resize_visual_smoke(TstContext* suite, const TstCase* item)
 {
     (void)suite;
     (void)item;
@@ -596,7 +596,7 @@ static int test_axis_panzoom_resize_visual_smoke(TstSuite* suite, TstItem* item)
 }
 
 
-int test_axis_dynamic_segment_draw_count(TstSuite* suite, TstItem* item)
+int test_axis_dynamic_segment_draw_count(TstContext* suite, const TstCase* item)
 {
     (void)suite;
     (void)item;
@@ -648,16 +648,19 @@ int test_scene_axis(TstSuite* suite)
     ANN(suite);
     const char* tags = "scene,axis";
 
-    TEST_SIMPLE(test_axis_domain_and_ticks);
-    TEST_SIMPLE(test_axis_minor_ticks);
-    TEST_SIMPLE(test_axis_tick_density_tracks_panel_size);
-    TEST_SIMPLE(test_panel_data_to_visual_positions);
-    TEST_SIMPLE(test_axis_plot_margins);
-    TEST_SIMPLE(test_axis_layout_reserve);
-    TEST_SIMPLE(test_panel_visible_domain);
-    TEST_SIMPLE(test_axis_panzoom_visible_domain);
-    TEST_SIMPLE(test_axis_zoom_out_in_grid_regression);
-    TEST_SIMPLE(test_axis_panzoom_resize_visual_smoke);
-    TEST_SIMPLE(test_axis_dynamic_segment_draw_count);
+    TST_MODULE(suite, "scene");
+    TST_GROUP("axis");
+
+    TST_CASE(test_axis_domain_and_ticks);
+    TST_CASE(test_axis_minor_ticks);
+    TST_CASE(test_axis_tick_density_tracks_panel_size);
+    TST_CASE(test_panel_data_to_visual_positions);
+    TST_CASE(test_axis_plot_margins);
+    TST_CASE(test_axis_layout_reserve);
+    TST_CASE(test_panel_visible_domain);
+    TST_CASE(test_axis_panzoom_visible_domain);
+    TST_CASE(test_axis_zoom_out_in_grid_regression);
+    TST_CASE(test_axis_panzoom_resize_visual_smoke);
+    TST_CASE(test_axis_dynamic_segment_draw_count);
     return 0;
 }

@@ -31,7 +31,7 @@
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
-static int test_app_config_defaults(TstSuite* suite, TstItem* item)
+static int test_app_config_defaults(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     ANN(item);
@@ -46,7 +46,7 @@ static int test_app_config_defaults(TstSuite* suite, TstItem* item)
 
 
 
-static int test_app_trace_mode_parsing(TstSuite* suite, TstItem* item)
+static int test_app_trace_mode_parsing(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     ANN(item);
@@ -63,7 +63,7 @@ static int test_app_trace_mode_parsing(TstSuite* suite, TstItem* item)
 
 
 
-static int test_app_trace_plan_normal_changed_after_open_line(TstSuite* suite, TstItem* item)
+static int test_app_trace_plan_normal_changed_after_open_line(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     ANN(item);
@@ -78,7 +78,7 @@ static int test_app_trace_plan_normal_changed_after_open_line(TstSuite* suite, T
 
 
 
-static int test_app_trace_plan_normal_unchanged_rewrites_in_place(TstSuite* suite, TstItem* item)
+static int test_app_trace_plan_normal_unchanged_rewrites_in_place(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     ANN(item);
@@ -93,7 +93,7 @@ static int test_app_trace_plan_normal_unchanged_rewrites_in_place(TstSuite* suit
 
 
 
-static int test_app_status_line_combines_trace_and_fps(TstSuite* suite, TstItem* item)
+static int test_app_status_line_combines_trace_and_fps(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     ANN(item);
@@ -112,7 +112,7 @@ static int test_app_status_line_combines_trace_and_fps(TstSuite* suite, TstItem*
 }
 
 
-static int test_app_status_line_rejects_truncation(TstSuite* suite, TstItem* item)
+static int test_app_status_line_rejects_truncation(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     ANN(item);
@@ -128,7 +128,7 @@ static int test_app_status_line_rejects_truncation(TstSuite* suite, TstItem* ite
 }
 
 
-static int test_app_trace_fingerprint_name_is_frame_stable(TstSuite* suite, TstItem* item)
+static int test_app_trace_fingerprint_name_is_frame_stable(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     ANN(item);
@@ -143,7 +143,7 @@ static int test_app_trace_fingerprint_name_is_frame_stable(TstSuite* suite, TstI
 
 
 static int test_app_trace_fingerprint_ignores_frame_handles_and_payloads(
-    TstSuite* suite, TstItem* item)
+    TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     ANN(item);
@@ -173,7 +173,7 @@ static int test_app_trace_fingerprint_ignores_frame_handles_and_payloads(
 }
 
 
-static int test_app_trace_fingerprint_keeps_write_ranges(TstSuite* suite, TstItem* item)
+static int test_app_trace_fingerprint_keeps_write_ranges(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     ANN(item);
@@ -198,7 +198,7 @@ static int test_app_trace_fingerprint_keeps_write_ranges(TstSuite* suite, TstIte
 }
 
 
-static int test_app_trace_fingerprint_keeps_texture_format(TstSuite* suite, TstItem* item)
+static int test_app_trace_fingerprint_keeps_texture_format(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     ANN(item);
@@ -224,7 +224,7 @@ static int test_app_trace_fingerprint_keeps_texture_format(TstSuite* suite, TstI
 
 
 static int test_app_trace_fingerprint_keeps_pipeline_attachment_state(
-    TstSuite* suite, TstItem* item)
+    TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     ANN(item);
@@ -257,7 +257,7 @@ static int test_app_trace_fingerprint_keeps_pipeline_attachment_state(
 
 
 static int test_app_trace_fingerprint_keeps_render_attachment_ops(
-    TstSuite* suite, TstItem* item)
+    TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     ANN(item);
@@ -287,7 +287,7 @@ static int test_app_trace_fingerprint_keeps_render_attachment_ops(
 }
 
 
-static int test_app_trace_fingerprint_keeps_dynamic_offsets(TstSuite* suite, TstItem* item)
+static int test_app_trace_fingerprint_keeps_dynamic_offsets(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     ANN(item);
@@ -314,7 +314,7 @@ static int test_app_trace_fingerprint_keeps_dynamic_offsets(TstSuite* suite, Tst
 }
 
 
-static int test_app_trace_fingerprint_bounds_fixed_labels(TstSuite* suite, TstItem* item)
+static int test_app_trace_fingerprint_bounds_fixed_labels(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     ANN(item);
@@ -339,7 +339,7 @@ static int test_app_trace_fingerprint_bounds_fixed_labels(TstSuite* suite, TstIt
 }
 
 
-static int test_app_trace_fingerprint_ignores_transient_pass_ids(TstSuite* suite, TstItem* item)
+static int test_app_trace_fingerprint_ignores_transient_pass_ids(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     ANN(item);
@@ -372,7 +372,7 @@ static int test_app_trace_fingerprint_ignores_transient_pass_ids(TstSuite* suite
 
 
 
-static int test_app_trace_snapshot_ignores_transient_pass_ids(TstSuite* suite, TstItem* item)
+static int test_app_trace_snapshot_ignores_transient_pass_ids(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     ANN(item);
@@ -423,7 +423,7 @@ static int test_app_trace_snapshot_ignores_transient_pass_ids(TstSuite* suite, T
 
 
 
-static int test_app_trace_snapshot_keeps_draw_payload(TstSuite* suite, TstItem* item)
+static int test_app_trace_snapshot_keeps_draw_payload(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     ANN(item);
@@ -461,7 +461,7 @@ static int test_app_trace_snapshot_keeps_draw_payload(TstSuite* suite, TstItem* 
 
 
 static int test_app_trace_snapshot_normalizes_scoped_edl_resources(
-    TstSuite* suite, TstItem* item)
+    TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     ANN(item);
@@ -525,7 +525,7 @@ static int test_app_trace_snapshot_normalizes_scoped_edl_resources(
 
 
 static int test_app_trace_snapshot_normalizes_scoped_ssao_resources(
-    TstSuite* suite, TstItem* item)
+    TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     ANN(item);
@@ -605,7 +605,7 @@ static int test_app_trace_snapshot_normalizes_scoped_ssao_resources(
 
 
 static int test_app_trace_snapshot_ignores_transient_scoped_creates(
-    TstSuite* suite, TstItem* item)
+    TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     ANN(item);
@@ -656,7 +656,7 @@ static int test_app_trace_snapshot_ignores_transient_scoped_creates(
 
 
 static int test_app_trace_snapshot_keeps_scoped_edl_draw_payload(
-    TstSuite* suite, TstItem* item)
+    TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     ANN(item);
@@ -706,7 +706,7 @@ static int test_app_trace_snapshot_keeps_scoped_edl_draw_payload(
 
 
 
-static int test_app_trace_snapshot_rejects_truncated_suffix(TstSuite* suite, TstItem* item)
+static int test_app_trace_snapshot_rejects_truncated_suffix(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     ANN(item);
@@ -734,7 +734,7 @@ static int test_app_trace_snapshot_rejects_truncated_suffix(TstSuite* suite, Tst
 }
 
 
-static int test_app_trace_snapshot_recovers_after_failed_build(TstSuite* suite, TstItem* item)
+static int test_app_trace_snapshot_recovers_after_failed_build(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     ANN(item);
@@ -777,28 +777,29 @@ int test_app(TstSuite* suite)
 {
     ANN(suite);
     const char* tags = "app";
-    TEST_SIMPLE(test_app_config_defaults);
-    TEST_SIMPLE(test_app_trace_mode_parsing);
-    TEST_SIMPLE(test_app_trace_plan_normal_changed_after_open_line);
-    TEST_SIMPLE(test_app_trace_plan_normal_unchanged_rewrites_in_place);
-    TEST_SIMPLE(test_app_status_line_combines_trace_and_fps);
-    TEST_SIMPLE(test_app_status_line_rejects_truncation);
-    TEST_SIMPLE(test_app_trace_fingerprint_name_is_frame_stable);
-    TEST_SIMPLE(test_app_trace_fingerprint_ignores_frame_handles_and_payloads);
-    TEST_SIMPLE(test_app_trace_fingerprint_keeps_write_ranges);
-    TEST_SIMPLE(test_app_trace_fingerprint_keeps_texture_format);
-    TEST_SIMPLE(test_app_trace_fingerprint_keeps_pipeline_attachment_state);
-    TEST_SIMPLE(test_app_trace_fingerprint_keeps_render_attachment_ops);
-    TEST_SIMPLE(test_app_trace_fingerprint_keeps_dynamic_offsets);
-    TEST_SIMPLE(test_app_trace_fingerprint_bounds_fixed_labels);
-    TEST_SIMPLE(test_app_trace_fingerprint_ignores_transient_pass_ids);
-    TEST_SIMPLE(test_app_trace_snapshot_ignores_transient_pass_ids);
-    TEST_SIMPLE(test_app_trace_snapshot_keeps_draw_payload);
-    TEST_SIMPLE(test_app_trace_snapshot_normalizes_scoped_edl_resources);
-    TEST_SIMPLE(test_app_trace_snapshot_normalizes_scoped_ssao_resources);
-    TEST_SIMPLE(test_app_trace_snapshot_ignores_transient_scoped_creates);
-    TEST_SIMPLE(test_app_trace_snapshot_keeps_scoped_edl_draw_payload);
-    TEST_SIMPLE(test_app_trace_snapshot_rejects_truncated_suffix);
-    TEST_SIMPLE(test_app_trace_snapshot_recovers_after_failed_build);
+    TST_MODULE(suite, tags);
+    TST_CASE(test_app_config_defaults);
+    TST_CASE(test_app_trace_mode_parsing);
+    TST_CASE(test_app_trace_plan_normal_changed_after_open_line);
+    TST_CASE(test_app_trace_plan_normal_unchanged_rewrites_in_place);
+    TST_CASE(test_app_status_line_combines_trace_and_fps);
+    TST_CASE(test_app_status_line_rejects_truncation);
+    TST_CASE(test_app_trace_fingerprint_name_is_frame_stable);
+    TST_CASE(test_app_trace_fingerprint_ignores_frame_handles_and_payloads);
+    TST_CASE(test_app_trace_fingerprint_keeps_write_ranges);
+    TST_CASE(test_app_trace_fingerprint_keeps_texture_format);
+    TST_CASE(test_app_trace_fingerprint_keeps_pipeline_attachment_state);
+    TST_CASE(test_app_trace_fingerprint_keeps_render_attachment_ops);
+    TST_CASE(test_app_trace_fingerprint_keeps_dynamic_offsets);
+    TST_CASE(test_app_trace_fingerprint_bounds_fixed_labels);
+    TST_CASE(test_app_trace_fingerprint_ignores_transient_pass_ids);
+    TST_CASE(test_app_trace_snapshot_ignores_transient_pass_ids);
+    TST_CASE(test_app_trace_snapshot_keeps_draw_payload);
+    TST_CASE(test_app_trace_snapshot_normalizes_scoped_edl_resources);
+    TST_CASE(test_app_trace_snapshot_normalizes_scoped_ssao_resources);
+    TST_CASE(test_app_trace_snapshot_ignores_transient_scoped_creates);
+    TST_CASE(test_app_trace_snapshot_keeps_scoped_edl_draw_payload);
+    TST_CASE(test_app_trace_snapshot_rejects_truncated_suffix);
+    TST_CASE(test_app_trace_snapshot_recovers_after_failed_build);
     return 0;
 }

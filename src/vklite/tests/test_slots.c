@@ -31,7 +31,7 @@
 /*  Slots tests                                                                                  */
 /*************************************************************************************************/
 
-int test_vklite_slots_1(TstSuite* suite, TstItem* tstitem)
+int test_vklite_slots_1(TstContext* suite, const TstCase* tstitem)
 {
     ANN(suite);
     ANN(tstitem);
@@ -81,7 +81,7 @@ int test_vklite_slots_1(TstSuite* suite, TstItem* tstitem)
 
 
 
-int test_vklite_slots_create_failure_unwinds_layouts(TstSuite* suite, TstItem* tstitem)
+int test_vklite_slots_create_failure_unwinds_layouts(TstContext* suite, const TstCase* tstitem)
 {
     ANN(suite);
     ANN(tstitem);

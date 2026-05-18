@@ -5,8 +5,11 @@
  */
 
 /*************************************************************************************************/
-/*  Datoviz scene test runner                                                                    */
+/*  Datoviz testing adapters                                                                     */
 /*************************************************************************************************/
+
+#ifndef DVZ_DATOVIZ_TESTING_HEADER
+#define DVZ_DATOVIZ_TESTING_HEADER
 
 
 
@@ -14,36 +17,20 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include <stddef.h>
-
-#include "_log.h"
-#include "../../src/scene/tests/test_scene.h"
-#include "datoviz_testing.h"
 #include "testing.h"
 
 
 
+EXTERN_C_ON
+
 /*************************************************************************************************/
-/*  Entry-point                                                                                  */
+/*  Functions                                                                                    */
 /*************************************************************************************************/
 
-/**
- * Run scene tests.
- *
- * @param argc command-line argument count
- * @param argv command-line arguments
- * @return process exit code
- */
-int main(int argc, char** argv)
-{
-    log_set_level_env();
+void dvz_testing_install_log_adapter(TstSuite* suite);
 
-    TstSuite suite = tst_suite();
-    dvz_testing_install_log_adapter(&suite);
 
-    test_scene(&suite);
 
-    int res = tst_suite_run(&suite, argc, argv);
-    tst_suite_destroy(&suite);
-    return res;
-}
+EXTERN_C_OFF
+
+#endif

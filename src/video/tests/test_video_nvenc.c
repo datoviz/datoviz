@@ -408,7 +408,7 @@ static uint64_t vk_render_frame_and_sync(VulkanCtx* vk, const VkClearColorValue*
 /*  NVENC video encode                                                                           */
 /*************************************************************************************************/
 
-int test_video_nvenc(TstSuite* suite, TstItem* tstitem)
+int test_video_nvenc(TstContext* suite, const TstCase* tstitem)
 {
     ANN(suite);
     ANN(tstitem);

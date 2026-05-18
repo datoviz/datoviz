@@ -43,6 +43,7 @@
 #endif
 #include "../src/vk/tests/test_vk.h"
 #include "../src/vklite/tests/test_vklite.h"
+#include "datoviz_testing.h"
 #include "testing.h"
 
 
@@ -56,6 +57,7 @@ int main(int argc, char** argv)
     log_set_level_env();
 
     TstSuite suite = tst_suite();
+    dvz_testing_install_log_adapter(&suite);
 
 #if defined(DVZ_HAS_APP) && DVZ_HAS_APP
     test_app(&suite);
@@ -84,7 +86,7 @@ int main(int argc, char** argv)
     test_vk(&suite);
     test_vklite(&suite);
 
-    tst_suite_run(&suite, argc >= 2 ? argv[1] : NULL);
+    int res = tst_suite_run(&suite, argc, argv);
     tst_suite_destroy(&suite);
-    return 0;
+    return res;
 }

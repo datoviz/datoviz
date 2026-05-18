@@ -23,7 +23,7 @@
  * @param tstitem test item pointer
  * @return 0 on success
  */
-int test_video_offline_headless_encode(TstSuite* suite, TstItem* tstitem)
+int test_video_offline_headless_encode(TstContext* suite, const TstCase* tstitem)
 {
     ANN(suite);
     ANN(tstitem);

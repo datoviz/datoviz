@@ -31,7 +31,7 @@
 /**
  * Ensure wrap windows can be created and selected explicitly.
  */
-int test_window_wrap_create(TstSuite* suite, TstItem* item)
+int test_window_wrap_create(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -49,7 +49,7 @@ int test_window_wrap_create(TstSuite* suite, TstItem* item)
 /**
  * Verify wrap external-surface attach, update, and detach APIs.
  */
-int test_window_wrap_attach_detach(TstSuite* suite, TstItem* item)
+int test_window_wrap_attach_detach(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -92,7 +92,7 @@ int test_window_wrap_attach_detach(TstSuite* suite, TstItem* item)
 /**
  * Verify wrap backend extension list roundtrips through host query APIs.
  */
-int test_window_required_extensions_wrap(TstSuite* suite, TstItem* item)
+int test_window_required_extensions_wrap(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -114,7 +114,7 @@ int test_window_required_extensions_wrap(TstSuite* suite, TstItem* item)
 /**
  * Verify wrap API rejects invalid arguments and invalid handle tuples.
  */
-int test_window_wrap_invalid_args(TstSuite* suite, TstItem* item)
+int test_window_wrap_invalid_args(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -154,7 +154,7 @@ int test_window_wrap_invalid_args(TstSuite* suite, TstItem* item)
 /**
  * Verify extension query APIs reject invalid input and unavailable backends.
  */
-int test_window_required_extensions_invalid_args(TstSuite* suite, TstItem* item)
+int test_window_required_extensions_invalid_args(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -179,7 +179,7 @@ int test_window_required_extensions_invalid_args(TstSuite* suite, TstItem* item)
 /**
  * Verify wrap update can replace an existing external surface and apply new metadata.
  */
-int test_window_wrap_replace_surface(TstSuite* suite, TstItem* item)
+int test_window_wrap_replace_surface(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -217,7 +217,7 @@ int test_window_wrap_replace_surface(TstSuite* suite, TstItem* item)
 /**
  * Verify owned-by-dataviz lifecycle is safe when the wrap surface transitions to null handles.
  */
-int test_window_wrap_owned_surface_null_lifecycle(TstSuite* suite, TstItem* item)
+int test_window_wrap_owned_surface_null_lifecycle(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;

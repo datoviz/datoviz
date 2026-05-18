@@ -32,7 +32,7 @@
 /*  Tests                                                                                        */
 /*************************************************************************************************/
 
-int test_scene_interaction_core(TstSuite* suite, TstItem* item)
+int test_scene_interaction_core(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     ANN(item);
@@ -67,7 +67,7 @@ int test_scene_interaction_core(TstSuite* suite, TstItem* item)
 }
 
 
-int test_scene_selection_apply_pick_and_link_keys(TstSuite* suite, TstItem* item)
+int test_scene_selection_apply_pick_and_link_keys(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     ANN(item);
@@ -117,7 +117,7 @@ int test_scene_selection_apply_pick_and_link_keys(TstSuite* suite, TstItem* item
 }
 
 
-int test_scene_text_annotation_bookkeeping(TstSuite* suite, TstItem* item)
+int test_scene_text_annotation_bookkeeping(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     ANN(item);
@@ -212,7 +212,7 @@ int test_scene_text_annotation_bookkeeping(TstSuite* suite, TstItem* item)
 }
 
 
-int test_scene_text_bitmap_visual_realization(TstSuite* suite, TstItem* item)
+int test_scene_text_bitmap_visual_realization(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     ANN(item);
@@ -381,7 +381,7 @@ int test_scene_text_bitmap_visual_realization(TstSuite* suite, TstItem* item)
  * @param item the active test item
  * @return 0 on success
  */
-int test_scene_text_many_labels_render_plan(TstSuite* suite, TstItem* item)
+int test_scene_text_many_labels_render_plan(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     ANN(item);
@@ -460,11 +460,14 @@ int test_scene_interaction(TstSuite* suite)
     ANN(suite);
     const char* tags = "scene";
 
-    TEST_SIMPLE(test_scene_interaction_core);
-    TEST_SIMPLE(test_scene_selection_apply_pick_and_link_keys);
-    TEST_SIMPLE(test_scene_text_annotation_bookkeeping);
-    TEST_SIMPLE(test_scene_text_bitmap_visual_realization);
-    TEST_SIMPLE(test_scene_text_many_labels_render_plan);
+    TST_MODULE(suite, "scene");
+    TST_GROUP("interaction");
+
+    TST_CASE(test_scene_interaction_core);
+    TST_CASE(test_scene_selection_apply_pick_and_link_keys);
+    TST_CASE(test_scene_text_annotation_bookkeeping);
+    TST_CASE(test_scene_text_bitmap_visual_realization);
+    TST_CASE(test_scene_text_many_labels_render_plan);
 
     return 0;
 }

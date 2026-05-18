@@ -24,9 +24,9 @@
 /*  Tests                                                                                        */
 /*************************************************************************************************/
 
-int test_png_1(TstSuite* suite, TstItem* tstitem);
+int test_png_1(TstContext* suite, const TstCase* tstitem);
 
-int test_parse_npy(TstSuite* suite, TstItem* tstitem);
+int test_parse_npy(TstContext* suite, const TstCase* tstitem);
 
 
 

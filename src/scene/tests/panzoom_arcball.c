@@ -31,7 +31,7 @@
 /*  Tests                                                                                        */
 /*************************************************************************************************/
 
-int test_panzoom_create_reset(TstSuite* suite, TstItem* item)
+int test_panzoom_create_reset(TstContext* suite, const TstCase* item)
 {
     (void)suite;
     (void)item;
@@ -58,7 +58,7 @@ int test_panzoom_create_reset(TstSuite* suite, TstItem* item)
 }
 
 
-int test_panzoom_pan_shift(TstSuite* suite, TstItem* item)
+int test_panzoom_pan_shift(TstContext* suite, const TstCase* item)
 {
     (void)suite;
     (void)item;
@@ -76,7 +76,7 @@ int test_panzoom_pan_shift(TstSuite* suite, TstItem* item)
 }
 
 
-int test_panzoom_zoom_wheel(TstSuite* suite, TstItem* item)
+int test_panzoom_zoom_wheel(TstContext* suite, const TstCase* item)
 {
     (void)suite;
     (void)item;
@@ -99,7 +99,7 @@ int test_panzoom_zoom_wheel(TstSuite* suite, TstItem* item)
 }
 
 
-int test_panzoom_zoom_limits(TstSuite* suite, TstItem* item)
+int test_panzoom_zoom_limits(TstContext* suite, const TstCase* item)
 {
     (void)suite;
     (void)item;
@@ -126,7 +126,7 @@ int test_panzoom_zoom_limits(TstSuite* suite, TstItem* item)
 }
 
 
-int test_panzoom_viewport_filters_pointer_events(TstSuite* suite, TstItem* item)
+int test_panzoom_viewport_filters_pointer_events(TstContext* suite, const TstCase* item)
 {
     (void)suite;
     (void)item;
@@ -168,7 +168,7 @@ int test_panzoom_viewport_filters_pointer_events(TstSuite* suite, TstItem* item)
 }
 
 
-int test_panzoom_double_click_resets(TstSuite* suite, TstItem* item)
+int test_panzoom_double_click_resets(TstContext* suite, const TstCase* item)
 {
     (void)suite;
     (void)item;
@@ -188,7 +188,7 @@ int test_panzoom_double_click_resets(TstSuite* suite, TstItem* item)
 }
 
 
-int test_panzoom_mvp_identity(TstSuite* suite, TstItem* item)
+int test_panzoom_mvp_identity(TstContext* suite, const TstCase* item)
 {
     (void)suite;
     (void)item;
@@ -213,7 +213,7 @@ int test_panzoom_mvp_identity(TstSuite* suite, TstItem* item)
 }
 
 
-int test_panel_panzoom_getter(TstSuite* suite, TstItem* item)
+int test_panel_panzoom_getter(TstContext* suite, const TstCase* item)
 {
     (void)suite;
     (void)item;
@@ -243,7 +243,7 @@ int test_panel_panzoom_getter(TstSuite* suite, TstItem* item)
  * @param item the test item
  * @return 0 on success
  */
-int test_scene_camera_arcball_mvp_composition(TstSuite* suite, TstItem* item)
+int test_scene_camera_arcball_mvp_composition(TstContext* suite, const TstCase* item)
 {
     (void)suite;
     (void)item;
@@ -286,7 +286,7 @@ int test_scene_camera_arcball_mvp_composition(TstSuite* suite, TstItem* item)
 }
 
 
-int test_arcball_create_reset(TstSuite* suite, TstItem* item)
+int test_arcball_create_reset(TstContext* suite, const TstCase* item)
 {
     (void)suite;
     (void)item;
@@ -305,7 +305,7 @@ int test_arcball_create_reset(TstSuite* suite, TstItem* item)
 }
 
 
-int test_arcball_rotate_produces_nonidentity_model(TstSuite* suite, TstItem* item)
+int test_arcball_rotate_produces_nonidentity_model(TstContext* suite, const TstCase* item)
 {
     (void)suite;
     (void)item;
@@ -325,7 +325,7 @@ int test_arcball_rotate_produces_nonidentity_model(TstSuite* suite, TstItem* ite
 }
 
 
-int test_arcball_end_commits_rotation(TstSuite* suite, TstItem* item)
+int test_arcball_end_commits_rotation(TstContext* suite, const TstCase* item)
 {
     (void)suite;
     (void)item;
@@ -353,7 +353,7 @@ int test_arcball_end_commits_rotation(TstSuite* suite, TstItem* item)
 }
 
 
-int test_arcball_rotate_axis_is_incremental(TstSuite* suite, TstItem* item)
+int test_arcball_rotate_axis_is_incremental(TstContext* suite, const TstCase* item)
 {
     (void)suite;
     (void)item;
@@ -393,7 +393,7 @@ int test_arcball_rotate_axis_is_incremental(TstSuite* suite, TstItem* item)
  * @param item test item
  * @return test status
  */
-int test_arcball_zoom_wheel(TstSuite* suite, TstItem* item)
+int test_arcball_zoom_wheel(TstContext* suite, const TstCase* item)
 {
     (void)suite;
     (void)item;
@@ -440,7 +440,7 @@ int test_arcball_zoom_wheel(TstSuite* suite, TstItem* item)
  * @param item test item
  * @return test status
  */
-int test_arcball_pan_right_drag(TstSuite* suite, TstItem* item)
+int test_arcball_pan_right_drag(TstContext* suite, const TstCase* item)
 {
     (void)suite;
     (void)item;
@@ -493,7 +493,7 @@ int test_arcball_pan_right_drag(TstSuite* suite, TstItem* item)
 }
 
 
-int test_arcball_interaction_state(TstSuite* suite, TstItem* item)
+int test_arcball_interaction_state(TstContext* suite, const TstCase* item)
 {
     (void)suite;
     (void)item;
@@ -536,7 +536,7 @@ int test_arcball_interaction_state(TstSuite* suite, TstItem* item)
 
 /*************************************************************************************************/
 /*  Camera tests                                                                                 */
-int test_arcball_double_click_resets(TstSuite* suite, TstItem* item)
+int test_arcball_double_click_resets(TstContext* suite, const TstCase* item)
 {
     (void)suite;
     (void)item;
@@ -573,24 +573,27 @@ int test_scene_panzoom_arcball(TstSuite* suite)
     ANN(suite);
     const char* tags = "scene";
 
-    TEST_SIMPLE(test_panzoom_create_reset);
-    TEST_SIMPLE(test_panzoom_pan_shift);
-    TEST_SIMPLE(test_panzoom_zoom_wheel);
-    TEST_SIMPLE(test_panzoom_zoom_limits);
-    TEST_SIMPLE(test_panzoom_viewport_filters_pointer_events);
-    TEST_SIMPLE(test_panzoom_double_click_resets);
-    TEST_SIMPLE(test_panzoom_mvp_identity);
-    TEST_SIMPLE(test_panel_panzoom_getter);
+    TST_MODULE(suite, "scene");
+    TST_GROUP("panzoom-arcball");
 
-    TEST_SIMPLE(test_arcball_create_reset);
-    TEST_SIMPLE(test_arcball_rotate_produces_nonidentity_model);
-    TEST_SIMPLE(test_arcball_end_commits_rotation);
-    TEST_SIMPLE(test_arcball_rotate_axis_is_incremental);
-    TEST_SIMPLE(test_arcball_zoom_wheel);
-    TEST_SIMPLE(test_arcball_pan_right_drag);
-    TEST_SIMPLE(test_arcball_interaction_state);
-    TEST_SIMPLE(test_arcball_double_click_resets);
+    TST_CASE(test_panzoom_create_reset);
+    TST_CASE(test_panzoom_pan_shift);
+    TST_CASE(test_panzoom_zoom_wheel);
+    TST_CASE(test_panzoom_zoom_limits);
+    TST_CASE(test_panzoom_viewport_filters_pointer_events);
+    TST_CASE(test_panzoom_double_click_resets);
+    TST_CASE(test_panzoom_mvp_identity);
+    TST_CASE(test_panel_panzoom_getter);
 
-    TEST_SIMPLE(test_scene_camera_arcball_mvp_composition);
+    TST_CASE(test_arcball_create_reset);
+    TST_CASE(test_arcball_rotate_produces_nonidentity_model);
+    TST_CASE(test_arcball_end_commits_rotation);
+    TST_CASE(test_arcball_rotate_axis_is_incremental);
+    TST_CASE(test_arcball_zoom_wheel);
+    TST_CASE(test_arcball_pan_right_drag);
+    TST_CASE(test_arcball_interaction_state);
+    TST_CASE(test_arcball_double_click_resets);
+
+    TST_CASE(test_scene_camera_arcball_mvp_composition);
     return 0;
 }

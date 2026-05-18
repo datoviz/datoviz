@@ -149,7 +149,7 @@ static void _stream_mock_destroy(DvzStreamSink* sink)
  * @param needle message fragment to search for
  * @return true when at least one captured log contains the fragment
  */
-static bool _stream_log_contains(TstSuite* suite, const char* needle)
+static bool _stream_log_contains(TstContext* suite, const char* needle)
 {
     ANN(suite);
     ANN(needle);
@@ -171,7 +171,7 @@ static bool _stream_log_contains(TstSuite* suite, const char* needle)
 /*  Tests                                                                                        */
 /*************************************************************************************************/
 
-int test_stream_attach_video(TstSuite* suite, TstItem* item)
+int test_stream_attach_video(TstContext* suite, const TstCase* item)
 {
     (void)item;
     ANN(suite);
@@ -194,7 +194,7 @@ int test_stream_attach_video(TstSuite* suite, TstItem* item)
 
 
 
-int test_stream_start_rollback_on_sink_failure(TstSuite* suite, TstItem* item)
+int test_stream_start_rollback_on_sink_failure(TstContext* suite, const TstCase* item)
 {
     (void)item;
     ANN(suite);
@@ -268,7 +268,7 @@ int test_stream_start_rollback_on_sink_failure(TstSuite* suite, TstItem* item)
 
 
 
-int test_stream_submit_returns_first_error(TstSuite* suite, TstItem* item)
+int test_stream_submit_returns_first_error(TstContext* suite, const TstCase* item)
 {
     (void)item;
     ANN(suite);
@@ -340,7 +340,7 @@ int test_stream_submit_returns_first_error(TstSuite* suite, TstItem* item)
 
 
 
-int test_stream_update_restart_failure_stops_stream(TstSuite* suite, TstItem* item)
+int test_stream_update_restart_failure_stops_stream(TstContext* suite, const TstCase* item)
 {
     (void)item;
     ANN(suite);
@@ -417,7 +417,7 @@ int test_stream_update_restart_failure_stops_stream(TstSuite* suite, TstItem* it
 
 
 
-int test_stream_attach_sink_name_prefers_requested_then_auto(TstSuite* suite, TstItem* item)
+int test_stream_attach_sink_name_prefers_requested_then_auto(TstContext* suite, const TstCase* item)
 {
     (void)item;
     ANN(suite);
@@ -483,10 +483,11 @@ int test_stream(TstSuite* suite)
 {
     ANN(suite);
     const char* tags = "stream";
-    TEST_SIMPLE(test_stream_attach_video);
-    TEST_SIMPLE(test_stream_start_rollback_on_sink_failure);
-    TEST_SIMPLE(test_stream_submit_returns_first_error);
-    TEST_SIMPLE(test_stream_update_restart_failure_stops_stream);
-    TEST_SIMPLE(test_stream_attach_sink_name_prefers_requested_then_auto);
+    TST_MODULE(suite, tags);
+    TST_CASE(test_stream_attach_video);
+    TST_CASE(test_stream_start_rollback_on_sink_failure);
+    TST_CASE(test_stream_submit_returns_first_error);
+    TST_CASE(test_stream_update_restart_failure_stops_stream);
+    TST_CASE(test_stream_attach_sink_name_prefers_requested_then_auto);
     return 0;
 }

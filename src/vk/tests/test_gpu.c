@@ -32,7 +32,7 @@
 /*  GPU tests                                                                                    */
 /*************************************************************************************************/
 
-int test_gpu_props(TstSuite* suite, TstItem* tstitem)
+int test_gpu_props(TstContext* suite, const TstCase* tstitem)
 {
     ANN(suite);
     ANN(tstitem);
@@ -75,7 +75,7 @@ int test_gpu_props(TstSuite* suite, TstItem* tstitem)
 
 
 
-int test_gpu_memprops(TstSuite* suite, TstItem* tstitem)
+int test_gpu_memprops(TstContext* suite, const TstCase* tstitem)
 {
     ANN(suite);
     ANN(tstitem);
@@ -129,7 +129,7 @@ int test_gpu_memprops(TstSuite* suite, TstItem* tstitem)
 
 
 
-int test_gpu_features(TstSuite* suite, TstItem* tstitem)
+int test_gpu_features(TstContext* suite, const TstCase* tstitem)
 {
     ANN(suite);
     ANN(tstitem);
@@ -164,7 +164,7 @@ int test_gpu_features(TstSuite* suite, TstItem* tstitem)
 
 
 
-int test_gpu_extensions(TstSuite* suite, TstItem* tstitem)
+int test_gpu_extensions(TstContext* suite, const TstCase* tstitem)
 {
     ANN(suite);
     ANN(tstitem);

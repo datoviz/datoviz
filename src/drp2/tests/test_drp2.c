@@ -56,7 +56,7 @@ bool _dvz_drp2_runtime_vklite_download_buffer(
 /*  Helpers                                                                                      */
 /*************************************************************************************************/
 
-static bool _captured_log_contains(const TstSuite* suite, const char* needle)
+static bool _captured_log_contains(const TstContext* suite, const char* needle)
 {
     ANN(suite);
     ANN(needle);
@@ -349,7 +349,7 @@ static DvzStreamFrame _test_stream_frame(uintptr_t seed, uint32_t width, uint32_
 /*************************************************************************************************/
 
 
-int test_drp2_stream_empty(TstSuite* suite, TstItem* item)
+int test_drp2_stream_empty(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -368,7 +368,7 @@ int test_drp2_stream_empty(TstSuite* suite, TstItem* item)
 
 
 
-int test_drp2_stream_append(TstSuite* suite, TstItem* item)
+int test_drp2_stream_append(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -397,7 +397,7 @@ int test_drp2_stream_append(TstSuite* suite, TstItem* item)
 
 
 
-int test_drp2_stream_debug_labels(TstSuite* suite, TstItem* item)
+int test_drp2_stream_debug_labels(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -419,7 +419,7 @@ int test_drp2_stream_debug_labels(TstSuite* suite, TstItem* item)
 
 
 
-int test_drp2_stream_json(TstSuite* suite, TstItem* item)
+int test_drp2_stream_json(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -450,7 +450,7 @@ int test_drp2_stream_json(TstSuite* suite, TstItem* item)
 
 
 
-int test_drp2_stream_growth_json(TstSuite* suite, TstItem* item)
+int test_drp2_stream_growth_json(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -478,7 +478,7 @@ int test_drp2_stream_growth_json(TstSuite* suite, TstItem* item)
 
 
 
-int test_drp2_runtime_validate_render_stream(TstSuite* suite, TstItem* item)
+int test_drp2_runtime_validate_render_stream(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -497,7 +497,7 @@ int test_drp2_runtime_validate_render_stream(TstSuite* suite, TstItem* item)
 
 
 int test_drp2_runtime_validate_render_state_inherited_across_passes(
-    TstSuite* suite, TstItem* item)
+    TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -545,7 +545,7 @@ int test_drp2_runtime_validate_render_state_inherited_across_passes(
 
 
 
-int test_drp2_runtime_validate_dynamic_viewport_scissor(TstSuite* suite, TstItem* item)
+int test_drp2_runtime_validate_dynamic_viewport_scissor(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -574,7 +574,7 @@ int test_drp2_runtime_validate_dynamic_viewport_scissor(TstSuite* suite, TstItem
 
 
 
-int test_drp2_runtime_rejects_duplicate_id(TstSuite* suite, TstItem* item)
+int test_drp2_runtime_rejects_duplicate_id(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -598,7 +598,7 @@ int test_drp2_runtime_rejects_duplicate_id(TstSuite* suite, TstItem* item)
 
 
 
-int test_drp2_runtime_failed_stream_does_not_commit_state(TstSuite* suite, TstItem* item)
+int test_drp2_runtime_failed_stream_does_not_commit_state(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -642,7 +642,7 @@ int test_drp2_runtime_failed_stream_does_not_commit_state(TstSuite* suite, TstIt
 
 
 
-int test_drp2_runtime_rejects_unknown_buffer_write(TstSuite* suite, TstItem* item)
+int test_drp2_runtime_rejects_unknown_buffer_write(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -665,7 +665,7 @@ int test_drp2_runtime_rejects_unknown_buffer_write(TstSuite* suite, TstItem* ite
 
 
 
-int test_drp2_runtime_rejects_draw_without_vertex_buffer(TstSuite* suite, TstItem* item)
+int test_drp2_runtime_rejects_draw_without_vertex_buffer(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -695,7 +695,7 @@ int test_drp2_runtime_rejects_draw_without_vertex_buffer(TstSuite* suite, TstIte
 
 
 
-int test_drp2_runtime_rejects_finish_with_open_pass(TstSuite* suite, TstItem* item)
+int test_drp2_runtime_rejects_finish_with_open_pass(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -721,7 +721,7 @@ int test_drp2_runtime_rejects_finish_with_open_pass(TstSuite* suite, TstItem* it
 
 
 
-int test_drp2_runtime_rejects_bad_readback_buffer(TstSuite* suite, TstItem* item)
+int test_drp2_runtime_rejects_bad_readback_buffer(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -747,7 +747,7 @@ int test_drp2_runtime_rejects_bad_readback_buffer(TstSuite* suite, TstItem* item
 
 
 
-int test_drp2_runtime_validate_compute_stream(TstSuite* suite, TstItem* item)
+int test_drp2_runtime_validate_compute_stream(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -773,7 +773,7 @@ int test_drp2_runtime_validate_compute_stream(TstSuite* suite, TstItem* item)
 
 
 
-int test_drp2_runtime_rejects_dispatch_without_pipeline(TstSuite* suite, TstItem* item)
+int test_drp2_runtime_rejects_dispatch_without_pipeline(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -800,7 +800,7 @@ int test_drp2_runtime_rejects_dispatch_without_pipeline(TstSuite* suite, TstItem
 
 
 
-int test_drp2_runtime_rejects_dispatch_outside_compute_pass(TstSuite* suite, TstItem* item)
+int test_drp2_runtime_rejects_dispatch_outside_compute_pass(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -826,7 +826,7 @@ int test_drp2_runtime_rejects_dispatch_outside_compute_pass(TstSuite* suite, Tst
 
 
 
-int test_drp2_runtime_rejects_wrong_pipeline_type(TstSuite* suite, TstItem* item)
+int test_drp2_runtime_rejects_wrong_pipeline_type(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -854,7 +854,7 @@ int test_drp2_runtime_rejects_wrong_pipeline_type(TstSuite* suite, TstItem* item
 
 
 
-int test_drp2_runtime_rejects_finish_with_open_compute_pass(TstSuite* suite, TstItem* item)
+int test_drp2_runtime_rejects_finish_with_open_compute_pass(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -879,7 +879,7 @@ int test_drp2_runtime_rejects_finish_with_open_compute_pass(TstSuite* suite, Tst
 
 
 
-int test_drp2_runtime_validate_indexed_render_stream(TstSuite* suite, TstItem* item)
+int test_drp2_runtime_validate_indexed_render_stream(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -905,7 +905,7 @@ int test_drp2_runtime_validate_indexed_render_stream(TstSuite* suite, TstItem* i
 
 
 int test_drp2_runtime_rejects_draw_indexed_without_index_buffer(
-    TstSuite* suite, TstItem* item)
+    TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -937,7 +937,7 @@ int test_drp2_runtime_rejects_draw_indexed_without_index_buffer(
 
 
 
-int test_drp2_runtime_rejects_wrong_index_buffer_usage(TstSuite* suite, TstItem* item)
+int test_drp2_runtime_rejects_wrong_index_buffer_usage(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -975,7 +975,7 @@ int test_drp2_runtime_rejects_wrong_index_buffer_usage(TstSuite* suite, TstItem*
 
 
 
-int test_drp2_runtime_validate_write_texture(TstSuite* suite, TstItem* item)
+int test_drp2_runtime_validate_write_texture(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -1004,7 +1004,7 @@ int test_drp2_runtime_validate_write_texture(TstSuite* suite, TstItem* item)
 
 
 
-int test_drp2_runtime_validate_write_texture_3d_formats(TstSuite* suite, TstItem* item)
+int test_drp2_runtime_validate_write_texture_3d_formats(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -1048,7 +1048,7 @@ int test_drp2_runtime_validate_write_texture_3d_formats(TstSuite* suite, TstItem
 
 
 int test_drp2_runtime_rejects_write_texture_format_row_layout(
-    TstSuite* suite, TstItem* item)
+    TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -1076,7 +1076,7 @@ int test_drp2_runtime_rejects_write_texture_format_row_layout(
 
 
 
-int test_drp2_runtime_validate_copy_buffer_to_texture(TstSuite* suite, TstItem* item)
+int test_drp2_runtime_validate_copy_buffer_to_texture(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -1107,7 +1107,7 @@ int test_drp2_runtime_validate_copy_buffer_to_texture(TstSuite* suite, TstItem* 
 
 
 
-int test_drp2_runtime_validate_copy_texture_to_texture(TstSuite* suite, TstItem* item)
+int test_drp2_runtime_validate_copy_texture_to_texture(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -1141,7 +1141,7 @@ int test_drp2_runtime_validate_copy_texture_to_texture(TstSuite* suite, TstItem*
 
 
 
-int test_drp2_runtime_validate_texture_sampler_bind_group(TstSuite* suite, TstItem* item)
+int test_drp2_runtime_validate_texture_sampler_bind_group(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -1206,7 +1206,7 @@ int test_drp2_runtime_validate_texture_sampler_bind_group(TstSuite* suite, TstIt
  * @param item the test item.
  * @return 0 on success.
  */
-int test_drp2_runtime_vklite_samples_3d_texture(TstSuite* suite, TstItem* item)
+int test_drp2_runtime_vklite_samples_3d_texture(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -1298,7 +1298,7 @@ int test_drp2_runtime_vklite_samples_3d_texture(TstSuite* suite, TstItem* item)
 
 
 
-int test_drp2_runtime_validate_generic_bind_group_slots(TstSuite* suite, TstItem* item)
+int test_drp2_runtime_validate_generic_bind_group_slots(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -1375,7 +1375,7 @@ int test_drp2_runtime_validate_generic_bind_group_slots(TstSuite* suite, TstItem
 
 
 
-int test_drp2_runtime_rejects_bind_group_entry_mismatch(TstSuite* suite, TstItem* item)
+int test_drp2_runtime_rejects_bind_group_entry_mismatch(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -1413,7 +1413,7 @@ int test_drp2_runtime_rejects_bind_group_entry_mismatch(TstSuite* suite, TstItem
 
 
 
-int test_drp2_runtime_validate_bind_group_dynamic_offsets(TstSuite* suite, TstItem* item)
+int test_drp2_runtime_validate_bind_group_dynamic_offsets(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -1497,7 +1497,7 @@ int test_drp2_runtime_validate_bind_group_dynamic_offsets(TstSuite* suite, TstIt
 
 
 
-int test_drp2_runtime_validate_bind_group_after_table_growth(TstSuite* suite, TstItem* item)
+int test_drp2_runtime_validate_bind_group_after_table_growth(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -1534,7 +1534,7 @@ int test_drp2_runtime_validate_bind_group_after_table_growth(TstSuite* suite, Ts
  * @param item test item
  * @return 0 on success
  */
-int test_drp2_runtime_validate_recreate_bind_group_resources(TstSuite* suite, TstItem* item)
+int test_drp2_runtime_validate_recreate_bind_group_resources(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -1636,7 +1636,7 @@ int test_drp2_runtime_validate_recreate_bind_group_resources(TstSuite* suite, Ts
 
 
 
-int test_drp2_runtime_reuses_submitted_transient_ids(TstSuite* suite, TstItem* item)
+int test_drp2_runtime_reuses_submitted_transient_ids(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -1707,7 +1707,7 @@ int test_drp2_runtime_reuses_submitted_transient_ids(TstSuite* suite, TstItem* i
 }
 
 
-int test_drp2_runtime_registers_external_buffer_semantic(TstSuite* suite, TstItem* item)
+int test_drp2_runtime_registers_external_buffer_semantic(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -1761,7 +1761,7 @@ int test_drp2_runtime_registers_external_buffer_semantic(TstSuite* suite, TstIte
 
 
 
-int test_drp2_runtime_validate_compute_storage_bind_group(TstSuite* suite, TstItem* item)
+int test_drp2_runtime_validate_compute_storage_bind_group(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -1808,7 +1808,7 @@ int test_drp2_runtime_validate_compute_storage_bind_group(TstSuite* suite, TstIt
 
 
 
-int test_drp2_runtime_validate_destroy_unused_bind_group(TstSuite* suite, TstItem* item)
+int test_drp2_runtime_validate_destroy_unused_bind_group(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -1842,7 +1842,7 @@ int test_drp2_runtime_validate_destroy_unused_bind_group(TstSuite* suite, TstIte
 
 
 int test_drp2_runtime_rejects_destroy_bind_group_layout_used_by_live_group(
-    TstSuite* suite, TstItem* item)
+    TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -1871,7 +1871,7 @@ int test_drp2_runtime_rejects_destroy_bind_group_layout_used_by_live_group(
 
 
 int test_drp2_runtime_rejects_destroy_bind_group_layout_used_by_pipeline(
-    TstSuite* suite, TstItem* item)
+    TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -1900,7 +1900,7 @@ int test_drp2_runtime_rejects_destroy_bind_group_layout_used_by_pipeline(
 
 
 int test_drp2_runtime_rejects_destroy_bind_group_referenced_by_work(
-    TstSuite* suite, TstItem* item)
+    TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -1942,7 +1942,7 @@ int test_drp2_runtime_rejects_destroy_bind_group_referenced_by_work(
 
 
 int test_drp2_runtime_rejects_compute_dispatch_without_bind_group(
-    TstSuite* suite, TstItem* item)
+    TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -1971,7 +1971,7 @@ int test_drp2_runtime_rejects_compute_dispatch_without_bind_group(
 
 
 
-int test_drp2_runtime_rejects_write_texture_out_of_range(TstSuite* suite, TstItem* item)
+int test_drp2_runtime_rejects_write_texture_out_of_range(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -1996,7 +1996,7 @@ int test_drp2_runtime_rejects_write_texture_out_of_range(TstSuite* suite, TstIte
 
 
 int test_drp2_runtime_rejects_write_texture_layout_size_overflow(
-    TstSuite* suite, TstItem* item)
+    TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -2021,7 +2021,7 @@ int test_drp2_runtime_rejects_write_texture_layout_size_overflow(
 
 
 
-int test_drp2_runtime_rejects_copy_buffer_to_texture_usage(TstSuite* suite, TstItem* item)
+int test_drp2_runtime_rejects_copy_buffer_to_texture_usage(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -2049,7 +2049,7 @@ int test_drp2_runtime_rejects_copy_buffer_to_texture_usage(TstSuite* suite, TstI
 
 
 int test_drp2_runtime_rejects_copy_texture_to_texture_inside_pass(
-    TstSuite* suite, TstItem* item)
+    TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -2078,7 +2078,7 @@ int test_drp2_runtime_rejects_copy_texture_to_texture_inside_pass(
 
 
 
-int test_drp2_runtime_validate_destroy_unused_buffer(TstSuite* suite, TstItem* item)
+int test_drp2_runtime_validate_destroy_unused_buffer(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -2106,7 +2106,7 @@ int test_drp2_runtime_validate_destroy_unused_buffer(TstSuite* suite, TstItem* i
 
 
 
-int test_drp2_runtime_rejects_use_after_destroy(TstSuite* suite, TstItem* item)
+int test_drp2_runtime_rejects_use_after_destroy(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -2131,7 +2131,7 @@ int test_drp2_runtime_rejects_use_after_destroy(TstSuite* suite, TstItem* item)
 
 
 
-int test_drp2_runtime_rejects_destroy_buffer_referenced_by_work(TstSuite* suite, TstItem* item)
+int test_drp2_runtime_rejects_destroy_buffer_referenced_by_work(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -2159,7 +2159,7 @@ int test_drp2_runtime_rejects_destroy_buffer_referenced_by_work(TstSuite* suite,
 
 
 
-int test_drp2_runtime_rejects_destroy_texture_referenced_by_work(TstSuite* suite, TstItem* item)
+int test_drp2_runtime_rejects_destroy_texture_referenced_by_work(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -2188,7 +2188,7 @@ int test_drp2_runtime_rejects_destroy_texture_referenced_by_work(TstSuite* suite
 
 
 
-int test_drp2_runtime_rejects_destroy_submitted_render_pipeline(TstSuite* suite, TstItem* item)
+int test_drp2_runtime_rejects_destroy_submitted_render_pipeline(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -2208,7 +2208,7 @@ int test_drp2_runtime_rejects_destroy_submitted_render_pipeline(TstSuite* suite,
 
 
 
-int test_drp2_runtime_rejects_destroy_live_shader_module(TstSuite* suite, TstItem* item)
+int test_drp2_runtime_rejects_destroy_live_shader_module(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -2234,7 +2234,7 @@ int test_drp2_runtime_rejects_destroy_live_shader_module(TstSuite* suite, TstIte
 
 
 
-int test_drp2_runtime_vklite_skeleton_create_destroy(TstSuite* suite, TstItem* item)
+int test_drp2_runtime_vklite_skeleton_create_destroy(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -2254,7 +2254,7 @@ int test_drp2_runtime_vklite_skeleton_create_destroy(TstSuite* suite, TstItem* i
 
 
 
-int test_drp2_runtime_vklite_skeleton_execute_valid_stream(TstSuite* suite, TstItem* item)
+int test_drp2_runtime_vklite_skeleton_execute_valid_stream(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -2277,7 +2277,7 @@ int test_drp2_runtime_vklite_skeleton_execute_valid_stream(TstSuite* suite, TstI
 
 
 
-int test_drp2_runtime_vklite_skeleton_execute_invalid_stream(TstSuite* suite, TstItem* item)
+int test_drp2_runtime_vklite_skeleton_execute_invalid_stream(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -2305,7 +2305,7 @@ int test_drp2_runtime_vklite_skeleton_execute_invalid_stream(TstSuite* suite, Ts
 
 
 
-int test_drp2_runtime_vklite_skeleton_rejects_null_runtime(TstSuite* suite, TstItem* item)
+int test_drp2_runtime_vklite_skeleton_rejects_null_runtime(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -2322,7 +2322,7 @@ int test_drp2_runtime_vklite_skeleton_rejects_null_runtime(TstSuite* suite, TstI
 }
 
 
-int test_drp2_runtime_frame_target_validation(TstSuite* suite, TstItem* item)
+int test_drp2_runtime_frame_target_validation(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -2412,7 +2412,7 @@ int test_drp2_runtime_frame_target_validation(TstSuite* suite, TstItem* item)
 
 
 #if DVZ_DRP2_HAS_VKLITE
-int test_drp2_runtime_vklite_deferred_destroy_flush(TstSuite* suite, TstItem* item)
+int test_drp2_runtime_vklite_deferred_destroy_flush(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -2447,7 +2447,7 @@ int test_drp2_runtime_vklite_deferred_destroy_flush(TstSuite* suite, TstItem* it
 }
 
 
-int test_drp2_runtime_vklite_trims_destroyed_tail_slots(TstSuite* suite, TstItem* item)
+int test_drp2_runtime_vklite_trims_destroyed_tail_slots(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -2494,7 +2494,7 @@ int test_drp2_runtime_vklite_trims_destroyed_tail_slots(TstSuite* suite, TstItem
 
 
 
-int test_drp2_runtime_frame_lifecycle_edge_cases(TstSuite* suite, TstItem* item)
+int test_drp2_runtime_frame_lifecycle_edge_cases(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -2549,7 +2549,7 @@ int test_drp2_runtime_frame_lifecycle_edge_cases(TstSuite* suite, TstItem* item)
 
 
 #if DVZ_DRP2_HAS_VKLITE
-int test_drp2_runtime_vklite_executes_resource_commands(TstSuite* suite, TstItem* item)
+int test_drp2_runtime_vklite_executes_resource_commands(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -2600,7 +2600,7 @@ int test_drp2_runtime_vklite_executes_resource_commands(TstSuite* suite, TstItem
 
 
 
-int test_drp2_runtime_vklite_writes_buffer_contents(TstSuite* suite, TstItem* item)
+int test_drp2_runtime_vklite_writes_buffer_contents(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -2657,7 +2657,7 @@ int test_drp2_runtime_vklite_writes_buffer_contents(TstSuite* suite, TstItem* it
 
 
 
-int test_drp2_runtime_vklite_copies_buffer_contents(TstSuite* suite, TstItem* item)
+int test_drp2_runtime_vklite_copies_buffer_contents(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -2719,7 +2719,7 @@ int test_drp2_runtime_vklite_copies_buffer_contents(TstSuite* suite, TstItem* it
 }
 
 
-int test_drp2_runtime_vklite_uses_external_buffer(TstSuite* suite, TstItem* item)
+int test_drp2_runtime_vklite_uses_external_buffer(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -2797,7 +2797,7 @@ int test_drp2_runtime_vklite_uses_external_buffer(TstSuite* suite, TstItem* item
 
 
 #if DVZ_HAS_CUDA
-int test_drp2_runtime_vklite_draws_cuda_external_vertex_buffer(TstSuite* suite, TstItem* item)
+int test_drp2_runtime_vklite_draws_cuda_external_vertex_buffer(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -3115,7 +3115,7 @@ cleanup:
 
 
 
-int test_drp2_runtime_download_buffer_rejects_out_of_range(TstSuite* suite, TstItem* item)
+int test_drp2_runtime_download_buffer_rejects_out_of_range(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -3177,7 +3177,7 @@ int test_drp2_runtime_download_buffer_rejects_out_of_range(TstSuite* suite, TstI
 
 
 
-int test_drp2_runtime_vklite_writes_texture_contents(TstSuite* suite, TstItem* item)
+int test_drp2_runtime_vklite_writes_texture_contents(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -3239,7 +3239,7 @@ int test_drp2_runtime_vklite_writes_texture_contents(TstSuite* suite, TstItem* i
 
 
 
-int test_drp2_runtime_vklite_copies_buffer_to_texture(TstSuite* suite, TstItem* item)
+int test_drp2_runtime_vklite_copies_buffer_to_texture(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -3305,7 +3305,7 @@ int test_drp2_runtime_vklite_copies_buffer_to_texture(TstSuite* suite, TstItem* 
 
 
 
-int test_drp2_runtime_vklite_copies_texture_to_texture(TstSuite* suite, TstItem* item)
+int test_drp2_runtime_vklite_copies_texture_to_texture(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -3370,7 +3370,7 @@ int test_drp2_runtime_vklite_copies_texture_to_texture(TstSuite* suite, TstItem*
 
 
 
-int test_drp2_runtime_vklite_creates_glsl_shader_modules(TstSuite* suite, TstItem* item)
+int test_drp2_runtime_vklite_creates_glsl_shader_modules(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -3421,7 +3421,7 @@ int test_drp2_runtime_vklite_creates_glsl_shader_modules(TstSuite* suite, TstIte
 
 
 
-int test_drp2_runtime_vklite_creates_render_pipeline(TstSuite* suite, TstItem* item)
+int test_drp2_runtime_vklite_creates_render_pipeline(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -3475,7 +3475,7 @@ int test_drp2_runtime_vklite_creates_render_pipeline(TstSuite* suite, TstItem* i
 
 
 
-int test_drp2_runtime_vklite_rejects_invalid_glsl_shader(TstSuite* suite, TstItem* item)
+int test_drp2_runtime_vklite_rejects_invalid_glsl_shader(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -3522,7 +3522,7 @@ int test_drp2_runtime_vklite_rejects_invalid_glsl_shader(TstSuite* suite, TstIte
 
 
 
-int test_drp2_runtime_vklite_rejects_pipeline_with_failed_shader(TstSuite* suite, TstItem* item)
+int test_drp2_runtime_vklite_rejects_pipeline_with_failed_shader(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -3575,7 +3575,7 @@ int test_drp2_runtime_vklite_rejects_pipeline_with_failed_shader(TstSuite* suite
 
 
 
-int test_drp2_runtime_vklite_destroy_after_partial_failure(TstSuite* suite, TstItem* item)
+int test_drp2_runtime_vklite_destroy_after_partial_failure(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -3623,7 +3623,7 @@ int test_drp2_runtime_vklite_destroy_after_partial_failure(TstSuite* suite, TstI
 
 
 
-int test_drp2_runtime_vklite_reallocates_object_table_safely(TstSuite* suite, TstItem* item)
+int test_drp2_runtime_vklite_reallocates_object_table_safely(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -3707,7 +3707,7 @@ int test_drp2_runtime_vklite_reallocates_object_table_safely(TstSuite* suite, Ts
 
 
 
-int test_drp2_runtime_vklite_draws_render_pass(TstSuite* suite, TstItem* item)
+int test_drp2_runtime_vklite_draws_render_pass(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -3778,7 +3778,7 @@ int test_drp2_runtime_vklite_draws_render_pass(TstSuite* suite, TstItem* item)
 }
 
 
-int test_drp2_runtime_vklite_draws_named_depth_render_pass(TstSuite* suite, TstItem* item)
+int test_drp2_runtime_vklite_draws_named_depth_render_pass(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -3853,7 +3853,7 @@ int test_drp2_runtime_vklite_draws_named_depth_render_pass(TstSuite* suite, TstI
 }
 
 
-int test_drp2_runtime_vklite_draws_msaa_resolve_render_pass(TstSuite* suite, TstItem* item)
+int test_drp2_runtime_vklite_draws_msaa_resolve_render_pass(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -3931,7 +3931,7 @@ int test_drp2_runtime_vklite_draws_msaa_resolve_render_pass(TstSuite* suite, Tst
 }
 
 
-int test_drp2_runtime_vklite_draws_multi_color_render_pass(TstSuite* suite, TstItem* item)
+int test_drp2_runtime_vklite_draws_multi_color_render_pass(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -4022,7 +4022,7 @@ int test_drp2_runtime_vklite_draws_multi_color_render_pass(TstSuite* suite, TstI
  * @param item the active test item
  * @return 0 on success
  */
-int test_drp2_runtime_vklite_draws_wboit_format_passes(TstSuite* suite, TstItem* item)
+int test_drp2_runtime_vklite_draws_wboit_format_passes(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -4193,7 +4193,7 @@ int test_drp2_runtime_vklite_draws_wboit_format_passes(TstSuite* suite, TstItem*
  * @param item the active test item
  * @return 0 on success
  */
-int test_drp2_runtime_vklite_draws_depth_peeling_shape(TstSuite* suite, TstItem* item)
+int test_drp2_runtime_vklite_draws_depth_peeling_shape(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -4491,7 +4491,7 @@ int test_drp2_runtime_vklite_draws_depth_peeling_shape(TstSuite* suite, TstItem*
 
 
 
-int test_drp2_runtime_vklite_samples_then_copies_texture(TstSuite* suite, TstItem* item)
+int test_drp2_runtime_vklite_samples_then_copies_texture(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -4586,7 +4586,7 @@ int test_drp2_runtime_vklite_samples_then_copies_texture(TstSuite* suite, TstIte
  * @return 0 on success
  */
 int test_drp2_runtime_vklite_refreshes_bind_group_after_texture_recreate(
-    TstSuite* suite, TstItem* item)
+    TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -4716,7 +4716,7 @@ int test_drp2_runtime_vklite_refreshes_bind_group_after_texture_recreate(
  * @return 0 on success
  */
 int test_drp2_runtime_vklite_refreshes_bind_group_after_buffer_sampler_recreate(
-    TstSuite* suite, TstItem* item)
+    TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -4877,7 +4877,7 @@ int test_drp2_runtime_vklite_refreshes_bind_group_after_buffer_sampler_recreate(
  * @return 0 on success
  */
 int test_drp2_runtime_vklite_refresh_defers_retired_descriptors(
-    TstSuite* suite, TstItem* item)
+    TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -4956,7 +4956,7 @@ int test_drp2_runtime_vklite_refresh_defers_retired_descriptors(
 
 /* ---- New regression tests ---- */
 
-int test_drp2_write_buffer_bytes_uses_data_raw(TstSuite* suite, TstItem* item)
+int test_drp2_write_buffer_bytes_uses_data_raw(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -4981,7 +4981,7 @@ int test_drp2_write_buffer_bytes_uses_data_raw(TstSuite* suite, TstItem* item)
 
 
 
-int test_drp2_write_buffer_bytes_json_encodes_data_raw(TstSuite* suite, TstItem* item)
+int test_drp2_write_buffer_bytes_json_encodes_data_raw(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -5006,7 +5006,7 @@ int test_drp2_write_buffer_bytes_json_encodes_data_raw(TstSuite* suite, TstItem*
 
 
 #if DVZ_DRP2_HAS_VKLITE
-int test_drp2_write_buffer_bytes_large_payload_executes(TstSuite* suite, TstItem* item)
+int test_drp2_write_buffer_bytes_large_payload_executes(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -5072,7 +5072,7 @@ int test_drp2_write_buffer_bytes_large_payload_executes(TstSuite* suite, TstItem
 
 
 
-int test_drp2_begin_render_pass_clear_color_stored(TstSuite* suite, TstItem* item)
+int test_drp2_begin_render_pass_clear_color_stored(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -5099,7 +5099,7 @@ int test_drp2_begin_render_pass_clear_color_stored(TstSuite* suite, TstItem* ite
 
 
 
-int test_drp2_begin_render_pass_multi_color_attachments(TstSuite* suite, TstItem* item)
+int test_drp2_begin_render_pass_multi_color_attachments(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -5153,7 +5153,7 @@ int test_drp2_begin_render_pass_multi_color_attachments(TstSuite* suite, TstItem
 
 
 
-int test_drp2_begin_render_pass_attachment_ops(TstSuite* suite, TstItem* item)
+int test_drp2_begin_render_pass_attachment_ops(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -5204,7 +5204,7 @@ int test_drp2_begin_render_pass_attachment_ops(TstSuite* suite, TstItem* item)
 
 
 
-int test_drp2_begin_render_pass_attachment_ops_validation(TstSuite* suite, TstItem* item)
+int test_drp2_begin_render_pass_attachment_ops_validation(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -5237,7 +5237,7 @@ int test_drp2_begin_render_pass_attachment_ops_validation(TstSuite* suite, TstIt
 
 
 
-int test_drp2_begin_render_pass_named_depth_validation(TstSuite* suite, TstItem* item)
+int test_drp2_begin_render_pass_named_depth_validation(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -5310,7 +5310,7 @@ int test_drp2_begin_render_pass_named_depth_validation(TstSuite* suite, TstItem*
 
 
 
-int test_drp2_render_pipeline_rejects_depth_color_target(TstSuite* suite, TstItem* item)
+int test_drp2_render_pipeline_rejects_depth_color_target(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -5351,7 +5351,7 @@ int test_drp2_render_pipeline_rejects_depth_color_target(TstSuite* suite, TstIte
 
 
 
-int test_drp2_render_pass_rejects_attachment_format_classes(TstSuite* suite, TstItem* item)
+int test_drp2_render_pass_rejects_attachment_format_classes(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -5395,7 +5395,7 @@ int test_drp2_render_pass_rejects_attachment_format_classes(TstSuite* suite, Tst
 
 
 
-int test_drp2_render_pipeline_attachment_validation(TstSuite* suite, TstItem* item)
+int test_drp2_render_pipeline_attachment_validation(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -5570,7 +5570,7 @@ int test_drp2_render_pipeline_attachment_validation(TstSuite* suite, TstItem* it
 
 
 
-int test_drp2_recording_preserves_attachment_ops(TstSuite* suite, TstItem* item)
+int test_drp2_recording_preserves_attachment_ops(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -5641,7 +5641,7 @@ int test_drp2_recording_preserves_attachment_ops(TstSuite* suite, TstItem* item)
 
 
 
-int test_drp2_recording_preserves_named_depth(TstSuite* suite, TstItem* item)
+int test_drp2_recording_preserves_named_depth(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -5701,7 +5701,7 @@ int test_drp2_recording_preserves_named_depth(TstSuite* suite, TstItem* item)
 
 
 
-int test_drp2_stream_json_preserves_clear_color(TstSuite* suite, TstItem* item)
+int test_drp2_stream_json_preserves_clear_color(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -5728,7 +5728,7 @@ int test_drp2_stream_json_preserves_clear_color(TstSuite* suite, TstItem* item)
 
 
 
-int test_drp2_write_buffer_bytes_large_json_roundtrip(TstSuite* suite, TstItem* item)
+int test_drp2_write_buffer_bytes_large_json_roundtrip(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -5759,7 +5759,7 @@ int test_drp2_write_buffer_bytes_large_json_roundtrip(TstSuite* suite, TstItem* 
 }
 
 
-int test_drp2_render_pipeline_step_modes_json(TstSuite* suite, TstItem* item)
+int test_drp2_render_pipeline_step_modes_json(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -5792,7 +5792,7 @@ int test_drp2_render_pipeline_step_modes_json(TstSuite* suite, TstItem* item)
 }
 
 
-int test_drp2_render_pipeline_color_targets_json(TstSuite* suite, TstItem* item)
+int test_drp2_render_pipeline_color_targets_json(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -5836,7 +5836,7 @@ int test_drp2_render_pipeline_color_targets_json(TstSuite* suite, TstItem* item)
 }
 
 
-int test_drp2_render_pipeline_raster_state(TstSuite* suite, TstItem* item)
+int test_drp2_render_pipeline_raster_state(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -5928,7 +5928,7 @@ int test_drp2_render_pipeline_raster_state(TstSuite* suite, TstItem* item)
  * @param item the active test item
  * @return 0 on success
  */
-int test_drp2_wboit_accumulation_resolve_stream(TstSuite* suite, TstItem* item)
+int test_drp2_wboit_accumulation_resolve_stream(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -6082,7 +6082,7 @@ int test_drp2_wboit_accumulation_resolve_stream(TstSuite* suite, TstItem* item)
  * @param item the active test item
  * @return 0 on success
  */
-int test_drp2_recording_linear_roundtrip(TstSuite* suite, TstItem* item)
+int test_drp2_recording_linear_roundtrip(TstContext* suite, const TstCase* item)
 {
     (void)suite;
     (void)item;
@@ -6262,7 +6262,7 @@ int test_drp2_recording_linear_roundtrip(TstSuite* suite, TstItem* item)
 
 
 
-int test_drp2_recording_render_jsonl_no_raw_fallback(TstSuite* suite, TstItem* item)
+int test_drp2_recording_render_jsonl_no_raw_fallback(TstContext* suite, const TstCase* item)
 {
     (void)suite;
     (void)item;
@@ -6383,7 +6383,7 @@ int test_drp2_recording_render_jsonl_no_raw_fallback(TstSuite* suite, TstItem* i
 
 
 
-int test_drp2_recording_compute_copy_jsonl_no_raw_fallback(TstSuite* suite, TstItem* item)
+int test_drp2_recording_compute_copy_jsonl_no_raw_fallback(TstContext* suite, const TstCase* item)
 {
     (void)suite;
     (void)item;
@@ -6499,7 +6499,7 @@ int test_drp2_recording_compute_copy_jsonl_no_raw_fallback(TstSuite* suite, TstI
  * @param item test item
  * @return 0 on success
  */
-int test_drp2_recording_reports_raw_fallback_command(TstSuite* suite, TstItem* item)
+int test_drp2_recording_reports_raw_fallback_command(TstContext* suite, const TstCase* item)
 {
     (void)suite;
     (void)item;
@@ -6558,119 +6558,121 @@ int test_drp2(TstSuite* suite)
 
     const char* tags = "drp2";
 
-    TEST_SIMPLE(test_drp2_stream_empty);
-    TEST_SIMPLE(test_drp2_stream_append);
-    TEST_SIMPLE(test_drp2_stream_debug_labels);
-    TEST_SIMPLE(test_drp2_stream_json);
-    TEST_SIMPLE(test_drp2_stream_growth_json);
-    TEST_SIMPLE(test_drp2_write_buffer_bytes_uses_data_raw);
-    TEST_SIMPLE(test_drp2_write_buffer_bytes_json_encodes_data_raw);
-    TEST_SIMPLE(test_drp2_write_buffer_bytes_large_json_roundtrip);
-    TEST_SIMPLE(test_drp2_render_pipeline_step_modes_json);
-    TEST_SIMPLE(test_drp2_render_pipeline_color_targets_json);
-    TEST_SIMPLE(test_drp2_render_pipeline_raster_state);
-    TEST_SIMPLE(test_drp2_wboit_accumulation_resolve_stream);
-    TEST_SIMPLE(test_drp2_recording_linear_roundtrip);
-    TEST_SIMPLE(test_drp2_recording_render_jsonl_no_raw_fallback);
-    TEST_SIMPLE(test_drp2_recording_compute_copy_jsonl_no_raw_fallback);
-    TEST_SIMPLE(test_drp2_recording_reports_raw_fallback_command);
-    TEST_SIMPLE(test_drp2_begin_render_pass_clear_color_stored);
-    TEST_SIMPLE(test_drp2_begin_render_pass_multi_color_attachments);
-    TEST_SIMPLE(test_drp2_begin_render_pass_attachment_ops);
-    TEST_SIMPLE(test_drp2_begin_render_pass_attachment_ops_validation);
-    TEST_SIMPLE(test_drp2_begin_render_pass_named_depth_validation);
-    TEST_SIMPLE(test_drp2_render_pipeline_rejects_depth_color_target);
-    TEST_SIMPLE(test_drp2_render_pass_rejects_attachment_format_classes);
-    TEST_SIMPLE(test_drp2_render_pipeline_attachment_validation);
-    TEST_SIMPLE(test_drp2_recording_preserves_attachment_ops);
-    TEST_SIMPLE(test_drp2_recording_preserves_named_depth);
-    TEST_SIMPLE(test_drp2_stream_json_preserves_clear_color);
-    TEST_SIMPLE(test_drp2_runtime_validate_render_stream);
-    TEST_SIMPLE(test_drp2_runtime_validate_render_state_inherited_across_passes);
-    TEST_SIMPLE(test_drp2_runtime_validate_dynamic_viewport_scissor);
-    TEST_SIMPLE(test_drp2_runtime_rejects_duplicate_id);
-    TEST_SIMPLE(test_drp2_runtime_failed_stream_does_not_commit_state);
-    TEST_SIMPLE(test_drp2_runtime_rejects_unknown_buffer_write);
-    TEST_SIMPLE(test_drp2_runtime_rejects_draw_without_vertex_buffer);
-    TEST_SIMPLE(test_drp2_runtime_rejects_finish_with_open_pass);
-    TEST_SIMPLE(test_drp2_runtime_rejects_bad_readback_buffer);
-    TEST_SIMPLE(test_drp2_runtime_validate_compute_stream);
-    TEST_SIMPLE(test_drp2_runtime_rejects_dispatch_without_pipeline);
-    TEST_SIMPLE(test_drp2_runtime_rejects_dispatch_outside_compute_pass);
-    TEST_SIMPLE(test_drp2_runtime_rejects_wrong_pipeline_type);
-    TEST_SIMPLE(test_drp2_runtime_rejects_finish_with_open_compute_pass);
-    TEST_SIMPLE(test_drp2_runtime_validate_indexed_render_stream);
-    TEST_SIMPLE(test_drp2_runtime_rejects_draw_indexed_without_index_buffer);
-    TEST_SIMPLE(test_drp2_runtime_rejects_wrong_index_buffer_usage);
-    TEST_SIMPLE(test_drp2_runtime_validate_write_texture);
-    TEST_SIMPLE(test_drp2_runtime_validate_write_texture_3d_formats);
-    TEST_SIMPLE(test_drp2_runtime_rejects_write_texture_format_row_layout);
-    TEST_SIMPLE(test_drp2_runtime_validate_copy_buffer_to_texture);
-    TEST_SIMPLE(test_drp2_runtime_validate_copy_texture_to_texture);
-    TEST_SIMPLE(test_drp2_runtime_validate_texture_sampler_bind_group);
-    TEST_SIMPLE(test_drp2_runtime_validate_generic_bind_group_slots);
-    TEST_SIMPLE(test_drp2_runtime_rejects_bind_group_entry_mismatch);
-    TEST_SIMPLE(test_drp2_runtime_validate_bind_group_dynamic_offsets);
-    TEST_SIMPLE(test_drp2_runtime_validate_bind_group_after_table_growth);
-    TEST_SIMPLE(test_drp2_runtime_validate_recreate_bind_group_resources);
-    TEST_SIMPLE(test_drp2_runtime_reuses_submitted_transient_ids);
-    TEST_SIMPLE(test_drp2_runtime_registers_external_buffer_semantic);
-    TEST_SIMPLE(test_drp2_runtime_validate_compute_storage_bind_group);
-    TEST_SIMPLE(test_drp2_runtime_validate_destroy_unused_bind_group);
-    TEST_SIMPLE(test_drp2_runtime_rejects_destroy_bind_group_layout_used_by_live_group);
-    TEST_SIMPLE(test_drp2_runtime_rejects_destroy_bind_group_layout_used_by_pipeline);
-    TEST_SIMPLE(test_drp2_runtime_rejects_destroy_bind_group_referenced_by_work);
-    TEST_SIMPLE(test_drp2_runtime_rejects_compute_dispatch_without_bind_group);
-    TEST_SIMPLE(test_drp2_runtime_rejects_write_texture_out_of_range);
-    TEST_SIMPLE(test_drp2_runtime_rejects_write_texture_layout_size_overflow);
-    TEST_SIMPLE(test_drp2_runtime_rejects_copy_buffer_to_texture_usage);
-    TEST_SIMPLE(test_drp2_runtime_rejects_copy_texture_to_texture_inside_pass);
-    TEST_SIMPLE(test_drp2_runtime_validate_destroy_unused_buffer);
-    TEST_SIMPLE(test_drp2_runtime_rejects_use_after_destroy);
-    TEST_SIMPLE(test_drp2_runtime_rejects_destroy_buffer_referenced_by_work);
-    TEST_SIMPLE(test_drp2_runtime_rejects_destroy_texture_referenced_by_work);
-    TEST_SIMPLE(test_drp2_runtime_rejects_destroy_submitted_render_pipeline);
-    TEST_SIMPLE(test_drp2_runtime_rejects_destroy_live_shader_module);
-    TEST_SIMPLE(test_drp2_runtime_vklite_skeleton_create_destroy);
-    TEST_SIMPLE(test_drp2_runtime_vklite_skeleton_execute_valid_stream);
-    TEST_SIMPLE(test_drp2_runtime_vklite_skeleton_execute_invalid_stream);
-    TEST_SIMPLE(test_drp2_runtime_vklite_skeleton_rejects_null_runtime);
-    TEST_SIMPLE(test_drp2_runtime_frame_target_validation);
-    TEST_SIMPLE(test_drp2_runtime_frame_lifecycle_edge_cases);
+    TST_MODULE(suite, tags);
+
+    TST_CASE(test_drp2_stream_empty);
+    TST_CASE(test_drp2_stream_append);
+    TST_CASE(test_drp2_stream_debug_labels);
+    TST_CASE(test_drp2_stream_json);
+    TST_CASE(test_drp2_stream_growth_json);
+    TST_CASE(test_drp2_write_buffer_bytes_uses_data_raw);
+    TST_CASE(test_drp2_write_buffer_bytes_json_encodes_data_raw);
+    TST_CASE(test_drp2_write_buffer_bytes_large_json_roundtrip);
+    TST_CASE(test_drp2_render_pipeline_step_modes_json);
+    TST_CASE(test_drp2_render_pipeline_color_targets_json);
+    TST_CASE(test_drp2_render_pipeline_raster_state);
+    TST_CASE(test_drp2_wboit_accumulation_resolve_stream);
+    TST_CASE(test_drp2_recording_linear_roundtrip);
+    TST_CASE(test_drp2_recording_render_jsonl_no_raw_fallback);
+    TST_CASE(test_drp2_recording_compute_copy_jsonl_no_raw_fallback);
+    TST_CASE(test_drp2_recording_reports_raw_fallback_command);
+    TST_CASE(test_drp2_begin_render_pass_clear_color_stored);
+    TST_CASE(test_drp2_begin_render_pass_multi_color_attachments);
+    TST_CASE(test_drp2_begin_render_pass_attachment_ops);
+    TST_CASE(test_drp2_begin_render_pass_attachment_ops_validation);
+    TST_CASE(test_drp2_begin_render_pass_named_depth_validation);
+    TST_CASE(test_drp2_render_pipeline_rejects_depth_color_target);
+    TST_CASE(test_drp2_render_pass_rejects_attachment_format_classes);
+    TST_CASE(test_drp2_render_pipeline_attachment_validation);
+    TST_CASE(test_drp2_recording_preserves_attachment_ops);
+    TST_CASE(test_drp2_recording_preserves_named_depth);
+    TST_CASE(test_drp2_stream_json_preserves_clear_color);
+    TST_CASE(test_drp2_runtime_validate_render_stream);
+    TST_CASE(test_drp2_runtime_validate_render_state_inherited_across_passes);
+    TST_CASE(test_drp2_runtime_validate_dynamic_viewport_scissor);
+    TST_CASE(test_drp2_runtime_rejects_duplicate_id);
+    TST_CASE(test_drp2_runtime_failed_stream_does_not_commit_state);
+    TST_CASE(test_drp2_runtime_rejects_unknown_buffer_write);
+    TST_CASE(test_drp2_runtime_rejects_draw_without_vertex_buffer);
+    TST_CASE(test_drp2_runtime_rejects_finish_with_open_pass);
+    TST_CASE(test_drp2_runtime_rejects_bad_readback_buffer);
+    TST_CASE(test_drp2_runtime_validate_compute_stream);
+    TST_CASE(test_drp2_runtime_rejects_dispatch_without_pipeline);
+    TST_CASE(test_drp2_runtime_rejects_dispatch_outside_compute_pass);
+    TST_CASE(test_drp2_runtime_rejects_wrong_pipeline_type);
+    TST_CASE(test_drp2_runtime_rejects_finish_with_open_compute_pass);
+    TST_CASE(test_drp2_runtime_validate_indexed_render_stream);
+    TST_CASE(test_drp2_runtime_rejects_draw_indexed_without_index_buffer);
+    TST_CASE(test_drp2_runtime_rejects_wrong_index_buffer_usage);
+    TST_CASE(test_drp2_runtime_validate_write_texture);
+    TST_CASE(test_drp2_runtime_validate_write_texture_3d_formats);
+    TST_CASE(test_drp2_runtime_rejects_write_texture_format_row_layout);
+    TST_CASE(test_drp2_runtime_validate_copy_buffer_to_texture);
+    TST_CASE(test_drp2_runtime_validate_copy_texture_to_texture);
+    TST_CASE(test_drp2_runtime_validate_texture_sampler_bind_group);
+    TST_CASE(test_drp2_runtime_validate_generic_bind_group_slots);
+    TST_CASE(test_drp2_runtime_rejects_bind_group_entry_mismatch);
+    TST_CASE(test_drp2_runtime_validate_bind_group_dynamic_offsets);
+    TST_CASE(test_drp2_runtime_validate_bind_group_after_table_growth);
+    TST_CASE(test_drp2_runtime_validate_recreate_bind_group_resources);
+    TST_CASE(test_drp2_runtime_reuses_submitted_transient_ids);
+    TST_CASE(test_drp2_runtime_registers_external_buffer_semantic);
+    TST_CASE(test_drp2_runtime_validate_compute_storage_bind_group);
+    TST_CASE(test_drp2_runtime_validate_destroy_unused_bind_group);
+    TST_CASE(test_drp2_runtime_rejects_destroy_bind_group_layout_used_by_live_group);
+    TST_CASE(test_drp2_runtime_rejects_destroy_bind_group_layout_used_by_pipeline);
+    TST_CASE(test_drp2_runtime_rejects_destroy_bind_group_referenced_by_work);
+    TST_CASE(test_drp2_runtime_rejects_compute_dispatch_without_bind_group);
+    TST_CASE(test_drp2_runtime_rejects_write_texture_out_of_range);
+    TST_CASE(test_drp2_runtime_rejects_write_texture_layout_size_overflow);
+    TST_CASE(test_drp2_runtime_rejects_copy_buffer_to_texture_usage);
+    TST_CASE(test_drp2_runtime_rejects_copy_texture_to_texture_inside_pass);
+    TST_CASE(test_drp2_runtime_validate_destroy_unused_buffer);
+    TST_CASE(test_drp2_runtime_rejects_use_after_destroy);
+    TST_CASE(test_drp2_runtime_rejects_destroy_buffer_referenced_by_work);
+    TST_CASE(test_drp2_runtime_rejects_destroy_texture_referenced_by_work);
+    TST_CASE(test_drp2_runtime_rejects_destroy_submitted_render_pipeline);
+    TST_CASE(test_drp2_runtime_rejects_destroy_live_shader_module);
+    TST_CASE(test_drp2_runtime_vklite_skeleton_create_destroy);
+    TST_CASE(test_drp2_runtime_vklite_skeleton_execute_valid_stream);
+    TST_CASE(test_drp2_runtime_vklite_skeleton_execute_invalid_stream);
+    TST_CASE(test_drp2_runtime_vklite_skeleton_rejects_null_runtime);
+    TST_CASE(test_drp2_runtime_frame_target_validation);
+    TST_CASE(test_drp2_runtime_frame_lifecycle_edge_cases);
 #if DVZ_DRP2_HAS_VKLITE
-    TEST_SIMPLE(test_drp2_runtime_vklite_deferred_destroy_flush);
-    TEST_SIMPLE(test_drp2_runtime_vklite_trims_destroyed_tail_slots);
+    TST_CASE(test_drp2_runtime_vklite_deferred_destroy_flush);
+    TST_CASE(test_drp2_runtime_vklite_trims_destroyed_tail_slots);
 #endif
-    TEST_SIMPLE(test_drp2_runtime_download_buffer_rejects_out_of_range);
+    TST_CASE(test_drp2_runtime_download_buffer_rejects_out_of_range);
 #if DVZ_DRP2_HAS_VKLITE
-    TEST_SIMPLE(test_drp2_write_buffer_bytes_large_payload_executes);
-    TEST_SIMPLE(test_drp2_runtime_vklite_executes_resource_commands);
-    TEST_SIMPLE(test_drp2_runtime_vklite_writes_buffer_contents);
-    TEST_SIMPLE(test_drp2_runtime_vklite_copies_buffer_contents);
-    TEST_SIMPLE(test_drp2_runtime_vklite_uses_external_buffer);
+    TST_CASE(test_drp2_write_buffer_bytes_large_payload_executes);
+    TST_CASE(test_drp2_runtime_vklite_executes_resource_commands);
+    TST_CASE(test_drp2_runtime_vklite_writes_buffer_contents);
+    TST_CASE(test_drp2_runtime_vklite_copies_buffer_contents);
+    TST_CASE(test_drp2_runtime_vklite_uses_external_buffer);
 #if DVZ_HAS_CUDA
-    TEST_SIMPLE(test_drp2_runtime_vklite_draws_cuda_external_vertex_buffer);
+    TST_CASE(test_drp2_runtime_vklite_draws_cuda_external_vertex_buffer);
 #endif
-    TEST_SIMPLE(test_drp2_runtime_vklite_writes_texture_contents);
-    TEST_SIMPLE(test_drp2_runtime_vklite_copies_buffer_to_texture);
-    TEST_SIMPLE(test_drp2_runtime_vklite_copies_texture_to_texture);
-    TEST_SIMPLE(test_drp2_runtime_vklite_creates_glsl_shader_modules);
-    TEST_SIMPLE(test_drp2_runtime_vklite_rejects_invalid_glsl_shader);
-    TEST_SIMPLE(test_drp2_runtime_vklite_rejects_pipeline_with_failed_shader);
-    TEST_SIMPLE(test_drp2_runtime_vklite_destroy_after_partial_failure);
-    TEST_SIMPLE(test_drp2_runtime_vklite_creates_render_pipeline);
-    TEST_SIMPLE(test_drp2_runtime_vklite_reallocates_object_table_safely);
-    TEST_SIMPLE(test_drp2_runtime_vklite_draws_render_pass);
-    TEST_SIMPLE(test_drp2_runtime_vklite_draws_named_depth_render_pass);
-    TEST_SIMPLE(test_drp2_runtime_vklite_draws_msaa_resolve_render_pass);
-    TEST_SIMPLE(test_drp2_runtime_vklite_draws_multi_color_render_pass);
-    TEST_SIMPLE(test_drp2_runtime_vklite_draws_wboit_format_passes);
-    TEST_SIMPLE(test_drp2_runtime_vklite_draws_depth_peeling_shape);
-    TEST_SIMPLE(test_drp2_runtime_vklite_samples_3d_texture);
-    TEST_SIMPLE(test_drp2_runtime_vklite_samples_then_copies_texture);
-    TEST_SIMPLE(test_drp2_runtime_vklite_refreshes_bind_group_after_texture_recreate);
-    TEST_SIMPLE(test_drp2_runtime_vklite_refreshes_bind_group_after_buffer_sampler_recreate);
-    TEST_SIMPLE(test_drp2_runtime_vklite_refresh_defers_retired_descriptors);
+    TST_CASE(test_drp2_runtime_vklite_writes_texture_contents);
+    TST_CASE(test_drp2_runtime_vklite_copies_buffer_to_texture);
+    TST_CASE(test_drp2_runtime_vklite_copies_texture_to_texture);
+    TST_CASE(test_drp2_runtime_vklite_creates_glsl_shader_modules);
+    TST_CASE(test_drp2_runtime_vklite_rejects_invalid_glsl_shader);
+    TST_CASE(test_drp2_runtime_vklite_rejects_pipeline_with_failed_shader);
+    TST_CASE(test_drp2_runtime_vklite_destroy_after_partial_failure);
+    TST_CASE(test_drp2_runtime_vklite_creates_render_pipeline);
+    TST_CASE(test_drp2_runtime_vklite_reallocates_object_table_safely);
+    TST_CASE(test_drp2_runtime_vklite_draws_render_pass);
+    TST_CASE(test_drp2_runtime_vklite_draws_named_depth_render_pass);
+    TST_CASE(test_drp2_runtime_vklite_draws_msaa_resolve_render_pass);
+    TST_CASE(test_drp2_runtime_vklite_draws_multi_color_render_pass);
+    TST_CASE(test_drp2_runtime_vklite_draws_wboit_format_passes);
+    TST_CASE(test_drp2_runtime_vklite_draws_depth_peeling_shape);
+    TST_CASE(test_drp2_runtime_vklite_samples_3d_texture);
+    TST_CASE(test_drp2_runtime_vklite_samples_then_copies_texture);
+    TST_CASE(test_drp2_runtime_vklite_refreshes_bind_group_after_texture_recreate);
+    TST_CASE(test_drp2_runtime_vklite_refreshes_bind_group_after_buffer_sampler_recreate);
+    TST_CASE(test_drp2_runtime_vklite_refresh_defers_retired_descriptors);
 #endif
 
     return 0;

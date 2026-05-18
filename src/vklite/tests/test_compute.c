@@ -110,7 +110,7 @@ static DVZ_SPIRV_ALIGN unsigned char minimal_compute[] = {
 /*  Compute tests                                                                                */
 /*************************************************************************************************/
 
-int test_vklite_compute_1(TstSuite* suite, TstItem* tstitem)
+int test_vklite_compute_1(TstContext* suite, const TstCase* tstitem)
 {
     ANN(suite);
     ANN(tstitem);
@@ -163,7 +163,7 @@ int test_vklite_compute_1(TstSuite* suite, TstItem* tstitem)
 
 
 
-int test_vklite_compute_create_requires_destroy(TstSuite* suite, TstItem* tstitem)
+int test_vklite_compute_create_requires_destroy(TstContext* suite, const TstCase* tstitem)
 {
     ANN(suite);
     ANN(tstitem);

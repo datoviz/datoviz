@@ -20,6 +20,7 @@
 #include "_alloc.h"
 #include "_assertions.h"
 #include "_compat.h"
+#include "_log.h"
 #include "../_frame_plan.h"
 #include "../_frame_plan_emit.h"
 #include "../_scene.h"
@@ -1116,7 +1117,7 @@ static int _scene_visual_records_portable_dvzr(SceneDvzrVisualKind kind, const c
 /*  Tests                                                                                        */
 /*************************************************************************************************/
 
-int test_frame_plan_emit_drp2_static_render(TstSuite* suite, TstItem* item)
+int test_frame_plan_emit_drp2_static_render(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -1164,7 +1165,7 @@ int test_frame_plan_emit_drp2_static_render(TstSuite* suite, TstItem* item)
 }
 
 
-int test_frame_plan_emit_drp2_static_render_glsl(TstSuite* suite, TstItem* item)
+int test_frame_plan_emit_drp2_static_render_glsl(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -1203,7 +1204,7 @@ int test_frame_plan_emit_drp2_static_render_glsl(TstSuite* suite, TstItem* item)
 }
 
 
-int test_frame_plan_emit_drp2_rejects_unsupported_shader_format(TstSuite* suite, TstItem* item)
+int test_frame_plan_emit_drp2_rejects_unsupported_shader_format(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -1233,7 +1234,7 @@ int test_frame_plan_emit_drp2_rejects_unsupported_shader_format(TstSuite* suite,
 }
 
 
-int test_frame_plan_emit_drp2_rejects_small_caps(TstSuite* suite, TstItem* item)
+int test_frame_plan_emit_drp2_rejects_small_caps(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -1298,7 +1299,7 @@ int test_frame_plan_emit_drp2_rejects_small_caps(TstSuite* suite, TstItem* item)
 }
 
 
-int test_frame_plan_emit_drp2_static_render_glsl_executes(TstSuite* suite, TstItem* item)
+int test_frame_plan_emit_drp2_static_render_glsl_executes(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -1353,7 +1354,7 @@ int test_frame_plan_emit_drp2_static_render_glsl_executes(TstSuite* suite, TstIt
 }
 
 
-int test_frame_plan_emit_drp2_readback_glsl_executes(TstSuite* suite, TstItem* item)
+int test_frame_plan_emit_drp2_readback_glsl_executes(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -1413,7 +1414,7 @@ int test_frame_plan_emit_drp2_readback_glsl_executes(TstSuite* suite, TstItem* i
 }
 
 
-int test_frame_plan_emitter_runtime_two_frames_glsl_executes(TstSuite* suite, TstItem* item)
+int test_frame_plan_emitter_runtime_two_frames_glsl_executes(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -1496,7 +1497,7 @@ int test_frame_plan_emitter_runtime_two_frames_glsl_executes(TstSuite* suite, Ts
 
 
 int test_frame_plan_emitter_runtime_dynamic_two_frames_glsl_executes(
-    TstSuite* suite, TstItem* item)
+    TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -1582,7 +1583,7 @@ int test_frame_plan_emitter_runtime_dynamic_two_frames_glsl_executes(
 
 
 int test_frame_plan_emitter_runtime_texture_two_frames_glsl_executes(
-    TstSuite* suite, TstItem* item)
+    TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -1666,7 +1667,7 @@ int test_frame_plan_emitter_runtime_texture_two_frames_glsl_executes(
 
 
 int test_frame_plan_emitter_runtime_compute_two_frames_glsl_executes(
-    TstSuite* suite, TstItem* item)
+    TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -1756,7 +1757,7 @@ int test_frame_plan_emitter_runtime_compute_two_frames_glsl_executes(
 
 
 #if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
-int test_frame_plan_emit_drp2_depth_peeling_graph_executes(TstSuite* suite, TstItem* item)
+int test_frame_plan_emit_drp2_depth_peeling_graph_executes(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -1825,7 +1826,7 @@ int test_frame_plan_emit_drp2_depth_peeling_graph_executes(TstSuite* suite, TstI
 #endif
 
 
-int test_scene_drp2_offscreen_canvas_frame(TstSuite* suite, TstItem* item)
+int test_scene_drp2_offscreen_canvas_frame(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -1932,7 +1933,7 @@ int test_scene_drp2_offscreen_canvas_frame(TstSuite* suite, TstItem* item)
 }
 
 
-int test_frame_plan_emit_drp2_readback(TstSuite* suite, TstItem* item)
+int test_frame_plan_emit_drp2_readback(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -1979,7 +1980,7 @@ int test_frame_plan_emit_drp2_readback(TstSuite* suite, TstItem* item)
 }
 
 
-int test_frame_plan_emit_drp2_dynamic_uploads(TstSuite* suite, TstItem* item)
+int test_frame_plan_emit_drp2_dynamic_uploads(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -2029,7 +2030,7 @@ int test_frame_plan_emit_drp2_dynamic_uploads(TstSuite* suite, TstItem* item)
 }
 
 
-int test_frame_plan_emit_drp2_texture_sampling(TstSuite* suite, TstItem* item)
+int test_frame_plan_emit_drp2_texture_sampling(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -2079,7 +2080,7 @@ int test_frame_plan_emit_drp2_texture_sampling(TstSuite* suite, TstItem* item)
 }
 
 
-int test_frame_plan_emit_drp2_compute_assisted(TstSuite* suite, TstItem* item)
+int test_frame_plan_emit_drp2_compute_assisted(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -2138,7 +2139,7 @@ int test_frame_plan_emit_drp2_compute_assisted(TstSuite* suite, TstItem* item)
 }
 
 
-int test_frame_plan_emitter_runtime_two_frames(TstSuite* suite, TstItem* item)
+int test_frame_plan_emitter_runtime_two_frames(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -2216,7 +2217,7 @@ int test_frame_plan_emitter_runtime_two_frames(TstSuite* suite, TstItem* item)
 }
 
 
-int test_frame_plan_emitter_runtime_dynamic_two_frames(TstSuite* suite, TstItem* item)
+int test_frame_plan_emitter_runtime_dynamic_two_frames(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -2298,7 +2299,7 @@ int test_frame_plan_emitter_runtime_dynamic_two_frames(TstSuite* suite, TstItem*
 }
 
 
-int test_frame_plan_emitter_runtime_dynamic_grow_buffer(TstSuite* suite, TstItem* item)
+int test_frame_plan_emitter_runtime_dynamic_grow_buffer(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -2370,7 +2371,7 @@ int test_frame_plan_emitter_runtime_dynamic_grow_buffer(TstSuite* suite, TstItem
  * @param item the active test item
  * @return 0 on success
  */
-int test_frame_plan_emitter_runtime_texture_extent_changes(TstSuite* suite, TstItem* item)
+int test_frame_plan_emitter_runtime_texture_extent_changes(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -2582,7 +2583,7 @@ int test_frame_plan_emitter_runtime_texture_extent_changes(TstSuite* suite, TstI
  * @param item the active test item
  * @return 0 on success
  */
-int test_frame_plan_emitter_runtime_object_map_grows(TstSuite* suite, TstItem* item)
+int test_frame_plan_emitter_runtime_object_map_grows(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -2614,7 +2615,7 @@ int test_frame_plan_emitter_runtime_object_map_grows(TstSuite* suite, TstItem* i
 }
 
 
-int test_frame_plan_emitter_runtime_texture_two_frames(TstSuite* suite, TstItem* item)
+int test_frame_plan_emitter_runtime_texture_two_frames(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -2692,7 +2693,7 @@ int test_frame_plan_emitter_runtime_texture_two_frames(TstSuite* suite, TstItem*
 }
 
 
-int test_frame_plan_emitter_runtime_compute_two_frames(TstSuite* suite, TstItem* item)
+int test_frame_plan_emitter_runtime_compute_two_frames(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -2781,7 +2782,7 @@ int test_frame_plan_emitter_runtime_compute_two_frames(TstSuite* suite, TstItem*
 
 
 static int test_frame_plan_emit_scene_core_visuals_record_portable_dvzr(
-    TstSuite* suite, TstItem* item)
+    TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -2805,32 +2806,35 @@ int test_scene_frame_plan_emit(TstSuite* suite)
     ANN(suite);
     const char* tags = "scene";
 
-    TEST_SIMPLE(test_frame_plan_emit_drp2_static_render);
-    TEST_SIMPLE(test_frame_plan_emit_drp2_static_render_glsl);
-    TEST_SIMPLE(test_frame_plan_emit_drp2_rejects_unsupported_shader_format);
-    TEST_SIMPLE(test_frame_plan_emit_drp2_rejects_small_caps);
+    TST_MODULE(suite, "scene");
+    TST_GROUP("frame-plan-emit");
+
+    TST_CASE(test_frame_plan_emit_drp2_static_render);
+    TST_CASE(test_frame_plan_emit_drp2_static_render_glsl);
+    TST_CASE(test_frame_plan_emit_drp2_rejects_unsupported_shader_format);
+    TST_CASE(test_frame_plan_emit_drp2_rejects_small_caps);
 #if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
-    TEST_SIMPLE(test_frame_plan_emit_drp2_static_render_glsl_executes);
-    TEST_SIMPLE(test_frame_plan_emit_drp2_readback_glsl_executes);
-    TEST_SIMPLE(test_frame_plan_emitter_runtime_two_frames_glsl_executes);
-    TEST_SIMPLE(test_frame_plan_emitter_runtime_dynamic_two_frames_glsl_executes);
-    TEST_SIMPLE(test_frame_plan_emitter_runtime_texture_two_frames_glsl_executes);
-    TEST_SIMPLE(test_frame_plan_emitter_runtime_compute_two_frames_glsl_executes);
-    TEST_SIMPLE(test_frame_plan_emit_drp2_depth_peeling_graph_executes);
-    TEST_SIMPLE(test_scene_drp2_offscreen_canvas_frame);
+    TST_CASE(test_frame_plan_emit_drp2_static_render_glsl_executes);
+    TST_CASE(test_frame_plan_emit_drp2_readback_glsl_executes);
+    TST_CASE(test_frame_plan_emitter_runtime_two_frames_glsl_executes);
+    TST_CASE(test_frame_plan_emitter_runtime_dynamic_two_frames_glsl_executes);
+    TST_CASE(test_frame_plan_emitter_runtime_texture_two_frames_glsl_executes);
+    TST_CASE(test_frame_plan_emitter_runtime_compute_two_frames_glsl_executes);
+    TST_CASE(test_frame_plan_emit_drp2_depth_peeling_graph_executes);
+    TST_CASE(test_scene_drp2_offscreen_canvas_frame);
 #endif
-    TEST_SIMPLE(test_frame_plan_emit_drp2_readback);
-    TEST_SIMPLE(test_frame_plan_emit_drp2_dynamic_uploads);
-    TEST_SIMPLE(test_frame_plan_emit_drp2_texture_sampling);
-    TEST_SIMPLE(test_frame_plan_emit_drp2_compute_assisted);
-    TEST_SIMPLE(test_frame_plan_emitter_runtime_two_frames);
-    TEST_SIMPLE(test_frame_plan_emitter_runtime_dynamic_two_frames);
-    TEST_SIMPLE(test_frame_plan_emitter_runtime_dynamic_grow_buffer);
-    TEST_SIMPLE(test_frame_plan_emitter_runtime_texture_extent_changes);
-    TEST_SIMPLE(test_frame_plan_emitter_runtime_object_map_grows);
-    TEST_SIMPLE(test_frame_plan_emitter_runtime_texture_two_frames);
-    TEST_SIMPLE(test_frame_plan_emitter_runtime_compute_two_frames);
-    TEST_SIMPLE(test_frame_plan_emit_scene_core_visuals_record_portable_dvzr);
+    TST_CASE(test_frame_plan_emit_drp2_readback);
+    TST_CASE(test_frame_plan_emit_drp2_dynamic_uploads);
+    TST_CASE(test_frame_plan_emit_drp2_texture_sampling);
+    TST_CASE(test_frame_plan_emit_drp2_compute_assisted);
+    TST_CASE(test_frame_plan_emitter_runtime_two_frames);
+    TST_CASE(test_frame_plan_emitter_runtime_dynamic_two_frames);
+    TST_CASE(test_frame_plan_emitter_runtime_dynamic_grow_buffer);
+    TST_CASE(test_frame_plan_emitter_runtime_texture_extent_changes);
+    TST_CASE(test_frame_plan_emitter_runtime_object_map_grows);
+    TST_CASE(test_frame_plan_emitter_runtime_texture_two_frames);
+    TST_CASE(test_frame_plan_emitter_runtime_compute_two_frames);
+    TST_CASE(test_frame_plan_emit_scene_core_visuals_record_portable_dvzr);
 
     return 0;
 }

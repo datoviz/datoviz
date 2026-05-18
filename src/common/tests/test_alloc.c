@@ -31,7 +31,7 @@
 /*  Tests                                                                                        */
 /*************************************************************************************************/
 
-int test_alloc_basic(TstSuite* suite, TstItem* tstitem)
+int test_alloc_basic(TstContext* suite, const TstCase* tstitem)
 {
     ANN(suite);
 
@@ -67,7 +67,7 @@ int test_alloc_basic(TstSuite* suite, TstItem* tstitem)
 
 
 
-int test_alloc_aligned(TstSuite* suite, TstItem* tstitem)
+int test_alloc_aligned(TstContext* suite, const TstCase* tstitem)
 {
     ANN(suite);
 

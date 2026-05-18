@@ -38,7 +38,7 @@ static void* _thread_callback(void* user_data)
     return NULL;
 }
 
-int test_thread_1(TstSuite* suite, TstItem* tstitem)
+int test_thread_1(TstContext* suite, const TstCase* tstitem)
 {
     ANN(suite);
     int data = 0;
@@ -61,7 +61,7 @@ static void* _mutex_callback(void* user_data)
     return NULL;
 }
 
-int test_mutex_1(TstSuite* suite, TstItem* tstitem)
+int test_mutex_1(TstContext* suite, const TstCase* tstitem)
 {
     ANN(suite);
     DvzMutex mutex = dvz_mutex();
@@ -88,7 +88,7 @@ static void* _cond_callback(void* user_data)
     return NULL;
 }
 
-int test_cond_1(TstSuite* suite, TstItem* tstitem)
+int test_cond_1(TstContext* suite, const TstCase* tstitem)
 {
     ANN(suite);
     DvzCond cond = dvz_cond();
@@ -107,7 +107,7 @@ int test_cond_1(TstSuite* suite, TstItem* tstitem)
 
 
 
-int test_atomic_1(TstSuite* suite, TstItem* tstitem)
+int test_atomic_1(TstContext* suite, const TstCase* tstitem)
 {
     ANN(suite);
     DvzAtomic atomic = dvz_atomic();
@@ -129,19 +129,24 @@ int test_thread(TstSuite* suite)
 
     const char* tags = "thread";
 
-    TEST_SIMPLE(test_thread_1);
-    TEST_SIMPLE(test_mutex_1);
-    TEST_SIMPLE(test_cond_1);
-    TEST_SIMPLE(test_atomic_1);
+    TST_MODULE(suite, "thread");
+    TST_GROUP("thread");
+    TST_CASE(test_thread_1);
+    TST_CASE(test_mutex_1);
+    TST_CASE(test_cond_1);
+    TST_CASE(test_atomic_1);
 
-    TEST_SIMPLE(test_fifo_1);
-    TEST_SIMPLE(test_fifo_2);
-    TEST_SIMPLE(test_fifo_resize);
-    TEST_SIMPLE(test_fifo_discard);
-    TEST_SIMPLE(test_fifo_first);
-    TEST_SIMPLE(test_deq_1);
-    TEST_SIMPLE(test_deq_2);
-    TEST_SIMPLE(test_deq_3);
+    TST_GROUP("fifo");
+    TST_CASE(test_fifo_1);
+    TST_CASE(test_fifo_2);
+    TST_CASE(test_fifo_resize);
+    TST_CASE(test_fifo_discard);
+    TST_CASE(test_fifo_first);
+
+    TST_GROUP("deq");
+    TST_CASE(test_deq_1);
+    TST_CASE(test_deq_2);
+    TST_CASE(test_deq_3);
 
     return 0;
 }

@@ -26,7 +26,7 @@
 /*  Stats tests                                                                                  */
 /*************************************************************************************************/
 
-int test_stats_parallel(TstSuite* suite, TstItem* tstitem)
+int test_stats_parallel(TstContext* suite, const TstCase* tstitem)
 {
     ANN(suite);
 

@@ -24,7 +24,7 @@
 /*  Random tests                                                                                 */
 /*************************************************************************************************/
 
-int test_prng_1(TstSuite* suite, TstItem* tstitem);
+int test_prng_1(TstContext* suite, const TstCase* tstitem);
 
 
 
@@ -32,17 +32,17 @@ int test_prng_1(TstSuite* suite, TstItem* tstitem);
 /*  Box tests                                                                                    */
 /*************************************************************************************************/
 
-int test_box_1(TstSuite* suite, TstItem* tstitem);
+int test_box_1(TstContext* suite, const TstCase* tstitem);
 
-int test_box_2(TstSuite* suite, TstItem* tstitem);
+int test_box_2(TstContext* suite, const TstCase* tstitem);
 
-int test_box_3(TstSuite* suite, TstItem* tstitem);
+int test_box_3(TstContext* suite, const TstCase* tstitem);
 
-int test_box_4(TstSuite* suite, TstItem* tstitem);
+int test_box_4(TstContext* suite, const TstCase* tstitem);
 
-int test_box_5(TstSuite* suite, TstItem* tstitem);
+int test_box_5(TstContext* suite, const TstCase* tstitem);
 
-int test_box_6(TstSuite* suite, TstItem* tstitem);
+int test_box_6(TstContext* suite, const TstCase* tstitem);
 
 
 
@@ -50,7 +50,7 @@ int test_box_6(TstSuite* suite, TstItem* tstitem);
 /*  Stat tests                                                                                   */
 /*************************************************************************************************/
 
-int test_stats_parallel(TstSuite* suite, TstItem* tstitem);
+int test_stats_parallel(TstContext* suite, const TstCase* tstitem);
 
 
 
@@ -58,7 +58,7 @@ int test_stats_parallel(TstSuite* suite, TstItem* tstitem);
 /*  Anim tests                                                                                   */
 /*************************************************************************************************/
 
-int test_anim_1(TstSuite* suite, TstItem* tstitem);
+int test_anim_1(TstContext* suite, const TstCase* tstitem);
 
 
 
@@ -66,25 +66,25 @@ int test_anim_1(TstSuite* suite, TstItem* tstitem);
 /*  Array tests                                                                                  */
 /*************************************************************************************************/
 
-int test_array_1(TstSuite* suite, TstItem* tstitem);
+int test_array_1(TstContext* suite, const TstCase* tstitem);
 
-int test_array_2(TstSuite* suite, TstItem* tstitem);
+int test_array_2(TstContext* suite, const TstCase* tstitem);
 
-int test_array_3(TstSuite* suite, TstItem* tstitem);
+int test_array_3(TstContext* suite, const TstCase* tstitem);
 
-int test_array_4(TstSuite* suite, TstItem* tstitem);
+int test_array_4(TstContext* suite, const TstCase* tstitem);
 
-int test_array_5(TstSuite* suite, TstItem* tstitem);
+int test_array_5(TstContext* suite, const TstCase* tstitem);
 
-int test_array_6(TstSuite* suite, TstItem* tstitem);
+int test_array_6(TstContext* suite, const TstCase* tstitem);
 
-int test_array_7(TstSuite* suite, TstItem* tstitem);
+int test_array_7(TstContext* suite, const TstCase* tstitem);
 
-int test_array_cast(TstSuite* suite, TstItem* tstitem);
+int test_array_cast(TstContext* suite, const TstCase* tstitem);
 
-int test_array_mvp(TstSuite* suite, TstItem* tstitem);
+int test_array_mvp(TstContext* suite, const TstCase* tstitem);
 
-int test_array_3D(TstSuite* suite, TstItem* tstitem);
+int test_array_3D(TstContext* suite, const TstCase* tstitem);
 
 
 

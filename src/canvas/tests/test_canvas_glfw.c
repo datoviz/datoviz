@@ -490,7 +490,7 @@ static void _canvas_wrap_surface_fixture_destroy(
  * @param item  The test item (unused).
  * @return int  Zero on success.
  */
-int test_canvas_swapchain_failfast_slot_init(TstSuite* suite, TstItem* item)
+int test_canvas_swapchain_failfast_slot_init(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -548,7 +548,7 @@ int test_canvas_swapchain_failfast_slot_init(TstSuite* suite, TstItem* item)
  * @param item  The test item (unused).
  * @return int  Zero on success.
  */
-int test_canvas_glfw_present_recovery(TstSuite* suite, TstItem* item)
+int test_canvas_glfw_present_recovery(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -614,7 +614,7 @@ int test_canvas_glfw_present_recovery(TstSuite* suite, TstItem* item)
  * @param item  The test item (unused).
  * @return int  Zero on success.
  */
-int test_canvas_handle_refresh_order(TstSuite* suite, TstItem* item)
+int test_canvas_handle_refresh_order(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -706,7 +706,7 @@ int test_canvas_handle_refresh_order(TstSuite* suite, TstItem* item)
  * @param item  The test item (unused).
  * @return int  Zero on success.
  */
-int test_canvas_video_wait_value_propagation(TstSuite* suite, TstItem* item)
+int test_canvas_video_wait_value_propagation(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -767,7 +767,7 @@ int test_canvas_video_wait_value_propagation(TstSuite* suite, TstItem* item)
  * @param item  The test item (unused).
  * @return int  Zero on success.
  */
-int test_canvas_video_wait_handle_ready_on_first_start(TstSuite* suite, TstItem* item)
+int test_canvas_video_wait_handle_ready_on_first_start(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -840,7 +840,7 @@ int test_canvas_video_wait_handle_ready_on_first_start(TstSuite* suite, TstItem*
  * @param item  The test item (unused).
  * @return int  Zero on success.
  */
-int test_canvas_video_wait_handle_export_fallback(TstSuite* suite, TstItem* item)
+int test_canvas_video_wait_handle_export_fallback(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -915,7 +915,7 @@ int test_canvas_video_wait_handle_export_fallback(TstSuite* suite, TstItem* item
  * @param item  The test item (unused).
  * @return int  Zero on success.
  */
-int test_canvas_video_wait_handle_export_fallback_after_recreate(TstSuite* suite, TstItem* item)
+int test_canvas_video_wait_handle_export_fallback_after_recreate(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -1017,7 +1017,7 @@ int test_canvas_video_wait_handle_export_fallback_after_recreate(TstSuite* suite
  * @param item  The test item (unused).
  * @return int  Zero on success.
  */
-int test_canvas_video_sink_start_submit_integration(TstSuite* suite, TstItem* item)
+int test_canvas_video_sink_start_submit_integration(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -1119,7 +1119,7 @@ cleanup:
  * @param item  The test item (unused).
  * @return int  Zero on success.
  */
-int test_canvas_video_sink_disable_rebuild(TstSuite* suite, TstItem* item)
+int test_canvas_video_sink_disable_rebuild(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -1249,7 +1249,7 @@ cleanup:
  * @param item  The test item (unused).
  * @return int  Zero on success.
  */
-int test_canvas_capture_api(TstSuite* suite, TstItem* item)
+int test_canvas_capture_api(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -1344,7 +1344,7 @@ int test_canvas_capture_api(TstSuite* suite, TstItem* item)
  * @param item  The test item (unused).
  * @return int  Zero on success.
  */
-int test_canvas_video_handle_refresh_after_recreate(TstSuite* suite, TstItem* item)
+int test_canvas_video_handle_refresh_after_recreate(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -1435,7 +1435,7 @@ int test_canvas_video_handle_refresh_after_recreate(TstSuite* suite, TstItem* it
  * @param item  The test item (unused).
  * @return int  Zero on success.
  */
-int test_canvas_device_lost_fatal_transition(TstSuite* suite, TstItem* item)
+int test_canvas_device_lost_fatal_transition(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -1510,7 +1510,7 @@ int test_canvas_device_lost_fatal_transition(TstSuite* suite, TstItem* item)
  * @param item  The test item (unused).
  * @return int  Zero on success.
  */
-int test_canvas_glfw_wrap_surface_present_recovery(TstSuite* suite, TstItem* item)
+int test_canvas_glfw_wrap_surface_present_recovery(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -1656,7 +1656,7 @@ int test_canvas_glfw_wrap_surface_present_recovery(TstSuite* suite, TstItem* ite
 
 
 
-int test_canvas_glfw_wrap_surface_resize_recreate_refreshes_state(TstSuite* suite, TstItem* item)
+int test_canvas_glfw_wrap_surface_resize_recreate_refreshes_state(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -1850,7 +1850,7 @@ int test_canvas_glfw_wrap_surface_resize_recreate_refreshes_state(TstSuite* suit
  * @param item  The test item (unused).
  * @return int  Zero on success.
  */
-int test_canvas_glfw(TstSuite* suite, TstItem* item)
+int test_canvas_glfw(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;

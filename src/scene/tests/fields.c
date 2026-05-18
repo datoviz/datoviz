@@ -35,7 +35,7 @@
 /*  Tests                                                                                        */
 /*************************************************************************************************/
 
-int test_scene_scale_colormap_colorbar_core(TstSuite* suite, TstItem* item)
+int test_scene_scale_colormap_colorbar_core(TstContext* suite, const TstCase* item)
 {
     (void)suite;
     (void)item;
@@ -129,7 +129,7 @@ int test_scene_scale_colormap_colorbar_core(TstSuite* suite, TstItem* item)
 }
 
 
-int test_scene_colorbar_rejects_cross_scene_scale(TstSuite* suite, TstItem* item)
+int test_scene_colorbar_rejects_cross_scene_scale(TstContext* suite, const TstCase* item)
 {
     tst_log_capture_begin(suite);
 
@@ -155,7 +155,7 @@ int test_scene_colorbar_rejects_cross_scene_scale(TstSuite* suite, TstItem* item
 }
 
 
-int test_scene_image_visual_binds_colormap_scale(TstSuite* suite, TstItem* item)
+int test_scene_image_visual_binds_colormap_scale(TstContext* suite, const TstCase* item)
 {
     (void)suite;
     (void)item;
@@ -233,7 +233,7 @@ int test_scene_image_visual_binds_colormap_scale(TstSuite* suite, TstItem* item)
 }
 
 
-int test_scene_visual_scale_rejects_cross_scene_scale(TstSuite* suite, TstItem* item)
+int test_scene_visual_scale_rejects_cross_scene_scale(TstContext* suite, const TstCase* item)
 {
     tst_log_capture_begin(suite);
 
@@ -256,7 +256,7 @@ int test_scene_visual_scale_rejects_cross_scene_scale(TstSuite* suite, TstItem* 
 }
 
 
-int test_scene_visual_buffer_rejects_cross_scene_buffer(TstSuite* suite, TstItem* item)
+int test_scene_visual_buffer_rejects_cross_scene_buffer(TstContext* suite, const TstCase* item)
 {
     tst_log_capture_begin(suite);
     (void)item;
@@ -281,7 +281,7 @@ int test_scene_visual_buffer_rejects_cross_scene_buffer(TstSuite* suite, TstItem
 }
 
 
-int test_scene_image_scalar_texture_uses_bound_scale(TstSuite* suite, TstItem* item)
+int test_scene_image_scalar_texture_uses_bound_scale(TstContext* suite, const TstCase* item)
 {
     (void)suite;
     (void)item;
@@ -346,7 +346,7 @@ int test_scene_image_scalar_texture_uses_bound_scale(TstSuite* suite, TstItem* i
 }
 
 
-int test_scene_image_r16_float_field_uses_bound_scale(TstSuite* suite, TstItem* item)
+int test_scene_image_r16_float_field_uses_bound_scale(TstContext* suite, const TstCase* item)
 {
     (void)suite;
     (void)item;
@@ -422,7 +422,7 @@ int test_scene_image_r16_float_field_uses_bound_scale(TstSuite* suite, TstItem* 
 }
 
 
-int test_scene_image_r16_snorm_field_uses_bound_scale(TstSuite* suite, TstItem* item)
+int test_scene_image_r16_snorm_field_uses_bound_scale(TstContext* suite, const TstCase* item)
 {
     (void)suite;
     (void)item;
@@ -498,7 +498,7 @@ int test_scene_image_r16_snorm_field_uses_bound_scale(TstSuite* suite, TstItem* 
 }
 
 
-int test_scene_visual_field_rejects_cross_scene_field(TstSuite* suite, TstItem* item)
+int test_scene_visual_field_rejects_cross_scene_field(TstContext* suite, const TstCase* item)
 {
     tst_log_capture_begin(suite);
     (void)item;
@@ -530,7 +530,7 @@ int test_scene_visual_field_rejects_cross_scene_field(TstSuite* suite, TstItem* 
 }
 
 
-int test_scene_sampled_field_update_region(TstSuite* suite, TstItem* item)
+int test_scene_sampled_field_update_region(TstContext* suite, const TstCase* item)
 {
     (void)suite;
     (void)item;
@@ -570,7 +570,7 @@ int test_scene_sampled_field_update_region(TstSuite* suite, TstItem* item)
 }
 
 
-int test_scene_sampled_field_rejects_unsupported_format(TstSuite* suite, TstItem* item)
+int test_scene_sampled_field_rejects_unsupported_format(TstContext* suite, const TstCase* item)
 {
     tst_log_capture_begin(suite);
     (void)item;
@@ -595,7 +595,7 @@ int test_scene_sampled_field_rejects_unsupported_format(TstSuite* suite, TstItem
 }
 
 
-int test_scene_image_visual_rejects_3d_field(TstSuite* suite, TstItem* item)
+int test_scene_image_visual_rejects_3d_field(TstContext* suite, const TstCase* item)
 {
     tst_log_capture_begin(suite);
     (void)item;
@@ -624,7 +624,7 @@ int test_scene_image_visual_rejects_3d_field(TstSuite* suite, TstItem* item)
 }
 
 
-int test_scene_volume_visual_binds_3d_field(TstSuite* suite, TstItem* item)
+int test_scene_volume_visual_binds_3d_field(TstContext* suite, const TstCase* item)
 {
     tst_log_capture_begin(suite);
     (void)item;
@@ -696,7 +696,7 @@ int test_scene_volume_visual_binds_3d_field(TstSuite* suite, TstItem* item)
 }
 
 
-int test_scene_volume_field_emit_realizes_3d_texture(TstSuite* suite, TstItem* item)
+int test_scene_volume_field_emit_realizes_3d_texture(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -852,7 +852,7 @@ int test_scene_volume_field_emit_realizes_3d_texture(TstSuite* suite, TstItem* i
 }
 
 
-int test_scene_volume_retained_controls(TstSuite* suite, TstItem* item)
+int test_scene_volume_retained_controls(TstContext* suite, const TstCase* item)
 {
     tst_log_capture_begin(suite);
     (void)item;
@@ -1066,7 +1066,7 @@ int test_scene_volume_retained_controls(TstSuite* suite, TstItem* item)
 }
 
 
-int test_scene_volume_visual_metadata_lowering(TstSuite* suite, TstItem* item)
+int test_scene_volume_visual_metadata_lowering(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -1161,7 +1161,7 @@ int test_scene_volume_visual_metadata_lowering(TstSuite* suite, TstItem* item)
 }
 
 
-int test_scene_volume_rgba_field_no_transfer(TstSuite* suite, TstItem* item)
+int test_scene_volume_rgba_field_no_transfer(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -1351,7 +1351,7 @@ int test_scene_volume_rgba_field_no_transfer(TstSuite* suite, TstItem* item)
 }
 
 
-int test_scene_volume_scalar_transfer_function_uploads_rgba(TstSuite* suite, TstItem* item)
+int test_scene_volume_scalar_transfer_function_uploads_rgba(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -1482,7 +1482,7 @@ int test_scene_volume_scalar_transfer_function_uploads_rgba(TstSuite* suite, Tst
 
 
 int test_scene_sampled_field_3d_emits_runtime_texture_upload(
-    TstSuite* suite, TstItem* item)
+    TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -1634,7 +1634,7 @@ int test_scene_sampled_field_3d_emits_runtime_texture_upload(
 
 
 int test_scene_sampled_field_update_region_rejects_out_of_bounds(
-    TstSuite* suite, TstItem* item)
+    TstContext* suite, const TstCase* item)
 {
     tst_log_capture_begin(suite);
     (void)item;
@@ -1666,7 +1666,7 @@ int test_scene_sampled_field_update_region_rejects_out_of_bounds(
 }
 
 
-int test_scene_sampled_field_destroy_clears_visual_binding(TstSuite* suite, TstItem* item)
+int test_scene_sampled_field_destroy_clears_visual_binding(TstContext* suite, const TstCase* item)
 {
     (void)suite;
     (void)item;
@@ -1702,7 +1702,7 @@ int test_scene_sampled_field_destroy_clears_visual_binding(TstSuite* suite, TstI
 }
 
 
-int test_scene_shared_field_update_marks_two_visuals_dirty(TstSuite* suite, TstItem* item)
+int test_scene_shared_field_update_marks_two_visuals_dirty(TstContext* suite, const TstCase* item)
 {
     (void)suite;
     (void)item;
@@ -1748,7 +1748,7 @@ int test_scene_shared_field_update_marks_two_visuals_dirty(TstSuite* suite, TstI
 }
 
 
-int test_scene_image_field_partial_update_emits_texture_subregion(TstSuite* suite, TstItem* item)
+int test_scene_image_field_partial_update_emits_texture_subregion(TstContext* suite, const TstCase* item)
 {
     (void)suite;
     (void)item;
@@ -1853,7 +1853,7 @@ int test_scene_image_field_partial_update_emits_texture_subregion(TstSuite* suit
  * @param item the active test item
  * @return 0 on success
  */
-int test_scene_image_field_resize_emits_texture_reallocation(TstSuite* suite, TstItem* item)
+int test_scene_image_field_resize_emits_texture_reallocation(TstContext* suite, const TstCase* item)
 {
     (void)suite;
     (void)item;
@@ -1976,7 +1976,7 @@ int test_scene_image_field_resize_emits_texture_reallocation(TstSuite* suite, Ts
 }
 
 
-int test_scene_shared_field_mixed_full_and_partial_uploads(TstSuite* suite, TstItem* item)
+int test_scene_shared_field_mixed_full_and_partial_uploads(TstContext* suite, const TstCase* item)
 {
     (void)suite;
     (void)item;
@@ -2110,31 +2110,34 @@ int test_scene_fields(TstSuite* suite)
     ANN(suite);
     const char* tags = "scene";
 
-    TEST_SIMPLE(test_scene_scale_colormap_colorbar_core);
-    TEST_SIMPLE(test_scene_colorbar_rejects_cross_scene_scale);
-    TEST_SIMPLE(test_scene_image_visual_binds_colormap_scale);
-    TEST_SIMPLE(test_scene_visual_scale_rejects_cross_scene_scale);
-    TEST_SIMPLE(test_scene_visual_buffer_rejects_cross_scene_buffer);
-    TEST_SIMPLE(test_scene_image_scalar_texture_uses_bound_scale);
-    TEST_SIMPLE(test_scene_image_r16_float_field_uses_bound_scale);
-    TEST_SIMPLE(test_scene_image_r16_snorm_field_uses_bound_scale);
-    TEST_SIMPLE(test_scene_visual_field_rejects_cross_scene_field);
-    TEST_SIMPLE(test_scene_sampled_field_update_region);
-    TEST_SIMPLE(test_scene_sampled_field_rejects_unsupported_format);
-    TEST_SIMPLE(test_scene_image_visual_rejects_3d_field);
-    TEST_SIMPLE(test_scene_volume_visual_binds_3d_field);
-    TEST_SIMPLE(test_scene_volume_field_emit_realizes_3d_texture);
-    TEST_SIMPLE(test_scene_volume_retained_controls);
-    TEST_SIMPLE(test_scene_volume_rgba_field_no_transfer);
-    TEST_SIMPLE(test_scene_volume_visual_metadata_lowering);
-    TEST_SIMPLE(test_scene_volume_scalar_transfer_function_uploads_rgba);
-    TEST_SIMPLE(test_scene_sampled_field_3d_emits_runtime_texture_upload);
-    TEST_SIMPLE(test_scene_sampled_field_update_region_rejects_out_of_bounds);
-    TEST_SIMPLE(test_scene_sampled_field_destroy_clears_visual_binding);
-    TEST_SIMPLE(test_scene_shared_field_update_marks_two_visuals_dirty);
-    TEST_SIMPLE(test_scene_image_field_partial_update_emits_texture_subregion);
-    TEST_SIMPLE(test_scene_image_field_resize_emits_texture_reallocation);
-    TEST_SIMPLE(test_scene_shared_field_mixed_full_and_partial_uploads);
+    TST_MODULE(suite, "scene");
+    TST_GROUP("fields");
+
+    TST_CASE(test_scene_scale_colormap_colorbar_core);
+    TST_CASE(test_scene_colorbar_rejects_cross_scene_scale);
+    TST_CASE(test_scene_image_visual_binds_colormap_scale);
+    TST_CASE(test_scene_visual_scale_rejects_cross_scene_scale);
+    TST_CASE(test_scene_visual_buffer_rejects_cross_scene_buffer);
+    TST_CASE(test_scene_image_scalar_texture_uses_bound_scale);
+    TST_CASE(test_scene_image_r16_float_field_uses_bound_scale);
+    TST_CASE(test_scene_image_r16_snorm_field_uses_bound_scale);
+    TST_CASE(test_scene_visual_field_rejects_cross_scene_field);
+    TST_CASE(test_scene_sampled_field_update_region);
+    TST_CASE(test_scene_sampled_field_rejects_unsupported_format);
+    TST_CASE(test_scene_image_visual_rejects_3d_field);
+    TST_CASE(test_scene_volume_visual_binds_3d_field);
+    TST_CASE(test_scene_volume_field_emit_realizes_3d_texture);
+    TST_CASE(test_scene_volume_retained_controls);
+    TST_CASE(test_scene_volume_rgba_field_no_transfer);
+    TST_CASE(test_scene_volume_visual_metadata_lowering);
+    TST_CASE(test_scene_volume_scalar_transfer_function_uploads_rgba);
+    TST_CASE(test_scene_sampled_field_3d_emits_runtime_texture_upload);
+    TST_CASE(test_scene_sampled_field_update_region_rejects_out_of_bounds);
+    TST_CASE(test_scene_sampled_field_destroy_clears_visual_binding);
+    TST_CASE(test_scene_shared_field_update_marks_two_visuals_dirty);
+    TST_CASE(test_scene_image_field_partial_update_emits_texture_subregion);
+    TST_CASE(test_scene_image_field_resize_emits_texture_reallocation);
+    TST_CASE(test_scene_shared_field_mixed_full_and_partial_uploads);
 
     return 0;
 }

@@ -19,6 +19,7 @@
 
 #include "_assertions.h"
 #include "_compat.h"
+#include "_log.h"
 #include "../_scene.h"
 #include "datoviz/drp2.h"
 #include "datoviz/scene.h"
@@ -35,7 +36,7 @@
 /*************************************************************************************************/
 
 int test_scene_process_requests_coalesces_pending_picks_before_execution(
-    TstSuite* suite, TstItem* item)
+    TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     ANN(item);
@@ -101,7 +102,7 @@ int test_scene_process_requests_coalesces_pending_picks_before_execution(
 
 
 int test_scene_process_requests_coalesces_pending_probes_before_execution(
-    TstSuite* suite, TstItem* item)
+    TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     ANN(item);
@@ -148,7 +149,7 @@ int test_scene_process_requests_coalesces_pending_probes_before_execution(
 }
 
 
-int test_scene_pick_probe_queues_and_pinned_readout(TstSuite* suite, TstItem* item)
+int test_scene_pick_probe_queues_and_pinned_readout(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     ANN(item);
@@ -227,7 +228,7 @@ int test_scene_pick_probe_queues_and_pinned_readout(TstSuite* suite, TstItem* it
  * @param item the active test item
  * @return 0 on success
  */
-int test_scene_poll_pick_probe_clears_consumed_slots(TstSuite* suite, TstItem* item)
+int test_scene_poll_pick_probe_clears_consumed_slots(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     ANN(item);
@@ -284,7 +285,7 @@ int test_scene_poll_pick_probe_clears_consumed_slots(TstSuite* suite, TstItem* i
 
 
 int test_scene_pick_request_same_id_supersedes_older_unresolved(
-    TstSuite* suite, TstItem* item)
+    TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     ANN(item);
@@ -322,7 +323,7 @@ int test_scene_pick_request_same_id_supersedes_older_unresolved(
 
 
 int test_scene_probe_request_zero_id_keeps_newest_unresolved(
-    TstSuite* suite, TstItem* item)
+    TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     ANN(item);
@@ -360,7 +361,7 @@ int test_scene_probe_request_zero_id_keeps_newest_unresolved(
 
 
 int test_scene_pick_request_distinct_ids_keep_independent_pending_and_results(
-    TstSuite* suite, TstItem* item)
+    TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     ANN(item);
@@ -406,7 +407,7 @@ int test_scene_pick_request_distinct_ids_keep_independent_pending_and_results(
 
 
 int test_scene_pick_request_same_id_rejects_late_result_after_newer_poll(
-    TstSuite* suite, TstItem* item)
+    TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     ANN(item);
@@ -439,7 +440,7 @@ int test_scene_pick_request_same_id_rejects_late_result_after_newer_poll(
 
 
 int test_scene_probe_request_zero_id_rejects_late_result_after_newer_poll(
-    TstSuite* suite, TstItem* item)
+    TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     ANN(item);
@@ -471,7 +472,7 @@ int test_scene_probe_request_zero_id_rejects_late_result_after_newer_poll(
 }
 
 
-int test_scene_image_probe_transparent_pixel_misses(TstSuite* suite, TstItem* item)
+int test_scene_image_probe_transparent_pixel_misses(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     ANN(item);
@@ -562,7 +563,7 @@ int test_scene_image_probe_transparent_pixel_misses(TstSuite* suite, TstItem* it
  */
 
 
-int test_scene_image_probe_gpu_readback_failure_misses(TstSuite* suite, TstItem* item)
+int test_scene_image_probe_gpu_readback_failure_misses(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     ANN(item);
@@ -645,7 +646,7 @@ int test_scene_image_probe_gpu_readback_failure_misses(TstSuite* suite, TstItem*
 }
 
 
-static int test_scene_volume_slice_probe_cpu_sample(TstSuite* suite, TstItem* item)
+static int test_scene_volume_slice_probe_cpu_sample(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     ANN(item);
@@ -714,7 +715,7 @@ static int test_scene_volume_slice_probe_cpu_sample(TstSuite* suite, TstItem* it
 }
 
 
-int test_scene_process_pick_probe_requests(TstSuite* suite, TstItem* item)
+int test_scene_process_pick_probe_requests(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     ANN(item);
@@ -825,7 +826,7 @@ int test_scene_process_pick_probe_requests(TstSuite* suite, TstItem* item)
  */
 
 
-int test_scene_point_pick_quadrants(TstSuite* suite, TstItem* item)
+int test_scene_point_pick_quadrants(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     ANN(item);
@@ -930,7 +931,7 @@ int test_scene_point_pick_quadrants(TstSuite* suite, TstItem* item)
  * @param item the active test item
  * @return 0 on success
  */
-int test_scene_point_pick_rejects_disc_corner(TstSuite* suite, TstItem* item)
+int test_scene_point_pick_rejects_disc_corner(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     ANN(item);
@@ -1001,7 +1002,7 @@ int test_scene_point_pick_rejects_disc_corner(TstSuite* suite, TstItem* item)
  * @param item the active test item
  * @return 0 on success
  */
-int test_scene_pixel_pick_accepts_square_corner(TstSuite* suite, TstItem* item)
+int test_scene_pixel_pick_accepts_square_corner(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     ANN(item);
@@ -1074,7 +1075,7 @@ int test_scene_pixel_pick_accepts_square_corner(TstSuite* suite, TstItem* item)
  * @param item the active test item
  * @return 0 on success
  */
-int test_scene_marker_pick_accepts_bbox_corner(TstSuite* suite, TstItem* item)
+int test_scene_marker_pick_accepts_bbox_corner(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     ANN(item);
@@ -1155,7 +1156,7 @@ int test_scene_marker_pick_accepts_bbox_corner(TstSuite* suite, TstItem* item)
  */
 
 
-int test_scene_process_requests_preserves_caller_runtime(TstSuite* suite, TstItem* item)
+int test_scene_process_requests_preserves_caller_runtime(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -1222,7 +1223,7 @@ int test_scene_process_requests_preserves_caller_runtime(TstSuite* suite, TstIte
  * @param item the active test item
  * @return 0 on success
  */
-int test_scene_image_probe_reuses_retained_request_executor(TstSuite* suite, TstItem* item)
+int test_scene_image_probe_reuses_retained_request_executor(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -1325,7 +1326,7 @@ int test_scene_image_probe_reuses_retained_request_executor(TstSuite* suite, Tst
  */
 
 
-int test_scene_image_probe_respects_panel_request_position(TstSuite* suite, TstItem* item)
+int test_scene_image_probe_respects_panel_request_position(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     ANN(item);
@@ -1459,7 +1460,7 @@ int test_scene_image_probe_respects_panel_request_position(TstSuite* suite, TstI
 }
 
 
-int test_scene_image_probe_segment_rgba_hidden_visual(TstSuite* suite, TstItem* item)
+int test_scene_image_probe_segment_rgba_hidden_visual(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     ANN(item);
@@ -1587,7 +1588,7 @@ int test_scene_image_probe_segment_rgba_hidden_visual(TstSuite* suite, TstItem* 
 }
 
 
-int test_scene_image_probe_plan_rejects_size_overflow(TstSuite* suite, TstItem* item)
+int test_scene_image_probe_plan_rejects_size_overflow(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     ANN(item);
@@ -1657,28 +1658,31 @@ int test_scene_pick_probe(TstSuite* suite)
     ANN(suite);
     const char* tags = "scene";
 
-    TEST_SIMPLE(test_scene_process_requests_coalesces_pending_picks_before_execution);
-    TEST_SIMPLE(test_scene_process_requests_coalesces_pending_probes_before_execution);
-    TEST_SIMPLE(test_scene_pick_probe_queues_and_pinned_readout);
-    TEST_SIMPLE(test_scene_poll_pick_probe_clears_consumed_slots);
-    TEST_SIMPLE(test_scene_pick_request_same_id_supersedes_older_unresolved);
-    TEST_SIMPLE(test_scene_probe_request_zero_id_keeps_newest_unresolved);
-    TEST_SIMPLE(test_scene_pick_request_distinct_ids_keep_independent_pending_and_results);
-    TEST_SIMPLE(test_scene_pick_request_same_id_rejects_late_result_after_newer_poll);
-    TEST_SIMPLE(test_scene_probe_request_zero_id_rejects_late_result_after_newer_poll);
-    TEST_SIMPLE(test_scene_image_probe_transparent_pixel_misses);
-    TEST_SIMPLE(test_scene_image_probe_gpu_readback_failure_misses);
-    TEST_SIMPLE(test_scene_volume_slice_probe_cpu_sample);
-    TEST_SIMPLE(test_scene_process_pick_probe_requests);
-    TEST_SIMPLE(test_scene_point_pick_quadrants);
-    TEST_SIMPLE(test_scene_point_pick_rejects_disc_corner);
-    TEST_SIMPLE(test_scene_pixel_pick_accepts_square_corner);
-    TEST_SIMPLE(test_scene_marker_pick_accepts_bbox_corner);
-    TEST_SIMPLE(test_scene_process_requests_preserves_caller_runtime);
-    TEST_SIMPLE(test_scene_image_probe_reuses_retained_request_executor);
-    TEST_SIMPLE(test_scene_image_probe_respects_panel_request_position);
-    TEST_SIMPLE(test_scene_image_probe_segment_rgba_hidden_visual);
-    TEST_SIMPLE(test_scene_image_probe_plan_rejects_size_overflow);
+    TST_MODULE(suite, "scene");
+    TST_GROUP("pick-probe");
+
+    TST_CASE(test_scene_process_requests_coalesces_pending_picks_before_execution);
+    TST_CASE(test_scene_process_requests_coalesces_pending_probes_before_execution);
+    TST_CASE(test_scene_pick_probe_queues_and_pinned_readout);
+    TST_CASE(test_scene_poll_pick_probe_clears_consumed_slots);
+    TST_CASE(test_scene_pick_request_same_id_supersedes_older_unresolved);
+    TST_CASE(test_scene_probe_request_zero_id_keeps_newest_unresolved);
+    TST_CASE(test_scene_pick_request_distinct_ids_keep_independent_pending_and_results);
+    TST_CASE(test_scene_pick_request_same_id_rejects_late_result_after_newer_poll);
+    TST_CASE(test_scene_probe_request_zero_id_rejects_late_result_after_newer_poll);
+    TST_CASE(test_scene_image_probe_transparent_pixel_misses);
+    TST_CASE(test_scene_image_probe_gpu_readback_failure_misses);
+    TST_CASE(test_scene_volume_slice_probe_cpu_sample);
+    TST_CASE(test_scene_process_pick_probe_requests);
+    TST_CASE(test_scene_point_pick_quadrants);
+    TST_CASE(test_scene_point_pick_rejects_disc_corner);
+    TST_CASE(test_scene_pixel_pick_accepts_square_corner);
+    TST_CASE(test_scene_marker_pick_accepts_bbox_corner);
+    TST_CASE(test_scene_process_requests_preserves_caller_runtime);
+    TST_CASE(test_scene_image_probe_reuses_retained_request_executor);
+    TST_CASE(test_scene_image_probe_respects_panel_request_position);
+    TST_CASE(test_scene_image_probe_segment_rgba_hidden_visual);
+    TST_CASE(test_scene_image_probe_plan_rejects_size_overflow);
 
     return 0;
 }

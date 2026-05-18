@@ -40,7 +40,7 @@
 
 /*************************************************************************************************/
 
-int test_scene_capabilities_diagnostics(TstSuite* suite, TstItem* item)
+int test_scene_capabilities_diagnostics(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -68,7 +68,7 @@ int test_scene_capabilities_diagnostics(TstSuite* suite, TstItem* item)
 
 /*************************************************************************************************/
 /*  Tests                                                                                        */
-int test_frame_plan_static_render(TstSuite* suite, TstItem* item)
+int test_frame_plan_static_render(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -102,7 +102,7 @@ int test_frame_plan_static_render(TstSuite* suite, TstItem* item)
 }
 
 
-int test_frame_plan_render_pass_roles(TstSuite* suite, TstItem* item)
+int test_frame_plan_render_pass_roles(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -141,7 +141,7 @@ int test_frame_plan_render_pass_roles(TstSuite* suite, TstItem* item)
 }
 
 
-int test_frame_plan_clear(TstSuite* suite, TstItem* item)
+int test_frame_plan_clear(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -165,7 +165,7 @@ int test_frame_plan_clear(TstSuite* suite, TstItem* item)
 }
 
 
-int test_frame_plan_growth_json(TstSuite* suite, TstItem* item)
+int test_frame_plan_growth_json(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -198,7 +198,7 @@ int test_frame_plan_growth_json(TstSuite* suite, TstItem* item)
 }
 
 
-int test_frame_plan_json_escapes_labels(TstSuite* suite, TstItem* item)
+int test_frame_plan_json_escapes_labels(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -233,7 +233,7 @@ int test_frame_plan_json_escapes_labels(TstSuite* suite, TstItem* item)
  * @param item the active test item
  * @return 0 on success
  */
-int test_scene_resource_keys(TstSuite* suite, TstItem* item)
+int test_scene_resource_keys(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -280,7 +280,7 @@ int test_scene_resource_keys(TstSuite* suite, TstItem* item)
  * @param item the active test item
  * @return 0 on success
  */
-int test_frame_plan_render_visual_metadata(TstSuite* suite, TstItem* item)
+int test_frame_plan_render_visual_metadata(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -348,7 +348,7 @@ int test_frame_plan_render_visual_metadata(TstSuite* suite, TstItem* item)
  * @param item the active test item
  * @return 0 on success
  */
-static int test_frame_plan_runtime_uses_graph_pass_order(TstSuite* suite, TstItem* item)
+static int test_frame_plan_runtime_uses_graph_pass_order(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -464,7 +464,7 @@ static int test_frame_plan_runtime_uses_graph_pass_order(TstSuite* suite, TstIte
  * @param item the active test item
  * @return 0 on success
  */
-int test_frame_plan_render_visual_metadata_diagnostic(TstSuite* suite, TstItem* item)
+int test_frame_plan_render_visual_metadata_diagnostic(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -515,7 +515,7 @@ int test_frame_plan_render_visual_metadata_diagnostic(TstSuite* suite, TstItem* 
 }
 
 
-int test_frame_plan_dynamic_update(TstSuite* suite, TstItem* item)
+int test_frame_plan_dynamic_update(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -546,7 +546,7 @@ int test_frame_plan_dynamic_update(TstSuite* suite, TstItem* item)
 }
 
 
-int test_frame_plan_texture_upload_json_includes_region(TstSuite* suite, TstItem* item)
+int test_frame_plan_texture_upload_json_includes_region(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -572,7 +572,7 @@ int test_frame_plan_texture_upload_json_includes_region(TstSuite* suite, TstItem
 }
 
 
-int test_frame_plan_readbacks(TstSuite* suite, TstItem* item)
+int test_frame_plan_readbacks(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -613,7 +613,7 @@ int test_frame_plan_readbacks(TstSuite* suite, TstItem* item)
  * @param item the active test item
  * @return 0 on success
  */
-int test_frame_plan_graph_static_multipass(TstSuite* suite, TstItem* item)
+int test_frame_plan_graph_static_multipass(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -745,7 +745,7 @@ int test_frame_plan_graph_static_multipass(TstSuite* suite, TstItem* item)
  * @param item the active test item
  * @return 0 on success
  */
-int test_frame_plan_graph_validation_read_before_write(TstSuite* suite, TstItem* item)
+int test_frame_plan_graph_validation_read_before_write(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -788,7 +788,7 @@ int test_frame_plan_graph_validation_read_before_write(TstSuite* suite, TstItem*
  * @param item the active test item
  * @return 0 on success
  */
-int test_frame_plan_graph_validation_topological_order(TstSuite* suite, TstItem* item)
+int test_frame_plan_graph_validation_topological_order(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -844,7 +844,7 @@ int test_frame_plan_graph_validation_topological_order(TstSuite* suite, TstItem*
  * @param item the active test item
  * @return 0 on success
  */
-int test_frame_plan_graph_validation_pass_kind(TstSuite* suite, TstItem* item)
+int test_frame_plan_graph_validation_pass_kind(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -895,7 +895,7 @@ int test_frame_plan_graph_validation_pass_kind(TstSuite* suite, TstItem* item)
  * @param item the active test item
  * @return 0 on success
  */
-int test_frame_plan_graph_dependencies_dump(TstSuite* suite, TstItem* item)
+int test_frame_plan_graph_dependencies_dump(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -1035,7 +1035,7 @@ int test_frame_plan_graph_dependencies_dump(TstSuite* suite, TstItem* item)
  * @param item the active test item
  * @return 0 on success
  */
-int test_frame_plan_graph_depth_peeling_shape(TstSuite* suite, TstItem* item)
+int test_frame_plan_graph_depth_peeling_shape(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -1233,7 +1233,7 @@ int test_frame_plan_graph_depth_peeling_shape(TstSuite* suite, TstItem* item)
  * @param item the active test item
  * @return 0 on success
  */
-int test_frame_plan_graph_gbuffer_shape(TstSuite* suite, TstItem* item)
+int test_frame_plan_graph_gbuffer_shape(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -1311,7 +1311,7 @@ int test_frame_plan_graph_gbuffer_shape(TstSuite* suite, TstItem* item)
  * @param item the active test item
  * @return 0 on success
  */
-int test_frame_plan_graph_validation_ambiguous_producer(TstSuite* suite, TstItem* item)
+int test_frame_plan_graph_validation_ambiguous_producer(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -1361,7 +1361,7 @@ int test_frame_plan_graph_validation_ambiguous_producer(TstSuite* suite, TstItem
  * @param item the active test item
  * @return 0 on success
  */
-int test_frame_plan_graph_validation_missing_usage(TstSuite* suite, TstItem* item)
+int test_frame_plan_graph_validation_missing_usage(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -1410,7 +1410,7 @@ int test_frame_plan_graph_validation_missing_usage(TstSuite* suite, TstItem* ite
  * @param item the active test item
  * @return 0 on success
  */
-int test_frame_plan_graph_validation_attachment_kind(TstSuite* suite, TstItem* item)
+int test_frame_plan_graph_validation_attachment_kind(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -1461,7 +1461,7 @@ int test_frame_plan_graph_validation_attachment_kind(TstSuite* suite, TstItem* i
  * @param item the active test item
  * @return 0 on success
  */
-int test_frame_plan_graph_validation_attachment_extent(TstSuite* suite, TstItem* item)
+int test_frame_plan_graph_validation_attachment_extent(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -1535,30 +1535,33 @@ int test_scene_frame_plan(TstSuite* suite)
     ANN(suite);
     const char* tags = "scene";
 
-    TEST_SIMPLE(test_scene_capabilities_diagnostics);
-    TEST_SIMPLE(test_frame_plan_static_render);
-    TEST_SIMPLE(test_frame_plan_render_pass_roles);
-    TEST_SIMPLE(test_frame_plan_clear);
-    TEST_SIMPLE(test_frame_plan_growth_json);
-    TEST_SIMPLE(test_frame_plan_json_escapes_labels);
-    TEST_SIMPLE(test_scene_resource_keys);
-    TEST_SIMPLE(test_frame_plan_render_visual_metadata);
-    TEST_SIMPLE(test_frame_plan_runtime_uses_graph_pass_order);
-    TEST_SIMPLE(test_frame_plan_render_visual_metadata_diagnostic);
-    TEST_SIMPLE(test_frame_plan_dynamic_update);
-    TEST_SIMPLE(test_frame_plan_texture_upload_json_includes_region);
-    TEST_SIMPLE(test_frame_plan_readbacks);
-    TEST_SIMPLE(test_frame_plan_graph_static_multipass);
-    TEST_SIMPLE(test_frame_plan_graph_dependencies_dump);
-    TEST_SIMPLE(test_frame_plan_graph_depth_peeling_shape);
-    TEST_SIMPLE(test_frame_plan_graph_gbuffer_shape);
-    TEST_SIMPLE(test_frame_plan_graph_validation_read_before_write);
-    TEST_SIMPLE(test_frame_plan_graph_validation_topological_order);
-    TEST_SIMPLE(test_frame_plan_graph_validation_ambiguous_producer);
-    TEST_SIMPLE(test_frame_plan_graph_validation_missing_usage);
-    TEST_SIMPLE(test_frame_plan_graph_validation_attachment_kind);
-    TEST_SIMPLE(test_frame_plan_graph_validation_attachment_extent);
-    TEST_SIMPLE(test_frame_plan_graph_validation_pass_kind);
+    TST_MODULE(suite, "scene");
+    TST_GROUP("frame-plan");
+
+    TST_CASE(test_scene_capabilities_diagnostics);
+    TST_CASE(test_frame_plan_static_render);
+    TST_CASE(test_frame_plan_render_pass_roles);
+    TST_CASE(test_frame_plan_clear);
+    TST_CASE(test_frame_plan_growth_json);
+    TST_CASE(test_frame_plan_json_escapes_labels);
+    TST_CASE(test_scene_resource_keys);
+    TST_CASE(test_frame_plan_render_visual_metadata);
+    TST_CASE(test_frame_plan_runtime_uses_graph_pass_order);
+    TST_CASE(test_frame_plan_render_visual_metadata_diagnostic);
+    TST_CASE(test_frame_plan_dynamic_update);
+    TST_CASE(test_frame_plan_texture_upload_json_includes_region);
+    TST_CASE(test_frame_plan_readbacks);
+    TST_CASE(test_frame_plan_graph_static_multipass);
+    TST_CASE(test_frame_plan_graph_dependencies_dump);
+    TST_CASE(test_frame_plan_graph_depth_peeling_shape);
+    TST_CASE(test_frame_plan_graph_gbuffer_shape);
+    TST_CASE(test_frame_plan_graph_validation_read_before_write);
+    TST_CASE(test_frame_plan_graph_validation_topological_order);
+    TST_CASE(test_frame_plan_graph_validation_ambiguous_producer);
+    TST_CASE(test_frame_plan_graph_validation_missing_usage);
+    TST_CASE(test_frame_plan_graph_validation_attachment_kind);
+    TST_CASE(test_frame_plan_graph_validation_attachment_extent);
+    TST_CASE(test_frame_plan_graph_validation_pass_kind);
 
     return 0;
 }

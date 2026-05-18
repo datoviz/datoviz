@@ -20,6 +20,7 @@
 #include "datoviz/vk/instance.h"
 #include "../../src/vk/tests/test_vk.h"
 #include "../../src/vklite/tests/test_vklite.h"
+#include "datoviz_testing.h"
 #include "testing.h"
 
 
@@ -56,7 +57,7 @@ static bool _vklite_runtime_available(void)
  * @param item current test item
  * @return 0
  */
-static int test_vklite_runtime_unavailable(TstSuite* suite, TstItem* item)
+static int test_vklite_runtime_unavailable(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -78,39 +79,41 @@ int main(int argc, char** argv)
     log_set_level_env();
 
     TstSuite _suite = tst_suite();
+    dvz_testing_install_log_adapter(&_suite);
     TstSuite* suite = &_suite;
 
     test_vk(suite);
 
     const char* tags = "vklite";
+    TST_MODULE(suite, tags);
     if (!_vklite_runtime_available())
     {
-        TEST_SIMPLE(test_vklite_runtime_unavailable);
+        TST_CASE(test_vklite_runtime_unavailable);
     }
     else
     {
-        TEST_SIMPLE(test_vklite_commands_1);
-        TEST_SIMPLE(test_vklite_commands_destroy_without_recording);
-        TEST_SIMPLE(test_vklite_sampler_1);
-        TEST_SIMPLE(test_vklite_shader_1);
-        TEST_SIMPLE(test_vklite_slots_1);
-        TEST_SIMPLE(test_vklite_compute_1);
-        TEST_SIMPLE(test_vklite_buffers_1);
-        TEST_SIMPLE(test_vklite_buffer_views);
-        TEST_SIMPLE(test_vklite_images_1);
-        TEST_SIMPLE(test_vklite_descriptors_1);
-        TEST_SIMPLE(test_vklite_graphics_1);
-        TEST_SIMPLE(test_technique_triangle);
-        TEST_SIMPLE(test_technique_render_texture);
-        TEST_SIMPLE(test_technique_stencil);
-        TEST_SIMPLE(test_technique_msaa);
-        TEST_SIMPLE(test_technique_compute_graphics);
-        TEST_SIMPLE(test_technique_picking);
-        TEST_SIMPLE(test_technique_wboit);
-        TEST_SIMPLE(test_technique_ssao);
+        TST_CASE(test_vklite_commands_1);
+        TST_CASE(test_vklite_commands_destroy_without_recording);
+        TST_CASE(test_vklite_sampler_1);
+        TST_CASE(test_vklite_shader_1);
+        TST_CASE(test_vklite_slots_1);
+        TST_CASE(test_vklite_compute_1);
+        TST_CASE(test_vklite_buffers_1);
+        TST_CASE(test_vklite_buffer_views);
+        TST_CASE(test_vklite_images_1);
+        TST_CASE(test_vklite_descriptors_1);
+        TST_CASE(test_vklite_graphics_1);
+        TST_CASE(test_technique_triangle);
+        TST_CASE(test_technique_render_texture);
+        TST_CASE(test_technique_stencil);
+        TST_CASE(test_technique_msaa);
+        TST_CASE(test_technique_compute_graphics);
+        TST_CASE(test_technique_picking);
+        TST_CASE(test_technique_wboit);
+        TST_CASE(test_technique_ssao);
     }
 
-    tst_suite_run(suite, argc >= 2 ? argv[1] : NULL);
+    int res = tst_suite_run(suite, argc, argv);
     tst_suite_destroy(suite);
-    return 0;
+    return res;
 }

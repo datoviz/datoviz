@@ -44,7 +44,7 @@
 /*  Techniques                                                                                   */
 /*************************************************************************************************/
 
-int test_technique_triangle(TstSuite* suite, TstItem* tstitem)
+int test_technique_triangle(TstContext* suite, const TstCase* tstitem)
 {
     ANN(suite);
     ANN(tstitem);
@@ -107,7 +107,7 @@ int test_technique_triangle(TstSuite* suite, TstItem* tstitem)
 
 
 
-int test_technique_render_texture(TstSuite* suite, TstItem* tstitem)
+int test_technique_render_texture(TstContext* suite, const TstCase* tstitem)
 {
     ANN(suite);
     ANN(tstitem);
@@ -372,7 +372,7 @@ int test_technique_render_texture(TstSuite* suite, TstItem* tstitem)
 
 
 
-int test_technique_stencil(TstSuite* suite, TstItem* tstitem)
+int test_technique_stencil(TstContext* suite, const TstCase* tstitem)
 {
     ANN(suite);
     ANN(tstitem);
@@ -561,7 +561,7 @@ int test_technique_stencil(TstSuite* suite, TstItem* tstitem)
 
 
 
-int test_technique_msaa(TstSuite* suite, TstItem* tstitem)
+int test_technique_msaa(TstContext* suite, const TstCase* tstitem)
 {
     ANN(suite);
     ANN(tstitem);
@@ -733,7 +733,7 @@ int test_technique_msaa(TstSuite* suite, TstItem* tstitem)
 
 
 
-int test_technique_compute_graphics(TstSuite* suite, TstItem* tstitem)
+int test_technique_compute_graphics(TstContext* suite, const TstCase* tstitem)
 {
     ANN(suite);
     ANN(tstitem);
@@ -890,7 +890,7 @@ int test_technique_compute_graphics(TstSuite* suite, TstItem* tstitem)
 
 
 
-int test_technique_picking(TstSuite* suite, TstItem* tstitem)
+int test_technique_picking(TstContext* suite, const TstCase* tstitem)
 {
     ANN(suite);
     ANN(tstitem);
@@ -1183,7 +1183,7 @@ int test_technique_picking(TstSuite* suite, TstItem* tstitem)
 
 
 
-int test_technique_wboit(TstSuite* suite, TstItem* tstitem)
+int test_technique_wboit(TstContext* suite, const TstCase* tstitem)
 {
     ANN(suite);
     ANN(tstitem);
@@ -1667,7 +1667,7 @@ int test_technique_wboit(TstSuite* suite, TstItem* tstitem)
 
 
 
-int test_technique_ssao(TstSuite* suite, TstItem* tstitem)
+int test_technique_ssao(TstContext* suite, const TstCase* tstitem)
 {
     ANN(suite);
     ANN(tstitem);

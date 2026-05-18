@@ -51,7 +51,7 @@ struct SceneCanvasDrawState
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
-bool _captured_log_contains(const TstSuite* suite, const char* needle);
+bool _captured_log_contains(const TstContext* suite, const char* needle);
 
 const uint8_t* _pixel_at(
     const uint8_t* rgba, uint32_t width, uint32_t height, uint32_t x, uint32_t y);

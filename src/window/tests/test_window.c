@@ -58,7 +58,7 @@ _window_resize_callback(DvzInputRouter* router, const DvzInputResizeEvent* event
 /**
  * Ensure headless windows can be created.
  */
-int test_window_headless(TstSuite* suite, TstItem* item)
+int test_window_headless(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -76,7 +76,7 @@ int test_window_headless(TstSuite* suite, TstItem* item)
 /**
  * Verify resize events propagate through the router.
  */
-int test_window_resize_events(TstSuite* suite, TstItem* item)
+int test_window_resize_events(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -100,7 +100,7 @@ int test_window_resize_events(TstSuite* suite, TstItem* item)
 /**
  * Ensure frame requests toggle the pending flag.
  */
-int test_window_frame_requests(TstSuite* suite, TstItem* item)
+int test_window_frame_requests(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -126,7 +126,7 @@ int test_window_frame_requests(TstSuite* suite, TstItem* item)
 /**
  * Requesting GLFW should fall back to the headless backend when it is unavailable.
  */
-int test_window_fallback(TstSuite* suite, TstItem* item)
+int test_window_fallback(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -138,7 +138,7 @@ int test_window_fallback(TstSuite* suite, TstItem* item)
     return 0;
 }
 #else
-int test_window_fallback(TstSuite* suite, TstItem* item)
+int test_window_fallback(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -152,7 +152,7 @@ int test_window_fallback(TstSuite* suite, TstItem* item)
 /**
  * Verify required-extension query returns empty set for the headless backend.
  */
-int test_window_required_extensions_headless(TstSuite* suite, TstItem* item)
+int test_window_required_extensions_headless(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -173,17 +173,18 @@ int test_window(TstSuite* suite)
 {
     ANN(suite);
     const char* tags = "window";
-    TEST_SIMPLE(test_window_headless);
-    TEST_SIMPLE(test_window_resize_events);
-    TEST_SIMPLE(test_window_frame_requests);
-    TEST_SIMPLE(test_window_fallback);
-    TEST_SIMPLE(test_window_wrap_create);
-    TEST_SIMPLE(test_window_wrap_attach_detach);
-    TEST_SIMPLE(test_window_required_extensions_headless);
-    TEST_SIMPLE(test_window_required_extensions_wrap);
-    TEST_SIMPLE(test_window_wrap_invalid_args);
-    TEST_SIMPLE(test_window_required_extensions_invalid_args);
-    TEST_SIMPLE(test_window_wrap_replace_surface);
-    TEST_SIMPLE(test_window_wrap_owned_surface_null_lifecycle);
+    TST_MODULE(suite, tags);
+    TST_CASE(test_window_headless);
+    TST_CASE(test_window_resize_events);
+    TST_CASE(test_window_frame_requests);
+    TST_CASE(test_window_fallback);
+    TST_CASE(test_window_wrap_create);
+    TST_CASE(test_window_wrap_attach_detach);
+    TST_CASE(test_window_required_extensions_headless);
+    TST_CASE(test_window_required_extensions_wrap);
+    TST_CASE(test_window_wrap_invalid_args);
+    TST_CASE(test_window_required_extensions_invalid_args);
+    TST_CASE(test_window_wrap_replace_surface);
+    TST_CASE(test_window_wrap_owned_surface_null_lifecycle);
     return 0;
 }

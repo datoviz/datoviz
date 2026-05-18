@@ -487,7 +487,7 @@ const DvzStreamSinkBackend CANVAS_REFRESH_PROBE_BACKEND = {
 /**
  * Validate the default canvas configuration.
  */
-int test_canvas_defaults(TstSuite* suite, TstItem* item)
+int test_canvas_defaults(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -507,7 +507,7 @@ int test_canvas_defaults(TstSuite* suite, TstItem* item)
 /**
  * Ensure the frame pool rotates across entries.
  */
-int test_canvas_frame_pool(TstSuite* suite, TstItem* item)
+int test_canvas_frame_pool(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -530,7 +530,7 @@ int test_canvas_frame_pool(TstSuite* suite, TstItem* item)
 /**
  * Check that timing samples wrap around the configured capacity.
  */
-int test_canvas_timings(TstSuite* suite, TstItem* item)
+int test_canvas_timings(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -553,7 +553,7 @@ int test_canvas_timings(TstSuite* suite, TstItem* item)
 /**
  * Validate offscreen canvas destroy/recreate on the same device and window setup.
  */
-int test_canvas_offscreen_destroy_recreate(TstSuite* suite, TstItem* item)
+int test_canvas_offscreen_destroy_recreate(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -631,7 +631,7 @@ offscreen_recreate_cleanup:
 /**
  * Validate GLFW present canvas destroy/recreate on the same device and window setup.
  */
-int test_canvas_glfw_destroy_recreate(TstSuite* suite, TstItem* item)
+int test_canvas_glfw_destroy_recreate(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -722,7 +722,7 @@ glfw_recreate_cleanup:
 /**
  * Validate first-class offscreen mode frame/submit flow on a headless window backend.
  */
-static int test_canvas_offscreen_mode_headless(TstSuite* suite, TstItem* item)
+static int test_canvas_offscreen_mode_headless(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -848,7 +848,7 @@ offscreen_cleanup:
 /**
  * Validate offscreen video sink CPU-readback contract with capability-gated skip behavior.
  */
-static int test_canvas_offscreen_video_sink_cpu_readback(TstSuite* suite, TstItem* item)
+static int test_canvas_offscreen_video_sink_cpu_readback(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -963,7 +963,7 @@ offscreen_video_cleanup:
 /**
  * Validate offscreen state rollback to DRAW_PENDING when a stream sink submit fails.
  */
-static int test_canvas_offscreen_state_on_stream_submit_failure(TstSuite* suite, TstItem* item)
+static int test_canvas_offscreen_state_on_stream_submit_failure(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -1056,7 +1056,7 @@ offscreen_submit_fail_cleanup:
 /**
  * Validate offscreen runtime enters FATAL_DEVICE_LOST after a forced submit device-loss status.
  */
-static int test_canvas_offscreen_state_device_lost(TstSuite* suite, TstItem* item)
+static int test_canvas_offscreen_state_device_lost(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -1151,7 +1151,7 @@ offscreen_device_lost_cleanup:
 /**
  * Validate offscreen frames keep clean handle metadata across stream rebuild toggles.
  */
-static int test_canvas_offscreen_handles_clean_after_rebuild(TstSuite* suite, TstItem* item)
+static int test_canvas_offscreen_handles_clean_after_rebuild(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -1238,7 +1238,7 @@ offscreen_clean_handles_cleanup:
 /**
  * Validate offscreen live-sink wait values stay strictly increasing across sink rebuild toggles.
  */
-static int test_canvas_offscreen_live_wait_monotonic_across_rebuild(TstSuite* suite, TstItem* item)
+static int test_canvas_offscreen_live_wait_monotonic_across_rebuild(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -1341,7 +1341,7 @@ offscreen_live_wait_cleanup:
 /**
  * Validate offscreen stream ordering: start() once per stream lifecycle and no update() calls.
  */
-static int test_canvas_offscreen_start_update_order_across_rebuild(TstSuite* suite, TstItem* item)
+static int test_canvas_offscreen_start_update_order_across_rebuild(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -1461,7 +1461,7 @@ offscreen_order_cleanup:
 /**
  * Validate offscreen video-sink rebuild keeps wait values strictly increasing.
  */
-static int test_canvas_offscreen_video_wait_monotonic_across_rebuild(TstSuite* suite, TstItem* item)
+static int test_canvas_offscreen_video_wait_monotonic_across_rebuild(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -1600,7 +1600,7 @@ offscreen_video_wait_cleanup:
 /**
  * Validate that present mode cannot be created on an offscreen window backend.
  */
-static int test_canvas_present_mode_rejects_offscreen_window(TstSuite* suite, TstItem* item)
+static int test_canvas_present_mode_rejects_offscreen_window(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -1669,34 +1669,35 @@ int test_canvas(TstSuite* suite)
 {
     ANN(suite);
     const char* tags = "canvas";
-    TEST_SIMPLE(test_canvas_defaults);
-    TEST_SIMPLE(test_canvas_frame_pool);
-    TEST_SIMPLE(test_canvas_timings);
-    TEST_SIMPLE(test_canvas_offscreen_destroy_recreate);
-    TEST_SIMPLE(test_canvas_glfw_destroy_recreate);
-    TEST_SIMPLE(test_canvas_offscreen_mode_headless);
-    TEST_SIMPLE(test_canvas_offscreen_video_sink_cpu_readback);
-    TEST_SIMPLE(test_canvas_offscreen_state_on_stream_submit_failure);
-    TEST_SIMPLE(test_canvas_offscreen_state_device_lost);
-    TEST_SIMPLE(test_canvas_offscreen_handles_clean_after_rebuild);
-    TEST_SIMPLE(test_canvas_offscreen_live_wait_monotonic_across_rebuild);
-    TEST_SIMPLE(test_canvas_offscreen_start_update_order_across_rebuild);
-    TEST_SIMPLE(test_canvas_offscreen_video_wait_monotonic_across_rebuild);
-    TEST_SIMPLE(test_canvas_present_mode_rejects_offscreen_window);
-    TEST_SIMPLE(test_canvas_swapchain_failfast_slot_init);
-    TEST_SIMPLE(test_canvas_glfw_present_recovery);
-    TEST_SIMPLE(test_canvas_handle_refresh_order);
-    TEST_SIMPLE(test_canvas_video_wait_value_propagation);
-    TEST_SIMPLE(test_canvas_video_wait_handle_ready_on_first_start);
-    TEST_SIMPLE(test_canvas_video_wait_handle_export_fallback);
-    TEST_SIMPLE(test_canvas_video_wait_handle_export_fallback_after_recreate);
-    TEST_SIMPLE(test_canvas_video_sink_start_submit_integration);
-    TEST_SIMPLE(test_canvas_video_sink_disable_rebuild);
-    TEST_SIMPLE(test_canvas_capture_api);
-    TEST_SIMPLE(test_canvas_video_handle_refresh_after_recreate);
-    TEST_SIMPLE(test_canvas_device_lost_fatal_transition);
-    TEST_SIMPLE(test_canvas_glfw_wrap_surface_present_recovery);
-    TEST_SIMPLE(test_canvas_glfw_wrap_surface_resize_recreate_refreshes_state);
-    TEST_SIMPLE(test_canvas_glfw);
+    TST_MODULE(suite, tags);
+    TST_CASE(test_canvas_defaults);
+    TST_CASE(test_canvas_frame_pool);
+    TST_CASE(test_canvas_timings);
+    TST_CASE(test_canvas_offscreen_destroy_recreate);
+    TST_CASE(test_canvas_glfw_destroy_recreate);
+    TST_CASE(test_canvas_offscreen_mode_headless);
+    TST_CASE(test_canvas_offscreen_video_sink_cpu_readback);
+    TST_CASE(test_canvas_offscreen_state_on_stream_submit_failure);
+    TST_CASE(test_canvas_offscreen_state_device_lost);
+    TST_CASE(test_canvas_offscreen_handles_clean_after_rebuild);
+    TST_CASE(test_canvas_offscreen_live_wait_monotonic_across_rebuild);
+    TST_CASE(test_canvas_offscreen_start_update_order_across_rebuild);
+    TST_CASE(test_canvas_offscreen_video_wait_monotonic_across_rebuild);
+    TST_CASE(test_canvas_present_mode_rejects_offscreen_window);
+    TST_CASE(test_canvas_swapchain_failfast_slot_init);
+    TST_CASE(test_canvas_glfw_present_recovery);
+    TST_CASE(test_canvas_handle_refresh_order);
+    TST_CASE(test_canvas_video_wait_value_propagation);
+    TST_CASE(test_canvas_video_wait_handle_ready_on_first_start);
+    TST_CASE(test_canvas_video_wait_handle_export_fallback);
+    TST_CASE(test_canvas_video_wait_handle_export_fallback_after_recreate);
+    TST_CASE(test_canvas_video_sink_start_submit_integration);
+    TST_CASE(test_canvas_video_sink_disable_rebuild);
+    TST_CASE(test_canvas_capture_api);
+    TST_CASE(test_canvas_video_handle_refresh_after_recreate);
+    TST_CASE(test_canvas_device_lost_fatal_transition);
+    TST_CASE(test_canvas_glfw_wrap_surface_present_recovery);
+    TST_CASE(test_canvas_glfw_wrap_surface_resize_recreate_refreshes_state);
+    TST_CASE(test_canvas_glfw);
     return 0;
 }

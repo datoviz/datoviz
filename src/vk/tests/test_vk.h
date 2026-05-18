@@ -26,68 +26,68 @@
 /*  Tests                                                                                        */
 /*************************************************************************************************/
 
-int test_instance_layers(TstSuite* suite, TstItem* tstitem);
+int test_instance_layers(TstContext* suite, const TstCase* tstitem);
 
-int test_instance_extensions(TstSuite* suite, TstItem* tstitem);
+int test_instance_extensions(TstContext* suite, const TstCase* tstitem);
 
-int test_instance_creation(TstSuite* suite, TstItem* tstitem);
+int test_instance_creation(TstContext* suite, const TstCase* tstitem);
 
-int test_instance_invalid_layer(TstSuite* suite, TstItem* tstitem);
-
-
-
-int test_gpu_props(TstSuite* suite, TstItem* tstitem);
-
-int test_gpu_memprops(TstSuite* suite, TstItem* tstitem);
-
-int test_gpu_features(TstSuite* suite, TstItem* tstitem);
-
-int test_gpu_extensions(TstSuite* suite, TstItem* tstitem);
+int test_instance_invalid_layer(TstContext* suite, const TstCase* tstitem);
 
 
 
-int test_queues_caps(TstSuite* suite, TstItem* tstitem);
+int test_gpu_props(TstContext* suite, const TstCase* tstitem);
 
-int test_queue_supports(TstSuite* suite, TstItem* tstitem);
+int test_gpu_memprops(TstContext* suite, const TstCase* tstitem);
 
-int test_queue_from_role(TstSuite* suite, TstItem* tstitem);
+int test_gpu_features(TstContext* suite, const TstCase* tstitem);
 
-int test_queues_basic(TstSuite* suite, TstItem* tstitem);
-
-int test_queues_single_family(TstSuite* suite, TstItem* tstitem);
-
-int test_queues_multiple(TstSuite* suite, TstItem* tstitem);
-
-int test_queues_tie_break(TstSuite* suite, TstItem* tstitem);
-
-int test_queues_no_optional(TstSuite* suite, TstItem* tstitem);
-
-int test_queues_video_roles(TstSuite* suite, TstItem* tstitem);
-
-int test_queues_queue_limits(TstSuite* suite, TstItem* tstitem);
+int test_gpu_extensions(TstContext* suite, const TstCase* tstitem);
 
 
 
-int test_device_1(TstSuite* suite, TstItem* tstitem);
+int test_queues_caps(TstContext* suite, const TstCase* tstitem);
 
-int test_device_2(TstSuite* suite, TstItem* tstitem);
+int test_queue_supports(TstContext* suite, const TstCase* tstitem);
 
-int test_device_3(TstSuite* suite, TstItem* tstitem);
+int test_queue_from_role(TstContext* suite, const TstCase* tstitem);
 
-int test_device_4(TstSuite* suite, TstItem* tstitem);
+int test_queues_basic(TstContext* suite, const TstCase* tstitem);
 
-int test_device_destroy_rebuild(TstSuite* suite, TstItem* tstitem);
+int test_queues_single_family(TstContext* suite, const TstCase* tstitem);
 
-int test_device_build_requires_destroy(TstSuite* suite, TstItem* tstitem);
+int test_queues_multiple(TstContext* suite, const TstCase* tstitem);
+
+int test_queues_tie_break(TstContext* suite, const TstCase* tstitem);
+
+int test_queues_no_optional(TstContext* suite, const TstCase* tstitem);
+
+int test_queues_video_roles(TstContext* suite, const TstCase* tstitem);
+
+int test_queues_queue_limits(TstContext* suite, const TstCase* tstitem);
 
 
 
-int test_memory_1(TstSuite* suite, TstItem* tstitem);
+int test_device_1(TstContext* suite, const TstCase* tstitem);
 
-int test_memory_interop_buffer_export(TstSuite* suite, TstItem* tstitem);
+int test_device_2(TstContext* suite, const TstCase* tstitem);
 
-int test_memory_cuda_1(TstSuite* suite, TstItem* tstitem);
+int test_device_3(TstContext* suite, const TstCase* tstitem);
 
-int test_memory_cuda_2(TstSuite* suite, TstItem* tstitem);
+int test_device_4(TstContext* suite, const TstCase* tstitem);
+
+int test_device_destroy_rebuild(TstContext* suite, const TstCase* tstitem);
+
+int test_device_build_requires_destroy(TstContext* suite, const TstCase* tstitem);
+
+
+
+int test_memory_1(TstContext* suite, const TstCase* tstitem);
+
+int test_memory_interop_buffer_export(TstContext* suite, const TstCase* tstitem);
+
+int test_memory_cuda_1(TstContext* suite, const TstCase* tstitem);
+
+int test_memory_cuda_2(TstContext* suite, const TstCase* tstitem);
 
 int test_vk(TstSuite* suite);

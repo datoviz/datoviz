@@ -39,7 +39,7 @@
 
 /*************************************************************************************************/
 
-bool _captured_log_contains(const TstSuite* suite, const char* needle)
+bool _captured_log_contains(const TstContext* suite, const char* needle)
 {
     ANN(suite);
     ANN(needle);

@@ -22,6 +22,7 @@
 #include "../../src/fileio/tests/test_fileio.h"
 #include "../../src/math/tests/test_math.h"
 #include "../../src/thread/tests/test_thread.h"
+#include "datoviz_testing.h"
 #include "testing.h"
 
 
@@ -42,6 +43,7 @@ int main(int argc, char** argv)
     log_set_level_env();
 
     TstSuite suite = tst_suite();
+    dvz_testing_install_log_adapter(&suite);
 
     test_common(&suite);
     test_ds(&suite);
@@ -49,7 +51,7 @@ int main(int argc, char** argv)
     test_math(&suite);
     test_thread(&suite);
 
-    tst_suite_run(&suite, argc >= 2 ? argv[1] : NULL);
+    int res = tst_suite_run(&suite, argc, argv);
     tst_suite_destroy(&suite);
-    return 0;
+    return res;
 }

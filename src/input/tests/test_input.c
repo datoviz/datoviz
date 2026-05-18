@@ -289,7 +289,7 @@ _record_window_union(DvzInputRouter* router, const DvzInputEvent* event, void* u
 /**
  * Ensure pointer subscriptions respect insertion order.
  */
-int test_router_callbacks(TstSuite* suite, TstItem* item)
+int test_router_callbacks(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     DvzInputRouter* router = dvz_input_router();
@@ -309,7 +309,7 @@ int test_router_callbacks(TstSuite* suite, TstItem* item)
 /**
  * Ensure unsubscribing from inside a callback does not stop dispatch.
  */
-int test_router_unsubscribe(TstSuite* suite, TstItem* item)
+int test_router_unsubscribe(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     DvzInputRouter* router = dvz_input_router();
@@ -330,7 +330,7 @@ int test_router_unsubscribe(TstSuite* suite, TstItem* item)
 /**
  * Verify modifier bit tracking works for shift.
  */
-int test_keyboard_modifiers(TstSuite* suite, TstItem* item)
+int test_keyboard_modifiers(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     DvzKeyboardModifierState* state = dvz_keyboard_modifier_state();
@@ -347,7 +347,7 @@ int test_keyboard_modifiers(TstSuite* suite, TstItem* item)
 /**
  * Confirm gesture detection emits clicks, double-clicks, and drags.
  */
-int test_pointer_gestures(TstSuite* suite, TstItem* item)
+int test_pointer_gestures(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     DvzInputRouter* router = dvz_input_router();
@@ -401,7 +401,7 @@ int test_pointer_gestures(TstSuite* suite, TstItem* item)
 /**
  * Ensure wheel helpers propagate deltas.
  */
-int test_pointer_wheel(TstSuite* suite, TstItem* item)
+int test_pointer_wheel(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     DvzInputRouter* router = dvz_input_router();
@@ -421,7 +421,7 @@ int test_pointer_wheel(TstSuite* suite, TstItem* item)
 /**
  * Validate resize/scale routing and union forwarding.
  */
-int test_resize_scale_events(TstSuite* suite, TstItem* item)
+int test_resize_scale_events(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     DvzInputRouter* router = dvz_input_router();
@@ -456,11 +456,12 @@ int test_input(TstSuite* suite)
 {
     ANN(suite);
     const char* tags = "input";
-    TEST_SIMPLE(test_router_callbacks);
-    TEST_SIMPLE(test_router_unsubscribe);
-    TEST_SIMPLE(test_keyboard_modifiers);
-    TEST_SIMPLE(test_pointer_gestures);
-    TEST_SIMPLE(test_pointer_wheel);
-    TEST_SIMPLE(test_resize_scale_events);
+    TST_MODULE(suite, tags);
+    TST_CASE(test_router_callbacks);
+    TST_CASE(test_router_unsubscribe);
+    TST_CASE(test_keyboard_modifiers);
+    TST_CASE(test_pointer_gestures);
+    TST_CASE(test_pointer_wheel);
+    TST_CASE(test_resize_scale_events);
     return 0;
 }

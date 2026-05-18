@@ -30,7 +30,7 @@
 /*  vklite tests                                                                                 */
 /*************************************************************************************************/
 
-int test_vklite_sampler_1(TstSuite* suite, TstItem* tstitem)
+int test_vklite_sampler_1(TstContext* suite, const TstCase* tstitem)
 {
     ANN(suite);
     ANN(tstitem);

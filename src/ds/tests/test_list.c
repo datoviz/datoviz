@@ -27,7 +27,7 @@
 /*  Map tests                                                                                    */
 /*************************************************************************************************/
 
-int test_list_1(TstSuite* suite, TstItem* tstitem)
+int test_list_1(TstContext* suite, const TstCase* tstitem)
 {
     DvzList* list = dvz_list();
 
@@ -97,7 +97,7 @@ int test_list_1(TstSuite* suite, TstItem* tstitem)
 
 
 
-int test_list_remove_pointer(TstSuite* suite, TstItem* tstitem)
+int test_list_remove_pointer(TstContext* suite, const TstCase* tstitem)
 {
     ANN(suite);
 

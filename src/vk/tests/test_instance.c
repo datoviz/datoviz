@@ -30,7 +30,7 @@
 /*  Instance tests                                                                               */
 /*************************************************************************************************/
 
-int test_instance_layers(TstSuite* suite, TstItem* tstitem)
+int test_instance_layers(TstContext* suite, const TstCase* tstitem)
 {
     ANN(suite);
     ANN(tstitem);
@@ -60,7 +60,7 @@ int test_instance_layers(TstSuite* suite, TstItem* tstitem)
 
 
 
-int test_instance_extensions(TstSuite* suite, TstItem* tstitem)
+int test_instance_extensions(TstContext* suite, const TstCase* tstitem)
 {
     ANN(suite);
     ANN(tstitem);
@@ -90,7 +90,7 @@ int test_instance_extensions(TstSuite* suite, TstItem* tstitem)
 
 
 
-int test_instance_creation(TstSuite* suite, TstItem* tstitem)
+int test_instance_creation(TstContext* suite, const TstCase* tstitem)
 {
     ANN(suite);
     ANN(tstitem);
@@ -115,7 +115,7 @@ int test_instance_creation(TstSuite* suite, TstItem* tstitem)
 
 
 
-int test_instance_invalid_layer(TstSuite* suite, TstItem* tstitem)
+int test_instance_invalid_layer(TstContext* suite, const TstCase* tstitem)
 {
     ANN(suite);
     ANN(tstitem);

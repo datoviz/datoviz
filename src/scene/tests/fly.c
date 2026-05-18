@@ -30,7 +30,7 @@
 /*  Tests                                                                                        */
 /*************************************************************************************************/
 
-int test_fly_create_default(TstSuite* suite, TstItem* item)
+int test_fly_create_default(TstContext* suite, const TstCase* item)
 {
     (void)suite;
     (void)item;
@@ -58,7 +58,7 @@ int test_fly_create_default(TstSuite* suite, TstItem* item)
 
 
 
-int test_fly_free_and_plane_movement(TstSuite* suite, TstItem* item)
+int test_fly_free_and_plane_movement(TstContext* suite, const TstCase* item)
 {
     (void)suite;
     (void)item;
@@ -95,7 +95,7 @@ int test_fly_free_and_plane_movement(TstSuite* suite, TstItem* item)
 
 
 
-int test_fly_set_mode(TstSuite* suite, TstItem* item)
+int test_fly_set_mode(TstContext* suite, const TstCase* item)
 {
     (void)suite;
     (void)item;
@@ -128,7 +128,7 @@ int test_fly_set_mode(TstSuite* suite, TstItem* item)
 
 
 
-int test_fly_keyboard_arrows_update(TstSuite* suite, TstItem* item)
+int test_fly_keyboard_arrows_update(TstContext* suite, const TstCase* item)
 {
     (void)suite;
     (void)item;
@@ -166,7 +166,7 @@ int test_fly_keyboard_arrows_update(TstSuite* suite, TstItem* item)
 
 
 
-int test_fly_ctrl_and_space_use_same_vertical_speed(TstSuite* suite, TstItem* item)
+int test_fly_ctrl_and_space_use_same_vertical_speed(TstContext* suite, const TstCase* item)
 {
     (void)suite;
     (void)item;
@@ -213,7 +213,7 @@ int test_fly_ctrl_and_space_use_same_vertical_speed(TstSuite* suite, TstItem* it
 
 
 
-int test_fly_right_drag_moves_vertical_plane(TstSuite* suite, TstItem* item)
+int test_fly_right_drag_moves_vertical_plane(TstContext* suite, const TstCase* item)
 {
     (void)suite;
     (void)item;
@@ -244,7 +244,7 @@ int test_fly_right_drag_moves_vertical_plane(TstSuite* suite, TstItem* item)
 
 
 
-int test_fly_pivot_preserves_eye_and_orbits(TstSuite* suite, TstItem* item)
+int test_fly_pivot_preserves_eye_and_orbits(TstContext* suite, const TstCase* item)
 {
     (void)suite;
     (void)item;
@@ -277,7 +277,7 @@ int test_fly_pivot_preserves_eye_and_orbits(TstSuite* suite, TstItem* item)
 
 
 
-int test_panel_fly_getter(TstSuite* suite, TstItem* item)
+int test_panel_fly_getter(TstContext* suite, const TstCase* item)
 {
     (void)suite;
     (void)item;
@@ -302,7 +302,7 @@ int test_panel_fly_getter(TstSuite* suite, TstItem* item)
 
 
 
-int test_figure_fly_update_advances_panel_camera(TstSuite* suite, TstItem* item)
+int test_figure_fly_update_advances_panel_camera(TstContext* suite, const TstCase* item)
 {
     (void)suite;
     (void)item;
@@ -357,14 +357,16 @@ int test_scene_fly(TstSuite* suite)
 {
     ANN(suite);
     const char* tags = "scene,fly";
-    TEST_SIMPLE(test_fly_create_default);
-    TEST_SIMPLE(test_fly_free_and_plane_movement);
-    TEST_SIMPLE(test_fly_set_mode);
-    TEST_SIMPLE(test_fly_keyboard_arrows_update);
-    TEST_SIMPLE(test_fly_ctrl_and_space_use_same_vertical_speed);
-    TEST_SIMPLE(test_fly_right_drag_moves_vertical_plane);
-    TEST_SIMPLE(test_fly_pivot_preserves_eye_and_orbits);
-    TEST_SIMPLE(test_panel_fly_getter);
-    TEST_SIMPLE(test_figure_fly_update_advances_panel_camera);
+    TST_MODULE(suite, "scene");
+    TST_GROUP("fly");
+    TST_CASE(test_fly_create_default);
+    TST_CASE(test_fly_free_and_plane_movement);
+    TST_CASE(test_fly_set_mode);
+    TST_CASE(test_fly_keyboard_arrows_update);
+    TST_CASE(test_fly_ctrl_and_space_use_same_vertical_speed);
+    TST_CASE(test_fly_right_drag_moves_vertical_plane);
+    TST_CASE(test_fly_pivot_preserves_eye_and_orbits);
+    TST_CASE(test_panel_fly_getter);
+    TST_CASE(test_figure_fly_update_advances_panel_camera);
     return 0;
 }

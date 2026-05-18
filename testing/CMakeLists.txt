@@ -2,7 +2,10 @@
 # Generic testing CMake file
 # -------------------------------------------------------------------------------------------------
 
-add_library(testing STATIC testing.cpp)
+add_library(testing STATIC
+    testing.cpp
+    datoviz_testing.c
+)
 
 get_property(_dvz_compile_definitions GLOBAL PROPERTY DVZ_COMPILE_DEFINITIONS)
 

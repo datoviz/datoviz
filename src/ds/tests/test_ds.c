@@ -31,10 +31,14 @@ int test_ds(TstSuite* suite)
 
     const char* tags = "ds";
 
-    TEST_SIMPLE(test_map_1);
-    TEST_SIMPLE(test_map_2);
-    TEST_SIMPLE(test_list_1);
-    TEST_SIMPLE(test_list_remove_pointer);
+    TST_MODULE(suite, "ds");
+    TST_GROUP("map");
+    TST_CASE(test_map_1);
+    TST_CASE(test_map_2);
+
+    TST_GROUP("list");
+    TST_CASE(test_list_1);
+    TST_CASE(test_list_remove_pointer);
 
     return 0;
 }
