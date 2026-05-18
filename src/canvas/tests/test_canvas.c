@@ -1662,6 +1662,25 @@ guard_cleanup:
     canvas_test_destroy_instance_device(instance, device);
     return 0;
 }
+
+
+
+#define TST_CANVAS_VK_RES (TST_RES_CPU | TST_RES_GPU | TST_RES_VULKAN)
+#define TST_CANVAS_GLFW_RES (TST_CANVAS_VK_RES | TST_RES_GLFW)
+#define TST_CANVAS_VIDEO_RES (TST_RES_VIDEO | TST_RES_FILESYSTEM)
+
+#define TST_CANVAS_CASE(test, resource_flags, isolation_mode)                                    \
+    do                                                                                            \
+    {                                                                                             \
+        TstCaseDesc _tst_desc = tst_case_desc(#test, #test, (test));                              \
+        _tst_desc.tags = tags;                                                                    \
+        _tst_desc.resources = (resource_flags);                                                   \
+        _tst_desc.isolation = (isolation_mode);                                                   \
+        tst_suite_add_case((suite), _tst_desc);                                                   \
+    } while (0)
+
+
+
 /**
  * Register the canvas tests.
  */
@@ -1670,34 +1689,80 @@ int test_canvas(TstSuite* suite)
     ANN(suite);
     const char* tags = "canvas";
     TST_MODULE(suite, tags);
-    TST_CASE(test_canvas_defaults);
-    TST_CASE(test_canvas_frame_pool);
-    TST_CASE(test_canvas_timings);
-    TST_CASE(test_canvas_offscreen_destroy_recreate);
-    TST_CASE(test_canvas_glfw_destroy_recreate);
-    TST_CASE(test_canvas_offscreen_mode_headless);
-    TST_CASE(test_canvas_offscreen_video_sink_cpu_readback);
-    TST_CASE(test_canvas_offscreen_state_on_stream_submit_failure);
-    TST_CASE(test_canvas_offscreen_state_device_lost);
-    TST_CASE(test_canvas_offscreen_handles_clean_after_rebuild);
-    TST_CASE(test_canvas_offscreen_live_wait_monotonic_across_rebuild);
-    TST_CASE(test_canvas_offscreen_start_update_order_across_rebuild);
-    TST_CASE(test_canvas_offscreen_video_wait_monotonic_across_rebuild);
-    TST_CASE(test_canvas_present_mode_rejects_offscreen_window);
-    TST_CASE(test_canvas_swapchain_failfast_slot_init);
-    TST_CASE(test_canvas_glfw_present_recovery);
-    TST_CASE(test_canvas_handle_refresh_order);
-    TST_CASE(test_canvas_video_wait_value_propagation);
-    TST_CASE(test_canvas_video_wait_handle_ready_on_first_start);
-    TST_CASE(test_canvas_video_wait_handle_export_fallback);
-    TST_CASE(test_canvas_video_wait_handle_export_fallback_after_recreate);
-    TST_CASE(test_canvas_video_sink_start_submit_integration);
-    TST_CASE(test_canvas_video_sink_disable_rebuild);
-    TST_CASE(test_canvas_capture_api);
-    TST_CASE(test_canvas_video_handle_refresh_after_recreate);
-    TST_CASE(test_canvas_device_lost_fatal_transition);
-    TST_CASE(test_canvas_glfw_wrap_surface_present_recovery);
-    TST_CASE(test_canvas_glfw_wrap_surface_resize_recreate_refreshes_state);
-    TST_CASE(test_canvas_glfw);
+    TST_CANVAS_CASE(test_canvas_defaults, TST_RES_CPU, TST_ISOLATION_THREAD_SAFE);
+    TST_CANVAS_CASE(test_canvas_frame_pool, TST_RES_CPU, TST_ISOLATION_THREAD_SAFE);
+    TST_CANVAS_CASE(test_canvas_timings, TST_RES_CPU, TST_ISOLATION_THREAD_SAFE);
+    TST_CANVAS_CASE(
+        test_canvas_offscreen_destroy_recreate, TST_CANVAS_VK_RES, TST_ISOLATION_PROCESS);
+    TST_CANVAS_CASE(test_canvas_glfw_destroy_recreate, TST_CANVAS_GLFW_RES, TST_ISOLATION_PROCESS);
+    TST_CANVAS_CASE(test_canvas_offscreen_mode_headless, TST_CANVAS_VK_RES, TST_ISOLATION_PROCESS);
+    TST_CANVAS_CASE(
+        test_canvas_offscreen_video_sink_cpu_readback,
+        TST_CANVAS_VK_RES | TST_CANVAS_VIDEO_RES, TST_ISOLATION_PROCESS);
+    TST_CANVAS_CASE(
+        test_canvas_offscreen_state_on_stream_submit_failure, TST_CANVAS_VK_RES,
+        TST_ISOLATION_PROCESS);
+    TST_CANVAS_CASE(
+        test_canvas_offscreen_state_device_lost,
+        TST_CANVAS_VK_RES | TST_RES_LOG_CAPTURE | TST_RES_GLOBAL_STATE,
+        TST_ISOLATION_EXCLUSIVE);
+    TST_CANVAS_CASE(
+        test_canvas_offscreen_handles_clean_after_rebuild, TST_CANVAS_VK_RES,
+        TST_ISOLATION_PROCESS);
+    TST_CANVAS_CASE(
+        test_canvas_offscreen_live_wait_monotonic_across_rebuild, TST_CANVAS_VK_RES,
+        TST_ISOLATION_PROCESS);
+    TST_CANVAS_CASE(
+        test_canvas_offscreen_start_update_order_across_rebuild, TST_CANVAS_VK_RES,
+        TST_ISOLATION_PROCESS);
+    TST_CANVAS_CASE(
+        test_canvas_offscreen_video_wait_monotonic_across_rebuild,
+        TST_CANVAS_VK_RES | TST_CANVAS_VIDEO_RES, TST_ISOLATION_PROCESS);
+    TST_CANVAS_CASE(
+        test_canvas_present_mode_rejects_offscreen_window,
+        TST_CANVAS_VK_RES | TST_RES_LOG_CAPTURE, TST_ISOLATION_PROCESS);
+    TST_CANVAS_CASE(
+        test_canvas_swapchain_failfast_slot_init,
+        TST_CANVAS_GLFW_RES | TST_RES_GLOBAL_STATE, TST_ISOLATION_EXCLUSIVE);
+    TST_CANVAS_CASE(test_canvas_glfw_present_recovery, TST_CANVAS_GLFW_RES, TST_ISOLATION_PROCESS);
+    TST_CANVAS_CASE(test_canvas_handle_refresh_order, TST_CANVAS_GLFW_RES, TST_ISOLATION_PROCESS);
+    TST_CANVAS_CASE(
+        test_canvas_video_wait_value_propagation,
+        TST_CANVAS_GLFW_RES | TST_RES_VIDEO, TST_ISOLATION_PROCESS);
+    TST_CANVAS_CASE(
+        test_canvas_video_wait_handle_ready_on_first_start,
+        TST_CANVAS_GLFW_RES | TST_RES_VIDEO, TST_ISOLATION_PROCESS);
+    TST_CANVAS_CASE(
+        test_canvas_video_wait_handle_export_fallback,
+        TST_CANVAS_GLFW_RES | TST_RES_VIDEO | TST_RES_GLOBAL_STATE, TST_ISOLATION_EXCLUSIVE);
+    TST_CANVAS_CASE(
+        test_canvas_video_wait_handle_export_fallback_after_recreate,
+        TST_CANVAS_GLFW_RES | TST_RES_VIDEO | TST_RES_GLOBAL_STATE, TST_ISOLATION_EXCLUSIVE);
+    TST_CANVAS_CASE(
+        test_canvas_video_sink_start_submit_integration,
+        TST_CANVAS_GLFW_RES | TST_CANVAS_VIDEO_RES, TST_ISOLATION_PROCESS);
+    TST_CANVAS_CASE(
+        test_canvas_video_sink_disable_rebuild,
+        TST_CANVAS_GLFW_RES | TST_CANVAS_VIDEO_RES, TST_ISOLATION_PROCESS);
+    TST_CANVAS_CASE(
+        test_canvas_capture_api,
+        TST_CANVAS_GLFW_RES | TST_RES_FILESYSTEM | TST_RES_LOG_CAPTURE,
+        TST_ISOLATION_PROCESS);
+    TST_CANVAS_CASE(
+        test_canvas_video_handle_refresh_after_recreate,
+        TST_CANVAS_GLFW_RES | TST_RES_VIDEO, TST_ISOLATION_PROCESS);
+    TST_CANVAS_CASE(
+        test_canvas_device_lost_fatal_transition,
+        TST_CANVAS_GLFW_RES | TST_RES_LOG_CAPTURE | TST_RES_GLOBAL_STATE,
+        TST_ISOLATION_EXCLUSIVE);
+    TST_CANVAS_CASE(
+        test_canvas_glfw_wrap_surface_present_recovery, TST_CANVAS_GLFW_RES,
+        TST_ISOLATION_PROCESS);
+    TST_CANVAS_CASE(
+        test_canvas_glfw_wrap_surface_resize_recreate_refreshes_state, TST_CANVAS_GLFW_RES,
+        TST_ISOLATION_PROCESS);
+    TST_CANVAS_CASE(
+        test_canvas_glfw,
+        TST_CANVAS_GLFW_RES | TST_CANVAS_VIDEO_RES | TST_RES_ENV, TST_ISOLATION_PROCESS);
     return 0;
 }
