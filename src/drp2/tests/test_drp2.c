@@ -6663,6 +6663,19 @@ int test_drp2_recording_reports_raw_fallback_command(TstContext* suite, const Ts
 /*  Entry-point                                                                                  */
 /*************************************************************************************************/
 
+#define TST_DRP2_CASE_EX(test, resources_, isolation_)                                            \
+    do                                                                                            \
+    {                                                                                             \
+        TstCaseDesc _tst_desc = tst_case_desc(#test, #test, (test));                              \
+        _tst_desc.tags = tags;                                                                    \
+        _tst_desc.resources = (resources_);                                                       \
+        _tst_desc.isolation = (isolation_);                                                       \
+        tst_suite_add_case((suite), _tst_desc);                                                   \
+    } while (0)
+
+#define TST_DRP2_GPU_CASE(test)                                                                   \
+    TST_DRP2_CASE_EX(test, TST_RES_CPU | TST_RES_GPU | TST_RES_VULKAN, TST_ISOLATION_PROCESS)
+
 int test_drp2(TstSuite* suite)
 {
     ANN(suite);
@@ -6671,6 +6684,7 @@ int test_drp2(TstSuite* suite)
 
     TST_MODULE(suite, tags);
 
+    TST_GROUP("stream");
     TST_CASE(test_drp2_stream_empty);
     TST_CASE(test_drp2_stream_append);
     TST_CASE(test_drp2_stream_debug_labels);
@@ -6683,10 +6697,22 @@ int test_drp2(TstSuite* suite)
     TST_CASE(test_drp2_render_pipeline_color_targets_json);
     TST_CASE(test_drp2_render_pipeline_raster_state);
     TST_CASE(test_drp2_wboit_accumulation_resolve_stream);
-    TST_CASE(test_drp2_recording_linear_roundtrip);
-    TST_CASE(test_drp2_recording_render_jsonl_no_raw_fallback);
-    TST_CASE(test_drp2_recording_compute_copy_jsonl_no_raw_fallback);
-    TST_CASE(test_drp2_recording_reports_raw_fallback_command);
+
+    TST_GROUP("recording");
+    TST_DRP2_CASE_EX(
+        test_drp2_recording_linear_roundtrip, TST_RES_CPU | TST_RES_FILESYSTEM,
+        TST_ISOLATION_PROCESS);
+    TST_DRP2_CASE_EX(
+        test_drp2_recording_render_jsonl_no_raw_fallback, TST_RES_CPU | TST_RES_FILESYSTEM,
+        TST_ISOLATION_PROCESS);
+    TST_DRP2_CASE_EX(
+        test_drp2_recording_compute_copy_jsonl_no_raw_fallback, TST_RES_CPU | TST_RES_FILESYSTEM,
+        TST_ISOLATION_PROCESS);
+    TST_DRP2_CASE_EX(
+        test_drp2_recording_reports_raw_fallback_command, TST_RES_CPU | TST_RES_FILESYSTEM,
+        TST_ISOLATION_PROCESS);
+
+    TST_GROUP("render-pass");
     TST_CASE(test_drp2_begin_render_pass_clear_color_stored);
     TST_CASE(test_drp2_begin_render_pass_multi_color_attachments);
     TST_CASE(test_drp2_begin_render_pass_attachment_ops);
@@ -6698,6 +6724,8 @@ int test_drp2(TstSuite* suite)
     TST_CASE(test_drp2_recording_preserves_attachment_ops);
     TST_CASE(test_drp2_recording_preserves_named_depth);
     TST_CASE(test_drp2_stream_json_preserves_clear_color);
+
+    TST_GROUP("runtime-validation");
     TST_CASE(test_drp2_runtime_validate_render_stream);
     TST_CASE(test_drp2_runtime_validate_render_state_inherited_across_passes);
     TST_CASE(test_drp2_runtime_validate_dynamic_viewport_scissor);
@@ -6744,6 +6772,8 @@ int test_drp2(TstSuite* suite)
     TST_CASE(test_drp2_runtime_rejects_destroy_texture_referenced_by_work);
     TST_CASE(test_drp2_runtime_rejects_destroy_submitted_render_pipeline);
     TST_CASE(test_drp2_runtime_rejects_destroy_live_shader_module);
+
+    TST_GROUP("runtime-lifecycle");
     TST_CASE(test_drp2_runtime_vklite_skeleton_create_destroy);
     TST_CASE(test_drp2_runtime_vklite_skeleton_execute_valid_stream);
     TST_CASE(test_drp2_runtime_vklite_skeleton_execute_invalid_stream);
@@ -6756,35 +6786,39 @@ int test_drp2(TstSuite* suite)
 #endif
     TST_CASE(test_drp2_runtime_download_buffer_rejects_out_of_range);
 #if DVZ_DRP2_HAS_VKLITE
-    TST_CASE(test_drp2_write_buffer_bytes_large_payload_executes);
-    TST_CASE(test_drp2_runtime_vklite_executes_resource_commands);
-    TST_CASE(test_drp2_runtime_vklite_writes_buffer_contents);
-    TST_CASE(test_drp2_runtime_vklite_copies_buffer_contents);
-    TST_CASE(test_drp2_runtime_vklite_uses_external_buffer);
+    TST_GROUP("vklite-runtime");
+    TST_DRP2_GPU_CASE(test_drp2_write_buffer_bytes_large_payload_executes);
+    TST_DRP2_GPU_CASE(test_drp2_runtime_vklite_executes_resource_commands);
+    TST_DRP2_GPU_CASE(test_drp2_runtime_vklite_writes_buffer_contents);
+    TST_DRP2_GPU_CASE(test_drp2_runtime_vklite_copies_buffer_contents);
+    TST_DRP2_GPU_CASE(test_drp2_runtime_vklite_uses_external_buffer);
 #if DVZ_HAS_CUDA
-    TST_CASE(test_drp2_runtime_vklite_draws_cuda_external_vertex_buffer);
+    TST_DRP2_GPU_CASE(test_drp2_runtime_vklite_draws_cuda_external_vertex_buffer);
 #endif
-    TST_CASE(test_drp2_runtime_vklite_writes_texture_contents);
-    TST_CASE(test_drp2_runtime_vklite_copies_buffer_to_texture);
-    TST_CASE(test_drp2_runtime_vklite_copies_texture_to_texture);
-    TST_CASE(test_drp2_runtime_vklite_creates_glsl_shader_modules);
-    TST_CASE(test_drp2_runtime_vklite_rejects_invalid_glsl_shader);
-    TST_CASE(test_drp2_runtime_vklite_rejects_pipeline_with_failed_shader);
-    TST_CASE(test_drp2_runtime_vklite_destroy_after_partial_failure);
-    TST_CASE(test_drp2_runtime_vklite_creates_render_pipeline);
-    TST_CASE(test_drp2_runtime_vklite_reallocates_object_table_safely);
-    TST_CASE(test_drp2_runtime_vklite_draws_render_pass);
-    TST_CASE(test_drp2_runtime_vklite_draws_named_depth_render_pass);
-    TST_CASE(test_drp2_runtime_vklite_draws_msaa_resolve_render_pass);
-    TST_CASE(test_drp2_runtime_vklite_draws_multi_color_render_pass);
-    TST_CASE(test_drp2_runtime_vklite_draws_wboit_format_passes);
-    TST_CASE(test_drp2_runtime_vklite_draws_depth_peeling_shape);
-    TST_CASE(test_drp2_runtime_vklite_samples_3d_texture);
-    TST_CASE(test_drp2_runtime_vklite_samples_then_copies_texture);
-    TST_CASE(test_drp2_runtime_vklite_refreshes_bind_group_after_texture_recreate);
-    TST_CASE(test_drp2_runtime_vklite_refreshes_bind_group_after_buffer_sampler_recreate);
-    TST_CASE(test_drp2_runtime_vklite_refresh_defers_retired_descriptors);
+    TST_DRP2_GPU_CASE(test_drp2_runtime_vklite_writes_texture_contents);
+    TST_DRP2_GPU_CASE(test_drp2_runtime_vklite_copies_buffer_to_texture);
+    TST_DRP2_GPU_CASE(test_drp2_runtime_vklite_copies_texture_to_texture);
+    TST_DRP2_GPU_CASE(test_drp2_runtime_vklite_creates_glsl_shader_modules);
+    TST_DRP2_GPU_CASE(test_drp2_runtime_vklite_rejects_invalid_glsl_shader);
+    TST_DRP2_GPU_CASE(test_drp2_runtime_vklite_rejects_pipeline_with_failed_shader);
+    TST_DRP2_GPU_CASE(test_drp2_runtime_vklite_destroy_after_partial_failure);
+    TST_DRP2_GPU_CASE(test_drp2_runtime_vklite_creates_render_pipeline);
+    TST_DRP2_GPU_CASE(test_drp2_runtime_vklite_reallocates_object_table_safely);
+    TST_DRP2_GPU_CASE(test_drp2_runtime_vklite_draws_render_pass);
+    TST_DRP2_GPU_CASE(test_drp2_runtime_vklite_draws_named_depth_render_pass);
+    TST_DRP2_GPU_CASE(test_drp2_runtime_vklite_draws_msaa_resolve_render_pass);
+    TST_DRP2_GPU_CASE(test_drp2_runtime_vklite_draws_multi_color_render_pass);
+    TST_DRP2_GPU_CASE(test_drp2_runtime_vklite_draws_wboit_format_passes);
+    TST_DRP2_GPU_CASE(test_drp2_runtime_vklite_draws_depth_peeling_shape);
+    TST_DRP2_GPU_CASE(test_drp2_runtime_vklite_samples_3d_texture);
+    TST_DRP2_GPU_CASE(test_drp2_runtime_vklite_samples_then_copies_texture);
+    TST_DRP2_GPU_CASE(test_drp2_runtime_vklite_refreshes_bind_group_after_texture_recreate);
+    TST_DRP2_GPU_CASE(test_drp2_runtime_vklite_refreshes_bind_group_after_buffer_sampler_recreate);
+    TST_DRP2_GPU_CASE(test_drp2_runtime_vklite_refresh_defers_retired_descriptors);
 #endif
 
     return 0;
 }
+
+#undef TST_DRP2_CASE_EX
+#undef TST_DRP2_GPU_CASE
