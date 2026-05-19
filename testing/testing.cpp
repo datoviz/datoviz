@@ -17,6 +17,7 @@
 #include <algorithm>
 #include <chrono>
 #include <cinttypes>
+#include <cstddef>
 #include <cstdlib>
 #include <fstream>
 #include <map>
@@ -90,6 +91,28 @@ typedef struct TstAggregate
     uint64_t first_start_ns;
     uint64_t last_end_ns;
 } TstAggregate;
+
+
+
+typedef struct TstFixtureDef
+{
+    std::string name;
+    TstFixtureScope scope;
+    TstFixtureCreate create;
+    TstFixtureDestroy destroy;
+    void* worker_instance;
+    bool worker_created;
+} TstFixtureDef;
+
+
+
+typedef struct TstFixtureRunState
+{
+    TstSuite* suite;
+    std::vector<TstFixtureDef>* registry;
+    uint32_t worker_index;
+    std::vector<std::pair<size_t, void*>> case_instances;
+} TstFixtureRunState;
 
 
 
@@ -542,6 +565,126 @@ static const char* _tst_isolation_name(TstIsolation isolation)
 
 
 
+static const char* _tst_fixture_scope_name(TstFixtureScope scope)
+{
+    switch (scope)
+    {
+    case TST_FIXTURE_SCOPE_CASE:
+        return "case";
+    case TST_FIXTURE_SCOPE_WORKER:
+        return "worker";
+    case TST_FIXTURE_SCOPE_PROCESS:
+        return "process";
+    case TST_FIXTURE_SCOPE_EXCLUSIVE:
+        return "exclusive";
+    case TST_FIXTURE_SCOPE_NONE:
+    default:
+        return "none";
+    }
+}
+
+
+
+static std::vector<TstFixtureDef>* _tst_fixture_registry(TstSuite* suite, bool create)
+{
+    ANN(suite);
+    if (suite->fixture_registry == NULL && create)
+    {
+        suite->fixture_registry = new std::vector<TstFixtureDef>();
+        ANN(suite->fixture_registry);
+    }
+    return (std::vector<TstFixtureDef>*)suite->fixture_registry;
+}
+
+
+
+static size_t _tst_fixture_find(const std::vector<TstFixtureDef>* registry, const char* name)
+{
+    if (registry == NULL || name == NULL)
+    {
+        return SIZE_MAX;
+    }
+    for (size_t i = 0; i < registry->size(); i++)
+    {
+        if ((*registry)[i].name == name)
+        {
+            return i;
+        }
+    }
+    return SIZE_MAX;
+}
+
+
+
+static TstFixtureScope _tst_fixture_case_scope(const TstSuite* suite, const TstCase* test)
+{
+    ANN(test);
+    if (test->fixture_scope != TST_FIXTURE_SCOPE_NONE)
+    {
+        return test->fixture_scope;
+    }
+    if (test->fixture == NULL)
+    {
+        return TST_FIXTURE_SCOPE_NONE;
+    }
+
+    const std::vector<TstFixtureDef>* registry =
+        suite != NULL ? (const std::vector<TstFixtureDef>*)suite->fixture_registry : NULL;
+    size_t idx = _tst_fixture_find(registry, test->fixture);
+    if (idx == SIZE_MAX)
+    {
+        return TST_FIXTURE_SCOPE_NONE;
+    }
+    return (*registry)[idx].scope;
+}
+
+
+
+static void _tst_fixture_destroy_case(TstFixtureRunState* state)
+{
+    if (state == NULL || state->registry == NULL)
+    {
+        return;
+    }
+    for (const auto& item : state->case_instances)
+    {
+        const size_t idx = item.first;
+        void* instance = item.second;
+        if (idx < state->registry->size() && instance != NULL)
+        {
+            TstFixtureDef& def = (*(state->registry))[idx];
+            if (def.destroy != NULL)
+            {
+                def.destroy(instance);
+            }
+        }
+    }
+    state->case_instances.clear();
+}
+
+
+
+static void _tst_fixture_destroy_all(TstSuite* suite)
+{
+    if (suite == NULL || suite->fixture_registry == NULL)
+    {
+        return;
+    }
+
+    std::vector<TstFixtureDef>* registry = (std::vector<TstFixtureDef>*)suite->fixture_registry;
+    for (TstFixtureDef& def : *registry)
+    {
+        if (def.worker_created && def.worker_instance != NULL && def.destroy != NULL)
+        {
+            def.destroy(def.worker_instance);
+        }
+        def.worker_instance = NULL;
+        def.worker_created = false;
+    }
+}
+
+
+
 static bool _tst_resource_matches(uint64_t resources, const char* name)
 {
     if (name == NULL)
@@ -922,6 +1065,11 @@ static void _tst_print_case(const TstCase* result, const TstOptions* options)
         dvz_fprintf(stdout, "  function   %s\n", result->function_name);
         dvz_fprintf(stdout, "  resources  %s\n", _tst_resources_string(result->resources).c_str());
         dvz_fprintf(stdout, "  isolation  %s\n", _tst_isolation_name(result->isolation));
+        if (result->fixture != NULL)
+        {
+            dvz_fprintf(stdout, "  fixture    %s (%s)\n", result->fixture,
+                        _tst_fixture_scope_name(result->fixture_scope));
+        }
         dvz_fprintf(stdout, "  elapsed    ");
         _tst_print_duration(stdout, options, result->elapsed_ns, 0);
         dvz_fprintf(stdout, "\n");
@@ -1167,6 +1315,11 @@ static int _tst_write_json(
         out << "      \"status\": \"" << _tst_status_name(r.status) << "\",\n";
         out << "      \"resources\": \"" << _tst_resources_string(r.resources) << "\",\n";
         out << "      \"isolation\": \"" << _tst_isolation_name(r.isolation) << "\",\n";
+        if (r.fixture != NULL)
+            out << "      \"fixture\": \"" << _tst_json_escape(r.fixture) << "\",\n";
+        else
+            out << "      \"fixture\": null,\n";
+        out << "      \"fixture_scope\": \"" << _tst_fixture_scope_name(r.fixture_scope) << "\",\n";
         if (r.skip_reason != NULL)
             out << "      \"skip_reason\": \"" << _tst_json_escape(r.skip_reason) << "\",\n";
         else
@@ -1197,10 +1350,11 @@ static void _tst_print_list(TstSuite* suite, const TstOptions* options)
             continue;
         }
         dvz_fprintf(
-            stdout, "%s  function=%s resources=%s isolation=%s\n", _tst_case_display_id(test).c_str(),
-            test->function_name != NULL ? test->function_name : "",
-            _tst_resources_string(test->resources).c_str(),
-            _tst_isolation_name(test->isolation));
+            stdout, "%s  function=%s resources=%s isolation=%s fixture=%s fixture_scope=%s\n",
+            _tst_case_display_id(test).c_str(), test->function_name != NULL ? test->function_name : "",
+            _tst_resources_string(test->resources).c_str(), _tst_isolation_name(test->isolation),
+            test->fixture != NULL ? test->fixture : "",
+            _tst_fixture_scope_name(_tst_fixture_case_scope(suite, test)));
     }
 }
 
@@ -1316,6 +1470,8 @@ void tst_suite_add_case(TstSuite* suite, TstCaseDesc desc)
     test->setup = desc.setup;
     test->teardown = desc.teardown;
     test->skip = desc.skip;
+    test->fixture = desc.fixture;
+    test->fixture_scope = desc.fixture_scope;
     test->user_data = desc.user_data;
     test->status = TST_STATUS_NOT_RUN;
 }
@@ -1332,6 +1488,37 @@ void tst_suite_set_log_adapter(TstSuite* suite, const TstLogAdapter* adapter)
         return;
     }
     suite->log_adapter = *adapter;
+}
+
+
+
+void tst_suite_register_fixture(
+    TstSuite* suite, const char* name, TstFixtureScope scope, TstFixtureCreate create,
+    TstFixtureDestroy destroy)
+{
+    ANN(suite);
+    ANN(name);
+    ANN(create);
+    std::vector<TstFixtureDef>* registry = _tst_fixture_registry(suite, true);
+    ANN(registry);
+
+    size_t idx = _tst_fixture_find(registry, name);
+    if (idx == SIZE_MAX)
+    {
+        TstFixtureDef def = {};
+        def.name = name;
+        def.scope = scope;
+        def.create = create;
+        def.destroy = destroy;
+        registry->push_back(def);
+        return;
+    }
+
+    TstFixtureDef& def = (*registry)[idx];
+    ASSERT(!def.worker_created);
+    def.scope = scope;
+    def.create = create;
+    def.destroy = destroy;
 }
 
 
@@ -1379,6 +1566,10 @@ int tst_suite_run(TstSuite* suite, int argc, char** argv)
     std::vector<TstCase> results;
     std::map<std::string, TstAggregate> modules;
     std::map<std::string, TstAggregate> groups;
+    TstFixtureRunState fixture_state = {};
+    fixture_state.suite = suite;
+    fixture_state.registry = _tst_fixture_registry(suite, false);
+    fixture_state.worker_index = 0;
     const uint64_t runner_start_ns = _tst_now_ns();
 
     for (uint64_t repeat = 0; repeat < options.repeat; ++repeat)
@@ -1387,6 +1578,7 @@ int tst_suite_run(TstSuite* suite, int argc, char** argv)
         {
             TstCase result = *test;
             result.repeat_index = repeat;
+            result.fixture_scope = _tst_fixture_case_scope(suite, &result);
             if (result.timeout_ms == 0)
             {
                 result.timeout_ms = options.default_timeout_ms;
@@ -1398,6 +1590,8 @@ int tst_suite_run(TstSuite* suite, int argc, char** argv)
             ctx.user_data = result.user_data;
             ctx.suppress_expected_error_output = true;
             ctx.strict_unexpected_errors = suite->strict_unexpected_errors;
+            ctx.worker_index = fixture_state.worker_index;
+            ctx.fixture_state = &fixture_state;
 
             result.start_ns = _tst_now_ns();
 
@@ -1473,6 +1667,7 @@ int tst_suite_run(TstSuite* suite, int argc, char** argv)
             summary.summed_case_ns += result.elapsed_ns;
 
             results.push_back(result);
+            _tst_fixture_destroy_case(&fixture_state);
             _tst_context_destroy(&ctx);
 
             if (options.fail_fast && result.status == TST_STATUS_FAIL)
@@ -1488,6 +1683,7 @@ int tst_suite_run(TstSuite* suite, int argc, char** argv)
 
     summary.runner_elapsed_ns = _tst_now_ns() - runner_start_ns;
     suite->last_summary = summary;
+    _tst_fixture_destroy_all(suite);
 
     _tst_print_summary(&summary, results, modules, &options, groups);
     _tst_print_slow_cases(results, &options, options.slow_count);
@@ -1588,6 +1784,55 @@ void tst_set_strict_unexpected_errors(TstSuite* suite, bool enabled)
 
 
 
+void* tst_context_fixture(TstContext* ctx, const char* name)
+{
+    ANN(ctx);
+    ANN(name);
+
+    TstFixtureRunState* state = (TstFixtureRunState*)ctx->fixture_state;
+    if (state == NULL || state->registry == NULL)
+    {
+        return NULL;
+    }
+
+    const size_t idx = _tst_fixture_find(state->registry, name);
+    if (idx == SIZE_MAX)
+    {
+        return NULL;
+    }
+
+    TstFixtureDef& def = (*(state->registry))[idx];
+    if (def.scope == TST_FIXTURE_SCOPE_CASE)
+    {
+        for (const auto& item : state->case_instances)
+        {
+            if (item.first == idx)
+            {
+                return item.second;
+            }
+        }
+        void* instance = def.create != NULL ? def.create(state->suite, state->worker_index) : NULL;
+        state->case_instances.push_back(std::make_pair(idx, instance));
+        return instance;
+    }
+
+    if (def.scope == TST_FIXTURE_SCOPE_WORKER || def.scope == TST_FIXTURE_SCOPE_PROCESS ||
+        def.scope == TST_FIXTURE_SCOPE_EXCLUSIVE)
+    {
+        if (!def.worker_created)
+        {
+            def.worker_instance =
+                def.create != NULL ? def.create(state->suite, state->worker_index) : NULL;
+            def.worker_created = true;
+        }
+        return def.worker_instance;
+    }
+
+    return NULL;
+}
+
+
+
 int tst_context_log(TstContext* ctx, int level, const char* file, int line, const char* message)
 {
     if (ctx == NULL)
@@ -1627,6 +1872,13 @@ void tst_assert_fail(TstContext* ctx, const char* file, int line, const char* ex
 void tst_suite_destroy(TstSuite* suite)
 {
     ANN(suite);
+    _tst_fixture_destroy_all(suite);
+    if (suite->fixture_registry != NULL)
+    {
+        std::vector<TstFixtureDef>* registry = (std::vector<TstFixtureDef>*)suite->fixture_registry;
+        delete registry;
+        suite->fixture_registry = NULL;
+    }
     suite->n_cases = 0;
     suite->capacity = 0;
     dvz_free_ptr((void**)&suite->cases);

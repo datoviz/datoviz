@@ -159,6 +159,17 @@ typedef enum
 
 
 
+typedef enum
+{
+    TST_FIXTURE_SCOPE_NONE = 0,
+    TST_FIXTURE_SCOPE_CASE = 1,
+    TST_FIXTURE_SCOPE_WORKER = 2,
+    TST_FIXTURE_SCOPE_PROCESS = 3,
+    TST_FIXTURE_SCOPE_EXCLUSIVE = 4,
+} TstFixtureScope;
+
+
+
 /*************************************************************************************************/
 /*  Typedefs                                                                                     */
 /*************************************************************************************************/
@@ -175,6 +186,8 @@ typedef int (*TstFunction)(TstContext* suite, const TstCase* item);
 typedef const char* (*TstSkipFunction)(TstContext* suite, const TstCase* item);
 typedef void (*TstLogInstall)(TstContext* ctx, void* user_data);
 typedef void (*TstLogUninstall)(void* user_data);
+typedef void* (*TstFixtureCreate)(TstSuite* suite, uint32_t worker_index);
+typedef void (*TstFixtureDestroy)(void* fixture);
 
 
 
@@ -204,6 +217,8 @@ struct TstCaseDesc
     TstFunction setup;
     TstFunction teardown;
     TstSkipFunction skip;
+    const char* fixture;
+    TstFixtureScope fixture_scope;
     void* user_data;
 };
 
@@ -223,6 +238,8 @@ struct TstCase
     TstFunction setup;
     TstFunction teardown;
     TstSkipFunction skip;
+    const char* fixture;
+    TstFixtureScope fixture_scope;
     void* user_data;
 
     TstStatus status;
@@ -263,6 +280,8 @@ struct TstContext
     TstLogRecord* captured_logs;
     const char* skip_reason;
     const char* failure_message;
+    uint32_t worker_index;
+    void* fixture_state;
 };
 
 
@@ -290,6 +309,7 @@ struct TstSuite
     bool strict_unexpected_errors;
     TstLogAdapter log_adapter;
     TstRunSummary last_summary;
+    void* fixture_registry;
 };
 
 
@@ -309,6 +329,10 @@ void tst_suite_group(TstSuite* suite, const char* group);
 void tst_suite_add_case(TstSuite* suite, TstCaseDesc desc);
 
 void tst_suite_set_log_adapter(TstSuite* suite, const TstLogAdapter* adapter);
+
+void tst_suite_register_fixture(
+    TstSuite* suite, const char* name, TstFixtureScope scope, TstFixtureCreate create,
+    TstFixtureDestroy destroy);
 
 int tst_suite_run(TstSuite* suite, int argc, char** argv);
 
@@ -331,6 +355,8 @@ int tst_expect_error_end(TstContext* ctx);
 void tst_skip(TstContext* ctx, const char* reason);
 
 void tst_set_strict_unexpected_errors(TstSuite* suite, bool enabled);
+
+void* tst_context_fixture(TstContext* ctx, const char* name);
 
 int tst_context_log(TstContext* ctx, int level, const char* file, int line, const char* message);
 
