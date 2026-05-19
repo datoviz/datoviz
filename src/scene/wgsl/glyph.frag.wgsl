@@ -18,9 +18,6 @@ fn main(input: FragmentIn) -> @location(0) vec4f {
         let sd = median3(texel.r, texel.g, texel.b);
         let w = max(fwidth(sd), 1.0 / 255.0);
         opacity = smoothstep(0.5 - w, 0.5 + w, sd);
-        if (texel.a > 0.0 && abs(texel.a - sd) > 1.0 / 255.0) {
-            opacity = max(opacity, smoothstep(0.5 - w, 0.5 + w, texel.a));
-        }
     }
     return vec4f(input.color.rgb, input.color.a * opacity);
 }

@@ -678,6 +678,88 @@ static uint64_t _app_rgb_region_channel_sum(
 
 
 /**
+ * Return a visual attribute index by name.
+ *
+ * @param visual the visual
+ * @param name the attribute name
+ * @return the attribute index, or -1 if absent
+ */
+static int _app_visual_attr_index(const DvzVisual* visual, const char* name)
+{
+    ANN(visual);
+    ANN(name);
+    for (uint32_t i = 0; i < visual->attr_count; i++)
+    {
+        if (strcmp(visual->attrs[i].name, name) == 0)
+            return (int)i;
+    }
+    return -1;
+}
+
+
+
+/**
+ * Convert glyph visual NDC bounds to a conservative pixel rectangle.
+ *
+ * @param visual the glyph visual
+ * @param width capture width
+ * @param height capture height
+ * @param out_rect output x0, y0, x1, y1
+ * @return whether bounds were resolved
+ */
+static bool _app_glyph_pixel_bounds(
+    const DvzVisual* visual, uint32_t width, uint32_t height, uint32_t out_rect[4])
+{
+    ANN(visual);
+    ANN(out_rect);
+    int pos_idx = _app_visual_attr_index(visual, "position");
+    if (pos_idx < 0 || visual->attrs[pos_idx].data == NULL || visual->attrs[pos_idx].item_count == 0)
+        return false;
+
+    const float(*positions)[3] = (const float(*)[3])visual->attrs[pos_idx].data;
+    float min_x = +INFINITY;
+    float min_y = +INFINITY;
+    float max_x = -INFINITY;
+    float max_y = -INFINITY;
+    for (uint64_t i = 0; i < visual->attrs[pos_idx].item_count; i++)
+    {
+        float px = (positions[i][0] * 0.5f + 0.5f) * (float)width;
+        float py = (1.0f - (positions[i][1] * 0.5f + 0.5f)) * (float)height;
+        if (px < min_x)
+            min_x = px;
+        if (px > max_x)
+            max_x = px;
+        if (py < min_y)
+            min_y = py;
+        if (py > max_y)
+            max_y = py;
+    }
+    if (!isfinite(min_x) || !isfinite(min_y) || !isfinite(max_x) || !isfinite(max_y))
+        return false;
+
+    int x0 = (int)floorf(min_x);
+    int y0 = (int)floorf(min_y);
+    int x1 = (int)ceilf(max_x);
+    int y1 = (int)ceilf(max_y);
+    if (x0 < 0)
+        x0 = 0;
+    if (y0 < 0)
+        y0 = 0;
+    if (x1 > (int)width)
+        x1 = (int)width;
+    if (y1 > (int)height)
+        y1 = (int)height;
+    if (x0 >= x1 || y0 >= y1)
+        return false;
+    out_rect[0] = (uint32_t)x0;
+    out_rect[1] = (uint32_t)y0;
+    out_rect[2] = (uint32_t)x1;
+    out_rect[3] = (uint32_t)y1;
+    return true;
+}
+
+
+/**
  * Render the deterministic EDL point fixture and return its captured RGBA pixels.
  *
  * @param enabled whether EDL should be enabled for the panel
@@ -2242,6 +2324,11 @@ int test_app_offscreen_sdf_text_has_nonblank_pixels(TstContext* suite, const Tst
     AT(height == 64);
 
     uint32_t green_count = 0;
+    uint32_t green_in_bounds = 0;
+    uint32_t bounds[4] = {0};
+    bool has_bounds =
+        text->text.glyph_visual != NULL &&
+        _app_glyph_pixel_bounds(text->text.glyph_visual, width, height, bounds);
     for (uint32_t i = 0; i < width * height; i++)
     {
         const uint8_t* pixel = &rgba[4 * i];
@@ -2249,6 +2336,21 @@ int test_app_offscreen_sdf_text_has_nonblank_pixels(TstContext* suite, const Tst
             green_count++;
     }
     AT(green_count > 0);
+    if (has_bounds)
+    {
+        for (uint32_t y = bounds[1]; y < bounds[3]; y++)
+        {
+            for (uint32_t x = bounds[0]; x < bounds[2]; x++)
+            {
+                const uint8_t* pixel = _pixel_at(rgba, width, height, x, y);
+                if (pixel[1] > 60 && pixel[0] < 100 && pixel[2] < 100)
+                    green_in_bounds++;
+            }
+        }
+        uint32_t bounds_pixels = (bounds[2] - bounds[0]) * (bounds[3] - bounds[1]);
+        AT(bounds_pixels > 0);
+        AT(green_in_bounds * 10u < bounds_pixels * 7u);
+    }
 
     dvz_free(rgba);
     dvz_app_destroy(app);
