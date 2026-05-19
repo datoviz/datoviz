@@ -16,9 +16,9 @@ directories.
    follow-up.
 6. [SCENE_VECTOR_VISUALS_PLAN.md](SCENE_VECTOR_VISUALS_PLAN.md): segment, path, and vector-family
    follow-up.
-7. [SCENE_VISUAL_SHADER_ABI_REFACTOR_PLAN.md](SCENE_VISUAL_SHADER_ABI_REFACTOR_PLAN.md): visual
-   shader ABI refactor plan.
+7. [SCENE_VISUAL_SHADER_ABI_REFACTOR_PLAN.md](SCENE_VISUAL_SHADER_ABI_REFACTOR_PLAN.md): remaining
+   visual shader ABI cleanup.
 8. [SCENE_VOLUME_RENDERING_PLAN.md](SCENE_VOLUME_RENDERING_PLAN.md): remaining volume and napari
    clipping follow-up.
-9. [SCENE_WGSL_SHADER_VARIANTS_PLAN.md](SCENE_WGSL_SHADER_VARIANTS_PLAN.md): WGSL shader-variant
-   parity lane.
+9. [SCENE_WGSL_SHADER_VARIANTS_PLAN.md](SCENE_WGSL_SHADER_VARIANTS_PLAN.md): remaining WGSL
+   shader-variant parity work.
