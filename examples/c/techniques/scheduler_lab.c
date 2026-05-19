@@ -492,7 +492,7 @@ int main(int argc, char** argv)
         return 1;
     }
     state.win = win;
-    dvz_panel_set_panzoom(panel, dvz_app_window_input(win), DVZ_PANZOOM_FLAGS_KEEP_ASPECT);
+    dvz_panel_set_panzoom(panel, dvz_app_window_input(win), 0);
 
     DvzGui* gui = dvz_app_window_gui(win, NULL);
     if (gui == NULL)

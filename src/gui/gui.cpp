@@ -1137,8 +1137,11 @@ void _dvz_gui_begin_frame(DvzGui* gui, DvzAppWindow* win, const DvzStreamFrame* 
 {
     ANN(gui);
     ANN(frame);
+    bool was_initialized = gui->vulkan_initialized;
     if (!_gui_ensure_vulkan(gui, frame))
         return;
+    if (!was_initialized)
+        _gui_request_frame(gui);
     _gui_set_current(gui);
     ImGui_ImplVulkan_NewFrame();
     ImGui_ImplGlfw_NewFrame();
