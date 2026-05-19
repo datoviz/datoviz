@@ -1,11 +1,11 @@
 # Test Runner Scheduling, Parallelization, And Fixtures
 
 > **Execution Status**
-> - **Status:** `PARTIALLY IMPLEMENTED; FOLLOW-UP QUEUE`
+> - **Status:** `STABLE BASELINE; OPTIONAL FOLLOW-UP QUEUE`
 > - **Updated on:** `2026-05-19`
-> - **Purpose:** track remaining runner scheduling and shared-fixture work after process sharding,
->   fixture lifecycle, resource-aware shard policy, fixture timing, and shared app-offscreen
->   coverage landed.
+> - **Purpose:** track optional runner scheduling and shared-fixture follow-up after process
+>   sharding, fixture lifecycle, resource-aware shard policy, fixture timing, progress reporting,
+>   and the low-risk shared GPU fixture performance pass landed.
 
 
 ## Durable Records
@@ -33,6 +33,9 @@ Implemented runner/scheduler work includes:
 10. process-isolated test replay for `TST_ISOLATION_PROCESS`;
 11. fixture setup timing in reports and JSON;
 12. shared app-offscreen coverage using resource-aware app construction.
+13. shard-progress output with completed cases, failures, skipped cases, and live fail percentage;
+14. shared DRP2 vklite fixtures for low-risk render, transfer, and texture runtime tests;
+15. shared scene frame-plan and scene-graph GPU fixtures for low-risk core visual execution tests.
 
 Relevant implementation commits include:
 
@@ -46,7 +49,38 @@ Relevant implementation commits include:
 8. `81db06c9` — ran process-isolated tests in child processes;
 9. `fc562771` and `8593600e` — expanded shared app offscreen depth/volume tests;
 10. `9b03d86e` and `8d97c9d5` — shard progress and replay reporting hardening;
-11. `ecbfac35` — refactored test runner scheduling helpers.
+11. `ecbfac35` — refactored test runner scheduling helpers;
+12. `a51f9f8e`, `155ddd10`, and `0c04ef77` — shared DRP2 vklite fixtures for
+    low-risk transfer, render, and texture tests;
+13. `543ec30b` — shared scene frame-plan DRP2 fixture;
+14. `2f2bbbec` — shared scene graph DRP2 fixture for core visuals.
+
+
+## Current Performance Baseline
+
+The low-risk performance pass is complete enough to stop here unless a future workflow needs more.
+Serial execution remains the default; `--jobs N` is available for explicit process sharding.
+
+Latest focused validation on `2026-05-19`:
+
+1. `just build` passed.
+2. `./build/testing/dvztest_scene --module scene --slow 25 --slow-groups 15 --json /tmp/dvztest-scene-final-wrapup.json`
+   passed `335/335`, runner time about `13 s`.
+3. `./build/testing/dvztest_scene --module scene --jobs 4 --parent-json /tmp/dvztest-scene-final-wrapup-parallel.json --slow 25`
+   passed `335/335`, runner time about `8.6 s`.
+4. Earlier focused checks in this pass showed `dvztest_drp2 --module drp2 --slow 30` at `108/108`
+   in about `3.8 s` serial and about `2.4 s` with `--jobs 4`.
+
+The remaining slow scene groups are now mostly tests where isolation still buys meaningful coverage:
+
+1. `scene/app-offscreen`: rendered-pixel and app/canvas lifecycle behavior;
+2. `scene/scene-graph`: WBOIT, depth peel, SSAO, borrowed buffers, large-count, and multi-frame
+   lifecycle cases;
+3. `scene/pick-probe`: request/readback behavior;
+4. `scene/frame-plan-emit`: graph/depth-peel and offscreen canvas execution.
+
+Do not treat those as mandatory optimization targets. Further sharing should happen only when the
+coverage contract is obvious and the before/after timings justify the added fixture complexity.
 
 
 ## Remaining Work

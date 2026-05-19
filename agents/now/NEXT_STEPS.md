@@ -20,9 +20,11 @@ image, volume, sphere, sampled-field, material, controller, pick/probe, annotati
 bookkeeping, graph-backed technique, and app/offscreen/GLFW slices. Treat these as active code, not
 future scaffolding.
 
-The serial C test-runner modernization baseline is complete. Historical notes live in
-[../done/TEST_RUNNER_MODERNIZATION.md](../done/TEST_RUNNER_MODERNIZATION.md); remaining scheduling
-work lives in [../soon/tooling/TEST_RUNNER_SCHEDULING.md](../soon/tooling/TEST_RUNNER_SCHEDULING.md).
+The C test-runner modernization and low-risk process-sharding performance pass are complete enough
+to treat as a stable baseline. Historical notes live in
+[../done/TEST_RUNNER_MODERNIZATION.md](../done/TEST_RUNNER_MODERNIZATION.md); optional scheduling
+and shared-fixture follow-ups live in
+[../soon/tooling/TEST_RUNNER_SCHEDULING.md](../soon/tooling/TEST_RUNNER_SCHEDULING.md).
 
 
 ## Read First
@@ -69,9 +71,9 @@ work lives in [../soon/tooling/TEST_RUNNER_SCHEDULING.md](../soon/tooling/TEST_R
 9. **CUDA/CuPy external-memory contract:** prefer Vulkan-owned exportable resources imported into
    CUDA/CuPy with explicit external-memory and semaphore metadata. Do not make CUDA-owned
    allocation import or NVIDIA CIG the primary architecture.
-10. **Runner scheduling follow-up:** process-level sharding, CI orchestration, optional
-   thread-safe workers, and remaining ad-hoc skip migration belong to
-   [../soon/tooling/TEST_RUNNER_SCHEDULING.md](../soon/tooling/TEST_RUNNER_SCHEDULING.md).
+10. **Runner scheduling follow-up:** this is no longer an active performance blocker. Optional
+    CI orchestration, thread-safe workers, and further shared-fixture migrations belong to
+    [../soon/tooling/TEST_RUNNER_SCHEDULING.md](../soon/tooling/TEST_RUNNER_SCHEDULING.md).
 
 
 ## Useful Current Records
