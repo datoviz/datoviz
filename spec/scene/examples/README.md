@@ -44,7 +44,11 @@ Use the example planning documents for distinct jobs:
    C examples, generated DRP2/WebGPU streams, GUI/cimgui, video, and low-level backend coverage.
 3. [EXAMPLE_ORGANIZATION.md](EXAMPLE_ORGANIZATION.md) explains which repository and API layer
    should own each class of example.
-4. [TEMPLATE.md](TEMPLATE.md) is the starting point for new worked example specs.
+4. [EXAMPLE_GAP_REPORT.md](EXAMPLE_GAP_REPORT.md) summarizes current scene, DRP2, app, and
+   runtime gaps exposed by the worked examples.
+5. [EXAMPLE_PRIORITIZATION.md](EXAMPLE_PRIORITIZATION.md) ranks example candidates by payoff,
+   feasibility, architecture pressure, and release usefulness.
+6. [TEMPLATE.md](TEMPLATE.md) is the starting point for new worked example specs.
 
 Do not use worked example files as release commitments by themselves. Promote release commitments
 through [EXAMPLE_RELEASE_STAGING.md](EXAMPLE_RELEASE_STAGING.md) so future agents can tell which

@@ -20,7 +20,7 @@ Subsystem-specific execution notes and stable behavior records live outside `now
 
 1. [../spec/drp2/AGENT_SPEC_PHASE.md](../spec/drp2/AGENT_SPEC_PHASE.md)
 2. [../spec/scene/visuals/IMPLEMENTATION_DECISIONS.md](../spec/scene/visuals/IMPLEMENTATION_DECISIONS.md)
-3. [soon/IMAGE_PICKING_RECOVERY.md](soon/IMAGE_PICKING_RECOVERY.md)
+3. [../spec/scene/validation/IMAGE_PICKING_RECOVERY.md](../spec/scene/validation/IMAGE_PICKING_RECOVERY.md)
 
 Near-term work that is expected soon, but should not crowd the active entry-point directory, lives
 in [soon/](soon/). This includes the WebGPU, WASM, dual-depth-peeling, and screen-space volume
@@ -47,9 +47,9 @@ If resuming work on the branch:
 6. Read [../spec/scene/visuals/IMPLEMENTATION_DECISIONS.md](../spec/scene/visuals/IMPLEMENTATION_DECISIONS.md)
    before extending pixel, point, marker, segment, path, image, sphere, or mesh first-slice
    behavior.
-7. Read [soon/IMAGE_PICKING_RECOVERY.md](soon/IMAGE_PICKING_RECOVERY.md) before changing
-   image probe coordinates, hidden pick-capable image behavior, panzoom probe mapping, or CPU
-   fallback behavior.
+7. Read [../spec/scene/validation/IMAGE_PICKING_RECOVERY.md](../spec/scene/validation/IMAGE_PICKING_RECOVERY.md)
+   before changing image probe coordinates, hidden pick-capable image behavior, panzoom probe
+   mapping, or CPU fallback behavior.
 8. Read [../spec/scene/README.md](../spec/scene/README.md) before changing scene semantics,
    public scene API shape, frame planning, visual families, interaction, annotations, scales, or
    runtime boundaries.
@@ -110,7 +110,8 @@ Scene feature lanes:
 
 Analysis notes:
 
-1. [soon/SCENE_EXAMPLES_GAP_REPORT.md](soon/SCENE_EXAMPLES_GAP_REPORT.md)
+1. [../spec/scene/examples/EXAMPLE_GAP_REPORT.md](../spec/scene/examples/EXAMPLE_GAP_REPORT.md)
+2. [../spec/scene/examples/EXAMPLE_PRIORITIZATION.md](../spec/scene/examples/EXAMPLE_PRIORITIZATION.md)
 
 Tooling follow-ups:
 

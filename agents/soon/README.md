@@ -6,8 +6,8 @@ This directory holds imminent implementation plans that should stay visible, but
 Use this directory for work expected soon, including WebGPU/WASM, depth peeling, screen-space
 volume occlusion, graph-backed screen-space effects, scene techniques, visual-family expansion,
 and controller work.
-Cross-cutting analysis notes that inform near-term work, such as example gap reports, can also
-live here.
+Stable scene semantics and example analysis belong under `spec/scene/`; keep only the executable
+implementation plan here.
 
 When a lane becomes the active branch focus, link it from `agents/now/NEXT_STEPS.md`. When it
 lands, move the implementation record to `agents/done/`.

@@ -86,7 +86,7 @@ work lives in [../soon/TEST_RUNNER_SCHEDULING.md](../soon/TEST_RUNNER_SCHEDULING
    descriptor refresh invariant.
 5. [../done/WBOIT_MESH_INTERACTIVE_PLAN.md](../done/WBOIT_MESH_INTERACTIVE_PLAN.md): WBOIT
    implementation record and follow-up checklist.
-6. [../soon/SCENE_EXAMPLE_PRIORITIZATION.md](../soon/SCENE_EXAMPLE_PRIORITIZATION.md): ranked
+6. [../../spec/scene/examples/EXAMPLE_PRIORITIZATION.md](../../spec/scene/examples/EXAMPLE_PRIORITIZATION.md): ranked
    scene/example priorities.
 7. [../../docs/tasks/2026-05-13-next-implementation-priorities/NEXT_STEPS.md](../../docs/tasks/2026-05-13-next-implementation-priorities/NEXT_STEPS.md):
    detailed implementation-lane notes from the May 13 planning pass.

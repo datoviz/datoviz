@@ -12,7 +12,7 @@ It complements:
 1. [`NEXT_STEPS.md`](NEXT_STEPS.md): current technical context and recent validation.
 2. [`RELEASE.md`](RELEASE.md): release scope, API policy,
    v0.3 regression checklist, and post-feature-completion work.
-3. [`../soon/SCENE_EXAMPLE_PRIORITIZATION.md`](../soon/SCENE_EXAMPLE_PRIORITIZATION.md): example
+3. [`../../spec/scene/examples/EXAMPLE_PRIORITIZATION.md`](../../spec/scene/examples/EXAMPLE_PRIORITIZATION.md): example
    priority and capability matrix.
 4. [`../../spec/scene/examples/EXAMPLE_RELEASE_STAGING.md`](../../spec/scene/examples/EXAMPLE_RELEASE_STAGING.md):
    example release targets, current readiness, and v0.4/v0.5/later classification.
@@ -259,7 +259,7 @@ Required v0.4 slice:
 
 Primary specs:
 
-1. [`../soon/SCENE_GRID_LAYOUT_SPEC.md`](../soon/SCENE_GRID_LAYOUT_SPEC.md)
+1. [`../../spec/scene/dashboards/GRID_LAYOUT.md`](../../spec/scene/dashboards/GRID_LAYOUT.md)
 2. [`../../spec/scene/core/PANEL_LAYOUT.md`](../../spec/scene/core/PANEL_LAYOUT.md)
 
 
@@ -286,7 +286,7 @@ Required v0.4 checks:
 Primary docs:
 
 1. [`../../spec/scene/visuals/IMPLEMENTATION_DECISIONS.md`](../../spec/scene/visuals/IMPLEMENTATION_DECISIONS.md)
-2. [`../soon/SCENE_EXAMPLE_PRIORITIZATION.md`](../soon/SCENE_EXAMPLE_PRIORITIZATION.md)
+2. [`../../spec/scene/examples/EXAMPLE_PRIORITIZATION.md`](../../spec/scene/examples/EXAMPLE_PRIORITIZATION.md)
 
 
 ### 8. Selection, Pick, Probe, And Highlight
@@ -309,7 +309,7 @@ Required v0.4 slice:
 
 Primary specs:
 
-1. [`../soon/IMAGE_PICKING_RECOVERY.md`](../soon/IMAGE_PICKING_RECOVERY.md)
+1. [`../../spec/scene/validation/IMAGE_PICKING_RECOVERY.md`](../../spec/scene/validation/IMAGE_PICKING_RECOVERY.md)
 2. [`../../spec/scene/interaction/PICKING.md`](../../spec/scene/interaction/PICKING.md)
 3. [`../../spec/scene/interaction/SELECTION.md`](../../spec/scene/interaction/SELECTION.md)
 
@@ -357,7 +357,7 @@ First v0.4 batch:
 
 Primary docs:
 
-1. [`../soon/SCENE_EXAMPLE_PRIORITIZATION.md`](../soon/SCENE_EXAMPLE_PRIORITIZATION.md)
+1. [`../../spec/scene/examples/EXAMPLE_PRIORITIZATION.md`](../../spec/scene/examples/EXAMPLE_PRIORITIZATION.md)
 2. [`../../spec/scene/examples/README.md`](../../spec/scene/examples/README.md)
 3. [`../../spec/scene/examples/EXAMPLE_RELEASE_STAGING.md`](../../spec/scene/examples/EXAMPLE_RELEASE_STAGING.md)
 
@@ -571,7 +571,7 @@ diff --check, just spec-check, and the relevant WebGPU preflight/browser runner.
 
 ```text
 You own the example audit/polish lane. Read the checklist,
-agents/soon/SCENE_EXAMPLE_PRIORITIZATION.md, spec/scene/examples/README.md, and
+spec/scene/examples/EXAMPLE_PRIORITIZATION.md, spec/scene/examples/README.md, and
 spec/scene/examples/EXAMPLE_RELEASE_STAGING.md.
 
 Goal: improve one release-target C example using already-implemented features. Prefer examples that
@@ -705,7 +705,7 @@ just build, focused scene/drp2 tests, shader generation checks if present, and o
 
 ```text
 You own the selection/request payload lane. Read the checklist,
-agents/soon/IMAGE_PICKING_RECOVERY.md, spec/scene/interaction/PICKING.md, and
+spec/scene/validation/IMAGE_PICKING_RECOVERY.md, spec/scene/interaction/PICKING.md, and
 spec/scene/interaction/SELECTION.md.
 
 Goal: improve one interaction slice: point/image request robustness, marker picking, richer payload
