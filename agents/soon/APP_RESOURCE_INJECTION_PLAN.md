@@ -1,10 +1,11 @@
 # App Resource Injection Plan
 
 > **Execution Status**
-> - **Status:** `SOON`
+> - **Status:** `DONE`
 > - **Updated on:** `2026-05-19`
 > - **Purpose:** define the public app API needed to let callers provide GPU, runtime, and window
 >   host resources instead of forcing `dvz_app()` to allocate everything.
+> - **Completed in:** `dfed9c2f`, `61e6cbc1`, `f2de8487`
 
 This plan is about app ownership and public API shape. The test-runner scheduling and shared
 fixture plan lives in [TEST_RUNNER_SCHEDULING.md](TEST_RUNNER_SCHEDULING.md) and should depend on
@@ -171,3 +172,33 @@ For the API implementation:
 4. run focused canvas/DRP2 smoke tests if ownership changes touch frame targets or runtime setup,
 5. run one app-offscreen benchmark before and after test fixture migration to verify the API enables
    real setup-time reduction.
+
+
+## Completion Record
+
+Implemented on `2026-05-19`.
+
+Changes:
+
+1. Added public `DvzAppResources` and `dvz_app_with_resources()`.
+2. Refactored `dvz_app()` and `dvz_app_with_config()` through the resource-aware constructor.
+3. Added explicit app ownership flags for GPU context, DRP2 runtime, and window host.
+4. Added runtime/GPU compatibility validation using `dvz_drp2_runtime_config()`,
+   `dvz_gpu_ctx_device()`, and `dvz_gpu_ctx_alloc()`.
+5. Updated app teardown so canvases/windows are destroyed first, then owned runtime, owned GPU
+   context, and owned window host.
+6. Added focused ownership tests for owned defaults, borrowed GPU context, borrowed GPU context plus
+   borrowed runtime, borrowed GPU context plus borrowed window host, and rejected incomplete or
+   incompatible bundles.
+
+Validation:
+
+1. `just build` passed.
+2. `just test app` passed `85/85`.
+3. `just test drp2` passed `126/126`.
+4. `just test canvas` passed `29/30`, with `canvas/glfw_destroy_recreate` skipped because GLFW
+   window creation was unavailable in the local environment.
+5. `git diff --check` passed before each code/test commit.
+
+The app-offscreen benchmark comparison remains part of the later test-fixture migration work because
+this plan only adds the resource injection API; no shared worker fixture migration was performed here.
