@@ -34,7 +34,11 @@
 
 typedef struct DvzApp       DvzApp;
 typedef struct DvzAppConfig DvzAppConfig;
+typedef struct DvzAppResources DvzAppResources;
 typedef struct DvzAppWindow DvzAppWindow;
+typedef struct DvzDrp2Runtime DvzDrp2Runtime;
+typedef struct DvzGpuCtx DvzGpuCtx;
+typedef struct DvzWindowHost DvzWindowHost;
 typedef struct DvzWindowExternalSurfaceInfo DvzWindowExternalSurfaceInfo;
 
 typedef void (*DvzAppFrameCallback)(DvzAppWindow* win, void* user_data);
@@ -66,6 +70,14 @@ struct DvzAppConfig
     bool enable_glfw_extensions;
     DvzAppScheduleMode schedule_mode;
     double fps_cap;
+};
+
+
+struct DvzAppResources
+{
+    DvzGpuCtx* gpu_ctx;
+    DvzDrp2Runtime* runtime;
+    DvzWindowHost* window_host;
 };
 
 
@@ -107,6 +119,24 @@ DVZ_EXPORT DvzApp* dvz_app(DvzScene* scene);
  * @return the app, or NULL on failure
  */
 DVZ_EXPORT DvzApp* dvz_app_with_config(DvzScene* scene, const DvzAppConfig* config);
+
+
+/**
+ * Create an app bound to a scene with optional caller-provided host resources.
+ *
+ * NULL resources make the app allocate the same stack as dvz_app_with_config().  Individual NULL
+ * fields are created and owned by the app.  Non-NULL fields are borrowed exclusively for the app
+ * lifetime and must outlive the app.  When a runtime is provided, a GPU context must also be
+ * provided, and the runtime must have been created from that GPU context's device and allocator.
+ * App config instance-extension fields only affect app-created GPU contexts.
+ *
+ * @param scene the scene (borrowed — must outlive the app)
+ * @param config optional app configuration, or NULL for dvz_app_config()
+ * @param resources optional borrowed resource bundle
+ * @return the app, or NULL on failure
+ */
+DVZ_EXPORT DvzApp* dvz_app_with_resources(
+    DvzScene* scene, const DvzAppConfig* config, const DvzAppResources* resources);
 
 
 /**

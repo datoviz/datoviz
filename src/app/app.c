@@ -158,6 +158,9 @@ struct DvzApp
     DvzDrp2Runtime* runtime;
     DvzSceneRequestExecutor request_executor;
     DvzWindowHost*  window_host;
+    bool owns_gpu_ctx;
+    bool owns_runtime;
+    bool owns_window_host;
 #endif
     uint32_t     window_count;
     DvzAppWindow windows[DVZ_APP_MAX_WINDOWS];
@@ -876,6 +879,65 @@ static void _app_gpu_config_add_glfw_extensions(
     (void)config;
 #endif
 }
+
+
+
+#if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
+/**
+ * Return whether a borrowed runtime can execute with a borrowed GPU context.
+ *
+ * @param runtime borrowed DRP2 runtime
+ * @param gpu_ctx borrowed GPU context
+ * @return true when the runtime uses the GPU context's device and allocator
+ */
+static bool _app_runtime_matches_gpu_ctx(DvzDrp2Runtime* runtime, DvzGpuCtx* gpu_ctx)
+{
+    ANN(runtime);
+    ANN(gpu_ctx);
+
+    DvzDrp2RuntimeConfig cfg = dvz_drp2_runtime_config(runtime);
+    if (cfg.semantic_only)
+        return false;
+    return cfg.device == dvz_gpu_ctx_device(gpu_ctx) &&
+           cfg.allocator == dvz_gpu_ctx_alloc(gpu_ctx);
+}
+
+
+
+/**
+ * Destroy top-level app resources according to the app ownership flags.
+ *
+ * @param app app whose top-level resources should be released or detached
+ */
+static void _app_destroy_resources(DvzApp* app)
+{
+    ANN(app);
+
+    if (app->runtime != NULL)
+    {
+        if (app->owns_runtime)
+            dvz_drp2_runtime_destroy(app->runtime);
+        app->runtime = NULL;
+    }
+    app->owns_runtime = false;
+
+    if (app->gpu_ctx != NULL)
+    {
+        if (app->owns_gpu_ctx)
+            dvz_gpu_ctx_destroy(app->gpu_ctx);
+        app->gpu_ctx = NULL;
+    }
+    app->owns_gpu_ctx = false;
+
+    if (app->window_host != NULL)
+    {
+        if (app->owns_window_host)
+            dvz_window_host_destroy(app->window_host);
+        app->window_host = NULL;
+    }
+    app->owns_window_host = false;
+}
+#endif
 
 
 
@@ -2417,11 +2479,45 @@ DvzApp* dvz_app(DvzScene* scene)
 
 DvzApp* dvz_app_with_config(DvzScene* scene, const DvzAppConfig* config)
 {
+    return dvz_app_with_resources(scene, config, NULL);
+}
+
+
+
+/**
+ * Create an app bound to a scene with optional borrowed host resources.
+ *
+ * @param scene scene borrowed by the app
+ * @param config optional app configuration
+ * @param resources optional borrowed resource bundle
+ * @return the app, or NULL on failure
+ */
+DvzApp*
+dvz_app_with_resources(DvzScene* scene, const DvzAppConfig* config, const DvzAppResources* resources)
+{
     ANN(scene);
 
 #if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
     DvzAppConfig resolved = config != NULL ? *config : _app_config_defaults();
     _app_config_apply_env(&resolved);
+    const DvzAppResources empty_resources = {0};
+    const DvzAppResources* res = resources != NULL ? resources : &empty_resources;
+    if (res->runtime != NULL && res->gpu_ctx == NULL)
+    {
+        log_error("dvz_app_with_resources() requires gpu_ctx when runtime is provided");
+        return NULL;
+    }
+    if (res->runtime != NULL && !_app_runtime_matches_gpu_ctx(res->runtime, res->gpu_ctx))
+    {
+        log_error("dvz_app_with_resources() received an incompatible runtime/gpu_ctx pair");
+        return NULL;
+    }
+    if (res->gpu_ctx != NULL &&
+        (resolved.instance_extension_count > 0 || resolved.enable_canvas_extensions ||
+         resolved.enable_glfw_extensions))
+    {
+        log_warn("dvz_app_with_resources() ignores app GPU-extension config for borrowed gpu_ctx");
+    }
 
     DvzApp* app = (DvzApp*)dvz_calloc(1, sizeof(DvzApp));
     if (app == NULL)
@@ -2431,66 +2527,90 @@ DvzApp* dvz_app_with_config(DvzScene* scene, const DvzAppConfig* config)
     _dvz_app_status_init(&app->status);
 
     /* Window host first — needed to query GLFW surface extensions before building the instance. */
-    app->window_host = dvz_window_host();
+    if (res->window_host != NULL)
+    {
+        app->window_host = res->window_host;
+        app->owns_window_host = false;
+    }
+    else
+    {
+        app->window_host = dvz_window_host();
+        app->owns_window_host = app->window_host != NULL;
+    }
     if (app->window_host == NULL)
     {
         dvz_free(app);
         return NULL;
     }
 
-    /* GPU context — request independent blending, dynamic rendering, synchronization2, and
-     * timeline semaphores. */
-    DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
-    VkPhysicalDeviceFeatures features10 = {0};
-    features10.independentBlend = true;
-    dvz_gpu_ctx_config_features10(&gpu_cfg, &features10);
-    VkPhysicalDeviceVulkan12Features features12 = {
-        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES};
-    features12.timelineSemaphore = true;
-    dvz_gpu_ctx_config_features12(&gpu_cfg, &features12);
-    VkPhysicalDeviceVulkan13Features features13 = {
-        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES};
-    features13.dynamicRendering = true;
-    features13.synchronization2 = true;
-    dvz_gpu_ctx_config_features13(&gpu_cfg, &features13);
-
-    if (!_app_gpu_config_add_instance_extensions(
-            &gpu_cfg, resolved.instance_extension_count, resolved.instance_extensions))
+    if (res->gpu_ctx != NULL)
     {
-        dvz_window_host_destroy(app->window_host);
-        dvz_free(app);
-        return NULL;
+        app->gpu_ctx = res->gpu_ctx;
+        app->owns_gpu_ctx = false;
     }
-    if (resolved.enable_canvas_extensions)
-        dvz_gpu_ctx_config_enable_canvas_extensions(&gpu_cfg, true);
-    _app_gpu_config_add_glfw_extensions(app, &gpu_cfg, &resolved);
-
-    app->gpu_ctx = dvz_gpu_ctx(&gpu_cfg);
-    if (app->gpu_ctx == NULL)
+    else
     {
-        dvz_window_host_destroy(app->window_host);
-        dvz_free(app);
-        return NULL;
+        /* GPU context — request independent blending, dynamic rendering, synchronization2, and
+         * timeline semaphores. */
+        DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
+        VkPhysicalDeviceFeatures features10 = {0};
+        features10.independentBlend = true;
+        dvz_gpu_ctx_config_features10(&gpu_cfg, &features10);
+        VkPhysicalDeviceVulkan12Features features12 = {
+            .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES};
+        features12.timelineSemaphore = true;
+        dvz_gpu_ctx_config_features12(&gpu_cfg, &features12);
+        VkPhysicalDeviceVulkan13Features features13 = {
+            .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES};
+        features13.dynamicRendering = true;
+        features13.synchronization2 = true;
+        dvz_gpu_ctx_config_features13(&gpu_cfg, &features13);
+
+        if (!_app_gpu_config_add_instance_extensions(
+                &gpu_cfg, resolved.instance_extension_count, resolved.instance_extensions))
+        {
+            _app_destroy_resources(app);
+            dvz_free(app);
+            return NULL;
+        }
+        if (resolved.enable_canvas_extensions)
+            dvz_gpu_ctx_config_enable_canvas_extensions(&gpu_cfg, true);
+        _app_gpu_config_add_glfw_extensions(app, &gpu_cfg, &resolved);
+
+        app->gpu_ctx = dvz_gpu_ctx(&gpu_cfg);
+        app->owns_gpu_ctx = app->gpu_ctx != NULL;
+        if (app->gpu_ctx == NULL)
+        {
+            _app_destroy_resources(app);
+            dvz_free(app);
+            return NULL;
+        }
     }
 
-    /* DRP2 runtime backed by vklite. */
-    DvzDrp2RuntimeConfig runtime_cfg = dvz_drp2_runtime_vklite_config(
-        dvz_gpu_ctx_device(app->gpu_ctx), dvz_gpu_ctx_alloc(app->gpu_ctx));
-    app->runtime = dvz_drp2_runtime_vklite(&runtime_cfg);
-    if (app->runtime == NULL)
+    if (res->runtime != NULL)
     {
-        dvz_gpu_ctx_destroy(app->gpu_ctx);
-        dvz_window_host_destroy(app->window_host);
-        dvz_free(app);
-        return NULL;
+        app->runtime = res->runtime;
+        app->owns_runtime = false;
+    }
+    else
+    {
+        /* DRP2 runtime backed by vklite. */
+        DvzDrp2RuntimeConfig runtime_cfg = dvz_drp2_runtime_vklite_config(
+            dvz_gpu_ctx_device(app->gpu_ctx), dvz_gpu_ctx_alloc(app->gpu_ctx));
+        app->runtime = dvz_drp2_runtime_vklite(&runtime_cfg);
+        app->owns_runtime = app->runtime != NULL;
+        if (app->runtime == NULL)
+        {
+            _app_destroy_resources(app);
+            dvz_free(app);
+            return NULL;
+        }
     }
     _scene_request_executor_init(&app->request_executor);
     if (!_scene_add_request_frame_callback(app->scene, _app_scene_request_frame, app))
     {
         _scene_request_executor_destroy(&app->request_executor);
-        dvz_drp2_runtime_destroy(app->runtime);
-        dvz_gpu_ctx_destroy(app->gpu_ctx);
-        dvz_window_host_destroy(app->window_host);
+        _app_destroy_resources(app);
         dvz_free(app);
         return NULL;
     }
@@ -2569,22 +2689,8 @@ void dvz_app_destroy(DvzApp* app)
         _dvz_app_trace_snapshot_destroy(&win->last_trace_snapshot);
         win->has_last_trace_snapshot = false;
     }
-    if (app->window_host != NULL)
-    {
-        dvz_window_host_destroy(app->window_host);
-        app->window_host = NULL;
-    }
     _scene_request_executor_destroy(&app->request_executor);
-    if (app->runtime != NULL)
-    {
-        dvz_drp2_runtime_destroy(app->runtime);
-        app->runtime = NULL;
-    }
-    if (app->gpu_ctx != NULL)
-    {
-        dvz_gpu_ctx_destroy(app->gpu_ctx);
-        app->gpu_ctx = NULL;
-    }
+    _app_destroy_resources(app);
 #endif
 
     dvz_free(app);
