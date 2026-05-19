@@ -985,6 +985,8 @@ void dvz_scene_destroy(DvzScene* scene)
         return;
     for (uint32_t i = 0; i < scene->visual_count; i++)
         _scene_visual_reset(&scene->visuals[i], true);
+    for (uint32_t i = 0; i < scene->font_count; i++)
+        _scene_font_release(&scene->fonts[i]);
     for (uint32_t i = 0; i < DVZ_SCENE_MAX_FIELDS; i++)
         _scene_field_reset(&scene->fields[i]);
     for (uint32_t i = 0; i < DVZ_SCENE_MAX_BUFFERS; i++)

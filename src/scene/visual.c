@@ -3098,7 +3098,8 @@ int dvz_text_set_renderer(DvzVisual* visual, DvzTextRenderer renderer)
         return -1;
     if (renderer != DVZ_TEXT_RENDERER_AUTO &&
         renderer != DVZ_TEXT_RENDERER_SMALL_BITMAP_ATLAS &&
-        renderer != DVZ_TEXT_RENDERER_BITMAP_ATLAS)
+        renderer != DVZ_TEXT_RENDERER_BITMAP_ATLAS &&
+        renderer != DVZ_TEXT_RENDERER_MSDF_ATLAS)
     {
         log_error("text renderer %d is not implemented for batched text visuals yet", renderer);
         return -1;

@@ -147,8 +147,9 @@ int test_scene_text_annotation_bookkeeping(TstContext* suite, const TstCase* ite
     AT(dvz_text_set_renderer(text, DVZ_TEXT_RENDERER_AUTO) == 0);
     AT(text->text.renderer == DVZ_TEXT_RENDERER_AUTO);
     AT(text->text.renderer_version == 1);
-    AT_EXPECTED_ERROR_STRICT(suite, dvz_text_set_renderer(text, DVZ_TEXT_RENDERER_MSDF_ATLAS) < 0);
-    AT(text->text.renderer == DVZ_TEXT_RENDERER_AUTO);
+    AT(dvz_text_set_renderer(text, DVZ_TEXT_RENDERER_MSDF_ATLAS) == 0);
+    AT(text->text.renderer == DVZ_TEXT_RENDERER_MSDF_ATLAS);
+    AT(text->text.renderer_version == 2);
     const char* strings[2] = {"hello", "world"};
     float positions[2][3] = {{10.0f, 20.0f, 0.0f}, {80.0f, 24.0f, 0.0f}};
     float text_anchors[2][2] = {{0.0f, 0.0f}, {0.5f, 0.5f}};
@@ -375,6 +376,95 @@ int test_scene_text_bitmap_visual_realization(TstContext* suite, const TstCase* 
 
 
 /**
+ * Verify the SDF text renderer realizes through a font-backed glyph atlas.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_text_sdf_visual_realization(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    ANN(item);
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 640, 480, 0);
+    DvzPanel* panel = dvz_panel(
+        figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+    ANN(panel);
+
+    DvzVisual* text = dvz_text(scene, 0);
+    ANN(text);
+    AT(dvz_text_set_renderer(text, DVZ_TEXT_RENDERER_MSDF_ATLAS) == 0);
+    const char* strings[1] = {"SDF"};
+    float positions[1][3] = {{32.0f, 48.0f, 0.0f}};
+    float text_anchors[1][2] = {{0.0f, 0.0f}};
+    float sizes[1] = {18.0f};
+    DvzColor colors[1] = {{255, 255, 255, 255}};
+    DvzVisualDataUpdate updates[4] = {
+        {.attr_name = "position", .data = positions, .item_count = 1},
+        {.attr_name = "anchor", .data = text_anchors, .item_count = 1},
+        {.attr_name = "size", .data = sizes, .item_count = 1},
+        {.attr_name = "color", .data = colors, .item_count = 1},
+    };
+    AT(dvz_visual_set_strings(text, "text", strings, 1) == 0);
+    AT(dvz_visual_set_data_many(text, updates, 4) == 0);
+    AT(dvz_panel_add_visual(
+           panel, text,
+           &(DvzVisualAttachDesc){.z_layer = 1, .controller_mode = DVZ_CONTROLLER_FIXED}) == 0);
+
+    _scene_prepare_text_visuals(figure);
+    DvzVisual* glyph = text->text.glyph_visual;
+    ANN(glyph);
+    AT(glyph->type == DVZ_VISUAL_TYPE_GLYPH);
+    AT(glyph->visible);
+    ANN(glyph->field);
+    AT(glyph->field->desc.width > 128);
+    AT(glyph->field->desc.height > 60);
+    AT(scene->font_count == 1);
+    ANN(scene->fonts[0].sdf_atlas);
+    AT(scene->fonts[0].sdf_atlas->field == glyph->field);
+    AT(text->text.span_count == 1);
+    AT(text->text.spans[0].glyph_count == 3);
+
+    int pos_idx = _attr_index(glyph, "position");
+    int uv_idx = _attr_index(glyph, "texcoords");
+    int color_idx = _attr_index(glyph, "color");
+    AT(pos_idx >= 0);
+    AT(uv_idx >= 0);
+    AT(color_idx >= 0);
+    AT(glyph->attrs[pos_idx].item_count == 18);
+    AT(glyph->attrs[uv_idx].item_count == 18);
+    AT(glyph->attrs[color_idx].item_count == 18);
+
+    DvzAnnotation* annotation = dvz_annotation_label(
+        panel,
+        &(DvzLabelDesc){
+            .text = "A",
+            .style = {
+                .size_pts = 14.0f,
+                .renderer = DVZ_TEXT_RENDERER_MSDF_ATLAS,
+            },
+            .placement = {
+                .mode = DVZ_TEXT_PLACEMENT_SCREEN,
+                .anchor = DVZ_SCENE_ANCHOR_PANEL_TOP_LEFT,
+                .offset = {4.0f, 4.0f},
+            },
+        });
+    ANN(annotation);
+    _scene_prepare_text_visuals(figure);
+    ANN(annotation->visual);
+    AT(annotation->visual->type == DVZ_VISUAL_TYPE_GLYPH);
+    AT(annotation->visual->visible);
+    AT(annotation->visual->field == glyph->field);
+    AT(annotation->dirty_flags == DVZ_TEXT_DIRTY_NONE);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+/**
  * Verify batched text emits many labels through one glyph visual.
  *
  * @param suite the active test suite
@@ -467,6 +557,7 @@ int test_scene_interaction(TstSuite* suite)
     TST_CASE(test_scene_selection_apply_pick_and_link_keys);
     TST_CASE(test_scene_text_annotation_bookkeeping);
     TST_CASE(test_scene_text_bitmap_visual_realization);
+    TST_CASE(test_scene_text_sdf_visual_realization);
     TST_CASE(test_scene_text_many_labels_render_plan);
 
     return 0;

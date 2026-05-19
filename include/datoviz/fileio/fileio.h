@@ -201,7 +201,7 @@ unsigned char* dvz_resource_texture(const char* name, unsigned long* size);
 
 
 // Defined in cmake-generated file build/_fonts.c
-unsigned char* dvz_resource_font(const char* name, unsigned long* size);
+const unsigned char* dvz_resource_font(const char* name, unsigned long* size);
 
 
 

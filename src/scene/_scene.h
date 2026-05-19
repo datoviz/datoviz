@@ -62,6 +62,7 @@
 #define DVZ_SCENE_MAX_AXIS_MINOR_TICKS 8
 #define DVZ_SCENE_MAX_AXIS_LINES                                                                  \
     ((2 + DVZ_SCENE_MAX_AXIS_MINOR_TICKS) * DVZ_SCENE_MAX_AXIS_TICKS + 1)
+#define DVZ_SCENE_TEXT_ATLAS_MAX_GLYPHS 96
 
 
 
@@ -132,6 +133,8 @@ typedef struct DvzAnimation DvzAnimation;
 typedef struct DvzTextShapedGlyph DvzTextShapedGlyph;
 typedef struct DvzTextLayoutMetrics DvzTextLayoutMetrics;
 typedef struct DvzTextGlyphInstance DvzTextGlyphInstance;
+typedef struct DvzTextAtlasGlyph DvzTextAtlasGlyph;
+typedef struct DvzTextAtlas DvzTextAtlas;
 
 
 
@@ -206,6 +209,34 @@ struct DvzTextGlyphInstance
     uint8_t color[4];
     uint32_t text_index;
     uint32_t glyph_index;
+};
+
+
+struct DvzTextAtlasGlyph
+{
+    uint32_t codepoint;
+    float advance;
+    float xoff;
+    float yoff;
+    float width;
+    float height;
+    float uv[4];
+    bool valid;
+};
+
+
+struct DvzTextAtlas
+{
+    DvzSampledField* field;
+    uint32_t width;
+    uint32_t height;
+    uint32_t glyph_count;
+    float pixel_height;
+    float ascent;
+    float descent;
+    float line_gap;
+    float line_height;
+    DvzTextAtlasGlyph glyphs[DVZ_SCENE_TEXT_ATLAS_MAX_GLYPHS];
 };
 
 
@@ -367,6 +398,9 @@ struct DvzFont
     uint32_t face_index;
     uint32_t flags;
     uint64_t version;
+    void* ttf_bytes;
+    uint64_t ttf_size;
+    DvzTextAtlas* sdf_atlas;
 };
 
 
@@ -1131,6 +1165,18 @@ void _scene_visual_texture_mark_clean(DvzVisual* visual);
 void _scene_refresh_field_dirty_state(DvzScene* scene, DvzSampledField* field);
 
 void _scene_prepare_text_visuals(DvzFigure* figure);
+
+EXTERN_C_ON
+
+bool _scene_text_atlas_ensure(DvzFont* font);
+
+DvzTextAtlasGlyph* _scene_text_atlas_glyph(DvzTextAtlas* atlas, uint32_t codepoint);
+
+void _scene_text_atlas_destroy(DvzTextAtlas* atlas);
+
+void _scene_font_release(DvzFont* font);
+
+EXTERN_C_OFF
 
 void _scene_release_visual_field(DvzVisual* visual);
 

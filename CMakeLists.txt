@@ -377,6 +377,34 @@ else()
     set(DVZ_WGSL_SHADERS_C "")
 endif()
 
+# -------------------------------------------------------------------------------------------------
+# Font embedding — compact defaults for scene text.
+# -------------------------------------------------------------------------------------------------
+
+set(DVZ_HAS_EMBEDDED_FONTS 0)
+set(DVZ_FONTS_C "")
+if(DVZ_BUILD_SCENE)
+    set(FONT_SOURCES
+        "${PROJECT_SOURCE_DIR}/data/fonts/Roboto-Regular.ttf"
+        "${PROJECT_SOURCE_DIR}/data/fonts/RobotoMono-Medium.ttf"
+    )
+    set(FONTS_C "${CMAKE_BINARY_DIR}/_fonts.c")
+    string(REPLACE ";" "\\;" _font_list_escaped "${FONT_SOURCES}")
+    add_custom_command(
+        OUTPUT  "${FONTS_C}"
+        COMMAND "${CMAKE_COMMAND}"
+            "-DFILES=${_font_list_escaped}"
+            "-DPREFIX=font"
+            "-DOUTPUT=${FONTS_C}"
+            -P "${PROJECT_SOURCE_DIR}/cmake/embed_resources.cmake"
+        DEPENDS ${FONT_SOURCES}
+        COMMENT "Embedding scene fonts into _fonts.c"
+    )
+    add_custom_target(datoviz_fonts DEPENDS "${FONTS_C}")
+    set(DVZ_HAS_EMBEDDED_FONTS 1)
+    set(DVZ_FONTS_C "${FONTS_C}")
+endif()
+
 # Add subdirectories
 add_subdirectory(src)
 add_subdirectory(testing)

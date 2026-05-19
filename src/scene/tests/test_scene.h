@@ -615,6 +615,8 @@ int test_scene_text_annotation_bookkeeping(TstContext* suite, const TstCase* ite
 
 int test_scene_text_bitmap_visual_realization(TstContext* suite, const TstCase* item);
 
+int test_scene_text_sdf_visual_realization(TstContext* suite, const TstCase* item);
+
 int test_scene_text_many_labels_render_plan(TstContext* suite, const TstCase* item);
 
 #if defined(DVZ_HAS_APP) && DVZ_HAS_APP

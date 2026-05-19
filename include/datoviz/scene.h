@@ -1213,8 +1213,8 @@ DVZ_EXPORT DvzVisual* dvz_text(DvzScene* scene, uint32_t flags);
 /**
  * Select the renderer used by a batched text visual.
  *
- * The current retained text visual path supports the built-in bitmap atlas renderers. MSDF/MTSDF
- * renderer metadata will be added in a later slice.
+ * The current retained text visual path supports the built-in bitmap atlas renderers and an
+ * SDF-backed atlas for the `DVZ_TEXT_RENDERER_MSDF_ATLAS` selection.
  *
  * @param visual text visual
  * @param renderer renderer selection

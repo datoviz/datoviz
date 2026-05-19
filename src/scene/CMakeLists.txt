@@ -14,6 +14,9 @@ endif()
 if(DVZ_HAS_WGSL_SHADERS AND DVZ_WGSL_SHADERS_C)
     list(APPEND SCENE_SRC "${DVZ_WGSL_SHADERS_C}")
 endif()
+if(DVZ_HAS_EMBEDDED_FONTS AND DVZ_FONTS_C)
+    list(APPEND SCENE_SRC "${DVZ_FONTS_C}")
+endif()
 
 add_library(datoviz_scene OBJECT ${SCENE_SRC})
 
@@ -25,6 +28,9 @@ if(DVZ_HAS_GLSL_SHADERS AND TARGET datoviz_glsl_shaders)
 endif()
 if(DVZ_HAS_WGSL_SHADERS AND TARGET datoviz_wgsl_shaders)
     add_dependencies(datoviz_scene datoviz_wgsl_shaders)
+endif()
+if(DVZ_HAS_EMBEDDED_FONTS AND TARGET datoviz_fonts)
+    add_dependencies(datoviz_scene datoviz_fonts)
 endif()
 
 target_include_directories(datoviz_scene
@@ -41,6 +47,7 @@ target_compile_definitions(
     datoviz_scene PUBLIC DVZ_HAS_PRECOMPILED_SHADERS=${DVZ_HAS_PRECOMPILED_SHADERS})
 target_compile_definitions(datoviz_scene PUBLIC DVZ_HAS_GLSL_SHADERS=${DVZ_HAS_GLSL_SHADERS})
 target_compile_definitions(datoviz_scene PUBLIC DVZ_HAS_WGSL_SHADERS=${DVZ_HAS_WGSL_SHADERS})
+target_compile_definitions(datoviz_scene PUBLIC DVZ_HAS_EMBEDDED_FONTS=${DVZ_HAS_EMBEDDED_FONTS})
 if(TARGET datoviz_vklite)
     target_compile_definitions(datoviz_scene PUBLIC DVZ_DRP2_HAS_VKLITE=1)
 else()

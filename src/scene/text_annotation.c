@@ -16,6 +16,7 @@
 
 #include <math.h>
 #include <stdint.h>
+#include <string.h>
 
 #include "_alloc.h"
 #include "_assertions.h"
@@ -118,6 +119,62 @@ static bool _text_renderer_uses_bitmap(DvzTextRenderer renderer)
     return renderer == DVZ_TEXT_RENDERER_AUTO ||
            renderer == DVZ_TEXT_RENDERER_SMALL_BITMAP_ATLAS ||
            renderer == DVZ_TEXT_RENDERER_BITMAP_ATLAS;
+}
+
+
+
+/**
+ * Return whether a renderer selection uses a font-backed SDF atlas.
+ *
+ * @param renderer the requested text renderer
+ * @return whether the SDF atlas path is selected
+ */
+static bool _text_renderer_uses_sdf(DvzTextRenderer renderer)
+{
+    return renderer == DVZ_TEXT_RENDERER_MSDF_ATLAS;
+}
+
+
+
+/**
+ * Return the scene default SDF font, creating it lazily.
+ *
+ * @param scene the scene
+ * @return the default font, or NULL on allocation failure
+ */
+static DvzFont* _text_default_sdf_font(DvzScene* scene)
+{
+    ANN(scene);
+    const char* family = "__datoviz_default_sdf__";
+    for (uint32_t i = 0; i < scene->font_count; i++)
+    {
+        if (strcmp(scene->fonts[i].family, family) == 0)
+            return &scene->fonts[i];
+    }
+    return dvz_font(
+        scene, &(DvzFontDesc){
+                   .family = family,
+                   .style = "Regular",
+                   .size_pts = 32.0f,
+               });
+}
+
+
+
+/**
+ * Resolve the font used by an SDF text style.
+ *
+ * @param scene the scene
+ * @param style the text style
+ * @return a scene-owned font, or NULL on failure
+ */
+static DvzFont* _text_sdf_font(DvzScene* scene, const DvzTextStyle* style)
+{
+    ANN(scene);
+    ANN(style);
+    if (style->font != NULL)
+        return style->font;
+    return _text_default_sdf_font(scene);
 }
 
 
@@ -493,6 +550,90 @@ static void _text_bitmap_atlas_uv(uint32_t ascii, float out[4])
 
 
 /**
+ * Return the style-to-atlas scale for SDF layout.
+ *
+ * @param style the text style
+ * @param atlas the SDF atlas
+ * @return the text scale relative to the atlas pixel height
+ */
+static float _text_sdf_layout_scale(const DvzTextStyle* style, const DvzTextAtlas* atlas)
+{
+    ANN(style);
+    ANN(atlas);
+    float size_pts = style->size_pts;
+    if (size_pts <= 0.0f && style->font != NULL)
+        size_pts = style->font->size_pts;
+    if (size_pts <= 0.0f)
+        size_pts = atlas->pixel_height;
+    if (size_pts < 1.0f)
+        size_pts = 1.0f;
+    if (size_pts > 512.0f)
+        size_pts = 512.0f;
+    return atlas->pixel_height > 0.0f ? size_pts / atlas->pixel_height : 1.0f;
+}
+
+
+
+/**
+ * Measure a string with SDF atlas metrics.
+ *
+ * @param string the string
+ * @param atlas the SDF atlas
+ * @param scale the layout scale
+ * @param out_width output layout width
+ * @param out_height output layout height
+ * @param out_visible output visible glyph count
+ */
+static void _text_sdf_measure(
+    const char* string, DvzTextAtlas* atlas, float scale, float* out_width, float* out_height,
+    uint32_t* out_visible)
+{
+    ANN(atlas);
+    ANN(out_width);
+    ANN(out_height);
+    ANN(out_visible);
+    float line_width = 0.0f;
+    float max_width = 0.0f;
+    uint32_t lines = 1;
+    uint32_t visible = 0;
+    DvzTextAtlasGlyph* space = _scene_text_atlas_glyph(atlas, ' ');
+    float tab_advance = space != NULL ? 4.0f * space->advance * scale : 2.0f * atlas->pixel_height;
+    if (string != NULL)
+    {
+        uint32_t byte_index = 0;
+        uint32_t cp = 0;
+        while (_text_utf8_next(string, &byte_index, &cp))
+        {
+            if (cp == '\n')
+            {
+                if (line_width > max_width)
+                    max_width = line_width;
+                line_width = 0.0f;
+                lines++;
+                continue;
+            }
+            if (cp == '\t')
+            {
+                line_width += tab_advance;
+                continue;
+            }
+            DvzTextAtlasGlyph* glyph = _scene_text_atlas_glyph(atlas, cp);
+            if (glyph == NULL)
+                continue;
+            line_width += glyph->advance * scale;
+            visible++;
+        }
+    }
+    if (line_width > max_width)
+        max_width = line_width;
+    *out_width = max_width;
+    *out_height = ((float)(lines - 1u) * atlas->line_height + atlas->pixel_height) * scale;
+    *out_visible = visible;
+}
+
+
+
+/**
  * Build an RGBA bitmap texture for a retained text string.
  *
  * @param text the text object
@@ -797,8 +938,9 @@ static bool _text_prepare_visual(DvzFigure* figure, DvzText* text)
     ANN(text);
     if (text->scene == NULL || text->panel == NULL || text->panel->figure != figure)
         return true;
-    if (!_text_renderer_uses_bitmap(text->style.renderer) ||
-        text->placement.mode != DVZ_TEXT_PLACEMENT_SCREEN)
+    bool use_bitmap = _text_renderer_uses_bitmap(text->style.renderer);
+    bool use_sdf = _text_renderer_uses_sdf(text->style.renderer);
+    if ((!use_bitmap && !use_sdf) || text->placement.mode != DVZ_TEXT_PLACEMENT_SCREEN)
     {
         if (text->visual != NULL)
             dvz_visual_set_visible(text->visual, false);
@@ -810,26 +952,48 @@ static bool _text_prepare_visual(DvzFigure* figure, DvzText* text)
         return true;
     }
 
-    uint32_t columns = 0;
-    uint32_t lines = 0;
     uint32_t visible = 0;
-    _text_measure_cells(text->string, &columns, &lines, &visible);
-    if (columns == 0 || visible == 0)
+    DvzSampledField* atlas = NULL;
+    DvzTextAtlas* sdf_atlas = NULL;
+    float scale = 1.0f;
+    float glyph_w = 0.0f;
+    float glyph_h = 0.0f;
+    float line_h = 0.0f;
+    float width = 0.0f;
+    float height = 0.0f;
+    if (use_sdf)
+    {
+        DvzFont* font = _text_sdf_font(text->scene, &text->style);
+        if (font == NULL || !_scene_text_atlas_ensure(font))
+            return false;
+        sdf_atlas = font->sdf_atlas;
+        ANN(sdf_atlas);
+        atlas = sdf_atlas->field;
+        scale = _text_sdf_layout_scale(&text->style, sdf_atlas);
+        _text_sdf_measure(text->string, sdf_atlas, scale, &width, &height, &visible);
+        line_h = sdf_atlas->line_height * scale;
+    }
+    else
+    {
+        uint32_t columns = 0;
+        uint32_t lines = 0;
+        _text_measure_cells(text->string, &columns, &lines, &visible);
+        atlas = _text_bitmap_atlas_field(text->scene);
+        scale = _text_bitmap_layout_scale(&text->style);
+        glyph_w = (float)DVZ_TEXT_BITMAP_GLYPH_WIDTH * scale;
+        glyph_h = (float)DVZ_TEXT_BITMAP_GLYPH_HEIGHT * scale;
+        line_h = (float)DVZ_TEXT_BITMAP_LINE_HEIGHT * scale;
+        width = (float)columns * glyph_w;
+        height = (float)(lines - 1u) * line_h + glyph_h;
+    }
+    if (visible == 0 || width <= 0.0f || height <= 0.0f)
     {
         if (text->visual != NULL)
             dvz_visual_set_visible(text->visual, false);
         return true;
     }
-    DvzSampledField* atlas = _text_bitmap_atlas_field(text->scene);
     if (atlas == NULL)
         return false;
-
-    float scale = _text_bitmap_layout_scale(&text->style);
-    float glyph_w = (float)DVZ_TEXT_BITMAP_GLYPH_WIDTH * scale;
-    float glyph_h = (float)DVZ_TEXT_BITMAP_GLYPH_HEIGHT * scale;
-    float line_h = (float)DVZ_TEXT_BITMAP_LINE_HEIGHT * scale;
-    float width = (float)columns * glyph_w;
-    float height = (float)(lines - 1u) * line_h + glyph_h;
     if (!isfinite(width) || !isfinite(height) || width <= 0.0f || height <= 0.0f ||
         width > (float)UINT32_MAX || height > (float)UINT32_MAX)
     {
@@ -880,26 +1044,61 @@ static bool _text_prepare_visual(DvzFigure* figure, DvzText* text)
     uint32_t byte_index = 0;
     uint32_t cp = 0;
     uint32_t vertex_count = 0;
+    float cursor_x = 0.0f;
     while (_text_utf8_next(text->string, &byte_index, &cp))
     {
         if (cp == '\n')
         {
             column = 0;
+            cursor_x = 0.0f;
             row++;
             continue;
         }
         if (cp == '\t')
         {
-            column += 4u;
+            if (use_sdf)
+            {
+                DvzTextAtlasGlyph* space = _scene_text_atlas_glyph(sdf_atlas, ' ');
+                cursor_x += space != NULL ? 4.0f * space->advance * scale :
+                                             2.0f * sdf_atlas->pixel_height * scale;
+            }
+            else
+            {
+                column += 4u;
+            }
             continue;
         }
 
-        float x0 = align_x + (float)column * glyph_w;
-        float y0 = align_y + (float)row * line_h;
-        float x1 = x0 + glyph_w;
-        float y1 = y0 + glyph_h;
         float uv[4] = {0};
-        _text_bitmap_atlas_uv(cp, uv);
+        float x0 = 0.0f;
+        float y0 = 0.0f;
+        float x1 = 0.0f;
+        float y1 = 0.0f;
+        if (use_sdf)
+        {
+            DvzTextAtlasGlyph* glyph = _scene_text_atlas_glyph(sdf_atlas, cp);
+            if (glyph == NULL)
+                continue;
+            x0 = align_x + cursor_x + glyph->xoff * scale;
+            y0 = align_y + (float)row * line_h + sdf_atlas->ascent * scale +
+                 glyph->yoff * scale;
+            x1 = x0 + glyph->width * scale;
+            y1 = y0 + glyph->height * scale;
+            uv[0] = glyph->uv[0];
+            uv[1] = glyph->uv[1];
+            uv[2] = glyph->uv[2];
+            uv[3] = glyph->uv[3];
+            cursor_x += glyph->advance * scale;
+        }
+        else
+        {
+            x0 = align_x + (float)column * glyph_w;
+            y0 = align_y + (float)row * line_h;
+            x1 = x0 + glyph_w;
+            y1 = y0 + glyph_h;
+            _text_bitmap_atlas_uv(cp, uv);
+            column++;
+        }
         const float xy[6][2] = {{x0, y0}, {x0, y1}, {x1, y0}, {x1, y0}, {x0, y1}, {x1, y1}};
         const float st[6][2] = {
             {uv[0], uv[1]}, {uv[0], uv[3]}, {uv[2], uv[1]},
@@ -919,7 +1118,6 @@ static bool _text_prepare_visual(DvzFigure* figure, DvzText* text)
             colors[4 * vertex_count + 3] = color[3];
             vertex_count++;
         }
-        column++;
     }
     if (vertex_count == 0)
     {
@@ -981,10 +1179,10 @@ static bool _text_prepare_visual(DvzFigure* figure, DvzText* text)
         text->metrics.layout_bounds[1] = 0;
         text->metrics.layout_bounds[2] = (float)width;
         text->metrics.layout_bounds[3] = (float)height;
-        text->metrics.baseline = 7.0f * scale;
-        text->metrics.ascender = text->metrics.baseline;
-        text->metrics.descender = 1.0f * scale;
-        text->metrics.line_height = (float)DVZ_TEXT_BITMAP_LINE_HEIGHT * scale;
+        text->metrics.baseline = use_sdf ? sdf_atlas->ascent * scale : 7.0f * scale;
+        text->metrics.ascender = use_sdf ? sdf_atlas->ascent * scale : text->metrics.baseline;
+        text->metrics.descender = use_sdf ? -sdf_atlas->descent * scale : 1.0f * scale;
+        text->metrics.line_height = line_h;
         text->dirty_flags = DVZ_TEXT_DIRTY_NONE;
         text->visual_version = text->version;
         text->visual_figure_width = figure->width;
@@ -1145,6 +1343,33 @@ static bool _text_visual_prepare(
         return true;
     }
 
+    DvzTextRenderer renderer = visual->text.renderer;
+    if (renderer == DVZ_TEXT_RENDERER_AUTO)
+        renderer = DVZ_TEXT_RENDERER_SMALL_BITMAP_ATLAS;
+    bool use_sdf = _text_renderer_uses_sdf(renderer);
+    DvzTextAtlas* sdf_atlas = NULL;
+    DvzSampledField* atlas = NULL;
+    if (use_sdf)
+    {
+        DvzTextStyle atlas_style = {
+            .font = NULL,
+            .size_pts = 32.0f,
+            .renderer = renderer,
+        };
+        DvzFont* font = _text_sdf_font(visual->scene, &atlas_style);
+        if (font == NULL || !_scene_text_atlas_ensure(font))
+            return false;
+        sdf_atlas = font->sdf_atlas;
+        ANN(sdf_atlas);
+        atlas = sdf_atlas->field;
+    }
+    else
+    {
+        atlas = _text_bitmap_atlas_field(visual->scene);
+    }
+    if (atlas == NULL)
+        return false;
+
     uint64_t vertex_count64 = 0;
     for (uint32_t i = 0; i < count; i++)
     {
@@ -1214,9 +1439,6 @@ static bool _text_visual_prepare(
 
     for (uint32_t i = 0; i < count; i++)
     {
-        DvzTextRenderer renderer = visual->text.renderer;
-        if (renderer == DVZ_TEXT_RENDERER_AUTO)
-            renderer = DVZ_TEXT_RENDERER_SMALL_BITMAP_ATLAS;
         DvzTextStyle style = {
             .size_pts = sizes != NULL ? sizes[i] : 12.0f,
             .renderer = renderer,
@@ -1232,23 +1454,38 @@ static bool _text_visual_prepare(
         uint8_t color[4] = {0};
         _text_style_color(&style, color);
 
-        uint32_t columns = 0;
-        uint32_t lines = 0;
         uint32_t visible = 0;
-        _text_measure_cells(visual->text.strings[i], &columns, &lines, &visible);
-        if (columns == 0 || visible == 0)
+        float scale = 1.0f;
+        float glyph_w = 0.0f;
+        float glyph_h = 0.0f;
+        float line_h = 0.0f;
+        float width = 0.0f;
+        float height = 0.0f;
+        if (use_sdf)
+        {
+            scale = _text_sdf_layout_scale(&style, sdf_atlas);
+            _text_sdf_measure(visual->text.strings[i], sdf_atlas, scale, &width, &height, &visible);
+            line_h = sdf_atlas->line_height * scale;
+        }
+        else
+        {
+            uint32_t columns = 0;
+            uint32_t lines = 0;
+            _text_measure_cells(visual->text.strings[i], &columns, &lines, &visible);
+            scale = _text_bitmap_layout_scale(&style);
+            glyph_w = (float)DVZ_TEXT_BITMAP_GLYPH_WIDTH * scale;
+            glyph_h = (float)DVZ_TEXT_BITMAP_GLYPH_HEIGHT * scale;
+            line_h = (float)DVZ_TEXT_BITMAP_LINE_HEIGHT * scale;
+            width = (float)columns * glyph_w;
+            height = (float)(lines - 1u) * line_h + glyph_h;
+        }
+        if (visible == 0 || width <= 0.0f || height <= 0.0f)
         {
             spans[i].first_glyph = vertex_count / 6u;
             spans[i].glyph_count = 0;
             continue;
         }
 
-        float scale = _text_bitmap_layout_scale(&style);
-        float glyph_w = (float)DVZ_TEXT_BITMAP_GLYPH_WIDTH * scale;
-        float glyph_h = (float)DVZ_TEXT_BITMAP_GLYPH_HEIGHT * scale;
-        float line_h = (float)DVZ_TEXT_BITMAP_LINE_HEIGHT * scale;
-        float width = (float)columns * glyph_w;
-        float height = (float)(lines - 1u) * line_h + glyph_h;
         float text_anchor[2] = {0.0f, 0.0f};
         if (text_anchors != NULL)
         {
@@ -1264,26 +1501,61 @@ static bool _text_visual_prepare(
         uint32_t row = 0;
         uint32_t byte_index = 0;
         uint32_t cp = 0;
+        float cursor_x = 0.0f;
         while (_text_utf8_next(visual->text.strings[i], &byte_index, &cp))
         {
             if (cp == '\n')
             {
                 column = 0;
+                cursor_x = 0.0f;
                 row++;
                 continue;
             }
             if (cp == '\t')
             {
-                column += 4u;
+                if (use_sdf)
+                {
+                    DvzTextAtlasGlyph* space = _scene_text_atlas_glyph(sdf_atlas, ' ');
+                    cursor_x += space != NULL ? 4.0f * space->advance * scale :
+                                                 2.0f * sdf_atlas->pixel_height * scale;
+                }
+                else
+                {
+                    column += 4u;
+                }
                 continue;
             }
 
-            float x0 = align_x + (float)column * glyph_w;
-            float y0 = align_y + (float)row * line_h;
-            float x1 = x0 + glyph_w;
-            float y1 = y0 + glyph_h;
             float uv[4] = {0};
-            _text_bitmap_atlas_uv(cp, uv);
+            float x0 = 0.0f;
+            float y0 = 0.0f;
+            float x1 = 0.0f;
+            float y1 = 0.0f;
+            if (use_sdf)
+            {
+                DvzTextAtlasGlyph* glyph = _scene_text_atlas_glyph(sdf_atlas, cp);
+                if (glyph == NULL)
+                    continue;
+                x0 = align_x + cursor_x + glyph->xoff * scale;
+                y0 = align_y + (float)row * line_h + sdf_atlas->ascent * scale +
+                     glyph->yoff * scale;
+                x1 = x0 + glyph->width * scale;
+                y1 = y0 + glyph->height * scale;
+                uv[0] = glyph->uv[0];
+                uv[1] = glyph->uv[1];
+                uv[2] = glyph->uv[2];
+                uv[3] = glyph->uv[3];
+                cursor_x += glyph->advance * scale;
+            }
+            else
+            {
+                x0 = align_x + (float)column * glyph_w;
+                y0 = align_y + (float)row * line_h;
+                x1 = x0 + glyph_w;
+                y1 = y0 + glyph_h;
+                _text_bitmap_atlas_uv(cp, uv);
+                column++;
+            }
             const float xy[6][2] = {
                 {x0, y0}, {x0, y1}, {x1, y0}, {x1, y0}, {x0, y1}, {x1, y1}};
             const float st[6][2] = {
@@ -1303,12 +1575,10 @@ static bool _text_visual_prepare(
                 colors[4 * vertex_count + 3] = color[3];
                 vertex_count++;
             }
-            column++;
         }
         spans[i].glyph_count = vertex_count / 6u - spans[i].first_glyph;
     }
 
-    DvzSampledField* atlas = _text_bitmap_atlas_field(visual->scene);
     bool ok = atlas != NULL;
     if (ok && visual->text.glyph_visual == NULL)
     {
@@ -1446,7 +1716,7 @@ void dvz_font_destroy(DvzFont* font)
 {
     if (font == NULL)
         return;
-    font->scene = NULL;
+    _scene_font_release(font);
 }
 
 
