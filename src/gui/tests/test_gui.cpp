@@ -122,17 +122,20 @@ static void _gui_viewport_resize_callback(DvzGui* gui, DvzAppWindow* win, void* 
     if (smoke->frame == 0)
     {
         igSetNextWindowSize(ImVec2{360, 260}, ImGuiCond_Always);
+        igSetNextWindowCollapsed(false, ImGuiCond_Always);
     }
     else if (smoke->frame == 1)
     {
         igSetNextWindowSize(ImVec2{260, 220}, ImGuiCond_Always);
+        igSetNextWindowCollapsed(false, ImGuiCond_Always);
     }
     else
     {
         igSetNextWindowCollapsed(true, ImGuiCond_Always);
     }
 
-    bool shown = dvz_gui_viewport_window(smoke->viewport, "GUI viewport smoke", NULL, 0);
+    bool shown = dvz_gui_viewport_window(
+        smoke->viewport, "GUI viewport smoke", NULL, ImGuiWindowFlags_NoSavedSettings);
     if (shown)
         smoke->shown_count++;
     else
