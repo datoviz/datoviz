@@ -34,6 +34,7 @@ These items are in scope for v0.4 but deferred beyond the initial implementation
 | GPU compute pre-pass for non-linear projection (e.g., geographic) | `spec/scene/semantics/NONLINEAR_TRANSFORMS.md` |
 | Non-linear transform interaction with axes | `spec/scene/semantics/NONLINEAR_TRANSFORMS.md` |
 | Path widths, caps, joins, grouping, and tapered (per-vertex width) lines | `spec/scene/visuals/PATH.md` |
+| Future tube visual: impostor tubes, mesh tubes, ribbons, curve-id picking, and tube-specific pass policy | `spec/scene/visuals/TUBE.md` |
 | `volume` multiplane / MPR render mode | `spec/scene/visuals/VOLUME.md` |
 | Richer volume transfer functions and isosurface controls beyond the active first slice | `spec/scene/visuals/VOLUME.md` |
 | Volume DVR/MIP ray-cast picking identity | `spec/scene/interaction/PICKING.md` |
