@@ -18,7 +18,7 @@ Transparency, depth-peeling, and MSAA implementation rules live in
 5. [SCENE_SCREEN_SPACE_EFFECTS_PLAN.md](SCENE_SCREEN_SPACE_EFFECTS_PLAN.md): screen-space effects
    follow-up.
 6. [SCENE_SSAO_IMPLEMENTATION_PLAN.md](SCENE_SSAO_IMPLEMENTATION_PLAN.md): SSAO implementation
-   lane.
+   follow-up.
 7. [SCENE_SSAO_QUALITY_PLAN.md](SCENE_SSAO_QUALITY_PLAN.md): SSAO quality follow-up.
 8. [SCENE_TECHNIQUES_MATERIALS_PLAN.md](SCENE_TECHNIQUES_MATERIALS_PLAN.md): techniques and
    materials follow-up.

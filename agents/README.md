@@ -22,9 +22,9 @@ Subsystem-specific execution notes and stable behavior records live outside `now
 2. [../spec/scene/visuals/IMPLEMENTATION_DECISIONS.md](../spec/scene/visuals/IMPLEMENTATION_DECISIONS.md)
 3. [../spec/scene/validation/IMAGE_PICKING_RECOVERY.md](../spec/scene/validation/IMAGE_PICKING_RECOVERY.md)
 
-Near-term work that is expected soon, but should not crowd the active entry-point directory, lives
-in [soon/](soon/). This includes the WebGPU, WASM, dual-depth-peeling, and screen-space volume
-occlusion/effects tracks.
+Near-term follow-up work that is expected soon, but should not crowd the active entry-point
+directory, lives in [soon/](soon/). Those files are execution notes that point back to durable
+contracts in `spec/scene`, `spec/drp2`, or completed records in `agents/done`.
 
 
 ## Start Here
@@ -107,7 +107,7 @@ Scene feature lanes:
 15. [soon/interaction/SCENE_TURNTABLE_CONTROLLER_PLAN.md](soon/interaction/SCENE_TURNTABLE_CONTROLLER_PLAN.md)
 
 For visual-family lanes, durable contracts live under [../spec/scene/visuals](../spec/scene/visuals);
-the `soon/` files above are implementation follow-up notes.
+the `soon/` files above are execution follow-up notes.
 
 Text/layout lanes:
 
@@ -157,7 +157,7 @@ Strategic visual backlog:
 ## Maintenance Rules
 
 1. Keep `agents/now/` small and practical.
-2. Put imminent but not immediately active implementation plans in `agents/soon/`.
+2. Put imminent but not immediately active follow-up notes in `agents/soon/`.
 3. Move stable scene semantics to specialized files under `spec/scene/`.
 4. Keep active not-yet-promoted design addenda in `spec/scene/proposals/active/`.
 5. Move completed implementation records to `agents/done/`.

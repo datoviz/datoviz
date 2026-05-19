@@ -1,6 +1,6 @@
 # Text Layout Soon Queue
 
-Text and glyph implementation plans should stay aligned with the durable contract in
+Text and glyph follow-up notes should stay aligned with the durable contract in
 [../../../spec/scene/implementation/TEXT_SHAPING_ATLAS.md](../../../spec/scene/implementation/TEXT_SHAPING_ATLAS.md).
 
 1. [SCENE_TEXT_GLYPH_PLAN.md](SCENE_TEXT_GLYPH_PLAN.md): retained text, glyph, and equation
