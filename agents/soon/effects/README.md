@@ -6,6 +6,8 @@ shared implementation contract lives in
 [../../../spec/scene/implementation/GRAPH_TECHNIQUES.md](../../../spec/scene/implementation/GRAPH_TECHNIQUES.md).
 SSAO, scene occlusion, and volume occlusion implementation rules live in
 [../../../spec/scene/implementation/OCCLUSION_EFFECTS.md](../../../spec/scene/implementation/OCCLUSION_EFFECTS.md).
+Transparency, depth-peeling, and MSAA implementation rules live in
+[../../../spec/scene/implementation/TRANSPARENCY_MSAA.md](../../../spec/scene/implementation/TRANSPARENCY_MSAA.md).
 
 1. [DUAL_DEPTH_PEELING_PLAN.md](DUAL_DEPTH_PEELING_PLAN.md): dual depth peeling implementation
    plan.

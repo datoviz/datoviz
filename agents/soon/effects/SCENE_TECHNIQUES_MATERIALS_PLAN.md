@@ -70,6 +70,9 @@ Start with
 Use
 [GRAPH_TECHNIQUES.md](../../../spec/scene/implementation/GRAPH_TECHNIQUES.md)
 for the durable graph-technique implementation contract.
+Use
+[TRANSPARENCY_MSAA.md](../../../spec/scene/implementation/TRANSPARENCY_MSAA.md)
+for durable transparency, depth-peeling, and MSAA implementation rules.
 
 That note is the architectural target. This file is the practical implementation pickup order.
 
@@ -78,8 +81,10 @@ That note is the architectural target. This file is the practical implementation
 
 The FramePlan graph is active and should remain the shared foundation. Current material,
 capability, graph resource/pass, and runtime guardrail details are recorded in
-[GRAPH_TECHNIQUES.md](../../../spec/scene/implementation/GRAPH_TECHNIQUES.md). Keep new work on the
-existing scene -> FramePlan graph -> DRP2 -> vklite/canvas route.
+[GRAPH_TECHNIQUES.md](../../../spec/scene/implementation/GRAPH_TECHNIQUES.md). Transparency and
+MSAA-specific details are recorded in
+[TRANSPARENCY_MSAA.md](../../../spec/scene/implementation/TRANSPARENCY_MSAA.md). Keep new work on
+the existing scene -> FramePlan graph -> DRP2 -> vklite/canvas route.
 
 
 ## Implementation Slices

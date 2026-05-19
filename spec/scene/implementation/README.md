@@ -13,6 +13,8 @@ Concise implementor documentation for active scene internals. These notes descri
    pass, material capability, and runtime guardrail contract.
 4. [OCCLUSION_EFFECTS.md](OCCLUSION_EFFECTS.md): implementation-facing SSAO, scene occlusion,
    volume occlusion, shader feature, and validation contract.
+5. [TRANSPARENCY_MSAA.md](TRANSPARENCY_MSAA.md): implementation-facing WBOIT, depth peeling,
+   MSAA, alpha-to-coverage, and validation contract.
 
 ## Current priorities
 
@@ -25,3 +27,5 @@ Concise implementor documentation for active scene internals. These notes descri
    durable technique implementation rules live in `GRAPH_TECHNIQUES.md`.
 6. Keep SSAO and occlusion execution plans in `agents/soon/` focused on remaining slices while
    durable occlusion implementation rules live in `OCCLUSION_EFFECTS.md`.
+7. Keep transparency, depth-peeling, and MSAA execution plans in `agents/soon/` focused on
+   remaining slices while durable implementation rules live in `TRANSPARENCY_MSAA.md`.
