@@ -7,6 +7,10 @@ short version: dual depth peeling should not be added as another WBOIT-shaped sp
 generalize FramePlan and DRP2 enough to express typed pass/resource graphs, then implement
 transparency techniques as graph expansions.
 
+The durable graph-backed technique contract now lives in
+[spec/scene/implementation/GRAPH_TECHNIQUES.md](../../../spec/scene/implementation/GRAPH_TECHNIQUES.md).
+Keep this note focused on transparency pickup order and gaps.
+
 
 ## Motivation
 
@@ -52,74 +56,15 @@ DRP2 emission remains the backend-facing lowering step from this graph into conc
 streams.
 
 
-## Generic Resource Model
+## Generic Resource And Pass Model
 
-FramePlan resources should be ordinary graph nodes, not hard-coded WBOIT or peeling fields.
-
-Minimum descriptor:
-
-```text
-Resource {
-    id
-    kind: texture | buffer | external_target
-    format
-    extent: figure | panel | fixed | resource_ref
-    usage: render_attachment | depth_attachment | sampled | storage | copy_src | copy_dst
-    lifetime: borrowed | per_frame | persistent
-}
-```
-
-Examples:
-
-- `rt`: borrowed final target.
-- `panel0.depth.opaque`: per-frame depth texture.
-- `panel0.wboit.accum`: per-frame color texture.
-- `panel0.peel.depth_ping`: per-frame color/depth-like texture.
-- `panel0.ssao.normal`: per-frame normal texture.
-
-Technique code owns names and creation policy; core FramePlan only sees typed resources.
+Use the resource, pass, and access model in
+[GRAPH_TECHNIQUES.md](../../../spec/scene/implementation/GRAPH_TECHNIQUES.md). Transparency
+builders should append typed graph resources and passes instead of adding WBOIT-shaped special
+cases in the scene emitter.
 
 
-## Generic Pass Model
-
-Minimum pass descriptor:
-
-```text
-Pass {
-    id
-    kind: render | compute | copy | readback | clear
-    panel_id
-    viewport
-    scissor
-    reads: ResourceAccess[]
-    writes: ResourceAccess[]
-    color_attachments: Attachment[]
-    depth_attachment: Attachment?
-    stencil_attachment: Attachment?
-    work: draws | dispatches | copies | readback
-}
-
-Attachment {
-    resource_id
-    load_op: clear | load | dont_care
-    store_op: store | dont_care
-    clear_value
-    access: read | write | read_write
-}
-
-ResourceAccess {
-    resource_id
-    usage: sampled | storage_read | storage_write | color_attachment |
-           depth_attachment_read | depth_attachment_write | copy_src | copy_dst
-}
-```
-
-Pass tags or roles should remain diagnostic and policy-facing, not the core execution model.
-Ordering can stay explicit at first, with validation checking that read/write dependencies make
-sense. Dependency-derived ordering can come later.
-
-
-## Technique Expansion Examples
+## Transparency Expansion Examples
 
 WBOIT builder:
 
@@ -142,33 +87,12 @@ Dual depth peeling builder:
 4. Add a fixed number of peel iteration passes, ping-ponging resources.
 5. Add composite pass sampling accumulators and writing `rt`.
 
-SSAO builder:
-
-1. Add gbuffer resources for depth/normal as needed.
-2. Add SSAO pass.
-3. Add optional blur pass.
-4. Add composite pass.
-
-
 ## DRP2 Gaps To Close
 
-The current DRP2/vklite path already supports many pieces: intermediate textures, multi-color
-render targets, sampled textures, storage buffers, compute pipelines, color blend state, depth
-compare/write state, and multi-pass execution.
-
-Missing or underspecified pieces for a generic graph:
-
-1. Named depth attachments/resources instead of only implicit transient depth.
-2. Explicit attachment load/store operations in the command stream.
-3. Explicit attachment access: depth read, depth write, depth read/write.
-4. Texture/resource layout transitions driven from declared access, not only local WBOIT assumptions.
-5. Pipeline raster state such as cull mode and front-face winding.
-6. Better validation of pipeline target formats versus actual render-pass attachment formats.
-7. Capability facts for sampled depth, storage images, required formats, max attachments, blend ops,
-   and independent blend.
-
-Storage textures already exist as a binding type, but they should be validated and exercised before
-being treated as available for graph techniques.
+The shared DRP2 graph gaps are tracked in
+[GRAPH_TECHNIQUES.md](../../../spec/scene/implementation/GRAPH_TECHNIQUES.md). For the transparency
+lane, the most important remaining pieces are named depth resources, explicit attachment access,
+layout transitions from declared graph access, and raster cull/front-face state.
 
 
 ## Scene Gaps To Close

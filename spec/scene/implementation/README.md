@@ -9,6 +9,8 @@ Concise implementor documentation for active scene internals. These notes descri
    extension steps, descriptor checklist, and validation checklist.
 2. [TEXT_SHAPING_ATLAS.md](TEXT_SHAPING_ATLAS.md): implementation-facing text shaping, layout,
    atlas, cache, and DRP2 emission contract.
+3. [GRAPH_TECHNIQUES.md](GRAPH_TECHNIQUES.md): implementation-facing graph technique, resource,
+   pass, material capability, and runtime guardrail contract.
 
 ## Current priorities
 
@@ -17,3 +19,5 @@ Concise implementor documentation for active scene internals. These notes descri
 3. Keep runtime emission descriptor-driven rather than adding visual-family policy there.
 4. Keep text execution plans in `agents/soon/` focused on order and validation while durable text
    resource contracts live here or in `../semantics/TEXT.md`.
+5. Keep graph-backed effects and transparency plans in `agents/soon/` focused on pickup order while
+   durable technique implementation rules live in `GRAPH_TECHNIQUES.md`.

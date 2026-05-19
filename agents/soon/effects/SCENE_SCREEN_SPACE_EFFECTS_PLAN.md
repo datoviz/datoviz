@@ -11,6 +11,8 @@
 
 The durable design proposal is
 [spec/scene/proposals/active/SCREEN_SPACE_EFFECTS_DESIGN.md](../../../spec/scene/proposals/active/SCREEN_SPACE_EFFECTS_DESIGN.md).
+The shared graph-technique implementation contract is
+[spec/scene/implementation/GRAPH_TECHNIQUES.md](../../../spec/scene/implementation/GRAPH_TECHNIQUES.md).
 
 Do not add a parallel renderer, visual-private postprocess path, or ad-hoc Vulkan path. These
 effects should use:
@@ -173,18 +175,9 @@ git diff --check
 
 ## Runtime Notes
 
-Keep graph lowering generic where possible:
-
-1. graph resources should drive texture creation and usage flags;
-2. graph passes should drive pass ordering and sampled reads;
-3. effect-specific runtime code should be limited to shader/pipeline/bind-group preparation and
-   fullscreen draw dispatch;
-4. descriptor refresh must reuse the existing graph-resource and texture-recreation path;
-5. borrowed canvas frame targets must remain borrowed and must not be destroyed by scene/runtime
-   effect code.
-
-If an effect needs a new DRP2 feature, write the DRP2 spec change first and add fixtures before
-lowering scene work to backend-specific commands.
+Follow the graph-backed technique rules in
+[GRAPH_TECHNIQUES.md](../../../spec/scene/implementation/GRAPH_TECHNIQUES.md). This plan should only
+record effect-specific pickup order, tests, and examples.
 
 
 ## Tests And Examples
@@ -214,5 +207,5 @@ This lane is complete when:
 2. outline and edge enhancement have graph-backed runtime paths and tests,
 3. bloom has an opt-in graph-backed runtime path and tests,
 4. export behavior is documented,
-5. stable semantics are promoted from the proposal into `spec/scene/semantics/EFFECTS.md` or an
-   equivalent specialized spec file.
+5. stable user-facing semantics are promoted from the proposal into `spec/scene/semantics/EFFECTS.md`
+   or an equivalent specialized spec file.

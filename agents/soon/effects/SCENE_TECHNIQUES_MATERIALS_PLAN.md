@@ -67,25 +67,19 @@ with DRP2 multisample lowering and explicit resolve metadata.
 
 Start with
 [scene_techniques_materials.md](../../../docs/architecture/scene_techniques_materials.md).
+Use
+[GRAPH_TECHNIQUES.md](../../../spec/scene/implementation/GRAPH_TECHNIQUES.md)
+for the durable graph-technique implementation contract.
 
 That note is the architectural target. This file is the practical implementation pickup order.
 
 
 ## Current Repo Reality
 
-Do not assume a public `DvzMaterial` object exists. The current retained material policy is an
-internal compatibility layer split across:
-
-1. `DvzAlphaMode` on visuals;
-2. internal `DvzMaterialState` / `DvzSceneMaterialParams` on visuals;
-3. `DvzPrimitiveShadingDesc` as the typed compatibility setter for lit material fields;
-4. `DvzVolumeState`;
-5. scale/colormap bindings;
-6. family-specific shader, pipeline, and bind descriptors in `src/scene/visual_pipeline.c`.
-
-The FramePlan graph is active and should be the shared foundation. Current graph-backed paths
-include opaque depth, WBOIT, depth peeling, blended volume, G-buffer, EDL, SSAO, SSAO blur, and
-MSAA resolve. Keep new work on the existing scene -> FramePlan graph -> DRP2 -> vklite/canvas route.
+The FramePlan graph is active and should remain the shared foundation. Current material,
+capability, graph resource/pass, and runtime guardrail details are recorded in
+[GRAPH_TECHNIQUES.md](../../../spec/scene/implementation/GRAPH_TECHNIQUES.md). Keep new work on the
+existing scene -> FramePlan graph -> DRP2 -> vklite/canvas route.
 
 
 ## Implementation Slices
@@ -260,9 +254,6 @@ The v0.4 pickup plan and remaining texture/equirectangular follow-ups are record
 
 ## Guardrails
 
-1. Do not add a public framegraph API for this lane.
-2. Do not add a parallel renderer or scene-private Vulkan execution path.
-3. Do not hardcode molecular semantics into core materials.
-4. Keep public APIs typed and narrow.
-5. Prefer internal state and compatibility mapping before broad public `DvzMaterial` exposure.
-6. Keep examples and tests in lockstep with each new technique.
+Follow the guardrails in
+[GRAPH_TECHNIQUES.md](../../../spec/scene/implementation/GRAPH_TECHNIQUES.md). This file should keep
+only the practical pickup order and status for the techniques/materials lane.

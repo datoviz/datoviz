@@ -1,7 +1,9 @@
 # Effects Soon Queue
 
 Effects plans cover render techniques, transparency, postprocess, MSAA, SSAO, and screen-space
-occlusion lanes. Durable technique semantics belong under the relevant `spec/scene/` sections.
+occlusion lanes. Durable technique semantics belong under the relevant `spec/scene/` sections; the
+shared implementation contract lives in
+[../../../spec/scene/implementation/GRAPH_TECHNIQUES.md](../../../spec/scene/implementation/GRAPH_TECHNIQUES.md).
 
 1. [DUAL_DEPTH_PEELING_PLAN.md](DUAL_DEPTH_PEELING_PLAN.md): dual depth peeling implementation
    plan.
