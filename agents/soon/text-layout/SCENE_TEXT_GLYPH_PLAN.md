@@ -3,8 +3,9 @@
 > **Execution Status**
 > - **Status:** `ACTIVE / FOLLOW-UP NOTE`
 > - **Updated on:** `2026-05-19`
-> - **Purpose:** track remaining retained text, glyph, and equation work after the durable text
->   semantics and shaping/atlas contracts were split into `spec/scene`.
+> - **Purpose:** track remaining text/glyph integration, API cleanup, shaping, and equation work
+>   after the first rendered text slice landed and the durable semantics and shaping/atlas
+>   contracts were split into `spec/scene`.
 
 
 ## Current State
@@ -23,8 +24,13 @@ Focused execution notes:
 2. [`SCENE_HARFBUZZ_SHAPING_PLAN.md`](SCENE_HARFBUZZ_SHAPING_PLAN.md) tracks shaping integration.
 
 The active scene already has retained text and annotation bookkeeping in `include/datoviz/scene/`
-and `src/scene/text_annotation.c`. Visible text rendering, glyph visual emission, production font
-loading, production shaping, and equation lowering remain follow-up work.
+and `src/scene/text_annotation.c`. The first visible `dvz_text()` path is active: text lowers to
+scene-owned glyph visuals, uses bitmap/SDF/MSDF-capable atlas resources, emits through the normal
+scene -> FramePlan -> DRP2 -> vklite/app path, and has focused scene/app readback coverage.
+
+The remaining work is no longer first proof of visibility. It is API/spec alignment, integration
+with explanatory objects, data/world placement, DPI/clipping hardening, production shaping, richer
+font fallback, diagnostics, and equation lowering.
 
 Use this file only for execution sequencing. Do not duplicate stable text semantics here.
 
@@ -33,21 +39,21 @@ Use this file only for execution sequencing. Do not duplicate stable text semant
 
 Recommended follow-up commits:
 
-1. Land the first visible `DvzText` rendering slice from `TEXT_RENDERING_SLICE.md` through the
-   normal scene -> FramePlan -> DRP2 -> vklite/app path.
-2. Keep a deterministic simple atlas renderer for dependency-light tests and diagnostics.
-3. Add a retained glyph visual only after the first text renderer proves atlas texture, sampler,
-   glyph quad, panel scissor, and repeated-frame reuse behavior.
-4. Add FreeType font loading behind a feature flag before making bitmap atlas rendering the quality
-   path for small labels.
-5. Integrate HarfBuzz-shaped glyph ids with atlas growth after the atlas/cache layer can ensure
+1. Reconcile the planned semantic `DvzText*` API with the current public
+   `DvzVisual* dvz_text()` and `DvzVisual* dvz_glyph()` surface, or document the transitional API.
+2. Wire axes, colorbars, legends, annotations, and pinned readouts to the current text path without
+   rewriting text internals.
+3. Finish data/world placement and depth policy instead of hiding non-screen retained text modes.
+4. Harden DPI scaling, panel scissor edge cases, resize invalidation, and bounded GLFW/manual smoke
+   coverage.
+5. Keep the deterministic simple atlas renderer for dependency-light tests and diagnostics.
+6. Add or harden FreeType font loading behind a feature flag before making bitmap atlas rendering
+   the quality path for small labels.
+7. Integrate HarfBuzz-shaped glyph ids with atlas growth after the atlas/cache layer can ensure
    glyph resources by `(font face, glyph id)`.
-6. Add SDF/MSDF rendering as a production-quality medium/large text path after bitmap text is
-   correct and testable.
-7. Integrate axes, colorbars, legends, annotations, and pinned readouts once measurement and layout
-   can consume text bounds.
-8. Keep Slug-style vector GPU text and MicroTeX/equation support as later optional lanes until
-   ordinary text and glyph rendering are stable.
+8. Improve explicit missing-glyph, renderer fallback, and atlas-capacity diagnostics.
+9. Keep Slug-style vector GPU text and MicroTeX/equation support as later optional lanes until
+   ordinary text, labels, and annotation integration are stable.
 
 
 ## v0.3 Reference
@@ -75,6 +81,7 @@ For text/glyph implementation work:
 
 ```text
 just build
+just test text
 just test scene
 git diff --check
 ```

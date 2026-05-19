@@ -23,6 +23,8 @@ The current implementation already has a first atlas-growth path:
 5. Atlas entries are capped by `DVZ_SCENE_TEXT_ATLAS_MAX_GLYPHS`.
 6. The shader receives atlas pixel range through glyph-specific uniforms.
 7. The deterministic 6x8 bitmap path remains useful for tests and fallback diagnostics.
+8. Focused tests now cover automatic renderer selection, UTF-8 atlas expansion, missing-glyph
+   fallback, font-atlas runtime readback, and app/offscreen visible text.
 
 Use this file only for remaining execution work. Do not duplicate stable atlas rules here.
 
@@ -31,19 +33,17 @@ Use this file only for remaining execution work. Do not duplicate stable atlas r
 
 Recommended follow-up commits:
 
-1. Add focused tests for the current codepoint-level growth path, including ASCII reuse,
-   non-ASCII append, generation increments, and cache hits.
-2. Assert old glyph UV stability after growth, accounting for expected global rescale when texture
+1. Assert old glyph UV stability after growth, accounting for expected global rescale when texture
    dimensions change.
-3. Test FreeType bitmap and MSDF append/growth separately, with representative glyphs such as
+2. Test FreeType bitmap and MSDF append/growth separately, with representative glyphs such as
    `b`, `e`, `g`, `@`, punctuation, and dense lowercase strings.
-4. Add explicit missing-glyph entries and diagnostics instead of silently skipping unsupported
+3. Add explicit missing-glyph entries and diagnostics instead of silently skipping unsupported
    characters.
-5. Formalize atlas/page/entry structs and cache keys so the codepoint path can migrate to
+4. Formalize atlas/page/entry structs and cache keys so the codepoint path can migrate to
    `(font face, glyph id)` requests.
-6. Add embedded default atlas support for the built-in/default font and common ASCII labels.
-7. Add atlas stats and diagnostics before exposing any public cache API.
-8. Add optional persistent disk cache only after the in-memory cache/page model is stable; disk
+5. Add embedded default atlas support for the built-in/default font and common ASCII labels.
+6. Add atlas stats and diagnostics before exposing any public cache API.
+7. Add optional persistent disk cache only after the in-memory cache/page model is stable; disk
    writes must remain explicit opt-in behavior.
 
 
@@ -53,6 +53,7 @@ For atlas/cache work:
 
 ```text
 just build
+just test text
 just test scene
 git diff --check
 ```

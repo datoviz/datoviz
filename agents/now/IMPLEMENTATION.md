@@ -111,34 +111,47 @@ Suggested validation:
    continuous benchmark, and immediate capped behavior
 
 
-### 2. Text Release-Hardening And Integration
+### 2. Text Integration And API Cleanup
 
-Status: `Next after scheduler`
+Status: `First rendered slice landed`
 
 Goal:
 
-Turn the existing retained/rendered text path into a dependable v0.4 explanatory-object primitive.
+Turn the landed `dvz_text()`/glyph-atlas path into the stable text substrate used by axes,
+colorbars, annotations, legends, and readouts.
 
 Current state:
 
 1. `examples/c/visuals/text.c` exercises basic `dvz_text()` rendering, strings, size, color,
    anchor, angle, multiline text, tick-like labels, and UTF-8 fallback behavior.
-2. The scene visual path already has text/glyph state and a bitmap-atlas renderer lane.
-3. The remaining work is integration, validation, and release-quality behavior rather than first
-   proof of visibility.
+2. The scene visual path has text/glyph state, built-in bitmap atlas rendering, font-backed
+   SDF/MSDF fallback behavior, shared atlas reuse, and glyph-atlas DRP2 lowering.
+3. Focused scene tests cover bitmap and SDF text realization, automatic renderer selection,
+   UTF-8 atlas growth, missing-glyph fallback, many-label batching, and runtime readback.
+4. App/offscreen smokes verify visible pixels for bitmap and SDF-backed text.
+5. `just test text` passed locally on 2026-05-19 with `40/40` selected tests.
 
-Required v0.4 slice:
+Landed first-slice behavior:
 
-1. built-in fallback font,
-2. visible single-line UTF-8 strings,
-3. run-level size and color,
-4. screen-space placement,
-5. simple data-space anchoring,
-6. panel viewport/scissor clipping,
-7. offscreen and GLFW rendering,
-8. retained update and destroy behavior,
-9. focused scene tests plus one app/offscreen smoke,
-10. documented behavior for unsupported glyphs and renderer choices.
+1. built-in fallback bitmap font for dependency-light text,
+2. visible single-line and simple multiline strings through `dvz_text()`,
+3. run/per-string size and color through visual attributes,
+4. screen-space placement in figure/panel logical pixels,
+5. offscreen rendering and runtime readback validation,
+6. retained string, style, renderer, resize, visibility, and destroy behavior,
+7. unsupported-glyph fallback to a visible fallback glyph.
+
+Remaining v0.4 work:
+
+1. make axes, colorbars, legends, annotation labels, and pinned readouts consume the landed text
+   path without changing text internals,
+2. reconcile the planned semantic `DvzText*` API with the current public `DvzVisual* dvz_text()`
+   surface, or explicitly document the transitional API,
+3. finish data/world-space placement instead of silently hiding non-screen retained text modes,
+4. harden DPI behavior, panel clipping edge cases, and bounded GLFW/manual smokes,
+5. improve missing-glyph and renderer fallback diagnostics,
+6. keep MSDF/SDF/bitmap parity tests current as feature flags vary,
+7. document unsupported renderer choices and advanced text non-goals.
 
 Non-goals for v0.4:
 
@@ -156,8 +169,9 @@ Suggested validation:
 1. `git diff --check`
 2. `just build`
 3. `just test scene`
-4. focused app/offscreen visible-text smoke
-5. `clang-tidy -p build --quiet` on touched scene files when practical
+4. `just test text` for text-only planning and implementation changes
+5. focused app/offscreen visible-text smoke
+6. `clang-tidy -p build --quiet` on touched scene files when practical
 
 
 ### 3. 2D Axes And Ticks
@@ -194,8 +208,8 @@ Primary specs:
 
 ### 4. Continuous Colorbars
 
-Status: `Parallel`; retained colorbar bookkeeping exists, ramp work can proceed, and final
-title/tick labels depend on the text integration pass.
+Status: `Parallel`; retained colorbar bookkeeping exists, ramp work can proceed, and title/tick
+labels can now target the landed text path.
 
 Goal:
 
@@ -218,8 +232,9 @@ Primary spec:
 
 ### 5. Basic Annotations And Readouts
 
-Status: `Parallel`; retained annotation/readout bookkeeping exists, visible labels depend on the
-text integration pass.
+Status: `Parallel`; retained annotation/readout bookkeeping exists, and simple visible labels can
+now target the landed screen-space text path. Data-anchored readouts and richer update behavior
+remain open.
 
 Goal:
 
@@ -408,12 +423,13 @@ Primary doc:
 
 Good parallel lanes right now:
 
-1. **Text release-hardening:** `src/scene`, scene shaders, `examples/c/visuals/text.c`, focused text
-   tests, and app/offscreen visible-text smoke.
+1. **Text integration/API cleanup:** reconcile the public text API with the landed
+   `dvz_text()`/glyph path, harden data/world placement, DPI/clipping behavior, diagnostics, and
+   focused text/app smokes.
 2. **Axes/tick integration:** axis tick generation, semantic state, grid/line geometry, and tests
    that can use current text as labels mature.
-3. **Colorbar ramp planning:** scale/colormap/ramp layout and diagnostics, with label emission wired
-   once the text integration pass is stable.
+3. **Colorbar ramp planning:** scale/colormap/ramp layout and diagnostics, with label emission
+   wired through the current text path.
 4. **WebGPU command parity:** `examples/webgpu`, DRP2 fixture/preflight work, no scene API churn.
 5. **Example audit/polish:** C examples and gallery harnesses that use already-implemented
    features.
@@ -484,18 +500,19 @@ Common coordination rules:
 7. finish with `git diff --check` and the narrowest relevant build/test command.
 
 
-### Prompt: Text Release-Hardening
+### Prompt: Text Integration/API Cleanup
 
 ```text
-You own the text release-hardening lane for Datoviz v0.4. Read
+You own the text integration/API cleanup lane for Datoviz v0.4. Read
 agents/now/IMPLEMENTATION.md, spec/scene/slices/TEXT_RENDERING_SLICE.md,
 spec/scene/semantics/TEXT.md, spec/scene/implementation/TEXT_SHAPING_ATLAS.md,
 and agents/soon/text-layout/SCENE_TEXT_GLYPH_PLAN.md.
 
-Goal: make the existing retained/rendered text path release-quality for the next small slice.
-Stay inside src/scene text/glyph code, scene shaders needed for text, examples/c/visuals/text.c,
-and focused scene/app text tests. Do not redesign axes, colorbars, annotations, or shared
-FramePlan contribution structures unless the exact text bug requires it.
+Goal: harden the landed `dvz_text()`/glyph-atlas path as the substrate for labels,
+annotations, axes, colorbars, and readouts. Focus on API/spec alignment, data/world placement,
+DPI/clipping behavior, fallback diagnostics, examples/c/visuals/text.c, and focused scene/app text
+tests. Do not redesign axes, colorbars, annotations, or shared FramePlan contribution structures
+unless the exact text bug requires it.
 
 Conflict avoidance: coordinate with axes/colorbar/annotation agents by exposing stable text
 behavior and tests, not by changing their semantic state. Avoid shader bind-layout changes unless

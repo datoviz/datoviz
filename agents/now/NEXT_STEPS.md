@@ -17,8 +17,8 @@ Vulkan wrapper paths.
 
 Implemented scene coverage includes retained point, pixel, marker, primitive, mesh, path/segment,
 image, volume, sphere, sampled-field, material, controller, pick/probe, annotation/text
-bookkeeping, graph-backed technique, and app/offscreen/GLFW slices. Treat these as active code, not
-future scaffolding.
+bookkeeping, a first rendered text/glyph-atlas slice, graph-backed technique, and
+app/offscreen/GLFW slices. Treat these as active code, not future scaffolding.
 
 The C test-runner modernization and low-risk process-sharding performance pass are complete enough
 to treat as a stable baseline. Historical notes live in
@@ -51,8 +51,10 @@ and shared-fixture follow-ups live in
 1. **App frame scheduling:** make `dvz_app_run(app, 0)` event-aware and optionally capped while
    preserving explicit continuous/immediate-present benchmark behavior. Start with
    [APP_FRAME_SCHEDULING_REFACTOR.md](APP_FRAME_SCHEDULING_REFACTOR.md).
-2. **Text/colorbar realization:** finish rendered text, labels, annotations, colorbar ramps, and
-   MSDF/SDF/bitmap parity through the existing scene -> frame-plan -> DRP2 path.
+2. **Text/colorbar realization:** use the landed first rendered text slice for axes,
+   colorbars, labels, and annotations; finish colorbar ramps, explanatory-object integration,
+   data/world text placement, DPI/clipping hardening, and MSDF/SDF/bitmap parity through the
+   existing scene -> frame-plan -> DRP2 path.
 3. **WebGPU/WGSL parity:** pressure the active DRP2 subset with point, primitive, image, minimal
    mesh/depth, marker, segment/path stroke, sphere, volume, and capability-gated advanced passes.
 4. **DVZR portability:** keep `dvz_drp2_player`, `replay_dvzr_glfw`, app recording hooks, and raw
