@@ -8,7 +8,7 @@
 > - **Current status:** the core GPU image-probe path, retained request executor reuse, hidden
 >   segment-target RGBA probing, transparent misses, and readback-failure diagnostics are now
 >   covered by scene tests. Napari/label-specific follow-up belongs in
->   [../soon/scene/SCENE_NAPARI_IMAGE_LABELS_PLAN.md](../soon/scene/SCENE_NAPARI_IMAGE_LABELS_PLAN.md).
+>   [../../../agents/soon/scene/SCENE_NAPARI_IMAGE_LABELS_PLAN.md](../../../agents/soon/scene/SCENE_NAPARI_IMAGE_LABELS_PLAN.md).
 
 
 ## Problem

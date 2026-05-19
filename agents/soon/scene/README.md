@@ -6,8 +6,8 @@ directories.
 
 1. [SCENE_2D_AXES_IMPLEMENTATION_PLAN.md](SCENE_2D_AXES_IMPLEMENTATION_PLAN.md): remaining 2D axes
    and label-layout follow-up.
-2. [SCENE_NAPARI_IMAGE_LABELS_PLAN.md](SCENE_NAPARI_IMAGE_LABELS_PLAN.md): napari-style image
-   label follow-up.
+2. [SCENE_NAPARI_IMAGE_LABELS_PLAN.md](SCENE_NAPARI_IMAGE_LABELS_PLAN.md): remaining napari-style
+   image and label follow-up.
 3. [SCENE_POINT_PIXEL_MARKER_PLAN.md](SCENE_POINT_PIXEL_MARKER_PLAN.md): point, pixel, and marker
    implementation plan.
 4. [SCENE_SPHERE_RENDER_MODES_PLAN.md](SCENE_SPHERE_RENDER_MODES_PLAN.md): sphere render-mode
