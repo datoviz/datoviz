@@ -75,6 +75,7 @@ typedef struct TextLabState
     float tick_count_value;
     int mode;
     int anchor_index;
+    int renderer_index;
     bool animate;
     bool show_demo;
     uint32_t frame_index;
@@ -110,6 +111,18 @@ static DvzSceneAnchor selected_anchor(int index)
     if ((uint32_t)index >= (uint32_t)(sizeof(anchors) / sizeof(anchors[0])))
         index = 0;
     return anchors[index];
+}
+
+
+/**
+ * Return the text renderer selected by the GUI.
+ *
+ * @param index GUI renderer index
+ * @return selected text renderer
+ */
+static DvzTextRenderer selected_renderer(int index)
+{
+    return index == 1 ? DVZ_TEXT_RENDERER_MSDF_ATLAS : DVZ_TEXT_RENDERER_SMALL_BITMAP_ATLAS;
 }
 
 
@@ -381,6 +394,7 @@ static void update_text_scene(TextLabState* state)
     DvzColor color = {0};
     gui_color_to_dvz(state->color, color);
     DvzSceneAnchor anchor = selected_anchor(state->anchor_index);
+    DvzTextRenderer renderer = selected_renderer(state->renderer_index);
     float text_anchor[2] = {state->text_anchor_x, state->text_anchor_y};
     float target[2] = {0};
     target_anchor_pixels(anchor, width, height, target);
@@ -390,6 +404,10 @@ static void update_text_scene(TextLabState* state)
     dvz_visual_set_visible(state->sample, false);
     dvz_visual_set_visible(state->multiline, false);
     dvz_visual_set_visible(state->ticks, false);
+    dvz_text_set_renderer(state->title, renderer);
+    dvz_text_set_renderer(state->sample, renderer);
+    dvz_text_set_renderer(state->multiline, renderer);
+    dvz_text_set_renderer(state->ticks, renderer);
 
     const char* title_string = "Text Lab";
     float title_pos[1][3] = {{24.0f, 24.0f, 0.0f}};
@@ -488,6 +506,7 @@ static void reset_text_state(TextLabState* state)
     state->tick_count_value = 12.0f;
     state->mode = TEXT_LAB_MODE_SAMPLE;
     state->anchor_index = 4;
+    state->renderer_index = 1;
     state->animate = false;
 }
 
@@ -526,8 +545,13 @@ static void gui_callback(DvzGui* gui, DvzAppWindow* win, void* user_data)
             "bottom",
             "bottom right",
         };
+        static const char* const renderer_items[] = {
+            "bitmap",
+            "SDF",
+        };
 
         changed |= dvz_gui_combo(gui, "Mode", &state->mode, mode_items, 4);
+        changed |= dvz_gui_combo(gui, "Renderer", &state->renderer_index, renderer_items, 2);
         if (state->mode == TEXT_LAB_MODE_SAMPLE || state->mode == TEXT_LAB_MODE_UTF8)
         {
             changed |= dvz_gui_slider_float_format(
