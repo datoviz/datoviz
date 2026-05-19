@@ -96,6 +96,8 @@ int test_scene_graph(TstSuite* suite);
 
 int test_scene_pick_probe(TstSuite* suite);
 
+int test_scene_text_atlas(TstSuite* suite);
+
 int test_scene_poll_pick_probe_clears_consumed_slots(TstContext* suite, const TstCase* item);
 
 int test_scene_app(TstSuite* suite);
@@ -628,6 +630,10 @@ int test_scene_text_sdf_visual_realization(TstContext* suite, const TstCase* ite
 int test_scene_text_auto_renderer_selection(TstContext* suite, const TstCase* item);
 
 int test_scene_text_font_atlas_expands_for_utf8(TstContext* suite, const TstCase* item);
+
+int test_scene_text_font_atlas_missing_glyph_fallback(TstContext* suite, const TstCase* item);
+
+int test_scene_text_atlas_utf8_runtime_readback(TstContext* suite, const TstCase* item);
 
 int test_scene_text_many_labels_render_plan(TstContext* suite, const TstCase* item);
 

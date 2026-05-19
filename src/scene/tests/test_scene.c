@@ -39,6 +39,7 @@ int test_scene(TstSuite* suite)
     test_scene_interaction(suite);
     test_scene_graph(suite);
     test_scene_pick_probe(suite);
+    test_scene_text_atlas(suite);
     test_scene_app(suite);
 
     return 0;

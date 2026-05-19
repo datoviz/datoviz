@@ -657,23 +657,88 @@ int test_scene_text_font_atlas_expands_for_utf8(TstContext* suite, const TstCase
     AT(dvz_panel_add_visual(
            panel, ascii,
            &(DvzVisualAttachDesc){.z_layer = 1, .controller_mode = DVZ_CONTROLLER_FIXED}) == 0);
+
+    _scene_prepare_text_visuals(figure);
+    AT(scene->font_count == 1);
+    DvzTextAtlas* initial_atlas =
+        scene->fonts[0].msdf_atlas != NULL ? scene->fonts[0].msdf_atlas : scene->fonts[0].sdf_atlas;
+    ANN(initial_atlas);
+    DvzSampledField* initial_field = initial_atlas->field;
+    ANN(initial_field);
+    uint32_t initial_glyph_count = initial_atlas->glyph_count;
+    uint64_t initial_generation = initial_atlas->generation;
+
     AT(dvz_panel_add_visual(
            panel, utf8,
            &(DvzVisualAttachDesc){.z_layer = 2, .controller_mode = DVZ_CONTROLLER_FIXED}) == 0);
 
     _scene_prepare_text_visuals(figure);
-    AT(scene->font_count == 1);
     DvzTextAtlas* atlas =
         scene->fonts[0].msdf_atlas != NULL ? scene->fonts[0].msdf_atlas : scene->fonts[0].sdf_atlas;
     ANN(atlas);
     ANN(atlas->field);
-    AT(atlas->glyph_count > (126u - 32u + 1u));
+    AT(atlas->glyph_count > initial_glyph_count);
+    AT(atlas->generation > initial_generation);
+    AT(atlas->field == initial_field);
     ANN(_scene_text_atlas_glyph(atlas, 0x00E9u));
     ANN(ascii->text.glyph_visual);
     ANN(utf8->text.glyph_visual);
     AT(ascii->text.glyph_visual->field == atlas->field);
     AT(utf8->text.glyph_visual->field == atlas->field);
     AT(ascii->text.glyph_visual->field == utf8->text.glyph_visual->field);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+/**
+ * Verify unavailable glyphs are counted and resolve to the explicit fallback glyph.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_text_font_atlas_missing_glyph_fallback(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    ANN(item);
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 640, 480, 0);
+    DvzPanel* panel = dvz_panel(
+        figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+    ANN(panel);
+
+    DvzVisual* text = dvz_text(scene, 0);
+    ANN(text);
+    AT(dvz_text_set_renderer(text, DVZ_TEXT_RENDERER_MSDF_ATLAS) == 0);
+    const char* strings[1] = {"missing \xF4\x8F\xBF\xBF"};
+    float positions[1][3] = {{24.0f, 32.0f, 0.0f}};
+    float sizes[1] = {24.0f};
+    DvzVisualDataUpdate updates[2] = {
+        {.attr_name = "position", .data = positions, .item_count = 1},
+        {.attr_name = "size", .data = sizes, .item_count = 1},
+    };
+    AT(dvz_visual_set_strings(text, "text", strings, 1) == 0);
+    AT(dvz_visual_set_data_many(text, updates, 2) == 0);
+    AT(dvz_panel_add_visual(
+           panel, text,
+           &(DvzVisualAttachDesc){.z_layer = 1, .controller_mode = DVZ_CONTROLLER_FIXED}) == 0);
+
+    _scene_prepare_text_visuals(figure);
+    AT(scene->font_count == 1);
+    DvzTextAtlas* atlas =
+        scene->fonts[0].msdf_atlas != NULL ? scene->fonts[0].msdf_atlas : scene->fonts[0].sdf_atlas;
+    ANN(atlas);
+    DvzTextAtlasGlyph* fallback = _scene_text_atlas_glyph(atlas, '?');
+    DvzTextAtlasGlyph* missing = _scene_text_atlas_glyph(atlas, 0x10FFFFu);
+    ANN(fallback);
+    ANN(missing);
+    AT(missing == fallback);
+    AT(atlas->missing_glyph_count > 0);
+    ANN(text->text.glyph_visual);
+    AT(text->text.glyph_visual->attrs[0].item_count > 0);
 
     dvz_scene_destroy(scene);
     return 0;
@@ -779,6 +844,7 @@ int test_scene_interaction(TstSuite* suite)
     TST_CASE(test_scene_text_sdf_visual_realization);
     TST_CASE(test_scene_text_auto_renderer_selection);
     TST_CASE(test_scene_text_font_atlas_expands_for_utf8);
+    TST_CASE(test_scene_text_font_atlas_missing_glyph_fallback);
     TST_CASE(test_scene_text_many_labels_render_plan);
 
     return 0;

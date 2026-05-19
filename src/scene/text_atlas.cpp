@@ -106,6 +106,7 @@ static float _text_sdf_pixel_height(float size_pts);
 static bool _text_sdf_font_bytes(DvzFont* font);
 static bool _text_atlas_upload_rgba(
     const DvzFont* font, DvzTextAtlas* atlas, uint8_t* rgba, uint32_t width, uint32_t height);
+static bool _text_atlas_replace_field_data(DvzSampledField* field, const DvzSampledField* src);
 
 
 #if defined(DVZ_HAS_MSDF_ATLAS) && DVZ_HAS_MSDF_ATLAS
@@ -278,6 +279,11 @@ static bool _text_msdf_build_atlas(
         DvzTextAtlasGlyph* glyph = &atlas->glyphs[index];
         glyph->codepoint = codepoint;
         glyph->glyph_id = (uint32_t)src_glyph.getIndex();
+        if (glyph->glyph_id == 0 && codepoint != DVZ_TEXT_SDF_FALLBACK)
+        {
+            atlas->missing_glyph_count++;
+            continue;
+        }
         glyph->advance = (float)(src_glyph.getAdvance() * scale);
 
         double l = 0.0;
@@ -867,6 +873,34 @@ static bool _text_atlas_upload_rgba(
 
 
 
+/**
+ * Replace one sampled-field payload with another field's full payload.
+ *
+ * @param field the destination sampled field
+ * @param src the source sampled field
+ * @return whether replacement succeeded
+ */
+static bool _text_atlas_replace_field_data(DvzSampledField* field, const DvzSampledField* src)
+{
+    ANN(field);
+    ANN(src);
+    if (src->data == NULL)
+        return false;
+    if (field->desc.width != src->desc.width || field->desc.height != src->desc.height ||
+        field->desc.depth != src->desc.depth || field->desc.format != src->desc.format ||
+        field->desc.dim != src->desc.dim)
+    {
+        return false;
+    }
+    DvzFieldDataView view = {};
+    view.data = src->data;
+    view.bytes_per_row = (uint64_t)src->desc.width * 4u;
+    view.rows_per_image = src->desc.height;
+    return dvz_sampled_field_set_data(field, &view);
+}
+
+
+
 #if defined(DVZ_HAS_FREETYPE) && DVZ_HAS_FREETYPE
 /**
  * Copy one FreeType glyph bitmap into an RGBA alpha atlas.
@@ -1034,6 +1068,11 @@ static bool _text_ft_build_bitmap_atlas(
         DvzTextAtlasGlyph* glyph = &atlas->glyphs[i];
         glyph->codepoint = codepoint;
         glyph->glyph_id = (uint32_t)FT_Get_Char_Index(face, (FT_ULong)codepoint);
+        if (glyph->glyph_id == 0 && codepoint != DVZ_TEXT_SDF_FALLBACK)
+        {
+            atlas->missing_glyph_count++;
+            continue;
+        }
         glyph->advance = glyph_advances[i];
         uint32_t col = i % DVZ_TEXT_SDF_COLUMNS;
         uint32_t row = i / DVZ_TEXT_SDF_COLUMNS;
@@ -1217,6 +1256,11 @@ static bool _text_sdf_build_atlas(
         DvzTextAtlasGlyph* glyph = &atlas->glyphs[i];
         glyph->codepoint = codepoint;
         glyph->glyph_id = (uint32_t)stbtt_FindGlyphIndex(&info, (int)codepoint);
+        if (glyph->glyph_id == 0 && codepoint != DVZ_TEXT_SDF_FALLBACK)
+        {
+            atlas->missing_glyph_count++;
+            continue;
+        }
         int advance = 0;
         int left_bearing = 0;
         stbtt_GetCodepointHMetrics(&info, (int)codepoint, &advance, &left_bearing);
@@ -1296,6 +1340,20 @@ static void _text_atlas_store(DvzFont* font, DvzTextAtlasBackend backend, DvzTex
     ANN(font);
     ANN(atlas);
     DvzTextAtlas** slot = _text_atlas_slot(font, backend);
+    if (*slot != NULL && (*slot)->field != NULL && atlas->field != NULL &&
+        _text_atlas_replace_field_data((*slot)->field, atlas->field))
+    {
+        DvzSampledField* field = (*slot)->field;
+        DvzSampledField* temporary_field = atlas->field;
+        (*slot)->field = NULL;
+        atlas->field = field;
+        _scene_text_atlas_destroy(*slot);
+        dvz_sampled_field_destroy(temporary_field);
+        *slot = atlas;
+        font->version++;
+        atlas->generation = font->version;
+        return;
+    }
     if (*slot != NULL)
         _scene_text_atlas_destroy(*slot);
     *slot = atlas;
@@ -1376,13 +1434,6 @@ static bool _text_atlas_ensure_set(
 
 extern "C" {
 
-/**
- * Ensure one font has a scene-owned font atlas.
- *
- * @param font the scene font
- * @param backend the requested atlas backend
- * @return whether the atlas is available
- */
 /**
  * Ensure one font has a scene-owned font atlas.
  *
