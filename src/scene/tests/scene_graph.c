@@ -4574,6 +4574,73 @@ int test_scene_second_emit_no_uploads_when_not_dirty(TstContext* suite, const Ts
 }
 
 
+/**
+ * Ensure retained volume parameter mutations keep on-demand scheduling dirty until emitted.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_pending_render_work_tracks_volume_state(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    AT(scene != NULL);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    AT(figure != NULL);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    AT(panel != NULL);
+
+    DvzSampledField* field = dvz_sampled_field(
+        scene, &(DvzSampledFieldDesc){
+                   .dim = DVZ_FIELD_DIM_3D,
+                   .format = DVZ_FIELD_FORMAT_R8_UNORM,
+                   .semantic = DVZ_FIELD_SEMANTIC_SCALAR,
+                   .width = 2,
+                   .height = 2,
+                   .depth = 2,
+               });
+    AT(field != NULL);
+    const uint8_t voxels[8] = {255, 255, 255, 255, 255, 255, 255, 255};
+    AT(dvz_sampled_field_set_data(
+        field, &(DvzFieldDataView){.data = voxels, .bytes_per_row = 2, .rows_per_image = 2}));
+
+    DvzVisual* volume = dvz_volume(scene, 0);
+    AT(volume != NULL);
+    AT(dvz_visual_set_field(volume, "field", field));
+    AT(dvz_volume_set_render_mode(volume, DVZ_VOLUME_RENDER_MIP) == 0);
+    AT(dvz_volume_set_step_count(volume, 16) == 0);
+    AT(dvz_panel_add_visual(panel, volume, NULL) == 0);
+
+    DvzCapabilitySnapshot caps;
+    dvz_capability_snapshot_default(&caps);
+    caps.shader_format_glsl = true;
+    DvzDiagnosticReport report;
+
+    AT(_scene_figure_has_pending_render_work(figure));
+    dvz_diagnostic_report_init(&report);
+    DvzDrp2CommandStream* stream1 = dvz_figure_emit(figure, &caps, &report);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+    AT(stream1 != NULL);
+    dvz_drp2_stream_destroy(stream1);
+    AT(!_scene_figure_has_pending_render_work(figure));
+
+    AT(dvz_volume_set_opacity(volume, 0.35f) == 0);
+    AT(_scene_figure_has_pending_render_work(figure));
+    dvz_diagnostic_report_init(&report);
+    DvzDrp2CommandStream* stream2 = dvz_figure_emit(figure, &caps, &report);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+    AT(stream2 != NULL);
+    dvz_drp2_stream_destroy(stream2);
+    AT(!_scene_figure_has_pending_render_work(figure));
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
 int test_scene_hidden_visual_first_visible_later_uploads(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
@@ -11238,6 +11305,7 @@ int test_scene_graph(TstSuite* suite)
     TST_SCENE_GRAPH_GPU_CASE(test_scene_indexed_primitive_shading_updates_runtime);
     TST_SCENE_GRAPH_GPU_CASE(test_scene_point_large_count_executes);
     TST_CASE(test_scene_second_emit_no_uploads_when_not_dirty);
+    TST_CASE(test_scene_pending_render_work_tracks_volume_state);
     TST_CASE(test_scene_hidden_visual_first_visible_later_uploads);
     TST_CASE(test_scene_hidden_indexed_mesh_first_visible_later_uploads);
     TST_SCENE_GRAPH_GPU_CASE(test_scene_hidden_wboit_mesh_scene_occlusion_two_frames_glsl_executes);

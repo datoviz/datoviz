@@ -586,6 +586,8 @@ int test_scene_point_emit_has_vertex_layout(TstContext* suite, const TstCase* it
 
 int test_scene_second_emit_no_uploads_when_not_dirty(TstContext* suite, const TstCase* item);
 
+int test_scene_pending_render_work_tracks_volume_state(TstContext* suite, const TstCase* item);
+
 int test_scene_hidden_visual_first_visible_later_uploads(TstContext* suite, const TstCase* item);
 
 int test_scene_hidden_indexed_mesh_first_visible_later_uploads(TstContext* suite, const TstCase* item);

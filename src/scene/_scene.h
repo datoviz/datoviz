@@ -823,6 +823,7 @@ struct DvzVisual
     bool                   scene_occluded;
     bool                   volume_occluded;
     DvzVolumeState         volume;
+    uint64_t               volume_realized_version;
 
     /* Attribute slots — indexed by attr index (type-specific) */
     uint32_t      attr_count;
