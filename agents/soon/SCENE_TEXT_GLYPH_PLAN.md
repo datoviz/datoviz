@@ -33,6 +33,20 @@ These retained objects are useful starting points, but they do not yet shape, la
 or render glyphs.
 
 
+## Detailed Follow-Up Plans
+
+Keep this file as the umbrella roadmap. Two focused notes now own the concrete implementation
+details for the most important next slices:
+
+- [SCENE_TEXT_ATLAS_CACHE_PLAN.md](SCENE_TEXT_ATLAS_CACHE_PLAN.md): atlas generation, cache keys,
+  embedded default atlases, dynamic growth, missing glyph behavior, and optional persistent cache.
+- [SCENE_HARFBUZZ_SHAPING_PLAN.md](SCENE_HARFBUZZ_SHAPING_PLAN.md): UTF-8 shaping, glyph ids,
+  clusters, font fallback, layout integration, and future complex-script support.
+
+The high-level architecture remains: HarfBuzz produces shaped glyph runs, the atlas/cache layer
+ensures renderer resources for those glyphs, and the scene emits normal DRP2 resources and draws.
+
+
 ## External Technology Snapshot
 
 This plan assumes the external text-rendering landscape as of `2026-05-16`.
@@ -518,6 +532,10 @@ Text emission must respect:
 ## Caching Model
 
 Use separate cache layers. They should be invalidated independently.
+
+The atlas/cache execution details now live in
+[SCENE_TEXT_ATLAS_CACHE_PLAN.md](SCENE_TEXT_ATLAS_CACHE_PLAN.md). The shaped-run details now live in
+[SCENE_HARFBUZZ_SHAPING_PLAN.md](SCENE_HARFBUZZ_SHAPING_PLAN.md).
 
 ### Font Face Cache
 
