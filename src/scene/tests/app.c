@@ -5683,12 +5683,8 @@ int test_scene_app(TstSuite* suite)
         test_app_external_surface_release_waits, TST_SCENE_APP_GPU_RES | TST_RES_GLFW,
         TST_ISOLATION_PROCESS);
 #endif
-    TST_SCENE_APP_CASE(
-        test_app_offscreen_panel_three_visuals_all_drawn, TST_SCENE_APP_GPU_RES,
-        TST_ISOLATION_PROCESS);
-    TST_SCENE_APP_CASE(
-        test_app_offscreen_point_depth_orders_overlap, TST_SCENE_APP_GPU_RES,
-        TST_ISOLATION_PROCESS);
+    TST_SCENE_APP_SHARED_CASE(test_app_offscreen_panel_three_visuals_all_drawn);
+    TST_SCENE_APP_SHARED_CASE(test_app_offscreen_point_depth_orders_overlap);
     TST_SCENE_APP_CASE(
         test_app_offscreen_wboit_mesh_order_independent_layers, TST_SCENE_APP_GPU_RES,
         TST_ISOLATION_PROCESS);
@@ -5704,14 +5700,9 @@ int test_scene_app(TstSuite* suite)
     TST_SCENE_APP_CASE(
         test_app_offscreen_source_over_scene_occlusion_matrix, TST_SCENE_APP_GPU_RES,
         TST_ISOLATION_PROCESS);
-    TST_SCENE_APP_CASE(
-        test_app_offscreen_point_depth_cue_darkens_far, TST_SCENE_APP_GPU_RES,
-        TST_ISOLATION_PROCESS);
-    TST_SCENE_APP_CASE(
-        test_app_offscreen_has_nonblank_pixels, TST_SCENE_APP_GPU_RES, TST_ISOLATION_PROCESS);
-    TST_SCENE_APP_CASE(
-        test_app_offscreen_pixel_square_has_nonblank_pixels, TST_SCENE_APP_GPU_RES,
-        TST_ISOLATION_PROCESS);
+    TST_SCENE_APP_SHARED_CASE(test_app_offscreen_point_depth_cue_darkens_far);
+    TST_SCENE_APP_SHARED_CASE(test_app_offscreen_has_nonblank_pixels);
+    TST_SCENE_APP_SHARED_CASE(test_app_offscreen_pixel_square_has_nonblank_pixels);
     TST_SCENE_APP_CASE(
         test_app_offscreen_points_edl_renders, TST_SCENE_APP_GPU_RES, TST_ISOLATION_PROCESS);
     TST_SCENE_APP_CASE(
@@ -5726,9 +5717,7 @@ int test_scene_app(TstSuite* suite)
     TST_SCENE_APP_CASE(
         test_app_offscreen_records_dvzr_frames,
         TST_SCENE_APP_GPU_RES | TST_RES_FILESYSTEM | TST_RES_ENV, TST_ISOLATION_PROCESS);
-    TST_SCENE_APP_CASE(
-        test_app_offscreen_image_has_nonblank_pixels, TST_SCENE_APP_GPU_RES,
-        TST_ISOLATION_PROCESS);
+    TST_SCENE_APP_SHARED_CASE(test_app_offscreen_image_has_nonblank_pixels);
     TST_SCENE_APP_CASE(
         test_app_offscreen_text_has_nonblank_pixels, TST_SCENE_APP_GPU_RES,
         TST_ISOLATION_PROCESS);
@@ -5738,14 +5727,9 @@ int test_scene_app(TstSuite* suite)
     TST_SCENE_APP_CASE(
         test_app_offscreen_image_field_partial_update_changes_region, TST_SCENE_APP_GPU_RES,
         TST_ISOLATION_PROCESS);
-    TST_SCENE_APP_CASE(
-        test_app_offscreen_lit_primitive_depth_orders_overlap, TST_SCENE_APP_GPU_RES,
-        TST_ISOLATION_PROCESS);
-    TST_SCENE_APP_CASE(
-        test_app_offscreen_lit_primitive_depth_cue_darkens_far, TST_SCENE_APP_GPU_RES,
-        TST_ISOLATION_PROCESS);
-    TST_SCENE_APP_CASE(
-        test_app_offscreen_mesh_renders_nonblank, TST_SCENE_APP_GPU_RES, TST_ISOLATION_PROCESS);
+    TST_SCENE_APP_SHARED_CASE(test_app_offscreen_lit_primitive_depth_orders_overlap);
+    TST_SCENE_APP_SHARED_CASE(test_app_offscreen_lit_primitive_depth_cue_darkens_far);
+    TST_SCENE_APP_SHARED_CASE(test_app_offscreen_mesh_renders_nonblank);
     TST_SCENE_APP_CASE(
         test_app_offscreen_rotated_mesh_depth_orders_faces, TST_SCENE_APP_GPU_RES,
         TST_ISOLATION_PROCESS);
@@ -5767,20 +5751,11 @@ int test_scene_app(TstSuite* suite)
     TST_SCENE_APP_CASE(
         test_app_offscreen_pick_probe_request_steady_state, TST_SCENE_APP_GPU_RES,
         TST_ISOLATION_PROCESS);
-    TST_SCENE_APP_CASE(
-        test_app_offscreen_two_panel_points_light_both_halves, TST_SCENE_APP_GPU_RES,
-        TST_ISOLATION_PROCESS);
-    TST_SCENE_APP_CASE(
-        test_app_offscreen_clear_color, TST_SCENE_APP_GPU_RES, TST_ISOLATION_PROCESS);
-    TST_SCENE_APP_CASE(
-        test_app_offscreen_volume_slice_renders_field, TST_SCENE_APP_GPU_RES,
-        TST_ISOLATION_PROCESS);
-    TST_SCENE_APP_CASE(
-        test_app_offscreen_volume_mip_renders_bright_slice, TST_SCENE_APP_GPU_RES,
-        TST_ISOLATION_PROCESS);
-    TST_SCENE_APP_CASE(
-        test_app_offscreen_volume_composite_renders_field, TST_SCENE_APP_GPU_RES,
-        TST_ISOLATION_PROCESS);
+    TST_SCENE_APP_SHARED_CASE(test_app_offscreen_two_panel_points_light_both_halves);
+    TST_SCENE_APP_SHARED_CASE(test_app_offscreen_clear_color);
+    TST_SCENE_APP_SHARED_CASE(test_app_offscreen_volume_slice_renders_field);
+    TST_SCENE_APP_SHARED_CASE(test_app_offscreen_volume_mip_renders_bright_slice);
+    TST_SCENE_APP_SHARED_CASE(test_app_offscreen_volume_composite_renders_field);
     TST_SCENE_APP_CASE(
         test_app_offscreen_volume_occlusion_slice_renders, TST_SCENE_APP_GPU_RES,
         TST_ISOLATION_PROCESS);
