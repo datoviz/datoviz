@@ -4991,14 +4991,16 @@ int test_app_offscreen_volume_composite_renders_field(TstContext* suite, const T
 /**
  * Render the deterministic volume-occlusion fixture and return region sums.
  *
+ * @param suite test context used for shared app resources
  * @param mode occlusion mode used by the fixture
  * @param perspective_camera whether to attach a perspective camera to the panel
  * @param clipped_occluder whether to restrict the volume occluder to one screen side
  * @return captured image sums, or skipped=true when no app context is available
  */
 static AppVolumeOcclusionCapture _app_volume_occlusion_capture(
-    AppVolumeOcclusionMode mode, bool perspective_camera, bool clipped_occluder)
+    TstContext* suite, AppVolumeOcclusionMode mode, bool perspective_camera, bool clipped_occluder)
 {
+    ANN(suite);
     AppVolumeOcclusionCapture out = {0};
     DvzScene* scene = dvz_scene();
     if (scene == NULL)
@@ -5116,7 +5118,7 @@ static AppVolumeOcclusionCapture _app_volume_occlusion_capture(
     }
     dvz_panel_set_background_color(panel, 0.0f, 0.0f, 0.0f, 1.0f);
 
-    DvzApp* app = dvz_app(scene);
+    DvzApp* app = _app_test_create(suite, scene);
     if (app == NULL)
     {
         out.skipped = true;
@@ -5190,7 +5192,7 @@ int test_app_offscreen_volume_occlusion_slice_renders(TstContext* suite, const T
     TST_SCENE_APP_REQUIRE_VKLITE(suite);
 
     AppVolumeOcclusionCapture disabled =
-        _app_volume_occlusion_capture(APP_VOLUME_OCCLUSION_MODE_DISABLED, false, false);
+        _app_volume_occlusion_capture(suite, APP_VOLUME_OCCLUSION_MODE_DISABLED, false, false);
     if (disabled.skipped)
     {
         log_warn("test_app_offscreen_volume_occlusion_slice_renders skipped: GPU context failed");
@@ -5198,7 +5200,7 @@ int test_app_offscreen_volume_occlusion_slice_renders(TstContext* suite, const T
         return 0;
     }
     AppVolumeOcclusionCapture enabled =
-        _app_volume_occlusion_capture(APP_VOLUME_OCCLUSION_MODE_VOLUME, false, false);
+        _app_volume_occlusion_capture(suite, APP_VOLUME_OCCLUSION_MODE_VOLUME, false, false);
     if (enabled.skipped)
     {
         log_warn("test_app_offscreen_volume_occlusion_slice_renders skipped: GPU context failed");
@@ -5238,7 +5240,7 @@ int test_app_offscreen_volume_occlusion_region_delta(TstContext* suite, const Ts
     TST_SCENE_APP_REQUIRE_VKLITE(suite);
 
     AppVolumeOcclusionCapture disabled =
-        _app_volume_occlusion_capture(APP_VOLUME_OCCLUSION_MODE_DISABLED, false, true);
+        _app_volume_occlusion_capture(suite, APP_VOLUME_OCCLUSION_MODE_DISABLED, false, true);
     if (disabled.skipped)
     {
         log_warn("test_app_offscreen_volume_occlusion_region_delta skipped: GPU context failed");
@@ -5246,7 +5248,7 @@ int test_app_offscreen_volume_occlusion_region_delta(TstContext* suite, const Ts
         return 0;
     }
     AppVolumeOcclusionCapture enabled =
-        _app_volume_occlusion_capture(APP_VOLUME_OCCLUSION_MODE_VOLUME, false, true);
+        _app_volume_occlusion_capture(suite, APP_VOLUME_OCCLUSION_MODE_VOLUME, false, true);
     if (enabled.skipped)
     {
         log_warn("test_app_offscreen_volume_occlusion_region_delta skipped: GPU context failed");
@@ -5290,7 +5292,7 @@ int test_app_offscreen_volume_occlusion_perspective_camera(TstContext* suite, co
     TST_SCENE_APP_REQUIRE_VKLITE(suite);
 
     AppVolumeOcclusionCapture disabled =
-        _app_volume_occlusion_capture(APP_VOLUME_OCCLUSION_MODE_DISABLED, true, false);
+        _app_volume_occlusion_capture(suite, APP_VOLUME_OCCLUSION_MODE_DISABLED, true, false);
     if (disabled.skipped)
     {
         log_warn(
@@ -5299,7 +5301,7 @@ int test_app_offscreen_volume_occlusion_perspective_camera(TstContext* suite, co
         return 0;
     }
     AppVolumeOcclusionCapture enabled =
-        _app_volume_occlusion_capture(APP_VOLUME_OCCLUSION_MODE_VOLUME, true, false);
+        _app_volume_occlusion_capture(suite, APP_VOLUME_OCCLUSION_MODE_VOLUME, true, false);
     if (enabled.skipped)
     {
         log_warn(
@@ -5334,7 +5336,7 @@ int test_app_offscreen_volume_slice_scene_occlusion_dimming(TstContext* suite, c
     TST_SCENE_APP_REQUIRE_VKLITE(suite);
 
     AppVolumeOcclusionCapture disabled =
-        _app_volume_occlusion_capture(APP_VOLUME_OCCLUSION_MODE_DISABLED, false, false);
+        _app_volume_occlusion_capture(suite, APP_VOLUME_OCCLUSION_MODE_DISABLED, false, false);
     if (disabled.skipped)
     {
         log_warn(
@@ -5343,7 +5345,7 @@ int test_app_offscreen_volume_slice_scene_occlusion_dimming(TstContext* suite, c
         return 0;
     }
     AppVolumeOcclusionCapture enabled =
-        _app_volume_occlusion_capture(APP_VOLUME_OCCLUSION_MODE_SCENE, false, false);
+        _app_volume_occlusion_capture(suite, APP_VOLUME_OCCLUSION_MODE_SCENE, false, false);
     if (enabled.skipped)
     {
         log_warn(
@@ -5481,7 +5483,7 @@ int test_app_offscreen_volume_slice_mesh_scene_occlusion_toggle(TstContext* suit
            }) == 0);
     dvz_panel_set_background_color(panel, 0.0f, 0.0f, 0.0f, 1.0f);
 
-    DvzApp* app = dvz_app(scene);
+    DvzApp* app = _app_test_create(suite, scene);
     if (app == NULL)
     {
         log_warn(
@@ -5725,24 +5727,14 @@ int test_scene_app(TstSuite* suite)
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_volume_slice_renders_field);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_volume_mip_renders_bright_slice);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_volume_composite_renders_field);
-    TST_SCENE_APP_CASE(
-        test_app_offscreen_volume_occlusion_slice_renders, TST_SCENE_APP_GPU_RES,
-        TST_ISOLATION_PROCESS);
-    TST_SCENE_APP_CASE(
-        test_app_offscreen_volume_occlusion_region_delta, TST_SCENE_APP_GPU_RES,
-        TST_ISOLATION_PROCESS);
-    TST_SCENE_APP_CASE(
-        test_app_offscreen_volume_occlusion_perspective_camera, TST_SCENE_APP_GPU_RES,
-        TST_ISOLATION_PROCESS);
-    TST_SCENE_APP_CASE(
-        test_app_offscreen_volume_slice_scene_occlusion_dimming, TST_SCENE_APP_GPU_RES,
-        TST_ISOLATION_PROCESS);
+    TST_SCENE_APP_SHARED_CASE(test_app_offscreen_volume_occlusion_slice_renders);
+    TST_SCENE_APP_SHARED_CASE(test_app_offscreen_volume_occlusion_region_delta);
+    TST_SCENE_APP_SHARED_CASE(test_app_offscreen_volume_occlusion_perspective_camera);
+    TST_SCENE_APP_SHARED_CASE(test_app_offscreen_volume_slice_scene_occlusion_dimming);
     TST_SCENE_APP_CASE(
         test_app_offscreen_volume_slice_mesh_scene_occlusion_toggle,
         TST_SCENE_APP_GPU_RES | TST_RES_LOG_CAPTURE, TST_ISOLATION_PROCESS);
-    TST_SCENE_APP_CASE(
-        test_app_offscreen_volume_depth_occluded_by_primitive, TST_SCENE_APP_GPU_RES,
-        TST_ISOLATION_PROCESS);
+    TST_SCENE_APP_SHARED_CASE(test_app_offscreen_volume_depth_occluded_by_primitive);
     TST_SCENE_APP_CASE(
         test_app_capture_rejects_wrong_dimensions, TST_SCENE_APP_GPU_RES,
         TST_ISOLATION_PROCESS);
