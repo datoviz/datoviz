@@ -16,6 +16,7 @@
 
 #include <string.h>
 
+#include "_alloc.h"
 #include "_assertions.h"
 #include "_compat.h"
 #include "../_frame_plan.h"
@@ -666,7 +667,13 @@ int test_scene_text_font_atlas_expands_for_utf8(TstContext* suite, const TstCase
     DvzSampledField* initial_field = initial_atlas->field;
     ANN(initial_field);
     uint32_t initial_glyph_count = initial_atlas->glyph_count;
+    uint32_t initial_width = initial_atlas->width;
+    uint32_t initial_height = initial_atlas->height;
     uint64_t initial_generation = initial_atlas->generation;
+    initial_field->dirty = false;
+    initial_field->dirty_full = false;
+    dvz_memset(
+        &initial_field->dirty_region, sizeof(DvzFieldRegion), 0, sizeof(DvzFieldRegion));
 
     AT(dvz_panel_add_visual(
            panel, utf8,
@@ -680,6 +687,20 @@ int test_scene_text_font_atlas_expands_for_utf8(TstContext* suite, const TstCase
     AT(atlas->glyph_count > initial_glyph_count);
     AT(atlas->generation > initial_generation);
     AT(atlas->field == initial_field);
+    AT(atlas->width >= initial_width);
+    AT(atlas->height >= initial_height);
+    if (initial_field->dirty && atlas->width == initial_width && atlas->height == initial_height)
+    {
+        AT(initial_field->dirty_region.width > 0);
+        AT(initial_field->dirty_region.height > 0);
+        AT(initial_field->dirty_region.width <= atlas->width);
+        AT(initial_field->dirty_region.height <= atlas->height);
+    }
+    else if (initial_field->dirty)
+    {
+        AT(initial_field->dirty_full);
+        AT(atlas->width > initial_width || atlas->height > initial_height);
+    }
     ANN(_scene_text_atlas_glyph(atlas, 0x00E9u));
     ANN(ascii->text.glyph_visual);
     ANN(utf8->text.glyph_visual);

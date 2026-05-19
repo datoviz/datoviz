@@ -106,7 +106,12 @@ static float _text_sdf_pixel_height(float size_pts);
 static bool _text_sdf_font_bytes(DvzFont* font);
 static bool _text_atlas_upload_rgba(
     const DvzFont* font, DvzTextAtlas* atlas, uint8_t* rgba, uint32_t width, uint32_t height);
+static bool _text_atlas_changed_region(
+    const DvzSampledField* field, const DvzSampledField* src, DvzFieldRegion* out_region);
 static bool _text_atlas_replace_field_data(DvzSampledField* field, const DvzSampledField* src);
+static bool _text_atlas_try_append(
+    DvzFont* font, DvzTextAtlasBackend backend, DvzTextAtlas* atlas,
+    const DvzTextAtlasBuildSet* requested_set);
 
 
 #if defined(DVZ_HAS_MSDF_ATLAS) && DVZ_HAS_MSDF_ATLAS
@@ -597,6 +602,29 @@ static bool _text_atlas_build_set_add_strings(
 
 
 /**
+ * Return an exact atlas glyph entry by codepoint.
+ *
+ * @param atlas the atlas
+ * @param codepoint the Unicode codepoint
+ * @return glyph entry, or NULL if absent
+ */
+static const DvzTextAtlasGlyph* _text_atlas_find_glyph(
+    const DvzTextAtlas* atlas, uint32_t codepoint)
+{
+    if (atlas == NULL)
+        return NULL;
+    for (uint32_t i = 0; i < atlas->glyph_count && i < DVZ_SCENE_TEXT_ATLAS_MAX_GLYPHS; i++)
+    {
+        const DvzTextAtlasGlyph* glyph = &atlas->glyphs[i];
+        if (glyph->codepoint == codepoint)
+            return glyph;
+    }
+    return NULL;
+}
+
+
+
+/**
  * Return whether an atlas contains a codepoint entry.
  *
  * @param atlas the atlas
@@ -609,10 +637,7 @@ static bool _text_atlas_contains_codepoint(const DvzTextAtlas* atlas, uint32_t c
         return false;
     if (!_text_atlas_codepoint_renderable(codepoint))
         codepoint = DVZ_TEXT_SDF_FALLBACK;
-    for (uint32_t i = 0; i < atlas->glyph_count; i++)
-        if (atlas->glyphs[i].codepoint == codepoint)
-            return true;
-    return false;
+    return _text_atlas_find_glyph(atlas, codepoint) != NULL;
 }
 
 
@@ -874,7 +899,87 @@ static bool _text_atlas_upload_rgba(
 
 
 /**
- * Replace one sampled-field payload with another field's full payload.
+ * Find the bounding region that differs between two atlas fields.
+ *
+ * @param field the current sampled field
+ * @param src the rebuilt sampled field
+ * @param out_region output changed region
+ * @return whether a non-empty changed region was found
+ */
+static bool _text_atlas_changed_region(
+    const DvzSampledField* field, const DvzSampledField* src, DvzFieldRegion* out_region)
+{
+    ANN(field);
+    ANN(src);
+    ANN(out_region);
+    dvz_memset(out_region, sizeof(DvzFieldRegion), 0, sizeof(DvzFieldRegion));
+    if (field->data == NULL || src->data == NULL)
+        return false;
+    if (field->desc.width != src->desc.width || field->desc.height != src->desc.height ||
+        field->desc.depth != src->desc.depth || field->desc.format != src->desc.format ||
+        field->desc.dim != src->desc.dim)
+    {
+        return false;
+    }
+    if (field->desc.format != DVZ_FIELD_FORMAT_RGBA8_UNORM || field->desc.dim != DVZ_FIELD_DIM_2D ||
+        field->desc.depth != 1)
+    {
+        return false;
+    }
+
+    const uint8_t* old_data = (const uint8_t*)field->data;
+    const uint8_t* new_data = (const uint8_t*)src->data;
+    uint32_t min_x = field->desc.width;
+    uint32_t min_y = field->desc.height;
+    uint32_t max_x = 0;
+    uint32_t max_y = 0;
+    bool changed = false;
+    for (uint32_t y = 0; y < field->desc.height; y++)
+    {
+        for (uint32_t x = 0; x < field->desc.width; x++)
+        {
+            uint64_t offset = ((uint64_t)y * field->desc.width + x) * 4u;
+            if (old_data[offset + 0] == new_data[offset + 0] &&
+                old_data[offset + 1] == new_data[offset + 1] &&
+                old_data[offset + 2] == new_data[offset + 2] &&
+                old_data[offset + 3] == new_data[offset + 3])
+            {
+                continue;
+            }
+            if (!changed)
+            {
+                min_x = max_x = x;
+                min_y = max_y = y;
+                changed = true;
+            }
+            else
+            {
+                if (x < min_x)
+                    min_x = x;
+                if (y < min_y)
+                    min_y = y;
+                if (x > max_x)
+                    max_x = x;
+                if (y > max_y)
+                    max_y = y;
+            }
+        }
+    }
+    if (!changed)
+        return false;
+    out_region->x = min_x;
+    out_region->y = min_y;
+    out_region->z = 0;
+    out_region->width = max_x - min_x + 1u;
+    out_region->height = max_y - min_y + 1u;
+    out_region->depth = 1;
+    return true;
+}
+
+
+
+/**
+ * Replace one sampled-field payload, using a subregion update when possible.
  *
  * @param field the destination sampled field
  * @param src the source sampled field
@@ -891,6 +996,22 @@ static bool _text_atlas_replace_field_data(DvzSampledField* field, const DvzSamp
         field->desc.dim != src->desc.dim)
     {
         return false;
+    }
+    DvzFieldRegion region = {};
+    if (_text_atlas_changed_region(field, src, &region))
+    {
+        const uint8_t* data = (const uint8_t*)src->data;
+        uint64_t offset = ((uint64_t)region.y * src->desc.width + region.x) * 4u;
+        DvzFieldDataView region_view = {};
+        region_view.data = data + offset;
+        region_view.bytes_per_row = (uint64_t)src->desc.width * 4u;
+        region_view.rows_per_image = src->desc.height;
+        return dvz_sampled_field_update_region(field, region, &region_view);
+    }
+    if (field->data != NULL && field->desc.format == DVZ_FIELD_FORMAT_RGBA8_UNORM &&
+        field->desc.dim == DVZ_FIELD_DIM_2D && field->desc.depth == 1)
+    {
+        return true;
     }
     DvzFieldDataView view = {};
     view.data = src->data;
@@ -1329,6 +1450,353 @@ static bool _text_sdf_build_atlas(
 
 
 /**
+ * Build a temporary atlas for a specific backend.
+ *
+ * @param font the font
+ * @param backend the atlas backend
+ * @param set requested codepoint set
+ * @param out_atlas output temporary atlas
+ * @return whether atlas generation succeeded
+ */
+static bool _text_atlas_build_backend(
+    DvzFont* font, DvzTextAtlasBackend backend, const DvzTextAtlasBuildSet* set,
+    DvzTextAtlas** out_atlas)
+{
+    ANN(font);
+    ANN(set);
+    ANN(out_atlas);
+    *out_atlas = NULL;
+    switch (backend)
+    {
+    case DVZ_TEXT_ATLAS_BACKEND_FREETYPE_BITMAP:
+#if defined(DVZ_HAS_FREETYPE) && DVZ_HAS_FREETYPE
+        return _text_ft_build_bitmap_atlas(font, set, out_atlas);
+#else
+        return false;
+#endif
+    case DVZ_TEXT_ATLAS_BACKEND_MSDF:
+#if defined(DVZ_HAS_MSDF_ATLAS) && DVZ_HAS_MSDF_ATLAS
+        return _text_msdf_build_atlas(font, set, out_atlas);
+#else
+        return false;
+#endif
+    case DVZ_TEXT_ATLAS_BACKEND_STB_SDF:
+    case DVZ_TEXT_ATLAS_BACKEND_BUILTIN_BITMAP:
+    default:
+        return _text_sdf_build_atlas(font, set, out_atlas);
+    }
+}
+
+
+
+/**
+ * Mark occupied atlas texels for one glyph rectangle.
+ *
+ * @param occupied atlas occupancy map
+ * @param width atlas width
+ * @param height atlas height
+ * @param glyph glyph metadata
+ */
+static void _text_atlas_mark_occupied(
+    uint8_t* occupied, uint32_t width, uint32_t height, const DvzTextAtlasGlyph* glyph)
+{
+    ANN(occupied);
+    ANN(glyph);
+    int32_t x0 = (int32_t)glyph->atlas_bounds[0];
+    int32_t y0 = (int32_t)glyph->atlas_bounds[1];
+    int32_t x1 = (int32_t)glyph->atlas_bounds[2];
+    int32_t y1 = (int32_t)glyph->atlas_bounds[3];
+    if (x0 < 0)
+        x0 = 0;
+    if (y0 < 0)
+        y0 = 0;
+    if (x1 > (int32_t)width)
+        x1 = (int32_t)width;
+    if (y1 > (int32_t)height)
+        y1 = (int32_t)height;
+    if (x1 <= x0 || y1 <= y0)
+        return;
+    for (uint32_t y = (uint32_t)y0; y < (uint32_t)y1; y++)
+    {
+        for (uint32_t x = (uint32_t)x0; x < (uint32_t)x1; x++)
+            occupied[(uint64_t)y * width + x] = 1;
+    }
+}
+
+
+
+/**
+ * Find a free atlas rectangle with a simple top-left scan.
+ *
+ * @param occupied atlas occupancy map
+ * @param width atlas width
+ * @param height atlas height
+ * @param rect_width requested rectangle width
+ * @param rect_height requested rectangle height
+ * @param out_x output x position
+ * @param out_y output y position
+ * @return whether a free rectangle was found
+ */
+static bool _text_atlas_find_free_rect(
+    const uint8_t* occupied, uint32_t width, uint32_t height, uint32_t rect_width,
+    uint32_t rect_height, uint32_t* out_x, uint32_t* out_y)
+{
+    ANN(occupied);
+    ANN(out_x);
+    ANN(out_y);
+    if (rect_width == 0 || rect_height == 0 || rect_width > width || rect_height > height)
+        return false;
+    for (uint32_t y = 0; y <= height - rect_height; y++)
+    {
+        for (uint32_t x = 0; x <= width - rect_width; x++)
+        {
+            bool free_rect = true;
+            for (uint32_t yy = 0; yy < rect_height && free_rect; yy++)
+            {
+                for (uint32_t xx = 0; xx < rect_width; xx++)
+                {
+                    if (occupied[(uint64_t)(y + yy) * width + x + xx] != 0)
+                    {
+                        free_rect = false;
+                        break;
+                    }
+                }
+            }
+            if (free_rect)
+            {
+                *out_x = x;
+                *out_y = y;
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+
+
+/**
+ * Append missing glyphs into an existing atlas without rearranging existing glyphs.
+ *
+ * @param font the font
+ * @param backend the atlas backend
+ * @param atlas the existing atlas to mutate
+ * @param requested_set requested codepoints
+ * @return whether all missing glyphs were appended
+ */
+static bool _text_atlas_try_append(
+    DvzFont* font, DvzTextAtlasBackend backend, DvzTextAtlas* atlas,
+    const DvzTextAtlasBuildSet* requested_set)
+{
+    ANN(font);
+    ANN(atlas);
+    ANN(requested_set);
+    if (atlas->field == NULL || atlas->field->data == NULL || atlas->width == 0 ||
+        atlas->height == 0)
+    {
+        return false;
+    }
+
+    DvzTextAtlasBuildSet missing_set = {};
+    for (uint32_t i = 0; i < requested_set->count; i++)
+    {
+        uint32_t codepoint = requested_set->codepoints[i];
+        if (!_text_atlas_contains_codepoint(atlas, codepoint) &&
+            !_text_atlas_build_set_add(&missing_set, codepoint))
+        {
+            return false;
+        }
+    }
+    if (missing_set.count == 0)
+        return true;
+    if (atlas->glyph_count + missing_set.count > DVZ_SCENE_TEXT_ATLAS_MAX_GLYPHS)
+        return false;
+
+    DvzTextAtlas* delta = NULL;
+    if (!_text_atlas_build_backend(font, backend, &missing_set, &delta))
+        return false;
+    ANN(delta);
+    if (delta->field == NULL || delta->field->data == NULL)
+    {
+        _scene_text_atlas_destroy(delta);
+        return false;
+    }
+
+    uint32_t target_width = atlas->width * 2u;
+    uint32_t target_height = atlas->height * 2u;
+    if (target_width <= atlas->width || target_height <= atlas->height)
+    {
+        _scene_text_atlas_destroy(delta);
+        return false;
+    }
+
+    uint64_t occupied_size = (uint64_t)target_width * target_height;
+    if (occupied_size > SIZE_MAX)
+    {
+        _scene_text_atlas_destroy(delta);
+        return false;
+    }
+    uint8_t* occupied = (uint8_t*)dvz_calloc((DvzSize)occupied_size, 1);
+    if (occupied == NULL)
+    {
+        _scene_text_atlas_destroy(delta);
+        return false;
+    }
+    for (uint32_t i = 0; i < atlas->glyph_count; i++)
+        _text_atlas_mark_occupied(occupied, target_width, target_height, &atlas->glyphs[i]);
+
+    DvzTextAtlasGlyph staged[DVZ_SCENE_TEXT_ATLAS_MAX_GLYPHS] = {};
+    DvzFieldRegion dst_regions[DVZ_SCENE_TEXT_ATLAS_MAX_GLYPHS] = {};
+    DvzFieldRegion src_regions[DVZ_SCENE_TEXT_ATLAS_MAX_GLYPHS] = {};
+    uint32_t staged_count = 0;
+    bool ok = true;
+    for (uint32_t i = 0; i < missing_set.count && ok; i++)
+    {
+        uint32_t codepoint = missing_set.codepoints[i];
+        const DvzTextAtlasGlyph* src_glyph = _text_atlas_find_glyph(delta, codepoint);
+        if (src_glyph == NULL)
+        {
+            staged[staged_count].codepoint = codepoint;
+            staged_count++;
+            atlas->missing_glyph_count++;
+            continue;
+        }
+
+        DvzTextAtlasGlyph glyph = *src_glyph;
+        uint32_t sx0 = (uint32_t)glyph.atlas_bounds[0];
+        uint32_t sy0 = (uint32_t)glyph.atlas_bounds[1];
+        uint32_t sx1 = (uint32_t)glyph.atlas_bounds[2];
+        uint32_t sy1 = (uint32_t)glyph.atlas_bounds[3];
+        uint32_t rect_width = sx1 > sx0 ? sx1 - sx0 : 0;
+        uint32_t rect_height = sy1 > sy0 ? sy1 - sy0 : 0;
+        if (!glyph.valid || rect_width == 0 || rect_height == 0)
+        {
+            staged[staged_count++] = glyph;
+            if (codepoint != DVZ_TEXT_SDF_FALLBACK)
+                atlas->missing_glyph_count++;
+            continue;
+        }
+
+        uint32_t dx = 0;
+        uint32_t dy = 0;
+        if (!_text_atlas_find_free_rect(
+                occupied, target_width, target_height, rect_width, rect_height, &dx, &dy))
+        {
+            ok = false;
+            break;
+        }
+
+        float u0 = glyph.uv[0] * (float)delta->width;
+        float v0 = glyph.uv[1] * (float)delta->height;
+        float u1 = glyph.uv[2] * (float)delta->width;
+        float v1 = glyph.uv[3] * (float)delta->height;
+        glyph.atlas_bounds[0] = (float)dx;
+        glyph.atlas_bounds[1] = (float)dy;
+        glyph.atlas_bounds[2] = (float)(dx + rect_width);
+        glyph.atlas_bounds[3] = (float)(dy + rect_height);
+        glyph.uv[0] = ((float)dx + (u0 - (float)sx0)) / (float)target_width;
+        glyph.uv[1] = ((float)dy + (v0 - (float)sy0)) / (float)target_height;
+        glyph.uv[2] = ((float)dx + (u1 - (float)sx0)) / (float)target_width;
+        glyph.uv[3] = ((float)dy + (v1 - (float)sy0)) / (float)target_height;
+
+        staged[staged_count] = glyph;
+        src_regions[staged_count].x = sx0;
+        src_regions[staged_count].y = sy0;
+        src_regions[staged_count].z = 0;
+        src_regions[staged_count].width = rect_width;
+        src_regions[staged_count].height = rect_height;
+        src_regions[staged_count].depth = 1;
+        dst_regions[staged_count].x = dx;
+        dst_regions[staged_count].y = dy;
+        dst_regions[staged_count].z = 0;
+        dst_regions[staged_count].width = rect_width;
+        dst_regions[staged_count].height = rect_height;
+        dst_regions[staged_count].depth = 1;
+        staged_count++;
+        _text_atlas_mark_occupied(occupied, target_width, target_height, &glyph);
+    }
+
+    if (ok)
+    {
+        uint64_t grown_pixel_count = 0;
+        uint64_t grown_byte_size = 0;
+        if (_dvz_mul_u64_overflows(target_width, target_height, &grown_pixel_count) ||
+            _dvz_mul_u64_overflows(grown_pixel_count, 4u, &grown_byte_size) ||
+            grown_byte_size > SIZE_MAX)
+        {
+            ok = false;
+        }
+        uint8_t* grown = ok ? (uint8_t*)dvz_calloc((DvzSize)grown_byte_size, 1) : NULL;
+        if (ok && grown == NULL)
+            ok = false;
+        if (ok)
+        {
+            const uint8_t* old_data = (const uint8_t*)atlas->field->data;
+            for (uint32_t y = 0; y < atlas->height; y++)
+            {
+                uint64_t src_offset = (uint64_t)y * atlas->width * 4u;
+                uint64_t dst_offset = (uint64_t)y * target_width * 4u;
+                dvz_memcpy(
+                    grown + dst_offset, (uint64_t)atlas->width * 4u, old_data + src_offset,
+                    (uint64_t)atlas->width * 4u);
+            }
+        }
+
+        const uint8_t* delta_data = (const uint8_t*)delta->field->data;
+        for (uint32_t i = 0; i < staged_count && ok; i++)
+        {
+            if (!staged[i].valid || dst_regions[i].width == 0 || dst_regions[i].height == 0)
+                continue;
+            for (uint32_t y = 0; y < dst_regions[i].height; y++)
+            {
+                uint64_t src_offset =
+                    ((uint64_t)(src_regions[i].y + y) * delta->width + src_regions[i].x) * 4u;
+                uint64_t dst_offset =
+                    ((uint64_t)(dst_regions[i].y + y) * target_width + dst_regions[i].x) * 4u;
+                dvz_memcpy(
+                    grown + dst_offset, (uint64_t)dst_regions[i].width * 4u,
+                    delta_data + src_offset, (uint64_t)dst_regions[i].width * 4u);
+            }
+        }
+        if (ok)
+        {
+            DvzFieldDataView view = {};
+            view.data = grown;
+            view.bytes_per_row = (uint64_t)target_width * 4u;
+            view.rows_per_image = target_height;
+            ok = dvz_sampled_field_resize(atlas->field, target_width, target_height, 1, &view);
+        }
+        if (ok)
+        {
+            float old_width = (float)atlas->width;
+            float old_height = (float)atlas->height;
+            for (uint32_t i = 0; i < atlas->glyph_count; i++)
+            {
+                atlas->glyphs[i].uv[0] = atlas->glyphs[i].uv[0] * old_width / target_width;
+                atlas->glyphs[i].uv[1] = atlas->glyphs[i].uv[1] * old_height / target_height;
+                atlas->glyphs[i].uv[2] = atlas->glyphs[i].uv[2] * old_width / target_width;
+                atlas->glyphs[i].uv[3] = atlas->glyphs[i].uv[3] * old_height / target_height;
+            }
+            atlas->width = target_width;
+            atlas->height = target_height;
+        }
+        dvz_free(grown);
+    }
+
+    if (ok)
+    {
+        for (uint32_t i = 0; i < staged_count; i++)
+            atlas->glyphs[atlas->glyph_count++] = staged[i];
+    }
+
+    dvz_free(occupied);
+    _scene_text_atlas_destroy(delta);
+    return ok;
+}
+
+
+
+/**
  * Store a newly built atlas in the font cache slot.
  *
  * @param font the font
@@ -1385,6 +1853,12 @@ static bool _text_atlas_ensure_set(
         return *slot != NULL && (*slot)->field != NULL;
     if (_text_atlas_contains_set(*slot, &set))
         return true;
+    if (*slot != NULL && _text_atlas_try_append(font, backend, *slot, &set))
+    {
+        font->version++;
+        (*slot)->generation = font->version;
+        return true;
+    }
 
     DvzTextAtlas* atlas = NULL;
 #if defined(DVZ_HAS_FREETYPE) && DVZ_HAS_FREETYPE
@@ -1420,6 +1894,13 @@ static bool _text_atlas_ensure_set(
         return *sdf_slot != NULL && (*sdf_slot)->field != NULL;
     if (_text_atlas_contains_set(*sdf_slot, &set))
         return true;
+    if (*sdf_slot != NULL &&
+        _text_atlas_try_append(font, DVZ_TEXT_ATLAS_BACKEND_STB_SDF, *sdf_slot, &set))
+    {
+        font->version++;
+        (*sdf_slot)->generation = font->version;
+        return true;
+    }
     if (!_text_sdf_build_atlas(font, &set, &atlas))
         return *sdf_slot != NULL && (*sdf_slot)->field != NULL;
     _text_atlas_store(font, DVZ_TEXT_ATLAS_BACKEND_STB_SDF, atlas);
