@@ -139,6 +139,10 @@ struct DvzGuiViewport
     bool input_capturing;
     int input_button;
     DvzPointerButton input_dvz_button;
+    bool mouse_valid;
+    bool mouse_hovered;
+    float mouse_pos[2];
+    float mouse_size[2];
     DvzGuiViewport* next;
 };
 
@@ -695,6 +699,28 @@ static void _gui_viewport_forward_input(
         viewport->input_button = 0;
         viewport->input_dvz_button = DVZ_POINTER_BUTTON_NONE;
     }
+}
+
+
+/**
+ * Update the public mouse state for a rendered GUI viewport image.
+ *
+ * @param viewport GUI viewport
+ * @param image_min top-left image position in ImGui coordinates
+ * @param size displayed image size
+ */
+static void _gui_viewport_update_mouse(
+    DvzGuiViewport* viewport, ImVec2 image_min, ImVec2 size)
+{
+    ANN(viewport);
+    ImGuiIO& io = ImGui::GetIO();
+    const bool hovered = ImGui::IsItemHovered();
+    viewport->mouse_valid = size.x > 0.0f && size.y > 0.0f;
+    viewport->mouse_hovered = hovered;
+    viewport->mouse_pos[0] = io.MousePos.x - image_min.x;
+    viewport->mouse_pos[1] = io.MousePos.y - image_min.y;
+    viewport->mouse_size[0] = size.x;
+    viewport->mouse_size[1] = size.y;
 }
 
 
@@ -1832,6 +1858,35 @@ DvzInputRouter* dvz_gui_viewport_input(DvzGuiViewport* viewport)
 }
 
 
+/**
+ * Return the last mouse position over a dockable GUI viewport image.
+ *
+ * @param viewport the GUI viewport
+ * @param out_pos optional output mouse x/y coordinates
+ * @param out_size optional output displayed source width/height
+ * @param out_hovered optional output hover state
+ * @return whether viewport mouse state was available
+ */
+bool dvz_gui_viewport_mouse(
+    DvzGuiViewport* viewport, float out_pos[2], float out_size[2], bool* out_hovered)
+{
+    ANN(viewport);
+    if (out_pos != NULL)
+    {
+        out_pos[0] = viewport->mouse_pos[0];
+        out_pos[1] = viewport->mouse_pos[1];
+    }
+    if (out_size != NULL)
+    {
+        out_size[0] = viewport->mouse_size[0];
+        out_size[1] = viewport->mouse_size[1];
+    }
+    if (out_hovered != NULL)
+        *out_hovered = viewport->mouse_hovered;
+    return viewport->mouse_valid;
+}
+
+
 
 /**
  * Destroy a dockable ImGui viewport.
@@ -1862,7 +1917,6 @@ bool dvz_gui_viewport_window(DvzGuiViewport* viewport, const char* title, bool* 
     ANN(gui);
     _gui_set_current(gui);
 
-    ImGui::SetNextWindowSize(ImVec2(520, 360), ImGuiCond_FirstUseEver);
     bool shown = false;
     if (ImGui::Begin(title, open, flags))
     {
@@ -1891,6 +1945,7 @@ bool dvz_gui_viewport_window(DvzGuiViewport* viewport, const char* title, bool* 
             ImGui::PopID();
             ImGui::GetWindowDrawList()->AddImage(
                 (ImTextureID)viewport->texture, image_min, image_max, ImVec2(0, 0), ImVec2(1, 1));
+            _gui_viewport_update_mouse(viewport, image_min, avail);
             if ((viewport->config.flags & DVZ_GUI_VIEWPORT_FLAGS_FORWARD_INPUT) != 0)
                 _gui_viewport_forward_input(viewport, image_min, avail);
             shown = true;

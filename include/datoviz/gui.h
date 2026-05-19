@@ -470,6 +470,22 @@ dvz_gui_viewport_from_window(
 DVZ_EXPORT struct DvzInputRouter* dvz_gui_viewport_input(DvzGuiViewport* viewport);
 
 
+/**
+ * Return the last mouse position over a dockable GUI viewport image.
+ *
+ * The position and size are in the viewport source window's logical coordinates. The returned
+ * state is refreshed by dvz_gui_viewport_window().
+ *
+ * @param viewport the GUI viewport
+ * @param out_pos optional output mouse x/y coordinates
+ * @param out_size optional output displayed source width/height
+ * @param out_hovered optional output hover state
+ * @return whether viewport mouse state was available
+ */
+DVZ_EXPORT bool dvz_gui_viewport_mouse(
+    DvzGuiViewport* viewport, float out_pos[2], float out_size[2], bool* out_hovered);
+
+
 
 /**
  * Destroy a dockable ImGui viewport.
