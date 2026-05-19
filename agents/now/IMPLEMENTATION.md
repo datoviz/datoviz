@@ -42,21 +42,19 @@ Status vocabulary:
 
 ## Current Next Pickup
 
-**Next critical-path item:** app frame scheduling refactor.
+**Next critical-path item:** text/colorbar realization.
 
-Reason: `dvz_app_run(app, 0)` currently uses an unconditional interactive render loop. That is
-useful for immediate-present benchmarks, but it can burn CPU/GPU on static scenes and mixes frame
-production, frame demand, event waiting, and benchmark policy. The next implementation lane is to
-make the built-in app loop event-aware and optionally capped while keeping
-`dvz_app_window_render_once()`, canvas primitives, and explicit continuous benchmark behavior
-scheduler-free.
+Reason: the first rendered `dvz_text()` slice is landed and validated, and the app scheduler is now
+closed. The next release-quality lane is to consume the text substrate from axes, colorbars,
+annotations, labels, and readouts while keeping data/world placement, DPI behavior, clipping, and
+renderer fallback policy explicit.
 
 Primary specs:
 
-1. [`APP_FRAME_SCHEDULING_REFACTOR.md`](APP_FRAME_SCHEDULING_REFACTOR.md)
-
-Previous critical-path text/axes work remains below as the next visual-release lane after the app
-scheduler pass.
+1. [`../../spec/scene/semantics/AXES.md`](../../spec/scene/semantics/AXES.md)
+2. [`../../spec/scene/slices/COLORBAR_RENDERING_SLICE.md`](../../spec/scene/slices/COLORBAR_RENDERING_SLICE.md)
+3. [`../done/APP_FRAME_SCHEDULING_REFACTOR.md`](../done/APP_FRAME_SCHEDULING_REFACTOR.md)
+   when changing app-loop wakeups while implementing the visual-release lane.
 
 
 ## Critical Path
@@ -80,7 +78,7 @@ Last validation:
 
 ### 1. App Frame Scheduling Refactor
 
-Status: `Next`
+Status: `Done`
 
 Goal:
 
@@ -100,20 +98,25 @@ Required v0.4 slice:
 
 Primary plan:
 
-1. [`APP_FRAME_SCHEDULING_REFACTOR.md`](APP_FRAME_SCHEDULING_REFACTOR.md)
+1. [`../done/APP_FRAME_SCHEDULING_REFACTOR.md`](../done/APP_FRAME_SCHEDULING_REFACTOR.md)
 
-Suggested validation:
+Last validation on `2026-05-19`:
 
 1. `git diff --check`
 2. `just build`
-3. focused app/window/canvas tests
-4. manual GLFW smoke for static idle, input wakeup, animation/replay continuity, immediate
-   continuous benchmark, and immediate capped behavior
+3. `just test app`: `99/99`
+4. `just test window`: `15/15`
+5. `just test time`: `113/113`
+6. `just test scene`: `335/335`
+7. bounded GLFW scheduler-lab launches across default, continuous, immediate-continuous, and
+   capped-continuous modes
+8. `direnv exec . ./build/examples/c/tools/hosted_glfw_smoke 120`: rendered `120` frames and
+   observed `126` frame requests
 
 
 ### 2. Text Integration And API Cleanup
 
-Status: `First rendered slice landed`
+Status: `Next`; first rendered slice landed.
 
 Goal:
 

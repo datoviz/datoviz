@@ -12,9 +12,8 @@ backlog belongs in [later/](later/).
 Start with the small active set in [now/](now/). These are the active entry points:
 
 1. [now/NEXT_STEPS.md](now/NEXT_STEPS.md)
-2. [now/APP_FRAME_SCHEDULING_REFACTOR.md](now/APP_FRAME_SCHEDULING_REFACTOR.md)
-3. [now/IMPLEMENTATION.md](now/IMPLEMENTATION.md)
-4. [now/RELEASE.md](now/RELEASE.md)
+2. [now/IMPLEMENTATION.md](now/IMPLEMENTATION.md)
+3. [now/RELEASE.md](now/RELEASE.md)
 
 Subsystem-specific execution notes and stable behavior records live outside `now/`:
 
@@ -32,7 +31,7 @@ contracts in `spec/scene`, `spec/drp2`, or completed records in `agents/done`.
 If resuming work on the branch:
 
 1. Read [now/NEXT_STEPS.md](now/NEXT_STEPS.md) for the current practical task list.
-2. Read [now/APP_FRAME_SCHEDULING_REFACTOR.md](now/APP_FRAME_SCHEDULING_REFACTOR.md) before
+2. Read [done/APP_FRAME_SCHEDULING_REFACTOR.md](done/APP_FRAME_SCHEDULING_REFACTOR.md) before
    changing the app loop, frame pacing, window wait/wakeup behavior, or immediate-present CPU
    policy.
 3. Read [now/IMPLEMENTATION.md](now/IMPLEMENTATION.md) to decide

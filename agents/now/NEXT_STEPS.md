@@ -18,7 +18,9 @@ Vulkan wrapper paths.
 Implemented scene coverage includes retained point, pixel, marker, primitive, mesh, path/segment,
 image, volume, sphere, sampled-field, material, controller, pick/probe, annotation/text
 bookkeeping, a first rendered text/glyph-atlas slice, graph-backed technique, and
-app/offscreen/GLFW slices. Treat these as active code, not future scaffolding.
+app/offscreen/GLFW slices. The app frame scheduler refactor is closed; the built-in loop is now
+on-demand by default with explicit continuous and capped modes. Treat these as active code, not
+future scaffolding.
 
 The C test-runner modernization and low-risk process-sharding performance pass are complete enough
 to treat as a stable baseline. Historical notes live in
@@ -29,7 +31,7 @@ and shared-fixture follow-ups live in
 
 ## Read First
 
-1. [APP_FRAME_SCHEDULING_REFACTOR.md](APP_FRAME_SCHEDULING_REFACTOR.md) before changing the
+1. [../done/APP_FRAME_SCHEDULING_REFACTOR.md](../done/APP_FRAME_SCHEDULING_REFACTOR.md) before changing the
    built-in app loop, frame pacing, window backend waiting, request-frame wakeups, or immediate
    present CPU behavior.
 2. [../../spec/scene/README.md](../../spec/scene/README.md) before changing scene semantics,
@@ -48,32 +50,29 @@ and shared-fixture follow-ups live in
 
 ## Active Priorities
 
-1. **App frame scheduling:** make `dvz_app_run(app, 0)` event-aware and optionally capped while
-   preserving explicit continuous/immediate-present benchmark behavior. Start with
-   [APP_FRAME_SCHEDULING_REFACTOR.md](APP_FRAME_SCHEDULING_REFACTOR.md).
-2. **Text/colorbar realization:** use the landed first rendered text slice for axes,
+1. **Text/colorbar realization:** use the landed first rendered text slice for axes,
    colorbars, labels, and annotations; finish colorbar ramps, explanatory-object integration,
    data/world text placement, DPI/clipping hardening, and MSDF/SDF/bitmap parity through the
    existing scene -> frame-plan -> DRP2 path.
-3. **WebGPU/WGSL parity:** pressure the active DRP2 subset with point, primitive, image, minimal
+2. **WebGPU/WGSL parity:** pressure the active DRP2 subset with point, primitive, image, minimal
    mesh/depth, marker, segment/path stroke, sphere, volume, and capability-gated advanced passes.
-4. **DVZR portability:** keep `dvz_drp2_player`, `replay_dvzr_glfw`, app recording hooks, and raw
+3. **DVZR portability:** keep `dvz_drp2_player`, `replay_dvzr_glfw`, app recording hooks, and raw
    fallback diagnostics aligned with real scene/app streams; broaden portable commands only when
    real recordings expose raw fallback gaps.
-5. **Runtime and technique hardening:** continue focused fixes for descriptor/resource lifetimes,
+4. **Runtime and technique hardening:** continue focused fixes for descriptor/resource lifetimes,
    graph-backed transparency, MSAA, EDL, SSAO, volume occlusion, scene occlusion, and deterministic
    offscreen readback/capture.
-6. **Material and shader ABI polish:** keep shader ABI checks green; refine the standard material
+5. **Material and shader ABI polish:** keep shader ABI checks green; refine the standard material
    look, family-specific material policy, and GLSL/WGSL parity without turning v0.4 into a full PBR
    pass.
-7. **Picking and selection payloads:** widen point/marker/image pick/probe payloads, highlight
+6. **Picking and selection payloads:** widen point/marker/image pick/probe payloads, highlight
    state, linked-panel request propagation, and explicit deferrals for mesh/path/volume picking.
-8. **Examples and gallery pressure:** keep C examples, manual smoke notes, gallery harnesses,
+7. **Examples and gallery pressure:** keep C examples, manual smoke notes, gallery harnesses,
    screenshots, and video/capture paths exercising already-implemented features.
-9. **CUDA/CuPy external-memory contract:** prefer Vulkan-owned exportable resources imported into
+8. **CUDA/CuPy external-memory contract:** prefer Vulkan-owned exportable resources imported into
    CUDA/CuPy with explicit external-memory and semaphore metadata. Do not make CUDA-owned
    allocation import or NVIDIA CIG the primary architecture.
-10. **Runner scheduling follow-up:** this is no longer an active performance blocker. Optional
+9. **Runner scheduling follow-up:** this is no longer an active performance blocker. Optional
     CI orchestration, thread-safe workers, and further shared-fixture migrations belong to
     [../soon/tooling/TEST_RUNNER_SCHEDULING.md](../soon/tooling/TEST_RUNNER_SCHEDULING.md).
 
@@ -82,19 +81,21 @@ and shared-fixture follow-ups live in
 
 1. [../done/SCENE_DRP2_IMPLEMENTATION.md](../done/SCENE_DRP2_IMPLEMENTATION.md): completed first
    scene -> DRP2 -> runtime slice.
-2. [../done/DRP2_SCENE_SAFETY.md](../done/DRP2_SCENE_SAFETY.md): ownership and safety cleanup
+2. [../done/APP_FRAME_SCHEDULING_REFACTOR.md](../done/APP_FRAME_SCHEDULING_REFACTOR.md):
+   completed app scheduler, frame pacing, window wait/wakeup, and scene mutation wakeup record.
+3. [../done/DRP2_SCENE_SAFETY.md](../done/DRP2_SCENE_SAFETY.md): ownership and safety cleanup
    history.
-3. [../done/SCENE_PICK_PROBE_EXECUTION.md](../done/SCENE_PICK_PROBE_EXECUTION.md): shipped
+4. [../done/SCENE_PICK_PROBE_EXECUTION.md](../done/SCENE_PICK_PROBE_EXECUTION.md): shipped
    request-resolution behavior and caveats.
-4. [../done/DRP2_DESCRIPTOR_REFRESH_PLAN.md](../done/DRP2_DESCRIPTOR_REFRESH_PLAN.md): completed
+5. [../done/DRP2_DESCRIPTOR_REFRESH_PLAN.md](../done/DRP2_DESCRIPTOR_REFRESH_PLAN.md): completed
    descriptor refresh invariant.
-5. [../done/WBOIT_MESH_INTERACTIVE_PLAN.md](../done/WBOIT_MESH_INTERACTIVE_PLAN.md): WBOIT
+6. [../done/WBOIT_MESH_INTERACTIVE_PLAN.md](../done/WBOIT_MESH_INTERACTIVE_PLAN.md): WBOIT
    implementation record and follow-up checklist.
-6. [../../spec/scene/examples/EXAMPLE_PRIORITIZATION.md](../../spec/scene/examples/EXAMPLE_PRIORITIZATION.md): ranked
+7. [../../spec/scene/examples/EXAMPLE_PRIORITIZATION.md](../../spec/scene/examples/EXAMPLE_PRIORITIZATION.md): ranked
    scene/example priorities.
-7. [../../docs/tasks/2026-05-13-next-implementation-priorities/NEXT_STEPS.md](../../docs/tasks/2026-05-13-next-implementation-priorities/NEXT_STEPS.md):
+8. [../../docs/tasks/2026-05-13-next-implementation-priorities/NEXT_STEPS.md](../../docs/tasks/2026-05-13-next-implementation-priorities/NEXT_STEPS.md):
    detailed implementation-lane notes from the May 13 planning pass.
-8. [../../docs/architecture/manual_scene_smoke.md](../../docs/architecture/manual_scene_smoke.md):
+9. [../../docs/architecture/manual_scene_smoke.md](../../docs/architecture/manual_scene_smoke.md):
    manual interactive scene smoke coverage.
 
 

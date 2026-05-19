@@ -1,18 +1,40 @@
 # App Frame Scheduling Refactor
 
 > **Execution Status**
-> - **Status:** `IMMEDIATE NEXT TASK`
+> - **Status:** `DONE`
 > - **Updated on:** `2026-05-19`
-> - **Purpose:** replace the unconditional interactive app loop with explicit scheduling policy,
->   while preserving run-as-fast-as-possible benchmark paths.
+> - **Purpose:** completed record for the app-loop scheduling and scene-wakeup refactor.
 
-This is the active plan for reducing unnecessary CPU/GPU work in interactive `dvz_app_run()` loops
-without weakening immediate-present benchmarks, replay, animation, or hosted-toolkit integration.
+This record captures the completed work that reduced unnecessary CPU/GPU work in interactive
+`dvz_app_run()` loops without weakening immediate-present benchmarks, replay, animation, or
+hosted-toolkit integration.
 
 
-## Problem
+## Completion Summary
 
-`dvz_app_run(app, 0)` currently behaves like a continuous game loop:
+The refactor is closed for the v0.4 scheduler slice:
+
+1. `dvz_app_window_render_once()` remains scheduler-free for hosted integrations.
+2. `dvz_app_run()` owns Datoviz scheduling policy for built-in interactive apps.
+3. The default app scheduler is on-demand; explicit continuous mode keeps benchmark behavior.
+4. `DVZ_APP_SCHEDULE=continuous` and `DVZ_FPS_CAP=<positive-number>` control continuous/capped
+   built-in scheduling independently from `DVZ_PRESENT_MODE`.
+5. Window backends expose poll/wait/wait-timeout/request-frame hooks, with GLFW using native event
+   wait/wakeup behavior.
+6. App windows carry instance-scoped dirty/frame-request/deadline state.
+7. Scene mutations, request paths, animations, replay paths, and hosted-surface paths wake the
+   owning app windows when a new frame is needed.
+8. Figure resize notifications are emitted only on real size changes, so app-side per-frame size
+   synchronization does not keep on-demand windows permanently dirty.
+
+Implementation commits:
+
+1. `70f2dee4` closed the remaining scene-mutation wakeups and regression tests.
+
+
+## Original Problem
+
+Before this refactor, `dvz_app_run(app, 0)` behaved like a continuous game loop:
 
 ```c
 while (open)
@@ -66,7 +88,7 @@ Recommended defaults:
    live streaming, or benchmark tools.
 3. `fps_cap = 0` means unlimited. A positive cap paces active continuous rendering.
 
-Likely configuration surface:
+Implemented configuration surface:
 
 ```c
 struct DvzAppConfig
@@ -80,7 +102,7 @@ struct DvzAppConfig
 };
 ```
 
-Suggested environment overrides:
+Implemented environment overrides:
 
 1. `DVZ_APP_SCHEDULE=on_demand|continuous`
 2. `DVZ_FPS_CAP=<positive-number>`
@@ -224,57 +246,58 @@ else
 
 ### 1. Monotonic Time
 
-Status: `Next`
+Status: `Done`
 
-Add the common monotonic timestamp helper and small tests that verify monotonic non-decreasing
-behavior and plausible elapsed intervals.
+Added the common monotonic timestamp helper used by scheduler deadlines. Focused time tests cover
+monotonic behavior and the app scheduler's offline timer paths.
 
 
 ### 2. Backend Wait Hooks
 
-Status: `Next`
+Status: `Done`
 
-Add `wait` and `wait_timeout` to the window backend table. Implement GLFW with native waits and add
-safe fallbacks for non-GLFW backends.
+Added `wait`, `wait_timeout`, and request-frame wakeup hooks to the window backend table. GLFW uses
+native event waiting and wakeups, with conservative fallbacks for non-GLFW/headless backends.
 
 
 ### 3. App Config And Environment
 
-Status: `Next`
+Status: `Done`
 
-Add scheduling mode and FPS cap to `DvzAppConfig`, defaults, and environment overrides. Keep current
-behavior available through explicit continuous mode.
+Added scheduling mode and FPS cap to `DvzAppConfig`, defaults, and environment overrides. Previous
+continuous behavior remains available through explicit continuous mode.
 
 
 ### 4. App-Window Invalidation
 
-Status: `Next`
+Status: `Done`
 
-Add per-window `dirty` and `frame_requested` state. Route existing app-window resize, input, request
-frame, replay, and external-surface paths through invalidation.
+Added per-window `dirty` and `frame_requested` state. App-window resize, input, request-frame,
+replay, render-enable, GUI, and external-surface paths route through invalidation.
 
 
 ### 5. Event-Aware `dvz_app_run()`
 
-Status: `Next`
+Status: `Done`
 
-Replace the unconditional interactive render loop with on-demand waiting, continuous work detection,
-and optional FPS pacing.
+Replaced the unconditional interactive render loop with on-demand waiting, continuous work
+detection, and optional FPS pacing.
 
 
 ### 6. Scene Dirty Integration
 
-Status: `Parallel`
+Status: `Done`
 
-Add or reuse scene mutation/animation signals once the app-window scheduler is in place. Keep this
-slice separate if broad scene mutation hooks would make the first scheduler patch too large.
+Scene request-frame integration now covers visual data/style/visibility mutations, scene buffers,
+fields, scales, panel layout/technique/controller state, axes, annotations, pick/probe requests,
+and active animations.
 
 
 ### 7. Benchmarks And Smoke Coverage
 
-Status: `Parallel`
+Status: `Done`
 
-Add focused validation for:
+Validation covered:
 
 1. static interactive app idles without continuous renders,
 2. input/resize wakes the loop and renders,
@@ -285,7 +308,7 @@ Add focused validation for:
 
 ## Sub-Agent Work Split
 
-This task can use parallel agents because the write scopes are naturally separable:
+This task used subagents because the write scopes were naturally separable:
 
 1. **Timing/backend worker:** `src/common/_time_utils.h`, `src/window/*`,
    `include/datoviz/window.h`, window tests.
@@ -301,35 +324,33 @@ explicitly.
 
 ## Validation
 
-Minimum validation for documentation-only updates:
+Recorded validation for closure on `2026-05-19`:
 
-1. `git diff --check`
+1. `git diff --check` passed.
+2. `just build` passed.
+3. `just test app` passed: `99/99`.
+4. `just test window` passed: `15/15`.
+5. `just test time` passed: `113/113`.
+6. `just test scene` passed: `335/335`.
+7. Bounded GLFW scheduler lab launches completed without startup or validation errors:
+   - `timeout 5s env DVZ_FPS=1 direnv exec . ./build/examples/c/techniques/scheduler_lab`
+   - `timeout 5s env DVZ_APP_SCHEDULE=continuous DVZ_FPS=1 direnv exec . ./build/examples/c/techniques/scheduler_lab`
+   - `timeout 5s env DVZ_APP_SCHEDULE=continuous DVZ_PRESENT_MODE=immediate DVZ_FPS=1 direnv exec . ./build/examples/c/techniques/scheduler_lab`
+   - `timeout 5s env DVZ_APP_SCHEDULE=continuous DVZ_FPS_CAP=60 DVZ_FPS=1 direnv exec . ./build/examples/c/techniques/scheduler_lab`
+8. Hosted GLFW smoke passed:
+   `direnv exec . ./build/examples/c/tools/hosted_glfw_smoke 120`
+   rendered `120` frames and observed `126` frame requests.
 
-Minimum validation for scheduler code changes:
-
-1. `git diff --check`
-2. `just build`
-3. focused `just test app` or the closest available app/window/canvas filters
-4. GLFW smoke test for interactive waiting and wakeup when the environment supports it
-
-Manual validation targets:
-
-1. static scene with default scheduler idles without visible CPU burn,
-2. mouse drag/wheel/resize wakes rendering,
-3. active scene animation keeps rendering,
-4. replay keeps rendering and honors pacing,
-5. `DVZ_PRESENT_MODE=immediate DVZ_APP_SCHEDULE=continuous` preserves benchmark behavior,
-6. `DVZ_PRESENT_MODE=immediate DVZ_APP_SCHEDULE=continuous DVZ_FPS_CAP=60` reduces CPU usage.
+The bounded GLFW launches prove startup and event-loop viability in this environment. They do not
+replace human mouse/resize observation for visual ergonomics, but they are sufficient to keep this
+implementation record closed.
 
 
-## Open Decisions
+## Closed Decisions
 
-Recommended defaults are listed here so implementation can proceed without blocking, unless the
-project owner chooses otherwise.
-
-1. Default interactive scheduler: recommend `on_demand`.
-2. Continuous benchmark opt-in: recommend `DVZ_APP_SCHEDULE=continuous`.
-3. FPS cap default: recommend `0` unlimited, with no implicit cap.
-4. Environment variable name: recommend `DVZ_FPS_CAP`.
-5. Public API surface: recommend adding schedule mode and FPS cap to `DvzAppConfig` first, and only
-   adding runtime setters if examples or hosted integrations need them.
+1. Default interactive scheduler: `on_demand`.
+2. Continuous benchmark opt-in: `DVZ_APP_SCHEDULE=continuous`.
+3. FPS cap default: `0` unlimited, with no implicit cap.
+4. Environment variable name: `DVZ_FPS_CAP`.
+5. Public API surface: schedule mode and FPS cap live in `DvzAppConfig`; runtime setters can be
+   added later only if examples or hosted integrations need them.
