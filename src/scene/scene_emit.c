@@ -1376,6 +1376,10 @@ bool _scene_visual_frame_plan_metadata(
             sizeof(metadata->angle_id)))
         return false;
     if (!_scene_attr_resource_key(
+            figure, visual, visual_index, "bounds", metadata->bounds_id,
+            sizeof(metadata->bounds_id)))
+        return false;
+    if (!_scene_attr_resource_key(
             figure, visual, visual_index, "shape", metadata->shape_id,
             sizeof(metadata->shape_id)))
         return false;

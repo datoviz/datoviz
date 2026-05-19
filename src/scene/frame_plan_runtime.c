@@ -932,8 +932,10 @@ static bool _emitter_prepare_render_multi(
     uint64_t common_bgl_id = 0;
     uint64_t apply_bg_id = 0;
     uint64_t fixed_bg_id = 0;
+    uint64_t isotropic_bg_id = 0;
     if (!_scene_common_bindings_resolve_panel_sets(
-            emitter, stream, render, &common_bgl_id, &apply_bg_id, &fixed_bg_id))
+            emitter, stream, render, &common_bgl_id, &apply_bg_id, &fixed_bg_id,
+            &isotropic_bg_id))
         return false;
 
     /* Image BGL + sampler (shared, created lazily on first image visual). */
@@ -1487,7 +1489,14 @@ static bool _emitter_prepare_render_multi(
         if (bind.uses_scene_occlusion_set2)
             bind.scene_occlusion_depth_texture_id = scene_occlusion_depth_id;
         if (bind.uses_common_set0)
-            vis_bg_set0 = bind.uses_fixed_common ? fixed_bg_id : apply_bg_id;
+        {
+            if (bind.uses_fixed_common)
+                vis_bg_set0 = fixed_bg_id;
+            else if (bind.controller_mode == DVZ_CONTROLLER_APPLY_ISOTROPIC_LOCAL)
+                vis_bg_set0 = isotropic_bg_id;
+            else
+                vis_bg_set0 = apply_bg_id;
+        }
         if (bind.uses_material_set1)
         {
             uint64_t material_bgl_id = 0;

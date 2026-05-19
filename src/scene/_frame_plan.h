@@ -314,6 +314,7 @@ typedef struct DvzFramePlanVisualMeta
     char color_id[DVZ_SCENE_LABEL_SIZE];
     char size_id[DVZ_SCENE_LABEL_SIZE];
     char angle_id[DVZ_SCENE_LABEL_SIZE];
+    char bounds_id[DVZ_SCENE_LABEL_SIZE];
     char shape_id[DVZ_SCENE_LABEL_SIZE];
     char line_width_id[DVZ_SCENE_LABEL_SIZE];
     char texcoords_id[DVZ_SCENE_LABEL_SIZE];

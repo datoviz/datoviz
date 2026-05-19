@@ -956,7 +956,7 @@ int main(int argc, char** argv)
         (uint32_t)(sizeof(panzoom_text_visuals) / sizeof(panzoom_text_visuals[0]));
     DvzVisualAttachDesc text_attach = {
         .z_layer = 4,
-        .controller_mode = DVZ_CONTROLLER_APPLY,
+        .controller_mode = DVZ_CONTROLLER_APPLY_ISOTROPIC_LOCAL,
     };
     for (uint32_t i = 0; i < panzoom_text_count; i++)
     {

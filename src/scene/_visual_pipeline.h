@@ -174,6 +174,7 @@ typedef struct DvzSceneVisualBindDesc
 {
     bool uses_common_set0;
     bool uses_fixed_common;
+    DvzControllerMode controller_mode;
     bool uses_image_set1;
     uint64_t image_texture_id;
     bool uses_volume_set1;

@@ -262,29 +262,43 @@ int test_scene_text_bitmap_visual_realization(TstContext* suite, const TstCase* 
     AT(text->text.spans[0].glyph_count == 2);
 
     int pos_idx = _attr_index(glyph, "position");
+    int bounds_idx = _attr_index(glyph, "bounds");
     int uv_idx = _attr_index(glyph, "texcoords");
     int color_idx = _attr_index(glyph, "color");
+    int angle_idx = _attr_index(glyph, "angle");
     AT(pos_idx >= 0);
+    AT(bounds_idx >= 0);
     AT(uv_idx >= 0);
     AT(color_idx >= 0);
+    AT(angle_idx >= 0);
     AT(glyph->attrs[pos_idx].item_count == 12);
+    AT(glyph->attrs[bounds_idx].item_count == 12);
     AT(glyph->attrs[uv_idx].item_count == 12);
     AT(glyph->attrs[color_idx].item_count == 12);
+    AT(glyph->attrs[angle_idx].item_count == 12);
     const float(*positions)[3] = (const float(*)[3])glyph->attrs[pos_idx].data;
+    const float(*bounds)[4] = (const float(*)[4])glyph->attrs[bounds_idx].data;
     ANN(positions);
+    ANN(bounds);
     AC(positions[0][0], -0.96875f, 1e-6f);
     AC(positions[0][1], 0.9166667f, 1e-6f);
-    AC(positions[11][0], -0.93125f, 1e-6f);
-    AC(positions[11][1], 0.8833333f, 1e-6f);
+    AC(bounds[0][0], 0.0f, 1e-6f);
+    AC(bounds[0][1], 0.0f, 1e-6f);
+    AC(bounds[11][2], 12.0f, 1e-6f);
+    AC(bounds[11][3], 8.0f, 1e-6f);
 
     text_anchors[0][0] = 0.5f;
     text_anchors[0][1] = 0.5f;
     AT(dvz_visual_set_data(text, "anchor", text_anchors, 1) == 0);
     _scene_prepare_text_visuals(figure);
     positions = (const float(*)[3])glyph->attrs[pos_idx].data;
+    bounds = (const float(*)[4])glyph->attrs[bounds_idx].data;
     ANN(positions);
-    AC(positions[0][0], -0.9875f, 1e-6f);
-    AC(positions[0][1], 0.9333333f, 1e-6f);
+    ANN(bounds);
+    AC(positions[0][0], -0.96875f, 1e-6f);
+    AC(positions[0][1], 0.9166667f, 1e-6f);
+    AC(bounds[0][0], -6.0f, 1e-6f);
+    AC(bounds[0][1], -4.0f, 1e-6f);
 
     const uint8_t* colors = (const uint8_t*)glyph->attrs[color_idx].data;
     ANN(colors);
@@ -309,8 +323,10 @@ int test_scene_text_bitmap_visual_realization(TstContext* suite, const TstCase* 
     _scene_prepare_text_visuals(figure);
     AT(glyph->type == DVZ_VISUAL_TYPE_GLYPH);
     AT(glyph->attrs[pos_idx].item_count == 18);
+    AT(glyph->attrs[bounds_idx].item_count == 18);
     AT(glyph->attrs[uv_idx].item_count == 18);
     AT(glyph->attrs[color_idx].item_count == 18);
+    AT(glyph->attrs[angle_idx].item_count == 18);
     AT(glyph->field == atlas);
     AT(text->text.spans[0].glyph_count == 3);
 
@@ -318,8 +334,10 @@ int test_scene_text_bitmap_visual_realization(TstContext* suite, const TstCase* 
     AT(dvz_visual_set_strings(text, "text", strings, 1) == 0);
     _scene_prepare_text_visuals(figure);
     AT(glyph->attrs[pos_idx].item_count == 6);
+    AT(glyph->attrs[bounds_idx].item_count == 6);
     AT(glyph->attrs[uv_idx].item_count == 6);
     AT(glyph->attrs[color_idx].item_count == 6);
+    AT(glyph->attrs[angle_idx].item_count == 6);
     DvzFramePlanVisualMeta metadata = {0};
     uint32_t glyph_index = 0;
     AT(_figure_visual_index(figure, glyph, &glyph_index));
@@ -471,25 +489,28 @@ int test_scene_text_sdf_visual_realization(TstContext* suite, const TstCase* ite
     AT(text->text.spans[0].glyph_count == 2);
 
     int pos_idx = _attr_index(glyph, "position");
+    int bounds_idx = _attr_index(glyph, "bounds");
     int uv_idx = _attr_index(glyph, "texcoords");
     int color_idx = _attr_index(glyph, "color");
     AT(pos_idx >= 0);
+    AT(bounds_idx >= 0);
     AT(uv_idx >= 0);
     AT(color_idx >= 0);
     AT(glyph->attrs[pos_idx].item_count == 12);
+    AT(glyph->attrs[bounds_idx].item_count == 12);
     AT(glyph->attrs[uv_idx].item_count == 12);
     AT(glyph->attrs[color_idx].item_count == 12);
-    const float(*glyph_positions)[3] = (const float(*)[3])glyph->attrs[pos_idx].data;
-    ANN(glyph_positions);
-    float first_max_x = glyph_positions[0][0];
-    float second_min_x = glyph_positions[6][0];
+    const float(*glyph_bounds)[4] = (const float(*)[4])glyph->attrs[bounds_idx].data;
+    ANN(glyph_bounds);
+    float first_max_x = glyph_bounds[0][2];
+    float second_min_x = glyph_bounds[6][0];
     for (uint32_t k = 1; k < 6; k++)
-        if (glyph_positions[k][0] > first_max_x)
-            first_max_x = glyph_positions[k][0];
+        if (glyph_bounds[k][2] > first_max_x)
+            first_max_x = glyph_bounds[k][2];
     for (uint32_t k = 7; k < 12; k++)
-        if (glyph_positions[k][0] < second_min_x)
-            second_min_x = glyph_positions[k][0];
-    AT(second_min_x > first_max_x + 0.005f);
+        if (glyph_bounds[k][0] < second_min_x)
+            second_min_x = glyph_bounds[k][0];
+    AT(second_min_x > first_max_x + 0.5f);
 
     DvzAnnotation* annotation = dvz_annotation_label(
         panel,

@@ -605,17 +605,25 @@ static bool _scene_visual_desc_from_metadata(
         }
         out->kind = meta->visual_type == DVZ_VISUAL_TYPE_GLYPH ? DVZ_SCENE_VISUAL_DESC_GLYPH :
                                                                  DVZ_SCENE_VISUAL_DESC_IMAGE;
-        out->vbuf_ids[out->vbuf_count++] = uv_id;
         if (meta->visual_type == DVZ_VISUAL_TYPE_GLYPH)
         {
+            uint64_t bounds_id = _resource_lookup_label(&emitter->resources, meta->bounds_id);
             uint64_t color_id = _resource_lookup_label(&emitter->resources, meta->color_id);
-            if (color_id == 0)
+            uint64_t angle_id = _resource_lookup_label(&emitter->resources, meta->angle_id);
+            if (bounds_id == 0 || color_id == 0 || angle_id == 0)
             {
                 if (error != NULL)
-                    *error = "typed glyph metadata missing color resource";
+                    *error = "typed glyph metadata missing bounds/color/angle resource";
                 return false;
             }
+            out->vbuf_ids[out->vbuf_count++] = bounds_id;
+            out->vbuf_ids[out->vbuf_count++] = uv_id;
             out->vbuf_ids[out->vbuf_count++] = color_id;
+            out->vbuf_ids[out->vbuf_count++] = angle_id;
+        }
+        else
+        {
+            out->vbuf_ids[out->vbuf_count++] = uv_id;
         }
         out->image_texture_id = tex_id;
         if (meta->visual_type == DVZ_VISUAL_TYPE_GLYPH)
@@ -1895,12 +1903,14 @@ bool _scene_visual_pipeline_desc(
         return true;
 
     case DVZ_SCENE_VISUAL_DESC_GLYPH:
-        out->vertex_buffer_count = 3;
-        out->binding_count = 3;
-        out->attr_count = 3;
+        out->vertex_buffer_count = 5;
+        out->binding_count = 5;
+        out->attr_count = 5;
         _pipeline_attr(out, 0, 0, 0, VK_FORMAT_R32G32B32_SFLOAT, 3 * sizeof(float));
-        _pipeline_attr(out, 1, 1, 1, VK_FORMAT_R32G32_SFLOAT, 2 * sizeof(float));
-        _pipeline_attr(out, 2, 2, 2, VK_FORMAT_R8G8B8A8_UNORM, 4 * sizeof(uint8_t));
+        _pipeline_attr(out, 1, 1, 1, VK_FORMAT_R32G32B32A32_SFLOAT, 4 * sizeof(float));
+        _pipeline_attr(out, 2, 2, 2, VK_FORMAT_R32G32B32A32_SFLOAT, 4 * sizeof(float));
+        _pipeline_attr(out, 3, 3, 3, VK_FORMAT_R8G8B8A8_UNORM, 4 * sizeof(uint8_t));
+        _pipeline_attr(out, 4, 4, 4, VK_FORMAT_R32_SFLOAT, sizeof(float));
         out->needs_common_layout = caps.uses_common_set;
         out->needs_image_layout = caps.uses_image_set;
         return true;
@@ -1943,6 +1953,7 @@ bool _scene_visual_bind_desc(
     dvz_memset(out, sizeof(DvzSceneVisualBindDesc), 0, sizeof(DvzSceneVisualBindDesc));
     out->uses_scene_occlusion_set2 = visual->scene_occluded;
     out->scene_occlusion = visual->scene_occlusion;
+    out->controller_mode = controller_mode;
 
     DvzSceneVisualPassCaps caps = {0};
     if (!_scene_visual_pass_caps_from_desc(

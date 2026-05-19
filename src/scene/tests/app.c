@@ -715,8 +715,20 @@ static bool _app_glyph_pixel_bounds(
     int pos_idx = _app_visual_attr_index(visual, "position");
     if (pos_idx < 0 || visual->attrs[pos_idx].data == NULL || visual->attrs[pos_idx].item_count == 0)
         return false;
+    int bounds_idx = _app_visual_attr_index(visual, "bounds");
+    int angle_idx = _app_visual_attr_index(visual, "angle");
 
     const float(*positions)[3] = (const float(*)[3])visual->attrs[pos_idx].data;
+    const float(*bounds)[4] =
+        bounds_idx >= 0 && visual->attrs[bounds_idx].data != NULL &&
+                visual->attrs[bounds_idx].item_count == visual->attrs[pos_idx].item_count
+            ? (const float(*)[4])visual->attrs[bounds_idx].data
+            : NULL;
+    const float* angles =
+        angle_idx >= 0 && visual->attrs[angle_idx].data != NULL &&
+                visual->attrs[angle_idx].item_count == visual->attrs[pos_idx].item_count
+            ? (const float*)visual->attrs[angle_idx].data
+            : NULL;
     float min_x = +INFINITY;
     float min_y = +INFINITY;
     float max_x = -INFINITY;
@@ -725,14 +737,37 @@ static bool _app_glyph_pixel_bounds(
     {
         float px = (positions[i][0] * 0.5f + 0.5f) * (float)width;
         float py = (1.0f - (positions[i][1] * 0.5f + 0.5f)) * (float)height;
-        if (px < min_x)
-            min_x = px;
-        if (px > max_x)
-            max_x = px;
-        if (py < min_y)
-            min_y = py;
-        if (py > max_y)
-            max_y = py;
+        if (bounds != NULL)
+        {
+            float c = angles != NULL ? cosf(angles[i]) : 1.0f;
+            float s = angles != NULL ? sinf(angles[i]) : 0.0f;
+            float x0 = bounds[i][0], y0 = bounds[i][1], x1 = bounds[i][2], y1 = bounds[i][3];
+            float corners[4][2] = {{x0, y0}, {x0, y1}, {x1, y0}, {x1, y1}};
+            for (uint32_t k = 0; k < 4; k++)
+            {
+                float x = px + c * corners[k][0] - s * corners[k][1];
+                float y = py + s * corners[k][0] + c * corners[k][1];
+                if (x < min_x)
+                    min_x = x;
+                if (x > max_x)
+                    max_x = x;
+                if (y < min_y)
+                    min_y = y;
+                if (y > max_y)
+                    max_y = y;
+            }
+        }
+        else
+        {
+            if (px < min_x)
+                min_x = px;
+            if (px > max_x)
+                max_x = px;
+            if (py < min_y)
+                min_y = py;
+            if (py > max_y)
+                max_y = py;
+        }
     }
     if (!isfinite(min_x) || !isfinite(min_y) || !isfinite(max_x) || !isfinite(max_y))
         return false;

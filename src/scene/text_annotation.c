@@ -948,28 +948,51 @@ static void _text_placement_alignment(
 
 
 /**
- * Write one rotated text-corner position in fixed clip coordinates.
+ * Write one glyph vertex record consumed by the shader-side quad generator.
  *
- * @param figure the figure
- * @param anchor_x the anchor x in figure pixels
- * @param anchor_y the anchor y in figure pixels
- * @param local_x the local x offset from the anchor
- * @param local_y the local y offset from the anchor
- * @param angle the rotation angle in radians
- * @param z the clip-space z coordinate
- * @param out output 3D clip-space position
+ * @param anchor_clip the glyph anchor in fixed clip coordinates
+ * @param bounds_rect the local glyph pixel bounds as x0, y0, x1, y1
+ * @param uv_rect the atlas UV rectangle as u0, v0, u1, v1
+ * @param color the glyph color
+ * @param angle the glyph rotation angle in radians
+ * @param vertex_index the destination vertex index
+ * @param positions the destination anchor positions
+ * @param bounds the destination local bounds
+ * @param texcoords the destination atlas UV bounds
+ * @param colors the destination colors
+ * @param angles the destination angles
  */
-static void _text_corner_position(
-    const DvzFigure* figure, float anchor_x, float anchor_y, float local_x, float local_y,
-    float angle, float z, float out[3])
+static void _text_write_glyph_vertex(
+    const float anchor_clip[3], const float bounds_rect[4], const float uv_rect[4],
+    const uint8_t color[4], float angle, uint32_t vertex_index, float* positions, float* bounds,
+    float* texcoords, uint8_t* colors, float* angles)
 {
-    ANN(figure);
-    ANN(out);
-    float c = cosf(angle);
-    float s = sinf(angle);
-    float x = anchor_x + c * local_x - s * local_y;
-    float y = anchor_y + s * local_x + c * local_y;
-    _text_pixel_to_clip(figure, x, y, z, out);
+    ANN(anchor_clip);
+    ANN(bounds_rect);
+    ANN(uv_rect);
+    ANN(color);
+    ANN(positions);
+    ANN(bounds);
+    ANN(texcoords);
+    ANN(colors);
+    ANN(angles);
+
+    positions[3 * vertex_index + 0] = anchor_clip[0];
+    positions[3 * vertex_index + 1] = anchor_clip[1];
+    positions[3 * vertex_index + 2] = anchor_clip[2];
+    bounds[4 * vertex_index + 0] = bounds_rect[0];
+    bounds[4 * vertex_index + 1] = bounds_rect[1];
+    bounds[4 * vertex_index + 2] = bounds_rect[2];
+    bounds[4 * vertex_index + 3] = bounds_rect[3];
+    texcoords[4 * vertex_index + 0] = uv_rect[0];
+    texcoords[4 * vertex_index + 1] = uv_rect[1];
+    texcoords[4 * vertex_index + 2] = uv_rect[2];
+    texcoords[4 * vertex_index + 3] = uv_rect[3];
+    colors[4 * vertex_index + 0] = color[0];
+    colors[4 * vertex_index + 1] = color[1];
+    colors[4 * vertex_index + 2] = color[2];
+    colors[4 * vertex_index + 3] = color[3];
+    angles[vertex_index] = angle;
 }
 
 
@@ -1052,27 +1075,36 @@ static bool _text_prepare_visual(DvzFigure* figure, DvzText* text)
 
     uint64_t max_vertices = 0;
     uint64_t position_bytes = 0;
+    uint64_t bounds_bytes = 0;
     uint64_t texcoord_bytes = 0;
     uint64_t color_bytes = 0;
+    uint64_t angle_bytes = 0;
     if (_dvz_mul_u64_overflows(visible, 6u, &max_vertices) ||
         _dvz_mul_u64_overflows(max_vertices, 3u * sizeof(float), &position_bytes) ||
-        _dvz_mul_u64_overflows(max_vertices, 2u * sizeof(float), &texcoord_bytes) ||
+        _dvz_mul_u64_overflows(max_vertices, 4u * sizeof(float), &bounds_bytes) ||
+        _dvz_mul_u64_overflows(max_vertices, 4u * sizeof(float), &texcoord_bytes) ||
         _dvz_mul_u64_overflows(max_vertices, 4u * sizeof(uint8_t), &color_bytes) ||
-        max_vertices > UINT32_MAX || position_bytes > SIZE_MAX || texcoord_bytes > SIZE_MAX ||
-        color_bytes > SIZE_MAX)
+        _dvz_mul_u64_overflows(max_vertices, sizeof(float), &angle_bytes) ||
+        max_vertices > UINT32_MAX || position_bytes > SIZE_MAX || bounds_bytes > SIZE_MAX ||
+        texcoord_bytes > SIZE_MAX || color_bytes > SIZE_MAX || angle_bytes > SIZE_MAX)
     {
         log_error("text glyph vertex buffer size overflow");
         return false;
     }
 
     float* positions = (float*)dvz_calloc((DvzSize)position_bytes, 1);
+    float* bounds = (float*)dvz_calloc((DvzSize)bounds_bytes, 1);
     float* texcoords = (float*)dvz_calloc((DvzSize)texcoord_bytes, 1);
     uint8_t* colors = (uint8_t*)dvz_calloc((DvzSize)color_bytes, 1);
-    if (positions == NULL || texcoords == NULL || colors == NULL)
+    float* angles = (float*)dvz_calloc((DvzSize)angle_bytes, 1);
+    if (positions == NULL || bounds == NULL || texcoords == NULL || colors == NULL ||
+        angles == NULL)
     {
         dvz_free(positions);
+        dvz_free(bounds);
         dvz_free(texcoords);
         dvz_free(colors);
+        dvz_free(angles);
         log_error("text glyph vertex allocation failed");
         return false;
     }
@@ -1082,6 +1114,9 @@ static bool _text_prepare_visual(DvzFigure* figure, DvzText* text)
     float anchor_x = 0;
     float anchor_y = 0;
     _text_anchor_pixels(text, &anchor_x, &anchor_y);
+    float z = (float)text->placement.position[2];
+    float anchor_clip[3] = {0};
+    _text_pixel_to_clip(figure, anchor_x, anchor_y, z, anchor_clip);
     float align_x = 0;
     float align_y = 0;
     _text_placement_alignment(&text->placement, (float)width, (float)height, &align_x, &align_y);
@@ -1154,31 +1189,22 @@ static bool _text_prepare_visual(DvzFigure* figure, DvzText* text)
             _text_bitmap_atlas_uv(cp, uv);
             column++;
         }
-        const float xy[6][2] = {{x0, y0}, {x0, y1}, {x1, y0}, {x1, y0}, {x0, y1}, {x1, y1}};
-        const float st[6][2] = {
-            {uv[0], uv[1]}, {uv[0], uv[3]}, {uv[2], uv[1]},
-            {uv[2], uv[1]}, {uv[0], uv[3]}, {uv[2], uv[3]},
-        };
-        float z = (float)text->placement.position[2];
+        float bounds_rect[4] = {x0, y0, x1, y1};
         for (uint32_t j = 0; j < 6; j++)
         {
-            _text_corner_position(
-                figure, anchor_x, anchor_y, xy[j][0], xy[j][1], text->placement.angle, z,
-                &positions[3 * vertex_count]);
-            texcoords[2 * vertex_count + 0] = st[j][0];
-            texcoords[2 * vertex_count + 1] = st[j][1];
-            colors[4 * vertex_count + 0] = color[0];
-            colors[4 * vertex_count + 1] = color[1];
-            colors[4 * vertex_count + 2] = color[2];
-            colors[4 * vertex_count + 3] = color[3];
+            _text_write_glyph_vertex(
+                anchor_clip, bounds_rect, uv, color, text->placement.angle, vertex_count,
+                positions, bounds, texcoords, colors, angles);
             vertex_count++;
         }
     }
     if (vertex_count == 0)
     {
         dvz_free(positions);
+        dvz_free(bounds);
         dvz_free(texcoords);
         dvz_free(colors);
+        dvz_free(angles);
         if (text->visual != NULL)
             dvz_visual_set_visible(text->visual, false);
         return true;
@@ -1211,12 +1237,14 @@ static bool _text_prepare_visual(DvzFigure* figure, DvzText* text)
     {
         text->visual->glyph_atlas_encoding =
             font_atlas != NULL ? font_atlas->encoding : DVZ_TEXT_ATLAS_ENCODING_BITMAP_ALPHA;
-        DvzVisualDataUpdate updates[3] = {
+        DvzVisualDataUpdate updates[5] = {
             {.attr_name = "position", .data = positions, .item_count = vertex_count},
+            {.attr_name = "bounds", .data = bounds, .item_count = vertex_count},
             {.attr_name = "texcoords", .data = texcoords, .item_count = vertex_count},
             {.attr_name = "color", .data = colors, .item_count = vertex_count},
+            {.attr_name = "angle", .data = angles, .item_count = vertex_count},
         };
-        if (dvz_visual_set_data_many(text->visual, updates, 3) != 0 ||
+        if (dvz_visual_set_data_many(text->visual, updates, 5) != 0 ||
             !dvz_visual_set_field(text->visual, "field", atlas))
         {
             ok = false;
@@ -1253,8 +1281,10 @@ static bool _text_prepare_visual(DvzFigure* figure, DvzText* text)
     }
 
     dvz_free(positions);
+    dvz_free(bounds);
     dvz_free(texcoords);
     dvz_free(colors);
+    dvz_free(angles);
     return ok;
 }
 
@@ -1466,26 +1496,36 @@ static bool _text_visual_prepare(
     uint32_t vertex_count_max = (uint32_t)vertex_count64;
 
     uint64_t position_bytes = 0;
+    uint64_t bounds_bytes = 0;
     uint64_t texcoord_bytes = 0;
     uint64_t color_bytes = 0;
+    uint64_t angle_bytes = 0;
     if (_dvz_mul_u64_overflows(vertex_count_max, 3u * sizeof(float), &position_bytes) ||
-        _dvz_mul_u64_overflows(vertex_count_max, 2u * sizeof(float), &texcoord_bytes) ||
+        _dvz_mul_u64_overflows(vertex_count_max, 4u * sizeof(float), &bounds_bytes) ||
+        _dvz_mul_u64_overflows(vertex_count_max, 4u * sizeof(float), &texcoord_bytes) ||
         _dvz_mul_u64_overflows(vertex_count_max, 4u * sizeof(uint8_t), &color_bytes) ||
-        position_bytes > SIZE_MAX || texcoord_bytes > SIZE_MAX || color_bytes > SIZE_MAX)
+        _dvz_mul_u64_overflows(vertex_count_max, sizeof(float), &angle_bytes) ||
+        position_bytes > SIZE_MAX || bounds_bytes > SIZE_MAX || texcoord_bytes > SIZE_MAX ||
+        color_bytes > SIZE_MAX || angle_bytes > SIZE_MAX)
     {
         log_error("text visual glyph buffer size overflow");
         return false;
     }
 
     float* positions = (float*)dvz_calloc((DvzSize)position_bytes, 1);
+    float* bounds = (float*)dvz_calloc((DvzSize)bounds_bytes, 1);
     float* texcoords = (float*)dvz_calloc((DvzSize)texcoord_bytes, 1);
     uint8_t* colors = (uint8_t*)dvz_calloc((DvzSize)color_bytes, 1);
+    float* glyph_angles = (float*)dvz_calloc((DvzSize)angle_bytes, 1);
     DvzTextGlyphSpan* spans = (DvzTextGlyphSpan*)dvz_calloc(count, sizeof(DvzTextGlyphSpan));
-    if (positions == NULL || texcoords == NULL || colors == NULL || spans == NULL)
+    if (positions == NULL || bounds == NULL || texcoords == NULL || colors == NULL ||
+        glyph_angles == NULL || spans == NULL)
     {
         dvz_free(positions);
+        dvz_free(bounds);
         dvz_free(texcoords);
         dvz_free(colors);
+        dvz_free(glyph_angles);
         dvz_free(spans);
         log_error("text visual glyph allocation failed");
         return false;
@@ -1559,6 +1599,8 @@ static bool _text_visual_prepare(
         float align_x = -text_anchor[0] * width;
         float align_y = -text_anchor[1] * height;
         float angle = angles != NULL ? angles[i] : 0.0f;
+        float anchor_clip[3] = {0};
+        _text_pixel_to_clip(figure, target[i][0], target[i][1], target[i][2], anchor_clip);
         spans[i].first_glyph = vertex_count / 6u;
 
         uint32_t column = 0;
@@ -1626,23 +1668,12 @@ static bool _text_visual_prepare(
                 _text_bitmap_atlas_uv(cp, uv);
                 column++;
             }
-            const float xy[6][2] = {
-                {x0, y0}, {x0, y1}, {x1, y0}, {x1, y0}, {x0, y1}, {x1, y1}};
-            const float st[6][2] = {
-                {uv[0], uv[1]}, {uv[0], uv[3]}, {uv[2], uv[1]},
-                {uv[2], uv[1]}, {uv[0], uv[3]}, {uv[2], uv[3]},
-            };
+            float bounds_rect[4] = {x0, y0, x1, y1};
             for (uint32_t j = 0; j < 6; j++)
             {
-                _text_corner_position(
-                    figure, target[i][0], target[i][1], xy[j][0], xy[j][1], angle,
-                    target[i][2], &positions[3 * vertex_count]);
-                texcoords[2 * vertex_count + 0] = st[j][0];
-                texcoords[2 * vertex_count + 1] = st[j][1];
-                colors[4 * vertex_count + 0] = color[0];
-                colors[4 * vertex_count + 1] = color[1];
-                colors[4 * vertex_count + 2] = color[2];
-                colors[4 * vertex_count + 3] = color[3];
+                _text_write_glyph_vertex(
+                    anchor_clip, bounds_rect, uv, color, angle, vertex_count, positions, bounds,
+                    texcoords, colors, glyph_angles);
                 vertex_count++;
             }
         }
@@ -1670,12 +1701,14 @@ static bool _text_visual_prepare(
     {
         visual->text.glyph_visual->glyph_atlas_encoding =
             font_atlas != NULL ? font_atlas->encoding : DVZ_TEXT_ATLAS_ENCODING_BITMAP_ALPHA;
-        DvzVisualDataUpdate updates[3] = {
+        DvzVisualDataUpdate updates[5] = {
             {.attr_name = "position", .data = positions, .item_count = vertex_count},
+            {.attr_name = "bounds", .data = bounds, .item_count = vertex_count},
             {.attr_name = "texcoords", .data = texcoords, .item_count = vertex_count},
             {.attr_name = "color", .data = colors, .item_count = vertex_count},
+            {.attr_name = "angle", .data = glyph_angles, .item_count = vertex_count},
         };
-        ok = dvz_visual_set_data_many(visual->text.glyph_visual, updates, 3) == 0 &&
+        ok = dvz_visual_set_data_many(visual->text.glyph_visual, updates, 5) == 0 &&
              dvz_visual_set_field(visual->text.glyph_visual, "field", atlas);
     }
     if (ok)
@@ -1695,8 +1728,10 @@ static bool _text_visual_prepare(
     }
 
     dvz_free(positions);
+    dvz_free(bounds);
     dvz_free(texcoords);
     dvz_free(colors);
+    dvz_free(glyph_angles);
     dvz_free(spans);
     return ok;
 }

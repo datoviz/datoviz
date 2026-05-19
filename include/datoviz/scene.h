@@ -758,7 +758,8 @@ dvz_visual_attr_mutability(const DvzVisual* visual, const char* attr_name);
  *        (vec4f) and `"anchor"` (vec2f)
  * text: string attribute `"text"` plus per-string `"position"` (vec3f pixels), optional
  *       `"anchor"` (vec2f), `"size"` (float points), `"color"` (RGBA8), `"angle"` (float radians)
- * glyph: `"position"` (vec3f), `"texcoords"` (vec2f), `"color"` (RGBA8)
+ * glyph: `"position"` (vec3f anchor), `"bounds"` (vec4f local pixel bounds),
+ *        `"texcoords"` (vec4f atlas UV bounds), `"color"` (RGBA8), `"angle"` (float radians)
  *
  * All configured attributes on one visual must use the same item_count. This
  * call is rejected while any emitted scene stream is still live.
@@ -1226,8 +1227,9 @@ DVZ_EXPORT int dvz_text_set_renderer(DvzVisual* visual, DvzTextRenderer renderer
 /**
  * Create a glyph visual.
  *
- * Renders atlas-backed glyph quads with `position` (vec3), `texcoords` (vec2), `color` (RGBA8),
- * and a bound 2D sampled field.
+ * Renders atlas-backed glyph quads with `position` (vec3 anchor), `bounds` (vec4 local pixel
+ * bounds), `texcoords` (vec4 atlas UV bounds), `color` (RGBA8), `angle` (float radians), and a
+ * bound 2D sampled field.
  *
  * @param scene the scene
  * @param flags variant flags

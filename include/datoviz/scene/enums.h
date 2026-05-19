@@ -105,6 +105,8 @@ typedef enum
 {
     DVZ_CONTROLLER_APPLY = 0, /* default: panzoom/arcball MVP applies to the visual */
     DVZ_CONTROLLER_FIXED = 1, /* visual is unaffected by navigation; identity MVP */
+    DVZ_CONTROLLER_APPLY_ISOTROPIC_LOCAL =
+        2, /* apply MVP, keep shader-generated local offsets isotropic */
 } DvzControllerMode;
 
 

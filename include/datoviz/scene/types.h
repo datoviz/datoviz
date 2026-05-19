@@ -376,7 +376,7 @@ typedef struct DvzVolumeState DvzVolumeState;
 struct DvzVisualAttachDesc
 {
     int32_t           z_layer;          /* signed; lower draws behind, higher in front; default 0 */
-    DvzControllerMode controller_mode;  /* APPLY (default) or FIXED (ignore panzoom/arcball) */
+    DvzControllerMode controller_mode;  /* APPLY (default), FIXED, or shader isotropic local */
 };
 typedef struct DvzVisualAttachDesc DvzVisualAttachDesc;
 

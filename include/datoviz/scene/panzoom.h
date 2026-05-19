@@ -64,6 +64,13 @@ struct DvzMVP
 };
 
 
+typedef enum
+{
+    DVZ_MVP_FLAGS_NONE = 0x00u,
+    DVZ_MVP_FLAGS_ISOTROPIC_LOCAL = 0x01u,
+} DvzMVPFlags;
+
+
 
 struct DvzPanzoom
 {

@@ -136,12 +136,14 @@ static void _mvp_uniform_copy(DvzMVP* dst, const DvzMVP* src)
  * @param common_bgl_id the shared common bind group layout id
  * @param mode_tag the controller mode tag
  * @param fixed whether the MVP should be identity
+ * @param mvp_flags extra MVP flags to OR into the uploaded uniform
  * @param out_bg_id the resolved bind group id
  * @return whether the common bind group was resolved
  */
 static bool _resolve_common_set(
     DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, const DvzFramePlanNode* render,
-    uint64_t common_bgl_id, const char* mode_tag, bool fixed, uint64_t* out_bg_id)
+    uint64_t common_bgl_id, const char* mode_tag, bool fixed, uint32_t mvp_flags,
+    uint64_t* out_bg_id)
 {
     ANN(emitter);
     ANN(stream);
@@ -227,6 +229,7 @@ static bool _resolve_common_set(
         mvp_src = &local_identity;
     }
     _mvp_uniform_copy(mvp_slot, mvp_src);
+    mvp_slot->flags |= mvp_flags;
     mvp_src = mvp_slot;
 
     DvzSceneViewportUniform local_viewport = {0};
@@ -259,11 +262,13 @@ static bool _resolve_common_set(
  * @param out_bgl_id the shared common bind group layout id
  * @param out_apply_bg_id the panel apply-common bind group id
  * @param out_fixed_bg_id the panel fixed-common bind group id
+ * @param out_isotropic_bg_id the panel isotropic-local apply-common bind group id
  * @return whether the common bindings were resolved
  */
 bool _scene_common_bindings_resolve_panel_sets(
     DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, const DvzFramePlanNode* render,
-    uint64_t* out_bgl_id, uint64_t* out_apply_bg_id, uint64_t* out_fixed_bg_id)
+    uint64_t* out_bgl_id, uint64_t* out_apply_bg_id, uint64_t* out_fixed_bg_id,
+    uint64_t* out_isotropic_bg_id)
 {
     ANN(emitter);
     ANN(stream);
@@ -271,10 +276,12 @@ bool _scene_common_bindings_resolve_panel_sets(
     ANN(out_bgl_id);
     ANN(out_apply_bg_id);
     ANN(out_fixed_bg_id);
+    ANN(out_isotropic_bg_id);
 
     *out_bgl_id = 0;
     *out_apply_bg_id = 0;
     *out_fixed_bg_id = 0;
+    *out_isotropic_bg_id = 0;
 
     bool ok = true;
     bool is_new = false;
@@ -287,28 +294,35 @@ bool _scene_common_bindings_resolve_panel_sets(
         ok = ok && _create_common_bind_group_layout(stream, common_bgl_id);
 
     /* Determine which modes are needed for this panel. */
-    bool needs_apply = false, needs_fixed = false;
+    bool needs_apply = false, needs_fixed = false, needs_isotropic = false;
     for (uint32_t i = 0; i < render->u.render.visual_count; i++)
     {
         if (render->u.render.controller_modes[i] == DVZ_CONTROLLER_FIXED)
             needs_fixed = true;
+        else if (render->u.render.controller_modes[i] == DVZ_CONTROLLER_APPLY_ISOTROPIC_LOCAL)
+            needs_isotropic = true;
         else
             needs_apply = true;
     }
 
-    uint64_t apply_bg_id = 0, fixed_bg_id = 0;
+    uint64_t apply_bg_id = 0, fixed_bg_id = 0, isotropic_bg_id = 0;
     if (needs_apply && ok)
         ok = _resolve_common_set(
-            emitter, stream, render, common_bgl_id, "apply", false, &apply_bg_id);
+            emitter, stream, render, common_bgl_id, "apply", false, 0, &apply_bg_id);
     if (needs_fixed && ok)
         ok = _resolve_common_set(
-            emitter, stream, render, common_bgl_id, "fixed", true, &fixed_bg_id);
+            emitter, stream, render, common_bgl_id, "fixed", true, 0, &fixed_bg_id);
+    if (needs_isotropic && ok)
+        ok = _resolve_common_set(
+            emitter, stream, render, common_bgl_id, "apply_iso", false,
+            DVZ_MVP_FLAGS_ISOTROPIC_LOCAL, &isotropic_bg_id);
 
     if (!ok)
         return false;
     *out_bgl_id = common_bgl_id;
     *out_apply_bg_id = apply_bg_id;
     *out_fixed_bg_id = fixed_bg_id;
+    *out_isotropic_bg_id = isotropic_bg_id;
     return true;
 }
 
@@ -346,11 +360,18 @@ bool _scene_common_bindings_resolve_single_set(
         ok = ok && _create_common_bind_group_layout(stream, common_bgl_id);
 
     const char* mode_tag =
-        (render->u.render.controller_modes[0] == DVZ_CONTROLLER_FIXED) ? "fixed" : "apply";
+        render->u.render.controller_modes[0] == DVZ_CONTROLLER_FIXED                 ? "fixed" :
+        render->u.render.controller_modes[0] == DVZ_CONTROLLER_APPLY_ISOTROPIC_LOCAL ? "apply_iso" :
+                                                                                        "apply";
+    bool fixed = render->u.render.controller_modes[0] == DVZ_CONTROLLER_FIXED;
+    uint32_t mvp_flags =
+        render->u.render.controller_modes[0] == DVZ_CONTROLLER_APPLY_ISOTROPIC_LOCAL
+            ? DVZ_MVP_FLAGS_ISOTROPIC_LOCAL
+            : 0;
     uint64_t common_bg_id = 0;
     ok = ok && _resolve_common_set(
-                   emitter, stream, render, common_bgl_id, mode_tag,
-                   render->u.render.controller_modes[0] == DVZ_CONTROLLER_FIXED, &common_bg_id);
+                   emitter, stream, render, common_bgl_id, mode_tag, fixed, mvp_flags,
+                   &common_bg_id);
 
     if (!ok)
         return false;

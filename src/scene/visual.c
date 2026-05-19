@@ -220,8 +220,10 @@ static uint32_t _attr_item_size(DvzVisualType type, const char* name)
         break;
     case DVZ_VISUAL_TYPE_GLYPH:
         if (strcmp(name, "position") == 0)  return 3 * sizeof(float);
-        if (strcmp(name, "texcoords") == 0) return 2 * sizeof(float);
+        if (strcmp(name, "bounds") == 0)    return 4 * sizeof(float);
+        if (strcmp(name, "texcoords") == 0) return 4 * sizeof(float);
         if (strcmp(name, "color") == 0)     return 4 * sizeof(uint8_t);
+        if (strcmp(name, "angle") == 0)     return sizeof(float);
         break;
     case DVZ_VISUAL_TYPE_VOLUME:
         if (strcmp(name, "position") == 0)  return 3 * sizeof(float);
@@ -271,7 +273,7 @@ static bool _attr_supported(DvzVisualType type, const char* name, uint32_t* item
     else if (type == DVZ_VISUAL_TYPE_TEXT)
         expected = "text strings plus position, anchor, size, color, angle";
     else if (type == DVZ_VISUAL_TYPE_GLYPH)
-        expected = "position, texcoords, color, plus a bound 2D field";
+        expected = "position, bounds, texcoords, color, angle, plus a bound 2D field";
     else if (type == DVZ_VISUAL_TYPE_VOLUME)
         expected = "position, texcoords, plus a bound 3D field";
 
