@@ -2174,6 +2174,88 @@ int test_app_offscreen_text_has_nonblank_pixels(TstContext* suite, const TstCase
     return 0;
 }
 
+/**
+ * Ensure SDF-backed text renders visible pixels through the offscreen app path.
+ *
+ * @param suite the test suite
+ * @param item the test item
+ * @return 0 on success
+ */
+int test_app_offscreen_sdf_text_has_nonblank_pixels(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    TST_SCENE_APP_REQUIRE_VKLITE(suite);
+
+    DvzScene* scene = dvz_scene();
+    AT(scene != NULL);
+    DvzFigure* figure = dvz_figure(scene, 96, 64, 0);
+    AT(figure != NULL);
+    DvzPanel* panel = dvz_panel(
+        figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+    AT(panel != NULL);
+
+    DvzVisual* text = dvz_text(scene, 0);
+    AT(text != NULL);
+    AT(dvz_text_set_renderer(text, DVZ_TEXT_RENDERER_MSDF_ATLAS) == 0);
+    const char* strings[1] = {"SDF"};
+    float positions[1][3] = {{6.0f, 8.0f, 0.0f}};
+    float text_anchors[1][2] = {{0.0f, 0.0f}};
+    float sizes[1] = {26.0f};
+    float angles[1] = {0.0f};
+    DvzColor colors[1] = {{0, 255, 0, 255}};
+    DvzVisualDataUpdate updates[5] = {
+        {.attr_name = "position", .data = positions, .item_count = 1},
+        {.attr_name = "anchor", .data = text_anchors, .item_count = 1},
+        {.attr_name = "size", .data = sizes, .item_count = 1},
+        {.attr_name = "color", .data = colors, .item_count = 1},
+        {.attr_name = "angle", .data = angles, .item_count = 1},
+    };
+    AT(dvz_visual_set_strings(text, "text", strings, 1) == 0);
+    AT(dvz_visual_set_data_many(text, updates, 5) == 0);
+    AT(dvz_panel_add_visual(
+           panel, text,
+           &(DvzVisualAttachDesc){.z_layer = 1, .controller_mode = DVZ_CONTROLLER_FIXED}) == 0);
+
+    DvzApp* app = dvz_app(scene);
+    if (app == NULL)
+    {
+        log_warn("test_app_offscreen_sdf_text_has_nonblank_pixels skipped: GPU context creation failed");
+        dvz_scene_destroy(scene);
+        return 0;
+    }
+    DvzAppWindow* win = dvz_app_window(app, figure, 96, 64);
+    AT(win != NULL);
+
+    dvz_app_run(app, 1);
+
+    DvzCanvas* canvas = dvz_app_window_canvas(win);
+    ANN(canvas);
+
+    uint32_t width = 0;
+    uint32_t height = 0;
+    uint8_t* rgba = NULL;
+    AT(dvz_canvas_capture_rgba(canvas, &width, &height, &rgba) == 0);
+    ANN(rgba);
+    AT(width == 96);
+    AT(height == 64);
+
+    uint32_t green_count = 0;
+    for (uint32_t i = 0; i < width * height; i++)
+    {
+        const uint8_t* pixel = &rgba[4 * i];
+        if (pixel[1] > 60 && pixel[0] < 100 && pixel[2] < 100)
+            green_count++;
+    }
+    AT(green_count > 0);
+
+    dvz_free(rgba);
+    dvz_app_destroy(app);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
 
 int test_app_offscreen_image_field_partial_update_changes_region(TstContext* suite, const TstCase* item)
 {
@@ -5058,6 +5140,9 @@ int test_scene_app(TstSuite* suite)
         TST_ISOLATION_PROCESS);
     TST_SCENE_APP_CASE(
         test_app_offscreen_text_has_nonblank_pixels, TST_SCENE_APP_GPU_RES,
+        TST_ISOLATION_PROCESS);
+    TST_SCENE_APP_CASE(
+        test_app_offscreen_sdf_text_has_nonblank_pixels, TST_SCENE_APP_GPU_RES,
         TST_ISOLATION_PROCESS);
     TST_SCENE_APP_CASE(
         test_app_offscreen_image_field_partial_update_changes_region, TST_SCENE_APP_GPU_RES,
