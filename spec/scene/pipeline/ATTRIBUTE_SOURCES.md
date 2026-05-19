@@ -80,7 +80,7 @@ The value may still change across frames, but every item sees the same value at 
 Examples:
 
 1. all pixels in a scatter plot are the same red color,
-2. all segments share a fixed linewidth,
+2. all segments share a fixed `stroke_width`,
 3. one opacity value applies to all markers in a visual.
 
 Scene implementation: typically a push constant, uniform binding, or small parameter block.
@@ -118,7 +118,7 @@ in a per-item group index.
 Examples:
 
 1. 20 paths each with its own color — one `rgba_u8` per path,
-2. 200 paths each with its own linewidth — one `float32` per path,
+2. 200 paths each with its own `stroke_width` — one `float32` per path,
 3. 50 glyph strings each with its own baseline color — one `rgba_u8` per string.
 
 Scene implementation: the scene resolves span membership from the stored span boundaries and
@@ -137,7 +137,7 @@ attribute value.
 Examples:
 
 1. 3 neuron populations, 1M spikes each, one color per population,
-2. 200 electrode channels, each channel a different linewidth,
+2. 200 electrode channels, each channel a different stroke width,
 3. K brain-atlas regions rendered together, each region a distinct opacity.
 
 User declaration requirements depend on the resource class of the visual:
@@ -160,7 +160,7 @@ The user does not select or see the strategy.
 1. spike rasters with per-neuron color or size,
 2. atlas meshes with per-region style state,
 3. multi-channel waveform or wiggle displays with per-channel color,
-4. path bundles with per-path linewidth or opacity.
+4. path bundles with per-path stroke width or opacity.
 
 
 ## Relationship To `GroupedItemTable`
@@ -194,7 +194,7 @@ The valid combinations are:
 
 2. **`GroupedItemTable` + `PER_SPAN`**: span membership is already encoded in the table
    boundaries; the user supplies one value per span.
-   Example: 200 paths each with its own color or linewidth.
+   Example: 200 paths each with its own color or `stroke_width`.
 
 3. **`GroupedItemTable` + `PER_GROUP`**: spans have a semantic group identity beyond the span
    itself; each span carries a group index, and the attribute varies per group.
@@ -214,8 +214,8 @@ Each family spec defines, for each attribute, which sources are valid.
 General rules:
 
 1. `position` is always `PER_ITEM` — a single position for all items is not meaningful.
-2. style attributes such as `color`, `size`, `opacity`, `linewidth` typically accept all three
-   sources.
+2. style attributes such as `color`, `size`, `opacity`, and `stroke_width` typically accept all
+   three sources.
 3. orientation or shape attributes such as `angle` or `marker_shape` typically accept `CONSTANT`
    or `PER_ITEM`.
 4. group identity itself is always `PER_ITEM` — it is a per-item integer index.
@@ -310,8 +310,8 @@ several spans.
 
 The scene validates that the selected source is accepted by the visual family and attribute.
 For example, `position` generally accepts only `PER_ITEM`, while style attributes such as `color`,
-`size`, and `linewidth` may accept `CONSTANT`, `PER_ITEM`, `PER_SPAN`, or `PER_GROUP` depending on
-the visual family.
+`size`, and `stroke_width` may accept `CONSTANT`, `PER_ITEM`, `PER_SPAN`, or `PER_GROUP`
+depending on the visual family.
 
 
 ## Implementation Avenue: Optimizing `CONSTANT` Sources

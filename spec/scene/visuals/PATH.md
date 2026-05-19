@@ -7,8 +7,8 @@ It refines `../semantics/VISUAL_FAMILIES.md`, `../semantics/VISUAL_FAMILY_RULES.
 `../semantics/VISUAL_CONTRACT.md`.
 
 Shared attribute and behavioral definitions are in `SHARED_ATTRIBUTES.md`.
-Landed naming, stroke, dash, arrow, and picking decisions are tracked in
-`IMPLEMENTATION_DECISIONS.md`.
+Durable family-level decisions should live here. `IMPLEMENTATION_DECISIONS.md` records the landed
+first-slice history when useful, but this document is authoritative for `path` semantics.
 
 
 ## Current Implementation Status
@@ -20,16 +20,26 @@ The implemented path supports:
 
 1. retained `path` visual construction via `dvz_path()`;
 2. dense `position` and `color` attributes;
-3. primitive line-strip rendering when `line_width` is absent;
-4. optional dense per-point `line_width` in screen pixels;
-5. `dvz_path_set_subpaths()` for explicit open subpath lengths;
+3. primitive line-strip rendering when `stroke_width` is absent;
+4. optional dense per-point `stroke_width` in screen pixels;
+5. `dvz_path_set_subpaths()` for explicit open subpath lengths in the stroked path lane;
 6. stroked lowering through derived segment-style `position_start`, `position_end`, `color`,
-   `line_width`, and index resources when `line_width` is present;
+   internal `line_width`, and index resources when `stroke_width` is present;
 7. GLSL/Vulkan frame-plan and DRP2 emission through the segment stroke pipeline for stroked paths.
+
+`stroke_width` is the public attribute name. The current retained storage, shader input, and DRP2
+resource metadata still use the historical internal name `line_width`.
+
+Current limitations:
+
+1. thin line-strip paths do not yet consume explicit subpath lengths;
+2. stroked paths are lowered as independent segment strokes with butt caps;
+3. path-native joins, path cap parameters, closed subpaths, dashes, picking, and WGSL lowering are
+   deferred.
 
 The following sections describe the target path contract. Closed subpaths, joins beyond the current
 segment-style stroke, miter-limit behavior, dashes, filled paths/polygons, SVG parsing, path
-picking, and data-space line width are planned capabilities unless explicitly marked as implemented
+picking, and data-space stroke width are planned capabilities unless explicitly marked as implemented
 above.
 
 
@@ -83,12 +93,12 @@ Accepted sources: `CONSTANT`, `PER_ITEM`, `PER_SPAN`.
 `CONSTANT` means one color for all vertices of all paths.
 
 
-### `line_width`
+### `stroke_width`
 
 Standard — see `SHARED_ATTRIBUTES.md`.
 Accepted sources: `CONSTANT`, `PER_ITEM`, `PER_SPAN`.
 
-Per-point line width enables tapered paths. The active first slice averages neighbouring endpoint
+Per-point stroke width enables tapered paths. The active first slice averages neighbouring endpoint
 widths when lowering each path edge to the segment stroke pipeline.
 
 
@@ -99,14 +109,14 @@ widths when lowering each path edge to the segment stroke pipeline.
 | Property | Value |
 |---|---|
 | Type | enum — same cap type list as `segment` |
-| Default | `round` for both |
+| Default | `round` for both in the target contract |
 | Mutability | `dynamic` |
 
 Cap styles applied to the start and end of each open path independently.
 Ignored for closed paths.
 
-Status on 2026-05-17: path-specific cap parameters are not implemented. Stroked paths currently
-use the segment stroke pipeline with butt caps.
+Status on 2026-05-17: path-specific cap parameters are not implemented. Stroked paths are lowered
+to independent segment-style strokes with butt caps.
 
 The cap and join vocabulary below is the focused home for the useful path enum sketch from the
 retired broad scene API draft. Arrow-style caps may be added here when the `path` or `segment`
@@ -156,12 +166,12 @@ The miter limit is controlled by `miter_limit` (see below).
 | Default | `4.0` |
 | Mutability | `dynamic` |
 
-Maximum miter length as a multiple of `line_width`. When a miter join would exceed this limit,
+Maximum miter length as a multiple of `stroke_width`. When a miter join would exceed this limit,
 the join falls back to `bevel` automatically. `4.0` is a standard SVG/PostScript default.
 Set to a large value to disable the limit (allows arbitrarily long miter spikes).
 
-When `line_width` is `PER_SPAN`, the miter limit is evaluated per-path using that path's own
-line width — a path with a wider line uses its width as the reference multiple.
+When `stroke_width` is `PER_SPAN`, the miter limit is evaluated per-path using that path's own
+stroke width — a path with a wider stroke uses its width as the reference multiple.
 
 Status on 2026-05-17: path-specific miter-limit handling is not implemented.
 
@@ -184,7 +194,7 @@ Status on 2026-05-17: closed subpaths are not implemented. `dvz_path_set_subpath
 subpath lengths only.
 
 
-### `line_width_space`
+### `stroke_width_space`
 
 Standard — see `SHARED_ATTRIBUTES.md`. Default: `screen`.
 
@@ -196,7 +206,7 @@ Standard — see `SHARED_ATTRIBUTES.md`. Default: `screen`.
 | `position` | required | NaN/Inf vertex breaks or skips the affected path segment | no |
 | subpath lengths | optional | invalid lengths are validation errors | no |
 | `color` | opaque white RGBA | scalar NaN uses scale missing color | yes |
-| `line_width` | family-defined screen width | NaN falls back to default | yes |
+| `stroke_width` | family-defined screen width | NaN falls back to default | yes |
 | `cap_start`, `cap_end`, `join` | defaults described above | n/a | yes |
 
 
@@ -238,11 +248,11 @@ dedicated streaming API is needed.
 
 ## Minimum Cases This Spec Must Support
 
-1. single signal trace — one path, `color` `CONSTANT`, `line_width` `CONSTANT`,
-2. 20 overlaid signal traces — `color` `PER_SPAN`, `line_width` `CONSTANT`,
+1. single signal trace — one path, `color` `CONSTANT`, `stroke_width` `CONSTANT`,
+2. 20 overlaid signal traces — `color` `PER_SPAN`, `stroke_width` `CONSTANT`,
 3. per-vertex colored trajectory — `color` `PER_ITEM` rgba (gradient along path),
 4. scalar-colored fiber bundle — `color` `PER_ITEM` scalar,
-5. per-path-width contour lines — `line_width` `PER_SPAN`,
+5. per-path-width contour lines — `stroke_width` `PER_SPAN`,
 6. closed polygon outlines — `closed = true`, `join = miter`.
 
 
@@ -252,9 +262,9 @@ dedicated streaming API is needed.
 |---|---|
 | `dvz_path_position` with `path_lengths` | `position` `PER_ITEM` + group structure |
 | `dvz_path_color` | `color`, extended sources and scalar mode |
-| `dvz_path_linewidth` | `line_width`, now also `PER_ITEM` and `PER_SPAN` |
+| `dvz_path_linewidth` | `stroke_width`, now also `PER_ITEM` and `PER_SPAN` |
 | `dvz_path_cap` | `cap_start` + `cap_end` (split; both default `round`) |
 | `dvz_path_join` | `join`, extended to `miter`/`round`/`bevel` |
 
-v0.4 adds: `PER_SPAN` sources, scalar color mode, `line_width_space`, and closed subpath support.
+v0.4 adds: `PER_SPAN` sources, scalar color mode, `stroke_width_space`, and closed subpath support.
 v0.3 `join` had only `square`/`round`; v0.4 renames `square` to `bevel` and adds `miter`.

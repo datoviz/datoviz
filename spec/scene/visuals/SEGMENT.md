@@ -7,25 +7,28 @@ It refines `../semantics/VISUAL_FAMILIES.md`, `../semantics/VISUAL_FAMILY_RULES.
 `../semantics/VISUAL_CONTRACT.md`.
 
 Shared attribute and behavioral definitions are in `SHARED_ATTRIBUTES.md`.
-Landed naming, stroke, dash, arrow, and picking decisions are tracked in
-`IMPLEMENTATION_DECISIONS.md`.
+Durable family-level decisions should live here. `IMPLEMENTATION_DECISIONS.md` records the landed
+first-slice history when useful, but this document is authoritative for `segment` semantics.
 
 
 ## Current Implementation Status
 
 Status on 2026-05-17: the active v0.4 runtime implements the first retained segment slice.
 
-The implemented path supports:
+The implemented segment supports:
 
 1. retained `segment` visual construction via `dvz_segment()`;
-2. dense `position_start`, `position_end`, `color`, and `line_width` attributes;
+2. dense `position_start`, `position_end`, `color`, and public `stroke_width` attributes;
 3. screen-space analytic stroked segments derived from the v0.3 four-vertex/six-index technique;
 4. caps `none`, `round`, `triangle_in`, `triangle_out`, `square`, and `butt`;
 5. `dvz_segment_set_caps()`, with `butt` as the default at both ends;
 6. GLSL/Vulkan frame-plan and DRP2 emission through the segment pipeline.
 
+`stroke_width` is the public attribute name. The current retained storage, shader input, and DRP2
+resource metadata still use the historical internal name `line_width`.
+
 The following sections describe the target segment contract. Dashes, arrow caps, endpoint shifts,
-`color_end` gradients, scalar/grouped color, data-space line width, segment picking, and WGSL
+`color_end` gradients, scalar/grouped color, data-space stroke width, segment picking, and WGSL
 segment lowering are planned capabilities unless explicitly marked as implemented above.
 
 
@@ -92,13 +95,13 @@ Must use the same `color_mode` as `color`.
 Useful for time-colored trajectories, FA-colored fibers, signal-strength connection lines.
 
 
-### `line_width`
+### `stroke_width`
 
 Standard — see `SHARED_ATTRIBUTES.md`.
 Accepted sources: `CONSTANT`, `PER_ITEM`, `PER_GROUP`.
-Per-item line width is the defining capability of `segment` over `primitive` line topologies.
+Per-item stroke width is the defining capability of `segment` over `primitive` line topologies.
 
-Status on 2026-05-17: the active first slice supports dense per-item `line_width`.
+Status on 2026-05-17: the active first slice supports dense per-item `stroke_width`.
 
 
 ### `shift`
@@ -126,8 +129,8 @@ for quiver-plot arrow markers.
 | Cap | Description |
 |---|---|
 | `none` | no cap, ends at the endpoint coordinate |
-| `round` | semicircular, extends by half line width |
-| `square` | rectangular, extends by half line width |
+| `round` | semicircular, extends by half stroke width |
+| `square` | rectangular, extends by half stroke width |
 | `butt` | flat exactly at endpoint, no extension |
 | `triangle_out` | triangular cap pointing outward |
 | `triangle_in` | triangular cap pointing inward (notch) |
@@ -136,13 +139,13 @@ for quiver-plot arrow markers.
 | `arrow_stealth` | swept-back stealth/chevron arrowhead — `DVZ_ARROW_STEALTH` |
 | `arrow_circle` | circular cap with arrowhead semantics — `DVZ_ARROW_CIRCLE` |
 
-`arrow_*` caps extend beyond the endpoint by a size proportional to `line_width`.
+`arrow_*` caps extend beyond the endpoint by a size proportional to `stroke_width`.
 
 Status on 2026-05-17: arrow caps are not implemented. The active defaults are `cap_start = butt`
 and `cap_end = butt`.
 
 
-### `line_width_space`
+### `stroke_width_space`
 
 Standard — see `SHARED_ATTRIBUTES.md`. Default: `screen`.
 
@@ -154,7 +157,7 @@ Standard — see `SHARED_ATTRIBUTES.md`. Default: `screen`.
 | `P0`, `P1` | required | NaN/Inf endpoint skips segment and picking | no |
 | `color` | opaque white RGBA | scalar NaN uses scale missing color | yes |
 | `color_end` | inherits `color` | scalar NaN uses scale missing color | yes |
-| `line_width` | family-defined screen width | NaN falls back to default | yes |
+| `stroke_width` | family-defined screen width | NaN falls back to default | yes |
 | `shift` | `(0, 0, 0, 0)` | NaN component treated as zero shift | yes |
 | `cap_start`, `cap_end` | directional default described above | n/a | yes |
 
@@ -189,9 +192,9 @@ Status on 2026-05-17: segment picking is not implemented in the active first sli
 
 ## Minimum Cases This Spec Must Support
 
-1. uniform error bars — `P0`/`P1` `PER_ITEM`, `color` `CONSTANT`, `line_width` `CONSTANT`,
+1. uniform error bars — `P0`/`P1` `PER_ITEM`, `color` `CONSTANT`, `stroke_width` `CONSTANT`,
 2. per-segment colored graph edges — `color` `PER_ITEM` rgba,
-3. multi-group error bars with group-encoded widths — `line_width` `PER_GROUP`,
+3. multi-group error bars with group-encoded widths — `stroke_width` `PER_GROUP`,
 4. time-colored trajectories — gradient, `color` and `color_end` both `PER_ITEM` scalar,
 5. error bar caps aligned to markers — `shift` `PER_ITEM`,
 6. fiber bundle with scalar FA coloring — `color` `PER_ITEM` scalar.
@@ -203,9 +206,9 @@ Status on 2026-05-17: segment picking is not implemented in the active first sli
 |---|---|
 | `initial`/`terminal` in `dvz_segment_position` | `P0`, `P1` |
 | `dvz_segment_color` | `color`, extended sources and scalar mode |
-| `dvz_segment_linewidth` | `line_width`, extended sources |
+| `dvz_segment_linewidth` | `stroke_width`, extended sources |
 | `dvz_segment_shift` | `shift` (`vec4`) |
 | `dvz_segment_cap` | `cap_start`, `cap_end` |
 
 v0.4 adds: `color_end` (gradient), `PER_GROUP` sources, `scalar` color mode,
-`line_width_space`.
+`stroke_width_space`.

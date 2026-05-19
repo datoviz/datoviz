@@ -273,7 +273,7 @@ Deferred:
 3. `color_end` gradients.
 4. Scalar color.
 5. Grouped width/color.
-6. Data-space line width.
+6. Data-space stroke width.
 7. Segment picking.
 8. WGSL support if not completed in the first renderer pass.
 
@@ -303,7 +303,7 @@ Deferred:
 2. SVG parsing.
 3. Filled paths/polygons.
 4. Path picking unless explicitly scoped after rendering is stable.
-5. Data-space line width unless a separate implementation note defines the 2D/3D projection rules.
+5. Data-space stroke width unless a separate implementation note defines the 2D/3D projection rules.
 6. Closed subpaths.
 7. Path-specific joins and miter-limit handling.
 
@@ -338,7 +338,7 @@ GPU stroke representation:
    geometry shaders.
 2. Segment starts from the v0.3 four-vertex/six-index analytic-cap model.
 3. Path-native strokes should use adjacency-style derived payloads with previous/current/next
-   positions, line width, color, subpath metadata, closed/open flags, and cumulative distance.
+   positions, stroke width, color, subpath metadata, closed/open flags, and cumulative distance.
 4. Keep the current segment-lowered stroked path as a temporary fallback until path-native joins and
    miter-limit tests are stable.
 

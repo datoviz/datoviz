@@ -150,12 +150,12 @@ Conceptually:
 
 ```c
 // Visual-wide parameters set by name (value is a typed pointer)
-dvz_visual_set_param(visual, "linewidth", &lw);
+dvz_visual_set_param(visual, "stroke_width", &lw);
 dvz_visual_set_param(visual, "size_space", &space);
 
 // Optional reusable defaults.
 DvzStyle* style = dvz_style(scene);
-dvz_style_set_param(style, "linewidth", &lw);
+dvz_style_set_param(style, "stroke_width", &lw);
 dvz_visual_set_style(visual, style);
 
 // Mutability hint (optional, default is DYNAMIC)
