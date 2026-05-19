@@ -613,6 +613,74 @@ int test_scene_text_auto_renderer_selection(TstContext* suite, const TstCase* it
 
 
 /**
+ * Verify font-backed text atlases grow to cover requested UTF-8 glyphs.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_text_font_atlas_expands_for_utf8(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    ANN(item);
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 640, 480, 0);
+    DvzPanel* panel = dvz_panel(
+        figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+    ANN(panel);
+
+    DvzVisual* ascii = dvz_text(scene, 0);
+    DvzVisual* utf8 = dvz_text(scene, 0);
+    ANN(ascii);
+    ANN(utf8);
+    AT(dvz_text_set_renderer(ascii, DVZ_TEXT_RENDERER_MSDF_ATLAS) == 0);
+    AT(dvz_text_set_renderer(utf8, DVZ_TEXT_RENDERER_MSDF_ATLAS) == 0);
+
+    const char* ascii_strings[1] = {"ASCII"};
+    const char* utf8_strings[1] = {"caf\xC3\xA9"};
+    float ascii_pos[1][3] = {{24.0f, 32.0f, 0.0f}};
+    float utf8_pos[1][3] = {{24.0f, 72.0f, 0.0f}};
+    float sizes[1] = {24.0f};
+    DvzVisualDataUpdate ascii_updates[2] = {
+        {.attr_name = "position", .data = ascii_pos, .item_count = 1},
+        {.attr_name = "size", .data = sizes, .item_count = 1},
+    };
+    DvzVisualDataUpdate utf8_updates[2] = {
+        {.attr_name = "position", .data = utf8_pos, .item_count = 1},
+        {.attr_name = "size", .data = sizes, .item_count = 1},
+    };
+    AT(dvz_visual_set_strings(ascii, "text", ascii_strings, 1) == 0);
+    AT(dvz_visual_set_strings(utf8, "text", utf8_strings, 1) == 0);
+    AT(dvz_visual_set_data_many(ascii, ascii_updates, 2) == 0);
+    AT(dvz_visual_set_data_many(utf8, utf8_updates, 2) == 0);
+    AT(dvz_panel_add_visual(
+           panel, ascii,
+           &(DvzVisualAttachDesc){.z_layer = 1, .controller_mode = DVZ_CONTROLLER_FIXED}) == 0);
+    AT(dvz_panel_add_visual(
+           panel, utf8,
+           &(DvzVisualAttachDesc){.z_layer = 2, .controller_mode = DVZ_CONTROLLER_FIXED}) == 0);
+
+    _scene_prepare_text_visuals(figure);
+    AT(scene->font_count == 1);
+    DvzTextAtlas* atlas =
+        scene->fonts[0].msdf_atlas != NULL ? scene->fonts[0].msdf_atlas : scene->fonts[0].sdf_atlas;
+    ANN(atlas);
+    ANN(atlas->field);
+    AT(atlas->glyph_count > (126u - 32u + 1u));
+    ANN(_scene_text_atlas_glyph(atlas, 0x00E9u));
+    ANN(ascii->text.glyph_visual);
+    ANN(utf8->text.glyph_visual);
+    AT(ascii->text.glyph_visual->field == atlas->field);
+    AT(utf8->text.glyph_visual->field == atlas->field);
+    AT(ascii->text.glyph_visual->field == utf8->text.glyph_visual->field);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+/**
  * Verify batched text emits many labels through one glyph visual.
  *
  * @param suite the active test suite
@@ -710,6 +778,7 @@ int test_scene_interaction(TstSuite* suite)
     TST_CASE(test_scene_text_bitmap_visual_realization);
     TST_CASE(test_scene_text_sdf_visual_realization);
     TST_CASE(test_scene_text_auto_renderer_selection);
+    TST_CASE(test_scene_text_font_atlas_expands_for_utf8);
     TST_CASE(test_scene_text_many_labels_render_plan);
 
     return 0;

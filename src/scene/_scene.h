@@ -62,7 +62,7 @@
 #define DVZ_SCENE_MAX_AXIS_MINOR_TICKS 8
 #define DVZ_SCENE_MAX_AXIS_LINES                                                                  \
     ((2 + DVZ_SCENE_MAX_AXIS_MINOR_TICKS) * DVZ_SCENE_MAX_AXIS_TICKS + 1)
-#define DVZ_SCENE_TEXT_ATLAS_MAX_GLYPHS 96
+#define DVZ_SCENE_TEXT_ATLAS_MAX_GLYPHS 256
 
 
 
@@ -265,6 +265,8 @@ struct DvzTextAtlas
     float descent;
     float line_gap;
     float line_height;
+    uint32_t missing_glyph_count;
+    uint64_t generation;
     DvzTextAtlasGlyph glyphs[DVZ_SCENE_TEXT_ATLAS_MAX_GLYPHS];
 };
 
@@ -1201,6 +1203,12 @@ void _scene_prepare_text_visuals(DvzFigure* figure);
 EXTERN_C_ON
 
 bool _scene_text_atlas_ensure(DvzFont* font, DvzTextAtlasBackend backend);
+
+bool _scene_text_atlas_ensure_string(
+    DvzFont* font, DvzTextAtlasBackend backend, const char* string);
+
+bool _scene_text_atlas_ensure_strings(
+    DvzFont* font, DvzTextAtlasBackend backend, const char* const* strings, uint32_t count);
 
 DvzTextAtlasGlyph* _scene_text_atlas_glyph(DvzTextAtlas* atlas, uint32_t codepoint);
 

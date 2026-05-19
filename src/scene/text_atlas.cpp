@@ -93,7 +93,15 @@
 /*  Function prototypes                                                                          */
 /*************************************************************************************************/
 
-static bool _text_sdf_codepoint_supported(uint32_t codepoint);
+typedef struct DvzTextAtlasBuildSet DvzTextAtlasBuildSet;
+struct DvzTextAtlasBuildSet
+{
+    uint32_t codepoints[DVZ_SCENE_TEXT_ATLAS_MAX_GLYPHS];
+    uint32_t count;
+};
+
+
+static bool _text_atlas_codepoint_renderable(uint32_t codepoint);
 static float _text_sdf_pixel_height(float size_pts);
 static bool _text_sdf_font_bytes(DvzFont* font);
 static bool _text_atlas_upload_rgba(
@@ -105,14 +113,19 @@ static bool _text_atlas_upload_rgba(
  * Build an RGB MSDF atlas with msdf-atlas-gen.
  *
  * @param font the font
+ * @param set the requested codepoint set
  * @param out_atlas output atlas metadata
  * @return whether atlas creation succeeded
  */
-static bool _text_msdf_build_atlas(DvzFont* font, DvzTextAtlas** out_atlas)
+static bool _text_msdf_build_atlas(
+    DvzFont* font, const DvzTextAtlasBuildSet* set, DvzTextAtlas** out_atlas)
 {
     ANN(font);
+    ANN(set);
     ANN(out_atlas);
     *out_atlas = NULL;
+    if (set->count == 0 || set->count > DVZ_SCENE_TEXT_ATLAS_MAX_GLYPHS)
+        return false;
     if (!_text_sdf_font_bytes(font))
         return false;
 
@@ -139,9 +152,9 @@ static bool _text_msdf_build_atlas(DvzFont* font, DvzTextAtlas** out_atlas)
     std::vector<msdf_atlas::GlyphGeometry> glyphs;
     msdf_atlas::FontGeometry font_geometry(&glyphs);
     msdf_atlas::Charset charset;
-    const uint32_t glyph_count = DVZ_TEXT_SDF_LAST_CHAR - DVZ_TEXT_SDF_FIRST_CHAR + 1u;
+    const uint32_t glyph_count = set->count;
     for (uint32_t i = 0; i < glyph_count; i++)
-        charset.add(DVZ_TEXT_SDF_FIRST_CHAR + i);
+        charset.add(set->codepoints[i]);
 
     if (font_geometry.loadCharset(msdf_font, 1.0, charset) <= 0 || glyphs.empty())
     {
@@ -245,13 +258,21 @@ static bool _text_msdf_build_atlas(DvzFont* font, DvzTextAtlas** out_atlas)
     atlas->line_height = (float)(metrics.lineHeight * scale);
     if (atlas->line_height <= 0.0f)
         atlas->line_height = (float)scale;
+    for (uint32_t i = 0; i < glyph_count; i++)
+        atlas->glyphs[i].codepoint = set->codepoints[i];
 
     for (const msdf_atlas::GlyphGeometry& src_glyph : glyphs)
     {
         uint32_t codepoint = (uint32_t)src_glyph.getCodepoint();
-        if (!_text_sdf_codepoint_supported(codepoint))
-            continue;
-        uint32_t index = codepoint - DVZ_TEXT_SDF_FIRST_CHAR;
+        uint32_t index = UINT32_MAX;
+        for (uint32_t i = 0; i < glyph_count; i++)
+        {
+            if (set->codepoints[i] == codepoint)
+            {
+                index = i;
+                break;
+            }
+        }
         if (index >= DVZ_SCENE_TEXT_ATLAS_MAX_GLYPHS)
             continue;
         DvzTextAtlasGlyph* glyph = &atlas->glyphs[index];
@@ -316,6 +337,11 @@ static bool _text_msdf_build_atlas(DvzFont* font, DvzTextAtlas** out_atlas)
         glyph->uv[3] = ((float)(top_y + (uint32_t)h) - pad_y) / (float)atlas_height;
         glyph->valid = true;
     }
+    for (uint32_t i = 0; i < glyph_count; i++)
+    {
+        if (!atlas->glyphs[i].valid && atlas->glyphs[i].codepoint != DVZ_TEXT_SDF_FALLBACK)
+            atlas->missing_glyph_count++;
+    }
 
     bool ok = _text_atlas_upload_rgba(font, atlas, rgba, atlas_width, atlas_height);
     dvz_free(rgba);
@@ -339,14 +365,271 @@ static bool _text_msdf_build_atlas(DvzFont* font, DvzTextAtlas** out_atlas)
 /*************************************************************************************************/
 
 /**
- * Return whether a codepoint belongs to the first atlas charset.
+ * Return whether a codepoint may be requested from a font-backed atlas.
  *
  * @param codepoint the Unicode codepoint
- * @return whether the codepoint is in the printable ASCII atlas range
+ * @return whether the codepoint can be requested
  */
-static bool _text_sdf_codepoint_supported(uint32_t codepoint)
+static bool _text_atlas_codepoint_renderable(uint32_t codepoint)
 {
-    return codepoint >= DVZ_TEXT_SDF_FIRST_CHAR && codepoint <= DVZ_TEXT_SDF_LAST_CHAR;
+    if (codepoint < DVZ_TEXT_SDF_FIRST_CHAR || codepoint > 0x10FFFFu)
+        return false;
+    if (codepoint >= 0xD800u && codepoint <= 0xDFFFu)
+        return false;
+    return true;
+}
+
+
+
+/**
+ * Return whether a build set already contains a codepoint.
+ *
+ * @param set the build set
+ * @param codepoint the Unicode codepoint
+ * @return whether the codepoint is already present
+ */
+static bool _text_atlas_build_set_contains(
+    const DvzTextAtlasBuildSet* set, uint32_t codepoint)
+{
+    ANN(set);
+    for (uint32_t i = 0; i < set->count; i++)
+        if (set->codepoints[i] == codepoint)
+            return true;
+    return false;
+}
+
+
+
+/**
+ * Add one codepoint to a build set.
+ *
+ * @param set the build set
+ * @param codepoint the Unicode codepoint
+ * @return whether the codepoint was accepted
+ */
+static bool _text_atlas_build_set_add(DvzTextAtlasBuildSet* set, uint32_t codepoint)
+{
+    ANN(set);
+    if (codepoint == '\n' || codepoint == '\t')
+        return true;
+    if (!_text_atlas_codepoint_renderable(codepoint))
+        codepoint = DVZ_TEXT_SDF_FALLBACK;
+    if (_text_atlas_build_set_contains(set, codepoint))
+        return true;
+    if (set->count >= DVZ_SCENE_TEXT_ATLAS_MAX_GLYPHS)
+    {
+        log_error("text atlas glyph capacity reached");
+        return false;
+    }
+    set->codepoints[set->count++] = codepoint;
+    return true;
+}
+
+
+
+/**
+ * Fill a build set with the default printable ASCII range.
+ *
+ * @param set the build set
+ * @return whether the default set was added
+ */
+static bool _text_atlas_build_set_add_default(DvzTextAtlasBuildSet* set)
+{
+    ANN(set);
+    for (uint32_t codepoint = DVZ_TEXT_SDF_FIRST_CHAR; codepoint <= DVZ_TEXT_SDF_LAST_CHAR;
+         codepoint++)
+    {
+        if (!_text_atlas_build_set_add(set, codepoint))
+            return false;
+    }
+    return _text_atlas_build_set_add(set, DVZ_TEXT_SDF_FALLBACK);
+}
+
+
+
+/**
+ * Preserve all codepoints already present in an atlas.
+ *
+ * @param set the build set
+ * @param atlas the existing atlas
+ * @return whether all codepoints were added
+ */
+static bool _text_atlas_build_set_add_existing(
+    DvzTextAtlasBuildSet* set, const DvzTextAtlas* atlas)
+{
+    ANN(set);
+    if (atlas == NULL)
+        return true;
+    for (uint32_t i = 0; i < atlas->glyph_count; i++)
+    {
+        if (!_text_atlas_build_set_add(set, atlas->glyphs[i].codepoint))
+            return false;
+    }
+    return true;
+}
+
+
+
+/**
+ * Decode one UTF-8 codepoint, replacing malformed input with the fallback codepoint.
+ *
+ * @param string the UTF-8 string
+ * @param inout_index byte index, advanced by the consumed sequence
+ * @param out_codepoint output Unicode codepoint
+ * @return whether a codepoint was decoded
+ */
+static bool _text_atlas_utf8_next(
+    const char* string, uint32_t* inout_index, uint32_t* out_codepoint)
+{
+    ANN(string);
+    ANN(inout_index);
+    ANN(out_codepoint);
+    uint32_t i = *inout_index;
+    if (i >= DVZ_SCENE_LABEL_SIZE || string[i] == '\0')
+        return false;
+
+    const uint8_t* s = (const uint8_t*)string;
+    uint8_t b0 = s[i];
+    if (b0 < 0x80u)
+    {
+        *out_codepoint = b0;
+        *inout_index = i + 1;
+        return true;
+    }
+
+    uint32_t needed = 0;
+    uint32_t cp = 0;
+    uint32_t min_cp = 0;
+    if ((b0 & 0xE0u) == 0xC0u)
+    {
+        needed = 2;
+        cp = b0 & 0x1Fu;
+        min_cp = 0x80u;
+    }
+    else if ((b0 & 0xF0u) == 0xE0u)
+    {
+        needed = 3;
+        cp = b0 & 0x0Fu;
+        min_cp = 0x800u;
+    }
+    else if ((b0 & 0xF8u) == 0xF0u)
+    {
+        needed = 4;
+        cp = b0 & 0x07u;
+        min_cp = 0x10000u;
+    }
+    else
+    {
+        *out_codepoint = DVZ_TEXT_SDF_FALLBACK;
+        *inout_index = i + 1;
+        return true;
+    }
+
+    for (uint32_t j = 1; j < needed; j++)
+    {
+        if (i + j >= DVZ_SCENE_LABEL_SIZE || string[i + j] == '\0' ||
+            (s[i + j] & 0xC0u) != 0x80u)
+        {
+            *out_codepoint = DVZ_TEXT_SDF_FALLBACK;
+            *inout_index = i + 1;
+            return true;
+        }
+        cp = (cp << 6) | (uint32_t)(s[i + j] & 0x3Fu);
+    }
+
+    if (cp < min_cp || !_text_atlas_codepoint_renderable(cp))
+        cp = DVZ_TEXT_SDF_FALLBACK;
+    *out_codepoint = cp;
+    *inout_index = i + needed;
+    return true;
+}
+
+
+
+/**
+ * Add all codepoints from one string to a build set.
+ *
+ * @param set the build set
+ * @param string the UTF-8 string
+ * @return whether all requested codepoints were added
+ */
+static bool _text_atlas_build_set_add_string(DvzTextAtlasBuildSet* set, const char* string)
+{
+    ANN(set);
+    if (string == NULL)
+        return true;
+    uint32_t index = 0;
+    uint32_t codepoint = 0;
+    while (_text_atlas_utf8_next(string, &index, &codepoint))
+        if (!_text_atlas_build_set_add(set, codepoint))
+            return false;
+    return true;
+}
+
+
+
+/**
+ * Add all codepoints from a string array to a build set.
+ *
+ * @param set the build set
+ * @param strings the UTF-8 strings
+ * @param count string count
+ * @return whether all requested codepoints were added
+ */
+static bool _text_atlas_build_set_add_strings(
+    DvzTextAtlasBuildSet* set, const char* const* strings, uint32_t count)
+{
+    ANN(set);
+    if (strings == NULL)
+        return true;
+    for (uint32_t i = 0; i < count; i++)
+        if (!_text_atlas_build_set_add_string(set, strings[i]))
+            return false;
+    return true;
+}
+
+
+
+/**
+ * Return whether an atlas contains a codepoint entry.
+ *
+ * @param atlas the atlas
+ * @param codepoint the Unicode codepoint
+ * @return whether the codepoint is present in the atlas metadata
+ */
+static bool _text_atlas_contains_codepoint(const DvzTextAtlas* atlas, uint32_t codepoint)
+{
+    if (atlas == NULL)
+        return false;
+    if (!_text_atlas_codepoint_renderable(codepoint))
+        codepoint = DVZ_TEXT_SDF_FALLBACK;
+    for (uint32_t i = 0; i < atlas->glyph_count; i++)
+        if (atlas->glyphs[i].codepoint == codepoint)
+            return true;
+    return false;
+}
+
+
+
+/**
+ * Return whether an atlas covers a build set.
+ *
+ * @param atlas the atlas
+ * @param set the requested codepoint set
+ * @return whether every requested codepoint is present
+ */
+static bool _text_atlas_contains_set(
+    const DvzTextAtlas* atlas, const DvzTextAtlasBuildSet* set)
+{
+    ANN(set);
+    if (atlas == NULL || atlas->field == NULL)
+        return false;
+    for (uint32_t i = 0; i < set->count; i++)
+    {
+        if (!_text_atlas_contains_codepoint(atlas, set->codepoints[i]))
+            return false;
+    }
+    return true;
 }
 
 
@@ -630,14 +913,19 @@ static void _text_ft_copy_bitmap(
  * Build a hinted FreeType bitmap atlas for printable ASCII glyphs.
  *
  * @param font the font
+ * @param set the requested codepoint set
  * @param out_atlas output atlas metadata
  * @return whether atlas creation succeeded
  */
-static bool _text_ft_build_bitmap_atlas(DvzFont* font, DvzTextAtlas** out_atlas)
+static bool _text_ft_build_bitmap_atlas(
+    DvzFont* font, const DvzTextAtlasBuildSet* set, DvzTextAtlas** out_atlas)
 {
     ANN(font);
+    ANN(set);
     ANN(out_atlas);
     *out_atlas = NULL;
+    if (set->count == 0 || set->count > DVZ_SCENE_TEXT_ATLAS_MAX_GLYPHS)
+        return false;
     if (!_text_sdf_font_bytes(font))
         return false;
 
@@ -666,7 +954,7 @@ static bool _text_ft_build_bitmap_atlas(DvzFont* font, DvzTextAtlas** out_atlas)
         return false;
     }
 
-    const uint32_t glyph_count = DVZ_TEXT_SDF_LAST_CHAR - DVZ_TEXT_SDF_FIRST_CHAR + 1u;
+    const uint32_t glyph_count = set->count;
     uint32_t glyph_widths[DVZ_SCENE_TEXT_ATLAS_MAX_GLYPHS] = {};
     uint32_t glyph_heights[DVZ_SCENE_TEXT_ATLAS_MAX_GLYPHS] = {};
     int glyph_lefts[DVZ_SCENE_TEXT_ATLAS_MAX_GLYPHS] = {};
@@ -677,7 +965,7 @@ static bool _text_ft_build_bitmap_atlas(DvzFont* font, DvzTextAtlas** out_atlas)
 
     for (uint32_t i = 0; i < glyph_count; i++)
     {
-        uint32_t codepoint = DVZ_TEXT_SDF_FIRST_CHAR + i;
+        uint32_t codepoint = set->codepoints[i];
         if (FT_Load_Char(face, (FT_ULong)codepoint, FT_LOAD_DEFAULT) != 0 ||
             FT_Render_Glyph(face->glyph, FT_RENDER_MODE_NORMAL) != 0)
             continue;
@@ -742,7 +1030,7 @@ static bool _text_ft_build_bitmap_atlas(DvzFont* font, DvzTextAtlas** out_atlas)
 
     for (uint32_t i = 0; i < glyph_count; i++)
     {
-        uint32_t codepoint = DVZ_TEXT_SDF_FIRST_CHAR + i;
+        uint32_t codepoint = set->codepoints[i];
         DvzTextAtlasGlyph* glyph = &atlas->glyphs[i];
         glyph->codepoint = codepoint;
         glyph->glyph_id = (uint32_t)FT_Get_Char_Index(face, (FT_ULong)codepoint);
@@ -787,6 +1075,11 @@ static bool _text_ft_build_bitmap_atlas(DvzFont* font, DvzTextAtlas** out_atlas)
             continue;
         _text_ft_copy_bitmap(rgba, atlas_width, x, y, &face->glyph->bitmap);
     }
+    for (uint32_t i = 0; i < glyph_count; i++)
+    {
+        if (!atlas->glyphs[i].valid && atlas->glyphs[i].codepoint != DVZ_TEXT_SDF_FALLBACK)
+            atlas->missing_glyph_count++;
+    }
 
     bool ok = _text_atlas_upload_rgba(font, atlas, rgba, atlas_width, atlas_height);
     dvz_free(rgba);
@@ -805,6 +1098,278 @@ static bool _text_ft_build_bitmap_atlas(DvzFont* font, DvzTextAtlas** out_atlas)
 
 
 
+/**
+ * Build an stb_truetype SDF atlas for the requested codepoint set.
+ *
+ * @param font the font
+ * @param set the requested codepoint set
+ * @param out_atlas output atlas metadata
+ * @return whether atlas creation succeeded
+ */
+static bool _text_sdf_build_atlas(
+    DvzFont* font, const DvzTextAtlasBuildSet* set, DvzTextAtlas** out_atlas)
+{
+    ANN(font);
+    ANN(set);
+    ANN(out_atlas);
+    *out_atlas = NULL;
+    if (set->count == 0 || set->count > DVZ_SCENE_TEXT_ATLAS_MAX_GLYPHS)
+        return false;
+    if (!_text_sdf_font_bytes(font))
+        return false;
+
+    stbtt_fontinfo info = {};
+    if (!_text_sdf_init_font(font, &info))
+        return false;
+
+    const float pixel_height = _text_sdf_pixel_height(font->size_pts);
+    const float scale = stbtt_ScaleForPixelHeight(&info, pixel_height);
+    const uint32_t glyph_count = set->count;
+    uint8_t* glyph_sdfs[DVZ_SCENE_TEXT_ATLAS_MAX_GLYPHS] = {};
+    uint32_t glyph_widths[DVZ_SCENE_TEXT_ATLAS_MAX_GLYPHS] = {};
+    uint32_t glyph_heights[DVZ_SCENE_TEXT_ATLAS_MAX_GLYPHS] = {};
+    int glyph_xoffs[DVZ_SCENE_TEXT_ATLAS_MAX_GLYPHS] = {};
+    int glyph_yoffs[DVZ_SCENE_TEXT_ATLAS_MAX_GLYPHS] = {};
+    uint32_t cell_width = 1;
+    uint32_t cell_height = 1;
+
+    for (uint32_t i = 0; i < glyph_count; i++)
+    {
+        int width = 0;
+        int height = 0;
+        int xoff = 0;
+        int yoff = 0;
+        uint32_t codepoint = set->codepoints[i];
+        unsigned char* sdf = stbtt_GetCodepointSDF(
+            &info, scale, (int)codepoint, DVZ_TEXT_SDF_PADDING,
+            (unsigned char)DVZ_TEXT_SDF_ONEDGE, _text_sdf_pixel_dist_scale(), &width, &height,
+            &xoff, &yoff);
+        if (sdf == NULL || width <= 0 || height <= 0)
+            continue;
+        glyph_sdfs[i] = sdf;
+        glyph_widths[i] = (uint32_t)width;
+        glyph_heights[i] = (uint32_t)height;
+        glyph_xoffs[i] = xoff;
+        glyph_yoffs[i] = yoff;
+        if ((uint32_t)width > cell_width)
+            cell_width = (uint32_t)width;
+        if ((uint32_t)height > cell_height)
+            cell_height = (uint32_t)height;
+    }
+
+    cell_width += DVZ_TEXT_SDF_CELL_GAP;
+    cell_height += DVZ_TEXT_SDF_CELL_GAP;
+    uint32_t rows = (glyph_count + DVZ_TEXT_SDF_COLUMNS - 1u) / DVZ_TEXT_SDF_COLUMNS;
+    uint64_t width64 = 0;
+    uint64_t height64 = 0;
+    uint64_t pixel_count = 0;
+    uint64_t byte_size = 0;
+    if (_dvz_mul_u64_overflows(DVZ_TEXT_SDF_COLUMNS, cell_width, &width64) ||
+        _dvz_mul_u64_overflows(rows, cell_height, &height64) ||
+        _dvz_mul_u64_overflows(width64, height64, &pixel_count) ||
+        _dvz_mul_u64_overflows(pixel_count, 4u, &byte_size) || width64 > UINT32_MAX ||
+        height64 > UINT32_MAX || byte_size > SIZE_MAX)
+    {
+        log_error("text SDF atlas dimensions overflow");
+        for (uint32_t i = 0; i < glyph_count; i++)
+            if (glyph_sdfs[i] != NULL)
+                stbtt_FreeSDF(glyph_sdfs[i], NULL);
+        return false;
+    }
+
+    uint32_t atlas_width = (uint32_t)width64;
+    uint32_t atlas_height = (uint32_t)height64;
+    uint8_t* rgba = (uint8_t*)dvz_calloc((DvzSize)byte_size, 1);
+    DvzTextAtlas* atlas = (DvzTextAtlas*)dvz_calloc(1, sizeof(DvzTextAtlas));
+    if (rgba == NULL || atlas == NULL)
+    {
+        log_error("text SDF atlas allocation failed");
+        dvz_free(rgba);
+        dvz_free(atlas);
+        for (uint32_t i = 0; i < glyph_count; i++)
+            if (glyph_sdfs[i] != NULL)
+                stbtt_FreeSDF(glyph_sdfs[i], NULL);
+        return false;
+    }
+
+    int ascent = 0;
+    int descent = 0;
+    int line_gap = 0;
+    stbtt_GetFontVMetrics(&info, &ascent, &descent, &line_gap);
+    atlas->backend = DVZ_TEXT_ATLAS_BACKEND_STB_SDF;
+    atlas->encoding = DVZ_TEXT_ATLAS_ENCODING_SDF_ALPHA;
+    atlas->width = atlas_width;
+    atlas->height = atlas_height;
+    atlas->glyph_count = glyph_count;
+    atlas->channels = 4;
+    atlas->pixel_height = pixel_height;
+    atlas->pixel_range = (float)DVZ_TEXT_SDF_PADDING;
+    atlas->ascent = (float)ascent * scale;
+    atlas->descent = (float)descent * scale;
+    atlas->line_gap = (float)line_gap * scale;
+    atlas->line_height = (float)(ascent - descent + line_gap) * scale;
+    if (atlas->line_height <= 0.0f)
+        atlas->line_height = pixel_height;
+
+    for (uint32_t i = 0; i < glyph_count; i++)
+    {
+        uint32_t codepoint = set->codepoints[i];
+        DvzTextAtlasGlyph* glyph = &atlas->glyphs[i];
+        glyph->codepoint = codepoint;
+        glyph->glyph_id = (uint32_t)stbtt_FindGlyphIndex(&info, (int)codepoint);
+        int advance = 0;
+        int left_bearing = 0;
+        stbtt_GetCodepointHMetrics(&info, (int)codepoint, &advance, &left_bearing);
+        (void)left_bearing;
+        glyph->advance = (float)advance * scale;
+        if (glyph_sdfs[i] == NULL)
+        {
+            glyph->valid = glyph->advance > 0.0f;
+            if (!glyph->valid && codepoint != DVZ_TEXT_SDF_FALLBACK)
+                atlas->missing_glyph_count++;
+            continue;
+        }
+
+        uint32_t col = i % DVZ_TEXT_SDF_COLUMNS;
+        uint32_t row = i / DVZ_TEXT_SDF_COLUMNS;
+        uint32_t x = col * cell_width;
+        uint32_t y = row * cell_height;
+        _text_sdf_copy_glyph(
+            rgba, atlas_width, x, y, glyph_sdfs[i], glyph_widths[i], glyph_heights[i]);
+        for (uint32_t gy = 0; gy < glyph_heights[i]; gy++)
+        {
+            for (uint32_t gx = 0; gx < glyph_widths[i]; gx++)
+            {
+                uint64_t index = ((uint64_t)(y + gy) * atlas_width + x + gx) * 4u;
+                rgba[index + 0] = rgba[index + 3];
+                rgba[index + 1] = rgba[index + 3];
+                rgba[index + 2] = rgba[index + 3];
+            }
+        }
+
+        glyph->xoff = (float)glyph_xoffs[i];
+        glyph->yoff = (float)glyph_yoffs[i];
+        glyph->width = (float)glyph_widths[i];
+        glyph->height = (float)glyph_heights[i];
+        glyph->atlas_bounds[0] = (float)x;
+        glyph->atlas_bounds[1] = (float)y;
+        glyph->atlas_bounds[2] = (float)(x + glyph_widths[i]);
+        glyph->atlas_bounds[3] = (float)(y + glyph_heights[i]);
+        glyph->plane_bounds[0] = glyph->xoff;
+        glyph->plane_bounds[1] = glyph->yoff;
+        glyph->plane_bounds[2] = glyph->xoff + glyph->width;
+        glyph->plane_bounds[3] = glyph->yoff + glyph->height;
+        glyph->uv[0] = (float)x / (float)atlas_width;
+        glyph->uv[1] = (float)y / (float)atlas_height;
+        glyph->uv[2] = (float)(x + glyph_widths[i]) / (float)atlas_width;
+        glyph->uv[3] = (float)(y + glyph_heights[i]) / (float)atlas_height;
+        glyph->valid = true;
+    }
+
+    for (uint32_t i = 0; i < glyph_count; i++)
+        if (glyph_sdfs[i] != NULL)
+            stbtt_FreeSDF(glyph_sdfs[i], NULL);
+
+    bool ok = _text_atlas_upload_rgba(font, atlas, rgba, atlas_width, atlas_height);
+    dvz_free(rgba);
+    if (!ok)
+    {
+        _scene_text_atlas_destroy(atlas);
+        return false;
+    }
+
+    *out_atlas = atlas;
+    return true;
+}
+
+
+
+/**
+ * Store a newly built atlas in the font cache slot.
+ *
+ * @param font the font
+ * @param backend the cache slot backend
+ * @param atlas the new atlas
+ */
+static void _text_atlas_store(DvzFont* font, DvzTextAtlasBackend backend, DvzTextAtlas* atlas)
+{
+    ANN(font);
+    ANN(atlas);
+    DvzTextAtlas** slot = _text_atlas_slot(font, backend);
+    if (*slot != NULL)
+        _scene_text_atlas_destroy(*slot);
+    *slot = atlas;
+    font->version++;
+    atlas->generation = font->version;
+}
+
+
+
+/**
+ * Ensure one font atlas covers a requested build set.
+ *
+ * @param font the scene font
+ * @param backend the requested atlas backend
+ * @param requested_set the requested codepoints
+ * @return whether an atlas is available
+ */
+static bool _text_atlas_ensure_set(
+    DvzFont* font, DvzTextAtlasBackend backend, const DvzTextAtlasBuildSet* requested_set)
+{
+    ANN(font);
+    ANN(requested_set);
+    if (font->scene == NULL)
+        return false;
+
+    DvzTextAtlasBuildSet set = *requested_set;
+    DvzTextAtlas** slot = _text_atlas_slot(font, backend);
+    if (!_text_atlas_build_set_add_existing(&set, *slot))
+        return *slot != NULL && (*slot)->field != NULL;
+    if (_text_atlas_contains_set(*slot, &set))
+        return true;
+
+    DvzTextAtlas* atlas = NULL;
+#if defined(DVZ_HAS_FREETYPE) && DVZ_HAS_FREETYPE
+    if (backend == DVZ_TEXT_ATLAS_BACKEND_FREETYPE_BITMAP)
+    {
+        if (_text_ft_build_bitmap_atlas(font, &set, &atlas))
+        {
+            _text_atlas_store(font, DVZ_TEXT_ATLAS_BACKEND_FREETYPE_BITMAP, atlas);
+            return true;
+        }
+        log_debug("FreeType bitmap atlas generation failed; falling back to SDF atlas");
+    }
+#else
+    if (backend == DVZ_TEXT_ATLAS_BACKEND_FREETYPE_BITMAP)
+        log_debug("FreeType bitmap atlas requested but Datoviz was built without FreeType");
+#endif
+    if (backend == DVZ_TEXT_ATLAS_BACKEND_MSDF)
+    {
+#if defined(DVZ_HAS_MSDF_ATLAS) && DVZ_HAS_MSDF_ATLAS
+        if (_text_msdf_build_atlas(font, &set, &atlas))
+        {
+            _text_atlas_store(font, DVZ_TEXT_ATLAS_BACKEND_MSDF, atlas);
+            return true;
+        }
+        log_debug("MSDF atlas generation failed; falling back to SDF atlas");
+#else
+        log_debug("MSDF atlas requested but msdf-atlas-gen is unavailable; falling back to SDF atlas");
+#endif
+    }
+
+    DvzTextAtlas** sdf_slot = _text_atlas_slot(font, DVZ_TEXT_ATLAS_BACKEND_STB_SDF);
+    if (!_text_atlas_build_set_add_existing(&set, *sdf_slot))
+        return *sdf_slot != NULL && (*sdf_slot)->field != NULL;
+    if (_text_atlas_contains_set(*sdf_slot, &set))
+        return true;
+    if (!_text_sdf_build_atlas(font, &set, &atlas))
+        return *sdf_slot != NULL && (*sdf_slot)->field != NULL;
+    _text_atlas_store(font, DVZ_TEXT_ATLAS_BACKEND_STB_SDF, atlas);
+    return true;
+}
+
+
+
 /*************************************************************************************************/
 /*  Functions                                                                                    */
 /*************************************************************************************************/
@@ -818,6 +1383,7 @@ extern "C" {
  * @param backend the requested atlas backend
  * @return whether the atlas is available
  */
+#if 0
 bool _scene_text_atlas_ensure(DvzFont* font, DvzTextAtlasBackend backend)
 {
     ANN(font);
@@ -826,10 +1392,13 @@ bool _scene_text_atlas_ensure(DvzFont* font, DvzTextAtlasBackend backend)
         return true;
     if (font->scene == NULL)
         return false;
+    DvzTextAtlasBuildSet set = {};
+    if (!_text_atlas_build_set_add_default(&set))
+        return false;
 #if defined(DVZ_HAS_FREETYPE) && DVZ_HAS_FREETYPE
     if (backend == DVZ_TEXT_ATLAS_BACKEND_FREETYPE_BITMAP)
     {
-        if (_text_ft_build_bitmap_atlas(font, slot))
+        if (_text_ft_build_bitmap_atlas(font, &set, slot))
         {
             font->version++;
             return true;
@@ -851,7 +1420,7 @@ bool _scene_text_atlas_ensure(DvzFont* font, DvzTextAtlasBackend backend)
     if (backend == DVZ_TEXT_ATLAS_BACKEND_MSDF)
     {
 #if defined(DVZ_HAS_MSDF_ATLAS) && DVZ_HAS_MSDF_ATLAS
-        if (_text_msdf_build_atlas(font, slot))
+        if (_text_msdf_build_atlas(font, &set, slot))
         {
             font->version++;
             return true;
@@ -1030,6 +1599,66 @@ bool _scene_text_atlas_ensure(DvzFont* font, DvzTextAtlasBackend backend)
     font->version++;
     return true;
 }
+#endif
+
+
+
+/**
+ * Ensure one font has a scene-owned font atlas.
+ *
+ * @param font the scene font
+ * @param backend the requested atlas backend
+ * @return whether the atlas is available
+ */
+bool _scene_text_atlas_ensure(DvzFont* font, DvzTextAtlasBackend backend)
+{
+    ANN(font);
+    DvzTextAtlasBuildSet set = {};
+    if (!_text_atlas_build_set_add_default(&set))
+        return false;
+    return _text_atlas_ensure_set(font, backend, &set);
+}
+
+
+
+/**
+ * Ensure one font has an atlas that covers one UTF-8 string.
+ *
+ * @param font the scene font
+ * @param backend the requested atlas backend
+ * @param string the UTF-8 string
+ * @return whether the atlas is available
+ */
+bool _scene_text_atlas_ensure_string(
+    DvzFont* font, DvzTextAtlasBackend backend, const char* string)
+{
+    ANN(font);
+    const char* strings[1] = {string};
+    return _scene_text_atlas_ensure_strings(font, backend, strings, 1);
+}
+
+
+
+/**
+ * Ensure one font has an atlas that covers a list of UTF-8 strings.
+ *
+ * @param font the scene font
+ * @param backend the requested atlas backend
+ * @param strings the UTF-8 strings
+ * @param count string count
+ * @return whether the atlas is available
+ */
+bool _scene_text_atlas_ensure_strings(
+    DvzFont* font, DvzTextAtlasBackend backend, const char* const* strings, uint32_t count)
+{
+    ANN(font);
+    DvzTextAtlasBuildSet set = {};
+    if (!_text_atlas_build_set_add_default(&set))
+        return false;
+    if (!_text_atlas_build_set_add_strings(&set, strings, count))
+        log_debug("text atlas request exceeded glyph capacity; using the accepted subset");
+    return _text_atlas_ensure_set(font, backend, &set);
+}
 
 
 
@@ -1043,13 +1672,24 @@ bool _scene_text_atlas_ensure(DvzFont* font, DvzTextAtlasBackend backend)
 DvzTextAtlasGlyph* _scene_text_atlas_glyph(DvzTextAtlas* atlas, uint32_t codepoint)
 {
     ANN(atlas);
-    if (!_text_sdf_codepoint_supported(codepoint))
+    if (!_text_atlas_codepoint_renderable(codepoint))
         codepoint = DVZ_TEXT_SDF_FALLBACK;
-    uint32_t index = codepoint - DVZ_TEXT_SDF_FIRST_CHAR;
-    if (index >= atlas->glyph_count || index >= DVZ_SCENE_TEXT_ATLAS_MAX_GLYPHS)
+
+    for (uint32_t i = 0; i < atlas->glyph_count && i < DVZ_SCENE_TEXT_ATLAS_MAX_GLYPHS; i++)
+    {
+        DvzTextAtlasGlyph* glyph = &atlas->glyphs[i];
+        if (glyph->codepoint == codepoint && glyph->valid)
+            return glyph;
+    }
+    if (codepoint == DVZ_TEXT_SDF_FALLBACK)
         return NULL;
-    DvzTextAtlasGlyph* glyph = &atlas->glyphs[index];
-    return glyph->valid ? glyph : NULL;
+    for (uint32_t i = 0; i < atlas->glyph_count && i < DVZ_SCENE_TEXT_ATLAS_MAX_GLYPHS; i++)
+    {
+        DvzTextAtlasGlyph* glyph = &atlas->glyphs[i];
+        if (glyph->codepoint == DVZ_TEXT_SDF_FALLBACK && glyph->valid)
+            return glyph;
+    }
+    return NULL;
 }
 
 

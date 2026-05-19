@@ -1018,7 +1018,8 @@ static bool _text_prepare_visual(DvzFigure* figure, DvzText* text)
             dvz_visual_set_visible(text->visual, false);
         return true;
     }
-    if (text->visual != NULL && text->visual_version == text->version &&
+    if (text->visual != NULL && text->visual->field != NULL &&
+        text->visual_version == text->version &&
         text->visual_figure_width == figure->width && text->visual_figure_height == figure->height)
     {
         return true;
@@ -1036,7 +1037,7 @@ static bool _text_prepare_visual(DvzFigure* figure, DvzText* text)
     if (!use_builtin)
     {
         DvzFont* font = _text_sdf_font(text->scene, &text->style);
-        if (font == NULL || !_scene_text_atlas_ensure(font, backend))
+        if (font == NULL || !_scene_text_atlas_ensure_string(font, backend, text->string))
             return false;
         font_atlas = _text_font_atlas(font, backend);
         ANN(font_atlas);
@@ -1425,7 +1426,8 @@ static bool _text_visual_prepare(
     }
 
     uint64_t version = _text_visual_version(visual);
-    if (visual->text.glyph_visual != NULL && visual->text.realized_version == version &&
+    if (visual->text.glyph_visual != NULL && visual->text.glyph_visual->field != NULL &&
+        visual->text.realized_version == version &&
         visual->text.visual_figure_width == figure->width &&
         visual->text.visual_figure_height == figure->height)
     {
@@ -1450,7 +1452,9 @@ static bool _text_visual_prepare(
             .renderer = renderer,
         };
         DvzFont* font = _text_sdf_font(visual->scene, &atlas_style);
-        if (font == NULL || !_scene_text_atlas_ensure(font, backend))
+        const char* const* strings = (const char* const*)visual->text.strings;
+        if (font == NULL || !_scene_text_atlas_ensure_strings(
+                                font, backend, strings, visual->text.string_count))
             return false;
         font_atlas = _text_font_atlas(font, backend);
         ANN(font_atlas);
@@ -1738,6 +1742,23 @@ static bool _text_visual_prepare(
 
 
 
+/**
+ * Return a compact version sum for all scene font resources.
+ *
+ * @param scene the scene
+ * @return the summed font version value
+ */
+static uint64_t _text_scene_font_version_sum(const DvzScene* scene)
+{
+    ANN(scene);
+    uint64_t version = 0;
+    for (uint32_t i = 0; i < scene->font_count; i++)
+        version += scene->fonts[i].version;
+    return version;
+}
+
+
+
 /*************************************************************************************************/
 /*  Internal text realization                                                                    */
 /*************************************************************************************************/
@@ -1752,25 +1773,31 @@ void _scene_prepare_text_visuals(DvzFigure* figure)
     ANN(figure);
     ANN(figure->scene);
     DvzScene* scene = figure->scene;
-    for (uint32_t pi = 0; pi < figure->panel_count; pi++)
+    for (uint32_t pass = 0; pass < 3; pass++)
     {
-        DvzPanel* panel = &figure->panels[pi];
-        uint32_t visual_count = panel->visual_count;
-        for (uint32_t vi = 0; vi < visual_count; vi++)
+        uint64_t font_version_before = _text_scene_font_version_sum(scene);
+        for (uint32_t pi = 0; pi < figure->panel_count; pi++)
         {
-            DvzPanelAttach* attach = &panel->visuals[vi];
-            DvzVisual* visual = attach->visual;
-            if (visual != NULL && visual->type == DVZ_VISUAL_TYPE_TEXT &&
-                !_text_visual_prepare(figure, panel, attach, visual))
+            DvzPanel* panel = &figure->panels[pi];
+            uint32_t visual_count = panel->visual_count;
+            for (uint32_t vi = 0; vi < visual_count; vi++)
             {
-                log_error("failed to prepare batched text visual %u", vi);
+                DvzPanelAttach* attach = &panel->visuals[vi];
+                DvzVisual* visual = attach->visual;
+                if (visual != NULL && visual->type == DVZ_VISUAL_TYPE_TEXT &&
+                    !_text_visual_prepare(figure, panel, attach, visual))
+                {
+                    log_error("failed to prepare batched text visual %u", vi);
+                }
             }
         }
-    }
-    for (uint32_t i = 0; i < scene->annotation_count; i++)
-    {
-        if (!_annotation_prepare_visual(figure, &scene->annotations[i]))
-            log_error("failed to prepare retained annotation visual %u", i);
+        for (uint32_t i = 0; i < scene->annotation_count; i++)
+        {
+            if (!_annotation_prepare_visual(figure, &scene->annotations[i]))
+                log_error("failed to prepare retained annotation visual %u", i);
+        }
+        if (_text_scene_font_version_sum(scene) == font_version_before)
+            break;
     }
 }
 
