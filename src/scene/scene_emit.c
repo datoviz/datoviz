@@ -1338,6 +1338,7 @@ bool _scene_visual_frame_plan_metadata(
     metadata->depth_cue_enabled = visual->material.depth_cue_enabled;
     metadata->point_style_enabled =
         visual->type == DVZ_VISUAL_TYPE_POINT && visual->material.point_style_enabled;
+    metadata->glyph_atlas_encoding = (uint32_t)visual->glyph_atlas_encoding;
     metadata->scale_index = _scene_scale_index(figure->scene, visual->scale);
     metadata->scene_occluder = visual->scene_occluder;
     metadata->scene_occluded = visual->scene_occluded;

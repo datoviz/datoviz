@@ -139,6 +139,28 @@ typedef struct DvzTextAtlas DvzTextAtlas;
 
 
 /*************************************************************************************************/
+/*  Text atlas                                                                                   */
+/*************************************************************************************************/
+
+typedef enum
+{
+    DVZ_TEXT_ATLAS_BACKEND_BUILTIN_BITMAP = 0,
+    DVZ_TEXT_ATLAS_BACKEND_FREETYPE_BITMAP,
+    DVZ_TEXT_ATLAS_BACKEND_STB_SDF,
+    DVZ_TEXT_ATLAS_BACKEND_MSDF,
+} DvzTextAtlasBackend;
+
+
+typedef enum
+{
+    DVZ_TEXT_ATLAS_ENCODING_BITMAP_ALPHA = 0,
+    DVZ_TEXT_ATLAS_ENCODING_SDF_ALPHA,
+    DVZ_TEXT_ATLAS_ENCODING_MSDF_RGB,
+} DvzTextAtlasEncoding;
+
+
+
+/*************************************************************************************************/
 /*  Shared helpers                                                                               */
 /*************************************************************************************************/
 
@@ -215,11 +237,14 @@ struct DvzTextGlyphInstance
 struct DvzTextAtlasGlyph
 {
     uint32_t codepoint;
+    uint32_t glyph_id;
     float advance;
     float xoff;
     float yoff;
     float width;
     float height;
+    float plane_bounds[4];
+    float atlas_bounds[4];
     float uv[4];
     bool valid;
 };
@@ -227,11 +252,15 @@ struct DvzTextAtlasGlyph
 
 struct DvzTextAtlas
 {
+    DvzTextAtlasBackend backend;
+    DvzTextAtlasEncoding encoding;
     DvzSampledField* field;
     uint32_t width;
     uint32_t height;
     uint32_t glyph_count;
+    uint32_t channels;
     float pixel_height;
+    float pixel_range;
     float ascent;
     float descent;
     float line_gap;
@@ -400,7 +429,9 @@ struct DvzFont
     uint64_t version;
     void* ttf_bytes;
     uint64_t ttf_size;
+    DvzTextAtlas* bitmap_atlas;
     DvzTextAtlas* sdf_atlas;
+    DvzTextAtlas* msdf_atlas;
 };
 
 
@@ -780,6 +811,7 @@ struct DvzVisual
     DvzSegmentState        segment;
     DvzPathState           path;
     DvzTextVisualState     text;
+    DvzTextAtlasEncoding   glyph_atlas_encoding;
     DvzImageGpuCache       image_gpu;
     DvzSphereMode          sphere_mode;
     bool                   mesh_default_color;
@@ -1168,7 +1200,7 @@ void _scene_prepare_text_visuals(DvzFigure* figure);
 
 EXTERN_C_ON
 
-bool _scene_text_atlas_ensure(DvzFont* font);
+bool _scene_text_atlas_ensure(DvzFont* font, DvzTextAtlasBackend backend);
 
 DvzTextAtlasGlyph* _scene_text_atlas_glyph(DvzTextAtlas* atlas, uint32_t codepoint);
 

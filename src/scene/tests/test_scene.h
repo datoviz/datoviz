@@ -617,6 +617,8 @@ int test_scene_text_bitmap_visual_realization(TstContext* suite, const TstCase* 
 
 int test_scene_text_sdf_visual_realization(TstContext* suite, const TstCase* item);
 
+int test_scene_text_auto_renderer_selection(TstContext* suite, const TstCase* item);
+
 int test_scene_text_many_labels_render_plan(TstContext* suite, const TstCase* item);
 
 #if defined(DVZ_HAS_APP) && DVZ_HAS_APP

@@ -3126,7 +3126,10 @@ DvzVisual* dvz_glyph(DvzScene* scene, uint32_t flags)
     ANN(scene);
     DvzVisual* visual = _scene_alloc_visual(scene, DVZ_VISUAL_TYPE_GLYPH, flags);
     if (visual != NULL)
+    {
         visual->topology = DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+        visual->glyph_atlas_encoding = DVZ_TEXT_ATLAS_ENCODING_MSDF_RGB;
+    }
     return visual;
 }
 

@@ -19,11 +19,15 @@ float median3(float r, float g, float b)
 void main()
 {
     vec4 texel = texture(sampler2D(tex, samp), fragUV);
-    float sd = median3(texel.r, texel.g, texel.b);
-    float width = max(fwidth(sd), 1.0 / 255.0);
-    float opacity = smoothstep(0.5 - width, 0.5 + width, sd);
-    if (texel.a > 0.0 && abs(texel.a - sd) > 1.0 / 255.0)
-        opacity = max(opacity, smoothstep(0.5 - width, 0.5 + width, texel.a));
+    float opacity = texel.a;
+    if (max(max(texel.r, texel.g), texel.b) > 1.0 / 255.0)
+    {
+        float sd = median3(texel.r, texel.g, texel.b);
+        float width = max(fwidth(sd), 1.0 / 255.0);
+        opacity = smoothstep(0.5 - width, 0.5 + width, sd);
+        if (texel.a > 0.0 && abs(texel.a - sd) > 1.0 / 255.0)
+            opacity = max(opacity, smoothstep(0.5 - width, 0.5 + width, texel.a));
+    }
     outColor = vec4(fragColor.rgb, fragColor.a * opacity);
 #ifdef DVZ_SCENE_OCCLUSION
     applySceneOcclusion(outColor);

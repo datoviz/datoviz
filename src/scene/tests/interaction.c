@@ -256,6 +256,7 @@ int test_scene_text_bitmap_visual_realization(TstContext* suite, const TstCase* 
     AT(glyph->visible);
     AT(glyph->alpha_mode == DVZ_ALPHA_BLENDED);
     AT(!glyph->depth_test_enabled);
+    AT(glyph->glyph_atlas_encoding == DVZ_TEXT_ATLAS_ENCODING_BITMAP_ALPHA);
     AT(text->text.realized_version > 0);
     AT(text->text.span_count == 1);
     AT(text->text.spans[0].glyph_count == 2);
@@ -324,6 +325,7 @@ int test_scene_text_bitmap_visual_realization(TstContext* suite, const TstCase* 
     AT(_figure_visual_index(figure, glyph, &glyph_index));
     AT(_scene_visual_frame_plan_metadata(figure, glyph, glyph_index, &metadata));
     AT(metadata.vertex_count == 6);
+    AT(metadata.glyph_atlas_encoding == DVZ_TEXT_ATLAS_ENCODING_BITMAP_ALPHA);
 
     text_anchors[0][0] = 0.0f;
     text_anchors[0][1] = 0.0f;
@@ -421,9 +423,13 @@ int test_scene_text_sdf_visual_realization(TstContext* suite, const TstCase* ite
     ANN(glyph->field);
     AT(glyph->field->desc.width > 128);
     AT(glyph->field->desc.height > 60);
+    AT(glyph->glyph_atlas_encoding == DVZ_TEXT_ATLAS_ENCODING_SDF_ALPHA ||
+       glyph->glyph_atlas_encoding == DVZ_TEXT_ATLAS_ENCODING_MSDF_RGB);
     AT(scene->font_count == 1);
-    ANN(scene->fonts[0].sdf_atlas);
-    AT(scene->fonts[0].sdf_atlas->field == glyph->field);
+    DvzTextAtlas* font_atlas =
+        scene->fonts[0].msdf_atlas != NULL ? scene->fonts[0].msdf_atlas : scene->fonts[0].sdf_atlas;
+    ANN(font_atlas);
+    AT(font_atlas->field == glyph->field);
     AT(text->text.span_count == 1);
     AT(text->text.spans[0].glyph_count == 3);
 
@@ -457,7 +463,77 @@ int test_scene_text_sdf_visual_realization(TstContext* suite, const TstCase* ite
     AT(annotation->visual->type == DVZ_VISUAL_TYPE_GLYPH);
     AT(annotation->visual->visible);
     AT(annotation->visual->field == glyph->field);
+    AT(annotation->visual->glyph_atlas_encoding == glyph->glyph_atlas_encoding);
     AT(annotation->dirty_flags == DVZ_TEXT_DIRTY_NONE);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+/**
+ * Verify automatic renderer selection uses hinted bitmap for small text when available.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_text_auto_renderer_selection(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    ANN(item);
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 640, 480, 0);
+    DvzPanel* panel = dvz_panel(
+        figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+    ANN(panel);
+
+    DvzVisual* small = dvz_text(scene, 0);
+    ANN(small);
+    AT(dvz_text_set_renderer(small, DVZ_TEXT_RENDERER_AUTO) == 0);
+    const char* small_string[1] = {"small"};
+    float small_pos[1][3] = {{24.0f, 24.0f, 0.0f}};
+    float small_size[1] = {10.0f};
+    DvzVisualDataUpdate small_updates[2] = {
+        {.attr_name = "position", .data = small_pos, .item_count = 1},
+        {.attr_name = "size", .data = small_size, .item_count = 1},
+    };
+    AT(dvz_visual_set_strings(small, "text", small_string, 1) == 0);
+    AT(dvz_visual_set_data_many(small, small_updates, 2) == 0);
+    AT(dvz_panel_add_visual(
+           panel, small,
+           &(DvzVisualAttachDesc){.z_layer = 1, .controller_mode = DVZ_CONTROLLER_FIXED}) == 0);
+
+    DvzVisual* large = dvz_text(scene, 0);
+    ANN(large);
+    AT(dvz_text_set_renderer(large, DVZ_TEXT_RENDERER_AUTO) == 0);
+    const char* large_string[1] = {"large"};
+    float large_pos[1][3] = {{24.0f, 64.0f, 0.0f}};
+    float large_size[1] = {24.0f};
+    DvzVisualDataUpdate large_updates[2] = {
+        {.attr_name = "position", .data = large_pos, .item_count = 1},
+        {.attr_name = "size", .data = large_size, .item_count = 1},
+    };
+    AT(dvz_visual_set_strings(large, "text", large_string, 1) == 0);
+    AT(dvz_visual_set_data_many(large, large_updates, 2) == 0);
+    AT(dvz_panel_add_visual(
+           panel, large,
+           &(DvzVisualAttachDesc){.z_layer = 2, .controller_mode = DVZ_CONTROLLER_FIXED}) == 0);
+
+    _scene_prepare_text_visuals(figure);
+    ANN(small->text.glyph_visual);
+    ANN(large->text.glyph_visual);
+#if defined(DVZ_HAS_FREETYPE) && DVZ_HAS_FREETYPE
+    AT(small->text.glyph_visual->glyph_atlas_encoding == DVZ_TEXT_ATLAS_ENCODING_BITMAP_ALPHA);
+    AT(scene->font_count >= 1);
+    ANN(scene->fonts[0].bitmap_atlas);
+    AT(scene->fonts[0].bitmap_atlas->field == small->text.glyph_visual->field);
+#else
+    AT(small->text.glyph_visual->field == scene->text_bitmap_atlas);
+#endif
+    AT(large->text.glyph_visual->glyph_atlas_encoding == DVZ_TEXT_ATLAS_ENCODING_SDF_ALPHA ||
+       large->text.glyph_visual->glyph_atlas_encoding == DVZ_TEXT_ATLAS_ENCODING_MSDF_RGB);
 
     dvz_scene_destroy(scene);
     return 0;
@@ -558,6 +634,7 @@ int test_scene_interaction(TstSuite* suite)
     TST_CASE(test_scene_text_annotation_bookkeeping);
     TST_CASE(test_scene_text_bitmap_visual_realization);
     TST_CASE(test_scene_text_sdf_visual_realization);
+    TST_CASE(test_scene_text_auto_renderer_selection);
     TST_CASE(test_scene_text_many_labels_render_plan);
 
     return 0;

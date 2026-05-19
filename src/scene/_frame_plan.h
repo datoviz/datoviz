@@ -293,6 +293,7 @@ typedef struct DvzFramePlanVisualMeta
     bool has_volume_occlusion;
     DvzVolumeOcclusionDesc volume_occlusion;
     DvzVolumeState volume_state;
+    uint32_t glyph_atlas_encoding;
     bool has_draw_contract;
     char draw_contract_id[DVZ_SCENE_LABEL_SIZE];
     uint32_t draw_depth_policy;

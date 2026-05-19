@@ -618,6 +618,8 @@ static bool _scene_visual_desc_from_metadata(
             out->vbuf_ids[out->vbuf_count++] = color_id;
         }
         out->image_texture_id = tex_id;
+        if (meta->visual_type == DVZ_VISUAL_TYPE_GLYPH)
+            out->glyph_atlas_encoding = meta->glyph_atlas_encoding;
         out->topology = _resource_topology(&emitter->resources, pos_buf);
         if (out->topology == UINT32_MAX)
             out->topology = meta->visual_type == DVZ_VISUAL_TYPE_GLYPH ?

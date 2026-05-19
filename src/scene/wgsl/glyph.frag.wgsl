@@ -13,11 +13,14 @@ fn median3(r: f32, g: f32, b: f32) -> f32 {
 @fragment
 fn main(input: FragmentIn) -> @location(0) vec4f {
     let texel = textureSample(tex, samp, input.uv);
-    let sd = median3(texel.r, texel.g, texel.b);
-    let w = max(fwidth(sd), 1.0 / 255.0);
-    var opacity = smoothstep(0.5 - w, 0.5 + w, sd);
-    if (texel.a > 0.0 && abs(texel.a - sd) > 1.0 / 255.0) {
-        opacity = max(opacity, smoothstep(0.5 - w, 0.5 + w, texel.a));
+    var opacity = texel.a;
+    if (max(max(texel.r, texel.g), texel.b) > 1.0 / 255.0) {
+        let sd = median3(texel.r, texel.g, texel.b);
+        let w = max(fwidth(sd), 1.0 / 255.0);
+        opacity = smoothstep(0.5 - w, 0.5 + w, sd);
+        if (texel.a > 0.0 && abs(texel.a - sd) > 1.0 / 255.0) {
+            opacity = max(opacity, smoothstep(0.5 - w, 0.5 + w, texel.a));
+        }
     }
     return vec4f(input.color.rgb, input.color.a * opacity);
 }
