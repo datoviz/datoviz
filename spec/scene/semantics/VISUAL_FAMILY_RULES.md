@@ -66,8 +66,21 @@ toward expanding `segment`.
 Wiggle-like behavior is path-scoped unless it later proves to require a materially different
 family contract. See `../semantics/VISUAL_FAMILIES.md` for the current direction on `wiggle`.
 
+If a curve needs physical radius, surface normals, corrected tube depth, material/SSAO
+participation, or ribbon/tube mode selection, that is pressure toward the future `tube` family, not
+toward expanding `path`.
+
 `monoglyph` must not return as a separate family; any useful simplification is a `glyph`
 variant or implementation path.
+
+
+### `tube`
+
+`tube` is a future/spec-only family for radius-bearing 3D curve surfaces. It should not duplicate
+domain resources such as tractography, tracks, molecules, or vector fields; those resources lower to
+ordinary visual families. It should also not require one implementation strategy: impostor tubes,
+mesh tubes, line fallback, and ribbons are modes of the same semantic family when they share the
+same packed curve input model.
 
 
 ### `glyph`

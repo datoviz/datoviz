@@ -38,8 +38,11 @@ Do not duplicate these as unrelated new systems.
 
 ### Existing Active Coverage
 
-- `point`, `pixel`, `marker`, `segment`, `path`, `image`, `mesh`, `sphere`, and `volume` are covered
-  by the per-family docs in [`../../visuals/`](../../visuals/).
+- `point`, `pixel`, `marker`, `segment`, `path`, `image`, `mesh`, `sphere`, and `volume` are
+  covered by the active per-family docs in [`../../visuals/`](../../visuals/).
+- Future radius-bearing curve surfaces are separated into the spec-only
+  [`tube`](../../visuals/TUBE.md) family so streamlines, tractography fibers, tracks, vessels, and
+  ribbons do not redefine their own renderers.
 - Text, labels, colorbars, annotations, scales, picking, and selection already have semantic and
   proposal documents.
 - Regular 2D/3D fields are covered by

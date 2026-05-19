@@ -43,7 +43,8 @@ Recommended follow-up commits:
 7. Keep SVG parsing, fills, markers, transforms, and static import as a later subset. Treat SVG as
    an authoring/import layer over Datoviz visuals, not as a separate renderer.
 8. Keep dense 3D streamlines/ribbons and tube meshes behind the 2D stroke backend. Tube work should
-   reuse mesh material, depth cueing, SSAO/G-buffer, and stable frame-generation rules.
+   follow [`../../../spec/scene/visuals/TUBE.md`](../../../spec/scene/visuals/TUBE.md) and reuse
+   mesh material, depth cueing, SSAO/G-buffer, and stable frame-generation rules.
 
 
 ## v0.3 Reference

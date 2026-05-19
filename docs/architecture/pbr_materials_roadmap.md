@@ -107,9 +107,9 @@ family.
 
 ### Future Tube Or Surface-Like Families
 
-A future tube visual could benefit from PBR-style lighting for streamlines, bonds, neurites, paths,
-and trajectory geometry. Plain line and path visuals should remain non-PBR unless they are rendered
-as real tube or ribbon surfaces with meaningful normals.
+The future [`tube`](../../spec/scene/visuals/TUBE.md) visual could benefit from PBR-style lighting
+for streamlines, bonds, neurites, paths, and trajectory geometry. Plain line and `path` visuals
+should remain non-PBR unless they are rendered as tube or ribbon surfaces with meaningful normals.
 
 ### Non-PBR Families
 
@@ -345,4 +345,3 @@ An incremental path that keeps risk low:
 5. Do not add image-based lighting before direct-light standard material evaluation is clean.
 6. Do not let PBR-specific conditionals accumulate in scene emission; route them through material
    state, pass capabilities, shader descriptors, and technique planning.
-

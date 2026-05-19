@@ -75,6 +75,10 @@ artificial:
 12. `errorbar`
 13. `boxplot`
 
+The following family is a future/spec-only candidate with a distinct contract from `path`:
+
+1. `tube` — radius-bearing 3D curve surfaces, including impostor tubes, mesh tubes, and ribbons.
+
 
 ## Active Implementation Status
 
@@ -96,6 +100,12 @@ means the family lowers through the active scene -> FramePlan -> DRP2 -> vklite/
 | `glyph` | no visual constructor; retained `DvzText`/`DvzAnnotation` bookkeeping exists | text/font/annotation objects retain semantic state | no rendered glyph path | no | font atlas, glyph shaping/rendering, glyph/text picking, and rendered labels remain deferred |
 | `errorbar` | none installed | none | no | no | spec only |
 | `boxplot` | none installed | none | no | no | spec only |
+
+Future/spec-only:
+
+| Family | Public constructor/API | Retained state | Native rendering | GPU request/readback | Remaining gaps |
+|---|---|---|---|---|---|
+| `tube` | none installed | none | no | no | full visual contract, API, lowering, picking, and backend support |
 
 
 ## Rationale For Kept Families
@@ -170,6 +180,30 @@ Reason:
 1. grouped sequence semantics are fundamental,
 2. joins, caps, ordering, and topology matter at the scene level,
 3. it is the natural home for path-derived specializations such as stacked or wiggle-like visuals.
+
+`path` may contain 3D coordinates, but it remains a stroke/line family. It should not absorb
+radius-bearing surface behavior such as tube impostors, generated tube meshes, or oriented ribbons.
+Those materially change resource schema, pass participation, and picking semantics.
+
+
+### `tube`
+
+Keep `tube` as a future first-class family candidate rather than a `path` flag.
+
+Reason:
+
+1. it adds a 3D `radius` contract rather than a screen-space `stroke_width` contract,
+2. its fragments can represent surface points with normals and corrected depth,
+3. it participates in material, transparency, G-buffer, SSAO, and clipping policies differently
+   from plain strokes,
+4. picking should identify logical curves while the backend may draw segment capsules, vertex
+   spheres, generated mesh triangles, or ribbons,
+5. fallback behavior may choose line, impostor, mesh, or ribbon modes without changing the
+   semantic input data.
+
+The existence of a `tube` family does not make tractography, streamlines, tracks, vessels, or
+molecules separate renderers. Those are domain resources or examples that can lower into `tube`,
+`path`, `segment`, `marker`, `sphere`, `mesh`, and `volume` visuals.
 
 
 ### `glyph`

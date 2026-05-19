@@ -29,6 +29,7 @@ The active v0.4 visual API should use precise attribute names rather than a fami
 | `sphere` | `radius` | sphere radius in world/data units unless a radius mode is added |
 | `segment` | `stroke_width` | line stroke width in screen pixels |
 | `path` | `stroke_width` | path stroke width in screen pixels |
+| `tube` | `radius` | future 3D curve-surface radius in world/data units |
 | `image` | `extent` | image rectangle width/height |
 | `mesh` | none | geometry size comes from vertex data and transforms |
 
@@ -72,6 +73,17 @@ broader than the current implementation.
 | `volume` | [VOLUME.md](VOLUME.md) | `dvz_volume()`, volume setters, field binding | 3D `SampledField`, mode/slice/bounds/clipping/sampling/opacity/scale | box-proxy slice, MIP, and composite rendering | slice probe/readout | isosurfaces, MPR, DVR/MIP picking, categorical labels, and WebGPU parity |
 | `errorbar` | [ERRORBAR.md](ERRORBAR.md) | none installed | none | no | no | spec only |
 | `boxplot` | [BOXPLOT.md](BOXPLOT.md) | none installed | none | no | no | spec only |
+
+
+## Future Visual-Family Specs
+
+`tube` is documented as a future/spec-only family in [TUBE.md](TUBE.md). It covers radius-bearing
+3D curve surfaces such as tractography fibers, streamtubes, vessels, neurites, field lines,
+trajectory tubes, and ribbons. It is intentionally separate from `path`: `path` owns screen-space
+stroked polylines, while `tube` owns surface-like curve rendering with radius, depth, normals, and
+mode-specific implementations such as impostor tubes, mesh tubes, and ribbons.
+
+No `dvz_tube()` constructor or runtime lowering is installed in the active v0.4 slice.
 
 
 ## Reading Order

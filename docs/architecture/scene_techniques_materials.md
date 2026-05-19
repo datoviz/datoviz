@@ -214,7 +214,7 @@ primitive / mesh
 
 path
   color and depth for line/strip first
-  tube-style normal/depth later when tube rendering exists
+  tube-style normal/depth belongs to future `tube` rendering, not plain strokes
 
 image
   color and probe
@@ -252,7 +252,8 @@ implemented foundations from next policy work.
 Additional high-value visual lanes:
 
 1. sphere impostor texture/equirectangular follow-ups and WGSL parity;
-2. tube/path rendering for streamlines, fibers, trajectories, and skeletons;
+2. future [`tube`](../../spec/scene/visuals/TUBE.md) rendering for streamlines, fibers,
+   trajectories, and skeletons;
 3. depth-aware labels and annotations;
 4. transfer-function improvements for volumes and scalar fields;
 5. clip planes shared by meshes, volumes, and point clouds where practical.
