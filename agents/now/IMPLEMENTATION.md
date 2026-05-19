@@ -2,7 +2,7 @@
 
 > **Execution Status**
 > - **Status:** `ACTIVE OPERATIONAL TRACKER`
-> - **Updated on:** `2026-05-18`
+> - **Updated on:** `2026-05-19`
 > - **Purpose:** tell agents where v0.4 C implementation stands, what to pick next, and which
 >   lanes can run in parallel.
 
@@ -42,20 +42,21 @@ Status vocabulary:
 
 ## Current Next Pickup
 
-**Next critical-path item:** text and axes release integration.
+**Next critical-path item:** app frame scheduling refactor.
 
-Reason: basic retained/rendered text already exists through `examples/c/visuals/text.c`, and the
-axes API/example path has started through `examples/c/techniques/scatter_axes.c`. The remaining
-v0.4 blocker is to make that prototype-level functionality release-quality and integrated with
-generated ticks, labels, colorbars, annotations, pinned readouts, legends, and polished 2D examples.
-v0.3 already exposed visible glyph/text and axes/colorbars; v0.4 should avoid regressing those
-visible capabilities even though source compatibility is not required.
+Reason: `dvz_app_run(app, 0)` currently uses an unconditional interactive render loop. That is
+useful for immediate-present benchmarks, but it can burn CPU/GPU on static scenes and mixes frame
+production, frame demand, event waiting, and benchmark policy. The next implementation lane is to
+make the built-in app loop event-aware and optionally capped while keeping
+`dvz_app_window_render_once()`, canvas primitives, and explicit continuous benchmark behavior
+scheduler-free.
 
 Primary specs:
 
-1. [`../../spec/scene/slices/TEXT_RENDERING_SLICE.md`](../../spec/scene/slices/TEXT_RENDERING_SLICE.md)
-2. [`../../spec/scene/semantics/TEXT.md`](../../spec/scene/semantics/TEXT.md)
-3. [`../soon/SCENE_TEXT_GLYPH_PLAN.md`](../soon/SCENE_TEXT_GLYPH_PLAN.md)
+1. [`APP_FRAME_SCHEDULING_REFACTOR.md`](APP_FRAME_SCHEDULING_REFACTOR.md)
+
+Previous critical-path text/axes work remains below as the next visual-release lane after the app
+scheduler pass.
 
 
 ## Critical Path
@@ -77,9 +78,42 @@ Last validation:
 1. `git diff --check` passed before commit `10d87091`.
 
 
-### 1. Text Release-Hardening And Integration
+### 1. App Frame Scheduling Refactor
 
 Status: `Next`
+
+Goal:
+
+Make the built-in interactive app loop event-aware, support optional FPS caps for active
+continuous work, and preserve explicit run-as-fast-as-possible immediate-present benchmarks.
+
+Required v0.4 slice:
+
+1. monotonic timing helper for scheduling deadlines,
+2. window backend `wait` / `wait_timeout` / wakeup hooks with GLFW support,
+3. app scheduling config and environment overrides,
+4. per-window dirty/frame-requested state,
+5. on-demand default behavior for static interactive scenes,
+6. continuous rendering for animations, replay, streaming, and explicit benchmark mode,
+7. optional FPS cap applied only inside `dvz_app_run()`,
+8. focused app/window validation plus manual GLFW smoke notes.
+
+Primary plan:
+
+1. [`APP_FRAME_SCHEDULING_REFACTOR.md`](APP_FRAME_SCHEDULING_REFACTOR.md)
+
+Suggested validation:
+
+1. `git diff --check`
+2. `just build`
+3. focused app/window/canvas tests
+4. manual GLFW smoke for static idle, input wakeup, animation/replay continuity, immediate
+   continuous benchmark, and immediate capped behavior
+
+
+### 2. Text Release-Hardening And Integration
+
+Status: `Next after scheduler`
 
 Goal:
 
@@ -126,7 +160,7 @@ Suggested validation:
 5. `clang-tidy -p build --quiet` on touched scene files when practical
 
 
-### 2. 2D Axes And Ticks
+### 3. 2D Axes And Ticks
 
 Status: `Partial`; axis API/example state exists, but visible generated ticks/labels are incomplete.
 
@@ -158,7 +192,7 @@ Primary specs:
 2. [`../soon/SCENE_2D_AXES_IMPLEMENTATION_PLAN.md`](../soon/SCENE_2D_AXES_IMPLEMENTATION_PLAN.md)
 
 
-### 3. Continuous Colorbars
+### 4. Continuous Colorbars
 
 Status: `Parallel`; retained colorbar bookkeeping exists, ramp work can proceed, and final
 title/tick labels depend on the text integration pass.
@@ -182,7 +216,7 @@ Primary spec:
 1. [`../../spec/scene/slices/COLORBAR_RENDERING_SLICE.md`](../../spec/scene/slices/COLORBAR_RENDERING_SLICE.md)
 
 
-### 4. Basic Annotations And Readouts
+### 5. Basic Annotations And Readouts
 
 Status: `Parallel`; retained annotation/readout bookkeeping exists, visible labels depend on the
 text integration pass.
@@ -205,7 +239,7 @@ Primary specs:
 2. [`../../spec/scene/semantics/ANNOTATIONS.md`](../../spec/scene/semantics/ANNOTATIONS.md)
 
 
-### 5. Grid Layout And Linked Panels
+### 6. Grid Layout And Linked Panels
 
 Status: `Partial`
 
@@ -229,7 +263,7 @@ Primary specs:
 2. [`../../spec/scene/core/PANEL_LAYOUT.md`](../../spec/scene/core/PANEL_LAYOUT.md)
 
 
-### 6. Visual Family Polish Pass
+### 7. Visual Family Polish Pass
 
 Status: `Partial`
 
@@ -255,7 +289,7 @@ Primary docs:
 2. [`../soon/SCENE_EXAMPLE_PRIORITIZATION.md`](../soon/SCENE_EXAMPLE_PRIORITIZATION.md)
 
 
-### 7. Selection, Pick, Probe, And Highlight
+### 8. Selection, Pick, Probe, And Highlight
 
 Status: `Partial`
 

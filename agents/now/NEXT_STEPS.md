@@ -27,43 +27,49 @@ work lives in [../soon/TEST_RUNNER_SCHEDULING.md](../soon/TEST_RUNNER_SCHEDULING
 
 ## Read First
 
-1. [../../spec/scene/README.md](../../spec/scene/README.md) before changing scene semantics,
+1. [APP_FRAME_SCHEDULING_REFACTOR.md](APP_FRAME_SCHEDULING_REFACTOR.md) before changing the
+   built-in app loop, frame pacing, window backend waiting, request-frame wakeups, or immediate
+   present CPU behavior.
+2. [../../spec/scene/README.md](../../spec/scene/README.md) before changing scene semantics,
    public scene API shape, frame planning, interaction, annotations, scales, visual families, or
    runtime boundaries.
-2. [../../spec/scene/api/API_SURFACE.md](../../spec/scene/api/API_SURFACE.md) before changing
+3. [../../spec/scene/api/API_SURFACE.md](../../spec/scene/api/API_SURFACE.md) before changing
    public scene API shape or adding scene object families.
-3. [../../spec/drp2/README.md](../../spec/drp2/README.md) and
+4. [../../spec/drp2/README.md](../../spec/drp2/README.md) and
    [../../spec/drp2/AGENT_SPEC_PHASE.md](../../spec/drp2/AGENT_SPEC_PHASE.md) before touching
    DRP2 commands, fixtures, schema docs, or DRP2-emitting scene code.
-4. [IMPLEMENTATION.md](IMPLEMENTATION.md) for the current
+5. [IMPLEMENTATION.md](IMPLEMENTATION.md) for the current
    lane inventory and parallel-work prompts.
-5. [RELEASE.md](RELEASE.md) for post-feature-completion
+6. [RELEASE.md](RELEASE.md) for post-feature-completion
    API review, documentation, bindings, gallery, packaging, and release-candidate work.
 
 
 ## Active Priorities
 
-1. **Text/colorbar realization:** finish rendered text, labels, annotations, colorbar ramps, and
+1. **App frame scheduling:** make `dvz_app_run(app, 0)` event-aware and optionally capped while
+   preserving explicit continuous/immediate-present benchmark behavior. Start with
+   [APP_FRAME_SCHEDULING_REFACTOR.md](APP_FRAME_SCHEDULING_REFACTOR.md).
+2. **Text/colorbar realization:** finish rendered text, labels, annotations, colorbar ramps, and
    MSDF/SDF/bitmap parity through the existing scene -> frame-plan -> DRP2 path.
-2. **WebGPU/WGSL parity:** pressure the active DRP2 subset with point, primitive, image, minimal
+3. **WebGPU/WGSL parity:** pressure the active DRP2 subset with point, primitive, image, minimal
    mesh/depth, marker, segment/path stroke, sphere, volume, and capability-gated advanced passes.
-3. **DVZR portability:** keep `dvz_drp2_player`, `replay_dvzr_glfw`, app recording hooks, and raw
+4. **DVZR portability:** keep `dvz_drp2_player`, `replay_dvzr_glfw`, app recording hooks, and raw
    fallback diagnostics aligned with real scene/app streams; broaden portable commands only when
    real recordings expose raw fallback gaps.
-4. **Runtime and technique hardening:** continue focused fixes for descriptor/resource lifetimes,
+5. **Runtime and technique hardening:** continue focused fixes for descriptor/resource lifetimes,
    graph-backed transparency, MSAA, EDL, SSAO, volume occlusion, scene occlusion, and deterministic
    offscreen readback/capture.
-5. **Material and shader ABI polish:** keep shader ABI checks green; refine the standard material
+6. **Material and shader ABI polish:** keep shader ABI checks green; refine the standard material
    look, family-specific material policy, and GLSL/WGSL parity without turning v0.4 into a full PBR
    pass.
-6. **Picking and selection payloads:** widen point/marker/image pick/probe payloads, highlight
+7. **Picking and selection payloads:** widen point/marker/image pick/probe payloads, highlight
    state, linked-panel request propagation, and explicit deferrals for mesh/path/volume picking.
-7. **Examples and gallery pressure:** keep C examples, manual smoke notes, gallery harnesses,
+8. **Examples and gallery pressure:** keep C examples, manual smoke notes, gallery harnesses,
    screenshots, and video/capture paths exercising already-implemented features.
-8. **CUDA/CuPy external-memory contract:** prefer Vulkan-owned exportable resources imported into
+9. **CUDA/CuPy external-memory contract:** prefer Vulkan-owned exportable resources imported into
    CUDA/CuPy with explicit external-memory and semaphore metadata. Do not make CUDA-owned
    allocation import or NVIDIA CIG the primary architecture.
-9. **Runner scheduling follow-up:** process-level sharding, CI orchestration, optional
+10. **Runner scheduling follow-up:** process-level sharding, CI orchestration, optional
    thread-safe workers, and remaining ad-hoc skip migration belong to
    [../soon/TEST_RUNNER_SCHEDULING.md](../soon/TEST_RUNNER_SCHEDULING.md).
 
@@ -98,7 +104,8 @@ work lives in [../soon/TEST_RUNNER_SCHEDULING.md](../soon/TEST_RUNNER_SCHEDULING
 5. Keep examples and focused tests in lockstep with each retained slice.
 6. Treat declared-but-unimplemented public functions as a priority: implement them narrowly or
    document the gap before depending on them.
-7. Preserve immediate presentation paths for run-as-fast-as-possible benchmarks.
+7. Preserve immediate presentation paths for run-as-fast-as-possible benchmarks through explicit
+   continuous scheduling; do not make immediate present imply an unconditional static-scene spin.
 
 
 ## Validation Defaults
