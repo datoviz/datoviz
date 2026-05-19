@@ -6,7 +6,7 @@
 > - **Purpose:** preserve the completed weighted blended order-independent transparency scene ->
 >   DRP2 -> vklite implementation and interactive example plan.
 > - **Current location:** `agents/done/`; active transparency follow-ups are tracked from
->   [../now/V0_4_NEXT_STEPS.md](../now/V0_4_NEXT_STEPS.md).
+>   [../now/NEXT_STEPS.md](../now/NEXT_STEPS.md).
 
 This document is the historical implementation record for the first WBOIT scene/app slice.
 

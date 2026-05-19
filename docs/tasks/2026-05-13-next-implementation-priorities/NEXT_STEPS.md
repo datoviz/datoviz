@@ -1,6 +1,6 @@
 # Next Implementation Priorities
 
-This file expands the six priority lanes from `agents/now/V0_4_NEXT_STEPS.md` into concrete
+This file expands the six priority lanes from `agents/now/NEXT_STEPS.md` into concrete
 implementation briefs.
 
 

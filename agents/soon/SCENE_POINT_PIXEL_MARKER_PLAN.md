@@ -81,7 +81,7 @@ Immediate point-like follow-up should prioritize marker picking quality, then ma
    paths.
 
 The cross-family execution order is recorded in
-`agents/now/VISUAL_FAMILY_IMPLEMENTATION_DECISIONS.md`.
+`spec/scene/visuals/IMPLEMENTATION_DECISIONS.md`.
 
 
 ## Design Principles

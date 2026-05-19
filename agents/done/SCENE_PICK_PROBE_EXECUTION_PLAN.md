@@ -11,7 +11,7 @@ This file is now historical context rather than the current execution guide.
 For the shipped behavior and remaining caveats, read
 [../done/SCENE_PICK_PROBE_EXECUTION.md](/home/cyrille/GIT/Viz/datoviz/agents/done/SCENE_PICK_PROBE_EXECUTION.md)
 and then
-[V0_4_NEXT_STEPS.md](/home/cyrille/GIT/Viz/datoviz/agents/now/V0_4_NEXT_STEPS.md).
+[NEXT_STEPS.md](/home/cyrille/GIT/Viz/datoviz/agents/now/NEXT_STEPS.md).
 
 
 ## Objective

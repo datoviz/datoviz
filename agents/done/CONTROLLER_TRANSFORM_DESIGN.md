@@ -135,7 +135,7 @@ Frame emit reads controller state → uploads MVP UBO → emits DRP2 stream.
 
 ## 8. Ordered Action Items
 
-1. **Docs commit** — save this file + update `V0_4_NEXT_STEPS.md` ✓
+1. **Docs commit** — save this file + update `NEXT_STEPS.md` ✓
 2. **DRP2: uniform bind group** — `_stream.h`, `stream.c`, `runtime.c` ✓
 3. **DRP2: second bind group layout in pipeline** — `create_render_pipeline` + runtime ✓
 4. **Shader infrastructure** — builtin GLSL compiled to SPIR-V at build time; converter uses embedded binaries ✓

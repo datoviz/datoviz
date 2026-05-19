@@ -6,7 +6,7 @@
 > - **Scope:** preserve the completed scene -> DRP2 converter split and follow-up decomposition
 >   history.
 > - **Current location:** `agents/done/`; current scene/runtime pressure work is tracked in
->   [../now/V0_4_NEXT_STEPS.md](../now/V0_4_NEXT_STEPS.md).
+>   [../now/NEXT_STEPS.md](../now/NEXT_STEPS.md).
 
 
 ## Current State

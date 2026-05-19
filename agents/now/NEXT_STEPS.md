@@ -32,11 +32,12 @@ work lives in [../soon/TEST_RUNNER_SCHEDULING.md](../soon/TEST_RUNNER_SCHEDULING
    runtime boundaries.
 2. [../../spec/scene/api/API_SURFACE.md](../../spec/scene/api/API_SURFACE.md) before changing
    public scene API shape or adding scene object families.
-3. [../../spec/drp2/README.md](../../spec/drp2/README.md) and [DRP2_SPEC.md](DRP2_SPEC.md) before
-   touching DRP2 commands, fixtures, schema docs, or DRP2-emitting scene code.
-4. [V0_4_C_IMPLEMENTATION_CHECKLIST.md](V0_4_C_IMPLEMENTATION_CHECKLIST.md) for the current
+3. [../../spec/drp2/README.md](../../spec/drp2/README.md) and
+   [../../spec/drp2/AGENT_SPEC_PHASE.md](../../spec/drp2/AGENT_SPEC_PHASE.md) before touching
+   DRP2 commands, fixtures, schema docs, or DRP2-emitting scene code.
+4. [IMPLEMENTATION.md](IMPLEMENTATION.md) for the current
    lane inventory and parallel-work prompts.
-5. [V0_4_RELEASE_READINESS_PLAN.md](V0_4_RELEASE_READINESS_PLAN.md) for post-feature-completion
+5. [RELEASE.md](RELEASE.md) for post-feature-completion
    API review, documentation, bindings, gallery, packaging, and release-candidate work.
 
 

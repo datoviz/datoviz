@@ -7,7 +7,7 @@
 >   task landed.
 > - **Current location:** `agents/done/`; current public API work should start from
 >   [../../spec/scene/api/API_SURFACE.md](../../spec/scene/api/API_SURFACE.md),
->   [../now/V0_4_NEXT_STEPS.md](../now/V0_4_NEXT_STEPS.md), and focused `agents/soon/` plans.
+>   [../now/NEXT_STEPS.md](../now/NEXT_STEPS.md), and focused `agents/soon/` plans.
 
 
 ## Current State

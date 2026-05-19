@@ -5,9 +5,9 @@
 > - **Current branch status:** not the immediate coding checklist, but now worth a narrow feasibility
 >   spike after the native 3D/manual-smoke pass because visuals are still early enough that browser
 >   constraints can influence DRP2 without major rewrites
-> - **Execution note:** the actionable spec-phase entry point is `agents/now/DRP2_SPEC.md`
+> - **Execution note:** the actionable spec-phase entry point is `spec/drp2/AGENT_SPEC_PHASE.md`
 > - **Implementation note:** the active repo-local implementation guide is
->   `agents/now/V0_4_NEXT_STEPS.md`
+>   `agents/now/NEXT_STEPS.md`
 
 # DRP2 / WebGPU / Scene Roadmap
 

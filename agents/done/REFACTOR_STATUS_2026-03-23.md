@@ -8,10 +8,10 @@ refactor burst.
 > - **Updated on:** `2026-05-18`
 > - **Purpose:** preserve the March 2026 refactor snapshot as background context.
 > - **Current location:** `agents/done/`; for current work, start with
->   [../now/V0_4_NEXT_STEPS.md](../now/V0_4_NEXT_STEPS.md).
+>   [../now/NEXT_STEPS.md](../now/NEXT_STEPS.md).
 
 > **Historical note:** this file is a March checkpoint. For current May 2026 execution guidance,
-> start with [now/V0_4_NEXT_STEPS.md](/home/cyrille/GIT/Viz/datoviz/agents/now/V0_4_NEXT_STEPS.md).
+> start with [now/NEXT_STEPS.md](/home/cyrille/GIT/Viz/datoviz/agents/now/NEXT_STEPS.md).
 
 
 ## May 2026 Addendum
@@ -332,7 +332,7 @@ If resuming work now, the shortest sensible sequence is:
    - then narrower loops such as `just test vklite` or direct `dvztest_vk` work as needed
 5. Pick one boundary-cleanup slice and finish it end-to-end before touching any dormant higher layer
 6. If resuming DRP2 instead of low-level cleanup, read
-   [DRP2_SPEC.md](/home/cyrille/GIT/Viz/datoviz/agents/now/DRP2_SPEC.md) and use:
+   [AGENT_SPEC_PHASE.md](/home/cyrille/GIT/Viz/datoviz/spec/drp2/AGENT_SPEC_PHASE.md) and use:
    - `python3 tools/drp2_fixture_runner.py --json`
    - `.venv/bin/pytest -q testing/test_drp2_fixture_runner.py`
    - `just spec-check`

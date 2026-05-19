@@ -7,7 +7,7 @@
 >   implementation/runtime lane. Keep prose, schemas, fixtures, stream code, runtime behavior, and
 >   scene emitters aligned.
 > - **Related active lane:** DVZR recording/replay is tracked in
->   [V0_4_NEXT_STEPS.md](V0_4_NEXT_STEPS.md); keep DRP2 portability changes coordinated with that
+>   [../../agents/now/NEXT_STEPS.md](../../agents/now/NEXT_STEPS.md); keep DRP2 portability changes coordinated with that
 >   lane, but do not turn this file into the DVZR execution checklist.
 
 # DRP2 Spec Phase
@@ -151,7 +151,7 @@ focused on contract quality and executable conformance material.
 
 The first implementation sequencing plan is complete and recorded in
 `agents/done/SCENE_DRP2_IMPLEMENTATION.md`. Current implementation sequencing is tracked in
-`agents/now/V0_4_NEXT_STEPS.md`.
+`agents/now/NEXT_STEPS.md`.
 
 Keep this file focused on the active DRP2 contract and fixture lane. Do not duplicate module
 bring-up order here.

@@ -9,8 +9,8 @@
 This file is the branch-level operational checklist for finishing the C implementation of v0.4.
 It complements:
 
-1. [`V0_4_NEXT_STEPS.md`](V0_4_NEXT_STEPS.md): current technical context and recent validation.
-2. [`V0_4_RELEASE_READINESS_PLAN.md`](V0_4_RELEASE_READINESS_PLAN.md): release scope, API policy,
+1. [`NEXT_STEPS.md`](NEXT_STEPS.md): current technical context and recent validation.
+2. [`RELEASE.md`](RELEASE.md): release scope, API policy,
    v0.3 regression checklist, and post-feature-completion work.
 3. [`../soon/SCENE_EXAMPLE_PRIORITIZATION.md`](../soon/SCENE_EXAMPLE_PRIORITIZATION.md): example
    priority and capability matrix.
@@ -70,7 +70,7 @@ Outcome:
 2. OO plotting is external GSP/VisPy2 scope.
 3. Publication/vector export is external GSP/Matplotlib scope.
 4. v0.3 visible capability regressions to avoid are listed in
-   [`V0_4_RELEASE_READINESS_PLAN.md`](V0_4_RELEASE_READINESS_PLAN.md).
+   [`RELEASE.md`](RELEASE.md).
 
 Last validation:
 
@@ -251,7 +251,7 @@ Required v0.4 checks:
 
 Primary docs:
 
-1. [`VISUAL_FAMILY_IMPLEMENTATION_DECISIONS.md`](VISUAL_FAMILY_IMPLEMENTATION_DECISIONS.md)
+1. [`../../spec/scene/visuals/IMPLEMENTATION_DECISIONS.md`](../../spec/scene/visuals/IMPLEMENTATION_DECISIONS.md)
 2. [`../soon/SCENE_EXAMPLE_PRIORITIZATION.md`](../soon/SCENE_EXAMPLE_PRIORITIZATION.md)
 
 
@@ -275,7 +275,7 @@ Required v0.4 slice:
 
 Primary specs:
 
-1. [`IMAGE_PICKING_RECOVERY_PLAN.md`](IMAGE_PICKING_RECOVERY_PLAN.md)
+1. [`../soon/IMAGE_PICKING_RECOVERY.md`](../soon/IMAGE_PICKING_RECOVERY.md)
 2. [`../../spec/scene/interaction/PICKING.md`](../../spec/scene/interaction/PICKING.md)
 3. [`../../spec/scene/interaction/SELECTION.md`](../../spec/scene/interaction/SELECTION.md)
 
@@ -366,7 +366,7 @@ Required v0.4 checks:
 
 Primary doc:
 
-1. [`V0_4_RELEASE_READINESS_PLAN.md`](V0_4_RELEASE_READINESS_PLAN.md)
+1. [`RELEASE.md`](RELEASE.md)
 
 
 ## Parallel Work Guidance
@@ -384,7 +384,7 @@ Good parallel lanes right now:
    features.
 6. **Runtime hardening:** DRP2/vklite/app lifetime bugs with focused tests.
 7. **API inventory/docs:** read-only or markdown-only work that does not alter active C code.
-8. **DRP2 contract and fixture maintenance:** `spec/drp2`, `agents/now/DRP2_SPEC.md`,
+8. **DRP2 contract and fixture maintenance:** `spec/drp2`, `spec/drp2/AGENT_SPEC_PHASE.md`,
    `tools/drp2_fixture_runner.py`, schema docs, and fixture updates that keep the active command
    surface aligned with native and WebGPU pressure.
 9. **DVZR recording/replay portability:** `src/drp2` recording/replay code, `src/app` recording
@@ -439,7 +439,7 @@ planning document when they land a slice.
 
 Common coordination rules:
 
-1. start by reading this checklist, `V0_4_NEXT_STEPS.md`, and the lane-specific docs named below,
+1. start by reading this checklist, `NEXT_STEPS.md`, and the lane-specific docs named below,
 2. state the write scope before editing and avoid files owned by another active lane,
 3. do not rewrite shared scene emission, DRP2 schemas, shader bind layouts, or test registration
    blocks unless that is the explicit lane objective,
@@ -453,7 +453,7 @@ Common coordination rules:
 
 ```text
 You own the text release-hardening lane for Datoviz v0.4. Read
-agents/now/V0_4_C_IMPLEMENTATION_CHECKLIST.md, spec/scene/slices/TEXT_RENDERING_SLICE.md,
+agents/now/IMPLEMENTATION.md, spec/scene/slices/TEXT_RENDERING_SLICE.md,
 spec/scene/semantics/TEXT.md, and agents/soon/SCENE_TEXT_GLYPH_PLAN.md.
 
 Goal: make the existing retained/rendered text path release-quality for the next small slice.
@@ -517,7 +517,7 @@ diff --check, just build, and focused scene colorbar/image tests.
 ```text
 You own the WebGPU/WASM experimental parity lane. Read the checklist,
 agents/soon/DRP2_WEBGPU_SUPPORT_PLAN.md, agents/soon/SCENE_WASM_WEBGPU_PORT_PLAN.md, and
-agents/now/DRP2_SPEC.md.
+spec/drp2/AGENT_SPEC_PHASE.md.
 
 Goal: advance the narrow browser path for the supported DRP2 subset. Work in examples/webgpu,
 WebGPU preflight fixtures, WGSL emission, and docs for supported/unsupported commands. Do not
@@ -557,7 +557,7 @@ the touched examples.
 ### Prompt: Runtime Hardening
 
 ```text
-You own the runtime hardening lane. Read the checklist, V0_4_NEXT_STEPS.md, and recent runtime
+You own the runtime hardening lane. Read the checklist, NEXT_STEPS.md, and recent runtime
 notes in agents/done that match the suspected subsystem.
 
 Goal: fix one lifetime, resize, descriptor refresh, repeated-frame, destroy-path, or transient
@@ -578,7 +578,7 @@ bounded GLFW/offscreen smoke when graphics paths are touched.
 
 ```text
 You own the API inventory/docs lane. Read the checklist and
-agents/now/V0_4_RELEASE_READINESS_PLAN.md.
+agents/now/RELEASE.md.
 
 Goal: classify public/internal/experimental C API surface, document ownership/destroy rules, and
 sync docs with actual v0.4 behavior. Prefer read-only audits and markdown/header comment updates.
@@ -596,7 +596,7 @@ and just build if headers or Doxygen comments changed.
 ### Prompt: DRP2 Contract And Fixture Maintenance
 
 ```text
-You own the DRP2 contract/fixture lane. Read agents/now/DRP2_SPEC.md, the checklist, spec/drp2
+You own the DRP2 contract/fixture lane. Read spec/drp2/AGENT_SPEC_PHASE.md, the checklist, spec/drp2
 docs, schema files, and tools/drp2_fixture_runner.py.
 
 Goal: keep the active DRP2 2.0 command surface, prose, schemas, fixtures, C serialization, and
@@ -616,7 +616,7 @@ git diff --check, just spec-check, and just test drp2 when C code changes.
 
 ```text
 You own the DVZR recording/replay portability lane. Read the DVZR updates in
-agents/now/V0_4_NEXT_STEPS.md, agents/now/DRP2_SPEC.md, and relevant src/drp2 recording code.
+agents/now/NEXT_STEPS.md, spec/drp2/AGENT_SPEC_PHASE.md, and relevant src/drp2 recording code.
 
 Goal: improve one recording/replay slice: portable command coverage, app recording hooks, replay
 target setup, raw-fallback diagnostics, player behavior, or example validation.
@@ -652,7 +652,7 @@ git diff --check, just build, focused scene/drp2 technique tests, and relevant o
 ### Prompt: Material And Shader ABI Polish
 
 ```text
-You own the material/shader ABI polish lane. Read the checklist, V0_4_NEXT_STEPS.md, shader ABI
+You own the material/shader ABI polish lane. Read the checklist, NEXT_STEPS.md, shader ABI
 notes in recent commits/docs, and active material-model examples/tests.
 
 Goal: improve one material or shader ABI slice: uniform layout, vertex attribute descriptors,
@@ -671,7 +671,7 @@ just build, focused scene/drp2 tests, shader generation checks if present, and o
 
 ```text
 You own the selection/request payload lane. Read the checklist,
-agents/now/IMAGE_PICKING_RECOVERY_PLAN.md, spec/scene/interaction/PICKING.md, and
+agents/soon/IMAGE_PICKING_RECOVERY.md, spec/scene/interaction/PICKING.md, and
 spec/scene/interaction/SELECTION.md.
 
 Goal: improve one interaction slice: point/image request robustness, marker picking, richer payload
@@ -709,7 +709,7 @@ focused tests.
 ### Prompt: Performance And Long-Run Smoke
 
 ```text
-You own the performance/long-run smoke lane. Read the checklist, V0_4_NEXT_STEPS.md, and any recent
+You own the performance/long-run smoke lane. Read the checklist, NEXT_STEPS.md, and any recent
 runtime hardening notes for the target path.
 
 Goal: identify and fix or document one performance or churn issue: immediate-present FPS
@@ -730,7 +730,7 @@ build, focused tests, bounded live smoke, and trace/FPS notes.
 
 ```text
 You own the capture/video/gallery artifact lane. Read the checklist,
-V0_4_RELEASE_READINESS_PLAN.md, and example staging docs.
+RELEASE.md, and example staging docs.
 
 Goal: improve one raster capture, frame-sequence/video, gallery artifact, or backend skip behavior
 needed for release examples. Keep publication/vector export out of scope.
@@ -766,7 +766,7 @@ build, and bounded runs of touched GUI examples.
 
 ```text
 You own the release documentation/website staging lane. Read
-agents/now/V0_4_RELEASE_READINESS_PLAN.md, the checklist, example staging docs, and current docs.
+agents/now/RELEASE.md, the checklist, example staging docs, and current docs.
 
 Goal: update user-facing documentation, capability matrices, known-gap notes, public/private labels,
 or website/gallery staging based on behavior already implemented in C.

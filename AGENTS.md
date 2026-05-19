@@ -43,9 +43,9 @@ When refactoring, do NOT delete existing comments, keep them and update them if 
   `35/35` WebGPU preflight fixtures, `52` fixture-runner tests, and `7` schema/generation tests;
   `just test drp2` has passed `119/119`; `just test scene` has passed beyond the first
   EDL/material slices, with later focused shader/visual-family checks recorded in
-  `agents/now/V0_4_NEXT_STEPS.md`. Re-run the narrow target before relying on a newer slice.
+  `agents/now/NEXT_STEPS.md`. Re-run the narrow target before relying on a newer slice.
 * For the current execution summary and next-step guidance, start with
-  `agents/now/V0_4_NEXT_STEPS.md`, then use `agents/README.md` to find completed phase records.
+  `agents/now/NEXT_STEPS.md`, then use `agents/README.md` to find completed phase records.
 
 ### 🏗️ Current refactor status (v0.4-dev)
 

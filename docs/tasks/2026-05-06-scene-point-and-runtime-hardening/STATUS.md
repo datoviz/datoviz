@@ -15,7 +15,7 @@
 
 ## Completed work
 
-- Refreshed `agents/now/V0_4_NEXT_STEPS.md` so it reflects already-landed repeated point-update and
+- Refreshed `agents/now/NEXT_STEPS.md` so it reflects already-landed repeated point-update and
   multi-panel point-emission work.
 - Tightened scene point-attribute validation and error reporting in `src/scene/scene.c` and
   documented the point-attribute contract in `include/datoviz/scene.h`.

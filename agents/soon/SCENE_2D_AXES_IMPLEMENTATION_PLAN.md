@@ -677,7 +677,7 @@ Checklist:
 4. update `docs/architecture/manual_scene_smoke.md`,
 5. add a focused troubleshooting section for axis trace labels,
 6. decide whether axes are default-on or opt-in for v0.4 examples,
-7. update `agents/now/V0_4_NEXT_STEPS.md` only after the implementation lands.
+7. update `agents/now/NEXT_STEPS.md` only after the implementation lands.
 
 
 ## Suggested File Plan

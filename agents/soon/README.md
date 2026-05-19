@@ -9,5 +9,5 @@ and controller work.
 Cross-cutting analysis notes that inform near-term work, such as example gap reports, can also
 live here.
 
-When a lane becomes the active branch focus, link it from `agents/now/V0_4_NEXT_STEPS.md`. When it
+When a lane becomes the active branch focus, link it from `agents/now/NEXT_STEPS.md`. When it
 lands, move the implementation record to `agents/done/`.

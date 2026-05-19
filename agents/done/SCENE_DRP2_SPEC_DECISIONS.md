@@ -73,7 +73,7 @@ Reasoning:
 
 Spec edits if accepted:
 
-1. update `agents/now/DRP2_SPEC.md` to remove stale deferred entries,
+1. update `spec/drp2/AGENT_SPEC_PHASE.md` to remove stale deferred entries,
 2. update `spec/drp2/LAYER1.md` active object-kind list,
 3. update `spec/drp2/README.md`, `LIFETIMES.md`, and `schema/DEFERRED.md` if any stale wording
    remains.

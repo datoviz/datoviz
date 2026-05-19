@@ -257,7 +257,7 @@ a special code path in the C API.
 
 The first implementation sequence is recorded in
 `agents/done/SCENE_DRP2_IMPLEMENTATION.md`; current follow-up work lives in
-`agents/now/V0_4_NEXT_STEPS.md`.
+`agents/now/NEXT_STEPS.md`.
 
 This document remains an implementation bridge for scene concepts and binding architecture. It
 should not duplicate the module bring-up order, canvas/runtime integration order, or validation

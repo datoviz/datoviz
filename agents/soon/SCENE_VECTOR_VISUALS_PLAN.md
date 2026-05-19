@@ -42,7 +42,7 @@ Immediate vector follow-up should happen in this order:
    behavior before dashes or arrow caps.
 
 The cross-family execution order is recorded in
-`agents/now/VISUAL_FAMILY_IMPLEMENTATION_DECISIONS.md`.
+`spec/scene/visuals/IMPLEMENTATION_DECISIONS.md`.
 
 This is not greenfield. The `v0.3/` tree already contains dedicated segment, path, marker, SVG-SDF,
 and 3D arrow work that should be mined and ported selectively:

@@ -16,7 +16,7 @@
 ### Clear high-priority updates
 
 - `AGENTS.md` was stale on current validation counts (`just test scene` still said `34/34`; current state is `52/52`).
-- `agents/now/V0_4_NEXT_STEPS.md` had the same stale scene-suite count and was missing the panel-region/runtime rendering update.
+- `agents/now/NEXT_STEPS.md` had the same stale scene-suite count and was missing the panel-region/runtime rendering update.
 - `ARCHITECTURE.md` was directionally correct, but undersold the implemented point-path surface area (multi-panel rendering, retained render behavior, panel-region handling).
 
 ### README status
@@ -35,7 +35,7 @@
 Updated the minimal sync set:
 
 1. `AGENTS.md`
-2. `agents/now/V0_4_NEXT_STEPS.md`
+2. `agents/now/NEXT_STEPS.md`
 3. `ARCHITECTURE.md`
 4. `README.md` (light-touch status/roadmap refresh)
 
