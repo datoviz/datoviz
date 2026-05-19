@@ -2745,7 +2745,7 @@ int test_app_offscreen_sdf_text_has_nonblank_pixels(TstContext* suite, const Tst
            panel, text,
            &(DvzVisualAttachDesc){.z_layer = 1, .controller_mode = DVZ_CONTROLLER_FIXED}) == 0);
 
-    DvzApp* app = dvz_app(scene);
+    DvzApp* app = _app_test_create(suite, scene);
     if (app == NULL)
     {
         log_warn("test_app_offscreen_sdf_text_has_nonblank_pixels skipped: GPU context creation failed");
@@ -3808,7 +3808,7 @@ int test_app_offscreen_rotated_mesh_depth_orders_faces(TstContext* suite, const 
            }) == 0);
     dvz_panel_set_background_color(panel, 0.05f, 0.05f, 0.08f, 1.0f);
 
-    DvzApp* app = dvz_app(scene);
+    DvzApp* app = _app_test_create(suite, scene);
     if (app == NULL)
     {
         log_warn(
@@ -3909,7 +3909,7 @@ int test_app_offscreen_camera_arcball_mesh_renders_cube(TstContext* suite, const
            }) == 0);
     dvz_panel_set_background_color(panel, 0.05f, 0.05f, 0.08f, 1.0f);
 
-    DvzApp* app = dvz_app(scene);
+    DvzApp* app = _app_test_create(suite, scene);
     if (app == NULL)
     {
         log_warn(
@@ -4028,7 +4028,7 @@ int test_app_offscreen_shared_field_mixed_runtime_updates(TstContext* suite, con
     AT(dvz_visual_set_field(image1, "field", field));
     AT(dvz_panel_add_visual(panel, image1, NULL) == 0);
 
-    DvzApp* app = dvz_app(scene);
+    DvzApp* app = _app_test_create(suite, scene);
     if (app == NULL)
     {
         log_warn(
@@ -4125,7 +4125,7 @@ int test_app_offscreen_retained_render_second_frame(TstContext* suite, const Tst
     AT(dvz_visual_set_data(visual, "size", &size, 1) == 0);
     AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
 
-    DvzApp* app = dvz_app(scene);
+    DvzApp* app = _app_test_create(suite, scene);
     if (app == NULL)
     {
         log_warn("test_app_offscreen_retained_render_second_frame skipped: GPU context creation failed");
@@ -4202,7 +4202,7 @@ int test_app_offscreen_image_retained_render_second_frame(TstContext* suite, con
     AT(dvz_visual_set_texture(visual, pixels, 4, 4) == 0);
     AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
 
-    DvzApp* app = dvz_app(scene);
+    DvzApp* app = _app_test_create(suite, scene);
     if (app == NULL)
     {
         log_warn("test_app_offscreen_image_retained_render_second_frame skipped: GPU context creation failed");
@@ -4329,7 +4329,7 @@ int test_app_offscreen_resize_reuses_runtime_with_mesh_and_image(TstContext* sui
     AT(dvz_visual_set_texture(image, pixels, 4, 4) == 0);
     AT(dvz_panel_add_visual(panel, image, NULL) == 0);
 
-    DvzApp* app = dvz_app(scene);
+    DvzApp* app = _app_test_create(suite, scene);
     if (app == NULL)
     {
         log_warn(
@@ -4444,7 +4444,7 @@ int test_app_offscreen_pick_probe_request_steady_state(TstContext* suite, const 
     AT(dvz_visual_set_texture(image, pixels, 4, 4) == 0);
     AT(dvz_panel_add_visual(panel, image, &(DvzVisualAttachDesc){.z_layer = -1}) == 0);
 
-    DvzApp* app = dvz_app(scene);
+    DvzApp* app = _app_test_create(suite, scene);
     if (app == NULL)
     {
         log_warn("test_app_offscreen_pick_probe_request_steady_state skipped: GPU context failed");
@@ -5714,34 +5714,18 @@ int test_scene_app(TstSuite* suite)
         TST_SCENE_APP_GPU_RES | TST_RES_FILESYSTEM | TST_RES_ENV, TST_ISOLATION_PROCESS);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_image_has_nonblank_pixels);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_text_has_nonblank_pixels);
-    TST_SCENE_APP_CASE(
-        test_app_offscreen_sdf_text_has_nonblank_pixels, TST_SCENE_APP_GPU_RES,
-        TST_ISOLATION_PROCESS);
+    TST_SCENE_APP_SHARED_CASE(test_app_offscreen_sdf_text_has_nonblank_pixels);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_image_field_partial_update_changes_region);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_lit_primitive_depth_orders_overlap);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_lit_primitive_depth_cue_darkens_far);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_mesh_renders_nonblank);
-    TST_SCENE_APP_CASE(
-        test_app_offscreen_rotated_mesh_depth_orders_faces, TST_SCENE_APP_GPU_RES,
-        TST_ISOLATION_PROCESS);
-    TST_SCENE_APP_CASE(
-        test_app_offscreen_camera_arcball_mesh_renders_cube, TST_SCENE_APP_GPU_RES,
-        TST_ISOLATION_PROCESS);
-    TST_SCENE_APP_CASE(
-        test_app_offscreen_shared_field_mixed_runtime_updates, TST_SCENE_APP_GPU_RES,
-        TST_ISOLATION_PROCESS);
-    TST_SCENE_APP_CASE(
-        test_app_offscreen_retained_render_second_frame, TST_SCENE_APP_GPU_RES,
-        TST_ISOLATION_PROCESS);
-    TST_SCENE_APP_CASE(
-        test_app_offscreen_image_retained_render_second_frame, TST_SCENE_APP_GPU_RES,
-        TST_ISOLATION_PROCESS);
-    TST_SCENE_APP_CASE(
-        test_app_offscreen_resize_reuses_runtime_with_mesh_and_image, TST_SCENE_APP_GPU_RES,
-        TST_ISOLATION_PROCESS);
-    TST_SCENE_APP_CASE(
-        test_app_offscreen_pick_probe_request_steady_state, TST_SCENE_APP_GPU_RES,
-        TST_ISOLATION_PROCESS);
+    TST_SCENE_APP_SHARED_CASE(test_app_offscreen_rotated_mesh_depth_orders_faces);
+    TST_SCENE_APP_SHARED_CASE(test_app_offscreen_camera_arcball_mesh_renders_cube);
+    TST_SCENE_APP_SHARED_CASE(test_app_offscreen_shared_field_mixed_runtime_updates);
+    TST_SCENE_APP_SHARED_CASE(test_app_offscreen_retained_render_second_frame);
+    TST_SCENE_APP_SHARED_CASE(test_app_offscreen_image_retained_render_second_frame);
+    TST_SCENE_APP_SHARED_CASE(test_app_offscreen_resize_reuses_runtime_with_mesh_and_image);
+    TST_SCENE_APP_SHARED_CASE(test_app_offscreen_pick_probe_request_steady_state);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_two_panel_points_light_both_halves);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_clear_color);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_volume_slice_renders_field);
