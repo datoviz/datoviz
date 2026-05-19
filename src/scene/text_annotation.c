@@ -1657,7 +1657,7 @@ static bool _text_visual_prepare(
             ok = false;
         DvzVisualAttachDesc glyph_attach = {
             .z_layer = attach->z_layer,
-            .controller_mode = DVZ_CONTROLLER_FIXED,
+            .controller_mode = attach->controller_mode,
         };
         if (ok && dvz_panel_add_visual(panel, visual->text.glyph_visual, &glyph_attach) != 0)
             ok = false;

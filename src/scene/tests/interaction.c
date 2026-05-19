@@ -644,9 +644,12 @@ int test_scene_text_many_labels_render_plan(TstContext* suite, const TstCase* it
     AT(dvz_visual_set_data_many(text, updates, 5) == 0);
     AT(dvz_panel_add_visual(
            panel, text,
-           &(DvzVisualAttachDesc){.z_layer = 1, .controller_mode = DVZ_CONTROLLER_FIXED}) == 0);
+           &(DvzVisualAttachDesc){.z_layer = 1, .controller_mode = DVZ_CONTROLLER_APPLY}) == 0);
     _scene_prepare_text_visuals(figure);
     ANN(text->text.glyph_visual);
+    AT(panel->visual_count == 2);
+    AT(panel->visuals[1].visual == text->text.glyph_visual);
+    AT(panel->visuals[1].controller_mode == DVZ_CONTROLLER_APPLY);
 
     DvzFramePlan* plan = dvz_frame_plan("figure.text.labels", 0);
     ANN(plan);

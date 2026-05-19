@@ -702,14 +702,27 @@ int main(int argc, char** argv)
         dvz_scene_destroy(scene);
         return 1;
     }
-    DvzVisual* text_visuals[] = {state.title, state.sample, state.multiline, state.ticks};
-    DvzVisualAttachDesc text_attach = {
+    DvzVisualAttachDesc title_attach = {
         .z_layer = 4,
         .controller_mode = DVZ_CONTROLLER_FIXED,
     };
-    for (uint32_t i = 0; i < (uint32_t)(sizeof(text_visuals) / sizeof(text_visuals[0])); i++)
+    if (dvz_panel_add_visual(panel, state.title, &title_attach) != 0)
     {
-        if (dvz_panel_add_visual(panel, text_visuals[i], &text_attach) != 0)
+        dvz_fprintf(stderr, "dvz_panel_add_visual() failed for title visual\n");
+        dvz_scene_destroy(scene);
+        return 1;
+    }
+
+    DvzVisual* panzoom_text_visuals[] = {state.sample, state.multiline, state.ticks};
+    uint32_t panzoom_text_count =
+        (uint32_t)(sizeof(panzoom_text_visuals) / sizeof(panzoom_text_visuals[0]));
+    DvzVisualAttachDesc text_attach = {
+        .z_layer = 4,
+        .controller_mode = DVZ_CONTROLLER_APPLY,
+    };
+    for (uint32_t i = 0; i < panzoom_text_count; i++)
+    {
+        if (dvz_panel_add_visual(panel, panzoom_text_visuals[i], &text_attach) != 0)
         {
             dvz_fprintf(stderr, "dvz_panel_add_visual() failed for text visual %u\n", i);
             dvz_scene_destroy(scene);
@@ -726,7 +739,7 @@ int main(int argc, char** argv)
     }
     DvzVisualAttachDesc crosshair_attach = {
         .z_layer = 5,
-        .controller_mode = DVZ_CONTROLLER_FIXED,
+        .controller_mode = DVZ_CONTROLLER_APPLY,
     };
     if (dvz_panel_add_visual(panel, state.crosshair, &crosshair_attach) != 0)
     {
@@ -756,6 +769,16 @@ int main(int argc, char** argv)
         return 1;
     }
     state.win = win;
+
+    DvzInputRouter* router = dvz_app_window_input(win);
+    if (router == NULL)
+    {
+        dvz_fprintf(stderr, "dvz_app_window_input() failed\n");
+        dvz_app_destroy(app);
+        dvz_scene_destroy(scene);
+        return 1;
+    }
+    dvz_panel_set_panzoom(panel, router, 0);
 
     DvzGuiConfig gui_config = dvz_gui_config();
     DvzGui* gui = dvz_app_window_gui(win, &gui_config);
