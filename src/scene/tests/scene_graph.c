@@ -4641,6 +4641,48 @@ int test_scene_pending_render_work_tracks_volume_state(TstContext* suite, const 
 }
 
 
+
+/**
+ * Verify unlit background primitives do not keep app scheduling work pending.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_pending_render_work_clears_unlit_background(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    AT(scene != NULL);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    AT(figure != NULL);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    AT(panel != NULL);
+
+    dvz_panel_set_background_color(panel, 0.02f, 0.03f, 0.04f, 1.0f);
+    AT(panel->background_visual != NULL);
+    AT(_scene_figure_has_pending_render_work(figure));
+
+    DvzCapabilitySnapshot caps;
+    dvz_capability_snapshot_default(&caps);
+    caps.shader_format_glsl = true;
+    DvzDiagnosticReport report;
+    dvz_diagnostic_report_init(&report);
+    DvzDrp2CommandStream* stream = dvz_figure_emit(figure, &caps, &report);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+    AT(stream != NULL);
+    dvz_drp2_stream_destroy(stream);
+
+    AT(!_scene_figure_has_pending_render_work(figure));
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
 int test_scene_hidden_visual_first_visible_later_uploads(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
@@ -11306,6 +11348,7 @@ int test_scene_graph(TstSuite* suite)
     TST_SCENE_GRAPH_GPU_CASE(test_scene_point_large_count_executes);
     TST_CASE(test_scene_second_emit_no_uploads_when_not_dirty);
     TST_CASE(test_scene_pending_render_work_tracks_volume_state);
+    TST_CASE(test_scene_pending_render_work_clears_unlit_background);
     TST_CASE(test_scene_hidden_visual_first_visible_later_uploads);
     TST_CASE(test_scene_hidden_indexed_mesh_first_visible_later_uploads);
     TST_SCENE_GRAPH_GPU_CASE(test_scene_hidden_wboit_mesh_scene_occlusion_two_frames_glsl_executes);

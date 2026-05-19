@@ -114,6 +114,8 @@ static bool _scene_panel_has_pending_adornment_work(const DvzPanel* panel);
 
 static bool _scene_panel_has_pending_visual_work(const DvzPanel* panel);
 
+static bool _scene_visual_has_attr_data(const DvzVisual* visual, const char* attr_name);
+
 static bool _scene_visual_dirty_material_emits_upload(const DvzVisual* visual);
 
 /**
@@ -866,6 +868,25 @@ static bool _scene_visual_has_pending_render_work(const DvzVisual* visual)
 
 
 /**
+ * Return whether one visual has CPU-side data for an attribute.
+ *
+ * @param visual the visual to inspect
+ * @param attr_name the attribute name
+ * @return whether the attribute exists and has at least one item
+ */
+static bool _scene_visual_has_attr_data(const DvzVisual* visual, const char* attr_name)
+{
+    if (visual == NULL || attr_name == NULL)
+        return false;
+
+    int attr_idx = _attr_index(visual, attr_name);
+    return attr_idx >= 0 && visual->attrs[attr_idx].data != NULL &&
+           visual->attrs[attr_idx].item_count > 0;
+}
+
+
+
+/**
  * Return whether a dirty material payload is emitted for one visual family.
  *
  * @param visual the visual to inspect
@@ -883,10 +904,11 @@ static bool _scene_visual_dirty_material_emits_upload(const DvzVisual* visual)
     case DVZ_VISUAL_TYPE_MARKER:
     case DVZ_VISUAL_TYPE_SEGMENT:
     case DVZ_VISUAL_TYPE_PATH:
-    case DVZ_VISUAL_TYPE_PRIMITIVE:
-    case DVZ_VISUAL_TYPE_MESH:
     case DVZ_VISUAL_TYPE_SPHERE:
         return true;
+    case DVZ_VISUAL_TYPE_PRIMITIVE:
+    case DVZ_VISUAL_TYPE_MESH:
+        return _scene_visual_has_attr_data(visual, "normal");
     default:
         return false;
     }
