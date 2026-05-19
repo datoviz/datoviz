@@ -64,6 +64,7 @@ function(dvz_add_example group name source)
         PRIVATE
         ${PROJECT_SOURCE_DIR}/include
         ${PROJECT_SOURCE_DIR}/src/common
+        ${PROJECT_SOURCE_DIR}/src/app
         ${PROJECT_SOURCE_DIR}/src/scene
         ${CMAKE_CURRENT_SOURCE_DIR}
         ${CMAKE_CURRENT_SOURCE_DIR}/tools
@@ -126,6 +127,7 @@ if(TARGET datoviz_app AND DVZ_HAS_GLFW AND TARGET datoviz_gui)
     dvz_add_example(techniques linked_panels techniques/linked_panels.c)
     dvz_add_example(techniques multi_panel techniques/multi_panel.c)
     dvz_add_example(techniques scatter_axes techniques/scatter_axes.c)
+    dvz_add_example(techniques scheduler_lab techniques/scheduler_lab.c)
     dvz_add_example(techniques gui_viewport techniques/gui_viewport.c)
     dvz_add_example(techniques gui_multi_viewport techniques/gui_multi_viewport.c)
 
