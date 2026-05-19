@@ -2609,6 +2609,7 @@ int test_app_offscreen_sdf_text_has_nonblank_pixels(TstContext* suite, const Tst
     bool has_bounds =
         text->text.glyph_visual != NULL &&
         _app_glyph_pixel_bounds(text->text.glyph_visual, width, height, bounds);
+    AT(has_bounds);
     for (uint32_t i = 0; i < width * height; i++)
     {
         const uint8_t* pixel = &rgba[4 * i];
