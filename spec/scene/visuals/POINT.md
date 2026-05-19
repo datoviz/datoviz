@@ -7,6 +7,7 @@ It refines `../semantics/VISUAL_FAMILIES.md`, `../semantics/VISUAL_FAMILY_RULES.
 `../semantics/VISUAL_CONTRACT.md`.
 
 Shared attribute and behavioral definitions are in `SHARED_ATTRIBUTES.md`.
+Landed naming and first-slice decisions are tracked in `IMPLEMENTATION_DECISIONS.md`.
 
 
 ## Current Implementation Status
@@ -181,4 +182,4 @@ A later slice may move GLSL to instanced quads too if exact GLSL/WGSL parity bec
 than native point-list throughput.
 
 Depth sorting of semi-transparent points uses the scene's transparency path
-(see `semantics/TRANSPARENCY.md`). `point` declares `alpha_mode` like any other visual.
+(see `../semantics/TRANSPARENCY.md`). `point` declares `alpha_mode` like any other visual.

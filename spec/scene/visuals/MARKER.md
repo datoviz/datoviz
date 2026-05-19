@@ -7,6 +7,8 @@ It refines `../semantics/VISUAL_FAMILIES.md`, `../semantics/VISUAL_FAMILY_RULES.
 `../semantics/VISUAL_CONTRACT.md`.
 
 Shared attribute and behavioral definitions are in `SHARED_ATTRIBUTES.md`.
+Landed naming, marker render-mode, and marker/glyph atlas-sharing decisions are tracked in
+`IMPLEMENTATION_DECISIONS.md`.
 
 
 ## Current Implementation Status

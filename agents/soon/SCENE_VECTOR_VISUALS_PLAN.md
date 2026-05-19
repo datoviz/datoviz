@@ -13,13 +13,13 @@ The active scene slice now has:
 
 1. a retained `dvz_segment()` visual for independent endpoint pairs;
 2. `position_start` and `position_end` endpoint attributes;
-3. per-item `line_width` in screen pixels;
+3. per-item `stroke_width` in screen pixels;
 4. RGBA color;
 5. analytic GLSL stroked segment lowering based on the v0.3 four-vertex/six-index technique;
 6. first-slice segment caps `none`, `round`, `triangle_in`, `triangle_out`, `square`, and `butt`;
 7. `dvz_segment_set_caps()`;
-8. the existing `dvz_path()` primitive line-strip path when no `line_width` is present;
-9. a stroked `dvz_path()` lane when per-point `line_width` is present;
+8. the existing `dvz_path()` primitive line-strip path when no `stroke_width` is present;
+9. a stroked `dvz_path()` lane when per-point `stroke_width` is present;
 10. open subpath lengths via `dvz_path_set_subpaths()`;
 11. stroked path lowering through derived segment-style resources.
 
@@ -32,31 +32,38 @@ picking and WGSL segment/path lowering are also still follow-up work.
 Immediate vector follow-up should happen in this order:
 
 1. Add segment picking against the visible screen-space stroke. The hit area should use
-   `line_width / 2` plus a small tolerance, account for endpoint caps where supported, and return
+   `stroke_width / 2` plus a small tolerance, account for endpoint caps where supported, and return
    the segment item index.
 2. Add stroked path picking by reusing the segment stroke hit logic over each derived path edge.
    Return the path/subpath identity, not the derived edge vertex.
 3. Add WGSL lowering for segment and stroked path so WebGPU keeps the same public
-   `position_start`/`position_end` and `line_width` semantics as GLSL.
+   `position_start`/`position_end` and `stroke_width` semantics as GLSL.
 4. After picking and WGSL parity, move to closed subpaths, path-native joins, and miter-limit
    behavior before dashes or arrow caps.
 
 The cross-family execution order is recorded in
 `spec/scene/visuals/IMPLEMENTATION_DECISIONS.md`.
 
+Durable vector-family contracts live in:
+
+1. `spec/scene/visuals/SEGMENT.md`
+2. `spec/scene/visuals/PATH.md`
+3. `spec/scene/visuals/MARKER.md`
+4. `spec/scene/visuals/IMPLEMENTATION_DECISIONS.md`
+
 This is not greenfield. The `v0.3/` tree already contains dedicated segment, path, marker, SVG-SDF,
 and 3D arrow work that should be mined and ported selectively:
 
 1. `v0.3/src/scene/visuals/segment.c` creates an indexed triangle-list visual with four vertices
    and six indices per segment, start/end positions, pixel shifts, per-segment color, per-segment
-   line width, and start/end cap parameters.
+   stroke width, and start/end cap parameters.
 2. `v0.3/src/scene/glsl/graphics_segment.vert` projects segment endpoints to screen space, expands
    a conservative quad in pixels, and passes local `(u, v)` stroke coordinates to the fragment
    shader.
 3. `v0.3/src/scene/glsl/graphics_segment.frag` uses the shared antialias helpers to draw body
    coverage and cap coverage analytically.
 4. `v0.3/src/scene/visuals/path.c` creates a triangle-strip stroked path visual with
-   `(p0, p1, p2, p3)` adjacency, variable per-point color/line width, open/closed path flags,
+   `(p0, p1, p2, p3)` adjacency, variable per-point color/stroke width, open/closed path flags,
    miter limit, cap type, and round/square join parameters.
 5. `v0.3/src/scene/glsl/graphics_path.vert` and `graphics_path.frag` are Rougier-derived shaders
    that already implement screen-space path expansion, miter handling, miter-limit fallback, round
@@ -89,7 +96,7 @@ visuals:
 1. Keep the first implementation portable across Vulkan and WebGPU. Do not rely on geometry shaders.
 2. Prefer the v0.3/Rougier shader-based stroke evaluation over CPU tessellating every dash or round
    cap into many triangles.
-3. Keep style changes cheap. Line width, dash phase, cap mode, and color changes should not force a
+3. Keep style changes cheap. Stroke width, dash phase, cap mode, and color changes should not force a
    full geometry rebuild when the point coordinates are unchanged.
 4. Keep joins and dashes deterministic in screen space. Scientific plots need stable line quality
    across GPUs and zoom levels more than they need exact browser-SVG corner cases in the first slice.
@@ -128,228 +135,15 @@ SVG references for the compatibility target:
    https://w3c.github.io/svgwg/specs/strokes/
 
 
-## Visual Families
+## Durable Contract References
 
-### Segment
+Keep this note focused on execution order. Stable vector-family contracts now live in:
 
-`segment` is the narrow foundation. It represents independent 2D or 3D line segments with no joins:
-
-1. per-item attributes: `position_start`, `position_end`, `color`, and `line_width`;
-2. visual-level stroke style: start cap, end cap, antialias radius, dash style, coordinate mode;
-3. one segment is one independent primitive, so caps and arrowheads are unambiguous;
-4. v0.3 already validates the four-vertex/six-index analytic-cap model; the first v0.4 port into
-   retained scene/DRP2 has landed for solid strokes and non-arrow caps;
-5. useful immediately for plot ticks, grid lines, rulers, annotations, graph edges, and vector-field
-   shafts.
-
-This should be implemented before full paths because it isolates stroke width, caps, dashing, and
-screen-space extrusion without join complexity.
-
-
-### Path
-
-`path` is an ordered set of one or more subpaths:
-
-1. per-vertex attributes: `position`, optional `color`, optional `line_width`;
-2. structural metadata: subpath lengths first, closed/open bit and cumulative arc length later;
-3. visual-level stroke style: cap mode, join mode, miter limit, dash style, antialias radius;
-4. derived adjacency data equivalent to the v0.3 `(p0, p1, p2, p3)` vertex payload;
-5. optional fill style for closed paths in later stages.
-
-The current line-strip path remains available when `line_width` is absent. When `line_width` is
-present, the first stroked path slice derives segment-style resources and uses the segment stroke
-pipeline. The v0.3 path shader remains the baseline for later miter/round joins, caps, and
-path-native pixel-width strokes; dashing, closed subpaths, and SVG subpaths are still missing.
-
-
-### Arrow And Marker
-
-Arrows should be modeled as markers attached to a segment or path, not as a separate hard-coded line
-variant:
-
-1. marker positions: start, mid, end;
-2. marker shapes: reuse the v0.3 code-based SDF set where possible, including arrow, chevron,
-   triangle, bar, circle/disc, square, diamond, pin, tag, and rounded rectangle;
-3. marker modes: start with code-generated SDF shapes; keep bitmap/SDF/MSDF/MTSDF support as a
-   second port because it depends on texture resources and optional `msdfgen`;
-4. aspects: filled, stroke, and outline;
-5. orientation: tangent-based `auto`, `auto-start-reverse`, or fixed angle;
-6. sizing: pixels, stroke-width multiples, or data/world units;
-7. fill/stroke style: inherit from parent stroke by default, with override hooks later.
-
-The public "2D arrow" API can be a convenience wrapper that creates a `segment` plus an end marker.
-
-
-### Vector Field
-
-`vector` should be an instanced glyph visual over the same stroke/marker backend:
-
-1. attributes: anchor position, vector direction, magnitude, optional color, optional scale;
-2. modes: raw vector length, normalized direction with scalar length mapping, fixed pixel length;
-3. glyphs: shaft-only, arrow, barbed arrow, line-with-dot;
-4. color mapping: direct RGBA first, scalar scale/colormap later;
-5. picking: item id should refer to the source vector, not the generated shaft/marker geometry.
-
-
-### Tube, Streamline, And 3D Arrow
-
-`tube` is a 3D path visual, not a 2D stroke. This lane should explicitly cover tractography and
-other dense streamline/trajectory use cases:
-
-1. input: many variable-length 3D polylines or curve-flattened paths;
-2. output modes: fast camera-facing ribbon/strip, true retained tube mesh, and optional directional
-   glyphs/arrowheads;
-3. cross-sections: ribbon first for dense tractograms, round tube with configurable side count for
-   selected/high-quality bundles, square/other sections later;
-4. caps: none and flat first, round/hemisphere later;
-5. joins/frames: stable parallel-transport frames for tubes, view-stable orientation for ribbons,
-   and explicit handling of sharp turns or broken streamlines;
-6. material: use existing mesh/primitive material and depth/SSAO paths for tube meshes; use a lean
-   unlit/depth-cued shader for dense ribbons;
-7. attributes: per-vertex or per-streamline color, optional scalar, width/radius, bundle id, and
-   source streamline id for picking/selection.
-
-Tubes and 3D arrows should wait until the 2D stroke path is stable enough to share input topology and
-style vocabulary, but they should not reuse the 2D screen-space stroke shaders. They need different
-geometry, depth, lighting, clipping, picking, and performance policy.
-
-Particle systems are related but distinct. A particle system owns dynamic GPU-updated state such as
-position, velocity, age, and size; track, streamline, and tube visuals are optional consumers of
-particle history or selected trajectories. The scene-level design lives in
-`spec/scene/proposals/active/PARTICLE_SYSTEM_DESIGN.md`.
-
-For tractography, the practical rendering ladder should be:
-
-1. **Ribbon/strip mode:** fastest path for many streamlines; supports depth cueing, clipping, alpha,
-   bundle coloring, and picking by streamline id.
-2. **Tube mesh mode:** true 3D normals and lighting for selected bundles, screenshots, or lower-density
-   scenes; generated from polyline data with parallel-transport frames.
-3. **3D arrow/glyph mode:** cone/cylinder or cone-only direction cues for selected streamlines,
-   vector fields, flow direction, or orientation debugging. Reuse the v0.3 `dvz_shape_arrow()` design
-   as geometry prior art, but emit retained v0.4 mesh/instance resources.
-
-
-## Stroke Model
-
-Add a shared stroke descriptor before adding more visual constructors:
-
-```c
-typedef enum DvzStrokeWidthMode
-{
-    DVZ_STROKE_WIDTH_SCREEN,
-    DVZ_STROKE_WIDTH_WORLD,
-} DvzStrokeWidthMode;
-
-typedef enum DvzStrokeCap
-{
-    DVZ_STROKE_CAP_NONE,
-    DVZ_STROKE_CAP_BUTT,
-    DVZ_STROKE_CAP_SQUARE,
-    DVZ_STROKE_CAP_ROUND,
-    DVZ_STROKE_CAP_TRIANGLE_IN,
-    DVZ_STROKE_CAP_TRIANGLE_OUT,
-} DvzStrokeCap;
-
-typedef enum DvzStrokeJoin
-{
-    DVZ_STROKE_JOIN_MITER,
-    DVZ_STROKE_JOIN_BEVEL,
-    DVZ_STROKE_JOIN_SQUARE,
-    DVZ_STROKE_JOIN_ROUND,
-} DvzStrokeJoin;
-
-typedef struct DvzStrokeDesc
-{
-    float width;
-    DvzStrokeWidthMode width_mode;
-    DvzStrokeCap cap_start;
-    DvzStrokeCap cap_end;
-    DvzStrokeJoin join;
-    float miter_limit;
-    float antialias;
-    uint64_t dash_id;
-    float dash_phase;
-} DvzStrokeDesc;
-```
-
-Default policy:
-
-1. width is in pixels;
-2. antialias radius is one pixel unless MSAA or target scale suggests otherwise;
-3. cap is butt for path/SVG compatibility, round for plot-friendly helper APIs only if explicitly
-   requested;
-4. join is miter with a conservative miter limit, falling back to bevel on sharp turns;
-5. stroke alignment is centered only in the first implementation.
-6. map the new enum values deliberately from the v0.3 integer values so shader ports do not depend
-   on legacy numeric order.
-
-
-## Dash Model
-
-Dashing should be a first-class scene resource, not ad-hoc per-visual arrays:
-
-```c
-typedef struct DvzDashPatternDesc
-{
-    const float* lengths;
-    uint32_t length_count;
-    float period;
-} DvzDashPatternDesc;
-```
-
-The v0.3 stroke code does not appear to implement dashed segments or dashed paths. Dashing should
-therefore be treated as new v0.4 behavior layered on top of the ported analytic stroke coordinate
-system and extended with cumulative path distance.
-
-First implementation:
-
-1. store a small dash pattern table in a uniform/storage buffer for a single visual;
-2. evaluate `mod(path_distance + dash_phase, period)` in the fragment shader;
-3. support solid, dot, dash, dash-dot, and user-provided even-length arrays;
-4. apply dash caps independently from path-end caps;
-5. keep dash phase mutable without rebuilding vertex buffers.
-
-Second implementation:
-
-1. add a scene-owned dash atlas texture or storage-buffer atlas;
-2. pack one dash pattern per row/record with reference point, dash subtype, dash start, and dash end;
-3. bind the atlas through the normal scene resource path;
-4. allow many visuals to share the same dash pattern resource;
-5. keep texture format support explicit in scene capabilities.
-
-The atlas version should follow Rougier's direction because it avoids CPU tessellation for animated
-dashes and arbitrary dash patterns. The simple uniform version is still useful as a low-risk bridge.
-
-
-## GPU Stroke Representation
-
-Use generated triangles, not hardware line primitives. The v0.3 segment and path implementations
-already prove this approach in Datoviz; the v0.4 work is to adapt the model to retained visuals,
-FramePlan resources, DRP2 command emission, shader variants, and runtime reuse.
-
-For `segment`:
-
-1. start from the v0.3 four-vertex/six-index shape;
-2. keep endpoint projection and screen-space quad expansion in the vertex shader;
-3. preserve the optional `shift` attribute for pixel offsets at each endpoint because it is useful
-   for ticks, error bars, and annotation offsets;
-4. fragment shader receives local `(u, v)` coordinates, segment length, width, cap modes, and dash
-   metadata;
-5. coverage is computed analytically and multiplied into alpha;
-6. consider instanced unit-quads only after the direct port is correct and benchmarked.
-
-For `path`:
-
-1. start from the v0.3 adjacency payload: previous point, current point, next point, next-next point,
-   per-point color, and per-point line width;
-2. extend the derived payload with subpath id, closed/open flags, cumulative distance, and dash flags;
-3. emit conservative segment quads for every path edge;
-4. port miter-limit and round-join shader logic before adding dash logic;
-5. avoid retaining pointers into growable scene arrays during preprocessing; store stable offsets and
-   rebuild derived buffers after source data changes.
-
-This representation costs more vertices than a geometry-shader approach but keeps the implementation
-portable and debuggable.
+1. `spec/scene/visuals/SEGMENT.md`: segment purpose, attributes, caps, picking, and fallbacks.
+2. `spec/scene/visuals/PATH.md`: path span model, attributes, joins, closed paths, and picking.
+3. `spec/scene/visuals/MARKER.md`: marker modes and arrow-marker vocabulary.
+4. `spec/scene/visuals/IMPLEMENTATION_DECISIONS.md`: stroke, dash, arrow, vector, and 3D
+   line-family follow-up rules.
 
 
 ## Staged Implementation
@@ -393,7 +187,7 @@ Expected work:
 
 1. add `DVZ_VISUAL_TYPE_SEGMENT`;
 2. add `dvz_segment()` with dense attributes matching v0.4 naming: `position_start`,
-   `position_end`, `color`, and `line_width`;
+   `position_end`, `color`, and `stroke_width`;
 3. port `graphics_segment.vert`, `graphics_segment.frag`, and the relevant `antialias.glsl`
    functions into the v0.4 built-in shader registry;
 4. lower segment visuals through FramePlan like other retained visuals;
@@ -416,11 +210,11 @@ git diff --check
 ### Stage 2. Port Path Geometry And Joins
 
 Scope: replace the current segment-lowered stroked path with a retained stroked polyline,
-ported from v0.3. Keep the primitive line-strip path available for paths without `line_width`
+ported from v0.3. Keep the primitive line-strip path available for paths without `stroke_width`
 until the path-native stroke path is stable and benchmarked.
 
-Status on 2026-05-17: partially implemented. Paths without `line_width` still use the primitive
-line-strip path. Paths with per-point `line_width` derive segment-style stroke resources and support
+Status on 2026-05-17: partially implemented. Paths without `stroke_width` still use the primitive
+line-strip path. Paths with per-point `stroke_width` derive segment-style stroke resources and support
 open subpath lengths. Path-native joins, miter limits, closed subpaths, dashes, and picking remain
 follow-up work.
 
@@ -443,12 +237,12 @@ Focused implementation checklist:
 1. Add path-native derived resources in `src/scene/scene_emit.c` instead of reusing segment
    endpoint resources for stroked paths. The first derived payload should mirror the v0.3
    `DvzPathVertex` inputs: previous point `p0`, current point `p1`, next point `p2`, next-next
-   point `p3`, per-point color, and per-point `line_width`.
-2. Rebuild that payload from retained `position`, `color`, `line_width`, and
+   point `p3`, per-point color, and per-point `stroke_width`.
+2. Rebuild that payload from retained `position`, `color`, `stroke_width`, and
    `dvz_path_set_subpaths()` metadata. Open subpaths should duplicate endpoint neighbours exactly
    as v0.3 does; closed subpaths should wrap neighbours once closed-path metadata is added.
-3. Preserve the existing public `stroke_width` alias, but keep the internal storage name
-   `line_width` unless the whole visual attribute vocabulary is deliberately renamed.
+3. Preserve the public `stroke_width` name, but keep existing internal storage names unless the
+   whole visual attribute vocabulary is deliberately renamed.
 4. Add a path-stroke shader family under `src/scene/glsl/`, adapted from
    `v0.3/src/scene/glsl/graphics_path.vert` and `graphics_path.frag`. The port should use v0.4
    `common.glsl`, viewport, material, clipping, depth, and shader registry conventions rather than
@@ -521,9 +315,9 @@ Expected work:
 1. port the v0.3 code-based marker SDF functions and the filled/stroke/outline fragment logic;
 2. add retained marker descriptors for standalone marker visuals and for path marker attachments
    (`start`, `mid`, `end`);
-3. support `position`, `size`, `angle`, and `color` attributes plus edge color/line width params;
+3. support `position`, `diameter`, `angle`, and `color` attributes plus edge color/stroke width params;
 4. initially use the same point-sprite model as v0.3 for standalone markers if it remains reliable
-   in Vulkan/WebGPU; use instanced quads if point-size behavior is too backend-specific;
+   in Vulkan/WebGPU; use instanced quads if point-diameter behavior is too backend-specific;
 5. attach marker draws to the same FramePlan render node as the parent path when possible;
 6. compute marker tangents from segment endpoints or path join tangents;
 7. add convenience API for 2D arrows over `segment`, using the existing v0.3 arrow marker shape as
@@ -737,7 +531,7 @@ Unit tests:
 4. subpath closure and zero-length segment handling;
 5. SVG path parsing and transform composition;
 6. fill tessellation edge cases.
-7. v0.3 behavior parity for segment caps, path open/closed handling, path variable line widths,
+7. v0.3 behavior parity for segment caps, path open/closed handling, path variable stroke widths,
    marker modes/aspects, and marker rotation.
 
 DRP2/spec tests:
@@ -787,7 +581,7 @@ Manual examples:
 6. **Performance:** dynamic paths should update only changed source attributes and derived buffers.
    Dash phase, stroke width, and color should be uniform/material updates when possible.
 7. **Porting debt:** v0.3 code uses the old batch/visual abstraction, direct allocation in places,
-   point-size marker sprites, and legacy shader includes. Port the behavior, not the architecture.
+   point-diameter marker sprites, and legacy shader includes. Port the behavior, not the architecture.
 8. **Tractography density:** true tubes for every streamline can be too expensive. Keep ribbon/strip
    mode as the dense default and reserve tube mesh mode for selected bundles or quality renders.
 9. **Tube frame stability:** naive Frenet frames twist or fail on straight segments. Use

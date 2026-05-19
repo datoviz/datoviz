@@ -30,7 +30,7 @@ MSDF infrastructure used by both marker and glyph/text.
 Already present:
 
 1. `dvz_point()` and `dvz_pixel()` are public scene constructors.
-2. Point-like visuals already use `position`, `color`, and `size` attributes.
+2. Point-like visuals already use `position`, `color`, and canonical size attributes.
 3. `dvz_marker()` is a public scene constructor for code-SDF markers.
 4. Scene frame-plan metadata recognizes point-like visual types, including
    `DVZ_VISUAL_TYPE_MARKER`.
@@ -47,10 +47,10 @@ Already present:
 
 First-slice marker capabilities:
 
-1. dense `position`, `color`, `size`, `angle`, and `shape`;
+1. dense `position`, `color`, `diameter`, `angle`, and `shape`;
 2. `DvzMarkerShape` values stored as `uint32_t`;
 3. built-in shapes `disc`, `square`, `triangle`, `diamond`, `cross`, and `ring`;
-4. `DvzMarkerStyle` with `edge_color`, `line_width`, `filled`, `stroke`, and `outline`;
+4. `DvzMarkerStyle` with `edge_color`, `stroke_width`, `filled`, `stroke`, and `outline`;
 5. code-SDF mode only.
 
 Gaps:
@@ -99,198 +99,15 @@ The cross-family execution order is recorded in
 10. Keep the first marker API useful but narrow; do not port every v0.3 mode at once.
 
 
-## Visual Semantics
+## Durable Contract References
 
-### Pixel Visual
+Keep this note focused on execution order. Stable point-like contracts now live in:
 
-Purpose: dense point clouds and raster-like unstructured data where throughput matters more than
-styling.
-
-Contract:
-
-1. required `position`: per-item `vec3f`.
-2. required `color`: per-item `RGBA8`, with constant and grouped color allowed when the shared
-   attribute-source machinery supports it.
-3. `size`: side length in framebuffer pixels; allow per-item and constant forms.
-4. shape: filled axis-aligned square.
-5. antialiasing: none in the first contract.
-6. stroke/edge: none.
-7. rotation: none.
-8. texture: none.
-9. depth: can depth-test and depth-write when attached through a normal controller.
-10. alpha: follows existing visual alpha mode routing.
-
-Important default:
-
-1. Missing `size` should eventually default to `1.0f` so callers can upload only position and color.
-2. Until default attributes are implemented, tests should keep using explicit size data.
-
-
-### Point Visual
-
-Purpose: ordinary scatter points and point clouds where visual quality matters but symbolic shapes do
-not.
-
-Contract:
-
-1. required `position`: per-item `vec3f`.
-2. required `color`: face color, per-item `RGBA8`.
-3. `size`: diameter in framebuffer pixels; allow per-item and constant forms.
-4. shape: circular disc.
-5. antialiasing: enabled by default in the fragment shader.
-6. optional uniform `edge_color`: `RGBA8` or normalized `vec4`.
-7. optional uniform `line_width`: stroke width in framebuffer pixels.
-8. no arbitrary shape selection.
-9. no bitmap texture.
-10. no marker rotation.
-11. depth: can depth-test and depth-write when attached through a normal controller.
-12. alpha: follows existing visual alpha mode routing.
-
-The point visual should become a true antialiased disc on every backend. GLSL can initially use
-`gl_PointCoord`, but instanced-quad lowering should be considered if exact GLSL/WGSL parity or
-future WebGPU-native alignment becomes more important than native point-list throughput.
-
-
-### Marker Visual
-
-Purpose: categorical/symbolic scatter points, icons, and custom marker glyphs.
-
-Contract:
-
-1. required `position`: per-item `vec3f`.
-2. required `color`: fill/tint color, per-item `RGBA8`.
-3. `size`: screen-space marker diameter in framebuffer pixels; allow per-item and constant forms.
-4. `angle`: marker rotation in radians; allow per-item and constant forms, default `0`.
-5. `shape`: built-in symbolic shape or atlas symbol id; support per-item shape eventually, with a
-   per-visual default as convenience.
-6. style: `filled`, `stroke`, and `outline`.
-7. optional uniform `edge_color`.
-8. optional uniform `line_width`.
-9. mode: `code`, `bitmap`, `sdf`, `msdf`.
-10. depth: can depth-test and depth-write using the marker center depth for the first implementation.
-11. alpha: follows existing visual alpha mode routing.
-
-The first marker slice should support only `code` mode. Bitmap and atlas modes should come next.
-SDF/MSDF should wait until the shared atlas substrate is in place.
-
-
-## Marker Modes
-
-### Code Mode
-
-Code mode evaluates built-in signed-distance marker functions directly in the fragment shader. This
-is the best first implementation because it needs no texture binding, no atlas, no external asset
-pipeline, and no generator dependency.
-
-Initial shape subset:
-
-1. disc,
-2. square,
-3. triangle,
-4. diamond,
-5. cross,
-6. ring.
-
-Later shape expansion can reuse v0.3's GLSL SDF functions for asterisk, chevron, clover, club,
-arrow, ellipse, hbar, heart, infinity, pin, spade, tag, vbar, and rounded rectangle.
-
-
-### Bitmap Mode
-
-Bitmap mode samples a normal RGBA or alpha texture and applies marker color as tint/alpha according
-to the selected policy.
-
-Bitmap mode should be part of `marker`, not a separate visual, because it shares marker's core
-semantics:
-
-1. one symbol per scene item,
-2. screen-space size,
-3. optional rotation,
-4. per-item color/tint,
-5. optional atlas symbol id,
-6. point-like depth and alpha behavior.
-
-First bitmap slice:
-
-1. one bitmap texture per marker visual,
-2. one UV rectangle covering the full texture,
-3. all items in the visual use the same bitmap,
-4. per-item color multiplies sampled color,
-5. alpha comes from sampled alpha times per-item color alpha.
-
-Second bitmap slice:
-
-1. atlas-backed bitmap markers,
-2. per-item symbol id,
-3. per-symbol UV rectangle and nominal bounds,
-4. support categorical icon scatter without creating one visual per icon.
-
-A separate `icon` visual should be deferred. It is only justified if bitmap/MSDF markers later grow
-layout semantics that do not fit scatter-symbol rendering.
-
-
-### SDF And MSDF Modes
-
-SDF/MSDF modes should consume shared atlas entries. The marker visual should not own a custom
-font/icon pipeline.
-
-SDF mode:
-
-1. single-channel distance field,
-2. simpler and cheaper than MSDF,
-3. suitable for simple filled symbols and silhouettes.
-
-MSDF mode:
-
-1. RGB multichannel distance field,
-2. better corners and complex icon outlines,
-3. useful for custom SVG/path markers and font glyphs.
-
-MTSDF or additional channels should remain deferred until there is a real quality need.
-
-
-## Glyph And MSDF Interaction
-
-Glyph/text and marker should share infrastructure, not public semantics.
-
-Shared internal substrate:
-
-1. atlas texture creation and upload,
-2. atlas resizing or immutable-atlas creation policy,
-3. atlas entry metadata,
-4. UV rectangle lookup,
-5. nominal symbol bounds,
-6. SDF/MSDF decode helpers,
-7. sampler setup,
-8. scene resource labels and DRP2 texture/bind-group emission,
-9. dirty-state and descriptor-refresh behavior,
-10. optional offline or import-time SVG/path/font-to-MSDF generation.
-
-Marker-specific interpretation:
-
-1. entry id means symbol/icon/marker shape,
-2. position is data point position,
-3. size is marker diameter in framebuffer pixels,
-4. angle rotates the symbol around its center,
-5. no baseline,
-6. no advance,
-7. no shaping,
-8. color is fill/tint.
-
-Glyph/text-specific interpretation:
-
-1. entry id means glyph id/codepoint within a font face,
-2. placement follows text layout,
-3. advances, bearings, baseline, line height, and font metrics matter,
-4. shaping and fallback may eventually be required,
-5. atlas bounds are used for glyph quads, not marker diameters.
-
-Therefore:
-
-1. Keep `marker` and `glyph/text` as separate visuals.
-2. Put atlas/MSDF resource ownership in shared scene internals.
-3. Put MSDF shader decode helpers in shared GLSL/WGSL includes.
-4. Let marker and glyph have separate vertex inputs and draw semantics.
+1. `spec/scene/visuals/PIXEL.md`: pixel purpose, attributes, defaults, picking, and fallback.
+2. `spec/scene/visuals/POINT.md`: point purpose, attributes, style, backend lowering, and picking.
+3. `spec/scene/visuals/MARKER.md`: marker purpose, render modes, attributes, style, and fallback.
+4. `spec/scene/visuals/IMPLEMENTATION_DECISIONS.md`: landed naming decisions, deferred lanes,
+   marker render-mode rules, and marker/glyph atlas sharing boundary.
 
 
 ## Proposed Public API Shape
@@ -329,7 +146,7 @@ typedef struct DvzMarkerStyle
     DvzMarkerAspect aspect;
     DvzMarkerShape default_shape;
     float edge_color[4];
-    float line_width;
+    float stroke_width;
 } DvzMarkerStyle;
 
 DVZ_EXPORT DvzVisual* dvz_marker(DvzScene* scene, uint32_t flags);
@@ -342,7 +159,7 @@ Attribute names:
 
 1. `position`: `vec3f`, required.
 2. `color`: `RGBA8`, required.
-3. `size`: `float`, optional/defaulted eventually.
+3. `diameter`: `float`, optional/defaulted eventually.
 4. `angle`: `float`, optional/defaulted eventually.
 5. `shape`: `uint32_t`, optional for code mode.
 6. `symbol`: `uint32_t`, optional for atlas-backed bitmap/SDF/MSDF modes.
@@ -353,7 +170,7 @@ For points, style can be narrower:
 typedef struct DvzPointStyle
 {
     float edge_color[4];
-    float line_width;
+    float stroke_width;
 } DvzPointStyle;
 
 DVZ_EXPORT int dvz_point_set_style(DvzVisual* visual, const DvzPointStyle* style);
@@ -448,8 +265,9 @@ Point-like picking should be generalized from point-only to:
 
 Staged approach:
 
-1. CPU hit testing for pixel/point using position, size, panel transform, and simple masks.
-2. GPU picking for point-like visuals using a dedicated picking pass.
+1. GPU-backed pixel/point picking using position, canonical size attributes, panel transform, and
+   simple masks.
+2. Keep unsupported precision as an explicit request/result status rather than a CPU fallback.
 3. For marker code mode, use the same SDF mask in pick shader as color shader.
 4. For bitmap/SDF/MSDF markers, sample the marker texture/atlas in the pick shader and reject
    transparent/outside fragments.
@@ -465,7 +283,7 @@ not needed because markers are screen-space symbols, not 3D surfaces.
 Expected work:
 
 1. Make the pixel public docs match the actual v0.4 retained API.
-2. Keep pixel attributes to `position`, `color`, and `size`.
+2. Keep pixel attributes to `position`, `color`, and `pixel_size`.
 3. Add or tighten GLSL and WGSL emission tests.
 4. Add one runtime/offscreen smoke that confirms pixel draws nonblank squares.
 5. Add a small `hello_pixel.c` or adapt an existing dense-pixel example into the active examples list.
@@ -491,7 +309,7 @@ Expected work:
 5. Ensure depth cue variants share the same shape mask and antialias coverage.
 6. Keep EDL/depth post-process eligibility unchanged unless tests prove otherwise.
 7. Add offscreen pixel checks around center, edge, and outside fragments.
-8. Add point picking that respects circular size.
+8. Add point picking that respects circular diameter.
 
 Validation:
 
@@ -509,7 +327,7 @@ Expected work:
 
 1. Add public marker enums and `dvz_marker()`.
 2. Add marker style state and setter.
-3. Add marker attributes: `position`, `color`, `size`, `angle`.
+3. Add marker attributes: `position`, `color`, `diameter`, `angle`.
 4. Add optional per-visual default shape.
 5. Add marker shader registry entries.
 6. Add GLSL and WGSL code-SDF shaders for the initial shape subset.
@@ -681,7 +499,7 @@ API should allow it. Performance-sensitive users can group by shape into separat
 ### Bitmap As Marker Mode
 
 Bitmap should be a marker mode because it shares marker's item contract. A separate bitmap/icon visual
-would create a duplicate API for position, size, angle, color, depth, alpha, and picking. Reconsider
+would create a duplicate API for position, diameter, angle, color, depth, alpha, and picking. Reconsider
 only if bitmap icons later need layout semantics that markers do not have.
 
 

@@ -83,16 +83,16 @@ means the family lowers through the active scene -> FramePlan -> DRP2 -> vklite/
 
 | Family | Public constructor/API | Retained state | Native rendering | GPU request/readback | Remaining gaps |
 |---|---|---|---|---|---|
-| `pixel` | `dvz_pixel()` | position/color/size, depth-cue state | emission and pipeline-selection coverage; no separate app readback smoke recorded | none specific | broader pixel-specific picking and styling are not active |
+| `pixel` | `dvz_pixel()` | position/color/pixel_size, depth-cue state | square pixel marks, GLSL native points, WGSL instanced quads | square GPU picking | constant/scalar/grouped sources, shift, and data-space pixel size are deferred |
 | `primitive` | `dvz_primitive()` | topology, position/color, optional normals/index buffers, material/depth/alpha state | point/line/triangle primitives, indexed draws, depth, WBOIT/depth-peel participation | none specific | remains a low-level escape hatch, not a replacement for richer families |
-| `point` | `dvz_point()` | position/color/size, external position buffers, depth-cue/alpha state | native point path with retained updates and multi-panel coverage | active point pick readback | richer pick payloads, selection highlight rendering, and marker shapes are separate work |
-| `path` | `dvz_path()` | position/color line-strip state | first slice as primitive line strip | none specific | widths, caps, joins, tapered lines, grouping, and path picking remain deferred |
+| `point` | `dvz_point()` | position/color/diameter, external position buffers, style/depth-cue/alpha state | antialiased circular points, GLSL native points, WGSL instanced quads | circular GPU picking | scalar/grouped sources, shift, data-space diameter, and richer selection are deferred |
+| `marker` | `dvz_marker()` | position/color/diameter/angle/shape, style | code-SDF marker sprites in GLSL | bounding-box GPU picking | exact SDF picking, bitmap/SDF atlas modes, and WGSL parity are deferred |
+| `segment` | `dvz_segment()` | endpoint positions/color/stroke_width/caps | analytic screen-space stroke quads in GLSL | none specific | dashes, arrows, gradients, picking, and WGSL parity are deferred |
+| `path` | `dvz_path()` | line-strip plus optional subpaths/stroke_width | primitive line-strip or stroked segment lowering | none specific | joins, closed subpaths, dashes, picking, and WGSL parity are deferred |
 | `image` | `dvz_image()`, `dvz_visual_set_field()`, texture convenience wrappers | 2D `SampledField`, colormap scale binding, partial updates | textured quad path with scalar colormap lowering and retained texture updates | active basic image probe readback | richer probe payloads, labels/categorical fields, per-item rectangles, anchors, and tinting remain deferred |
 | `mesh` | `dvz_mesh()` | position, optional color/normal/index buffers, material/depth/alpha state | indexed triangle mesh path with depth, Phong/material, WBOIT/depth-peel, EDL/SSAO/G-buffer participation where eligible | none specific | broader mesh/object picking, geometry-resource public shape, and full PBR remain deferred |
 | `sphere` | `dvz_sphere()`, `dvz_sphere_*()` setters | impostor mode, center/color/radius, material/depth state | analytic sphere impostor path, including raycast mode and SSAO/G-buffer coverage | none specific | texture variants, per-item material/PBR, and sphere picking are not active |
 | `volume` | `dvz_volume()`, volume setters, `dvz_visual_set_field()` | 3D `SampledField`, render mode, slice, bounds, clipping, sampling, opacity, scale binding | box-proxy volume renderer with slice, MIP, and composite paths | none specific | richer transfer functions, isosurfaces, MPR, DVR/MIP picking, and volume probe payloads remain deferred |
-| `marker` | none installed | none | no | no | spec only |
-| `segment` | none installed | none | no | no | spec only |
 | `glyph` | no visual constructor; retained `DvzText`/`DvzAnnotation` bookkeeping exists | text/font/annotation objects retain semantic state | no rendered glyph path | no | font atlas, glyph shaping/rendering, glyph/text picking, and rendered labels remain deferred |
 | `errorbar` | none installed | none | no | no | spec only |
 | `boxplot` | none installed | none | no | no | spec only |

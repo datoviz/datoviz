@@ -7,6 +7,7 @@ It refines `../semantics/VISUAL_FAMILIES.md`, `../semantics/VISUAL_FAMILY_RULES.
 `../semantics/VISUAL_CONTRACT.md`.
 
 Shared attribute and behavioral definitions are in `SHARED_ATTRIBUTES.md`.
+Landed naming and first-slice decisions are tracked in `IMPLEMENTATION_DECISIONS.md`.
 
 
 ## Current Implementation Status
@@ -134,7 +135,7 @@ Set at visual creation time by passing flags to `dvz_pixel(scene, flags)`:
 ## Depth And Transparency
 
 `z` participates in depth sorting when fragment alpha < 1.0. No explicit flag is needed;
-use `alpha_mode` on the visual to control the transparency path (see `semantics/TRANSPARENCY.md`).
+use `alpha_mode` on the visual to control the transparency path (see `../semantics/TRANSPARENCY.md`).
 
 
 ## Transform Model, Stage Participation, Picking

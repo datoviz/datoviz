@@ -123,8 +123,8 @@ The next batch should focus on picking and backend parity, in this order:
 4. Visual-family showcase. Add one compact example or smoke scene containing `pixel`, `point`,
    `marker`, `segment`, and stroked `path` together so future regressions are easier to spot.
 
-Marker-specific follow-up details live in `agents/soon/SCENE_POINT_PIXEL_MARKER_PLAN.md`. Segment,
-path, dash, arrow, and SVG follow-up details live in `agents/soon/SCENE_VECTOR_VISUALS_PLAN.md`.
+Marker-specific execution phases live in `agents/soon/SCENE_POINT_PIXEL_MARKER_PLAN.md`. Segment,
+path, dash, arrow, and SVG execution phases live in `agents/soon/SCENE_VECTOR_VISUALS_PLAN.md`.
 
 
 ## Pixel
@@ -222,6 +222,31 @@ Deferred:
 5. Scalar color and grouped attributes.
 6. Data-space marker sizing.
 
+Marker render-mode rules:
+
+1. Bitmap, SDF, and MSDF are marker render modes, not separate public visual families.
+2. One marker item remains one screen-facing symbol anchored at a data/world position.
+3. Bitmap mode samples an RGBA or alpha texture and applies marker color as tint/alpha according to
+   the selected policy.
+4. Atlas-backed marker modes use per-symbol UV rectangles and nominal bounds; the per-item `shape`
+   or future `symbol` attribute selects the entry.
+5. SDF/MSDF marker modes consume shared atlas entries and shared decode helpers; marker must not
+   own a custom font or glyph pipeline.
+
+Marker/glyph sharing boundary:
+
+1. Shared internals may include atlas texture creation/upload, atlas entry metadata, UV rectangle
+   lookup, SDF/MSDF decode helpers, sampler setup, DRP2 texture/bind-group emission, dirty-state
+   handling, and descriptor-refresh behavior.
+2. Marker semantics remain scatter-symbol semantics: position is the item anchor, diameter controls
+   marker extent, angle rotates around the center, and no baseline, advance, shaping, or fallback is
+   involved.
+3. Glyph/text semantics remain text-layout semantics: atlas entry identity is tied to font face and
+   glyph id, placement comes from layout, and metrics such as advance, bearing, baseline, line
+   height, and bounds matter.
+4. Keep `marker` and glyph/text as separate public surfaces even when they share atlas/MSDF
+   infrastructure.
+
 
 ## Segment
 
@@ -278,6 +303,52 @@ Deferred:
 5. Data-space line width unless a separate implementation note defines the 2D/3D projection rules.
 6. Closed subpaths.
 7. Path-specific joins and miter-limit handling.
+
+
+## Stroke, Dash, Arrow, and Vector Rules
+
+Segment and path share a stroke vocabulary.
+
+Stroke rules:
+
+1. Width is screen-space by default.
+2. Stroke alignment is centered for the first implementation.
+3. Antialias radius defaults to one pixel unless MSAA or target scale requires otherwise.
+4. Path joins should support miter, bevel, and round; miter falls back to bevel when the configured
+   limit is exceeded.
+5. Segment/path caps include `none`, `butt`, `square`, `round`, `triangle_in`, and `triangle_out`.
+6. Arrow-style caps and marker attachments are follow-up behavior layered on the same stroke
+   vocabulary, not separate line families.
+
+Dash rules:
+
+1. Dashes are scene resources or visual-level stroke resources, not ad-hoc per-visual arrays.
+2. Dashing uses cumulative path distance and dash phase; dash phase should be mutable without
+   rebuilding source geometry.
+3. Dash caps are separate from path-end caps.
+4. A simple uniform/storage-buffer dash pattern is the first bridge; a shared dash atlas can follow
+   when multiple visuals need pattern sharing.
+
+GPU stroke representation:
+
+1. Use generated triangles and fragment-shader analytic coverage, not hardware line primitives or
+   geometry shaders.
+2. Segment starts from the v0.3 four-vertex/six-index analytic-cap model.
+3. Path-native strokes should use adjacency-style derived payloads with previous/current/next
+   positions, line width, color, subpath metadata, closed/open flags, and cumulative distance.
+4. Keep the current segment-lowered stroked path as a temporary fallback until path-native joins and
+   miter-limit tests are stable.
+
+Vector and 3D line-family direction:
+
+1. A 2D vector-field visual should lower to the segment/marker backend with source item identity
+   preserved.
+2. Tubes, streamlines, and 3D arrows are 3D geometry lanes, not reuse of 2D screen-space stroke
+   shaders.
+3. Dense streamlines should get a fast ribbon/strip path before every streamline is committed to a
+   true tube mesh.
+4. Tube mesh mode should use stable frames, preferably parallel-transport frames, and reuse mesh
+   material, depth, SSAO/G-buffer, clipping, picking, and normal-generation policy where possible.
 
 
 ## Remaining Worker Lanes
