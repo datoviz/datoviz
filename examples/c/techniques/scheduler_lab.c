@@ -422,7 +422,12 @@ int main(int argc, char** argv)
     if (
         dvz_visual_set_data(image, "position", image_pos, 4) != 0 ||
         dvz_visual_set_data(image, "texcoords", texcoords, 4) != 0 ||
-        dvz_panel_add_visual(panel, image, &(DvzVisualAttachDesc){.z_layer = -1}) != 0)
+        dvz_panel_add_visual(
+            panel, image,
+            &(DvzVisualAttachDesc){
+                .z_layer = -1,
+                .controller_mode = DVZ_CONTROLLER_FIXED,
+            }) != 0)
     {
         dvz_fprintf(stderr, "image setup failed\n");
         dvz_scene_destroy(scene);
@@ -487,6 +492,7 @@ int main(int argc, char** argv)
         return 1;
     }
     state.win = win;
+    dvz_panel_set_panzoom(panel, dvz_app_window_input(win), DVZ_PANZOOM_FLAGS_KEEP_ASPECT);
 
     DvzGui* gui = dvz_app_window_gui(win, NULL);
     if (gui == NULL)
