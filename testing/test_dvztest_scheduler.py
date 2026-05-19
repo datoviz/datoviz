@@ -47,6 +47,9 @@ def test_dvztest_scheduler_parent_jobs_keep_serial_cases_in_serial_phase(tmp_pat
     data = _load_json(json_path)
 
     assert "8/8 tests passed" in completed.stdout
+    assert "shards 4/4" in completed.stderr
+    assert "cases 8/8" in completed.stderr
+    assert "fail 0/8 (0.0%)" in completed.stderr
     assert data["summary"]["selected"] == 8
     assert data["summary"]["passed"] == 8
     assert data["summary"]["failed"] == 0

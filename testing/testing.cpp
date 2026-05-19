@@ -164,6 +164,8 @@ typedef struct TstOwnedResult
 typedef struct TstChildProc
 {
     uint32_t shard_index;
+    uint32_t shard_count;
+    TstShardPolicy policy;
     std::string json_path;
 #if defined(_WIN32)
     intptr_t pid;
@@ -171,6 +173,18 @@ typedef struct TstChildProc
     pid_t pid;
 #endif
 } TstChildProc;
+
+
+
+typedef struct TstShardProgress
+{
+    uint64_t total_cases;
+    uint64_t completed_cases;
+    uint64_t failed_cases;
+    uint64_t skipped_cases;
+    uint32_t total_shards;
+    uint32_t completed_shards;
+} TstShardProgress;
 
 
 
@@ -1800,6 +1814,53 @@ static int _tst_read_json_results(const char* path, std::vector<TstOwnedResult>*
 
 
 
+static int _tst_read_json_summary(const char* path, TstRunSummary* summary)
+{
+    ANN(path);
+    ANN(summary);
+    std::ifstream in(path);
+    if (!in)
+    {
+        dvz_fprintf(stderr, "could not read JSON test summary from %s\n", path);
+        return 1;
+    }
+
+    *summary = {};
+    bool in_summary = false;
+    std::string line;
+    while (std::getline(in, line))
+    {
+        if (!in_summary)
+        {
+            if (line.find("\"summary\"") != std::string::npos)
+            {
+                in_summary = true;
+            }
+            continue;
+        }
+        if (line.find('}') != std::string::npos)
+        {
+            return 0;
+        }
+
+        if (line.find("\"selected\"") != std::string::npos)
+            summary->selected_count = (uint32_t)_tst_json_line_u64(line);
+        else if (line.find("\"passed\"") != std::string::npos)
+            summary->passed_count = (uint32_t)_tst_json_line_u64(line);
+        else if (line.find("\"failed\"") != std::string::npos)
+            summary->failed_count = (uint32_t)_tst_json_line_u64(line);
+        else if (line.find("\"skipped\"") != std::string::npos)
+            summary->skipped_count = (uint32_t)_tst_json_line_u64(line);
+        else if (line.find("\"summed_case_ns\"") != std::string::npos)
+            summary->summed_case_ns = _tst_json_line_u64(line);
+        else if (line.find("\"runner_elapsed_ns\"") != std::string::npos)
+            summary->runner_elapsed_ns = _tst_json_line_u64(line);
+    }
+    return 1;
+}
+
+
+
 static void _tst_rebuild_summary(
     const std::vector<TstCase>& results, uint64_t runner_elapsed_ns, TstRunSummary* summary,
     std::map<std::string, TstAggregate>* modules, std::map<std::string, TstAggregate>* groups)
@@ -2053,13 +2114,65 @@ _tst_count_policy_cases(TstSuite* suite, const TstOptions* options, TstShardPoli
 
 
 
+static void _tst_shard_progress_update(
+    TstShardProgress* progress, const TstRunSummary* child_summary)
+{
+    ANN(progress);
+    ANN(child_summary);
+    progress->completed_shards++;
+    progress->completed_cases += child_summary->selected_count;
+    progress->failed_cases += child_summary->failed_count;
+    progress->skipped_cases += child_summary->skipped_count;
+}
+
+
+
+static void _tst_print_shard_progress(
+    const TstShardProgress* progress, const TstChildProc* child, bool final)
+{
+    ANN(progress);
+    ANN(child);
+
+    const double fail_pct =
+        progress->completed_cases > 0
+            ? (100.0 * (double)progress->failed_cases / (double)progress->completed_cases)
+            : 0.0;
+    const uint32_t bar_width = 24;
+    const uint32_t filled =
+        progress->total_cases > 0
+            ? (uint32_t)((progress->completed_cases * bar_width) / progress->total_cases)
+            : bar_width;
+
+    dvz_fprintf(stderr, "\r%s shard %u/%u [", _tst_shard_policy_name(child->policy),
+                child->shard_index + 1, child->shard_count);
+    for (uint32_t i = 0; i < bar_width; i++)
+    {
+        dvz_fprintf(stderr, "%c", i < filled ? '#' : '-');
+    }
+    dvz_fprintf(
+        stderr,
+        "] shards %u/%u | cases %" PRIu64 "/%" PRIu64 " | fail %" PRIu64 "/%" PRIu64
+        " (%.1f%%) | skipped %" PRIu64 "          ",
+        progress->completed_shards, progress->total_shards, progress->completed_cases,
+        progress->total_cases, progress->failed_cases, progress->completed_cases, fail_pct,
+        progress->skipped_cases);
+    if (final)
+    {
+        dvz_fprintf(stderr, "\n");
+    }
+    fflush(stderr);
+}
+
+
+
 static int _tst_run_parent_shards(
     TstSuite* suite, int argc, char** argv, const TstOptions* options, uint64_t runner_start_ns)
 {
     ANN(suite);
     ANN(options);
     std::vector<TstChildProc> running;
-    std::vector<std::string> json_paths;
+    std::vector<TstOwnedResult> owned;
+    TstShardProgress progress = {};
     int child_failure = 0;
 
     auto run_phase = [&](TstShardPolicy policy, uint32_t shard_count, uint32_t max_jobs) {
@@ -2073,6 +2186,8 @@ static int _tst_run_parent_shards(
                     _tst_child_args(argc, argv, next_shard, shard_count, json_path, policy);
                 TstChildProc child = {};
                 child.shard_index = next_shard;
+                child.shard_count = shard_count;
+                child.policy = policy;
                 child.json_path = json_path;
                 if (_tst_spawn_child(args, &child) != 0)
                 {
@@ -2081,7 +2196,6 @@ static int _tst_run_parent_shards(
                     next_shard = shard_count;
                     break;
                 }
-                json_paths.push_back(json_path);
                 running.push_back(child);
                 next_shard++;
             }
@@ -2099,6 +2213,20 @@ static int _tst_run_parent_shards(
                 dvz_fprintf(stderr, "shard %u failed with exit code %d\n", child.shard_index, status);
                 child_failure = 1;
             }
+
+            TstRunSummary child_summary = {};
+            if (_tst_read_json_summary(child.json_path.c_str(), &child_summary) != 0)
+            {
+                child_failure = 1;
+            }
+            if (_tst_read_json_results(child.json_path.c_str(), &owned) != 0)
+            {
+                child_failure = 1;
+            }
+            std::remove(child.json_path.c_str());
+            _tst_shard_progress_update(&progress, &child_summary);
+            _tst_print_shard_progress(
+                &progress, &child, progress.completed_shards == progress.total_shards);
         }
     };
 
@@ -2106,6 +2234,8 @@ static int _tst_run_parent_shards(
         _tst_count_policy_cases(suite, options, TST_SHARD_POLICY_PARALLEL_SAFE);
     const uint32_t serial_count =
         _tst_count_policy_cases(suite, options, TST_SHARD_POLICY_SERIAL_ONLY);
+    progress.total_cases = (uint64_t)(parallel_count + serial_count) * options->repeat;
+    progress.total_shards = (parallel_count > 0 ? options->jobs : 0) + (serial_count > 0 ? 1u : 0u);
 
     if (parallel_count > 0)
         run_phase(TST_SHARD_POLICY_PARALLEL_SAFE, options->jobs, std::max<uint32_t>(1, options->jobs));
@@ -2120,16 +2250,20 @@ static int _tst_run_parent_shards(
             dvz_fprintf(stderr, "shard %u failed with exit code %d\n", child.shard_index, status);
             child_failure = 1;
         }
-    }
 
-    std::vector<TstOwnedResult> owned;
-    for (const std::string& path : json_paths)
-    {
-        if (_tst_read_json_results(path.c_str(), &owned) != 0)
+        TstRunSummary child_summary = {};
+        if (_tst_read_json_summary(child.json_path.c_str(), &child_summary) != 0)
         {
             child_failure = 1;
         }
-        std::remove(path.c_str());
+        if (_tst_read_json_results(child.json_path.c_str(), &owned) != 0)
+        {
+            child_failure = 1;
+        }
+        std::remove(child.json_path.c_str());
+        _tst_shard_progress_update(&progress, &child_summary);
+        _tst_print_shard_progress(
+            &progress, &child, progress.completed_shards == progress.total_shards);
     }
     std::sort(owned.begin(), owned.end(), [](const TstOwnedResult& a, const TstOwnedResult& b) {
         if (a.test.repeat_index != b.test.repeat_index)
