@@ -55,7 +55,7 @@ option(DVZ_BUILD_SCENE "Build the scene layer" ON)
 option(DVZ_BUILD_APP "Build the app presentation layer" ON)
 option(DVZ_BUILD_GUI "Build the Dear ImGui app overlay layer" ON)
 option(DVZ_WITH_FREETYPE "Enable FreeType-backed scene text atlases when available" ON)
-option(DVZ_WITH_MSDF_ATLAS "Enable msdf-atlas-gen scene text atlases when available" OFF)
+option(DVZ_WITH_MSDF_ATLAS "Enable msdf-atlas-gen scene text atlases when available" ON)
 
 if(DVZ_ENABLE_GPROF)
     add_compile_options(
