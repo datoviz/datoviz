@@ -37,7 +37,9 @@ EXTERN_C_ON
 /*************************************************************************************************/
 
 DvzGui*
-_dvz_gui_create(DvzApp* app, DvzGpuCtx* gpu_ctx, DvzWindow* window, const DvzGuiConfig* config);
+_dvz_gui_create(
+    DvzApp* app, DvzGpuCtx* gpu_ctx, DvzAppWindow* app_window, DvzWindow* window,
+    const DvzGuiConfig* config);
 void _dvz_gui_destroy(DvzGui* gui);
 void _dvz_gui_set_callback(DvzGui* gui, DvzGuiCallback callback, void* user_data);
 void _dvz_gui_begin_frame(DvzGui* gui, DvzAppWindow* win, const DvzStreamFrame* frame);

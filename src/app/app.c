@@ -3355,7 +3355,9 @@ DvzGui* dvz_app_window_gui(DvzAppWindow* win, const DvzGuiConfig* config)
         return win->gui;
     if (win->app == NULL || win->app->gpu_ctx == NULL || win->window == NULL)
         return NULL;
-    win->gui = _dvz_gui_create(win->app, win->app->gpu_ctx, win->window, config);
+    win->gui = _dvz_gui_create(win->app, win->app->gpu_ctx, win, win->window, config);
+    if (win->gui != NULL)
+        dvz_app_window_request_frame(win);
     return win->gui;
 #else
     (void)config;
@@ -3371,7 +3373,10 @@ void dvz_app_window_set_gui_callback(
     ANN(win);
 #if defined(DVZ_HAS_GUI) && DVZ_HAS_GUI
     if (win->gui != NULL)
+    {
         _dvz_gui_set_callback(win->gui, callback, user_data);
+        dvz_app_window_request_frame(win);
+    }
 #else
     (void)callback;
     (void)user_data;

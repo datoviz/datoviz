@@ -93,6 +93,7 @@ VkQueue dvz_queue_handle(DvzQueue* queue);
 struct DvzGui
 {
     DvzApp* app;
+    DvzAppWindow* app_window;
     DvzGpuCtx* gpu_ctx;
     DvzDevice* device;
     DvzQueue* queue;
@@ -789,6 +790,20 @@ static bool _gui_viewport_forward_key(DvzGui* gui, int key, int action, int mods
 
 
 /**
+ * Request an app-window frame after GUI input changes ImGui state.
+ *
+ * @param gui the GUI overlay
+ */
+static void _gui_request_frame(DvzGui* gui)
+{
+    if (gui == NULL || gui->app_window == NULL)
+        return;
+    dvz_app_window_request_frame(gui->app_window);
+}
+
+
+
+/**
  * Forward a raw GLFW cursor event to ImGui.
  *
  * @param window Datoviz window
@@ -804,6 +819,7 @@ static bool _gui_glfw_cursor_pos(DvzWindow* window, double x, double y, void* us
     ANN(gui);
     _gui_set_current(gui);
     ImGui_ImplGlfw_CursorPosCallback(gui->glfw_window, x, y);
+    _gui_request_frame(gui);
     return _gui_want_capture_mouse(gui);
 }
 
@@ -827,6 +843,7 @@ _gui_glfw_mouse_button(DvzWindow* window, int button, int action, int mods, void
     ANN(gui);
     _gui_set_current(gui);
     ImGui_ImplGlfw_MouseButtonCallback(gui->glfw_window, button, action, mods);
+    _gui_request_frame(gui);
     return _gui_want_capture_mouse(gui);
 }
 
@@ -848,6 +865,7 @@ static bool _gui_glfw_scroll(DvzWindow* window, double xoffset, double yoffset, 
     ANN(gui);
     _gui_set_current(gui);
     ImGui_ImplGlfw_ScrollCallback(gui->glfw_window, xoffset, yoffset);
+    _gui_request_frame(gui);
     return _gui_want_capture_mouse(gui);
 }
 
@@ -872,6 +890,7 @@ _gui_glfw_key(DvzWindow* window, int key, int scancode, int action, int mods, vo
     ANN(gui);
     _gui_set_current(gui);
     ImGui_ImplGlfw_KeyCallback(gui->glfw_window, key, scancode, action, mods);
+    _gui_request_frame(gui);
     bool capture = _gui_want_capture_keyboard(gui);
     if (!capture)
         capture = _gui_viewport_forward_key(gui, key, action, mods);
@@ -895,6 +914,7 @@ static bool _gui_glfw_char(DvzWindow* window, uint32_t codepoint, void* user_dat
     ANN(gui);
     _gui_set_current(gui);
     ImGui_ImplGlfw_CharCallback(gui->glfw_window, codepoint);
+    _gui_request_frame(gui);
     return true;
 }
 
@@ -997,12 +1017,14 @@ static void _gui_submit_dockspace(DvzGui* gui)
  *
  * @param app app that owns any GUI-hosted offscreen windows
  * @param gpu_ctx GPU context borrowed from the app
+ * @param app_window app-window to invalidate after GUI input
  * @param window GLFW window borrowed from the app window
  * @param config optional GUI configuration
  * @return created GUI overlay, or NULL
  */
-DvzGui*
-_dvz_gui_create(DvzApp* app, DvzGpuCtx* gpu_ctx, DvzWindow* window, const DvzGuiConfig* config)
+DvzGui* _dvz_gui_create(
+    DvzApp* app, DvzGpuCtx* gpu_ctx, DvzAppWindow* app_window, DvzWindow* window,
+    const DvzGuiConfig* config)
 {
     ANN(app);
     ANN(gpu_ctx);
@@ -1020,6 +1042,7 @@ _dvz_gui_create(DvzApp* app, DvzGpuCtx* gpu_ctx, DvzWindow* window, const DvzGui
         return NULL;
 
     gui->app = app;
+    gui->app_window = app_window;
     gui->gpu_ctx = gpu_ctx;
     gui->device = dvz_gpu_ctx_device(gpu_ctx);
     gui->queue = dvz_gpu_ctx_queue(gpu_ctx, DVZ_QUEUE_MAIN);
