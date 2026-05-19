@@ -3705,6 +3705,10 @@ int test_scene_glyph_emit_glsl(TstContext* suite, const TstCase* item)
     bool found_pipeline = false;
     bool found_draw = false;
     bool found_texture_bind = false;
+    bool found_glyph_layout = false;
+    bool found_glyph_bind_group = false;
+    bool found_glyph_params_write = false;
+    uint64_t glyph_params_buffer_id = 0;
     bool found_position_upload = false;
     bool found_bounds_upload = false;
     bool found_uv_upload = false;
@@ -3722,6 +3726,35 @@ int test_scene_glyph_emit_glsl(TstContext* suite, const TstCase* item)
                 cmd->u.create_render_pipeline.binding_count == 5 &&
                 cmd->u.create_render_pipeline.attr_count == 5 &&
                 cmd->u.create_render_pipeline.bind_group_layout_count == 2;
+        }
+        else if (cmd->type == DVZ_DRP2_COMMAND_CREATE_BIND_GROUP_LAYOUT)
+        {
+            const char* label =
+                dvz_drp2_stream_label(stream, cmd->u.create_bind_group_layout.id);
+            if (label != NULL && strcmp(label, "_bgl_glyph") == 0)
+            {
+                found_glyph_layout =
+                    cmd->u.create_bind_group_layout.entry_count == 3 &&
+                    cmd->u.create_bind_group_layout.entries[0].binding_type ==
+                        DVZ_DRP2_BINDING_TYPE_SAMPLED_TEXTURE &&
+                    cmd->u.create_bind_group_layout.entries[1].binding_type ==
+                        DVZ_DRP2_BINDING_TYPE_SAMPLER &&
+                    cmd->u.create_bind_group_layout.entries[2].binding_type ==
+                        DVZ_DRP2_BINDING_TYPE_UNIFORM_BUFFER;
+            }
+        }
+        else if (cmd->type == DVZ_DRP2_COMMAND_CREATE_BIND_GROUP)
+        {
+            const char* label = dvz_drp2_stream_label(stream, cmd->u.create_bind_group.id);
+            if (label != NULL && strncmp(label, "_bg_glyph_", 10) == 0)
+            {
+                found_glyph_bind_group =
+                    cmd->u.create_bind_group.entry_count == 3 &&
+                    cmd->u.create_bind_group.entries[2].binding_type ==
+                        DVZ_DRP2_BINDING_TYPE_UNIFORM_BUFFER &&
+                    cmd->u.create_bind_group.entries[2].size == 4 * sizeof(float);
+                glyph_params_buffer_id = cmd->u.create_bind_group.entries[2].resource_id;
+            }
         }
         else if (cmd->type == DVZ_DRP2_COMMAND_SET_VERTEX_BUFFER)
         {
@@ -3757,6 +3790,8 @@ int test_scene_glyph_emit_glsl(TstContext* suite, const TstCase* item)
         ANN(cmd);
         if (cmd->type != DVZ_DRP2_COMMAND_WRITE_BUFFER)
             continue;
+        if (cmd->u.write_buffer.buffer_id == glyph_params_buffer_id)
+            found_glyph_params_write = cmd->u.write_buffer.size == 4 * sizeof(float);
         if (cmd->u.write_buffer.buffer_id == position_buffer_id)
             found_position_upload = cmd->u.write_buffer.size == 6 * 3 * sizeof(float);
         if (cmd->u.write_buffer.buffer_id == bounds_buffer_id)
@@ -3772,6 +3807,9 @@ int test_scene_glyph_emit_glsl(TstContext* suite, const TstCase* item)
     AT(found_pipeline);
     AT(found_draw);
     AT(found_texture_bind);
+    AT(found_glyph_layout);
+    AT(found_glyph_bind_group);
+    AT(found_glyph_params_write);
     AT(found_position_upload);
     AT(found_bounds_upload);
     AT(found_uv_upload);

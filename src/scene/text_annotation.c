@@ -1238,6 +1238,7 @@ static bool _text_prepare_visual(DvzFigure* figure, DvzText* text)
     {
         text->visual->glyph_atlas_encoding =
             font_atlas != NULL ? font_atlas->encoding : DVZ_TEXT_ATLAS_ENCODING_BITMAP_ALPHA;
+        text->visual->glyph_pixel_range = font_atlas != NULL ? font_atlas->pixel_range : 1.0f;
         DvzVisualDataUpdate updates[5] = {
             {.attr_name = "position", .data = positions, .item_count = vertex_count},
             {.attr_name = "bounds", .data = bounds, .item_count = vertex_count},
@@ -1705,6 +1706,8 @@ static bool _text_visual_prepare(
     {
         visual->text.glyph_visual->glyph_atlas_encoding =
             font_atlas != NULL ? font_atlas->encoding : DVZ_TEXT_ATLAS_ENCODING_BITMAP_ALPHA;
+        visual->text.glyph_visual->glyph_pixel_range =
+            font_atlas != NULL ? font_atlas->pixel_range : 1.0f;
         DvzVisualDataUpdate updates[5] = {
             {.attr_name = "position", .data = positions, .item_count = vertex_count},
             {.attr_name = "bounds", .data = bounds, .item_count = vertex_count},

@@ -1483,6 +1483,12 @@ static bool _contract_validate_drp2_pipeline_layouts(
         _contract_report(report, "DRP2 pipeline missing image bind-group layout");
         ok = false;
     }
+    if ((mask & DVZ_SCENE_BIND_GROUP_REQUIREMENT_GLYPH) != 0 &&
+        !_contract_pipeline_has_layout_label(stream, command, "_bgl_glyph"))
+    {
+        _contract_report(report, "DRP2 pipeline missing glyph bind-group layout");
+        ok = false;
+    }
     if ((mask & DVZ_SCENE_BIND_GROUP_REQUIREMENT_VOLUME) != 0 &&
         !_contract_pipeline_has_layout_label(stream, command, "_bgl_volume"))
     {
@@ -1952,6 +1958,8 @@ static void _contract_apply_draw_metadata(
         (draw->bind_group_layout_mask & DVZ_SCENE_BIND_GROUP_REQUIREMENT_MATERIAL) != 0;
     draw->needs_image_set =
         (draw->bind_group_layout_mask & DVZ_SCENE_BIND_GROUP_REQUIREMENT_IMAGE) != 0;
+    draw->needs_glyph_set =
+        (draw->bind_group_layout_mask & DVZ_SCENE_BIND_GROUP_REQUIREMENT_GLYPH) != 0;
     draw->needs_volume_set =
         (draw->bind_group_layout_mask & DVZ_SCENE_BIND_GROUP_REQUIREMENT_VOLUME) != 0;
     draw->needs_scene_occlusion_set =
@@ -2170,6 +2178,12 @@ bool _scene_draw_contract_resolve(
     out->needs_common_set = facts->uses_common_set;
     out->needs_material_set = facts->uses_material_set;
     out->needs_image_set = facts->uses_image_set;
+    out->needs_glyph_set = false;
+    if (facts->visual_type == DVZ_VISUAL_TYPE_GLYPH && out->needs_image_set)
+    {
+        out->needs_image_set = false;
+        out->needs_glyph_set = true;
+    }
     out->needs_volume_set = facts->uses_volume_set;
     if (pass_role == DVZ_FRAME_PLAN_RENDER_PASS_GBUFFER &&
         facts->visual_type != DVZ_VISUAL_TYPE_SPHERE)
@@ -2178,6 +2192,7 @@ bool _scene_draw_contract_resolve(
     {
         out->needs_material_set = false;
         out->needs_image_set = false;
+        out->needs_glyph_set = false;
     }
     out->needs_scene_occlusion_set = out->samples_scene_occlusion;
     out->depth_policy =
@@ -2203,6 +2218,8 @@ bool _scene_draw_contract_resolve(
         out->bind_group_layout_mask |= DVZ_SCENE_BIND_GROUP_REQUIREMENT_MATERIAL;
     if (out->needs_image_set)
         out->bind_group_layout_mask |= DVZ_SCENE_BIND_GROUP_REQUIREMENT_IMAGE;
+    if (out->needs_glyph_set)
+        out->bind_group_layout_mask |= DVZ_SCENE_BIND_GROUP_REQUIREMENT_GLYPH;
     if (out->needs_volume_set)
         out->bind_group_layout_mask |= DVZ_SCENE_BIND_GROUP_REQUIREMENT_VOLUME;
     if (out->needs_scene_occlusion_set)
@@ -2315,6 +2332,7 @@ bool _scene_pass_contract_from_render_ex(
         out->needs_common_set = out->needs_common_set || draw->needs_common_set;
         out->needs_material_set = out->needs_material_set || draw->needs_material_set;
         out->needs_image_set = out->needs_image_set || draw->needs_image_set;
+        out->needs_glyph_set = out->needs_glyph_set || draw->needs_glyph_set;
         out->needs_volume_set = out->needs_volume_set || draw->needs_volume_set;
         out->needs_scene_occlusion_set =
             out->needs_scene_occlusion_set || draw->needs_scene_occlusion_set;

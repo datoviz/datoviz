@@ -63,6 +63,12 @@ typedef struct DvzSceneOcclusionUniform
 } DvzSceneOcclusionUniform;
 
 
+typedef struct DvzSceneGlyphUniform
+{
+    float params[4];
+} DvzSceneGlyphUniform;
+
+
 struct SceneRenderDraw
 {
     uint64_t pipeline_id;
@@ -240,6 +246,7 @@ static const char* _depth_peel_fragment_spirv_key(DvzSceneBuiltinShader shader)
  * @param pipeline visual pipeline descriptor
  * @param common_bgl_id scene-common bind group layout id
  * @param image_bgl_id image bind group layout id
+ * @param glyph_bgl_id glyph bind group layout id
  * @param volume_bgl_id volume bind group layout id
  * @param material_bgl_id material bind group layout id
  * @param scene_occlusion_bgl_id scene occlusion bind group layout id
@@ -249,8 +256,9 @@ static const char* _depth_peel_fragment_spirv_key(DvzSceneBuiltinShader shader)
  */
 static void _pipeline_bind_group_layouts(
     const DvzSceneVisualPipelineDesc* pipeline, uint64_t common_bgl_id, uint64_t image_bgl_id,
-    uint64_t volume_bgl_id, uint64_t material_bgl_id, uint64_t scene_occlusion_bgl_id,
-    bool scene_occlusion_uses_set2, uint64_t* out_layouts, uint32_t* out_count)
+    uint64_t glyph_bgl_id, uint64_t volume_bgl_id, uint64_t material_bgl_id,
+    uint64_t scene_occlusion_bgl_id, bool scene_occlusion_uses_set2, uint64_t* out_layouts,
+    uint32_t* out_count)
 {
     ANN(pipeline);
     ANN(out_layouts);
@@ -262,6 +270,8 @@ static void _pipeline_bind_group_layouts(
         out_layouts[count++] = common_bgl_id;
     if (pipeline->needs_image_layout && image_bgl_id != 0)
         set1_layout = image_bgl_id;
+    if (pipeline->needs_glyph_layout && glyph_bgl_id != 0)
+        set1_layout = glyph_bgl_id;
     if (pipeline->needs_volume_layout && volume_bgl_id != 0)
         set1_layout = volume_bgl_id;
     if (pipeline->needs_material_layout && material_bgl_id != 0)
@@ -317,6 +327,41 @@ static bool _resolve_material_bind_group_layout(
     return true;
 }
 
+
+
+/**
+ * Create the glyph bind group layout used by text shaders.
+ *
+ * @param stream destination DRP2 command stream.
+ * @param id bind group layout id.
+ * @return whether the command was appended.
+ */
+static bool _create_glyph_bind_group_layout(DvzDrp2CommandStream* stream, uint64_t id)
+{
+    ANN(stream);
+
+    DvzDrp2BindGroupLayoutEntry entries[3] = {
+        {
+            .binding = DVZ_SCENE_SHADER_BINDING_GLYPH_TEXTURE,
+            .binding_type = DVZ_DRP2_BINDING_TYPE_SAMPLED_TEXTURE,
+            .visibility = DVZ_DRP2_SHADER_STAGE_FRAGMENT,
+            .access = DVZ_DRP2_BINDING_ACCESS_READ,
+        },
+        {
+            .binding = DVZ_SCENE_SHADER_BINDING_GLYPH_SAMPLER,
+            .binding_type = DVZ_DRP2_BINDING_TYPE_SAMPLER,
+            .visibility = DVZ_DRP2_SHADER_STAGE_FRAGMENT,
+            .access = DVZ_DRP2_BINDING_ACCESS_READ,
+        },
+        {
+            .binding = DVZ_SCENE_SHADER_BINDING_GLYPH_PARAMS,
+            .binding_type = DVZ_DRP2_BINDING_TYPE_UNIFORM_BUFFER,
+            .visibility = DVZ_DRP2_SHADER_STAGE_FRAGMENT,
+            .access = DVZ_DRP2_BINDING_ACCESS_READ,
+        },
+    };
+    return dvz_drp2_stream_create_bind_group_layout_entries(stream, id, 3, entries);
+}
 
 
 /**
@@ -423,6 +468,92 @@ static void _scene_occlusion_uniform_from_desc(
     if (out->params[2] > 1.0f)
         out->params[2] = 1.0f;
     out->params[3] = 1.0f;
+}
+
+
+/**
+ * Resolve a glyph texture/sampler/parameter bind group for one glyph visual.
+ *
+ * @param emitter frame-plan emitter carrying persistent object ids.
+ * @param stream destination DRP2 command stream.
+ * @param bgl_id glyph bind group layout id.
+ * @param sampler_id glyph sampler id.
+ * @param bind visual bind descriptor.
+ * @param out_bg_id output bind group id.
+ * @return whether the bind group and current uniform payload are available.
+ */
+static bool _resolve_glyph_bind_group(
+    DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, uint64_t bgl_id,
+    uint64_t sampler_id, const DvzSceneVisualBindDesc* bind, uint64_t* out_bg_id)
+{
+    ANN(emitter);
+    ANN(stream);
+    ANN(bind);
+    ANN(out_bg_id);
+    *out_bg_id = 0;
+    if (bind->glyph_texture_id == 0)
+        return false;
+
+    float pixel_range = bind->glyph_pixel_range > 0.0f ? bind->glyph_pixel_range : 4.0f;
+    uint32_t pixel_range_milli = (uint32_t)(pixel_range * 1000.0f + 0.5f);
+
+    bool is_new = false;
+    char params_buf_key[96], bg_key[128];
+    dvz_snprintf(
+        params_buf_key, sizeof(params_buf_key), "_buf_glyph_params_%" PRIu64 "_r%u",
+        bind->glyph_texture_id, pixel_range_milli);
+    dvz_snprintf(
+        bg_key, sizeof(bg_key), "_bg_glyph_%" PRIu64 "_r%u", bind->glyph_texture_id,
+        pixel_range_milli);
+
+    uint32_t usage = DVZ_DRP2_BUFFER_USAGE_UNIFORM | DVZ_DRP2_BUFFER_USAGE_MAP_WRITE |
+                     DVZ_DRP2_BUFFER_USAGE_COPY_DST;
+    uint64_t params_buf_id = _obj_id(emitter, params_buf_key, &is_new);
+    if (params_buf_id == 0)
+        return false;
+    if (is_new && !dvz_drp2_stream_create_buffer(
+                      stream, params_buf_id, sizeof(DvzSceneGlyphUniform), usage))
+        return false;
+
+    uint64_t bg_id = _obj_id(emitter, bg_key, &is_new);
+    if (bg_id == 0)
+        return false;
+    if (is_new)
+    {
+        DvzDrp2BindGroupEntry entries[3] = {
+            {
+                .binding = DVZ_SCENE_SHADER_BINDING_GLYPH_TEXTURE,
+                .binding_type = DVZ_DRP2_BINDING_TYPE_SAMPLED_TEXTURE,
+                .resource_kind = DVZ_DRP2_BINDING_RESOURCE_TEXTURE,
+                .resource_id = bind->glyph_texture_id,
+            },
+            {
+                .binding = DVZ_SCENE_SHADER_BINDING_GLYPH_SAMPLER,
+                .binding_type = DVZ_DRP2_BINDING_TYPE_SAMPLER,
+                .resource_kind = DVZ_DRP2_BINDING_RESOURCE_SAMPLER,
+                .resource_id = sampler_id,
+            },
+            {
+                .binding = DVZ_SCENE_SHADER_BINDING_GLYPH_PARAMS,
+                .binding_type = DVZ_DRP2_BINDING_TYPE_UNIFORM_BUFFER,
+                .resource_kind = DVZ_DRP2_BINDING_RESOURCE_BUFFER,
+                .resource_id = params_buf_id,
+                .offset = 0,
+                .size = sizeof(DvzSceneGlyphUniform),
+            },
+        };
+        if (!dvz_drp2_stream_create_bind_group_entries(stream, bg_id, bgl_id, 3, entries))
+            return false;
+    }
+
+    DvzSceneGlyphUniform uniform = {0};
+    uniform.params[0] = pixel_range;
+    if (!dvz_drp2_stream_write_buffer_bytes(
+            stream, params_buf_id, 0, sizeof(DvzSceneGlyphUniform), &uniform))
+        return false;
+
+    *out_bg_id = bg_id;
+    return true;
 }
 
 
@@ -940,6 +1071,7 @@ static bool _emitter_prepare_render_multi(
 
     /* Image BGL + sampler (shared, created lazily on first image visual). */
     uint64_t img_bgl_id = 0, img_sampler_id = 0;
+    uint64_t glyph_bgl_id = 0, glyph_sampler_id = 0;
     uint64_t volume_bgl_id = 0, volume_sampler_linear_id = 0, volume_sampler_nearest_id = 0;
     uint64_t scene_occlusion_bgl_id = 0, scene_occlusion_sampler_id = 0;
 
@@ -1316,6 +1448,7 @@ static bool _emitter_prepare_render_multi(
             if (scene_occlusion_pass)
             {
                 pipeline.needs_image_layout = false;
+                pipeline.needs_glyph_layout = false;
                 pipeline.needs_material_layout = false;
                 pipeline.needs_scene_occlusion_layout = false;
                 pipeline.has_depth_state = true;
@@ -1350,6 +1483,13 @@ static bool _emitter_prepare_render_multi(
                     ok = ok && dvz_drp2_stream_create_texture_sampler_bind_group_layout(
                                    stream, img_bgl_id);
             }
+            if (pipeline.needs_glyph_layout && glyph_bgl_id == 0)
+            {
+                glyph_bgl_id = _obj_id(emitter, "_bgl_glyph", &is_new);
+                if (glyph_bgl_id == 0) { ok = false; break; }
+                if (is_new)
+                    ok = ok && _create_glyph_bind_group_layout(stream, glyph_bgl_id);
+            }
             if (pipeline.needs_volume_layout && volume_bgl_id == 0)
             {
                 volume_bgl_id = _obj_id(emitter, "_bgl_volume", &is_new);
@@ -1382,8 +1522,9 @@ static bool _emitter_prepare_render_multi(
                 uint64_t layouts[DVZ_DRP2_MAX_BIND_GROUPS] = {0};
                 uint32_t layout_count = 0;
                 _pipeline_bind_group_layouts(
-                    &pipeline, common_bgl_id, img_bgl_id, volume_bgl_id, material_bgl_id,
-                    scene_occlusion_bgl_id, scene_occlusion_uses_set2, layouts, &layout_count);
+                    &pipeline, common_bgl_id, img_bgl_id, glyph_bgl_id, volume_bgl_id,
+                    material_bgl_id, scene_occlusion_bgl_id, scene_occlusion_uses_set2, layouts,
+                    &layout_count);
                 if (layout_count > 0)
                     ok = dvz_drp2_stream_pipeline_set_bind_group_layouts(
                         stream, layout_count, layouts);
@@ -1464,6 +1605,8 @@ static bool _emitter_prepare_render_multi(
         {
             bind.uses_image_set1 = false;
             bind.image_texture_id = 0;
+            bind.uses_glyph_set1 = false;
+            bind.glyph_texture_id = 0;
             bind.uses_material_set1 = false;
             bind.material_buffer_id = 0;
             bind.uses_scene_occlusion_set2 = false;
@@ -1546,6 +1689,28 @@ static bool _emitter_prepare_render_multi(
                                stream, img_bg_id, img_bgl_id, bind.image_texture_id,
                                img_sampler_id);
             vis_bg_set1 = img_bg_id;
+        }
+        if (bind.uses_glyph_set1)
+        {
+            if (glyph_bgl_id == 0)
+            {
+                glyph_bgl_id = _obj_id(emitter, "_bgl_glyph", &is_new);
+                if (glyph_bgl_id == 0) { ok = false; break; }
+                if (is_new)
+                    ok = ok && _create_glyph_bind_group_layout(stream, glyph_bgl_id);
+            }
+            if (glyph_sampler_id == 0)
+            {
+                glyph_sampler_id = _obj_id(emitter, "_sampler_glyph", &is_new);
+                if (glyph_sampler_id == 0) { ok = false; break; }
+                if (ok && is_new)
+                    ok = ok && dvz_drp2_stream_create_sampler(stream, glyph_sampler_id);
+            }
+            uint64_t glyph_bg_id = 0;
+            ok = ok && _resolve_glyph_bind_group(
+                           emitter, stream, glyph_bgl_id, glyph_sampler_id, &bind,
+                           &glyph_bg_id);
+            vis_bg_set1 = glyph_bg_id;
         }
         if (bind.uses_volume_set1)
         {

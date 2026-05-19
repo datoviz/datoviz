@@ -91,8 +91,9 @@ typedef enum
     DVZ_SCENE_BIND_GROUP_REQUIREMENT_COMMON = 1u << 0,
     DVZ_SCENE_BIND_GROUP_REQUIREMENT_MATERIAL = 1u << 1,
     DVZ_SCENE_BIND_GROUP_REQUIREMENT_IMAGE = 1u << 2,
-    DVZ_SCENE_BIND_GROUP_REQUIREMENT_VOLUME = 1u << 3,
-    DVZ_SCENE_BIND_GROUP_REQUIREMENT_SCENE_OCCLUSION = 1u << 4,
+    DVZ_SCENE_BIND_GROUP_REQUIREMENT_GLYPH = 1u << 3,
+    DVZ_SCENE_BIND_GROUP_REQUIREMENT_VOLUME = 1u << 4,
+    DVZ_SCENE_BIND_GROUP_REQUIREMENT_SCENE_OCCLUSION = 1u << 5,
 } DvzSceneBindGroupRequirement;
 
 
@@ -183,6 +184,7 @@ typedef struct DvzSceneDrawContract
     bool needs_common_set;
     bool needs_material_set;
     bool needs_image_set;
+    bool needs_glyph_set;
     bool needs_volume_set;
     bool needs_scene_occlusion_set;
 
@@ -218,6 +220,7 @@ typedef struct DvzScenePassContract
     bool needs_common_set;
     bool needs_material_set;
     bool needs_image_set;
+    bool needs_glyph_set;
     bool needs_volume_set;
     bool needs_scene_occlusion_set;
     bool needs_wboit_resolve_layout;

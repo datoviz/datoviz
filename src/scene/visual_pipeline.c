@@ -627,7 +627,11 @@ static bool _scene_visual_desc_from_metadata(
         }
         out->image_texture_id = tex_id;
         if (meta->visual_type == DVZ_VISUAL_TYPE_GLYPH)
+        {
             out->glyph_atlas_encoding = meta->glyph_atlas_encoding;
+            out->glyph_pixel_range =
+                meta->glyph_pixel_range > 0.0f ? meta->glyph_pixel_range : 4.0f;
+        }
         out->topology = _resource_topology(&emitter->resources, pos_buf);
         if (out->topology == UINT32_MAX)
             out->topology = meta->visual_type == DVZ_VISUAL_TYPE_GLYPH ?
@@ -1912,7 +1916,7 @@ bool _scene_visual_pipeline_desc(
         _pipeline_attr(out, 3, 3, 3, VK_FORMAT_R8G8B8A8_UNORM, 4 * sizeof(uint8_t));
         _pipeline_attr(out, 4, 4, 4, VK_FORMAT_R32_SFLOAT, sizeof(float));
         out->needs_common_layout = caps.uses_common_set;
-        out->needs_image_layout = caps.uses_image_set;
+        out->needs_glyph_layout = caps.uses_image_set;
         return true;
 
     case DVZ_SCENE_VISUAL_DESC_VOLUME:
@@ -1987,11 +1991,19 @@ bool _scene_visual_bind_desc(
         return true;
 
     case DVZ_SCENE_VISUAL_DESC_IMAGE:
-    case DVZ_SCENE_VISUAL_DESC_GLYPH:
         out->uses_common_set0 = caps.uses_common_set;
         out->uses_fixed_common = caps.fixed_controller;
         out->uses_image_set1 = caps.uses_image_set;
         out->image_texture_id = visual->image_texture_id;
+        return true;
+
+    case DVZ_SCENE_VISUAL_DESC_GLYPH:
+        out->uses_common_set0 = caps.uses_common_set;
+        out->uses_fixed_common = caps.fixed_controller;
+        out->uses_glyph_set1 = caps.uses_image_set;
+        out->glyph_texture_id = visual->image_texture_id;
+        out->glyph_pixel_range =
+            visual->glyph_pixel_range > 0.0f ? visual->glyph_pixel_range : 4.0f;
         return true;
 
     case DVZ_SCENE_VISUAL_DESC_VOLUME:

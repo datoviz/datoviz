@@ -6,6 +6,10 @@
 
 layout(set = 1, binding = 0) uniform texture2D tex;
 layout(set = 1, binding = 1) uniform sampler samp;
+layout(set = 1, binding = 2) uniform GlyphParams
+{
+    vec4 params;
+} glyph;
 
 layout(location = 0) in vec2 fragUV;
 layout(location = 1) in vec4 fragColor;
@@ -18,7 +22,7 @@ float median3(float r, float g, float b)
 
 float screenPixelRange()
 {
-    const float pixelRange = 4.0;
+    float pixelRange = max(glyph.params.x, 1.0);
     vec2 unitRange = vec2(pixelRange) / vec2(textureSize(sampler2D(tex, samp), 0));
     vec2 screenTexSize = vec2(1.0) / fwidth(fragUV);
     return max(0.5 * dot(unitRange, screenTexSize), 1.0);

@@ -5,13 +5,14 @@ struct FragmentIn {
 
 @group(1) @binding(0) var tex: texture_2d<f32>;
 @group(1) @binding(1) var samp: sampler;
+@group(1) @binding(2) var<uniform> glyph: vec4f;
 
 fn median3(r: f32, g: f32, b: f32) -> f32 {
     return max(min(r, g), min(max(r, g), b));
 }
 
 fn screenPixelRange(uv: vec2f) -> f32 {
-    let pixelRange = 4.0;
+    let pixelRange = max(glyph.x, 1.0);
     let dims = vec2f(textureDimensions(tex, 0));
     let unitRange = vec2f(pixelRange) / dims;
     let screenTexSize = vec2f(1.0) / fwidth(uv);
