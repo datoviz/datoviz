@@ -959,6 +959,33 @@ _tst_print_summary_count(FILE* stream, const TstOptions* options, TstStatus stat
 
 
 
+/**
+ * Print a summary status phrase, coloring the whole phrase only for nonzero counts.
+ *
+ * @param stream output stream
+ * @param options runner options controlling color output
+ * @param status status whose color should be used
+ * @param value numeric count to print
+ * @param label status label to print after the count
+ */
+static void _tst_print_summary_status_phrase(
+    FILE* stream, const TstOptions* options, TstStatus status, uint32_t value, const char* label)
+{
+    ANN(stream);
+    ANN(options);
+    ANN(label);
+    if (value > 0 && _tst_use_color(options))
+    {
+        dvz_fprintf(stream, "%s%u %s\x1b[0m", _tst_status_color(status), value, label);
+    }
+    else
+    {
+        dvz_fprintf(stream, "%u %s", value, label);
+    }
+}
+
+
+
 static void _tst_update_aggregate(TstAggregate* agg, const TstCase* result)
 {
     ANN(agg);
@@ -989,10 +1016,12 @@ static void _tst_print_summary(
     _tst_print_separator(stdout);
     _tst_print_summary_count(stdout, options, TST_STATUS_PASS, summary->passed_count);
     dvz_fprintf(stdout, "/%u tests passed, ", summary->selected_count);
-    _tst_print_summary_count(stdout, options, TST_STATUS_FAIL, summary->failed_count);
-    dvz_fprintf(stdout, " failed, ");
-    _tst_print_summary_count(stdout, options, TST_STATUS_SKIP, summary->skipped_count);
-    dvz_fprintf(stdout, " skipped\n");
+    _tst_print_summary_status_phrase(
+        stdout, options, TST_STATUS_FAIL, summary->failed_count, "failed");
+    dvz_fprintf(stdout, ", ");
+    _tst_print_summary_status_phrase(
+        stdout, options, TST_STATUS_SKIP, summary->skipped_count, "skipped");
+    dvz_fprintf(stdout, "\n");
     dvz_fprintf(stdout, "case time: ");
     _tst_print_duration(stdout, options, summary->summed_case_ns, 0);
     dvz_fprintf(stdout, ", runner time: ");
