@@ -130,6 +130,21 @@ static inline void dvz_sleep(int milliseconds) { dvz_sleep_us(milliseconds * 100
 
 
 /*************************************************************************************************/
+/*  Monotonic time                                                                               */
+/*************************************************************************************************/
+
+/**
+ * Return the current monotonic timestamp in nanoseconds.
+ *
+ * @return monotonic timestamp in nanoseconds, or zero when unavailable
+ */
+EXTERN_C_ON
+DVZ_EXPORT uint64_t dvz_time_monotonic_ns(void);
+EXTERN_C_OFF
+
+
+
+/*************************************************************************************************/
 /*  Clock                                                                                        */
 /*************************************************************************************************/
 

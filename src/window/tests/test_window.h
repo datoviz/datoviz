@@ -30,6 +30,8 @@ int test_window_resize_events(TstContext* suite, const TstCase* item);
 
 int test_window_frame_requests(TstContext* suite, const TstCase* item);
 
+int test_window_wait_hooks_headless(TstContext* suite, const TstCase* item);
+
 int test_window_fallback(TstContext* suite, const TstCase* item);
 
 int test_window_wrap_create(TstContext* suite, const TstCase* item);

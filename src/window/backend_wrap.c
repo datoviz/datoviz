@@ -17,6 +17,7 @@
 #include "_alloc.h"
 #include "_assertions.h"
 #include "_log.h"
+#include "_time_utils.h"
 #include "datoviz/window.h"
 #include "window_internal.h"
 
@@ -282,6 +283,41 @@ static void _wrap_destroy(DvzWindowBackend* backend, DvzWindow* window)
 
 
 /**
+ * Conservatively wait for wrap backend activity.
+ *
+ * @param backend wrap backend descriptor
+ * @param host host owning active wrap windows
+ */
+static void _wrap_wait(DvzWindowBackend* backend, DvzWindowHost* host)
+{
+    (void)backend;
+    (void)host;
+    dvz_sleep_us(1000);
+}
+
+
+
+/**
+ * Conservatively wait for wrap backend activity up to a timeout.
+ *
+ * @param backend wrap backend descriptor
+ * @param host host owning active wrap windows
+ * @param seconds maximum wait duration in seconds
+ */
+static void _wrap_wait_timeout(DvzWindowBackend* backend, DvzWindowHost* host, double seconds)
+{
+    (void)backend;
+    (void)host;
+    if (!(seconds > 0.0))
+        return;
+    if (seconds > 1.0)
+        seconds = 1.0;
+    dvz_sleep_us((int)(seconds * 1000000.0));
+}
+
+
+
+/**
  * Return the number of required Vulkan instance extensions configured on wrap backend.
  *
  * @param backend wrap backend descriptor
@@ -339,6 +375,8 @@ void dvz_window_register_wrap_backend(DvzWindowHost* host)
                 .create = _wrap_create,
                 .destroy = _wrap_destroy,
                 .poll = NULL,
+                .wait = _wrap_wait,
+                .wait_timeout = _wrap_wait_timeout,
                 .request_frame = NULL,
                 .required_extension_count = _wrap_required_extension_count,
                 .required_extension_at = _wrap_required_extension_at,

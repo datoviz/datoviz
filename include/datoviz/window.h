@@ -67,6 +67,23 @@ DVZ_EXPORT void dvz_window_host_register_backend(
 DVZ_EXPORT void dvz_window_host_poll(DvzWindowHost* host);
 
 
+/**
+ * Wait for backend events, blocking until an event is available when supported.
+ *
+ * @param host host whose backends should wait for events
+ */
+DVZ_EXPORT void dvz_window_host_wait(DvzWindowHost* host);
+
+
+/**
+ * Wait for backend events with a timeout.
+ *
+ * @param host host whose backends should wait for events
+ * @param seconds maximum wait duration in seconds
+ */
+DVZ_EXPORT void dvz_window_host_wait_timeout(DvzWindowHost* host, double seconds);
+
+
 
 /**
  * Request a frame for the given window.

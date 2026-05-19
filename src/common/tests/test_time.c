@@ -5,7 +5,7 @@
  */
 
 /*************************************************************************************************/
-/*  Testing common                                                                               */
+/*  Testing time utilities                                                                       */
 /*************************************************************************************************/
 
 
@@ -15,6 +15,7 @@
 /*************************************************************************************************/
 
 #include "_assertions.h"
+#include "_time_utils.h"
 
 #include "test_common.h"
 #include "testing.h"
@@ -22,25 +23,38 @@
 
 
 /*************************************************************************************************/
-/*  Entry-point                                                                                  */
+/*  Tests                                                                                        */
 /*************************************************************************************************/
 
-int test_common(TstSuite* suite)
+/**
+ * Verify monotonic timestamps are non-decreasing and advance across a short sleep.
+ *
+ * @param suite test suite context
+ * @param tstitem test item context
+ * @return zero on success
+ */
+int test_time_monotonic_ns(TstContext* suite, const TstCase* tstitem)
 {
     ANN(suite);
+    ANN(tstitem);
 
-    const char* tags = "common";
+    uint64_t t0 = dvz_time_monotonic_ns();
+    AT(t0 > 0);
 
-    TST_MODULE(suite, "common");
-    TST_GROUP("obj");
-    TST_CASE(test_obj_1);
+    uint64_t t1 = t0;
+    for (uint32_t i = 0; i < 32; i++)
+    {
+        uint64_t current = dvz_time_monotonic_ns();
+        AT(current >= t1);
+        t1 = current;
+    }
 
-    TST_GROUP("alloc");
-    TST_CASE(test_alloc_basic);
-    TST_CASE(test_alloc_aligned);
+    dvz_sleep_us(1000);
 
-    TST_GROUP("time");
-    TST_CASE(test_time_monotonic_ns);
-
+    uint64_t t2 = dvz_time_monotonic_ns();
+    AT(t2 >= t1);
+    uint64_t elapsed_ns = t2 - t1;
+    AT(elapsed_ns >= 100000ULL);
+    AT(elapsed_ns < 1000000000ULL);
     return 0;
 }

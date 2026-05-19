@@ -139,6 +139,9 @@ struct DvzAppWindow
     double fps;
     double fps_frame_ms;
     double fps_last_sample_elapsed_s;
+    bool frame_requested;
+    bool dirty;
+    uint64_t next_frame_ns;
 #if defined(DVZ_HAS_GUI) && DVZ_HAS_GUI
     DvzGui* gui;
 #endif
@@ -148,6 +151,7 @@ struct DvzAppWindow
 struct DvzApp
 {
     DvzScene* scene;
+    DvzAppConfig config;
 #if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
     DvzGpuCtx*      gpu_ctx;
     DvzDrp2Runtime* runtime;
@@ -164,6 +168,86 @@ struct DvzApp
 /*************************************************************************************************/
 /*  Helpers                                                                                      */
 /*************************************************************************************************/
+
+/**
+ * Return the app configuration before environment overrides are applied.
+ *
+ * @return default app configuration
+ */
+static DvzAppConfig _app_config_defaults(void)
+{
+    DvzAppConfig config = {
+        .instance_extension_count = 0,
+        .instance_extensions = NULL,
+        .enable_canvas_extensions = false,
+        .enable_glfw_extensions = true,
+        .schedule_mode = DVZ_APP_SCHEDULE_ON_DEMAND,
+        .fps_cap = 0.0,
+    };
+    return config;
+}
+
+
+
+/**
+ * Apply the DVZ_APP_SCHEDULE environment override to an app configuration.
+ *
+ * @param config app configuration to mutate
+ */
+static void _app_config_apply_schedule_env(DvzAppConfig* config)
+{
+    ANN(config);
+    const char* env = getenv("DVZ_APP_SCHEDULE");
+    if (env == NULL || env[0] == '\0')
+        return;
+
+    if (strcmp(env, "on_demand") == 0)
+        config->schedule_mode = DVZ_APP_SCHEDULE_ON_DEMAND;
+    else if (strcmp(env, "continuous") == 0)
+        config->schedule_mode = DVZ_APP_SCHEDULE_CONTINUOUS;
+    else
+        log_warn("ignoring DVZ_APP_SCHEDULE='%s' (expected on_demand|continuous)", env);
+}
+
+
+
+/**
+ * Apply the DVZ_FPS_CAP environment override to an app configuration.
+ *
+ * @param config app configuration to mutate
+ */
+static void _app_config_apply_fps_cap_env(DvzAppConfig* config)
+{
+    ANN(config);
+    const char* env = getenv("DVZ_FPS_CAP");
+    if (env == NULL || env[0] == '\0')
+        return;
+
+    char* end = NULL;
+    double fps = strtod(env, &end);
+    if (end == env || *end != '\0' || fps <= 0)
+    {
+        log_warn("ignoring DVZ_FPS_CAP='%s' (expected positive FPS)", env);
+        return;
+    }
+    config->fps_cap = fps;
+}
+
+
+
+/**
+ * Apply supported app environment overrides to an app configuration.
+ *
+ * @param config app configuration to mutate
+ */
+static void _app_config_apply_env(DvzAppConfig* config)
+{
+    ANN(config);
+    _app_config_apply_schedule_env(config);
+    _app_config_apply_fps_cap_env(config);
+}
+
+
 
 #if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
 
@@ -353,6 +437,328 @@ static void _app_window_fps_update(DvzAppWindow* win, uint64_t now)
         win->fps_sample_frames = 0;
         win->fps_sample_start_ns = now;
     }
+}
+
+
+
+/**
+ * Mark an app-window as needing a submitted frame.
+ *
+ * @param win app-window to invalidate
+ */
+static void _app_window_mark_dirty(DvzAppWindow* win)
+{
+    ANN(win);
+    win->dirty = true;
+    win->frame_requested = true;
+}
+
+
+
+/**
+ * Forward input-router events into the app-window scheduler state.
+ *
+ * @param router input router that emitted the event
+ * @param event input event
+ * @param user_data app-window pointer
+ */
+static void
+_app_window_input_event(DvzInputRouter* router, const DvzInputEvent* event, void* user_data)
+{
+    (void)router;
+    if (event == NULL)
+        return;
+    DvzAppWindow* win = (DvzAppWindow*)user_data;
+    if (win == NULL)
+        return;
+    _app_window_mark_dirty(win);
+}
+
+
+
+/**
+ * Subscribe an app-window to input events that invalidate rendered content.
+ *
+ * @param win app-window receiving input events
+ */
+static void _app_window_subscribe_input(DvzAppWindow* win)
+{
+    ANN(win);
+    if (win->canvas == NULL)
+        return;
+    DvzInputRouter* router = dvz_canvas_input(win->canvas);
+    if (router != NULL)
+        dvz_input_subscribe_event(router, _app_window_input_event, win);
+}
+
+
+
+/**
+ * Return the scheduler timestamp in nanoseconds.
+ *
+ * @return current timestamp in nanoseconds
+ */
+static uint64_t _app_scheduler_now_ns(void)
+{
+    uint64_t now = dvz_time_monotonic_ns();
+    return now != 0 ? now : dvz_input_timestamp_ns();
+}
+
+
+
+/**
+ * Poll the built-in window host for pending events.
+ *
+ * @param app app owning the window host
+ */
+static void _app_host_poll(DvzApp* app)
+{
+    ANN(app);
+    if (app->window_host != NULL)
+        dvz_window_host_poll(app->window_host);
+}
+
+
+
+/**
+ * Wait for window events through the host backend.
+ *
+ * @param app app owning the window host
+ */
+static void _app_host_wait(DvzApp* app)
+{
+    ANN(app);
+    if (app->window_host != NULL)
+        dvz_window_host_wait(app->window_host);
+}
+
+
+
+/**
+ * Wait until a scheduler deadline, then poll window events.
+ *
+ * @param app app owning the window host
+ * @param deadline_ns absolute scheduler deadline in nanoseconds
+ */
+static void _app_host_wait_until(DvzApp* app, uint64_t deadline_ns)
+{
+    ANN(app);
+    uint64_t now = _app_scheduler_now_ns();
+    if (deadline_ns > now)
+    {
+        uint64_t delay_ns = deadline_ns - now;
+        if (app->window_host != NULL)
+            dvz_window_host_wait_timeout(app->window_host, (double)delay_ns * 1e-9);
+        return;
+    }
+    _app_host_poll(app);
+}
+
+
+
+/**
+ * Return whether at least one interactive app-window is still open.
+ *
+ * @param app app to inspect
+ * @return whether the interactive loop should continue
+ */
+static bool _app_any_interactive_window_open(DvzApp* app)
+{
+    ANN(app);
+    for (uint32_t i = 0; i < app->window_count; i++)
+    {
+        DvzAppWindow* win = &app->windows[i];
+        if (win->is_interactive && win->window != NULL && !dvz_window_should_close(win->window))
+            return true;
+    }
+    return false;
+}
+
+
+
+/**
+ * Return whether the app has active continuous rendering work.
+ *
+ * @param app app to inspect
+ * @return whether continuous scheduling should be active
+ */
+static bool _app_has_continuous_work(DvzApp* app)
+{
+    ANN(app);
+    if (app->config.schedule_mode == DVZ_APP_SCHEDULE_CONTINUOUS)
+        return true;
+    if (app->scene != NULL && dvz_scene_has_active_animations(app->scene))
+        return true;
+    for (uint32_t i = 0; i < app->window_count; i++)
+    {
+        DvzAppWindow* win = &app->windows[i];
+        if (!win->render_enabled || win->replay_recording == NULL)
+            continue;
+        uint32_t frame_count = dvz_drp2_recording_frame_count(win->replay_recording);
+        if (frame_count > 0 && (win->replay_loop || win->replay_frame_index < frame_count))
+            return true;
+    }
+    return false;
+}
+
+
+
+/**
+ * Return whether one app-window's figure has queued scene requests.
+ *
+ * @param win app-window to inspect
+ * @return whether pick/probe work is pending for the figure
+ */
+static bool _app_window_has_pending_requests(DvzAppWindow* win)
+{
+    ANN(win);
+    if (win->app == NULL || win->app->scene == NULL || win->figure == NULL)
+        return false;
+    DvzScene* scene = win->app->scene;
+    for (uint32_t i = 0; i < scene->pending_pick_count; i++)
+    {
+        DvzPendingPickRequest* pending = &scene->pending_picks[i];
+        if (pending->panel != NULL && pending->panel->figure == win->figure)
+            return true;
+    }
+    for (uint32_t i = 0; i < scene->pending_probe_count; i++)
+    {
+        DvzPendingProbeRequest* pending = &scene->pending_probes[i];
+        if (pending->panel != NULL && pending->panel->figure == win->figure)
+            return true;
+    }
+    return false;
+}
+
+
+
+/**
+ * Return whether one app-window has retained scene work waiting for a frame.
+ *
+ * @param win app-window to inspect
+ * @return whether the window's figure has dirty scene state
+ */
+static bool _app_window_has_pending_scene_work(DvzAppWindow* win)
+{
+    ANN(win);
+    return _scene_figure_has_pending_render_work(win->figure);
+}
+
+
+
+/**
+ * Return whether any enabled window has pending invalidated work.
+ *
+ * @param app app to inspect
+ * @return whether at least one window is dirty or has a frame request
+ */
+static bool _app_has_pending_windows(DvzApp* app)
+{
+    ANN(app);
+    for (uint32_t i = 0; i < app->window_count; i++)
+    {
+        DvzAppWindow* win = &app->windows[i];
+        if (win->is_interactive && win->window != NULL && dvz_window_should_close(win->window))
+            continue;
+        if (
+            win->render_enabled &&
+            (win->dirty || win->frame_requested || _app_window_has_pending_requests(win) ||
+             _app_window_has_pending_scene_work(win)))
+            return true;
+    }
+    return false;
+}
+
+
+
+/**
+ * Return the earliest continuous-frame deadline among enabled windows.
+ *
+ * @param app app to inspect
+ * @return earliest frame deadline, or zero when no deadline is set
+ */
+static uint64_t _app_next_continuous_deadline(DvzApp* app)
+{
+    ANN(app);
+    uint64_t deadline = 0;
+    for (uint32_t i = 0; i < app->window_count; i++)
+    {
+        DvzAppWindow* win = &app->windows[i];
+        if (!win->render_enabled || win->next_frame_ns == 0)
+            continue;
+        if (win->is_interactive && win->window != NULL && dvz_window_should_close(win->window))
+            continue;
+        if (deadline == 0 || win->next_frame_ns < deadline)
+            deadline = win->next_frame_ns;
+    }
+    return deadline;
+}
+
+
+
+/**
+ * Return whether one app-window should render on this scheduler tick.
+ *
+ * @param win app-window to inspect
+ * @param continuous whether continuous scheduling is active
+ * @param now current scheduler timestamp in nanoseconds
+ * @return whether the app-window should render
+ */
+static bool _app_window_should_render(DvzAppWindow* win, bool continuous, uint64_t now)
+{
+    ANN(win);
+    if (!win->render_enabled)
+        return false;
+    if (win->canvas == NULL)
+        return false;
+    if (win->is_interactive && win->window != NULL && dvz_window_should_close(win->window))
+        return false;
+    if (continuous)
+    {
+        if (win->next_frame_ns != 0 && now < win->next_frame_ns)
+            return false;
+    }
+    if (win->dirty || win->frame_requested)
+        return true;
+    if (_app_window_has_pending_requests(win))
+        return true;
+    if (_app_window_has_pending_scene_work(win))
+        return true;
+    if (continuous)
+        return win->next_frame_ns == 0 || now >= win->next_frame_ns;
+    return false;
+}
+
+
+
+/**
+ * Update one app-window's next continuous-frame deadline after a submitted frame.
+ *
+ * @param win app-window to update
+ * @param now current scheduler timestamp in nanoseconds
+ * @param fps_cap positive FPS cap, or zero for unlimited
+ */
+static void _app_window_update_deadline(DvzAppWindow* win, uint64_t now, double fps_cap)
+{
+    ANN(win);
+    if (fps_cap <= 0)
+    {
+        win->next_frame_ns = 0;
+        return;
+    }
+
+    double period = 1000000000.0 / fps_cap;
+    uint64_t period_ns = period > (double)UINT64_MAX ? UINT64_MAX : (uint64_t)period;
+    if (period_ns == 0)
+        period_ns = 1;
+    if (win->next_frame_ns > 0 && UINT64_MAX - win->next_frame_ns >= period_ns)
+        win->next_frame_ns += period_ns;
+    else if (UINT64_MAX - now >= period_ns)
+        win->next_frame_ns = now + period_ns;
+    else
+        win->next_frame_ns = UINT64_MAX;
+    if (win->next_frame_ns <= now)
+        win->next_frame_ns = UINT64_MAX - now >= period_ns ? now + period_ns : UINT64_MAX;
 }
 
 
@@ -1943,6 +2349,8 @@ static void _app_draw(DvzCanvas* canvas, const DvzStreamFrame* frame, void* user
 
     if (win->frame_callback != NULL && _app_frame_callback_allowed(win))
         win->frame_callback(win, win->frame_user_data);
+    if (_app_window_has_pending_scene_work(win))
+        dvz_app_window_request_frame(win);
     if (fly_active)
         dvz_app_window_request_frame(win);
     win->frame_index++;
@@ -1958,12 +2366,8 @@ static void _app_draw(DvzCanvas* canvas, const DvzStreamFrame* frame, void* user
 
 DvzAppConfig dvz_app_config(void)
 {
-    DvzAppConfig config = {
-        .instance_extension_count = 0,
-        .instance_extensions = NULL,
-        .enable_canvas_extensions = false,
-        .enable_glfw_extensions = true,
-    };
+    DvzAppConfig config = _app_config_defaults();
+    _app_config_apply_env(&config);
     return config;
 }
 
@@ -1971,8 +2375,7 @@ DvzAppConfig dvz_app_config(void)
 
 DvzApp* dvz_app(DvzScene* scene)
 {
-    DvzAppConfig config = dvz_app_config();
-    return dvz_app_with_config(scene, &config);
+    return dvz_app_with_config(scene, NULL);
 }
 
 
@@ -1982,12 +2385,14 @@ DvzApp* dvz_app_with_config(DvzScene* scene, const DvzAppConfig* config)
     ANN(scene);
 
 #if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
-    DvzAppConfig resolved = config != NULL ? *config : dvz_app_config();
+    DvzAppConfig resolved = config != NULL ? *config : _app_config_defaults();
+    _app_config_apply_env(&resolved);
 
     DvzApp* app = (DvzApp*)dvz_calloc(1, sizeof(DvzApp));
     if (app == NULL)
         return NULL;
     app->scene = scene;
+    app->config = resolved;
     _dvz_app_status_init(&app->status);
 
     /* Window host first — needed to query GLFW surface extensions before building the instance. */
@@ -2181,9 +2586,11 @@ dvz_app_window(DvzApp* app, DvzFigure* figure, uint32_t width, uint32_t height)
     win->canvas        = canvas;
     win->target_id     = DVZ_APP_CANVAS_TARGET_BASE + (uint64_t)app->window_count;
     win->render_enabled = true;
+    _app_window_mark_dirty(win);
     app->window_count++;
 
     dvz_canvas_set_draw_callback(canvas, _app_draw, win);
+    _app_window_subscribe_input(win);
     return win;
 #else
     (void)width;
@@ -2242,9 +2649,11 @@ dvz_app_window_glfw(DvzApp* app, DvzFigure* figure, uint32_t width, uint32_t hei
     win->is_interactive = true;
     win->render_enabled = true;
     win->fps_overlay_enabled = _app_env_flag_enabled("DVZ_FPS_OVERLAY");
+    _app_window_mark_dirty(win);
     app->window_count++;
 
     dvz_canvas_set_draw_callback(canvas, _app_draw, win);
+    _app_window_subscribe_input(win);
 #if defined(DVZ_HAS_GUI) && DVZ_HAS_GUI
     if (win->fps_overlay_enabled && dvz_app_window_gui(win, NULL) == NULL)
         log_warn("DVZ_FPS_OVERLAY is enabled but the Dear ImGui overlay could not be created");
@@ -2316,9 +2725,11 @@ DvzAppWindow* dvz_app_window_external_surface(
     win->canvas     = canvas;
     win->target_id  = DVZ_APP_CANVAS_TARGET_BASE + (uint64_t)app->window_count;
     win->render_enabled = true;
+    _app_window_mark_dirty(win);
     app->window_count++;
 
     dvz_canvas_set_draw_callback(canvas, _app_draw, win);
+    _app_window_subscribe_input(win);
     return win;
 #else
     return NULL;
@@ -2369,7 +2780,10 @@ int dvz_app_window_update_external_surface(
 #if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
     if (win->window == NULL || dvz_window_backend_type(win->window) != DVZ_BACKEND_WRAP)
         return -1;
-    return dvz_window_wrap_update_surface(win->window, surface);
+    int rc = dvz_window_wrap_update_surface(win->window, surface);
+    if (rc == 0)
+        dvz_app_window_request_frame(win);
+    return rc;
 #else
     return -1;
 #endif
@@ -2605,6 +3019,7 @@ int dvz_app_window_record_start(DvzAppWindow* win, const char* path)
     win->recording_last_t_present = 0.0;
     win->recording_target_created = false;
     win->recording_has_last_frame = false;
+    dvz_app_window_request_frame(win);
     return 0;
 #else
     return -1;
@@ -2629,6 +3044,7 @@ int dvz_app_window_record_stop(DvzAppWindow* win)
     win->recorder = NULL;
     win->recording_target_created = false;
     win->recording_has_last_frame = false;
+    dvz_app_window_request_frame(win);
     return ok ? 0 : -1;
 #else
     return -1;
@@ -2673,6 +3089,7 @@ int dvz_app_window_replay_start(DvzAppWindow* win, const char* path)
     win->replay_speed = 1.0;
     win->render_enabled = true;
     dvz_drp2_runtime_reset(win->app->runtime);
+    dvz_app_window_request_frame(win);
     return 0;
 #else
     return -1;
@@ -2698,6 +3115,7 @@ int dvz_app_window_replay_stop(DvzAppWindow* win)
     win->replay_target_id = 0;
     win->replay_frame_index = 0;
     win->replay_clock_started = false;
+    dvz_app_window_request_frame(win);
     return 0;
 #else
     return -1;
@@ -2716,6 +3134,7 @@ void dvz_app_window_replay_set_paced(DvzAppWindow* win, bool paced)
 {
     ANN(win);
     win->replay_paced = paced;
+    dvz_app_window_request_frame(win);
 }
 
 
@@ -2730,7 +3149,10 @@ void dvz_app_window_replay_set_speed(DvzAppWindow* win, double speed)
 {
     ANN(win);
     if (speed > 0)
+    {
         win->replay_speed = speed;
+        dvz_app_window_request_frame(win);
+    }
 }
 
 
@@ -2745,6 +3167,7 @@ void dvz_app_window_replay_set_loop(DvzAppWindow* win, bool loop)
 {
     ANN(win);
     win->replay_loop = loop;
+    dvz_app_window_request_frame(win);
 }
 
 
@@ -2808,6 +3231,7 @@ void dvz_app_window_set_render_enabled(DvzAppWindow* win, bool enabled)
 {
     ANN(win);
     win->render_enabled = enabled;
+    _app_window_mark_dirty(win);
 }
 
 
@@ -2834,6 +3258,7 @@ bool dvz_app_window_render_enabled(const DvzAppWindow* win)
 void dvz_app_window_request_frame(DvzAppWindow* win)
 {
     ANN(win);
+    _app_window_mark_dirty(win);
 #if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
     if (win->app != NULL && win->app->window_host != NULL && win->window != NULL)
         dvz_window_host_request_frame(win->app->window_host, win->window);
@@ -2927,17 +3352,38 @@ int dvz_app_window_render_once(DvzAppWindow* win)
         return 0;
     if (win->canvas == NULL)
         return -1;
+
+    bool dirty_before = win->dirty;
+    bool requested_before = win->frame_requested;
+    win->dirty = false;
+    win->frame_requested = false;
+
     int rc = dvz_canvas_frame(win->canvas);
     if (rc == DVZ_CANVAS_FRAME_READY)
     {
         if (dvz_canvas_submit(win->canvas) != 0)
+        {
+            win->dirty = win->dirty || dirty_before;
+            win->frame_requested = win->frame_requested || requested_before;
             return -1;
+        }
         _app_window_fps_update(win, dvz_input_timestamp_ns());
         if (win->app != NULL && win->app->scene != NULL &&
             dvz_scene_has_active_animations(win->app->scene))
         {
             dvz_app_window_request_frame(win);
         }
+        if (win->replay_recording != NULL)
+        {
+            uint32_t frame_count = dvz_drp2_recording_frame_count(win->replay_recording);
+            if (frame_count > 0 && (win->replay_loop || win->replay_frame_index < frame_count))
+                dvz_app_window_request_frame(win);
+        }
+    }
+    else
+    {
+        win->dirty = win->dirty || dirty_before;
+        win->frame_requested = win->frame_requested || requested_before;
     }
     return rc;
 #else
@@ -2992,25 +3438,41 @@ void dvz_app_run(DvzApp* app, uint32_t frame_count)
         /* Interactive mode: loop until every interactive window requests close. */
         for (;;)
         {
-            dvz_window_host_poll(app->window_host);
-            bool any_open = false;
-            for (uint32_t i = 0; i < app->window_count; i++)
+            bool continuous = _app_has_continuous_work(app);
+            bool pending = _app_has_pending_windows(app);
+            if (continuous)
             {
-                DvzAppWindow* win = &app->windows[i];
-                if (win->is_interactive && !dvz_window_should_close(win->window))
-                    any_open = true;
+                uint64_t deadline =
+                    app->config.fps_cap > 0 ? _app_next_continuous_deadline(app) : 0;
+                if (deadline > 0)
+                    _app_host_wait_until(app, deadline);
+                else
+                    _app_host_poll(app);
             }
-            if (!any_open)
+            else if (!pending)
+                _app_host_wait(app);
+            else
+                _app_host_poll(app);
+
+            if (!_app_any_interactive_window_open(app))
                 break;
+
+            continuous = _app_has_continuous_work(app);
+            uint64_t now = _app_scheduler_now_ns();
             for (uint32_t i = 0; i < app->window_count; i++)
             {
                 DvzAppWindow* win = &app->windows[i];
-                (void)dvz_app_window_render_once(win);
+                if (!_app_window_should_render(win, continuous, now))
+                    continue;
+                int rc = dvz_app_window_render_once(win);
+                if (continuous && app->config.fps_cap > 0 && rc == DVZ_CANVAS_FRAME_READY)
+                    _app_window_update_deadline(win, _app_scheduler_now_ns(), app->config.fps_cap);
+                if (rc == DVZ_CANVAS_FRAME_READY && fps_enabled)
+                    fps_window_frames++;
             }
             if (fps_enabled)
             {
-                fps_window_frames++;
-                uint64_t now = dvz_input_timestamp_ns();
+                now = dvz_input_timestamp_ns();
                 uint64_t elapsed_ns = now - fps_window_start;
                 if (elapsed_ns >= 1000000000ULL)
                 {

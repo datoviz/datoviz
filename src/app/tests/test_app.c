@@ -14,10 +14,12 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
+#include <stdlib.h>
 #include <string.h>
 
 #include "_alloc.h"
 #include "_assertions.h"
+#include "_compat.h"
 #include "../_status.h"
 #include "../_trace.h"
 #include "../../drp2/_stream.h"
@@ -31,16 +33,87 @@
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
+static void _test_restore_env(const char* name, const char* value)
+{
+    ANN(name);
+    if (value != NULL)
+        (void)setenv(name, value, 1);
+    else
+        (void)unsetenv(name);
+}
+
+
+
 static int test_app_config_defaults(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     ANN(item);
+
+    const char* old_schedule = getenv("DVZ_APP_SCHEDULE");
+    const char* old_fps_cap = getenv("DVZ_FPS_CAP");
+    char saved_schedule[64] = {0};
+    char saved_fps_cap[64] = {0};
+    if (old_schedule != NULL)
+        dvz_snprintf(saved_schedule, sizeof(saved_schedule), "%s", old_schedule);
+    if (old_fps_cap != NULL)
+        dvz_snprintf(saved_fps_cap, sizeof(saved_fps_cap), "%s", old_fps_cap);
+    (void)unsetenv("DVZ_APP_SCHEDULE");
+    (void)unsetenv("DVZ_FPS_CAP");
 
     DvzAppConfig config = dvz_app_config();
     AT(config.instance_extension_count == 0);
     AT(config.instance_extensions == NULL);
     AT(!config.enable_canvas_extensions);
     AT(config.enable_glfw_extensions);
+    AT(config.schedule_mode == DVZ_APP_SCHEDULE_ON_DEMAND);
+    AT(config.fps_cap == 0);
+
+    _test_restore_env("DVZ_APP_SCHEDULE", old_schedule != NULL ? saved_schedule : NULL);
+    _test_restore_env("DVZ_FPS_CAP", old_fps_cap != NULL ? saved_fps_cap : NULL);
+    return 0;
+}
+
+
+
+static int test_app_config_env_schedule(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    ANN(item);
+
+    const char* old_schedule = getenv("DVZ_APP_SCHEDULE");
+    char saved_schedule[64] = {0};
+    if (old_schedule != NULL)
+        dvz_snprintf(saved_schedule, sizeof(saved_schedule), "%s", old_schedule);
+
+    AT(setenv("DVZ_APP_SCHEDULE", "continuous", 1) == 0);
+    DvzAppConfig config = dvz_app_config();
+    AT(config.schedule_mode == DVZ_APP_SCHEDULE_CONTINUOUS);
+
+    AT(setenv("DVZ_APP_SCHEDULE", "on_demand", 1) == 0);
+    config = dvz_app_config();
+    AT(config.schedule_mode == DVZ_APP_SCHEDULE_ON_DEMAND);
+
+    _test_restore_env("DVZ_APP_SCHEDULE", old_schedule != NULL ? saved_schedule : NULL);
+    return 0;
+}
+
+
+
+static int test_app_config_env_fps_cap(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    ANN(item);
+
+    const char* old_fps_cap = getenv("DVZ_FPS_CAP");
+    char saved_fps_cap[64] = {0};
+    if (old_fps_cap != NULL)
+        dvz_snprintf(saved_fps_cap, sizeof(saved_fps_cap), "%s", old_fps_cap);
+
+    AT(setenv("DVZ_FPS_CAP", "144.5", 1) == 0);
+    DvzAppConfig config = dvz_app_config();
+    AT(config.fps_cap == 144.5);
+
+    _test_restore_env("DVZ_FPS_CAP", old_fps_cap != NULL ? saved_fps_cap : NULL);
     return 0;
 }
 
@@ -779,6 +852,8 @@ int test_app(TstSuite* suite)
     const char* tags = "app";
     TST_MODULE(suite, tags);
     TST_CASE(test_app_config_defaults);
+    TST_CASE(test_app_config_env_schedule);
+    TST_CASE(test_app_config_env_fps_cap);
     TST_CASE(test_app_trace_mode_parsing);
     TST_CASE(test_app_trace_plan_normal_changed_after_open_line);
     TST_CASE(test_app_trace_plan_normal_unchanged_rewrites_in_place);

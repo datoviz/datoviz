@@ -19,6 +19,7 @@
 #include "_alloc.h"
 #include "_assertions.h"
 #include "_log.h"
+#include "_time_utils.h"
 #include "datoviz/input/pointer.h"
 #include "datoviz/window.h"
 #include "window_internal.h"
@@ -56,6 +57,9 @@ static void _window_array_remove(DvzWindowHost* host, DvzWindow* window);
 
 static void _window_host_clear_windows(DvzWindowHost* host);
 static void _window_wrap_state_clear(DvzWindowHost* host);
+static bool _window_backend_slot_has_window(
+    const DvzWindowHost* host, const DvzWindowBackendSlot* slot);
+static void _window_host_clear_frame_pending(DvzWindowHost* host);
 
 
 
@@ -171,6 +175,44 @@ static void _window_host_clear_windows(DvzWindowHost* host)
     while (host->window_count > 0)
     {
         dvz_window_destroy(host->windows[host->window_count - 1]);
+    }
+}
+
+
+
+/**
+ * Return whether a backend slot owns at least one live window.
+ *
+ * @param host host whose windows are inspected
+ * @param slot backend slot to match
+ * @return true when at least one window uses the slot
+ */
+static bool
+_window_backend_slot_has_window(const DvzWindowHost* host, const DvzWindowBackendSlot* slot)
+{
+    ANN(host);
+    ANN(slot);
+    for (uint32_t i = 0; i < host->window_count; i++)
+    {
+        if (host->windows[i] != NULL && host->windows[i]->backend_slot == slot)
+            return true;
+    }
+    return false;
+}
+
+
+
+/**
+ * Clear pending frame request flags after an event-processing wait/poll.
+ *
+ * @param host host whose windows are updated
+ */
+static void _window_host_clear_frame_pending(DvzWindowHost* host)
+{
+    ANN(host);
+    for (uint32_t i = 0; i < host->window_count; i++)
+    {
+        host->windows[i]->frame_pending = false;
     }
 }
 
@@ -422,10 +464,96 @@ void dvz_window_host_poll(DvzWindowHost* host)
         if (slot->available && slot->backend.procs.poll != NULL)
             slot->backend.procs.poll(&slot->backend, host);
     }
-    for (uint32_t i = 0; i < host->window_count; i++)
+    _window_host_clear_frame_pending(host);
+}
+
+
+
+/**
+ * Wait for events from the first backend that supports blocking waits.
+ *
+ * @param host host whose active backend should wait for events
+ */
+void dvz_window_host_wait(DvzWindowHost* host)
+{
+    ANN(host);
+    for (uint32_t i = 0; i < host->backend_count; i++)
     {
-        host->windows[i]->frame_pending = false;
+        DvzWindowBackendSlot* slot = &host->backends[i];
+        if (!slot->available || !_window_backend_slot_has_window(host, slot))
+            continue;
+        if (slot->backend.procs.wait != NULL)
+        {
+            slot->backend.procs.wait(&slot->backend, host);
+            _window_host_clear_frame_pending(host);
+            return;
+        }
+        if (slot->backend.procs.poll != NULL)
+        {
+            dvz_sleep_us(1000);
+            slot->backend.procs.poll(&slot->backend, host);
+            _window_host_clear_frame_pending(host);
+            return;
+        }
     }
+
+    dvz_sleep_us(1000);
+    _window_host_clear_frame_pending(host);
+}
+
+
+
+/**
+ * Wait for events from the first backend that supports timeout waits.
+ *
+ * @param host host whose active backend should wait for events
+ * @param seconds maximum wait duration in seconds
+ */
+void dvz_window_host_wait_timeout(DvzWindowHost* host, double seconds)
+{
+    ANN(host);
+    if (!(seconds > 0.0))
+    {
+        dvz_window_host_poll(host);
+        return;
+    }
+
+    for (uint32_t i = 0; i < host->backend_count; i++)
+    {
+        DvzWindowBackendSlot* slot = &host->backends[i];
+        if (!slot->available || !_window_backend_slot_has_window(host, slot))
+            continue;
+        if (slot->backend.procs.wait_timeout != NULL)
+        {
+            slot->backend.procs.wait_timeout(&slot->backend, host, seconds);
+            _window_host_clear_frame_pending(host);
+            return;
+        }
+        if (slot->backend.procs.wait != NULL)
+        {
+            slot->backend.procs.wait(&slot->backend, host);
+            _window_host_clear_frame_pending(host);
+            return;
+        }
+        if (slot->backend.procs.poll != NULL)
+        {
+            double sleep_us_f = seconds * 1000000.0;
+            int sleep_us = sleep_us_f > 1000000.0 ? 1000000 : (int)sleep_us_f;
+            if (sleep_us < 1000)
+                sleep_us = 1000;
+            dvz_sleep_us(sleep_us);
+            slot->backend.procs.poll(&slot->backend, host);
+            _window_host_clear_frame_pending(host);
+            return;
+        }
+    }
+
+    double sleep_us_f = seconds * 1000000.0;
+    int sleep_us = sleep_us_f > 1000000.0 ? 1000000 : (int)sleep_us_f;
+    if (sleep_us < 1000)
+        sleep_us = 1000;
+    dvz_sleep_us(sleep_us);
+    _window_host_clear_frame_pending(host);
 }
 
 

@@ -16,6 +16,7 @@
 
 #include "test_window.h"
 #include "_assertions.h"
+#include "datoviz/common.h"
 #include "datoviz/window.h"
 #include "testing.h"
 
@@ -118,6 +119,38 @@ int test_window_frame_requests(TstContext* suite, const TstCase* item)
 
 
 
+/**
+ * Ensure headless wait hooks clear pending frame requests without blocking indefinitely.
+ */
+int test_window_wait_hooks_headless(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+    DvzWindowHost* host = dvz_window_host();
+    DvzWindow* window = dvz_window_create(host, DVZ_BACKEND_OFFSCREEN, NULL);
+    ANN(window);
+
+    dvz_window_host_request_frame(host, window);
+    AT(dvz_window_frame_pending(window));
+
+    uint64_t start = dvz_time_monotonic_ns();
+    dvz_window_host_wait_timeout(host, 0.001);
+    uint64_t end = dvz_time_monotonic_ns();
+    AT(!dvz_window_frame_pending(window));
+    AT(end >= start);
+    AT(end - start < 2000000000ULL);
+
+    dvz_window_host_request_frame(host, window);
+    AT(dvz_window_frame_pending(window));
+    dvz_window_host_wait(host);
+    AT(!dvz_window_frame_pending(window));
+
+    dvz_window_host_destroy(host);
+    return 0;
+}
+
+
+
 #ifndef DVZ_HAS_GLFW
 #define DVZ_HAS_GLFW 0
 #endif
@@ -177,6 +210,7 @@ int test_window(TstSuite* suite)
     TST_CASE(test_window_headless);
     TST_CASE(test_window_resize_events);
     TST_CASE(test_window_frame_requests);
+    TST_CASE(test_window_wait_hooks_headless);
     TST_CASE(test_window_fallback);
     TST_CASE(test_window_wrap_create);
     TST_CASE(test_window_wrap_attach_detach);

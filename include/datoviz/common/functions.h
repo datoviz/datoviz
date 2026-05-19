@@ -46,5 +46,13 @@ EXTERN_C_ON
 DVZ_EXPORT void dvz_error_callback(DvzErrorCallback cb);
 
 
+/**
+ * Return a monotonic timestamp in nanoseconds.
+ *
+ * @return monotonic timestamp in nanoseconds
+ */
+DVZ_EXPORT uint64_t dvz_time_monotonic_ns(void);
+
+
 
 EXTERN_C_OFF

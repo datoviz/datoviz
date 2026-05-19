@@ -108,6 +108,14 @@ static void _scene_report_capability_fallbacks(
 
 static void _scene_commit_emit_success(DvzFigure* figure);
 
+static bool _scene_visual_has_pending_render_work(const DvzVisual* visual);
+
+static bool _scene_panel_has_pending_adornment_work(const DvzPanel* panel);
+
+static bool _scene_panel_has_pending_visual_work(const DvzPanel* panel);
+
+static bool _scene_visual_dirty_material_emits_upload(const DvzVisual* visual);
+
 /**
  * Resolve the stable emitted figure identifier for one scene figure.
  *
@@ -819,6 +827,138 @@ static void _scene_report_capability_fallbacks(
 
 
 /**
+ * Return whether one visual carries dirty state that should trigger a new emitted frame.
+ *
+ * @param visual the visual to inspect
+ * @return whether rendering work is pending for this visual
+ */
+static bool _scene_visual_has_pending_render_work(const DvzVisual* visual)
+{
+    if (visual == NULL || !visual->visible)
+        return false;
+
+    if (_scene_visual_dirty_material_emits_upload(visual) || visual->texture.dirty)
+        return true;
+    if (visual->field != NULL && visual->field->dirty)
+        return true;
+    if (visual->buffer != NULL && visual->buffer->dirty)
+        return true;
+    if (visual->segment.gpu.dirty || visual->path.gpu.dirty || visual->image_gpu.dirty)
+        return true;
+
+    for (uint32_t i = 0; i < visual->attr_count; i++)
+    {
+        const DvzVisualAttr* attr = &visual->attrs[i];
+        if (attr->dirty_item_count > 0)
+            return true;
+        if (attr->buffer != NULL && attr->buffer->dirty)
+            return true;
+    }
+    return false;
+}
+
+
+
+/**
+ * Return whether a dirty material payload is emitted for one visual family.
+ *
+ * @param visual the visual to inspect
+ * @return whether material_params_dirty should trigger app rendering
+ */
+static bool _scene_visual_dirty_material_emits_upload(const DvzVisual* visual)
+{
+    if (visual == NULL || !visual->material_params_dirty)
+        return false;
+
+    switch (visual->type)
+    {
+    case DVZ_VISUAL_TYPE_POINT:
+    case DVZ_VISUAL_TYPE_PIXEL:
+    case DVZ_VISUAL_TYPE_MARKER:
+    case DVZ_VISUAL_TYPE_SEGMENT:
+    case DVZ_VISUAL_TYPE_PATH:
+    case DVZ_VISUAL_TYPE_PRIMITIVE:
+    case DVZ_VISUAL_TYPE_MESH:
+    case DVZ_VISUAL_TYPE_SPHERE:
+        return true;
+    default:
+        return false;
+    }
+}
+
+
+
+/**
+ * Return whether panel-owned adornments need realization before the next emitted frame.
+ *
+ * @param panel the panel to inspect
+ * @return whether axis, text, or annotation work is pending
+ */
+static bool _scene_panel_has_pending_adornment_work(const DvzPanel* panel)
+{
+    if (panel == NULL)
+        return false;
+
+    for (uint32_t dim = 0; dim < 2; dim++)
+    {
+        const DvzAxis* axis = &panel->axes[dim];
+        if (axis->panel == panel && axis->dirty)
+            return true;
+    }
+
+    const DvzScene* scene = panel->figure != NULL ? panel->figure->scene : NULL;
+    if (scene == NULL)
+        return false;
+
+    for (uint32_t i = 0; i < scene->annotation_count; i++)
+    {
+        const DvzAnnotation* annotation = &scene->annotations[i];
+        if (annotation->panel == panel && annotation->dirty_flags != DVZ_TEXT_DIRTY_NONE)
+            return true;
+    }
+    return false;
+}
+
+
+
+/**
+ * Return whether one panel has visible dirty visuals attached.
+ *
+ * @param panel the panel to inspect
+ * @return whether render work is pending for attached visuals
+ */
+static bool _scene_panel_has_pending_visual_work(const DvzPanel* panel)
+{
+    if (panel == NULL)
+        return false;
+    for (uint32_t i = 0; i < panel->visual_count; i++)
+    {
+        const DvzVisual* visual = panel->visuals[i].visual;
+        if (_scene_visual_has_pending_render_work(visual))
+            return true;
+        if (visual != NULL && visual->type == DVZ_VISUAL_TYPE_TEXT)
+        {
+            const DvzFigure* figure = panel->figure;
+            uint64_t version = visual->text.strings_version + visual->text.renderer_version;
+            for (uint32_t ai = 0; ai < visual->attr_count; ai++)
+                version += visual->attrs[ai].version;
+            if (
+                visual->text.string_count > 0 && visual->text.strings != NULL &&
+                (visual->text.realized_version != version ||
+                 (figure != NULL &&
+                  (visual->text.visual_figure_width != figure->width ||
+                   visual->text.visual_figure_height != figure->height))))
+            {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+
+
+/**
  * Clear dirty scene state after one successful figure emit.
  *
  * @param figure the emitted figure
@@ -845,7 +985,9 @@ static void _scene_commit_emit_success(DvzFigure* figure)
                 visual->buffer->dirty = false;
             if (
                 visual->type == DVZ_VISUAL_TYPE_POINT || visual->type == DVZ_VISUAL_TYPE_PIXEL ||
+                visual->type == DVZ_VISUAL_TYPE_MARKER ||
                 visual->type == DVZ_VISUAL_TYPE_SEGMENT ||
+                visual->type == DVZ_VISUAL_TYPE_PATH ||
                 visual->type == DVZ_VISUAL_TYPE_PRIMITIVE ||
                 visual->type == DVZ_VISUAL_TYPE_MESH ||
                 visual->type == DVZ_VISUAL_TYPE_SPHERE)
@@ -855,9 +997,10 @@ static void _scene_commit_emit_success(DvzFigure* figure)
                     normal_idx >= 0 && visual->attrs[normal_idx].data != NULL &&
                     visual->attrs[normal_idx].item_count > 0;
                 bool point_like = visual->type == DVZ_VISUAL_TYPE_POINT ||
-                                  visual->type == DVZ_VISUAL_TYPE_PIXEL;
+                                  visual->type == DVZ_VISUAL_TYPE_PIXEL ||
+                                  visual->type == DVZ_VISUAL_TYPE_MARKER;
                 if (point_like || has_normals || visual->type == DVZ_VISUAL_TYPE_SEGMENT ||
-                    visual->type == DVZ_VISUAL_TYPE_SPHERE)
+                    visual->type == DVZ_VISUAL_TYPE_PATH || visual->type == DVZ_VISUAL_TYPE_SPHERE)
                     visual->material_params_dirty = false;
             }
             if (visual->type == DVZ_VISUAL_TYPE_IMAGE || visual->type == DVZ_VISUAL_TYPE_VOLUME)
@@ -866,6 +1009,32 @@ static void _scene_commit_emit_success(DvzFigure* figure)
     }
     for (uint32_t i = 0; i < figure->scene->field_count; i++)
         _scene_refresh_field_dirty_state(figure->scene, &figure->scene->fields[i]);
+}
+
+
+
+/**
+ * Return whether a figure has retained scene work waiting for another emitted frame.
+ *
+ * @param figure the figure to inspect
+ * @return whether dirty retained state is pending for this figure
+ */
+bool _scene_figure_has_pending_render_work(const DvzFigure* figure)
+{
+    if (figure == NULL)
+        return false;
+
+    for (uint32_t i = 0; i < figure->panel_count; i++)
+    {
+        const DvzPanel* panel = &figure->panels[i];
+        if (
+            _scene_panel_has_pending_visual_work(panel) ||
+            _scene_panel_has_pending_adornment_work(panel))
+        {
+            return true;
+        }
+    }
+    return false;
 }
 
 

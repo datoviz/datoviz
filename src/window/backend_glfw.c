@@ -462,6 +462,61 @@ static void _glfw_poll(DvzWindowBackend* backend, DvzWindowHost* host)
 
 
 
+/**
+ * Wait for the next GLFW event.
+ *
+ * @param backend GLFW backend descriptor
+ * @param host host owning active GLFW windows
+ */
+static void _glfw_wait(DvzWindowBackend* backend, DvzWindowHost* host)
+{
+    (void)backend;
+    (void)host;
+    if (_glfw_state.initialized)
+        glfwWaitEvents();
+}
+
+
+
+/**
+ * Wait for the next GLFW event up to a timeout.
+ *
+ * @param backend GLFW backend descriptor
+ * @param host host owning active GLFW windows
+ * @param seconds maximum wait duration in seconds
+ */
+static void _glfw_wait_timeout(DvzWindowBackend* backend, DvzWindowHost* host, double seconds)
+{
+    (void)backend;
+    (void)host;
+    if (!_glfw_state.initialized)
+        return;
+    if (!(seconds > 0.0))
+    {
+        glfwPollEvents();
+        return;
+    }
+    glfwWaitEventsTimeout(seconds);
+}
+
+
+
+/**
+ * Wake GLFW event waits after a frame request.
+ *
+ * @param backend GLFW backend descriptor
+ * @param window window requesting a frame
+ */
+static void _glfw_request_frame(DvzWindowBackend* backend, DvzWindow* window)
+{
+    (void)backend;
+    (void)window;
+    if (_glfw_state.initialized)
+        glfwPostEmptyEvent();
+}
+
+
+
 static bool _glfw_should_close(const DvzWindowBackend* backend, const DvzWindow* window)
 {
     (void)backend;
@@ -491,7 +546,9 @@ void dvz_window_register_glfw_backend(DvzWindowHost* host)
                 .create = _glfw_create,
                 .destroy = _glfw_destroy,
                 .poll = _glfw_poll,
-                .request_frame = NULL,
+                .wait = _glfw_wait,
+                .wait_timeout = _glfw_wait_timeout,
+                .request_frame = _glfw_request_frame,
                 .should_close = _glfw_should_close,
                 .required_extension_count = _glfw_required_extension_count,
                 .required_extension_at = _glfw_required_extension_at,
@@ -563,6 +620,8 @@ void dvz_window_register_glfw_backend(DvzWindowHost* host)
                 .create = NULL,
                 .destroy = NULL,
                 .poll = NULL,
+                .wait = NULL,
+                .wait_timeout = NULL,
                 .request_frame = NULL,
                 .required_extension_count = _glfw_disabled_required_extension_count,
                 .required_extension_at = _glfw_disabled_required_extension_at,

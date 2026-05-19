@@ -37,6 +37,9 @@ typedef bool (*DvzWindowBackendCreate)(
     DvzWindowBackend* backend, DvzWindow* window, const DvzWindowConfig* config);
 typedef void (*DvzWindowBackendDestroy)(DvzWindowBackend* backend, DvzWindow* window);
 typedef void (*DvzWindowBackendPoll)(DvzWindowBackend* backend, DvzWindowHost* host);
+typedef void (*DvzWindowBackendWait)(DvzWindowBackend* backend, DvzWindowHost* host);
+typedef void (*DvzWindowBackendWaitTimeout)(
+    DvzWindowBackend* backend, DvzWindowHost* host, double seconds);
 typedef void (*DvzWindowBackendRequestFrame)(DvzWindowBackend* backend, DvzWindow* window);
 typedef bool (*DvzWindowBackendShouldClose)(
     const DvzWindowBackend* backend, const DvzWindow* window);
@@ -65,6 +68,8 @@ struct DvzWindowBackendProcs
     DvzWindowBackendCreate create;
     DvzWindowBackendDestroy destroy;
     DvzWindowBackendPoll poll;
+    DvzWindowBackendWait wait;
+    DvzWindowBackendWaitTimeout wait_timeout;
     DvzWindowBackendRequestFrame request_frame;
     DvzWindowBackendShouldClose should_close;
     DvzWindowBackendRequiredExtensionCount required_extension_count;

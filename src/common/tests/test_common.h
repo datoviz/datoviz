@@ -27,6 +27,7 @@
 int test_obj_1(TstContext* suite, const TstCase* tstitem);
 int test_alloc_basic(TstContext* suite, const TstCase* tstitem);
 int test_alloc_aligned(TstContext* suite, const TstCase* tstitem);
+int test_time_monotonic_ns(TstContext* suite, const TstCase* tstitem);
 
 
 

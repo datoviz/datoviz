@@ -15,6 +15,7 @@
 /*************************************************************************************************/
 
 #include "_assertions.h"
+#include "_time_utils.h"
 #include "datoviz/window.h"
 #include "datoviz/window/backend.h"
 
@@ -57,6 +58,41 @@ static void _headless_destroy(DvzWindowBackend* backend, DvzWindow* window)
 {
     (void)backend;
     (void)window;
+}
+
+
+
+/**
+ * Conservatively wait for headless backend activity.
+ *
+ * @param backend headless backend descriptor
+ * @param host host owning active headless windows
+ */
+static void _headless_wait(DvzWindowBackend* backend, DvzWindowHost* host)
+{
+    (void)backend;
+    (void)host;
+    dvz_sleep_us(1000);
+}
+
+
+
+/**
+ * Conservatively wait for headless backend activity up to a timeout.
+ *
+ * @param backend headless backend descriptor
+ * @param host host owning active headless windows
+ * @param seconds maximum wait duration in seconds
+ */
+static void _headless_wait_timeout(DvzWindowBackend* backend, DvzWindowHost* host, double seconds)
+{
+    (void)backend;
+    (void)host;
+    if (!(seconds > 0.0))
+        return;
+    if (seconds > 1.0)
+        seconds = 1.0;
+    dvz_sleep_us((int)(seconds * 1000000.0));
 }
 
 
@@ -112,6 +148,8 @@ void dvz_window_register_headless_backend(DvzWindowHost* host)
                 .create = _headless_create,
                 .destroy = _headless_destroy,
                 .poll = NULL,
+                .wait = _headless_wait,
+                .wait_timeout = _headless_wait_timeout,
                 .request_frame = NULL,
                 .required_extension_count = _headless_required_extension_count,
                 .required_extension_at = _headless_required_extension_at,

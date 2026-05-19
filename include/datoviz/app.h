@@ -43,6 +43,18 @@ typedef void (*DvzAppRequestFrameCallback)(DvzAppWindow* win, void* user_data);
 
 
 /*************************************************************************************************/
+/*  Enums                                                                                        */
+/*************************************************************************************************/
+
+typedef enum DvzAppScheduleMode
+{
+    DVZ_APP_SCHEDULE_ON_DEMAND,
+    DVZ_APP_SCHEDULE_CONTINUOUS,
+} DvzAppScheduleMode;
+
+
+
+/*************************************************************************************************/
 /*  Structs                                                                                      */
 /*************************************************************************************************/
 
@@ -52,6 +64,8 @@ struct DvzAppConfig
     const char* const* instance_extensions;
     bool enable_canvas_extensions;
     bool enable_glfw_extensions;
+    DvzAppScheduleMode schedule_mode;
+    double fps_cap;
 };
 
 
@@ -497,9 +511,9 @@ DVZ_EXPORT int dvz_app_render_once(DvzApp* app);
 /**
  * Run the frame loop.
  *
- * Each iteration polls events, then calls dvz_canvas_frame() / dvz_canvas_submit() for every
- * registered window.  The draw callback attached to each canvas emits and executes the DRP2
- * command stream for its associated figure.
+ * Finite runs render the requested number of frames. Interactive runs (`frame_count == 0`) use
+ * the app scheduler: on-demand mode waits for resize/input/request-frame invalidation, while
+ * continuous mode renders active windows until every interactive window closes.
  *
  * @param app the app
  * @param frame_count number of frames to render (0 = interactive loop until all windows close)

@@ -1135,6 +1135,7 @@ void _scene_request_executor_destroy(DvzSceneRequestExecutor* executor);
 uint32_t _dvz_figure_process_requests_with_executor(
     DvzFigure* figure, DvzDrp2Runtime* runtime, DvzSceneRequestExecutor* executor,
     const DvzCapabilitySnapshot* caps);
+bool _scene_figure_has_pending_render_work(const DvzFigure* figure);
 
 
 
