@@ -26,6 +26,8 @@
 #include "datoviz/app.h"
 #include "datoviz/common/functions.h"
 #include "datoviz/gui.h"
+#include "datoviz/imgui.h"
+#include "datoviz/input/router.h"
 #include "datoviz/scene.h"
 
 
@@ -38,6 +40,7 @@
 #define LAB_HEIGHT 720
 #define LAB_POINT_COUNT 5
 #define LAB_IMAGE_SIZE  32
+#define LAB_HOVER_PROBE_INTERVAL_NS 33000000ULL
 
 
 
@@ -50,6 +53,7 @@ typedef struct SchedulerLabState
     DvzScene* scene;
     DvzPanel* panel;
     DvzAppWindow* win;
+    DvzInputRouter* router;
     DvzVisual* points;
     DvzVisual* image;
 
@@ -77,9 +81,16 @@ typedef struct SchedulerLabState
     uint32_t fps_sample_frames;
     double fps;
     double frame_ms;
+    double cursor_x;
+    double cursor_y;
+    float hover_rgba[4];
 
     char last_pick[128];
     char last_probe[160];
+
+    uint64_t hover_probe_ns;
+    bool cursor_valid;
+    bool hover_color_valid;
 } SchedulerLabState;
 
 
@@ -161,18 +172,58 @@ static void _lab_update_image(SchedulerLabState* state)
 
 
 /**
+ * Queue a point pick request at a window coordinate.
+ *
+ * @param state example state
+ * @param x window x coordinate
+ * @param y window y coordinate
+ */
+static void _lab_queue_pick_at(SchedulerLabState* state, double x, double y)
+{
+    if (state == NULL || state->panel == NULL)
+        return;
+    state->pick_request_count++;
+    DvzPickRequest request = {
+        .request_id = state->pick_request_count,
+        .target = DVZ_SCENE_TARGET_ITEM,
+        .hit_policy = DVZ_PICK_HIT_FRONTMOST,
+    };
+    if (dvz_panel_pick(state->panel, x, y, &request) != 0)
+        dvz_fprintf(stderr, "dvz_panel_pick() failed\n");
+}
+
+
+
+/**
  * Request a center pick on the point visual.
  *
  * @param state example state
  */
 static void _lab_queue_pick(SchedulerLabState* state)
 {
+    _lab_queue_pick_at(state, LAB_WIDTH * 0.5, LAB_HEIGHT * 0.5);
+}
+
+
+
+/**
+ * Queue an image probe request at a window coordinate.
+ *
+ * @param state example state
+ * @param x window x coordinate
+ * @param y window y coordinate
+ */
+static void _lab_queue_probe_at(SchedulerLabState* state, double x, double y)
+{
     if (state == NULL || state->panel == NULL)
         return;
-    state->pick_request_count++;
-    DvzPickRequest request = {.request_id = state->pick_request_count};
-    if (dvz_panel_pick(state->panel, LAB_WIDTH * 0.5, LAB_HEIGHT * 0.5, &request) != 0)
-        dvz_fprintf(stderr, "dvz_panel_pick() failed\n");
+    state->probe_request_count++;
+    DvzProbeRequest request = {
+        .request_id = state->probe_request_count,
+        .target = DVZ_SCENE_TARGET_PIXEL,
+    };
+    if (dvz_panel_probe(state->panel, x, y, &request) != 0)
+        dvz_fprintf(stderr, "dvz_panel_probe() failed\n");
 }
 
 
@@ -184,12 +235,47 @@ static void _lab_queue_pick(SchedulerLabState* state)
  */
 static void _lab_queue_probe(SchedulerLabState* state)
 {
-    if (state == NULL || state->panel == NULL)
+    _lab_queue_probe_at(state, LAB_WIDTH * 0.5, LAB_HEIGHT * 0.5);
+}
+
+
+
+/**
+ * Queue click picks and throttled hover probes from pointer input.
+ *
+ * @param router input router that emitted the event
+ * @param event pointer event payload
+ * @param user_data example state
+ */
+static void _lab_pointer(DvzInputRouter* router, const DvzPointerEvent* event, void* user_data)
+{
+    (void)router;
+    SchedulerLabState* state = (SchedulerLabState*)user_data;
+    if (state == NULL || event == NULL)
         return;
-    state->probe_request_count++;
-    DvzProbeRequest request = {.request_id = state->probe_request_count};
-    if (dvz_panel_probe(state->panel, LAB_WIDTH * 0.5, LAB_HEIGHT * 0.5, &request) != 0)
-        dvz_fprintf(stderr, "dvz_panel_probe() failed\n");
+
+    if (event->type == DVZ_POINTER_EVENT_MOVE || event->type == DVZ_POINTER_EVENT_PRESS)
+    {
+        state->cursor_valid = true;
+        state->cursor_x = event->pos[0];
+        state->cursor_y = event->pos[1];
+    }
+
+    if (event->type == DVZ_POINTER_EVENT_MOVE)
+    {
+        uint64_t now = dvz_time_monotonic_ns();
+        if (
+            state->hover_probe_ns == 0 ||
+            now - state->hover_probe_ns >= LAB_HOVER_PROBE_INTERVAL_NS)
+        {
+            state->hover_probe_ns = now;
+            _lab_queue_probe_at(state, event->pos[0], event->pos[1]);
+        }
+    }
+    else if (event->type == DVZ_POINTER_EVENT_PRESS && event->button == DVZ_POINTER_BUTTON_LEFT)
+    {
+        _lab_queue_pick_at(state, event->pos[0], event->pos[1]);
+    }
 }
 
 
@@ -243,9 +329,19 @@ static void _lab_frame(DvzAppWindow* win, void* user_data)
     while (dvz_scene_poll_pick(state->scene, &pick))
     {
         state->pick_result_count++;
-        (void)snprintf(
-            state->last_pick, sizeof(state->last_pick), "pick #%u: %s item=%" PRIu64,
-            state->pick_result_count, pick.hit ? "hit" : "miss", pick.resolved_id);
+        if (pick.hit && pick.has_data_position)
+        {
+            (void)snprintf(
+                state->last_pick, sizeof(state->last_pick),
+                "pick #%u: item=%" PRIu64 " data=(%.2f, %.2f)", state->pick_result_count,
+                pick.resolved_id, pick.data_position[0], pick.data_position[1]);
+        }
+        else
+        {
+            (void)snprintf(
+                state->last_pick, sizeof(state->last_pick), "pick #%u: %s item=%" PRIu64,
+                state->pick_result_count, pick.hit ? "hit" : "miss", pick.resolved_id);
+        }
     }
 
     DvzProbeResult probe = {0};
@@ -254,6 +350,9 @@ static void _lab_frame(DvzAppWindow* win, void* user_data)
         state->probe_result_count++;
         if (probe.hit && probe.value_kind == DVZ_PROBE_VALUE_VEC4)
         {
+            state->hover_color_valid = true;
+            for (uint32_t i = 0; i < 4; i++)
+                state->hover_rgba[i] = (float)probe.vector[i];
             (void)snprintf(
                 state->last_probe, sizeof(state->last_probe),
                 "probe #%u: rgba=(%.2f, %.2f, %.2f, %.2f)", state->probe_result_count,
@@ -261,6 +360,7 @@ static void _lab_frame(DvzAppWindow* win, void* user_data)
         }
         else
         {
+            state->hover_color_valid = false;
             (void)snprintf(
                 state->last_probe, sizeof(state->last_probe), "probe #%u: miss",
                 state->probe_result_count);
@@ -319,6 +419,26 @@ static void _lab_gui(DvzGui* gui, DvzAppWindow* win, void* user_data)
         dvz_gui_text(gui, line);
         dvz_gui_text(gui, state->last_pick);
         dvz_gui_text(gui, state->last_probe);
+        if (state->cursor_valid)
+        {
+            (void)snprintf(
+                line, sizeof(line), "cursor: %.1f, %.1f", state->cursor_x, state->cursor_y);
+            dvz_gui_text(gui, line);
+        }
+        ImVec4 hover_color = state->hover_color_valid
+                                 ? (ImVec4){
+                                       state->hover_rgba[0],
+                                       state->hover_rgba[1],
+                                       state->hover_rgba[2],
+                                       state->hover_rgba[3],
+                                   }
+                                 : (ImVec4){0.12f, 0.12f, 0.12f, 1.0f};
+        (void)igColorButton(
+            "hover color", hover_color,
+            ImGuiColorEditFlags_NoTooltip | ImGuiColorEditFlags_NoDragDrop,
+            (ImVec2){34.0f, 34.0f});
+        dvz_gui_same_line(gui, 0.0f, 8.0f);
+        dvz_gui_text(gui, state->hover_color_valid ? "hover image color" : "hover: no image");
 
         dvz_gui_separator_text(gui, "Controls");
         if (dvz_gui_button(gui, "Request frame"))
@@ -492,7 +612,16 @@ int main(int argc, char** argv)
         return 1;
     }
     state.win = win;
-    dvz_panel_set_panzoom(panel, dvz_app_window_input(win), 0);
+    state.router = dvz_app_window_input(win);
+    if (state.router == NULL)
+    {
+        dvz_fprintf(stderr, "dvz_app_window_input() failed\n");
+        dvz_app_destroy(app);
+        dvz_scene_destroy(scene);
+        return 1;
+    }
+    dvz_panel_set_panzoom(panel, state.router, 0);
+    dvz_input_subscribe_pointer(state.router, _lab_pointer, &state);
 
     DvzGui* gui = dvz_app_window_gui(win, NULL);
     if (gui == NULL)
