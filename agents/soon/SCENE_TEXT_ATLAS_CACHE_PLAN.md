@@ -45,18 +45,25 @@ settings to GPU texture regions, metrics, cache entries, uploads, and shader par
 
 ## Current State
 
-The current scene text work has real renderer plumbing, but the atlas model is still temporary:
+The current scene text work has real renderer plumbing and a first dynamic-growth path:
 
-- The current generated font-backed atlas path is mostly fixed-range ASCII.
+- FreeType bitmap, MSDF, and SDF atlas generation share an internal `DvzTextAtlas` shape.
+- `_scene_text_atlas_ensure_strings()` builds a requested codepoint set from default printable
+  ASCII plus the requested UTF-8 strings.
+- `_text_atlas_ensure_set()` reuses an existing atlas when it already covers the request.
+- `_text_atlas_try_append()` can append missing codepoints into an existing atlas by building a
+  temporary delta atlas, growing the atlas texture, copying old pixels, packing the new glyph
+  rectangles, rescaling old UVs, and appending glyph metadata.
+- The current growth policy doubles both atlas width and height.
+- Atlas entries remain capped by `DVZ_SCENE_TEXT_ATLAS_MAX_GLYPHS` (`256` at the time this note was
+  updated).
+- The shader now receives atlas pixel range through glyph-specific uniforms instead of hardcoding
+  MSDF range.
 - The older 6x8 bitmap path is deterministic and useful for tests, but it is not the quality path.
-- The current atlas metadata is enough for a visible demo, but not for robust dynamic glyph loading,
-  fallback, or HarfBuzz glyph ids.
-- Non-ASCII input is not yet a dependable production feature.
-- Missing glyph behavior needs to become explicit and testable.
 
-The durable fix is not another hardcoded range. The durable fix is a cache that can ensure glyphs
-on demand, grow atlas pages, expose reliable metrics, and keep shader parameters tied to the atlas
-that generated them.
+This means "dynamic atlas growth" exists, but it is still a first implementation. The remaining work
+is to harden, test, and evolve it into a mature cache/page subsystem that can support fallback fonts,
+HarfBuzz glyph ids, embedded default atlases, and broader Unicode ranges.
 
 
 ## Atlas Objects
@@ -157,7 +164,18 @@ The exact owner may be `DvzApp`, `DvzScene`, or a future renderer context. The i
 
 ## Dynamic Growth
 
-The atlas manager should expose an "ensure glyphs" operation:
+The current implementation already exposes the codepoint-level equivalent of an "ensure glyphs"
+operation:
+
+```text
+UTF-8 strings
+  -> default ASCII + requested codepoint set
+  -> reuse existing atlas if covered
+  -> append missing codepoints into a grown texture when possible
+  -> rebuild or fallback if append fails
+```
+
+The desired mature version should generalize this to glyph ids and pages:
 
 ```text
 shaped run
@@ -177,6 +195,17 @@ Important constraints:
 - Page dimensions, padding, pixel range, and generator settings must be part of cache identity.
 - The shader must use the atlas entry's or atlas page's pixel range instead of a hardcoded value.
 - Atlas updates must be visible to DRP2 validation and replay.
+
+Near-term hardening for the existing growth path:
+
+- Add CPU tests that create an ASCII atlas, request `é`/`Ω`, and assert atlas growth.
+- Assert that old glyph UVs remain stable after growth, modulo the expected global rescale when the
+  texture dimensions change.
+- Assert `generation` increments when new glyphs are appended and does not increment for cache hits.
+- Test MSDF and FreeType bitmap append separately.
+- Test capacity behavior near `DVZ_SCENE_TEXT_ATLAS_MAX_GLYPHS`.
+- Report append/growth/fallback events in diagnostics so visual tools can show what happened.
+- Consider a less wasteful growth policy than doubling both width and height on every append.
 
 
 ## Renderer-Specific Notes
@@ -257,7 +286,11 @@ Focused tests should cover:
 - atlas cache key equality and inequality;
 - cache reuse across repeated strings;
 - dynamic growth when a new glyph appears;
-- stable UVs after growth;
+- generation increments on append and stays stable on cache hits;
+- stable UVs after growth, with expected rescaling when atlas dimensions change;
+- FreeType bitmap append/growth;
+- MSDF append/growth;
+- capacity behavior near `DVZ_SCENE_TEXT_ATLAS_MAX_GLYPHS`;
 - custom font path atlas generation;
 - embedded atlas lookup for default ASCII;
 - missing glyph fallback and diagnostics;
@@ -277,15 +310,17 @@ Regression screenshots or readback tests should include:
 
 ## Execution Phases
 
-1. Formalize internal atlas/page/entry structs and cache keys.
-2. Route current bitmap/SDF/MSDF metadata through the same atlas-entry contract.
-3. Add explicit missing-glyph entries and diagnostics.
-4. Add embedded default atlas for the default font and common ASCII labels.
-5. Add in-memory dynamic atlas growth for new glyph ids.
-6. Add atlas stats and focused cache tests.
-7. Correct MSDF shader/generator parameter flow and add artifact regressions.
-8. Add optional persistent disk cache API only after the in-memory model is stable.
-9. Integrate HarfBuzz-shaped glyph ids as the primary atlas request path.
+1. Add focused tests for the current codepoint-level dynamic growth path.
+2. Add per-glyph atlas metadata diagnostics for requested sample strings.
+3. Improve or document the current texture growth policy.
+4. Formalize internal atlas/page/entry structs and cache keys.
+5. Route current bitmap/SDF/MSDF metadata through the same atlas-entry contract.
+6. Add explicit missing-glyph entries and diagnostics.
+7. Add embedded default atlas for the default font and common ASCII labels.
+8. Generalize dynamic growth from codepoints to glyph ids and atlas pages.
+9. Add atlas stats and focused cache tests.
+10. Add optional persistent disk cache API only after the in-memory model is stable.
+11. Integrate HarfBuzz-shaped glyph ids as the primary atlas request path.
 
 
 ## Open Questions
