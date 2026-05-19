@@ -6,6 +6,9 @@ It implements the smallest useful text renderer while preserving the broader tex
 [../semantics/TEXT.md](../semantics/TEXT.md) and the glyph visual contract in
 [../visuals/GLYPH.md](../visuals/GLYPH.md).
 
+The implementation-facing shaping, layout, atlas, and cache contract lives in
+[../implementation/TEXT_SHAPING_ATLAS.md](../implementation/TEXT_SHAPING_ATLAS.md).
+
 
 ## Scope
 
@@ -171,4 +174,3 @@ This slice is complete when:
 3. text updates work across repeated frames,
 4. focused tests cover emission, update, destroy, and validation paths,
 5. `API_IMPLEMENTATION_READINESS.md` can move text from "retained only" to "rendered first slice".
-

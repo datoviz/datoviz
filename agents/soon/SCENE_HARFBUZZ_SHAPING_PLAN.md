@@ -17,6 +17,10 @@ HarfBuzz is the right final layer for shaping. It should replace direct codepoin
 for production text, but it does not replace atlas generation. The shaped output feeds the atlas
 system by selected font face and glyph id.
 
+The durable shaping/layout/atlas/cache contract now lives in
+[../../spec/scene/implementation/TEXT_SHAPING_ATLAS.md](../../spec/scene/implementation/TEXT_SHAPING_ATLAS.md).
+Keep this file focused on the HarfBuzz integration sequence, tests, and unresolved choices.
+
 
 ## Goals
 
@@ -58,25 +62,21 @@ The useful intermediate work is not a competing shaper. The useful intermediate 
 the atlas and layout contracts so HarfBuzz can feed them cleanly.
 
 
-## Pipeline
+## Durable Contract Summary
 
-The durable shaping pipeline should be:
+Do not duplicate the full shaping contract here. Use
+[../../spec/scene/implementation/TEXT_SHAPING_ATLAS.md](../../spec/scene/implementation/TEXT_SHAPING_ATLAS.md)
+for stable rules:
 
-```text
-retained UTF-8 string + style
-  -> optional UTF-8 validation and normalization
-  -> font fallback and run segmentation
-  -> HarfBuzz buffer setup
-  -> HarfBuzz shaping
-  -> shaped glyph runs
-  -> line/box layout
-  -> atlas ensure by font face and glyph id
-  -> positioned glyph instances
-  -> DRP2 resources and draws
-```
+- scene text preserves original UTF-8 bytes;
+- shaping output is independent from placement, panzoom, camera transforms, and atlas UVs;
+- shaped runs carry selected font face, glyph ids, clusters, advances, offsets, and run metadata;
+- fallback happens before atlas lookup;
+- atlas lookup receives `(font face, glyph id)` pairs;
+- placement-only changes should not force reshaping.
 
-The first production slice can start with a single font face and left-to-right text. The structs
-should still leave room for script, direction, language, features, and fallback runs.
+The first production slice can still start with one font face and left-to-right text, but internal
+structs should leave room for script, direction, language, features, and fallback runs.
 
 
 ## Build And Dependency Model
@@ -90,77 +90,6 @@ HarfBuzz should be optional but preferred when scene text is enabled:
 - avoid making HarfBuzz symbols visible in public Datoviz headers.
 
 The HarfBuzz-backed code can live under `src/scene/` until text becomes a standalone module.
-
-
-## Internal Data Model
-
-Suggested shape key:
-
-```c
-typedef struct DvzTextShapeKey
-{
-    uint64_t string_hash;
-    uint64_t font_chain_hash;
-    uint32_t direction;
-    uint32_t script;
-    uint32_t language_id;
-    uint32_t feature_set_id;
-    uint32_t normalization_flags;
-} DvzTextShapeKey;
-```
-
-Suggested shaped run:
-
-```c
-typedef struct DvzTextShapedGlyph
-{
-    uint32_t glyph_id;
-    uint32_t cluster;
-    int32_t advance_x;
-    int32_t advance_y;
-    int32_t offset_x;
-    int32_t offset_y;
-} DvzTextShapedGlyph;
-
-typedef struct DvzTextShapedRun
-{
-    uint64_t font_face_id;
-    uint32_t direction;
-    uint32_t script;
-    uint32_t language_id;
-    uint32_t glyph_count;
-    DvzTextShapedGlyph* glyphs;
-} DvzTextShapedRun;
-```
-
-The exact representation can change. The key rule is that shaped runs are independent from
-placement, transforms, and atlas page coordinates.
-
-
-## Font Fallback
-
-Implement fallback in stages.
-
-Stage 1:
-
-- shape with one selected font face;
-- expose missing glyphs explicitly;
-- render missing-glyph boxes rather than skipping.
-
-Stage 2:
-
-- user-provided fallback chain;
-- split runs when the primary face lacks coverage;
-- cache coverage maps per font face where useful.
-
-Stage 3:
-
-- platform or bundled fallback fonts;
-- script-aware fallback;
-- deterministic test fallback fonts.
-
-Fallback should happen before atlas lookup. The atlas should receive selected `(font face, glyph id)`
-pairs, not unsupported codepoints.
 
 
 ## Unicode Normalization
@@ -193,48 +122,6 @@ Staged policy:
 
 This distinction matters for tests. A single Arabic word can validate shaping, but complete mixed
 LTR/RTL paragraphs need a broader text layout layer.
-
-
-## Layout Integration
-
-Layout should consume shaped runs and produce positioned glyph instances:
-
-- scale HarfBuzz font-unit advances to pixels/points using the selected font size;
-- apply glyph offsets before anchor/alignment transforms;
-- compute advance bounds, ink bounds, baseline, ascender, descender, and line height;
-- keep layout independent from atlas UVs;
-- invalidate layout on size, DPI, alignment, wrapping, or metrics-mode changes;
-- do not invalidate shaping when only placement or panzoom changes.
-
-This is also the contract that later math layout should target: math produces normal positioned
-glyph runs plus rule/box primitives.
-
-
-## Atlas Integration
-
-The atlas system should be asked to ensure glyphs after shaping:
-
-```text
-shaped run glyph ids
-  -> atlas cache lookup by font face and glyph id
-  -> dynamic atlas growth for missing entries
-  -> glyph instances receive UVs and plane bounds
-```
-
-Do not key atlas entries by Unicode codepoint once HarfBuzz is in the path. Different fonts can map
-the same codepoint to different glyph ids, and the same glyph id is only meaningful inside one face.
-
-
-## Caching
-
-Use distinct caches:
-
-- shape cache: UTF-8 bytes, font fallback chain, direction, script, language, features, normalization;
-- layout cache: shaped run id, size, DPI, line spacing, wrap width, alignment, metrics mode;
-- atlas cache: selected font face, glyph id, renderer backend, size bucket, generator parameters.
-
-This separation is what makes panzoom and placement changes cheap. They should update transforms or
-instance positions, not reshape text or rebuild atlases.
 
 
 ## Tests

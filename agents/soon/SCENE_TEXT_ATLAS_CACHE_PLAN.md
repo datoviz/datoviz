@@ -18,6 +18,10 @@ Atlas work is required even after HarfBuzz is integrated. HarfBuzz converts UTF-
 glyph ids, clusters, advances, and offsets. The atlas system maps those glyph ids and renderer
 settings to GPU texture regions, metrics, cache entries, uploads, and shader parameters.
 
+The durable shaping/layout/atlas/cache contract now lives in
+[../../spec/scene/implementation/TEXT_SHAPING_ATLAS.md](../../spec/scene/implementation/TEXT_SHAPING_ATLAS.md).
+Keep this file focused on current state, hardening tasks, execution phases, and unresolved choices.
+
 
 ## Goals
 
@@ -66,137 +70,25 @@ is to harden, test, and evolve it into a mature cache/page subsystem that can su
 HarfBuzz glyph ids, embedded default atlases, and broader Unicode ranges.
 
 
-## Atlas Objects
+## Durable Contract Summary
 
-Use explicit objects internally instead of treating the atlas as one texture plus loose arrays.
+Do not duplicate the full contract here. Use
+[../../spec/scene/implementation/TEXT_SHAPING_ATLAS.md](../../spec/scene/implementation/TEXT_SHAPING_ATLAS.md)
+for the stable rules:
 
-Suggested internal model:
+- atlas entries are keyed by selected font face and glyph id;
+- dynamic growth is an "ensure shaped glyphs" operation;
+- existing atlas entries should remain stable across growth whenever possible;
+- page dimensions, padding, pixel range, and generator settings are cache identity;
+- persistent disk caches are explicit opt-in behavior, never implicit library writes;
+- atlas writes must appear through normal FramePlan and DRP2 resource/update nodes.
 
-```c
-typedef struct DvzTextAtlasKey
-{
-    uint64_t font_id;
-    uint32_t face_index;
-    uint32_t renderer_backend;
-    uint32_t size_bucket;
-    uint32_t load_flags;
-    uint32_t generator_version;
-    uint32_t pixel_range_bits;
-} DvzTextAtlasKey;
-
-typedef struct DvzTextAtlasGlyphKey
-{
-    uint64_t font_id;
-    uint32_t glyph_id;
-    uint32_t renderer_backend;
-    uint32_t size_bucket;
-} DvzTextAtlasGlyphKey;
-
-typedef struct DvzTextAtlasEntry
-{
-    uint32_t page_id;
-    uint32_t glyph_id;
-    float advance;
-    float plane_bounds[4];
-    float atlas_bounds[4];
-    float uv[4];
-    float pixel_range;
-} DvzTextAtlasEntry;
-```
-
-The exact struct names can change, but the important rule is that atlas entries should be keyed by
-font face and glyph id, not by Unicode codepoint. Codepoints are useful before shaping and for
-debugging, but HarfBuzz output and font fallback operate on glyph ids inside selected font faces.
+The current implementation still starts from UTF-8 strings and codepoint sets. The important
+near-term transition is to preserve that behavior while shaping and fallback move requests toward
+`(font face, glyph id)` pairs.
 
 
-## Cache Layers
-
-### Embedded Built-In Atlases
-
-Datoviz should eventually ship at least one embedded default atlas:
-
-- default sans regular face;
-- ASCII coverage at minimum;
-- likely Latin-1 coverage if binary size stays reasonable;
-- metadata generated with the same code path as runtime atlases;
-- versioned generator parameters;
-- no runtime generation cost for normal examples and common plots.
-
-This should not replace the deterministic 6x8 fallback. The embedded atlas is the normal default
-quality path when the bundled font and common glyph range are enough. The 6x8 atlas remains the
-minimal backend for tests, diagnostics, and dependency-free builds.
-
-### In-Memory Dynamic Cache
-
-The default runtime cache should be automatic and in memory:
-
-- scoped to the scene, app, or renderer runtime;
-- shared across text visuals in the same owner;
-- keyed by font face, renderer backend, size bucket, and generator parameters;
-- able to add missing glyphs after initial atlas creation;
-- able to upload only new texture regions where the backend supports it;
-- able to report stats for tests and diagnostics.
-
-The first implementation can avoid eviction. A scene with many fonts, sizes, and scripts can allocate
-more atlas pages rather than compacting or invalidating UVs. Eviction can be added later once usage
-patterns are clear.
-
-### Optional Persistent Disk Cache
-
-Persistent cache should be an explicit advanced-user feature, not automatic library behavior.
-Datoviz is a library and should not write cache files into user directories without a direct request.
-
-A later public or semi-public API could look like:
-
-```c
-bool dvz_text_cache_set_directory(DvzScene* scene, const char* path, uint32_t flags);
-bool dvz_text_cache_clear_disk(DvzScene* scene);
-bool dvz_text_cache_stats(DvzScene* scene, DvzTextCacheStats* out);
-```
-
-The exact owner may be `DvzApp`, `DvzScene`, or a future renderer context. The important policy is:
-
-- no implicit writes;
-- cache format versioned by Datoviz version and generator version;
-- safe failure path when the cache is unreadable or stale;
-- deterministic fallback to in-memory generation.
-
-
-## Dynamic Growth
-
-The current implementation already exposes the codepoint-level equivalent of an "ensure glyphs"
-operation:
-
-```text
-UTF-8 strings
-  -> default ASCII + requested codepoint set
-  -> reuse existing atlas if covered
-  -> append missing codepoints into a grown texture when possible
-  -> rebuild or fallback if append fails
-```
-
-The desired mature version should generalize this to glyph ids and pages:
-
-```text
-shaped run
-  -> collect missing (font face, glyph id) pairs
-  -> pack missing glyphs into existing pages when possible
-  -> allocate new pages when needed
-  -> generate bitmap/SDF/MSDF pixels
-  -> upload new regions or pages
-  -> return stable atlas entries
-```
-
-Important constraints:
-
-- Existing UVs should remain stable across growth.
-- A text string should never render with missing glyphs because an upload happened one frame late
-  unless the renderer explicitly reports an asynchronous pending state.
-- Page dimensions, padding, pixel range, and generator settings must be part of cache identity.
-- The shader must use the atlas entry's or atlas page's pixel range instead of a hardcoded value.
-- Atlas updates must be visible to DRP2 validation and replay.
-
-Near-term hardening for the existing growth path:
+## Near-Term Hardening
 
 - Add CPU tests that create an ASCII atlas, request `é`/`Ω`, and assert atlas growth.
 - Assert that old glyph UVs remain stable after growth, modulo the expected global rescale when the
@@ -250,33 +142,6 @@ filtering.
 
 Keep SDF as a fallback/debug backend, but do not make it the quality target if MSDF is available.
 It remains useful because it is simpler and can isolate bugs in MSDF edge coloring.
-
-
-## Missing Glyph Policy
-
-Missing glyphs must be explicit:
-
-- try the selected font face;
-- try configured fallback faces once fallback exists;
-- use a visible missing-glyph box as the final fallback;
-- report diagnostics in debug/test builds;
-- expose missing-glyph counts in cache or text stats.
-
-Silently dropping characters is not acceptable. It makes Unicode failures look like layout bugs.
-
-
-## Embedded Atlas Packaging
-
-Good default behavior probably needs a bundled font and embedded atlas:
-
-- a small permissive sans regular face;
-- a generated ASCII atlas in the binary;
-- possibly Latin-1 if size is acceptable;
-- build-time regeneration script checked into the repo;
-- generated metadata checked in only if that is the existing project practice for generated assets.
-
-This avoids recomputing common text every time an example starts, while still allowing arbitrary
-custom fonts and rare glyphs through the dynamic runtime path.
 
 
 ## Tests

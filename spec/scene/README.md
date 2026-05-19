@@ -177,8 +177,10 @@ Read the scene spec in this order during review.
 9. [semantics/LEGENDS_AND_COLORBARS.md](semantics/LEGENDS_AND_COLORBARS.md) — explanatory mapping semantics
 10. [semantics/TEXT.md](semantics/TEXT.md) — text content, placement, resources, and DPI behavior
 11. [slices/TEXT_RENDERING_SLICE.md](slices/TEXT_RENDERING_SLICE.md) — first rendered text work packet
-12. [slices/ANNOTATION_LABEL_SLICE.md](slices/ANNOTATION_LABEL_SLICE.md) — first rendered label annotation work packet
-13. [slices/COLORBAR_RENDERING_SLICE.md](slices/COLORBAR_RENDERING_SLICE.md) — first rendered colorbar work packet
+12. [implementation/TEXT_SHAPING_ATLAS.md](implementation/TEXT_SHAPING_ATLAS.md) — text shaping,
+    layout, atlas, cache, and DRP2 emission contract
+13. [slices/ANNOTATION_LABEL_SLICE.md](slices/ANNOTATION_LABEL_SLICE.md) — first rendered label annotation work packet
+14. [slices/COLORBAR_RENDERING_SLICE.md](slices/COLORBAR_RENDERING_SLICE.md) — first rendered colorbar work packet
 
 ### 4. Data, transforms, planning, and runtime handoff
 
@@ -280,6 +282,8 @@ Normative scene semantics and pipeline contracts:
 - [semantics/AXES.md](semantics/AXES.md), [semantics/ANNOTATIONS.md](semantics/ANNOTATIONS.md),
   [semantics/LEGENDS_AND_COLORBARS.md](semantics/LEGENDS_AND_COLORBARS.md), and
   [semantics/TEXT.md](semantics/TEXT.md): explanatory object semantics.
+- [implementation/TEXT_SHAPING_ATLAS.md](implementation/TEXT_SHAPING_ATLAS.md): text shaping,
+  layout, atlas, cache, and DRP2 emission contract.
 - [semantics/CLIPPING.md](semantics/CLIPPING.md) and
   [semantics/NONLINEAR_TRANSFORMS.md](semantics/NONLINEAR_TRANSFORMS.md): specialized rendering
   and coordinate behavior.

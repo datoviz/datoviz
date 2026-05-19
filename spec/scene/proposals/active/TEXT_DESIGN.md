@@ -17,6 +17,10 @@ yet implementation-ready.
 The first implementation-ready rendering path is now scoped in
 [../slices/TEXT_RENDERING_SLICE.md](../../slices/TEXT_RENDERING_SLICE.md).
 
+The durable implementation contract for shaping, layout, atlas resources, cache keys, and DRP2
+emission is now in
+[../implementation/TEXT_SHAPING_ATLAS.md](../../implementation/TEXT_SHAPING_ATLAS.md).
+
 
 ## Objective
 

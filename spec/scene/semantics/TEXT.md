@@ -19,6 +19,9 @@ outline rendering.
 The first implementation-ready rendering packet is
 [../slices/TEXT_RENDERING_SLICE.md](../slices/TEXT_RENDERING_SLICE.md).
 
+Implementation-facing details for shaping, layout, glyph atlas resources, cache keys, and DRP2
+emission live in [../implementation/TEXT_SHAPING_ATLAS.md](../implementation/TEXT_SHAPING_ATLAS.md).
+
 
 ## Semantic Purpose
 
@@ -245,3 +248,4 @@ The first text slice does not include:
 6. [../pipeline/INVALIDATION_AND_CACHING.md](../pipeline/INVALIDATION_AND_CACHING.md)
 7. [../integration/HIGH_DPI.md](../integration/HIGH_DPI.md)
 8. [../interaction/PICKING.md](../interaction/PICKING.md)
+9. [../implementation/TEXT_SHAPING_ATLAS.md](../implementation/TEXT_SHAPING_ATLAS.md)

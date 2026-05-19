@@ -488,7 +488,8 @@ Common coordination rules:
 ```text
 You own the text release-hardening lane for Datoviz v0.4. Read
 agents/now/IMPLEMENTATION.md, spec/scene/slices/TEXT_RENDERING_SLICE.md,
-spec/scene/semantics/TEXT.md, and agents/soon/SCENE_TEXT_GLYPH_PLAN.md.
+spec/scene/semantics/TEXT.md, spec/scene/implementation/TEXT_SHAPING_ATLAS.md,
+and agents/soon/SCENE_TEXT_GLYPH_PLAN.md.
 
 Goal: make the existing retained/rendered text path release-quality for the next small slice.
 Stay inside src/scene text/glyph code, scene shaders needed for text, examples/c/visuals/text.c,

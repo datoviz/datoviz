@@ -2,7 +2,7 @@
 
 > **Execution Status**
 > - **Status:** `PLANNING NOTE`
-> - **Updated on:** `2026-05-16`
+> - **Updated on:** `2026-05-19`
 > - **Purpose:** define a staged implementation path for retained glyph and text visuals,
 >   high-quality Unicode text, GPU-accelerated font rendering, and later minimal math/equation
 >   support in the active scene -> DRP2 -> vklite/app path.
@@ -45,6 +45,8 @@ details for the most important next slices:
 
 The high-level architecture remains: HarfBuzz produces shaped glyph runs, the atlas/cache layer
 ensures renderer resources for those glyphs, and the scene emits normal DRP2 resources and draws.
+The durable implementation-facing contract for that architecture now lives in
+[../../spec/scene/implementation/TEXT_SHAPING_ATLAS.md](../../spec/scene/implementation/TEXT_SHAPING_ATLAS.md).
 
 
 ## External Technology Snapshot
@@ -102,107 +104,19 @@ Non-goals for the first production slice:
 - automatic global label placement or collision avoidance beyond simple optional heuristics.
 
 
-## Scientific Visualization Requirements
+## Durable Contract References
 
-Text in scientific visualization has stricter placement and measurement requirements than simple UI
-labels. The first stable API and implementation should cover the following.
+Keep this roadmap focused on execution order. The stable requirements and contracts are now split
+across:
 
-### Text Encodings And Unicode
-
-- Accept UTF-8 strings at the public API boundary.
-- Preserve byte strings exactly in retained objects and DVZR recordings.
-- Convert to shaped glyph runs through HarfBuzz rather than mapping codepoints directly to glyphs.
-- Track grapheme clusters and glyph-to-byte mapping enough for picking, future editing, and precise
-  diagnostics.
-- Support font fallback per run or glyph when the primary font lacks coverage.
-- Support script, direction, and language metadata internally, even if the public API starts with
-  auto-detection/defaults.
-- Treat combining marks, ligatures, Arabic/Indic shaping, CJK, and right-to-left text as correctness
-  requirements for the shaped text path, not as extensions to the ASCII path.
-
-### Metrics And Layout
-
-- Measure text before rendering in deterministic units.
-- Expose layout bounds, ink bounds, baseline, ascender, descender, advance, line height, and anchor
-  points internally.
-- Support single-line layout first, then explicit multiline text, then wrapped text if needed.
-- Support horizontal and vertical alignment: left, center, right, baseline, top, middle, bottom.
-- Support rotation in screen space and billboard-like world/data placement.
-- Support per-label offsets in pixels after coordinate transform.
-- Keep point size, pixel size, and data/world units separate.
-- Make DPI and framebuffer scale explicit in layout cache keys.
-
-### Coordinate Spaces
-
-Use one placement model across text, annotations, axis labels, colorbar labels, and glyph visuals:
-
-- screen-space: fixed pixel/normalized figure placement;
-- panel-space: fixed placement inside a panel viewport;
-- data-space: transformed by panel panzoom/arcball/data transform;
-- world-space: transformed by camera/controller, optionally billboarding;
-- hybrid-space: data/world anchor plus screen-space pixel offset.
-
-The existing `DvzTextPlacement` already points in this direction:
-
-```c
-struct DvzTextPlacement
-{
-    DvzTextPlacementMode mode;
-    DvzSceneAnchor anchor;
-    double position[3];
-    float offset[2];
-};
-```
-
-The staged implementation should keep this shape if possible, but it may extend it aggressively in
-v0.4 because API compatibility is not a constraint on this branch.
-
-### Rendering Behavior
-
-- Respect per-panel viewport and scissor rectangles.
-- Respect scene z-layer ordering.
-- Support optional depth testing for world/data text.
-- Support depth-disabled overlay text for axes, labels, legends, readouts, and UI-like annotations.
-- Support alpha blending, premultiplied alpha, and linear/sRGB correctness in the final shader path.
-- Avoid text bleeding across panels.
-- Avoid accumulating transient per-frame text runtime objects indefinitely.
-
-### Performance
-
-Text must handle both low-count high-quality labels and high-count dense labels:
-
-- cache shaped runs by text, font, style, script/direction/language, and OpenType features;
-- cache glyph atlas entries or vector glyph resources by font face, glyph id, render backend, size,
-  and renderer-specific parameters;
-- reuse GPU buffers for repeated labels when possible;
-- support partial updates when only placement changes;
-- support partial updates when only string content changes;
-- avoid reshaping unchanged text every frame;
-- avoid rebuilding atlases unless new glyphs are needed;
-- avoid one draw call per label when batching is possible.
-
-
-## Architecture
-
-The durable architecture should separate text processing from rendering technique.
-
-```text
-UTF-8 string + style + placement
-  -> font fallback and run segmentation
-  -> HarfBuzz shaping
-  -> line/box layout
-  -> positioned glyph instances
-  -> renderer-specific resources
-  -> DRP2 buffers/textures/bind groups/draws
-```
-
-The shaped/layout output is the common contract. Different renderers can consume that output:
-
-- simple monospace bitmap atlas;
-- FreeType bitmap atlas;
-- FreeType + SDF/MSDF atlas;
-- Slug-style vector GPU resources;
-- later math layout that emits ordinary glyph runs plus rule/box primitives.
+- [../../spec/scene/semantics/TEXT.md](../../spec/scene/semantics/TEXT.md): text content,
+  placement, semantic identity, DPI behavior, picking, export, and fallback semantics.
+- [../../spec/scene/slices/TEXT_RENDERING_SLICE.md](../../spec/scene/slices/TEXT_RENDERING_SLICE.md):
+  first retained `DvzText` rendering scope.
+- [../../spec/scene/implementation/TEXT_SHAPING_ATLAS.md](../../spec/scene/implementation/TEXT_SHAPING_ATLAS.md):
+  shaping, layout, atlas, cache, renderer roles, and DRP2 emission contract.
+- [../../spec/scene/visuals/GLYPH.md](../../spec/scene/visuals/GLYPH.md): glyph visual family
+  contract.
 
 
 ## Public API Direction
@@ -302,150 +216,6 @@ Likely future additions:
 - outline/shadow/background options if needed.
 
 
-## Renderer Backends
-
-Support multiple text renderers behind one scene API. Renderer choice should be explicit in style or
-scene options, with an automatic default once the stack matures.
-
-### Renderer 0: Simple Monospace Atlas
-
-Purpose:
-
-- debug/status overlays;
-- quick initial scene integration;
-- high-performance low-quality text;
-- deterministic tests with tiny fixtures.
-
-Characteristics:
-
-- built-in fixed-size atlas;
-- ASCII first, optional Latin-1/limited Unicode later;
-- no shaping;
-- no font fallback;
-- no high-quality scaling;
-- one quad per glyph;
-- trivial shader.
-
-Why it is still valuable:
-
-- gives the first executable path quickly;
-- makes text visible in examples before FreeType/HarfBuzz integration lands;
-- avoids blocking text-dependent features like app traces or debug overlays;
-- provides a fallback when external dependencies are disabled.
-
-Limitations:
-
-- not acceptable as the main scientific text path;
-- not publication quality;
-- not enough for Unicode.
-
-### Renderer 1: FreeType Bitmap Atlas
-
-Purpose:
-
-- robust first external-font path;
-- hinted small text;
-- compatibility fallback for systems where SDF/MSDF or vector paths are disabled.
-
-Characteristics:
-
-- FreeType loads faces and rasterizes glyph bitmaps;
-- HarfBuzz shapes text;
-- glyph bitmaps are packed into GPU atlases;
-- shader samples coverage/alpha texture;
-- quality is best near the rasterized size.
-
-Strengths:
-
-- simple, predictable, proven;
-- good for small UI/tick text when hinting matters;
-- useful fallback for exact visual parity with FreeType metrics.
-
-Weaknesses:
-
-- poor scaling away from atlas size;
-- many sizes can create atlas pressure;
-- rotated/large text may degrade.
-
-### Renderer 2: SDF/MSDF Atlas
-
-Purpose:
-
-- main first production renderer for scene text.
-
-Characteristics:
-
-- HarfBuzz shapes text;
-- FreeType provides outlines/metrics;
-- SDF or MSDF glyphs are generated into GPU atlases;
-- shader reconstructs smooth coverage at draw time;
-- one quad per glyph, batched by font atlas/material.
-
-Strengths:
-
-- good quality over a wider size range than bitmap atlases;
-- efficient GPU rendering;
-- suitable for axes, labels, legends, annotations, and many screen-space labels;
-- implementation is easier to fit into existing DRP2 buffers/textures/draws than vector GPU text.
-
-Weaknesses:
-
-- quality can suffer on tiny hinted text, very sharp corners, large scale factors, and extreme
-  perspective;
-- atlas generation and packing need careful cache design;
-- MSDF generation adds complexity and dependency choices.
-
-Recommended role:
-
-- default production path after simple text;
-- target for axes, colorbars, legends, and normal annotations;
-- primary path to test font fallback and Unicode shaping.
-
-### Renderer 3: Slug-Style Vector GPU Text
-
-Purpose:
-
-- high-quality scalable vector text;
-- large labels;
-- rotated text;
-- world/data labels viewed at oblique angles;
-- publication-grade output;
-- future vector graphics synergy.
-
-Characteristics:
-
-- HarfBuzz shapes text;
-- glyph outlines are encoded for GPU rasterization;
-- shaders evaluate curve coverage directly or through compact curve/band data;
-- no size-specific bitmap atlas is required.
-
-Potential implementation paths:
-
-1. evaluate HarfBuzz `libharfbuzz-gpu` as an optional dependency or reference;
-2. port/reference the MIT Slug shaders into Datoviz shader assets;
-3. build a Datoviz-specific encoder and DRP2 resource contract for curve/band buffers;
-4. keep this backend optional until it is stable and validated.
-
-Strengths:
-
-- excellent scaling and rotation quality;
-- avoids atlas-size explosion;
-- a strong long-term fit for scientific visualization and vector-like overlays.
-
-Weaknesses:
-
-- new runtime resource types and shaders are more complex than atlas quads;
-- backend maturity needs evaluation;
-- shader portability across Vulkan/WGSL/WebGPU needs real tests;
-- CPU-side encoding and cache invalidation need careful design.
-
-Recommended role:
-
-- do not block the first text visual on this path;
-- prototype after SDF/MSDF is useful;
-- design the shaped-run contract so this backend can plug in without changing public text APIs.
-
-
 ## Internal Components
 
 Introduce internals in `src/scene/` first unless the code becomes broadly useful across modules.
@@ -475,166 +245,6 @@ Potential tests:
 - `src/scene/tests/glyph.c` for glyph visual tests;
 - DRP2 fixture coverage for emitted text streams once stable;
 - app/offscreen image smoke tests for representative text scenes.
-
-
-## DRP2 Contract
-
-The first implementation should use existing DRP2 primitives:
-
-- `CreateBuffer` for glyph vertices, instances, uniforms, and index data;
-- `WriteBuffer` for dynamic glyph instance data;
-- `CreateTexture` and `WriteTexture` for atlas uploads;
-- `CreateSampler`, `CreateBindGroupLayout`, `CreateBindGroup`;
-- shader modules from scene shader registry;
-- render pass draw commands.
-
-Do not add DRP2 text-specific commands for the first slice. Add text-specific DRP2 commands only if
-the vector backend proves that generic buffers/textures/draw commands are too awkward or too opaque
-for validation and replay.
-
-DRP2 validation should eventually check:
-
-- atlas texture dimensions and usage flags;
-- glyph vertex/index buffer sizes;
-- bind group layout compatibility;
-- shader format availability;
-- no draw references destroyed atlas/buffer resources;
-- text resources are recreated cleanly on resize or renderer switch;
-- DVZR recording has portable enough payloads to replay text scenes.
-
-
-## FramePlan And Scene Emission
-
-Text should be emitted as a scene visual family or overlay family depending on placement and depth
-behavior.
-
-Recommended first policy:
-
-- screen/panel text: overlay render node after ordinary scene visuals;
-- data/world text with depth disabled: overlay render node with transformed positions;
-- data/world text with depth enabled: normal scene render node in z order;
-- glyph visual: normal visual family with configurable depth behavior.
-
-The first slice can use one overlay pass if needed. Later, fold text into existing pass ordering
-when the material/blending state model supports it cleanly.
-
-Text emission must respect:
-
-- panel viewport/scissor;
-- per-panel controller transforms;
-- figure/framebuffer size;
-- DPI/framebuffer scale;
-- z-layer;
-- alpha mode;
-- renderer capability checks.
-
-
-## Caching Model
-
-Use separate cache layers. They should be invalidated independently.
-
-The atlas/cache execution details now live in
-[SCENE_TEXT_ATLAS_CACHE_PLAN.md](SCENE_TEXT_ATLAS_CACHE_PLAN.md). The shaped-run details now live in
-[SCENE_HARFBUZZ_SHAPING_PLAN.md](SCENE_HARFBUZZ_SHAPING_PLAN.md).
-
-### Font Face Cache
-
-Key:
-
-- font file path or embedded font id;
-- face index;
-- variation coordinates if supported later;
-- font loading flags.
-
-Value:
-
-- FreeType face or equivalent;
-- HarfBuzz face/font;
-- font metadata;
-- available coverage metadata if cheap enough.
-
-### Shaped Run Cache
-
-Key:
-
-- UTF-8 string;
-- font fallback list;
-- size-independent font style;
-- script;
-- direction;
-- language;
-- OpenType features;
-- normalization flags if added later.
-
-Value:
-
-- glyph ids;
-- cluster ids;
-- advances and offsets in font units;
-- run segmentation metadata;
-- selected font face per run.
-
-Do not key shaped runs by placement or transform.
-
-### Layout Cache
-
-Key:
-
-- shaped run id;
-- size in points/pixels;
-- DPI/framebuffer scale;
-- line spacing;
-- max width/wrap policy;
-- alignment/anchor;
-- renderer metrics mode.
-
-Value:
-
-- positioned glyph instances in local label coordinates;
-- layout bounds and ink bounds;
-- baseline and anchor offsets.
-
-### Renderer Resource Cache
-
-Key:
-
-- font face;
-- glyph id;
-- renderer backend;
-- size bucket for bitmap paths;
-- SDF/MSDF parameters;
-- vector encoder version for Slug-style paths.
-
-Value:
-
-- atlas slot and UVs;
-- or vector curve/band buffer offsets;
-- resource generation/version metadata.
-
-
-## Font Fallback
-
-Font fallback is required for good Unicode support.
-
-First fallback strategy:
-
-1. primary `DvzFont`;
-2. scene default font;
-3. platform default sans font if available;
-4. bundled fallback font if the project adds one;
-5. missing-glyph box as a final explicit fallback.
-
-Later fallback improvements:
-
-- user-provided fallback chain;
-- script-aware fallback;
-- emoji/color-font policy;
-- CJK fallback policy;
-- cache coverage maps per face;
-- warning diagnostics for missing glyphs.
-
-Keep fallback deterministic. The same input and configured fonts should produce the same glyph runs
-across runs when possible.
 
 
 ## Dependency Strategy
