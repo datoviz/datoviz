@@ -500,6 +500,30 @@ static const char* _tst_status_name(TstStatus status)
 
 
 
+/**
+ * Return the ANSI color escape used for a test status.
+ *
+ * @param status test status value
+ * @return ANSI color sequence, or an empty string for uncolored statuses
+ */
+static const char* _tst_status_color(TstStatus status)
+{
+    switch (status)
+    {
+    case TST_STATUS_PASS:
+        return "\x1b[32m";
+    case TST_STATUS_FAIL:
+        return "\x1b[31m";
+    case TST_STATUS_SKIP:
+        return "\x1b[33m";
+    case TST_STATUS_NOT_RUN:
+    default:
+        return "";
+    }
+}
+
+
+
 static const char* _tst_isolation_name(TstIsolation isolation)
 {
     switch (isolation)
@@ -880,12 +904,7 @@ static void _tst_print_case(const TstCase* result, const TstOptions* options)
     const char* reset = "";
     if (color)
     {
-        if (result->status == TST_STATUS_PASS)
-            code = "\x1b[32m";
-        else if (result->status == TST_STATUS_FAIL)
-            code = "\x1b[31m";
-        else if (result->status == TST_STATUS_SKIP)
-            code = "\x1b[33m";
+        code = _tst_status_color(result->status);
         reset = "\x1b[0m";
     }
 
@@ -910,6 +929,31 @@ static void _tst_print_case(const TstCase* result, const TstOptions* options)
             dvz_fprintf(stdout, "  timeout    %" PRIu64 " ms\n", result->timeout_ms);
         if (result->skip_reason != NULL)
             dvz_fprintf(stdout, "  reason     %s\n", result->skip_reason);
+    }
+}
+
+
+
+/**
+ * Print one colored summary count when terminal colors are enabled.
+ *
+ * @param stream output stream
+ * @param options runner options controlling color output
+ * @param status status whose color should be used
+ * @param value numeric count to print
+ */
+static void
+_tst_print_summary_count(FILE* stream, const TstOptions* options, TstStatus status, uint32_t value)
+{
+    ANN(stream);
+    ANN(options);
+    if (_tst_use_color(options))
+    {
+        dvz_fprintf(stream, "%s%u\x1b[0m", _tst_status_color(status), value);
+    }
+    else
+    {
+        dvz_fprintf(stream, "%u", value);
     }
 }
 
@@ -943,9 +987,12 @@ static void _tst_print_summary(
     ANN(summary);
     ANN(options);
     _tst_print_separator(stdout);
-    dvz_fprintf(
-        stdout, "%u/%u tests passed, %u failed, %u skipped\n", summary->passed_count,
-        summary->selected_count, summary->failed_count, summary->skipped_count);
+    _tst_print_summary_count(stdout, options, TST_STATUS_PASS, summary->passed_count);
+    dvz_fprintf(stdout, "/%u tests passed, ", summary->selected_count);
+    _tst_print_summary_count(stdout, options, TST_STATUS_FAIL, summary->failed_count);
+    dvz_fprintf(stdout, " failed, ");
+    _tst_print_summary_count(stdout, options, TST_STATUS_SKIP, summary->skipped_count);
+    dvz_fprintf(stdout, " skipped\n");
     dvz_fprintf(stdout, "case time: ");
     _tst_print_duration(stdout, options, summary->summed_case_ns, 0);
     dvz_fprintf(stdout, ", runner time: ");
