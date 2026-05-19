@@ -1869,7 +1869,7 @@ int test_app_offscreen_point_depth_orders_overlap(TstContext* suite, const TstCa
     AT(dvz_visual_set_data(far_visual, "size", &size, 1) == 0);
     AT(dvz_panel_add_visual(panel, far_visual, NULL) == 0);
 
-    DvzApp* app = dvz_app(scene);
+    DvzApp* app = _app_test_create(suite, scene);
     if (app == NULL)
     {
         log_warn(
@@ -1948,7 +1948,7 @@ int test_app_offscreen_point_depth_cue_darkens_far(TstContext* suite, const TstC
            }) == 0);
     AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
 
-    DvzApp* app = dvz_app(scene);
+    DvzApp* app = _app_test_create(suite, scene);
     if (app == NULL)
     {
         log_warn(
@@ -3351,7 +3351,7 @@ int test_app_offscreen_lit_primitive_depth_orders_overlap(TstContext* suite, con
                .diffuse = 0.0f,
            }) == 0);
 
-    DvzApp* app = dvz_app(scene);
+    DvzApp* app = _app_test_create(suite, scene);
     if (app == NULL)
     {
         log_warn(
@@ -3450,7 +3450,7 @@ int test_app_offscreen_lit_primitive_depth_cue_darkens_far(
            }) == 0);
     AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
 
-    DvzApp* app = dvz_app(scene);
+    DvzApp* app = _app_test_create(suite, scene);
     if (app == NULL)
     {
         log_warn(
@@ -5814,6 +5814,10 @@ int test_scene_app(TstSuite* suite)
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_mesh_renders_nonblank);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_panel_three_visuals_all_drawn);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_two_panel_points_light_both_halves);
+    TST_SCENE_APP_SHARED_CASE(test_app_offscreen_point_depth_orders_overlap);
+    TST_SCENE_APP_SHARED_CASE(test_app_offscreen_point_depth_cue_darkens_far);
+    TST_SCENE_APP_SHARED_CASE(test_app_offscreen_lit_primitive_depth_orders_overlap);
+    TST_SCENE_APP_SHARED_CASE(test_app_offscreen_lit_primitive_depth_cue_darkens_far);
 #endif
 
     return 0;
