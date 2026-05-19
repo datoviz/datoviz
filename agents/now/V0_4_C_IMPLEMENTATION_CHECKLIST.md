@@ -399,9 +399,11 @@ Good parallel lanes right now:
 12. **Selection and request payload widening:** richer point/marker/image pick/probe payloads,
     highlight state, linked-panel request propagation, and explicit deferrals for mesh/path/volume
     picking.
-13. **Test-runner modernization:** metadata, skip/resource reporting, component runners, timing,
-    JSON output, and later process-level scheduling as tracked in
-    [`TEST_RUNNER_MODERNIZATION.md`](TEST_RUNNER_MODERNIZATION.md).
+13. **Test-runner scheduling follow-up:** process-level sharding, CI orchestration, optional
+    thread-safe workers, and remaining skip cleanup as tracked in
+    [../soon/TEST_RUNNER_SCHEDULING.md](../soon/TEST_RUNNER_SCHEDULING.md). The completed serial
+    modernization history is in
+    [../done/TEST_RUNNER_MODERNIZATION.md](../done/TEST_RUNNER_MODERNIZATION.md).
 14. **Performance and long-run smoke:** immediate-presentation FPS preservation, repeated-frame
     allocation/destructor pressure, descriptor churn, bounded live GLFW loops, and trace-assisted
     investigation of unexpected stream changes.
@@ -684,14 +686,14 @@ with git diff --check, just build, focused scene request tests, and app/offscree
 ```
 
 
-### Prompt: Test-Runner Modernization
+### Prompt: Test-Runner Scheduling Follow-Up
 
 ```text
-You own the test-runner modernization lane. Read agents/now/TEST_RUNNER_MODERNIZATION.md and the
-checklist.
+You own the test-runner scheduling follow-up lane. Read
+agents/soon/TEST_RUNNER_SCHEDULING.md and the checklist.
 
-Goal: land one runner slice: metadata migration, skip/resource reporting, component runner wiring,
-timing/JSON output, or preparation for process-level scheduling.
+Goal: land one scheduling or reporting slice: process-level sharding, child JSON aggregation,
+CI orchestration, exact-case rerun ergonomics, or remaining skip cleanup.
 
 Conflict avoidance: avoid editing the same test registration blocks that feature agents are using.
 Do not change subsystem behavior while migrating test metadata. Keep generic runner logic separate

@@ -15,10 +15,9 @@ remain after older plans are retired or moved:
 1. [now/V0_4_NEXT_STEPS.md](now/V0_4_NEXT_STEPS.md)
 2. [now/V0_4_C_IMPLEMENTATION_CHECKLIST.md](now/V0_4_C_IMPLEMENTATION_CHECKLIST.md)
 3. [now/V0_4_RELEASE_READINESS_PLAN.md](now/V0_4_RELEASE_READINESS_PLAN.md)
-4. [now/TEST_RUNNER_MODERNIZATION.md](now/TEST_RUNNER_MODERNIZATION.md)
-5. [now/DRP2_SPEC.md](now/DRP2_SPEC.md)
-6. [now/VISUAL_FAMILY_IMPLEMENTATION_DECISIONS.md](now/VISUAL_FAMILY_IMPLEMENTATION_DECISIONS.md)
-7. [now/IMAGE_PICKING_RECOVERY_PLAN.md](now/IMAGE_PICKING_RECOVERY_PLAN.md)
+4. [now/DRP2_SPEC.md](now/DRP2_SPEC.md)
+5. [now/VISUAL_FAMILY_IMPLEMENTATION_DECISIONS.md](now/VISUAL_FAMILY_IMPLEMENTATION_DECISIONS.md)
+6. [now/IMAGE_PICKING_RECOVERY_PLAN.md](now/IMAGE_PICKING_RECOVERY_PLAN.md)
 
 Near-term work that is expected soon, but should not crowd the active entry-point directory, lives
 in [soon/](soon/). This includes the WebGPU, WASM, dual-depth-peeling, and screen-space volume
@@ -35,8 +34,10 @@ If resuming work on the branch:
 3. Read [now/V0_4_RELEASE_READINESS_PLAN.md](now/V0_4_RELEASE_READINESS_PLAN.md) when working on
    post-feature-completion quality, API review, documentation, bindings, gallery, packaging,
    release candidates, or communication planning.
-4. Read [now/TEST_RUNNER_MODERNIZATION.md](now/TEST_RUNNER_MODERNIZATION.md) before changing the
-   C test framework, suite registration, test binaries, or filter/reporting behavior.
+4. Read [done/TEST_RUNNER_MODERNIZATION.md](done/TEST_RUNNER_MODERNIZATION.md) for completed
+   test-runner modernization history, and
+   [soon/TEST_RUNNER_SCHEDULING.md](soon/TEST_RUNNER_SCHEDULING.md) before changing scheduling,
+   process sharding, CI orchestration, or remaining skip/reporting behavior.
 5. Read [now/VISUAL_FAMILY_IMPLEMENTATION_DECISIONS.md](now/VISUAL_FAMILY_IMPLEMENTATION_DECISIONS.md)
    before extending pixel, point, marker, segment, path, image, sphere, or mesh first-slice
    behavior.
@@ -104,6 +105,10 @@ Analysis notes:
 
 1. [soon/SCENE_EXAMPLES_GAP_REPORT.md](soon/SCENE_EXAMPLES_GAP_REPORT.md)
 
+Tooling follow-ups:
+
+1. [soon/TEST_RUNNER_SCHEDULING.md](soon/TEST_RUNNER_SCHEDULING.md)
+
 ### `done/`
 
 Completed phase records and historical checkpoints. These are useful context, but they are not
@@ -118,6 +123,7 @@ Recently retired or historical notes:
 5. [done/SCENE_CONVERTER_REFACTOR_PLAN.md](done/SCENE_CONVERTER_REFACTOR_PLAN.md)
 6. [done/SCENE_DRP2_REFACTOR_OPPORTUNITIES.md](done/SCENE_DRP2_REFACTOR_OPPORTUNITIES.md)
 7. [done/WBOIT_MESH_INTERACTIVE_PLAN.md](done/WBOIT_MESH_INTERACTIVE_PLAN.md)
+8. [done/TEST_RUNNER_MODERNIZATION.md](done/TEST_RUNNER_MODERNIZATION.md)
 
 ### `later/`
 

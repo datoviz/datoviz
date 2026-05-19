@@ -1,10 +1,13 @@
 # Test Runner Modernization Plan
 
 > **Execution Status**
-> - **Status:** `SERIAL RUNNER MODERNIZATION VALIDATED`
-> - **Updated on:** `2026-05-18`
-> - **Purpose:** document the current C test-runner limitations and a staged refactor path toward
->   explicit grouping, cleaner filtering, and safe future parallelism.
+> - **Status:** `COMPLETED RECORD`
+> - **Updated on:** `2026-05-19`
+> - **Purpose:** preserve the completed serial runner modernization plan and validation history.
+
+This file is historical. The active follow-up for process sharding, optional thread workers, CI
+orchestration, and residual skip cleanup is
+[../soon/TEST_RUNNER_SCHEDULING.md](../soon/TEST_RUNNER_SCHEDULING.md).
 
 
 ## Summary
@@ -93,6 +96,47 @@ Two boundaries should stay clean:
 1. `testing/testing.h` and `testing/testing.cpp` should remain a generic C/C++ test framework.
 2. Datoviz-specific module registration, Vulkan/GLFW/CUDA/video skip logic, shader paths, and log
    adapters should live in Datoviz test runners and module test sources.
+
+
+## Current Implementation Snapshot
+
+As of `2026-05-19`, the serial runner modernization baseline has landed. The remaining work is the
+separate scheduling phase described above, not the registry/context/filtering foundation.
+
+What has landed:
+
+1. Focused component binaries exist for the current broad slices and CPU modules:
+   - `dvztest_common`,
+   - `dvztest_ds`,
+   - `dvztest_fileio`,
+   - `dvztest_math`,
+   - `dvztest_thread`,
+   - `dvztest_core`,
+   - `dvztest_drp2`,
+   - `dvztest_scene`,
+   - `dvztest_vk`,
+   - `dvztest_canvas`,
+   - `dvztest_gui`,
+   - `dvztest_integration`,
+   - aggregate `dvztest`.
+2. CTest entries are registered at component-binary granularity, with component source filtering
+   keeping broad runners more focused than the original single aggregate runner.
+3. The generic testing API now uses a metadata-first `TstCase` registry and per-test `TstContext`.
+4. Filtering includes structured module/group/case/tag/resource controls, plus `--list`,
+   `--list-groups`, and JSON result output.
+5. Resource/isolation metadata, runner-visible skip results, timing fields, repeat/shuffle options,
+   color controls, and slow-test summaries are available across the modernized runner.
+
+What is still open:
+
+1. Process-level sharding and optional worker scheduling remain future work.
+2. CI orchestration can now build on the runner metadata and JSON output but has not been fully
+   redesigned around it.
+3. Any remaining ad-hoc graphics/runtime skips should continue migrating toward explicit
+   `tst_skip(ctx, reason)` paths when they are touched.
+
+Recommendation: move the completed audit/history portions to `agents/done/` once the next planning
+pass starts, and keep only a shorter scheduling follow-up in `agents/now/` or `agents/soon/`.
 
 
 ## Current Runner Audit
