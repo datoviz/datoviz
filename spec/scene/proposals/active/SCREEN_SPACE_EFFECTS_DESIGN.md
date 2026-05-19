@@ -37,7 +37,7 @@ Required properties:
 
 These effects should reuse the existing technique-planning lane described in
 `docs/architecture/scene_techniques_materials.md` and
-`agents/soon/SCENE_TECHNIQUES_MATERIALS_PLAN.md`.
+`agents/soon/effects/SCENE_TECHNIQUES_MATERIALS_PLAN.md`.
 
 Existing techniques affect priority and scope:
 
@@ -267,4 +267,4 @@ Each implemented effect should have:
 
 Once the API and ordering stabilize, promote durable rules into a specialized scene semantics file,
 for example `spec/scene/semantics/EFFECTS.md`. Keep implementation sequencing in
-`agents/soon/SCENE_SCREEN_SPACE_EFFECTS_PLAN.md`.
+`agents/soon/effects/SCENE_SCREEN_SPACE_EFFECTS_PLAN.md`.

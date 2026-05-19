@@ -66,7 +66,7 @@ with DRP2 multisample lowering and explicit resolve metadata.
 ## Source Architecture Note
 
 Start with
-[scene_techniques_materials.md](../../docs/architecture/scene_techniques_materials.md).
+[scene_techniques_materials.md](../../../docs/architecture/scene_techniques_materials.md).
 
 That note is the architectural target. This file is the practical implementation pickup order.
 
@@ -255,7 +255,7 @@ Use the existing SSAO implementation plan for the SSAO-specific graph and shader
 
 Sphere impostors have been implemented as a standalone visual family rather than a marker variant.
 The v0.4 pickup plan and remaining texture/equirectangular follow-ups are recorded in
-[SPHERE.md](../../spec/scene/visuals/SPHERE.md).
+[SPHERE.md](../../../spec/scene/visuals/SPHERE.md).
 
 
 ## Guardrails

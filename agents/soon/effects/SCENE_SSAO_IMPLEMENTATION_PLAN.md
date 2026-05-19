@@ -184,7 +184,7 @@ The next high-value SSAO demonstration target should be a dedicated sphere visua
 variant and not a tessellated mesh fallback. Sphere impostors can provide analytic normals and
 correct sphere-surface depth in the G-buffer while keeping per-item data compact. The dedicated
 implementation plan is recorded in
-[SPHERE.md](../../spec/scene/visuals/SPHERE.md).
+[SPHERE.md](../../../spec/scene/visuals/SPHERE.md).
 
 
 ## Runtime Emission Changes
