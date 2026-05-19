@@ -79,15 +79,14 @@ future agent should read when landing in the branch.
 
 Runtime, graph, and backend lanes:
 
-1. [soon/runtime/DRP2_NORMAL_TRACE_NORMALIZATION_PLAN.md](soon/runtime/DRP2_NORMAL_TRACE_NORMALIZATION_PLAN.md)
-2. [soon/runtime/DRP2_WEBGPU_SUPPORT_PLAN.md](soon/runtime/DRP2_WEBGPU_SUPPORT_PLAN.md)
+1. [soon/runtime/DRP2_WEBGPU_SUPPORT_PLAN.md](soon/runtime/DRP2_WEBGPU_SUPPORT_PLAN.md)
+2. [soon/runtime/SCENE_WASM_WEBGPU_PORT_PLAN.md](soon/runtime/SCENE_WASM_WEBGPU_PORT_PLAN.md)
 3. [soon/effects/FRAME_PLAN_GRAPH_TRANSPARENCY_PLAN.md](soon/effects/FRAME_PLAN_GRAPH_TRANSPARENCY_PLAN.md)
 4. [soon/effects/DUAL_DEPTH_PEELING_PLAN.md](soon/effects/DUAL_DEPTH_PEELING_PLAN.md)
 5. [soon/effects/SCREEN_SPACE_SCENE_OCCLUSION_PLAN.md](soon/effects/SCREEN_SPACE_SCENE_OCCLUSION_PLAN.md)
 6. [soon/effects/SCREEN_SPACE_VOLUME_OCCLUSION_PLAN.md](soon/effects/SCREEN_SPACE_VOLUME_OCCLUSION_PLAN.md)
 7. [soon/effects/SCENE_SCREEN_SPACE_EFFECTS_PLAN.md](soon/effects/SCENE_SCREEN_SPACE_EFFECTS_PLAN.md)
 8. [soon/scene/SCENE_WGSL_SHADER_VARIANTS_PLAN.md](soon/scene/SCENE_WGSL_SHADER_VARIANTS_PLAN.md)
-9. [soon/runtime/SCENE_WASM_WEBGPU_PORT_PLAN.md](soon/runtime/SCENE_WASM_WEBGPU_PORT_PLAN.md)
 
 Scene feature lanes:
 

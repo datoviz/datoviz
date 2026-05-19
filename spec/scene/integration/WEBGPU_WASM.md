@@ -1,0 +1,228 @@
+# WebGPU And WASM Integration
+
+This document defines the durable architecture for the experimental scene-to-browser path.
+
+The v0.4 goal is a documented, narrow scene/DRP2/WGSL/WebGPU subset that can run in a browser. It
+is not native Vulkan feature parity.
+
+## Architecture
+
+The browser path should run the active retained scene layer without porting the native Vulkan
+presentation stack.
+
+```text
+C/WASM scene state
+  -> scene FramePlan
+  -> WGSL DRP2 command stream
+  -> browser WebGPU DRP2 runtime
+  -> HTML canvas
+```
+
+The scene layer remains the owner of scene semantics, visual lowering, controller state, shader
+selection, resource ids, and request bookkeeping. The browser runtime executes portable DRP2
+streams. It must not know about Datoviz visual families except through the DRP2 contract.
+
+## Non-Goals
+
+1. Do not port `vk`, `vklite`, `canvas`, `window`, `stream`, `video`, or native `app` directly to
+   WASM.
+2. Do not fork scene semantics for WebGPU.
+3. Do not make scene techniques WebGPU-specific.
+4. Do not add browser-side GLSL-to-WGSL translation.
+5. Do not promote deferred DRP2 commands only to mirror native Vulkan or browser WebGPU object
+   models.
+6. Do not block the first slice on every visual family, technique, or readback feature.
+
+## Portable Scene And DRP2 Boundary
+
+The first hardening step is to make DRP2 stream emission and scene planning portable without native
+runtime headers leaking into browser-facing code.
+
+Rules:
+
+1. keep DRP2 command streams, stream construction, JSON/debug serialization, and semantic validation
+   in the portable surface;
+2. move vklite-specific runtime entry points and borrowed native frame helpers behind native-only
+   runtime headers;
+3. keep `DvzDrp2Runtime` opaque where validation/runtime handles are needed;
+4. move native runtime types such as devices, allocators, buffers, and external native descriptors
+   to native-only APIs;
+5. replace Vulkan-shaped public DRP2 values with DRP2-owned enums;
+6. keep backend mapping local;
+7. keep public scene headers free of Vulkan, vklite, canvas, stream-frame, and native window
+   headers.
+
+Validation target:
+
+1. a native build can compile scene plus portable DRP2 stream/semantic code with Vulkan and canvas
+   disabled;
+2. public portable scene/DRP2 headers remain free of native runtime types;
+3. native vklite DRP2 tests pass through explicit backend mapping;
+4. WebGPU fixture preflight sees the same portable command semantics.
+
+## WASM Scene Module
+
+The first WASM module should be narrow and explicit, built with Emscripten.
+
+Required modules:
+
+1. `common`;
+2. selected `ds`;
+3. `math`;
+4. portable DRP2 stream and semantic pieces;
+5. `scene`.
+
+Initially excluded modules include native file I/O where avoidable, thread, Vulkan, vklite, canvas,
+window, stream, video, native app, GUI, CUDA, native DVZR tools, and shaderc/dlopen paths.
+
+The exported C/WASM API should cover:
+
+1. create and destroy a scene;
+2. create a figure and panels;
+3. create a small set of visuals;
+4. upload or update visual data;
+5. update figure size and controller state;
+6. emit one WGSL DRP2 frame stream;
+7. return stream JSON or an owned pointer/length to encoded commands;
+8. destroy emitted streams and owned payload buffers.
+
+Every exported pointer must have explicit ownership: borrowed until the next call, or owned until a
+matching destroy call.
+
+## Browser DRP2 Runtime
+
+The browser runtime may remain JavaScript or TypeScript. C/WASM should not try to own browser GPU
+objects directly.
+
+Runtime object model:
+
+1. buffers;
+2. textures and texture views;
+3. samplers;
+4. bind-group layouts and bind groups;
+5. shader modules;
+6. render and compute pipelines;
+7. command encoders and passes.
+
+Runtime behavior must align with DRP2 semantic validation:
+
+1. unsupported command diagnostics;
+2. invalid resource-id diagnostics;
+3. backend capability failures;
+4. shader/pipeline creation failures;
+5. command-index context for errors;
+6. deterministic object destruction and use-after-destroy validation.
+
+Strict fixture paths should not depend on proof-of-concept shortcuts such as implicit canvas texture
+ids, missing pipeline metadata fallbacks, hard-coded scene uniform ids, or browser-side shader
+substitution.
+
+## Active WebGPU Command Subset
+
+The browser runtime should implement every active DRP2 command used by the supported subset, or
+return explicit unsupported-feature diagnostics.
+
+Immediate active-command parity priorities:
+
+1. `SetViewport`;
+2. `SetScissor`;
+3. `SetBlendConstant`;
+4. `SetStencilReference`;
+5. `CopyBufferToBuffer`;
+6. real destroy/lifetime behavior;
+7. multiple color attachments and color-target validation.
+
+Deferred commands stay deferred until a concrete use case promotes them into the active DRP2
+contract:
+
+1. `CreatePipelineLayout`;
+2. `DestroyPipelineLayout`;
+3. `ResourceBarrier`;
+4. indirect draw and dispatch commands.
+
+Promotion must update DRP2 command specs, schemas, native semantic validation, WebGPU execution,
+fixtures, and lifecycle rules together.
+
+## Transport And Incremental Updates
+
+JSON remains a debugging and fixture format, not the final hot path.
+
+Transport levels:
+
+1. JSON stream returned by WASM;
+2. JSON commands with binary payloads passed as WASM memory views;
+3. compact binary command stream plus direct payload spans;
+4. split setup/update/draw streams with stable resource ids and minimal per-frame payload.
+
+Hot-path browser transport should avoid base64, avoid resending unchanged visual data, and preserve
+browser runtime GPU resources across repeated frame submissions.
+
+Resource update rules:
+
+1. stable scene resources keep stable DRP2 ids;
+2. scene emits `Create*` only when a resource is new or recreated;
+3. repeated frames use buffer, texture, or uniform updates;
+4. resize recreates extent-dependent targets and refreshes or invalidates dependent bind groups;
+5. browser runtime must not retain borrowed WASM memory after the caller frees or overwrites it.
+
+## Browser App Layer
+
+The browser app layer is equivalent in role to native `app`, but it is not a port of native
+window/canvas internals.
+
+Responsibilities:
+
+1. HTML canvas creation or attachment;
+2. WebGPU adapter/device/context acquisition;
+3. canvas format and target texture management;
+4. DPR-aware sizing;
+5. animation-frame scheduling;
+6. browser input translation into scene controllers;
+7. browser status and diagnostics.
+
+JavaScript should translate browser events into scene/controller calls. It should not duplicate
+controller math unless that helper is explicitly browser-only.
+
+## Capability And Diagnostics
+
+The browser runtime must report a capability snapshot aligned with DRP2 negotiation and validation.
+
+It should report:
+
+1. shader formats, expected to be WGSL for the browser path;
+2. texture formats, usages, sample counts, and limits;
+3. bind-group, binding, dynamic-offset, alignment, and buffer-copy-row constraints;
+4. unsupported features separately from malformed stream validation;
+5. device loss, WebGPU validation errors, and asynchronous mapping failures as DRP2-level
+   diagnostics where practical.
+
+Scene emission should use browser capabilities to reject unsupported lowering paths with explicit
+diagnostics rather than silent fallbacks.
+
+## First Milestone
+
+The first milestone is deliberately small:
+
+1. build a WASM module containing portable scene and DRP2 stream emission;
+2. from browser JavaScript, create one scene, one figure, one panel, and one point visual;
+3. request WGSL scene emission with an external browser canvas color target;
+4. submit the emitted DRP2 stream to the WebGPU runtime;
+5. render points using the portable WebGPU lowering selected by scene emission.
+
+After that, expand to primitive, image, basic mesh, incremental uniform updates, direct payload
+transport, browser app examples, and then broader visual/technique parity.
+
+## Validation Matrix
+
+Use progressively broader validation:
+
+1. portable native build without Vulkan/canvas;
+2. DRP2 semantic tests that do not require vklite;
+3. scene emission tests requesting WGSL without vklite execution;
+4. Emscripten compile;
+5. Node or browser smoke for create/destroy and stream emission;
+6. `just webgpu-fixture-preflight`;
+7. browser fixture execution;
+8. scene point/primitive/image canvas smoke;
+9. resize and repeated-frame resource-count checks;
+10. native/browser scene-emitted stream comparisons where deterministic.

@@ -10,8 +10,8 @@ The serial C test-runner modernization is complete and recorded in
 [../../done/TEST_RUNNER_MODERNIZATION.md](../../done/TEST_RUNNER_MODERNIZATION.md). This file is the
 active design note for the remaining scheduling work.
 
-The app API work needed to let tests borrow a worker GPU context is separate and lives in
-[../runtime/APP_RESOURCE_INJECTION_PLAN.md](../runtime/APP_RESOURCE_INJECTION_PLAN.md).
+The app API work needed to let tests borrow a worker GPU context is complete and recorded in
+[../../done/APP_RESOURCE_INJECTION_PLAN.md](../../done/APP_RESOURCE_INJECTION_PLAN.md).
 
 
 ## Current Baseline
@@ -219,7 +219,7 @@ be reconsidered for low-level DRP2 tests after `dvz_drp2_runtime_reset()` has de
 
 ## App Offscreen Migration
 
-After [../runtime/APP_RESOURCE_INJECTION_PLAN.md](../runtime/APP_RESOURCE_INJECTION_PLAN.md) lands, introduce a fast
+After [../../done/APP_RESOURCE_INJECTION_PLAN.md](../../done/APP_RESOURCE_INJECTION_PLAN.md) lands, introduce a fast
 offscreen lane that borrows worker resources:
 
 ```c

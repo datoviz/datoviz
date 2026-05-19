@@ -20,7 +20,9 @@ threads, high-DPI windows, or custom user-provided visual families.
 7. [ANDROID_SUPPORT.md](ANDROID_SUPPORT.md): Android Vulkan hosted-surface build and runtime plan.
 8. [IOS_SUPPORT.md](IOS_SUPPORT.md): iOS MoltenVK hosted-surface build and runtime plan.
 9. [TOUCH_SUPPORT.md](TOUCH_SUPPORT.md): touch contact, gesture, controller, and validation plan.
-10. [napari](napari/README.md): informative napari adapter guidance and historical PoC notes.
+10. [WEBGPU_WASM.md](WEBGPU_WASM.md): experimental browser WebGPU and WASM scene integration
+    contract.
+11. [napari](napari/README.md): informative napari adapter guidance and historical PoC notes.
 
 
 ## Active Proposal Inputs

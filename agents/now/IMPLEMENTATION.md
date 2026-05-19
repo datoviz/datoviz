@@ -333,8 +333,9 @@ Required v0.4 slice:
 
 Primary docs:
 
-1. [`../soon/runtime/DRP2_WEBGPU_SUPPORT_PLAN.md`](../soon/runtime/DRP2_WEBGPU_SUPPORT_PLAN.md)
-2. [`../soon/runtime/SCENE_WASM_WEBGPU_PORT_PLAN.md`](../soon/runtime/SCENE_WASM_WEBGPU_PORT_PLAN.md)
+1. [`../../spec/scene/integration/WEBGPU_WASM.md`](../../spec/scene/integration/WEBGPU_WASM.md)
+2. [`../soon/runtime/DRP2_WEBGPU_SUPPORT_PLAN.md`](../soon/runtime/DRP2_WEBGPU_SUPPORT_PLAN.md)
+3. [`../soon/runtime/SCENE_WASM_WEBGPU_PORT_PLAN.md`](../soon/runtime/SCENE_WASM_WEBGPU_PORT_PLAN.md)
 
 
 ### 9. Gallery And Example Pressure Tests
@@ -551,8 +552,8 @@ diff --check, just build, and focused scene colorbar/image tests.
 
 ```text
 You own the WebGPU/WASM experimental parity lane. Read the checklist,
-agents/soon/runtime/DRP2_WEBGPU_SUPPORT_PLAN.md, agents/soon/runtime/SCENE_WASM_WEBGPU_PORT_PLAN.md, and
-spec/drp2/AGENT_SPEC_PHASE.md.
+spec/scene/integration/WEBGPU_WASM.md, agents/soon/runtime/DRP2_WEBGPU_SUPPORT_PLAN.md,
+agents/soon/runtime/SCENE_WASM_WEBGPU_PORT_PLAN.md, and spec/drp2/AGENT_SPEC_PHASE.md.
 
 Goal: advance the narrow browser path for the supported DRP2 subset. Work in examples/webgpu,
 WebGPU preflight fixtures, WGSL emission, and docs for supported/unsupported commands. Do not
