@@ -9,13 +9,12 @@ SSAO, scene occlusion, and volume occlusion implementation rules live in
 Transparency, depth-peeling, and MSAA implementation rules live in
 [../../../spec/scene/implementation/TRANSPARENCY_MSAA.md](../../../spec/scene/implementation/TRANSPARENCY_MSAA.md).
 
-1. [DUAL_DEPTH_PEELING_PLAN.md](DUAL_DEPTH_PEELING_PLAN.md): dual depth peeling implementation
-   plan.
+1. [DUAL_DEPTH_PEELING_PLAN.md](DUAL_DEPTH_PEELING_PLAN.md): dual depth peeling follow-up.
 2. [FRAME_PLAN_GRAPH_TRANSPARENCY_PLAN.md](FRAME_PLAN_GRAPH_TRANSPARENCY_PLAN.md): graph-backed
    transparency follow-up.
 3. [SCENE_MESH_VOLUME_OCCLUSION_PLAN.md](SCENE_MESH_VOLUME_OCCLUSION_PLAN.md): mesh/volume
    occlusion interaction plan.
-4. [SCENE_MSAA_PLAN.md](SCENE_MSAA_PLAN.md): MSAA implementation plan.
+4. [SCENE_MSAA_PLAN.md](SCENE_MSAA_PLAN.md): MSAA follow-up.
 5. [SCENE_SCREEN_SPACE_EFFECTS_PLAN.md](SCENE_SCREEN_SPACE_EFFECTS_PLAN.md): screen-space effects
    follow-up.
 6. [SCENE_SSAO_IMPLEMENTATION_PLAN.md](SCENE_SSAO_IMPLEMENTATION_PLAN.md): SSAO implementation

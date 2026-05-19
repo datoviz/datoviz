@@ -1,82 +1,71 @@
-# Dual Depth Peeling Plan
+# Dual Depth Peeling Follow-Up
 
 > **Execution Status**
-> - **Status:** `PLANNING`
+> - **Status:** `ACTIVE / FOLLOW-UP NOTE`
 > - **Updated on:** `2026-05-19`
-> - **Purpose:** turn the current scene depth-peeling-shaped path into real dual depth peeling for
->   complex non-convex transparent meshes such as the IBL BWM brain shell.
+> - **Purpose:** track the remaining work to turn the current depth-peeling-shaped path into real
+>   fixed-iteration dual depth peeling for difficult non-convex transparent meshes.
 
 
-## Durable Contract
+## Current State
 
-Use the transparency and depth-peeling implementation contract:
-[../../../spec/scene/implementation/TRANSPARENCY_MSAA.md](../../../spec/scene/implementation/TRANSPARENCY_MSAA.md).
+Durable contracts live in:
 
-Public alpha-mode semantics live in
-[../../../spec/scene/semantics/TRANSPARENCY.md](../../../spec/scene/semantics/TRANSPARENCY.md).
+1. [`../../../spec/scene/implementation/TRANSPARENCY_MSAA.md`](../../../spec/scene/implementation/TRANSPARENCY_MSAA.md)
+2. [`../../../spec/scene/semantics/TRANSPARENCY.md`](../../../spec/scene/semantics/TRANSPARENCY.md)
+3. [`../../../spec/scene/implementation/GRAPH_TECHNIQUES.md`](../../../spec/scene/implementation/GRAPH_TECHNIQUES.md)
 
-This file tracks remaining execution order, validation, and example guidance.
+Use this file only for execution order, validation, and example guidance. Do not duplicate the
+depth-peeling graph contract here.
 
-
-## Current Situation
-
-`DVZ_ALPHA_DEPTH_PEEL` currently expands the scene into a depth-peeling-shaped graph:
-
-1. an opaque pass;
-2. a front-facing transparent pass;
-3. a back-facing transparent pass;
-4. a composite pass.
-
-That path exercises graph-backed multi-pass rendering, raster-state changes, intermediate render
-targets, sampled resolve, resize handling, and borrowed app-frame execution. It is not yet full
-dual depth peeling because it does not iteratively peel all transparent depth layers using previous
-min/max depth bounds.
-
-This limitation shows up on non-convex meshes. The IBL BWM brain shell can produce missing or
-jagged-looking shell regions in `Depth peel` mode while `WBOIT` appears more stable.
+`DVZ_ALPHA_DEPTH_PEEL` currently expands to a depth-peeling-shaped graph with opaque,
+front-facing, back-facing, and composite passes. That path exercises graph-backed multi-pass
+rendering, but it does not yet iteratively peel all transparent layers using previous min/max depth
+bounds.
 
 
-## Scene API And Example Guidance
+## Remaining Dual-Peeling Work
 
-Keep `DVZ_ALPHA_DEPTH_PEEL` as the opt-in mode, but label the BWM example default as `WBOIT` until
-dual depth peeling is corrected. The BWM GUI should keep the technique selector so users can compare
-`WBOIT`, `Depth peel`, and `Source-over`.
+Recommended follow-up commits:
 
-The `Shell depth-tests clusters` diagnostic checkbox should remain useful:
-
-1. on: transparent shell respects opaque cluster depth;
-2. off: shell overlays/tints clusters regardless of cluster depth, useful for judging shell
-   coverage independently from point-sprite occlusion.
-
-
-## Validation Plan
-
-Add tests in layers:
-
-1. FramePlan graph tests:
-   - expected resources for `N` peel iterations;
-   - alternating ping/pong reads and writes;
-   - composite reads the final accumulator resources.
-2. DRP2 semantic tests:
-   - multi-iteration graph lowers to legal command order;
-   - sampled reads never use the texture being written in the same pass;
-   - pipeline formats match attachment formats.
-3. GPU smoke tests:
-   - convex cube with front/back color cards;
-   - two or three nested transparent shells;
-   - non-convex fixture mesh with overlapping lobes;
-   - resize smoke to catch stale sampled descriptors.
-4. Real-data smoke:
-   - `ibl_bwm_brain_glfw` in bounded or timeout-driven mode;
-   - compare WBOIT and depth peel visually with shell depth-test on and off.
+1. Add graph and lowering tests for a fixed-iteration dual-depth-peel graph without changing the
+   public alpha mode.
+2. Validate ping/pong min/max depth resources, front/back accumulators, and composite reads.
+3. Implement DRP2/vklite execution of the fixed graph with minimal unlit shaders first.
+4. Replace the scene `DVZ_ALPHA_DEPTH_PEEL` graph expansion with the fixed-iteration dual path.
+5. Add lit mesh shader variants through the existing material uniform path.
+6. Keep a retained quality descriptor deferred until the fixed path is correct and stable.
+7. Keep the IBL BWM example default on `WBOIT` until dual depth peeling handles non-convex shells
+   reliably.
 
 
-## Recommended Sequence
+## Validation Targets
 
-1. Add graph and lowering tests for a fixed two-iteration dual-depth-peel graph without changing
-   the existing public mode.
-2. Implement DRP2/vklite execution of the fixed graph with minimal unlit shaders.
-3. Replace the scene `DVZ_ALPHA_DEPTH_PEEL` graph expansion with the fixed-iteration dual path.
-4. Add lit mesh shader variants and use the existing material uniform path.
-5. Re-run `hello_mesh_depth_peel_glfw`, `ibl_bwm_brain_glfw`, and scene alpha-mode GPU tests.
-6. Add a retained quality descriptor only after the fixed path is correct and stable.
+1. FramePlan graph tests for fixed iteration resources, alternating ping/pong reads/writes, and
+   final accumulator composite reads.
+2. DRP2 semantic tests for legal command order, sampled-read/write separation, and pipeline
+   attachment format matching.
+3. GPU smokes for convex transparent geometry, nested shells, non-convex meshes, and resize.
+4. Real-data smoke with `ibl_bwm_brain_glfw`, comparing `WBOIT`, `Depth peel`, and `Source-over`
+   with shell depth-testing on and off.
+
+
+## Validation
+
+For docs-only changes, run:
+
+```text
+rg for old moved filenames and stale soon/spec links
+git diff --check
+git status --short
+```
+
+For implementation changes, use:
+
+```text
+just build
+just test scene
+just test drp2
+```
+
+Run bounded GLFW examples when shader, graph-resource, or runtime descriptor behavior changes.
