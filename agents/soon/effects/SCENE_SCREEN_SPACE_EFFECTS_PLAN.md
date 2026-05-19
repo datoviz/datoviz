@@ -1,212 +1,96 @@
-# Scene Screen-Space Effects Plan
+# Scene Screen-Space Effects Follow-Up
 
 > **Execution Status**
-> - **Status:** `PLANNING NOTE`
-> - **Updated on:** `2026-05-17`
-> - **Purpose:** stage outline rendering, screen-space edge enhancement, and bloom on the existing
->   scene FramePlan graph and technique-planning path.
+> - **Status:** `ACTIVE / FOLLOW-UP NOTE`
+> - **Updated on:** `2026-05-19`
+> - **Purpose:** track the remaining outline, screen-space edge enhancement, and bloom execution
+>   order after durable semantics and graph-technique rules were split into `spec/scene`.
 
 
-## Context
+## Current State
 
-The durable design proposal is
-[spec/scene/proposals/active/SCREEN_SPACE_EFFECTS_DESIGN.md](../../../spec/scene/proposals/active/SCREEN_SPACE_EFFECTS_DESIGN.md).
-The durable user-facing semantics are in
-[spec/scene/semantics/EFFECTS.md](../../../spec/scene/semantics/EFFECTS.md).
-The shared graph-technique implementation contract is
-[spec/scene/implementation/GRAPH_TECHNIQUES.md](../../../spec/scene/implementation/GRAPH_TECHNIQUES.md).
+Durable screen-space effect contracts live in:
 
-Do not add a parallel renderer, visual-private postprocess path, or ad-hoc Vulkan path. These
-effects should use:
+1. [`../../../spec/scene/semantics/EFFECTS.md`](../../../spec/scene/semantics/EFFECTS.md)
+2. [`../../../spec/scene/proposals/active/SCREEN_SPACE_EFFECTS_DESIGN.md`](../../../spec/scene/proposals/active/SCREEN_SPACE_EFFECTS_DESIGN.md)
+3. [`../../../spec/scene/implementation/GRAPH_TECHNIQUES.md`](../../../spec/scene/implementation/GRAPH_TECHNIQUES.md)
+4. [`../../../spec/scene/implementation/OCCLUSION_EFFECTS.md`](../../../spec/scene/implementation/OCCLUSION_EFFECTS.md)
 
-```text
-retained scene state
-  -> technique planning
-  -> FramePlan graph resources and passes
-  -> DRP2 command stream
-  -> vklite/canvas runtime
-```
+Use this file only for pickup sequencing, validation, and unresolved implementation choices. Do not
+duplicate public effect semantics, composition ordering, graph pass/resource contracts, or G-buffer
+rules here.
 
-Relevant existing lanes:
-
-1. [SCENE_TECHNIQUES_MATERIALS_PLAN.md](SCENE_TECHNIQUES_MATERIALS_PLAN.md)
-2. [SCENE_SSAO_IMPLEMENTATION_PLAN.md](SCENE_SSAO_IMPLEMENTATION_PLAN.md)
-3. [SCENE_SSAO_QUALITY_PLAN.md](SCENE_SSAO_QUALITY_PLAN.md)
-4. [FRAME_PLAN_GRAPH_TRANSPARENCY_PLAN.md](FRAME_PLAN_GRAPH_TRANSPARENCY_PLAN.md)
+All screen-space effects should remain default-off, panel-local retained technique settings and
+should use the normal scene -> FramePlan graph -> DRP2 -> vklite/canvas route.
 
 
-## Implementation Order
+## Remaining Screen-Space Work
 
-Preferred order:
+Recommended follow-up commits:
 
-1. outline rendering for hover/selection,
-2. screen-space edge enhancement,
-3. bloom.
-
-Rationale:
-
-1. outline rendering is the highest interaction value and aligns with picking/selection work,
-2. edge enhancement reuses the G-buffer/SSAO foundation and can share fullscreen pass plumbing,
-3. bloom is useful but more presentation-oriented and needs a careful quantitative-view policy.
-
-
-## Slice 1: Technique State And Public Descriptors
-
-Scope: retained state only, no rendering changes.
-
-Expected work:
-
-1. add internal panel technique state for outline, edge enhancement, and bloom descriptors;
-2. expose typed default descriptor constructors and panel setters only after API naming review;
-3. keep all effects default-off;
-4. mark panel/frame dirty when a descriptor changes;
-5. add tests that descriptor defaults do not change the default emitted FramePlan.
-
-Validation:
-
-```text
-just build
-just test scene
-git diff --check
-```
+1. Add retained internal panel technique state for outline, edge enhancement, and bloom descriptors
+   without changing default FramePlan output.
+2. Pick the first outline identity source: object IDs, selection masks, or a deliberately narrow
+   selected/hovered-object mask.
+3. Add outline source resources and a source pass for eligible opaque selected/hovered targets,
+   with multi-panel scissor coverage.
+4. Add outline composite after base scene composition and before external UI; keep width units and
+   physical/logical pixel behavior explicit.
+5. Add screen-space edge enhancement by reusing G-buffer depth/normal resources where available and
+   falling back to depth-only edges only by explicit policy.
+6. Add opt-in bloom over resolved panel color only after the export and quantitative-image
+   inclusion policy is explicit.
+7. Add public typed descriptor constructors and panel setters only after API naming review.
 
 
-## Slice 2: Outline Mask Or Object-ID Foundation
+## Open Implementation Choices
 
-Scope: create the reusable identity/mask source needed by outlines.
+Track these while implementing, and promote stable answers back to `spec/scene`:
 
-Expected work:
-
-1. choose the first outline identity source: selection mask, object-id texture, or both;
-2. add visual pass capability flags for object-id or mask participation;
-3. add graph resources for per-panel outline mask or ID targets;
-4. add an outline-source render pass that draws only eligible selected/hovered targets;
-5. respect panel viewport/scissor metadata;
-6. ensure multi-panel figures allocate and use independent outline intermediates.
-
-Preferred first path:
-
-1. start with object-level selected/hovered visuals;
-2. support item-level masks only for visual families that already have stable item identity;
-3. defer transparent visual outlines until the opaque path is tested.
-
-Validation:
-
-```text
-just build
-just test test_scene_pick
-just test scene
-git diff --check
-```
-
-
-## Slice 3: Outline Composite
-
-Scope: render visible outlines over the panel color target.
-
-Expected work:
-
-1. add fullscreen outline shaders in GLSL and WGSL when needed;
-2. add graph resources for outline edge output if the implementation uses a separate edge pass;
-3. add an outline composite pass after base scene composition and before external UI;
-4. keep outline width in physical pixels or define the exact logical-to-physical mapping;
-5. add offscreen image-difference tests for selected and hovered object outlines;
-6. add multi-panel regression coverage proving no outline bleeding across panels.
-
-Validation:
-
-```text
-just build
-just test scene
-just test drp2
-git diff --check
-```
-
-
-## Slice 4: Edge Enhancement
-
-Scope: add an optional depth/normal discontinuity pass.
-
-Expected work:
-
-1. reuse existing G-buffer normal/depth resources when present;
-2. fall back to depth-only edges only when the descriptor and capability policy allow it;
-3. add graph roles/resources for edge mask and edge composite;
-4. run after SSAO/EDL composite by default;
-5. respect panel viewport/scissor boundaries;
-6. add tests that enabling edge enhancement requests only the required graph resources.
-
-Shader behavior:
-
-1. sample neighboring depth and normal values inside the panel region;
-2. compare against descriptor thresholds;
-3. composite a controlled color/strength contribution over the shaded scene;
-4. avoid sampling outside the active panel rectangle.
-
-Validation:
-
-```text
-just build
-just test scene
-just test drp2
-git diff --check
-```
-
-
-## Slice 5: Bloom
-
-Scope: add opt-in panel bloom as a presentation effect.
-
-Expected work:
-
-1. add bright-pass extraction from resolved panel color;
-2. add separable blur or mip-chain blur resources;
-3. composite bloom before outlines so outlines remain crisp;
-4. decide whether the first implementation is LDR-thresholded or introduces an HDR intermediate;
-5. add deterministic offscreen image-difference tests with and without bloom;
-6. document export inclusion/exclusion behavior.
-
-Validation:
-
-```text
-just build
-just test scene
-git diff --check
-```
-
-
-## Runtime Notes
-
-Follow the graph-backed technique rules in
-[GRAPH_TECHNIQUES.md](../../../spec/scene/implementation/GRAPH_TECHNIQUES.md). This plan should only
-record effect-specific pickup order, tests, and examples.
+1. outline target bitset shape for hover, selection, explicit visual flags, and annotations;
+2. object-level versus item-level identity in the first outline slice;
+3. hover/selection precedence when both are active;
+4. transparent visual outline policy;
+5. depth and normal threshold units for edge enhancement;
+6. LDR thresholding versus HDR intermediate for the first bloom path;
+7. export inclusion defaults for presentation effects.
 
 
 ## Tests And Examples
 
 Focused tests should cover:
 
-1. default-off FramePlan parity,
-2. opt-in graph resource and pass creation,
-3. graph dependency order,
-4. DRP2 runtime lowering smoke coverage,
-5. multi-panel scissor correctness,
-6. offscreen image differences,
+1. default-off FramePlan parity;
+2. opt-in graph resource and pass creation;
+3. graph dependency order;
+4. DRP2 runtime lowering smoke coverage;
+5. multi-panel scissor correctness;
+6. offscreen image differences;
 7. hover/selection outline state changes.
 
 Useful examples:
 
-1. mesh/sphere selection outline example,
-2. dense surface edge-enhancement example with SSAO comparison,
+1. mesh/sphere selection outline example;
+2. dense surface edge-enhancement example with SSAO comparison;
 3. astronomy or fluorescence-style bloom example.
 
 
-## Completion Criteria
+## Validation
 
-This lane is complete when:
+For docs-only changes, run:
 
-1. all three effects have retained panel state,
-2. outline and edge enhancement have graph-backed runtime paths and tests,
-3. bloom has an opt-in graph-backed runtime path and tests,
-4. export behavior is documented and matches
-   [EFFECTS.md](../../../spec/scene/semantics/EFFECTS.md).
+```text
+rg for old moved filenames and stale soon/spec links
+git diff --check
+git status --short
+```
+
+For implementation changes in this lane, use:
+
+```text
+just build
+just test scene
+just test drp2
+```
+
+Add offscreen image-difference coverage before treating a runtime effect as complete.

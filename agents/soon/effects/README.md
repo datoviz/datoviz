@@ -17,12 +17,12 @@ Transparency, depth-peeling, and MSAA implementation rules live in
    occlusion interaction plan.
 4. [SCENE_MSAA_PLAN.md](SCENE_MSAA_PLAN.md): MSAA implementation plan.
 5. [SCENE_SCREEN_SPACE_EFFECTS_PLAN.md](SCENE_SCREEN_SPACE_EFFECTS_PLAN.md): screen-space effects
-   implementation plan.
+   follow-up.
 6. [SCENE_SSAO_IMPLEMENTATION_PLAN.md](SCENE_SSAO_IMPLEMENTATION_PLAN.md): SSAO implementation
    lane.
 7. [SCENE_SSAO_QUALITY_PLAN.md](SCENE_SSAO_QUALITY_PLAN.md): SSAO quality follow-up.
 8. [SCENE_TECHNIQUES_MATERIALS_PLAN.md](SCENE_TECHNIQUES_MATERIALS_PLAN.md): techniques and
-   materials plan.
+   materials follow-up.
 9. [SCREEN_SPACE_SCENE_OCCLUSION_PLAN.md](SCREEN_SPACE_SCENE_OCCLUSION_PLAN.md): scene
    screen-space occlusion plan.
 10. [SCREEN_SPACE_VOLUME_OCCLUSION_PLAN.md](SCREEN_SPACE_VOLUME_OCCLUSION_PLAN.md): volume
