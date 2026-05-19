@@ -4,6 +4,8 @@ Effects plans cover render techniques, transparency, postprocess, MSAA, SSAO, an
 occlusion lanes. Durable technique semantics belong under the relevant `spec/scene/` sections; the
 shared implementation contract lives in
 [../../../spec/scene/implementation/GRAPH_TECHNIQUES.md](../../../spec/scene/implementation/GRAPH_TECHNIQUES.md).
+SSAO, scene occlusion, and volume occlusion implementation rules live in
+[../../../spec/scene/implementation/OCCLUSION_EFFECTS.md](../../../spec/scene/implementation/OCCLUSION_EFFECTS.md).
 
 1. [DUAL_DEPTH_PEELING_PLAN.md](DUAL_DEPTH_PEELING_PLAN.md): dual depth peeling implementation
    plan.

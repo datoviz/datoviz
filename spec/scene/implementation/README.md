@@ -11,6 +11,8 @@ Concise implementor documentation for active scene internals. These notes descri
    atlas, cache, and DRP2 emission contract.
 3. [GRAPH_TECHNIQUES.md](GRAPH_TECHNIQUES.md): implementation-facing graph technique, resource,
    pass, material capability, and runtime guardrail contract.
+4. [OCCLUSION_EFFECTS.md](OCCLUSION_EFFECTS.md): implementation-facing SSAO, scene occlusion,
+   volume occlusion, shader feature, and validation contract.
 
 ## Current priorities
 
@@ -21,3 +23,5 @@ Concise implementor documentation for active scene internals. These notes descri
    resource contracts live here or in `../semantics/TEXT.md`.
 5. Keep graph-backed effects and transparency plans in `agents/soon/` focused on pickup order while
    durable technique implementation rules live in `GRAPH_TECHNIQUES.md`.
+6. Keep SSAO and occlusion execution plans in `agents/soon/` focused on remaining slices while
+   durable occlusion implementation rules live in `OCCLUSION_EFFECTS.md`.

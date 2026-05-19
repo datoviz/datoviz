@@ -2,9 +2,17 @@
 
 > **Execution Status**
 > - **Status:** `PLANNING NOTE`
-> - **Updated on:** `2026-05-17`
+> - **Updated on:** `2026-05-19`
 > - **Purpose:** define the next narrow slice for letting mesh-like scene visuals appear embedded
 >   inside a volume by sampling the existing screen-space volume occlusion depth prepass.
+
+
+## Durable Contract
+
+Use the volume-occlusion and rollout contract in
+[../../../spec/scene/implementation/OCCLUSION_EFFECTS.md](../../../spec/scene/implementation/OCCLUSION_EFFECTS.md).
+
+This file tracks the next consumer-family implementation slice.
 
 
 ## Goal
@@ -25,7 +33,7 @@ the bind layout and shader path are proven.
 
 ## Current Baseline
 
-The existing volume-slice path now has focused runtime coverage:
+The existing volume-slice path has focused runtime coverage:
 
 1. identity/offscreen volume-slice dimming;
 2. perspective-camera volume-slice dimming;
@@ -39,83 +47,22 @@ existing bind layouts and shader variants.
 
 ## Implementation Plan
 
-### 1. Confirm the Support Boundary
-
-Inspect the primitive and mesh visual descriptors, shader feature masks, bind layout requirements,
-and runtime bind-group resolution.
-
-Confirm whether a non-volume visual marked `volume_occluded` currently:
-
-1. declares a sampled volume-occlusion resource read;
-2. requests a compatible bind group layout;
-3. receives the occlusion depth texture, sampler, and parameters at runtime;
-4. compiles a shader variant with occlusion logic.
-
-Expected result: this is probably only wired for volume shaders today.
+1. Confirm whether a non-volume visual marked `volume_occluded` declares the graph read, requests
+   the bind layout, receives runtime bindings, and selects the shader variant.
+2. Choose `primitive` or unlit `mesh` as the first target visual.
+3. Make `dvz_visual_set_volume_occluded(visual, true)` imply the graph read, occlusion bind layout,
+   shader feature mask, and runtime binding only when a panel volume occluder exists.
+4. Resolve the non-volume occlusion bind group without disturbing material, image, or scene
+   occlusion set usage.
+5. Add shader sampling with the same no-hit, in-front, behind-volume, hidden-alpha, and fade
+   semantics as the volume-slice path.
+6. Add contract tests before pixel tests.
+7. Add deterministic offscreen image-difference coverage.
 
 
-### 2. Choose the First Target Visual
+## Contract Tests
 
-Start with the simplest visual family that can prove the path:
-
-1. `primitive` if its shader and bind layout are simpler;
-2. otherwise unlit `mesh`;
-3. defer lit/material mesh variants until the unlit path is stable.
-
-Avoid starting with material-model, WBOIT, depth-peel, or instanced mesh variants unless the simpler
-path cannot represent the target behavior.
-
-
-### 3. Extend the Draw Contract
-
-For the selected visual family, make `dvz_visual_set_volume_occluded(visual, true)` imply:
-
-1. the draw samples the panel `.volume_occlusion.depth` resource;
-2. the draw needs the volume-occlusion bind layout;
-3. the shader feature mask selects a volume-occluded variant;
-4. the graph pass read is recorded only when a panel volume occluder exists.
-
-Keep unsupported visual families explicit: either leave `volume_occluded` as a no-op with a test
-showing no occlusion resources are requested, or add a warning/failure path if that matches the
-current scene API style better.
-
-
-### 4. Add Runtime Binding
-
-Resolve a non-volume occlusion bind group without disturbing existing set usage.
-
-The first pass should verify:
-
-1. no collision with image, material, or scene-occlusion bind groups;
-2. stable pipeline layout ordering;
-3. descriptor refresh still works after resource recreation;
-4. no dummy texture path accidentally masks a missing graph read.
-
-If primitive/mesh already use set 1 for another resource, prefer the existing scene shader ABI
-layout rules over adding an ad-hoc special case.
-
-
-### 5. Add Shader Sampling
-
-Add a shader variant for the selected visual family that samples the volume-occlusion depth texture
-using `gl_FragCoord`.
-
-Required behavior:
-
-1. no occlusion when sampled depth is the no-hit sentinel;
-2. no occlusion when the fragment is in front of the sampled volume depth;
-3. attenuate alpha/color when the fragment is behind the volume depth;
-4. use the same hidden-alpha and fade-distance semantics as the slice path where practical.
-
-For the first slice, prefer alpha attenuation over hard discard. Hard discard can be added later as
-a debug option if it proves useful.
-
-
-### 6. Add Contract Tests
-
-Add a focused FramePlan/DRP2 shape test before the pixel test.
-
-The test should assert:
+The first test should assert:
 
 1. a `volume_occlusion` render pass exists;
 2. the volume occlusion depth resource exists;
@@ -124,15 +71,13 @@ The test should assert:
 5. the draw is absent from the occlusion prepass unless it is the panel volume occluder.
 
 
-### 7. Add Pixel Tests
-
-Add deterministic offscreen app coverage.
+## Pixel Tests
 
 Minimum fixture:
 
 1. dense scalar volume occluder;
 2. one embedded primitive/mesh visual behind the front volume depth;
-3. disabled-vs-enabled capture comparison;
+3. disabled-versus-enabled capture comparison;
 4. assertion that enabled occlusion visibly dims the embedded visual.
 
 Second fixture, after the first is stable:
@@ -143,7 +88,7 @@ Second fixture, after the first is stable:
 4. assert the uncovered region stays close to the disabled baseline.
 
 Keep the fixture visually simple and numeric. Optional PNG dumps should remain env-gated debug
-helpers and not be required by the tests.
+helpers and not be required by tests.
 
 
 ## Validation
