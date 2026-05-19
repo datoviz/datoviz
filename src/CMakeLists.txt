@@ -221,6 +221,8 @@ set(DVZ_COMPILE_DEFINITIONS ${DVZ_COMPILE_DEFINITIONS}
     DVZ_HAS_CUDA=${DVZ_HAS_CUDA}
     DVZ_HAS_GLFW=${DVZ_HAS_GLFW}
     DVZ_HAS_KVZ=${DVZ_HAS_KVZ}
+    DVZ_HAS_FREETYPE=${DVZ_HAS_FREETYPE}
+    DVZ_HAS_MSDF_ATLAS=${DVZ_HAS_MSDF_ATLAS}
     DVZ_HAS_DRP2=$<IF:$<BOOL:${DVZ_BUILD_DRP2}>,1,0>
     DVZ_HAS_SCENE=$<IF:$<BOOL:${DVZ_BUILD_SCENE}>,1,0>
     DVZ_HAS_APP=$<IF:$<BOOL:${DVZ_BUILD_APP}>,1,0>
@@ -575,6 +577,15 @@ if(DVZ_WITH_MIMALLOC)
     endif()
     if(DVZ_BUILD_CORE)
         target_link_libraries(datoviz PRIVATE $<$<CONFIG:Release>:mimalloc-static>)
+    endif()
+endif()
+
+if(DVZ_TEXT_ATLAS_LIBS)
+    if(TARGET datoviz_scene)
+        target_link_libraries(datoviz_scene PUBLIC ${DVZ_TEXT_ATLAS_LIBS})
+    endif()
+    if(DVZ_BUILD_SCENE)
+        target_link_libraries(datoviz PRIVATE ${DVZ_TEXT_ATLAS_LIBS})
     endif()
 endif()
 

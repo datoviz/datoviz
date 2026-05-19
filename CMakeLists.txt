@@ -54,6 +54,8 @@ option(DVZ_BUILD_WEBGPU "Build the WebGPU layer" OFF)
 option(DVZ_BUILD_SCENE "Build the scene layer" ON)
 option(DVZ_BUILD_APP "Build the app presentation layer" ON)
 option(DVZ_BUILD_GUI "Build the Dear ImGui app overlay layer" ON)
+option(DVZ_WITH_FREETYPE "Enable FreeType-backed scene text atlases when available" ON)
+option(DVZ_WITH_MSDF_ATLAS "Enable msdf-atlas-gen scene text atlases when available" OFF)
 
 if(DVZ_ENABLE_GPROF)
     add_compile_options(
@@ -115,6 +117,50 @@ if(DVZ_WITH_ZLIB)
 endif()
 
 set(DVZ_HAS_ZLIB "${DVZ_HAS_ZLIB}" CACHE INTERNAL "zlib availability flag" FORCE)
+
+set(DVZ_HAS_FREETYPE 0)
+set(DVZ_HAS_MSDF_ATLAS 0)
+set(DVZ_TEXT_ATLAS_LIBS "")
+
+if(DVZ_BUILD_SCENE AND DVZ_WITH_FREETYPE)
+    find_package(Freetype QUIET)
+    if(Freetype_FOUND)
+        set(DVZ_HAS_FREETYPE 1)
+        list(APPEND DVZ_TEXT_ATLAS_LIBS Freetype::Freetype)
+    else()
+        message(WARNING "DVZ_WITH_FREETYPE is ON but FreeType was not found; hinted bitmap text is disabled.")
+    endif()
+endif()
+
+if(DVZ_BUILD_SCENE AND DVZ_WITH_MSDF_ATLAS)
+    include(FetchContent)
+    set(MSDFGEN_CORE_ONLY OFF CACHE BOOL "" FORCE)
+    set(MSDFGEN_BUILD_STANDALONE OFF CACHE BOOL "" FORCE)
+    set(MSDFGEN_USE_SKIA OFF CACHE BOOL "" FORCE)
+    set(MSDFGEN_DISABLE_SVG ON CACHE BOOL "" FORCE)
+    set(MSDF_ATLAS_BUILD_STANDALONE OFF CACHE BOOL "" FORCE)
+    set(MSDF_ATLAS_USE_SKIA OFF CACHE BOOL "" FORCE)
+    set(MSDF_ATLAS_DYNAMIC_RUNTIME OFF CACHE BOOL "" FORCE)
+    set(MSDF_ATLAS_MSDFGEN_EXTERNAL OFF CACHE BOOL "" FORCE)
+    set(MSDF_ATLAS_INSTALL OFF CACHE BOOL "" FORCE)
+
+    FetchContent_Declare(
+        msdfgen-atlas
+        GIT_REPOSITORY https://github.com/Chlumsky/msdf-atlas-gen.git
+        GIT_TAG master
+    )
+    FetchContent_MakeAvailable(msdfgen-atlas)
+
+    if(TARGET msdf-atlas-gen::msdf-atlas-gen)
+        set(DVZ_HAS_MSDF_ATLAS 1)
+        list(APPEND DVZ_TEXT_ATLAS_LIBS msdf-atlas-gen::msdf-atlas-gen)
+    else()
+        message(WARNING "DVZ_WITH_MSDF_ATLAS is ON but msdf-atlas-gen target was not created; MSDF text is disabled.")
+    endif()
+endif()
+
+set(DVZ_HAS_FREETYPE "${DVZ_HAS_FREETYPE}" CACHE INTERNAL "FreeType availability flag" FORCE)
+set(DVZ_HAS_MSDF_ATLAS "${DVZ_HAS_MSDF_ATLAS}" CACHE INTERNAL "msdf-atlas-gen availability flag" FORCE)
 
 if(DVZ_ENABLE_CUDA)
     find_package(CUDAToolkit QUIET)
