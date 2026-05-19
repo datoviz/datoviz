@@ -16,9 +16,9 @@ headers, or DRP2 protocol specs.
 
 Execution order, open task lists, and staged implementation checklists remain in:
 
-1. [SCENE_TEXT_GLYPH_PLAN.md](../../../agents/soon/SCENE_TEXT_GLYPH_PLAN.md)
-2. [SCENE_TEXT_ATLAS_CACHE_PLAN.md](../../../agents/soon/SCENE_TEXT_ATLAS_CACHE_PLAN.md)
-3. [SCENE_HARFBUZZ_SHAPING_PLAN.md](../../../agents/soon/SCENE_HARFBUZZ_SHAPING_PLAN.md)
+1. [SCENE_TEXT_GLYPH_PLAN.md](../../../agents/soon/text-layout/SCENE_TEXT_GLYPH_PLAN.md)
+2. [SCENE_TEXT_ATLAS_CACHE_PLAN.md](../../../agents/soon/text-layout/SCENE_TEXT_ATLAS_CACHE_PLAN.md)
+3. [SCENE_HARFBUZZ_SHAPING_PLAN.md](../../../agents/soon/text-layout/SCENE_HARFBUZZ_SHAPING_PLAN.md)
 
 
 ## Core Contract

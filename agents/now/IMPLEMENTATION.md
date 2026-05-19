@@ -333,8 +333,8 @@ Required v0.4 slice:
 
 Primary docs:
 
-1. [`../soon/DRP2_WEBGPU_SUPPORT_PLAN.md`](../soon/DRP2_WEBGPU_SUPPORT_PLAN.md)
-2. [`../soon/SCENE_WASM_WEBGPU_PORT_PLAN.md`](../soon/SCENE_WASM_WEBGPU_PORT_PLAN.md)
+1. [`../soon/runtime/DRP2_WEBGPU_SUPPORT_PLAN.md`](../soon/runtime/DRP2_WEBGPU_SUPPORT_PLAN.md)
+2. [`../soon/runtime/SCENE_WASM_WEBGPU_PORT_PLAN.md`](../soon/runtime/SCENE_WASM_WEBGPU_PORT_PLAN.md)
 
 
 ### 9. Gallery And Example Pressure Tests
@@ -435,7 +435,7 @@ Good parallel lanes right now:
     picking.
 13. **Test-runner scheduling follow-up:** process-level sharding, CI orchestration, optional
     thread-safe workers, and remaining skip cleanup as tracked in
-    [../soon/TEST_RUNNER_SCHEDULING.md](../soon/TEST_RUNNER_SCHEDULING.md). The completed serial
+    [../soon/tooling/TEST_RUNNER_SCHEDULING.md](../soon/tooling/TEST_RUNNER_SCHEDULING.md). The completed serial
     modernization history is in
     [../done/TEST_RUNNER_MODERNIZATION.md](../done/TEST_RUNNER_MODERNIZATION.md).
 14. **Performance and long-run smoke:** immediate-presentation FPS preservation, repeated-frame
@@ -489,7 +489,7 @@ Common coordination rules:
 You own the text release-hardening lane for Datoviz v0.4. Read
 agents/now/IMPLEMENTATION.md, spec/scene/slices/TEXT_RENDERING_SLICE.md,
 spec/scene/semantics/TEXT.md, spec/scene/implementation/TEXT_SHAPING_ATLAS.md,
-and agents/soon/SCENE_TEXT_GLYPH_PLAN.md.
+and agents/soon/text-layout/SCENE_TEXT_GLYPH_PLAN.md.
 
 Goal: make the existing retained/rendered text path release-quality for the next small slice.
 Stay inside src/scene text/glyph code, scene shaders needed for text, examples/c/visuals/text.c,
@@ -551,7 +551,7 @@ diff --check, just build, and focused scene colorbar/image tests.
 
 ```text
 You own the WebGPU/WASM experimental parity lane. Read the checklist,
-agents/soon/DRP2_WEBGPU_SUPPORT_PLAN.md, agents/soon/SCENE_WASM_WEBGPU_PORT_PLAN.md, and
+agents/soon/runtime/DRP2_WEBGPU_SUPPORT_PLAN.md, agents/soon/runtime/SCENE_WASM_WEBGPU_PORT_PLAN.md, and
 spec/drp2/AGENT_SPEC_PHASE.md.
 
 Goal: advance the narrow browser path for the supported DRP2 subset. Work in examples/webgpu,
@@ -725,7 +725,7 @@ with git diff --check, just build, focused scene request tests, and app/offscree
 
 ```text
 You own the test-runner scheduling follow-up lane. Read
-agents/soon/TEST_RUNNER_SCHEDULING.md and the checklist.
+agents/soon/tooling/TEST_RUNNER_SCHEDULING.md and the checklist.
 
 Goal: land one scheduling or reporting slice: process-level sharding, child JSON aggregation,
 CI orchestration, exact-case rerun ergonomics, or remaining skip cleanup.

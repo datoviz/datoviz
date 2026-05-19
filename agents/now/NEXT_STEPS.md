@@ -22,7 +22,7 @@ future scaffolding.
 
 The serial C test-runner modernization baseline is complete. Historical notes live in
 [../done/TEST_RUNNER_MODERNIZATION.md](../done/TEST_RUNNER_MODERNIZATION.md); remaining scheduling
-work lives in [../soon/TEST_RUNNER_SCHEDULING.md](../soon/TEST_RUNNER_SCHEDULING.md).
+work lives in [../soon/tooling/TEST_RUNNER_SCHEDULING.md](../soon/tooling/TEST_RUNNER_SCHEDULING.md).
 
 
 ## Read First
@@ -71,7 +71,7 @@ work lives in [../soon/TEST_RUNNER_SCHEDULING.md](../soon/TEST_RUNNER_SCHEDULING
    allocation import or NVIDIA CIG the primary architecture.
 10. **Runner scheduling follow-up:** process-level sharding, CI orchestration, optional
    thread-safe workers, and remaining ad-hoc skip migration belong to
-   [../soon/TEST_RUNNER_SCHEDULING.md](../soon/TEST_RUNNER_SCHEDULING.md).
+   [../soon/tooling/TEST_RUNNER_SCHEDULING.md](../soon/tooling/TEST_RUNNER_SCHEDULING.md).
 
 
 ## Useful Current Records

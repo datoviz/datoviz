@@ -8,7 +8,7 @@
 > - **Completed in:** `dfed9c2f`, `61e6cbc1`, `f2de8487`
 
 This plan is about app ownership and public API shape. The test-runner scheduling and shared
-fixture plan lives in [TEST_RUNNER_SCHEDULING.md](TEST_RUNNER_SCHEDULING.md) and should depend on
+fixture plan lives in [../tooling/TEST_RUNNER_SCHEDULING.md](../tooling/TEST_RUNNER_SCHEDULING.md) and should depend on
 this API rather than owning its design.
 
 

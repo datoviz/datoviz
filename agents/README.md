@@ -42,7 +42,7 @@ If resuming work on the branch:
    release candidates, or communication planning.
 5. Read [done/TEST_RUNNER_MODERNIZATION.md](done/TEST_RUNNER_MODERNIZATION.md) for completed
    test-runner modernization history, and
-   [soon/TEST_RUNNER_SCHEDULING.md](soon/TEST_RUNNER_SCHEDULING.md) before changing scheduling,
+   [soon/tooling/TEST_RUNNER_SCHEDULING.md](soon/tooling/TEST_RUNNER_SCHEDULING.md) before changing scheduling,
    process sharding, CI orchestration, or remaining skip/reporting behavior.
 6. Read [../spec/scene/visuals/IMPLEMENTATION_DECISIONS.md](../spec/scene/visuals/IMPLEMENTATION_DECISIONS.md)
    before extending pixel, point, marker, segment, path, image, sphere, or mesh first-slice
@@ -79,15 +79,15 @@ future agent should read when landing in the branch.
 
 Runtime, graph, and backend lanes:
 
-1. [soon/DRP2_NORMAL_TRACE_NORMALIZATION_PLAN.md](soon/DRP2_NORMAL_TRACE_NORMALIZATION_PLAN.md)
-2. [soon/DRP2_WEBGPU_SUPPORT_PLAN.md](soon/DRP2_WEBGPU_SUPPORT_PLAN.md)
+1. [soon/runtime/DRP2_NORMAL_TRACE_NORMALIZATION_PLAN.md](soon/runtime/DRP2_NORMAL_TRACE_NORMALIZATION_PLAN.md)
+2. [soon/runtime/DRP2_WEBGPU_SUPPORT_PLAN.md](soon/runtime/DRP2_WEBGPU_SUPPORT_PLAN.md)
 3. [soon/FRAME_PLAN_GRAPH_TRANSPARENCY_PLAN.md](soon/FRAME_PLAN_GRAPH_TRANSPARENCY_PLAN.md)
 4. [soon/DUAL_DEPTH_PEELING_PLAN.md](soon/DUAL_DEPTH_PEELING_PLAN.md)
 5. [soon/SCREEN_SPACE_SCENE_OCCLUSION_PLAN.md](soon/SCREEN_SPACE_SCENE_OCCLUSION_PLAN.md)
 6. [soon/SCREEN_SPACE_VOLUME_OCCLUSION_PLAN.md](soon/SCREEN_SPACE_VOLUME_OCCLUSION_PLAN.md)
 7. [soon/SCENE_SCREEN_SPACE_EFFECTS_PLAN.md](soon/SCENE_SCREEN_SPACE_EFFECTS_PLAN.md)
 8. [soon/SCENE_WGSL_SHADER_VARIANTS_PLAN.md](soon/SCENE_WGSL_SHADER_VARIANTS_PLAN.md)
-9. [soon/SCENE_WASM_WEBGPU_PORT_PLAN.md](soon/SCENE_WASM_WEBGPU_PORT_PLAN.md)
+9. [soon/runtime/SCENE_WASM_WEBGPU_PORT_PLAN.md](soon/runtime/SCENE_WASM_WEBGPU_PORT_PLAN.md)
 
 Scene feature lanes:
 
@@ -113,9 +113,9 @@ the `soon/` files above are implementation follow-up notes.
 Text/layout lanes:
 
 1. [../spec/scene/implementation/TEXT_SHAPING_ATLAS.md](../spec/scene/implementation/TEXT_SHAPING_ATLAS.md)
-2. [soon/SCENE_TEXT_GLYPH_PLAN.md](soon/SCENE_TEXT_GLYPH_PLAN.md)
-3. [soon/SCENE_TEXT_ATLAS_CACHE_PLAN.md](soon/SCENE_TEXT_ATLAS_CACHE_PLAN.md)
-4. [soon/SCENE_HARFBUZZ_SHAPING_PLAN.md](soon/SCENE_HARFBUZZ_SHAPING_PLAN.md)
+2. [soon/text-layout/SCENE_TEXT_GLYPH_PLAN.md](soon/text-layout/SCENE_TEXT_GLYPH_PLAN.md)
+3. [soon/text-layout/SCENE_TEXT_ATLAS_CACHE_PLAN.md](soon/text-layout/SCENE_TEXT_ATLAS_CACHE_PLAN.md)
+4. [soon/text-layout/SCENE_HARFBUZZ_SHAPING_PLAN.md](soon/text-layout/SCENE_HARFBUZZ_SHAPING_PLAN.md)
 
 Analysis notes:
 
@@ -124,7 +124,7 @@ Analysis notes:
 
 Tooling follow-ups:
 
-1. [soon/TEST_RUNNER_SCHEDULING.md](soon/TEST_RUNNER_SCHEDULING.md)
+1. [soon/tooling/TEST_RUNNER_SCHEDULING.md](soon/tooling/TEST_RUNNER_SCHEDULING.md)
 
 ### `done/`
 

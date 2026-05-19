@@ -18,7 +18,7 @@ for production text, but it does not replace atlas generation. The shaped output
 system by selected font face and glyph id.
 
 The durable shaping/layout/atlas/cache contract now lives in
-[../../spec/scene/implementation/TEXT_SHAPING_ATLAS.md](../../spec/scene/implementation/TEXT_SHAPING_ATLAS.md).
+[../../../spec/scene/implementation/TEXT_SHAPING_ATLAS.md](../../../spec/scene/implementation/TEXT_SHAPING_ATLAS.md).
 Keep this file focused on the HarfBuzz integration sequence, tests, and unresolved choices.
 
 
@@ -65,7 +65,7 @@ the atlas and layout contracts so HarfBuzz can feed them cleanly.
 ## Durable Contract Summary
 
 Do not duplicate the full shaping contract here. Use
-[../../spec/scene/implementation/TEXT_SHAPING_ATLAS.md](../../spec/scene/implementation/TEXT_SHAPING_ATLAS.md)
+[../../../spec/scene/implementation/TEXT_SHAPING_ATLAS.md](../../../spec/scene/implementation/TEXT_SHAPING_ATLAS.md)
 for stable rules:
 
 - scene text preserves original UTF-8 bytes;

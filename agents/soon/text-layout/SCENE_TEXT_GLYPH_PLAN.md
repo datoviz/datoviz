@@ -46,7 +46,7 @@ details for the most important next slices:
 The high-level architecture remains: HarfBuzz produces shaped glyph runs, the atlas/cache layer
 ensures renderer resources for those glyphs, and the scene emits normal DRP2 resources and draws.
 The durable implementation-facing contract for that architecture now lives in
-[../../spec/scene/implementation/TEXT_SHAPING_ATLAS.md](../../spec/scene/implementation/TEXT_SHAPING_ATLAS.md).
+[../../../spec/scene/implementation/TEXT_SHAPING_ATLAS.md](../../../spec/scene/implementation/TEXT_SHAPING_ATLAS.md).
 
 
 ## External Technology Snapshot
@@ -109,13 +109,13 @@ Non-goals for the first production slice:
 Keep this roadmap focused on execution order. The stable requirements and contracts are now split
 across:
 
-- [../../spec/scene/semantics/TEXT.md](../../spec/scene/semantics/TEXT.md): text content,
+- [../../../spec/scene/semantics/TEXT.md](../../../spec/scene/semantics/TEXT.md): text content,
   placement, semantic identity, DPI behavior, picking, export, and fallback semantics.
-- [../../spec/scene/slices/TEXT_RENDERING_SLICE.md](../../spec/scene/slices/TEXT_RENDERING_SLICE.md):
+- [../../../spec/scene/slices/TEXT_RENDERING_SLICE.md](../../../spec/scene/slices/TEXT_RENDERING_SLICE.md):
   first retained `DvzText` rendering scope.
-- [../../spec/scene/implementation/TEXT_SHAPING_ATLAS.md](../../spec/scene/implementation/TEXT_SHAPING_ATLAS.md):
+- [../../../spec/scene/implementation/TEXT_SHAPING_ATLAS.md](../../../spec/scene/implementation/TEXT_SHAPING_ATLAS.md):
   shaping, layout, atlas, cache, renderer roles, and DRP2 emission contract.
-- [../../spec/scene/visuals/GLYPH.md](../../spec/scene/visuals/GLYPH.md): glyph visual family
+- [../../../spec/scene/visuals/GLYPH.md](../../../spec/scene/visuals/GLYPH.md): glyph visual family
   contract.
 
 

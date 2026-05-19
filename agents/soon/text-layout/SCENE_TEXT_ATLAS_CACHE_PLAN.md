@@ -19,7 +19,7 @@ glyph ids, clusters, advances, and offsets. The atlas system maps those glyph id
 settings to GPU texture regions, metrics, cache entries, uploads, and shader parameters.
 
 The durable shaping/layout/atlas/cache contract now lives in
-[../../spec/scene/implementation/TEXT_SHAPING_ATLAS.md](../../spec/scene/implementation/TEXT_SHAPING_ATLAS.md).
+[../../../spec/scene/implementation/TEXT_SHAPING_ATLAS.md](../../../spec/scene/implementation/TEXT_SHAPING_ATLAS.md).
 Keep this file focused on current state, hardening tasks, execution phases, and unresolved choices.
 
 
@@ -73,7 +73,7 @@ HarfBuzz glyph ids, embedded default atlases, and broader Unicode ranges.
 ## Durable Contract Summary
 
 Do not duplicate the full contract here. Use
-[../../spec/scene/implementation/TEXT_SHAPING_ATLAS.md](../../spec/scene/implementation/TEXT_SHAPING_ATLAS.md)
+[../../../spec/scene/implementation/TEXT_SHAPING_ATLAS.md](../../../spec/scene/implementation/TEXT_SHAPING_ATLAS.md)
 for the stable rules:
 
 - atlas entries are keyed by selected font face and glyph id;
