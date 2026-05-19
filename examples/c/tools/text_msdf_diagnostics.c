@@ -16,6 +16,7 @@
 /*************************************************************************************************/
 
 #include <errno.h>
+#include <inttypes.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
@@ -116,6 +117,98 @@ static DvzTextAtlas* renderer_atlas(DvzScene* scene, DvzTextRenderer renderer)
     return font->sdf_atlas;
 }
 
+
+
+/**
+ * Return a human-readable atlas backend name.
+ *
+ * @param backend atlas backend
+ * @return backend name
+ */
+static const char* atlas_backend_name(DvzTextAtlasBackend backend)
+{
+    switch (backend)
+    {
+    case DVZ_TEXT_ATLAS_BACKEND_BUILTIN_BITMAP:
+        return "builtin_bitmap";
+    case DVZ_TEXT_ATLAS_BACKEND_FREETYPE_BITMAP:
+        return "freetype_bitmap";
+    case DVZ_TEXT_ATLAS_BACKEND_STB_SDF:
+        return "stb_sdf";
+    case DVZ_TEXT_ATLAS_BACKEND_MSDF:
+        return "msdf";
+    default:
+        return "unknown";
+    }
+}
+
+
+/**
+ * Return a human-readable atlas encoding name.
+ *
+ * @param encoding atlas texture encoding
+ * @return encoding name
+ */
+static const char* atlas_encoding_name(DvzTextAtlasEncoding encoding)
+{
+    switch (encoding)
+    {
+    case DVZ_TEXT_ATLAS_ENCODING_BITMAP_ALPHA:
+        return "bitmap_alpha";
+    case DVZ_TEXT_ATLAS_ENCODING_SDF_ALPHA:
+        return "sdf_alpha";
+    case DVZ_TEXT_ATLAS_ENCODING_MSDF_RGB:
+        return "msdf_rgb";
+    default:
+        return "unknown";
+    }
+}
+
+
+/**
+ * Emit a parseable atlas metadata line for one diagnostic case.
+ *
+ * @param renderer renderer descriptor
+ * @param sample sample descriptor
+ * @param size text size
+ * @param atlas generated atlas, or NULL
+ * @param scene_path scene PNG path
+ * @param atlas_path atlas PNG path
+ */
+static void emit_atlas_metadata(
+    const TextDiagRenderer* renderer, const TextDiagSample* sample, float size,
+    const DvzTextAtlas* atlas, const char* scene_path, const char* atlas_path)
+{
+    ANN(renderer);
+    ANN(sample);
+    ANN(scene_path);
+    ANN(atlas_path);
+    if (atlas == NULL)
+    {
+        dvz_fprintf(
+            stdout,
+            "{\"kind\":\"text_atlas\",\"renderer\":\"%s\",\"sample\":\"%s\","
+            "\"size\":%.1f,\"backend\":\"none\",\"scene_png\":\"%s\","
+            "\"atlas_png\":\"%s\"}\n",
+            renderer->name, sample->name, size, scene_path, atlas_path);
+        return;
+    }
+
+    dvz_fprintf(
+        stdout,
+        "{\"kind\":\"text_atlas\",\"renderer\":\"%s\",\"sample\":\"%s\","
+        "\"size\":%.1f,\"backend\":\"%s\",\"encoding\":\"%s\","
+        "\"width\":%u,\"height\":%u,\"channels\":%u,\"glyphs\":%u,"
+        "\"capacity\":%u,\"missing\":%u,\"generation\":%" PRIu64 ","
+        "\"pixel_height\":%.3f,\"pixel_range\":%.3f,\"ascent\":%.3f,"
+        "\"descent\":%.3f,\"line_height\":%.3f,\"scene_png\":\"%s\","
+        "\"atlas_png\":\"%s\"}\n",
+        renderer->name, sample->name, size, atlas_backend_name(atlas->backend),
+        atlas_encoding_name(atlas->encoding), atlas->width, atlas->height, atlas->channels,
+        atlas->glyph_count, DVZ_SCENE_TEXT_ATLAS_MAX_GLYPHS, atlas->missing_glyph_count,
+        atlas->generation, atlas->pixel_height, atlas->pixel_range, atlas->ascent,
+        atlas->descent, atlas->line_height, scene_path, atlas_path);
+}
 
 
 /**
@@ -255,7 +348,8 @@ static int render_case(
         dvz_fprintf(stderr, "failed to capture %s\n", scene_path);
     write_atlas_png(scene, renderer->renderer, atlas_path);
 
-    dvz_fprintf(stdout, "%s\n%s\n", scene_path, atlas_path);
+    emit_atlas_metadata(
+        renderer, sample, size, renderer_atlas(scene, renderer->renderer), scene_path, atlas_path);
     dvz_app_destroy(app);
     dvz_scene_destroy(scene);
     return 0;

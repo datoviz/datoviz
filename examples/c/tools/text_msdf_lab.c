@@ -15,12 +15,14 @@
 /*************************************************************************************************/
 
 #include <stdbool.h>
+#include <inttypes.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include "_alloc.h"
 #include "_compat.h"
+#include "_scene.h"
 #include "datoviz/app.h"
 #include "datoviz/canvas.h"
 #include "datoviz/gui.h"
@@ -135,6 +137,153 @@ static DvzTextRenderer selected_renderer(int index)
     }
 }
 
+
+
+/**
+ * Resolve the expected atlas backend for a renderer and text size.
+ *
+ * @param renderer requested renderer
+ * @param size_pts text size in points
+ * @return atlas backend
+ */
+static DvzTextAtlasBackend renderer_backend(DvzTextRenderer renderer, float size_pts)
+{
+    if (renderer == DVZ_TEXT_RENDERER_SMALL_BITMAP_ATLAS)
+        return DVZ_TEXT_ATLAS_BACKEND_BUILTIN_BITMAP;
+    if (renderer == DVZ_TEXT_RENDERER_BITMAP_ATLAS)
+    {
+#if defined(DVZ_HAS_FREETYPE) && DVZ_HAS_FREETYPE
+        return DVZ_TEXT_ATLAS_BACKEND_FREETYPE_BITMAP;
+#else
+        return DVZ_TEXT_ATLAS_BACKEND_BUILTIN_BITMAP;
+#endif
+    }
+    if (renderer == DVZ_TEXT_RENDERER_MSDF_ATLAS)
+        return DVZ_TEXT_ATLAS_BACKEND_MSDF;
+    if (renderer == DVZ_TEXT_RENDERER_AUTO)
+    {
+        if (size_pts < 14.0f)
+        {
+#if defined(DVZ_HAS_FREETYPE) && DVZ_HAS_FREETYPE
+            return DVZ_TEXT_ATLAS_BACKEND_FREETYPE_BITMAP;
+#else
+            return DVZ_TEXT_ATLAS_BACKEND_BUILTIN_BITMAP;
+#endif
+        }
+        return DVZ_TEXT_ATLAS_BACKEND_MSDF;
+    }
+    return DVZ_TEXT_ATLAS_BACKEND_BUILTIN_BITMAP;
+}
+
+
+/**
+ * Return a human-readable atlas backend name.
+ *
+ * @param backend atlas backend
+ * @return backend name
+ */
+static const char* atlas_backend_name(DvzTextAtlasBackend backend)
+{
+    switch (backend)
+    {
+    case DVZ_TEXT_ATLAS_BACKEND_BUILTIN_BITMAP:
+        return "builtin_bitmap";
+    case DVZ_TEXT_ATLAS_BACKEND_FREETYPE_BITMAP:
+        return "freetype_bitmap";
+    case DVZ_TEXT_ATLAS_BACKEND_STB_SDF:
+        return "stb_sdf";
+    case DVZ_TEXT_ATLAS_BACKEND_MSDF:
+        return "msdf";
+    default:
+        return "unknown";
+    }
+}
+
+
+/**
+ * Return a human-readable atlas encoding name.
+ *
+ * @param encoding atlas texture encoding
+ * @return encoding name
+ */
+static const char* atlas_encoding_name(DvzTextAtlasEncoding encoding)
+{
+    switch (encoding)
+    {
+    case DVZ_TEXT_ATLAS_ENCODING_BITMAP_ALPHA:
+        return "bitmap_alpha";
+    case DVZ_TEXT_ATLAS_ENCODING_SDF_ALPHA:
+        return "sdf_alpha";
+    case DVZ_TEXT_ATLAS_ENCODING_MSDF_RGB:
+        return "msdf_rgb";
+    default:
+        return "unknown";
+    }
+}
+
+
+/**
+ * Return the atlas generated for one source.
+ *
+ * @param source source state
+ * @param size_pts text size in points
+ * @return atlas pointer, or NULL when unavailable
+ */
+static DvzTextAtlas* source_atlas(const TextLabSource* source, float size_pts)
+{
+    ANN(source);
+    if (source->figure == NULL || source->figure->scene == NULL ||
+        source->figure->scene->font_count == 0)
+        return NULL;
+    DvzFont* font = &source->figure->scene->fonts[0];
+    DvzTextAtlasBackend backend = renderer_backend(source->renderer, size_pts);
+    switch (backend)
+    {
+    case DVZ_TEXT_ATLAS_BACKEND_FREETYPE_BITMAP:
+        return font->bitmap_atlas;
+    case DVZ_TEXT_ATLAS_BACKEND_MSDF:
+        return font->msdf_atlas != NULL ? font->msdf_atlas : font->sdf_atlas;
+    case DVZ_TEXT_ATLAS_BACKEND_STB_SDF:
+        return font->sdf_atlas;
+    case DVZ_TEXT_ATLAS_BACKEND_BUILTIN_BITMAP:
+    default:
+        return NULL;
+    }
+}
+
+
+/**
+ * Format one compact atlas summary.
+ *
+ * @param prefix summary prefix
+ * @param source source state
+ * @param size_pts text size in points
+ * @param out output string
+ * @param out_size output string capacity
+ */
+static void atlas_summary_line(
+    const char* prefix, const TextLabSource* source, float size_pts, char* out, size_t out_size)
+{
+    ANN(prefix);
+    ANN(source);
+    ANN(out);
+    if (out_size == 0)
+        return;
+    DvzTextAtlas* atlas = source_atlas(source, size_pts);
+    if (atlas == NULL)
+    {
+        dvz_snprintf(out, out_size, "%s atlas: none", prefix);
+        return;
+    }
+    dvz_snprintf(
+        out, out_size,
+        "%s atlas: %s %s %ux%u c%u glyphs %u/%u miss %u gen %" PRIu64
+        " px %.1f range %.1f line %.1f",
+        prefix, atlas_backend_name(atlas->backend), atlas_encoding_name(atlas->encoding),
+        atlas->width, atlas->height, atlas->channels, atlas->glyph_count,
+        DVZ_SCENE_TEXT_ATLAS_MAX_GLYPHS, atlas->missing_glyph_count, atlas->generation,
+        atlas->pixel_height, atlas->pixel_range, atlas->line_height);
+}
 
 
 /**
@@ -558,7 +707,7 @@ static void draw_inspector(DvzGui* gui, TextMsdfLabState* state)
         (void)dvz_gui_slider_int(gui, "Crop", &state->crop_size, 8, 96);
         (void)dvz_gui_slider_int(gui, "Pixel zoom", &state->pixel_zoom, 2, 20);
 
-        char line[128] = {0};
+        char line[256] = {0};
         dvz_snprintf(
             line, sizeof(line), "hover: %s  pixel: %d, %d",
             state->hover_source == 0 ? "left" : state->hover_source == 1 ? "right" : "none",
@@ -571,6 +720,10 @@ static void draw_inspector(DvzGui* gui, TextMsdfLabState* state)
         dvz_snprintf(
             line, sizeof(line), "right: %ux%u %s", state->sources[1].width,
             state->sources[1].height, state->sources[1].capture_valid ? "captured" : "empty");
+        dvz_gui_text(gui, line);
+        atlas_summary_line("left", &state->sources[0], state->size_pts, line, sizeof(line));
+        dvz_gui_text(gui, line);
+        atlas_summary_line("right", &state->sources[1], state->size_pts, line, sizeof(line));
         dvz_gui_text(gui, line);
 
         igBeginGroup();
