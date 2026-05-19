@@ -19,9 +19,11 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "_alloc.h"
 #include "_compat.h"
+#include "_scene.h"
 #include "datoviz/app.h"
 #include "datoviz/gui.h"
 #include "datoviz/imgui.h"
@@ -289,143 +291,75 @@ static void append_crosshair_rect(
 
 
 /**
- * Append one pixel-space line segment as two triangles.
+ * Return a retained visual attribute index by name.
+ *
+ * @param visual the retained visual
+ * @param name the attribute name
+ * @return attribute index, or -1 when absent
+ */
+static int visual_attr_index(const DvzVisual* visual, const char* name)
+{
+    ANN(visual);
+    ANN(name);
+    for (uint32_t i = 0; i < visual->attr_count; i++)
+    {
+        if (strcmp(visual->attrs[i].name, name) == 0)
+            return (int)i;
+    }
+    return -1;
+}
+
+
+
+/**
+ * Append one shader-local box edge as a glyph quad.
  *
  * @param count current vertex count
- * @param vertices output primitive positions
- * @param colors output primitive colors
- * @param width figure width
- * @param height figure height
- * @param x0 segment start x in figure pixels
- * @param y0 segment start y in figure pixels
- * @param x1 segment end x in figure pixels
- * @param y1 segment end y in figure pixels
- * @param thickness segment thickness in pixels
- * @param color segment color
+ * @param positions output anchor positions
+ * @param bounds output local pixel bounds
+ * @param texcoords output atlas UV bounds
+ * @param colors output colors
+ * @param angles output rotation angles
+ * @param anchor_clip text anchor in fixed clip coordinates
+ * @param rect local edge rectangle as x0, y0, x1, y1
+ * @param angle text angle in radians
+ * @param color box color
  */
-static void append_box_segment(
-    uint32_t* count, float vertices[][3], DvzColor colors[], float width, float height, float x0,
-    float y0, float x1, float y1, float thickness, const DvzColor color)
+static void append_box_glyph(
+    uint32_t* count, float positions[][3], float bounds[][4], float texcoords[][4],
+    DvzColor colors[], float angles[], const float anchor_clip[3], const float rect[4],
+    float angle, const DvzColor color)
 {
     ANN(count);
-    ANN(vertices);
+    ANN(positions);
+    ANN(bounds);
+    ANN(texcoords);
     ANN(colors);
+    ANN(angles);
+    ANN(anchor_clip);
+    ANN(rect);
     ANN(color);
     if (*count + 6 > TEXT_LAB_BOX_VERTICES)
         return;
 
-    float dx = x1 - x0;
-    float dy = y1 - y0;
-    float len = sqrtf(dx * dx + dy * dy);
-    if (len <= 0.0f)
-        return;
-    float nx = -dy / len * 0.5f * thickness;
-    float ny = +dx / len * 0.5f * thickness;
-
     uint32_t idx = *count;
-    pixel_to_clip(width, height, x0 + nx, y0 + ny, vertices[idx + 0]);
-    pixel_to_clip(width, height, x0 - nx, y0 - ny, vertices[idx + 1]);
-    pixel_to_clip(width, height, x1 - nx, y1 - ny, vertices[idx + 2]);
-    pixel_to_clip(width, height, x0 + nx, y0 + ny, vertices[idx + 3]);
-    pixel_to_clip(width, height, x1 - nx, y1 - ny, vertices[idx + 4]);
-    pixel_to_clip(width, height, x1 + nx, y1 + ny, vertices[idx + 5]);
     for (uint32_t i = 0; i < 6; i++)
+    {
+        positions[idx + i][0] = anchor_clip[0];
+        positions[idx + i][1] = anchor_clip[1];
+        positions[idx + i][2] = anchor_clip[2];
+        bounds[idx + i][0] = rect[0];
+        bounds[idx + i][1] = rect[1];
+        bounds[idx + i][2] = rect[2];
+        bounds[idx + i][3] = rect[3];
+        texcoords[idx + i][0] = 0.0f;
+        texcoords[idx + i][1] = 0.0f;
+        texcoords[idx + i][2] = 1.0f;
+        texcoords[idx + i][3] = 1.0f;
         dvz_memcpy(colors[idx + i], sizeof(DvzColor), color, sizeof(DvzColor));
+        angles[idx + i] = angle;
+    }
     *count = idx + 6;
-}
-
-
-
-/**
- * Count visible layout characters in one UTF-8 string line.
- *
- * @param string text string
- * @param out_lines output line count
- * @return maximum visible codepoint count across all lines
- */
-static uint32_t text_layout_columns(const char* string, uint32_t* out_lines)
-{
-    ANN(out_lines);
-    *out_lines = 1;
-    if (string == NULL)
-        return 0;
-    uint32_t columns = 0;
-    uint32_t line_columns = 0;
-    const uint8_t* bytes = (const uint8_t*)string;
-    for (uint32_t i = 0; bytes[i] != 0; i++)
-    {
-        if (bytes[i] == '\n')
-        {
-            if (line_columns > columns)
-                columns = line_columns;
-            line_columns = 0;
-            (*out_lines)++;
-            continue;
-        }
-        if ((bytes[i] & 0xC0u) == 0x80u)
-            continue;
-        line_columns++;
-    }
-    return line_columns > columns ? line_columns : columns;
-}
-
-
-
-/**
- * Append an estimated rotated text layout bounding box.
- *
- * @param count current vertex count
- * @param vertices output primitive positions
- * @param colors output primitive colors
- * @param figure_width figure width
- * @param figure_height figure height
- * @param string text string
- * @param position text anchor position in figure pixels
- * @param size_pts text size in points
- * @param text_anchor normalized text-box anchor
- * @param angle text angle in radians
- */
-static void append_text_box(
-    uint32_t* count, float vertices[][3], DvzColor colors[], float figure_width,
-    float figure_height, const char* string, const float position[3], float size_pts,
-    const float text_anchor[2], float angle)
-{
-    ANN(count);
-    ANN(vertices);
-    ANN(colors);
-    ANN(position);
-    ANN(text_anchor);
-    uint32_t lines = 1;
-    uint32_t columns = text_layout_columns(string, &lines);
-    if (columns == 0 || lines == 0)
-        return;
-
-    float box_width = (float)columns * size_pts * 0.58f;
-    float box_height = ((float)lines * 1.20f - 0.20f) * size_pts;
-    float x0 = -text_anchor[0] * box_width;
-    float y0 = -text_anchor[1] * box_height;
-    float x1 = x0 + box_width;
-    float y1 = y0 + box_height;
-
-    float c = cosf(angle);
-    float s = sinf(angle);
-    float local[4][2] = {{x0, y0}, {x1, y0}, {x1, y1}, {x0, y1}};
-    float corners[4][2] = {{0}};
-    for (uint32_t i = 0; i < 4; i++)
-    {
-        corners[i][0] = position[0] + c * local[i][0] - s * local[i][1];
-        corners[i][1] = position[1] + s * local[i][0] + c * local[i][1];
-    }
-
-    const DvzColor color = {255, 190, 80, 210};
-    const float thickness = 1.25f;
-    for (uint32_t i = 0; i < 4; i++)
-    {
-        uint32_t j = (i + 1u) % 4u;
-        append_box_segment(
-            count, vertices, colors, figure_width, figure_height, corners[i][0], corners[i][1],
-            corners[j][0], corners[j][1], thickness, color);
-    }
 }
 
 
@@ -480,58 +414,115 @@ static void set_crosshair_items(
 
 
 /**
- * Update the debug text bounding-box visual.
+ * Update the debug text bounding-box visual from realized glyph bounds.
  *
- * @param visual primitive visual
- * @param strings text strings
- * @param count number of text strings
- * @param positions figure-pixel text positions
- * @param sizes text sizes in points
- * @param text_anchor normalized text-box anchor
- * @param angles per-string angles, or NULL for zero
- * @param width figure width
- * @param height figure height
+ * @param boxes glyph visual used for the box overlay
+ * @param text_visual source text visual
  */
-static void set_box_items(
-    DvzVisual* visual, const char* const* strings, uint32_t count, float positions[][3],
-    const float* sizes, const float text_anchor[2], const float* angles, float width,
-    float height)
+static void set_box_items(DvzVisual* boxes, const DvzVisual* text_visual)
 {
-    ANN(visual);
-    ANN(strings);
-    ANN(positions);
-    ANN(sizes);
-    ANN(text_anchor);
-    if (count > TEXT_LAB_MAX_TICKS)
-        count = TEXT_LAB_MAX_TICKS;
-    if (count == 0)
+    ANN(boxes);
+    ANN(text_visual);
+    if (text_visual->type != DVZ_VISUAL_TYPE_TEXT || text_visual->text.glyph_visual == NULL ||
+        text_visual->text.spans == NULL || text_visual->text.span_count == 0)
     {
-        dvz_visual_set_visible(visual, false);
+        dvz_visual_set_visible(boxes, false);
         return;
     }
 
-    float vertices[TEXT_LAB_BOX_VERTICES][3] = {{0}};
-    DvzColor colors[TEXT_LAB_BOX_VERTICES] = {{0}};
-    uint32_t vertex_count = 0;
-    for (uint32_t i = 0; i < count; i++)
+    const DvzVisual* glyph = text_visual->text.glyph_visual;
+    int pos_idx = visual_attr_index(glyph, "position");
+    int bounds_idx = visual_attr_index(glyph, "bounds");
+    int angle_idx = visual_attr_index(glyph, "angle");
+    if (pos_idx < 0 || bounds_idx < 0 || angle_idx < 0 ||
+        glyph->attrs[pos_idx].data == NULL || glyph->attrs[bounds_idx].data == NULL ||
+        glyph->attrs[angle_idx].data == NULL)
     {
-        float angle = angles != NULL ? angles[i] : 0.0f;
-        append_text_box(
-            &vertex_count, vertices, colors, width, height, strings[i], positions[i], sizes[i],
-            text_anchor, angle);
+        dvz_visual_set_visible(boxes, false);
+        return;
+    }
+
+    const float(*src_positions)[3] = (const float(*)[3])glyph->attrs[pos_idx].data;
+    const float(*src_bounds)[4] = (const float(*)[4])glyph->attrs[bounds_idx].data;
+    const float* src_angles = (const float*)glyph->attrs[angle_idx].data;
+    float positions[TEXT_LAB_BOX_VERTICES][3] = {{0}};
+    float bounds[TEXT_LAB_BOX_VERTICES][4] = {{0}};
+    float texcoords[TEXT_LAB_BOX_VERTICES][4] = {{0}};
+    DvzColor colors[TEXT_LAB_BOX_VERTICES] = {{0}};
+    float angles[TEXT_LAB_BOX_VERTICES] = {0};
+    uint32_t vertex_count = 0;
+    const DvzColor color = {255, 190, 80, 220};
+    const float thickness = 1.25f;
+    const float padding = 1.5f;
+
+    for (uint32_t i = 0; i < text_visual->text.span_count; i++)
+    {
+        DvzTextGlyphSpan span = text_visual->text.spans[i];
+        if (span.glyph_count == 0)
+            continue;
+        uint64_t first_vertex = (uint64_t)span.first_glyph * 6u;
+        uint64_t last_vertex = (uint64_t)(span.first_glyph + span.glyph_count) * 6u;
+        if (last_vertex > glyph->attrs[bounds_idx].item_count ||
+            last_vertex > glyph->attrs[pos_idx].item_count ||
+            last_vertex > glyph->attrs[angle_idx].item_count)
+            continue;
+
+        float x0 = +INFINITY;
+        float y0 = +INFINITY;
+        float x1 = -INFINITY;
+        float y1 = -INFINITY;
+        for (uint64_t v = first_vertex; v < last_vertex; v += 6u)
+        {
+            if (src_bounds[v][0] < x0)
+                x0 = src_bounds[v][0];
+            if (src_bounds[v][1] < y0)
+                y0 = src_bounds[v][1];
+            if (src_bounds[v][2] > x1)
+                x1 = src_bounds[v][2];
+            if (src_bounds[v][3] > y1)
+                y1 = src_bounds[v][3];
+        }
+        if (!isfinite(x0) || !isfinite(y0) || !isfinite(x1) || !isfinite(y1) || x0 >= x1 ||
+            y0 >= y1)
+            continue;
+
+        x0 -= padding;
+        y0 -= padding;
+        x1 += padding;
+        y1 += padding;
+        float top[4] = {x0, y0 - 0.5f * thickness, x1, y0 + 0.5f * thickness};
+        float right[4] = {x1 - 0.5f * thickness, y0, x1 + 0.5f * thickness, y1};
+        float bottom[4] = {x0, y1 - 0.5f * thickness, x1, y1 + 0.5f * thickness};
+        float left[4] = {x0 - 0.5f * thickness, y0, x0 + 0.5f * thickness, y1};
+        append_box_glyph(
+            &vertex_count, positions, bounds, texcoords, colors, angles, src_positions[first_vertex],
+            top, src_angles[first_vertex], color);
+        append_box_glyph(
+            &vertex_count, positions, bounds, texcoords, colors, angles, src_positions[first_vertex],
+            right, src_angles[first_vertex], color);
+        append_box_glyph(
+            &vertex_count, positions, bounds, texcoords, colors, angles, src_positions[first_vertex],
+            bottom, src_angles[first_vertex], color);
+        append_box_glyph(
+            &vertex_count, positions, bounds, texcoords, colors, angles, src_positions[first_vertex],
+            left, src_angles[first_vertex], color);
     }
     if (vertex_count == 0)
     {
-        dvz_visual_set_visible(visual, false);
+        dvz_visual_set_visible(boxes, false);
         return;
     }
 
-    DvzVisualDataUpdate updates[2] = {
-        {.attr_name = "position", .data = vertices, .item_count = vertex_count},
+    DvzVisualDataUpdate updates[5] = {
+        {.attr_name = "position", .data = positions, .item_count = vertex_count},
+        {.attr_name = "bounds", .data = bounds, .item_count = vertex_count},
+        {.attr_name = "texcoords", .data = texcoords, .item_count = vertex_count},
         {.attr_name = "color", .data = colors, .item_count = vertex_count},
+        {.attr_name = "angle", .data = angles, .item_count = vertex_count},
     };
-    dvz_visual_set_visible(visual, true);
-    dvz_visual_set_data_many(visual, updates, 2);
+    boxes->glyph_atlas_encoding = DVZ_TEXT_ATLAS_ENCODING_BITMAP_ALPHA;
+    dvz_visual_set_visible(boxes, true);
+    dvz_visual_set_data_many(boxes, updates, 5);
 }
 
 
@@ -614,11 +605,7 @@ static void update_text_scene(TextLabState* state)
     float crosshair_positions[TEXT_LAB_MAX_TICKS][3] = {{0}};
     uint32_t crosshair_count = 0;
     char tick_labels[TEXT_LAB_MAX_TICKS][32] = {{0}};
-    const char* box_strings[TEXT_LAB_MAX_TICKS] = {0};
-    float box_positions[TEXT_LAB_MAX_TICKS][3] = {{0}};
-    float box_sizes[TEXT_LAB_MAX_TICKS] = {0};
-    float box_angles[TEXT_LAB_MAX_TICKS] = {0};
-    uint32_t box_count = 0;
+    DvzVisual* box_source = NULL;
 
     dvz_visual_set_visible(state->sample, false);
     dvz_visual_set_visible(state->multiline, false);
@@ -663,17 +650,11 @@ static void update_text_scene(TextLabState* state)
             positions[i][0] = left + (float)i * step;
             positions[i][1] = 0.5f * height;
             positions[i][2] = 0.0f;
-            box_strings[i] = strings[i];
-            box_positions[i][0] = positions[i][0];
-            box_positions[i][1] = positions[i][1];
-            box_positions[i][2] = positions[i][2];
-            box_sizes[i] = state->tick_size_pts;
-            box_angles[i] = 0.0f;
         }
-        box_count = tick_count;
         set_text_items(
             state->ticks, strings, tick_count, positions, state->tick_size_pts, color, text_anchor,
             NULL);
+        box_source = state->ticks;
     }
     else if (state->mode == TEXT_LAB_MODE_MULTILINE)
     {
@@ -688,12 +669,7 @@ static void update_text_scene(TextLabState* state)
         crosshair_positions[0][1] = multiline_pos[0][1];
         crosshair_positions[0][2] = multiline_pos[0][2];
         crosshair_count = 1;
-        box_strings[0] = multiline_string;
-        box_positions[0][0] = multiline_pos[0][0];
-        box_positions[0][1] = multiline_pos[0][1];
-        box_positions[0][2] = multiline_pos[0][2];
-        box_sizes[0] = state->size_pts;
-        box_count = 1;
+        box_source = state->multiline;
     }
     else
     {
@@ -705,23 +681,18 @@ static void update_text_scene(TextLabState* state)
         crosshair_positions[0][1] = sample_pos[0][1];
         crosshair_positions[0][2] = sample_pos[0][2];
         crosshair_count = 1;
-        box_strings[0] = sample_string;
-        box_positions[0][0] = sample_pos[0][0];
-        box_positions[0][1] = sample_pos[0][1];
-        box_positions[0][2] = sample_pos[0][2];
-        box_sizes[0] = state->size_pts;
-        box_angles[0] = sample_angle[0];
-        box_count = 1;
+        box_source = state->sample;
     }
 
     if (state->crosshair != NULL)
         set_crosshair_items(state->crosshair, crosshair_count, crosshair_positions, width, height);
     if (state->boxes != NULL)
     {
-        if (state->show_boxes)
-            set_box_items(
-                state->boxes, box_strings, box_count, box_positions, box_sizes, text_anchor,
-                box_angles, width, height);
+        if (state->show_boxes && box_source != NULL)
+        {
+            _scene_prepare_text_visuals(state->figure);
+            set_box_items(state->boxes, box_source);
+        }
         else
             dvz_visual_set_visible(state->boxes, false);
     }
@@ -986,16 +957,26 @@ int main(int argc, char** argv)
         return 1;
     }
 
-    state.boxes = dvz_primitive(scene, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 0);
+    state.boxes = dvz_glyph(scene, 0);
     if (state.boxes == NULL)
     {
-        dvz_fprintf(stderr, "dvz_primitive() failed for bounding boxes\n");
+        dvz_fprintf(stderr, "dvz_glyph() failed for bounding boxes\n");
+        dvz_scene_destroy(scene);
+        return 1;
+    }
+    static const uint8_t box_texture[4] = {255, 255, 255, 255};
+    state.boxes->glyph_atlas_encoding = DVZ_TEXT_ATLAS_ENCODING_BITMAP_ALPHA;
+    if (dvz_visual_set_texture(state.boxes, box_texture, 1, 1) != 0 ||
+        dvz_visual_set_alpha_mode(state.boxes, DVZ_ALPHA_BLENDED) != 0 ||
+        dvz_visual_set_depth_test(state.boxes, false) != 0)
+    {
+        dvz_fprintf(stderr, "bounding box glyph visual setup failed\n");
         dvz_scene_destroy(scene);
         return 1;
     }
     DvzVisualAttachDesc box_attach = {
         .z_layer = 6,
-        .controller_mode = DVZ_CONTROLLER_APPLY,
+        .controller_mode = DVZ_CONTROLLER_APPLY_ISOTROPIC_LOCAL,
     };
     if (dvz_panel_add_visual(panel, state.boxes, &box_attach) != 0)
     {

@@ -64,6 +64,7 @@ function(dvz_add_example group name source)
         PRIVATE
         ${PROJECT_SOURCE_DIR}/include
         ${PROJECT_SOURCE_DIR}/src/common
+        ${PROJECT_SOURCE_DIR}/src/scene
         ${CMAKE_CURRENT_SOURCE_DIR}
         ${CMAKE_CURRENT_SOURCE_DIR}/tools
         ${PROJECT_SOURCE_DIR}/external/volk
