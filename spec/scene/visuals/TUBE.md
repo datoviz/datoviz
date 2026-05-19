@@ -9,7 +9,7 @@ public enum, shader path, picking path, or DRP2 lowering yet. Current examples s
 
 This spec extracts generic visual-family requirements from the tractography, flow-field, tokamak,
 tracks, particle-trail, and protein-ribbon notes. Domain examples should link here instead of
-defining independent `Path3DVisual`, `StreamlineVisual`, or `TubePathVisual` names.
+defining independent curve-rendering family names.
 
 
 ## Semantic Purpose
