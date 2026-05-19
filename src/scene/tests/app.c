@@ -34,6 +34,8 @@
 #include "datoviz/canvas.h"
 #include "datoviz/drp2.h"
 #include "datoviz/scene.h"
+#include "datoviz/vk/gpu_ctx.h"
+#include "datoviz/window.h"
 #include "datoviz/window/backend.h"
 #include "helpers.h"
 #include "test_scene.h"
@@ -47,6 +49,8 @@
 
 #define TST_SCENE_APP_GPU_RES (TST_RES_CPU | TST_RES_GPU | TST_RES_VULKAN)
 
+#define TST_SCENE_APP_GPU_FIXTURE "scene-app-gpu"
+
 #define TST_SCENE_APP_CASE(test, resource_flags, isolation_mode)                                  \
     do                                                                                            \
     {                                                                                             \
@@ -54,6 +58,18 @@
         _tst_desc.tags = tags;                                                                    \
         _tst_desc.resources = (resource_flags);                                                   \
         _tst_desc.isolation = (isolation_mode);                                                   \
+        tst_suite_add_case((suite), _tst_desc);                                                   \
+    } while (0)
+
+#define TST_SCENE_APP_SHARED_CASE(test)                                                           \
+    do                                                                                            \
+    {                                                                                             \
+        TstCaseDesc _tst_desc = tst_case_desc(#test, #test, (test));                              \
+        _tst_desc.tags = tags;                                                                    \
+        _tst_desc.resources = TST_SCENE_APP_GPU_RES;                                              \
+        _tst_desc.isolation = TST_ISOLATION_SERIAL;                                               \
+        _tst_desc.fixture = TST_SCENE_APP_GPU_FIXTURE;                                            \
+        _tst_desc.fixture_scope = TST_FIXTURE_SCOPE_PROCESS;                                      \
         tst_suite_add_case((suite), _tst_desc);                                                   \
     } while (0)
 
@@ -146,12 +162,163 @@ typedef struct
 } AppLogCapture;
 
 
+typedef struct
+{
+    DvzGpuCtx* gpu_ctx;
+    DvzWindowHost* window_host;
+    bool available;
+    const char* skip_reason;
+} DvzTestGpuFixture;
+
+
 typedef enum
 {
     APP_VOLUME_OCCLUSION_MODE_DISABLED,
     APP_VOLUME_OCCLUSION_MODE_VOLUME,
     APP_VOLUME_OCCLUSION_MODE_SCENE,
 } AppVolumeOcclusionMode;
+
+
+
+/**
+ * Return an app config that does not request extra instance extensions from borrowed GPU contexts.
+ *
+ * @return app config with GPU-extension requests disabled
+ */
+static DvzAppConfig _app_test_resource_config(void)
+{
+    DvzAppConfig config = dvz_app_config();
+    config.instance_extension_count = 0;
+    config.instance_extensions = NULL;
+    config.enable_canvas_extensions = false;
+    config.enable_glfw_extensions = false;
+    return config;
+}
+
+
+
+/**
+ * Create a GPU context with the same feature baseline as the default app path.
+ *
+ * @return GPU context, or NULL when Vulkan setup is unavailable
+ */
+static DvzGpuCtx* _app_test_gpu_ctx(void)
+{
+    DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
+    VkPhysicalDeviceFeatures features10 = {0};
+    features10.independentBlend = true;
+    dvz_gpu_ctx_config_features10(&gpu_cfg, &features10);
+    VkPhysicalDeviceVulkan12Features features12 = {
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES};
+    features12.timelineSemaphore = true;
+    dvz_gpu_ctx_config_features12(&gpu_cfg, &features12);
+    VkPhysicalDeviceVulkan13Features features13 = {
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES};
+    features13.dynamicRendering = true;
+    features13.synchronization2 = true;
+    dvz_gpu_ctx_config_features13(&gpu_cfg, &features13);
+    return dvz_gpu_ctx(&gpu_cfg);
+}
+
+
+
+/**
+ * Create the process-scoped GPU fixture used by shared offscreen app tests.
+ *
+ * @param suite active test suite
+ * @param worker_index scheduler worker index
+ * @return fixture state
+ */
+static void* _app_gpu_fixture_create(TstSuite* suite, uint32_t worker_index)
+{
+    (void)suite;
+    (void)worker_index;
+
+    DvzTestGpuFixture* fixture = (DvzTestGpuFixture*)dvz_calloc(1, sizeof(DvzTestGpuFixture));
+    ANN(fixture);
+
+    fixture->window_host = dvz_window_host();
+    if (fixture->window_host == NULL)
+    {
+        fixture->skip_reason = "window host creation failed";
+        return fixture;
+    }
+
+    fixture->gpu_ctx = _app_test_gpu_ctx();
+    if (fixture->gpu_ctx == NULL)
+    {
+        fixture->skip_reason = "GPU context creation failed";
+        return fixture;
+    }
+
+    fixture->available = true;
+    return fixture;
+}
+
+
+
+/**
+ * Destroy a process-scoped GPU fixture used by shared offscreen app tests.
+ *
+ * @param fixture_ptr fixture state
+ */
+static void _app_gpu_fixture_destroy(void* fixture_ptr)
+{
+    DvzTestGpuFixture* fixture = (DvzTestGpuFixture*)fixture_ptr;
+    if (fixture == NULL)
+        return;
+    if (fixture->gpu_ctx != NULL)
+    {
+        /* Other app paths may have loaded Volk against a later transient instance. */
+        DvzInstance* instance = dvz_gpu_ctx_instance(fixture->gpu_ctx);
+        if (instance != NULL && dvz_instance_handle(instance) != VK_NULL_HANDLE)
+            volkLoadInstance(dvz_instance_handle(instance));
+        dvz_gpu_ctx_destroy(fixture->gpu_ctx);
+        fixture->gpu_ctx = NULL;
+    }
+    if (fixture->window_host != NULL)
+    {
+        dvz_window_host_destroy(fixture->window_host);
+        fixture->window_host = NULL;
+    }
+    dvz_free(fixture);
+}
+
+
+
+/**
+ * Create an app using the current test fixture when the case requested one.
+ *
+ * @param suite active test context
+ * @param scene scene borrowed by the app
+ * @return app, or NULL when setup is unavailable
+ */
+static DvzApp* _app_test_create(TstContext* suite, DvzScene* scene)
+{
+    ANN(suite);
+    ANN(scene);
+
+    DvzTestGpuFixture* fixture =
+        (DvzTestGpuFixture*)tst_context_fixture(suite, TST_SCENE_APP_GPU_FIXTURE);
+    if (fixture == NULL)
+    {
+        return dvz_app(scene);
+    }
+    if (!fixture->available)
+    {
+        tst_skip(suite, fixture->skip_reason != NULL ? fixture->skip_reason : "GPU fixture unavailable");
+        return NULL;
+    }
+
+    DvzAppResources resources = {.gpu_ctx = fixture->gpu_ctx, .window_host = fixture->window_host};
+    DvzAppConfig config = _app_test_resource_config();
+    DvzApp* app = dvz_app_with_resources(scene, &config, &resources);
+    if (app == NULL)
+    {
+        tst_skip(suite, "app creation from shared GPU fixture failed");
+    }
+    return app;
+}
 
 
 
@@ -1612,7 +1779,7 @@ int test_app_offscreen_panel_three_visuals_all_drawn(TstContext* suite, const Ts
     AT(dvz_panel_add_visual(panel, vg, NULL) == 0);
     AT(dvz_panel_add_visual(panel, vb, NULL) == 0);
 
-    DvzApp* app = dvz_app(scene);
+    DvzApp* app = _app_test_create(suite, scene);
     if (app == NULL)
     {
         log_warn("test_app_offscreen_panel_three_visuals_all_drawn skipped: GPU context creation failed");
@@ -1842,7 +2009,7 @@ int test_app_offscreen_has_nonblank_pixels(TstContext* suite, const TstCase* ite
     AT(dvz_visual_set_data(visual, "size", &size, 1) == 0);
     AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
 
-    DvzApp* app = dvz_app(scene);
+    DvzApp* app = _app_test_create(suite, scene);
     if (app == NULL)
     {
         log_warn("test_app_offscreen_has_nonblank_pixels skipped: GPU context creation failed");
@@ -1913,7 +2080,7 @@ int test_app_offscreen_pixel_square_has_nonblank_pixels(TstContext* suite, const
     AT(dvz_visual_set_data(visual, "size", &size, 1) == 0);
     AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
 
-    DvzApp* app = dvz_app(scene);
+    DvzApp* app = _app_test_create(suite, scene);
     if (app == NULL)
     {
         log_warn("test_app_offscreen_pixel_square_has_nonblank_pixels skipped: GPU context failed");
@@ -2412,7 +2579,7 @@ int test_app_offscreen_image_has_nonblank_pixels(TstContext* suite, const TstCas
     AT(dvz_visual_set_texture(visual, pixels, 4, 4) == 0);
     AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
 
-    DvzApp* app = dvz_app(scene);
+    DvzApp* app = _app_test_create(suite, scene);
     if (app == NULL)
     {
         log_warn("test_app_offscreen_image_has_nonblank_pixels skipped: GPU context creation failed");
@@ -3383,7 +3550,7 @@ int test_app_offscreen_mesh_renders_nonblank(TstContext* suite, const TstCase* i
                .diffuse = 0.0f,
            }) == 0);
 
-    DvzApp* app = dvz_app(scene);
+    DvzApp* app = _app_test_create(suite, scene);
     if (app == NULL)
     {
         log_warn("test_app_offscreen_mesh_renders_nonblank skipped: GPU context creation failed");
@@ -4366,7 +4533,7 @@ int test_app_offscreen_two_panel_points_light_both_halves(TstContext* suite, con
     AT(dvz_visual_set_data(right_visual, "size", &size, 1) == 0);
     AT(dvz_panel_add_visual(right, right_visual, NULL) == 0);
 
-    DvzApp* app = dvz_app(scene);
+    DvzApp* app = _app_test_create(suite, scene);
     if (app == NULL)
     {
         log_warn(
@@ -4437,7 +4604,7 @@ int test_app_offscreen_clear_color(TstContext* suite, const TstCase* item)
     (void)panel;
     AT(panel != NULL);
 
-    DvzApp* app = dvz_app(scene);
+    DvzApp* app = _app_test_create(suite, scene);
     if (app == NULL)
     {
         log_warn("test_app_offscreen_clear_color skipped: GPU context creation failed");
@@ -5489,6 +5656,10 @@ int test_scene_app(TstSuite* suite)
     TST_GROUP("app-offscreen");
 
 #if defined(DVZ_HAS_APP) && DVZ_HAS_APP
+    tst_suite_register_fixture(
+        suite, TST_SCENE_APP_GPU_FIXTURE, TST_FIXTURE_SCOPE_PROCESS, _app_gpu_fixture_create,
+        _app_gpu_fixture_destroy);
+
     TST_SCENE_APP_CASE(test_app_offscreen, TST_SCENE_APP_GPU_RES, TST_ISOLATION_PROCESS);
     TST_SCENE_APP_CASE(
         test_app_offscreen_scheduler_sees_scene_dirty_without_request, TST_SCENE_APP_GPU_RES,
@@ -5634,6 +5805,15 @@ int test_scene_app(TstSuite* suite)
     TST_SCENE_APP_CASE(
         test_app_capture_rejects_undersized_buffer, TST_SCENE_APP_GPU_RES,
         TST_ISOLATION_PROCESS);
+
+    TST_GROUP("app-offscreen-shared");
+    TST_SCENE_APP_SHARED_CASE(test_app_offscreen_clear_color);
+    TST_SCENE_APP_SHARED_CASE(test_app_offscreen_has_nonblank_pixels);
+    TST_SCENE_APP_SHARED_CASE(test_app_offscreen_pixel_square_has_nonblank_pixels);
+    TST_SCENE_APP_SHARED_CASE(test_app_offscreen_image_has_nonblank_pixels);
+    TST_SCENE_APP_SHARED_CASE(test_app_offscreen_mesh_renders_nonblank);
+    TST_SCENE_APP_SHARED_CASE(test_app_offscreen_panel_three_visuals_all_drawn);
+    TST_SCENE_APP_SHARED_CASE(test_app_offscreen_two_panel_points_light_both_halves);
 #endif
 
     return 0;
