@@ -42,6 +42,48 @@ if(APPLE)
 endif()
 
 # -------------------------------------------------------------------------------------------------
+# Synthetic scheduler test probe
+# -------------------------------------------------------------------------------------------------
+
+add_executable(dvztest_scheduler
+    dvztest_scheduler.c
+)
+
+target_link_libraries(dvztest_scheduler
+    PRIVATE
+    datoviz_common
+    testing
+)
+
+if(DVZ_THREADING_TARGET)
+    target_link_libraries(dvztest_scheduler PRIVATE ${DVZ_THREADING_TARGET})
+endif()
+
+if(DVZ_WITH_MIMALLOC)
+    target_link_libraries(dvztest_scheduler PRIVATE $<$<CONFIG:Release>:mimalloc-static>)
+endif()
+
+target_include_directories(dvztest_scheduler
+    PRIVATE
+    ${PROJECT_SOURCE_DIR}/include
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${PROJECT_SOURCE_DIR}/src/common
+)
+
+if(_dvz_compile_definitions)
+    target_compile_definitions(dvztest_scheduler PRIVATE ${_dvz_compile_definitions})
+endif()
+
+if(APPLE)
+    set_target_properties(dvztest_scheduler PROPERTIES
+        BUILD_RPATH "${_dvz_runtime_rpath}"
+        INSTALL_RPATH "${_dvz_runtime_rpath}"
+    )
+endif()
+
+add_test(NAME dvztest_scheduler COMMAND dvztest_scheduler)
+
+# -------------------------------------------------------------------------------------------------
 # Datoviz test runner
 # -------------------------------------------------------------------------------------------------
 
