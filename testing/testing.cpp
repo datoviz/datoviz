@@ -1260,6 +1260,74 @@ static bool _tst_case_matches(const TstCase* test, const TstOptions* options)
 
 
 
+static int _tst_select_cases(
+    TstSuite* suite, const TstOptions* options, bool child_mode, TstShardPolicy shard_policy,
+    std::vector<TstSelectedCase>* selected)
+{
+    ANN(suite);
+    ANN(options);
+    ANN(selected);
+    selected->clear();
+
+    for (uint32_t i = 0; i < suite->n_cases; ++i)
+    {
+        TstCase* test = &suite->cases[i];
+        if (_tst_case_matches(test, options))
+        {
+            TstSelectedCase item = {};
+            item.test = test;
+            item.order_index = selected->size();
+            selected->push_back(item);
+        }
+    }
+
+    if (options->shuffle && selected->size() > 1)
+    {
+        std::mt19937_64 rng(options->seed);
+        std::shuffle(selected->begin(), selected->end(), rng);
+    }
+    for (size_t i = 0; i < selected->size(); i++)
+    {
+        (*selected)[i].order_index = i;
+    }
+    if (child_mode)
+    {
+        selected->erase(
+            std::remove_if(
+                selected->begin(), selected->end(), [options](const TstSelectedCase& item) {
+                    return item.order_index % options->shard_count != options->shard_index;
+                }),
+            selected->end());
+    }
+    if (shard_policy != TST_SHARD_POLICY_ALL)
+    {
+        selected->erase(
+            std::remove_if(
+                selected->begin(), selected->end(),
+                [suite, shard_policy](const TstSelectedCase& item) {
+                    return !_tst_shard_policy_matches(suite, item.test, shard_policy);
+                }),
+            selected->end());
+    }
+    if (options->process_child)
+    {
+        if (options->selected_order_index == UINT64_MAX)
+        {
+            dvz_fprintf(stderr, "--process-child requires --selected-order-index\n");
+            return 1;
+        }
+        selected->erase(
+            std::remove_if(
+                selected->begin(), selected->end(), [options](const TstSelectedCase& item) {
+                    return item.order_index != options->selected_order_index;
+                }),
+            selected->end());
+    }
+    return 0;
+}
+
+
+
 static void _tst_context_destroy(TstContext* ctx)
 {
     ANN(ctx);
@@ -2165,6 +2233,67 @@ static void _tst_print_shard_progress(
 
 
 
+static int _tst_collect_child_json(
+    const TstChildProc* child, std::vector<TstOwnedResult>* owned, TstShardProgress* progress,
+    bool final)
+{
+    ANN(child);
+    ANN(owned);
+    ANN(progress);
+
+    int res = 0;
+    TstRunSummary child_summary = {};
+    if (_tst_read_json_summary(child->json_path.c_str(), &child_summary) != 0)
+    {
+        res = 1;
+    }
+    if (_tst_read_json_results(child->json_path.c_str(), owned) != 0)
+    {
+        res = 1;
+    }
+    std::remove(child->json_path.c_str());
+    _tst_shard_progress_update(progress, &child_summary);
+    _tst_print_shard_progress(progress, child, final);
+    return res;
+}
+
+
+
+static void _tst_record_result(
+    const TstCase* result, const TstOptions* options, bool suppress_output,
+    std::vector<TstCase>* results, TstRunSummary* summary,
+    std::map<std::string, TstAggregate>* modules, std::map<std::string, TstAggregate>* groups)
+{
+    ANN(result);
+    ANN(options);
+    ANN(results);
+    ANN(summary);
+    ANN(modules);
+    ANN(groups);
+
+    if (!suppress_output)
+    {
+        _tst_print_case(result, options);
+    }
+    _tst_update_aggregate(
+        &(*modules)[result->module != NULL ? result->module : "default"], result);
+    _tst_update_aggregate(
+        &(*groups)[_tst_case_id(result).substr(0, _tst_case_id(result).rfind('/'))], result);
+
+    summary->selected_count++;
+    if (result->status == TST_STATUS_PASS)
+        summary->passed_count++;
+    else if (result->status == TST_STATUS_FAIL)
+        summary->failed_count++;
+    else if (result->status == TST_STATUS_SKIP)
+        summary->skipped_count++;
+    summary->summed_case_ns += result->elapsed_ns;
+
+    results->push_back(*result);
+}
+
+
+
 static int _tst_run_parent_shards(
     TstSuite* suite, int argc, char** argv, const TstOptions* options, uint64_t runner_start_ns)
 {
@@ -2214,19 +2343,12 @@ static int _tst_run_parent_shards(
                 child_failure = 1;
             }
 
-            TstRunSummary child_summary = {};
-            if (_tst_read_json_summary(child.json_path.c_str(), &child_summary) != 0)
+            if (_tst_collect_child_json(
+                    &child, &owned, &progress,
+                    progress.completed_shards + 1 == progress.total_shards) != 0)
             {
                 child_failure = 1;
             }
-            if (_tst_read_json_results(child.json_path.c_str(), &owned) != 0)
-            {
-                child_failure = 1;
-            }
-            std::remove(child.json_path.c_str());
-            _tst_shard_progress_update(&progress, &child_summary);
-            _tst_print_shard_progress(
-                &progress, &child, progress.completed_shards == progress.total_shards);
         }
     };
 
@@ -2251,19 +2373,12 @@ static int _tst_run_parent_shards(
             child_failure = 1;
         }
 
-        TstRunSummary child_summary = {};
-        if (_tst_read_json_summary(child.json_path.c_str(), &child_summary) != 0)
+        if (_tst_collect_child_json(
+                &child, &owned, &progress,
+                progress.completed_shards + 1 == progress.total_shards) != 0)
         {
             child_failure = 1;
         }
-        if (_tst_read_json_results(child.json_path.c_str(), &owned) != 0)
-        {
-            child_failure = 1;
-        }
-        std::remove(child.json_path.c_str());
-        _tst_shard_progress_update(&progress, &child_summary);
-        _tst_print_shard_progress(
-            &progress, &child, progress.completed_shards == progress.total_shards);
     }
     std::sort(owned.begin(), owned.end(), [](const TstOwnedResult& a, const TstOwnedResult& b) {
         if (a.test.repeat_index != b.test.repeat_index)
@@ -2530,59 +2645,9 @@ int tst_suite_run(TstSuite* suite, int argc, char** argv)
     }
 
     std::vector<TstSelectedCase> selected;
-    for (uint32_t i = 0; i < suite->n_cases; ++i)
+    if (_tst_select_cases(suite, &options, child_mode, shard_policy, &selected) != 0)
     {
-        TstCase* test = &suite->cases[i];
-        if (_tst_case_matches(test, &options))
-        {
-            TstSelectedCase item = {};
-            item.test = test;
-            item.order_index = selected.size();
-            selected.push_back(item);
-        }
-    }
-
-    if (options.shuffle && selected.size() > 1)
-    {
-        std::mt19937_64 rng(options.seed);
-        std::shuffle(selected.begin(), selected.end(), rng);
-    }
-    for (size_t i = 0; i < selected.size(); i++)
-    {
-        selected[i].order_index = i;
-    }
-    if (child_mode)
-    {
-        selected.erase(
-            std::remove_if(
-                selected.begin(), selected.end(), [&options](const TstSelectedCase& item) {
-                    return item.order_index % options.shard_count != options.shard_index;
-                }),
-            selected.end());
-    }
-    if (shard_policy != TST_SHARD_POLICY_ALL)
-    {
-        selected.erase(
-            std::remove_if(
-                selected.begin(), selected.end(),
-                [suite, shard_policy](const TstSelectedCase& item) {
-                    return !_tst_shard_policy_matches(suite, item.test, shard_policy);
-                }),
-            selected.end());
-    }
-    if (options.process_child)
-    {
-        if (options.selected_order_index == UINT64_MAX)
-        {
-            dvz_fprintf(stderr, "--process-child requires --selected-order-index\n");
-            return 1;
-        }
-        selected.erase(
-            std::remove_if(
-                selected.begin(), selected.end(), [&options](const TstSelectedCase& item) {
-                    return item.order_index != options.selected_order_index;
-                }),
-            selected.end());
+        return 1;
     }
 
     TstRunSummary summary = {};
@@ -2596,26 +2661,6 @@ int tst_suite_run(TstSuite* suite, int argc, char** argv)
     fixture_state.worker_index = 0;
     const bool suppress_output = options.child_json_path != NULL;
     const uint64_t runner_start_ns = _tst_now_ns();
-    auto record_result = [&](const TstCase& result) {
-        if (!suppress_output)
-        {
-            _tst_print_case(&result, &options);
-        }
-        _tst_update_aggregate(&modules[result.module != NULL ? result.module : "default"], &result);
-        _tst_update_aggregate(
-            &groups[_tst_case_id(&result).substr(0, _tst_case_id(&result).rfind('/'))], &result);
-
-        summary.selected_count++;
-        if (result.status == TST_STATUS_PASS)
-            summary.passed_count++;
-        else if (result.status == TST_STATUS_FAIL)
-            summary.failed_count++;
-        else if (result.status == TST_STATUS_SKIP)
-            summary.skipped_count++;
-        summary.summed_case_ns += result.elapsed_ns;
-
-        results.push_back(result);
-    };
 
     for (uint64_t repeat = 0; repeat < options.repeat; ++repeat)
     {
@@ -2658,7 +2703,8 @@ int tst_suite_run(TstSuite* suite, int argc, char** argv)
                     result.status = TST_STATUS_FAIL;
                 }
 
-                record_result(result);
+                _tst_record_result(
+                    &result, &options, suppress_output, &results, &summary, &modules, &groups);
                 if (options.fail_fast && result.status == TST_STATUS_FAIL)
                 {
                     break;
@@ -2734,7 +2780,8 @@ int tst_suite_run(TstSuite* suite, int argc, char** argv)
                 suite->log_adapter.uninstall(suite->log_adapter.user_data);
             }
 
-            record_result(result);
+            _tst_record_result(
+                &result, &options, suppress_output, &results, &summary, &modules, &groups);
             _tst_fixture_destroy_case(&fixture_state);
             _tst_context_destroy(&ctx);
 
