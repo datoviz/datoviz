@@ -13,8 +13,8 @@ Shared attribute and behavioral definitions are in `SHARED_ATTRIBUTES.md`.
 
 The active v0.4 path supports retained `volume` visuals backed by 3D `SampledField` resources,
 volume opacity/sampling/render-mode/slice/bounds/box-clipping state, and scene -> DRP2 emission.
-The default public mode is full-volume composite rendering. Slice rendering is explicit through
-`render_mode = slice`.
+The default public mode is full-volume composite rendering. MIP and slice rendering are explicit
+through `render_mode = mip` and `render_mode = slice`.
 
 The active v0.4 volume contract is intentionally powerful but bounded:
 
@@ -25,7 +25,7 @@ The active v0.4 volume contract is intentionally powerful but bounded:
 5. one arbitrary clipping plane in addition to the normalized clipping box;
 6. CPU slice probe/readout returning UVW, object coordinate, and sampled value.
 
-MIP and DVR picking remain follow-up work.
+DVR/MIP picking remains follow-up work.
 
 Isosurfaces, gradient lighting, categorical label volumes, bricking/out-of-core streaming, full MPR,
 and WebGPU/WGSL parity remain follow-up work unless a specific v0.4 task activates them.
