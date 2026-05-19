@@ -1438,7 +1438,7 @@ int test_app_offscreen_shared_scene_request_frame_subscribers(
         dvz_panel(figure, (DvzPanelDesc){.x = 0, .y = 0, .width = 1, .height = 1});
     AT(panel != NULL);
 
-    DvzApp* app1 = dvz_app(scene);
+    DvzApp* app1 = _app_test_create(suite, scene);
     if (app1 == NULL)
     {
         log_warn(
@@ -5671,9 +5671,7 @@ int test_scene_app(TstSuite* suite)
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_scheduler_sees_scene_dirty_without_request);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_pick_probe_requests_notify_hosted_callback);
-    TST_SCENE_APP_CASE(
-        test_app_offscreen_shared_scene_request_frame_subscribers, TST_SCENE_APP_GPU_RES,
-        TST_ISOLATION_PROCESS);
+    TST_SCENE_APP_SHARED_CASE(test_app_offscreen_shared_scene_request_frame_subscribers);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_timer_advances_in_app_run);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_timer_advances_in_render_once);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_render_enabled_gate);
