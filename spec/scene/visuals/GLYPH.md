@@ -11,10 +11,12 @@ Shared attribute and behavioral definitions are in `SHARED_ATTRIBUTES.md`.
 
 ## Semantic Purpose
 
-`glyph` renders text strings anchored at data-space positions.
+`glyph` renders atlas-backed text geometry. In the target semantic model, each logical glyph item
+belongs to a higher-level text string anchored in screen, data, or world space.
 
-Each logical item is one string. The scene layer handles font layout, atlas management, and
-per-character geometry internally. Users do not interact with glyph-level atlas coordinates.
+Each logical item is one string in the target model. The scene layer handles font layout, atlas
+management, and per-character geometry internally. Ordinary users should not interact with
+glyph-level atlas coordinates.
 
 Typical uses: axis tick labels, data point annotations, legend entries, categorical labels,
 per-character color coding.
@@ -22,6 +24,23 @@ per-character color coding.
 Higher-level retained text objects are defined in [../semantics/TEXT.md](../semantics/TEXT.md).
 Those objects may lower to this `glyph` visual contract, but the public text API should remain
 semantic and should not expose glyph atlas internals.
+
+
+## Current Implementation Status
+
+The current v0.4-dev implementation is transitional:
+
+1. `dvz_glyph()` is installed as a low-level `DvzVisual*` constructor,
+2. `dvz_text()` is installed as a visual-backed text API that lowers internally to glyph visuals,
+3. text uses bitmap/SDF/MSDF-capable atlas resources and renders through the scene -> FramePlan ->
+   DRP2 -> vklite/canvas path,
+4. focused tests cover text realization, UTF-8 atlas growth, missing-glyph fallback, many-label
+   batching, runtime readback, and app/offscreen visible pixels.
+
+The target semantic contract below is still the direction for API cleanup. Until the semantic
+`DvzText*` surface lands, references to "users do not interact with atlas coordinates" describe
+the desired high-level text path, while `dvz_glyph()` remains a lower-level escape hatch and
+implementation target.
 
 
 ## Item and Group Model

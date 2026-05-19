@@ -1,8 +1,10 @@
 # Text Rendering Slice
 
-This slice defines the first implementation-ready path for rendering retained `DvzText` objects.
+This slice records the first rendered text path and the remaining work needed to align it with the
+retained semantic `DvzText` design.
 
-It implements the smallest useful text renderer while preserving the broader text semantics in
+The active implementation provides the smallest useful text renderer while preserving the broader
+text semantics in
 [../semantics/TEXT.md](../semantics/TEXT.md) and the glyph visual contract in
 [../visuals/GLYPH.md](../visuals/GLYPH.md).
 
@@ -10,19 +12,47 @@ The implementation-facing shaping, layout, atlas, and cache contract lives in
 [../implementation/TEXT_SHAPING_ATLAS.md](../implementation/TEXT_SHAPING_ATLAS.md).
 
 
+## Current Implementation Status
+
+Status: first rendered slice landed.
+
+The installed v0.4-dev surface is currently transitional:
+
+1. `dvz_text()` returns a `DvzVisual*` text visual, not a semantic `DvzText*` handle,
+2. text content is supplied with `dvz_visual_set_strings(text, "text", ...)`,
+3. position, anchor, size, color, and angle are supplied as visual attributes,
+4. `dvz_text_set_renderer()` selects the bitmap/SDF/MSDF-capable atlas path,
+5. text lowers internally to scene-owned glyph visuals and atlas resources,
+6. offscreen/runtime readback tests verify visible bitmap and SDF-backed text.
+
+The remaining slice work is API/spec alignment and integration, not first proof that glyphs can
+render.
+
+
 ## Scope
 
-Implement visible text for retained `DvzText` objects attached to a panel.
+Support visible text attached to a panel through the current `dvz_text()` visual path while keeping
+the semantic `DvzText` design as the target API direction.
 
 The first slice supports:
 
-1. UTF-8 strings stored on `DvzText`,
-2. one font reference per text object, with a built-in fallback font when no font is supplied,
-3. one run-level color and size per text object,
-4. screen-space and data-space placement modes already exposed by `DvzTextPlacement`,
-5. panel scissor/viewport clipping,
-6. retained string, style, and placement updates,
-7. offscreen and GLFW app rendering through scene -> `FramePlan` -> DRP2 -> vklite/canvas.
+1. UTF-8 strings stored on a text visual,
+2. a built-in fallback bitmap font and font-backed SDF/MSDF-capable atlas behavior,
+3. run/per-string color and size through visual attributes,
+4. screen-space placement in logical pixels,
+5. panel viewport/scissor participation through the normal render path,
+6. retained string, renderer, visibility, resize, and destroy updates,
+7. offscreen app rendering and runtime readback through scene -> `FramePlan` -> DRP2 ->
+   vklite/canvas.
+
+Remaining first-slice gaps:
+
+1. reconcile or document the gap between the target `DvzText*` API and current `DvzVisual*`
+   surface,
+2. finish data/world-space retained text placement and depth policy,
+3. harden DPI behavior and panel clipping edge cases,
+4. improve explicit diagnostics for renderer fallback, missing glyphs, and unsupported modes,
+5. add or record bounded GLFW/manual smoke coverage.
 
 
 ## Non-Goals
@@ -44,22 +74,23 @@ scene diagnostic.
 
 ## Public API Boundary
 
-Use the installed APIs:
+Use the currently installed APIs:
 
 1. `dvz_font()`,
 2. `dvz_font_destroy()`,
-3. `dvz_text()`,
-4. `dvz_text_destroy()`,
-5. `dvz_text_set_string()`,
-6. `dvz_text_set_style()`,
-7. `dvz_text_set_placement()`.
+3. `dvz_text()` returning `DvzVisual*`,
+4. `dvz_text_set_renderer()`,
+5. `dvz_visual_set_strings()`,
+6. `dvz_visual_set_data()` / `dvz_visual_set_data_many()`,
+7. `dvz_glyph()` as the current low-level glyph visual constructor.
 
-Do not add a direct public glyph visual constructor in this slice.
+Target semantic APIs such as `DvzText*`, `dvz_text_set_string()`, `dvz_text_set_style()`, and
+`dvz_text_set_placement()` remain design intent until the public surface is reconciled.
 
 
 ## Retained State
 
-The existing retained state in `DvzText` is the semantic source:
+The target retained state in `DvzText` is the semantic source:
 
 1. `scene`,
 2. `panel`,
@@ -68,7 +99,8 @@ The existing retained state in `DvzText` is the semantic source:
 5. `placement`,
 6. `flags`.
 
-The implementation may add internal scene-owned caches:
+The current implementation stores text state on `DvzVisual` and uses an internal derived glyph
+visual. The implementation may add internal scene-owned caches:
 
 1. font face identity,
 2. glyph metrics,
@@ -107,8 +139,7 @@ Validate before planning:
 
 ## FramePlan Contribution
 
-The first renderer may lower all visible `DvzText` objects in a panel into one panel-local glyph
-contribution.
+The first renderer lowers visible text visuals into glyph visual contributions.
 
 The contribution contains:
 
@@ -125,7 +156,7 @@ The contribution must remain scene-owned producer data and must not expose Vulka
 
 ## DRP2 Lowering
 
-The first DRP2 lowering should emit:
+The first DRP2 lowering emits the standard generic resources for glyph visuals:
 
 1. atlas texture create/write commands,
 2. sampler create command,
@@ -152,25 +183,35 @@ later without changing the public text model.
 
 ## Tests
 
-Add focused scene tests for:
+Existing focused tests cover:
+
+1. bitmap text realization into glyph visual attributes,
+2. SDF/MSDF-capable text realization and atlas encoding,
+3. automatic renderer selection,
+4. UTF-8 atlas growth and field reuse,
+5. missing-glyph fallback,
+6. many-label batching through one glyph visual,
+7. runtime/offscreen readback of visible text,
+8. app/offscreen visible-pixel smoke for bitmap and SDF-backed text.
+
+Remaining focused tests to add or harden:
 
 1. text emission produces atlas, sampler, pipeline, buffer, and draw contributions,
 2. changing a string updates text geometry and atlas coverage,
 3. changing color avoids unnecessary atlas rebuild when practical,
 4. screen-space text remains panel-clipped,
 5. data-space text follows panzoom transform,
-6. destroying a text object removes it from emission,
+6. destroying a semantic text object removes it from emission once the `DvzText*` API lands,
 7. cross-scene font binding is rejected.
-
-Add one app/offscreen smoke that captures a frame with visible text.
 
 
 ## Acceptance
 
-This slice is complete when:
+This slice is complete enough for v0.4 explanatory-object integration when:
 
-1. a retained `DvzText` appears in offscreen and GLFW app rendering,
-2. no public atlas/glyph internals leak into the API,
+1. text appears in offscreen and bounded GLFW/manual app rendering,
+2. public atlas/glyph internals are either hidden behind the semantic API or explicitly documented
+   as transitional,
 3. text updates work across repeated frames,
 4. focused tests cover emission, update, destroy, and validation paths,
-5. `API_IMPLEMENTATION_READINESS.md` can move text from "retained only" to "rendered first slice".
+5. API readiness notes record text as a rendered first slice with a transitional public surface.

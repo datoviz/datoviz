@@ -33,9 +33,9 @@ slice.
 
 | Feature | Specified | API declared | Retained state | Rendered | Pickable | Exported | Focused tests | Next slice |
 |---|---|---|---|---|---|---|---|---|
-| Text object | yes | yes, `DvzText` | yes | no | no | no | bookkeeping only | [TEXT_RENDERING_SLICE.md](TEXT_RENDERING_SLICE.md) |
-| Glyph visual contract | yes | no direct constructor | partial via text/annotation state | no | no | no | no rendered path | [TEXT_RENDERING_SLICE.md](TEXT_RENDERING_SLICE.md) |
-| Label annotation | yes | yes, `DvzAnnotation` / `dvz_annotation_label()` | yes | no | no | no | bookkeeping only | [ANNOTATION_LABEL_SLICE.md](ANNOTATION_LABEL_SLICE.md) |
+| Text object | yes | transitional `DvzVisual* dvz_text()`; semantic `DvzText` target | visual-backed text state | first rendered slice active | no | raster capture only | text realization, atlas growth, runtime readback, app/offscreen smoke | integration/API cleanup |
+| Glyph visual contract | yes | yes, `dvz_glyph()` | active as text lowering target | atlas-backed glyph path active | no | raster capture only | covered through text/glyph tests | API boundary cleanup |
+| Label annotation | yes | yes, `DvzAnnotation` / `dvz_annotation_label()` | yes | simple glyph lowering active; richer readouts pending | no | raster capture only | annotation bookkeeping and realization tests | [ANNOTATION_LABEL_SLICE.md](ANNOTATION_LABEL_SLICE.md) |
 | Generic annotation kinds | broad semantics | partial, `DvzAnnotationKind` | partial | no | no | no | no rendered path | after label slice |
 | Continuous scale | yes | yes, `DvzScale` | yes | active for image/volume colormap binding | no | capture only | scale/field tests | colorbar slice |
 | Colormap | yes | yes, `DvzColormap` | yes | active for image/volume colormap binding | no | capture only | scale/field tests | colorbar slice |
@@ -63,9 +63,9 @@ Each implementation slice should answer these questions before code starts:
 
 Use this order unless a concrete user task changes priority:
 
-1. Render simple `DvzText` through a glyph path.
-2. Lower `dvz_annotation_label()` to the same text path with panel/data placement.
-3. Render a continuous `DvzColorbar` ramp plus title/tick labels.
-4. Add a dedicated scale-bar measurement annotation.
-5. Define and implement `DvzLegend` only after categorical scale labels and ordering are concrete.
-
+1. Use the landed `dvz_text()`/glyph path for axes, colorbars, labels, annotations, and readouts.
+2. Reconcile the transitional visual-backed text API with the semantic `DvzText` target API.
+3. Finish data/world text placement and depth policy.
+4. Render a continuous `DvzColorbar` ramp plus title/tick labels.
+5. Add a dedicated scale-bar measurement annotation.
+6. Define and implement `DvzLegend` only after categorical scale labels and ordering are concrete.
