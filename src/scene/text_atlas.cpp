@@ -17,6 +17,7 @@
 #include <float.h>
 #include <limits.h>
 #include <stdint.h>
+#include <vector>
 
 #include "_alloc.h"
 #include "_assertions.h"
@@ -30,6 +31,24 @@
 #if defined(DVZ_HAS_FREETYPE) && DVZ_HAS_FREETYPE
 #include <ft2build.h>
 #include FT_FREETYPE_H
+#endif
+
+#if defined(DVZ_HAS_MSDF_ATLAS) && DVZ_HAS_MSDF_ATLAS
+#if defined(__GNUC__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wconversion"
+#pragma GCC diagnostic ignored "-Wdouble-promotion"
+#pragma GCC diagnostic ignored "-Wint-in-bool-context"
+#pragma GCC diagnostic ignored "-Wold-style-cast"
+#pragma GCC diagnostic ignored "-Wshadow"
+#pragma GCC diagnostic ignored "-Wsign-conversion"
+#pragma GCC diagnostic ignored "-Wswitch-default"
+#endif
+#include <msdf-atlas-gen/msdf-atlas-gen.h>
+#include <msdf-atlas-gen/types.h>
+#if defined(__GNUC__)
+#pragma GCC diagnostic pop
+#endif
 #endif
 
 #if defined(__GNUC__)
@@ -55,7 +74,6 @@
 #endif
 
 
-
 /*************************************************************************************************/
 /*  Constants                                                                                    */
 /*************************************************************************************************/
@@ -68,6 +86,222 @@
 #define DVZ_TEXT_SDF_CELL_GAP   2u
 #define DVZ_TEXT_SDF_ONEDGE     128u
 #define DVZ_TEXT_BITMAP_PADDING 1u
+
+
+
+/*************************************************************************************************/
+/*  Function prototypes                                                                          */
+/*************************************************************************************************/
+
+static bool _text_sdf_codepoint_supported(uint32_t codepoint);
+static float _text_sdf_pixel_height(float size_pts);
+static bool _text_sdf_font_bytes(DvzFont* font);
+static bool _text_atlas_upload_rgba(
+    const DvzFont* font, DvzTextAtlas* atlas, uint8_t* rgba, uint32_t width, uint32_t height);
+
+
+#if defined(DVZ_HAS_MSDF_ATLAS) && DVZ_HAS_MSDF_ATLAS
+/**
+ * Build an RGB MSDF atlas with msdf-atlas-gen.
+ *
+ * @param font the font
+ * @param out_atlas output atlas metadata
+ * @return whether atlas creation succeeded
+ */
+static bool _text_msdf_build_atlas(DvzFont* font, DvzTextAtlas** out_atlas)
+{
+    ANN(font);
+    ANN(out_atlas);
+    *out_atlas = NULL;
+    if (!_text_sdf_font_bytes(font))
+        return false;
+
+    msdfgen::FreetypeHandle* ft = msdfgen::initializeFreetype();
+    if (ft == NULL)
+    {
+        log_error("failed to initialize msdfgen FreeType handle");
+        return false;
+    }
+#if OS_WINDOWS
+    msdfgen::FontHandle* msdf_font =
+        msdfgen::loadFontData(ft, (const unsigned char*)font->ttf_bytes, (int)font->ttf_size);
+#else
+    msdfgen::FontHandle* msdf_font =
+        msdfgen::loadFontData(ft, (const unsigned char*)font->ttf_bytes, font->ttf_size);
+#endif
+    if (msdf_font == NULL)
+    {
+        log_error("failed to load msdfgen font data");
+        msdfgen::deinitializeFreetype(ft);
+        return false;
+    }
+
+    std::vector<msdf_atlas::GlyphGeometry> glyphs;
+    msdf_atlas::FontGeometry font_geometry(&glyphs);
+    msdf_atlas::Charset charset;
+    const uint32_t glyph_count = DVZ_TEXT_SDF_LAST_CHAR - DVZ_TEXT_SDF_FIRST_CHAR + 1u;
+    for (uint32_t i = 0; i < glyph_count; i++)
+        charset.add(DVZ_TEXT_SDF_FIRST_CHAR + i);
+
+    if (font_geometry.loadCharset(msdf_font, 1.0, charset) <= 0 || glyphs.empty())
+    {
+        log_error("failed to load MSDF charset");
+        msdfgen::destroyFont(msdf_font);
+        msdfgen::deinitializeFreetype(ft);
+        return false;
+    }
+
+    const double max_corner_angle = 3.0;
+    for (msdf_atlas::GlyphGeometry& glyph : glyphs)
+        glyph.edgeColoring(&msdfgen::edgeColoringInkTrap, max_corner_angle, 0);
+
+    float pixel_height = _text_sdf_pixel_height(font->size_pts);
+    msdf_atlas::TightAtlasPacker packer;
+    packer.setDimensionsConstraint(msdf_atlas::DimensionsConstraint::SQUARE);
+    packer.setMinimumScale((double)pixel_height);
+    packer.setPixelRange(4.0);
+    packer.setMiterLimit(1.0);
+    if (packer.pack(glyphs.data(), (int)glyphs.size()) != 0)
+    {
+        log_error("failed to pack MSDF atlas");
+        msdfgen::destroyFont(msdf_font);
+        msdfgen::deinitializeFreetype(ft);
+        return false;
+    }
+
+    int width = 0;
+    int height = 0;
+    packer.getDimensions(width, height);
+    if (width <= 0 || height <= 0)
+    {
+        log_error("MSDF atlas has invalid dimensions");
+        msdfgen::destroyFont(msdf_font);
+        msdfgen::deinitializeFreetype(ft);
+        return false;
+    }
+
+    msdf_atlas::ImmediateAtlasGenerator<
+        float, 3, &msdf_atlas::msdfGenerator, msdf_atlas::BitmapAtlasStorage<uint8_t, 3>>
+        generator(width, height);
+    msdf_atlas::GeneratorAttributes attributes;
+    generator.setAttributes(attributes);
+    generator.setThreadCount(8);
+    generator.generate(glyphs.data(), glyphs.size());
+    msdfgen::BitmapConstRef<uint8_t, 3> bitmap = generator.atlasStorage();
+
+    uint64_t pixel_count = 0;
+    uint64_t byte_size = 0;
+    if (_dvz_mul_u64_overflows((uint64_t)width, (uint64_t)height, &pixel_count) ||
+        _dvz_mul_u64_overflows(pixel_count, 4u, &byte_size) || byte_size > SIZE_MAX)
+    {
+        log_error("MSDF atlas byte size overflow");
+        msdfgen::destroyFont(msdf_font);
+        msdfgen::deinitializeFreetype(ft);
+        return false;
+    }
+
+    uint8_t* rgba = (uint8_t*)dvz_calloc((DvzSize)byte_size, 1);
+    DvzTextAtlas* atlas = (DvzTextAtlas*)dvz_calloc(1, sizeof(DvzTextAtlas));
+    if (rgba == NULL || atlas == NULL)
+    {
+        log_error("MSDF atlas allocation failed");
+        dvz_free(rgba);
+        dvz_free(atlas);
+        msdfgen::destroyFont(msdf_font);
+        msdfgen::deinitializeFreetype(ft);
+        return false;
+    }
+
+    uint32_t atlas_width = (uint32_t)width;
+    uint32_t atlas_height = (uint32_t)height;
+    for (uint32_t y = 0; y < atlas_height; y++)
+    {
+        for (uint32_t x = 0; x < atlas_width; x++)
+        {
+            uint64_t src = ((uint64_t)y * atlas_width + x) * 3u;
+            uint64_t dst = ((uint64_t)(atlas_height - 1u - y) * atlas_width + x) * 4u;
+            rgba[dst + 0] = bitmap.pixels[src + 0];
+            rgba[dst + 1] = bitmap.pixels[src + 1];
+            rgba[dst + 2] = bitmap.pixels[src + 2];
+            rgba[dst + 3] = 255;
+        }
+    }
+
+    const double scale = packer.getScale();
+    const msdfgen::FontMetrics& metrics = font_geometry.getMetrics();
+    atlas->backend = DVZ_TEXT_ATLAS_BACKEND_MSDF;
+    atlas->encoding = DVZ_TEXT_ATLAS_ENCODING_MSDF_RGB;
+    atlas->width = atlas_width;
+    atlas->height = atlas_height;
+    atlas->glyph_count = glyph_count;
+    atlas->channels = 4;
+    atlas->pixel_height = (float)scale;
+    atlas->pixel_range = 4.0f;
+    atlas->ascent = (float)(metrics.ascenderY * scale);
+    atlas->descent = (float)(metrics.descenderY * scale);
+    atlas->line_gap = (float)((metrics.lineHeight - metrics.ascenderY + metrics.descenderY) * scale);
+    atlas->line_height = (float)(metrics.lineHeight * scale);
+    if (atlas->line_height <= 0.0f)
+        atlas->line_height = (float)scale;
+
+    for (const msdf_atlas::GlyphGeometry& src_glyph : glyphs)
+    {
+        uint32_t codepoint = (uint32_t)src_glyph.getCodepoint();
+        if (!_text_sdf_codepoint_supported(codepoint))
+            continue;
+        uint32_t index = codepoint - DVZ_TEXT_SDF_FIRST_CHAR;
+        if (index >= DVZ_SCENE_TEXT_ATLAS_MAX_GLYPHS)
+            continue;
+        DvzTextAtlasGlyph* glyph = &atlas->glyphs[index];
+        glyph->codepoint = codepoint;
+        glyph->glyph_id = (uint32_t)src_glyph.getIndex();
+        glyph->advance = (float)(src_glyph.getAdvance() * scale);
+
+        double l = 0.0;
+        double b = 0.0;
+        double r = 0.0;
+        double t = 0.0;
+        src_glyph.getQuadPlaneBounds(l, b, r, t);
+        glyph->xoff = (float)(l * scale);
+        glyph->yoff = (float)(-t * scale);
+        glyph->width = (float)((r - l) * scale);
+        glyph->height = (float)((t - b) * scale);
+        glyph->plane_bounds[0] = glyph->xoff;
+        glyph->plane_bounds[1] = glyph->yoff;
+        glyph->plane_bounds[2] = glyph->xoff + glyph->width;
+        glyph->plane_bounds[3] = glyph->yoff + glyph->height;
+
+        int x = 0;
+        int y = 0;
+        int w = 0;
+        int h = 0;
+        src_glyph.getBoxRect(x, y, w, h);
+        uint32_t top_y = atlas_height - (uint32_t)y - (uint32_t)h;
+        glyph->atlas_bounds[0] = (float)x;
+        glyph->atlas_bounds[1] = (float)top_y;
+        glyph->atlas_bounds[2] = (float)(x + w);
+        glyph->atlas_bounds[3] = (float)(top_y + (uint32_t)h);
+        glyph->uv[0] = (float)x / (float)atlas_width;
+        glyph->uv[1] = (float)top_y / (float)atlas_height;
+        glyph->uv[2] = (float)(x + w) / (float)atlas_width;
+        glyph->uv[3] = (float)(top_y + (uint32_t)h) / (float)atlas_height;
+        glyph->valid = true;
+    }
+
+    bool ok = _text_atlas_upload_rgba(font, atlas, rgba, atlas_width, atlas_height);
+    dvz_free(rgba);
+    msdfgen::destroyFont(msdf_font);
+    msdfgen::deinitializeFreetype(ft);
+    if (!ok)
+    {
+        _scene_text_atlas_destroy(atlas);
+        return false;
+    }
+
+    *out_atlas = atlas;
+    return true;
+}
+#endif
 
 
 
@@ -576,7 +810,16 @@ bool _scene_text_atlas_ensure(DvzFont* font, DvzTextAtlasBackend backend)
 #endif
     if (backend == DVZ_TEXT_ATLAS_BACKEND_MSDF)
     {
+#if defined(DVZ_HAS_MSDF_ATLAS) && DVZ_HAS_MSDF_ATLAS
+        if (_text_msdf_build_atlas(font, slot))
+        {
+            font->version++;
+            return true;
+        }
+        log_debug("MSDF atlas generation failed; falling back to SDF atlas");
+#else
         log_debug("MSDF atlas requested but msdf-atlas-gen is unavailable; falling back to SDF atlas");
+#endif
         slot = _text_atlas_slot(font, DVZ_TEXT_ATLAS_BACKEND_STB_SDF);
         if (*slot != NULL && (*slot)->field != NULL)
             return true;

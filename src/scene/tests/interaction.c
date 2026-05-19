@@ -423,8 +423,12 @@ int test_scene_text_sdf_visual_realization(TstContext* suite, const TstCase* ite
     ANN(glyph->field);
     AT(glyph->field->desc.width > 128);
     AT(glyph->field->desc.height > 60);
+#if defined(DVZ_HAS_MSDF_ATLAS) && DVZ_HAS_MSDF_ATLAS
+    AT(glyph->glyph_atlas_encoding == DVZ_TEXT_ATLAS_ENCODING_MSDF_RGB);
+#else
     AT(glyph->glyph_atlas_encoding == DVZ_TEXT_ATLAS_ENCODING_SDF_ALPHA ||
        glyph->glyph_atlas_encoding == DVZ_TEXT_ATLAS_ENCODING_MSDF_RGB);
+#endif
     AT(scene->font_count == 1);
     DvzTextAtlas* font_atlas =
         scene->fonts[0].msdf_atlas != NULL ? scene->fonts[0].msdf_atlas : scene->fonts[0].sdf_atlas;
@@ -532,8 +536,11 @@ int test_scene_text_auto_renderer_selection(TstContext* suite, const TstCase* it
 #else
     AT(small->text.glyph_visual->field == scene->text_bitmap_atlas);
 #endif
-    AT(large->text.glyph_visual->glyph_atlas_encoding == DVZ_TEXT_ATLAS_ENCODING_SDF_ALPHA ||
-       large->text.glyph_visual->glyph_atlas_encoding == DVZ_TEXT_ATLAS_ENCODING_MSDF_RGB);
+#if defined(DVZ_HAS_MSDF_ATLAS) && DVZ_HAS_MSDF_ATLAS
+    AT(large->text.glyph_visual->glyph_atlas_encoding == DVZ_TEXT_ATLAS_ENCODING_MSDF_RGB);
+#else
+    AT(large->text.glyph_visual->glyph_atlas_encoding == DVZ_TEXT_ATLAS_ENCODING_SDF_ALPHA);
+#endif
 
     dvz_scene_destroy(scene);
     return 0;
