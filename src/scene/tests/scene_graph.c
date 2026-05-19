@@ -35,6 +35,7 @@
 #include "datoviz/scene.h"
 #include "datoviz/vklite/buffers.h"
 #include "datoviz/vk/gpu_ctx.h"
+#include "datoviz/vk/instance.h"
 #include "helpers.h"
 #include "test_scene.h"
 #include "testing.h"
@@ -61,6 +62,20 @@ bool _dvz_drp2_runtime_vklite_download_buffer(
         tst_suite_add_case((suite), _tst_desc);                                                   \
     } while (0)
 
+#define TST_SCENE_GRAPH_GPU_FIXTURE "scene-graph-drp2-gpu"
+
+#define TST_SCENE_GRAPH_SHARED_GPU_CASE(test)                                                     \
+    do                                                                                            \
+    {                                                                                             \
+        TstCaseDesc _tst_desc = tst_case_desc(#test, #test, (test));                              \
+        _tst_desc.tags = tags;                                                                    \
+        _tst_desc.resources = TST_RES_CPU | TST_RES_GPU | TST_RES_VULKAN;                         \
+        _tst_desc.isolation = TST_ISOLATION_SERIAL;                                               \
+        _tst_desc.fixture = TST_SCENE_GRAPH_GPU_FIXTURE;                                          \
+        _tst_desc.fixture_scope = TST_FIXTURE_SCOPE_PROCESS;                                      \
+        tst_suite_add_case((suite), _tst_desc);                                                   \
+    } while (0)
+
 #define TST_SCENE_GRAPH_REQUIRE_VKLITE(ctx)                                                       \
     do                                                                                            \
     {                                                                                             \
@@ -77,6 +92,142 @@ bool _dvz_drp2_runtime_vklite_download_buffer(
 /*************************************************************************************************/
 /*  Helpers                                                                                      */
 /*************************************************************************************************/
+
+#if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
+typedef struct
+{
+    DvzGpuCtx* gpu_ctx;
+    DvzDrp2Runtime* runtime;
+    bool available;
+    const char* skip_reason;
+} SceneGraphGpuFixture;
+#endif
+
+
+
+#if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
+/**
+ * Return the GPU context configuration for shared scene-graph DRP2 execution tests.
+ *
+ * @return GPU context configuration with required Vulkan 1.3 features
+ */
+static DvzGpuCtxConfig _scene_graph_gpu_ctx_config(void)
+{
+    DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
+    VkPhysicalDeviceVulkan13Features features13 = {
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES};
+    features13.dynamicRendering = true;
+    features13.synchronization2 = true;
+    dvz_gpu_ctx_config_features13(&gpu_cfg, &features13);
+    return gpu_cfg;
+}
+
+
+
+/**
+ * Create a process-scoped GPU/runtime fixture for scene-graph DRP2 execution tests.
+ *
+ * @param suite active test suite
+ * @param worker_index scheduler worker index
+ * @return fixture state
+ */
+static void* _scene_graph_gpu_fixture_create(TstSuite* suite, uint32_t worker_index)
+{
+    (void)suite;
+    (void)worker_index;
+
+    SceneGraphGpuFixture* fixture =
+        (SceneGraphGpuFixture*)dvz_calloc(1, sizeof(SceneGraphGpuFixture));
+    ANN(fixture);
+
+    if (!_scene_vklite_runtime_available())
+    {
+        fixture->skip_reason = "Vulkan instance creation failed";
+        return fixture;
+    }
+
+    DvzGpuCtxConfig gpu_cfg = _scene_graph_gpu_ctx_config();
+    fixture->gpu_ctx = dvz_gpu_ctx(&gpu_cfg);
+    if (fixture->gpu_ctx == NULL)
+    {
+        fixture->skip_reason = "GPU context creation failed";
+        return fixture;
+    }
+
+    DvzDrp2RuntimeConfig runtime_cfg = dvz_drp2_runtime_vklite_config(
+        dvz_gpu_ctx_device(fixture->gpu_ctx), dvz_gpu_ctx_alloc(fixture->gpu_ctx));
+    fixture->runtime = dvz_drp2_runtime_vklite(&runtime_cfg);
+    if (fixture->runtime == NULL)
+    {
+        fixture->skip_reason = "DRP2 runtime creation failed";
+        return fixture;
+    }
+
+    fixture->available = true;
+    return fixture;
+}
+
+
+
+/**
+ * Destroy the process-scoped scene-graph DRP2 GPU fixture.
+ *
+ * @param fixture_ptr fixture state
+ */
+static void _scene_graph_gpu_fixture_destroy(void* fixture_ptr)
+{
+    SceneGraphGpuFixture* fixture = (SceneGraphGpuFixture*)fixture_ptr;
+    if (fixture == NULL)
+        return;
+    if (fixture->gpu_ctx != NULL)
+    {
+        DvzInstance* instance = dvz_gpu_ctx_instance(fixture->gpu_ctx);
+        if (instance != NULL && dvz_instance_handle(instance) != VK_NULL_HANDLE)
+            volkLoadInstance(dvz_instance_handle(instance));
+    }
+    if (fixture->runtime != NULL)
+    {
+        dvz_drp2_runtime_destroy(fixture->runtime);
+        fixture->runtime = NULL;
+    }
+    if (fixture->gpu_ctx != NULL)
+    {
+        dvz_gpu_ctx_destroy(fixture->gpu_ctx);
+        fixture->gpu_ctx = NULL;
+    }
+    dvz_free(fixture);
+}
+
+
+
+/**
+ * Return the reset shared runtime for one scene-graph execution test.
+ *
+ * @param suite active test context
+ * @param out_gpu_ctx optional output borrowed GPU context
+ * @return borrowed runtime, or NULL when the fixture is unavailable
+ */
+static DvzDrp2Runtime* _scene_graph_fixture_runtime(TstContext* suite, DvzGpuCtx** out_gpu_ctx)
+{
+    ANN(suite);
+    SceneGraphGpuFixture* fixture =
+        (SceneGraphGpuFixture*)tst_context_fixture(suite, TST_SCENE_GRAPH_GPU_FIXTURE);
+    if (fixture == NULL || !fixture->available)
+    {
+        const char* skip_reason = fixture != NULL && fixture->skip_reason != NULL ?
+                                      fixture->skip_reason :
+                                      "GPU fixture unavailable";
+        tst_skip(suite, skip_reason);
+        return NULL;
+    }
+    dvz_drp2_runtime_reset(fixture->runtime);
+    if (out_gpu_ctx != NULL)
+        *out_gpu_ctx = fixture->gpu_ctx;
+    return fixture->runtime;
+}
+#endif
+
+
 
 /**
  * Return whether a command creates the scene common bind-group layout.
@@ -183,21 +334,11 @@ int test_scene_point_emit_glsl_executes(TstContext* suite, const TstCase* item)
     ANN(suite);
     (void)item;
 
-    TST_SCENE_GRAPH_REQUIRE_VKLITE(suite);
-
-    DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
-    VkPhysicalDeviceVulkan13Features features13 = {
-        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES};
-    features13.dynamicRendering = true;
-    features13.synchronization2 = true;
-    dvz_gpu_ctx_config_features13(&gpu_cfg, &features13);
-    DvzGpuCtx* ctx = dvz_gpu_ctx(&gpu_cfg);
-    if (ctx == NULL)
-    {
-        log_warn("test_scene_point_emit_glsl_executes skipped: GPU context creation failed");
-        tst_skip(suite, "GPU context creation failed");
+    DvzGpuCtx* ctx = NULL;
+    DvzDrp2Runtime* runtime = _scene_graph_fixture_runtime(suite, &ctx);
+    if (runtime == NULL)
         return 0;
-    }
+    ANN(ctx);
 
     /* Build scene */
     DvzScene* scene = dvz_scene();
@@ -241,20 +382,13 @@ int test_scene_point_emit_glsl_executes(TstContext* suite, const TstCase* item)
     AT(stream != NULL);
 
     /* Execute on GPU */
-    DvzDrp2RuntimeConfig runtime_cfg =
-        dvz_drp2_runtime_vklite_config(dvz_gpu_ctx_device(ctx), dvz_gpu_ctx_alloc(ctx));
-    DvzDrp2Runtime* runtime = dvz_drp2_runtime_vklite(&runtime_cfg);
-    ANN(runtime);
-
     DvzDrp2ValidationResult result = dvz_drp2_runtime_execute(runtime, stream);
     AT(result.ok);
     AT(result.code == DVZ_DRP2_VALIDATION_OK);
     AT(dvz_gpu_ctx_error_count(ctx) == 0);
 
-    dvz_drp2_runtime_destroy(runtime);
     dvz_drp2_stream_destroy(stream);
     dvz_scene_destroy(scene);
-    dvz_gpu_ctx_destroy(ctx);
     return 0;
 }
 
@@ -271,21 +405,11 @@ int test_scene_sphere_emit_glsl_executes(TstContext* suite, const TstCase* item)
     ANN(suite);
     (void)item;
 
-    TST_SCENE_GRAPH_REQUIRE_VKLITE(suite);
-
-    DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
-    VkPhysicalDeviceVulkan13Features features13 = {
-        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES};
-    features13.dynamicRendering = true;
-    features13.synchronization2 = true;
-    dvz_gpu_ctx_config_features13(&gpu_cfg, &features13);
-    DvzGpuCtx* ctx = dvz_gpu_ctx(&gpu_cfg);
-    if (ctx == NULL)
-    {
-        log_warn("test_scene_sphere_emit_glsl_executes skipped: GPU context creation failed");
-        tst_skip(suite, "GPU context creation failed");
+    DvzGpuCtx* ctx = NULL;
+    DvzDrp2Runtime* runtime = _scene_graph_fixture_runtime(suite, &ctx);
+    if (runtime == NULL)
         return 0;
-    }
+    ANN(ctx);
 
     DvzScene* scene = dvz_scene();
     AT(scene != NULL);
@@ -327,20 +451,13 @@ int test_scene_sphere_emit_glsl_executes(TstContext* suite, const TstCase* item)
     AT(dvz_diagnostic_report_count(&report) == 0);
     AT(stream != NULL);
 
-    DvzDrp2RuntimeConfig runtime_cfg =
-        dvz_drp2_runtime_vklite_config(dvz_gpu_ctx_device(ctx), dvz_gpu_ctx_alloc(ctx));
-    DvzDrp2Runtime* runtime = dvz_drp2_runtime_vklite(&runtime_cfg);
-    ANN(runtime);
-
     DvzDrp2ValidationResult result = dvz_drp2_runtime_execute(runtime, stream);
     AT(result.ok);
     AT(result.code == DVZ_DRP2_VALIDATION_OK);
     AT(dvz_gpu_ctx_error_count(ctx) == 0);
 
-    dvz_drp2_runtime_destroy(runtime);
     dvz_drp2_stream_destroy(stream);
     dvz_scene_destroy(scene);
-    dvz_gpu_ctx_destroy(ctx);
     return 0;
 }
 
@@ -912,20 +1029,12 @@ static int _scene_primitive_emit_executes(
     TstContext* suite, DvzPrimitiveTopology topology, uint32_t vertex_count)
 {
     ANN(suite);
-    TST_SCENE_GRAPH_REQUIRE_VKLITE(suite);
 
-    DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
-    VkPhysicalDeviceVulkan13Features features13 = {
-        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES};
-    features13.dynamicRendering = true;
-    features13.synchronization2 = true;
-    dvz_gpu_ctx_config_features13(&gpu_cfg, &features13);
-    DvzGpuCtx* ctx = dvz_gpu_ctx(&gpu_cfg);
-    if (ctx == NULL)
-    {
-        tst_skip(suite, "GPU context creation failed");
+    DvzGpuCtx* ctx = NULL;
+    DvzDrp2Runtime* runtime = _scene_graph_fixture_runtime(suite, &ctx);
+    if (runtime == NULL)
         return 0;
-    }
+    ANN(ctx);
 
     DvzScene* scene = dvz_scene();
     AT(scene != NULL);
@@ -965,20 +1074,13 @@ static int _scene_primitive_emit_executes(
     AT(dvz_diagnostic_report_count(&report) == 0);
     AT(stream != NULL);
 
-    DvzDrp2RuntimeConfig runtime_cfg =
-        dvz_drp2_runtime_vklite_config(dvz_gpu_ctx_device(ctx), dvz_gpu_ctx_alloc(ctx));
-    DvzDrp2Runtime* runtime = dvz_drp2_runtime_vklite(&runtime_cfg);
-    ANN(runtime);
-
     DvzDrp2ValidationResult result = dvz_drp2_runtime_execute(runtime, stream);
     AT(result.ok);
     AT(result.code == DVZ_DRP2_VALIDATION_OK);
     AT(dvz_gpu_ctx_error_count(ctx) == 0);
 
-    dvz_drp2_runtime_destroy(runtime);
     dvz_drp2_stream_destroy(stream);
     dvz_scene_destroy(scene);
-    dvz_gpu_ctx_destroy(ctx);
     dvz_free(positions);
     dvz_free(colors);
     return 0;
@@ -988,20 +1090,12 @@ static int _scene_primitive_emit_executes(
 static int _scene_path_emit_executes(TstContext* suite, uint32_t vertex_count)
 {
     ANN(suite);
-    TST_SCENE_GRAPH_REQUIRE_VKLITE(suite);
 
-    DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
-    VkPhysicalDeviceVulkan13Features features13 = {
-        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES};
-    features13.dynamicRendering = true;
-    features13.synchronization2 = true;
-    dvz_gpu_ctx_config_features13(&gpu_cfg, &features13);
-    DvzGpuCtx* ctx = dvz_gpu_ctx(&gpu_cfg);
-    if (ctx == NULL)
-    {
-        tst_skip(suite, "GPU context creation failed");
+    DvzGpuCtx* ctx = NULL;
+    DvzDrp2Runtime* runtime = _scene_graph_fixture_runtime(suite, &ctx);
+    if (runtime == NULL)
         return 0;
-    }
+    ANN(ctx);
 
     DvzScene* scene = dvz_scene();
     AT(scene != NULL);
@@ -1039,20 +1133,13 @@ static int _scene_path_emit_executes(TstContext* suite, uint32_t vertex_count)
     AT(dvz_diagnostic_report_count(&report) == 0);
     AT(stream != NULL);
 
-    DvzDrp2RuntimeConfig runtime_cfg =
-        dvz_drp2_runtime_vklite_config(dvz_gpu_ctx_device(ctx), dvz_gpu_ctx_alloc(ctx));
-    DvzDrp2Runtime* runtime = dvz_drp2_runtime_vklite(&runtime_cfg);
-    ANN(runtime);
-
     DvzDrp2ValidationResult result = dvz_drp2_runtime_execute(runtime, stream);
     AT(result.ok);
     AT(result.code == DVZ_DRP2_VALIDATION_OK);
     AT(dvz_gpu_ctx_error_count(ctx) == 0);
 
-    dvz_drp2_runtime_destroy(runtime);
     dvz_drp2_stream_destroy(stream);
     dvz_scene_destroy(scene);
-    dvz_gpu_ctx_destroy(ctx);
     dvz_free(positions);
     dvz_free(colors);
     return 0;
@@ -1062,20 +1149,12 @@ static int _scene_path_emit_executes(TstContext* suite, uint32_t vertex_count)
 static int _scene_mesh_emit_executes(TstContext* suite)
 {
     ANN(suite);
-    TST_SCENE_GRAPH_REQUIRE_VKLITE(suite);
 
-    DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
-    VkPhysicalDeviceVulkan13Features features13 = {
-        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES};
-    features13.dynamicRendering = true;
-    features13.synchronization2 = true;
-    dvz_gpu_ctx_config_features13(&gpu_cfg, &features13);
-    DvzGpuCtx* ctx = dvz_gpu_ctx(&gpu_cfg);
-    if (ctx == NULL)
-    {
-        tst_skip(suite, "GPU context creation failed");
+    DvzGpuCtx* ctx = NULL;
+    DvzDrp2Runtime* runtime = _scene_graph_fixture_runtime(suite, &ctx);
+    if (runtime == NULL)
         return 0;
-    }
+    ANN(ctx);
 
     DvzScene* scene = dvz_scene();
     AT(scene != NULL);
@@ -1126,20 +1205,13 @@ static int _scene_mesh_emit_executes(TstContext* suite)
     AT(dvz_diagnostic_report_count(&report) == 0);
     AT(stream != NULL);
 
-    DvzDrp2RuntimeConfig runtime_cfg =
-        dvz_drp2_runtime_vklite_config(dvz_gpu_ctx_device(ctx), dvz_gpu_ctx_alloc(ctx));
-    DvzDrp2Runtime* runtime = dvz_drp2_runtime_vklite(&runtime_cfg);
-    ANN(runtime);
-
     DvzDrp2ValidationResult result = dvz_drp2_runtime_execute(runtime, stream);
     AT(result.ok);
     AT(result.code == DVZ_DRP2_VALIDATION_OK);
     AT(dvz_gpu_ctx_error_count(ctx) == 0);
 
-    dvz_drp2_runtime_destroy(runtime);
     dvz_drp2_stream_destroy(stream);
     dvz_scene_destroy(scene);
-    dvz_gpu_ctx_destroy(ctx);
     return 0;
 }
 
@@ -1917,20 +1989,11 @@ int test_scene_image_glsl_executes(TstContext* suite, const TstCase* item)
     ANN(suite);
     (void)item;
 
-    TST_SCENE_GRAPH_REQUIRE_VKLITE(suite);
-
-    DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
-    VkPhysicalDeviceVulkan13Features features13 = {
-        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES};
-    features13.dynamicRendering = true;
-    features13.synchronization2 = true;
-    dvz_gpu_ctx_config_features13(&gpu_cfg, &features13);
-    DvzGpuCtx* ctx = dvz_gpu_ctx(&gpu_cfg);
-    if (ctx == NULL)
-    {
-        tst_skip(suite, "GPU context creation failed");
+    DvzGpuCtx* ctx = NULL;
+    DvzDrp2Runtime* runtime = _scene_graph_fixture_runtime(suite, &ctx);
+    if (runtime == NULL)
         return 0;
-    }
+    ANN(ctx);
 
     DvzScene* scene = dvz_scene();
     AT(scene != NULL);
@@ -1983,20 +2046,13 @@ int test_scene_image_glsl_executes(TstContext* suite, const TstCase* item)
     AT(dvz_diagnostic_report_count(&report) == 0);
     AT(stream != NULL);
 
-    DvzDrp2RuntimeConfig runtime_cfg =
-        dvz_drp2_runtime_vklite_config(dvz_gpu_ctx_device(ctx), dvz_gpu_ctx_alloc(ctx));
-    DvzDrp2Runtime* runtime = dvz_drp2_runtime_vklite(&runtime_cfg);
-    ANN(runtime);
-
     DvzDrp2ValidationResult result = dvz_drp2_runtime_execute(runtime, stream);
     AT(result.ok);
     AT(result.code == DVZ_DRP2_VALIDATION_OK);
     AT(dvz_gpu_ctx_error_count(ctx) == 0);
 
-    dvz_drp2_runtime_destroy(runtime);
     dvz_drp2_stream_destroy(stream);
     dvz_scene_destroy(scene);
-    dvz_gpu_ctx_destroy(ctx);
     return 0;
 }
 
@@ -11277,8 +11333,12 @@ int test_scene_graph(TstSuite* suite)
     TST_MODULE(suite, "scene");
     TST_GROUP("scene-graph");
 
-    TST_SCENE_GRAPH_GPU_CASE(test_scene_point_emit_glsl_executes);
-    TST_SCENE_GRAPH_GPU_CASE(test_scene_sphere_emit_glsl_executes);
+    tst_suite_register_fixture(
+        suite, TST_SCENE_GRAPH_GPU_FIXTURE, TST_FIXTURE_SCOPE_PROCESS,
+        _scene_graph_gpu_fixture_create, _scene_graph_gpu_fixture_destroy);
+
+    TST_SCENE_GRAPH_SHARED_GPU_CASE(test_scene_point_emit_glsl_executes);
+    TST_SCENE_GRAPH_SHARED_GPU_CASE(test_scene_sphere_emit_glsl_executes);
     TST_CASE(test_scene_sphere_mode);
     TST_CASE(test_scene_segment_caps);
     TST_CASE(test_scene_segment_emit_glsl);
@@ -11289,18 +11349,18 @@ int test_scene_graph(TstSuite* suite)
     TST_CASE(test_scene_pixel_emit_glsl_native_square_points);
     TST_CASE(test_scene_point_emit_wgsl_instanced_quads);
     TST_CASE(test_scene_pixel_emit_wgsl_instanced_quads);
-    TST_SCENE_GRAPH_GPU_CASE(test_scene_primitive_triangle_list_glsl_executes);
-    TST_SCENE_GRAPH_GPU_CASE(test_scene_primitive_line_strip_glsl_executes);
+    TST_SCENE_GRAPH_SHARED_GPU_CASE(test_scene_primitive_triangle_list_glsl_executes);
+    TST_SCENE_GRAPH_SHARED_GPU_CASE(test_scene_primitive_line_strip_glsl_executes);
     TST_CASE(test_scene_primitive_triangle_list_emit_wgsl);
     TST_CASE(test_scene_mesh_indexed_default_color_emits_draw_indexed);
     TST_CASE(test_scene_mesh_instance_transform_emits_instanced_draw);
     TST_CASE(test_scene_mesh_emits_depth_attachment);
     TST_CASE(test_scene_indexed_primitive_emits_draw_indexed);
     TST_CASE(test_scene_shared_index_buffer_emits_one_upload);
-    TST_SCENE_GRAPH_GPU_CASE(test_scene_mesh_glsl_executes);
-    TST_SCENE_GRAPH_GPU_CASE(test_scene_path_glsl_executes);
+    TST_SCENE_GRAPH_SHARED_GPU_CASE(test_scene_mesh_glsl_executes);
+    TST_SCENE_GRAPH_SHARED_GPU_CASE(test_scene_path_glsl_executes);
     TST_CASE(test_scene_path_line_width_emit_glsl);
-    TST_SCENE_GRAPH_GPU_CASE(test_scene_image_glsl_executes);
+    TST_SCENE_GRAPH_SHARED_GPU_CASE(test_scene_image_glsl_executes);
     TST_CASE(test_scene_json);
     TST_CASE(test_scene_json_includes_field_dirty_metadata);
     TST_CASE(test_scene_json_includes_buffer_binding_metadata);
