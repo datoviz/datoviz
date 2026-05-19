@@ -1242,6 +1242,79 @@ int test_app_offscreen_pick_probe_requests_notify_hosted_callback(
 }
 
 
+/**
+ * Ensure multiple apps sharing one scene receive independent request-frame notifications.
+ *
+ * @param suite the test suite
+ * @param item the test item
+ * @return 0 on success
+ */
+int test_app_offscreen_shared_scene_request_frame_subscribers(
+    TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    TST_SCENE_APP_REQUIRE_VKLITE(suite);
+
+    DvzScene* scene = dvz_scene();
+    AT(scene != NULL);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    AT(figure != NULL);
+    DvzPanel* panel =
+        dvz_panel(figure, (DvzPanelDesc){.x = 0, .y = 0, .width = 1, .height = 1});
+    AT(panel != NULL);
+
+    DvzApp* app1 = dvz_app(scene);
+    if (app1 == NULL)
+    {
+        log_warn(
+            "test_app_offscreen_shared_scene_request_frame_subscribers skipped: GPU context "
+            "failed");
+        tst_skip(suite, "GPU context failed");
+        dvz_scene_destroy(scene);
+        return 0;
+    }
+    DvzAppWindow* win1 = dvz_app_window(app1, figure, 64, 64);
+    AT(win1 != NULL);
+
+    DvzApp* app2 = dvz_app(scene);
+    if (app2 == NULL)
+    {
+        log_warn(
+            "test_app_offscreen_shared_scene_request_frame_subscribers skipped: second GPU "
+            "context failed");
+        tst_skip(suite, "second GPU context failed");
+        dvz_app_destroy(app1);
+        dvz_scene_destroy(scene);
+        return 0;
+    }
+    DvzAppWindow* win2 = dvz_app_window(app2, figure, 64, 64);
+    AT(win2 != NULL);
+
+    AppRequestFrameProbe probe1 = {0};
+    AppRequestFrameProbe probe2 = {0};
+    dvz_app_window_set_request_frame_callback(win1, _app_request_frame_probe_callback, &probe1);
+    dvz_app_window_set_request_frame_callback(win2, _app_request_frame_probe_callback, &probe2);
+
+    AT(dvz_panel_pick(panel, 32.0, 32.0, &(DvzPickRequest){.request_id = 1}) == 0);
+    AT(probe1.calls == 1);
+    AT(probe1.last_window == win1);
+    AT(probe2.calls == 1);
+    AT(probe2.last_window == win2);
+
+    dvz_app_destroy(app1);
+    AT(dvz_panel_probe(panel, 32.0, 32.0, &(DvzProbeRequest){.request_id = 2}) == 0);
+    AT(probe1.calls == 1);
+    AT(probe2.calls == 2);
+    AT(probe2.last_window == win2);
+
+    dvz_app_destroy(app2);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
 int test_app_offscreen_timer_advances_in_app_run(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
@@ -5421,6 +5494,9 @@ int test_scene_app(TstSuite* suite)
         TST_ISOLATION_PROCESS);
     TST_SCENE_APP_CASE(
         test_app_offscreen_pick_probe_requests_notify_hosted_callback, TST_SCENE_APP_GPU_RES,
+        TST_ISOLATION_PROCESS);
+    TST_SCENE_APP_CASE(
+        test_app_offscreen_shared_scene_request_frame_subscribers, TST_SCENE_APP_GPU_RES,
         TST_ISOLATION_PROCESS);
     TST_SCENE_APP_CASE(
         test_app_offscreen_timer_advances_in_app_run, TST_SCENE_APP_GPU_RES,

@@ -298,6 +298,9 @@ int test_app_offscreen_scheduler_sees_scene_dirty_without_request(
 int test_app_offscreen_pick_probe_requests_notify_hosted_callback(
     TstContext* suite, const TstCase* item);
 
+int test_app_offscreen_shared_scene_request_frame_subscribers(
+    TstContext* suite, const TstCase* item);
+
 int test_app_offscreen_timer_advances_in_app_run(TstContext* suite, const TstCase* item);
 
 int test_app_offscreen_timer_advances_in_render_once(TstContext* suite, const TstCase* item);

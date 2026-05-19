@@ -2485,7 +2485,15 @@ DvzApp* dvz_app_with_config(DvzScene* scene, const DvzAppConfig* config)
         return NULL;
     }
     _scene_request_executor_init(&app->request_executor);
-    _scene_set_request_frame_callback(app->scene, _app_scene_request_frame, app);
+    if (!_scene_add_request_frame_callback(app->scene, _app_scene_request_frame, app))
+    {
+        _scene_request_executor_destroy(&app->request_executor);
+        dvz_drp2_runtime_destroy(app->runtime);
+        dvz_gpu_ctx_destroy(app->gpu_ctx);
+        dvz_window_host_destroy(app->window_host);
+        dvz_free(app);
+        return NULL;
+    }
 
     return app;
 #else
@@ -2524,7 +2532,7 @@ void dvz_app_destroy(DvzApp* app)
         return;
 
     if (app->scene != NULL)
-        _scene_set_request_frame_callback(app->scene, NULL, NULL);
+        _scene_remove_request_frame_callback(app->scene, _app_scene_request_frame, app);
 
 #if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
     _dvz_app_status_finish(&app->status);

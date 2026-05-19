@@ -1834,24 +1834,70 @@ DvzTurntable* dvz_panel_turntable(DvzPanel* panel)
 
 
 /**
- * Register the scene-level callback used to request a host frame.
+ * Register one scene-level callback used to request a host frame.
  *
  * @param scene the scene
- * @param callback callback pointer, or NULL to clear it
+ * @param callback callback pointer
  * @param user_data opaque pointer forwarded to the callback
+ * @return true on success, false when the subscription table is full or input is invalid
  */
-void _scene_set_request_frame_callback(
+bool _scene_add_request_frame_callback(
     DvzScene* scene, DvzSceneRequestFrameCallback callback, void* user_data)
 {
-    if (scene == NULL)
-        return;
-    scene->request_frame_callback = callback;
-    scene->request_frame_user_data = user_data;
+    if (scene == NULL || callback == NULL)
+        return false;
+
+    DvzSceneRequestFrameSubscription* free_slot = NULL;
+    for (uint32_t i = 0; i < DVZ_SCENE_MAX_REQUEST_FRAME_SUBSCRIPTIONS; i++)
+    {
+        DvzSceneRequestFrameSubscription* sub = &scene->request_frame_subscriptions[i];
+        if (sub->active && sub->callback == callback && sub->user_data == user_data)
+            return true;
+        if (!sub->active && free_slot == NULL)
+            free_slot = sub;
+    }
+
+    if (free_slot == NULL)
+    {
+        log_error("scene request-frame subscription table is full");
+        return false;
+    }
+
+    free_slot->callback = callback;
+    free_slot->user_data = user_data;
+    free_slot->active = true;
+    return true;
 }
 
 
 /**
- * Notify the scene host that one figure needs another frame.
+ * Remove one scene-level host frame request callback.
+ *
+ * @param scene the scene
+ * @param callback callback pointer
+ * @param user_data opaque pointer previously registered with the callback
+ */
+void _scene_remove_request_frame_callback(
+    DvzScene* scene, DvzSceneRequestFrameCallback callback, void* user_data)
+{
+    if (scene == NULL || callback == NULL)
+        return;
+
+    for (uint32_t i = 0; i < DVZ_SCENE_MAX_REQUEST_FRAME_SUBSCRIPTIONS; i++)
+    {
+        DvzSceneRequestFrameSubscription* sub = &scene->request_frame_subscriptions[i];
+        if (sub->active && sub->callback == callback && sub->user_data == user_data)
+        {
+            dvz_memset(sub, sizeof(DvzSceneRequestFrameSubscription), 0,
+                       sizeof(DvzSceneRequestFrameSubscription));
+            return;
+        }
+    }
+}
+
+
+/**
+ * Notify all scene hosts that one figure needs another frame.
  *
  * @param figure figure requesting a frame
  */
@@ -1860,8 +1906,14 @@ void _scene_notify_request_frame(DvzFigure* figure)
     if (figure == NULL || figure->scene == NULL)
         return;
     DvzScene* scene = figure->scene;
-    if (scene->request_frame_callback != NULL)
-        scene->request_frame_callback(figure, scene->request_frame_user_data);
+    for (uint32_t i = 0; i < DVZ_SCENE_MAX_REQUEST_FRAME_SUBSCRIPTIONS; i++)
+    {
+        const DvzSceneRequestFrameSubscription* sub = &scene->request_frame_subscriptions[i];
+        DvzSceneRequestFrameCallback callback = sub->callback;
+        void* user_data = sub->user_data;
+        if (sub->active && callback != NULL)
+            callback(figure, user_data);
+    }
 }
 
 

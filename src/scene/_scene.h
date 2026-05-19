@@ -60,6 +60,7 @@
 #define DVZ_SCENE_MAX_ANIMATIONS 128
 #define DVZ_SCENE_MAX_AXIS_TICKS 64
 #define DVZ_SCENE_MAX_AXIS_MINOR_TICKS 8
+#define DVZ_SCENE_MAX_REQUEST_FRAME_SUBSCRIPTIONS 16
 #define DVZ_SCENE_MAX_AXIS_LINES                                                                  \
     ((2 + DVZ_SCENE_MAX_AXIS_MINOR_TICKS) * DVZ_SCENE_MAX_AXIS_TICKS + 1)
 #define DVZ_SCENE_TEXT_ATLAS_MAX_GLYPHS 256
@@ -137,6 +138,21 @@ typedef struct DvzTextAtlasGlyph DvzTextAtlasGlyph;
 typedef struct DvzTextAtlas DvzTextAtlas;
 
 typedef void (*DvzSceneRequestFrameCallback)(DvzFigure* figure, void* user_data);
+
+typedef struct DvzSceneRequestFrameSubscription DvzSceneRequestFrameSubscription;
+
+
+
+/*************************************************************************************************/
+/*  Request frame subscriptions                                                                  */
+/*************************************************************************************************/
+
+struct DvzSceneRequestFrameSubscription
+{
+    DvzSceneRequestFrameCallback callback;
+    void* user_data;
+    bool active;
+};
 
 
 
@@ -1085,8 +1101,8 @@ struct DvzScene
     uint32_t probe_scope_count;
     DvzRequestFreshnessScope probe_scopes[DVZ_SCENE_MAX_REQUEST_SCOPES];
     DvzSampledField* text_bitmap_atlas;
-    DvzSceneRequestFrameCallback request_frame_callback;
-    void* request_frame_user_data;
+    DvzSceneRequestFrameSubscription
+        request_frame_subscriptions[DVZ_SCENE_MAX_REQUEST_FRAME_SUBSCRIPTIONS];
 
     struct
     {
@@ -1141,7 +1157,9 @@ uint32_t _dvz_figure_process_requests_with_executor(
     DvzFigure* figure, DvzDrp2Runtime* runtime, DvzSceneRequestExecutor* executor,
     const DvzCapabilitySnapshot* caps);
 bool _scene_figure_has_pending_render_work(const DvzFigure* figure);
-void _scene_set_request_frame_callback(
+bool _scene_add_request_frame_callback(
+    DvzScene* scene, DvzSceneRequestFrameCallback callback, void* user_data);
+void _scene_remove_request_frame_callback(
     DvzScene* scene, DvzSceneRequestFrameCallback callback, void* user_data);
 void _scene_notify_request_frame(DvzFigure* figure);
 
