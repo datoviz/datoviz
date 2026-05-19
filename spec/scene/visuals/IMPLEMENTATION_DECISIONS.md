@@ -20,8 +20,8 @@ This note refines:
 7. `spec/scene/visuals/SPHERE.md`
 8. `spec/scene/visuals/MESH.md`
 9. `spec/scene/visuals/VOLUME.md`
-10. `agents/soon/SCENE_POINT_PIXEL_MARKER_PLAN.md`
-11. `agents/soon/SCENE_VECTOR_VISUALS_PLAN.md`
+10. `agents/soon/scene/SCENE_POINT_PIXEL_MARKER_PLAN.md`
+11. `agents/soon/scene/SCENE_VECTOR_VISUALS_PLAN.md`
 
 It is authoritative for the first implementation pass when those documents disagree.
 
@@ -124,10 +124,10 @@ The next batch should focus on picking and backend parity, in this order:
 4. Visual-family showcase. Add one compact example or smoke scene containing `pixel`, `point`,
    `marker`, `segment`, and stroked `path` together so future regressions are easier to spot.
 
-Marker-specific execution phases live in `agents/soon/SCENE_POINT_PIXEL_MARKER_PLAN.md`. Segment,
-path, dash, arrow, and SVG execution phases live in `agents/soon/SCENE_VECTOR_VISUALS_PLAN.md`.
+Marker-specific execution phases live in `agents/soon/scene/SCENE_POINT_PIXEL_MARKER_PLAN.md`. Segment,
+path, dash, arrow, and SVG execution phases live in `agents/soon/scene/SCENE_VECTOR_VISUALS_PLAN.md`.
 Volume implementation and napari-style example sequencing lives in
-`agents/soon/SCENE_VOLUME_RENDERING_PLAN.md`; the durable contract lives in `VOLUME.md`.
+`agents/soon/scene/SCENE_VOLUME_RENDERING_PLAN.md`; the durable contract lives in `VOLUME.md`.
 
 
 ## Pixel

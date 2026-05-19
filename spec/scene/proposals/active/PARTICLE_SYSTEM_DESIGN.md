@@ -24,7 +24,7 @@ This proposal complements:
    pressure test;
 2. [../integration/CUPY_CUDA_INTEROP.md](../../integration/CUPY_CUDA_INTEROP.md), which defines the
    preferred Vulkan-owned external-memory route for CuPy;
-3. [../../../../agents/soon/SCENE_VECTOR_VISUALS_PLAN.md](../../../../agents/soon/SCENE_VECTOR_VISUALS_PLAN.md),
+3. [../../../../agents/soon/scene/SCENE_VECTOR_VISUALS_PLAN.md](../../../../agents/soon/scene/SCENE_VECTOR_VISUALS_PLAN.md),
    which defines `path`, `streamline`, and `tube` as trajectory/geometry renderers.
 
 

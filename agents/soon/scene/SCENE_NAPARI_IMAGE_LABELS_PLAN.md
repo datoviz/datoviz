@@ -436,7 +436,7 @@ Tests:
 ### Out Of Scope
 
 napari 3D image, volume, and 3D labels behavior belongs in
-`agents/soon/SCENE_VOLUME_RENDERING_PLAN.md`.
+`agents/soon/scene/SCENE_VOLUME_RENDERING_PLAN.md`.
 
 This plan only defines the 2D sampled-field, colormap, palette, filtering, probe, and blend-mode
 pieces that the volume plan may later reuse.

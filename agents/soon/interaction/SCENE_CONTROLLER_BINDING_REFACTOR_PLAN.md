@@ -10,7 +10,7 @@
 ## Summary
 
 The accepted v0.4 controller model lives in
-[`../../spec/scene/decisions/CONTROLLER_BINDING_MODEL.md`](../../spec/scene/decisions/CONTROLLER_BINDING_MODEL.md).
+[`../../../spec/scene/decisions/CONTROLLER_BINDING_MODEL.md`](../../../spec/scene/decisions/CONTROLLER_BINDING_MODEL.md).
 This file is only the tactical execution plan. Do not redefine the API here; keep this note aligned
 with the canonical spec and use it to guide implementation sequencing.
 
@@ -176,9 +176,9 @@ Keep family-specific state snapshots and wrong-family validation tests.
 
 Update these docs or examples as the implementation lands:
 
-1. [`../../spec/scene/interaction/CONTROLLERS.md`](../../spec/scene/interaction/CONTROLLERS.md)
-2. [`../../spec/scene/examples/core/LINKED_PANELS_AXES_PANZOOM.md`](../../spec/scene/examples/core/LINKED_PANELS_AXES_PANZOOM.md)
-3. [`../../docs/architecture/manual_scene_smoke.md`](../../docs/architecture/manual_scene_smoke.md)
+1. [`../../../spec/scene/interaction/CONTROLLERS.md`](../../../spec/scene/interaction/CONTROLLERS.md)
+2. [`../../../spec/scene/examples/core/LINKED_PANELS_AXES_PANZOOM.md`](../../../spec/scene/examples/core/LINKED_PANELS_AXES_PANZOOM.md)
+3. [`../../../docs/architecture/manual_scene_smoke.md`](../../../docs/architecture/manual_scene_smoke.md)
 4. `examples/c/techniques/linked_panels.c`
 5. public scene API headers and any WASM/API-surface notes touched by the new declarations
 

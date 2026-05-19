@@ -189,7 +189,7 @@ Required v0.4 slice:
 Primary specs:
 
 1. [`../../spec/scene/semantics/AXES.md`](../../spec/scene/semantics/AXES.md)
-2. [`../soon/SCENE_2D_AXES_IMPLEMENTATION_PLAN.md`](../soon/SCENE_2D_AXES_IMPLEMENTATION_PLAN.md)
+2. [`../soon/scene/SCENE_2D_AXES_IMPLEMENTATION_PLAN.md`](../soon/scene/SCENE_2D_AXES_IMPLEMENTATION_PLAN.md)
 
 
 ### 4. Continuous Colorbars
@@ -511,7 +511,7 @@ text smoke.
 
 ```text
 You own the 2D axes/tick integration lane. Read the checklist, spec/scene/semantics/AXES.md, and
-agents/soon/SCENE_2D_AXES_IMPLEMENTATION_PLAN.md.
+agents/soon/scene/SCENE_2D_AXES_IMPLEMENTATION_PLAN.md.
 
 Goal: land one narrow axes slice: generated numeric ticks, axis/tick line geometry, label emission,
 or resize/panzoom update behavior. Stay in axes semantic state, panel layout hooks, line/segment
