@@ -281,10 +281,12 @@ static bool _text_msdf_build_atlas(DvzFont* font, DvzTextAtlas** out_atlas)
         glyph->atlas_bounds[1] = (float)top_y;
         glyph->atlas_bounds[2] = (float)(x + w);
         glyph->atlas_bounds[3] = (float)(top_y + (uint32_t)h);
-        glyph->uv[0] = (float)x / (float)atlas_width;
-        glyph->uv[1] = (float)top_y / (float)atlas_height;
-        glyph->uv[2] = (float)(x + w) / (float)atlas_width;
-        glyph->uv[3] = (float)(top_y + (uint32_t)h) / (float)atlas_height;
+        float pad_x = w > 3 ? 1.25f : 0.0f;
+        float pad_y = h > 4 ? 1.5f : 0.0f;
+        glyph->uv[0] = ((float)x + pad_x) / (float)atlas_width;
+        glyph->uv[1] = ((float)top_y + pad_y) / (float)atlas_height;
+        glyph->uv[2] = ((float)(x + w) - pad_x) / (float)atlas_width;
+        glyph->uv[3] = ((float)(top_y + (uint32_t)h) - pad_y) / (float)atlas_height;
         glyph->valid = true;
     }
 

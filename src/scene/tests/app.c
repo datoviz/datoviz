@@ -760,6 +760,20 @@ static bool _app_glyph_pixel_bounds(
 
 
 /**
+ * Return whether a captured pixel belongs to the green text foreground.
+ *
+ * @param pixel captured RGBA8 pixel
+ * @return whether the pixel is a bright green foreground sample
+ */
+static bool _app_text_green_pixel(const uint8_t* pixel)
+{
+    ANN(pixel);
+    return pixel[1] > 140 && pixel[0] < 100 && pixel[2] < 100;
+}
+
+
+
+/**
  * Render the deterministic EDL point fixture and return its captured RGBA pixels.
  *
  * @param enabled whether EDL should be enabled for the panel
@@ -2272,7 +2286,7 @@ int test_app_offscreen_sdf_text_has_nonblank_pixels(TstContext* suite, const Tst
 
     DvzScene* scene = dvz_scene();
     AT(scene != NULL);
-    DvzFigure* figure = dvz_figure(scene, 96, 64, 0);
+    DvzFigure* figure = dvz_figure(scene, 256, 72, 0);
     AT(figure != NULL);
     DvzPanel* panel = dvz_panel(
         figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
@@ -2281,10 +2295,10 @@ int test_app_offscreen_sdf_text_has_nonblank_pixels(TstContext* suite, const Tst
     DvzVisual* text = dvz_text(scene, 0);
     AT(text != NULL);
     AT(dvz_text_set_renderer(text, DVZ_TEXT_RENDERER_MSDF_ATLAS) == 0);
-    const char* strings[1] = {"SDF"};
-    float positions[1][3] = {{6.0f, 8.0f, 0.0f}};
+    const char* strings[1] = {"UTF-8 fallback: A?B cafe? -> ?"};
+    float positions[1][3] = {{6.0f, 12.0f, 0.0f}};
     float text_anchors[1][2] = {{0.0f, 0.0f}};
-    float sizes[1] = {26.0f};
+    float sizes[1] = {24.0f};
     float angles[1] = {0.0f};
     DvzColor colors[1] = {{0, 255, 0, 255}};
     DvzVisualDataUpdate updates[5] = {
@@ -2307,7 +2321,7 @@ int test_app_offscreen_sdf_text_has_nonblank_pixels(TstContext* suite, const Tst
         dvz_scene_destroy(scene);
         return 0;
     }
-    DvzAppWindow* win = dvz_app_window(app, figure, 96, 64);
+    DvzAppWindow* win = dvz_app_window(app, figure, 256, 72);
     AT(win != NULL);
 
     dvz_app_run(app, 1);
@@ -2320,11 +2334,12 @@ int test_app_offscreen_sdf_text_has_nonblank_pixels(TstContext* suite, const Tst
     uint8_t* rgba = NULL;
     AT(dvz_canvas_capture_rgba(canvas, &width, &height, &rgba) == 0);
     ANN(rgba);
-    AT(width == 96);
-    AT(height == 64);
+    AT(width == 256);
+    AT(height == 72);
 
     uint32_t green_count = 0;
     uint32_t green_in_bounds = 0;
+    uint32_t isolated_green = 0;
     uint32_t bounds[4] = {0};
     bool has_bounds =
         text->text.glyph_visual != NULL &&
@@ -2332,7 +2347,7 @@ int test_app_offscreen_sdf_text_has_nonblank_pixels(TstContext* suite, const Tst
     for (uint32_t i = 0; i < width * height; i++)
     {
         const uint8_t* pixel = &rgba[4 * i];
-        if (pixel[1] > 60 && pixel[0] < 100 && pixel[2] < 100)
+        if (_app_text_green_pixel(pixel))
             green_count++;
     }
     AT(green_count > 0);
@@ -2343,13 +2358,33 @@ int test_app_offscreen_sdf_text_has_nonblank_pixels(TstContext* suite, const Tst
             for (uint32_t x = bounds[0]; x < bounds[2]; x++)
             {
                 const uint8_t* pixel = _pixel_at(rgba, width, height, x, y);
-                if (pixel[1] > 60 && pixel[0] < 100 && pixel[2] < 100)
-                    green_in_bounds++;
+                if (!_app_text_green_pixel(pixel))
+                    continue;
+                green_in_bounds++;
+                if (x == bounds[0] || y == bounds[1] || x + 1u >= bounds[2] || y + 1u >= bounds[3])
+                    continue;
+                bool connected = false;
+                for (int32_t dy = -1; dy <= 1 && !connected; dy++)
+                {
+                    for (int32_t dx = -1; dx <= 1; dx++)
+                    {
+                        if (dx == 0 && dy == 0)
+                            continue;
+                        const uint8_t* neighbor = _pixel_at(
+                            rgba, width, height, (uint32_t)((int32_t)x + dx),
+                            (uint32_t)((int32_t)y + dy));
+                        connected = connected || _app_text_green_pixel(neighbor);
+                    }
+                }
+                if (!connected)
+                    isolated_green++;
             }
         }
         uint32_t bounds_pixels = (bounds[2] - bounds[0]) * (bounds[3] - bounds[1]);
         AT(bounds_pixels > 0);
         AT(green_in_bounds * 10u < bounds_pixels * 7u);
+        AT(green_in_bounds > 32u);
+        AT(isolated_green * 10u < green_in_bounds);
     }
 
     dvz_free(rgba);

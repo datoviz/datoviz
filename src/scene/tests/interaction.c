@@ -434,6 +434,21 @@ int test_scene_text_sdf_visual_realization(TstContext* suite, const TstCase* ite
         scene->fonts[0].msdf_atlas != NULL ? scene->fonts[0].msdf_atlas : scene->fonts[0].sdf_atlas;
     ANN(font_atlas);
     AT(font_atlas->field == glyph->field);
+#if defined(DVZ_HAS_MSDF_ATLAS) && DVZ_HAS_MSDF_ATLAS
+    if (font_atlas->encoding == DVZ_TEXT_ATLAS_ENCODING_MSDF_RGB)
+    {
+        DvzTextAtlasGlyph* atlas_glyph = _scene_text_atlas_glyph(font_atlas, 'S');
+        ANN(atlas_glyph);
+        float x0 = atlas_glyph->uv[0] * (float)font_atlas->width;
+        float y0 = atlas_glyph->uv[1] * (float)font_atlas->height;
+        float x1 = atlas_glyph->uv[2] * (float)font_atlas->width;
+        float y1 = atlas_glyph->uv[3] * (float)font_atlas->height;
+        AT(x0 > atlas_glyph->atlas_bounds[0]);
+        AT(y0 > atlas_glyph->atlas_bounds[1]);
+        AT(x1 < atlas_glyph->atlas_bounds[2]);
+        AT(y1 < atlas_glyph->atlas_bounds[3]);
+    }
+#endif
     AT(text->text.span_count == 1);
     AT(text->text.spans[0].glyph_count == 3);
 
