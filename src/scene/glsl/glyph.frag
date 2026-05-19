@@ -31,6 +31,9 @@ void main()
     if (max(max(texel.r, texel.g), texel.b) > 1.0 / 255.0)
     {
         float sd = median3(texel.r, texel.g, texel.b);
+        float trueSd = texel.a;
+        if ((sd - 0.5) * (trueSd - 0.5) < 0.0)
+            sd = trueSd;
         float screenPxDistance = screenPixelRange() * (sd - 0.5);
         opacity = clamp(screenPxDistance + 0.5, 0.0, 1.0);
     }
