@@ -1,166 +1,52 @@
-# Scene Controller Binding Refactor Plan
+# Scene Controller Binding Follow-Up
 
 > **Execution Status**
-> - **Status:** `IMPLEMENTATION PLAN`
+> - **Status:** `ACTIVE / FOLLOW-UP NOTE`
 > - **Updated on:** `2026-05-19`
-> - **Purpose:** turn the accepted controller-binding decision into a concrete near-term
->   implementation lane for linked panels, shared axes, and binding-friendly controller APIs.
+> - **Purpose:** track the near-term implementation sequence for scene-owned controller handles,
+>   panel bindings, linked panels, and binding-friendly controller APIs.
 
 
-## Summary
+## Current State
 
-The accepted v0.4 controller model lives in
-[`../../../spec/scene/decisions/CONTROLLER_BINDING_MODEL.md`](../../../spec/scene/decisions/CONTROLLER_BINDING_MODEL.md).
-This file is only the tactical execution plan. Do not redefine the API here; keep this note aligned
-with the canonical spec and use it to guide implementation sequencing.
+Durable controller contracts live in:
 
-The target model is:
+1. [`../../../spec/scene/decisions/CONTROLLER_BINDING_MODEL.md`](../../../spec/scene/decisions/CONTROLLER_BINDING_MODEL.md)
+2. [`../../../spec/scene/interaction/CONTROLLERS.md`](../../../spec/scene/interaction/CONTROLLERS.md)
+3. [`../../../spec/scene/interaction/CAMERA_CONTROLLERS.md`](../../../spec/scene/interaction/CAMERA_CONTROLLERS.md)
+4. [`../../../spec/scene/proposals/active/TRANSFORM_CONTROLLER_DESIGN.md`](../../../spec/scene/proposals/active/TRANSFORM_CONTROLLER_DESIGN.md)
+5. [`../../../spec/scene/proposals/active/CONTROLLER_INSPECTORS_AND_GIZMOS.md`](../../../spec/scene/proposals/active/CONTROLLER_INSPECTORS_AND_GIZMOS.md)
 
-```c
-DvzController* dvz_panzoom(DvzScene* scene, int flags);
-DvzController* dvz_arcball(DvzScene* scene, int flags);
-DvzController* dvz_fly(DvzScene* scene, const DvzFlyDesc* desc);
-DvzController* dvz_turntable(DvzScene* scene, const DvzTurntableDesc* desc);
+Use this file only for execution sequencing and validation. Do not duplicate the accepted public
+controller ownership, binding, input routing, or axis-domain rules here.
 
-int dvz_panel_bind_controller(DvzPanel* panel, DvzController* controller, DvzDimMask dims);
-DvzController* dvz_panel_controller(DvzPanel* panel, DvzDim dim);
-```
-
-Linked panels are created by binding the same scene-owned controller handle to multiple panels. No
-separate panzoom-specific linked-panel API should be introduced.
+The active scene code still has panel-owned navigation controllers. The accepted target is
+scene-owned opaque `DvzController*` handles that panels borrow and bind by dimension mask. Linked
+panels share controller identity instead of copying mutable panzoom fields.
 
 
-## Current Baseline
+## Remaining Binding Work
 
-The active scene code still attaches navigation controllers directly to panels:
+Recommended follow-up commits:
 
-1. `dvz_panel_set_panzoom()` creates and owns a `DvzPanzoom` inside the panel.
-2. `dvz_panel_panzoom()` exposes that panel-owned object.
-3. Arcball, fly, and turntable follow the same panel-owned pattern.
-4. The `linked_panels` example copies mutable panzoom fields in a frame callback to simulate
-   linking.
-
-That shape works for single-panel navigation, but it makes shared X, shared Y, shared cameras,
-bindings, and WASM-facing APIs awkward.
-
-
-## Goals
-
-1. Introduce scene-owned opaque `DvzController*` handles.
-2. Bind controllers to panels by dimension mask.
-3. Make linked panels use shared controller identity instead of state copying.
-4. Support partial links: shared X with independent Y, shared XY, and future XYZ camera links.
-5. Keep input routing panel-local so one shared controller can receive gestures from several
-   differently sized panels.
-6. Provide typed POD state get/set APIs for tests, examples, external UI, serialization, and
-   generated bindings.
-7. Keep axis domain lookup as a pull model: axes query the controller bound to their panel and
-   dimension during frame preparation.
+1. Add the public opaque controller type and dimension-mask surface without changing existing panel
+   controller behavior.
+2. Add scene-owned controller storage and lifecycle rules; panels should borrow controller handles
+   and never destroy them.
+3. Move panzoom behind the generic controller handle first, with typed POD state get/set helpers.
+4. Add `dvz_panel_bind_controller()` and `dvz_panel_controller()` and validate family/dimension
+   compatibility.
+5. Route input through panel bindings while keeping viewport and panel-local coordinate context on
+   the event path.
+6. Add internal axis/domain queries through the bound controller instead of direct panel panzoom
+   access.
+7. Migrate the linked-panels example away from copied panzoom fields and onto shared controller
+   handles.
+8. Move arcball, fly, and turntable behind `DvzController*` only after the panzoom/binding path is
+   tested.
 
 
-## Non-Goals
-
-1. Do not add a separate `dvz_panel_link_panzoom()` API.
-2. Do not expose mutable controller structs or public controller unions.
-3. Do not add a generic string/property controller API.
-4. Do not couple scene controller APIs to GLFW, Vulkan, vklite, WebGPU, or native window types.
-5. Do not make `LinkedPanelsController` the spatial-navigation link primitive; reserve that concept
-   for higher-level crosshair, hover, selection, brushing, and semantic coordination.
-
-
-## Implementation Slices
-
-### 1. Public Type And Enum Surface
-
-Add or promote:
-
-```c
-typedef struct DvzController DvzController;
-typedef uint32_t DvzDimMask;
-```
-
-Add dimension masks for X, Y, Z, XY, and XYZ. Keep single-dimension query APIs using `DvzDim` where
-that is clearer.
-
-
-### 2. Scene-Owned Controller Storage
-
-Add a scene-owned controller table in the scene internals. The private implementation can use a
-tagged union or ops table, but the layout must stay out of installed headers.
-
-Required ownership rules:
-
-1. scene destruction frees controllers once,
-2. panels borrow controller handles,
-3. panel destruction clears bindings but does not destroy controllers,
-4. explicit controller destruction, if exposed, clears or invalidates panel bindings.
-
-
-### 3. Panzoom First
-
-Move panzoom behind the generic controller handle first. Implement:
-
-```c
-DvzController* dvz_panzoom(DvzScene* scene, int flags);
-int dvz_panzoom_get_state(const DvzController* controller, DvzPanzoomState* out);
-int dvz_panzoom_set_state(DvzController* controller, const DvzPanzoomState* state);
-```
-
-Keep the first state struct as a POD snapshot of semantic pan/zoom state, not panel viewport state.
-
-
-### 4. Panel Binding
-
-Implement:
-
-```c
-int dvz_panel_bind_controller(DvzPanel* panel, DvzController* controller, DvzDimMask dims);
-DvzController* dvz_panel_controller(DvzPanel* panel, DvzDim dim);
-```
-
-Validation should reject incompatible family/dimension combinations. Panzoom may bind to X, Y, or
-XY. Arcball, fly, and turntable should bind to XYZ in the first implementation.
-
-
-### 5. Input Routing And Viewport Context
-
-Route input through the panel binding rather than through a controller-owned canonical viewport.
-
-The panel supplies the current viewport and panel-local coordinate context for each event. The
-controller stores semantic state only. This is required for linked panels with different sizes and
-positions.
-
-
-### 6. Axis And Domain Query Integration
-
-Add the internal query path that lets axes and panel domain helpers ask the bound controller for the
-visible domain of one dimension.
-
-Shared controller identity should imply shared visible domain, not shared axis resources. Each panel
-keeps its own axis geometry, tick labels, and cached covered-domain state.
-
-
-### 7. Legacy API Migration
-
-Migrate existing examples and tests from:
-
-```c
-dvz_panel_set_panzoom(panel, router, flags);
-DvzPanzoom* pz = dvz_panel_panzoom(panel);
-```
-
-to scene-owned controllers and panel binding. During the transition, keep legacy wrappers only if
-they make the migration safer; clearly document whether they create a private panel-local
-controller.
-
-
-### 8. Other Controller Families
-
-After panzoom and binding are stable, migrate arcball, fly, and turntable behind `DvzController*`.
-Keep family-specific state snapshots and wrong-family validation tests.
-
-
-## First Linked-Panel Acceptance Tests
+## First Acceptance Tests
 
 1. Two panels bound to one XY panzoom report identical visible X and Y domains.
 2. Two panels bound to one X panzoom and separate Y panzooms share X only.
@@ -172,32 +58,35 @@ Keep family-specific state snapshots and wrong-family validation tests.
 8. `examples/c/techniques/linked_panels.c` no longer copies public panzoom fields.
 
 
-## Documentation And Example Updates
+## Files To Update As Implementation Lands
 
-Update these docs or examples as the implementation lands:
-
-1. [`../../../spec/scene/interaction/CONTROLLERS.md`](../../../spec/scene/interaction/CONTROLLERS.md)
-2. [`../../../spec/scene/interaction/CAMERA_CONTROLLERS.md`](../../../spec/scene/interaction/CAMERA_CONTROLLERS.md)
-3. [`../../../spec/scene/examples/core/LINKED_PANELS_AXES_PANZOOM.md`](../../../spec/scene/examples/core/LINKED_PANELS_AXES_PANZOOM.md)
-4. [`../../../docs/architecture/manual_scene_smoke.md`](../../../docs/architecture/manual_scene_smoke.md)
-5. `examples/c/techniques/linked_panels.c`
-6. public scene API headers and any WASM/API-surface notes touched by the new declarations
+1. public scene headers;
+2. `src/scene/` controller storage, panel binding, and input routing internals;
+3. [`../../../spec/scene/examples/core/LINKED_PANELS_AXES_PANZOOM.md`](../../../spec/scene/examples/core/LINKED_PANELS_AXES_PANZOOM.md);
+4. [`../../../docs/architecture/manual_scene_smoke.md`](../../../docs/architecture/manual_scene_smoke.md);
+5. `examples/c/techniques/linked_panels.c`;
+6. WASM/API-surface notes touched by the new declarations.
 
 
 ## Validation
 
-For narrow API or panzoom-only slices:
+For docs-only changes, run:
 
-```bash
+```text
+rg for old moved filenames and stale soon/spec links
+git diff --check
+git status --short
+```
+
+For implementation slices, use:
+
+```text
 just build
 just test scene
-git diff --check
 ```
 
-For live input/routing changes, also run a bounded linked-panel smoke:
+For live input/routing changes, add a bounded linked-panel smoke such as:
 
-```bash
+```text
 ./build/examples/c/techniques/linked_panels 300
 ```
-
-Use the graphics-test environment guidance in the root `AGENTS.md` when running Vulkan/GLFW paths.
