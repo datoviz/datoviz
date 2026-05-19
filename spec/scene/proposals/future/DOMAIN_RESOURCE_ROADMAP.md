@@ -98,7 +98,7 @@ Differences from ordinary `path`:
 - event markers along a track;
 - selected-track highlight;
 - dense trajectory bundle view;
-- tube/ribbon view for selected high-quality tracks.
+- future [`tube`](../../visuals/TUBE.md) or ribbon view for selected high-quality tracks.
 
 
 ### First-Class Or Composition?
@@ -257,8 +257,8 @@ selection across atoms, bonds, residues, chains, ribbons, surfaces, labels, and 
 
 - atoms as `sphere`;
 - bonds as `segment`, cylinder-like impostors, or instanced meshes;
-- backbone trace as `path`;
-- ribbon/cartoon as path/mesh-derived geometry;
+- backbone trace as [`path`](../../visuals/PATH.md);
+- ribbon/cartoon as future [`tube`](../../visuals/TUBE.md) or precomputed `mesh` geometry;
 - molecular surface as `mesh`;
 - cryo-EM density as `volume`;
 - labels as `glyph`;

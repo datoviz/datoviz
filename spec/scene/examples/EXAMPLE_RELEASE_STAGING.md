@@ -61,7 +61,7 @@ release-quality integrated axes/tick/label path.
 | Interaction | Point pick, image probe, marker pick, basic selection highlight, linked crosshair/probe. | Mesh/region, path, label, volume pick/probe; lasso/box selection. | Full dashboard interaction models in GSP/VisPy2. |
 | Layout/linking | Grid/subplot layout, linked panzoom x/y, panel reservations. | Dashboard layout helpers, shared legends/colorbars. | Full application/dashboard framework in GSP/VisPy2. |
 | Large data | Stable high-count point/pixel/path updates and basic partial updates. | LOD, ring buffers, visible-range policies, tiled images. | Out-of-core and distributed data policies. |
-| Tracks/trajectories | Use existing path/segment/marker fallbacks only. | First-class track/streamline visual plus a polished tractography viewer: packed ragged paths, per-track identity, direction coloring, tail/time filtering, basic picking/selection, and high-quality thin-line rendering. | Tube/ribbon geometry, million-streamline out-of-core collections, and domain-specific track resources. |
+| Tracks/trajectories | Use existing path/segment/marker fallbacks only. | Polished tractography/track viewers over packed ragged paths, per-track identity, direction coloring, tail/time filtering, basic picking/selection, and high-quality thin-line rendering. | Future `tube` rendering, tube/ribbon geometry, million-streamline out-of-core collections, and domain-specific track resources. |
 | Multi-pass techniques | EDL, SSAO, MSAA, WBOIT/depth-peeling slices, volume occlusion as native examples. | General scene framegraph resources and custom materials. | Advanced postprocess/effects library. |
 | Compute/custom shaders | DRP2-level fixtures only. | Scene-level compute/custom visual/material API. | Large simulation/application frameworks. |
 | WebGPU/WASM | Experimental point/primitive/image/basic mesh subset. | Broader scene subset and automated browser parity. | Full backend parity only if justified by demand. |
@@ -230,10 +230,10 @@ These decisions refine the feature roadmap:
 4. **Marker picking is the first picking expansion after point/image.** It is smaller than mesh or
    volume picking and protects scatter/selection use cases.
 5. **Tracks and tractography should be a real v0.5 lane.** v0.4 can use path/segment fallbacks, but
-   v0.5 should deliver a good track/streamline visual and a polished tractography viewer with packed
-   ragged paths, per-streamline identity, direction coloring, arcball navigation, basic selection,
-   and high-quality thin-line rendering. Tube/ribbon geometry and out-of-core million-streamline
-   collections remain later extensions.
+   v0.5 should deliver polished track/tractography viewers with packed ragged paths,
+   per-streamline identity, direction coloring, arcball navigation, basic selection, and
+   high-quality thin-line rendering. The future `tube` visual, tube/ribbon geometry, and
+   out-of-core million-streamline collections remain later extensions.
 6. **A narrow brain/volume showcase belongs in v0.4, but full atlas explorer belongs in v0.5.** This
    avoids blocking v0.4 on region picking, UI trees, and linked 2D/3D atlas workflows.
 7. **One dense streaming example is enough for v0.4.** Choose DAQ or physiology and keep it simple;

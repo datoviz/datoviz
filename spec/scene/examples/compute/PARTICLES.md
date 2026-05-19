@@ -440,6 +440,10 @@ p1 = position - trail_scale * velocity
 
 This can look very good and avoids point-size limitations, but requires either shader-generated segment endpoints or a derived render buffer.
 
+Longer particle trails should reuse [`path`](../../visuals/PATH.md) semantics, while future
+radius-bearing 3D trails should lower to [`tube`](../../visuals/TUBE.md) instead of adding a
+particle-specific renderer.
+
 ---
 
 ## Transparency

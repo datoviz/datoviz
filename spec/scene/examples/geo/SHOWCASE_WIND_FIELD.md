@@ -178,7 +178,7 @@ Rendering:
 1. use one `dvz_path` visual when grouped paths are supported by the active C API;
 2. otherwise use one path visual per streamline only if the count remains low enough;
 3. color streamlines by local speed or use a restrained off-white/blue overlay;
-4. keep line widths modest so arrows remain readable.
+4. keep stroke widths modest so arrows remain readable.
 
 If grouped path support is missing in the C v0.4 surface, the first implementation may skip
 streamlines and leave a clear TODO near the local helper.

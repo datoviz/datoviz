@@ -89,7 +89,7 @@ Panel B — path:
 
 1. source `GroupedItemTable` in `DataSpace` (x = time, y = signal value),
 2. derived normalized `GroupedItemTable` in `VisualSpace`,
-3. `ParameterBlockResource` for linewidth and color.
+3. `ParameterBlockResource` for stroke width and color.
 
 Axis-derived resources (per panel per axis):
 

@@ -126,6 +126,10 @@ Build paths:
 - one polyline per track;
 - color by track ID, speed, lifetime, or division lineage.
 
+The active visual target is [`path`](../../visuals/PATH.md). Future 3D radius-bearing track
+histories should use the spec-only [`tube`](../../visuals/TUBE.md) contract instead of defining a
+separate track renderer.
+
 ## Datoviz adaptation
 
 ### Required visuals
@@ -134,7 +138,7 @@ Build paths:
 - Optional labels visual for current segmentation mask.
 - Tracks visual:
   - fading recent tail;
-  - full path mode;
+  - full `path` mode;
   - color by track ID or speed.
 - Vectors visual:
   - arrows from current position to next frame;

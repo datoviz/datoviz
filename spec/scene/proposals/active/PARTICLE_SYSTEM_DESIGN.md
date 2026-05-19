@@ -25,7 +25,9 @@ This proposal complements:
 2. [../integration/CUPY_CUDA_INTEROP.md](../../integration/CUPY_CUDA_INTEROP.md), which defines the
    preferred Vulkan-owned external-memory route for CuPy;
 3. [../../../../agents/soon/scene/SCENE_VECTOR_VISUALS_PLAN.md](../../../../agents/soon/scene/SCENE_VECTOR_VISUALS_PLAN.md),
-   which defines `path`, `streamline`, and `tube` as trajectory/geometry renderers.
+   which tracks remaining vector and curve execution work;
+4. [../visuals/PATH.md](../../visuals/PATH.md) and [../visuals/TUBE.md](../../visuals/TUBE.md),
+   which own the active path and future tube visual contracts.
 
 
 ## Taxonomy
@@ -34,7 +36,8 @@ Use these terms consistently:
 
 1. `point`, `pixel`, `sphere`, and future billboard/splat modes render independent particle-like
    samples.
-2. `path`, `streamline`, `track`, and `tube` render authored or derived trajectory geometry.
+2. `path` renders authored or derived trajectory strokes; future `tube` renders radius-bearing
+   trajectory surfaces.
 3. `particles` owns dynamic simulation state and exposes render views over that state.
 
 Tracks and tubes do not replace particles. They are optional consumers of particle history,
@@ -166,8 +169,9 @@ and should not be used for picking or identity-preserving analysis.
 
 ## Streamlines, Tubes, And Selected Tracks
 
-Future `streamline` and `tube` visuals should be used for selected trajectories, authored paths, or
-lower-density high-quality outputs.
+Future `tube` rendering should be used for selected trajectories, authored paths, or lower-density
+high-quality outputs. `streamline` should remain a vector-field or domain helper unless repeated
+examples prove it needs its own resource contract.
 
 Do not make true tube meshes the default rendering mode for every particle in a dense simulation.
 For high-density systems, prefer points, billboards, velocity streaks, or ribbon/strip modes. Tube
@@ -244,5 +248,4 @@ git diff --check
 5. Add velocity streaks as the first track-like view.
 6. Add optional history tracks with bounded ring-buffer storage.
 7. Add CUDA/CuPy-facing Python wrappers around Vulkan-owned exported buffers.
-8. Add selected-particle streamline/tube export after the vector visual lane has the required
-   path/tube primitives.
+8. Add selected-particle path/tube export after the vector visual lane has the required primitives.

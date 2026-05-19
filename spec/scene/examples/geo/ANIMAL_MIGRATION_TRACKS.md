@@ -247,6 +247,10 @@ selected animal     highlighted path and marker
 environment         optional image or coastline overlay
 ```
 
+The active trajectory target is [`path`](../../visuals/PATH.md). Future radius-bearing 3D
+trajectory tubes should follow [`TUBE.md`](../../visuals/TUBE.md) rather than defining a
+movement-ecology-specific renderer.
+
 Color modes:
 
 - individual identity,
@@ -437,7 +441,7 @@ The first C implementation can stay focused:
 
 1. load one prepared public tracking cache,
 2. project lon/lat to stable local coordinates,
-3. render all trajectories as paths,
+3. render all trajectories as [`path`](../../visuals/PATH.md) visuals,
 4. update current-position markers from the time cursor,
 5. implement individual selection,
 6. add the linked movement-metric panel after the map view is stable.

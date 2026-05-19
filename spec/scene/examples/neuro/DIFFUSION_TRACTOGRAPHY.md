@@ -21,7 +21,8 @@ visual, picking/probe, and performance acceptance criteria.
 
 ## Goal
 
-Create a polished Datoviz v0.4 Python example showing **3D diffusion MRI tractography streamlines** as colored paths, tubes, or ribbons.
+Create a polished Datoviz v0.4 Python example showing **3D diffusion MRI tractography
+streamlines** as colored paths, future tubes, or future ribbons.
 
 The example should stress-test the new Datoviz scene API by requiring a first-class representation of **large collections of 3D polylines with variable length**, per-vertex attributes, per-streamline metadata, interactive 3D navigation, picking, transparency, depth handling, and optional LOD.
 
@@ -56,14 +57,9 @@ A good Datoviz example should show:
 - good transparency and depth behavior;
 - fast rendering without rebuilding geometry every frame.
 
-This is a natural candidate for a built-in Datoviz visual, tentatively named:
-
-```text
-Path3DVisual
-StreamlineVisual
-TubeVisual
-TractographyVisual
-```
+This is a natural pressure test for the active [`path`](../../visuals/PATH.md) visual and the
+future/spec-only [`tube`](../../visuals/TUBE.md) visual. This example should not introduce a
+separate tractography renderer or independent curve-visual contract.
 
 ---
 
@@ -175,7 +171,7 @@ The Python example should:
 3. Load the `.npz`.
 4. Create a 3D scene.
 5. Add a 3D panel with arcball/orbit camera.
-6. Add a streamline/path/tube visual.
+6. Add an active `path` visual or future `tube` visual.
 7. Expose rendering controls through ImGui.
 8. Allow interactive switching between rendering modes.
 9. Keep rendering interactive for at least tens or hundreds of thousands of vertices.
@@ -229,7 +225,7 @@ Pros:
 
 Cons:
 
-- line width support is backend-dependent;
+- stroke width support is backend-dependent;
 - thin lines do not look as good in 3D;
 - poor depth perception.
 
@@ -273,7 +269,7 @@ Cons:
 - silhouette artifacts possible;
 - picking may need special handling.
 
-This should be considered the main target for a built-in `Path3DVisual` or `TubePathVisual`.
+This should be considered the main target for the future `tube` family.
 
 ---
 
@@ -524,11 +520,13 @@ This makes the example useful for validating that a visual can request framegrap
 
 ---
 
-## Proposed built-in visual: `Path3DVisual`
+## Visual Contract Pressure
 
-This example strongly argues for a built-in path visual in the scene API.
+This example strongly argues for a shared packed-curve data model across `path` and future `tube`
+rendering. The generic family contract belongs in [`TUBE.md`](../../visuals/TUBE.md); this section
+records only the tractography-specific pressure points.
 
-Minimal `Path3DVisual` data model:
+Minimal packed streamline data model:
 
 ```text
 positions:  float32[N, 3]
@@ -538,16 +536,16 @@ radius:     optional float32[N] or constant
 ids:        optional uint32[M]
 ```
 
-Supported modes:
+Useful rendering modes:
 
 ```text
-line
-screen_tube
-mesh_tube
-ribbon
+line fallback through `path` or `primitive`
+tube impostor through future `tube`
+mesh tube through future `tube` or precomputed `mesh`
+ribbon through future `tube` or precomputed `mesh`
 ```
 
-Core properties:
+Core visual controls:
 
 ```text
 radius
@@ -578,7 +576,7 @@ flat
 round
 ```
 
-This visual would be useful beyond tractography:
+The future `tube` family is useful beyond tractography:
 
 ```text
 trajectories
@@ -734,7 +732,7 @@ Required conceptual operations:
 Create scene
 Create 3D panel
 Create arcball/orbit camera
-Create path/tube visual
+Create active path visual or future tube visual
 Upload ragged streamline data
 Assign per-vertex colors
 Assign offsets
@@ -744,7 +742,8 @@ Expose ImGui controls
 
 Avoid hardcoding fragile API names in this specification.
 
-Where the scene API lacks a built-in path/tube visual, the first implementation may use one of these fallbacks:
+Where the scene API lacks built-in tube rendering, the first implementation may use one of these
+fallbacks:
 
 ```text
 1. line-list visual generated from streamline segments;
@@ -769,7 +768,7 @@ The example is successful if:
 - It colors streamlines by local direction.
 - It exposes useful ImGui controls.
 - It keeps interactive performance on a normal GPU.
-- It demonstrates why Datoviz needs a built-in path/tube visual.
+- It demonstrates why Datoviz needs future tube rendering alongside the active path visual.
 ```
 
 Minimum acceptable first version:
@@ -778,7 +777,7 @@ Minimum acceptable first version:
 DIPY fornix dataset
 Direction-colored 3D line rendering
 Arcball camera
-ImGui controls for alpha, radius/line width, subsampling, color mode
+ImGui controls for alpha, radius/stroke width, subsampling, color mode
 ```
 
 Ideal version:

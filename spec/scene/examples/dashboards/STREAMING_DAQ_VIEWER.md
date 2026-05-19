@@ -468,7 +468,7 @@ visual styling.
 Expected advantages:
 
 - high visual quality;
-- direct support for linewidth, joins, caps, and digital step traces;
+- direct support for stroke width, joins, caps, and digital step traces;
 - can avoid backend-dependent wide-line behavior.
 
 Potential limitations:

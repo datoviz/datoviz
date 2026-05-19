@@ -251,7 +251,7 @@ jitter. Particles entering the obstacle should also be respawned or pushed to a 
 Optional trails:
 
 - store the previous `N` positions per displayed trail particle,
-- render trails as path lines,
+- render trails through the active [`path`](../../visuals/PATH.md) visual,
 - fade trail alpha with age.
 
 Trails should be optional because they increase buffer size and update cost.
@@ -265,7 +265,7 @@ Flow panel:
 vorticity image   signed scalar field with diverging colormap
 particles         small points, white/cyan or speed-colored
 trails            translucent paths, optional
-streamlines       thin paths seeded upstream, optional
+streamlines       thin paths seeded upstream; future tubes can follow `TUBE.md`
 obstacle          filled primitive or mesh circle
 probe             crosshair and velocity arrow
 ```
@@ -405,6 +405,8 @@ candidate for a later GPU compute path:
 5. framegraph dependency from compute pass to render pass.
 
 This path should reuse the same visual semantics rather than introducing a parallel renderer.
+Radius-bearing streamlines should lower to the future [`tube`](../../visuals/TUBE.md) visual rather
+than becoming a CFD-specific renderer.
 
 
 ## DRP2 Command Categories

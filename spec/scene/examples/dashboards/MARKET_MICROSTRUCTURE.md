@@ -446,7 +446,7 @@ Use a mix of attribute and constant channels:
 
 - Attribute positions for trade points and line vertices.
 - Attribute colors or side flags for buy/sell trade classification.
-- Constant alpha/line width where appropriate.
+- Constant alpha/stroke width where appropriate.
 - Attribute bar heights for volume.
 
 ### Resources

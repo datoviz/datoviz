@@ -28,8 +28,8 @@ Use this file only for remaining execution work. Do not duplicate stable visual 
 
 Recommended follow-up commits:
 
-1. Add segment picking against the visible screen-space stroke, accounting for line width, tolerance,
-   and endpoint caps. Return the source segment item index.
+1. Add segment picking against the visible screen-space stroke, accounting for stroke width,
+   tolerance, and endpoint caps. Return the source segment item index.
 2. Add stroked path picking by reusing segment stroke hit logic over derived path edges while
    returning path/subpath identity rather than derived edge identity.
 3. Add WGSL lowering for segment and stroked path so WebGPU preserves the public

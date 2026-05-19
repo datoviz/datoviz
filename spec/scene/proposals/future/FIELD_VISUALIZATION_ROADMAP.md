@@ -61,7 +61,8 @@ Recommended views:
 
 - arrow/quiver glyphs;
 - line-integral convolution or texture flow for 2D fields;
-- streamlines and pathlines;
+- streamlines and pathlines, lowering to [`path`](../../visuals/PATH.md) for strokes or future
+  [`tube`](../../visuals/TUBE.md) for radius-bearing surfaces;
 - particles/tracers advected through the field;
 - slice-plane arrows through a 3D field;
 - magnitude image/volume using a scalar derived field;

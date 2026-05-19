@@ -247,7 +247,7 @@ The scalar values should be deterministic and normalized for stable colormap ran
 
 ```text
 flux surfaces     transparent mesh surfaces
-field lines       colored 3D paths
+field lines       colored 3D paths; future radius-bearing tubes use `TUBE.md`
 slice             scalar-colored mesh or image-like surface
 vessel outline    optional path/mesh overlay
 tracer particles  small points animated along selected field lines
@@ -258,6 +258,10 @@ Default color modes:
 
 - field lines by `q` or `psi_n`,
 - flux surfaces by `psi_n`,
+
+The active field-line target is [`path`](../../visuals/PATH.md). Future tube-like magnetic field
+lines should follow [`TUBE.md`](../../visuals/TUBE.md) rather than becoming a tokamak-specific
+renderer.
 - slice by temperature.
 
 The profile panel should mark the selected normalized radius when a line or surface is selected.
@@ -410,7 +414,7 @@ The example is expected to require:
 The first C implementation can stay focused:
 
 1. generate synthetic field lines and flux surfaces on the CPU,
-2. render field lines as paths,
+2. render field lines as [`path`](../../visuals/PATH.md) visuals,
 3. render flux surfaces with low opacity if supported, or as wireframe paths if transparency is
    not ready,
 4. render one scalar slice or skip it until mesh scalar coloring is stable,

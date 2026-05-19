@@ -64,7 +64,7 @@ Path resources:
 
 1. source `GroupedItemTable` in `DataSpace`,
 2. derived normalized `GroupedItemTable` in `VisualSpace`,
-3. `ParameterBlockResource` for linewidth, joins, and caps.
+3. `ParameterBlockResource` for stroke width, joins, and caps.
 
 Axis-derived resources:
 
