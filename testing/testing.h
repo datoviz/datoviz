@@ -245,6 +245,8 @@ struct TstCase
     TstStatus status;
     int result;
     uint64_t repeat_index;
+    uint64_t order_index;
+    uint32_t shard_index;
     uint64_t start_ns;
     uint64_t end_ns;
     uint64_t elapsed_ns;
