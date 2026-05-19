@@ -61,6 +61,7 @@ typedef struct SchedulerLabState
     float point_size;
     float image_tint;
     uint8_t image_rgba[LAB_IMAGE_SIZE * LAB_IMAGE_SIZE * 4];
+    DvzColor point_colors[LAB_POINT_COUNT];
 
     bool show_points;
     bool show_image;
@@ -83,14 +84,16 @@ typedef struct SchedulerLabState
     double frame_ms;
     double cursor_x;
     double cursor_y;
-    float hover_rgba[4];
+    float hover_point_rgba[4];
+    float hover_image_rgba[4];
 
     char last_pick[128];
     char last_probe[160];
 
     uint64_t hover_probe_ns;
     bool cursor_valid;
-    bool hover_color_valid;
+    bool hover_point_color_valid;
+    bool hover_image_color_valid;
 } SchedulerLabState;
 
 
@@ -167,6 +170,37 @@ static void _lab_update_image(SchedulerLabState* state)
         dvz_visual_set_texture(
             state->image, state->image_rgba, LAB_IMAGE_SIZE, LAB_IMAGE_SIZE) == 0)
         state->mutation_count++;
+}
+
+
+
+/**
+ * Convert a cursor y coordinate to the image-probe y coordinate used by the displayed texture.
+ *
+ * @param y window y coordinate
+ * @return image probe y coordinate
+ */
+static double _lab_image_probe_y(double y)
+{
+    return (double)LAB_HEIGHT - y;
+}
+
+
+
+/**
+ * Store the frontmost hovered point color for the GUI swatch.
+ *
+ * @param state example state
+ * @param item_id point item id
+ */
+static void _lab_set_hover_point_color(SchedulerLabState* state, uint64_t item_id)
+{
+    if (state == NULL || item_id >= LAB_POINT_COUNT)
+        return;
+
+    for (uint32_t i = 0; i < 4; i++)
+        state->hover_point_rgba[i] = (float)state->point_colors[item_id][i] / 255.0f;
+    state->hover_point_color_valid = true;
 }
 
 
@@ -269,7 +303,8 @@ static void _lab_pointer(DvzInputRouter* router, const DvzPointerEvent* event, v
             now - state->hover_probe_ns >= LAB_HOVER_PROBE_INTERVAL_NS)
         {
             state->hover_probe_ns = now;
-            _lab_queue_probe_at(state, event->pos[0], event->pos[1]);
+            _lab_queue_pick_at(state, event->pos[0], event->pos[1]);
+            _lab_queue_probe_at(state, event->pos[0], _lab_image_probe_y(event->pos[1]));
         }
     }
     else if (event->type == DVZ_POINTER_EVENT_PRESS && event->button == DVZ_POINTER_BUTTON_LEFT)
@@ -329,6 +364,16 @@ static void _lab_frame(DvzAppWindow* win, void* user_data)
     while (dvz_scene_poll_pick(state->scene, &pick))
     {
         state->pick_result_count++;
+        if (
+            pick.hit && pick.resolved_target == DVZ_SCENE_TARGET_ITEM &&
+            pick.resolved_id < LAB_POINT_COUNT)
+        {
+            _lab_set_hover_point_color(state, pick.resolved_id);
+        }
+        else
+        {
+            state->hover_point_color_valid = false;
+        }
         if (pick.hit && pick.has_data_position)
         {
             (void)snprintf(
@@ -350,9 +395,9 @@ static void _lab_frame(DvzAppWindow* win, void* user_data)
         state->probe_result_count++;
         if (probe.hit && probe.value_kind == DVZ_PROBE_VALUE_VEC4)
         {
-            state->hover_color_valid = true;
+            state->hover_image_color_valid = true;
             for (uint32_t i = 0; i < 4; i++)
-                state->hover_rgba[i] = (float)probe.vector[i];
+                state->hover_image_rgba[i] = (float)probe.vector[i];
             (void)snprintf(
                 state->last_probe, sizeof(state->last_probe),
                 "probe #%u: rgba=(%.2f, %.2f, %.2f, %.2f)", state->probe_result_count,
@@ -360,7 +405,7 @@ static void _lab_frame(DvzAppWindow* win, void* user_data)
         }
         else
         {
-            state->hover_color_valid = false;
+            state->hover_image_color_valid = false;
             (void)snprintf(
                 state->last_probe, sizeof(state->last_probe), "probe #%u: miss",
                 state->probe_result_count);
@@ -425,12 +470,15 @@ static void _lab_gui(DvzGui* gui, DvzAppWindow* win, void* user_data)
                 line, sizeof(line), "cursor: %.1f, %.1f", state->cursor_x, state->cursor_y);
             dvz_gui_text(gui, line);
         }
-        ImVec4 hover_color = state->hover_color_valid
+        bool has_hover_color = state->hover_point_color_valid || state->hover_image_color_valid;
+        float* hover_rgba =
+            state->hover_point_color_valid ? state->hover_point_rgba : state->hover_image_rgba;
+        ImVec4 hover_color = has_hover_color
                                  ? (ImVec4){
-                                       state->hover_rgba[0],
-                                       state->hover_rgba[1],
-                                       state->hover_rgba[2],
-                                       state->hover_rgba[3],
+                                       hover_rgba[0],
+                                       hover_rgba[1],
+                                       hover_rgba[2],
+                                       hover_rgba[3],
                                    }
                                  : (ImVec4){0.12f, 0.12f, 0.12f, 1.0f};
         (void)igColorButton(
@@ -438,7 +486,10 @@ static void _lab_gui(DvzGui* gui, DvzAppWindow* win, void* user_data)
             ImGuiColorEditFlags_NoTooltip | ImGuiColorEditFlags_NoDragDrop,
             (ImVec2){34.0f, 34.0f});
         dvz_gui_same_line(gui, 0.0f, 8.0f);
-        dvz_gui_text(gui, state->hover_color_valid ? "hover image color" : "hover: no image");
+        dvz_gui_text(
+            gui, state->hover_point_color_valid
+                     ? "hover point color"
+                     : state->hover_image_color_valid ? "hover image color" : "hover: no sample");
 
         dvz_gui_separator_text(gui, "Controls");
         if (dvz_gui_button(gui, "Request frame"))
@@ -591,6 +642,11 @@ int main(int argc, char** argv)
     };
     (void)snprintf(state.last_pick, sizeof(state.last_pick), "pick: none");
     (void)snprintf(state.last_probe, sizeof(state.last_probe), "probe: none");
+    for (uint32_t i = 0; i < LAB_POINT_COUNT; i++)
+    {
+        for (uint32_t c = 0; c < 4; c++)
+            state.point_colors[i][c] = point_color[i][c];
+    }
     _lab_update_points(&state);
     _lab_update_image(&state);
     state.mutation_count = 0;
