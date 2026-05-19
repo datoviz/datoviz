@@ -34,6 +34,7 @@ void main()
         float trueSd = texel.a;
         if ((sd - 0.5) * (trueSd - 0.5) < 0.0)
             sd = trueSd;
+        sd = clamp(sd, trueSd - 0.125, trueSd + 0.125);
         float screenPxDistance = screenPixelRange() * (sd - 0.5);
         opacity = clamp(screenPxDistance + 0.5, 0.0, 1.0);
     }

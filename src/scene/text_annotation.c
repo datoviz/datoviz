@@ -1128,6 +1128,12 @@ static bool _text_prepare_visual(DvzFigure* figure, DvzText* text)
             DvzTextAtlasGlyph* glyph = _scene_text_atlas_glyph(font_atlas, cp);
             if (glyph == NULL)
                 continue;
+            float advance = glyph->advance * scale;
+            if (glyph->width <= 0.0f || glyph->height <= 0.0f)
+            {
+                cursor_x += advance;
+                continue;
+            }
             x0 = align_x + cursor_x + glyph->xoff * scale;
             y0 = align_y + (float)row * line_h + font_atlas->ascent * scale +
                  glyph->yoff * scale;
@@ -1137,7 +1143,7 @@ static bool _text_prepare_visual(DvzFigure* figure, DvzText* text)
             uv[1] = glyph->uv[1];
             uv[2] = glyph->uv[2];
             uv[3] = glyph->uv[3];
-            cursor_x += glyph->advance * scale;
+            cursor_x += advance;
         }
         else
         {
@@ -1594,6 +1600,12 @@ static bool _text_visual_prepare(
                 DvzTextAtlasGlyph* glyph = _scene_text_atlas_glyph(font_atlas, cp);
                 if (glyph == NULL)
                     continue;
+                float advance = glyph->advance * scale;
+                if (glyph->width <= 0.0f || glyph->height <= 0.0f)
+                {
+                    cursor_x += advance;
+                    continue;
+                }
                 x0 = align_x + cursor_x + glyph->xoff * scale;
                 y0 = align_y + (float)row * line_h + font_atlas->ascent * scale +
                      glyph->yoff * scale;
@@ -1603,7 +1615,7 @@ static bool _text_visual_prepare(
                 uv[1] = glyph->uv[1];
                 uv[2] = glyph->uv[2];
                 uv[3] = glyph->uv[3];
-                cursor_x += glyph->advance * scale;
+                cursor_x += advance;
             }
             else
             {

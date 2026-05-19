@@ -28,6 +28,7 @@ fn main(input: FragmentIn) -> @location(0) vec4f {
         if ((sd - 0.5) * (trueSd - 0.5) < 0.0) {
             sd = trueSd;
         }
+        sd = clamp(sd, trueSd - 0.125, trueSd + 0.125);
         let screenPxDistance = screenPixelRange(input.uv) * (sd - 0.5);
         opacity = clamp(screenPxDistance + 0.5, 0.0, 1.0);
     }

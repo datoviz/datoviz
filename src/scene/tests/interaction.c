@@ -398,7 +398,7 @@ int test_scene_text_sdf_visual_realization(TstContext* suite, const TstCase* ite
     DvzVisual* text = dvz_text(scene, 0);
     ANN(text);
     AT(dvz_text_set_renderer(text, DVZ_TEXT_RENDERER_MSDF_ATLAS) == 0);
-    const char* strings[1] = {"SDF"};
+    const char* strings[1] = {"S D"};
     float positions[1][3] = {{32.0f, 48.0f, 0.0f}};
     float text_anchors[1][2] = {{0.0f, 0.0f}};
     float sizes[1] = {18.0f};
@@ -434,6 +434,10 @@ int test_scene_text_sdf_visual_realization(TstContext* suite, const TstCase* ite
         scene->fonts[0].msdf_atlas != NULL ? scene->fonts[0].msdf_atlas : scene->fonts[0].sdf_atlas;
     ANN(font_atlas);
     AT(font_atlas->field == glyph->field);
+    DvzTextAtlasGlyph* space_glyph = _scene_text_atlas_glyph(font_atlas, ' ');
+    ANN(space_glyph);
+    AT(space_glyph->advance > 0.0f);
+    AT(space_glyph->valid);
 #if defined(DVZ_HAS_MSDF_ATLAS) && DVZ_HAS_MSDF_ATLAS
     if (font_atlas->encoding == DVZ_TEXT_ATLAS_ENCODING_MSDF_RGB)
     {
@@ -464,7 +468,7 @@ int test_scene_text_sdf_visual_realization(TstContext* suite, const TstCase* ite
     }
 #endif
     AT(text->text.span_count == 1);
-    AT(text->text.spans[0].glyph_count == 3);
+    AT(text->text.spans[0].glyph_count == 2);
 
     int pos_idx = _attr_index(glyph, "position");
     int uv_idx = _attr_index(glyph, "texcoords");
@@ -472,9 +476,20 @@ int test_scene_text_sdf_visual_realization(TstContext* suite, const TstCase* ite
     AT(pos_idx >= 0);
     AT(uv_idx >= 0);
     AT(color_idx >= 0);
-    AT(glyph->attrs[pos_idx].item_count == 18);
-    AT(glyph->attrs[uv_idx].item_count == 18);
-    AT(glyph->attrs[color_idx].item_count == 18);
+    AT(glyph->attrs[pos_idx].item_count == 12);
+    AT(glyph->attrs[uv_idx].item_count == 12);
+    AT(glyph->attrs[color_idx].item_count == 12);
+    const float(*glyph_positions)[3] = (const float(*)[3])glyph->attrs[pos_idx].data;
+    ANN(glyph_positions);
+    float first_max_x = glyph_positions[0][0];
+    float second_min_x = glyph_positions[6][0];
+    for (uint32_t k = 1; k < 6; k++)
+        if (glyph_positions[k][0] > first_max_x)
+            first_max_x = glyph_positions[k][0];
+    for (uint32_t k = 7; k < 12; k++)
+        if (glyph_positions[k][0] < second_min_x)
+            second_min_x = glyph_positions[k][0];
+    AT(second_min_x > first_max_x + 0.005f);
 
     DvzAnnotation* annotation = dvz_annotation_label(
         panel,

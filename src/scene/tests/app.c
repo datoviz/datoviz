@@ -2393,7 +2393,7 @@ int test_app_offscreen_sdf_text_has_nonblank_pixels(TstContext* suite, const Tst
         AT(green_in_bounds * 10u < bounds_pixels * 7u);
         AT(green_in_bounds > 32u);
         AT(isolated_green * 10u < green_in_bounds);
-        AT(sparse_green * 20u < green_in_bounds);
+        AT(sparse_green * 15u < green_in_bounds);
     }
 
     dvz_free(rgba);

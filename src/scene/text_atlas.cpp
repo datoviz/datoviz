@@ -269,7 +269,10 @@ static bool _text_msdf_build_atlas(DvzFont* font, DvzTextAtlas** out_atlas)
         int h = 0;
         src_glyph.getBoxRect(x, y, w, h);
         if (w <= 0 || h <= 0)
+        {
+            glyph->valid = glyph->advance > 0.0f;
             continue;
+        }
 
         const double inset_x = 0.5;
         const double inset_y = 0.5;
@@ -957,7 +960,10 @@ bool _scene_text_atlas_ensure(DvzFont* font, DvzTextAtlasBackend backend)
         (void)left_bearing;
         glyph->advance = (float)advance * scale;
         if (glyph_sdfs[i] == NULL)
+        {
+            glyph->valid = glyph->advance > 0.0f;
             continue;
+        }
 
         uint32_t col = i % DVZ_TEXT_SDF_COLUMNS;
         uint32_t row = i / DVZ_TEXT_SDF_COLUMNS;
