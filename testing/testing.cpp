@@ -71,6 +71,7 @@ typedef struct TstOptions
     const char* json_path;
     const char* child_json_path;
     const char* parent_json_path;
+    const char* shard_policy;
     bool list;
     bool list_groups;
     bool fail_fast;
@@ -87,6 +88,15 @@ typedef struct TstOptions
     uint32_t shard_count;
     int color_mode;
 } TstOptions;
+
+
+
+typedef enum TstShardPolicy
+{
+    TST_SHARD_POLICY_ALL = 0,
+    TST_SHARD_POLICY_PARALLEL_SAFE = 1,
+    TST_SHARD_POLICY_SERIAL_ONLY = 2,
+} TstShardPolicy;
 
 
 
@@ -905,6 +915,81 @@ static bool _tst_isolation_matches(TstIsolation isolation, const char* name)
 
 
 
+static TstShardPolicy _tst_shard_policy_from_name(const char* name)
+{
+    if (_tst_streq(name, "parallel-safe"))
+    {
+        return TST_SHARD_POLICY_PARALLEL_SAFE;
+    }
+    if (_tst_streq(name, "serial-only"))
+    {
+        return TST_SHARD_POLICY_SERIAL_ONLY;
+    }
+    return TST_SHARD_POLICY_ALL;
+}
+
+
+
+static const char* _tst_shard_policy_name(TstShardPolicy policy)
+{
+    switch (policy)
+    {
+    case TST_SHARD_POLICY_PARALLEL_SAFE:
+        return "parallel-safe";
+    case TST_SHARD_POLICY_SERIAL_ONLY:
+        return "serial-only";
+    case TST_SHARD_POLICY_ALL:
+    default:
+        return "all";
+    }
+}
+
+
+
+static bool _tst_case_parallel_safe(const TstSuite* suite, const TstCase* test)
+{
+    ANN(test);
+    if (test->isolation == TST_ISOLATION_EXCLUSIVE)
+    {
+        return false;
+    }
+
+    const uint64_t serial_resources =
+        TST_RES_GLFW | TST_RES_ENV | TST_RES_VIDEO | TST_RES_LOG_CAPTURE | TST_RES_GLOBAL_STATE;
+    if ((test->resources & serial_resources) != 0)
+    {
+        return false;
+    }
+
+    const TstFixtureScope fixture_scope = _tst_fixture_case_scope(suite, test);
+    if (fixture_scope == TST_FIXTURE_SCOPE_EXCLUSIVE)
+    {
+        return false;
+    }
+
+    return true;
+}
+
+
+
+static bool
+_tst_shard_policy_matches(const TstSuite* suite, const TstCase* test, TstShardPolicy policy)
+{
+    const bool parallel_safe = _tst_case_parallel_safe(suite, test);
+    switch (policy)
+    {
+    case TST_SHARD_POLICY_PARALLEL_SAFE:
+        return parallel_safe;
+    case TST_SHARD_POLICY_SERIAL_ONLY:
+        return !parallel_safe;
+    case TST_SHARD_POLICY_ALL:
+    default:
+        return true;
+    }
+}
+
+
+
 static std::string _tst_json_escape(const char* value)
 {
     std::string out;
@@ -991,7 +1076,7 @@ static bool _tst_is_option_with_value(const char* arg)
            _tst_streq(arg, "--slow") || _tst_streq(arg, "--slow-groups") ||
            _tst_streq(arg, "--timeout") || _tst_streq(arg, "--jobs") ||
            _tst_streq(arg, "--shard-index") || _tst_streq(arg, "--shard-count") ||
-           _tst_streq(arg, "--color");
+           _tst_streq(arg, "--shard-policy") || _tst_streq(arg, "--color");
 }
 
 
@@ -1004,7 +1089,8 @@ static bool _tst_parent_only_option(const char* arg)
     }
     return _tst_streq(arg, "--jobs") || _tst_streq(arg, "--shard-index") ||
            _tst_streq(arg, "--shard-count") || _tst_streq(arg, "--child-json") ||
-           _tst_streq(arg, "--parent-json") || _tst_streq(arg, "--json");
+           _tst_streq(arg, "--parent-json") || _tst_streq(arg, "--json") ||
+           _tst_streq(arg, "--shard-policy");
 }
 
 
@@ -1076,6 +1162,8 @@ static int _tst_parse_options(int argc, char** argv, TstOptions* options)
             options->shard_index = (uint32_t)_tst_parse_u64(argv[++i], UINT32_MAX);
         else if (_tst_streq(arg, "--shard-count") && i + 1 < argc)
             options->shard_count = (uint32_t)_tst_parse_u64(argv[++i], 0);
+        else if (_tst_streq(arg, "--shard-policy") && i + 1 < argc)
+            options->shard_policy = argv[++i];
         else if (_tst_streq(arg, "--color") && i + 1 < argc)
         {
             const char* mode = argv[++i];
@@ -1739,7 +1827,8 @@ static std::string _tst_child_json_path(uint32_t shard_index)
 
 
 static std::vector<std::string> _tst_child_args(
-    int argc, char** argv, uint32_t shard_index, uint32_t shard_count, const std::string& json_path)
+    int argc, char** argv, uint32_t shard_index, uint32_t shard_count, const std::string& json_path,
+    TstShardPolicy policy)
 {
     std::vector<std::string> args;
     args.push_back(argc > 0 && argv[0] != NULL ? argv[0] : "");
@@ -1762,6 +1851,8 @@ static std::vector<std::string> _tst_child_args(
     args.push_back(std::to_string(shard_count));
     args.push_back("--child-json");
     args.push_back(json_path);
+    args.push_back("--shard-policy");
+    args.push_back(_tst_shard_policy_name(policy));
     args.push_back("--color");
     args.push_back("never");
     return args;
@@ -1831,54 +1922,83 @@ static int _tst_wait_child(TstChildProc* child)
 
 
 
+static uint32_t
+_tst_count_policy_cases(TstSuite* suite, const TstOptions* options, TstShardPolicy policy)
+{
+    ANN(suite);
+    ANN(options);
+    uint32_t count = 0;
+    for (uint32_t i = 0; i < suite->n_cases; i++)
+    {
+        TstCase* test = &suite->cases[i];
+        if (_tst_case_matches(test, options) && _tst_shard_policy_matches(suite, test, policy))
+        {
+            count++;
+        }
+    }
+    return count;
+}
+
+
+
 static int _tst_run_parent_shards(
     TstSuite* suite, int argc, char** argv, const TstOptions* options, uint64_t runner_start_ns)
 {
     ANN(suite);
     ANN(options);
-    const uint32_t shard_count = options->jobs;
-    const uint32_t max_jobs = std::max<uint32_t>(1, options->jobs);
     std::vector<TstChildProc> running;
     std::vector<std::string> json_paths;
-    uint32_t next_shard = 0;
     int child_failure = 0;
 
-    while (next_shard < shard_count || !running.empty())
-    {
-        while (next_shard < shard_count && running.size() < max_jobs)
+    auto run_phase = [&](TstShardPolicy policy, uint32_t shard_count, uint32_t max_jobs) {
+        uint32_t next_shard = 0;
+        while (next_shard < shard_count || !running.empty())
         {
-            const std::string json_path = _tst_child_json_path(next_shard);
-            std::vector<std::string> args =
-                _tst_child_args(argc, argv, next_shard, shard_count, json_path);
-            TstChildProc child = {};
-            child.shard_index = next_shard;
-            child.json_path = json_path;
-            if (_tst_spawn_child(args, &child) != 0)
+            while (next_shard < shard_count && running.size() < max_jobs)
             {
-                dvz_fprintf(stderr, "could not spawn shard %u\n", next_shard);
-                child_failure = 1;
-                next_shard = shard_count;
+                const std::string json_path = _tst_child_json_path(next_shard);
+                std::vector<std::string> args =
+                    _tst_child_args(argc, argv, next_shard, shard_count, json_path, policy);
+                TstChildProc child = {};
+                child.shard_index = next_shard;
+                child.json_path = json_path;
+                if (_tst_spawn_child(args, &child) != 0)
+                {
+                    dvz_fprintf(stderr, "could not spawn shard %u\n", next_shard);
+                    child_failure = 1;
+                    next_shard = shard_count;
+                    break;
+                }
+                json_paths.push_back(json_path);
+                running.push_back(child);
+                next_shard++;
+            }
+
+            if (running.empty())
+            {
                 break;
             }
-            json_paths.push_back(json_path);
-            running.push_back(child);
-            next_shard++;
-        }
 
-        if (running.empty())
-        {
-            break;
+            TstChildProc child = running.front();
+            running.erase(running.begin());
+            int status = _tst_wait_child(&child);
+            if (status != 0)
+            {
+                dvz_fprintf(stderr, "shard %u failed with exit code %d\n", child.shard_index, status);
+                child_failure = 1;
+            }
         }
+    };
 
-        TstChildProc child = running.front();
-        running.erase(running.begin());
-        int status = _tst_wait_child(&child);
-        if (status != 0)
-        {
-            dvz_fprintf(stderr, "shard %u failed with exit code %d\n", child.shard_index, status);
-            child_failure = 1;
-        }
-    }
+    const uint32_t parallel_count =
+        _tst_count_policy_cases(suite, options, TST_SHARD_POLICY_PARALLEL_SAFE);
+    const uint32_t serial_count =
+        _tst_count_policy_cases(suite, options, TST_SHARD_POLICY_SERIAL_ONLY);
+
+    if (parallel_count > 0)
+        run_phase(TST_SHARD_POLICY_PARALLEL_SAFE, options->jobs, std::max<uint32_t>(1, options->jobs));
+    if (serial_count > 0)
+        run_phase(TST_SHARD_POLICY_SERIAL_ONLY, 1, 1);
 
     for (TstChildProc& child : running)
     {
@@ -2147,6 +2267,7 @@ int tst_suite_run(TstSuite* suite, int argc, char** argv)
     }
 
     const bool child_mode = options.shard_count > 0;
+    const TstShardPolicy shard_policy = _tst_shard_policy_from_name(options.shard_policy);
     if (options.jobs > 1 && !child_mode)
     {
         return _tst_run_parent_shards(suite, argc, argv, &options, _tst_now_ns());
@@ -2186,6 +2307,16 @@ int tst_suite_run(TstSuite* suite, int argc, char** argv)
             std::remove_if(
                 selected.begin(), selected.end(), [&options](const TstSelectedCase& item) {
                     return item.order_index % options.shard_count != options.shard_index;
+                }),
+            selected.end());
+    }
+    if (shard_policy != TST_SHARD_POLICY_ALL)
+    {
+        selected.erase(
+            std::remove_if(
+                selected.begin(), selected.end(),
+                [suite, shard_policy](const TstSelectedCase& item) {
+                    return !_tst_shard_policy_matches(suite, item.test, shard_policy);
                 }),
             selected.end());
     }
