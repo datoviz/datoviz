@@ -24,13 +24,29 @@
 #include "../_trace.h"
 #include "../../drp2/_stream.h"
 #include "datoviz/app.h"
+#include "datoviz/drp2/runtime.h"
 #include "datoviz/drp2/stream.h"
+#include "datoviz/scene.h"
+#include "datoviz/vk/gpu_ctx.h"
+#include "datoviz/window.h"
 #include "test_app.h"
 
 
 
 /*************************************************************************************************/
-/*  Functions                                                                                    */
+/*  Structs                                                                                      */
+/*************************************************************************************************/
+
+typedef struct AppTestWindowBackendState
+{
+    uint32_t create_count;
+    uint32_t destroy_count;
+} AppTestWindowBackendState;
+
+
+
+/*************************************************************************************************/
+/*  Helpers                                                                                      */
 /*************************************************************************************************/
 
 static void _test_restore_env(const char* name, const char* value)
@@ -43,6 +59,115 @@ static void _test_restore_env(const char* name, const char* value)
 }
 
 
+
+/**
+ * Return an app config that does not request instance extensions for borrowed GPU contexts.
+ *
+ * @return app config with GPU-extension requests disabled
+ */
+static DvzAppConfig _test_app_resource_config(void)
+{
+    DvzAppConfig config = dvz_app_config();
+    config.instance_extension_count = 0;
+    config.instance_extensions = NULL;
+    config.enable_canvas_extensions = false;
+    config.enable_glfw_extensions = false;
+    return config;
+}
+
+
+
+/**
+ * Create a GPU context with the same baseline features as the default app path.
+ *
+ * @return GPU context, or NULL when Vulkan setup is unavailable
+ */
+static DvzGpuCtx* _test_app_gpu_ctx(void)
+{
+    DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
+    VkPhysicalDeviceFeatures features10 = {0};
+    features10.independentBlend = true;
+    dvz_gpu_ctx_config_features10(&gpu_cfg, &features10);
+    VkPhysicalDeviceVulkan12Features features12 = {
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES};
+    features12.timelineSemaphore = true;
+    dvz_gpu_ctx_config_features12(&gpu_cfg, &features12);
+    VkPhysicalDeviceVulkan13Features features13 = {
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES};
+    features13.dynamicRendering = true;
+    features13.synchronization2 = true;
+    dvz_gpu_ctx_config_features13(&gpu_cfg, &features13);
+    return dvz_gpu_ctx(&gpu_cfg);
+}
+
+
+
+/**
+ * Create a test backend window and record the creation.
+ *
+ * @param backend backend descriptor
+ * @param window window being created
+ * @param config window configuration
+ * @return true
+ */
+static bool _test_app_backend_create(
+    DvzWindowBackend* backend, DvzWindow* window, const DvzWindowConfig* config)
+{
+    (void)window;
+    (void)config;
+    ANN(backend);
+    AppTestWindowBackendState* state = (AppTestWindowBackendState*)backend->user_data;
+    ANN(state);
+    state->create_count++;
+    return true;
+}
+
+
+
+/**
+ * Destroy a test backend window and record the destruction.
+ *
+ * @param backend backend descriptor
+ * @param window window being destroyed
+ */
+static void _test_app_backend_destroy(DvzWindowBackend* backend, DvzWindow* window)
+{
+    (void)window;
+    ANN(backend);
+    AppTestWindowBackendState* state = (AppTestWindowBackendState*)backend->user_data;
+    ANN(state);
+    state->destroy_count++;
+}
+
+
+
+/**
+ * Register a CPU-only test backend on a window host.
+ *
+ * @param host window host receiving the backend
+ * @param state backend state storing callback counts
+ */
+static void _test_app_register_backend(DvzWindowHost* host, AppTestWindowBackendState* state)
+{
+    ANN(host);
+    ANN(state);
+    DvzWindowBackend backend = {
+        .name = "app-test",
+        .type = DVZ_BACKEND_QT,
+        .user_data = state,
+        .procs = {
+            .create = _test_app_backend_create,
+            .destroy = _test_app_backend_destroy,
+        },
+    };
+    dvz_window_host_register_backend(host, &backend);
+}
+
+
+
+/*************************************************************************************************/
+/*  Functions                                                                                    */
+/*************************************************************************************************/
 
 static int test_app_config_defaults(TstContext* suite, const TstCase* item)
 {
@@ -114,6 +239,205 @@ static int test_app_config_env_fps_cap(TstContext* suite, const TstCase* item)
     AT(config.fps_cap == 144.5);
 
     _test_restore_env("DVZ_FPS_CAP", old_fps_cap != NULL ? saved_fps_cap : NULL);
+    return 0;
+}
+
+
+
+/**
+ * Create and destroy an app that owns every top-level resource.
+ */
+static int test_app_resources_owned_defaults(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    ANN(item);
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzAppConfig config = _test_app_resource_config();
+    DvzApp* app = dvz_app_with_resources(scene, &config, NULL);
+    if (app == NULL)
+    {
+        dvz_scene_destroy(scene);
+        tst_skip(suite, "GPU context creation failed");
+        return 0;
+    }
+
+    dvz_app_destroy(app);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
+/**
+ * Reject a borrowed runtime when no matching GPU context is provided.
+ */
+static int test_app_resources_reject_runtime_without_gpu(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    ANN(item);
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzDrp2RuntimeConfig runtime_cfg = {.semantic_only = true};
+    DvzDrp2Runtime* runtime = dvz_drp2_runtime_vklite(&runtime_cfg);
+    ANN(runtime);
+    DvzAppResources resources = {.runtime = runtime};
+    DvzAppConfig config = _test_app_resource_config();
+
+    tst_expect_error_begin(suite);
+    DvzApp* app = dvz_app_with_resources(scene, &config, &resources);
+    AT(app == NULL);
+    AT(tst_expect_error_end(suite) == 0);
+
+    dvz_drp2_runtime_destroy(runtime);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
+/**
+ * Reject a runtime whose device/allocator do not match the borrowed GPU context.
+ */
+static int test_app_resources_reject_incompatible_runtime(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    ANN(item);
+
+    DvzGpuCtx* gpu_ctx = _test_app_gpu_ctx();
+    if (gpu_ctx == NULL)
+    {
+        tst_skip(suite, "GPU context creation failed");
+        return 0;
+    }
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzDrp2RuntimeConfig runtime_cfg = {.semantic_only = true};
+    DvzDrp2Runtime* runtime = dvz_drp2_runtime_vklite(&runtime_cfg);
+    ANN(runtime);
+    DvzAppResources resources = {.gpu_ctx = gpu_ctx, .runtime = runtime};
+    DvzAppConfig config = _test_app_resource_config();
+
+    tst_expect_error_begin(suite);
+    DvzApp* app = dvz_app_with_resources(scene, &config, &resources);
+    AT(app == NULL);
+    AT(tst_expect_error_end(suite) == 0);
+
+    dvz_drp2_runtime_destroy(runtime);
+    dvz_gpu_ctx_destroy(gpu_ctx);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
+/**
+ * Borrow a GPU context while the app owns its runtime and window host.
+ */
+static int test_app_resources_borrow_gpu_ctx(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    ANN(item);
+
+    DvzGpuCtx* gpu_ctx = _test_app_gpu_ctx();
+    if (gpu_ctx == NULL)
+    {
+        tst_skip(suite, "GPU context creation failed");
+        return 0;
+    }
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzAppResources resources = {.gpu_ctx = gpu_ctx};
+    DvzAppConfig config = _test_app_resource_config();
+
+    DvzApp* app = dvz_app_with_resources(scene, &config, &resources);
+    AT(app != NULL);
+    dvz_app_destroy(app);
+
+    AT(dvz_gpu_ctx_device(gpu_ctx) != NULL);
+    dvz_gpu_ctx_destroy(gpu_ctx);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
+/**
+ * Borrow a GPU context and a compatible runtime.
+ */
+static int test_app_resources_borrow_gpu_ctx_and_runtime(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    ANN(item);
+
+    DvzGpuCtx* gpu_ctx = _test_app_gpu_ctx();
+    if (gpu_ctx == NULL)
+    {
+        tst_skip(suite, "GPU context creation failed");
+        return 0;
+    }
+    DvzDrp2RuntimeConfig runtime_cfg = dvz_drp2_runtime_vklite_config(
+        dvz_gpu_ctx_device(gpu_ctx), dvz_gpu_ctx_alloc(gpu_ctx));
+    DvzDrp2Runtime* runtime = dvz_drp2_runtime_vklite(&runtime_cfg);
+    ANN(runtime);
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzAppResources resources = {.gpu_ctx = gpu_ctx, .runtime = runtime};
+    DvzAppConfig config = _test_app_resource_config();
+
+    DvzApp* app = dvz_app_with_resources(scene, &config, &resources);
+    AT(app != NULL);
+    dvz_app_destroy(app);
+
+    DvzDrp2RuntimeConfig after_cfg = dvz_drp2_runtime_config(runtime);
+    AT(after_cfg.device == dvz_gpu_ctx_device(gpu_ctx));
+    AT(after_cfg.allocator == dvz_gpu_ctx_alloc(gpu_ctx));
+    dvz_drp2_runtime_destroy(runtime);
+    dvz_gpu_ctx_destroy(gpu_ctx);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
+/**
+ * Borrow a GPU context and window host without destroying either in app teardown.
+ */
+static int test_app_resources_borrow_gpu_ctx_and_window_host(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    ANN(item);
+
+    DvzGpuCtx* gpu_ctx = _test_app_gpu_ctx();
+    if (gpu_ctx == NULL)
+    {
+        tst_skip(suite, "GPU context creation failed");
+        return 0;
+    }
+    AppTestWindowBackendState state = {0};
+    DvzWindowHost* host = dvz_window_host();
+    ANN(host);
+    _test_app_register_backend(host, &state);
+    DvzWindow* window = dvz_window_create(host, DVZ_BACKEND_QT, NULL);
+    ANN(window);
+    AT(state.create_count == 1);
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzAppResources resources = {.gpu_ctx = gpu_ctx, .window_host = host};
+    DvzAppConfig config = _test_app_resource_config();
+
+    DvzApp* app = dvz_app_with_resources(scene, &config, &resources);
+    AT(app != NULL);
+    dvz_app_destroy(app);
+    AT(state.destroy_count == 0);
+
+    dvz_window_host_destroy(host);
+    AT(state.destroy_count == 1);
+    dvz_gpu_ctx_destroy(gpu_ctx);
+    dvz_scene_destroy(scene);
     return 0;
 }
 
@@ -854,6 +1178,12 @@ int test_app(TstSuite* suite)
     TST_CASE(test_app_config_defaults);
     TST_CASE(test_app_config_env_schedule);
     TST_CASE(test_app_config_env_fps_cap);
+    TST_CASE(test_app_resources_owned_defaults);
+    TST_CASE(test_app_resources_reject_runtime_without_gpu);
+    TST_CASE(test_app_resources_reject_incompatible_runtime);
+    TST_CASE(test_app_resources_borrow_gpu_ctx);
+    TST_CASE(test_app_resources_borrow_gpu_ctx_and_runtime);
+    TST_CASE(test_app_resources_borrow_gpu_ctx_and_window_host);
     TST_CASE(test_app_trace_mode_parsing);
     TST_CASE(test_app_trace_plan_normal_changed_after_open_line);
     TST_CASE(test_app_trace_plan_normal_unchanged_rewrites_in_place);
