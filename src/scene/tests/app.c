@@ -277,6 +277,13 @@ static void _app_gpu_fixture_destroy(void* fixture_ptr)
     DvzTestGpuFixture* fixture = (DvzTestGpuFixture*)fixture_ptr;
     if (fixture == NULL)
         return;
+    if (fixture->gpu_ctx != NULL)
+    {
+        /* Other app paths may have loaded Volk against a later transient instance. */
+        DvzInstance* instance = dvz_gpu_ctx_instance(fixture->gpu_ctx);
+        if (instance != NULL && dvz_instance_handle(instance) != VK_NULL_HANDLE)
+            volkLoadInstance(dvz_instance_handle(instance));
+    }
     if (fixture->runtime != NULL)
     {
         dvz_drp2_runtime_destroy(fixture->runtime);
@@ -284,10 +291,6 @@ static void _app_gpu_fixture_destroy(void* fixture_ptr)
     }
     if (fixture->gpu_ctx != NULL)
     {
-        /* Other app paths may have loaded Volk against a later transient instance. */
-        DvzInstance* instance = dvz_gpu_ctx_instance(fixture->gpu_ctx);
-        if (instance != NULL && dvz_instance_handle(instance) != VK_NULL_HANDLE)
-            volkLoadInstance(dvz_instance_handle(instance));
         dvz_gpu_ctx_destroy(fixture->gpu_ctx);
         fixture->gpu_ctx = NULL;
     }
