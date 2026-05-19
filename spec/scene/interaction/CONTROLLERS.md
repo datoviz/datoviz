@@ -28,6 +28,10 @@ The accepted controller ownership and panel-binding model is recorded in
 document defines broader controller behavior; that decision record fixes the public handle,
 ownership, linking, and dimension-binding rules for the v0.4 refactor.
 
+Fly, pivot-orbit, and turntable camera-controller semantics are recorded in
+[`CAMERA_CONTROLLERS.md`](CAMERA_CONTROLLERS.md). Keep this file focused on shared controller
+ownership, routing, invalidation, and interaction responsibilities.
+
 
 ## Position
 
