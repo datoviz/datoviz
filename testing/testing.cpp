@@ -2289,6 +2289,10 @@ static int _tst_run_parent_shards(
         results, _tst_now_ns() - runner_start_ns, &summary, &modules, &groups);
     suite->last_summary = summary;
 
+    for (const TstCase& result : results)
+    {
+        _tst_print_case(&result, options);
+    }
     _tst_print_summary(&summary, results, modules, options, groups);
     _tst_print_slow_cases(results, options, options->slow_count);
     _tst_print_slow_groups(groups, options, options->slow_group_count);

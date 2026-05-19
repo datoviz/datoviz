@@ -54,6 +54,22 @@ def test_dvztest_scheduler_parent_jobs_keep_serial_cases_in_serial_phase(tmp_pat
     assert data["summary"]["passed"] == 8
     assert data["summary"]["failed"] == 0
 
+    replay_lines = [
+        line
+        for line in completed.stdout.splitlines()
+        if line.startswith("PASS  scheduler/policy/")
+    ]
+    assert [line.split()[1].removeprefix("scheduler/policy/") for line in replay_lines] == [
+        "parallel-cpu-a",
+        "parallel-cpu-b",
+        "parallel-process-fixture",
+        "process-isolated-child",
+        "serial-env",
+        "serial-log-capture",
+        "serial-exclusive-isolation",
+        "serial-exclusive-fixture",
+    ]
+
     cases = data["cases"]
     assert [case["name"] for case in cases] == [
         "parallel-cpu-a",
