@@ -2166,7 +2166,7 @@ int test_app_offscreen_points_edl_renders(TstContext* suite, const TstCase* item
     AT(dvz_panel_set_edl(
         panel, &(DvzEdlDesc){.radius = 2.0f, .strength = 65.0f, .depth_scale = 1.0f}));
 
-    DvzApp* app = dvz_app(scene);
+    DvzApp* app = _app_test_create(suite, scene);
     if (app == NULL)
     {
         log_warn("test_app_offscreen_points_edl_renders skipped: GPU context creation failed");
@@ -2297,7 +2297,7 @@ int test_app_offscreen_mesh_ssao_changes_pixels(TstContext* suite, const TstCase
     AT(front.visual != NULL);
     dvz_panel_set_background_color(panel, 0.03f, 0.035f, 0.045f, 1.0f);
 
-    DvzApp* app = dvz_app(scene);
+    DvzApp* app = _app_test_create(suite, scene);
     if (app == NULL)
     {
         log_warn("test_app_offscreen_mesh_ssao_changes_pixels skipped: GPU context creation failed");
@@ -2404,7 +2404,7 @@ int test_app_offscreen_sphere_ssao_darkens_contact(TstContext* suite, const TstC
     AT(dvz_panel_add_visual(panel, sphere, NULL) == 0);
     dvz_panel_set_background_color(panel, 0.03f, 0.035f, 0.045f, 1.0f);
 
-    DvzApp* app = dvz_app(scene);
+    DvzApp* app = _app_test_create(suite, scene);
     if (app == NULL)
     {
         log_warn(
@@ -2662,7 +2662,7 @@ int test_app_offscreen_text_has_nonblank_pixels(TstContext* suite, const TstCase
            panel, text,
            &(DvzVisualAttachDesc){.z_layer = 1, .controller_mode = DVZ_CONTROLLER_FIXED}) == 0);
 
-    DvzApp* app = dvz_app(scene);
+    DvzApp* app = _app_test_create(suite, scene);
     if (app == NULL)
     {
         log_warn("test_app_offscreen_text_has_nonblank_pixels skipped: GPU context creation failed");
@@ -2894,7 +2894,7 @@ int test_app_offscreen_image_field_partial_update_changes_region(TstContext* sui
     AT(dvz_visual_set_field(image, "field", field));
     AT(dvz_panel_add_visual(panel, image, NULL) == 0);
 
-    DvzApp* app = dvz_app(scene);
+    DvzApp* app = _app_test_create(suite, scene);
     if (app == NULL)
     {
         log_warn(
@@ -5703,30 +5703,21 @@ int test_scene_app(TstSuite* suite)
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_point_depth_cue_darkens_far);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_has_nonblank_pixels);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_pixel_square_has_nonblank_pixels);
-    TST_SCENE_APP_CASE(
-        test_app_offscreen_points_edl_renders, TST_SCENE_APP_GPU_RES, TST_ISOLATION_PROCESS);
+    TST_SCENE_APP_SHARED_CASE(test_app_offscreen_points_edl_renders);
     TST_SCENE_APP_CASE(
         test_app_offscreen_points_edl_changes_pixels, TST_SCENE_APP_GPU_RES,
         TST_ISOLATION_PROCESS);
-    TST_SCENE_APP_CASE(
-        test_app_offscreen_mesh_ssao_changes_pixels, TST_SCENE_APP_GPU_RES,
-        TST_ISOLATION_PROCESS);
-    TST_SCENE_APP_CASE(
-        test_app_offscreen_sphere_ssao_darkens_contact, TST_SCENE_APP_GPU_RES,
-        TST_ISOLATION_PROCESS);
+    TST_SCENE_APP_SHARED_CASE(test_app_offscreen_mesh_ssao_changes_pixels);
+    TST_SCENE_APP_SHARED_CASE(test_app_offscreen_sphere_ssao_darkens_contact);
     TST_SCENE_APP_CASE(
         test_app_offscreen_records_dvzr_frames,
         TST_SCENE_APP_GPU_RES | TST_RES_FILESYSTEM | TST_RES_ENV, TST_ISOLATION_PROCESS);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_image_has_nonblank_pixels);
-    TST_SCENE_APP_CASE(
-        test_app_offscreen_text_has_nonblank_pixels, TST_SCENE_APP_GPU_RES,
-        TST_ISOLATION_PROCESS);
+    TST_SCENE_APP_SHARED_CASE(test_app_offscreen_text_has_nonblank_pixels);
     TST_SCENE_APP_CASE(
         test_app_offscreen_sdf_text_has_nonblank_pixels, TST_SCENE_APP_GPU_RES,
         TST_ISOLATION_PROCESS);
-    TST_SCENE_APP_CASE(
-        test_app_offscreen_image_field_partial_update_changes_region, TST_SCENE_APP_GPU_RES,
-        TST_ISOLATION_PROCESS);
+    TST_SCENE_APP_SHARED_CASE(test_app_offscreen_image_field_partial_update_changes_region);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_lit_primitive_depth_orders_overlap);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_lit_primitive_depth_cue_darkens_far);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_mesh_renders_nonblank);
