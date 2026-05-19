@@ -621,6 +621,8 @@ int test_scene_text_auto_renderer_selection(TstContext* suite, const TstCase* it
 
 int test_scene_text_many_labels_render_plan(TstContext* suite, const TstCase* item);
 
+int test_scene_text_panzoom_isotropic_quads(TstContext* suite, const TstCase* item);
+
 #if defined(DVZ_HAS_APP) && DVZ_HAS_APP
 int test_app_offscreen_has_nonblank_pixels(TstContext* suite, const TstCase* item);
 

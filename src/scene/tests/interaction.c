@@ -670,6 +670,81 @@ int test_scene_text_many_labels_render_plan(TstContext* suite, const TstCase* it
 
 
 /**
+ * Verify panzoom-applied text keeps glyph quads isotropic under anisotropic zoom.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_text_panzoom_isotropic_quads(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    ANN(item);
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 640, 480, 0);
+    DvzPanel* panel = dvz_panel(
+        figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+    ANN(panel);
+    dvz_panel_set_panzoom(panel, NULL, 0);
+    ANN(panel->panzoom);
+    dvz_panzoom_zoom(panel->panzoom, (vec2){4.0f, 1.0f});
+
+    DvzVisual* text = dvz_text(scene, 0);
+    ANN(text);
+    AT(dvz_text_set_renderer(text, DVZ_TEXT_RENDERER_SMALL_BITMAP_ATLAS) == 0);
+    const char* strings[1] = {"M"};
+    float positions[1][3] = {{320.0f, 240.0f, 0.0f}};
+    float text_anchors[1][2] = {{0.5f, 0.5f}};
+    float sizes[1] = {8.0f};
+    DvzVisualDataUpdate updates[3] = {
+        {.attr_name = "position", .data = positions, .item_count = 1},
+        {.attr_name = "anchor", .data = text_anchors, .item_count = 1},
+        {.attr_name = "size", .data = sizes, .item_count = 1},
+    };
+    AT(dvz_visual_set_strings(text, "text", strings, 1) == 0);
+    AT(dvz_visual_set_data_many(text, updates, 3) == 0);
+    AT(dvz_panel_add_visual(
+           panel, text,
+           &(DvzVisualAttachDesc){.z_layer = 1, .controller_mode = DVZ_CONTROLLER_APPLY}) == 0);
+    _scene_prepare_text_visuals(figure);
+    ANN(text->text.glyph_visual);
+
+    int pos_idx = _attr_index(text->text.glyph_visual, "position");
+    AT(pos_idx >= 0);
+    const float(*glyph_positions)[3] =
+        (const float(*)[3])text->text.glyph_visual->attrs[pos_idx].data;
+    ANN(glyph_positions);
+    float min_x = glyph_positions[0][0];
+    float max_x = glyph_positions[0][0];
+    float min_y = glyph_positions[0][1];
+    float max_y = glyph_positions[0][1];
+    for (uint32_t i = 1; i < 6; i++)
+    {
+        if (glyph_positions[i][0] < min_x)
+            min_x = glyph_positions[i][0];
+        if (glyph_positions[i][0] > max_x)
+            max_x = glyph_positions[i][0];
+        if (glyph_positions[i][1] < min_y)
+            min_y = glyph_positions[i][1];
+        if (glyph_positions[i][1] > max_y)
+            max_y = glyph_positions[i][1];
+    }
+
+    DvzMVP mvp = {0};
+    _scene_panel_apply_mvp(panel, &mvp);
+    float final_width = (max_x - min_x) * fabsf(mvp.proj[0][0]);
+    float final_height = (max_y - min_y) * fabsf(mvp.proj[1][1]);
+    AT(final_width > 0.0f);
+    AT(final_height > 0.0f);
+    AT(final_width < final_height);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+/**
  * Register scene interaction tests.
  *
  * @param suite the active test suite
@@ -690,6 +765,7 @@ int test_scene_interaction(TstSuite* suite)
     TST_CASE(test_scene_text_sdf_visual_realization);
     TST_CASE(test_scene_text_auto_renderer_selection);
     TST_CASE(test_scene_text_many_labels_render_plan);
+    TST_CASE(test_scene_text_panzoom_isotropic_quads);
 
     return 0;
 }

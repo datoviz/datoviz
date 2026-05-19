@@ -961,15 +961,48 @@ static void _text_placement_alignment(
  */
 static void _text_corner_position(
     const DvzFigure* figure, float anchor_x, float anchor_y, float local_x, float local_y,
-    float angle, float z, float out[3])
+    const float local_scale[2], float angle, float z, float out[3])
 {
     ANN(figure);
+    ANN(local_scale);
     ANN(out);
     float c = cosf(angle);
     float s = sinf(angle);
-    float x = anchor_x + c * local_x - s * local_y;
-    float y = anchor_y + s * local_x + c * local_y;
+    float scaled_x = local_x * local_scale[0];
+    float scaled_y = local_y * local_scale[1];
+    float x = anchor_x + c * scaled_x - s * scaled_y;
+    float y = anchor_y + s * scaled_x + c * scaled_y;
     _text_pixel_to_clip(figure, x, y, z, out);
+}
+
+
+
+/**
+ * Resolve per-axis local text scale that makes panzoom-applied glyph quads isotropic.
+ *
+ * @param panel the panel carrying the text visual
+ * @param controller_mode the visual attachment controller mode
+ * @param out output local X/Y scale compensation
+ */
+static void _text_local_scale_for_controller(
+    const DvzPanel* panel, DvzControllerMode controller_mode, float out[2])
+{
+    ANN(out);
+    out[0] = 1.0f;
+    out[1] = 1.0f;
+    if (panel == NULL || panel->panzoom == NULL || controller_mode != DVZ_CONTROLLER_APPLY)
+        return;
+
+    DvzMVP mvp = {0};
+    _scene_panel_apply_mvp(panel, &mvp);
+    float zoom_x = fabsf(mvp.proj[0][0]);
+    float zoom_y = fabsf(mvp.proj[1][1]);
+    if (!isfinite(zoom_x) || !isfinite(zoom_y) || zoom_x <= 0.0f || zoom_y <= 0.0f)
+        return;
+
+    float isotropic_zoom = sqrtf(zoom_x * zoom_y);
+    out[0] = isotropic_zoom / zoom_x;
+    out[1] = isotropic_zoom / zoom_y;
 }
 
 
@@ -1082,6 +1115,7 @@ static bool _text_prepare_visual(DvzFigure* figure, DvzText* text)
     float anchor_x = 0;
     float anchor_y = 0;
     _text_anchor_pixels(text, &anchor_x, &anchor_y);
+    float local_scale[2] = {1.0f, 1.0f};
     float align_x = 0;
     float align_y = 0;
     _text_placement_alignment(&text->placement, (float)width, (float)height, &align_x, &align_y);
@@ -1163,8 +1197,8 @@ static bool _text_prepare_visual(DvzFigure* figure, DvzText* text)
         for (uint32_t j = 0; j < 6; j++)
         {
             _text_corner_position(
-                figure, anchor_x, anchor_y, xy[j][0], xy[j][1], text->placement.angle, z,
-                &positions[3 * vertex_count]);
+                figure, anchor_x, anchor_y, xy[j][0], xy[j][1], local_scale,
+                text->placement.angle, z, &positions[3 * vertex_count]);
             texcoords[2 * vertex_count + 0] = st[j][0];
             texcoords[2 * vertex_count + 1] = st[j][1];
             colors[4 * vertex_count + 0] = color[0];
@@ -1395,7 +1429,10 @@ static bool _text_visual_prepare(
     }
 
     uint64_t version = _text_visual_version(visual);
-    if (visual->text.glyph_visual != NULL && visual->text.realized_version == version &&
+    bool controller_scale_dynamic =
+        attach->controller_mode == DVZ_CONTROLLER_APPLY && panel->panzoom != NULL;
+    if (!controller_scale_dynamic && visual->text.glyph_visual != NULL &&
+        visual->text.realized_version == version &&
         visual->text.visual_figure_width == figure->width &&
         visual->text.visual_figure_height == figure->height)
     {
@@ -1498,6 +1535,8 @@ static bool _text_visual_prepare(
     const uint8_t(*item_colors)[4] =
         color_attr != NULL ? (const uint8_t(*)[4])color_attr->data : NULL;
     const float* angles = angle_attr != NULL ? (const float*)angle_attr->data : NULL;
+    float local_scale[2] = {1.0f, 1.0f};
+    _text_local_scale_for_controller(panel, attach->controller_mode, local_scale);
     uint32_t vertex_count = 0;
 
     for (uint32_t i = 0; i < count; i++)
@@ -1635,7 +1674,7 @@ static bool _text_visual_prepare(
             for (uint32_t j = 0; j < 6; j++)
             {
                 _text_corner_position(
-                    figure, target[i][0], target[i][1], xy[j][0], xy[j][1], angle,
+                    figure, target[i][0], target[i][1], xy[j][0], xy[j][1], local_scale, angle,
                     target[i][2], &positions[3 * vertex_count]);
                 texcoords[2 * vertex_count + 0] = st[j][0];
                 texcoords[2 * vertex_count + 1] = st[j][1];
