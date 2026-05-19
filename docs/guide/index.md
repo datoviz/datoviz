@@ -24,8 +24,8 @@ Each visual primitive has its own page with examples and documentation:
 - 🟦 [Pixel](../visuals/pixel.md) — individual pixels with position, color, and size (squares)
 - ⚪ [Point](../visuals/point.md) — sized, colored antialiased discs without borders
 - ✳️ [Marker](../visuals/marker.md) — symbols with optional borders, using built-in shapes, SVGs, or bitmap images
-- ➖ [Segment](../visuals/segment.md) — variable-width line segments with optional caps
-- ➰ [Path](../visuals/path.md) — continuous polylines
+- ➖ [Segment](../visuals/segment.md) — independent stroked line segments with optional caps
+- ➰ [Path](../visuals/path.md) — continuous polylines with optional stroke width
 - 🖼️ [Image](../visuals/image.md) — RGB or single-channel images with optional colormaps
 - 🔤 [Glyph](../visuals/glyph.md) — glyph-based text rendering
 - 🧊 [Mesh](../visuals/mesh.md) — 3D triangle meshes with optional lighting (flat, basic, or advanced), textures, contours, or experimental isolines

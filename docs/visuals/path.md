@@ -1,10 +1,17 @@
 # Path Visual
 
-The **Path** visual renders continuous polylines — sequences of connected line segments that form a single open or closed path. It supports batch rendering with multiple disconnected paths per visual, per-vertex styling and optional variable thickness, making it well-suited for contours, trajectories, and line-based annotations.
+The **Path** visual renders ordered polylines: sequences of connected vertices that form one or
+more open paths. In v0.4-dev it is the stroke/line family for contours, traces, trajectories,
+field lines, tracks, and line-based annotations.
+
+Path is distinct from future tube/ribbon rendering. A path may contain 3D positions, but its
+thickness is a screen-space stroke. Radius-bearing 3D curve surfaces belong to the future
+`tube` visual contract.
 
 !!! note
 
-    This visual is powerful and high-quality, but not optimized or scalable to millions of points. For very large datasets, use the lower-quality but more scalable [**Basic**](basic.md) visual instead, with the `line_strip` primitive and groups.
+    This page describes the v0.4-dev path direction. The Python examples shown below may still use
+    legacy naming until the public bindings and gallery are regenerated from the v0.4 C API.
 
 
 <figure markdown="span">
@@ -16,14 +23,18 @@ The **Path** visual renders continuous polylines — sequences of connected line
 
 ## Overview
 
-- Renders connected polylines from vertex sequences
-- Supports **per-vertex color and linewidth**
-- Each group of vertices forms an independent path
-- Optional cap and join styles for line ends and corners
+- Renders connected polylines from vertex sequences.
+- Supports dense per-vertex color.
+- Supports optional dense per-point `stroke_width` in screen pixels.
+- Supports explicit open subpath lengths in the stroked path lane.
+- Uses primitive line-strip rendering when `stroke_width` is absent.
+- Lowers to segment-style screen-space strokes when `stroke_width` is present.
 
 !!! warning
 
-    Dashed paths are not yet implemented.
+    Path-native joins, closed subpaths, path-specific caps, dashes, path picking, and WGSL lowering
+    are not implemented yet. Stroked paths currently lower to independent segment-style strokes
+    with butt caps.
 
 ---
 
@@ -31,9 +42,13 @@ The **Path** visual renders continuous polylines — sequences of connected line
 
 Use the path visual when:
 
-- You want to draw 2D or 3D trajectories or contours
-- You need continuous, styled polylines with thickness
-- You want to render multiple independent paths in one visual
+- You want to draw 2D or 3D trajectories, contours, tracks, or field lines.
+- You need continuous polylines with per-vertex color.
+- You want optional screen-space stroke width.
+- You want to batch multiple independent open paths in one visual.
+
+Use a future `tube` visual, or a precomputed `mesh` fallback today, when the curve should be a 3D
+object with physical radius, surface normals, lighting, and SSAO/G-buffer participation.
 
 ---
 
@@ -41,25 +56,24 @@ Use the path visual when:
 
 ### Per-item
 
-| Attribute   | Type             | Description                          |
-|-------------|------------------|--------------------------------------|
-| `position`  | `(N, 3) float32` | Vertex positions in NDC              |
-| `color`     | `(N, 4) uint8`   | RGBA color per vertex                |
-| `linewidth` | `(N,) float32`   | Line thickness in pixels             |
+| Attribute | Type | Description |
+|---|---|---|
+| `position` | `(N, 3) float32` | Vertex positions in visual space |
+| `color` | `(N, 4) uint8` | RGBA color per vertex |
+| `stroke_width` | `(N,) float32` | Optional screen-space stroke width in pixels |
 
 ### Per-visual (uniform)
 
-| Parameter | Type | Description                                   |
-|-----------|------|-----------------------------------------------|
-| `cap`     | enum | Cap style at the start/end of each path       |
-| `join`    | enum | Join style between connected segments         |
+| Parameter | Type | Description |
+|---|---|---|
+| subpath lengths | `uint32[M]` | Optional open subpath vertex counts via `dvz_path_set_subpaths()` |
 
-Cap and join styles are defined by enums from the Vulkan line rendering system.
+Path cap and join parameters are target-contract features, not active v0.4-dev behavior.
 
 
-## Cap types
+## Planned caps and joins
 
-Each path endpoint can be rendered with a custom **cap** style:
+The target path contract includes endpoint caps and corner joins. These are planned features:
 
 | Cap Name       | Image |
 |----------------|------|
@@ -70,33 +84,36 @@ Each path endpoint can be rendered with a custom **cap** style:
 | `butt`         | ![cap_butt](https://raw.githubusercontent.com/datoviz/data/main/screenshots/guide/segment_butt.png)    |
 
 
-## Joint styles
+## Join styles
 
-| Cap Name       |
-|----------------|
-| `square`       |
-| `round`        |
+| Join Name |
+|---|
+| `miter` |
+| `bevel` |
+| `round` |
 
 
 ---
 
 ## Grouping paths
 
-Each visual can include multiple independent paths. Use `visual.set_position()` to specify how the data is grouped. You can pass either:
+Each visual can include multiple independent open paths. In the v0.4 C API, the packed `position`
+array is accompanied by explicit subpath lengths:
 
-* A **list of arrays**, where each array defines one path
-* A single position array, and an additional argument `groups` which is either:
+```c
+dvz_path_set_subpaths(path, subpath_count, lengths);
+```
 
-    * `int`: number of paths (the position array is split in that number of equal size sub-paths)
-    * `np.ndarray`: an array of group size integers
-
-Each group becomes a separate, continuous polyline.
+When unset, all points belong to one open path. Current thin line-strip rendering does not yet use
+subpath lengths; the stroked path lane does.
 
 ---
 
 ## Large-scale paths
 
-For very large paths (e.g. time series with millions of points), you may prefer the [**Basic**](basic.md) visual with `line_strip` topology. This will be more efficient but offers no line width or styling.
+For very large paths, use the primitive line-strip lane when possible. Use `stroke_width` only when
+screen-space thickness is needed, because the current stroked lane derives segment-style resources
+from the source path.
 
 ---
 
@@ -112,10 +129,11 @@ For very large paths (e.g. time series with millions of points), you may prefer 
 
 The path visual is ideal for rendering styled, continuous line sequences.
 
-* ✔️ Variable thickness and color
-* ✔️ Multiple independent paths per visual
-* ✔️ Custom caps and joins
-* ❌ No dashed line support yet
+* yes: dense positions and colors
+* yes: optional per-point `stroke_width`
+* yes: multiple open subpaths in the stroked lane
+* deferred: path-native caps, joins, closed paths, dashes, picking, WGSL parity
+* separate future family: 3D tubes and ribbons
 
 See also:
 

@@ -1,6 +1,8 @@
 # Segment Visual
 
-The **Segment** visual renders independent line segments between pairs of 3D positions. Each segment can have its own color, thickness, shift.
+The **Segment** visual renders independent line segments between pairs of 3D positions. It is the
+right stroke family for disconnected lines, rulers, graph edges, error bars, vector shafts, and
+other endpoint-pair geometry.
 
 <figure markdown="span">
 ![Segment visual](https://raw.githubusercontent.com/datoviz/data/main/gallery/visuals/segment.png)
@@ -10,14 +12,15 @@ The **Segment** visual renders independent line segments between pairs of 3D pos
 
 ## Overview
 
-- Each segment is defined by an **initial** and **terminal** 3D point
-- Supports **per-segment color, linewidth, and shift**
-- Customizable caps: round, square, triangle, butt, etc.
-- Fast and flexible for disconnected line data
+- Each segment is defined by a `position_start` and `position_end` 3D point.
+- Supports per-segment color and `stroke_width`.
+- Supports visual-wide endpoint caps: none, round, square, triangle-in, triangle-out, and butt.
+- Renders as analytic screen-space stroked quads in the current GLSL/Vulkan path.
 
 !!! note
 
-    2D arrows are not yet supported in the segment visual. For now, consider using the [**Marker**](marker.md) visual with an `arrow` shape, or the 3D [Shape API](../reference/api_py.md) to generate 3D arrows, which can be rendered using the [**Mesh**](mesh.md) visual.
+    Arrow caps, dashes, endpoint shifts, `color_end` gradients, segment picking, and WGSL segment
+    lowering are deferred in v0.4-dev.
 
 ---
 
@@ -25,8 +28,9 @@ The **Segment** visual renders independent line segments between pairs of 3D pos
 
 Use the segment visual when:
 
-- You want to render many disjoint lines or vectors
-- You need variable width, style, or shift per segment
+- You want to render many disjoint lines or vectors.
+- You need screen-space stroke width and endpoint caps.
+- You do not need connected path joins or ordered polyline semantics.
 
 ---
 
@@ -34,18 +38,18 @@ Use the segment visual when:
 
 ### Per-item
 
-| Attribute   | Type             | Description                              |
-|-------------|------------------|------------------------------------------|
-| `position`  | `(N, 3)` x 2     | Initial and terminal 3D points (NDC)     |
-| `color`     | `(N, 4) uint8`   | RGBA color per segment                   |
-| `linewidth` | `(N,) float32`   | Line thickness in pixels                 |
-| `shift`     | `(N, 4) float32` | Pixel offset applied to both endpoints   |
+| Attribute | Type | Description |
+|---|---|---|
+| `position_start` | `(N, 3) float32` | Start endpoint in visual space |
+| `position_end` | `(N, 3) float32` | End endpoint in visual space |
+| `color` | `(N, 4) uint8` | RGBA color per segment |
+| `stroke_width` | `(N,) float32` | Stroke width in screen pixels |
 
 ### Per-visual (uniform)
 
 | Parameter   | Type        | Description                             |
 |-------------|-------------|-----------------------------------------|
-| `cap`       | `enum` x 2  | Cap type (for both ends)                |
+| `cap_start`, `cap_end` | `enum` | Endpoint cap types set by `dvz_segment_set_caps()` |
 
 ---
 
@@ -61,7 +65,7 @@ Each segment endpoint can be rendered with a custom **cap** style:
 | `square`       | ![cap_square](https://raw.githubusercontent.com/datoviz/data/main/screenshots/guide/segment_square.png)    |
 | `butt`         | ![cap_butt](https://raw.githubusercontent.com/datoviz/data/main/screenshots/guide/segment_butt.png)    |
 
-Use `visual.set_cap(initial, terminal)` to set cap styles.
+Use `dvz_segment_set_caps(visual, start_cap, end_cap)` to set cap styles in the v0.4 C API.
 
 ---
 
@@ -77,11 +81,11 @@ Use `visual.set_cap(initial, terminal)` to set cap styles.
 
 The segment visual is ideal for rendering many disconnected lines with full styling control per segment.
 
-* ✔️ Initial and terminal points
-* ✔️ Per-segment color and thickness
-* ✔️ Uniform cap
-* ✔️ Supports pixel shifting for layering or emphasis
-* ❌ Not suitable for continuous paths (see [**Path**](path.md) instead)
+* yes: independent start/end endpoint pairs
+* yes: per-segment color and `stroke_width`
+* yes: visual-wide endpoint caps
+* deferred: arrows, dashes, endpoint shifts, gradients, picking, WGSL parity
+* not suitable for continuous joined paths; see [**Path**](path.md)
 
 See also:
 

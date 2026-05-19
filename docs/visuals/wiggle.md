@@ -1,5 +1,10 @@
 # Wiggle Visual
 
+!!! warning
+
+    Wiggle is legacy/deferred in the v0.4-dev scene docs. Treat this page as historical user-facing
+    material until a v0.4 `path`-scoped or dedicated wiggle contract is promoted.
+
 The **Wiggle** visual displays multichannel time series data (such as seismic traces) using a traditional wiggle plot format. Each channel is plotted as a waveform offset vertically, with filled positive and/or negative areas.
 
 <figure markdown="span">

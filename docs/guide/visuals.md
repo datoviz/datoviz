@@ -55,7 +55,7 @@ Symbols with predefined (circle, square, cross, etc.) or custom (SVG, bitmap) sh
 <a href="../../visuals/segment/">
 <img src="https://raw.githubusercontent.com/datoviz/data/main/gallery/visuals/segment.png" alt="Segment" />
 <div class="card-title">➖ <strong>Segment</strong></a>:
-Line segments with arbitrary width and customizable caps (no arrows nor dashes for now).
+Independent screen-space stroked line segments with customizable endpoint caps.
 </div>
 </div>
 
@@ -63,7 +63,7 @@ Line segments with arbitrary width and customizable caps (no arrows nor dashes f
 <a href="../../visuals/path/">
 <img src="https://raw.githubusercontent.com/datoviz/data/main/gallery/visuals/path.png" alt="Path" />
 <div class="card-title">➰ <strong>Path</strong></a>:
-Continuous polylines with optional variable thickness, optionally closed (no arrows nor dashes for now).
+Continuous polylines with optional screen-space stroke width.
 </div>
 </div>
 
@@ -79,7 +79,7 @@ User-facing 2D images (RGBA or single-channel with colormap) anchored in world s
 <a href="../../visuals/wiggle/">
 <img src="https://raw.githubusercontent.com/datoviz/data/main/gallery/visuals/wiggle.png" alt="Wiggle plot" />
 <div class="card-title">🖼️ <strong>Wiggle plot</strong></a>:
-Wiggle plot for multichannel time series.
+Legacy/deferred wiggle plot direction for multichannel time series.
 </div>
 </div>
 
@@ -134,7 +134,7 @@ Each visual manages a collection of **items**. The definition of an item depends
 
 * **Pixel**, **Point**, **Marker**: 1 item = 1 point or marker
 * **Segment**: 1 item = 1 line segment
-* **Path**: 1 item = 1 point in a polyline (multiple disjoint paths can be batched)
+* **Path**: 1 span = 1 polyline; vertices are per-item data inside each span
 * **Image**: 1 item = 1 image
 * **Glyph**: 1 item = 1 character, grouped into strings by position
 * **Mesh**: 1 item = 1 vertex (connectivity defined by faces, a separate list of indices)
@@ -153,9 +153,12 @@ This model is key to Datoviz's performance: many visual instances are submitted 
 
 ## Coordinate system
 
-All visuals expect positions in [**3D Normalized Device Coordinates (NDC)**](common.md#coordinate-system), where each axis ranges from `-1` to `+1`.
+The active v0.4 scene specs distinguish data space from visual space. Positions uploaded to visuals
+are interpreted in the visual's coordinate space after any data normalization chosen by the scene or
+application layer.
 
-For 2D rendering, simply set the Z coordinate to `0` and use a 2D camera or interaction mode (e.g. pan-zoom). This keeps your data in the XY plane while leveraging the full GPU pipeline.
+For 2D rendering, set the Z coordinate to `0` and use a 2D camera or interaction mode such as
+pan-zoom. For 3D rendering, use a 3D camera/controller such as arcball.
 
 ---
 
