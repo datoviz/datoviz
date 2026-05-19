@@ -20,6 +20,8 @@ SampledField -> scene frame plan -> DRP2 command stream -> vklite/canvas runtime
 ```
 
 Do not create a parallel Vulkan renderer, presentation loop, or volume-private data model.
+The durable volume contract lives in `spec/scene/visuals/VOLUME.md`; keep this file as the
+implementation and example sequencing note.
 
 
 ## Existing v0.3 Reference
@@ -61,68 +63,16 @@ Parts not to port as-is:
 9. scalar/RGBA-only format assumptions baked into the visual.
 
 
-## Target First-Class v0.4 Objects
+## Durable Contract Reference
 
-The first implementation should introduce or extend these concepts:
+`spec/scene/visuals/VOLUME.md` owns the stable contract for:
 
-1. `DvzSampledField` remains the authoritative 3D data object.
-2. `VolumeVisual` binds a `DVZ_FIELD_DIM_3D` sampled field through the `"field"` slot.
-3. `PlaneSliceVisual` or a first narrow slice visual samples the same 3D field on an arbitrary plane.
-4. `DvzScale` / colormap state provides scalar-to-color mapping where practical.
-5. Volume-specific retained state stores render mode, intensity window, opacity, step policy, and
-   clipping-plane parameters.
-6. DRP2 owns backend-agnostic texture creation, upload, bind groups, and render commands.
-7. vklite executes the emitted DRP2 stream with 3D sampled textures and ordinary panel render passes.
-
-
-## Rendering Modes
-
-Implement modes in this order:
-
-1. `MIP`: maximum intensity projection. This is the best first correctness target because it avoids
-   opacity integration details and is visually useful for microscopy.
-2. `ALPHA`: front-to-back alpha compositing with early ray termination.
-3. `PLANE`: sample along a finite-thickness ray perpendicular to a plane, or render an explicit plane
-   quad through the volume.
-4. `CLIPPED_ALPHA` or `CLIPPED_MIP`: same raymarcher as above, but with one active clipping plane.
-
-Defer these until the base path is stable:
-
-1. isosurface mode,
-2. gradient lighting,
-3. pre-integrated transfer functions,
-4. multi-volume intermixing,
-5. out-of-core bricking,
-6. empty-space skipping acceleration structures.
-
-
-## Categorical Label Volumes
-
-napari `Labels` layers can also be displayed in 3D, but that should be a follow-up after scalar
-volume rendering is stable. The image/labels 2D plan deliberately keeps these requirements out of
-the 2D image visual path.
-
-Required semantics:
-
-1. integer 3D `DvzSampledField` with `DVZ_FIELD_SEMANTIC_LABEL`,
-2. nearest sampling or integer texel fetch only,
-3. categorical palette lookup using the same direct-palette/hash-color policy as 2D labels,
-4. background label `0` transparent by default,
-5. probe/readback returning the raw label id,
-6. selected-label-only display where practical,
-7. no interpolation between neighboring label ids.
-
-Render modes to consider after scalar MIP/alpha/plane/clipping are stable:
-
-1. translucent categorical volume rendering,
-2. categorical plane slice using the same field and palette,
-3. categorical isosurface rendering,
-4. optional fast/smooth gradient modes for label-surface lighting.
-
-Implementation note: label volumes should reuse the sampled-field, palette, and blend-mode
-infrastructure from `SCENE_NAPARI_IMAGE_LABELS_PLAN.md`, but they should not broaden the 2D image
-shader into a volume renderer. Keep the 3D raymarch/proxy-cube and clipping behavior in the volume
-visual path.
+1. `DvzSampledField` as the authoritative 3D data object;
+2. supported render modes: composite/DVR, MIP, and slice;
+3. bounds, crop, axis order, and axis flip coordinate behavior;
+4. value range, opacity, transfer, sampling, and clipping-plane state;
+5. slice probe/readout payloads, including UVW, object coordinate, and sampled value;
+6. future categorical label-volume, sparse-voxel, and out-of-core directions.
 
 
 ## Step-By-Step Implementation

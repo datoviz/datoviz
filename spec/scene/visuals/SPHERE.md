@@ -9,14 +9,32 @@ It refines `../semantics/VISUAL_FAMILIES.md`, `../semantics/VISUAL_FAMILY_RULES.
 Shared attribute and behavioral definitions are in `SHARED_ATTRIBUTES.md`.
 
 
+## Active Implementation Status
+
+Status on 2026-05-19: the active v0.4 runtime implements retained sphere impostors.
+
+The implemented path supports:
+
+1. retained `sphere` visual construction via `dvz_sphere()`;
+2. generic data upload with canonical `position`, `color`, and `radius` attributes;
+3. `dvz_sphere_mode()` with `fast_impostor` and `raycast_impostor` modes;
+4. material/depth state through the shared scene material path;
+5. color, alpha-to-coverage, and G-buffer shader variants;
+6. SSAO/G-buffer participation;
+7. app/offscreen and GLFW example coverage for sphere impostors.
+
+Texture projection variants, per-item material/PBR fields, pixel-sized sphere mode, and sphere
+picking remain follow-up work.
+
+
 ## Semantic Purpose
 
 `sphere` renders per-item 3D spheres with Phong shading.
 
 Each item is one sphere defined by a center position and radius. Spheres are rendered as
-ray-cast impostors — a single quad per sphere with the sphere geometry computed analytically
-in the shader. This produces pixel-accurate silhouettes and correct depth at far lower cost
-than a tessellated mesh sphere per item.
+impostors, with a selectable fast point-coordinate mode and ray-cast mode. Both modes keep one
+retained visual family and the same data model. The ray-cast mode computes the sphere geometry
+analytically in the shader for more accurate perspective, depth, and normals.
 
 Typical uses: molecular visualization (atoms), particle systems, cell body positions,
 electrode contacts, 3D scatter plots with physical extent, textured globes.
@@ -42,16 +60,16 @@ diffuse term.
 Ignored when `color_mode = texture`.
 
 
-### `size`
+### `radius`
 
 Standard — see `SHARED_ATTRIBUTES.md`. Sphere radius (not diameter).
 Accepted sources: `CONSTANT`, `PER_ITEM`, `PER_GROUP`.
-Supports `direct` and `scalar` modes — see `size_mode` variant axis.
+Supports `direct` and `scalar` modes — see `radius_mode` variant axis.
 
 
 ## Visual-Wide Parameters
 
-### `size_space`
+### `radius_space`
 
 Standard — see `SHARED_ATTRIBUTES.md`. Default: `data`.
 
@@ -106,7 +124,7 @@ are not supported. Per-item material is PBR territory, deferred to the PBR light
 |---|---|---|---|
 | `position` | required | NaN/Inf sphere skipped and not pickable | no |
 | `color` | opaque white RGBA | scalar NaN uses scale missing color | yes |
-| `size` | required unless default size is set | scalar NaN uses size fallback | yes |
+| `radius` | required unless default radius is set | scalar NaN uses radius fallback | yes |
 | texture fields | disabled unless texture mode is selected | missing required texture is validation error | no |
 | lighting parameters | shared lighting defaults | NaN falls back to family default | yes |
 
@@ -116,17 +134,21 @@ are not supported. Per-item material is PBR territory, deferred to the PBR light
 | Axis | Values | Default |
 |---|---|---|
 | `color_mode` | `rgba`, `scalar`, `texture` | `rgba` |
-| `size_mode` | `direct`, `scalar` | `direct` |
+| `radius_mode` | `direct`, `scalar` | `direct` |
 | `lighting` | `phong`, `flat` | `phong` |
+| `render_mode` | `fast_impostor`, `raycast_impostor` | `fast_impostor` |
 
 All set at visual creation time.
+`render_mode` may also be changed on retained sphere visuals through `dvz_sphere_mode()`.
 
 
 ## Transform Model, Stage Participation, Picking
 
 Standard — see `SHARED_ATTRIBUTES.md`.
-Picking returns the sphere index. The impostor shader computes the exact ray–sphere
-intersection, so picking is geometrically accurate (not bounding-box based).
+Target picking returns the sphere index. Exact sphere picking should use the same analytic
+ray-sphere intersection as the impostor shader rather than a bounding box.
+
+Status on 2026-05-19: sphere picking is not implemented in the active first slice.
 
 
 ## Relationship To Other Families

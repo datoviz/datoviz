@@ -66,7 +66,7 @@ with DRP2 multisample lowering and explicit resolve metadata.
 ## Source Architecture Note
 
 Start with
-[../../docs/architecture/scene_techniques_materials.md](/home/cyrille/GIT/Viz/datoviz/docs/architecture/scene_techniques_materials.md).
+[scene_techniques_materials.md](../../docs/architecture/scene_techniques_materials.md).
 
 That note is the architectural target. This file is the practical implementation pickup order.
 
@@ -251,11 +251,11 @@ or SSAO branches. The next EDL architecture decision is whether it should become
 post-process that can run after selected transparent techniques.
 
 Use the existing SSAO implementation plan for the SSAO-specific graph and shader details:
-[SCENE_SSAO_IMPLEMENTATION_PLAN.md](/home/cyrille/GIT/Viz/datoviz/agents/soon/SCENE_SSAO_IMPLEMENTATION_PLAN.md).
+[SCENE_SSAO_IMPLEMENTATION_PLAN.md](SCENE_SSAO_IMPLEMENTATION_PLAN.md).
 
 Sphere impostors have been implemented as a standalone visual family rather than a marker variant.
 The v0.4 pickup plan and remaining texture/equirectangular follow-ups are recorded in
-[SCENE_SPHERE_VISUAL_PLAN.md](/home/cyrille/GIT/Viz/datoviz/agents/soon/SCENE_SPHERE_VISUAL_PLAN.md).
+[SPHERE.md](../../spec/scene/visuals/SPHERE.md).
 
 
 ## Guardrails

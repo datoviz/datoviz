@@ -19,8 +19,9 @@ This note refines:
 6. `spec/scene/visuals/IMAGE.md`
 7. `spec/scene/visuals/SPHERE.md`
 8. `spec/scene/visuals/MESH.md`
-9. `agents/soon/SCENE_POINT_PIXEL_MARKER_PLAN.md`
-10. `agents/soon/SCENE_VECTOR_VISUALS_PLAN.md`
+9. `spec/scene/visuals/VOLUME.md`
+10. `agents/soon/SCENE_POINT_PIXEL_MARKER_PLAN.md`
+11. `agents/soon/SCENE_VECTOR_VISUALS_PLAN.md`
 
 It is authoritative for the first implementation pass when those documents disagree.
 
@@ -125,6 +126,8 @@ The next batch should focus on picking and backend parity, in this order:
 
 Marker-specific execution phases live in `agents/soon/SCENE_POINT_PIXEL_MARKER_PLAN.md`. Segment,
 path, dash, arrow, and SVG execution phases live in `agents/soon/SCENE_VECTOR_VISUALS_PLAN.md`.
+Volume implementation and napari-style example sequencing lives in
+`agents/soon/SCENE_VOLUME_RENDERING_PLAN.md`; the durable contract lives in `VOLUME.md`.
 
 
 ## Pixel

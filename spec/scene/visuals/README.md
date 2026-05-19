@@ -69,7 +69,7 @@ broader than the current implementation.
 | `image` | [IMAGE.md](IMAGE.md) | `dvz_image()`, field binding, texture wrappers | multi-item position/extent/anchor/tex_rect/tint over 2D `SampledField`, scale/colormap binding, partial updates | textured rectangle path | basic image probe readback | item-aware image picking, labels/categorical fields, richer probe payloads |
 | `mesh` | [MESH.md](MESH.md) | `dvz_mesh()` | vertex attributes, optional indices/normals, instance attributes, material/depth/alpha | indexed triangle mesh, optional instancing, depth, Phong/material, WBOIT/depth-peel, EDL/SSAO/G-buffer eligibility | no mesh picking path | instance-aware mesh picking, geometry-resource API, full PBR |
 | `sphere` | [SPHERE.md](SPHERE.md) | `dvz_sphere()` | position/color/radius, impostor mode, material/depth | analytic impostor sphere, including raycast and SSAO/G-buffer coverage | no sphere picking path | texture variants, per-item material/PBR, sphere picking |
-| `volume` | [VOLUME.md](VOLUME.md) | `dvz_volume()`, volume setters, field binding | 3D `SampledField`, mode/slice/bounds/clipping/sampling/opacity/scale | box-proxy slice, MIP, and composite rendering | no volume probe/pick path | transfer functions, isosurfaces, MPR, DVR/MIP picking, richer payloads |
+| `volume` | [VOLUME.md](VOLUME.md) | `dvz_volume()`, volume setters, field binding | 3D `SampledField`, mode/slice/bounds/clipping/sampling/opacity/scale | box-proxy slice, MIP, and composite rendering | slice probe/readout | isosurfaces, MPR, DVR/MIP picking, categorical labels, and WebGPU parity |
 | `errorbar` | [ERRORBAR.md](ERRORBAR.md) | none installed | none | no | no | spec only |
 | `boxplot` | [BOXPLOT.md](BOXPLOT.md) | none installed | none | no | no | spec only |
 

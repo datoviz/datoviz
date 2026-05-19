@@ -107,6 +107,9 @@ Scene feature lanes:
 14. [soon/SCENE_FLY_CAMERA_PLAN.md](soon/SCENE_FLY_CAMERA_PLAN.md)
 15. [soon/SCENE_TURNTABLE_CONTROLLER_PLAN.md](soon/SCENE_TURNTABLE_CONTROLLER_PLAN.md)
 
+For visual-family lanes, durable contracts live under [../spec/scene/visuals](../spec/scene/visuals);
+the `soon/` files above are implementation follow-up notes.
+
 Text/layout lanes:
 
 1. [../spec/scene/implementation/TEXT_SHAPING_ATLAS.md](../spec/scene/implementation/TEXT_SHAPING_ATLAS.md)

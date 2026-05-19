@@ -11,29 +11,22 @@
 The core sphere visual slice is already present in the codebase:
 
 1. `DVZ_VISUAL_TYPE_SPHERE` exists and is wired into the scene runtime.
-2. `dvz_sphere()`, `dvz_sphere_mode()`, and the typed position/color/size setters exist.
+2. `dvz_sphere()`, `dvz_sphere_mode()`, and generic `position`/`color`/`radius` data upload exist.
 3. GLSL color, A2C, and G-buffer shader variants are already registered and emitted.
 4. Scene tests cover sphere emit execution, mode retention, and SSAO usage.
 5. The interactive GLFW sphere SSAO example already exercises the retained visual.
 
 The remaining work is therefore narrower than the original pickup plan.
+The durable family contract lives in `spec/scene/visuals/SPHERE.md`; keep this file as the
+execution note for remaining sphere feature work.
 
 
-## Decision
+## Durable Contract Reference
 
-Sphere should be a standalone retained visual family in v0.4, not a marker shape and not a mesh
-shape helper.
-
-The v0.3 implementation had the right conceptual split:
-
-1. 2D markers are their own visual family with many planar glyph shapes.
-2. Sphere is its own visual family with one semantic shape: a 3D sphere.
-3. Sphere rendering is shader-defined: the fragment shader reconstructs the sphere surface from a
-   point sprite, computes normals, optionally applies lighting/texturing, and writes sphere-surface
-   depth.
-
-Keep that split in v0.4. Add `DVZ_VISUAL_TYPE_SPHERE` and a typed public constructor/setter API
-instead of extending marker or primitive semantics.
+Sphere is a standalone retained visual family in v0.4, not a marker shape and not a mesh helper.
+The durable rules for canonical `position`/`color`/`radius` data, impostor render modes,
+`dvz_sphere_mode()`, material participation, G-buffer/SSAO behavior, and deferred texture/PBR lanes
+live in `spec/scene/visuals/SPHERE.md`.
 
 
 ## v0.3 Reference
@@ -111,7 +104,7 @@ Use a point-list topology for the first GLSL path, as v0.3 did.
 
 Vertex shader:
 
-1. read sphere center, color, and size;
+1. read sphere center, color, and radius;
 2. transform center through the active panel MVP;
 3. compute `gl_PointSize` from projected sphere diameter;
 4. pass center, color, radius, and camera/view data to the fragment shader.

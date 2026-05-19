@@ -1,11 +1,19 @@
 # Scene Sphere Render Modes Plan
 
 > **Execution Status**
-> - **Status:** `PLANNING NOTE`
-> - **Updated on:** `2026-05-16`
-> - **Purpose:** define how the sphere visual should support both the current fast impostor mode
->   and an exact raycast impostor mode without splitting the visual family or duplicating public
->   data APIs.
+> - **Status:** `IMPLEMENTED / FOLLOW-UP NOTE`
+> - **Updated on:** `2026-05-19`
+> - **Purpose:** preserve the rationale and validation guidance for the fast and raycast sphere
+>   impostor modes.
+
+
+## Current Status
+
+The sphere mode API and raycast impostor path have landed. The durable contract now lives in
+`spec/scene/visuals/SPHERE.md`.
+
+Keep this note for shader rationale, validation commands, and future quality work around mode
+comparison, MSAA/alpha-to-coverage, and example controls.
 
 
 ## Decision
@@ -19,7 +27,7 @@ Do not create a second public visual family for raycast spheres. The data model 
 
 1. center position;
 2. color;
-3. radius/size;
+3. radius;
 4. material;
 5. optional texture fields later.
 
@@ -234,4 +242,3 @@ git diff --check
 
 If the shader mode becomes a variant rather than a uniform branch, also run shader-registry and
 visual-pipeline focused tests.
-
