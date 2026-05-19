@@ -517,7 +517,7 @@ static void reset_text_state(TextLabState* state)
     state->tick_count_value = 12.0f;
     state->mode = TEXT_LAB_MODE_SAMPLE;
     state->anchor_index = 4;
-    state->renderer_index = 0;
+    state->renderer_index = 3;
     state->animate = false;
 }
 

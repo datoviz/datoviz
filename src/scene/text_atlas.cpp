@@ -184,6 +184,8 @@ static bool _text_msdf_build_atlas(DvzFont* font, DvzTextAtlas** out_atlas)
         float, 4, &msdf_atlas::mtsdfGenerator, msdf_atlas::BitmapAtlasStorage<uint8_t, 4>>
         generator(width, height);
     msdf_atlas::GeneratorAttributes attributes;
+    attributes.config.overlapSupport = true;
+    attributes.scanlinePass = true;
     generator.setAttributes(attributes);
     generator.setThreadCount(8);
     generator.generate(glyphs.data(), glyphs.size());
@@ -745,14 +747,25 @@ static bool _text_ft_build_bitmap_atlas(DvzFont* font, DvzTextAtlas** out_atlas)
         glyph->codepoint = codepoint;
         glyph->glyph_id = (uint32_t)FT_Get_Char_Index(face, (FT_ULong)codepoint);
         glyph->advance = glyph_advances[i];
-        glyph->xoff = (float)glyph_lefts[i];
-        glyph->yoff = -(float)glyph_tops[i];
-        glyph->width = (float)glyph_widths[i];
-        glyph->height = (float)glyph_heights[i];
         uint32_t col = i % DVZ_TEXT_SDF_COLUMNS;
         uint32_t row = i / DVZ_TEXT_SDF_COLUMNS;
         uint32_t x = col * cell_width + DVZ_TEXT_BITMAP_PADDING;
         uint32_t y = row * cell_height + DVZ_TEXT_BITMAP_PADDING;
+        uint32_t sample_x0 = x;
+        uint32_t sample_y0 = y;
+        uint32_t sample_x1 = x + glyph_widths[i];
+        uint32_t sample_y1 = y + glyph_heights[i];
+        if (glyph_widths[i] > 0 && glyph_heights[i] > 0)
+        {
+            sample_x0 -= DVZ_TEXT_BITMAP_PADDING;
+            sample_y0 -= DVZ_TEXT_BITMAP_PADDING;
+            sample_x1 += DVZ_TEXT_BITMAP_PADDING;
+            sample_y1 += DVZ_TEXT_BITMAP_PADDING;
+        }
+        glyph->xoff = (float)glyph_lefts[i] - (float)(x - sample_x0);
+        glyph->yoff = -(float)glyph_tops[i] - (float)(y - sample_y0);
+        glyph->width = (float)(sample_x1 - sample_x0);
+        glyph->height = (float)(sample_y1 - sample_y0);
         glyph->atlas_bounds[0] = (float)x;
         glyph->atlas_bounds[1] = (float)y;
         glyph->atlas_bounds[2] = (float)(x + glyph_widths[i]);
@@ -761,10 +774,10 @@ static bool _text_ft_build_bitmap_atlas(DvzFont* font, DvzTextAtlas** out_atlas)
         glyph->plane_bounds[1] = glyph->yoff;
         glyph->plane_bounds[2] = glyph->xoff + glyph->width;
         glyph->plane_bounds[3] = glyph->yoff + glyph->height;
-        glyph->uv[0] = (float)x / (float)atlas_width;
-        glyph->uv[1] = (float)y / (float)atlas_height;
-        glyph->uv[2] = (float)(x + glyph_widths[i]) / (float)atlas_width;
-        glyph->uv[3] = (float)(y + glyph_heights[i]) / (float)atlas_height;
+        glyph->uv[0] = (float)sample_x0 / (float)atlas_width;
+        glyph->uv[1] = (float)sample_y0 / (float)atlas_height;
+        glyph->uv[2] = (float)sample_x1 / (float)atlas_width;
+        glyph->uv[3] = (float)sample_y1 / (float)atlas_height;
         glyph->valid = glyph->advance > 0.0f || glyph_widths[i] > 0 || glyph_heights[i] > 0;
 
         if (glyph_widths[i] == 0 || glyph_heights[i] == 0)
