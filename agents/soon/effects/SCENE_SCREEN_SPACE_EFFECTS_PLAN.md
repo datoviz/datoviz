@@ -11,6 +11,8 @@
 
 The durable design proposal is
 [spec/scene/proposals/active/SCREEN_SPACE_EFFECTS_DESIGN.md](../../../spec/scene/proposals/active/SCREEN_SPACE_EFFECTS_DESIGN.md).
+The durable user-facing semantics are in
+[spec/scene/semantics/EFFECTS.md](../../../spec/scene/semantics/EFFECTS.md).
 The shared graph-technique implementation contract is
 [spec/scene/implementation/GRAPH_TECHNIQUES.md](../../../spec/scene/implementation/GRAPH_TECHNIQUES.md).
 
@@ -206,6 +208,5 @@ This lane is complete when:
 1. all three effects have retained panel state,
 2. outline and edge enhancement have graph-backed runtime paths and tests,
 3. bloom has an opt-in graph-backed runtime path and tests,
-4. export behavior is documented,
-5. stable user-facing semantics are promoted from the proposal into `spec/scene/semantics/EFFECTS.md`
-   or an equivalent specialized spec file.
+4. export behavior is documented and matches
+   [EFFECTS.md](../../../spec/scene/semantics/EFFECTS.md).

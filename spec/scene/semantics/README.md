@@ -17,10 +17,11 @@ transparency, clipping, transforms, or geometry utilities.
 7. [LEGENDS_AND_COLORBARS.md](LEGENDS_AND_COLORBARS.md): explanatory mapping objects.
 8. [LIGHTING.md](LIGHTING.md): scene lighting model and ray-tracing forward compatibility.
 9. [TRANSPARENCY.md](TRANSPARENCY.md): alpha modes and transparency planning.
-10. [TEXT.md](TEXT.md): text content, placement, resources, and DPI behavior.
-11. [CLIPPING.md](CLIPPING.md): clip modes and data-area clipping.
-12. [NONLINEAR_TRANSFORMS.md](NONLINEAR_TRANSFORMS.md): non-linear coordinate transforms.
-13. [GEOMETRY_UTILITIES.md](GEOMETRY_UTILITIES.md): CPU-side geometry utility layer.
+10. [EFFECTS.md](EFFECTS.md): screen-space outline, edge enhancement, bloom, and effect ordering.
+11. [TEXT.md](TEXT.md): text content, placement, resources, and DPI behavior.
+12. [CLIPPING.md](CLIPPING.md): clip modes and data-area clipping.
+13. [NONLINEAR_TRANSFORMS.md](NONLINEAR_TRANSFORMS.md): non-linear coordinate transforms.
+14. [GEOMETRY_UTILITIES.md](GEOMETRY_UTILITIES.md): CPU-side geometry utility layer.
 
 
 ## Active Proposal Inputs
