@@ -136,6 +136,8 @@ typedef struct DvzTextGlyphInstance DvzTextGlyphInstance;
 typedef struct DvzTextAtlasGlyph DvzTextAtlasGlyph;
 typedef struct DvzTextAtlas DvzTextAtlas;
 
+typedef void (*DvzSceneRequestFrameCallback)(DvzFigure* figure, void* user_data);
+
 
 
 /*************************************************************************************************/
@@ -1082,6 +1084,8 @@ struct DvzScene
     uint32_t probe_scope_count;
     DvzRequestFreshnessScope probe_scopes[DVZ_SCENE_MAX_REQUEST_SCOPES];
     DvzSampledField* text_bitmap_atlas;
+    DvzSceneRequestFrameCallback request_frame_callback;
+    void* request_frame_user_data;
 
     struct
     {
@@ -1136,6 +1140,9 @@ uint32_t _dvz_figure_process_requests_with_executor(
     DvzFigure* figure, DvzDrp2Runtime* runtime, DvzSceneRequestExecutor* executor,
     const DvzCapabilitySnapshot* caps);
 bool _scene_figure_has_pending_render_work(const DvzFigure* figure);
+void _scene_set_request_frame_callback(
+    DvzScene* scene, DvzSceneRequestFrameCallback callback, void* user_data);
+void _scene_notify_request_frame(DvzFigure* figure);
 
 
 

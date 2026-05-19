@@ -1826,6 +1826,38 @@ DvzTurntable* dvz_panel_turntable(DvzPanel* panel)
 
 
 /**
+ * Register the scene-level callback used to request a host frame.
+ *
+ * @param scene the scene
+ * @param callback callback pointer, or NULL to clear it
+ * @param user_data opaque pointer forwarded to the callback
+ */
+void _scene_set_request_frame_callback(
+    DvzScene* scene, DvzSceneRequestFrameCallback callback, void* user_data)
+{
+    if (scene == NULL)
+        return;
+    scene->request_frame_callback = callback;
+    scene->request_frame_user_data = user_data;
+}
+
+
+/**
+ * Notify the scene host that one figure needs another frame.
+ *
+ * @param figure figure requesting a frame
+ */
+void _scene_notify_request_frame(DvzFigure* figure)
+{
+    if (figure == NULL || figure->scene == NULL)
+        return;
+    DvzScene* scene = figure->scene;
+    if (scene->request_frame_callback != NULL)
+        scene->request_frame_callback(figure, scene->request_frame_user_data);
+}
+
+
+/**
  * Queue one explicit pick request on a panel.
  *
  * @param panel the panel
@@ -1860,6 +1892,7 @@ int dvz_panel_pick(DvzPanel* panel, double x, double y, const DvzPickRequest* re
         pending->request = *request;
     else if (panel->interaction != NULL)
         pending->request.hit_policy = panel->interaction->pick_hit_policy;
+    _scene_notify_request_frame(panel->figure);
     return 0;
 }
 
@@ -1897,6 +1930,7 @@ int dvz_panel_probe(DvzPanel* panel, double x, double y, const DvzProbeRequest* 
         scene, panel, request_id, pending->freshness_serial);
     if (request != NULL)
         pending->request = *request;
+    _scene_notify_request_frame(panel->figure);
     return 0;
 }
 

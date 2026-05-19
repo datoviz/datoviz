@@ -29,6 +29,7 @@
 #include "_log.h"
 #include "../_scene.h"
 #include "../_technique.h"
+#include "../../app/_app.h"
 #include "datoviz/app.h"
 #include "datoviz/canvas.h"
 #include "datoviz/drp2.h"
@@ -1079,6 +1080,161 @@ int test_app_offscreen(TstContext* suite, const TstCase* item)
     AT(dvz_app_window_render_once(win) == DVZ_CANVAS_FRAME_READY);
     AT(dvz_app_render_once(app) == 0);
     dvz_app_run(app, 1);
+
+    dvz_app_destroy(app);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+/**
+ * Ensure on-demand scheduling sees retained scene mutations without an explicit frame request.
+ *
+ * @param suite the test suite
+ * @param item the test item
+ * @return 0 on success
+ */
+int test_app_offscreen_scheduler_sees_scene_dirty_without_request(
+    TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    TST_SCENE_APP_REQUIRE_VKLITE(suite);
+
+    DvzScene* scene = dvz_scene();
+    AT(scene != NULL);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    AT(figure != NULL);
+    DvzPanel* panel =
+        dvz_panel(figure, (DvzPanelDesc){.x = 0, .y = 0, .width = 1, .height = 1});
+    AT(panel != NULL);
+
+    DvzVisual* visual = dvz_point(scene, 0);
+    AT(visual != NULL);
+    float position[1][3] = {{0.0f, 0.0f, 0.0f}};
+    DvzColor color[1] = {{255, 255, 255, 255}};
+    float size[1] = {8.0f};
+    AT(dvz_visual_set_data(visual, "position", position, 1) == 0);
+    AT(dvz_visual_set_data(visual, "color", color, 1) == 0);
+    AT(dvz_visual_set_data(visual, "size", size, 1) == 0);
+    AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
+
+    DvzApp* app = dvz_app(scene);
+    if (app == NULL)
+    {
+        log_warn(
+            "test_app_offscreen_scheduler_sees_scene_dirty_without_request skipped: GPU context "
+            "failed");
+        tst_skip(suite, "GPU context failed");
+        dvz_scene_destroy(scene);
+        return 0;
+    }
+    DvzAppWindow* win = dvz_app_window(app, figure, 64, 64);
+    AT(win != NULL);
+
+    AT(_dvz_app_window_scheduler_should_render(win, false, 0));
+    AT(dvz_app_window_render_once(win) == DVZ_CANVAS_FRAME_READY);
+    AT(!_dvz_app_window_scheduler_should_render(win, false, 0));
+
+    float updated_size[1] = {16.0f};
+    AT(dvz_visual_set_data(visual, "size", updated_size, 1) == 0);
+    AT(_dvz_app_window_scheduler_should_render(win, false, 0));
+    AT(dvz_app_window_render_once(win) == DVZ_CANVAS_FRAME_READY);
+    AT(!_dvz_app_window_scheduler_should_render(win, false, 0));
+
+    dvz_app_destroy(app);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+/**
+ * Ensure pick and probe requests notify hosted app-window repaint callbacks.
+ *
+ * @param suite the test suite
+ * @param item the test item
+ * @return 0 on success
+ */
+int test_app_offscreen_pick_probe_requests_notify_hosted_callback(
+    TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    TST_SCENE_APP_REQUIRE_VKLITE(suite);
+
+    DvzScene* scene = dvz_scene();
+    AT(scene != NULL);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    AT(figure != NULL);
+    DvzPanel* panel =
+        dvz_panel(figure, (DvzPanelDesc){.x = 0, .y = 0, .width = 1, .height = 1});
+    AT(panel != NULL);
+
+    DvzVisual* points = dvz_point(scene, 0);
+    AT(points != NULL);
+    dvz_visual_set_pick_capabilities(points, DVZ_PICK_CAPABILITY_ITEM);
+    float point_pos[1][3] = {{0.0f, 0.0f, 0.0f}};
+    DvzColor point_color[1] = {{255, 255, 0, 255}};
+    float point_size[1] = {24.0f};
+    AT(dvz_visual_set_data(points, "position", point_pos, 1) == 0);
+    AT(dvz_visual_set_data(points, "color", point_color, 1) == 0);
+    AT(dvz_visual_set_data(points, "size", point_size, 1) == 0);
+    AT(dvz_panel_add_visual(panel, points, NULL) == 0);
+
+    DvzVisual* image = dvz_image(scene, 0);
+    AT(image != NULL);
+    float image_pos[4][3] = {
+        {-1.0f, -1.0f, 0.0f},
+        {-1.0f, 1.0f, 0.0f},
+        {1.0f, -1.0f, 0.0f},
+        {1.0f, 1.0f, 0.0f},
+    };
+    float texcoords[4][2] = {
+        {0.0f, 0.0f},
+        {0.0f, 1.0f},
+        {1.0f, 0.0f},
+        {1.0f, 1.0f},
+    };
+    uint8_t pixels[4 * 4 * 4] = {0};
+    for (uint32_t i = 0; i < 16; i++)
+    {
+        pixels[4 * i + 0] = 255;
+        pixels[4 * i + 3] = 255;
+    }
+    AT(dvz_visual_set_data(image, "position", image_pos, 4) == 0);
+    AT(dvz_visual_set_data(image, "texcoords", texcoords, 4) == 0);
+    AT(dvz_visual_set_texture(image, pixels, 4, 4) == 0);
+    AT(dvz_panel_add_visual(panel, image, &(DvzVisualAttachDesc){.z_layer = -1}) == 0);
+
+    DvzApp* app = dvz_app(scene);
+    if (app == NULL)
+    {
+        log_warn(
+            "test_app_offscreen_pick_probe_requests_notify_hosted_callback skipped: GPU context "
+            "failed");
+        tst_skip(suite, "GPU context failed");
+        dvz_scene_destroy(scene);
+        return 0;
+    }
+    DvzAppWindow* win = dvz_app_window(app, figure, 64, 64);
+    AT(win != NULL);
+    AT(dvz_app_window_render_once(win) == DVZ_CANVAS_FRAME_READY);
+    AT(!_dvz_app_window_scheduler_should_render(win, false, 0));
+
+    AppRequestFrameProbe request_probe = {0};
+    dvz_app_window_set_request_frame_callback(win, _app_request_frame_probe_callback, &request_probe);
+
+    AT(dvz_panel_pick(panel, 32.0, 32.0, &(DvzPickRequest){.request_id = 1}) == 0);
+    AT(request_probe.calls == 1);
+    AT(request_probe.last_window == win);
+    AT(_dvz_app_window_scheduler_should_render(win, false, 0));
+
+    AT(dvz_panel_probe(panel, 32.0, 32.0, &(DvzProbeRequest){.request_id = 2}) == 0);
+    AT(request_probe.calls == 2);
+    AT(request_probe.last_window == win);
+    AT(_dvz_app_window_scheduler_should_render(win, false, 0));
 
     dvz_app_destroy(app);
     dvz_scene_destroy(scene);
@@ -5260,6 +5416,12 @@ int test_scene_app(TstSuite* suite)
 
 #if defined(DVZ_HAS_APP) && DVZ_HAS_APP
     TST_SCENE_APP_CASE(test_app_offscreen, TST_SCENE_APP_GPU_RES, TST_ISOLATION_PROCESS);
+    TST_SCENE_APP_CASE(
+        test_app_offscreen_scheduler_sees_scene_dirty_without_request, TST_SCENE_APP_GPU_RES,
+        TST_ISOLATION_PROCESS);
+    TST_SCENE_APP_CASE(
+        test_app_offscreen_pick_probe_requests_notify_hosted_callback, TST_SCENE_APP_GPU_RES,
+        TST_ISOLATION_PROCESS);
     TST_SCENE_APP_CASE(
         test_app_offscreen_timer_advances_in_app_run, TST_SCENE_APP_GPU_RES,
         TST_ISOLATION_PROCESS);

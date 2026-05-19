@@ -290,6 +290,12 @@ int test_scene_image_probe_gpu_readback_failure_misses(TstContext* suite, const 
 #if defined(DVZ_HAS_APP) && DVZ_HAS_APP
 int test_app_offscreen(TstContext* suite, const TstCase* item);
 
+int test_app_offscreen_scheduler_sees_scene_dirty_without_request(
+    TstContext* suite, const TstCase* item);
+
+int test_app_offscreen_pick_probe_requests_notify_hosted_callback(
+    TstContext* suite, const TstCase* item);
+
 int test_app_offscreen_timer_advances_in_app_run(TstContext* suite, const TstCase* item);
 
 int test_app_offscreen_timer_advances_in_render_once(TstContext* suite, const TstCase* item);

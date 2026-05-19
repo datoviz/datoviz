@@ -23,6 +23,7 @@
 #include "_assertions.h"
 #include "_compat.h"
 #include "_log.h"
+#include "_app.h"
 #include "_status.h"
 #include "_time_utils.h"
 #include "_trace.h"
@@ -727,6 +728,40 @@ static bool _app_window_should_render(DvzAppWindow* win, bool continuous, uint64
     if (continuous)
         return win->next_frame_ns == 0 || now >= win->next_frame_ns;
     return false;
+}
+
+
+/**
+ * Return whether one app-window should render on this scheduler tick.
+ *
+ * @param win app-window to inspect
+ * @param continuous whether continuous scheduling is active
+ * @param now current scheduler timestamp in nanoseconds
+ * @return whether the app-window should render
+ */
+bool _dvz_app_window_scheduler_should_render(DvzAppWindow* win, bool continuous, uint64_t now)
+{
+    return _app_window_should_render(win, continuous, now);
+}
+
+
+/**
+ * Forward scene request-frame notifications to the app-window that owns the figure.
+ *
+ * @param figure figure requesting a frame
+ * @param user_data app pointer
+ */
+static void _app_scene_request_frame(DvzFigure* figure, void* user_data)
+{
+    DvzApp* app = (DvzApp*)user_data;
+    if (app == NULL || figure == NULL)
+        return;
+    for (uint32_t i = 0; i < app->window_count; i++)
+    {
+        DvzAppWindow* win = &app->windows[i];
+        if (win->figure == figure)
+            dvz_app_window_request_frame(win);
+    }
 }
 
 
@@ -2450,6 +2485,7 @@ DvzApp* dvz_app_with_config(DvzScene* scene, const DvzAppConfig* config)
         return NULL;
     }
     _scene_request_executor_init(&app->request_executor);
+    _scene_set_request_frame_callback(app->scene, _app_scene_request_frame, app);
 
     return app;
 #else
@@ -2486,6 +2522,9 @@ void dvz_app_destroy(DvzApp* app)
 {
     if (app == NULL)
         return;
+
+    if (app->scene != NULL)
+        _scene_set_request_frame_callback(app->scene, NULL, NULL);
 
 #if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
     _dvz_app_status_finish(&app->status);
