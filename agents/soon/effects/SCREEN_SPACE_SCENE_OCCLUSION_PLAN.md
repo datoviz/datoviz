@@ -1,89 +1,80 @@
-# Screen-Space Scene Occlusion Plan
+# Screen-Space Scene Occlusion Follow-Up
+
+> **Execution Status**
+> - **Status:** `ACTIVE / FOLLOW-UP NOTE`
+> - **Updated on:** `2026-05-19`
+> - **Purpose:** track the remaining generic scene occlusion producer/consumer sequence after the
+>   durable model and graph contract moved to `spec/scene`.
 
 
-## Durable Contract
+## Current State
 
-The scene-occlusion visual model, resource/pass contract, shader feature policy, and validation
-expectations live in
-[../../../spec/scene/implementation/OCCLUSION_EFFECTS.md](../../../spec/scene/implementation/OCCLUSION_EFFECTS.md).
+Durable contracts live in:
 
-This file tracks the remaining implementation phases and first commit sequence.
+1. [`../../../spec/scene/implementation/OCCLUSION_EFFECTS.md`](../../../spec/scene/implementation/OCCLUSION_EFFECTS.md)
+2. [`../../../spec/scene/visuals/VOLUME.md`](../../../spec/scene/visuals/VOLUME.md)
+3. [`../../../spec/scene/visuals/MESH.md`](../../../spec/scene/visuals/MESH.md)
+
+Use this file only for implementation sequencing and first-commit guidance. Do not duplicate the
+scene occlusion visual model, resource/pass contract, shader feature policy, or validation
+expectations here.
+
+Generic scene occlusion remains a pragmatic screen-space approximation for hiding or attenuating
+embedded visuals behind volumes and surface shells. It is not a physically correct unified
+volume/geometry renderer.
 
 
-## Goal
+## Remaining Generic Occlusion Work
 
-Add a generic screen-space occlusion system so ordinary visuals can be visually embedded inside
-volumes and surface shells without relying on volume-specific shader paths.
+Recommended follow-up commits:
 
-This is a pragmatic scientific-visualization approximation, not a physically correct unified
-volume/geometry renderer. It should make cases such as Allen atlas shells hiding internal slices,
-small meshes embedded in translucent volumes, and image planes inside volumes look coherent.
+1. Add retained scene occlusion flags and descriptors with graph-only tests.
+2. Add graph resource/pass naming helpers only where the generic occlusion contract needs them.
+3. Add a mesh, primitive, or sphere depth prepass that writes front depth for surface occluders.
+4. Wire the Allen atlas mesh as a first surface occluder after the prepass contract is tested.
+5. Add a generic occlusion bind group and `scene_occlusion.glsl` include path for consumers.
+6. Route the Allen slice through generic scene occlusion once the volume-slice behavior matches the
+   existing volume-specific path.
+7. Migrate the current volume front-depth prepass into the generic scene occlusion producer path.
+8. Add a merge pass for mesh and volume depth when both producers are active.
+9. Remove or deprecate volume-specific occlusion plumbing only after equivalent generic behavior is
+   covered.
+
+
+## Focused Tests
+
+1. Hidden or visible occluder toggles do not produce invalid runtime streams.
+2. Mesh or primitive occluder depth pass appears before occluded visual passes.
+3. Occluded visual passes declare a graph read on scene occlusion depth.
+4. Mixed WBOIT and blended passes remain valid.
+5. The Allen atlas mesh uses the intended alpha mode when acting as an occluder.
+6. Shader and pipeline feature keys differ for occluded versus non-occluded variants.
 
 
 ## Non-Goals
 
-1. Do not implement physically based volume/geometry integration.
-2. Do not require every visual to use one monolithic renderer.
-3. Do not duplicate GLSL files for occluded and non-occluded variants.
-4. Do not make WBOIT behave like true opaque rendering.
+1. No physically based volume/geometry integration.
+2. No monolithic renderer requirement for all visuals.
+3. No duplicated `_occluded.frag` shader families.
+4. No assumption that WBOIT behaves like true opaque rendering.
 
 
-## Implementation Phases
+## Validation
 
-Phase 1: Design scaffolding
+For docs-only changes, run:
 
-1. add scene occlusion flags and descriptors;
-2. add frame-graph resource/pass naming helpers;
-3. add tests for graph emission only.
+```text
+rg for old moved filenames and stale soon/spec links
+git diff --check
+git status --short
+```
 
-Phase 2: Mesh occlusion producer
+For implementation changes, use:
 
-1. add mesh/primitive/sphere depth prepass;
-2. write `R32_SFLOAT` front depth;
-3. wire Allen atlas mesh as occluder.
+```text
+just build
+just test scene
+```
 
-Phase 3: Generic occlusion consumer for volume slice
-
-1. add shared occlusion bind group;
-2. add `scene_occlusion.glsl`;
-3. compile `volume_slice.frag` with `DVZ_SCENE_OCCLUSION` when needed;
-4. route Allen slice through generic occlusion.
-
-Phase 4: Volume producer migration
-
-1. move current volume front-depth prepass into the generic scene occlusion producer path;
-2. add merge pass for mesh + volume depth;
-3. remove or deprecate volume-specific occlusion plumbing once equivalent behavior is covered.
-
-Phase 5: Additional consumers
-
-1. add occlusion support to primitive/mesh/image/sphere/point shader paths;
-2. keep non-occluded visuals zero-cost.
-
-Phase 6: GUI and polish
-
-1. expose scene occlusion controls in Allen GUI;
-2. reorganize controls into clear sections;
-3. keep advanced producer controls hidden unless needed.
-
-
-## Tests
-
-Add focused coverage:
-
-1. hidden/visible occluder toggles do not produce invalid runtime streams;
-2. mesh occluder depth pass appears before occluded visual passes;
-3. occluded visual pass declares graph read on scene occlusion depth;
-4. mixed WBOIT and blended passes remain valid;
-5. fully opaque atlas mesh uses opaque alpha mode in the Allen example;
-6. shader/pipeline feature keys differ for occluded versus non-occluded variants.
-
-
-## Recommended First Commit Sequence
-
-1. Add retained scene occlusion flags/API with graph-only tests.
-2. Add mesh occlusion prepass emission.
-3. Add shader preprocessing support for feature defines/includes.
-4. Add generic occlusion bind group and volume-slice consumer.
-5. Update Allen example to use mesh + volume scene occlusion.
-6. Migrate current volume occlusion path into generic scene occlusion.
+Add offscreen image-difference or bounded Allen-example smoke coverage before relying on a live GUI
+path.
