@@ -56,6 +56,20 @@ bool _dvz_drp2_runtime_vklite_download_buffer(
 /*  Helpers                                                                                      */
 /*************************************************************************************************/
 
+#define TST_DRP2_VKLITE_FIXTURE "drp2-vklite-runtime"
+
+#if DVZ_DRP2_HAS_VKLITE
+typedef struct
+{
+    DvzGpuCtx* gpu_ctx;
+    DvzDrp2Runtime* runtime;
+    bool available;
+    const char* skip_reason;
+} DvzDrp2VkliteFixture;
+#endif
+
+
+
 static bool _captured_log_contains(const TstContext* suite, const char* needle)
 {
     ANN(suite);
@@ -89,6 +103,131 @@ static bool _drp2_vklite_runtime_available(void)
     }
     dvz_instance_destroy(instance);
     return true;
+}
+
+
+
+/**
+ * Return a GPU context configuration for DRP2 vklite execution tests.
+ *
+ * @return GPU context configuration with required Vulkan 1.3 features
+ */
+static DvzGpuCtxConfig _drp2_vklite_gpu_ctx_config(void)
+{
+    DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
+    VkPhysicalDeviceVulkan13Features features13 = {
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES};
+    features13.dynamicRendering = true;
+    features13.synchronization2 = true;
+    dvz_gpu_ctx_config_features13(&gpu_cfg, &features13);
+    return gpu_cfg;
+}
+
+
+
+/**
+ * Create a process-scoped GPU/runtime fixture for DRP2 vklite execution tests.
+ *
+ * @param suite active test suite
+ * @param worker_index scheduler worker index
+ * @return fixture state
+ */
+static void* _drp2_vklite_fixture_create(TstSuite* suite, uint32_t worker_index)
+{
+    (void)suite;
+    (void)worker_index;
+
+    DvzDrp2VkliteFixture* fixture =
+        (DvzDrp2VkliteFixture*)dvz_calloc(1, sizeof(DvzDrp2VkliteFixture));
+    ANN(fixture);
+
+    if (!_drp2_vklite_runtime_available())
+    {
+        fixture->skip_reason = "Vulkan instance creation failed";
+        return fixture;
+    }
+
+    DvzGpuCtxConfig gpu_cfg = _drp2_vklite_gpu_ctx_config();
+    fixture->gpu_ctx = dvz_gpu_ctx(&gpu_cfg);
+    if (fixture->gpu_ctx == NULL)
+    {
+        fixture->skip_reason = "GPU context creation failed";
+        return fixture;
+    }
+
+    DvzDrp2RuntimeConfig runtime_cfg = dvz_drp2_runtime_vklite_config(
+        dvz_gpu_ctx_device(fixture->gpu_ctx), dvz_gpu_ctx_alloc(fixture->gpu_ctx));
+    fixture->runtime = dvz_drp2_runtime_vklite(&runtime_cfg);
+    if (fixture->runtime == NULL)
+    {
+        fixture->skip_reason = "DRP2 runtime creation failed";
+        return fixture;
+    }
+
+    fixture->available = true;
+    return fixture;
+}
+
+
+
+/**
+ * Destroy a process-scoped GPU/runtime fixture for DRP2 vklite execution tests.
+ *
+ * @param fixture_ptr fixture state
+ */
+static void _drp2_vklite_fixture_destroy(void* fixture_ptr)
+{
+    DvzDrp2VkliteFixture* fixture = (DvzDrp2VkliteFixture*)fixture_ptr;
+    if (fixture == NULL)
+        return;
+    if (fixture->gpu_ctx != NULL)
+    {
+        DvzInstance* instance = dvz_gpu_ctx_instance(fixture->gpu_ctx);
+        if (instance != NULL && dvz_instance_handle(instance) != VK_NULL_HANDLE)
+            volkLoadInstance(dvz_instance_handle(instance));
+    }
+    if (fixture->runtime != NULL)
+    {
+        dvz_drp2_runtime_destroy(fixture->runtime);
+        fixture->runtime = NULL;
+    }
+    if (fixture->gpu_ctx != NULL)
+    {
+        dvz_gpu_ctx_destroy(fixture->gpu_ctx);
+        fixture->gpu_ctx = NULL;
+    }
+    dvz_free(fixture);
+}
+
+
+
+/**
+ * Borrow and reset the current DRP2 vklite runtime fixture.
+ *
+ * @param suite active test context
+ * @param out_gpu_ctx optional output receiving the borrowed GPU context
+ * @return borrowed runtime, or NULL when setup is unavailable
+ */
+static DvzDrp2Runtime*
+_drp2_vklite_fixture_runtime(TstContext* suite, DvzGpuCtx** out_gpu_ctx)
+{
+    ANN(suite);
+    DvzDrp2VkliteFixture* fixture =
+        (DvzDrp2VkliteFixture*)tst_context_fixture(suite, TST_DRP2_VKLITE_FIXTURE);
+    if (fixture == NULL)
+    {
+        tst_skip(suite, "DRP2 vklite fixture unavailable");
+        return NULL;
+    }
+    if (!fixture->available)
+    {
+        tst_skip(suite, fixture->skip_reason != NULL ? fixture->skip_reason : "GPU unavailable");
+        return NULL;
+    }
+    dvz_drp2_runtime_reset(fixture->runtime);
+    if (out_gpu_ctx != NULL)
+        *out_gpu_ctx = fixture->gpu_ctx;
+    return fixture->runtime;
 }
 #endif
 
@@ -2558,29 +2697,11 @@ int test_drp2_runtime_vklite_executes_resource_commands(TstContext* suite, const
     ANN(suite);
     (void)item;
 
-    if (!_drp2_vklite_runtime_available())
-    {
-        tst_skip(suite, "Vulkan instance creation failed");
+    DvzGpuCtx* ctx = NULL;
+    DvzDrp2Runtime* runtime = _drp2_vklite_fixture_runtime(suite, &ctx);
+    if (runtime == NULL)
         return 0;
-    }
-
-    DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
-    VkPhysicalDeviceVulkan13Features features13 = {
-        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES};
-    features13.synchronization2 = true;
-    dvz_gpu_ctx_config_features13(&gpu_cfg, &features13);
-    DvzGpuCtx* ctx = dvz_gpu_ctx(&gpu_cfg);
-    if (ctx == NULL)
-    {
-        log_warn("DRP2 vklite execution test skipped because GPU context creation failed");
-        tst_skip(suite, "GPU context creation failed");
-        return 0;
-    }
-
-    DvzDrp2RuntimeConfig cfg =
-        dvz_drp2_runtime_vklite_config(dvz_gpu_ctx_device(ctx), dvz_gpu_ctx_alloc(ctx));
-    DvzDrp2Runtime* runtime = dvz_drp2_runtime_vklite(&cfg);
-    ANN(runtime);
+    ANN(ctx);
 
     DvzDrp2CommandStream* stream = dvz_drp2_stream();
     ANN(stream);
@@ -2601,8 +2722,6 @@ int test_drp2_runtime_vklite_executes_resource_commands(TstContext* suite, const
     AT(dvz_gpu_ctx_error_count(ctx) == 0);
 
     dvz_drp2_stream_destroy(stream);
-    dvz_drp2_runtime_destroy(runtime);
-    dvz_gpu_ctx_destroy(ctx);
     return 0;
 }
 
@@ -2613,29 +2732,11 @@ int test_drp2_runtime_vklite_writes_buffer_contents(TstContext* suite, const Tst
     ANN(suite);
     (void)item;
 
-    if (!_drp2_vklite_runtime_available())
-    {
-        tst_skip(suite, "Vulkan instance creation failed");
+    DvzGpuCtx* ctx = NULL;
+    DvzDrp2Runtime* runtime = _drp2_vklite_fixture_runtime(suite, &ctx);
+    if (runtime == NULL)
         return 0;
-    }
-
-    DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
-    VkPhysicalDeviceVulkan13Features features13 = {
-        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES};
-    features13.synchronization2 = true;
-    dvz_gpu_ctx_config_features13(&gpu_cfg, &features13);
-    DvzGpuCtx* ctx = dvz_gpu_ctx(&gpu_cfg);
-    if (ctx == NULL)
-    {
-        log_warn("DRP2 vklite buffer content test skipped because GPU context creation failed");
-        tst_skip(suite, "GPU context creation failed");
-        return 0;
-    }
-
-    DvzDrp2RuntimeConfig cfg =
-        dvz_drp2_runtime_vklite_config(dvz_gpu_ctx_device(ctx), dvz_gpu_ctx_alloc(ctx));
-    DvzDrp2Runtime* runtime = dvz_drp2_runtime_vklite(&cfg);
-    ANN(runtime);
+    ANN(ctx);
 
     DvzDrp2CommandStream* stream = dvz_drp2_stream();
     ANN(stream);
@@ -2662,8 +2763,6 @@ int test_drp2_runtime_vklite_writes_buffer_contents(TstContext* suite, const Tst
     }
 
     dvz_drp2_stream_destroy(stream);
-    dvz_drp2_runtime_destroy(runtime);
-    dvz_gpu_ctx_destroy(ctx);
     return 0;
 }
 
@@ -2674,29 +2773,11 @@ int test_drp2_runtime_vklite_copies_buffer_contents(TstContext* suite, const Tst
     ANN(suite);
     (void)item;
 
-    if (!_drp2_vklite_runtime_available())
-    {
-        tst_skip(suite, "Vulkan instance creation failed");
+    DvzGpuCtx* ctx = NULL;
+    DvzDrp2Runtime* runtime = _drp2_vklite_fixture_runtime(suite, &ctx);
+    if (runtime == NULL)
         return 0;
-    }
-
-    DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
-    VkPhysicalDeviceVulkan13Features features13 = {
-        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES};
-    features13.synchronization2 = true;
-    dvz_gpu_ctx_config_features13(&gpu_cfg, &features13);
-    DvzGpuCtx* ctx = dvz_gpu_ctx(&gpu_cfg);
-    if (ctx == NULL)
-    {
-        log_warn("DRP2 vklite buffer copy test skipped because GPU context creation failed");
-        tst_skip(suite, "GPU context creation failed");
-        return 0;
-    }
-
-    DvzDrp2RuntimeConfig cfg =
-        dvz_drp2_runtime_vklite_config(dvz_gpu_ctx_device(ctx), dvz_gpu_ctx_alloc(ctx));
-    DvzDrp2Runtime* runtime = dvz_drp2_runtime_vklite(&cfg);
-    ANN(runtime);
+    ANN(ctx);
 
     DvzDrp2CommandStream* stream = dvz_drp2_stream();
     ANN(stream);
@@ -2729,8 +2810,6 @@ int test_drp2_runtime_vklite_copies_buffer_contents(TstContext* suite, const Tst
     }
 
     dvz_drp2_stream_destroy(stream);
-    dvz_drp2_runtime_destroy(runtime);
-    dvz_gpu_ctx_destroy(ctx);
     return 0;
 }
 
@@ -3213,29 +3292,11 @@ int test_drp2_runtime_vklite_writes_texture_contents(TstContext* suite, const Ts
     ANN(suite);
     (void)item;
 
-    if (!_drp2_vklite_runtime_available())
-    {
-        tst_skip(suite, "Vulkan instance creation failed");
+    DvzGpuCtx* ctx = NULL;
+    DvzDrp2Runtime* runtime = _drp2_vklite_fixture_runtime(suite, &ctx);
+    if (runtime == NULL)
         return 0;
-    }
-
-    DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
-    VkPhysicalDeviceVulkan13Features features13 = {
-        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES};
-    features13.synchronization2 = true;
-    dvz_gpu_ctx_config_features13(&gpu_cfg, &features13);
-    DvzGpuCtx* ctx = dvz_gpu_ctx(&gpu_cfg);
-    if (ctx == NULL)
-    {
-        log_warn("DRP2 vklite texture write test skipped because GPU context creation failed");
-        tst_skip(suite, "GPU context creation failed");
-        return 0;
-    }
-
-    DvzDrp2RuntimeConfig cfg =
-        dvz_drp2_runtime_vklite_config(dvz_gpu_ctx_device(ctx), dvz_gpu_ctx_alloc(ctx));
-    DvzDrp2Runtime* runtime = dvz_drp2_runtime_vklite(&cfg);
-    ANN(runtime);
+    ANN(ctx);
 
     DvzDrp2CommandStream* stream = dvz_drp2_stream();
     ANN(stream);
@@ -3267,8 +3328,6 @@ int test_drp2_runtime_vklite_writes_texture_contents(TstContext* suite, const Ts
     }
 
     dvz_drp2_stream_destroy(stream);
-    dvz_drp2_runtime_destroy(runtime);
-    dvz_gpu_ctx_destroy(ctx);
     return 0;
 }
 
@@ -3279,29 +3338,11 @@ int test_drp2_runtime_vklite_copies_buffer_to_texture(TstContext* suite, const T
     ANN(suite);
     (void)item;
 
-    if (!_drp2_vklite_runtime_available())
-    {
-        tst_skip(suite, "Vulkan instance creation failed");
+    DvzGpuCtx* ctx = NULL;
+    DvzDrp2Runtime* runtime = _drp2_vklite_fixture_runtime(suite, &ctx);
+    if (runtime == NULL)
         return 0;
-    }
-
-    DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
-    VkPhysicalDeviceVulkan13Features features13 = {
-        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES};
-    features13.synchronization2 = true;
-    dvz_gpu_ctx_config_features13(&gpu_cfg, &features13);
-    DvzGpuCtx* ctx = dvz_gpu_ctx(&gpu_cfg);
-    if (ctx == NULL)
-    {
-        log_warn("DRP2 vklite texture copy test skipped because GPU context creation failed");
-        tst_skip(suite, "GPU context creation failed");
-        return 0;
-    }
-
-    DvzDrp2RuntimeConfig cfg =
-        dvz_drp2_runtime_vklite_config(dvz_gpu_ctx_device(ctx), dvz_gpu_ctx_alloc(ctx));
-    DvzDrp2Runtime* runtime = dvz_drp2_runtime_vklite(&cfg);
-    ANN(runtime);
+    ANN(ctx);
 
     DvzDrp2CommandStream* stream = dvz_drp2_stream();
     ANN(stream);
@@ -3337,8 +3378,6 @@ int test_drp2_runtime_vklite_copies_buffer_to_texture(TstContext* suite, const T
     }
 
     dvz_drp2_stream_destroy(stream);
-    dvz_drp2_runtime_destroy(runtime);
-    dvz_gpu_ctx_destroy(ctx);
     return 0;
 }
 
@@ -3349,29 +3388,11 @@ int test_drp2_runtime_vklite_copies_texture_to_texture(TstContext* suite, const 
     ANN(suite);
     (void)item;
 
-    if (!_drp2_vklite_runtime_available())
-    {
-        tst_skip(suite, "Vulkan instance creation failed");
+    DvzGpuCtx* ctx = NULL;
+    DvzDrp2Runtime* runtime = _drp2_vklite_fixture_runtime(suite, &ctx);
+    if (runtime == NULL)
         return 0;
-    }
-
-    DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
-    VkPhysicalDeviceVulkan13Features features13 = {
-        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES};
-    features13.synchronization2 = true;
-    dvz_gpu_ctx_config_features13(&gpu_cfg, &features13);
-    DvzGpuCtx* ctx = dvz_gpu_ctx(&gpu_cfg);
-    if (ctx == NULL)
-    {
-        log_warn("DRP2 vklite texture-to-texture test skipped because GPU context creation failed");
-        tst_skip(suite, "GPU context creation failed");
-        return 0;
-    }
-
-    DvzDrp2RuntimeConfig cfg =
-        dvz_drp2_runtime_vklite_config(dvz_gpu_ctx_device(ctx), dvz_gpu_ctx_alloc(ctx));
-    DvzDrp2Runtime* runtime = dvz_drp2_runtime_vklite(&cfg);
-    ANN(runtime);
+    ANN(ctx);
 
     DvzDrp2CommandStream* stream = dvz_drp2_stream();
     ANN(stream);
@@ -3406,8 +3427,6 @@ int test_drp2_runtime_vklite_copies_texture_to_texture(TstContext* suite, const 
     }
 
     dvz_drp2_stream_destroy(stream);
-    dvz_drp2_runtime_destroy(runtime);
-    dvz_gpu_ctx_destroy(ctx);
     return 0;
 }
 
@@ -6682,6 +6701,18 @@ int test_drp2_recording_reports_raw_fallback_command(TstContext* suite, const Ts
 #define TST_DRP2_GPU_CASE(test)                                                                   \
     TST_DRP2_CASE_EX(test, TST_RES_CPU | TST_RES_GPU | TST_RES_VULKAN, TST_ISOLATION_PROCESS)
 
+#define TST_DRP2_SHARED_GPU_CASE(test)                                                            \
+    do                                                                                            \
+    {                                                                                             \
+        TstCaseDesc _tst_desc = tst_case_desc(#test, #test, (test));                              \
+        _tst_desc.tags = tags;                                                                    \
+        _tst_desc.resources = TST_RES_CPU | TST_RES_GPU | TST_RES_VULKAN;                         \
+        _tst_desc.isolation = TST_ISOLATION_SERIAL;                                               \
+        _tst_desc.fixture = TST_DRP2_VKLITE_FIXTURE;                                              \
+        _tst_desc.fixture_scope = TST_FIXTURE_SCOPE_PROCESS;                                      \
+        tst_suite_add_case((suite), _tst_desc);                                                   \
+    } while (0)
+
 int test_drp2(TstSuite* suite)
 {
     ANN(suite);
@@ -6689,6 +6720,12 @@ int test_drp2(TstSuite* suite)
     const char* tags = "drp2";
 
     TST_MODULE(suite, tags);
+
+#if DVZ_DRP2_HAS_VKLITE
+    tst_suite_register_fixture(
+        suite, TST_DRP2_VKLITE_FIXTURE, TST_FIXTURE_SCOPE_PROCESS,
+        _drp2_vklite_fixture_create, _drp2_vklite_fixture_destroy);
+#endif
 
     TST_GROUP("stream");
     TST_CASE(test_drp2_stream_empty);
@@ -6794,16 +6831,16 @@ int test_drp2(TstSuite* suite)
 #if DVZ_DRP2_HAS_VKLITE
     TST_GROUP("vklite-runtime");
     TST_DRP2_GPU_CASE(test_drp2_write_buffer_bytes_large_payload_executes);
-    TST_DRP2_GPU_CASE(test_drp2_runtime_vklite_executes_resource_commands);
-    TST_DRP2_GPU_CASE(test_drp2_runtime_vklite_writes_buffer_contents);
-    TST_DRP2_GPU_CASE(test_drp2_runtime_vklite_copies_buffer_contents);
+    TST_DRP2_SHARED_GPU_CASE(test_drp2_runtime_vklite_executes_resource_commands);
+    TST_DRP2_SHARED_GPU_CASE(test_drp2_runtime_vklite_writes_buffer_contents);
+    TST_DRP2_SHARED_GPU_CASE(test_drp2_runtime_vklite_copies_buffer_contents);
     TST_DRP2_GPU_CASE(test_drp2_runtime_vklite_uses_external_buffer);
 #if DVZ_HAS_CUDA
     TST_DRP2_GPU_CASE(test_drp2_runtime_vklite_draws_cuda_external_vertex_buffer);
 #endif
-    TST_DRP2_GPU_CASE(test_drp2_runtime_vklite_writes_texture_contents);
-    TST_DRP2_GPU_CASE(test_drp2_runtime_vklite_copies_buffer_to_texture);
-    TST_DRP2_GPU_CASE(test_drp2_runtime_vklite_copies_texture_to_texture);
+    TST_DRP2_SHARED_GPU_CASE(test_drp2_runtime_vklite_writes_texture_contents);
+    TST_DRP2_SHARED_GPU_CASE(test_drp2_runtime_vklite_copies_buffer_to_texture);
+    TST_DRP2_SHARED_GPU_CASE(test_drp2_runtime_vklite_copies_texture_to_texture);
     TST_DRP2_GPU_CASE(test_drp2_runtime_vklite_creates_glsl_shader_modules);
     TST_DRP2_GPU_CASE(test_drp2_runtime_vklite_rejects_invalid_glsl_shader);
     TST_DRP2_GPU_CASE(test_drp2_runtime_vklite_rejects_pipeline_with_failed_shader);
@@ -6828,3 +6865,4 @@ int test_drp2(TstSuite* suite)
 
 #undef TST_DRP2_CASE_EX
 #undef TST_DRP2_GPU_CASE
+#undef TST_DRP2_SHARED_GPU_CASE
