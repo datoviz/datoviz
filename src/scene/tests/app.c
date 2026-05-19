@@ -545,14 +545,16 @@ static DvzVisual* _app_primitive_add_quad(
 /**
  * Render one source-over scene-occlusion case and capture the center pixel.
  *
+ * @param suite test context used for shared app resources
  * @param scene_occlusion_enabled whether scene occlusion should be enabled on the panel
  * @param occluder_hidden whether the occluder visual is hidden
  * @param occluder_alpha alpha channel used by the visible occluder
  * @return captured RGB values, or skipped=true when no app context is available
  */
 static AppSceneOcclusionCapture _app_source_over_scene_occlusion_capture_center(
-    bool scene_occlusion_enabled, bool occluder_hidden, uint8_t occluder_alpha)
+    TstContext* suite, bool scene_occlusion_enabled, bool occluder_hidden, uint8_t occluder_alpha)
 {
+    ANN(suite);
     AppSceneOcclusionCapture out = {0};
     DvzScene* scene = dvz_scene();
     if (scene == NULL)
@@ -599,7 +601,7 @@ static AppSceneOcclusionCapture _app_source_over_scene_occlusion_capture_center(
     if (occluder_hidden)
         dvz_visual_set_visible(occluder, false);
 
-    DvzApp* app = dvz_app(scene);
+    DvzApp* app = _app_test_create(suite, scene);
     if (app == NULL)
     {
         out.skipped = true;
@@ -662,11 +664,13 @@ static AppSceneOcclusionCapture _app_source_over_scene_occlusion_capture_center(
 /**
  * Render two WBOIT layers and capture the center pixel.
  *
+ * @param suite test context used for shared app resources
  * @param reverse_order whether the blue layer is added before the red layer
  * @return captured RGB values, or skipped=true when no app context is available
  */
-static AppWboitCapture _app_wboit_capture_center(bool reverse_order)
+static AppWboitCapture _app_wboit_capture_center(TstContext* suite, bool reverse_order)
 {
+    ANN(suite);
     AppWboitCapture out = {0};
     DvzScene* scene = dvz_scene();
     if (scene == NULL)
@@ -699,7 +703,7 @@ static AppWboitCapture _app_wboit_capture_center(bool reverse_order)
         return out;
     }
 
-    DvzApp* app = dvz_app(scene);
+    DvzApp* app = _app_test_create(suite, scene);
     if (app == NULL)
     {
         out.skipped = true;
@@ -979,11 +983,13 @@ static bool _app_text_green_pixel(const uint8_t* pixel)
 /**
  * Render the deterministic EDL point fixture and return its captured RGBA pixels.
  *
+ * @param suite test context used for shared app resources
  * @param enabled whether EDL should be enabled for the panel
  * @return captured RGBA buffer, or skipped=true when no app context is available
  */
-static AppRgbaCapture _app_edl_point_capture(bool enabled)
+static AppRgbaCapture _app_edl_point_capture(TstContext* suite, bool enabled)
 {
+    ANN(suite);
     AppRgbaCapture out = {0};
     DvzScene* scene = dvz_scene();
     if (scene == NULL)
@@ -1037,7 +1043,7 @@ static AppRgbaCapture _app_edl_point_capture(bool enabled)
         return out;
     }
 
-    DvzApp* app = dvz_app(scene);
+    DvzApp* app = _app_test_create(suite, scene);
     if (app == NULL)
     {
         out.skipped = true;
@@ -2220,14 +2226,14 @@ int test_app_offscreen_points_edl_changes_pixels(TstContext* suite, const TstCas
 
     TST_SCENE_APP_REQUIRE_VKLITE(suite);
 
-    AppRgbaCapture disabled = _app_edl_point_capture(false);
+    AppRgbaCapture disabled = _app_edl_point_capture(suite, false);
     if (disabled.skipped)
     {
         log_warn("test_app_offscreen_points_edl_changes_pixels skipped: GPU context failed");
         tst_skip(suite, disabled.skip_reason);
         return 0;
     }
-    AppRgbaCapture enabled = _app_edl_point_capture(true);
+    AppRgbaCapture enabled = _app_edl_point_capture(suite, true);
     if (enabled.skipped)
     {
         log_warn("test_app_offscreen_points_edl_changes_pixels skipped: GPU context failed");
@@ -2972,7 +2978,7 @@ int test_app_offscreen_wboit_mesh_order_independent_layers(TstContext* suite, co
 
     TST_SCENE_APP_REQUIRE_VKLITE(suite);
 
-    AppWboitCapture forward = _app_wboit_capture_center(false);
+    AppWboitCapture forward = _app_wboit_capture_center(suite, false);
     if (forward.skipped)
     {
         log_warn(
@@ -2980,7 +2986,7 @@ int test_app_offscreen_wboit_mesh_order_independent_layers(TstContext* suite, co
         tst_skip(suite, forward.skip_reason);
         return 0;
     }
-    AppWboitCapture reverse = _app_wboit_capture_center(true);
+    AppWboitCapture reverse = _app_wboit_capture_center(suite, true);
     if (reverse.skipped)
     {
         log_warn(
@@ -3036,7 +3042,7 @@ int test_app_offscreen_source_over_mesh_depth_and_blend(TstContext* suite, const
     ANN(transparent_visual);
     ANN(occluder_visual);
 
-    DvzApp* app = dvz_app(scene);
+    DvzApp* app = _app_test_create(suite, scene);
     if (app == NULL)
     {
         log_warn(
@@ -3117,7 +3123,7 @@ int test_app_offscreen_depth_peel_mesh_two_layers(TstContext* suite, const TstCa
     ANN(blue_visual);
     ANN(occluder_visual);
 
-    DvzApp* app = dvz_app(scene);
+    DvzApp* app = _app_test_create(suite, scene);
     if (app == NULL)
     {
         log_warn("test_app_offscreen_depth_peel_mesh_two_layers skipped: GPU context failed");
@@ -3186,7 +3192,7 @@ int test_app_offscreen_scene_occlusion_hidden_alpha(TstContext* suite, const Tst
     TST_SCENE_APP_REQUIRE_VKLITE(suite);
 
     AppSceneOcclusionCapture hidden =
-        _app_source_over_scene_occlusion_capture_center(true, true, 255);
+        _app_source_over_scene_occlusion_capture_center(suite, true, true, 255);
     if (hidden.skipped)
     {
         log_warn("test_app_offscreen_scene_occlusion_hidden_alpha skipped: GPU context failed");
@@ -3194,7 +3200,7 @@ int test_app_offscreen_scene_occlusion_hidden_alpha(TstContext* suite, const Tst
         return 0;
     }
     AppSceneOcclusionCapture zero =
-        _app_source_over_scene_occlusion_capture_center(true, false, 0);
+        _app_source_over_scene_occlusion_capture_center(suite, true, false, 0);
     if (zero.skipped)
     {
         log_warn("test_app_offscreen_scene_occlusion_hidden_alpha skipped: GPU context failed");
@@ -3202,7 +3208,7 @@ int test_app_offscreen_scene_occlusion_hidden_alpha(TstContext* suite, const Tst
         return 0;
     }
     AppSceneOcclusionCapture positive =
-        _app_source_over_scene_occlusion_capture_center(true, false, 64);
+        _app_source_over_scene_occlusion_capture_center(suite, true, false, 64);
     if (positive.skipped)
     {
         log_warn("test_app_offscreen_scene_occlusion_hidden_alpha skipped: GPU context failed");
@@ -3243,7 +3249,7 @@ int test_app_offscreen_source_over_scene_occlusion_matrix(TstContext* suite, con
     TST_SCENE_APP_REQUIRE_VKLITE(suite);
 
     AppSceneOcclusionCapture disabled =
-        _app_source_over_scene_occlusion_capture_center(false, false, 64);
+        _app_source_over_scene_occlusion_capture_center(suite, false, false, 64);
     if (disabled.skipped)
     {
         log_warn("test_app_offscreen_source_over_scene_occlusion_matrix skipped: GPU context failed");
@@ -3251,7 +3257,7 @@ int test_app_offscreen_source_over_scene_occlusion_matrix(TstContext* suite, con
         return 0;
     }
     AppSceneOcclusionCapture hidden =
-        _app_source_over_scene_occlusion_capture_center(true, true, 255);
+        _app_source_over_scene_occlusion_capture_center(suite, true, true, 255);
     if (hidden.skipped)
     {
         log_warn("test_app_offscreen_source_over_scene_occlusion_matrix skipped: GPU context failed");
@@ -3259,7 +3265,7 @@ int test_app_offscreen_source_over_scene_occlusion_matrix(TstContext* suite, con
         return 0;
     }
     AppSceneOcclusionCapture enabled =
-        _app_source_over_scene_occlusion_capture_center(true, false, 64);
+        _app_source_over_scene_occlusion_capture_center(suite, true, false, 64);
     if (enabled.skipped)
     {
         log_warn("test_app_offscreen_source_over_scene_occlusion_matrix skipped: GPU context failed");
@@ -5685,28 +5691,16 @@ int test_scene_app(TstSuite* suite)
 #endif
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_panel_three_visuals_all_drawn);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_point_depth_orders_overlap);
-    TST_SCENE_APP_CASE(
-        test_app_offscreen_wboit_mesh_order_independent_layers, TST_SCENE_APP_GPU_RES,
-        TST_ISOLATION_PROCESS);
-    TST_SCENE_APP_CASE(
-        test_app_offscreen_source_over_mesh_depth_and_blend, TST_SCENE_APP_GPU_RES,
-        TST_ISOLATION_PROCESS);
-    TST_SCENE_APP_CASE(
-        test_app_offscreen_depth_peel_mesh_two_layers, TST_SCENE_APP_GPU_RES,
-        TST_ISOLATION_PROCESS);
-    TST_SCENE_APP_CASE(
-        test_app_offscreen_scene_occlusion_hidden_alpha, TST_SCENE_APP_GPU_RES,
-        TST_ISOLATION_PROCESS);
-    TST_SCENE_APP_CASE(
-        test_app_offscreen_source_over_scene_occlusion_matrix, TST_SCENE_APP_GPU_RES,
-        TST_ISOLATION_PROCESS);
+    TST_SCENE_APP_SHARED_CASE(test_app_offscreen_wboit_mesh_order_independent_layers);
+    TST_SCENE_APP_SHARED_CASE(test_app_offscreen_source_over_mesh_depth_and_blend);
+    TST_SCENE_APP_SHARED_CASE(test_app_offscreen_depth_peel_mesh_two_layers);
+    TST_SCENE_APP_SHARED_CASE(test_app_offscreen_scene_occlusion_hidden_alpha);
+    TST_SCENE_APP_SHARED_CASE(test_app_offscreen_source_over_scene_occlusion_matrix);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_point_depth_cue_darkens_far);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_has_nonblank_pixels);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_pixel_square_has_nonblank_pixels);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_points_edl_renders);
-    TST_SCENE_APP_CASE(
-        test_app_offscreen_points_edl_changes_pixels, TST_SCENE_APP_GPU_RES,
-        TST_ISOLATION_PROCESS);
+    TST_SCENE_APP_SHARED_CASE(test_app_offscreen_points_edl_changes_pixels);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_mesh_ssao_changes_pixels);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_sphere_ssao_darkens_contact);
     TST_SCENE_APP_CASE(
