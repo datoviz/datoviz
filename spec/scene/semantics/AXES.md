@@ -7,6 +7,24 @@ Axes are scene-side semantic objects.
 They are not merely decorative line visuals, and they are not backend concepts.
 
 
+## Active Implementation Status
+
+The active v0.4 path has a first 2D axes slice:
+
+1. panel-owned finite linear X/Y domains;
+2. panzoom-aware visible-domain queries;
+3. data-to-visual mapping helpers for panel domains;
+4. panel-owned axis handles with visibility, grid, label, tick-policy, style, and plot-margin
+   setters;
+5. cached linear tick generation;
+6. primitive-backed spine, major/minor tick, and optional grid geometry;
+7. focused scene tests and a `scatter_axes` example.
+
+Rendered tick labels and axis labels are still part of the text/layout follow-up. Log, inverted,
+categorical, datetime, and 3D scientific axes remain deferred unless a specific v0.4 task activates
+them.
+
+
 ## Purpose
 
 Axes exist to:

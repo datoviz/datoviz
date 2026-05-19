@@ -4,8 +4,8 @@ Scene plans cover visual-family implementation work and layout follow-ups. Durab
 belong under [../../../spec/scene/visuals/](../../../spec/scene/visuals/) and related scene spec
 directories.
 
-1. [SCENE_2D_AXES_IMPLEMENTATION_PLAN.md](SCENE_2D_AXES_IMPLEMENTATION_PLAN.md): 2D axes
-   implementation lane.
+1. [SCENE_2D_AXES_IMPLEMENTATION_PLAN.md](SCENE_2D_AXES_IMPLEMENTATION_PLAN.md): remaining 2D axes
+   and label-layout follow-up.
 2. [SCENE_NAPARI_IMAGE_LABELS_PLAN.md](SCENE_NAPARI_IMAGE_LABELS_PLAN.md): napari-style image
    label follow-up.
 3. [SCENE_POINT_PIXEL_MARKER_PLAN.md](SCENE_POINT_PIXEL_MARKER_PLAN.md): point, pixel, and marker
