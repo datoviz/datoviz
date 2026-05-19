@@ -20,6 +20,7 @@
 #include <cstddef>
 #include <cstdio>
 #include <cstdlib>
+#include <deque>
 #include <fstream>
 #include <map>
 #include <random>
@@ -86,7 +87,10 @@ typedef struct TstOptions
     uint32_t jobs;
     uint32_t shard_index;
     uint32_t shard_count;
+    uint64_t selected_order_index;
+    uint64_t repeat_index;
     int color_mode;
+    bool process_child;
 } TstOptions;
 
 
@@ -1037,6 +1041,8 @@ static TstOptions _tst_options_default(void)
     options.jobs = 1;
     options.shard_index = UINT32_MAX;
     options.shard_count = 0;
+    options.selected_order_index = UINT64_MAX;
+    options.repeat_index = UINT64_MAX;
     options.color_mode = 0;
     options.compact = true;
     return options;
@@ -1076,7 +1082,8 @@ static bool _tst_is_option_with_value(const char* arg)
            _tst_streq(arg, "--slow") || _tst_streq(arg, "--slow-groups") ||
            _tst_streq(arg, "--timeout") || _tst_streq(arg, "--jobs") ||
            _tst_streq(arg, "--shard-index") || _tst_streq(arg, "--shard-count") ||
-           _tst_streq(arg, "--shard-policy") || _tst_streq(arg, "--color");
+           _tst_streq(arg, "--shard-policy") || _tst_streq(arg, "--color") ||
+           _tst_streq(arg, "--selected-order-index") || _tst_streq(arg, "--repeat-index");
 }
 
 
@@ -1090,7 +1097,8 @@ static bool _tst_parent_only_option(const char* arg)
     return _tst_streq(arg, "--jobs") || _tst_streq(arg, "--shard-index") ||
            _tst_streq(arg, "--shard-count") || _tst_streq(arg, "--child-json") ||
            _tst_streq(arg, "--parent-json") || _tst_streq(arg, "--json") ||
-           _tst_streq(arg, "--shard-policy");
+           _tst_streq(arg, "--shard-policy") || _tst_streq(arg, "--selected-order-index") ||
+           _tst_streq(arg, "--repeat-index");
 }
 
 
@@ -1164,6 +1172,10 @@ static int _tst_parse_options(int argc, char** argv, TstOptions* options)
             options->shard_count = (uint32_t)_tst_parse_u64(argv[++i], 0);
         else if (_tst_streq(arg, "--shard-policy") && i + 1 < argc)
             options->shard_policy = argv[++i];
+        else if (_tst_streq(arg, "--selected-order-index") && i + 1 < argc)
+            options->selected_order_index = _tst_parse_u64(argv[++i], UINT64_MAX);
+        else if (_tst_streq(arg, "--repeat-index") && i + 1 < argc)
+            options->repeat_index = _tst_parse_u64(argv[++i], UINT64_MAX);
         else if (_tst_streq(arg, "--color") && i + 1 < argc)
         {
             const char* mode = argv[++i];
@@ -1181,6 +1193,8 @@ static int _tst_parse_options(int argc, char** argv, TstOptions* options)
             options->verbose = true;
         else if (_tst_streq(arg, "--shuffle"))
             options->shuffle = true;
+        else if (_tst_streq(arg, "--process-child"))
+            options->process_child = true;
         else if (arg[0] != '-' && options->positional_filter == NULL)
             options->positional_filter = arg;
         else
@@ -1869,6 +1883,48 @@ static std::vector<std::string> _tst_child_args(
 
 
 
+static bool _tst_process_child_skip_option(const char* arg)
+{
+    return _tst_parent_only_option(arg) || _tst_streq(arg, "--repeat");
+}
+
+
+
+static std::vector<std::string> _tst_process_child_args(
+    int argc, char** argv, uint64_t order_index, uint64_t repeat_index,
+    const std::string& json_path)
+{
+    std::vector<std::string> args;
+    args.push_back(argc > 0 && argv[0] != NULL ? argv[0] : "");
+    for (int i = 1; i < argc; i++)
+    {
+        const char* arg = argv[i];
+        if (_tst_process_child_skip_option(arg))
+        {
+            if (_tst_is_option_with_value(arg) && i + 1 < argc)
+            {
+                i++;
+            }
+            continue;
+        }
+        args.push_back(arg != NULL ? arg : "");
+    }
+    args.push_back("--process-child");
+    args.push_back("--selected-order-index");
+    args.push_back(std::to_string(order_index));
+    args.push_back("--repeat");
+    args.push_back("1");
+    args.push_back("--repeat-index");
+    args.push_back(std::to_string(repeat_index));
+    args.push_back("--child-json");
+    args.push_back(json_path);
+    args.push_back("--color");
+    args.push_back("never");
+    return args;
+}
+
+
+
 static int _tst_spawn_child(const std::vector<std::string>& args, TstChildProc* child)
 {
     ANN(child);
@@ -1927,6 +1983,53 @@ static int _tst_wait_child(TstChildProc* child)
     }
     return 1;
 #endif
+}
+
+
+
+static int _tst_run_process_child_case(
+    int argc, char** argv, uint64_t order_index, uint64_t repeat_index, TstOwnedResult* result)
+{
+    ANN(result);
+
+    const std::string json_path = _tst_child_json_path((uint32_t)(order_index & UINT32_MAX));
+    std::vector<std::string> args =
+        _tst_process_child_args(argc, argv, order_index, repeat_index, json_path);
+
+    TstChildProc child = {};
+    child.json_path = json_path;
+    if (_tst_spawn_child(args, &child) != 0)
+    {
+        dvz_fprintf(stderr, "could not spawn process-isolated case %" PRIu64 "\n", order_index);
+        return 1;
+    }
+
+    int status = _tst_wait_child(&child);
+    if (status != 0)
+    {
+        dvz_fprintf(
+            stderr, "process-isolated case %" PRIu64 " failed with exit code %d\n", order_index,
+            status);
+    }
+
+    std::vector<TstOwnedResult> owned;
+    int read_res = _tst_read_json_results(json_path.c_str(), &owned);
+    std::remove(json_path.c_str());
+    if (read_res != 0)
+    {
+        return 1;
+    }
+    if (owned.size() != 1)
+    {
+        dvz_fprintf(
+            stderr, "process-isolated case %" PRIu64 " produced %zu JSON results\n", order_index,
+            owned.size());
+        return 1;
+    }
+
+    *result = owned[0];
+    _tst_owned_result_refresh(result);
+    return status == 0 ? 0 : 1;
 }
 
 
@@ -2329,9 +2432,24 @@ int tst_suite_run(TstSuite* suite, int argc, char** argv)
                 }),
             selected.end());
     }
+    if (options.process_child)
+    {
+        if (options.selected_order_index == UINT64_MAX)
+        {
+            dvz_fprintf(stderr, "--process-child requires --selected-order-index\n");
+            return 1;
+        }
+        selected.erase(
+            std::remove_if(
+                selected.begin(), selected.end(), [&options](const TstSelectedCase& item) {
+                    return item.order_index != options.selected_order_index;
+                }),
+            selected.end());
+    }
 
     TstRunSummary summary = {};
     std::vector<TstCase> results;
+    std::deque<TstOwnedResult> process_owned;
     std::map<std::string, TstAggregate> modules;
     std::map<std::string, TstAggregate> groups;
     TstFixtureRunState fixture_state = {};
@@ -2340,6 +2458,26 @@ int tst_suite_run(TstSuite* suite, int argc, char** argv)
     fixture_state.worker_index = 0;
     const bool suppress_output = options.child_json_path != NULL;
     const uint64_t runner_start_ns = _tst_now_ns();
+    auto record_result = [&](const TstCase& result) {
+        if (!suppress_output)
+        {
+            _tst_print_case(&result, &options);
+        }
+        _tst_update_aggregate(&modules[result.module != NULL ? result.module : "default"], &result);
+        _tst_update_aggregate(
+            &groups[_tst_case_id(&result).substr(0, _tst_case_id(&result).rfind('/'))], &result);
+
+        summary.selected_count++;
+        if (result.status == TST_STATUS_PASS)
+            summary.passed_count++;
+        else if (result.status == TST_STATUS_FAIL)
+            summary.failed_count++;
+        else if (result.status == TST_STATUS_SKIP)
+            summary.skipped_count++;
+        summary.summed_case_ns += result.elapsed_ns;
+
+        results.push_back(result);
+    };
 
     for (uint64_t repeat = 0; repeat < options.repeat; ++repeat)
     {
@@ -2347,13 +2485,47 @@ int tst_suite_run(TstSuite* suite, int argc, char** argv)
         {
             TstCase* test = selected_case.test;
             TstCase result = *test;
-            result.repeat_index = repeat;
+            result.repeat_index = options.repeat_index != UINT64_MAX ? options.repeat_index : repeat;
             result.order_index = selected_case.order_index;
             result.shard_index = child_mode ? options.shard_index : 0;
             result.fixture_scope = _tst_fixture_case_scope(suite, &result);
             if (result.timeout_ms == 0)
             {
                 result.timeout_ms = options.default_timeout_ms;
+            }
+
+            if (!child_mode && !options.process_child && result.isolation == TST_ISOLATION_PROCESS)
+            {
+                TstOwnedResult child_result = {};
+                const uint64_t start_ns = _tst_now_ns();
+                int child_res = _tst_run_process_child_case(
+                    argc, argv, selected_case.order_index, result.repeat_index, &child_result);
+                if (child_result.test.name != NULL)
+                {
+                    process_owned.push_back(child_result);
+                    _tst_owned_result_refresh(&process_owned.back());
+                    result = process_owned.back().test;
+                }
+                else
+                {
+                    result.start_ns = start_ns;
+                    result.end_ns = _tst_now_ns();
+                    result.elapsed_ns = result.end_ns - result.start_ns;
+                    result.result = 1;
+                    result.status = TST_STATUS_FAIL;
+                }
+                if (child_res != 0 && result.status == TST_STATUS_PASS)
+                {
+                    result.result = 1;
+                    result.status = TST_STATUS_FAIL;
+                }
+
+                record_result(result);
+                if (options.fail_fast && result.status == TST_STATUS_FAIL)
+                {
+                    break;
+                }
+                continue;
             }
 
             TstContext ctx = {};
@@ -2424,25 +2596,7 @@ int tst_suite_run(TstSuite* suite, int argc, char** argv)
                 suite->log_adapter.uninstall(suite->log_adapter.user_data);
             }
 
-            if (!suppress_output)
-            {
-                _tst_print_case(&result, &options);
-            }
-            _tst_update_aggregate(&modules[result.module != NULL ? result.module : "default"], &result);
-            _tst_update_aggregate(&groups[_tst_case_id(&result).substr(
-                                      0, _tst_case_id(&result).rfind('/'))],
-                                  &result);
-
-            summary.selected_count++;
-            if (result.status == TST_STATUS_PASS)
-                summary.passed_count++;
-            else if (result.status == TST_STATUS_FAIL)
-                summary.failed_count++;
-            else if (result.status == TST_STATUS_SKIP)
-                summary.skipped_count++;
-            summary.summed_case_ns += result.elapsed_ns;
-
-            results.push_back(result);
+            record_result(result);
             _tst_fixture_destroy_case(&fixture_state);
             _tst_context_destroy(&ctx);
 
