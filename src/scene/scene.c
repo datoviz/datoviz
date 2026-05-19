@@ -1238,6 +1238,8 @@ DvzFigure* dvz_figure(DvzScene* scene, uint32_t width, uint32_t height, uint32_t
 void dvz_figure_resize(DvzFigure* figure, uint32_t width, uint32_t height)
 {
     ANN(figure);
+    if (figure->width == width && figure->height == height)
+        return;
     figure->width = width;
     figure->height = height;
     for (uint32_t i = 0; i < figure->panel_count; i++)
@@ -1260,6 +1262,7 @@ void dvz_figure_resize(DvzFigure* figure, uint32_t width, uint32_t height)
             dvz_turntable_viewport(
                 panel->turntable, panel_x, panel_y, panel_width, panel_height);
     }
+    _scene_notify_request_frame(figure);
 }
 
 
@@ -1474,6 +1477,7 @@ bool dvz_panel_set_layout_reserve(DvzPanel* panel, const DvzPanelLayoutReserve* 
         axis->dirty = true;
         axis->version++;
     }
+    _scene_notify_request_frame(panel->figure);
     return true;
 }
 
@@ -1504,7 +1508,10 @@ bool dvz_panel_get_layout_reserve(DvzPanel* panel, DvzPanelLayoutReserve* out)
 bool dvz_panel_set_edl(DvzPanel* panel, const DvzEdlDesc* desc)
 {
     ANN(panel);
-    return _scene_technique_state_set_edl(&panel->techniques, desc);
+    bool ok = _scene_technique_state_set_edl(&panel->techniques, desc);
+    if (ok)
+        _scene_notify_request_frame(panel->figure);
+    return ok;
 }
 
 
@@ -1518,7 +1525,10 @@ bool dvz_panel_set_edl(DvzPanel* panel, const DvzEdlDesc* desc)
 bool dvz_panel_set_msaa(DvzPanel* panel, const DvzMsaaDesc* desc)
 {
     ANN(panel);
-    return _scene_technique_state_set_msaa(&panel->techniques, desc);
+    bool ok = _scene_technique_state_set_msaa(&panel->techniques, desc);
+    if (ok)
+        _scene_notify_request_frame(panel->figure);
+    return ok;
 }
 
 
@@ -1532,7 +1542,10 @@ bool dvz_panel_set_msaa(DvzPanel* panel, const DvzMsaaDesc* desc)
 bool dvz_panel_set_ssao(DvzPanel* panel, const DvzSsaoDesc* desc)
 {
     ANN(panel);
-    return _scene_technique_state_set_ssao(&panel->techniques, desc);
+    bool ok = _scene_technique_state_set_ssao(&panel->techniques, desc);
+    if (ok)
+        _scene_notify_request_frame(panel->figure);
+    return ok;
 }
 
 
@@ -1552,6 +1565,7 @@ int dvz_panel_set_scene_occlusion(DvzPanel* panel, const DvzSceneOcclusionDesc* 
         dvz_memset(
             &panel->scene_occlusion, sizeof(DvzSceneOcclusionDesc), 0,
             sizeof(DvzSceneOcclusionDesc));
+        _scene_notify_request_frame(panel->figure);
         return 0;
     }
 
@@ -1564,6 +1578,7 @@ int dvz_panel_set_scene_occlusion(DvzPanel* panel, const DvzSceneOcclusionDesc* 
     if (panel->scene_occlusion.hidden_alpha > 1.0f)
         panel->scene_occlusion.hidden_alpha = 1.0f;
     panel->scene_occlusion_enabled = true;
+    _scene_notify_request_frame(panel->figure);
     return 0;
 }
 
@@ -1587,6 +1602,7 @@ int dvz_panel_set_volume_occluder(
         dvz_memset(
             &panel->volume_occlusion, sizeof(DvzVolumeOcclusionDesc), 0,
             sizeof(DvzVolumeOcclusionDesc));
+        _scene_notify_request_frame(panel->figure);
         return 0;
     }
     if (volume->type != DVZ_VISUAL_TYPE_VOLUME)
@@ -1614,6 +1630,7 @@ int dvz_panel_set_volume_occluder(
     if (panel->volume_occlusion.occluded_alpha <= 0.0f)
         panel->volume_occlusion.occluded_alpha = 0.20f;
     panel->volume_occlusion_enabled = true;
+    _scene_notify_request_frame(panel->figure);
     return 0;
 }
 
@@ -1671,6 +1688,7 @@ void dvz_panel_set_panzoom(DvzPanel* panel, DvzInputRouter* router, int flags)
     dvz_panzoom_viewport(panel->panzoom, x, y, w, h);
     if (router != NULL)
         dvz_panzoom_connect(panel->panzoom, router);
+    _scene_notify_request_frame(panel->figure);
 }
 
 
@@ -1692,6 +1710,7 @@ void dvz_panel_set_arcball(DvzPanel* panel, DvzInputRouter* router, int flags)
     panel->arcball = dvz_arcball(w, h, flags);
     if (router != NULL)
         dvz_arcball_connect(panel->arcball, router);
+    _scene_notify_request_frame(panel->figure);
 }
 
 
@@ -1728,6 +1747,7 @@ DvzCamera* dvz_panel_set_camera(DvzPanel* panel, const DvzCameraDesc* desc)
         _scene_panel_pixel_size(panel, &w, &h);
         dvz_camera_resize(panel->camera, w, h);
     }
+    _scene_notify_request_frame(panel->figure);
     return panel->camera;
 }
 
@@ -1780,6 +1800,7 @@ DvzFly* dvz_panel_set_fly(DvzPanel* panel, DvzInputRouter* router, const DvzFlyD
     dvz_camera_resize(panel->camera, w, h);
     if (router != NULL)
         dvz_fly_connect(panel->fly, router);
+    _scene_notify_request_frame(panel->figure);
     return panel->fly;
 }
 
@@ -1833,6 +1854,7 @@ DvzTurntable* dvz_panel_set_turntable(
     dvz_camera_resize(panel->camera, w, h);
     if (router != NULL)
         dvz_turntable_connect(panel->turntable, router);
+    _scene_notify_request_frame(panel->figure);
     return panel->turntable;
 }
 
@@ -1935,6 +1957,92 @@ void _scene_notify_request_frame(DvzFigure* figure)
         void* user_data = sub->user_data;
         if (sub->active && callback != NULL)
             callback(figure, user_data);
+    }
+}
+
+
+/**
+ * Notify app hosts for every figure containing an attached visual.
+ *
+ * @param visual visual whose attached figures should be redrawn
+ */
+void _scene_notify_visual_changed(DvzVisual* visual)
+{
+    if (visual == NULL || visual->scene == NULL)
+        return;
+    DvzScene* scene = visual->scene;
+    for (uint32_t fi = 0; fi < scene->figure_count; fi++)
+    {
+        DvzFigure* figure = &scene->figures[fi];
+        bool contains_visual = false;
+        for (uint32_t pi = 0; pi < figure->panel_count && !contains_visual; pi++)
+        {
+            const DvzPanel* panel = &figure->panels[pi];
+            for (uint32_t vi = 0; vi < panel->visual_count; vi++)
+            {
+                if (panel->visuals[vi].visual == visual)
+                {
+                    contains_visual = true;
+                    break;
+                }
+            }
+        }
+        if (contains_visual)
+            _scene_notify_request_frame(figure);
+    }
+}
+
+
+/**
+ * Return whether one visual consumes a scene buffer.
+ *
+ * @param visual visual to inspect
+ * @param buffer scene buffer to find
+ * @return whether the visual references the buffer
+ */
+static bool _scene_visual_uses_buffer(const DvzVisual* visual, const DvzSceneBuffer* buffer)
+{
+    if (visual == NULL || buffer == NULL)
+        return false;
+    if (visual->buffer == buffer)
+        return true;
+    for (uint32_t ai = 0; ai < visual->attr_count; ai++)
+    {
+        if (visual->attrs[ai].buffer == buffer)
+            return true;
+    }
+    return false;
+}
+
+
+/**
+ * Notify app hosts for every figure containing a visual bound to a scene buffer.
+ *
+ * @param buffer scene buffer whose consumers should be redrawn
+ */
+void _scene_notify_buffer_changed(DvzSceneBuffer* buffer)
+{
+    if (buffer == NULL || buffer->scene == NULL)
+        return;
+    DvzScene* scene = buffer->scene;
+    for (uint32_t fi = 0; fi < scene->figure_count; fi++)
+    {
+        DvzFigure* figure = &scene->figures[fi];
+        bool uses_buffer = false;
+        for (uint32_t pi = 0; pi < figure->panel_count && !uses_buffer; pi++)
+        {
+            const DvzPanel* panel = &figure->panels[pi];
+            for (uint32_t vi = 0; vi < panel->visual_count; vi++)
+            {
+                if (_scene_visual_uses_buffer(panel->visuals[vi].visual, buffer))
+                {
+                    uses_buffer = true;
+                    break;
+                }
+            }
+        }
+        if (uses_buffer)
+            _scene_notify_request_frame(figure);
     }
 }
 

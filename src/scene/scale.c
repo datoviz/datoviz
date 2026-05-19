@@ -63,6 +63,7 @@ static void _scene_mark_scale_dirty(DvzScale* scale)
             _scene_visual_texture_mark_clean(visual);
             visual->texture.dirty = true;
             _scene_texture_bump_version(visual);
+            _scene_notify_visual_changed(visual);
         }
     }
 }

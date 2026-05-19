@@ -1393,6 +1393,7 @@ static void _visual_material_mark_dirty(DvzVisual* visual)
     _sphere_params_sync_mode(visual);
     _visual_bump_version(&visual->material.version);
     visual->material_params_dirty = true;
+    _scene_notify_visual_changed(visual);
 }
 
 
@@ -1537,6 +1538,7 @@ int dvz_panel_add_visual(DvzPanel* panel, DvzVisual* visual, const DvzVisualAtta
     slot->controller_mode = desc ? desc->controller_mode : DVZ_CONTROLLER_APPLY;
     slot->insertion_index = panel->visual_count;
     panel->visual_count++;
+    _scene_notify_request_frame(panel->figure);
     return 0;
 }
 
@@ -1855,6 +1857,7 @@ void dvz_visual_set_visible(DvzVisual* visual, bool visible)
 {
     ANN(visual);
     visual->visible = visible;
+    _scene_notify_visual_changed(visual);
 }
 
 
@@ -1873,6 +1876,7 @@ int dvz_visual_set_depth_test(DvzVisual* visual, bool enabled)
         return -1;
     visual->depth_test_enabled = enabled;
     _visual_bump_version(&visual->material.version);
+    _scene_notify_visual_changed(visual);
     return 0;
 }
 
@@ -1912,6 +1916,7 @@ int dvz_visual_set_alpha_mode(DvzVisual* visual, DvzAlphaMode mode)
     visual->alpha_mode = mode;
     visual->material.alpha_mode = mode;
     _visual_bump_version(&visual->material.version);
+    _scene_notify_visual_changed(visual);
     return 0;
 }
 
@@ -1943,6 +1948,7 @@ int dvz_visual_set_volume_occluded(DvzVisual* visual, bool enabled)
     if (!_scene_visual_mutation_allowed(visual->scene, "set volume occlusion"))
         return -1;
     visual->volume_occluded = enabled;
+    _scene_notify_visual_changed(visual);
     return 0;
 }
 
@@ -1960,6 +1966,7 @@ int dvz_visual_set_scene_occluder(DvzVisual* visual, bool enabled)
     if (!_scene_visual_mutation_allowed(visual->scene, "set scene occluder"))
         return -1;
     visual->scene_occluder = enabled;
+    _scene_notify_visual_changed(visual);
     return 0;
 }
 
@@ -1977,6 +1984,7 @@ int dvz_visual_set_scene_occluded(DvzVisual* visual, bool enabled)
     if (!_scene_visual_mutation_allowed(visual->scene, "set scene occluded"))
         return -1;
     visual->scene_occluded = enabled;
+    _scene_notify_visual_changed(visual);
     return 0;
 }
 
@@ -2025,6 +2033,7 @@ int dvz_visual_set_attr_source(
     }
 
     attr->source = source;
+    _scene_notify_visual_changed(visual);
     return 0;
 }
 
@@ -2085,6 +2094,7 @@ int dvz_visual_set_attr_mutability(
     }
 
     attr->mutability = mutability;
+    _scene_notify_visual_changed(visual);
     return 0;
 }
 
@@ -2155,6 +2165,7 @@ bool dvz_visual_set_attr_buffer(
         attr->buffer_byte_offset = 0;
         if (attr->data == NULL)
             attr->item_count = 0;
+        _scene_notify_visual_changed(visual);
         return true;
     }
 
@@ -2211,6 +2222,7 @@ bool dvz_visual_set_attr_buffer(
     attr->dirty_first_item = 0;
     attr->dirty_item_count = 0;
     _visual_bump_version(&attr->version);
+    _scene_notify_visual_changed(visual);
     return true;
 }
 
@@ -2320,6 +2332,7 @@ int dvz_visual_set_data(
     }
     if (visual->type == DVZ_VISUAL_TYPE_PATH && strcmp(attr_name, "line_width") == 0)
         visual->material_params_dirty = true;
+    _scene_notify_visual_changed(visual);
     return 0;
 }
 
@@ -2387,6 +2400,7 @@ int dvz_visual_set_strings(
     visual->text.strings = copy;
     visual->text.string_count = item_count;
     visual->text.strings_version++;
+    _scene_notify_visual_changed(visual);
     return 0;
 }
 
@@ -2622,6 +2636,7 @@ int dvz_visual_set_data_many(
     }
 
     dvz_free(prepared);
+    _scene_notify_visual_changed(visual);
     return 0;
 }
 
@@ -2744,6 +2759,7 @@ int dvz_visual_set_data_range(
     if (visual->type == DVZ_VISUAL_TYPE_PATH && strcmp(attr_name, "line_width") == 0)
         visual->material_params_dirty = true;
     _visual_bump_version(&attr->version);
+    _scene_notify_visual_changed(visual);
     return 0;
 }
 
@@ -2879,6 +2895,7 @@ int dvz_segment_set_caps(DvzVisual* visual, DvzSegmentCap start_cap, DvzSegmentC
     _segment_sync_params(visual);
     _visual_bump_version(&visual->material.version);
     visual->material_params_dirty = true;
+    _scene_notify_visual_changed(visual);
     return 0;
 }
 
@@ -2912,6 +2929,7 @@ int dvz_sphere_mode(DvzVisual* visual, DvzSphereMode mode)
     _sphere_params_sync_mode(visual);
     _visual_bump_version(&visual->material.version);
     visual->material_params_dirty = true;
+    _scene_notify_visual_changed(visual);
     return 0;
 }
 
@@ -3039,6 +3057,7 @@ int dvz_path_set_subpaths(DvzVisual* visual, uint32_t subpath_count, const uint3
     visual->path.subpath_lengths = copy;
     visual->path.subpath_count = subpath_count;
     visual->path.gpu.dirty = true;
+    _scene_notify_visual_changed(visual);
     return 0;
 }
 
@@ -3110,6 +3129,7 @@ int dvz_text_set_renderer(DvzVisual* visual, DvzTextRenderer renderer)
     {
         visual->text.renderer = renderer;
         visual->text.renderer_version++;
+        _scene_notify_visual_changed(visual);
     }
     return 0;
 }
@@ -3229,6 +3249,7 @@ int dvz_volume_set_opacity(DvzVisual* visual, float opacity)
         return -1;
     visual->volume.opacity = opacity;
     _visual_bump_version(&visual->volume.version);
+    _scene_notify_visual_changed(visual);
     return 0;
 }
 
@@ -3258,6 +3279,7 @@ int dvz_volume_set_sampling(DvzVisual* visual, DvzVolumeSamplingMode sampling)
         return -1;
     visual->volume.sampling = sampling;
     _visual_bump_version(&visual->volume.version);
+    _scene_notify_visual_changed(visual);
     return 0;
 }
 
@@ -3287,6 +3309,7 @@ int dvz_volume_set_render_mode(DvzVisual* visual, DvzVolumeRenderMode mode)
         return -1;
     visual->volume.render_mode = mode;
     _visual_bump_version(&visual->volume.version);
+    _scene_notify_visual_changed(visual);
     return 0;
 }
 
@@ -3315,6 +3338,7 @@ int dvz_volume_set_slice_axis(DvzVisual* visual, DvzVolumeAxis axis)
         return -1;
     visual->volume.slice_axis = axis;
     _visual_bump_version(&visual->volume.version);
+    _scene_notify_visual_changed(visual);
     return 0;
 }
 
@@ -3343,6 +3367,7 @@ int dvz_volume_set_slice_position(DvzVisual* visual, double position)
         return -1;
     visual->volume.slice_position = position;
     _visual_bump_version(&visual->volume.version);
+    _scene_notify_visual_changed(visual);
     return 0;
 }
 
@@ -3371,6 +3396,7 @@ int dvz_volume_set_step_count(DvzVisual* visual, uint32_t step_count)
         return -1;
     visual->volume.step_count = step_count;
     _visual_bump_version(&visual->volume.version);
+    _scene_notify_visual_changed(visual);
     return 0;
 }
 
@@ -3414,6 +3440,7 @@ int dvz_volume_set_bounds(
     if (_volume_apply_bounds_geometry(visual) != 0)
         return -1;
     _visual_bump_version(&visual->volume.version);
+    _scene_notify_visual_changed(visual);
     return 0;
 }
 
@@ -3454,6 +3481,7 @@ int dvz_volume_set_axis_mapping(
         visual->volume.axis_flip[i] = axis_flip != NULL ? axis_flip[i] : false;
     }
     _visual_bump_version(&visual->volume.version);
+    _scene_notify_visual_changed(visual);
     return 0;
 }
 
@@ -3484,6 +3512,7 @@ int dvz_volume_set_value_range(DvzVisual* visual, double min, double max)
     visual->volume.value_min = min;
     visual->volume.value_max = max;
     _visual_bump_version(&visual->volume.version);
+    _scene_notify_visual_changed(visual);
     return 0;
 }
 
@@ -3540,6 +3569,7 @@ int dvz_volume_set_alpha_stops(
         visual->volume.alpha_stops[i] = sorted[i];
     visual->volume.alpha_stop_count = count;
     _visual_bump_version(&visual->volume.version);
+    _scene_notify_visual_changed(visual);
     return 0;
 }
 
@@ -3582,6 +3612,7 @@ int dvz_volume_set_clipping_box(
     }
     visual->volume.clipping_enabled = true;
     _visual_bump_version(&visual->volume.version);
+    _scene_notify_visual_changed(visual);
     return 0;
 }
 
@@ -3632,6 +3663,7 @@ int dvz_volume_set_clipping_plane(
     visual->volume.clip_plane_keep_positive = keep_positive;
     visual->volume.clip_plane_enabled = true;
     _visual_bump_version(&visual->volume.version);
+    _scene_notify_visual_changed(visual);
     return 0;
 }
 
@@ -3661,6 +3693,7 @@ int dvz_volume_clear_clipping_plane(DvzVisual* visual)
     visual->volume.clip_plane_normal[1] = 0.0;
     visual->volume.clip_plane_normal[2] = 0.0;
     _visual_bump_version(&visual->volume.version);
+    _scene_notify_visual_changed(visual);
     return 0;
 }
 
@@ -3698,6 +3731,7 @@ int dvz_volume_clear_clipping(DvzVisual* visual)
     visual->volume.clip_plane_normal[1] = 0.0;
     visual->volume.clip_plane_normal[2] = 0.0;
     _visual_bump_version(&visual->volume.version);
+    _scene_notify_visual_changed(visual);
     return 0;
 }
 
@@ -3759,6 +3793,7 @@ int dvz_visual_set_scale(DvzVisual* visual, const char* slot_name, DvzScale* sca
         visual->texture.dirty = true;
         _visual_bump_version(&visual->texture.version);
     }
+    _scene_notify_visual_changed(visual);
     return 0;
 }
 

@@ -1898,6 +1898,7 @@ DvzAnnotation* dvz_annotation(DvzPanel* panel, const DvzAnnotationDesc* desc)
     annotation->version = 1;
     if (desc->text != NULL)
         dvz_strlcpy(annotation->text, desc->text, sizeof(annotation->text));
+    _scene_notify_request_frame(panel->figure);
     return annotation;
 }
 
@@ -1935,6 +1936,7 @@ void dvz_annotation_destroy(DvzAnnotation* annotation)
         return;
     if (annotation->visual != NULL)
         dvz_visual_set_visible(annotation->visual, false);
+    _scene_notify_request_frame(annotation->panel != NULL ? annotation->panel->figure : NULL);
     annotation->scene = NULL;
     annotation->panel = NULL;
     annotation->has_format = false;
@@ -1956,4 +1958,5 @@ void dvz_annotation_set_format(DvzAnnotation* annotation, const DvzFormatDesc* f
     annotation->dirty_flags |=
         DVZ_TEXT_DIRTY_STRING | DVZ_TEXT_DIRTY_LAYOUT | DVZ_TEXT_DIRTY_RENDER;
     annotation->version++;
+    _scene_notify_request_frame(annotation->panel != NULL ? annotation->panel->figure : NULL);
 }

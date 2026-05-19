@@ -1016,6 +1016,7 @@ bool dvz_visual_set_field(DvzVisual* visual, const char* slot_name, DvzSampledFi
     {
         _visual_binding_clear(visual, DVZ_VISUAL_BINDING_FIELD);
     }
+    _scene_notify_visual_changed(visual);
     return true;
 }
 
@@ -1138,6 +1139,7 @@ bool dvz_scene_buffer_set_data(DvzSceneBuffer* buffer, const void* data, uint64_
     dvz_memcpy(buffer->data, byte_size, data, byte_size);
     buffer->desc.byte_size = byte_size;
     buffer->dirty = true;
+    _scene_notify_buffer_changed(buffer);
     return true;
 }
 
@@ -1203,6 +1205,7 @@ bool dvz_visual_set_buffer(DvzVisual* visual, const char* slot_name, DvzSceneBuf
         _visual_binding_assign(visual, DVZ_VISUAL_BINDING_BUFFER, slot_name, buffer, false);
     else
         _visual_binding_clear(visual, DVZ_VISUAL_BINDING_BUFFER);
+    _scene_notify_visual_changed(visual);
     return true;
 }
 
@@ -1469,6 +1472,7 @@ static void _scene_mark_field_region_dirty(DvzSampledField* field, DvzFieldRegio
             }
             else
                 _scene_visual_texture_mark_region_dirty(visual, &field->desc, region);
+            _scene_notify_visual_changed(visual);
         }
     }
 }

@@ -731,6 +731,7 @@ int dvz_panel_set_domain(DvzPanel* panel, DvzDim dim, double min, double max)
     axis->tick_cache_valid = false;
     axis->dirty = true;
     axis->version++;
+    _scene_notify_request_frame(panel->figure);
     return 0;
 }
 
@@ -855,6 +856,7 @@ DvzAxis* dvz_panel_axis(DvzPanel* panel, DvzDim dim)
     }
     axis->enabled = true;
     axis->dirty = true;
+    _scene_notify_request_frame(panel->figure);
     return axis;
 }
 
@@ -876,6 +878,7 @@ bool dvz_axis_set_visible(DvzAxis* axis, bool visible)
     axis->version++;
     if (axis->visual != NULL && !visible)
         axis->visual->visible = false;
+    _scene_notify_request_frame(axis->panel != NULL ? axis->panel->figure : NULL);
     return true;
 }
 
@@ -895,6 +898,7 @@ bool dvz_axis_set_grid(DvzAxis* axis, bool visible)
     axis->style.show_grid = visible;
     axis->dirty = true;
     axis->version++;
+    _scene_notify_request_frame(axis->panel != NULL ? axis->panel->figure : NULL);
     return true;
 }
 
@@ -913,6 +917,7 @@ bool dvz_axis_set_label(DvzAxis* axis, const char* label)
         return false;
     dvz_strlcpy(axis->label, label != NULL ? label : "", sizeof(axis->label));
     axis->version++;
+    _scene_notify_request_frame(axis->panel != NULL ? axis->panel->figure : NULL);
     return true;
 }
 
@@ -934,6 +939,7 @@ bool dvz_axis_set_tick_policy(DvzAxis* axis, const DvzAxisTickPolicy* policy)
     axis->tick_cache_valid = false;
     axis->dirty = true;
     axis->version++;
+    _scene_notify_request_frame(axis->panel != NULL ? axis->panel->figure : NULL);
     return true;
 }
 
@@ -954,6 +960,7 @@ bool dvz_axis_set_style(DvzAxis* axis, const DvzAxisStyle* style)
     axis->tick_cache_valid = false;
     axis->dirty = true;
     axis->version++;
+    _scene_notify_request_frame(axis->panel != NULL ? axis->panel->figure : NULL);
     return true;
 }
 
@@ -984,6 +991,7 @@ bool dvz_axis_set_plot_margins(
     axis->tick_cache_valid = false;
     axis->dirty = true;
     axis->version++;
+    _scene_notify_request_frame(axis->panel != NULL ? axis->panel->figure : NULL);
     return true;
 }
 
