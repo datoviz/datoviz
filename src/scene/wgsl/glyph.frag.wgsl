@@ -23,7 +23,11 @@ fn main(input: FragmentIn) -> @location(0) vec4f {
     let texel = textureSample(tex, samp, input.uv);
     var opacity = texel.a;
     if (max(max(texel.r, texel.g), texel.b) > 1.0 / 255.0) {
-        let sd = median3(texel.r, texel.g, texel.b);
+        var sd = median3(texel.r, texel.g, texel.b);
+        let trueSd = texel.a;
+        if ((sd - 0.5) * (trueSd - 0.5) < 0.0) {
+            sd = trueSd;
+        }
         let screenPxDistance = screenPixelRange(input.uv) * (sd - 0.5);
         opacity = clamp(screenPxDistance + 0.5, 0.0, 1.0);
     }

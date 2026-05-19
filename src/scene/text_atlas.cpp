@@ -181,13 +181,13 @@ static bool _text_msdf_build_atlas(DvzFont* font, DvzTextAtlas** out_atlas)
     }
 
     msdf_atlas::ImmediateAtlasGenerator<
-        float, 3, &msdf_atlas::msdfGenerator, msdf_atlas::BitmapAtlasStorage<uint8_t, 3>>
+        float, 4, &msdf_atlas::mtsdfGenerator, msdf_atlas::BitmapAtlasStorage<uint8_t, 4>>
         generator(width, height);
     msdf_atlas::GeneratorAttributes attributes;
     generator.setAttributes(attributes);
     generator.setThreadCount(8);
     generator.generate(glyphs.data(), glyphs.size());
-    msdfgen::BitmapConstRef<uint8_t, 3> bitmap = generator.atlasStorage();
+    msdfgen::BitmapConstRef<uint8_t, 4> bitmap = generator.atlasStorage();
 
     uint64_t pixel_count = 0;
     uint64_t byte_size = 0;
@@ -218,12 +218,12 @@ static bool _text_msdf_build_atlas(DvzFont* font, DvzTextAtlas** out_atlas)
     {
         for (uint32_t x = 0; x < atlas_width; x++)
         {
-            uint64_t src = ((uint64_t)y * atlas_width + x) * 3u;
+            uint64_t src = ((uint64_t)y * atlas_width + x) * 4u;
             uint64_t dst = ((uint64_t)(atlas_height - 1u - y) * atlas_width + x) * 4u;
             rgba[dst + 0] = bitmap.pixels[src + 0];
             rgba[dst + 1] = bitmap.pixels[src + 1];
             rgba[dst + 2] = bitmap.pixels[src + 2];
-            rgba[dst + 3] = 255;
+            rgba[dst + 3] = bitmap.pixels[src + 3];
         }
     }
 
@@ -262,27 +262,49 @@ static bool _text_msdf_build_atlas(DvzFont* font, DvzTextAtlas** out_atlas)
         double r = 0.0;
         double t = 0.0;
         src_glyph.getQuadPlaneBounds(l, b, r, t);
-        glyph->xoff = (float)(l * scale);
-        glyph->yoff = (float)(-t * scale);
-        glyph->width = (float)((r - l) * scale);
-        glyph->height = (float)((t - b) * scale);
-        glyph->plane_bounds[0] = glyph->xoff;
-        glyph->plane_bounds[1] = glyph->yoff;
-        glyph->plane_bounds[2] = glyph->xoff + glyph->width;
-        glyph->plane_bounds[3] = glyph->yoff + glyph->height;
 
         int x = 0;
         int y = 0;
         int w = 0;
         int h = 0;
         src_glyph.getBoxRect(x, y, w, h);
+        if (w <= 0 || h <= 0)
+            continue;
+
+        const double inset_x = 0.5;
+        const double inset_y = 0.5;
+        double plane_l = l;
+        double plane_b = b;
+        double plane_r = r;
+        double plane_t = t;
+        if (w > 2 && h > 2)
+        {
+            double fx = inset_x / (double)w;
+            double fy = inset_y / (double)h;
+            double plane_w = r - l;
+            double plane_h = t - b;
+            plane_l += fx * plane_w;
+            plane_r -= fx * plane_w;
+            plane_b += fy * plane_h;
+            plane_t -= fy * plane_h;
+        }
+
+        glyph->xoff = (float)(plane_l * scale);
+        glyph->yoff = (float)(-plane_t * scale);
+        glyph->width = (float)((plane_r - plane_l) * scale);
+        glyph->height = (float)((plane_t - plane_b) * scale);
+        glyph->plane_bounds[0] = glyph->xoff;
+        glyph->plane_bounds[1] = glyph->yoff;
+        glyph->plane_bounds[2] = glyph->xoff + glyph->width;
+        glyph->plane_bounds[3] = glyph->yoff + glyph->height;
+
         uint32_t top_y = atlas_height - (uint32_t)y - (uint32_t)h;
         glyph->atlas_bounds[0] = (float)x;
         glyph->atlas_bounds[1] = (float)top_y;
         glyph->atlas_bounds[2] = (float)(x + w);
         glyph->atlas_bounds[3] = (float)(top_y + (uint32_t)h);
-        float pad_x = w > 3 ? 1.25f : 0.0f;
-        float pad_y = h > 4 ? 1.5f : 0.0f;
+        float pad_x = w > 2 ? (float)inset_x : 0.0f;
+        float pad_y = h > 2 ? (float)inset_y : 0.0f;
         glyph->uv[0] = ((float)x + pad_x) / (float)atlas_width;
         glyph->uv[1] = ((float)top_y + pad_y) / (float)atlas_height;
         glyph->uv[2] = ((float)(x + w) - pad_x) / (float)atlas_width;

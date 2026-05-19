@@ -2340,6 +2340,7 @@ int test_app_offscreen_sdf_text_has_nonblank_pixels(TstContext* suite, const Tst
     uint32_t green_count = 0;
     uint32_t green_in_bounds = 0;
     uint32_t isolated_green = 0;
+    uint32_t sparse_green = 0;
     uint32_t bounds[4] = {0};
     bool has_bounds =
         text->text.glyph_visual != NULL &&
@@ -2364,7 +2365,8 @@ int test_app_offscreen_sdf_text_has_nonblank_pixels(TstContext* suite, const Tst
                 if (x == bounds[0] || y == bounds[1] || x + 1u >= bounds[2] || y + 1u >= bounds[3])
                     continue;
                 bool connected = false;
-                for (int32_t dy = -1; dy <= 1 && !connected; dy++)
+                uint32_t neighbor_count = 0;
+                for (int32_t dy = -1; dy <= 1; dy++)
                 {
                     for (int32_t dx = -1; dx <= 1; dx++)
                     {
@@ -2373,11 +2375,17 @@ int test_app_offscreen_sdf_text_has_nonblank_pixels(TstContext* suite, const Tst
                         const uint8_t* neighbor = _pixel_at(
                             rgba, width, height, (uint32_t)((int32_t)x + dx),
                             (uint32_t)((int32_t)y + dy));
-                        connected = connected || _app_text_green_pixel(neighbor);
+                        if (_app_text_green_pixel(neighbor))
+                        {
+                            connected = true;
+                            neighbor_count++;
+                        }
                     }
                 }
                 if (!connected)
                     isolated_green++;
+                if (neighbor_count <= 2u)
+                    sparse_green++;
             }
         }
         uint32_t bounds_pixels = (bounds[2] - bounds[0]) * (bounds[3] - bounds[1]);
@@ -2385,6 +2393,7 @@ int test_app_offscreen_sdf_text_has_nonblank_pixels(TstContext* suite, const Tst
         AT(green_in_bounds * 10u < bounds_pixels * 7u);
         AT(green_in_bounds > 32u);
         AT(isolated_green * 10u < green_in_bounds);
+        AT(sparse_green * 20u < green_in_bounds);
     }
 
     dvz_free(rgba);

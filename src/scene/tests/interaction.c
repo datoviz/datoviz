@@ -447,6 +447,20 @@ int test_scene_text_sdf_visual_realization(TstContext* suite, const TstCase* ite
         AT(y0 > atlas_glyph->atlas_bounds[1]);
         AT(x1 < atlas_glyph->atlas_bounds[2]);
         AT(y1 < atlas_glyph->atlas_bounds[3]);
+        const uint8_t* atlas_rgba = (const uint8_t*)font_atlas->field->data;
+        ANN(atlas_rgba);
+        uint8_t min_alpha = 255;
+        uint8_t max_alpha = 0;
+        for (uint64_t px = 0; px < (uint64_t)font_atlas->width * font_atlas->height; px++)
+        {
+            uint8_t alpha = atlas_rgba[4 * px + 3];
+            if (alpha < min_alpha)
+                min_alpha = alpha;
+            if (alpha > max_alpha)
+                max_alpha = alpha;
+        }
+        AT(min_alpha < 250);
+        AT(max_alpha > 5);
     }
 #endif
     AT(text->text.span_count == 1);
