@@ -165,6 +165,7 @@ typedef struct
 typedef struct
 {
     DvzGpuCtx* gpu_ctx;
+    DvzDrp2Runtime* runtime;
     DvzWindowHost* window_host;
     bool available;
     const char* skip_reason;
@@ -251,6 +252,15 @@ static void* _app_gpu_fixture_create(TstSuite* suite, uint32_t worker_index)
         return fixture;
     }
 
+    DvzDrp2RuntimeConfig runtime_cfg = dvz_drp2_runtime_vklite_config(
+        dvz_gpu_ctx_device(fixture->gpu_ctx), dvz_gpu_ctx_alloc(fixture->gpu_ctx));
+    fixture->runtime = dvz_drp2_runtime_vklite(&runtime_cfg);
+    if (fixture->runtime == NULL)
+    {
+        fixture->skip_reason = "DRP2 runtime creation failed";
+        return fixture;
+    }
+
     fixture->available = true;
     return fixture;
 }
@@ -267,6 +277,11 @@ static void _app_gpu_fixture_destroy(void* fixture_ptr)
     DvzTestGpuFixture* fixture = (DvzTestGpuFixture*)fixture_ptr;
     if (fixture == NULL)
         return;
+    if (fixture->runtime != NULL)
+    {
+        dvz_drp2_runtime_destroy(fixture->runtime);
+        fixture->runtime = NULL;
+    }
     if (fixture->gpu_ctx != NULL)
     {
         /* Other app paths may have loaded Volk against a later transient instance. */
@@ -310,7 +325,9 @@ static DvzApp* _app_test_create(TstContext* suite, DvzScene* scene)
         return NULL;
     }
 
-    DvzAppResources resources = {.gpu_ctx = fixture->gpu_ctx, .window_host = fixture->window_host};
+    dvz_drp2_runtime_reset(fixture->runtime);
+    DvzAppResources resources = {
+        .gpu_ctx = fixture->gpu_ctx, .runtime = fixture->runtime, .window_host = fixture->window_host};
     DvzAppConfig config = _app_test_resource_config();
     DvzApp* app = dvz_app_with_resources(scene, &config, &resources);
     if (app == NULL)
