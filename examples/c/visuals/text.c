@@ -122,7 +122,18 @@ static DvzSceneAnchor selected_anchor(int index)
  */
 static DvzTextRenderer selected_renderer(int index)
 {
-    return index == 1 ? DVZ_TEXT_RENDERER_MSDF_ATLAS : DVZ_TEXT_RENDERER_SMALL_BITMAP_ATLAS;
+    switch (index)
+    {
+    case 1:
+        return DVZ_TEXT_RENDERER_SMALL_BITMAP_ATLAS;
+    case 2:
+        return DVZ_TEXT_RENDERER_BITMAP_ATLAS;
+    case 3:
+        return DVZ_TEXT_RENDERER_MSDF_ATLAS;
+    case 0:
+    default:
+        return DVZ_TEXT_RENDERER_AUTO;
+    }
 }
 
 
@@ -506,7 +517,7 @@ static void reset_text_state(TextLabState* state)
     state->tick_count_value = 12.0f;
     state->mode = TEXT_LAB_MODE_SAMPLE;
     state->anchor_index = 4;
-    state->renderer_index = 1;
+    state->renderer_index = 0;
     state->animate = false;
 }
 
@@ -546,12 +557,14 @@ static void gui_callback(DvzGui* gui, DvzAppWindow* win, void* user_data)
             "bottom right",
         };
         static const char* const renderer_items[] = {
-            "bitmap",
-            "SDF",
+            "auto",
+            "6x8 bitmap",
+            "FreeType bitmap",
+            "MSDF",
         };
 
         changed |= dvz_gui_combo(gui, "Mode", &state->mode, mode_items, 4);
-        changed |= dvz_gui_combo(gui, "Renderer", &state->renderer_index, renderer_items, 2);
+        changed |= dvz_gui_combo(gui, "Renderer", &state->renderer_index, renderer_items, 4);
         if (state->mode == TEXT_LAB_MODE_SAMPLE || state->mode == TEXT_LAB_MODE_UTF8)
         {
             changed |= dvz_gui_slider_float_format(
