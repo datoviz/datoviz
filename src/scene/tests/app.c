@@ -4770,7 +4770,7 @@ int test_app_offscreen_volume_slice_renders_field(TstContext* suite, const TstCa
     AT(dvz_panel_add_visual(panel, volume, NULL) == 0);
     dvz_panel_set_background_color(panel, 0.0f, 0.0f, 0.0f, 1.0f);
 
-    DvzApp* app = dvz_app(scene);
+    DvzApp* app = _app_test_create(suite, scene);
     if (app == NULL)
     {
         log_warn("test_app_offscreen_volume_slice_renders_field skipped: GPU context failed");
@@ -4858,7 +4858,7 @@ int test_app_offscreen_volume_mip_renders_bright_slice(TstContext* suite, const 
     AT(dvz_panel_add_visual(panel, volume, NULL) == 0);
     dvz_panel_set_background_color(panel, 0.0f, 0.0f, 0.0f, 1.0f);
 
-    DvzApp* app = dvz_app(scene);
+    DvzApp* app = _app_test_create(suite, scene);
     if (app == NULL)
     {
         log_warn("test_app_offscreen_volume_mip_renders_bright_slice skipped: GPU context failed");
@@ -4941,7 +4941,7 @@ int test_app_offscreen_volume_composite_renders_field(TstContext* suite, const T
     AT(dvz_panel_add_visual(panel, volume, NULL) == 0);
     dvz_panel_set_background_color(panel, 0.0f, 0.0f, 0.0f, 1.0f);
 
-    DvzApp* app = dvz_app(scene);
+    DvzApp* app = _app_test_create(suite, scene);
     if (app == NULL)
     {
         log_warn("test_app_offscreen_volume_composite_renders_field skipped: GPU context failed");
@@ -5818,6 +5818,9 @@ int test_scene_app(TstSuite* suite)
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_point_depth_cue_darkens_far);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_lit_primitive_depth_orders_overlap);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_lit_primitive_depth_cue_darkens_far);
+    TST_SCENE_APP_SHARED_CASE(test_app_offscreen_volume_slice_renders_field);
+    TST_SCENE_APP_SHARED_CASE(test_app_offscreen_volume_mip_renders_bright_slice);
+    TST_SCENE_APP_SHARED_CASE(test_app_offscreen_volume_composite_renders_field);
 #endif
 
     return 0;
