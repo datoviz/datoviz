@@ -250,6 +250,7 @@ struct TstCase
     uint64_t start_ns;
     uint64_t end_ns;
     uint64_t elapsed_ns;
+    uint64_t fixture_setup_ns;
     const char* skip_reason;
 };
 
@@ -283,6 +284,7 @@ struct TstContext
     const char* skip_reason;
     const char* failure_message;
     uint32_t worker_index;
+    uint64_t fixture_setup_ns;
     void* fixture_state;
 };
 

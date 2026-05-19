@@ -1340,6 +1340,12 @@ static void _tst_print_case(const TstCase* result, const TstOptions* options)
         {
             dvz_fprintf(stdout, "  fixture    %s (%s)\n", result->fixture,
                         _tst_fixture_scope_name(result->fixture_scope));
+            if (result->fixture_setup_ns > 0)
+            {
+                dvz_fprintf(stdout, "  fixture setup ");
+                _tst_print_duration(stdout, options, result->fixture_setup_ns, 0);
+                dvz_fprintf(stdout, "\n");
+            }
         }
         dvz_fprintf(stdout, "  elapsed    ");
         _tst_print_duration(stdout, options, result->elapsed_ns, 0);
@@ -1603,7 +1609,8 @@ static int _tst_write_json(
         out << "      \"timeout_ms\": " << r.timeout_ms << ",\n";
         out << "      \"start_ns\": " << r.start_ns << ",\n";
         out << "      \"end_ns\": " << r.end_ns << ",\n";
-        out << "      \"elapsed_ns\": " << r.elapsed_ns << "\n";
+        out << "      \"elapsed_ns\": " << r.elapsed_ns << ",\n";
+        out << "      \"fixture_setup_ns\": " << r.fixture_setup_ns << "\n";
         out << "    }" << (i + 1 < results.size() ? "," : "") << "\n";
     }
     out << "  ]\n";
@@ -1771,6 +1778,8 @@ static int _tst_read_json_results(const char* path, std::vector<TstOwnedResult>*
             current.test.end_ns = _tst_json_line_u64(line);
         else if (line.find("\"elapsed_ns\"") != std::string::npos)
             current.test.elapsed_ns = _tst_json_line_u64(line);
+        else if (line.find("\"fixture_setup_ns\"") != std::string::npos)
+            current.test.fixture_setup_ns = _tst_json_line_u64(line);
     }
     return 0;
 }
@@ -2401,6 +2410,7 @@ int tst_suite_run(TstSuite* suite, int argc, char** argv)
             res = _tst_item_finalize(&ctx, res);
             result.end_ns = _tst_now_ns();
             result.elapsed_ns = result.end_ns - result.start_ns;
+            result.fixture_setup_ns = ctx.fixture_setup_ns;
             if (result.timeout_ms > 0 && result.elapsed_ns > result.timeout_ms * 1000000ull)
             {
                 res = 1;
@@ -2581,7 +2591,9 @@ void* tst_context_fixture(TstContext* ctx, const char* name)
                 return item.second;
             }
         }
+        const uint64_t start_ns = _tst_now_ns();
         void* instance = def.create != NULL ? def.create(state->suite, state->worker_index) : NULL;
+        ctx->fixture_setup_ns += _tst_now_ns() - start_ns;
         state->case_instances.push_back(std::make_pair(idx, instance));
         return instance;
     }
@@ -2591,8 +2603,10 @@ void* tst_context_fixture(TstContext* ctx, const char* name)
     {
         if (!def.worker_created)
         {
+            const uint64_t start_ns = _tst_now_ns();
             def.worker_instance =
                 def.create != NULL ? def.create(state->suite, state->worker_index) : NULL;
+            ctx->fixture_setup_ns += _tst_now_ns() - start_ns;
             def.worker_created = true;
         }
         return def.worker_instance;
