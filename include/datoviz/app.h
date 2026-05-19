@@ -75,8 +75,13 @@ struct DvzAppConfig
 
 struct DvzAppResources
 {
+    /* Optional borrowed GPU context.  The app creates and owns one when NULL. */
     DvzGpuCtx* gpu_ctx;
+
+    /* Optional borrowed DRP2 runtime compatible with gpu_ctx.  The app creates one when NULL. */
     DvzDrp2Runtime* runtime;
+
+    /* Optional borrowed window host.  The app creates and owns one when NULL. */
     DvzWindowHost* window_host;
 };
 
