@@ -87,15 +87,17 @@ and shared-fixture follow-ups live in
    history.
 4. [../done/SCENE_PICK_PROBE_EXECUTION.md](../done/SCENE_PICK_PROBE_EXECUTION.md): shipped
    request-resolution behavior and caveats.
-5. [../done/DRP2_DESCRIPTOR_REFRESH_PLAN.md](../done/DRP2_DESCRIPTOR_REFRESH_PLAN.md): completed
+5. [../done/SCENE_PICK_PROBE_PAYLOAD_REFACTOR.md](../done/SCENE_PICK_PROBE_PAYLOAD_REFACTOR.md):
+   widened pick/probe result payloads and explicit status reporting.
+6. [../done/DRP2_DESCRIPTOR_REFRESH_PLAN.md](../done/DRP2_DESCRIPTOR_REFRESH_PLAN.md): completed
    descriptor refresh invariant.
-6. [../done/WBOIT_MESH_INTERACTIVE_PLAN.md](../done/WBOIT_MESH_INTERACTIVE_PLAN.md): WBOIT
+7. [../done/WBOIT_MESH_INTERACTIVE_PLAN.md](../done/WBOIT_MESH_INTERACTIVE_PLAN.md): WBOIT
    implementation record and follow-up checklist.
-7. [../../spec/scene/examples/EXAMPLE_PRIORITIZATION.md](../../spec/scene/examples/EXAMPLE_PRIORITIZATION.md): ranked
+8. [../../spec/scene/examples/EXAMPLE_PRIORITIZATION.md](../../spec/scene/examples/EXAMPLE_PRIORITIZATION.md): ranked
    scene/example priorities.
-8. [../../docs/tasks/2026-05-13-next-implementation-priorities/NEXT_STEPS.md](../../docs/tasks/2026-05-13-next-implementation-priorities/NEXT_STEPS.md):
+9. [../../docs/tasks/2026-05-13-next-implementation-priorities/NEXT_STEPS.md](../../docs/tasks/2026-05-13-next-implementation-priorities/NEXT_STEPS.md):
    detailed implementation-lane notes from the May 13 planning pass.
-9. [../../docs/architecture/manual_scene_smoke.md](../../docs/architecture/manual_scene_smoke.md):
+10. [../../docs/architecture/manual_scene_smoke.md](../../docs/architecture/manual_scene_smoke.md):
    manual interactive scene smoke coverage.
 
 
