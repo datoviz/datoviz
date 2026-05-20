@@ -1,452 +1,172 @@
 # Earthquake Aftershock Explorer
 
-> **Agent Pickup**
-> - **Category:** `geo`
-> - **Implementation target:** Geographic or globe/terrain example with a minimal deterministic mode and optional real assets.
-> - **Data policy:** Prefer public datasets with cache metadata; include a synthetic fallback for offline development.
-> - **Preprocessing:** Required for real datasets; specify download, projection, tiling, simplification, and cache outputs.
-> - **Validation:** Smoke command, camera/interaction checklist, and visual checks for projection or coordinate correctness.
+> **Example status:** informative pressure test
+> **Target:** C showcase plus preparation script
+> **Data:** Ridgecrest 2019 prepared cache with synthetic fallback
+> **Validation:** smoke, coordinate/depth/replay/selection checklist
+
+See [../SHARED_POLICIES.md](../SHARED_POLICIES.md) for shared worked-example policy.
 
 
 ## Summary
 
-Build a geophysical event-catalog explorer for an earthquake aftershock sequence, with linked map,
-depth, and time views as later stages. The preferred data is a prepared Ridgecrest 2019 aftershock
-cache derived offline from USGS ComCat, with a deterministic synthetic strike-slip sequence as the
-fallback and no runtime network dependency. The first practical slice is a local-kilometer 3D crust
-panel with magnitude-scaled points, elapsed-time color, depth-positive-down coordinates, and an
-optional fault-trace path. Validate with a smoke command, camera/interaction checklist, and manual
-visual checks for coordinate projection, depth orientation, event encodings, and selection
-highlighting once picking is added.
+Render an earthquake aftershock sequence as a local 3D crust event catalog with magnitude-scaled
+points, depth/time color modes, replay, fault paths, and linked panels as later stages. The default
+data should be a prepared Ridgecrest 2019 cache derived offline from USGS ComCat; runtime should not
+depend on live network access.
 
 
-## Example Name
+## User-Visible Result
 
-`EARTHQUAKE_AFTERSHOCK_EXPLORER`
-
-
-## Purpose
-
-Specify a Datoviz v0.4 showcase example for interactive geophysical event-catalog visualization.
-The example renders a real or simulated earthquake aftershock sequence as a linked map, depth, and
-time scene.
-
-This should not be a generic map example. The scientific focus is the structure of an aftershock
-sequence:
-
-- hypocenter depth below the surface,
-- magnitude-dependent event scale,
-- elapsed time after the mainshock,
-- spatial clustering along faults,
-- optional cross-section views through the crust,
-- linked event selection across map and time panels.
+- A local crust panel shows aftershocks below a `z = 0` surface plane.
+- Point size encodes magnitude; color encodes depth, elapsed time, magnitude, or distance.
+- Replay shows cumulative growth or a sliding time window.
+- Optional fault traces, selected-event projection line, and linked time/depth panels provide
+  geophysical context.
+- Clicking an event reports catalog metadata and highlights the event in all visible panels.
 
 
-## Why This Example Exists
+## Feature Pressure Points
 
-This example fills a gap in the current showcase set: sparse scientific event data with geospatial
-coordinates, depth, and time.
-
-It is distinct from the global wind examples because it uses catalog events rather than gridded
-fields. It is distinct from particle or astronomy examples because the coordinates, encodings, and
-interactions are geophysical: event hypocenters, fault traces, magnitude-time decay, and crustal
-cross-sections.
-
-The example should pressure:
-
-1. 3D point rendering with semantic size and color encodings,
-2. local map/projection transforms,
-3. linked 2D and 3D panels,
-4. animated time replay and sliding-window filtering,
-5. event picking and cross-panel highlighting,
-6. colorbars, annotations, and selected-event readouts,
-7. path overlays for fault traces and cross-section lines.
+- 3D point rendering with semantic size/color encodings.
+- Local lon/lat/depth projection into stable kilometer coordinates.
+- Time replay through visibility/opacity/filter updates.
+- Linked 2D/3D panels sharing selection and replay state.
+- Picking in a semantically meaningful sparse point cloud.
+- Path, point, surface/image, colorbar, annotation, and camera features in one workflow.
 
 
-## Recommended Default Dataset
+## Required Data And Resources
 
-Use a prepared Ridgecrest, California 2019 aftershock sequence as the default.
+Default sequence: Ridgecrest, California 2019 aftershocks. It is compact, scientifically
+recognizable, fault-aligned, depth-rich, and cacheable. Optional later sequences include 2011 Tohoku,
+a smaller teaching dataset, or the synthetic fallback.
 
-Rationale:
-
-- the sequence is scientifically recognizable,
-- the spatial extent is compact enough for local kilometer coordinates,
-- the aftershock cloud has strong fault-aligned structure,
-- depth variation is meaningful in 3D,
-- the dataset can be cached as a small prepared file.
-
-Other optional sequences:
-
-- 2011 Tohoku, Japan, for a larger subduction-zone sequence,
-- a smaller local teaching dataset,
-- a deterministic synthetic strike-slip sequence fallback.
-
-Runtime should not depend on live network availability. A preparation script may query USGS ComCat
-once and export a compact Datoviz-ready cache.
-
-
-## Visual Target
-
-The main 3D view should look like a local block of crust rather than a globe.
-
-Coordinates:
-
-```text
-x = east/west kilometers relative to the mainshock or sequence center
-y = north/south kilometers relative to the mainshock or sequence center
-z = depth kilometers, positive downward
-```
-
-Default composition:
-
-```text
-surface plane, z = 0
-+-----------------------------------+
-| subtle terrain/map tint            |
-| fault traces as dark/red paths     |
-| mainshock epicenter marker         |
-+-----------------------------------+
-        .   .  .       aftershocks below surface
-          . . . .
-             . . .     color = depth or elapsed time
-                . .
-                  .
-                    depth axis downward
-```
-
-The camera should start in an oblique arcball view so both the surface epicenter pattern and the
-subsurface hypocenter cloud are visible.
-
-
-## Scene Layout
-
-Recommended window layout:
-
-```text
-+------------------------------------------------------------------+
-| 3D local crust panel                                              |
-| surface plane, fault traces, mainshock, subsurface aftershocks     |
-+------------------------------------------------------------------+
-| magnitude vs elapsed time panel                                   |
-+------------------------------------------------------------------+
-| depth vs elapsed time or cumulative count panel                   |
-+------------------------------------------------------------------+
-```
-
-Minimum viable version:
-
-1. one 3D panel with arcball interaction,
-2. aftershock points below a surface plane,
-3. point size by magnitude,
-4. point color by depth,
-5. animated cumulative replay by elapsed time,
-6. click or hover readout for one event.
-
-Preferred fuller version:
-
-1. 3D crust panel,
-2. linked magnitude-time scatter panel,
-3. linked depth-time or cumulative-count panel,
-4. selectable color mode: depth, elapsed time, magnitude,
-5. fault-trace paths on the surface,
-6. selected event highlighted in all panels,
-7. optional cross-section mode.
-
-
-## Data Strategy
-
-### Stage 1: Prepared Cache
-
-The first implementation should load a compact prepared cache. The cache may be generated by a
-Python preparation script, but the interactive example should not need to contact USGS at runtime.
-
-Suggested cache layout:
+Suggested cache:
 
 ```text
 ~/.cache/datoviz/earthquakes/ridgecrest_2019/
   metadata.json
-  events_f32.bin          # x_km, y_km, depth_km, magnitude, elapsed_days
-  lonlat_f64.bin          # optional original longitude, latitude
-  time_i64.bin            # optional epoch milliseconds or nanoseconds
-  event_id_u64.bin        # optional stable event ids or cache-local ids
-  fault_trace_f32.bin     # optional packed x_km, y_km, z_km polylines
-  fault_trace_offsets.bin # optional polyline offsets
+  events_f32.bin
+  lonlat_f64.bin
+  time_i64.bin
+  event_id_u64.bin
+  fault_trace_f32.bin
+  fault_trace_offsets.bin
 ```
 
-Recommended prepared event fields:
+Prepared event fields:
 
 ```text
-event_id
-utc_time
-elapsed_seconds
-longitude
-latitude
-depth_km
-magnitude
-x_km
-y_km
-distance_from_mainshock_km
+event_id, utc_time, elapsed_seconds, longitude, latitude, depth_km, magnitude,
+x_km, y_km, distance_from_mainshock_km
 ```
 
+Metadata should record source, USGS query URL, sequence name, mainshock id/time, `latitude0`,
+`longitude0`, projection, magnitude minimum, start/end time, cache version, and preparation script.
 
-### Stage 2: USGS Preparation Script
+Synthetic fallback should create one mainshock, intersecting strike-slip planes, Omori-like event
+times, Gutenberg-Richter-like magnitudes, dipping-plane depths, and small location noise.
 
-A later preparation script may query the USGS ANSS Comprehensive Earthquake Catalog, select a time
-and radius window around the mainshock, project coordinates to a local tangent plane, and export the
-cache above.
 
-The source catalog should be recorded in `metadata.json` with:
+## Coordinate And Visual Model
+
+Default coordinates:
 
 ```text
-source
-query_url
-sequence_name
-mainshock_event_id
-mainshock_time
-latitude0
-longitude0
-projection
-magnitude_min
-start_time
-end_time
+x = east/west kilometers relative to sequence center
+y = north/south kilometers relative to sequence center
+z = depth kilometers, positive downward
 ```
-
-
-### Synthetic Fallback
-
-If no prepared data is available, the example may generate a deterministic synthetic aftershock
-cloud:
-
-- one large mainshock,
-- two intersecting strike-slip fault planes,
-- aftershock times following a simple Omori-like decay,
-- magnitudes drawn from a Gutenberg-Richter-like distribution,
-- depths concentrated around dipping planes,
-- small random location noise.
-
-The fallback should be scientifically plausible enough to test the rendering and interactions, but
-the default showcase should use prepared real data when possible.
-
-
-## Visual Encodings
 
 Default encodings:
 
-```text
-position.x       local east/west coordinate, km
-position.y       local north/south coordinate, km
-position.z       depth, km downward
-point size       magnitude, capped for visual stability
-point color      depth, with colorbar
-point opacity    replay age or fixed cumulative alpha
-mainshock        larger highlighted marker
-fault trace      path on z = 0 surface
-```
+| Quantity | Encoding |
+| --- | --- |
+| hypocenter | 3D point below surface |
+| magnitude | bounded nonlinear point radius |
+| depth/time/magnitude/distance | selectable color mode with colorbar |
+| mainshock | larger highlighted marker |
+| fault trace | path on `z = 0` surface |
+| replay age | opacity or visibility |
 
-Alternative color modes:
+First radius mapping may be linear with clamping; later versions may use an energy-like
+`10^(0.3 * M)` mapping with strong bounds.
 
-- depth,
-- elapsed time since mainshock,
-- magnitude,
-- distance from mainshock.
 
-Magnitude size should be nonlinear but bounded. A simple first mapping is acceptable:
+## Scene Layout
+
+Minimum viable layout:
 
 ```text
-radius = radius_min + scale * clamp(magnitude - magnitude_min, 0, magnitude_span)
+3D local crust panel: surface plane, mainshock, fault paths, aftershock cloud
 ```
 
-A later implementation may use an energy-like mapping such as `10^(0.3 * M)` with strong clamping.
+Preferred layout:
+
+```text
+3D local crust panel
+magnitude vs elapsed time
+depth vs elapsed time or cumulative count
+```
+
+Controls should cover sequence, 3D/top/cross-section view, color mode, cumulative/sliding replay,
+play/time/speed/window, magnitude/depth filters, faults/surface/labels toggles, reset camera, and
+optional clip export.
 
 
-## 3D Map View
+## Cross-Section And Replay
 
-The 3D panel represents a local crust volume.
-
-Recommended visual elements:
-
-- a muted rectangular surface plane at `z = 0`,
-- optional cached terrain or shaded-relief image on the plane,
-- fault traces as thin dark or red paths,
-- mainshock epicenter projected onto the surface,
-- hypocenter points below the plane,
-- a depth axis labeled in kilometers,
-- faint vertical projection line for the selected event,
-- optional bounding box or side grid for depth context.
-
-The default camera should be tilted enough to reveal depth. Controls should allow:
-
-- top-down map snap,
-- oblique 3D view,
-- side/cross-section view,
-- reset camera.
-
-
-## Cross-Section Mode
-
-Cross-section mode is a preferred full-version feature, not required for the first implementation.
-
-The user selects a profile line across the map or chooses a predefined fault-normal/fault-parallel
-profile. Events are projected into distance-depth coordinates:
+Cross-section mode is preferred but not required for the first slice. It projects events onto a
+fault-normal/fault-parallel or user-selected profile:
 
 ```text
 x = distance along profile
 y = depth_km
 ```
 
-The cross-section may appear as:
+Replay modes:
 
-1. a separate linked 2D panel, or
-2. a camera snap in the 3D panel looking along the profile direction.
+- cumulative: all events up to current time visible;
+- sliding window: only recent events bright or visible.
 
-Selected events should remain highlighted in both map and cross-section views.
-
-
-## Time Replay
-
-The example should support two replay modes:
-
-1. **Cumulative**
-   - all events up to the current replay time are visible,
-   - older events keep a stable opacity,
-   - useful for seeing the aftershock cloud grow.
-
-2. **Sliding Window**
-   - only events within a recent time window are bright or visible,
-   - useful for seeing migration over time.
-
-The time cursor should drive the 3D event visibility and linked panels. Offline replay should be
-deterministic enough for video export.
+Offline replay should be deterministic enough for video export.
 
 
-## Controls
+## Interactivity And Readout
 
-Recommended controls:
-
-```text
-Sequence:       Ridgecrest 2019 / Tohoku 2011 / synthetic
-View:           3D crust / top map / cross-section
-Color by:       Depth / Time / Magnitude / Distance
-Replay:         Cumulative / Sliding window
-Play:           checkbox
-Time:           slider
-Speed:          slider
-Window:         slider, for sliding-window replay
-Magnitude min:  slider
-Depth range:    min/max slider
-Show faults:    checkbox
-Show surface:   checkbox
-Show labels:    checkbox
-Reset camera:   button
-Export clip:    button or command-line option
-```
+Picking should identify the nearest visible event in the active panel. Readout should include event
+id, UTC time, elapsed time, magnitude, depth, latitude/longitude, local x/y, and distance from the
+mainshock. Selection highlights the event in the crust panel and any magnitude-time, depth-time,
+cumulative-count, or cross-section panel.
 
 
-## Picking And Readout
+## Scene And Runtime Behavior
 
-Picking should identify the nearest visible event in the active panel.
+Use the normal scene pipeline; see [../../pipeline/FRAME_PLAN.md](../../pipeline/FRAME_PLAN.md) and
+[../../drp2/](../../drp2/).
 
-Readout should include:
-
-```text
-event id
-UTC time
-elapsed time since mainshock
-magnitude
-depth km
-latitude / longitude
-x / y local coordinates
-distance from mainshock
-```
-
-The selected event should be highlighted in:
-
-- the 3D crust panel,
-- magnitude-time panel,
-- depth-time or cumulative-count panel,
-- cross-section panel when visible.
+- Initial setup uploads event positions/colors/sizes, surface plane/image, fault paths, and linked
+  panel data.
+- Replay updates event visibility/opacity/active subset and linked time cursor.
+- Selection updates highlight marker, vertical projection line, and linked panel markers.
+- Magnitude/depth filters may rebuild active subsets but should not rebuild static catalog data.
 
 
-## FramePlan Shape
+## Minimal Implementation Target
 
-### Static Setup
-
-Initial frame:
-
-```text
-UploadNode  -> event positions
-UploadNode  -> event colors and sizes
-UploadNode  -> surface plane geometry or image
-UploadNode  -> fault trace path vertices, if available
-UploadNode  -> linked panel data
-RenderNode  -> 3D crust panel
-RenderNode  -> magnitude-time panel
-RenderNode  -> depth-time or count panel
-```
+1. Load or generate prepared event arrays.
+2. Normalize local kilometer coordinates into stable scene scale.
+3. Render points below a simple surface plane in an oblique arcball view.
+4. Update visibility or opacity from a replay cursor.
+5. Keep linked panels minimal but synchronized once added.
+6. Add event picking through the current scene request path when available.
 
 
-### Replay Frame
+## Validation
 
-When the replay time changes:
-
-```text
-UploadNode  -> event visibility, opacity, or filtered active subset
-UploadNode  -> linked time cursor geometry
-RenderNode  -> 3D crust panel
-RenderNode  -> linked panels
-```
-
-If the implementation uses CPU-filtered subsets, it should avoid rebuilding static event data unless
-the magnitude/depth filter or sequence changes.
-
-
-### Selection Frame
-
-When an event is picked:
-
-```text
-UploadNode  -> selected-event highlight marker
-UploadNode  -> optional vertical projection line
-UploadNode  -> linked panel highlight markers
-RenderNode  -> affected panels
-```
-
-
-## DRP2 Command Categories
-
-The example is expected to require:
-
-- buffers for event positions, colors, sizes, and visibility/highlight state,
-- repeated buffer uploads or parameter updates during replay,
-- point draw commands for event clouds,
-- path draw commands for fault traces, axes, and cross-section/profile lines,
-- primitive or mesh draw commands for the surface plane and optional crust box,
-- panel transform updates for arcball and panzoom controllers,
-- readback/pick requests for event selection,
-- optional capture/video commands through the app/canvas layer.
-
-
-## Implementation Notes
-
-The first C implementation can stay narrow:
-
-1. load or generate the prepared event arrays,
-2. normalize local kilometer coordinates into a stable scene scale,
-3. render points below a simple surface plane,
-4. update visibility or opacity from a replay cursor,
-5. keep linked panels minimal but synchronized,
-6. support event picking through the current scene request path when available.
-
-The example should not introduce a new geospatial renderer. Projection and local coordinate
-preparation should happen before rendering or in a narrow preparation layer.
-
-
-## Key Pressure On The Scene Spec
-
-This example checks that Datoviz v0.4 can express a time-dependent scientific event catalog where:
-
-- spatial, depth, magnitude, and time encodings are visible in one scene,
-- linked panels share selection and replay state,
-- animation changes visibility without rebuilding the full scene,
-- 3D picking remains useful in a semantically meaningful point cloud,
-- path, point, image/plane, colorbar, and annotation features combine in one workflow.
+- Smoke run loads or generates events, renders nonblank crust view, advances replay, and tears down.
+- Coordinate projection and depth-positive-down orientation are visually checked.
+- Point size/color match magnitude/depth/time modes and colorbar labels.
+- Replay is deterministic and does not rebuild static event data.
+- Selection highlight and readout remain stable after filters/replay changes.
