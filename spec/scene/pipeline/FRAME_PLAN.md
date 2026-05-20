@@ -1,409 +1,175 @@
 # Scene FramePlan IR
 
-This document defines the preferred intermediate representation used by the future scene layer to
-plan one frame of work before the scene-to-DRP2 converter emits DRP2.
+## Status
 
-It is intentionally not a frozen public render-graph API.
+Normative for the scene-owned producer artifact used to plan one frame before scene-to-DRP2
+conversion. It is not a public render-graph API and does not freeze runtime ownership, backend
+scheduling, or DRP2 object-cache policy.
 
-Its purpose is narrower:
+## Purpose
 
-1. give the scene layer a deterministic planning structure,
-2. separate scene-state mutation from DRP2 emission,
-3. provide a stable producer-side model while DRP2 runtime implementation details remain below the
-   scene boundary.
+`FramePlan` sits between scene state and the emitted DRP2 command stream:
 
+```text
+Scene/Panel/Visual/Resource state -> FramePlan -> scene-to-DRP2 converter -> DRP2 runtime
+```
 
-## Normative Status
+It must provide deterministic planning, separate scene mutation from DRP2 emission, and remain
+inspectable/serializable for tests.
 
-This document is normative for the producer-side execution artifact.
+## Core Rules
 
-Examples, deferred questions, and follow-on notes in this document are informative.
+1. One scene-level `FramePlan` is produced for each frame build.
+2. Panels contribute subplans, node groups, or target configuration inside that one plan.
+3. Cross-panel ordering must be explicit; it must not be left to unrelated top-level plans.
+4. `FramePlan` is scene-owned producer data, not runtime-owned execution state.
+5. It must not contain Vulkan, Metal, WebGPU, GLFW, swapchain, command-buffer, or image-view handles.
+6. It describes logical work and dependencies, not backend command-buffer mechanics.
+7. It is deterministic for a given scene state, input event set, and capability record.
+8. Upload work for scene resources is emitted through the plan, not a parallel execution path.
 
+## Minimum Shape
 
-## Position In The Stack
+A valid first-slice plan contains:
 
-`FramePlan` sits between:
-
-1. scene-owned state such as panels, visuals, resources, cameras, and controllers,
-2. the final DRP2 command stream emitted for the frame.
-
-The relationship is:
-
-1. scene state is updated first,
-2. a `FramePlan` is derived from that state,
-3. the scene-to-DRP2 converter translates the `FramePlan` plus runtime capabilities into a DRP2
-   command stream,
-4. the DRP2 runtime consumes that command stream.
-
-
-## Plan Scope
-
-The current spec direction is that one scene-level `FramePlan` is produced for each frame build.
-
-That plan may still contain:
-
-1. panel-local targets,
-2. panel-local render or picking nodes,
-3. panel-local ordering constraints,
-4. optional panel-local derived resources,
-5. scene-global nodes that coordinate shared resources or multi-panel composition.
-
-Panels therefore contribute subplans, node groups, or target configuration inside one scene-owned
-plan.
-
-The scene should not build several unrelated top-level plans for one frame and leave cross-panel
-ordering implicit.
-
-
-## Goals
-
-The first `FramePlan` IR should be able to express:
-
-1. resource uploads and lazy resource creation,
-2. one or more render stages,
-3. optional compute stages before or between render stages,
-4. offscreen and picking paths,
-5. deterministic readback requests,
-6. panel-local and scene-global ordering constraints.
-
-
-## Non-Goals
-
-The first `FramePlan` IR should not freeze:
-
-1. a public user-facing render-graph API,
-2. final runtime object ownership,
-3. exact DRP2 id-allocation and cache policy for pipelines, bind groups, samplers, or texture views,
-4. backend-specific scheduling or synchronization controls,
-5. performance-tuning policy beyond what is needed for deterministic planning.
-
-
-## Design Rules
-
-1. `FramePlan` is scene-owned producer data, not runtime-owned execution state.
-2. `FramePlan` must not contain Vulkan, Metal, WebGPU, GLFW, or swapchain handles.
-3. `FramePlan` should describe logical work and dependencies, not backend command-buffer mechanics.
-4. `FramePlan` should be deterministic for a given scene state, input event set, and capability
-   record.
-5. `FramePlan` should be inspectable and serializable for tests even if its final in-memory
-   representation changes later.
-
-
-## Minimum IR Shape
-
-The first useful `FramePlan` can be modeled as:
-
-1. plan metadata,
-2. logical targets,
-3. logical resources referenced this frame,
-4. ordered plan nodes,
-5. explicit dependency edges or equivalent ordering constraints,
-6. optional readback requests,
-7. diagnostics collected during planning.
-
-
-## Plan Metadata
-
-Each plan should carry enough metadata for debugging and deterministic tests:
-
-1. frame index,
-2. scene revision or equivalent state-generation number,
-3. capability snapshot identifier or summary,
-4. validation scope or validation generation summary,
-5. adaptation outcome summary or identifier,
-6. target panel set,
-7. planning flags such as offscreen-only or picking-enabled.
-
+| Part | Required content |
+|---|---|
+| Metadata | frame index, scene revision, capability snapshot, validation/adaptation summary, target panels, flags |
+| Targets | logical color/depth/picking/offscreen/transient targets |
+| Resources | stable logical resource ids referenced this frame |
+| Nodes | ordered `UploadNode`, `ComputeNode`, `RenderNode`, `CopyNode`, `ReadbackNode` entries |
+| Dependencies | explicit edges or topological order plus read/write sets |
+| Readbacks | deterministic producer-visible request descriptors |
+| Diagnostics | planning warnings/errors before DRP2 emission |
 
 ## Logical Targets
 
-A target is a logical rendering destination used by plan nodes.
+Target kinds:
 
-The first scene-level target kinds should be:
+- panel color target;
+- panel depth target;
+- picking target;
+- offscreen export target;
+- transient intermediate target for multi-stage composition.
 
-1. panel color target,
-2. panel depth target,
-3. picking target,
-4. offscreen export target,
-5. transient intermediate target for multi-stage composition.
-
-Targets should describe:
-
-1. logical format requirements,
-2. dimensions or sizing policy,
-3. sample-count requirements,
-4. clear/load/store intent,
-5. whether readback is required after execution.
-
-Targets should not expose backend image/view handles.
-
+Targets describe logical format requirements, dimensions/sizing policy, sample count, clear/load/
+store intent, and whether readback is required. They never expose backend handles.
 
 ## Logical Resources
 
-The `FramePlan` should reference scene resources through stable logical ids.
+Resources are referenced by stable scene ids. Each referenced resource records:
 
-For each referenced resource, the plan should know at least:
+- kind: buffer, texture, uniform/parameter block, readback buffer, or equivalent;
+- usage role in the current frame;
+- creation intent;
+- upload or subrange-write intent;
+- nodes that read it;
+- nodes that write it.
 
-1. resource kind such as buffer, texture, uniform block, or readback buffer,
-2. usage role in the current frame,
-3. whether creation is required,
-4. whether upload or subrange write is required,
-5. which plan nodes read it,
-6. which plan nodes write it.
+Producer-side hints may mark resources immutable/dynamic, shared/panel-local, or transient/
+persistent. These guide planning and validation only.
 
-The plan may also carry producer-side materialization hints such as:
+Derived resources must be classified as one of:
 
-1. immutable versus dynamic,
-2. shared versus panel-local,
-3. transient versus persistent.
-
-These hints exist to guide planning and validation, not to expose backend allocation strategy.
-
-The plan should also be able to distinguish whether a derived resource is:
-
-1. authoritative scene data,
-2. reusable persistent derived cache,
+1. authoritative scene data;
+2. reusable persistent derived cache;
 3. frame-local transient output.
-
-This is especially important for compute-written resources and readback paths.
-
 
 ## Node Kinds
 
-The first `FramePlan` does not need many node kinds.
+| Node | Required behavior |
+|---|---|
+| `UploadNode` | first-use creation intent, dirty buffer ranges, texture writes, ordering before consumers |
+| `ComputeNode` | input/output resources, logical shader/program variant, dispatch dimensions, downstream consumers |
+| `RenderNode` | attachments, clear/load/store behavior, viewport/scissor policy, ordered draw items, depth/blend/pick mode |
+| `CopyNode` | logical buffer/texture transfers visible at FramePlan/DRP2 level |
+| `ReadbackNode` | deterministic producer-visible retrieval for picking, image export, or test/tooling data |
 
-The minimum useful set is:
+There is no `OverlayNode`. External UI overlays are runtime-injected after scene submission and
+before present; see `FRAME_LIFECYCLE.md`.
 
-1. `UploadNode`
-2. `ComputeNode`
-3. `RenderNode`
-4. `CopyNode`
-5. `ReadbackNode`
+`RayTraceNode` is reserved for future hardware ray tracing. If added, it replaces `RenderNode` for
+ray-traced visuals while preserving the same scene/planning boundary.
 
-There is no `OverlayNode` in the `FramePlan` IR. The external UI overlay (e.g., Dear ImGui)
-is a **runtime-injected** step that executes after the scene plan completes, not a plan node.
-`FRAME_LIFECYCLE.md` describes it as an "external overlay slot" that the runtime fills after
-scene submission and before present. The `FramePlan` represents only scene-owned work.
+## Draw Items
 
-A `RayTraceNode` is reserved as a future node kind for hardware ray tracing.
-It would replace `RenderNode` for ray-traced visuals when the capability is available and
-requested.
-The scene layer emits it identically to other node types; the DRP2 runtime handles BVH
-construction and ray tracing command recording.
-See `semantics/LIGHTING.md` for the forward-compatibility design.
+Each `RenderNode` contains a logical draw-item list. A draw item identifies:
 
+- source visual id;
+- material/shader variant identity;
+- geometry/resource bindings;
+- transform inputs or resolved transform id;
+- optional picking payload id;
+- draw parameters such as vertex or index count.
 
-## UploadNode
+Material is not a separate FramePlan concept. Shading parameters are regular parameter-block
+resources attached to visuals.
 
-An `UploadNode` represents host-driven resource materialization needed for this frame.
+## Dependencies
 
-It should support:
+The dependency representation may be explicit edges or a topologically ordered node list with
+per-node read/write sets. It must express:
 
-1. first-use resource creation intent,
-2. dirty-range buffer writes,
-3. texture writes,
-4. upload ordering before dependent compute or render nodes.
+- upload before first use;
+- compute before render/copy/readback consumers;
+- picking render before picking readback;
+- offscreen render before export readback;
+- panel-local ordering;
+- cross-panel shared-resource ordering.
 
-`UploadNode` is where scene dirty tracking becomes concrete frame work.
+## Capability Adaptation And Diagnostics
 
-`UploadNode` should be the canonical place where already-resolved resource dirtiness becomes explicit
-execution work.
+Adaptation policy runs before planning. `FramePlan` records the chosen outcome and may still reject
+invalid topology. The result is one of:
 
-The scene should not maintain a parallel execution path that emits upload work outside `FramePlan`.
+1. valid plan;
+2. deterministic degraded plan;
+3. scene-visible diagnostic before DRP2 submission.
 
+Planning diagnostics include unsupported capabilities, unresolved resource dependencies, invalid
+target configuration, incompatible visual/material combinations, and unsupported picking/readback
+requests. Diagnostics are scene-level and must not leak backend handles.
 
-## ComputeNode
+## Shader And Pipeline Identity
 
-A `ComputeNode` represents one logical compute stage.
+The scene-to-DRP2 converter assigns deterministic runtime ids from scene shader keys:
 
-It should declare:
+- shader modules are keyed by stage, source hash, and transport format;
+- render pipelines are keyed by vertex module id, fragment module id, and pipeline state;
+- create commands are emitted once per unique key and omitted when already live;
+- destroy commands are emitted when the referencing visual is removed or its variant changes.
 
-1. its input resources,
-2. its output resources,
-3. the logical shader or program variant it requires,
-4. dispatch dimensions or a scene-level equivalent,
-5. whether its outputs are later consumed by render, copy, or readback nodes.
+## Relationship To Scene Objects And DRP2
 
-It should not encode backend pipeline or encoder internals directly.
+Scene objects contribute:
 
-Unless a stronger scene contract says otherwise, compute-written outputs should be treated as
-frame-local derived resources.
+| Source | Contribution |
+|---|---|
+| `Scene` | global shared resources and scheduling policy |
+| `Panel` | targets, camera state, panel-local visual membership, node grouping |
+| `Visual` | draw items, stage participation, resource requirements |
+| `Resource` | creation intent, dirty ranges, sharing information |
+| `Animation` / `Controller` | state changes before planning begins |
 
-Persistence across frames should be explicit rather than implicit.
+DRP2 conversion:
 
+| FramePlan node | DRP2 category |
+|---|---|
+| Upload | resource creation/write commands |
+| Compute | compute-pass commands |
+| Render | render-pass commands and draws |
+| Copy | DRP2 copy commands |
+| Readback | `QueueSubmit.readbacks` and reply routing metadata |
 
-## RenderNode
+The converter owns exact command spelling, id assignment, and omission of already-created runtime
+objects.
 
-A `RenderNode` represents one logical render pass or render stage.
+## Required Coverage
 
-It should declare:
+The first IR is acceptable only if it can represent:
 
-1. target attachments,
-2. clear/load/store behavior,
-3. viewport/scissor policy at a logical level,
-4. the ordered draw items to execute,
-5. the visual set or draw list that contributes to the node,
-6. any required depth, blending, or picking mode.
-
-One render node may correspond to one panel pass, one picking pass, or one intermediate composition
-pass.
-
-
-## CopyNode
-
-A `CopyNode` represents explicit logical transfers not covered by uploads.
-
-The first plan only needs copies for:
-
-1. buffer-to-buffer movement when required by the producer model,
-2. texture export preparation,
-3. staging transfers that are visible at DRP2 level.
-
-If a copy is purely backend-private, it does not belong in `FramePlan`.
-
-
-## ReadbackNode
-
-A `ReadbackNode` represents deterministic producer-visible data retrieval after execution.
-
-The first scene slice should support:
-
-1. single-pixel picking readback,
-2. full or partial offscreen image readback,
-3. optional compute-result readback when needed by tests or tooling.
-
-Readback nodes should specify the logical destination for interpreted results, not a backend mapping
-API.
-
-
-## Draw Items Inside RenderNode
-
-The scene layer should be free to change the concrete storage shape later, but each render node needs a
-logical draw-item list.
-
-Each draw item should identify:
-
-1. source visual identity,
-2. material or shader variant identity,
-3. geometry/resource bindings required by that item,
-4. transform inputs or resolved transform identity,
-5. optional picking payload identity,
-6. draw parameters such as vertex count or index count.
-
-This keeps visual semantics visible to planning without freezing the final low-level binding model.
-
-
-## Dependencies And Ordering
-
-`FramePlan` must make dependencies explicit enough that DRP2 emission is not forced to rediscover them.
-
-The first plan can represent this either as:
-
-1. explicit edges between nodes, or
-2. a topologically ordered node list plus per-node read/write sets.
-
-Whichever representation is used, it must express:
-
-1. upload before first use,
-2. compute before render when outputs feed rendering,
-3. picking render before picking readback,
-4. offscreen render before export readback,
-5. panel-local ordering and cross-panel shared-resource ordering.
-
-
-## Capability Adaptation
-
-`FramePlan` should reflect capability-shaped producer decisions, but it should not be the first place
-where those decisions are discovered.
-
-Examples:
-
-1. choose a non-FP64 visual variant when FP64 is unavailable,
-2. disable a compute-assisted path and choose a fallback plan,
-3. select a supported sample count,
-4. refuse to build a plan that requires unsupported texture formats.
-
-The result should be one of:
-
-1. a valid plan,
-2. a deterministic degraded plan,
-3. a scene-visible planning diagnostic before DRP2 submission.
-
-The preferred rule is:
-
-1. adaptation policy runs before planning,
-2. `FramePlan` records the chosen adapted outcome,
-3. planning diagnostics may still reject a plan if no valid adapted topology exists.
-
-
-## Planning Diagnostics
-
-Planning may fail before DRP2 emission.
-
-The planning stage should be able to report diagnostics such as:
-
-1. unsupported capability for a required visual path,
-2. unresolved resource dependency,
-3. invalid panel target configuration,
-4. incompatible visual/material combination,
-5. unsupported picking or readback request.
-
-These are scene-level diagnostics and should remain free of backend leakage.
-
-
-## Relationship To Existing Scene Objects
-
-`FramePlan` should be derived from the existing scene object model as follows:
-
-1. `Scene` contributes global shared resources and scheduling policy,
-2. `Panel` contributes target configuration, camera state, panel-local visual membership, and any
-   panel-local node grouping within the scene-level plan,
-3. `Visual` contributes draw items, stage participation, and resource requirements,
-4. `Resource` contributes creation intent, dirty ranges, and sharing information,
-5. `Animation` and `Controller` contribute state changes before planning begins.
-
-
-## Material And Shader Identity
-
-Material is not a first-class FramePlan concept. Shading parameters (`ambient`, `diffuse`,
-`specular`, lighting mode) are fields of a `ParameterBlockResource` attached to the visual.
-The FramePlan references them as a regular parameter-block binding — there is no `DvzMaterial`
-handle or material-specific node kind.
-
-Shader module and pipeline identities are assigned by the scene-to-DRP2 converter from deterministic
-scene shader keys:
-
-- The converter assigns deterministic numeric IDs to shader modules based on (stage, source hash,
-  transport format).
-- `CreateShaderModule` is emitted once per unique (stage, source) pair.
-- `CreateRenderPipeline` is emitted referencing those module IDs, keyed on
-  (vertex_module_id, fragment_module_id, pipeline state). If the same key was already created
-  in a prior frame, the command is omitted.
-- `DestroyShaderModule` and `DestroyRenderPipeline` are emitted when the referencing visual
-  is removed or its variant changes.
-
-
-## Relationship To DRP2
-
-The `FramePlan` should be translatable to DRP2 command categories already in scope:
-
-1. upload nodes become resource creation and write commands where supported,
-2. compute nodes become compute-pass commands,
-3. render nodes become render-pass commands and draw calls,
-4. copy nodes become DRP2 copy commands,
-5. readback nodes become `QueueSubmit.readbacks` and `QueueSubmitReply` routing metadata through
-   the runtime boundary.
-
-`FramePlan` should refer to logical shader, material, and binding identities. The converter owns the
-exact DRP2 command spelling, id assignment, and omission of already-created runtime objects.
-
-
-## Minimum Worked Examples This IR Must Cover
-
-The first `FramePlan` IR is acceptable only if it can represent:
-
-1. one-panel static plot,
-2. dynamic buffer updates without whole-scene rebuild,
-3. a picking pass plus single-pixel readback,
-4. offscreen rendering plus deterministic image readback,
+1. one-panel static plot;
+2. dynamic buffer updates without whole-scene rebuild;
+3. picking pass plus single-pixel readback;
+4. offscreen rendering plus deterministic image readback;
 5. one compute-assisted visual path followed by rendering.

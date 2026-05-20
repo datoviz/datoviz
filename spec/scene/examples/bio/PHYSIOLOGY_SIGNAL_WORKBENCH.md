@@ -1,445 +1,127 @@
 # Physiology Signal Workbench
 
-> **Agent Pickup**
-> - **Category:** `bio`
-> - **Implementation target:** Scientific domain example with staged implementation, starting from deterministic or prepared data.
-> - **Data policy:** Synthetic or prepared-cache first slice; real public data may be a second stage with license notes.
-> - **Preprocessing:** Document any data conversion script, output schema, coordinate normalization, and cache validation.
-> - **Validation:** Smoke run plus domain-specific visual, picking/probe, and performance acceptance criteria.
-
 ## Summary
 
-Build an offline biomedical signal-analysis scene example centered on ECG inspection, with linked
-time-series panels, annotation markers, derived analysis views, and probe readouts. The preferred
-data path is a compact prepared PhysioNet-style ECG cache, such as an MIT-BIH or PTB-XL excerpt,
-containing signals, channel metadata, annotations, optional LOD envelopes, and derived RR data; a
-deterministic ECG-like synthetic fallback should remain annotation-aware if no cache is present. The
-first practical slice should render an overview timeline, stacked trace panel, annotation raster or
-overlay, linked time-axis panzoom, and hover/click sample or event readout. Validate with a bounded
-smoke run, domain visual checks, probe accuracy checks, and the staged performance criteria.
+Example name: `PHYSIOLOGY_SIGNAL_WORKBENCH`
 
+Build an offline biomedical signal-analysis scene centered on ECG inspection. The example renders
+linked time-series panels, annotation markers, derived analysis views, and probe readouts. Stage 1
+uses a compact prepared ECG cache, with a deterministic annotation-aware synthetic fallback. EEG
+and EMG are later modes that reuse the same workbench structure.
 
-## Example Name
+This differs from a live DAQ viewer: the goal is offline, annotation-aware analysis of recorded
+clinical or laboratory signals, not ring-buffer acquisition.
 
-`PHYSIOLOGY_SIGNAL_WORKBENCH`
+## Feature Pressure
 
+- Dense 2D path rendering for long multichannel signals.
+- Shared X-axis panzoom across linked panels.
+- Independent per-panel Y gain and row offsets.
+- Annotation markers, labels, selection, and linked highlights.
+- Exact sample probe and event readout.
+- Level-of-detail switching between envelope and raw samples.
+- Derived panels such as RR intervals, beat morphology, or spectrograms.
 
-## Purpose
+## Data And Resources
 
-Specify a Datoviz v0.4 showcase example for offline biomedical signal exploration. The example
-loads real or prepared physiological recordings, renders dense linked time-series panels, and
-supports annotation-aware navigation, probing, and derived analysis views.
-
-This example is related to `STREAMING_DAQ_VIEWER`, but it has a different identity:
-
-- `STREAMING_DAQ_VIEWER` is a live acquisition and ring-buffer update stress test,
-- `PHYSIOLOGY_SIGNAL_WORKBENCH` is an offline scientific signal-analysis viewer for annotated
-  clinical or laboratory recordings.
-
-The first implementation should focus on ECG. EEG and EMG should be treated as later modes that
-reuse the same workbench structure.
-
-
-## Why This Example Exists
-
-This example fills a gap in the current showcase set: dense biomedical time-series analysis with
-real annotations and multiscale navigation.
-
-It should pressure:
-
-1. high-density 2D path rendering,
-2. shared X-axis linked panels,
-3. independent per-panel Y scaling,
-4. annotation markers and labels,
-5. crosshair probe and exact sample readout,
-6. long-recording level-of-detail,
-7. image panels for spectrograms or other derived views,
-8. linked event selection across traces, rasters, and derived panels.
-
-The default should look like a practical physiology analysis tool rather than a synthetic
-oscilloscope.
-
-
-## Recommended Default Dataset
-
-Use a prepared ECG excerpt from a standard PhysioNet-style dataset as the default.
-
-Good Stage 1 choices:
-
-- MIT-BIH Arrhythmia Database excerpt, for classic annotated ECG beats,
-- PTB-XL excerpt, for a more clinical 12-lead ECG layout.
-
-The runtime example should not require live PhysioNet access. A preparation script may use WFDB or
-another loader to create a compact Datoviz-ready cache.
-
-Optional later modes:
-
-- EEG: scalp EEG with seizure, sleep-stage, or artifact annotations,
-- EMG: raw high-density EMG with rectified/envelope views and activation windows.
-
-
-## User-Facing Scenario
-
-The default ECG scenario should show:
-
-- an overview timeline for the full excerpt,
-- several stacked ECG leads or channels,
-- R-peak and beat-type annotations,
-- a linked RR-interval or beat-morphology panel,
-- a crosshair readout with time, sample index, lead value, and nearest annotation,
-- smooth pan and zoom over the selected time range.
-
-The example should support both overview inspection and close sample-level inspection.
-
-
-## Scene Layout
-
-Recommended ECG layout:
-
-```text
-+------------------------------------------------------------------+
-| overview timeline with selected visible range                     |
-+------------------------------------------------------------------+
-| stacked ECG traces, shared time axis                              |
-| Lead I / Lead II / V1 / V2 / ...                                  |
-+------------------------------------------------------------------+
-| derived panel: RR intervals or beat-aligned morphology             |
-+------------------------------------------------------------------+
-| annotation raster: beat classes, noise, rhythm/event markers       |
-+------------------------------------------------------------------+
-```
-
-Minimum viable version:
-
-1. one overview panel,
-2. one stacked trace panel,
-3. one annotation raster or marker overlay,
-4. linked panzoom on the time axis,
-5. hover/click readout for one sample or event.
-
-Preferred fuller version:
-
-1. stacked ECG traces with per-lead gain and offset,
-2. overview timeline using LOD envelope data,
-3. RR-interval or beat morphology panel,
-4. annotation raster with beat classes,
-5. selected beat highlighted across all panels,
-6. optional spectrogram or filtered-signal panel.
-
-
-## Dataset Strategy
-
-### Stage 1: Prepared ECG Cache
-
-The first implementation should load a compact prepared cache. The cache may be generated by a
-Python script, but the interactive example should only read local arrays.
-
-Suggested cache layout:
+Stage 1 should load a local ECG cache derived from a standard PhysioNet-style dataset, preferably
+MIT-BIH Arrhythmia Database or PTB-XL.
 
 ```text
 ~/.cache/datoviz/physiology/ecg_mitbih_100/
   metadata.json
-  signals_f32.bin             # n_channels x n_samples, row-major or documented layout
-  time_f64.bin                # optional sample times; sample_rate may be enough
-  channel_names.txt           # one name per channel
-  channel_units.txt           # optional, for example mV
+  signals_f32.bin             # n_channels x n_samples
+  time_f64.bin                # optional; sample_rate may be enough
+  channel_names.txt
+  channel_units.txt           # optional
   annotations_i64.bin         # sample indices
-  annotation_type_u16.bin     # beat/event class ids
+  annotation_type_u16.bin     # class ids
   annotation_label.txt        # optional label table
-  lod_min_f32.bin             # optional multiscale envelope min
-  lod_max_f32.bin             # optional multiscale envelope max
-  rr_interval_f32.bin         # optional derived panel data
+  lod_min_f32.bin             # optional envelope
+  lod_max_f32.bin             # optional envelope
+  rr_interval_f32.bin         # optional derived panel
   rr_sample_i64.bin           # optional sample index per RR interval
 ```
 
-Recommended metadata:
+`metadata.json` records source, record name, sample rate, dimensions, duration, channel names,
+units, annotation classes, cache layout, and license/citation metadata.
+
+The preparation script may download/load WFDB data, choose an excerpt, normalize units, compute
+LOD envelopes, derive RR intervals, and export the cache. Runtime reads only local arrays.
+
+Synthetic fallback must be deterministic and annotation-aware: ECG-like channels, QRS complexes,
+beat-to-beat variability, premature/missed beats, baseline wander, artifacts, and beat labels.
+
+## Scene And Runtime Behavior
+
+Recommended layout:
 
 ```text
-source
-record_name
-sample_rate_hz
-n_channels
-n_samples
-duration_seconds
-channel_names
-units
-annotation_classes
-cache_layout
++--------------------------------------------------------------+
+| overview timeline with selected visible range                 |
++--------------------------------------------------------------+
+| stacked ECG traces, shared time axis                          |
++--------------------------------------------------------------+
+| derived panel: RR intervals or beat morphology                |
++--------------------------------------------------------------+
+| annotation raster or marker overlays                          |
++--------------------------------------------------------------+
 ```
 
-
-### Stage 2: Preparation Script
-
-A later preparation script may:
-
-1. download or locate a public PhysioNet/WFDB record,
-2. load signals and annotations,
-3. choose a manageable excerpt,
-4. normalize units,
-5. compute LOD envelopes,
-6. compute RR intervals or another derived view,
-7. export the cache above.
-
-The preparation script should record the exact source record and license/citation metadata.
-
-
-### Synthetic Fallback
-
-If no prepared data is available, the example may generate deterministic synthetic physiology data:
-
-- ECG-like channels with QRS complexes and beat-to-beat variability,
-- arrhythmia-like premature beats and missed beats,
-- slow baseline wander,
-- noise/artifact intervals,
-- beat annotations and event labels.
-
-The fallback should be visually plausible and annotation-aware. It should not be generic white
-noise.
-
-
-## Visual Encodings
-
-Stacked trace panel:
-
-```text
-x              time in seconds
-y              per-channel normalized amplitude plus row offset
-line color     channel or lead identity
-row label      channel name
-vertical mark  annotation/event time
-```
-
-Annotation raster:
-
-```text
-x              event time
-y              annotation class or channel row
-marker color   event class
-marker shape   optional class family
-```
-
-Derived ECG panel:
-
-```text
-x              beat time or beat index
-y              RR interval, heart rate, or beat-aligned amplitude
-color          annotation class or selected state
-```
-
-Probe readout:
-
-```text
-time seconds
-sample index
-channel name
-amplitude and unit
-nearest annotation
-selected beat class
-```
-
-
-## Multiscale Navigation
-
-The distinctive feature of this example should be multiscale signal navigation.
-
-When zoomed out:
-
-- traces may use min/max envelope LOD instead of raw samples,
-- annotation labels may be aggregated or hidden,
-- overview range selection remains stable,
-- the visible panel avoids uploading or drawing every raw sample when it is not useful.
-
-When zoomed in:
-
-- raw samples are drawn,
-- annotation labels and beat markers appear,
-- the crosshair reports exact sample values,
-- selected beat morphology can be inspected.
-
-LOD resources may be generated offline in the cache or computed at load time for smaller excerpts.
-
-
-## Controls
-
-Recommended controls:
-
-```text
-Dataset:        MIT-BIH ECG / PTB-XL ECG / EEG / EMG / synthetic
-View:           ECG leads / Spectrogram / Beat morphology / RR intervals
-Time range:     overview brush or slider
-Gain:           slider
-Spacing:        slider
-Filter:         raw / bandpass / notch / envelope
-Color by:       Channel / Annotation class / Selected state
-Annotations:    checkbox
-LOD:            auto / raw / envelope
-Play cursor:    checkbox
-Speed:          slider
-Reset view:     button
-Export clip:    button or command-line option
-```
-
-
-## ECG Stage 1 Behavior
-
-Stage 1 should prioritize:
-
-1. 2-12 ECG channels stacked vertically,
-2. beat annotations shown as markers,
-3. selected beat highlight,
-4. shared time panzoom,
-5. exact probe readout,
-6. overview-to-detail navigation.
-
-Useful ECG-specific derived views:
-
-- RR interval over time,
-- heart-rate trend,
-- beat-aligned waveform overlay,
-- annotation-class raster.
-
-
-## EEG Stage 2 Behavior
-
-EEG mode should reuse the same workbench but emphasize:
-
-- many stacked channels,
-- channel grouping by montage,
-- event intervals such as seizure or sleep-stage regions,
-- spectrogram or time-frequency image panels,
-- artifact annotations.
-
-This mode would pressure dense traces plus derived image panels.
-
-
-## EMG Stage 2 Behavior
-
-EMG mode should reuse the same workbench but emphasize:
-
-- raw high-frequency signal,
-- rectified/envelope view,
-- detected activation bursts,
-- optional high-density channel grid,
-- linked activation intervals.
-
-This mode would pressure trace density, envelope derivation, and event interval overlays.
-
-
-## Picking And Readout
-
-Picking should support both samples and annotations.
-
-Sample probe:
-
-1. map pointer X to time and sample index,
-2. choose the nearest channel row in the trace panel,
-3. report exact value from the active signal representation,
-4. show crosshair guides.
-
-Annotation/event pick:
-
-1. identify the nearest visible annotation marker,
-2. expose event label and sample index,
-3. highlight the corresponding beat/event in all linked panels,
-4. optionally center the selected event in the visible range.
-
-Latest-request-wins behavior should apply to hover probes when readback or asynchronous picking is
-used.
-
-
-## FramePlan Shape
-
-### Static Setup
-
-Initial frame:
-
-```text
-UploadNode  -> visible trace vertices or selected LOD envelope
-UploadNode  -> overview LOD geometry
-UploadNode  -> annotation marker positions and colors
-UploadNode  -> derived panel data
-RenderNode  -> overview panel
-RenderNode  -> stacked trace panel
-RenderNode  -> derived panel
-RenderNode  -> annotation raster or overlays
-```
-
-
-### Pan Or Zoom
-
-When the visible time range changes:
-
-```text
-UploadNode  -> trace geometry if LOD level or visible subset changes
-UploadNode  -> annotation subset or label geometry if needed
-UploadNode  -> overview brush geometry
-RenderNode  -> affected panels
-```
-
-Small pans inside a prepared visible envelope may only require panel transform updates. Large
-navigation changes may switch LOD level or rebuild visible geometry.
-
-
-### Selection Or Probe
-
-When a sample or annotation is selected:
-
-```text
-UploadNode  -> crosshair and selected marker geometry
-UploadNode  -> linked derived-panel highlight
-RenderNode  -> affected panels
-```
-
-No full signal reupload should be required for selection-only changes.
-
-
-### Filter Or Gain Change
-
-When gain, spacing, or filter mode changes:
-
-```text
-UploadNode  -> style/parameter resources, when possible
-UploadNode  -> regenerated trace geometry, when the data representation changes
-RenderNode  -> stacked trace panel and linked panels
-```
-
-The implementation should distinguish cheap style changes from data-transform changes.
-
-
-## DRP2 Command Categories
-
-The example is expected to require:
-
-- buffers for visible trace geometry, overview envelopes, annotation markers, and derived panels,
-- path draw commands for traces and envelope outlines,
-- point or primitive draw commands for annotations and selected events,
-- image draw commands for spectrograms in EEG or optional ECG modes,
-- panel transform updates for linked panzoom controllers,
-- readback/pick requests for probes and annotation selection,
-- optional capture/video commands through the app/canvas layer.
-
-
-## Implementation Notes
-
-The first C implementation can stay focused:
-
-1. load or generate one ECG excerpt,
-2. render a small set of stacked leads,
-3. draw annotations as markers or vertical lines,
-4. implement linked time navigation,
-5. provide a selected-event readout,
-6. use precomputed or simple LOD envelopes for overview rendering.
-
-The example should avoid building a full clinical application. It should demonstrate the rendering,
-interaction, and data-flow shape needed for scientific physiology signal analysis.
-
-
-## Key Pressure On The Scene Spec
-
-This example checks that Datoviz v0.4 can express a signal-analysis workflow where:
-
-- long dense signals can be navigated smoothly,
-- linked panels share a precise time domain,
-- annotations remain semantically connected to traces and derived views,
-- LOD switches do not break probe/readout semantics,
-- sample and event selection update small overlay resources rather than rebuilding the scene.
+Encodings:
+
+| Panel | Data |
+|---|---|
+| Stacked traces | time vs normalized amplitude plus row offset; channel color/name |
+| Annotation raster | event time vs class/channel row; class color/shape |
+| Derived ECG panel | beat time/index vs RR interval, heart rate, or beat waveform |
+| Probe | time, sample index, channel, amplitude/unit, nearest annotation |
+
+Zoomed-out views may use min/max envelope LOD and hidden/aggregated labels. Zoomed-in views draw
+raw samples, labels, beat markers, and exact probe values. LOD resources may be precomputed or
+computed at load time for small excerpts.
+
+Controls should cover dataset, view mode, time range, gain, spacing, filter, color mode,
+annotations, LOD mode, play cursor, speed, reset view, and capture.
+
+Picking supports:
+
+- sample probe: pointer X -> time/sample, nearest channel row, exact value, crosshair guides;
+- annotation pick: nearest marker, label/sample index, highlight in linked panels, optional center.
+
+Latest-request-wins behavior applies when hover probes use asynchronous readback.
+
+Frame-plan shape:
+
+- static setup uploads visible trace/envelope geometry, overview, annotations, and derived panels;
+- pan/zoom updates visible trace geometry only when the subset or LOD changes;
+- small pans inside a prepared envelope may only update panel transforms;
+- selection/probe updates overlay and highlight resources, not full signals;
+- gain/filter changes distinguish cheap style updates from regenerated trace geometry.
+
+Expected DRP2 categories: path buffers, envelope/annotation/derived buffers, point or primitive
+draws for markers, optional image draws for spectrograms, linked panzoom updates, pick/readback
+requests, and optional app/canvas capture.
+
+## Minimal Target
+
+1. Load or synthesize one ECG excerpt.
+2. Render 2-12 stacked ECG channels.
+3. Draw beat annotations as markers or vertical lines.
+4. Provide overview-to-detail linked time navigation.
+5. Provide hover/click sample or event readout.
+6. Use LOD envelopes for the overview or zoomed-out trace view.
+
+## Validation
+
+- Smoke-run the example with a bounded frame count.
+- Confirm ECG traces, channel labels, and annotations align in time.
+- Confirm selected beats highlight consistently across all panels.
+- Confirm probe values match the active raw or LOD representation.
+- Confirm LOD transitions do not change semantic time/sample readout.
+- Confirm selection-only changes update overlays without full signal reupload.
+- Report loaded sample count, visible sample count, and frame rate while panning/zooming.
+
+Later EEG mode should add many-channel traces, montage grouping, interval events, spectrograms,
+and artifact annotations. Later EMG mode should add high-frequency raw traces, rectified/envelope
+views, activation windows, and optional high-density channel grids.
