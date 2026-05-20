@@ -1867,9 +1867,12 @@ int main(int argc, char** argv)
     {
         dvz_fprintf(
             stderr,
-            "Allen/IBL atlas mesh assets not found in %s; continuing with volume only\n"
+            "Allen/IBL atlas mesh assets not found or invalid in %s\n"
             "prepare them with: python tools/prepare_allen_ibl_assets.py\n",
             DEFAULT_IBL_ASSET_DIR);
+        _allen_mouse_brain_destroy(&volume_data);
+        dvz_scene_destroy(scene);
+        return 1;
     }
 
     AllenMouseBrainVolume display_volume = volume_data;
