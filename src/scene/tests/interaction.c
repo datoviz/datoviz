@@ -121,6 +121,110 @@ int test_scene_selection_apply_pick_and_link_keys(TstContext* suite, const TstCa
 }
 
 
+int test_scene_selection_apply_pick_updates_visual_masks(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    ANN(item);
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 640, 480, 0);
+    DvzPanel* panel = dvz_panel(
+        figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+    DvzLinkChannel* channel = dvz_link_channel(scene, "items");
+    DvzSelection* selection = dvz_selection(
+        scene, &(DvzSelectionDesc){.mode = DVZ_SELECT_TOGGLE, .target = DVZ_SCENE_TARGET_ITEM});
+    DvzVisual* point = dvz_point(scene, 0);
+    DvzVisual* marker = dvz_marker(scene, 0);
+    ANN(panel);
+    ANN(channel);
+    ANN(selection);
+    ANN(point);
+    ANN(marker);
+
+    float point_pos[3][3] = {{0.0f, 0.0f, 0.0f}, {0.25f, 0.0f, 0.0f}, {0.5f, 0.0f, 0.0f}};
+    DvzColor point_color[3] = {
+        {255, 255, 255, 255},
+        {255, 255, 255, 255},
+        {255, 255, 255, 255},
+    };
+    float point_size[3] = {8.0f, 8.0f, 8.0f};
+    uint64_t point_keys[3] = {10, 20, 30};
+    AT(dvz_visual_set_data(point, "position", point_pos, 3) == 0);
+    AT(dvz_visual_set_data(point, "color", point_color, 3) == 0);
+    AT(dvz_visual_set_data(point, "size", point_size, 3) == 0);
+    AT(dvz_visual_set_link_keys(point, channel, point_keys, 3) == 0);
+    AT(dvz_panel_add_visual(panel, point, NULL) == 0);
+
+    float marker_pos[3][3] = {{0.0f, 0.25f, 0.0f}, {0.25f, 0.25f, 0.0f}, {0.5f, 0.25f, 0.0f}};
+    DvzColor marker_color[3] = {
+        {255, 255, 255, 255},
+        {255, 255, 255, 255},
+        {255, 255, 255, 255},
+    };
+    float marker_size[3] = {12.0f, 12.0f, 12.0f};
+    float marker_angle[3] = {0.0f, 0.0f, 0.0f};
+    uint32_t marker_shape[3] = {
+        DVZ_MARKER_SHAPE_DISC,
+        DVZ_MARKER_SHAPE_DISC,
+        DVZ_MARKER_SHAPE_DISC,
+    };
+    uint64_t marker_keys[3] = {40, 20, 50};
+    AT(dvz_visual_set_data(marker, "position", marker_pos, 3) == 0);
+    AT(dvz_visual_set_data(marker, "color", marker_color, 3) == 0);
+    AT(dvz_visual_set_data(marker, "size", marker_size, 3) == 0);
+    AT(dvz_visual_set_data(marker, "angle", marker_angle, 3) == 0);
+    AT(dvz_visual_set_data(marker, "shape", marker_shape, 3) == 0);
+    AT(dvz_visual_set_link_keys(marker, channel, marker_keys, 3) == 0);
+    AT(dvz_panel_add_visual(panel, marker, NULL) == 0);
+
+    DvzPickResult pick = {
+        .request_id = 1,
+        .status = DVZ_PICK_STATUS_HIT,
+        .hit = true,
+        .visual_id = _scene_visual_public_id(scene, point),
+        .resolved_target = DVZ_SCENE_TARGET_ITEM,
+        .resolved_id = 1,
+        .link_key = 20,
+    };
+    AT(dvz_selection_apply_pick(selection, &pick) == 0);
+
+    int point_selection_idx = _attr_index(point, "selection");
+    int marker_selection_idx = _attr_index(marker, "selection");
+    AT(point_selection_idx >= 0);
+    AT(marker_selection_idx >= 0);
+    const uint8_t* point_mask = (const uint8_t*)point->attrs[point_selection_idx].data;
+    const uint8_t* marker_mask = (const uint8_t*)marker->attrs[marker_selection_idx].data;
+    ANN(point_mask);
+    ANN(marker_mask);
+    AT(point_mask[0] == 0);
+    AT(point_mask[1] == 1);
+    AT(point_mask[2] == 0);
+    AT(marker_mask[0] == 0);
+    AT(marker_mask[1] == 1);
+    AT(marker_mask[2] == 0);
+    AT(point->attrs[point_selection_idx].dirty_item_count == 3);
+    AT(marker->attrs[marker_selection_idx].dirty_item_count == 3);
+
+    point->attrs[point_selection_idx].dirty_item_count = 0;
+    marker->attrs[marker_selection_idx].dirty_item_count = 0;
+    AT(dvz_selection_apply_pick(selection, &pick) == 0);
+    AT(dvz_selection_count(selection) == 0);
+    point_mask = (const uint8_t*)point->attrs[point_selection_idx].data;
+    marker_mask = (const uint8_t*)marker->attrs[marker_selection_idx].data;
+    AT(point_mask[0] == 0);
+    AT(point_mask[1] == 0);
+    AT(point_mask[2] == 0);
+    AT(marker_mask[0] == 0);
+    AT(marker_mask[1] == 0);
+    AT(marker_mask[2] == 0);
+    AT(point->attrs[point_selection_idx].dirty_item_count == 3);
+    AT(marker->attrs[marker_selection_idx].dirty_item_count == 3);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
 int test_scene_text_annotation_bookkeeping(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
@@ -864,6 +968,7 @@ int test_scene_interaction(TstSuite* suite)
 
     TST_CASE(test_scene_interaction_core);
     TST_CASE(test_scene_selection_apply_pick_and_link_keys);
+    TST_CASE(test_scene_selection_apply_pick_updates_visual_masks);
     TST_CASE(test_scene_text_annotation_bookkeeping);
     TST_CASE(test_scene_text_bitmap_visual_realization);
     TST_CASE(test_scene_text_sdf_visual_realization);

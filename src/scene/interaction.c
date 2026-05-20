@@ -36,6 +36,22 @@ static bool _selection_item_equals(const DvzSelectionItem* a, const DvzSelection
 
 static bool _scene_remove_selection_item(DvzSelection* selection, const DvzSelectionItem* item);
 
+static void _selection_clear_items(DvzSelection* selection);
+
+static bool _selection_visual_supports_mask(const DvzVisual* visual);
+
+static DvzVisual* _selection_visual_from_public_id(DvzScene* scene, uint64_t visual_id);
+
+static uint32_t _selection_visual_item_count(const DvzVisual* visual);
+
+static bool _selection_matches_visual_item(
+    const DvzSelection* selection, const DvzVisual* visual, uint64_t visual_id,
+    uint32_t item_index);
+
+static int _selection_sync_visual_mask(DvzSelection* selection, DvzVisual* visual);
+
+static int _selection_sync_masks(DvzSelection* selection);
+
 
 
 /*************************************************************************************************/
@@ -93,6 +109,187 @@ static bool _scene_remove_selection_item(DvzSelection* selection, const DvzSelec
         return true;
     }
     return false;
+}
+
+
+/**
+ * Clear stored selection items without synchronizing visual masks.
+ *
+ * @param selection the selection
+ */
+static void _selection_clear_items(DvzSelection* selection)
+{
+    ANN(selection);
+    selection->item_count = 0;
+    dvz_memset(selection->items, sizeof(selection->items), 0, sizeof(selection->items));
+}
+
+
+
+/**
+ * Return whether one visual supports the first selection-mask rendering path.
+ *
+ * @param visual the visual
+ * @return whether the visual supports a per-item selection mask
+ */
+static bool _selection_visual_supports_mask(const DvzVisual* visual)
+{
+    return visual != NULL &&
+           (visual->type == DVZ_VISUAL_TYPE_POINT || visual->type == DVZ_VISUAL_TYPE_MARKER);
+}
+
+
+
+/**
+ * Resolve a public visual id to a retained visual slot.
+ *
+ * @param scene the scene
+ * @param visual_id one-based public visual id
+ * @return the visual, or NULL when the id is invalid
+ */
+static DvzVisual* _selection_visual_from_public_id(DvzScene* scene, uint64_t visual_id)
+{
+    if (scene == NULL || visual_id == 0 || visual_id > scene->visual_count)
+        return NULL;
+    DvzVisual* visual = &scene->visuals[visual_id - 1];
+    if (_scene_visual_public_id(scene, visual) != visual_id)
+        return NULL;
+    return visual;
+}
+
+
+
+/**
+ * Return the selectable item count for one point-like visual.
+ *
+ * @param visual the visual
+ * @return the item count, or zero when unavailable
+ */
+static uint32_t _selection_visual_item_count(const DvzVisual* visual)
+{
+    if (!_selection_visual_supports_mask(visual))
+        return 0;
+    int pos_idx = _attr_index(visual, "position");
+    if (pos_idx < 0 || visual->attrs[pos_idx].item_count > UINT32_MAX)
+        return 0;
+    return (uint32_t)visual->attrs[pos_idx].item_count;
+}
+
+
+
+/**
+ * Return whether the retained selection contains one visual item.
+ *
+ * @param selection the selection
+ * @param visual the visual
+ * @param visual_id one-based public visual id
+ * @param item_index zero-based item index
+ * @return whether the item is selected directly or through a link key
+ */
+static bool _selection_matches_visual_item(
+    const DvzSelection* selection, const DvzVisual* visual, uint64_t visual_id,
+    uint32_t item_index)
+{
+    ANN(selection);
+    ANN(visual);
+
+    uint64_t link_key = 0;
+    if (visual->link_keys != NULL && item_index < visual->link_key_count)
+        link_key = visual->link_keys[item_index];
+
+    for (uint32_t i = 0; i < selection->item_count; i++)
+    {
+        const DvzSelectionItem* item = &selection->items[i];
+        if (item->target != DVZ_SCENE_TARGET_ITEM)
+            continue;
+        if (item->visual_id == visual_id && item->target_id == item_index)
+            return true;
+        if (item->link_key != 0 && link_key != 0 && item->link_key == link_key)
+            return true;
+    }
+    return false;
+}
+
+
+
+/**
+ * Rebuild the selection mask attribute for one visual.
+ *
+ * @param selection the selection
+ * @param visual the visual
+ * @return 0 on success, -1 on error
+ */
+static int _selection_sync_visual_mask(DvzSelection* selection, DvzVisual* visual)
+{
+    ANN(selection);
+    ANN(visual);
+    if (!_selection_visual_supports_mask(visual))
+        return 0;
+
+    uint32_t item_count = _selection_visual_item_count(visual);
+    int selection_idx = _attr_index(visual, "selection");
+    if (item_count == 0 && selection_idx < 0)
+        return 0;
+    if (item_count == 0)
+        return 0;
+
+    uint8_t* mask = (uint8_t*)dvz_calloc(item_count, sizeof(uint8_t));
+    if (mask == NULL)
+    {
+        log_error("selection mask allocation failed for %u items", item_count);
+        return -1;
+    }
+
+    uint64_t visual_id = _scene_visual_public_id(selection->scene, visual);
+    bool any_selected = false;
+    for (uint32_t i = 0; i < item_count; i++)
+    {
+        if (_selection_matches_visual_item(selection, visual, visual_id, i))
+        {
+            mask[i] = 1;
+            any_selected = true;
+        }
+    }
+
+    if (selection_idx < 0 && !any_selected)
+    {
+        dvz_free(mask);
+        return 0;
+    }
+
+    int res = dvz_visual_set_data(visual, "selection", mask, item_count);
+    dvz_free(mask);
+    return res;
+}
+
+
+
+/**
+ * Synchronize all point-like visual masks affected by a selection change.
+ *
+ * @param selection the selection
+ * @return 0 on success, -1 on error
+ */
+static int _selection_sync_masks(DvzSelection* selection)
+{
+    ANN(selection);
+    if (selection->scene == NULL)
+        return 0;
+    if (!_scene_visual_mutation_allowed(selection->scene, "update selection masks"))
+        return -1;
+
+    int res = 0;
+    DvzScene* scene = selection->scene;
+    for (uint32_t i = 0; i < scene->visual_count; i++)
+    {
+        DvzVisual* visual = &scene->visuals[i];
+        DvzVisual* picked_visual = _selection_visual_from_public_id(scene, (uint64_t)i + 1);
+        if (picked_visual != visual)
+            continue;
+        if (_selection_sync_visual_mask(selection, visual) != 0)
+            res = -1;
+    }
+    return res;
 }
 
 
@@ -374,8 +571,8 @@ void dvz_selection_destroy(DvzSelection* selection)
 void dvz_selection_clear(DvzSelection* selection)
 {
     ANN(selection);
-    selection->item_count = 0;
-    dvz_memset(selection->items, sizeof(selection->items), 0, sizeof(selection->items));
+    _selection_clear_items(selection);
+    (void)_selection_sync_masks(selection);
 }
 
 
@@ -406,10 +603,10 @@ int dvz_selection_apply_pick(DvzSelection* selection, const DvzPickResult* pick)
     switch (selection->desc.mode)
     {
     case DVZ_SELECT_REPLACE:
-        dvz_selection_clear(selection);
+        _selection_clear_items(selection);
         selection->items[0] = item;
         selection->item_count = 1;
-        return 0;
+        return _selection_sync_masks(selection);
     case DVZ_SELECT_ADDITIVE:
         if (present)
             return 0;
@@ -417,12 +614,12 @@ int dvz_selection_apply_pick(DvzSelection* selection, const DvzPickResult* pick)
     case DVZ_SELECT_SUBTRACT:
         if (present)
             _scene_remove_selection_item(selection, &item);
-        return 0;
+        return _selection_sync_masks(selection);
     case DVZ_SELECT_TOGGLE:
         if (present)
         {
             _scene_remove_selection_item(selection, &item);
-            return 0;
+            return _selection_sync_masks(selection);
         }
         break;
     default:
@@ -434,7 +631,7 @@ int dvz_selection_apply_pick(DvzSelection* selection, const DvzPickResult* pick)
         return -1;
     }
     selection->items[selection->item_count++] = item;
-    return 0;
+    return _selection_sync_masks(selection);
 }
 
 

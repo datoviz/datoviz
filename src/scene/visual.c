@@ -180,6 +180,9 @@ static uint32_t _attr_item_size(DvzVisualType type, const char* name)
         if (strcmp(name, "position") == 0) return 3 * sizeof(float);
         if (strcmp(name, "color") == 0)    return 4 * sizeof(uint8_t);
         if (strcmp(name, "size") == 0)     return sizeof(float);
+        if ((type == DVZ_VISUAL_TYPE_POINT || type == DVZ_VISUAL_TYPE_MARKER) &&
+            strcmp(name, "selection") == 0)
+            return sizeof(uint8_t);
         if (type == DVZ_VISUAL_TYPE_MARKER && strcmp(name, "angle") == 0)
             return sizeof(float);
         if (type == DVZ_VISUAL_TYPE_MARKER && strcmp(name, "shape") == 0)
@@ -253,9 +256,9 @@ static bool _attr_supported(DvzVisualType type, const char* name, uint32_t* item
     if (*item_size != 0)
         return true;
 
-    const char* expected = "position, color, diameter";
+    const char* expected = "position, color, diameter, selection";
     if (type == DVZ_VISUAL_TYPE_MARKER)
-        expected = "position, color, diameter, angle, shape";
+        expected = "position, color, diameter, selection, angle, shape";
     else if (type == DVZ_VISUAL_TYPE_PIXEL)
         expected = "position, color, pixel_size";
     else if (type == DVZ_VISUAL_TYPE_SPHERE)
