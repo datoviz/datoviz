@@ -1,766 +1,154 @@
 # Scene Controllers And Interaction
 
-This document defines how controllers and interaction should work in the future scene layer.
-
-Controllers are scene-side state machines.
-
-They translate panel-local or scene-level events into scene-state mutations, invalidation, and frame
-scheduling.
+> **Status:** normative scene interaction model for v0.4.
+> **Authority:** this file defines shared controller routing, state, capture, and invalidation
+> rules. Family-specific camera behavior lives in
+> [`CAMERA_CONTROLLERS.md`](CAMERA_CONTROLLERS.md), and the accepted ownership/binding API lives in
+> [`../decisions/CONTROLLER_BINDING_MODEL.md`](../decisions/CONTROLLER_BINDING_MODEL.md).
 
 
 ## Purpose
 
-The controller model should:
+Controllers are scene-side state machines. They translate scene-level events into scene-state
+mutations, invalidation, and redraw scheduling.
 
-1. keep input and interaction policy above DRP2 and backend internals,
-2. make panel-local navigation explicit,
-3. give picking, hover, and selection a clean scene-level home,
-4. separate event interpretation from visual rendering,
-5. fit naturally with invalidation, redraw, and `FramePlan` rebuild rules.
+The model must:
 
-Controller public APIs must also follow the scene API WASM portability contract in
-[`../api/WASM_PORTABILITY.md`](../api/WASM_PORTABILITY.md). Controllers should be exposed as opaque
-scene-owned handles with typed state accessors, not as public structs, public unions, or
-layout-dependent casts between controller families.
-
-The accepted controller ownership and panel-binding model is recorded in
-[`../decisions/CONTROLLER_BINDING_MODEL.md`](../decisions/CONTROLLER_BINDING_MODEL.md). This
-document defines broader controller behavior; that decision record fixes the public handle,
-ownership, linking, and dimension-binding rules for the v0.4 refactor.
-
-Fly, pivot-orbit, and turntable camera-controller semantics are recorded in
-[`CAMERA_CONTROLLERS.md`](CAMERA_CONTROLLERS.md). Keep this file focused on shared controller
-ownership, routing, invalidation, and interaction responsibilities.
+1. keep input policy above DRP2 and backend internals;
+2. make panel-local navigation, routing, focus, and capture explicit;
+3. give hover, picking, and selection a scene-level home;
+4. fit the frame lifecycle in [`../pipeline/FRAME_LIFECYCLE.md`](../pipeline/FRAME_LIFECYCLE.md)
+   and invalidation rules in
+   [`../pipeline/INVALIDATION_AND_CACHING.md`](../pipeline/INVALIDATION_AND_CACHING.md);
+5. expose opaque, WASM-portable handles as required by
+   [`../api/WASM_PORTABILITY.md`](../api/WASM_PORTABILITY.md).
 
 
-## Position
+## Core Rules
 
-Controllers sit between:
+A controller mutates scene, panel, selection, hover, or navigation state. It does not emit DRP2,
+record backend commands, own backend synchronization, bypass invalidation, or interpret raw GPU
+pick payloads.
 
-1. runtime-delivered input events,
-2. scene-owned objects such as panels, visuals, axes, and selection state,
-3. the invalidation and redraw system,
-4. `FramePlan` construction for the next frame.
+The normal order is:
 
-The intended order is:
-
-1. events are translated into scene-level events,
-2. controllers consume those events,
-3. controllers mutate scene state,
-4. invalidation and redraw are recorded,
-5. the next frame build resolves the consequences.
+1. runtime input is translated into a scene-level event;
+2. routing selects a panel, focused target, hovered target, or captured controller;
+3. controllers consume the event in deterministic order;
+4. state is mutated and dirty scopes are marked;
+5. the next frame resolves validation, planning, DRP2 emission, and runtime execution.
 
 
-## Core Rule
+## Boundary And Scope
 
-A controller mutates scene state.
+| Scope | Owns | Examples |
+|---|---|---|
+| Panel-local | one panel's navigation, view, probes, or gestures | panzoom, orbit/fly, box selection, panel probes |
+| Scene-global | state shared across panels or the whole scene | linked panning, shared cursor, animation scrubber, global selection |
 
-A controller does not:
+Navigation belongs to the panel, not to visuals. Visuals consume panel-local transform state from
+[`../pipeline/TRANSFORM_PIPELINE.md`](../pipeline/TRANSFORM_PIPELINE.md).
 
-1. emit DRP2 directly,
-2. record backend commands,
-3. own backend synchronization or submission,
-4. bypass scene invalidation rules.
+
+## Routing, Focus, And Capture
+
+Event routing is explicit and panel-aware.
+
+| Concept | Required behavior |
+|---|---|
+| Scene event | Backend events are normalized into semantic pointer, wheel, keyboard, resize, timer, gesture, and pick-result events. Backend-specific fields are not authoritative. |
+| Hovered panel | Pointer motion updates the panel under the pointer when no capture overrides routing. |
+| Focused panel | Keyboard and mode-changing events may use the focused panel. Focus is scene-owned. |
+| Capture | A drag or gesture may temporarily route events to the initiating controller even after the pointer leaves the panel. Capture ends on release or cancel. |
+| Order | Dispatch order must be deterministic for a fixed scene state, event sequence, controller state, and capability record. |
+
+Touch is translated before this routing stage. Controllers consume gestures, not platform touch
+callbacks; see [`../integration/TOUCH_SUPPORT.md`](../integration/TOUCH_SUPPORT.md).
+
+
+## Controller Families
+
+| Family | Scope | State mutated | Dirty/redraw consequences | Notes |
+|---|---|---|---|---|
+| `PanZoom2DController` | panel-local or shared handle | visible X/Y domain or panzoom state | `PanelTransformDirty`; `AxisLayoutDirty` only when domains/layout-affecting values change; redraw | `DVZ_ASPECT_EQUAL` locks X/Y data-unit-per-pixel ratio; pan remains free. |
+| `Camera3DController` | panel-local or shared handle | camera state | `PanelTransformDirty`; redraw; optional view-dependent overlay invalidation | Fly, arcball/pivot-orbit, and turntable semantics are canonical in [`CAMERA_CONTROLLERS.md`](CAMERA_CONTROLLERS.md). |
+| `GlobeController` | panel-local or shared handle | longitude, latitude, altitude, optional up-vector | `PanelTransformDirty`; redraw | Natural controller for `DVZ_TRANSFORM_GEO_GLOBE`; domain queries return geographic units. |
+| `HoverController` | usually panel-local | pointer position and hover target | redraw when hover-visible state changes; optional style dirtiness | Issues/coalesces pick requests and applies only fresh latest-request-wins results from [`PICKING.md`](PICKING.md). |
+| `SelectionController` | panel-local gestures, scene-owned selection | selection state | redraw; style dirtiness when selection affects visual props | Click/drag gestures may use picking or geometric region queries. |
+| `LinkedPanelsController` | scene-global | shared domains, cursors, hover, or selection | affected panel transforms, overlays, or redraw | Sharing one controller handle is the linking mechanism. |
+
+
+## State Inspection And Editing
+
+Controllers expose family-specific state snapshots for UI inspectors, tests, serialization, and
+programmatic navigation. State snapshots carry semantic values such as pan, zoom, quaternion, pivot,
+yaw, pitch, distance, position, target, roll, movement speed, and clamp limits. Derived view,
+projection, and model matrices are not authoritative controller state.
+
+Applying a snapshot is semantically equivalent to a user gesture:
+
+1. controller state is updated;
+2. attached panel or camera state is updated;
+3. `PanelTransformDirty` is marked;
+4. axis/layout dirtiness is marked only when visible domains or layout-affecting values change;
+5. redraw is requested.
+
+Arcball pan is controller state, not visual geometry. Right/middle drag moves the apparent rotation
+center through panel-plane translation; fixed overlays attached with `DVZ_CONTROLLER_FIXED` remain
+unaffected. Pivot picking may later set the arcball center from a semantic pick target, but default
+pan remains lightweight and deterministic.
+
+
+## Binding, Linking, And Domain Queries
+
+The public binding model is fixed by
+[`../decisions/CONTROLLER_BINDING_MODEL.md`](../decisions/CONTROLLER_BINDING_MODEL.md):
+
+| Topic | Rule |
+|---|---|
+| Handles | Controllers are scene-owned opaque `DvzController*` objects with stable identity. |
+| Construction | Family-specific constructors are the public surface; generic constructors may remain internal. |
+| Lifetime | The scene destroys controllers with the scene; explicit early destruction may exist. |
+| Per-dimension binding | Panels bind controllers per dimension so X, Y, Z, or full camera navigation can be linked independently. |
+| Linking | Sharing a controller handle across panels is the linking API; no separate link object is required. |
+| Query model | Axes and scene objects pull visible domains from bound controllers during update. If none is bound, the panel uses its full data-space domain. |
+
+Domain query values are data-space scalar bounds for ordinary controllers and longitude, latitude,
+or altitude for `GlobeController`.
+
+
+## Interaction Flows
+
+| Flow | Required sequence |
+|---|---|
+| Hover | pointer motion -> hover controller updates panel position -> latest hover pick is issued/refreshed when needed -> fresh result mutates hover state -> redraw if visible hover changed |
+| Click selection | press records gesture -> release/click confirmation issues or consumes pick -> scene identity is resolved -> selection state mutates -> redraw if visible selection changed |
+| Box/region selection | controller owns gesture -> panel-local query region is resolved -> scene selection state mutates -> normal invalidation/redraw follows |
+| Animation plus interaction | controller updates and animation updates both feed the same invalidation system before validation and planning |
+
+Picking integration uses interpreted scene identity only. Request identity, freshness, and
+latest-wins behavior are defined in [`PICKING.md`](PICKING.md).
+
+
+## Invalidation And Diagnostics
+
+Typical controller invalidation:
+
+| Mutation | Consequence |
+|---|---|
+| panzoom or camera navigation | `PanelTransformDirty`, redraw |
+| visible domain change | `AxisLayoutDirty` where axes depend on the domain |
+| hover or selection state change | redraw; optional `VisualPropsDirty` for style-driven highlighting |
+| controller mode or picking policy change | `FramePlanDirty` only when scene participation or picking topology changes |
+
+Diagnostics should use the schema in
+[`../validation/DIAGNOSTICS.md`](../validation/DIAGNOSTICS.md) and report the smallest useful
+scene scope: last handling controller, focus/capture owner, produced dirty scopes, coalesced or
+discarded hover requests, and whether a selection change required plan rebuild or redraw only.
 
 
 ## Non-Goals
 
-This document does not define:
-
-1. the exact runtime event adapter,
-2. the exact callback signatures,
-3. the exact final C API,
-4. the exact threading model for event delivery,
-5. low-level window-system behavior.
-
-
-## Controller Scope
-
-The scene layer should recognize at least two controller scopes:
-
-1. panel-local controllers,
-2. scene-global controllers.
-
-
-### Panel-Local Controllers
-
-These operate on one panel’s view, interaction state, or attached scene objects.
-
-Examples:
-
-1. 2D panzoom,
-2. 3D orbit or fly camera,
-3. box selection inside one panel,
-4. axis interaction or panel-local probes.
-
-
-### Scene-Global Controllers
-
-These operate across the scene or coordinate multiple panels.
-
-Examples:
-
-1. synchronized linked panning,
-2. global animation scrubbing,
-3. shared selection state,
-4. coordinated cursor or crosshair behaviors.
-
-
-## Main Responsibilities
-
-Controllers should be responsible for:
-
-1. interpreting scene-level events,
-2. mutating panel or scene state,
-3. scheduling picking requests when needed,
-4. marking the correct invalidation scopes,
-5. requesting redraw when the user-visible result changed.
-
-
-## Event Model
-
-The scene spec should use scene-level events rather than raw backend events.
-
-Useful conceptual event families include:
-
-1. pointer motion,
-2. pointer press,
-3. pointer release,
-4. wheel or scroll,
-5. keyboard press or release,
-6. enter or leave panel,
-7. resize,
-8. timer or animation tick,
-9. picking result arrival.
-
-These are semantic events.
-They do not need to preserve every backend-specific field.
-
-
-## Event Routing
-
-Event routing should be explicit and panel-aware.
-
-The normal route is:
-
-1. runtime event arrives,
-2. scene determines which panel or scene object it targets,
-3. the event is translated into a scene-level event,
-4. relevant controllers receive it in a deterministic order.
-
-The spec should allow:
-
-1. one focused panel,
-2. one hovered panel,
-3. optional controller capture during drag interaction.
-
-
-## Capture And Focus
-
-The scene should support a notion of temporary interaction capture.
-
-This matters when:
-
-1. a drag starts in one panel,
-2. the pointer temporarily leaves the panel,
-3. interaction should still continue with the same controller.
-
-So the model should allow:
-
-1. panel focus,
-2. pointer capture during an active gesture,
-3. release of capture when the gesture ends or is canceled.
-
-
-## Panel-Owned Navigation
-
-Navigation should be owned by the panel, not by the visual.
-
-That means:
-
-1. 2D panzoom belongs to panel state,
-2. 3D camera belongs to panel state,
-3. controllers mutate panel-local view state,
-4. visuals consume the resulting panel-local transform state.
-
-This keeps the transform model aligned with `TRANSFORM_PIPELINE.md`.
-
-
-## Default Controller Families
-
-The first useful set is:
-
-1. `PanZoom2DController`
-2. `Camera3DController`
-3. `GlobeController`
-4. `HoverController`
-5. `SelectionController`
-6. `LinkedPanelsController`
-
-These names are descriptive only.
-
-
-## `PanZoom2DController`
-
-This controller should:
-
-1. interpret drag and scroll input in panel coordinates,
-2. mutate the panel’s visible domain or equivalent panzoom state,
-3. mark `PanelTransformDirty`,
-4. reevaluate whether attached axes need `AxisLayoutDirty`,
-5. request redraw.
-
-It should usually not:
-
-1. invalidate normalized scene resources,
-2. force bulk reupload of ordinary visual data.
-
-
-## `Camera3DController`
-
-This controller should:
-
-1. interpret drag, scroll, and keyboard navigation as camera updates,
-2. mutate the panel’s camera state,
-3. mark `PanelTransformDirty`,
-4. request redraw.
-
-It may also:
-
-1. invalidate view-dependent overlays,
-2. schedule picking or probes if the interaction model wants that.
-
-
-### Controller State Inspection And Editing
-
-Controllers should expose family-specific state snapshots so external UI, Python wrappers, tests,
-and serialization helpers can read and edit navigation state without duplicating controller math.
-
-Recommended state APIs:
-
-```text
-dvz_panzoom_get_state(panzoom, &state)
-dvz_panzoom_set_state(panzoom, &state)
-
-dvz_arcball_get_state(arcball, &state)
-dvz_arcball_set_state(arcball, &state)
-
-dvz_turntable_get_state(turntable, &state)
-dvz_turntable_set_state(turntable, &state)
-
-dvz_fly_get_state(fly, &state)
-dvz_fly_set_state(fly, &state)
-```
-
-State structs should carry semantic values such as pan, zoom, quaternion, pivot, yaw, pitch,
-distance, position, target, roll, movement speed, and clamp limits. They should not carry derived
-view, projection, or model matrices as authoritative state.
-
-Applying a state snapshot is semantically equivalent to a user gesture:
-
-1. the controller updates its internal state;
-2. attached panel or camera state is updated when relevant;
-3. `PanelTransformDirty` is marked;
-4. axis/layout dirty state is marked only when visible domains or layout-affecting values change;
-5. redraw is requested.
-
-This state surface is the correct foundation for small controller inspector widgets. Those widgets
-remain external UI clients; the controller stays the source of truth.
-
-
-### Arcball Interaction Policy
-
-Status on 2026-05-16: the active `DvzArcball` controller supports:
-
-1. left-drag rotation;
-2. right-drag or middle-drag panel-plane pan, moving the apparent rotation center;
-3. scroll-wheel zoom;
-4. double-click reset of rotation, zoom, and pan.
-
-The arcball pan is controller state, not visual geometry. It must compose into the panel model
-matrix so every visual attached with `DVZ_CONTROLLER_APPLY` observes the same shifted rotation
-center. A fixed overlay visual attached with `DVZ_CONTROLLER_FIXED` remains unaffected.
-
-The pan operation is deliberately screen-driven. It changes the panel-plane translation used by the
-arcball model rather than editing mesh vertices or camera target data. More advanced pivot picking
-can be added later by resolving a picked data-space point and setting the arcball center to that
-semantic target, but the default right/middle drag path should remain lightweight and deterministic.
-
-
-## `GlobeController`
-
-This controller supports navigation on a 3D geographic globe.
-
-It should:
-
-1. constrain the camera to always point toward the globe center,
-2. interpret drag as rotation on the sphere surface — expressed as longitude and latitude of
-   the view center,
-3. interpret scroll or pinch as altitude change — moving the camera closer to or farther from
-   the surface,
-4. enforce a minimum altitude to prevent the camera from passing through the surface,
-5. enforce a maximum altitude beyond which the full globe is visible,
-6. mark `PanelTransformDirty` on any navigation change.
-
-It is the natural paired controller for `DVZ_TRANSFORM_GEO_GLOBE` visual attachments.
-
-Unlike `Camera3DController`, navigation is expressed in geographic terms (longitude, latitude,
-altitude) rather than free 3D space.
-The camera is always oriented with the sphere's north pole up unless an explicit up-vector
-override is applied.
-
-The queryable domain interface for globe axes should return the currently visible longitude and
-latitude ranges rather than raw `VisualSpace` extents. When `dvz_controller_query_domain` is
-called on a `GlobeController`, `visible_min` and `visible_max` are in geographic units:
-longitude (`DVZ_DIM_X`) in degrees east, latitude (`DVZ_DIM_Y`) in degrees north, altitude
-(`DVZ_DIM_Z`) in the same distance unit used by `dvz_globe_controller_set_altitude`.
-
-Constructor:
-
-```text
-globe = dvz_globe_controller(scene, flags)
-dvz_globe_controller_set_altitude(globe, min_alt, max_alt)
-dvz_panel_bind_controller(panel, globe, DVZ_DIM_XYZ)   // binds all three spatial dimensions
-```
-
-
-## `HoverController`
-
-This controller should:
-
-1. track current pointer position per panel,
-2. decide whether hover picking should be requested,
-3. coalesce or replace stale hover requests,
-4. update hover state when a valid pick result returns,
-5. request redraw when hover-visible state changes.
-
-This controller should cooperate closely with the picking model in `PICKING.md`.
-
-The default freshness rule should be:
-
-1. hover follows latest-request-wins semantics,
-2. stale hover results are discarded rather than applied late,
-3. request identity and scene or panel generation are checked before hover state mutates.
-
-
-## `SelectionController`
-
-This controller should:
-
-1. interpret click or drag-based selection gestures,
-2. decide whether picking or geometric selection is needed,
-3. mutate scene selection state,
-4. mark the correct invalidation scopes,
-5. request redraw.
-
-Selection state should remain scene-owned rather than visual-owned.
-
-
-## `LinkedPanelsController`
-
-This controller should support coordinated multi-panel interaction.
-
-Examples:
-
-1. several panels share the same 2D visible domain,
-2. one cursor position is mirrored across panels,
-3. one selection or hover drives linked updates in other panels.
-
-This controller is scene-global in effect even if it listens to one panel-local source event.
-
-
-## Controller Handles
-
-Controllers are first-class scene objects with stable handles.
-
-This means:
-
-1. a controller is created and owned by the scene,
-2. it is returned as an opaque handle (`DvzController*`),
-3. panels reference that handle rather than embedding controller state internally,
-4. one controller handle may be bound to multiple panels,
-5. the scene owns the controller lifecycle and destroys it when the scene is destroyed.
-
-Making handles explicit is required for panel linking: two panels that share the same controller
-handle automatically have their navigation synchronized, with no additional linking API.
-
-
-## Controller Construction
-
-Family-specific constructors are the preferred public surface, mirroring the visual construction
-model in \`../API_DESIGN.md\`.
-
-Conceptually:
-
-```text
-// Create a controller (scene-owned)
-panzoom  = dvz_panzoom(scene, flags)
-camera3d = dvz_camera3d(scene, flags)
-hover    = dvz_hover(scene, flags)
-
-// Optionally configure before binding
-dvz_panzoom_set_bounds(panzoom, &bounds)
-dvz_panzoom_set_aspect(panzoom, DVZ_ASPECT_EQUAL)  // see Aspect Ratio below
-```
-
-A generic `dvz_controller(scene, type, flags)` may exist internally but is not the user-facing
-default.
-
-Controllers are destroyed when the scene is destroyed.
-Explicit `dvz_controller_destroy()` is available for earlier release.
-
-
-## Aspect Ratio
-
-`dvz_panzoom` supports an aspect ratio constraint that locks X and Y zoom together.
-
-```text
-dvz_panzoom_set_aspect(panzoom, DVZ_ASPECT_EQUAL)
-```
-
-| Value | Behavior |
-|---|---|
-| `DVZ_ASPECT_FREE` | X and Y scale independently (default) |
-| `DVZ_ASPECT_EQUAL` | zoom constrains X and Y to the same data-unit-per-pixel ratio |
-
-When `DVZ_ASPECT_EQUAL` is active, any zoom gesture that would scale X and Y differently is
-adjusted so both dimensions receive the same scale factor.
-Pan remains unconstrained.
-
-The constraint operates on `VisualSpace` after normalization.
-See `TRANSFORM_PIPELINE.md` for how the panel domain and normalization interact with aspect
-ratio.
-
-
-## Per-Dimension Binding
-
-Panels bind controllers per dimension.
-
-This allows partial linking: sharing X navigation while keeping Y independent, or binding a
-3D camera globally while leaving a secondary dimension panel-local.
-
-Conceptually:
-
-```text
-// Bind a panzoom controller to a panel's X dimension
-dvz_panel_bind_controller(panel, panzoom, DVZ_DIM_X)
-dvz_panel_bind_controller(panel, local_y, DVZ_DIM_Y)
-```
-
-A panel that has a controller bound for a dimension delegates all navigation on that dimension
-to the controller.
-
-For 2D panzoom, binding the same controller to both `DVZ_DIM_X` and `DVZ_DIM_Y` covers the
-common case of full-panel panzoom.
-For 3D, a `Camera3DController` handle covers all three dimensions through a single binding.
-
-Panels retain the binding reference; the controller handle is the stable identity.
-
-
-## Panel Linking Via Shared Handles
-
-Sharing a controller handle across panels is the panel-linking mechanism.
-
-Conceptually:
-
-```text
-// Create one shared X controller
-shared_x = dvz_panzoom(scene, flags)
-
-// Bind it to two panels on the X dimension only
-dvz_panel_bind_controller(panel_a, shared_x, DVZ_DIM_X)
-dvz_panel_bind_controller(panel_b, shared_x, DVZ_DIM_X)
-
-// Each panel keeps its own independent Y controller
-dvz_panel_bind_controller(panel_a, local_y_a, DVZ_DIM_Y)
-dvz_panel_bind_controller(panel_b, local_y_b, DVZ_DIM_Y)
-```
-
-Both panels' X axes query `shared_x` and therefore always show the same visible X domain.
-No separate linking API is needed: sharing the handle IS the link.
-
-This pattern covers common scientific visualization layouts:
-
-1. spike raster + PSTH sharing a time axis,
-2. multi-panel time series locked to the same X range,
-3. scatter plot + marginal histograms sharing X and Y,
-4. overview + detail with one synchronized dimension.
-
-
-## Domain Query Interface
-
-Axes and other scene objects query controllers for the current visible domain.
-
-This is a pull model: the scene does not push domain changes to axes.
-Instead, during the axis update step of the frame lifecycle, the axis queries its bound
-controller directly.
-
-Conceptually:
-
-```text
-// Axis queries its panel's X controller for the currently visible range
-// visible_min and visible_max are double* out-parameters; they receive data-space scalar bounds.
-dvz_controller_query_domain(panel_x_controller, DVZ_DIM_X, &visible_min, &visible_max)
-```
-
-`visible_min` and `visible_max` are `double` scalars giving the data-space bounds of the
-currently visible range along the queried dimension. For `GlobeController` these are in
-geographic units; for other controllers they are in the same units as the declared
-`DvzDataDomain` (see `TRANSFORM_PIPELINE.md`).
-
-This makes axis update deterministic and avoids event-routing complexity for something that
-happens every frame anyway.
-
-If no controller is bound to a dimension, the panel uses its full data-space domain.
-
-
-## Interaction State
-
-The scene layer should represent interaction state explicitly.
-
-Useful conceptual state includes:
-
-1. focused panel,
-2. captured controller,
-3. hovered panel,
-4. current pointer position per active panel,
-5. hover target,
-6. selection state,
-7. active gesture state.
-
-This state belongs to the scene layer, not to backend callbacks.
-
-
-## Gesture Model
-
-The scene layer should think in terms of gestures, not just raw events.
-
-Examples:
-
-1. press-drag-release pan gesture,
-2. wheel zoom gesture,
-3. click-to-select gesture,
-4. drag-box selection gesture,
-5. hover probe gesture.
-
-Controllers may internally keep gesture state machines, but the scene spec should remain focused on
-their observable effects.
-
-
-## Touch And Multi-Touch Input
-
-Touch input is translated into the same semantic gesture events as mouse input before reaching
-controllers. Controllers require no touch-specific code.
-
-A **gesture recognizer** layer sits between the platform input source and the scene event
-system. It tracks active touch points and emits `DvzGestureEvent` objects when a recognized
-gesture is detected.
-
-### Supported Gestures
-
-| Gesture | Touch pattern | Controller action |
-|---|---|---|
-| `DVZ_GESTURE_PAN` | 1-finger drag, or 2-finger drag | pan |
-| `DVZ_GESTURE_PINCH` | 2-finger pinch / spread | zoom |
-| `DVZ_GESTURE_ROTATE` | 2-finger rotation | 3D rotation (`ArcballController`) |
-| `DVZ_GESTURE_TAP` | 1-finger tap | pick / click |
-
-Gestures above are in scope for v0.4.
-3+ finger gestures, pressure sensitivity, stylus tilt, and multi-touch picking are deferred.
-
-### Platform Sources
-
-| Platform | Touch source |
-|---|---|
-| Desktop touchscreen / tablet | GLFW touch callbacks |
-| Browser (WebGPU / Emscripten) | Emscripten touch events |
-| macOS trackpad pinch / scroll | existing GLFW scroll events — no change needed |
-
-The gesture recognizer is initialized by the runtime with the appropriate platform source.
-The scene layer consumes only `DvzGestureEvent` and is unaware of the source.
-
-### ImGui Routing
-
-Touch input follows the same routing rule as mouse input.
-`io.WantCaptureMouse` is checked first; gestures claimed by ImGui are not forwarded to scene
-controllers.
-
-
-## Picking Integration
-
-Controllers should not interpret GPU payloads directly.
-
-Instead:
-
-1. controllers may request picking,
-2. picking results return to scene-level routing,
-3. controllers consume interpreted scene-level pick results.
-
-This preserves the boundary:
-
-1. controllers decide interaction policy,
-2. picking resolves scene identity,
-3. controllers mutate scene state from that identity.
-
-Controllers should not need to guess whether a pick result is current.
-
-That freshness decision should already have been made by scene-level routing using the request
-identity and revision data defined by `PICKING.md`.
-
-
-## Hover Flow
-
-The intended hover flow is:
-
-1. pointer motion enters a panel,
-2. hover controller updates current pointer position,
-3. if hover policy requires it, a pick request is issued or refreshed,
-4. the next suitable frame includes or reuses the picking path,
-5. a pick result returns,
-6. hover state is updated if the result is current,
-7. redraw is requested if the visible hover state changed.
-
-
-## Click Selection Flow
-
-The intended click-selection flow is:
-
-1. pointer press occurs in a panel,
-2. selection controller records gesture state,
-3. pointer release or click confirmation occurs,
-4. a pick request is issued or consumed,
-5. the pick result is mapped back to scene identity,
-6. selection state is mutated,
-7. redraw is requested if the visible selection changed.
-
-
-## Box Or Region Selection
-
-The spec should leave room for region-based selection without forcing it immediately into the first
-family contracts.
-
-At the interaction level, it should still fit the same pattern:
-
-1. controller owns gesture state,
-2. panel-local geometry defines the query region,
-3. selection state is updated at scene level,
-4. redraw and invalidation follow normal rules.
-
-
-## Axes And Controllers
-
-Axes should participate in interaction through controllers rather than by owning backend callbacks.
-
-Possible axis-related interactions include:
-
-1. hover on ticks or labels,
-2. drag on an axis-linked range control,
-3. scroll or zoom that changes axis layout indirectly through panel navigation,
-4. click on axis annotations.
-
-Axis interaction should still route through scene-owned identities and invalidation.
-
-
-## Controllers And Invalidation
-
-Controllers should be one of the main producers of invalidation.
-
-Typical mappings:
-
-1. panzoom gesture -> `PanelTransformDirty`, maybe `AxisLayoutDirty`
-2. camera gesture -> `PanelTransformDirty`
-3. hover state change -> redraw, maybe style-related `VisualPropsDirty`
-4. selection change -> redraw, maybe style-related `VisualPropsDirty`
-5. controller mode change -> `FramePlanDirty` only if scene participation or picking policy changes
-
-Controllers should not bypass `INVALIDATION_AND_CACHING.md`.
-
-
-## Controllers And Redraw
-
-Not every event should force immediate redraw.
-
-The controller layer should be free to:
-
-1. mark state dirty,
-2. coalesce events,
-3. request redraw only when the visible result may change.
-
-This matters especially for:
-
-1. hover motion,
-2. repeated wheel events,
-3. linked multi-panel interaction.
-
-
-## Animation And Controllers
-
-Animations and controllers are related but distinct.
-
-The useful separation is:
-
-1. controllers respond to external interaction events,
-2. animations evolve scene properties over time,
-3. both feed the same invalidation and redraw system.
-
-This keeps the frame lifecycle clean:
-
-1. input and controller update,
-2. animation update,
-3. invalidation resolution,
-4. `FramePlan` build.
-
-
-## Determinism
-
-For a given:
-
-1. scene state,
-2. event sequence,
-3. controller state,
-4. capability record,
-
-the resulting scene mutations and invalidation decisions should be deterministic.
-
-This is important for:
-
-1. tests,
-2. replayable interaction traces,
-3. debugging.
-
-
-## Diagnostics
-
-The scene layer should be able to report:
-
-1. which controller handled the last event,
-2. which panel currently owns focus or capture,
-3. which invalidation scopes were produced by a gesture,
-4. whether a hover request was coalesced or discarded,
-5. whether a selection change triggered plan rebuild or only redraw.
-
-
-## API-Sketch Consequences
-
-This document defines the following concrete API-shape commitments:
-
-1. controllers are created by family-specific constructors returning `DvzController*` handles,
-2. panels bind controllers per dimension via `dvz_panel_bind_controller(panel, controller, dim)`,
-3. panel linking is achieved by sharing a controller handle — no separate linking API,
-4. axes and scene objects query controllers via `dvz_controller_query_domain()` in a pull model,
-5. events are routed to the scene, which dispatches to the correct panel and its bound controllers,
-6. hover and selection state remain queryable at scene level,
-7. focus and capture remain scene-owned, not backend-owned.
-
-The exact final naming follows the resolved `dvz_` convention from \`../API_DESIGN.md\`.
-
-
-## Recommended Next Step
-
-The next useful spec iteration is a worked 2D axis example that traces:
-
-1. domain source → tick generation → `FramePlan` contribution,
-2. panzoom interaction → controller domain query → axis regeneration decision,
-3. panel linking with shared controller → synchronized axes across panels.
-
-This will pressure-test the axis binding model and the pull-model query interface defined above.
+This document does not define exact final C names, callback signatures, platform event adapters,
+threading policy, backend window behavior, or camera-family math already covered by
+[`CAMERA_CONTROLLERS.md`](CAMERA_CONTROLLERS.md).
