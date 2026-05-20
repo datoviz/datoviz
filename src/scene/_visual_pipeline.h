@@ -79,6 +79,7 @@ typedef struct DvzSceneVisualDesc
     uint32_t volume_visual_index;
     bool depth_cue_enabled;
     bool point_style_enabled;
+    bool has_selection_mask;
     bool volume_transfer_rgba;
     bool scene_occluded;
     DvzSceneOcclusionDesc scene_occlusion;

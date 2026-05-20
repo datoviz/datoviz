@@ -94,6 +94,8 @@ static DvzFramePlanResourceRole _scene_attr_frame_plan_role(const char* attr_nam
         return DVZ_FRAME_PLAN_RESOURCE_ROLE_TEXCOORDS;
     if (strcmp(attr_name, "normal") == 0)
         return DVZ_FRAME_PLAN_RESOURCE_ROLE_NORMAL;
+    if (strcmp(attr_name, "selection") == 0)
+        return DVZ_FRAME_PLAN_RESOURCE_ROLE_SELECTION;
     return DVZ_FRAME_PLAN_RESOURCE_ROLE_NONE;
 }
 
@@ -1424,6 +1426,10 @@ bool _scene_visual_frame_plan_metadata(
     if (!_scene_attr_resource_key(
             figure, visual, visual_index, "normal", metadata->normal_id,
             sizeof(metadata->normal_id)))
+        return false;
+    if (!_scene_attr_resource_key(
+            figure, visual, visual_index, "selection", metadata->selection_id,
+            sizeof(metadata->selection_id)))
         return false;
     if (visual->type == DVZ_VISUAL_TYPE_SEGMENT || _scene_visual_needs_material_params(visual))
     {

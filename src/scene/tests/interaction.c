@@ -16,9 +16,12 @@
 
 #include <string.h>
 
+#include <vulkan/vulkan_core.h>
+
 #include "_alloc.h"
 #include "_assertions.h"
 #include "_compat.h"
+#include "../../drp2/_stream.h"
 #include "../_frame_plan.h"
 #include "../_scene.h"
 #include "../_scene_emit.h"
@@ -26,6 +29,47 @@
 #include "test_scene.h"
 #include "testing.h"
 
+
+
+
+/*************************************************************************************************/
+/*  Helpers                                                                                      */
+/*************************************************************************************************/
+
+/**
+ * Return whether one stream pipeline has a specific vertex attribute.
+ *
+ * @param stream the command stream
+ * @param label the pipeline debug label
+ * @param format the expected VkFormat
+ * @param location the expected shader location
+ * @return whether the attribute was found
+ */
+static bool _interaction_stream_has_pipeline_attr(
+    const DvzDrp2CommandStream* stream, const char* label, uint32_t format, uint32_t location)
+{
+    ANN(stream);
+    ANN(label);
+    for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
+    {
+        const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream, i);
+        if (cmd == NULL || cmd->type != DVZ_DRP2_COMMAND_CREATE_RENDER_PIPELINE)
+            continue;
+        const char* pipeline_label =
+            dvz_drp2_stream_label(stream, cmd->u.create_render_pipeline.id);
+        if (pipeline_label == NULL || strcmp(pipeline_label, label) != 0)
+            continue;
+        for (uint32_t a = 0; a < cmd->u.create_render_pipeline.attr_count; a++)
+        {
+            if (cmd->u.create_render_pipeline.attr_formats[a] == format &&
+                cmd->u.create_render_pipeline.attr_locations[a] == location)
+            {
+                return true;
+            }
+        }
+    }
+    return false;
+}
 
 
 
@@ -205,8 +249,23 @@ int test_scene_selection_apply_pick_updates_visual_masks(TstContext* suite, cons
     AT(point->attrs[point_selection_idx].dirty_item_count == 3);
     AT(marker->attrs[marker_selection_idx].dirty_item_count == 3);
 
-    point->attrs[point_selection_idx].dirty_item_count = 0;
-    marker->attrs[marker_selection_idx].dirty_item_count = 0;
+    DvzCapabilitySnapshot caps;
+    dvz_capability_snapshot_default(&caps);
+    DvzDiagnosticReport report;
+    dvz_diagnostic_report_init(&report);
+    DvzFramePlanEmitConfig cfg = dvz_frame_plan_emit_config();
+    cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
+    DvzDrp2CommandStream* stream = dvz_figure_emit_ex(figure, &caps, &report, &cfg);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+    ANN(stream);
+    AT(_interaction_stream_has_pipeline_attr(
+        stream, "_pipe_point_selectg_depth", VK_FORMAT_R8_UINT, 5));
+    AT(_interaction_stream_has_pipeline_attr(
+        stream, "_pipe_marker_selectg_depth", VK_FORMAT_R8_UINT, 5));
+    dvz_drp2_stream_destroy(stream);
+
+    AT(point->attrs[point_selection_idx].dirty_item_count == 0);
+    AT(marker->attrs[marker_selection_idx].dirty_item_count == 0);
     AT(dvz_selection_apply_pick(selection, &pick) == 0);
     AT(dvz_selection_count(selection) == 0);
     point_mask = (const uint8_t*)point->attrs[point_selection_idx].data;

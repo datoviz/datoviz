@@ -9,6 +9,7 @@
  * Opens a GLFW window showing a point grid.
  * Move the cursor over the panel to pick one point per frame.
  * The hovered point grows via dvz_visual_set_data_range(), exercising partial retained updates.
+ * Click a point to toggle retained selection; selected points stay bright while others dim.
  * Left-drag to pan, right-drag or scroll to zoom, double-click to reset.
  *
  * Build:  just build
@@ -50,9 +51,11 @@ struct HoverPickState
     DvzScene* scene;
     DvzPanel* panel;
     DvzVisual* visual;
+    DvzSelection* selection;
     float sizes[POINT_COUNT];
     uint32_t hovered_index;
     bool cursor_valid;
+    bool click_pending;
     double cursor_x;
     double cursor_y;
 };
@@ -88,7 +91,7 @@ static void _set_point_size(HoverPickState* state, uint32_t index, float size)
 /*************************************************************************************************/
 
 /**
- * Record the latest cursor position in panel coordinates.
+ * Record the latest cursor position and click intent in panel coordinates.
  *
  * @param router input router emitting the event
  * @param event pointer event payload
@@ -101,12 +104,14 @@ _hover_pick_pointer(DvzInputRouter* router, const DvzPointerEvent* event, void* 
     HoverPickState* state = (HoverPickState*)user_data;
     if (state == NULL || event == NULL)
         return;
-    if (event->type != DVZ_POINTER_EVENT_MOVE)
+    if (event->type != DVZ_POINTER_EVENT_MOVE && event->type != DVZ_POINTER_EVENT_CLICK)
         return;
 
     state->cursor_valid = true;
     state->cursor_x = event->pos[0];
     state->cursor_y = event->pos[1];
+    if (event->type == DVZ_POINTER_EVENT_CLICK && event->button == DVZ_POINTER_BUTTON_LEFT)
+        state->click_pending = true;
 }
 
 
@@ -125,10 +130,12 @@ static void _hover_pick_frame(DvzAppWindow* win, void* user_data)
 
     DvzPickResult pick = {0};
     bool saw_pick = false;
+    DvzPickResult latest_pick = {0};
     uint32_t next_hovered = UINT32_MAX;
     while (dvz_scene_poll_pick(state->scene, &pick))
     {
         saw_pick = true;
+        latest_pick = pick;
         if (pick.hit && pick.resolved_target == DVZ_SCENE_TARGET_ITEM &&
             pick.resolved_id < POINT_COUNT)
         {
@@ -143,6 +150,20 @@ static void _hover_pick_frame(DvzAppWindow* win, void* user_data)
         if (next_hovered < POINT_COUNT)
             _set_point_size(state, next_hovered, HOVER_SIZE);
         state->hovered_index = next_hovered;
+    }
+
+    if (state->click_pending && saw_pick)
+    {
+        if (latest_pick.hit && latest_pick.resolved_target == DVZ_SCENE_TARGET_ITEM)
+        {
+            if (dvz_selection_apply_pick(state->selection, &latest_pick) != 0)
+                fprintf(stderr, "dvz_selection_apply_pick() failed\n");
+        }
+        else
+        {
+            dvz_selection_clear(state->selection);
+        }
+        state->click_pending = false;
     }
 
     if (state->cursor_valid)
@@ -200,10 +221,20 @@ int main(void)
         return 1;
     }
 
+    DvzSelection* selection = dvz_selection(
+        scene, &(DvzSelectionDesc){.mode = DVZ_SELECT_TOGGLE, .target = DVZ_SCENE_TARGET_ITEM});
+    if (selection == NULL)
+    {
+        fprintf(stderr, "dvz_selection() failed\n");
+        dvz_scene_destroy(scene);
+        return 1;
+    }
+
     HoverPickState state = {
         .scene = scene,
         .panel = panel,
         .visual = visual,
+        .selection = selection,
         .hovered_index = UINT32_MAX,
     };
 

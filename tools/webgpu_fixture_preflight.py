@@ -27,6 +27,7 @@ VERTEX_FORMAT_BYTES = {
     'sint32x2': 8,
     'sint32x3': 12,
     'sint32x4': 16,
+    'uint8': 1,
     'unorm8x4': 4,
     'snorm8x4': 4,
     'unorm16x2': 4,

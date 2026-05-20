@@ -41,6 +41,7 @@ TEXTURE_FORMATS = {
 }
 
 VERTEX_FORMATS = {
+    13: "uint8",
     37: "unorm8x4",
     100: "float32",
     103: "float32x2",

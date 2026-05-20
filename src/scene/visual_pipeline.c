@@ -45,6 +45,7 @@ typedef enum
     DVZ_SCENE_SHADER_FEATURE_VOLUME_COMPOSITE = 1u << 5,
     DVZ_SCENE_SHADER_FEATURE_POINT_STYLE      = 1u << 6,
     DVZ_SCENE_SHADER_FEATURE_INSTANCING       = 1u << 7,
+    DVZ_SCENE_SHADER_FEATURE_SELECTION_MASK   = 1u << 8,
 } DvzSceneShaderFeatureFlag;
 
 
@@ -323,6 +324,8 @@ static const char* _resource_role_tag(DvzFramePlanResourceRole role)
     case DVZ_FRAME_PLAN_RESOURCE_ROLE_PRIMITIVE_SHADING:
     case DVZ_FRAME_PLAN_RESOURCE_ROLE_MATERIAL_PARAMS:
         return "material_params";
+    case DVZ_FRAME_PLAN_RESOURCE_ROLE_SELECTION:
+        return "selection";
     case DVZ_FRAME_PLAN_RESOURCE_ROLE_NONE:
     default:
         return NULL;
@@ -446,6 +449,7 @@ static bool _scene_visual_desc_from_metadata(
         uint64_t size_id = _resource_lookup_label(&emitter->resources, meta->size_id);
         uint64_t angle_id = _resource_lookup_label(&emitter->resources, meta->angle_id);
         uint64_t shape_id = _resource_lookup_label(&emitter->resources, meta->shape_id);
+        uint64_t selection_id = _resource_lookup_label(&emitter->resources, meta->selection_id);
         if (color_id == 0 || size_id == 0)
         {
             if (error != NULL)
@@ -474,6 +478,11 @@ static bool _scene_visual_desc_from_metadata(
         {
             out->vbuf_ids[out->vbuf_count++] = angle_id;
             out->vbuf_ids[out->vbuf_count++] = shape_id;
+        }
+        if (selection_id != 0)
+        {
+            out->vbuf_ids[out->vbuf_count++] = selection_id;
+            out->has_selection_mask = true;
         }
         out->topology = VK_PRIMITIVE_TOPOLOGY_POINT_LIST;
         out->material_buffer_id = _resource_lookup_label(&emitter->resources, meta->material_id);
@@ -900,6 +909,9 @@ bool _emitter_resolve_render_vertex_buffers(
                     &emitter->resources, meta->shape_id, out_ids, out_count, false))
                 return false;
             if (!_append_resource_key(
+                    &emitter->resources, meta->selection_id, out_ids, out_count, false))
+                return false;
+            if (!_append_resource_key(
                     &emitter->resources, meta->line_width_id, out_ids, out_count, false))
                 return false;
             if (!_append_resource_key(
@@ -921,13 +933,14 @@ bool _emitter_resolve_render_vertex_buffers(
         out_ids[(*out_count)++] = pos;
 
         /* Optional attrs - collect any that exist. Order matches family pipeline expectations:
-         * POINT      = position, color, size
+         * POINT      = position, color, size, optional selection
          * PRIMITIVE  = position, color
          * IMAGE      = position, texcoords (+ texture, registered alongside). */
         const DvzFramePlanResourceRole optional[] = {
             DVZ_FRAME_PLAN_RESOURCE_ROLE_COLOR, DVZ_FRAME_PLAN_RESOURCE_ROLE_SIZE,
-            DVZ_FRAME_PLAN_RESOURCE_ROLE_TEXCOORDS, DVZ_FRAME_PLAN_RESOURCE_ROLE_TEXTURE};
-        for (uint32_t ai = 0; ai < 4; ai++)
+            DVZ_FRAME_PLAN_RESOURCE_ROLE_SELECTION, DVZ_FRAME_PLAN_RESOURCE_ROLE_TEXCOORDS,
+            DVZ_FRAME_PLAN_RESOURCE_ROLE_TEXTURE};
+        for (uint32_t ai = 0; ai < 5; ai++)
         {
             uint64_t id =
                 _render_visual_resource_id(emitter, render->u.render.visuals[i], optional[ai]);
@@ -1014,8 +1027,8 @@ bool _scene_visual_desc_from_render(
         DVZ_FRAME_PLAN_RESOURCE_ROLE_COLOR, DVZ_FRAME_PLAN_RESOURCE_ROLE_SIZE,
         DVZ_FRAME_PLAN_RESOURCE_ROLE_TEXCOORDS, DVZ_FRAME_PLAN_RESOURCE_ROLE_TEXTURE,
         DVZ_FRAME_PLAN_RESOURCE_ROLE_NORMAL, DVZ_FRAME_PLAN_RESOURCE_ROLE_INDEX,
-        DVZ_FRAME_PLAN_RESOURCE_ROLE_MATERIAL_PARAMS};
-    for (uint32_t ai = 0; ai < 7; ai++)
+        DVZ_FRAME_PLAN_RESOURCE_ROLE_MATERIAL_PARAMS, DVZ_FRAME_PLAN_RESOURCE_ROLE_SELECTION};
+    for (uint32_t ai = 0; ai < 8; ai++)
     {
         uint64_t rid_id = _render_visual_resource_id(
             emitter, render->u.render.visuals[visual_index], optionals[ai]);
@@ -1031,6 +1044,8 @@ bool _scene_visual_desc_from_render(
             out->material_buffer_id = rid_id;
             continue;
         }
+        if (optionals[ai] == DVZ_FRAME_PLAN_RESOURCE_ROLE_SELECTION)
+            out->has_selection_mask = true;
         if (out->vbuf_count >= DVZ_SCENE_MAX_NODE_RESOURCES)
             return false;
         out->vbuf_ids[out->vbuf_count++] = rid_id;
@@ -1327,6 +1342,12 @@ static void _scene_shader_features_resolve(
         out->flags |= DVZ_SCENE_SHADER_FEATURE_DEPTH_CUE;
     if (visual->point_style_enabled && visual->kind == DVZ_SCENE_VISUAL_DESC_POINT)
         out->flags |= DVZ_SCENE_SHADER_FEATURE_POINT_STYLE;
+    if (visual->has_selection_mask && !picking &&
+        (visual->kind == DVZ_SCENE_VISUAL_DESC_POINT ||
+         visual->kind == DVZ_SCENE_VISUAL_DESC_MARKER))
+    {
+        out->flags |= DVZ_SCENE_SHADER_FEATURE_SELECTION_MASK;
+    }
     if (visual->kind == DVZ_SCENE_VISUAL_DESC_SPHERE && visual->material_buffer_id != 0)
         out->flags |= DVZ_SCENE_SHADER_FEATURE_LIGHTING;
     if (visual->has_normal)
@@ -1397,8 +1418,11 @@ static bool _scene_shader_desc_point_like(
     bool picking = _shader_features_has(features, DVZ_SCENE_SHADER_FEATURE_PICKING);
     bool depth_cue = _shader_features_has(features, DVZ_SCENE_SHADER_FEATURE_DEPTH_CUE);
     bool point_style = _shader_features_has(features, DVZ_SCENE_SHADER_FEATURE_POINT_STYLE);
+    bool selection = _shader_features_has(features, DVZ_SCENE_SHADER_FEATURE_SELECTION_MASK) &&
+                     !depth_cue && !point_style;
 
-    const char* suffix = picking ? "_pick" : point_style && depth_cue ? "_cue_style" :
+    const char* suffix = picking ? "_pick" : selection ? "_select" :
+                         point_style && depth_cue ? "_cue_style" :
                          point_style ? "_style" : depth_cue ? "_cue" : "";
     dvz_snprintf(
         out->vertex_key, sizeof(out->vertex_key), "_vs_%s%s%s", visual_name, suffix, format_tag);
@@ -1411,13 +1435,17 @@ static bool _scene_shader_desc_point_like(
 
     DvzSceneBuiltinShader shader = DVZ_SCENE_BUILTIN_SHADER_POINT;
     if (features->kind == DVZ_SCENE_VISUAL_DESC_MARKER)
-        shader = picking ? DVZ_SCENE_BUILTIN_SHADER_PIXEL_PICK : DVZ_SCENE_BUILTIN_SHADER_MARKER;
+        shader = picking ? DVZ_SCENE_BUILTIN_SHADER_PIXEL_PICK :
+                 selection ? DVZ_SCENE_BUILTIN_SHADER_MARKER_SELECTION :
+                             DVZ_SCENE_BUILTIN_SHADER_MARKER;
     else if (features->kind == DVZ_SCENE_VISUAL_DESC_PIXEL)
         shader = picking ? DVZ_SCENE_BUILTIN_SHADER_PIXEL_PICK :
                  depth_cue ? DVZ_SCENE_BUILTIN_SHADER_PIXEL_DEPTH_CUE :
                              DVZ_SCENE_BUILTIN_SHADER_PIXEL;
     else if (picking)
         shader = DVZ_SCENE_BUILTIN_SHADER_POINT_PICK;
+    else if (selection)
+        shader = DVZ_SCENE_BUILTIN_SHADER_POINT_SELECTION;
     else if (point_style)
         shader = depth_cue ? DVZ_SCENE_BUILTIN_SHADER_POINT_STYLE_DEPTH_CUE :
                              DVZ_SCENE_BUILTIN_SHADER_POINT_STYLE;
@@ -1432,6 +1460,7 @@ static bool _scene_shader_desc_point_like(
                                              "scene.marker" :
                                              "scene.point",
                                     picking ? "pick" :
+                                    selection ? "selection" :
                                     point_style && depth_cue ? "style_depth_cue" :
                                     point_style ? "style" :
                                     depth_cue ? "depth_cue" : "default");
@@ -1439,8 +1468,8 @@ static bool _scene_shader_desc_point_like(
     {
         if (features->kind == DVZ_SCENE_VISUAL_DESC_MARKER)
         {
-            out->vertex_spirv_key = "marker_vert";
-            out->fragment_spirv_key = "marker_frag";
+            out->vertex_spirv_key = selection ? "marker_select_vert" : "marker_vert";
+            out->fragment_spirv_key = selection ? "marker_select_frag" : "marker_frag";
         }
         else if (features->kind == DVZ_SCENE_VISUAL_DESC_PIXEL)
         {
@@ -1454,8 +1483,10 @@ static bool _scene_shader_desc_point_like(
         }
         else
         {
-            out->vertex_spirv_key = depth_cue ? "point_cue_vert" : "point_vert";
-            out->fragment_spirv_key = depth_cue ? "point_cue_frag" : "point_frag";
+            out->vertex_spirv_key = selection ? "point_select_vert" :
+                                    depth_cue ? "point_cue_vert" : "point_vert";
+            out->fragment_spirv_key = selection ? "point_select_frag" :
+                                      depth_cue ? "point_cue_frag" : "point_frag";
         }
     }
     else
@@ -1827,9 +1858,12 @@ bool _scene_visual_pipeline_desc(
     case DVZ_SCENE_VISUAL_DESC_MARKER:
         if (visual->kind == DVZ_SCENE_VISUAL_DESC_MARKER)
         {
-            out->vertex_buffer_count = 5;
-            out->binding_count = 5;
-            out->attr_count = picking ? 2 : 5;
+            uint32_t attr_count = picking ? 2 : 5;
+            if (visual->has_selection_mask && !picking)
+                attr_count++;
+            out->vertex_buffer_count = visual->has_selection_mask ? 6 : 5;
+            out->binding_count = out->vertex_buffer_count;
+            out->attr_count = attr_count;
             _pipeline_attr(out, 0, 0, 0, VK_FORMAT_R32G32B32_SFLOAT, 3 * sizeof(float));
             _pipeline_attr(
                 out, 1, picking ? 2 : 1, picking ? 2 : 1,
@@ -1838,6 +1872,8 @@ bool _scene_visual_pipeline_desc(
             _pipeline_attr(out, 2, 2, 2, VK_FORMAT_R32_SFLOAT, sizeof(float));
             _pipeline_attr(out, 3, 3, 3, VK_FORMAT_R32_SFLOAT, sizeof(float));
             _pipeline_attr(out, 4, 4, 4, VK_FORMAT_R32_UINT, sizeof(uint32_t));
+            if (visual->has_selection_mask && !picking)
+                _pipeline_attr(out, 5, 5, 5, VK_FORMAT_R8_UINT, sizeof(uint8_t));
             out->needs_common_layout = caps.uses_common_set;
             out->needs_material_layout = caps.needs_material_layout && !picking;
             _pipeline_apply_standard_depth_state(
@@ -1845,9 +1881,11 @@ bool _scene_visual_pipeline_desc(
             return true;
         }
 
-        out->vertex_buffer_count = 3;
-        out->binding_count = 3;
-        out->attr_count = visual->kind == DVZ_SCENE_VISUAL_DESC_SPHERE ? 3 : picking ? 2 : 3;
+        out->vertex_buffer_count = visual->has_selection_mask ? 4 : 3;
+        out->binding_count = out->vertex_buffer_count;
+        out->attr_count =
+            visual->kind == DVZ_SCENE_VISUAL_DESC_SPHERE ? 3 :
+            picking ? 2 : visual->has_selection_mask ? 4 : 3;
         uint32_t color_binding = picking && visual->kind != DVZ_SCENE_VISUAL_DESC_SPHERE ? 2 : 1;
         uint32_t color_format = picking && visual->kind != DVZ_SCENE_VISUAL_DESC_SPHERE ?
                                     VK_FORMAT_R32_SFLOAT :
@@ -1855,6 +1893,8 @@ bool _scene_visual_pipeline_desc(
         _pipeline_attr(out, 0, 0, 0, VK_FORMAT_R32G32B32_SFLOAT, 3 * sizeof(float));
         _pipeline_attr(out, 1, color_binding, color_binding, color_format, 4 * sizeof(uint8_t));
         _pipeline_attr(out, 2, 2, 2, VK_FORMAT_R32_SFLOAT, sizeof(float));
+        if (visual->has_selection_mask && !picking)
+            _pipeline_attr(out, 3, 3, 5, VK_FORMAT_R8_UINT, sizeof(uint8_t));
         out->needs_common_layout = caps.uses_common_set;
         out->needs_material_layout = caps.needs_material_layout;
         _pipeline_apply_standard_depth_state(

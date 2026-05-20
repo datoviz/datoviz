@@ -741,10 +741,12 @@ dvz_visual_attr_mutability(const DvzVisual* visual, const char* attr_name);
  * Write attribute data to a visual.
  *
  * First-slice visual families currently accept:
- * point: `"position"` (vec3f), `"color"` (RGBA8), `"diameter"` (float pixels)
+ * point: `"position"` (vec3f), `"color"` (RGBA8), `"diameter"` (float pixels),
+ *        optional `"selection"` (uint8 mask)
  * pixel: `"position"` (vec3f), `"color"` (RGBA8), `"pixel_size"` (float pixels)
  * marker: `"position"` (vec3f), `"color"` (RGBA8), `"diameter"` (float pixels),
- *         `"angle"` (float radians), `"shape"` (uint32_t DvzMarkerShape)
+ *         `"angle"` (float radians), `"shape"` (uint32_t DvzMarkerShape),
+ *         optional `"selection"` (uint8 mask)
  * sphere: `"position"` (vec3f), `"color"` (RGBA8), `"radius"` (float scene units)
  * segment: `"position_start"` (vec3f), `"position_end"` (vec3f), `"color"` (RGBA8),
  *          `"stroke_width"` (float pixels)
@@ -1025,8 +1027,9 @@ DVZ_EXPORT int dvz_marker_set_style(DvzVisual* visual, const DvzMarkerStyle* sty
  * Create a point visual.
  *
  * Renders screen-space antialiased circular sprites with `position` (vec3), `color` (RGBA8),
- * and `diameter` (float, in pixels). `dvz_point_set_style()` controls optional edge styling with
- * `edge_color`, `stroke_width`, and filled/stroke/outline aspects.
+ * and `diameter` (float, in pixels). An optional `selection` (uint8) mask dims unselected
+ * items. `dvz_point_set_style()` controls optional edge styling with `edge_color`,
+ * `stroke_width`, and filled/stroke/outline aspects.
  *
  * @param scene the scene
  * @param flags variant flags
@@ -1053,8 +1056,8 @@ DVZ_EXPORT DvzVisual* dvz_pixel(DvzScene* scene, uint32_t flags);
  *
  * Renders screen-space code-SDF marker sprites with dense `position` (vec3), `color` (RGBA8),
  * `diameter` (float in pixels), `angle` (float radians), and `shape` (uint32_t
- * DvzMarkerShape) attributes. First-slice shapes are disc, square, triangle, diamond, cross, and
- * ring.
+ * DvzMarkerShape) attributes. An optional `selection` (uint8) mask dims unselected items.
+ * First-slice shapes are disc, square, triangle, diamond, cross, and ring.
  *
  * @param scene the scene
  * @param flags variant flags
