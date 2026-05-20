@@ -532,6 +532,10 @@ When editing C code, treat robustness and undefined behavior avoidance as first-
   narrower integer types.
 * Do not dereference possibly NULL pointers. Use existing `ANN`, `ASSERT`, and explicit runtime checks
   according to whether the condition is an internal invariant or a recoverable runtime failure.
+* Do not pass function calls, increments, assignments, or other side-effectful/nontrivial expressions
+  directly to `ANN()`, `ASSERT()`, or `DVZ_ASSUME()`. Evaluate the expression once into a local variable
+  first, then assert/assume on that variable; Clang ignores `__builtin_assume()` expressions with
+  potential side effects and emits `-Wassume`.
 * Make ownership explicit. Every pointer or Vulkan handle should be clearly owned or borrowed by the
   current object. Destroy/free paths must be idempotent, set pointers to `NULL`, set Vulkan handles to
   `VK_NULL_HANDLE`, and never destroy borrowed handles.
