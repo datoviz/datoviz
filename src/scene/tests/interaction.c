@@ -701,7 +701,8 @@ int test_scene_text_font_atlas_expands_for_utf8(TstContext* suite, const TstCase
         AT(initial_field->dirty_full);
         AT(atlas->width > initial_width || atlas->height > initial_height);
     }
-    ANN(_scene_text_atlas_glyph(atlas, 0x00E9u));
+    DvzTextAtlasGlyph* utf8_glyph = _scene_text_atlas_glyph(atlas, 0x00E9u);
+    ANN(utf8_glyph);
     ANN(ascii->text.glyph_visual);
     ANN(utf8->text.glyph_visual);
     AT(ascii->text.glyph_visual->field == atlas->field);

@@ -237,7 +237,8 @@ int test_scene_text_atlas_utf8_runtime_readback(TstContext* suite, const TstCase
         scene->fonts[0].msdf_atlas != NULL ? scene->fonts[0].msdf_atlas : scene->fonts[0].sdf_atlas;
     ANN(atlas);
     ANN(atlas->field);
-    ANN(_scene_text_atlas_glyph(atlas, 0x00E9u));
+    DvzTextAtlasGlyph* utf8_glyph = _scene_text_atlas_glyph(atlas, 0x00E9u);
+    ANN(utf8_glyph);
     AT(text->text.glyph_visual->field == atlas->field);
 
     DvzCapabilitySnapshot caps;
