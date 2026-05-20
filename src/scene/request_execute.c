@@ -32,8 +32,81 @@
 
 
 /*************************************************************************************************/
+/*  Typedefs                                                                                     */
+/*************************************************************************************************/
+
+typedef struct DvzScenePickPayload DvzScenePickPayload;
+typedef struct DvzSceneProbePayload DvzSceneProbePayload;
+
+
+
+/*************************************************************************************************/
+/*  Structs                                                                                      */
+/*************************************************************************************************/
+
+struct DvzScenePickPayload
+{
+    DvzSceneVisualFamily visual_family;
+    DvzSceneTargetKind raw_target;
+    uint64_t raw_id;
+    DvzSceneTargetKind resolved_target;
+    uint64_t resolved_id;
+    uint64_t item_id;
+    uint64_t group_id;
+    uint64_t auxiliary_id;
+};
+
+
+
+struct DvzSceneProbePayload
+{
+    DvzProbeStatus status;
+    DvzSceneVisualFamily visual_family;
+    DvzSceneTargetKind target;
+    uint64_t target_id;
+    uint64_t item_id;
+    uint64_t group_id;
+    uint64_t auxiliary_id;
+    DvzProbeValueKind value_kind;
+    double vector[4];
+    uint64_t category_id;
+    char label[DVZ_SCENE_LABEL_SIZE];
+};
+
+
+
+/*************************************************************************************************/
 /*  Helpers                                                                                      */
 /*************************************************************************************************/
+
+static DvzSceneVisualFamily _scene_visual_family(uint32_t visual_type);
+
+static bool _scene_pick_target_supported(DvzSceneTargetKind target);
+
+static bool _scene_probe_target_supported(DvzSceneTargetKind target);
+
+static DvzPickResult _scene_pick_miss_result(
+    const DvzFigure* figure, const DvzPanel* panel, const DvzPendingPickRequest* pending,
+    DvzPickStatus status);
+
+static DvzProbeResult _scene_probe_miss_result(
+    const DvzFigure* figure, const DvzPanel* panel, const DvzPendingProbeRequest* pending,
+    DvzProbeStatus status);
+
+static bool _scene_decode_point_like_pick_payload(
+    const DvzVisual* visual, const uint8_t rgba[4], DvzScenePickPayload* out_payload);
+
+static void _scene_apply_pick_payload(
+    const DvzScene* scene, const DvzVisual* visual, const DvzScenePickPayload* payload,
+    DvzPickResult* out_result);
+
+static bool _scene_decode_image_probe_payload(
+    const DvzVisual* visual, bool segment_probe, const uint8_t rgba[4],
+    DvzSceneProbePayload* out_payload);
+
+static void _scene_apply_probe_payload(
+    const DvzScene* scene, const DvzVisual* visual, const DvzSceneProbePayload* payload,
+    DvzProbeResult* out_result);
 
 static bool _scene_execute_readback_plan(
     const DvzScene* scene, DvzSceneRequestExecutor* executor, const DvzCapabilitySnapshot* caps,
@@ -209,6 +282,275 @@ void _scene_request_executor_destroy(DvzSceneRequestExecutor* executor)
     if (executor->emitter != NULL)
         dvz_frame_plan_emitter_destroy(executor->emitter);
     dvz_memset(executor, sizeof(DvzSceneRequestExecutor), 0, sizeof(DvzSceneRequestExecutor));
+}
+
+
+/**
+ * Return the public visual family corresponding to an internal visual type.
+ *
+ * @param visual_type internal visual type value
+ * @return public scene visual family
+ */
+static DvzSceneVisualFamily _scene_visual_family(uint32_t visual_type)
+{
+    switch (visual_type)
+    {
+    case DVZ_VISUAL_TYPE_POINT:
+        return DVZ_SCENE_VISUAL_FAMILY_POINT;
+    case DVZ_VISUAL_TYPE_PIXEL:
+        return DVZ_SCENE_VISUAL_FAMILY_PIXEL;
+    case DVZ_VISUAL_TYPE_MARKER:
+        return DVZ_SCENE_VISUAL_FAMILY_MARKER;
+    case DVZ_VISUAL_TYPE_SEGMENT:
+        return DVZ_SCENE_VISUAL_FAMILY_SEGMENT;
+    case DVZ_VISUAL_TYPE_PATH:
+        return DVZ_SCENE_VISUAL_FAMILY_PATH;
+    case DVZ_VISUAL_TYPE_IMAGE:
+        return DVZ_SCENE_VISUAL_FAMILY_IMAGE;
+    case DVZ_VISUAL_TYPE_MESH:
+        return DVZ_SCENE_VISUAL_FAMILY_MESH;
+    case DVZ_VISUAL_TYPE_VOLUME:
+        return DVZ_SCENE_VISUAL_FAMILY_VOLUME;
+    case DVZ_VISUAL_TYPE_PRIMITIVE:
+        return DVZ_SCENE_VISUAL_FAMILY_PRIMITIVE;
+    case DVZ_VISUAL_TYPE_SPHERE:
+        return DVZ_SCENE_VISUAL_FAMILY_SPHERE;
+    case DVZ_VISUAL_TYPE_GLYPH:
+        return DVZ_SCENE_VISUAL_FAMILY_GLYPH;
+    case DVZ_VISUAL_TYPE_TEXT:
+        return DVZ_SCENE_VISUAL_FAMILY_TEXT;
+    default:
+        return DVZ_SCENE_VISUAL_FAMILY_NONE;
+    }
+}
+
+
+/**
+ * Return whether the first request slice supports a pick target kind.
+ *
+ * @param target requested scene target
+ * @return true when the target can be resolved by the current pick executor
+ */
+static bool _scene_pick_target_supported(DvzSceneTargetKind target)
+{
+    return target == DVZ_SCENE_TARGET_NONE || target == DVZ_SCENE_TARGET_ITEM;
+}
+
+
+/**
+ * Return whether the first request slice supports a probe target kind.
+ *
+ * @param target requested scene target
+ * @return true when the target can be resolved or explicitly missed by the current probe executor
+ */
+static bool _scene_probe_target_supported(DvzSceneTargetKind target)
+{
+    return target == DVZ_SCENE_TARGET_NONE || target == DVZ_SCENE_TARGET_PIXEL ||
+           target == DVZ_SCENE_TARGET_SAMPLE || target == DVZ_SCENE_TARGET_SEGMENT;
+}
+
+
+/**
+ * Build a pick miss/error result with the common request metadata.
+ *
+ * @param figure owning figure
+ * @param panel requesting panel
+ * @param pending pending pick request
+ * @param status miss or error status
+ * @return initialized pick result
+ */
+static DvzPickResult _scene_pick_miss_result(
+    const DvzFigure* figure, const DvzPanel* panel, const DvzPendingPickRequest* pending,
+    DvzPickStatus status)
+{
+    ANN(figure);
+    ANN(panel);
+    ANN(pending);
+    DvzPickResult result = {
+        .request_id = pending->request.request_id,
+        .status = status,
+        .hit = false,
+        .panel_id = _scene_panel_public_id(figure, panel),
+        .panel_position = {pending->x, pending->y},
+    };
+    return result;
+}
+
+
+/**
+ * Build a probe miss/error result with the common request metadata.
+ *
+ * @param figure owning figure
+ * @param panel requesting panel
+ * @param pending pending probe request
+ * @param status miss or error status
+ * @return initialized probe result
+ */
+static DvzProbeResult _scene_probe_miss_result(
+    const DvzFigure* figure, const DvzPanel* panel, const DvzPendingProbeRequest* pending,
+    DvzProbeStatus status)
+{
+    ANN(figure);
+    ANN(panel);
+    ANN(pending);
+    DvzProbeResult result = {
+        .request_id = pending->request.request_id,
+        .status = status,
+        .hit = false,
+        .panel_id = _scene_panel_public_id(figure, panel),
+        .panel_position = {pending->x, pending->y},
+        .source_request_id = pending->request.request_id,
+    };
+    return result;
+}
+
+
+/**
+ * Decode the GPU RGBA payload for a point-like visual into scene identity.
+ *
+ * @param visual visual that produced the payload
+ * @param rgba encoded pick pixel
+ * @param out_payload decoded scene payload
+ * @return true when the pixel contains a non-zero item id
+ */
+static bool _scene_decode_point_like_pick_payload(
+    const DvzVisual* visual, const uint8_t rgba[4], DvzScenePickPayload* out_payload)
+{
+    ANN(visual);
+    ANN(rgba);
+    ANN(out_payload);
+    dvz_memset(out_payload, sizeof(DvzScenePickPayload), 0, sizeof(DvzScenePickPayload));
+    uint32_t encoded =
+        (uint32_t)rgba[0] | ((uint32_t)rgba[1] << 8) | ((uint32_t)rgba[2] << 16);
+    if (encoded == 0)
+        return false;
+
+    uint64_t item_id = (uint64_t)encoded - 1;
+    out_payload->visual_family = _scene_visual_family((uint32_t)visual->type);
+    out_payload->raw_target = DVZ_SCENE_TARGET_ITEM;
+    out_payload->raw_id = item_id;
+    out_payload->resolved_target = DVZ_SCENE_TARGET_ITEM;
+    out_payload->resolved_id = item_id;
+    out_payload->item_id = item_id;
+    return true;
+}
+
+
+/**
+ * Copy a decoded pick payload into a public pick result.
+ *
+ * @param scene owning scene
+ * @param visual visual that produced the payload
+ * @param payload decoded scene payload
+ * @param out_result result to populate
+ */
+static void _scene_apply_pick_payload(
+    const DvzScene* scene, const DvzVisual* visual, const DvzScenePickPayload* payload,
+    DvzPickResult* out_result)
+{
+    ANN(scene);
+    ANN(visual);
+    ANN(payload);
+    ANN(out_result);
+    out_result->status = DVZ_PICK_STATUS_HIT;
+    out_result->hit = true;
+    out_result->visual_id = _scene_visual_public_id(scene, visual);
+    out_result->visual_family = payload->visual_family;
+    out_result->raw_target = payload->raw_target;
+    out_result->raw_id = payload->raw_id;
+    out_result->resolved_target = payload->resolved_target;
+    out_result->resolved_id = payload->resolved_id;
+    out_result->item_id = payload->item_id;
+    out_result->group_id = payload->group_id;
+    out_result->auxiliary_id = payload->auxiliary_id;
+    if (visual->link_keys != NULL && payload->item_id < visual->link_key_count)
+        out_result->link_key = visual->link_keys[payload->item_id];
+}
+
+
+/**
+ * Decode the GPU RGBA payload for an image or hidden label image probe.
+ *
+ * @param visual visual that produced the payload
+ * @param segment_probe whether the request targets segment labels
+ * @param rgba sampled GPU pixel
+ * @param out_payload decoded scene payload
+ * @return true when the pixel contains a supported hit payload
+ */
+static bool _scene_decode_image_probe_payload(
+    const DvzVisual* visual, bool segment_probe, const uint8_t rgba[4],
+    DvzSceneProbePayload* out_payload)
+{
+    ANN(visual);
+    ANN(rgba);
+    ANN(out_payload);
+    dvz_memset(out_payload, sizeof(DvzSceneProbePayload), 0, sizeof(DvzSceneProbePayload));
+    out_payload->status = DVZ_PROBE_STATUS_MISS;
+    out_payload->visual_family = _scene_visual_family((uint32_t)visual->type);
+
+    if (rgba[3] == 0)
+        return false;
+
+    out_payload->status = DVZ_PROBE_STATUS_HIT;
+    if (segment_probe)
+    {
+        uint64_t label_id = (uint64_t)rgba[0] | ((uint64_t)rgba[1] << 8) |
+                            ((uint64_t)rgba[2] << 16);
+        if (label_id == 0)
+        {
+            out_payload->status = DVZ_PROBE_STATUS_MISS;
+            return false;
+        }
+        out_payload->target = DVZ_SCENE_TARGET_SEGMENT;
+        out_payload->target_id = label_id;
+        out_payload->group_id = label_id;
+        out_payload->value_kind = DVZ_PROBE_VALUE_LABEL;
+        out_payload->category_id = label_id;
+        dvz_snprintf(out_payload->label, sizeof(out_payload->label), "label %" PRIu64, label_id);
+        return true;
+    }
+
+    out_payload->target = DVZ_SCENE_TARGET_PIXEL;
+    out_payload->value_kind = DVZ_PROBE_VALUE_VEC4;
+    out_payload->vector[0] = rgba[0] / 255.0;
+    out_payload->vector[1] = rgba[1] / 255.0;
+    out_payload->vector[2] = rgba[2] / 255.0;
+    out_payload->vector[3] = rgba[3] / 255.0;
+    dvz_strlcpy(out_payload->label, "rgba", sizeof(out_payload->label));
+    return true;
+}
+
+
+/**
+ * Copy a decoded probe payload into a public probe result.
+ *
+ * @param scene owning scene
+ * @param visual visual that produced the payload
+ * @param payload decoded scene payload
+ * @param out_result result to populate
+ */
+static void _scene_apply_probe_payload(
+    const DvzScene* scene, const DvzVisual* visual, const DvzSceneProbePayload* payload,
+    DvzProbeResult* out_result)
+{
+    ANN(scene);
+    ANN(visual);
+    ANN(payload);
+    ANN(out_result);
+    out_result->status = payload->status;
+    out_result->hit = payload->status == DVZ_PROBE_STATUS_HIT;
+    out_result->visual_id = _scene_visual_public_id(scene, visual);
+    out_result->visual_family = payload->visual_family;
+    out_result->target = payload->target;
+    out_result->target_id = payload->target_id;
+    out_result->item_id = payload->item_id;
+    out_result->group_id = payload->group_id;
+    out_result->auxiliary_id = payload->auxiliary_id;
+    out_result->value_kind = payload->value_kind;
+    for (uint32_t i = 0; i < 4; i++)
+        out_result->vector[i] = payload->vector[i];
+    out_result->category_id = payload->category_id;
+    dvz_strlcpy(out_result->label, payload->label, sizeof(out_result->label));
 }
 
 
@@ -693,6 +1035,13 @@ static bool _scene_probe_request_has_image_candidate(
     ANN(pending);
     if (pending->panel == NULL || pending->panel->figure != figure)
         return false;
+    if (
+        pending->request.target != DVZ_SCENE_TARGET_NONE &&
+        pending->request.target != DVZ_SCENE_TARGET_PIXEL &&
+        pending->request.target != DVZ_SCENE_TARGET_SEGMENT)
+    {
+        return false;
+    }
 
     const DvzPanel* panel = pending->panel;
     bool segment_probe = pending->request.target == DVZ_SCENE_TARGET_SEGMENT;
@@ -729,6 +1078,8 @@ static bool _scene_pick_request_has_point_like_candidate(
     ANN(pending);
     if (pending->panel == NULL || pending->panel->figure != figure)
         return false;
+    if (!_scene_pick_target_supported(pending->request.target))
+        return false;
 
     const DvzPanel* panel = pending->panel;
     for (uint32_t i = 0; i < panel->visual_count; i++)
@@ -747,26 +1098,6 @@ static bool _scene_pick_request_has_point_like_candidate(
         return true;
     }
     return false;
-}
-
-
-/**
- * Decode a little-endian RGBA8 item id payload.
- *
- * @param rgba encoded pick pixel
- * @param out_item_id decoded zero-based item id
- * @return true when the pixel contains a non-zero id
- */
-static bool _scene_decode_pick_rgba(const uint8_t rgba[4], uint64_t* out_item_id)
-{
-    ANN(rgba);
-    ANN(out_item_id);
-    uint32_t encoded =
-        (uint32_t)rgba[0] | ((uint32_t)rgba[1] << 8) | ((uint32_t)rgba[2] << 16);
-    if (encoded == 0)
-        return false;
-    *out_item_id = (uint64_t)encoded - 1;
-    return true;
 }
 
 
@@ -926,13 +1257,14 @@ static bool _scene_process_point_pick_request(
 
     DvzScene* scene = figure->scene;
     DvzPanel* panel = pending->panel;
-    DvzPickResult miss = {
-        .request_id = pending->request.request_id,
-        .status = DVZ_PICK_STATUS_NO_CAPABLE_VISUAL,
-        .hit = false,
-        .panel_id = _scene_panel_public_id(figure, panel),
-        .panel_position = {pending->x, pending->y},
-    };
+    DvzPickResult miss =
+        _scene_pick_miss_result(figure, panel, pending, DVZ_PICK_STATUS_NO_CAPABLE_VISUAL);
+
+    if (!_scene_pick_target_supported(pending->request.target))
+    {
+        miss.status = DVZ_PICK_STATUS_UNSUPPORTED_TARGET;
+        return _scene_push_pick_result(scene, panel, pending->freshness_serial, &miss);
+    }
 
     vec2 request_ndc = {0};
     if (!_scene_pick_request_ndc(figure, panel, pending->x, pending->y, request_ndc))
@@ -999,8 +1331,8 @@ static bool _scene_process_point_pick_request(
             scene, executor, caps, pick_plan.plan, target_width, target_height, rgba, &executed);
         _scene_probe_plan_destroy(&pick_plan);
 
-        uint64_t picked_id = 0;
-        if (!readback_ok || !_scene_decode_pick_rgba(rgba, &picked_id))
+        DvzScenePickPayload payload = {0};
+        if (!readback_ok || !_scene_decode_point_like_pick_payload(visual, rgba, &payload))
         {
             if (!readback_ok)
                 miss.status = executed ? DVZ_PICK_STATUS_READBACK_FAILED :
@@ -1014,17 +1346,11 @@ static bool _scene_process_point_pick_request(
         }
 
         DvzPickResult resolved = miss;
-        resolved.status = DVZ_PICK_STATUS_HIT;
-        resolved.hit = true;
-        resolved.visual_id = _scene_visual_public_id(scene, visual);
-        resolved.raw_target = DVZ_SCENE_TARGET_ITEM;
-        resolved.resolved_target = DVZ_SCENE_TARGET_ITEM;
-        resolved.raw_id = picked_id;
-        resolved.resolved_id = picked_id;
+        _scene_apply_pick_payload(scene, visual, &payload, &resolved);
         _scene_pick_trace(
             "picker_resolved request=%llu visual=%p visual_id=%llu item=%llu\n",
             (unsigned long long)pending->request.request_id, (void*)visual,
-            (unsigned long long)resolved.visual_id, (unsigned long long)picked_id);
+            (unsigned long long)resolved.visual_id, (unsigned long long)payload.item_id);
         return _scene_push_pick_result(scene, panel, pending->freshness_serial, &resolved);
     }
 
@@ -1051,16 +1377,15 @@ static bool _scene_process_volume_slice_probe_request(
 
     DvzScene* scene = figure->scene;
     DvzPanel* panel = pending->panel;
-    DvzProbeResult miss = {
-        .request_id = pending->request.request_id,
-        .hit = false,
-        .panel_id = _scene_panel_public_id(figure, panel),
-        .source_request_id = pending->request.request_id,
-    };
+    DvzProbeResult miss =
+        _scene_probe_miss_result(figure, panel, pending, DVZ_PROBE_STATUS_NO_CAPABLE_VISUAL);
 
     vec2 request_ndc = {0};
     if (!_scene_pick_request_ndc(figure, panel, pending->x, pending->y, request_ndc))
+    {
+        miss.status = DVZ_PROBE_STATUS_OUTSIDE_PANEL;
         return _scene_push_probe_result(scene, panel, pending->freshness_serial, &miss);
+    }
 
     uint32_t order[DVZ_SCENE_MAX_VISUALS] = {0};
     _scene_panel_visual_order(panel, order);
@@ -1175,9 +1500,12 @@ static bool _scene_process_volume_slice_probe_request(
         if (!_volume_probe_sample_nearest(visual->field, texture_uvw, &voxel_index, &resolved))
             continue;
         resolved.hit = true;
+        resolved.status = DVZ_PROBE_STATUS_HIT;
         resolved.visual_id = _scene_visual_public_id(scene, visual);
+        resolved.visual_family = _scene_visual_family((uint32_t)visual->type);
         resolved.target = DVZ_SCENE_TARGET_SAMPLE;
         resolved.target_id = voxel_index;
+        resolved.auxiliary_id = voxel_index;
         resolved.has_coordinate = true;
         resolved.has_uvw = true;
         for (uint32_t i = 0; i < 3; i++)
@@ -1204,16 +1532,23 @@ static bool _scene_process_image_probe_request(
 
     DvzScene* scene = figure->scene;
     DvzPanel* panel = pending->panel;
-    DvzProbeResult miss = {
-        .request_id = pending->request.request_id,
-        .hit = false,
-        .panel_id = _scene_panel_public_id(figure, panel),
-        .source_request_id = pending->request.request_id,
-    };
+    DvzProbeResult miss =
+        _scene_probe_miss_result(figure, panel, pending, DVZ_PROBE_STATUS_NO_CAPABLE_VISUAL);
+
+    if (!_scene_probe_target_supported(pending->request.target))
+    {
+        miss.status = DVZ_PROBE_STATUS_UNSUPPORTED_TARGET;
+        return _scene_push_probe_result(scene, panel, pending->freshness_serial, &miss);
+    }
+    if (pending->request.target == DVZ_SCENE_TARGET_SAMPLE)
+        return _scene_push_probe_result(scene, panel, pending->freshness_serial, &miss);
 
     vec2 request_ndc = {0};
     if (!_scene_pick_request_ndc(figure, panel, pending->x, pending->y, request_ndc))
+    {
+        miss.status = DVZ_PROBE_STATUS_OUTSIDE_PANEL;
         return _scene_push_probe_result(scene, panel, pending->freshness_serial, &miss);
+    }
 
     uint32_t order[DVZ_SCENE_MAX_VISUALS] = {0};
     _scene_panel_visual_order(panel, order);
@@ -1235,9 +1570,13 @@ static bool _scene_process_image_probe_request(
             continue;
         }
 
+        if (miss.status == DVZ_PROBE_STATUS_NO_CAPABLE_VISUAL)
+            miss.status = DVZ_PROBE_STATUS_MISS;
+
         if (executor == NULL || executor->runtime == NULL || executor->emitter == NULL)
         {
             log_error("image probe request requires a DRP2 runtime");
+            miss.status = DVZ_PROBE_STATUS_GPU_EXEC_FAILED;
             continue;
         }
 
@@ -1262,6 +1601,9 @@ static bool _scene_process_image_probe_request(
         bool executed = false;
         bool readback_ok = _scene_execute_readback_plan(
             scene, executor, caps, probe_plan.plan, 1, 1, rgba, &executed);
+        if (!readback_ok)
+            miss.status = executed ? DVZ_PROBE_STATUS_READBACK_FAILED :
+                                     DVZ_PROBE_STATUS_GPU_EXEC_FAILED;
         if (executed && include_static_uploads)
         {
             _scene_image_probe_mark_static_uploaded(
@@ -1280,31 +1622,12 @@ static bool _scene_process_image_probe_request(
         if (!hit)
             continue;
 
+        DvzSceneProbePayload payload = {0};
+        if (!_scene_decode_image_probe_payload(visual, segment_probe, rgba, &payload))
+            continue;
+
         DvzProbeResult resolved = miss;
-        resolved.hit = true;
-        resolved.visual_id = _scene_visual_public_id(scene, visual);
-        if (segment_probe)
-        {
-            uint64_t label_id = (uint64_t)rgba[0] | ((uint64_t)rgba[1] << 8) |
-                                ((uint64_t)rgba[2] << 16);
-            if (label_id == 0)
-                continue;
-            resolved.target = DVZ_SCENE_TARGET_SEGMENT;
-            resolved.target_id = label_id;
-            resolved.value_kind = DVZ_PROBE_VALUE_LABEL;
-            resolved.category_id = label_id;
-            dvz_snprintf(resolved.label, sizeof(resolved.label), "label %" PRIu64, label_id);
-        }
-        else
-        {
-            resolved.target = DVZ_SCENE_TARGET_PIXEL;
-            resolved.value_kind = DVZ_PROBE_VALUE_VEC4;
-            resolved.vector[0] = rgba[0] / 255.0;
-            resolved.vector[1] = rgba[1] / 255.0;
-            resolved.vector[2] = rgba[2] / 255.0;
-            resolved.vector[3] = rgba[3] / 255.0;
-            dvz_strlcpy(resolved.label, "rgba", sizeof(resolved.label));
-        }
+        _scene_apply_probe_payload(scene, visual, &payload, &resolved);
         return _scene_push_probe_result(scene, panel, pending->freshness_serial, &resolved);
     }
 

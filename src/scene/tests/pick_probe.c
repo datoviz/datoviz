@@ -175,6 +175,67 @@ int test_scene_process_requests_coalesces_pending_probes_before_execution(
 }
 
 
+/**
+ * Ensure unsupported request targets are reported explicitly instead of as generic misses.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_pick_probe_unsupported_targets(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    ANN(item);
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 640, 480, 0);
+    DvzPanel* panel = dvz_panel(
+        figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+    ANN(panel);
+
+    AT(dvz_panel_pick(
+           panel, 12.0, 34.0,
+           &(DvzPickRequest){.request_id = 81, .target = DVZ_SCENE_TARGET_FACE}) == 0);
+    AT(dvz_panel_probe(
+           panel, 9.0, 8.0,
+           &(DvzProbeRequest){.request_id = 82, .target = DVZ_SCENE_TARGET_FACE}) == 0);
+    AT(dvz_panel_pick(panel, 700.0, 34.0, &(DvzPickRequest){.request_id = 83}) == 0);
+    AT(dvz_panel_probe(panel, 9.0, 500.0, &(DvzProbeRequest){.request_id = 84}) == 0);
+    AT(dvz_figure_process_requests(figure, (DvzDrp2Runtime*)scene, NULL) == 4);
+
+    DvzPickResult pick = {0};
+    DvzProbeResult probe = {0};
+    AT(dvz_scene_poll_pick(scene, &pick));
+    AT(!pick.hit);
+    AT(pick.request_id == 81);
+    AT(pick.status == DVZ_PICK_STATUS_UNSUPPORTED_TARGET);
+    AT(pick.visual_family == DVZ_SCENE_VISUAL_FAMILY_NONE);
+    AC(pick.panel_position[0], 12.0, 1e-12);
+    AC(pick.panel_position[1], 34.0, 1e-12);
+
+    AT(dvz_scene_poll_probe(scene, &probe));
+    AT(!probe.hit);
+    AT(probe.request_id == 82);
+    AT(probe.status == DVZ_PROBE_STATUS_UNSUPPORTED_TARGET);
+    AT(probe.visual_family == DVZ_SCENE_VISUAL_FAMILY_NONE);
+    AC(probe.panel_position[0], 9.0, 1e-12);
+    AC(probe.panel_position[1], 8.0, 1e-12);
+
+    AT(dvz_scene_poll_pick(scene, &pick));
+    AT(!pick.hit);
+    AT(pick.request_id == 83);
+    AT(pick.status == DVZ_PICK_STATUS_OUTSIDE_PANEL);
+
+    AT(dvz_scene_poll_probe(scene, &probe));
+    AT(!probe.hit);
+    AT(probe.request_id == 84);
+    AT(probe.status == DVZ_PROBE_STATUS_OUTSIDE_PANEL);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
 int test_scene_pick_probe_queues_and_pinned_readout(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
@@ -570,6 +631,7 @@ int test_scene_image_probe_transparent_pixel_misses(TstContext* suite, const Tst
     AT(dvz_scene_poll_probe(scene, &probe));
     AT(!probe.hit);
     AT(probe.request_id == 21);
+    AT(probe.status == DVZ_PROBE_STATUS_MISS);
     AT(_captured_log_contains(suite, "returned a transparent GPU pixel"));
 
     dvz_drp2_runtime_destroy(runtime);
@@ -663,6 +725,7 @@ int test_scene_image_probe_gpu_readback_failure_misses(TstContext* suite, const 
     AT(dvz_scene_poll_probe(scene, &probe));
     AT(!probe.hit);
     AT(probe.request_id == 22);
+    AT(probe.status == DVZ_PROBE_STATUS_READBACK_FAILED);
     AT(_captured_log_contains(suite, "scene readback buffer download forced to fail"));
 
     dvz_drp2_runtime_destroy(runtime);
@@ -721,9 +784,12 @@ static int test_scene_volume_slice_probe_cpu_sample(TstContext* suite, const Tst
     AT(dvz_scene_poll_probe(scene, &probe));
     AT(probe.hit);
     AT(probe.request_id == 71);
+    AT(probe.status == DVZ_PROBE_STATUS_HIT);
     AT(probe.visual_id == _scene_visual_public_id(scene, volume));
+    AT(probe.visual_family == DVZ_SCENE_VISUAL_FAMILY_VOLUME);
     AT(probe.target == DVZ_SCENE_TARGET_SAMPLE);
     AT(probe.target_id == 13);
+    AT(probe.auxiliary_id == 13);
     AT(probe.value_kind == DVZ_PROBE_VALUE_SCALAR);
     AC(probe.scalar, 13.0, 1e-12);
     AT(probe.has_coordinate);
@@ -772,6 +838,10 @@ int test_scene_process_pick_probe_requests(TstContext* suite, const TstCase* ite
     DvzVisual* points = dvz_point(scene, 0);
     ANN(points);
     dvz_visual_set_pick_capabilities(points, DVZ_PICK_CAPABILITY_ITEM);
+    DvzLinkChannel* channel = dvz_link_channel(scene, "pick-links");
+    uint64_t point_link_keys[1] = {1234};
+    ANN(channel);
+    AT(dvz_visual_set_link_keys(points, channel, point_link_keys, 1) == 0);
     float point_pos[1][3] = {{0.0f, 0.0f, 0.0f}};
     uint8_t point_color[1][4] = {{255, 255, 0, 255}};
     float point_size[1] = {24.0f};
@@ -826,11 +896,22 @@ int test_scene_process_pick_probe_requests(TstContext* suite, const TstCase* ite
     AT(dvz_scene_poll_probe(scene, &probe));
     AT(pick.hit);
     AT(pick.request_id == 11);
+    AT(pick.status == DVZ_PICK_STATUS_HIT);
+    AT(pick.visual_family == DVZ_SCENE_VISUAL_FAMILY_POINT);
     AT(pick.resolved_target == DVZ_SCENE_TARGET_ITEM);
     AT(pick.resolved_id == 0);
+    AT(pick.raw_target == DVZ_SCENE_TARGET_ITEM);
+    AT(pick.raw_id == 0);
+    AT(pick.item_id == 0);
+    AT(pick.link_key == 1234);
     AT(probe.hit);
     AT(probe.request_id == 12);
+    AT(probe.status == DVZ_PROBE_STATUS_HIT);
+    AT(probe.visual_family == DVZ_SCENE_VISUAL_FAMILY_IMAGE);
+    AT(probe.target == DVZ_SCENE_TARGET_PIXEL);
     AT(probe.value_kind == DVZ_PROBE_VALUE_VEC4);
+    AC(probe.panel_position[0], 32.0, 1e-12);
+    AC(probe.panel_position[1], 32.0, 1e-12);
     AT(probe.vector[0] > 0.9);
     AT(probe.vector[1] < 0.1);
     AT(probe.vector[2] < 0.1);
@@ -927,8 +1008,11 @@ int test_scene_point_pick_quadrants(TstContext* suite, const TstCase* item)
         AT(dvz_scene_poll_pick(scene, &pick));
         AT(pick.hit);
         AT(pick.request_id == i + 1);
+        AT(pick.status == DVZ_PICK_STATUS_HIT);
+        AT(pick.visual_family == DVZ_SCENE_VISUAL_FAMILY_POINT);
         AT(pick.resolved_target == DVZ_SCENE_TARGET_ITEM);
         AT(pick.resolved_id == expected_ids[i]);
+        AT(pick.item_id == expected_ids[i]);
         AT(!dvz_scene_poll_pick(scene, &pick));
     }
 
@@ -939,6 +1023,7 @@ int test_scene_point_pick_quadrants(TstContext* suite, const TstCase* item)
     AT(dvz_scene_poll_pick(scene, &resized_pick));
     AT(resized_pick.hit);
     AT(resized_pick.request_id == 20);
+    AT(resized_pick.visual_family == DVZ_SCENE_VISUAL_FAMILY_POINT);
     AT(resized_pick.resolved_target == DVZ_SCENE_TARGET_ITEM);
     AT(resized_pick.resolved_id == 3);
     AT(!dvz_scene_poll_pick(scene, &resized_pick));
@@ -1012,6 +1097,7 @@ int test_scene_point_pick_rejects_disc_corner(TstContext* suite, const TstCase* 
     AT(dvz_scene_poll_pick(scene, &pick));
     AT(!pick.hit);
     AT(pick.request_id == 51);
+    AT(pick.status == DVZ_PICK_STATUS_MISS);
     AT(!dvz_scene_poll_pick(scene, &pick));
 
     dvz_drp2_runtime_destroy(runtime);
@@ -1083,8 +1169,11 @@ int test_scene_pixel_pick_accepts_square_corner(TstContext* suite, const TstCase
     AT(dvz_scene_poll_pick(scene, &pick));
     AT(pick.hit);
     AT(pick.request_id == 52);
+    AT(pick.status == DVZ_PICK_STATUS_HIT);
+    AT(pick.visual_family == DVZ_SCENE_VISUAL_FAMILY_PIXEL);
     AT(pick.resolved_target == DVZ_SCENE_TARGET_ITEM);
     AT(pick.resolved_id == 0);
+    AT(pick.item_id == 0);
     AT(!dvz_scene_poll_pick(scene, &pick));
 
     dvz_drp2_runtime_destroy(runtime);
@@ -1161,8 +1250,11 @@ int test_scene_marker_pick_accepts_bbox_corner(TstContext* suite, const TstCase*
     AT(pick.hit);
     AT(pick.request_id == 53);
     AT(pick.visual_id == 1);
+    AT(pick.status == DVZ_PICK_STATUS_HIT);
+    AT(pick.visual_family == DVZ_SCENE_VISUAL_FAMILY_MARKER);
     AT(pick.resolved_target == DVZ_SCENE_TARGET_ITEM);
     AT(pick.resolved_id == 0);
+    AT(pick.item_id == 0);
     AT(!dvz_scene_poll_pick(scene, &pick));
 
     dvz_drp2_runtime_destroy(runtime);
@@ -1457,6 +1549,9 @@ int test_scene_image_probe_respects_panel_request_position(TstContext* suite, co
     AT(dvz_scene_poll_probe(scene, &probe));
     AT(probe.hit);
     AT(probe.request_id == 31);
+    AT(probe.status == DVZ_PROBE_STATUS_HIT);
+    AT(probe.visual_family == DVZ_SCENE_VISUAL_FAMILY_IMAGE);
+    AT(probe.target == DVZ_SCENE_TARGET_PIXEL);
     AT(probe.vector[0] > 0.9);
     AT(probe.vector[1] < 0.1);
     AT(probe.vector[2] < 0.1);
@@ -1578,7 +1673,11 @@ int test_scene_image_probe_segment_rgba_hidden_visual(TstContext* suite, const T
     AT(dvz_scene_poll_probe(scene, &probe));
     AT(probe.hit);
     AT(probe.request_id == 41);
+    AT(probe.status == DVZ_PROBE_STATUS_HIT);
+    AT(probe.visual_family == DVZ_SCENE_VISUAL_FAMILY_IMAGE);
     AT(probe.target == DVZ_SCENE_TARGET_SEGMENT);
+    AT(probe.target_id == 17);
+    AT(probe.group_id == 17);
     AT(probe.category_id == 17);
 
     AT(dvz_scene_poll_probe(scene, &probe));
@@ -1594,6 +1693,7 @@ int test_scene_image_probe_segment_rgba_hidden_visual(TstContext* suite, const T
     AT(dvz_scene_poll_probe(scene, &probe));
     AT(!probe.hit);
     AT(probe.request_id == 44);
+    AT(probe.status == DVZ_PROBE_STATUS_MISS);
 
     dvz_panel_set_panzoom(panel, NULL, 0);
     DvzPanzoom* pz = dvz_panel_panzoom(panel);
@@ -1608,6 +1708,7 @@ int test_scene_image_probe_segment_rgba_hidden_visual(TstContext* suite, const T
     AT(dvz_scene_poll_probe(scene, &probe));
     AT(probe.hit);
     AT(probe.request_id == 45);
+    AT(probe.status == DVZ_PROBE_STATUS_HIT);
     AT(probe.category_id == 17);
 
     dvz_drp2_runtime_destroy(runtime);
@@ -1692,6 +1793,7 @@ int test_scene_pick_probe(TstSuite* suite)
 
     TST_CASE(test_scene_process_requests_coalesces_pending_picks_before_execution);
     TST_CASE(test_scene_process_requests_coalesces_pending_probes_before_execution);
+    TST_CASE(test_scene_pick_probe_unsupported_targets);
     TST_CASE(test_scene_pick_probe_queues_and_pinned_readout);
     TST_CASE(test_scene_poll_pick_probe_clears_consumed_slots);
     TST_CASE(test_scene_pick_request_same_id_supersedes_older_unresolved);

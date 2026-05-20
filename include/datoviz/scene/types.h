@@ -440,6 +440,10 @@ struct DvzPickResult
     bool hit;
     uint64_t panel_id;
     uint64_t visual_id;
+    DvzSceneVisualFamily visual_family;
+    uint64_t item_id;
+    uint64_t group_id;
+    uint64_t auxiliary_id;
     DvzSceneTargetKind raw_parent_target;
     uint64_t raw_parent_id;
     DvzSceneTargetKind raw_target;
@@ -449,6 +453,7 @@ struct DvzPickResult
     DvzSceneTargetKind resolved_target;
     uint64_t resolved_id;
     uint64_t instance_id;
+    uint64_t link_key;
     double panel_position[2];
     bool has_data_position;
     double data_position[3];
@@ -468,11 +473,17 @@ typedef struct DvzProbeRequest DvzProbeRequest;
 struct DvzProbeResult
 {
     uint64_t request_id;
+    DvzProbeStatus status;
     bool hit;
     uint64_t panel_id;
     uint64_t visual_id;
+    DvzSceneVisualFamily visual_family;
+    uint64_t item_id;
+    uint64_t group_id;
+    uint64_t auxiliary_id;
     DvzSceneTargetKind target;
     uint64_t target_id;
+    double panel_position[2];
     bool has_coordinate;
     double coordinate[3];
     bool has_uvw;

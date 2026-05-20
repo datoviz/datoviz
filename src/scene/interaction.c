@@ -60,7 +60,7 @@ static bool _selection_matches_pick(
     out_item->visual_id = pick->visual_id;
     out_item->target = pick->resolved_target;
     out_item->target_id = pick->resolved_id;
-    out_item->link_key = 0;
+    out_item->link_key = pick->link_key;
     return true;
 }
 

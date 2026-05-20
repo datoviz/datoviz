@@ -97,6 +97,7 @@ int test_scene_selection_apply_pick_and_link_keys(TstContext* suite, const TstCa
         .visual_id = 7,
         .resolved_target = DVZ_SCENE_TARGET_ITEM,
         .resolved_id = 0,
+        .link_key = 10,
     };
     AT(dvz_selection_apply_pick(selection, &pick) == 0);
     AT(dvz_selection_count(selection) == 1);
@@ -104,6 +105,7 @@ int test_scene_selection_apply_pick_and_link_keys(TstContext* suite, const TstCa
     AT(dvz_selection_count(selection) == 0);
 
     pick.resolved_id = 43;
+    pick.link_key = 0;
     selection->desc.mode = DVZ_SELECT_ADDITIVE;
     AT(dvz_selection_apply_pick(selection, &pick) == 0);
     AT(dvz_selection_count(selection) == 1);
@@ -112,6 +114,7 @@ int test_scene_selection_apply_pick_and_link_keys(TstContext* suite, const TstCa
     dvz_selection_copy(selection, items, 2);
     AT(items[0].target == DVZ_SCENE_TARGET_ITEM);
     AT(items[0].target_id == 43);
+    AT(items[0].link_key == 0);
 
     dvz_scene_destroy(scene);
     return 0;
