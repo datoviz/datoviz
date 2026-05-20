@@ -22,4 +22,5 @@ Text shaping, layout, atlas, cache, and DRP2 emission contracts belong in
 6. [effects](effects/): render techniques, transparency, SSAO, MSAA, and screen-space effects.
 
 When a lane becomes the active branch focus, link it from `agents/now/NEXT_STEPS.md`. When it
-lands, move the implementation record to `agents/done/`.
+lands, remove the plan from this queue, move or rewrite the final implementation record under
+`agents/done/`, and delete stale links from the relevant `soon/` README files.

@@ -3,8 +3,8 @@
 This directory contains execution guidance for automation agents.
 
 Stable scene semantics belong in [../spec/scene](../spec/scene). Current execution entry points
-belong in [now/](now/). Completed or historical records belong in [done/](done/). Long-horizon
-backlog belongs in [later/](later/).
+belong in [now/](now/). Completed or historical records belong in [done/](done/), which is the
+archive for finished agent plans. Long-horizon backlog belongs in [later/](later/).
 
 
 ## Current Priority
@@ -127,7 +127,9 @@ Tooling follow-ups:
 ### `done/`
 
 Completed phase records and historical checkpoints. These are useful context, but they are not
-current execution plans.
+current execution plans. When a plan from `now/` or `soon/` is finished, remove it from its active
+queue, move or rewrite the final implementation record under `done/`, and update any index links so
+future agents do not keep treating completed work as pending.
 
 Recently retired or historical notes:
 
@@ -159,7 +161,8 @@ Strategic visual backlog:
 2. Put imminent but not immediately active follow-up notes in `agents/soon/`.
 3. Move stable scene semantics to specialized files under `spec/scene/`.
 4. Keep active not-yet-promoted design addenda in `spec/scene/proposals/active/`.
-5. Move completed implementation records to `agents/done/`.
+5. Move completed implementation records to `agents/done/`, remove the original active plan from
+   `agents/now/` or `agents/soon/`, and update affected README/index links in the same cleanup.
 6. Move speculative or long-horizon execution ideas to `agents/later/`.
 7. Keep example and gallery planning out of `agents/`; it belongs under `spec/scene/examples/`.
 8. On the `v0.4` branch, prefer architecture, correctness, and maintainability over API or ABI

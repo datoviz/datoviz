@@ -79,6 +79,10 @@ material under `spec/scene/` (or the closest existing `spec/` subtree), and use 
 execution status, handoff notes, and automation plans. Treat `docs/` as a future migration target when
 the v0.4 public documentation is rebuilt.
 
+Completed agent plans should not remain in active queues. When work tracked under `agents/now/` or
+`agents/soon/` is done, remove the active plan, move or rewrite the final implementation record under
+`agents/done/`, and update README/index links so future agents do not treat finished work as pending.
+
 ```
 datoviz/
 ├── include/                    # Public headers (installed)
