@@ -44,11 +44,21 @@ int test_scene_turntable(TstSuite* suite);
 
 int test_fly_create_default(TstContext* suite, const TstCase* item);
 
+int test_fly_lookat_initialization(TstContext* suite, const TstCase* item);
+
+int test_fly_pitch_clamp_and_reset(TstContext* suite, const TstCase* item);
+
 int test_fly_free_and_plane_movement(TstContext* suite, const TstCase* item);
 
 int test_fly_set_mode(TstContext* suite, const TstCase* item);
 
 int test_fly_keyboard_arrows_update(TstContext* suite, const TstCase* item);
+
+int test_fly_wasd_and_arrows_equivalent(TstContext* suite, const TstCase* item);
+
+int test_fly_shift_changes_speed(TstContext* suite, const TstCase* item);
+
+int test_fly_left_drag_updates_view(TstContext* suite, const TstCase* item);
 
 int test_fly_ctrl_and_space_use_same_vertical_speed(TstContext* suite, const TstCase* item);
 
@@ -59,6 +69,10 @@ int test_fly_pivot_preserves_eye_and_orbits(TstContext* suite, const TstCase* it
 int test_panel_fly_getter(TstContext* suite, const TstCase* item);
 
 int test_figure_fly_update_advances_panel_camera(TstContext* suite, const TstCase* item);
+
+int test_figure_fly_update_clamps_dt(TstContext* suite, const TstCase* item);
+
+int test_fly_state_is_panel_scoped(TstContext* suite, const TstCase* item);
 
 int test_turntable_create_default(TstContext* suite, const TstCase* item);
 

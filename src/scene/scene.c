@@ -38,6 +38,8 @@
 /*  Helpers                                                                                      */
 /*************************************************************************************************/
 
+#define DVZ_SCENE_FLY_MAX_DT 0.1
+
 static void _scene_stream_release(void* owner);
 
 
@@ -1390,6 +1392,10 @@ bool _dvz_figure_fly_update(DvzFigure* figure, double dt)
     if (figure == NULL)
         return false;
 
+    double update_dt = dt;
+    if (update_dt > DVZ_SCENE_FLY_MAX_DT)
+        update_dt = DVZ_SCENE_FLY_MAX_DT;
+
     bool active = false;
     for (uint32_t i = 0; i < figure->panel_count; i++)
     {
@@ -1402,7 +1408,7 @@ bool _dvz_figure_fly_update(DvzFigure* figure, double dt)
         {
             active = true;
         }
-        dvz_fly_update(fly, dt);
+        dvz_fly_update(fly, update_dt);
     }
     return active;
 }
