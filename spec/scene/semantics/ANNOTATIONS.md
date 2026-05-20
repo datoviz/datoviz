@@ -1,550 +1,140 @@
 # Scene Annotations
 
-This document defines how annotations should work in the v0.4 scene layer.
+Status: normative v0.4 scene semantics spec.
 
-Annotations are scene-side semantic objects.
-
-They are not merely decorative draw calls, and they are not backend concepts.
+Annotations are semantic scene objects for explanatory, diagnostic, and interactive context. They
+may emit ordinary visual-family or overlay contributions, but they are not merely draw calls or
+backend concepts.
 
 
 ## Purpose
 
-Annotations should:
-
-1. attach explanatory, diagnostic, or interactive context to scene content,
-2. remain expressible in scene semantics rather than renderer mechanics,
-3. support both static explanatory overlays and live interaction-driven overlays,
-4. fit naturally into panel-local transforms, picking, and invalidation,
-5. emit ordinary family contributions or panel-local overlay contributions as needed.
-
-
-## Position
-
-Annotations sit between:
-
-1. scene-owned semantic objects such as panels, visuals, axes, and resources,
-2. panel-local interaction and controller state,
-3. derived visual contributions and `FramePlan`,
-4. optional picking and readback interpretation.
-
-The intended flow is:
-
-1. scene objects or controllers define annotation intent,
-2. the scene derives annotation content and placement,
-3. annotation contributions are assembled into the current `FramePlan`,
-4. the runtime only sees planned render work and optional picking work.
-
-
-## Core Rule
-
-Annotations should be modeled by semantic role, not by low-level rendering technique.
-
-That means the scene should express concepts such as:
-
-1. label,
-2. guide line,
-3. probe readout,
-4. crosshair,
-5. overlay callout,
-6. legend entry,
-7. colorbar companion.
-
-It should not force the user to think in terms of:
-
-1. glyph buffers,
-2. segment batches,
-3. texture quads,
-4. backend overlay passes.
+Annotations attach context to scene content, support static and interaction-driven overlays, honor
+panel transforms/picking/invalidation, and keep public concepts independent from glyph buffers,
+segment batches, texture quads, or overlay passes.
 
 
 ## API Model
 
-The current installed API exposes one retained `DvzAnnotation` handle for the first annotation
-slice, including label annotations. That handle is a semantic scene object, not a renderer union.
+The current installed API exposes one retained `DvzAnnotation` handle for the first annotation slice,
+including label annotations. Future subtypes may use dedicated handles when their content models
+justify it. Shared behavior belongs here: attachment, anchor, placement, invalidation, z-order, and
+pick identity.
 
-Future annotation subtypes may grow dedicated handles when their content models justify it. Text
-labels, callouts, guide lines, probe overlays, scale bars, dimensions, and region overlays differ
-enough that the public API should not force every mature subtype through one monolithic descriptor.
-Shared behaviour — attachment, placement, invalidation, and z-order — is covered by shared rules in
-this spec and matching fields in each subtype or descriptor.
-
-Colorbars are dedicated scene objects (`DvzColorbar`) defined in
-`semantics/LEGENDS_AND_COLORBARS.md`. Legends are also dedicated explanatory objects in the semantic
-model, but the current installed public headers do not yet expose a `DvzLegend` handle. Neither
-colorbars nor future legends should be implemented as ordinary annotation subtypes.
+Colorbars are dedicated `DvzColorbar` objects and legends are dedicated explanatory objects in the
+semantic model; neither should become ordinary annotation subtypes. See
+[LEGENDS_AND_COLORBARS.md](LEGENDS_AND_COLORBARS.md).
 
 
-## Non-Goals
+## Core Rules
 
-This document does not define:
-
-1. the final public C API,
-2. the final text shaping or font pipeline,
-3. the exact overlay pass topology,
-4. the final styling vocabulary,
-5. the exact DRP2 command sequence for annotation rendering.
-
-
-## Why Annotations Are Special
-
-Annotations differ from ordinary visuals because they often depend on semantic context in addition to
-renderable data.
-
-Typical dependencies include:
-
-1. the current panel-local view,
-2. hover or selection state,
-3. axis-derived semantic values,
-4. sampled or queried data values,
-5. layout collision or anchoring rules,
-6. panel-edge or viewport-relative placement.
-
-This means annotations often sit across:
-
-1. scene semantics,
-2. panel-local viewing state,
-3. interaction state,
-4. derived geometry and text layout.
-
-
-## Main Responsibilities
-
-An annotation object or annotation-producing scene object should be responsible for:
-
-1. defining the semantic meaning of the annotation,
-2. defining its anchor source,
-3. defining its placement policy,
-4. deriving its visible content,
-5. producing ordinary family contributions or overlay contributions,
-6. reacting to the correct invalidation triggers.
+1. Model annotations by semantic role, not rendering technique.
+2. Keep anchor and placement separate.
+3. Keep attachment scope explicit.
+4. Route interaction through scene/controller state.
+5. Use ordinary family contributions where possible.
+6. Integrate with normal dirty scopes and `FramePlan` assembly.
 
 
 ## Annotation Classes
 
-The scene spec should recognize at least the following conceptual classes:
-
-1. labels,
-2. guides,
-3. probes,
-4. crosshairs,
-5. callouts,
-6. overlays,
-7. legends,
-8. colorbars.
-
-
-### Labels
-
-Labels are text-oriented annotations attached to one semantic target.
-
-Examples:
-
-1. point labels,
-2. panel titles,
-3. axis-adjacent labels,
-4. selection labels,
-5. static explanatory text.
-
-
-### Guides
-
-Guides are geometric annotations intended to help reading or alignment.
-
-Examples:
-
-1. horizontal or vertical guide lines,
-2. threshold markers,
-3. bounding boxes,
-4. region outlines,
-5. reference planes in 3D-oriented panels.
-
-
-### Probes
-
-Probes are interaction-aware readouts tied to a queried semantic target.
-
-Examples:
-
-1. hover value readout,
-2. cursor-aligned sampled value display,
-3. nearest-item summary,
-4. live slice or voxel inspection.
-
-
-### Crosshairs
-
-Crosshairs are panel-local cursor-aligned guides, often coupled to probes or linked panels.
-
-They usually depend on live interaction state rather than static scene resources.
-
-
-### Callouts
-
-Callouts attach explanatory text or highlights to a target anchor.
-
-They commonly combine:
-
-1. one anchor target,
-2. one connecting guide,
-3. one text block or badge,
-4. optional emphasis styling.
-
-
-### Overlays
-
-Overlays are annotations positioned primarily in panel or viewport coordinates rather than data
-coordinates.
-
-Examples:
-
-1. corner labels,
-2. status badges,
-3. export stamps,
-4. viewport-relative HUD text.
-
-
-### Legends And Colorbars
-
-Legends and colorbars are annotation families large enough to deserve their own follow-up document.
-
-For the purposes of this document:
-
-1. they are annotations,
-2. they are usually panel-attached rather than visual-family primitives,
-3. they often summarize mappings used by one or more visuals,
-4. they may emit multiple derived contributions.
+| Class | Meaning/examples |
+|---|---|
+| label | point labels, panel titles, axis-adjacent labels, selection labels, static text |
+| guide | threshold lines, boxes, region outlines, reference planes |
+| probe | hover/readout/nearest-item/sampled-value summaries |
+| crosshair | cursor-aligned panel guides, often linked to probes or panels |
+| callout | target anchor, leader/guide, text block/badge, optional emphasis |
+| overlay | panel/viewport coordinates: corner labels, status badges, export stamps, HUD text |
+| legend/colorbar | mapping summaries; specified in [LEGENDS_AND_COLORBARS.md](LEGENDS_AND_COLORBARS.md) |
 
 
 ## Attachment Scope
 
-Annotations should have explicit ownership or attachment scope.
-
-The minimum useful scopes are:
-
-1. scene-global,
-2. panel-attached,
-3. visual-attached,
-4. axis-attached,
-5. interaction-derived.
-
-
-### Scene-Global
-
-These annotations are owned by the scene and may appear in one or more panels.
-
-Examples:
-
-1. shared title or subtitle objects,
-2. shared probe state mirrored across panels,
-3. global explanatory overlays.
-
-
-### Panel-Attached
-
-These annotations belong to one panel.
-
-Examples:
-
-1. panel title,
-2. panel-local crosshair,
-3. corner status overlay,
-4. panel-local legend.
-
-
-### Visual-Attached
-
-These annotations derive meaning from one visual instance.
-
-Examples:
-
-1. labels for selected points,
-2. a threshold guide owned by one visual,
-3. a visual-specific readout or highlight.
-
-
-### Axis-Attached
-
-These annotations derive from or extend axis semantics.
-
-Examples:
-
-1. axis titles,
-2. domain markers,
-3. a linked colorbar,
-4. axis-side probes or rulers.
-
-
-### Interaction-Derived
-
-These annotations are ephemeral and controller-driven.
-
-Examples:
-
-1. hover tooltip,
-2. drag-selection rectangle,
-3. live cursor probe,
-4. transient measurement guide.
+| Scope | Examples |
+|---|---|
+| scene-global | shared titles, mirrored probe state, global explanatory overlays |
+| panel-attached | panel title, crosshair, corner overlay, panel-local legend |
+| visual-attached | selected-point labels, visual threshold guide, visual-specific readout |
+| axis-attached | axis title, domain marker, colorbar, ruler/probe |
+| interaction-derived | hover tooltip, drag rectangle, cursor probe, measurement guide |
 
 
 ## Anchor Model
 
-Every annotation should define where its meaning is anchored.
+Every annotation defines what it refers to before placement chooses where it is drawn.
 
-Useful conceptual anchor kinds include:
-
-1. data-space anchor,
-2. visual-space anchor,
-3. panel-space anchor,
-4. viewport-relative anchor,
-5. item or group identity anchor,
-6. sampled-value anchor.
-
-
-### Data-Space Anchor
-
-The annotation is anchored to a semantic data coordinate or domain value.
-
-Examples:
-
-1. a threshold line at `x = 3.2`,
-2. a label for one data point,
-3. a marker at one isovalue.
-
-
-### Visual-Space Anchor
-
-The annotation is anchored after data normalization but before panel-local viewing transforms.
-
-This is useful when:
-
-1. a visual has already defined a normalized layout,
-2. the annotation should track that layout,
-3. the original semantic data value is not the primary placement source.
-
-
-### Panel-Space Anchor
-
-The annotation is anchored in panel-local coordinates.
-
-Examples:
-
-1. crosshair lines,
-2. drag boxes,
-3. panel-relative probe readouts.
-
-
-### Viewport-Relative Anchor
-
-The annotation is anchored relative to panel edges or corners.
-
-Examples:
-
-1. top-left panel title,
-2. bottom-right scale readout,
-3. corner legend placement.
-
-
-### Identity Anchor
-
-The annotation is anchored to a picked or selected item or group identity rather than to one raw
-coordinate alone.
-
-This matters for grouped visuals and for annotations that must survive replanning.
+| Anchor | Meaning |
+|---|---|
+| data-space | semantic coordinate/domain value such as threshold `x = 3.2` |
+| visual-space | normalized/layout position before panel transform |
+| panel-space | panel-local coordinates for crosshairs or drag boxes |
+| viewport-relative | panel edge/corner placement |
+| identity | picked/selected item, span, group, or visual identity |
+| sampled-value | field/probe result that supplies content and/or placement |
 
 
 ## Placement Model
 
-The scene spec should keep anchor and placement distinct.
+Placement policies may include direct anchor placement, offsets, edge docking, collision avoidance,
+leader-line/callout placement, and panel-relative stacking. Viewport-relative overlays may bypass
+`DataSpace`; data/visual anchors follow the transform discipline in
+[`../pipeline/TRANSFORM_PIPELINE.md`](../pipeline/TRANSFORM_PIPELINE.md).
 
-An annotation may know what it refers to before the scene decides exactly where it should be drawn.
 
-Placement policy should therefore cover:
+## Contributions
 
-1. direct placement on the anchor,
-2. offset placement from the anchor,
-3. edge docking,
-4. collision-avoiding placement,
-5. leader-line or callout placement,
-6. panel-relative stacking.
+One logical annotation may emit multiple contribution types:
 
+| Annotation | Possible contributions |
+|---|---|
+| label | `glyph` plus optional background geometry |
+| crosshair | one or more `segment` contributions |
+| probe | `glyph`, `segment`, highlight marker |
+| callout | leader geometry, text, emphasis marker |
+| overlay | `glyph`, `image`, `segment`, or panel-local primitives |
 
-## Relationship To The Transform Pipeline
+The public semantic model must not expose those realization choices as the primary API.
 
-Annotations should follow the same transform discipline as the rest of the scene model.
 
-The important split is:
+## Interaction And Picking
 
-1. annotation meaning may originate in `DataSpace`,
-2. annotation geometry or text anchors may be derived in `VisualSpace`,
-3. panel-local viewing transforms may move those contributions afterward,
-4. viewport-relative overlays may bypass `DataSpace` entirely and live in panel or viewport space.
+Annotations may be persistent, controller-lifetime, picking-result-driven, or mirrored across linked
+panels. If pickable, they pick by scene identity:
 
-This means not every annotation needs the same transform path.
+| Pick mode | Meaning |
+|---|---|
+| non-pickable | ignored by picking |
+| object-pickable | returns the annotation id |
+| subpart-pickable | returns entry/badge/handle identity when needed |
 
+Interaction-driven probes and annotation picks should align with `../interaction/PICKING.md` and
+`../interaction/CONTROLLERS.md`.
 
-## Annotation Families Versus Underlying Contributions
 
-Annotations are not required to correspond one-to-one with a primitive visual family.
+## Invalidation And Resources
 
-One logical annotation may emit several contribution types.
+Common dirty sources are content changes, anchor changes, placement policy, panel transform,
+interaction state, picking results, attached visual/axis state, panel layout/size, and export target
+policy. Distinguish cheap movement, semantic content rebuild, layout recomputation, and upload
+changes; dirty scopes are canonical in
+[`../pipeline/INVALIDATION_AND_CACHING.md`](../pipeline/INVALIDATION_AND_CACHING.md).
 
-Examples:
+Annotations may reuse shared resources when semantics allow, but panel-local derived resources are
+valid for viewport layout, text placement, picking overlays, linked-panel mirror state, and
+export-only overlays.
 
-1. a label may emit `glyph` plus a background box,
-2. a crosshair may emit two `segment` contributions,
-3. a probe may emit `glyph`, `segment`, and highlight-marker contributions,
-4. a callout may emit guide geometry plus text plus emphasis markers.
 
-This is the same composite pattern already used by axes.
+## Export And Capability Adaptation
 
+Annotations are first-class export concerns: they may be export-only, hidden in interactive display,
+or target-specific. Capability gaps such as text quality, picking support, layered composition, or
+dynamic resource limits require explicit semantic fallback rather than backend escape hatches.
 
-## Text And Geometry Expectations
 
-The scene layer should be free to realize annotations through ordinary families such as:
+## Boundaries
 
-1. `glyph`,
-2. `segment`,
-3. `path`,
-4. `marker`,
-5. `image`.
-
-This should remain an implementation consequence, not the public semantic model.
-
-
-## Interaction Coupling
-
-Some annotations are static and some are interaction-driven.
-
-The spec should explicitly support:
-
-1. annotations that persist until user code removes them,
-2. annotations that appear only while a controller state is active,
-3. annotations updated by picking results,
-4. annotations mirrored across linked panels.
-
-This keeps annotation logic aligned with `interaction/PICKING.md` and `interaction/CONTROLLERS.md`.
-
-
-## Picking Expectations
-
-Annotations may themselves participate in picking, but they should do so by scene identity.
-
-The scene should be free to mark an annotation as:
-
-1. non-pickable,
-2. pickable as one annotation object,
-3. pickable with sub-part identity when needed.
-
-Examples:
-
-1. clicking a legend entry filters one visual,
-2. clicking an annotation badge opens details,
-3. hovering a callout highlight reveals more context.
-
-
-## Invalidation Model
-
-Annotations should integrate with scene invalidation rather than bypass it.
-
-Typical invalidation sources include:
-
-1. content change,
-2. anchor change,
-3. placement-policy change,
-4. panel transform change,
-5. interaction-state change,
-6. picking result arrival,
-7. attached visual or axis state change,
-8. panel layout or size change.
-
-
-## Cheap Versus Expensive Updates
-
-The scene should distinguish between:
-
-1. cheap movement of already-derived annotation contributions,
-2. semantic content rebuild,
-3. layout recomputation,
-4. upload changes.
-
-Examples:
-
-1. a viewport-corner title may only need panel-size-aware layout updates,
-2. a crosshair may move every frame without semantic rebuild,
-3. a probe tooltip may need content regeneration when the sampled value changes,
-4. collision-avoiding labels may require a more expensive layout pass after resize or zoom changes.
-
-
-## Shared Versus Panel-Local Resources
-
-Annotations should be allowed to reuse shared scene resources when the semantics allow it.
-
-But the model must also allow panel-local derived resources for:
-
-1. viewport-relative layout,
-2. panel-local text placement,
-3. picking overlays,
-4. linked-panel mirror state,
-5. export-only overlays.
-
-Panels should not duplicate scene resources unnecessarily, but panel-local annotation derivation is
-often correct.
-
-
-## Export And Offscreen Behavior
-
-Annotations should participate naturally in offscreen and export-oriented scenes.
-
-The scene spec should allow:
-
-1. export-only annotations,
-2. annotations omitted from interactive display but included in export,
-3. deterministic probe or stamp overlays for reproducible output,
-4. annotation visibility policies that differ by target mode.
-
-
-## Capability Adaptation Pressure
-
-Annotations create pressure on runtime capabilities without justifying backend leakage.
-
-Important pressures include:
-
-1. text rendering availability or quality,
-2. offscreen readback support,
-3. picking support,
-4. layered or overlay-like composition support,
-5. resource limits for dynamic annotation churn.
-
-If capability gaps matter, the scene layer should adapt through explicit policy rather than through
-backend-specific escape hatches.
-
-
-## Relationship To Other Scene Spec Documents
-
-This document should be read alongside:
-
-1. `semantics/AXES.md` for axis-derived labels and related semantic guides,
-2. `interaction/PICKING.md` for interaction-driven probes and pickable annotation identity,
-3. `interaction/CONTROLLERS.md` for controller-driven transient overlays,
-4. `pipeline/TRANSFORM_PIPELINE.md` for anchor and placement transform stages,
-5. `pipeline/INVALIDATION_AND_CACHING.md` for dirty-scope and reuse behavior,
-6. `pipeline/FRAME_PLAN.md` for how annotation contributions enter the scene-level `FramePlan`.
-
-
-## What This Document Intentionally Leaves Open
-
-This document intentionally does not freeze:
-
-1. the final style or theme object model,
-2. the final text-layout engine boundary,
-3. the final collision-avoidance algorithm.
-
-
-## Immediate Follow-Up
-
-`semantics/LEGENDS_AND_COLORBARS.md` and `validation/VALIDATION.md` are the natural follow-ons from this
-document; annotation-heavy and multi-panel worked examples further pressure-test it.
-
-The first implementation-ready annotation packet is
-[../slices/ANNOTATION_LABEL_SLICE.md](../slices/ANNOTATION_LABEL_SLICE.md). Measurement annotations
-should wait until that label path and the text rendering slice are active.
+This document does not freeze the final public API, text shaping/font pipeline, overlay pass
+topology, styling vocabulary, collision-avoidance algorithm, or exact DRP2 command sequence.
+Implementation slices: [`../slices/ANNOTATION_LABEL_SLICE.md`](../slices/ANNOTATION_LABEL_SLICE.md);
+measurement annotations wait for label and text rendering slices.

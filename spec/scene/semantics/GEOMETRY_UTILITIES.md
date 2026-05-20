@@ -1,471 +1,129 @@
 # Geometry Utilities
 
-This document specifies the CPU-side geometry utility layer bundled with Datoviz.
+Status: normative v0.4 scene semantics spec for CPU-side geometry helpers.
 
-Geometry utilities operate above the scene layer and below user code.
-They produce standard scene resource data (vertex arrays, index arrays, atlas textures) that
-feed the normal resource upload path.
-
-
-## Purpose
-
-Certain geometry operations come up repeatedly across scientific visualization workflows and
-cannot be cleanly delegated to user code or Python:
-
-1. triangulation is needed before any polygon can be rendered as a mesh,
-2. curve tessellation is needed before smooth paths can be rendered as line geometry,
-3. line simplification is needed to reduce geographic or anatomical contour complexity at
-   varying zoom levels,
-4. hull computation is needed for cluster outlines, ROI boundaries, and point-set enclosures,
-5. boolean polygon operations are needed for geographic overlays and region masking,
-6. MSDF/SDF generation is needed for high-quality marker shapes and text rendering.
-
-All utilities operate in **F64 (double-precision float)** throughout.
-Their output vertex data enters the normal resource upload path and is downcast to F32 at
-`UploadNode` time by the standard CPU precision policy (see `pipeline/TRANSFORM_PIPELINE.md`).
+Geometry utilities operate above the scene layer and below user code. They produce standard scene
+resource data such as F64 vertices, indices, and atlas textures that enter the normal resource upload
+path.
 
 
-## Procedural Render Geometry
+## Core Rules
 
-Some geometry utilities are not triangulation algorithms; they are deterministic generators for
-small renderable mesh assets. These utilities still belong in the geometry layer because their
-output is ordinary indexed geometry consumed by scene visuals.
-
-The geometry layer should include:
-
-1. primitive solids such as cubes, spheres, cylinders, cones, torus meshes, and arrows;
-2. classic polyhedra when useful for examples or markers;
-3. 3D gizmo-axis geometry;
-4. structured surface grids.
-
-These generators must not become a second scene graph. They produce CPU-side geometry payloads,
-which are then uploaded through the same resource path as imported or user-provided meshes.
-
-
-### Gizmo Axis Geometry
-
-The v0.3 orientation gizmo was built from three colored arrows merged into one shape. That remains
-the recommended geometry baseline for v0.4, but the generator should live in `geom` rather than in
-a Python-only shape collection abstraction.
-
-Recommended generator:
-
-```text
-dvz_geom_gizmo_axes(&desc, &out_geometry)
-```
-
-The descriptor should control:
-
-1. axis length;
-2. shaft radius;
-3. head length;
-4. head radius;
-5. tessellation count;
-6. per-axis colors.
-
-The generated geometry is ordinary mesh geometry. Scene-level orientation-gizmo behavior, such as
-pinning it to a corner viewport and synchronizing it with an arcball or camera rotation, belongs in
-the scene/app layer rather than in the geometry generator.
-
-
-### Structured Surface Grid Geometry
-
-A surface-grid generator converts a dense rectangular height field into indexed mesh geometry.
-
-Recommended generator:
-
-```text
-dvz_geom_surface_grid(&desc, &out_geometry)
-```
-
-The descriptor should include:
-
-1. row and column counts;
-2. height array;
-3. optional scalar or color array;
-4. origin;
-5. two basis vectors defining the grid plane;
-6. height scale or height direction;
-7. normal policy;
-8. optional structured-grid metadata output.
-
-The generator should preserve enough structured provenance for downstream systems to support
-height-only updates, normal recomputation, grid edge overlays, contours, isolines, and future LOD.
-The renderable output is still a standard mesh geometry payload.
+1. Utilities are CPU-side data preparation steps, not scene graph nodes or visual families.
+2. All geometric computation uses F64. Downcast to F32 happens at `UploadNode` time after normal
+   scene normalization; see [`../pipeline/TRANSFORM_PIPELINE.md`](../pipeline/TRANSFORM_PIPELINE.md).
+3. Outputs lower to existing resource classes in
+   [`../pipeline/RESOURCE_MODEL.md`](../pipeline/RESOURCE_MODEL.md), not special resource classes.
 
 
 ## Bundled Dependencies
 
-| Utility area | Library | Notes |
+| Utility area | Library | Contract |
 |---|---|---|
-| Simple polygon triangulation | earcut (C++) | fast, handles holes, no external deps |
-| Constrained Delaunay / PSLG | Triangle (Shewchuk) | quality mesh, PSLG input, public domain |
-| Curve tessellation | built-in | Bézier, Catmull-Rom, B-spline |
-| Line simplification | built-in | Douglas-Peucker |
-| 2D hull | built-in | convex hull; concave hull deferred |
-| Boolean polygon ops | Clipper2 | union, intersection, difference; small dep |
-| MSDF/SDF generation | msdfgen | already bundled in v0.3 |
-| Glyph atlas packing | msdf-atlas-gen | already bundled in v0.3 |
+| simple polygon triangulation | earcut (C++) | holes, fast, no external deps |
+| constrained Delaunay / PSLG | Triangle (Shewchuk) | quality mesh, constrained edges, holes |
+| curve tessellation | built-in | Bezier, Catmull-Rom, B-spline |
+| line simplification | built-in | Douglas-Peucker |
+| 2D hull | built-in | convex hull baseline; concave deferred |
+| boolean polygon ops | Clipper2 | union, intersection, difference, XOR |
+| MSDF/SDF generation | msdfgen | marker shapes, annotation shapes |
+| glyph atlas packing | msdf-atlas-gen | font/glyph atlases |
 
 
----
+## Procedural Render Geometry
+
+Generators produce ordinary indexed geometry payloads.
+
+| Generator | Descriptor controls | Notes |
+|---|---|---|
+| primitive solids | cube, sphere, cylinder, cone, torus, arrow, classic polyhedra | examples, markers, utilities |
+| `dvz_geom_gizmo_axes` | axis length, shaft/head dimensions, tessellation, per-axis colors | scene/app owns pinning and camera sync |
+| `dvz_geom_surface_grid` | rows/cols, height/scalar/color arrays, origin, basis, height policy, normals, metadata | preserves provenance for updates, overlays, contours, isolines, future LOD |
+
 
 ## Triangulation
 
-### Simple Polygon — `DvzPolygon`
+| Input | Function | Contract | Use |
+|---|---|---|---|
+| `DvzPolygon` | `dvz_triangulate_polygon` | outer F64 ring plus holes -> F64 vertices + `uint32` indices | filled polygons, regions, annotation shapes |
+| `DvzPSLG` | `dvz_triangulate_pslg` | F64 points, constrained edges, holes, quality -> F64 vertices + `uint32` indices | boundaries, constrained/scattered Delaunay |
 
-`DvzPolygon` is the input type for simple polygon triangulation.
+`DvzTriangulateQuality` carries optional minimum angle and maximum triangle area. Earcut and Triangle
+operate in F64; no upload-time downcast occurs here.
 
-It carries:
-1. an outer ring of F64 vertices,
-2. zero or more hole rings (each a contiguous vertex array).
-
-The scene calls earcut internally and returns a flat F64 vertex array and a `uint32` index
-array, both ready for a `mesh` visual.
-
-```text
-DvzPolygon poly = {
-    .vertices    = (dvec2*) outer_pts,
-    .vertex_count = n_outer,
-    .holes        = hole_arrays,
-    .hole_counts  = hole_sizes,
-    .hole_count   = n_holes,
-}
-dvz_triangulate_polygon(&poly, &out_vertices, &out_indices)
-```
-
-Use this path for simple filled polygons, region outlines, and annotation shapes.
-
-
-### PSLG — `DvzPSLG`
-
-`DvzPSLG` is the input type for constrained Delaunay triangulation via the Triangle library.
-
-A PSLG (Planar Straight-Line Graph) carries:
-1. a set of F64 point coordinates,
-2. a set of required (constrained) edges that must survive the triangulation,
-3. optional hole seed points.
-
-```text
-DvzPSLG pslg = {
-    .points       = pts_f64,
-    .point_count  = n,
-    .segments     = edges,          // (i, j) index pairs — must appear in output
-    .segment_count = n_segs,
-    .holes        = hole_seeds,     // one interior point per hole
-    .hole_count   = n_holes,
-}
-dvz_triangulate_pslg(&pslg, &quality_opts, &out_vertices, &out_indices)
-```
-
-`DvzTriangulateQuality` carries optional Triangle-library quality constraints:
-- minimum angle bound (degrees),
-- maximum triangle area bound.
-
-Use this path when:
-1. specific edges must be preserved (coastlines, anatomical region boundaries),
-2. quality mesh generation with angle or area constraints is needed,
-3. scattered point triangulation (Delaunay from a point cloud) is needed.
-
-
-### Triangulation And Precision
-
-Both triangulators operate in F64 and produce F64 vertex output.
-Earcut uses F64 arithmetic for all winding and intersection tests.
-Triangle (Shewchuk) is a F64 library natively.
-Downcast to F32 happens at `UploadNode` time, not here.
-
-
----
 
 ## Curve Tessellation
 
-Curve tessellation converts smooth curve control points into polyline vertex sequences for
-rendering with the `path` family.
+Curve tessellation outputs flat F64 `dvec3` polyline data for `path` resources.
 
-Three curve types are supported:
+| Curve | Function | Controls |
+|---|---|---|
+| quadratic/cubic Bezier | `dvz_tessellate_bezier_cubic` and related forms | F64 deviation tolerance in data units |
+| Catmull-Rom | `dvz_tessellate_catmull_rom` | steps per segment; passes through controls |
+| uniform cubic B-spline | `dvz_tessellate_bspline` | steps per segment and degree |
 
-### Bézier Curves
-
-| Type | Control points |
-|---|---|
-| Quadratic | 3 per segment |
-| Cubic | 4 per segment |
-
-```text
-dvz_tessellate_bezier_cubic(ctrl_pts, n_segments, tolerance, &out_pts, &out_count)
-```
-
-`tolerance` is the maximum F64 deviation between the curve and its polyline approximation,
-in data-space units.
-Smaller tolerance produces more vertices.
-
-
-### Catmull-Rom Spline
-
-Produces a smooth curve passing through all control points.
-Adjacent control points define a $C^1$ continuous spline.
-
-```text
-dvz_tessellate_catmull_rom(ctrl_pts, n_pts, steps_per_segment, &out_pts, &out_count)
-```
-
-`steps_per_segment` controls the number of output polyline points per input interval.
-
-
-### B-Spline
-
-Uniform cubic B-spline through or near the control points.
-
-```text
-dvz_tessellate_bspline(ctrl_pts, n_pts, steps_per_segment, degree, &out_pts, &out_count)
-```
-
-
-### Tessellation Output
-
-All tessellators return a flat F64 `dvec3` array suitable for upload as a `path` visual
-vertex buffer.
-The output count depends on the tolerance or steps-per-segment setting.
-
-
----
 
 ## Line Simplification
 
-Douglas-Peucker simplification reduces the vertex count of a polyline while preserving its
-visual shape within a given tolerance.
+`dvz_simplify_path(pts_f64, n_pts, tolerance, &out_pts, &out_count)` applies
+Douglas-Peucker simplification. `tolerance` is maximum F64 perpendicular deviation in data units.
+The output is a topology-preserving subset of input points. This is a one-shot utility; automatic
+zoom-dependent LOD is future work.
 
-```text
-dvz_simplify_path(pts_f64, n_pts, tolerance, &out_pts, &out_count)
-```
-
-`tolerance` is the maximum F64 perpendicular distance, in data-space units, that a removed
-point may deviate from the simplified segment.
-
-Use cases:
-1. geographic data rendered at low zoom — simplify coastlines and roads before upload,
-2. large anatomical contours — reduce vertex count without visible loss,
-3. LOD (level-of-detail) path variants at different simplification levels.
-
-`dvz_simplify_path` is a **one-shot utility**; it is not applied automatically at different zoom
-levels. Automatic LOD (triggering simplification per zoom change) is a v0.4+ concern.
-
-The output is a subset of the input points (Douglas-Peucker is topology-preserving).
-Output is F64 and feeds the normal upload path.
-
-
----
 
 ## 2D Hull
 
-### Convex Hull
+`dvz_hull_convex(pts_f64, n_pts, &hull_pts, &hull_count)` returns an ordered CCW F64 polygon ring
+using an O(n log n) algorithm. Concave/alpha-shape hull computation is deferred.
 
-```text
-dvz_hull_convex(pts_f64, n_pts, &hull_pts, &hull_count)
-```
-
-Returns the convex hull as an ordered F64 polygon ring (counter-clockwise).
-Uses an $O(n \log n)$ algorithm.
-
-Use cases: cluster outlines in scatter plots, electrode array footprints, bounding regions.
-
-
-### Concave Hull
-
-Concave (alpha-shape) hull computation is deferred.
-Use the convex hull as the initial approximation.
-
-
----
 
 ## Boolean Polygon Operations
 
-Boolean polygon operations on 2D polygons via the Clipper2 library. These are **CPU-side
-utilities** exposed at the geometry utility layer — they are not scene API calls and do not
-have direct counterparts in `dvz_scene` or `dvz_visual` functions.
-
-Supported operations:
-
 | Operation | Function |
 |---|---|
-| Union | `dvz_polygon_union` |
-| Intersection | `dvz_polygon_intersection` |
-| Difference | `dvz_polygon_difference` |
+| union | `dvz_polygon_union` |
+| intersection | `dvz_polygon_intersection` |
+| difference | `dvz_polygon_difference` |
 | XOR | `dvz_polygon_xor` |
 
-All functions accept and return `DvzPolygon` objects (outer ring + holes).
-Input and output are in F64.
-
-Clipper2 uses exact integer arithmetic internally (coordinates are scaled to integers with
-a configurable precision factor); the wrapper converts F64 ↔ integer transparently.
-
-Use cases:
-1. geographic region masking (clip data to a polygon boundary),
-2. merging overlapping ROIs,
-3. computing overlap regions between two anatomical areas.
+All functions accept and return `DvzPolygon` objects with outer ring plus holes. Input/output are
+F64. The Clipper2 wrapper scales F64 coordinates to exact integer arithmetic internally and converts
+back transparently.
 
 
----
+## SDF And MSDF
 
-## SDF And MSDF Pipeline
+The SDF/MSDF pipeline uses msdfgen and msdf-atlas-gen for resolution-independent marker shapes,
+annotation decorations, and text glyphs.
 
-### Purpose And v0.3 Baseline
+| Path | Contract |
+|---|---|
+| SVG path -> MSDF/SDF | `dvz_msdf_from_svg` / `dvz_sdf_from_svg` return float textures; `dvz_marker_tex_scale` matches texture width |
+| font handle | `DvzFont` is typeface/metrics identity; atlas storage is separate and shareable |
+| default font | `dvz_font_default(scene)` returns the built-in typeface |
+| custom font | `dvz_font_load(scene, ttf_bytes, ttf_size)` |
+| glyph usage | glyph/text objects reference a compatible `DvzFont*`; atlases are shared by default |
+| preloading | `dvz_font_preload_string` and `dvz_font_preload_codepoints` avoid runtime growth when known ahead |
+| import/export | `dvz_font_export` / `dvz_font_import` preserve pre-baked atlas startup paths |
 
-The SDF/MSDF pipeline enables high-quality anti-aliased rendering of arbitrary vector shapes —
-custom marker symbols, text glyphs, and annotation decorations — at any resolution and scale.
+Lazy auto-grow is the default glyph atlas policy. New codepoints mark compatible glyph/text users
+dirty; atlas regeneration or patching is deferred to the next frame boundary, never mid-render.
+Static atlas policy may reject undeclared codepoints instead.
 
-Datoviz bundles **msdfgen** (multi-channel signed distance field generator) and
-**msdf-atlas-gen** (atlas packer for fonts and glyph sets).
-Both were already present in v0.3.
-
-The pipeline is used by:
-1. the `marker` family — `DVZ_MARKER_MODE_SDF` and `DVZ_MARKER_MODE_MSDF`,
-2. the `glyph` family — all text rendering via font atlases.
-
-
-### SVG Path → MSDF Texture
-
-A single SVG path string can be converted directly to an MSDF texture via the v0.3 functions,
-which carry forward unchanged into v0.4:
-
-```text
-float* msdf = dvz_msdf_from_svg(svg_path_string, width, height)
-// single-channel SDF variant:
-float* sdf  = dvz_sdf_from_svg(svg_path_string, width, height)
-```
-
-The result is a float texture that is uploaded and attached to a marker visual in `MSDF` or
-`SDF` mode.
-`dvz_marker_tex_scale` must be set to the texture width so the shader scales SDF distances
-correctly.
-
-This is the recommended path for custom marker shapes defined as SVG paths.
+`marker` in `DVZ_MARKER_MODE_MSDF` may index a shared atlas per item using a shape-index attribute,
+allowing multiple custom marker shapes in one visual. Annotation shapes such as boxes, bubbles, and
+arrows may use the same SDF infrastructure. GPU-side SDF generation via jump flooding is future
+compute work.
 
 
-### Font Glyph Atlas — `DvzFont` And Glyph Atlas Resources
+## Resource Mapping
 
-The semantic text contract is defined in [TEXT.md](TEXT.md). This section covers only the
-geometry/atlas utility path used by glyph and marker rendering.
-
-#### Scene-Level Font Handle — `DvzFont`
-
-`DvzFont` is the scene-level resource for a loaded typeface.
-It provides metrics and shaping-facing font identity. Glyph atlas storage is a separate scene
-resource role that may be created lazily and shared by all glyph/text users of the same font and
-rasterization policy.
-
-```text
-// Load a custom font from TTF bytes
-DvzFont* font = dvz_font_load(scene, ttf_bytes, ttf_size)
-
-// Use the scene-provided default font (same typeface as v0.3)
-DvzFont* font = dvz_font_default(scene)
-```
-
-The default font is the built-in typeface bundled with Datoviz (same as v0.3).
-It is available without any user-side font loading.
-
-A `glyph` visual references a font at creation time:
-
-```text
-visual = dvz_glyph(scene, &(DvzGlyphParams){ .font = font, ... })
-```
-
-All `glyph` visuals and retained text objects referencing the same compatible `DvzFont*` handle
-share glyph atlas resources. No per-visual atlas copies are made by default.
-
-
-#### Codepoint Declaration Policy
-
-The scene uses **lazy auto-grow** by default for glyph atlas resources.
-
-The user sets strings directly; the scene tracks which codepoints are required across all
-`glyph` visuals or retained text objects that reference a compatible font/atlas pair, and
-regenerates or patches the atlas automatically when new characters appear.
-Regeneration is deferred to the next frame boundary — it never happens mid-render.
-
-For performance-sensitive cases where any runtime regeneration must be avoided, an explicit
-pre-declaration path is available:
-
-```text
-dvz_font_preload_string(font, "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789")
-dvz_font_preload_codepoints(font, codepoints, n)
-```
-
-Calling either function before the first frame bakes the atlas ahead of time.
-If a string later introduces codepoints not in the pre-declared set, the auto-grow policy
-still applies unless the atlas resource was created with a static-atlas policy.
-
-
-#### Atlas Invalidation On Growth
-
-When auto-grow triggers, the full atlas is regenerated via msdf-atlas-gen repacking and
-re-uploaded on the next frame.
-All `glyph` visuals and retained text objects referencing the atlas are marked dirty: their
-per-character UV coordinates are recomputed against the new atlas layout before the next render.
-
-For typical scientific character sets (< 200 glyphs, Latin + digits + symbols), regeneration
-is fast and usually happens at most once or twice during application startup.
-
-Atlases can be pre-generated offline and serialized for instant startup:
-
-```text
-dvz_font_export(font, path)   // save pre-baked atlas to disk
-DvzFont* font = dvz_font_import(scene, path)  // load at startup, skip generation
-```
-
-These carry forward the `dvz_atlas_export` / `dvz_atlas_import` v0.3 functionality at the
-font/atlas resource level.
-
-
-### Per-Item Shape Variation Via Atlas
-
-In v0.4, a `marker` visual in `DVZ_MARKER_MODE_MSDF` can index into a shared `DvzAtlas` on
-a per-item basis using a shape index attribute.
-This allows a single marker visual to display different custom shapes per item, without
-requiring one visual per shape.
-
-The shape index attribute selects the atlas entry; the atlas carries the UV coordinates for
-each packed shape.
-This is a v0.4 addition over v0.3 (which required separate visuals for different MSDF shapes).
-
-
-### Annotation And Callout Shapes
-
-The SDF pipeline applies to annotation shapes (rounded boxes, speech bubbles, pointer arrows)
-generated via msdfgen rather than rasterized.
-This produces crisp shapes at any DPI without pre-rendering at a fixed pixel size.
-Annotation shape generation is deferred; the infrastructure (msdfgen + upload path) is in
-place.
-
-
-### GPU-Side SDF Computation (Future)
-
-For distance fields derived from dynamic binary masks (e.g., brain region outlines from
-segmentation maps), GPU-side SDF computation via the jump flooding algorithm is a future
-compute path.
-It would produce a `Texture2DResource` suitable for use in the SDF marker or annotation
-pipeline.
-This is not part of the v0.4 baseline but the architecture supports it via `ComputeNode`.
-
-
----
-
-## Relationship To Scene Resources
-
-Geometry utility output is not a special resource class.
-The output of triangulation, tessellation, simplification, hull, and boolean operations is
-plain F64 vertex and index data that enters the standard resource upload path:
-
-1. triangulation output → `IndexedGeometry` resource → `mesh` visual,
-2. curve tessellation output → `ItemTable` or `GroupedItemTable` resource → `path` visual,
-3. hull output → `DvzPolygon` → triangulation → `mesh` or `primitive` visual,
-4. boolean output → `DvzPolygon` → triangulation → `mesh` visual,
-5. MSDF output → `Texture2DResource` → `marker` or `glyph` visual.
+| Utility output | Resource path |
+|---|---|
+| triangulation | `IndexedGeometry` -> `mesh` |
+| curve tessellation | `ItemTable`/`GroupedItemTable` -> `path` |
+| hull | `DvzPolygon` -> triangulation -> `mesh`/`primitive` |
+| boolean polygons | `DvzPolygon` -> triangulation -> `mesh` |
+| MSDF/SDF | `Texture2DResource` -> `marker`, `glyph`, or annotation |
 
 No special resource handling is needed.
-The utilities are CPU-side data preparation steps, not scene-layer extension points.
-
-
----
