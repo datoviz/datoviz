@@ -843,15 +843,17 @@ int main(int argc, char** argv)
     dvz_memcpy(fly_desc.target, sizeof(fly_desc.target), view.target, sizeof(view.target));
     dvz_memcpy(fly_desc.up, sizeof(fly_desc.up), view.up, sizeof(view.up));
     fly_desc.speed = view.speed;
-    DvzFly* fly = dvz_panel_set_fly(panel, dvz_app_window_input(win), &fly_desc);
-    if (fly == NULL)
+    DvzController* fly_controller = dvz_scene_fly(scene, &fly_desc);
+    DvzFly* fly = dvz_controller_fly(fly_controller);
+    if (fly == NULL || dvz_panel_bind_controller(panel, fly_controller, DVZ_DIM_MASK_XYZ) != 0)
     {
-        dvz_fprintf(stderr, "dvz_panel_set_fly() failed\n");
+        dvz_fprintf(stderr, "failed to create or bind the LIDAR fly controller\n");
         dvz_app_destroy(app);
         dvz_scene_destroy(scene);
         _destroy_lidar_dataset(&dataset);
         return 1;
     }
+    dvz_fly_connect(fly, dvz_app_window_input(win));
     gui_state.fly = fly;
 
     DvzGuiConfig gui_config = dvz_gui_config();

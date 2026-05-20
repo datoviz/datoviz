@@ -31,6 +31,7 @@
 #include "../drp2/_stream.h"
 #include "_scene.h"
 #include "_technique.h"
+#include "datoviz/scene.h"
 
 
 
@@ -68,6 +69,17 @@ static bool _scene_has_live_streams(const DvzScene* scene);
 static void _scene_figure_id(const DvzFigure* figure, char* out, uint32_t size);
 
 static void _scene_panel_pixel_size(const DvzPanel* panel, float* out_width, float* out_height);
+
+static DvzCamera* _scene_panel_ensure_camera(DvzPanel* panel);
+
+static void _scene_controller_destroy(DvzController* controller);
+
+static bool _scene_fly_active(const DvzFly* fly);
+
+static bool _scene_controller_seen(
+    DvzController* const* controllers, uint32_t count, const DvzController* controller);
+
+static bool _scene_panel_sync_fly_pivot_marker(DvzPanel* panel);
 
 static bool _scene_pick_request_supersedes(
     const DvzPendingPickRequest* pending, const DvzPanel* panel, uint64_t request_id);
@@ -224,6 +236,150 @@ void _scene_panel_pixel_rect(
     *out_x = panel->desc.x * figure_width;
     *out_y = panel->desc.y * figure_height;
     _scene_panel_pixel_size(panel, out_width, out_height);
+}
+
+
+
+/**
+ * Ensure one panel has an owned camera.
+ *
+ * @param panel the panel
+ * @return the panel camera, or NULL on allocation failure
+ */
+static DvzCamera* _scene_panel_ensure_camera(DvzPanel* panel)
+{
+    ANN(panel);
+    if (panel->camera == NULL)
+    {
+        DvzCameraDesc camera_desc = dvz_camera_desc();
+        panel->camera = _dvz_camera(&camera_desc);
+    }
+    return panel->camera;
+}
+
+
+
+/**
+ * Destroy one scene-owned controller payload.
+ *
+ * @param controller the controller
+ */
+static void _scene_controller_destroy(DvzController* controller)
+{
+    if (controller == NULL || !controller->active)
+        return;
+    if (controller->fly != NULL)
+    {
+        dvz_fly_destroy(controller->fly);
+        controller->fly = NULL;
+    }
+    controller->scene = NULL;
+    controller->type = DVZ_CONTROLLER_TYPE_NONE;
+    controller->active = false;
+}
+
+
+
+/**
+ * Return whether one fly controller still needs frame updates.
+ *
+ * @param fly the fly payload
+ * @return whether the fly payload is active
+ */
+static bool _scene_fly_active(const DvzFly* fly)
+{
+    if (fly == NULL)
+        return false;
+    return fly->key_forward || fly->key_backward || fly->key_left || fly->key_right ||
+           fly->key_up || fly->key_down || fly->interacting || fly->pivot_marker_time_left > 0.0;
+}
+
+
+
+/**
+ * Return whether one controller is already present in a small pointer set.
+ *
+ * @param controllers controller pointer set
+ * @param count number of valid entries
+ * @param controller controller to search
+ * @return whether the controller was found
+ */
+static bool _scene_controller_seen(
+    DvzController* const* controllers, uint32_t count, const DvzController* controller)
+{
+    ANN(controllers);
+    if (controller == NULL)
+        return true;
+    for (uint32_t i = 0; i < count; i++)
+    {
+        if (controllers[i] == controller)
+            return true;
+    }
+    return false;
+}
+
+
+
+/**
+ * Synchronize the transient fly pivot marker visual for one panel.
+ *
+ * @param panel the panel
+ * @return whether synchronization succeeded
+ */
+static bool _scene_panel_sync_fly_pivot_marker(DvzPanel* panel)
+{
+    if (panel == NULL || panel->figure == NULL || panel->figure->scene == NULL ||
+        panel->fly == NULL)
+    {
+        return true;
+    }
+
+    DvzFly* fly = panel->fly;
+    bool visible = fly->has_pivot && fly->pivot_marker_visible;
+    if (panel->fly_pivot_marker_visual == NULL && !visible)
+        return true;
+
+    if (panel->fly_pivot_marker_visual == NULL)
+    {
+        DvzVisual* marker = dvz_point(panel->figure->scene, 0);
+        if (marker == NULL)
+            return false;
+        DvzPointStyleDesc style = dvz_point_style_desc();
+        style.stroke = true;
+        style.stroke_width = 2.0f;
+        style.edge_color[0] = 0;
+        style.edge_color[1] = 0;
+        style.edge_color[2] = 0;
+        style.edge_color[3] = 220;
+        if (dvz_point_set_style(marker, &style) != 0)
+            return false;
+        if (dvz_visual_set_depth_test(marker, false) != 0)
+            return false;
+        if (dvz_panel_add_visual(
+                panel, marker,
+                &(DvzVisualAttachDesc){.z_layer = 10000, .controller_mode = DVZ_CONTROLLER_APPLY}) !=
+            0)
+        {
+            return false;
+        }
+        panel->fly_pivot_marker_visual = marker;
+    }
+
+    DvzVisual* marker = panel->fly_pivot_marker_visual;
+    dvz_visual_set_visible(marker, visible);
+    if (!visible)
+        return true;
+
+    float position[1][3] = {{
+        fly->pivot[0],
+        fly->pivot[1],
+        fly->pivot[2],
+    }};
+    DvzColor color[1] = {{255, 220, 32, 235}};
+    float size[1] = {14.0f};
+    return dvz_visual_set_data(marker, "position", position, 1) == 0 &&
+           dvz_visual_set_data(marker, "color", color, 1) == 0 &&
+           dvz_visual_set_data(marker, "size", size, 1) == 0;
 }
 
 
@@ -1200,6 +1356,8 @@ void dvz_scene_destroy(DvzScene* scene)
         scene->link_channels[i].scene = NULL;
     for (uint32_t i = 0; i < scene->pinned_readout_count; i++)
         scene->pinned_readouts[i].scene = NULL;
+    for (uint32_t i = 0; i < scene->controller_count; i++)
+        _scene_controller_destroy(&scene->controllers[i]);
     if (scene->emitter != NULL)
     {
         dvz_frame_plan_emitter_destroy(scene->emitter);
@@ -1297,6 +1455,65 @@ void dvz_figure_destroy(DvzFigure* figure)
 }
 
 
+/**
+ * Create a scene-owned fly controller.
+ *
+ * @param scene the scene
+ * @param desc fly descriptor, or NULL for defaults
+ * @return the scene-owned controller handle
+ */
+DvzController* dvz_scene_fly(DvzScene* scene, const DvzFlyDesc* desc)
+{
+    ANN(scene);
+    if (scene->controller_count >= DVZ_SCENE_MAX_CONTROLLERS)
+        return NULL;
+
+    DvzController* controller = &scene->controllers[scene->controller_count++];
+    controller->scene = scene;
+    controller->type = DVZ_CONTROLLER_TYPE_FLY;
+    controller->active = true;
+    controller->fly = dvz_fly(desc);
+    if (controller->fly == NULL)
+    {
+        _scene_controller_destroy(controller);
+        scene->controller_count--;
+        return NULL;
+    }
+    return controller;
+}
+
+
+
+/**
+ * Return the type of a scene-owned controller.
+ *
+ * @param controller the controller
+ * @return the controller type, or DVZ_CONTROLLER_TYPE_NONE
+ */
+DvzControllerType dvz_controller_type(const DvzController* controller)
+{
+    if (controller == NULL || !controller->active)
+        return DVZ_CONTROLLER_TYPE_NONE;
+    return controller->type;
+}
+
+
+
+/**
+ * Return the fly payload of a fly controller.
+ *
+ * @param controller the controller
+ * @return the borrowed fly payload, or NULL for the wrong family
+ */
+DvzFly* dvz_controller_fly(DvzController* controller)
+{
+    if (controller == NULL || !controller->active || controller->type != DVZ_CONTROLLER_TYPE_FLY)
+        return NULL;
+    return controller->fly;
+}
+
+
+
 DvzDrp2CommandStream* dvz_figure_emit_ex(
     DvzFigure* figure, const DvzCapabilitySnapshot* caps, DvzDiagnosticReport* report,
     const DvzFramePlanEmitConfig* cfg)
@@ -1316,6 +1533,9 @@ DvzDrp2CommandStream* dvz_figure_emit_ex(
 
     if (!_scene_figure_validate_transparency_modes(figure, figure_id, report))
         return NULL;
+
+    for (uint32_t pi = 0; pi < figure->panel_count; pi++)
+        (void)_scene_panel_sync_fly_pivot_marker(&figure->panels[pi]);
 
     DvzFramePlan* plan = dvz_frame_plan(figure_id, 0);
     if (plan == NULL)
@@ -1396,19 +1616,36 @@ bool _dvz_figure_fly_update(DvzFigure* figure, double dt)
     if (update_dt > DVZ_SCENE_FLY_MAX_DT)
         update_dt = DVZ_SCENE_FLY_MAX_DT;
 
+    DvzController* updated[DVZ_SCENE_MAX_PANELS] = {0};
+    uint32_t updated_count = 0;
     bool active = false;
     for (uint32_t i = 0; i < figure->panel_count; i++)
     {
-        DvzFly* fly = figure->panels[i].fly;
-        if (fly == NULL)
+        DvzPanel* panel = &figure->panels[i];
+        DvzController* controller = panel->controllers[DVZ_DIM_X];
+        if (controller == NULL || controller->type != DVZ_CONTROLLER_TYPE_FLY)
             continue;
 
-        if (fly->key_forward || fly->key_backward || fly->key_left || fly->key_right ||
-            fly->key_up || fly->key_down || fly->interacting || fly->pivot_marker_time_left > 0.0)
-        {
+        DvzFly* fly = dvz_controller_fly(controller);
+        if (fly == NULL)
+            continue;
+        if (_scene_fly_active(fly))
             active = true;
-        }
+        if (_scene_controller_seen(updated, updated_count, controller))
+            continue;
         dvz_fly_update(fly, update_dt);
+        updated[updated_count++] = controller;
+    }
+
+    for (uint32_t i = 0; i < figure->panel_count; i++)
+    {
+        DvzPanel* panel = &figure->panels[i];
+        DvzController* controller = panel->controllers[DVZ_DIM_X];
+        DvzFly* fly = dvz_controller_fly(controller);
+        if (fly == NULL || panel->camera == NULL)
+            continue;
+        dvz_fly_set_camera(fly, panel->camera);
+        (void)_scene_panel_sync_fly_pivot_marker(panel);
     }
     return active;
 }
@@ -1656,11 +1893,9 @@ void dvz_panel_destroy(DvzPanel* panel)
         dvz_arcball_destroy(panel->arcball);
         panel->arcball = NULL;
     }
-    if (panel->fly != NULL)
-    {
-        dvz_fly_destroy(panel->fly);
-        panel->fly = NULL;
-    }
+    panel->fly = NULL;
+    for (uint32_t i = 0; i < 3; i++)
+        panel->controllers[i] = NULL;
     if (panel->turntable != NULL)
     {
         dvz_turntable_destroy(panel->turntable);
@@ -1678,6 +1913,67 @@ void dvz_panel_destroy(DvzPanel* panel)
     panel->pinned_readout_count = 0;
     dvz_memset(&panel->hover, sizeof(DvzHoverState), 0, sizeof(DvzHoverState));
 }
+
+
+/**
+ * Bind a scene-owned controller to one panel.
+ *
+ * @param panel the panel
+ * @param controller the scene-owned controller
+ * @param dims dimension mask
+ * @return 0 on success, -1 on validation error
+ */
+int dvz_panel_bind_controller(DvzPanel* panel, DvzController* controller, DvzDimMask dims)
+{
+    if (panel == NULL || panel->figure == NULL || panel->figure->scene == NULL ||
+        controller == NULL || !controller->active)
+    {
+        return -1;
+    }
+    if (controller->scene != panel->figure->scene)
+        return -1;
+    if (controller->type != DVZ_CONTROLLER_TYPE_FLY || dims != DVZ_DIM_MASK_XYZ)
+        return -1;
+
+    DvzFly* fly = dvz_controller_fly(controller);
+    if (fly == NULL)
+        return -1;
+    DvzCamera* camera = _scene_panel_ensure_camera(panel);
+    if (camera == NULL)
+        return -1;
+
+    float w = 0.0f;
+    float h = 0.0f;
+    float x = 0.0f;
+    float y = 0.0f;
+    _scene_panel_pixel_rect(panel, &x, &y, &w, &h);
+    panel->controllers[DVZ_DIM_X] = controller;
+    panel->controllers[DVZ_DIM_Y] = controller;
+    panel->controllers[DVZ_DIM_Z] = controller;
+    panel->fly = fly;
+    dvz_fly_viewport(fly, x, y, w, h);
+    dvz_fly_set_camera(fly, camera);
+    dvz_camera_resize(camera, w, h);
+    _scene_notify_request_frame(panel->figure);
+    return 0;
+}
+
+
+
+/**
+ * Return the controller bound to one panel dimension.
+ *
+ * @param panel the panel
+ * @param dim the dimension
+ * @return the borrowed controller handle, or NULL
+ */
+DvzController* dvz_panel_controller(DvzPanel* panel, DvzDim dim)
+{
+    if (panel == NULL || dim < DVZ_DIM_X || dim > DVZ_DIM_Z)
+        return NULL;
+    return panel->controllers[dim];
+}
+
 
 
 void dvz_panel_set_panzoom(DvzPanel* panel, DvzInputRouter* router, int flags)
@@ -1744,7 +2040,13 @@ DvzCamera* dvz_panel_set_camera(DvzPanel* panel, const DvzCameraDesc* desc)
 {
     ANN(panel);
     if (panel->camera != NULL)
+    {
+        if (panel->fly != NULL)
+            dvz_fly_set_camera(panel->fly, NULL);
+        if (panel->turntable != NULL)
+            dvz_turntable_set_camera(panel->turntable, NULL);
         dvz_camera_destroy(panel->camera);
+    }
     panel->camera = _dvz_camera(desc);
     if (panel->camera != NULL)
     {
@@ -1752,6 +2054,10 @@ DvzCamera* dvz_panel_set_camera(DvzPanel* panel, const DvzCameraDesc* desc)
         float h = 0.0f;
         _scene_panel_pixel_size(panel, &w, &h);
         dvz_camera_resize(panel->camera, w, h);
+        if (panel->fly != NULL)
+            dvz_fly_set_camera(panel->fly, panel->camera);
+        if (panel->turntable != NULL)
+            dvz_turntable_set_camera(panel->turntable, panel->camera);
     }
     _scene_notify_request_frame(panel->figure);
     return panel->camera;
@@ -1777,36 +2083,26 @@ DvzCamera* dvz_panel_camera(DvzPanel* panel)
  * @param panel the panel
  * @param router input router to subscribe to
  * @param desc fly descriptor, or NULL for defaults
- * @return the panel-owned fly controller
+ * @return the panel-bound fly controller payload
  */
 DvzFly* dvz_panel_set_fly(DvzPanel* panel, DvzInputRouter* router, const DvzFlyDesc* desc)
 {
     ANN(panel);
-    if (panel->fly != NULL)
-        dvz_fly_destroy(panel->fly);
-    if (panel->camera == NULL)
+    if (panel->figure == NULL || panel->figure->scene == NULL)
+        return NULL;
+
+    DvzController* controller = dvz_scene_fly(panel->figure->scene, desc);
+    if (controller == NULL)
+        return NULL;
+    if (dvz_panel_bind_controller(panel, controller, DVZ_DIM_MASK_XYZ) != 0)
     {
-        DvzCameraDesc camera_desc = dvz_camera_desc();
-        panel->camera = _dvz_camera(&camera_desc);
+        _scene_controller_destroy(controller);
+        panel->figure->scene->controller_count--;
+        return NULL;
     }
-    if (panel->camera == NULL)
-        return NULL;
 
-    panel->fly = dvz_fly(desc);
-    if (panel->fly == NULL)
-        return NULL;
-
-    float w = 0.0f;
-    float h = 0.0f;
-    float x = 0.0f;
-    float y = 0.0f;
-    _scene_panel_pixel_rect(panel, &x, &y, &w, &h);
-    dvz_fly_viewport(panel->fly, x, y, w, h);
-    dvz_fly_set_camera(panel->fly, panel->camera);
-    dvz_camera_resize(panel->camera, w, h);
     if (router != NULL)
         dvz_fly_connect(panel->fly, router);
-    _scene_notify_request_frame(panel->figure);
     return panel->fly;
 }
 
@@ -1815,7 +2111,7 @@ DvzFly* dvz_panel_set_fly(DvzPanel* panel, DvzInputRouter* router, const DvzFlyD
  * Return the fly controller attached to a panel.
  *
  * @param panel the panel
- * @return the panel-owned fly controller, or NULL
+ * @return the panel-bound fly controller payload, or NULL
  */
 DvzFly* dvz_panel_fly(DvzPanel* panel)
 {

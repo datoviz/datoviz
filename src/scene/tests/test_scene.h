@@ -60,13 +60,25 @@ int test_fly_shift_changes_speed(TstContext* suite, const TstCase* item);
 
 int test_fly_left_drag_updates_view(TstContext* suite, const TstCase* item);
 
+int test_fly_router_keyboard_updates_key_state(TstContext* suite, const TstCase* item);
+
 int test_fly_ctrl_and_space_use_same_vertical_speed(TstContext* suite, const TstCase* item);
 
 int test_fly_right_drag_moves_vertical_plane(TstContext* suite, const TstCase* item);
 
 int test_fly_pivot_preserves_eye_and_orbits(TstContext* suite, const TstCase* item);
 
+int test_fly_pivot_marker_visual_tracks_visibility(TstContext* suite, const TstCase* item);
+
 int test_panel_fly_getter(TstContext* suite, const TstCase* item);
+
+int test_fly_scene_controller_binding(TstContext* suite, const TstCase* item);
+
+int test_fly_controller_rejects_partial_dims(TstContext* suite, const TstCase* item);
+
+int test_fly_controller_survives_panel_destroy(TstContext* suite, const TstCase* item);
+
+int test_shared_fly_updates_once_for_two_panels(TstContext* suite, const TstCase* item);
 
 int test_figure_fly_update_advances_panel_camera(TstContext* suite, const TstCase* item);
 

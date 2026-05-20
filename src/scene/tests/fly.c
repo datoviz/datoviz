@@ -345,6 +345,44 @@ int test_fly_left_drag_updates_view(TstContext* suite, const TstCase* item)
 
 
 
+int test_fly_router_keyboard_updates_key_state(TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 800, 600, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    ANN(panel);
+    DvzInputRouter* router = dvz_input_router();
+    ANN(router);
+
+    DvzFlyDesc desc = dvz_fly_desc();
+    desc.speed = 2.0f;
+    DvzFly* fly = dvz_panel_set_fly(panel, router, &desc);
+    ANN(fly);
+
+    DvzKeyboardEvent press = {.type = DVZ_KEYBOARD_EVENT_PRESS, .key = DVZ_KEY_W};
+    dvz_input_emit_keyboard(router, &press);
+    AT(_dvz_figure_fly_update(figure, 0.5));
+
+    vec3 pos = {0};
+    dvz_fly_get_position(fly, pos);
+    AC(pos[2], 2.8f, 1e-5f);
+
+    DvzKeyboardEvent release = {.type = DVZ_KEYBOARD_EVENT_RELEASE, .key = DVZ_KEY_W};
+    dvz_input_emit_keyboard(router, &release);
+    AT(!_dvz_figure_fly_update(figure, 0.5));
+
+    dvz_input_router_destroy(router);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
 int test_fly_ctrl_and_space_use_same_vertical_speed(TstContext* suite, const TstCase* item)
 {
     (void)suite;
@@ -456,6 +494,41 @@ int test_fly_pivot_preserves_eye_and_orbits(TstContext* suite, const TstCase* it
 
 
 
+int test_fly_pivot_marker_visual_tracks_visibility(TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 800, 600, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    ANN(panel);
+    DvzFly* fly = dvz_panel_set_fly(panel, NULL, NULL);
+    ANN(fly);
+    AT(panel->fly_pivot_marker_visual == NULL);
+
+    dvz_fly_pivot(fly, (vec3){1.0f, 0.0f, 3.0f});
+    AT(_dvz_figure_fly_update(figure, 0.1));
+    ANN(panel->fly_pivot_marker_visual);
+    AT(panel->fly_pivot_marker_visual->visible);
+    AT(panel->fly_pivot_marker_visual->type == DVZ_VISUAL_TYPE_POINT);
+    int pos_attr = _attr_index(panel->fly_pivot_marker_visual, "position");
+    AT(pos_attr >= 0);
+    uint32_t pos_index = (uint32_t)pos_attr;
+    AT(panel->fly_pivot_marker_visual->attrs[pos_index].item_count == 1);
+
+    for (uint32_t i = 0; i < 12; i++)
+        (void)_dvz_figure_fly_update(figure, 0.2);
+    AT(!panel->fly_pivot_marker_visual->visible);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
 int test_panel_fly_getter(TstContext* suite, const TstCase* item)
 {
     (void)suite;
@@ -474,6 +547,131 @@ int test_panel_fly_getter(TstContext* suite, const TstCase* item)
     AT(dvz_panel_fly(panel) == fly);
     AT(panel->camera != NULL);
     AT(fly->camera == panel->camera);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
+int test_fly_scene_controller_binding(TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 800, 600, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    ANN(panel);
+
+    DvzController* controller = dvz_scene_fly(scene, NULL);
+    ANN(controller);
+    AT(dvz_controller_type(controller) == DVZ_CONTROLLER_TYPE_FLY);
+    DvzFly* fly = dvz_controller_fly(controller);
+    ANN(fly);
+    AT(dvz_panel_bind_controller(panel, controller, DVZ_DIM_MASK_XYZ) == 0);
+    AT(dvz_panel_controller(panel, DVZ_DIM_X) == controller);
+    AT(dvz_panel_controller(panel, DVZ_DIM_Y) == controller);
+    AT(dvz_panel_controller(panel, DVZ_DIM_Z) == controller);
+    AT(dvz_panel_fly(panel) == fly);
+    AT(panel->camera != NULL);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
+int test_fly_controller_rejects_partial_dims(TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 800, 600, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    ANN(panel);
+    DvzController* controller = dvz_scene_fly(scene, NULL);
+    ANN(controller);
+
+    AT(dvz_panel_bind_controller(panel, controller, DVZ_DIM_MASK_X) != 0);
+    AT(dvz_panel_bind_controller(panel, controller, DVZ_DIM_MASK_XY) != 0);
+    AT(dvz_panel_controller(panel, DVZ_DIM_X) == NULL);
+    AT(dvz_panel_bind_controller(panel, controller, DVZ_DIM_MASK_XYZ) == 0);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
+int test_fly_controller_survives_panel_destroy(TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 800, 600, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    ANN(panel);
+    DvzController* controller = dvz_scene_fly(scene, NULL);
+    ANN(controller);
+    AT(dvz_panel_bind_controller(panel, controller, DVZ_DIM_MASK_XYZ) == 0);
+
+    dvz_panel_destroy(panel);
+    AT(dvz_controller_type(controller) == DVZ_CONTROLLER_TYPE_FLY);
+    DvzFly* fly = dvz_controller_fly(controller);
+    ANN(fly);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
+int test_shared_fly_updates_once_for_two_panels(TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 800, 600, 0);
+    ANN(figure);
+    DvzPanel* left = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 0.5f, 1.0f});
+    DvzPanel* right = dvz_panel(figure, (DvzPanelDesc){0.5f, 0.0f, 0.5f, 1.0f});
+    ANN(left);
+    ANN(right);
+
+    DvzFlyDesc desc = dvz_fly_desc();
+    desc.speed = 2.0f;
+    DvzController* controller = dvz_scene_fly(scene, &desc);
+    ANN(controller);
+    DvzFly* fly = dvz_controller_fly(controller);
+    ANN(fly);
+    AT(dvz_panel_bind_controller(left, controller, DVZ_DIM_MASK_XYZ) == 0);
+    AT(dvz_panel_bind_controller(right, controller, DVZ_DIM_MASK_XYZ) == 0);
+
+    DvzKeyboardEvent press = {.type = DVZ_KEYBOARD_EVENT_PRESS, .key = DVZ_KEY_W};
+    AT(dvz_fly_keyboard(fly, &press));
+    AT(_dvz_figure_fly_update(figure, 0.5));
+
+    vec3 pos = {0};
+    dvz_fly_get_position(fly, pos);
+    AC(pos[2], 2.8f, 1e-5f);
+
+    DvzMVP left_mvp = {0};
+    DvzMVP right_mvp = {0};
+    _scene_panel_apply_mvp(left, &left_mvp);
+    _scene_panel_apply_mvp(right, &right_mvp);
+    AC(left_mvp.view[3][2], -2.8f, 1e-4f);
+    AC(right_mvp.view[3][2], -2.8f, 1e-4f);
 
     dvz_scene_destroy(scene);
     return 0;
@@ -616,10 +814,16 @@ int test_scene_fly(TstSuite* suite)
     TST_CASE(test_fly_wasd_and_arrows_equivalent);
     TST_CASE(test_fly_shift_changes_speed);
     TST_CASE(test_fly_left_drag_updates_view);
+    TST_CASE(test_fly_router_keyboard_updates_key_state);
     TST_CASE(test_fly_ctrl_and_space_use_same_vertical_speed);
     TST_CASE(test_fly_right_drag_moves_vertical_plane);
     TST_CASE(test_fly_pivot_preserves_eye_and_orbits);
+    TST_CASE(test_fly_pivot_marker_visual_tracks_visibility);
     TST_CASE(test_panel_fly_getter);
+    TST_CASE(test_fly_scene_controller_binding);
+    TST_CASE(test_fly_controller_rejects_partial_dims);
+    TST_CASE(test_fly_controller_survives_panel_destroy);
+    TST_CASE(test_shared_fly_updates_once_for_two_panels);
     TST_CASE(test_figure_fly_update_advances_panel_camera);
     TST_CASE(test_figure_fly_update_clamps_dt);
     TST_CASE(test_fly_state_is_panel_scoped);

@@ -136,6 +136,34 @@ DVZ_EXPORT void dvz_figure_destroy(DvzFigure* figure);
 
 
 /**
+ * Create a scene-owned fly controller.
+ *
+ * @param scene the scene
+ * @param desc fly descriptor, or NULL for defaults
+ * @return the scene-owned controller handle
+ */
+DVZ_EXPORT DvzController* dvz_scene_fly(DvzScene* scene, const DvzFlyDesc* desc);
+
+
+/**
+ * Return the type of a scene-owned controller.
+ *
+ * @param controller the controller
+ * @return the controller type, or DVZ_CONTROLLER_TYPE_NONE
+ */
+DVZ_EXPORT DvzControllerType dvz_controller_type(const DvzController* controller);
+
+
+/**
+ * Return the fly payload of a fly controller.
+ *
+ * @param controller the controller
+ * @return the borrowed fly payload, or NULL for the wrong family
+ */
+DVZ_EXPORT DvzFly* dvz_controller_fly(DvzController* controller);
+
+
+/**
  * Build the ordered frame execution plan for one frame.
  *
  * Lifetime: the returned stream embeds borrowed pointers into the visuals'
@@ -253,6 +281,30 @@ DVZ_EXPORT bool dvz_panel_get_layout_reserve(DvzPanel* panel, DvzPanelLayoutRese
  * @param panel the panel
  */
 DVZ_EXPORT void dvz_panel_destroy(DvzPanel* panel);
+
+
+/**
+ * Bind a scene-owned controller to one panel.
+ *
+ * Fly controllers must be bound to DVZ_DIM_MASK_XYZ in this first slice.
+ *
+ * @param panel the panel
+ * @param controller the scene-owned controller
+ * @param dims dimension mask
+ * @return 0 on success, -1 on validation error
+ */
+DVZ_EXPORT int
+dvz_panel_bind_controller(DvzPanel* panel, DvzController* controller, DvzDimMask dims);
+
+
+/**
+ * Return the controller bound to one panel dimension.
+ *
+ * @param panel the panel
+ * @param dim the dimension
+ * @return the borrowed controller handle, or NULL
+ */
+DVZ_EXPORT DvzController* dvz_panel_controller(DvzPanel* panel, DvzDim dim);
 
 
 /**
@@ -543,7 +595,7 @@ DVZ_EXPORT DvzArcball* dvz_panel_arcball(DvzPanel* panel);
  * @param panel the panel
  * @param router input router to subscribe to (may be NULL to create without connecting)
  * @param desc fly descriptor, or NULL for defaults
- * @return the panel-owned fly controller
+ * @return the panel-bound fly controller payload
  */
 DVZ_EXPORT DvzFly*
 dvz_panel_set_fly(DvzPanel* panel, DvzInputRouter* router, const DvzFlyDesc* desc);
@@ -553,7 +605,7 @@ dvz_panel_set_fly(DvzPanel* panel, DvzInputRouter* router, const DvzFlyDesc* des
  * Return the fly controller attached to a panel.
  *
  * @param panel the panel
- * @return the panel-owned fly controller, or NULL
+ * @return the panel-bound fly controller payload, or NULL
  */
 DVZ_EXPORT DvzFly* dvz_panel_fly(DvzPanel* panel);
 

@@ -61,6 +61,7 @@
 #define DVZ_SCENE_MAX_AXIS_TICKS 64
 #define DVZ_SCENE_MAX_AXIS_MINOR_TICKS 8
 #define DVZ_SCENE_MAX_REQUEST_FRAME_SUBSCRIPTIONS 16
+#define DVZ_SCENE_MAX_CONTROLLERS 128
 #define DVZ_SCENE_MAX_AXIS_LINES                                                                  \
     ((2 + DVZ_SCENE_MAX_AXIS_MINOR_TICKS) * DVZ_SCENE_MAX_AXIS_TICKS + 1)
 #define DVZ_SCENE_TEXT_ATLAS_MAX_GLYPHS 256
@@ -140,6 +141,14 @@ typedef struct DvzTextAtlas DvzTextAtlas;
 typedef void (*DvzSceneRequestFrameCallback)(DvzFigure* figure, void* user_data);
 
 typedef struct DvzSceneRequestFrameSubscription DvzSceneRequestFrameSubscription;
+
+struct DvzController
+{
+    DvzScene* scene;
+    DvzControllerType type;
+    bool active;
+    DvzFly* fly;
+};
 
 
 
@@ -985,7 +994,9 @@ struct DvzPanel
     DvzPanzoom* panzoom; /* optional pan/zoom controller (owned) */
     DvzArcball* arcball; /* optional arcball controller (owned) */
     DvzCamera* camera;   /* optional camera (owned) */
-    DvzFly* fly;         /* optional fly camera controller (owned) */
+    DvzFly* fly;         /* optional fly camera controller (borrowed from scene-owned handle) */
+    DvzController* controllers[3]; /* optional scene-owned spatial controller bindings */
+    DvzVisual* fly_pivot_marker_visual; /* optional navigation overlay marker visual */
     DvzTurntable* turntable; /* optional turntable camera controller (owned) */
     DvzAxis axes[2];
     DvzInteractionPolicy* interaction;
@@ -1039,6 +1050,9 @@ struct DvzScene
 
     uint32_t animation_count;
     DvzAnimation animations[DVZ_SCENE_MAX_ANIMATIONS];
+
+    uint32_t controller_count;
+    DvzController controllers[DVZ_SCENE_MAX_CONTROLLERS];
 
     DvzFramePlanEmitter* emitter; /* shared across all figures — owns GPU resource key→ID map */
 

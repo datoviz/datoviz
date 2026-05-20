@@ -53,6 +53,7 @@ typedef struct DvzFigure            DvzFigure;
 typedef struct DvzPanel             DvzPanel;
 typedef struct DvzVisual            DvzVisual;
 typedef struct DvzCamera            DvzCamera;
+typedef struct DvzController        DvzController;
 typedef struct DvzSampledField      DvzSampledField;
 typedef struct DvzSceneBuffer       DvzSceneBuffer;
 typedef struct DvzInteractionPolicy DvzInteractionPolicy;
@@ -78,6 +79,27 @@ typedef enum
     DVZ_DIM_Y = 1,
     DVZ_DIM_Z = 2,
 } DvzDim;
+
+
+typedef uint32_t DvzDimMask;
+
+
+typedef enum
+{
+    DVZ_DIM_MASK_NONE = 0x00u,
+    DVZ_DIM_MASK_X    = 0x01u,
+    DVZ_DIM_MASK_Y    = 0x02u,
+    DVZ_DIM_MASK_Z    = 0x04u,
+    DVZ_DIM_MASK_XY   = DVZ_DIM_MASK_X | DVZ_DIM_MASK_Y,
+    DVZ_DIM_MASK_XYZ  = DVZ_DIM_MASK_X | DVZ_DIM_MASK_Y | DVZ_DIM_MASK_Z,
+} DvzDimMaskFlag;
+
+
+typedef enum
+{
+    DVZ_CONTROLLER_TYPE_NONE = 0,
+    DVZ_CONTROLLER_TYPE_FLY  = 1,
+} DvzControllerType;
 
 
 
