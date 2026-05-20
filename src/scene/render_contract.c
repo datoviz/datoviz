@@ -211,7 +211,13 @@ static void _draw_blend_target_contracts(
             targets[i] = (DvzSceneBlendTargetContract){
                 .target_index = i,
                 .format = VK_FORMAT_R16G16B16A16_SFLOAT,
-                .blend_enabled = false,
+                .blend_enabled = i < 2,
+                .src_color_blend_factor = VK_BLEND_FACTOR_ONE,
+                .dst_color_blend_factor = VK_BLEND_FACTOR_ONE,
+                .color_blend_op = VK_BLEND_OP_ADD,
+                .src_alpha_blend_factor = VK_BLEND_FACTOR_ONE,
+                .dst_alpha_blend_factor = VK_BLEND_FACTOR_ONE,
+                .alpha_blend_op = VK_BLEND_OP_ADD,
                 .color_write_mask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |
                                     VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT,
             };
@@ -848,6 +854,12 @@ static bool _scene_pass_contract_validate_technique(
             _contract_report(report, "depth peel raster pass must have three color attachments");
             ok = false;
         }
+        if (contract->role == DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_ITER &&
+            contract->sampled_read_count != 1)
+        {
+            _contract_report(report, "depth peel iteration pass must sample previous bounds");
+            ok = false;
+        }
         if (_contract_needs_depth(contract) && !contract->has_depth_attachment)
         {
             _contract_report(report, "depth peel raster pass is missing required depth");
@@ -857,8 +869,8 @@ static bool _scene_pass_contract_validate_technique(
 
     case DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_COMPOSITE:
         if (contract->draw_count != 0 || contract->color_attachment_count != 1 ||
-            contract->sampled_read_count != 3 || !contract->needs_depth_peel_sampled_layout ||
-            contract->sampled_texture_binding_count != 3)
+            contract->sampled_read_count != 2 || !contract->needs_depth_peel_sampled_layout ||
+            contract->sampled_texture_binding_count != 2)
         {
             _contract_report(report, "depth peel composite pass has invalid attachment shape");
             ok = false;

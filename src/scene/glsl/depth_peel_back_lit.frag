@@ -2,6 +2,8 @@
 
 #include "scene_material.glsl"
 
+layout(set = 3, binding = 0) uniform texture2D prevDepthMinMax;
+layout(set = 3, binding = 1) uniform sampler samp;
 layout(location = 0) in vec4 fragColor;
 layout(location = 1) in vec3 fragNormal;
 layout(location = 2) in vec3 fragWorldPos;
@@ -20,9 +22,15 @@ vec4 shade()
 
 void main()
 {
+    ivec2 uv = ivec2(gl_FragCoord.xy);
+    vec2 prev = texelFetch(sampler2D(prevDepthMinMax, samp), uv, 0).rg;
+    float maxDepth = prev.g > prev.r ? prev.g : 1.0;
+    if (gl_FragCoord.z <= prev.r + 1e-5 || gl_FragCoord.z >= maxDepth - 1e-5)
+        discard;
+
     vec4 c = shade();
     float a = clamp(c.a, 0.0, 1.0);
     frontAccum = vec4(0.0);
     backAccum = vec4(c.rgb * a, a);
-    depthPair = vec4(gl_FragCoord.z, 1.0 - gl_FragCoord.z, 0.0, 1.0);
+    depthPair = vec4(gl_FragCoord.z, maxDepth, 0.0, 1.0);
 }

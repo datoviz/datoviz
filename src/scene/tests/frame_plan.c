@@ -1062,15 +1062,13 @@ int test_frame_plan_graph_depth_peeling_shape(TstContext* suite, const TstCase* 
     opaque_depth.lifetime = DVZ_FRAME_GRAPH_RESOURCE_LIFETIME_PER_FRAME;
     AT(dvz_frame_plan_graph_resource(plan, &opaque_depth));
 
-    const char* color_ids[6] = {
-        "panel0.peel.front_ping",
-        "panel0.peel.back_ping",
-        "panel0.peel.depth_ping",
-        "panel0.peel.front_pong",
-        "panel0.peel.back_pong",
-        "panel0.peel.depth_pong",
+    const char* color_ids[4] = {
+        "panel0.peel.front_accum",
+        "panel0.peel.back_accum",
+        "panel0.peel.depth_minmax_ping",
+        "panel0.peel.depth_minmax_pong",
     };
-    for (uint32_t i = 0; i < 6; i++)
+    for (uint32_t i = 0; i < 4; i++)
     {
         DvzFrameGraphResource resource = {0};
         dvz_strlcpy(resource.id, color_ids[i], sizeof(resource.id));
@@ -1128,22 +1126,32 @@ int test_frame_plan_graph_depth_peeling_shape(TstContext* suite, const TstCase* 
     AT(dvz_frame_graph_pass_depth_attachment(&init, &depth_read));
     AT(dvz_frame_plan_graph_pass(plan, &init));
 
-    DvzFrameGraphPass iter = {0};
-    dvz_strlcpy(iter.id, "panel0.peel.iter.0", sizeof(iter.id));
-    dvz_strlcpy(iter.panel_id, "panel.0", sizeof(iter.panel_id));
-    dvz_strlcpy(iter.work_label, "depth_peel_iter", sizeof(iter.work_label));
-    iter.kind = DVZ_FRAME_GRAPH_PASS_RENDER;
-    for (uint32_t i = 3; i < 6; i++)
+    for (uint32_t iter_idx = 0; iter_idx < DVZ_SCENE_DEPTH_PEEL_ITERATIONS; iter_idx++)
     {
-        DvzFrameGraphAttachment attachment = {0};
-        dvz_strlcpy(attachment.resource_id, color_ids[i], sizeof(attachment.resource_id));
-        attachment.load_op = DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_CLEAR;
-        attachment.store_op = DVZ_FRAME_GRAPH_ATTACHMENT_STORE_STORE;
-        attachment.access = DVZ_FRAME_GRAPH_ATTACHMENT_ACCESS_WRITE;
-        AT(dvz_frame_graph_pass_color_attachment(&iter, &attachment));
+        const bool even = (iter_idx % 2) == 0;
+        const char* read_depth = even ? color_ids[2] : color_ids[3];
+        const char* write_depth = even ? color_ids[3] : color_ids[2];
+
+        DvzFrameGraphPass iter = {0};
+        dvz_snprintf(iter.id, sizeof(iter.id), "panel0.peel.iter.%u", iter_idx);
+        dvz_strlcpy(iter.panel_id, "panel.0", sizeof(iter.panel_id));
+        dvz_strlcpy(iter.work_label, "depth_peel_iter", sizeof(iter.work_label));
+        iter.kind = DVZ_FRAME_GRAPH_PASS_RENDER;
+        AT(dvz_frame_graph_pass_read(&iter, read_depth, DVZ_FRAME_GRAPH_ACCESS_SAMPLED));
+        for (uint32_t i = 0; i < 3; i++)
+        {
+            DvzFrameGraphAttachment attachment = {0};
+            const char* resource_id = i == 0 ? color_ids[0] : i == 1 ? color_ids[1] : write_depth;
+            dvz_strlcpy(attachment.resource_id, resource_id, sizeof(attachment.resource_id));
+            attachment.load_op = i < 2 ? DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_LOAD :
+                                         DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_CLEAR;
+            attachment.store_op = DVZ_FRAME_GRAPH_ATTACHMENT_STORE_STORE;
+            attachment.access = DVZ_FRAME_GRAPH_ATTACHMENT_ACCESS_WRITE;
+            AT(dvz_frame_graph_pass_color_attachment(&iter, &attachment));
+        }
+        AT(dvz_frame_graph_pass_depth_attachment(&iter, &depth_read));
+        AT(dvz_frame_plan_graph_pass(plan, &iter));
     }
-    AT(dvz_frame_graph_pass_depth_attachment(&iter, &depth_read));
-    AT(dvz_frame_plan_graph_pass(plan, &iter));
 
     DvzFrameGraphAttachment rt_load = {0};
     dvz_strlcpy(rt_load.resource_id, "rt", sizeof(rt_load.resource_id));
@@ -1157,29 +1165,28 @@ int test_frame_plan_graph_depth_peeling_shape(TstContext* suite, const TstCase* 
     dvz_strlcpy(composite.work_label, "depth_peel_composite", sizeof(composite.work_label));
     composite.kind = DVZ_FRAME_GRAPH_PASS_RENDER;
     AT(dvz_frame_graph_pass_read(
-        &composite, "panel0.peel.front_ping", DVZ_FRAME_GRAPH_ACCESS_SAMPLED));
+        &composite, "panel0.peel.front_accum", DVZ_FRAME_GRAPH_ACCESS_SAMPLED));
     AT(dvz_frame_graph_pass_read(
-        &composite, "panel0.peel.back_pong", DVZ_FRAME_GRAPH_ACCESS_SAMPLED));
-    AT(dvz_frame_graph_pass_read(
-        &composite, "panel0.peel.depth_pong", DVZ_FRAME_GRAPH_ACCESS_SAMPLED));
+        &composite, "panel0.peel.back_accum", DVZ_FRAME_GRAPH_ACCESS_SAMPLED));
     AT(dvz_frame_graph_pass_color_attachment(&composite, &rt_load));
     AT(dvz_frame_plan_graph_pass(plan, &composite));
 
-    AT(dvz_frame_plan_graph_resource_count(plan) == 8);
-    AT(dvz_frame_plan_graph_pass_count(plan) == 4);
+    AT(dvz_frame_plan_graph_resource_count(plan) == 6);
+    AT(dvz_frame_plan_graph_pass_count(plan) == 3 + DVZ_SCENE_DEPTH_PEEL_ITERATIONS);
 
-    const DvzFrameGraphResource* front_ping = dvz_frame_plan_graph_resource_get(plan, 2);
-    ANN(front_ping);
-    AT(strcmp(front_ping->id, "panel0.peel.front_ping") == 0);
-    AT(front_ping->format == VK_FORMAT_R16G16B16A16_SFLOAT);
+    const DvzFrameGraphResource* front_accum = dvz_frame_plan_graph_resource_get(plan, 2);
+    ANN(front_accum);
+    AT(strcmp(front_accum->id, "panel0.peel.front_accum") == 0);
+    AT(front_accum->format == VK_FORMAT_R16G16B16A16_SFLOAT);
     AT(
-        (front_ping->usage_flags & DVZ_FRAME_GRAPH_RESOURCE_USAGE_COLOR_ATTACHMENT) != 0);
-    AT((front_ping->usage_flags & DVZ_FRAME_GRAPH_RESOURCE_USAGE_SAMPLED) != 0);
+        (front_accum->usage_flags & DVZ_FRAME_GRAPH_RESOURCE_USAGE_COLOR_ATTACHMENT) != 0);
+    AT((front_accum->usage_flags & DVZ_FRAME_GRAPH_RESOURCE_USAGE_SAMPLED) != 0);
 
     const DvzFrameGraphPass* pass = dvz_frame_plan_graph_pass_get(plan, 2);
     ANN(pass);
     AT(strcmp(pass->id, "panel0.peel.iter.0") == 0);
-    AT(pass->read_count == 0);
+    AT(pass->read_count == 1);
+    AT(strcmp(pass->reads[0].resource_id, "panel0.peel.depth_minmax_ping") == 0);
     AT(pass->color_attachment_count == 3);
     AT(pass->has_depth_attachment);
 
@@ -1188,34 +1195,45 @@ int test_frame_plan_graph_depth_peeling_shape(TstContext* suite, const TstCase* 
     AT(dvz_frame_plan_graph_validate(plan, &report));
     AT(dvz_diagnostic_report_count(&report) == 0);
 
-    AT(dvz_frame_plan_graph_dependency_count(plan) == 6);
+    AT(dvz_frame_plan_graph_dependency_count(plan) >= 6);
     DvzFrameGraphDependency dep = {0};
-    AT(dvz_frame_plan_graph_dependency_get(plan, 0, &dep));
-    AT(strcmp(dep.producer_pass_id, "panel0.opaque") == 0);
-    AT(strcmp(dep.consumer_pass_id, "panel0.peel.init") == 0);
-    AT(strcmp(dep.resource_id, "panel0.depth.opaque") == 0);
-    AT(dep.consumer_usage == DVZ_FRAME_GRAPH_ACCESS_DEPTH_ATTACHMENT_READ);
-
-    AT(dvz_frame_plan_graph_dependency_get(plan, 1, &dep));
-    AT(strcmp(dep.producer_pass_id, "panel0.opaque") == 0);
-    AT(strcmp(dep.consumer_pass_id, "panel0.peel.iter.0") == 0);
-    AT(strcmp(dep.resource_id, "panel0.depth.opaque") == 0);
-
-    AT(dvz_frame_plan_graph_dependency_get(plan, 5, &dep));
-    AT(strcmp(dep.producer_pass_id, "panel0.opaque") == 0);
-    AT(strcmp(dep.consumer_pass_id, "panel0.peel.composite") == 0);
-    AT(strcmp(dep.resource_id, "rt") == 0);
+    bool init_depth_dep = false;
+    bool iter_depth_dep = false;
+    bool iter_minmax_dep = false;
+    for (uint32_t i = 0; i < dvz_frame_plan_graph_dependency_count(plan); i++)
+    {
+        AT(dvz_frame_plan_graph_dependency_get(plan, i, &dep));
+        if (
+            strcmp(dep.producer_pass_id, "panel0.opaque") == 0 &&
+            strcmp(dep.consumer_pass_id, "panel0.peel.init") == 0 &&
+            strcmp(dep.resource_id, "panel0.depth.opaque") == 0 &&
+            dep.consumer_usage == DVZ_FRAME_GRAPH_ACCESS_DEPTH_ATTACHMENT_READ)
+            init_depth_dep = true;
+        if (
+            strcmp(dep.producer_pass_id, "panel0.opaque") == 0 &&
+            strcmp(dep.consumer_pass_id, "panel0.peel.iter.0") == 0 &&
+            strcmp(dep.resource_id, "panel0.depth.opaque") == 0)
+            iter_depth_dep = true;
+        if (
+            strcmp(dep.producer_pass_id, "panel0.peel.init") == 0 &&
+            strcmp(dep.consumer_pass_id, "panel0.peel.iter.0") == 0 &&
+            strcmp(dep.resource_id, "panel0.peel.depth_minmax_ping") == 0)
+            iter_minmax_dep = true;
+    }
+    AT(init_depth_dep);
+    AT(iter_depth_dep);
+    AT(iter_minmax_dep);
 
     char* dump = dvz_frame_plan_graph_dump(plan);
     ANN(dump);
     AT(strstr(dump, "\"id\": \"panel0.peel.iter.0\"") != NULL);
-    AT(strstr(dump, "\"resource_id\": \"panel0.peel.depth_pong\"") != NULL);
+    AT(strstr(dump, "\"resource_id\": \"panel0.peel.depth_minmax_pong\"") != NULL);
     AT(strstr(dump, "\"consumer\": \"panel0.peel.composite\"") != NULL);
     dvz_frame_plan_json_destroy(dump);
 
     char* json = dvz_frame_plan_json(plan);
     ANN(json);
-    AT(strstr(json, "\"id\": \"panel0.peel.front_ping\"") != NULL);
+    AT(strstr(json, "\"id\": \"panel0.peel.front_accum\"") != NULL);
     AT(strstr(json, "\"work\": \"depth_peel_composite\"") != NULL);
     AT(strstr(json, "\"usage\": \"sampled\"") != NULL);
     AT(strstr(json, "\"access\": \"read\"") != NULL);

@@ -14,6 +14,7 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
+#include <inttypes.h>
 #include <string.h>
 
 #include <vulkan/vulkan_core.h>
@@ -104,6 +105,8 @@ static const DvzSceneTechniquePassPolicy TECHNIQUE_PASS_POLICIES[] = {
         .work_label = "depth_peel_iter",
         .graph_required = true,
         .depth_peel = true,
+        .needs_depth_peel_sampled_layout = true,
+        .sampled_texture_binding_count = 1,
     },
     {
         .role = DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_COMPOSITE,
@@ -111,7 +114,7 @@ static const DvzSceneTechniquePassPolicy TECHNIQUE_PASS_POLICIES[] = {
         .graph_required = true,
         .fullscreen_resolve = true,
         .needs_depth_peel_sampled_layout = true,
-        .sampled_texture_binding_count = 3,
+        .sampled_texture_binding_count = 2,
     },
     {
         .role = DVZ_FRAME_PLAN_RENDER_PASS_PICKING,
@@ -1179,26 +1182,24 @@ bool _scene_technique_emit_depth_peel_frame_graph(
     ANN(panel_id);
 
     char opaque_depth_id[DVZ_SCENE_LABEL_SIZE];
-    char front_ping_id[DVZ_SCENE_LABEL_SIZE];
-    char back_ping_id[DVZ_SCENE_LABEL_SIZE];
-    char depth_ping_id[DVZ_SCENE_LABEL_SIZE];
-    char front_pong_id[DVZ_SCENE_LABEL_SIZE];
-    char back_pong_id[DVZ_SCENE_LABEL_SIZE];
-    char depth_pong_id[DVZ_SCENE_LABEL_SIZE];
+    char front_accum_id[DVZ_SCENE_LABEL_SIZE];
+    char back_accum_id[DVZ_SCENE_LABEL_SIZE];
+    char depth_minmax_ping_id[DVZ_SCENE_LABEL_SIZE];
+    char depth_minmax_pong_id[DVZ_SCENE_LABEL_SIZE];
     char opaque_pass_id[DVZ_SCENE_LABEL_SIZE];
     char init_pass_id[DVZ_SCENE_LABEL_SIZE];
-    char iter_pass_id[DVZ_SCENE_LABEL_SIZE];
     char composite_pass_id[DVZ_SCENE_LABEL_SIZE];
     dvz_snprintf(opaque_depth_id, sizeof(opaque_depth_id), "%s.depth.opaque", panel_id);
-    dvz_snprintf(front_ping_id, sizeof(front_ping_id), "%s.peel.front_ping", panel_id);
-    dvz_snprintf(back_ping_id, sizeof(back_ping_id), "%s.peel.back_ping", panel_id);
-    dvz_snprintf(depth_ping_id, sizeof(depth_ping_id), "%s.peel.depth_ping", panel_id);
-    dvz_snprintf(front_pong_id, sizeof(front_pong_id), "%s.peel.front_pong", panel_id);
-    dvz_snprintf(back_pong_id, sizeof(back_pong_id), "%s.peel.back_pong", panel_id);
-    dvz_snprintf(depth_pong_id, sizeof(depth_pong_id), "%s.peel.depth_pong", panel_id);
+    dvz_snprintf(front_accum_id, sizeof(front_accum_id), "%s.peel.front_accum", panel_id);
+    dvz_snprintf(back_accum_id, sizeof(back_accum_id), "%s.peel.back_accum", panel_id);
+    dvz_snprintf(
+        depth_minmax_ping_id, sizeof(depth_minmax_ping_id), "%s.peel.depth_minmax_ping",
+        panel_id);
+    dvz_snprintf(
+        depth_minmax_pong_id, sizeof(depth_minmax_pong_id), "%s.peel.depth_minmax_pong",
+        panel_id);
     dvz_snprintf(opaque_pass_id, sizeof(opaque_pass_id), "%s.opaque", panel_id);
     dvz_snprintf(init_pass_id, sizeof(init_pass_id), "%s.peel.init", panel_id);
-    dvz_snprintf(iter_pass_id, sizeof(iter_pass_id), "%s.peel.iter.0", panel_id);
     dvz_snprintf(composite_pass_id, sizeof(composite_pass_id), "%s.peel.composite", panel_id);
 
     DvzFrameGraphResource rt = {0};
@@ -1225,9 +1226,9 @@ bool _scene_technique_emit_depth_peel_frame_graph(
             return false;
     }
 
-    const char* peel_ids[6] = {
-        front_ping_id, back_ping_id, depth_ping_id, front_pong_id, back_pong_id, depth_pong_id};
-    for (uint32_t i = 0; i < 6; i++)
+    const char* peel_ids[4] = {
+        front_accum_id, back_accum_id, depth_minmax_ping_id, depth_minmax_pong_id};
+    for (uint32_t i = 0; i < 4; i++)
     {
         DvzFrameGraphResource resource = {0};
         dvz_strlcpy(resource.id, peel_ids[i], sizeof(resource.id));
@@ -1272,6 +1273,13 @@ bool _scene_technique_emit_depth_peel_frame_graph(
     {
         _scene_frame_graph_color_attachment(
             &color, peel_ids[i], DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_CLEAR, true);
+        if (i == 2)
+        {
+            color.clear_color[0] = 1.0f;
+            color.clear_color[1] = 0.0f;
+            color.clear_color[2] = 0.0f;
+            color.clear_color[3] = 0.0f;
+        }
         if (!dvz_frame_graph_pass_color_attachment(&init, &color))
             return false;
     }
@@ -1290,41 +1298,62 @@ bool _scene_technique_emit_depth_peel_frame_graph(
     if (!dvz_frame_plan_graph_pass(plan, &init))
         return false;
 
-    DvzFrameGraphPass iter = {0};
-    dvz_strlcpy(iter.id, iter_pass_id, sizeof(iter.id));
-    dvz_strlcpy(iter.panel_id, panel_id, sizeof(iter.panel_id));
-    dvz_strlcpy(iter.work_label, "depth_peel_iter", sizeof(iter.work_label));
-    iter.kind = DVZ_FRAME_GRAPH_PASS_RENDER;
-    for (uint32_t i = 3; i < 6; i++)
+    for (uint32_t iter_idx = 0; iter_idx < DVZ_SCENE_DEPTH_PEEL_ITERATIONS; iter_idx++)
     {
+        char iter_pass_id[DVZ_SCENE_LABEL_SIZE];
+        const char* prev_depth =
+            (iter_idx % 2 == 0) ? depth_minmax_ping_id : depth_minmax_pong_id;
+        const char* next_depth =
+            (iter_idx % 2 == 0) ? depth_minmax_pong_id : depth_minmax_ping_id;
+        dvz_snprintf(
+            iter_pass_id, sizeof(iter_pass_id), "%s.peel.iter.%" PRIu32, panel_id, iter_idx);
+
+        DvzFrameGraphPass iter = {0};
+        dvz_strlcpy(iter.id, iter_pass_id, sizeof(iter.id));
+        dvz_strlcpy(iter.panel_id, panel_id, sizeof(iter.panel_id));
+        dvz_strlcpy(iter.work_label, "depth_peel_iter", sizeof(iter.work_label));
+        iter.kind = DVZ_FRAME_GRAPH_PASS_RENDER;
+        if (!dvz_frame_graph_pass_read(&iter, prev_depth, DVZ_FRAME_GRAPH_ACCESS_SAMPLED))
+            return false;
         _scene_frame_graph_color_attachment(
-            &color, peel_ids[i], DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_CLEAR, true);
+            &color, front_accum_id, DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_LOAD, true);
         if (!dvz_frame_graph_pass_color_attachment(&iter, &color))
             return false;
-    }
-    if (transparent_needs_depth)
-    {
-        _scene_frame_graph_depth_attachment(
-            &depth, opaque_depth_id,
-            opaque_needs_depth ? DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_LOAD :
-                                 DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_CLEAR,
-            opaque_needs_depth ? DVZ_FRAME_GRAPH_ATTACHMENT_ACCESS_READ :
-                                 DVZ_FRAME_GRAPH_ATTACHMENT_ACCESS_WRITE);
-        depth.store_op = DVZ_FRAME_GRAPH_ATTACHMENT_STORE_DONT_CARE;
-        if (!dvz_frame_graph_pass_depth_attachment(&iter, &depth))
+        _scene_frame_graph_color_attachment(
+            &color, back_accum_id, DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_LOAD, true);
+        if (!dvz_frame_graph_pass_color_attachment(&iter, &color))
+            return false;
+        _scene_frame_graph_color_attachment(
+            &color, next_depth, DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_CLEAR, true);
+        color.clear_color[0] = 1.0f;
+        color.clear_color[1] = 0.0f;
+        color.clear_color[2] = 0.0f;
+        color.clear_color[3] = 0.0f;
+        if (!dvz_frame_graph_pass_color_attachment(&iter, &color))
+            return false;
+        if (transparent_needs_depth)
+        {
+            _scene_frame_graph_depth_attachment(
+                &depth, opaque_depth_id,
+                opaque_needs_depth ? DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_LOAD :
+                                     DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_CLEAR,
+                opaque_needs_depth ? DVZ_FRAME_GRAPH_ATTACHMENT_ACCESS_READ :
+                                     DVZ_FRAME_GRAPH_ATTACHMENT_ACCESS_WRITE);
+            depth.store_op = DVZ_FRAME_GRAPH_ATTACHMENT_STORE_DONT_CARE;
+            if (!dvz_frame_graph_pass_depth_attachment(&iter, &depth))
+                return false;
+        }
+        if (!dvz_frame_plan_graph_pass(plan, &iter))
             return false;
     }
-    if (!dvz_frame_plan_graph_pass(plan, &iter))
-        return false;
 
     DvzFrameGraphPass composite = {0};
     dvz_strlcpy(composite.id, composite_pass_id, sizeof(composite.id));
     dvz_strlcpy(composite.panel_id, panel_id, sizeof(composite.panel_id));
     dvz_strlcpy(composite.work_label, "depth_peel_composite", sizeof(composite.work_label));
     composite.kind = DVZ_FRAME_GRAPH_PASS_RENDER;
-    if (!dvz_frame_graph_pass_read(&composite, front_ping_id, DVZ_FRAME_GRAPH_ACCESS_SAMPLED) ||
-        !dvz_frame_graph_pass_read(&composite, back_pong_id, DVZ_FRAME_GRAPH_ACCESS_SAMPLED) ||
-        !dvz_frame_graph_pass_read(&composite, depth_pong_id, DVZ_FRAME_GRAPH_ACCESS_SAMPLED))
+    if (!dvz_frame_graph_pass_read(&composite, front_accum_id, DVZ_FRAME_GRAPH_ACCESS_SAMPLED) ||
+        !dvz_frame_graph_pass_read(&composite, back_accum_id, DVZ_FRAME_GRAPH_ACCESS_SAMPLED))
         return false;
     _scene_frame_graph_color_attachment(
         &color, "rt", DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_LOAD, false);

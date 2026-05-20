@@ -75,6 +75,7 @@ struct SceneRenderDraw
     uint64_t bg_set0;  /* MVP bg; 0 = none */
     uint64_t bg_set1;  /* image texture or primitive shading bg; 0 = none */
     uint64_t bg_set2;  /* scene occlusion bg; 0 = none */
+    uint64_t bg_set3;  /* depth-peel sampled bg; 0 = none */
     DvzSceneVisualDesc visual;
 };
 
@@ -166,8 +167,11 @@ struct SceneDepthPeelTargets
     uint64_t depth_id;
     SceneGraphRuntimeTargets graph;
     uint64_t sampler_id;
-    uint64_t sampled_bgl_id;
+    uint64_t composite_bgl_id;
+    uint64_t iter_bgl_id;
     uint64_t composite_bg_id;
+    uint64_t iter_bg_ids[DVZ_SCENE_DEPTH_PEEL_ITERATIONS];
+    uint64_t dummy_bg_id;
     uint64_t composite_pipeline_id;
 };
 
@@ -444,6 +448,27 @@ static bool _create_scene_occlusion_bind_group_layout(DvzDrp2CommandStream* stre
         },
     };
     return dvz_drp2_stream_create_bind_group_layout_entries(stream, id, 3, entries);
+}
+
+
+/**
+ * Create a placeholder bind group layout used to reserve unused set slots.
+ *
+ * @param stream destination DRP2 command stream.
+ * @param id bind group layout id.
+ * @return whether the command was appended.
+ */
+static bool _create_dummy_bind_group_layout(DvzDrp2CommandStream* stream, uint64_t id)
+{
+    ANN(stream);
+
+    DvzDrp2BindGroupLayoutEntry entry = {
+        .binding = 0,
+        .binding_type = DVZ_DRP2_BINDING_TYPE_SAMPLER,
+        .visibility = DVZ_DRP2_SHADER_STAGE_FRAGMENT,
+        .access = DVZ_DRP2_BINDING_ACCESS_READ,
+    };
+    return dvz_drp2_stream_create_bind_group_layout_entries(stream, id, 1, &entry);
 }
 
 
@@ -1028,6 +1053,9 @@ static bool _runtime_key_appendf(
  * @param force_point_depth whether point-like visuals must emit depth writes.
  * @param sampled_depth_id depth texture sampled by volume shaders, or zero.
  * @param sampled_depth_is_volume_occlusion whether sampled_depth_id is a volume occlusion texture.
+ * @param depth_peel_sampled_bgl_id sampled bind-group layout for peel iteration bounds.
+ * @param depth_peel_sampled_bg_id sampled bind group for this peel iteration, or zero.
+ * @param depth_peel_dummy_bg_id dummy bind group for unused peel iteration set slots.
  * @param report diagnostic report receiving recoverable emission errors.
  * @param draws output draw descriptors filled from prepared visuals.
  * @param draw_count_out output number of prepared draw descriptors.
@@ -1037,8 +1065,10 @@ static bool _emitter_prepare_render_multi(
     DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, const DvzFramePlanNode* render,
     const DvzFramePlanEmitConfig* cfg, bool pass_has_depth_attachment, bool force_point_depth,
     uint64_t sampled_depth_id, bool sampled_depth_is_volume_occlusion,
-    uint64_t scene_occlusion_depth_id, uint32_t pass_sample_count, bool pass_alpha_to_coverage,
-    DvzDiagnosticReport* report, SceneRenderDraw* draws, uint32_t* draw_count_out)
+    uint64_t scene_occlusion_depth_id, uint64_t depth_peel_sampled_bgl_id,
+    uint64_t depth_peel_sampled_bg_id, uint64_t depth_peel_dummy_bg_id,
+    uint32_t pass_sample_count, bool pass_alpha_to_coverage, DvzDiagnosticReport* report,
+    SceneRenderDraw* draws, uint32_t* draw_count_out)
 {
     ANN(emitter);
     ANN(stream);
@@ -1521,10 +1551,56 @@ static bool _emitter_prepare_render_multi(
             {
                 uint64_t layouts[DVZ_DRP2_MAX_BIND_GROUPS] = {0};
                 uint32_t layout_count = 0;
-                _pipeline_bind_group_layouts(
-                    &pipeline, common_bgl_id, img_bgl_id, glyph_bgl_id, volume_bgl_id,
-                    material_bgl_id, scene_occlusion_bgl_id, scene_occlusion_uses_set2, layouts,
-                    &layout_count);
+                bool depth_peel_iter_pass =
+                    render->u.render.pass_role == DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_ITER &&
+                    depth_peel_sampled_bgl_id != 0;
+                if (depth_peel_iter_pass)
+                {
+                    uint64_t dummy_bgl_id = _obj_id(emitter, "_bgl_unused_set", &is_new);
+                    if (dummy_bgl_id == 0)
+                    {
+                        ok = false;
+                    }
+                    else if (is_new)
+                    {
+                        ok = _create_dummy_bind_group_layout(stream, dummy_bgl_id);
+                    }
+                    if (!ok)
+                        break;
+
+                    layouts[0] = pipeline.needs_common_layout && common_bgl_id != 0
+                                     ? common_bgl_id
+                                     : dummy_bgl_id;
+                    if (pipeline.needs_material_layout && material_bgl_id != 0)
+                        layouts[1] = material_bgl_id;
+                    else if (pipeline.needs_image_layout && img_bgl_id != 0)
+                        layouts[1] = img_bgl_id;
+                    else if (pipeline.needs_glyph_layout && glyph_bgl_id != 0)
+                        layouts[1] = glyph_bgl_id;
+                    else if (pipeline.needs_volume_layout && volume_bgl_id != 0)
+                        layouts[1] = volume_bgl_id;
+                    else if (
+                        pipeline.needs_scene_occlusion_layout && scene_occlusion_bgl_id != 0 &&
+                        !scene_occlusion_uses_set2)
+                        layouts[1] = scene_occlusion_bgl_id;
+                    else
+                        layouts[1] = dummy_bgl_id;
+
+                    layouts[2] =
+                        pipeline.needs_scene_occlusion_layout && scene_occlusion_bgl_id != 0 &&
+                                scene_occlusion_uses_set2
+                            ? scene_occlusion_bgl_id
+                            : dummy_bgl_id;
+                    layouts[DVZ_SCENE_DEPTH_PEEL_BIND_SET] = depth_peel_sampled_bgl_id;
+                    layout_count = DVZ_SCENE_DEPTH_PEEL_BIND_SET + 1;
+                }
+                else
+                {
+                    _pipeline_bind_group_layouts(
+                        &pipeline, common_bgl_id, img_bgl_id, glyph_bgl_id, volume_bgl_id,
+                        material_bgl_id, scene_occlusion_bgl_id, scene_occlusion_uses_set2,
+                        layouts, &layout_count);
+                }
                 if (layout_count > 0)
                     ok = dvz_drp2_stream_pipeline_set_bind_group_layouts(
                         stream, layout_count, layouts);
@@ -1560,7 +1636,17 @@ static bool _emitter_prepare_render_multi(
                      dvz_drp2_stream_pipeline_set_color_target(
                          stream, 1, VK_FORMAT_R16G16B16A16_SFLOAT) &&
                      dvz_drp2_stream_pipeline_set_color_target(
-                         stream, 2, VK_FORMAT_R16G16B16A16_SFLOAT);
+                         stream, 2, VK_FORMAT_R16G16B16A16_SFLOAT) &&
+                     dvz_drp2_stream_pipeline_set_color_blend(
+                         stream, 0, VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ONE, VK_BLEND_OP_ADD,
+                         VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ONE, VK_BLEND_OP_ADD,
+                         VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |
+                             VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT) &&
+                     dvz_drp2_stream_pipeline_set_color_blend(
+                         stream, 1, VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ONE, VK_BLEND_OP_ADD,
+                         VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ONE, VK_BLEND_OP_ADD,
+                         VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |
+                             VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT);
                 if (ok && render->u.render.pass_role == DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_INIT)
                     ok = dvz_drp2_stream_pipeline_set_raster_state(
                         stream, VK_CULL_MODE_BACK_BIT, VK_FRONT_FACE_COUNTER_CLOCKWISE);
@@ -1589,12 +1675,15 @@ static bool _emitter_prepare_render_multi(
                     VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |
                         VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT);
             }
+            if (!ok)
+                _diagnostic(report, "scene render pipeline setup failed");
         }
 
         /* Bind group at set 0. */
         uint64_t vis_bg_set0 = 0;
         uint64_t vis_bg_set1 = 0;
         uint64_t vis_bg_set2 = 0;
+        uint64_t vis_bg_set3 = 0;
         DvzSceneVisualBindDesc bind = {0};
         if (!_scene_visual_bind_desc(&desc, render->u.render.controller_modes[i], &bind))
         {
@@ -1770,20 +1859,36 @@ static bool _emitter_prepare_render_multi(
             else
                 vis_bg_set1 = scene_occ_bg_id;
         }
+        if (render->u.render.pass_role == DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_ITER)
+        {
+            if (vis_bg_set1 == 0)
+                vis_bg_set1 = depth_peel_dummy_bg_id;
+            if (vis_bg_set2 == 0)
+                vis_bg_set2 = depth_peel_dummy_bg_id;
+            vis_bg_set3 = depth_peel_sampled_bg_id;
+        }
 
         if (!ok)
+        {
+            _diagnostic(report, "scene render bind setup failed");
             break;
+        }
 
         draws[draw_count].pipeline_id = pipe_id;
         draws[draw_count].bg_set0     = vis_bg_set0;
         draws[draw_count].bg_set1     = vis_bg_set1;
         draws[draw_count].bg_set2     = vis_bg_set2;
+        draws[draw_count].bg_set3     = vis_bg_set3;
         draws[draw_count].visual      = desc;
         draw_count++;
     }
 
     if (!ok || draw_count == 0)
+    {
+        if (ok && draw_count == 0)
+            _diagnostic(report, "scene render batch has no prepared draws");
         return false;
+    }
 
     *draw_count_out = draw_count;
     return true;
@@ -1821,6 +1926,7 @@ static bool _emitter_emit_render_multi_draws(
     uint64_t last_bg_set0 = (cache != NULL) ? cache->bg_set0 : 0;
     uint64_t last_bg_set1 = 0;
     uint64_t last_bg_set2 = 0;
+    uint64_t last_bg_set3 = 0;
     for (uint32_t d = 0; ok && d < draw_count; d++)
     {
         if (draws[d].pipeline_id != last_pipeline)
@@ -1830,6 +1936,7 @@ static bool _emitter_emit_render_multi_draws(
             last_bg_set0  = 0;
             last_bg_set1  = 0;
             last_bg_set2  = 0;
+            last_bg_set3  = 0;
         }
         if (draws[d].bg_set0 != 0 && draws[d].bg_set0 != last_bg_set0)
         {
@@ -1848,6 +1955,13 @@ static bool _emitter_emit_render_multi_draws(
             ok = ok &&
                  dvz_drp2_stream_set_bind_group(stream, render_pass_id, 2, draws[d].bg_set2);
             last_bg_set2 = draws[d].bg_set2;
+        }
+        if (draws[d].bg_set3 != 0 && draws[d].bg_set3 != last_bg_set3)
+        {
+            ok = ok && dvz_drp2_stream_set_bind_group(
+                           stream, render_pass_id, DVZ_SCENE_DEPTH_PEEL_BIND_SET,
+                           draws[d].bg_set3);
+            last_bg_set3 = draws[d].bg_set3;
         }
         for (uint32_t j = 0; ok && j < draws[d].visual.vbuf_count; j++)
             ok = ok && dvz_drp2_stream_set_vertex_buffer(
@@ -1941,6 +2055,27 @@ static const DvzFrameGraphPass* _graph_pass_by_panel_work(
         const DvzFrameGraphPass* pass = dvz_frame_plan_graph_pass_get(plan, i);
         if (pass != NULL && strcmp(pass->panel_id, panel_id) == 0 &&
             strcmp(pass->work_label, work_label) == 0)
+            return pass;
+    }
+    return NULL;
+}
+
+
+/**
+ * Return a graph pass descriptor by id.
+ *
+ * @param plan the FramePlan.
+ * @param pass_id graph pass id.
+ * @return the graph pass descriptor, or NULL when absent.
+ */
+static const DvzFrameGraphPass* _graph_pass_by_id(const DvzFramePlan* plan, const char* pass_id)
+{
+    ANN(plan);
+    ANN(pass_id);
+    for (uint32_t i = 0; i < dvz_frame_plan_graph_pass_count(plan); i++)
+    {
+        const DvzFrameGraphPass* pass = dvz_frame_plan_graph_pass_get(plan, i);
+        if (pass != NULL && strcmp(pass->id, pass_id) == 0)
             return pass;
     }
     return NULL;
@@ -3855,19 +3990,18 @@ static bool _emitter_prepare_wboit_targets(
 /**
  * Return a compact fingerprint for a depth-peel sampled bind group dependency set.
  *
- * @param front_id front accumulation texture id.
- * @param back_id back accumulation texture id.
- * @param depth_id depth pair texture id.
+ * @param texture_ids sampled texture ids.
+ * @param texture_count sampled texture count.
  * @param sampler_id sampler id.
  * @return dependency fingerprint.
  */
 static uint64_t _depth_peel_bind_group_fingerprint(
-    uint64_t front_id, uint64_t back_id, uint64_t depth_id, uint64_t sampler_id)
+    const uint64_t* texture_ids, uint32_t texture_count, uint64_t sampler_id)
 {
+    ANN(texture_ids);
     uint64_t hash = UINT64_C(1469598103934665603);
-    hash = (hash ^ front_id) * UINT64_C(1099511628211);
-    hash = (hash ^ back_id) * UINT64_C(1099511628211);
-    hash = (hash ^ depth_id) * UINT64_C(1099511628211);
+    for (uint32_t i = 0; i < texture_count; i++)
+        hash = (hash ^ texture_ids[i]) * UINT64_C(1099511628211);
     hash = (hash ^ sampler_id) * UINT64_C(1099511628211);
     return hash != 0 ? hash : UINT64_C(1);
 }
@@ -3898,14 +4032,16 @@ static bool _depth_peel_resolve_sampled_bind_group(
     ANN(targets);
     ANN(key);
     ANN(out_bg_id);
-    if (pass->read_count < 3)
+    if (pass->read_count == 0 || pass->read_count + 1 > DVZ_DRP2_MAX_BINDINGS)
         return false;
 
-    uint64_t front_id = _graph_runtime_targets_get(targets, pass->reads[0].resource_id);
-    uint64_t back_id = _graph_runtime_targets_get(targets, pass->reads[1].resource_id);
-    uint64_t depth_id = _graph_runtime_targets_get(targets, pass->reads[2].resource_id);
-    if (front_id == 0 || back_id == 0 || depth_id == 0)
-        return false;
+    uint64_t texture_ids[DVZ_DRP2_MAX_BINDINGS] = {0};
+    for (uint32_t i = 0; i < pass->read_count; i++)
+    {
+        texture_ids[i] = _graph_runtime_targets_get(targets, pass->reads[i].resource_id);
+        if (texture_ids[i] == 0)
+            return false;
+    }
 
     bool is_new = false;
     ResourceId* resource = _resource_entry(&emitter->objects, key, &is_new);
@@ -3913,39 +4049,26 @@ static bool _depth_peel_resolve_sampled_bind_group(
         return false;
     uint64_t bg_id = resource->id;
     uint64_t fingerprint =
-        _depth_peel_bind_group_fingerprint(front_id, back_id, depth_id, sampler_id);
+        _depth_peel_bind_group_fingerprint(texture_ids, pass->read_count, sampler_id);
     if (!is_new && resource->byte_size != fingerprint)
         is_new = true;
     resource->byte_size = fingerprint;
     if (is_new)
     {
-        DvzDrp2BindGroupEntry entries[4] = {
-            {
-                .binding = 0,
-                .binding_type = DVZ_DRP2_BINDING_TYPE_SAMPLED_TEXTURE,
-                .resource_kind = DVZ_DRP2_BINDING_RESOURCE_TEXTURE,
-                .resource_id = front_id,
-            },
-            {
-                .binding = 1,
-                .binding_type = DVZ_DRP2_BINDING_TYPE_SAMPLED_TEXTURE,
-                .resource_kind = DVZ_DRP2_BINDING_RESOURCE_TEXTURE,
-                .resource_id = back_id,
-            },
-            {
-                .binding = 2,
-                .binding_type = DVZ_DRP2_BINDING_TYPE_SAMPLED_TEXTURE,
-                .resource_kind = DVZ_DRP2_BINDING_RESOURCE_TEXTURE,
-                .resource_id = depth_id,
-            },
-            {
-                .binding = 3,
-                .binding_type = DVZ_DRP2_BINDING_TYPE_SAMPLER,
-                .resource_kind = DVZ_DRP2_BINDING_RESOURCE_SAMPLER,
-                .resource_id = sampler_id,
-            },
-        };
-        if (!dvz_drp2_stream_create_bind_group_entries(stream, bg_id, bgl_id, 4, entries))
+        DvzDrp2BindGroupEntry entries[DVZ_DRP2_MAX_BINDINGS] = {0};
+        for (uint32_t i = 0; i < pass->read_count; i++)
+        {
+            entries[i].binding = i;
+            entries[i].binding_type = DVZ_DRP2_BINDING_TYPE_SAMPLED_TEXTURE;
+            entries[i].resource_kind = DVZ_DRP2_BINDING_RESOURCE_TEXTURE;
+            entries[i].resource_id = texture_ids[i];
+        }
+        entries[pass->read_count].binding = pass->read_count;
+        entries[pass->read_count].binding_type = DVZ_DRP2_BINDING_TYPE_SAMPLER;
+        entries[pass->read_count].resource_kind = DVZ_DRP2_BINDING_RESOURCE_SAMPLER;
+        entries[pass->read_count].resource_id = sampler_id;
+        if (!dvz_drp2_stream_create_bind_group_entries(
+                stream, bg_id, bgl_id, pass->read_count + 1, entries))
             return false;
     }
 
@@ -4014,12 +4137,12 @@ static bool _emitter_prepare_depth_peel_targets(
     if (is_new)
         ok = ok && dvz_drp2_stream_create_sampler(stream, out->sampler_id);
 
-    out->sampled_bgl_id = _obj_id(emitter, "_bgl_depth_peel_sampled", &is_new);
-    if (out->sampled_bgl_id == 0)
+    out->composite_bgl_id = _obj_id(emitter, "_bgl_depth_peel_composite", &is_new);
+    if (out->composite_bgl_id == 0)
         return false;
     if (ok && is_new)
     {
-        DvzDrp2BindGroupLayoutEntry entries[4] = {
+        DvzDrp2BindGroupLayoutEntry entries[3] = {
             {
                 .binding = 0,
                 .binding_type = DVZ_DRP2_BINDING_TYPE_SAMPLED_TEXTURE,
@@ -4034,19 +4157,56 @@ static bool _emitter_prepare_depth_peel_targets(
             },
             {
                 .binding = 2,
-                .binding_type = DVZ_DRP2_BINDING_TYPE_SAMPLED_TEXTURE,
-                .visibility = DVZ_DRP2_SHADER_STAGE_FRAGMENT,
-                .access = DVZ_DRP2_BINDING_ACCESS_READ,
-            },
-            {
-                .binding = 3,
                 .binding_type = DVZ_DRP2_BINDING_TYPE_SAMPLER,
                 .visibility = DVZ_DRP2_SHADER_STAGE_FRAGMENT,
                 .access = DVZ_DRP2_BINDING_ACCESS_READ,
             },
         };
         ok = ok && dvz_drp2_stream_create_bind_group_layout_entries(
-                       stream, out->sampled_bgl_id, 4, entries);
+                       stream, out->composite_bgl_id, 3, entries);
+    }
+
+    out->iter_bgl_id = _obj_id(emitter, "_bgl_depth_peel_iter", &is_new);
+    if (out->iter_bgl_id == 0)
+        return false;
+    if (ok && is_new)
+    {
+        DvzDrp2BindGroupLayoutEntry entries[2] = {
+            {
+                .binding = 0,
+                .binding_type = DVZ_DRP2_BINDING_TYPE_SAMPLED_TEXTURE,
+                .visibility = DVZ_DRP2_SHADER_STAGE_FRAGMENT,
+                .access = DVZ_DRP2_BINDING_ACCESS_READ,
+            },
+            {
+                .binding = 1,
+                .binding_type = DVZ_DRP2_BINDING_TYPE_SAMPLER,
+                .visibility = DVZ_DRP2_SHADER_STAGE_FRAGMENT,
+                .access = DVZ_DRP2_BINDING_ACCESS_READ,
+            },
+        };
+        ok = ok && dvz_drp2_stream_create_bind_group_layout_entries(
+                       stream, out->iter_bgl_id, 2, entries);
+    }
+
+    uint64_t dummy_bgl_id = _obj_id(emitter, "_bgl_unused_set", &is_new);
+    if (dummy_bgl_id == 0)
+        return false;
+    if (ok && is_new)
+        ok = ok && _create_dummy_bind_group_layout(stream, dummy_bgl_id);
+    out->dummy_bg_id = _obj_id(emitter, "_bg_unused_set", &is_new);
+    if (out->dummy_bg_id == 0)
+        return false;
+    if (ok && is_new)
+    {
+        DvzDrp2BindGroupEntry entry = {
+            .binding = 0,
+            .binding_type = DVZ_DRP2_BINDING_TYPE_SAMPLER,
+            .resource_kind = DVZ_DRP2_BINDING_RESOURCE_SAMPLER,
+            .resource_id = out->sampler_id,
+        };
+        ok = ok && dvz_drp2_stream_create_bind_group_entries(
+                       stream, out->dummy_bg_id, dummy_bgl_id, 1, &entry);
     }
 
     const DvzFrameGraphPass* composite_pass =
@@ -4059,7 +4219,29 @@ static bool _emitter_prepare_depth_peel_targets(
             cfg, "_bg_depth_peel_composite", composite_bg_key, sizeof(composite_bg_key));
         ok = ok && _depth_peel_resolve_sampled_bind_group(
             emitter, stream, composite_pass, &out->graph, composite_bg_key,
-            out->sampled_bgl_id, out->sampler_id, &out->composite_bg_id);
+            out->composite_bgl_id, out->sampler_id, &out->composite_bg_id);
+    }
+
+    for (uint32_t iter_idx = 0; ok && iter_idx < DVZ_SCENE_DEPTH_PEEL_ITERATIONS; iter_idx++)
+    {
+        char iter_pass_id[DVZ_SCENE_LABEL_SIZE];
+        dvz_snprintf(
+            iter_pass_id, sizeof(iter_pass_id), "%s.peel.iter.%" PRIu32,
+            render->u.render.panel_id, iter_idx);
+        const DvzFrameGraphPass* iter_pass = _graph_pass_by_id(plan, iter_pass_id);
+        ok = ok && iter_pass != NULL;
+        if (ok)
+        {
+            char iter_bg_base_key[DVZ_SCENE_LABEL_SIZE];
+            char iter_bg_key[DVZ_SCENE_LABEL_SIZE];
+            dvz_snprintf(
+                iter_bg_base_key, sizeof(iter_bg_base_key), "_bg_depth_peel_iter_%" PRIu32,
+                iter_idx);
+            _runtime_scope_key(cfg, iter_bg_base_key, iter_bg_key, sizeof(iter_bg_key));
+            ok = _depth_peel_resolve_sampled_bind_group(
+                emitter, stream, iter_pass, &out->graph, iter_bg_key, out->iter_bgl_id,
+                out->sampler_id, &out->iter_bg_ids[iter_idx]);
+        }
     }
 
     const char* fmt = _shader_format_tag(cfg);
@@ -4095,7 +4277,7 @@ static bool _emitter_prepare_depth_peel_targets(
     {
         ok = ok && dvz_drp2_stream_create_render_pipeline_with_bind_group_layout(
                        stream, out->composite_pipeline_id, vs_id, fs_id, 0,
-                       out->sampled_bgl_id) &&
+                       out->composite_bgl_id) &&
              dvz_drp2_stream_pipeline_set_color_blend(
                  stream, 0, VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,
                  VK_BLEND_OP_ADD, VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,
@@ -4347,8 +4529,8 @@ static bool _emitter_emit_render_multi(
     uint32_t pass_sample_count = _graph_render_pass_sample_count(emitter, plan, graph_pass);
     ok = _emitter_prepare_render_multi(
         emitter, stream, render, cfg, pass_has_depth_attachment, false, sampled_depth_id,
-        false, 0, pass_sample_count, graph_pass != NULL && graph_pass->alpha_to_coverage,
-        report, draws, &draw_count);
+        false, 0, 0, 0, 0, pass_sample_count,
+        graph_pass != NULL && graph_pass->alpha_to_coverage, report, draws, &draw_count);
     if (!ok)
         return false;
 
@@ -4428,8 +4610,8 @@ static bool _emitter_emit_scene_figure_renders(
         SceneRenderBatch* batch = &batches[batch_count];
         batch->render = render;
         ok = _emitter_prepare_render_multi(
-            emitter, stream, render, cfg, needs_depth, false, 0, false, 0, 1, false, report,
-            batch->draws, &batch->draw_count);
+            emitter, stream, render, cfg, needs_depth, false, 0, false, 0, 0, 0, 0, 1, false,
+            report, batch->draws, &batch->draw_count);
         if (ok)
             batch_count++;
     }
@@ -4625,6 +4807,9 @@ static bool _emitter_emit_scene_graph_renders(
         if (render_graph_pass != NULL && render_graph_pass->has_depth_attachment &&
             render_graph_pass->depth_attachment.access == DVZ_FRAME_GRAPH_ATTACHMENT_ACCESS_READ)
             sampled_depth_id = render_graph_depth_id;
+        uint64_t depth_peel_sampled_bgl_id = 0;
+        uint64_t depth_peel_sampled_bg_id = 0;
+        uint64_t depth_peel_dummy_bg_id = 0;
         if (render->u.render.pass_role == DVZ_FRAME_PLAN_RENDER_PASS_GBUFFER)
         {
             ok = _emitter_prepare_gbuffer_targets(
@@ -4666,6 +4851,24 @@ static bool _emitter_emit_scene_graph_renders(
                 render_graph_pass->depth_attachment.access ==
                     DVZ_FRAME_GRAPH_ATTACHMENT_ACCESS_READ)
                 sampled_depth_id = targets->depth_id;
+            if (targets != NULL && render_graph_pass != NULL)
+            {
+                depth_peel_sampled_bgl_id = targets->iter_bgl_id;
+                depth_peel_dummy_bg_id = targets->dummy_bg_id;
+                for (uint32_t iter_idx = 0; iter_idx < DVZ_SCENE_DEPTH_PEEL_ITERATIONS;
+                     iter_idx++)
+                {
+                    char iter_pass_id[DVZ_SCENE_LABEL_SIZE];
+                    dvz_snprintf(
+                        iter_pass_id, sizeof(iter_pass_id), "%s.peel.iter.%" PRIu32,
+                        render->u.render.panel_id, iter_idx);
+                    if (strcmp(render_graph_pass->id, iter_pass_id) == 0)
+                    {
+                        depth_peel_sampled_bg_id = targets->iter_bg_ids[iter_idx];
+                        break;
+                    }
+                }
+            }
         }
         bool sampled_depth_is_volume_occlusion = false;
         uint64_t volume_occlusion_depth_id = 0;
@@ -4695,11 +4898,20 @@ static bool _emitter_emit_scene_graph_renders(
             ok = _emitter_prepare_render_multi(
                 emitter, stream, render, cfg, pass_has_depth_attachment, force_point_depth,
                 sampled_depth_id, sampled_depth_is_volume_occlusion, scene_occlusion_depth_id,
+                depth_peel_sampled_bgl_id, depth_peel_sampled_bg_id, depth_peel_dummy_bg_id,
                 _graph_render_pass_sample_count(emitter, plan, render_graph_pass),
                 render_graph_pass != NULL && render_graph_pass->alpha_to_coverage, report,
                 batch->draws, &batch->draw_count);
             if (ok)
                 batch_count++;
+            else
+            {
+                char message[96];
+                dvz_snprintf(
+                    message, sizeof(message), "failed to prepare scene render batch for role %d",
+                    (int)render->u.render.pass_role);
+                _diagnostic(report, message);
+            }
         }
     }
     if (!ok)
@@ -5028,7 +5240,7 @@ static bool _emitter_emit_scene_graph_renders(
                  dvz_drp2_stream_begin_render_pass_add_color_attachment(
                      stream, second_id, 0.0f, 0.0f, 0.0f, 0.0f, true) &&
                  dvz_drp2_stream_begin_render_pass_add_color_attachment(
-                     stream, third_id, 0.0f, 0.0f, 0.0f, 0.0f, true);
+                     stream, third_id, 1.0f, 0.0f, 0.0f, 0.0f, true);
             ok = ok && _stream_apply_graph_color_ops(
                            stream, graph_pass, color_id, &targets->graph);
             ok = ok && _stream_apply_graph_depth(stream, graph_pass, targets->depth_id);

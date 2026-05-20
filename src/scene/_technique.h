@@ -27,6 +27,9 @@
 /*  Structs                                                                                      */
 /*************************************************************************************************/
 
+#define DVZ_SCENE_DEPTH_PEEL_ITERATIONS 4
+#define DVZ_SCENE_DEPTH_PEEL_BIND_SET 3
+
 typedef struct DvzSceneGBufferPlan
 {
     bool enabled;

@@ -24,5 +24,5 @@ void main()
     float a = clamp(c.a, 0.0, 1.0);
     frontAccum = vec4(c.rgb * a, a);
     backAccum = vec4(0.0);
-    depthPair = vec4(gl_FragCoord.z, 1.0 - gl_FragCoord.z, 0.0, 1.0);
+    depthPair = vec4(gl_FragCoord.z, 1.0, 0.0, 1.0);
 }

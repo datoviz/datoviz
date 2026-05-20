@@ -14,6 +14,7 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
+#include <inttypes.h>
 #include <stdint.h>
 #include <stdarg.h>
 #include <string.h>
@@ -2053,7 +2054,7 @@ bool _scene_emit_panel_render_ex(
     uint32_t gbuffer_node = invalid_node;
     uint32_t transparent_node = invalid_node;
     uint32_t depth_peel_init_node = invalid_node;
-    uint32_t depth_peel_iter_node = invalid_node;
+    uint32_t depth_peel_iter_nodes[DVZ_SCENE_DEPTH_PEEL_ITERATIONS] = {0};
     uint32_t depth_peel_composite_node = invalid_node;
     uint32_t blended_nodes[DVZ_SCENE_MAX_RENDER_VISUALS] = {0};
     bool blended_needs_depth[DVZ_SCENE_MAX_RENDER_VISUALS] = {0};
@@ -2080,6 +2081,8 @@ bool _scene_emit_panel_render_ex(
     bool opaque_needs_depth = false;
     bool transparent_needs_depth = false;
     bool graph_ok = true;
+    for (uint32_t i = 0; i < DVZ_SCENE_DEPTH_PEEL_ITERATIONS; i++)
+        depth_peel_iter_nodes[i] = invalid_node;
     for (uint32_t k = 0; k < panel->visual_count; k++)
     {
         uint32_t vi = order[k];
@@ -2246,10 +2249,42 @@ bool _scene_emit_panel_render_ex(
                     DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_INIT, &panel_apply_mvp,
                     &panel_viewport, &depth_peel_init_node))
                     continue;
-                if (!_scene_begin_panel_render_pass(
-                    plan, panel_id, "rt.depth_peel_iter", panel->desc,
-                    DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_ITER, &panel_apply_mvp,
-                    &panel_viewport, &depth_peel_iter_node))
+                bool iter_nodes_ok = true;
+                for (uint32_t iter_idx = 0; iter_idx < DVZ_SCENE_DEPTH_PEEL_ITERATIONS;
+                     iter_idx++)
+                {
+                    char iter_target_id[DVZ_SCENE_LABEL_SIZE];
+                    dvz_snprintf(
+                        iter_target_id, sizeof(iter_target_id), "rt.depth_peel_iter.%" PRIu32,
+                        iter_idx);
+                    if (!_scene_begin_panel_render_pass(
+                            plan, panel_id, iter_target_id, panel->desc,
+                            DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_ITER, &panel_apply_mvp,
+                            &panel_viewport, &depth_peel_iter_nodes[iter_idx]))
+                    {
+                        iter_nodes_ok = false;
+                        break;
+                    }
+                    DvzFramePlanNode* iter_node =
+                        _scene_frame_plan_node_mut(plan, depth_peel_iter_nodes[iter_idx]);
+                    if (iter_node == NULL)
+                    {
+                        iter_nodes_ok = false;
+                        break;
+                    }
+                    int ret = dvz_snprintf(
+                        iter_node->u.render.pass_contract_id,
+                        sizeof(iter_node->u.render.pass_contract_id), "%s.pass.%u.iter.%" PRIu32,
+                        panel_id, (uint32_t)DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_ITER,
+                        iter_idx);
+                    if (ret < 0 ||
+                        (size_t)ret >= sizeof(iter_node->u.render.pass_contract_id))
+                    {
+                        iter_nodes_ok = false;
+                        break;
+                    }
+                }
+                if (!iter_nodes_ok)
                     continue;
                 if (!_scene_begin_panel_render_pass(
                     plan, panel_id, "rt", panel->desc,
@@ -2259,18 +2294,23 @@ bool _scene_emit_panel_render_ex(
             }
             DvzFramePlanNode* init_node =
                 _scene_frame_plan_node_mut(plan, depth_peel_init_node);
-            DvzFramePlanNode* iter_node =
-                _scene_frame_plan_node_mut(plan, depth_peel_iter_node);
-            if (init_node == NULL || iter_node == NULL)
+            if (init_node == NULL)
                 continue;
             (void)_scene_append_visual_to_render_pass(
                 figure, plan, init_node, visual, attach, vidx,
                 scene_occlusion_enabled ? &panel->scene_occlusion : NULL,
                 volume_occlusion_enabled ? &panel->volume_occlusion : NULL);
-            (void)_scene_append_visual_to_render_pass(
-                figure, plan, iter_node, visual, attach, vidx,
-                scene_occlusion_enabled ? &panel->scene_occlusion : NULL,
-                volume_occlusion_enabled ? &panel->volume_occlusion : NULL);
+            for (uint32_t iter_idx = 0; iter_idx < DVZ_SCENE_DEPTH_PEEL_ITERATIONS; iter_idx++)
+            {
+                DvzFramePlanNode* iter_node =
+                    _scene_frame_plan_node_mut(plan, depth_peel_iter_nodes[iter_idx]);
+                if (iter_node == NULL)
+                    continue;
+                (void)_scene_append_visual_to_render_pass(
+                    figure, plan, iter_node, visual, attach, vidx,
+                    scene_occlusion_enabled ? &panel->scene_occlusion : NULL,
+                    volume_occlusion_enabled ? &panel->volume_occlusion : NULL);
+            }
             transparent_needs_depth = transparent_needs_depth || caps.needs_depth_attachment;
             continue;
         }
