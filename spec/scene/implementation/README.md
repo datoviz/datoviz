@@ -3,6 +3,10 @@
 Concise implementor documentation for active scene internals. These notes describe the current
 `src/scene` vertical slice and should not override public API or DRP2 protocol specs.
 
+Keep implementation notes concrete and short: current boundary, constraints, internal data flow,
+failure/lifetime/performance cases, validation, and known gaps. Link to semantic specs for public
+behavior instead of restating it here.
+
 ## Files
 
 1. [VISUAL_SHADER_REFACTOR.md](VISUAL_SHADER_REFACTOR.md): shader ABI, visual-family and shader-variant

@@ -20,6 +20,10 @@ Cross-cutting lessons that come out of several examples can live at this level. 
 volume, slice, and transparent mesh composition is
 [TRANSPARENCY_OCCLUSION.md](TRANSPARENCY_OCCLUSION.md).
 
+Shared example policy lives in [SHARED_POLICIES.md](SHARED_POLICIES.md). Use it for API caveats,
+cache/download rules, generic FramePlan/DRP2 references, and compact agent-pickup metadata instead
+of repeating those blocks in each example.
+
 Embedding explorer examples share data-model, preprocessing, query, and runtime-boundary guidance in
 [dashboards/EMBEDDING_EXPLORER_COMMON.md](dashboards/EMBEDDING_EXPLORER_COMMON.md). Use that note
 when extending the image and semantic embedding atlas examples so their bundle formats and query
@@ -73,17 +77,7 @@ GSP examples, vispy2 plot examples, fixtures, showcases, regression examples, an
 lives in [EXAMPLE_ORGANIZATION.md](EXAMPLE_ORGANIZATION.md).
 
 Use [TEMPLATE.md](TEMPLATE.md) for new example specs. Existing examples should keep their
-domain-specific detail, but each file should provide enough information for an agent to pick up the
-implementation without asking for missing data-planning context. In practice, every example should
-answer:
-
-1. what artifact to implement,
-2. what data to use, download, synthesize, or cache,
-3. what preprocessing script is needed, if any,
-4. which scene visuals, panels, resources, transforms, and interactions are required,
-5. which Datoviz capabilities are mandatory versus optional,
-6. how to validate the result with a smoke command, screenshot/readback check, fixture, or manual
-   interaction checklist.
+domain-specific detail while moving shared policy to [SHARED_POLICIES.md](SHARED_POLICIES.md).
 
 
 ## Directory Layout
@@ -187,13 +181,6 @@ Operational or dense-interface examples with multiple coordinated panels.
 
 ## Common Structure
 
-Each example should describe:
-
-1. the owning specs that define the normative rules it exercises,
-2. the scene setup,
-3. the visual family and variant,
-4. the resource schema instance,
-5. the transform pipeline for that case,
-6. the resulting `FramePlan` shape,
-7. the DRP2 command categories implied,
-8. the key pressure on the current spec.
+Each example should stay close to this shape: summary, feature pressure, data/resources, scene
+shape, runtime behavior, minimal target, validation, and open questions. Link to canonical specs for
+the generic resource, transform, FramePlan, DRP2, validation, and cache policy.
