@@ -65,8 +65,9 @@ and shared-fixture follow-ups live in
 5. **Material and shader ABI polish:** keep shader ABI checks green; refine the standard material
    look, family-specific material policy, and GLSL/WGSL parity without turning v0.4 into a full PBR
    pass.
-6. **Picking and selection payloads:** widen point/marker/image pick/probe payloads, highlight
-   state, linked-panel request propagation, and explicit deferrals for mesh/path/volume picking.
+6. **Picking and selection payloads:** point/marker click selection now reaches visible mask
+   highlighting. Continue with richer point/marker/image pick/probe payloads, image selection,
+   linked-panel request propagation, and explicit deferrals for mesh/path/volume picking.
 7. **Examples and gallery pressure:** keep C examples, manual smoke notes, gallery harnesses,
    screenshots, and video/capture paths exercising already-implemented features.
 8. **CUDA/CuPy external-memory contract:** prefer Vulkan-owned exportable resources imported into

@@ -55,7 +55,7 @@ These items are in scope for v0.4 but deferred beyond the initial implementation
 | Per-item material / PBR lighting for sphere | `spec/scene/visuals/SPHERE.md` |
 | Full PBR material model beyond current material/Phong/depth-cue slices | `spec/scene/semantics/LIGHTING.md`, `spec/scene/proposals/active/MATERIAL_LIGHTING_API.md` |
 | Selection state synchronization across scenes | `spec/scene/interaction/SELECTION.md` |
-| Rendered selection highlight overlays/effects | `spec/scene/interaction/SELECTION.md`, `spec/scene/proposals/active/SELECTION_HIGHLIGHT_DESIGN.md` |
+| Selection highlight beyond point/marker mask dimming: image, mesh/path/volume/text, style overlays/effects | `spec/scene/interaction/SELECTION.md`, `spec/scene/proposals/active/SELECTION_HIGHLIGHT_DESIGN.md` |
 | Custom visual dirty-tracking optimization | `spec/scene/integration/CUSTOM_VISUALS.md` |
 | Per-character glyph orientation | `spec/scene/visuals/GLYPH.md` |
 | Vector export tile-based rendering and SVG-level effects | `spec/scene/export/VECTOR_EXPORT.md` |

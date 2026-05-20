@@ -315,13 +315,14 @@ Current baseline:
 
 1. GPU-backed point picking exists.
 2. GPU-backed image probing exists.
-3. Selection/link bookkeeping exists.
+3. Point/marker selection masks and visible alpha-dim highlighting exist.
+4. Selection/link bookkeeping exists for linked point/marker visuals.
 
 Required v0.4 slice:
 
 1. robust point pick and image probe steady-state behavior,
 2. marker picking if marker is a supported v0.4 visual family,
-3. selection highlight styling for point/marker/image examples,
+3. selection highlight styling for image examples and richer point/marker styles,
 4. linked-panel probe/crosshair state,
 5. explicit deferral for mesh/path/volume/text picking if not implemented.
 

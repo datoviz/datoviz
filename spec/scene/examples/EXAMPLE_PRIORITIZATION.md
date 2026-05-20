@@ -103,7 +103,7 @@ materials, and large-data policies.
 | WBOIT/depth peeling | Implemented first slices. | Brain mesh, transparent mesh, protein surfaces. | Harden composition and consider full dual depth peeling when needed. |
 | Volume occlusion | Implemented first slice. | Allen brain, embedded overlays inside volume. | Generalize beyond one narrow volume-occluder lane. |
 | Picking/probing | Point picking and image probing are GPU-backed. | Marker picking, linked probe, brain, mesh selection. | Add marker, mesh face/region, label, path, and volume pick/probe payloads. |
-| Selection/linking | Bookkeeping exists. | Mesh selection, brain region highlight, dashboards. | Propagate resolved selection into visual styling and linked panels. |
+| Selection/linking | Point/marker mask highlight exists; broader linking is partial. | Mesh selection, brain region highlight, dashboards. | Extend selection styling to images and linked panels, then mesh/region highlights. |
 | FramePlan graph | Internal multi-pass shapes exist. | WBOIT, depth peel, EDL, SSAO, volume, future compute. | Expose scene-level virtual resources and pass dependencies. |
 | Compute/custom shaders | DRP2-level only. | Gray-Scott, Mandelbrot, particles, custom postprocess. | Promote compute/custom material resources into scene semantics. |
 | Large-data/LOD/ring buffers | Partial. | LiDAR, raster, DAQ, market, image embedding. | Add explicit visible-range, ring-buffer, sparse-update, and LOD policies. |

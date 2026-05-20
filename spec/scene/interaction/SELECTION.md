@@ -1,7 +1,7 @@
 # Selection And Linked Highlight
 
-This document defines scene-level selection state, highlight rendering, cross-visual linking,
-and lasso selection for the future scene layer.
+This document defines active and planned scene-level selection state, highlight rendering,
+cross-visual linking, and lasso selection.
 
 
 ## Purpose
@@ -15,9 +15,27 @@ Selection is a first-class scene concern:
 Selection state is owned by the scene, not by individual visuals or controllers.
 
 
+## Current v0.4 Slice (May 2026)
+
+The active implementation covers the narrow visible highlight path for point and marker visuals:
+
+1. `DvzSelection` keeps the CPU-side selected item set.
+2. `dvz_selection_apply_pick()` updates `uint8` per-item masks on matching point and marker
+   visuals, including visuals linked by scene link keys.
+3. Selection mask updates mark the affected visuals dirty so the scene emits a fresh frame plan.
+4. The scene emits an optional `selection` attribute, DRP2 uploads it as `uint8`, and point/marker
+   shaders render selected items at full alpha while dimming unselected items.
+5. `examples/c/techniques/pick_hover.c` demonstrates click selection and linked point/marker
+   highlighting.
+
+The broader design below still tracks planned follow-ups: explicit visual attachment APIs,
+parametrizable input maps, highlight descriptors beyond alpha dimming, image/mesh/path/volume/text
+selection, box/lasso selection, and cross-scene selection synchronization.
+
+
 ## `DvzSelection`
 
-`DvzSelection` is a scene-level handle that owns:
+The target `DvzSelection` design is a scene-level handle that owns:
 
 1. a set of selected item indices,
 2. a per-item `uint8` mask buffer (see Implementation Note below),
@@ -28,15 +46,15 @@ Selection state is owned by the scene, not by individual visuals or controllers.
 DvzSelection* sel = dvz_selection(scene, &highlight_desc)
 ```
 
-Multiple visuals attach to a selection handle to share selection state:
+The target design lets multiple visuals attach to a selection handle to share selection state:
 
 ```text
 dvz_visual_set_selection(visual_a, sel)
 dvz_visual_set_selection(visual_b, sel)
 ```
 
-When the selection changes, the mask buffer is updated and all attached visuals are marked
-dirty for highlight. No geometry rebuild is needed.
+When the selection changes, the mask buffer is updated and all attached or synchronized visuals
+are marked dirty for highlight. No geometry rebuild is needed.
 
 Multiple independent `DvzSelection` handles may coexist in the same scene.
 
@@ -149,7 +167,7 @@ dvz_selection_clear(sel)
 2. picking readback returns a scene item identity (or empty),
 3. controller applies the selection mode from the input map,
 4. `DvzSelection` updates its index set and mask buffer,
-5. attached visuals are marked dirty for highlight,
+5. attached or synchronized visuals are marked dirty for highlight,
 6. next frame: `UploadNode` uploads the updated mask; highlight renders.
 
 **Box selection:**
@@ -220,8 +238,9 @@ It is not normative for the scene contract but is recorded here because it drive
 architectural constraints.
 
 **Mask buffer:**
-`DvzSelection` owns a `BufferResource` containing one `uint8` per item across all attached
-visuals (or one buffer per visual, depending on item count).
+The current point/marker path stores one visual-local `uint8` attribute per item. The broader
+target keeps the same mask semantics and may realize that mask as a `BufferResource` owned by
+`DvzSelection`, or as one buffer per visual depending on item count.
 Value `1` = selected, `0` = unselected.
 
 **On selection change (click/box/programmatic):**
