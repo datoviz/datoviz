@@ -1,14 +1,15 @@
 # Promoted Scene Proposal Notes
 
-These files are mostly or partially represented by specialized specs. Keep them as rationale,
-backlog, and API-shape notes; update the specialized spec first when changing active behavior.
+These files are mostly or partially represented by specialized specs. Keep them short: status,
+decision record, canonical links, unresolved choices, and any API or precision notes not yet
+represented elsewhere. Update the specialized spec first when changing active behavior.
 
 
 ## Authority Note
 
-The files in this directory are not primary implementation-facing specs. Their detailed sections
-may preserve useful historical requirements, API sketches, and tradeoffs, but current rules belong
-in the specialized `spec/scene/` documents listed below.
+The files in this directory are not primary implementation-facing specs. They preserve historical
+requirements, API sketches, and tradeoffs only where those details have not moved into the
+specialized `spec/scene/` documents listed below.
 
 1. [PICKING_DESIGN.md](PICKING_DESIGN.md) -> `../../interaction/PICKING.md`, visual-family specs,
    and `../../api/API_SURFACE.md`.
