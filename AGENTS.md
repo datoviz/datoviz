@@ -71,6 +71,14 @@ When refactoring, do NOT delete existing comments, keep them and update them if 
 **Important**: do not treat `v0.3` as an implementation target or compatibility constraint. Focus on
 `include`, `src`, `testing`, and supporting roots such as `external/`.
 
+### Documentation placement during v0.4 refactor
+
+The current `docs/` tree is legacy v0.3 public documentation and should not receive new v0.4 design
+notes, specifications, implementation plans, or architecture records. Put active v0.4 source-of-truth
+material under `spec/scene/` (or the closest existing `spec/` subtree), and use `agents/` only for
+execution status, handoff notes, and automation plans. Treat `docs/` as a future migration target when
+the v0.4 public documentation is rebuilt.
+
 ```
 datoviz/
 ├── include/                    # Public headers (installed)
