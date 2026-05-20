@@ -137,7 +137,7 @@ magnitude, stress value, field units, and boundary/load flag.
 ## Scene And Runtime Behavior
 
 Use the normal scene pipeline; see [../../pipeline/FRAME_PLAN.md](../../pipeline/FRAME_PLAN.md) and
-[../../drp2/](../../drp2/).
+[../../drp2/](../../../drp2/).
 
 - Initial setup uploads mesh positions/indices, stress colors, ghost geometry, support/load markers,
   and diagnostics curves.

@@ -128,7 +128,7 @@ Readout should report event id, object family, object id, and family-specific fi
 ## Scene And Runtime Behavior
 
 Use the normal scene -> FramePlan -> DRP2 path without restating the protocol; see
-[../../pipeline/FRAME_PLAN.md](../../pipeline/FRAME_PLAN.md) and [../../drp2/](../../drp2/).
+[../../pipeline/FRAME_PLAN.md](../../pipeline/FRAME_PLAN.md) and [../../drp2/](../../../drp2/).
 
 - Initial setup uploads static detector geometry and the selected event resources.
 - Event changes update only event-specific tracks, hits, calo, jets, MET, projections, and summary

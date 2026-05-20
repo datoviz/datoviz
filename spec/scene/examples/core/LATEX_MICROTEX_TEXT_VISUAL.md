@@ -101,7 +101,7 @@ The scene layer owns text-specific state: layout, math layout, font cache, glyph
 tracking, and visual-local text state. The DRP/runtime layer receives only normal resources and draw
 commands; see [../../pipeline/FRAME_PLAN.md](../../pipeline/FRAME_PLAN.md),
 [../../pipeline/RESOURCE_MODEL.md](../../pipeline/RESOURCE_MODEL.md), and
-[../../drp2/](../../drp2/).
+[../../drp2/](../../../drp2/).
 
 Dirty rules:
 

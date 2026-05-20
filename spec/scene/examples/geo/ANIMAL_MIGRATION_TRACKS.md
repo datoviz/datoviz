@@ -138,7 +138,7 @@ speed, heading, cumulative distance, movement state, and nearest stopover/cluste
 ## Scene And Runtime Behavior
 
 Use the normal scene pipeline; see [../../pipeline/FRAME_PLAN.md](../../pipeline/FRAME_PLAN.md) and
-[../../drp2/](../../drp2/).
+[../../drp2/](../../../drp2/).
 
 - Initial setup uploads trajectory paths, current markers, optional coastline/environment resources,
   and metric-panel geometry.

@@ -144,7 +144,7 @@ cumulative-count, or cross-section panel.
 ## Scene And Runtime Behavior
 
 Use the normal scene pipeline; see [../../pipeline/FRAME_PLAN.md](../../pipeline/FRAME_PLAN.md) and
-[../../drp2/](../../drp2/).
+[../../drp2/](../../../drp2/).
 
 - Initial setup uploads event positions/colors/sizes, surface plane/image, fault paths, and linked
   panel data.
