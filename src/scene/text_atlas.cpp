@@ -86,6 +86,7 @@
 #define DVZ_TEXT_SDF_CELL_GAP   2u
 #define DVZ_TEXT_SDF_ONEDGE     128u
 #define DVZ_TEXT_BITMAP_PADDING 1u
+#define DVZ_TEXT_ATLAS_DEFAULT_EM_PX 32.0f
 
 
 
@@ -102,7 +103,7 @@ struct DvzTextAtlasBuildSet
 
 
 static bool _text_atlas_codepoint_renderable(uint32_t codepoint);
-static float _text_sdf_pixel_height(float size_pts);
+static float _text_sdf_default_em_px(void);
 static bool _text_sdf_font_bytes(DvzFont* font);
 static bool _text_atlas_upload_rgba(
     const DvzFont* font, DvzTextAtlas* atlas, uint8_t* rgba, uint32_t width, uint32_t height);
@@ -174,7 +175,7 @@ static bool _text_msdf_build_atlas(
     for (msdf_atlas::GlyphGeometry& glyph : glyphs)
         glyph.edgeColoring(&msdfgen::edgeColoringInkTrap, max_corner_angle, 0);
 
-    float pixel_height = _text_sdf_pixel_height(font->size_pts);
+    float pixel_height = _text_sdf_default_em_px();
     msdf_atlas::TightAtlasPacker packer;
     packer.setDimensionsConstraint(msdf_atlas::DimensionsConstraint::SQUARE);
     packer.setMinimumScale((double)pixel_height);
@@ -666,19 +667,13 @@ static bool _text_atlas_contains_set(
 
 
 /**
- * Clamp the requested atlas font size to a practical SDF generation range.
+ * Return the default atlas em size for generated text atlases.
  *
- * @param size_pts requested font size in pixels/points
- * @return clamped atlas pixel height
+ * @return atlas em size in pixels
  */
-static float _text_sdf_pixel_height(float size_pts)
+static float _text_sdf_default_em_px(void)
 {
-    float pixel_height = size_pts > 0.0f ? size_pts : 32.0f;
-    if (pixel_height < 8.0f)
-        pixel_height = 8.0f;
-    if (pixel_height > 128.0f)
-        pixel_height = 128.0f;
-    return pixel_height;
+    return DVZ_TEXT_ATLAS_DEFAULT_EM_PX;
 }
 
 
@@ -1100,7 +1095,7 @@ static bool _text_ft_build_bitmap_atlas(
         return false;
     }
 
-    float pixel_height = _text_sdf_pixel_height(font->size_pts);
+    float pixel_height = _text_sdf_default_em_px();
     if (FT_Set_Pixel_Sizes(face, 0, (FT_UInt)pixel_height) != 0)
     {
         log_error("failed to set FreeType pixel size");
@@ -1282,7 +1277,7 @@ static bool _text_sdf_build_atlas(
     if (!_text_sdf_init_font(font, &info))
         return false;
 
-    const float pixel_height = _text_sdf_pixel_height(font->size_pts);
+    const float pixel_height = _text_sdf_default_em_px();
     const float scale = stbtt_ScaleForPixelHeight(&info, pixel_height);
     const uint32_t glyph_count = set->count;
     uint8_t* glyph_sdfs[DVZ_SCENE_TEXT_ATLAS_MAX_GLYPHS] = {};

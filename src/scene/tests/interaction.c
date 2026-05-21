@@ -299,7 +299,6 @@ int test_scene_text_annotation_bookkeeping(TstContext* suite, const TstCase* ite
             .path = "Demo.ttf",
             .family = "Demo",
             .style = "Regular",
-            .size_pts = 14.0f,
             .face_index = 2});
     ANN(font);
     AT(strcmp(font->path, "Demo.ttf") == 0);
@@ -347,7 +346,7 @@ int test_scene_text_annotation_bookkeeping(TstContext* suite, const TstCase* ite
             .text = "peak",
             .style = {
                 .font = font,
-                .size_pts = 12.0f,
+                .size_px = 12.0f,
                 .renderer = DVZ_TEXT_RENDERER_MSDF_ATLAS,
             },
             .placement = {
@@ -534,7 +533,7 @@ int test_scene_text_bitmap_visual_realization(TstContext* suite, const TstCase* 
         &(DvzLabelDesc){
             .text = "A",
             .style = {
-                .size_pts = 8.0f,
+                .size_px = 8.0f,
                 .renderer = DVZ_TEXT_RENDERER_SMALL_BITMAP_ATLAS,
                 .color = {255, 255, 255, 255},
             },
@@ -684,7 +683,7 @@ int test_scene_text_sdf_visual_realization(TstContext* suite, const TstCase* ite
         &(DvzLabelDesc){
             .text = "A",
             .style = {
-                .size_pts = 14.0f,
+                .size_px = 14.0f,
                 .renderer = DVZ_TEXT_RENDERER_MSDF_ATLAS,
             },
             .placement = {

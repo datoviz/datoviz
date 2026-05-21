@@ -535,7 +535,7 @@ static bool _axis_ensure_text_visual(DvzAxis* axis)
  * @param y item y coordinate in pixels
  * @param anchor_x text anchor x
  * @param anchor_y text anchor y
- * @param size text size in points
+ * @param size text size in pixels
  * @param color text color
  * @param angle text angle in radians
  */

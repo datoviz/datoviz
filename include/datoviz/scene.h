@@ -759,7 +759,7 @@ dvz_visual_attr_mutability(const DvzVisual* visual, const char* attr_name);
  *        per-item `"position"` (vec3f) + `"extent"` (vec2f) with optional `"tex_rect"`
  *        (vec4f) and `"anchor"` (vec2f)
  * text: string attribute `"text"` plus per-string `"position"` (vec3f pixels), optional
- *       `"anchor"` (vec2f), `"size"` (float points), `"color"` (RGBA8), `"angle"` (float radians)
+ *       `"anchor"` (vec2f), `"size"` (float pixels), `"color"` (RGBA8), `"angle"` (float radians)
  * glyph: `"position"` (vec3f anchor), `"bounds"` (vec4f local pixel bounds),
  *        `"texcoords"` (vec4f atlas UV bounds), `"color"` (RGBA8), `"angle"` (float radians)
  *

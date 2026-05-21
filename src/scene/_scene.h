@@ -479,7 +479,6 @@ struct DvzFont
     char path[512];
     char family[DVZ_SCENE_LABEL_SIZE];
     char style[DVZ_SCENE_LABEL_SIZE];
-    float size_pts;
     uint32_t face_index;
     uint32_t flags;
     uint64_t version;

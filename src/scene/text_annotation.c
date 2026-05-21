@@ -117,12 +117,10 @@ static const uint8_t _text_font_6x8[DVZ_TEXT_BITMAP_GLYPH_COUNT * 6] = {
 static float _text_style_size_px(const DvzTextStyle* style)
 {
     ANN(style);
-    float size_pts = style->size_pts;
-    if (size_pts <= 0.0f && style->font != NULL)
-        size_pts = style->font->size_pts;
-    if (size_pts <= 0.0f)
-        size_pts = 12.0f;
-    return size_pts;
+    float size_px = style->size_px;
+    if (size_px <= 0.0f)
+        size_px = 12.0f;
+    return size_px;
 }
 
 
@@ -186,7 +184,6 @@ static DvzFont* _text_default_sdf_font(DvzScene* scene)
         scene, &(DvzFontDesc){
                    .family = family,
                    .style = "Regular",
-                   .size_pts = 32.0f,
                });
 }
 
@@ -265,12 +262,10 @@ static void _text_style_color(const DvzTextStyle* style, uint8_t out_color[4])
 static uint32_t _text_bitmap_scale(const DvzTextStyle* style)
 {
     ANN(style);
-    float size_pts = style->size_pts;
-    if (size_pts <= 0 && style->font != NULL)
-        size_pts = style->font->size_pts;
-    if (size_pts <= 0)
-        size_pts = 12.0f;
-    uint32_t scale = (uint32_t)floorf(size_pts / 8.0f + 0.5f);
+    float size_px = style->size_px;
+    if (size_px <= 0)
+        size_px = 12.0f;
+    uint32_t scale = (uint32_t)floorf(size_px / 8.0f + 0.5f);
     if (scale == 0)
         scale = 1;
     if (scale > 32)
@@ -289,12 +284,10 @@ static uint32_t _text_bitmap_scale(const DvzTextStyle* style)
 static float _text_bitmap_layout_scale(const DvzTextStyle* style)
 {
     ANN(style);
-    float size_pts = style->size_pts;
-    if (size_pts <= 0 && style->font != NULL)
-        size_pts = style->font->size_pts;
-    if (size_pts <= 0)
-        size_pts = 12.0f;
-    float scale = size_pts / 8.0f;
+    float size_px = style->size_px;
+    if (size_px <= 0)
+        size_px = 12.0f;
+    float scale = size_px / 8.0f;
     if (scale < 0.25f)
         scale = 0.25f;
     if (scale > 32.0f)
@@ -609,16 +602,14 @@ static float _text_sdf_layout_scale(const DvzTextStyle* style, const DvzTextAtla
 {
     ANN(style);
     ANN(atlas);
-    float size_pts = style->size_pts;
-    if (size_pts <= 0.0f && style->font != NULL)
-        size_pts = style->font->size_pts;
-    if (size_pts <= 0.0f)
-        size_pts = atlas->pixel_height;
-    if (size_pts < 1.0f)
-        size_pts = 1.0f;
-    if (size_pts > 512.0f)
-        size_pts = 512.0f;
-    return atlas->pixel_height > 0.0f ? size_pts / atlas->pixel_height : 1.0f;
+    float size_px = style->size_px;
+    if (size_px <= 0.0f)
+        size_px = atlas->pixel_height;
+    if (size_px < 1.0f)
+        size_px = 1.0f;
+    if (size_px > 512.0f)
+        size_px = 512.0f;
+    return atlas->pixel_height > 0.0f ? size_px / atlas->pixel_height : 1.0f;
 }
 
 
@@ -1464,8 +1455,8 @@ static bool _text_visual_prepare(
 
     DvzTextRenderer renderer = visual->text.renderer;
     DvzTextStyle backend_style = {
-        .size_pts = size_attr != NULL && size_attr->data != NULL ? ((const float*)size_attr->data)[0] :
-                                                                   12.0f,
+        .size_px = size_attr != NULL && size_attr->data != NULL ? ((const float*)size_attr->data)[0] :
+                                                                  12.0f,
         .renderer = renderer,
     };
     DvzTextAtlasBackend backend = _text_renderer_backend(renderer, &backend_style);
@@ -1476,7 +1467,7 @@ static bool _text_visual_prepare(
     {
         DvzTextStyle atlas_style = {
             .font = NULL,
-            .size_pts = backend_style.size_pts,
+            .size_px = backend_style.size_px,
             .renderer = renderer,
         };
         DvzFont* font = _text_sdf_font(visual->scene, &atlas_style);
@@ -1575,7 +1566,7 @@ static bool _text_visual_prepare(
     for (uint32_t i = 0; i < count; i++)
     {
         DvzTextStyle style = {
-            .size_pts = sizes != NULL ? sizes[i] : 12.0f,
+            .size_px = sizes != NULL ? sizes[i] : 12.0f,
             .renderer = renderer,
             .color = {255, 255, 255, 255},
         };
@@ -1856,7 +1847,6 @@ DvzFont* dvz_font(DvzScene* scene, const DvzFontDesc* desc)
     DvzFont* font = &scene->fonts[scene->font_count++];
     dvz_memset(font, sizeof(DvzFont), 0, sizeof(DvzFont));
     font->scene = scene;
-    font->size_pts = desc->size_pts;
     font->face_index = desc->face_index;
     font->flags = desc->flags;
     font->version = 1;

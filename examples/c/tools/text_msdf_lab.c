@@ -69,7 +69,7 @@ typedef struct TextMsdfLabState
     TextLabSource sources[2];
     DvzAppWindow* host_win;
     char text[TEXT_MSDF_LAB_TEXT_MAX];
-    float size_pts;
+    float size_px;
     float angle;
     float color[4];
     int renderer_index[2];
@@ -143,10 +143,10 @@ static DvzTextRenderer selected_renderer(int index)
  * Resolve the expected atlas backend for a renderer and text size.
  *
  * @param renderer requested renderer
- * @param size_pts text size in points
+ * @param size_px text size in pixels
  * @return atlas backend
  */
-static DvzTextAtlasBackend renderer_backend(DvzTextRenderer renderer, float size_pts)
+static DvzTextAtlasBackend renderer_backend(DvzTextRenderer renderer, float size_px)
 {
     if (renderer == DVZ_TEXT_RENDERER_SMALL_BITMAP_ATLAS)
         return DVZ_TEXT_ATLAS_BACKEND_BUILTIN_BITMAP;
@@ -162,7 +162,7 @@ static DvzTextAtlasBackend renderer_backend(DvzTextRenderer renderer, float size
         return DVZ_TEXT_ATLAS_BACKEND_MSDF;
     if (renderer == DVZ_TEXT_RENDERER_AUTO)
     {
-        if (size_pts < 14.0f)
+        if (size_px < 14.0f)
         {
 #if defined(DVZ_HAS_FREETYPE) && DVZ_HAS_FREETYPE
             return DVZ_TEXT_ATLAS_BACKEND_FREETYPE_BITMAP;
@@ -226,17 +226,17 @@ static const char* atlas_encoding_name(DvzTextAtlasEncoding encoding)
  * Return the atlas generated for one source.
  *
  * @param source source state
- * @param size_pts text size in points
+ * @param size_px text size in pixels
  * @return atlas pointer, or NULL when unavailable
  */
-static DvzTextAtlas* source_atlas(const TextLabSource* source, float size_pts)
+static DvzTextAtlas* source_atlas(const TextLabSource* source, float size_px)
 {
     ANN(source);
     if (source->figure == NULL || source->figure->scene == NULL ||
         source->figure->scene->font_count == 0)
         return NULL;
     DvzFont* font = &source->figure->scene->fonts[0];
-    DvzTextAtlasBackend backend = renderer_backend(source->renderer, size_pts);
+    DvzTextAtlasBackend backend = renderer_backend(source->renderer, size_px);
     switch (backend)
     {
     case DVZ_TEXT_ATLAS_BACKEND_FREETYPE_BITMAP:
@@ -257,19 +257,19 @@ static DvzTextAtlas* source_atlas(const TextLabSource* source, float size_pts)
  *
  * @param prefix summary prefix
  * @param source source state
- * @param size_pts text size in points
+ * @param size_px text size in pixels
  * @param out output string
  * @param out_size output string capacity
  */
 static void atlas_summary_line(
-    const char* prefix, const TextLabSource* source, float size_pts, char* out, size_t out_size)
+    const char* prefix, const TextLabSource* source, float size_px, char* out, size_t out_size)
 {
     ANN(prefix);
     ANN(source);
     ANN(out);
     if (out_size == 0)
         return;
-    DvzTextAtlas* atlas = source_atlas(source, size_pts);
+    DvzTextAtlas* atlas = source_atlas(source, size_px);
     if (atlas == NULL)
     {
         dvz_snprintf(out, out_size, "%s atlas: none", prefix);
@@ -331,7 +331,7 @@ static void update_source_text(TextMsdfLabState* state, uint32_t source)
     const char* strings[1] = {state->text};
     float positions[1][3] = {{36.0f, 118.0f, 0.0f}};
     float anchors[1][2] = {{0.0f, 0.5f}};
-    float sizes[1] = {state->size_pts};
+    float sizes[1] = {state->size_px};
     float angles[1] = {state->angle};
     DvzColor colors[1] = {{color[0], color[1], color[2], color[3]}};
     DvzVisualDataUpdate updates[5] = {
@@ -721,9 +721,9 @@ static void draw_inspector(DvzGui* gui, TextMsdfLabState* state)
             line, sizeof(line), "right: %ux%u %s", state->sources[1].width,
             state->sources[1].height, state->sources[1].capture_valid ? "captured" : "empty");
         dvz_gui_text(gui, line);
-        atlas_summary_line("left", &state->sources[0], state->size_pts, line, sizeof(line));
+        atlas_summary_line("left", &state->sources[0], state->size_px, line, sizeof(line));
         dvz_gui_text(gui, line);
-        atlas_summary_line("right", &state->sources[1], state->size_pts, line, sizeof(line));
+        atlas_summary_line("right", &state->sources[1], state->size_px, line, sizeof(line));
         dvz_gui_text(gui, line);
 
         igBeginGroup();
@@ -793,7 +793,7 @@ static void gui_callback(DvzGui* gui, DvzAppWindow* win, void* user_data)
         changed |=
             dvz_gui_combo(gui, "Right renderer", &state->renderer_index[1], renderer_items, 4);
         changed |=
-            dvz_gui_slider_float_format(gui, "Size", &state->size_pts, 6.0f, 160.0f, "%.1f pt");
+            dvz_gui_slider_float_format(gui, "Size", &state->size_px, 6.0f, 160.0f, "%.1f px");
         changed |= dvz_gui_slider_float(gui, "Angle", &state->angle, -1.57f, 1.57f);
         changed |= dvz_gui_color_edit4(gui, "Color", state->color, 0);
         (void)dvz_gui_checkbox(gui, "Linked panzoom", &state->link_panzoom);
@@ -915,7 +915,7 @@ int main(int argc, char** argv)
     }
 
     TextMsdfLabState state = {0};
-    state.size_pts = 72.0f;
+    state.size_px = 72.0f;
     state.color[0] = 0.86f;
     state.color[1] = 0.93f;
     state.color[2] = 1.00f;

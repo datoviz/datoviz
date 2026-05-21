@@ -41,7 +41,6 @@
 #define TEXT_LAB_BOX_VERTICES (24u * TEXT_LAB_MAX_TICKS)
 #define TEXT_LAB_DEFAULT_TEXT_SIZE 32.0f
 #define TEXT_LAB_DEFAULT_TICK_SIZE 12.0f
-#define TEXT_LAB_SDF_FONT_SIZE 64.0f
 #define TEXT_LAB_SDF_FONT_FAMILY "__datoviz_default_sdf__"
 
 
@@ -72,8 +71,8 @@ typedef struct TextLabState
     DvzVisual* boxes;
     uint32_t figure_width;
     uint32_t figure_height;
-    float size_pts;
-    float tick_size_pts;
+    float size_px;
+    float tick_size_px;
     float angle;
     float offset_x;
     float offset_y;
@@ -538,14 +537,14 @@ static void set_box_items(DvzVisual* boxes, const DvzVisual* text_visual)
  * @param strings text strings
  * @param count number of text strings
  * @param positions figure-pixel text positions
- * @param size_pts text size in points
+ * @param size_px text size in pixels
  * @param color text color
  * @param text_anchor normalized text-box anchor
  * @param angles per-string angles, or NULL for zero
  */
 static void set_text_items(
     DvzVisual* visual, const char* const* strings, uint32_t count, float positions[][3],
-    float size_pts, const DvzColor color, const float text_anchor[2], const float* angles)
+    float size_px, const DvzColor color, const float text_anchor[2], const float* angles)
 {
     ANN(visual);
     ANN(strings);
@@ -559,7 +558,7 @@ static void set_text_items(
     DvzColor colors[TEXT_LAB_MAX_TICKS] = {0};
     for (uint32_t i = 0; i < count && i < TEXT_LAB_MAX_TICKS; i++)
     {
-        sizes[i] = size_pts;
+        sizes[i] = size_px;
         text_anchors[i][0] = text_anchor[0];
         text_anchors[i][1] = text_anchor[1];
         angle_values[i] = angles != NULL ? angles[i] : 0.0f;
@@ -656,7 +655,7 @@ static void update_text_scene(TextLabState* state)
             positions[i][2] = 0.0f;
         }
         set_text_items(
-            state->ticks, strings, tick_count, positions, state->tick_size_pts, color, text_anchor,
+            state->ticks, strings, tick_count, positions, state->tick_size_px, color, text_anchor,
             NULL);
         box_source = state->ticks;
     }
@@ -667,7 +666,7 @@ static void update_text_scene(TextLabState* state)
             {0.5f * width - 180.0f, 0.5f * height - 20.0f, 0.0f},
         };
         set_text_items(
-            state->multiline, &multiline_string, 1, multiline_pos, state->size_pts, color,
+            state->multiline, &multiline_string, 1, multiline_pos, state->size_px, color,
             text_anchor, NULL);
         crosshair_positions[0][0] = multiline_pos[0][0];
         crosshair_positions[0][1] = multiline_pos[0][1];
@@ -679,7 +678,7 @@ static void update_text_scene(TextLabState* state)
     {
         sample_string = mode_sample_text(state->mode);
         set_text_items(
-            state->sample, &sample_string, 1, sample_pos, state->size_pts, color, text_anchor,
+            state->sample, &sample_string, 1, sample_pos, state->size_px, color, text_anchor,
             sample_angle);
         crosshair_positions[0][0] = sample_pos[0][0];
         crosshair_positions[0][1] = sample_pos[0][1];
@@ -714,8 +713,8 @@ static void update_text_scene(TextLabState* state)
 static void reset_text_state(TextLabState* state)
 {
     ANN(state);
-    state->size_pts = TEXT_LAB_DEFAULT_TEXT_SIZE;
-    state->tick_size_pts = TEXT_LAB_DEFAULT_TICK_SIZE;
+    state->size_px = TEXT_LAB_DEFAULT_TEXT_SIZE;
+    state->tick_size_px = TEXT_LAB_DEFAULT_TICK_SIZE;
     state->angle = 0.0f;
     state->offset_x = 0.0f;
     state->offset_y = 0.0f;
@@ -780,12 +779,12 @@ static void gui_callback(DvzGui* gui, DvzAppWindow* win, void* user_data)
         if (state->mode == TEXT_LAB_MODE_SAMPLE || state->mode == TEXT_LAB_MODE_UTF8)
         {
             changed |= dvz_gui_slider_float_format(
-                gui, "Text size", &state->size_pts, 6.0f, 64.0f, "%.1f pt");
+                gui, "Text size", &state->size_px, 6.0f, 64.0f, "%.1f px");
         }
         else if (state->mode == TEXT_LAB_MODE_MULTILINE)
         {
             changed |= dvz_gui_slider_float_format(
-                gui, "Multiline text size", &state->size_pts, 6.0f, 64.0f, "%.1f pt");
+                gui, "Multiline text size", &state->size_px, 6.0f, 64.0f, "%.1f px");
         }
         if (state->mode == TEXT_LAB_MODE_SAMPLE || state->mode == TEXT_LAB_MODE_UTF8)
         {
@@ -802,7 +801,7 @@ static void gui_callback(DvzGui* gui, DvzAppWindow* win, void* user_data)
                 gui, "Tick count", &state->tick_count_value, 2.0f, (float)TEXT_LAB_MAX_TICKS,
                 "%.0f");
             changed |= dvz_gui_slider_float_format(
-                gui, "Tick size", &state->tick_size_pts, 5.0f, 18.0f, "%.1f pt");
+                gui, "Tick size", &state->tick_size_px, 5.0f, 18.0f, "%.1f px");
         }
         dvz_gui_separator_text(gui, "Appearance");
         changed |= dvz_gui_color_edit4(gui, "Text color", state->color, 0);
@@ -880,12 +879,11 @@ int main(int argc, char** argv)
         return 1;
     }
 
-    /* Seed the retained-text default SDF/MSDF font at a higher atlas resolution for inspection. */
+    /* Seed the retained-text default SDF/MSDF font for inspection. */
     DvzFont* font = dvz_font(
         scene, &(DvzFontDesc){
                    .family = TEXT_LAB_SDF_FONT_FAMILY,
                    .style = "Regular",
-                   .size_pts = TEXT_LAB_SDF_FONT_SIZE,
                });
     if (font == NULL)
     {
