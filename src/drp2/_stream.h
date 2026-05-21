@@ -170,7 +170,8 @@ struct DvzDrp2Command
             uint64_t buffer_id;
             uint64_t offset;
             uint64_t size;
-            const void* data_raw;  /* in-process path: borrowed pointer, never freed */
+            void* data_raw;        /* in-process path: copied bytes */
+            bool data_raw_owned;   /* whether data_raw is owned directly by this command */
             char* data_base64;     /* JSON path: heap-allocated, freed by stream_destroy */
         } write_buffer;
         struct

@@ -786,11 +786,8 @@ DVZ_EXPORT bool dvz_drp2_stream_write_buffer(
  * point over dvz_drp2_stream_write_buffer (which takes a pre-encoded base64
  * string and is intended for JSON wire-loading paths).
  *
- * IMPORTANT (lifetime): `data` is borrowed, NOT copied. The caller MUST keep
- * the buffer alive and unchanged from this call until the stream is executed
- * (or destroyed unused). Modifying or freeing `data` between emit and execute
- * is undefined behavior. The base64 string is computed lazily, only if the
- * stream is later serialized to JSON.
+ * The stream owns a copy of `data`. The base64 string is computed lazily, only
+ * if the stream is later serialized to JSON.
  *
  * size==0 is a valid WebGPU-shaped no-op: returns true without recording a
  * command and does not retain `data` (which may legitimately be NULL).

@@ -524,6 +524,7 @@ static bool _recording_command_copy_payloads(
     if (source->type == DVZ_DRP2_COMMAND_WRITE_BUFFER)
     {
         command->u.write_buffer.data_raw = NULL;
+        command->u.write_buffer.data_raw_owned = false;
         command->u.write_buffer.data_base64 = NULL;
         if (source->u.write_buffer.data_base64 != NULL)
         {
@@ -1991,6 +1992,7 @@ static bool _recording_attach_payload(
     {
     case DVZ_DRP2_COMMAND_WRITE_BUFFER:
         command->u.write_buffer.data_raw = payload;
+        command->u.write_buffer.data_raw_owned = false;
         if (_recording_owner_add(owner, payload))
             return true;
         command->u.write_buffer.data_raw = NULL;

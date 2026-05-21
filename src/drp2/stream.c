@@ -176,7 +176,11 @@ void dvz_drp2_stream_destroy(DvzDrp2CommandStream* stream)
     {
         DvzDrp2Command* cmd = &stream->commands[i];
         if (cmd->type == DVZ_DRP2_COMMAND_WRITE_BUFFER)
+        {
+            if (cmd->u.write_buffer.data_raw_owned)
+                dvz_free(cmd->u.write_buffer.data_raw);
             dvz_free(cmd->u.write_buffer.data_base64);
+        }
         else if (cmd->type == DVZ_DRP2_COMMAND_WRITE_TEXTURE)
             dvz_free(cmd->u.write_texture.data_base64);
         else if (cmd->type == DVZ_DRP2_COMMAND_CREATE_SHADER_MODULE)
@@ -2462,18 +2466,26 @@ bool dvz_drp2_stream_write_buffer_bytes(
     /* WebGPU-shaped: size==0 is a valid no-op that does not need to be recorded. */
     if (size == 0)
         return true;
-    if (data == NULL)
+    if (data == NULL || size > SIZE_MAX)
         return false;
 
     DvzDrp2Command* command = _append_command(stream, DVZ_DRP2_COMMAND_WRITE_BUFFER);
     if (command == NULL)
         return false;
-    command->type                       = DVZ_DRP2_COMMAND_WRITE_BUFFER;
-    command->u.write_buffer.buffer_id   = buffer_id;
-    command->u.write_buffer.offset      = offset;
-    command->u.write_buffer.size        = size;
-    command->u.write_buffer.data_raw    = data; /* borrowed; caller keeps alive */
-    command->u.write_buffer.data_base64 = NULL; /* populated only for JSON serialization */
+    void* data_copy = dvz_malloc((size_t)size);
+    if (data_copy == NULL)
+    {
+        stream->count--;
+        return false;
+    }
+    dvz_memcpy(data_copy, (size_t)size, data, (size_t)size);
+    command->type                          = DVZ_DRP2_COMMAND_WRITE_BUFFER;
+    command->u.write_buffer.buffer_id      = buffer_id;
+    command->u.write_buffer.offset         = offset;
+    command->u.write_buffer.size           = size;
+    command->u.write_buffer.data_raw       = data_copy;
+    command->u.write_buffer.data_raw_owned = true;
+    command->u.write_buffer.data_base64    = NULL; /* populated only for JSON serialization */
     return true;
 }
 

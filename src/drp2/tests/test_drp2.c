@@ -4980,15 +4980,18 @@ int test_drp2_write_buffer_bytes_uses_data_raw(TstContext* suite, const TstCase*
     DvzDrp2CommandStream* stream = dvz_drp2_stream();
     ANN(stream);
 
-    static const uint8_t payload[8] = {1, 2, 3, 4, 5, 6, 7, 8};
+    uint8_t payload[8] = {1, 2, 3, 4, 5, 6, 7, 8};
     AT(dvz_drp2_stream_write_buffer_bytes(stream, 1, 0, sizeof(payload), payload));
+    payload[0] = 42;
     AT(dvz_drp2_stream_count(stream) == 1);
 
     const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream, 0);
     ANN(cmd);
     AT(cmd->type == DVZ_DRP2_COMMAND_WRITE_BUFFER);
-    /* The in-process path must store the raw pointer, NOT encode to base64. */
-    AT(cmd->u.write_buffer.data_raw == (const void*)payload);
+    /* The in-process path keeps copied raw bytes and still avoids eager base64 encoding. */
+    AT(cmd->u.write_buffer.data_raw != (void*)payload);
+    const uint8_t expected[8] = {1, 2, 3, 4, 5, 6, 7, 8};
+    AT(memcmp(cmd->u.write_buffer.data_raw, expected, sizeof(expected)) == 0);
     AT(cmd->u.write_buffer.data_base64 == NULL);
 
     dvz_drp2_stream_destroy(stream);
