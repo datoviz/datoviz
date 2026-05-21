@@ -520,18 +520,19 @@ static bool _resolve_glyph_bind_group(
     if (bind->glyph_texture_id == 0)
         return false;
 
-    float pixel_range = bind->glyph_pixel_range > 0.0f ? bind->glyph_pixel_range : 4.0f;
+    float distance_range_px =
+        bind->glyph_distance_range_px > 0.0f ? bind->glyph_distance_range_px : 4.0f;
     uint32_t encoding = bind->glyph_atlas_encoding;
-    uint32_t pixel_range_milli = (uint32_t)(pixel_range * 1000.0f + 0.5f);
+    uint32_t distance_range_milli = (uint32_t)(distance_range_px * 1000.0f + 0.5f);
 
     bool is_new = false;
     char params_buf_key[96], bg_key[128];
     dvz_snprintf(
         params_buf_key, sizeof(params_buf_key), "_buf_glyph_params_%" PRIu64 "_e%u_r%u",
-        bind->glyph_texture_id, encoding, pixel_range_milli);
+        bind->glyph_texture_id, encoding, distance_range_milli);
     dvz_snprintf(
         bg_key, sizeof(bg_key), "_bg_glyph_%" PRIu64 "_e%u_r%u", bind->glyph_texture_id,
-        encoding, pixel_range_milli);
+        encoding, distance_range_milli);
 
     uint32_t usage = DVZ_DRP2_BUFFER_USAGE_UNIFORM | DVZ_DRP2_BUFFER_USAGE_MAP_WRITE |
                      DVZ_DRP2_BUFFER_USAGE_COPY_DST;
@@ -574,7 +575,7 @@ static bool _resolve_glyph_bind_group(
     }
 
     DvzSceneGlyphUniform uniform = {0};
-    uniform.params[0] = pixel_range;
+    uniform.params[0] = distance_range_px;
     uniform.params[1] = (float)encoding;
     if (!dvz_drp2_stream_write_buffer_bytes(
             stream, params_buf_id, 0, sizeof(DvzSceneGlyphUniform), &uniform))

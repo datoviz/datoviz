@@ -3154,7 +3154,7 @@ DvzVisual* dvz_glyph(DvzScene* scene, uint32_t flags)
     {
         visual->topology = DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
         visual->glyph_atlas_encoding = DVZ_TEXT_ATLAS_ENCODING_MSDF_RGB;
-        visual->glyph_pixel_range = 4.0f;
+        visual->glyph_distance_range_px = 4.0f;
     }
     return visual;
 }

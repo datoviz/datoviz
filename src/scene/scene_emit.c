@@ -1342,7 +1342,7 @@ bool _scene_visual_frame_plan_metadata(
     metadata->point_style_enabled =
         visual->type == DVZ_VISUAL_TYPE_POINT && visual->material.point_style_enabled;
     metadata->glyph_atlas_encoding = (uint32_t)visual->glyph_atlas_encoding;
-    metadata->glyph_pixel_range = visual->glyph_pixel_range;
+    metadata->glyph_distance_range_px = visual->glyph_distance_range_px;
     metadata->scale_index = _scene_scale_index(figure->scene, visual->scale);
     metadata->scene_occluder = visual->scene_occluder;
     metadata->scene_occluded = visual->scene_occluded;

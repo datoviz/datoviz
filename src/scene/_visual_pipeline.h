@@ -73,7 +73,7 @@ typedef struct DvzSceneVisualDesc
     uint64_t material_buffer_id;
     uint64_t image_texture_id;
     uint32_t glyph_atlas_encoding;
-    float glyph_pixel_range;
+    float glyph_distance_range_px;
     uint64_t volume_texture_id;
     uint64_t volume_transfer_texture_id;
     uint32_t volume_visual_index;
@@ -183,7 +183,7 @@ typedef struct DvzSceneVisualBindDesc
     bool uses_glyph_set1;
     uint64_t glyph_texture_id;
     uint32_t glyph_atlas_encoding;
-    float glyph_pixel_range;
+    float glyph_distance_range_px;
     bool uses_volume_set1;
     uint64_t volume_texture_id;
     uint64_t volume_transfer_texture_id;

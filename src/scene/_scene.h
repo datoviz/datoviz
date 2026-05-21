@@ -881,7 +881,7 @@ struct DvzVisual
     DvzPathState           path;
     DvzTextVisualState     text;
     DvzTextAtlasEncoding   glyph_atlas_encoding;
-    float                  glyph_pixel_range;
+    float                  glyph_distance_range_px;
     DvzImageGpuCache       image_gpu;
     DvzSphereMode          sphere_mode;
     bool                   mesh_default_color;

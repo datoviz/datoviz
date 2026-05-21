@@ -638,8 +638,8 @@ static bool _scene_visual_desc_from_metadata(
         if (meta->visual_type == DVZ_VISUAL_TYPE_GLYPH)
         {
             out->glyph_atlas_encoding = meta->glyph_atlas_encoding;
-            out->glyph_pixel_range =
-                meta->glyph_pixel_range > 0.0f ? meta->glyph_pixel_range : 4.0f;
+            out->glyph_distance_range_px =
+                meta->glyph_distance_range_px > 0.0f ? meta->glyph_distance_range_px : 4.0f;
         }
         out->topology = _resource_topology(&emitter->resources, pos_buf);
         if (out->topology == UINT32_MAX)
@@ -2043,8 +2043,8 @@ bool _scene_visual_bind_desc(
         out->uses_glyph_set1 = caps.uses_image_set;
         out->glyph_texture_id = visual->image_texture_id;
         out->glyph_atlas_encoding = visual->glyph_atlas_encoding;
-        out->glyph_pixel_range =
-            visual->glyph_pixel_range > 0.0f ? visual->glyph_pixel_range : 4.0f;
+        out->glyph_distance_range_px =
+            visual->glyph_distance_range_px > 0.0f ? visual->glyph_distance_range_px : 4.0f;
         return true;
 
     case DVZ_SCENE_VISUAL_DESC_VOLUME:

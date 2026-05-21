@@ -304,7 +304,7 @@ typedef struct DvzFramePlanVisualMeta
     DvzVolumeOcclusionDesc volume_occlusion;
     DvzVolumeState volume_state;
     uint32_t glyph_atlas_encoding;
-    float glyph_pixel_range;
+    float glyph_distance_range_px;
     bool has_draw_contract;
     char draw_contract_id[DVZ_SCENE_LABEL_SIZE];
     uint32_t draw_depth_policy;
