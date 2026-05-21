@@ -290,6 +290,30 @@ static bool _scene_shader_desc_primitive(
 
     bool lit = _shader_features_has(features, DVZ_SCENE_SHADER_FEATURE_LIGHTING);
     bool instanced = _shader_features_has(features, DVZ_SCENE_SHADER_FEATURE_INSTANCING);
+    bool picking = _shader_features_has(features, DVZ_SCENE_SHADER_FEATURE_PICKING);
+    if (picking)
+    {
+        dvz_snprintf(
+            out->vertex_key, sizeof(out->vertex_key), "_vs_prim_pick%s%s",
+            instanced ? "_inst" : "", format_tag);
+        dvz_snprintf(out->fragment_key, sizeof(out->fragment_key), "_fs_prim_pick%s", format_tag);
+        dvz_snprintf(
+            out->pipeline_key, sizeof(out->pipeline_key), "_pipe_prim_pick_t%u%s%s",
+            features->topology, instanced ? "_inst" : "", format_tag);
+        _scene_shader_desc_set_builtin(out, DVZ_SCENE_BUILTIN_SHADER_PRIMITIVE_PICK);
+        if (instanced)
+        {
+            out->vertex_glsl =
+                _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_PRIMITIVE_INSTANCED, false);
+            out->vertex_wgsl =
+                _builtin_shader_wgsl(DVZ_SCENE_BUILTIN_SHADER_PRIMITIVE_INSTANCED, false);
+            out->vertex_spirv_key = "primitive_instanced_vert";
+        }
+        _scene_shader_desc_set_identity(
+            out, "scene.primitive", instanced ? "pick_instanced" : "pick");
+        out->fragment_spirv_key = "primitive_pick_frag";
+        return true;
+    }
     if (_shader_features_has(features, DVZ_SCENE_SHADER_FEATURE_WBOIT_ACCUM))
     {
         DvzSceneBuiltinShader shader =

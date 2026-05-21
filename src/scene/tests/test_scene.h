@@ -321,6 +321,8 @@ int test_scene_sphere_pick_resolves_item(TstContext* suite, const TstCase* item)
 
 int test_scene_stroke_pick_resolves_item(TstContext* suite, const TstCase* item);
 
+int test_scene_primitive_pick_resolves_item(TstContext* suite, const TstCase* item);
+
 int test_scene_process_requests_preserves_caller_runtime(TstContext* suite, const TstCase* item);
 
 int test_scene_image_probe_reuses_retained_request_executor(TstContext* suite, const TstCase* item);

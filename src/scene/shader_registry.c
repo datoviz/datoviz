@@ -148,6 +148,8 @@ static const char* _builtin_shader_resource_key(DvzSceneBuiltinShader shader, bo
         return fragment ? "primitive_frag" : "primitive_vert";
     case DVZ_SCENE_BUILTIN_SHADER_PRIMITIVE_INSTANCED:
         return fragment ? "primitive_frag" : "primitive_instanced_vert";
+    case DVZ_SCENE_BUILTIN_SHADER_PRIMITIVE_PICK:
+        return fragment ? "primitive_pick_frag" : "primitive_vert";
     case DVZ_SCENE_BUILTIN_SHADER_PRIMITIVE_LIT:
         return fragment ? "primitive_lit_frag" : "primitive_lit_vert";
     case DVZ_SCENE_BUILTIN_SHADER_PRIMITIVE_LIT_INSTANCED:

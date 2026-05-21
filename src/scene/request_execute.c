@@ -166,6 +166,9 @@ static bool _scene_pick_request_has_sphere_candidate(
 static bool _scene_pick_request_has_stroke_candidate(
     const DvzFigure* figure, const DvzPendingPickRequest* pending);
 
+static bool _scene_pick_request_has_primitive_candidate(
+    const DvzFigure* figure, const DvzPendingPickRequest* pending);
+
 static bool _scene_pick_request_needs_runtime(
     const DvzFigure* figure, const DvzPendingPickRequest* pending);
 
@@ -179,6 +182,11 @@ static bool _scene_stroke_pick_plan(
     const DvzPendingPickRequest* pending, const vec2 request_ndc, DvzSceneProbePlan* out_plan,
     uint32_t* out_target_width, uint32_t* out_target_height);
 
+static bool _scene_primitive_pick_plan(
+    const DvzFigure* figure, const DvzPanel* panel, DvzVisual* visual,
+    const DvzPendingPickRequest* pending, const vec2 request_ndc, DvzSceneProbePlan* out_plan,
+    uint32_t* out_target_width, uint32_t* out_target_height);
+
 static bool _scene_process_point_pick_request(
     DvzFigure* figure, DvzSceneRequestExecutor* executor, const DvzCapabilitySnapshot* caps,
     const DvzPendingPickRequest* pending);
@@ -188,6 +196,10 @@ static bool _scene_process_sphere_pick_request(
     const DvzPendingPickRequest* pending);
 
 static bool _scene_process_stroke_pick_request(
+    DvzFigure* figure, DvzSceneRequestExecutor* executor, const DvzCapabilitySnapshot* caps,
+    const DvzPendingPickRequest* pending);
+
+static bool _scene_process_primitive_pick_request(
     DvzFigure* figure, DvzSceneRequestExecutor* executor, const DvzCapabilitySnapshot* caps,
     const DvzPendingPickRequest* pending);
 
@@ -226,6 +238,12 @@ static const DvzScenePickResolver PICK_RESOLVERS[] = {
         .needs_runtime = true,
         .has_candidate = _scene_pick_request_has_stroke_candidate,
         .process = _scene_process_stroke_pick_request,
+    },
+    {
+        .name = "primitive",
+        .needs_runtime = true,
+        .has_candidate = _scene_pick_request_has_primitive_candidate,
+        .process = _scene_process_primitive_pick_request,
     },
 };
 
@@ -1313,6 +1331,50 @@ static bool _scene_pick_request_has_stroke_candidate(
 
 
 /**
+ * Return whether one pending pick has a visible primitive-pipeline candidate.
+ *
+ * @param figure figure whose request queue is being processed
+ * @param pending pending pick request
+ * @return true when a matching primitive, mesh, or non-stroked path visual exists
+ */
+static bool _scene_pick_request_has_primitive_candidate(
+    const DvzFigure* figure, const DvzPendingPickRequest* pending)
+{
+    ANN(figure);
+    ANN(pending);
+    if (pending->panel == NULL || pending->panel->figure != figure)
+        return false;
+    if (!_scene_pick_target_supported(pending->request.target))
+        return false;
+
+    const DvzPanel* panel = pending->panel;
+    for (uint32_t i = 0; i < panel->visual_count; i++)
+    {
+        const DvzVisual* visual = panel->visuals[i].visual;
+        if (visual == NULL || !visual->visible)
+            continue;
+        bool primitive_like = visual->type == DVZ_VISUAL_TYPE_PRIMITIVE ||
+                              visual->type == DVZ_VISUAL_TYPE_MESH ||
+                              visual->type == DVZ_VISUAL_TYPE_PATH;
+        if (!primitive_like)
+            continue;
+        if (
+            visual->type == DVZ_VISUAL_TYPE_PATH &&
+            _scene_pick_visual_has_attr_data(visual, "line_width"))
+        {
+            continue;
+        }
+        if ((visual->pick_capabilities & DVZ_PICK_CAPABILITY_ITEM) == 0)
+            continue;
+        if (panel->visuals[i].controller_mode == DVZ_CONTROLLER_FIXED)
+            continue;
+        return true;
+    }
+    return false;
+}
+
+
+/**
  * Return whether one pending pick needs an auxiliary request runtime.
  *
  * @param figure figure whose request queue is being processed
@@ -1456,15 +1518,16 @@ static void _scene_pick_plan_apply_render_state(
  * Mark the most recent upload node as an index buffer.
  *
  * @param plan the frame plan
+ * @param stride index item stride in bytes
  */
-static void _scene_pick_mark_last_upload_index(DvzFramePlan* plan)
+static void _scene_pick_mark_last_upload_index(DvzFramePlan* plan, uint32_t stride)
 {
     ANN(plan);
     DvzFramePlanNode* node = plan->count > 0 ? &plan->nodes[plan->count - 1] : NULL;
     if (node == NULL || node->type != DVZ_FRAME_PLAN_NODE_UPLOAD)
         return;
     node->u.upload.buffer_usage = DVZ_DRP2_BUFFER_USAGE_COPY_DST | DVZ_DRP2_BUFFER_USAGE_INDEX;
-    node->u.upload.item_stride = sizeof(uint32_t);
+    node->u.upload.item_stride = stride;
 }
 
 
@@ -1525,6 +1588,56 @@ static float _scene_pick_path_point_distance(const float* position, uint64_t i0,
     float dy = position[3 * i1 + 1] - position[3 * i0 + 1];
     float dz = position[3 * i1 + 2] - position[3 * i0 + 2];
     return sqrtf(dx * dx + dy * dy + dz * dz);
+}
+
+
+/**
+ * Return one source vertex index from either direct or indexed visual geometry.
+ *
+ * @param visual visual carrying an optional index buffer binding
+ * @param draw_index draw-order vertex index
+ * @param vertex_count source vertex count
+ * @param out_source_index output source vertex index
+ * @return true when the source index is valid
+ */
+static bool _scene_pick_source_vertex_index(
+    const DvzVisual* visual, uint64_t draw_index, uint64_t vertex_count,
+    uint64_t* out_source_index)
+{
+    ANN(visual);
+    ANN(out_source_index);
+    uint64_t source_index = draw_index;
+    if (visual->buffer != NULL && visual->buffer->data != NULL)
+    {
+        uint32_t stride = visual->buffer->desc.stride;
+        uint64_t offset = 0;
+        if (
+            stride == 0 ||
+            _dvz_mul_u64_overflows(draw_index, stride, &offset) ||
+            offset + stride > visual->buffer->desc.byte_size)
+        {
+            return false;
+        }
+        const uint8_t* data = (const uint8_t*)visual->buffer->data + offset;
+        if (stride == sizeof(uint16_t))
+        {
+            uint16_t index = 0;
+            dvz_memcpy(&index, sizeof(index), data, sizeof(index));
+            source_index = (uint64_t)index;
+        }
+        else if (stride == sizeof(uint32_t))
+        {
+            uint32_t index = 0;
+            dvz_memcpy(&index, sizeof(index), data, sizeof(index));
+            source_index = (uint64_t)index;
+        }
+        else
+            return false;
+    }
+    if (source_index >= vertex_count)
+        return false;
+    *out_source_index = source_index;
+    return true;
 }
 
 
@@ -2012,7 +2125,7 @@ static bool _scene_stroke_pick_plan(
     ok = ok && dvz_frame_plan_upload_bytes(
                    plan, "pick0_index", 0, index_bytes, "index", out_plan->pick_indices);
     if (ok)
-        _scene_pick_mark_last_upload_index(plan);
+        _scene_pick_mark_last_upload_index(plan, sizeof(uint32_t));
     ok = ok && dvz_frame_plan_upload_bytes(
                    plan, "pick0_material", 0, sizeof(DvzSceneMaterialParams), "material_params",
                    &visual->material_params);
@@ -2056,6 +2169,236 @@ static bool _scene_stroke_pick_plan(
     {
         log_error(
             "stroke pick request %" PRIu64 " failed to assemble the GPU readback plan",
+            pending->request.request_id);
+        _scene_probe_plan_destroy(out_plan);
+        return false;
+    }
+
+    *out_target_width = target_width;
+    *out_target_height = target_height;
+    return true;
+}
+
+
+/**
+ * Build a synthetic GPU readback frame plan for one primitive-pipeline pick request.
+ *
+ * @param figure the parent figure
+ * @param panel the panel receiving the request
+ * @param visual the primitive, mesh, or non-stroked path visual to pick
+ * @param pending the pending pick request
+ * @param request_ndc the request coordinate in panel-local NDC
+ * @param out_plan the output plan wrapper
+ * @param out_target_width output offscreen target width
+ * @param out_target_height output offscreen target height
+ * @return true when the plan was assembled
+ */
+static bool _scene_primitive_pick_plan(
+    const DvzFigure* figure, const DvzPanel* panel, DvzVisual* visual,
+    const DvzPendingPickRequest* pending, const vec2 request_ndc, DvzSceneProbePlan* out_plan,
+    uint32_t* out_target_width, uint32_t* out_target_height)
+{
+    ANN(figure);
+    ANN(panel);
+    ANN(visual);
+    ANN(pending);
+    ANN(request_ndc);
+    ANN(out_plan);
+    ANN(out_target_width);
+    ANN(out_target_height);
+
+    int pos_idx = _attr_index(visual, "position");
+    if (pos_idx < 0)
+        return false;
+    DvzVisualAttr* pos_attr = &visual->attrs[pos_idx];
+    if (pos_attr->data == NULL || pos_attr->item_count == 0 ||
+        pos_attr->item_size != sizeof(vec3))
+    {
+        return false;
+    }
+    uint64_t vertex_count = pos_attr->item_count;
+
+    uint64_t source_index_count = vertex_count;
+    if (visual->buffer != NULL && visual->buffer->data != NULL &&
+        visual->buffer->desc.byte_size > 0 && visual->buffer->desc.stride > 0)
+    {
+        uint32_t stride = visual->buffer->desc.stride;
+        if (stride != sizeof(uint16_t) && stride != sizeof(uint32_t))
+        {
+            log_error("primitive pick request index stride must be 16-bit or 32-bit");
+            return false;
+        }
+        if (visual->buffer->desc.byte_size % stride != 0)
+        {
+            log_error("primitive pick request index buffer size is not stride-aligned");
+            return false;
+        }
+        source_index_count = visual->buffer->desc.byte_size / stride;
+    }
+
+    uint64_t primitive_count = 0;
+    uint64_t draw_vertex_count = 0;
+    uint32_t draw_topology = (uint32_t)visual->topology;
+    switch (visual->topology)
+    {
+    case DVZ_PRIMITIVE_TOPOLOGY_POINT_LIST:
+        primitive_count = source_index_count;
+        draw_vertex_count = primitive_count;
+        draw_topology = VK_PRIMITIVE_TOPOLOGY_POINT_LIST;
+        break;
+    case DVZ_PRIMITIVE_TOPOLOGY_LINE_LIST:
+        primitive_count = source_index_count / 2;
+        draw_vertex_count = primitive_count * 2;
+        draw_topology = VK_PRIMITIVE_TOPOLOGY_LINE_LIST;
+        break;
+    case DVZ_PRIMITIVE_TOPOLOGY_LINE_STRIP:
+        if (source_index_count < 2)
+            return false;
+        primitive_count = source_index_count - 1;
+        draw_vertex_count = primitive_count * 2;
+        draw_topology = VK_PRIMITIVE_TOPOLOGY_LINE_LIST;
+        break;
+    case DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST:
+        primitive_count = source_index_count / 3;
+        draw_vertex_count = primitive_count * 3;
+        draw_topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+        break;
+    case DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP:
+    case DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_FAN:
+        if (source_index_count < 3)
+            return false;
+        primitive_count = source_index_count - 2;
+        draw_vertex_count = primitive_count * 3;
+        draw_topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+        break;
+    default:
+        return false;
+    }
+    if (primitive_count == 0 || draw_vertex_count == 0 || draw_vertex_count > UINT32_MAX)
+        return false;
+
+    if (!_scene_pick_alloc(
+            (void**)&out_plan->probe_positions, draw_vertex_count, sizeof(vec3), "primitive") ||
+        !_scene_pick_alloc(
+            (void**)&out_plan->pick_colors, draw_vertex_count, sizeof(DvzColor), "primitive"))
+    {
+        _scene_probe_plan_destroy(out_plan);
+        return false;
+    }
+
+    const float* position = (const float*)pos_attr->data;
+    for (uint64_t prim = 0; prim < primitive_count; prim++)
+    {
+        uint64_t draw_indices[3] = {0, 0, 0};
+        uint32_t prim_vertex_count = 1;
+        switch (visual->topology)
+        {
+        case DVZ_PRIMITIVE_TOPOLOGY_POINT_LIST:
+            draw_indices[0] = prim;
+            prim_vertex_count = 1;
+            break;
+        case DVZ_PRIMITIVE_TOPOLOGY_LINE_LIST:
+            draw_indices[0] = 2 * prim + 0;
+            draw_indices[1] = 2 * prim + 1;
+            prim_vertex_count = 2;
+            break;
+        case DVZ_PRIMITIVE_TOPOLOGY_LINE_STRIP:
+            draw_indices[0] = prim;
+            draw_indices[1] = prim + 1;
+            prim_vertex_count = 2;
+            break;
+        case DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST:
+            draw_indices[0] = 3 * prim + 0;
+            draw_indices[1] = 3 * prim + 1;
+            draw_indices[2] = 3 * prim + 2;
+            prim_vertex_count = 3;
+            break;
+        case DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP:
+            draw_indices[0] = prim;
+            draw_indices[1] = prim + 1;
+            draw_indices[2] = prim + 2;
+            prim_vertex_count = 3;
+            break;
+        case DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_FAN:
+            draw_indices[0] = 0;
+            draw_indices[1] = prim + 1;
+            draw_indices[2] = prim + 2;
+            prim_vertex_count = 3;
+            break;
+        default:
+            return false;
+        }
+
+        for (uint32_t j = 0; j < prim_vertex_count; j++)
+        {
+            uint64_t source_index = 0;
+            if (!_scene_pick_source_vertex_index(
+                    visual, draw_indices[j], vertex_count, &source_index))
+            {
+                _scene_probe_plan_destroy(out_plan);
+                return false;
+            }
+            uint64_t dst = prim * prim_vertex_count + j;
+            dvz_memcpy(
+                out_plan->probe_positions[dst], sizeof(vec3), &position[3 * source_index],
+                sizeof(vec3));
+            _scene_pick_encode_item(prim, out_plan->pick_colors[dst]);
+        }
+    }
+
+    uint32_t target_width = 0;
+    uint32_t target_height = 0;
+    if (!_scene_pick_target_extent(figure, panel, &target_width, &target_height))
+    {
+        _scene_probe_plan_destroy(out_plan);
+        return false;
+    }
+
+    uint64_t position_bytes = 0;
+    uint64_t color_bytes = 0;
+    if (
+        _dvz_mul_u64_overflows(draw_vertex_count, sizeof(vec3), &position_bytes) ||
+        _dvz_mul_u64_overflows(draw_vertex_count, sizeof(DvzColor), &color_bytes))
+    {
+        log_error("primitive pick request buffer size overflow");
+        _scene_probe_plan_destroy(out_plan);
+        return false;
+    }
+
+    DvzFramePlan* plan = dvz_frame_plan("figure.pick", pending->request.request_id);
+    out_plan->plan = plan;
+    bool ok = plan != NULL;
+    ok = ok && dvz_frame_plan_upload_bytes(
+                   plan, "pick0_position", 0, position_bytes, "position",
+                   out_plan->probe_positions);
+    if (ok)
+        ok = dvz_frame_plan_upload_set_topology(plan, draw_topology);
+    ok = ok && dvz_frame_plan_upload_bytes(
+                   plan, "pick0_color", 0, color_bytes, "color", out_plan->pick_colors);
+
+    DvzFramePlanVisualMeta metadata = {0};
+    metadata.has_metadata = true;
+    metadata.visual_type = (uint32_t)visual->type;
+    metadata.topology = draw_topology;
+    metadata.alpha_mode = DVZ_ALPHA_OPAQUE;
+    metadata.depth_test_enabled = visual->depth_test_enabled;
+    metadata.vertex_count = (uint32_t)draw_vertex_count;
+    dvz_strlcpy(metadata.position_id, "pick0_position", sizeof(metadata.position_id));
+    dvz_strlcpy(metadata.color_id, "pick0_color", sizeof(metadata.color_id));
+
+    ok = ok && dvz_frame_plan_render_panel(
+                   plan, "panel.pick", "target.pick", true,
+                   (DvzPanelDesc){.x = 0, .y = 0, .width = 1, .height = 1}) &&
+         dvz_frame_plan_render_visual(plan, "pick0") &&
+         dvz_frame_plan_render_visual_metadata(plan, &metadata);
+    if (ok)
+        _scene_pick_plan_apply_render_state(plan, panel, request_ndc, target_width, target_height);
+    ok = ok && dvz_frame_plan_copy(plan, "target.pick", "buf.pick", 4) &&
+         dvz_frame_plan_readback(plan, "buf.pick", "request.pick");
+    if (!ok)
+    {
+        log_error(
+            "primitive pick request %" PRIu64 " failed to assemble the GPU readback plan",
             pending->request.request_id);
         _scene_probe_plan_destroy(out_plan);
         return false;
@@ -2401,6 +2744,116 @@ static bool _scene_process_stroke_pick_request(
         uint32_t target_width = 0;
         uint32_t target_height = 0;
         if (!_scene_stroke_pick_plan(
+                figure, panel, visual, pending, request_ndc, &pick_plan, &target_width,
+                &target_height))
+        {
+            _scene_pick_trace(
+                "picker_visual_miss request=%llu visual=%p order_index=%d attach_slot=%u\n",
+                (unsigned long long)pending->request.request_id, (void*)visual, oi, order[oi]);
+            continue;
+        }
+
+        uint8_t rgba[4] = {0};
+        bool executed = false;
+        bool readback_ok = _scene_execute_readback_plan(
+            scene, executor, caps, pick_plan.plan, target_width, target_height, rgba, &executed);
+        _scene_probe_plan_destroy(&pick_plan);
+
+        DvzScenePickPayload payload = {0};
+        if (!readback_ok || !_scene_decode_point_like_pick_payload(visual, rgba, &payload))
+        {
+            if (!readback_ok)
+                miss.status = executed ? DVZ_PICK_STATUS_READBACK_FAILED :
+                                         DVZ_PICK_STATUS_GPU_EXEC_FAILED;
+            _scene_pick_trace(
+                "picker_visual_miss request=%llu visual=%p order_index=%d attach_slot=%u "
+                "readback_ok=%d executed=%d rgba=%u,%u,%u,%u\n",
+                (unsigned long long)pending->request.request_id, (void*)visual, oi, order[oi],
+                readback_ok ? 1 : 0, executed ? 1 : 0, rgba[0], rgba[1], rgba[2], rgba[3]);
+            continue;
+        }
+
+        DvzPickResult resolved = miss;
+        _scene_apply_pick_payload(scene, visual, &payload, &resolved);
+        _scene_pick_trace(
+            "picker_resolved request=%llu visual=%p visual_id=%llu item=%llu\n",
+            (unsigned long long)pending->request.request_id, (void*)visual,
+            (unsigned long long)resolved.visual_id, (unsigned long long)payload.item_id);
+        return _scene_push_pick_result(scene, panel, pending->freshness_serial, &resolved);
+    }
+
+    return _scene_push_pick_result(scene, panel, pending->freshness_serial, &miss);
+}
+
+
+/**
+ * Resolve one primitive-pipeline pick request through a GPU primitive-id pick pass.
+ *
+ * @param figure figure whose request queue is being processed
+ * @param executor retained request executor for the GPU readback stream
+ * @param caps capability snapshot
+ * @param pending pending pick request
+ * @return whether a result was queued
+ */
+static bool _scene_process_primitive_pick_request(
+    DvzFigure* figure, DvzSceneRequestExecutor* executor, const DvzCapabilitySnapshot* caps,
+    const DvzPendingPickRequest* pending)
+{
+    ANN(figure);
+    ANN(caps);
+    ANN(pending);
+    ANN(pending->panel);
+
+    DvzScene* scene = figure->scene;
+    DvzPanel* panel = pending->panel;
+    DvzPickResult miss =
+        _scene_pick_miss_result(figure, panel, pending, DVZ_PICK_STATUS_NO_CAPABLE_VISUAL);
+
+    vec2 request_ndc = {0};
+    if (!_scene_pick_request_ndc(figure, panel, pending->x, pending->y, request_ndc))
+    {
+        miss.status = DVZ_PICK_STATUS_OUTSIDE_PANEL;
+        return _scene_push_pick_result(scene, panel, pending->freshness_serial, &miss);
+    }
+
+    uint32_t order[DVZ_SCENE_MAX_VISUALS] = {0};
+    _scene_panel_visual_order(panel, order);
+    for (int32_t oi = (int32_t)panel->visual_count - 1; oi >= 0; oi--)
+    {
+        DvzPanelAttach* attach = &panel->visuals[order[oi]];
+        DvzVisual* visual = attach->visual;
+        if (visual == NULL || !visual->visible)
+            continue;
+        bool primitive_like = visual->type == DVZ_VISUAL_TYPE_PRIMITIVE ||
+                              visual->type == DVZ_VISUAL_TYPE_MESH ||
+                              visual->type == DVZ_VISUAL_TYPE_PATH;
+        if (!primitive_like)
+            continue;
+        if (
+            visual->type == DVZ_VISUAL_TYPE_PATH &&
+            _scene_pick_visual_has_attr_data(visual, "line_width"))
+        {
+            continue;
+        }
+        if ((visual->pick_capabilities & DVZ_PICK_CAPABILITY_ITEM) == 0)
+            continue;
+        if (attach->controller_mode == DVZ_CONTROLLER_FIXED)
+            continue;
+
+        if (miss.status == DVZ_PICK_STATUS_NO_CAPABLE_VISUAL)
+            miss.status = DVZ_PICK_STATUS_MISS;
+
+        if (executor == NULL || executor->runtime == NULL || executor->emitter == NULL)
+        {
+            log_error("primitive pick request requires a DRP2 runtime");
+            miss.status = DVZ_PICK_STATUS_GPU_EXEC_FAILED;
+            continue;
+        }
+
+        DvzSceneProbePlan pick_plan = {0};
+        uint32_t target_width = 0;
+        uint32_t target_height = 0;
+        if (!_scene_primitive_pick_plan(
                 figure, panel, visual, pending, request_ndc, &pick_plan, &target_width,
                 &target_height))
         {

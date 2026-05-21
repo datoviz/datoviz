@@ -1512,6 +1512,153 @@ int test_scene_stroke_pick_resolves_item(TstContext* suite, const TstCase* item)
 }
 
 
+/**
+ * Ensure primitive and indexed mesh picking resolve GPU primitive identity.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_primitive_pick_resolves_item(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    ANN(item);
+    TST_SCENE_PICK_PROBE_REQUIRE_VKLITE(suite);
+
+    DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
+    VkPhysicalDeviceVulkan13Features features13 = {
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES};
+    features13.dynamicRendering = true;
+    features13.synchronization2 = true;
+    dvz_gpu_ctx_config_features13(&gpu_cfg, &features13);
+    DvzGpuCtx* ctx = dvz_gpu_ctx(&gpu_cfg);
+    if (ctx == NULL)
+    {
+        log_warn("scene primitive-pick test skipped because GPU context creation failed");
+        tst_skip(suite, "GPU context creation failed");
+        return 0;
+    }
+
+    DvzCapabilitySnapshot caps = {0};
+    dvz_capability_snapshot_default(&caps);
+    caps.shader_format_glsl = true;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(
+        figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+    ANN(panel);
+
+    DvzVisual* primitive = dvz_primitive(scene, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 0);
+    ANN(primitive);
+    dvz_visual_set_pick_capabilities(primitive, DVZ_PICK_CAPABILITY_ITEM);
+    float primitive_pos[6][3] = {
+        {-0.9f, -0.7f, 0.0f},
+        {-0.9f, 0.7f, 0.0f},
+        {-0.1f, 0.0f, 0.0f},
+        {0.1f, -0.7f, 0.0f},
+        {0.1f, 0.7f, 0.0f},
+        {0.9f, 0.0f, 0.0f},
+    };
+    DvzColor primitive_color[6] = {
+        {255, 255, 255, 255}, {255, 255, 255, 255}, {255, 255, 255, 255},
+        {255, 255, 255, 255}, {255, 255, 255, 255}, {255, 255, 255, 255},
+    };
+    AT(dvz_primitive_data(primitive, primitive_pos, primitive_color, NULL, 6) == 0);
+    AT(dvz_panel_add_visual(panel, primitive, NULL) == 0);
+
+    DvzDrp2RuntimeConfig runtime_cfg =
+        dvz_drp2_runtime_vklite_config(dvz_gpu_ctx_device(ctx), dvz_gpu_ctx_alloc(ctx));
+    DvzDrp2Runtime* runtime = dvz_drp2_runtime_vklite(&runtime_cfg);
+    ANN(runtime);
+
+    AT(dvz_panel_pick(panel, 48.0, 32.0, &(DvzPickRequest){.request_id = 81}) == 0);
+    AT(dvz_figure_process_requests(figure, runtime, &caps) == 1);
+    DvzPickResult pick = {0};
+    AT(dvz_scene_poll_pick(scene, &pick));
+    AT(pick.hit);
+    AT(pick.request_id == 81);
+    AT(pick.status == DVZ_PICK_STATUS_HIT);
+    AT(pick.visual_family == DVZ_SCENE_VISUAL_FAMILY_PRIMITIVE);
+    AT(pick.resolved_target == DVZ_SCENE_TARGET_ITEM);
+    AT(pick.resolved_id == 1);
+    AT(pick.item_id == 1);
+    AT(!dvz_scene_poll_pick(scene, &pick));
+
+    AT(dvz_panel_pick(panel, 32.0, 8.0, &(DvzPickRequest){.request_id = 82}) == 0);
+    AT(dvz_figure_process_requests(figure, runtime, &caps) == 1);
+    pick = (DvzPickResult){0};
+    AT(dvz_scene_poll_pick(scene, &pick));
+    AT(!pick.hit);
+    AT(pick.request_id == 82);
+    AT(pick.status == DVZ_PICK_STATUS_MISS);
+    AT(!dvz_scene_poll_pick(scene, &pick));
+
+    dvz_drp2_runtime_destroy(runtime);
+    dvz_scene_destroy(scene);
+
+    scene = dvz_scene();
+    ANN(scene);
+    figure = dvz_figure(scene, 64, 64, 0);
+    ANN(figure);
+    panel = dvz_panel(
+        figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+    ANN(panel);
+
+    DvzVisual* mesh = dvz_mesh(scene, 0);
+    ANN(mesh);
+    dvz_visual_set_pick_capabilities(mesh, DVZ_PICK_CAPABILITY_ITEM);
+    float mesh_pos[4][3] = {
+        {-0.8f, -0.8f, 0.0f},
+        {-0.8f, 0.8f, 0.0f},
+        {0.8f, -0.8f, 0.0f},
+        {0.8f, 0.8f, 0.0f},
+    };
+    float mesh_normals[4][3] = {
+        {0.0f, 0.0f, 1.0f},
+        {0.0f, 0.0f, 1.0f},
+        {0.0f, 0.0f, 1.0f},
+        {0.0f, 0.0f, 1.0f},
+    };
+    DvzIndex mesh_indices[6] = {0, 1, 2, 2, 1, 3};
+    DvzSceneBuffer* index_buffer = dvz_scene_buffer(
+        scene, &(DvzSceneBufferDesc){
+                   .usage = DVZ_SCENE_BUFFER_USAGE_INDEX,
+                   .stride = sizeof(DvzIndex),
+               });
+    ANN(index_buffer);
+    AT(dvz_scene_buffer_set_data(index_buffer, mesh_indices, sizeof(mesh_indices)));
+    AT(dvz_mesh_data(mesh, mesh_pos, NULL, mesh_normals, 4) == 0);
+    AT(dvz_visual_set_buffer(mesh, "index", index_buffer));
+    AT(dvz_panel_add_visual(panel, mesh, NULL) == 0);
+
+    runtime_cfg =
+        dvz_drp2_runtime_vklite_config(dvz_gpu_ctx_device(ctx), dvz_gpu_ctx_alloc(ctx));
+    runtime = dvz_drp2_runtime_vklite(&runtime_cfg);
+    ANN(runtime);
+
+    AT(dvz_panel_pick(panel, 48.0, 32.0, &(DvzPickRequest){.request_id = 83}) == 0);
+    AT(dvz_figure_process_requests(figure, runtime, &caps) == 1);
+    pick = (DvzPickResult){0};
+    AT(dvz_scene_poll_pick(scene, &pick));
+    AT(pick.hit);
+    AT(pick.request_id == 83);
+    AT(pick.status == DVZ_PICK_STATUS_HIT);
+    AT(pick.visual_family == DVZ_SCENE_VISUAL_FAMILY_MESH);
+    AT(pick.resolved_target == DVZ_SCENE_TARGET_ITEM);
+    AT(pick.resolved_id == 1);
+    AT(pick.item_id == 1);
+    AT(!dvz_scene_poll_pick(scene, &pick));
+
+    dvz_drp2_runtime_destroy(runtime);
+    dvz_gpu_ctx_destroy(ctx);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
 
 /**
  * Ensure pick/probe readbacks do not reset the caller-owned DRP2 runtime.
@@ -2062,6 +2209,7 @@ int test_scene_pick_probe(TstSuite* suite)
     TST_SCENE_PICK_PROBE_GPU_CASE(test_scene_marker_pick_accepts_bbox_corner);
     TST_SCENE_PICK_PROBE_GPU_CASE(test_scene_sphere_pick_resolves_item);
     TST_SCENE_PICK_PROBE_GPU_CASE(test_scene_stroke_pick_resolves_item);
+    TST_SCENE_PICK_PROBE_GPU_CASE(test_scene_primitive_pick_resolves_item);
     TST_CASE(test_scene_process_requests_preserves_caller_runtime);
     TST_CASE(test_scene_image_probe_reuses_retained_request_executor);
     TST_SCENE_PICK_PROBE_GPU_CASE(test_scene_image_probe_respects_panel_request_position);

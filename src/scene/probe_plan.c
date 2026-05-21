@@ -160,6 +160,10 @@ void _scene_probe_plan_destroy(DvzSceneProbePlan* plan)
         return;
     dvz_frame_plan_destroy(plan->plan);
     plan->plan = NULL;
+    dvz_free(plan->probe_positions);
+    plan->probe_positions = NULL;
+    dvz_free(plan->probe_texcoords);
+    plan->probe_texcoords = NULL;
     dvz_free(plan->pick_colors);
     plan->pick_colors = NULL;
     dvz_free(plan->pick_position_start);
