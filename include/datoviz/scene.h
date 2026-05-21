@@ -1160,13 +1160,43 @@ DVZ_EXPORT DvzVisual* dvz_mesh(DvzScene* scene, uint32_t flags);
  *
  * A path accepts `position` (vec3), `color` (RGBA8), and optional per-point `stroke_width`
  * (float, pixels). Without `stroke_width`, paths use the primitive line-strip pipeline. With
- * `stroke_width`, paths are lowered to screen-space stroked segments built from consecutive points.
+ * `stroke_width`, paths use the scene.path screen-space stroke pipeline.
  *
  * @param scene the scene
  * @param flags variant flags
  * @return the visual
  */
 DVZ_EXPORT DvzVisual* dvz_path(DvzScene* scene, uint32_t flags);
+
+
+/**
+ * Configure caps applied to each open subpath endpoint.
+ *
+ * Arrow caps, dashes, per-item cap attributes, and closed subpaths are deferred. Supported first
+ * slice caps are none, round, triangle-in, triangle-out, square, and butt.
+ *
+ * @param visual the path visual
+ * @param start_cap cap applied to each open subpath start
+ * @param end_cap cap applied to each open subpath end
+ * @return 0 on success, -1 on error
+ */
+DVZ_EXPORT int
+dvz_path_set_caps(DvzVisual* visual, DvzSegmentCap start_cap, DvzSegmentCap end_cap);
+
+
+/**
+ * Configure the join style and miter limit for stroked path corners.
+ *
+ * `DVZ_PATH_JOIN_MITER` falls back to bevel when the miter length exceeds `miter_limit` times
+ * the local stroke width. Round and bevel joins ignore the limit.
+ *
+ * @param visual the path visual
+ * @param join the path join style
+ * @param miter_limit positive finite miter limit
+ * @return 0 on success, -1 on error
+ */
+DVZ_EXPORT int
+dvz_path_set_join(DvzVisual* visual, DvzPathJoin join, float miter_limit);
 
 
 /**

@@ -151,6 +151,21 @@ void _segment_sync_params(DvzVisual* visual)
 
 
 /**
+ * Store path cap/join state into the shared material payload used by path shaders.
+ *
+ * @param visual the path visual
+ */
+void _path_sync_params(DvzVisual* visual)
+{
+    ANN(visual);
+    visual->material_params.params[0] = (float)visual->path.cap_start;
+    visual->material_params.params[1] = (float)visual->path.cap_end;
+    visual->material_params.params[2] = (float)visual->path.join;
+    visual->material_params.params[3] = visual->path.miter_limit;
+}
+
+
+/**
  * Release one segment visual's derived GPU upload cache.
  *
  * @param cache the segment GPU cache
@@ -297,6 +312,95 @@ int dvz_segment_set_caps(DvzVisual* visual, DvzSegmentCap start_cap, DvzSegmentC
     visual->segment.start_cap = start_cap;
     visual->segment.end_cap = end_cap;
     _segment_sync_params(visual);
+    _visual_bump_version(&visual->material.version);
+    visual->material_params_dirty = true;
+    _scene_notify_visual_changed(visual);
+    return 0;
+}
+
+
+/**
+ * Return whether one path join enum value is supported by the first slice.
+ *
+ * @param join the path join
+ * @return whether the join is valid
+ */
+static bool _path_join_valid(DvzPathJoin join)
+{
+    return join >= DVZ_PATH_JOIN_MITER && join <= DVZ_PATH_JOIN_BEVEL;
+}
+
+
+/**
+ * Configure path endpoint caps.
+ *
+ * @param visual the path visual
+ * @param start_cap cap applied to each open subpath start
+ * @param end_cap cap applied to each open subpath end
+ * @return 0 on success, -1 on validation error
+ */
+int dvz_path_set_caps(DvzVisual* visual, DvzSegmentCap start_cap, DvzSegmentCap end_cap)
+{
+    ANN(visual);
+    if (visual->type != DVZ_VISUAL_TYPE_PATH)
+    {
+        log_error("dvz_path_set_caps requires a path visual");
+        return -1;
+    }
+    if (!_segment_cap_valid(start_cap) || !_segment_cap_valid(end_cap))
+    {
+        log_error("invalid path cap");
+        return -1;
+    }
+    if (!_scene_visual_mutation_allowed(visual->scene, "update path caps"))
+        return -1;
+
+    if (visual->path.cap_start == start_cap && visual->path.cap_end == end_cap)
+        return 0;
+    visual->path.cap_start = start_cap;
+    visual->path.cap_end = end_cap;
+    _path_sync_params(visual);
+    _visual_bump_version(&visual->material.version);
+    visual->material_params_dirty = true;
+    _scene_notify_visual_changed(visual);
+    return 0;
+}
+
+
+/**
+ * Configure path joins and miter limit.
+ *
+ * @param visual the path visual
+ * @param join the path join style
+ * @param miter_limit positive finite miter limit
+ * @return 0 on success, -1 on validation error
+ */
+int dvz_path_set_join(DvzVisual* visual, DvzPathJoin join, float miter_limit)
+{
+    ANN(visual);
+    if (visual->type != DVZ_VISUAL_TYPE_PATH)
+    {
+        log_error("dvz_path_set_join requires a path visual");
+        return -1;
+    }
+    if (!_path_join_valid(join))
+    {
+        log_error("invalid path join");
+        return -1;
+    }
+    if (!isfinite(miter_limit) || miter_limit <= 0.0f)
+    {
+        log_error("path miter_limit must be positive and finite");
+        return -1;
+    }
+    if (!_scene_visual_mutation_allowed(visual->scene, "update path join"))
+        return -1;
+
+    if (visual->path.join == join && visual->path.miter_limit == miter_limit)
+        return 0;
+    visual->path.join = join;
+    visual->path.miter_limit = miter_limit;
+    _path_sync_params(visual);
     _visual_bump_version(&visual->material.version);
     visual->material_params_dirty = true;
     _scene_notify_visual_changed(visual);

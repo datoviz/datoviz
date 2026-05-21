@@ -58,6 +58,14 @@ DvzVisual* _scene_alloc_visual(DvzScene* scene, DvzVisualType type, uint32_t fla
         visual->segment.end_cap = DVZ_SEGMENT_CAP_BUTT;
         _segment_sync_params(visual);
     }
+    if (type == DVZ_VISUAL_TYPE_PATH)
+    {
+        visual->path.cap_start = DVZ_SEGMENT_CAP_ROUND;
+        visual->path.cap_end = DVZ_SEGMENT_CAP_ROUND;
+        visual->path.join = DVZ_PATH_JOIN_ROUND;
+        visual->path.miter_limit = 4.0f;
+        _path_sync_params(visual);
+    }
     _volume_state_default(&visual->volume);
     return visual;
 }
@@ -544,7 +552,7 @@ DvzVisual* dvz_mesh(DvzScene* scene, uint32_t flags)
  * Create a path visual.
  *
  * Path visuals use primitive line-strip rendering unless a per-point `line_width` attribute is
- * present, in which case scene emission lowers them to stroked screen-space segments.
+ * present, in which case scene emission lowers them to path-native screen-space strokes.
  *
  * @param scene the scene
  * @param flags variant flags
@@ -557,8 +565,6 @@ DvzVisual* dvz_path(DvzScene* scene, uint32_t flags)
     if (visual == NULL)
         return NULL;
     visual->topology = DVZ_PRIMITIVE_TOPOLOGY_LINE_STRIP;
-    visual->material_params.params[0] = (float)DVZ_SEGMENT_CAP_BUTT;
-    visual->material_params.params[1] = (float)DVZ_SEGMENT_CAP_BUTT;
     visual->material_params_dirty = true;
     return visual;
 }

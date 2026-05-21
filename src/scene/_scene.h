@@ -760,6 +760,10 @@ struct DvzPathState
 {
     uint32_t* subpath_lengths;
     uint32_t subpath_count;
+    DvzSegmentCap cap_start;
+    DvzSegmentCap cap_end;
+    DvzPathJoin join;
+    float miter_limit;
     DvzPathGpuCache gpu;
 };
 

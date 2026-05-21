@@ -156,6 +156,14 @@ typedef enum
 
 typedef enum
 {
+    DVZ_PATH_JOIN_MITER = 0,
+    DVZ_PATH_JOIN_ROUND = 1,
+    DVZ_PATH_JOIN_BEVEL = 2,
+} DvzPathJoin;
+
+
+typedef enum
+{
     DVZ_MARKER_SHAPE_DISC = 0,
     DVZ_MARKER_SHAPE_SQUARE,
     DVZ_MARKER_SHAPE_TRIANGLE,

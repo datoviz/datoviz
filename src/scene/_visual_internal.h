@@ -62,6 +62,7 @@ DvzPointStyleDesc _marker_style_to_point_style(const DvzMarkerStyle* style);
 void _point_style_sync_params(DvzSceneMaterialParams* params, const DvzPointStyleDesc* style);
 bool _segment_cap_valid(DvzSegmentCap cap);
 void _segment_sync_params(DvzVisual* visual);
+void _path_sync_params(DvzVisual* visual);
 void _segment_gpu_cache_free(DvzSegmentGpuCache* cache);
 void _path_gpu_cache_free(DvzPathGpuCache* cache);
 void _image_gpu_cache_free(DvzImageGpuCache* cache);
