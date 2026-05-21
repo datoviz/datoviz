@@ -36,8 +36,16 @@ typedef struct DvzApp       DvzApp;
 typedef struct DvzAppConfig DvzAppConfig;
 typedef struct DvzAppResources DvzAppResources;
 typedef struct DvzAppWindow DvzAppWindow;
+typedef struct DvzArcball DvzArcball;
+typedef struct DvzArcballDesc DvzArcballDesc;
 typedef struct DvzDrp2Runtime DvzDrp2Runtime;
+typedef struct DvzFly DvzFly;
+typedef struct DvzFlyDesc DvzFlyDesc;
 typedef struct DvzGpuCtx DvzGpuCtx;
+typedef struct DvzPanzoom DvzPanzoom;
+typedef struct DvzPanzoomDesc DvzPanzoomDesc;
+typedef struct DvzTurntable DvzTurntable;
+typedef struct DvzTurntableDesc DvzTurntableDesc;
 typedef struct DvzWindowHost DvzWindowHost;
 typedef struct DvzWindowExternalSurfaceInfo DvzWindowExternalSurfaceInfo;
 
@@ -339,6 +347,77 @@ DVZ_EXPORT struct DvzCanvas* dvz_app_window_canvas(DvzAppWindow* win);
  * @return the input router, or NULL
  */
 DVZ_EXPORT struct DvzInputRouter* dvz_app_window_input(DvzAppWindow* win);
+
+
+/**
+ * Connect a panel's bound controllers to an app-window input router.
+ *
+ * @param win the app-window
+ * @param panel the panel
+ * @return 0 on success, -1 on validation error
+ */
+DVZ_EXPORT int dvz_app_window_connect_panel(DvzAppWindow* win, DvzPanel* panel);
+
+
+/**
+ * Bind a controller to a panel and connect the panel to an app-window input router.
+ *
+ * @param win the app-window
+ * @param panel the panel
+ * @param controller the scene-owned controller
+ * @param dims dimension mask
+ * @return 0 on success, -1 on validation error
+ */
+DVZ_EXPORT int dvz_app_window_bind_controller(
+    DvzAppWindow* win, DvzPanel* panel, DvzController* controller, DvzDimMask dims);
+
+
+/**
+ * Create, bind, and connect a panzoom controller for one panel.
+ *
+ * @param win the app-window
+ * @param panel the panel
+ * @param desc panzoom descriptor, or NULL for defaults
+ * @return the panzoom payload, or NULL on validation error
+ */
+DVZ_EXPORT DvzPanzoom*
+dvz_app_window_panel_panzoom(DvzAppWindow* win, DvzPanel* panel, const DvzPanzoomDesc* desc);
+
+
+/**
+ * Create, bind, and connect an arcball controller for one panel.
+ *
+ * @param win the app-window
+ * @param panel the panel
+ * @param desc arcball descriptor, or NULL for defaults
+ * @return the arcball payload, or NULL on validation error
+ */
+DVZ_EXPORT DvzArcball*
+dvz_app_window_panel_arcball(DvzAppWindow* win, DvzPanel* panel, const DvzArcballDesc* desc);
+
+
+/**
+ * Create, bind, and connect a fly controller for one panel.
+ *
+ * @param win the app-window
+ * @param panel the panel
+ * @param desc fly descriptor, or NULL for defaults
+ * @return the fly payload, or NULL on validation error
+ */
+DVZ_EXPORT DvzFly*
+dvz_app_window_panel_fly(DvzAppWindow* win, DvzPanel* panel, const DvzFlyDesc* desc);
+
+
+/**
+ * Create, bind, and connect a turntable controller for one panel.
+ *
+ * @param win the app-window
+ * @param panel the panel
+ * @param desc turntable descriptor, or NULL for defaults
+ * @return the turntable payload, or NULL on validation error
+ */
+DVZ_EXPORT DvzTurntable* dvz_app_window_panel_turntable(
+    DvzAppWindow* win, DvzPanel* panel, const DvzTurntableDesc* desc);
 
 
 /**

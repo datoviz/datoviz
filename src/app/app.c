@@ -29,6 +29,7 @@
 #include "_trace.h"
 #include "datoviz/app.h"
 #include "datoviz/gui.h"
+#include "datoviz/input/router.h"
 #include "datoviz/scene.h"
 #include "../drp2/_stream.h"
 #include "../scene/_scene.h"
@@ -3144,6 +3145,161 @@ struct DvzInputRouter* dvz_app_window_input(DvzAppWindow* win)
     return NULL;
 #endif
 }
+
+
+/**
+ * Connect a panel's bound controllers to an app-window input router.
+ *
+ * @param win the app-window
+ * @param panel the panel
+ * @return 0 on success, -1 on validation error
+ */
+int dvz_app_window_connect_panel(DvzAppWindow* win, DvzPanel* panel)
+{
+    if (win == NULL || panel == NULL)
+        return -1;
+
+    DvzInputRouter* router = dvz_app_window_input(win);
+    if (router == NULL)
+        return -1;
+
+    return dvz_panel_connect_input(panel, router);
+}
+
+
+
+/**
+ * Bind a controller to a panel and connect the panel to an app-window input router.
+ *
+ * @param win the app-window
+ * @param panel the panel
+ * @param controller the scene-owned controller
+ * @param dims dimension mask
+ * @return 0 on success, -1 on validation error
+ */
+int dvz_app_window_bind_controller(
+    DvzAppWindow* win, DvzPanel* panel, DvzController* controller, DvzDimMask dims)
+{
+    if (win == NULL || panel == NULL || controller == NULL)
+        return -1;
+
+    DvzInputRouter* router = dvz_app_window_input(win);
+    if (router == NULL)
+        return -1;
+
+    if (dvz_panel_bind_controller(panel, controller, dims) != 0)
+        return -1;
+
+    return dvz_panel_connect_input(panel, router);
+}
+
+
+
+/**
+ * Create, bind, and connect a panzoom controller for one panel.
+ *
+ * @param win the app-window
+ * @param panel the panel
+ * @param desc panzoom descriptor, or NULL for defaults
+ * @return the panzoom payload, or NULL on validation error
+ */
+DvzPanzoom*
+dvz_app_window_panel_panzoom(DvzAppWindow* win, DvzPanel* panel, const DvzPanzoomDesc* desc)
+{
+    if (win == NULL || panel == NULL || panel->figure == NULL || panel->figure->scene == NULL)
+        return NULL;
+    if (dvz_app_window_input(win) == NULL)
+        return NULL;
+
+    DvzController* controller = dvz_panzoom(panel->figure->scene, desc);
+    DvzPanzoom* panzoom = dvz_controller_panzoom(controller);
+    if (panzoom == NULL)
+        return NULL;
+    if (dvz_app_window_bind_controller(win, panel, controller, DVZ_DIM_MASK_XY) != 0)
+        return NULL;
+    return panzoom;
+}
+
+
+
+/**
+ * Create, bind, and connect an arcball controller for one panel.
+ *
+ * @param win the app-window
+ * @param panel the panel
+ * @param desc arcball descriptor, or NULL for defaults
+ * @return the arcball payload, or NULL on validation error
+ */
+DvzArcball*
+dvz_app_window_panel_arcball(DvzAppWindow* win, DvzPanel* panel, const DvzArcballDesc* desc)
+{
+    if (win == NULL || panel == NULL || panel->figure == NULL || panel->figure->scene == NULL)
+        return NULL;
+    if (dvz_app_window_input(win) == NULL)
+        return NULL;
+
+    DvzController* controller = dvz_arcball(panel->figure->scene, desc);
+    DvzArcball* arcball = dvz_controller_arcball(controller);
+    if (arcball == NULL)
+        return NULL;
+    if (dvz_app_window_bind_controller(win, panel, controller, DVZ_DIM_MASK_XYZ) != 0)
+        return NULL;
+    return arcball;
+}
+
+
+
+/**
+ * Create, bind, and connect a fly controller for one panel.
+ *
+ * @param win the app-window
+ * @param panel the panel
+ * @param desc fly descriptor, or NULL for defaults
+ * @return the fly payload, or NULL on validation error
+ */
+DvzFly* dvz_app_window_panel_fly(DvzAppWindow* win, DvzPanel* panel, const DvzFlyDesc* desc)
+{
+    if (win == NULL || panel == NULL || panel->figure == NULL || panel->figure->scene == NULL)
+        return NULL;
+    if (dvz_app_window_input(win) == NULL)
+        return NULL;
+
+    DvzController* controller = dvz_fly(panel->figure->scene, desc);
+    DvzFly* fly = dvz_controller_fly(controller);
+    if (fly == NULL)
+        return NULL;
+    if (dvz_app_window_bind_controller(win, panel, controller, DVZ_DIM_MASK_XYZ) != 0)
+        return NULL;
+    return fly;
+}
+
+
+
+/**
+ * Create, bind, and connect a turntable controller for one panel.
+ *
+ * @param win the app-window
+ * @param panel the panel
+ * @param desc turntable descriptor, or NULL for defaults
+ * @return the turntable payload, or NULL on validation error
+ */
+DvzTurntable* dvz_app_window_panel_turntable(
+    DvzAppWindow* win, DvzPanel* panel, const DvzTurntableDesc* desc)
+{
+    if (win == NULL || panel == NULL || panel->figure == NULL || panel->figure->scene == NULL)
+        return NULL;
+    if (dvz_app_window_input(win) == NULL)
+        return NULL;
+
+    DvzController* controller = dvz_turntable(panel->figure->scene, desc);
+    DvzTurntable* turntable = dvz_controller_turntable(controller);
+    if (turntable == NULL)
+        return NULL;
+    if (dvz_app_window_bind_controller(win, panel, controller, DVZ_DIM_MASK_XYZ) != 0)
+        return NULL;
+    return turntable;
+}
+
 
 
 int dvz_app_window_capture_png(DvzAppWindow* win, const char* path)
