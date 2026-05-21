@@ -92,10 +92,11 @@ The first native implementation uses this fixed internal contract:
 3. peel intermediates use `VK_FORMAT_R16G16B16A16_SFLOAT`;
 4. `front_accum` and `back_accum` are persistent per-frame accumulators;
 5. `depth_minmax_ping` and `depth_minmax_pong` are ping-ponged by iteration;
-6. init writes initial accumulators and the first min/max bounds;
-7. each `peel.iter.N` samples the previous min/max bounds and writes the opposite min/max target;
-8. composite samples only `front_accum` and `back_accum`;
-9. iteration shaders sample peel resources from bind group set 3 so common, material/image/volume,
+6. depth bounds are encoded as `(-near, far)` and reduced with max blending in the RG channels;
+7. init writes initial accumulators and the first min/max bounds;
+8. each `peel.iter.N` samples the previous min/max bounds and writes the opposite min/max target;
+9. composite samples only `front_accum` and `back_accum`;
+10. iteration shaders sample peel resources from bind group set 3 so common, material/image/volume,
    and scene-occlusion bindings keep their existing set positions.
 
 ## Depth Peeling Runtime Requirements

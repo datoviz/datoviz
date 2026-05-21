@@ -61,7 +61,8 @@ Recommended follow-up commits:
    graph follow-up.
 3. [`SCENE_SSAO_QUALITY_PLAN.md`](SCENE_SSAO_QUALITY_PLAN.md): SSAO quality tuning.
 4. [`SCENE_MSAA_PLAN.md`](SCENE_MSAA_PLAN.md): remaining MSAA and alpha-to-coverage work.
-5. [`DUAL_DEPTH_PEELING_PLAN.md`](DUAL_DEPTH_PEELING_PLAN.md): real dual depth peeling follow-up.
+5. [`../../done/DUAL_DEPTH_PEELING_IMPLEMENTATION.md`](../../done/DUAL_DEPTH_PEELING_IMPLEMENTATION.md):
+   completed dual depth peeling implementation record.
 
 
 ## Validation
