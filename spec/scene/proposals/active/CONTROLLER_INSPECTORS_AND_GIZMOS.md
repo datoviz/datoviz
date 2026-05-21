@@ -106,6 +106,11 @@ The v0.4 design should keep the useful geometry idea while separating two produc
 1. orientation gizmo or axis triad;
 2. interactive transform gizmo.
 
+Because the v0.4 branch accepts API-breaking cleanup, the first public C surface should not preserve
+the ambiguous old `panel.gizmo()` naming as a contract. Use `orientation gizmo` for the non-editing
+view-orientation widget and reserve `transform gizmo` for future editing handles. Bindings may later
+choose a shorter convenience name, but the C API and specs should keep the two products explicit.
+
 
 ### Orientation Gizmo
 
@@ -124,6 +129,23 @@ Recommended properties:
 This belongs above raw geometry and below generic application UI: geometry generation happens in
 `geom`, while placement and synchronization happen in the scene/app layer.
 
+Recommended first implementation slice:
+
+1. add a retained `DvzOrientationGizmo` scene object, attached to one panel;
+2. generate the triad with `dvz_geom_gizmo_axes()` once `geom` is available, or with the nearest
+   active geometry helper as a temporary internal bridge;
+3. render into a small panel-local inset or overlay viewport, not into the main world depth range;
+4. synchronize only orientation from the panel's 3D controller or camera state;
+5. ignore main view pan, target translation, zoom, and distance for placement;
+6. use unlit colored mesh geometry and deterministic X/Y/Z colors;
+7. request redraw when the source controller/camera orientation changes;
+8. expose visibility, anchor, size, and source-controller/camera binding controls before adding
+   styling knobs.
+
+The first slice should support arcball and turntable orientation sources. Camera/fly support may
+follow once camera state snapshots are explicit enough to read orientation without duplicating
+controller math.
+
 
 ### Interactive Transform Gizmo
 
@@ -135,6 +157,9 @@ plain mesh convenience.
 
 The transform gizmo should wait until object transforms, picking identities, and selection state
 are stable enough to avoid inventing a parallel editing path.
+
+When it is implemented, it should use a distinct public name such as `DvzTransformGizmo`, not
+`DvzGizmo`, so code cannot accidentally treat a passive orientation widget as an editing tool.
 
 
 ## Surface Plots

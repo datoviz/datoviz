@@ -84,6 +84,7 @@ Use opaque handles for retained scene-owned objects:
 9. `DvzFont`
 10. `DvzText`
 11. `DvzAnnotation`
+12. `DvzOrientationGizmo`
 
 Use public structs for value-like data:
 
@@ -94,6 +95,7 @@ Use public structs for value-like data:
 5. color stops and categorical entries,
 6. text style and placement descriptors,
 7. sampled-field creation and update descriptors.
+8. orientation-gizmo placement and source-binding descriptors.
 
 Public structs must not expose backend handles, atlas pages, command buffers, runtime object ids, or
 Vulkan/DRP2 execution details.
@@ -110,6 +112,42 @@ panel.
 
 Result structs are caller-owned values. Any pointer inside a result must either be valid only until
 the next poll/read call and documented as borrowed, or replaced by fixed-size storage / ids.
+
+
+## Orientation Gizmo Surface
+
+The first v0.4 gizmo API should expose a passive orientation gizmo, not a generic `DvzGizmo`
+handle. The object shows panel orientation through a small axis triad and does not edit scene data.
+
+Recommended public naming:
+
+```text
+DvzOrientationGizmo
+dvz_panel_orientation_gizmo(panel, &desc)
+dvz_orientation_gizmo_set_visible(gizmo, visible)
+dvz_orientation_gizmo_set_source(gizmo, controller_or_camera)
+dvz_orientation_gizmo_set_layout(gizmo, &layout)
+```
+
+The descriptor should cover:
+
+1. anchor corner or normalized panel-local rectangle;
+2. pixel or panel-relative size;
+3. source controller or camera binding;
+4. visibility;
+5. optional axis length and style knobs.
+
+The implementation should lower the triad to ordinary generated mesh geometry. Geometry generation
+belongs in `geom` through `dvz_geom_gizmo_axes()` when that module is active; scene/app owns inset
+placement, synchronization, redraw requests, viewport/scissor handling, and depth policy.
+
+Do not use the old v0.3 `panel.gizmo()` name as the C contract. Bindings may add a shorter alias
+later, but the C API should keep `orientation` in the name because an interactive transform gizmo is
+a separate future feature.
+
+The transform gizmo should use a distinct future handle such as `DvzTransformGizmo`. It depends on
+object transform ownership, selection state, and richer picking identities, and must not be coupled
+to the passive orientation widget.
 
 
 ## SampledField Surface
