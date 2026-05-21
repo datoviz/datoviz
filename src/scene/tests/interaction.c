@@ -57,6 +57,28 @@ static DvzTextAtlas* text_test_atlas(
 
 
 /**
+ * Return a visual attribute by name.
+ *
+ * @param visual the visual
+ * @param name the attribute name
+ * @return the attribute pointer, or NULL when unavailable
+ */
+static const DvzVisualAttr* _interaction_visual_attr(const DvzVisual* visual, const char* name)
+{
+    ANN(visual);
+    ANN(name);
+    for (uint32_t i = 0; i < visual->attr_count; i++)
+    {
+        const DvzVisualAttr* attr = &visual->attrs[i];
+        if (strcmp(attr->name, name) == 0)
+            return attr;
+    }
+    return NULL;
+}
+
+
+
+/**
  * Return whether one stream pipeline has a specific vertex attribute.
  *
  * @param stream the command stream
@@ -1058,6 +1080,122 @@ int test_scene_text_many_labels_render_plan(TstContext* suite, const TstCase* it
 }
 
 
+
+/**
+ * Verify controller-applied text keeps generated glyph anchors in visual coordinates.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_text_panzoom_glyph_anchor_coordinates(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    ANN(item);
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 640, 480, 0);
+    DvzPanel* panel = dvz_panel(
+        figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+    ANN(panel);
+
+    DvzVisual* text = dvz_text(scene, 0);
+    ANN(text);
+    const char* strings[1] = {"panzoom"};
+    float positions[1][3] = {{0.25f, -0.125f, 0.25f}};
+    float sizes[1] = {24.0f};
+    DvzVisualDataUpdate updates[2] = {
+        {.attr_name = "position", .data = positions, .item_count = 1},
+        {.attr_name = "size", .data = sizes, .item_count = 1},
+    };
+    AT(dvz_visual_set_strings(text, "text", strings, 1) == 0);
+    AT(dvz_visual_set_data_many(text, updates, 2) == 0);
+    AT(dvz_panel_add_visual(
+           panel, text,
+           &(DvzVisualAttachDesc){.z_layer = 1, .controller_mode = DVZ_CONTROLLER_APPLY}) == 0);
+
+    _scene_prepare_text_visuals(figure);
+    ANN(text->text.glyph_visual);
+    AT(panel->visual_count == 2);
+    AT(panel->visuals[1].visual == text->text.glyph_visual);
+    AT(panel->visuals[1].controller_mode == DVZ_CONTROLLER_APPLY);
+
+    const DvzVisualAttr* position_attr =
+        _interaction_visual_attr(text->text.glyph_visual, "position");
+    ANN(position_attr);
+    AT(position_attr->item_count > 0);
+    const float* glyph_positions = (const float*)position_attr->data;
+    ANN(glyph_positions);
+    AC(glyph_positions[0], positions[0][0], 1e-6f);
+    AC(glyph_positions[1], positions[0][1], 1e-6f);
+    AC(glyph_positions[2], positions[0][2], 1e-6f);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
+/**
+ * Verify text realization regenerates anchors when attachment controller mode changes.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_text_attach_mode_change_regenerates_glyphs(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    ANN(item);
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 640, 480, 0);
+    DvzPanel* panel = dvz_panel(
+        figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+    ANN(panel);
+
+    DvzVisual* text = dvz_text(scene, 0);
+    ANN(text);
+    const char* strings[1] = {"mode"};
+    float positions[1][3] = {{320.0f, 240.0f, 0.0f}};
+    float sizes[1] = {24.0f};
+    DvzVisualDataUpdate updates[2] = {
+        {.attr_name = "position", .data = positions, .item_count = 1},
+        {.attr_name = "size", .data = sizes, .item_count = 1},
+    };
+    AT(dvz_visual_set_strings(text, "text", strings, 1) == 0);
+    AT(dvz_visual_set_data_many(text, updates, 2) == 0);
+    AT(dvz_panel_add_visual(
+           panel, text,
+           &(DvzVisualAttachDesc){.z_layer = 1, .controller_mode = DVZ_CONTROLLER_FIXED}) == 0);
+
+    _scene_prepare_text_visuals(figure);
+    ANN(text->text.glyph_visual);
+    const DvzVisualAttr* position_attr =
+        _interaction_visual_attr(text->text.glyph_visual, "position");
+    ANN(position_attr);
+    const float* glyph_positions = (const float*)position_attr->data;
+    ANN(glyph_positions);
+    AC(glyph_positions[0], 0.0f, 1e-6f);
+    AC(glyph_positions[1], 0.0f, 1e-6f);
+
+    panel->visuals[0].controller_mode = DVZ_CONTROLLER_APPLY;
+    _scene_prepare_text_visuals(figure);
+    AT(panel->visuals[1].visual == text->text.glyph_visual);
+    AT(panel->visuals[1].controller_mode == DVZ_CONTROLLER_APPLY);
+    position_attr = _interaction_visual_attr(text->text.glyph_visual, "position");
+    ANN(position_attr);
+    glyph_positions = (const float*)position_attr->data;
+    ANN(glyph_positions);
+    AC(glyph_positions[0], positions[0][0], 1e-6f);
+    AC(glyph_positions[1], positions[0][1], 1e-6f);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
 /**
  * Register scene interaction tests.
  *
@@ -1083,6 +1221,8 @@ int test_scene_interaction(TstSuite* suite)
     TST_CASE(test_scene_text_font_atlas_expands_for_utf8);
     TST_CASE(test_scene_text_font_atlas_missing_glyph_fallback);
     TST_CASE(test_scene_text_many_labels_render_plan);
+    TST_CASE(test_scene_text_panzoom_glyph_anchor_coordinates);
+    TST_CASE(test_scene_text_attach_mode_change_regenerates_glyphs);
 
     return 0;
 }

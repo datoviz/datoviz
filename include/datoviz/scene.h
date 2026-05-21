@@ -1206,6 +1206,8 @@ DVZ_EXPORT DvzVisual* dvz_image(DvzScene* scene, uint32_t flags);
  *
  * Text visuals render one string per item. Use `dvz_visual_set_strings(text, "text", ...)` and
  * regular visual data attributes for positions, text-box anchors, sizes, colors, and angles.
+ * Position attributes are interpreted like the generated glyph visual attachment: panel pixels
+ * for `DVZ_CONTROLLER_FIXED`, or visual coordinates for controller-applied attachments.
  *
  * @param scene the scene
  * @param flags variant flags

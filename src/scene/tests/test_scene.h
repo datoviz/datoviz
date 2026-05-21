@@ -694,6 +694,10 @@ int test_scene_text_atlas_utf8_runtime_readback(TstContext* suite, const TstCase
 
 int test_scene_text_many_labels_render_plan(TstContext* suite, const TstCase* item);
 
+int test_scene_text_panzoom_glyph_anchor_coordinates(TstContext* suite, const TstCase* item);
+
+int test_scene_text_attach_mode_change_regenerates_glyphs(TstContext* suite, const TstCase* item);
+
 #if defined(DVZ_HAS_APP) && DVZ_HAS_APP
 int test_app_offscreen_has_nonblank_pixels(TstContext* suite, const TstCase* item);
 

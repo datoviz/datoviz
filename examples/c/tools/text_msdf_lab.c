@@ -93,6 +93,24 @@ typedef struct TextMsdfLabState
 /*************************************************************************************************/
 
 /**
+ * Convert source-window pixels to panzoom visual coordinates.
+ *
+ * @param x x coordinate in source pixels
+ * @param y y coordinate in source pixels
+ * @param z z coordinate
+ * @param out output visual position
+ */
+static void source_pixel_to_visual(float x, float y, float z, float out[3])
+{
+    ANN(out);
+    out[0] = 2.0f * x / (float)TEXT_MSDF_LAB_SOURCE_WIDTH - 1.0f;
+    out[1] = 1.0f - 2.0f * y / (float)TEXT_MSDF_LAB_SOURCE_HEIGHT;
+    out[2] = z;
+}
+
+
+
+/**
  * Convert GUI float RGBA channels to one DvzColor.
  *
  * @param rgba float RGBA channels in [0, 1]
@@ -321,7 +339,8 @@ static void update_source_text(TextMsdfLabState* state, uint32_t source)
     (void)dvz_text_set_renderer(src->text, src->renderer);
 
     const char* strings[1] = {state->text};
-    float positions[1][3] = {{36.0f, 118.0f, 0.0f}};
+    float positions[1][3] = {{0}};
+    source_pixel_to_visual(36.0f, 118.0f, 0.0f, positions[0]);
     float anchors[1][2] = {{0.0f, 0.5f}};
     float sizes[1] = {state->size_px};
     float angles[1] = {state->angle};

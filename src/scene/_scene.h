@@ -787,6 +787,7 @@ struct DvzTextVisualState
     DvzVisual* glyph_visual;
     uint64_t realized_version;
     uint64_t atlas_generation;
+    DvzControllerMode realized_controller_mode;
     uint32_t visual_figure_width;
     uint32_t visual_figure_height;
 };

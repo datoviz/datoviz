@@ -963,9 +963,41 @@ static void _text_placement_alignment(
 
 
 /**
+ * Attach or update the generated glyph visual with the text visual attachment metadata.
+ *
+ * @param panel the owning panel
+ * @param glyph_visual the generated glyph visual
+ * @param desc the desired attachment descriptor
+ * @return whether the glyph visual is attached with the desired metadata
+ */
+static bool _text_sync_glyph_visual_attach(
+    DvzPanel* panel, DvzVisual* glyph_visual, const DvzVisualAttachDesc* desc)
+{
+    ANN(panel);
+    ANN(glyph_visual);
+    ANN(desc);
+    for (uint32_t i = 0; i < panel->visual_count; i++)
+    {
+        DvzPanelAttach* attach = &panel->visuals[i];
+        if (attach->visual != glyph_visual)
+            continue;
+        bool changed =
+            attach->z_layer != desc->z_layer || attach->controller_mode != desc->controller_mode;
+        attach->z_layer = desc->z_layer;
+        attach->controller_mode = desc->controller_mode;
+        if (changed)
+            _scene_notify_request_frame(panel->figure);
+        return true;
+    }
+    return dvz_panel_add_visual(panel, glyph_visual, desc) == 0;
+}
+
+
+
+/**
  * Write one glyph vertex record consumed by the shader-side quad generator.
  *
- * @param anchor_clip the glyph anchor in fixed clip coordinates
+ * @param anchor_position the glyph anchor in the generated visual coordinate space
  * @param bounds_rect the local glyph pixel bounds as x0, y0, x1, y1
  * @param uv_rect the atlas UV rectangle as u0, v0, u1, v1
  * @param color the glyph color
@@ -978,11 +1010,11 @@ static void _text_placement_alignment(
  * @param angles the destination angles
  */
 static void _text_write_glyph_vertex(
-    const float anchor_clip[3], const float bounds_rect[4], const float uv_rect[4],
+    const float anchor_position[3], const float bounds_rect[4], const float uv_rect[4],
     const uint8_t color[4], float angle, uint32_t vertex_index, float* positions, float* bounds,
     float* texcoords, uint8_t* colors, float* angles)
 {
-    ANN(anchor_clip);
+    ANN(anchor_position);
     ANN(bounds_rect);
     ANN(uv_rect);
     ANN(color);
@@ -992,9 +1024,9 @@ static void _text_write_glyph_vertex(
     ANN(colors);
     ANN(angles);
 
-    positions[3 * vertex_index + 0] = anchor_clip[0];
-    positions[3 * vertex_index + 1] = anchor_clip[1];
-    positions[3 * vertex_index + 2] = anchor_clip[2];
+    positions[3 * vertex_index + 0] = anchor_position[0];
+    positions[3 * vertex_index + 1] = anchor_position[1];
+    positions[3 * vertex_index + 2] = anchor_position[2];
     bounds[4 * vertex_index + 0] = bounds_rect[0];
     bounds[4 * vertex_index + 1] = bounds_rect[1];
     bounds[4 * vertex_index + 2] = bounds_rect[2];
@@ -1495,13 +1527,20 @@ static bool _text_visual_prepare(
     }
     if (atlas == NULL)
         return false;
-    if (visual->text.glyph_visual != NULL && visual->text.glyph_visual->field != NULL &&
+    DvzVisualAttachDesc glyph_attach = {
+        .z_layer = attach->z_layer,
+        .controller_mode = attach->controller_mode,
+    };
+    bool realized_cache_valid =
+        visual->text.glyph_visual != NULL && visual->text.glyph_visual->field != NULL &&
         visual->text.realized_version == version &&
         visual->text.atlas_generation == atlas_generation &&
+        visual->text.realized_controller_mode == attach->controller_mode &&
         visual->text.visual_figure_width == figure->width &&
-        visual->text.visual_figure_height == figure->height)
+        visual->text.visual_figure_height == figure->height;
+    if (realized_cache_valid)
     {
-        return true;
+        return _text_sync_glyph_visual_attach(panel, visual->text.glyph_visual, &glyph_attach);
     }
 
     uint64_t vertex_count64 = 0;
@@ -1640,8 +1679,18 @@ static bool _text_visual_prepare(
         float align_x = -text_anchor[0] * width;
         float align_y = -text_anchor[1] * height;
         float angle = angles != NULL ? angles[i] : 0.0f;
-        float anchor_clip[3] = {0};
-        _text_panel_pixel_to_clip(panel, target[i][0], target[i][1], target[i][2], anchor_clip);
+        float anchor_position[3] = {0};
+        if (attach->controller_mode == DVZ_CONTROLLER_FIXED)
+        {
+            _text_panel_pixel_to_clip(
+                panel, target[i][0], target[i][1], target[i][2], anchor_position);
+        }
+        else
+        {
+            anchor_position[0] = target[i][0];
+            anchor_position[1] = target[i][1];
+            anchor_position[2] = target[i][2];
+        }
         spans[i].first_glyph = vertex_count / 6u;
 
         uint32_t column = 0;
@@ -1713,8 +1762,8 @@ static bool _text_visual_prepare(
             for (uint32_t j = 0; j < 6; j++)
             {
                 _text_write_glyph_vertex(
-                    anchor_clip, bounds_rect, uv, color, angle, vertex_count, positions, bounds,
-                    texcoords, colors, glyph_angles);
+                    anchor_position, bounds_rect, uv, color, angle, vertex_count, positions,
+                    bounds, texcoords, colors, glyph_angles);
                 vertex_count++;
             }
         }
@@ -1727,17 +1776,13 @@ static bool _text_visual_prepare(
         visual->text.glyph_visual = dvz_glyph(visual->scene, 0);
         if (visual->text.glyph_visual == NULL)
             ok = false;
-        DvzVisualAttachDesc glyph_attach = {
-            .z_layer = attach->z_layer,
-            .controller_mode = attach->controller_mode,
-        };
-        if (ok && dvz_panel_add_visual(panel, visual->text.glyph_visual, &glyph_attach) != 0)
-            ok = false;
-        if (ok && dvz_visual_set_alpha_mode(visual->text.glyph_visual, DVZ_ALPHA_BLENDED) != 0)
-            ok = false;
-        if (ok && dvz_visual_set_depth_test(visual->text.glyph_visual, false) != 0)
-            ok = false;
     }
+    if (ok && !_text_sync_glyph_visual_attach(panel, visual->text.glyph_visual, &glyph_attach))
+        ok = false;
+    if (ok && dvz_visual_set_alpha_mode(visual->text.glyph_visual, DVZ_ALPHA_BLENDED) != 0)
+        ok = false;
+    if (ok && dvz_visual_set_depth_test(visual->text.glyph_visual, false) != 0)
+        ok = false;
     if (ok)
     {
         visual->text.glyph_visual->glyph_atlas_encoding =
@@ -1763,6 +1808,7 @@ static bool _text_visual_prepare(
         spans = NULL;
         visual->text.realized_version = version;
         visual->text.atlas_generation = atlas_generation;
+        visual->text.realized_controller_mode = attach->controller_mode;
         visual->text.visual_figure_width = figure->width;
         visual->text.visual_figure_height = figure->height;
     }
