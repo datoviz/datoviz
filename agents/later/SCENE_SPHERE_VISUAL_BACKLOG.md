@@ -32,13 +32,15 @@ visual family rules here.
 
 Recommended future commits:
 
-1. Port or redesign the v0.3 textured and equirectangular sphere lanes as a separate feature slice.
+1. Add screen-radius sphere support through the shared `radius_space` contract if a future use case
+   needs zoom-invariant sphere markers. Do not revive a sphere constructor flag for this mode.
+2. Port or redesign the v0.3 textured and equirectangular sphere lanes as a separate feature slice.
    Keep texture projection semantics in `SPHERE.md` before adding API.
-2. Add sphere picking/probing only after the shared picking payload contract can represent
+3. Add sphere picking/probing only after the shared picking payload contract can represent
    impostor-hit depth, object id, and sphere index consistently.
-3. Extend material coverage only through the shared material layer. Avoid sphere-private lighting
+4. Extend material coverage only through the shared material layer. Avoid sphere-private lighting
    uniforms unless the shared contract cannot represent the feature.
-4. Refresh public examples and gallery coverage after the mode, material, and SSAO paths settle.
+5. Refresh public examples and gallery coverage after the mode, material, and SSAO paths settle.
 
 
 ## v0.3 Reference
@@ -53,7 +55,7 @@ Use `v0.3.5` as a reference, not a compatibility target:
 Useful v0.3 ideas to keep available:
 
 1. compact per-sphere vertex payload;
-2. pixel-size mode;
+2. screen-radius mode;
 3. texture and equirectangular projection flags;
 4. analytic point-sprite sphere reconstruction.
 

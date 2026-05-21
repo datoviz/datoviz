@@ -23,8 +23,9 @@ The implemented path supports:
 6. SSAO/G-buffer participation;
 7. app/offscreen and GLFW example coverage for sphere impostors.
 
-Texture projection variants, per-item material/PBR fields, pixel-sized sphere mode, and sphere
-picking remain follow-up work.
+Texture projection variants, per-item material/PBR fields, screen-radius sphere mode, and sphere
+picking remain follow-up work. The active public constructor flags do not reserve a pixel-size
+sphere mode; a future implementation should expose this through the shared `radius_space` contract.
 
 
 ## Semantic Purpose
@@ -75,7 +76,8 @@ Standard — see `SHARED_ATTRIBUTES.md`. Default: `data`.
 
 `data` is the natural default for `sphere` — spheres typically represent physical objects
 whose size should scale with zoom (atoms, cells). Use `screen` when spheres are decorative
-markers that should stay constant size regardless of zoom.
+markers that should stay constant size regardless of zoom. `screen` is specified here as the
+future semantic target; the active v0.4 public API only implements data-space radii.
 
 
 ### `texture`
