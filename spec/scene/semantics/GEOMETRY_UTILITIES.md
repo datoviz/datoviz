@@ -14,6 +14,9 @@ path.
    scene normalization; see [`../pipeline/TRANSFORM_PIPELINE.md`](../pipeline/TRANSFORM_PIPELINE.md).
 3. Outputs lower to existing resource classes in
    [`../pipeline/RESOURCE_MODEL.md`](../pipeline/RESOURCE_MODEL.md), not special resource classes.
+4. v0.4 may break the old `DvzShape` surface. New utility APIs should expose `DvzGeometry`,
+   `DvzPolygon`, `DvzPSLG`, and explicit descriptors rather than preserving shape-era fields or
+   compatibility names.
 
 
 ## Bundled Dependencies

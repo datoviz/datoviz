@@ -44,6 +44,8 @@ Core choices:
    routing;
 6. transparency mode belongs to the visual/material side and lowers through the shared render
    contract.
+7. the public mesh resource path should consume `DvzGeometry` directly; it should not preserve a
+   parallel `DvzShape` upload path for compatibility.
 
 
 ## Canonical Migration Links

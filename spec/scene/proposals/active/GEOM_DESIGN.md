@@ -21,6 +21,11 @@ geometry and triangulation belong in the v0.4 stack.
 planar triangulation helpers, and import paths. It emits ordinary geometry payloads that scene mesh
 resources upload and render.
 
+Because the v0.4 branch does not preserve v0.3 API or ABI compatibility, the `geom` migration
+should be a direct replacement rather than a compatibility bridge. Do not keep `DvzShape` in the
+public geometry API only to ease transition. If a short-lived adapter is useful while landing the
+module, keep it private and remove it before treating `geom` as active.
+
 This replaces the old central `DvzShape` framing with a cleaner split:
 
 1. `DvzGeometry` is the generic render-oriented CPU container;
@@ -35,7 +40,7 @@ This replaces the old central `DvzShape` framing with a cleaner split:
 | Topic | Direction |
 |---|---|
 | Module/name | Use `geom` with public umbrella `datoviz/geom.h`. |
-| Core type | Use `DvzGeometry`; do not revive `DvzShape` as the central container. |
+| Core type | Use `DvzGeometry`; remove `DvzShape` from the public canonical path instead of supporting both APIs. |
 | Coordinates | Renderable geometry stores 3D positions; planar APIs remain genuinely 2D and embed into 3D output when needed. |
 | Base payload | Positions, normals, colors, UVs, triangle indices, and later tangents. |
 | Excluded base fields | Do not bake isoline, contour, left/right distance, or shader-specific staging fields into all geometry objects. |
@@ -69,3 +74,19 @@ Do not restate generator tables or triangulation dependency policy here.
 5. How much structured-grid provenance is stored in `DvzGeometry` versus a sidecar descriptor.
 6. PSLG/constrained triangulation backend choice and build option policy.
 7. Whether contour/isoline preparation helpers live in `geom` or a mesh-shading helper namespace.
+
+
+## First Implementation Slice
+
+1. Replace the current public `datoviz/geom` shape scaffold with a lean `DvzGeometry` declaration
+   and descriptors for the first generators.
+2. Add a `src/geom` object module using the normal allocator wrappers and explicit destroy/reset
+   helpers.
+3. Land a small generator set first: cube, plane, and structured surface grid, with positions,
+   normals, colors, UVs, and `uint32` triangle indices.
+4. Add geometry operations needed by those generators: bounds, normal generation, transform, and
+   merge.
+5. Add tests that validate ownership, counts, index ranges, generated bounds, normal direction, and
+   scene mesh upload compatibility.
+6. Defer OBJ import, constrained triangulation, contour/isoline sidecars, and richer asset import
+   until the core container and upload path are stable.
