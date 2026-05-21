@@ -216,6 +216,7 @@ int test_scene_colorbar_auto_reserve_and_visuals(TstContext* suite, const TstCas
     AT(colorbar->ramp_visual != NULL);
     AT(colorbar->tick_visual != NULL);
     AT(colorbar->text_visual != NULL);
+    AT(colorbar->ramp_visual->topology == DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
     AT(colorbar->ramp_visual->visible);
     AT(colorbar->tick_visual->visible);
     AT(colorbar->text_visual->visible);
@@ -226,7 +227,7 @@ int test_scene_colorbar_auto_reserve_and_visuals(TstContext* suite, const TstCas
     DvzVisualAttr* ramp_color = _colorbar_test_attr(colorbar->ramp_visual, "color");
     ANN(pos);
     ANN(ramp_color);
-    AT(pos->item_count == 2 * (64 + 1));
+    AT(pos->item_count == 6 * 64);
     AT(ramp_color->item_count == pos->item_count);
     float* positions = (float*)pos->data;
     AT(positions[1] < -0.95f);
@@ -428,7 +429,7 @@ int test_scene_colorbar_emit_stream_contains_derived_visuals(
     AT(colorbar->text_visual != NULL);
     AT(colorbar->text_visual->text.glyph_visual != NULL);
 
-    const uint64_t ramp_vertex_count = 2u * (64u + 1u);
+    const uint64_t ramp_vertex_count = 6u * 64u;
     const uint64_t ramp_position_size = ramp_vertex_count * 3u * sizeof(float);
     const uint64_t ramp_color_size = ramp_vertex_count * sizeof(DvzColor);
     bool found_ramp_position_upload = false;

@@ -638,7 +638,7 @@ static bool _colorbar_ensure_visuals(DvzColorbar* colorbar)
     if (colorbar->ramp_visual == NULL)
     {
         colorbar->ramp_visual =
-            dvz_primitive(colorbar->scene, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP, 0);
+            dvz_primitive(colorbar->scene, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 0);
         if (colorbar->ramp_visual == NULL)
             return false;
         colorbar->ramp_visual->visible = false;
@@ -783,30 +783,47 @@ static void _colorbar_update_ramp(
 {
     ANN(colorbar);
     ANN(colorbar->ramp_visual);
-    const uint32_t vertex_count = 2 * (COLORBAR_RAMP_SEGMENTS + 1u);
-    float positions[2 * (COLORBAR_RAMP_SEGMENTS + 1u)][3] = {{0}};
-    DvzColor colors[2 * (COLORBAR_RAMP_SEGMENTS + 1u)] = {{0}};
+    const uint32_t vertex_count = 6 * COLORBAR_RAMP_SEGMENTS;
+    float positions[6 * COLORBAR_RAMP_SEGMENTS][3] = {{0}};
+    DvzColor colors[6 * COLORBAR_RAMP_SEGMENTS] = {{0}};
     bool vertical = _colorbar_vertical(colorbar);
-    for (uint32_t i = 0; i <= COLORBAR_RAMP_SEGMENTS; i++)
+    for (uint32_t i = 0; i < COLORBAR_RAMP_SEGMENTS; i++)
     {
-        double t = (double)i / (double)COLORBAR_RAMP_SEGMENTS;
-        float x = vertical ? ramp_x0 : ramp_x0 + (ramp_x1 - ramp_x0) * (float)t;
-        float y = vertical ? ramp_y1 + (ramp_y0 - ramp_y1) * (float)t : ramp_y0;
-        uint8_t rgba[4] = {0};
-        (void)_scene_color_from_colormap(colorbar->scale->colormap, t, rgba);
-        uint32_t k = 2u * i;
+        double t0 = (double)i / (double)COLORBAR_RAMP_SEGMENTS;
+        double t1 = (double)(i + 1u) / (double)COLORBAR_RAMP_SEGMENTS;
+        float x0 = vertical ? ramp_x0 : ramp_x0 + (ramp_x1 - ramp_x0) * (float)t0;
+        float x1 = vertical ? ramp_x1 : ramp_x0 + (ramp_x1 - ramp_x0) * (float)t1;
+        float y0 = vertical ? ramp_y1 + (ramp_y0 - ramp_y1) * (float)t0 : ramp_y0;
+        float y1 = vertical ? ramp_y1 + (ramp_y0 - ramp_y1) * (float)t1 : ramp_y1;
+        uint8_t rgba0[4] = {0};
+        uint8_t rgba1[4] = {0};
+        (void)_scene_color_from_colormap(colorbar->scale->colormap, t0, rgba0);
+        (void)_scene_color_from_colormap(colorbar->scale->colormap, t1, rgba1);
+        uint32_t k = 6u * i;
+        _colorbar_pixel_to_visual(width, height, x0, y0, 0.0f, positions[k + 0]);
+        _colorbar_pixel_to_visual(width, height, x1, y0, 0.0f, positions[k + 1]);
+        _colorbar_pixel_to_visual(width, height, x1, y1, 0.0f, positions[k + 2]);
+        _colorbar_pixel_to_visual(width, height, x0, y0, 0.0f, positions[k + 3]);
+        _colorbar_pixel_to_visual(width, height, x0, y1, 0.0f, positions[k + 4]);
+        _colorbar_pixel_to_visual(width, height, x1, y1, 0.0f, positions[k + 5]);
         if (vertical)
         {
-            _colorbar_pixel_to_visual(width, height, ramp_x0, y, 0.0f, positions[k + 0]);
-            _colorbar_pixel_to_visual(width, height, ramp_x1, y, 0.0f, positions[k + 1]);
+            dvz_memcpy(colors[k + 0], sizeof(DvzColor), rgba0, sizeof(DvzColor));
+            dvz_memcpy(colors[k + 1], sizeof(DvzColor), rgba0, sizeof(DvzColor));
+            dvz_memcpy(colors[k + 2], sizeof(DvzColor), rgba1, sizeof(DvzColor));
+            dvz_memcpy(colors[k + 3], sizeof(DvzColor), rgba0, sizeof(DvzColor));
+            dvz_memcpy(colors[k + 4], sizeof(DvzColor), rgba1, sizeof(DvzColor));
+            dvz_memcpy(colors[k + 5], sizeof(DvzColor), rgba1, sizeof(DvzColor));
         }
         else
         {
-            _colorbar_pixel_to_visual(width, height, x, ramp_y1, 0.0f, positions[k + 0]);
-            _colorbar_pixel_to_visual(width, height, x, ramp_y0, 0.0f, positions[k + 1]);
+            dvz_memcpy(colors[k + 0], sizeof(DvzColor), rgba0, sizeof(DvzColor));
+            dvz_memcpy(colors[k + 1], sizeof(DvzColor), rgba1, sizeof(DvzColor));
+            dvz_memcpy(colors[k + 2], sizeof(DvzColor), rgba1, sizeof(DvzColor));
+            dvz_memcpy(colors[k + 3], sizeof(DvzColor), rgba0, sizeof(DvzColor));
+            dvz_memcpy(colors[k + 4], sizeof(DvzColor), rgba0, sizeof(DvzColor));
+            dvz_memcpy(colors[k + 5], sizeof(DvzColor), rgba1, sizeof(DvzColor));
         }
-        dvz_memcpy(colors[k + 0], sizeof(DvzColor), rgba, sizeof(DvzColor));
-        dvz_memcpy(colors[k + 1], sizeof(DvzColor), rgba, sizeof(DvzColor));
     }
     DvzVisualDataUpdate updates[2] = {
         {.attr_name = "position", .data = positions, .item_count = vertex_count},
