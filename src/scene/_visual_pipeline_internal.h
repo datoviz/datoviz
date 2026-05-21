@@ -44,6 +44,10 @@ bool _scene_visual_desc_is_sphere(DvzSceneVisualDescKind kind);
 
 bool _scene_visual_desc_is_segment(DvzSceneVisualDescKind kind);
 
+bool _scene_visual_desc_is_path(DvzSceneVisualDescKind kind);
+
+bool _scene_visual_desc_is_stroke(DvzSceneVisualDescKind kind);
+
 bool _scene_visual_meta_point_like_kind(uint32_t visual_type, DvzScenePointLikeKind* out);
 
 uint64_t _scene_render_visual_resource_id(

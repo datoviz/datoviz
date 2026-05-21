@@ -379,6 +379,29 @@ static bool _scene_shader_desc_segment(const char* format_tag, DvzSceneVisualSha
 
 
 /**
+ * Resolve path shader metadata.
+ *
+ * @param format_tag the shader-format cache-key suffix
+ * @param out the output shader descriptor
+ * @return whether a shader descriptor was resolved
+ */
+static bool _scene_shader_desc_path(const char* format_tag, DvzSceneVisualShaderDesc* out)
+{
+    ANN(format_tag);
+    ANN(out);
+
+    dvz_snprintf(out->vertex_key, sizeof(out->vertex_key), "_vs_path%s", format_tag);
+    dvz_snprintf(out->fragment_key, sizeof(out->fragment_key), "_fs_path%s", format_tag);
+    dvz_snprintf(out->pipeline_key, sizeof(out->pipeline_key), "_pipe_path%s", format_tag);
+    _scene_shader_desc_set_builtin(out, DVZ_SCENE_BUILTIN_SHADER_PATH);
+    _scene_shader_desc_set_identity(out, "scene.path", "default");
+    out->vertex_spirv_key = "path_vert";
+    out->fragment_spirv_key = "path_frag";
+    return true;
+}
+
+
+/**
  * Resolve sphere shader metadata from feature flags.
  *
  * @param features the shader features
@@ -443,6 +466,9 @@ bool _scene_visual_shader_desc(
 
     case DVZ_SCENE_VISUAL_DESC_SEGMENT:
         return _scene_shader_desc_segment(format_tag, out);
+
+    case DVZ_SCENE_VISUAL_DESC_PATH:
+        return _scene_shader_desc_path(format_tag, out);
 
     case DVZ_SCENE_VISUAL_DESC_PRIMITIVE:
         return _scene_shader_desc_primitive(&features, format_tag, out);

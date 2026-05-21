@@ -21,6 +21,7 @@
 #include "_scene_resource_key.h"
 #include "_technique.h"
 #include "_visual_pipeline.h"
+#include "_visual_pipeline_internal.h"
 #include "../drp2/_stream.h"
 
 
@@ -2272,7 +2273,7 @@ bool _scene_draw_contract_from_visual(
         .volume_occluded = visual->volume_occluded,
         .scene_occluded = visual->scene_occluded,
         .scene_occluder = visual->scene_occluder,
-        .uses_segment_pipeline = caps.kind == DVZ_SCENE_VISUAL_DESC_SEGMENT,
+        .uses_segment_pipeline = _scene_visual_desc_is_stroke(caps.kind),
         .uses_common_set = caps.uses_common_set,
         .uses_material_set = caps.uses_material_set,
         .uses_image_set = caps.uses_image_set,

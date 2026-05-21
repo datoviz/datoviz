@@ -76,6 +76,7 @@ bool _scene_visual_bind_desc(
         return true;
 
     case DVZ_SCENE_VISUAL_DESC_SEGMENT:
+    case DVZ_SCENE_VISUAL_DESC_PATH:
         out->uses_common_set0 = caps.uses_common_set;
         out->uses_fixed_common = caps.fixed_controller;
         out->uses_material_set1 = caps.uses_material_set;

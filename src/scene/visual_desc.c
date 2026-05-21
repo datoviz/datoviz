@@ -191,6 +191,30 @@ bool _scene_visual_desc_is_segment(DvzSceneVisualDescKind kind)
 }
 
 
+/**
+ * Return whether a visual descriptor uses the path analytic stroke pipeline family.
+ *
+ * @param kind the visual descriptor kind
+ * @return whether the descriptor is path-like
+ */
+bool _scene_visual_desc_is_path(DvzSceneVisualDescKind kind)
+{
+    return kind == DVZ_SCENE_VISUAL_DESC_PATH;
+}
+
+
+/**
+ * Return whether a visual descriptor uses an analytic stroke pipeline family.
+ *
+ * @param kind the visual descriptor kind
+ * @return whether the descriptor is stroke-like
+ */
+bool _scene_visual_desc_is_stroke(DvzSceneVisualDescKind kind)
+{
+    return _scene_visual_desc_is_segment(kind) || _scene_visual_desc_is_path(kind);
+}
+
+
 
 /**
  * Return the point-like family represented by a retained visual type.
@@ -387,15 +411,18 @@ static bool _scene_visual_desc_from_metadata(
         *error = NULL;
 
     bool stroked_path = _scene_visual_meta_is_stroked_path(&emitter->resources, meta);
-    bool segment_like = meta->visual_type == DVZ_VISUAL_TYPE_SEGMENT || stroked_path;
+    bool segment_like = meta->visual_type == DVZ_VISUAL_TYPE_SEGMENT;
+    bool stroke_like = segment_like || stroked_path;
     const char* primary_position_id = segment_like ? meta->position_start_id : meta->position_id;
+    if (stroked_path)
+        primary_position_id = meta->position_start_id;
     uint64_t pos_buf =
         _scene_visual_resource_lookup_label(&emitter->resources, primary_position_id);
     if (pos_buf == 0)
     {
         if (error != NULL)
-            *error = segment_like ? "typed segment metadata missing position_start resource"
-                                  : "typed visual metadata missing position resource";
+            *error = stroke_like ? "typed stroke metadata missing position_start resource"
+                                 : "typed visual metadata missing position resource";
         return false;
     }
     out->vbuf_ids[out->vbuf_count++] = pos_buf;
@@ -462,7 +489,7 @@ static bool _scene_visual_desc_from_metadata(
         return true;
     }
 
-    if (segment_like)
+    if (stroke_like)
     {
         uint64_t end_id =
             _scene_visual_resource_lookup_label(&emitter->resources, meta->position_end_id);
@@ -485,7 +512,7 @@ static bool _scene_visual_desc_from_metadata(
                                "resource";
             return false;
         }
-        out->kind = DVZ_SCENE_VISUAL_DESC_SEGMENT;
+        out->kind = stroked_path ? DVZ_SCENE_VISUAL_DESC_PATH : DVZ_SCENE_VISUAL_DESC_SEGMENT;
         out->vbuf_ids[out->vbuf_count++] = end_id;
         out->vbuf_ids[out->vbuf_count++] = color_id;
         out->vbuf_ids[out->vbuf_count++] = line_width_id;

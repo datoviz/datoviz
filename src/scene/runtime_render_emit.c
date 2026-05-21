@@ -36,6 +36,7 @@
 #include "_shader_registry.h"
 #include "_technique.h"
 #include "_visual_pipeline.h"
+#include "_visual_pipeline_internal.h"
 #include "datoviz/drp2.h"
 #include "datoviz/drp2/stream.h"
 #include "datoviz/scene.h"
@@ -442,7 +443,7 @@ bool _emitter_prepare_render_multi(
                                       ? render->u.render.visual_metadata[i].alpha_mode
                                       : DVZ_ALPHA_OPAQUE;
         bool segment_coverage_blend =
-            !render->u.render.picking && desc.kind == DVZ_SCENE_VISUAL_DESC_SEGMENT &&
+            !render->u.render.picking && _scene_visual_desc_is_stroke(desc.kind) &&
             !_scene_alpha_mode_is_blended(alpha_mode) && !wboit_accumulation && !depth_peel_pass;
         bool point_like_desc = desc.kind == DVZ_SCENE_VISUAL_DESC_POINT ||
                                desc.kind == DVZ_SCENE_VISUAL_DESC_PIXEL ||

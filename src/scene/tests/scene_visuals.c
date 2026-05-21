@@ -1581,7 +1581,7 @@ int test_scene_path_glsl_executes(TstContext* suite, const TstCase* item)
 
 
 /**
- * Verify line-width path visuals lower to the stroked segment pipeline.
+ * Verify line-width path visuals lower to the scene.path stroke pipeline.
  *
  * @param suite the active test suite
  * @param item the active test item
@@ -1647,7 +1647,7 @@ int test_scene_path_line_width_emit_glsl(TstContext* suite, const TstCase* item)
         if (cmd->type == DVZ_DRP2_COMMAND_CREATE_RENDER_PIPELINE)
         {
             const char* label = dvz_drp2_stream_label(stream, cmd->u.create_render_pipeline.id);
-            if (label != NULL && strstr(label, "_pipe_segmentg") == label)
+            if (label != NULL && strstr(label, "_pipe_pathg") == label)
             {
                 found_pipeline = true;
                 AT(cmd->u.create_render_pipeline.topology == VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);

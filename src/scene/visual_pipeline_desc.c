@@ -213,6 +213,7 @@ bool _scene_visual_pipeline_desc(
         return true;
 
     case DVZ_SCENE_VISUAL_DESC_SEGMENT:
+    case DVZ_SCENE_VISUAL_DESC_PATH:
         out->vertex_buffer_count = 4;
         out->binding_count = 4;
         out->attr_count = 4;

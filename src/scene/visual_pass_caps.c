@@ -53,7 +53,7 @@ static void _scene_visual_pass_caps_resolve(
     dvz_memset(out, sizeof(DvzSceneVisualPassCaps), 0, sizeof(DvzSceneVisualPassCaps));
 
     bool primitive = _scene_visual_desc_is_primitive(kind);
-    bool segment = _scene_visual_desc_is_segment(kind);
+    bool stroke = _scene_visual_desc_is_stroke(kind);
     bool sphere = _scene_visual_desc_is_sphere(kind);
     bool point_like = kind == DVZ_SCENE_VISUAL_DESC_POINT || kind == DVZ_SCENE_VISUAL_DESC_PIXEL ||
                       kind == DVZ_SCENE_VISUAL_DESC_MARKER;
@@ -77,12 +77,12 @@ static void _scene_visual_pass_caps_resolve(
     out->uses_source_over_blend = _scene_alpha_mode_is_blended(alpha_mode);
     out->writes_color = kind != DVZ_SCENE_VISUAL_DESC_NONE;
     out->writes_depth = out->draws_in_opaque_pass &&
-                        (primitive || segment || point_like || sphere) && !fixed &&
+                        (primitive || stroke || point_like || sphere) && !fixed &&
                         depth_test_enabled;
     out->can_write_depth =
-        (primitive || segment || point_like || sphere) && !fixed && depth_test_enabled;
+        (primitive || stroke || point_like || sphere) && !fixed && depth_test_enabled;
     out->can_depth_test =
-        (primitive || segment || point_like || sphere) && !fixed && depth_test_enabled;
+        (primitive || stroke || point_like || sphere) && !fixed && depth_test_enabled;
     out->samples_depth = volume && !fixed;
     out->needs_depth_attachment = out->can_depth_test || out->samples_depth;
     out->eligible_for_depth_postprocess = out->draws_in_opaque_pass && out->writes_depth;
@@ -90,7 +90,7 @@ static void _scene_visual_pass_caps_resolve(
         out->draws_in_opaque_pass && ((primitive && has_normals) || sphere) && out->writes_depth;
     out->uses_common_set = kind != DVZ_SCENE_VISUAL_DESC_NONE;
     out->needs_material_layout =
-        (primitive && has_normals) || segment || sphere || (point_like && has_material_resource);
+        (primitive && has_normals) || stroke || sphere || (point_like && has_material_resource);
     out->uses_material_set = out->needs_material_layout && has_material_resource;
     out->uses_image_set = image;
     out->uses_volume_set = volume;
@@ -137,7 +137,7 @@ bool _scene_visual_pass_caps_from_visual(
         break;
     case DVZ_VISUAL_TYPE_PATH:
         kind = _scene_visual_has_dense_attr(visual, "line_width")
-                   ? DVZ_SCENE_VISUAL_DESC_SEGMENT
+                   ? DVZ_SCENE_VISUAL_DESC_PATH
                    : DVZ_SCENE_VISUAL_DESC_PRIMITIVE;
         break;
     case DVZ_VISUAL_TYPE_IMAGE:
