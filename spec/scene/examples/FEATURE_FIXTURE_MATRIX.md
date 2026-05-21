@@ -75,7 +75,10 @@ example is `v0.4 required`, `v0.4 experimental`, `v0.4 fixture-only`, `v0.5`, `l
 | Scale | Domain clipping | Implemented | `fixture_scale_domain.c` | PNG | scene+app | Render the same scalar image with a clipped scale domain. |
 | Scale | Categorical colormap | Implemented | `fixture_scale_categorical.c` | PNG | scene+app | Render a small label image through a categorical scale. |
 | Colorbar | Retained bookkeeping | Implemented bookkeeping | `fixture_colorbar_bookkeeping.c` | stdout/JSON | scene | Create a colorbar object and serialize/inspect it. |
-| Colorbar | Rendered colorbar | Planned | `fixture_colorbar_rendered.c` | PNG | scene+app | Render scalar image plus a simple colorbar when rendering lands. |
+| Colorbar | Frame-plan contributions | Planned first slice | `fixture_colorbar_frame_plan.c` | JSON | scene | Verify ramp, ticks, tick labels, title, anchor, orientation, and auto-reserve metadata. |
+| Colorbar | Rendered vertical colorbar | Planned first slice | `fixture_colorbar_vertical.c` | PNG | scene+app | Render scalar image plus a right-anchored continuous colorbar with title and tick labels. |
+| Colorbar | Rendered horizontal colorbar | Planned first slice | `fixture_colorbar_horizontal.c` | PNG | scene+app | Render scalar image plus a bottom-anchored continuous colorbar and deterministic tick labels. |
+| Colorbar | Unsupported scale/anchor diagnostics | Planned first slice | `fixture_colorbar_diagnostics.c` | stdout/JSON | scene | Check categorical scale and non-edge anchor diagnostics without silent fallback. |
 | Material | Unlit | Implemented | `fixture_material_unlit.c` | PNG | scene+app | One triangle/mesh using unlit material state. |
 | Material | Phong/lit | Implemented | `fixture_material_phong.c` | PNG | scene+app | One lit cube or sphere with normals. |
 | Effect | Depth cue points | Implemented | `fixture_depth_cue_points.c` | PNG | scene+app | Points at different z values fade/darken with depth. |

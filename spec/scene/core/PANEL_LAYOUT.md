@@ -28,6 +28,12 @@ figure resize.
 to reserve space for axis labels and titles) are expressed in **pixels** — they have a fixed
 physical size regardless of figure dimensions.
 
+Current implementation note: the public `DvzPanelLayoutReserve` object is still expressed in
+panel visual units. Pixel-sized adornments such as axes, labels, and the first colorbar slice
+should keep their own logical-pixel layout constants internally, then convert those values to
+panel visual reserve units when updating the active panel reserve state. Do not expose normalized
+reserve units as the primary sizing language for new adornment APIs.
+
 
 ## Panel, Plot, And Adornment Rectangles
 
@@ -201,12 +207,19 @@ Cells covered by a span that are not the origin cell should not also be used by 
 The scene does not enforce this, but overlapping spans produce undefined visual results.
 
 
-#### Colorbar And Legend Slots
+#### Colorbar And Legend Placement
 
-A colorbar or legend is a fixed-size column or row adjacent to a data panel.
+There are two useful placement patterns, and they should not be conflated.
 
-The standard pattern is a fixed-pixel column (or row) for the colorbar, with the data column
-carrying the remaining proportional weight:
+The first rendered colorbar slice uses a same-panel edge band. The `DvzColorbar` remains attached
+to the data panel, selects a panel edge through `DvzColorbarDesc.anchor`, and auto-reserves a
+fixed logical-pixel band inside that panel. Data visuals render in the plot rect; the colorbar
+ramp, ticks, and labels render as panel adornments clipped to the panel rect. This is the default
+for one panel explaining one continuous scale.
+
+Grid-level colorbar slots are a later layout feature for shared or consolidated colorbars. In that
+model, a colorbar or legend uses a fixed-size column or row adjacent to one or more data panels,
+with the data column carrying the remaining proportional weight:
 
 ```text
 // 2-column grid: data panel (proportional) + colorbar (60 px fixed)
@@ -218,18 +231,19 @@ DvzPanel* data_panel  = dvz_grid_panel(grid, 0, 0)
 DvzPanel* cbar_panel  = dvz_grid_panel(grid, 0, 1)
 ```
 
-The colorbar visual is attached to `cbar_panel` as a normal visual.
-No special colorbar-panel type is needed — it is an ordinary panel with a fixed-width column.
+In the grid-slot model, no special colorbar-panel type is needed. The slot is an ordinary panel
+with a fixed-width column or fixed-height row. The rendered colorbar still explains a `DvzScale`;
+only its layout ownership changes from same-panel edge band to dedicated layout slot.
 
-A convenience wrapper is available that encapsulates the grid setup above:
+A future convenience wrapper may encapsulate the grid setup above:
 
 ```text
 DvzPanel* cbar_panel = dvz_panel_attach_colorbar(data_panel, DVZ_PANEL_SIDE_RIGHT, 60)
 ```
 
-`dvz_panel_attach_colorbar` creates a fixed-width column or row adjacent to the given panel
-and returns a `DvzPanel*` for the colorbar. `DVZ_PANEL_SIDE_RIGHT`, `_LEFT`, `_TOP`, and
-`_BOTTOM` select the side; the second argument is the width (or height) in pixels.
+`dvz_panel_attach_colorbar` would create a fixed-width column or row adjacent to the given panel
+and return a `DvzPanel*` for the colorbar. `DVZ_PANEL_SIDE_RIGHT`, `_LEFT`, `_TOP`, and
+`_BOTTOM` would select the side; the second argument is the width or height in pixels.
 
 For a shared colorbar spanning multiple data rows, use a row-span:
 

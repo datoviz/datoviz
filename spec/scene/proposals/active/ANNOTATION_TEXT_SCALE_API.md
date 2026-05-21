@@ -203,7 +203,12 @@ Colorbars should be panel-owned semantic objects bound to scales.
 Conceptual API shape:
 
 ```text
-DvzColorbar* cb = dvz_colorbar(panel, scale, flags);
+DvzColorbarDesc desc = {
+    .orientation = DVZ_COLORBAR_ORIENTATION_VERTICAL,
+    .anchor = DVZ_SCENE_ANCHOR_PANEL_RIGHT,
+    .title = "Intensity",
+};
+DvzColorbar* cb = dvz_colorbar(panel, scale, &desc);
 dvz_colorbar_set_orientation(cb, mode);
 dvz_colorbar_set_title(cb, "Intensity");
 dvz_colorbar_set_anchor(cb, anchor);
@@ -216,6 +221,17 @@ Recommended rule:
 2. they do not become the owner of the scale,
 3. they inherit colormap appearance from the referenced scale unless an explicit explanatory
    override is introduced later.
+
+First rendered-slice API decisions:
+
+1. `dvz_colorbar()` takes a descriptor, not a flags-only constructor,
+2. orientation, anchor, title, and format are retained colorbar state,
+3. narrow setters should be added for orientation, anchor, and title when implementation needs
+   mutation after creation,
+4. setters dirty only colorbar layout or text state, not the referenced scale or colormap,
+5. first-slice anchors are limited to panel edges: left, right, top, and bottom,
+6. colorbar sizing uses fixed logical pixels and auto-reserves the selected panel edge,
+7. shared/consolidated colorbars across multiple panels are a later grid/dashboard layout feature.
 
 
 ## Annotation Surface

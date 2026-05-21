@@ -20,6 +20,15 @@ The first slice supports:
 7. unit and precision formatting from scale/colorbar format state,
 8. offscreen and GLFW app rendering through scene -> `FramePlan` -> DRP2.
 
+First-slice decisions:
+
+1. colorbars are same-panel adornments, not separate layout panels,
+2. only panel-edge anchors are valid: left, right, top, and bottom,
+3. colorbar dimensions are specified in fixed logical pixels,
+4. `dvz_colorbar()` auto-reserves a deterministic panel-edge band for the first slice,
+5. callers can later opt out of auto-reserve through an explicit flag or setter if needed,
+6. shared or consolidated colorbars across multiple panels are deferred to grid/dashboard layout.
+
 
 ## Non-Goals
 
@@ -52,6 +61,16 @@ Use the installed APIs:
 If an installed setter is missing for a required field, add the narrow setter rather than encoding
 the behavior through flags.
 
+The first implementation should add these narrow setters if code needs to mutate retained colorbar
+layout state after creation:
+
+1. `dvz_colorbar_set_orientation()`,
+2. `dvz_colorbar_set_anchor()`,
+3. `dvz_colorbar_set_title()`.
+
+These setters dirty only the colorbar layout/text state. They do not mutate the referenced scale,
+colormap, or visual data.
+
 
 ## Retained State
 
@@ -81,8 +100,40 @@ The first implementation should use deterministic fixed-size layout:
 4. tick marks use primitive or segment contributions,
 5. no collision solver is required.
 
+Default logical-pixel constants for the first slice:
+
+| Name | Value | Notes |
+| --- | ---: | --- |
+| vertical edge reserve | 96 px | used for left/right anchors |
+| horizontal edge reserve | 72 px | used for top/bottom anchors |
+| ramp thickness | 18 px | width for vertical bars, height for horizontal bars |
+| edge padding | 8 px | inside the reserved band |
+| tick length | 6 px | drawn toward labels |
+| label gap | 4 px | between tick marks and tick labels |
+| title gap | 8 px | between ramp/ticks and title |
+
+The reserve values are deliberately conservative. They should be constants in one internal colorbar
+layout helper so later tight-layout measurement can replace them without changing public semantics.
+
+Anchor and orientation policy:
+
+| Anchor | Default orientation | Ramp direction |
+| --- | --- | --- |
+| `DVZ_SCENE_ANCHOR_PANEL_RIGHT` | vertical | low at bottom, high at top |
+| `DVZ_SCENE_ANCHOR_PANEL_LEFT` | vertical | low at bottom, high at top |
+| `DVZ_SCENE_ANCHOR_PANEL_BOTTOM` | horizontal | low at left, high at right |
+| `DVZ_SCENE_ANCHOR_PANEL_TOP` | horizontal | low at left, high at right |
+
+If a descriptor supplies an orientation that disagrees with the anchor, preserve the explicit
+orientation and lay the colorbar inside the same reserved edge band. Emit a diagnostic only when
+the requested combination cannot fit the deterministic layout.
+
 If a panel is too small, validation or adaptation should produce a diagnostic and skip optional
 labels before it changes the semantic scale mapping.
+
+Panel reserve is currently exposed as normalized panel visual units. The colorbar implementation
+should treat its own sizing as logical pixels, then convert the selected edge reserve to panel
+visual units when calling or updating the panel reserve state.
 
 
 ## Tick Policy
@@ -108,6 +159,14 @@ The first ramp may be represented as either:
 
 Prefer the generated texture path if it reuses existing image/texture upload and sampling
 infrastructure cleanly. The public colorbar semantics must not expose which representation is used.
+
+Implementation preference:
+
+1. use a generated RGBA ramp texture when it can reuse retained sampled-field/image upload paths
+   without per-frame resource churn,
+2. otherwise use a fixed strip of primitive rectangles for the first slice,
+3. keep the chosen representation internal so tests assert colorbar semantics and emitted
+   contribution roles, not a public primitive type.
 
 
 ## Dirty Rules
@@ -137,6 +196,11 @@ Validate before planning:
 Categorical scales should produce an explicit "legend required" or "categorical colorbar
 unsupported" diagnostic in this slice.
 
+Non-edge anchors (`PANEL_TOP_LEFT`, `PANEL_TOP_RIGHT`, `PANEL_CENTER`,
+`PANEL_BOTTOM_LEFT`, `PANEL_BOTTOM_RIGHT`, `DATA`, `WORLD`, and `SCREEN`) should produce an
+explicit unsupported-anchor diagnostic in this slice. They should not silently fall back to
+`PANEL_RIGHT`.
+
 
 ## FramePlan Contribution
 
@@ -149,6 +213,17 @@ A rendered colorbar contributes:
 
 These should be panel-local overlay contributions that respect panel viewport/scissor.
 
+The contribution role should distinguish:
+
+1. ramp geometry,
+2. tick marks,
+3. tick labels,
+4. title text,
+5. optional background or border.
+
+This keeps frame-plan fixtures stable even if the ramp implementation switches between texture and
+primitive strips.
+
 
 ## Tests
 
@@ -160,7 +235,9 @@ Add focused scene tests for:
 4. colormap changes regenerate the ramp but not unrelated visual geometry,
 5. destroyed colorbars stop emitting,
 6. cross-scene scale binding remains rejected,
-7. categorical scale colorbar request produces an explicit diagnostic.
+7. categorical scale colorbar request produces an explicit diagnostic,
+8. unsupported anchors produce explicit diagnostics,
+9. auto-reserve updates the selected panel edge using pixel-to-visual conversion.
 
 Add one app/offscreen smoke that captures an image or volume slice with a visible colorbar.
 
@@ -174,4 +251,3 @@ This slice is complete when:
 3. updates to scale domain and colormap are visible across repeated frames,
 4. validation catches unsupported scale kinds and invalid domains,
 5. focused tests cover creation, updates, destroy, and cross-scene failures.
-
