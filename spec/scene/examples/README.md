@@ -52,7 +52,9 @@ Use the example planning documents for distinct jobs:
    runtime gaps exposed by the worked examples.
 5. [EXAMPLE_PRIORITIZATION.md](EXAMPLE_PRIORITIZATION.md) ranks example candidates by payoff,
    feasibility, architecture pressure, and release usefulness.
-6. [TEMPLATE.md](TEMPLATE.md) is the starting point for new worked example specs.
+6. [EXAMPLE_API_DUPLICATION_DECISIONS.md](EXAMPLE_API_DUPLICATION_DECISIONS.md) records the
+   decisions from the current C example duplication review.
+7. [TEMPLATE.md](TEMPLATE.md) is the starting point for new worked example specs.
 
 Do not use worked example files as release commitments by themselves. Promote release commitments
 through [EXAMPLE_RELEASE_STAGING.md](EXAMPLE_RELEASE_STAGING.md) so future agents can tell which
