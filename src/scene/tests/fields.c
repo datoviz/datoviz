@@ -95,6 +95,9 @@ int test_scene_scale_colormap_colorbar_core(TstContext* suite, const TstCase* it
     ANN(colormap);
     AT(scene->colormap_count == 1);
     AT(colormap->builtin == DVZ_BUILTIN_COLORMAP_MAGMA);
+    uint8_t builtin_rgba[4] = {0};
+    AT(_scene_color_from_colormap(colormap, 0.5, builtin_rgba));
+    AT(builtin_rgba[0] != builtin_rgba[1]);
 
     DvzColormapStop stops[2] = {
         {.position = 0.0, .rgba = {0, 0, 0, 255}},

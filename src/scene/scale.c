@@ -65,6 +65,139 @@ static void _scene_mark_colorbar_dirty(DvzColorbar* colorbar);
 /*************************************************************************************************/
 
 /**
+ * Sample an ordered colormap stop table.
+ *
+ * @param stops the stop table
+ * @param count number of stops
+ * @param t normalized scalar value
+ * @param out_rgba the output RGBA color
+ * @return true when a color was written
+ */
+static bool _colormap_sample_stops(
+    const DvzColormapStop* stops, uint32_t count, double t, uint8_t out_rgba[4])
+{
+    ANN(stops);
+    ANN(out_rgba);
+    if (count < 2)
+        return false;
+    const DvzColormapStop* lo = &stops[0];
+    const DvzColormapStop* hi = &stops[count - 1];
+    for (uint32_t i = 1; i < count; i++)
+    {
+        if (t <= stops[i].position)
+        {
+            lo = &stops[i - 1];
+            hi = &stops[i];
+            break;
+        }
+    }
+    double span = hi->position - lo->position;
+    double u = span > 0.0 ? (t - lo->position) / span : 0.0;
+    if (u < 0.0)
+        u = 0.0;
+    if (u > 1.0)
+        u = 1.0;
+    for (uint32_t c = 0; c < 4; c++)
+    {
+        double value = (1.0 - u) * lo->rgba[c] + u * hi->rgba[c];
+        out_rgba[c] = (uint8_t)(value + 0.5);
+    }
+    return true;
+}
+
+
+
+/**
+ * Return a compact built-in colormap stop table.
+ *
+ * @param builtin the built-in colormap
+ * @param out_count output stop count
+ * @return the static stop table, or NULL
+ */
+static const DvzColormapStop*
+_colormap_builtin_stops(DvzBuiltinColormap builtin, uint32_t* out_count)
+{
+    ANN(out_count);
+    static const DvzColormapStop viridis[] = {
+        {.position = 0.00, .rgba = {68, 1, 84, 255}},
+        {.position = 0.25, .rgba = {59, 82, 139, 255}},
+        {.position = 0.50, .rgba = {33, 145, 140, 255}},
+        {.position = 0.75, .rgba = {94, 201, 98, 255}},
+        {.position = 1.00, .rgba = {253, 231, 37, 255}},
+    };
+    static const DvzColormapStop magma[] = {
+        {.position = 0.00, .rgba = {0, 0, 4, 255}},
+        {.position = 0.25, .rgba = {80, 18, 123, 255}},
+        {.position = 0.50, .rgba = {182, 54, 121, 255}},
+        {.position = 0.75, .rgba = {251, 136, 97, 255}},
+        {.position = 1.00, .rgba = {252, 253, 191, 255}},
+    };
+    static const DvzColormapStop plasma[] = {
+        {.position = 0.00, .rgba = {13, 8, 135, 255}},
+        {.position = 0.25, .rgba = {126, 3, 168, 255}},
+        {.position = 0.50, .rgba = {204, 71, 120, 255}},
+        {.position = 0.75, .rgba = {248, 149, 64, 255}},
+        {.position = 1.00, .rgba = {240, 249, 33, 255}},
+    };
+    static const DvzColormapStop inferno[] = {
+        {.position = 0.00, .rgba = {0, 0, 4, 255}},
+        {.position = 0.25, .rgba = {87, 16, 110, 255}},
+        {.position = 0.50, .rgba = {188, 55, 84, 255}},
+        {.position = 0.75, .rgba = {249, 142, 9, 255}},
+        {.position = 1.00, .rgba = {252, 255, 164, 255}},
+    };
+    static const DvzColormapStop cividis[] = {
+        {.position = 0.00, .rgba = {0, 32, 76, 255}},
+        {.position = 0.25, .rgba = {59, 78, 109, 255}},
+        {.position = 0.50, .rgba = {124, 123, 120, 255}},
+        {.position = 0.75, .rgba = {188, 172, 103, 255}},
+        {.position = 1.00, .rgba = {255, 233, 69, 255}},
+    };
+    static const DvzColormapStop turbo[] = {
+        {.position = 0.00, .rgba = {48, 18, 59, 255}},
+        {.position = 0.20, .rgba = {55, 91, 178, 255}},
+        {.position = 0.40, .rgba = {49, 205, 207, 255}},
+        {.position = 0.60, .rgba = {135, 255, 88, 255}},
+        {.position = 0.80, .rgba = {255, 170, 36, 255}},
+        {.position = 1.00, .rgba = {122, 4, 3, 255}},
+    };
+    static const DvzColormapStop gray[] = {
+        {.position = 0.00, .rgba = {0, 0, 0, 255}},
+        {.position = 1.00, .rgba = {255, 255, 255, 255}},
+    };
+    switch (builtin)
+    {
+    case DVZ_BUILTIN_COLORMAP_VIRIDIS:
+        *out_count = DVZ_ARRAY_COUNT(viridis);
+        return viridis;
+    case DVZ_BUILTIN_COLORMAP_MAGMA:
+        *out_count = DVZ_ARRAY_COUNT(magma);
+        return magma;
+    case DVZ_BUILTIN_COLORMAP_PLASMA:
+        *out_count = DVZ_ARRAY_COUNT(plasma);
+        return plasma;
+    case DVZ_BUILTIN_COLORMAP_INFERNO:
+        *out_count = DVZ_ARRAY_COUNT(inferno);
+        return inferno;
+    case DVZ_BUILTIN_COLORMAP_CIVIDIS:
+        *out_count = DVZ_ARRAY_COUNT(cividis);
+        return cividis;
+    case DVZ_BUILTIN_COLORMAP_TURBO:
+        *out_count = DVZ_ARRAY_COUNT(turbo);
+        return turbo;
+    case DVZ_BUILTIN_COLORMAP_GRAY:
+        *out_count = DVZ_ARRAY_COUNT(gray);
+        return gray;
+    case DVZ_BUILTIN_COLORMAP_NONE:
+    default:
+        *out_count = 0;
+        return NULL;
+    }
+}
+
+
+
+/**
  * Mark visuals depending on one scale as needing refreshed texture data.
  *
  * @param scale the scale
@@ -926,29 +1059,16 @@ bool _scene_color_from_colormap(
 
     if (colormap != NULL && colormap->stop_count >= 2)
     {
-        const DvzColormapStop* lo = &colormap->stops[0];
-        const DvzColormapStop* hi = &colormap->stops[colormap->stop_count - 1];
-        for (uint32_t i = 1; i < colormap->stop_count; i++)
-        {
-            if (t <= colormap->stops[i].position)
-            {
-                lo = &colormap->stops[i - 1];
-                hi = &colormap->stops[i];
-                break;
-            }
-        }
-        double span = hi->position - lo->position;
-        double u = span > 0.0 ? (t - lo->position) / span : 0.0;
-        if (u < 0.0)
-            u = 0.0;
-        if (u > 1.0)
-            u = 1.0;
-        for (uint32_t c = 0; c < 4; c++)
-        {
-            double value = (1.0 - u) * lo->rgba[c] + u * hi->rgba[c];
-            out_rgba[c] = (uint8_t)(value + 0.5);
-        }
-        return true;
+        return _colormap_sample_stops(colormap->stops, colormap->stop_count, t, out_rgba);
+    }
+
+    if (colormap != NULL)
+    {
+        uint32_t builtin_count = 0;
+        const DvzColormapStop* builtin =
+            _colormap_builtin_stops(colormap->builtin, &builtin_count);
+        if (builtin != NULL && builtin_count >= 2)
+            return _colormap_sample_stops(builtin, builtin_count, t, out_rgba);
     }
 
     uint8_t gray = (uint8_t)(255.0 * t + 0.5);
