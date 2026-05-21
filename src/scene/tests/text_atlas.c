@@ -20,6 +20,7 @@
 #include "_assertions.h"
 #include "_log.h"
 #include "../_scene.h"
+#include "../_shader_registry.h"
 #include "../../drp2/_stream.h"
 #include "datoviz/drp2.h"
 #include "datoviz/scene.h"
@@ -170,6 +171,40 @@ static bool _download_render_target(
 /*************************************************************************************************/
 
 /**
+ * Verify MSDF glyph shaders decode RGB distance with alpha used only as artifact guard.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_text_msdf_shader_uses_rgb_distance(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    const char* glsl = _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_GLYPH, true);
+    const char* wgsl = _builtin_shader_wgsl(DVZ_SCENE_BUILTIN_SHADER_GLYPH, true);
+    ANN(glsl);
+    ANN(wgsl);
+
+    AT(strstr(glsl, "float median3") != NULL);
+    AT(strstr(glsl, "float msdf = median3(texel.r, texel.g, texel.b);") != NULL);
+    AT(strstr(glsl, "float sdf = texel.a;") != NULL);
+    AT(strstr(glsl, "opacity = distanceOpacity(sd);") != NULL);
+    AT(strstr(glsl, "opacity = distanceOpacity(texel.a);") != NULL);
+
+    AT(strstr(wgsl, "fn median3") != NULL);
+    AT(strstr(wgsl, "let msdf = median3(texel.r, texel.g, texel.b);") != NULL);
+    AT(strstr(wgsl, "let sdf = texel.a;") != NULL);
+    AT(strstr(wgsl, "opacity = distanceOpacity(input.uv, sd);") != NULL);
+    AT(strstr(wgsl, "opacity = distanceOpacity(input.uv, texel.a);") != NULL);
+
+    return 0;
+}
+
+
+
+/**
  * Verify font-backed UTF-8 text renders through scene DRP2 runtime readback.
  *
  * @param suite the active test suite
@@ -306,6 +341,7 @@ int test_scene_text_atlas(TstSuite* suite)
     TST_MODULE(suite, "scene");
     TST_GROUP("text-atlas");
 
+    TST_CASE(test_scene_text_msdf_shader_uses_rgb_distance);
     TST_SCENE_TEXT_ATLAS_GPU_CASE(test_scene_text_atlas_utf8_runtime_readback);
 
     return 0;

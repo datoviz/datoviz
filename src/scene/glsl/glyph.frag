@@ -18,6 +18,11 @@ layout(location = 0) out vec4 outColor;
 #define GLYPH_ENCODING_SDF_ALPHA    1
 #define GLYPH_ENCODING_MSDF_RGB     2
 
+float median3(float r, float g, float b)
+{
+    return max(min(r, g), min(max(r, g), b));
+}
+
 float screenPixelRange()
 {
     float pixelRange = max(glyph.params.x, 1.0);
@@ -39,8 +44,13 @@ void main()
     int encoding = int(glyph.params.y + 0.5);
     if (encoding == GLYPH_ENCODING_MSDF_RGB)
     {
-        /* The generated atlas is MTSDF; alpha is the true signed-distance channel. */
-        opacity = distanceOpacity(texel.a);
+        /* The generated atlas is MTSDF: RGB carries sharp MSDF, alpha guards sign artifacts. */
+        float msdf = median3(texel.r, texel.g, texel.b);
+        float sdf = texel.a;
+        float sd = msdf;
+        if ((msdf - 0.5) * (sdf - 0.5) < 0.0)
+            sd = sdf;
+        opacity = distanceOpacity(sd);
     }
     else if (encoding == GLYPH_ENCODING_SDF_ALPHA)
     {

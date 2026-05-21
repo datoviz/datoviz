@@ -10,6 +10,10 @@ struct FragmentIn {
 const GLYPH_ENCODING_SDF_ALPHA: i32 = 1;
 const GLYPH_ENCODING_MSDF_RGB: i32 = 2;
 
+fn median3(r: f32, g: f32, b: f32) -> f32 {
+    return max(min(r, g), min(max(r, g), b));
+}
+
 fn screenPixelRange(uv: vec2f) -> f32 {
     let pixelRange = max(glyph.x, 1.0);
     let dims = vec2f(textureDimensions(tex, 0));
@@ -29,8 +33,14 @@ fn main(input: FragmentIn) -> @location(0) vec4f {
     var opacity = texel.a;
     let encoding = i32(glyph.y + 0.5);
     if (encoding == GLYPH_ENCODING_MSDF_RGB) {
-        // The generated atlas is MTSDF; alpha is the true signed-distance channel.
-        opacity = distanceOpacity(input.uv, texel.a);
+        // The generated atlas is MTSDF: RGB carries sharp MSDF, alpha guards sign artifacts.
+        let msdf = median3(texel.r, texel.g, texel.b);
+        let sdf = texel.a;
+        var sd = msdf;
+        if ((msdf - 0.5) * (sdf - 0.5) < 0.0) {
+            sd = sdf;
+        }
+        opacity = distanceOpacity(input.uv, sd);
     } else if (encoding == GLYPH_ENCODING_SDF_ALPHA) {
         opacity = distanceOpacity(input.uv, texel.a);
     }

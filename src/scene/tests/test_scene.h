@@ -686,6 +686,8 @@ int test_scene_text_font_atlas_expands_for_utf8(TstContext* suite, const TstCase
 
 int test_scene_text_font_atlas_missing_glyph_fallback(TstContext* suite, const TstCase* item);
 
+int test_scene_text_msdf_shader_uses_rgb_distance(TstContext* suite, const TstCase* item);
+
 int test_scene_text_atlas_utf8_runtime_readback(TstContext* suite, const TstCase* item);
 
 int test_scene_text_many_labels_render_plan(TstContext* suite, const TstCase* item);
