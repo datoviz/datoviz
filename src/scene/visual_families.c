@@ -648,13 +648,13 @@ DvzVisual* dvz_image(DvzScene* scene, uint32_t flags)
 
 
 /**
- * Create a batched text visual.
+ * Create an internal batched text visual.
  *
  * @param scene the scene
  * @param flags variant flags
  * @return the visual, or NULL on allocation failure
  */
-DvzVisual* dvz_text(DvzScene* scene, uint32_t flags)
+DvzVisual* _scene_text_visual(DvzScene* scene, uint32_t flags)
 {
     ANN(scene);
     DvzVisual* visual = _scene_alloc_visual(scene, DVZ_VISUAL_TYPE_TEXT, flags);
@@ -670,13 +670,13 @@ DvzVisual* dvz_text(DvzScene* scene, uint32_t flags)
 
 
 /**
- * Select the renderer used by a batched text visual.
+ * Select the renderer used by an internal batched text visual.
  *
  * @param visual text visual
  * @param renderer renderer selection
  * @return 0 on success, -1 on error
  */
-int dvz_text_set_renderer(DvzVisual* visual, DvzTextRenderer renderer)
+int _scene_text_visual_set_renderer(DvzVisual* visual, DvzTextRenderer renderer)
 {
     ANN(visual);
     if (visual->type != DVZ_VISUAL_TYPE_TEXT)

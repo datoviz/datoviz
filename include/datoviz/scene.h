@@ -1356,34 +1356,6 @@ DVZ_EXPORT DvzVisual* dvz_image(DvzScene* scene, uint32_t flags);
 
 
 /**
- * Create a batched text visual.
- *
- * Text visuals render one string per item. Use `dvz_visual_set_strings(text, "text", ...)` and
- * regular visual data attributes for positions, text-box anchors, sizes, colors, and angles.
- * Position attributes are interpreted like the generated glyph visual attachment: panel pixels
- * for `DVZ_CONTROLLER_FIXED`, or visual coordinates for controller-applied attachments.
- *
- * @param scene the scene
- * @param flags variant flags
- * @return the visual
- */
-DVZ_EXPORT DvzVisual* dvz_text(DvzScene* scene, uint32_t flags);
-
-
-/**
- * Select the renderer used by a batched text visual.
- *
- * The current retained text visual path supports the built-in bitmap atlas renderers and an
- * SDF-backed atlas for the `DVZ_TEXT_RENDERER_MSDF_ATLAS` selection.
- *
- * @param visual text visual
- * @param renderer renderer selection
- * @return 0 on success, -1 on error
- */
-DVZ_EXPORT int dvz_text_set_renderer(DvzVisual* visual, DvzTextRenderer renderer);
-
-
-/**
  * Create a glyph visual.
  *
  * Renders atlas-backed glyph quads with `position` (vec3 anchor), `bounds` (vec4 local pixel

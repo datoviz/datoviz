@@ -337,7 +337,7 @@ static void update_source_text(TextMsdfLabState* state, uint32_t source)
     DvzColor color = {0};
     gui_color_to_dvz(state->color, color);
     src->renderer = selected_renderer(state->renderer_index[source]);
-    (void)dvz_text_set_renderer(src->text, src->renderer);
+    (void)_scene_text_visual_set_renderer(src->text, src->renderer);
 
     const char* strings[1] = {state->text};
     float positions[1][3] = {{0}};
@@ -852,7 +852,7 @@ static int setup_source_scene(DvzScene* scene, TextLabSource* source)
     if (source->panel == NULL)
         return -1;
     dvz_panel_set_background_color(source->panel, 0.055f, 0.065f, 0.085f, 1.0f);
-    source->text = dvz_text(scene, 0);
+    source->text = _scene_text_visual(scene, 0);
     if (source->text == NULL)
         return -1;
     DvzVisualAttachDesc attach = {

@@ -710,6 +710,8 @@ int test_scene_image_probe_plan_rejects_size_overflow(TstContext* suite, const T
 
 int test_scene_text_annotation_bookkeeping(TstContext* suite, const TstCase* item);
 
+int test_scene_text_semantic_object_realization(TstContext* suite, const TstCase* item);
+
 int test_scene_text_bitmap_visual_realization(TstContext* suite, const TstCase* item);
 
 int test_scene_text_sdf_visual_realization(TstContext* suite, const TstCase* item);

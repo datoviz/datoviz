@@ -1679,6 +1679,12 @@ static bool _scene_panel_has_pending_adornment_work(const DvzPanel* panel)
         if (annotation->panel == panel && annotation->dirty_flags != DVZ_TEXT_DIRTY_NONE)
             return true;
     }
+    for (uint32_t i = 0; i < scene->text_count; i++)
+    {
+        const DvzText* text = &scene->texts[i];
+        if (text->panel == panel && text->dirty_flags != DVZ_TEXT_DIRTY_NONE)
+            return true;
+    }
     return false;
 }
 

@@ -1158,6 +1158,9 @@ struct DvzScene
     uint32_t font_count;
     DvzFont fonts[DVZ_SCENE_MAX_FONTS];
 
+    uint32_t text_count;
+    DvzText texts[DVZ_SCENE_MAX_TEXTS];
+
     uint32_t annotation_count;
     DvzAnnotation annotations[DVZ_SCENE_MAX_ANNOTATIONS];
 
@@ -1307,6 +1310,10 @@ void _scene_visual_texture_mark_clean(DvzVisual* visual);
 void _scene_refresh_field_dirty_state(DvzScene* scene, DvzSampledField* field);
 
 void _scene_prepare_text_visuals(DvzFigure* figure);
+
+DvzVisual* _scene_text_visual(DvzScene* scene, uint32_t flags);
+
+int _scene_text_visual_set_renderer(DvzVisual* visual, DvzTextRenderer renderer);
 
 EXTERN_C_ON
 

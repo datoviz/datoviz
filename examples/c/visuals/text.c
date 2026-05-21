@@ -18,7 +18,6 @@
 #include <stdint.h>
 #include <stdlib.h>
 
-#include "_assertions.h"
 #include "_compat.h"
 #include "datoviz/app.h"
 #include "datoviz/scene.h"
@@ -33,31 +32,6 @@
 #define WIDTH      960u
 #define HEIGHT     540u
 #define TEXT_COUNT 5u
-
-
-
-/*************************************************************************************************/
-/*  Helpers                                                                                      */
-/*************************************************************************************************/
-
-/**
- * Convert figure pixels to panzoom visual coordinates.
- *
- * @param width figure width in pixels
- * @param height figure height in pixels
- * @param x x coordinate in figure pixels
- * @param y y coordinate in figure pixels
- * @param z z coordinate in visual space
- * @param out output visual coordinate
- */
-static void _pixel_to_visual(
-    uint32_t width, uint32_t height, float x, float y, float z, float out[3])
-{
-    ANN(out);
-    out[0] = width > 0 ? 2.0f * x / (float)width - 1.0f : -1.0f;
-    out[1] = height > 0 ? 1.0f - 2.0f * y / (float)height : 1.0f;
-    out[2] = z;
-}
 
 
 
@@ -100,20 +74,6 @@ int main(int argc, char** argv)
     }
     dvz_panel_set_background_color(panel, 0.055f, 0.065f, 0.085f, 1.0f);
 
-    DvzVisual* text = dvz_text(scene, 0);
-    if (text == NULL)
-    {
-        dvz_fprintf(stderr, "dvz_text() failed\n");
-        dvz_scene_destroy(scene);
-        return 1;
-    }
-    if (dvz_text_set_renderer(text, DVZ_TEXT_RENDERER_MSDF_ATLAS) != 0)
-    {
-        dvz_fprintf(stderr, "dvz_text_set_renderer() failed\n");
-        dvz_scene_destroy(scene);
-        return 1;
-    }
-
     const char* strings[TEXT_COUNT] = {
         "MSDF text smoke",
         "e b S  space  0123456789",
@@ -138,36 +98,49 @@ int main(int argc, char** argv)
         {166, 178, 196, 255},
         {255, 198, 110, 255},
     };
-    _pixel_to_visual(WIDTH, HEIGHT, 54.0f, 112.0f, 0.0f, positions[0]);
-    _pixel_to_visual(WIDTH, HEIGHT, 56.0f, 220.0f, 0.0f, positions[1]);
-    _pixel_to_visual(WIDTH, HEIGHT, 58.0f, 318.0f, 0.0f, positions[2]);
-    _pixel_to_visual(WIDTH, HEIGHT, 60.0f, 382.0f, 0.0f, positions[3]);
-    _pixel_to_visual(WIDTH, HEIGHT, 760.0f, 410.0f, 0.0f, positions[4]);
+    positions[0][0] = 54.0f;
+    positions[0][1] = 112.0f;
+    positions[1][0] = 56.0f;
+    positions[1][1] = 220.0f;
+    positions[2][0] = 58.0f;
+    positions[2][1] = 318.0f;
+    positions[3][0] = 60.0f;
+    positions[3][1] = 382.0f;
+    positions[4][0] = 760.0f;
+    positions[4][1] = 410.0f;
 
-    DvzVisualDataUpdate updates[5] = {
-        {.attr_name = "position", .data = positions, .item_count = TEXT_COUNT},
-        {.attr_name = "anchor", .data = anchors, .item_count = TEXT_COUNT},
-        {.attr_name = "size", .data = sizes, .item_count = TEXT_COUNT},
-        {.attr_name = "color", .data = colors, .item_count = TEXT_COUNT},
-        {.attr_name = "angle", .data = angles, .item_count = TEXT_COUNT},
-    };
-    if (dvz_visual_set_strings(text, "text", strings, TEXT_COUNT) != 0 ||
-        dvz_visual_set_data_many(text, updates, 5) != 0)
+    for (uint32_t i = 0; i < TEXT_COUNT; i++)
     {
-        dvz_fprintf(stderr, "text visual data setup failed\n");
-        dvz_scene_destroy(scene);
-        return 1;
-    }
-
-    DvzVisualAttachDesc attach = {
-        .z_layer = 1,
-        .controller_mode = DVZ_CONTROLLER_APPLY_ISOTROPIC_LOCAL,
-    };
-    if (dvz_panel_add_visual(panel, text, &attach) != 0)
-    {
-        dvz_fprintf(stderr, "dvz_panel_add_visual() failed\n");
-        dvz_scene_destroy(scene);
-        return 1;
+        DvzText* text = dvz_text(panel, 0);
+        if (text == NULL)
+        {
+            dvz_fprintf(stderr, "dvz_text() failed\n");
+            dvz_scene_destroy(scene);
+            return 1;
+        }
+        if (dvz_text_set_style(
+                text,
+                &(DvzTextStyle){
+                    .size_px = sizes[i],
+                    .renderer = DVZ_TEXT_RENDERER_MSDF_ATLAS,
+                    .color = {colors[i][0], colors[i][1], colors[i][2], colors[i][3]},
+                }) != 0)
+        {
+            dvz_fprintf(stderr, "dvz_text_set_style() failed\n");
+            dvz_scene_destroy(scene);
+            return 1;
+        }
+        dvz_text_set_placement(
+            text,
+            &(DvzTextPlacement){
+                .mode = DVZ_TEXT_PLACEMENT_SCREEN,
+                .anchor = DVZ_SCENE_ANCHOR_PANEL_TOP_LEFT,
+                .position = {positions[i][0], positions[i][1], positions[i][2]},
+                .text_anchor = {anchors[i][0], anchors[i][1]},
+                .has_text_anchor = true,
+                .angle = angles[i],
+            });
+        dvz_text_set_string(text, strings[i]);
     }
 
     DvzAppConfig app_config = dvz_app_config();

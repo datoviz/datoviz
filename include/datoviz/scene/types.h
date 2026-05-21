@@ -64,6 +64,7 @@ typedef struct DvzScale             DvzScale;
 typedef struct DvzColormap          DvzColormap;
 typedef struct DvzColorbar          DvzColorbar;
 typedef struct DvzFont              DvzFont;
+typedef struct DvzText              DvzText;
 typedef struct DvzAnnotation        DvzAnnotation;
 typedef struct DvzAxis              DvzAxis;
 

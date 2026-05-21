@@ -349,13 +349,13 @@ int test_scene_text_annotation_bookkeeping(TstContext* suite, const TstCase* ite
     AT(font->face_index == 2);
     AT(font->version == 1);
 
-    DvzVisual* text = dvz_text(scene, 0);
+    DvzVisual* text = _scene_text_visual(scene, 0);
     ANN(text);
     AT(text->text.renderer == DVZ_TEXT_RENDERER_SMALL_BITMAP_ATLAS);
-    AT(dvz_text_set_renderer(text, DVZ_TEXT_RENDERER_AUTO) == 0);
+    AT(_scene_text_visual_set_renderer(text, DVZ_TEXT_RENDERER_AUTO) == 0);
     AT(text->text.renderer == DVZ_TEXT_RENDERER_AUTO);
     AT(text->text.renderer_version == 1);
-    AT(dvz_text_set_renderer(text, DVZ_TEXT_RENDERER_MSDF_ATLAS) == 0);
+    AT(_scene_text_visual_set_renderer(text, DVZ_TEXT_RENDERER_MSDF_ATLAS) == 0);
     AT(text->text.renderer == DVZ_TEXT_RENDERER_MSDF_ATLAS);
     AT(text->text.renderer_version == 2);
     const char* strings[2] = {"hello", "world"};
@@ -421,6 +421,62 @@ int test_scene_text_annotation_bookkeeping(TstContext* suite, const TstCase* ite
 }
 
 
+int test_scene_text_semantic_object_realization(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    ANN(item);
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 640, 480, 0);
+    DvzPanel* panel = dvz_panel(
+        figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+
+    DvzText* text = dvz_text(panel, 0);
+    ANN(text);
+    AT(scene->text_count == 1);
+    AT(text->style.renderer == DVZ_TEXT_RENDERER_SMALL_BITMAP_ATLAS);
+    AT(text->dirty_flags == DVZ_TEXT_DIRTY_ALL);
+
+    AT(dvz_text_set_renderer(text, DVZ_TEXT_RENDERER_AUTO) == 0);
+    AT(text->style.renderer == DVZ_TEXT_RENDERER_AUTO);
+    AT(dvz_text_set_style(
+           text,
+           &(DvzTextStyle){
+               .size_px = 16.0f,
+               .renderer = DVZ_TEXT_RENDERER_SMALL_BITMAP_ATLAS,
+               .color = {180, 220, 255, 255},
+           }) == 0);
+    dvz_text_set_placement(
+        text,
+        &(DvzTextPlacement){
+            .mode = DVZ_TEXT_PLACEMENT_SCREEN,
+            .anchor = DVZ_SCENE_ANCHOR_PANEL_TOP_LEFT,
+            .position = {10.0, 20.0, 0.0},
+            .text_anchor = {0.0f, 0.0f},
+            .has_text_anchor = true,
+        });
+    dvz_text_set_string(text, "ABC");
+    AT(strcmp(text->string, "ABC") == 0);
+
+    _scene_prepare_text_visuals(figure);
+    ANN(text->visual);
+    AT(text->visual->visible);
+    AT(text->dirty_flags == DVZ_TEXT_DIRTY_NONE);
+    const DvzVisualAttr* position_attr = _interaction_visual_attr(text->visual, "position");
+    ANN(position_attr);
+    const float(*positions)[3] = (const float(*)[3])position_attr->data;
+    ANN(positions);
+    AC(positions[0][0], -0.96875f, 1e-6f);
+    AC(positions[0][1], 0.9166667f, 1e-6f);
+
+    dvz_text_destroy(text);
+    AT(text->scene == NULL);
+    AT(!text->visual->visible);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
 int test_scene_text_bitmap_visual_realization(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
@@ -432,7 +488,7 @@ int test_scene_text_bitmap_visual_realization(TstContext* suite, const TstCase* 
         figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
     ANN(panel);
 
-    DvzVisual* text = dvz_text(scene, 0);
+    DvzVisual* text = _scene_text_visual(scene, 0);
     ANN(text);
     const char* strings[1] = {"Hi"};
     float positions_text[1][3] = {{10.0f, 20.0f, 0.0f}};
@@ -621,9 +677,9 @@ int test_scene_text_sdf_visual_realization(TstContext* suite, const TstCase* ite
         figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
     ANN(panel);
 
-    DvzVisual* text = dvz_text(scene, 0);
+    DvzVisual* text = _scene_text_visual(scene, 0);
     ANN(text);
-    AT(dvz_text_set_renderer(text, DVZ_TEXT_RENDERER_MSDF_ATLAS) == 0);
+    AT(_scene_text_visual_set_renderer(text, DVZ_TEXT_RENDERER_MSDF_ATLAS) == 0);
     const char* strings[1] = {"S D"};
     float positions[1][3] = {{32.0f, 48.0f, 0.0f}};
     float text_anchors[1][2] = {{0.0f, 0.0f}};
@@ -765,9 +821,9 @@ int test_scene_text_auto_renderer_selection(TstContext* suite, const TstCase* it
         figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
     ANN(panel);
 
-    DvzVisual* small = dvz_text(scene, 0);
+    DvzVisual* small = _scene_text_visual(scene, 0);
     ANN(small);
-    AT(dvz_text_set_renderer(small, DVZ_TEXT_RENDERER_AUTO) == 0);
+    AT(_scene_text_visual_set_renderer(small, DVZ_TEXT_RENDERER_AUTO) == 0);
     const char* small_string[1] = {"small"};
     float small_pos[1][3] = {{24.0f, 24.0f, 0.0f}};
     float small_size[1] = {10.0f};
@@ -781,9 +837,9 @@ int test_scene_text_auto_renderer_selection(TstContext* suite, const TstCase* it
            panel, small,
            &(DvzVisualAttachDesc){.z_layer = 1, .controller_mode = DVZ_CONTROLLER_FIXED}) == 0);
 
-    DvzVisual* large = dvz_text(scene, 0);
+    DvzVisual* large = _scene_text_visual(scene, 0);
     ANN(large);
-    AT(dvz_text_set_renderer(large, DVZ_TEXT_RENDERER_AUTO) == 0);
+    AT(_scene_text_visual_set_renderer(large, DVZ_TEXT_RENDERER_AUTO) == 0);
     const char* large_string[1] = {"large"};
     float large_pos[1][3] = {{24.0f, 64.0f, 0.0f}};
     float large_size[1] = {24.0f};
@@ -868,12 +924,12 @@ int test_scene_text_font_atlas_expands_for_utf8(TstContext* suite, const TstCase
         figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
     ANN(panel);
 
-    DvzVisual* ascii = dvz_text(scene, 0);
-    DvzVisual* utf8 = dvz_text(scene, 0);
+    DvzVisual* ascii = _scene_text_visual(scene, 0);
+    DvzVisual* utf8 = _scene_text_visual(scene, 0);
     ANN(ascii);
     ANN(utf8);
-    AT(dvz_text_set_renderer(ascii, DVZ_TEXT_RENDERER_MSDF_ATLAS) == 0);
-    AT(dvz_text_set_renderer(utf8, DVZ_TEXT_RENDERER_MSDF_ATLAS) == 0);
+    AT(_scene_text_visual_set_renderer(ascii, DVZ_TEXT_RENDERER_MSDF_ATLAS) == 0);
+    AT(_scene_text_visual_set_renderer(utf8, DVZ_TEXT_RENDERER_MSDF_ATLAS) == 0);
 
     const char* ascii_strings[1] = {"ASCII"};
     const char* utf8_strings[1] = {"caf\xC3\xA9"};
@@ -968,9 +1024,9 @@ int test_scene_text_font_atlas_missing_glyph_fallback(TstContext* suite, const T
         figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
     ANN(panel);
 
-    DvzVisual* text = dvz_text(scene, 0);
+    DvzVisual* text = _scene_text_visual(scene, 0);
     ANN(text);
-    AT(dvz_text_set_renderer(text, DVZ_TEXT_RENDERER_MSDF_ATLAS) == 0);
+    AT(_scene_text_visual_set_renderer(text, DVZ_TEXT_RENDERER_MSDF_ATLAS) == 0);
     const char* strings[1] = {"missing \xF4\x8F\xBF\xBF"};
     float positions[1][3] = {{24.0f, 32.0f, 0.0f}};
     float sizes[1] = {24.0f};
@@ -1021,7 +1077,7 @@ int test_scene_text_many_labels_render_plan(TstContext* suite, const TstCase* it
     ANN(panel);
 
     const uint32_t label_count = 16;
-    DvzVisual* text = dvz_text(scene, 0);
+    DvzVisual* text = _scene_text_visual(scene, 0);
     ANN(text);
     char labels[16][16] = {{0}};
     const char* strings[16] = {0};
@@ -1099,7 +1155,7 @@ int test_scene_text_panzoom_glyph_anchor_coordinates(TstContext* suite, const Ts
         figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
     ANN(panel);
 
-    DvzVisual* text = dvz_text(scene, 0);
+    DvzVisual* text = _scene_text_visual(scene, 0);
     ANN(text);
     const char* strings[1] = {"panzoom"};
     float positions[1][3] = {{0.25f, -0.125f, 0.25f}};
@@ -1154,7 +1210,7 @@ int test_scene_text_attach_mode_change_regenerates_glyphs(TstContext* suite, con
         figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
     ANN(panel);
 
-    DvzVisual* text = dvz_text(scene, 0);
+    DvzVisual* text = _scene_text_visual(scene, 0);
     ANN(text);
     const char* strings[1] = {"mode"};
     float positions[1][3] = {{320.0f, 240.0f, 0.0f}};
@@ -1214,6 +1270,7 @@ int test_scene_interaction(TstSuite* suite)
     TST_CASE(test_scene_selection_apply_pick_and_link_keys);
     TST_CASE(test_scene_selection_apply_pick_updates_visual_masks);
     TST_CASE(test_scene_text_annotation_bookkeeping);
+    TST_CASE(test_scene_text_semantic_object_realization);
     TST_CASE(test_scene_text_bitmap_visual_realization);
     TST_CASE(test_scene_text_sdf_visual_realization);
     TST_CASE(test_scene_text_auto_renderer_selection);

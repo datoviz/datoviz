@@ -2845,7 +2845,7 @@ int test_app_offscreen_text_has_nonblank_pixels(TstContext* suite, const TstCase
         figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
     AT(panel != NULL);
 
-    DvzVisual* text = dvz_text(scene, 0);
+    DvzVisual* text = _scene_text_visual(scene, 0);
     AT(text != NULL);
     const char* strings[1] = {"HI"};
     float positions[1][3] = {{8.0f, 8.0f, 0.0f}};
@@ -2927,9 +2927,9 @@ int test_app_offscreen_sdf_text_has_nonblank_pixels(TstContext* suite, const Tst
         figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
     AT(panel != NULL);
 
-    DvzVisual* text = dvz_text(scene, 0);
+    DvzVisual* text = _scene_text_visual(scene, 0);
     AT(text != NULL);
-    AT(dvz_text_set_renderer(text, DVZ_TEXT_RENDERER_MSDF_ATLAS) == 0);
+    AT(_scene_text_visual_set_renderer(text, DVZ_TEXT_RENDERER_MSDF_ATLAS) == 0);
     const char* strings[1] = {"UTF-8 fallback: A?B cafe? -> ?"};
     float positions[1][3] = {{6.0f, 12.0f, 0.0f}};
     float text_anchors[1][2] = {{0.0f, 0.0f}};

@@ -257,7 +257,7 @@ static bool configure_text_visual(
 {
     ANN(visual);
     ANN(text);
-    if (dvz_text_set_renderer(visual, renderer) != 0)
+    if (_scene_text_visual_set_renderer(visual, renderer) != 0)
         return false;
 
     const char* strings[1] = {text};
@@ -306,7 +306,7 @@ static int render_case(
     }
     dvz_panel_set_background_color(panel, 0.055f, 0.065f, 0.085f, 1.0f);
 
-    DvzVisual* text = dvz_text(scene, 0);
+    DvzVisual* text = _scene_text_visual(scene, 0);
     if (text == NULL || !configure_text_visual(text, renderer->renderer, sample->text, size))
     {
         dvz_scene_destroy(scene);

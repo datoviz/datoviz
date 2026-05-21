@@ -504,7 +504,7 @@ static bool _axis_ensure_text_visual(DvzAxis* axis)
         return true;
     if (axis->panel == NULL || axis->panel->figure == NULL || axis->panel->figure->scene == NULL)
         return false;
-    axis->text_visual = dvz_text(axis->panel->figure->scene, 0);
+    axis->text_visual = _scene_text_visual(axis->panel->figure->scene, 0);
     if (axis->text_visual == NULL)
         return false;
     axis->text_visual->visible = false;

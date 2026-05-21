@@ -243,9 +243,9 @@ int test_scene_text_atlas_utf8_runtime_readback(TstContext* suite, const TstCase
         figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
     ANN(panel);
 
-    DvzVisual* text = dvz_text(scene, 0);
+    DvzVisual* text = _scene_text_visual(scene, 0);
     ANN(text);
-    AT(dvz_text_set_renderer(text, DVZ_TEXT_RENDERER_MSDF_ATLAS) == 0);
+    AT(_scene_text_visual_set_renderer(text, DVZ_TEXT_RENDERER_MSDF_ATLAS) == 0);
     const char* strings[1] = {"Atlas UTF-8 caf" "\xC3" "\xA9"};
     float positions[1][3] = {{8.0f, 16.0f, 0.0f}};
     float text_anchors[1][2] = {{0.0f, 0.0f}};
