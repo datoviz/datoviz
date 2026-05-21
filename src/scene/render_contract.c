@@ -212,15 +212,19 @@ static void _draw_blend_target_contracts(
             targets[i] = (DvzSceneBlendTargetContract){
                 .target_index = i,
                 .format = VK_FORMAT_R16G16B16A16_SFLOAT,
-                .blend_enabled = i < 2,
+                .blend_enabled = true,
                 .src_color_blend_factor = VK_BLEND_FACTOR_ONE,
-                .dst_color_blend_factor = VK_BLEND_FACTOR_ONE,
-                .color_blend_op = VK_BLEND_OP_ADD,
+                .dst_color_blend_factor = i < 2 ? VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA :
+                                                   VK_BLEND_FACTOR_ONE,
+                .color_blend_op = i < 2 ? VK_BLEND_OP_ADD : VK_BLEND_OP_MIN,
                 .src_alpha_blend_factor = VK_BLEND_FACTOR_ONE,
-                .dst_alpha_blend_factor = VK_BLEND_FACTOR_ONE,
-                .alpha_blend_op = VK_BLEND_OP_ADD,
-                .color_write_mask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |
-                                    VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT,
+                .dst_alpha_blend_factor = i < 2 ? VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA :
+                                                   VK_BLEND_FACTOR_ONE,
+                .alpha_blend_op = i < 2 ? VK_BLEND_OP_ADD : VK_BLEND_OP_MIN,
+                .color_write_mask = i < 2 ? VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |
+                                                VK_COLOR_COMPONENT_B_BIT |
+                                                VK_COLOR_COMPONENT_A_BIT
+                                          : VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT,
             };
         }
         *target_count = 3;
@@ -263,13 +267,13 @@ static void _draw_raster_state_contract(
     if (pass_role == DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_INIT)
     {
         *out_has_raster_state = true;
-        *out_cull_mode = VK_CULL_MODE_BACK_BIT;
+        *out_cull_mode = VK_CULL_MODE_NONE;
         *out_front_face = VK_FRONT_FACE_COUNTER_CLOCKWISE;
     }
     else if (pass_role == DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_ITER)
     {
         *out_has_raster_state = true;
-        *out_cull_mode = VK_CULL_MODE_FRONT_BIT;
+        *out_cull_mode = VK_CULL_MODE_NONE;
         *out_front_face = VK_FRONT_FACE_COUNTER_CLOCKWISE;
     }
     else if (facts->visual_type == DVZ_VISUAL_TYPE_VOLUME)

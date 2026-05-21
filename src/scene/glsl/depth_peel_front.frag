@@ -7,8 +7,8 @@ layout(location = 2) out vec4 depthPair;
 
 void main()
 {
-    float a = clamp(fragColor.a, 0.0, 1.0);
-    frontAccum = vec4(fragColor.rgb * a, a);
+    /* Init pass: reduce all transparent fragments to first nearest/farthest depth bounds. */
     backAccum = vec4(0.0);
-    depthPair = vec4(gl_FragCoord.z, 1.0, 0.0, 1.0);
+    frontAccum = vec4(0.0);
+    depthPair = vec4(gl_FragCoord.z, -gl_FragCoord.z, 0.0, 0.0);
 }

@@ -1190,6 +1190,31 @@ int test_frame_plan_graph_depth_peeling_shape(TstContext* suite, const TstCase* 
     AT(pass->color_attachment_count == 3);
     AT(pass->has_depth_attachment);
 
+    for (uint32_t iter_idx = 0; iter_idx < DVZ_SCENE_DEPTH_PEEL_ITERATIONS; iter_idx++)
+    {
+        const DvzFrameGraphPass* iter = dvz_frame_plan_graph_pass_get(plan, 2 + iter_idx);
+        ANN(iter);
+        char iter_id[DVZ_SCENE_LABEL_SIZE];
+        dvz_snprintf(iter_id, sizeof(iter_id), "panel0.peel.iter.%u", iter_idx);
+        AT(strcmp(iter->id, iter_id) == 0);
+        AT(iter->read_count == 1);
+
+        const bool even = (iter_idx % 2) == 0;
+        const char* read_depth = even ? color_ids[2] : color_ids[3];
+        const char* write_depth = even ? color_ids[3] : color_ids[2];
+        AT(strcmp(iter->reads[0].resource_id, read_depth) == 0);
+        AT(iter->color_attachment_count == 3);
+        AT(strcmp(iter->color_attachments[0].resource_id, color_ids[0]) == 0);
+        AT(iter->color_attachments[0].load_op == DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_LOAD);
+        AT(strcmp(iter->color_attachments[1].resource_id, color_ids[1]) == 0);
+        AT(iter->color_attachments[1].load_op == DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_LOAD);
+        AT(strcmp(iter->color_attachments[2].resource_id, write_depth) == 0);
+        AT(iter->color_attachments[2].load_op == DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_CLEAR);
+        AT(iter->has_depth_attachment);
+        AT(strcmp(iter->depth_attachment.resource_id, "panel0.depth.opaque") == 0);
+        AT(iter->depth_attachment.access == DVZ_FRAME_GRAPH_ATTACHMENT_ACCESS_READ);
+    }
+
     DvzDiagnosticReport report = {0};
     dvz_diagnostic_report_init(&report);
     AT(dvz_frame_plan_graph_validate(plan, &report));
@@ -1200,6 +1225,7 @@ int test_frame_plan_graph_depth_peeling_shape(TstContext* suite, const TstCase* 
     bool init_depth_dep = false;
     bool iter_depth_dep = false;
     bool iter_minmax_dep = false;
+    bool iter_chain_deps[DVZ_SCENE_DEPTH_PEEL_ITERATIONS] = {0};
     for (uint32_t i = 0; i < dvz_frame_plan_graph_dependency_count(plan); i++)
     {
         AT(dvz_frame_plan_graph_dependency_get(plan, i, &dep));
@@ -1219,10 +1245,32 @@ int test_frame_plan_graph_depth_peeling_shape(TstContext* suite, const TstCase* 
             strcmp(dep.consumer_pass_id, "panel0.peel.iter.0") == 0 &&
             strcmp(dep.resource_id, "panel0.peel.depth_minmax_ping") == 0)
             iter_minmax_dep = true;
+        for (uint32_t iter_idx = 0; iter_idx < DVZ_SCENE_DEPTH_PEEL_ITERATIONS; iter_idx++)
+        {
+            char producer_id[DVZ_SCENE_LABEL_SIZE];
+            char consumer_id[DVZ_SCENE_LABEL_SIZE];
+            if (iter_idx == 0)
+                dvz_strlcpy(producer_id, "panel0.peel.init", sizeof(producer_id));
+            else
+                dvz_snprintf(
+                    producer_id, sizeof(producer_id), "panel0.peel.iter.%u", iter_idx - 1);
+            dvz_snprintf(consumer_id, sizeof(consumer_id), "panel0.peel.iter.%u", iter_idx);
+
+            const bool even = (iter_idx % 2) == 0;
+            const char* resource_id = even ? color_ids[2] : color_ids[3];
+            if (
+                strcmp(dep.producer_pass_id, producer_id) == 0 &&
+                strcmp(dep.consumer_pass_id, consumer_id) == 0 &&
+                strcmp(dep.resource_id, resource_id) == 0 &&
+                dep.consumer_usage == DVZ_FRAME_GRAPH_ACCESS_SAMPLED)
+                iter_chain_deps[iter_idx] = true;
+        }
     }
     AT(init_depth_dep);
     AT(iter_depth_dep);
     AT(iter_minmax_dep);
+    for (uint32_t iter_idx = 0; iter_idx < DVZ_SCENE_DEPTH_PEEL_ITERATIONS; iter_idx++)
+        AT(iter_chain_deps[iter_idx]);
 
     char* dump = dvz_frame_plan_graph_dump(plan);
     ANN(dump);

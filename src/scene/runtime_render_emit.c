@@ -822,13 +822,14 @@ bool _emitter_prepare_render_multi(
                          stream, 1, VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ONE, VK_BLEND_OP_ADD,
                          VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ONE, VK_BLEND_OP_ADD,
                          VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |
-                             VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT);
-                if (ok && render->u.render.pass_role == DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_INIT)
+                             VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT) &&
+                     dvz_drp2_stream_pipeline_set_color_blend(
+                         stream, 2, VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ONE, VK_BLEND_OP_MIN,
+                         VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ONE, VK_BLEND_OP_MIN,
+                         VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT);
+                if (ok)
                     ok = dvz_drp2_stream_pipeline_set_raster_state(
-                        stream, VK_CULL_MODE_BACK_BIT, VK_FRONT_FACE_COUNTER_CLOCKWISE);
-                else if (ok)
-                    ok = dvz_drp2_stream_pipeline_set_raster_state(
-                        stream, VK_CULL_MODE_FRONT_BIT, VK_FRONT_FACE_COUNTER_CLOCKWISE);
+                        stream, VK_CULL_MODE_NONE, VK_FRONT_FACE_COUNTER_CLOCKWISE);
             }
             else if (ok && gbuffer_pass)
             {

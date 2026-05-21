@@ -3009,8 +3009,13 @@ int test_scene_visual_alpha_mode_depth_peel_frame_plan(TstContext* suite, const 
     AT(init_contract.draws[0].blend_targets[0].format == VK_FORMAT_R16G16B16A16_SFLOAT);
     AT(init_contract.draws[0].blend_targets[0].blend_enabled);
     AT(init_contract.draws[0].blend_targets[2].format == VK_FORMAT_R16G16B16A16_SFLOAT);
+    AT(init_contract.draws[0].blend_targets[2].blend_enabled);
+    AT(init_contract.draws[0].blend_targets[2].color_blend_op == VK_BLEND_OP_MIN);
+    AT(
+        init_contract.draws[0].blend_targets[2].color_write_mask ==
+        (VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT));
     AT(init_contract.draws[0].has_raster_state);
-    AT(init_contract.draws[0].cull_mode == VK_CULL_MODE_BACK_BIT);
+    AT(init_contract.draws[0].cull_mode == VK_CULL_MODE_NONE);
     AT(init_contract.draws[0].front_face == VK_FRONT_FACE_COUNTER_CLOCKWISE);
     AT(init_contract.color_attachment_count == 3);
     AT(init_contract.has_depth_attachment);
@@ -3030,8 +3035,13 @@ int test_scene_visual_alpha_mode_depth_peel_frame_plan(TstContext* suite, const 
     AT(iter_contract.draws[0].blend_targets[0].format == VK_FORMAT_R16G16B16A16_SFLOAT);
     AT(iter_contract.draws[0].blend_targets[0].blend_enabled);
     AT(iter_contract.draws[0].blend_targets[2].format == VK_FORMAT_R16G16B16A16_SFLOAT);
+    AT(iter_contract.draws[0].blend_targets[2].blend_enabled);
+    AT(iter_contract.draws[0].blend_targets[2].color_blend_op == VK_BLEND_OP_MIN);
+    AT(
+        iter_contract.draws[0].blend_targets[2].color_write_mask ==
+        (VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT));
     AT(iter_contract.draws[0].has_raster_state);
-    AT(iter_contract.draws[0].cull_mode == VK_CULL_MODE_FRONT_BIT);
+    AT(iter_contract.draws[0].cull_mode == VK_CULL_MODE_NONE);
     AT(iter_contract.draws[0].front_face == VK_FRONT_FACE_COUNTER_CLOCKWISE);
     AT(iter_contract.color_attachment_count == 3);
     AT(iter_contract.sampled_read_count == 1);
@@ -3195,6 +3205,9 @@ int test_scene_visual_alpha_mode_emits_depth_peel_drp2(TstContext* suite, const 
     bool has_depth_minmax_pong = false;
     bool has_depth_texture = false;
     bool has_three_target_pipeline = false;
+    bool has_depth_bounds_min_blend = false;
+    bool has_depth_peel_src_over_blend = false;
+    bool has_depth_peel_no_cull = false;
     bool has_composite_pipeline = false;
     bool has_blended_composite_pipeline = false;
     bool has_composite_bind_group = false;
@@ -3224,6 +3237,29 @@ int test_scene_visual_alpha_mode_emits_depth_peel_drp2(TstContext* suite, const 
             has_three_target_pipeline =
                 has_three_target_pipeline ||
                 command->u.create_render_pipeline.color_target_count == 3;
+            if (command->u.create_render_pipeline.color_target_count == 3)
+            {
+                const DvzDrp2ColorTarget* front =
+                    &command->u.create_render_pipeline.color_targets[0];
+                const DvzDrp2ColorTarget* bounds =
+                    &command->u.create_render_pipeline.color_targets[2];
+                has_depth_peel_src_over_blend =
+                    has_depth_peel_src_over_blend ||
+                    (front->blend_enabled &&
+                     front->src_color_blend_factor == VK_BLEND_FACTOR_ONE &&
+                     front->dst_color_blend_factor ==
+                         VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA);
+                has_depth_bounds_min_blend =
+                    has_depth_bounds_min_blend ||
+                    (bounds->blend_enabled && bounds->color_blend_op == VK_BLEND_OP_MIN &&
+                     bounds->alpha_blend_op == VK_BLEND_OP_MIN &&
+                     bounds->color_write_mask ==
+                         (VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT));
+                has_depth_peel_no_cull =
+                    has_depth_peel_no_cull ||
+                    (command->u.create_render_pipeline.has_raster_state &&
+                     command->u.create_render_pipeline.cull_mode == VK_CULL_MODE_NONE);
+            }
             has_composite_pipeline =
                 has_composite_pipeline ||
                 (command->u.create_render_pipeline.bind_group_layout_count == 1 &&
@@ -3256,6 +3292,9 @@ int test_scene_visual_alpha_mode_emits_depth_peel_drp2(TstContext* suite, const 
     AT(has_depth_minmax_pong);
     AT(has_depth_texture);
     AT(has_three_target_pipeline);
+    AT(has_depth_bounds_min_blend);
+    AT(has_depth_peel_src_over_blend);
+    AT(has_depth_peel_no_cull);
     AT(has_composite_pipeline);
     AT(has_blended_composite_pipeline);
     AT(has_composite_bind_group);
@@ -4066,16 +4105,21 @@ int test_scene_drp2_contract_checker_rejects_raster_drift(TstContext* suite, con
             command->u.create_render_pipeline.color_target_count != 3 ||
             !command->u.create_render_pipeline.has_raster_state)
             continue;
-        if (command->u.create_render_pipeline.cull_mode == VK_CULL_MODE_BACK_BIT)
-            init_pipeline = command;
-        else if (command->u.create_render_pipeline.cull_mode == VK_CULL_MODE_FRONT_BIT)
-            iter_pipeline = command;
+        if (command->u.create_render_pipeline.cull_mode == VK_CULL_MODE_NONE)
+        {
+            if (init_pipeline == NULL)
+                init_pipeline = command;
+            else
+                iter_pipeline = command;
+        }
+        if (init_pipeline != NULL && iter_pipeline != NULL)
+            break;
     }
     ANN(init_pipeline);
     ANN(iter_pipeline);
 
     const DvzDrp2Command original_init_pipeline = *init_pipeline;
-    init_pipeline->u.create_render_pipeline.cull_mode = VK_CULL_MODE_FRONT_BIT;
+    init_pipeline->u.create_render_pipeline.cull_mode = VK_CULL_MODE_BACK_BIT;
     dvz_diagnostic_report_init(&report);
     AT(!_scene_frame_plan_drp2_contracts_validate(plan, stream, &report));
     AT(dvz_diagnostic_report_count(&report) > 0);
