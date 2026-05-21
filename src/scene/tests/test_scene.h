@@ -620,6 +620,9 @@ int test_scene_rejects_range_mutation_while_emitted_stream_is_live(TstContext* s
 
 int test_scene_rejects_destroy_while_emitted_stream_is_live(TstContext* suite, const TstCase* item);
 
+int test_scene_rejects_visual_destroy_while_emitted_stream_is_live(
+    TstContext* suite, const TstCase* item);
+
 int test_scene_live_stream_count_tracks_multiple_emits(TstContext* suite, const TstCase* item);
 
 int test_scene_point_emit(TstContext* suite, const TstCase* item);
