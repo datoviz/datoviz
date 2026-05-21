@@ -102,7 +102,6 @@ Scene feature lanes:
 8. [soon/effects/SCENE_SSAO_QUALITY_PLAN.md](soon/effects/SCENE_SSAO_QUALITY_PLAN.md)
 9. [soon/effects/SCENE_TECHNIQUES_MATERIALS_PLAN.md](soon/effects/SCENE_TECHNIQUES_MATERIALS_PLAN.md)
 10. [soon/scene/SCENE_VISUAL_SHADER_ABI_FOLLOWUP.md](soon/scene/SCENE_VISUAL_SHADER_ABI_FOLLOWUP.md)
-11. [soon/scene/SCENE_VISUAL_DATA_VIEW_API_PLAN.md](soon/scene/SCENE_VISUAL_DATA_VIEW_API_PLAN.md)
 
 For visual-family lanes, durable contracts live under [../spec/scene/visuals](../spec/scene/visuals);
 the `soon/` files above are execution follow-up notes.
@@ -140,6 +139,7 @@ Recently retired or historical notes:
 10. [done/SCENE_CONTROLLER_BINDING_REFACTOR_PLAN.md](done/SCENE_CONTROLLER_BINDING_REFACTOR_PLAN.md)
 11. [done/SCENE_TURNTABLE_CONTROLLER_PLAN.md](done/SCENE_TURNTABLE_CONTROLLER_PLAN.md)
 12. [done/SCENE_FILE_SPLIT_REFACTOR.md](done/SCENE_FILE_SPLIT_REFACTOR.md)
+13. [done/SCENE_VISUAL_DATA_VIEW_API.md](done/SCENE_VISUAL_DATA_VIEW_API.md)
 
 ### `later/`
 

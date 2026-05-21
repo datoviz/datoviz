@@ -1,10 +1,33 @@
-# Scene visual data view API plan
+# Scene Visual Data View API
 
 > **Execution Status**
-> - **Status:** `READY FOR IMPLEMENTATION`
+> - **Status:** `COMPLETED`
 > - **Updated on:** `2026-05-21`
 > - **Purpose:** remove the need for examples and app-level tests to inspect internal
 >   `DvzVisual` attribute slots.
+> - **Implemented in:** `e8d5bed1` and `cc6bad7c`.
+
+
+## Completion Record
+
+The public read-only visual data view API is now implemented:
+
+1. `DvzVisualDataView` lives in `include/datoviz/scene/types.h`.
+2. `dvz_visual_data()` lives in `include/datoviz/scene.h` and `src/scene/visual_attrs.c`.
+3. The query path uses `_attr_index()`, so aliases still resolve through `_attr_storage_name()`.
+4. The API exposes retained dense per-item CPU payloads only; buffer-backed, metadata-only, and
+   missing attributes return `-1`.
+5. `src/scene/tests/app.c` no longer duplicates visual attribute index lookup for glyph pixel bounds.
+6. Focused coverage is registered as `scene/scene-graph/data_view`.
+
+Validation recorded on 2026-05-21:
+
+1. `git diff --check`
+2. `just build`
+3. `just test scene` with `369/369` tests passing.
+
+
+## Original Plan
 
 This plan records a small public scene API cleanup. The current retained visual API is mostly
 write-only: callers can attach dense attribute data with `dvz_visual_set_data()`,
@@ -16,7 +39,7 @@ duplicate helpers like `_app_visual_attr_index()`. That is fragile because the r
 goes through `_attr_storage_name()`, so aliases such as `"diameter" -> "size"`,
 `"radius" -> "size"`, and `"stroke_width" -> "line_width"` can drift from copied lookup code.
 
-This is separate from [../../later/SCENE_SHARED_VISUAL_DATA_API.md](../../later/SCENE_SHARED_VISUAL_DATA_API.md).
+This is separate from [../later/SCENE_SHARED_VISUAL_DATA_API.md](../later/SCENE_SHARED_VISUAL_DATA_API.md).
 That later note is about reusable attribute stores shared by several visuals. This plan is only a
 read-only view over one visual's currently retained dense data.
 
