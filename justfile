@@ -1741,8 +1741,13 @@ python *args:
 #     just runexample {{name}}
 # #
 
-# Run all Python examples and generate a screenshot in data/gallery/
-examples filter="": && gallery
+# Run C examples sequentially for manual regression checks.
+[positional-arguments]
+examples *args: build
+    @python3 tools/run_c_examples.py "$@"
+
+# Run all Python examples and generate screenshots in data/gallery/.
+gallery-screenshots filter="": && gallery
     @echo "Generating screenshots from examples..."
     @python tools/build_screenshots.py {{filter}}
 
