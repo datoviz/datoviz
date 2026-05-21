@@ -186,7 +186,8 @@ bool _scene_attr_resource_key(
     uint32_t buffer_idx = _scene_attr_buffer_index(figure, visual, attr_name);
     if (buffer_idx != UINT32_MAX)
         return _scene_resource_key_buffer(buffer_idx, out_key, out_size);
-    return _scene_resource_key_visual_attr(visual_index, attr_name, out_key, out_size);
+    return _scene_visual_attr_resource_key(
+        figure, visual, visual_index, attr_name, out_key, out_size);
 }
 
 
@@ -404,9 +405,10 @@ static bool _segment_cache_rebuild(DvzVisual* visual)
  * @param visual the segment visual
  * @param visual_index the scene visual index
  */
-static void
-_scene_emit_segment_uploads(DvzFramePlan* plan, DvzVisual* visual, uint32_t visual_index)
+static void _scene_emit_segment_uploads(
+    const DvzFigure* figure, DvzFramePlan* plan, DvzVisual* visual, uint32_t visual_index)
 {
+    ANN(figure);
     ANN(plan);
     ANN(visual);
     DvzSegmentGpuCache* cache = &visual->segment.gpu;
@@ -436,8 +438,8 @@ _scene_emit_segment_uploads(DvzFramePlan* plan, DvzVisual* visual, uint32_t visu
     for (uint32_t i = 0; i < 4; i++)
     {
         char resource_id[128];
-        if (!_scene_resource_key_visual_attr(
-                visual_index, uploads[i].name, resource_id, sizeof(resource_id)))
+        if (!_scene_visual_attr_resource_key(
+                figure, visual, visual_index, uploads[i].name, resource_id, sizeof(resource_id)))
             continue;
         uint64_t byte_size = 0;
         if (_dvz_mul_u64_overflows(cache->vertex_count, uploads[i].item_size, &byte_size))
@@ -450,7 +452,8 @@ _scene_emit_segment_uploads(DvzFramePlan* plan, DvzVisual* visual, uint32_t visu
     }
 
     char index_id[128];
-    if (_scene_resource_key_visual_attr(visual_index, "index", index_id, sizeof(index_id)))
+    if (_scene_visual_attr_resource_key(
+            figure, visual, visual_index, "index", index_id, sizeof(index_id)))
     {
         uint64_t byte_size = 0;
         if (!_dvz_mul_u64_overflows(cache->index_count, sizeof(uint32_t), &byte_size))
@@ -671,8 +674,10 @@ static bool _path_cache_rebuild(DvzVisual* visual)
  * @param visual the path visual
  * @param visual_index the scene visual index
  */
-static void _scene_emit_path_uploads(DvzFramePlan* plan, DvzVisual* visual, uint32_t visual_index)
+static void _scene_emit_path_uploads(
+    const DvzFigure* figure, DvzFramePlan* plan, DvzVisual* visual, uint32_t visual_index)
 {
+    ANN(figure);
     ANN(plan);
     ANN(visual);
     DvzPathGpuCache* cache = &visual->path.gpu;
@@ -706,8 +711,8 @@ static void _scene_emit_path_uploads(DvzFramePlan* plan, DvzVisual* visual, uint
     for (uint32_t i = 0; i < 7; i++)
     {
         char resource_id[128];
-        if (!_scene_resource_key_visual_attr(
-                visual_index, uploads[i].name, resource_id, sizeof(resource_id)))
+        if (!_scene_visual_attr_resource_key(
+                figure, visual, visual_index, uploads[i].name, resource_id, sizeof(resource_id)))
             continue;
         uint64_t byte_size = 0;
         if (_dvz_mul_u64_overflows(cache->vertex_count, uploads[i].item_size, &byte_size))
@@ -720,7 +725,8 @@ static void _scene_emit_path_uploads(DvzFramePlan* plan, DvzVisual* visual, uint
     }
 
     char index_id[128];
-    if (_scene_resource_key_visual_attr(visual_index, "index", index_id, sizeof(index_id)))
+    if (_scene_visual_attr_resource_key(
+            figure, visual, visual_index, "index", index_id, sizeof(index_id)))
     {
         uint64_t byte_size = 0;
         if (!_dvz_mul_u64_overflows(cache->index_count, sizeof(uint32_t), &byte_size))
@@ -850,8 +856,10 @@ static bool _image_cache_rebuild(DvzVisual* visual)
  * @param visual the image visual
  * @param visual_index the scene visual index
  */
-static void _scene_emit_image_uploads(DvzFramePlan* plan, DvzVisual* visual, uint32_t visual_index)
+static void _scene_emit_image_uploads(
+    const DvzFigure* figure, DvzFramePlan* plan, DvzVisual* visual, uint32_t visual_index)
 {
+    ANN(figure);
     ANN(plan);
     ANN(visual);
     DvzImageGpuCache* cache = &visual->image_gpu;
@@ -877,8 +885,8 @@ static void _scene_emit_image_uploads(DvzFramePlan* plan, DvzVisual* visual, uin
     for (uint32_t i = 0; i < 2; i++)
     {
         char resource_id[128];
-        if (!_scene_resource_key_visual_attr(
-                visual_index, uploads[i].name, resource_id, sizeof(resource_id)))
+        if (!_scene_visual_attr_resource_key(
+                figure, visual, visual_index, uploads[i].name, resource_id, sizeof(resource_id)))
             continue;
         uint64_t byte_size = 0;
         if (_dvz_mul_u64_overflows(cache->vertex_count, uploads[i].item_size, &byte_size))
@@ -1065,17 +1073,19 @@ static bool _scene_prepare_volume_transfer_texture(DvzVisual* visual, const void
  * @param visual_index the scene visual index
  * @return whether emission can continue for this visual
  */
-static bool
-_scene_emit_visual_material_upload(DvzFramePlan* plan, DvzVisual* visual, uint32_t visual_index)
+static bool _scene_emit_visual_material_upload(
+    const DvzFigure* figure, DvzFramePlan* plan, DvzVisual* visual, uint32_t visual_index)
 {
+    ANN(figure);
     ANN(plan);
     ANN(visual);
     if (!visual->material_params_dirty)
         return true;
 
     char material_resource_id[128];
-    if (!_scene_resource_key_visual_attr(
-            visual_index, "material_params", material_resource_id, sizeof(material_resource_id)))
+    if (!_scene_visual_attr_resource_key(
+            figure, visual, visual_index, "material_params", material_resource_id,
+            sizeof(material_resource_id)))
     {
         return false;
     }
@@ -1105,9 +1115,10 @@ _scene_emit_visual_material_upload(DvzFramePlan* plan, DvzVisual* visual, uint32
  * @return whether emission can continue for this visual
  */
 static bool _scene_emit_visual_family_derived_uploads(
-    DvzFramePlan* plan, DvzVisual* visual, uint32_t visual_index, bool* out_skip_dense_attrs,
-    bool* out_finished_visual)
+    const DvzFigure* figure, DvzFramePlan* plan, DvzVisual* visual, uint32_t visual_index,
+    bool* out_skip_dense_attrs, bool* out_finished_visual)
 {
+    ANN(figure);
     ANN(plan);
     ANN(visual);
     ANN(out_skip_dense_attrs);
@@ -1117,19 +1128,19 @@ static bool _scene_emit_visual_family_derived_uploads(
 
     if (visual->type == DVZ_VISUAL_TYPE_SEGMENT)
     {
-        _scene_emit_segment_uploads(plan, visual, visual_index);
+        _scene_emit_segment_uploads(figure, plan, visual, visual_index);
         *out_finished_visual = true;
-        return _scene_emit_visual_material_upload(plan, visual, visual_index);
+        return _scene_emit_visual_material_upload(figure, plan, visual, visual_index);
     }
     if (visual->type == DVZ_VISUAL_TYPE_PATH && _scene_visual_has_attr_data(visual, "line_width"))
     {
-        _scene_emit_path_uploads(plan, visual, visual_index);
+        _scene_emit_path_uploads(figure, plan, visual, visual_index);
         *out_finished_visual = true;
-        return _scene_emit_visual_material_upload(plan, visual, visual_index);
+        return _scene_emit_visual_material_upload(figure, plan, visual, visual_index);
     }
     if (_scene_image_uses_generated_quads(visual))
     {
-        _scene_emit_image_uploads(plan, visual, visual_index);
+        _scene_emit_image_uploads(figure, plan, visual, visual_index);
         *out_skip_dense_attrs = true;
     }
     return true;
@@ -1144,9 +1155,10 @@ static bool _scene_emit_visual_family_derived_uploads(
  * @param visual the image or glyph visual
  * @param visual_index the scene visual index
  */
-static void
-_scene_emit_image_like_texture_upload(DvzFramePlan* plan, DvzVisual* visual, uint32_t visual_index)
+static void _scene_emit_image_like_texture_upload(
+    const DvzFigure* figure, DvzFramePlan* plan, DvzVisual* visual, uint32_t visual_index)
 {
+    ANN(figure);
     ANN(plan);
     ANN(visual);
     if ((visual->type != DVZ_VISUAL_TYPE_IMAGE && visual->type != DVZ_VISUAL_TYPE_GLYPH) ||
@@ -1160,7 +1172,8 @@ _scene_emit_image_like_texture_upload(DvzFramePlan* plan, DvzVisual* visual, uin
     if (!_scene_prepare_image_texture(visual, &upload_region, &upload_data))
         return;
     char tex_resource_id[128];
-    if (!_scene_resource_key_visual_texture(visual_index, tex_resource_id, sizeof(tex_resource_id)))
+    if (!_scene_visual_texture_resource_key(
+            figure, visual, visual_index, tex_resource_id, sizeof(tex_resource_id)))
         return;
     uint64_t bytes = 0;
     if (!_field_region_byte_size(DVZ_FIELD_FORMAT_RGBA8_UNORM, &upload_region, &bytes))
@@ -1188,9 +1201,10 @@ _scene_emit_image_like_texture_upload(DvzFramePlan* plan, DvzVisual* visual, uin
  * @param visual the volume visual
  * @param visual_index the scene visual index
  */
-static void
-_scene_emit_volume_source_texture_upload(DvzFramePlan* plan, DvzVisual* visual, uint32_t visual_index)
+static void _scene_emit_volume_source_texture_upload(
+    const DvzFigure* figure, DvzFramePlan* plan, DvzVisual* visual, uint32_t visual_index)
 {
+    ANN(figure);
     ANN(plan);
     ANN(visual);
     if (visual->type != DVZ_VISUAL_TYPE_VOLUME || visual->field == NULL ||
@@ -1200,7 +1214,8 @@ _scene_emit_volume_source_texture_upload(DvzFramePlan* plan, DvzVisual* visual, 
     }
 
     char tex_resource_id[128];
-    if (!_scene_resource_key_visual_texture(visual_index, tex_resource_id, sizeof(tex_resource_id)))
+    if (!_scene_visual_texture_resource_key(
+            figure, visual, visual_index, tex_resource_id, sizeof(tex_resource_id)))
         return;
     DvzFieldRegion upload_region = {0};
     const void* upload_data = NULL;
@@ -1293,13 +1308,14 @@ _scene_emit_volume_transfer_texture_upload(DvzFramePlan* plan, DvzVisual* visual
  * @param visual the visual
  * @param visual_index the scene visual index
  */
-static void
-_scene_emit_visual_family_texture_uploads(DvzFramePlan* plan, DvzVisual* visual, uint32_t visual_index)
+static void _scene_emit_visual_family_texture_uploads(
+    const DvzFigure* figure, DvzFramePlan* plan, DvzVisual* visual, uint32_t visual_index)
 {
+    ANN(figure);
     ANN(plan);
     ANN(visual);
-    _scene_emit_image_like_texture_upload(plan, visual, visual_index);
-    _scene_emit_volume_source_texture_upload(plan, visual, visual_index);
+    _scene_emit_image_like_texture_upload(figure, plan, visual, visual_index);
+    _scene_emit_volume_source_texture_upload(figure, plan, visual, visual_index);
     _scene_emit_volume_transfer_texture_upload(plan, visual, visual_index);
 }
 
@@ -1338,7 +1354,7 @@ void _scene_emit_visual_uploads(
             bool skip_dense_attrs = false;
             bool finished_visual = false;
             if (!_scene_emit_visual_family_derived_uploads(
-                    plan, visual, vidx, &skip_dense_attrs, &finished_visual))
+                    figure, plan, visual, vidx, &skip_dense_attrs, &finished_visual))
             {
                 continue;
             }
@@ -1390,8 +1406,8 @@ void _scene_emit_visual_uploads(
                     if (attr->dirty_item_count == 0 || attr->data == NULL || attr->item_count == 0)
                         continue;
                     char resource_id[128];
-                    if (!_scene_resource_key_visual_attr(
-                            vidx, attr->name, resource_id, sizeof(resource_id)))
+                    if (!_scene_visual_attr_resource_key(
+                            figure, visual, vidx, attr->name, resource_id, sizeof(resource_id)))
                     {
                         continue;
                     }
@@ -1421,7 +1437,7 @@ void _scene_emit_visual_uploads(
             {
                 if (_scene_visual_needs_material_params(visual) && visual->material_params_dirty)
                 {
-                    if (!_scene_emit_visual_material_upload(plan, visual, vidx))
+                    if (!_scene_emit_visual_material_upload(figure, plan, visual, vidx))
                         continue;
                 }
             }
@@ -1448,7 +1464,7 @@ void _scene_emit_visual_uploads(
                     emitted_buffers[buffer_idx] = true;
                 }
             }
-            _scene_emit_visual_family_texture_uploads(plan, visual, vidx);
+            _scene_emit_visual_family_texture_uploads(figure, plan, visual, vidx);
         }
     }
 }

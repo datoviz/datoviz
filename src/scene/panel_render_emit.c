@@ -427,13 +427,13 @@ static bool _scene_append_visual_to_render_pass(
     uint32_t buffer_idx = _scene_buffer_index(figure->scene, visual->buffer);
     if (buffer_idx != UINT32_MAX)
     {
-        if (!_scene_resource_key_visual_indexed(
-                visual_index, buffer_idx, visual_id, sizeof(visual_id)))
+        if (!_scene_visual_indexed_resource_key(
+                figure, visual, visual_index, buffer_idx, visual_id, sizeof(visual_id)))
             return false;
     }
     else
     {
-        if (!_scene_resource_key_visual(visual_index, visual_id, sizeof(visual_id)))
+        if (!_scene_visual_resource_key(figure, visual, visual_index, visual_id, sizeof(visual_id)))
             return false;
     }
     (void)plan;

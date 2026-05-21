@@ -126,8 +126,8 @@ bool _scene_visual_frame_plan_metadata(
             figure, visual, visual_index, "instance_transform", metadata->instance_transform_id,
             sizeof(metadata->instance_transform_id)))
         return false;
-    if (!_scene_resource_key_visual_texture(
-            visual_index, metadata->texture_id, sizeof(metadata->texture_id)))
+    if (!_scene_visual_texture_resource_key(
+            figure, visual, visual_index, metadata->texture_id, sizeof(metadata->texture_id)))
         return false;
     if (visual->type == DVZ_VISUAL_TYPE_VOLUME)
     {
@@ -162,19 +162,19 @@ bool _scene_visual_frame_plan_metadata(
     if (visual->type == DVZ_VISUAL_TYPE_PATH &&
         _scene_visual_has_attr_data(visual, "line_width"))
     {
-        if (!_scene_resource_key_visual_attr(
-                visual_index, "path_flags", metadata->path_flags_id,
+        if (!_scene_visual_attr_resource_key(
+                figure, visual, visual_index, "path_flags", metadata->path_flags_id,
                 sizeof(metadata->path_flags_id)))
             return false;
-        if (!_scene_resource_key_visual_attr(
-                visual_index, "path_distance", metadata->path_distance_id,
+        if (!_scene_visual_attr_resource_key(
+                figure, visual, visual_index, "path_distance", metadata->path_distance_id,
                 sizeof(metadata->path_distance_id)))
             return false;
     }
     if (visual->type == DVZ_VISUAL_TYPE_SEGMENT || _scene_visual_needs_material_params(visual))
     {
-        if (!_scene_resource_key_visual_attr(
-                visual_index, "material_params", metadata->material_id,
+        if (!_scene_visual_attr_resource_key(
+                figure, visual, visual_index, "material_params", metadata->material_id,
                 sizeof(metadata->material_id)))
             return false;
     }
@@ -191,8 +191,9 @@ bool _scene_visual_frame_plan_metadata(
         (visual->type == DVZ_VISUAL_TYPE_PATH &&
          _scene_visual_has_attr_data(visual, "line_width")))
     {
-        if (!_scene_resource_key_visual_attr(
-                visual_index, "index", metadata->index_id, sizeof(metadata->index_id)))
+        if (!_scene_visual_attr_resource_key(
+                figure, visual, visual_index, "index", metadata->index_id,
+                sizeof(metadata->index_id)))
             return false;
         if (visual->type == DVZ_VISUAL_TYPE_SEGMENT)
         {

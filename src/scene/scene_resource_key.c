@@ -23,6 +23,7 @@
 #include "_alloc.h"
 #include "_assertions.h"
 #include "_compat.h"
+#include "_scene.h"
 #include "_scene_resource_key.h"
 
 
@@ -161,6 +162,135 @@ bool _scene_resource_key_visual_attr(
 bool _scene_resource_key_visual_texture(uint32_t visual_index, char* out, size_t out_size)
 {
     return _scene_resource_key_visual_attr(visual_index, "texture", out, out_size);
+}
+
+
+/**
+ * Format a colorbar-derived visual id when the visual is owned by a retained colorbar.
+ *
+ * @param figure the figure being emitted
+ * @param visual the visual to identify
+ * @param out the output key buffer
+ * @param out_size the output buffer capacity
+ * @return whether the visual is colorbar-derived and the key was written
+ */
+static bool _scene_colorbar_visual_resource_key(
+    const DvzFigure* figure, const DvzVisual* visual, char* out, size_t out_size)
+{
+    if (figure == NULL || figure->scene == NULL || visual == NULL || out == NULL || out_size == 0)
+        return false;
+
+    DvzScene* scene = figure->scene;
+    for (uint32_t i = 0; i < scene->colorbar_count; i++)
+    {
+        const DvzColorbar* colorbar = &scene->colorbars[i];
+        if (colorbar->scene != scene || colorbar->panel == NULL ||
+            colorbar->panel->figure != figure)
+        {
+            continue;
+        }
+        if (visual == colorbar->ramp_visual)
+            return _format_key(out, out_size, "colorbar.%u.ramp", i);
+        if (visual == colorbar->tick_visual)
+            return _format_key(out, out_size, "colorbar.%u.ticks", i);
+        if (visual == colorbar->text_visual)
+            return _format_key(out, out_size, "colorbar.%u.labels", i);
+        if (colorbar->text_visual != NULL &&
+            visual == colorbar->text_visual->text.glyph_visual)
+        {
+            return _format_key(out, out_size, "colorbar.%u.labels.glyph", i);
+        }
+    }
+    return false;
+}
+
+
+
+/**
+ * Format a visual resource id, preserving semantic debug provenance when available.
+ *
+ * @param figure the figure being emitted
+ * @param visual the visual to identify
+ * @param visual_index the figure-local visual index
+ * @param out the output key buffer
+ * @param out_size the output buffer capacity
+ * @return whether the key was written
+ */
+bool _scene_visual_resource_key(
+    const DvzFigure* figure, const DvzVisual* visual, uint32_t visual_index, char* out,
+    size_t out_size)
+{
+    if (_scene_colorbar_visual_resource_key(figure, visual, out, out_size))
+        return true;
+    return _scene_resource_key_visual(visual_index, out, out_size);
+}
+
+
+
+/**
+ * Format a visual attribute resource id, preserving semantic debug provenance when available.
+ *
+ * @param figure the figure being emitted
+ * @param visual the visual that owns the attribute
+ * @param visual_index the figure-local visual index
+ * @param attr_name the visual attribute name
+ * @param out the output key buffer
+ * @param out_size the output buffer capacity
+ * @return whether the key was written
+ */
+bool _scene_visual_attr_resource_key(
+    const DvzFigure* figure, const DvzVisual* visual, uint32_t visual_index,
+    const char* attr_name, char* out, size_t out_size)
+{
+    ANN(attr_name);
+    char visual_id[128] = {0};
+    if (_scene_colorbar_visual_resource_key(figure, visual, visual_id, sizeof(visual_id)))
+        return _format_key(out, out_size, "%s.%s", visual_id, attr_name);
+    return _scene_resource_key_visual_attr(visual_index, attr_name, out, out_size);
+}
+
+
+
+/**
+ * Format a visual texture resource id, preserving semantic debug provenance when available.
+ *
+ * @param figure the figure being emitted
+ * @param visual the visual that owns the texture
+ * @param visual_index the figure-local visual index
+ * @param out the output key buffer
+ * @param out_size the output buffer capacity
+ * @return whether the key was written
+ */
+bool _scene_visual_texture_resource_key(
+    const DvzFigure* figure, const DvzVisual* visual, uint32_t visual_index, char* out,
+    size_t out_size)
+{
+    return _scene_visual_attr_resource_key(figure, visual, visual_index, "texture", out, out_size);
+}
+
+
+
+/**
+ * Format an encoded visual id carrying a shared index-buffer id.
+ *
+ * @param figure the figure being emitted
+ * @param visual the visual to identify
+ * @param visual_index the figure-local visual index
+ * @param buffer_index the scene-local buffer index
+ * @param out the output key buffer
+ * @param out_size the output buffer capacity
+ * @return whether the key was written
+ */
+bool _scene_visual_indexed_resource_key(
+    const DvzFigure* figure, const DvzVisual* visual, uint32_t visual_index,
+    uint32_t buffer_index, char* out, size_t out_size)
+{
+    char visual_id[128] = {0};
+    if (_scene_colorbar_visual_resource_key(figure, visual, visual_id, sizeof(visual_id)))
+    {
+        return _format_key(out, out_size, "%s#index=b%u", visual_id, buffer_index);
+    }
+    return _scene_resource_key_visual_indexed(visual_index, buffer_index, out, out_size);
 }
 
 

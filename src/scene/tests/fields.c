@@ -400,16 +400,38 @@ int test_scene_colorbar_emit_stream_contains_derived_visuals(
     bool found_tick_draw = false;
     bool found_glyph_bind = false;
     bool found_glyph_draw = false;
+    bool found_ramp_position_label = false;
+    bool found_ramp_color_label = false;
+    bool found_tick_start_label = false;
+    bool found_tick_index_label = false;
+    bool found_glyph_position_label = false;
     for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
     {
         const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream, i);
         ANN(cmd);
         if (cmd->type == DVZ_DRP2_COMMAND_WRITE_BUFFER)
         {
+            const char* label = dvz_drp2_stream_label(stream, cmd->u.write_buffer.buffer_id);
             found_ramp_position_upload =
                 found_ramp_position_upload || cmd->u.write_buffer.size == ramp_position_size;
             found_ramp_color_upload =
                 found_ramp_color_upload || cmd->u.write_buffer.size == ramp_color_size;
+            if (label != NULL)
+            {
+                found_ramp_position_label =
+                    found_ramp_position_label ||
+                    strcmp(label, "colorbar.0.ramp.position") == 0;
+                found_ramp_color_label =
+                    found_ramp_color_label || strcmp(label, "colorbar.0.ramp.color") == 0;
+                found_tick_start_label =
+                    found_tick_start_label ||
+                    strcmp(label, "colorbar.0.ticks.position_start") == 0;
+                found_tick_index_label =
+                    found_tick_index_label || strcmp(label, "colorbar.0.ticks.index") == 0;
+                found_glyph_position_label =
+                    found_glyph_position_label ||
+                    strcmp(label, "colorbar.0.labels.glyph.position") == 0;
+            }
         }
         else if (cmd->type == DVZ_DRP2_COMMAND_DRAW)
         {
@@ -435,6 +457,11 @@ int test_scene_colorbar_emit_stream_contains_derived_visuals(
     AT(found_glyph_draw);
     AT(_colorbar_stream_has_pipeline_label(stream, "_pipe_prim_t"));
     AT(_colorbar_stream_has_pipeline_label(stream, "_pipe_glyphg"));
+    AT(found_ramp_position_label);
+    AT(found_ramp_color_label);
+    AT(found_tick_start_label);
+    AT(found_tick_index_label);
+    AT(found_glyph_position_label);
 
     dvz_drp2_stream_destroy(stream);
     dvz_scene_destroy(scene);
