@@ -118,15 +118,24 @@ static void _fill_pixels(PixelState* state, float phase)
         const uint32_t y = i / side;
         const float u = (float)x * inv_side;
         const float v = (float)y * inv_side;
-        const float wave = sinf(phase + 18.0f * u + 9.0f * v);
+        const float px = 2.0f * u - 1.0f;
+        const float py = 2.0f * v - 1.0f;
+        const float r = sqrtf(px * px + py * py);
+        const float angle = atan2f(py, px);
+        const float spiral = angle + 0.42f * sinf(phase * 0.45f + 5.5f * r);
+        const float dome = fmaxf(0.0f, 1.0f - 0.62f * r * r);
+        const float ridge = 0.5f + 0.5f * sinf(phase + 17.0f * r - 5.0f * angle);
+        const float wave = sinf(phase + 12.0f * u + 16.0f * v);
+        const float z = state->depth_variation ? 0.72f * dome + 0.20f * wave : 0.0f;
 
-        state->positions[i][0] = 2.0f * u - 1.0f;
-        state->positions[i][1] = 2.0f * v - 1.0f;
-        state->positions[i][2] = state->depth_variation ? 0.35f * wave : 0.0f;
-        state->sizes[i] = state->pixel_size * (0.7f + 0.3f * (0.5f + 0.5f * wave));
-        state->colors[i][0] = (uint8_t)(32u + (uint32_t)(190.0f * u));
-        state->colors[i][1] = (uint8_t)(48u + (uint32_t)(180.0f * v));
-        state->colors[i][2] = (uint8_t)(220u - (uint32_t)(120.0f * u));
+        state->positions[i][0] = 1.36f * r * cosf(spiral);
+        state->positions[i][1] = 1.02f * r * sinf(spiral);
+        state->positions[i][2] = z - 0.34f;
+        state->sizes[i] = state->pixel_size * (0.62f + 0.58f * ridge);
+        state->colors[i][0] = (uint8_t)(70u + (uint32_t)(145.0f * ridge));
+        state->colors[i][1] = (uint8_t)(58u + (uint32_t)(150.0f * dome));
+        state->colors[i][2] =
+            (uint8_t)(105u + (uint32_t)(118.0f * (1.0f - 0.45f * u + 0.25f * v)));
         state->colors[i][3] = (uint8_t)(255.0f * state->alpha);
     }
 }
@@ -233,9 +242,10 @@ int main(int argc, char** argv)
         .max_count = MAX_PIXELS,
         .active_count = 65536u,
         .count_value = 65536.0f,
-        .pixel_size = 3.0f,
+        .pixel_size = 3.4f,
         .alpha = 0.95f,
         .animate = true,
+        .depth_variation = true,
     };
     state.positions = dvz_calloc(MAX_PIXELS, sizeof(*state.positions));
     state.colors = dvz_calloc(MAX_PIXELS, sizeof(*state.colors));
@@ -262,9 +272,31 @@ int main(int argc, char** argv)
         return 1;
     }
 
+    DvzCameraDesc camera_desc = dvz_camera_desc();
+    camera_desc.eye[2] = 3.6f;
+    camera_desc.near = 0.1f;
+    camera_desc.far = 100.0f;
+    if (!dvz_panel_set_camera(panel, &camera_desc))
+    {
+        dvz_fprintf(stderr, "dvz_panel_set_camera() failed\n");
+        dvz_scene_destroy(scene);
+        return 1;
+    }
+
     dvz_panel_set_background_color(panel, 0.030f, 0.036f, 0.045f, 1.0f);
+    DvzDepthCueDesc cue = {
+        .mode = DVZ_DEPTH_CUE_FADE_TO_BACKGROUND,
+        .metric = DVZ_DEPTH_CUE_METRIC_EYE_DISTANCE,
+        .falloff = DVZ_DEPTH_CUE_FALLOFF_LINEAR,
+        .near_depth = 2.5f,
+        .far_depth = 4.8f,
+        .strength = 0.58f,
+        .density = 2.6f,
+        .background_color = {0.030f, 0.036f, 0.045f, 1.0f},
+    };
     _fill_pixels(&state, 0.0f);
-    if (!_upload_pixels(&state) || dvz_panel_add_visual(panel, state.visual, NULL) != 0)
+    if (!_upload_pixels(&state) || dvz_visual_set_depth_cue(state.visual, &cue) != 0 ||
+        dvz_panel_add_visual(panel, state.visual, NULL) != 0)
     {
         dvz_fprintf(stderr, "pixel visual setup failed\n");
         dvz_scene_destroy(scene);
@@ -286,16 +318,18 @@ int main(int argc, char** argv)
         dvz_scene_destroy(scene);
         return 1;
     }
-    DvzController* panzoom_controller = dvz_panzoom(scene, NULL);
-    if (panzoom_controller == NULL ||
-        dvz_panel_bind_controller(panel, panzoom_controller, DVZ_DIM_MASK_XY) != 0)
+    DvzController* arcball_controller = dvz_arcball(scene, NULL);
+    DvzArcball* arcball = dvz_controller_arcball(arcball_controller);
+    if (arcball == NULL ||
+        dvz_panel_bind_controller(panel, arcball_controller, DVZ_DIM_MASK_XYZ) != 0)
     {
-        dvz_fprintf(stderr, "failed to create or bind panzoom controller\n");
+        dvz_fprintf(stderr, "failed to create or bind arcball controller\n");
         dvz_app_destroy(app);
         dvz_scene_destroy(scene);
         return 1;
     }
     dvz_panel_connect_input(panel, dvz_app_window_input(state.win));
+    dvz_arcball_set(arcball, (vec3){+0.48f, -0.12f, +0.24f});
     DvzGui* gui = dvz_app_window_gui(state.win, NULL);
     if (gui != NULL)
         dvz_app_window_set_gui_callback(state.win, _gui_callback, &state);

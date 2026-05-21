@@ -439,6 +439,9 @@ static void _ssao_gui(DvzGui* gui, DvzAppWindow* win, void* user_data)
         spin_changed |= dvz_gui_checkbox(gui, "Auto rotate", &state->spin_enabled);
         mode_changed |= dvz_gui_checkbox(gui, "Raycast impostor", &state->raycast_mode);
 
+        dvz_gui_separator_text(gui, "Sphere");
+        size_changed |= dvz_gui_slider_float(gui, "Sphere size", &state->size_scale, 0.35f, 2.5f);
+
         dvz_gui_separator_text(gui, "Material");
         DvzExampleGuiMaterialControls material = {
             .standard_material = state->standard_material,
@@ -472,7 +475,6 @@ static void _ssao_gui(DvzGui* gui, DvzAppWindow* win, void* user_data)
         state->msaa_sample_count = msaa.samples;
 
         dvz_gui_separator_text(gui, "SSAO");
-        size_changed |= dvz_gui_slider_float(gui, "Sphere size", &state->size_scale, 0.35f, 2.5f);
         DvzExampleGuiSsaoControls ssao = {
             .enabled = state->ssao_enabled,
             .blur = state->blur_enabled,

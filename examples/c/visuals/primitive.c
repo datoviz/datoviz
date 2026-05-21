@@ -55,6 +55,7 @@ typedef struct PrimitiveState
     DvzVisual* visual;
     DvzAppWindow* win;
     float (*positions)[3];
+    float (*normals)[3];
     DvzColor* colors;
     uint32_t max_triangles;
     uint32_t triangle_count;
@@ -71,6 +72,52 @@ typedef struct PrimitiveState
 /*************************************************************************************************/
 /*  Helpers                                                                                      */
 /*************************************************************************************************/
+
+/**
+ * Normalize a 3D vector in place, falling back to +Z for degenerate inputs.
+ *
+ * @param v vector to normalize
+ */
+static void _normalize3(float v[3])
+{
+    ANN(v);
+
+    const float len2 = v[0] * v[0] + v[1] * v[1] + v[2] * v[2];
+    if (len2 <= 0.0f)
+    {
+        v[0] = 0.0f;
+        v[1] = 0.0f;
+        v[2] = 1.0f;
+        return;
+    }
+
+    const float inv_len = 1.0f / sqrtf(len2);
+    v[0] *= inv_len;
+    v[1] *= inv_len;
+    v[2] *= inv_len;
+}
+
+
+
+/**
+ * Compute a 3D cross product.
+ *
+ * @param a first input vector
+ * @param b second input vector
+ * @param out output vector
+ */
+static void _cross3(const float a[3], const float b[3], float out[3])
+{
+    ANN(a);
+    ANN(b);
+    ANN(out);
+
+    out[0] = a[1] * b[2] - a[2] * b[1];
+    out[1] = a[2] * b[0] - a[0] * b[2];
+    out[2] = a[0] * b[1] - a[1] * b[0];
+}
+
+
 
 /**
  * Parse a bounded frame count from the first command-line argument.
@@ -105,12 +152,13 @@ static void _fill_triangles(PrimitiveState* state, float phase)
 {
     ANN(state);
     ANN(state->positions);
+    ANN(state->normals);
     ANN(state->colors);
 
     const uint32_t count = state->triangle_count;
     const uint32_t side = (uint32_t)ceilf(sqrtf((float)count));
     const float inv_side = side > 1 ? 1.0f / (float)(side - 1) : 1.0f;
-    const float radius = state->scale / (float)side;
+    const float radius = 1.15f * state->scale / (float)side;
 
     for (uint32_t i = 0; i < count; i++)
     {
@@ -118,20 +166,57 @@ static void _fill_triangles(PrimitiveState* state, float phase)
         const uint32_t y = i / side;
         const float u = (float)x * inv_side;
         const float v = (float)y * inv_side;
-        const float cx = 2.0f * u - 1.0f;
-        const float cy = 2.0f * v - 1.0f;
-        const float angle = phase + TAU * (0.11f * (float)x + 0.07f * (float)y);
+        const float px = 2.0f * u - 1.0f;
+        const float py = 2.0f * v - 1.0f;
+        const float r = sqrtf(px * px + py * py);
+        const float theta = atan2f(py, px);
+        const float twist = theta + 0.38f * sinf(phase * 0.45f + 4.0f * r);
+        const float ridge = sinf(phase + 10.0f * r + 4.0f * theta);
+        const float dome = fmaxf(0.0f, 1.0f - 0.55f * r * r);
+        const float cx = 1.18f * r * cosf(twist);
+        const float cy = 0.92f * r * sinf(twist);
+        const float cz = 0.62f * dome + 0.16f * ridge - 0.30f;
+        const float angle = phase + TAU * (0.13f * (float)x + 0.09f * (float)y);
         const uint32_t base = VERTICES_PER_TRIANGLE * i;
+        float normal[3] = {
+            -0.42f * px + 0.20f * cosf(phase + 6.0f * v),
+            -0.42f * py + 0.20f * sinf(phase + 6.0f * u),
+            1.0f,
+        };
+        _normalize3(normal);
+
+        float tangent[3] = {-normal[1], normal[0], 0.0f};
+        if (tangent[0] * tangent[0] + tangent[1] * tangent[1] <= 0.0001f)
+        {
+            tangent[0] = 1.0f;
+            tangent[1] = 0.0f;
+            tangent[2] = 0.0f;
+        }
+        _normalize3(tangent);
+
+        float bitangent[3] = {0};
+        _cross3(normal, tangent, bitangent);
+        _normalize3(bitangent);
 
         for (uint32_t k = 0; k < VERTICES_PER_TRIANGLE; k++)
         {
             const float a = angle + TAU * (float)k / 3.0f;
-            state->positions[base + k][0] = cx + radius * cosf(a);
-            state->positions[base + k][1] = cy + radius * sinf(a);
-            state->positions[base + k][2] = 0.25f * sinf(phase + 0.017f * (float)i);
-            state->colors[base + k][0] = (uint8_t)(40u + (uint32_t)(170.0f * u));
-            state->colors[base + k][1] = (uint8_t)(48u + (uint32_t)(180.0f * v));
-            state->colors[base + k][2] = (uint8_t)(220u - (uint32_t)(120.0f * u));
+            const float ca = cosf(a);
+            const float sa = sinf(a);
+            const float local = 0.82f + 0.22f * (float)k;
+            state->positions[base + k][0] =
+                cx + radius * local * (ca * tangent[0] + sa * bitangent[0]);
+            state->positions[base + k][1] =
+                cy + radius * local * (ca * tangent[1] + sa * bitangent[1]);
+            state->positions[base + k][2] =
+                cz + radius * local * (ca * tangent[2] + sa * bitangent[2]);
+            state->normals[base + k][0] = normal[0];
+            state->normals[base + k][1] = normal[1];
+            state->normals[base + k][2] = normal[2];
+            state->colors[base + k][0] =
+                (uint8_t)(72u + (uint32_t)(145.0f * (0.5f + 0.5f * ridge)));
+            state->colors[base + k][1] = (uint8_t)(64u + (uint32_t)(145.0f * dome));
+            state->colors[base + k][2] = (uint8_t)(112u + (uint32_t)(108.0f * (1.0f - 0.35f * u)));
             state->colors[base + k][3] = (uint8_t)(255.0f * state->alpha);
         }
     }
@@ -151,11 +236,12 @@ static bool _upload_triangles(PrimitiveState* state)
     ANN(state->visual);
 
     const uint32_t vertex_count = VERTICES_PER_TRIANGLE * state->triangle_count;
-    DvzVisualDataUpdate updates[2] = {
+    DvzVisualDataUpdate updates[3] = {
         {.attr_name = "position", .data = state->positions, .item_count = vertex_count},
+        {.attr_name = "normal", .data = state->normals, .item_count = vertex_count},
         {.attr_name = "color", .data = state->colors, .item_count = vertex_count},
     };
-    if (dvz_visual_set_data_many(state->visual, updates, 2) != 0)
+    if (dvz_visual_set_data_many(state->visual, updates, 3) != 0)
         return false;
 
     DvzAlphaMode alpha_mode =
@@ -242,13 +328,14 @@ int main(int argc, char** argv)
         .max_triangles = MAX_TRIANGLES,
         .triangle_count = 8192u,
         .triangle_value = 8192.0f,
-        .scale = 1.0f,
-        .alpha = 0.85f,
+        .scale = 1.35f,
+        .alpha = 1.0f,
         .animate = true,
     };
     state.positions = dvz_calloc(MAX_TRIANGLES * VERTICES_PER_TRIANGLE, sizeof(*state.positions));
+    state.normals = dvz_calloc(MAX_TRIANGLES * VERTICES_PER_TRIANGLE, sizeof(*state.normals));
     state.colors = dvz_calloc(MAX_TRIANGLES * VERTICES_PER_TRIANGLE, sizeof(*state.colors));
-    if (state.positions == NULL || state.colors == NULL)
+    if (state.positions == NULL || state.normals == NULL || state.colors == NULL)
     {
         dvz_fprintf(stderr, "primitive buffer allocation failed\n");
         return 1;
@@ -271,9 +358,30 @@ int main(int argc, char** argv)
         return 1;
     }
 
+    DvzCameraDesc camera_desc = dvz_camera_desc();
+    camera_desc.eye[2] = 3.6f;
+    camera_desc.near = 0.1f;
+    camera_desc.far = 100.0f;
+    if (!dvz_panel_set_camera(panel, &camera_desc))
+    {
+        dvz_fprintf(stderr, "dvz_panel_set_camera() failed\n");
+        dvz_scene_destroy(scene);
+        return 1;
+    }
+
     dvz_panel_set_background_color(panel, 0.040f, 0.043f, 0.052f, 1.0f);
     _fill_triangles(&state, 0.0f);
-    if (!_upload_triangles(&state) || dvz_panel_add_visual(panel, state.visual, NULL) != 0)
+    if (!_upload_triangles(&state) ||
+        dvz_visual_set_primitive_shading(
+            state.visual,
+            &(DvzPrimitiveShadingDesc){
+                .light_direction = {0.32f, 0.46f, 0.82f},
+                .ambient = 0.23f,
+                .diffuse = 0.78f,
+                .specular = 0.34f,
+                .shininess = 48.0f,
+            }) != 0 ||
+        dvz_panel_add_visual(panel, state.visual, NULL) != 0)
     {
         dvz_fprintf(stderr, "primitive visual setup failed\n");
         dvz_scene_destroy(scene);
@@ -295,16 +403,18 @@ int main(int argc, char** argv)
         dvz_scene_destroy(scene);
         return 1;
     }
-    DvzController* panzoom_controller = dvz_panzoom(scene, NULL);
-    if (panzoom_controller == NULL ||
-        dvz_panel_bind_controller(panel, panzoom_controller, DVZ_DIM_MASK_XY) != 0)
+    DvzController* arcball_controller = dvz_arcball(scene, NULL);
+    DvzArcball* arcball = dvz_controller_arcball(arcball_controller);
+    if (arcball == NULL ||
+        dvz_panel_bind_controller(panel, arcball_controller, DVZ_DIM_MASK_XYZ) != 0)
     {
-        dvz_fprintf(stderr, "failed to create or bind panzoom controller\n");
+        dvz_fprintf(stderr, "failed to create or bind arcball controller\n");
         dvz_app_destroy(app);
         dvz_scene_destroy(scene);
         return 1;
     }
     dvz_panel_connect_input(panel, dvz_app_window_input(state.win));
+    dvz_arcball_set(arcball, (vec3){+0.54f, -0.10f, +0.26f});
     DvzGui* gui = dvz_app_window_gui(state.win, NULL);
     if (gui != NULL)
         dvz_app_window_set_gui_callback(state.win, _gui_callback, &state);
@@ -315,6 +425,7 @@ int main(int argc, char** argv)
     dvz_app_destroy(app);
     dvz_scene_destroy(scene);
     dvz_free(state.colors);
+    dvz_free(state.normals);
     dvz_free(state.positions);
     return 0;
 }

@@ -39,6 +39,10 @@
 #define TEXT_LAB_FIGURE_WIDTH 1100.0f
 #define TEXT_LAB_FIGURE_HEIGHT 760.0f
 #define TEXT_LAB_BOX_VERTICES (24u * TEXT_LAB_MAX_TICKS)
+#define TEXT_LAB_DEFAULT_TEXT_SIZE 32.0f
+#define TEXT_LAB_DEFAULT_TICK_SIZE 12.0f
+#define TEXT_LAB_SDF_FONT_SIZE 64.0f
+#define TEXT_LAB_SDF_FONT_FAMILY "__datoviz_default_sdf__"
 
 
 
@@ -710,8 +714,8 @@ static void update_text_scene(TextLabState* state)
 static void reset_text_state(TextLabState* state)
 {
     ANN(state);
-    state->size_pts = 18.0f;
-    state->tick_size_pts = 8.0f;
+    state->size_pts = TEXT_LAB_DEFAULT_TEXT_SIZE;
+    state->tick_size_pts = TEXT_LAB_DEFAULT_TICK_SIZE;
     state->angle = 0.0f;
     state->offset_x = 0.0f;
     state->offset_y = 0.0f;
@@ -873,6 +877,20 @@ int main(int argc, char** argv)
     if (scene == NULL)
     {
         dvz_fprintf(stderr, "dvz_scene() failed\n");
+        return 1;
+    }
+
+    /* Seed the retained-text default SDF/MSDF font at a higher atlas resolution for inspection. */
+    DvzFont* font = dvz_font(
+        scene, &(DvzFontDesc){
+                   .family = TEXT_LAB_SDF_FONT_FAMILY,
+                   .style = "Regular",
+                   .size_pts = TEXT_LAB_SDF_FONT_SIZE,
+               });
+    if (font == NULL)
+    {
+        dvz_fprintf(stderr, "dvz_font() failed\n");
+        dvz_scene_destroy(scene);
         return 1;
     }
 
