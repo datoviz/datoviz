@@ -195,6 +195,11 @@ static bool _scene_image_pick_plan(
     const DvzPendingPickRequest* pending, const vec2 request_ndc, DvzSceneProbePlan* out_plan,
     uint32_t* out_target_width, uint32_t* out_target_height);
 
+static bool _scene_volume_pick_plan(
+    const DvzFigure* figure, const DvzPanel* panel, DvzVisual* visual,
+    const DvzPendingPickRequest* pending, const vec2 request_ndc, DvzSceneProbePlan* out_plan,
+    uint32_t* out_target_width, uint32_t* out_target_height);
+
 static bool _scene_visual_pick_plan(
     const DvzFigure* figure, const DvzPanel* panel, DvzVisual* visual,
     const DvzPendingPickRequest* pending, const vec2 request_ndc, DvzSceneProbePlan* out_plan,
@@ -1378,7 +1383,8 @@ static bool _scene_pick_request_has_primitive_candidate(
             continue;
         bool primitive_like = visual->type == DVZ_VISUAL_TYPE_PRIMITIVE ||
                               visual->type == DVZ_VISUAL_TYPE_MESH ||
-                              visual->type == DVZ_VISUAL_TYPE_PATH;
+                              visual->type == DVZ_VISUAL_TYPE_PATH ||
+                              visual->type == DVZ_VISUAL_TYPE_VOLUME;
         if (!primitive_like)
             continue;
         if (
@@ -2656,6 +2662,114 @@ static bool _scene_image_pick_plan(
 
 
 /**
+ * Build a synthetic GPU readback frame plan for one volume visual-identity pick request.
+ *
+ * @param figure the parent figure
+ * @param panel the panel receiving the request
+ * @param visual the volume visual to pick
+ * @param pending the pending pick request
+ * @param request_ndc the request coordinate in panel-local NDC
+ * @param out_plan the output plan wrapper
+ * @param out_target_width output offscreen target width
+ * @param out_target_height output offscreen target height
+ * @return true when the plan was assembled
+ */
+static bool _scene_volume_pick_plan(
+    const DvzFigure* figure, const DvzPanel* panel, DvzVisual* visual,
+    const DvzPendingPickRequest* pending, const vec2 request_ndc, DvzSceneProbePlan* out_plan,
+    uint32_t* out_target_width, uint32_t* out_target_height)
+{
+    ANN(figure);
+    ANN(panel);
+    ANN(visual);
+    ANN(pending);
+    ANN(request_ndc);
+    ANN(out_plan);
+    ANN(out_target_width);
+    ANN(out_target_height);
+
+    int pos_idx = _attr_index(visual, "position");
+    if (pos_idx < 0)
+        return false;
+    DvzVisualAttr* pos_attr = &visual->attrs[pos_idx];
+    if (pos_attr->data == NULL || pos_attr->item_count == 0 ||
+        pos_attr->item_size != sizeof(vec3) || pos_attr->item_count > UINT32_MAX)
+    {
+        return false;
+    }
+    uint64_t vertex_count = pos_attr->item_count;
+    if (!_scene_pick_alloc(
+            (void**)&out_plan->pick_colors, vertex_count, sizeof(DvzColor), "volume"))
+    {
+        return false;
+    }
+    for (uint64_t i = 0; i < vertex_count; i++)
+        _scene_pick_encode_item(0, out_plan->pick_colors[i]);
+
+    uint32_t target_width = 0;
+    uint32_t target_height = 0;
+    if (!_scene_pick_target_extent(figure, panel, &target_width, &target_height))
+    {
+        _scene_probe_plan_destroy(out_plan);
+        return false;
+    }
+
+    uint64_t position_bytes = 0;
+    uint64_t color_bytes = 0;
+    if (
+        _dvz_mul_u64_overflows(vertex_count, sizeof(vec3), &position_bytes) ||
+        _dvz_mul_u64_overflows(vertex_count, sizeof(DvzColor), &color_bytes))
+    {
+        log_error("volume pick request buffer size overflow");
+        _scene_probe_plan_destroy(out_plan);
+        return false;
+    }
+
+    DvzFramePlan* plan = dvz_frame_plan("figure.pick", pending->request.request_id);
+    out_plan->plan = plan;
+    bool ok = plan != NULL;
+    ok = ok && dvz_frame_plan_upload_bytes(
+                   plan, "pick0_position", 0, position_bytes, "position", pos_attr->data);
+    if (ok)
+        ok = dvz_frame_plan_upload_set_topology(plan, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
+    ok = ok && dvz_frame_plan_upload_bytes(
+                   plan, "pick0_color", 0, color_bytes, "color", out_plan->pick_colors);
+
+    DvzFramePlanVisualMeta metadata = {0};
+    metadata.has_metadata = true;
+    metadata.visual_type = (uint32_t)DVZ_VISUAL_TYPE_PRIMITIVE;
+    metadata.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+    metadata.alpha_mode = DVZ_ALPHA_OPAQUE;
+    metadata.depth_test_enabled = visual->depth_test_enabled;
+    metadata.vertex_count = (uint32_t)vertex_count;
+    dvz_strlcpy(metadata.position_id, "pick0_position", sizeof(metadata.position_id));
+    dvz_strlcpy(metadata.color_id, "pick0_color", sizeof(metadata.color_id));
+
+    ok = ok && dvz_frame_plan_render_panel(
+                   plan, "panel.pick", "target.pick", true,
+                   (DvzPanelDesc){.x = 0, .y = 0, .width = 1, .height = 1}) &&
+         dvz_frame_plan_render_visual(plan, "pick0") &&
+         dvz_frame_plan_render_visual_metadata(plan, &metadata);
+    if (ok)
+        _scene_pick_plan_apply_render_state(plan, panel, request_ndc, target_width, target_height);
+    ok = ok && dvz_frame_plan_copy(plan, "target.pick", "buf.pick", 4) &&
+         dvz_frame_plan_readback(plan, "buf.pick", "request.pick");
+    if (!ok)
+    {
+        log_error(
+            "volume pick request %" PRIu64 " failed to assemble the GPU readback plan",
+            pending->request.request_id);
+        _scene_probe_plan_destroy(out_plan);
+        return false;
+    }
+
+    *out_target_width = target_width;
+    *out_target_height = target_height;
+    return true;
+}
+
+
+/**
  * Build the visual-family-specific GPU pick plan for one eligible visual.
  *
  * @param figure the parent figure
@@ -2706,6 +2820,10 @@ static bool _scene_visual_pick_plan(
             out_target_height);
     case DVZ_VISUAL_TYPE_IMAGE:
         return _scene_image_pick_plan(
+            figure, panel, visual, pending, request_ndc, out_plan, out_target_width,
+            out_target_height);
+    case DVZ_VISUAL_TYPE_VOLUME:
+        return _scene_volume_pick_plan(
             figure, panel, visual, pending, request_ndc, out_plan, out_target_width,
             out_target_height);
     default:
@@ -3183,7 +3301,8 @@ static bool _scene_process_primitive_pick_request(
             continue;
         bool primitive_like = visual->type == DVZ_VISUAL_TYPE_PRIMITIVE ||
                               visual->type == DVZ_VISUAL_TYPE_MESH ||
-                              visual->type == DVZ_VISUAL_TYPE_PATH;
+                              visual->type == DVZ_VISUAL_TYPE_PATH ||
+                              visual->type == DVZ_VISUAL_TYPE_VOLUME;
         if (!primitive_like)
             continue;
         if (
