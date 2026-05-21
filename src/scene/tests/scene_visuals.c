@@ -2028,6 +2028,66 @@ int test_scene_visual_attr_source_and_mutability_metadata(TstContext* suite, con
 }
 
 
+/**
+ * Verify public read-only views over retained dense visual data.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_visual_data_view(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzVisual* visual = dvz_point(scene, 0);
+    ANN(visual);
+
+    vec3 positions[2] = {{0.0f, 0.0f, 0.0f}, {1.0f, 0.0f, 0.0f}};
+    float sizes[2] = {6.0f, 12.0f};
+
+    AT(dvz_visual_set_attr_mutability(
+           visual, "position", DVZ_VISUAL_ATTR_MUTABILITY_STREAMING) == 0);
+    AT(dvz_visual_set_data(visual, "position", positions, 2) == 0);
+    AT(dvz_visual_set_data(visual, "diameter", sizes, 2) == 0);
+
+    DvzVisualDataView view = {0};
+    AT(dvz_visual_data(visual, "position", &view) == 0);
+    AT(view.data != NULL);
+    AT(view.item_count == 2);
+    AT(view.item_size == 3 * sizeof(float));
+    AT(view.source == DVZ_VISUAL_ATTR_SOURCE_PER_ITEM);
+    AT(view.mutability == DVZ_VISUAL_ATTR_MUTABILITY_STREAMING);
+    AT(view.version > 0);
+    const float* view_positions = view.data;
+    AT(view_positions[3] == 1.0f);
+
+    DvzVisualDataView alias_view = {0};
+    AT(dvz_visual_data(visual, "diameter", &alias_view) == 0);
+    AT(alias_view.data != NULL);
+    AT(alias_view.item_count == 2);
+    AT(alias_view.item_size == sizeof(float));
+    const float* view_sizes = alias_view.data;
+    AT(view_sizes[0] == 6.0f);
+    AT(view_sizes[1] == 12.0f);
+
+    AT(dvz_visual_set_attr_source(visual, "color", DVZ_VISUAL_ATTR_SOURCE_CONSTANT) == 0);
+    DvzVisualDataView missing_view = {0};
+    AT(dvz_visual_data(visual, "color", &missing_view) == -1);
+    AT(missing_view.data == NULL);
+    AT(dvz_visual_data(visual, "texcoords", &missing_view) == -1);
+    AT(dvz_visual_data(NULL, "position", &missing_view) == -1);
+    AT(dvz_visual_data(visual, NULL, &missing_view) == -1);
+    AT(dvz_visual_data(visual, "position", NULL) == -1);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
 int test_scene_point_external_position_buffer_emits_no_upload(TstContext* suite, const TstCase* item)
 {
     ANN(suite);

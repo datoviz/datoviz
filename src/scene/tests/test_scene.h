@@ -577,6 +577,8 @@ int test_scene_visual_alpha_mode_depth_peel_glsl_executes(TstContext* suite, con
 
 int test_scene_visual_attr_source_and_mutability_metadata(TstContext* suite, const TstCase* item);
 
+int test_scene_visual_data_view(TstContext* suite, const TstCase* item);
+
 int test_scene_point_external_position_buffer_emits_no_upload(TstContext* suite, const TstCase* item);
 
 int test_scene_point_external_position_buffer_executes(TstContext* suite, const TstCase* item);

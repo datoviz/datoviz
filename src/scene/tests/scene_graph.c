@@ -113,6 +113,7 @@ int test_scene_graph(TstSuite* suite)
     TST_CASE(test_scene_blended_mesh_orders_after_volume_slice);
     TST_CASE(test_scene_blended_mesh_occlusion_contracts);
     TST_CASE(test_scene_visual_attr_source_and_mutability_metadata);
+    TST_CASE(test_scene_visual_data_view);
     TST_CASE(test_scene_point_external_position_buffer_emits_no_upload);
     TST_SCENE_GRAPH_GPU_CASE(test_scene_point_external_position_buffer_executes);
     TST_CASE(test_scene_point_rejects_texcoords_attribute);

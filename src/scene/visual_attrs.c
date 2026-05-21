@@ -953,6 +953,41 @@ int dvz_visual_set_data(
 
 
 /**
+ * Return a read-only view of retained dense visual attribute data.
+ *
+ * @param visual the visual
+ * @param attr_name the attribute name
+ * @param out output data view
+ * @return 0 when dense data is available, -1 otherwise
+ */
+int dvz_visual_data(const DvzVisual* visual, const char* attr_name, DvzVisualDataView* out)
+{
+    if (visual == NULL || attr_name == NULL || out == NULL)
+        return -1;
+
+    dvz_memset(out, sizeof(DvzVisualDataView), 0, sizeof(DvzVisualDataView));
+    int idx = _attr_index(visual, attr_name);
+    if (idx < 0)
+        return -1;
+
+    const DvzVisualAttr* attr = &visual->attrs[idx];
+    if (attr->data == NULL || attr->item_count == 0 || attr->item_size == 0)
+        return -1;
+    if (attr->source != DVZ_VISUAL_ATTR_SOURCE_PER_ITEM || attr->buffer != NULL)
+        return -1;
+
+    out->data = attr->data;
+    out->item_count = attr->item_count;
+    out->item_size = attr->item_size;
+    out->source = attr->source;
+    out->mutability = attr->mutability;
+    out->version = attr->version;
+    return 0;
+}
+
+
+
+/**
  * Replace one variable-length string attribute on a visual.
  *
  * @param visual the visual

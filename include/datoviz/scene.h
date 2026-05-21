@@ -777,6 +777,22 @@ DVZ_EXPORT int dvz_visual_set_data(DvzVisual* visual, const char* attr_name, con
 
 
 /**
+ * Return a read-only view of retained dense visual attribute data.
+ *
+ * Attribute aliases are resolved with the same storage-name rules as dvz_visual_set_data().
+ * Buffer-backed, field-backed, metadata-only, and missing attributes do not expose dense data
+ * through this first-slice view.
+ *
+ * @param visual the visual
+ * @param attr_name attribute name
+ * @param out output data view
+ * @return 0 when dense data is available, -1 otherwise
+ */
+DVZ_EXPORT int dvz_visual_data(
+    const DvzVisual* visual, const char* attr_name, DvzVisualDataView* out);
+
+
+/**
  * Write variable-length string data to a visual.
  *
  * Text visuals accept the `"text"` string attribute. The item count must match any configured

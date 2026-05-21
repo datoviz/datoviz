@@ -415,6 +415,18 @@ struct DvzVisualDataUpdate
 typedef struct DvzVisualDataUpdate DvzVisualDataUpdate;
 
 
+struct DvzVisualDataView
+{
+    const void* data;
+    uint64_t item_count;
+    uint32_t item_size;
+    DvzVisualAttrSource source;
+    DvzVisualAttrMutability mutability;
+    uint64_t version;
+};
+typedef struct DvzVisualDataView DvzVisualDataView;
+
+
 
 struct DvzFormatDesc
 {
