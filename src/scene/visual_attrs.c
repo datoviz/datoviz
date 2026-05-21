@@ -25,6 +25,7 @@
 #include "_overflow.h"
 #include "_scene.h"
 #include "_scene_resource_key.h"
+#include "_visual_family.h"
 #include "_visual_internal.h"
 #include "datoviz/scene.h"
 
@@ -36,23 +37,7 @@
 const char* _attr_storage_name(DvzVisualType type, const char* name)
 {
     ANN(name);
-    if (strcmp(name, "size") == 0)
-        return "size";
-    if ((type == DVZ_VISUAL_TYPE_POINT || type == DVZ_VISUAL_TYPE_MARKER) &&
-        strcmp(name, "diameter") == 0)
-    {
-        return "size";
-    }
-    if (type == DVZ_VISUAL_TYPE_PIXEL && strcmp(name, "pixel_size") == 0)
-        return "size";
-    if (type == DVZ_VISUAL_TYPE_SPHERE && strcmp(name, "radius") == 0)
-        return "size";
-    if ((type == DVZ_VISUAL_TYPE_SEGMENT || type == DVZ_VISUAL_TYPE_PATH) &&
-        strcmp(name, "stroke_width") == 0)
-    {
-        return "line_width";
-    }
-    return name;
+    return _visual_family_attr_storage_name(type, name);
 }
 
 
@@ -65,7 +50,8 @@ const char* _attr_storage_name(DvzVisualType type, const char* name)
 bool _attr_is_instance_attribute(const char* name)
 {
     ANN(name);
-    return strcmp(name, "instance_transform") == 0 || strcmp(name, "instance_color") == 0 ||
+    const DvzVisualFamilyAttrDesc* desc = _visual_family_attr_desc(DVZ_VISUAL_TYPE_MESH, name);
+    return (desc != NULL && desc->instance) || strcmp(name, "instance_color") == 0 ||
            strcmp(name, "instance_id") == 0;
 }
 
@@ -80,102 +66,8 @@ bool _attr_is_instance_attribute(const char* name)
  */
 uint32_t _attr_item_size(DvzVisualType type, const char* name)
 {
-    name = _attr_storage_name(type, name);
-    switch (type)
-    {
-    case DVZ_VISUAL_TYPE_POINT:
-    case DVZ_VISUAL_TYPE_PIXEL:
-    case DVZ_VISUAL_TYPE_MARKER:
-    case DVZ_VISUAL_TYPE_SPHERE:
-        if (strcmp(name, "position") == 0)
-            return 3 * sizeof(float);
-        if (strcmp(name, "color") == 0)
-            return 4 * sizeof(uint8_t);
-        if (strcmp(name, "size") == 0)
-            return sizeof(float);
-        if ((type == DVZ_VISUAL_TYPE_POINT || type == DVZ_VISUAL_TYPE_MARKER) &&
-            strcmp(name, "selection") == 0)
-            return sizeof(uint8_t);
-        if (type == DVZ_VISUAL_TYPE_MARKER && strcmp(name, "angle") == 0)
-            return sizeof(float);
-        if (type == DVZ_VISUAL_TYPE_MARKER && strcmp(name, "shape") == 0)
-            return sizeof(uint32_t);
-        break;
-    case DVZ_VISUAL_TYPE_PRIMITIVE:
-    case DVZ_VISUAL_TYPE_MESH:
-        if (strcmp(name, "position") == 0)
-            return 3 * sizeof(float);
-        if (strcmp(name, "color") == 0)
-            return 4 * sizeof(uint8_t);
-        if (strcmp(name, "normal") == 0)
-            return 3 * sizeof(float);
-        if (type == DVZ_VISUAL_TYPE_MESH && strcmp(name, "instance_transform") == 0)
-            return 16 * sizeof(float);
-        break;
-    case DVZ_VISUAL_TYPE_PATH:
-        if (strcmp(name, "position") == 0)
-            return 3 * sizeof(float);
-        if (strcmp(name, "color") == 0)
-            return 4 * sizeof(uint8_t);
-        if (strcmp(name, "line_width") == 0)
-            return sizeof(float);
-        break;
-    case DVZ_VISUAL_TYPE_SEGMENT:
-        if (strcmp(name, "position_start") == 0)
-            return 3 * sizeof(float);
-        if (strcmp(name, "position_end") == 0)
-            return 3 * sizeof(float);
-        if (strcmp(name, "color") == 0)
-            return 4 * sizeof(uint8_t);
-        if (strcmp(name, "line_width") == 0)
-            return sizeof(float);
-        break;
-    case DVZ_VISUAL_TYPE_IMAGE:
-        if (strcmp(name, "position") == 0)
-            return 3 * sizeof(float);
-        if (strcmp(name, "extent") == 0)
-            return 2 * sizeof(float);
-        if (strcmp(name, "anchor") == 0)
-            return 2 * sizeof(float);
-        if (strcmp(name, "tex_rect") == 0)
-            return 4 * sizeof(float);
-        if (strcmp(name, "texcoords") == 0)
-            return 2 * sizeof(float);
-        break;
-    case DVZ_VISUAL_TYPE_TEXT:
-        if (strcmp(name, "position") == 0)
-            return 3 * sizeof(float);
-        if (strcmp(name, "anchor") == 0)
-            return 2 * sizeof(float);
-        if (strcmp(name, "size") == 0)
-            return sizeof(float);
-        if (strcmp(name, "color") == 0)
-            return 4 * sizeof(uint8_t);
-        if (strcmp(name, "angle") == 0)
-            return sizeof(float);
-        break;
-    case DVZ_VISUAL_TYPE_GLYPH:
-        if (strcmp(name, "position") == 0)
-            return 3 * sizeof(float);
-        if (strcmp(name, "bounds") == 0)
-            return 4 * sizeof(float);
-        if (strcmp(name, "texcoords") == 0)
-            return 4 * sizeof(float);
-        if (strcmp(name, "color") == 0)
-            return 4 * sizeof(uint8_t);
-        if (strcmp(name, "angle") == 0)
-            return sizeof(float);
-        break;
-    case DVZ_VISUAL_TYPE_VOLUME:
-        if (strcmp(name, "position") == 0)
-            return 3 * sizeof(float);
-        if (strcmp(name, "texcoords") == 0)
-            return 3 * sizeof(float);
-        break;
-    default:
-        break;
-    }
-    return 0;
+    const DvzVisualFamilyAttrDesc* desc = _visual_family_attr_desc(type, name);
+    return desc != NULL ? desc->item_size : 0;
 }
 
 
@@ -196,29 +88,7 @@ bool _attr_supported(DvzVisualType type, const char* name, uint32_t* item_size)
     if (*item_size != 0)
         return true;
 
-    const char* expected = "position, color, diameter, selection";
-    if (type == DVZ_VISUAL_TYPE_MARKER)
-        expected = "position, color, diameter, selection, angle, shape";
-    else if (type == DVZ_VISUAL_TYPE_PIXEL)
-        expected = "position, color, pixel_size";
-    else if (type == DVZ_VISUAL_TYPE_SPHERE)
-        expected = "position, color, radius";
-    else if (type == DVZ_VISUAL_TYPE_PRIMITIVE)
-        expected = "position, color, normal";
-    else if (type == DVZ_VISUAL_TYPE_MESH)
-        expected = "position, color, normal, instance_transform";
-    else if (type == DVZ_VISUAL_TYPE_PATH)
-        expected = "position, color, stroke_width";
-    else if (type == DVZ_VISUAL_TYPE_SEGMENT)
-        expected = "position_start, position_end, color, stroke_width";
-    else if (type == DVZ_VISUAL_TYPE_IMAGE)
-        expected = "position, extent, anchor, tex_rect, texcoords";
-    else if (type == DVZ_VISUAL_TYPE_TEXT)
-        expected = "text strings plus position, anchor, size, color, angle";
-    else if (type == DVZ_VISUAL_TYPE_GLYPH)
-        expected = "position, bounds, texcoords, color, angle, plus a bound 2D field";
-    else if (type == DVZ_VISUAL_TYPE_VOLUME)
-        expected = "position, texcoords, plus a bound 3D field";
+    const char* expected = _visual_family_attr_expected(type);
 
     log_error(
         "unsupported %s visual attribute '%s' (expected one of: %s)", _visual_type_name(type),
@@ -243,20 +113,7 @@ bool _attr_source_supported(DvzVisualType type, const char* name, DvzVisualAttrS
     if (!_attr_supported(type, name, &item_size))
         return false;
     name = _attr_storage_name(type, name);
-
-    if (source == DVZ_VISUAL_ATTR_SOURCE_PER_ITEM)
-        return true;
-
-    bool is_color = strcmp(name, "color") == 0;
-    bool is_size = strcmp(name, "size") == 0;
-    bool is_line_width = strcmp(name, "line_width") == 0;
-
-    if (source == DVZ_VISUAL_ATTR_SOURCE_CONSTANT && (is_color || is_size || is_line_width))
-        return true;
-    if (source == DVZ_VISUAL_ATTR_SOURCE_PER_GROUP && type != DVZ_VISUAL_TYPE_SEGMENT &&
-        (is_color || is_size))
-        return true;
-    if (source == DVZ_VISUAL_ATTR_SOURCE_PER_SPAN && type == DVZ_VISUAL_TYPE_PATH && is_color)
+    if (_visual_family_attr_source_supported(type, name, source))
         return true;
 
     log_error(
