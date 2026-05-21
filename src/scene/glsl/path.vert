@@ -96,8 +96,8 @@ void main()
     {
         vec2 miter = safeNormalize(normalIn + normalOut, normal);
         float denom = max(abs(dot(miter, normalOut)), 1e-3);
-        float miterScale = min(1.0 / denom, miterLimit);
-        normal = miter * miterScale;
+        float miterScale = 1.0 / denom;
+        normal = miterScale <= miterLimit ? miter * miterScale : normal;
     }
     else if (hasPrev && hasNext && joinType == 1)
     {

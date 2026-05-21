@@ -13,8 +13,8 @@ first-slice history when useful, but this document is authoritative for `path` s
 
 ## Current Implementation Status
 
-Status on 2026-05-17: the active v0.4 runtime implements both the earlier line-strip path and the
-first stroked path slice.
+Status on 2026-05-21: the active v0.4 runtime implements both the earlier line-strip path and the
+path-native stroked path slice.
 
 The implemented path supports:
 
@@ -23,24 +23,26 @@ The implemented path supports:
 3. primitive line-strip rendering when `stroke_width` is absent;
 4. optional dense per-point `stroke_width` in screen pixels;
 5. `dvz_path_set_subpaths()` for explicit open subpath lengths in the stroked path lane;
-6. stroked lowering through derived segment-style `position_start`, `position_end`, `color`,
-   internal `line_width`, and index resources when `stroke_width` is present;
-7. GLSL/Vulkan frame-plan and DRP2 emission through the segment stroke pipeline for stroked paths.
+6. `dvz_path_set_caps()` and `dvz_path_set_join()` with round caps/joins by default and a default
+   miter limit of `4.0`;
+7. stroked lowering through path-native adjacency resources carrying previous/current/next
+   positions, color, internal `line_width`, per-vertex role/subpath flags, cumulative distance, and
+   indices when `stroke_width` is present;
+8. GLSL/Vulkan frame-plan and DRP2 emission through the `scene.path` stroke pipeline for stroked
+   paths, while `segment` remains the independent endpoint-pair stroke pipeline.
 
-`stroke_width` is the public attribute name. The current retained storage, shader input, and DRP2
-resource metadata still use the historical internal name `line_width`.
+`stroke_width` is the public attribute name. The current retained storage and shader width input
+still use the historical internal name `line_width`.
 
 Current limitations:
 
 1. thin line-strip paths do not yet consume explicit subpath lengths;
-2. stroked paths are lowered as independent segment strokes with butt caps;
-3. path-native joins, path cap parameters, closed subpaths, dashes, picking, and WGSL lowering are
-   deferred.
+2. closed subpaths, dashes, picking, SVG parsing, filled paths/polygons, data-space stroke width,
+   and WGSL lowering are deferred.
 
-The following sections describe the target path contract. Closed subpaths, joins beyond the current
-segment-style stroke, miter-limit behavior, dashes, filled paths/polygons, SVG parsing, path
-picking, and data-space stroke width are planned capabilities unless explicitly marked as implemented
-above.
+The following sections describe the target path contract. Closed subpaths, dashes, filled
+paths/polygons, SVG parsing, path picking, data-space stroke width, and fuller backend parity are
+planned capabilities unless explicitly marked as implemented above.
 
 
 ## Semantic Purpose
@@ -115,8 +117,8 @@ widths when lowering each path edge to the segment stroke pipeline.
 Cap styles applied to the start and end of each open path independently.
 Ignored for closed paths.
 
-Status on 2026-05-17: path-specific cap parameters are not implemented. Stroked paths are lowered
-to independent segment-style strokes with butt caps.
+Status on 2026-05-21: path-specific cap parameters are implemented for open stroked paths in the
+GLSL/Vulkan path pipeline.
 
 The cap and join vocabulary below is the focused home for the useful path enum sketch from the
 retired broad scene API draft. Arrow-style caps may be added here when the `path` or `segment`
@@ -151,8 +153,8 @@ Corner join style between consecutive segments of a path.
 | `round` | circular arc at the join |
 | `bevel` | flat diagonal cut |
 
-Status on 2026-05-17: path-specific join rendering is not implemented. The stroked path first slice
-lowers each edge to the segment stroke pipeline.
+Status on 2026-05-21: path-specific join parameters are implemented for open stroked paths in the
+GLSL/Vulkan path pipeline.
 
 `miter` may produce very long spikes at near-180° angles.
 The miter limit is controlled by `miter_limit` (see below).
@@ -173,7 +175,8 @@ Set to a large value to disable the limit (allows arbitrarily long miter spikes)
 When `stroke_width` is `PER_SPAN`, the miter limit is evaluated per-path using that path's own
 stroke width — a path with a wider stroke uses its width as the reference multiple.
 
-Status on 2026-05-17: path-specific miter-limit handling is not implemented.
+Status on 2026-05-21: path-specific miter-limit handling is implemented for GLSL/Vulkan stroked
+paths.
 
 
 ### `closed`

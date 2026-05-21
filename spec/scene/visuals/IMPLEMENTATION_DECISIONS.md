@@ -306,7 +306,7 @@ Deferred:
 4. Path picking unless explicitly scoped after rendering is stable.
 5. Data-space stroke width unless a separate implementation note defines the 2D/3D projection rules.
 6. Closed subpaths.
-7. Path-specific joins and miter-limit handling.
+7. WGSL lowering for path-native strokes.
 
 
 ## Stroke, Dash, Arrow, and Vector Rules
@@ -340,8 +340,9 @@ GPU stroke representation:
 2. Segment starts from the v0.3 four-vertex/six-index analytic-cap model.
 3. Path-native strokes should use adjacency-style derived payloads with previous/current/next
    positions, stroke width, color, subpath metadata, closed/open flags, and cumulative distance.
-4. Keep the current segment-lowered stroked path as a temporary fallback until path-native joins and
-   miter-limit tests are stable.
+4. The 2026-05-21 GLSL/Vulkan path slice replaces the temporary segment-lowered stroked path with
+   a path-native descriptor and adjacency-style derived payload. The segment visual remains the
+   independent endpoint-pair stroke family.
 
 Vector and 3D line-family direction:
 
