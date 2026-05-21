@@ -453,6 +453,10 @@ int test_scene_panel_plot_clip_rect_metadata(TstContext* suite, const TstCase* i
 
 int test_scene_scale_colormap_colorbar_core(TstContext* suite, const TstCase* item);
 
+int test_scene_colorbar_auto_reserve_and_visuals(TstContext* suite, const TstCase* item);
+
+int test_scene_colorbar_rejects_unsupported_requests(TstContext* suite, const TstCase* item);
+
 int test_scene_colorbar_rejects_cross_scene_scale(TstContext* suite, const TstCase* item);
 
 int test_scene_image_visual_binds_colormap_scale(TstContext* suite, const TstCase* item);

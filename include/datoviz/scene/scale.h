@@ -167,6 +167,38 @@ DVZ_EXPORT void dvz_colorbar_set_format(
     DvzColorbar* colorbar, const DvzFormatDesc* format);
 
 
+/**
+ * Set the colorbar orientation.
+ *
+ * @param colorbar the colorbar
+ * @param orientation the orientation
+ */
+DVZ_EXPORT void dvz_colorbar_set_orientation(
+    DvzColorbar* colorbar, DvzColorbarOrientation orientation);
+
+
+/**
+ * Set the colorbar panel-edge anchor.
+ *
+ * The first rendered colorbar slice accepts only panel-left, panel-right, panel-top, and
+ * panel-bottom anchors.
+ *
+ * @param colorbar the colorbar
+ * @param anchor the panel-edge anchor
+ * @return true when the anchor was accepted
+ */
+DVZ_EXPORT bool dvz_colorbar_set_anchor(DvzColorbar* colorbar, DvzSceneAnchor anchor);
+
+
+/**
+ * Set the colorbar title.
+ *
+ * @param colorbar the colorbar
+ * @param title the title, or NULL to clear
+ */
+DVZ_EXPORT void dvz_colorbar_set_title(DvzColorbar* colorbar, const char* title);
+
+
 
 /*************************************************************************************************/
 /*  Visual scale bindings                                                                        */

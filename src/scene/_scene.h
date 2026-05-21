@@ -49,6 +49,8 @@
 #define DVZ_SCENE_MAX_TEXTS 128
 #define DVZ_SCENE_MAX_ANNOTATIONS 128
 #define DVZ_SCENE_MAX_PANEL_COLORBARS 16
+#define DVZ_SCENE_MAX_COLORBAR_TICKS 16
+#define DVZ_SCENE_MAX_COLORBAR_TEXTS (DVZ_SCENE_MAX_COLORBAR_TICKS + 1)
 #define DVZ_SCENE_MAX_COLOR_STOPS 32
 #define DVZ_SCENE_MAX_ITEM_ATTRS 8
 #define DVZ_SCENE_MAX_VISUAL_BINDINGS 3
@@ -441,6 +443,20 @@ struct DvzColorbar
     uint32_t flags;
     bool has_format;
     DvzSceneFormatState format;
+    bool dirty;
+    uint64_t version;
+    DvzVisual* ramp_visual;
+    DvzVisual* tick_visual;
+    DvzVisual* text_visual;
+    uint32_t tick_count;
+    double ticks[DVZ_SCENE_MAX_COLORBAR_TICKS];
+    uint32_t text_count;
+    char text_labels[DVZ_SCENE_MAX_COLORBAR_TEXTS][DVZ_SCENE_LABEL_SIZE];
+    float text_positions[DVZ_SCENE_MAX_COLORBAR_TEXTS][3];
+    float text_anchors[DVZ_SCENE_MAX_COLORBAR_TEXTS][2];
+    float text_sizes[DVZ_SCENE_MAX_COLORBAR_TEXTS];
+    uint8_t text_colors[DVZ_SCENE_MAX_COLORBAR_TEXTS][4];
+    float text_angles[DVZ_SCENE_MAX_COLORBAR_TEXTS];
 };
 
 
@@ -1308,6 +1324,10 @@ bool _scene_color_from_colormap(const DvzColormap* colormap, double t, uint8_t o
 void _scene_visual_texture_mark_clean(DvzVisual* visual);
 
 void _scene_refresh_field_dirty_state(DvzScene* scene, DvzSampledField* field);
+
+void _scene_prepare_axis_visuals(DvzFigure* figure);
+
+void _scene_prepare_colorbar_visuals(DvzFigure* figure);
 
 void _scene_prepare_text_visuals(DvzFigure* figure);
 

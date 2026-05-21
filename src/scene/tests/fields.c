@@ -35,6 +35,18 @@
 /*  Tests                                                                                        */
 /*************************************************************************************************/
 
+static DvzVisualAttr* _colorbar_test_attr(DvzVisual* visual, const char* name)
+{
+    ANN(visual);
+    ANN(name);
+    int idx = _attr_index(visual, name);
+    if (idx < 0)
+        return NULL;
+    return &visual->attrs[idx];
+}
+
+
+
 int test_scene_scale_colormap_colorbar_core(TstContext* suite, const TstCase* item)
 {
     (void)suite;
@@ -123,6 +135,118 @@ int test_scene_scale_colormap_colorbar_core(TstContext* suite, const TstCase* it
     AT(colorbar->has_format);
     AT(colorbar->format.precision == 0);
     AT(strcmp(colorbar->format.unit, "um") == 0);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+int test_scene_colorbar_auto_reserve_and_visuals(TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 800, 600, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
+    ANN(panel);
+
+    DvzScale* scale = dvz_scale(
+        scene, &(DvzScaleDesc){
+                   .kind = DVZ_SCALE_CONTINUOUS,
+                   .unit = "u",
+                   .format = (DvzFormatDesc){.precision = 1, .show_unit = true},
+               });
+    ANN(scale);
+    dvz_scale_set_domain(scale, 0.0, 1.0);
+    DvzColormapStop stops[2] = {
+        {.position = 0.0, .rgba = {0, 0, 255, 255}},
+        {.position = 1.0, .rgba = {255, 0, 0, 255}},
+    };
+    DvzColormap* colormap = dvz_colormap(scene, NULL);
+    ANN(colormap);
+    dvz_colormap_set_stops(colormap, stops, 2);
+    dvz_scale_set_colormap(scale, colormap);
+
+    DvzColorbar* colorbar = dvz_colorbar(
+        panel, scale, &(DvzColorbarDesc){
+                          .orientation = DVZ_COLORBAR_ORIENTATION_VERTICAL,
+                          .anchor = DVZ_SCENE_ANCHOR_PANEL_RIGHT,
+                          .title = "Intensity",
+                      });
+    ANN(colorbar);
+    DvzPanelLayoutReserve reserve = {0};
+    AT(dvz_panel_get_layout_reserve(panel, &reserve));
+    AT(fabsf(reserve.right - 0.24f) < 1e-6f);
+
+    _scene_prepare_colorbar_visuals(figure);
+    AT(colorbar->ramp_visual != NULL);
+    AT(colorbar->tick_visual != NULL);
+    AT(colorbar->text_visual != NULL);
+    AT(colorbar->ramp_visual->visible);
+    AT(colorbar->tick_visual->visible);
+    AT(colorbar->text_visual->visible);
+    AT(colorbar->tick_count >= 2);
+    AT(colorbar->text_count == colorbar->tick_count + 1);
+
+    DvzVisualAttr* pos = _colorbar_test_attr(colorbar->ramp_visual, "position");
+    DvzVisualAttr* ramp_color = _colorbar_test_attr(colorbar->ramp_visual, "color");
+    ANN(pos);
+    ANN(ramp_color);
+    AT(pos->item_count == 2 * (64 + 1));
+    AT(ramp_color->item_count == pos->item_count);
+    float* positions = (float*)pos->data;
+    AT(positions[1] < -0.95f);
+    AT(positions[3 * (pos->item_count - 1) + 1] > 0.95f);
+
+    AT(dvz_colorbar_set_anchor(colorbar, DVZ_SCENE_ANCHOR_PANEL_BOTTOM));
+    dvz_colorbar_set_orientation(colorbar, DVZ_COLORBAR_ORIENTATION_HORIZONTAL);
+    _scene_prepare_colorbar_visuals(figure);
+    AT(dvz_panel_get_layout_reserve(panel, &reserve));
+    AT(fabsf(reserve.bottom - 0.24f) < 1e-6f);
+    pos = _colorbar_test_attr(colorbar->ramp_visual, "position");
+    ANN(pos);
+    positions = (float*)pos->data;
+    AT(positions[0] < -0.95f);
+    AT(positions[3 * (pos->item_count - 1) + 0] > 0.95f);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+int test_scene_colorbar_rejects_unsupported_requests(TstContext* suite, const TstCase* item)
+{
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 256, 256, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
+    ANN(panel);
+
+    DvzScale* scale = dvz_scale(scene, &(DvzScaleDesc){.kind = DVZ_SCALE_CONTINUOUS});
+    ANN(scale);
+    DvzColorbar* colorbar = NULL;
+    AT_EXPECTED_ERROR_STRICT(
+        suite,
+        (colorbar = dvz_colorbar(
+             panel, scale,
+             &(DvzColorbarDesc){.anchor = DVZ_SCENE_ANCHOR_PANEL_CENTER})) == NULL);
+    AT(colorbar == NULL);
+
+    DvzScale* categorical = dvz_scale(scene, &(DvzScaleDesc){.kind = DVZ_SCALE_CATEGORICAL});
+    ANN(categorical);
+    AT_EXPECTED_ERROR_STRICT(suite, (colorbar = dvz_colorbar(panel, categorical, NULL)) == NULL);
+    AT(colorbar == NULL);
+
+    colorbar = dvz_colorbar(panel, scale, NULL);
+    ANN(colorbar);
+    AT_EXPECTED_ERROR_STRICT(
+        suite, !dvz_colorbar_set_anchor(colorbar, DVZ_SCENE_ANCHOR_SCREEN));
 
     dvz_scene_destroy(scene);
     return 0;
@@ -2128,6 +2252,8 @@ int test_scene_fields(TstSuite* suite)
     TST_GROUP("fields");
 
     TST_CASE(test_scene_scale_colormap_colorbar_core);
+    TST_CASE(test_scene_colorbar_auto_reserve_and_visuals);
+    TST_CASE(test_scene_colorbar_rejects_unsupported_requests);
     TST_CASE(test_scene_colorbar_rejects_cross_scene_scale);
     TST_CASE(test_scene_image_visual_binds_colormap_scale);
     TST_CASE(test_scene_visual_scale_rejects_cross_scene_scale);
