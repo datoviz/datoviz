@@ -91,8 +91,7 @@ int main(int argc, char** argv)
         return 1;
     }
 
-    DvzPanel* panel =
-        dvz_panel(figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+    DvzPanel* panel = dvz_panel_full(figure);
     if (panel == NULL)
     {
         dvz_fprintf(stderr, "dvz_panel() failed\n");
@@ -171,14 +170,6 @@ int main(int argc, char** argv)
         return 1;
     }
 
-    DvzController* controller = dvz_panzoom(scene, NULL);
-    if (controller == NULL || dvz_panel_bind_controller(panel, controller, DVZ_DIM_MASK_XY) != 0)
-    {
-        dvz_fprintf(stderr, "failed to create or bind panzoom controller\n");
-        dvz_scene_destroy(scene);
-        return 1;
-    }
-
     DvzAppConfig app_config = dvz_app_config();
     if (frames > 0)
         app_config.schedule_mode = DVZ_APP_SCHEDULE_CONTINUOUS;
@@ -198,15 +189,14 @@ int main(int argc, char** argv)
         dvz_scene_destroy(scene);
         return 1;
     }
-    DvzInputRouter* router = dvz_app_window_input(win);
-    if (router == NULL)
+    DvzPanzoom* panzoom = dvz_app_window_panel_panzoom(win, panel, NULL);
+    if (panzoom == NULL)
     {
-        dvz_fprintf(stderr, "dvz_app_window_input() failed\n");
+        dvz_fprintf(stderr, "failed to create or bind panzoom controller\n");
         dvz_app_destroy(app);
         dvz_scene_destroy(scene);
         return 1;
     }
-    dvz_panel_connect_input(panel, router);
     dvz_app_window_request_frame(win);
 
     dvz_app_run(app, frames);

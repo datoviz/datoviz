@@ -1160,8 +1160,8 @@ int dvz_visual_set_data_many(
  * @return 0 on success, -1 on validation error
  */
 int dvz_point_data(
-    DvzVisual* visual, const vec3* positions, const DvzColor* colors,
-    const float* diameters, uint32_t item_count)
+    DvzVisual* visual, const void* positions, const void* colors, const float* diameters,
+    uint32_t item_count)
 {
     if (visual == NULL || visual->type != DVZ_VISUAL_TYPE_POINT || positions == NULL ||
         colors == NULL || diameters == NULL || item_count == 0)
@@ -1210,7 +1210,7 @@ int dvz_point_selection(DvzVisual* visual, const uint8_t* selection, uint32_t it
  * @return 0 on success, -1 on validation error
  */
 int dvz_mesh_data(
-    DvzVisual* visual, const vec3* positions, const DvzColor* colors, const vec3* normals,
+    DvzVisual* visual, const void* positions, const void* colors, const void* normals,
     uint32_t vertex_count)
 {
     if (visual == NULL || visual->type != DVZ_VISUAL_TYPE_MESH || positions == NULL ||
@@ -1246,7 +1246,7 @@ int dvz_mesh_data(
  * @param instance_count number of instances
  * @return 0 on success, -1 on validation error
  */
-int dvz_mesh_instances(DvzVisual* visual, const mat4* instance_transforms, uint32_t instance_count)
+int dvz_mesh_instances(DvzVisual* visual, const void* instance_transforms, uint32_t instance_count)
 {
     if (visual == NULL || visual->type != DVZ_VISUAL_TYPE_MESH || instance_transforms == NULL ||
         instance_count == 0)

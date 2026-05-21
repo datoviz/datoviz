@@ -90,9 +90,7 @@ static bool _add_point_grid(
         }
     }
 
-    if (dvz_visual_set_data(visual, "position", positions, POINT_COUNT) != 0 ||
-        dvz_visual_set_data(visual, "color", colors, POINT_COUNT) != 0 ||
-        dvz_visual_set_data(visual, "diameter", sizes, POINT_COUNT) != 0)
+    if (dvz_point_data(visual, positions, colors, sizes, POINT_COUNT) != 0)
     {
         return false;
     }
@@ -217,31 +215,28 @@ static bool _add_path_panel(DvzScene* scene, DvzPanel* panel)
 
 
 /**
- * Attach panzoom to every panel through one input router.
+ * Attach app-window panzoom controllers to every panel.
  *
- * @param scene scene owning the controllers
+ * @param win app window owning the input router
  * @param panels panels to connect
  * @param count number of panels
- * @param router input router from the app window
  * @return true on success, false on error
  */
 static bool
-_attach_panzoom(DvzScene* scene, DvzPanel** panels, uint32_t count, DvzInputRouter* router)
+_attach_panzoom(DvzAppWindow* win, DvzPanel** panels, uint32_t count)
 {
-    if (scene == NULL || panels == NULL || router == NULL)
+    if (win == NULL || panels == NULL)
         return false;
 
     for (uint32_t i = 0; i < count; i++)
     {
         if (panels[i] == NULL)
             return false;
-        DvzController* controller = dvz_panzoom(scene, NULL);
-        if (controller == NULL ||
-            dvz_panel_bind_controller(panels[i], controller, DVZ_DIM_MASK_XY) != 0)
+        DvzPanzoom* panzoom = dvz_app_window_panel_panzoom(win, panels[i], NULL);
+        if (panzoom == NULL)
         {
             return false;
         }
-        dvz_panel_connect_input(panels[i], router);
     }
     return true;
 }
@@ -315,7 +310,7 @@ int main(int argc, char** argv)
         return 1;
     }
 
-    if (!_attach_panzoom(scene, panels, 4, dvz_app_window_input(win)))
+    if (!_attach_panzoom(win, panels, 4))
     {
         fprintf(stderr, "panzoom setup failed\n");
         dvz_app_destroy(app);

@@ -130,9 +130,7 @@ int main(void)
         return 1;
     }
 
-    dvz_visual_set_data(visual, "position", visual_positions, N);
-    dvz_visual_set_data(visual, "color", colors, N);
-    dvz_visual_set_data(visual, "diameter", sizes, N);
+    dvz_point_data(visual, visual_positions, colors, sizes, N);
     dvz_panel_add_visual(panel, visual, NULL);
 
     DvzAxis* x_axis = dvz_panel_axis(panel, DVZ_DIM_X);
@@ -159,16 +157,14 @@ int main(void)
         return 1;
     }
 
-    DvzController* panzoom_controller = dvz_panzoom(scene, NULL);
-    if (panzoom_controller == NULL ||
-        dvz_panel_bind_controller(panel, panzoom_controller, DVZ_DIM_MASK_XY) != 0)
+    DvzPanzoom* panzoom = dvz_app_window_panel_panzoom(win, panel, NULL);
+    if (panzoom == NULL)
     {
         fprintf(stderr, "failed to create or bind panzoom controller\n");
         dvz_app_destroy(app);
         dvz_scene_destroy(scene);
         return 1;
     }
-    dvz_panel_connect_input(panel, dvz_app_window_input(win));
     dvz_app_run(app, 0);
 
     dvz_app_destroy(app);

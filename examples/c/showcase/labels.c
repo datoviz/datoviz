@@ -631,7 +631,7 @@ int main(int argc, char** argv)
     }
 
     DvzFigure* figure = dvz_figure(scene, WIDTH, HEIGHT, 0);
-    DvzPanel* panel = figure != NULL ? dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1}) : NULL;
+    DvzPanel* panel = figure != NULL ? dvz_panel_full(figure) : NULL;
     if (figure == NULL || panel == NULL)
     {
         fprintf(stderr, "scene panel setup failed\n");
@@ -729,9 +729,8 @@ int main(int argc, char** argv)
     }
     DvzPanzoomDesc panzoom_desc = dvz_panzoom_desc();
     panzoom_desc.flags = DVZ_PANZOOM_FLAGS_KEEP_ASPECT;
-    DvzController* panzoom_controller = dvz_panzoom(scene, &panzoom_desc);
-    if (panzoom_controller == NULL ||
-        dvz_panel_bind_controller(panel, panzoom_controller, DVZ_DIM_MASK_XY) != 0)
+    DvzPanzoom* panzoom = dvz_app_window_panel_panzoom(win, panel, &panzoom_desc);
+    if (panzoom == NULL)
     {
         fprintf(stderr, "failed to create or bind panzoom controller\n");
         dvz_app_destroy(app);
@@ -742,7 +741,6 @@ int main(int argc, char** argv)
         dvz_free(labels);
         return 1;
     }
-    dvz_panel_connect_input(panel, router);
     dvz_input_subscribe_pointer(router, _pointer_callback, &state);
     dvz_input_subscribe_event(router, _input_event_callback, &state);
     dvz_app_window_set_frame_callback(win, _frame_callback, &state);

@@ -931,9 +931,7 @@ int main(int argc, char** argv)
         return 1;
     }
     DvzFigure* host_figure = dvz_figure(scene, TEXT_MSDF_LAB_HOST_WIDTH, TEXT_MSDF_LAB_HOST_HEIGHT, 0);
-    DvzPanel* host_panel = host_figure != NULL
-                               ? dvz_panel(host_figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f})
-                               : NULL;
+    DvzPanel* host_panel = host_figure != NULL ? dvz_panel_full(host_figure) : NULL;
     if (host_figure == NULL || host_panel == NULL)
     {
         dvz_fprintf(stderr, "host figure setup failed\n");

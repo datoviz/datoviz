@@ -183,9 +183,7 @@ static bool _add_point_grid(DvzScene* scene, DvzPanel* panel, uint32_t variant)
         }
     }
 
-    if (dvz_visual_set_data(visual, "position", positions, POINT_COUNT) != 0 ||
-        dvz_visual_set_data(visual, "color", colors, POINT_COUNT) != 0 ||
-        dvz_visual_set_data(visual, "diameter", sizes, POINT_COUNT) != 0)
+    if (dvz_point_data(visual, positions, colors, sizes, POINT_COUNT) != 0)
     {
         return false;
     }
@@ -323,29 +321,17 @@ int main(int argc, char** argv)
         return 1;
     }
 
-    DvzInputRouter* router = dvz_app_window_input(win);
-    if (router == NULL)
-    {
-        fprintf(stderr, "dvz_app_window_input() failed\n");
-        dvz_app_destroy(app);
-        dvz_scene_destroy(scene);
-        return 1;
-    }
-
     LinkedPanelsState state = {0};
     for (uint32_t i = 0; i < PANEL_COUNT; i++)
     {
-        DvzController* panzoom_controller = dvz_panzoom(scene, NULL);
-        state.panzooms[i] = dvz_controller_panzoom(panzoom_controller);
-        if (state.panzooms[i] == NULL ||
-            dvz_panel_bind_controller(panels[i], panzoom_controller, DVZ_DIM_MASK_XY) != 0)
+        state.panzooms[i] = dvz_app_window_panel_panzoom(win, panels[i], NULL);
+        if (state.panzooms[i] == NULL)
         {
             fprintf(stderr, "failed to create or bind panzoom controller\n");
             dvz_app_destroy(app);
             dvz_scene_destroy(scene);
             return 1;
         }
-        dvz_panel_connect_input(panels[i], router);
     }
 
     dvz_app_window_set_frame_callback(win, _linked_panels_frame, &state);

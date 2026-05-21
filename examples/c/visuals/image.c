@@ -251,8 +251,7 @@ int main(int argc, char** argv)
         return 1;
     }
 
-    DvzPanel* panel =
-        dvz_panel(figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+    DvzPanel* panel = dvz_panel_full(figure);
     if (panel == NULL)
     {
         fprintf(stderr, "dvz_panel() failed\n");

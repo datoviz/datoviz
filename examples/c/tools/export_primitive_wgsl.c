@@ -45,7 +45,7 @@ int main(int argc, char** argv)
         return 1;
 
     DvzFigure* figure = dvz_figure(scene, 640, 640, 0);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    DvzPanel* panel = dvz_panel_full(figure);
     DvzVisual* visual = dvz_primitive(scene, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 0);
     if (figure == NULL || panel == NULL || visual == NULL)
     {

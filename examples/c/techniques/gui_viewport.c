@@ -104,9 +104,8 @@ int main(int argc, char** argv)
         return 1;
     }
 
-    DvzPanelDesc full = {0.0f, 0.0f, 1.0f, 1.0f};
-    DvzPanel* source_panel = dvz_panel(source_figure, full);
-    DvzPanel* host_panel = dvz_panel(host_figure, full);
+    DvzPanel* source_panel = dvz_panel_full(source_figure);
+    DvzPanel* host_panel = dvz_panel_full(host_figure);
     if (source_panel == NULL || host_panel == NULL)
     {
         fprintf(stderr, "dvz_panel() failed\n");
@@ -144,8 +143,7 @@ int main(int argc, char** argv)
         .show_points = true,
     };
     update_visual(&state);
-    dvz_visual_set_data(visual, "position", positions, 5);
-    dvz_visual_set_data(visual, "color", colors, 5);
+    dvz_point_data(visual, positions, colors, state.sizes, 5);
     dvz_panel_add_visual(source_panel, visual, NULL);
 
     DvzApp* app = dvz_app(scene);

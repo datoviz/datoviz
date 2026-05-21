@@ -846,8 +846,8 @@ DVZ_EXPORT int dvz_visual_set_data_many(
  * @return 0 on success, -1 on validation error
  */
 DVZ_EXPORT int dvz_point_data(
-    DvzVisual* visual, const vec3* positions, const DvzColor* colors,
-    const float* diameters, uint32_t item_count);
+    DvzVisual* visual, const void* positions, const void* colors, const float* diameters,
+    uint32_t item_count);
 
 
 /**
@@ -873,7 +873,7 @@ dvz_point_selection(DvzVisual* visual, const uint8_t* selection, uint32_t item_c
  * @return 0 on success, -1 on validation error
  */
 DVZ_EXPORT int dvz_mesh_data(
-    DvzVisual* visual, const vec3* positions, const DvzColor* colors, const vec3* normals,
+    DvzVisual* visual, const void* positions, const void* colors, const void* normals,
     uint32_t vertex_count);
 
 
@@ -886,7 +886,7 @@ DVZ_EXPORT int dvz_mesh_data(
  * @return 0 on success, -1 on validation error
  */
 DVZ_EXPORT int
-dvz_mesh_instances(DvzVisual* visual, const mat4* instance_transforms, uint32_t instance_count);
+dvz_mesh_instances(DvzVisual* visual, const void* instance_transforms, uint32_t instance_count);
 
 
 /**

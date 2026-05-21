@@ -226,7 +226,7 @@ int main(int argc, char** argv)
         return 1;
     }
     DvzFigure* figure = dvz_figure(scene, WIDTH, HEIGHT, 0);
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    DvzPanel* panel = dvz_panel_full(figure);
     DvzVisual* visual = dvz_point(scene, 0);
     if (figure == NULL || panel == NULL || visual == NULL)
     {
@@ -250,9 +250,7 @@ int main(int argc, char** argv)
         {255, 255, 255, 255},
     };
     float sizes[5] = {36.0f, 42.0f, 48.0f, 40.0f, 28.0f};
-    dvz_visual_set_data(visual, "position", positions, 5);
-    dvz_visual_set_data(visual, "color", colors, 5);
-    dvz_visual_set_data(visual, "diameter", sizes, 5);
+    dvz_point_data(visual, positions, colors, sizes, 5);
     dvz_panel_add_visual(panel, visual, NULL);
 
     DvzApp* app = dvz_app(scene);

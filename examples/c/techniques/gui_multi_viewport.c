@@ -64,8 +64,7 @@ static void update_source(SourceState* source)
 static DvzPanel*
 setup_source(DvzScene* scene, DvzFigure* figure, SourceState* state, float shift)
 {
-    DvzPanelDesc full = {0.0f, 0.0f, 1.0f, 1.0f};
-    DvzPanel* panel = dvz_panel(figure, full);
+    DvzPanel* panel = dvz_panel_full(figure);
     if (panel == NULL)
         return NULL;
     dvz_panel_set_background_color(panel, 0.07f + shift * 0.05f, 0.08f, 0.11f, 1.0f);
@@ -90,8 +89,7 @@ setup_source(DvzScene* scene, DvzFigure* figure, SourceState* state, float shift
         {235, 205,  80, 255},
     };
     update_source(state);
-    dvz_visual_set_data(visual, "position", positions, 4);
-    dvz_visual_set_data(visual, "color", colors, 4);
+    dvz_point_data(visual, positions, colors, state->sizes, 4);
     dvz_panel_add_visual(panel, visual, NULL);
     return panel;
 }
@@ -162,8 +160,7 @@ int main(int argc, char** argv)
         setup_source(scene, source_figures[0], &state.sources[0], -0.10f),
         setup_source(scene, source_figures[1], &state.sources[1], 0.10f),
     };
-    DvzPanelDesc full = {0.0f, 0.0f, 1.0f, 1.0f};
-    DvzPanel* host_panel = dvz_panel(host_figure, full);
+    DvzPanel* host_panel = dvz_panel_full(host_figure);
     if (source_panels[0] == NULL || source_panels[1] == NULL || host_panel == NULL)
     {
         fprintf(stderr, "panel setup failed\n");

@@ -292,8 +292,7 @@ int main(int argc, char** argv)
         return 1;
     }
 
-    DvzPanel* panel =
-        dvz_panel(figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+    DvzPanel* panel = dvz_panel_full(figure);
     if (panel == NULL)
     {
         dvz_fprintf(stderr, "dvz_panel() failed\n");
@@ -388,8 +387,7 @@ int main(int argc, char** argv)
     dvz_visual_set_data(reference, "position", reference_positions, 12);
     dvz_visual_set_data(reference, "color", reference_colors, 12);
 
-    dvz_visual_set_data(cube, "position", positions, 24);
-    dvz_visual_set_data(cube, "normal", normals, 24);
+    dvz_mesh_data(cube, positions, NULL, normals, 24);
     dvz_visual_set_buffer(cube, "index", index_buffer);
     _mesh_wboit_update_cube(&state);
     dvz_visual_set_alpha_mode(cube, DVZ_ALPHA_WBOIT);
@@ -415,17 +413,14 @@ int main(int argc, char** argv)
         return 1;
     }
 
-    DvzController* arcball_controller = dvz_arcball(scene, NULL);
-    DvzArcball* arcball = dvz_controller_arcball(arcball_controller);
-    if (arcball == NULL ||
-        dvz_panel_bind_controller(panel, arcball_controller, DVZ_DIM_MASK_XYZ) != 0)
+    DvzArcball* arcball = dvz_app_window_panel_arcball(win, panel, NULL);
+    if (arcball == NULL)
     {
         dvz_fprintf(stderr, "failed to create or bind arcball controller\n");
         dvz_app_destroy(app);
         dvz_scene_destroy(scene);
         return 1;
     }
-    dvz_panel_connect_input(panel, dvz_app_window_input(win));
     dvz_arcball_set(arcball, (vec3){+0.65f, 0.0f, +0.35f});
 
     DvzGuiConfig gui_config = dvz_gui_config();

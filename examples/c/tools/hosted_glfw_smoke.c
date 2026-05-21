@@ -288,7 +288,7 @@ static DvzScene* _make_scene(DvzFigure** out_figure, DvzPanel** out_panel)
         return NULL;
     }
 
-    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    DvzPanel* panel = dvz_panel_full(figure);
     DvzVisual* visual = panel != NULL ? dvz_point(scene, 0) : NULL;
     if (panel == NULL || visual == NULL)
     {
@@ -308,9 +308,7 @@ static DvzScene* _make_scene(DvzFigure** out_figure, DvzPanel** out_panel)
     };
     float sizes[3] = {24.0f, 24.0f, 24.0f};
 
-    dvz_visual_set_data(visual, "position", positions, 3);
-    dvz_visual_set_data(visual, "color", colors, 3);
-    dvz_visual_set_data(visual, "diameter", sizes, 3);
+    dvz_point_data(visual, positions, colors, sizes, 3);
     dvz_panel_add_visual(panel, visual, NULL);
     dvz_panel_set_background_color(panel, 0.08f, 0.10f, 0.14f, 1.0f);
 
@@ -427,9 +425,8 @@ int main(int argc, char** argv)
     glfwSetFramebufferSizeCallback(window, _framebuffer_size_callback);
     glfwSetWindowContentScaleCallback(window, _content_scale_callback);
     _emit_resize(window, app_window);
-    DvzController* panzoom_controller = dvz_panzoom(scene, NULL);
-    if (panzoom_controller == NULL ||
-        dvz_panel_bind_controller(panel, panzoom_controller, DVZ_DIM_MASK_XY) != 0)
+    DvzPanzoom* panzoom = dvz_app_window_panel_panzoom(app_window, panel, NULL);
+    if (panzoom == NULL)
     {
         fprintf(stderr, "failed to create or bind panzoom controller\n");
         dvz_app_destroy(app);
@@ -439,7 +436,6 @@ int main(int argc, char** argv)
         glfwTerminate();
         return 1;
     }
-    dvz_panel_connect_input(panel, dvz_app_window_input(app_window));
 
     uint32_t frame = 0;
     while (!glfwWindowShouldClose(window) && (max_frames == 0 || frame < max_frames))

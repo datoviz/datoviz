@@ -667,7 +667,7 @@ int main(int argc, char** argv)
         goto cleanup;
     }
 
-    state.panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    state.panel = dvz_panel_full(figure);
     if (state.panel == NULL)
     {
         dvz_fprintf(stderr, "dvz_panel() failed\n");
@@ -712,15 +712,12 @@ int main(int argc, char** argv)
         goto cleanup;
     }
 
-    DvzController* panzoom_controller = dvz_panzoom(scene, NULL);
-    if (panzoom_controller == NULL ||
-        dvz_panel_bind_controller(state.panel, panzoom_controller, DVZ_DIM_MASK_XY) != 0)
+    DvzPanzoom* panzoom = dvz_app_window_panel_panzoom(state.win, state.panel, NULL);
+    if (panzoom == NULL)
     {
         dvz_fprintf(stderr, "failed to create or bind panzoom controller\n");
         goto cleanup;
     }
-    dvz_panel_connect_input(state.panel, dvz_app_window_input(state.win));
-
     DvzGuiConfig gui_config = dvz_gui_config();
     DvzGui* gui = dvz_app_window_gui(state.win, &gui_config);
     if (gui == NULL)

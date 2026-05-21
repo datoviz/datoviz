@@ -1145,8 +1145,7 @@ int main(int argc, char** argv)
     }
 
     DvzFigure* figure = dvz_figure(scene, WIDTH, HEIGHT, 0);
-    DvzPanel* panel =
-        dvz_panel(figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+    DvzPanel* panel = dvz_panel_full(figure);
     DvzVisual* spheres = dvz_sphere(scene, DVZ_SPHERE_FLAGS_LIGHTING);
     if (figure == NULL || panel == NULL || spheres == NULL)
     {
@@ -1209,12 +1208,9 @@ int main(int argc, char** argv)
             !dvz_scene_buffer_set_data(
                 ribbon_index_buffer, bundle.ribbon_indices,
                 (uint64_t)bundle.ribbon_index_count * sizeof(DvzIndex)) ||
-            dvz_visual_set_data(
-                ribbon, "position", bundle.ribbon_positions, bundle.ribbon_vertex_count) != 0 ||
-            dvz_visual_set_data(ribbon, "normal", bundle.ribbon_normals, bundle.ribbon_vertex_count) !=
-                0 ||
-            dvz_visual_set_data(
-                ribbon, "color", bundle.ribbon_colors_chain, bundle.ribbon_vertex_count) != 0 ||
+            dvz_mesh_data(
+                ribbon, bundle.ribbon_positions, bundle.ribbon_colors_chain, bundle.ribbon_normals,
+                bundle.ribbon_vertex_count) != 0 ||
             !dvz_visual_set_buffer(ribbon, "index", ribbon_index_buffer) ||
             dvz_panel_add_visual(panel, ribbon, NULL) != 0)
         {
@@ -1260,10 +1256,8 @@ int main(int argc, char** argv)
         return 1;
     }
 
-    DvzController* arcball_controller = dvz_arcball(scene, NULL);
-    DvzArcball* arcball = dvz_controller_arcball(arcball_controller);
-    if (arcball == NULL ||
-        dvz_panel_bind_controller(panel, arcball_controller, DVZ_DIM_MASK_XYZ) != 0)
+    DvzArcball* arcball = dvz_app_window_panel_arcball(win, panel, NULL);
+    if (arcball == NULL)
     {
         dvz_fprintf(stderr, "failed to create or bind arcball controller\n");
         dvz_app_destroy(app);
@@ -1272,7 +1266,6 @@ int main(int argc, char** argv)
         _protein_bundle_destroy(&bundle);
         return 1;
     }
-    dvz_panel_connect_input(panel, dvz_app_window_input(win));
     dvz_arcball_initial(arcball, (vec3){+0.70f, 0.0f, +0.30f});
     dvz_scene_set_clock_mode(scene, DVZ_CLOCK_REALTIME);
     dvz_scene_set_fps(scene, 60.0);

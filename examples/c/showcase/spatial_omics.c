@@ -817,8 +817,7 @@ int main(int argc, char** argv)
     }
 
     DvzFigure* figure = dvz_figure(scene, WIDTH, HEIGHT, 0);
-    DvzPanel* panel = figure != NULL ? dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f}) :
-                                       NULL;
+    DvzPanel* panel = figure != NULL ? dvz_panel_full(figure) : NULL;
     DvzVisual* points = panel != NULL ? dvz_point(scene, 0) : NULL;
     if (figure == NULL || panel == NULL || points == NULL)
     {
@@ -896,9 +895,8 @@ int main(int argc, char** argv)
 
     DvzPanzoomDesc panzoom_desc = dvz_panzoom_desc();
     panzoom_desc.flags = DVZ_PANZOOM_FLAGS_KEEP_ASPECT;
-    DvzController* panzoom_controller = dvz_panzoom(scene, &panzoom_desc);
-    if (panzoom_controller == NULL ||
-        dvz_panel_bind_controller(panel, panzoom_controller, DVZ_DIM_MASK_XY) != 0)
+    DvzPanzoom* panzoom = dvz_app_window_panel_panzoom(win, panel, &panzoom_desc);
+    if (panzoom == NULL)
     {
         dvz_fprintf(stderr, "dense_points: panzoom setup failed\n");
         dvz_app_destroy(app);
@@ -906,7 +904,6 @@ int main(int argc, char** argv)
         _state_destroy(&state);
         return 1;
     }
-    dvz_panel_connect_input(panel, dvz_app_window_input(win));
     DvzGuiConfig gui_config = dvz_gui_config();
     DvzGui* gui = dvz_app_window_gui(win, &gui_config);
     if (gui == NULL)

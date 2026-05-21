@@ -204,8 +204,7 @@ int main(void)
         return 1;
     }
 
-    DvzPanel* panel =
-        dvz_panel(figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+    DvzPanel* panel = dvz_panel_full(figure);
     if (panel == NULL)
     {
         fprintf(stderr, "dvz_panel() failed\n");
@@ -257,9 +256,7 @@ int main(void)
         }
     }
 
-    if (dvz_visual_set_data(visual, "position", positions, POINT_COUNT) != 0 ||
-        dvz_visual_set_data(visual, "color", colors, POINT_COUNT) != 0 ||
-        dvz_visual_set_data(visual, "diameter", state.sizes, POINT_COUNT) != 0)
+    if (dvz_point_data(visual, positions, colors, state.sizes, POINT_COUNT) != 0)
     {
         fprintf(stderr, "dvz_visual_set_data() failed\n");
         dvz_scene_destroy(scene);
@@ -302,16 +299,14 @@ int main(void)
         return 1;
     }
 
-    DvzController* panzoom_controller = dvz_panzoom(scene, NULL);
-    if (panzoom_controller == NULL ||
-        dvz_panel_bind_controller(panel, panzoom_controller, DVZ_DIM_MASK_XY) != 0)
+    DvzPanzoom* panzoom = dvz_app_window_panel_panzoom(win, panel, NULL);
+    if (panzoom == NULL)
     {
         fprintf(stderr, "failed to create or bind panzoom controller\n");
         dvz_app_destroy(app);
         dvz_scene_destroy(scene);
         return 1;
     }
-    dvz_panel_connect_input(panel, router);
     dvz_input_subscribe_pointer(router, _hover_pick_pointer, &state);
     dvz_app_window_set_frame_callback(win, _hover_pick_frame, &state);
 
