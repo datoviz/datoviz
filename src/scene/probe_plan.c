@@ -162,4 +162,18 @@ void _scene_probe_plan_destroy(DvzSceneProbePlan* plan)
     plan->plan = NULL;
     dvz_free(plan->pick_colors);
     plan->pick_colors = NULL;
+    dvz_free(plan->pick_position_start);
+    plan->pick_position_start = NULL;
+    dvz_free(plan->pick_position_curr);
+    plan->pick_position_curr = NULL;
+    dvz_free(plan->pick_position_end);
+    plan->pick_position_end = NULL;
+    dvz_free(plan->pick_line_width);
+    plan->pick_line_width = NULL;
+    dvz_free(plan->pick_path_flags);
+    plan->pick_path_flags = NULL;
+    dvz_free(plan->pick_path_distance);
+    plan->pick_path_distance = NULL;
+    dvz_free(plan->pick_indices);
+    plan->pick_indices = NULL;
 }

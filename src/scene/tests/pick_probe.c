@@ -1357,6 +1357,161 @@ int test_scene_sphere_pick_resolves_item(TstContext* suite, const TstCase* item)
 }
 
 
+/**
+ * Ensure segment and stroked path picking resolve item identity through GPU stroke masks.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_stroke_pick_resolves_item(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    ANN(item);
+    TST_SCENE_PICK_PROBE_REQUIRE_VKLITE(suite);
+
+    DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
+    VkPhysicalDeviceVulkan13Features features13 = {
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES};
+    features13.dynamicRendering = true;
+    features13.synchronization2 = true;
+    dvz_gpu_ctx_config_features13(&gpu_cfg, &features13);
+    DvzGpuCtx* ctx = dvz_gpu_ctx(&gpu_cfg);
+    if (ctx == NULL)
+    {
+        log_warn("scene stroke-pick test skipped because GPU context creation failed");
+        tst_skip(suite, "GPU context creation failed");
+        return 0;
+    }
+
+    DvzCapabilitySnapshot caps = {0};
+    dvz_capability_snapshot_default(&caps);
+    caps.shader_format_glsl = true;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(
+        figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+    ANN(panel);
+
+    DvzVisual* segment = dvz_segment(scene, 0);
+    ANN(segment);
+    dvz_visual_set_pick_capabilities(segment, DVZ_PICK_CAPABILITY_ITEM);
+    float segment_start[2][3] = {
+        {-0.75f, -0.5f, 0.0f},
+        {-0.75f, 0.0f, 0.0f},
+    };
+    float segment_end[2][3] = {
+        {0.75f, -0.5f, 0.0f},
+        {0.75f, 0.0f, 0.0f},
+    };
+    DvzColor segment_color[2] = {
+        {255, 255, 255, 255},
+        {255, 255, 255, 255},
+    };
+    float segment_width[2] = {12.0f, 12.0f};
+    AT(dvz_visual_set_data(segment, "position_start", segment_start, 2) == 0);
+    AT(dvz_visual_set_data(segment, "position_end", segment_end, 2) == 0);
+    AT(dvz_visual_set_data(segment, "color", segment_color, 2) == 0);
+    AT(dvz_visual_set_data(segment, "line_width", segment_width, 2) == 0);
+    AT(dvz_segment_set_caps(segment, DVZ_SEGMENT_CAP_BUTT, DVZ_SEGMENT_CAP_BUTT) == 0);
+    AT(dvz_panel_add_visual(panel, segment, NULL) == 0);
+
+    DvzDrp2RuntimeConfig runtime_cfg =
+        dvz_drp2_runtime_vklite_config(dvz_gpu_ctx_device(ctx), dvz_gpu_ctx_alloc(ctx));
+    DvzDrp2Runtime* runtime = dvz_drp2_runtime_vklite(&runtime_cfg);
+    ANN(runtime);
+
+    AT(dvz_panel_pick(panel, 32.0, 32.0, &(DvzPickRequest){.request_id = 71}) == 0);
+    AT(dvz_figure_process_requests(figure, runtime, &caps) == 1);
+    DvzPickResult pick = {0};
+    AT(dvz_scene_poll_pick(scene, &pick));
+    AT(pick.hit);
+    AT(pick.request_id == 71);
+    AT(pick.status == DVZ_PICK_STATUS_HIT);
+    AT(pick.visual_family == DVZ_SCENE_VISUAL_FAMILY_SEGMENT);
+    AT(pick.resolved_target == DVZ_SCENE_TARGET_ITEM);
+    AT(pick.resolved_id == 1);
+    AT(pick.item_id == 1);
+    AT(!dvz_scene_poll_pick(scene, &pick));
+
+    AT(dvz_panel_pick(panel, 32.0, 20.0, &(DvzPickRequest){.request_id = 72}) == 0);
+    AT(dvz_figure_process_requests(figure, runtime, &caps) == 1);
+    pick = (DvzPickResult){0};
+    AT(dvz_scene_poll_pick(scene, &pick));
+    AT(!pick.hit);
+    AT(pick.request_id == 72);
+    AT(pick.status == DVZ_PICK_STATUS_MISS);
+    AT(!dvz_scene_poll_pick(scene, &pick));
+
+    dvz_drp2_runtime_destroy(runtime);
+    dvz_scene_destroy(scene);
+
+    scene = dvz_scene();
+    ANN(scene);
+    figure = dvz_figure(scene, 64, 64, 0);
+    ANN(figure);
+    panel = dvz_panel(
+        figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+    ANN(panel);
+
+    DvzVisual* path = dvz_path(scene, 0);
+    ANN(path);
+    dvz_visual_set_pick_capabilities(path, DVZ_PICK_CAPABILITY_ITEM);
+    float path_position[3][3] = {
+        {-0.75f, 0.0f, 0.0f},
+        {0.0f, 0.0f, 0.0f},
+        {0.75f, 0.0f, 0.0f},
+    };
+    DvzColor path_color[3] = {
+        {255, 255, 255, 255},
+        {255, 255, 255, 255},
+        {255, 255, 255, 255},
+    };
+    float path_width[3] = {12.0f, 12.0f, 12.0f};
+    AT(dvz_visual_set_data(path, "position", path_position, 3) == 0);
+    AT(dvz_visual_set_data(path, "color", path_color, 3) == 0);
+    AT(dvz_visual_set_data(path, "line_width", path_width, 3) == 0);
+    AT(dvz_path_set_caps(path, DVZ_SEGMENT_CAP_BUTT, DVZ_SEGMENT_CAP_BUTT) == 0);
+    AT(dvz_path_set_join(path, DVZ_PATH_JOIN_MITER, 4.0f) == 0);
+    AT(dvz_panel_add_visual(panel, path, NULL) == 0);
+
+    runtime_cfg =
+        dvz_drp2_runtime_vklite_config(dvz_gpu_ctx_device(ctx), dvz_gpu_ctx_alloc(ctx));
+    runtime = dvz_drp2_runtime_vklite(&runtime_cfg);
+    ANN(runtime);
+
+    AT(dvz_panel_pick(panel, 48.0, 32.0, &(DvzPickRequest){.request_id = 73}) == 0);
+    AT(dvz_figure_process_requests(figure, runtime, &caps) == 1);
+    pick = (DvzPickResult){0};
+    AT(dvz_scene_poll_pick(scene, &pick));
+    AT(pick.hit);
+    AT(pick.request_id == 73);
+    AT(pick.status == DVZ_PICK_STATUS_HIT);
+    AT(pick.visual_family == DVZ_SCENE_VISUAL_FAMILY_PATH);
+    AT(pick.resolved_target == DVZ_SCENE_TARGET_ITEM);
+    AT(pick.resolved_id == 1);
+    AT(pick.item_id == 1);
+    AT(!dvz_scene_poll_pick(scene, &pick));
+
+    AT(dvz_panel_pick(panel, 48.0, 20.0, &(DvzPickRequest){.request_id = 74}) == 0);
+    AT(dvz_figure_process_requests(figure, runtime, &caps) == 1);
+    pick = (DvzPickResult){0};
+    AT(dvz_scene_poll_pick(scene, &pick));
+    AT(!pick.hit);
+    AT(pick.request_id == 74);
+    AT(pick.status == DVZ_PICK_STATUS_MISS);
+    AT(!dvz_scene_poll_pick(scene, &pick));
+
+    dvz_drp2_runtime_destroy(runtime);
+    dvz_gpu_ctx_destroy(ctx);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
 
 /**
  * Ensure pick/probe readbacks do not reset the caller-owned DRP2 runtime.
@@ -1906,6 +2061,7 @@ int test_scene_pick_probe(TstSuite* suite)
     TST_SCENE_PICK_PROBE_GPU_CASE(test_scene_pixel_pick_accepts_square_corner);
     TST_SCENE_PICK_PROBE_GPU_CASE(test_scene_marker_pick_accepts_bbox_corner);
     TST_SCENE_PICK_PROBE_GPU_CASE(test_scene_sphere_pick_resolves_item);
+    TST_SCENE_PICK_PROBE_GPU_CASE(test_scene_stroke_pick_resolves_item);
     TST_CASE(test_scene_process_requests_preserves_caller_runtime);
     TST_CASE(test_scene_image_probe_reuses_retained_request_executor);
     TST_SCENE_PICK_PROBE_GPU_CASE(test_scene_image_probe_respects_panel_request_position);

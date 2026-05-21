@@ -358,22 +358,30 @@ static bool _scene_shader_desc_primitive(
 /**
  * Resolve segment shader metadata.
  *
+ * @param features the shader features
  * @param format_tag the shader-format cache-key suffix
  * @param out the output shader descriptor
  * @return whether a shader descriptor was resolved
  */
-static bool _scene_shader_desc_segment(const char* format_tag, DvzSceneVisualShaderDesc* out)
+static bool _scene_shader_desc_segment(
+    const DvzSceneShaderFeatures* features, const char* format_tag, DvzSceneVisualShaderDesc* out)
 {
+    ANN(features);
     ANN(format_tag);
     ANN(out);
 
-    dvz_snprintf(out->vertex_key, sizeof(out->vertex_key), "_vs_segment%s", format_tag);
-    dvz_snprintf(out->fragment_key, sizeof(out->fragment_key), "_fs_segment%s", format_tag);
-    dvz_snprintf(out->pipeline_key, sizeof(out->pipeline_key), "_pipe_segment%s", format_tag);
-    _scene_shader_desc_set_builtin(out, DVZ_SCENE_BUILTIN_SHADER_SEGMENT);
-    _scene_shader_desc_set_identity(out, "scene.segment", "default");
+    bool picking = _shader_features_has(features, DVZ_SCENE_SHADER_FEATURE_PICKING);
+    const char* suffix = picking ? "_pick" : "";
+    dvz_snprintf(out->vertex_key, sizeof(out->vertex_key), "_vs_segment%s%s", suffix, format_tag);
+    dvz_snprintf(
+        out->fragment_key, sizeof(out->fragment_key), "_fs_segment%s%s", suffix, format_tag);
+    dvz_snprintf(
+        out->pipeline_key, sizeof(out->pipeline_key), "_pipe_segment%s%s", suffix, format_tag);
+    _scene_shader_desc_set_builtin(
+        out, picking ? DVZ_SCENE_BUILTIN_SHADER_SEGMENT_PICK : DVZ_SCENE_BUILTIN_SHADER_SEGMENT);
+    _scene_shader_desc_set_identity(out, "scene.segment", picking ? "pick" : "default");
     out->vertex_spirv_key = "segment_vert";
-    out->fragment_spirv_key = "segment_frag";
+    out->fragment_spirv_key = picking ? "segment_pick_frag" : "segment_frag";
     return true;
 }
 
@@ -381,22 +389,29 @@ static bool _scene_shader_desc_segment(const char* format_tag, DvzSceneVisualSha
 /**
  * Resolve path shader metadata.
  *
+ * @param features the shader features
  * @param format_tag the shader-format cache-key suffix
  * @param out the output shader descriptor
  * @return whether a shader descriptor was resolved
  */
-static bool _scene_shader_desc_path(const char* format_tag, DvzSceneVisualShaderDesc* out)
+static bool _scene_shader_desc_path(
+    const DvzSceneShaderFeatures* features, const char* format_tag, DvzSceneVisualShaderDesc* out)
 {
+    ANN(features);
     ANN(format_tag);
     ANN(out);
 
-    dvz_snprintf(out->vertex_key, sizeof(out->vertex_key), "_vs_path%s", format_tag);
-    dvz_snprintf(out->fragment_key, sizeof(out->fragment_key), "_fs_path%s", format_tag);
-    dvz_snprintf(out->pipeline_key, sizeof(out->pipeline_key), "_pipe_path%s", format_tag);
-    _scene_shader_desc_set_builtin(out, DVZ_SCENE_BUILTIN_SHADER_PATH);
-    _scene_shader_desc_set_identity(out, "scene.path", "default");
+    bool picking = _shader_features_has(features, DVZ_SCENE_SHADER_FEATURE_PICKING);
+    const char* suffix = picking ? "_pick" : "";
+    dvz_snprintf(out->vertex_key, sizeof(out->vertex_key), "_vs_path%s%s", suffix, format_tag);
+    dvz_snprintf(out->fragment_key, sizeof(out->fragment_key), "_fs_path%s%s", suffix, format_tag);
+    dvz_snprintf(
+        out->pipeline_key, sizeof(out->pipeline_key), "_pipe_path%s%s", suffix, format_tag);
+    _scene_shader_desc_set_builtin(
+        out, picking ? DVZ_SCENE_BUILTIN_SHADER_PATH_PICK : DVZ_SCENE_BUILTIN_SHADER_PATH);
+    _scene_shader_desc_set_identity(out, "scene.path", picking ? "pick" : "default");
     out->vertex_spirv_key = "path_vert";
-    out->fragment_spirv_key = "path_frag";
+    out->fragment_spirv_key = picking ? "path_pick_frag" : "path_frag";
     return true;
 }
 
@@ -469,10 +484,10 @@ bool _scene_visual_shader_desc(
         return _scene_shader_desc_sphere(&features, format_tag, out);
 
     case DVZ_SCENE_VISUAL_DESC_SEGMENT:
-        return _scene_shader_desc_segment(format_tag, out);
+        return _scene_shader_desc_segment(&features, format_tag, out);
 
     case DVZ_SCENE_VISUAL_DESC_PATH:
-        return _scene_shader_desc_path(format_tag, out);
+        return _scene_shader_desc_path(&features, format_tag, out);
 
     case DVZ_SCENE_VISUAL_DESC_PRIMITIVE:
         return _scene_shader_desc_primitive(&features, format_tag, out);

@@ -130,8 +130,12 @@ static const char* _builtin_shader_resource_key(DvzSceneBuiltinShader shader, bo
         return fragment ? "marker_select_frag" : "marker_select_vert";
     case DVZ_SCENE_BUILTIN_SHADER_SEGMENT:
         return fragment ? "segment_frag" : "segment_vert";
+    case DVZ_SCENE_BUILTIN_SHADER_SEGMENT_PICK:
+        return fragment ? "segment_pick_frag" : "segment_vert";
     case DVZ_SCENE_BUILTIN_SHADER_PATH:
         return fragment ? "path_frag" : "path_vert";
+    case DVZ_SCENE_BUILTIN_SHADER_PATH_PICK:
+        return fragment ? "path_pick_frag" : "path_vert";
     case DVZ_SCENE_BUILTIN_SHADER_SPHERE:
         return fragment ? "sphere_frag" : "sphere_vert";
     case DVZ_SCENE_BUILTIN_SHADER_SPHERE_PICK:

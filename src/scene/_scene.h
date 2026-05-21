@@ -601,6 +601,13 @@ struct DvzSceneProbePlan
     vec3* probe_positions;
     vec2* probe_texcoords;
     DvzColor* pick_colors;
+    float* pick_position_start;
+    float* pick_position_curr;
+    float* pick_position_end;
+    float* pick_line_width;
+    uint32_t* pick_path_flags;
+    float* pick_path_distance;
+    uint32_t* pick_indices;
 };
 
 
