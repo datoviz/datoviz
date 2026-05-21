@@ -47,6 +47,33 @@ static DvzVisualAttr* _colorbar_test_attr(DvzVisual* visual, const char* name)
 
 
 
+/**
+ * Return whether a stream contains a render pipeline label fragment.
+ *
+ * @param stream the emitted command stream
+ * @param label the label fragment
+ * @return whether a matching pipeline was found
+ */
+static bool _colorbar_stream_has_pipeline_label(
+    const DvzDrp2CommandStream* stream, const char* label)
+{
+    ANN(stream);
+    ANN(label);
+    for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
+    {
+        const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream, i);
+        if (cmd == NULL || cmd->type != DVZ_DRP2_COMMAND_CREATE_RENDER_PIPELINE)
+            continue;
+        const char* pipeline_label =
+            dvz_drp2_stream_label(stream, cmd->u.create_render_pipeline.id);
+        if (pipeline_label != NULL && strstr(pipeline_label, label) != NULL)
+            return true;
+    }
+    return false;
+}
+
+
+
 int test_scene_scale_colormap_colorbar_core(TstContext* suite, const TstCase* item)
 {
     (void)suite;
@@ -215,6 +242,201 @@ int test_scene_colorbar_auto_reserve_and_visuals(TstContext* suite, const TstCas
     AT(positions[0] < -0.95f);
     AT(positions[3 * (pos->item_count - 1) + 0] > 0.95f);
 
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+/**
+ * Verify retained colorbar visuals respond to scale and colormap updates.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_colorbar_updates_retained_visuals(TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 640, 480, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
+    ANN(panel);
+
+    DvzScale* scale = dvz_scale(
+        scene, &(DvzScaleDesc){.kind = DVZ_SCALE_CONTINUOUS, .format = {.precision = 0}});
+    ANN(scale);
+    dvz_scale_set_domain(scale, 0.0, 1.0);
+    DvzColormapStop stops0[2] = {
+        {.position = 0.0, .rgba = {0, 0, 255, 255}},
+        {.position = 1.0, .rgba = {255, 0, 0, 255}},
+    };
+    DvzColormap* colormap = dvz_colormap(scene, NULL);
+    ANN(colormap);
+    dvz_colormap_set_stops(colormap, stops0, 2);
+    dvz_scale_set_colormap(scale, colormap);
+
+    DvzColorbar* colorbar = dvz_colorbar(
+        panel, scale,
+        &(DvzColorbarDesc){
+            .orientation = DVZ_COLORBAR_ORIENTATION_VERTICAL,
+            .anchor = DVZ_SCENE_ANCHOR_PANEL_RIGHT,
+            .title = "Initial",
+        });
+    ANN(colorbar);
+    _scene_prepare_colorbar_visuals(figure);
+    AT(colorbar->tick_count >= 2);
+    AT(colorbar->text_count == colorbar->tick_count + 1);
+    AT(strcmp(colorbar->text_labels[0], "0") == 0);
+    AT(strcmp(colorbar->text_labels[colorbar->text_count - 1], "Initial") == 0);
+
+    DvzVisualAttr* ramp_color = _colorbar_test_attr(colorbar->ramp_visual, "color");
+    ANN(ramp_color);
+    DvzColor* colors = (DvzColor*)ramp_color->data;
+    ANN(colors);
+    AT(colors[0][2] == 255);
+    AT(colors[ramp_color->item_count - 1][0] == 255);
+
+    dvz_scale_set_domain(scale, -10.0, 10.0);
+    dvz_colorbar_set_title(colorbar, "Updated");
+    _scene_prepare_colorbar_visuals(figure);
+    AT(colorbar->tick_count >= 2);
+    AT(strcmp(colorbar->text_labels[0], "-10") == 0);
+    AT(strcmp(colorbar->text_labels[colorbar->text_count - 1], "Updated") == 0);
+    AT(!colorbar->dirty);
+
+    DvzColormapStop stops1[2] = {
+        {.position = 0.0, .rgba = {0, 255, 0, 255}},
+        {.position = 1.0, .rgba = {255, 255, 0, 255}},
+    };
+    dvz_colormap_set_stops(colormap, stops1, 2);
+    _scene_prepare_colorbar_visuals(figure);
+    ramp_color = _colorbar_test_attr(colorbar->ramp_visual, "color");
+    ANN(ramp_color);
+    colors = (DvzColor*)ramp_color->data;
+    ANN(colors);
+    AT(colors[0][1] == 255);
+    AT(colors[0][2] == 0);
+    AT(colors[ramp_color->item_count - 1][0] == 255);
+    AT(colors[ramp_color->item_count - 1][1] == 255);
+
+    DvzVisual* ramp = colorbar->ramp_visual;
+    DvzVisual* ticks = colorbar->tick_visual;
+    DvzVisual* text = colorbar->text_visual;
+    ANN(ramp);
+    ANN(ticks);
+    ANN(text);
+    dvz_colorbar_destroy(colorbar);
+    AT(!ramp->visible);
+    AT(!ticks->visible);
+    AT(!text->visible);
+    AT(panel->colorbar_count == 0);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+/**
+ * Verify colorbars emit ramp, tick, and glyph-derived DRP2 work.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_colorbar_emit_stream_contains_derived_visuals(
+    TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 640, 480, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
+    ANN(panel);
+
+    DvzScale* scale = dvz_scale(
+        scene, &(DvzScaleDesc){.kind = DVZ_SCALE_CONTINUOUS, .format = {.precision = 1}});
+    ANN(scale);
+    dvz_scale_set_domain(scale, 0.0, 1.0);
+    DvzColormap* colormap = dvz_colormap_builtin(scene, DVZ_BUILTIN_COLORMAP_VIRIDIS);
+    ANN(colormap);
+    dvz_scale_set_colormap(scale, colormap);
+    DvzColorbar* colorbar = dvz_colorbar(
+        panel, scale,
+        &(DvzColorbarDesc){
+            .orientation = DVZ_COLORBAR_ORIENTATION_VERTICAL,
+            .anchor = DVZ_SCENE_ANCHOR_PANEL_RIGHT,
+            .title = "Intensity",
+        });
+    ANN(colorbar);
+
+    DvzCapabilitySnapshot caps = {0};
+    DvzDiagnosticReport report = {0};
+    DvzFramePlanEmitConfig emit_cfg = dvz_frame_plan_emit_config();
+    emit_cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
+    dvz_capability_snapshot_default(&caps);
+    caps.supports_color_blending = true;
+    dvz_diagnostic_report_init(&report);
+
+    DvzDrp2CommandStream* stream = dvz_figure_emit_ex(figure, &caps, &report, &emit_cfg);
+    ANN(stream);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+    AT(colorbar->tick_count >= 2);
+    AT(colorbar->text_visual != NULL);
+    AT(colorbar->text_visual->text.glyph_visual != NULL);
+
+    const uint64_t ramp_vertex_count = 2u * (64u + 1u);
+    const uint64_t ramp_position_size = ramp_vertex_count * 3u * sizeof(float);
+    const uint64_t ramp_color_size = ramp_vertex_count * sizeof(DvzColor);
+    bool found_ramp_position_upload = false;
+    bool found_ramp_color_upload = false;
+    bool found_ramp_draw = false;
+    bool found_tick_draw = false;
+    bool found_glyph_bind = false;
+    bool found_glyph_draw = false;
+    for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
+    {
+        const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream, i);
+        ANN(cmd);
+        if (cmd->type == DVZ_DRP2_COMMAND_WRITE_BUFFER)
+        {
+            found_ramp_position_upload =
+                found_ramp_position_upload || cmd->u.write_buffer.size == ramp_position_size;
+            found_ramp_color_upload =
+                found_ramp_color_upload || cmd->u.write_buffer.size == ramp_color_size;
+        }
+        else if (cmd->type == DVZ_DRP2_COMMAND_DRAW)
+        {
+            if (cmd->u.draw.vertex_count == ramp_vertex_count)
+                found_ramp_draw = true;
+            else if (cmd->u.draw.vertex_count > 0 && cmd->u.draw.vertex_count % 6 == 0)
+                found_glyph_draw = true;
+        }
+        else if (cmd->type == DVZ_DRP2_COMMAND_DRAW_INDEXED)
+        {
+            found_tick_draw = true;
+        }
+        else if (cmd->type == DVZ_DRP2_COMMAND_SET_BIND_GROUP)
+        {
+            found_glyph_bind = found_glyph_bind || cmd->u.set_bind_group.slot == 1;
+        }
+    }
+    AT(found_ramp_position_upload);
+    AT(found_ramp_color_upload);
+    AT(found_ramp_draw);
+    AT(found_tick_draw);
+    AT(found_glyph_bind);
+    AT(found_glyph_draw);
+    AT(_colorbar_stream_has_pipeline_label(stream, "_pipe_prim_t"));
+    AT(_colorbar_stream_has_pipeline_label(stream, "_pipe_glyphg"));
+
+    dvz_drp2_stream_destroy(stream);
     dvz_scene_destroy(scene);
     return 0;
 }
@@ -2256,6 +2478,8 @@ int test_scene_fields(TstSuite* suite)
 
     TST_CASE(test_scene_scale_colormap_colorbar_core);
     TST_CASE(test_scene_colorbar_auto_reserve_and_visuals);
+    TST_CASE(test_scene_colorbar_updates_retained_visuals);
+    TST_CASE(test_scene_colorbar_emit_stream_contains_derived_visuals);
     TST_CASE(test_scene_colorbar_rejects_unsupported_requests);
     TST_CASE(test_scene_colorbar_rejects_cross_scene_scale);
     TST_CASE(test_scene_image_visual_binds_colormap_scale);

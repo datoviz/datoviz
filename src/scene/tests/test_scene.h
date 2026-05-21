@@ -455,6 +455,11 @@ int test_scene_scale_colormap_colorbar_core(TstContext* suite, const TstCase* it
 
 int test_scene_colorbar_auto_reserve_and_visuals(TstContext* suite, const TstCase* item);
 
+int test_scene_colorbar_updates_retained_visuals(TstContext* suite, const TstCase* item);
+
+int test_scene_colorbar_emit_stream_contains_derived_visuals(
+    TstContext* suite, const TstCase* item);
+
 int test_scene_colorbar_rejects_unsupported_requests(TstContext* suite, const TstCase* item);
 
 int test_scene_colorbar_rejects_cross_scene_scale(TstContext* suite, const TstCase* item);
