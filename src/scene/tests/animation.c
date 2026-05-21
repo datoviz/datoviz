@@ -17,6 +17,7 @@
 #include <string.h>
 
 #include "_assertions.h"
+#include "../_controllers.h"
 #include "../_scene.h"
 #include "datoviz/scene.h"
 #include "test_scene.h"

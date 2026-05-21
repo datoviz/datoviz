@@ -18,6 +18,7 @@
 
 #include "_alloc.h"
 #include "_assertions.h"
+#include "_controllers.h"
 #include "_log.h"
 #include "datoviz/math/_cglm.h"
 #include "datoviz/scene/arcball.h"
