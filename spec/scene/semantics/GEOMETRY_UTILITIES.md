@@ -2,6 +2,11 @@
 
 Status: normative v0.4 scene semantics spec for CPU-side geometry helpers.
 
+Implementation status on 2026-05-21: the first `geom` module slice is active in core builds with
+`DvzGeometry`, owned buffers, cube/plane generators, bounds, and F32 conversion helpers. Structured
+surface grids, triangulation, curve tessellation, simplification, hulls, polygon booleans, and
+direct scene mesh-resource upload from `DvzGeometry` remain target capabilities.
+
 Geometry utilities operate above the scene layer and below user code. They produce standard scene
 resource data such as F64 vertices, indices, and atlas textures that enter the normal resource upload
 path.
@@ -39,7 +44,8 @@ Generators produce ordinary indexed geometry payloads.
 
 | Generator | Descriptor controls | Notes |
 |---|---|---|
-| primitive solids | cube, sphere, cylinder, cone, torus, arrow, classic polyhedra | examples, markers, utilities |
+| primitive solids | cube, sphere, cylinder, cone, torus, arrow, classic polyhedra | cube implemented; remaining solids targeted |
+| `dvz_geom_plane` | center, width, height, z offset, color | implemented as indexed XY plane |
 | `dvz_geom_gizmo_axes` | axis length, shaft/head dimensions, tessellation, per-axis colors | scene/app owns pinning and camera sync |
 | `dvz_geom_surface_grid` | rows/cols, height/scalar/color arrays, origin, basis, height policy, normals, metadata | preserves provenance for updates, overlays, contours, isolines, future LOD |
 

@@ -27,6 +27,7 @@
 #include "../src/drp2/tests/test_drp2.h"
 #endif
 #include "../src/fileio/tests/test_fileio.h"
+#include "../src/geom/tests/test_geom.h"
 #if defined(DVZ_HAS_GUI) && DVZ_HAS_GUI
 #include "../src/gui/tests/test_gui.h"
 #endif
@@ -68,6 +69,7 @@ int main(int argc, char** argv)
     test_drp2(&suite);
 #endif
     test_fileio(&suite);
+    test_geom(&suite);
     test_math(&suite);
 #if defined(DVZ_HAS_SCENE) && DVZ_HAS_SCENE
     test_scene(&suite);

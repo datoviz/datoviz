@@ -5,7 +5,7 @@
  */
 
 /*************************************************************************************************/
-/*  Datoviz core test runner                                                                     */
+/*  Datoviz geometry test runner                                                                 */
 /*************************************************************************************************/
 
 
@@ -14,15 +14,8 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include <stddef.h>
-
 #include "_log.h"
-#include "../../src/common/tests/test_common.h"
-#include "../../src/ds/tests/test_ds.h"
-#include "../../src/fileio/tests/test_fileio.h"
 #include "../../src/geom/tests/test_geom.h"
-#include "../../src/math/tests/test_math.h"
-#include "../../src/thread/tests/test_thread.h"
 #include "datoviz_testing.h"
 #include "testing.h"
 
@@ -33,7 +26,7 @@
 /*************************************************************************************************/
 
 /**
- * Run core-module tests.
+ * Run geometry-module tests.
  *
  * @param argc command-line argument count
  * @param argv command-line arguments
@@ -46,12 +39,7 @@ int main(int argc, char** argv)
     TstSuite suite = tst_suite();
     dvz_testing_install_log_adapter(&suite);
 
-    test_common(&suite);
-    test_ds(&suite);
-    test_fileio(&suite);
     test_geom(&suite);
-    test_math(&suite);
-    test_thread(&suite);
 
     int res = tst_suite_run(&suite, argc, argv);
     tst_suite_destroy(&suite);

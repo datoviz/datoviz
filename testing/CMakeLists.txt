@@ -184,7 +184,12 @@ set(_dvz_has_drp2 0)
 set(_dvz_has_scene 0)
 set(_dvz_has_app 0)
 
-if(TARGET datoviz_common AND TARGET datoviz_ds AND TARGET datoviz_fileio AND TARGET datoviz_math AND TARGET datoviz_thread)
+if(TARGET datoviz_common
+    AND TARGET datoviz_ds
+    AND TARGET datoviz_fileio
+    AND TARGET datoviz_geom
+    AND TARGET datoviz_math
+    AND TARGET datoviz_thread)
     set(_dvz_has_core 1)
 endif()
 
@@ -219,7 +224,7 @@ if(NOT _dvz_has_scene)
 endif()
 
 set(DVZ_TEST_CORE_SOURCES ${DVZ_MODULE_TEST_SOURCES})
-list(FILTER DVZ_TEST_CORE_SOURCES INCLUDE REGEX "/src/(common|ds|fileio|math|thread)/tests/")
+list(FILTER DVZ_TEST_CORE_SOURCES INCLUDE REGEX "/src/(common|ds|fileio|geom|math|thread)/tests/")
 
 set(DVZ_TEST_COMMON_SOURCES ${DVZ_MODULE_TEST_SOURCES})
 list(FILTER DVZ_TEST_COMMON_SOURCES INCLUDE REGEX "/src/common/tests/")
@@ -229,6 +234,9 @@ list(FILTER DVZ_TEST_DS_SOURCES INCLUDE REGEX "/src/ds/tests/")
 
 set(DVZ_TEST_FILEIO_SOURCES ${DVZ_MODULE_TEST_SOURCES})
 list(FILTER DVZ_TEST_FILEIO_SOURCES INCLUDE REGEX "/src/fileio/tests/")
+
+set(DVZ_TEST_GEOM_SOURCES ${DVZ_MODULE_TEST_SOURCES})
+list(FILTER DVZ_TEST_GEOM_SOURCES INCLUDE REGEX "/src/geom/tests/")
 
 set(DVZ_TEST_MATH_SOURCES ${DVZ_MODULE_TEST_SOURCES})
 list(FILTER DVZ_TEST_MATH_SOURCES INCLUDE REGEX "/src/math/tests/")
@@ -316,6 +324,14 @@ if(_dvz_has_core)
     )
 
     dvz_add_cpu_test_runner(
+        dvztest_geom
+        DVZ_TEST_GEOM_SOURCES
+        datoviz_common
+        datoviz_geom
+        datoviz_math
+    )
+
+    dvz_add_cpu_test_runner(
         dvztest_math
         DVZ_TEST_MATH_SOURCES
         datoviz_common
@@ -339,6 +355,7 @@ if(_dvz_has_core)
         datoviz_common
         datoviz_ds
         datoviz_fileio
+        datoviz_geom
         datoviz_math
         datoviz_thread
         testing
@@ -477,6 +494,7 @@ if(_dvz_has_core AND _dvz_has_drp2 AND _dvz_has_scene)
         datoviz_common
         datoviz_ds
         datoviz_fileio
+        datoviz_geom
         datoviz_math
         datoviz_thread
         datoviz_input
@@ -544,6 +562,7 @@ if(_dvz_has_core AND _dvz_has_vk)
         datoviz_common
         datoviz_ds
         datoviz_fileio
+        datoviz_geom
         datoviz_math
         datoviz_thread
         datoviz_vk
@@ -621,6 +640,7 @@ if(_dvz_has_core AND _dvz_has_vk AND _dvz_has_canvas)
         datoviz_common
         datoviz_ds
         datoviz_fileio
+        datoviz_geom
         datoviz_math
         datoviz_thread
         datoviz_input
@@ -752,6 +772,7 @@ if(_dvz_has_core AND _dvz_has_vk AND _dvz_has_canvas)
         datoviz_common
         datoviz_ds
         datoviz_fileio
+        datoviz_geom
         datoviz_math
         datoviz_thread
         datoviz_input
@@ -769,6 +790,7 @@ if(_dvz_has_core AND _dvz_has_vk AND _dvz_has_canvas)
         datoviz_common
         datoviz_ds
         datoviz_fileio
+        datoviz_geom
         datoviz_math
         datoviz_thread
         datoviz_input

@@ -2,7 +2,7 @@
 
 > **Execution Status**
 > - **Status:** `ACTIVE DEVELOPMENT DISPATCH`
-> - **Updated on:** `2026-05-19`
+> - **Updated on:** `2026-05-21`
 > - **Purpose:** keep the current v0.4 work queue short and point longer history elsewhere.
 
 Start here, then follow the linked specs or completed records only for the subsystem being edited.
@@ -21,6 +21,11 @@ bookkeeping, a first rendered text/glyph-atlas slice, graph-backed technique, an
 app/offscreen/GLFW slices. The app frame scheduler refactor is closed; the built-in loop is now
 on-demand by default with explicit continuous and capped modes. Treat these as active code, not
 future scaffolding.
+
+The first CPU-side `geom` module slice is now active in the core build: public `DvzGeometry`,
+owned geometry buffers, cube/plane generators, bounds, F32 conversion helpers for current mesh
+upload paths, and focused `geom` tests. Next `geom` work should prioritize structured surface-grid
+generation, transform/merge helpers, and direct scene mesh-resource upload from `DvzGeometry`.
 
 The C test-runner modernization and low-risk process-sharding performance pass are complete enough
 to treat as a stable baseline. Historical notes live in

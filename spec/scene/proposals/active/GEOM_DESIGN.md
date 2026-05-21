@@ -1,6 +1,6 @@
 > **Execution Status**
-> - **Status:** `SCENE SPEC PROPOSAL`
-> - **Updated on:** `2026-05-20`
+> - **Status:** `PARTIALLY IMPLEMENTED SCENE SPEC PROPOSAL`
+> - **Updated on:** `2026-05-21`
 > - **Purpose:** preserve remaining geometry-module decisions after the canonical geometry utility
 >   spec absorbed the durable CPU-side rules.
 
@@ -68,25 +68,40 @@ Do not restate generator tables or triangulation dependency policy here.
 ## Remaining Unresolved Points
 
 1. Final public C function names and descriptor structs for generators and operations.
-2. Exact memory ownership and allocation helpers for `DvzGeometry` buffers.
-3. Which first-slice generators land with tests beyond cube and surface grid.
+2. Whether the next generator slice should prioritize structured surface grid, sphere, or arrow/
+   gizmo axes.
+3. Exact partial-update and provenance policy for structured surface grids.
 4. OBJ import scope and whether richer asset import belongs here or in an asset layer.
 5. How much structured-grid provenance is stored in `DvzGeometry` versus a sidecar descriptor.
 6. PSLG/constrained triangulation backend choice and build option policy.
 7. Whether contour/isoline preparation helpers live in `geom` or a mesh-shading helper namespace.
 
 
-## First Implementation Slice
+## Landed First Slice
 
-1. Replace the current public `datoviz/geom` shape scaffold with a lean `DvzGeometry` declaration
-   and descriptors for the first generators.
-2. Add a `src/geom` object module using the normal allocator wrappers and explicit destroy/reset
-   helpers.
-3. Land a small generator set first: cube, plane, and structured surface grid, with positions,
-   normals, colors, UVs, and `uint32` triangle indices.
-4. Add geometry operations needed by those generators: bounds, normal generation, transform, and
-   merge.
-5. Add tests that validate ownership, counts, index ranges, generated bounds, normal direction, and
-   scene mesh upload compatibility.
-6. Defer OBJ import, constrained triangulation, contour/isoline sidecars, and richer asset import
-   until the core container and upload path are stable.
+Implemented on 2026-05-21:
+
+1. public `DvzGeometry` replaces the old public `DvzShape` scaffold in `datoviz/geom`;
+2. `src/geom` is an active core object module linked into `libdatoviz` and core test runners;
+3. `dvz_geometry()`, `dvz_geometry_reset()`, and `dvz_geometry_destroy()` own positions,
+   normals, colors, UVs, and triangle indices through the shared allocator wrappers;
+4. `dvz_geometry_bounds()` computes F64 bounds;
+5. `dvz_geometry_positions_f32()` and `dvz_geometry_normals_f32()` provide the current bridge to
+   scene mesh upload paths that still consume F32 arrays;
+6. `dvz_geom_cube()` and `dvz_geom_plane()` generate indexed geometry with normals, UVs, and
+   zero-initialized color descriptors defaulting to opaque white;
+7. focused `geom` tests cover allocation/reset, cube bounds/index validity, plane normals/bounds,
+   F32 conversion, and core-runner wiring.
+
+
+## Next Implementation Slice
+
+1. Add structured surface-grid generation with row/column descriptors, height input, UV policy,
+   normal generation, and grid-provenance metadata.
+2. Add transform and merge operations for generated geometry.
+3. Add a narrow scene-side mesh-resource upload helper that consumes `DvzGeometry` directly, while
+   keeping the F32 bridge only as a temporary convenience for existing `dvz_mesh_data()` paths.
+4. Expand tests to cover generated surface-grid counts, winding, normal direction, invalid
+   dimensions, and upload through the direct mesh-resource path once it exists.
+5. Defer OBJ import, constrained triangulation, contour/isoline sidecars, and richer asset import
+   until the core container and direct upload path are stable.

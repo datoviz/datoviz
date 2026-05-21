@@ -50,8 +50,8 @@ When refactoring, do NOT delete existing comments, keep them and update them if 
 ### 🏗️ Current refactor status (v0.4-dev)
 
 * ✅ Active modules currently linked into `libdatoviz` by default are: `common`, `ds`, `fileio`,
-  `math`, `thread`, `input`, `window`, `canvas`, `stream`, `video`, `vk`, `vklite`, `drp2`,
-  `scene`, and `app`.
+  `geom`, `math`, `thread`, `input`, `window`, `canvas`, `stream`, `video`, `vk`, `vklite`,
+  `drp2`, `scene`, and `app`.
 * ✅ The active low-level graphics stack is the stable foundation; use it rather than creating a
   parallel presentation, frame-stream, or Vulkan wrapper path.
 * 🚧 The highest-value remaining work is now targeted hardening: WebGPU/WGSL parity lanes,
@@ -102,6 +102,7 @@ datoviz/
 │   │   └── map.cpp
 │   ├── fileio/                 # File helpers
 │   │   └── fileio.c
+│   ├── geom/                   # CPU-side geometry containers and generators
 │   ├── math/                   # Math utilities (C and C++)
 │   │   ├── anim.c array.c box.c mock.c parallel.c prng.cpp rand.c stats.c vec.c
 │   │   └── tests/
@@ -132,8 +133,8 @@ datoviz/
 ```
 
 Modules currently compiled into `libdatoviz` when the default build options are on: **`common`, `ds`,
-`fileio`, `math`, `thread`, `input`, `window`, `canvas`, `stream`, `video`, `vk`, `vklite`, `drp2`,
-`scene`, and `app`**. Modules such as `color`/`wasm` remain inactive scaffolding and should stay
+`fileio`, `geom`, `math`, `thread`, `input`, `window`, `canvas`, `stream`, `video`, `vk`, `vklite`,
+`drp2`, `scene`, and `app`**. Modules such as `color`/`wasm` remain inactive scaffolding and should stay
 untouched unless explicitly requested.
 
 ### ⏩ Planned activation order
@@ -179,6 +180,7 @@ untouched unless explicitly requested.
   add_subdirectory(common)
   add_subdirectory(ds)
   add_subdirectory(fileio)
+  add_subdirectory(geom)
   add_subdirectory(math)
   add_subdirectory(thread)
   add_subdirectory(input)
@@ -197,6 +199,7 @@ untouched unless explicitly requested.
           datoviz_common
           datoviz_ds
           datoviz_fileio
+          datoviz_geom
           datoviz_math
           datoviz_thread
           datoviz_input

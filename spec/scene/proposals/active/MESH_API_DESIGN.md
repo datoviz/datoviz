@@ -22,6 +22,11 @@ optional scene-owned index buffers, lit material state, depth-tested rendering, 
 `instance_transform` instanced draws. Future API work should refine that path into an explicit
 resource model rather than returning to a v0.3-style batch/request layer.
 
+Status on 2026-05-21: the first `geom` core slice has landed with `DvzGeometry`, cube/plane
+generators, bounds, and F32 conversion helpers. Mesh still lacks a direct public resource upload API
+that consumes `DvzGeometry`; current interop goes through temporary F32 conversion plus existing
+visual upload/index-buffer paths.
+
 
 ## Chosen Direction
 
@@ -78,6 +83,6 @@ policy in this proposal.
 4. Texture/material binding API once textured mesh variants are enabled.
 5. Serialization shape for shared mesh resources and visual references.
 6. Capability diagnostics for unsupported instancing, transparency modes, or material variants.
-7. Narrow first public slice: resource upload from `DvzGeometry`, vertex/index subrange updates,
-   one-instance and multi-instance draws, classic-lit material state, opaque mode first, and
-   face-picking-ready ordering.
+7. Narrow first public mesh-resource slice: resource upload from `DvzGeometry`, vertex/index
+   subrange updates, one-instance and multi-instance draws, classic-lit material state, opaque mode
+   first, and face-picking-ready ordering.
