@@ -2447,6 +2447,20 @@ DvzPanel* dvz_panel(DvzFigure* figure, DvzPanelDesc desc)
 }
 
 
+
+/**
+ * Create a panel that fills the whole figure.
+ *
+ * @param figure the figure
+ * @return the panel
+ */
+DvzPanel* dvz_panel_full(DvzFigure* figure)
+{
+    return dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+}
+
+
+
 /**
  * Return the default panel layout reservation.
  *

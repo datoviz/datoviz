@@ -22,6 +22,27 @@
 /*  Tests                                                                                        */
 /*************************************************************************************************/
 
+int test_scene_panel_full_helper(TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    DvzFigure* figure = dvz_figure(scene, 64, 32, 0);
+    DvzPanel* panel = dvz_panel_full(figure);
+
+    ANN(panel);
+    AT(panel->desc.x == 0.0f);
+    AT(panel->desc.y == 0.0f);
+    AT(panel->desc.width == 1.0f);
+    AT(panel->desc.height == 1.0f);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
 int test_scene_z_layer_orders_emit(TstContext* suite, const TstCase* item)
 {
     (void)suite;
@@ -528,5 +549,4 @@ int test_scene_multi_panel_glsl_emits_viewport_scissor_commands(
     dvz_scene_destroy(scene);
     return 0;
 }
-
 

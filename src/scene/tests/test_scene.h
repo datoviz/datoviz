@@ -396,6 +396,8 @@ int test_scene_json_includes_field_dirty_metadata(TstContext* suite, const TstCa
 
 int test_scene_json_includes_buffer_binding_metadata(TstContext* suite, const TstCase* item);
 
+int test_scene_panel_full_helper(TstContext* suite, const TstCase* item);
+
 int test_scene_rejects_cross_scene_visual(TstContext* suite, const TstCase* item);
 
 int test_scene_z_layer_orders_emit(TstContext* suite, const TstCase* item);

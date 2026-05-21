@@ -268,6 +268,15 @@ DVZ_EXPORT DvzPanel* dvz_panel(DvzFigure* figure, DvzPanelDesc desc);
 
 
 /**
+ * Create a panel that fills the whole figure.
+ *
+ * @param figure the figure
+ * @return the panel
+ */
+DVZ_EXPORT DvzPanel* dvz_panel_full(DvzFigure* figure);
+
+
+/**
  * Return the default panel layout reservation.
  *
  * The default is zero on every side so plot panels remain edge-to-edge unless callers opt in.
