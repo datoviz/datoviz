@@ -28,19 +28,20 @@ semantic and should not expose glyph atlas internals.
 
 ## Current Implementation Status
 
-The current v0.4-dev implementation is transitional:
+The current v0.4-dev implementation has visible glyph rendering, but its public text entry point is
+still being migrated:
 
 1. `dvz_glyph()` is installed as a low-level `DvzVisual*` constructor,
-2. `dvz_text()` is installed as a visual-backed text API that lowers internally to glyph visuals,
+2. `dvz_text()` is currently installed as a visual-backed text API that lowers internally to glyph
+   visuals,
 3. text uses bitmap/SDF/MSDF-capable atlas resources and renders through the scene -> FramePlan ->
    DRP2 -> vklite/canvas path,
 4. focused tests cover text realization, UTF-8 atlas growth, missing-glyph fallback, many-label
    batching, runtime readback, and app/offscreen visible pixels.
 
-The target semantic contract below is still the direction for API cleanup. Until the semantic
-`DvzText*` surface lands, references to "users do not interact with atlas coordinates" describe
-the desired high-level text path, while `dvz_glyph()` remains a lower-level escape hatch and
-implementation target.
+The v0.4 target is no longer to preserve the visual-backed `dvz_text()` surface. Semantic
+`DvzText*` objects should own content, style, placement, and identity; glyph visuals are derived
+implementation output or an explicit low-level escape hatch for advanced callers.
 
 
 ## Item and Group Model
@@ -273,8 +274,9 @@ Picking returns the string index as item identity. Sub-character picking is not 
 
 | Situation | Preferred family |
 |---|---|
-| Single uniform labels | `glyph` with `color` `CONSTANT` |
-| Per-character colored text | `glyph` with `char_color` |
+| Ordinary labels, axes, colorbars, annotations, readouts | semantic `DvzText` or annotation APIs |
+| Low-level generated glyph batches | `glyph` with `color` `CONSTANT` |
+| Per-character colored text | semantic text when available; otherwise `glyph` with `char_color` |
 | Custom atlas symbols (icons) | future extension or `marker` with `msdf` |
 
 

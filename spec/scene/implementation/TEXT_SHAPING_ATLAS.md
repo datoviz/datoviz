@@ -38,12 +38,14 @@ UTF-8 content + style + placement
 
 Rules:
 
-1. scene text objects preserve the original UTF-8 bytes,
+1. retained `DvzText` objects preserve the original UTF-8 bytes and own semantic text state,
 2. shaping output is independent from placement, panzoom, camera transforms, and atlas UVs,
 3. layout output is independent from atlas page allocation,
 4. atlas entries are keyed by selected font face and glyph id, not only by Unicode codepoint,
 5. renderer resources are internal implementation details and must not become the primary public
-   meaning of text.
+   meaning of text,
+6. visual-backed text state should be migrated into `DvzText` instead of treated as a stable v0.4
+   public contract.
 
 
 ## Shaping Contract

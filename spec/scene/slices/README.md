@@ -33,8 +33,8 @@ slice.
 
 | Feature | Specified | API declared | Retained state | Rendered | Pickable | Exported | Focused tests | Next slice |
 |---|---|---|---|---|---|---|---|---|
-| Text object | yes | transitional `DvzVisual* dvz_text()`; semantic `DvzText` target | visual-backed text state | first rendered slice active | no | raster capture only | text realization, atlas growth, runtime readback, app/offscreen smoke | integration/API cleanup |
-| Glyph visual contract | yes | yes, `dvz_glyph()` | active as text lowering target | atlas-backed glyph path active | no | raster capture only | covered through text/glyph tests | API boundary cleanup |
+| Text object | yes | semantic `DvzText` target; visual-backed `dvz_text()` pending migration | retained text state plus current visual-backed state | first rendered slice active | no | raster capture only | text realization, atlas growth, runtime readback, app/offscreen smoke | semantic API migration |
+| Glyph visual contract | yes | yes, `dvz_glyph()` low-level | active as text lowering target | atlas-backed glyph path active | no | raster capture only | covered through text/glyph tests | keep low-level boundary |
 | Label annotation | yes | yes, `DvzAnnotation` / `dvz_annotation_label()` | yes | simple glyph lowering active; richer readouts pending | no | raster capture only | annotation bookkeeping and realization tests | [ANNOTATION_LABEL_SLICE.md](ANNOTATION_LABEL_SLICE.md) |
 | Generic annotation kinds | broad semantics | partial, `DvzAnnotationKind` | partial | no | no | no | no rendered path | after label slice |
 | Continuous scale | yes | yes, `DvzScale` | yes | active for image/volume colormap binding | no | capture only | scale/field tests | colorbar slice |
@@ -63,8 +63,9 @@ Each implementation slice should answer these questions before code starts:
 
 Use this order unless a concrete user task changes priority:
 
-1. Use the landed `dvz_text()`/glyph path for axes, colorbars, labels, annotations, and readouts.
-2. Reconcile the transitional visual-backed text API with the semantic `DvzText` target API.
+1. Promote semantic `DvzText` as the public text source of truth and migrate the visual-backed
+   `dvz_text()` shape.
+2. Wire axes, colorbars, labels, annotations, and readouts to semantic text/glyph lowering.
 3. Finish data/world text placement and depth policy.
 4. Render a continuous `DvzColorbar` ramp plus title/tick labels.
 5. Add a dedicated scale-bar measurement annotation.

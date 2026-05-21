@@ -46,19 +46,21 @@ The first public header split has landed. Treat these groups as implemented APIs
 8. interaction policy, selection, link-channel, pick/probe queue, hover-state, and pinned-readout
    bookkeeping,
 9. first point-pick and image-probe execution through the DRP2 runtime request processor,
-10. font/text and annotation retained-object bookkeeping.
+10. font/text and annotation retained-object bookkeeping,
+11. first rendered text/glyph output through atlas-backed scene resources.
 
 Treat these installed declarations as draft contracts until implemented in `src/scene`:
 
-1. rendered text/glyph output,
-2. rendered annotations and callouts,
+1. semantic `DvzText*` public surface migration from the current visual-backed text entry point,
+2. rendered non-label annotations and callouts,
 3. rendered colorbar ticks/labels,
 4. selection highlight rendering and broader link-driven state propagation,
 5. mesh/object picking and richer probe payloads,
 6. broad mapped attributes beyond the current image colormap path.
 
-Colorbars, text, and annotations are currently retained semantic objects, but rendered
-ticks/labels/glyphs remain future work.
+Colorbars, text, and annotations are retained semantic objects. Text/glyph rendering exists as a
+first slice, but the visual-backed text API must be migrated so retained `DvzText` is the v0.4
+source of truth.
 
 Implementation-ready rendering work for those retained objects is tracked in:
 
@@ -243,6 +245,11 @@ The first public surface should expose:
 
 Text callers should bind content, style, font, placement, and color. They should not manage glyph
 atlases, glyph UVs, or text render-pass resources directly.
+
+For v0.4, `DvzText*` is the target public text handle. The existing `DvzVisual* dvz_text()` shape is
+not a compatibility constraint; either reshape `dvz_text()` to return `DvzText*` or replace it with
+a clearly named semantic constructor. `dvz_glyph()` may remain low-level, but axes, colorbars,
+annotations, legends, and readouts should consume semantic text or annotation APIs.
 
 
 ## Formatting Descriptor Policy
