@@ -1659,6 +1659,94 @@ int test_scene_primitive_pick_resolves_item(TstContext* suite, const TstCase* it
 }
 
 
+/**
+ * Ensure per-item image picking resolves image item identity through GPU quads.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_image_pick_resolves_item(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    ANN(item);
+    TST_SCENE_PICK_PROBE_REQUIRE_VKLITE(suite);
+
+    DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
+    VkPhysicalDeviceVulkan13Features features13 = {
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES};
+    features13.dynamicRendering = true;
+    features13.synchronization2 = true;
+    dvz_gpu_ctx_config_features13(&gpu_cfg, &features13);
+    DvzGpuCtx* ctx = dvz_gpu_ctx(&gpu_cfg);
+    if (ctx == NULL)
+    {
+        log_warn("scene image-pick test skipped because GPU context creation failed");
+        tst_skip(suite, "GPU context creation failed");
+        return 0;
+    }
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(
+        figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+    ANN(panel);
+
+    DvzVisual* image = dvz_image(scene, 0);
+    ANN(image);
+    dvz_visual_set_pick_capabilities(image, DVZ_PICK_CAPABILITY_ITEM);
+    float positions[2][3] = {
+        {-0.5f, 0.0f, 0.0f},
+        {0.5f, 0.0f, 0.0f},
+    };
+    float extents[2][2] = {
+        {0.4f, 0.4f},
+        {0.4f, 0.4f},
+    };
+    AT(dvz_visual_set_data(image, "position", positions, 2) == 0);
+    AT(dvz_visual_set_data(image, "extent", extents, 2) == 0);
+    AT(dvz_panel_add_visual(panel, image, NULL) == 0);
+
+    DvzDrp2RuntimeConfig runtime_cfg =
+        dvz_drp2_runtime_vklite_config(dvz_gpu_ctx_device(ctx), dvz_gpu_ctx_alloc(ctx));
+    DvzDrp2Runtime* runtime = dvz_drp2_runtime_vklite(&runtime_cfg);
+    ANN(runtime);
+
+    DvzCapabilitySnapshot caps = {0};
+    dvz_capability_snapshot_default(&caps);
+    caps.shader_format_glsl = true;
+
+    AT(dvz_panel_pick(panel, 48.0, 32.0, &(DvzPickRequest){.request_id = 91}) == 0);
+    AT(dvz_figure_process_requests(figure, runtime, &caps) == 1);
+    DvzPickResult pick = {0};
+    AT(dvz_scene_poll_pick(scene, &pick));
+    AT(pick.hit);
+    AT(pick.request_id == 91);
+    AT(pick.status == DVZ_PICK_STATUS_HIT);
+    AT(pick.visual_family == DVZ_SCENE_VISUAL_FAMILY_IMAGE);
+    AT(pick.resolved_target == DVZ_SCENE_TARGET_ITEM);
+    AT(pick.resolved_id == 1);
+    AT(pick.item_id == 1);
+    AT(!dvz_scene_poll_pick(scene, &pick));
+
+    AT(dvz_panel_pick(panel, 32.0, 32.0, &(DvzPickRequest){.request_id = 92}) == 0);
+    AT(dvz_figure_process_requests(figure, runtime, &caps) == 1);
+    pick = (DvzPickResult){0};
+    AT(dvz_scene_poll_pick(scene, &pick));
+    AT(!pick.hit);
+    AT(pick.request_id == 92);
+    AT(pick.status == DVZ_PICK_STATUS_MISS);
+    AT(!dvz_scene_poll_pick(scene, &pick));
+
+    dvz_drp2_runtime_destroy(runtime);
+    dvz_gpu_ctx_destroy(ctx);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
 
 /**
  * Ensure pick/probe readbacks do not reset the caller-owned DRP2 runtime.
@@ -2210,6 +2298,7 @@ int test_scene_pick_probe(TstSuite* suite)
     TST_SCENE_PICK_PROBE_GPU_CASE(test_scene_sphere_pick_resolves_item);
     TST_SCENE_PICK_PROBE_GPU_CASE(test_scene_stroke_pick_resolves_item);
     TST_SCENE_PICK_PROBE_GPU_CASE(test_scene_primitive_pick_resolves_item);
+    TST_SCENE_PICK_PROBE_GPU_CASE(test_scene_image_pick_resolves_item);
     TST_CASE(test_scene_process_requests_preserves_caller_runtime);
     TST_CASE(test_scene_image_probe_reuses_retained_request_executor);
     TST_SCENE_PICK_PROBE_GPU_CASE(test_scene_image_probe_respects_panel_request_position);
