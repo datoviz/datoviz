@@ -30,6 +30,7 @@
 #include "_compat.h"
 #include "datoviz/app.h"
 #include "datoviz/scene.h"
+#include "example_common.h"
 
 
 
@@ -119,9 +120,7 @@ static void _build_cube(
  */
 int main(int argc, char** argv)
 {
-    uint64_t frame_count = 0;
-    if (argc >= 2)
-        frame_count = (uint64_t)strtoull(argv[1], NULL, 10);
+    uint32_t frame_count = example_frame_count(argc, argv);
 
     DvzScene* scene = dvz_scene();
     if (scene == NULL)

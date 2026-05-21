@@ -34,6 +34,7 @@
 #include "datoviz/app.h"
 #include "datoviz/canvas.h"
 #include "datoviz/scene.h"
+#include "example_common.h"
 #include "datoviz/video.h"
 
 
@@ -112,35 +113,6 @@ static void _build_cube(
         indices[6 * face + 4] = base + 2;
         indices[6 * face + 5] = base + 3;
     }
-}
-
-
-
-/**
- * Parse an optional bounded frame count from the command line.
- *
- * @param argc command-line argument count
- * @param argv command-line argument vector
- * @return requested frame count, or 0 for the interactive loop
- */
-static uint32_t _frame_count(int argc, char** argv)
-{
-    if (argc < 2 || argv == NULL)
-        return 0;
-
-    for (int i = 1; i < argc; i++)
-    {
-        if (argv[i] == NULL)
-            continue;
-        char* end = NULL;
-        unsigned long value = strtoul(argv[i], &end, 10);
-        if (end == argv[i] || (end != NULL && *end != '\0'))
-            continue;
-        if (value > UINT32_MAX)
-            return UINT32_MAX;
-        return (uint32_t)value;
-    }
-    return 0;
 }
 
 
@@ -232,7 +204,7 @@ static void _outpath(const char* exe, const char* name, char* out, size_t size)
 int main(int argc, char** argv)
 {
     bool video_enabled = _video_enabled(argc, argv);
-    uint32_t frame_count = _frame_count(argc, argv);
+    uint32_t frame_count = example_frame_count_any(argc, argv);
     char default_dvzr_path[512] = {0};
     char dvzr_path[512] = {0};
     _outpath(argv[0], "mesh.dvzr", default_dvzr_path, sizeof(default_dvzr_path));

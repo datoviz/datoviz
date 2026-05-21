@@ -28,6 +28,7 @@
 #include "datoviz/app.h"
 #include "datoviz/gui.h"
 #include "datoviz/scene.h"
+#include "example_common.h"
 #include "example_gui_controls.h"
 
 
@@ -77,35 +78,6 @@ struct VolumeGlfwState
 /*************************************************************************************************/
 /*  Helpers                                                                                      */
 /*************************************************************************************************/
-
-/**
- * Parse an optional bounded frame count from the command line.
- *
- * @param argc command-line argument count
- * @param argv command-line argument vector
- * @return requested frame count, or 0 for the interactive loop
- */
-static uint32_t _frame_count(int argc, char** argv)
-{
-    if (argc < 2 || argv == NULL)
-        return 0;
-
-    for (int i = 1; i < argc; i++)
-    {
-        if (argv[i] == NULL)
-            continue;
-        char* end = NULL;
-        unsigned long value = strtoul(argv[i], &end, 10);
-        if (end == argv[i] || (end != NULL && *end != '\0'))
-            continue;
-        if (value > UINT32_MAX)
-            return UINT32_MAX;
-        return (uint32_t)value;
-    }
-    return 0;
-}
-
-
 
 /**
  * Return an unsigned absolute integer distance.
@@ -415,7 +387,7 @@ static void _volume_glfw_gui(DvzGui* gui, DvzAppWindow* win, void* user_data)
 
 int main(int argc, char** argv)
 {
-    uint32_t frame_count = _frame_count(argc, argv);
+    uint32_t frame_count = example_frame_count_any(argc, argv);
 
     DvzScene* scene = dvz_scene();
     if (scene == NULL)

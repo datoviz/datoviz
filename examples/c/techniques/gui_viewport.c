@@ -18,6 +18,7 @@
 #include "datoviz/app.h"
 #include "datoviz/gui.h"
 #include "datoviz/scene.h"
+#include "example_common.h"
 
 
 
@@ -81,28 +82,6 @@ static void gui_callback(DvzGui* gui, DvzAppWindow* win, void* user_data)
 
     if (changed)
         update_visual(state);
-}
-
-
-
-/**
- * Parse an optional bounded frame count from the command line.
- *
- * @param argc command-line argument count
- * @param argv command-line argument vector
- * @return requested frame count, or 0 for the interactive loop
- */
-static uint32_t frame_count(int argc, char** argv)
-{
-    if (argc < 2 || argv == NULL)
-        return 0;
-    char* end = NULL;
-    unsigned long value = strtoul(argv[1], &end, 10);
-    if (end == argv[1] || (end != NULL && *end != '\0'))
-        return 0;
-    if (value > UINT32_MAX)
-        return UINT32_MAX;
-    return (uint32_t)value;
 }
 
 
@@ -218,7 +197,7 @@ int main(int argc, char** argv)
     dvz_panel_connect_input(source_panel, dvz_gui_viewport_input(state.gui_viewport));
     dvz_app_window_set_gui_callback(host_win, gui_callback, &state);
 
-    dvz_app_run(app, frame_count(argc, argv));
+    dvz_app_run(app, example_frame_count(argc, argv));
 
     dvz_gui_viewport_destroy(state.gui_viewport);
     dvz_app_destroy(app);

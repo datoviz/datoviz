@@ -33,6 +33,7 @@
 #include "datoviz/fileio.h"
 #include "datoviz/gui.h"
 #include "datoviz/scene.h"
+#include "example_common.h"
 
 
 
@@ -150,34 +151,6 @@ typedef struct AllenMouseBrainState
 /*************************************************************************************************/
 /*  Helpers                                                                                      */
 /*************************************************************************************************/
-
-/**
- * Parse an optional bounded frame count from the command line.
- *
- * @param argc command-line argument count
- * @param argv command-line argument vector
- * @return requested frame count, or 0 for the interactive loop
- */
-static uint32_t _frame_count(int argc, char** argv)
-{
-    if (argc < 2 || argv == NULL)
-        return 0;
-    for (int i = 1; i < argc; i++)
-    {
-        if (argv[i] == NULL)
-            continue;
-        char* end = NULL;
-        unsigned long value = strtoul(argv[i], &end, 10);
-        if (end == argv[i] || (end != NULL && *end != '\0'))
-            continue;
-        if (value > UINT32_MAX)
-            return UINT32_MAX;
-        return (uint32_t)value;
-    }
-    return 0;
-}
-
-
 
 /**
  * Parse an optional bounded unsigned command-line option.
@@ -1723,7 +1696,7 @@ static void _allen_mouse_brain_gui(DvzGui* gui, DvzAppWindow* win, void* user_da
 
 int main(int argc, char** argv)
 {
-    uint32_t frame_count = _frame_count(argc, argv);
+    uint32_t frame_count = example_frame_count_any(argc, argv);
     uint32_t downsample = _option_u32(argc, argv, "downsample", 1, 1, 8);
 
     char data_path[1024] = {0};

@@ -35,6 +35,7 @@
 #include "datoviz/gui.h"
 #include "datoviz/imgui.h"
 #include "datoviz/scene.h"
+#include "example_common.h"
 #include "example_gui_controls.h"
 
 
@@ -141,28 +142,6 @@ static bool _cache_bundle_path(const char* pdb_id, char* out, size_t out_size);
 /*************************************************************************************************/
 /*  Helpers                                                                                      */
 /*************************************************************************************************/
-
-/**
- * Parse a bounded frame count from an optional command-line argument.
- *
- * @param text command-line text, or NULL
- * @return requested frame count, or 0 for the interactive loop
- */
-static uint32_t _frame_count(const char* text)
-{
-    if (text == NULL || text[0] == '\0')
-        return 0;
-
-    char* end = NULL;
-    unsigned long value = strtoul(text, &end, 10);
-    if (end == text || (end != NULL && *end != '\0'))
-        return 0;
-    if (value > UINT32_MAX)
-        return UINT32_MAX;
-    return (uint32_t)value;
-}
-
-
 
 /**
  * Return the default bundle path.
@@ -1360,7 +1339,7 @@ int main(int argc, char** argv)
 
     dvz_fprintf(
         stderr, "loaded %" PRIu32 " atoms from %s\n", bundle.atom_count, bundle.path);
-    dvz_app_run(app, _frame_count(frame_arg));
+    dvz_app_run(app, example_frame_count_from_text(frame_arg));
 
     dvz_app_destroy(app);
     dvz_scene_destroy(scene);

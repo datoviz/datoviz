@@ -26,6 +26,7 @@
 #include "datoviz/gui.h"
 #include "datoviz/imgui.h"
 #include "datoviz/scene.h"
+#include "example_common.h"
 
 
 
@@ -426,29 +427,6 @@ static void _set_animation_enabled(MarkerStressState* state, bool animate)
 
 
 /**
- * Parse an optional bounded frame count from the command line.
- *
- * @param argc command-line argument count
- * @param argv command-line argument vector
- * @return requested frame count, or 0 for the interactive loop
- */
-static uint32_t _frame_count(int argc, char** argv)
-{
-    if (argc < 2 || argv == NULL || argv[1] == NULL)
-        return 0;
-
-    char* end = NULL;
-    unsigned long value = strtoul(argv[1], &end, 10);
-    if (end == argv[1] || (end != NULL && *end != '\0'))
-        return 0;
-    if (value > UINT32_MAX)
-        return UINT32_MAX;
-    return (uint32_t)value;
-}
-
-
-
-/**
  * Release heap-backed marker arrays owned by the stress state.
  *
  * @param state marker stress state
@@ -767,7 +745,7 @@ int main(int argc, char** argv)
     dvz_app_window_set_gui_callback(win, _marker_stress_gui, &state);
     dvz_scene_set_clock_mode(scene, DVZ_CLOCK_REALTIME);
     dvz_scene_set_fps(scene, 60.0);
-    dvz_app_run(app, _frame_count(argc, argv));
+    dvz_app_run(app, example_frame_count(argc, argv));
 
     dvz_app_destroy(app);
     _marker_stress_free(&state);
