@@ -30,6 +30,89 @@
 
 
 /*************************************************************************************************/
+/*  Structs                                                                                      */
+/*************************************************************************************************/
+
+typedef struct PipelineFixedAttr PipelineFixedAttr;
+struct PipelineFixedAttr
+{
+    uint32_t binding;
+    uint32_t location;
+    uint32_t format;
+    uint32_t stride;
+};
+
+
+typedef struct PipelineFixedLayout PipelineFixedLayout;
+struct PipelineFixedLayout
+{
+    DvzSceneVisualDescKind kind;
+    const PipelineFixedAttr* attrs;
+    uint32_t attr_count;
+};
+
+
+
+/*************************************************************************************************/
+/*  Constants                                                                                    */
+/*************************************************************************************************/
+
+static const PipelineFixedAttr SEGMENT_PIPELINE_ATTRS[] = {
+    {0, 0, VK_FORMAT_R32G32B32_SFLOAT, 3 * sizeof(float)},
+    {1, 1, VK_FORMAT_R32G32B32_SFLOAT, 3 * sizeof(float)},
+    {2, 2, VK_FORMAT_R8G8B8A8_UNORM, 4 * sizeof(uint8_t)},
+    {3, 3, VK_FORMAT_R32_SFLOAT, sizeof(float)},
+};
+
+
+static const PipelineFixedAttr PATH_PIPELINE_ATTRS[] = {
+    {0, 0, VK_FORMAT_R32G32B32_SFLOAT, 3 * sizeof(float)},
+    {1, 1, VK_FORMAT_R32G32B32_SFLOAT, 3 * sizeof(float)},
+    {2, 2, VK_FORMAT_R32G32B32_SFLOAT, 3 * sizeof(float)},
+    {3, 3, VK_FORMAT_R8G8B8A8_UNORM, 4 * sizeof(uint8_t)},
+    {4, 4, VK_FORMAT_R32_SFLOAT, sizeof(float)},
+    {5, 5, VK_FORMAT_R32_UINT, sizeof(uint32_t)},
+    {6, 6, VK_FORMAT_R32_SFLOAT, sizeof(float)},
+};
+
+
+static const PipelineFixedAttr IMAGE_PIPELINE_ATTRS[] = {
+    {0, 0, VK_FORMAT_R32G32B32_SFLOAT, 3 * sizeof(float)},
+    {1, 1, VK_FORMAT_R32G32_SFLOAT, 2 * sizeof(float)},
+};
+
+
+static const PipelineFixedAttr GLYPH_PIPELINE_ATTRS[] = {
+    {0, 0, VK_FORMAT_R32G32B32_SFLOAT, 3 * sizeof(float)},
+    {1, 1, VK_FORMAT_R32G32B32A32_SFLOAT, 4 * sizeof(float)},
+    {2, 2, VK_FORMAT_R32G32B32A32_SFLOAT, 4 * sizeof(float)},
+    {3, 3, VK_FORMAT_R8G8B8A8_UNORM, 4 * sizeof(uint8_t)},
+    {4, 4, VK_FORMAT_R32_SFLOAT, sizeof(float)},
+};
+
+
+static const PipelineFixedAttr VOLUME_PIPELINE_ATTRS[] = {
+    {0, 0, VK_FORMAT_R32G32B32_SFLOAT, 3 * sizeof(float)},
+    {1, 1, VK_FORMAT_R32G32B32_SFLOAT, 3 * sizeof(float)},
+};
+
+
+static const PipelineFixedLayout FIXED_PIPELINE_LAYOUTS[] = {
+    {DVZ_SCENE_VISUAL_DESC_SEGMENT, SEGMENT_PIPELINE_ATTRS,
+     (uint32_t)DVZ_ARRAY_COUNT(SEGMENT_PIPELINE_ATTRS)},
+    {DVZ_SCENE_VISUAL_DESC_PATH, PATH_PIPELINE_ATTRS,
+     (uint32_t)DVZ_ARRAY_COUNT(PATH_PIPELINE_ATTRS)},
+    {DVZ_SCENE_VISUAL_DESC_IMAGE, IMAGE_PIPELINE_ATTRS,
+     (uint32_t)DVZ_ARRAY_COUNT(IMAGE_PIPELINE_ATTRS)},
+    {DVZ_SCENE_VISUAL_DESC_GLYPH, GLYPH_PIPELINE_ATTRS,
+     (uint32_t)DVZ_ARRAY_COUNT(GLYPH_PIPELINE_ATTRS)},
+    {DVZ_SCENE_VISUAL_DESC_VOLUME, VOLUME_PIPELINE_ATTRS,
+     (uint32_t)DVZ_ARRAY_COUNT(VOLUME_PIPELINE_ATTRS)},
+};
+
+
+
+/*************************************************************************************************/
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
@@ -106,6 +189,105 @@ static void _pipeline_apply_standard_depth_state(
         caps->can_write_depth && !wboit_accumulation && alpha_mode != DVZ_ALPHA_BLENDED;
     out->depth_compare_op =
         caps->can_depth_test ? VK_COMPARE_OP_LESS_OR_EQUAL : VK_COMPARE_OP_ALWAYS;
+}
+
+
+
+/**
+ * Return the fixed vertex layout for one visual descriptor kind.
+ *
+ * @param kind the visual descriptor kind
+ * @return the fixed layout descriptor, or NULL when the family is dynamic
+ */
+static const PipelineFixedLayout* _pipeline_fixed_layout(DvzSceneVisualDescKind kind)
+{
+    for (uint32_t i = 0; i < (uint32_t)DVZ_ARRAY_COUNT(FIXED_PIPELINE_LAYOUTS); i++)
+    {
+        if (FIXED_PIPELINE_LAYOUTS[i].kind == kind)
+            return &FIXED_PIPELINE_LAYOUTS[i];
+    }
+    return NULL;
+}
+
+
+
+/**
+ * Apply one fixed vertex layout to a pipeline descriptor.
+ *
+ * @param layout fixed vertex-layout descriptor
+ * @param out pipeline descriptor to update
+ */
+static void _pipeline_apply_fixed_layout(
+    const PipelineFixedLayout* layout, DvzSceneVisualPipelineDesc* out)
+{
+    ANN(layout);
+    ANN(out);
+
+    out->vertex_buffer_count = layout->attr_count;
+    out->binding_count = layout->attr_count;
+    out->attr_count = layout->attr_count;
+    for (uint32_t i = 0; i < layout->attr_count; i++)
+    {
+        const PipelineFixedAttr* attr = &layout->attrs[i];
+        _pipeline_attr(out, i, attr->binding, attr->location, attr->format, attr->stride);
+    }
+}
+
+
+
+/**
+ * Resolve a fixed-layout visual pipeline descriptor.
+ *
+ * @param visual the visual descriptor
+ * @param caps resolved pass capabilities for the visual
+ * @param pass_needs_depth whether the containing pass has a depth attachment
+ * @param wboit_accumulation whether the pass is an order-independent transparency pass
+ * @param alpha_mode visual alpha mode
+ * @param out pipeline descriptor to update
+ * @return whether the visual uses a fixed layout and has been resolved
+ */
+static bool _pipeline_apply_fixed_visual(
+    const DvzSceneVisualDesc* visual, const DvzSceneVisualPassCaps* caps, bool pass_needs_depth,
+    bool wboit_accumulation, DvzAlphaMode alpha_mode, DvzSceneVisualPipelineDesc* out)
+{
+    ANN(visual);
+    ANN(caps);
+    ANN(out);
+
+    const PipelineFixedLayout* layout = _pipeline_fixed_layout(visual->kind);
+    if (layout == NULL)
+        return false;
+
+    _pipeline_apply_fixed_layout(layout, out);
+    out->needs_common_layout = caps->uses_common_set;
+
+    if (visual->kind == DVZ_SCENE_VISUAL_DESC_SEGMENT ||
+        visual->kind == DVZ_SCENE_VISUAL_DESC_PATH)
+    {
+        out->needs_material_layout = caps->needs_material_layout;
+        _pipeline_apply_standard_depth_state(
+            caps, pass_needs_depth, wboit_accumulation, alpha_mode, out);
+    }
+    else if (visual->kind == DVZ_SCENE_VISUAL_DESC_IMAGE)
+    {
+        out->needs_image_layout = caps->uses_image_set;
+    }
+    else if (visual->kind == DVZ_SCENE_VISUAL_DESC_GLYPH)
+    {
+        out->needs_glyph_layout = caps->uses_image_set;
+    }
+    else if (visual->kind == DVZ_SCENE_VISUAL_DESC_VOLUME)
+    {
+        out->needs_volume_layout = caps->uses_volume_set;
+        out->has_raster_state = true;
+        out->cull_mode = VK_CULL_MODE_BACK_BIT;
+        out->front_face = VK_FRONT_FACE_CLOCKWISE;
+    }
+    else
+    {
+        return false;
+    }
+    return true;
 }
 
 
@@ -213,71 +395,12 @@ bool _scene_visual_pipeline_desc(
         return true;
 
     case DVZ_SCENE_VISUAL_DESC_SEGMENT:
-        out->vertex_buffer_count = 4;
-        out->binding_count = 4;
-        out->attr_count = 4;
-        _pipeline_attr(out, 0, 0, 0, VK_FORMAT_R32G32B32_SFLOAT, 3 * sizeof(float));
-        _pipeline_attr(out, 1, 1, 1, VK_FORMAT_R32G32B32_SFLOAT, 3 * sizeof(float));
-        _pipeline_attr(out, 2, 2, 2, VK_FORMAT_R8G8B8A8_UNORM, 4 * sizeof(uint8_t));
-        _pipeline_attr(out, 3, 3, 3, VK_FORMAT_R32_SFLOAT, sizeof(float));
-        out->needs_common_layout = caps.uses_common_set;
-        out->needs_material_layout = caps.needs_material_layout;
-        _pipeline_apply_standard_depth_state(
-            &caps, pass_needs_depth, wboit_accumulation, alpha_mode, out);
-        return true;
-
     case DVZ_SCENE_VISUAL_DESC_PATH:
-        out->vertex_buffer_count = 7;
-        out->binding_count = 7;
-        out->attr_count = 7;
-        _pipeline_attr(out, 0, 0, 0, VK_FORMAT_R32G32B32_SFLOAT, 3 * sizeof(float));
-        _pipeline_attr(out, 1, 1, 1, VK_FORMAT_R32G32B32_SFLOAT, 3 * sizeof(float));
-        _pipeline_attr(out, 2, 2, 2, VK_FORMAT_R32G32B32_SFLOAT, 3 * sizeof(float));
-        _pipeline_attr(out, 3, 3, 3, VK_FORMAT_R8G8B8A8_UNORM, 4 * sizeof(uint8_t));
-        _pipeline_attr(out, 4, 4, 4, VK_FORMAT_R32_SFLOAT, sizeof(float));
-        _pipeline_attr(out, 5, 5, 5, VK_FORMAT_R32_UINT, sizeof(uint32_t));
-        _pipeline_attr(out, 6, 6, 6, VK_FORMAT_R32_SFLOAT, sizeof(float));
-        out->needs_common_layout = caps.uses_common_set;
-        out->needs_material_layout = caps.needs_material_layout;
-        _pipeline_apply_standard_depth_state(
-            &caps, pass_needs_depth, wboit_accumulation, alpha_mode, out);
-        return true;
-
     case DVZ_SCENE_VISUAL_DESC_IMAGE:
-        out->vertex_buffer_count = 2;
-        out->binding_count = 2;
-        out->attr_count = 2;
-        _pipeline_attr(out, 0, 0, 0, VK_FORMAT_R32G32B32_SFLOAT, 3 * sizeof(float));
-        _pipeline_attr(out, 1, 1, 1, VK_FORMAT_R32G32_SFLOAT, 2 * sizeof(float));
-        out->needs_common_layout = caps.uses_common_set;
-        out->needs_image_layout = caps.uses_image_set;
-        return true;
-
     case DVZ_SCENE_VISUAL_DESC_GLYPH:
-        out->vertex_buffer_count = 5;
-        out->binding_count = 5;
-        out->attr_count = 5;
-        _pipeline_attr(out, 0, 0, 0, VK_FORMAT_R32G32B32_SFLOAT, 3 * sizeof(float));
-        _pipeline_attr(out, 1, 1, 1, VK_FORMAT_R32G32B32A32_SFLOAT, 4 * sizeof(float));
-        _pipeline_attr(out, 2, 2, 2, VK_FORMAT_R32G32B32A32_SFLOAT, 4 * sizeof(float));
-        _pipeline_attr(out, 3, 3, 3, VK_FORMAT_R8G8B8A8_UNORM, 4 * sizeof(uint8_t));
-        _pipeline_attr(out, 4, 4, 4, VK_FORMAT_R32_SFLOAT, sizeof(float));
-        out->needs_common_layout = caps.uses_common_set;
-        out->needs_glyph_layout = caps.uses_image_set;
-        return true;
-
     case DVZ_SCENE_VISUAL_DESC_VOLUME:
-        out->vertex_buffer_count = 2;
-        out->binding_count = 2;
-        out->attr_count = 2;
-        _pipeline_attr(out, 0, 0, 0, VK_FORMAT_R32G32B32_SFLOAT, 3 * sizeof(float));
-        _pipeline_attr(out, 1, 1, 1, VK_FORMAT_R32G32B32_SFLOAT, 3 * sizeof(float));
-        out->needs_common_layout = caps.uses_common_set;
-        out->needs_volume_layout = caps.uses_volume_set;
-        out->has_raster_state = true;
-        out->cull_mode = VK_CULL_MODE_BACK_BIT;
-        out->front_face = VK_FRONT_FACE_CLOCKWISE;
-        return true;
+        return _pipeline_apply_fixed_visual(
+            visual, &caps, pass_needs_depth, wboit_accumulation, alpha_mode, out);
 
     case DVZ_SCENE_VISUAL_DESC_NONE:
     default:
