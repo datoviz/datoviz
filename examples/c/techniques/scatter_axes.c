@@ -21,6 +21,7 @@
 
 #include "datoviz/app.h"
 #include "datoviz/scene.h"
+#include "example_common.h"
 
 #define N 2000
 
@@ -70,7 +71,7 @@ static void _make_scatter(float positions[N][3], uint8_t colors[N][4], float siz
 
 
 
-int main(void)
+int main(int argc, char** argv)
 {
     srand(42);
 
@@ -165,7 +166,7 @@ int main(void)
         dvz_scene_destroy(scene);
         return 1;
     }
-    dvz_app_run(app, 0);
+    dvz_app_run(app, example_frame_count(argc, argv));
 
     dvz_app_destroy(app);
     dvz_scene_destroy(scene);

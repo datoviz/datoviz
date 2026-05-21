@@ -214,12 +214,8 @@ static bool _upload_triangles(PrimitiveState* state)
     ANN(state->visual);
 
     const uint32_t vertex_count = VERTICES_PER_TRIANGLE * state->triangle_count;
-    DvzVisualDataUpdate updates[3] = {
-        {.attr_name = "position", .data = state->positions, .item_count = vertex_count},
-        {.attr_name = "normal", .data = state->normals, .item_count = vertex_count},
-        {.attr_name = "color", .data = state->colors, .item_count = vertex_count},
-    };
-    if (dvz_visual_set_data_many(state->visual, updates, 3) != 0)
+    if (dvz_primitive_data(
+            state->visual, state->positions, state->colors, state->normals, vertex_count) != 0)
         return false;
 
     DvzAlphaMode alpha_mode =

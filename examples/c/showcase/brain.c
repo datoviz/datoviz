@@ -1898,10 +1898,9 @@ int main(int argc, char** argv)
         if (atlas_mesh_visual == NULL || atlas_index_buffer == NULL ||
             !dvz_scene_buffer_set_data(
                 atlas_index_buffer, atlas_mesh.idx, atlas_mesh.index_count * sizeof(DvzIndex)) ||
-            dvz_visual_set_data(
-                atlas_mesh_visual, "position", atlas_mesh.pos, atlas_mesh.vertex_count) != 0 ||
-            dvz_visual_set_data(
-                atlas_mesh_visual, "normal", atlas_mesh.normal, atlas_mesh.vertex_count) != 0 ||
+            dvz_mesh_data(
+                atlas_mesh_visual, atlas_mesh.pos, atlas_mesh.color, atlas_mesh.normal,
+                atlas_mesh.vertex_count) != 0 ||
             !dvz_visual_set_buffer(atlas_mesh_visual, "index", atlas_index_buffer) ||
             dvz_visual_set_alpha_mode(atlas_mesh_visual, DVZ_ALPHA_BLENDED) != 0 ||
             dvz_visual_set_depth_test(atlas_mesh_visual, true) != 0)

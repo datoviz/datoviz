@@ -64,8 +64,7 @@ int main(int argc, char** argv)
         {70, 132, 255, 255},
     };
 
-    if (dvz_visual_set_data(visual, "position", positions, 3) != 0 ||
-        dvz_visual_set_data(visual, "color", colors, 3) != 0 ||
+    if (dvz_primitive_data(visual, positions, colors, NULL, 3) != 0 ||
         dvz_panel_add_visual(panel, visual, NULL) != 0)
     {
         dvz_scene_destroy(scene);

@@ -691,16 +691,9 @@ static bool _reload_bundle(ProteinExampleState* state, const char* bundle_path)
         return false;
     }
 
-    DvzVisualDataUpdate sphere_updates[3] = {
-        {.attr_name = "position",
-         .data = next.positions,
-         .item_count = next.atom_count},
-        {.attr_name = "color",
-         .data = _atom_colors(&next, state->atom_color_mode),
-         .item_count = next.atom_count},
-        {.attr_name = "radius", .data = next_radii, .item_count = next.atom_count},
-    };
-    if (dvz_visual_set_data_many(state->spheres, sphere_updates, 3) != 0)
+    if (dvz_sphere_data(
+            state->spheres, next.positions, _atom_colors(&next, state->atom_color_mode),
+            next_radii, next.atom_count) != 0)
     {
         _protein_bundle_destroy(&next);
         dvz_free(next_radii);
@@ -726,18 +719,10 @@ static bool _reload_bundle(ProteinExampleState* state, const char* bundle_path)
             if (!dvz_scene_buffer_set_data(
                     state->ribbon_index_buffer, state->ribbon_indices_upload,
                     (uint64_t)state->ribbon_index_upload_count * sizeof(DvzIndex)) ||
-                dvz_visual_set_data_many(
-                    state->ribbon,
-                    (DvzVisualDataUpdate[]){
-                        {.attr_name = "position",
-                         .data = next.ribbon_positions,
-                         .item_count = next.ribbon_vertex_count},
-                        {.attr_name = "normal",
-                         .data = next.ribbon_normals,
-                         .item_count = next.ribbon_vertex_count},
-                        {.attr_name = "color", .data = _ribbon_colors(&next, state->ribbon_color_mode),
-                         .item_count = next.ribbon_vertex_count}},
-                    3) != 0)
+                dvz_mesh_data(
+                    state->ribbon, next.ribbon_positions,
+                    _ribbon_colors(&next, state->ribbon_color_mode), next.ribbon_normals,
+                    next.ribbon_vertex_count) != 0)
             {
                 _protein_bundle_destroy(&next);
                 dvz_free(next_radii);
@@ -1174,9 +1159,9 @@ int main(int argc, char** argv)
     }
 
     if (dvz_sphere_mode(spheres, DVZ_SPHERE_MODE_RAYCAST_IMPOSTOR) != 0 ||
-        dvz_visual_set_data(spheres, "position", bundle.positions, bundle.atom_count) != 0 ||
-        dvz_visual_set_data(spheres, "color", bundle.atom_colors_element, bundle.atom_count) != 0 ||
-        dvz_visual_set_data(spheres, "radius", scaled_radii, bundle.atom_count) != 0 ||
+        dvz_sphere_data(
+            spheres, bundle.positions, bundle.atom_colors_element, scaled_radii,
+            bundle.atom_count) != 0 ||
         dvz_panel_add_visual(panel, spheres, NULL) != 0)
     {
         dvz_fprintf(stderr, "sphere visual setup failed\n");

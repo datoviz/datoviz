@@ -776,9 +776,8 @@ int main(int argc, char** argv)
         return 1;
     }
 
-    if (dvz_visual_set_data(visual, "position", dataset.positions, dataset.point_count) != 0 ||
-        dvz_visual_set_data(visual, "color", dataset.colors, dataset.point_count) != 0 ||
-        dvz_visual_set_data(visual, "pixel_size", dataset.sizes, dataset.point_count) != 0 ||
+    if (dvz_pixel_data(
+            visual, dataset.positions, dataset.colors, dataset.sizes, dataset.point_count) != 0 ||
         dvz_panel_add_visual(panel, visual, NULL) != 0)
     {
         dvz_fprintf(stderr, "LIDAR visual setup failed\n");

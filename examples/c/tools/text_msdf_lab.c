@@ -848,8 +848,7 @@ static int setup_source_scene(DvzScene* scene, TextLabSource* source)
     source->figure = dvz_figure(scene, TEXT_MSDF_LAB_SOURCE_WIDTH, TEXT_MSDF_LAB_SOURCE_HEIGHT, 0);
     if (source->figure == NULL)
         return -1;
-    source->panel = dvz_panel(
-        source->figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+    source->panel = dvz_panel_full(source->figure);
     if (source->panel == NULL)
         return -1;
     dvz_panel_set_background_color(source->panel, 0.055f, 0.065f, 0.085f, 1.0f);

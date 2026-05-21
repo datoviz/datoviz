@@ -23,6 +23,7 @@
 #include "datoviz/app.h"
 #include "datoviz/input/router.h"
 #include "datoviz/scene.h"
+#include "example_common.h"
 
 
 
@@ -187,7 +188,7 @@ static void _hover_pick_frame(DvzAppWindow* win, void* user_data)
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
-int main(void)
+int main(int argc, char** argv)
 {
     DvzScene* scene = dvz_scene();
     if (scene == NULL)
@@ -310,7 +311,7 @@ int main(void)
     dvz_input_subscribe_pointer(router, _hover_pick_pointer, &state);
     dvz_app_window_set_frame_callback(win, _hover_pick_frame, &state);
 
-    dvz_app_run(app, 0);
+    dvz_app_run(app, example_frame_count(argc, argv));
 
     dvz_app_destroy(app);
     dvz_scene_destroy(scene);

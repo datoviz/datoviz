@@ -573,12 +573,9 @@ static bool _upload_points(DenseState* state)
         state->upload_sizes[i] = state->point_size;
     }
 
-    DvzVisualDataUpdate updates[] = {
-        {.attr_name = "position", .data = state->dataset.positions, .item_count = count},
-        {.attr_name = "color", .data = state->upload_colors, .item_count = count},
-        {.attr_name = "diameter", .data = state->upload_sizes, .item_count = count},
-    };
-    if (dvz_visual_set_data_many(state->points, updates, 3) != 0)
+    if (dvz_point_data(
+            state->points, state->dataset.positions, state->upload_colors, state->upload_sizes,
+            count) != 0)
     {
         return false;
     }

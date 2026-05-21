@@ -298,8 +298,7 @@ static int render_case(
     if (scene == NULL)
         return -1;
     DvzFigure* figure = dvz_figure(scene, TEXT_DIAG_WIDTH, TEXT_DIAG_HEIGHT, 0);
-    DvzPanel* panel = dvz_panel(
-        figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+    DvzPanel* panel = figure != NULL ? dvz_panel_full(figure) : NULL;
     if (figure == NULL || panel == NULL)
     {
         dvz_scene_destroy(scene);

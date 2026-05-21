@@ -595,9 +595,7 @@ int main(int argc, char** argv)
         dvz_scene_destroy(scene);
         return 1;
     }
-    if (dvz_visual_set_data(visual, "position", &positions[0][0], sphere_count) != 0 ||
-        dvz_visual_set_data(visual, "color", colors, sphere_count) != 0 ||
-        dvz_visual_set_data(visual, "radius", live_sizes, sphere_count) != 0 ||
+    if (dvz_sphere_data(visual, &positions[0][0], colors, live_sizes, sphere_count) != 0 ||
         dvz_panel_add_visual(panel, visual, NULL) != 0)
     {
         dvz_fprintf(stderr, "sphere visual setup failed\n");

@@ -213,8 +213,7 @@ int main(int argc, char** argv)
         return 1;
     }
 
-    dvz_visual_set_data(reference, "position", reference_positions, 12);
-    dvz_visual_set_data(reference, "color", reference_colors, 12);
+    dvz_primitive_data(reference, reference_positions, reference_colors, NULL, 12);
 
     dvz_mesh_data(cube, positions, colors, normals, 24);
     dvz_visual_set_buffer(cube, "index", index_buffer);

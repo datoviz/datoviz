@@ -28,6 +28,7 @@
 #include "datoviz/fileio.h"
 #include "datoviz/gui.h"
 #include "datoviz/scene.h"
+#include "example_common.h"
 
 
 
@@ -606,7 +607,7 @@ static void _bwm_gui(DvzGui* gui, DvzAppWindow* win, void* user_data)
  *
  * @return process status
  */
-int main(void)
+int main(int argc, char** argv)
 {
     BwmDataset dataset = {0};
     if (!_load_bwm_dataset(BWM_DATA_DIR, &dataset))
@@ -777,7 +778,7 @@ int main(void)
     }
     _apply_spin(&state);
 
-    dvz_app_run(app, 0);
+    dvz_app_run(app, example_frame_count(argc, argv));
 
     dvz_app_destroy(app);
     dvz_scene_destroy(scene);
