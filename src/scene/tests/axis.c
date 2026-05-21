@@ -15,6 +15,7 @@
 /*************************************************************************************************/
 
 #include <math.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "_alloc.h"
@@ -453,6 +454,103 @@ static int test_axis_text_layout_reserve(TstContext* suite, const TstCase* item)
 }
 
 
+/**
+ * Ensure axis text for inset panels uses panel-local pixels and viewport-local clip anchors.
+ *
+ * @param suite the test suite
+ * @param item the test item
+ * @return 0 on success
+ */
+static int test_axis_text_inset_panel_coordinates(TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 1000, 700, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(
+        figure, (DvzPanelDesc){.x = 0.08f, .y = 0.06f, .width = 0.86f, .height = 0.86f});
+    ANN(panel);
+
+    AT(dvz_panel_set_layout_reserve(
+        panel, &(DvzPanelLayoutReserve){.left = 0.14f, .right = 0.04f, .bottom = 0.18f,
+                                        .top = 0.04f}));
+    AT(dvz_panel_set_domain(panel, DVZ_DIM_X, -5.0, +5.0) == 0);
+    AT(dvz_panel_set_domain(panel, DVZ_DIM_Y, -5.0, +5.0) == 0);
+    DvzAxis* x_axis = dvz_panel_axis(panel, DVZ_DIM_X);
+    DvzAxis* y_axis = dvz_panel_axis(panel, DVZ_DIM_Y);
+    ANN(x_axis);
+    ANN(y_axis);
+
+    _scene_prepare_axis_visuals(figure);
+    ANN(x_axis->text_visual);
+    ANN(y_axis->text_visual);
+    char* x_tick_end = NULL;
+    double x_tick = strtod(x_axis->text_visual->text.strings[0], &x_tick_end);
+    AT(x_tick_end != x_axis->text_visual->text.strings[0]);
+    char* y_tick_end = NULL;
+    double y_tick = strtod(y_axis->text_visual->text.strings[0], &y_tick_end);
+    AT(y_tick_end != y_axis->text_visual->text.strings[0]);
+
+    float panel_x = 0.0f;
+    float panel_y = 0.0f;
+    float panel_width = 0.0f;
+    float panel_height = 0.0f;
+    _scene_panel_pixel_rect(panel, &panel_x, &panel_y, &panel_width, &panel_height);
+    (void)panel_x;
+    (void)panel_y;
+
+    DvzVisualAttr* x_position_attr = _axis_test_text_position_attr(x_axis);
+    DvzVisualAttr* y_position_attr = _axis_test_text_position_attr(y_axis);
+    ANN(x_position_attr);
+    ANN(y_position_attr);
+    const float* x_positions = (const float*)x_position_attr->data;
+    const float* y_positions = (const float*)y_position_attr->data;
+    const float tick_gap = 6.0f;
+    double x_visible_min = 0.0;
+    double x_visible_max = 0.0;
+    double y_visible_min = 0.0;
+    double y_visible_max = 0.0;
+    AT(dvz_panel_visible_domain(panel, DVZ_DIM_X, &x_visible_min, &x_visible_max));
+    AT(dvz_panel_visible_domain(panel, DVZ_DIM_Y, &y_visible_min, &y_visible_max));
+    const float x_plot_min = -1.0f + 0.14f;
+    const float x_plot_max = +1.0f - 0.04f;
+    const float x_visual =
+        x_plot_min + (float)((x_tick - x_visible_min) / (x_visible_max - x_visible_min)) *
+                         (x_plot_max - x_plot_min);
+    const float expected_x0 = 0.5f * (x_visual + 1.0f) * panel_width;
+    const float expected_left_x = 0.5f * (x_plot_min + 1.0f) * panel_width;
+    const float y_plot_min = -1.0f + 0.18f;
+    const float y_plot_max = +1.0f - 0.04f;
+    const float y_visual =
+        y_plot_min + (float)((y_tick - y_visible_min) / (y_visible_max - y_visible_min)) *
+                         (y_plot_max - y_plot_min);
+    const float expected_y0 = 0.5f * (1.0f - y_visual) * panel_height;
+    const float expected_x_tick_y = 0.5f * (1.0f - y_plot_min) * panel_height;
+    AC(x_positions[0], expected_x0, 1e-3f);
+    AC(x_positions[1], expected_x_tick_y + tick_gap, 1e-3f);
+    AC(y_positions[0], expected_left_x - tick_gap, 1e-3f);
+    AC(y_positions[1], expected_y0, 1e-3f);
+
+    _scene_prepare_text_visuals(figure);
+    ANN(x_axis->text_visual->text.glyph_visual);
+    DvzVisualAttr* glyph_position_attr =
+        _axis_test_attr(x_axis->text_visual->text.glyph_visual, "position");
+    ANN(glyph_position_attr);
+    const float* glyph_positions = (const float*)glyph_position_attr->data;
+    const float expected_clip_x = 2.0f * expected_x0 / panel_width - 1.0f;
+    const float expected_clip_y =
+        1.0f - 2.0f * (expected_x_tick_y + tick_gap) / panel_height;
+    AC(glyph_positions[0], expected_clip_x, 1e-3f);
+    AC(glyph_positions[1], expected_clip_y, 1e-3f);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
 int test_panel_data_to_visual_positions(TstContext* suite, const TstCase* item)
 {
     (void)suite;
@@ -798,6 +896,7 @@ int test_scene_axis(TstSuite* suite)
     TST_CASE(test_axis_text_labels);
     TST_CASE(test_axis_text_updates_after_domain_change);
     TST_CASE(test_axis_text_layout_reserve);
+    TST_CASE(test_axis_text_inset_panel_coordinates);
     TST_CASE(test_panel_data_to_visual_positions);
     TST_CASE(test_axis_plot_margins);
     TST_CASE(test_axis_layout_reserve);
