@@ -3376,6 +3376,86 @@ int test_app_offscreen_depth_peel_mesh_two_layers(TstContext* suite, const TstCa
 
 
 /**
+ * Ensure depth peeling accumulates a third layer between nearest and farthest transparent quads.
+ *
+ * @param suite test suite
+ * @param item test item
+ * @return 0 on success
+ */
+int test_app_offscreen_depth_peel_mesh_three_layers(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    TST_SCENE_APP_REQUIRE_VKLITE(suite);
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    ANN(panel);
+    dvz_panel_set_background_color(panel, 0.0f, 0.0f, 0.0f, 1.0f);
+
+    DvzColor background = {0, 0, 0, 255};
+    DvzColor red = {255, 0, 0, 128};
+    DvzColor green = {0, 255, 0, 128};
+    DvzColor blue = {0, 0, 255, 128};
+    DvzVisual* background_visual = _app_primitive_add_quad(
+        scene, panel, -0.95f, 0.95f, -0.95f, 0.95f, 0.9f, background, DVZ_ALPHA_OPAQUE, true);
+    DvzVisual* red_visual = _app_primitive_add_quad(
+        scene, panel, -0.75f, 0.75f, -0.75f, 0.75f, 0.2f, red, DVZ_ALPHA_DEPTH_PEEL, true);
+    DvzVisual* green_visual = _app_primitive_add_quad(
+        scene, panel, -0.75f, 0.75f, -0.75f, 0.75f, 0.45f, green, DVZ_ALPHA_DEPTH_PEEL, true);
+    DvzVisual* blue_visual = _app_primitive_add_quad(
+        scene, panel, -0.75f, 0.75f, -0.75f, 0.75f, 0.7f, blue, DVZ_ALPHA_DEPTH_PEEL, true);
+    ANN(background_visual);
+    ANN(red_visual);
+    ANN(green_visual);
+    ANN(blue_visual);
+
+    DvzApp* app = _app_test_create(suite, scene);
+    if (app == NULL)
+    {
+        log_warn("test_app_offscreen_depth_peel_mesh_three_layers skipped: GPU context failed");
+        tst_skip(suite, "GPU context failed");
+        dvz_scene_destroy(scene);
+        return 0;
+    }
+    DvzAppWindow* win = dvz_app_window(app, figure, 64, 64);
+    ANN(win);
+    DvzCanvas* canvas = dvz_app_window_canvas(win);
+    ANN(canvas);
+
+    for (uint32_t frame = 0; frame < 3; frame++)
+        dvz_app_run(app, 1);
+
+    uint32_t width = 0, height = 0;
+    uint8_t* rgba = NULL;
+    AT(dvz_canvas_capture_rgba(canvas, &width, &height, &rgba) == 0);
+    ANN(rgba);
+    AT(width == 64);
+    AT(height == 64);
+
+    const uint32_t region_pixels = 12 * 12;
+    uint64_t region_r = _app_rgb_region_channel_sum(rgba, width, height, 26, 26, 38, 38, 0);
+    uint64_t region_g = _app_rgb_region_channel_sum(rgba, width, height, 26, 26, 38, 38, 1);
+    uint64_t region_b = _app_rgb_region_channel_sum(rgba, width, height, 26, 26, 38, 38, 2);
+
+    AT(region_r > 100 * region_pixels);
+    AT(region_g > 45 * region_pixels);
+    AT(region_b > 20 * region_pixels);
+    AT(region_r > region_g);
+    AT(region_g > region_b);
+
+    dvz_free(rgba);
+    dvz_app_destroy(app);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+/**
  * Ensure hidden and zero-alpha scene occluders do not attenuate sampled visuals.
  *
  * @param suite test suite
@@ -5889,6 +5969,7 @@ int test_scene_app(TstSuite* suite)
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_wboit_mesh_order_independent_layers);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_source_over_mesh_depth_and_blend);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_depth_peel_mesh_two_layers);
+    TST_SCENE_APP_SHARED_CASE(test_app_offscreen_depth_peel_mesh_three_layers);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_scene_occlusion_hidden_alpha);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_source_over_scene_occlusion_matrix);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_point_depth_cue_darkens_far);

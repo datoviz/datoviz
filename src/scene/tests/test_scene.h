@@ -424,6 +424,8 @@ int test_app_offscreen_source_over_mesh_depth_and_blend(TstContext* suite, const
 
 int test_app_offscreen_depth_peel_mesh_two_layers(TstContext* suite, const TstCase* item);
 
+int test_app_offscreen_depth_peel_mesh_three_layers(TstContext* suite, const TstCase* item);
+
 int test_app_offscreen_scene_occlusion_hidden_alpha(TstContext* suite, const TstCase* item);
 
 int test_app_offscreen_source_over_scene_occlusion_matrix(TstContext* suite, const TstCase* item);

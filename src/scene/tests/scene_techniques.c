@@ -3010,7 +3010,7 @@ int test_scene_visual_alpha_mode_depth_peel_frame_plan(TstContext* suite, const 
     AT(init_contract.draws[0].blend_targets[0].blend_enabled);
     AT(init_contract.draws[0].blend_targets[2].format == VK_FORMAT_R16G16B16A16_SFLOAT);
     AT(init_contract.draws[0].blend_targets[2].blend_enabled);
-    AT(init_contract.draws[0].blend_targets[2].color_blend_op == VK_BLEND_OP_MIN);
+    AT(init_contract.draws[0].blend_targets[2].color_blend_op == VK_BLEND_OP_MAX);
     AT(
         init_contract.draws[0].blend_targets[2].color_write_mask ==
         (VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT));
@@ -3036,7 +3036,7 @@ int test_scene_visual_alpha_mode_depth_peel_frame_plan(TstContext* suite, const 
     AT(iter_contract.draws[0].blend_targets[0].blend_enabled);
     AT(iter_contract.draws[0].blend_targets[2].format == VK_FORMAT_R16G16B16A16_SFLOAT);
     AT(iter_contract.draws[0].blend_targets[2].blend_enabled);
-    AT(iter_contract.draws[0].blend_targets[2].color_blend_op == VK_BLEND_OP_MIN);
+    AT(iter_contract.draws[0].blend_targets[2].color_blend_op == VK_BLEND_OP_MAX);
     AT(
         iter_contract.draws[0].blend_targets[2].color_write_mask ==
         (VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT));
@@ -3205,8 +3205,9 @@ int test_scene_visual_alpha_mode_emits_depth_peel_drp2(TstContext* suite, const 
     bool has_depth_minmax_pong = false;
     bool has_depth_texture = false;
     bool has_three_target_pipeline = false;
-    bool has_depth_bounds_min_blend = false;
-    bool has_depth_peel_src_over_blend = false;
+    bool has_depth_bounds_max_blend = false;
+    bool has_depth_peel_front_under_blend = false;
+    bool has_depth_peel_back_over_blend = false;
     bool has_depth_peel_no_cull = false;
     bool has_composite_pipeline = false;
     bool has_blended_composite_pipeline = false;
@@ -3241,18 +3242,23 @@ int test_scene_visual_alpha_mode_emits_depth_peel_drp2(TstContext* suite, const 
             {
                 const DvzDrp2ColorTarget* front =
                     &command->u.create_render_pipeline.color_targets[0];
+                const DvzDrp2ColorTarget* back =
+                    &command->u.create_render_pipeline.color_targets[1];
                 const DvzDrp2ColorTarget* bounds =
                     &command->u.create_render_pipeline.color_targets[2];
-                has_depth_peel_src_over_blend =
-                    has_depth_peel_src_over_blend ||
+                has_depth_peel_front_under_blend =
+                    has_depth_peel_front_under_blend ||
                     (front->blend_enabled &&
-                     front->src_color_blend_factor == VK_BLEND_FACTOR_ONE &&
-                     front->dst_color_blend_factor ==
-                         VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA);
-                has_depth_bounds_min_blend =
-                    has_depth_bounds_min_blend ||
-                    (bounds->blend_enabled && bounds->color_blend_op == VK_BLEND_OP_MIN &&
-                     bounds->alpha_blend_op == VK_BLEND_OP_MIN &&
+                     front->src_color_blend_factor == VK_BLEND_FACTOR_ONE_MINUS_DST_ALPHA &&
+                     front->dst_color_blend_factor == VK_BLEND_FACTOR_ONE);
+                has_depth_peel_back_over_blend =
+                    has_depth_peel_back_over_blend ||
+                    (back->blend_enabled && back->src_color_blend_factor == VK_BLEND_FACTOR_ONE &&
+                     back->dst_color_blend_factor == VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA);
+                has_depth_bounds_max_blend =
+                    has_depth_bounds_max_blend ||
+                    (bounds->blend_enabled && bounds->color_blend_op == VK_BLEND_OP_MAX &&
+                     bounds->alpha_blend_op == VK_BLEND_OP_MAX &&
                      bounds->color_write_mask ==
                          (VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT));
                 has_depth_peel_no_cull =
@@ -3292,8 +3298,9 @@ int test_scene_visual_alpha_mode_emits_depth_peel_drp2(TstContext* suite, const 
     AT(has_depth_minmax_pong);
     AT(has_depth_texture);
     AT(has_three_target_pipeline);
-    AT(has_depth_bounds_min_blend);
-    AT(has_depth_peel_src_over_blend);
+    AT(has_depth_bounds_max_blend);
+    AT(has_depth_peel_front_under_blend);
+    AT(has_depth_peel_back_over_blend);
     AT(has_depth_peel_no_cull);
     AT(has_composite_pipeline);
     AT(has_blended_composite_pipeline);

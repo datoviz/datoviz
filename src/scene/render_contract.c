@@ -213,14 +213,18 @@ static void _draw_blend_target_contracts(
                 .target_index = i,
                 .format = VK_FORMAT_R16G16B16A16_SFLOAT,
                 .blend_enabled = true,
-                .src_color_blend_factor = VK_BLEND_FACTOR_ONE,
-                .dst_color_blend_factor = i < 2 ? VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA :
+                .src_color_blend_factor = i == 0 ? VK_BLEND_FACTOR_ONE_MINUS_DST_ALPHA :
+                                                    VK_BLEND_FACTOR_ONE,
+                .dst_color_blend_factor = i == 0 ? VK_BLEND_FACTOR_ONE :
+                                                    i == 1 ? VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA :
+                                                             VK_BLEND_FACTOR_ONE,
+                .color_blend_op = i < 2 ? VK_BLEND_OP_ADD : VK_BLEND_OP_MAX,
+                .src_alpha_blend_factor = i == 0 ? VK_BLEND_FACTOR_ONE_MINUS_DST_ALPHA :
                                                    VK_BLEND_FACTOR_ONE,
-                .color_blend_op = i < 2 ? VK_BLEND_OP_ADD : VK_BLEND_OP_MIN,
-                .src_alpha_blend_factor = VK_BLEND_FACTOR_ONE,
-                .dst_alpha_blend_factor = i < 2 ? VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA :
-                                                   VK_BLEND_FACTOR_ONE,
-                .alpha_blend_op = i < 2 ? VK_BLEND_OP_ADD : VK_BLEND_OP_MIN,
+                .dst_alpha_blend_factor = i == 0 ? VK_BLEND_FACTOR_ONE :
+                                                    i == 1 ? VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA :
+                                                             VK_BLEND_FACTOR_ONE,
+                .alpha_blend_op = i < 2 ? VK_BLEND_OP_ADD : VK_BLEND_OP_MAX,
                 .color_write_mask = i < 2 ? VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |
                                                 VK_COLOR_COMPONENT_B_BIT |
                                                 VK_COLOR_COMPONENT_A_BIT
@@ -1331,7 +1335,19 @@ static bool _contract_validate_drp2_blend_target(
         actual->dst_alpha_blend_factor != expected->dst_alpha_blend_factor ||
         actual->alpha_blend_op != expected->alpha_blend_op)
     {
-        _contract_report(report, "DRP2 pipeline blend equation mismatches contract");
+        char message[256];
+        dvz_snprintf(
+            message, sizeof(message),
+            "DRP2 pipeline blend equation mismatches contract for target %u "
+            "(actual color %u/%u/%u alpha %u/%u/%u, expected color %u/%u/%u alpha %u/%u/%u)",
+            expected->target_index, actual->src_color_blend_factor,
+            actual->dst_color_blend_factor, actual->color_blend_op,
+            actual->src_alpha_blend_factor, actual->dst_alpha_blend_factor,
+            actual->alpha_blend_op, expected->src_color_blend_factor,
+            expected->dst_color_blend_factor, expected->color_blend_op,
+            expected->src_alpha_blend_factor, expected->dst_alpha_blend_factor,
+            expected->alpha_blend_op);
+        _contract_report(report, message);
         ok = false;
     }
     return ok;

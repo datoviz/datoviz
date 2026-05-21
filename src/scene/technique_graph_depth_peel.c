@@ -133,8 +133,8 @@ bool _scene_technique_emit_depth_peel_frame_graph(
             &color, peel_ids[i], DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_CLEAR, true);
         if (i == 2)
         {
-            color.clear_color[0] = 1.0f;
-            color.clear_color[1] = 0.0f;
+            color.clear_color[0] = -1.0f;
+            color.clear_color[1] = -1.0f;
             color.clear_color[2] = 0.0f;
             color.clear_color[3] = 0.0f;
         }
@@ -181,8 +181,8 @@ bool _scene_technique_emit_depth_peel_frame_graph(
             return false;
         _scene_frame_graph_color_attachment(
             &color, next_depth, DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_CLEAR, true);
-        color.clear_color[0] = 1.0f;
-        color.clear_color[1] = 0.0f;
+        color.clear_color[0] = -1.0f;
+        color.clear_color[1] = -1.0f;
         color.clear_color[2] = 0.0f;
         color.clear_color[3] = 0.0f;
         if (!dvz_frame_graph_pass_color_attachment(&iter, &color))

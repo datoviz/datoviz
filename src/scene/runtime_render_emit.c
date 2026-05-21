@@ -814,18 +814,20 @@ bool _emitter_prepare_render_multi(
                      dvz_drp2_stream_pipeline_set_color_target(
                          stream, 2, VK_FORMAT_R16G16B16A16_SFLOAT) &&
                      dvz_drp2_stream_pipeline_set_color_blend(
-                         stream, 0, VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ONE, VK_BLEND_OP_ADD,
-                         VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ONE, VK_BLEND_OP_ADD,
+                         stream, 0, VK_BLEND_FACTOR_ONE_MINUS_DST_ALPHA, VK_BLEND_FACTOR_ONE,
+                         VK_BLEND_OP_ADD, VK_BLEND_FACTOR_ONE_MINUS_DST_ALPHA,
+                         VK_BLEND_FACTOR_ONE, VK_BLEND_OP_ADD,
                          VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |
                              VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT) &&
                      dvz_drp2_stream_pipeline_set_color_blend(
-                         stream, 1, VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ONE, VK_BLEND_OP_ADD,
-                         VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ONE, VK_BLEND_OP_ADD,
+                         stream, 1, VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,
+                         VK_BLEND_OP_ADD, VK_BLEND_FACTOR_ONE,
+                         VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA, VK_BLEND_OP_ADD,
                          VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |
                              VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT) &&
                      dvz_drp2_stream_pipeline_set_color_blend(
-                         stream, 2, VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ONE, VK_BLEND_OP_MIN,
-                         VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ONE, VK_BLEND_OP_MIN,
+                         stream, 2, VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ONE, VK_BLEND_OP_MAX,
+                         VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ONE, VK_BLEND_OP_MAX,
                          VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT);
                 if (ok)
                     ok = dvz_drp2_stream_pipeline_set_raster_state(

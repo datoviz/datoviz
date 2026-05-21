@@ -10,5 +10,5 @@ void main()
     /* Init pass: reduce all transparent fragments to first nearest/farthest depth bounds. */
     backAccum = vec4(0.0);
     frontAccum = vec4(0.0);
-    depthPair = vec4(gl_FragCoord.z, -gl_FragCoord.z, 0.0, 0.0);
+    depthPair = vec4(-gl_FragCoord.z, gl_FragCoord.z, 0.0, 0.0);
 }
