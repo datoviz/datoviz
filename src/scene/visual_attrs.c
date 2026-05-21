@@ -1200,6 +1200,36 @@ int dvz_point_selection(DvzVisual* visual, const uint8_t* selection, uint32_t it
 
 
 /**
+ * Atomically upload the standard pixel visual attributes.
+ *
+ * @param visual the pixel visual
+ * @param positions pixel positions
+ * @param colors pixel colors
+ * @param pixel_sizes pixel sizes in pixels
+ * @param item_count number of pixels
+ * @return 0 on success, -1 on validation error
+ */
+int dvz_pixel_data(
+    DvzVisual* visual, const void* positions, const void* colors, const float* pixel_sizes,
+    uint32_t item_count)
+{
+    if (visual == NULL || visual->type != DVZ_VISUAL_TYPE_PIXEL || positions == NULL ||
+        colors == NULL || pixel_sizes == NULL || item_count == 0)
+    {
+        return -1;
+    }
+
+    DvzVisualDataUpdate updates[] = {
+        {.attr_name = "position", .data = positions, .item_count = item_count},
+        {.attr_name = "color", .data = colors, .item_count = item_count},
+        {.attr_name = "pixel_size", .data = pixel_sizes, .item_count = item_count},
+    };
+    return dvz_visual_set_data_many(visual, updates, 3);
+}
+
+
+
+/**
  * Upload the standard mesh visual attributes.
  *
  * @param visual the mesh visual
@@ -1255,6 +1285,71 @@ int dvz_mesh_instances(DvzVisual* visual, const void* instance_transforms, uint3
     }
     return dvz_visual_set_data(
         visual, "instance_transform", instance_transforms, instance_count);
+}
+
+
+
+/**
+ * Atomically upload the standard primitive visual attributes.
+ *
+ * @param visual the primitive visual
+ * @param positions primitive vertex positions
+ * @param colors primitive vertex colors
+ * @param normals optional primitive vertex normals
+ * @param vertex_count number of primitive vertices
+ * @return 0 on success, -1 on validation error
+ */
+int dvz_primitive_data(
+    DvzVisual* visual, const void* positions, const void* colors, const void* normals,
+    uint32_t vertex_count)
+{
+    if (visual == NULL || visual->type != DVZ_VISUAL_TYPE_PRIMITIVE || positions == NULL ||
+        colors == NULL || vertex_count == 0)
+    {
+        return -1;
+    }
+
+    DvzVisualDataUpdate updates[3] = {
+        {.attr_name = "position", .data = positions, .item_count = vertex_count},
+        {.attr_name = "color", .data = colors, .item_count = vertex_count},
+    };
+    uint32_t update_count = 2;
+    if (normals != NULL)
+    {
+        updates[update_count++] = (DvzVisualDataUpdate){
+            .attr_name = "normal", .data = normals, .item_count = vertex_count};
+    }
+    return dvz_visual_set_data_many(visual, updates, update_count);
+}
+
+
+
+/**
+ * Atomically upload the standard sphere visual attributes.
+ *
+ * @param visual the sphere visual
+ * @param positions sphere positions
+ * @param colors sphere colors
+ * @param radii sphere radii in scene units
+ * @param item_count number of spheres
+ * @return 0 on success, -1 on validation error
+ */
+int dvz_sphere_data(
+    DvzVisual* visual, const void* positions, const void* colors, const float* radii,
+    uint32_t item_count)
+{
+    if (visual == NULL || visual->type != DVZ_VISUAL_TYPE_SPHERE || positions == NULL ||
+        colors == NULL || radii == NULL || item_count == 0)
+    {
+        return -1;
+    }
+
+    DvzVisualDataUpdate updates[] = {
+        {.attr_name = "position", .data = positions, .item_count = item_count},
+        {.attr_name = "color", .data = colors, .item_count = item_count},
+        {.attr_name = "radius", .data = radii, .item_count = item_count},
+    };
+    return dvz_visual_set_data_many(visual, updates, 3);
 }
 
 

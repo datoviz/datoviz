@@ -2174,6 +2174,65 @@ int test_scene_mesh_typed_data_upload(TstContext* suite, const TstCase* item)
 
 
 
+int test_scene_additional_typed_data_uploads(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+
+    vec3 positions[3] = {
+        {0.0f, 0.0f, 0.0f},
+        {1.0f, 0.0f, 0.0f},
+        {0.0f, 1.0f, 0.0f},
+    };
+    DvzColor colors[3] = {{255, 0, 0, 255}, {0, 255, 0, 255}, {0, 0, 255, 255}};
+    vec3 normals[3] = {
+        {0.0f, 0.0f, 1.0f},
+        {0.0f, 0.0f, 1.0f},
+        {0.0f, 0.0f, 1.0f},
+    };
+    float sizes[3] = {4.0f, 8.0f, 12.0f};
+
+    DvzVisual* pixel = dvz_pixel(scene, 0);
+    DvzVisual* primitive = dvz_primitive(scene, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 0);
+    DvzVisual* sphere = dvz_sphere(scene, 0);
+    ANN(pixel);
+    ANN(primitive);
+    ANN(sphere);
+
+    AT(dvz_pixel_data(pixel, positions, colors, sizes, 3) == 0);
+    AT(dvz_primitive_data(primitive, positions, colors, normals, 3) == 0);
+    AT(dvz_sphere_data(sphere, positions, colors, sizes, 3) == 0);
+
+    DvzVisualDataView pixel_size_view = {0};
+    AT(dvz_visual_data(pixel, "pixel_size", &pixel_size_view) == 0);
+    const float* stored_pixel_sizes = pixel_size_view.data;
+    AT(stored_pixel_sizes[2] == 12.0f);
+
+    DvzVisualDataView primitive_normal_view = {0};
+    AT(dvz_visual_data(primitive, "normal", &primitive_normal_view) == 0);
+    const float* stored_normals = primitive_normal_view.data;
+    AT(stored_normals[2] == 1.0f);
+
+    DvzVisualDataView sphere_radius_view = {0};
+    AT(dvz_visual_data(sphere, "radius", &sphere_radius_view) == 0);
+    const float* stored_radii = sphere_radius_view.data;
+    AT(stored_radii[1] == 8.0f);
+
+    DvzVisual* flat_primitive = dvz_primitive(scene, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 0);
+    ANN(flat_primitive);
+    AT(dvz_primitive_data(flat_primitive, positions, colors, NULL, 3) == 0);
+    DvzVisualDataView flat_normal_view = {0};
+    AT(dvz_visual_data(flat_primitive, "normal", &flat_normal_view) == -1);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
 int test_scene_typed_upload_rejects_wrong_family(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
@@ -2182,9 +2241,15 @@ int test_scene_typed_upload_rejects_wrong_family(TstContext* suite, const TstCas
     DvzScene* scene = dvz_scene();
     ANN(scene);
     DvzVisual* point = dvz_point(scene, 0);
+    DvzVisual* pixel = dvz_pixel(scene, 0);
     DvzVisual* mesh = dvz_mesh(scene, 0);
+    DvzVisual* primitive = dvz_primitive(scene, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 0);
+    DvzVisual* sphere = dvz_sphere(scene, 0);
     ANN(point);
+    ANN(pixel);
     ANN(mesh);
+    ANN(primitive);
+    ANN(sphere);
 
     vec3 positions[1] = {{0.0f, 0.0f, 0.0f}};
     DvzColor colors[1] = {{255, 255, 255, 255}};
@@ -2197,10 +2262,16 @@ int test_scene_typed_upload_rejects_wrong_family(TstContext* suite, const TstCas
 
     AT(dvz_point_data(mesh, positions, colors, diameters, 1) == -1);
     AT(dvz_point_selection(mesh, selection, 1) == -1);
+    AT(dvz_pixel_data(point, positions, colors, diameters, 1) == -1);
     AT(dvz_mesh_data(point, positions, colors, NULL, 1) == -1);
     AT(dvz_mesh_instances(point, transforms, 1) == -1);
+    AT(dvz_primitive_data(point, positions, colors, NULL, 1) == -1);
+    AT(dvz_sphere_data(point, positions, colors, diameters, 1) == -1);
     AT(dvz_point_data(point, NULL, colors, diameters, 1) == -1);
+    AT(dvz_pixel_data(pixel, positions, colors, NULL, 1) == -1);
     AT(dvz_mesh_data(mesh, positions, NULL, NULL, 0) == -1);
+    AT(dvz_primitive_data(primitive, positions, NULL, NULL, 1) == -1);
+    AT(dvz_sphere_data(sphere, positions, colors, diameters, 0) == -1);
 
     dvz_scene_destroy(scene);
     return 0;

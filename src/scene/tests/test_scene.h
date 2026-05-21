@@ -589,6 +589,8 @@ int test_scene_point_typed_data_upload(TstContext* suite, const TstCase* item);
 
 int test_scene_mesh_typed_data_upload(TstContext* suite, const TstCase* item);
 
+int test_scene_additional_typed_data_uploads(TstContext* suite, const TstCase* item);
+
 int test_scene_typed_upload_rejects_wrong_family(TstContext* suite, const TstCase* item);
 
 int test_scene_point_external_position_buffer_emits_no_upload(TstContext* suite, const TstCase* item);

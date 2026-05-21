@@ -863,6 +863,21 @@ dvz_point_selection(DvzVisual* visual, const uint8_t* selection, uint32_t item_c
 
 
 /**
+ * Atomically upload the standard pixel visual attributes.
+ *
+ * @param visual the pixel visual
+ * @param positions pixel positions
+ * @param colors pixel colors
+ * @param pixel_sizes pixel sizes in pixels
+ * @param item_count number of pixels
+ * @return 0 on success, -1 on validation error
+ */
+DVZ_EXPORT int dvz_pixel_data(
+    DvzVisual* visual, const void* positions, const void* colors, const float* pixel_sizes,
+    uint32_t item_count);
+
+
+/**
  * Upload the standard mesh visual attributes.
  *
  * @param visual the mesh visual
@@ -887,6 +902,36 @@ DVZ_EXPORT int dvz_mesh_data(
  */
 DVZ_EXPORT int
 dvz_mesh_instances(DvzVisual* visual, const void* instance_transforms, uint32_t instance_count);
+
+
+/**
+ * Atomically upload the standard primitive visual attributes.
+ *
+ * @param visual the primitive visual
+ * @param positions primitive vertex positions
+ * @param colors primitive vertex colors
+ * @param normals optional primitive vertex normals
+ * @param vertex_count number of primitive vertices
+ * @return 0 on success, -1 on validation error
+ */
+DVZ_EXPORT int dvz_primitive_data(
+    DvzVisual* visual, const void* positions, const void* colors, const void* normals,
+    uint32_t vertex_count);
+
+
+/**
+ * Atomically upload the standard sphere visual attributes.
+ *
+ * @param visual the sphere visual
+ * @param positions sphere positions
+ * @param colors sphere colors
+ * @param radii sphere radii in scene units
+ * @param item_count number of spheres
+ * @return 0 on success, -1 on validation error
+ */
+DVZ_EXPORT int dvz_sphere_data(
+    DvzVisual* visual, const void* positions, const void* colors, const float* radii,
+    uint32_t item_count);
 
 
 /**

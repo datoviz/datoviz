@@ -117,6 +117,7 @@ int test_scene_graph(TstSuite* suite)
     TST_CASE(test_scene_visual_data_view);
     TST_CASE(test_scene_point_typed_data_upload);
     TST_CASE(test_scene_mesh_typed_data_upload);
+    TST_CASE(test_scene_additional_typed_data_uploads);
     TST_CASE(test_scene_typed_upload_rejects_wrong_family);
     TST_CASE(test_scene_point_external_position_buffer_emits_no_upload);
     TST_SCENE_GRAPH_GPU_CASE(test_scene_point_external_position_buffer_executes);
