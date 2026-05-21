@@ -100,8 +100,7 @@ Scene feature lanes:
 9. [soon/effects/SCENE_TECHNIQUES_MATERIALS_PLAN.md](soon/effects/SCENE_TECHNIQUES_MATERIALS_PLAN.md)
 10. [soon/scene/SCENE_VISUAL_SHADER_ABI_FOLLOWUP.md](soon/scene/SCENE_VISUAL_SHADER_ABI_FOLLOWUP.md)
 11. [soon/interaction/SCENE_CONTROLLER_BINDING_REFACTOR_PLAN.md](soon/interaction/SCENE_CONTROLLER_BINDING_REFACTOR_PLAN.md)
-12. [soon/interaction/SCENE_FLY_CAMERA_PLAN.md](soon/interaction/SCENE_FLY_CAMERA_PLAN.md)
-13. [soon/interaction/SCENE_TURNTABLE_CONTROLLER_PLAN.md](soon/interaction/SCENE_TURNTABLE_CONTROLLER_PLAN.md)
+12. [soon/interaction/SCENE_TURNTABLE_CONTROLLER_PLAN.md](soon/interaction/SCENE_TURNTABLE_CONTROLLER_PLAN.md)
 
 For visual-family lanes, durable contracts live under [../spec/scene/visuals](../spec/scene/visuals);
 the `soon/` files above are execution follow-up notes.
@@ -135,6 +134,7 @@ Recently retired or historical notes:
 6. [done/SCENE_DRP2_REFACTOR_OPPORTUNITIES.md](done/SCENE_DRP2_REFACTOR_OPPORTUNITIES.md)
 7. [done/WBOIT_MESH_INTERACTIVE_PLAN.md](done/WBOIT_MESH_INTERACTIVE_PLAN.md)
 8. [done/TEST_RUNNER_MODERNIZATION.md](done/TEST_RUNNER_MODERNIZATION.md)
+9. [done/SCENE_FLY_CAMERA_PLAN.md](done/SCENE_FLY_CAMERA_PLAN.md)
 
 ### `later/`
 

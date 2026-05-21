@@ -1,8 +1,8 @@
 # Scene Controller Binding Follow-Up
 
 > **Execution Status**
-> - **Status:** `ACTIVE / FOLLOW-UP NOTE`
-> - **Updated on:** `2026-05-19`
+> - **Status:** `ACTIVE / PARTIAL FLY SLICE LANDED`
+> - **Updated on:** `2026-05-21`
 > - **Purpose:** track the near-term implementation sequence for scene-owned controller handles,
 >   panel bindings, linked panels, and binding-friendly controller APIs.
 
@@ -20,42 +20,66 @@ Durable controller contracts live in:
 Use this file only for execution sequencing and validation. Do not duplicate the accepted public
 controller ownership, binding, input routing, or axis-domain rules here.
 
-The active scene code still has panel-owned navigation controllers. The accepted target is
+The active scene code now has the first generic controller slice for fly only: public
+`DvzController*`, dimension masks, scene-owned controller storage, `dvz_scene_fly()`,
+`dvz_controller_fly()`, `dvz_panel_bind_controller()`, and `dvz_panel_controller()` are present.
+`dvz_panel_bind_controller()` currently accepts only fly controllers bound with
+`DVZ_DIM_MASK_XYZ`.
+
+Panzoom, arcball, and turntable remain panel-owned navigation controllers. The accepted target is
 scene-owned opaque `DvzController*` handles that panels borrow and bind by dimension mask. Linked
-panels share controller identity instead of copying mutable panzoom fields.
+panels should share controller identity instead of copying mutable panzoom fields.
+
+
+## Completed Binding Work
+
+Implemented slices:
+
+1. Public opaque `DvzController*` and `DvzDimMask` declarations are present.
+2. `DvzScene` owns a fixed controller table and destroys scene-owned fly payloads.
+3. Panels have per-dimension borrowed controller bindings.
+4. The first `dvz_panel_bind_controller()` / `dvz_panel_controller()` path is implemented and
+   validated for fly plus `DVZ_DIM_MASK_XYZ`.
+5. Focused fly tests cover scene-owned controller creation, incompatible dimension rejection,
+   panel destruction preserving a shared controller, and one shared fly updating once for two
+   panels.
 
 
 ## Remaining Binding Work
 
 Recommended follow-up commits:
 
-1. Add the public opaque controller type and dimension-mask surface without changing existing panel
-   controller behavior.
-2. Add scene-owned controller storage and lifecycle rules; panels should borrow controller handles
-   and never destroy them.
-3. Move panzoom behind the generic controller handle first, with typed POD state get/set helpers.
-4. Add `dvz_panel_bind_controller()` and `dvz_panel_controller()` and validate family/dimension
-   compatibility.
-5. Route input through panel bindings while keeping viewport and panel-local coordinate context on
+1. Move panzoom behind the generic controller handle first, with typed POD state get/set helpers.
+2. Broaden `dvz_panel_bind_controller()` validation beyond fly to panzoom family/dimension
+   compatibility, including split X/Y bindings.
+3. Route input through panel bindings while keeping viewport and panel-local coordinate context on
    the event path.
-6. Add internal axis/domain queries through the bound controller instead of direct panel panzoom
+4. Add internal axis/domain queries through the bound controller instead of direct panel panzoom
    access.
-7. Migrate the linked-panels example away from copied panzoom fields and onto shared controller
+5. Migrate the linked-panels example away from copied panzoom fields and onto shared controller
    handles.
-8. Move arcball, fly, and turntable behind `DvzController*` only after the panzoom/binding path is
-   tested.
+6. Move arcball and turntable behind `DvzController*` after the panzoom/binding path is tested.
+7. Revisit the compatibility wrappers so `dvz_panel_set_panzoom()`, `dvz_panel_set_arcball()`, and
+   `dvz_panel_set_turntable()` either create scene-owned handles or are clearly transitional.
 
 
 ## First Acceptance Tests
+
+Landed for the fly slice:
+
+1. Incompatible fly dimension binding fails validation.
+2. Destroying a panel does not destroy a shared scene-owned fly controller.
+3. A shared fly controller bound to two panels updates once and writes back to both cameras.
+
+Still needed for the panzoom-first binding migration:
 
 1. Two panels bound to one XY panzoom report identical visible X and Y domains.
 2. Two panels bound to one X panzoom and separate Y panzooms share X only.
 3. Linked panels work with different viewport rectangles and sizes.
 4. Rebinding X does not change an existing Y binding.
-5. Wrong-family or incompatible-dimension binding fails validation.
-6. Destroying a panel does not destroy a shared controller.
-7. Typed panzoom state get/set rejects non-panzoom controllers.
-8. `examples/c/techniques/linked_panels.c` no longer copies public panzoom fields.
+5. Wrong-family or incompatible-dimension binding fails validation across all landed families.
+6. Typed panzoom state get/set rejects non-panzoom controllers.
+7. `examples/c/techniques/linked_panels.c` no longer copies public panzoom fields.
 
 
 ## Files To Update As Implementation Lands

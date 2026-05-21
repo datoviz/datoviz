@@ -7,6 +7,5 @@ Fly, pivot-orbit, and turntable semantics live in
 
 1. [SCENE_CONTROLLER_BINDING_REFACTOR_PLAN.md](SCENE_CONTROLLER_BINDING_REFACTOR_PLAN.md):
    controller binding follow-up.
-2. [SCENE_FLY_CAMERA_PLAN.md](SCENE_FLY_CAMERA_PLAN.md): fly-camera implementation follow-up.
-3. [SCENE_TURNTABLE_CONTROLLER_PLAN.md](SCENE_TURNTABLE_CONTROLLER_PLAN.md): turntable controller
+2. [SCENE_TURNTABLE_CONTROLLER_PLAN.md](SCENE_TURNTABLE_CONTROLLER_PLAN.md): turntable controller
    implementation follow-up.

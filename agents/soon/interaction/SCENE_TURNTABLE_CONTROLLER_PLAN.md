@@ -1,8 +1,8 @@
 # Scene Turntable Controller Follow-Up
 
 > **Execution Status**
-> - **Status:** `ACTIVE / FOLLOW-UP NOTE`
-> - **Updated on:** `2026-05-19`
+> - **Status:** `ACTIVE / PARTIAL IMPLEMENTATION`
+> - **Updated on:** `2026-05-21`
 > - **Purpose:** track remaining stable-up orbit controller work without duplicating durable
 >   camera-controller or binding semantics.
 
@@ -14,36 +14,56 @@ Durable turntable, pivot, input-default, and pivot-marker semantics live in
 General ownership and panel-binding rules live in
 [`../../../spec/scene/decisions/CONTROLLER_BINDING_MODEL.md`](../../../spec/scene/decisions/CONTROLLER_BINDING_MODEL.md).
 
-Use this file only for implementation sequencing, focused tests, and validation. Turntable should
-update a camera pose or model transform before the existing MVP emission path runs; it should not be
-implemented as a DRP2, visual, or runtime feature.
+Use this file only for remaining implementation sequencing, focused tests, and validation.
+Turntable updates a camera pose before the existing MVP emission path runs; it is not implemented
+as a DRP2, visual, or runtime feature.
+
+
+## Completed Turntable Work
+
+Implemented slices:
+
+1. Deterministic turntable math exists in `src/scene/turntable.c`: descriptor defaults,
+   eye/pivot spherical conversion, yaw wrap, pitch clamp, distance clamp, dolly, and view-plane
+   pan.
+2. Pointer input and input-router integration exist for left-drag orbit, middle/right-drag pan,
+   wheel dolly, double-click reset, resize, and panel viewport filtering.
+3. The transitional panel-owned API exists through `dvz_panel_set_turntable()` and
+   `dvz_panel_turntable()`.
+4. Camera-mode turntable creates or reuses a panel camera and updates the existing panel MVP path.
+5. Focused tests cover default pose, horizontal orbit distance, preserve-eye pivot changes,
+   pan translating pivot and eye, and panel camera integration.
 
 
 ## Remaining Turntable Work
 
 Recommended follow-up commits:
 
-1. Add pure deterministic math helpers first: descriptor defaults, eye/pivot spherical conversion,
-   pose conversion, yaw wrap, pitch and distance clamps, and view-plane pan delta.
-2. Add tests for orbit, dolly, pan, pivot changes, and clamp behavior before wiring input events.
-3. Expose turntable as a scene-owned `DvzController*` family if controller binding lands first;
-   otherwise keep any temporary panel-owned path clearly transitional.
-4. Ensure camera-mode turntable creates or reuses a panel camera and updates the existing MVP path.
-5. Add input-router integration for drag, wheel, reset, and panel viewport filtering.
-6. Add pivot helpers for explicit points, scene or visual bounds, and later pick/probe-derived
+1. Expose turntable as a scene-owned `DvzController*` family after the broader controller-binding
+   path supports non-fly controller families.
+2. Add missing focused tests for vertical pitch clamp, distance clamp, dolly behavior, and outside
+   viewport drag rejection.
+3. Add pivot helpers for explicit points, scene or visual bounds, and later pick/probe-derived
    pivots after base orbit behavior is stable.
-7. Add an example that makes the difference between arcball, turntable, and fly clear.
+4. Add an example that makes the difference between arcball, turntable, and fly clear.
 
 
 ## Focused Tests
 
+Landed:
+
 1. Default pose looks at the pivot with the expected distance.
 2. Horizontal orbit preserves distance and changes yaw.
-3. Vertical orbit clamps pitch and avoids flipping.
-4. Dolly clamps distance.
-5. Panning translates pivot and eye consistently.
-6. Changing pivot with preserve-eye policy does not move the camera eye.
-7. Drag outside the panel viewport is ignored.
+3. Panning translates pivot and eye consistently.
+4. Changing pivot with preserve-eye policy does not move the camera eye.
+5. Panel turntable creates/reuses a camera and feeds panel MVP emission.
+
+Still needed:
+
+1. Vertical orbit clamps pitch and avoids flipping.
+2. Dolly clamps distance.
+3. Drag outside the panel viewport is ignored.
+4. Scene-owned turntable binding works once the generic binding path supports turntable.
 
 
 ## Validation
