@@ -41,7 +41,7 @@ If resuming work on the branch:
    release candidates, or communication planning.
 5. Read [done/TEST_RUNNER_MODERNIZATION.md](done/TEST_RUNNER_MODERNIZATION.md) for completed
    test-runner modernization history, and
-   [soon/tooling/TEST_RUNNER_SCHEDULING.md](soon/tooling/TEST_RUNNER_SCHEDULING.md) before changing scheduling,
+   [later/TEST_RUNNER_SCHEDULING.md](later/TEST_RUNNER_SCHEDULING.md) before changing scheduling,
    process sharding, CI orchestration, or remaining skip/reporting behavior.
 6. Read [../spec/scene/visuals/IMPLEMENTATION_DECISIONS.md](../spec/scene/visuals/IMPLEMENTATION_DECISIONS.md)
    before extending pixel, point, marker, segment, path, image, sphere, or mesh first-slice
@@ -120,10 +120,6 @@ Analysis notes:
 1. [../spec/scene/examples/EXAMPLE_GAP_REPORT.md](../spec/scene/examples/EXAMPLE_GAP_REPORT.md)
 2. [../spec/scene/examples/EXAMPLE_PRIORITIZATION.md](../spec/scene/examples/EXAMPLE_PRIORITIZATION.md)
 
-Tooling follow-ups:
-
-1. [soon/tooling/TEST_RUNNER_SCHEDULING.md](soon/tooling/TEST_RUNNER_SCHEDULING.md)
-
 ### `done/`
 
 Completed phase records and historical checkpoints. These are useful context, but they are not
@@ -153,6 +149,10 @@ API design backlog:
 Strategic visual backlog:
 
 1. [later/SPLATTING_TIERED_PLAN.md](later/SPLATTING_TIERED_PLAN.md)
+
+Tooling backlog:
+
+1. [later/TEST_RUNNER_SCHEDULING.md](later/TEST_RUNNER_SCHEDULING.md)
 
 
 ## Maintenance Rules

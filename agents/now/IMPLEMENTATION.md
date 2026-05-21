@@ -456,7 +456,7 @@ Good parallel lanes right now:
     picking.
 13. **Test-runner scheduling follow-up:** process-level sharding, CI orchestration, optional
     thread-safe workers, and remaining skip cleanup as tracked in
-    [../soon/tooling/TEST_RUNNER_SCHEDULING.md](../soon/tooling/TEST_RUNNER_SCHEDULING.md). The completed serial
+    [../later/TEST_RUNNER_SCHEDULING.md](../later/TEST_RUNNER_SCHEDULING.md). The completed serial
     modernization history is in
     [../done/TEST_RUNNER_MODERNIZATION.md](../done/TEST_RUNNER_MODERNIZATION.md).
 14. **Performance and long-run smoke:** immediate-presentation FPS preservation, repeated-frame
@@ -747,7 +747,7 @@ with git diff --check, just build, focused scene request tests, and app/offscree
 
 ```text
 You own the test-runner scheduling follow-up lane. Read
-agents/soon/tooling/TEST_RUNNER_SCHEDULING.md and the checklist.
+agents/later/TEST_RUNNER_SCHEDULING.md and the checklist.
 
 Goal: land one scheduling or reporting slice: process-level sharding, child JSON aggregation,
 CI orchestration, exact-case rerun ergonomics, or remaining skip cleanup.

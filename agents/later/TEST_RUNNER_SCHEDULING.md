@@ -1,7 +1,7 @@
 # Test Runner Scheduling Follow-Up
 
 > **Execution Status**
-> - **Status:** `STABLE BASELINE / OPTIONAL FOLLOW-UP NOTE`
+> - **Status:** `BACKLOG / OPTIONAL FOLLOW-UP NOTE`
 > - **Updated on:** `2026-05-19`
 > - **Purpose:** track optional runner scheduling, shared-fixture, skip-cleanup, and reporting
 >   follow-ups after the stable process-sharding and shared-fixture baseline landed.
@@ -9,10 +9,14 @@
 
 ## Current State
 
+This is not an active `soon/` execution lane. The stable runner modernization and low-risk
+process-sharding baseline are complete; this file preserves optional backlog slices for future
+runner work.
+
 Durable records live in:
 
-1. [`../../done/TEST_RUNNER_MODERNIZATION.md`](../../done/TEST_RUNNER_MODERNIZATION.md)
-2. [`../../done/APP_RESOURCE_INJECTION_PLAN.md`](../../done/APP_RESOURCE_INJECTION_PLAN.md)
+1. [`../done/TEST_RUNNER_MODERNIZATION.md`](../done/TEST_RUNNER_MODERNIZATION.md)
+2. [`../done/APP_RESOURCE_INJECTION_PLAN.md`](../done/APP_RESOURCE_INJECTION_PLAN.md)
 
 Use this file only for the remaining follow-up queue. Do not duplicate the serial runner
 modernization history, app resource-injection API design, or long commit lists here.

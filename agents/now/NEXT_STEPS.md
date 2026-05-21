@@ -26,7 +26,7 @@ The C test-runner modernization and low-risk process-sharding performance pass a
 to treat as a stable baseline. Historical notes live in
 [../done/TEST_RUNNER_MODERNIZATION.md](../done/TEST_RUNNER_MODERNIZATION.md); optional scheduling
 and shared-fixture follow-ups live in
-[../soon/tooling/TEST_RUNNER_SCHEDULING.md](../soon/tooling/TEST_RUNNER_SCHEDULING.md).
+[../later/TEST_RUNNER_SCHEDULING.md](../later/TEST_RUNNER_SCHEDULING.md).
 
 
 ## Read First
@@ -75,7 +75,7 @@ and shared-fixture follow-ups live in
    allocation import or NVIDIA CIG the primary architecture.
 9. **Runner scheduling follow-up:** this is no longer an active performance blocker. Optional
     CI orchestration, thread-safe workers, and further shared-fixture migrations belong to
-    [../soon/tooling/TEST_RUNNER_SCHEDULING.md](../soon/tooling/TEST_RUNNER_SCHEDULING.md).
+    [../later/TEST_RUNNER_SCHEDULING.md](../later/TEST_RUNNER_SCHEDULING.md).
 
 
 ## Useful Current Records

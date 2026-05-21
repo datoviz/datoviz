@@ -9,7 +9,7 @@
 
 This plan is about app ownership and public API shape. The test-runner scheduling and shared
 fixture plan lives in
-[../soon/tooling/TEST_RUNNER_SCHEDULING.md](../soon/tooling/TEST_RUNNER_SCHEDULING.md) and should
+[../later/TEST_RUNNER_SCHEDULING.md](../later/TEST_RUNNER_SCHEDULING.md) and should
 depend on this API rather than owning its design.
 
 

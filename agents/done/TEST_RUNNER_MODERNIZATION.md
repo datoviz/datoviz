@@ -5,9 +5,9 @@
 > - **Updated on:** `2026-05-19`
 > - **Purpose:** preserve the completed serial runner modernization plan and validation history.
 
-This file is historical. The active follow-up for process sharding, optional thread workers, CI
-orchestration, and residual skip cleanup is
-[../soon/tooling/TEST_RUNNER_SCHEDULING.md](../soon/tooling/TEST_RUNNER_SCHEDULING.md).
+This file is historical. Optional follow-up notes for process sharding, thread workers, CI
+orchestration, and residual skip cleanup live in
+[../later/TEST_RUNNER_SCHEDULING.md](../later/TEST_RUNNER_SCHEDULING.md).
 
 
 ## Summary
