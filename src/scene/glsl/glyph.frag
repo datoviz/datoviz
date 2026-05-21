@@ -15,10 +15,8 @@ layout(location = 0) in vec2 fragUV;
 layout(location = 1) in vec4 fragColor;
 layout(location = 0) out vec4 outColor;
 
-float median3(float r, float g, float b)
-{
-    return max(min(r, g), min(max(r, g), b));
-}
+#define GLYPH_ENCODING_SDF_ALPHA    1
+#define GLYPH_ENCODING_MSDF_RGB     2
 
 float screenPixelRange()
 {
@@ -28,18 +26,25 @@ float screenPixelRange()
     return max(0.5 * dot(unitRange, screenTexSize), 1.0);
 }
 
+float distanceOpacity(float sd)
+{
+    float screenPxDistance = screenPixelRange() * (sd - 0.5);
+    return clamp(screenPxDistance + 0.5, 0.0, 1.0);
+}
+
 void main()
 {
     vec4 texel = texture(sampler2D(tex, samp), fragUV);
     float opacity = texel.a;
-    if (max(max(texel.r, texel.g), texel.b) > 1.0 / 255.0)
+    int encoding = int(glyph.params.y + 0.5);
+    if (encoding == GLYPH_ENCODING_MSDF_RGB)
     {
-        float sd = median3(texel.r, texel.g, texel.b);
-        float trueSd = texel.a;
-        if ((sd - 0.5) * (trueSd - 0.5) < 0.0)
-            sd = trueSd;
-        float screenPxDistance = screenPixelRange() * (sd - 0.5);
-        opacity = clamp(screenPxDistance + 0.5, 0.0, 1.0);
+        /* The generated atlas is MTSDF; alpha is the true signed-distance channel. */
+        opacity = distanceOpacity(texel.a);
+    }
+    else if (encoding == GLYPH_ENCODING_SDF_ALPHA)
+    {
+        opacity = distanceOpacity(texel.a);
     }
     outColor = vec4(fragColor.rgb, fragColor.a * opacity);
 #ifdef DVZ_SCENE_OCCLUSION

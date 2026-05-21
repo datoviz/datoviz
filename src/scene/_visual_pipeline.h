@@ -182,6 +182,7 @@ typedef struct DvzSceneVisualBindDesc
     uint64_t image_texture_id;
     bool uses_glyph_set1;
     uint64_t glyph_texture_id;
+    uint32_t glyph_atlas_encoding;
     float glyph_pixel_range;
     bool uses_volume_set1;
     uint64_t volume_texture_id;

@@ -2042,6 +2042,7 @@ bool _scene_visual_bind_desc(
         out->uses_fixed_common = caps.fixed_controller;
         out->uses_glyph_set1 = caps.uses_image_set;
         out->glyph_texture_id = visual->image_texture_id;
+        out->glyph_atlas_encoding = visual->glyph_atlas_encoding;
         out->glyph_pixel_range =
             visual->glyph_pixel_range > 0.0f ? visual->glyph_pixel_range : 4.0f;
         return true;
