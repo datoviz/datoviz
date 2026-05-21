@@ -286,6 +286,68 @@ int test_scene_colorbar_auto_reserve_and_visuals(TstContext* suite, const TstCas
 
 
 /**
+ * Verify repeated colorbar preparation does not replace clean retained buffers.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_colorbar_prepare_is_idempotent(TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 800, 600, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
+    ANN(panel);
+
+    DvzScale* scale = dvz_scale(scene, &(DvzScaleDesc){.kind = DVZ_SCALE_CONTINUOUS});
+    ANN(scale);
+    dvz_scale_set_domain(scale, 0.0, 1.0);
+    DvzColormap* colormap = dvz_colormap_builtin(scene, DVZ_BUILTIN_COLORMAP_VIRIDIS);
+    ANN(colormap);
+    dvz_scale_set_colormap(scale, colormap);
+
+    DvzColorbar* colorbar = dvz_colorbar(
+        panel, scale,
+        &(DvzColorbarDesc){
+            .orientation = DVZ_COLORBAR_ORIENTATION_VERTICAL,
+            .anchor = DVZ_SCENE_ANCHOR_PANEL_RIGHT,
+            .title = "Intensity",
+        });
+    ANN(colorbar);
+
+    _scene_prepare_colorbar_visuals(figure, NULL);
+    DvzVisualAttr* ramp_pos = _colorbar_test_attr(colorbar->ramp_visual, "position");
+    DvzVisualAttr* ramp_color = _colorbar_test_attr(colorbar->ramp_visual, "color");
+    DvzVisualAttr* tick_pos = _colorbar_test_attr(colorbar->tick_visual, "position_start");
+    ANN(ramp_pos);
+    ANN(ramp_color);
+    ANN(tick_pos);
+    void* ramp_pos_data = ramp_pos->data;
+    void* ramp_color_data = ramp_color->data;
+    void* tick_pos_data = tick_pos->data;
+    uint64_t ramp_pos_version = ramp_pos->version;
+    uint64_t ramp_color_version = ramp_color->version;
+    uint64_t tick_pos_version = tick_pos->version;
+
+    _scene_prepare_colorbar_visuals(figure, NULL);
+    AT(ramp_pos->data == ramp_pos_data);
+    AT(ramp_color->data == ramp_color_data);
+    AT(tick_pos->data == tick_pos_data);
+    AT(ramp_pos->version == ramp_pos_version);
+    AT(ramp_color->version == ramp_color_version);
+    AT(tick_pos->version == tick_pos_version);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+/**
  * Verify retained colorbar visuals respond to scale and colormap updates.
  *
  * @param suite the active test suite
@@ -2594,6 +2656,7 @@ int test_scene_fields(TstSuite* suite)
 
     TST_CASE(test_scene_scale_colormap_colorbar_core);
     TST_CASE(test_scene_colorbar_auto_reserve_and_visuals);
+    TST_CASE(test_scene_colorbar_prepare_is_idempotent);
     TST_CASE(test_scene_colorbar_updates_retained_visuals);
     TST_CASE(test_scene_colorbar_emit_stream_contains_derived_visuals);
     TST_CASE(test_scene_colorbar_invalid_domain_reports_diagnostic);

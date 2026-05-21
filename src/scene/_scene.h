@@ -446,6 +446,8 @@ struct DvzColorbar
     DvzSceneFormatState format;
     bool dirty;
     uint64_t version;
+    float realized_panel_width;
+    float realized_panel_height;
     DvzVisual* ramp_visual;
     DvzVisual* tick_visual;
     DvzVisual* text_visual;

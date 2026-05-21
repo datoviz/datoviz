@@ -65,6 +65,7 @@ static void _colorbar_fail(DvzColorbar* colorbar, DvzDiagnosticReport* report, c
 #define COLORBAR_TICK_TEXT_SIZE_PX 12.0f
 #define COLORBAR_TITLE_TEXT_SIZE_PX 13.0f
 #define COLORBAR_EPS 1e-12
+#define COLORBAR_LAYOUT_EPS 1e-3f
 
 
 
@@ -1036,9 +1037,13 @@ static void _colorbar_update_visuals(DvzColorbar* colorbar, DvzDiagnosticReport*
     (void)panel_y;
     if (!(width > 0.0f) || !(height > 0.0f) || !isfinite(width) || !isfinite(height))
     {
+        colorbar->realized_panel_width = 0.0f;
+        colorbar->realized_panel_height = 0.0f;
         _colorbar_hide(colorbar);
         return;
     }
+    colorbar->realized_panel_width = width;
+    colorbar->realized_panel_height = height;
     if (!_colorbar_ensure_visuals(colorbar))
     {
         _colorbar_hide(colorbar);
@@ -1093,6 +1098,38 @@ static void _colorbar_update_visuals(DvzColorbar* colorbar, DvzDiagnosticReport*
     _colorbar_update_title(colorbar, width, height, ramp_x0, ramp_y0, ramp_x1, ramp_y1);
     _colorbar_update_text(colorbar);
     colorbar->dirty = false;
+}
+
+
+
+/**
+ * Return whether one retained colorbar needs its derived visuals rebuilt.
+ *
+ * @param colorbar the colorbar
+ * @return whether the colorbar visual payloads need rebuilding
+ */
+static bool _colorbar_needs_visual_update(const DvzColorbar* colorbar)
+{
+    ANN(colorbar);
+    if (colorbar->dirty || colorbar->ramp_visual == NULL || colorbar->tick_visual == NULL ||
+        colorbar->text_visual == NULL)
+    {
+        return true;
+    }
+    if (colorbar->panel == NULL)
+        return false;
+
+    float panel_x = 0.0f;
+    float panel_y = 0.0f;
+    float width = 0.0f;
+    float height = 0.0f;
+    _scene_panel_pixel_rect(colorbar->panel, &panel_x, &panel_y, &width, &height);
+    (void)panel_x;
+    (void)panel_y;
+    if (!(width > 0.0f) || !(height > 0.0f) || !isfinite(width) || !isfinite(height))
+        return true;
+    return fabsf(width - colorbar->realized_panel_width) > COLORBAR_LAYOUT_EPS ||
+           fabsf(height - colorbar->realized_panel_height) > COLORBAR_LAYOUT_EPS;
 }
 
 
@@ -1564,6 +1601,7 @@ void _scene_prepare_colorbar_visuals(DvzFigure* figure, DvzDiagnosticReport* rep
             colorbar->panel->figure != figure)
             continue;
         _colorbar_apply_auto_reserve(colorbar);
-        _colorbar_update_visuals(colorbar, report);
+        if (_colorbar_needs_visual_update(colorbar))
+            _colorbar_update_visuals(colorbar, report);
     }
 }
