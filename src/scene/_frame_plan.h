@@ -265,9 +265,18 @@ typedef struct DvzFramePlanUploadMeta
 
 
 
+typedef enum DvzFramePlanClipRect
+{
+    DVZ_FRAME_PLAN_CLIP_RECT_PANEL = 0,
+    DVZ_FRAME_PLAN_CLIP_RECT_PLOT,
+} DvzFramePlanClipRect;
+
+
+
 typedef struct DvzFramePlanVisualMeta
 {
     bool has_metadata;
+    DvzFramePlanClipRect clip_rect;
     uint32_t visual_type;
     uint32_t visual_index;
     uint32_t buffer_index;
@@ -397,6 +406,8 @@ struct DvzFramePlanNode
             bool has_pass_contract;
             char pass_contract_id[DVZ_SCENE_LABEL_SIZE];
             DvzPanelDesc desc;
+            bool has_plot_desc;
+            DvzPanelDesc plot_desc;
             bool has_viewport;
             DvzSceneViewportUniform viewport;
             bool has_mvp;

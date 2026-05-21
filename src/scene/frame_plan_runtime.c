@@ -76,6 +76,7 @@ struct SceneRenderDraw
     uint64_t bg_set1;  /* image texture or primitive shading bg; 0 = none */
     uint64_t bg_set2;  /* scene occlusion bg; 0 = none */
     uint64_t bg_set3;  /* depth-peel sampled bg; 0 = none */
+    DvzFramePlanClipRect clip_rect;
     DvzSceneVisualDesc visual;
 };
 
@@ -1881,6 +1882,10 @@ static bool _emitter_prepare_render_multi(
         draws[draw_count].bg_set1     = vis_bg_set1;
         draws[draw_count].bg_set2     = vis_bg_set2;
         draws[draw_count].bg_set3     = vis_bg_set3;
+        draws[draw_count].clip_rect =
+            render->u.render.visual_metadata[i].has_metadata ?
+                render->u.render.visual_metadata[i].clip_rect :
+                DVZ_FRAME_PLAN_CLIP_RECT_PANEL;
         draws[draw_count].visual      = desc;
         draw_count++;
     }
@@ -1924,6 +1929,7 @@ static bool _emitter_emit_render_multi_draws(
                   stream, render_pass_id, render->u.render.desc.x, render->u.render.desc.y,
                   render->u.render.desc.width, render->u.render.desc.height);
 
+    DvzPanelDesc active_scissor = render->u.render.desc;
     uint64_t last_pipeline = (cache != NULL) ? cache->pipeline_id : 0;
     uint64_t last_bg_set0 = (cache != NULL) ? cache->bg_set0 : 0;
     uint64_t last_bg_set1 = 0;
@@ -1931,6 +1937,18 @@ static bool _emitter_emit_render_multi_draws(
     uint64_t last_bg_set3 = 0;
     for (uint32_t d = 0; ok && d < draw_count; d++)
     {
+        DvzPanelDesc draw_scissor = render->u.render.desc;
+        if (draws[d].clip_rect == DVZ_FRAME_PLAN_CLIP_RECT_PLOT && render->u.render.has_plot_desc)
+            draw_scissor = render->u.render.plot_desc;
+        if (draw_scissor.x != active_scissor.x || draw_scissor.y != active_scissor.y ||
+            draw_scissor.width != active_scissor.width ||
+            draw_scissor.height != active_scissor.height)
+        {
+            ok = ok && dvz_drp2_stream_set_scissor(
+                           stream, render_pass_id, draw_scissor.x, draw_scissor.y,
+                           draw_scissor.width, draw_scissor.height);
+            active_scissor = draw_scissor;
+        }
         if (draws[d].pipeline_id != last_pipeline)
         {
             ok = ok && dvz_drp2_stream_set_pipeline(stream, render_pass_id, draws[d].pipeline_id);
