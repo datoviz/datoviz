@@ -793,6 +793,33 @@ static void _text_pixel_to_clip(
 }
 
 
+/**
+ * Convert panel-local pixel coordinates to fixed clip-space coordinates.
+ *
+ * @param panel the panel that owns the text visual
+ * @param x the x coordinate in panel-local pixels
+ * @param y the y coordinate in panel-local pixels from the panel top
+ * @param z the clip-space z coordinate
+ * @param out output 3D clip-space position
+ */
+static void _text_panel_pixel_to_clip(
+    const DvzPanel* panel, float x, float y, float z, float out[3])
+{
+    ANN(panel);
+    ANN(out);
+    float panel_x = 0.0f;
+    float panel_y = 0.0f;
+    float panel_width = 0.0f;
+    float panel_height = 0.0f;
+    _scene_panel_pixel_rect(panel, &panel_x, &panel_y, &panel_width, &panel_height);
+    (void)panel_x;
+    (void)panel_y;
+    out[0] = panel_width > 0.0f ? 2.0f * x / panel_width - 1.0f : -1.0f;
+    out[1] = panel_height > 0.0f ? 1.0f - 2.0f * y / panel_height : 1.0f;
+    out[2] = z;
+}
+
+
 
 /**
  * Resolve a text anchor in figure pixels.
@@ -1605,7 +1632,7 @@ static bool _text_visual_prepare(
         float align_y = -text_anchor[1] * height;
         float angle = angles != NULL ? angles[i] : 0.0f;
         float anchor_clip[3] = {0};
-        _text_pixel_to_clip(figure, target[i][0], target[i][1], target[i][2], anchor_clip);
+        _text_panel_pixel_to_clip(panel, target[i][0], target[i][1], target[i][2], anchor_clip);
         spans[i].first_glyph = vertex_count / 6u;
 
         uint32_t column = 0;

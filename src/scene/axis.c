@@ -340,13 +340,13 @@ static float _axis_snap_visual_pixel_center(const DvzAxis* axis, float value, Dv
 
 
 /**
- * Convert one fixed visual-space coordinate to figure pixel coordinates.
+ * Convert one fixed visual-space coordinate to panel-local pixel coordinates.
  *
  * @param axis the axis owning the panel
  * @param visual_x visual-space x coordinate
  * @param visual_y visual-space y coordinate
- * @param out_x output x coordinate in figure pixels
- * @param out_y output y coordinate in figure pixels from the figure top
+ * @param out_x output x coordinate in panel-local pixels
+ * @param out_y output y coordinate in panel-local pixels from the panel top
  */
 static void _axis_visual_to_pixels(
     const DvzAxis* axis, float visual_x, float visual_y, float* out_x, float* out_y)
@@ -359,8 +359,10 @@ static void _axis_visual_to_pixels(
     float panel_width = 0.0f;
     float panel_height = 0.0f;
     _scene_panel_pixel_rect(axis->panel, &panel_x, &panel_y, &panel_width, &panel_height);
-    *out_x = panel_x + 0.5f * (visual_x + 1.0f) * panel_width;
-    *out_y = panel_y + 0.5f * (1.0f - visual_y) * panel_height;
+    (void)panel_x;
+    (void)panel_y;
+    *out_x = 0.5f * (visual_x + 1.0f) * panel_width;
+    *out_y = 0.5f * (1.0f - visual_y) * panel_height;
 }
 
 
