@@ -1397,7 +1397,8 @@ static const DvzVisualAttr* _text_visual_attr(const DvzVisual* visual, const cha
 static uint64_t _text_visual_version(const DvzVisual* visual)
 {
     ANN(visual);
-    uint64_t version = visual->text.strings_version + visual->text.renderer_version;
+    uint64_t version =
+        visual->text.strings_version + visual->text.renderer_version + visual->text.font_version;
     for (uint32_t i = 0; i < visual->attr_count; i++)
         version += visual->attrs[i].version;
     return version;
@@ -1464,6 +1465,7 @@ static bool _text_visual_prepare(
 
     DvzTextRenderer renderer = visual->text.renderer;
     DvzTextStyle backend_style = {
+        .font = visual->text.font,
         .size_pts = size_attr != NULL && size_attr->data != NULL ? ((const float*)size_attr->data)[0] :
                                                                    12.0f,
         .renderer = renderer,
@@ -1475,7 +1477,7 @@ static bool _text_visual_prepare(
     if (!use_builtin)
     {
         DvzTextStyle atlas_style = {
-            .font = NULL,
+            .font = visual->text.font,
             .size_pts = backend_style.size_pts,
             .renderer = renderer,
         };

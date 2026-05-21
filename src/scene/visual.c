@@ -3140,6 +3140,39 @@ int dvz_text_set_renderer(DvzVisual* visual, DvzTextRenderer renderer)
 
 
 /**
+ * Select the font used by a batched text visual.
+ *
+ * @param visual text visual
+ * @param font scene-owned font, or NULL to use the default font
+ * @return 0 on success, -1 on error
+ */
+int dvz_text_set_font(DvzVisual* visual, DvzFont* font)
+{
+    ANN(visual);
+    if (visual->type != DVZ_VISUAL_TYPE_TEXT)
+    {
+        log_error("dvz_text_set_font requires a text visual");
+        return -1;
+    }
+    if (font != NULL && font->scene != visual->scene)
+    {
+        log_error("cannot bind a font from a different scene");
+        return -1;
+    }
+    if (!_scene_visual_mutation_allowed(visual->scene, "mutate text font"))
+        return -1;
+    if (visual->text.font != font)
+    {
+        visual->text.font = font;
+        visual->text.font_version++;
+        _scene_notify_visual_changed(visual);
+    }
+    return 0;
+}
+
+
+
+/**
  * Create a glyph visual.
  *
  * @param scene the scene

@@ -680,6 +680,8 @@ int test_scene_text_bitmap_visual_realization(TstContext* suite, const TstCase* 
 
 int test_scene_text_sdf_visual_realization(TstContext* suite, const TstCase* item);
 
+int test_scene_text_visual_explicit_sdf_font(TstContext* suite, const TstCase* item);
+
 int test_scene_text_auto_renderer_selection(TstContext* suite, const TstCase* item);
 
 int test_scene_text_font_atlas_expands_for_utf8(TstContext* suite, const TstCase* item);

@@ -770,6 +770,8 @@ struct DvzTextVisualState
     uint64_t strings_version;
     DvzTextRenderer renderer;
     uint64_t renderer_version;
+    DvzFont* font;
+    uint64_t font_version;
     DvzTextGlyphSpan* spans;
     uint32_t span_count;
     DvzVisual* glyph_visual;
