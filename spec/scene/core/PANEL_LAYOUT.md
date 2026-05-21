@@ -29,6 +29,104 @@ to reserve space for axis labels and titles) are expressed in **pixels** — the
 physical size regardless of figure dimensions.
 
 
+## Panel, Plot, And Adornment Rectangles
+
+The current preferred direction is a small panel-local box model, not a general constraint
+solver.
+
+Each panel should expose three conceptual rectangles:
+
+1. **Panel rect**: the full panel viewport in figure pixels.
+2. **Plot rect**: the data-rendering rectangle inside the panel.
+3. **Adornment area**: the panel-local space outside the plot rect but inside the panel rect,
+   reserved for axes, tick labels, axis labels, legends, colorbars, readouts, and similar
+   explanatory objects.
+
+The panel rect remains the ownership and attachment boundary: visuals, axes, annotations, and
+controllers attach to a panel. The plot rect is the default data viewport: data visuals should be
+mapped and clipped to it when layout reserve or margins are active. Adornments may use the whole
+panel rect so they can sit outside the axis spines without being clipped by the plot.
+
+This model intentionally separates two concerns that are currently easy to conflate:
+
+1. **Geometry space**: which coordinate system positions a contribution.
+2. **Clip space**: which rectangle limits the contribution at render time.
+
+Recommended internal classification:
+
+| Contribution | Geometry space | Clip space |
+| --- | --- | --- |
+| panel background | panel | panel |
+| data point, pixel, marker, mesh, image, volume, path | data/plot | plot |
+| grid lines and axis spines | plot | plot |
+| inward tick marks | plot | plot |
+| outward tick marks | plot | panel |
+| tick labels and axis labels | panel | panel |
+| legends, colorbars, pinned readouts | panel | panel |
+| HUD or external UI overlays | panel or screen | panel or none |
+
+The first implementation does not need a public layout engine. It needs enough internal structure
+for frame-plan emission to choose the correct viewport/scissor state for data versus adornment
+draws. Public API should stay conservative until the rectangle and clipping model has been tested
+with axes, text, colorbars, and multi-panel examples.
+
+
+## Space Definitions
+
+The scene should distinguish these spaces:
+
+| Space | Meaning |
+| --- | --- |
+| figure pixels | top-left-origin pixels over the full figure surface |
+| panel pixels | top-left-origin pixels relative to one panel rect |
+| plot pixels | top-left-origin pixels relative to one plot rect |
+| panel visual | normalized `[-1, +1]` coordinates over the panel rect |
+| plot visual | normalized `[-1, +1]` coordinates over the plot rect |
+| data | user data coordinates before panel domain normalization |
+
+Text and annotation placement that is panel-attached should use panel pixels unless an explicit
+data or plot placement mode is requested. Data visuals should not use panel pixels directly; they
+should go through data/domain normalization into the plot area.
+
+
+## Clipping Rule
+
+Panel clipping and plot clipping are separate.
+
+Panel clipping prevents one panel's adornments from drawing into neighboring panels or the figure
+background. Plot clipping prevents data visuals from drawing into tick-label or axis-label gutters.
+
+When layout reserve is nonzero:
+
+1. data visuals should be scissored or clipped to the plot rect,
+2. axis/grid geometry that belongs to the plot should be clipped to the plot rect,
+3. labels and explanatory adornments should be clipped to the panel rect,
+4. background visuals may fill the panel rect unless a separate plot-background object is requested.
+
+This means that reserving room for tick labels should not merely move the data-to-visual mapping.
+It must also give frame-plan emission enough information to keep rendered data out of the reserved
+gutter.
+
+
+## Minimal Implementation Strategy
+
+The initial implementation should avoid a broad layout engine.
+
+Preferred staging:
+
+1. derive panel and plot pixel rectangles from the existing panel descriptor and margin/reserve
+   state,
+2. keep data normalization and panel navigation separate from layout solving,
+3. add internal geometry-space and clip-space classifications for built-in contributions,
+4. group frame-plan render nodes by compatible viewport/scissor state,
+5. use plot scissor for data visuals and panel scissor for text/adornment visuals,
+6. keep public layout API narrow until the model is validated by axes, colorbars, and examples.
+
+This supports the immediate axis-label use case while leaving room for colorbars, legends, and
+screen-space annotations without committing to CSS-like constraints, automatic collision solving,
+or full tight-layout behavior.
+
+
 ## Two Placement Modes
 
 ### Free Placement
