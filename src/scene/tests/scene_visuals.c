@@ -2088,6 +2088,126 @@ int test_scene_visual_data_view(TstContext* suite, const TstCase* item)
 
 
 
+int test_scene_point_typed_data_upload(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzVisual* visual = dvz_point(scene, 0);
+    ANN(visual);
+
+    vec3 positions[2] = {{0.0f, 0.0f, 0.0f}, {1.0f, 2.0f, 0.0f}};
+    DvzColor colors[2] = {{255, 0, 0, 255}, {0, 255, 0, 255}};
+    float diameters[2] = {4.0f, 8.0f};
+    uint8_t selection[2] = {1, 0};
+
+    AT(dvz_point_data(visual, positions, colors, diameters, 2) == 0);
+    AT(dvz_point_selection(visual, selection, 2) == 0);
+
+    DvzVisualDataView view = {0};
+    AT(dvz_visual_data(visual, "diameter", &view) == 0);
+    const float* stored_diameters = view.data;
+    AT(stored_diameters[1] == 8.0f);
+
+    DvzVisualDataView selection_view = {0};
+    AT(dvz_visual_data(visual, "selection", &selection_view) == 0);
+    const uint8_t* stored_selection = selection_view.data;
+    AT(stored_selection[0] == 1);
+    AT(stored_selection[1] == 0);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
+int test_scene_mesh_typed_data_upload(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzVisual* visual = dvz_mesh(scene, 0);
+    ANN(visual);
+
+    vec3 positions[3] = {
+        {0.0f, 0.0f, 0.0f},
+        {1.0f, 0.0f, 0.0f},
+        {0.0f, 1.0f, 0.0f},
+    };
+    DvzColor colors[3] = {{255, 0, 0, 255}, {0, 255, 0, 255}, {0, 0, 255, 255}};
+    vec3 normals[3] = {
+        {0.0f, 0.0f, 1.0f},
+        {0.0f, 0.0f, 1.0f},
+        {0.0f, 0.0f, 1.0f},
+    };
+    mat4 transforms[1] = {{{1.0f, 0.0f, 0.0f, 0.0f},
+                           {0.0f, 1.0f, 0.0f, 0.0f},
+                           {0.0f, 0.0f, 1.0f, 0.0f},
+                           {0.0f, 0.0f, 0.0f, 1.0f}}};
+
+    AT(dvz_mesh_data(visual, positions, colors, normals, 3) == 0);
+    AT(dvz_mesh_instances(visual, transforms, 1) == 0);
+
+    DvzVisualDataView normal_view = {0};
+    AT(dvz_visual_data(visual, "normal", &normal_view) == 0);
+    const float* stored_normals = normal_view.data;
+    AT(stored_normals[2] == 1.0f);
+
+    DvzVisualDataView transform_view = {0};
+    AT(dvz_visual_data(visual, "instance_transform", &transform_view) == 0);
+    AT(transform_view.item_count == 1);
+
+    DvzVisual* default_color_mesh = dvz_mesh(scene, 0);
+    ANN(default_color_mesh);
+    AT(dvz_mesh_data(default_color_mesh, positions, NULL, NULL, 3) == 0);
+    DvzVisualDataView color_view = {0};
+    AT(dvz_visual_data(default_color_mesh, "color", &color_view) == 0);
+    AT(color_view.item_count == 3);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
+int test_scene_typed_upload_rejects_wrong_family(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzVisual* point = dvz_point(scene, 0);
+    DvzVisual* mesh = dvz_mesh(scene, 0);
+    ANN(point);
+    ANN(mesh);
+
+    vec3 positions[1] = {{0.0f, 0.0f, 0.0f}};
+    DvzColor colors[1] = {{255, 255, 255, 255}};
+    float diameters[1] = {4.0f};
+    uint8_t selection[1] = {1};
+    mat4 transforms[1] = {{{1.0f, 0.0f, 0.0f, 0.0f},
+                           {0.0f, 1.0f, 0.0f, 0.0f},
+                           {0.0f, 0.0f, 1.0f, 0.0f},
+                           {0.0f, 0.0f, 0.0f, 1.0f}}};
+
+    AT(dvz_point_data(mesh, positions, colors, diameters, 1) == -1);
+    AT(dvz_point_selection(mesh, selection, 1) == -1);
+    AT(dvz_mesh_data(point, positions, colors, NULL, 1) == -1);
+    AT(dvz_mesh_instances(point, transforms, 1) == -1);
+    AT(dvz_point_data(point, NULL, colors, diameters, 1) == -1);
+    AT(dvz_mesh_data(mesh, positions, NULL, NULL, 0) == -1);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
 int test_scene_point_external_position_buffer_emits_no_upload(TstContext* suite, const TstCase* item)
 {
     ANN(suite);

@@ -1150,6 +1150,116 @@ int dvz_visual_set_data_many(
 
 
 /**
+ * Atomically upload the standard point visual attributes.
+ *
+ * @param visual the point visual
+ * @param positions point positions
+ * @param colors point colors
+ * @param diameters point diameters in pixels
+ * @param item_count number of points
+ * @return 0 on success, -1 on validation error
+ */
+int dvz_point_data(
+    DvzVisual* visual, const vec3* positions, const DvzColor* colors,
+    const float* diameters, uint32_t item_count)
+{
+    if (visual == NULL || visual->type != DVZ_VISUAL_TYPE_POINT || positions == NULL ||
+        colors == NULL || diameters == NULL || item_count == 0)
+    {
+        return -1;
+    }
+
+    DvzVisualDataUpdate updates[] = {
+        {.attr_name = "position", .data = positions, .item_count = item_count},
+        {.attr_name = "color", .data = colors, .item_count = item_count},
+        {.attr_name = "diameter", .data = diameters, .item_count = item_count},
+    };
+    return dvz_visual_set_data_many(visual, updates, 3);
+}
+
+
+
+/**
+ * Upload the optional point selection mask.
+ *
+ * @param visual the point visual
+ * @param selection selection mask
+ * @param item_count number of points
+ * @return 0 on success, -1 on validation error
+ */
+int dvz_point_selection(DvzVisual* visual, const uint8_t* selection, uint32_t item_count)
+{
+    if (visual == NULL || visual->type != DVZ_VISUAL_TYPE_POINT || selection == NULL ||
+        item_count == 0)
+    {
+        return -1;
+    }
+    return dvz_visual_set_data(visual, "selection", selection, item_count);
+}
+
+
+
+/**
+ * Upload the standard mesh visual attributes.
+ *
+ * @param visual the mesh visual
+ * @param positions mesh vertex positions
+ * @param colors optional mesh vertex colors
+ * @param normals optional mesh vertex normals
+ * @param vertex_count number of mesh vertices
+ * @return 0 on success, -1 on validation error
+ */
+int dvz_mesh_data(
+    DvzVisual* visual, const vec3* positions, const DvzColor* colors, const vec3* normals,
+    uint32_t vertex_count)
+{
+    if (visual == NULL || visual->type != DVZ_VISUAL_TYPE_MESH || positions == NULL ||
+        vertex_count == 0)
+    {
+        return -1;
+    }
+
+    DvzVisualDataUpdate updates[3] = {
+        {.attr_name = "position", .data = positions, .item_count = vertex_count},
+    };
+    uint32_t update_count = 1;
+    if (colors != NULL)
+    {
+        updates[update_count++] =
+            (DvzVisualDataUpdate){.attr_name = "color", .data = colors, .item_count = vertex_count};
+    }
+    if (normals != NULL)
+    {
+        updates[update_count++] = (DvzVisualDataUpdate){
+            .attr_name = "normal", .data = normals, .item_count = vertex_count};
+    }
+    return dvz_visual_set_data_many(visual, updates, update_count);
+}
+
+
+
+/**
+ * Upload optional mesh instance transforms.
+ *
+ * @param visual the mesh visual
+ * @param instance_transforms instance transform matrices
+ * @param instance_count number of instances
+ * @return 0 on success, -1 on validation error
+ */
+int dvz_mesh_instances(DvzVisual* visual, const mat4* instance_transforms, uint32_t instance_count)
+{
+    if (visual == NULL || visual->type != DVZ_VISUAL_TYPE_MESH || instance_transforms == NULL ||
+        instance_count == 0)
+    {
+        return -1;
+    }
+    return dvz_visual_set_data(
+        visual, "instance_transform", instance_transforms, instance_count);
+}
+
+
+
+/**
  * Replace a subrange of one dense visual attribute payload.
  *
  * @param visual the visual

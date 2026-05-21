@@ -836,6 +836,60 @@ DVZ_EXPORT int dvz_visual_set_data_many(
 
 
 /**
+ * Atomically upload the standard point visual attributes.
+ *
+ * @param visual the point visual
+ * @param positions point positions
+ * @param colors point colors
+ * @param diameters point diameters in pixels
+ * @param item_count number of points
+ * @return 0 on success, -1 on validation error
+ */
+DVZ_EXPORT int dvz_point_data(
+    DvzVisual* visual, const vec3* positions, const DvzColor* colors,
+    const float* diameters, uint32_t item_count);
+
+
+/**
+ * Upload the optional point selection mask.
+ *
+ * @param visual the point visual
+ * @param selection selection mask
+ * @param item_count number of points
+ * @return 0 on success, -1 on validation error
+ */
+DVZ_EXPORT int
+dvz_point_selection(DvzVisual* visual, const uint8_t* selection, uint32_t item_count);
+
+
+/**
+ * Upload the standard mesh visual attributes.
+ *
+ * @param visual the mesh visual
+ * @param positions mesh vertex positions
+ * @param colors optional mesh vertex colors
+ * @param normals optional mesh vertex normals
+ * @param vertex_count number of mesh vertices
+ * @return 0 on success, -1 on validation error
+ */
+DVZ_EXPORT int dvz_mesh_data(
+    DvzVisual* visual, const vec3* positions, const DvzColor* colors, const vec3* normals,
+    uint32_t vertex_count);
+
+
+/**
+ * Upload optional mesh instance transforms.
+ *
+ * @param visual the mesh visual
+ * @param instance_transforms instance transform matrices
+ * @param instance_count number of instances
+ * @return 0 on success, -1 on validation error
+ */
+DVZ_EXPORT int
+dvz_mesh_instances(DvzVisual* visual, const mat4* instance_transforms, uint32_t instance_count);
+
+
+/**
  * Write a contiguous sub-range of attribute data to a visual.
  *
  * The attribute must already be fully allocated by a prior
