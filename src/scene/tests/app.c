@@ -883,27 +883,6 @@ static uint64_t _app_rgb_region_channel_sum(
 
 
 /**
- * Return a visual attribute index by name.
- *
- * @param visual the visual
- * @param name the attribute name
- * @return the attribute index, or -1 if absent
- */
-static int _app_visual_attr_index(const DvzVisual* visual, const char* name)
-{
-    ANN(visual);
-    ANN(name);
-    for (uint32_t i = 0; i < visual->attr_count; i++)
-    {
-        if (strcmp(visual->attrs[i].name, name) == 0)
-            return (int)i;
-    }
-    return -1;
-}
-
-
-
-/**
  * Convert glyph visual NDC bounds to a conservative pixel rectangle.
  *
  * @param visual the glyph visual
@@ -917,36 +896,46 @@ static bool _app_glyph_pixel_bounds(
 {
     ANN(visual);
     ANN(out_rect);
-    int pos_idx = _app_visual_attr_index(visual, "position");
-    if (pos_idx < 0 || visual->attrs[pos_idx].data == NULL || visual->attrs[pos_idx].item_count == 0)
+    DvzVisualDataView position_view = {0};
+    if (dvz_visual_data(visual, "position", &position_view) != 0 ||
+        position_view.item_size != 3 * sizeof(float))
+    {
         return false;
-    int bounds_idx = _app_visual_attr_index(visual, "bounds");
-    int angle_idx = _app_visual_attr_index(visual, "angle");
+    }
 
-    const float(*positions)[3] = (const float(*)[3])visual->attrs[pos_idx].data;
-    const float(*bounds)[4] =
-        bounds_idx >= 0 && visual->attrs[bounds_idx].data != NULL &&
-                visual->attrs[bounds_idx].item_count == visual->attrs[pos_idx].item_count
-            ? (const float(*)[4])visual->attrs[bounds_idx].data
-            : NULL;
-    const float* angles =
-        angle_idx >= 0 && visual->attrs[angle_idx].data != NULL &&
-                visual->attrs[angle_idx].item_count == visual->attrs[pos_idx].item_count
-            ? (const float*)visual->attrs[angle_idx].data
-            : NULL;
+    const float* positions = position_view.data;
+    const float* bounds = NULL;
+    DvzVisualDataView bounds_view = {0};
+    if (dvz_visual_data(visual, "bounds", &bounds_view) == 0 &&
+        bounds_view.item_count == position_view.item_count &&
+        bounds_view.item_size == 4 * sizeof(float))
+    {
+        bounds = bounds_view.data;
+    }
+
+    const float* angles = NULL;
+    DvzVisualDataView angle_view = {0};
+    if (dvz_visual_data(visual, "angle", &angle_view) == 0 &&
+        angle_view.item_count == position_view.item_count && angle_view.item_size == sizeof(float))
+    {
+        angles = angle_view.data;
+    }
     float min_x = +INFINITY;
     float min_y = +INFINITY;
     float max_x = -INFINITY;
     float max_y = -INFINITY;
-    for (uint64_t i = 0; i < visual->attrs[pos_idx].item_count; i++)
+    for (uint64_t i = 0; i < position_view.item_count; i++)
     {
-        float px = (positions[i][0] * 0.5f + 0.5f) * (float)width;
-        float py = (1.0f - (positions[i][1] * 0.5f + 0.5f)) * (float)height;
+        uint64_t pos_offset = 3 * i;
+        float px = (positions[pos_offset + 0] * 0.5f + 0.5f) * (float)width;
+        float py = (1.0f - (positions[pos_offset + 1] * 0.5f + 0.5f)) * (float)height;
         if (bounds != NULL)
         {
             float c = angles != NULL ? cosf(angles[i]) : 1.0f;
             float s = angles != NULL ? sinf(angles[i]) : 0.0f;
-            float x0 = bounds[i][0], y0 = bounds[i][1], x1 = bounds[i][2], y1 = bounds[i][3];
+            uint64_t bounds_offset = 4 * i;
+            float x0 = bounds[bounds_offset + 0], y0 = bounds[bounds_offset + 1];
+            float x1 = bounds[bounds_offset + 2], y1 = bounds[bounds_offset + 3];
             float corners[4][2] = {{x0, y0}, {x0, y1}, {x1, y0}, {x1, y1}};
             for (uint32_t k = 0; k < 4; k++)
             {
