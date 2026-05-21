@@ -97,6 +97,14 @@ int main(void)
         return 1;
     }
     dvz_panel_set_background_color(panel, 0.07f, 0.08f, 0.11f, 1.0f);
+    if (!dvz_panel_set_layout_reserve(
+            panel, &(DvzPanelLayoutReserve){.left = 0.14f, .right = 0.0f, .bottom = 0.18f,
+                                            .top = 0.0f}))
+    {
+        fprintf(stderr, "dvz_panel_set_layout_reserve() failed\n");
+        dvz_scene_destroy(scene);
+        return 1;
+    }
 
     DvzVisual* visual = dvz_point(scene, 0);
     if (visual == NULL)
