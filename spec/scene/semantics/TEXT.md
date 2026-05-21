@@ -106,7 +106,9 @@ composition of glyph runs, rules, boxes, and transforms.
 
 ## Placement Modes
 
-Text supports two primary placement modes.
+Text placement separates the coordinate reference, the resolved anchor, the text-box alignment, and
+the text size mode. Controller attachment may affect how a text object is transformed, but it must
+not be the only public signal that changes what `position` means.
 
 Screen-space text:
 
@@ -125,12 +127,91 @@ World-space text:
 World-space text must not be implemented as an undocumented screen-space hack.
 
 
+## Placement Model
+
+Text placement resolves in four steps:
+
+1. choose a reference frame,
+2. resolve a reference anchor inside that frame,
+3. apply the authored anchor position and pixel offset,
+4. align the text box relative to that resolved point.
+
+The reference frame is explicit. The initial v0.4 vocabulary should cover:
+
+| Reference frame | Meaning | Typical use |
+|---|---|---|
+| `panel` | coordinates local to one panel | titles, panel labels, axis and colorbar text |
+| `figure` | coordinates local to the whole figure | figure titles, watermarks, global overlays |
+| `visual` | visual/data coordinates before panel navigation | point labels, plot annotations, map labels |
+
+The reference position space is explicit. The initial v0.4 vocabulary should cover:
+
+| Position space | Meaning |
+|---|---|
+| `pixels` | logical pixels from the resolved reference anchor |
+| `normalized` | normalized coordinates inside the reference frame |
+| `visual` | authored visual coordinates transformed by the panel controller |
+
+For `panel` and `figure` references, `pixels` and `normalized` are the normal spaces. For `visual`
+references, `visual` is the normal space. API helpers may reject invalid combinations rather than
+silently reinterpret them.
+
+Anchors are split into horizontal and vertical alignment components in the semantic model:
+
+| Axis | Values |
+|---|---|
+| horizontal | `left`, `center`, `right` |
+| vertical | `top`, `center`, `bottom`, `baseline` |
+
+Combined nine-point anchor names such as `top_left` or `bottom_right` are acceptable convenience
+helpers, but internal state and validation should store split horizontal and vertical alignment.
+Split alignment keeps baseline alignment first-class and avoids hard-coding every future
+combination.
+
+Text placement has two independent anchors:
+
+1. reference anchor: where the authored position starts inside the reference frame,
+2. text-box anchor: which point of the measured text box is attached to the resolved position.
+
+Examples:
+
+1. a top-right panel label uses `reference = panel`, `reference_anchor = right/top`,
+   `position = (-12, 12) pixels`, and `text_anchor = right/top`;
+2. a centered panel title uses `reference = panel`, `reference_anchor = center/top`,
+   `position = (0, 16) pixels`, and `text_anchor = center/top`;
+3. a point label uses `reference = visual`, `position = (x, y, z) visual`,
+   `text_anchor = center/bottom`, and `offset = (0, -6) pixels`;
+4. a baseline-aligned tick label uses `text_anchor = center/baseline`.
+
+Pixel offsets are always logical pixels after the reference position has been resolved. This keeps
+callout gaps, tick-label spacing, and hover-label nudges stable under panzoom while still allowing
+the anchor itself to follow data coordinates.
+
+
 ## Scale and Orientation
 
 Text scale mode is explicit:
 
-1. screen-size text keeps approximately constant on-screen size,
-2. world-size text scales with scene/world units.
+1. screen-size text keeps approximately constant on-screen size and is expressed in logical pixels,
+2. visual-size text scales with the panel visual/data transform and is expressed in visual units,
+3. future figure-relative text may scale with figure dimensions for responsive dashboards.
+
+Screen-size text is the default. It is the correct default for axes, labels, legends, colorbars,
+hover annotations, and most point labels. In this mode, the anchor may be transformed by the panel
+controller, but glyph quad expansion happens in screen/logical-pixel units.
+
+Visual-size text is opt-in. It is useful when text is itself part of plotted geometry, for example
+map labels printed on a plane or image-space annotations whose physical size has data meaning. In
+this mode, glyph bounds are transformed like geometry and scale with zoom.
+
+Position space and size mode are independent. Valid combinations include:
+
+| Reference/position | Size mode | Example |
+|---|---|---|
+| panel pixels | screen pixels | title, colorbar label, fixed overlay |
+| panel normalized | screen pixels | responsive panel label |
+| visual coordinates | screen pixels | point label that pans but stays readable |
+| visual coordinates | visual units | zoom-scaled text-as-geometry |
 
 World-space orientation is explicit:
 
