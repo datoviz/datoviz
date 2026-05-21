@@ -332,8 +332,8 @@ DVZ_EXPORT struct DvzCanvas* dvz_app_window_canvas(DvzAppWindow* win);
 /**
  * Return the input router for an app-window.
  *
- * Pass the returned router to dvz_panel_set_panzoom() or dvz_panel_set_arcball() to attach
- * interactive controllers. Returns NULL when GPU support is absent.
+ * Pass the returned router to dvz_panel_connect_input() to route panel-local input through
+ * scene-owned controller bindings. Returns NULL when GPU support is absent.
  *
  * @param win the app-window
  * @return the input router, or NULL

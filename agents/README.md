@@ -61,6 +61,10 @@ If resuming work on the branch:
 11. Read [done/SCENE_DRP2_IMPLEMENTATION.md](done/SCENE_DRP2_IMPLEMENTATION.md) and
    [done/DRP2_SCENE_SAFETY.md](done/DRP2_SCENE_SAFETY.md) when touching the completed first
    scene -> DRP2 -> runtime slice.
+12. Read [done/SCENE_CONTROLLER_BINDING_REFACTOR_PLAN.md](done/SCENE_CONTROLLER_BINDING_REFACTOR_PLAN.md)
+   and [done/SCENE_TURNTABLE_CONTROLLER_PLAN.md](done/SCENE_TURNTABLE_CONTROLLER_PLAN.md) before
+   changing scene-owned controller binding, panel-local input routing, or camera controller
+   semantics.
 
 
 ## Directory Layout
@@ -98,8 +102,6 @@ Scene feature lanes:
 8. [soon/effects/SCENE_SSAO_QUALITY_PLAN.md](soon/effects/SCENE_SSAO_QUALITY_PLAN.md)
 9. [soon/effects/SCENE_TECHNIQUES_MATERIALS_PLAN.md](soon/effects/SCENE_TECHNIQUES_MATERIALS_PLAN.md)
 10. [soon/scene/SCENE_VISUAL_SHADER_ABI_FOLLOWUP.md](soon/scene/SCENE_VISUAL_SHADER_ABI_FOLLOWUP.md)
-11. [soon/interaction/SCENE_CONTROLLER_BINDING_REFACTOR_PLAN.md](soon/interaction/SCENE_CONTROLLER_BINDING_REFACTOR_PLAN.md)
-12. [soon/interaction/SCENE_TURNTABLE_CONTROLLER_PLAN.md](soon/interaction/SCENE_TURNTABLE_CONTROLLER_PLAN.md)
 
 For visual-family lanes, durable contracts live under [../spec/scene/visuals](../spec/scene/visuals);
 the `soon/` files above are execution follow-up notes.
@@ -134,6 +136,8 @@ Recently retired or historical notes:
 7. [done/WBOIT_MESH_INTERACTIVE_PLAN.md](done/WBOIT_MESH_INTERACTIVE_PLAN.md)
 8. [done/TEST_RUNNER_MODERNIZATION.md](done/TEST_RUNNER_MODERNIZATION.md)
 9. [done/SCENE_FLY_CAMERA_PLAN.md](done/SCENE_FLY_CAMERA_PLAN.md)
+10. [done/SCENE_CONTROLLER_BINDING_REFACTOR_PLAN.md](done/SCENE_CONTROLLER_BINDING_REFACTOR_PLAN.md)
+11. [done/SCENE_TURNTABLE_CONTROLLER_PLAN.md](done/SCENE_TURNTABLE_CONTROLLER_PLAN.md)
 
 ### `later/`
 

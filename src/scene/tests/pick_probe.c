@@ -1695,8 +1695,11 @@ int test_scene_image_probe_segment_rgba_hidden_visual(TstContext* suite, const T
     AT(probe.request_id == 44);
     AT(probe.status == DVZ_PROBE_STATUS_MISS);
 
-    dvz_panel_set_panzoom(panel, NULL, 0);
-    DvzPanzoom* pz = dvz_panel_panzoom(panel);
+    DvzController* panzoom_controller = dvz_panzoom(scene, NULL);
+    ANN(panzoom_controller);
+    DvzPanzoom* pz = dvz_controller_panzoom(panzoom_controller);
+    ANN(pz);
+    AT(dvz_panel_bind_controller(panel, panzoom_controller, DVZ_DIM_MASK_XY) == 0);
     ANN(pz);
     dvz_panzoom_zoom(pz, (vec2){2.0f, 2.0f});
     dvz_panzoom_pan(pz, (vec2){0.5f, 0.0f});

@@ -107,6 +107,15 @@ DVZ_EXPORT DvzFigure* dvz_figure(DvzScene* scene, uint32_t width, uint32_t heigh
 
 
 /**
+ * Return the scene that owns a figure.
+ *
+ * @param figure the figure
+ * @return the owning scene, or NULL
+ */
+DVZ_EXPORT DvzScene* dvz_figure_scene(DvzFigure* figure);
+
+
+/**
  * Update a figure logical size.
  *
  * @param figure the figure
@@ -315,6 +324,19 @@ dvz_panel_bind_controller(DvzPanel* panel, DvzController* controller, DvzDimMask
 
 
 /**
+ * Route an input router through one panel's bound controllers.
+ *
+ * The panel supplies viewport-local context before events reach scene-owned controllers, so shared
+ * controllers do not own a single canonical viewport.
+ *
+ * @param panel the panel
+ * @param router input router to subscribe to, or NULL to disconnect
+ * @return 0 on success, -1 on validation error
+ */
+DVZ_EXPORT int dvz_panel_connect_input(DvzPanel* panel, DvzInputRouter* router);
+
+
+/**
  * Return the controller bound to one panel dimension.
  *
  * @param panel the panel
@@ -431,27 +453,6 @@ DVZ_EXPORT int dvz_panel_set_volume_occluder(
  */
 DVZ_EXPORT int
 dvz_panel_set_scene_occlusion(DvzPanel* panel, const DvzSceneOcclusionDesc* desc);
-
-
-/**
- * Attach a panzoom controller to a panel and connect it to an input router.
- *
- * Pan: left-drag. Zoom: right-drag or scroll wheel. Double-click: reset.
- *
- * @param panel the panel
- * @param router input router to subscribe to (may be NULL to create without connecting)
- * @param flags DvzPanzoomFlags bitmask
- */
-DVZ_EXPORT void dvz_panel_set_panzoom(DvzPanel* panel, DvzInputRouter* router, int flags);
-
-
-/**
- * Return the panzoom controller attached to a panel.
- *
- * @param panel the panel
- * @return the panel-owned panzoom, or NULL
- */
-DVZ_EXPORT DvzPanzoom* dvz_panel_panzoom(DvzPanel* panel);
 
 
 /**
@@ -579,76 +580,6 @@ DVZ_EXPORT bool dvz_axis_set_style(DvzAxis* axis, const DvzAxisStyle* style);
  */
 DVZ_EXPORT bool dvz_axis_set_plot_margins(
     DvzAxis* axis, float left, float right, float bottom, float top);
-
-
-/**
- * Attach an arcball controller to a panel and connect it to an input router.
- *
- * Rotate: left-drag. Pan rotation center: right-drag or middle-drag. Zoom: scroll wheel.
- * Double-click: reset.
- *
- * @param panel the panel
- * @param router input router to subscribe to (may be NULL to create without connecting)
- * @param flags DvzArcballFlags bitmask
- */
-DVZ_EXPORT void dvz_panel_set_arcball(DvzPanel* panel, DvzInputRouter* router, int flags);
-
-
-/**
- * Return the arcball controller attached to a panel.
- *
- * @param panel the panel
- * @return the panel-owned arcball, or NULL
- */
-DVZ_EXPORT DvzArcball* dvz_panel_arcball(DvzPanel* panel);
-
-
-/**
- * Attach a fly camera controller to a panel and connect it to an input router.
- *
- * The fly controller updates the panel camera. Keyboard movement supports WASD and arrow keys;
- * left-drag controls look, and right-drag moves on the camera vertical plane unless a pivot is set.
- *
- * @param panel the panel
- * @param router input router to subscribe to (may be NULL to create without connecting)
- * @param desc fly descriptor, or NULL for defaults
- * @return the panel-bound fly controller payload
- */
-DVZ_EXPORT DvzFly*
-dvz_panel_set_fly(DvzPanel* panel, DvzInputRouter* router, const DvzFlyDesc* desc);
-
-
-/**
- * Return the fly controller attached to a panel.
- *
- * @param panel the panel
- * @return the panel-bound fly controller payload, or NULL
- */
-DVZ_EXPORT DvzFly* dvz_panel_fly(DvzPanel* panel);
-
-
-/**
- * Attach a turntable camera controller to a panel and connect it to an input router.
- *
- * The turntable controller updates the panel camera by orbiting around a stable-up pivot.
- *
- * @param panel the panel
- * @param router input router to subscribe to (may be NULL to create without connecting)
- * @param desc turntable descriptor, or NULL for defaults
- * @return the panel-owned turntable controller
- */
-DVZ_EXPORT DvzTurntable* dvz_panel_set_turntable(
-    DvzPanel* panel, DvzInputRouter* router, const DvzTurntableDesc* desc);
-
-
-/**
- * Return the turntable controller attached to a panel.
- *
- * @param panel the panel
- * @return the panel-owned turntable controller, or NULL
- */
-DVZ_EXPORT DvzTurntable* dvz_panel_turntable(DvzPanel* panel);
-
 
 
 /*************************************************************************************************/

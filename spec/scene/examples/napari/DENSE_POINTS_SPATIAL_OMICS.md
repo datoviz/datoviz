@@ -66,7 +66,7 @@ Stage 1 uses only current v0.4 capabilities:
 - `dvz_point()` with `position`, `color`, and `size`;
 - full array swaps for point-count/color-mode changes;
 - small range updates only when useful;
-- `dvz_panel_set_panzoom()` and `dvz_gui_*` controls;
+- scene-owned `dvz_panzoom()` controller binding and `dvz_gui_*` controls;
 - ordinary alpha blending for translucent points.
 
 Stage 1 emulation rules:

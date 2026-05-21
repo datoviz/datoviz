@@ -205,7 +205,17 @@ int main(int argc, char** argv)
         dvz_scene_destroy(scene);
         return 1;
     }
-    dvz_panel_set_panzoom(source_panel, dvz_gui_viewport_input(state.gui_viewport), 0);
+    DvzController* panzoom_controller = dvz_panzoom(scene, NULL);
+    if (panzoom_controller == NULL ||
+        dvz_panel_bind_controller(source_panel, panzoom_controller, DVZ_DIM_MASK_XY) != 0)
+    {
+        fprintf(stderr, "failed to create or bind panzoom controller\n");
+        dvz_gui_viewport_destroy(state.gui_viewport);
+        dvz_app_destroy(app);
+        dvz_scene_destroy(scene);
+        return 1;
+    }
+    dvz_panel_connect_input(source_panel, dvz_gui_viewport_input(state.gui_viewport));
     dvz_app_window_set_gui_callback(host_win, gui_callback, &state);
 
     dvz_app_run(app, frame_count(argc, argv));

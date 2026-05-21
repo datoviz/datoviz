@@ -357,15 +357,17 @@ int main(int argc, char** argv)
     LinkedPanelsState state = {0};
     for (uint32_t i = 0; i < PANEL_COUNT; i++)
     {
-        dvz_panel_set_panzoom(panels[i], router, 0);
-        state.panzooms[i] = dvz_panel_panzoom(panels[i]);
-        if (state.panzooms[i] == NULL)
+        DvzController* panzoom_controller = dvz_panzoom(scene, NULL);
+        state.panzooms[i] = dvz_controller_panzoom(panzoom_controller);
+        if (state.panzooms[i] == NULL ||
+            dvz_panel_bind_controller(panels[i], panzoom_controller, DVZ_DIM_MASK_XY) != 0)
         {
-            fprintf(stderr, "dvz_panel_set_panzoom() failed\n");
+            fprintf(stderr, "failed to create or bind panzoom controller\n");
             dvz_app_destroy(app);
             dvz_scene_destroy(scene);
             return 1;
         }
+        dvz_panel_connect_input(panels[i], router);
     }
 
     dvz_app_window_set_frame_callback(win, _linked_panels_frame, &state);

@@ -96,6 +96,12 @@ int test_turntable_pan_moves_pivot_and_eye(TstContext* suite, const TstCase* ite
 
 int test_panel_turntable_getter(TstContext* suite, const TstCase* item);
 
+int test_turntable_pitch_and_distance_clamps(TstContext* suite, const TstCase* item);
+
+int test_turntable_double_click_resets(TstContext* suite, const TstCase* item);
+
+int test_turntable_scene_binding_uses_panel_input(TstContext* suite, const TstCase* item);
+
 int test_scene_animation(TstSuite* suite);
 
 int test_scene_animation_offline_timer_every_frame(TstContext* suite, const TstCase* item);
@@ -144,6 +150,10 @@ int test_panzoom_mvp_identity(TstContext* suite, const TstCase* item);
 
 int test_panel_panzoom_getter(TstContext* suite, const TstCase* item);
 
+int test_shared_panzoom_xy_visible_domains(TstContext* suite, const TstCase* item);
+
+int test_split_panzoom_x_y_bindings(TstContext* suite, const TstCase* item);
+
 int test_arcball_create_reset(TstContext* suite, const TstCase* item);
 
 int test_arcball_rotate_produces_nonidentity_model(TstContext* suite, const TstCase* item);
@@ -159,6 +169,8 @@ int test_arcball_pan_right_drag(TstContext* suite, const TstCase* item);
 int test_arcball_interaction_state(TstContext* suite, const TstCase* item);
 
 int test_arcball_double_click_resets(TstContext* suite, const TstCase* item);
+
+int test_arcball_scene_binding_uses_panel_input(TstContext* suite, const TstCase* item);
 
 int test_scene_capabilities_diagnostics(TstContext* suite, const TstCase* item);
 

@@ -27,8 +27,9 @@ by the existence of a camera controller.
 
 ## Shared Controller Rules
 
-Camera controllers should be scene-owned opaque `DvzController*` handles when implemented under the
-accepted controller-binding model. Panels borrow those handles by binding them to `DVZ_DIM_XYZ`.
+Camera controllers should be scene-owned opaque `DvzController*` handles created by short
+scene-owned family constructors under the accepted controller-binding model. Panels borrow those
+handles by binding them to `DVZ_DIM_XYZ`.
 
 Rules:
 
@@ -136,9 +137,10 @@ Turntable is a separate controller family from both arcball and fly:
 3. `DvzArcball`: unconstrained model/object rotation;
 4. `DvzTurntable`: stable-up camera orbit around a pivot.
 
-The preferred implementation is a scene-owned `DvzController*` family. It may share low-level
-helpers with arcball or fly, but it should not be exposed as an arcball option because its state
-and camera semantics are different.
+The preferred implementation is a scene-owned `DvzController*` family created by a short
+scene-owned constructor and attached to panels through binding. It may share low-level helpers with
+arcball or fly, but it should not be exposed as an arcball option because its state and camera
+semantics are different.
 
 ## Turntable State
 
@@ -209,4 +211,4 @@ Focused controller tests should cover:
 7. turntable pan translating pivot and eye consistently;
 8. pivot changes using preserve-eye policy;
 9. typed state get/set rejecting wrong controller families;
-10. panel binding, resize, and destruction ownership rules once controllers are scene-owned.
+10. panel binding, resize, and destruction ownership rules for scene-owned controllers.

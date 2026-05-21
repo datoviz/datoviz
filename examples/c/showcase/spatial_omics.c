@@ -894,7 +894,19 @@ int main(int argc, char** argv)
         return 1;
     }
 
-    dvz_panel_set_panzoom(panel, dvz_app_window_input(win), DVZ_PANZOOM_FLAGS_KEEP_ASPECT);
+    DvzPanzoomDesc panzoom_desc = dvz_panzoom_desc();
+    panzoom_desc.flags = DVZ_PANZOOM_FLAGS_KEEP_ASPECT;
+    DvzController* panzoom_controller = dvz_panzoom(scene, &panzoom_desc);
+    if (panzoom_controller == NULL ||
+        dvz_panel_bind_controller(panel, panzoom_controller, DVZ_DIM_MASK_XY) != 0)
+    {
+        dvz_fprintf(stderr, "dense_points: panzoom setup failed\n");
+        dvz_app_destroy(app);
+        dvz_scene_destroy(scene);
+        _state_destroy(&state);
+        return 1;
+    }
+    dvz_panel_connect_input(panel, dvz_app_window_input(win));
     DvzGuiConfig gui_config = dvz_gui_config();
     DvzGui* gui = dvz_app_window_gui(win, &gui_config);
     if (gui == NULL)

@@ -225,12 +225,178 @@ int test_panel_panzoom_getter(TstContext* suite, const TstCase* item)
     DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
     ANN(panel);
 
-    AT(dvz_panel_panzoom(panel) == NULL);
-    dvz_panel_set_panzoom(panel, NULL, 0);
-    DvzPanzoom* pz = dvz_panel_panzoom(panel);
+    AT(panel->panzoom == NULL);
+    DvzController* controller = dvz_panzoom(scene, NULL);
+    ANN(controller);
+    AT(dvz_panel_bind_controller(panel, controller, DVZ_DIM_MASK_XY) == 0);
+    DvzPanzoom* pz = dvz_controller_panzoom(controller);
     ANN(pz);
     AT(pz == panel->panzoom);
 
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+int test_shared_panzoom_xy_visible_domains(TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 800, 400, 0);
+    ANN(figure);
+    DvzPanel* left = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 0.5f, 1.0f});
+    DvzPanel* right = dvz_panel(figure, (DvzPanelDesc){0.5f, 0.0f, 0.5f, 1.0f});
+    ANN(left);
+    ANN(right);
+
+    DvzController* controller = dvz_panzoom(scene, NULL);
+    ANN(controller);
+    DvzPanzoom* panzoom = dvz_controller_panzoom(controller);
+    ANN(panzoom);
+    AT(dvz_panel_bind_controller(left, controller, DVZ_DIM_MASK_XY) == 0);
+    AT(dvz_panel_bind_controller(right, controller, DVZ_DIM_MASK_XY) == 0);
+
+    DvzInputRouter* router = dvz_input_router();
+    ANN(router);
+    AT(dvz_panel_connect_input(left, router) == 0);
+    AT(dvz_panel_connect_input(right, router) == 0);
+
+    DvzInputEvent ev = {
+        .type = DVZ_INPUT_EVENT_POINTER,
+        .content.pointer =
+            {
+                .type = DVZ_POINTER_EVENT_WHEEL,
+                .content.w.dir = {0.0f, 1.0f},
+                .pos = {200.0f, 200.0f},
+            },
+    };
+    dvz_input_emit_event(router, &ev);
+    AT(panzoom->zoom[0] > 1.0f);
+
+    double left_x0 = 0.0, left_x1 = 0.0, right_x0 = 0.0, right_x1 = 0.0;
+    double left_y0 = 0.0, left_y1 = 0.0, right_y0 = 0.0, right_y1 = 0.0;
+    AT(dvz_panel_visible_domain(left, DVZ_DIM_X, &left_x0, &left_x1));
+    AT(dvz_panel_visible_domain(right, DVZ_DIM_X, &right_x0, &right_x1));
+    AT(dvz_panel_visible_domain(left, DVZ_DIM_Y, &left_y0, &left_y1));
+    AT(dvz_panel_visible_domain(right, DVZ_DIM_Y, &right_y0, &right_y1));
+    AC(left_x0, right_x0, 1e-6);
+    AC(left_x1, right_x1, 1e-6);
+    AC(left_y0, right_y0, 1e-6);
+    AC(left_y1, right_y1, 1e-6);
+
+    dvz_input_router_destroy(router);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+int test_split_panzoom_x_y_bindings(TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 800, 400, 0);
+    ANN(figure);
+    DvzPanel* left = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 0.5f, 1.0f});
+    DvzPanel* right = dvz_panel(figure, (DvzPanelDesc){0.5f, 0.0f, 0.5f, 1.0f});
+    ANN(left);
+    ANN(right);
+
+    DvzController* shared_x = dvz_panzoom(scene, NULL);
+    DvzController* left_y = dvz_panzoom(scene, NULL);
+    DvzController* right_y = dvz_panzoom(scene, NULL);
+    ANN(shared_x);
+    ANN(left_y);
+    ANN(right_y);
+
+    DvzPanzoom* px = dvz_controller_panzoom(shared_x);
+    DvzPanzoom* ly = dvz_controller_panzoom(left_y);
+    DvzPanzoom* ry = dvz_controller_panzoom(right_y);
+    ANN(px);
+    ANN(ly);
+    ANN(ry);
+    dvz_panzoom_pan(px, (vec2){0.25f, 0.0f});
+    dvz_panzoom_zoom(px, (vec2){2.0f, 1.0f});
+    dvz_panzoom_pan(ly, (vec2){0.0f, +0.10f});
+    dvz_panzoom_zoom(ly, (vec2){1.0f, 3.0f});
+    dvz_panzoom_pan(ry, (vec2){0.0f, -0.20f});
+    dvz_panzoom_zoom(ry, (vec2){1.0f, 4.0f});
+
+    AT(dvz_panel_bind_controller(left, shared_x, DVZ_DIM_MASK_X) == 0);
+    AT(dvz_panel_bind_controller(left, left_y, DVZ_DIM_MASK_Y) == 0);
+    AT(dvz_panel_bind_controller(right, shared_x, DVZ_DIM_MASK_X) == 0);
+    AT(dvz_panel_bind_controller(right, right_y, DVZ_DIM_MASK_Y) == 0);
+
+    double left_x0 = 0.0, left_x1 = 0.0, right_x0 = 0.0, right_x1 = 0.0;
+    double left_y0 = 0.0, left_y1 = 0.0, right_y0 = 0.0, right_y1 = 0.0;
+    AT(dvz_panel_visible_domain(left, DVZ_DIM_X, &left_x0, &left_x1));
+    AT(dvz_panel_visible_domain(right, DVZ_DIM_X, &right_x0, &right_x1));
+    AT(dvz_panel_visible_domain(left, DVZ_DIM_Y, &left_y0, &left_y1));
+    AT(dvz_panel_visible_domain(right, DVZ_DIM_Y, &right_y0, &right_y1));
+    AC(left_x0, right_x0, 1e-6);
+    AC(left_x1, right_x1, 1e-6);
+    AT(fabs(left_y0 - right_y0) > 1e-3);
+    AT(fabs(left_y1 - right_y1) > 1e-3);
+
+    DvzController* replacement_x = dvz_panzoom(scene, NULL);
+    ANN(replacement_x);
+    AT(dvz_panel_bind_controller(left, replacement_x, DVZ_DIM_MASK_X) == 0);
+    AT(dvz_panel_controller(left, DVZ_DIM_X) == replacement_x);
+    AT(dvz_panel_controller(left, DVZ_DIM_Y) == left_y);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+int test_arcball_scene_binding_uses_panel_input(TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 800, 400, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 0.5f, 1.0f});
+    ANN(panel);
+
+    DvzController* controller = dvz_arcball(scene, NULL);
+    ANN(controller);
+    DvzArcball* arcball = dvz_controller_arcball(controller);
+    ANN(arcball);
+    AT(dvz_panel_bind_controller(panel, controller, DVZ_DIM_MASK_XYZ) == 0);
+
+    DvzInputRouter* router = dvz_input_router();
+    ANN(router);
+    AT(dvz_panel_connect_input(panel, router) == 0);
+
+    DvzInputEvent outside = {
+        .type = DVZ_INPUT_EVENT_POINTER,
+        .content.pointer =
+            {
+                .type = DVZ_POINTER_EVENT_WHEEL,
+                .content.w.dir = {0.0f, 1.0f},
+                .pos = {600.0f, 200.0f},
+            },
+    };
+    dvz_input_emit_event(router, &outside);
+    AC(arcball->zoom, 1.0f, 1e-6f);
+
+    DvzInputEvent inside = outside;
+    inside.content.pointer.pos[0] = 200.0f;
+    dvz_input_emit_event(router, &inside);
+    AT(arcball->zoom > 1.0f);
+
+    dvz_panel_destroy(panel);
+    AT(dvz_controller_arcball(controller) == arcball);
+
+    dvz_input_router_destroy(router);
     dvz_scene_destroy(scene);
     return 0;
 }
@@ -269,9 +435,12 @@ int test_scene_camera_arcball_mvp_composition(TstContext* suite, const TstCase* 
     ANN(camera);
     AT(dvz_panel_camera(panel) == camera);
 
-    dvz_panel_set_arcball(panel, NULL, 0);
-    ANN(panel->arcball);
-    dvz_arcball_initial(panel->arcball, (vec3){0.4f, -0.8f, 1.2f});
+    DvzController* arcball_controller = dvz_arcball(scene, NULL);
+    ANN(arcball_controller);
+    DvzArcball* arcball = dvz_controller_arcball(arcball_controller);
+    ANN(arcball);
+    AT(dvz_panel_bind_controller(panel, arcball_controller, DVZ_DIM_MASK_XYZ) == 0);
+    dvz_arcball_initial(arcball, (vec3){0.4f, -0.8f, 1.2f});
 
     DvzMVP mvp = {0};
     _scene_panel_apply_mvp(panel, &mvp);
@@ -584,6 +753,8 @@ int test_scene_panzoom_arcball(TstSuite* suite)
     TST_CASE(test_panzoom_double_click_resets);
     TST_CASE(test_panzoom_mvp_identity);
     TST_CASE(test_panel_panzoom_getter);
+    TST_CASE(test_shared_panzoom_xy_visible_domains);
+    TST_CASE(test_split_panzoom_x_y_bindings);
 
     TST_GROUP("arcball");
     TST_CASE(test_arcball_create_reset);
@@ -594,6 +765,7 @@ int test_scene_panzoom_arcball(TstSuite* suite)
     TST_CASE(test_arcball_pan_right_drag);
     TST_CASE(test_arcball_interaction_state);
     TST_CASE(test_arcball_double_click_resets);
+    TST_CASE(test_arcball_scene_binding_uses_panel_input);
 
     TST_CASE(test_scene_camera_arcball_mvp_composition);
     return 0;

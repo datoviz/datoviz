@@ -114,8 +114,8 @@ handle's family internally.
 For controllers, the preferred public shape is:
 
 ```c
-DvzController* dvz_panzoom(DvzScene* scene, int flags);
-DvzController* dvz_arcball(DvzScene* scene, int flags);
+DvzController* dvz_panzoom(DvzScene* scene, const DvzPanzoomDesc* desc);
+DvzController* dvz_arcball(DvzScene* scene, const DvzArcballDesc* desc);
 
 int dvz_panel_bind_controller(DvzPanel* panel, DvzController* controller, DvzDimMask dims);
 DvzController* dvz_panel_controller(DvzPanel* panel, DvzDim dim);

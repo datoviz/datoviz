@@ -370,6 +370,7 @@ struct DvzAnimation
 DvzCamera* _dvz_camera(const DvzCameraDesc* desc);
 
 void _scene_panel_apply_mvp(const DvzPanel* panel, DvzMVP* out);
+bool _scene_panel_panzoom_extent(const DvzPanel* panel, float out[4]);
 
 bool _dvz_figure_fly_update(DvzFigure* figure, double dt);
 
@@ -1023,6 +1024,7 @@ struct DvzPanel
     DvzCamera* camera;   /* optional camera (owned) */
     DvzFly* fly;         /* optional fly camera controller (borrowed from scene-owned handle) */
     DvzController* controllers[3]; /* optional scene-owned spatial controller bindings */
+    DvzInputRouter* input_router; /* optional router subscribed through panel-local dispatch */
     DvzVisual* fly_pivot_marker_visual; /* optional navigation overlay marker visual */
     DvzTurntable* turntable; /* optional turntable camera controller (owned) */
     DvzAxis axes[2];

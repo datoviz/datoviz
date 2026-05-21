@@ -1015,7 +1015,16 @@ int main(int argc, char** argv)
         dvz_scene_destroy(scene);
         return 1;
     }
-    dvz_panel_set_panzoom(panel, router, 0);
+    DvzController* panzoom_controller = dvz_panzoom(scene, NULL);
+    if (panzoom_controller == NULL ||
+        dvz_panel_bind_controller(panel, panzoom_controller, DVZ_DIM_MASK_XY) != 0)
+    {
+        dvz_fprintf(stderr, "failed to create or bind panzoom controller\n");
+        dvz_app_destroy(app);
+        dvz_scene_destroy(scene);
+        return 1;
+    }
+    dvz_panel_connect_input(panel, router);
 
     DvzGuiConfig gui_config = dvz_gui_config();
     DvzGui* gui = dvz_app_window_gui(win, &gui_config);

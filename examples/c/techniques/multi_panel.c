@@ -241,21 +241,29 @@ static bool _add_path_panel(DvzScene* scene, DvzPanel* panel)
 /**
  * Attach panzoom to every panel through one input router.
  *
+ * @param scene scene owning the controllers
  * @param panels panels to connect
  * @param count number of panels
  * @param router input router from the app window
  * @return true on success, false on error
  */
-static bool _attach_panzoom(DvzPanel** panels, uint32_t count, DvzInputRouter* router)
+static bool
+_attach_panzoom(DvzScene* scene, DvzPanel** panels, uint32_t count, DvzInputRouter* router)
 {
-    if (panels == NULL || router == NULL)
+    if (scene == NULL || panels == NULL || router == NULL)
         return false;
 
     for (uint32_t i = 0; i < count; i++)
     {
         if (panels[i] == NULL)
             return false;
-        dvz_panel_set_panzoom(panels[i], router, 0);
+        DvzController* controller = dvz_panzoom(scene, NULL);
+        if (controller == NULL ||
+            dvz_panel_bind_controller(panels[i], controller, DVZ_DIM_MASK_XY) != 0)
+        {
+            return false;
+        }
+        dvz_panel_connect_input(panels[i], router);
     }
     return true;
 }
@@ -329,7 +337,7 @@ int main(int argc, char** argv)
         return 1;
     }
 
-    if (!_attach_panzoom(panels, 4, dvz_app_window_input(win)))
+    if (!_attach_panzoom(scene, panels, 4, dvz_app_window_input(win)))
     {
         fprintf(stderr, "panzoom setup failed\n");
         dvz_app_destroy(app);

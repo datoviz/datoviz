@@ -107,7 +107,7 @@ The public binding model is fixed by
 | Topic | Rule |
 |---|---|
 | Handles | Controllers are scene-owned opaque `DvzController*` objects with stable identity. |
-| Construction | Family-specific constructors are the public surface; generic constructors may remain internal. |
+| Construction | Short scene-owned family constructors are the public surface; generic constructors may remain internal. |
 | Lifetime | The scene destroys controllers with the scene; explicit early destruction may exist. |
 | Per-dimension binding | Panels bind controllers per dimension so X, Y, Z, or full camera navigation can be linked independently. |
 | Linking | Sharing a controller handle across panels is the linking API; no separate link object is required. |
@@ -152,3 +152,7 @@ discarded hover requests, and whether a selection change required plan rebuild o
 This document does not define exact final C names, callback signatures, platform event adapters,
 threading policy, backend window behavior, or camera-family math already covered by
 [`CAMERA_CONTROLLERS.md`](CAMERA_CONTROLLERS.md).
+
+Because v0.4 is allowed to break old APIs, panel-owned controller constructors and
+`dvz_panel_set_*()` compatibility wrappers are not part of the target model. Prefer replacing them
+with scene-owned constructors and panel binding.

@@ -416,7 +416,14 @@ bool DvzQtHostedWindow::_ensure_initialized()
 
     dvz_app_window_set_request_frame_callback(_app_window, _request_frame_callback, this);
     if (_panel != nullptr)
-        dvz_panel_set_panzoom(_panel, dvz_app_window_input(_app_window), 0);
+    {
+        DvzController* controller = dvz_panzoom(dvz_figure_scene(_figure), NULL);
+        if (controller != NULL &&
+            dvz_panel_bind_controller(_panel, controller, DVZ_DIM_MASK_XY) == 0)
+        {
+            (void)dvz_panel_connect_input(_panel, dvz_app_window_input(_app_window));
+        }
+    }
     _emit_resize();
     return true;
 }

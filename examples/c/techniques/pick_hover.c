@@ -302,7 +302,16 @@ int main(void)
         return 1;
     }
 
-    dvz_panel_set_panzoom(panel, router, 0);
+    DvzController* panzoom_controller = dvz_panzoom(scene, NULL);
+    if (panzoom_controller == NULL ||
+        dvz_panel_bind_controller(panel, panzoom_controller, DVZ_DIM_MASK_XY) != 0)
+    {
+        fprintf(stderr, "failed to create or bind panzoom controller\n");
+        dvz_app_destroy(app);
+        dvz_scene_destroy(scene);
+        return 1;
+    }
+    dvz_panel_connect_input(panel, router);
     dvz_input_subscribe_pointer(router, _hover_pick_pointer, &state);
     dvz_app_window_set_frame_callback(win, _hover_pick_frame, &state);
 

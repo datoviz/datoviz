@@ -29,8 +29,8 @@ Controllers are scene-owned opaque handles.
 controller families created by typed constructors that all return `DvzController*`:
 
 ```c
-DvzController* dvz_panzoom(DvzScene* scene, int flags);
-DvzController* dvz_arcball(DvzScene* scene, int flags);
+DvzController* dvz_panzoom(DvzScene* scene, const DvzPanzoomDesc* desc);
+DvzController* dvz_arcball(DvzScene* scene, const DvzArcballDesc* desc);
 DvzController* dvz_fly(DvzScene* scene, const DvzFlyDesc* desc);
 DvzController* dvz_turntable(DvzScene* scene, const DvzTurntableDesc* desc);
 ```

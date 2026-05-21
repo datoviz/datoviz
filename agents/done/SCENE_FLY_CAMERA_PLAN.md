@@ -29,16 +29,14 @@ Implemented follow-up slices:
    movement, and reset behavior.
 3. Input-router integration sets/releases movement bits, and frame update applies movement from
    key state and `dt`, not OS key repeat cadence.
-4. Fly now has a scene-owned `DvzController*` path with `DVZ_DIM_MASK_XYZ` panel binding and a
-   compatibility `dvz_panel_set_fly()` wrapper returning the borrowed fly payload.
+4. Fly now has a scene-owned `DvzController*` path with `DVZ_DIM_MASK_XYZ` panel binding.
 5. App/figure frame update advances fly controllers once per frame with a conservative `dt` clamp
    after stalls.
 6. Pivot helpers exist for preserve-eye pivot changes and orbiting around the active pivot.
 7. A transient point-based pivot marker is realized for bound fly panels while pivot feedback is
    visible.
-8. Public scene API exposes `dvz_scene_fly()`, `dvz_controller_fly()`,
-   `dvz_panel_bind_controller()`, `dvz_panel_controller()`, and compatibility
-   `dvz_panel_set_fly()` / `dvz_panel_fly()` helpers.
+8. The later binding refactor replaced the original fly-only constructor with `dvz_fly(scene,
+   desc)` and removed the temporary panel-owned compatibility helpers.
 9. `examples/c/showcase/lidar.c` exercises the scene-owned fly controller through a GLFW app
    window and accepts a bounded frame count for smoke runs, although it is a showcase example that
    depends on prepared local LIDAR data.
@@ -48,8 +46,8 @@ Implemented follow-up slices:
 
 1. A small fly-only GLFW smoke example is still useful, but example and gallery planning belongs
    under `spec/scene/examples/`, not as an active fly implementation blocker.
-2. The broader controller-binding migration for panzoom, arcball, and turntable remains tracked by
-   [`../soon/interaction/SCENE_CONTROLLER_BINDING_REFACTOR_PLAN.md`](../soon/interaction/SCENE_CONTROLLER_BINDING_REFACTOR_PLAN.md).
+2. The broader controller-binding migration for panzoom, arcball, and turntable is completed in
+   [`SCENE_CONTROLLER_BINDING_REFACTOR_PLAN.md`](SCENE_CONTROLLER_BINDING_REFACTOR_PLAN.md).
 
 
 ## Focused Test Coverage

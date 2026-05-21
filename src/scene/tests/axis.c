@@ -54,6 +54,26 @@ static DvzVisualAttr* _axis_test_attr(DvzVisual* visual, const char* name)
 
 
 /**
+ * Create and bind a scene-owned panzoom for axis tests.
+ *
+ * @param scene the scene
+ * @param panel the panel
+ * @return the panzoom payload, or NULL
+ */
+static DvzPanzoom* _axis_test_bind_panzoom(DvzScene* scene, DvzPanel* panel)
+{
+    ANN(scene);
+    ANN(panel);
+    DvzController* controller = dvz_panzoom(scene, NULL);
+    if (controller == NULL)
+        return NULL;
+    if (dvz_panel_bind_controller(panel, controller, DVZ_DIM_MASK_XY) != 0)
+        return NULL;
+    return dvz_controller_panzoom(controller);
+}
+
+
+/**
  * Return the first draw vertex count in a command stream.
  *
  * @param stream the command stream
@@ -570,8 +590,7 @@ int test_panel_visible_domain(TstContext* suite, const TstCase* item)
     AT(fabs(max - 1.0) < 1e-9);
 
     AT(dvz_panel_set_domain(panel, DVZ_DIM_X, 0.0, 100.0) == 0);
-    dvz_panel_set_panzoom(panel, NULL, 0);
-    DvzPanzoom* pz = dvz_panel_panzoom(panel);
+    DvzPanzoom* pz = _axis_test_bind_panzoom(scene, panel);
     ANN(pz);
     dvz_panzoom_zoom(pz, (vec2){2.0f, 2.0f});
     dvz_panzoom_pan(pz, (vec2){0.5f, 0.0f});
@@ -601,8 +620,7 @@ int test_axis_panzoom_visible_domain(TstContext* suite, const TstCase* item)
     DvzAxis* axis = dvz_panel_axis(panel, DVZ_DIM_X);
     ANN(axis);
 
-    dvz_panel_set_panzoom(panel, NULL, 0);
-    DvzPanzoom* pz = dvz_panel_panzoom(panel);
+    DvzPanzoom* pz = _axis_test_bind_panzoom(scene, panel);
     ANN(pz);
     dvz_panzoom_zoom(pz, (vec2){2.0f, 2.0f});
     dvz_panzoom_pan(pz, (vec2){0.5f, 0.0f});
@@ -654,8 +672,7 @@ static int test_axis_zoom_out_in_grid_regression(TstContext* suite, const TstCas
     ANN(axis);
     AT(dvz_axis_set_grid(axis, true));
 
-    dvz_panel_set_panzoom(panel, NULL, 0);
-    DvzPanzoom* pz = dvz_panel_panzoom(panel);
+    DvzPanzoom* pz = _axis_test_bind_panzoom(scene, panel);
     ANN(pz);
 
     dvz_panzoom_zoom(pz, (vec2){0.10f, 1.0f});
@@ -694,8 +711,7 @@ static int test_axis_panzoom_resize_visual_smoke(TstContext* suite, const TstCas
     AT(dvz_axis_set_grid(x_axis, true));
     AT(dvz_axis_set_grid(y_axis, true));
 
-    dvz_panel_set_panzoom(panel, NULL, 0);
-    DvzPanzoom* pz = dvz_panel_panzoom(panel);
+    DvzPanzoom* pz = _axis_test_bind_panzoom(scene, panel);
     ANN(pz);
 
     const uint32_t widths[] = {1000, 320, 900};

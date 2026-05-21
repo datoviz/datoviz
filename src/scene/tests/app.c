@@ -3919,9 +3919,11 @@ int test_app_offscreen_camera_arcball_mesh_renders_cube(TstContext* suite, const
     camera_desc.fov_y = GLM_PI_4f;
     DvzCamera* camera = dvz_panel_set_camera(panel, &camera_desc);
     ANN(camera);
-    dvz_panel_set_arcball(panel, NULL, 0);
-    DvzArcball* arcball = dvz_panel_arcball(panel);
+    DvzController* arcball_controller = dvz_arcball(scene, NULL);
+    ANN(arcball_controller);
+    DvzArcball* arcball = dvz_controller_arcball(arcball_controller);
     ANN(arcball);
+    AT(dvz_panel_bind_controller(panel, arcball_controller, DVZ_DIM_MASK_XYZ) == 0);
     dvz_arcball_initial(arcball, (vec3){+0.6f, -1.2f, +3.0f});
 
     DvzVisual* visual = dvz_mesh(scene, 0);

@@ -461,8 +461,8 @@ dvz_gui_viewport_from_window(
 /**
  * Return the input router used by a GUI viewport's offscreen app window.
  *
- * Pass the returned router to dvz_panel_set_panzoom() or dvz_panel_set_arcball() to attach
- * controllers to scene panels rendered in the GUI viewport.
+ * Pass the returned router to dvz_panel_connect_input() to route input through scene panels
+ * rendered in the GUI viewport.
  *
  * @param viewport the GUI viewport
  * @return the input router, or NULL

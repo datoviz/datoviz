@@ -427,7 +427,19 @@ int main(int argc, char** argv)
     glfwSetFramebufferSizeCallback(window, _framebuffer_size_callback);
     glfwSetWindowContentScaleCallback(window, _content_scale_callback);
     _emit_resize(window, app_window);
-    dvz_panel_set_panzoom(panel, dvz_app_window_input(app_window), 0);
+    DvzController* panzoom_controller = dvz_panzoom(scene, NULL);
+    if (panzoom_controller == NULL ||
+        dvz_panel_bind_controller(panel, panzoom_controller, DVZ_DIM_MASK_XY) != 0)
+    {
+        fprintf(stderr, "failed to create or bind panzoom controller\n");
+        dvz_app_destroy(app);
+        vkDestroySurfaceKHR(instance, surface, NULL);
+        dvz_scene_destroy(scene);
+        glfwDestroyWindow(window);
+        glfwTerminate();
+        return 1;
+    }
+    dvz_panel_connect_input(panel, dvz_app_window_input(app_window));
 
     uint32_t frame = 0;
     while (!glfwWindowShouldClose(window) && (max_frames == 0 || frame < max_frames))

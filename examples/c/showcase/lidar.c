@@ -853,7 +853,7 @@ int main(int argc, char** argv)
         _destroy_lidar_dataset(&dataset);
         return 1;
     }
-    dvz_fly_connect(fly, dvz_app_window_input(win));
+    (void)dvz_panel_connect_input(panel, dvz_app_window_input(win));
     gui_state.fly = fly;
 
     DvzGuiConfig gui_config = dvz_gui_config();

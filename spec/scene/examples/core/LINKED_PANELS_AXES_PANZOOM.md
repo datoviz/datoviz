@@ -63,9 +63,9 @@ Axis-related scene objects:
 Controller configuration:
 
 ```text
-shared_x  = dvz_panzoom(scene, 0)
-local_y_a = dvz_panzoom(scene, 0)
-local_y_b = dvz_panzoom(scene, 0)
+shared_x  = dvz_panzoom(scene, NULL)
+local_y_a = dvz_panzoom(scene, NULL)
+local_y_b = dvz_panzoom(scene, NULL)
 
 dvz_panel_bind_controller(panel_a, shared_x,  DVZ_DIM_X)
 dvz_panel_bind_controller(panel_a, local_y_a, DVZ_DIM_Y)

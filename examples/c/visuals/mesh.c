@@ -339,15 +339,17 @@ int main(int argc, char** argv)
         return 1;
     }
 
-    dvz_panel_set_arcball(panel, dvz_app_window_input(win), 0);
-    DvzArcball* arcball = dvz_panel_arcball(panel);
-    if (arcball == NULL)
+    DvzController* arcball_controller = dvz_arcball(scene, NULL);
+    DvzArcball* arcball = dvz_controller_arcball(arcball_controller);
+    if (arcball == NULL ||
+        dvz_panel_bind_controller(panel, arcball_controller, DVZ_DIM_MASK_XYZ) != 0)
     {
-        dvz_fprintf(stderr, "dvz_panel_set_arcball() failed\n");
+        dvz_fprintf(stderr, "failed to create or bind arcball controller\n");
         dvz_app_destroy(app);
         dvz_scene_destroy(scene);
         return 1;
     }
+    dvz_panel_connect_input(panel, dvz_app_window_input(win));
     dvz_arcball_set(arcball, (vec3){+0.65f, 0.0f, +0.35f});
 
     dvz_scene_set_clock_mode(scene, video_enabled ? DVZ_CLOCK_OFFLINE : DVZ_CLOCK_REALTIME);

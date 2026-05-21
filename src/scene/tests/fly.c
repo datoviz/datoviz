@@ -27,6 +27,41 @@
 
 
 /*************************************************************************************************/
+/*  Helpers                                                                                      */
+/*************************************************************************************************/
+
+/**
+ * Create and bind one scene-owned fly controller for tests.
+ *
+ * @param panel the panel
+ * @param router optional input router
+ * @param desc optional fly descriptor
+ * @param out_controller optional output controller handle
+ * @return the fly payload, or NULL
+ */
+static DvzFly* _test_panel_bind_fly(
+    DvzPanel* panel, DvzInputRouter* router, const DvzFlyDesc* desc,
+    DvzController** out_controller)
+{
+    ANN(panel);
+    ANN(panel->figure);
+    ANN(panel->figure->scene);
+    DvzController* controller = dvz_fly(panel->figure->scene, desc);
+    if (out_controller != NULL)
+        *out_controller = controller;
+    if (controller == NULL)
+        return NULL;
+    DvzFly* fly = dvz_controller_fly(controller);
+    if (fly == NULL || dvz_panel_bind_controller(panel, controller, DVZ_DIM_MASK_XYZ) != 0)
+        return NULL;
+    if (router != NULL && dvz_panel_connect_input(panel, router) != 0)
+        return NULL;
+    return fly;
+}
+
+
+
+/*************************************************************************************************/
 /*  Tests                                                                                        */
 /*************************************************************************************************/
 
@@ -361,7 +396,7 @@ int test_fly_router_keyboard_updates_key_state(TstContext* suite, const TstCase*
 
     DvzFlyDesc desc = dvz_fly_desc();
     desc.speed = 2.0f;
-    DvzFly* fly = dvz_panel_set_fly(panel, router, &desc);
+    DvzFly* fly = _test_panel_bind_fly(panel, router, &desc, NULL);
     ANN(fly);
 
     DvzKeyboardEvent press = {.type = DVZ_KEYBOARD_EVENT_PRESS, .key = DVZ_KEY_W};
@@ -505,7 +540,7 @@ int test_fly_pivot_marker_visual_tracks_visibility(TstContext* suite, const TstC
     ANN(figure);
     DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
     ANN(panel);
-    DvzFly* fly = dvz_panel_set_fly(panel, NULL, NULL);
+    DvzFly* fly = _test_panel_bind_fly(panel, NULL, NULL, NULL);
     ANN(fly);
     AT(panel->fly_pivot_marker_visual == NULL);
 
@@ -541,12 +576,12 @@ int test_panel_fly_getter(TstContext* suite, const TstCase* item)
     DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
     ANN(panel);
 
-    AT(dvz_panel_fly(panel) == NULL);
-    DvzFly* fly = dvz_panel_set_fly(panel, NULL, NULL);
+    AT(panel->fly == NULL);
+    DvzFly* fly = _test_panel_bind_fly(panel, NULL, NULL, NULL);
     ANN(fly);
-    AT(dvz_panel_fly(panel) == fly);
+    AT(panel->fly == fly);
     AT(panel->camera != NULL);
-    AT(fly->camera == panel->camera);
+    AT(fly->camera == NULL);
 
     dvz_scene_destroy(scene);
     return 0;
@@ -575,7 +610,7 @@ int test_fly_scene_controller_binding(TstContext* suite, const TstCase* item)
     AT(dvz_panel_controller(panel, DVZ_DIM_X) == controller);
     AT(dvz_panel_controller(panel, DVZ_DIM_Y) == controller);
     AT(dvz_panel_controller(panel, DVZ_DIM_Z) == controller);
-    AT(dvz_panel_fly(panel) == fly);
+    AT(panel->fly == fly);
     AT(panel->camera != NULL);
 
     dvz_scene_destroy(scene);
@@ -693,7 +728,7 @@ int test_figure_fly_update_advances_panel_camera(TstContext* suite, const TstCas
 
     DvzFlyDesc desc = dvz_fly_desc();
     desc.speed = 2.0f;
-    DvzFly* fly = dvz_panel_set_fly(panel, NULL, &desc);
+    DvzFly* fly = _test_panel_bind_fly(panel, NULL, &desc, NULL);
     ANN(fly);
 
     DvzKeyboardEvent press = {
@@ -740,7 +775,7 @@ int test_figure_fly_update_clamps_dt(TstContext* suite, const TstCase* item)
 
     DvzFlyDesc desc = dvz_fly_desc();
     desc.speed = 10.0f;
-    DvzFly* fly = dvz_panel_set_fly(panel, NULL, &desc);
+    DvzFly* fly = _test_panel_bind_fly(panel, NULL, &desc, NULL);
     ANN(fly);
 
     DvzKeyboardEvent press = {.type = DVZ_KEYBOARD_EVENT_PRESS, .key = DVZ_KEY_W};
@@ -773,8 +808,8 @@ int test_fly_state_is_panel_scoped(TstContext* suite, const TstCase* item)
 
     DvzFlyDesc desc = dvz_fly_desc();
     desc.speed = 2.0f;
-    DvzFly* left_fly = dvz_panel_set_fly(left, NULL, &desc);
-    DvzFly* right_fly = dvz_panel_set_fly(right, NULL, &desc);
+    DvzFly* left_fly = _test_panel_bind_fly(left, NULL, &desc, NULL);
+    DvzFly* right_fly = _test_panel_bind_fly(right, NULL, &desc, NULL);
     ANN(left_fly);
     ANN(right_fly);
 

@@ -375,7 +375,7 @@ Controllers and animations are distinct but feed the same pipeline:
 
 | Concept | Driven by | Typical lifetime |
 |---|---|---|
-| Controller | external input event (mouse, keyboard) | persistent, panel-owned |
+| Controller | external input event (mouse, keyboard) | persistent, scene-owned and panel-bound |
 | Animation | scene clock | bounded or open-ended |
 
 Both produce scene-state changes.

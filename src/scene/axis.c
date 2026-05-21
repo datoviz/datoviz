@@ -670,8 +670,8 @@ static bool _axis_visible_domain(const DvzAxis* axis, double* out_min, double* o
     ANN(out_min);
     ANN(out_max);
     float extent[4] = {-1.0f, +1.0f, -1.0f, +1.0f};
-    if (axis->panel != NULL && axis->panel->panzoom != NULL)
-        (void)dvz_panzoom_extent(axis->panel->panzoom, extent);
+    if (axis->panel != NULL)
+        (void)_scene_panel_panzoom_extent(axis->panel, extent);
     uint32_t lo_idx = axis->dim == DVZ_DIM_X ? 0 : 2;
     uint32_t hi_idx = axis->dim == DVZ_DIM_X ? 1 : 3;
     double a = _axis_visual_to_data(axis, extent[lo_idx]);
@@ -1122,8 +1122,7 @@ bool dvz_panel_visible_domain(DvzPanel* panel, DvzDim dim, double* out_min, doub
     if (!axis->domain_set)
     {
         float extent[4] = {-1.0f, +1.0f, -1.0f, +1.0f};
-        if (panel->panzoom != NULL)
-            (void)dvz_panzoom_extent(panel->panzoom, extent);
+        (void)_scene_panel_panzoom_extent(panel, extent);
         uint32_t lo_idx = dim == DVZ_DIM_X ? 0 : 2;
         uint32_t hi_idx = dim == DVZ_DIM_X ? 1 : 3;
         *out_min = fmin((double)extent[lo_idx], (double)extent[hi_idx]);

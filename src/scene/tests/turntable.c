@@ -119,17 +119,125 @@ int test_panel_turntable_getter(TstContext* suite, const TstCase* item)
     DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
     ANN(panel);
 
-    AT(dvz_panel_turntable(panel) == NULL);
-    DvzTurntable* turntable = dvz_panel_set_turntable(panel, NULL, NULL);
+    AT(panel->turntable == NULL);
+    DvzController* controller = dvz_turntable(scene, NULL);
+    ANN(controller);
+    DvzTurntable* turntable = dvz_controller_turntable(controller);
     ANN(turntable);
-    AT(dvz_panel_turntable(panel) == turntable);
+    AT(dvz_panel_bind_controller(panel, controller, DVZ_DIM_MASK_XYZ) == 0);
+    AT(panel->turntable == turntable);
     AT(panel->camera != NULL);
-    AT(turntable->camera == panel->camera);
+    AT(turntable->camera == NULL);
 
     DvzMVP mvp = {0};
     _scene_panel_apply_mvp(panel, &mvp);
     AC(mvp.view[3][2], -3.0f, 1e-4f);
 
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+int test_turntable_pitch_and_distance_clamps(TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzTurntableDesc desc = dvz_turntable_desc();
+    desc.min_pitch = -0.25f;
+    desc.max_pitch = +0.25f;
+    desc.min_distance = 2.0f;
+    desc.max_distance = 4.0f;
+    desc.distance = 3.0f;
+    desc.flags |= DVZ_TURNTABLE_FLAGS_CLAMP_DISTANCE;
+    DvzTurntable* turntable = _dvz_turntable(&desc);
+    ANN(turntable);
+
+    dvz_turntable_orbit(turntable, 0.0f, 10.0f);
+    AC(turntable->pitch, 0.25f, 1e-5f);
+    dvz_turntable_orbit(turntable, 0.0f, -10.0f);
+    AC(turntable->pitch, -0.25f, 1e-5f);
+
+    dvz_turntable_dolly(turntable, -10.0f);
+    AC(turntable->distance, 2.0f, 1e-5f);
+    dvz_turntable_dolly(turntable, +10.0f);
+    AC(turntable->distance, 4.0f, 1e-5f);
+
+    dvz_turntable_destroy(turntable);
+    return 0;
+}
+
+
+
+int test_turntable_double_click_resets(TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzTurntable* turntable = _dvz_turntable(NULL);
+    ANN(turntable);
+    dvz_turntable_orbit(turntable, 0.5f, 0.2f);
+    dvz_turntable_dolly(turntable, -1.0f);
+
+    DvzPointerEvent ev = {.type = DVZ_POINTER_EVENT_DOUBLE_CLICK};
+    AT(dvz_turntable_pointer(turntable, &ev));
+    AC(turntable->distance, 3.0f, 1e-5f);
+    AC(turntable->yaw, -GLM_PI_2f, 1e-5f);
+    AC(turntable->pitch, 0.0f, 1e-5f);
+
+    dvz_turntable_destroy(turntable);
+    return 0;
+}
+
+
+
+int test_turntable_scene_binding_uses_panel_input(TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 800, 400, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 0.5f, 1.0f});
+    ANN(panel);
+
+    DvzController* controller = dvz_turntable(scene, NULL);
+    ANN(controller);
+    DvzTurntable* turntable = dvz_controller_turntable(controller);
+    ANN(turntable);
+    AT(dvz_panel_bind_controller(panel, controller, DVZ_DIM_MASK_XYZ) == 0);
+    AT(panel->camera != NULL);
+    AT(turntable->camera == NULL);
+
+    DvzInputRouter* router = dvz_input_router();
+    ANN(router);
+    AT(dvz_panel_connect_input(panel, router) == 0);
+
+    DvzInputEvent outside = {
+        .type = DVZ_INPUT_EVENT_POINTER,
+        .content.pointer =
+            {
+                .type = DVZ_POINTER_EVENT_WHEEL,
+                .content.w.dir = {0.0f, 1.0f},
+                .pos = {600.0f, 200.0f},
+            },
+    };
+    dvz_input_emit_event(router, &outside);
+    AC(turntable->distance, 3.0f, 1e-5f);
+
+    DvzInputEvent inside = outside;
+    inside.content.pointer.pos[0] = 200.0f;
+    dvz_input_emit_event(router, &inside);
+    AT(turntable->distance < 3.0f);
+    AT(turntable->camera == NULL);
+
+    DvzMVP mvp = {0};
+    _scene_panel_apply_mvp(panel, &mvp);
+    AT(mvp.view[3][2] < -2.0f);
+
+    dvz_input_router_destroy(router);
     dvz_scene_destroy(scene);
     return 0;
 }
@@ -151,5 +259,8 @@ int test_scene_turntable(TstSuite* suite)
     TST_CASE(test_turntable_pivot_preserves_eye);
     TST_CASE(test_turntable_pan_moves_pivot_and_eye);
     TST_CASE(test_panel_turntable_getter);
+    TST_CASE(test_turntable_pitch_and_distance_clamps);
+    TST_CASE(test_turntable_double_click_resets);
+    TST_CASE(test_turntable_scene_binding_uses_panel_input);
     return 0;
 }

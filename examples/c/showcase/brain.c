@@ -2027,17 +2027,18 @@ int main(int argc, char** argv)
         dvz_scene_destroy(scene);
         return 1;
     }
-    dvz_panel_set_arcball(panel, dvz_app_window_input(win), 0);
-    DvzArcball* arcball = dvz_panel_arcball(panel);
-    if (arcball == NULL)
+    DvzController* arcball_controller = dvz_arcball(scene, NULL);
+    if (arcball_controller == NULL ||
+        dvz_panel_bind_controller(panel, arcball_controller, DVZ_DIM_MASK_XYZ) != 0)
     {
-        dvz_fprintf(stderr, "dvz_panel_set_arcball() failed\n");
+        dvz_fprintf(stderr, "failed to create or bind arcball controller\n");
         _ibl_atlas_mesh_destroy(&atlas_mesh);
         _allen_mouse_brain_destroy(&volume_data);
         dvz_app_destroy(app);
         dvz_scene_destroy(scene);
         return 1;
     }
+    dvz_panel_connect_input(panel, dvz_app_window_input(win));
 
     DvzGuiConfig gui_config = dvz_gui_config();
     DvzGui* gui = dvz_app_window_gui(win, &gui_config);
