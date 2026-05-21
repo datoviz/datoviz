@@ -19,5 +19,6 @@
 EXTERN_C_ON
 
 bool _dvz_app_window_scheduler_should_render(DvzAppWindow* win, bool continuous, uint64_t now);
+bool _dvz_app_has_continuous_work(DvzApp* app);
 
 EXTERN_C_OFF

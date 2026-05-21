@@ -596,6 +596,10 @@ static bool _app_has_continuous_work(DvzApp* app)
     for (uint32_t i = 0; i < app->window_count; i++)
     {
         DvzAppWindow* win = &app->windows[i];
+        if (win->is_interactive && win->window != NULL && dvz_window_should_close(win->window))
+            continue;
+        if (win->render_enabled && win->frame_callback != NULL)
+            return true;
         if (!win->render_enabled || win->replay_recording == NULL)
             continue;
         uint32_t frame_count = dvz_drp2_recording_frame_count(win->replay_recording);
@@ -745,6 +749,18 @@ static bool _app_window_should_render(DvzAppWindow* win, bool continuous, uint64
 bool _dvz_app_window_scheduler_should_render(DvzAppWindow* win, bool continuous, uint64_t now)
 {
     return _app_window_should_render(win, continuous, now);
+}
+
+
+/**
+ * Return whether the app has active continuous rendering work.
+ *
+ * @param app app to inspect
+ * @return whether continuous scheduling should be active
+ */
+bool _dvz_app_has_continuous_work(DvzApp* app)
+{
+    return _app_has_continuous_work(app);
 }
 
 

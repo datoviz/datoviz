@@ -333,6 +333,9 @@ int test_app_offscreen(TstContext* suite, const TstCase* item);
 int test_app_offscreen_scheduler_sees_scene_dirty_without_request(
     TstContext* suite, const TstCase* item);
 
+int test_app_offscreen_frame_callback_enables_continuous_scheduler(
+    TstContext* suite, const TstCase* item);
+
 int test_app_offscreen_pick_probe_requests_notify_hosted_callback(
     TstContext* suite, const TstCase* item);
 

@@ -379,6 +379,19 @@ static void _app_request_frame_probe_callback(DvzAppWindow* win, void* user_data
 
 
 /**
+ * Accept one app-window frame callback without mutating test state.
+ *
+ * @param win app-window that completed a frame
+ * @param user_data unused callback user data
+ */
+static void _app_empty_frame_callback(DvzAppWindow* win, void* user_data)
+{
+    (void)win;
+    (void)user_data;
+}
+
+
+/**
  * Summarize captured app draw errors during retained offscreen regression tests.
  *
  * @param suite the active test suite with log capture enabled
@@ -1349,6 +1362,52 @@ int test_app_offscreen_scheduler_sees_scene_dirty_without_request(
     AT(_dvz_app_window_scheduler_should_render(win, false, 0));
     AT(dvz_app_window_render_once(win) == DVZ_CANVAS_FRAME_READY);
     AT(!_dvz_app_window_scheduler_should_render(win, false, 0));
+
+    dvz_app_destroy(app);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+/**
+ * Ensure on-demand app runs treat frame callbacks as continuous work.
+ *
+ * @param suite the test suite
+ * @param item the test item
+ * @return 0 on success
+ */
+int test_app_offscreen_frame_callback_enables_continuous_scheduler(
+    TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    TST_SCENE_APP_REQUIRE_VKLITE(suite);
+
+    DvzScene* scene = dvz_scene();
+    AT(scene != NULL);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    AT(figure != NULL);
+
+    DvzApp* app = _app_test_create(suite, scene);
+    if (app == NULL)
+    {
+        log_warn(
+            "test_app_offscreen_frame_callback_enables_continuous_scheduler skipped: GPU context "
+            "failed");
+        tst_skip(suite, "GPU context failed");
+        dvz_scene_destroy(scene);
+        return 0;
+    }
+
+    DvzAppWindow* win = dvz_app_window(app, figure, 64, 64);
+    AT(win != NULL);
+
+    AT(!_dvz_app_has_continuous_work(app));
+    dvz_app_window_set_frame_callback(win, _app_empty_frame_callback, NULL);
+    AT(_dvz_app_has_continuous_work(app));
+    dvz_app_window_set_frame_callback(win, NULL, NULL);
+    AT(!_dvz_app_has_continuous_work(app));
 
     dvz_app_destroy(app);
     dvz_scene_destroy(scene);
@@ -5712,6 +5771,7 @@ int test_scene_app(TstSuite* suite)
 
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_scheduler_sees_scene_dirty_without_request);
+    TST_SCENE_APP_SHARED_CASE(test_app_offscreen_frame_callback_enables_continuous_scheduler);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_pick_probe_requests_notify_hosted_callback);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_shared_scene_request_frame_subscribers);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_timer_advances_in_app_run);
