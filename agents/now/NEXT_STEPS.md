@@ -50,10 +50,10 @@ and shared-fixture follow-ups live in
 
 ## Active Priorities
 
-1. **Text/colorbar realization:** use the landed first rendered text slice for axes,
-   colorbars, labels, and annotations; finish colorbar ramps, explanatory-object integration,
-   data/world text placement, DPI/clipping hardening, and MSDF/SDF/bitmap parity through the
-   existing scene -> frame-plan -> DRP2 path.
+1. **Text/annotation/readout realization:** use the landed first rendered text slice for axes,
+   labels, annotations, and pinned readouts. The first continuous colorbar rendering slice is
+   closed; remaining colorbar work is now gallery/app smoke, shared-layout, categorical legend, and
+   richer scale follow-up rather than ramp/tick/text realization.
 2. **WebGPU/WGSL parity:** pressure the active DRP2 subset with point, primitive, image, minimal
    mesh/depth, marker, segment/path stroke, sphere, volume, and capability-gated advanced passes.
 3. **DVZR portability:** keep `dvz_drp2_player`, `replay_dvzr_glfw`, app recording hooks, and raw

@@ -211,12 +211,13 @@ Primary specs:
 
 ### 4. Continuous Colorbars
 
-Status: `Parallel`; retained colorbar bookkeeping exists, ramp work can proceed, and title/tick
-labels can now target the landed text path.
+Status: `Closed first slice`; retained colorbar bookkeeping, ramp realization, deterministic
+ticks, title/tick labels, update behavior, and realization diagnostics are implemented. See
+[`../done/SCENE_COLORBAR_RENDERING_SLICE.md`](../done/SCENE_COLORBAR_RENDERING_SLICE.md).
 
 Goal:
 
-Render continuous colorbars bound to `DvzScale`/`DvzColormap`.
+Keep continuous colorbars stable while broader examples exercise them.
 
 Required v0.4 slice:
 
@@ -227,6 +228,13 @@ Required v0.4 slice:
 5. title, units, and formatted labels,
 6. updates when scale domain or colormap changes,
 7. explicit diagnostics for categorical or unsupported scales.
+
+Remaining follow-ups belong with examples/layout/legend/scale work, not this closed first slice:
+
+1. app/offscreen visible colorbar smoke fixtures,
+2. shared or consolidated grid-level colorbars,
+3. categorical legend support,
+4. richer scale transforms and interactive range editing.
 
 Primary spec:
 
@@ -432,42 +440,40 @@ Good parallel lanes right now:
    focused text/app smokes.
 2. **Axes/tick integration:** axis tick generation, semantic state, grid/line geometry, and tests
    that can use current text as labels mature.
-3. **Colorbar ramp planning:** scale/colormap/ramp layout and diagnostics, with label emission
-   wired through the current text path.
-4. **WebGPU command parity:** `examples/webgpu`, DRP2 fixture/preflight work, no scene API churn.
-5. **Example audit/polish:** C examples and gallery harnesses that use already-implemented
+3. **WebGPU command parity:** `examples/webgpu`, DRP2 fixture/preflight work, no scene API churn.
+4. **Example audit/polish:** C examples and gallery harnesses that use already-implemented
    features.
-6. **Runtime hardening:** DRP2/vklite/app lifetime bugs with focused tests.
-7. **API inventory/docs:** read-only or markdown-only work that does not alter active C code.
-8. **DRP2 contract and fixture maintenance:** `spec/drp2`, `spec/drp2/AGENT_SPEC_PHASE.md`,
+5. **Runtime hardening:** DRP2/vklite/app lifetime bugs with focused tests.
+6. **API inventory/docs:** read-only or markdown-only work that does not alter active C code.
+7. **DRP2 contract and fixture maintenance:** `spec/drp2`, `spec/drp2/AGENT_SPEC_PHASE.md`,
    `tools/drp2_fixture_runner.py`, schema docs, and fixture updates that keep the active command
    surface aligned with native and WebGPU pressure.
-9. **DVZR recording/replay portability:** `src/drp2` recording/replay code, `src/app` recording
+8. **DVZR recording/replay portability:** `src/drp2` recording/replay code, `src/app` recording
    hooks, replay/player examples, and raw-fallback diagnostics. Keep this coordinated with DRP2
    schema/fixture work when portable command coverage changes.
-10. **Render-contract and technique hardening:** scene FramePlan contracts, technique builders,
+9. **Render-contract and technique hardening:** scene FramePlan contracts, technique builders,
     post-emit DRP2 validation, and deterministic offscreen readback coverage for source-over,
     WBOIT, depth peeling, MSAA, EDL, SSAO, volume occlusion, and scene occlusion.
-11. **Material and shader ABI polish:** active scene shader ABI, material uniforms, vertex
+10. **Material and shader ABI polish:** active scene shader ABI, material uniforms, vertex
     attribute descriptors, generated shader variants, GLSL/WGSL parity checks, and material-model
     examples.
-12. **Selection and request payload widening:** richer point/marker/image pick/probe payloads,
+11. **Selection and request payload widening:** richer point/marker/image pick/probe payloads,
     highlight state, linked-panel request propagation, and explicit deferrals for mesh/path/volume
     picking.
-13. **Test-runner scheduling follow-up:** process-level sharding, CI orchestration, optional
+12. **Test-runner scheduling follow-up:** process-level sharding, CI orchestration, optional
     thread-safe workers, and remaining skip cleanup as tracked in
     [../later/TEST_RUNNER_SCHEDULING.md](../later/TEST_RUNNER_SCHEDULING.md). The completed serial
     modernization history is in
     [../done/TEST_RUNNER_MODERNIZATION.md](../done/TEST_RUNNER_MODERNIZATION.md).
-14. **Performance and long-run smoke:** immediate-presentation FPS preservation, repeated-frame
+13. **Performance and long-run smoke:** immediate-presentation FPS preservation, repeated-frame
     allocation/destructor pressure, descriptor churn, bounded live GLFW loops, and trace-assisted
     investigation of unexpected stream changes.
-15. **Capture/video/export support for examples:** offscreen screenshots, frame-sequence/video
+14. **Capture/video/export support for examples:** offscreen screenshots, frame-sequence/video
     paths, gallery artifact generation, and codec/backend skip behavior. Keep publication/vector
     export out of Datoviz v0.4 scope.
-16. **GUI-driven example controls:** ImGui/example-side controls that exercise existing scene/app
+15. **GUI-driven example controls:** ImGui/example-side controls that exercise existing scene/app
     parameters without promoting the GUI module into a broad public API surface.
-17. **Release documentation and website staging:** user-facing docs, example staging tables,
+16. **Release documentation and website staging:** user-facing docs, example staging tables,
     capability matrix updates, public/private/experimental labels, and known-gap notes.
 
 Avoid parallel edits that touch the same write scope:
@@ -546,26 +552,6 @@ explicitly shared with that lane.
 If subagents are authorized, use an explorer for v0.3-visible axes capability gaps and a worker for
 example-only polish. Keep tick generation and scene state changes local. Validate with git
 diff --check, just build, and focused scene axes/scatter tests.
-```
-
-
-### Prompt: Colorbar Ramp Planning
-
-```text
-You own the continuous colorbar lane. Read the checklist and
-spec/scene/slices/COLORBAR_RENDERING_SLICE.md.
-
-Goal: implement one colorbar slice such as ramp geometry, scale/colormap binding, deterministic
-ticks, orientation layout, diagnostics, or update/destroy behavior. Stay in colorbar state,
-scale/colormap integration, ramp visual emission, examples using image/colormap, and focused tests.
-
-Conflict avoidance: do not change text internals; wire labels through the current text surface and
-leave label-quality blockers documented. Do not alter global scale semantics used by images unless
-the image/visual-family owner is coordinated.
-
-If subagents are authorized, use one explorer for scale/colormap call sites and one worker for a
-disjoint example or doc update. Keep colorbar state and emission local. Validate with git
-diff --check, just build, and focused scene colorbar/image tests.
 ```
 
 
