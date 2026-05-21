@@ -195,6 +195,11 @@ static bool _scene_image_pick_plan(
     const DvzPendingPickRequest* pending, const vec2 request_ndc, DvzSceneProbePlan* out_plan,
     uint32_t* out_target_width, uint32_t* out_target_height);
 
+static bool _scene_visual_pick_plan(
+    const DvzFigure* figure, const DvzPanel* panel, DvzVisual* visual,
+    const DvzPendingPickRequest* pending, const vec2 request_ndc, DvzSceneProbePlan* out_plan,
+    uint32_t* out_target_width, uint32_t* out_target_height);
+
 static bool _scene_process_point_pick_request(
     DvzFigure* figure, DvzSceneRequestExecutor* executor, const DvzCapabilitySnapshot* caps,
     const DvzPendingPickRequest* pending);
@@ -2651,7 +2656,66 @@ static bool _scene_image_pick_plan(
 
 
 /**
- * Resolve one pick request by dispatching to the first matching family resolver.
+ * Build the visual-family-specific GPU pick plan for one eligible visual.
+ *
+ * @param figure the parent figure
+ * @param panel the panel receiving the request
+ * @param visual the visual to pick
+ * @param pending the pending pick request
+ * @param request_ndc the request coordinate in panel-local NDC
+ * @param out_plan the output plan wrapper
+ * @param out_target_width output offscreen target width
+ * @param out_target_height output offscreen target height
+ * @return true when a matching plan was assembled
+ */
+static bool _scene_visual_pick_plan(
+    const DvzFigure* figure, const DvzPanel* panel, DvzVisual* visual,
+    const DvzPendingPickRequest* pending, const vec2 request_ndc, DvzSceneProbePlan* out_plan,
+    uint32_t* out_target_width, uint32_t* out_target_height)
+{
+    ANN(figure);
+    ANN(panel);
+    ANN(visual);
+    switch (visual->type)
+    {
+    case DVZ_VISUAL_TYPE_POINT:
+    case DVZ_VISUAL_TYPE_PIXEL:
+    case DVZ_VISUAL_TYPE_MARKER:
+    case DVZ_VISUAL_TYPE_SPHERE:
+        return _scene_item_pick_plan(
+            figure, panel, visual, pending, request_ndc, out_plan, out_target_width,
+            out_target_height);
+    case DVZ_VISUAL_TYPE_SEGMENT:
+        return _scene_stroke_pick_plan(
+            figure, panel, visual, pending, request_ndc, out_plan, out_target_width,
+            out_target_height);
+    case DVZ_VISUAL_TYPE_PATH:
+        if (_scene_pick_visual_has_attr_data(visual, "line_width"))
+        {
+            return _scene_stroke_pick_plan(
+                figure, panel, visual, pending, request_ndc, out_plan, out_target_width,
+                out_target_height);
+        }
+        return _scene_primitive_pick_plan(
+            figure, panel, visual, pending, request_ndc, out_plan, out_target_width,
+            out_target_height);
+    case DVZ_VISUAL_TYPE_PRIMITIVE:
+    case DVZ_VISUAL_TYPE_MESH:
+        return _scene_primitive_pick_plan(
+            figure, panel, visual, pending, request_ndc, out_plan, out_target_width,
+            out_target_height);
+    case DVZ_VISUAL_TYPE_IMAGE:
+        return _scene_image_pick_plan(
+            figure, panel, visual, pending, request_ndc, out_plan, out_target_width,
+            out_target_height);
+    default:
+        return false;
+    }
+}
+
+
+/**
+ * Resolve one pick request by trying visible visuals from top to bottom.
  *
  * @param figure figure whose request queue is being processed
  * @param executor retained request executor for GPU-backed resolvers
@@ -2690,16 +2754,69 @@ static bool _scene_process_pick_request(
         return _scene_push_pick_result(scene, panel, pending->freshness_serial, &miss);
     }
 
-    for (uint32_t i = 0; i < DVZ_ARRAY_COUNT(PICK_RESOLVERS); i++)
+    uint32_t order[DVZ_SCENE_MAX_VISUALS] = {0};
+    _scene_panel_visual_order(panel, order);
+    for (int32_t oi = (int32_t)panel->visual_count - 1; oi >= 0; oi--)
     {
-        const DvzScenePickResolver* resolver = &PICK_RESOLVERS[i];
-        if (
-            resolver->has_candidate == NULL || resolver->process == NULL ||
-            !resolver->has_candidate(figure, pending))
+        DvzPanelAttach* attach = &panel->visuals[order[oi]];
+        DvzVisual* visual = attach->visual;
+        if (visual == NULL || !visual->visible)
+            continue;
+        if ((visual->pick_capabilities & DVZ_PICK_CAPABILITY_ITEM) == 0)
+            continue;
+        if (attach->controller_mode == DVZ_CONTROLLER_FIXED)
+            continue;
+
+        if (miss.status == DVZ_PICK_STATUS_NO_CAPABLE_VISUAL)
+            miss.status = DVZ_PICK_STATUS_MISS;
+
+        if (executor == NULL || executor->runtime == NULL || executor->emitter == NULL)
         {
+            log_error("visual pick request requires a DRP2 runtime");
+            miss.status = DVZ_PICK_STATUS_GPU_EXEC_FAILED;
             continue;
         }
-        return resolver->process(figure, executor, caps, pending);
+
+        DvzSceneProbePlan pick_plan = {0};
+        uint32_t target_width = 0;
+        uint32_t target_height = 0;
+        if (!_scene_visual_pick_plan(
+                figure, panel, visual, pending, request_ndc, &pick_plan, &target_width,
+                &target_height))
+        {
+            _scene_pick_trace(
+                "picker_visual_miss request=%llu visual=%p order_index=%d attach_slot=%u\n",
+                (unsigned long long)pending->request.request_id, (void*)visual, oi, order[oi]);
+            continue;
+        }
+
+        uint8_t rgba[4] = {0};
+        bool executed = false;
+        bool readback_ok = _scene_execute_readback_plan(
+            scene, executor, caps, pick_plan.plan, target_width, target_height, rgba, &executed);
+        _scene_probe_plan_destroy(&pick_plan);
+
+        DvzScenePickPayload payload = {0};
+        if (!readback_ok || !_scene_decode_point_like_pick_payload(visual, rgba, &payload))
+        {
+            if (!readback_ok)
+                miss.status = executed ? DVZ_PICK_STATUS_READBACK_FAILED :
+                                         DVZ_PICK_STATUS_GPU_EXEC_FAILED;
+            _scene_pick_trace(
+                "picker_visual_miss request=%llu visual=%p order_index=%d attach_slot=%u "
+                "readback_ok=%d executed=%d rgba=%u,%u,%u,%u\n",
+                (unsigned long long)pending->request.request_id, (void*)visual, oi, order[oi],
+                readback_ok ? 1 : 0, executed ? 1 : 0, rgba[0], rgba[1], rgba[2], rgba[3]);
+            continue;
+        }
+
+        DvzPickResult resolved = miss;
+        _scene_apply_pick_payload(scene, visual, &payload, &resolved);
+        _scene_pick_trace(
+            "picker_resolved request=%llu visual=%p visual_id=%llu item=%llu\n",
+            (unsigned long long)pending->request.request_id, (void*)visual,
+            (unsigned long long)resolved.visual_id, (unsigned long long)payload.item_id);
+        return _scene_push_pick_result(scene, panel, pending->freshness_serial, &resolved);
     }
 
     return _scene_push_pick_result(scene, panel, pending->freshness_serial, &miss);
