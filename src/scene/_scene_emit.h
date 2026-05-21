@@ -25,7 +25,8 @@
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
-void _scene_emit_visual_uploads(DvzFigure* figure, DvzFramePlan* plan);
+void _scene_emit_visual_uploads(
+    DvzFigure* figure, DvzFramePlan* plan, DvzDiagnosticReport* report);
 
 void _scene_prepare_axis_visuals(DvzFigure* figure);
 

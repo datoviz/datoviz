@@ -2318,7 +2318,7 @@ DvzDrp2CommandStream* dvz_figure_emit_ex(
     if (plan == NULL)
         return NULL;
 
-    _scene_emit_visual_uploads(figure, plan);
+    _scene_emit_visual_uploads(figure, plan, report);
 
     bool panels_ok = true;
     uint32_t graph_report_start = dvz_diagnostic_report_count(report);

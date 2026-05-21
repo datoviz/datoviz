@@ -1327,7 +1327,7 @@ void _scene_refresh_field_dirty_state(DvzScene* scene, DvzSampledField* field);
 
 void _scene_prepare_axis_visuals(DvzFigure* figure);
 
-void _scene_prepare_colorbar_visuals(DvzFigure* figure);
+void _scene_prepare_colorbar_visuals(DvzFigure* figure, DvzDiagnosticReport* report);
 
 void _scene_prepare_text_visuals(DvzFigure* figure);
 

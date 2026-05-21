@@ -41,6 +41,14 @@ static void _scene_mark_colorbar_dirty(DvzColorbar* colorbar);
 
 
 
+static void _colorbar_report(DvzDiagnosticReport* report, const char* message);
+
+static void _colorbar_hide(DvzColorbar* colorbar);
+
+static void _colorbar_fail(DvzColorbar* colorbar, DvzDiagnosticReport* report, const char* message);
+
+
+
 /*************************************************************************************************/
 /*  Constants                                                                                    */
 /*************************************************************************************************/
@@ -291,6 +299,41 @@ static bool _colorbar_anchor_supported(DvzSceneAnchor anchor)
 {
     return anchor == DVZ_SCENE_ANCHOR_PANEL_LEFT || anchor == DVZ_SCENE_ANCHOR_PANEL_RIGHT ||
            anchor == DVZ_SCENE_ANCHOR_PANEL_TOP || anchor == DVZ_SCENE_ANCHOR_PANEL_BOTTOM;
+}
+
+
+
+/**
+ * Report a colorbar realization error through logs and optional diagnostics.
+ *
+ * @param report optional diagnostic report
+ * @param message the diagnostic message
+ */
+static void _colorbar_report(DvzDiagnosticReport* report, const char* message)
+{
+    ANN(message);
+    log_error("%s", message);
+    if (report != NULL)
+        (void)dvz_diagnostic_report_add(report, message);
+}
+
+
+
+/**
+ * Hide one invalid colorbar and report the validation failure once per dirty cycle.
+ *
+ * @param colorbar the colorbar
+ * @param report optional diagnostic report
+ * @param message the diagnostic message
+ */
+static void _colorbar_fail(DvzColorbar* colorbar, DvzDiagnosticReport* report, const char* message)
+{
+    ANN(colorbar);
+    ANN(message);
+    if (colorbar->dirty || report != NULL)
+        _colorbar_report(report, message);
+    colorbar->dirty = false;
+    _colorbar_hide(colorbar);
 }
 
 
@@ -937,22 +980,24 @@ static void _colorbar_update_title(
  * Rebuild the derived visuals for one retained colorbar.
  *
  * @param colorbar the colorbar
+ * @param report optional diagnostic report
  */
-static void _colorbar_update_visuals(DvzColorbar* colorbar)
+static void _colorbar_update_visuals(DvzColorbar* colorbar, DvzDiagnosticReport* report)
 {
     ANN(colorbar);
     if (colorbar->scene == NULL || colorbar->panel == NULL || colorbar->scale == NULL)
         return;
     if (!_colorbar_anchor_supported(colorbar->anchor))
     {
-        log_error("colorbar anchor is not supported in the first rendered colorbar slice");
-        _colorbar_hide(colorbar);
+        _colorbar_fail(
+            colorbar, report,
+            "colorbar anchor is not supported in the first rendered colorbar slice");
         return;
     }
     if (colorbar->scale->kind != DVZ_SCALE_CONTINUOUS)
     {
-        log_error("categorical colorbar rendering is unsupported; use a legend");
-        _colorbar_hide(colorbar);
+        _colorbar_fail(
+            colorbar, report, "categorical colorbar rendering is unsupported; use a legend");
         return;
     }
     double min = colorbar->scale->has_view_range ? colorbar->scale->view_min :
@@ -961,8 +1006,8 @@ static void _colorbar_update_visuals(DvzColorbar* colorbar)
                                                     colorbar->scale->domain_max;
     if (!colorbar->scale->has_domain || !isfinite(min) || !isfinite(max) || !(max > min))
     {
-        log_error("colorbar scale domain must be finite and increasing");
-        _colorbar_hide(colorbar);
+        _colorbar_fail(
+            colorbar, report, "colorbar scale domain must be finite and increasing");
         return;
     }
     float panel_x = 0.0f;
@@ -1020,8 +1065,7 @@ static void _colorbar_update_visuals(DvzColorbar* colorbar)
     if (ramp_x0 < 0.0f || ramp_y0 < 0.0f || ramp_x1 > width || ramp_y1 > height ||
         ramp_x1 <= ramp_x0 || ramp_y1 <= ramp_y0)
     {
-        log_error("panel is too small for deterministic colorbar layout");
-        _colorbar_hide(colorbar);
+        _colorbar_fail(colorbar, report, "panel is too small for deterministic colorbar layout");
         return;
     }
 
@@ -1489,8 +1533,9 @@ void dvz_colorbar_set_title(DvzColorbar* colorbar, const char* title)
  * Rebuild all retained colorbar visuals before FramePlan emission.
  *
  * @param figure the figure
+ * @param report optional diagnostic report
  */
-void _scene_prepare_colorbar_visuals(DvzFigure* figure)
+void _scene_prepare_colorbar_visuals(DvzFigure* figure, DvzDiagnosticReport* report)
 {
     if (figure == NULL || figure->scene == NULL)
         return;
@@ -1502,6 +1547,6 @@ void _scene_prepare_colorbar_visuals(DvzFigure* figure)
             colorbar->panel->figure != figure)
             continue;
         _colorbar_apply_auto_reserve(colorbar);
-        _colorbar_update_visuals(colorbar);
+        _colorbar_update_visuals(colorbar, report);
     }
 }

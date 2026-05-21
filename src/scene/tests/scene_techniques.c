@@ -2384,7 +2384,7 @@ int test_scene_blended_mesh_occlusion_contracts(TstContext* suite, const TstCase
 
     DvzFramePlan* plan = dvz_frame_plan("figure.alpha.volume_mesh_occlusion", 0);
     ANN(plan);
-    _scene_emit_visual_uploads(figure, plan);
+    _scene_emit_visual_uploads(figure, plan, NULL);
     _scene_emit_panel_render(figure, 0, plan, "figure_0");
 
     const DvzFramePlanNode* blend_node = NULL;
@@ -3886,7 +3886,7 @@ int test_scene_drp2_contract_checker_rejects_pipeline_drift(TstContext* suite, c
 
     DvzFramePlan* plan = dvz_frame_plan("figure.contract.drp2", 0);
     ANN(plan);
-    _scene_emit_visual_uploads(figure, plan);
+    _scene_emit_visual_uploads(figure, plan, NULL);
     AT(_scene_emit_panel_render(figure, 0, plan, "figure_0"));
 
     DvzDiagnosticReport report;
@@ -4078,7 +4078,7 @@ int test_scene_drp2_contract_checker_rejects_raster_drift(TstContext* suite, con
 
     DvzFramePlan* plan = dvz_frame_plan("figure.contract.raster", 0);
     ANN(plan);
-    _scene_emit_visual_uploads(figure, plan);
+    _scene_emit_visual_uploads(figure, plan, NULL);
     AT(_scene_emit_panel_render(figure, 0, plan, "figure_0"));
 
     DvzCapabilitySnapshot caps;

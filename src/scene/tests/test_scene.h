@@ -460,6 +460,9 @@ int test_scene_colorbar_updates_retained_visuals(TstContext* suite, const TstCas
 int test_scene_colorbar_emit_stream_contains_derived_visuals(
     TstContext* suite, const TstCase* item);
 
+int test_scene_colorbar_invalid_domain_reports_diagnostic(
+    TstContext* suite, const TstCase* item);
+
 int test_scene_colorbar_rejects_unsupported_requests(TstContext* suite, const TstCase* item);
 
 int test_scene_colorbar_rejects_cross_scene_scale(TstContext* suite, const TstCase* item);
