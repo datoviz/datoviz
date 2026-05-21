@@ -517,7 +517,7 @@ DVZ_EXPORT bool dvz_axis_set_grid(DvzAxis* axis, bool visible);
 /**
  * Set the label stored on one panel-owned axis.
  *
- * Text rendering is not part of this WIP slice; the label is retained for future text requests.
+ * The active 2D axis path renders this label through the scene text visual pipeline.
  *
  * @param axis the axis
  * @param label label string, or NULL to clear

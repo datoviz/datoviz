@@ -10,10 +10,11 @@ they are not ordinary visual families or backend concepts.
 
 The active first 2D slice includes finite linear X/Y panel domains, panzoom-aware visible-domain
 queries, data-to-visual mapping helpers, panel-owned axis handles, cached linear tick generation,
-primitive-backed spine/tick/grid geometry, focused scene tests, and a `scatter_axes` example.
+primitive-backed spine/tick/grid geometry, rendered tick labels and axis labels through the current
+text visual path, focused scene tests, and a `scatter_axes` example.
 
-Rendered tick labels and axis labels remain text/layout follow-up. Log, inverted, categorical,
-datetime, and 3D scientific axes are deferred unless explicitly activated.
+Label collision avoidance, richer formatter policy, log, inverted, categorical, datetime, and 3D
+scientific axes are deferred unless explicitly activated.
 
 
 ## Purpose

@@ -25,7 +25,8 @@ The active v0.4 code already has:
 5. retained axis visibility, grid, label, tick policy, style, and plot-margin setters;
 6. panzoom-aware linear tick regeneration with cached covered-domain reuse;
 7. primitive-backed spine, major/minor tick, and optional grid geometry;
-8. focused scene tests and the `examples/c/techniques/scatter_axes.c` smoke example.
+8. rendered tick labels and axis labels through the current `dvz_text()` visual path;
+9. focused scene tests and the `examples/c/techniques/scatter_axes.c` smoke example.
 
 Use this file only for remaining execution work. Do not duplicate stable axis/domain semantics here.
 
@@ -34,11 +35,11 @@ Use this file only for remaining execution work. Do not duplicate stable axis/do
 
 Recommended follow-up commits:
 
-1. Integrate rendered tick labels and axis labels through the text workstream. Axis state already
-   retains labels, but visible label rendering, layout, and collision behavior are still separate.
+1. Harden tick and axis label layout: collision behavior, edge clipping, formatter policy, and
+   richer text style controls are still separate from the first rendered-label slice.
 2. Harden plot-area reserve behavior so axes, labels, colorbars, legends, and annotations can share
    panel-adjacent space without one-off margins.
-3. Add image/screenshot smoke coverage for `scatter_axes` once text labels render.
+3. Add image/screenshot smoke coverage for `scatter_axes`.
 4. Decide whether inverted numeric domains should become valid in the first v0.4 API. If yes, update
    validation, tick ordering, tests, and the semantics together.
 5. Add log-domain and nonlinear-domain support only after linear labels and visible geometry are
@@ -81,7 +82,8 @@ For remaining axes work:
 
 ```text
 just build
-just test test_scene_axis
+just test test_axis
+just test text
 just test scene
 git diff --check
 ```
