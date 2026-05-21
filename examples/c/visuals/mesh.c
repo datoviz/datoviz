@@ -31,11 +31,12 @@
 
 #include "_alloc.h"
 #include "_compat.h"
+#include "datoviz/geom.h"
 #include "datoviz/app.h"
 #include "datoviz/canvas.h"
 #include "datoviz/scene.h"
-#include "example_common.h"
 #include "datoviz/video.h"
+#include "example_common.h"
 
 
 
@@ -45,6 +46,10 @@
 
 #define WIDTH  1600
 #define HEIGHT 1200
+
+#define MESH_CUBE_SIZE         1.16
+#define MESH_CUBE_VERTEX_COUNT 24
+#define MESH_CUBE_INDEX_COUNT  36
 
 #define ROTATION_SPEED_RAD_PER_SEC 0.9f
 
@@ -61,27 +66,32 @@
  * @param colors output vertex colors
  * @param normals output vertex normals
  * @param indices output triangle-list indices
+ * @return whether geometry generation succeeded
  */
-static void _build_cube(
-    float positions[24][3], DvzColor colors[24], float normals[24][3], DvzIndex indices[36])
+static bool _build_cube(
+    vec3 positions[MESH_CUBE_VERTEX_COUNT], DvzColor colors[MESH_CUBE_VERTEX_COUNT],
+    vec3 normals[MESH_CUBE_VERTEX_COUNT], DvzIndex indices[MESH_CUBE_INDEX_COUNT])
 {
-    const float s = 0.58f;
-    const float face_positions[6][4][3] = {
-        {{-s, -s, +s}, {+s, -s, +s}, {+s, +s, +s}, {-s, +s, +s}},
-        {{+s, -s, -s}, {-s, -s, -s}, {-s, +s, -s}, {+s, +s, -s}},
-        {{-s, -s, -s}, {-s, -s, +s}, {-s, +s, +s}, {-s, +s, -s}},
-        {{+s, -s, +s}, {+s, -s, -s}, {+s, +s, -s}, {+s, +s, +s}},
-        {{-s, +s, +s}, {+s, +s, +s}, {+s, +s, -s}, {-s, +s, -s}},
-        {{-s, -s, -s}, {+s, -s, -s}, {+s, -s, +s}, {-s, -s, +s}},
-    };
-    const float face_normals[6][3] = {
-        {0.0f, 0.0f, +1.0f},
-        {0.0f, 0.0f, -1.0f},
-        {-1.0f, 0.0f, 0.0f},
-        {+1.0f, 0.0f, 0.0f},
-        {0.0f, +1.0f, 0.0f},
-        {0.0f, -1.0f, 0.0f},
-    };
+    DvzGeometry* cube = dvz_geom_cube(&(DvzGeometryCubeDesc){.size = MESH_CUBE_SIZE});
+    if (cube == NULL)
+        return false;
+
+    if (cube->vertex_count != MESH_CUBE_VERTEX_COUNT || cube->index_count != MESH_CUBE_INDEX_COUNT)
+    {
+        dvz_geometry_destroy(cube);
+        return false;
+    }
+
+    if (dvz_geometry_positions_f32(cube, positions, MESH_CUBE_VERTEX_COUNT) != 0 ||
+        dvz_geometry_normals_f32(cube, normals, MESH_CUBE_VERTEX_COUNT) != 0)
+    {
+        dvz_geometry_destroy(cube);
+        return false;
+    }
+
+    dvz_memcpy(indices, sizeof(DvzIndex) * MESH_CUBE_INDEX_COUNT, cube->indices,
+               sizeof(DvzIndex) * MESH_CUBE_INDEX_COUNT);
+
     const DvzColor face_colors[6] = {
         {239, 83, 80, 255},
         {66, 165, 245, 255},
@@ -96,23 +106,12 @@ static void _build_cube(
         for (uint32_t corner = 0; corner < 4; corner++)
         {
             const uint32_t vertex = 4 * face + corner;
-            positions[vertex][0] = face_positions[face][corner][0];
-            positions[vertex][1] = face_positions[face][corner][1];
-            positions[vertex][2] = face_positions[face][corner][2];
             dvz_memcpy(colors[vertex], sizeof(DvzColor), face_colors[face], sizeof(DvzColor));
-            normals[vertex][0] = face_normals[face][0];
-            normals[vertex][1] = face_normals[face][1];
-            normals[vertex][2] = face_normals[face][2];
         }
-
-        const uint32_t base = 4 * face;
-        indices[6 * face + 0] = base + 0;
-        indices[6 * face + 1] = base + 1;
-        indices[6 * face + 2] = base + 2;
-        indices[6 * face + 3] = base + 0;
-        indices[6 * face + 4] = base + 2;
-        indices[6 * face + 5] = base + 3;
     }
+
+    dvz_geometry_destroy(cube);
+    return true;
 }
 
 
@@ -255,11 +254,16 @@ int main(int argc, char** argv)
         return 1;
     }
 
-    float positions[24][3] = {0};
-    DvzColor colors[24] = {0};
-    float normals[24][3] = {0};
-    DvzIndex indices[36] = {0};
-    _build_cube(positions, colors, normals, indices);
+    vec3 positions[MESH_CUBE_VERTEX_COUNT] = {0};
+    DvzColor colors[MESH_CUBE_VERTEX_COUNT] = {0};
+    vec3 normals[MESH_CUBE_VERTEX_COUNT] = {0};
+    DvzIndex indices[MESH_CUBE_INDEX_COUNT] = {0};
+    if (!_build_cube(positions, colors, normals, indices))
+    {
+        dvz_fprintf(stderr, "dvz_geom_cube() failed\n");
+        dvz_scene_destroy(scene);
+        return 1;
+    }
 
     DvzSceneBuffer* index_buffer = dvz_scene_buffer(
         scene, &(DvzSceneBufferDesc){
@@ -279,7 +283,7 @@ int main(int argc, char** argv)
         return 1;
     }
 
-    dvz_mesh_data(visual, positions, colors, normals, 24);
+    dvz_mesh_data(visual, positions, colors, normals, MESH_CUBE_VERTEX_COUNT);
     dvz_visual_set_buffer(visual, "index", index_buffer);
     dvz_visual_set_primitive_shading(
         visual,

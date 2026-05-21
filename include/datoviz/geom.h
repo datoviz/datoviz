@@ -61,9 +61,9 @@ DVZ_EXPORT void dvz_geometry_destroy(DvzGeometry* geometry);
  * Compute the bounds of a geometry object's positions.
  *
  * @param geometry the geometry
- * @return the geometry bounds, or an empty zero box when no vertices exist
+ * @return the geometry bounds, or an empty zero bounds when no vertices exist
  */
-DVZ_EXPORT DvzBox dvz_geometry_bounds(const DvzGeometry* geometry);
+DVZ_EXPORT DvzGeometryBounds dvz_geometry_bounds(const DvzGeometry* geometry);
 
 
 

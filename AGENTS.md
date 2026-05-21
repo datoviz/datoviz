@@ -706,26 +706,28 @@ Before submitting a PR or automated refactor:
 
 ---
 
-### 🧩 Example: adding a new module “geometry”
+### 🧩 Example: adding a new module
 
-1. Create sources under `src/geom/` (`geom.c`, `geom.cpp`, optional `_geom_internal.h`).
-2. Add `src/geom/CMakeLists.txt`:
+1. Create sources under `src/<module>/` (`<module>.c`, optional `_<module>_internal.h`).
+2. Add `src/<module>/CMakeLists.txt`:
 
    ```cmake
-   file(GLOB GEOM_SRC "${CMAKE_CURRENT_SOURCE_DIR}/*.c*")
-   add_library(datoviz_geom OBJECT ${GEOM_SRC})
+   file(GLOB MODULE_SRC "${CMAKE_CURRENT_SOURCE_DIR}/*.c*")
+   add_library(datoviz_<module> OBJECT ${MODULE_SRC})
 
-   target_include_directories(datoviz_geom
+   target_include_directories(datoviz_<module>
        PUBLIC
            ${PROJECT_SOURCE_DIR}/include
            ${PROJECT_SOURCE_DIR}/src/common
    )
 
-   target_compile_definitions(datoviz_geom PUBLIC ${DVZ_COMPILE_DEFINITIONS})
+   target_compile_definitions(datoviz_<module> PUBLIC ${DVZ_COMPILE_DEFINITIONS})
    ```
-3. Add tests under `src/geom/tests/` and expose `int test_geom(TstSuite* suite)`.
-4. Update `src/CMakeLists.txt` (`add_subdirectory(geom)` + link `datoviz_geom` into `datoviz`).
-5. Add public headers in `include/datoviz/geom.h` and `include/datoviz/geom/*.h` if the API is public.
+3. Add tests under `src/<module>/tests/` and expose a `test_<module>()` entry point.
+4. Update `src/CMakeLists.txt` (`add_subdirectory(<module>)` + add `datoviz_<module>` to the
+   appropriate component list).
+5. Add public headers in `include/datoviz/<module>.h` and `include/datoviz/<module>/*.h` only if
+   the API is public.
 
 ---
 

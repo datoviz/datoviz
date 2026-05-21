@@ -286,12 +286,12 @@ void dvz_geometry_destroy(DvzGeometry* geometry)
  * Compute the bounds of a geometry object's positions.
  *
  * @param geometry the geometry
- * @return the geometry bounds, or an empty zero box when no vertices exist
+ * @return the geometry bounds, or an empty zero bounds when no vertices exist
  */
-DvzBox dvz_geometry_bounds(const DvzGeometry* geometry)
+DvzGeometryBounds dvz_geometry_bounds(const DvzGeometry* geometry)
 {
     if (geometry == NULL || geometry->vertex_count == 0 || geometry->positions == NULL)
-        return dvz_box(0, 0, 0, 0, 0, 0);
+        return (DvzGeometryBounds){0};
 
     double xmin = DBL_MAX;
     double xmax = -DBL_MAX;
@@ -311,7 +311,8 @@ DvzBox dvz_geometry_bounds(const DvzGeometry* geometry)
         zmax = (*p)[2] > zmax ? (*p)[2] : zmax;
     }
 
-    return dvz_box(xmin, xmax, ymin, ymax, zmin, zmax);
+    return (DvzGeometryBounds){
+        .xmin = xmin, .xmax = xmax, .ymin = ymin, .ymax = ymax, .zmin = zmin, .zmax = zmax};
 }
 
 

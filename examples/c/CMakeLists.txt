@@ -30,6 +30,7 @@ function(dvz_add_example group name source)
         datoviz_common
         datoviz_ds
         datoviz_fileio
+        datoviz_geom
         datoviz_math
         datoviz_thread
         datoviz_input

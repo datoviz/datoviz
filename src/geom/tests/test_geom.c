@@ -66,7 +66,7 @@ int test_geometry_cube(TstContext* suite, const TstCase* tstitem)
     AT(cube->vertex_count == 24);
     AT(cube->index_count == 36);
 
-    DvzBox bounds = dvz_geometry_bounds(cube);
+    DvzGeometryBounds bounds = dvz_geometry_bounds(cube);
     AC(bounds.xmin, 0.0, EPS);
     AC(bounds.xmax, 2.0, EPS);
     AC(bounds.ymin, 1.0, EPS);
@@ -99,7 +99,7 @@ int test_geometry_plane(TstContext* suite, const TstCase* tstitem)
     AT(plane->vertex_count == 4);
     AT(plane->index_count == 6);
 
-    DvzBox bounds = dvz_geometry_bounds(plane);
+    DvzGeometryBounds bounds = dvz_geometry_bounds(plane);
     AC(bounds.xmin, 0.0, EPS);
     AC(bounds.xmax, 4.0, EPS);
     AC(bounds.ymin, 2.0, EPS);

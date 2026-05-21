@@ -16,7 +16,6 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include "datoviz/math/box.h"
 #include "datoviz/math/types.h"
 #include "enums.h"
 #include <inttypes.h>
@@ -29,6 +28,7 @@
 /*************************************************************************************************/
 
 typedef struct DvzGeometry DvzGeometry;
+typedef struct DvzGeometryBounds DvzGeometryBounds;
 typedef struct DvzGeometryCubeDesc DvzGeometryCubeDesc;
 typedef struct DvzGeometryPlaneDesc DvzGeometryPlaneDesc;
 
@@ -51,6 +51,13 @@ struct DvzGeometry
     DvzColor* colors;  // RGBA color of each vertex
     dvec2* texcoords;  // F64 texture coordinates
     DvzIndex* indices; // triangle-list index buffer
+};
+
+
+
+struct DvzGeometryBounds
+{
+    double xmin, xmax, ymin, ymax, zmin, zmax;
 };
 
 

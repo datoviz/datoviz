@@ -54,9 +54,9 @@ preserve it.
 
 ## Geometry
 
-Prefer `dvz_geom_gizmo_axes()` once the `geom` utility path is available. If implementation starts
-before the public `geom` module is active, keep any temporary generator internal and shaped so it can
-move to `geom` without changing scene semantics.
+Prefer `dvz_geom_gizmo_axes()` once that generator lands in the active `geom` module. Until then,
+keep any temporary triad generator internal and shaped so it can move to `geom` without changing
+scene semantics.
 
 The generated geometry should be deterministic:
 
