@@ -755,7 +755,13 @@ DvzDrp2ValidationResult _vklite_begin_render_pass(
         if (resolves[i] != NULL)
             skip_texture_ids[skip_count++] = resolves[i]->id;
     }
-    if (named_depth != NULL)
+    DvzDrp2AttachmentAccess depth_transition_access = DVZ_DRP2_ATTACHMENT_ACCESS_READ_WRITE;
+    if (named_depth != NULL || transient_depth_owner != NULL)
+    {
+        depth_transition_access = _attachment_effective_access(
+            command->u.begin_render_pass.depth_access, command->u.begin_render_pass.depth_load_op);
+    }
+    if (named_depth != NULL && depth_transition_access != DVZ_DRP2_ATTACHMENT_ACCESS_READ)
         skip_texture_ids[skip_count++] = named_depth->id;
 
     DvzDrp2ValidationResult bind_group_transition_result =
@@ -792,17 +798,11 @@ DvzDrp2ValidationResult _vklite_begin_render_pass(
     if (named_depth != NULL)
     {
         _vklite_transition_image_access(
-            cmds, named_depth,
-            _depth_texture_access(_attachment_effective_access(
-                command->u.begin_render_pass.depth_access,
-                command->u.begin_render_pass.depth_load_op)));
+            cmds, named_depth, _depth_texture_access(depth_transition_access));
     }
     else if (transient_depth_owner != NULL && transient_depth_owner->depth_images != NULL)
         _transition_owned_depth_image_access(
-            cmds, transient_depth_owner,
-            _depth_texture_access(_attachment_effective_access(
-                command->u.begin_render_pass.depth_access,
-                command->u.begin_render_pass.depth_load_op)));
+            cmds, transient_depth_owner, _depth_texture_access(depth_transition_access));
     dvz_cmd_rendering_begin(cmds, rendering);
     return _drp2_ok();
 }

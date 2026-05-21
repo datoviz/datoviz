@@ -243,7 +243,7 @@ int main(int argc, char** argv)
         .active_count = 65536u,
         .count_value = 65536.0f,
         .pixel_size = 3.4f,
-        .alpha = 0.95f,
+        .alpha = 1.0f,
         .animate = true,
         .depth_variation = true,
     };
