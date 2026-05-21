@@ -17,6 +17,7 @@
 #include <math.h>
 #include <string.h>
 
+#include "_alloc.h"
 #include "_assertions.h"
 #include "../../drp2/_stream.h"
 #include "../_scene.h"
@@ -192,6 +193,20 @@ static uint32_t _axis_test_horizontal_grid_line_count(DvzAxis* axis)
 }
 
 
+/**
+ * Return one text visual position attribute.
+ *
+ * @param axis the axis
+ * @return text position attribute, or NULL
+ */
+static DvzVisualAttr* _axis_test_text_position_attr(DvzAxis* axis)
+{
+    ANN(axis);
+    ANN(axis->text_visual);
+    return _axis_test_attr(axis->text_visual, "position");
+}
+
+
 
 /*************************************************************************************************/
 /*  Tests                                                                                        */
@@ -305,6 +320,115 @@ static int test_axis_tick_density_tracks_panel_size(TstContext* suite, const Tst
 
     dvz_scene_destroy(wide_scene);
     dvz_scene_destroy(narrow_scene);
+    return 0;
+}
+
+
+static int test_axis_text_labels(TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 800, 600, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
+    ANN(panel);
+
+    AT(dvz_panel_set_domain(panel, DVZ_DIM_X, 0.0, 10.0) == 0);
+    DvzAxis* axis = dvz_panel_axis(panel, DVZ_DIM_X);
+    ANN(axis);
+    AT(dvz_axis_set_label(axis, "Time"));
+
+    _scene_prepare_axis_visuals(figure);
+    ANN(axis->text_visual);
+    AT(axis->text_visual->type == DVZ_VISUAL_TYPE_TEXT);
+    AT(axis->text_visual->visible);
+    AT(axis->text_visual->text.string_count == axis->tick_count + 1);
+    AT(strcmp(axis->text_visual->text.strings[axis->tick_count], "Time") == 0);
+    DvzVisualAttr* position_attr = _axis_test_text_position_attr(axis);
+    ANN(position_attr);
+    AT(position_attr->item_count == axis->text_visual->text.string_count);
+
+    _scene_prepare_text_visuals(figure);
+    ANN(axis->text_visual->text.glyph_visual);
+    AT(axis->text_visual->text.glyph_visual->visible);
+
+    AT(dvz_axis_set_visible(axis, false));
+    _scene_prepare_axis_visuals(figure);
+    AT(!axis->text_visual->visible);
+    _scene_prepare_text_visuals(figure);
+    AT(!axis->text_visual->text.glyph_visual->visible);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+static int test_axis_text_updates_after_domain_change(TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 800, 600, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
+    ANN(panel);
+
+    AT(dvz_panel_set_domain(panel, DVZ_DIM_X, 0.0, 100.0) == 0);
+    DvzAxis* axis = dvz_panel_axis(panel, DVZ_DIM_X);
+    ANN(axis);
+    _scene_prepare_axis_visuals(figure);
+    ANN(axis->text_visual);
+    AT(axis->text_visual->text.string_count >= 2);
+    char second_before[DVZ_SCENE_LABEL_SIZE] = {0};
+    dvz_strlcpy(second_before, axis->text_visual->text.strings[1], sizeof(second_before));
+
+    AT(dvz_panel_set_domain(panel, DVZ_DIM_X, 0.0, 10.0) == 0);
+    _scene_prepare_axis_visuals(figure);
+    AT(axis->text_visual->text.string_count >= 2);
+    AT(strcmp(axis->text_visual->text.strings[1], second_before) != 0);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+static int test_axis_text_layout_reserve(TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 800, 600, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
+    ANN(panel);
+
+    AT(dvz_panel_set_domain(panel, DVZ_DIM_X, 0.0, 10.0) == 0);
+    DvzAxis* axis = dvz_panel_axis(panel, DVZ_DIM_X);
+    ANN(axis);
+    _scene_prepare_axis_visuals(figure);
+    DvzVisualAttr* position_attr = _axis_test_text_position_attr(axis);
+    ANN(position_attr);
+    const float* positions = (const float*)position_attr->data;
+    float y_before = positions[1];
+
+    AT(dvz_panel_set_layout_reserve(
+        panel, &(DvzPanelLayoutReserve){.left = 0.0f, .right = 0.0f, .bottom = 0.20f,
+                                        .top = 0.0f}));
+    _scene_prepare_axis_visuals(figure);
+    position_attr = _axis_test_text_position_attr(axis);
+    ANN(position_attr);
+    positions = (const float*)position_attr->data;
+    float y_after = positions[1];
+    AT(y_after < y_before);
+
+    dvz_scene_destroy(scene);
     return 0;
 }
 
@@ -615,6 +739,7 @@ int test_axis_dynamic_segment_draw_count(TstContext* suite, const TstCase* item)
 
     DvzCapabilitySnapshot caps;
     dvz_capability_snapshot_default(&caps);
+    caps.supports_color_blending = true;
     DvzDiagnosticReport report;
     dvz_diagnostic_report_init(&report);
     DvzFramePlanEmitConfig cfg = dvz_frame_plan_emit_config();
@@ -654,6 +779,9 @@ int test_scene_axis(TstSuite* suite)
     TST_CASE(test_axis_domain_and_ticks);
     TST_CASE(test_axis_minor_ticks);
     TST_CASE(test_axis_tick_density_tracks_panel_size);
+    TST_CASE(test_axis_text_labels);
+    TST_CASE(test_axis_text_updates_after_domain_change);
+    TST_CASE(test_axis_text_layout_reserve);
     TST_CASE(test_panel_data_to_visual_positions);
     TST_CASE(test_axis_plot_margins);
     TST_CASE(test_axis_layout_reserve);

@@ -961,6 +961,14 @@ struct DvzAxis
     bool tick_cache_valid;
     double ticks[DVZ_SCENE_MAX_AXIS_TICKS];
     DvzVisual* visual;
+    DvzVisual* text_visual;
+    uint32_t text_count;
+    char text_labels[DVZ_SCENE_MAX_AXIS_TICKS + 1][DVZ_SCENE_LABEL_SIZE];
+    float text_positions[DVZ_SCENE_MAX_AXIS_TICKS + 1][3];
+    float text_anchors[DVZ_SCENE_MAX_AXIS_TICKS + 1][2];
+    float text_sizes[DVZ_SCENE_MAX_AXIS_TICKS + 1];
+    uint8_t text_colors[DVZ_SCENE_MAX_AXIS_TICKS + 1][4];
+    float text_angles[DVZ_SCENE_MAX_AXIS_TICKS + 1];
 };
 
 

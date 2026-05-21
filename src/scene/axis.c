@@ -17,6 +17,7 @@
 #include <math.h>
 #include <stdbool.h>
 #include <stdint.h>
+#include <string.h>
 
 #include "_alloc.h"
 #include "_assertions.h"
@@ -32,6 +33,11 @@
 /*************************************************************************************************/
 
 #define AXIS_EPS 1e-12
+#define AXIS_TEXT_TICK_SIZE 11.0f
+#define AXIS_TEXT_LABEL_SIZE 13.0f
+#define AXIS_TEXT_TICK_GAP 6.0f
+#define AXIS_TEXT_LABEL_GAP 28.0f
+#define AXIS_TEXT_Y_LABEL_ANGLE -1.57079632679f
 
 
 
@@ -332,6 +338,237 @@ static float _axis_snap_visual_pixel_center(const DvzAxis* axis, float value, Dv
 }
 
 
+
+/**
+ * Convert one fixed visual-space coordinate to figure pixel coordinates.
+ *
+ * @param axis the axis owning the panel
+ * @param visual_x visual-space x coordinate
+ * @param visual_y visual-space y coordinate
+ * @param out_x output x coordinate in figure pixels
+ * @param out_y output y coordinate in figure pixels from the figure top
+ */
+static void _axis_visual_to_pixels(
+    const DvzAxis* axis, float visual_x, float visual_y, float* out_x, float* out_y)
+{
+    ANN(axis);
+    ANN(out_x);
+    ANN(out_y);
+    float panel_x = 0.0f;
+    float panel_y = 0.0f;
+    float panel_width = 0.0f;
+    float panel_height = 0.0f;
+    _scene_panel_pixel_rect(axis->panel, &panel_x, &panel_y, &panel_width, &panel_height);
+    *out_x = panel_x + 0.5f * (visual_x + 1.0f) * panel_width;
+    *out_y = panel_y + 0.5f * (1.0f - visual_y) * panel_height;
+}
+
+
+
+/**
+ * Format one numeric tick value for the first rendered 2D axis label slice.
+ *
+ * @param value the tick value
+ * @param step the major tick step
+ * @param out output string buffer
+ * @param out_size output string buffer size
+ */
+static void _axis_format_tick(double value, double step, char* out, uint32_t out_size)
+{
+    ANN(out);
+    if (out_size == 0)
+        return;
+    if (isfinite(step) && step > 0.0 && fabs(value) < 0.5 * step * 1e-9)
+        value = 0.0;
+    dvz_snprintf(out, out_size, "%.6g", value);
+}
+
+
+
+/**
+ * Return whether two axis text layouts are byte-identical.
+ *
+ * @param axis the axis
+ * @param count text item count
+ * @param labels text labels
+ * @param positions text positions
+ * @param anchors text anchors
+ * @param sizes text sizes
+ * @param colors text colors
+ * @param angles text angles
+ * @return whether the cached layout matches
+ */
+static bool _axis_text_cache_matches(
+    const DvzAxis* axis, uint32_t count, char labels[][DVZ_SCENE_LABEL_SIZE],
+    float positions[][3], float anchors[][2], float* sizes, uint8_t colors[][4],
+    float* angles)
+{
+    ANN(axis);
+    if (axis->text_count != count)
+        return false;
+    for (uint32_t i = 0; i < count; i++)
+    {
+        if (strcmp(axis->text_labels[i], labels[i]) != 0)
+            return false;
+        for (uint32_t j = 0; j < 3; j++)
+        {
+            if (fabsf(axis->text_positions[i][j] - positions[i][j]) > 1e-5f)
+                return false;
+        }
+        for (uint32_t j = 0; j < 2; j++)
+        {
+            if (fabsf(axis->text_anchors[i][j] - anchors[i][j]) > 1e-5f)
+                return false;
+        }
+        if (fabsf(axis->text_sizes[i] - sizes[i]) > 1e-5f)
+            return false;
+        if (memcmp(axis->text_colors[i], colors[i], 4) != 0)
+            return false;
+        if (fabsf(axis->text_angles[i] - angles[i]) > 1e-5f)
+            return false;
+    }
+    return true;
+}
+
+
+
+/**
+ * Store a successfully emitted axis text layout in the axis cache.
+ *
+ * @param axis the axis
+ * @param count text item count
+ * @param labels text labels
+ * @param positions text positions
+ * @param anchors text anchors
+ * @param sizes text sizes
+ * @param colors text colors
+ * @param angles text angles
+ */
+static void _axis_text_cache_store(
+    DvzAxis* axis, uint32_t count, char labels[][DVZ_SCENE_LABEL_SIZE],
+    float positions[][3], float anchors[][2], float* sizes, uint8_t colors[][4],
+    float* angles)
+{
+    ANN(axis);
+    axis->text_count = count;
+    for (uint32_t i = 0; i < count; i++)
+    {
+        dvz_strlcpy(axis->text_labels[i], labels[i], sizeof(axis->text_labels[i]));
+        for (uint32_t j = 0; j < 3; j++)
+            axis->text_positions[i][j] = positions[i][j];
+        for (uint32_t j = 0; j < 2; j++)
+            axis->text_anchors[i][j] = anchors[i][j];
+        axis->text_sizes[i] = sizes[i];
+        for (uint32_t j = 0; j < 4; j++)
+            axis->text_colors[i][j] = colors[i][j];
+        axis->text_angles[i] = angles[i];
+    }
+}
+
+
+
+/**
+ * Hide the derived text visual for an axis.
+ *
+ * @param axis the axis
+ */
+static void _axis_hide_text(DvzAxis* axis)
+{
+    ANN(axis);
+    axis->text_count = 0;
+    if (axis->text_visual != NULL)
+    {
+        if (axis->text_visual->visible)
+            dvz_visual_set_visible(axis->text_visual, false);
+        if (axis->text_visual->text.glyph_visual != NULL &&
+            axis->text_visual->text.glyph_visual->visible)
+            dvz_visual_set_visible(axis->text_visual->text.glyph_visual, false);
+    }
+}
+
+
+
+/**
+ * Ensure one derived screen-space text visual exists for an axis.
+ *
+ * @param axis the axis
+ * @return whether the text visual exists
+ */
+static bool _axis_ensure_text_visual(DvzAxis* axis)
+{
+    ANN(axis);
+    if (axis->text_visual != NULL)
+        return true;
+    if (axis->panel == NULL || axis->panel->figure == NULL || axis->panel->figure->scene == NULL)
+        return false;
+    axis->text_visual = dvz_text(axis->panel->figure->scene, 0);
+    if (axis->text_visual == NULL)
+        return false;
+    axis->text_visual->visible = false;
+    DvzVisualAttachDesc attach = {.z_layer = 1001, .controller_mode = DVZ_CONTROLLER_FIXED};
+    if (dvz_panel_add_visual(axis->panel, axis->text_visual, &attach) != 0)
+    {
+        axis->text_visual = NULL;
+        return false;
+    }
+    return true;
+}
+
+
+
+/**
+ * Append one text item to axis text layout arrays.
+ *
+ * @param count current text item count
+ * @param labels text labels
+ * @param strings string pointer table
+ * @param positions text positions
+ * @param anchors text anchors
+ * @param sizes text sizes
+ * @param colors text colors
+ * @param angles text angles
+ * @param label item label
+ * @param x item x coordinate in pixels
+ * @param y item y coordinate in pixels
+ * @param anchor_x text anchor x
+ * @param anchor_y text anchor y
+ * @param size text size in points
+ * @param color text color
+ * @param angle text angle in radians
+ */
+static void _axis_append_text_item(
+    uint32_t* count, char labels[][DVZ_SCENE_LABEL_SIZE], const char** strings,
+    float positions[][3], float anchors[][2], float* sizes, uint8_t colors[][4], float* angles,
+    const char* label, float x, float y, float anchor_x, float anchor_y, float size,
+    const uint8_t color[4], float angle)
+{
+    ANN(count);
+    ANN(labels);
+    ANN(strings);
+    ANN(positions);
+    ANN(anchors);
+    ANN(sizes);
+    ANN(colors);
+    ANN(angles);
+    ANN(label);
+    ANN(color);
+    if (*count >= DVZ_SCENE_MAX_AXIS_TICKS + 1)
+        return;
+    uint32_t i = (*count)++;
+    dvz_strlcpy(labels[i], label, DVZ_SCENE_LABEL_SIZE);
+    strings[i] = labels[i];
+    positions[i][0] = x;
+    positions[i][1] = y;
+    positions[i][2] = 0.0f;
+    anchors[i][0] = anchor_x;
+    anchors[i][1] = anchor_y;
+    sizes[i] = size;
+    for (uint32_t j = 0; j < 4; j++)
+        colors[i][j] = color[j];
+    angles[i] = angle;
+}
+
+
 /**
  * Return the clamped minor tick count for one major interval.
  *
@@ -611,6 +848,127 @@ static void _axis_append_tick(
 
 
 /**
+ * Rebuild the derived text visual for tick labels and the axis label.
+ *
+ * @param axis the axis
+ * @param x0 plot left in visual coordinates
+ * @param x1 plot right in visual coordinates
+ * @param y0 plot bottom in visual coordinates
+ * @param y1 plot top in visual coordinates
+ * @param visible_min visible data minimum
+ * @param visible_max visible data maximum
+ */
+static void _axis_update_text(
+    DvzAxis* axis, float x0, float x1, float y0, float y1, double visible_min,
+    double visible_max)
+{
+    ANN(axis);
+    if (!axis->enabled || axis->tick_count == 0 || !(visible_max > visible_min))
+    {
+        _axis_hide_text(axis);
+        return;
+    }
+
+    uint32_t count = 0;
+    char labels[DVZ_SCENE_MAX_AXIS_TICKS + 1][DVZ_SCENE_LABEL_SIZE] = {{0}};
+    const char* strings[DVZ_SCENE_MAX_AXIS_TICKS + 1] = {0};
+    float positions[DVZ_SCENE_MAX_AXIS_TICKS + 1][3] = {{0}};
+    float anchors[DVZ_SCENE_MAX_AXIS_TICKS + 1][2] = {{0}};
+    float sizes[DVZ_SCENE_MAX_AXIS_TICKS + 1] = {0};
+    uint8_t colors[DVZ_SCENE_MAX_AXIS_TICKS + 1][4] = {{0}};
+    float angles[DVZ_SCENE_MAX_AXIS_TICKS + 1] = {0};
+
+    for (uint32_t i = 0; i < axis->tick_count; i++)
+    {
+        float plot_min = axis->dim == DVZ_DIM_X ? x0 : y0;
+        float plot_max = axis->dim == DVZ_DIM_X ? x1 : y1;
+        float p =
+            _axis_data_to_visual(axis->ticks[i], visible_min, visible_max, plot_min, plot_max);
+        if (p < plot_min - 0.0001f || p > plot_max + 0.0001f)
+            continue;
+
+        char tick_label[DVZ_SCENE_LABEL_SIZE] = {0};
+        _axis_format_tick(axis->ticks[i], axis->tick_lstep, tick_label, sizeof(tick_label));
+        float px = 0.0f;
+        float py = 0.0f;
+        if (axis->dim == DVZ_DIM_X)
+        {
+            _axis_visual_to_pixels(axis, p, y0, &px, &py);
+            py += AXIS_TEXT_TICK_GAP;
+            _axis_append_text_item(
+                &count, labels, strings, positions, anchors, sizes, colors, angles, tick_label, px,
+                py, 0.5f, 0.0f, AXIS_TEXT_TICK_SIZE, axis->style.major_tick_color, 0.0f);
+        }
+        else
+        {
+            _axis_visual_to_pixels(axis, x0, p, &px, &py);
+            px -= AXIS_TEXT_TICK_GAP;
+            _axis_append_text_item(
+                &count, labels, strings, positions, anchors, sizes, colors, angles, tick_label, px,
+                py, 1.0f, 0.5f, AXIS_TEXT_TICK_SIZE, axis->style.major_tick_color, 0.0f);
+        }
+    }
+
+    if (axis->label[0] != '\0')
+    {
+        float px = 0.0f;
+        float py = 0.0f;
+        if (axis->dim == DVZ_DIM_X)
+        {
+            _axis_visual_to_pixels(axis, 0.5f * (x0 + x1), y0, &px, &py);
+            py += AXIS_TEXT_LABEL_GAP;
+            _axis_append_text_item(
+                &count, labels, strings, positions, anchors, sizes, colors, angles, axis->label,
+                px, py, 0.5f, 0.0f, AXIS_TEXT_LABEL_SIZE, axis->style.spine_color, 0.0f);
+        }
+        else
+        {
+            _axis_visual_to_pixels(axis, x0, 0.5f * (y0 + y1), &px, &py);
+            px -= AXIS_TEXT_LABEL_GAP;
+            _axis_append_text_item(
+                &count, labels, strings, positions, anchors, sizes, colors, angles, axis->label,
+                px, py, 0.5f, 0.5f, AXIS_TEXT_LABEL_SIZE, axis->style.spine_color,
+                AXIS_TEXT_Y_LABEL_ANGLE);
+        }
+    }
+
+    if (count == 0)
+    {
+        _axis_hide_text(axis);
+        return;
+    }
+    if (!_axis_ensure_text_visual(axis))
+        return;
+    if (_axis_text_cache_matches(axis, count, labels, positions, anchors, sizes, colors, angles))
+    {
+        if (!axis->text_visual->visible)
+            dvz_visual_set_visible(axis->text_visual, true);
+        return;
+    }
+
+    DvzVisualDataUpdate updates[5] = {
+        {.attr_name = "position", .data = positions, .item_count = count},
+        {.attr_name = "anchor", .data = anchors, .item_count = count},
+        {.attr_name = "size", .data = sizes, .item_count = count},
+        {.attr_name = "color", .data = colors, .item_count = count},
+        {.attr_name = "angle", .data = angles, .item_count = count},
+    };
+    if (dvz_visual_set_strings(axis->text_visual, "text", strings, count) == 0 &&
+        dvz_visual_set_data_many(axis->text_visual, updates, 5) == 0)
+    {
+        if (!axis->text_visual->visible)
+            dvz_visual_set_visible(axis->text_visual, true);
+        _axis_text_cache_store(axis, count, labels, positions, anchors, sizes, colors, angles);
+    }
+    else
+    {
+        _axis_hide_text(axis);
+    }
+}
+
+
+
+/**
  * Rebuild the fixed-space primitive visual backing one axis.
  *
  * @param axis the axis
@@ -629,6 +987,8 @@ static void _axis_update_visual(DvzAxis* axis)
     float x1 = +1.0f;
     float y0 = -1.0f;
     float y1 = +1.0f;
+    _axis_init(&axis->panel->axes[DVZ_DIM_X], axis->panel, DVZ_DIM_X);
+    _axis_init(&axis->panel->axes[DVZ_DIM_Y], axis->panel, DVZ_DIM_Y);
     _axis_plot_interval(&axis->panel->axes[DVZ_DIM_X], &x0, &x1);
     _axis_plot_interval(&axis->panel->axes[DVZ_DIM_Y], &y0, &y1);
 
@@ -647,7 +1007,10 @@ static void _axis_update_visual(DvzAxis* axis)
     double visible_min = 0.0;
     double visible_max = 0.0;
     if (!_axis_visible_domain(axis, &visible_min, &visible_max))
+    {
+        _axis_hide_text(axis);
         return;
+    }
     _axis_compute_ticks(axis);
     for (uint32_t i = 0; i < axis->tick_count; i++)
     {
@@ -683,7 +1046,8 @@ static void _axis_update_visual(DvzAxis* axis)
             for (uint32_t j = 1; j <= minor_count; j++)
             {
                 double value = axis->ticks[i] + (double)j * delta;
-                float mp = _axis_data_to_visual(value, visible_min, visible_max, plot_min, plot_max);
+                float mp =
+                    _axis_data_to_visual(value, visible_min, visible_max, plot_min, plot_max);
                 if (mp < plot_min - 0.0001f || mp > plot_max + 0.0001f)
                     continue;
                 _axis_append_tick(
@@ -695,12 +1059,16 @@ static void _axis_update_visual(DvzAxis* axis)
 
     axis->visual->visible = axis->enabled && vertex_count > 0;
     if (vertex_count == 0)
+    {
+        _axis_hide_text(axis);
         return;
+    }
     DvzVisualDataUpdate updates[] = {
         {.attr_name = "position", .data = positions, .item_count = vertex_count},
         {.attr_name = "color", .data = colors, .item_count = vertex_count},
     };
     (void)dvz_visual_set_data_many(axis->visual, updates, 2);
+    _axis_update_text(axis, x0, x1, y0, y1, visible_min, visible_max);
     axis->dirty = false;
 }
 
@@ -878,6 +1246,8 @@ bool dvz_axis_set_visible(DvzAxis* axis, bool visible)
     axis->version++;
     if (axis->visual != NULL && !visible)
         axis->visual->visible = false;
+    if (!visible)
+        _axis_hide_text(axis);
     _scene_notify_request_frame(axis->panel != NULL ? axis->panel->figure : NULL);
     return true;
 }
@@ -916,6 +1286,7 @@ bool dvz_axis_set_label(DvzAxis* axis, const char* label)
     if (axis == NULL)
         return false;
     dvz_strlcpy(axis->label, label != NULL ? label : "", sizeof(axis->label));
+    axis->dirty = true;
     axis->version++;
     _scene_notify_request_frame(axis->panel != NULL ? axis->panel->figure : NULL);
     return true;
