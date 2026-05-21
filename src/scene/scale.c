@@ -215,32 +215,39 @@ static void _colorbar_apply_auto_reserve(DvzColorbar* colorbar)
         return;
     DvzPanelLayoutReserve reserve = dvz_panel_layout_reserve();
     (void)dvz_panel_get_layout_reserve(colorbar->panel, &reserve);
+    DvzPanelLayoutReserve next = reserve;
     switch (colorbar->anchor)
     {
     case DVZ_SCENE_ANCHOR_PANEL_LEFT:
-        reserve.left = fmaxf(
-            reserve.left,
+        next.left = fmaxf(
+            next.left,
             _colorbar_pixels_to_reserve(colorbar->panel, true, COLORBAR_VERTICAL_RESERVE_PX));
         break;
     case DVZ_SCENE_ANCHOR_PANEL_RIGHT:
-        reserve.right = fmaxf(
-            reserve.right,
+        next.right = fmaxf(
+            next.right,
             _colorbar_pixels_to_reserve(colorbar->panel, true, COLORBAR_VERTICAL_RESERVE_PX));
         break;
     case DVZ_SCENE_ANCHOR_PANEL_TOP:
-        reserve.top = fmaxf(
-            reserve.top,
+        next.top = fmaxf(
+            next.top,
             _colorbar_pixels_to_reserve(colorbar->panel, false, COLORBAR_HORIZONTAL_RESERVE_PX));
         break;
     case DVZ_SCENE_ANCHOR_PANEL_BOTTOM:
-        reserve.bottom = fmaxf(
-            reserve.bottom,
+        next.bottom = fmaxf(
+            next.bottom,
             _colorbar_pixels_to_reserve(colorbar->panel, false, COLORBAR_HORIZONTAL_RESERVE_PX));
         break;
     default:
         break;
     }
-    (void)dvz_panel_set_layout_reserve(colorbar->panel, &reserve);
+    if (fabsf(next.left - reserve.left) > 1e-6f ||
+        fabsf(next.right - reserve.right) > 1e-6f ||
+        fabsf(next.bottom - reserve.bottom) > 1e-6f ||
+        fabsf(next.top - reserve.top) > 1e-6f)
+    {
+        (void)dvz_panel_set_layout_reserve(colorbar->panel, &next);
+    }
 }
 
 
