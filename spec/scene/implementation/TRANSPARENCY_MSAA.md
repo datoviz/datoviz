@@ -55,8 +55,8 @@ knowledge below the scene contract.
 `DVZ_ALPHA_DEPTH_PEEL` is the explicit higher-quality OIT path. It is appropriate when WBOIT
 approximation errors are unacceptable and the runtime can afford extra passes.
 
-The current scene path may use a depth-peeling-shaped graph as an implementation scaffold, but the
-target behavior for real dual depth peeling is:
+The current scene path uses the fixed internal graph contract below, but the remaining correctness
+target for real dual depth peeling is:
 
 1. render opaque scene color and depth first;
 2. initialize per-pixel nearest and farthest transparent depth bounds;
