@@ -37,6 +37,7 @@
 
 typedef struct DvzScenePickPayload DvzScenePickPayload;
 typedef struct DvzSceneProbePayload DvzSceneProbePayload;
+typedef struct DvzScenePickResolver DvzScenePickResolver;
 
 
 
@@ -71,6 +72,17 @@ struct DvzSceneProbePayload
     double vector[4];
     uint64_t category_id;
     char label[DVZ_SCENE_LABEL_SIZE];
+};
+
+
+struct DvzScenePickResolver
+{
+    const char* name;
+    bool needs_runtime;
+    bool (*has_candidate)(const DvzFigure* figure, const DvzPendingPickRequest* pending);
+    bool (*process)(
+        DvzFigure* figure, DvzSceneRequestExecutor* executor, const DvzCapabilitySnapshot* caps,
+        const DvzPendingPickRequest* pending);
 };
 
 
@@ -140,6 +152,9 @@ static bool _scene_probe_request_has_volume_slice_candidate(
 static bool _scene_pick_request_has_point_like_candidate(
     const DvzFigure* figure, const DvzPendingPickRequest* pending);
 
+static bool _scene_pick_request_needs_runtime(
+    const DvzFigure* figure, const DvzPendingPickRequest* pending);
+
 static bool _scene_point_like_pick_plan(
     const DvzFigure* figure, const DvzPanel* panel, DvzVisual* visual,
     const DvzPendingPickRequest* pending, const vec2 request_ndc, DvzSceneProbePlan* out_plan,
@@ -149,12 +164,31 @@ static bool _scene_process_point_pick_request(
     DvzFigure* figure, DvzSceneRequestExecutor* executor, const DvzCapabilitySnapshot* caps,
     const DvzPendingPickRequest* pending);
 
+static bool _scene_process_pick_request(
+    DvzFigure* figure, DvzSceneRequestExecutor* executor, const DvzCapabilitySnapshot* caps,
+    const DvzPendingPickRequest* pending);
+
 static bool _scene_process_image_probe_request(
     DvzFigure* figure, DvzSceneRequestExecutor* executor, const DvzCapabilitySnapshot* caps,
     const DvzPendingProbeRequest* pending);
 
 static bool _scene_process_volume_slice_probe_request(
     DvzFigure* figure, const DvzPendingProbeRequest* pending);
+
+
+
+/*************************************************************************************************/
+/*  Constants                                                                                    */
+/*************************************************************************************************/
+
+static const DvzScenePickResolver PICK_RESOLVERS[] = {
+    {
+        .name = "point-like",
+        .needs_runtime = true,
+        .has_candidate = _scene_pick_request_has_point_like_candidate,
+        .process = _scene_process_point_pick_request,
+    },
+};
 
 
 
@@ -221,9 +255,9 @@ uint32_t _dvz_figure_process_requests_with_executor(
             i++;
             continue;
         }
-        if (_scene_pick_request_has_point_like_candidate(figure, &pending))
+        if (_scene_pick_request_needs_runtime(figure, &pending))
             (void)_scene_request_executor_prepare(executor, runtime);
-        (void)_scene_process_point_pick_request(figure, executor, caps, &pending);
+        (void)_scene_process_pick_request(figure, executor, caps, &pending);
         _scene_remove_pending_pick_at(scene, i);
         processed++;
     }
@@ -1102,6 +1136,32 @@ static bool _scene_pick_request_has_point_like_candidate(
 
 
 /**
+ * Return whether one pending pick needs an auxiliary request runtime.
+ *
+ * @param figure figure whose request queue is being processed
+ * @param pending pending pick request
+ * @return true when at least one matching resolver requires the DRP2 runtime
+ */
+static bool _scene_pick_request_needs_runtime(
+    const DvzFigure* figure, const DvzPendingPickRequest* pending)
+{
+    ANN(figure);
+    ANN(pending);
+    for (uint32_t i = 0; i < DVZ_ARRAY_COUNT(PICK_RESOLVERS); i++)
+    {
+        const DvzScenePickResolver* resolver = &PICK_RESOLVERS[i];
+        if (
+            resolver->needs_runtime && resolver->has_candidate != NULL &&
+            resolver->has_candidate(figure, pending))
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+
+/**
  * Build a synthetic GPU readback frame plan for one point-like pick request.
  *
  * @param figure the parent figure
@@ -1242,6 +1302,62 @@ static bool _scene_point_like_pick_plan(
     *out_target_width = target_width;
     *out_target_height = target_height;
     return true;
+}
+
+
+/**
+ * Resolve one pick request by dispatching to the first matching family resolver.
+ *
+ * @param figure figure whose request queue is being processed
+ * @param executor retained request executor for GPU-backed resolvers
+ * @param caps capability snapshot
+ * @param pending pending pick request
+ * @return whether a result was queued
+ */
+static bool _scene_process_pick_request(
+    DvzFigure* figure, DvzSceneRequestExecutor* executor, const DvzCapabilitySnapshot* caps,
+    const DvzPendingPickRequest* pending)
+{
+    ANN(figure);
+    ANN(caps);
+    ANN(pending);
+    ANN(pending->panel);
+
+    DvzScene* scene = figure->scene;
+    DvzPanel* panel = pending->panel;
+    DvzPickResult miss =
+        _scene_pick_miss_result(figure, panel, pending, DVZ_PICK_STATUS_NO_CAPABLE_VISUAL);
+
+    if (!_scene_pick_target_supported(pending->request.target))
+    {
+        miss.status = DVZ_PICK_STATUS_UNSUPPORTED_TARGET;
+        return _scene_push_pick_result(scene, panel, pending->freshness_serial, &miss);
+    }
+
+    vec2 request_ndc = {0};
+    if (!_scene_pick_request_ndc(figure, panel, pending->x, pending->y, request_ndc))
+    {
+        miss.status = DVZ_PICK_STATUS_OUTSIDE_PANEL;
+        _scene_pick_trace(
+            "picker_request request=%llu x=%.3f y=%.3f panel=%p figure=%ux%u outside_panel=1\n",
+            (unsigned long long)pending->request.request_id, pending->x, pending->y,
+            (void*)panel, figure->width, figure->height);
+        return _scene_push_pick_result(scene, panel, pending->freshness_serial, &miss);
+    }
+
+    for (uint32_t i = 0; i < DVZ_ARRAY_COUNT(PICK_RESOLVERS); i++)
+    {
+        const DvzScenePickResolver* resolver = &PICK_RESOLVERS[i];
+        if (
+            resolver->has_candidate == NULL || resolver->process == NULL ||
+            !resolver->has_candidate(figure, pending))
+        {
+            continue;
+        }
+        return resolver->process(figure, executor, caps, pending);
+    }
+
+    return _scene_push_pick_result(scene, panel, pending->freshness_serial, &miss);
 }
 
 
