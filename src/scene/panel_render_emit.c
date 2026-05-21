@@ -317,6 +317,38 @@ static bool _scene_visual_is_visible_drawable(const DvzVisual* visual)
 
 
 /**
+ * Return whether a visual is owned by a panel colorbar adornment.
+ *
+ * @param panel the panel owning colorbar handles
+ * @param visual the visual to classify
+ * @return whether the visual is colorbar-derived
+ */
+static bool _scene_visual_is_colorbar_derived(const DvzPanel* panel, const DvzVisual* visual)
+{
+    ANN(panel);
+    ANN(visual);
+    for (uint32_t i = 0; i < panel->colorbar_count; i++)
+    {
+        const DvzColorbar* colorbar = panel->colorbars[i];
+        if (colorbar == NULL)
+            continue;
+        if (visual == colorbar->ramp_visual || visual == colorbar->tick_visual ||
+            visual == colorbar->text_visual)
+        {
+            return true;
+        }
+        if (colorbar->text_visual != NULL &&
+            visual == colorbar->text_visual->text.glyph_visual)
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+
+
+/**
  * Return the clip rectangle one visual should use within its panel render pass.
  *
  * @param panel the panel owning the visual attachment
@@ -327,8 +359,11 @@ static DvzFramePlanClipRect _scene_visual_clip_rect(const DvzPanel* panel, const
 {
     ANN(panel);
     ANN(visual);
-    if (visual == panel->background_visual || visual->type == DVZ_VISUAL_TYPE_GLYPH)
+    if (visual == panel->background_visual || visual->type == DVZ_VISUAL_TYPE_GLYPH ||
+        _scene_visual_is_colorbar_derived(panel, visual))
+    {
         return DVZ_FRAME_PLAN_CLIP_RECT_PANEL;
+    }
     return DVZ_FRAME_PLAN_CLIP_RECT_PLOT;
 }
 

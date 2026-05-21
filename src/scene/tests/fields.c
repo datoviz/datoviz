@@ -21,6 +21,7 @@
 #include "_assertions.h"
 #include "_overflow.h"
 #include "../_scene.h"
+#include "../_scene_emit.h"
 #include "../../drp2/_stream.h"
 #include "datoviz/drp2.h"
 #include "datoviz/scene.h"
@@ -230,6 +231,42 @@ int test_scene_colorbar_auto_reserve_and_visuals(TstContext* suite, const TstCas
     float* positions = (float*)pos->data;
     AT(positions[1] < -0.95f);
     AT(positions[3 * (pos->item_count - 1) + 1] > 0.95f);
+
+    DvzFramePlan* plan = dvz_frame_plan("figure.colorbar.clip", 0);
+    ANN(plan);
+    AT(_scene_emit_panel_render(figure, 0, plan, "figure_0"));
+    uint32_t ramp_index = UINT32_MAX;
+    uint32_t tick_index = UINT32_MAX;
+    AT(_figure_visual_index(figure, colorbar->ramp_visual, &ramp_index));
+    AT(_figure_visual_index(figure, colorbar->tick_visual, &tick_index));
+    bool found_ramp_clip = false;
+    bool found_tick_clip = false;
+    for (uint32_t i = 0; i < dvz_frame_plan_node_count(plan); i++)
+    {
+        const DvzFramePlanNode* node = dvz_frame_plan_node_get(plan, i);
+        ANN(node);
+        if (node->type != DVZ_FRAME_PLAN_NODE_RENDER)
+            continue;
+        for (uint32_t j = 0; j < node->u.render.visual_count; j++)
+        {
+            const DvzFramePlanVisualMeta* meta = &node->u.render.visual_metadata[j];
+            if (!meta->has_metadata)
+                continue;
+            if (meta->visual_index == ramp_index)
+            {
+                AT(meta->clip_rect == DVZ_FRAME_PLAN_CLIP_RECT_PANEL);
+                found_ramp_clip = true;
+            }
+            if (meta->visual_index == tick_index)
+            {
+                AT(meta->clip_rect == DVZ_FRAME_PLAN_CLIP_RECT_PANEL);
+                found_tick_clip = true;
+            }
+        }
+    }
+    AT(found_ramp_clip);
+    AT(found_tick_clip);
+    dvz_frame_plan_destroy(plan);
 
     AT(dvz_colorbar_set_anchor(colorbar, DVZ_SCENE_ANCHOR_PANEL_BOTTOM));
     dvz_colorbar_set_orientation(colorbar, DVZ_COLORBAR_ORIENTATION_HORIZONTAL);
