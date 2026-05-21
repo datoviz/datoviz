@@ -469,6 +469,34 @@ int test_scene_text_semantic_object_realization(TstContext* suite, const TstCase
     AC(positions[0][0], -0.96875f, 1e-6f);
     AC(positions[0][1], 0.9166667f, 1e-6f);
 
+    dvz_text_set_placement(
+        text,
+        &(DvzTextPlacement){
+            .mode = DVZ_TEXT_PLACEMENT_DATA,
+            .position = {0.25, -0.5, 0.1},
+            .text_anchor = {0.0f, 0.0f},
+            .has_text_anchor = true,
+            .depth_test = true,
+        });
+    _scene_prepare_text_visuals(figure);
+    position_attr = _interaction_visual_attr(text->visual, "position");
+    ANN(position_attr);
+    positions = (const float(*)[3])position_attr->data;
+    ANN(positions);
+    AC(positions[0][0], 0.25f, 1e-6f);
+    AC(positions[0][1], -0.5f, 1e-6f);
+    AT(text->visual->depth_test_enabled);
+    bool found_data_attach = false;
+    for (uint32_t i = 0; i < panel->visual_count; i++)
+    {
+        if (panel->visuals[i].visual == text->visual)
+        {
+            found_data_attach = true;
+            AT(panel->visuals[i].controller_mode == DVZ_CONTROLLER_APPLY_ISOTROPIC_LOCAL);
+        }
+    }
+    AT(found_data_attach);
+
     dvz_text_destroy(text);
     AT(text->scene == NULL);
     AT(!text->visual->visible);

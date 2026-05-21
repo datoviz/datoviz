@@ -1061,12 +1061,12 @@ static bool _text_prepare_visual(DvzFigure* figure, DvzText* text)
         return true;
     DvzTextAtlasBackend backend = _text_renderer_backend(text->style.renderer, &text->style);
     bool use_builtin = backend == DVZ_TEXT_ATLAS_BACKEND_BUILTIN_BITMAP;
-    if (text->placement.mode != DVZ_TEXT_PLACEMENT_SCREEN)
-    {
-        if (text->visual != NULL)
-            dvz_visual_set_visible(text->visual, false);
-        return true;
-    }
+    bool screen_placement = text->placement.mode == DVZ_TEXT_PLACEMENT_SCREEN;
+    DvzVisualAttachDesc attach = {
+        .z_layer = INT32_MAX / 4,
+        .controller_mode =
+            screen_placement ? DVZ_CONTROLLER_FIXED : DVZ_CONTROLLER_APPLY_ISOTROPIC_LOCAL,
+    };
     uint32_t visible = 0;
     DvzSampledField* atlas = NULL;
     DvzTextAtlas* font_atlas = NULL;
@@ -1165,12 +1165,21 @@ static bool _text_prepare_visual(DvzFigure* figure, DvzText* text)
 
     uint8_t color[4] = {0};
     _text_style_color(&text->style, color);
-    float anchor_x = 0;
-    float anchor_y = 0;
-    _text_anchor_pixels(text, &anchor_x, &anchor_y);
-    float z = (float)text->placement.position[2];
     float anchor_clip[3] = {0};
-    _text_pixel_to_clip(figure, anchor_x, anchor_y, z, anchor_clip);
+    if (screen_placement)
+    {
+        float anchor_x = 0;
+        float anchor_y = 0;
+        _text_anchor_pixels(text, &anchor_x, &anchor_y);
+        float z = (float)text->placement.position[2];
+        _text_pixel_to_clip(figure, anchor_x, anchor_y, z, anchor_clip);
+    }
+    else
+    {
+        anchor_clip[0] = (float)text->placement.position[0];
+        anchor_clip[1] = (float)text->placement.position[1];
+        anchor_clip[2] = (float)text->placement.position[2];
+    }
     float align_x = 0;
     float align_y = 0;
     _text_placement_alignment(&text->placement, (float)width, (float)height, &align_x, &align_y);
@@ -1275,17 +1284,13 @@ static bool _text_prepare_visual(DvzFigure* figure, DvzText* text)
         text->visual = dvz_glyph(text->scene, 0);
         if (text->visual == NULL)
             ok = false;
-        DvzVisualAttachDesc attach = {
-            .z_layer = INT32_MAX / 4,
-            .controller_mode = DVZ_CONTROLLER_FIXED,
-        };
-        if (ok && dvz_panel_add_visual(text->panel, text->visual, &attach) != 0)
-            ok = false;
-        if (ok && dvz_visual_set_alpha_mode(text->visual, DVZ_ALPHA_BLENDED) != 0)
-            ok = false;
-        if (ok && dvz_visual_set_depth_test(text->visual, false) != 0)
-            ok = false;
     }
+    if (ok && !_text_sync_glyph_visual_attach(text->panel, text->visual, &attach))
+        ok = false;
+    if (ok && dvz_visual_set_alpha_mode(text->visual, DVZ_ALPHA_BLENDED) != 0)
+        ok = false;
+    if (ok && dvz_visual_set_depth_test(text->visual, text->placement.depth_test) != 0)
+        ok = false;
 
     if (ok)
     {
