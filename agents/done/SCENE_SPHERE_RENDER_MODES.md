@@ -1,18 +1,17 @@
-# Scene Sphere Render Modes Follow-Up
+# Scene Sphere Render Modes
 
 > **Execution Status**
-> - **Status:** `IMPLEMENTED / FOLLOW-UP NOTE`
-> - **Updated on:** `2026-05-19`
-> - **Purpose:** preserve validation and quality follow-ups for fast and raycast sphere impostor
->   modes.
+> - **Status:** `DONE`
+> - **Updated on:** `2026-05-21`
+> - **Purpose:** record the completed fast and raycast sphere impostor mode slice.
 
 
 ## Current Status
 
 The mode API and raycast impostor path have landed. The durable public contract lives in
-[`../../../spec/scene/visuals/SPHERE.md`](../../../spec/scene/visuals/SPHERE.md).
+[`../../spec/scene/visuals/SPHERE.md`](../../spec/scene/visuals/SPHERE.md).
 
-Keep this note for execution details that may still matter while tuning quality:
+This completed slice established:
 
 1. fast impostor and raycast impostor are modes of one sphere visual family;
 2. both modes use the same retained payload: center position, color, radius, material state, and
@@ -21,9 +20,10 @@ Keep this note for execution details that may still matter while tuning quality:
 4. G-buffer behavior must match the color path for depth, normal, and SSAO input quality.
 
 
-## Remaining Mode Work
+## Deferred Work
 
-Recommended follow-up commits:
+Mode-quality follow-up is no longer tracked as an active `soon` plan. Re-open a focused follow-up
+only when one of these items becomes immediate:
 
 1. Add or refresh live example controls that compare `FAST_IMPOSTOR` and `RAYCAST_IMPOSTOR`
    without recreating the scene.

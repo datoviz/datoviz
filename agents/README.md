@@ -90,20 +90,18 @@ Runtime, graph, and backend lanes:
 Scene feature lanes:
 
 1. [soon/scene/SCENE_2D_AXES_IMPLEMENTATION_PLAN.md](soon/scene/SCENE_2D_AXES_IMPLEMENTATION_PLAN.md)
-2. [soon/scene/SCENE_POINT_PIXEL_MARKER_PLAN.md](soon/scene/SCENE_POINT_PIXEL_MARKER_PLAN.md)
+2. [soon/scene/SCENE_POINT_PIXEL_MARKER_FOLLOWUP.md](soon/scene/SCENE_POINT_PIXEL_MARKER_FOLLOWUP.md)
 3. [soon/scene/SCENE_VECTOR_VISUALS_PLAN.md](soon/scene/SCENE_VECTOR_VISUALS_PLAN.md)
-4. [soon/scene/SCENE_VOLUME_RENDERING_PLAN.md](soon/scene/SCENE_VOLUME_RENDERING_PLAN.md)
+4. [soon/scene/SCENE_VOLUME_RENDERING_FOLLOWUP.md](soon/scene/SCENE_VOLUME_RENDERING_FOLLOWUP.md)
 5. [soon/scene/SCENE_NAPARI_IMAGE_LABELS_PLAN.md](soon/scene/SCENE_NAPARI_IMAGE_LABELS_PLAN.md)
-6. [soon/scene/SCENE_SPHERE_VISUAL_PLAN.md](soon/scene/SCENE_SPHERE_VISUAL_PLAN.md)
-7. [soon/scene/SCENE_SPHERE_RENDER_MODES_PLAN.md](soon/scene/SCENE_SPHERE_RENDER_MODES_PLAN.md)
-8. [soon/effects/SCENE_MSAA_PLAN.md](soon/effects/SCENE_MSAA_PLAN.md)
-9. [soon/effects/SCENE_SSAO_IMPLEMENTATION_PLAN.md](soon/effects/SCENE_SSAO_IMPLEMENTATION_PLAN.md)
-10. [soon/effects/SCENE_SSAO_QUALITY_PLAN.md](soon/effects/SCENE_SSAO_QUALITY_PLAN.md)
-11. [soon/effects/SCENE_TECHNIQUES_MATERIALS_PLAN.md](soon/effects/SCENE_TECHNIQUES_MATERIALS_PLAN.md)
-12. [soon/scene/SCENE_VISUAL_SHADER_ABI_REFACTOR_PLAN.md](soon/scene/SCENE_VISUAL_SHADER_ABI_REFACTOR_PLAN.md)
-13. [soon/interaction/SCENE_CONTROLLER_BINDING_REFACTOR_PLAN.md](soon/interaction/SCENE_CONTROLLER_BINDING_REFACTOR_PLAN.md)
-14. [soon/interaction/SCENE_FLY_CAMERA_PLAN.md](soon/interaction/SCENE_FLY_CAMERA_PLAN.md)
-15. [soon/interaction/SCENE_TURNTABLE_CONTROLLER_PLAN.md](soon/interaction/SCENE_TURNTABLE_CONTROLLER_PLAN.md)
+6. [soon/effects/SCENE_MSAA_PLAN.md](soon/effects/SCENE_MSAA_PLAN.md)
+7. [soon/effects/SCENE_SSAO_IMPLEMENTATION_PLAN.md](soon/effects/SCENE_SSAO_IMPLEMENTATION_PLAN.md)
+8. [soon/effects/SCENE_SSAO_QUALITY_PLAN.md](soon/effects/SCENE_SSAO_QUALITY_PLAN.md)
+9. [soon/effects/SCENE_TECHNIQUES_MATERIALS_PLAN.md](soon/effects/SCENE_TECHNIQUES_MATERIALS_PLAN.md)
+10. [soon/scene/SCENE_VISUAL_SHADER_ABI_FOLLOWUP.md](soon/scene/SCENE_VISUAL_SHADER_ABI_FOLLOWUP.md)
+11. [soon/interaction/SCENE_CONTROLLER_BINDING_REFACTOR_PLAN.md](soon/interaction/SCENE_CONTROLLER_BINDING_REFACTOR_PLAN.md)
+12. [soon/interaction/SCENE_FLY_CAMERA_PLAN.md](soon/interaction/SCENE_FLY_CAMERA_PLAN.md)
+13. [soon/interaction/SCENE_TURNTABLE_CONTROLLER_PLAN.md](soon/interaction/SCENE_TURNTABLE_CONTROLLER_PLAN.md)
 
 For visual-family lanes, durable contracts live under [../spec/scene/visuals](../spec/scene/visuals);
 the `soon/` files above are execution follow-up notes.
@@ -149,6 +147,7 @@ API design backlog:
 Strategic visual backlog:
 
 1. [later/SPLATTING_TIERED_PLAN.md](later/SPLATTING_TIERED_PLAN.md)
+2. [later/SCENE_SPHERE_VISUAL_BACKLOG.md](later/SCENE_SPHERE_VISUAL_BACKLOG.md)
 
 Tooling backlog:
 

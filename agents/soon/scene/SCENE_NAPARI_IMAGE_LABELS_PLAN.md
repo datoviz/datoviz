@@ -47,7 +47,7 @@ Recommended follow-up commits:
 7. Treat N-D slicing and thick-slice projection as adapter-owned for the first napari path; Datoviz
    should receive display-ready 2D fields and apply validated full or region updates.
 8. Keep 3D volume and 3D labels work in
-   [`SCENE_VOLUME_RENDERING_PLAN.md`](SCENE_VOLUME_RENDERING_PLAN.md).
+   [`SCENE_VOLUME_RENDERING_FOLLOWUP.md`](SCENE_VOLUME_RENDERING_FOLLOWUP.md).
 
 
 ## Example Pressure Tests
