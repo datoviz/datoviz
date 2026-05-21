@@ -1795,7 +1795,7 @@ clean:
 #
 
 rebuild:
-    just rmbuild
+    just clean
     just build || just build
 #
 
