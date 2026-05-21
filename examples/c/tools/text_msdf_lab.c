@@ -501,17 +501,15 @@ static void capture_source(TextLabSource* source)
 
 
 /**
- * Capture a source window after a successful source frame.
+ * Capture both submitted source windows for the CPU pixel inspector.
  *
- * @param win source app window
- * @param user_data source state
+ * @param state lab state
  */
-static void source_frame_callback(DvzAppWindow* win, void* user_data)
+static void capture_sources(TextMsdfLabState* state)
 {
-    (void)win;
-    TextLabSource* source = (TextLabSource*)user_data;
-    if (source != NULL)
-        capture_source(source);
+    ANN(state);
+    capture_source(&state->sources[0]);
+    capture_source(&state->sources[1]);
 }
 
 
@@ -770,6 +768,8 @@ static void gui_callback(DvzGui* gui, DvzAppWindow* win, void* user_data)
     TextMsdfLabState* state = (TextMsdfLabState*)user_data;
     ANN(state);
 
+    capture_sources(state);
+
     set_next_lab_window_rect(state, 1);
     (void)dvz_gui_viewport_window(state->sources[0].viewport, "Baseline", NULL, 0);
     update_hover_crop(state, 0);
@@ -961,7 +961,6 @@ int main(int argc, char** argv)
             dvz_scene_destroy(scene);
             return 1;
         }
-        dvz_app_window_set_frame_callback(state.sources[i].win, source_frame_callback, &state.sources[i]);
     }
     state.host_win =
         dvz_app_window_glfw(app, host_figure, TEXT_MSDF_LAB_HOST_WIDTH, TEXT_MSDF_LAB_HOST_HEIGHT,

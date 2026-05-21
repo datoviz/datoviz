@@ -858,6 +858,11 @@ static int canvas_offscreen_capture_rgba_into(
         log_error("offscreen canvas capture requires a prepared frame");
         return -1;
     }
+    if (canvas->offscreen_runtime_state == DVZ_CANVAS_OFFSCREEN_STATE_DRAW_PENDING)
+    {
+        log_error("offscreen canvas capture requires a submitted frame");
+        return -1;
+    }
     if (width != canvas->offscreen_extent.width || height != canvas->offscreen_extent.height)
     {
         log_error(

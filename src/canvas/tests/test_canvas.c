@@ -802,6 +802,17 @@ static int test_canvas_offscreen_mode_headless(TstContext* suite, const TstCase*
         AT(frame_rc != DVZ_CANVAS_FRAME_WAIT_SURFACE);
         AT(frame_rc == DVZ_CANVAS_FRAME_READY);
         AT(dvz_canvas_offscreen_runtime_state(canvas) == DVZ_CANVAS_OFFSCREEN_STATE_DRAW_PENDING);
+        if (i == 0)
+        {
+            uint32_t pending_width = 0;
+            uint32_t pending_height = 0;
+            uint8_t* pending_rgba = NULL;
+            AT_EXPECTED_ERROR(
+                suite,
+                dvz_canvas_capture_rgba(
+                    canvas, &pending_width, &pending_height, &pending_rgba) != 0);
+            AT(pending_rgba == NULL);
+        }
         AT(dvz_canvas_submit(canvas) == 0);
         AT(dvz_canvas_offscreen_runtime_state(canvas) == DVZ_CANVAS_OFFSCREEN_STATE_READY);
     }
