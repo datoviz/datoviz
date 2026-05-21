@@ -22,6 +22,7 @@ identity across batching and the scene -> DRP2 -> runtime boundary.
 4. Hover uses latest-request-wins semantics; stale hover results are discarded silently.
 5. Click and explicit query requests may require stronger delivery guarantees than hover.
 6. Controllers receive interpreted scene-level results, not encoded GPU payloads.
+7. Visual picking is GPU-render-path based. Do not add CPU-side picking fallbacks for visual hits.
 
 
 ## Identity Model
@@ -94,6 +95,14 @@ a DRP2 protocol change.
 
 Picking is visible planning work. A picking-enabled frame may add a picking target, render node,
 readback node, resource dependencies, and request metadata to route the result.
+
+Picking must use the same GPU-side visual geometry, fragment discard rules, depth behavior,
+viewport/scissor state, and family-specific shader semantics that define whether a visual
+contribution is pickable on screen. CPU ray tests or retained-geometry hit tests are not acceptable
+fallbacks for visual picking, because they can diverge from impostor silhouettes, screen-space
+strokes, mesh depth, transparency policy, clipping, shader discard, and future backend behavior.
+If the GPU pick path cannot produce stable scene identity for a visual family, that family must
+report unsupported or no-capable-visual status until the GPU path exists.
 
 Always-on and on-demand picking are both valid policies, but the chosen policy must be explicit.
 Changes follow [`../pipeline/INVALIDATION_AND_CACHING.md`](../pipeline/INVALIDATION_AND_CACHING.md):
