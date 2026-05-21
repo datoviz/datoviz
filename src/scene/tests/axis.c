@@ -35,26 +35,6 @@
 /*************************************************************************************************/
 
 /**
- * Return one visual attribute by name.
- *
- * @param visual the visual
- * @param name the attribute name
- * @return the visual attribute, or NULL
- */
-static DvzVisualAttr* _axis_test_attr(DvzVisual* visual, const char* name)
-{
-    ANN(visual);
-    ANN(name);
-    for (uint32_t i = 0; i < visual->attr_count; i++)
-    {
-        if (strcmp(visual->attrs[i].name, name) == 0)
-            return &visual->attrs[i];
-    }
-    return NULL;
-}
-
-
-/**
  * Create and bind a scene-owned panzoom for axis tests.
  *
  * @param scene the scene
@@ -105,11 +85,12 @@ static uint32_t _axis_test_rect_color_count(DvzAxis* axis, const uint8_t color[4
     ANN(axis);
     ANN(axis->visual);
     ANN(color);
-    DvzVisualAttr* colors_attr = _axis_test_attr(axis->visual, "color");
-    ANN(colors_attr);
-    const uint8_t* colors = (const uint8_t*)colors_attr->data;
+    DvzVisualDataView colors_view = {0};
+    int res = dvz_visual_data(axis->visual, "color", &colors_view);
+    ASSERT(res == 0);
+    const uint8_t* colors = (const uint8_t*)colors_view.data;
     uint32_t count = 0;
-    for (uint32_t i = 0; i + 5 < colors_attr->item_count; i += 6)
+    for (uint32_t i = 0; i + 5 < colors_view.item_count; i += 6)
     {
         if (memcmp(&colors[4 * i], color, 4) == 0)
             count++;
@@ -154,14 +135,16 @@ static uint32_t _axis_test_vertical_grid_line_count(DvzAxis* axis)
 {
     ANN(axis);
     ANN(axis->visual);
-    DvzVisualAttr* positions_attr = _axis_test_attr(axis->visual, "position");
-    DvzVisualAttr* colors_attr = _axis_test_attr(axis->visual, "color");
-    ANN(positions_attr);
-    ANN(colors_attr);
-    const float* positions = (const float*)positions_attr->data;
-    const uint8_t* colors = (const uint8_t*)colors_attr->data;
+    DvzVisualDataView positions_view = {0};
+    DvzVisualDataView colors_view = {0};
+    int res = dvz_visual_data(axis->visual, "position", &positions_view);
+    ASSERT(res == 0);
+    res = dvz_visual_data(axis->visual, "color", &colors_view);
+    ASSERT(res == 0);
+    const float* positions = (const float*)positions_view.data;
+    const uint8_t* colors = (const uint8_t*)colors_view.data;
     uint32_t count = 0;
-    for (uint32_t i = 0; i + 5 < positions_attr->item_count; i += 6)
+    for (uint32_t i = 0; i + 5 < positions_view.item_count; i += 6)
     {
         if (memcmp(&colors[4 * i], axis->style.grid_color, 4) != 0)
             continue;
@@ -189,14 +172,16 @@ static uint32_t _axis_test_horizontal_grid_line_count(DvzAxis* axis)
 {
     ANN(axis);
     ANN(axis->visual);
-    DvzVisualAttr* positions_attr = _axis_test_attr(axis->visual, "position");
-    DvzVisualAttr* colors_attr = _axis_test_attr(axis->visual, "color");
-    ANN(positions_attr);
-    ANN(colors_attr);
-    const float* positions = (const float*)positions_attr->data;
-    const uint8_t* colors = (const uint8_t*)colors_attr->data;
+    DvzVisualDataView positions_view = {0};
+    DvzVisualDataView colors_view = {0};
+    int res = dvz_visual_data(axis->visual, "position", &positions_view);
+    ASSERT(res == 0);
+    res = dvz_visual_data(axis->visual, "color", &colors_view);
+    ASSERT(res == 0);
+    const float* positions = (const float*)positions_view.data;
+    const uint8_t* colors = (const uint8_t*)colors_view.data;
     uint32_t count = 0;
-    for (uint32_t i = 0; i + 5 < positions_attr->item_count; i += 6)
+    for (uint32_t i = 0; i + 5 < positions_view.item_count; i += 6)
     {
         if (memcmp(&colors[4 * i], axis->style.grid_color, 4) != 0)
             continue;
@@ -212,21 +197,6 @@ static uint32_t _axis_test_horizontal_grid_line_count(DvzAxis* axis)
     }
     return count;
 }
-
-
-/**
- * Return one text visual position attribute.
- *
- * @param axis the axis
- * @return text position attribute, or NULL
- */
-static DvzVisualAttr* _axis_test_text_position_attr(DvzAxis* axis)
-{
-    ANN(axis);
-    ANN(axis->text_visual);
-    return _axis_test_attr(axis->text_visual, "position");
-}
-
 
 
 /*************************************************************************************************/
@@ -368,9 +338,9 @@ static int test_axis_text_labels(TstContext* suite, const TstCase* item)
     AT(axis->text_visual->visible);
     AT(axis->text_visual->text.string_count == axis->tick_count + 1);
     AT(strcmp(axis->text_visual->text.strings[axis->tick_count], "Time") == 0);
-    DvzVisualAttr* position_attr = _axis_test_text_position_attr(axis);
-    ANN(position_attr);
-    AT(position_attr->item_count == axis->text_visual->text.string_count);
+    DvzVisualDataView position_view = {0};
+    AT(dvz_visual_data(axis->text_visual, "position", &position_view) == 0);
+    AT(position_view.item_count == axis->text_visual->text.string_count);
 
     _scene_prepare_text_visuals(figure);
     ANN(axis->text_visual->text.glyph_visual);
@@ -434,18 +404,17 @@ static int test_axis_text_layout_reserve(TstContext* suite, const TstCase* item)
     DvzAxis* axis = dvz_panel_axis(panel, DVZ_DIM_X);
     ANN(axis);
     _scene_prepare_axis_visuals(figure);
-    DvzVisualAttr* position_attr = _axis_test_text_position_attr(axis);
-    ANN(position_attr);
-    const float* positions = (const float*)position_attr->data;
+    DvzVisualDataView position_view = {0};
+    AT(dvz_visual_data(axis->text_visual, "position", &position_view) == 0);
+    const float* positions = (const float*)position_view.data;
     float y_before = positions[1];
 
     AT(dvz_panel_set_layout_reserve(
         panel, &(DvzPanelLayoutReserve){.left = 0.0f, .right = 0.0f, .bottom = 0.20f,
                                         .top = 0.0f}));
     _scene_prepare_axis_visuals(figure);
-    position_attr = _axis_test_text_position_attr(axis);
-    ANN(position_attr);
-    positions = (const float*)position_attr->data;
+    AT(dvz_visual_data(axis->text_visual, "position", &position_view) == 0);
+    positions = (const float*)position_view.data;
     float y_after = positions[1];
     AT(y_after < y_before);
 
@@ -502,12 +471,12 @@ static int test_axis_text_inset_panel_coordinates(TstContext* suite, const TstCa
     (void)panel_x;
     (void)panel_y;
 
-    DvzVisualAttr* x_position_attr = _axis_test_text_position_attr(x_axis);
-    DvzVisualAttr* y_position_attr = _axis_test_text_position_attr(y_axis);
-    ANN(x_position_attr);
-    ANN(y_position_attr);
-    const float* x_positions = (const float*)x_position_attr->data;
-    const float* y_positions = (const float*)y_position_attr->data;
+    DvzVisualDataView x_position_view = {0};
+    DvzVisualDataView y_position_view = {0};
+    AT(dvz_visual_data(x_axis->text_visual, "position", &x_position_view) == 0);
+    AT(dvz_visual_data(y_axis->text_visual, "position", &y_position_view) == 0);
+    const float* x_positions = (const float*)x_position_view.data;
+    const float* y_positions = (const float*)y_position_view.data;
     const float tick_gap = 6.0f;
     double x_visible_min = 0.0;
     double x_visible_max = 0.0;
@@ -536,10 +505,10 @@ static int test_axis_text_inset_panel_coordinates(TstContext* suite, const TstCa
 
     _scene_prepare_text_visuals(figure);
     ANN(x_axis->text_visual->text.glyph_visual);
-    DvzVisualAttr* glyph_position_attr =
-        _axis_test_attr(x_axis->text_visual->text.glyph_visual, "position");
-    ANN(glyph_position_attr);
-    const float* glyph_positions = (const float*)glyph_position_attr->data;
+    DvzVisualDataView glyph_position_view = {0};
+    AT(dvz_visual_data(
+           x_axis->text_visual->text.glyph_visual, "position", &glyph_position_view) == 0);
+    const float* glyph_positions = (const float*)glyph_position_view.data;
     const float expected_clip_x = 2.0f * expected_x0 / panel_width - 1.0f;
     const float expected_clip_y =
         1.0f - 2.0f * (expected_x_tick_y + tick_gap) / panel_height;

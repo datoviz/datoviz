@@ -57,28 +57,6 @@ static DvzTextAtlas* text_test_atlas(
 
 
 /**
- * Return a visual attribute by name.
- *
- * @param visual the visual
- * @param name the attribute name
- * @return the attribute pointer, or NULL when unavailable
- */
-static const DvzVisualAttr* _interaction_visual_attr(const DvzVisual* visual, const char* name)
-{
-    ANN(visual);
-    ANN(name);
-    for (uint32_t i = 0; i < visual->attr_count; i++)
-    {
-        const DvzVisualAttr* attr = &visual->attrs[i];
-        if (strcmp(attr->name, name) == 0)
-            return attr;
-    }
-    return NULL;
-}
-
-
-
-/**
  * Return whether one stream pipeline has a specific vertex attribute.
  *
  * @param stream the command stream
@@ -462,9 +440,9 @@ int test_scene_text_semantic_object_realization(TstContext* suite, const TstCase
     ANN(text->visual);
     AT(text->visual->visible);
     AT(text->dirty_flags == DVZ_TEXT_DIRTY_NONE);
-    const DvzVisualAttr* position_attr = _interaction_visual_attr(text->visual, "position");
-    ANN(position_attr);
-    const float(*positions)[3] = (const float(*)[3])position_attr->data;
+    DvzVisualDataView position_view = {0};
+    AT(dvz_visual_data(text->visual, "position", &position_view) == 0);
+    const float(*positions)[3] = (const float(*)[3])position_view.data;
     ANN(positions);
     AC(positions[0][0], -0.96875f, 1e-6f);
     AC(positions[0][1], 0.9166667f, 1e-6f);
@@ -479,9 +457,8 @@ int test_scene_text_semantic_object_realization(TstContext* suite, const TstCase
             .depth_test = true,
         });
     _scene_prepare_text_visuals(figure);
-    position_attr = _interaction_visual_attr(text->visual, "position");
-    ANN(position_attr);
-    positions = (const float(*)[3])position_attr->data;
+    AT(dvz_visual_data(text->visual, "position", &position_view) == 0);
+    positions = (const float(*)[3])position_view.data;
     ANN(positions);
     AC(positions[0][0], 0.25f, 1e-6f);
     AC(positions[0][1], -0.5f, 1e-6f);
@@ -1204,11 +1181,10 @@ int test_scene_text_panzoom_glyph_anchor_coordinates(TstContext* suite, const Ts
     AT(panel->visuals[1].visual == text->text.glyph_visual);
     AT(panel->visuals[1].controller_mode == DVZ_CONTROLLER_APPLY);
 
-    const DvzVisualAttr* position_attr =
-        _interaction_visual_attr(text->text.glyph_visual, "position");
-    ANN(position_attr);
-    AT(position_attr->item_count > 0);
-    const float* glyph_positions = (const float*)position_attr->data;
+    DvzVisualDataView position_view = {0};
+    AT(dvz_visual_data(text->text.glyph_visual, "position", &position_view) == 0);
+    AT(position_view.item_count > 0);
+    const float* glyph_positions = (const float*)position_view.data;
     ANN(glyph_positions);
     AC(glyph_positions[0], positions[0][0], 1e-6f);
     AC(glyph_positions[1], positions[0][1], 1e-6f);
@@ -1255,10 +1231,9 @@ int test_scene_text_attach_mode_change_regenerates_glyphs(TstContext* suite, con
 
     _scene_prepare_text_visuals(figure);
     ANN(text->text.glyph_visual);
-    const DvzVisualAttr* position_attr =
-        _interaction_visual_attr(text->text.glyph_visual, "position");
-    ANN(position_attr);
-    const float* glyph_positions = (const float*)position_attr->data;
+    DvzVisualDataView position_view = {0};
+    AT(dvz_visual_data(text->text.glyph_visual, "position", &position_view) == 0);
+    const float* glyph_positions = (const float*)position_view.data;
     ANN(glyph_positions);
     AC(glyph_positions[0], 0.0f, 1e-6f);
     AC(glyph_positions[1], 0.0f, 1e-6f);
@@ -1267,9 +1242,8 @@ int test_scene_text_attach_mode_change_regenerates_glyphs(TstContext* suite, con
     _scene_prepare_text_visuals(figure);
     AT(panel->visuals[1].visual == text->text.glyph_visual);
     AT(panel->visuals[1].controller_mode == DVZ_CONTROLLER_APPLY);
-    position_attr = _interaction_visual_attr(text->text.glyph_visual, "position");
-    ANN(position_attr);
-    glyph_positions = (const float*)position_attr->data;
+    AT(dvz_visual_data(text->text.glyph_visual, "position", &position_view) == 0);
+    glyph_positions = (const float*)position_view.data;
     ANN(glyph_positions);
     AC(glyph_positions[0], positions[0][0], 1e-6f);
     AC(glyph_positions[1], positions[0][1], 1e-6f);

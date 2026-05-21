@@ -36,18 +36,6 @@
 /*  Tests                                                                                        */
 /*************************************************************************************************/
 
-static DvzVisualAttr* _colorbar_test_attr(DvzVisual* visual, const char* name)
-{
-    ANN(visual);
-    ANN(name);
-    int idx = _attr_index(visual, name);
-    if (idx < 0)
-        return NULL;
-    return &visual->attrs[idx];
-}
-
-
-
 /**
  * Return whether a stream contains a render pipeline label fragment.
  *
@@ -223,15 +211,15 @@ int test_scene_colorbar_auto_reserve_and_visuals(TstContext* suite, const TstCas
     AT(colorbar->tick_count >= 2);
     AT(colorbar->text_count == colorbar->tick_count + 1);
 
-    DvzVisualAttr* pos = _colorbar_test_attr(colorbar->ramp_visual, "position");
-    DvzVisualAttr* ramp_color = _colorbar_test_attr(colorbar->ramp_visual, "color");
-    ANN(pos);
-    ANN(ramp_color);
-    AT(pos->item_count == 6 * 64);
-    AT(ramp_color->item_count == pos->item_count);
-    float* positions = (float*)pos->data;
+    DvzVisualDataView pos_view = {0};
+    DvzVisualDataView ramp_color_view = {0};
+    AT(dvz_visual_data(colorbar->ramp_visual, "position", &pos_view) == 0);
+    AT(dvz_visual_data(colorbar->ramp_visual, "color", &ramp_color_view) == 0);
+    AT(pos_view.item_count == 6 * 64);
+    AT(ramp_color_view.item_count == pos_view.item_count);
+    const float* positions = (const float*)pos_view.data;
     AT(positions[1] < -0.95f);
-    AT(positions[3 * (pos->item_count - 1) + 1] > 0.95f);
+    AT(positions[3 * (pos_view.item_count - 1) + 1] > 0.95f);
 
     DvzFramePlan* plan = dvz_frame_plan("figure.colorbar.clip", 0);
     ANN(plan);
@@ -274,11 +262,10 @@ int test_scene_colorbar_auto_reserve_and_visuals(TstContext* suite, const TstCas
     _scene_prepare_colorbar_visuals(figure, NULL);
     AT(dvz_panel_get_layout_reserve(panel, &reserve));
     AT(fabsf(reserve.bottom - 0.24f) < 1e-6f);
-    pos = _colorbar_test_attr(colorbar->ramp_visual, "position");
-    ANN(pos);
-    positions = (float*)pos->data;
+    AT(dvz_visual_data(colorbar->ramp_visual, "position", &pos_view) == 0);
+    positions = (const float*)pos_view.data;
     AT(positions[0] < -0.95f);
-    AT(positions[3 * (pos->item_count - 1) + 0] > 0.95f);
+    AT(positions[3 * (pos_view.item_count - 1) + 0] > 0.95f);
 
     dvz_scene_destroy(scene);
     return 0;
@@ -321,26 +308,29 @@ int test_scene_colorbar_prepare_is_idempotent(TstContext* suite, const TstCase* 
     ANN(colorbar);
 
     _scene_prepare_colorbar_visuals(figure, NULL);
-    DvzVisualAttr* ramp_pos = _colorbar_test_attr(colorbar->ramp_visual, "position");
-    DvzVisualAttr* ramp_color = _colorbar_test_attr(colorbar->ramp_visual, "color");
-    DvzVisualAttr* tick_pos = _colorbar_test_attr(colorbar->tick_visual, "position_start");
-    ANN(ramp_pos);
-    ANN(ramp_color);
-    ANN(tick_pos);
-    void* ramp_pos_data = ramp_pos->data;
-    void* ramp_color_data = ramp_color->data;
-    void* tick_pos_data = tick_pos->data;
-    uint64_t ramp_pos_version = ramp_pos->version;
-    uint64_t ramp_color_version = ramp_color->version;
-    uint64_t tick_pos_version = tick_pos->version;
+    DvzVisualDataView ramp_pos = {0};
+    DvzVisualDataView ramp_color = {0};
+    DvzVisualDataView tick_pos = {0};
+    AT(dvz_visual_data(colorbar->ramp_visual, "position", &ramp_pos) == 0);
+    AT(dvz_visual_data(colorbar->ramp_visual, "color", &ramp_color) == 0);
+    AT(dvz_visual_data(colorbar->tick_visual, "position_start", &tick_pos) == 0);
+    const void* ramp_pos_data = ramp_pos.data;
+    const void* ramp_color_data = ramp_color.data;
+    const void* tick_pos_data = tick_pos.data;
+    uint64_t ramp_pos_version = ramp_pos.version;
+    uint64_t ramp_color_version = ramp_color.version;
+    uint64_t tick_pos_version = tick_pos.version;
 
     _scene_prepare_colorbar_visuals(figure, NULL);
-    AT(ramp_pos->data == ramp_pos_data);
-    AT(ramp_color->data == ramp_color_data);
-    AT(tick_pos->data == tick_pos_data);
-    AT(ramp_pos->version == ramp_pos_version);
-    AT(ramp_color->version == ramp_color_version);
-    AT(tick_pos->version == tick_pos_version);
+    AT(dvz_visual_data(colorbar->ramp_visual, "position", &ramp_pos) == 0);
+    AT(dvz_visual_data(colorbar->ramp_visual, "color", &ramp_color) == 0);
+    AT(dvz_visual_data(colorbar->tick_visual, "position_start", &tick_pos) == 0);
+    AT(ramp_pos.data == ramp_pos_data);
+    AT(ramp_color.data == ramp_color_data);
+    AT(tick_pos.data == tick_pos_data);
+    AT(ramp_pos.version == ramp_pos_version);
+    AT(ramp_color.version == ramp_color_version);
+    AT(tick_pos.version == tick_pos_version);
 
     dvz_scene_destroy(scene);
     return 0;
@@ -393,12 +383,12 @@ int test_scene_colorbar_updates_retained_visuals(TstContext* suite, const TstCas
     AT(strcmp(colorbar->text_labels[0], "0") == 0);
     AT(strcmp(colorbar->text_labels[colorbar->text_count - 1], "Initial") == 0);
 
-    DvzVisualAttr* ramp_color = _colorbar_test_attr(colorbar->ramp_visual, "color");
-    ANN(ramp_color);
-    DvzColor* colors = (DvzColor*)ramp_color->data;
+    DvzVisualDataView ramp_color = {0};
+    AT(dvz_visual_data(colorbar->ramp_visual, "color", &ramp_color) == 0);
+    const DvzColor* colors = (const DvzColor*)ramp_color.data;
     ANN(colors);
     AT(colors[0][2] == 255);
-    AT(colors[ramp_color->item_count - 1][0] == 255);
+    AT(colors[ramp_color.item_count - 1][0] == 255);
 
     dvz_scale_set_domain(scale, -10.0, 10.0);
     dvz_colorbar_set_title(colorbar, "Updated");
@@ -414,14 +404,13 @@ int test_scene_colorbar_updates_retained_visuals(TstContext* suite, const TstCas
     };
     dvz_colormap_set_stops(colormap, stops1, 2);
     _scene_prepare_colorbar_visuals(figure, NULL);
-    ramp_color = _colorbar_test_attr(colorbar->ramp_visual, "color");
-    ANN(ramp_color);
-    colors = (DvzColor*)ramp_color->data;
+    AT(dvz_visual_data(colorbar->ramp_visual, "color", &ramp_color) == 0);
+    colors = (const DvzColor*)ramp_color.data;
     ANN(colors);
     AT(colors[0][1] == 255);
     AT(colors[0][2] == 0);
-    AT(colors[ramp_color->item_count - 1][0] == 255);
-    AT(colors[ramp_color->item_count - 1][1] == 255);
+    AT(colors[ramp_color.item_count - 1][0] == 255);
+    AT(colors[ramp_color.item_count - 1][1] == 255);
 
     DvzVisual* ramp = colorbar->ramp_visual;
     DvzVisual* ticks = colorbar->tick_visual;
@@ -1168,21 +1157,14 @@ int test_scene_volume_visual_binds_3d_field(TstContext* suite, const TstCase* it
     AT(volume->type == DVZ_VISUAL_TYPE_VOLUME);
     AT(volume->topology == DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
 
-    const DvzVisualAttr* position_attr = NULL;
-    const DvzVisualAttr* texcoord_attr = NULL;
-    for (uint32_t i = 0; i < volume->attr_count; i++)
-    {
-        if (strcmp(volume->attrs[i].name, "position") == 0)
-            position_attr = &volume->attrs[i];
-        if (strcmp(volume->attrs[i].name, "texcoords") == 0)
-            texcoord_attr = &volume->attrs[i];
-    }
-    ANN(position_attr);
-    ANN(texcoord_attr);
-    AT(position_attr->item_count == 36);
-    AT(texcoord_attr->item_count == 36);
-    const float(*positions)[3] = (const float(*)[3])position_attr->data;
-    const float(*texcoords)[3] = (const float(*)[3])texcoord_attr->data;
+    DvzVisualDataView position_view = {0};
+    DvzVisualDataView texcoord_view = {0};
+    AT(dvz_visual_data(volume, "position", &position_view) == 0);
+    AT(dvz_visual_data(volume, "texcoords", &texcoord_view) == 0);
+    AT(position_view.item_count == 36);
+    AT(texcoord_view.item_count == 36);
+    const float(*positions)[3] = (const float(*)[3])position_view.data;
+    const float(*texcoords)[3] = (const float(*)[3])texcoord_view.data;
     ANN(positions);
     ANN(texcoords);
     AT(positions[0][2] == -1.0f);
