@@ -6,10 +6,10 @@
 
 /* image — live sampled-field partial-update smoke example.
  *
- * Opens a GLFW window showing a scalar sampled field through an image visual and colormap. A bright
- * patch moves around the field by calling dvz_sampled_field_update_region() from the app frame
- * callback, exercising retained texture subregion uploads through the live scene -> DRP2 -> app
- * path.
+ * Opens a GLFW window showing a scalar sampled field through an image visual, colormap, and
+ * colorbar. A bright patch moves around the field by calling dvz_sampled_field_update_region()
+ * from the app frame callback, exercising retained texture subregion uploads through the live
+ * scene -> DRP2 -> app path.
  *
  * Build:  just example-c visuals/image
  * Run:    ./build/examples/c/visuals/image
@@ -354,6 +354,21 @@ int main(int argc, char** argv)
         dvz_scene_destroy(scene);
         return 1;
     }
+
+    DvzColorbar* colorbar = dvz_colorbar(
+        panel, scale,
+        &(DvzColorbarDesc){
+            .orientation = DVZ_COLORBAR_ORIENTATION_VERTICAL,
+            .anchor = DVZ_SCENE_ANCHOR_PANEL_RIGHT,
+            .title = "Intensity",
+        });
+    if (colorbar == NULL)
+    {
+        fprintf(stderr, "dvz_colorbar() failed\n");
+        dvz_scene_destroy(scene);
+        return 1;
+    }
+    dvz_colorbar_set_format(colorbar, &(DvzFormatDesc){.precision = 2});
 
     dvz_panel_set_background_color(panel, 0.04f, 0.05f, 0.06f, 1.0f);
 
