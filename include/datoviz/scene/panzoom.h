@@ -102,14 +102,31 @@ EXTERN_C_ON
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
+typedef struct DvzPanzoomDesc DvzPanzoomDesc;
+
+
+
+struct DvzPanzoomDesc
+{
+    float width;
+    float height;
+    int flags;
+};
+
+
+
+DVZ_EXPORT DvzPanzoomDesc dvz_panzoom_desc(void);
+
+
+
 /**
- * Create a panzoom controller.
+ * Create a scene-owned panzoom controller.
  *
- * @param width viewport width in pixels
- * @param height viewport height in pixels
- * @param flags DvzPanzoomFlags bitmask
+ * @param scene the scene
+ * @param desc panzoom descriptor, or NULL for defaults
+ * @return the scene-owned controller handle
  */
-DVZ_EXPORT DvzPanzoom* dvz_panzoom(float width, float height, int flags);
+DVZ_EXPORT DvzController* dvz_panzoom(DvzScene* scene, const DvzPanzoomDesc* desc);
 
 
 

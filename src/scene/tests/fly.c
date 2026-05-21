@@ -35,7 +35,7 @@ int test_fly_create_default(TstContext* suite, const TstCase* item)
     (void)suite;
     (void)item;
 
-    DvzFly* fly = dvz_fly(NULL);
+    DvzFly* fly = _dvz_fly(NULL);
     ANN(fly);
     vec3 pos = {0};
     vec3 target = {0};
@@ -71,7 +71,7 @@ int test_fly_lookat_initialization(TstContext* suite, const TstCase* item)
     desc.target[1] = 2.0f;
     desc.target[2] = 2.0f;
 
-    DvzFly* fly = dvz_fly(&desc);
+    DvzFly* fly = _dvz_fly(&desc);
     ANN(fly);
 
     vec3 pos = {0};
@@ -103,7 +103,7 @@ int test_fly_pitch_clamp_and_reset(TstContext* suite, const TstCase* item)
     desc.position[2] = 0.0f;
     desc.pitch = GLM_PIf;
 
-    DvzFly* fly = dvz_fly(&desc);
+    DvzFly* fly = _dvz_fly(&desc);
     ANN(fly);
     AT(fly->pitch < GLM_PI_2f);
     AT(fly->pitch > 0.0f);
@@ -139,7 +139,7 @@ int test_fly_free_and_plane_movement(TstContext* suite, const TstCase* item)
     desc.yaw = -GLM_PI_2f;
     desc.pitch = GLM_PI_4f;
 
-    DvzFly* free_fly = dvz_fly(&desc);
+    DvzFly* free_fly = _dvz_fly(&desc);
     ANN(free_fly);
     dvz_fly_move_forward(free_fly, 1.0f);
     vec3 free_pos = {0};
@@ -148,7 +148,7 @@ int test_fly_free_and_plane_movement(TstContext* suite, const TstCase* item)
     AT(free_pos[2] < -0.5f);
 
     desc.mode = DVZ_FLY_MODE_PLANE;
-    DvzFly* plane_fly = dvz_fly(&desc);
+    DvzFly* plane_fly = _dvz_fly(&desc);
     ANN(plane_fly);
     dvz_fly_move_forward(plane_fly, 1.0f);
     vec3 plane_pos = {0};
@@ -177,7 +177,7 @@ int test_fly_set_mode(TstContext* suite, const TstCase* item)
     desc.pitch = GLM_PI_4f;
     desc.mode = DVZ_FLY_MODE_PLANE;
 
-    DvzFly* fly = dvz_fly(&desc);
+    DvzFly* fly = _dvz_fly(&desc);
     ANN(fly);
     dvz_fly_move_forward(fly, 1.0f);
     vec3 pos = {0};
@@ -203,7 +203,7 @@ int test_fly_keyboard_arrows_update(TstContext* suite, const TstCase* item)
 
     DvzFlyDesc desc = dvz_fly_desc();
     desc.speed = 2.0f;
-    DvzFly* fly = dvz_fly(&desc);
+    DvzFly* fly = _dvz_fly(&desc);
     ANN(fly);
 
     DvzKeyboardEvent press = {
@@ -241,8 +241,8 @@ int test_fly_wasd_and_arrows_equivalent(TstContext* suite, const TstCase* item)
 
     DvzFlyDesc desc = dvz_fly_desc();
     desc.speed = 2.0f;
-    DvzFly* wasd = dvz_fly(&desc);
-    DvzFly* arrows = dvz_fly(&desc);
+    DvzFly* wasd = _dvz_fly(&desc);
+    DvzFly* arrows = _dvz_fly(&desc);
     ANN(wasd);
     ANN(arrows);
 
@@ -286,7 +286,7 @@ int test_fly_shift_changes_speed(TstContext* suite, const TstCase* item)
     DvzFlyDesc desc = dvz_fly_desc();
     desc.speed = 1.0f;
     desc.fast_multiplier = 4.0f;
-    DvzFly* fly = dvz_fly(&desc);
+    DvzFly* fly = _dvz_fly(&desc);
     ANN(fly);
 
     DvzKeyboardEvent press_shift = {.type = DVZ_KEYBOARD_EVENT_PRESS, .key = DVZ_KEY_LEFT_SHIFT};
@@ -319,7 +319,7 @@ int test_fly_left_drag_updates_view(TstContext* suite, const TstCase* item)
     (void)suite;
     (void)item;
 
-    DvzFly* fly = dvz_fly(NULL);
+    DvzFly* fly = _dvz_fly(NULL);
     ANN(fly);
     dvz_fly_resize(fly, 800.0f, 600.0f);
 
@@ -390,7 +390,7 @@ int test_fly_ctrl_and_space_use_same_vertical_speed(TstContext* suite, const Tst
 
     DvzFlyDesc desc = dvz_fly_desc();
     desc.speed = 2.0f;
-    DvzFly* fly = dvz_fly(&desc);
+    DvzFly* fly = _dvz_fly(&desc);
     ANN(fly);
 
     DvzKeyboardEvent press_space = {
@@ -437,7 +437,7 @@ int test_fly_right_drag_moves_vertical_plane(TstContext* suite, const TstCase* i
 
     DvzFlyDesc desc = dvz_fly_desc();
     desc.speed = 2.0f;
-    DvzFly* fly = dvz_fly(&desc);
+    DvzFly* fly = _dvz_fly(&desc);
     ANN(fly);
     dvz_fly_resize(fly, 800.0f, 600.0f);
 
@@ -466,7 +466,7 @@ int test_fly_pivot_preserves_eye_and_orbits(TstContext* suite, const TstCase* it
     (void)suite;
     (void)item;
 
-    DvzFly* fly = dvz_fly(NULL);
+    DvzFly* fly = _dvz_fly(NULL);
     ANN(fly);
     dvz_fly_pivot(fly, (vec3){1.0f, 0.0f, 3.0f});
     AT(dvz_fly_has_pivot(fly));
@@ -566,7 +566,7 @@ int test_fly_scene_controller_binding(TstContext* suite, const TstCase* item)
     DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
     ANN(panel);
 
-    DvzController* controller = dvz_scene_fly(scene, NULL);
+    DvzController* controller = dvz_fly(scene, NULL);
     ANN(controller);
     AT(dvz_controller_type(controller) == DVZ_CONTROLLER_TYPE_FLY);
     DvzFly* fly = dvz_controller_fly(controller);
@@ -595,7 +595,7 @@ int test_fly_controller_rejects_partial_dims(TstContext* suite, const TstCase* i
     ANN(figure);
     DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
     ANN(panel);
-    DvzController* controller = dvz_scene_fly(scene, NULL);
+    DvzController* controller = dvz_fly(scene, NULL);
     ANN(controller);
 
     AT(dvz_panel_bind_controller(panel, controller, DVZ_DIM_MASK_X) != 0);
@@ -620,7 +620,7 @@ int test_fly_controller_survives_panel_destroy(TstContext* suite, const TstCase*
     ANN(figure);
     DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
     ANN(panel);
-    DvzController* controller = dvz_scene_fly(scene, NULL);
+    DvzController* controller = dvz_fly(scene, NULL);
     ANN(controller);
     AT(dvz_panel_bind_controller(panel, controller, DVZ_DIM_MASK_XYZ) == 0);
 
@@ -651,7 +651,7 @@ int test_shared_fly_updates_once_for_two_panels(TstContext* suite, const TstCase
 
     DvzFlyDesc desc = dvz_fly_desc();
     desc.speed = 2.0f;
-    DvzController* controller = dvz_scene_fly(scene, &desc);
+    DvzController* controller = dvz_fly(scene, &desc);
     ANN(controller);
     DvzFly* fly = dvz_controller_fly(controller);
     ANN(fly);

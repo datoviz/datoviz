@@ -36,7 +36,7 @@ int test_panzoom_create_reset(TstContext* suite, const TstCase* item)
     (void)suite;
     (void)item;
 
-    DvzPanzoom* pz = dvz_panzoom(800.0f, 600.0f, 0);
+    DvzPanzoom* pz = _dvz_panzoom(800.0f, 600.0f, 0);
     ANN(pz);
     AT(pz->zoom[0] == 1.0f);
     AT(pz->zoom[1] == 1.0f);
@@ -63,7 +63,7 @@ int test_panzoom_pan_shift(TstContext* suite, const TstCase* item)
     (void)suite;
     (void)item;
 
-    DvzPanzoom* pz = dvz_panzoom(800.0f, 600.0f, 0);
+    DvzPanzoom* pz = _dvz_panzoom(800.0f, 600.0f, 0);
 
     /* Shift by half the viewport width → pan[0] should move by 1.0 NDC unit (at zoom=1). */
     dvz_panzoom_pan_shift(pz, (vec2){400.0f, 0.0f}, (vec2){0, 0});
@@ -81,14 +81,14 @@ int test_panzoom_zoom_wheel(TstContext* suite, const TstCase* item)
     (void)suite;
     (void)item;
 
-    DvzPanzoom* pz = dvz_panzoom(800.0f, 800.0f, 0);
+    DvzPanzoom* pz = _dvz_panzoom(800.0f, 800.0f, 0);
 
     /* Positive wheel delta should zoom in regardless of platform. */
     dvz_panzoom_zoom_wheel(pz, (vec2){0.0f, 1.0f}, (vec2){400.0f, 400.0f});
     AT(pz->zoom[0] > 1.0f);
     AT(pz->zoom[1] > 1.0f);
 
-    DvzPanzoom* pz2 = dvz_panzoom(800.0f, 800.0f, 0);
+    DvzPanzoom* pz2 = _dvz_panzoom(800.0f, 800.0f, 0);
     dvz_panzoom_zoom_wheel(pz2, (vec2){0.0f, -1.0f}, (vec2){400.0f, 400.0f});
     AT(pz2->zoom[0] < 1.0f);
     AT(pz2->zoom[1] < 1.0f);
@@ -104,7 +104,7 @@ int test_panzoom_zoom_limits(TstContext* suite, const TstCase* item)
     (void)suite;
     (void)item;
 
-    DvzPanzoom* pz = dvz_panzoom(800.0f, 800.0f, 0);
+    DvzPanzoom* pz = _dvz_panzoom(800.0f, 800.0f, 0);
     ANN(pz);
 
     AT(dvz_panzoom_zoom_limits(pz, (vec2){0.5f, 0.25f}, (vec2){4.0f, 8.0f}));
@@ -131,8 +131,8 @@ int test_panzoom_viewport_filters_pointer_events(TstContext* suite, const TstCas
     (void)suite;
     (void)item;
 
-    DvzPanzoom* left = dvz_panzoom(400.0f, 400.0f, 0);
-    DvzPanzoom* right = dvz_panzoom(400.0f, 400.0f, 0);
+    DvzPanzoom* left = _dvz_panzoom(400.0f, 400.0f, 0);
+    DvzPanzoom* right = _dvz_panzoom(400.0f, 400.0f, 0);
     ANN(left);
     ANN(right);
     dvz_panzoom_viewport(left, 0.0f, 0.0f, 400.0f, 400.0f);
@@ -173,7 +173,7 @@ int test_panzoom_double_click_resets(TstContext* suite, const TstCase* item)
     (void)suite;
     (void)item;
 
-    DvzPanzoom* pz = dvz_panzoom(800.0f, 600.0f, 0);
+    DvzPanzoom* pz = _dvz_panzoom(800.0f, 600.0f, 0);
     dvz_panzoom_zoom(pz, (vec2){3.0f, 3.0f});
     dvz_panzoom_pan(pz, (vec2){0.5f, 0.5f});
 
@@ -193,7 +193,7 @@ int test_panzoom_mvp_identity(TstContext* suite, const TstCase* item)
     (void)suite;
     (void)item;
 
-    DvzPanzoom* pz = dvz_panzoom(800.0f, 600.0f, 0);
+    DvzPanzoom* pz = _dvz_panzoom(800.0f, 600.0f, 0);
 
     DvzMVP mvp = {0};
     glm_mat4_identity(mvp.model);
@@ -291,7 +291,7 @@ int test_arcball_create_reset(TstContext* suite, const TstCase* item)
     (void)suite;
     (void)item;
 
-    DvzArcball* arc = dvz_arcball(800.0f, 600.0f, 0);
+    DvzArcball* arc = _dvz_arcball(800.0f, 600.0f, 0);
     ANN(arc);
 
     /* At construction the accumulated matrix should be identity (init angles all zero). */
@@ -310,7 +310,7 @@ int test_arcball_rotate_produces_nonidentity_model(TstContext* suite, const TstC
     (void)suite;
     (void)item;
 
-    DvzArcball* arc = dvz_arcball(800.0f, 800.0f, 0);
+    DvzArcball* arc = _dvz_arcball(800.0f, 800.0f, 0);
 
     /* Simulate a drag: current position != press position → rotation quaternion not identity. */
     dvz_arcball_rotate(arc, (vec2){0.5f, 0.0f}, (vec2){0.0f, 0.0f});
@@ -330,7 +330,7 @@ int test_arcball_end_commits_rotation(TstContext* suite, const TstCase* item)
     (void)suite;
     (void)item;
 
-    DvzArcball* arc = dvz_arcball(800.0f, 800.0f, 0);
+    DvzArcball* arc = _dvz_arcball(800.0f, 800.0f, 0);
 
     dvz_arcball_rotate(arc, (vec2){0.5f, 0.0f}, (vec2){0.0f, 0.0f});
     mat4 model_before = GLM_MAT4_IDENTITY_INIT;
@@ -358,7 +358,7 @@ int test_arcball_rotate_axis_is_incremental(TstContext* suite, const TstCase* it
     (void)suite;
     (void)item;
 
-    DvzArcball* arc = dvz_arcball(800.0f, 800.0f, 0);
+    DvzArcball* arc = _dvz_arcball(800.0f, 800.0f, 0);
 
     dvz_arcball_set(arc, (vec3){0.4f, 0.0f, 0.2f});
     mat4 model_before = GLM_MAT4_IDENTITY_INIT;
@@ -398,7 +398,7 @@ int test_arcball_zoom_wheel(TstContext* suite, const TstCase* item)
     (void)suite;
     (void)item;
 
-    DvzArcball* arc = dvz_arcball(800.0f, 800.0f, 0);
+    DvzArcball* arc = _dvz_arcball(800.0f, 800.0f, 0);
     ANN(arc);
     AT(fabsf(arc->zoom - 1.0f) < 1e-5f);
 
@@ -445,7 +445,7 @@ int test_arcball_pan_right_drag(TstContext* suite, const TstCase* item)
     (void)suite;
     (void)item;
 
-    DvzArcball* arc = dvz_arcball(800.0f, 600.0f, 0);
+    DvzArcball* arc = _dvz_arcball(800.0f, 600.0f, 0);
     ANN(arc);
 
     DvzPointerEvent start = {
@@ -498,7 +498,7 @@ int test_arcball_interaction_state(TstContext* suite, const TstCase* item)
     (void)suite;
     (void)item;
 
-    DvzArcball* arc = dvz_arcball(800.0f, 600.0f, 0);
+    DvzArcball* arc = _dvz_arcball(800.0f, 600.0f, 0);
     ANN(arc);
 
     AT(!dvz_arcball_is_interacting(NULL));
@@ -541,7 +541,7 @@ int test_arcball_double_click_resets(TstContext* suite, const TstCase* item)
     (void)suite;
     (void)item;
 
-    DvzArcball* arc = dvz_arcball(800.0f, 600.0f, 0);
+    DvzArcball* arc = _dvz_arcball(800.0f, 600.0f, 0);
 
     /* Apply a rotation then commit it. */
     dvz_arcball_rotate(arc, (vec2){0.5f, 0.3f}, (vec2){-0.2f, -0.1f});

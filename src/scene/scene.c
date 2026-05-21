@@ -268,10 +268,25 @@ static void _scene_controller_destroy(DvzController* controller)
 {
     if (controller == NULL || !controller->active)
         return;
+    if (controller->panzoom != NULL)
+    {
+        dvz_panzoom_destroy(controller->panzoom);
+        controller->panzoom = NULL;
+    }
+    if (controller->arcball != NULL)
+    {
+        dvz_arcball_destroy(controller->arcball);
+        controller->arcball = NULL;
+    }
     if (controller->fly != NULL)
     {
         dvz_fly_destroy(controller->fly);
         controller->fly = NULL;
+    }
+    if (controller->turntable != NULL)
+    {
+        dvz_turntable_destroy(controller->turntable);
+        controller->turntable = NULL;
     }
     controller->scene = NULL;
     controller->type = DVZ_CONTROLLER_TYPE_NONE;
@@ -1456,13 +1471,13 @@ void dvz_figure_destroy(DvzFigure* figure)
 
 
 /**
- * Create a scene-owned fly controller.
+ * Allocate one scene-owned controller slot.
  *
  * @param scene the scene
- * @param desc fly descriptor, or NULL for defaults
- * @return the scene-owned controller handle
+ * @param type controller type
+ * @return the active controller slot, or NULL
  */
-DvzController* dvz_scene_fly(DvzScene* scene, const DvzFlyDesc* desc)
+static DvzController* _scene_controller(DvzScene* scene, DvzControllerType type)
 {
     ANN(scene);
     if (scene->controller_count >= DVZ_SCENE_MAX_CONTROLLERS)
@@ -1470,10 +1485,143 @@ DvzController* dvz_scene_fly(DvzScene* scene, const DvzFlyDesc* desc)
 
     DvzController* controller = &scene->controllers[scene->controller_count++];
     controller->scene = scene;
-    controller->type = DVZ_CONTROLLER_TYPE_FLY;
+    controller->type = type;
     controller->active = true;
-    controller->fly = dvz_fly(desc);
+    return controller;
+}
+
+
+
+/**
+ * Return a default panzoom descriptor.
+ *
+ * @return the panzoom descriptor
+ */
+DvzPanzoomDesc dvz_panzoom_desc(void)
+{
+    return (DvzPanzoomDesc){
+        .width = 800.0f,
+        .height = 600.0f,
+        .flags = 0,
+    };
+}
+
+
+
+/**
+ * Create a scene-owned panzoom controller.
+ *
+ * @param scene the scene
+ * @param desc panzoom descriptor, or NULL for defaults
+ * @return the scene-owned controller handle
+ */
+DvzController* dvz_panzoom(DvzScene* scene, const DvzPanzoomDesc* desc)
+{
+    ANN(scene);
+    DvzPanzoomDesc default_desc = dvz_panzoom_desc();
+    if (desc == NULL)
+        desc = &default_desc;
+
+    DvzController* controller = _scene_controller(scene, DVZ_CONTROLLER_TYPE_PANZOOM);
+    if (controller == NULL)
+        return NULL;
+    controller->panzoom = _dvz_panzoom(desc->width, desc->height, desc->flags);
+    if (controller->panzoom == NULL)
+    {
+        _scene_controller_destroy(controller);
+        scene->controller_count--;
+        return NULL;
+    }
+    return controller;
+}
+
+
+
+/**
+ * Return a default arcball descriptor.
+ *
+ * @return the arcball descriptor
+ */
+DvzArcballDesc dvz_arcball_desc(void)
+{
+    return (DvzArcballDesc){
+        .width = 800.0f,
+        .height = 600.0f,
+        .flags = 0,
+    };
+}
+
+
+
+/**
+ * Create a scene-owned arcball controller.
+ *
+ * @param scene the scene
+ * @param desc arcball descriptor, or NULL for defaults
+ * @return the scene-owned controller handle
+ */
+DvzController* dvz_arcball(DvzScene* scene, const DvzArcballDesc* desc)
+{
+    ANN(scene);
+    DvzArcballDesc default_desc = dvz_arcball_desc();
+    if (desc == NULL)
+        desc = &default_desc;
+
+    DvzController* controller = _scene_controller(scene, DVZ_CONTROLLER_TYPE_ARCBALL);
+    if (controller == NULL)
+        return NULL;
+    controller->arcball = _dvz_arcball(desc->width, desc->height, desc->flags);
+    if (controller->arcball == NULL)
+    {
+        _scene_controller_destroy(controller);
+        scene->controller_count--;
+        return NULL;
+    }
+    return controller;
+}
+
+
+
+/**
+ * Create a scene-owned fly controller.
+ *
+ * @param scene the scene
+ * @param desc fly descriptor, or NULL for defaults
+ * @return the scene-owned controller handle
+ */
+DvzController* dvz_fly(DvzScene* scene, const DvzFlyDesc* desc)
+{
+    ANN(scene);
+    DvzController* controller = _scene_controller(scene, DVZ_CONTROLLER_TYPE_FLY);
+    if (controller == NULL)
+        return NULL;
+    controller->fly = _dvz_fly(desc);
     if (controller->fly == NULL)
+    {
+        _scene_controller_destroy(controller);
+        scene->controller_count--;
+        return NULL;
+    }
+    return controller;
+}
+
+
+
+/**
+ * Create a scene-owned turntable controller.
+ *
+ * @param scene the scene
+ * @param desc turntable descriptor, or NULL for defaults
+ * @return the scene-owned controller handle
+ */
+DvzController* dvz_turntable(DvzScene* scene, const DvzTurntableDesc* desc)
+{
+    ANN(scene);
+    DvzController* controller = _scene_controller(scene, DVZ_CONTROLLER_TYPE_TURNTABLE);
+    if (controller == NULL)
+        return NULL;
+    controller->turntable = _dvz_turntable(desc);
+    if (controller->turntable == NULL)
     {
         _scene_controller_destroy(controller);
         scene->controller_count--;
@@ -1500,6 +1648,42 @@ DvzControllerType dvz_controller_type(const DvzController* controller)
 
 
 /**
+ * Return the panzoom payload of a panzoom controller.
+ *
+ * @param controller the controller
+ * @return the borrowed panzoom payload, or NULL for the wrong family
+ */
+DvzPanzoom* dvz_controller_panzoom(DvzController* controller)
+{
+    if (controller == NULL || !controller->active ||
+        controller->type != DVZ_CONTROLLER_TYPE_PANZOOM)
+    {
+        return NULL;
+    }
+    return controller->panzoom;
+}
+
+
+
+/**
+ * Return the arcball payload of an arcball controller.
+ *
+ * @param controller the controller
+ * @return the borrowed arcball payload, or NULL for the wrong family
+ */
+DvzArcball* dvz_controller_arcball(DvzController* controller)
+{
+    if (controller == NULL || !controller->active ||
+        controller->type != DVZ_CONTROLLER_TYPE_ARCBALL)
+    {
+        return NULL;
+    }
+    return controller->arcball;
+}
+
+
+
+/**
  * Return the fly payload of a fly controller.
  *
  * @param controller the controller
@@ -1510,6 +1694,24 @@ DvzFly* dvz_controller_fly(DvzController* controller)
     if (controller == NULL || !controller->active || controller->type != DVZ_CONTROLLER_TYPE_FLY)
         return NULL;
     return controller->fly;
+}
+
+
+
+/**
+ * Return the turntable payload of a turntable controller.
+ *
+ * @param controller the controller
+ * @return the borrowed turntable payload, or NULL for the wrong family
+ */
+DvzTurntable* dvz_controller_turntable(DvzController* controller)
+{
+    if (controller == NULL || !controller->active ||
+        controller->type != DVZ_CONTROLLER_TYPE_TURNTABLE)
+    {
+        return NULL;
+    }
+    return controller->turntable;
 }
 
 
@@ -1932,28 +2134,86 @@ int dvz_panel_bind_controller(DvzPanel* panel, DvzController* controller, DvzDim
     }
     if (controller->scene != panel->figure->scene)
         return -1;
-    if (controller->type != DVZ_CONTROLLER_TYPE_FLY || dims != DVZ_DIM_MASK_XYZ)
-        return -1;
-
-    DvzFly* fly = dvz_controller_fly(controller);
-    if (fly == NULL)
-        return -1;
-    DvzCamera* camera = _scene_panel_ensure_camera(panel);
-    if (camera == NULL)
-        return -1;
 
     float w = 0.0f;
     float h = 0.0f;
     float x = 0.0f;
     float y = 0.0f;
     _scene_panel_pixel_rect(panel, &x, &y, &w, &h);
-    panel->controllers[DVZ_DIM_X] = controller;
-    panel->controllers[DVZ_DIM_Y] = controller;
-    panel->controllers[DVZ_DIM_Z] = controller;
-    panel->fly = fly;
-    dvz_fly_viewport(fly, x, y, w, h);
-    dvz_fly_set_camera(fly, camera);
-    dvz_camera_resize(camera, w, h);
+
+    switch (controller->type)
+    {
+    case DVZ_CONTROLLER_TYPE_PANZOOM:
+    {
+        const DvzDimMask invalid = dims & ~((DvzDimMask)DVZ_DIM_MASK_XY);
+        if (invalid != 0 || dims == DVZ_DIM_MASK_NONE)
+            return -1;
+        DvzPanzoom* panzoom = dvz_controller_panzoom(controller);
+        if (panzoom == NULL)
+            return -1;
+        if ((dims & DVZ_DIM_MASK_X) != 0)
+            panel->controllers[DVZ_DIM_X] = controller;
+        if ((dims & DVZ_DIM_MASK_Y) != 0)
+            panel->controllers[DVZ_DIM_Y] = controller;
+        panel->panzoom = panzoom;
+        dvz_panzoom_viewport(panzoom, x, y, w, h);
+        break;
+    }
+    case DVZ_CONTROLLER_TYPE_ARCBALL:
+    {
+        if (dims != DVZ_DIM_MASK_XYZ)
+            return -1;
+        DvzArcball* arcball = dvz_controller_arcball(controller);
+        if (arcball == NULL)
+            return -1;
+        panel->controllers[DVZ_DIM_X] = controller;
+        panel->controllers[DVZ_DIM_Y] = controller;
+        panel->controllers[DVZ_DIM_Z] = controller;
+        panel->arcball = arcball;
+        dvz_arcball_resize(arcball, w, h);
+        break;
+    }
+    case DVZ_CONTROLLER_TYPE_FLY:
+    {
+        if (dims != DVZ_DIM_MASK_XYZ)
+            return -1;
+        DvzFly* fly = dvz_controller_fly(controller);
+        if (fly == NULL)
+            return -1;
+        DvzCamera* camera = _scene_panel_ensure_camera(panel);
+        if (camera == NULL)
+            return -1;
+        panel->controllers[DVZ_DIM_X] = controller;
+        panel->controllers[DVZ_DIM_Y] = controller;
+        panel->controllers[DVZ_DIM_Z] = controller;
+        panel->fly = fly;
+        dvz_fly_viewport(fly, x, y, w, h);
+        dvz_fly_set_camera(fly, camera);
+        dvz_camera_resize(camera, w, h);
+        break;
+    }
+    case DVZ_CONTROLLER_TYPE_TURNTABLE:
+    {
+        if (dims != DVZ_DIM_MASK_XYZ)
+            return -1;
+        DvzTurntable* turntable = dvz_controller_turntable(controller);
+        if (turntable == NULL)
+            return -1;
+        DvzCamera* camera = _scene_panel_ensure_camera(panel);
+        if (camera == NULL)
+            return -1;
+        panel->controllers[DVZ_DIM_X] = controller;
+        panel->controllers[DVZ_DIM_Y] = controller;
+        panel->controllers[DVZ_DIM_Z] = controller;
+        panel->turntable = turntable;
+        dvz_turntable_viewport(turntable, x, y, w, h);
+        dvz_turntable_set_camera(turntable, camera);
+        dvz_camera_resize(camera, w, h);
+        break;
+    }
+    default:
+        return -1;
+    }
     _scene_notify_request_frame(panel->figure);
     return 0;
 }
@@ -1986,7 +2246,7 @@ void dvz_panel_set_panzoom(DvzPanel* panel, DvzInputRouter* router, int flags)
     float x = 0.0f;
     float y = 0.0f;
     _scene_panel_pixel_rect(panel, &x, &y, &w, &h);
-    panel->panzoom = dvz_panzoom(w, h, flags);
+    panel->panzoom = _dvz_panzoom(w, h, flags);
     dvz_panzoom_viewport(panel->panzoom, x, y, w, h);
     if (router != NULL)
         dvz_panzoom_connect(panel->panzoom, router);
@@ -2009,7 +2269,7 @@ void dvz_panel_set_arcball(DvzPanel* panel, DvzInputRouter* router, int flags)
     float w = 0.0f;
     float h = 0.0f;
     _scene_panel_pixel_size(panel, &w, &h);
-    panel->arcball = dvz_arcball(w, h, flags);
+    panel->arcball = _dvz_arcball(w, h, flags);
     if (router != NULL)
         dvz_arcball_connect(panel->arcball, router);
     _scene_notify_request_frame(panel->figure);
@@ -2091,7 +2351,7 @@ DvzFly* dvz_panel_set_fly(DvzPanel* panel, DvzInputRouter* router, const DvzFlyD
     if (panel->figure == NULL || panel->figure->scene == NULL)
         return NULL;
 
-    DvzController* controller = dvz_scene_fly(panel->figure->scene, desc);
+    DvzController* controller = dvz_fly(panel->figure->scene, desc);
     if (controller == NULL)
         return NULL;
     if (dvz_panel_bind_controller(panel, controller, DVZ_DIM_MASK_XYZ) != 0)
@@ -2142,7 +2402,7 @@ DvzTurntable* dvz_panel_set_turntable(
     if (panel->camera == NULL)
         return NULL;
 
-    panel->turntable = dvz_turntable(desc);
+    panel->turntable = _dvz_turntable(desc);
     if (panel->turntable == NULL)
         return NULL;
 

@@ -313,7 +313,7 @@ static void _panzoom_input_callback(
 /*  Public API                                                                                   */
 /*************************************************************************************************/
 
-DvzPanzoom* dvz_panzoom(float width, float height, int flags)
+DvzPanzoom* _dvz_panzoom(float width, float height, int flags)
 {
     ASSERT(width > 0);
     ASSERT(height > 0);

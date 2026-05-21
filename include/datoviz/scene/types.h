@@ -97,8 +97,11 @@ typedef enum
 
 typedef enum
 {
-    DVZ_CONTROLLER_TYPE_NONE = 0,
-    DVZ_CONTROLLER_TYPE_FLY  = 1,
+    DVZ_CONTROLLER_TYPE_NONE      = 0,
+    DVZ_CONTROLLER_TYPE_PANZOOM   = 1,
+    DVZ_CONTROLLER_TYPE_ARCBALL   = 2,
+    DVZ_CONTROLLER_TYPE_FLY       = 3,
+    DVZ_CONTROLLER_TYPE_TURNTABLE = 4,
 } DvzControllerType;
 
 

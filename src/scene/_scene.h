@@ -147,8 +147,27 @@ struct DvzController
     DvzScene* scene;
     DvzControllerType type;
     bool active;
+    DvzPanzoom* panzoom;
+    DvzArcball* arcball;
     DvzFly* fly;
+    DvzTurntable* turntable;
 };
+
+
+
+DvzPanzoom* _dvz_panzoom(float width, float height, int flags);
+
+
+
+DvzArcball* _dvz_arcball(float width, float height, int flags);
+
+
+
+DvzFly* _dvz_fly(const DvzFlyDesc* desc);
+
+
+
+DvzTurntable* _dvz_turntable(const DvzTurntableDesc* desc);
 
 
 

@@ -25,6 +25,7 @@
 #include "datoviz/input/router.h"
 #include "datoviz/math/types.h"
 #include "datoviz/scene/camera.h"
+#include "datoviz/scene/types.h"
 
 
 
@@ -149,12 +150,13 @@ DVZ_EXPORT DvzFlyDesc dvz_fly_desc(void);
 
 
 /**
- * Create a fly camera controller.
+ * Create a scene-owned fly camera controller.
  *
+ * @param scene the scene
  * @param desc fly descriptor, or NULL for defaults
- * @return the fly controller
+ * @return the scene-owned controller handle
  */
-DVZ_EXPORT DvzFly* dvz_fly(const DvzFlyDesc* desc);
+DVZ_EXPORT DvzController* dvz_fly(DvzScene* scene, const DvzFlyDesc* desc);
 
 
 

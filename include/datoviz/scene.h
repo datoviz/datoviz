@@ -136,16 +136,6 @@ DVZ_EXPORT void dvz_figure_destroy(DvzFigure* figure);
 
 
 /**
- * Create a scene-owned fly controller.
- *
- * @param scene the scene
- * @param desc fly descriptor, or NULL for defaults
- * @return the scene-owned controller handle
- */
-DVZ_EXPORT DvzController* dvz_scene_fly(DvzScene* scene, const DvzFlyDesc* desc);
-
-
-/**
  * Return the type of a scene-owned controller.
  *
  * @param controller the controller
@@ -155,12 +145,39 @@ DVZ_EXPORT DvzControllerType dvz_controller_type(const DvzController* controller
 
 
 /**
+ * Return the panzoom payload of a panzoom controller.
+ *
+ * @param controller the controller
+ * @return the borrowed panzoom payload, or NULL for the wrong family
+ */
+DVZ_EXPORT DvzPanzoom* dvz_controller_panzoom(DvzController* controller);
+
+
+/**
+ * Return the arcball payload of an arcball controller.
+ *
+ * @param controller the controller
+ * @return the borrowed arcball payload, or NULL for the wrong family
+ */
+DVZ_EXPORT DvzArcball* dvz_controller_arcball(DvzController* controller);
+
+
+/**
  * Return the fly payload of a fly controller.
  *
  * @param controller the controller
  * @return the borrowed fly payload, or NULL for the wrong family
  */
 DVZ_EXPORT DvzFly* dvz_controller_fly(DvzController* controller);
+
+
+/**
+ * Return the turntable payload of a turntable controller.
+ *
+ * @param controller the controller
+ * @return the borrowed turntable payload, or NULL for the wrong family
+ */
+DVZ_EXPORT DvzTurntable* dvz_controller_turntable(DvzController* controller);
 
 
 /**

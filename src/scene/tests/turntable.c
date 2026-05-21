@@ -33,7 +33,7 @@ int test_turntable_create_default(TstContext* suite, const TstCase* item)
     (void)suite;
     (void)item;
 
-    DvzTurntable* turntable = dvz_turntable(NULL);
+    DvzTurntable* turntable = _dvz_turntable(NULL);
     ANN(turntable);
     AC(turntable->pivot[0], 0.0f, 1e-5f);
     AC(turntable->pivot[1], 0.0f, 1e-5f);
@@ -53,7 +53,7 @@ int test_turntable_orbit_preserves_distance(TstContext* suite, const TstCase* it
     (void)suite;
     (void)item;
 
-    DvzTurntable* turntable = dvz_turntable(NULL);
+    DvzTurntable* turntable = _dvz_turntable(NULL);
     ANN(turntable);
     dvz_turntable_orbit(turntable, GLM_PI_2f, 0.0f);
     AC(turntable->distance, 3.0f, 1e-5f);
@@ -72,7 +72,7 @@ int test_turntable_pivot_preserves_eye(TstContext* suite, const TstCase* item)
     (void)suite;
     (void)item;
 
-    DvzTurntable* turntable = dvz_turntable(NULL);
+    DvzTurntable* turntable = _dvz_turntable(NULL);
     ANN(turntable);
     dvz_turntable_pivot(turntable, (vec3){1.0f, 0.0f, 3.0f});
     AC(turntable->eye[0], 0.0f, 1e-5f);
@@ -92,7 +92,7 @@ int test_turntable_pan_moves_pivot_and_eye(TstContext* suite, const TstCase* ite
     (void)suite;
     (void)item;
 
-    DvzTurntable* turntable = dvz_turntable(NULL);
+    DvzTurntable* turntable = _dvz_turntable(NULL);
     ANN(turntable);
     dvz_turntable_pan(turntable, 1.0f, 2.0f);
     AC(turntable->pivot[0], 1.0f, 1e-5f);

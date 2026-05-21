@@ -23,6 +23,7 @@
 #include "datoviz/input/router.h"
 #include "datoviz/math/types.h"
 #include "datoviz/scene/camera.h"
+#include "datoviz/scene/types.h"
 
 
 
@@ -134,12 +135,13 @@ DVZ_EXPORT DvzTurntableDesc dvz_turntable_desc(void);
 
 
 /**
- * Create a turntable controller.
+ * Create a scene-owned turntable controller.
  *
+ * @param scene the scene
  * @param desc descriptor, or NULL for defaults
- * @return the turntable controller
+ * @return the scene-owned controller handle
  */
-DVZ_EXPORT DvzTurntable* dvz_turntable(const DvzTurntableDesc* desc);
+DVZ_EXPORT DvzController* dvz_turntable(DvzScene* scene, const DvzTurntableDesc* desc);
 
 
 

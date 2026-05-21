@@ -350,7 +350,7 @@ DvzTurntableDesc dvz_turntable_desc(void)
  * @param desc descriptor, or NULL for defaults
  * @return the turntable controller
  */
-DvzTurntable* dvz_turntable(const DvzTurntableDesc* desc)
+DvzTurntable* _dvz_turntable(const DvzTurntableDesc* desc)
 {
     DvzTurntableDesc default_desc = dvz_turntable_desc();
     if (desc == NULL)

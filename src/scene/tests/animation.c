@@ -266,7 +266,7 @@ int test_scene_animation_arcball_spin(TstContext* suite, const TstCase* item)
     dvz_scene_set_clock_mode(scene, DVZ_CLOCK_OFFLINE);
     dvz_scene_set_fps(scene, 10.0);
 
-    DvzArcball* arcball = dvz_arcball(800.0f, 600.0f, 0);
+    DvzArcball* arcball = _dvz_arcball(800.0f, 600.0f, 0);
     ANN(arcball);
 
     mat4 before = GLM_MAT4_IDENTITY_INIT;

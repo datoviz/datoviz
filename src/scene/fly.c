@@ -419,7 +419,7 @@ DvzFlyDesc dvz_fly_desc(void)
  * @param desc fly descriptor, or NULL for defaults
  * @return the fly controller
  */
-DvzFly* dvz_fly(const DvzFlyDesc* desc)
+DvzFly* _dvz_fly(const DvzFlyDesc* desc)
 {
     DvzFlyDesc default_desc = dvz_fly_desc();
     if (desc == NULL)

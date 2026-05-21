@@ -78,14 +78,31 @@ EXTERN_C_ON
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
+typedef struct DvzArcballDesc DvzArcballDesc;
+
+
+
+struct DvzArcballDesc
+{
+    float width;
+    float height;
+    int flags;
+};
+
+
+
+DVZ_EXPORT DvzArcballDesc dvz_arcball_desc(void);
+
+
+
 /**
- * Create an arcball controller.
+ * Create a scene-owned arcball controller.
  *
- * @param width viewport width in pixels
- * @param height viewport height in pixels
- * @param flags DvzArcballFlags bitmask
+ * @param scene the scene
+ * @param desc arcball descriptor, or NULL for defaults
+ * @return the scene-owned controller handle
  */
-DVZ_EXPORT DvzArcball* dvz_arcball(float width, float height, int flags);
+DVZ_EXPORT DvzController* dvz_arcball(DvzScene* scene, const DvzArcballDesc* desc);
 
 
 

@@ -162,7 +162,7 @@ static void _arcball_input_callback(
 /*  Public API                                                                                   */
 /*************************************************************************************************/
 
-DvzArcball* dvz_arcball(float width, float height, int flags)
+DvzArcball* _dvz_arcball(float width, float height, int flags)
 {
     ASSERT(width > 0);
     ASSERT(height > 0);
