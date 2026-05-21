@@ -1228,19 +1228,6 @@ DVZ_EXPORT int dvz_text_set_renderer(DvzVisual* visual, DvzTextRenderer renderer
 
 
 /**
- * Select the font used by a batched text visual.
- *
- * The font must belong to the same scene as the visual. Passing NULL restores the scene default
- * font used by SDF-backed renderers.
- *
- * @param visual text visual
- * @param font scene-owned font, or NULL for the default font
- * @return 0 on success, -1 on error
- */
-DVZ_EXPORT int dvz_text_set_font(DvzVisual* visual, DvzFont* font);
-
-
-/**
  * Create a glyph visual.
  *
  * Renders atlas-backed glyph quads with `position` (vec3 anchor), `bounds` (vec4 local pixel

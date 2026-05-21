@@ -41,8 +41,8 @@
 #define TEXT_LAB_BOX_VERTICES (24u * TEXT_LAB_MAX_TICKS)
 #define TEXT_LAB_DEFAULT_TEXT_SIZE 32.0f
 #define TEXT_LAB_DEFAULT_TICK_SIZE 12.0f
-#define TEXT_LAB_SDF_FONT_SIZE 128.0f
-#define TEXT_LAB_SDF_FONT_FAMILY "__datoviz_text_lab_sdf__"
+#define TEXT_LAB_SDF_FONT_SIZE 64.0f
+#define TEXT_LAB_SDF_FONT_FAMILY "__datoviz_default_sdf__"
 
 
 
@@ -880,7 +880,7 @@ int main(int argc, char** argv)
         return 1;
     }
 
-    /* Use a high-resolution SDF/MSDF atlas font for the interactive text visual. */
+    /* Seed the retained-text default SDF/MSDF font at a higher atlas resolution for inspection. */
     DvzFont* font = dvz_font(
         scene, &(DvzFontDesc){
                    .family = TEXT_LAB_SDF_FONT_FAMILY,
@@ -928,18 +928,6 @@ int main(int argc, char** argv)
         dvz_fprintf(stderr, "dvz_text() failed\n");
         dvz_scene_destroy(scene);
         return 1;
-    }
-    DvzVisual* text_font_visuals[] = {state.title, state.sample, state.multiline, state.ticks};
-    uint32_t text_font_count =
-        (uint32_t)(sizeof(text_font_visuals) / sizeof(text_font_visuals[0]));
-    for (uint32_t i = 0; i < text_font_count; i++)
-    {
-        if (dvz_text_set_font(text_font_visuals[i], font) != 0)
-        {
-            dvz_fprintf(stderr, "dvz_text_set_font() failed for text visual %u\n", i);
-            dvz_scene_destroy(scene);
-            return 1;
-        }
     }
     DvzVisualAttachDesc title_attach = {
         .z_layer = 4,
