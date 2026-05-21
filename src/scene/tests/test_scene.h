@@ -257,6 +257,8 @@ int test_scene_segment_emit_glsl(TstContext* suite, const TstCase* item);
 
 int test_scene_segment_caps(TstContext* suite, const TstCase* item);
 
+int test_scene_path_stroke_style(TstContext* suite, const TstCase* item);
+
 int test_scene_point_like_lowering_policy(TstContext* suite, const TstCase* item);
 
 int test_scene_point_emit_glsl_native_points(TstContext* suite, const TstCase* item);
@@ -703,6 +705,8 @@ int test_scene_text_attach_mode_change_regenerates_glyphs(TstContext* suite, con
 
 #if defined(DVZ_HAS_APP) && DVZ_HAS_APP
 int test_app_offscreen_has_nonblank_pixels(TstContext* suite, const TstCase* item);
+
+int test_app_offscreen_path_join_has_no_center_gap(TstContext* suite, const TstCase* item);
 
 int test_app_offscreen_pixel_square_has_nonblank_pixels(TstContext* suite, const TstCase* item);
 

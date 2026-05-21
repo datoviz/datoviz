@@ -233,6 +233,52 @@ int test_scene_segment_caps(TstContext* suite, const TstCase* item)
 
 
 /**
+ * Verify path cap/join defaults and retained updates.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_path_stroke_style(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    DvzVisual* visual = dvz_path(scene, 0);
+    AT(visual != NULL);
+    AT(visual->path.cap_start == DVZ_SEGMENT_CAP_ROUND);
+    AT(visual->path.cap_end == DVZ_SEGMENT_CAP_ROUND);
+    AT(visual->path.join == DVZ_PATH_JOIN_ROUND);
+    AT(visual->path.miter_limit == 4.0f);
+    AT(visual->material_params.params[0] == (float)DVZ_SEGMENT_CAP_ROUND);
+    AT(visual->material_params.params[1] == (float)DVZ_SEGMENT_CAP_ROUND);
+    AT(visual->material_params.params[2] == (float)DVZ_PATH_JOIN_ROUND);
+    AT(visual->material_params.params[3] == 4.0f);
+
+    AT(dvz_path_set_caps(visual, DVZ_SEGMENT_CAP_BUTT, DVZ_SEGMENT_CAP_SQUARE) == 0);
+    AT(dvz_path_set_join(visual, DVZ_PATH_JOIN_MITER, 2.5f) == 0);
+    AT(visual->path.cap_start == DVZ_SEGMENT_CAP_BUTT);
+    AT(visual->path.cap_end == DVZ_SEGMENT_CAP_SQUARE);
+    AT(visual->path.join == DVZ_PATH_JOIN_MITER);
+    AT(visual->path.miter_limit == 2.5f);
+    AT(visual->material_params.params[0] == (float)DVZ_SEGMENT_CAP_BUTT);
+    AT(visual->material_params.params[1] == (float)DVZ_SEGMENT_CAP_SQUARE);
+    AT(visual->material_params.params[2] == (float)DVZ_PATH_JOIN_MITER);
+    AT(visual->material_params.params[3] == 2.5f);
+
+    AT_EXPECTED_ERROR_STRICT(
+        suite, dvz_path_set_caps(visual, (DvzSegmentCap)99, DVZ_SEGMENT_CAP_BUTT) < 0);
+    AT_EXPECTED_ERROR_STRICT(
+        suite, dvz_path_set_join(visual, (DvzPathJoin)99, 4.0f) < 0);
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_path_set_join(visual, DVZ_PATH_JOIN_BEVEL, 0.0f) < 0);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+/**
  * Verify segment visuals lower to analytic indexed GLSL quads.
  *
  * @param suite the active test suite
@@ -1651,8 +1697,8 @@ int test_scene_path_line_width_emit_glsl(TstContext* suite, const TstCase* item)
             {
                 found_pipeline = true;
                 AT(cmd->u.create_render_pipeline.topology == VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
-                AT(cmd->u.create_render_pipeline.binding_count == 4);
-                AT(cmd->u.create_render_pipeline.attr_count == 4);
+                AT(cmd->u.create_render_pipeline.binding_count == 7);
+                AT(cmd->u.create_render_pipeline.attr_count == 7);
             }
         }
         else if (cmd->type == DVZ_DRP2_COMMAND_SET_VERTEX_BUFFER)
@@ -1669,7 +1715,7 @@ int test_scene_path_line_width_emit_glsl(TstContext* suite, const TstCase* item)
     AT(found_set_index);
     AT(found_draw_indexed);
     AT(found_material_bg);
-    AT(set_vertex_buffer_count == 4);
+    AT(set_vertex_buffer_count == 7);
 
     dvz_drp2_stream_destroy(stream);
     dvz_scene_destroy(scene);

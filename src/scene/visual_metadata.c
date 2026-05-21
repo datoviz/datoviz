@@ -159,6 +159,18 @@ bool _scene_visual_frame_plan_metadata(
             figure, visual, visual_index, "selection", metadata->selection_id,
             sizeof(metadata->selection_id)))
         return false;
+    if (visual->type == DVZ_VISUAL_TYPE_PATH &&
+        _scene_visual_has_attr_data(visual, "line_width"))
+    {
+        if (!_scene_resource_key_visual_attr(
+                visual_index, "path_flags", metadata->path_flags_id,
+                sizeof(metadata->path_flags_id)))
+            return false;
+        if (!_scene_resource_key_visual_attr(
+                visual_index, "path_distance", metadata->path_distance_id,
+                sizeof(metadata->path_distance_id)))
+            return false;
+    }
     if (visual->type == DVZ_VISUAL_TYPE_SEGMENT || _scene_visual_needs_material_params(visual))
     {
         if (!_scene_resource_key_visual_attr(
@@ -189,6 +201,14 @@ bool _scene_visual_frame_plan_metadata(
                 return false;
             metadata->vertex_count = (uint32_t)visual->segment.gpu.vertex_count;
             metadata->index_count = (uint32_t)visual->segment.gpu.index_count;
+        }
+        else if (visual->type == DVZ_VISUAL_TYPE_PATH)
+        {
+            if (visual->path.gpu.vertex_count > UINT32_MAX ||
+                visual->path.gpu.index_count > UINT32_MAX)
+                return false;
+            metadata->vertex_count = (uint32_t)visual->path.gpu.vertex_count;
+            metadata->index_count = (uint32_t)visual->path.gpu.index_count;
         }
     }
     if (visual->type == DVZ_VISUAL_TYPE_IMAGE && _scene_image_uses_generated_quads(visual))

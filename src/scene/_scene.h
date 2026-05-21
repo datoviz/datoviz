@@ -741,10 +741,13 @@ typedef struct DvzPathGpuCache DvzPathGpuCache;
 
 struct DvzPathGpuCache
 {
-    float* position_start;
-    float* position_end;
+    float* position_prev;
+    float* position_curr;
+    float* position_next;
     DvzColor* color;
     float* line_width;
+    uint32_t* path_flags;
+    float* path_distance;
     uint32_t* indices;
     uint64_t point_count;
     uint64_t segment_count;

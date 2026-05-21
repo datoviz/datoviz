@@ -14,6 +14,7 @@
 /*************************************************************************************************/
 
 #include <inttypes.h>
+#include <math.h>
 #include <stdarg.h>
 #include <stdint.h>
 #include <string.h>
@@ -34,6 +35,18 @@
 #include "_visual_pipeline.h"
 #include "datoviz/drp2/runtime.h"
 #include "render_contract.h"
+
+
+/*************************************************************************************************/
+/*  Macros                                                                                       */
+/*************************************************************************************************/
+
+#define DVZ_PATH_VERTEX_SIDE_NEGATIVE 0x01u
+#define DVZ_PATH_VERTEX_ENDPOINT_END  0x02u
+#define DVZ_PATH_VERTEX_HAS_PREV      0x04u
+#define DVZ_PATH_VERTEX_HAS_NEXT      0x08u
+#define DVZ_PATH_VERTEX_SUBPATH_START 0x10u
+#define DVZ_PATH_VERTEX_SUBPATH_END   0x20u
 
 
 /*************************************************************************************************/
@@ -72,6 +85,10 @@ static DvzFramePlanResourceRole _scene_attr_frame_plan_role(const char* attr_nam
         return DVZ_FRAME_PLAN_RESOURCE_ROLE_NORMAL;
     if (strcmp(attr_name, "selection") == 0)
         return DVZ_FRAME_PLAN_RESOURCE_ROLE_SELECTION;
+    if (strcmp(attr_name, "path_flags") == 0)
+        return DVZ_FRAME_PLAN_RESOURCE_ROLE_PATH_FLAGS;
+    if (strcmp(attr_name, "path_distance") == 0)
+        return DVZ_FRAME_PLAN_RESOURCE_ROLE_PATH_DISTANCE;
     return DVZ_FRAME_PLAN_RESOURCE_ROLE_NONE;
 }
 
@@ -481,7 +498,51 @@ static bool _path_required_attrs(const DvzVisual* visual, uint64_t* out_count)
 
 
 /**
- * Rebuild one path visual's derived segment upload cache.
+ * Return the Euclidean distance between two path points.
+ *
+ * @param position flat vec3 position array
+ * @param i0 first point index
+ * @param i1 second point index
+ * @return the point distance in visual coordinates
+ */
+static float _path_point_distance(const float* position, uint64_t i0, uint64_t i1)
+{
+    ANN(position);
+    float dx = position[3 * i1 + 0] - position[3 * i0 + 0];
+    float dy = position[3 * i1 + 1] - position[3 * i0 + 1];
+    float dz = position[3 * i1 + 2] - position[3 * i0 + 2];
+    return sqrtf(dx * dx + dy * dy + dz * dz);
+}
+
+
+/**
+ * Return packed path vertex flags for one derived stroke vertex.
+ *
+ * @param side_negative whether the vertex is on the negative normal side
+ * @param endpoint_end whether the vertex belongs to the segment end endpoint
+ * @param has_prev whether the endpoint has a previous path point
+ * @param has_next whether the endpoint has a next path point
+ * @param subpath_start whether the endpoint is the first point in an open subpath
+ * @param subpath_end whether the endpoint is the last point in an open subpath
+ * @return packed path vertex flags
+ */
+static uint32_t _path_vertex_flags(
+    bool side_negative, bool endpoint_end, bool has_prev, bool has_next, bool subpath_start,
+    bool subpath_end)
+{
+    uint32_t flags = 0;
+    flags |= side_negative ? DVZ_PATH_VERTEX_SIDE_NEGATIVE : 0u;
+    flags |= endpoint_end ? DVZ_PATH_VERTEX_ENDPOINT_END : 0u;
+    flags |= has_prev ? DVZ_PATH_VERTEX_HAS_PREV : 0u;
+    flags |= has_next ? DVZ_PATH_VERTEX_HAS_NEXT : 0u;
+    flags |= subpath_start ? DVZ_PATH_VERTEX_SUBPATH_START : 0u;
+    flags |= subpath_end ? DVZ_PATH_VERTEX_SUBPATH_END : 0u;
+    return flags;
+}
+
+
+/**
+ * Rebuild one path visual's derived adjacency-style upload cache.
  *
  * @param visual the path visual
  * @return whether the cache is ready for upload
@@ -525,10 +586,13 @@ static bool _path_cache_rebuild(DvzVisual* visual)
     }
 
     DvzPathGpuCache* cache = &visual->path.gpu;
-    if (!_segment_cache_resize((void**)&cache->position_start, vertex_count, 3 * sizeof(float)) ||
-        !_segment_cache_resize((void**)&cache->position_end, vertex_count, 3 * sizeof(float)) ||
+    if (!_segment_cache_resize((void**)&cache->position_prev, vertex_count, 3 * sizeof(float)) ||
+        !_segment_cache_resize((void**)&cache->position_curr, vertex_count, 3 * sizeof(float)) ||
+        !_segment_cache_resize((void**)&cache->position_next, vertex_count, 3 * sizeof(float)) ||
         !_segment_cache_resize((void**)&cache->color, vertex_count, sizeof(DvzColor)) ||
         !_segment_cache_resize((void**)&cache->line_width, vertex_count, sizeof(float)) ||
+        !_segment_cache_resize((void**)&cache->path_flags, vertex_count, sizeof(uint32_t)) ||
+        !_segment_cache_resize((void**)&cache->path_distance, vertex_count, sizeof(float)) ||
         !_segment_cache_resize((void**)&cache->indices, index_count, sizeof(uint32_t)))
     {
         log_error("failed to allocate path visual derived GPU cache");
@@ -546,21 +610,39 @@ static bool _path_cache_rebuild(DvzVisual* visual)
     {
         uint32_t length = visual->path.subpath_count > 0 ? visual->path.subpath_lengths[sp]
                                                          : (uint32_t)point_count;
+        float cumulative = 0.0f;
         for (uint32_t i = 0; i + 1 < length; i++)
         {
             uint64_t i0 = offset + i;
             uint64_t i1 = i0 + 1;
+            float edge_length = _path_point_distance(position, i0, i1);
             for (uint32_t j = 0; j < 4; j++)
             {
+                bool endpoint_end = j >= 2;
+                bool side_negative = j == 1 || j == 2;
+                uint64_t point_idx = endpoint_end ? i1 : i0;
+                uint64_t prev_idx = point_idx > offset ? point_idx - 1 : point_idx;
+                uint64_t next_idx = point_idx + 1 < offset + length ? point_idx + 1 : point_idx;
+                bool has_prev = prev_idx != point_idx;
+                bool has_next = next_idx != point_idx;
+                bool subpath_start = point_idx == offset;
+                bool subpath_end = point_idx + 1 == offset + length;
                 uint64_t dst = 4 * segment + j;
                 dvz_memcpy(
-                    &cache->position_start[3 * dst], 3 * sizeof(float), &position[3 * i0],
+                    &cache->position_prev[3 * dst], 3 * sizeof(float), &position[3 * prev_idx],
                     3 * sizeof(float));
                 dvz_memcpy(
-                    &cache->position_end[3 * dst], 3 * sizeof(float), &position[3 * i1],
+                    &cache->position_curr[3 * dst], 3 * sizeof(float), &position[3 * point_idx],
                     3 * sizeof(float));
-                dvz_memcpy(&cache->color[dst], sizeof(DvzColor), &color[i0], sizeof(DvzColor));
-                cache->line_width[dst] = 0.5f * (line_width[i0] + line_width[i1]);
+                dvz_memcpy(
+                    &cache->position_next[3 * dst], 3 * sizeof(float), &position[3 * next_idx],
+                    3 * sizeof(float));
+                dvz_memcpy(
+                    &cache->color[dst], sizeof(DvzColor), &color[point_idx], sizeof(DvzColor));
+                cache->line_width[dst] = line_width[point_idx];
+                cache->path_flags[dst] = _path_vertex_flags(
+                    side_negative, endpoint_end, has_prev, has_next, subpath_start, subpath_end);
+                cache->path_distance[dst] = endpoint_end ? cumulative + edge_length : cumulative;
             }
             cache->indices[6 * segment + 0] = (uint32_t)(4 * segment + 0);
             cache->indices[6 * segment + 1] = (uint32_t)(4 * segment + 1);
@@ -569,6 +651,7 @@ static bool _path_cache_rebuild(DvzVisual* visual)
             cache->indices[6 * segment + 4] = (uint32_t)(4 * segment + 2);
             cache->indices[6 * segment + 5] = (uint32_t)(4 * segment + 3);
             segment++;
+            cumulative += edge_length;
         }
         offset += length;
     }
@@ -608,15 +691,19 @@ static void _scene_emit_path_uploads(DvzFramePlan* plan, DvzVisual* visual, uint
         uint32_t item_size;
         DvzFramePlanResourceRole role;
     } uploads[] = {
-        {"position_start", cache->position_start, 3 * sizeof(float),
+        {"position_start", cache->position_prev, 3 * sizeof(float),
          DVZ_FRAME_PLAN_RESOURCE_ROLE_POSITION_START},
-        {"position_end", cache->position_end, 3 * sizeof(float),
+        {"position", cache->position_curr, 3 * sizeof(float), DVZ_FRAME_PLAN_RESOURCE_ROLE_POSITION},
+        {"position_end", cache->position_next, 3 * sizeof(float),
          DVZ_FRAME_PLAN_RESOURCE_ROLE_POSITION_END},
         {"color", cache->color, sizeof(DvzColor), DVZ_FRAME_PLAN_RESOURCE_ROLE_COLOR},
         {"line_width", cache->line_width, sizeof(float), DVZ_FRAME_PLAN_RESOURCE_ROLE_LINE_WIDTH},
+        {"path_flags", cache->path_flags, sizeof(uint32_t), DVZ_FRAME_PLAN_RESOURCE_ROLE_PATH_FLAGS},
+        {"path_distance", cache->path_distance, sizeof(float),
+         DVZ_FRAME_PLAN_RESOURCE_ROLE_PATH_DISTANCE},
     };
 
-    for (uint32_t i = 0; i < 4; i++)
+    for (uint32_t i = 0; i < 7; i++)
     {
         char resource_id[128];
         if (!_scene_resource_key_visual_attr(

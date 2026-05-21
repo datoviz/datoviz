@@ -106,8 +106,11 @@ bool _scene_visual_meta_is_stroked_path(
     if (meta->visual_type != DVZ_VISUAL_TYPE_PATH)
         return false;
     return _scene_visual_resource_lookup_label(state, meta->position_start_id) != 0 &&
+           _scene_visual_resource_lookup_label(state, meta->position_id) != 0 &&
            _scene_visual_resource_lookup_label(state, meta->position_end_id) != 0 &&
            _scene_visual_resource_lookup_label(state, meta->line_width_id) != 0 &&
+           _scene_visual_resource_lookup_label(state, meta->path_flags_id) != 0 &&
+           _scene_visual_resource_lookup_label(state, meta->path_distance_id) != 0 &&
            _scene_visual_resource_lookup_label(state, meta->index_id) != 0;
 }
 
@@ -321,6 +324,10 @@ static const char* _resource_role_tag(DvzFramePlanResourceRole role)
         return "material_params";
     case DVZ_FRAME_PLAN_RESOURCE_ROLE_SELECTION:
         return "selection";
+    case DVZ_FRAME_PLAN_RESOURCE_ROLE_PATH_FLAGS:
+        return "path_flags";
+    case DVZ_FRAME_PLAN_RESOURCE_ROLE_PATH_DISTANCE:
+        return "path_distance";
     case DVZ_FRAME_PLAN_RESOURCE_ROLE_NONE:
     default:
         return NULL;
@@ -413,9 +420,7 @@ static bool _scene_visual_desc_from_metadata(
     bool stroked_path = _scene_visual_meta_is_stroked_path(&emitter->resources, meta);
     bool segment_like = meta->visual_type == DVZ_VISUAL_TYPE_SEGMENT;
     bool stroke_like = segment_like || stroked_path;
-    const char* primary_position_id = segment_like ? meta->position_start_id : meta->position_id;
-    if (stroked_path)
-        primary_position_id = meta->position_start_id;
+    const char* primary_position_id = stroke_like ? meta->position_start_id : meta->position_id;
     uint64_t pos_buf =
         _scene_visual_resource_lookup_label(&emitter->resources, primary_position_id);
     if (pos_buf == 0)
@@ -489,7 +494,65 @@ static bool _scene_visual_desc_from_metadata(
         return true;
     }
 
-    if (stroke_like)
+    if (stroked_path)
+    {
+        uint64_t curr_id =
+            _scene_visual_resource_lookup_label(&emitter->resources, meta->position_id);
+        uint64_t next_id =
+            _scene_visual_resource_lookup_label(&emitter->resources, meta->position_end_id);
+        uint64_t color_id =
+            _scene_visual_resource_lookup_label(&emitter->resources, meta->color_id);
+        uint64_t line_width_id =
+            _scene_visual_resource_lookup_label(&emitter->resources, meta->line_width_id);
+        uint64_t flags_id =
+            _scene_visual_resource_lookup_label(&emitter->resources, meta->path_flags_id);
+        uint64_t distance_id =
+            _scene_visual_resource_lookup_label(&emitter->resources, meta->path_distance_id);
+        uint64_t index_id =
+            _scene_visual_resource_lookup_label(&emitter->resources, meta->index_id);
+        uint64_t material_id =
+            _scene_visual_resource_lookup_label(&emitter->resources, meta->material_id);
+        if (curr_id == 0 || next_id == 0 || color_id == 0 || line_width_id == 0 ||
+            flags_id == 0 || distance_id == 0 || index_id == 0 || material_id == 0)
+        {
+            if (error != NULL)
+                *error = "typed stroked path metadata missing adjacency/color/width/flags/"
+                         "distance/index resource";
+            return false;
+        }
+        out->kind = DVZ_SCENE_VISUAL_DESC_PATH;
+        out->vbuf_ids[out->vbuf_count++] = curr_id;
+        out->vbuf_ids[out->vbuf_count++] = next_id;
+        out->vbuf_ids[out->vbuf_count++] = color_id;
+        out->vbuf_ids[out->vbuf_count++] = line_width_id;
+        out->vbuf_ids[out->vbuf_count++] = flags_id;
+        out->vbuf_ids[out->vbuf_count++] = distance_id;
+        out->topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+        out->index_buffer_id = index_id;
+        out->material_buffer_id = material_id;
+        if (meta->vertex_count > 0)
+            out->vertex_count = meta->vertex_count;
+        if (_resource_item_stride(&emitter->resources, index_id) != 0)
+        {
+            uint64_t index_count = _resource_byte_size(&emitter->resources, index_id) /
+                                   _resource_item_stride(&emitter->resources, index_id);
+            if (index_count > UINT32_MAX)
+            {
+                if (error != NULL)
+                    *error = "typed path index count exceeds uint32";
+                return false;
+            }
+            out->index_count = (uint32_t)index_count;
+        }
+        if (meta->index_count > 0)
+            out->index_count = meta->index_count;
+        out->index_format =
+            _resource_item_stride(&emitter->resources, index_id) == sizeof(uint16_t) ? "uint16"
+                                                                                     : "uint32";
+        return true;
+    }
+
+    if (segment_like)
     {
         uint64_t end_id =
             _scene_visual_resource_lookup_label(&emitter->resources, meta->position_end_id);
@@ -505,14 +568,10 @@ static bool _scene_visual_desc_from_metadata(
             material_id == 0)
         {
             if (error != NULL)
-                *error = stroked_path
-                             ? "typed stroked path metadata missing endpoint/color/width/index "
-                               "resource"
-                             : "typed segment metadata missing endpoint/color/width/index/cap "
-                               "resource";
+                *error = "typed segment metadata missing endpoint/color/width/index/cap resource";
             return false;
         }
-        out->kind = stroked_path ? DVZ_SCENE_VISUAL_DESC_PATH : DVZ_SCENE_VISUAL_DESC_SEGMENT;
+        out->kind = DVZ_SCENE_VISUAL_DESC_SEGMENT;
         out->vbuf_ids[out->vbuf_count++] = end_id;
         out->vbuf_ids[out->vbuf_count++] = color_id;
         out->vbuf_ids[out->vbuf_count++] = line_width_id;
@@ -921,9 +980,21 @@ bool _emitter_resolve_render_vertex_buffers(
         const DvzFramePlanVisualMeta* meta = &render->u.render.visual_metadata[i];
         if (meta->has_metadata)
         {
-            bool segment_like = meta->visual_type == DVZ_VISUAL_TYPE_SEGMENT ||
-                                _scene_visual_meta_is_stroked_path(&emitter->resources, meta);
-            if (segment_like)
+            bool segment_like = meta->visual_type == DVZ_VISUAL_TYPE_SEGMENT;
+            bool stroked_path = _scene_visual_meta_is_stroked_path(&emitter->resources, meta);
+            if (stroked_path)
+            {
+                if (!_append_resource_key(
+                        &emitter->resources, meta->position_start_id, out_ids, out_count, true))
+                    return false;
+                if (!_append_resource_key(
+                        &emitter->resources, meta->position_id, out_ids, out_count, true))
+                    return false;
+                if (!_append_resource_key(
+                        &emitter->resources, meta->position_end_id, out_ids, out_count, true))
+                    return false;
+            }
+            else if (segment_like)
             {
                 if (!_append_resource_key(
                         &emitter->resources, meta->position_start_id, out_ids, out_count, true))
@@ -952,6 +1023,12 @@ bool _emitter_resolve_render_vertex_buffers(
                 return false;
             if (!_append_resource_key(
                     &emitter->resources, meta->line_width_id, out_ids, out_count, false))
+                return false;
+            if (!_append_resource_key(
+                    &emitter->resources, meta->path_flags_id, out_ids, out_count, false))
+                return false;
+            if (!_append_resource_key(
+                    &emitter->resources, meta->path_distance_id, out_ids, out_count, false))
                 return false;
             if (!_append_resource_key(
                     &emitter->resources, meta->texcoords_id, out_ids, out_count, false))
@@ -1015,11 +1092,12 @@ bool _scene_render_visual_has_position_resource(
     const DvzFramePlanVisualMeta* meta = &render->u.render.visual_metadata[visual_index];
     if (meta->has_metadata)
     {
-        bool segment_like = meta->visual_type == DVZ_VISUAL_TYPE_SEGMENT ||
-                            _scene_visual_meta_is_stroked_path(&emitter->resources, meta);
+        bool segment_like = meta->visual_type == DVZ_VISUAL_TYPE_SEGMENT;
+        bool stroked_path = _scene_visual_meta_is_stroked_path(&emitter->resources, meta);
         return _scene_visual_resource_lookup_label(
                    &emitter->resources,
-                   segment_like ? meta->position_start_id : meta->position_id) != 0;
+                   (segment_like || stroked_path) ? meta->position_start_id : meta->position_id) !=
+               0;
     }
 
     return _scene_render_visual_resource_id(

@@ -8,6 +8,8 @@ layout(location = 0) in vec4 fragColor;
 layout(location = 1) in vec2 fragCoord;
 layout(location = 2) in float fragLength;
 layout(location = 3) in float fragLineWidth;
+layout(location = 4) in float fragHasPrev;
+layout(location = 5) in float fragHasNext;
 
 layout(location = 0) out vec4 outColor;
 
@@ -56,15 +58,21 @@ float capDistance(int capType, float dx, float dy, float lineWidth)
 void main()
 {
     float distance = fragCoord.y;
+    int joinType = int(round(material.params.z));
     if (fragCoord.x < 0.0)
     {
-        distance =
-            capDistance(int(round(material.params.x)), fragCoord.x, fragCoord.y, fragLineWidth);
+        int capType = fragHasPrev < 0.5 ? int(round(material.params.x)) : joinType;
+        if (fragHasPrev >= 0.5 && joinType != 1)
+            capType = 5;
+        distance = capDistance(capType, fragCoord.x, fragCoord.y, fragLineWidth);
     }
     else if (fragCoord.x > fragLength)
     {
+        int capType = fragHasNext < 0.5 ? int(round(material.params.y)) : joinType;
+        if (fragHasNext >= 0.5 && joinType != 1)
+            capType = 5;
         distance = capDistance(
-            int(round(material.params.y)), fragCoord.x - fragLength, fragCoord.y, fragLineWidth);
+            capType, fragCoord.x - fragLength, fragCoord.y, fragLineWidth);
     }
 
     float alpha = strokeAlpha(distance, fragLineWidth);

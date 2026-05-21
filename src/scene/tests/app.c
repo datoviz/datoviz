@@ -2153,6 +2153,80 @@ int test_app_offscreen_has_nonblank_pixels(TstContext* suite, const TstCase* ite
 
 
 /**
+ * Ensure a sharp stroked path join contributes pixels at the join center.
+ *
+ * @param suite the test suite
+ * @param item the test item
+ * @return 0 on success
+ */
+int test_app_offscreen_path_join_has_no_center_gap(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    TST_SCENE_APP_REQUIRE_VKLITE(suite);
+
+    DvzScene* scene = dvz_scene();
+    AT(scene != NULL);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    AT(figure != NULL);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    AT(panel != NULL);
+    DvzVisual* visual = dvz_path(scene, 0);
+    AT(visual != NULL);
+
+    float positions[3][3] = {
+        {-0.75f, -0.45f, 0.0f},
+        {0.0f, 0.0f, 0.0f},
+        {0.75f, -0.45f, 0.0f},
+    };
+    DvzColor colors[3] = {
+        {255, 0, 0, 255},
+        {255, 0, 0, 255},
+        {255, 0, 0, 255},
+    };
+    float widths[3] = {20.0f, 20.0f, 20.0f};
+    AT(dvz_visual_set_data(visual, "position", positions, 3) == 0);
+    AT(dvz_visual_set_data(visual, "color", colors, 3) == 0);
+    AT(dvz_visual_set_data(visual, "stroke_width", widths, 3) == 0);
+    AT(dvz_path_set_join(visual, DVZ_PATH_JOIN_ROUND, 4.0f) == 0);
+    AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
+
+    DvzApp* app = _app_test_create(suite, scene);
+    if (app == NULL)
+    {
+        log_warn(
+            "test_app_offscreen_path_join_has_no_center_gap skipped: GPU context creation failed");
+        tst_skip(suite, "GPU context creation failed");
+        dvz_scene_destroy(scene);
+        return 0;
+    }
+    DvzAppWindow* win = dvz_app_window(app, figure, 64, 64);
+    AT(win != NULL);
+    dvz_app_run(app, 1);
+
+    DvzCanvas* canvas = dvz_app_window_canvas(win);
+    ANN(canvas);
+    uint32_t width = 0, height = 0;
+    uint8_t* rgba = NULL;
+    AT(dvz_canvas_capture_rgba(canvas, &width, &height, &rgba) == 0);
+    ANN(rgba);
+    AT(width == 64);
+    AT(height == 64);
+
+    const uint8_t* center = _pixel_at(rgba, width, height, width / 2, height / 2);
+    AT(center[0] > 120);
+    AT(center[0] > center[1] + 40);
+    AT(center[0] > center[2] + 40);
+
+    dvz_free(rgba);
+    dvz_app_destroy(app);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+/**
  * Ensure pixel visuals render nonblank square marks through the offscreen app path.
  *
  * @param suite the active test suite
@@ -5791,6 +5865,7 @@ int test_scene_app(TstSuite* suite)
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_source_over_scene_occlusion_matrix);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_point_depth_cue_darkens_far);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_has_nonblank_pixels);
+    TST_SCENE_APP_SHARED_CASE(test_app_offscreen_path_join_has_no_center_gap);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_pixel_square_has_nonblank_pixels);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_points_edl_renders);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_points_edl_changes_pixels);

@@ -213,7 +213,6 @@ bool _scene_visual_pipeline_desc(
         return true;
 
     case DVZ_SCENE_VISUAL_DESC_SEGMENT:
-    case DVZ_SCENE_VISUAL_DESC_PATH:
         out->vertex_buffer_count = 4;
         out->binding_count = 4;
         out->attr_count = 4;
@@ -221,6 +220,23 @@ bool _scene_visual_pipeline_desc(
         _pipeline_attr(out, 1, 1, 1, VK_FORMAT_R32G32B32_SFLOAT, 3 * sizeof(float));
         _pipeline_attr(out, 2, 2, 2, VK_FORMAT_R8G8B8A8_UNORM, 4 * sizeof(uint8_t));
         _pipeline_attr(out, 3, 3, 3, VK_FORMAT_R32_SFLOAT, sizeof(float));
+        out->needs_common_layout = caps.uses_common_set;
+        out->needs_material_layout = caps.needs_material_layout;
+        _pipeline_apply_standard_depth_state(
+            &caps, pass_needs_depth, wboit_accumulation, alpha_mode, out);
+        return true;
+
+    case DVZ_SCENE_VISUAL_DESC_PATH:
+        out->vertex_buffer_count = 7;
+        out->binding_count = 7;
+        out->attr_count = 7;
+        _pipeline_attr(out, 0, 0, 0, VK_FORMAT_R32G32B32_SFLOAT, 3 * sizeof(float));
+        _pipeline_attr(out, 1, 1, 1, VK_FORMAT_R32G32B32_SFLOAT, 3 * sizeof(float));
+        _pipeline_attr(out, 2, 2, 2, VK_FORMAT_R32G32B32_SFLOAT, 3 * sizeof(float));
+        _pipeline_attr(out, 3, 3, 3, VK_FORMAT_R8G8B8A8_UNORM, 4 * sizeof(uint8_t));
+        _pipeline_attr(out, 4, 4, 4, VK_FORMAT_R32_SFLOAT, sizeof(float));
+        _pipeline_attr(out, 5, 5, 5, VK_FORMAT_R32_UINT, sizeof(uint32_t));
+        _pipeline_attr(out, 6, 6, 6, VK_FORMAT_R32_SFLOAT, sizeof(float));
         out->needs_common_layout = caps.uses_common_set;
         out->needs_material_layout = caps.needs_material_layout;
         _pipeline_apply_standard_depth_state(

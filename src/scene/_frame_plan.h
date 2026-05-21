@@ -54,6 +54,8 @@ typedef enum
     DVZ_FRAME_PLAN_RESOURCE_ROLE_PRIMITIVE_SHADING,
     DVZ_FRAME_PLAN_RESOURCE_ROLE_MATERIAL_PARAMS,
     DVZ_FRAME_PLAN_RESOURCE_ROLE_SELECTION,
+    DVZ_FRAME_PLAN_RESOURCE_ROLE_PATH_FLAGS,
+    DVZ_FRAME_PLAN_RESOURCE_ROLE_PATH_DISTANCE,
 } DvzFramePlanResourceRole;
 
 
@@ -337,6 +339,8 @@ typedef struct DvzFramePlanVisualMeta
     char index_id[DVZ_SCENE_LABEL_SIZE];
     char material_id[DVZ_SCENE_LABEL_SIZE];
     char selection_id[DVZ_SCENE_LABEL_SIZE];
+    char path_flags_id[DVZ_SCENE_LABEL_SIZE];
+    char path_distance_id[DVZ_SCENE_LABEL_SIZE];
 } DvzFramePlanVisualMeta;
 
 
