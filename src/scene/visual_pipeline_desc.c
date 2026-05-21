@@ -368,7 +368,7 @@ bool _scene_visual_pipeline_desc(
         if (visual->has_selection_mask && !picking)
             _pipeline_attr(out, 3, 3, 5, VK_FORMAT_R8_UINT, sizeof(uint8_t));
         out->needs_common_layout = caps.uses_common_set;
-        out->needs_material_layout = caps.needs_material_layout;
+        out->needs_material_layout = caps.needs_material_layout && !picking;
         _pipeline_apply_standard_depth_state(
             &caps, pass_needs_depth, wboit_accumulation, alpha_mode, out);
         return true;

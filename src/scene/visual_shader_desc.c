@@ -416,14 +416,18 @@ static bool _scene_shader_desc_sphere(
     ANN(format_tag);
     ANN(out);
 
-    (void)features;
-    dvz_snprintf(out->vertex_key, sizeof(out->vertex_key), "_vs_sphere%s", format_tag);
-    dvz_snprintf(out->fragment_key, sizeof(out->fragment_key), "_fs_sphere%s", format_tag);
-    dvz_snprintf(out->pipeline_key, sizeof(out->pipeline_key), "_pipe_sphere%s", format_tag);
-    _scene_shader_desc_set_builtin(out, DVZ_SCENE_BUILTIN_SHADER_SPHERE);
-    _scene_shader_desc_set_identity(out, "scene.sphere", "default");
+    bool picking = _shader_features_has(features, DVZ_SCENE_SHADER_FEATURE_PICKING);
+    const char* suffix = picking ? "_pick" : "";
+    dvz_snprintf(out->vertex_key, sizeof(out->vertex_key), "_vs_sphere%s%s", suffix, format_tag);
+    dvz_snprintf(
+        out->fragment_key, sizeof(out->fragment_key), "_fs_sphere%s%s", suffix, format_tag);
+    dvz_snprintf(
+        out->pipeline_key, sizeof(out->pipeline_key), "_pipe_sphere%s%s", suffix, format_tag);
+    _scene_shader_desc_set_builtin(
+        out, picking ? DVZ_SCENE_BUILTIN_SHADER_SPHERE_PICK : DVZ_SCENE_BUILTIN_SHADER_SPHERE);
+    _scene_shader_desc_set_identity(out, "scene.sphere", picking ? "pick" : "default");
     out->vertex_spirv_key = "sphere_vert";
-    out->fragment_spirv_key = "sphere_frag";
+    out->fragment_spirv_key = picking ? "sphere_pick_frag" : "sphere_frag";
     return true;
 }
 

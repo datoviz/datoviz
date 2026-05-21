@@ -162,10 +162,7 @@ static bool _scene_pick_request_has_sphere_candidate(
 static bool _scene_pick_request_needs_runtime(
     const DvzFigure* figure, const DvzPendingPickRequest* pending);
 
-static bool _scene_pick_ray_model(
-    const DvzPanel* panel, const vec2 request_ndc, double out_origin[3], double out_dir[3]);
-
-static bool _scene_point_like_pick_plan(
+static bool _scene_item_pick_plan(
     const DvzFigure* figure, const DvzPanel* panel, DvzVisual* visual,
     const DvzPendingPickRequest* pending, const vec2 request_ndc, DvzSceneProbePlan* out_plan,
     uint32_t* out_target_width, uint32_t* out_target_height);
@@ -204,7 +201,7 @@ static const DvzScenePickResolver PICK_RESOLVERS[] = {
     },
     {
         .name = "sphere",
-        .needs_runtime = false,
+        .needs_runtime = true,
         .has_candidate = _scene_pick_request_has_sphere_candidate,
         .process = _scene_process_sphere_pick_request,
     },
@@ -683,9 +680,28 @@ static bool _scene_execute_readback_plan(
         DvzDrp2ValidationResult result = dvz_drp2_runtime_execute(executor->runtime, stream);
         if (!result.ok)
         {
+            const DvzDrp2Command* failed = dvz_drp2_stream_get(stream, result.command_index);
+            uint64_t failed_id = 0;
+            if (failed != NULL)
+            {
+                if (failed->type == DVZ_DRP2_COMMAND_CREATE_RENDER_PIPELINE)
+                    failed_id = failed->u.create_render_pipeline.id;
+                else if (failed->type == DVZ_DRP2_COMMAND_CREATE_SHADER_MODULE)
+                    failed_id = failed->u.create_shader_module.id;
+                else if (failed->type == DVZ_DRP2_COMMAND_CREATE_BIND_GROUP_LAYOUT)
+                    failed_id = failed->u.create_bind_group_layout.id;
+                else if (failed->type == DVZ_DRP2_COMMAND_CREATE_BIND_GROUP)
+                    failed_id = failed->u.create_bind_group.id;
+                else if (failed->type == DVZ_DRP2_COMMAND_DRAW)
+                    failed_id = failed->u.draw.pass_id;
+            }
+            const char* failed_label =
+                failed_id != 0 ? dvz_drp2_stream_label(stream, failed_id) : NULL;
             log_error(
-                "scene readback runtime execution failed (code=%d command=%u)",
-                (int)result.code, result.command_index);
+                "scene readback runtime execution failed (code=%d command=%u type=%d id=%llu "
+                "label=%s)",
+                (int)result.code, result.command_index, failed != NULL ? (int)failed->type : -1,
+                (unsigned long long)failed_id, failed_label != NULL ? failed_label : "");
         }
         else
         {
@@ -1238,67 +1254,11 @@ static bool _scene_pick_request_needs_runtime(
 
 
 /**
- * Build a model-space ray from one panel-local pick coordinate.
- *
- * @param panel panel receiving the request
- * @param request_ndc panel-local normalized device coordinate
- * @param out_origin output ray origin
- * @param out_dir normalized output ray direction
- * @return whether the ray could be built
- */
-static bool _scene_pick_ray_model(
-    const DvzPanel* panel, const vec2 request_ndc, double out_origin[3], double out_dir[3])
-{
-    ANN(panel);
-    ANN(request_ndc);
-    ANN(out_origin);
-    ANN(out_dir);
-
-    DvzMVP mvp = {0};
-    _scene_panel_apply_mvp(panel, &mvp);
-    mat4 mv = {0};
-    mat4 mvp_mat = {0};
-    mat4 inv_mvp = {0};
-    glm_mat4_mul(mvp.view, mvp.model, mv);
-    glm_mat4_mul(mvp.proj, mv, mvp_mat);
-    glm_mat4_inv(mvp_mat, inv_mvp);
-
-    vec4 near_clip = {request_ndc[0], request_ndc[1], -1.0f, 1.0f};
-    vec4 far_clip = {request_ndc[0], request_ndc[1], +1.0f, 1.0f};
-    vec4 near_obj = {0};
-    vec4 far_obj = {0};
-    glm_mat4_mulv(inv_mvp, near_clip, near_obj);
-    glm_mat4_mulv(inv_mvp, far_clip, far_obj);
-    if (fabsf(near_obj[3]) < 1e-12f || fabsf(far_obj[3]) < 1e-12f)
-        return false;
-
-    out_origin[0] = (double)(near_obj[0] / near_obj[3]);
-    out_origin[1] = (double)(near_obj[1] / near_obj[3]);
-    out_origin[2] = (double)(near_obj[2] / near_obj[3]);
-    double far_point[3] = {
-        (double)(far_obj[0] / far_obj[3]),
-        (double)(far_obj[1] / far_obj[3]),
-        (double)(far_obj[2] / far_obj[3]),
-    };
-    out_dir[0] = far_point[0] - out_origin[0];
-    out_dir[1] = far_point[1] - out_origin[1];
-    out_dir[2] = far_point[2] - out_origin[2];
-    double len = sqrt(
-        out_dir[0] * out_dir[0] + out_dir[1] * out_dir[1] + out_dir[2] * out_dir[2]);
-    if (len <= 0.0)
-        return false;
-    for (uint32_t i = 0; i < 3; i++)
-        out_dir[i] /= len;
-    return true;
-}
-
-
-/**
- * Build a synthetic GPU readback frame plan for one point-like pick request.
+ * Build a synthetic GPU readback frame plan for one item-identity pick request.
  *
  * @param figure the parent figure
  * @param panel the panel receiving the request
- * @param visual the point or pixel visual to pick
+ * @param visual the point-like or sphere visual to pick
  * @param pending the pending pick request
  * @param request_ndc the request coordinate in panel-local NDC
  * @param out_plan the output plan wrapper
@@ -1306,7 +1266,7 @@ static bool _scene_pick_ray_model(
  * @param out_target_height output offscreen target height
  * @return true when the plan was assembled
  */
-static bool _scene_point_like_pick_plan(
+static bool _scene_item_pick_plan(
     const DvzFigure* figure, const DvzPanel* panel, DvzVisual* visual,
     const DvzPendingPickRequest* pending, const vec2 request_ndc, DvzSceneProbePlan* out_plan,
     uint32_t* out_target_width, uint32_t* out_target_height)
@@ -1344,7 +1304,7 @@ static bool _scene_point_like_pick_plan(
         _dvz_mul_u64_overflows(color_attr->item_count, color_attr->item_size, &color_bytes) ||
         _dvz_mul_u64_overflows(size_attr->item_count, size_attr->item_size, &size_bytes))
     {
-        log_error("point-like pick request buffer size overflow");
+        log_error("item pick request buffer size overflow");
         return false;
     }
 
@@ -1422,7 +1382,7 @@ static bool _scene_point_like_pick_plan(
     if (!ok)
     {
         log_error(
-            "point-like pick request %" PRIu64 " failed to assemble the GPU readback plan",
+            "item pick request %" PRIu64 " failed to assemble the GPU readback plan",
             pending->request.request_id);
         dvz_frame_plan_destroy(plan);
         dvz_free(pick_colors);
@@ -1563,7 +1523,7 @@ static bool _scene_process_point_pick_request(
         DvzSceneProbePlan pick_plan = {0};
         uint32_t target_width = 0;
         uint32_t target_height = 0;
-        if (!_scene_point_like_pick_plan(
+        if (!_scene_item_pick_plan(
                 figure, panel, visual, pending, request_ndc, &pick_plan, &target_width,
                 &target_height))
         {
@@ -1610,11 +1570,11 @@ static bool _scene_process_point_pick_request(
 
 
 /**
- * Resolve one sphere pick request against retained sphere data.
+ * Resolve one sphere pick request through the GPU impostor pick pass.
  *
  * @param figure figure whose request queue is being processed
- * @param executor retained request executor, unused by this CPU resolver
- * @param caps capability snapshot, unused by this CPU resolver
+ * @param executor retained request executor for the GPU readback stream
+ * @param caps capability snapshot
  * @param pending pending pick request
  * @return whether a result was queued
  */
@@ -1622,9 +1582,8 @@ static bool _scene_process_sphere_pick_request(
     DvzFigure* figure, DvzSceneRequestExecutor* executor, const DvzCapabilitySnapshot* caps,
     const DvzPendingPickRequest* pending)
 {
-    (void)executor;
-    (void)caps;
     ANN(figure);
+    ANN(caps);
     ANN(pending);
     ANN(pending->panel);
 
@@ -1639,11 +1598,6 @@ static bool _scene_process_sphere_pick_request(
         miss.status = DVZ_PICK_STATUS_OUTSIDE_PANEL;
         return _scene_push_pick_result(scene, panel, pending->freshness_serial, &miss);
     }
-
-    double ro[3] = {0};
-    double rd[3] = {0};
-    if (!_scene_pick_ray_model(panel, request_ndc, ro, rd))
-        return _scene_push_pick_result(scene, panel, pending->freshness_serial, &miss);
 
     uint32_t order[DVZ_SCENE_MAX_VISUALS] = {0};
     _scene_panel_visual_order(panel, order);
@@ -1661,67 +1615,52 @@ static bool _scene_process_sphere_pick_request(
         if (miss.status == DVZ_PICK_STATUS_NO_CAPABLE_VISUAL)
             miss.status = DVZ_PICK_STATUS_MISS;
 
-        int pos_idx = _attr_index(visual, "position");
-        int radius_idx = _attr_index(visual, "radius");
-        if (pos_idx < 0 || radius_idx < 0)
-            continue;
-        const DvzVisualAttr* pos_attr = &visual->attrs[pos_idx];
-        const DvzVisualAttr* radius_attr = &visual->attrs[radius_idx];
-        if (
-            pos_attr->data == NULL || radius_attr->data == NULL || pos_attr->item_count == 0 ||
-            radius_attr->item_count != pos_attr->item_count ||
-            pos_attr->item_size != sizeof(vec3) || radius_attr->item_size != sizeof(float))
+        if (executor == NULL || executor->runtime == NULL || executor->emitter == NULL)
         {
+            log_error("sphere pick request requires a DRP2 runtime");
+            miss.status = DVZ_PICK_STATUS_GPU_EXEC_FAILED;
             continue;
         }
 
-        const vec3* positions = (const vec3*)pos_attr->data;
-        const float* radii = (const float*)radius_attr->data;
-        bool found = false;
-        double best_t = INFINITY;
-        uint64_t best_item = 0;
-        double best_position[3] = {0};
-
-        for (uint64_t k = 0; k < pos_attr->item_count; k++)
+        DvzSceneProbePlan pick_plan = {0};
+        uint32_t target_width = 0;
+        uint32_t target_height = 0;
+        if (!_scene_item_pick_plan(
+                figure, panel, visual, pending, request_ndc, &pick_plan, &target_width,
+                &target_height))
         {
-            double radius = (double)radii[k];
-            if (radius <= 0.0 || !isfinite(radius))
-                continue;
-
-            double oc[3] = {
-                ro[0] - (double)positions[k][0],
-                ro[1] - (double)positions[k][1],
-                ro[2] - (double)positions[k][2],
-            };
-            double b = oc[0] * rd[0] + oc[1] * rd[1] + oc[2] * rd[2];
-            double c = oc[0] * oc[0] + oc[1] * oc[1] + oc[2] * oc[2] - radius * radius;
-            double discriminant = b * b - c;
-            if (discriminant < 0.0)
-                continue;
-            double root = sqrt(discriminant);
-            double t = -b - root;
-            if (t < 0.0)
-                t = -b + root;
-            if (t < 0.0 || t >= best_t)
-                continue;
-
-            found = true;
-            best_t = t;
-            best_item = k;
-            for (uint32_t j = 0; j < 3; j++)
-                best_position[j] = ro[j] + rd[j] * t;
+            _scene_pick_trace(
+                "picker_visual_miss request=%llu visual=%p order_index=%d attach_slot=%u\n",
+                (unsigned long long)pending->request.request_id, (void*)visual, oi, order[oi]);
+            continue;
         }
 
-        if (!found)
-            continue;
+        uint8_t rgba[4] = {0};
+        bool executed = false;
+        bool readback_ok = _scene_execute_readback_plan(
+            scene, executor, caps, pick_plan.plan, target_width, target_height, rgba, &executed);
+        _scene_probe_plan_destroy(&pick_plan);
 
         DvzScenePickPayload payload = {0};
-        _scene_pick_item_payload(visual, DVZ_SCENE_TARGET_ITEM, best_item, &payload);
+        if (!readback_ok || !_scene_decode_point_like_pick_payload(visual, rgba, &payload))
+        {
+            if (!readback_ok)
+                miss.status = executed ? DVZ_PICK_STATUS_READBACK_FAILED :
+                                         DVZ_PICK_STATUS_GPU_EXEC_FAILED;
+            _scene_pick_trace(
+                "picker_visual_miss request=%llu visual=%p order_index=%d attach_slot=%u "
+                "readback_ok=%d executed=%d rgba=%u,%u,%u,%u\n",
+                (unsigned long long)pending->request.request_id, (void*)visual, oi, order[oi],
+                readback_ok ? 1 : 0, executed ? 1 : 0, rgba[0], rgba[1], rgba[2], rgba[3]);
+            continue;
+        }
+
         DvzPickResult resolved = miss;
         _scene_apply_pick_payload(scene, visual, &payload, &resolved);
-        resolved.has_data_position = true;
-        for (uint32_t j = 0; j < 3; j++)
-            resolved.data_position[j] = best_position[j];
+        _scene_pick_trace(
+            "picker_resolved request=%llu visual=%p visual_id=%llu item=%llu\n",
+            (unsigned long long)pending->request.request_id, (void*)visual,
+            (unsigned long long)resolved.visual_id, (unsigned long long)payload.item_id);
         return _scene_push_pick_result(scene, panel, pending->freshness_serial, &resolved);
     }
 
