@@ -2,7 +2,7 @@
 
 > **Execution Status**
 > - **Status:** `ACTIVE / FOLLOW-UP NOTE`
-> - **Updated on:** `2026-05-19`
+> - **Updated on:** `2026-05-21`
 > - **Purpose:** track remaining text/glyph integration, API cleanup, shaping, and equation work
 >   after the first rendered text slice landed and the durable semantics and shaping/atlas
 >   contracts were split into `spec/scene`.
@@ -29,10 +29,30 @@ scene-owned glyph visuals, uses bitmap/SDF/MSDF-capable atlas resources, emits t
 scene -> FramePlan -> DRP2 -> vklite/app path, and has focused scene/app readback coverage.
 
 The remaining work is no longer first proof of visibility. It is API/spec alignment, integration
-with explanatory objects, data/world placement, DPI/clipping hardening, production shaping, richer
-font fallback, diagnostics, and equation lowering.
+with explanatory objects, data/world placement, depth policy, DPI/clipping hardening, production
+shaping, richer font fallback, diagnostics, and equation lowering.
 
 Use this file only for execution sequencing. Do not duplicate stable text semantics here.
+
+
+## Landed / Covered
+
+These items were previously mixed into the active follow-up list but are now covered by current code,
+tests, or specs:
+
+1. retained text, font, and annotation bookkeeping exists in the active scene module;
+2. `dvz_text()` is a visible visual-backed API and lowers internally to scene-owned glyph visuals;
+3. `dvz_glyph()` emits atlas-backed glyph quads through the scene -> DRP2 -> runtime path;
+4. annotation labels use the current glyph/text realization path;
+5. built-in bitmap, FreeType bitmap, SDF, and MSDF-capable atlas rendering paths exist behind
+   feature flags and fallbacks;
+6. retained text realization handles strings, per-string size/color/angle/anchor attributes, simple
+   multiline text, visibility, destroy, and resize invalidation;
+7. focused tests cover bitmap and SDF/MSDF-backed realization, automatic renderer selection,
+   UTF-8 atlas growth, missing-glyph fallback, many-label batching, glyph emission, runtime
+   readback, and app/offscreen visible text;
+8. the transitional `DvzVisual* dvz_text()` / `DvzVisual* dvz_glyph()` surface is documented in
+   `spec/scene/visuals/GLYPH.md`.
 
 
 ## Remaining Text And Glyph Work
@@ -40,19 +60,22 @@ Use this file only for execution sequencing. Do not duplicate stable text semant
 Recommended follow-up commits:
 
 1. Reconcile the planned semantic `DvzText*` API with the current public
-   `DvzVisual* dvz_text()` and `DvzVisual* dvz_glyph()` surface, or document the transitional API.
-2. Wire axes, colorbars, legends, annotations, and pinned readouts to the current text path without
+   `DvzVisual* dvz_text()` and `DvzVisual* dvz_glyph()` surface, or explicitly keep the
+   transitional API for v0.4 with a narrow public contract.
+2. Wire axes, colorbars, legends, and pinned readouts to the current text path without
    rewriting text internals.
-3. Finish data/world placement and depth policy instead of hiding non-screen retained text modes.
-4. Harden DPI scaling, panel scissor edge cases, resize invalidation, and bounded GLFW/manual smoke
-   coverage.
-5. Keep the deterministic simple atlas renderer for dependency-light tests and diagnostics.
-6. Add or harden FreeType font loading behind a feature flag before making bitmap atlas rendering
-   the quality path for small labels.
-7. Integrate HarfBuzz-shaped glyph ids with atlas growth after the atlas/cache layer can ensure
+3. Finish data/world placement instead of hiding non-screen retained text modes.
+4. Honor depth policy for data/world text instead of always forcing generated glyph visuals to
+   depth-test disabled.
+5. Harden DPI scaling and panel scissor edge cases; resize invalidation is covered, but the text
+   path still needs focused high-DPI and clipping validation.
+6. Keep the deterministic simple atlas renderer for dependency-light tests and diagnostics.
+7. Keep FreeType font loading behind a feature flag and add focused fallback diagnostics before
+   making bitmap atlas rendering the default quality path for small labels.
+8. Integrate HarfBuzz-shaped glyph ids with atlas growth after the atlas/cache layer can ensure
    glyph resources by `(font face, glyph id)`.
-8. Improve explicit missing-glyph, renderer fallback, and atlas-capacity diagnostics.
-9. Keep Slug-style vector GPU text and MicroTeX/equation support as later optional lanes until
+9. Improve explicit missing-glyph, renderer fallback, and atlas-capacity diagnostics.
+10. Keep Slug-style vector GPU text and MicroTeX/equation support as later optional lanes until
    ordinary text, labels, and annotation integration are stable.
 
 
