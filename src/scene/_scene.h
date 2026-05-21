@@ -65,6 +65,7 @@
 #define DVZ_SCENE_MAX_AXIS_LINES                                                                  \
     ((2 + DVZ_SCENE_MAX_AXIS_MINOR_TICKS) * DVZ_SCENE_MAX_AXIS_TICKS + 1)
 #define DVZ_SCENE_TEXT_ATLAS_MAX_GLYPHS 256
+#define DVZ_SCENE_MAX_TEXT_ATLASES_PER_FONT 32
 
 
 
@@ -136,6 +137,7 @@ typedef struct DvzTextShapedGlyph DvzTextShapedGlyph;
 typedef struct DvzTextLayoutMetrics DvzTextLayoutMetrics;
 typedef struct DvzTextGlyphInstance DvzTextGlyphInstance;
 typedef struct DvzTextAtlasGlyph DvzTextAtlasGlyph;
+typedef struct DvzTextAtlasSpec DvzTextAtlasSpec;
 typedef struct DvzTextAtlas DvzTextAtlas;
 
 typedef void (*DvzSceneRequestFrameCallback)(DvzFigure* figure, void* user_data);
@@ -303,8 +305,19 @@ struct DvzTextAtlasGlyph
 };
 
 
+struct DvzTextAtlasSpec
+{
+    DvzTextAtlasBackend backend;
+    float em_px;
+    float distance_range_px;
+    uint32_t flags;
+};
+
+
+
 struct DvzTextAtlas
 {
+    DvzTextAtlasSpec spec;
     DvzTextAtlasBackend backend;
     DvzTextAtlasEncoding encoding;
     DvzSampledField* field;
@@ -312,8 +325,8 @@ struct DvzTextAtlas
     uint32_t height;
     uint32_t glyph_count;
     uint32_t channels;
-    float pixel_height;
-    float pixel_range;
+    float em_px;
+    float distance_range_px;
     float ascent;
     float descent;
     float line_gap;
@@ -484,9 +497,8 @@ struct DvzFont
     uint64_t version;
     void* ttf_bytes;
     uint64_t ttf_size;
-    DvzTextAtlas* bitmap_atlas;
-    DvzTextAtlas* sdf_atlas;
-    DvzTextAtlas* msdf_atlas;
+    DvzTextAtlas* atlases[DVZ_SCENE_MAX_TEXT_ATLASES_PER_FONT];
+    uint32_t atlas_count;
 };
 
 
@@ -503,6 +515,7 @@ struct DvzText
     DvzTextLayoutMetrics metrics;
     DvzVisual* visual;
     uint64_t visual_version;
+    uint64_t visual_atlas_generation;
     uint32_t visual_figure_width;
     uint32_t visual_figure_height;
 };
@@ -773,6 +786,7 @@ struct DvzTextVisualState
     uint32_t span_count;
     DvzVisual* glyph_visual;
     uint64_t realized_version;
+    uint64_t atlas_generation;
     uint32_t visual_figure_width;
     uint32_t visual_figure_height;
 };
@@ -1281,13 +1295,17 @@ void _scene_prepare_text_visuals(DvzFigure* figure);
 
 EXTERN_C_ON
 
-bool _scene_text_atlas_ensure(DvzFont* font, DvzTextAtlasBackend backend);
+DvzTextAtlasSpec _scene_text_atlas_spec(DvzTextAtlasBackend backend, float size_px);
+
+DvzTextAtlas* _scene_text_atlas_get(DvzFont* font, const DvzTextAtlasSpec* spec);
+
+bool _scene_text_atlas_ensure(DvzFont* font, const DvzTextAtlasSpec* spec);
 
 bool _scene_text_atlas_ensure_string(
-    DvzFont* font, DvzTextAtlasBackend backend, const char* string);
+    DvzFont* font, const DvzTextAtlasSpec* spec, const char* string);
 
 bool _scene_text_atlas_ensure_strings(
-    DvzFont* font, DvzTextAtlasBackend backend, const char* const* strings, uint32_t count);
+    DvzFont* font, const DvzTextAtlasSpec* spec, const char* const* strings, uint32_t count);
 
 DvzTextAtlasGlyph* _scene_text_atlas_glyph(DvzTextAtlas* atlas, uint32_t codepoint);
 

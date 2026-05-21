@@ -37,6 +37,26 @@
 /*************************************************************************************************/
 
 /**
+ * Return one generated text atlas from the default scene font.
+ *
+ * @param scene the scene
+ * @param backend atlas backend
+ * @param size_px rendered text size
+ * @return atlas pointer, or NULL when unavailable
+ */
+static DvzTextAtlas* text_test_atlas(
+    DvzScene* scene, DvzTextAtlasBackend backend, float size_px)
+{
+    ANN(scene);
+    if (scene->font_count == 0)
+        return NULL;
+    DvzTextAtlasSpec spec = _scene_text_atlas_spec(backend, size_px);
+    return _scene_text_atlas_get(&scene->fonts[0], &spec);
+}
+
+
+
+/**
  * Return whether one stream pipeline has a specific vertex attribute.
  *
  * @param stream the command stream
@@ -614,8 +634,7 @@ int test_scene_text_sdf_visual_realization(TstContext* suite, const TstCase* ite
        glyph->glyph_atlas_encoding == DVZ_TEXT_ATLAS_ENCODING_MSDF_RGB);
 #endif
     AT(scene->font_count == 1);
-    DvzTextAtlas* font_atlas =
-        scene->fonts[0].msdf_atlas != NULL ? scene->fonts[0].msdf_atlas : scene->fonts[0].sdf_atlas;
+    DvzTextAtlas* font_atlas = text_test_atlas(scene, DVZ_TEXT_ATLAS_BACKEND_MSDF, sizes[0]);
     ANN(font_atlas);
     AT(font_atlas->field == glyph->field);
     DvzTextAtlasGlyph* space_glyph = _scene_text_atlas_glyph(font_atlas, ' ');
@@ -762,8 +781,10 @@ int test_scene_text_auto_renderer_selection(TstContext* suite, const TstCase* it
 #if defined(DVZ_HAS_FREETYPE) && DVZ_HAS_FREETYPE
     AT(small->text.glyph_visual->glyph_atlas_encoding == DVZ_TEXT_ATLAS_ENCODING_BITMAP_ALPHA);
     AT(scene->font_count >= 1);
-    ANN(scene->fonts[0].bitmap_atlas);
-    AT(scene->fonts[0].bitmap_atlas->field == small->text.glyph_visual->field);
+    DvzTextAtlas* small_atlas =
+        text_test_atlas(scene, DVZ_TEXT_ATLAS_BACKEND_FREETYPE_BITMAP, small_size[0]);
+    ANN(small_atlas);
+    AT(small_atlas->field == small->text.glyph_visual->field);
 #else
     AT(small->text.glyph_visual->field == scene->text_bitmap_atlas);
 #endif
@@ -776,6 +797,35 @@ int test_scene_text_auto_renderer_selection(TstContext* suite, const TstCase* it
     dvz_scene_destroy(scene);
     return 0;
 }
+
+
+
+/**
+ * Verify MSDF atlas specs preserve the distance-range/em ratio across atlas sizes.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_text_msdf_atlas_spec_scales_range(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    ANN(item);
+    DvzTextAtlasSpec small = _scene_text_atlas_spec(DVZ_TEXT_ATLAS_BACKEND_MSDF, 32.0f);
+    DvzTextAtlasSpec medium = _scene_text_atlas_spec(DVZ_TEXT_ATLAS_BACKEND_MSDF, 72.0f);
+    DvzTextAtlasSpec large = _scene_text_atlas_spec(DVZ_TEXT_ATLAS_BACKEND_MSDF, 128.0f);
+
+    AC(small.em_px, 32.0f, 1e-6f);
+    AC(small.distance_range_px, 4.0f, 1e-6f);
+    AC(medium.em_px, 64.0f, 1e-6f);
+    AC(medium.distance_range_px, 8.0f, 1e-6f);
+    AC(large.em_px, 128.0f, 1e-6f);
+    AC(large.distance_range_px, 16.0f, 1e-6f);
+    AC(small.distance_range_px / small.em_px, medium.distance_range_px / medium.em_px, 1e-6f);
+    AC(medium.distance_range_px / medium.em_px, large.distance_range_px / large.em_px, 1e-6f);
+    return 0;
+}
+
 
 
 /**
@@ -827,7 +877,7 @@ int test_scene_text_font_atlas_expands_for_utf8(TstContext* suite, const TstCase
     _scene_prepare_text_visuals(figure);
     AT(scene->font_count == 1);
     DvzTextAtlas* initial_atlas =
-        scene->fonts[0].msdf_atlas != NULL ? scene->fonts[0].msdf_atlas : scene->fonts[0].sdf_atlas;
+        text_test_atlas(scene, DVZ_TEXT_ATLAS_BACKEND_MSDF, sizes[0]);
     ANN(initial_atlas);
     DvzSampledField* initial_field = initial_atlas->field;
     ANN(initial_field);
@@ -845,8 +895,7 @@ int test_scene_text_font_atlas_expands_for_utf8(TstContext* suite, const TstCase
            &(DvzVisualAttachDesc){.z_layer = 2, .controller_mode = DVZ_CONTROLLER_FIXED}) == 0);
 
     _scene_prepare_text_visuals(figure);
-    DvzTextAtlas* atlas =
-        scene->fonts[0].msdf_atlas != NULL ? scene->fonts[0].msdf_atlas : scene->fonts[0].sdf_atlas;
+    DvzTextAtlas* atlas = text_test_atlas(scene, DVZ_TEXT_ATLAS_BACKEND_MSDF, sizes[0]);
     ANN(atlas);
     ANN(atlas->field);
     AT(atlas->glyph_count > initial_glyph_count);
@@ -915,8 +964,7 @@ int test_scene_text_font_atlas_missing_glyph_fallback(TstContext* suite, const T
 
     _scene_prepare_text_visuals(figure);
     AT(scene->font_count == 1);
-    DvzTextAtlas* atlas =
-        scene->fonts[0].msdf_atlas != NULL ? scene->fonts[0].msdf_atlas : scene->fonts[0].sdf_atlas;
+    DvzTextAtlas* atlas = text_test_atlas(scene, DVZ_TEXT_ATLAS_BACKEND_MSDF, sizes[0]);
     ANN(atlas);
     DvzTextAtlasGlyph* fallback = _scene_text_atlas_glyph(atlas, '?');
     DvzTextAtlasGlyph* missing = _scene_text_atlas_glyph(atlas, 0x10FFFFu);
@@ -1031,6 +1079,7 @@ int test_scene_interaction(TstSuite* suite)
     TST_CASE(test_scene_text_bitmap_visual_realization);
     TST_CASE(test_scene_text_sdf_visual_realization);
     TST_CASE(test_scene_text_auto_renderer_selection);
+    TST_CASE(test_scene_text_msdf_atlas_spec_scales_range);
     TST_CASE(test_scene_text_font_atlas_expands_for_utf8);
     TST_CASE(test_scene_text_font_atlas_missing_glyph_fallback);
     TST_CASE(test_scene_text_many_labels_render_plan);

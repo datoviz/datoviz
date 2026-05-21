@@ -16,6 +16,7 @@
 
 #include <float.h>
 #include <limits.h>
+#include <math.h>
 #include <stdint.h>
 #include <vector>
 
@@ -86,7 +87,14 @@
 #define DVZ_TEXT_SDF_CELL_GAP   2u
 #define DVZ_TEXT_SDF_ONEDGE     128u
 #define DVZ_TEXT_BITMAP_PADDING 1u
+#define DVZ_TEXT_ATLAS_MIN_EM_PX 8.0f
 #define DVZ_TEXT_ATLAS_DEFAULT_EM_PX 32.0f
+#define DVZ_TEXT_ATLAS_MAX_EM_PX 128.0f
+#define DVZ_TEXT_MSDF_REFERENCE_EM_PX 32.0f
+#define DVZ_TEXT_MSDF_REFERENCE_RANGE_PX 4.0f
+#define DVZ_TEXT_MSDF_MAX_RANGE_PX 16.0f
+#define DVZ_TEXT_SDF_REFERENCE_RANGE_PX ((float)DVZ_TEXT_SDF_PADDING)
+#define DVZ_TEXT_SDF_MAX_RANGE_PX 32.0f
 
 
 
@@ -103,7 +111,11 @@ struct DvzTextAtlasBuildSet
 
 
 static bool _text_atlas_codepoint_renderable(uint32_t codepoint);
-static float _text_sdf_default_em_px(void);
+static float _text_atlas_clamp(float value, float lo, float hi);
+static float _text_atlas_bitmap_em_px(float size_px);
+static float _text_atlas_sdf_em_px(float size_px);
+static float _text_atlas_msdf_range_px(float em_px);
+static float _text_atlas_sdf_range_px(float em_px);
 static bool _text_sdf_font_bytes(DvzFont* font);
 static bool _text_atlas_upload_rgba(
     const DvzFont* font, DvzTextAtlas* atlas, uint8_t* rgba, uint32_t width, uint32_t height);
@@ -111,8 +123,7 @@ static bool _text_atlas_changed_region(
     const DvzSampledField* field, const DvzSampledField* src, DvzFieldRegion* out_region);
 static bool _text_atlas_replace_field_data(DvzSampledField* field, const DvzSampledField* src);
 static bool _text_atlas_try_append(
-    DvzFont* font, DvzTextAtlasBackend backend, DvzTextAtlas* atlas,
-    const DvzTextAtlasBuildSet* requested_set);
+    DvzFont* font, DvzTextAtlas* atlas, const DvzTextAtlasBuildSet* requested_set);
 
 
 #if defined(DVZ_HAS_MSDF_ATLAS) && DVZ_HAS_MSDF_ATLAS
@@ -125,9 +136,11 @@ static bool _text_atlas_try_append(
  * @return whether atlas creation succeeded
  */
 static bool _text_msdf_build_atlas(
-    DvzFont* font, const DvzTextAtlasBuildSet* set, DvzTextAtlas** out_atlas)
+    DvzFont* font, const DvzTextAtlasSpec* spec, const DvzTextAtlasBuildSet* set,
+    DvzTextAtlas** out_atlas)
 {
     ANN(font);
+    ANN(spec);
     ANN(set);
     ANN(out_atlas);
     *out_atlas = NULL;
@@ -175,11 +188,14 @@ static bool _text_msdf_build_atlas(
     for (msdf_atlas::GlyphGeometry& glyph : glyphs)
         glyph.edgeColoring(&msdfgen::edgeColoringInkTrap, max_corner_angle, 0);
 
-    float pixel_height = _text_sdf_default_em_px();
+    float em_px = spec->em_px > 0.0f ? spec->em_px : DVZ_TEXT_ATLAS_DEFAULT_EM_PX;
+    float distance_range_px =
+        spec->distance_range_px > 0.0f ? spec->distance_range_px :
+                                         DVZ_TEXT_MSDF_REFERENCE_RANGE_PX;
     msdf_atlas::TightAtlasPacker packer;
     packer.setDimensionsConstraint(msdf_atlas::DimensionsConstraint::SQUARE);
-    packer.setMinimumScale((double)pixel_height);
-    packer.setPixelRange(4.0);
+    packer.setMinimumScale((double)em_px);
+    packer.setPixelRange((double)distance_range_px);
     packer.setMiterLimit(1.0);
     if (packer.pack(glyphs.data(), (int)glyphs.size()) != 0)
     {
@@ -251,14 +267,15 @@ static bool _text_msdf_build_atlas(
 
     const double scale = packer.getScale();
     const msdfgen::FontMetrics& metrics = font_geometry.getMetrics();
+    atlas->spec = *spec;
     atlas->backend = DVZ_TEXT_ATLAS_BACKEND_MSDF;
     atlas->encoding = DVZ_TEXT_ATLAS_ENCODING_MSDF_RGB;
     atlas->width = atlas_width;
     atlas->height = atlas_height;
     atlas->glyph_count = glyph_count;
     atlas->channels = 4;
-    atlas->pixel_height = (float)scale;
-    atlas->pixel_range = 4.0f;
+    atlas->em_px = (float)scale;
+    atlas->distance_range_px = distance_range_px;
     atlas->ascent = (float)(metrics.ascenderY * scale);
     atlas->descent = (float)(metrics.descenderY * scale);
     atlas->line_gap = (float)((metrics.lineHeight - metrics.ascenderY + metrics.descenderY) * scale);
@@ -667,13 +684,87 @@ static bool _text_atlas_contains_set(
 
 
 /**
- * Return the default atlas em size for generated text atlases.
+ * Clamp a floating-point value.
  *
+ * @param value input value
+ * @param lo lower bound
+ * @param hi upper bound
+ * @return clamped value
+ */
+static float _text_atlas_clamp(float value, float lo, float hi)
+{
+    if (value < lo)
+        return lo;
+    if (value > hi)
+        return hi;
+    return value;
+}
+
+
+
+/**
+ * Return a bitmap atlas em size for a rendered text size.
+ *
+ * @param size_px rendered text size in pixels
  * @return atlas em size in pixels
  */
-static float _text_sdf_default_em_px(void)
+static float _text_atlas_bitmap_em_px(float size_px)
 {
-    return DVZ_TEXT_ATLAS_DEFAULT_EM_PX;
+    if (size_px <= 0.0f)
+        size_px = DVZ_TEXT_ATLAS_DEFAULT_EM_PX;
+    return _text_atlas_clamp(floorf(size_px + 0.5f), DVZ_TEXT_ATLAS_MIN_EM_PX,
+                             DVZ_TEXT_ATLAS_MAX_EM_PX);
+}
+
+
+
+/**
+ * Return the quantized SDF/MSDF atlas em size for a rendered text size.
+ *
+ * @param size_px rendered text size in pixels
+ * @return atlas em size in pixels
+ */
+static float _text_atlas_sdf_em_px(float size_px)
+{
+    if (size_px <= 0.0f)
+        return DVZ_TEXT_ATLAS_DEFAULT_EM_PX;
+    if (size_px <= 48.0f)
+        return 32.0f;
+    if (size_px <= 96.0f)
+        return 64.0f;
+    return 128.0f;
+}
+
+
+
+/**
+ * Return the baked MSDF distance range for an atlas em size.
+ *
+ * @param em_px atlas em size in pixels
+ * @return MSDF distance range in atlas pixels
+ */
+static float _text_atlas_msdf_range_px(float em_px)
+{
+    float range =
+        DVZ_TEXT_MSDF_REFERENCE_RANGE_PX * em_px / DVZ_TEXT_MSDF_REFERENCE_EM_PX;
+    return _text_atlas_clamp(
+        range, DVZ_TEXT_MSDF_REFERENCE_RANGE_PX, DVZ_TEXT_MSDF_MAX_RANGE_PX);
+}
+
+
+
+/**
+ * Return the baked STB SDF distance range for an atlas em size.
+ *
+ * @param em_px atlas em size in pixels
+ * @return SDF distance range in atlas pixels
+ */
+static float _text_atlas_sdf_range_px(float em_px)
+{
+    float range =
+        DVZ_TEXT_SDF_REFERENCE_RANGE_PX * em_px / DVZ_TEXT_ATLAS_DEFAULT_EM_PX;
+    return _text_atlas_clamp(
+        range, DVZ_TEXT_SDF_REFERENCE_RANGE_PX, DVZ_TEXT_SDF_MAX_RANGE_PX);
 }
 
 
@@ -823,35 +914,94 @@ static bool _text_sdf_init_font(const DvzFont* font, stbtt_fontinfo* out_info)
 /**
  * Convert an SDF value to an atlas threshold scaling constant.
  *
+ * @param distance_range_px baked SDF range in atlas pixels
  * @return pixel distance scale passed to stb_truetype SDF generation
  */
-static float _text_sdf_pixel_dist_scale(void)
+static float _text_sdf_pixel_dist_scale(float distance_range_px)
 {
-    return (float)DVZ_TEXT_SDF_ONEDGE / (float)DVZ_TEXT_SDF_PADDING;
+    if (distance_range_px < 1.0f)
+        distance_range_px = DVZ_TEXT_SDF_REFERENCE_RANGE_PX;
+    return (float)DVZ_TEXT_SDF_ONEDGE / distance_range_px;
 }
 
 
+
 /**
- * Return the cache slot used by a text atlas backend.
+ * Return whether two atlas specs address the same font-owned cache entry.
+ *
+ * @param a first spec
+ * @param b second spec
+ * @return whether the specs are equivalent
+ */
+static bool _text_atlas_spec_equal(const DvzTextAtlasSpec* a, const DvzTextAtlasSpec* b)
+{
+    ANN(a);
+    ANN(b);
+    return a->backend == b->backend && a->flags == b->flags &&
+           fabsf(a->em_px - b->em_px) <= 0.001f &&
+           fabsf(a->distance_range_px - b->distance_range_px) <= 0.001f;
+}
+
+
+
+/**
+ * Return the fallback STB SDF spec matching a requested atlas scale.
+ *
+ * @param spec requested atlas spec
+ * @return fallback SDF spec
+ */
+static DvzTextAtlasSpec _text_atlas_fallback_spec(const DvzTextAtlasSpec* spec)
+{
+    ANN(spec);
+    DvzTextAtlasSpec fallback = _scene_text_atlas_spec(DVZ_TEXT_ATLAS_BACKEND_STB_SDF, spec->em_px);
+    fallback.flags = spec->flags;
+    return fallback;
+}
+
+
+
+/**
+ * Find an existing atlas cache slot for one spec.
  *
  * @param font the font
- * @param backend the requested backend
- * @return pointer to the font-owned atlas cache slot
+ * @param spec atlas spec
+ * @return pointer to the matching font-owned atlas cache slot, or NULL
  */
-static DvzTextAtlas** _text_atlas_slot(DvzFont* font, DvzTextAtlasBackend backend)
+static DvzTextAtlas** _text_atlas_find_slot(DvzFont* font, const DvzTextAtlasSpec* spec)
 {
     ANN(font);
-    switch (backend)
+    ANN(spec);
+    for (uint32_t i = 0; i < font->atlas_count && i < DVZ_SCENE_MAX_TEXT_ATLASES_PER_FONT; i++)
     {
-    case DVZ_TEXT_ATLAS_BACKEND_FREETYPE_BITMAP:
-        return &font->bitmap_atlas;
-    case DVZ_TEXT_ATLAS_BACKEND_MSDF:
-        return &font->msdf_atlas;
-    case DVZ_TEXT_ATLAS_BACKEND_STB_SDF:
-    case DVZ_TEXT_ATLAS_BACKEND_BUILTIN_BITMAP:
-    default:
-        return &font->sdf_atlas;
+        DvzTextAtlas* atlas = font->atlases[i];
+        if (atlas != NULL && _text_atlas_spec_equal(&atlas->spec, spec))
+            return &font->atlases[i];
     }
+    return NULL;
+}
+
+
+
+/**
+ * Find or allocate an atlas cache slot for one spec.
+ *
+ * @param font the font
+ * @param spec atlas spec
+ * @return pointer to a font-owned atlas cache slot, or NULL when the cache is full
+ */
+static DvzTextAtlas** _text_atlas_acquire_slot(DvzFont* font, const DvzTextAtlasSpec* spec)
+{
+    ANN(font);
+    ANN(spec);
+    DvzTextAtlas** slot = _text_atlas_find_slot(font, spec);
+    if (slot != NULL)
+        return slot;
+    if (font->atlas_count >= DVZ_SCENE_MAX_TEXT_ATLASES_PER_FONT)
+    {
+        log_error("text atlas cache is full");
+        return NULL;
+    }
+    return &font->atlases[font->atlas_count++];
 }
 
 
@@ -1063,14 +1213,17 @@ static void _text_ft_copy_bitmap(
  * Build a hinted FreeType bitmap atlas for printable ASCII glyphs.
  *
  * @param font the font
+ * @param spec atlas generation spec
  * @param set the requested codepoint set
  * @param out_atlas output atlas metadata
  * @return whether atlas creation succeeded
  */
 static bool _text_ft_build_bitmap_atlas(
-    DvzFont* font, const DvzTextAtlasBuildSet* set, DvzTextAtlas** out_atlas)
+    DvzFont* font, const DvzTextAtlasSpec* spec, const DvzTextAtlasBuildSet* set,
+    DvzTextAtlas** out_atlas)
 {
     ANN(font);
+    ANN(spec);
     ANN(set);
     ANN(out_atlas);
     *out_atlas = NULL;
@@ -1095,8 +1248,8 @@ static bool _text_ft_build_bitmap_atlas(
         return false;
     }
 
-    float pixel_height = _text_sdf_default_em_px();
-    if (FT_Set_Pixel_Sizes(face, 0, (FT_UInt)pixel_height) != 0)
+    float em_px = spec->em_px > 0.0f ? spec->em_px : DVZ_TEXT_ATLAS_DEFAULT_EM_PX;
+    if (FT_Set_Pixel_Sizes(face, 0, (FT_UInt)em_px) != 0)
     {
         log_error("failed to set FreeType pixel size");
         FT_Done_Face(face);
@@ -1163,20 +1316,21 @@ static bool _text_ft_build_bitmap_atlas(
         return false;
     }
 
+    atlas->spec = *spec;
     atlas->backend = DVZ_TEXT_ATLAS_BACKEND_FREETYPE_BITMAP;
     atlas->encoding = DVZ_TEXT_ATLAS_ENCODING_BITMAP_ALPHA;
     atlas->width = atlas_width;
     atlas->height = atlas_height;
     atlas->glyph_count = glyph_count;
     atlas->channels = 4;
-    atlas->pixel_height = pixel_height;
-    atlas->ascent = face->size != NULL ? (float)face->size->metrics.ascender / 64.0f : pixel_height;
+    atlas->em_px = em_px;
+    atlas->ascent = face->size != NULL ? (float)face->size->metrics.ascender / 64.0f : em_px;
     atlas->descent = face->size != NULL ? (float)face->size->metrics.descender / 64.0f : 0.0f;
     atlas->line_gap = 0.0f;
     atlas->line_height =
-        face->size != NULL ? (float)face->size->metrics.height / 64.0f : pixel_height;
+        face->size != NULL ? (float)face->size->metrics.height / 64.0f : em_px;
     if (atlas->line_height <= 0.0f)
-        atlas->line_height = pixel_height;
+        atlas->line_height = em_px;
 
     for (uint32_t i = 0; i < glyph_count; i++)
     {
@@ -1257,14 +1411,17 @@ static bool _text_ft_build_bitmap_atlas(
  * Build an stb_truetype SDF atlas for the requested codepoint set.
  *
  * @param font the font
+ * @param spec atlas generation spec
  * @param set the requested codepoint set
  * @param out_atlas output atlas metadata
  * @return whether atlas creation succeeded
  */
 static bool _text_sdf_build_atlas(
-    DvzFont* font, const DvzTextAtlasBuildSet* set, DvzTextAtlas** out_atlas)
+    DvzFont* font, const DvzTextAtlasSpec* spec, const DvzTextAtlasBuildSet* set,
+    DvzTextAtlas** out_atlas)
 {
     ANN(font);
+    ANN(spec);
     ANN(set);
     ANN(out_atlas);
     *out_atlas = NULL;
@@ -1277,8 +1434,12 @@ static bool _text_sdf_build_atlas(
     if (!_text_sdf_init_font(font, &info))
         return false;
 
-    const float pixel_height = _text_sdf_default_em_px();
-    const float scale = stbtt_ScaleForPixelHeight(&info, pixel_height);
+    const float em_px = spec->em_px > 0.0f ? spec->em_px : DVZ_TEXT_ATLAS_DEFAULT_EM_PX;
+    const float distance_range_px = spec->distance_range_px > 0.0f
+                                        ? spec->distance_range_px
+                                        : DVZ_TEXT_SDF_REFERENCE_RANGE_PX;
+    const int padding = (int)(distance_range_px + 0.5f);
+    const float scale = stbtt_ScaleForPixelHeight(&info, em_px);
     const uint32_t glyph_count = set->count;
     uint8_t* glyph_sdfs[DVZ_SCENE_TEXT_ATLAS_MAX_GLYPHS] = {};
     uint32_t glyph_widths[DVZ_SCENE_TEXT_ATLAS_MAX_GLYPHS] = {};
@@ -1296,9 +1457,8 @@ static bool _text_sdf_build_atlas(
         int yoff = 0;
         uint32_t codepoint = set->codepoints[i];
         unsigned char* sdf = stbtt_GetCodepointSDF(
-            &info, scale, (int)codepoint, DVZ_TEXT_SDF_PADDING,
-            (unsigned char)DVZ_TEXT_SDF_ONEDGE, _text_sdf_pixel_dist_scale(), &width, &height,
-            &xoff, &yoff);
+            &info, scale, (int)codepoint, padding, (unsigned char)DVZ_TEXT_SDF_ONEDGE,
+            _text_sdf_pixel_dist_scale(distance_range_px), &width, &height, &xoff, &yoff);
         if (sdf == NULL || width <= 0 || height <= 0)
             continue;
         glyph_sdfs[i] = sdf;
@@ -1351,20 +1511,21 @@ static bool _text_sdf_build_atlas(
     int descent = 0;
     int line_gap = 0;
     stbtt_GetFontVMetrics(&info, &ascent, &descent, &line_gap);
+    atlas->spec = *spec;
     atlas->backend = DVZ_TEXT_ATLAS_BACKEND_STB_SDF;
     atlas->encoding = DVZ_TEXT_ATLAS_ENCODING_SDF_ALPHA;
     atlas->width = atlas_width;
     atlas->height = atlas_height;
     atlas->glyph_count = glyph_count;
     atlas->channels = 4;
-    atlas->pixel_height = pixel_height;
-    atlas->pixel_range = (float)DVZ_TEXT_SDF_PADDING;
+    atlas->em_px = em_px;
+    atlas->distance_range_px = distance_range_px;
     atlas->ascent = (float)ascent * scale;
     atlas->descent = (float)descent * scale;
     atlas->line_gap = (float)line_gap * scale;
     atlas->line_height = (float)(ascent - descent + line_gap) * scale;
     if (atlas->line_height <= 0.0f)
-        atlas->line_height = pixel_height;
+        atlas->line_height = em_px;
 
     for (uint32_t i = 0; i < glyph_count; i++)
     {
@@ -1448,37 +1609,38 @@ static bool _text_sdf_build_atlas(
  * Build a temporary atlas for a specific backend.
  *
  * @param font the font
- * @param backend the atlas backend
+ * @param spec atlas generation spec
  * @param set requested codepoint set
  * @param out_atlas output temporary atlas
  * @return whether atlas generation succeeded
  */
 static bool _text_atlas_build_backend(
-    DvzFont* font, DvzTextAtlasBackend backend, const DvzTextAtlasBuildSet* set,
+    DvzFont* font, const DvzTextAtlasSpec* spec, const DvzTextAtlasBuildSet* set,
     DvzTextAtlas** out_atlas)
 {
     ANN(font);
+    ANN(spec);
     ANN(set);
     ANN(out_atlas);
     *out_atlas = NULL;
-    switch (backend)
+    switch (spec->backend)
     {
     case DVZ_TEXT_ATLAS_BACKEND_FREETYPE_BITMAP:
 #if defined(DVZ_HAS_FREETYPE) && DVZ_HAS_FREETYPE
-        return _text_ft_build_bitmap_atlas(font, set, out_atlas);
+        return _text_ft_build_bitmap_atlas(font, spec, set, out_atlas);
 #else
         return false;
 #endif
     case DVZ_TEXT_ATLAS_BACKEND_MSDF:
 #if defined(DVZ_HAS_MSDF_ATLAS) && DVZ_HAS_MSDF_ATLAS
-        return _text_msdf_build_atlas(font, set, out_atlas);
+        return _text_msdf_build_atlas(font, spec, set, out_atlas);
 #else
         return false;
 #endif
     case DVZ_TEXT_ATLAS_BACKEND_STB_SDF:
     case DVZ_TEXT_ATLAS_BACKEND_BUILTIN_BITMAP:
     default:
-        return _text_sdf_build_atlas(font, set, out_atlas);
+        return _text_sdf_build_atlas(font, spec, set, out_atlas);
     }
 }
 
@@ -1574,14 +1736,12 @@ static bool _text_atlas_find_free_rect(
  * Append missing glyphs into an existing atlas without rearranging existing glyphs.
  *
  * @param font the font
- * @param backend the atlas backend
  * @param atlas the existing atlas to mutate
  * @param requested_set requested codepoints
  * @return whether all missing glyphs were appended
  */
 static bool _text_atlas_try_append(
-    DvzFont* font, DvzTextAtlasBackend backend, DvzTextAtlas* atlas,
-    const DvzTextAtlasBuildSet* requested_set)
+    DvzFont* font, DvzTextAtlas* atlas, const DvzTextAtlasBuildSet* requested_set)
 {
     ANN(font);
     ANN(atlas);
@@ -1608,7 +1768,7 @@ static bool _text_atlas_try_append(
         return false;
 
     DvzTextAtlas* delta = NULL;
-    if (!_text_atlas_build_backend(font, backend, &missing_set, &delta))
+    if (!_text_atlas_build_backend(font, &atlas->spec, &missing_set, &delta))
         return false;
     ANN(delta);
     if (delta->field == NULL || delta->field->data == NULL)
@@ -1792,17 +1952,21 @@ static bool _text_atlas_try_append(
 
 
 /**
- * Store a newly built atlas in the font cache slot.
+ * Store a newly built atlas in the font cache.
  *
  * @param font the font
- * @param backend the cache slot backend
+ * @param spec atlas generation spec
  * @param atlas the new atlas
+ * @return whether the atlas was stored
  */
-static void _text_atlas_store(DvzFont* font, DvzTextAtlasBackend backend, DvzTextAtlas* atlas)
+static bool _text_atlas_store(DvzFont* font, const DvzTextAtlasSpec* spec, DvzTextAtlas* atlas)
 {
     ANN(font);
+    ANN(spec);
     ANN(atlas);
-    DvzTextAtlas** slot = _text_atlas_slot(font, backend);
+    DvzTextAtlas** slot = _text_atlas_acquire_slot(font, spec);
+    if (slot == NULL)
+        return false;
     if (*slot != NULL && (*slot)->field != NULL && atlas->field != NULL &&
         _text_atlas_replace_field_data((*slot)->field, atlas->field))
     {
@@ -1815,91 +1979,86 @@ static void _text_atlas_store(DvzFont* font, DvzTextAtlasBackend backend, DvzTex
         *slot = atlas;
         font->version++;
         atlas->generation = font->version;
-        return;
+        return true;
     }
     if (*slot != NULL)
         _scene_text_atlas_destroy(*slot);
     *slot = atlas;
     font->version++;
     atlas->generation = font->version;
+    return true;
 }
 
 
 
 /**
- * Ensure one font atlas covers a requested build set.
+ * Ensure one exact font atlas spec covers a requested build set.
  *
  * @param font the scene font
- * @param backend the requested atlas backend
+ * @param spec requested atlas spec
  * @param requested_set the requested codepoints
  * @return whether an atlas is available
  */
-static bool _text_atlas_ensure_set(
-    DvzFont* font, DvzTextAtlasBackend backend, const DvzTextAtlasBuildSet* requested_set)
+static bool _text_atlas_ensure_exact_set(
+    DvzFont* font, const DvzTextAtlasSpec* spec, const DvzTextAtlasBuildSet* requested_set)
 {
     ANN(font);
+    ANN(spec);
     ANN(requested_set);
     if (font->scene == NULL)
         return false;
 
     DvzTextAtlasBuildSet set = *requested_set;
-    DvzTextAtlas** slot = _text_atlas_slot(font, backend);
-    if (!_text_atlas_build_set_add_existing(&set, *slot))
-        return *slot != NULL && (*slot)->field != NULL;
-    if (_text_atlas_contains_set(*slot, &set))
+    DvzTextAtlas** slot = _text_atlas_find_slot(font, spec);
+    DvzTextAtlas* existing = slot != NULL ? *slot : NULL;
+    if (!_text_atlas_build_set_add_existing(&set, existing))
+        return existing != NULL && existing->field != NULL;
+    if (_text_atlas_contains_set(existing, &set))
         return true;
-    if (*slot != NULL && _text_atlas_try_append(font, backend, *slot, &set))
+    if (existing != NULL && _text_atlas_try_append(font, existing, &set))
     {
         font->version++;
-        (*slot)->generation = font->version;
+        existing->generation = font->version;
         return true;
     }
 
     DvzTextAtlas* atlas = NULL;
-#if defined(DVZ_HAS_FREETYPE) && DVZ_HAS_FREETYPE
-    if (backend == DVZ_TEXT_ATLAS_BACKEND_FREETYPE_BITMAP)
+    if (!_text_atlas_build_backend(font, spec, &set, &atlas))
+        return existing != NULL && existing->field != NULL;
+    if (!_text_atlas_store(font, spec, atlas))
     {
-        if (_text_ft_build_bitmap_atlas(font, &set, &atlas))
-        {
-            _text_atlas_store(font, DVZ_TEXT_ATLAS_BACKEND_FREETYPE_BITMAP, atlas);
-            return true;
-        }
-        log_debug("FreeType bitmap atlas generation failed; falling back to SDF atlas");
+        _scene_text_atlas_destroy(atlas);
+        return existing != NULL && existing->field != NULL;
     }
-#else
-    if (backend == DVZ_TEXT_ATLAS_BACKEND_FREETYPE_BITMAP)
-        log_debug("FreeType bitmap atlas requested but Datoviz was built without FreeType");
-#endif
-    if (backend == DVZ_TEXT_ATLAS_BACKEND_MSDF)
-    {
-#if defined(DVZ_HAS_MSDF_ATLAS) && DVZ_HAS_MSDF_ATLAS
-        if (_text_msdf_build_atlas(font, &set, &atlas))
-        {
-            _text_atlas_store(font, DVZ_TEXT_ATLAS_BACKEND_MSDF, atlas);
-            return true;
-        }
-        log_debug("MSDF atlas generation failed; falling back to SDF atlas");
-#else
-        log_debug("MSDF atlas requested but msdf-atlas-gen is unavailable; falling back to SDF atlas");
-#endif
-    }
-
-    DvzTextAtlas** sdf_slot = _text_atlas_slot(font, DVZ_TEXT_ATLAS_BACKEND_STB_SDF);
-    if (!_text_atlas_build_set_add_existing(&set, *sdf_slot))
-        return *sdf_slot != NULL && (*sdf_slot)->field != NULL;
-    if (_text_atlas_contains_set(*sdf_slot, &set))
-        return true;
-    if (*sdf_slot != NULL &&
-        _text_atlas_try_append(font, DVZ_TEXT_ATLAS_BACKEND_STB_SDF, *sdf_slot, &set))
-    {
-        font->version++;
-        (*sdf_slot)->generation = font->version;
-        return true;
-    }
-    if (!_text_sdf_build_atlas(font, &set, &atlas))
-        return *sdf_slot != NULL && (*sdf_slot)->field != NULL;
-    _text_atlas_store(font, DVZ_TEXT_ATLAS_BACKEND_STB_SDF, atlas);
     return true;
+}
+
+
+
+/**
+ * Ensure one font atlas covers a requested build set, falling back to STB SDF when needed.
+ *
+ * @param font the scene font
+ * @param spec requested atlas spec
+ * @param requested_set the requested codepoints
+ * @return whether an atlas is available
+ */
+static bool _text_atlas_ensure_set(
+    DvzFont* font, const DvzTextAtlasSpec* spec, const DvzTextAtlasBuildSet* requested_set)
+{
+    ANN(font);
+    ANN(spec);
+    ANN(requested_set);
+    if (_text_atlas_ensure_exact_set(font, spec, requested_set))
+        return true;
+    if (spec->backend == DVZ_TEXT_ATLAS_BACKEND_MSDF)
+        log_debug("MSDF atlas generation failed; falling back to SDF atlas");
+    if (spec->backend == DVZ_TEXT_ATLAS_BACKEND_FREETYPE_BITMAP)
+        log_debug("FreeType bitmap atlas generation failed; falling back to SDF atlas");
+    if (spec->backend == DVZ_TEXT_ATLAS_BACKEND_STB_SDF)
+        return false;
+    DvzTextAtlasSpec fallback = _text_atlas_fallback_spec(spec);
+    return _text_atlas_ensure_exact_set(font, &fallback, requested_set);
 }
 
 
@@ -1911,19 +2070,69 @@ static bool _text_atlas_ensure_set(
 extern "C" {
 
 /**
+ * Resolve a text atlas spec from a backend and rendered size.
+ *
+ * @param backend requested atlas backend
+ * @param size_px rendered text size in pixels
+ * @return atlas generation spec
+ */
+DvzTextAtlasSpec _scene_text_atlas_spec(DvzTextAtlasBackend backend, float size_px)
+{
+    DvzTextAtlasSpec spec = {};
+    spec.backend = backend;
+    if (backend == DVZ_TEXT_ATLAS_BACKEND_FREETYPE_BITMAP)
+    {
+        spec.em_px = _text_atlas_bitmap_em_px(size_px);
+        return spec;
+    }
+    spec.em_px = _text_atlas_sdf_em_px(size_px);
+    if (backend == DVZ_TEXT_ATLAS_BACKEND_MSDF)
+        spec.distance_range_px = _text_atlas_msdf_range_px(spec.em_px);
+    else if (backend == DVZ_TEXT_ATLAS_BACKEND_STB_SDF)
+        spec.distance_range_px = _text_atlas_sdf_range_px(spec.em_px);
+    return spec;
+}
+
+
+
+/**
+ * Return a font atlas matching a requested spec, including SDF fallback atlases.
+ *
+ * @param font the scene font
+ * @param spec requested atlas spec
+ * @return atlas pointer, or NULL when unavailable
+ */
+DvzTextAtlas* _scene_text_atlas_get(DvzFont* font, const DvzTextAtlasSpec* spec)
+{
+    ANN(font);
+    ANN(spec);
+    DvzTextAtlas** slot = _text_atlas_find_slot(font, spec);
+    if (slot != NULL)
+        return *slot;
+    if (spec->backend == DVZ_TEXT_ATLAS_BACKEND_STB_SDF)
+        return NULL;
+    DvzTextAtlasSpec fallback = _text_atlas_fallback_spec(spec);
+    slot = _text_atlas_find_slot(font, &fallback);
+    return slot != NULL ? *slot : NULL;
+}
+
+
+
+/**
  * Ensure one font has a scene-owned font atlas.
  *
  * @param font the scene font
- * @param backend the requested atlas backend
+ * @param spec requested atlas spec
  * @return whether the atlas is available
  */
-bool _scene_text_atlas_ensure(DvzFont* font, DvzTextAtlasBackend backend)
+bool _scene_text_atlas_ensure(DvzFont* font, const DvzTextAtlasSpec* spec)
 {
     ANN(font);
+    ANN(spec);
     DvzTextAtlasBuildSet set = {};
     if (!_text_atlas_build_set_add_default(&set))
         return false;
-    return _text_atlas_ensure_set(font, backend, &set);
+    return _text_atlas_ensure_set(font, spec, &set);
 }
 
 
@@ -1932,16 +2141,17 @@ bool _scene_text_atlas_ensure(DvzFont* font, DvzTextAtlasBackend backend)
  * Ensure one font has an atlas that covers one UTF-8 string.
  *
  * @param font the scene font
- * @param backend the requested atlas backend
+ * @param spec requested atlas spec
  * @param string the UTF-8 string
  * @return whether the atlas is available
  */
 bool _scene_text_atlas_ensure_string(
-    DvzFont* font, DvzTextAtlasBackend backend, const char* string)
+    DvzFont* font, const DvzTextAtlasSpec* spec, const char* string)
 {
     ANN(font);
+    ANN(spec);
     const char* strings[1] = {string};
-    return _scene_text_atlas_ensure_strings(font, backend, strings, 1);
+    return _scene_text_atlas_ensure_strings(font, spec, strings, 1);
 }
 
 
@@ -1950,21 +2160,22 @@ bool _scene_text_atlas_ensure_string(
  * Ensure one font has an atlas that covers a list of UTF-8 strings.
  *
  * @param font the scene font
- * @param backend the requested atlas backend
+ * @param spec requested atlas spec
  * @param strings the UTF-8 strings
  * @param count string count
  * @return whether the atlas is available
  */
 bool _scene_text_atlas_ensure_strings(
-    DvzFont* font, DvzTextAtlasBackend backend, const char* const* strings, uint32_t count)
+    DvzFont* font, const DvzTextAtlasSpec* spec, const char* const* strings, uint32_t count)
 {
     ANN(font);
+    ANN(spec);
     DvzTextAtlasBuildSet set = {};
     if (!_text_atlas_build_set_add_default(&set))
         return false;
     if (!_text_atlas_build_set_add_strings(&set, strings, count))
         log_debug("text atlas request exceeded glyph capacity; using the accepted subset");
-    return _text_atlas_ensure_set(font, backend, &set);
+    return _text_atlas_ensure_set(font, spec, &set);
 }
 
 
@@ -2029,21 +2240,12 @@ void _scene_font_release(DvzFont* font)
 {
     if (font == NULL)
         return;
-    if (font->bitmap_atlas != NULL)
+    for (uint32_t i = 0; i < font->atlas_count && i < DVZ_SCENE_MAX_TEXT_ATLASES_PER_FONT; i++)
     {
-        _scene_text_atlas_destroy(font->bitmap_atlas);
-        font->bitmap_atlas = NULL;
+        _scene_text_atlas_destroy(font->atlases[i]);
+        font->atlases[i] = NULL;
     }
-    if (font->sdf_atlas != NULL)
-    {
-        _scene_text_atlas_destroy(font->sdf_atlas);
-        font->sdf_atlas = NULL;
-    }
-    if (font->msdf_atlas != NULL)
-    {
-        _scene_text_atlas_destroy(font->msdf_atlas);
-        font->msdf_atlas = NULL;
-    }
+    font->atlas_count = 0;
     if (font->ttf_bytes != NULL)
     {
         dvz_free(font->ttf_bytes);

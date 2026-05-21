@@ -207,20 +207,17 @@ static DvzFont* _text_sdf_font(DvzScene* scene, const DvzTextStyle* style)
 
 
 /**
- * Return the font-owned atlas for a requested backend after ensure has run.
+ * Return the font-owned atlas for a requested spec after ensure has run.
  *
  * @param font the font
- * @param backend the requested backend
+ * @param spec requested atlas spec
  * @return the resolved atlas, including fallback atlases
  */
-static DvzTextAtlas* _text_font_atlas(DvzFont* font, DvzTextAtlasBackend backend)
+static DvzTextAtlas* _text_font_atlas(DvzFont* font, const DvzTextAtlasSpec* spec)
 {
     ANN(font);
-    if (backend == DVZ_TEXT_ATLAS_BACKEND_FREETYPE_BITMAP)
-        return font->bitmap_atlas != NULL ? font->bitmap_atlas : font->sdf_atlas;
-    if (backend == DVZ_TEXT_ATLAS_BACKEND_MSDF)
-        return font->msdf_atlas != NULL ? font->msdf_atlas : font->sdf_atlas;
-    return font->sdf_atlas;
+    ANN(spec);
+    return _scene_text_atlas_get(font, spec);
 }
 
 
@@ -604,12 +601,12 @@ static float _text_sdf_layout_scale(const DvzTextStyle* style, const DvzTextAtla
     ANN(atlas);
     float size_px = style->size_px;
     if (size_px <= 0.0f)
-        size_px = atlas->pixel_height;
+        size_px = atlas->em_px;
     if (size_px < 1.0f)
         size_px = 1.0f;
     if (size_px > 512.0f)
         size_px = 512.0f;
-    return atlas->pixel_height > 0.0f ? size_px / atlas->pixel_height : 1.0f;
+    return atlas->em_px > 0.0f ? size_px / atlas->em_px : 1.0f;
 }
 
 
@@ -637,7 +634,7 @@ static void _text_sdf_measure(
     uint32_t lines = 1;
     uint32_t visible = 0;
     DvzTextAtlasGlyph* space = _scene_text_atlas_glyph(atlas, ' ');
-    float tab_advance = space != NULL ? 4.0f * space->advance * scale : 2.0f * atlas->pixel_height;
+    float tab_advance = space != NULL ? 4.0f * space->advance * scale : 2.0f * atlas->em_px;
     if (string != NULL)
     {
         uint32_t byte_index = 0;
@@ -667,7 +664,7 @@ static void _text_sdf_measure(
     if (line_width > max_width)
         max_width = line_width;
     *out_width = max_width;
-    *out_height = ((float)(lines - 1u) * atlas->line_height + atlas->pixel_height) * scale;
+    *out_height = ((float)(lines - 1u) * atlas->line_height + atlas->em_px) * scale;
     *out_visible = visible;
 }
 
@@ -1036,16 +1033,10 @@ static bool _text_prepare_visual(DvzFigure* figure, DvzText* text)
             dvz_visual_set_visible(text->visual, false);
         return true;
     }
-    if (text->visual != NULL && text->visual->field != NULL &&
-        text->visual_version == text->version &&
-        text->visual_figure_width == figure->width && text->visual_figure_height == figure->height)
-    {
-        return true;
-    }
-
     uint32_t visible = 0;
     DvzSampledField* atlas = NULL;
     DvzTextAtlas* font_atlas = NULL;
+    uint64_t atlas_generation = 0;
     float scale = 1.0f;
     float glyph_w = 0.0f;
     float glyph_h = 0.0f;
@@ -1055,11 +1046,14 @@ static bool _text_prepare_visual(DvzFigure* figure, DvzText* text)
     if (!use_builtin)
     {
         DvzFont* font = _text_sdf_font(text->scene, &text->style);
-        if (font == NULL || !_scene_text_atlas_ensure_string(font, backend, text->string))
+        DvzTextAtlasSpec spec =
+            _scene_text_atlas_spec(backend, _text_style_size_px(&text->style));
+        if (font == NULL || !_scene_text_atlas_ensure_string(font, &spec, text->string))
             return false;
-        font_atlas = _text_font_atlas(font, backend);
+        font_atlas = _text_font_atlas(font, &spec);
         ANN(font_atlas);
         atlas = font_atlas->field;
+        atlas_generation = font_atlas->generation;
         scale = _text_sdf_layout_scale(&text->style, font_atlas);
         _text_sdf_measure(text->string, font_atlas, scale, &width, &height, &visible);
         line_h = font_atlas->line_height * scale;
@@ -1076,6 +1070,13 @@ static bool _text_prepare_visual(DvzFigure* figure, DvzText* text)
         line_h = (float)DVZ_TEXT_BITMAP_LINE_HEIGHT * scale;
         width = (float)columns * glyph_w;
         height = (float)(lines - 1u) * line_h + glyph_h;
+    }
+    if (text->visual != NULL && text->visual->field != NULL &&
+        text->visual_version == text->version &&
+        text->visual_atlas_generation == atlas_generation &&
+        text->visual_figure_width == figure->width && text->visual_figure_height == figure->height)
+    {
+        return true;
     }
     if (visible == 0 || width <= 0.0f || height <= 0.0f)
     {
@@ -1163,7 +1164,7 @@ static bool _text_prepare_visual(DvzFigure* figure, DvzText* text)
             {
                 DvzTextAtlasGlyph* space = _scene_text_atlas_glyph(font_atlas, ' ');
                 cursor_x += space != NULL ? 4.0f * space->advance * scale :
-                                             2.0f * font_atlas->pixel_height * scale;
+                                             2.0f * font_atlas->em_px * scale;
             }
             else
             {
@@ -1256,7 +1257,8 @@ static bool _text_prepare_visual(DvzFigure* figure, DvzText* text)
     {
         text->visual->glyph_atlas_encoding =
             font_atlas != NULL ? font_atlas->encoding : DVZ_TEXT_ATLAS_ENCODING_BITMAP_ALPHA;
-        text->visual->glyph_pixel_range = font_atlas != NULL ? font_atlas->pixel_range : 1.0f;
+        text->visual->glyph_pixel_range =
+            font_atlas != NULL ? font_atlas->distance_range_px : 1.0f;
         DvzVisualDataUpdate updates[5] = {
             {.attr_name = "position", .data = positions, .item_count = vertex_count},
             {.attr_name = "bounds", .data = bounds, .item_count = vertex_count},
@@ -1292,6 +1294,7 @@ static bool _text_prepare_visual(DvzFigure* figure, DvzText* text)
         text->metrics.line_height = line_h;
         text->dirty_flags = DVZ_TEXT_DIRTY_NONE;
         text->visual_version = text->version;
+        text->visual_atlas_generation = atlas_generation;
         text->visual_figure_width = figure->width;
         text->visual_figure_height = figure->height;
     }
@@ -1445,24 +1448,29 @@ static bool _text_visual_prepare(
     }
 
     uint64_t version = _text_visual_version(visual);
-    if (visual->text.glyph_visual != NULL && visual->text.glyph_visual->field != NULL &&
-        visual->text.realized_version == version &&
-        visual->text.visual_figure_width == figure->width &&
-        visual->text.visual_figure_height == figure->height)
-    {
-        return true;
-    }
 
     DvzTextRenderer renderer = visual->text.renderer;
+    float spec_size_px = 0.0f;
+    if (size_attr != NULL && size_attr->data != NULL)
+    {
+        const float* item_sizes = (const float*)size_attr->data;
+        for (uint32_t i = 0; i < count; i++)
+        {
+            if (item_sizes[i] > spec_size_px)
+                spec_size_px = item_sizes[i];
+        }
+    }
+    if (spec_size_px <= 0.0f)
+        spec_size_px = 12.0f;
     DvzTextStyle backend_style = {
-        .size_px = size_attr != NULL && size_attr->data != NULL ? ((const float*)size_attr->data)[0] :
-                                                                  12.0f,
+        .size_px = spec_size_px,
         .renderer = renderer,
     };
     DvzTextAtlasBackend backend = _text_renderer_backend(renderer, &backend_style);
     bool use_builtin = backend == DVZ_TEXT_ATLAS_BACKEND_BUILTIN_BITMAP;
     DvzTextAtlas* font_atlas = NULL;
     DvzSampledField* atlas = NULL;
+    uint64_t atlas_generation = 0;
     if (!use_builtin)
     {
         DvzTextStyle atlas_style = {
@@ -1472,12 +1480,14 @@ static bool _text_visual_prepare(
         };
         DvzFont* font = _text_sdf_font(visual->scene, &atlas_style);
         const char* const* strings = (const char* const*)visual->text.strings;
+        DvzTextAtlasSpec spec = _scene_text_atlas_spec(backend, spec_size_px);
         if (font == NULL || !_scene_text_atlas_ensure_strings(
-                                font, backend, strings, visual->text.string_count))
+                                font, &spec, strings, visual->text.string_count))
             return false;
-        font_atlas = _text_font_atlas(font, backend);
+        font_atlas = _text_font_atlas(font, &spec);
         ANN(font_atlas);
         atlas = font_atlas->field;
+        atlas_generation = font_atlas->generation;
     }
     else
     {
@@ -1485,6 +1495,14 @@ static bool _text_visual_prepare(
     }
     if (atlas == NULL)
         return false;
+    if (visual->text.glyph_visual != NULL && visual->text.glyph_visual->field != NULL &&
+        visual->text.realized_version == version &&
+        visual->text.atlas_generation == atlas_generation &&
+        visual->text.visual_figure_width == figure->width &&
+        visual->text.visual_figure_height == figure->height)
+    {
+        return true;
+    }
 
     uint64_t vertex_count64 = 0;
     for (uint32_t i = 0; i < count; i++)
@@ -1646,7 +1664,7 @@ static bool _text_visual_prepare(
                 {
                     DvzTextAtlasGlyph* space = _scene_text_atlas_glyph(font_atlas, ' ');
                     cursor_x += space != NULL ? 4.0f * space->advance * scale :
-                                                 2.0f * font_atlas->pixel_height * scale;
+                                                 2.0f * font_atlas->em_px * scale;
                 }
                 else
                 {
@@ -1725,7 +1743,7 @@ static bool _text_visual_prepare(
         visual->text.glyph_visual->glyph_atlas_encoding =
             font_atlas != NULL ? font_atlas->encoding : DVZ_TEXT_ATLAS_ENCODING_BITMAP_ALPHA;
         visual->text.glyph_visual->glyph_pixel_range =
-            font_atlas != NULL ? font_atlas->pixel_range : 1.0f;
+            font_atlas != NULL ? font_atlas->distance_range_px : 1.0f;
         DvzVisualDataUpdate updates[5] = {
             {.attr_name = "position", .data = positions, .item_count = vertex_count},
             {.attr_name = "bounds", .data = bounds, .item_count = vertex_count},
@@ -1744,6 +1762,7 @@ static bool _text_visual_prepare(
         visual->text.span_count = count;
         spans = NULL;
         visual->text.realized_version = version;
+        visual->text.atlas_generation = atlas_generation;
         visual->text.visual_figure_width = figure->width;
         visual->text.visual_figure_height = figure->height;
     }

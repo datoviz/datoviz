@@ -682,6 +682,8 @@ int test_scene_text_sdf_visual_realization(TstContext* suite, const TstCase* ite
 
 int test_scene_text_auto_renderer_selection(TstContext* suite, const TstCase* item);
 
+int test_scene_text_msdf_atlas_spec_scales_range(TstContext* suite, const TstCase* item);
+
 int test_scene_text_font_atlas_expands_for_utf8(TstContext* suite, const TstCase* item);
 
 int test_scene_text_font_atlas_missing_glyph_fallback(TstContext* suite, const TstCase* item);

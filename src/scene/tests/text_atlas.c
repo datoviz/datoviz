@@ -268,8 +268,8 @@ int test_scene_text_atlas_utf8_runtime_readback(TstContext* suite, const TstCase
     _scene_prepare_text_visuals(figure);
     ANN(text->text.glyph_visual);
     AT(scene->font_count == 1);
-    DvzTextAtlas* atlas =
-        scene->fonts[0].msdf_atlas != NULL ? scene->fonts[0].msdf_atlas : scene->fonts[0].sdf_atlas;
+    DvzTextAtlasSpec spec = _scene_text_atlas_spec(DVZ_TEXT_ATLAS_BACKEND_MSDF, sizes[0]);
+    DvzTextAtlas* atlas = _scene_text_atlas_get(&scene->fonts[0], &spec);
     ANN(atlas);
     ANN(atlas->field);
     DvzTextAtlasGlyph* utf8_glyph = _scene_text_atlas_glyph(atlas, 0x00E9u);

@@ -102,19 +102,30 @@ static bool make_output_dirs(const char* path)
  *
  * @param scene the scene
  * @param renderer selected renderer
+ * @param size_px rendered text size in pixels
  * @return atlas pointer, or NULL if unavailable
  */
-static DvzTextAtlas* renderer_atlas(DvzScene* scene, DvzTextRenderer renderer)
+static DvzTextAtlas* renderer_atlas(DvzScene* scene, DvzTextRenderer renderer, float size_px)
 {
     ANN(scene);
     if (scene->font_count == 0)
         return NULL;
     DvzFont* font = &scene->fonts[0];
+    DvzTextAtlasBackend backend = DVZ_TEXT_ATLAS_BACKEND_STB_SDF;
     if (renderer == DVZ_TEXT_RENDERER_BITMAP_ATLAS)
-        return font->bitmap_atlas;
-    if (renderer == DVZ_TEXT_RENDERER_MSDF_ATLAS)
-        return font->msdf_atlas != NULL ? font->msdf_atlas : font->sdf_atlas;
-    return font->sdf_atlas;
+    {
+#if defined(DVZ_HAS_FREETYPE) && DVZ_HAS_FREETYPE
+        backend = DVZ_TEXT_ATLAS_BACKEND_FREETYPE_BITMAP;
+#else
+        return NULL;
+#endif
+    }
+    else if (renderer == DVZ_TEXT_RENDERER_MSDF_ATLAS)
+    {
+        backend = DVZ_TEXT_ATLAS_BACKEND_MSDF;
+    }
+    DvzTextAtlasSpec spec = _scene_text_atlas_spec(backend, size_px);
+    return _scene_text_atlas_get(font, &spec);
 }
 
 
@@ -200,13 +211,13 @@ static void emit_atlas_metadata(
         "\"size\":%.1f,\"backend\":\"%s\",\"encoding\":\"%s\","
         "\"width\":%u,\"height\":%u,\"channels\":%u,\"glyphs\":%u,"
         "\"capacity\":%u,\"missing\":%u,\"generation\":%" PRIu64 ","
-        "\"pixel_height\":%.3f,\"pixel_range\":%.3f,\"ascent\":%.3f,"
+        "\"em_px\":%.3f,\"distance_range_px\":%.3f,\"ascent\":%.3f,"
         "\"descent\":%.3f,\"line_height\":%.3f,\"scene_png\":\"%s\","
         "\"atlas_png\":\"%s\"}\n",
         renderer->name, sample->name, size, atlas_backend_name(atlas->backend),
         atlas_encoding_name(atlas->encoding), atlas->width, atlas->height, atlas->channels,
         atlas->glyph_count, DVZ_SCENE_TEXT_ATLAS_MAX_GLYPHS, atlas->missing_glyph_count,
-        atlas->generation, atlas->pixel_height, atlas->pixel_range, atlas->ascent,
+        atlas->generation, atlas->em_px, atlas->distance_range_px, atlas->ascent,
         atlas->descent, atlas->line_height, scene_path, atlas_path);
 }
 
@@ -216,13 +227,14 @@ static void emit_atlas_metadata(
  *
  * @param scene the scene
  * @param renderer selected renderer
+ * @param size_px rendered text size in pixels
  * @param path output PNG path
  */
-static void write_atlas_png(DvzScene* scene, DvzTextRenderer renderer, const char* path)
+static void write_atlas_png(DvzScene* scene, DvzTextRenderer renderer, float size_px, const char* path)
 {
     ANN(scene);
     ANN(path);
-    DvzTextAtlas* atlas = renderer_atlas(scene, renderer);
+    DvzTextAtlas* atlas = renderer_atlas(scene, renderer, size_px);
     if (atlas == NULL || atlas->field == NULL || atlas->field->data == NULL)
         return;
     if (dvz_write_png(path, atlas->width, atlas->height, (const uint8_t*)atlas->field->data) != 0)
@@ -346,10 +358,11 @@ static int render_case(
         sample->name, (uint32_t)size);
     if (dvz_app_window_capture_png(win, scene_path) != 0)
         dvz_fprintf(stderr, "failed to capture %s\n", scene_path);
-    write_atlas_png(scene, renderer->renderer, atlas_path);
+    write_atlas_png(scene, renderer->renderer, size, atlas_path);
 
     emit_atlas_metadata(
-        renderer, sample, size, renderer_atlas(scene, renderer->renderer), scene_path, atlas_path);
+        renderer, sample, size, renderer_atlas(scene, renderer->renderer, size), scene_path,
+        atlas_path);
     dvz_app_destroy(app);
     dvz_scene_destroy(scene);
     return 0;

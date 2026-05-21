@@ -237,18 +237,10 @@ static DvzTextAtlas* source_atlas(const TextLabSource* source, float size_px)
         return NULL;
     DvzFont* font = &source->figure->scene->fonts[0];
     DvzTextAtlasBackend backend = renderer_backend(source->renderer, size_px);
-    switch (backend)
-    {
-    case DVZ_TEXT_ATLAS_BACKEND_FREETYPE_BITMAP:
-        return font->bitmap_atlas;
-    case DVZ_TEXT_ATLAS_BACKEND_MSDF:
-        return font->msdf_atlas != NULL ? font->msdf_atlas : font->sdf_atlas;
-    case DVZ_TEXT_ATLAS_BACKEND_STB_SDF:
-        return font->sdf_atlas;
-    case DVZ_TEXT_ATLAS_BACKEND_BUILTIN_BITMAP:
-    default:
+    if (backend == DVZ_TEXT_ATLAS_BACKEND_BUILTIN_BITMAP)
         return NULL;
-    }
+    DvzTextAtlasSpec spec = _scene_text_atlas_spec(backend, size_px);
+    return _scene_text_atlas_get(font, &spec);
 }
 
 
@@ -278,11 +270,11 @@ static void atlas_summary_line(
     dvz_snprintf(
         out, out_size,
         "%s atlas: %s %s %ux%u c%u glyphs %u/%u miss %u gen %" PRIu64
-        " px %.1f range %.1f line %.1f",
+        " em %.1f range %.1f line %.1f",
         prefix, atlas_backend_name(atlas->backend), atlas_encoding_name(atlas->encoding),
         atlas->width, atlas->height, atlas->channels, atlas->glyph_count,
         DVZ_SCENE_TEXT_ATLAS_MAX_GLYPHS, atlas->missing_glyph_count, atlas->generation,
-        atlas->pixel_height, atlas->pixel_range, atlas->line_height);
+        atlas->em_px, atlas->distance_range_px, atlas->line_height);
 }
 
 
