@@ -8,7 +8,7 @@
  *
  * Opens a GLFW window showing random discs with per-point color and diameter.
  * Left-drag to pan, right-drag or scroll to zoom, double-click to reset.
- * Axis text labels are retained by the scene API but not rendered yet.
+ * Axis tick labels and axis labels render through the scene text visual path.
  *
  * Build:  just example-c scatter_axes
  * Run:    ./build/examples/c/techniques/scatter_axes
