@@ -19,3 +19,5 @@ belongs in [../../later/](../../later/).
    clipping follow-up.
 7. [SCENE_WGSL_SHADER_VARIANTS_PLAN.md](SCENE_WGSL_SHADER_VARIANTS_PLAN.md): remaining WGSL
    shader-variant parity work.
+8. [SCENE_FILE_SPLIT_REFACTOR_PLAN.md](SCENE_FILE_SPLIT_REFACTOR_PLAN.md): focused scene source-file
+   split plan to reduce visual, technique, runtime, and test merge-risk hotspots.
