@@ -1264,6 +1264,65 @@ int test_scene_marker_pick_accepts_bbox_corner(TstContext* suite, const TstCase*
 }
 
 
+/**
+ * Ensure sphere picking resolves retained item identity without a GPU readback.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_sphere_pick_resolves_item(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    ANN(item);
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(
+        figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+    ANN(panel);
+
+    DvzVisual* sphere = dvz_sphere(scene, 0);
+    ANN(sphere);
+    dvz_visual_set_pick_capabilities(sphere, DVZ_PICK_CAPABILITY_ITEM);
+    float positions[2][3] = {
+        {-0.5f, 0.0f, 0.0f},
+        {0.0f, 0.0f, 0.0f},
+    };
+    DvzColor colors[2] = {
+        {255, 0, 0, 255},
+        {0, 255, 0, 255},
+    };
+    float radii[2] = {0.2f, 0.25f};
+    AT(dvz_sphere_data(sphere, positions, colors, radii, 2) == 0);
+    AT(dvz_panel_add_visual(panel, sphere, NULL) == 0);
+
+    AT(dvz_panel_pick(panel, 32.0, 32.0, &(DvzPickRequest){.request_id = 61}) == 0);
+    AT(dvz_figure_process_requests(figure, (DvzDrp2Runtime*)scene, NULL) == 1);
+
+    DvzPickResult pick = {0};
+    AT(dvz_scene_poll_pick(scene, &pick));
+    AT(pick.hit);
+    AT(pick.request_id == 61);
+    AT(pick.status == DVZ_PICK_STATUS_HIT);
+    AT(pick.visual_id == _scene_visual_public_id(scene, sphere));
+    AT(pick.visual_family == DVZ_SCENE_VISUAL_FAMILY_SPHERE);
+    AT(pick.raw_target == DVZ_SCENE_TARGET_ITEM);
+    AT(pick.raw_id == 1);
+    AT(pick.resolved_target == DVZ_SCENE_TARGET_ITEM);
+    AT(pick.resolved_id == 1);
+    AT(pick.item_id == 1);
+    AT(pick.has_data_position);
+    AC(pick.data_position[0], 0.0, 1e-6);
+    AC(pick.data_position[1], 0.0, 1e-6);
+    AT(!dvz_scene_poll_pick(scene, &pick));
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
 
 /**
  * Ensure pick/probe readbacks do not reset the caller-owned DRP2 runtime.
@@ -1812,6 +1871,7 @@ int test_scene_pick_probe(TstSuite* suite)
     TST_SCENE_PICK_PROBE_GPU_CASE(test_scene_point_pick_rejects_disc_corner);
     TST_SCENE_PICK_PROBE_GPU_CASE(test_scene_pixel_pick_accepts_square_corner);
     TST_SCENE_PICK_PROBE_GPU_CASE(test_scene_marker_pick_accepts_bbox_corner);
+    TST_CASE(test_scene_sphere_pick_resolves_item);
     TST_CASE(test_scene_process_requests_preserves_caller_runtime);
     TST_CASE(test_scene_image_probe_reuses_retained_request_executor);
     TST_SCENE_PICK_PROBE_GPU_CASE(test_scene_image_probe_respects_panel_request_position);
