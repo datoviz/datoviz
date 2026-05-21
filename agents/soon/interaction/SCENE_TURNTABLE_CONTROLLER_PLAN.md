@@ -33,6 +33,8 @@ Implemented slices:
 4. Camera-mode turntable creates or reuses a panel camera and updates the existing panel MVP path.
 5. Focused tests cover default pose, horizontal orbit distance, preserve-eye pivot changes,
    pan translating pivot and eye, and panel camera integration.
+6. The agreed first interaction contract is: left-drag orbit, wheel dolly, middle/right-drag pan,
+   double-click reset, and explicit API pivot set preserving the current eye.
 
 
 ## Remaining Turntable Work
@@ -43,9 +45,10 @@ Recommended follow-up commits:
    path supports non-fly controller families.
 2. Add missing focused tests for vertical pitch clamp, distance clamp, dolly behavior, and outside
    viewport drag rejection.
-3. Add pivot helpers for explicit points, scene or visual bounds, and later pick/probe-derived
-   pivots after base orbit behavior is stable.
-4. Add an example that makes the difference between arcball, turntable, and fly clear.
+3. Add focused tests for double-click reset and explicit pivot set preserving the current eye.
+4. Add pivot helpers for scene or visual bounds, and later pick/probe-derived pivots after base
+   orbit behavior is stable.
+5. Add an example that makes the difference between arcball, turntable, and fly clear.
 
 
 ## Focused Tests
@@ -63,7 +66,8 @@ Still needed:
 1. Vertical orbit clamps pitch and avoids flipping.
 2. Dolly clamps distance.
 3. Drag outside the panel viewport is ignored.
-4. Scene-owned turntable binding works once the generic binding path supports turntable.
+4. Double-click resets the initial pose.
+5. Scene-owned turntable binding works once the generic binding path supports turntable.
 
 
 ## Validation

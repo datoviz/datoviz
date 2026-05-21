@@ -124,35 +124,34 @@ This avoids surprising camera jumps when a user selects a new point or object.
 
 ## Turntable Controller Semantics
 
-Turntable navigation is stable-up orbit navigation for object- and pivot-centered 3D inspection.
-It should feel like a world-up orbit: horizontal drag rotates around the up axis, vertical drag
-changes elevation, and wheel or drag changes camera distance.
+Turntable navigation is stable-up camera orbit navigation for object- and pivot-centered 3D
+inspection. It orbits around a fixed pivot on a sphere or spherical cap: horizontal drag rotates
+around the stable up axis, vertical drag changes elevation, and wheel changes camera distance.
 
-Turntable is closer to arcball than fly:
+Turntable is a separate controller family from both arcball and fly:
 
 1. `DvzFly`: first-person/free camera movement through a scene;
 2. `DvzFly` with pivot: temporary camera orbit around a selected/picked point while remaining in
    fly navigation;
 3. `DvzArcball`: unconstrained model/object rotation;
-4. `DvzTurntable`: stable-up pivot orbit, either as an arcball mode or as a small sibling
-   controller that shares arcball panel plumbing.
+4. `DvzTurntable`: stable-up camera orbit around a pivot.
 
-The preferred first implementation is an arcball-family controller mode or sibling controller, not
-a fly option.
+The preferred implementation is a scene-owned `DvzController*` family. It may share low-level
+helpers with arcball or fly, but it should not be exposed as an arcball option because its state
+and camera semantics are different.
 
 ## Turntable State
 
 Recommended semantic state:
 
-1. mode: camera or model;
-2. pivot;
-3. up vector;
-4. distance;
-5. yaw;
-6. pitch/elevation;
-7. yaw, pitch, zoom, and pan speeds;
-8. pitch and distance clamps;
-9. flags.
+1. pivot;
+2. up vector;
+3. distance;
+4. yaw;
+5. pitch/elevation;
+6. yaw, pitch, zoom, and pan speeds;
+7. pitch and distance clamps;
+8. flags.
 
 Default behavior:
 
@@ -163,12 +162,10 @@ Default behavior:
 5. distance clamping enabled;
 6. Y inversion disabled.
 
-Camera-mode turntable computes camera eye from spherical coordinates around the pivot and targets
-the pivot. Panning moves the pivot in the view plane and translates the camera eye by the same
-delta.
-
-Model-mode turntable rotates the model matrix around the pivot. Camera-mode may land first if
-model-mode composition would broaden the first patch.
+Turntable computes camera eye from spherical coordinates around the pivot and targets the pivot.
+Panning moves the pivot in the view plane and translates the camera eye by the same delta. A
+model-space product-display spin can be added later under a separate name or explicit model-mode
+API; it should not blur the primary stable-up camera-orbit contract.
 
 ## Turntable Input Defaults
 
@@ -178,11 +175,11 @@ Recommended first controls:
 2. wheel: dolly by changing distance;
 3. middle-drag or right-drag: pan pivot in the view plane when panning is enabled;
 4. double-click or `R`: reset to initial pose;
-5. `Shift`: faster orbit/pan/dolly;
-6. `Ctrl`: slower or fine-grained movement.
+5. explicit API call: set pivot while preserving the current eye, then recompute yaw, pitch, and
+   distance from the new pivot.
 
-Roll should be disabled by default. If enabled, it should require an explicit modifier gesture so
-the normal turntable path remains stable-up and predictable.
+Roll is not part of the default turntable gesture set. The normal path should remain stable-up and
+predictable.
 
 ## Pivot Marker Policy
 
