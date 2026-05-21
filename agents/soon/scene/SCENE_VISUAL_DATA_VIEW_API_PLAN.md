@@ -21,6 +21,37 @@ That later note is about reusable attribute stores shared by several visuals. Th
 read-only view over one visual's currently retained dense data.
 
 
+## Related Internal Boundary Finding
+
+The 2026-05-21 path-native stroke work exposed a broader internal design smell: several
+`visual_*` files are named and used as generic scene visual infrastructure, but they still contain
+family-specific knowledge for path, segment, image, volume, glyph, and other visuals. Examples
+include derived upload cache construction, metadata field selection, descriptor-kind resolution,
+shader identity, vertex-buffer layout, and pass capability decisions.
+
+This plan should not try to solve that whole internal architecture issue. Its public data-view API
+is still useful because it removes one reason for app/example code to inspect `DvzVisual` internals.
+However, while implementing this plan, avoid adding any new visual-family branching to generic code
+unless it already exists on the setter path being mirrored. The intended direction is that generic
+visual code should dispatch to family-local behavior, not accumulate more path/segment/image-specific
+cases.
+
+A follow-up internal refactor should introduce a small visual-family operations boundary, with
+family-owned hooks for:
+
+1. retained state initialization and destruction;
+2. derived upload emission;
+3. metadata/resource declaration;
+4. descriptor resolution;
+5. shader identity;
+6. vertex layout and pipeline state;
+7. pass-capability mapping.
+
+That boundary would keep path-specific code in the path family implementation, segment-specific code
+in the segment family implementation, and leave generic frame-plan/runtime code as dispatch and
+orchestration only.
+
+
 ## Goals
 
 1. Provide a narrow public read API for retained visual attribute data.
@@ -28,6 +59,17 @@ read-only view over one visual's currently retained dense data.
 3. Preserve existing setter APIs and visual storage internals.
 4. Make alias handling match the internal scene implementation.
 5. Remove duplicated attr-index helpers from app/example-style code.
+6. Avoid increasing visual-family-specific logic in generic visual files.
+
+
+## Non-Goals
+
+1. Do not expose generated GPU resources such as path adjacency buffers, derived image quads, or
+   segment stroke caches through `dvz_visual_data()`.
+2. Do not expose `DvzVisualAttr` or visual attribute indexes.
+3. Do not introduce a new generic switchboard for visual families as part of this public API patch.
+4. Do not solve the visual-family operations refactor in this plan; record that as a separate
+   internal architecture task.
 
 
 ## Proposed API
@@ -88,6 +130,8 @@ After the read-only view lands, add semantic helpers only when a real workflow n
 2. `dvz_visual_item_count()` if item count becomes a common public need;
 3. text or bounds-specific APIs, such as text pixel bounds, when callers need layout information
    rather than raw glyph attributes.
+4. an internal visual-family operations table so family-specific upload, metadata, descriptor,
+   shader, pipeline, and pass-capability code can move out of generic `visual_*` switchboards.
 
 Do not expose visual attribute indexes as public API. Indexes are an implementation detail and will
 become more fragile as attributes move between dense CPU data, scene buffers, fields, and generated
