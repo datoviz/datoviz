@@ -348,6 +348,103 @@ void _scene_panel_pixel_rect(
 }
 
 
+/**
+ * Return a panel's plot rectangle in panel visual coordinates.
+ *
+ * @param panel the panel
+ * @param out output rectangle as xmin, xmax, ymin, ymax
+ */
+void _scene_panel_plot_visual_rect(const DvzPanel* panel, float out[4])
+{
+    ANN(panel);
+    ANN(out);
+    DvzPanelLayoutReserve reserve = panel->layout_reserve;
+    if (!_panel_layout_reserve_valid(&reserve))
+        reserve = dvz_panel_layout_reserve();
+
+    out[0] = -1.0f + reserve.left;
+    out[1] = +1.0f - reserve.right;
+    out[2] = -1.0f + reserve.bottom;
+    out[3] = +1.0f - reserve.top;
+
+    if (out[1] <= out[0] || out[3] <= out[2])
+    {
+        out[0] = -1.0f;
+        out[1] = +1.0f;
+        out[2] = -1.0f;
+        out[3] = +1.0f;
+    }
+}
+
+
+
+/**
+ * Return a panel's plot rectangle in figure pixels.
+ *
+ * @param panel the panel
+ * @param out_x output x origin in pixels
+ * @param out_y output y origin in pixels
+ * @param out_width output width in pixels
+ * @param out_height output height in pixels
+ */
+void _scene_panel_plot_pixel_rect(
+    const DvzPanel* panel, float* out_x, float* out_y, float* out_width, float* out_height)
+{
+    ANN(panel);
+    ANN(out_x);
+    ANN(out_y);
+    ANN(out_width);
+    ANN(out_height);
+
+    float panel_x = 0.0f;
+    float panel_y = 0.0f;
+    float panel_width = 0.0f;
+    float panel_height = 0.0f;
+    _scene_panel_pixel_rect(panel, &panel_x, &panel_y, &panel_width, &panel_height);
+
+    float plot[4] = {0};
+    _scene_panel_plot_visual_rect(panel, plot);
+
+    const float left = 0.5f * (plot[0] + 1.0f);
+    const float right = 0.5f * (plot[1] + 1.0f);
+    const float bottom = 0.5f * (plot[2] + 1.0f);
+    const float top = 0.5f * (plot[3] + 1.0f);
+
+    *out_x = panel_x + left * panel_width;
+    *out_y = panel_y + (1.0f - top) * panel_height;
+    *out_width = (right - left) * panel_width;
+    *out_height = (top - bottom) * panel_height;
+}
+
+
+
+/**
+ * Return a panel's plot rectangle in normalized figure coordinates.
+ *
+ * @param panel the panel
+ * @return normalized plot rectangle
+ */
+DvzPanelDesc _scene_panel_plot_desc(const DvzPanel* panel)
+{
+    ANN(panel);
+
+    float plot[4] = {0};
+    _scene_panel_plot_visual_rect(panel, plot);
+
+    const float left = 0.5f * (plot[0] + 1.0f);
+    const float right = 0.5f * (plot[1] + 1.0f);
+    const float bottom = 0.5f * (plot[2] + 1.0f);
+    const float top = 0.5f * (plot[3] + 1.0f);
+
+    return (DvzPanelDesc){
+        .x = panel->desc.x + left * panel->desc.width,
+        .y = panel->desc.y + (1.0f - top) * panel->desc.height,
+        .width = (right - left) * panel->desc.width,
+        .height = (top - bottom) * panel->desc.height,
+    };
+}
+
+
 
 /**
  * Ensure one panel has an owned camera.

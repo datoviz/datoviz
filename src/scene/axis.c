@@ -156,17 +156,18 @@ static void _axis_plot_interval(const DvzAxis* axis, float* out_min, float* out_
     ANN(out_min);
     ANN(out_max);
     const DvzAxisStyle* style = &axis->style;
-    const DvzPanelLayoutReserve reserve =
-        axis->panel != NULL ? axis->panel->layout_reserve : dvz_panel_layout_reserve();
+    float plot[4] = {-1.0f, +1.0f, -1.0f, +1.0f};
+    if (axis->panel != NULL)
+        _scene_panel_plot_visual_rect(axis->panel, plot);
     if (axis->dim == DVZ_DIM_X)
     {
-        *out_min = -1.0f + reserve.left + style->plot_margin_left;
-        *out_max = +1.0f - reserve.right - style->plot_margin_right;
+        *out_min = plot[0] + style->plot_margin_left;
+        *out_max = plot[1] - style->plot_margin_right;
     }
     else
     {
-        *out_min = -1.0f + reserve.bottom + style->plot_margin_bottom;
-        *out_max = +1.0f - reserve.top - style->plot_margin_top;
+        *out_min = plot[2] + style->plot_margin_bottom;
+        *out_max = plot[3] - style->plot_margin_top;
     }
     if (*out_max <= *out_min)
     {

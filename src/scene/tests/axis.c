@@ -648,6 +648,29 @@ static int test_axis_layout_reserve(TstContext* suite, const TstCase* item)
     AT(fabsf(reserve.bottom - 0.05f) < 1e-6f);
     AT(fabsf(reserve.top - 0.15f) < 1e-6f);
 
+    float plot_visual[4] = {0};
+    _scene_panel_plot_visual_rect(panel, plot_visual);
+    AT(fabsf(plot_visual[0] + 0.80f) < 1e-6f);
+    AT(fabsf(plot_visual[1] - 0.90f) < 1e-6f);
+    AT(fabsf(plot_visual[2] + 0.95f) < 1e-6f);
+    AT(fabsf(plot_visual[3] - 0.85f) < 1e-6f);
+
+    float plot_x = 0.0f;
+    float plot_y = 0.0f;
+    float plot_width = 0.0f;
+    float plot_height = 0.0f;
+    _scene_panel_plot_pixel_rect(panel, &plot_x, &plot_y, &plot_width, &plot_height);
+    AT(fabsf(plot_x - 80.0f) < 1e-4f);
+    AT(fabsf(plot_y - 45.0f) < 1e-4f);
+    AT(fabsf(plot_width - 680.0f) < 1e-6f);
+    AT(fabsf(plot_height - 540.0f) < 1e-6f);
+
+    DvzPanelDesc plot_desc = _scene_panel_plot_desc(panel);
+    AT(fabsf(plot_desc.x - 0.10f) < 1e-6f);
+    AT(fabsf(plot_desc.y - 0.075f) < 1e-6f);
+    AT(fabsf(plot_desc.width - 0.85f) < 1e-6f);
+    AT(fabsf(plot_desc.height - 0.90f) < 1e-6f);
+
     AT(dvz_panel_set_domain(panel, DVZ_DIM_X, 0.0, 10.0) == 0);
     AT(dvz_panel_set_domain(panel, DVZ_DIM_Y, -5.0, 5.0) == 0);
     float data[] = {0.0f, -5.0f, 0.0f, 10.0f, 5.0f, 0.0f};
