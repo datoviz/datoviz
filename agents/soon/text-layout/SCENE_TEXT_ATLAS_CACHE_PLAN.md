@@ -2,7 +2,7 @@
 
 > **Execution Status**
 > - **Status:** `ACTIVE / FOLLOW-UP NOTE`
-> - **Updated on:** `2026-05-19`
+> - **Updated on:** `2026-05-21`
 > - **Purpose:** track remaining atlas generation, cache, growth, embedded-atlas, and persistent
 >   cache work for scene text rendering.
 
@@ -29,19 +29,39 @@ The current implementation already has a first atlas-growth path:
 Use this file only for remaining execution work. Do not duplicate stable atlas rules here.
 
 
+## Landed / Covered
+
+These items were previously mixed into the follow-up list but are now covered by current code and
+focused tests:
+
+1. font-backed bitmap, MSDF, and SDF atlas builders behind feature flags;
+2. per-font backend atlas slots for bitmap, SDF, and MSDF;
+3. UTF-8 string decoding into a codepoint request set;
+4. atlas reuse when an existing atlas covers the requested strings;
+5. incremental append/growth through a temporary delta atlas;
+6. stable sampled-field reuse across compatible atlas growth;
+7. unsupported or unavailable codepoints falling back to `?`;
+8. `missing_glyph_count` bookkeeping for unavailable glyphs;
+9. automatic renderer selection tests;
+10. UTF-8 expansion tests;
+11. missing-glyph fallback tests;
+12. font-atlas runtime readback and app/offscreen visible-text tests.
+
+
 ## Remaining Atlas Work
 
 Recommended follow-up commits:
 
-1. Assert old glyph UV stability after growth, accounting for expected global rescale when texture
-   dimensions change.
+1. Add a regression test that asserts old glyph UV stability after growth, accounting for expected
+   global rescale when texture dimensions change.
 2. Test FreeType bitmap and MSDF append/growth separately, with representative glyphs such as
    `b`, `e`, `g`, `@`, punctuation, and dense lowercase strings.
-3. Add explicit missing-glyph entries and diagnostics instead of silently skipping unsupported
-   characters.
-4. Formalize atlas/page/entry structs and cache keys so the codepoint path can migrate to
-   `(font face, glyph id)` requests.
-5. Add embedded default atlas support for the built-in/default font and common ASCII labels.
+3. Improve explicit diagnostics for missing glyphs, renderer fallback, and atlas-capacity
+   truncation; the fallback behavior exists, but reporting is still too sparse.
+4. Formalize atlas/page/entry structs and cache keys so the codepoint path can migrate from
+   codepoint requests to `(font face, glyph id)` requests.
+5. Add embedded default atlas support for the built-in/default font and common ASCII labels, if this
+   still provides measurable startup or dependency-light value beyond embedded font bytes.
 6. Add atlas stats and diagnostics before exposing any public cache API.
 7. Add optional persistent disk cache only after the in-memory cache/page model is stable; disk
    writes must remain explicit opt-in behavior.
