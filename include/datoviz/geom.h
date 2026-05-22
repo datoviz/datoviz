@@ -164,4 +164,17 @@ DVZ_EXPORT DvzGeometry* dvz_geom_sphere(const DvzGeometrySphereDesc* desc);
  */
 DVZ_EXPORT DvzGeometry* dvz_geom_surface_grid(const DvzGeometrySurfaceGridDesc* desc);
 
+
+
+/**
+ * Update the heights of an existing structured surface-grid geometry.
+ *
+ * @param geometry the surface-grid geometry
+ * @param heights row-major height values
+ * @param count number of height values
+ * @return 0 on success, -1 on invalid input
+ */
+DVZ_EXPORT int
+dvz_geom_surface_grid_update_heights(DvzGeometry* geometry, const double* heights, uint32_t count);
+
 EXTERN_C_OFF

@@ -198,6 +198,55 @@ int test_geometry_surface_grid(TstContext* suite, const TstCase* tstitem)
 
 
 
+int test_geometry_surface_grid_update(TstContext* suite, const TstCase* tstitem)
+{
+    ANN(suite);
+
+    double heights[4] = {0.0, 0.0, 0.0, 0.0};
+    DvzGeometrySurfaceGridDesc desc = {
+        .rows = 2,
+        .cols = 2,
+        .heights = heights,
+        .origin = {10.0, 20.0, 30.0},
+        .col_basis = {2.0, 0.0, 0.0},
+        .row_basis = {0.0, 3.0, 0.0},
+        .height_axis = {0.0, 0.0, 1.0},
+        .height_scale = 2.0,
+    };
+    DvzGeometry* grid = dvz_geom_surface_grid(&desc);
+    AT(grid != NULL);
+    AT(grid->grid_rows == 2);
+    AT(grid->grid_cols == 2);
+    AC(grid->grid_origin[0], 10.0, EPS);
+    AC(grid->grid_row_basis[1], 3.0, EPS);
+    AC(grid->grid_col_basis[0], 2.0, EPS);
+    AC(grid->grid_height_axis[2], 1.0, EPS);
+    AC(grid->grid_height_scale, 2.0, EPS);
+
+    double updated[4] = {0.0, 1.0, 2.0, 3.0};
+    AT(dvz_geom_surface_grid_update_heights(grid, updated, 4) == 0);
+    AC(grid->positions[0][0], 10.0, EPS);
+    AC(grid->positions[0][1], 20.0, EPS);
+    AC(grid->positions[0][2], 30.0, EPS);
+    AC(grid->positions[1][0], 12.0, EPS);
+    AC(grid->positions[1][1], 20.0, EPS);
+    AC(grid->positions[1][2], 32.0, EPS);
+    AC(grid->positions[3][0], 12.0, EPS);
+    AC(grid->positions[3][1], 23.0, EPS);
+    AC(grid->positions[3][2], 36.0, EPS);
+
+    AT(dvz_geom_surface_grid_update_heights(grid, updated, 3) == -1);
+    DvzGeometry* plane = dvz_geom_plane(NULL);
+    AT(plane != NULL);
+    AT(dvz_geom_surface_grid_update_heights(plane, updated, 4) == -1);
+
+    dvz_geometry_destroy(plane);
+    dvz_geometry_destroy(grid);
+    return 0;
+}
+
+
+
 int test_geometry_sphere(TstContext* suite, const TstCase* tstitem)
 {
     ANN(suite);
@@ -329,6 +378,7 @@ int test_geom(TstSuite* suite)
     TST_CASE(test_geometry_plane);
     TST_CASE(test_geometry_f32);
     TST_CASE(test_geometry_surface_grid);
+    TST_CASE(test_geometry_surface_grid_update);
     TST_CASE(test_geometry_sphere);
     TST_CASE(test_geometry_transform);
     TST_CASE(test_geometry_merge);

@@ -428,6 +428,57 @@ static bool _geom_valid_payload(const DvzGeometry* geometry)
 
 
 
+/**
+ * Store structured-grid provenance on a geometry.
+ *
+ * @param geometry the geometry
+ * @param cfg surface-grid descriptor
+ */
+static void _geom_surface_grid_store_provenance(
+    DvzGeometry* geometry, const DvzGeometrySurfaceGridDesc* cfg)
+{
+    ANN(geometry);
+    ANN(cfg);
+    geometry->grid_rows = cfg->rows;
+    geometry->grid_cols = cfg->cols;
+    dvz_memcpy(geometry->grid_origin, sizeof(dvec3), cfg->origin, sizeof(dvec3));
+    dvz_memcpy(geometry->grid_row_basis, sizeof(dvec3), cfg->row_basis, sizeof(dvec3));
+    dvz_memcpy(geometry->grid_col_basis, sizeof(dvec3), cfg->col_basis, sizeof(dvec3));
+    dvz_memcpy(geometry->grid_height_axis, sizeof(dvec3), cfg->height_axis, sizeof(dvec3));
+    geometry->grid_height_scale = cfg->height_scale;
+}
+
+
+
+/**
+ * Update one structured-grid vertex position from provenance and height.
+ *
+ * @param geometry the geometry
+ * @param row row index
+ * @param col column index
+ * @param height height value
+ */
+static void _geom_surface_grid_update_position(
+    DvzGeometry* geometry, uint32_t row, uint32_t col, double height)
+{
+    ANN(geometry);
+    ASSERT(row < geometry->grid_rows);
+    ASSERT(col < geometry->grid_cols);
+    const uint32_t index = row * geometry->grid_cols + col;
+    const double scaled_height = height * geometry->grid_height_scale;
+    geometry->positions[index][0] =
+        geometry->grid_origin[0] + (double)col * geometry->grid_col_basis[0] +
+        (double)row * geometry->grid_row_basis[0] + scaled_height * geometry->grid_height_axis[0];
+    geometry->positions[index][1] =
+        geometry->grid_origin[1] + (double)col * geometry->grid_col_basis[1] +
+        (double)row * geometry->grid_row_basis[1] + scaled_height * geometry->grid_height_axis[1];
+    geometry->positions[index][2] =
+        geometry->grid_origin[2] + (double)col * geometry->grid_col_basis[2] +
+        (double)row * geometry->grid_row_basis[2] + scaled_height * geometry->grid_height_axis[2];
+}
+
+
+
 /*************************************************************************************************/
 /*  Functions                                                                                    */
 /*************************************************************************************************/
@@ -1016,8 +1067,7 @@ DvzGeometry* dvz_geom_surface_grid(const DvzGeometrySurfaceGridDesc* desc)
 
     geometry->type = DVZ_GEOMETRY_SURFACE_GRID;
     geometry->flags = DVZ_GEOMETRY_INDEXING_TRIANGLES | DVZ_GEOMETRY_INDEXING_SURFACE_GRID;
-    geometry->grid_rows = cfg.rows;
-    geometry->grid_cols = cfg.cols;
+    _geom_surface_grid_store_provenance(geometry, &cfg);
 
     for (uint32_t row = 0; row < cfg.rows; row++)
     {
@@ -1026,20 +1076,13 @@ DvzGeometry* dvz_geom_surface_grid(const DvzGeometrySurfaceGridDesc* desc)
         {
             const uint32_t index = row * cfg.cols + col;
             const double u = cfg.cols > 1 ? (double)col / (double)(cfg.cols - 1) : 0.0;
-            const double height =
-                cfg.heights != NULL ? cfg.heights[index] * cfg.height_scale : 0.0;
-            const dvec3 position = {
-                cfg.origin[0] + (double)col * cfg.col_basis[0] +
-                    (double)row * cfg.row_basis[0] + height * cfg.height_axis[0],
-                cfg.origin[1] + (double)col * cfg.col_basis[1] +
-                    (double)row * cfg.row_basis[1] + height * cfg.height_axis[1],
-                cfg.origin[2] + (double)col * cfg.col_basis[2] +
-                    (double)row * cfg.row_basis[2] + height * cfg.height_axis[2],
-            };
+            const double height = cfg.heights != NULL ? cfg.heights[index] : 0.0;
+            _geom_surface_grid_update_position(geometry, row, col, height);
             const dvec3 normal = {0.0, 0.0, 1.0};
             const dvec2 texcoord = {u, v};
             const DvzColor* color = cfg.colors != NULL ? &cfg.colors[index] : &fallback_color;
-            _geom_set_vertex(geometry, index, position, normal, texcoord, *color);
+            _geom_set_vertex(
+                geometry, index, geometry->positions[index], normal, texcoord, *color);
         }
     }
 
@@ -1069,4 +1112,44 @@ DvzGeometry* dvz_geom_surface_grid(const DvzGeometrySurfaceGridDesc* desc)
     }
 
     return geometry;
+}
+
+
+
+/**
+ * Update the heights of an existing structured surface-grid geometry.
+ *
+ * @param geometry the surface-grid geometry
+ * @param heights row-major height values
+ * @param count number of height values
+ * @return 0 on success, -1 on invalid input
+ */
+int dvz_geom_surface_grid_update_heights(
+    DvzGeometry* geometry, const double* heights, uint32_t count)
+{
+    if (geometry == NULL || heights == NULL || geometry->type != DVZ_GEOMETRY_SURFACE_GRID ||
+        geometry->positions == NULL || geometry->grid_rows < 2 || geometry->grid_cols < 2 ||
+        count != geometry->vertex_count || geometry->vertex_count == 0)
+    {
+        return -1;
+    }
+
+    uint64_t expected = 0;
+    if (_dvz_mul_u64_overflows(
+            (uint64_t)geometry->grid_rows, (uint64_t)geometry->grid_cols, &expected) ||
+        expected != geometry->vertex_count)
+    {
+        return -1;
+    }
+
+    for (uint32_t row = 0; row < geometry->grid_rows; row++)
+    {
+        for (uint32_t col = 0; col < geometry->grid_cols; col++)
+        {
+            const uint32_t index = row * geometry->grid_cols + col;
+            _geom_surface_grid_update_position(geometry, row, col, heights[index]);
+        }
+    }
+
+    return dvz_geometry_compute_normals(geometry);
 }

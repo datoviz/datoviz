@@ -50,6 +50,11 @@ struct DvzGeometry
 
     uint32_t grid_rows; // row count for structured-grid provenance, or zero
     uint32_t grid_cols; // column count for structured-grid provenance, or zero
+    dvec3 grid_origin;      // surface-grid origin
+    dvec3 grid_row_basis;   // surface-grid row step vector
+    dvec3 grid_col_basis;   // surface-grid column step vector
+    dvec3 grid_height_axis; // surface-grid height displacement axis
+    double grid_height_scale; // surface-grid height multiplier
 
     dvec3* positions;  // F64 3D positions
     dvec3* normals;    // F64 3D normal vectors
