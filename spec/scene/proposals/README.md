@@ -51,7 +51,7 @@ Some mature proposals are now mostly represented by specialized specs. Keep thos
 design rationale and backlog notes; do not treat them as the primary rule source when the listed
 specialized spec exists.
 
-Mostly promoted notes now live in [promoted](future/README.md):
+Mostly promoted notes now live in [promoted](promoted/README.md):
 
 1. [TRANSPARENCY_WBOIT_DESIGN.md](promoted/TRANSPARENCY_WBOIT_DESIGN.md) ->
    `../semantics/TRANSPARENCY.md`, with frame-plan and
@@ -69,7 +69,10 @@ Mostly promoted notes now live in [promoted](future/README.md):
    `../interaction/PICKING.md`,
    `../semantics/ANNOTATIONS.md`, `../visuals/IMAGE.md`, `../visuals/VOLUME.md`, and
    `../api/API_SURFACE.md`.
-6. [UI_BACKEND_INTEGRATION.md](promoted/UI_BACKEND_INTEGRATION.md) ->
+6. [PANEL_RESERVE_AND_COLORBAR_PLACEMENT.md](promoted/PANEL_RESERVE_AND_COLORBAR_PLACEMENT.md) ->
+   `../core/PANEL_LAYOUT.md`, `../semantics/LEGENDS_AND_COLORBARS.md`, and
+   `../api/API_SURFACE.md`.
+7. [UI_BACKEND_INTEGRATION.md](promoted/UI_BACKEND_INTEGRATION.md) ->
    `../integration/EXTERNAL_UI.md`,
    `../integration/HOSTED_BACKENDS.md`, `../pipeline/FRAME_LIFECYCLE.md`, and
    `../core/RUNTIME_BOUNDARY.md`.

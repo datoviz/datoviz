@@ -1,8 +1,9 @@
 > **Execution Status**
-> - **Status:** `SCENE SPEC PROPOSAL`
+> - **Status:** `PROMOTED / IMPLEMENTED IN V0.4-DEV`
 > - **Updated on:** `2026-05-22`
-> - **Purpose:** define the near-term panel reserve and colorbar placement direction without
+> - **Purpose:** preserve the implemented panel reserve and colorbar placement direction without
 >   introducing a general layout solver.
+> - **Implemented by:** `49d01eea` and `707014b6`
 
 # Panel Reserve And Colorbar Placement
 
@@ -10,6 +11,10 @@ This note records the next design direction after the first retained colorbar sl
 goal is deliberately small: reserve a fixed number of pixels on any side of a panel, place attached
 colorbars in that reserved band, and support detached colorbars with explicit anchored pixel
 placement.
+
+Implementation status: the v0.4-dev public scene API now exposes fixed pixel panel reserves,
+plot-rectangle queries in figure pixels, attached colorbar pixel reserves and geometry fields, and
+detached colorbar placement in panel or figure pixel space.
 
 
 ## Goals
