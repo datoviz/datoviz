@@ -444,6 +444,7 @@ struct DvzColorbar
     uint32_t flags;
     bool has_format;
     DvzSceneFormatState format;
+    DvzPanelLayoutReserve auto_reserve;
     bool dirty;
     uint64_t version;
     float realized_panel_width;

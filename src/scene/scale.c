@@ -54,12 +54,12 @@ static void _colorbar_fail(DvzColorbar* colorbar, DvzDiagnosticReport* report, c
 /*************************************************************************************************/
 
 #define COLORBAR_RAMP_SEGMENTS 64u
-#define COLORBAR_VERTICAL_RESERVE_PX 96.0f
-#define COLORBAR_HORIZONTAL_RESERVE_PX 72.0f
-#define COLORBAR_RAMP_THICKNESS_PX 18.0f
-#define COLORBAR_EDGE_PADDING_PX 8.0f
+#define COLORBAR_VERTICAL_RESERVE_PX 140.0f
+#define COLORBAR_HORIZONTAL_RESERVE_PX 96.0f
+#define COLORBAR_RAMP_THICKNESS_PX 36.0f
+#define COLORBAR_EDGE_PADDING_PX 12.0f
 #define COLORBAR_TICK_LENGTH_PX 6.0f
-#define COLORBAR_LABEL_GAP_PX 4.0f
+#define COLORBAR_LABEL_GAP_PX 6.0f
 #define COLORBAR_TITLE_GAP_PX 8.0f
 #define COLORBAR_TICK_WIDTH_PX 1.0f
 #define COLORBAR_TICK_TEXT_SIZE_PX 12.0f
@@ -381,6 +381,44 @@ static float _colorbar_pixels_to_reserve(
 
 
 /**
+ * Return whether a reserve component still matches a previous automatic colorbar value.
+ *
+ * @param value the current panel reserve component
+ * @param applied the previously applied automatic reserve component
+ * @return whether the current component can be replaced by a freshly computed value
+ */
+static bool _colorbar_reserve_matches_auto(float value, float applied)
+{
+    return applied > 0.0f && fabsf(value - applied) <= 1e-6f;
+}
+
+
+
+/**
+ * Remove a previous automatic colorbar reserve when it still owns that panel edge.
+ *
+ * @param colorbar the colorbar
+ * @param reserve the mutable panel reserve
+ */
+static void _colorbar_clear_auto_reserve(DvzColorbar* colorbar, DvzPanelLayoutReserve* reserve)
+{
+    ANN(colorbar);
+    ANN(reserve);
+    DvzPanelLayoutReserve applied = colorbar->auto_reserve;
+    if (_colorbar_reserve_matches_auto(reserve->left, applied.left))
+        reserve->left = 0.0f;
+    if (_colorbar_reserve_matches_auto(reserve->right, applied.right))
+        reserve->right = 0.0f;
+    if (_colorbar_reserve_matches_auto(reserve->bottom, applied.bottom))
+        reserve->bottom = 0.0f;
+    if (_colorbar_reserve_matches_auto(reserve->top, applied.top))
+        reserve->top = 0.0f;
+    colorbar->auto_reserve = dvz_panel_layout_reserve();
+}
+
+
+
+/**
  * Apply the deterministic first-slice panel reserve for a colorbar edge.
  *
  * @param colorbar the colorbar
@@ -393,31 +431,34 @@ static void _colorbar_apply_auto_reserve(DvzColorbar* colorbar)
     DvzPanelLayoutReserve reserve = dvz_panel_layout_reserve();
     (void)dvz_panel_get_layout_reserve(colorbar->panel, &reserve);
     DvzPanelLayoutReserve next = reserve;
+    DvzPanelLayoutReserve applied = dvz_panel_layout_reserve();
+    _colorbar_clear_auto_reserve(colorbar, &next);
     switch (colorbar->anchor)
     {
     case DVZ_SCENE_ANCHOR_PANEL_LEFT:
-        next.left = fmaxf(
-            next.left,
-            _colorbar_pixels_to_reserve(colorbar->panel, true, COLORBAR_VERTICAL_RESERVE_PX));
+        applied.left =
+            _colorbar_pixels_to_reserve(colorbar->panel, true, COLORBAR_VERTICAL_RESERVE_PX);
+        next.left = fmaxf(next.left, applied.left);
         break;
     case DVZ_SCENE_ANCHOR_PANEL_RIGHT:
-        next.right = fmaxf(
-            next.right,
-            _colorbar_pixels_to_reserve(colorbar->panel, true, COLORBAR_VERTICAL_RESERVE_PX));
+        applied.right =
+            _colorbar_pixels_to_reserve(colorbar->panel, true, COLORBAR_VERTICAL_RESERVE_PX);
+        next.right = fmaxf(next.right, applied.right);
         break;
     case DVZ_SCENE_ANCHOR_PANEL_TOP:
-        next.top = fmaxf(
-            next.top,
-            _colorbar_pixels_to_reserve(colorbar->panel, false, COLORBAR_HORIZONTAL_RESERVE_PX));
+        applied.top =
+            _colorbar_pixels_to_reserve(colorbar->panel, false, COLORBAR_HORIZONTAL_RESERVE_PX);
+        next.top = fmaxf(next.top, applied.top);
         break;
     case DVZ_SCENE_ANCHOR_PANEL_BOTTOM:
-        next.bottom = fmaxf(
-            next.bottom,
-            _colorbar_pixels_to_reserve(colorbar->panel, false, COLORBAR_HORIZONTAL_RESERVE_PX));
+        applied.bottom =
+            _colorbar_pixels_to_reserve(colorbar->panel, false, COLORBAR_HORIZONTAL_RESERVE_PX);
+        next.bottom = fmaxf(next.bottom, applied.bottom);
         break;
     default:
         break;
     }
+    colorbar->auto_reserve = applied;
     if (fabsf(next.left - reserve.left) > 1e-6f ||
         fabsf(next.right - reserve.right) > 1e-6f ||
         fabsf(next.bottom - reserve.bottom) > 1e-6f ||

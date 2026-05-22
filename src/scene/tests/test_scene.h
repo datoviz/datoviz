@@ -457,6 +457,8 @@ int test_scene_colorbar_auto_reserve_and_visuals(TstContext* suite, const TstCas
 
 int test_scene_colorbar_prepare_is_idempotent(TstContext* suite, const TstCase* item);
 
+int test_scene_colorbar_auto_reserve_tracks_resize(TstContext* suite, const TstCase* item);
+
 int test_scene_colorbar_updates_retained_visuals(TstContext* suite, const TstCase* item);
 
 int test_scene_colorbar_emit_stream_contains_derived_visuals(

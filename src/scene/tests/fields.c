@@ -198,7 +198,7 @@ int test_scene_colorbar_auto_reserve_and_visuals(TstContext* suite, const TstCas
     ANN(colorbar);
     DvzPanelLayoutReserve reserve = {0};
     AT(dvz_panel_get_layout_reserve(panel, &reserve));
-    AT(fabsf(reserve.right - 0.24f) < 1e-6f);
+    AT(fabsf(reserve.right - 0.35f) < 1e-6f);
 
     _scene_prepare_colorbar_visuals(figure, NULL);
     AT(colorbar->ramp_visual != NULL);
@@ -261,7 +261,7 @@ int test_scene_colorbar_auto_reserve_and_visuals(TstContext* suite, const TstCas
     dvz_colorbar_set_orientation(colorbar, DVZ_COLORBAR_ORIENTATION_HORIZONTAL);
     _scene_prepare_colorbar_visuals(figure, NULL);
     AT(dvz_panel_get_layout_reserve(panel, &reserve));
-    AT(fabsf(reserve.bottom - 0.24f) < 1e-6f);
+    AT(fabsf(reserve.bottom - 0.32f) < 1e-6f);
     AT(dvz_visual_data(colorbar->ramp_visual, "position", &pos_view) == 0);
     positions = (const float*)pos_view.data;
     AT(positions[0] < -0.95f);
@@ -331,6 +331,61 @@ int test_scene_colorbar_prepare_is_idempotent(TstContext* suite, const TstCase* 
     AT(ramp_pos.version == ramp_pos_version);
     AT(ramp_color.version == ramp_color_version);
     AT(tick_pos.version == tick_pos_version);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+/**
+ * Verify automatic colorbar reserves keep a fixed pixel size across figure resizes.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_colorbar_auto_reserve_tracks_resize(TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 800, 600, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
+    ANN(panel);
+
+    DvzScale* scale = dvz_scale(scene, &(DvzScaleDesc){.kind = DVZ_SCALE_CONTINUOUS});
+    ANN(scale);
+    dvz_scale_set_domain(scale, 0.0, 1.0);
+    DvzColormap* colormap = dvz_colormap_builtin(scene, DVZ_BUILTIN_COLORMAP_VIRIDIS);
+    ANN(colormap);
+    dvz_scale_set_colormap(scale, colormap);
+
+    DvzColorbar* colorbar = dvz_colorbar(
+        panel, scale,
+        &(DvzColorbarDesc){
+            .orientation = DVZ_COLORBAR_ORIENTATION_VERTICAL,
+            .anchor = DVZ_SCENE_ANCHOR_PANEL_RIGHT,
+            .title = "Intensity",
+        });
+    ANN(colorbar);
+
+    DvzPanelLayoutReserve reserve = {0};
+    _scene_prepare_colorbar_visuals(figure, NULL);
+    AT(dvz_panel_get_layout_reserve(panel, &reserve));
+    AT(fabsf(reserve.right - 0.35f) < 1e-6f);
+
+    dvz_figure_resize(figure, 1200, 600);
+    _scene_prepare_colorbar_visuals(figure, NULL);
+    AT(dvz_panel_get_layout_reserve(panel, &reserve));
+    AT(fabsf(reserve.right - 2.0f * 140.0f / 1200.0f) < 1e-6f);
+
+    dvz_figure_resize(figure, 700, 600);
+    _scene_prepare_colorbar_visuals(figure, NULL);
+    AT(dvz_panel_get_layout_reserve(panel, &reserve));
+    AT(fabsf(reserve.right - 2.0f * 140.0f / 700.0f) < 1e-6f);
 
     dvz_scene_destroy(scene);
     return 0;
@@ -2639,6 +2694,7 @@ int test_scene_fields(TstSuite* suite)
     TST_CASE(test_scene_scale_colormap_colorbar_core);
     TST_CASE(test_scene_colorbar_auto_reserve_and_visuals);
     TST_CASE(test_scene_colorbar_prepare_is_idempotent);
+    TST_CASE(test_scene_colorbar_auto_reserve_tracks_resize);
     TST_CASE(test_scene_colorbar_updates_retained_visuals);
     TST_CASE(test_scene_colorbar_emit_stream_contains_derived_visuals);
     TST_CASE(test_scene_colorbar_invalid_domain_reports_diagnostic);
