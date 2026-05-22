@@ -35,6 +35,8 @@
 #define WIDTH      800
 #define HEIGHT     600
 #define FIELD_SIZE 96
+#define FIELD_MIN  10.0f
+#define FIELD_MAX  20.0f
 
 
 
@@ -63,7 +65,7 @@ static void _fill_field(float values[FIELD_SIZE * FIELD_SIZE])
                 value = 0.0f;
             if (value > 1.0f)
                 value = 1.0f;
-            values[y * FIELD_SIZE + x] = value;
+            values[y * FIELD_SIZE + x] = FIELD_MIN + (FIELD_MAX - FIELD_MIN) * value;
         }
     }
 }
@@ -111,7 +113,8 @@ int main(int argc, char** argv)
         dvz_scene_destroy(scene);
         return 1;
     }
-    dvz_scale_set_domain(scale, 0.0, 1.0);
+    dvz_scale_set_domain(scale, FIELD_MIN, FIELD_MAX);
+    dvz_scale_set_view_range(scale, FIELD_MIN, FIELD_MAX);
 
     DvzColormap* colormap = dvz_colormap_builtin(scene, DVZ_BUILTIN_COLORMAP_VIRIDIS);
     if (colormap == NULL)
