@@ -15,6 +15,7 @@
 /*************************************************************************************************/
 
 #include "scene_graph_utils.h"
+#include "datoviz/geom.h"
 
 
 
@@ -2168,6 +2169,67 @@ int test_scene_mesh_typed_data_upload(TstContext* suite, const TstCase* item)
     AT(dvz_visual_data(default_color_mesh, "color", &color_view) == 0);
     AT(color_view.item_count == 3);
 
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
+int test_scene_mesh_geometry_upload(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzVisual* visual = dvz_mesh(scene, 0);
+    ANN(visual);
+
+    DvzColor colors[4] = {
+        {255, 0, 0, 255},
+        {0, 255, 0, 255},
+        {0, 0, 255, 255},
+        {255, 255, 255, 255},
+    };
+    DvzGeometrySurfaceGridDesc desc = {
+        .rows = 2,
+        .cols = 2,
+        .colors = colors,
+    };
+    DvzGeometry* geometry = dvz_geom_surface_grid(&desc);
+    ANN(geometry);
+
+    AT(dvz_mesh_geometry(visual, geometry) == 0);
+
+    DvzVisualDataView position_view = {0};
+    AT(dvz_visual_data(visual, "position", &position_view) == 0);
+    AT(position_view.item_count == 4);
+    AT(position_view.item_size == 3 * sizeof(float));
+    const float* positions = position_view.data;
+    AT(positions[0] == 0.0f);
+    AT(positions[3] == 1.0f);
+
+    DvzVisualDataView normal_view = {0};
+    AT(dvz_visual_data(visual, "normal", &normal_view) == 0);
+    const float* normals = normal_view.data;
+    AT(normals[2] == 1.0f);
+
+    DvzVisualDataView color_view = {0};
+    AT(dvz_visual_data(visual, "color", &color_view) == 0);
+    const DvzColor* stored_colors = color_view.data;
+    AT(stored_colors[0][0] == 255);
+    AT(stored_colors[1][1] == 255);
+
+    AT(visual->buffer != NULL);
+    AT(visual->buffer->desc.usage & DVZ_SCENE_BUFFER_USAGE_INDEX);
+    AT(visual->buffer->desc.stride == sizeof(DvzIndex));
+    AT(visual->buffer->desc.byte_size == 6 * sizeof(DvzIndex));
+
+    DvzVisual* point = dvz_point(scene, 0);
+    ANN(point);
+    AT(dvz_mesh_geometry(point, geometry) == -1);
+
+    dvz_geometry_destroy(geometry);
     dvz_scene_destroy(scene);
     return 0;
 }

@@ -17,6 +17,7 @@
 /*************************************************************************************************/
 
 #include "datoviz/common/macros.h"
+#include "datoviz/geom/types.h"
 #include "scene/annotation.h"
 #include "scene/animation.h"
 #include "scene/arcball.h"
@@ -923,6 +924,20 @@ DVZ_EXPORT int dvz_pixel_data(
 DVZ_EXPORT int dvz_mesh_data(
     DvzVisual* visual, const void* positions, const void* colors, const void* normals,
     uint32_t vertex_count);
+
+
+/**
+ * Upload a CPU geometry object into a mesh visual.
+ *
+ * Positions and normals are downcast from F64 to F32 for the current mesh attribute path. Colors
+ * and indices are uploaded directly. Geometry UVs are retained by DvzGeometry but ignored until the
+ * mesh visual exposes a texcoord attribute.
+ *
+ * @param visual the mesh visual
+ * @param geometry the geometry
+ * @return 0 on success, -1 on validation error
+ */
+DVZ_EXPORT int dvz_mesh_geometry(DvzVisual* visual, const DvzGeometry* geometry);
 
 
 /**

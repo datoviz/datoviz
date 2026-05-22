@@ -1269,6 +1269,102 @@ int dvz_mesh_data(
 
 
 /**
+ * Upload a CPU geometry object into a mesh visual.
+ *
+ * Positions and normals are downcast from F64 to F32 for the current mesh attribute path. Colors
+ * and indices are uploaded directly. Geometry UVs are retained by DvzGeometry but ignored until the
+ * mesh visual exposes a texcoord attribute.
+ *
+ * @param visual the mesh visual
+ * @param geometry the geometry
+ * @return 0 on success, -1 on validation error
+ */
+int dvz_mesh_geometry(DvzVisual* visual, const DvzGeometry* geometry)
+{
+    if (visual == NULL || visual->type != DVZ_VISUAL_TYPE_MESH || geometry == NULL ||
+        geometry->vertex_count == 0 || geometry->positions == NULL)
+    {
+        return -1;
+    }
+
+    vec3* positions = (vec3*)dvz_calloc(geometry->vertex_count, sizeof(vec3));
+    vec3* normals = NULL;
+    DvzSceneBuffer* index_buffer = NULL;
+    if (positions == NULL)
+        return -1;
+
+    int rc = -1;
+    for (uint32_t i = 0; i < geometry->vertex_count; i++)
+    {
+        positions[i][0] = (float)geometry->positions[i][0];
+        positions[i][1] = (float)geometry->positions[i][1];
+        positions[i][2] = (float)geometry->positions[i][2];
+    }
+
+    if (geometry->normals != NULL)
+    {
+        normals = (vec3*)dvz_calloc(geometry->vertex_count, sizeof(vec3));
+        if (normals == NULL)
+            goto cleanup;
+        for (uint32_t i = 0; i < geometry->vertex_count; i++)
+        {
+            normals[i][0] = (float)geometry->normals[i][0];
+            normals[i][1] = (float)geometry->normals[i][1];
+            normals[i][2] = (float)geometry->normals[i][2];
+        }
+    }
+
+    if (geometry->index_count > 0)
+    {
+        if (geometry->indices == NULL)
+            goto cleanup;
+
+        for (uint32_t i = 0; i < geometry->index_count; i++)
+        {
+            if (geometry->indices[i] >= geometry->vertex_count)
+                goto cleanup;
+        }
+
+        uint64_t index_bytes = 0;
+        if (_dvz_mul_u64_overflows((uint64_t)geometry->index_count, (uint64_t)sizeof(DvzIndex),
+                                   &index_bytes))
+        {
+            goto cleanup;
+        }
+
+        index_buffer = dvz_scene_buffer(
+            visual->scene, &(DvzSceneBufferDesc){
+                               .usage = DVZ_SCENE_BUFFER_USAGE_INDEX,
+                               .stride = sizeof(DvzIndex),
+                           });
+        if (index_buffer == NULL)
+            goto cleanup;
+        if (!dvz_scene_buffer_set_data(index_buffer, geometry->indices, index_bytes))
+            goto cleanup;
+    }
+
+    if (dvz_mesh_data(visual, positions, geometry->colors, normals, geometry->vertex_count) != 0)
+        goto cleanup;
+
+    if (!dvz_visual_set_buffer(visual, "index", index_buffer))
+    {
+        goto cleanup;
+    }
+    index_buffer = NULL;
+
+    rc = 0;
+
+cleanup:
+    if (index_buffer != NULL)
+        dvz_scene_buffer_destroy(index_buffer);
+    dvz_free(positions);
+    dvz_free(normals);
+    return rc;
+}
+
+
+
+/**
  * Upload optional mesh instance transforms.
  *
  * @param visual the mesh visual
