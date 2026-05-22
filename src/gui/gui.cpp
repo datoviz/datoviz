@@ -1593,6 +1593,33 @@ bool dvz_gui_slider_float_format(
 
 
 /**
+ * Show a float range slider with two handles.
+ *
+ * @param gui the GUI overlay
+ * @param label slider label
+ * @param current_min minimum value edited in place
+ * @param current_max maximum value edited in place
+ * @param min lower clamp value
+ * @param max upper clamp value
+ * @param format optional printf-style value format
+ * @return whether either value changed
+ */
+bool dvz_gui_slider_range_float(
+    DvzGui* gui, const char* label, float* current_min, float* current_max, float min,
+    float max, const char* format)
+{
+    ANN(gui);
+    ANN(label);
+    ANN(current_min);
+    ANN(current_max);
+    _gui_set_current(gui);
+    return ImGui::SliderFloatRange2(
+        label, current_min, current_max, min, max, format != NULL ? format : "%.3f");
+}
+
+
+
+/**
  * Show a float min/max range editor.
  *
  * @param gui the GUI overlay

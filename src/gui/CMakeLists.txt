@@ -63,6 +63,7 @@ target_link_libraries(datoviz_gui
 target_compile_definitions(datoviz_gui PUBLIC
     ${DVZ_COMPILE_DEFINITIONS}
     IMGUI_IMPL_VULKAN_USE_VOLK
+    IM_COUNTOF=IM_ARRAYSIZE
     DVZ_HAS_GUI=1
 )
 
@@ -75,6 +76,7 @@ target_include_directories(datoviz_cimgui
 
 target_compile_definitions(datoviz_cimgui PUBLIC
     ${DVZ_COMPILE_DEFINITIONS}
+    IM_COUNTOF=IM_ARRAYSIZE
     DVZ_HAS_GUI=1
 )
 
