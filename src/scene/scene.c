@@ -72,6 +72,9 @@ static void _scene_panel_inner_pixel_size(
 
 static bool _panel_padding_valid(const DvzPanel* panel, const DvzPanelReserve* padding);
 
+static bool _panel_reserve_valid_for_padding(
+    const DvzPanel* panel, const DvzPanelReserve* reserve, const DvzPanelReserve* padding);
+
 
 /**
  * Return whether a panel pixel reservation is finite and leaves non-empty plot space.
@@ -84,6 +87,25 @@ static bool _panel_reserve_valid(const DvzPanel* panel, const DvzPanelReserve* r
 {
     ANN(panel);
     ANN(reserve);
+    return _panel_reserve_valid_for_padding(panel, reserve, &panel->padding);
+}
+
+
+
+/**
+ * Return whether a panel pixel reservation leaves non-empty plot space with explicit padding.
+ *
+ * @param panel the panel
+ * @param reserve the pixel reservation descriptor
+ * @param padding the pixel padding descriptor
+ * @return whether the reservation is valid
+ */
+static bool _panel_reserve_valid_for_padding(
+    const DvzPanel* panel, const DvzPanelReserve* reserve, const DvzPanelReserve* padding)
+{
+    ANN(panel);
+    ANN(reserve);
+    ANN(padding);
     if (!isfinite(reserve->left_px) || !isfinite(reserve->right_px) ||
         !isfinite(reserve->top_px) || !isfinite(reserve->bottom_px))
         return false;
@@ -93,7 +115,11 @@ static bool _panel_reserve_valid(const DvzPanel* panel, const DvzPanelReserve* r
 
     float width = 0.0f;
     float height = 0.0f;
-    _scene_panel_inner_pixel_size(panel, &width, &height);
+    _scene_panel_pixel_size(panel, &width, &height);
+    if (!_panel_padding_valid(panel, padding))
+        return false;
+    width -= padding->left_px + padding->right_px;
+    height -= padding->top_px + padding->bottom_px;
     return reserve->left_px + reserve->right_px < width &&
            reserve->top_px + reserve->bottom_px < height;
 }
@@ -2902,6 +2928,11 @@ bool dvz_panel_set_padding(DvzPanel* panel, const DvzPanelReserve* padding)
         return false;
     DvzPanelReserve next = padding != NULL ? *padding : (DvzPanelReserve){0};
     if (!_panel_padding_valid(panel, &next))
+        return false;
+    DvzPanelReserve reserve = panel->base_reserve;
+    _panel_reserve_add(&reserve, &panel->axis_reserve);
+    _panel_reserve_add(&reserve, &panel->colorbar_reserve);
+    if (!_panel_reserve_valid_for_padding(panel, &reserve, &next))
         return false;
     if (_panel_reserve_equal(&panel->padding, &next))
         return true;

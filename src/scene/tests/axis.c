@@ -732,6 +732,15 @@ static int test_axis_layout_reserve(TstContext* suite, const TstCase* item)
     AT(fabsf(plot_rect.width - 897.0f) < 1e-4f);
     AT(fabsf(plot_rect.height - 748.0f) < 1e-4f);
 
+    AT(!dvz_panel_set_padding(
+        panel, &(DvzPanelReserve){
+                   .left_px = 1000.0f,
+                   .right_px = 100.0f,
+               }));
+    AT(dvz_panel_plot_rect_px(panel, &plot_rect));
+    AT(fabsf(plot_rect.x - 167.0f) < 1e-4f);
+    AT(fabsf(plot_rect.width - 897.0f) < 1e-4f);
+
     AT(dvz_panel_set_padding(panel, NULL));
     AT(dvz_panel_plot_rect_px(panel, &plot_rect));
     AT(fabsf(plot_rect.x - 135.0f) < 1e-4f);
