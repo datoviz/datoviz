@@ -37,8 +37,8 @@
 #define WIDTH      800
 #define HEIGHT     600
 #define FIELD_SIZE 96
-#define SCALE_MIN  0.0f
-#define SCALE_MAX  30.0f
+#define SCALE_MIN  0.0
+#define SCALE_MAX  30.0
 #define FIELD_MIN  10.0f
 #define FIELD_MAX  20.0f
 #define COLORMAP_COUNT 6u
@@ -68,8 +68,8 @@ typedef struct ColorbarState
     int horizontal_anchor;
     int vertical_anchor;
     int precision;
-    float range_min;
-    float range_max;
+    double range_min;
+    double range_max;
     float reserve_px;
     float ramp_width_px;
     float edge_offset_px;
@@ -140,6 +140,35 @@ static DvzSceneAnchor _anchor_from_index(int index)
         return DVZ_SCENE_ANCHOR_PANEL_RIGHT;
     }
 }
+
+
+
+/**
+ * Return an orientation-compatible colorbar anchor selected by the GUI.
+ *
+ * @param state colorbar example state
+ * @param orientation resolved colorbar orientation
+ * @return scene anchor
+ */
+static DvzSceneAnchor
+_anchor_from_state(ColorbarState* state, DvzColorbarOrientation orientation)
+{
+    if (state == NULL)
+        return _anchor_from_index(0);
+    DvzSceneAnchor anchor = _anchor_from_index(state->anchor_index);
+    if (orientation == DVZ_COLORBAR_ORIENTATION_HORIZONTAL)
+    {
+        if (anchor == DVZ_SCENE_ANCHOR_PANEL_TOP || anchor == DVZ_SCENE_ANCHOR_PANEL_BOTTOM)
+            return anchor;
+        state->anchor_index = 3;
+        return DVZ_SCENE_ANCHOR_PANEL_BOTTOM;
+    }
+    if (anchor == DVZ_SCENE_ANCHOR_PANEL_LEFT || anchor == DVZ_SCENE_ANCHOR_PANEL_RIGHT)
+        return anchor;
+    state->anchor_index = 0;
+    return DVZ_SCENE_ANCHOR_PANEL_RIGHT;
+}
+
 
 
 /**
@@ -243,7 +272,7 @@ static void _apply_colorbar_layout(ColorbarState* state)
         state->colorbar, &(DvzColorbarDesc){
                              .placement_mode = placement_mode,
                              .orientation = orientation,
-                             .anchor = _anchor_from_index(state->anchor_index),
+                             .anchor = _anchor_from_state(state, orientation),
                              .title = "Intensity",
                              .reserve_px = state->reserve_px,
                              .ramp_width_px = state->ramp_width_px,
@@ -350,9 +379,8 @@ static void _colorbar_gui(DvzGui* gui, DvzAppWindow* win, void* user_data)
         dvz_gui_separator_text(gui, "Scale");
         colormap_changed = dvz_gui_combo(
             gui, "Colormap", &state->colormap_index, colormap_names, (int)COLORMAP_COUNT);
-        range_changed = dvz_gui_range_float(
-            gui, "Range", &state->range_min, &state->range_max, 0.05f, SCALE_MIN, SCALE_MAX,
-            "%.2f");
+        range_changed = dvz_gui_slider_range_double(
+            gui, "Range", &state->range_min, &state->range_max, SCALE_MIN, SCALE_MAX, "%.2f");
         if (dvz_gui_button(gui, "Reset range"))
         {
             state->range_min = FIELD_MIN;
@@ -509,7 +537,7 @@ int main(int argc, char** argv)
         .range_max = FIELD_MAX,
         .reserve_px = 140.0f,
         .ramp_width_px = 36.0f,
-        .edge_offset_px = 12.0f,
+        .edge_offset_px = 0.0f,
         .plot_gap_px = 12.0f,
         .tick_length_px = 6.0f,
         .label_gap_px = 6.0f,
@@ -558,10 +586,10 @@ int main(int argc, char** argv)
     }
 
     float positions[4][3] = {
-        {-0.90f, -0.90f, 0.0f},
-        {-0.90f, 0.90f, 0.0f},
-        {0.90f, -0.90f, 0.0f},
-        {0.90f, 0.90f, 0.0f},
+        {-1.0f, -1.0f, 0.0f},
+        {-1.0f, +1.0f, 0.0f},
+        {+1.0f, -1.0f, 0.0f},
+        {+1.0f, +1.0f, 0.0f},
     };
     float texcoords[4][2] = {
         {0.0f, 0.0f},

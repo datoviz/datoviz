@@ -340,6 +340,24 @@ DVZ_EXPORT bool dvz_gui_slider_range_float(
 
 
 /**
+ * Show a double range slider with two handles.
+ *
+ * @param gui the GUI overlay
+ * @param label slider label
+ * @param current_min minimum value edited in place
+ * @param current_max maximum value edited in place
+ * @param min lower clamp value
+ * @param max upper clamp value
+ * @param format optional printf-style value format
+ * @return whether either value changed
+ */
+DVZ_EXPORT bool dvz_gui_slider_range_double(
+    DvzGui* gui, const char* label, double* current_min, double* current_max, double min,
+    double max, const char* format);
+
+
+
+/**
  * Show a float min/max range editor.
  *
  * @param gui the GUI overlay

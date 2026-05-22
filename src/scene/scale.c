@@ -57,7 +57,8 @@ static void _colorbar_fail(DvzColorbar* colorbar, DvzDiagnosticReport* report, c
 #define COLORBAR_VERTICAL_RESERVE_PX 140.0f
 #define COLORBAR_HORIZONTAL_RESERVE_PX 96.0f
 #define COLORBAR_RAMP_THICKNESS_PX 36.0f
-#define COLORBAR_EDGE_PADDING_PX 12.0f
+#define COLORBAR_EDGE_OFFSET_PX 0.0f
+#define COLORBAR_PLOT_GAP_PX   12.0f
 #define COLORBAR_TICK_LENGTH_PX 6.0f
 #define COLORBAR_LABEL_GAP_PX 6.0f
 #define COLORBAR_TITLE_GAP_PX 8.0f
@@ -313,6 +314,39 @@ static float _colorbar_default_reserve_px(DvzColorbarOrientation orientation)
 {
     return orientation == DVZ_COLORBAR_ORIENTATION_HORIZONTAL ? COLORBAR_HORIZONTAL_RESERVE_PX :
                                                                COLORBAR_VERTICAL_RESERVE_PX;
+}
+
+
+
+/**
+ * Return the default attached edge for a colorbar orientation.
+ *
+ * @param orientation the colorbar orientation
+ * @return the default panel-edge anchor
+ */
+static DvzSceneAnchor _colorbar_default_anchor(DvzColorbarOrientation orientation)
+{
+    return orientation == DVZ_COLORBAR_ORIENTATION_HORIZONTAL ? DVZ_SCENE_ANCHOR_PANEL_BOTTOM :
+                                                               DVZ_SCENE_ANCHOR_PANEL_RIGHT;
+}
+
+
+
+/**
+ * Return whether an edge anchor matches a colorbar orientation.
+ *
+ * @param orientation the colorbar orientation
+ * @param anchor the panel-edge anchor
+ * @return whether the anchor can host the oriented colorbar
+ */
+static bool _colorbar_anchor_matches_orientation(
+    DvzColorbarOrientation orientation, DvzSceneAnchor anchor)
+{
+    if (orientation == DVZ_COLORBAR_ORIENTATION_HORIZONTAL)
+    {
+        return anchor == DVZ_SCENE_ANCHOR_PANEL_TOP || anchor == DVZ_SCENE_ANCHOR_PANEL_BOTTOM;
+    }
+    return anchor == DVZ_SCENE_ANCHOR_PANEL_LEFT || anchor == DVZ_SCENE_ANCHOR_PANEL_RIGHT;
 }
 
 
@@ -1127,13 +1161,13 @@ static void _colorbar_ramp_rect(
             out[0] = plot_x + plot_width + colorbar->plot_gap_px;
             out[2] = out[0] + colorbar->ramp_width_px;
         }
-        out[1] = colorbar->edge_offset_px;
-        out[3] = panel_height - colorbar->edge_offset_px;
+        out[1] = plot_y + colorbar->edge_offset_px;
+        out[3] = plot_y + plot_height - colorbar->edge_offset_px;
     }
     else
     {
-        out[0] = colorbar->edge_offset_px;
-        out[2] = panel_width - colorbar->edge_offset_px;
+        out[0] = plot_x + colorbar->edge_offset_px;
+        out[2] = plot_x + plot_width - colorbar->edge_offset_px;
         if (colorbar->anchor == DVZ_SCENE_ANCHOR_PANEL_TOP)
         {
             out[3] = plot_y - colorbar->plot_gap_px;
@@ -1165,6 +1199,12 @@ static void _colorbar_update_visuals(DvzColorbar* colorbar, DvzDiagnosticReport*
         _colorbar_fail(
             colorbar, report,
             "attached colorbar anchor must be a panel edge");
+        return;
+    }
+    if (colorbar->placement_mode == DVZ_COLORBAR_PLACEMENT_ATTACHED &&
+        !_colorbar_anchor_matches_orientation(colorbar->orientation, colorbar->anchor))
+    {
+        _colorbar_fail(colorbar, report, "attached colorbar anchor must match its orientation");
         return;
     }
     if (colorbar->scale->kind != DVZ_SCALE_CONTINUOUS)
@@ -1563,10 +1603,16 @@ DvzColorbar* dvz_colorbar(DvzPanel* panel, DvzScale* scale, const DvzColorbarDes
         desc != NULL ? desc->orientation : DVZ_COLORBAR_ORIENTATION_VERTICAL;
     DvzSceneAnchor anchor = desc != NULL && desc->anchor != DVZ_SCENE_ANCHOR_NONE ?
                                 desc->anchor :
-                                DVZ_SCENE_ANCHOR_PANEL_RIGHT;
+                                _colorbar_default_anchor(orientation);
     if (placement_mode == DVZ_COLORBAR_PLACEMENT_ATTACHED && !_colorbar_anchor_supported(anchor))
     {
         log_error("attached colorbar anchor must be a panel edge");
+        return NULL;
+    }
+    if (placement_mode == DVZ_COLORBAR_PLACEMENT_ATTACHED &&
+        !_colorbar_anchor_matches_orientation(orientation, anchor))
+    {
+        log_error("attached colorbar anchor must match its orientation");
         return NULL;
     }
     if (scale->kind != DVZ_SCALE_CONTINUOUS)
@@ -1598,9 +1644,9 @@ DvzColorbar* dvz_colorbar(DvzPanel* panel, DvzScale* scale, const DvzColorbarDes
     colorbar->ramp_width_px = _colorbar_positive_or_default(
         desc != NULL ? desc->ramp_width_px : 0.0f, COLORBAR_RAMP_THICKNESS_PX);
     colorbar->edge_offset_px = _colorbar_positive_or_default(
-        desc != NULL ? desc->edge_offset_px : 0.0f, COLORBAR_EDGE_PADDING_PX);
+        desc != NULL ? desc->edge_offset_px : 0.0f, COLORBAR_EDGE_OFFSET_PX);
     colorbar->plot_gap_px = _colorbar_positive_or_default(
-        desc != NULL ? desc->plot_gap_px : 0.0f, COLORBAR_EDGE_PADDING_PX);
+        desc != NULL ? desc->plot_gap_px : 0.0f, COLORBAR_PLOT_GAP_PX);
     colorbar->tick_length_px = _colorbar_positive_or_default(
         desc != NULL ? desc->tick_length_px : 0.0f, COLORBAR_TICK_LENGTH_PX);
     colorbar->label_gap_px = _colorbar_positive_or_default(
@@ -1689,6 +1735,8 @@ void dvz_colorbar_set_orientation(DvzColorbar* colorbar, DvzColorbarOrientation 
         return;
     colorbar->orientation = orientation;
     colorbar->reserve_px = _colorbar_default_reserve_px(orientation);
+    if (!_colorbar_anchor_matches_orientation(orientation, colorbar->anchor))
+        colorbar->anchor = _colorbar_default_anchor(orientation);
     _colorbar_apply_auto_reserve(colorbar);
     _scene_mark_colorbar_dirty(colorbar);
 }
@@ -1710,7 +1758,17 @@ bool dvz_colorbar_set_anchor(DvzColorbar* colorbar, DvzSceneAnchor anchor)
         log_error("attached colorbar anchor must be a panel edge");
         return false;
     }
-    if (colorbar->anchor == anchor)
+    bool changed = colorbar->anchor != anchor;
+    if (!_colorbar_anchor_matches_orientation(colorbar->orientation, anchor))
+    {
+        colorbar->orientation =
+            anchor == DVZ_SCENE_ANCHOR_PANEL_TOP || anchor == DVZ_SCENE_ANCHOR_PANEL_BOTTOM ?
+                DVZ_COLORBAR_ORIENTATION_HORIZONTAL :
+                DVZ_COLORBAR_ORIENTATION_VERTICAL;
+        colorbar->reserve_px = _colorbar_default_reserve_px(colorbar->orientation);
+        changed = true;
+    }
+    if (!changed)
         return true;
     colorbar->anchor = anchor;
     _colorbar_apply_auto_reserve(colorbar);
@@ -1734,10 +1792,16 @@ bool dvz_colorbar_set_layout(DvzColorbar* colorbar, const DvzColorbarDesc* desc)
     DvzColorbarPlacementMode placement_mode = desc->placement_mode;
     DvzColorbarOrientation orientation = desc->orientation;
     DvzSceneAnchor anchor =
-        desc->anchor != DVZ_SCENE_ANCHOR_NONE ? desc->anchor : DVZ_SCENE_ANCHOR_PANEL_RIGHT;
+        desc->anchor != DVZ_SCENE_ANCHOR_NONE ? desc->anchor : _colorbar_default_anchor(orientation);
     if (placement_mode == DVZ_COLORBAR_PLACEMENT_ATTACHED && !_colorbar_anchor_supported(anchor))
     {
         log_error("attached colorbar anchor must be a panel edge");
+        return false;
+    }
+    if (placement_mode == DVZ_COLORBAR_PLACEMENT_ATTACHED &&
+        !_colorbar_anchor_matches_orientation(orientation, anchor))
+    {
+        log_error("attached colorbar anchor must match its orientation");
         return false;
     }
 
@@ -1750,9 +1814,9 @@ bool dvz_colorbar_set_layout(DvzColorbar* colorbar, const DvzColorbarDesc* desc)
     colorbar->ramp_width_px =
         _colorbar_positive_or_default(desc->ramp_width_px, COLORBAR_RAMP_THICKNESS_PX);
     colorbar->edge_offset_px =
-        _colorbar_positive_or_default(desc->edge_offset_px, COLORBAR_EDGE_PADDING_PX);
+        _colorbar_positive_or_default(desc->edge_offset_px, COLORBAR_EDGE_OFFSET_PX);
     colorbar->plot_gap_px =
-        _colorbar_positive_or_default(desc->plot_gap_px, COLORBAR_EDGE_PADDING_PX);
+        _colorbar_positive_or_default(desc->plot_gap_px, COLORBAR_PLOT_GAP_PX);
     colorbar->tick_length_px =
         _colorbar_positive_or_default(desc->tick_length_px, COLORBAR_TICK_LENGTH_PX);
     colorbar->label_gap_px =

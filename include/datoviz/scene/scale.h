@@ -180,8 +180,8 @@ DVZ_EXPORT void dvz_colorbar_set_orientation(
 /**
  * Set the colorbar panel-edge anchor.
  *
- * The first rendered colorbar slice accepts only panel-left, panel-right, panel-top, and
- * panel-bottom anchors.
+ * Panel-left and panel-right anchors use vertical orientation. Panel-top and panel-bottom anchors
+ * use horizontal orientation.
  *
  * @param colorbar the colorbar
  * @param anchor the panel-edge anchor
@@ -194,7 +194,8 @@ DVZ_EXPORT bool dvz_colorbar_set_anchor(DvzColorbar* colorbar, DvzSceneAnchor an
  * Update colorbar layout and placement parameters.
  *
  * The descriptor updates orientation, placement mode, anchor, reserve size, geometry gaps, explicit
- * detached placement, flags, and title when a non-NULL title is supplied.
+ * detached placement, flags, and title when a non-NULL title is supplied. Attached colorbar anchors
+ * must match the requested orientation.
  *
  * @param colorbar the colorbar
  * @param desc layout descriptor

@@ -199,6 +199,7 @@ int test_scene_colorbar_auto_reserve_and_visuals(TstContext* suite, const TstCas
     AT(colorbar->placement_mode == DVZ_COLORBAR_PLACEMENT_ATTACHED);
     AT(fabsf(colorbar->reserve_px - 140.0f) < 1e-6f);
     AT(fabsf(colorbar->ramp_width_px - 36.0f) < 1e-6f);
+    AT(fabsf(colorbar->edge_offset_px) < 1e-6f);
     AT(fabsf(colorbar->plot_gap_px - 12.0f) < 1e-6f);
     DvzPanelReserve reserve = {0};
     AT(dvz_panel_get_reserve(panel, &reserve));
@@ -234,7 +235,9 @@ int test_scene_colorbar_auto_reserve_and_visuals(TstContext* suite, const TstCas
     AT(pos_view.item_count == 6 * 64);
     AT(ramp_color_view.item_count == pos_view.item_count);
     const float* positions = (const float*)pos_view.data;
-    AT(positions[1] < -0.95f);
+    AT(dvz_panel_plot_rect_px(panel, &plot_rect));
+    float expected_bottom_y = 1.0f - 2.0f * (plot_rect.y + plot_rect.height) / 600.0f;
+    AT(fabsf(positions[1] - expected_bottom_y) < 1e-5f);
     AT(positions[3 * (pos_view.item_count - 1) + 1] > 0.95f);
 
     DvzFramePlan* plan = dvz_frame_plan("figure.colorbar.clip", 0);
@@ -273,8 +276,9 @@ int test_scene_colorbar_auto_reserve_and_visuals(TstContext* suite, const TstCas
     AT(found_tick_clip);
     dvz_frame_plan_destroy(plan);
 
-    AT(dvz_colorbar_set_anchor(colorbar, DVZ_SCENE_ANCHOR_PANEL_BOTTOM));
     dvz_colorbar_set_orientation(colorbar, DVZ_COLORBAR_ORIENTATION_HORIZONTAL);
+    AT(colorbar->anchor == DVZ_SCENE_ANCHOR_PANEL_BOTTOM);
+    AT(dvz_colorbar_set_anchor(colorbar, DVZ_SCENE_ANCHOR_PANEL_BOTTOM));
     _scene_prepare_colorbar_visuals(figure, NULL);
     AT(dvz_panel_get_reserve(panel, &reserve));
     AT(fabsf(reserve.right_px) < 1e-6f);
