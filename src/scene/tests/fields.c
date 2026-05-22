@@ -14,6 +14,7 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
+#include <float.h>
 #include <inttypes.h>
 #include <string.h>
 
@@ -444,6 +445,113 @@ int test_scene_colorbar_auto_reserve_tracks_resize(TstContext* suite, const TstC
     _scene_prepare_colorbar_visuals(figure, NULL);
     AT(dvz_panel_get_reserve(panel, &reserve));
     AT(fabsf(reserve.right_px - 140.0f) < 1e-6f);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+/**
+ * Verify attached colorbars align to plot rects after panel-wide padding.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_colorbar_attached_respects_panel_padding(TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 800, 600, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
+    ANN(panel);
+
+    AT(dvz_panel_set_padding(
+        panel, &(DvzPanelReserve){
+                   .left_px = 32.0f,
+                   .right_px = 24.0f,
+                   .top_px = 20.0f,
+                   .bottom_px = 16.0f,
+               }));
+    AT(dvz_panel_set_reserve(
+        panel, &(DvzPanelReserve){
+                   .left_px = 40.0f,
+                   .top_px = 20.0f,
+                   .bottom_px = 30.0f,
+               }));
+
+    DvzScale* scale = dvz_scale(scene, &(DvzScaleDesc){.kind = DVZ_SCALE_CONTINUOUS});
+    ANN(scale);
+    dvz_scale_set_domain(scale, 0.0, 1.0);
+    DvzColormap* colormap = dvz_colormap_builtin(scene, DVZ_BUILTIN_COLORMAP_VIRIDIS);
+    ANN(colormap);
+    dvz_scale_set_colormap(scale, colormap);
+
+    DvzColorbar* colorbar = dvz_colorbar(
+        panel, scale,
+        &(DvzColorbarDesc){
+            .orientation = DVZ_COLORBAR_ORIENTATION_VERTICAL,
+            .anchor = DVZ_SCENE_ANCHOR_PANEL_RIGHT,
+        });
+    ANN(colorbar);
+
+    DvzPanelReserve reserve = {0};
+    AT(dvz_panel_get_reserve(panel, &reserve));
+    AT(fabsf(reserve.left_px - 40.0f) < 1e-6f);
+    AT(fabsf(reserve.right_px - 140.0f) < 1e-6f);
+    AT(fabsf(reserve.top_px - 20.0f) < 1e-6f);
+    AT(fabsf(reserve.bottom_px - 30.0f) < 1e-6f);
+
+    DvzRect inner_rect = {0};
+    AT(dvz_panel_inner_rect_px(panel, &inner_rect));
+    AT(fabsf(inner_rect.x - 32.0f) < 1e-4f);
+    AT(fabsf(inner_rect.y - 20.0f) < 1e-4f);
+    AT(fabsf(inner_rect.width - 744.0f) < 1e-4f);
+    AT(fabsf(inner_rect.height - 564.0f) < 1e-4f);
+
+    DvzRect plot_rect = {0};
+    AT(dvz_panel_plot_rect_px(panel, &plot_rect));
+    AT(fabsf(plot_rect.x - 72.0f) < 1e-4f);
+    AT(fabsf(plot_rect.y - 40.0f) < 1e-4f);
+    AT(fabsf(plot_rect.width - 564.0f) < 1e-4f);
+    AT(fabsf(plot_rect.height - 514.0f) < 1e-4f);
+
+    _scene_prepare_colorbar_visuals(figure, NULL);
+    ANN(colorbar->ramp_visual);
+    DvzVisualDataView pos_view = {0};
+    AT(dvz_visual_data(colorbar->ramp_visual, "position", &pos_view) == 0);
+    AT(pos_view.item_count > 0);
+    const float* positions = (const float*)pos_view.data;
+    float min_x = +FLT_MAX;
+    float max_x = -FLT_MAX;
+    float min_y = +FLT_MAX;
+    float max_y = -FLT_MAX;
+    for (uint32_t i = 0; i < pos_view.item_count; i++)
+    {
+        const float x = positions[3 * i + 0];
+        const float y = positions[3 * i + 1];
+        min_x = fminf(min_x, x);
+        max_x = fmaxf(max_x, x);
+        min_y = fminf(min_y, y);
+        max_y = fmaxf(max_y, y);
+    }
+
+    const float expected_x0 =
+        -1.0f + 2.0f * (plot_rect.x + plot_rect.width + colorbar->plot_gap_px) / 800.0f;
+    const float expected_x1 = -1.0f + 2.0f *
+                                           (plot_rect.x + plot_rect.width +
+                                            colorbar->plot_gap_px + colorbar->ramp_width_px) /
+                                           800.0f;
+    const float expected_y0 = 1.0f - 2.0f * plot_rect.y / 600.0f;
+    const float expected_y1 = 1.0f - 2.0f * (plot_rect.y + plot_rect.height) / 600.0f;
+    AT(fabsf(min_x - expected_x0) < 1e-5f);
+    AT(fabsf(max_x - expected_x1) < 1e-5f);
+    AT(fabsf(max_y - expected_y0) < 1e-5f);
+    AT(fabsf(min_y - expected_y1) < 1e-5f);
 
     dvz_scene_destroy(scene);
     return 0;
@@ -2839,6 +2947,7 @@ int test_scene_fields(TstSuite* suite)
     TST_CASE(test_scene_colorbar_auto_reserve_and_visuals);
     TST_CASE(test_scene_colorbar_prepare_is_idempotent);
     TST_CASE(test_scene_colorbar_auto_reserve_tracks_resize);
+    TST_CASE(test_scene_colorbar_attached_respects_panel_padding);
     TST_CASE(test_scene_colorbar_detached_placement);
     TST_CASE(test_scene_colorbar_updates_retained_visuals);
     TST_CASE(test_scene_colorbar_emit_stream_contains_derived_visuals);
