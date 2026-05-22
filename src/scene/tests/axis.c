@@ -656,6 +656,24 @@ static int test_axis_layout_reserve(TstContext* suite, const TstCase* item)
     AT(dvz_panel_get_layout_reserve(panel, &reserve));
     AT(reserve.left == 0.0f && reserve.right == 0.0f);
 
+    DvzPanelReserve padding = {
+        .left_px = 32.0f,
+        .right_px = 16.0f,
+        .top_px = 24.0f,
+        .bottom_px = 8.0f,
+    };
+    AT(dvz_panel_set_padding(panel, &padding));
+    DvzPanelReserve padding_out = {0};
+    AT(dvz_panel_get_padding(panel, &padding_out));
+    AT(fabsf(padding_out.left_px - 32.0f) < 1e-6f);
+    AT(fabsf(padding_out.right_px - 16.0f) < 1e-6f);
+    DvzRect inner_rect = {0};
+    AT(dvz_panel_inner_rect_px(panel, &inner_rect));
+    AT(fabsf(inner_rect.x - 32.0f) < 1e-4f);
+    AT(fabsf(inner_rect.y - 24.0f) < 1e-4f);
+    AT(fabsf(inner_rect.width - 752.0f) < 1e-4f);
+    AT(fabsf(inner_rect.height - 568.0f) < 1e-4f);
+
     DvzPanelReserve pixel_reserve = {
         .left_px = 80.0f,
         .right_px = 120.0f,
@@ -668,17 +686,28 @@ static int test_axis_layout_reserve(TstContext* suite, const TstCase* item)
     AT(fabsf(pixel_out.left_px - 80.0f) < 1e-6f);
     DvzRect plot_rect = {0};
     AT(dvz_panel_plot_rect_px(panel, &plot_rect));
-    AT(fabsf(plot_rect.x - 80.0f) < 1e-4f);
-    AT(fabsf(plot_rect.y - 30.0f) < 1e-4f);
-    AT(fabsf(plot_rect.width - 600.0f) < 1e-4f);
-    AT(fabsf(plot_rect.height - 520.0f) < 1e-4f);
+    AT(fabsf(plot_rect.x - 112.0f) < 1e-4f);
+    AT(fabsf(plot_rect.y - 54.0f) < 1e-4f);
+    AT(fabsf(plot_rect.width - 552.0f) < 1e-4f);
+    AT(fabsf(plot_rect.height - 488.0f) < 1e-4f);
+
+    DvzPanelDesc padded_plot_desc = _scene_panel_plot_desc(panel);
+    AT(fabsf(padded_plot_desc.x - 0.14f) < 1e-6f);
+    AT(fabsf(padded_plot_desc.y - 0.09f) < 1e-6f);
+    AT(fabsf(padded_plot_desc.width - 0.69f) < 1e-6f);
+    AT(fabsf(padded_plot_desc.height - (488.0f / 600.0f)) < 1e-6f);
 
     dvz_figure_resize(figure, 1200, 900);
+    AT(dvz_panel_inner_rect_px(panel, &inner_rect));
+    AT(fabsf(inner_rect.x - 32.0f) < 1e-4f);
+    AT(fabsf(inner_rect.y - 24.0f) < 1e-4f);
+    AT(fabsf(inner_rect.width - 1152.0f) < 1e-4f);
+    AT(fabsf(inner_rect.height - 868.0f) < 1e-4f);
     AT(dvz_panel_plot_rect_px(panel, &plot_rect));
-    AT(fabsf(plot_rect.x - 80.0f) < 1e-4f);
-    AT(fabsf(plot_rect.y - 30.0f) < 1e-4f);
-    AT(fabsf(plot_rect.width - 1000.0f) < 1e-4f);
-    AT(fabsf(plot_rect.height - 820.0f) < 1e-4f);
+    AT(fabsf(plot_rect.x - 112.0f) < 1e-4f);
+    AT(fabsf(plot_rect.y - 54.0f) < 1e-4f);
+    AT(fabsf(plot_rect.width - 952.0f) < 1e-4f);
+    AT(fabsf(plot_rect.height - 788.0f) < 1e-4f);
 
     DvzAxis* x_axis = dvz_panel_axis(panel, DVZ_DIM_X);
     ANN(x_axis);
@@ -697,6 +726,13 @@ static int test_axis_layout_reserve(TstContext* suite, const TstCase* item)
     AT(dvz_panel_get_reserve(panel, &pixel_out));
     AT(fabsf(pixel_out.left_px - 135.0f) < 1e-6f);
     AT(fabsf(pixel_out.bottom_px - 90.0f) < 1e-6f);
+    AT(dvz_panel_plot_rect_px(panel, &plot_rect));
+    AT(fabsf(plot_rect.x - 167.0f) < 1e-4f);
+    AT(fabsf(plot_rect.y - 54.0f) < 1e-4f);
+    AT(fabsf(plot_rect.width - 897.0f) < 1e-4f);
+    AT(fabsf(plot_rect.height - 748.0f) < 1e-4f);
+
+    AT(dvz_panel_set_padding(panel, NULL));
     AT(dvz_panel_plot_rect_px(panel, &plot_rect));
     AT(fabsf(plot_rect.x - 135.0f) < 1e-4f);
     AT(fabsf(plot_rect.y - 30.0f) < 1e-4f);

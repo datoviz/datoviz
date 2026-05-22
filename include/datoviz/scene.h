@@ -311,7 +311,44 @@ DVZ_EXPORT bool dvz_panel_get_reserve(const DvzPanel* panel, DvzPanelReserve* ou
 
 
 /**
+ * Set a fixed pixel padding inside one panel's outer rectangle.
+ *
+ * Padding is applied before reserves are resolved: the padded inner panel rectangle contains both
+ * the plot rectangle and reserved adornment bands. Pass NULL to reset every side to zero.
+ *
+ * @param panel the panel
+ * @param padding pixel padding descriptor, or NULL for zero padding
+ * @return whether the padding was accepted
+ */
+DVZ_EXPORT bool dvz_panel_set_padding(DvzPanel* panel, const DvzPanelReserve* padding);
+
+
+/**
+ * Return one panel's fixed pixel padding.
+ *
+ * @param panel the panel
+ * @param out output pixel padding
+ * @return whether the padding was written
+ */
+DVZ_EXPORT bool dvz_panel_get_padding(const DvzPanel* panel, DvzPanelReserve* out);
+
+
+/**
+ * Return one panel's current inner rectangle in figure pixel coordinates.
+ *
+ * The inner rectangle is the panel rectangle after padding and before resolved reserve.
+ *
+ * @param panel the panel
+ * @param out output inner rectangle in logical pixels
+ * @return whether the rectangle was written
+ */
+DVZ_EXPORT bool dvz_panel_inner_rect_px(const DvzPanel* panel, DvzRect* out);
+
+
+/**
  * Return one panel's current plot rectangle in figure pixel coordinates.
+ *
+ * The plot rectangle is the panel rectangle after padding and resolved reserve.
  *
  * @param panel the panel
  * @param out output plot rectangle in logical pixels

@@ -218,6 +218,9 @@ typedef enum
 void _scene_panel_pixel_rect(
     const DvzPanel* panel, float* out_x, float* out_y, float* out_width, float* out_height);
 
+void _scene_panel_inner_pixel_rect(
+    const DvzPanel* panel, float* out_x, float* out_y, float* out_width, float* out_height);
+
 void _scene_panel_plot_visual_rect(const DvzPanel* panel, float out[4]);
 
 void _scene_panel_plot_pixel_rect(
@@ -1092,6 +1095,7 @@ struct DvzPanel
     DvzPanelReserve axis_reserve;
     DvzPanelReserve colorbar_reserve;
     DvzPanelReserve reserve;
+    DvzPanelReserve padding;
 
     DvzPanzoom* panzoom; /* optional pan/zoom controller (owned) */
     DvzArcball* arcball; /* optional arcball controller (owned) */

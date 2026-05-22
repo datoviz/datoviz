@@ -67,6 +67,11 @@ static bool _panel_layout_reserve_valid(const DvzPanelLayoutReserve* reserve)
 
 static void _scene_panel_pixel_size(const DvzPanel* panel, float* out_width, float* out_height);
 
+static void _scene_panel_inner_pixel_size(
+    const DvzPanel* panel, float* out_width, float* out_height);
+
+static bool _panel_padding_valid(const DvzPanel* panel, const DvzPanelReserve* padding);
+
 
 /**
  * Return whether a panel pixel reservation is finite and leaves non-empty plot space.
@@ -88,7 +93,7 @@ static bool _panel_reserve_valid(const DvzPanel* panel, const DvzPanelReserve* r
 
     float width = 0.0f;
     float height = 0.0f;
-    _scene_panel_pixel_size(panel, &width, &height);
+    _scene_panel_inner_pixel_size(panel, &width, &height);
     return reserve->left_px + reserve->right_px < width &&
            reserve->top_px + reserve->bottom_px < height;
 }
@@ -130,6 +135,33 @@ static void _panel_reserve_add(DvzPanelReserve* reserve, const DvzPanelReserve* 
 
 
 /**
+ * Return whether a panel padding is finite and leaves non-empty inner panel space.
+ *
+ * @param panel the panel
+ * @param padding the pixel padding descriptor
+ * @return whether the padding is valid
+ */
+static bool _panel_padding_valid(const DvzPanel* panel, const DvzPanelReserve* padding)
+{
+    ANN(panel);
+    ANN(padding);
+    if (!isfinite(padding->left_px) || !isfinite(padding->right_px) ||
+        !isfinite(padding->top_px) || !isfinite(padding->bottom_px))
+        return false;
+    if (padding->left_px < 0.0f || padding->right_px < 0.0f ||
+        padding->top_px < 0.0f || padding->bottom_px < 0.0f)
+        return false;
+
+    float width = 0.0f;
+    float height = 0.0f;
+    _scene_panel_pixel_size(panel, &width, &height);
+    return padding->left_px + padding->right_px < width &&
+           padding->top_px + padding->bottom_px < height;
+}
+
+
+
+/**
  * Resolve one panel's base and decoration reserve contributions.
  *
  * @param panel the panel
@@ -157,14 +189,15 @@ static DvzPanelReserve _panel_resolve_reserve(const DvzPanel* panel)
  *
  * @param panel the panel
  */
-static void _panel_update_reserve(DvzPanel* panel)
+static bool _panel_update_reserve(DvzPanel* panel)
 {
     ANN(panel);
     DvzPanelReserve next = _panel_resolve_reserve(panel);
     if (_panel_reserve_equal(&panel->reserve, &next))
-        return;
+        return false;
     panel->reserve = next;
     _panel_mark_layout_changed(panel);
+    return true;
 }
 
 
@@ -531,6 +564,67 @@ void _scene_panel_pixel_rect(
 
 
 /**
+ * Return a panel's padded inner pixel size.
+ *
+ * @param panel the panel
+ * @param out_width output width in pixels
+ * @param out_height output height in pixels
+ */
+static void _scene_panel_inner_pixel_size(
+    const DvzPanel* panel, float* out_width, float* out_height)
+{
+    ANN(panel);
+    ANN(out_width);
+    ANN(out_height);
+    float width = 0.0f;
+    float height = 0.0f;
+    _scene_panel_pixel_size(panel, &width, &height);
+    DvzPanelReserve padding = panel->padding;
+    if (!_panel_padding_valid(panel, &padding))
+        padding = (DvzPanelReserve){0};
+
+    *out_width = width - padding.left_px - padding.right_px;
+    *out_height = height - padding.top_px - padding.bottom_px;
+}
+
+
+
+/**
+ * Return a panel's padded inner pixel rectangle.
+ *
+ * @param panel the panel
+ * @param out_x output x origin in pixels
+ * @param out_y output y origin in pixels
+ * @param out_width output width in pixels
+ * @param out_height output height in pixels
+ */
+void _scene_panel_inner_pixel_rect(
+    const DvzPanel* panel, float* out_x, float* out_y, float* out_width, float* out_height)
+{
+    ANN(panel);
+    ANN(out_x);
+    ANN(out_y);
+    ANN(out_width);
+    ANN(out_height);
+
+    float panel_x = 0.0f;
+    float panel_y = 0.0f;
+    float panel_width = 0.0f;
+    float panel_height = 0.0f;
+    _scene_panel_pixel_rect(panel, &panel_x, &panel_y, &panel_width, &panel_height);
+    DvzPanelReserve padding = panel->padding;
+    if (!_panel_padding_valid(panel, &padding))
+        padding = (DvzPanelReserve){0};
+
+    *out_x = panel_x + padding.left_px;
+    *out_y = panel_y + padding.top_px;
+    *out_width = panel_width - padding.left_px - padding.right_px;
+    *out_height = panel_height - padding.top_px - padding.bottom_px;
+}
+
+
+
+/**
  * Return a panel's plot rectangle in panel visual coordinates.
  *
  * @param panel the panel
@@ -540,6 +634,9 @@ void _scene_panel_plot_visual_rect(const DvzPanel* panel, float out[4])
 {
     ANN(panel);
     ANN(out);
+    DvzPanelReserve padding = panel->padding;
+    if (!_panel_padding_valid(panel, &padding))
+        padding = (DvzPanelReserve){0};
     DvzPanelReserve reserve = panel->reserve;
     if (!_panel_reserve_valid(panel, &reserve))
         reserve = (DvzPanelReserve){0};
@@ -547,10 +644,11 @@ void _scene_panel_plot_visual_rect(const DvzPanel* panel, float out[4])
     float width = 0.0f;
     float height = 0.0f;
     _scene_panel_pixel_size(panel, &width, &height);
-    const float left = width > 0.0f ? reserve.left_px / width : 0.0f;
-    const float right = width > 0.0f ? reserve.right_px / width : 0.0f;
-    const float top = height > 0.0f ? reserve.top_px / height : 0.0f;
-    const float bottom = height > 0.0f ? reserve.bottom_px / height : 0.0f;
+    const float left = width > 0.0f ? (padding.left_px + reserve.left_px) / width : 0.0f;
+    const float right = width > 0.0f ? (padding.right_px + reserve.right_px) / width : 0.0f;
+    const float top = height > 0.0f ? (padding.top_px + reserve.top_px) / height : 0.0f;
+    const float bottom =
+        height > 0.0f ? (padding.bottom_px + reserve.bottom_px) / height : 0.0f;
 
     out[0] = -1.0f + 2.0f * left;
     out[1] = +1.0f - 2.0f * right;
@@ -590,7 +688,7 @@ void _scene_panel_plot_pixel_rect(
     float panel_y = 0.0f;
     float panel_width = 0.0f;
     float panel_height = 0.0f;
-    _scene_panel_pixel_rect(panel, &panel_x, &panel_y, &panel_width, &panel_height);
+    _scene_panel_inner_pixel_rect(panel, &panel_x, &panel_y, &panel_width, &panel_height);
 
     DvzPanelReserve reserve = panel->reserve;
     if (!_panel_reserve_valid(panel, &reserve))
@@ -614,9 +712,11 @@ DvzPanelDesc _scene_panel_plot_desc(const DvzPanel* panel)
 {
     ANN(panel);
 
+    float panel_x = 0.0f;
+    float panel_y = 0.0f;
     float panel_width = 0.0f;
     float panel_height = 0.0f;
-    _scene_panel_pixel_size(panel, &panel_width, &panel_height);
+    _scene_panel_inner_pixel_rect(panel, &panel_x, &panel_y, &panel_width, &panel_height);
     DvzPanelReserve reserve = panel->reserve;
     if (!_panel_reserve_valid(panel, &reserve))
         reserve = (DvzPanelReserve){0};
@@ -627,10 +727,20 @@ DvzPanelDesc _scene_panel_plot_desc(const DvzPanel* panel)
     const float bottom = panel_height > 0.0f ? reserve.bottom_px / panel_height : 0.0f;
 
     return (DvzPanelDesc){
-        .x = panel->desc.x + left * panel->desc.width,
-        .y = panel->desc.y + top * panel->desc.height,
-        .width = (1.0f - left - right) * panel->desc.width,
-        .height = (1.0f - top - bottom) * panel->desc.height,
+        .x = panel->figure != NULL && panel->figure->width > 0 ?
+                 (panel_x + reserve.left_px) / (float)panel->figure->width :
+                 panel->desc.x + left * panel->desc.width,
+        .y = panel->figure != NULL && panel->figure->height > 0 ?
+                 (panel_y + reserve.top_px) / (float)panel->figure->height :
+                 panel->desc.y + top * panel->desc.height,
+        .width = panel->figure != NULL && panel->figure->width > 0 ?
+                     (panel_width - reserve.left_px - reserve.right_px) /
+                         (float)panel->figure->width :
+                     (1.0f - left - right) * panel->desc.width,
+        .height = panel->figure != NULL && panel->figure->height > 0 ?
+                      (panel_height - reserve.top_px - reserve.bottom_px) /
+                          (float)panel->figure->height :
+                      (1.0f - top - bottom) * panel->desc.height,
     };
 }
 
@@ -2705,7 +2815,11 @@ DvzPanel* dvz_panel(DvzFigure* figure, DvzPanelDesc desc)
     DvzPanel* panel       = &figure->panels[figure->panel_count++];
     panel->figure         = figure;
     panel->desc           = desc;
+    panel->base_reserve   = (DvzPanelReserve){0};
+    panel->axis_reserve   = (DvzPanelReserve){0};
+    panel->colorbar_reserve = (DvzPanelReserve){0};
     panel->reserve        = (DvzPanelReserve){0};
+    panel->padding        = (DvzPanelReserve){0};
     _scene_technique_state_init(&panel->techniques);
     panel->visual_count = 0;
     return panel;
@@ -2773,6 +2887,66 @@ bool dvz_panel_get_reserve(const DvzPanel* panel, DvzPanelReserve* out)
     *out = panel->reserve;
     return true;
 }
+
+
+/**
+ * Set a fixed pixel padding inside one panel's outer rectangle.
+ *
+ * @param panel the panel
+ * @param padding pixel padding descriptor, or NULL for zero padding
+ * @return whether the padding was accepted
+ */
+bool dvz_panel_set_padding(DvzPanel* panel, const DvzPanelReserve* padding)
+{
+    if (panel == NULL)
+        return false;
+    DvzPanelReserve next = padding != NULL ? *padding : (DvzPanelReserve){0};
+    if (!_panel_padding_valid(panel, &next))
+        return false;
+    if (_panel_reserve_equal(&panel->padding, &next))
+        return true;
+
+    panel->padding = next;
+    bool reserve_changed = _panel_update_reserve(panel);
+    if (!reserve_changed)
+        _panel_mark_layout_changed(panel);
+    return true;
+}
+
+
+
+/**
+ * Return one panel's fixed pixel padding.
+ *
+ * @param panel the panel
+ * @param out output pixel padding
+ * @return whether the padding was written
+ */
+bool dvz_panel_get_padding(const DvzPanel* panel, DvzPanelReserve* out)
+{
+    if (panel == NULL || out == NULL)
+        return false;
+    *out = panel->padding;
+    return true;
+}
+
+
+
+/**
+ * Return one panel's current inner rectangle in figure pixel coordinates.
+ *
+ * @param panel the panel
+ * @param out output inner rectangle in logical pixels
+ * @return whether the rectangle was written
+ */
+bool dvz_panel_inner_rect_px(const DvzPanel* panel, DvzRect* out)
+{
+    if (panel == NULL || out == NULL)
+        return false;
+    _scene_panel_inner_pixel_rect(panel, &out->x, &out->y, &out->width, &out->height);
+    return true;
+}
+
 
 
 /**
