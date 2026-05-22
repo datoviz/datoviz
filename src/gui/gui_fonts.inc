@@ -3,11 +3,11 @@
  *
  * Karla-Regular.ttf: SIL Open Font License 1.1.
  * Cousine-Regular.ttf: SIL Open Font License 1.1.
- * Generated with external/imgui/misc/fonts/binary_to_compressed_c.cpp.
+ * Generated with external/cimgui/imgui/misc/fonts/binary_to_compressed_c.cpp.
  */
 
-// File: 'external/imgui/misc/fonts/Karla-Regular.ttf' (16848 bytes)
-// Exported using binary_to_compressed_c.exe -u8 "external/imgui/misc/fonts/Karla-Regular.ttf" dvz_gui_font_karla_regular
+// File: 'external/cimgui/imgui/misc/fonts/Karla-Regular.ttf' (16848 bytes)
+// Exported using binary_to_compressed_c.exe -u8 "external/cimgui/imgui/misc/fonts/Karla-Regular.ttf" dvz_gui_font_karla_regular
 static const unsigned int dvz_gui_font_karla_regular_compressed_size = 12719;
 static const unsigned char dvz_gui_font_karla_regular_compressed_data[12719] =
 {
@@ -231,8 +231,8 @@ static const unsigned char dvz_gui_font_karla_regular_compressed_data[12719] =
     55,255,196,130,17,32,211,130,63,34,248,0,4,130,21,32,228,130,21,32,215,130,71,32,224,130,21,32,224,132,49,32,215,136,49,32,244,130,27,32,232,130,27,32,200,130,17,32,228,132,49,131,
     179,65,9,5,35,1,0,0,0,67,255,26,37,111,110,117,109,0,8,68,53,6,32,1,130,105,68,7,5,36,8,0,2,0,26,130,55,130,24,144,2,48,2,0,1,0,19,0,28,0,0,0,0,0,1,0,0,0,0,5,250,222,184,166,133,
 };
-// File: 'external/imgui/misc/fonts/Cousine-Regular.ttf' (43912 bytes)
-// Exported using binary_to_compressed_c.exe -u8 "external/imgui/misc/fonts/Cousine-Regular.ttf" dvz_gui_font_cousine_regular
+// File: 'external/cimgui/imgui/misc/fonts/Cousine-Regular.ttf' (43912 bytes)
+// Exported using binary_to_compressed_c.exe -u8 "external/cimgui/imgui/misc/fonts/Cousine-Regular.ttf" dvz_gui_font_cousine_regular
 static const unsigned int dvz_gui_font_cousine_regular_compressed_size = 37630;
 static const unsigned char dvz_gui_font_cousine_regular_compressed_data[37630] =
 {

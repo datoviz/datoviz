@@ -4,23 +4,23 @@
 
 set(GUI_SRC
     "${CMAKE_CURRENT_SOURCE_DIR}/gui.cpp"
-    "${PROJECT_SOURCE_DIR}/external/imgui/imgui.cpp"
-    "${PROJECT_SOURCE_DIR}/external/imgui/imgui_demo.cpp"
-    "${PROJECT_SOURCE_DIR}/external/imgui/imgui_draw.cpp"
-    "${PROJECT_SOURCE_DIR}/external/imgui/imgui_tables.cpp"
-    "${PROJECT_SOURCE_DIR}/external/imgui/imgui_widgets.cpp"
-    "${PROJECT_SOURCE_DIR}/external/imgui/backends/imgui_impl_glfw.cpp"
-    "${PROJECT_SOURCE_DIR}/external/imgui/backends/imgui_impl_vulkan.cpp"
+    "${PROJECT_SOURCE_DIR}/external/cimgui/imgui/imgui.cpp"
+    "${PROJECT_SOURCE_DIR}/external/cimgui/imgui/imgui_demo.cpp"
+    "${PROJECT_SOURCE_DIR}/external/cimgui/imgui/imgui_draw.cpp"
+    "${PROJECT_SOURCE_DIR}/external/cimgui/imgui/imgui_tables.cpp"
+    "${PROJECT_SOURCE_DIR}/external/cimgui/imgui/imgui_widgets.cpp"
+    "${PROJECT_SOURCE_DIR}/external/cimgui/imgui/backends/imgui_impl_glfw.cpp"
+    "${PROJECT_SOURCE_DIR}/external/cimgui/imgui/backends/imgui_impl_vulkan.cpp"
 )
 
 set(GUI_EXTERNAL_SRC
-    "${PROJECT_SOURCE_DIR}/external/imgui/imgui.cpp"
-    "${PROJECT_SOURCE_DIR}/external/imgui/imgui_demo.cpp"
-    "${PROJECT_SOURCE_DIR}/external/imgui/imgui_draw.cpp"
-    "${PROJECT_SOURCE_DIR}/external/imgui/imgui_tables.cpp"
-    "${PROJECT_SOURCE_DIR}/external/imgui/imgui_widgets.cpp"
-    "${PROJECT_SOURCE_DIR}/external/imgui/backends/imgui_impl_glfw.cpp"
-    "${PROJECT_SOURCE_DIR}/external/imgui/backends/imgui_impl_vulkan.cpp"
+    "${PROJECT_SOURCE_DIR}/external/cimgui/imgui/imgui.cpp"
+    "${PROJECT_SOURCE_DIR}/external/cimgui/imgui/imgui_demo.cpp"
+    "${PROJECT_SOURCE_DIR}/external/cimgui/imgui/imgui_draw.cpp"
+    "${PROJECT_SOURCE_DIR}/external/cimgui/imgui/imgui_tables.cpp"
+    "${PROJECT_SOURCE_DIR}/external/cimgui/imgui/imgui_widgets.cpp"
+    "${PROJECT_SOURCE_DIR}/external/cimgui/imgui/backends/imgui_impl_glfw.cpp"
+    "${PROJECT_SOURCE_DIR}/external/cimgui/imgui/backends/imgui_impl_vulkan.cpp"
 )
 
 set(CIMGUI_SRC
@@ -44,8 +44,8 @@ target_include_directories(datoviz_gui
     ${PROJECT_SOURCE_DIR}/src/common
     ${PROJECT_SOURCE_DIR}/src/gui
     ${PROJECT_SOURCE_DIR}/external
-    ${PROJECT_SOURCE_DIR}/external/imgui
-    ${PROJECT_SOURCE_DIR}/external/imgui/backends
+    ${PROJECT_SOURCE_DIR}/external/cimgui/imgui
+    ${PROJECT_SOURCE_DIR}/external/cimgui/imgui/backends
     ${PROJECT_SOURCE_DIR}/external/volk
 )
 

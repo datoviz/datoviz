@@ -358,8 +358,8 @@ if(DVZ_BUILD_GUI AND NOT DVZ_HAS_GLFW)
     message(FATAL_ERROR "DVZ_BUILD_GUI requires DVZ_WITH_GLFW=ON and a built GLFW target.")
 endif()
 
-if(DVZ_BUILD_GUI AND NOT EXISTS "${PROJECT_SOURCE_DIR}/external/imgui/imgui.h")
-    message(FATAL_ERROR "DVZ_BUILD_GUI requires external/imgui.")
+if(DVZ_BUILD_GUI AND NOT EXISTS "${PROJECT_SOURCE_DIR}/external/cimgui/imgui/imgui.h")
+    message(FATAL_ERROR "DVZ_BUILD_GUI requires external/cimgui/imgui.")
 endif()
 
 if(DVZ_BUILD_GUI AND NOT EXISTS "${PROJECT_SOURCE_DIR}/external/cimgui/cimgui.h")
@@ -367,7 +367,7 @@ if(DVZ_BUILD_GUI AND NOT EXISTS "${PROJECT_SOURCE_DIR}/external/cimgui/cimgui.h"
 endif()
 
 if(DVZ_BUILD_GUI)
-    file(READ "${PROJECT_SOURCE_DIR}/external/imgui/imgui.h" _dvz_imgui_header)
+    file(READ "${PROJECT_SOURCE_DIR}/external/cimgui/imgui/imgui.h" _dvz_imgui_header)
     if(NOT _dvz_imgui_header MATCHES "IMGUI_HAS_DOCK")
         message(FATAL_ERROR "DVZ_BUILD_GUI requires a Dear ImGui docking branch/tag with IMGUI_HAS_DOCK.")
     endif()

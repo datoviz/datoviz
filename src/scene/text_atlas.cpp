@@ -795,7 +795,6 @@ static void* _text_sdf_load_default_font(DvzSize* out_size)
     const char* paths[] = {
         "data/fonts/Roboto-Regular.ttf",
         "data/fonts/Roboto-Medium.ttf",
-        "external/imgui/misc/fonts/Roboto-Medium.ttf",
         "external/cimgui/imgui/misc/fonts/Roboto-Medium.ttf",
     };
     for (uint32_t i = 0; i < (uint32_t)(sizeof(paths) / sizeof(paths[0])); i++)
