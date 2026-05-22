@@ -38,6 +38,7 @@ target_include_directories(datoviz_scene
     ${PROJECT_SOURCE_DIR}/include
     ${PROJECT_SOURCE_DIR}/src/common
     ${PROJECT_SOURCE_DIR}/external
+    ${PROJECT_SOURCE_DIR}/external/cimgui
     ${PROJECT_SOURCE_DIR}/external/cglm/include
     ${PROJECT_SOURCE_DIR}/external/volk
 )
