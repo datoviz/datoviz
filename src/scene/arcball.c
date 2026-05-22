@@ -31,7 +31,12 @@
 
 #define DVZ_ARCBALL_ZOOM_MIN        0.02f
 #define DVZ_ARCBALL_ZOOM_MAX       50.00f
+
+#if defined(__APPLE__)
+#define DVZ_ARCBALL_ZOOM_WHEEL_COEF 0.0125f
+#else
 #define DVZ_ARCBALL_ZOOM_WHEEL_COEF 0.05f
+#endif
 
 
 

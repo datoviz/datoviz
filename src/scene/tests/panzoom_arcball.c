@@ -725,6 +725,9 @@ int test_arcball_zoom_wheel(TstContext* suite, const TstCase* item)
     AT(dvz_arcball_pointer(arc, &wheel_in));
     AT(arc->zoom > 1.0f);
     float zoom_in = arc->zoom;
+#if defined(__APPLE__)
+    AT(zoom_in < 1.02f);
+#endif
 
     DvzPointerEvent wheel_out = {
         .type = DVZ_POINTER_EVENT_WHEEL,
