@@ -22,10 +22,12 @@ app/offscreen/GLFW slices. The app frame scheduler refactor is closed; the built
 on-demand by default with explicit continuous and capped modes. Treat these as active code, not
 future scaffolding.
 
-The first CPU-side `geom` module slice is now active in the core build: public `DvzGeometry`,
-owned geometry buffers, cube/plane generators, bounds, F32 conversion helpers for current mesh
-upload paths, and focused `geom` tests. Next `geom` work should prioritize structured surface-grid
-generation, transform/merge helpers, and direct scene mesh-resource upload from `DvzGeometry`.
+The CPU-side `geom` v0.4 subset is active in the core build: public `DvzGeometry`, owned geometry
+buffers, cube/plane/surface-grid generators, bounds, normal recomputation, transform/merge helpers,
+F32 conversion helpers for current mesh upload paths, direct `DvzGeometry` upload into scene mesh
+visuals, and focused `geom`/scene tests. Remaining `geom` work is now optional expansion: more solid
+generators, richer structured-grid provenance and update helpers, triangulation, curve utilities,
+simplification, hulls, polygon booleans, and import/asset-layer decisions.
 
 The C test-runner modernization and low-risk process-sharding performance pass are complete enough
 to treat as a stable baseline. Historical notes live in

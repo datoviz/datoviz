@@ -1,6 +1,6 @@
 > **Execution Status**
 > - **Status:** `PARTIALLY IMPLEMENTED SCENE SPEC PROPOSAL`
-> - **Updated on:** `2026-05-21`
+> - **Updated on:** `2026-05-22`
 > - **Purpose:** preserve remaining geometry-module decisions after the canonical geometry utility
 >   spec absorbed the durable CPU-side rules.
 
@@ -68,13 +68,11 @@ Do not restate generator tables or triangulation dependency policy here.
 ## Remaining Unresolved Points
 
 1. Final public C function names and descriptor structs for generators and operations.
-2. Whether the next generator slice should prioritize structured surface grid, sphere, or arrow/
-   gizmo axes.
-3. Exact partial-update and provenance policy for structured surface grids.
+2. Whether the next generator slice should prioritize sphere or arrow/gizmo axes.
+3. Exact partial-update policy for structured surface grids.
 4. OBJ import scope and whether richer asset import belongs here or in an asset layer.
-5. How much structured-grid provenance is stored in `DvzGeometry` versus a sidecar descriptor.
-6. PSLG/constrained triangulation backend choice and build option policy.
-7. Whether contour/isoline preparation helpers live in `geom` or a mesh-shading helper namespace.
+5. PSLG/constrained triangulation backend choice and build option policy.
+6. Whether contour/isoline preparation helpers live in `geom` or a mesh-shading helper namespace.
 
 
 ## Landed First Slice
@@ -94,14 +92,24 @@ Implemented on 2026-05-21:
    F32 conversion, and core-runner wiring.
 
 
-## Next Implementation Slice
+## Second Implementation Slice
 
-1. Add structured surface-grid generation with row/column descriptors, height input, UV policy,
-   normal generation, and grid-provenance metadata.
-2. Add transform and merge operations for generated geometry.
-3. Add a narrow scene-side mesh-resource upload helper that consumes `DvzGeometry` directly, while
-   keeping the F32 bridge only as a temporary convenience for existing `dvz_mesh_data()` paths.
-4. Expand tests to cover generated surface-grid counts, winding, normal direction, invalid
-   dimensions, and upload through the direct mesh-resource path once it exists.
-5. Defer OBJ import, constrained triangulation, contour/isoline sidecars, and richer asset import
-   until the core container and direct upload path are stable.
+Implemented on 2026-05-22:
+
+1. `dvz_geom_surface_grid()` generates indexed structured grids with row/column descriptors, optional
+   height/color arrays, UVs, smooth normals, and row/column provenance on `DvzGeometry`;
+2. `dvz_geometry_compute_normals()`, `dvz_geometry_transform()`, and `dvz_geometry_merge()` cover the
+   first normal/transform/composition operation slice;
+3. `dvz_mesh_geometry()` uploads a `DvzGeometry` directly into a scene mesh visual, including dense
+   position/color/normal attributes and a scene-owned index buffer;
+4. tests cover generated surface-grid counts, winding/index validity, invalid dimensions, transform
+   behavior, merge index rebasing, and the direct scene mesh upload path.
+
+
+## Deferred Follow-Ups
+
+1. Add sphere or arrow/gizmo-axis generators when a concrete example needs them.
+2. Add partial height-update helpers and richer structured-grid provenance once surface examples
+   require update-efficient behavior.
+3. Defer OBJ import, constrained triangulation, contour/isoline sidecars, and richer asset import
+   until the current container and direct upload path have more example pressure.
