@@ -68,6 +68,39 @@ DVZ_EXPORT DvzGeometryBounds dvz_geometry_bounds(const DvzGeometry* geometry);
 
 
 /**
+ * Recompute smooth vertex normals from triangle indices.
+ *
+ * @param geometry the geometry
+ * @return 0 on success, -1 on invalid input
+ */
+DVZ_EXPORT int dvz_geometry_compute_normals(DvzGeometry* geometry);
+
+
+
+/**
+ * Apply an affine transform to positions and normals in place.
+ *
+ * @param geometry the geometry
+ * @param transform affine transform matrix
+ * @return 0 on success, -1 on invalid input
+ */
+DVZ_EXPORT int dvz_geometry_transform(DvzGeometry* geometry, dmat4 transform);
+
+
+
+/**
+ * Merge several geometry objects into one indexed geometry.
+ *
+ * @param count number of input geometries
+ * @param geometries input geometry array
+ * @return the merged geometry, or NULL on failure
+ */
+DVZ_EXPORT DvzGeometry*
+dvz_geometry_merge(uint32_t count, const DvzGeometry* const* geometries);
+
+
+
+/**
  * Convert geometry positions to F32 vectors for current scene mesh upload paths.
  *
  * @param geometry the geometry
@@ -110,5 +143,15 @@ DVZ_EXPORT DvzGeometry* dvz_geom_cube(const DvzGeometryCubeDesc* desc);
  * @return the new geometry, or NULL on failure
  */
 DVZ_EXPORT DvzGeometry* dvz_geom_plane(const DvzGeometryPlaneDesc* desc);
+
+
+
+/**
+ * Create an indexed structured surface-grid geometry.
+ *
+ * @param desc surface-grid descriptor
+ * @return the new geometry, or NULL on failure
+ */
+DVZ_EXPORT DvzGeometry* dvz_geom_surface_grid(const DvzGeometrySurfaceGridDesc* desc);
 
 EXTERN_C_OFF

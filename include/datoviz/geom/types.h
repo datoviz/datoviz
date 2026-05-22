@@ -31,6 +31,7 @@ typedef struct DvzGeometry DvzGeometry;
 typedef struct DvzGeometryBounds DvzGeometryBounds;
 typedef struct DvzGeometryCubeDesc DvzGeometryCubeDesc;
 typedef struct DvzGeometryPlaneDesc DvzGeometryPlaneDesc;
+typedef struct DvzGeometrySurfaceGridDesc DvzGeometrySurfaceGridDesc;
 
 
 
@@ -45,6 +46,9 @@ struct DvzGeometry
 
     uint32_t vertex_count; // number of vertices
     uint32_t index_count;  // number of triangle-list indices
+
+    uint32_t grid_rows; // row count for structured-grid provenance, or zero
+    uint32_t grid_cols; // column count for structured-grid provenance, or zero
 
     dvec3* positions;  // F64 3D positions
     dvec3* normals;    // F64 3D normal vectors
@@ -78,4 +82,23 @@ struct DvzGeometryPlaneDesc
     double height;  // plane height along Y
     double z;       // plane Z coordinate, added to center.z
     DvzColor color; // vertex color, defaults to opaque white when all channels are zero
+};
+
+
+
+struct DvzGeometrySurfaceGridDesc
+{
+    uint32_t rows; // number of grid rows
+    uint32_t cols; // number of grid columns
+
+    const double* heights;  // optional row-major height values
+    const DvzColor* colors; // optional row-major vertex colors
+
+    dvec3 origin;      // position of row 0, column 0
+    dvec3 row_basis;   // step vector when row increases, defaults to +Y
+    dvec3 col_basis;   // step vector when column increases, defaults to +X
+    dvec3 height_axis; // height displacement axis, defaults to +Z
+
+    double height_scale; // multiplier applied to heights, defaults to 1
+    DvzColor color;      // fallback vertex color, defaults to opaque white
 };

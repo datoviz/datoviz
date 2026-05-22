@@ -15,8 +15,10 @@
 /*************************************************************************************************/
 
 #include "datoviz/geom.h"
+#include "datoviz/math/vec.h"
 
 #include <float.h>
+#include <math.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -187,6 +189,205 @@ static void _geom_copy_dvec3_to_vec3(uint32_t count, const dvec3* src, vec3* out
 
 
 
+/**
+ * Return the squared length of a F64 3-vector.
+ *
+ * @param v vector
+ * @return squared vector length
+ */
+static double _geom_dvec3_norm2(const dvec3 v)
+{
+    ANN(v);
+    return v[0] * v[0] + v[1] * v[1] + v[2] * v[2];
+}
+
+
+
+/**
+ * Return whether a vector is effectively zero.
+ *
+ * @param v vector
+ * @return whether all components are near zero
+ */
+static bool _geom_dvec3_is_zero(const dvec3 v)
+{
+    ANN(v);
+    return _geom_dvec3_norm2(v) <= EPSILON * EPSILON;
+}
+
+
+
+/**
+ * Normalize a F64 3-vector in place.
+ *
+ * @param v vector
+ * @return whether the vector was normalized
+ */
+static bool _geom_dvec3_normalize(dvec3 v)
+{
+    ANN(v);
+    const double norm2 = _geom_dvec3_norm2(v);
+    if (norm2 <= EPSILON * EPSILON || !isfinite(norm2))
+        return false;
+
+    const double inv_norm = 1.0 / sqrt(norm2);
+    v[0] *= inv_norm;
+    v[1] *= inv_norm;
+    v[2] *= inv_norm;
+    return true;
+}
+
+
+
+/**
+ * Compute the cross product of two F64 3-vectors.
+ *
+ * @param a first vector
+ * @param b second vector
+ * @param out output vector
+ */
+static void _geom_dvec3_cross(const dvec3 a, const dvec3 b, dvec3 out)
+{
+    ANN(a);
+    ANN(b);
+    ANN(out);
+    out[0] = a[1] * b[2] - a[2] * b[1];
+    out[1] = a[2] * b[0] - a[0] * b[2];
+    out[2] = a[0] * b[1] - a[1] * b[0];
+}
+
+
+
+/**
+ * Compute one triangle normal from indexed positions.
+ *
+ * @param geometry the geometry
+ * @param i0 first vertex index
+ * @param i1 second vertex index
+ * @param i2 third vertex index
+ * @param out output normal
+ * @return whether the normal is valid
+ */
+static bool _geom_triangle_normal(
+    const DvzGeometry* geometry, DvzIndex i0, DvzIndex i1, DvzIndex i2, dvec3 out)
+{
+    ANN(geometry);
+    ANN(out);
+    ASSERT(i0 < geometry->vertex_count);
+    ASSERT(i1 < geometry->vertex_count);
+    ASSERT(i2 < geometry->vertex_count);
+
+    const dvec3* p0 = &geometry->positions[i0];
+    const dvec3* p1 = &geometry->positions[i1];
+    const dvec3* p2 = &geometry->positions[i2];
+    dvec3 a = {(*p1)[0] - (*p0)[0], (*p1)[1] - (*p0)[1], (*p1)[2] - (*p0)[2]};
+    dvec3 b = {(*p2)[0] - (*p0)[0], (*p2)[1] - (*p0)[1], (*p2)[2] - (*p0)[2]};
+    _geom_dvec3_cross(a, b, out);
+    return _geom_dvec3_normalize(out);
+}
+
+
+
+/**
+ * Validate and compute structured surface-grid counts.
+ *
+ * @param rows row count
+ * @param cols column count
+ * @param out_vertices output vertex count
+ * @param out_indices output index count
+ * @return whether the counts are valid
+ */
+static bool _geom_surface_grid_counts(
+    uint32_t rows, uint32_t cols, uint32_t* out_vertices, uint32_t* out_indices)
+{
+    ANN(out_vertices);
+    ANN(out_indices);
+    if (rows < 2 || cols < 2)
+        return false;
+
+    uint64_t vertex_count = 0;
+    if (_dvz_mul_u64_overflows((uint64_t)rows, (uint64_t)cols, &vertex_count) ||
+        vertex_count > UINT32_MAX)
+    {
+        return false;
+    }
+
+    uint64_t quad_count = 0;
+    if (_dvz_mul_u64_overflows((uint64_t)(rows - 1), (uint64_t)(cols - 1), &quad_count))
+        return false;
+
+    uint64_t index_count = 0;
+    if (_dvz_mul_u64_overflows(quad_count, 6, &index_count) || index_count > UINT32_MAX)
+        return false;
+
+    *out_vertices = (uint32_t)vertex_count;
+    *out_indices = (uint32_t)index_count;
+    return true;
+}
+
+
+
+/**
+ * Fill surface-grid descriptor defaults.
+ *
+ * @param desc optional source descriptor
+ * @param out output descriptor
+ * @param color output fallback color
+ */
+static void _geom_surface_grid_config(
+    const DvzGeometrySurfaceGridDesc* desc, DvzGeometrySurfaceGridDesc* out, DvzColor color)
+{
+    ANN(out);
+    ANN(color);
+    dvz_memset(out, sizeof(DvzGeometrySurfaceGridDesc), 0, sizeof(DvzGeometrySurfaceGridDesc));
+    out->height_scale = 1.0;
+    out->col_basis[0] = 1.0;
+    out->row_basis[1] = 1.0;
+    out->height_axis[2] = 1.0;
+    if (desc != NULL)
+        *out = *desc;
+
+    if (_geom_dvec3_is_zero(out->col_basis))
+    {
+        out->col_basis[0] = 1.0;
+        out->col_basis[1] = 0.0;
+        out->col_basis[2] = 0.0;
+    }
+    if (_geom_dvec3_is_zero(out->row_basis))
+    {
+        out->row_basis[0] = 0.0;
+        out->row_basis[1] = 1.0;
+        out->row_basis[2] = 0.0;
+    }
+    if (_geom_dvec3_is_zero(out->height_axis))
+    {
+        out->height_axis[0] = 0.0;
+        out->height_axis[1] = 0.0;
+        out->height_axis[2] = 1.0;
+    }
+    if (out->height_scale == 0.0)
+        out->height_scale = 1.0;
+
+    _geom_color_or_default(out->color, color);
+}
+
+
+
+/**
+ * Return whether a geometry can be consumed as a complete indexed payload.
+ *
+ * @param geometry the geometry
+ * @return whether the geometry is valid
+ */
+static bool _geom_valid_payload(const DvzGeometry* geometry)
+{
+    return geometry != NULL && geometry->vertex_count > 0 && geometry->positions != NULL &&
+           geometry->colors != NULL && geometry->texcoords != NULL &&
+           (geometry->index_count == 0 || geometry->indices != NULL);
+}
+
+
+
 /*************************************************************************************************/
 /*  Functions                                                                                    */
 /*************************************************************************************************/
@@ -313,6 +514,191 @@ DvzGeometryBounds dvz_geometry_bounds(const DvzGeometry* geometry)
 
     return (DvzGeometryBounds){
         .xmin = xmin, .xmax = xmax, .ymin = ymin, .ymax = ymax, .zmin = zmin, .zmax = zmax};
+}
+
+
+
+/**
+ * Recompute smooth vertex normals from triangle indices.
+ *
+ * @param geometry the geometry
+ * @return 0 on success, -1 on invalid input
+ */
+int dvz_geometry_compute_normals(DvzGeometry* geometry)
+{
+    if (geometry == NULL || geometry->positions == NULL || geometry->normals == NULL ||
+        geometry->indices == NULL || geometry->vertex_count == 0 || geometry->index_count == 0 ||
+        geometry->index_count % 3 != 0)
+    {
+        return -1;
+    }
+
+    dvz_memset(geometry->normals, geometry->vertex_count * sizeof(dvec3), 0,
+               geometry->vertex_count * sizeof(dvec3));
+
+    for (uint32_t i = 0; i < geometry->index_count; i += 3)
+    {
+        const DvzIndex i0 = geometry->indices[i + 0];
+        const DvzIndex i1 = geometry->indices[i + 1];
+        const DvzIndex i2 = geometry->indices[i + 2];
+        if (i0 >= geometry->vertex_count || i1 >= geometry->vertex_count ||
+            i2 >= geometry->vertex_count)
+        {
+            return -1;
+        }
+
+        dvec3 n = {0};
+        if (!_geom_triangle_normal(geometry, i0, i1, i2, n))
+            continue;
+
+        for (uint32_t j = 0; j < 3; j++)
+        {
+            geometry->normals[i0][j] += n[j];
+            geometry->normals[i1][j] += n[j];
+            geometry->normals[i2][j] += n[j];
+        }
+    }
+
+    for (uint32_t i = 0; i < geometry->vertex_count; i++)
+    {
+        if (!_geom_dvec3_normalize(geometry->normals[i]))
+        {
+            geometry->normals[i][0] = 0.0;
+            geometry->normals[i][1] = 0.0;
+            geometry->normals[i][2] = 1.0;
+        }
+    }
+    return 0;
+}
+
+
+
+/**
+ * Apply an affine transform to positions and normals in place.
+ *
+ * @param geometry the geometry
+ * @param transform affine transform matrix
+ * @return 0 on success, -1 on invalid input
+ */
+int dvz_geometry_transform(DvzGeometry* geometry, dmat4 transform)
+{
+    if (geometry == NULL || transform == NULL || geometry->positions == NULL ||
+        geometry->vertex_count == 0)
+    {
+        return -1;
+    }
+
+    const double a00 = transform[0][0], a01 = transform[1][0], a02 = transform[2][0];
+    const double a10 = transform[0][1], a11 = transform[1][1], a12 = transform[2][1];
+    const double a20 = transform[0][2], a21 = transform[1][2], a22 = transform[2][2];
+    const double det = a00 * (a11 * a22 - a12 * a21) -
+                       a01 * (a10 * a22 - a12 * a20) +
+                       a02 * (a10 * a21 - a11 * a20);
+    if (geometry->normals != NULL && fabs(det) <= EPSILON)
+        return -1;
+
+    const double inv_det = det != 0.0 ? 1.0 / det : 0.0;
+    const double n00 = (a11 * a22 - a12 * a21) * inv_det;
+    const double n01 = (a12 * a20 - a10 * a22) * inv_det;
+    const double n02 = (a10 * a21 - a11 * a20) * inv_det;
+    const double n10 = (a02 * a21 - a01 * a22) * inv_det;
+    const double n11 = (a00 * a22 - a02 * a20) * inv_det;
+    const double n12 = (a01 * a20 - a00 * a21) * inv_det;
+    const double n20 = (a01 * a12 - a02 * a11) * inv_det;
+    const double n21 = (a02 * a10 - a00 * a12) * inv_det;
+    const double n22 = (a00 * a11 - a01 * a10) * inv_det;
+
+    for (uint32_t i = 0; i < geometry->vertex_count; i++)
+        dvz_dmat4_mulv3(transform, geometry->positions[i], 1.0, geometry->positions[i]);
+
+    if (geometry->normals != NULL)
+    {
+        for (uint32_t i = 0; i < geometry->vertex_count; i++)
+        {
+            const double x = geometry->normals[i][0];
+            const double y = geometry->normals[i][1];
+            const double z = geometry->normals[i][2];
+            geometry->normals[i][0] = n00 * x + n01 * y + n02 * z;
+            geometry->normals[i][1] = n10 * x + n11 * y + n12 * z;
+            geometry->normals[i][2] = n20 * x + n21 * y + n22 * z;
+            _geom_dvec3_normalize(geometry->normals[i]);
+        }
+    }
+
+    return 0;
+}
+
+
+
+/**
+ * Merge several geometry objects into one indexed geometry.
+ *
+ * @param count number of input geometries
+ * @param geometries input geometry array
+ * @return the merged geometry, or NULL on failure
+ */
+DvzGeometry* dvz_geometry_merge(uint32_t count, const DvzGeometry* const* geometries)
+{
+    if (count == 0 || geometries == NULL)
+        return NULL;
+
+    uint64_t vertex_count = 0;
+    uint64_t index_count = 0;
+    for (uint32_t i = 0; i < count; i++)
+    {
+        const DvzGeometry* geometry = geometries[i];
+        if (!_geom_valid_payload(geometry))
+            return NULL;
+
+        if (_dvz_add_u64_overflows(vertex_count, geometry->vertex_count, &vertex_count) ||
+            _dvz_add_u64_overflows(index_count, geometry->index_count, &index_count) ||
+            vertex_count > UINT32_MAX || index_count > UINT32_MAX)
+        {
+            return NULL;
+        }
+    }
+
+    DvzGeometry* out = dvz_geometry((uint32_t)vertex_count, (uint32_t)index_count);
+    if (out == NULL)
+        return NULL;
+
+    out->type = DVZ_GEOMETRY_CUSTOM;
+    out->flags = DVZ_GEOMETRY_INDEXING_TRIANGLES;
+
+    uint32_t vertex_offset = 0;
+    uint32_t index_offset = 0;
+    for (uint32_t i = 0; i < count; i++)
+    {
+        const DvzGeometry* geometry = geometries[i];
+        const uint64_t position_size = (uint64_t)geometry->vertex_count * sizeof(dvec3);
+        const uint64_t color_size = (uint64_t)geometry->vertex_count * sizeof(DvzColor);
+        const uint64_t texcoord_size = (uint64_t)geometry->vertex_count * sizeof(dvec2);
+
+        dvz_memcpy(&out->positions[vertex_offset], position_size, geometry->positions, position_size);
+        if (geometry->normals != NULL)
+            dvz_memcpy(&out->normals[vertex_offset], position_size, geometry->normals, position_size);
+        if (geometry->colors != NULL)
+            dvz_memcpy(&out->colors[vertex_offset], color_size, geometry->colors, color_size);
+        if (geometry->texcoords != NULL)
+            dvz_memcpy(
+                &out->texcoords[vertex_offset], texcoord_size, geometry->texcoords, texcoord_size);
+
+        for (uint32_t j = 0; j < geometry->index_count; j++)
+        {
+            const DvzIndex src_index = geometry->indices[j];
+            if (src_index >= geometry->vertex_count)
+            {
+                dvz_geometry_destroy(out);
+                return NULL;
+            }
+            out->indices[index_offset + j] = vertex_offset + src_index;
+        }
+
+        vertex_offset += geometry->vertex_count;
+        index_offset += geometry->index_count;
+    }
+
+    return out;
 }
 
 
@@ -473,6 +859,89 @@ DvzGeometry* dvz_geom_plane(const DvzGeometryPlaneDesc* desc)
     _geom_set_index(geometry, 3, 0);
     _geom_set_index(geometry, 4, 2);
     _geom_set_index(geometry, 5, 3);
+
+    return geometry;
+}
+
+
+
+/**
+ * Create an indexed structured surface-grid geometry.
+ *
+ * @param desc surface-grid descriptor
+ * @return the new geometry, or NULL on failure
+ */
+DvzGeometry* dvz_geom_surface_grid(const DvzGeometrySurfaceGridDesc* desc)
+{
+    if (desc == NULL)
+        return NULL;
+
+    DvzGeometrySurfaceGridDesc cfg = {0};
+    DvzColor fallback_color = {0};
+    _geom_surface_grid_config(desc, &cfg, fallback_color);
+
+    uint32_t vertex_count = 0;
+    uint32_t index_count = 0;
+    if (!_geom_surface_grid_counts(cfg.rows, cfg.cols, &vertex_count, &index_count))
+        return NULL;
+
+    DvzGeometry* geometry = dvz_geometry(vertex_count, index_count);
+    if (geometry == NULL)
+        return NULL;
+
+    geometry->type = DVZ_GEOMETRY_SURFACE_GRID;
+    geometry->flags = DVZ_GEOMETRY_INDEXING_TRIANGLES | DVZ_GEOMETRY_INDEXING_SURFACE_GRID;
+    geometry->grid_rows = cfg.rows;
+    geometry->grid_cols = cfg.cols;
+
+    for (uint32_t row = 0; row < cfg.rows; row++)
+    {
+        const double v = cfg.rows > 1 ? (double)row / (double)(cfg.rows - 1) : 0.0;
+        for (uint32_t col = 0; col < cfg.cols; col++)
+        {
+            const uint32_t index = row * cfg.cols + col;
+            const double u = cfg.cols > 1 ? (double)col / (double)(cfg.cols - 1) : 0.0;
+            const double height =
+                cfg.heights != NULL ? cfg.heights[index] * cfg.height_scale : 0.0;
+            const dvec3 position = {
+                cfg.origin[0] + (double)col * cfg.col_basis[0] +
+                    (double)row * cfg.row_basis[0] + height * cfg.height_axis[0],
+                cfg.origin[1] + (double)col * cfg.col_basis[1] +
+                    (double)row * cfg.row_basis[1] + height * cfg.height_axis[1],
+                cfg.origin[2] + (double)col * cfg.col_basis[2] +
+                    (double)row * cfg.row_basis[2] + height * cfg.height_axis[2],
+            };
+            const dvec3 normal = {0.0, 0.0, 1.0};
+            const dvec2 texcoord = {u, v};
+            const DvzColor* color = cfg.colors != NULL ? &cfg.colors[index] : &fallback_color;
+            _geom_set_vertex(geometry, index, position, normal, texcoord, *color);
+        }
+    }
+
+    uint32_t index_offset = 0;
+    for (uint32_t row = 0; row < cfg.rows - 1; row++)
+    {
+        for (uint32_t col = 0; col < cfg.cols - 1; col++)
+        {
+            const uint32_t i0 = row * cfg.cols + col;
+            const uint32_t i1 = i0 + 1;
+            const uint32_t i2 = i0 + cfg.cols;
+            const uint32_t i3 = i2 + 1;
+            _geom_set_index(geometry, index_offset + 0, i0);
+            _geom_set_index(geometry, index_offset + 1, i1);
+            _geom_set_index(geometry, index_offset + 2, i3);
+            _geom_set_index(geometry, index_offset + 3, i0);
+            _geom_set_index(geometry, index_offset + 4, i3);
+            _geom_set_index(geometry, index_offset + 5, i2);
+            index_offset += 6;
+        }
+    }
+
+    if (dvz_geometry_compute_normals(geometry) != 0)
+    {
+        dvz_geometry_destroy(geometry);
+        return NULL;
+    }
 
     return geometry;
 }
