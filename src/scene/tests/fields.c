@@ -284,6 +284,43 @@ int test_scene_colorbar_auto_reserve_and_visuals(TstContext* suite, const TstCas
     AT(positions[0] < -0.95f);
     AT(positions[3 * (pos_view.item_count - 1) + 0] > 0.95f);
 
+    AT(dvz_colorbar_set_layout(
+        colorbar, &(DvzColorbarDesc){
+                      .placement_mode = DVZ_COLORBAR_PLACEMENT_DETACHED,
+                      .orientation = DVZ_COLORBAR_ORIENTATION_VERTICAL,
+                      .anchor = DVZ_SCENE_ANCHOR_PANEL_RIGHT,
+                      .reserve_px = 80.0f,
+                      .ramp_width_px = 24.0f,
+                      .placement = {
+                          .space = DVZ_PLACEMENT_SPACE_PANEL,
+                          .horizontal_anchor = DVZ_HORIZONTAL_ANCHOR_RIGHT,
+                          .vertical_anchor = DVZ_VERTICAL_ANCHOR_CENTER,
+                          .offset_x_px = -24.0f,
+                          .width_px = 48.0f,
+                          .height_px = 240.0f,
+                      },
+                  }));
+    _scene_prepare_colorbar_visuals(figure, NULL);
+    AT(colorbar->placement_mode == DVZ_COLORBAR_PLACEMENT_DETACHED);
+    AT(fabsf(colorbar->ramp_width_px - 24.0f) < 1e-6f);
+    AT(dvz_panel_get_reserve(panel, &reserve));
+    AT(fabsf(reserve.right_px) < 1e-6f);
+    AT(fabsf(reserve.bottom_px - 35.0f) < 1e-6f);
+
+    AT(dvz_colorbar_set_layout(
+        colorbar, &(DvzColorbarDesc){
+                      .placement_mode = DVZ_COLORBAR_PLACEMENT_ATTACHED,
+                      .orientation = DVZ_COLORBAR_ORIENTATION_VERTICAL,
+                      .anchor = DVZ_SCENE_ANCHOR_PANEL_RIGHT,
+                      .reserve_px = 80.0f,
+                      .ramp_width_px = 20.0f,
+                      .title = "Live layout",
+                  }));
+    AT(strcmp(colorbar->title, "Live layout") == 0);
+    AT(dvz_panel_get_reserve(panel, &reserve));
+    AT(fabsf(reserve.right_px - 80.0f) < 1e-6f);
+    AT(fabsf(reserve.bottom_px - 35.0f) < 1e-6f);
+
     dvz_scene_destroy(scene);
     return 0;
 }

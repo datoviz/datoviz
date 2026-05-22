@@ -1719,6 +1719,54 @@ bool dvz_colorbar_set_anchor(DvzColorbar* colorbar, DvzSceneAnchor anchor)
 }
 
 
+/**
+ * Update colorbar layout and placement parameters.
+ *
+ * @param colorbar the colorbar
+ * @param desc layout descriptor
+ * @return true when the layout was accepted
+ */
+bool dvz_colorbar_set_layout(DvzColorbar* colorbar, const DvzColorbarDesc* desc)
+{
+    ANN(colorbar);
+    if (desc == NULL)
+        return false;
+    DvzColorbarPlacementMode placement_mode = desc->placement_mode;
+    DvzColorbarOrientation orientation = desc->orientation;
+    DvzSceneAnchor anchor =
+        desc->anchor != DVZ_SCENE_ANCHOR_NONE ? desc->anchor : DVZ_SCENE_ANCHOR_PANEL_RIGHT;
+    if (placement_mode == DVZ_COLORBAR_PLACEMENT_ATTACHED && !_colorbar_anchor_supported(anchor))
+    {
+        log_error("attached colorbar anchor must be a panel edge");
+        return false;
+    }
+
+    colorbar->placement_mode = placement_mode;
+    colorbar->orientation = orientation;
+    colorbar->anchor = anchor;
+    colorbar->flags = desc->flags;
+    colorbar->reserve_px =
+        _colorbar_positive_or_default(desc->reserve_px, _colorbar_default_reserve_px(orientation));
+    colorbar->ramp_width_px =
+        _colorbar_positive_or_default(desc->ramp_width_px, COLORBAR_RAMP_THICKNESS_PX);
+    colorbar->edge_offset_px =
+        _colorbar_positive_or_default(desc->edge_offset_px, COLORBAR_EDGE_PADDING_PX);
+    colorbar->plot_gap_px =
+        _colorbar_positive_or_default(desc->plot_gap_px, COLORBAR_EDGE_PADDING_PX);
+    colorbar->tick_length_px =
+        _colorbar_positive_or_default(desc->tick_length_px, COLORBAR_TICK_LENGTH_PX);
+    colorbar->label_gap_px =
+        _colorbar_positive_or_default(desc->label_gap_px, COLORBAR_LABEL_GAP_PX);
+    colorbar->placement = desc->placement;
+    if (desc->title != NULL)
+        dvz_strlcpy(colorbar->title, desc->title, sizeof(colorbar->title));
+
+    _colorbar_apply_auto_reserve(colorbar);
+    _scene_mark_colorbar_dirty(colorbar);
+    return true;
+}
+
+
 
 /**
  * Set the colorbar title.

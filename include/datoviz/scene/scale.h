@@ -191,6 +191,19 @@ DVZ_EXPORT bool dvz_colorbar_set_anchor(DvzColorbar* colorbar, DvzSceneAnchor an
 
 
 /**
+ * Update colorbar layout and placement parameters.
+ *
+ * The descriptor updates orientation, placement mode, anchor, reserve size, geometry gaps, explicit
+ * detached placement, flags, and title when a non-NULL title is supplied.
+ *
+ * @param colorbar the colorbar
+ * @param desc layout descriptor
+ * @return true when the layout was accepted
+ */
+DVZ_EXPORT bool dvz_colorbar_set_layout(DvzColorbar* colorbar, const DvzColorbarDesc* desc);
+
+
+/**
  * Set the colorbar title.
  *
  * @param colorbar the colorbar
