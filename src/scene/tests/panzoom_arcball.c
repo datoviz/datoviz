@@ -403,6 +403,66 @@ int test_arcball_scene_binding_uses_panel_input(TstContext* suite, const TstCase
 }
 
 
+int test_arcball_panel_input_uses_hidpi_figure_coordinates(TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 800, 400, 0);
+    ANN(figure);
+    DvzPanel* left = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 0.5f, 1.0f});
+    DvzPanel* right = dvz_panel(figure, (DvzPanelDesc){0.5f, 0.0f, 0.5f, 1.0f});
+    ANN(left);
+    ANN(right);
+
+    DvzController* left_controller = dvz_arcball(scene, NULL);
+    DvzController* right_controller = dvz_arcball(scene, NULL);
+    ANN(left_controller);
+    ANN(right_controller);
+    DvzArcball* left_arcball = dvz_controller_arcball(left_controller);
+    DvzArcball* right_arcball = dvz_controller_arcball(right_controller);
+    ANN(left_arcball);
+    ANN(right_arcball);
+    AT(dvz_panel_bind_controller(left, left_controller, DVZ_DIM_MASK_XYZ) == 0);
+    AT(dvz_panel_bind_controller(right, right_controller, DVZ_DIM_MASK_XYZ) == 0);
+
+    DvzInputRouter* router = dvz_input_router();
+    ANN(router);
+    AT(dvz_panel_connect_input(left, router) == 0);
+    AT(dvz_panel_connect_input(right, router) == 0);
+
+    DvzInputResizeEvent resize = {
+        .framebuffer_width = 800,
+        .framebuffer_height = 400,
+        .window_width = 400,
+        .window_height = 200,
+        .content_scale_x = 2.0f,
+        .content_scale_y = 2.0f,
+    };
+    dvz_input_emit_resize(router, &resize);
+
+    DvzInputEvent wheel = {
+        .type = DVZ_INPUT_EVENT_POINTER,
+        .content.pointer =
+            {
+                .type = DVZ_POINTER_EVENT_WHEEL,
+                .content.w.dir = {0.0f, 1.0f},
+                .pos = {250.0f, 100.0f},
+                .content_scale = 2.0f,
+            },
+    };
+    dvz_input_emit_event(router, &wheel);
+    AC(left_arcball->zoom, 1.0f, 1e-6f);
+    AT(right_arcball->zoom > 1.0f);
+
+    dvz_input_router_destroy(router);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
 /**
  * Ensure panel camera and arcball compose into view/projection and model matrices.
  *
@@ -767,6 +827,7 @@ int test_scene_panzoom_arcball(TstSuite* suite)
     TST_CASE(test_arcball_interaction_state);
     TST_CASE(test_arcball_double_click_resets);
     TST_CASE(test_arcball_scene_binding_uses_panel_input);
+    TST_CASE(test_arcball_panel_input_uses_hidpi_figure_coordinates);
 
     TST_CASE(test_scene_camera_arcball_mvp_composition);
     return 0;

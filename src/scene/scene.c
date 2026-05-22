@@ -918,6 +918,54 @@ static void _scene_panel_local_pointer(
 
 
 /**
+ * Convert a pointer event from logical window coordinates to figure coordinates.
+ *
+ * @param panel panel receiving input
+ * @param router input router carrying the last resize event
+ * @param ev input event
+ * @param out output event in figure coordinates
+ */
+static void _scene_panel_pointer_to_figure_coordinates(
+    const DvzPanel* panel, const DvzInputRouter* router, const DvzPointerEvent* ev,
+    DvzPointerEvent* out)
+{
+    ANN(panel);
+    ANN(ev);
+    ANN(out);
+    *out = *ev;
+
+    float sx = 1.0f;
+    float sy = 1.0f;
+    DvzInputResizeEvent resize = {0};
+    if (router != NULL && dvz_input_router_last_resize(router, &resize) &&
+        resize.window_width > 0 && resize.window_height > 0 && panel->figure != NULL &&
+        panel->figure->width > 0 && panel->figure->height > 0)
+    {
+        sx = (float)panel->figure->width / (float)resize.window_width;
+        sy = (float)panel->figure->height / (float)resize.window_height;
+    }
+    else if (isfinite(ev->content_scale) && ev->content_scale > 0.0f)
+    {
+        sx = ev->content_scale;
+        sy = ev->content_scale;
+    }
+
+    out->pos[0] *= sx;
+    out->pos[1] *= sy;
+    if (ev->type == DVZ_POINTER_EVENT_DRAG || ev->type == DVZ_POINTER_EVENT_DRAG_STOP)
+    {
+        out->content.d.press_pos[0] *= sx;
+        out->content.d.press_pos[1] *= sy;
+        out->content.d.last_pos[0] *= sx;
+        out->content.d.last_pos[1] *= sy;
+        out->content.d.shift[0] *= sx;
+        out->content.d.shift[1] *= sy;
+    }
+}
+
+
+
+/**
  * Return whether a pointer event targets a panel.
  *
  * @param panel the panel
@@ -1125,12 +1173,15 @@ static bool _scene_panel_dispatch_keyboard(DvzPanel* panel, const DvzKeyboardEve
 static void _scene_panel_input_callback(
     DvzInputRouter* router, const DvzInputEvent* ev, void* user_data)
 {
-    (void)router;
     DvzPanel* panel = (DvzPanel*)user_data;
     if (panel == NULL || ev == NULL)
         return;
     if (ev->type == DVZ_INPUT_EVENT_POINTER)
-        (void)_scene_panel_dispatch_pointer(panel, &ev->content.pointer);
+    {
+        DvzPointerEvent pointer = {0};
+        _scene_panel_pointer_to_figure_coordinates(panel, router, &ev->content.pointer, &pointer);
+        (void)_scene_panel_dispatch_pointer(panel, &pointer);
+    }
     else if (ev->type == DVZ_INPUT_EVENT_KEYBOARD)
         (void)_scene_panel_dispatch_keyboard(panel, &ev->content.keyboard);
     else if (ev->type == DVZ_INPUT_EVENT_RESIZE && panel->camera != NULL)

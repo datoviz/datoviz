@@ -172,6 +172,9 @@ int test_arcball_double_click_resets(TstContext* suite, const TstCase* item);
 
 int test_arcball_scene_binding_uses_panel_input(TstContext* suite, const TstCase* item);
 
+int test_arcball_panel_input_uses_hidpi_figure_coordinates(
+    TstContext* suite, const TstCase* item);
+
 int test_scene_capabilities_diagnostics(TstContext* suite, const TstCase* item);
 
 int test_frame_plan_static_render(TstContext* suite, const TstCase* item);
