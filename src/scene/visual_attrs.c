@@ -1271,9 +1271,8 @@ int dvz_mesh_data(
 /**
  * Upload a CPU geometry object into a mesh visual.
  *
- * Positions and normals are downcast from F64 to F32 for the current mesh attribute path. Colors
- * and indices are uploaded directly. Geometry UVs are retained by DvzGeometry but ignored until the
- * mesh visual exposes a texcoord attribute.
+ * Positions, normals, and texcoords are downcast from F64 to F32 for the current mesh attribute
+ * path. Colors and indices are uploaded directly.
  *
  * @param visual the mesh visual
  * @param geometry the geometry
@@ -1289,6 +1288,7 @@ int dvz_mesh_geometry(DvzVisual* visual, const DvzGeometry* geometry)
 
     vec3* positions = (vec3*)dvz_calloc(geometry->vertex_count, sizeof(vec3));
     vec3* normals = NULL;
+    vec2* texcoords = NULL;
     DvzSceneBuffer* index_buffer = NULL;
     if (positions == NULL)
         return -1;
@@ -1311,6 +1311,18 @@ int dvz_mesh_geometry(DvzVisual* visual, const DvzGeometry* geometry)
             normals[i][0] = (float)geometry->normals[i][0];
             normals[i][1] = (float)geometry->normals[i][1];
             normals[i][2] = (float)geometry->normals[i][2];
+        }
+    }
+
+    if (geometry->texcoords != NULL)
+    {
+        texcoords = (vec2*)dvz_calloc(geometry->vertex_count, sizeof(vec2));
+        if (texcoords == NULL)
+            goto cleanup;
+        for (uint32_t i = 0; i < geometry->vertex_count; i++)
+        {
+            texcoords[i][0] = (float)geometry->texcoords[i][0];
+            texcoords[i][1] = (float)geometry->texcoords[i][1];
         }
     }
 
@@ -1343,7 +1355,27 @@ int dvz_mesh_geometry(DvzVisual* visual, const DvzGeometry* geometry)
             goto cleanup;
     }
 
-    if (dvz_mesh_data(visual, positions, geometry->colors, normals, geometry->vertex_count) != 0)
+    DvzVisualDataUpdate updates[4] = {
+        {.attr_name = "position", .data = positions, .item_count = geometry->vertex_count},
+    };
+    uint32_t update_count = 1;
+    if (geometry->colors != NULL)
+    {
+        updates[update_count++] = (DvzVisualDataUpdate){
+            .attr_name = "color", .data = geometry->colors, .item_count = geometry->vertex_count};
+    }
+    if (normals != NULL)
+    {
+        updates[update_count++] = (DvzVisualDataUpdate){
+            .attr_name = "normal", .data = normals, .item_count = geometry->vertex_count};
+    }
+    if (texcoords != NULL)
+    {
+        updates[update_count++] = (DvzVisualDataUpdate){
+            .attr_name = "texcoords", .data = texcoords, .item_count = geometry->vertex_count};
+    }
+
+    if (dvz_visual_set_data_many(visual, updates, update_count) != 0)
         goto cleanup;
 
     if (!dvz_visual_set_buffer(visual, "index", index_buffer))
@@ -1359,6 +1391,7 @@ cleanup:
         dvz_scene_buffer_destroy(index_buffer);
     dvz_free(positions);
     dvz_free(normals);
+    dvz_free(texcoords);
     return rc;
 }
 

@@ -796,7 +796,7 @@ dvz_visual_attr_mutability(const DvzVisual* visual, const char* attr_name);
  * primitive: `"position"` (vec3f), `"color"` (RGBA8)
  * path: `"position"` (vec3f), `"color"` (RGBA8), optional `"stroke_width"` (float pixels)
  * mesh: `"position"` (vec3f), optional `"color"` (RGBA8), optional `"normal"` (vec3f),
- *       optional `"instance_transform"` (mat4f, one per instance)
+ *       optional `"texcoords"` (vec2f), optional `"instance_transform"` (mat4f, one per instance)
  * primitive only: `"normal"` (vec3f)
  * image: legacy `"position"` (vec3f) + `"texcoords"` (vec2f) corner vertices, or
  *        per-item `"position"` (vec3f) + `"extent"` (vec2f) with optional `"tex_rect"`
@@ -929,9 +929,8 @@ DVZ_EXPORT int dvz_mesh_data(
 /**
  * Upload a CPU geometry object into a mesh visual.
  *
- * Positions and normals are downcast from F64 to F32 for the current mesh attribute path. Colors
- * and indices are uploaded directly. Geometry UVs are retained by DvzGeometry but ignored until the
- * mesh visual exposes a texcoord attribute.
+ * Positions, normals, and texcoords are downcast from F64 to F32 for the current mesh attribute
+ * path. Colors and indices are uploaded directly.
  *
  * @param visual the mesh visual
  * @param geometry the geometry

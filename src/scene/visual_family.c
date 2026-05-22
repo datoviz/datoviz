@@ -123,6 +123,7 @@ static const DvzVisualFamilyAttrDesc MESH_ATTRS[] = {
     {"position", 3 * sizeof(float), SRC_ITEM_ONLY, false},
     {"color", 4 * sizeof(uint8_t), SRC_COLOR_GROUPED, false},
     {"normal", 3 * sizeof(float), SRC_ITEM_ONLY, false},
+    {"texcoords", 2 * sizeof(float), SRC_ITEM_ONLY, false},
     {"instance_transform", 16 * sizeof(float), SRC_ITEM_ONLY, true},
 };
 
@@ -189,7 +190,7 @@ static const VisualFamilyAttrs FAMILY_ATTRS[] = {
     {DVZ_VISUAL_TYPE_IMAGE, IMAGE_ATTRS, DVZ_ARRAY_COUNT(IMAGE_ATTRS),
      "position, extent, anchor, tex_rect, texcoords"},
     {DVZ_VISUAL_TYPE_MESH, MESH_ATTRS, DVZ_ARRAY_COUNT(MESH_ATTRS),
-     "position, color, normal, instance_transform"},
+     "position, color, normal, texcoords, instance_transform"},
     {DVZ_VISUAL_TYPE_VOLUME, VOLUME_ATTRS, DVZ_ARRAY_COUNT(VOLUME_ATTRS),
      "position, texcoords, plus a bound 3D field"},
     {DVZ_VISUAL_TYPE_PRIMITIVE, PRIMITIVE_ATTRS, DVZ_ARRAY_COUNT(PRIMITIVE_ATTRS),

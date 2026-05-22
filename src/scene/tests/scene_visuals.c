@@ -2145,12 +2145,18 @@ int test_scene_mesh_typed_data_upload(TstContext* suite, const TstCase* item)
         {0.0f, 0.0f, 1.0f},
         {0.0f, 0.0f, 1.0f},
     };
+    vec2 texcoords[3] = {
+        {0.0f, 0.0f},
+        {1.0f, 0.0f},
+        {0.0f, 1.0f},
+    };
     mat4 transforms[1] = {{{1.0f, 0.0f, 0.0f, 0.0f},
                            {0.0f, 1.0f, 0.0f, 0.0f},
                            {0.0f, 0.0f, 1.0f, 0.0f},
                            {0.0f, 0.0f, 0.0f, 1.0f}}};
 
     AT(dvz_mesh_data(visual, positions, colors, normals, 3) == 0);
+    AT(dvz_visual_set_data(visual, "texcoords", texcoords, 3) == 0);
     AT(dvz_mesh_instances(visual, transforms, 1) == 0);
 
     DvzVisualDataView normal_view = {0};
@@ -2161,6 +2167,14 @@ int test_scene_mesh_typed_data_upload(TstContext* suite, const TstCase* item)
     DvzVisualDataView transform_view = {0};
     AT(dvz_visual_data(visual, "instance_transform", &transform_view) == 0);
     AT(transform_view.item_count == 1);
+
+    DvzVisualDataView texcoord_view = {0};
+    AT(dvz_visual_data(visual, "texcoords", &texcoord_view) == 0);
+    AT(texcoord_view.item_count == 3);
+    AT(texcoord_view.item_size == 2 * sizeof(float));
+    const float* stored_texcoords = texcoord_view.data;
+    AT(stored_texcoords[3] == 0.0f);
+    AT(stored_texcoords[5] == 1.0f);
 
     DvzVisual* default_color_mesh = dvz_mesh(scene, 0);
     ANN(default_color_mesh);
@@ -2219,6 +2233,15 @@ int test_scene_mesh_geometry_upload(TstContext* suite, const TstCase* item)
     const DvzColor* stored_colors = color_view.data;
     AT(stored_colors[0][0] == 255);
     AT(stored_colors[1][1] == 255);
+
+    DvzVisualDataView texcoord_view = {0};
+    AT(dvz_visual_data(visual, "texcoords", &texcoord_view) == 0);
+    AT(texcoord_view.item_count == 4);
+    AT(texcoord_view.item_size == 2 * sizeof(float));
+    const float* texcoords = texcoord_view.data;
+    AT(texcoords[0] == 0.0f);
+    AT(texcoords[2] == 1.0f);
+    AT(texcoords[7] == 1.0f);
 
     AT(visual->buffer != NULL);
     AT(visual->buffer->desc.usage & DVZ_SCENE_BUFFER_USAGE_INDEX);
