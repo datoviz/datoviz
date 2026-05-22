@@ -358,6 +358,39 @@ typedef enum
 } DvzColorbarOrientation;
 
 
+typedef enum
+{
+    DVZ_COLORBAR_PLACEMENT_ATTACHED = 0,
+    DVZ_COLORBAR_PLACEMENT_DETACHED,
+} DvzColorbarPlacementMode;
+
+
+
+typedef enum
+{
+    DVZ_PLACEMENT_SPACE_PANEL = 0,
+    DVZ_PLACEMENT_SPACE_FIGURE,
+} DvzPlacementSpace;
+
+
+
+typedef enum
+{
+    DVZ_HORIZONTAL_ANCHOR_LEFT = 0,
+    DVZ_HORIZONTAL_ANCHOR_CENTER,
+    DVZ_HORIZONTAL_ANCHOR_RIGHT,
+} DvzHorizontalAnchor;
+
+
+
+typedef enum
+{
+    DVZ_VERTICAL_ANCHOR_TOP = 0,
+    DVZ_VERTICAL_ANCHOR_CENTER,
+    DVZ_VERTICAL_ANCHOR_BOTTOM,
+} DvzVerticalAnchor;
+
+
 
 typedef enum
 {

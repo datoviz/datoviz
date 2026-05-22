@@ -287,10 +287,43 @@ DVZ_EXPORT DvzPanelLayoutReserve dvz_panel_layout_reserve(void);
 
 
 /**
+ * Set a fixed pixel reservation around one panel's plot area.
+ *
+ * Reservations are in logical pixels and remain stable across figure/window resizes. Pass NULL to
+ * reset every side to zero.
+ *
+ * @param panel the panel
+ * @param reserve pixel reservation descriptor, or NULL for zero reserve
+ * @return whether the reservation was accepted
+ */
+DVZ_EXPORT bool dvz_panel_set_reserve(DvzPanel* panel, const DvzPanelReserve* reserve);
+
+
+/**
+ * Return one panel's fixed pixel reservation.
+ *
+ * @param panel the panel
+ * @param out output pixel reservation
+ * @return whether the reservation was written
+ */
+DVZ_EXPORT bool dvz_panel_get_reserve(const DvzPanel* panel, DvzPanelReserve* out);
+
+
+/**
+ * Return one panel's current plot rectangle in figure pixel coordinates.
+ *
+ * @param panel the panel
+ * @param out output plot rectangle in logical pixels
+ * @return whether the rectangle was written
+ */
+DVZ_EXPORT bool dvz_panel_plot_rect_px(const DvzPanel* panel, DvzRect* out);
+
+
+/**
  * Reserve visual-space room around one panel's plot area for future adornments.
  *
- * Reservations are in panel visual-space units. Defaults are zero. Nonzero values are intended for
- * tick labels, axis labels, legends, colorbars, or other panel-level adornments.
+ * Compatibility bridge: reservations are accepted in panel visual-space units and converted to
+ * fixed logical pixels at the panel's current size. Prefer dvz_panel_set_reserve() for new code.
  *
  * @param panel the panel
  * @param reserve reservation descriptor, or NULL for defaults

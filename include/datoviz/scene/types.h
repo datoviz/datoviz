@@ -159,6 +159,26 @@ struct DvzPanelDesc
 typedef struct DvzPanelDesc DvzPanelDesc;
 
 
+struct DvzRect
+{
+    float x;
+    float y;
+    float width;
+    float height;
+};
+typedef struct DvzRect DvzRect;
+
+
+struct DvzPanelReserve
+{
+    float left_px;
+    float right_px;
+    float top_px;
+    float bottom_px;
+};
+typedef struct DvzPanelReserve DvzPanelReserve;
+
+
 struct DvzDataDomain
 {
     double min;
@@ -208,6 +228,19 @@ struct DvzPanelLayoutReserve
     float top;
 };
 typedef struct DvzPanelLayoutReserve DvzPanelLayoutReserve;
+
+
+struct DvzPlacement
+{
+    DvzPlacementSpace space;
+    DvzHorizontalAnchor horizontal_anchor;
+    DvzVerticalAnchor vertical_anchor;
+    float offset_x_px;
+    float offset_y_px;
+    float width_px;
+    float height_px;
+};
+typedef struct DvzPlacement DvzPlacement;
 
 
 struct DvzEdlDesc
@@ -578,9 +611,17 @@ typedef struct DvzColormapDesc DvzColormapDesc;
 
 struct DvzColorbarDesc
 {
+    DvzColorbarPlacementMode placement_mode;
     DvzColorbarOrientation orientation;
     DvzSceneAnchor anchor;
     const char* title;
+    float reserve_px;
+    float ramp_width_px;
+    float edge_offset_px;
+    float plot_gap_px;
+    float tick_length_px;
+    float label_gap_px;
+    DvzPlacement placement;
     uint32_t flags;
 };
 typedef struct DvzColorbarDesc DvzColorbarDesc;

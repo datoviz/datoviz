@@ -63,6 +63,57 @@ static bool _panel_layout_reserve_valid(const DvzPanelLayoutReserve* reserve)
     return reserve->left + reserve->right < 2.0f && reserve->bottom + reserve->top < 2.0f;
 }
 
+static void _scene_panel_pixel_size(const DvzPanel* panel, float* out_width, float* out_height);
+
+
+/**
+ * Return whether a panel pixel reservation is finite and leaves non-empty plot space.
+ *
+ * @param panel the panel
+ * @param reserve the pixel reservation descriptor
+ * @return whether the reservation is valid
+ */
+static bool _panel_reserve_valid(const DvzPanel* panel, const DvzPanelReserve* reserve)
+{
+    ANN(panel);
+    ANN(reserve);
+    if (!isfinite(reserve->left_px) || !isfinite(reserve->right_px) ||
+        !isfinite(reserve->top_px) || !isfinite(reserve->bottom_px))
+        return false;
+    if (reserve->left_px < 0.0f || reserve->right_px < 0.0f ||
+        reserve->top_px < 0.0f || reserve->bottom_px < 0.0f)
+        return false;
+
+    float width = 0.0f;
+    float height = 0.0f;
+    _scene_panel_pixel_size(panel, &width, &height);
+    return reserve->left_px + reserve->right_px < width &&
+           reserve->top_px + reserve->bottom_px < height;
+}
+
+
+
+/**
+ * Mark panel layout-dependent state dirty after a plot rectangle change.
+ *
+ * @param panel the panel
+ */
+static void _panel_mark_layout_changed(DvzPanel* panel)
+{
+    ANN(panel);
+    for (uint32_t dim = 0; dim < 2; dim++)
+    {
+        DvzAxis* axis = &panel->axes[dim];
+        if (axis->panel == NULL)
+            continue;
+        axis->tick_cache_valid = false;
+        axis->dirty = true;
+        axis->version++;
+    }
+    _scene_notify_request_frame(panel->figure);
+}
+
+
 static bool _scene_stream_register(DvzScene* scene, DvzDrp2CommandStream* stream);
 
 static bool _scene_has_live_streams(const DvzScene* scene);
@@ -359,14 +410,22 @@ void _scene_panel_plot_visual_rect(const DvzPanel* panel, float out[4])
 {
     ANN(panel);
     ANN(out);
-    DvzPanelLayoutReserve reserve = panel->layout_reserve;
-    if (!_panel_layout_reserve_valid(&reserve))
-        reserve = dvz_panel_layout_reserve();
+    DvzPanelReserve reserve = panel->reserve;
+    if (!_panel_reserve_valid(panel, &reserve))
+        reserve = (DvzPanelReserve){0};
 
-    out[0] = -1.0f + reserve.left;
-    out[1] = +1.0f - reserve.right;
-    out[2] = -1.0f + reserve.bottom;
-    out[3] = +1.0f - reserve.top;
+    float width = 0.0f;
+    float height = 0.0f;
+    _scene_panel_pixel_size(panel, &width, &height);
+    const float left = width > 0.0f ? reserve.left_px / width : 0.0f;
+    const float right = width > 0.0f ? reserve.right_px / width : 0.0f;
+    const float top = height > 0.0f ? reserve.top_px / height : 0.0f;
+    const float bottom = height > 0.0f ? reserve.bottom_px / height : 0.0f;
+
+    out[0] = -1.0f + 2.0f * left;
+    out[1] = +1.0f - 2.0f * right;
+    out[2] = -1.0f + 2.0f * bottom;
+    out[3] = +1.0f - 2.0f * top;
 
     if (out[1] <= out[0] || out[3] <= out[2])
     {
@@ -403,18 +462,14 @@ void _scene_panel_plot_pixel_rect(
     float panel_height = 0.0f;
     _scene_panel_pixel_rect(panel, &panel_x, &panel_y, &panel_width, &panel_height);
 
-    float plot[4] = {0};
-    _scene_panel_plot_visual_rect(panel, plot);
+    DvzPanelReserve reserve = panel->reserve;
+    if (!_panel_reserve_valid(panel, &reserve))
+        reserve = (DvzPanelReserve){0};
 
-    const float left = 0.5f * (plot[0] + 1.0f);
-    const float right = 0.5f * (plot[1] + 1.0f);
-    const float bottom = 0.5f * (plot[2] + 1.0f);
-    const float top = 0.5f * (plot[3] + 1.0f);
-
-    *out_x = panel_x + left * panel_width;
-    *out_y = panel_y + (1.0f - top) * panel_height;
-    *out_width = (right - left) * panel_width;
-    *out_height = (top - bottom) * panel_height;
+    *out_x = panel_x + reserve.left_px;
+    *out_y = panel_y + reserve.top_px;
+    *out_width = panel_width - reserve.left_px - reserve.right_px;
+    *out_height = panel_height - reserve.top_px - reserve.bottom_px;
 }
 
 
@@ -429,19 +484,23 @@ DvzPanelDesc _scene_panel_plot_desc(const DvzPanel* panel)
 {
     ANN(panel);
 
-    float plot[4] = {0};
-    _scene_panel_plot_visual_rect(panel, plot);
+    float panel_width = 0.0f;
+    float panel_height = 0.0f;
+    _scene_panel_pixel_size(panel, &panel_width, &panel_height);
+    DvzPanelReserve reserve = panel->reserve;
+    if (!_panel_reserve_valid(panel, &reserve))
+        reserve = (DvzPanelReserve){0};
 
-    const float left = 0.5f * (plot[0] + 1.0f);
-    const float right = 0.5f * (plot[1] + 1.0f);
-    const float bottom = 0.5f * (plot[2] + 1.0f);
-    const float top = 0.5f * (plot[3] + 1.0f);
+    const float left = panel_width > 0.0f ? reserve.left_px / panel_width : 0.0f;
+    const float right = panel_width > 0.0f ? reserve.right_px / panel_width : 0.0f;
+    const float top = panel_height > 0.0f ? reserve.top_px / panel_height : 0.0f;
+    const float bottom = panel_height > 0.0f ? reserve.bottom_px / panel_height : 0.0f;
 
     return (DvzPanelDesc){
         .x = panel->desc.x + left * panel->desc.width,
-        .y = panel->desc.y + (1.0f - top) * panel->desc.height,
-        .width = (right - left) * panel->desc.width,
-        .height = (top - bottom) * panel->desc.height,
+        .y = panel->desc.y + top * panel->desc.height,
+        .width = (1.0f - left - right) * panel->desc.width,
+        .height = (1.0f - top - bottom) * panel->desc.height,
     };
 }
 
@@ -2447,7 +2506,7 @@ DvzPanel* dvz_panel(DvzFigure* figure, DvzPanelDesc desc)
     DvzPanel* panel       = &figure->panels[figure->panel_count++];
     panel->figure         = figure;
     panel->desc           = desc;
-    panel->layout_reserve = dvz_panel_layout_reserve();
+    panel->reserve        = (DvzPanelReserve){0};
     _scene_technique_state_init(&panel->techniques);
     panel->visual_count = 0;
     return panel;
@@ -2480,6 +2539,58 @@ DvzPanelLayoutReserve dvz_panel_layout_reserve(void)
 
 
 /**
+ * Set a fixed pixel reservation around one panel's plot area.
+ *
+ * @param panel the panel
+ * @param reserve pixel reservation descriptor, or NULL for zero reserve
+ * @return whether the reservation was accepted
+ */
+bool dvz_panel_set_reserve(DvzPanel* panel, const DvzPanelReserve* reserve)
+{
+    if (panel == NULL)
+        return false;
+    DvzPanelReserve next = reserve != NULL ? *reserve : (DvzPanelReserve){0};
+    if (!_panel_reserve_valid(panel, &next))
+        return false;
+    panel->reserve = next;
+    _panel_mark_layout_changed(panel);
+    return true;
+}
+
+
+/**
+ * Return one panel's fixed pixel reservation.
+ *
+ * @param panel the panel
+ * @param out output pixel reservation
+ * @return whether the reservation was written
+ */
+bool dvz_panel_get_reserve(const DvzPanel* panel, DvzPanelReserve* out)
+{
+    if (panel == NULL || out == NULL)
+        return false;
+    *out = panel->reserve;
+    return true;
+}
+
+
+/**
+ * Return one panel's current plot rectangle in figure pixel coordinates.
+ *
+ * @param panel the panel
+ * @param out output plot rectangle in logical pixels
+ * @return whether the rectangle was written
+ */
+bool dvz_panel_plot_rect_px(const DvzPanel* panel, DvzRect* out)
+{
+    if (panel == NULL || out == NULL)
+        return false;
+    _scene_panel_plot_pixel_rect(panel, &out->x, &out->y, &out->width, &out->height);
+    return true;
+}
+
+
+/**
  * Reserve visual-space room around one panel's plot area for future adornments.
  *
  * @param panel the panel
@@ -2493,18 +2604,17 @@ bool dvz_panel_set_layout_reserve(DvzPanel* panel, const DvzPanelLayoutReserve* 
     DvzPanelLayoutReserve next = reserve != NULL ? *reserve : dvz_panel_layout_reserve();
     if (!_panel_layout_reserve_valid(&next))
         return false;
-    panel->layout_reserve = next;
-    for (uint32_t dim = 0; dim < 2; dim++)
-    {
-        DvzAxis* axis = &panel->axes[dim];
-        if (axis->panel == NULL)
-            continue;
-        axis->tick_cache_valid = false;
-        axis->dirty = true;
-        axis->version++;
-    }
-    _scene_notify_request_frame(panel->figure);
-    return true;
+
+    float width = 0.0f;
+    float height = 0.0f;
+    _scene_panel_pixel_size(panel, &width, &height);
+    DvzPanelReserve pixel_reserve = {
+        .left_px = 0.5f * next.left * width,
+        .right_px = 0.5f * next.right * width,
+        .top_px = 0.5f * next.top * height,
+        .bottom_px = 0.5f * next.bottom * height,
+    };
+    return dvz_panel_set_reserve(panel, &pixel_reserve);
 }
 
 
@@ -2519,7 +2629,18 @@ bool dvz_panel_get_layout_reserve(DvzPanel* panel, DvzPanelLayoutReserve* out)
 {
     if (panel == NULL || out == NULL)
         return false;
-    *out = panel->layout_reserve;
+    float width = 0.0f;
+    float height = 0.0f;
+    _scene_panel_pixel_size(panel, &width, &height);
+    DvzPanelReserve reserve = panel->reserve;
+    if (!_panel_reserve_valid(panel, &reserve))
+        reserve = (DvzPanelReserve){0};
+    *out = (DvzPanelLayoutReserve){
+        .left = width > 0.0f ? 2.0f * reserve.left_px / width : 0.0f,
+        .right = width > 0.0f ? 2.0f * reserve.right_px / width : 0.0f,
+        .bottom = height > 0.0f ? 2.0f * reserve.bottom_px / height : 0.0f,
+        .top = height > 0.0f ? 2.0f * reserve.top_px / height : 0.0f,
+    };
     return true;
 }
 
