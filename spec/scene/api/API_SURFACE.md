@@ -263,6 +263,16 @@ The first public surface should expose:
 7. panel pixel reserve accessors and plot-rectangle queries,
 8. colorbar orientation, anchor, placement, title, geometry, and formatting overrides.
 
+Installed colorbar layout mutation is represented by `dvz_colorbar_set_layout()`, which accepts the
+same `DvzColorbarDesc` layout fields used at creation time. This avoids destroy/recreate churn in
+GUI and application code.
+
+Axis layout uses the same resolved panel reserve model. `DvzAxisStyle` carries fixed-pixel reserve,
+tick-gap, and label-gap fields; attached X/Y axes contribute bottom/left reserve bands when an
+explicit positive axis reserve is configured, while colorbars contribute the edge selected by their
+anchor. The resolved plot rectangle combines these contributions with the explicit user/base panel
+reserve.
+
 Interactive range editing should be represented as interaction policy on the scale/colorbar pair,
 not as an external UI-only behavior.
 

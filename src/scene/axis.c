@@ -117,18 +117,7 @@ static float _axis_reserve_px(const DvzAxis* axis)
         return 0.0f;
     if (axis->style.reserve_px > 0.0f && isfinite(axis->style.reserve_px))
         return axis->style.reserve_px;
-    float tick_gap =
-        axis->style.tick_gap_px > 0.0f && isfinite(axis->style.tick_gap_px) ?
-            axis->style.tick_gap_px :
-            AXIS_TEXT_TICK_GAP;
-    float label_gap =
-        axis->style.label_gap_px > 0.0f && isfinite(axis->style.label_gap_px) ?
-            axis->style.label_gap_px :
-            AXIS_TEXT_LABEL_GAP;
-    float reserve = axis->style.show_major_ticks ? tick_gap + AXIS_TEXT_TICK_SIZE + 4.0f : 0.0f;
-    if (axis->label[0] != '\0')
-        reserve = fmaxf(reserve, label_gap + AXIS_TEXT_LABEL_SIZE + 4.0f);
-    return reserve;
+    return 0.0f;
 }
 
 

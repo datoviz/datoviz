@@ -57,10 +57,14 @@ Legends and colorbars are annotation classes; shared anchor/placement behavior i
 
 The installed colorbar API supports two placement modes:
 
-1. attached colorbars reserve fixed logical pixels on a panel edge and render in that panel's
-   adornment band;
+1. attached colorbars contribute fixed logical pixels on a panel edge to the panel's resolved
+   reserve and render in that panel's adornment band;
 2. detached colorbars do not reserve plot space and use explicit `DvzPlacement` anchored in panel
    or figure pixel space.
+
+Attached colorbars use the same panel reserve aggregation path as axes. This keeps data visuals,
+axis geometry, and explanatory colorbar geometry aligned on one resolved plot rectangle while
+preserving separate retained objects and invalidation rules.
 
 
 ## Source Of Truth And Mapping Identity

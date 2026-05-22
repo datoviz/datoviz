@@ -34,6 +34,17 @@ a compatibility bridge; it converts the supplied visual reserve to pixels at the
 size. New adornment APIs should not expose normalized reserve units as their primary sizing
 language.
 
+The active implementation resolves panel reserve from multiple contributions:
+
+1. the explicit user/base reserve set by `dvz_panel_set_reserve()` or the legacy
+   `dvz_panel_set_layout_reserve()` bridge,
+2. attached axis reserve contributions when an explicit positive axis reserve is configured,
+3. attached colorbar reserve contributions.
+
+`dvz_panel_get_reserve()` and `dvz_panel_plot_rect_px()` report the resolved reserve/plot state.
+`dvz_panel_get_layout_reserve()` remains a compatibility readback for the explicit base reserve,
+not for automatically contributed adornment bands.
+
 
 ## Panel, Plot, And Adornment Rectangles
 
@@ -212,10 +223,11 @@ The scene does not enforce this, but overlapping spans produce undefined visual 
 There are two useful placement patterns, and they should not be conflated.
 
 The first rendered colorbar slice uses a same-panel edge band. The `DvzColorbar` remains attached
-to the data panel, selects a panel edge through `DvzColorbarDesc.anchor`, and auto-reserves a
-fixed logical-pixel band inside that panel. Data visuals render in the plot rect; the colorbar
-ramp, ticks, and labels render as panel adornments clipped to the panel rect. This is the default
-for one panel explaining one continuous scale.
+to the data panel, selects a panel edge through `DvzColorbarDesc.anchor`, and contributes a fixed
+logical-pixel band to the panel's resolved reserve. Axes contribute through the same reserve
+aggregation path. Data visuals render in the plot rect; the colorbar ramp, ticks, and labels render
+as panel adornments clipped to the panel rect. This is the default for one panel explaining one
+continuous scale.
 
 Detached colorbars do not reserve plot space. They use `DvzPlacement` with split horizontal and
 vertical anchors in either panel or figure pixel space. This gives explicit anchored placement

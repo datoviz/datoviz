@@ -56,7 +56,8 @@ Use the installed APIs:
 7. `dvz_colormap_set_stops()`,
 8. `dvz_colorbar()`,
 9. `dvz_colorbar_destroy()`,
-10. `dvz_colorbar_set_format()`.
+10. `dvz_colorbar_set_format()`,
+11. `dvz_colorbar_set_layout()`.
 
 If an installed setter is missing for a required field, add the narrow setter rather than encoding
 the behavior through flags.
@@ -66,7 +67,8 @@ layout state after creation:
 
 1. `dvz_colorbar_set_orientation()`,
 2. `dvz_colorbar_set_anchor()`,
-3. `dvz_colorbar_set_title()`.
+3. `dvz_colorbar_set_title()`,
+4. `dvz_colorbar_set_layout()`.
 
 These setters dirty only the colorbar layout/text state. They do not mutate the referenced scale,
 colormap, or visual data.
@@ -131,9 +133,9 @@ the requested combination cannot fit the deterministic layout.
 If a panel is too small, validation or adaptation should produce a diagnostic and skip optional
 labels before it changes the semantic scale mapping.
 
-Panel reserve is currently exposed as normalized panel visual units. The colorbar implementation
-should treat its own sizing as logical pixels, then convert the selected edge reserve to panel
-visual units when calling or updating the panel reserve state.
+Panel reserve is exposed through `DvzPanelReserve` in fixed logical pixels. The colorbar
+implementation contributes an attached reserve band into the panel's resolved reserve state instead
+of overwriting the explicit user/base panel reserve. Detached colorbars do not contribute reserve.
 
 
 ## Tick Policy
