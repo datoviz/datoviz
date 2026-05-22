@@ -162,6 +162,13 @@ int test_scene_panel_plot_clip_rect_metadata(TstContext* suite, const TstCase* i
     DvzScene* scene = dvz_scene();
     DvzFigure* figure = dvz_figure(scene, 128, 96, 0);
     DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
+    AT(dvz_panel_set_padding(
+        panel, &(DvzPanelReserve){
+                   .left_px = 8.0f,
+                   .right_px = 4.0f,
+                   .top_px = 6.0f,
+                   .bottom_px = 2.0f,
+               }));
     AT(dvz_panel_set_layout_reserve(
         panel, &(DvzPanelLayoutReserve){.left = 0.25f, .right = 0.15f, .bottom = 0.10f,
                                         .top = 0.20f}));
@@ -187,6 +194,22 @@ int test_scene_panel_plot_clip_rect_metadata(TstContext* suite, const TstCase* i
     AT(render->u.render.has_plot_desc);
 
     DvzPanelDesc plot_desc = _scene_panel_plot_desc(panel);
+    DvzRect inner_rect = {0};
+    AT(dvz_panel_inner_rect_px(panel, &inner_rect));
+    AC(inner_rect.x, 8.0f, 1e-6);
+    AC(inner_rect.y, 6.0f, 1e-6);
+    AC(inner_rect.width, 116.0f, 1e-6);
+    AC(inner_rect.height, 88.0f, 1e-6);
+    DvzRect plot_rect = {0};
+    AT(dvz_panel_plot_rect_px(panel, &plot_rect));
+    AC(plot_rect.x, 24.0f, 1e-6);
+    AC(plot_rect.y, 15.6f, 1e-6);
+    AC(plot_rect.width, 90.4f, 1e-6);
+    AC(plot_rect.height, 73.6f, 1e-6);
+    AC(plot_desc.x, 24.0f / 128.0f, 1e-6);
+    AC(plot_desc.y, 15.6f / 96.0f, 1e-6);
+    AC(plot_desc.width, 90.4f / 128.0f, 1e-6);
+    AC(plot_desc.height, 73.6f / 96.0f, 1e-6);
     AC(render->u.render.desc.x, panel->desc.x, 1e-6);
     AC(render->u.render.desc.y, panel->desc.y, 1e-6);
     AC(render->u.render.desc.width, panel->desc.width, 1e-6);
@@ -549,4 +572,3 @@ int test_scene_multi_panel_glsl_emits_viewport_scissor_commands(
     dvz_scene_destroy(scene);
     return 0;
 }
-
