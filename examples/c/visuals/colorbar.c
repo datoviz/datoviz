@@ -23,6 +23,7 @@
 
 #include "_compat.h"
 #include "datoviz/app.h"
+#include "datoviz/gui.h"
 #include "datoviz/scene.h"
 #include "example_common.h"
 
@@ -37,6 +38,23 @@
 #define FIELD_SIZE 96
 #define FIELD_MIN  10.0f
 #define FIELD_MAX  20.0f
+#define COLORMAP_COUNT 6u
+
+
+
+/*************************************************************************************************/
+/*  Structs                                                                                      */
+/*************************************************************************************************/
+
+typedef struct ColorbarState
+{
+    DvzScale* scale;
+    DvzColormap* colormaps[COLORMAP_COUNT];
+    DvzAppWindow* win;
+    int colormap_index;
+    float range_min;
+    float range_max;
+} ColorbarState;
 
 
 
@@ -68,6 +86,80 @@ static void _fill_field(float values[FIELD_SIZE * FIELD_SIZE])
             values[y * FIELD_SIZE + x] = FIELD_MIN + (FIELD_MAX - FIELD_MIN) * value;
         }
     }
+}
+
+
+
+/**
+ * Apply the current GUI controls to the scene scale.
+ *
+ * @param state colorbar example state
+ * @param update_colormap whether the selected colormap changed
+ * @param update_range whether the visible scale range changed
+ */
+static void _apply_colorbar_controls(
+    ColorbarState* state, bool update_colormap, bool update_range)
+{
+    if (state == NULL || state->scale == NULL)
+        return;
+
+    if (state->range_min > state->range_max - 0.01f)
+        state->range_min = state->range_max - 0.01f;
+    if (state->range_max < state->range_min + 0.01f)
+        state->range_max = state->range_min + 0.01f;
+    if (state->range_min < FIELD_MIN)
+        state->range_min = FIELD_MIN;
+    if (state->range_max > FIELD_MAX)
+        state->range_max = FIELD_MAX;
+
+    if (update_colormap)
+    {
+        uint32_t index = state->colormap_index >= 0 ? (uint32_t)state->colormap_index : 0;
+        if (index >= COLORMAP_COUNT)
+            index = 0;
+        dvz_scale_set_colormap(state->scale, state->colormaps[index]);
+    }
+    if (update_range)
+    {
+        dvz_scale_set_view_range(state->scale, state->range_min, state->range_max);
+    }
+    if (state->win != NULL)
+        dvz_app_window_request_frame(state->win);
+}
+
+
+
+/**
+ * Render the colorbar example controls.
+ *
+ * @param gui GUI context
+ * @param win app window
+ * @param user_data colorbar example state
+ */
+static void _colorbar_gui(DvzGui* gui, DvzAppWindow* win, void* user_data)
+{
+    (void)win;
+    ColorbarState* state = (ColorbarState*)user_data;
+    if (state == NULL)
+        return;
+
+    bool colormap_changed = false;
+    bool range_changed = false;
+    if (dvz_gui_begin(gui, "Colorbar", NULL, 0))
+    {
+        const char* const colormap_names[COLORMAP_COUNT] = {
+            "Viridis", "Magma", "Plasma", "Inferno", "Cividis", "Turbo",
+        };
+        colormap_changed = dvz_gui_combo(
+            gui, "Colormap", &state->colormap_index, colormap_names, (int)COLORMAP_COUNT);
+        range_changed = dvz_gui_range_float(
+            gui, "Range", &state->range_min, &state->range_max, 0.05f, FIELD_MIN, FIELD_MAX,
+            "%.2f");
+    }
+    dvz_gui_end(gui);
+
+    if (colormap_changed || range_changed)
+        _apply_colorbar_controls(state, colormap_changed, range_changed);
 }
 
 
@@ -116,14 +208,37 @@ int main(int argc, char** argv)
     dvz_scale_set_domain(scale, FIELD_MIN, FIELD_MAX);
     dvz_scale_set_view_range(scale, FIELD_MIN, FIELD_MAX);
 
-    DvzColormap* colormap = dvz_colormap_builtin(scene, DVZ_BUILTIN_COLORMAP_VIRIDIS);
-    if (colormap == NULL)
+    ColorbarState state = {
+        .scale = scale,
+        .colormap_index = 0,
+        .range_min = FIELD_MIN,
+        .range_max = FIELD_MAX,
+    };
+    const DvzBuiltinColormap builtins[COLORMAP_COUNT] = {
+        DVZ_BUILTIN_COLORMAP_VIRIDIS, //
+        DVZ_BUILTIN_COLORMAP_MAGMA,   //
+        DVZ_BUILTIN_COLORMAP_PLASMA,  //
+        DVZ_BUILTIN_COLORMAP_INFERNO, //
+        DVZ_BUILTIN_COLORMAP_CIVIDIS, //
+        DVZ_BUILTIN_COLORMAP_TURBO,   //
+    };
+    for (uint32_t i = 0; i < COLORMAP_COUNT; i++)
+    {
+        state.colormaps[i] = dvz_colormap_builtin(scene, builtins[i]);
+        if (state.colormaps[i] == NULL)
+        {
+            dvz_fprintf(stderr, "dvz_colormap_builtin() failed\n");
+            dvz_scene_destroy(scene);
+            return 1;
+        }
+    }
+    if (state.colormaps[state.colormap_index] == NULL)
     {
         dvz_fprintf(stderr, "dvz_colormap_builtin() failed\n");
         dvz_scene_destroy(scene);
         return 1;
     }
-    dvz_scale_set_colormap(scale, colormap);
+    dvz_scale_set_colormap(scale, state.colormaps[state.colormap_index]);
 
     DvzVisual* image = dvz_image(scene, 0);
     if (image == NULL)
@@ -225,6 +340,18 @@ int main(int argc, char** argv)
         dvz_scene_destroy(scene);
         return 1;
     }
+    state.win = win;
+
+    DvzGuiConfig gui_config = dvz_gui_config();
+    DvzGui* gui = dvz_app_window_gui(win, &gui_config);
+    if (gui == NULL)
+    {
+        dvz_fprintf(stderr, "dvz_app_window_gui() failed\n");
+        dvz_app_destroy(app);
+        dvz_scene_destroy(scene);
+        return 1;
+    }
+    dvz_app_window_set_gui_callback(win, _colorbar_gui, &state);
 
     dvz_app_run(app, example_frame_count(argc, argv));
 
