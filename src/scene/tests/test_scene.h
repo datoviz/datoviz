@@ -162,6 +162,8 @@ int test_arcball_end_commits_rotation(TstContext* suite, const TstCase* item);
 
 int test_arcball_rotate_axis_is_incremental(TstContext* suite, const TstCase* item);
 
+int test_arcball_camera_view_preserves_drag_anchor(TstContext* suite, const TstCase* item);
+
 int test_arcball_zoom_wheel(TstContext* suite, const TstCase* item);
 
 int test_arcball_pan_right_drag(TstContext* suite, const TstCase* item);

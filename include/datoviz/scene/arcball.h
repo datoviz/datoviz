@@ -64,9 +64,11 @@ struct DvzArcball
     vec3 init;       /* initial Euler angles (used by reset) */
     vec4 rotation;   /* in-flight quaternion (while dragging); same layout as cglm versor */
     vec3 constrain;  /* constrain axis; null if no constraint */
+    mat4 view;        /* optional camera view used to interpret drag axes */
     float zoom;      /* uniform model-space zoom factor */
     vec2 pan;        /* panel-plane translation applied before rotation */
     vec2 pan_center; /* committed pan baseline used during right/middle drag */
+    bool has_view;   /* true when view carries a camera-space drag basis */
     bool interacting; /* true while the pointer is controlling the arcball */
 };
 

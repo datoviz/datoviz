@@ -99,6 +99,37 @@ static void _constrain(versor q, vec3 axis)
 
 
 /**
+ * Return the current drag rotation in model/world coordinates.
+ *
+ * @param arcball arcball controller
+ * @param out rotation matrix
+ */
+static void _arcball_drag_rotation_matrix(DvzArcball* arcball, mat4 out)
+{
+    ANN(arcball);
+    ANN(out);
+
+    glm_quat_mat4(arcball->rotation, out);
+    if (!arcball->has_view)
+        return;
+
+    mat4 view_rot = GLM_MAT4_IDENTITY_INIT;
+    for (uint32_t col = 0; col < 3; col++)
+    {
+        for (uint32_t row = 0; row < 3; row++)
+            view_rot[col][row] = arcball->view[col][row];
+    }
+
+    mat4 inv_view_rot = GLM_MAT4_IDENTITY_INIT;
+    glm_mat4_inv(view_rot, inv_view_rot);
+
+    mat4 tmp = GLM_MAT4_IDENTITY_INIT;
+    glm_mat4_mul(inv_view_rot, out, tmp);
+    glm_mat4_mul(tmp, view_rot, out);
+}
+
+
+/**
  * Apply a wheel zoom delta to an arcball.
  *
  * @param arcball arcball controller
@@ -172,8 +203,36 @@ DvzArcball* _dvz_arcball(float width, float height, int flags)
     arcball->flags = flags;
     arcball->viewport_size[0] = width;
     arcball->viewport_size[1] = height;
+    glm_mat4_identity(arcball->view);
     dvz_arcball_reset(arcball);
     return arcball;
+}
+
+
+/**
+ * Set the camera view matrix used to interpret drag axes.
+ *
+ * @param arcball arcball controller
+ * @param view camera view matrix
+ */
+void _dvz_arcball_view(DvzArcball* arcball, mat4 view)
+{
+    ANN(arcball);
+    glm_mat4_copy(view, arcball->view);
+    arcball->has_view = true;
+}
+
+
+/**
+ * Clear the camera view matrix used to interpret drag axes.
+ *
+ * @param arcball arcball controller
+ */
+void _dvz_arcball_clear_view(DvzArcball* arcball)
+{
+    ANN(arcball);
+    glm_mat4_identity(arcball->view);
+    arcball->has_view = false;
 }
 
 
@@ -321,9 +380,24 @@ void dvz_arcball_rotate(DvzArcball* arcball, vec2 cur_pos, vec2 last_pos)
         _constrain(prev_ball, arcball->constrain);
     }
 
-    glm_quat_identity(arcball->rotation);
-    glm_quat_mul(prev_ball, arcball->rotation, arcball->rotation);
-    glm_quat_mul(cur_ball, arcball->rotation, arcball->rotation);
+    vec3 axis = {0};
+    glm_vec3_cross(prev_ball, cur_ball, axis);
+    float dot = _clampf(glm_vec3_dot(prev_ball, cur_ball), -1.0f, 1.0f);
+    arcball->rotation[0] = axis[0];
+    arcball->rotation[1] = axis[1];
+    arcball->rotation[2] = axis[2];
+    arcball->rotation[3] = 1.0f + dot;
+    if (arcball->rotation[3] <= 1e-6f && glm_vec3_norm(axis) <= 1e-6f)
+    {
+        glm_vec3_cross(prev_ball, (vec3){1.0f, 0.0f, 0.0f}, axis);
+        if (glm_vec3_norm(axis) <= 1e-6f)
+            glm_vec3_cross(prev_ball, (vec3){0.0f, 1.0f, 0.0f}, axis);
+        arcball->rotation[0] = axis[0];
+        arcball->rotation[1] = axis[1];
+        arcball->rotation[2] = axis[2];
+        arcball->rotation[3] = 0.0f;
+    }
+    glm_quat_normalize(arcball->rotation);
 }
 
 
@@ -332,7 +406,7 @@ void dvz_arcball_model(DvzArcball* arcball, mat4 model)
 {
     ANN(arcball);
     mat4 rot = GLM_MAT4_IDENTITY_INIT;
-    glm_quat_mat4(arcball->rotation, rot);
+    _arcball_drag_rotation_matrix(arcball, rot);
     mat4 base = GLM_MAT4_IDENTITY_INIT;
     glm_mat4_mul(rot, arcball->mat, base);
     glm_scale_uni(base, arcball->zoom);
@@ -348,7 +422,7 @@ void dvz_arcball_end(DvzArcball* arcball)
 {
     ANN(arcball);
     mat4 rot = GLM_MAT4_IDENTITY_INIT;
-    glm_quat_mat4(arcball->rotation, rot);
+    _arcball_drag_rotation_matrix(arcball, rot);
     glm_mat4_mul(rot, arcball->mat, arcball->mat);
     glm_quat_identity(arcball->rotation);
 }

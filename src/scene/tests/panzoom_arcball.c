@@ -32,6 +32,28 @@
 /*  Tests                                                                                        */
 /*************************************************************************************************/
 
+/**
+ * Project normalized device coordinates onto the test arcball sphere.
+ *
+ * @param p normalized input position
+ * @param out output homogeneous direction
+ */
+static void _test_screen_to_arcball(vec2 p, vec4 out)
+{
+    ANN(out);
+    float dist = glm_vec2_dot(p, p);
+    if (dist <= 1.0f)
+    {
+        glm_vec4_copy((vec4){p[0], p[1], sqrtf(1.0f - dist), 0.0f}, out);
+    }
+    else
+    {
+        glm_vec2_normalize(p);
+        glm_vec4_copy((vec4){p[0], p[1], 0.0f, 0.0f}, out);
+    }
+}
+
+
 int test_panzoom_create_reset(TstContext* suite, const TstCase* item)
 {
     (void)suite;
@@ -617,6 +639,69 @@ int test_arcball_rotate_axis_is_incremental(TstContext* suite, const TstCase* it
 
 
 /**
+ * Ensure a camera-backed drag keeps the pressed virtual-sphere point under the cursor.
+ *
+ * @param suite the test suite
+ * @param item the test item
+ * @return 0 on success
+ */
+int test_arcball_camera_view_preserves_drag_anchor(TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzArcball* arc = _dvz_arcball(800.0f, 600.0f, 0);
+    ANN(arc);
+
+    mat4 view = GLM_MAT4_IDENTITY_INIT;
+    glm_lookat(
+        (vec3){1.8f, -2.2f, 1.5f}, (vec3){0.0f, 0.0f, 0.0f},
+        (vec3){0.0f, 0.0f, 1.0f}, view);
+    _dvz_arcball_view(arc, view);
+
+    vec2 press_ndc = {-0.20f, 0.0f};
+    vec2 cursor_ndc = {0.25f, 0.0f};
+    vec4 press_ball = {0};
+    vec4 cursor_ball = {0};
+    _test_screen_to_arcball(press_ndc, press_ball);
+    _test_screen_to_arcball(cursor_ndc, cursor_ball);
+
+    mat4 inv_view = GLM_MAT4_IDENTITY_INIT;
+    glm_mat4_inv(view, inv_view);
+    vec4 object_anchor = {0};
+    glm_mat4_mulv(inv_view, press_ball, object_anchor);
+
+    DvzPointerEvent drag = {
+        .type = DVZ_POINTER_EVENT_DRAG,
+        .button = DVZ_POINTER_BUTTON_LEFT,
+        .content.d =
+            {
+                .press_pos = {320.0f, 300.0f},
+                .last_pos = {320.0f, 300.0f},
+                .shift = {180.0f, 0.0f},
+                .is_press_valid = true,
+            },
+        .pos = {500.0f, 300.0f},
+    };
+    AT(dvz_arcball_pointer(arc, &drag));
+
+    mat4 model = GLM_MAT4_IDENTITY_INIT;
+    dvz_arcball_model(arc, model);
+
+    vec4 moved_anchor = {0};
+    vec4 moved_view = {0};
+    glm_mat4_mulv(model, object_anchor, moved_anchor);
+    glm_mat4_mulv(view, moved_anchor, moved_view);
+    AC(moved_view[0], cursor_ball[0], 1e-4f);
+    AC(moved_view[1], cursor_ball[1], 1e-4f);
+    AC(moved_view[2], cursor_ball[2], 1e-4f);
+
+    dvz_arcball_destroy(arc);
+    return 0;
+}
+
+
+/**
  * Check that wheel events update arcball zoom and model scale.
  *
  * @param suite test suite
@@ -822,6 +907,7 @@ int test_scene_panzoom_arcball(TstSuite* suite)
     TST_CASE(test_arcball_rotate_produces_nonidentity_model);
     TST_CASE(test_arcball_end_commits_rotation);
     TST_CASE(test_arcball_rotate_axis_is_incremental);
+    TST_CASE(test_arcball_camera_view_preserves_drag_anchor);
     TST_CASE(test_arcball_zoom_wheel);
     TST_CASE(test_arcball_pan_right_drag);
     TST_CASE(test_arcball_interaction_state);

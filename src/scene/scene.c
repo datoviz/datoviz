@@ -464,7 +464,13 @@ void _scene_panel_apply_mvp(const DvzPanel* panel, DvzMVP* out)
             dvz_panzoom_mvp(&panzoom, out);
     }
     if (panel->arcball != NULL)
+    {
+        if (panel->camera != NULL)
+            _dvz_arcball_view(panel->arcball, out->view);
+        else
+            _dvz_arcball_clear_view(panel->arcball);
         dvz_arcball_mvp(panel->arcball, out);
+    }
 }
 
 
@@ -1048,11 +1054,29 @@ static bool _scene_panel_dispatch_pointer_controller(
         if (arcball == NULL || !_scene_panel_pointer_targets(panel, ev, arcball->interacting))
             return false;
         vec2 old_size = {arcball->viewport_size[0], arcball->viewport_size[1]};
+        mat4 old_view = GLM_MAT4_IDENTITY_INIT;
+        glm_mat4_copy(arcball->view, old_view);
+        bool old_has_view = arcball->has_view;
         DvzPointerEvent local = {0};
         _scene_panel_local_pointer(ev, x, y, &local);
         dvz_arcball_resize(arcball, w, h);
+        if (panel->camera != NULL)
+        {
+            DvzMVP camera_mvp = {0};
+            glm_mat4_identity(camera_mvp.model);
+            glm_mat4_identity(camera_mvp.view);
+            glm_mat4_identity(camera_mvp.proj);
+            dvz_camera_mvp(panel->camera, &camera_mvp);
+            _dvz_arcball_view(arcball, camera_mvp.view);
+        }
+        else
+        {
+            _dvz_arcball_clear_view(arcball);
+        }
         consumed = dvz_arcball_pointer(arcball, &local);
         glm_vec2_copy(old_size, arcball->viewport_size);
+        glm_mat4_copy(old_view, arcball->view);
+        arcball->has_view = old_has_view;
         break;
     }
     case DVZ_CONTROLLER_TYPE_FLY:

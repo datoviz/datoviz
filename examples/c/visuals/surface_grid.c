@@ -43,8 +43,8 @@
 #define WIDTH  1600
 #define HEIGHT 1200
 
-#define SURFACE_ROWS 49
-#define SURFACE_COLS 49
+#define SURFACE_ROWS 256
+#define SURFACE_COLS 256
 
 
 
@@ -69,15 +69,19 @@ static void _surface_data(double* heights, DvzColor* colors)
         for (uint32_t col = 0; col < SURFACE_COLS; col++)
         {
             const double x = -1.0 + 2.0 * (double)col / (double)(SURFACE_COLS - 1);
-            const double r2 = x * x + y * y;
-            const double wave = 0.28 * cos(8.0 * sqrt(r2)) * exp(-1.8 * r2);
+            const double r = sqrt(x * x + y * y);
+            const double r2 = r * r;
+            const double radial = 0.30 * cos(18.0 * r) * exp(-1.25 * r2);
+            const double cross = 0.07 * sin(13.0 * x + 2.0 * y) * cos(12.0 * y - 1.5 * x);
+            const double ripple = 0.035 * sin(26.0 * (x + y)) * exp(-0.65 * r2);
+            const double wave = radial + cross + ripple;
             const uint32_t idx = row * SURFACE_COLS + col;
             heights[idx] = wave;
 
-            const double t = CLIP((wave + 0.22) / 0.44, 0.0, 1.0);
-            colors[idx][0] = (uint8_t)(40.0 + 180.0 * t);
-            colors[idx][1] = (uint8_t)(80.0 + 120.0 * (1.0 - fabs(2.0 * t - 1.0)));
-            colors[idx][2] = (uint8_t)(160.0 + 70.0 * (1.0 - t));
+            const double t = CLIP((wave + 0.36) / 0.72, 0.0, 1.0);
+            colors[idx][0] = (uint8_t)(28.0 + 210.0 * t);
+            colors[idx][1] = (uint8_t)(70.0 + 135.0 * (1.0 - fabs(2.0 * t - 1.0)));
+            colors[idx][2] = (uint8_t)(150.0 + 85.0 * (1.0 - t));
             colors[idx][3] = 255;
         }
     }
@@ -129,6 +133,8 @@ int main(int argc, char** argv)
     camera_desc.eye[0] = 1.8f;
     camera_desc.eye[1] = -2.2f;
     camera_desc.eye[2] = 1.5f;
+    camera_desc.up[0] = 0.0f;
+    camera_desc.up[1] = 0.0f;
     camera_desc.up[2] = 1.0f;
     camera_desc.fov_y = 0.72f;
     camera_desc.near = 0.05f;
@@ -177,8 +183,10 @@ int main(int argc, char** argv)
         visual,
         &(DvzPrimitiveShadingDesc){
             .light_direction = {0.35f, -0.45f, 0.82f},
-            .ambient = 0.30f,
-            .diffuse = 0.85f,
+            .ambient = 0.18f,
+            .diffuse = 0.78f,
+            .specular = 0.85f,
+            .shininess = 96.0f,
         });
     dvz_panel_add_visual(panel, visual, NULL);
     dvz_panel_set_background_color(panel, 0.04f, 0.045f, 0.05f, 1.0f);
@@ -200,7 +208,7 @@ int main(int argc, char** argv)
 
     DvzArcball* arcball = dvz_app_window_panel_arcball(win, panel, NULL);
     if (arcball != NULL)
-        dvz_arcball_set(arcball, (vec3){0.55f, 0.0f, -0.25f});
+        dvz_arcball_initial(arcball, (vec3){0.55f, 0.0f, -0.25f});
 
     dvz_app_run(app, frame_count);
 
