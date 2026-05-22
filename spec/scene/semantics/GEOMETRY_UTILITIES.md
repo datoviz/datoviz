@@ -3,10 +3,10 @@
 Status: normative v0.4 scene semantics spec for CPU-side geometry helpers.
 
 Implementation status on 2026-05-22: the active `geom` subset is in core builds with `DvzGeometry`,
-owned buffers, cube/plane/surface-grid generators, bounds, normal recomputation, transform/merge
-helpers, F32 conversion helpers, and direct scene mesh upload from `DvzGeometry`. Triangulation,
-curve tessellation, simplification, hulls, polygon booleans, and richer import paths remain target
-capabilities.
+owned buffers, cube/plane/sphere/surface-grid generators, bounds, normal recomputation,
+transform/merge helpers, surface-grid height updates, F32 conversion helpers, and direct scene mesh
+upload from `DvzGeometry` including retained mesh texcoords. Triangulation, curve tessellation,
+simplification, hulls, polygon booleans, and richer import paths remain target capabilities.
 
 Geometry utilities operate above the scene layer and below user code. They produce standard scene
 resource data such as F64 vertices, indices, and atlas textures that enter the normal resource upload
@@ -45,10 +45,10 @@ Generators produce ordinary indexed geometry payloads.
 
 | Generator | Descriptor controls | Notes |
 |---|---|---|
-| primitive solids | cube, sphere, cylinder, cone, torus, arrow, classic polyhedra | cube implemented; remaining solids targeted |
+| primitive solids | cube, sphere, cylinder, cone, torus, arrow, classic polyhedra | cube and sphere implemented; remaining solids targeted |
 | `dvz_geom_plane` | center, width, height, z offset, color | implemented as indexed XY plane |
 | `dvz_geom_gizmo_axes` | axis length, shaft/head dimensions, tessellation, per-axis colors | scene/app owns pinning and camera sync |
-| `dvz_geom_surface_grid` | rows/cols, height/color arrays, origin, basis, height policy, normals, metadata | implemented with row/column provenance; richer update helpers remain future work |
+| `dvz_geom_surface_grid` | rows/cols, height/color arrays, origin, basis, height policy, normals, metadata | implemented with row/column provenance and height updates; richer update helpers remain future work |
 
 
 ## Triangulation

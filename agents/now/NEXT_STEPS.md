@@ -23,11 +23,13 @@ on-demand by default with explicit continuous and capped modes. Treat these as a
 future scaffolding.
 
 The CPU-side `geom` v0.4 subset is active in the core build: public `DvzGeometry`, owned geometry
-buffers, cube/plane/surface-grid generators, bounds, normal recomputation, transform/merge helpers,
-F32 conversion helpers for current mesh upload paths, direct `DvzGeometry` upload into scene mesh
-visuals, and focused `geom`/scene tests. Remaining `geom` work is now optional expansion: more solid
-generators, richer structured-grid provenance and update helpers, triangulation, curve utilities,
-simplification, hulls, polygon booleans, and import/asset-layer decisions.
+buffers, cube/plane/sphere/surface-grid generators, bounds, normal recomputation, transform/merge
+helpers, surface-grid height updates, F32 conversion helpers for current mesh upload paths, direct
+`DvzGeometry` upload into scene mesh visuals including retained texcoords, a visible surface-grid
+example, and focused `geom`/scene tests. Remaining `geom` work is now optional expansion: arrow/
+gizmo-axis and other solid generators, richer structured-grid update/provenance helpers,
+triangulation, curve utilities, simplification, hulls, polygon booleans, and import/asset-layer
+decisions.
 
 The C test-runner modernization and low-risk process-sharding performance pass are complete enough
 to treat as a stable baseline. Historical notes live in

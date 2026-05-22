@@ -108,8 +108,18 @@ Implemented on 2026-05-22:
 
 ## Deferred Follow-Ups
 
-1. Add sphere or arrow/gizmo-axis generators when a concrete example needs them.
-2. Add partial height-update helpers and richer structured-grid provenance once surface examples
-   require update-efficient behavior.
+Additional v0.4 follow-up work on 2026-05-22 added:
+
+1. `dvz_geom_sphere()` as the first post-cube solid generator;
+2. `dvz_geom_surface_grid_update_heights()` for in-place structured-grid height updates;
+3. retained mesh `texcoords` support, with `dvz_mesh_geometry()` lowering `DvzGeometry` UVs into the
+   mesh visual attribute set;
+4. `examples/c/visuals/surface_grid.c` as a visible app-path pressure test for generated geometry.
+
+Remaining deferred work:
+
+1. Add arrow/gizmo-axis and other solid generators when a concrete example needs them.
+2. Add richer structured-grid update/provenance helpers once surface examples require more
+   update-efficient behavior.
 3. Defer OBJ import, constrained triangulation, contour/isoline sidecars, and richer asset import
    until the current container and direct upload path have more example pressure.
