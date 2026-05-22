@@ -204,6 +204,9 @@ struct DvzAxisStyle
     float grid_width;
     float major_tick_length;
     float minor_tick_length;
+    float reserve_px;
+    float tick_gap_px;
+    float label_gap_px;
     float plot_margin_left;
     float plot_margin_right;
     float plot_margin_bottom;

@@ -44,6 +44,8 @@
 
 static void _scene_stream_release(void* owner);
 
+static void _panel_mark_layout_changed(DvzPanel* panel);
+
 
 /**
  * Return whether a panel layout reservation is finite and leaves non-empty plot space.
@@ -92,6 +94,80 @@ static bool _panel_reserve_valid(const DvzPanel* panel, const DvzPanelReserve* r
 }
 
 
+/**
+ * Return whether two panel reservations are equivalent.
+ *
+ * @param a first reservation
+ * @param b second reservation
+ * @return whether all sides match within layout tolerance
+ */
+static bool _panel_reserve_equal(const DvzPanelReserve* a, const DvzPanelReserve* b)
+{
+    ANN(a);
+    ANN(b);
+    return fabsf(a->left_px - b->left_px) <= 1e-4f &&
+           fabsf(a->right_px - b->right_px) <= 1e-4f &&
+           fabsf(a->top_px - b->top_px) <= 1e-4f &&
+           fabsf(a->bottom_px - b->bottom_px) <= 1e-4f;
+}
+
+
+/**
+ * Add one reserve contribution into another one.
+ *
+ * @param reserve destination reservation
+ * @param contribution contribution to add
+ */
+static void _panel_reserve_add(DvzPanelReserve* reserve, const DvzPanelReserve* contribution)
+{
+    ANN(reserve);
+    ANN(contribution);
+    reserve->left_px += contribution->left_px;
+    reserve->right_px += contribution->right_px;
+    reserve->top_px += contribution->top_px;
+    reserve->bottom_px += contribution->bottom_px;
+}
+
+
+/**
+ * Resolve one panel's base and decoration reserve contributions.
+ *
+ * @param panel the panel
+ * @return resolved reservation
+ */
+static DvzPanelReserve _panel_resolve_reserve(const DvzPanel* panel)
+{
+    ANN(panel);
+    DvzPanelReserve reserve = panel->base_reserve;
+    _panel_reserve_add(&reserve, &panel->axis_reserve);
+    _panel_reserve_add(&reserve, &panel->colorbar_reserve);
+    if (!_panel_reserve_valid(panel, &reserve))
+    {
+        if (_panel_reserve_valid(panel, &panel->base_reserve))
+            reserve = panel->base_reserve;
+        else
+            reserve = (DvzPanelReserve){0};
+    }
+    return reserve;
+}
+
+
+/**
+ * Recompute one panel's resolved reservation.
+ *
+ * @param panel the panel
+ */
+static void _panel_update_reserve(DvzPanel* panel)
+{
+    ANN(panel);
+    DvzPanelReserve next = _panel_resolve_reserve(panel);
+    if (_panel_reserve_equal(&panel->reserve, &next))
+        return;
+    panel->reserve = next;
+    _panel_mark_layout_changed(panel);
+}
+
+
 
 /**
  * Mark panel layout-dependent state dirty after a plot rectangle change.
@@ -110,7 +186,55 @@ static void _panel_mark_layout_changed(DvzPanel* panel)
         axis->dirty = true;
         axis->version++;
     }
+    for (uint32_t i = 0; i < panel->colorbar_count; i++)
+    {
+        DvzColorbar* colorbar = panel->colorbars[i];
+        if (colorbar == NULL)
+            continue;
+        colorbar->dirty = true;
+        colorbar->version = colorbar->version == UINT64_MAX ? 1 : colorbar->version + 1;
+    }
     _scene_notify_request_frame(panel->figure);
+}
+
+
+/**
+ * Set one panel's aggregate axis reserve contribution.
+ *
+ * @param panel the panel
+ * @param reserve axis reserve contribution, or NULL for zero
+ */
+void _scene_panel_set_axis_reserve(DvzPanel* panel, const DvzPanelReserve* reserve)
+{
+    if (panel == NULL)
+        return;
+    DvzPanelReserve next = reserve != NULL ? *reserve : (DvzPanelReserve){0};
+    if (!_panel_reserve_valid(panel, &next) && !_panel_reserve_equal(&next, &(DvzPanelReserve){0}))
+        next = (DvzPanelReserve){0};
+    if (_panel_reserve_equal(&panel->axis_reserve, &next))
+        return;
+    panel->axis_reserve = next;
+    _panel_update_reserve(panel);
+}
+
+
+/**
+ * Set one panel's aggregate colorbar reserve contribution.
+ *
+ * @param panel the panel
+ * @param reserve colorbar reserve contribution, or NULL for zero
+ */
+void _scene_panel_set_colorbar_reserve(DvzPanel* panel, const DvzPanelReserve* reserve)
+{
+    if (panel == NULL)
+        return;
+    DvzPanelReserve next = reserve != NULL ? *reserve : (DvzPanelReserve){0};
+    if (!_panel_reserve_valid(panel, &next) && !_panel_reserve_equal(&next, &(DvzPanelReserve){0}))
+        next = (DvzPanelReserve){0};
+    if (_panel_reserve_equal(&panel->colorbar_reserve, &next))
+        return;
+    panel->colorbar_reserve = next;
+    _panel_update_reserve(panel);
 }
 
 
@@ -2552,8 +2676,10 @@ bool dvz_panel_set_reserve(DvzPanel* panel, const DvzPanelReserve* reserve)
     DvzPanelReserve next = reserve != NULL ? *reserve : (DvzPanelReserve){0};
     if (!_panel_reserve_valid(panel, &next))
         return false;
-    panel->reserve = next;
-    _panel_mark_layout_changed(panel);
+    if (_panel_reserve_equal(&panel->base_reserve, &next))
+        return true;
+    panel->base_reserve = next;
+    _panel_update_reserve(panel);
     return true;
 }
 
@@ -2632,7 +2758,7 @@ bool dvz_panel_get_layout_reserve(DvzPanel* panel, DvzPanelLayoutReserve* out)
     float width = 0.0f;
     float height = 0.0f;
     _scene_panel_pixel_size(panel, &width, &height);
-    DvzPanelReserve reserve = panel->reserve;
+    DvzPanelReserve reserve = panel->base_reserve;
     if (!_panel_reserve_valid(panel, &reserve))
         reserve = (DvzPanelReserve){0};
     *out = (DvzPanelLayoutReserve){

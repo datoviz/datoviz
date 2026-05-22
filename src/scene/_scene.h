@@ -225,6 +225,14 @@ void _scene_panel_plot_pixel_rect(
 
 DvzPanelDesc _scene_panel_plot_desc(const DvzPanel* panel);
 
+void _scene_panel_set_axis_reserve(DvzPanel* panel, const DvzPanelReserve* reserve);
+
+void _scene_panel_set_colorbar_reserve(DvzPanel* panel, const DvzPanelReserve* reserve);
+
+void _scene_panel_refresh_axis_reserve(DvzPanel* panel);
+
+void _scene_panel_refresh_colorbar_reserve(DvzPanel* panel);
+
 
 
 /*************************************************************************************************/
@@ -1080,6 +1088,9 @@ struct DvzPanel
 
     uint32_t       visual_count;
     DvzPanelAttach visuals[DVZ_SCENE_MAX_VISUALS];
+    DvzPanelReserve base_reserve;
+    DvzPanelReserve axis_reserve;
+    DvzPanelReserve colorbar_reserve;
     DvzPanelReserve reserve;
 
     DvzPanzoom* panzoom; /* optional pan/zoom controller (owned) */

@@ -207,6 +207,15 @@ int test_scene_colorbar_auto_reserve_and_visuals(TstContext* suite, const TstCas
     AT(dvz_panel_plot_rect_px(panel, &plot_rect));
     AT(fabsf(plot_rect.width - 660.0f) < 1e-6f);
 
+    DvzAxis* x_axis = dvz_panel_axis(panel, DVZ_DIM_X);
+    ANN(x_axis);
+    DvzAxisStyle x_style = x_axis->style;
+    x_style.reserve_px = 35.0f;
+    AT(dvz_axis_set_style(x_axis, &x_style));
+    AT(dvz_panel_get_reserve(panel, &reserve));
+    AT(fabsf(reserve.right_px - 140.0f) < 1e-6f);
+    AT(fabsf(reserve.bottom_px - 35.0f) < 1e-6f);
+
     _scene_prepare_colorbar_visuals(figure, NULL);
     AT(colorbar->ramp_visual != NULL);
     AT(colorbar->tick_visual != NULL);
@@ -269,7 +278,7 @@ int test_scene_colorbar_auto_reserve_and_visuals(TstContext* suite, const TstCas
     _scene_prepare_colorbar_visuals(figure, NULL);
     AT(dvz_panel_get_reserve(panel, &reserve));
     AT(fabsf(reserve.right_px) < 1e-6f);
-    AT(fabsf(reserve.bottom_px - 96.0f) < 1e-6f);
+    AT(fabsf(reserve.bottom_px - 131.0f) < 1e-6f);
     AT(dvz_visual_data(colorbar->ramp_visual, "position", &pos_view) == 0);
     positions = (const float*)pos_view.data;
     AT(positions[0] < -0.95f);
@@ -496,6 +505,7 @@ int test_scene_colorbar_updates_retained_visuals(TstContext* suite, const TstCas
     ANN(figure);
     DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
     ANN(panel);
+    AT(dvz_panel_set_reserve(panel, &(DvzPanelReserve){.left_px = 24.0f}));
 
     DvzScale* scale = dvz_scale(
         scene, &(DvzScaleDesc){.kind = DVZ_SCALE_CONTINUOUS, .format = {.precision = 0}});
@@ -518,6 +528,10 @@ int test_scene_colorbar_updates_retained_visuals(TstContext* suite, const TstCas
             .title = "Initial",
         });
     ANN(colorbar);
+    DvzPanelReserve reserve = {0};
+    AT(dvz_panel_get_reserve(panel, &reserve));
+    AT(fabsf(reserve.left_px - 24.0f) < 1e-6f);
+    AT(fabsf(reserve.right_px - 140.0f) < 1e-6f);
     _scene_prepare_colorbar_visuals(figure, NULL);
     AT(colorbar->tick_count >= 2);
     AT(colorbar->text_count == colorbar->tick_count + 1);
@@ -564,6 +578,9 @@ int test_scene_colorbar_updates_retained_visuals(TstContext* suite, const TstCas
     AT(!ticks->visible);
     AT(!text->visible);
     AT(panel->colorbar_count == 0);
+    AT(dvz_panel_get_reserve(panel, &reserve));
+    AT(fabsf(reserve.left_px - 24.0f) < 1e-6f);
+    AT(fabsf(reserve.right_px) < 1e-6f);
 
     dvz_scene_destroy(scene);
     return 0;

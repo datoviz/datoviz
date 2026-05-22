@@ -680,6 +680,29 @@ static int test_axis_layout_reserve(TstContext* suite, const TstCase* item)
     AT(fabsf(plot_rect.width - 1000.0f) < 1e-4f);
     AT(fabsf(plot_rect.height - 820.0f) < 1e-4f);
 
+    DvzAxis* x_axis = dvz_panel_axis(panel, DVZ_DIM_X);
+    ANN(x_axis);
+    DvzAxisStyle x_style = x_axis->style;
+    x_style.reserve_px = 40.0f;
+    AT(dvz_axis_set_style(x_axis, &x_style));
+    DvzAxis* y_axis = dvz_panel_axis(panel, DVZ_DIM_Y);
+    ANN(y_axis);
+    DvzAxisStyle y_style = y_axis->style;
+    y_style.reserve_px = 55.0f;
+    AT(dvz_axis_set_style(y_axis, &y_style));
+
+    AT(dvz_panel_get_layout_reserve(panel, &reserve));
+    AT(fabsf(reserve.left - (2.0f * 80.0f / 1200.0f)) < 1e-6f);
+    AT(fabsf(reserve.bottom - (2.0f * 50.0f / 900.0f)) < 1e-6f);
+    AT(dvz_panel_get_reserve(panel, &pixel_out));
+    AT(fabsf(pixel_out.left_px - 135.0f) < 1e-6f);
+    AT(fabsf(pixel_out.bottom_px - 90.0f) < 1e-6f);
+    AT(dvz_panel_plot_rect_px(panel, &plot_rect));
+    AT(fabsf(plot_rect.x - 135.0f) < 1e-4f);
+    AT(fabsf(plot_rect.y - 30.0f) < 1e-4f);
+    AT(fabsf(plot_rect.width - 945.0f) < 1e-4f);
+    AT(fabsf(plot_rect.height - 780.0f) < 1e-4f);
+
     dvz_scene_destroy(scene);
     return 0;
 }

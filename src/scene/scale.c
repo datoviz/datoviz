@@ -381,39 +381,51 @@ static bool _colorbar_vertical(const DvzColorbar* colorbar)
 
 
 /**
- * Return whether a reserve component still matches a previous automatic colorbar value.
+ * Refresh aggregate attached colorbar reserve for one panel.
  *
- * @param value the current panel reserve component
- * @param applied the previously applied automatic reserve component
- * @return whether the current component can be replaced by a freshly computed value
+ * @param panel the panel
  */
-static bool _colorbar_reserve_matches_auto(float value, float applied)
+void _scene_panel_refresh_colorbar_reserve(DvzPanel* panel)
 {
-    return applied > 0.0f && fabsf(value - applied) <= COLORBAR_LAYOUT_EPS;
-}
-
-
-
-/**
- * Remove a previous automatic colorbar reserve when it still owns that panel edge.
- *
- * @param colorbar the colorbar
- * @param reserve the mutable panel reserve
- */
-static void _colorbar_clear_auto_reserve(DvzColorbar* colorbar, DvzPanelReserve* reserve)
-{
-    ANN(colorbar);
-    ANN(reserve);
-    DvzPanelReserve applied = colorbar->auto_reserve;
-    if (_colorbar_reserve_matches_auto(reserve->left_px, applied.left_px))
-        reserve->left_px = 0.0f;
-    if (_colorbar_reserve_matches_auto(reserve->right_px, applied.right_px))
-        reserve->right_px = 0.0f;
-    if (_colorbar_reserve_matches_auto(reserve->bottom_px, applied.bottom_px))
-        reserve->bottom_px = 0.0f;
-    if (_colorbar_reserve_matches_auto(reserve->top_px, applied.top_px))
-        reserve->top_px = 0.0f;
-    colorbar->auto_reserve = (DvzPanelReserve){0};
+    if (panel == NULL)
+        return;
+    DvzPanelReserve reserve = {0};
+    for (uint32_t i = 0; i < panel->colorbar_count; i++)
+    {
+        DvzColorbar* colorbar = panel->colorbars[i];
+        if (colorbar == NULL || colorbar->panel != panel)
+            continue;
+        DvzPanelReserve applied = {0};
+        if (colorbar->placement_mode == DVZ_COLORBAR_PLACEMENT_ATTACHED &&
+            _colorbar_anchor_supported(colorbar->anchor))
+        {
+            float reserve_px = _colorbar_positive_or_default(
+                colorbar->reserve_px, _colorbar_default_reserve_px(colorbar->orientation));
+            switch (colorbar->anchor)
+            {
+            case DVZ_SCENE_ANCHOR_PANEL_LEFT:
+                applied.left_px = reserve_px;
+                reserve.left_px += reserve_px;
+                break;
+            case DVZ_SCENE_ANCHOR_PANEL_RIGHT:
+                applied.right_px = reserve_px;
+                reserve.right_px += reserve_px;
+                break;
+            case DVZ_SCENE_ANCHOR_PANEL_TOP:
+                applied.top_px = reserve_px;
+                reserve.top_px += reserve_px;
+                break;
+            case DVZ_SCENE_ANCHOR_PANEL_BOTTOM:
+                applied.bottom_px = reserve_px;
+                reserve.bottom_px += reserve_px;
+                break;
+            default:
+                break;
+            }
+        }
+        colorbar->auto_reserve = applied;
+    }
+    _scene_panel_set_colorbar_reserve(panel, &reserve);
 }
 
 
@@ -428,79 +440,7 @@ static void _colorbar_apply_auto_reserve(DvzColorbar* colorbar)
     ANN(colorbar);
     if (colorbar->panel == NULL)
         return;
-    DvzPanelReserve reserve = {0};
-    (void)dvz_panel_get_reserve(colorbar->panel, &reserve);
-    DvzPanelReserve next = reserve;
-    DvzPanelReserve applied = {0};
-    _colorbar_clear_auto_reserve(colorbar, &next);
-    if (colorbar->placement_mode != DVZ_COLORBAR_PLACEMENT_ATTACHED ||
-        !_colorbar_anchor_supported(colorbar->anchor))
-    {
-        if (fabsf(next.left_px - reserve.left_px) > COLORBAR_LAYOUT_EPS ||
-            fabsf(next.right_px - reserve.right_px) > COLORBAR_LAYOUT_EPS ||
-            fabsf(next.bottom_px - reserve.bottom_px) > COLORBAR_LAYOUT_EPS ||
-            fabsf(next.top_px - reserve.top_px) > COLORBAR_LAYOUT_EPS)
-        {
-            (void)dvz_panel_set_reserve(colorbar->panel, &next);
-        }
-        return;
-    }
-
-    float reserve_px = _colorbar_positive_or_default(
-        colorbar->reserve_px, _colorbar_default_reserve_px(colorbar->orientation));
-    switch (colorbar->anchor)
-    {
-    case DVZ_SCENE_ANCHOR_PANEL_LEFT:
-        applied.left_px = reserve_px;
-        next.left_px = fmaxf(next.left_px, applied.left_px);
-        break;
-    case DVZ_SCENE_ANCHOR_PANEL_RIGHT:
-        applied.right_px = reserve_px;
-        next.right_px = fmaxf(next.right_px, applied.right_px);
-        break;
-    case DVZ_SCENE_ANCHOR_PANEL_TOP:
-        applied.top_px = reserve_px;
-        next.top_px = fmaxf(next.top_px, applied.top_px);
-        break;
-    case DVZ_SCENE_ANCHOR_PANEL_BOTTOM:
-        applied.bottom_px = reserve_px;
-        next.bottom_px = fmaxf(next.bottom_px, applied.bottom_px);
-        break;
-    default:
-        break;
-    }
-    colorbar->auto_reserve = applied;
-    if (fabsf(next.left_px - reserve.left_px) > COLORBAR_LAYOUT_EPS ||
-        fabsf(next.right_px - reserve.right_px) > COLORBAR_LAYOUT_EPS ||
-        fabsf(next.bottom_px - reserve.bottom_px) > COLORBAR_LAYOUT_EPS ||
-        fabsf(next.top_px - reserve.top_px) > COLORBAR_LAYOUT_EPS)
-    {
-        (void)dvz_panel_set_reserve(colorbar->panel, &next);
-    }
-}
-
-
-/**
- * Drop a colorbar-owned automatic reserve from its panel.
- *
- * @param colorbar the colorbar
- */
-static void _colorbar_drop_auto_reserve(DvzColorbar* colorbar)
-{
-    ANN(colorbar);
-    if (colorbar->panel == NULL)
-        return;
-    DvzPanelReserve reserve = {0};
-    (void)dvz_panel_get_reserve(colorbar->panel, &reserve);
-    DvzPanelReserve next = reserve;
-    _colorbar_clear_auto_reserve(colorbar, &next);
-    if (fabsf(next.left_px - reserve.left_px) > COLORBAR_LAYOUT_EPS ||
-        fabsf(next.right_px - reserve.right_px) > COLORBAR_LAYOUT_EPS ||
-        fabsf(next.bottom_px - reserve.bottom_px) > COLORBAR_LAYOUT_EPS ||
-        fabsf(next.top_px - reserve.top_px) > COLORBAR_LAYOUT_EPS)
-    {
-        (void)dvz_panel_set_reserve(colorbar->panel, &next);
-    }
+    _scene_panel_refresh_colorbar_reserve(colorbar->panel);
 }
 
 
@@ -1693,10 +1633,9 @@ void dvz_colorbar_destroy(DvzColorbar* colorbar)
     if (colorbar == NULL)
         return;
     _colorbar_hide(colorbar);
-    _colorbar_drop_auto_reserve(colorbar);
+    DvzPanel* panel = colorbar->panel;
     if (colorbar->panel != NULL)
     {
-        DvzPanel* panel = colorbar->panel;
         for (uint32_t i = 0; i < panel->colorbar_count; i++)
         {
             if (panel->colorbars[i] != colorbar)
@@ -1707,6 +1646,7 @@ void dvz_colorbar_destroy(DvzColorbar* colorbar)
             panel->colorbar_count--;
             break;
         }
+        _scene_panel_refresh_colorbar_reserve(panel);
     }
     colorbar->scene = NULL;
     colorbar->panel = NULL;

@@ -594,6 +594,7 @@ bool _scene_emit_panel_render_ex(
     ANN(figure);
     ANN(plan);
     ANN(figure_id);
+    _scene_prepare_axis_visuals(figure);
     _scene_prepare_colorbar_visuals(figure, NULL);
     _scene_prepare_text_visuals(figure);
     ASSERT(panel_index < figure->panel_count);

@@ -72,6 +72,9 @@ static DvzAxisStyle _axis_default_style(void)
         .grid_width = 1.0f,
         .major_tick_length = 9.0f,
         .minor_tick_length = 5.0f,
+        .reserve_px = 0.0f,
+        .tick_gap_px = AXIS_TEXT_TICK_GAP,
+        .label_gap_px = AXIS_TEXT_LABEL_GAP,
         .plot_margin_left = 0.0f,
         .plot_margin_right = 0.0f,
         .plot_margin_bottom = 0.0f,
@@ -101,6 +104,51 @@ static bool _axis_dim_supported(DvzDim dim)
 }
 
 
+/**
+ * Return one axis reserve contribution in logical pixels.
+ *
+ * @param axis the axis
+ * @return reserve contribution in pixels
+ */
+static float _axis_reserve_px(const DvzAxis* axis)
+{
+    ANN(axis);
+    if (!axis->enabled)
+        return 0.0f;
+    if (axis->style.reserve_px > 0.0f && isfinite(axis->style.reserve_px))
+        return axis->style.reserve_px;
+    float tick_gap =
+        axis->style.tick_gap_px > 0.0f && isfinite(axis->style.tick_gap_px) ?
+            axis->style.tick_gap_px :
+            AXIS_TEXT_TICK_GAP;
+    float label_gap =
+        axis->style.label_gap_px > 0.0f && isfinite(axis->style.label_gap_px) ?
+            axis->style.label_gap_px :
+            AXIS_TEXT_LABEL_GAP;
+    float reserve = axis->style.show_major_ticks ? tick_gap + AXIS_TEXT_TICK_SIZE + 4.0f : 0.0f;
+    if (axis->label[0] != '\0')
+        reserve = fmaxf(reserve, label_gap + AXIS_TEXT_LABEL_SIZE + 4.0f);
+    return reserve;
+}
+
+
+/**
+ * Mark one axis layout and derived visuals dirty.
+ *
+ * @param axis the axis
+ */
+static void _axis_mark_dirty(DvzAxis* axis)
+{
+    if (axis == NULL)
+        return;
+    axis->tick_cache_valid = false;
+    axis->dirty = true;
+    axis->version++;
+    _scene_panel_refresh_axis_reserve(axis->panel);
+    _scene_notify_request_frame(axis->panel != NULL ? axis->panel->figure : NULL);
+}
+
+
 
 /**
  * Return the panel-owned axis slot for a supported dimension.
@@ -114,6 +162,26 @@ static DvzAxis* _panel_axis_slot(DvzPanel* panel, DvzDim dim)
     if (panel == NULL || !_axis_dim_supported(dim))
         return NULL;
     return &panel->axes[(uint32_t)dim];
+}
+
+
+/**
+ * Refresh aggregate attached axis reserve for one panel.
+ *
+ * @param panel the panel
+ */
+void _scene_panel_refresh_axis_reserve(DvzPanel* panel)
+{
+    if (panel == NULL)
+        return;
+    DvzPanelReserve reserve = {0};
+    DvzAxis* x_axis = &panel->axes[DVZ_DIM_X];
+    DvzAxis* y_axis = &panel->axes[DVZ_DIM_Y];
+    if (x_axis->panel == panel)
+        reserve.bottom_px = _axis_reserve_px(x_axis);
+    if (y_axis->panel == panel)
+        reserve.left_px = _axis_reserve_px(y_axis);
+    _scene_panel_set_axis_reserve(panel, &reserve);
 }
 
 
@@ -897,7 +965,9 @@ static void _axis_update_text(
         if (axis->dim == DVZ_DIM_X)
         {
             _axis_visual_to_pixels(axis, p, y0, &px, &py);
-            py += AXIS_TEXT_TICK_GAP;
+            py += axis->style.tick_gap_px > 0.0f && isfinite(axis->style.tick_gap_px) ?
+                      axis->style.tick_gap_px :
+                      AXIS_TEXT_TICK_GAP;
             _axis_append_text_item(
                 &count, labels, strings, positions, anchors, sizes, colors, angles, tick_label, px,
                 py, 0.5f, 0.0f, AXIS_TEXT_TICK_SIZE, axis->style.major_tick_color, 0.0f);
@@ -905,7 +975,9 @@ static void _axis_update_text(
         else
         {
             _axis_visual_to_pixels(axis, x0, p, &px, &py);
-            px -= AXIS_TEXT_TICK_GAP;
+            px -= axis->style.tick_gap_px > 0.0f && isfinite(axis->style.tick_gap_px) ?
+                      axis->style.tick_gap_px :
+                      AXIS_TEXT_TICK_GAP;
             _axis_append_text_item(
                 &count, labels, strings, positions, anchors, sizes, colors, angles, tick_label, px,
                 py, 1.0f, 0.5f, AXIS_TEXT_TICK_SIZE, axis->style.major_tick_color, 0.0f);
@@ -919,7 +991,9 @@ static void _axis_update_text(
         if (axis->dim == DVZ_DIM_X)
         {
             _axis_visual_to_pixels(axis, 0.5f * (x0 + x1), y0, &px, &py);
-            py += AXIS_TEXT_LABEL_GAP;
+            py += axis->style.label_gap_px > 0.0f && isfinite(axis->style.label_gap_px) ?
+                      axis->style.label_gap_px :
+                      AXIS_TEXT_LABEL_GAP;
             _axis_append_text_item(
                 &count, labels, strings, positions, anchors, sizes, colors, angles, axis->label,
                 px, py, 0.5f, 0.0f, AXIS_TEXT_LABEL_SIZE, axis->style.spine_color, 0.0f);
@@ -927,7 +1001,9 @@ static void _axis_update_text(
         else
         {
             _axis_visual_to_pixels(axis, x0, 0.5f * (y0 + y1), &px, &py);
-            px -= AXIS_TEXT_LABEL_GAP;
+            px -= axis->style.label_gap_px > 0.0f && isfinite(axis->style.label_gap_px) ?
+                      axis->style.label_gap_px :
+                      AXIS_TEXT_LABEL_GAP;
             _axis_append_text_item(
                 &count, labels, strings, positions, anchors, sizes, colors, angles, axis->label,
                 px, py, 0.5f, 0.5f, AXIS_TEXT_LABEL_SIZE, axis->style.spine_color,
@@ -1225,8 +1301,7 @@ DvzAxis* dvz_panel_axis(DvzPanel* panel, DvzDim dim)
         }
     }
     axis->enabled = true;
-    axis->dirty = true;
-    _scene_notify_request_frame(panel->figure);
+    _axis_mark_dirty(axis);
     return axis;
 }
 
@@ -1244,13 +1319,11 @@ bool dvz_axis_set_visible(DvzAxis* axis, bool visible)
     if (axis == NULL)
         return false;
     axis->enabled = visible;
-    axis->dirty = true;
-    axis->version++;
     if (axis->visual != NULL && !visible)
         axis->visual->visible = false;
     if (!visible)
         _axis_hide_text(axis);
-    _scene_notify_request_frame(axis->panel != NULL ? axis->panel->figure : NULL);
+    _axis_mark_dirty(axis);
     return true;
 }
 
@@ -1268,9 +1341,7 @@ bool dvz_axis_set_grid(DvzAxis* axis, bool visible)
     if (axis == NULL)
         return false;
     axis->style.show_grid = visible;
-    axis->dirty = true;
-    axis->version++;
-    _scene_notify_request_frame(axis->panel != NULL ? axis->panel->figure : NULL);
+    _axis_mark_dirty(axis);
     return true;
 }
 
@@ -1288,9 +1359,7 @@ bool dvz_axis_set_label(DvzAxis* axis, const char* label)
     if (axis == NULL)
         return false;
     dvz_strlcpy(axis->label, label != NULL ? label : "", sizeof(axis->label));
-    axis->dirty = true;
-    axis->version++;
-    _scene_notify_request_frame(axis->panel != NULL ? axis->panel->figure : NULL);
+    _axis_mark_dirty(axis);
     return true;
 }
 
@@ -1309,10 +1378,7 @@ bool dvz_axis_set_tick_policy(DvzAxis* axis, const DvzAxisTickPolicy* policy)
         return false;
     axis->tick_policy = policy != NULL ? *policy : _axis_default_tick_policy();
     axis->tick_lstep = 0.0;
-    axis->tick_cache_valid = false;
-    axis->dirty = true;
-    axis->version++;
-    _scene_notify_request_frame(axis->panel != NULL ? axis->panel->figure : NULL);
+    _axis_mark_dirty(axis);
     return true;
 }
 
@@ -1330,10 +1396,7 @@ bool dvz_axis_set_style(DvzAxis* axis, const DvzAxisStyle* style)
     if (axis == NULL)
         return false;
     axis->style = style != NULL ? *style : _axis_default_style();
-    axis->tick_cache_valid = false;
-    axis->dirty = true;
-    axis->version++;
-    _scene_notify_request_frame(axis->panel != NULL ? axis->panel->figure : NULL);
+    _axis_mark_dirty(axis);
     return true;
 }
 
@@ -1361,10 +1424,7 @@ bool dvz_axis_set_plot_margins(
     axis->style.plot_margin_right = right;
     axis->style.plot_margin_bottom = bottom;
     axis->style.plot_margin_top = top;
-    axis->tick_cache_valid = false;
-    axis->dirty = true;
-    axis->version++;
-    _scene_notify_request_frame(axis->panel != NULL ? axis->panel->figure : NULL);
+    _axis_mark_dirty(axis);
     return true;
 }
 
@@ -1382,6 +1442,7 @@ void _scene_prepare_axis_visuals(DvzFigure* figure)
     for (uint32_t pi = 0; pi < figure->panel_count; pi++)
     {
         DvzPanel* panel = &figure->panels[pi];
+        _scene_panel_refresh_axis_reserve(panel);
         for (uint32_t dim = 0; dim < 2; dim++)
         {
             DvzAxis* axis = &panel->axes[dim];
