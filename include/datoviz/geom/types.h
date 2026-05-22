@@ -31,6 +31,7 @@ typedef struct DvzGeometry DvzGeometry;
 typedef struct DvzGeometryBounds DvzGeometryBounds;
 typedef struct DvzGeometryCubeDesc DvzGeometryCubeDesc;
 typedef struct DvzGeometryPlaneDesc DvzGeometryPlaneDesc;
+typedef struct DvzGeometrySphereDesc DvzGeometrySphereDesc;
 typedef struct DvzGeometrySurfaceGridDesc DvzGeometrySurfaceGridDesc;
 
 
@@ -81,6 +82,17 @@ struct DvzGeometryPlaneDesc
     double width;   // plane width along X
     double height;  // plane height along Y
     double z;       // plane Z coordinate, added to center.z
+    DvzColor color; // vertex color, defaults to opaque white when all channels are zero
+};
+
+
+
+struct DvzGeometrySphereDesc
+{
+    dvec3 center;   // sphere center
+    double radius;  // sphere radius
+    uint32_t rings; // latitude segment count, defaults to 16
+    uint32_t sectors; // longitude segment count, defaults to 32
     DvzColor color; // vertex color, defaults to opaque white when all channels are zero
 };
 

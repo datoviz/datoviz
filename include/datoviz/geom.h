@@ -147,6 +147,16 @@ DVZ_EXPORT DvzGeometry* dvz_geom_plane(const DvzGeometryPlaneDesc* desc);
 
 
 /**
+ * Create an indexed UV-sphere geometry.
+ *
+ * @param desc optional sphere descriptor
+ * @return the new geometry, or NULL on failure
+ */
+DVZ_EXPORT DvzGeometry* dvz_geom_sphere(const DvzGeometrySphereDesc* desc);
+
+
+
+/**
  * Create an indexed structured surface-grid geometry.
  *
  * @param desc surface-grid descriptor

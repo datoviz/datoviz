@@ -34,6 +34,8 @@ int test_geometry_f32(TstContext* suite, const TstCase* tstitem);
 
 int test_geometry_surface_grid(TstContext* suite, const TstCase* tstitem);
 
+int test_geometry_sphere(TstContext* suite, const TstCase* tstitem);
+
 int test_geometry_transform(TstContext* suite, const TstCase* tstitem);
 
 int test_geometry_merge(TstContext* suite, const TstCase* tstitem);

@@ -198,6 +198,50 @@ int test_geometry_surface_grid(TstContext* suite, const TstCase* tstitem)
 
 
 
+int test_geometry_sphere(TstContext* suite, const TstCase* tstitem)
+{
+    ANN(suite);
+
+    DvzGeometrySphereDesc desc = {
+        .center = {1.0, 2.0, 3.0},
+        .radius = 2.0,
+        .rings = 4,
+        .sectors = 8,
+    };
+    DvzGeometry* sphere = dvz_geom_sphere(&desc);
+    AT(sphere != NULL);
+    AT(sphere->type == DVZ_GEOMETRY_SPHERE);
+    AT(sphere->vertex_count == 45);
+    AT(sphere->index_count == 192);
+
+    DvzGeometryBounds bounds = dvz_geometry_bounds(sphere);
+    AC(bounds.xmin, -1.0, EPS);
+    AC(bounds.xmax, 3.0, EPS);
+    AC(bounds.ymin, 0.0, EPS);
+    AC(bounds.ymax, 4.0, EPS);
+    AC(bounds.zmin, 1.0, EPS);
+    AC(bounds.zmax, 5.0, EPS);
+
+    for (uint32_t i = 0; i < sphere->index_count; i++)
+        AT(sphere->indices[i] < sphere->vertex_count);
+    for (uint32_t i = 0; i < sphere->vertex_count; i++)
+    {
+        const double norm = sqrt(
+            sphere->normals[i][0] * sphere->normals[i][0] +
+            sphere->normals[i][1] * sphere->normals[i][1] +
+            sphere->normals[i][2] * sphere->normals[i][2]);
+        AC(norm, 1.0, EPS);
+    }
+    AC(sphere->texcoords[0][0], 0.0, EPS);
+    AC(sphere->texcoords[8][0], 1.0, EPS);
+    AT(dvz_geom_sphere(&(DvzGeometrySphereDesc){.radius = -1.0}) == NULL);
+
+    dvz_geometry_destroy(sphere);
+    return 0;
+}
+
+
+
 int test_geometry_transform(TstContext* suite, const TstCase* tstitem)
 {
     ANN(suite);
@@ -285,6 +329,7 @@ int test_geom(TstSuite* suite)
     TST_CASE(test_geometry_plane);
     TST_CASE(test_geometry_f32);
     TST_CASE(test_geometry_surface_grid);
+    TST_CASE(test_geometry_sphere);
     TST_CASE(test_geometry_transform);
     TST_CASE(test_geometry_merge);
 

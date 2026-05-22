@@ -39,6 +39,8 @@
 #define DVZ_GEOM_CUBE_INDEX_COUNT  36
 #define DVZ_GEOM_PLANE_VERTEX_COUNT 4
 #define DVZ_GEOM_PLANE_INDEX_COUNT  6
+#define DVZ_GEOM_SPHERE_DEFAULT_RINGS 16
+#define DVZ_GEOM_SPHERE_DEFAULT_SECTORS 32
 
 
 
@@ -314,6 +316,44 @@ static bool _geom_surface_grid_counts(
 
     uint64_t quad_count = 0;
     if (_dvz_mul_u64_overflows((uint64_t)(rows - 1), (uint64_t)(cols - 1), &quad_count))
+        return false;
+
+    uint64_t index_count = 0;
+    if (_dvz_mul_u64_overflows(quad_count, 6, &index_count) || index_count > UINT32_MAX)
+        return false;
+
+    *out_vertices = (uint32_t)vertex_count;
+    *out_indices = (uint32_t)index_count;
+    return true;
+}
+
+
+
+/**
+ * Validate and compute UV-sphere counts.
+ *
+ * @param rings latitude segment count
+ * @param sectors longitude segment count
+ * @param out_vertices output vertex count
+ * @param out_indices output index count
+ * @return whether the counts are valid
+ */
+static bool _geom_sphere_counts(
+    uint32_t rings, uint32_t sectors, uint32_t* out_vertices, uint32_t* out_indices)
+{
+    ANN(out_vertices);
+    ANN(out_indices);
+    if (rings < 2 || sectors < 3)
+        return false;
+
+    uint64_t rows = (uint64_t)rings + 1;
+    uint64_t cols = (uint64_t)sectors + 1;
+    uint64_t vertex_count = 0;
+    if (_dvz_mul_u64_overflows(rows, cols, &vertex_count) || vertex_count > UINT32_MAX)
+        return false;
+
+    uint64_t quad_count = 0;
+    if (_dvz_mul_u64_overflows((uint64_t)rings, (uint64_t)sectors, &quad_count))
         return false;
 
     uint64_t index_count = 0;
@@ -859,6 +899,91 @@ DvzGeometry* dvz_geom_plane(const DvzGeometryPlaneDesc* desc)
     _geom_set_index(geometry, 3, 0);
     _geom_set_index(geometry, 4, 2);
     _geom_set_index(geometry, 5, 3);
+
+    return geometry;
+}
+
+
+
+/**
+ * Create an indexed UV-sphere geometry.
+ *
+ * @param desc optional sphere descriptor
+ * @return the new geometry, or NULL on failure
+ */
+DvzGeometry* dvz_geom_sphere(const DvzGeometrySphereDesc* desc)
+{
+    DvzGeometrySphereDesc cfg = {0};
+    cfg.radius = 1.0;
+    cfg.rings = DVZ_GEOM_SPHERE_DEFAULT_RINGS;
+    cfg.sectors = DVZ_GEOM_SPHERE_DEFAULT_SECTORS;
+    if (desc != NULL)
+        cfg = *desc;
+    if (cfg.radius <= 0.0)
+        return NULL;
+    if (cfg.rings == 0)
+        cfg.rings = DVZ_GEOM_SPHERE_DEFAULT_RINGS;
+    if (cfg.sectors == 0)
+        cfg.sectors = DVZ_GEOM_SPHERE_DEFAULT_SECTORS;
+
+    uint32_t vertex_count = 0;
+    uint32_t index_count = 0;
+    if (!_geom_sphere_counts(cfg.rings, cfg.sectors, &vertex_count, &index_count))
+        return NULL;
+
+    DvzColor color = {0};
+    _geom_color_or_default(cfg.color, color);
+
+    DvzGeometry* geometry = dvz_geometry(vertex_count, index_count);
+    if (geometry == NULL)
+        return NULL;
+
+    geometry->type = DVZ_GEOMETRY_SPHERE;
+    geometry->flags = DVZ_GEOMETRY_INDEXING_TRIANGLES;
+
+    for (uint32_t ring = 0; ring <= cfg.rings; ring++)
+    {
+        const double v = (double)ring / (double)cfg.rings;
+        const double theta = M_PI * v;
+        const double st = sin(theta);
+        const double ct = cos(theta);
+        for (uint32_t sector = 0; sector <= cfg.sectors; sector++)
+        {
+            const double u = (double)sector / (double)cfg.sectors;
+            const double phi = M_2PI * u;
+            const double cp = cos(phi);
+            const double sp = sin(phi);
+            const dvec3 normal = {st * cp, st * sp, ct};
+            const dvec3 position = {
+                cfg.center[0] + cfg.radius * normal[0],
+                cfg.center[1] + cfg.radius * normal[1],
+                cfg.center[2] + cfg.radius * normal[2],
+            };
+            const dvec2 texcoord = {u, v};
+            _geom_set_vertex(
+                geometry, ring * (cfg.sectors + 1) + sector, position, normal, texcoord, color);
+        }
+    }
+
+    uint32_t index_offset = 0;
+    const uint32_t cols = cfg.sectors + 1;
+    for (uint32_t ring = 0; ring < cfg.rings; ring++)
+    {
+        for (uint32_t sector = 0; sector < cfg.sectors; sector++)
+        {
+            const uint32_t i0 = ring * cols + sector;
+            const uint32_t i1 = i0 + 1;
+            const uint32_t i2 = i0 + cols;
+            const uint32_t i3 = i2 + 1;
+            _geom_set_index(geometry, index_offset + 0, i0);
+            _geom_set_index(geometry, index_offset + 1, i3);
+            _geom_set_index(geometry, index_offset + 2, i1);
+            _geom_set_index(geometry, index_offset + 3, i0);
+            _geom_set_index(geometry, index_offset + 4, i2);
+            _geom_set_index(geometry, index_offset + 5, i3);
+            index_offset += 6;
+        }
+    }
 
     return geometry;
 }
