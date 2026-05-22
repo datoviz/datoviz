@@ -656,6 +656,30 @@ static int test_axis_layout_reserve(TstContext* suite, const TstCase* item)
     AT(dvz_panel_get_layout_reserve(panel, &reserve));
     AT(reserve.left == 0.0f && reserve.right == 0.0f);
 
+    DvzPanelReserve pixel_reserve = {
+        .left_px = 80.0f,
+        .right_px = 120.0f,
+        .top_px = 30.0f,
+        .bottom_px = 50.0f,
+    };
+    AT(dvz_panel_set_reserve(panel, &pixel_reserve));
+    DvzPanelReserve pixel_out = {0};
+    AT(dvz_panel_get_reserve(panel, &pixel_out));
+    AT(fabsf(pixel_out.left_px - 80.0f) < 1e-6f);
+    DvzRect plot_rect = {0};
+    AT(dvz_panel_plot_rect_px(panel, &plot_rect));
+    AT(fabsf(plot_rect.x - 80.0f) < 1e-4f);
+    AT(fabsf(plot_rect.y - 30.0f) < 1e-4f);
+    AT(fabsf(plot_rect.width - 600.0f) < 1e-4f);
+    AT(fabsf(plot_rect.height - 520.0f) < 1e-4f);
+
+    dvz_figure_resize(figure, 1200, 900);
+    AT(dvz_panel_plot_rect_px(panel, &plot_rect));
+    AT(fabsf(plot_rect.x - 80.0f) < 1e-4f);
+    AT(fabsf(plot_rect.y - 30.0f) < 1e-4f);
+    AT(fabsf(plot_rect.width - 1000.0f) < 1e-4f);
+    AT(fabsf(plot_rect.height - 820.0f) < 1e-4f);
+
     dvz_scene_destroy(scene);
     return 0;
 }

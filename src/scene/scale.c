@@ -303,6 +303,33 @@ static bool _colorbar_anchor_supported(DvzSceneAnchor anchor)
 }
 
 
+/**
+ * Return the default attached reserve for a colorbar orientation.
+ *
+ * @param orientation the colorbar orientation
+ * @return default reserve in logical pixels
+ */
+static float _colorbar_default_reserve_px(DvzColorbarOrientation orientation)
+{
+    return orientation == DVZ_COLORBAR_ORIENTATION_HORIZONTAL ? COLORBAR_HORIZONTAL_RESERVE_PX :
+                                                               COLORBAR_VERTICAL_RESERVE_PX;
+}
+
+
+
+/**
+ * Return a positive descriptor value or its fallback.
+ *
+ * @param value descriptor value
+ * @param fallback default value
+ * @return value when positive, otherwise fallback
+ */
+static float _colorbar_positive_or_default(float value, float fallback)
+{
+    return value > 0.0f && isfinite(value) ? value : fallback;
+}
+
+
 
 /**
  * Report a colorbar realization error through logs and optional diagnostics.
@@ -354,33 +381,6 @@ static bool _colorbar_vertical(const DvzColorbar* colorbar)
 
 
 /**
- * Return the visual-space reserve needed for a pixel band.
- *
- * @param panel the panel
- * @param horizontal whether the reserve applies to the x dimension
- * @param pixels reserve in logical pixels
- * @return reserve in panel visual units
- */
-static float _colorbar_pixels_to_reserve(
-    const DvzPanel* panel, bool horizontal, float pixels)
-{
-    ANN(panel);
-    float x = 0.0f;
-    float y = 0.0f;
-    float width = 0.0f;
-    float height = 0.0f;
-    _scene_panel_pixel_rect(panel, &x, &y, &width, &height);
-    (void)x;
-    (void)y;
-    float span = horizontal ? width : height;
-    if (!(span > 0.0f) || !isfinite(span))
-        return 0.0f;
-    return 2.0f * pixels / span;
-}
-
-
-
-/**
  * Return whether a reserve component still matches a previous automatic colorbar value.
  *
  * @param value the current panel reserve component
@@ -389,7 +389,7 @@ static float _colorbar_pixels_to_reserve(
  */
 static bool _colorbar_reserve_matches_auto(float value, float applied)
 {
-    return applied > 0.0f && fabsf(value - applied) <= 1e-6f;
+    return applied > 0.0f && fabsf(value - applied) <= COLORBAR_LAYOUT_EPS;
 }
 
 
@@ -400,20 +400,20 @@ static bool _colorbar_reserve_matches_auto(float value, float applied)
  * @param colorbar the colorbar
  * @param reserve the mutable panel reserve
  */
-static void _colorbar_clear_auto_reserve(DvzColorbar* colorbar, DvzPanelLayoutReserve* reserve)
+static void _colorbar_clear_auto_reserve(DvzColorbar* colorbar, DvzPanelReserve* reserve)
 {
     ANN(colorbar);
     ANN(reserve);
-    DvzPanelLayoutReserve applied = colorbar->auto_reserve;
-    if (_colorbar_reserve_matches_auto(reserve->left, applied.left))
-        reserve->left = 0.0f;
-    if (_colorbar_reserve_matches_auto(reserve->right, applied.right))
-        reserve->right = 0.0f;
-    if (_colorbar_reserve_matches_auto(reserve->bottom, applied.bottom))
-        reserve->bottom = 0.0f;
-    if (_colorbar_reserve_matches_auto(reserve->top, applied.top))
-        reserve->top = 0.0f;
-    colorbar->auto_reserve = dvz_panel_layout_reserve();
+    DvzPanelReserve applied = colorbar->auto_reserve;
+    if (_colorbar_reserve_matches_auto(reserve->left_px, applied.left_px))
+        reserve->left_px = 0.0f;
+    if (_colorbar_reserve_matches_auto(reserve->right_px, applied.right_px))
+        reserve->right_px = 0.0f;
+    if (_colorbar_reserve_matches_auto(reserve->bottom_px, applied.bottom_px))
+        reserve->bottom_px = 0.0f;
+    if (_colorbar_reserve_matches_auto(reserve->top_px, applied.top_px))
+        reserve->top_px = 0.0f;
+    colorbar->auto_reserve = (DvzPanelReserve){0};
 }
 
 
@@ -426,45 +426,80 @@ static void _colorbar_clear_auto_reserve(DvzColorbar* colorbar, DvzPanelLayoutRe
 static void _colorbar_apply_auto_reserve(DvzColorbar* colorbar)
 {
     ANN(colorbar);
-    if (colorbar->panel == NULL || !_colorbar_anchor_supported(colorbar->anchor))
+    if (colorbar->panel == NULL)
         return;
-    DvzPanelLayoutReserve reserve = dvz_panel_layout_reserve();
-    (void)dvz_panel_get_layout_reserve(colorbar->panel, &reserve);
-    DvzPanelLayoutReserve next = reserve;
-    DvzPanelLayoutReserve applied = dvz_panel_layout_reserve();
+    DvzPanelReserve reserve = {0};
+    (void)dvz_panel_get_reserve(colorbar->panel, &reserve);
+    DvzPanelReserve next = reserve;
+    DvzPanelReserve applied = {0};
     _colorbar_clear_auto_reserve(colorbar, &next);
+    if (colorbar->placement_mode != DVZ_COLORBAR_PLACEMENT_ATTACHED ||
+        !_colorbar_anchor_supported(colorbar->anchor))
+    {
+        if (fabsf(next.left_px - reserve.left_px) > COLORBAR_LAYOUT_EPS ||
+            fabsf(next.right_px - reserve.right_px) > COLORBAR_LAYOUT_EPS ||
+            fabsf(next.bottom_px - reserve.bottom_px) > COLORBAR_LAYOUT_EPS ||
+            fabsf(next.top_px - reserve.top_px) > COLORBAR_LAYOUT_EPS)
+        {
+            (void)dvz_panel_set_reserve(colorbar->panel, &next);
+        }
+        return;
+    }
+
+    float reserve_px = _colorbar_positive_or_default(
+        colorbar->reserve_px, _colorbar_default_reserve_px(colorbar->orientation));
     switch (colorbar->anchor)
     {
     case DVZ_SCENE_ANCHOR_PANEL_LEFT:
-        applied.left =
-            _colorbar_pixels_to_reserve(colorbar->panel, true, COLORBAR_VERTICAL_RESERVE_PX);
-        next.left = fmaxf(next.left, applied.left);
+        applied.left_px = reserve_px;
+        next.left_px = fmaxf(next.left_px, applied.left_px);
         break;
     case DVZ_SCENE_ANCHOR_PANEL_RIGHT:
-        applied.right =
-            _colorbar_pixels_to_reserve(colorbar->panel, true, COLORBAR_VERTICAL_RESERVE_PX);
-        next.right = fmaxf(next.right, applied.right);
+        applied.right_px = reserve_px;
+        next.right_px = fmaxf(next.right_px, applied.right_px);
         break;
     case DVZ_SCENE_ANCHOR_PANEL_TOP:
-        applied.top =
-            _colorbar_pixels_to_reserve(colorbar->panel, false, COLORBAR_HORIZONTAL_RESERVE_PX);
-        next.top = fmaxf(next.top, applied.top);
+        applied.top_px = reserve_px;
+        next.top_px = fmaxf(next.top_px, applied.top_px);
         break;
     case DVZ_SCENE_ANCHOR_PANEL_BOTTOM:
-        applied.bottom =
-            _colorbar_pixels_to_reserve(colorbar->panel, false, COLORBAR_HORIZONTAL_RESERVE_PX);
-        next.bottom = fmaxf(next.bottom, applied.bottom);
+        applied.bottom_px = reserve_px;
+        next.bottom_px = fmaxf(next.bottom_px, applied.bottom_px);
         break;
     default:
         break;
     }
     colorbar->auto_reserve = applied;
-    if (fabsf(next.left - reserve.left) > 1e-6f ||
-        fabsf(next.right - reserve.right) > 1e-6f ||
-        fabsf(next.bottom - reserve.bottom) > 1e-6f ||
-        fabsf(next.top - reserve.top) > 1e-6f)
+    if (fabsf(next.left_px - reserve.left_px) > COLORBAR_LAYOUT_EPS ||
+        fabsf(next.right_px - reserve.right_px) > COLORBAR_LAYOUT_EPS ||
+        fabsf(next.bottom_px - reserve.bottom_px) > COLORBAR_LAYOUT_EPS ||
+        fabsf(next.top_px - reserve.top_px) > COLORBAR_LAYOUT_EPS)
     {
-        (void)dvz_panel_set_layout_reserve(colorbar->panel, &next);
+        (void)dvz_panel_set_reserve(colorbar->panel, &next);
+    }
+}
+
+
+/**
+ * Drop a colorbar-owned automatic reserve from its panel.
+ *
+ * @param colorbar the colorbar
+ */
+static void _colorbar_drop_auto_reserve(DvzColorbar* colorbar)
+{
+    ANN(colorbar);
+    if (colorbar->panel == NULL)
+        return;
+    DvzPanelReserve reserve = {0};
+    (void)dvz_panel_get_reserve(colorbar->panel, &reserve);
+    DvzPanelReserve next = reserve;
+    _colorbar_clear_auto_reserve(colorbar, &next);
+    if (fabsf(next.left_px - reserve.left_px) > COLORBAR_LAYOUT_EPS ||
+        fabsf(next.right_px - reserve.right_px) > COLORBAR_LAYOUT_EPS ||
+        fabsf(next.bottom_px - reserve.bottom_px) > COLORBAR_LAYOUT_EPS ||
+        fabsf(next.top_px - reserve.top_px) > COLORBAR_LAYOUT_EPS)
+    {
+        (void)dvz_panel_set_reserve(colorbar->panel, &next);
     }
 }
 
@@ -921,16 +956,16 @@ static void _colorbar_update_ticks_and_text(
             float y = ramp_y1 + (ramp_y0 - ramp_y1) * (float)t;
             if (colorbar->anchor == DVZ_SCENE_ANCHOR_PANEL_LEFT)
             {
-                x0 = ramp_x0 - COLORBAR_TICK_LENGTH_PX;
+                x0 = ramp_x0 - colorbar->tick_length_px;
                 x1 = ramp_x0;
-                label_x = x0 - COLORBAR_LABEL_GAP_PX;
+                label_x = x0 - colorbar->label_gap_px;
                 anchor_x = 1.0f;
             }
             else
             {
                 x0 = ramp_x1;
-                x1 = ramp_x1 + COLORBAR_TICK_LENGTH_PX;
-                label_x = x1 + COLORBAR_LABEL_GAP_PX;
+                x1 = ramp_x1 + colorbar->tick_length_px;
+                label_x = x1 + colorbar->label_gap_px;
                 anchor_x = 0.0f;
             }
             y0 = y1 = label_y = y;
@@ -940,16 +975,16 @@ static void _colorbar_update_ticks_and_text(
             float x = ramp_x0 + (ramp_x1 - ramp_x0) * (float)t;
             if (colorbar->anchor == DVZ_SCENE_ANCHOR_PANEL_TOP)
             {
-                y0 = ramp_y0 - COLORBAR_TICK_LENGTH_PX;
+                y0 = ramp_y0 - colorbar->tick_length_px;
                 y1 = ramp_y0;
-                label_y = y0 - COLORBAR_LABEL_GAP_PX;
+                label_y = y0 - colorbar->label_gap_px;
                 anchor_y = 1.0f;
             }
             else
             {
                 y0 = ramp_y1;
-                y1 = ramp_y1 + COLORBAR_TICK_LENGTH_PX;
-                label_y = y1 + COLORBAR_LABEL_GAP_PX;
+                y1 = ramp_y1 + colorbar->tick_length_px;
+                label_y = y1 + colorbar->label_gap_px;
                 anchor_y = 0.0f;
             }
             x0 = x1 = label_x = x;
@@ -1012,10 +1047,10 @@ static void _colorbar_update_title(
     if (vertical)
     {
         float x = colorbar->anchor == DVZ_SCENE_ANCHOR_PANEL_LEFT ?
-                      fmaxf(COLORBAR_EDGE_PADDING_PX, ramp_x0 - COLORBAR_TITLE_GAP_PX - 4.0f) :
+                      fmaxf(colorbar->edge_offset_px, ramp_x0 - COLORBAR_TITLE_GAP_PX - 4.0f) :
                       fminf(
-                          width - COLORBAR_EDGE_PADDING_PX,
-                          ramp_x1 + COLORBAR_TICK_LENGTH_PX + COLORBAR_LABEL_GAP_PX + 46.0f);
+                          width - colorbar->edge_offset_px,
+                          ramp_x1 + colorbar->tick_length_px + colorbar->label_gap_px + 46.0f);
         float y = 0.5f * (ramp_y0 + ramp_y1);
         float angle = colorbar->anchor == DVZ_SCENE_ANCHOR_PANEL_LEFT ? -1.57079632679f :
                                                                       +1.57079632679f;
@@ -1026,11 +1061,149 @@ static void _colorbar_update_title(
     {
         float x = 0.5f * (ramp_x0 + ramp_x1);
         float y = colorbar->anchor == DVZ_SCENE_ANCHOR_PANEL_TOP ?
-                      COLORBAR_EDGE_PADDING_PX :
-                      height - COLORBAR_EDGE_PADDING_PX;
+                      colorbar->edge_offset_px :
+                      height - colorbar->edge_offset_px;
         float anchor_y = colorbar->anchor == DVZ_SCENE_ANCHOR_PANEL_TOP ? 0.0f : 1.0f;
         _colorbar_append_text(
             colorbar, colorbar->title, x, y, 0.5f, anchor_y, COLORBAR_TITLE_TEXT_SIZE_PX, 0.0f);
+    }
+}
+
+
+/**
+ * Resolve an anchored detached placement rectangle to panel-local pixels.
+ *
+ * @param colorbar the colorbar
+ * @param panel_x panel x origin in figure pixels
+ * @param panel_y panel y origin in figure pixels
+ * @param panel_width panel width in pixels
+ * @param panel_height panel height in pixels
+ * @param out output rectangle as x0, y0, x1, y1 in panel-local pixels
+ */
+static void _colorbar_detached_rect(
+    const DvzColorbar* colorbar, float panel_x, float panel_y, float panel_width,
+    float panel_height, float out[4])
+{
+    ANN(colorbar);
+    ANN(out);
+    const DvzPlacement* placement = &colorbar->placement;
+    float space_x = 0.0f;
+    float space_y = 0.0f;
+    float space_width = panel_width;
+    float space_height = panel_height;
+    if (placement->space == DVZ_PLACEMENT_SPACE_FIGURE && colorbar->panel != NULL &&
+        colorbar->panel->figure != NULL)
+    {
+        space_x = -panel_x;
+        space_y = -panel_y;
+        space_width = colorbar->panel->figure->width > 0 ? (float)colorbar->panel->figure->width :
+                                                           panel_width;
+        space_height = colorbar->panel->figure->height > 0 ?
+                           (float)colorbar->panel->figure->height :
+                           panel_height;
+    }
+
+    float width = _colorbar_positive_or_default(
+        placement->width_px, _colorbar_vertical(colorbar) ? colorbar->ramp_width_px :
+                                                            fmaxf(1.0f, panel_width));
+    float height = _colorbar_positive_or_default(
+        placement->height_px, _colorbar_vertical(colorbar) ? fmaxf(1.0f, panel_height) :
+                                                             colorbar->ramp_width_px);
+    float x = space_x + placement->offset_x_px;
+    if (placement->horizontal_anchor == DVZ_HORIZONTAL_ANCHOR_CENTER)
+        x = space_x + 0.5f * (space_width - width) + placement->offset_x_px;
+    else if (placement->horizontal_anchor == DVZ_HORIZONTAL_ANCHOR_RIGHT)
+        x = space_x + space_width - width + placement->offset_x_px;
+
+    float y = space_y + placement->offset_y_px;
+    if (placement->vertical_anchor == DVZ_VERTICAL_ANCHOR_CENTER)
+        y = space_y + 0.5f * (space_height - height) + placement->offset_y_px;
+    else if (placement->vertical_anchor == DVZ_VERTICAL_ANCHOR_BOTTOM)
+        y = space_y + space_height - height + placement->offset_y_px;
+
+    out[0] = x;
+    out[1] = y;
+    out[2] = x + width;
+    out[3] = y + height;
+}
+
+
+
+/**
+ * Resolve the color ramp rectangle to panel-local pixels.
+ *
+ * @param colorbar the colorbar
+ * @param panel_x panel x origin in figure pixels
+ * @param panel_y panel y origin in figure pixels
+ * @param panel_width panel width in pixels
+ * @param panel_height panel height in pixels
+ * @param out output ramp rectangle as x0, y0, x1, y1 in panel-local pixels
+ */
+static void _colorbar_ramp_rect(
+    const DvzColorbar* colorbar, float panel_x, float panel_y, float panel_width,
+    float panel_height, float out[4])
+{
+    ANN(colorbar);
+    ANN(out);
+    if (colorbar->placement_mode == DVZ_COLORBAR_PLACEMENT_DETACHED)
+    {
+        float rect[4] = {0};
+        _colorbar_detached_rect(colorbar, panel_x, panel_y, panel_width, panel_height, rect);
+        if (_colorbar_vertical(colorbar))
+        {
+            out[0] = rect[0];
+            out[1] = rect[1];
+            out[2] = fminf(rect[2], rect[0] + colorbar->ramp_width_px);
+            out[3] = rect[3];
+        }
+        else
+        {
+            out[0] = rect[0];
+            out[1] = rect[1];
+            out[2] = rect[2];
+            out[3] = fminf(rect[3], rect[1] + colorbar->ramp_width_px);
+        }
+        return;
+    }
+
+    float plot_x = 0.0f;
+    float plot_y = 0.0f;
+    float plot_width = 0.0f;
+    float plot_height = 0.0f;
+    _scene_panel_plot_pixel_rect(
+        colorbar->panel, &plot_x, &plot_y, &plot_width, &plot_height);
+    plot_x -= panel_x;
+    plot_y -= panel_y;
+
+    if (_colorbar_vertical(colorbar))
+    {
+        if (colorbar->anchor == DVZ_SCENE_ANCHOR_PANEL_LEFT)
+        {
+            out[2] = plot_x - colorbar->plot_gap_px;
+            out[0] = out[2] - colorbar->ramp_width_px;
+        }
+        else
+        {
+            out[0] = plot_x + plot_width + colorbar->plot_gap_px;
+            out[2] = out[0] + colorbar->ramp_width_px;
+        }
+        out[1] = colorbar->edge_offset_px;
+        out[3] = panel_height - colorbar->edge_offset_px;
+    }
+    else
+    {
+        out[0] = colorbar->edge_offset_px;
+        out[2] = panel_width - colorbar->edge_offset_px;
+        if (colorbar->anchor == DVZ_SCENE_ANCHOR_PANEL_TOP)
+        {
+            out[3] = plot_y - colorbar->plot_gap_px;
+            out[1] = out[3] - colorbar->ramp_width_px;
+        }
+        else
+        {
+            out[1] = plot_y + plot_height + colorbar->plot_gap_px;
+            out[3] = out[1] + colorbar->ramp_width_px;
+        }
     }
 }
 
@@ -1046,11 +1219,12 @@ static void _colorbar_update_visuals(DvzColorbar* colorbar, DvzDiagnosticReport*
     ANN(colorbar);
     if (colorbar->scene == NULL || colorbar->panel == NULL || colorbar->scale == NULL)
         return;
-    if (!_colorbar_anchor_supported(colorbar->anchor))
+    if (colorbar->placement_mode == DVZ_COLORBAR_PLACEMENT_ATTACHED &&
+        !_colorbar_anchor_supported(colorbar->anchor))
     {
         _colorbar_fail(
             colorbar, report,
-            "colorbar anchor is not supported in the first rendered colorbar slice");
+            "attached colorbar anchor must be a panel edge");
         return;
     }
     if (colorbar->scale->kind != DVZ_SCALE_CONTINUOUS)
@@ -1091,40 +1265,12 @@ static void _colorbar_update_visuals(DvzColorbar* colorbar, DvzDiagnosticReport*
         return;
     }
 
-    float ramp_x0 = 0.0f;
-    float ramp_y0 = 0.0f;
-    float ramp_x1 = 0.0f;
-    float ramp_y1 = 0.0f;
-    if (_colorbar_vertical(colorbar))
-    {
-        if (colorbar->anchor == DVZ_SCENE_ANCHOR_PANEL_LEFT)
-        {
-            ramp_x1 = COLORBAR_VERTICAL_RESERVE_PX - COLORBAR_EDGE_PADDING_PX;
-            ramp_x0 = ramp_x1 - COLORBAR_RAMP_THICKNESS_PX;
-        }
-        else
-        {
-            ramp_x0 = width - COLORBAR_VERTICAL_RESERVE_PX + COLORBAR_EDGE_PADDING_PX;
-            ramp_x1 = ramp_x0 + COLORBAR_RAMP_THICKNESS_PX;
-        }
-        ramp_y0 = COLORBAR_EDGE_PADDING_PX;
-        ramp_y1 = height - COLORBAR_EDGE_PADDING_PX;
-    }
-    else
-    {
-        ramp_x0 = COLORBAR_EDGE_PADDING_PX;
-        ramp_x1 = width - COLORBAR_EDGE_PADDING_PX;
-        if (colorbar->anchor == DVZ_SCENE_ANCHOR_PANEL_TOP)
-        {
-            ramp_y1 = COLORBAR_HORIZONTAL_RESERVE_PX - COLORBAR_EDGE_PADDING_PX;
-            ramp_y0 = ramp_y1 - COLORBAR_RAMP_THICKNESS_PX;
-        }
-        else
-        {
-            ramp_y0 = height - COLORBAR_HORIZONTAL_RESERVE_PX + COLORBAR_EDGE_PADDING_PX;
-            ramp_y1 = ramp_y0 + COLORBAR_RAMP_THICKNESS_PX;
-        }
-    }
+    float ramp[4] = {0};
+    _colorbar_ramp_rect(colorbar, panel_x, panel_y, width, height, ramp);
+    float ramp_x0 = ramp[0];
+    float ramp_y0 = ramp[1];
+    float ramp_x1 = ramp[2];
+    float ramp_y1 = ramp[3];
     if (ramp_x0 < 0.0f || ramp_y0 < 0.0f || ramp_x1 > width || ramp_y1 > height ||
         ramp_x1 <= ramp_x0 || ramp_y1 <= ramp_y0)
     {
@@ -1471,10 +1617,16 @@ DvzColorbar* dvz_colorbar(DvzPanel* panel, DvzScale* scale, const DvzColorbarDes
         log_error("cannot attach a scale from a different scene to a panel colorbar");
         return NULL;
     }
-    DvzSceneAnchor anchor = desc != NULL ? desc->anchor : DVZ_SCENE_ANCHOR_PANEL_RIGHT;
-    if (!_colorbar_anchor_supported(anchor))
+    DvzColorbarPlacementMode placement_mode =
+        desc != NULL ? desc->placement_mode : DVZ_COLORBAR_PLACEMENT_ATTACHED;
+    DvzColorbarOrientation orientation =
+        desc != NULL ? desc->orientation : DVZ_COLORBAR_ORIENTATION_VERTICAL;
+    DvzSceneAnchor anchor = desc != NULL && desc->anchor != DVZ_SCENE_ANCHOR_NONE ?
+                                desc->anchor :
+                                DVZ_SCENE_ANCHOR_PANEL_RIGHT;
+    if (placement_mode == DVZ_COLORBAR_PLACEMENT_ATTACHED && !_colorbar_anchor_supported(anchor))
     {
-        log_error("colorbar anchor is not supported in the first rendered colorbar slice");
+        log_error("attached colorbar anchor must be a panel edge");
         return NULL;
     }
     if (scale->kind != DVZ_SCALE_CONTINUOUS)
@@ -1497,10 +1649,29 @@ DvzColorbar* dvz_colorbar(DvzPanel* panel, DvzScale* scale, const DvzColorbarDes
     colorbar->scene = scene;
     colorbar->panel = panel;
     colorbar->scale = scale;
-    colorbar->orientation =
-        desc != NULL ? desc->orientation : DVZ_COLORBAR_ORIENTATION_VERTICAL;
+    colorbar->placement_mode = placement_mode;
+    colorbar->orientation = orientation;
     colorbar->anchor = anchor;
     colorbar->flags = desc != NULL ? desc->flags : 0;
+    colorbar->reserve_px = _colorbar_positive_or_default(
+        desc != NULL ? desc->reserve_px : 0.0f, _colorbar_default_reserve_px(orientation));
+    colorbar->ramp_width_px = _colorbar_positive_or_default(
+        desc != NULL ? desc->ramp_width_px : 0.0f, COLORBAR_RAMP_THICKNESS_PX);
+    colorbar->edge_offset_px = _colorbar_positive_or_default(
+        desc != NULL ? desc->edge_offset_px : 0.0f, COLORBAR_EDGE_PADDING_PX);
+    colorbar->plot_gap_px = _colorbar_positive_or_default(
+        desc != NULL ? desc->plot_gap_px : 0.0f, COLORBAR_EDGE_PADDING_PX);
+    colorbar->tick_length_px = _colorbar_positive_or_default(
+        desc != NULL ? desc->tick_length_px : 0.0f, COLORBAR_TICK_LENGTH_PX);
+    colorbar->label_gap_px = _colorbar_positive_or_default(
+        desc != NULL ? desc->label_gap_px : 0.0f, COLORBAR_LABEL_GAP_PX);
+    colorbar->placement =
+        desc != NULL ? desc->placement :
+                       (DvzPlacement){
+                           .space = DVZ_PLACEMENT_SPACE_PANEL,
+                           .horizontal_anchor = DVZ_HORIZONTAL_ANCHOR_LEFT,
+                           .vertical_anchor = DVZ_VERTICAL_ANCHOR_TOP,
+                       };
     if (desc != NULL && desc->title != NULL)
         dvz_strlcpy(colorbar->title, desc->title, sizeof(colorbar->title));
     colorbar->dirty = true;
@@ -1522,6 +1693,7 @@ void dvz_colorbar_destroy(DvzColorbar* colorbar)
     if (colorbar == NULL)
         return;
     _colorbar_hide(colorbar);
+    _colorbar_drop_auto_reserve(colorbar);
     if (colorbar->panel != NULL)
     {
         DvzPanel* panel = colorbar->panel;
@@ -1576,6 +1748,8 @@ void dvz_colorbar_set_orientation(DvzColorbar* colorbar, DvzColorbarOrientation 
     if (colorbar->orientation == orientation)
         return;
     colorbar->orientation = orientation;
+    colorbar->reserve_px = _colorbar_default_reserve_px(orientation);
+    _colorbar_apply_auto_reserve(colorbar);
     _scene_mark_colorbar_dirty(colorbar);
 }
 
@@ -1593,7 +1767,7 @@ bool dvz_colorbar_set_anchor(DvzColorbar* colorbar, DvzSceneAnchor anchor)
     ANN(colorbar);
     if (!_colorbar_anchor_supported(anchor))
     {
-        log_error("colorbar anchor is not supported in the first rendered colorbar slice");
+        log_error("attached colorbar anchor must be a panel edge");
         return false;
     }
     if (colorbar->anchor == anchor)

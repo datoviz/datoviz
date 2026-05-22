@@ -196,9 +196,16 @@ int test_scene_colorbar_auto_reserve_and_visuals(TstContext* suite, const TstCas
                           .title = "Intensity",
                       });
     ANN(colorbar);
-    DvzPanelLayoutReserve reserve = {0};
-    AT(dvz_panel_get_layout_reserve(panel, &reserve));
-    AT(fabsf(reserve.right - 0.35f) < 1e-6f);
+    AT(colorbar->placement_mode == DVZ_COLORBAR_PLACEMENT_ATTACHED);
+    AT(fabsf(colorbar->reserve_px - 140.0f) < 1e-6f);
+    AT(fabsf(colorbar->ramp_width_px - 36.0f) < 1e-6f);
+    AT(fabsf(colorbar->plot_gap_px - 12.0f) < 1e-6f);
+    DvzPanelReserve reserve = {0};
+    AT(dvz_panel_get_reserve(panel, &reserve));
+    AT(fabsf(reserve.right_px - 140.0f) < 1e-6f);
+    DvzRect plot_rect = {0};
+    AT(dvz_panel_plot_rect_px(panel, &plot_rect));
+    AT(fabsf(plot_rect.width - 660.0f) < 1e-6f);
 
     _scene_prepare_colorbar_visuals(figure, NULL);
     AT(colorbar->ramp_visual != NULL);
@@ -260,8 +267,9 @@ int test_scene_colorbar_auto_reserve_and_visuals(TstContext* suite, const TstCas
     AT(dvz_colorbar_set_anchor(colorbar, DVZ_SCENE_ANCHOR_PANEL_BOTTOM));
     dvz_colorbar_set_orientation(colorbar, DVZ_COLORBAR_ORIENTATION_HORIZONTAL);
     _scene_prepare_colorbar_visuals(figure, NULL);
-    AT(dvz_panel_get_layout_reserve(panel, &reserve));
-    AT(fabsf(reserve.bottom - 0.32f) < 1e-6f);
+    AT(dvz_panel_get_reserve(panel, &reserve));
+    AT(fabsf(reserve.right_px) < 1e-6f);
+    AT(fabsf(reserve.bottom_px - 96.0f) < 1e-6f);
     AT(dvz_visual_data(colorbar->ramp_visual, "position", &pos_view) == 0);
     positions = (const float*)pos_view.data;
     AT(positions[0] < -0.95f);
@@ -372,20 +380,98 @@ int test_scene_colorbar_auto_reserve_tracks_resize(TstContext* suite, const TstC
         });
     ANN(colorbar);
 
-    DvzPanelLayoutReserve reserve = {0};
+    DvzPanelReserve reserve = {0};
     _scene_prepare_colorbar_visuals(figure, NULL);
-    AT(dvz_panel_get_layout_reserve(panel, &reserve));
-    AT(fabsf(reserve.right - 0.35f) < 1e-6f);
+    AT(dvz_panel_get_reserve(panel, &reserve));
+    AT(fabsf(reserve.right_px - 140.0f) < 1e-6f);
 
     dvz_figure_resize(figure, 1200, 600);
     _scene_prepare_colorbar_visuals(figure, NULL);
-    AT(dvz_panel_get_layout_reserve(panel, &reserve));
-    AT(fabsf(reserve.right - 2.0f * 140.0f / 1200.0f) < 1e-6f);
+    AT(dvz_panel_get_reserve(panel, &reserve));
+    AT(fabsf(reserve.right_px - 140.0f) < 1e-6f);
 
     dvz_figure_resize(figure, 700, 600);
     _scene_prepare_colorbar_visuals(figure, NULL);
-    AT(dvz_panel_get_layout_reserve(panel, &reserve));
-    AT(fabsf(reserve.right - 2.0f * 140.0f / 700.0f) < 1e-6f);
+    AT(dvz_panel_get_reserve(panel, &reserve));
+    AT(fabsf(reserve.right_px - 140.0f) < 1e-6f);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+/**
+ * Verify detached colorbar placement leaves the panel plot rectangle unchanged.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_colorbar_detached_placement(TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 800, 600, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
+    ANN(panel);
+    AT(dvz_panel_set_reserve(
+        panel, &(DvzPanelReserve){
+                   .left_px = 40.0f,
+                   .right_px = 20.0f,
+                   .top_px = 10.0f,
+                   .bottom_px = 30.0f,
+               }));
+    DvzRect before = {0};
+    AT(dvz_panel_plot_rect_px(panel, &before));
+
+    DvzScale* scale = dvz_scale(scene, &(DvzScaleDesc){.kind = DVZ_SCALE_CONTINUOUS});
+    ANN(scale);
+    dvz_scale_set_domain(scale, 0.0, 1.0);
+    DvzColormap* colormap = dvz_colormap_builtin(scene, DVZ_BUILTIN_COLORMAP_VIRIDIS);
+    ANN(colormap);
+    dvz_scale_set_colormap(scale, colormap);
+
+    DvzColorbar* colorbar = dvz_colorbar(
+        panel, scale,
+        &(DvzColorbarDesc){
+            .placement_mode = DVZ_COLORBAR_PLACEMENT_DETACHED,
+            .orientation = DVZ_COLORBAR_ORIENTATION_VERTICAL,
+            .title = "Detached",
+            .ramp_width_px = 24.0f,
+            .placement = {
+                .space = DVZ_PLACEMENT_SPACE_FIGURE,
+                .horizontal_anchor = DVZ_HORIZONTAL_ANCHOR_RIGHT,
+                .vertical_anchor = DVZ_VERTICAL_ANCHOR_TOP,
+                .offset_x_px = -32.0f,
+                .offset_y_px = 48.0f,
+                .width_px = 64.0f,
+                .height_px = 320.0f,
+            },
+        });
+    ANN(colorbar);
+    AT(colorbar->placement_mode == DVZ_COLORBAR_PLACEMENT_DETACHED);
+
+    DvzRect after = {0};
+    AT(dvz_panel_plot_rect_px(panel, &after));
+    AT(fabsf(after.x - before.x) < 1e-6f);
+    AT(fabsf(after.y - before.y) < 1e-6f);
+    AT(fabsf(after.width - before.width) < 1e-6f);
+    AT(fabsf(after.height - before.height) < 1e-6f);
+
+    _scene_prepare_colorbar_visuals(figure, NULL);
+    AT(colorbar->ramp_visual != NULL);
+    DvzVisualDataView pos_view = {0};
+    AT(dvz_visual_data(colorbar->ramp_visual, "position", &pos_view) == 0);
+    const float* positions = (const float*)pos_view.data;
+    AT(fabsf(positions[0] - 0.76f) < 1e-5f);
+    AT(fabsf(positions[1] + 0.2266667f) < 1e-5f);
+    AT(fabsf(positions[3] - 0.82f) < 1e-5f);
+    AT(fabsf(positions[3 * (pos_view.item_count - 1) + 0] - 0.82f) < 1e-5f);
+    AT(fabsf(positions[3 * (pos_view.item_count - 1) + 1] - 0.84f) < 1e-5f);
 
     dvz_scene_destroy(scene);
     return 0;
@@ -2695,6 +2781,7 @@ int test_scene_fields(TstSuite* suite)
     TST_CASE(test_scene_colorbar_auto_reserve_and_visuals);
     TST_CASE(test_scene_colorbar_prepare_is_idempotent);
     TST_CASE(test_scene_colorbar_auto_reserve_tracks_resize);
+    TST_CASE(test_scene_colorbar_detached_placement);
     TST_CASE(test_scene_colorbar_updates_retained_visuals);
     TST_CASE(test_scene_colorbar_emit_stream_contains_derived_visuals);
     TST_CASE(test_scene_colorbar_invalid_domain_reports_diagnostic);
