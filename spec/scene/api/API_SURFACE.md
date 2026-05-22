@@ -248,8 +248,9 @@ Changing an active link channel must not reinterpret existing selection contents
 
 Scales and colormaps are scene-owned semantic objects.
 
-Colorbars are panel-attached explanatory objects bound to a scale; they do not own the scale or the
-colormap.
+Colorbars are explanatory objects bound to a scale; they do not own the scale or the colormap.
+They may be attached to a panel edge with a fixed pixel reserve or detached with explicit anchored
+panel/figure pixel placement.
 
 The first public surface should expose:
 
@@ -259,7 +260,8 @@ The first public surface should expose:
 4. custom color-stop ramps,
 5. diverging center support,
 6. panel-attached colorbar creation,
-7. colorbar orientation, anchor, title, and formatting overrides.
+7. panel pixel reserve accessors and plot-rectangle queries,
+8. colorbar orientation, anchor, placement, title, geometry, and formatting overrides.
 
 Interactive range editing should be represented as interaction policy on the scale/colorbar pair,
 not as an external UI-only behavior.

@@ -55,6 +55,13 @@ Both may reference a first-class `DvzScale*` from [SCALES.md](SCALES.md). They d
 Legends and colorbars are annotation classes; shared anchor/placement behavior is defined in
 [ANNOTATIONS.md](ANNOTATIONS.md).
 
+The installed colorbar API supports two placement modes:
+
+1. attached colorbars reserve fixed logical pixels on a panel edge and render in that panel's
+   adornment band;
+2. detached colorbars do not reserve plot space and use explicit `DvzPlacement` anchored in panel
+   or figure pixel space.
+
 
 ## Source Of Truth And Mapping Identity
 
@@ -94,7 +101,7 @@ implementation consequence.
 
 | Policy | Rules |
 |---|---|
-| placement | docked edge, corner, axis side, export layout region, shared multi-panel region, callout-like placement |
+| placement | attached panel edge, detached anchored placement, axis side, export layout region, shared multi-panel region, callout-like placement |
 | ordering/grouping | preserve user order; allow grouping by visual/section; deterministic export order |
 | visibility | explicit rules: always, attached-visual, export-only, hidden, collapsed, or omitted |
 | interaction | passive by default; may support pickable entries, category toggles, hover highlight, linked filtering |

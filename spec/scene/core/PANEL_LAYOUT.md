@@ -28,11 +28,11 @@ figure resize.
 to reserve space for axis labels and titles) are expressed in **pixels** — they have a fixed
 physical size regardless of figure dimensions.
 
-Current implementation note: the public `DvzPanelLayoutReserve` object is still expressed in
-panel visual units. Pixel-sized adornments such as axes, labels, and the first colorbar slice
-should keep their own logical-pixel layout constants internally, then convert those values to
-panel visual reserve units when updating the active panel reserve state. Do not expose normalized
-reserve units as the primary sizing language for new adornment APIs.
+Current implementation note: the public `DvzPanelReserve` object is expressed in fixed logical
+pixels and is the preferred reserve API. The legacy `DvzPanelLayoutReserve` visual-unit API remains
+a compatibility bridge; it converts the supplied visual reserve to pixels at the panel's current
+size. New adornment APIs should not expose normalized reserve units as their primary sizing
+language.
 
 
 ## Panel, Plot, And Adornment Rectangles
@@ -216,6 +216,10 @@ to the data panel, selects a panel edge through `DvzColorbarDesc.anchor`, and au
 fixed logical-pixel band inside that panel. Data visuals render in the plot rect; the colorbar
 ramp, ticks, and labels render as panel adornments clipped to the panel rect. This is the default
 for one panel explaining one continuous scale.
+
+Detached colorbars do not reserve plot space. They use `DvzPlacement` with split horizontal and
+vertical anchors in either panel or figure pixel space. This gives explicit anchored placement
+without adding a general layout solver.
 
 Grid-level colorbar slots are a later layout feature for shared or consolidated colorbars. In that
 model, a colorbar or legend uses a fixed-size column or row adjacent to one or more data panels,
