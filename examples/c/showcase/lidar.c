@@ -713,45 +713,30 @@ static void _lidar_gui(DvzGui* gui, DvzAppWindow* win, void* user_data)
 
 int main(int argc, char** argv)
 {
+    int status = 1;
+    DvzScene* scene = NULL;
+    DvzApp* app = NULL;
     LidarDataset dataset = {0};
     const char* data_dir = _data_dir(argc, argv);
     uint32_t stride = _data_stride(argc, argv);
     if (!_load_lidar_dataset(data_dir, stride, &dataset))
-        return 1;
+        goto cleanup;
 
     LidarViewParams view = {0};
     if (!_compute_lidar_view_params(&dataset, &view))
     {
         dvz_fprintf(stderr, "failed to compute the LIDAR fly-camera pose\n");
-        _destroy_lidar_dataset(&dataset);
-        return 1;
+        goto cleanup;
     }
 
-    DvzScene* scene = dvz_scene();
-    if (scene == NULL)
-    {
-        dvz_fprintf(stderr, "dvz_scene() failed\n");
-        _destroy_lidar_dataset(&dataset);
-        return 1;
-    }
+    scene = dvz_scene();
+    EXAMPLE_CHECK(scene != NULL, "dvz_scene() failed");
 
     DvzFigure* figure = dvz_figure(scene, WIDTH, HEIGHT, 0);
-    if (figure == NULL)
-    {
-        dvz_fprintf(stderr, "dvz_figure() failed\n");
-        dvz_scene_destroy(scene);
-        _destroy_lidar_dataset(&dataset);
-        return 1;
-    }
+    EXAMPLE_CHECK(figure != NULL, "dvz_figure() failed");
 
     DvzPanel* panel = dvz_panel_full(figure);
-    if (panel == NULL)
-    {
-        dvz_fprintf(stderr, "dvz_panel() failed\n");
-        dvz_scene_destroy(scene);
-        _destroy_lidar_dataset(&dataset);
-        return 1;
-    }
+    EXAMPLE_CHECK(panel != NULL, "dvz_panel() failed");
 
     DvzCameraDesc camera_desc = dvz_camera_desc();
     dvz_memcpy(camera_desc.eye, sizeof(camera_desc.eye), view.eye, sizeof(view.eye));
@@ -759,32 +744,16 @@ int main(int argc, char** argv)
     dvz_memcpy(camera_desc.up, sizeof(camera_desc.up), view.up, sizeof(view.up));
     camera_desc.near = 0.1f;
     camera_desc.far = view.far;
-    if (!dvz_panel_set_camera(panel, &camera_desc))
-    {
-        dvz_fprintf(stderr, "dvz_panel_set_camera() failed\n");
-        dvz_scene_destroy(scene);
-        _destroy_lidar_dataset(&dataset);
-        return 1;
-    }
+    EXAMPLE_CHECK(dvz_panel_set_camera(panel, &camera_desc), "dvz_panel_set_camera() failed");
 
     DvzVisual* visual = dvz_pixel(scene, 0);
-    if (visual == NULL)
-    {
-        dvz_fprintf(stderr, "dvz_pixel() failed\n");
-        dvz_scene_destroy(scene);
-        _destroy_lidar_dataset(&dataset);
-        return 1;
-    }
+    EXAMPLE_CHECK(visual != NULL, "dvz_pixel() failed");
 
-    if (dvz_pixel_data(
-            visual, dataset.positions, dataset.colors, dataset.sizes, dataset.point_count) != 0 ||
-        dvz_panel_add_visual(panel, visual, NULL) != 0)
-    {
-        dvz_fprintf(stderr, "LIDAR visual setup failed\n");
-        dvz_scene_destroy(scene);
-        _destroy_lidar_dataset(&dataset);
-        return 1;
-    }
+    EXAMPLE_CHECK(
+        dvz_pixel_data(
+            visual, dataset.positions, dataset.colors, dataset.sizes, dataset.point_count) == 0 &&
+            dvz_panel_add_visual(panel, visual, NULL) == 0,
+        "LIDAR visual setup failed");
     dvz_panel_set_background_color(panel, 0.030f, 0.036f, 0.042f, 1.0f);
 
     LidarExampleState gui_state = {
@@ -795,24 +764,11 @@ int main(int argc, char** argv)
     };
     _reset_lidar_controls(&gui_state);
 
-    DvzApp* app = dvz_app(scene);
-    if (app == NULL)
-    {
-        dvz_fprintf(stderr, "dvz_app() failed (no GPU or display?)\n");
-        dvz_scene_destroy(scene);
-        _destroy_lidar_dataset(&dataset);
-        return 1;
-    }
+    app = dvz_app(scene);
+    EXAMPLE_CHECK(app != NULL, "dvz_app() failed (no GPU or display?)");
 
     DvzAppWindow* win = dvz_app_window_glfw(app, figure, WIDTH, HEIGHT, "lidar");
-    if (win == NULL)
-    {
-        dvz_fprintf(stderr, "dvz_app_window_glfw() failed (GLFW unavailable?)\n");
-        dvz_app_destroy(app);
-        dvz_scene_destroy(scene);
-        _destroy_lidar_dataset(&dataset);
-        return 1;
-    }
+    EXAMPLE_CHECK(win != NULL, "dvz_app_window_glfw() failed (GLFW unavailable?)");
 
     DvzFlyDesc fly_desc = dvz_fly_desc();
     fly_desc.mode = DVZ_FLY_MODE_PLANE;
@@ -821,32 +777,23 @@ int main(int argc, char** argv)
     dvz_memcpy(fly_desc.up, sizeof(fly_desc.up), view.up, sizeof(view.up));
     fly_desc.speed = view.speed;
     DvzFly* fly = dvz_app_window_panel_fly(win, panel, &fly_desc);
-    if (fly == NULL)
-    {
-        dvz_fprintf(stderr, "failed to create or bind the LIDAR fly controller\n");
-        dvz_app_destroy(app);
-        dvz_scene_destroy(scene);
-        _destroy_lidar_dataset(&dataset);
-        return 1;
-    }
+    EXAMPLE_CHECK(fly != NULL, "failed to create or bind the LIDAR fly controller");
     gui_state.fly = fly;
 
     DvzGuiConfig gui_config = dvz_gui_config();
     DvzGui* gui = dvz_app_window_gui(win, &gui_config);
-    if (gui == NULL)
-    {
-        dvz_fprintf(stderr, "dvz_app_window_gui() failed\n");
-        dvz_app_destroy(app);
-        dvz_scene_destroy(scene);
-        _destroy_lidar_dataset(&dataset);
-        return 1;
-    }
+    EXAMPLE_CHECK(gui != NULL, "dvz_app_window_gui() failed");
     dvz_app_window_set_gui_callback(win, _lidar_gui, &gui_state);
 
     dvz_app_run(app, example_frame_count(argc, argv));
 
-    dvz_app_destroy(app);
-    dvz_scene_destroy(scene);
+    status = 0;
+
+cleanup:
+    if (app != NULL)
+        dvz_app_destroy(app);
+    if (scene != NULL)
+        dvz_scene_destroy(scene);
     _destroy_lidar_dataset(&dataset);
-    return 0;
+    return status;
 }

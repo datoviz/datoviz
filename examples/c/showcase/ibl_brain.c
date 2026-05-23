@@ -606,17 +606,15 @@ static void _bwm_gui(DvzGui* gui, DvzAppWindow* win, void* user_data)
  */
 int main(int argc, char** argv)
 {
+    int status = 1;
+    DvzScene* scene = NULL;
+    DvzApp* app = NULL;
     BwmDataset dataset = {0};
     if (!_load_bwm_dataset(BWM_DATA_DIR, &dataset))
-        return 1;
+        goto cleanup;
 
-    DvzScene* scene = dvz_scene();
-    if (scene == NULL)
-    {
-        dvz_fprintf(stderr, "dvz_scene() failed\n");
-        _destroy_bwm_dataset(&dataset);
-        return 1;
-    }
+    scene = dvz_scene();
+    EXAMPLE_CHECK(scene != NULL, "dvz_scene() failed");
     DvzCapabilitySnapshot caps;
     dvz_capability_snapshot_default(&caps);
     caps.max_color_attachments = 3;
@@ -628,13 +626,7 @@ int main(int argc, char** argv)
 
     DvzFigure* figure = dvz_figure(scene, WIDTH, HEIGHT, 0);
     DvzPanel* panel = dvz_panel_full(figure);
-    if (figure == NULL || panel == NULL)
-    {
-        dvz_fprintf(stderr, "scene setup failed\n");
-        dvz_scene_destroy(scene);
-        _destroy_bwm_dataset(&dataset);
-        return 1;
-    }
+    EXAMPLE_CHECK(figure != NULL && panel != NULL, "scene setup failed");
     dvz_panel_set_background_color(panel, 0.97f, 0.97f, 0.95f, 1.0f);
 
     DvzCameraDesc camera_desc = dvz_camera_desc();
@@ -648,38 +640,22 @@ int main(int argc, char** argv)
     camera_desc.fov_y = 0.72f;
     camera_desc.near = 0.01f;
     camera_desc.far = 100.0f;
-    if (!dvz_panel_set_camera(panel, &camera_desc))
-    {
-        dvz_fprintf(stderr, "dvz_panel_set_camera() failed\n");
-        dvz_scene_destroy(scene);
-        _destroy_bwm_dataset(&dataset);
-        return 1;
-    }
+    EXAMPLE_CHECK(dvz_panel_set_camera(panel, &camera_desc), "dvz_panel_set_camera() failed");
 
     DvzVisual* point = dvz_point(scene, 0);
     DvzVisual* mesh = dvz_mesh(scene, 0);
-    if (point == NULL || mesh == NULL)
-    {
-        dvz_fprintf(stderr, "visual creation failed\n");
-        dvz_scene_destroy(scene);
-        _destroy_bwm_dataset(&dataset);
-        return 1;
-    }
+    EXAMPLE_CHECK(point != NULL && mesh != NULL, "visual creation failed");
 
     DvzSceneBuffer* index_buffer = dvz_scene_buffer(
         scene, &(DvzSceneBufferDesc){
                    .usage = DVZ_SCENE_BUFFER_USAGE_INDEX,
                    .stride = sizeof(DvzIndex),
                });
-    if (index_buffer == NULL ||
-        !dvz_scene_buffer_set_data(
-            index_buffer, dataset.mesh_idx, dataset.mesh_index_count * sizeof(DvzIndex)))
-    {
-        dvz_fprintf(stderr, "index buffer setup failed\n");
-        dvz_scene_destroy(scene);
-        _destroy_bwm_dataset(&dataset);
-        return 1;
-    }
+    EXAMPLE_CHECK(
+        index_buffer != NULL &&
+            dvz_scene_buffer_set_data(
+                index_buffer, dataset.mesh_idx, dataset.mesh_index_count * sizeof(DvzIndex)),
+        "index buffer setup failed");
 
     BwmExampleState state = {
         .point = point,
@@ -697,18 +673,14 @@ int main(int argc, char** argv)
         .light_direction = {0.20f, 0.70f, 0.45f},
     };
 
-    if (dvz_point_data(
+    EXAMPLE_CHECK(
+        dvz_point_data(
             point, dataset.cluster_pos, dataset.cluster_color, dataset.cluster_size,
-            dataset.cluster_count) != 0 ||
-        dvz_mesh_data(mesh, dataset.mesh_pos, NULL, dataset.mesh_normal, dataset.mesh_vertex_count) !=
-            0 ||
-        !dvz_visual_set_buffer(mesh, "index", index_buffer))
-    {
-        dvz_fprintf(stderr, "visual data upload failed\n");
-        dvz_scene_destroy(scene);
-        _destroy_bwm_dataset(&dataset);
-        return 1;
-    }
+            dataset.cluster_count) == 0 &&
+            dvz_mesh_data(
+                mesh, dataset.mesh_pos, NULL, dataset.mesh_normal, dataset.mesh_vertex_count) == 0 &&
+            dvz_visual_set_buffer(mesh, "index", index_buffer),
+        "visual data upload failed");
 
     _apply_shell_material(&state);
     _apply_technique(&state);
@@ -717,46 +689,19 @@ int main(int argc, char** argv)
     dvz_panel_add_visual(panel, point, NULL);
     dvz_panel_add_visual(panel, mesh, NULL);
 
-    DvzApp* app = dvz_app(scene);
-    if (app == NULL)
-    {
-        dvz_fprintf(stderr, "dvz_app() failed (no GPU or display?)\n");
-        dvz_scene_destroy(scene);
-        _destroy_bwm_dataset(&dataset);
-        return 1;
-    }
+    app = dvz_app(scene);
+    EXAMPLE_CHECK(app != NULL, "dvz_app() failed (no GPU or display?)");
 
     DvzAppWindow* win = dvz_app_window_glfw(app, figure, WIDTH, HEIGHT, "ibl_brain");
-    if (win == NULL)
-    {
-        dvz_fprintf(stderr, "dvz_app_window_glfw() failed (GLFW unavailable?)\n");
-        dvz_app_destroy(app);
-        dvz_scene_destroy(scene);
-        _destroy_bwm_dataset(&dataset);
-        return 1;
-    }
+    EXAMPLE_CHECK(win != NULL, "dvz_app_window_glfw() failed (GLFW unavailable?)");
 
     DvzArcball* arcball = dvz_app_window_panel_arcball(win, panel, NULL);
-    if (arcball == NULL)
-    {
-        dvz_fprintf(stderr, "failed to create or bind arcball controller\n");
-        dvz_app_destroy(app);
-        dvz_scene_destroy(scene);
-        _destroy_bwm_dataset(&dataset);
-        return 1;
-    }
+    EXAMPLE_CHECK(arcball != NULL, "failed to create or bind arcball controller");
     dvz_arcball_set(arcball, (vec3){+0.70f, 0.0f, +0.20f});
 
     DvzGuiConfig gui_config = dvz_gui_config();
     DvzGui* gui = dvz_app_window_gui(win, &gui_config);
-    if (gui == NULL)
-    {
-        dvz_fprintf(stderr, "dvz_app_window_gui() failed\n");
-        dvz_app_destroy(app);
-        dvz_scene_destroy(scene);
-        _destroy_bwm_dataset(&dataset);
-        return 1;
-    }
+    EXAMPLE_CHECK(gui != NULL, "dvz_app_window_gui() failed");
     dvz_app_window_set_gui_callback(win, _bwm_gui, &state);
 
     dvz_scene_set_clock_mode(scene, DVZ_CLOCK_REALTIME);
@@ -765,20 +710,18 @@ int main(int argc, char** argv)
     state.spin = dvz_anim_arcball_spin(
         scene, arcball, (vec3){0.0f, 1.0f, 0.0f}, BWM_ROTATION_SPEED_RAD_PER_SEC,
         DVZ_ARCBALL_SPIN_FLAGS_PAUSE_ON_INTERACTION);
-    if (state.spin == NULL)
-    {
-        dvz_fprintf(stderr, "dvz_anim_arcball_spin() failed\n");
-        dvz_app_destroy(app);
-        dvz_scene_destroy(scene);
-        _destroy_bwm_dataset(&dataset);
-        return 1;
-    }
+    EXAMPLE_CHECK(state.spin != NULL, "dvz_anim_arcball_spin() failed");
     _apply_spin(&state);
 
     dvz_app_run(app, example_frame_count(argc, argv));
 
-    dvz_app_destroy(app);
-    dvz_scene_destroy(scene);
+    status = 0;
+
+cleanup:
+    if (app != NULL)
+        dvz_app_destroy(app);
+    if (scene != NULL)
+        dvz_scene_destroy(scene);
     _destroy_bwm_dataset(&dataset);
-    return 0;
+    return status;
 }

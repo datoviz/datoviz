@@ -599,19 +599,16 @@ static void _gui_callback(DvzGui* gui, DvzAppWindow* win, void* user_data)
 
 int main(int argc, char** argv)
 {
+    int status = 1;
+    DvzScene* scene = NULL;
+    DvzApp* app = NULL;
     uint8_t* base_rgba = (uint8_t*)dvz_calloc(TEX_W * TEX_H * 4ull, 1);
     uint8_t* overlay_rgba = (uint8_t*)dvz_calloc(TEX_W * TEX_H * 4ull, 1);
     uint8_t* pick_rgba = (uint8_t*)dvz_calloc(TEX_W * TEX_H * 4ull, 1);
     uint32_t* labels = (uint32_t*)dvz_calloc(TEX_W * TEX_H, sizeof(uint32_t));
-    if (base_rgba == NULL || overlay_rgba == NULL || pick_rgba == NULL || labels == NULL)
-    {
-        fprintf(stderr, "texture allocation failed\n");
-        dvz_free(base_rgba);
-        dvz_free(overlay_rgba);
-        dvz_free(pick_rgba);
-        dvz_free(labels);
-        return 1;
-    }
+    EXAMPLE_CHECK(
+        base_rgba != NULL && overlay_rgba != NULL && pick_rgba != NULL && labels != NULL,
+        "texture allocation failed");
 
     LabelCell cells[CELL_COUNT] = {0};
     _generate_base_image(base_rgba);
@@ -619,29 +616,12 @@ int main(int argc, char** argv)
     _generate_labels(cells, labels, base_rgba);
     _encode_pick_texture(labels, pick_rgba);
 
-    DvzScene* scene = dvz_scene();
-    if (scene == NULL)
-    {
-        fprintf(stderr, "dvz_scene() failed\n");
-        dvz_free(base_rgba);
-        dvz_free(overlay_rgba);
-        dvz_free(pick_rgba);
-        dvz_free(labels);
-        return 1;
-    }
+    scene = dvz_scene();
+    EXAMPLE_CHECK(scene != NULL, "dvz_scene() failed");
 
     DvzFigure* figure = dvz_figure(scene, WIDTH, HEIGHT, 0);
     DvzPanel* panel = figure != NULL ? dvz_panel_full(figure) : NULL;
-    if (figure == NULL || panel == NULL)
-    {
-        fprintf(stderr, "scene panel setup failed\n");
-        dvz_scene_destroy(scene);
-        dvz_free(base_rgba);
-        dvz_free(overlay_rgba);
-        dvz_free(pick_rgba);
-        dvz_free(labels);
-        return 1;
-    }
+    EXAMPLE_CHECK(figure != NULL && panel != NULL, "scene panel setup failed");
 
     LabelsDemoState state = {
         .scene = scene,
@@ -661,112 +641,52 @@ int main(int argc, char** argv)
     DvzVisual* overlay = _image_visual(scene, overlay_rgba, DVZ_ALPHA_BLENDED);
     DvzVisual* label_pick = _image_visual(scene, pick_rgba, DVZ_ALPHA_OPAQUE);
     state.overlay = overlay;
-    if (base == NULL || overlay == NULL || label_pick == NULL)
-    {
-        fprintf(stderr, "image visual setup failed\n");
-        dvz_scene_destroy(scene);
-        dvz_free(base_rgba);
-        dvz_free(overlay_rgba);
-        dvz_free(pick_rgba);
-        dvz_free(labels);
-        return 1;
-    }
+    EXAMPLE_CHECK(base != NULL && overlay != NULL && label_pick != NULL, "image visual setup failed");
     dvz_visual_set_pick_capabilities(label_pick, DVZ_PICK_CAPABILITY_GROUP);
     dvz_visual_set_visible(label_pick, false);
 
-    if (dvz_panel_add_visual(panel, base, &(DvzVisualAttachDesc){.z_layer = 0}) != 0 ||
-        dvz_panel_add_visual(panel, overlay, &(DvzVisualAttachDesc){.z_layer = 1}) != 0 ||
-        dvz_panel_add_visual(panel, label_pick, &(DvzVisualAttachDesc){.z_layer = 2}) != 0)
-    {
-        fprintf(stderr, "panel visual attachment failed\n");
-        dvz_scene_destroy(scene);
-        dvz_free(base_rgba);
-        dvz_free(overlay_rgba);
-        dvz_free(pick_rgba);
-        dvz_free(labels);
-        return 1;
-    }
+    EXAMPLE_CHECK(
+        dvz_panel_add_visual(panel, base, &(DvzVisualAttachDesc){.z_layer = 0}) == 0 &&
+            dvz_panel_add_visual(panel, overlay, &(DvzVisualAttachDesc){.z_layer = 1}) == 0 &&
+            dvz_panel_add_visual(panel, label_pick, &(DvzVisualAttachDesc){.z_layer = 2}) == 0,
+        "panel visual attachment failed");
     dvz_panel_set_background_color(panel, 0.02f, 0.025f, 0.03f, 1.0f);
 
-    DvzApp* app = dvz_app(scene);
-    if (app == NULL)
-    {
-        fprintf(stderr, "dvz_app() failed (no GPU or display?)\n");
-        dvz_scene_destroy(scene);
-        dvz_free(base_rgba);
-        dvz_free(overlay_rgba);
-        dvz_free(pick_rgba);
-        dvz_free(labels);
-        return 1;
-    }
+    app = dvz_app(scene);
+    EXAMPLE_CHECK(app != NULL, "dvz_app() failed (no GPU or display?)");
 
     DvzAppWindow* win =
         dvz_app_window_glfw(app, figure, WIDTH, HEIGHT, "labels");
-    if (win == NULL)
-    {
-        fprintf(stderr, "dvz_app_window_glfw() failed (GLFW unavailable?)\n");
-        dvz_app_destroy(app);
-        dvz_scene_destroy(scene);
-        dvz_free(base_rgba);
-        dvz_free(overlay_rgba);
-        dvz_free(pick_rgba);
-        dvz_free(labels);
-        return 1;
-    }
+    EXAMPLE_CHECK(win != NULL, "dvz_app_window_glfw() failed (GLFW unavailable?)");
     state.win = win;
 
     DvzInputRouter* router = dvz_app_window_input(win);
-    if (router == NULL)
-    {
-        fprintf(stderr, "dvz_app_window_input() failed\n");
-        dvz_app_destroy(app);
-        dvz_scene_destroy(scene);
-        dvz_free(base_rgba);
-        dvz_free(overlay_rgba);
-        dvz_free(pick_rgba);
-        dvz_free(labels);
-        return 1;
-    }
+    EXAMPLE_CHECK(router != NULL, "dvz_app_window_input() failed");
     DvzPanzoomDesc panzoom_desc = dvz_panzoom_desc();
     panzoom_desc.flags = DVZ_PANZOOM_FLAGS_KEEP_ASPECT;
     DvzPanzoom* panzoom = dvz_app_window_panel_panzoom(win, panel, &panzoom_desc);
-    if (panzoom == NULL)
-    {
-        fprintf(stderr, "failed to create or bind panzoom controller\n");
-        dvz_app_destroy(app);
-        dvz_scene_destroy(scene);
-        dvz_free(base_rgba);
-        dvz_free(overlay_rgba);
-        dvz_free(pick_rgba);
-        dvz_free(labels);
-        return 1;
-    }
+    EXAMPLE_CHECK(panzoom != NULL, "failed to create or bind panzoom controller");
     dvz_input_subscribe_pointer(router, _pointer_callback, &state);
     dvz_input_subscribe_event(router, _input_event_callback, &state);
     dvz_app_window_set_frame_callback(win, _frame_callback, &state);
 
     DvzGuiConfig gui_config = dvz_gui_config();
     DvzGui* gui = dvz_app_window_gui(win, &gui_config);
-    if (gui == NULL)
-    {
-        fprintf(stderr, "dvz_app_window_gui() failed\n");
-        dvz_app_destroy(app);
-        dvz_scene_destroy(scene);
-        dvz_free(base_rgba);
-        dvz_free(overlay_rgba);
-        dvz_free(pick_rgba);
-        dvz_free(labels);
-        return 1;
-    }
+    EXAMPLE_CHECK(gui != NULL, "dvz_app_window_gui() failed");
     dvz_app_window_set_gui_callback(win, _gui_callback, &state);
 
     dvz_app_run(app, example_frame_count(argc, argv));
 
-    dvz_app_destroy(app);
-    dvz_scene_destroy(scene);
+    status = 0;
+
+cleanup:
+    if (app != NULL)
+        dvz_app_destroy(app);
+    if (scene != NULL)
+        dvz_scene_destroy(scene);
     dvz_free(base_rgba);
     dvz_free(overlay_rgba);
     dvz_free(pick_rgba);
     dvz_free(labels);
-    return 0;
+    return status;
 }

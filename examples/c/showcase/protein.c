@@ -1089,6 +1089,12 @@ static void _print_prepare_hint(const char* path)
  */
 int main(int argc, char** argv)
 {
+    int status = 1;
+    bool state_initialized = false;
+    DvzScene* scene = NULL;
+    DvzApp* app = NULL;
+    float* scaled_radii = NULL;
+    ProteinExampleState state = {0};
     char default_path[1024] = {0};
     const char* bundle_path = NULL;
     const char* frame_arg = NULL;
@@ -1110,36 +1116,20 @@ int main(int argc, char** argv)
     if (!_protein_bundle_load(bundle_path, &bundle))
     {
         _print_prepare_hint(bundle_path);
-        return 1;
+        goto cleanup;
     }
 
     float atom_scale = 0.594f;
-    float* scaled_radii = _scaled_radii(&bundle, atom_scale);
-    if (scaled_radii == NULL)
-    {
-        _protein_bundle_destroy(&bundle);
-        return 1;
-    }
+    scaled_radii = _scaled_radii(&bundle, atom_scale);
+    EXAMPLE_CHECK(scaled_radii != NULL, "failed to allocate scaled radii");
 
-    DvzScene* scene = dvz_scene();
-    if (scene == NULL)
-    {
-        dvz_free(scaled_radii);
-        _protein_bundle_destroy(&bundle);
-        return 1;
-    }
+    scene = dvz_scene();
+    EXAMPLE_CHECK(scene != NULL, "dvz_scene() failed");
 
     DvzFigure* figure = dvz_figure(scene, WIDTH, HEIGHT, 0);
     DvzPanel* panel = dvz_panel_full(figure);
     DvzVisual* spheres = dvz_sphere(scene, DVZ_SPHERE_FLAGS_LIGHTING);
-    if (figure == NULL || panel == NULL || spheres == NULL)
-    {
-        dvz_fprintf(stderr, "scene setup failed\n");
-        dvz_scene_destroy(scene);
-        dvz_free(scaled_radii);
-        _protein_bundle_destroy(&bundle);
-        return 1;
-    }
+    EXAMPLE_CHECK(figure != NULL && panel != NULL && spheres != NULL, "scene setup failed");
     DvzVisual* ribbon = NULL;
     DvzSceneBuffer* ribbon_index_buffer = NULL;
 
@@ -1149,27 +1139,15 @@ int main(int argc, char** argv)
     camera_desc.fov_y = 0.68f;
     camera_desc.near = 0.05f;
     camera_desc.far = 100.0f;
-    if (!dvz_panel_set_camera(panel, &camera_desc))
-    {
-        dvz_fprintf(stderr, "dvz_panel_set_camera() failed\n");
-        dvz_scene_destroy(scene);
-        dvz_free(scaled_radii);
-        _protein_bundle_destroy(&bundle);
-        return 1;
-    }
+    EXAMPLE_CHECK(dvz_panel_set_camera(panel, &camera_desc), "dvz_panel_set_camera() failed");
 
-    if (dvz_sphere_mode(spheres, DVZ_SPHERE_MODE_RAYCAST_IMPOSTOR) != 0 ||
-        dvz_sphere_data(
-            spheres, bundle.positions, bundle.atom_colors_element, scaled_radii,
-            bundle.atom_count) != 0 ||
-        dvz_panel_add_visual(panel, spheres, NULL) != 0)
-    {
-        dvz_fprintf(stderr, "sphere visual setup failed\n");
-        dvz_scene_destroy(scene);
-        dvz_free(scaled_radii);
-        _protein_bundle_destroy(&bundle);
-        return 1;
-    }
+    EXAMPLE_CHECK(
+        dvz_sphere_mode(spheres, DVZ_SPHERE_MODE_RAYCAST_IMPOSTOR) == 0 &&
+            dvz_sphere_data(
+                spheres, bundle.positions, bundle.atom_colors_element, scaled_radii,
+                bundle.atom_count) == 0 &&
+            dvz_panel_add_visual(panel, spheres, NULL) == 0,
+        "sphere visual setup failed");
 
     DvzMaterialDesc sphere_material = dvz_phong_material_desc();
     sphere_material.light_direction[0] = 0.25f;
@@ -1189,22 +1167,17 @@ int main(int argc, char** argv)
                        .usage = DVZ_SCENE_BUFFER_USAGE_INDEX,
                        .stride = sizeof(DvzIndex),
                    });
-        if (ribbon == NULL || ribbon_index_buffer == NULL ||
-            !dvz_scene_buffer_set_data(
-                ribbon_index_buffer, bundle.ribbon_indices,
-                (uint64_t)bundle.ribbon_index_count * sizeof(DvzIndex)) ||
-            dvz_mesh_data(
-                ribbon, bundle.ribbon_positions, bundle.ribbon_colors_chain, bundle.ribbon_normals,
-                bundle.ribbon_vertex_count) != 0 ||
-            !dvz_visual_set_buffer(ribbon, "index", ribbon_index_buffer) ||
-            dvz_panel_add_visual(panel, ribbon, NULL) != 0)
-        {
-            dvz_fprintf(stderr, "ribbon visual setup failed\n");
-            dvz_scene_destroy(scene);
-            dvz_free(scaled_radii);
-            _protein_bundle_destroy(&bundle);
-            return 1;
-        }
+        EXAMPLE_CHECK(
+            ribbon != NULL && ribbon_index_buffer != NULL &&
+                dvz_scene_buffer_set_data(
+                    ribbon_index_buffer, bundle.ribbon_indices,
+                    (uint64_t)bundle.ribbon_index_count * sizeof(DvzIndex)) &&
+                dvz_mesh_data(
+                    ribbon, bundle.ribbon_positions, bundle.ribbon_colors_chain,
+                    bundle.ribbon_normals, bundle.ribbon_vertex_count) == 0 &&
+                dvz_visual_set_buffer(ribbon, "index", ribbon_index_buffer) &&
+                dvz_panel_add_visual(panel, ribbon, NULL) == 0,
+            "ribbon visual setup failed");
 
         DvzMaterialDesc ribbon_material = dvz_phong_material_desc();
         ribbon_material.light_direction[0] = 0.25f;
@@ -1219,38 +1192,15 @@ int main(int argc, char** argv)
     }
 
     dvz_panel_set_background_color(panel, 0.030f, 0.034f, 0.044f, 1.0f);
-    DvzApp* app = dvz_app(scene);
-    if (app == NULL)
-    {
-        dvz_fprintf(stderr, "dvz_app() failed (no GPU or display?)\n");
-        dvz_scene_destroy(scene);
-        dvz_free(scaled_radii);
-        _protein_bundle_destroy(&bundle);
-        return 1;
-    }
+    app = dvz_app(scene);
+    EXAMPLE_CHECK(app != NULL, "dvz_app() failed (no GPU or display?)");
 
     DvzAppWindow* win =
         dvz_app_window_glfw(app, figure, WIDTH, HEIGHT, "protein");
-    if (win == NULL)
-    {
-        dvz_fprintf(stderr, "dvz_app_window_glfw() failed (GLFW unavailable?)\n");
-        dvz_app_destroy(app);
-        dvz_scene_destroy(scene);
-        dvz_free(scaled_radii);
-        _protein_bundle_destroy(&bundle);
-        return 1;
-    }
+    EXAMPLE_CHECK(win != NULL, "dvz_app_window_glfw() failed (GLFW unavailable?)");
 
     DvzArcball* arcball = dvz_app_window_panel_arcball(win, panel, NULL);
-    if (arcball == NULL)
-    {
-        dvz_fprintf(stderr, "failed to create or bind arcball controller\n");
-        dvz_app_destroy(app);
-        dvz_scene_destroy(scene);
-        dvz_free(scaled_radii);
-        _protein_bundle_destroy(&bundle);
-        return 1;
-    }
+    EXAMPLE_CHECK(arcball != NULL, "failed to create or bind arcball controller");
     dvz_arcball_initial(arcball, (vec3){+0.70f, 0.0f, +0.30f});
     dvz_scene_set_clock_mode(scene, DVZ_CLOCK_REALTIME);
     dvz_scene_set_fps(scene, 60.0);
@@ -1258,17 +1208,9 @@ int main(int argc, char** argv)
     DvzAnimation* spin = dvz_anim_arcball_spin(
         scene, arcball, (vec3){0.0f, 1.0f, 0.0f}, ROTATION_SPEED_RAD_PER_SEC,
         DVZ_ARCBALL_SPIN_FLAGS_PAUSE_ON_INTERACTION);
-    if (spin == NULL)
-    {
-        dvz_fprintf(stderr, "dvz_anim_arcball_spin() failed\n");
-        dvz_app_destroy(app);
-        dvz_scene_destroy(scene);
-        dvz_free(scaled_radii);
-        _protein_bundle_destroy(&bundle);
-        return 1;
-    }
+    EXAMPLE_CHECK(spin != NULL, "dvz_anim_arcball_spin() failed");
 
-    ProteinExampleState state = {
+    state = (ProteinExampleState){
         .panel = panel,
         .spheres = spheres,
         .ribbon = ribbon,
@@ -1304,6 +1246,7 @@ int main(int argc, char** argv)
         .rim_strength = 0.024f,
         .ssao_blur = true,
     };
+    state_initialized = true;
     _apply_render_mode(&state);
     _apply_material(&state);
     _apply_msaa(&state);
@@ -1319,10 +1262,22 @@ int main(int argc, char** argv)
         stderr, "loaded %" PRIu32 " atoms from %s\n", bundle.atom_count, bundle.path);
     dvz_app_run(app, example_frame_count_from_text(frame_arg));
 
-    dvz_app_destroy(app);
-    dvz_scene_destroy(scene);
-    dvz_free(state.ribbon_indices_upload);
-    dvz_free(state.live_radii);
+    status = 0;
+
+cleanup:
+    if (app != NULL)
+        dvz_app_destroy(app);
+    if (scene != NULL)
+        dvz_scene_destroy(scene);
+    if (state_initialized)
+    {
+        dvz_free(state.ribbon_indices_upload);
+        dvz_free(state.live_radii);
+    }
+    else
+    {
+        dvz_free(scaled_radii);
+    }
     _protein_bundle_destroy(&bundle);
-    return 0;
+    return status;
 }

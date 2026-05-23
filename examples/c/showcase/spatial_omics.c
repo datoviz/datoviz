@@ -38,6 +38,7 @@
 #include "datoviz/imgui.h"
 #include "datoviz/scene.h"
 #include "datoviz/scene/panzoom.h"
+#include "example_common.h"
 
 
 
@@ -783,6 +784,11 @@ static void _state_destroy(DenseState* state)
  */
 int main(int argc, char** argv)
 {
+    int status = 1;
+    bool state_initialized = false;
+    DvzScene* scene = NULL;
+    DvzApp* app = NULL;
+    DenseState state = {0};
     DenseConfig cfg = _parse_args(argc, argv);
     DenseDataset dataset = {0};
 
@@ -802,27 +808,16 @@ int main(int argc, char** argv)
             stderr,
             "dense_points: prepare data first, for example with "
             "python tools/data/prepare_napari_synthetic_spatial.py\n");
-        return 1;
+        goto cleanup;
     }
 
-    DvzScene* scene = dvz_scene();
-    if (scene == NULL)
-    {
-        _dataset_destroy(&dataset);
-        dvz_fprintf(stderr, "dense_points: dvz_scene() failed\n");
-        return 1;
-    }
+    scene = dvz_scene();
+    EXAMPLE_CHECK(scene != NULL, "dense_points: dvz_scene() failed");
 
     DvzFigure* figure = dvz_figure(scene, WIDTH, HEIGHT, 0);
     DvzPanel* panel = figure != NULL ? dvz_panel_full(figure) : NULL;
     DvzVisual* points = panel != NULL ? dvz_point(scene, 0) : NULL;
-    if (figure == NULL || panel == NULL || points == NULL)
-    {
-        dvz_fprintf(stderr, "dense_points: scene setup failed\n");
-        dvz_scene_destroy(scene);
-        _dataset_destroy(&dataset);
-        return 1;
-    }
+    EXAMPLE_CHECK(figure != NULL && panel != NULL && points != NULL, "dense_points: scene setup failed");
 
     dvz_panel_set_background_color(panel, 0.035f, 0.040f, 0.052f, 1.0f);
 
@@ -837,20 +832,16 @@ int main(int argc, char** argv)
             });
     }
     dvz_visual_set_alpha_mode(points, DVZ_ALPHA_BLENDED);
-    if (dvz_panel_add_visual(
+    EXAMPLE_CHECK(
+        dvz_panel_add_visual(
             panel, points,
             &(DvzVisualAttachDesc){
                 .z_layer = 1,
                 .controller_mode = DVZ_CONTROLLER_APPLY,
-            }) != 0)
-    {
-        dvz_fprintf(stderr, "dense_points: point visual attach failed\n");
-        dvz_scene_destroy(scene);
-        _dataset_destroy(&dataset);
-        return 1;
-    }
+            }) == 0,
+        "dense_points: point visual attach failed");
 
-    DenseState state = {
+    state = (DenseState){
         .dataset = dataset,
         .points = points,
         .background = background,
@@ -861,63 +852,39 @@ int main(int argc, char** argv)
         .fps_clock = dvz_clock(),
         .dataset_choice = (int)cfg.dataset_choice,
     };
+    state_initialized = true;
     dvz_clock_tick(&state.fps_clock);
-    if (!_upload_points(&state))
-    {
-        dvz_fprintf(stderr, "dense_points: initial upload failed\n");
-        dvz_scene_destroy(scene);
-        _state_destroy(&state);
-        return 1;
-    }
+    EXAMPLE_CHECK(_upload_points(&state), "dense_points: initial upload failed");
 
-    DvzApp* app = dvz_app(scene);
-    if (app == NULL)
-    {
-        dvz_fprintf(stderr, "dense_points: dvz_app() failed (no GPU or display?)\n");
-        dvz_scene_destroy(scene);
-        _state_destroy(&state);
-        return 1;
-    }
+    app = dvz_app(scene);
+    EXAMPLE_CHECK(app != NULL, "dense_points: dvz_app() failed (no GPU or display?)");
 
     DvzAppWindow* win =
         dvz_app_window_glfw(app, figure, WIDTH, HEIGHT, "Dense spatial omics points");
-    if (win == NULL)
-    {
-        dvz_fprintf(stderr, "dense_points: GLFW window creation failed\n");
-        dvz_app_destroy(app);
-        dvz_scene_destroy(scene);
-        _state_destroy(&state);
-        return 1;
-    }
+    EXAMPLE_CHECK(win != NULL, "dense_points: GLFW window creation failed");
 
     DvzPanzoomDesc panzoom_desc = dvz_panzoom_desc();
     panzoom_desc.flags = DVZ_PANZOOM_FLAGS_KEEP_ASPECT;
     DvzPanzoom* panzoom = dvz_app_window_panel_panzoom(win, panel, &panzoom_desc);
-    if (panzoom == NULL)
-    {
-        dvz_fprintf(stderr, "dense_points: panzoom setup failed\n");
-        dvz_app_destroy(app);
-        dvz_scene_destroy(scene);
-        _state_destroy(&state);
-        return 1;
-    }
+    EXAMPLE_CHECK(panzoom != NULL, "dense_points: panzoom setup failed");
     DvzGuiConfig gui_config = dvz_gui_config();
     DvzGui* gui = dvz_app_window_gui(win, &gui_config);
-    if (gui == NULL)
-    {
-        dvz_fprintf(stderr, "dense_points: GUI creation failed\n");
-        dvz_app_destroy(app);
-        dvz_scene_destroy(scene);
-        _state_destroy(&state);
-        return 1;
-    }
+    EXAMPLE_CHECK(gui != NULL, "dense_points: GUI creation failed");
     dvz_app_window_set_gui_callback(win, _gui_callback, &state);
     dvz_app_window_set_frame_callback(win, _frame_callback, &state);
 
     dvz_app_run(app, cfg.frames);
 
-    dvz_app_destroy(app);
-    dvz_scene_destroy(scene);
-    _state_destroy(&state);
-    return 0;
+    status = 0;
+
+cleanup:
+    if (app != NULL)
+        dvz_app_destroy(app);
+    if (scene != NULL)
+        dvz_scene_destroy(scene);
+    if (state_initialized)
+        _state_destroy(&state);
+    else
+        _dataset_destroy(&dataset);
+    return status;
 }
