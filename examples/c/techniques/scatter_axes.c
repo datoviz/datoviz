@@ -75,45 +75,27 @@ int main(int argc, char** argv)
 {
     srand(42);
 
-    DvzScene* scene = dvz_scene();
-    if (scene == NULL)
-    {
-        fprintf(stderr, "dvz_scene() failed\n");
-        return 1;
-    }
+    int ret = 1;
+    DvzScene* scene = NULL;
+    DvzApp* app = NULL;
+
+    scene = dvz_scene();
+    EXAMPLE_CHECK(scene != NULL, "dvz_scene() failed");
 
     DvzFigure* figure = dvz_figure(scene, 1000, 700, 0);
-    if (figure == NULL)
-    {
-        fprintf(stderr, "dvz_figure() failed\n");
-        dvz_scene_destroy(scene);
-        return 1;
-    }
+    EXAMPLE_CHECK(figure != NULL, "dvz_figure() failed");
 
     DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.08f, 0.06f, 0.86f, 0.86f});
-    if (panel == NULL)
-    {
-        fprintf(stderr, "dvz_panel() failed\n");
-        dvz_scene_destroy(scene);
-        return 1;
-    }
+    EXAMPLE_CHECK(panel != NULL, "dvz_panel() failed");
     dvz_panel_set_background_color(panel, 0.07f, 0.08f, 0.11f, 1.0f);
-    if (!dvz_panel_set_layout_reserve(
+    EXAMPLE_CHECK(
+        dvz_panel_set_layout_reserve(
             panel, &(DvzPanelLayoutReserve){.left = 0.14f, .right = 0.0f, .bottom = 0.18f,
-                                            .top = 0.0f}))
-    {
-        fprintf(stderr, "dvz_panel_set_layout_reserve() failed\n");
-        dvz_scene_destroy(scene);
-        return 1;
-    }
+                                            .top = 0.0f}),
+        "dvz_panel_set_layout_reserve() failed");
 
     DvzVisual* visual = dvz_point(scene, 0);
-    if (visual == NULL)
-    {
-        fprintf(stderr, "dvz_point() failed\n");
-        dvz_scene_destroy(scene);
-        return 1;
-    }
+    EXAMPLE_CHECK(visual != NULL, "dvz_point() failed");
 
     float data_positions[N][3];
     float visual_positions[N][3];
@@ -123,13 +105,10 @@ int main(int argc, char** argv)
 
     dvz_panel_set_domain(panel, DVZ_DIM_X, -5.0, +5.0);
     dvz_panel_set_domain(panel, DVZ_DIM_Y, -3.0, +3.0);
-    if (dvz_panel_data_to_visual_positions(panel, &data_positions[0][0], &visual_positions[0][0], N)
-        != 0)
-    {
-        fprintf(stderr, "dvz_panel_data_to_visual_positions() failed\n");
-        dvz_scene_destroy(scene);
-        return 1;
-    }
+    EXAMPLE_CHECK(
+        dvz_panel_data_to_visual_positions(panel, &data_positions[0][0], &visual_positions[0][0], N)
+            == 0,
+        "dvz_panel_data_to_visual_positions() failed");
 
     dvz_point_data(visual, visual_positions, colors, sizes, N);
     dvz_panel_add_visual(panel, visual, NULL);
@@ -141,34 +120,22 @@ int main(int argc, char** argv)
     dvz_axis_set_label(x_axis, "x");
     dvz_axis_set_label(y_axis, "y");
 
-    DvzApp* app = dvz_app(scene);
-    if (app == NULL)
-    {
-        fprintf(stderr, "dvz_app() failed (no GPU or display?)\n");
-        dvz_scene_destroy(scene);
-        return 1;
-    }
+    app = dvz_app(scene);
+    EXAMPLE_CHECK(app != NULL, "dvz_app() failed (no GPU or display?)");
 
     DvzAppWindow* win = dvz_app_window_glfw(app, figure, 1000, 700, "scatter_axes");
-    if (win == NULL)
-    {
-        fprintf(stderr, "dvz_app_window_glfw() failed (GLFW unavailable?)\n");
-        dvz_app_destroy(app);
-        dvz_scene_destroy(scene);
-        return 1;
-    }
+    EXAMPLE_CHECK(win != NULL, "dvz_app_window_glfw() failed (GLFW unavailable?)");
 
     DvzPanzoom* panzoom = dvz_app_window_panel_panzoom(win, panel, NULL);
-    if (panzoom == NULL)
-    {
-        fprintf(stderr, "failed to create or bind panzoom controller\n");
-        dvz_app_destroy(app);
-        dvz_scene_destroy(scene);
-        return 1;
-    }
-    dvz_app_run(app, example_frame_count(argc, argv));
+    EXAMPLE_CHECK(panzoom != NULL, "failed to create or bind panzoom controller");
 
-    dvz_app_destroy(app);
-    dvz_scene_destroy(scene);
-    return 0;
+    dvz_app_run(app, example_frame_count(argc, argv));
+    ret = 0;
+
+cleanup:
+    if (app != NULL)
+        dvz_app_destroy(app);
+    if (scene != NULL)
+        dvz_scene_destroy(scene);
+    return ret;
 }
