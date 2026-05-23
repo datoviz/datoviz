@@ -190,45 +190,25 @@ static void _hover_pick_frame(DvzAppWindow* win, void* user_data)
 
 int main(int argc, char** argv)
 {
-    DvzScene* scene = dvz_scene();
-    if (scene == NULL)
-    {
-        fprintf(stderr, "dvz_scene() failed\n");
-        return 1;
-    }
+    int ret = 1;
+    DvzScene* scene = NULL;
+    DvzApp* app = NULL;
+
+    scene = dvz_scene();
+    EXAMPLE_CHECK(scene != NULL, "dvz_scene() failed");
 
     DvzFigure* figure = dvz_figure(scene, WIDTH, HEIGHT, 0);
-    if (figure == NULL)
-    {
-        fprintf(stderr, "dvz_figure() failed\n");
-        dvz_scene_destroy(scene);
-        return 1;
-    }
+    EXAMPLE_CHECK(figure != NULL, "dvz_figure() failed");
 
     DvzPanel* panel = dvz_panel_full(figure);
-    if (panel == NULL)
-    {
-        fprintf(stderr, "dvz_panel() failed\n");
-        dvz_scene_destroy(scene);
-        return 1;
-    }
+    EXAMPLE_CHECK(panel != NULL, "dvz_panel() failed");
 
     DvzVisual* visual = dvz_point(scene, 0);
-    if (visual == NULL)
-    {
-        fprintf(stderr, "dvz_point() failed\n");
-        dvz_scene_destroy(scene);
-        return 1;
-    }
+    EXAMPLE_CHECK(visual != NULL, "dvz_point() failed");
 
     DvzSelection* selection = dvz_selection(
         scene, &(DvzSelectionDesc){.mode = DVZ_SELECT_TOGGLE, .target = DVZ_SCENE_TARGET_ITEM});
-    if (selection == NULL)
-    {
-        fprintf(stderr, "dvz_selection() failed\n");
-        dvz_scene_destroy(scene);
-        return 1;
-    }
+    EXAMPLE_CHECK(selection != NULL, "dvz_selection() failed");
 
     HoverPickState state = {
         .scene = scene,
@@ -257,63 +237,36 @@ int main(int argc, char** argv)
         }
     }
 
-    if (dvz_point_data(visual, positions, colors, state.sizes, POINT_COUNT) != 0)
-    {
-        fprintf(stderr, "dvz_visual_set_data() failed\n");
-        dvz_scene_destroy(scene);
-        return 1;
-    }
+    EXAMPLE_CHECK(
+        dvz_point_data(visual, positions, colors, state.sizes, POINT_COUNT) == 0,
+        "dvz_visual_set_data() failed");
     dvz_visual_set_pick_capabilities(visual, DVZ_PICK_CAPABILITY_ITEM);
 
-    if (dvz_panel_add_visual(panel, visual, NULL) != 0)
-    {
-        fprintf(stderr, "dvz_panel_add_visual() failed\n");
-        dvz_scene_destroy(scene);
-        return 1;
-    }
+    EXAMPLE_CHECK(dvz_panel_add_visual(panel, visual, NULL) == 0, "dvz_panel_add_visual() failed");
 
     dvz_panel_set_background_color(panel, 0.05f, 0.07f, 0.10f, 1.0f);
 
-    DvzApp* app = dvz_app(scene);
-    if (app == NULL)
-    {
-        fprintf(stderr, "dvz_app() failed (no GPU or display?)\n");
-        dvz_scene_destroy(scene);
-        return 1;
-    }
+    app = dvz_app(scene);
+    EXAMPLE_CHECK(app != NULL, "dvz_app() failed (no GPU or display?)");
 
     DvzAppWindow* win = dvz_app_window_glfw(app, figure, WIDTH, HEIGHT, "pick_hover");
-    if (win == NULL)
-    {
-        fprintf(stderr, "dvz_app_window_glfw() failed (GLFW unavailable?)\n");
-        dvz_app_destroy(app);
-        dvz_scene_destroy(scene);
-        return 1;
-    }
+    EXAMPLE_CHECK(win != NULL, "dvz_app_window_glfw() failed (GLFW unavailable?)");
 
     DvzInputRouter* router = dvz_app_window_input(win);
-    if (router == NULL)
-    {
-        fprintf(stderr, "dvz_app_window_input() failed\n");
-        dvz_app_destroy(app);
-        dvz_scene_destroy(scene);
-        return 1;
-    }
+    EXAMPLE_CHECK(router != NULL, "dvz_app_window_input() failed");
 
     DvzPanzoom* panzoom = dvz_app_window_panel_panzoom(win, panel, NULL);
-    if (panzoom == NULL)
-    {
-        fprintf(stderr, "failed to create or bind panzoom controller\n");
-        dvz_app_destroy(app);
-        dvz_scene_destroy(scene);
-        return 1;
-    }
+    EXAMPLE_CHECK(panzoom != NULL, "failed to create or bind panzoom controller");
     dvz_input_subscribe_pointer(router, _hover_pick_pointer, &state);
     dvz_app_window_set_frame_callback(win, _hover_pick_frame, &state);
 
     dvz_app_run(app, example_frame_count(argc, argv));
+    ret = 0;
 
-    dvz_app_destroy(app);
-    dvz_scene_destroy(scene);
-    return 0;
+cleanup:
+    if (app != NULL)
+        dvz_app_destroy(app);
+    if (scene != NULL)
+        dvz_scene_destroy(scene);
+    return ret;
 }

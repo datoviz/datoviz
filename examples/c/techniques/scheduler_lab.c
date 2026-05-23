@@ -530,31 +530,21 @@ static void _lab_gui(DvzGui* gui, DvzAppWindow* win, void* user_data)
 
 int main(int argc, char** argv)
 {
-    DvzScene* scene = dvz_scene();
-    if (scene == NULL)
-    {
-        dvz_fprintf(stderr, "dvz_scene() failed\n");
-        return 1;
-    }
+    int ret = 1;
+    DvzScene* scene = NULL;
+    DvzApp* app = NULL;
+
+    scene = dvz_scene();
+    EXAMPLE_CHECK(scene != NULL, "dvz_scene() failed");
 
     DvzFigure* figure = dvz_figure(scene, LAB_WIDTH, LAB_HEIGHT, 0);
     DvzPanel* panel = figure != NULL ? dvz_panel_full(figure) : NULL;
-    if (figure == NULL || panel == NULL)
-    {
-        dvz_fprintf(stderr, "figure or panel creation failed\n");
-        dvz_scene_destroy(scene);
-        return 1;
-    }
+    EXAMPLE_CHECK(figure != NULL && panel != NULL, "figure or panel creation failed");
     dvz_panel_set_background_color(panel, 0.045f, 0.052f, 0.060f, 1.0f);
 
     DvzVisual* image = dvz_image(scene, 0);
     DvzVisual* points = dvz_point(scene, 0);
-    if (image == NULL || points == NULL)
-    {
-        dvz_fprintf(stderr, "visual creation failed\n");
-        dvz_scene_destroy(scene);
-        return 1;
-    }
+    EXAMPLE_CHECK(image != NULL && points != NULL, "visual creation failed");
 
     float image_pos[4][3] = {
         {-1.0f, -1.0f, 0.0f},
@@ -568,20 +558,16 @@ int main(int argc, char** argv)
         {1.0f, 0.0f},
         {1.0f, 1.0f},
     };
-    if (
-        dvz_visual_set_data(image, "position", image_pos, 4) != 0 ||
-        dvz_visual_set_data(image, "texcoords", texcoords, 4) != 0 ||
-        dvz_panel_add_visual(
-            panel, image,
-            &(DvzVisualAttachDesc){
-                .z_layer = -1,
-                .controller_mode = DVZ_CONTROLLER_FIXED,
-            }) != 0)
-    {
-        dvz_fprintf(stderr, "image setup failed\n");
-        dvz_scene_destroy(scene);
-        return 1;
-    }
+    EXAMPLE_CHECK(
+        dvz_visual_set_data(image, "position", image_pos, 4) == 0 &&
+            dvz_visual_set_data(image, "texcoords", texcoords, 4) == 0 &&
+            dvz_panel_add_visual(
+                panel, image,
+                &(DvzVisualAttachDesc){
+                    .z_layer = -1,
+                    .controller_mode = DVZ_CONTROLLER_FIXED,
+                }) == 0,
+        "image setup failed");
 
     float point_pos[LAB_POINT_COUNT][3] = {
         {0.00f, 0.00f, 0.0f},
@@ -598,15 +584,11 @@ int main(int argc, char** argv)
         {220, 120, 245, 255},
     };
     dvz_visual_set_pick_capabilities(points, DVZ_PICK_CAPABILITY_ITEM);
-    if (
-        dvz_visual_set_data(points, "position", point_pos, LAB_POINT_COUNT) != 0 ||
-        dvz_visual_set_data(points, "color", point_color, LAB_POINT_COUNT) != 0 ||
-        dvz_panel_add_visual(panel, points, NULL) != 0)
-    {
-        dvz_fprintf(stderr, "point setup failed\n");
-        dvz_scene_destroy(scene);
-        return 1;
-    }
+    EXAMPLE_CHECK(
+        dvz_visual_set_data(points, "position", point_pos, LAB_POINT_COUNT) == 0 &&
+            dvz_visual_set_data(points, "color", point_color, LAB_POINT_COUNT) == 0 &&
+            dvz_panel_add_visual(panel, points, NULL) == 0,
+        "point setup failed");
 
     SchedulerLabState state = {
         .scene = scene,
@@ -629,49 +611,22 @@ int main(int argc, char** argv)
     _lab_update_image(&state);
     state.mutation_count = 0;
 
-    DvzApp* app = dvz_app(scene);
-    if (app == NULL)
-    {
-        dvz_fprintf(stderr, "dvz_app() failed (no GPU or display?)\n");
-        dvz_scene_destroy(scene);
-        return 1;
-    }
+    app = dvz_app(scene);
+    EXAMPLE_CHECK(app != NULL, "dvz_app() failed (no GPU or display?)");
 
     DvzAppWindow* win = dvz_app_window_glfw(app, figure, LAB_WIDTH, LAB_HEIGHT, "scheduler_lab");
-    if (win == NULL)
-    {
-        dvz_fprintf(stderr, "dvz_app_window_glfw() failed (GLFW unavailable?)\n");
-        dvz_app_destroy(app);
-        dvz_scene_destroy(scene);
-        return 1;
-    }
+    EXAMPLE_CHECK(win != NULL, "dvz_app_window_glfw() failed (GLFW unavailable?)");
     state.win = win;
+
     state.router = dvz_app_window_input(win);
-    if (state.router == NULL)
-    {
-        dvz_fprintf(stderr, "dvz_app_window_input() failed\n");
-        dvz_app_destroy(app);
-        dvz_scene_destroy(scene);
-        return 1;
-    }
+    EXAMPLE_CHECK(state.router != NULL, "dvz_app_window_input() failed");
+
     DvzPanzoom* panzoom = dvz_app_window_panel_panzoom(win, panel, NULL);
-    if (panzoom == NULL)
-    {
-        dvz_fprintf(stderr, "failed to create or bind panzoom controller\n");
-        dvz_app_destroy(app);
-        dvz_scene_destroy(scene);
-        return 1;
-    }
+    EXAMPLE_CHECK(panzoom != NULL, "failed to create or bind panzoom controller");
     dvz_input_subscribe_pointer(state.router, _lab_pointer, &state);
 
     DvzGui* gui = dvz_app_window_gui(win, NULL);
-    if (gui == NULL)
-    {
-        dvz_fprintf(stderr, "dvz_app_window_gui() failed\n");
-        dvz_app_destroy(app);
-        dvz_scene_destroy(scene);
-        return 1;
-    }
+    EXAMPLE_CHECK(gui != NULL, "dvz_app_window_gui() failed");
 
     dvz_app_window_set_request_frame_callback(win, _lab_request_frame, &state);
     dvz_app_window_set_frame_callback(win, _lab_frame, &state);
@@ -679,8 +634,12 @@ int main(int argc, char** argv)
     dvz_app_window_request_frame(win);
 
     dvz_app_run(app, example_frame_count(argc, argv));
+    ret = 0;
 
-    dvz_app_destroy(app);
-    dvz_scene_destroy(scene);
-    return 0;
+cleanup:
+    if (app != NULL)
+        dvz_app_destroy(app);
+    if (scene != NULL)
+        dvz_scene_destroy(scene);
+    return ret;
 }
