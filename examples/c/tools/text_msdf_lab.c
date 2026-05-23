@@ -896,12 +896,12 @@ static void free_captures(TextMsdfLabState* state)
  */
 int main(int argc, char** argv)
 {
-    DvzScene* scene = dvz_scene();
-    if (scene == NULL)
-    {
-        dvz_fprintf(stderr, "dvz_scene() failed\n");
-        return 1;
-    }
+    int ret = 1;
+    DvzScene* scene = NULL;
+    DvzApp* app = NULL;
+
+    scene = dvz_scene();
+    EXAMPLE_CHECK(scene != NULL, "dvz_scene() failed");
 
     TextMsdfLabState state = {0};
     state.size_px = 72.0f;
@@ -922,66 +922,36 @@ int main(int argc, char** argv)
     state.show_grid = true;
     set_sample_text(&state);
 
-    if (setup_source_scene(scene, &state.sources[0]) != 0 ||
-        setup_source_scene(scene, &state.sources[1]) != 0)
-    {
-        dvz_fprintf(stderr, "source setup failed\n");
-        dvz_scene_destroy(scene);
-        return 1;
-    }
+    EXAMPLE_CHECK(
+        setup_source_scene(scene, &state.sources[0]) == 0 &&
+            setup_source_scene(scene, &state.sources[1]) == 0,
+        "source setup failed");
+
     DvzFigure* host_figure = dvz_figure(scene, TEXT_MSDF_LAB_HOST_WIDTH, TEXT_MSDF_LAB_HOST_HEIGHT, 0);
     DvzPanel* host_panel = host_figure != NULL ? dvz_panel_full(host_figure) : NULL;
-    if (host_figure == NULL || host_panel == NULL)
-    {
-        dvz_fprintf(stderr, "host figure setup failed\n");
-        dvz_scene_destroy(scene);
-        return 1;
-    }
+    EXAMPLE_CHECK(host_figure != NULL && host_panel != NULL, "host figure setup failed");
     dvz_panel_set_background_color(host_panel, 0.045f, 0.052f, 0.062f, 1.0f);
     update_sources(&state);
 
     DvzAppConfig app_config = dvz_app_config();
     app_config.schedule_mode = DVZ_APP_SCHEDULE_CONTINUOUS;
-    DvzApp* app = dvz_app_with_config(scene, &app_config);
-    if (app == NULL)
-    {
-        dvz_fprintf(stderr, "dvz_app() failed\n");
-        dvz_scene_destroy(scene);
-        return 1;
-    }
+    app = dvz_app_with_config(scene, &app_config);
+    EXAMPLE_CHECK(app != NULL, "dvz_app() failed");
 
     for (uint32_t i = 0; i < 2; i++)
     {
         state.sources[i].win = dvz_app_window(
             app, state.sources[i].figure, TEXT_MSDF_LAB_SOURCE_WIDTH, TEXT_MSDF_LAB_SOURCE_HEIGHT);
-        if (state.sources[i].win == NULL)
-        {
-            dvz_fprintf(stderr, "source app-window setup failed\n");
-            dvz_app_destroy(app);
-            dvz_scene_destroy(scene);
-            return 1;
-        }
+        EXAMPLE_CHECK(state.sources[i].win != NULL, "source app-window setup failed");
     }
     state.host_win =
         dvz_app_window_glfw(app, host_figure, TEXT_MSDF_LAB_HOST_WIDTH, TEXT_MSDF_LAB_HOST_HEIGHT,
                             "text_msdf_lab");
-    if (state.host_win == NULL)
-    {
-        dvz_fprintf(stderr, "host GLFW window setup failed\n");
-        dvz_app_destroy(app);
-        dvz_scene_destroy(scene);
-        return 1;
-    }
+    EXAMPLE_CHECK(state.host_win != NULL, "host GLFW window setup failed");
 
     DvzGuiConfig gui_config = dvz_gui_config();
     DvzGui* gui = dvz_app_window_gui(state.host_win, &gui_config);
-    if (gui == NULL)
-    {
-        dvz_fprintf(stderr, "GUI setup failed\n");
-        dvz_app_destroy(app);
-        dvz_scene_destroy(scene);
-        return 1;
-    }
+    EXAMPLE_CHECK(gui != NULL, "GUI setup failed");
 
     DvzGuiViewportConfig viewport_config = dvz_gui_viewport_config();
     viewport_config.initial_width = TEXT_MSDF_LAB_SOURCE_WIDTH;
@@ -991,24 +961,14 @@ int main(int argc, char** argv)
     {
         state.sources[i].viewport =
             dvz_gui_viewport_from_window(gui, state.sources[i].win, &viewport_config);
-        if (state.sources[i].viewport == NULL)
-        {
-            dvz_fprintf(stderr, "GUI viewport setup failed\n");
-            dvz_app_destroy(app);
-            dvz_scene_destroy(scene);
-            return 1;
-        }
+        EXAMPLE_CHECK(state.sources[i].viewport != NULL, "GUI viewport setup failed");
         DvzController* panzoom_controller = dvz_panzoom(scene, NULL);
         state.sources[i].panzoom = dvz_controller_panzoom(panzoom_controller);
-        if (state.sources[i].panzoom == NULL ||
-            dvz_panel_bind_controller(
-                state.sources[i].panel, panzoom_controller, DVZ_DIM_MASK_XY) != 0)
-        {
-            dvz_fprintf(stderr, "failed to create or bind panzoom controller\n");
-            dvz_app_destroy(app);
-            dvz_scene_destroy(scene);
-            return 1;
-        }
+        EXAMPLE_CHECK(
+            state.sources[i].panzoom != NULL &&
+                dvz_panel_bind_controller(
+                    state.sources[i].panel, panzoom_controller, DVZ_DIM_MASK_XY) == 0,
+            "failed to create or bind panzoom controller");
         dvz_panel_connect_input(
             state.sources[i].panel, dvz_gui_viewport_input(state.sources[i].viewport));
     }
@@ -1016,11 +976,17 @@ int main(int argc, char** argv)
     dvz_app_window_set_gui_callback(state.host_win, gui_callback, &state);
 
     dvz_app_run(app, example_frame_count(argc, argv));
+    ret = 0;
 
+cleanup:
     free_captures(&state);
-    dvz_gui_viewport_destroy(state.sources[0].viewport);
-    dvz_gui_viewport_destroy(state.sources[1].viewport);
-    dvz_app_destroy(app);
-    dvz_scene_destroy(scene);
-    return 0;
+    if (state.sources[0].viewport != NULL)
+        dvz_gui_viewport_destroy(state.sources[0].viewport);
+    if (state.sources[1].viewport != NULL)
+        dvz_gui_viewport_destroy(state.sources[1].viewport);
+    if (app != NULL)
+        dvz_app_destroy(app);
+    if (scene != NULL)
+        dvz_scene_destroy(scene);
+    return ret;
 }

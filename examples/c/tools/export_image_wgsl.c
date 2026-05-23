@@ -20,6 +20,7 @@
 #include "datoviz/drp2.h"
 #include "datoviz/fileio.h"
 #include "datoviz/scene.h"
+#include "example_common.h"
 
 
 
@@ -39,18 +40,18 @@ int main(int argc, char** argv)
     const char* output =
         argc >= 2 ? argv[1] : "examples/webgpu/streams/scene_image_wgsl.json";
 
-    DvzScene* scene = dvz_scene();
-    if (scene == NULL)
-        return 1;
+    int ret = 1;
+    DvzScene* scene = NULL;
+    DvzDrp2CommandStream* stream = NULL;
+    char* json = NULL;
+
+    scene = dvz_scene();
+    EXAMPLE_CHECK(scene != NULL, "dvz_scene() failed");
 
     DvzFigure* figure = dvz_figure(scene, 640, 640, 0);
     DvzPanel* panel = dvz_panel_full(figure);
     DvzVisual* visual = dvz_image(scene, 0);
-    if (figure == NULL || panel == NULL || visual == NULL)
-    {
-        dvz_scene_destroy(scene);
-        return 1;
-    }
+    EXAMPLE_CHECK(figure != NULL && panel != NULL && visual != NULL, "scene setup failed");
 
     float positions[4][3] = {
         {-0.75f, -0.75f, 0.0f},
@@ -71,14 +72,12 @@ int main(int argc, char** argv)
         255, 220, 90, 255,
     };
 
-    if (dvz_visual_set_data(visual, "position", positions, 4) != 0 ||
-        dvz_visual_set_data(visual, "texcoords", texcoords, 4) != 0 ||
-        dvz_visual_set_texture(visual, pixels, 2, 2) != 0 ||
-        dvz_panel_add_visual(panel, visual, NULL) != 0)
-    {
-        dvz_scene_destroy(scene);
-        return 1;
-    }
+    EXAMPLE_CHECK(
+        dvz_visual_set_data(visual, "position", positions, 4) == 0 &&
+            dvz_visual_set_data(visual, "texcoords", texcoords, 4) == 0 &&
+            dvz_visual_set_texture(visual, pixels, 2, 2) == 0 &&
+            dvz_panel_add_visual(panel, visual, NULL) == 0,
+        "image visual setup failed");
 
     DvzCapabilitySnapshot caps;
     dvz_capability_snapshot_default(&caps);
@@ -95,23 +94,23 @@ int main(int argc, char** argv)
 
     DvzDiagnosticReport report;
     dvz_diagnostic_report_init(&report);
-    DvzDrp2CommandStream* stream = dvz_figure_emit_ex(figure, &caps, &report, &emit_cfg);
-    if (stream == NULL || dvz_diagnostic_report_count(&report) != 0)
-    {
-        dvz_scene_destroy(scene);
-        return 1;
-    }
+    stream = dvz_figure_emit_ex(figure, &caps, &report, &emit_cfg);
+    EXAMPLE_CHECK(
+        stream != NULL && dvz_diagnostic_report_count(&report) == 0,
+        "frame-plan emission failed");
 
-    char* json = dvz_drp2_stream_json(stream, "scene_image_wgsl");
-    int rc = 1;
+    json = dvz_drp2_stream_json(stream, "scene_image_wgsl");
     if (json != NULL)
     {
         DvzSize size = (DvzSize)strlen(json);
-        rc = dvz_write_bytes(output, "wb", size, (const uint8_t*)json);
+        ret = dvz_write_bytes(output, "wb", size, (const uint8_t*)json) == 0 ? 0 : 1;
     }
 
+cleanup:
     dvz_drp2_stream_json_destroy(json);
-    dvz_drp2_stream_destroy(stream);
-    dvz_scene_destroy(scene);
-    return rc == 0 ? 0 : 1;
+    if (stream != NULL)
+        dvz_drp2_stream_destroy(stream);
+    if (scene != NULL)
+        dvz_scene_destroy(scene);
+    return ret;
 }

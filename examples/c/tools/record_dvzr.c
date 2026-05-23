@@ -29,6 +29,7 @@
 #include "datoviz/fileio/fileio.h"
 #include "datoviz/scene.h"
 #include "datoviz/vk/gpu_ctx.h"
+#include "example_common.h"
 
 
 
@@ -219,21 +220,18 @@ int main(int argc, char** argv)
     _outpath(argv[0], "record_dvzr_original.png", original_png, sizeof(original_png));
     _outpath(argv[0], "record_dvzr_replay.png", replay_png, sizeof(replay_png));
 
-    DvzScene* scene = dvz_scene();
-    if (scene == NULL)
-    {
-        dvz_fprintf(stderr, "dvz_scene() failed\n");
-        return 1;
-    }
+    int ret = 1;
+    DvzScene* scene = NULL;
+    DvzApp* app = NULL;
+
+    scene = dvz_scene();
+    EXAMPLE_CHECK(scene != NULL, "dvz_scene() failed");
+
     DvzFigure* figure = dvz_figure(scene, WIDTH, HEIGHT, 0);
     DvzPanel* panel = dvz_panel_full(figure);
     DvzVisual* visual = dvz_point(scene, 0);
-    if (figure == NULL || panel == NULL || visual == NULL)
-    {
-        dvz_fprintf(stderr, "failed to create scene objects\n");
-        dvz_scene_destroy(scene);
-        return 1;
-    }
+    EXAMPLE_CHECK(
+        figure != NULL && panel != NULL && visual != NULL, "failed to create scene objects");
 
     float positions[5][3] = {
         {-0.7f, -0.5f, 0.0f},
@@ -253,47 +251,36 @@ int main(int argc, char** argv)
     dvz_point_data(visual, positions, colors, sizes, 5);
     dvz_panel_add_visual(panel, visual, NULL);
 
-    DvzApp* app = dvz_app(scene);
-    if (app == NULL)
-    {
-        dvz_fprintf(stderr, "dvz_app() failed (no GPU?)\n");
-        dvz_scene_destroy(scene);
-        return 1;
-    }
-    DvzAppWindow* win = dvz_app_window(app, figure, WIDTH, HEIGHT);
-    if (win == NULL)
-    {
-        dvz_fprintf(stderr, "dvz_app_window() failed\n");
-        dvz_app_destroy(app);
-        dvz_scene_destroy(scene);
-        return 1;
-    }
+    app = dvz_app(scene);
+    EXAMPLE_CHECK(app != NULL, "dvz_app() failed (no GPU?)");
 
-    if (dvz_app_window_record_start(win, recording_path) != 0)
-    {
-        dvz_fprintf(stderr, "failed to start DVZR recording\n");
-        dvz_app_destroy(app);
-        dvz_scene_destroy(scene);
-        return 1;
-    }
-    if (dvz_app_window_render_once(win) != DVZ_CANVAS_FRAME_READY ||
-        dvz_app_window_record_stop(win) != 0 ||
-        dvz_app_window_capture_png(win, original_png) != 0)
-    {
-        dvz_fprintf(stderr, "failed to render/capture original scene\n");
-        dvz_app_destroy(app);
-        dvz_scene_destroy(scene);
-        return 1;
-    }
+    DvzAppWindow* win = dvz_app_window(app, figure, WIDTH, HEIGHT);
+    EXAMPLE_CHECK(win != NULL, "dvz_app_window() failed");
+
+    EXAMPLE_CHECK(dvz_app_window_record_start(win, recording_path) == 0, "failed to start DVZR recording");
+    EXAMPLE_CHECK(
+        dvz_app_window_render_once(win) == DVZ_CANVAS_FRAME_READY &&
+            dvz_app_window_record_stop(win) == 0 &&
+            dvz_app_window_capture_png(win, original_png) == 0,
+        "failed to render/capture original scene");
 
     dvz_app_destroy(app);
+    app = NULL;
     dvz_scene_destroy(scene);
+    scene = NULL;
 
     if (_save_replay_png(recording_path, replay_png) != 0)
-        return 1;
+        goto cleanup;
 
     dvz_fprintf(stdout, "record_dvzr: wrote %s\n", recording_path);
     dvz_fprintf(stdout, "record_dvzr: wrote %s\n", original_png);
     dvz_fprintf(stdout, "record_dvzr: wrote %s\n", replay_png);
-    return 0;
+    ret = 0;
+
+cleanup:
+    if (app != NULL)
+        dvz_app_destroy(app);
+    if (scene != NULL)
+        dvz_scene_destroy(scene);
+    return ret;
 }
