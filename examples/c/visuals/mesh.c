@@ -59,21 +59,18 @@
 /*************************************************************************************************/
 
 /**
- * Build an indexed cube with duplicated vertices and per-face normals.
+ * Assign the example's per-face colors to a generated cube geometry.
  *
- * @return the generated geometry, or NULL on failure
+ * @param cube generated cube geometry
+ * @return whether the cube layout matched the expected face-duplicated layout
  */
-static DvzGeometry* _build_cube(void)
+static bool _apply_cube_face_colors(DvzGeometry* cube)
 {
-    DvzGeometry* cube = dvz_geom_cube(&(DvzGeometryCubeDesc){.size = MESH_CUBE_SIZE});
     if (cube == NULL)
-        return NULL;
+        return false;
 
     if (cube->vertex_count != MESH_CUBE_VERTEX_COUNT || cube->index_count != MESH_CUBE_INDEX_COUNT)
-    {
-        dvz_geometry_destroy(cube);
-        return NULL;
-    }
+        return false;
 
     const DvzColor face_colors[6] = {
         {239, 83, 80, 255},
@@ -96,7 +93,7 @@ static DvzGeometry* _build_cube(void)
         }
     }
 
-    return cube;
+    return true;
 }
 
 
@@ -239,10 +236,12 @@ int main(int argc, char** argv)
         return 1;
     }
 
-    DvzGeometry* cube = _build_cube();
-    if (cube == NULL)
+    DvzGeometry* cube = dvz_geom_cube(&(DvzGeometryCubeDesc){.size = MESH_CUBE_SIZE});
+    if (cube == NULL || !_apply_cube_face_colors(cube))
     {
         dvz_fprintf(stderr, "dvz_geom_cube() failed\n");
+        if (cube != NULL)
+            dvz_geometry_destroy(cube);
         dvz_scene_destroy(scene);
         return 1;
     }
