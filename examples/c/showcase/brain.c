@@ -1695,6 +1695,11 @@ int main(int argc, char** argv)
 {
     uint32_t frame_count = example_frame_count_any(argc, argv);
     uint32_t downsample = _option_u32(argc, argv, "downsample", 1, 1, 8);
+    int ret = 1;
+    DvzScene* scene = NULL;
+    DvzApp* app = NULL;
+    AllenMouseBrainVolume volume_data = {0};
+    AllenIblAtlasMesh atlas_mesh = {0};
 
     char data_path[1024] = {0};
     if (!_data_path(argc, argv, data_path, sizeof(data_path)))
@@ -1703,7 +1708,6 @@ int main(int argc, char** argv)
         return 1;
     }
 
-    AllenMouseBrainVolume volume_data = {0};
     if (!_read_allen_mouse_brain(data_path, &volume_data))
     {
         dvz_fprintf(
@@ -1716,8 +1720,7 @@ int main(int argc, char** argv)
     if (!_downsample_allen_mouse_brain(&volume_data, downsample))
     {
         dvz_fprintf(stderr, "failed to downsample Allen mouse brain volume by %u\n", downsample);
-        _allen_mouse_brain_destroy(&volume_data);
-        return 1;
+        goto cleanup;
     }
     _normalize_allen_alpha(&volume_data);
     if (volume_data.downsample > 1)
@@ -1727,13 +1730,8 @@ int main(int argc, char** argv)
             volume_data.width, volume_data.height, volume_data.depth, volume_data.downsample);
     }
 
-    DvzScene* scene = dvz_scene();
-    if (scene == NULL)
-    {
-        dvz_fprintf(stderr, "dvz_scene() failed\n");
-        _allen_mouse_brain_destroy(&volume_data);
-        return 1;
-    }
+    scene = dvz_scene();
+    EXAMPLE_CHECK(scene != NULL, "dvz_scene() failed");
     DvzCapabilitySnapshot caps;
     dvz_capability_snapshot_default(&caps);
     caps.max_color_attachments = 3;
@@ -1744,22 +1742,10 @@ int main(int argc, char** argv)
     dvz_scene_set_capabilities(scene, &caps);
 
     DvzFigure* figure = dvz_figure(scene, WIDTH, HEIGHT, 0);
-    if (figure == NULL)
-    {
-        dvz_fprintf(stderr, "dvz_figure() failed\n");
-        _allen_mouse_brain_destroy(&volume_data);
-        dvz_scene_destroy(scene);
-        return 1;
-    }
+    EXAMPLE_CHECK(figure != NULL, "dvz_figure() failed");
 
     DvzPanel* panel = dvz_panel_full(figure);
-    if (panel == NULL)
-    {
-        dvz_fprintf(stderr, "dvz_panel() failed\n");
-        _allen_mouse_brain_destroy(&volume_data);
-        dvz_scene_destroy(scene);
-        return 1;
-    }
+    EXAMPLE_CHECK(panel != NULL, "dvz_panel() failed");
 
     DvzCameraDesc camera_desc = dvz_camera_desc();
     camera_desc.eye[2] = 2.2f;
@@ -1767,13 +1753,7 @@ int main(int argc, char** argv)
     camera_desc.fov_y = 0.78539816339f;
     camera_desc.near = 0.01f;
     camera_desc.far = 100.0f;
-    if (!dvz_panel_set_camera(panel, &camera_desc))
-    {
-        dvz_fprintf(stderr, "dvz_panel_set_camera() failed\n");
-        _allen_mouse_brain_destroy(&volume_data);
-        dvz_scene_destroy(scene);
-        return 1;
-    }
+    EXAMPLE_CHECK(dvz_panel_set_camera(panel, &camera_desc), "dvz_panel_set_camera() failed");
 
     DvzSampledField* field = dvz_sampled_field(
         scene, &(DvzSampledFieldDesc){
@@ -1784,53 +1764,28 @@ int main(int argc, char** argv)
                    .height = volume_data.height,
                    .depth = volume_data.depth,
                });
-    if (field == NULL)
-    {
-        dvz_fprintf(stderr, "dvz_sampled_field() failed\n");
-        _allen_mouse_brain_destroy(&volume_data);
-        dvz_scene_destroy(scene);
-        return 1;
-    }
-    if (!dvz_sampled_field_set_data(
+    EXAMPLE_CHECK(field != NULL, "dvz_sampled_field() failed");
+    EXAMPLE_CHECK(
+        dvz_sampled_field_set_data(
             field, &(DvzFieldDataView){
                        .data = volume_data.voxels,
                        .bytes_per_row = volume_data.width * 4,
                        .rows_per_image = volume_data.height,
-                   }))
-    {
-        dvz_fprintf(stderr, "dvz_sampled_field_set_data() failed\n");
-        _allen_mouse_brain_destroy(&volume_data);
-        dvz_scene_destroy(scene);
-        return 1;
-    }
+                   }),
+        "dvz_sampled_field_set_data() failed");
 
     DvzVisual* volume_3d = dvz_volume(scene, 0);
     DvzVisual* volume_slice = dvz_volume(scene, 0);
-    if (volume_3d == NULL || volume_slice == NULL)
-    {
-        dvz_fprintf(stderr, "dvz_volume() failed\n");
-        _allen_mouse_brain_destroy(&volume_data);
-        dvz_scene_destroy(scene);
-        return 1;
-    }
-    if (!dvz_visual_set_field(volume_3d, "field", field) ||
-        !dvz_visual_set_field(volume_slice, "field", field))
-    {
-        dvz_fprintf(stderr, "dvz_visual_set_field() failed\n");
-        _allen_mouse_brain_destroy(&volume_data);
-        dvz_scene_destroy(scene);
-        return 1;
-    }
-    if (dvz_visual_set_alpha_mode(volume_3d, DVZ_ALPHA_WBOIT) != 0 ||
-        dvz_visual_set_alpha_mode(volume_slice, DVZ_ALPHA_WBOIT) != 0)
-    {
-        dvz_fprintf(stderr, "dvz_visual_set_alpha_mode() failed\n");
-        _allen_mouse_brain_destroy(&volume_data);
-        dvz_scene_destroy(scene);
-        return 1;
-    }
+    EXAMPLE_CHECK(volume_3d != NULL && volume_slice != NULL, "dvz_volume() failed");
+    EXAMPLE_CHECK(
+        dvz_visual_set_field(volume_3d, "field", field) &&
+            dvz_visual_set_field(volume_slice, "field", field),
+        "dvz_visual_set_field() failed");
+    EXAMPLE_CHECK(
+        dvz_visual_set_alpha_mode(volume_3d, DVZ_ALPHA_WBOIT) == 0 &&
+            dvz_visual_set_alpha_mode(volume_slice, DVZ_ALPHA_WBOIT) == 0,
+        "dvz_visual_set_alpha_mode() failed");
 
-    AllenIblAtlasMesh atlas_mesh = {0};
     bool atlas_loaded = _load_ibl_atlas_mesh(DEFAULT_IBL_ASSET_DIR, &atlas_mesh);
     if (!atlas_loaded)
     {
@@ -1839,9 +1794,7 @@ int main(int argc, char** argv)
             "Allen/IBL atlas mesh assets not found or invalid in %s\n"
             "prepare them with: python tools/prepare_allen_ibl_assets.py\n",
             DEFAULT_IBL_ASSET_DIR);
-        _allen_mouse_brain_destroy(&volume_data);
-        dvz_scene_destroy(scene);
-        return 1;
+        goto cleanup;
     }
 
     AllenMouseBrainVolume display_volume = volume_data;
@@ -1860,27 +1813,18 @@ int main(int argc, char** argv)
         bounds_max[1] = atlas_mesh.volume_bounds_max[1];
         bounds_max[2] = atlas_mesh.volume_bounds_max[2];
     }
-    if (dvz_volume_set_bounds(volume_3d, bounds_min, bounds_max) != 0 ||
-        dvz_volume_set_bounds(volume_slice, bounds_min, bounds_max) != 0)
-    {
-        dvz_fprintf(stderr, "dvz_volume_set_bounds() failed\n");
-        _ibl_atlas_mesh_destroy(&atlas_mesh);
-        _allen_mouse_brain_destroy(&volume_data);
-        dvz_scene_destroy(scene);
-        return 1;
-    }
+    EXAMPLE_CHECK(
+        dvz_volume_set_bounds(volume_3d, bounds_min, bounds_max) == 0 &&
+            dvz_volume_set_bounds(volume_slice, bounds_min, bounds_max) == 0,
+        "dvz_volume_set_bounds() failed");
+
     uint32_t axis_order[3] = {0};
     bool axis_flip[3] = {0};
     _allen_mouse_brain_axis_mapping(axis_order, axis_flip);
-    if (dvz_volume_set_axis_mapping(volume_3d, axis_order, axis_flip) != 0 ||
-        dvz_volume_set_axis_mapping(volume_slice, axis_order, axis_flip) != 0)
-    {
-        dvz_fprintf(stderr, "dvz_volume_set_axis_mapping() failed\n");
-        _ibl_atlas_mesh_destroy(&atlas_mesh);
-        _allen_mouse_brain_destroy(&volume_data);
-        dvz_scene_destroy(scene);
-        return 1;
-    }
+    EXAMPLE_CHECK(
+        dvz_volume_set_axis_mapping(volume_3d, axis_order, axis_flip) == 0 &&
+            dvz_volume_set_axis_mapping(volume_slice, axis_order, axis_flip) == 0,
+        "dvz_volume_set_axis_mapping() failed");
 
     DvzVisual* atlas_mesh_visual = NULL;
     DvzSceneBuffer* atlas_index_buffer = NULL;
@@ -1892,22 +1836,18 @@ int main(int argc, char** argv)
                        .usage = DVZ_SCENE_BUFFER_USAGE_INDEX,
                        .stride = sizeof(DvzIndex),
                    });
-        if (atlas_mesh_visual == NULL || atlas_index_buffer == NULL ||
-            !dvz_scene_buffer_set_data(
-                atlas_index_buffer, atlas_mesh.idx, atlas_mesh.index_count * sizeof(DvzIndex)) ||
-            dvz_mesh_data(
-                atlas_mesh_visual, atlas_mesh.pos, atlas_mesh.color, atlas_mesh.normal,
-                atlas_mesh.vertex_count) != 0 ||
-            !dvz_visual_set_buffer(atlas_mesh_visual, "index", atlas_index_buffer) ||
-            dvz_visual_set_alpha_mode(atlas_mesh_visual, DVZ_ALPHA_BLENDED) != 0 ||
-            dvz_visual_set_depth_test(atlas_mesh_visual, true) != 0)
-        {
-            dvz_fprintf(stderr, "Allen/IBL atlas mesh visual setup failed\n");
-            _ibl_atlas_mesh_destroy(&atlas_mesh);
-            _allen_mouse_brain_destroy(&volume_data);
-            dvz_scene_destroy(scene);
-            return 1;
-        }
+        EXAMPLE_CHECK(
+            atlas_mesh_visual != NULL && atlas_index_buffer != NULL &&
+                dvz_scene_buffer_set_data(
+                    atlas_index_buffer, atlas_mesh.idx,
+                    atlas_mesh.index_count * sizeof(DvzIndex)) &&
+                dvz_mesh_data(
+                    atlas_mesh_visual, atlas_mesh.pos, atlas_mesh.color, atlas_mesh.normal,
+                    atlas_mesh.vertex_count) == 0 &&
+                dvz_visual_set_buffer(atlas_mesh_visual, "index", atlas_index_buffer) &&
+                dvz_visual_set_alpha_mode(atlas_mesh_visual, DVZ_ALPHA_BLENDED) == 0 &&
+                dvz_visual_set_depth_test(atlas_mesh_visual, true) == 0,
+            "Allen/IBL atlas mesh visual setup failed");
     }
 
     DvzVisualAttachDesc volume_attach = {
@@ -1922,23 +1862,14 @@ int main(int argc, char** argv)
         .z_layer = 2,
         .controller_mode = DVZ_CONTROLLER_APPLY,
     };
-    if (dvz_panel_add_visual(panel, volume_3d, &volume_attach) != 0 ||
-        dvz_panel_add_visual(panel, volume_slice, &slice_attach) != 0)
-    {
-        dvz_fprintf(stderr, "dvz_panel_add_visual() failed\n");
-        _ibl_atlas_mesh_destroy(&atlas_mesh);
-        _allen_mouse_brain_destroy(&volume_data);
-        dvz_scene_destroy(scene);
-        return 1;
-    }
-    if (atlas_mesh_visual != NULL && dvz_panel_add_visual(panel, atlas_mesh_visual, &atlas_attach) != 0)
-    {
-        dvz_fprintf(stderr, "dvz_panel_add_visual() failed for Allen/IBL atlas mesh\n");
-        _ibl_atlas_mesh_destroy(&atlas_mesh);
-        _allen_mouse_brain_destroy(&volume_data);
-        dvz_scene_destroy(scene);
-        return 1;
-    }
+    EXAMPLE_CHECK(
+        dvz_panel_add_visual(panel, volume_3d, &volume_attach) == 0 &&
+            dvz_panel_add_visual(panel, volume_slice, &slice_attach) == 0,
+        "dvz_panel_add_visual() failed");
+    EXAMPLE_CHECK(
+        atlas_mesh_visual == NULL ||
+            dvz_panel_add_visual(panel, atlas_mesh_visual, &atlas_attach) == 0,
+        "dvz_panel_add_visual() failed for Allen/IBL atlas mesh");
     dvz_panel_set_background_color(panel, 0.025f, 0.035f, 0.045f, 1.0f);
 
     AllenMouseBrainState state = {
@@ -1974,59 +1905,33 @@ int main(int argc, char** argv)
     _apply_volume_occlusion_controls(&state);
     _apply_transparency_modes(&state);
 
-    DvzApp* app = dvz_app(scene);
-    if (app == NULL)
-    {
-        dvz_fprintf(stderr, "dvz_app() failed (no GPU or display?)\n");
-        _ibl_atlas_mesh_destroy(&atlas_mesh);
-        _allen_mouse_brain_destroy(&volume_data);
-        dvz_scene_destroy(scene);
-        return 1;
-    }
+    app = dvz_app(scene);
+    EXAMPLE_CHECK(app != NULL, "dvz_app() failed (no GPU or display?)");
 
     DvzAppWindow* win =
         dvz_app_window_glfw(app, figure, WIDTH, HEIGHT, "brain");
-    if (win == NULL)
-    {
-        dvz_fprintf(stderr, "dvz_app_window_glfw() failed (GLFW unavailable?)\n");
-        _ibl_atlas_mesh_destroy(&atlas_mesh);
-        _allen_mouse_brain_destroy(&volume_data);
-        dvz_app_destroy(app);
-        dvz_scene_destroy(scene);
-        return 1;
-    }
+    EXAMPLE_CHECK(win != NULL, "dvz_app_window_glfw() failed (GLFW unavailable?)");
+
     DvzArcball* arcball = dvz_app_window_panel_arcball(win, panel, NULL);
-    if (arcball == NULL)
-    {
-        dvz_fprintf(stderr, "failed to create or bind arcball controller\n");
-        _ibl_atlas_mesh_destroy(&atlas_mesh);
-        _allen_mouse_brain_destroy(&volume_data);
-        dvz_app_destroy(app);
-        dvz_scene_destroy(scene);
-        return 1;
-    }
+    EXAMPLE_CHECK(arcball != NULL, "failed to create or bind arcball controller");
 
     DvzGuiConfig gui_config = dvz_gui_config();
     DvzGui* gui = dvz_app_window_gui(win, &gui_config);
-    if (gui == NULL)
-    {
-        dvz_fprintf(stderr, "dvz_app_window_gui() failed\n");
-        _ibl_atlas_mesh_destroy(&atlas_mesh);
-        _allen_mouse_brain_destroy(&volume_data);
-        dvz_app_destroy(app);
-        dvz_scene_destroy(scene);
-        return 1;
-    }
+    EXAMPLE_CHECK(gui != NULL, "dvz_app_window_gui() failed");
     dvz_app_window_set_gui_callback(win, _allen_mouse_brain_gui, &state);
 
     dvz_scene_set_clock_mode(scene, DVZ_CLOCK_REALTIME);
     dvz_scene_set_fps(scene, 60.0);
 
     dvz_app_run(app, frame_count);
+    ret = 0;
 
+cleanup:
+    if (app != NULL)
+        dvz_app_destroy(app);
     _ibl_atlas_mesh_destroy(&atlas_mesh);
     _allen_mouse_brain_destroy(&volume_data);
-    dvz_app_destroy(app);
-    dvz_scene_destroy(scene);
-    return 0;
+    if (scene != NULL)
+        dvz_scene_destroy(scene);
+    return ret;
 }
