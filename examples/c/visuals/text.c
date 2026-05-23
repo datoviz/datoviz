@@ -49,29 +49,18 @@
 int main(int argc, char** argv)
 {
     uint32_t frames = example_frame_count(argc, argv);
+    int ret = 1;
+    DvzScene* scene = NULL;
+    DvzApp* app = NULL;
 
-    DvzScene* scene = dvz_scene();
-    if (scene == NULL)
-    {
-        dvz_fprintf(stderr, "dvz_scene() failed\n");
-        return 1;
-    }
+    scene = dvz_scene();
+    EXAMPLE_CHECK(scene != NULL, "dvz_scene() failed");
 
     DvzFigure* figure = dvz_figure(scene, WIDTH, HEIGHT, 0);
-    if (figure == NULL)
-    {
-        dvz_fprintf(stderr, "dvz_figure() failed\n");
-        dvz_scene_destroy(scene);
-        return 1;
-    }
+    EXAMPLE_CHECK(figure != NULL, "dvz_figure() failed");
 
     DvzPanel* panel = dvz_panel_full(figure);
-    if (panel == NULL)
-    {
-        dvz_fprintf(stderr, "dvz_panel() failed\n");
-        dvz_scene_destroy(scene);
-        return 1;
-    }
+    EXAMPLE_CHECK(panel != NULL, "dvz_panel() failed");
     dvz_panel_set_background_color(panel, 0.055f, 0.065f, 0.085f, 1.0f);
 
     const char* strings[TEXT_COUNT] = {
@@ -112,24 +101,16 @@ int main(int argc, char** argv)
     for (uint32_t i = 0; i < TEXT_COUNT; i++)
     {
         DvzText* text = dvz_text(panel, 0);
-        if (text == NULL)
-        {
-            dvz_fprintf(stderr, "dvz_text() failed\n");
-            dvz_scene_destroy(scene);
-            return 1;
-        }
-        if (dvz_text_set_style(
+        EXAMPLE_CHECK(text != NULL, "dvz_text() failed");
+        EXAMPLE_CHECK(
+            dvz_text_set_style(
                 text,
                 &(DvzTextStyle){
                     .size_px = sizes[i],
                     .renderer = DVZ_TEXT_RENDERER_MSDF_ATLAS,
                     .color = {colors[i][0], colors[i][1], colors[i][2], colors[i][3]},
-                }) != 0)
-        {
-            dvz_fprintf(stderr, "dvz_text_set_style() failed\n");
-            dvz_scene_destroy(scene);
-            return 1;
-        }
+                }) == 0,
+            "dvz_text_set_style() failed");
         dvz_text_set_placement(
             text,
             &(DvzTextPlacement){
@@ -146,35 +127,23 @@ int main(int argc, char** argv)
     DvzAppConfig app_config = dvz_app_config();
     if (frames > 0)
         app_config.schedule_mode = DVZ_APP_SCHEDULE_CONTINUOUS;
-    DvzApp* app = dvz_app_with_config(scene, &app_config);
-    if (app == NULL)
-    {
-        dvz_fprintf(stderr, "dvz_app() failed (no GPU or display?)\n");
-        dvz_scene_destroy(scene);
-        return 1;
-    }
+    app = dvz_app_with_config(scene, &app_config);
+    EXAMPLE_CHECK(app != NULL, "dvz_app() failed (no GPU or display?)");
 
     DvzAppWindow* win = dvz_app_window_glfw(app, figure, WIDTH, HEIGHT, "text");
-    if (win == NULL)
-    {
-        dvz_fprintf(stderr, "dvz_app_window_glfw() failed (GLFW unavailable?)\n");
-        dvz_app_destroy(app);
-        dvz_scene_destroy(scene);
-        return 1;
-    }
+    EXAMPLE_CHECK(win != NULL, "dvz_app_window_glfw() failed (GLFW unavailable?)");
+
     DvzPanzoom* panzoom = dvz_app_window_panel_panzoom(win, panel, NULL);
-    if (panzoom == NULL)
-    {
-        dvz_fprintf(stderr, "failed to create or bind panzoom controller\n");
-        dvz_app_destroy(app);
-        dvz_scene_destroy(scene);
-        return 1;
-    }
+    EXAMPLE_CHECK(panzoom != NULL, "failed to create or bind panzoom controller");
     dvz_app_window_request_frame(win);
 
     dvz_app_run(app, frames);
+    ret = 0;
 
-    dvz_app_destroy(app);
-    dvz_scene_destroy(scene);
-    return 0;
+cleanup:
+    if (app != NULL)
+        dvz_app_destroy(app);
+    if (scene != NULL)
+        dvz_scene_destroy(scene);
+    return ret;
 }

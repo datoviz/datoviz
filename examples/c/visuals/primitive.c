@@ -298,6 +298,9 @@ static void _frame_callback(DvzAppWindow* win, void* user_data)
  */
 int main(int argc, char** argv)
 {
+    int ret = 1;
+    DvzScene* scene = NULL;
+    DvzApp* app = NULL;
     PrimitiveState state = {
         .max_triangles = MAX_TRIANGLES,
         .triangle_count = 8192u,
@@ -309,39 +312,25 @@ int main(int argc, char** argv)
     state.positions = dvz_calloc(MAX_TRIANGLES * VERTICES_PER_TRIANGLE, sizeof(*state.positions));
     state.normals = dvz_calloc(MAX_TRIANGLES * VERTICES_PER_TRIANGLE, sizeof(*state.normals));
     state.colors = dvz_calloc(MAX_TRIANGLES * VERTICES_PER_TRIANGLE, sizeof(*state.colors));
-    if (state.positions == NULL || state.normals == NULL || state.colors == NULL)
-    {
-        dvz_fprintf(stderr, "primitive buffer allocation failed\n");
-        return 1;
-    }
+    EXAMPLE_CHECK(
+        state.positions != NULL && state.normals != NULL && state.colors != NULL,
+        "primitive buffer allocation failed");
 
-    DvzScene* scene = dvz_scene();
-    if (scene == NULL)
-    {
-        dvz_fprintf(stderr, "dvz_scene() failed\n");
-        return 1;
-    }
+    scene = dvz_scene();
+    EXAMPLE_CHECK(scene != NULL, "dvz_scene() failed");
+
     DvzFigure* figure = dvz_figure(scene, WIDTH, HEIGHT, 0);
     DvzPanel* panel = figure != NULL ? dvz_panel_full(figure) : NULL;
     state.visual =
         panel != NULL ? dvz_primitive(scene, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 0) : NULL;
-    if (figure == NULL || panel == NULL || state.visual == NULL)
-    {
-        dvz_fprintf(stderr, "primitive scene setup failed\n");
-        dvz_scene_destroy(scene);
-        return 1;
-    }
+    EXAMPLE_CHECK(
+        figure != NULL && panel != NULL && state.visual != NULL, "primitive scene setup failed");
 
     DvzCameraDesc camera_desc = dvz_camera_desc();
     camera_desc.eye[2] = 3.6f;
     camera_desc.near = 0.1f;
     camera_desc.far = 100.0f;
-    if (!dvz_panel_set_camera(panel, &camera_desc))
-    {
-        dvz_fprintf(stderr, "dvz_panel_set_camera() failed\n");
-        dvz_scene_destroy(scene);
-        return 1;
-    }
+    EXAMPLE_CHECK(dvz_panel_set_camera(panel, &camera_desc), "dvz_panel_set_camera() failed");
 
     dvz_panel_set_background_color(panel, 0.040f, 0.043f, 0.052f, 1.0f);
     _fill_triangles(&state, 0.0f);
@@ -354,37 +343,19 @@ int main(int argc, char** argv)
     material.phong.diffuse = 0.78f;
     material.phong.specular = 0.34f;
     material.phong.shininess = 48.0f;
-    if (!_upload_triangles(&state) || dvz_visual_set_material(state.visual, &material) != 0 ||
-        dvz_panel_add_visual(panel, state.visual, NULL) != 0)
-    {
-        dvz_fprintf(stderr, "primitive visual setup failed\n");
-        dvz_scene_destroy(scene);
-        return 1;
-    }
+    EXAMPLE_CHECK(
+        _upload_triangles(&state) && dvz_visual_set_material(state.visual, &material) == 0 &&
+            dvz_panel_add_visual(panel, state.visual, NULL) == 0,
+        "primitive visual setup failed");
 
-    DvzApp* app = dvz_app(scene);
-    if (app == NULL)
-    {
-        dvz_fprintf(stderr, "dvz_app() failed\n");
-        dvz_scene_destroy(scene);
-        return 1;
-    }
+    app = dvz_app(scene);
+    EXAMPLE_CHECK(app != NULL, "dvz_app() failed");
+
     state.win = dvz_app_window_glfw(app, figure, WIDTH, HEIGHT, "primitive");
-    if (state.win == NULL)
-    {
-        dvz_fprintf(stderr, "dvz_app_window_glfw() failed\n");
-        dvz_app_destroy(app);
-        dvz_scene_destroy(scene);
-        return 1;
-    }
+    EXAMPLE_CHECK(state.win != NULL, "dvz_app_window_glfw() failed");
+
     DvzArcball* arcball = dvz_app_window_panel_arcball(state.win, panel, NULL);
-    if (arcball == NULL)
-    {
-        dvz_fprintf(stderr, "failed to create or bind arcball controller\n");
-        dvz_app_destroy(app);
-        dvz_scene_destroy(scene);
-        return 1;
-    }
+    EXAMPLE_CHECK(arcball != NULL, "failed to create or bind arcball controller");
     dvz_arcball_set(arcball, (vec3){+0.54f, -0.10f, +0.26f});
     DvzGui* gui = dvz_app_window_gui(state.win, NULL);
     if (gui != NULL)
@@ -392,11 +363,15 @@ int main(int argc, char** argv)
     dvz_app_window_set_frame_callback(state.win, _frame_callback, &state);
 
     dvz_app_run(app, example_frame_count(argc, argv));
+    ret = 0;
 
-    dvz_app_destroy(app);
-    dvz_scene_destroy(scene);
+cleanup:
+    if (app != NULL)
+        dvz_app_destroy(app);
+    if (scene != NULL)
+        dvz_scene_destroy(scene);
     dvz_free(state.colors);
     dvz_free(state.normals);
     dvz_free(state.positions);
-    return 0;
+    return ret;
 }

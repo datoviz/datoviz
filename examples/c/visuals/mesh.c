@@ -150,28 +150,19 @@ int main(int argc, char** argv)
     bool recording_enabled =
         _recording_path(argc, argv, default_dvzr_path, dvzr_path, sizeof(dvzr_path));
 
-    DvzScene* scene = dvz_scene();
-    if (scene == NULL)
-    {
-        dvz_fprintf(stderr, "dvz_scene() failed\n");
-        return 1;
-    }
+    int ret = 1;
+    DvzScene* scene = NULL;
+    DvzApp* app = NULL;
+    DvzGeometry* cube = NULL;
+
+    scene = dvz_scene();
+    EXAMPLE_CHECK(scene != NULL, "dvz_scene() failed");
 
     DvzFigure* figure = dvz_figure(scene, WIDTH, HEIGHT, 0);
-    if (figure == NULL)
-    {
-        dvz_fprintf(stderr, "dvz_figure() failed\n");
-        dvz_scene_destroy(scene);
-        return 1;
-    }
+    EXAMPLE_CHECK(figure != NULL, "dvz_figure() failed");
 
     DvzPanel* panel = dvz_panel_full(figure);
-    if (panel == NULL)
-    {
-        dvz_fprintf(stderr, "dvz_panel() failed\n");
-        dvz_scene_destroy(scene);
-        return 1;
-    }
+    EXAMPLE_CHECK(panel != NULL, "dvz_panel() failed");
 
     DvzCameraDesc camera_desc = dvz_camera_desc();
     camera_desc.eye[2] = 3.0f;
@@ -179,20 +170,10 @@ int main(int argc, char** argv)
     camera_desc.fov_y = 0.78539816339f;
     camera_desc.near = 0.1f;
     camera_desc.far = 100.0f;
-    if (!dvz_panel_set_camera(panel, &camera_desc))
-    {
-        dvz_fprintf(stderr, "dvz_panel_set_camera() failed\n");
-        dvz_scene_destroy(scene);
-        return 1;
-    }
+    EXAMPLE_CHECK(dvz_panel_set_camera(panel, &camera_desc), "dvz_panel_set_camera() failed");
 
     DvzVisual* visual = dvz_mesh(scene, 0);
-    if (visual == NULL)
-    {
-        dvz_fprintf(stderr, "dvz_mesh() failed\n");
-        dvz_scene_destroy(scene);
-        return 1;
-    }
+    EXAMPLE_CHECK(visual != NULL, "dvz_mesh() failed");
 
     const DvzColor face_colors[DVZ_GEOM_CUBE_FACE_COUNT] = {
         {239, 83, 80, 255},
@@ -202,26 +183,16 @@ int main(int argc, char** argv)
         {171, 71, 188, 255},
         {255, 112, 67, 255},
     };
-    DvzGeometry* cube = dvz_geom_cube(&(DvzGeometryCubeDesc){
+    cube = dvz_geom_cube(&(DvzGeometryCubeDesc){
         .size = MESH_CUBE_SIZE,
         .face_colors = face_colors,
         .face_color_count = DVZ_GEOM_CUBE_FACE_COUNT,
     });
-    if (cube == NULL)
-    {
-        dvz_fprintf(stderr, "dvz_geom_cube() failed\n");
-        dvz_scene_destroy(scene);
-        return 1;
-    }
+    EXAMPLE_CHECK(cube != NULL, "dvz_geom_cube() failed");
 
-    if (dvz_mesh_geometry(visual, cube) != 0)
-    {
-        dvz_fprintf(stderr, "dvz_mesh_geometry() failed\n");
-        dvz_geometry_destroy(cube);
-        dvz_scene_destroy(scene);
-        return 1;
-    }
+    EXAMPLE_CHECK(dvz_mesh_geometry(visual, cube) == 0, "dvz_mesh_geometry() failed");
     dvz_geometry_destroy(cube);
+    cube = NULL;
 
     DvzMaterialDesc material = dvz_phong_material_desc();
     material.light_direction[0] = 0.35f;
@@ -233,31 +204,14 @@ int main(int argc, char** argv)
     dvz_panel_add_visual(panel, visual, NULL);
     dvz_panel_set_background_color(panel, 0.05f, 0.05f, 0.08f, 1.0f);
 
-    DvzApp* app = dvz_app(scene);
-    if (app == NULL)
-    {
-        dvz_fprintf(stderr, "dvz_app() failed (no GPU or display?)\n");
-        dvz_scene_destroy(scene);
-        return 1;
-    }
+    app = dvz_app(scene);
+    EXAMPLE_CHECK(app != NULL, "dvz_app() failed (no GPU or display?)");
 
     DvzAppWindow* win = dvz_app_window_glfw(app, figure, WIDTH, HEIGHT, "mesh");
-    if (win == NULL)
-    {
-        dvz_fprintf(stderr, "dvz_app_window_glfw() failed (GLFW unavailable?)\n");
-        dvz_app_destroy(app);
-        dvz_scene_destroy(scene);
-        return 1;
-    }
+    EXAMPLE_CHECK(win != NULL, "dvz_app_window_glfw() failed (GLFW unavailable?)");
 
     DvzArcball* arcball = dvz_app_window_panel_arcball(win, panel, NULL);
-    if (arcball == NULL)
-    {
-        dvz_fprintf(stderr, "failed to create or bind arcball controller\n");
-        dvz_app_destroy(app);
-        dvz_scene_destroy(scene);
-        return 1;
-    }
+    EXAMPLE_CHECK(arcball != NULL, "failed to create or bind arcball controller");
     dvz_arcball_set(arcball, (vec3){+0.65f, 0.0f, +0.35f});
 
     dvz_scene_set_clock_mode(scene, video_enabled ? DVZ_CLOCK_OFFLINE : DVZ_CLOCK_REALTIME);
@@ -274,32 +228,17 @@ int main(int argc, char** argv)
         _outpath(argv[0], "mesh.mp4", mp4_path, sizeof(mp4_path));
         video.encoder.mp4_path = mp4_path;
 
-        if (dvz_canvas_configure_video_sink(dvz_app_window_canvas(win), true, &video) != 0)
-        {
-            dvz_fprintf(stderr, "dvz_canvas_configure_video_sink() failed\n");
-            dvz_app_destroy(app);
-            dvz_scene_destroy(scene);
-            return 1;
-        }
+        EXAMPLE_CHECK(
+            dvz_canvas_configure_video_sink(dvz_app_window_canvas(win), true, &video) == 0,
+            "dvz_canvas_configure_video_sink() failed");
     }
     if (recording_enabled && dvz_app_window_record_start(win, dvzr_path) != 0)
-    {
-        dvz_fprintf(stderr, "dvz_app_window_record_start() failed\n");
-        dvz_app_destroy(app);
-        dvz_scene_destroy(scene);
-        return 1;
-    }
+        EXAMPLE_CHECK(false, "dvz_app_window_record_start() failed");
 
     DvzAnimation* spin = dvz_anim_arcball_spin(
         scene, arcball, (vec3){0.0f, 1.0f, 0.0f}, ROTATION_SPEED_RAD_PER_SEC,
         DVZ_ARCBALL_SPIN_FLAGS_PAUSE_ON_INTERACTION);
-    if (spin == NULL)
-    {
-        dvz_fprintf(stderr, "dvz_anim_arcball_spin() failed\n");
-        dvz_app_destroy(app);
-        dvz_scene_destroy(scene);
-        return 1;
-    }
+    EXAMPLE_CHECK(spin != NULL, "dvz_anim_arcball_spin() failed");
     dvz_anim_start(spin, 0.0);
 
     dvz_app_run(app, frame_count);
@@ -312,8 +251,14 @@ int main(int argc, char** argv)
     }
     if (video_enabled)
         dvz_fprintf(stdout, "mesh: saved %s\n", mp4_path);
+    ret = 0;
 
-    dvz_app_destroy(app);
-    dvz_scene_destroy(scene);
-    return 0;
+cleanup:
+    if (cube != NULL)
+        dvz_geometry_destroy(cube);
+    if (app != NULL)
+        dvz_app_destroy(app);
+    if (scene != NULL)
+        dvz_scene_destroy(scene);
+    return ret;
 }

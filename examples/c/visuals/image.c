@@ -236,45 +236,25 @@ static void _texture_update_frame(DvzAppWindow* win, void* user_data)
 
 int main(int argc, char** argv)
 {
-    DvzScene* scene = dvz_scene();
-    if (scene == NULL)
-    {
-        fprintf(stderr, "dvz_scene() failed\n");
-        return 1;
-    }
+    int ret = 1;
+    DvzScene* scene = NULL;
+    DvzApp* app = NULL;
+
+    scene = dvz_scene();
+    EXAMPLE_CHECK(scene != NULL, "dvz_scene() failed");
 
     DvzFigure* figure = dvz_figure(scene, WIDTH, HEIGHT, 0);
-    if (figure == NULL)
-    {
-        fprintf(stderr, "dvz_figure() failed\n");
-        dvz_scene_destroy(scene);
-        return 1;
-    }
+    EXAMPLE_CHECK(figure != NULL, "dvz_figure() failed");
 
     DvzPanel* panel = dvz_panel_full(figure);
-    if (panel == NULL)
-    {
-        fprintf(stderr, "dvz_panel() failed\n");
-        dvz_scene_destroy(scene);
-        return 1;
-    }
+    EXAMPLE_CHECK(panel != NULL, "dvz_panel() failed");
 
     DvzScale* scale = dvz_scale(scene, &(DvzScaleDesc){.kind = DVZ_SCALE_CONTINUOUS});
-    if (scale == NULL)
-    {
-        fprintf(stderr, "dvz_scale() failed\n");
-        dvz_scene_destroy(scene);
-        return 1;
-    }
+    EXAMPLE_CHECK(scale != NULL, "dvz_scale() failed");
     dvz_scale_set_domain(scale, 0.0, 1.0);
 
     DvzColormap* colormap = dvz_colormap(scene, NULL);
-    if (colormap == NULL)
-    {
-        fprintf(stderr, "dvz_colormap() failed\n");
-        dvz_scene_destroy(scene);
-        return 1;
-    }
+    EXAMPLE_CHECK(colormap != NULL, "dvz_colormap() failed");
     DvzColormapStop stops[4] = {
         {.position = 0.00, .rgba = {22, 31, 42, 255}},
         {.position = 0.30, .rgba = {38, 110, 143, 255}},
@@ -285,12 +265,7 @@ int main(int argc, char** argv)
     dvz_scale_set_colormap(scale, colormap);
 
     DvzVisual* image = dvz_image(scene, 0);
-    if (image == NULL)
-    {
-        fprintf(stderr, "dvz_image() failed\n");
-        dvz_scene_destroy(scene);
-        return 1;
-    }
+    EXAMPLE_CHECK(image != NULL, "dvz_image() failed");
 
     float positions[4][3] = {
         {-0.90f, -0.90f, 0.0f},
@@ -304,14 +279,11 @@ int main(int argc, char** argv)
         {1.0f, 0.0f},
         {1.0f, 1.0f},
     };
-    if (dvz_visual_set_data(image, "position", positions, 4) != 0 ||
-        dvz_visual_set_data(image, "texcoords", texcoords, 4) != 0 ||
-        dvz_visual_set_scale(image, "colormap", scale) != 0)
-    {
-        fprintf(stderr, "image visual setup failed\n");
-        dvz_scene_destroy(scene);
-        return 1;
-    }
+    EXAMPLE_CHECK(
+        dvz_visual_set_data(image, "position", positions, 4) == 0 &&
+            dvz_visual_set_data(image, "texcoords", texcoords, 4) == 0 &&
+            dvz_visual_set_scale(image, "colormap", scale) == 0,
+        "image visual setup failed");
 
     DvzSampledField* field = dvz_sampled_field(
         scene, &(DvzSampledFieldDesc){
@@ -322,12 +294,7 @@ int main(int argc, char** argv)
                    .height = FIELD_SIZE,
                    .depth = 1,
                });
-    if (field == NULL)
-    {
-        fprintf(stderr, "dvz_sampled_field() failed\n");
-        dvz_scene_destroy(scene);
-        return 1;
-    }
+    EXAMPLE_CHECK(field != NULL, "dvz_sampled_field() failed");
 
     TextureUpdateState state = {.field = field};
     _patch_position(0, &state.patch_x, &state.patch_y);
@@ -335,50 +302,37 @@ int main(int argc, char** argv)
     float values[FIELD_SIZE * FIELD_SIZE] = {0};
     _fill_field(values);
     _fill_field_patch(values, state.patch_x, state.patch_y, 1.0f);
-    if (!dvz_sampled_field_set_data(
+    EXAMPLE_CHECK(
+        dvz_sampled_field_set_data(
             field, &(DvzFieldDataView){
                        .data = values,
                        .bytes_per_row = FIELD_SIZE * sizeof(float),
                        .rows_per_image = FIELD_SIZE,
-                   }))
-    {
-        fprintf(stderr, "dvz_sampled_field_set_data() failed\n");
-        dvz_scene_destroy(scene);
-        return 1;
-    }
+                   }),
+        "dvz_sampled_field_set_data() failed");
 
-    if (!dvz_visual_set_field(image, "field", field) ||
-        dvz_panel_add_visual(panel, image, NULL) != 0)
-    {
-        fprintf(stderr, "field binding failed\n");
-        dvz_scene_destroy(scene);
-        return 1;
-    }
+    EXAMPLE_CHECK(
+        dvz_visual_set_field(image, "field", field) &&
+            dvz_panel_add_visual(panel, image, NULL) == 0,
+        "field binding failed");
 
     dvz_panel_set_background_color(panel, 0.04f, 0.05f, 0.06f, 1.0f);
 
-    DvzApp* app = dvz_app(scene);
-    if (app == NULL)
-    {
-        fprintf(stderr, "dvz_app() failed (no GPU or display?)\n");
-        dvz_scene_destroy(scene);
-        return 1;
-    }
+    app = dvz_app(scene);
+    EXAMPLE_CHECK(app != NULL, "dvz_app() failed (no GPU or display?)");
 
     DvzAppWindow* win =
         dvz_app_window_glfw(app, figure, WIDTH, HEIGHT, "image");
-    if (win == NULL)
-    {
-        fprintf(stderr, "dvz_app_window_glfw() failed (GLFW unavailable?)\n");
-        dvz_app_destroy(app);
-        dvz_scene_destroy(scene);
-        return 1;
-    }
+    EXAMPLE_CHECK(win != NULL, "dvz_app_window_glfw() failed (GLFW unavailable?)");
     dvz_app_window_set_frame_callback(win, _texture_update_frame, &state);
 
     dvz_app_run(app, example_frame_count(argc, argv));
+    ret = 0;
 
-    dvz_app_destroy(app);
-    dvz_scene_destroy(scene);
-    return 0;
+cleanup:
+    if (app != NULL)
+        dvz_app_destroy(app);
+    if (scene != NULL)
+        dvz_scene_destroy(scene);
+    return ret;
 }
