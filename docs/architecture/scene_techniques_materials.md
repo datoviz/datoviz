@@ -38,10 +38,9 @@ is no heap-allocated public `DvzMaterial` object today. The closest current conc
 
 1. `DvzAlphaMode` on `DvzVisual`;
 2. `DvzMaterialDesc`, `DvzSceneMaterialState`, and `DvzSceneMaterialParams`;
-3. `DvzPrimitiveShadingDesc` as compatibility scaffolding that forwards through the material path;
-4. `DvzVolumeState` for volume-specific opacity, sampling, render mode, steps, and clipping;
-5. `DvzScale` / `DvzColormap` bindings for scalar-to-color mapping;
-6. per-family shader and pipeline descriptors in `visual_pipeline.c`.
+3. `DvzVolumeState` for volume-specific opacity, sampling, render mode, steps, and clipping;
+4. `DvzScale` / `DvzColormap` bindings for scalar-to-color mapping;
+5. per-family shader and pipeline descriptors in `visual_pipeline.c`.
 
 Those pieces now form the first material system, but they are deliberately narrow. The remaining
 policy questions are where material fields apply beyond primitive/mesh/sphere, when G-buffer output
@@ -172,7 +171,7 @@ typedef struct DvzMaterialState
 Migration rules:
 
 1. `DvzAlphaMode` remains the public alpha policy for now, but internally belongs to material state.
-2. `DvzPrimitiveShadingDesc` becomes a compatibility setter for lit material fields.
+2. `DvzMaterialDesc` is the public route for lit material fields.
 3. `DvzVolumeState` remains volume-specific at first; later, common opacity/depth cue fields can
    move into material state while raymarch-specific state stays volume-owned.
 4. Scale/colormap bindings remain separate data mapping objects. A material may reference scalar
@@ -265,7 +264,7 @@ Original implementation sequence and current status:
 
 1. Done: add internal technique-builder files/types and move current opaque-depth, blended, WBOIT,
    and depth-peeling graph setup behind them without behavior change.
-2. Done: add internal material state and route primitive shading through the shared material path.
+2. Done: add internal material state and route lit primitive material through the shared material path.
 3. Done: add material-driven depth cueing for primitive/mesh and point/pixel where supported.
 4. Done: add visual pass capability descriptors and tests for existing visual families.
 5. Done: add a G-buffer technique builder for normal/depth resources, starting with eligible
@@ -275,8 +274,7 @@ Original implementation sequence and current status:
 8. Done: implement SSAO using the G-buffer foundation.
 9. Deferred: add generic scalar material modulation, then use it for curvature/cavity demos.
 10. Current polish: improve standard-material appearance, decide material policy for
-    point/pixel/image/volume, keep graph-backed technique composition explicit, and update examples
-    that still present primitive-specific shading as the primary route.
+    point/pixel/image/volume, and keep graph-backed technique composition explicit.
 
 
 ## Non-Goals For The First Slice

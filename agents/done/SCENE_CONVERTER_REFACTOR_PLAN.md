@@ -516,7 +516,7 @@ Before considering the refactor complete:
    - point rendering,
    - primitive rendering,
    - mesh/depth rendering,
-   - indexed primitive shading update,
+   - indexed primitive material update,
    - image rendering and partial texture update,
    - multi-panel figure,
    - point pick,

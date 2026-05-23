@@ -12,7 +12,7 @@
 Completed implementation commits:
 
 1. `70765767` — added the public `DvzMaterialDesc` value API, internal model/standard state, and
-   a compatibility route from `dvz_visual_set_primitive_shading()` to
+   a temporary compatibility route from the old primitive-specific setter to
    `dvz_visual_set_material()`;
 2. `569ddf61` — extended the scene material uniform payload and shared GLSL/WGSL material helpers
    so Phong, standard, and unlit models lower through one shader evaluator;
@@ -22,7 +22,7 @@ The first public material slice is now active for primitive, mesh, and sphere vi
 the default fast model. The standard model stores roughness, specular strength, metallic, emissive,
 and rim-strength fields and evaluates through the shared material helper. Depth cueing remains a
 separate typed setter and composes with the material payload. The primitive-specific shading setter
-is still public compatibility scaffolding, but it now forwards through the unified material setter.
+was removed after the unified material setter became the public route.
 
 Remaining follow-ups:
 
@@ -30,7 +30,7 @@ Remaining follow-ups:
 2. decide whether `base_color_factor`, opacity, and alpha-mode material fields should apply to
    point/pixel/image/volume families through narrower family-specific policy;
 3. add material-aware G-buffer fields only when a concrete post-process needs them;
-4. update docs/examples that still describe primitive-specific shading as the primary route.
+4. update docs/examples that still describe visual materials through older primitive-specific terms.
 
 
 ## Decision
@@ -64,13 +64,12 @@ The scene material layer currently exists internally:
 2. `DvzSceneMaterialParams` is the GPU payload consumed by primitive/mesh/sphere material shaders;
 3. `dvz_visual_set_material()` is the public value-descriptor setter for primitive, mesh, and
    sphere visuals;
-4. `dvz_visual_set_primitive_shading()` currently forwards to the Phong material path;
-5. `dvz_visual_set_depth_cue()` shares depth cueing across point/pixel/primitive/mesh/sphere where
+4. `dvz_visual_set_depth_cue()` shares depth cueing across point/pixel/primitive/mesh/sphere where
    supported;
-6. sphere uses the same material descriptor and shader helper as primitive/mesh color passes.
+5. sphere uses the same material descriptor and shader helper as primitive/mesh color passes.
 
-This is already better than one-off uniforms, but the public naming and parameter model still imply
-that only primitive shading exists.
+This is already better than one-off uniforms, and the public naming now centers the shared material
+model instead of primitive-specific shading.
 
 
 ## Target Material Concepts
@@ -144,11 +143,13 @@ typedef struct DvzMaterialDesc
 } DvzMaterialDesc;
 
 DVZ_EXPORT DvzMaterialDesc dvz_material_desc(void);
+DVZ_EXPORT DvzMaterialDesc dvz_phong_material_desc(void);
+DVZ_EXPORT DvzMaterialDesc dvz_standard_material_desc(void);
 DVZ_EXPORT int dvz_visual_set_material(DvzVisual* visual, const DvzMaterialDesc* desc);
 ```
 
-`dvz_visual_set_primitive_shading()` should not remain the long-term public API. It can exist only
-as temporary migration scaffolding while the scene material path is being refactored.
+The old primitive-specific shading setter was temporary migration scaffolding while the scene
+material path was being refactored.
 
 Do not expose a heap-allocated public `DvzMaterial` object yet. A value descriptor is enough for the
 current retained scene model and keeps ownership simple.
@@ -222,10 +223,9 @@ Recommended commits:
    shading without changing behavior.
 2. Add `DvzMaterialModel` and standard material fields to `DvzSceneMaterialState`.
 3. Add an internal material descriptor conversion helper for Phong and standard fields.
-4. Add `dvz_material_desc()` and `dvz_visual_set_material()` once the internal state and tests are
-   stable.
-5. Retire or de-emphasize `dvz_visual_set_primitive_shading()` after the unified material setter
-   exists.
+4. Add material descriptor constructors and `dvz_visual_set_material()` once the internal state and
+   tests are stable.
+5. Retire the old primitive-specific shading setter after the unified material setter exists.
 6. Port primitive/mesh/sphere shaders to a shared material evaluation helper.
 7. Update sphere SSAO example to expose material model selection and the relevant model fields.
 
@@ -236,7 +236,7 @@ Focused validation:
 
 ```text
 cmake --build build --target dvztest_scene hello_sphere_ssao_glfw -j 8
-./build/testing/dvztest_scene test_scene_indexed_primitive_shading_updates_runtime
+./build/testing/dvztest_scene test_scene_indexed_primitive_material_updates_runtime
 ./build/testing/dvztest_scene test_scene_sphere_emit_glsl_executes
 ./build/testing/dvztest_scene test_scene_visual_alpha_mode
 ./build/examples/c/hello_sphere_ssao_glfw 2

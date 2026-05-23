@@ -162,10 +162,9 @@ is an internal compatibility layer split across:
 1. `DvzAlphaMode` on visuals;
 2. internal `DvzMaterialState` and `DvzSceneMaterialParams` on visuals;
 3. `DvzMaterialDesc` and `dvz_visual_set_material()` for typed material fields;
-4. `DvzPrimitiveShadingDesc` as the compatibility setter for lit primitive fields;
-5. `DvzVolumeState`;
-6. scale and colormap bindings;
-7. family-specific shader, pipeline, and bind descriptors in `src/scene/visual_pipeline.c`.
+4. `DvzVolumeState`;
+5. scale and colormap bindings;
+6. family-specific shader, pipeline, and bind descriptors in `src/scene/visual_pipeline.c`.
 
 Technique eligibility must come from explicit visual pass capabilities resolved from visual family,
 material state, attributes, alpha mode, and controller mode. New technique conditionals should use

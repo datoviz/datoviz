@@ -65,7 +65,7 @@ Current implementation status on `2026-05-15`:
 
 ### 1. Public scene transparency API
 
-The current public scene headers have mesh visuals, RGBA colors, primitive shading, arcball
+The current public scene headers have mesh visuals, RGBA colors, visual materials, arcball
 controllers, depth-capable rendering, and visual alpha-mode storage/accessors.
 
 The active visual-level mode is:
