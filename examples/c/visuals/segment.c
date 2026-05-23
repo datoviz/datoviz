@@ -647,39 +647,19 @@ int main(int argc, char** argv)
         .max_count = MAX_SEGMENT_COUNT,
     };
 
-    if (!_segment_state_alloc(&state))
-    {
-        dvz_fprintf(stderr, "segment stress buffer allocation failed\n");
-        goto cleanup;
-    }
+    EXAMPLE_CHECK(_segment_state_alloc(&state), "segment stress buffer allocation failed");
 
     scene = dvz_scene();
-    if (scene == NULL)
-    {
-        dvz_fprintf(stderr, "dvz_scene() failed\n");
-        goto cleanup;
-    }
+    EXAMPLE_CHECK(scene != NULL, "dvz_scene() failed");
 
     DvzFigure* figure = dvz_figure(scene, WIDTH, HEIGHT, 0);
-    if (figure == NULL)
-    {
-        dvz_fprintf(stderr, "dvz_figure() failed\n");
-        goto cleanup;
-    }
+    EXAMPLE_CHECK(figure != NULL, "dvz_figure() failed");
 
     state.panel = dvz_panel_full(figure);
-    if (state.panel == NULL)
-    {
-        dvz_fprintf(stderr, "dvz_panel() failed\n");
-        goto cleanup;
-    }
+    EXAMPLE_CHECK(state.panel != NULL, "dvz_panel() failed");
 
     state.visual = dvz_segment(scene, 0);
-    if (state.visual == NULL)
-    {
-        dvz_fprintf(stderr, "dvz_segment() failed\n");
-        goto cleanup;
-    }
+    EXAMPLE_CHECK(state.visual != NULL, "dvz_segment() failed");
 
     (void)dvz_visual_set_attr_mutability(
         state.visual, "position_start", DVZ_VISUAL_ATTR_MUTABILITY_STREAMING);
@@ -691,40 +671,23 @@ int main(int argc, char** argv)
         state.visual, "stroke_width", DVZ_VISUAL_ATTR_MUTABILITY_STREAMING);
 
     _segment_reset(&state);
-    if (dvz_panel_add_visual(state.panel, state.visual, NULL) != 0)
-    {
-        dvz_fprintf(stderr, "dvz_panel_add_visual() failed\n");
-        goto cleanup;
-    }
+    EXAMPLE_CHECK(
+        dvz_panel_add_visual(state.panel, state.visual, NULL) == 0,
+        "dvz_panel_add_visual() failed");
     dvz_panel_set_background_color(state.panel, 0.055f, 0.060f, 0.075f, 1.0f);
 
     app = dvz_app(scene);
-    if (app == NULL)
-    {
-        dvz_fprintf(stderr, "dvz_app() failed (no GPU or display?)\n");
-        goto cleanup;
-    }
+    EXAMPLE_CHECK(app != NULL, "dvz_app() failed (no GPU or display?)");
 
     state.win = dvz_app_window_glfw(app, figure, WIDTH, HEIGHT, "segment");
-    if (state.win == NULL)
-    {
-        dvz_fprintf(stderr, "dvz_app_window_glfw() failed (GLFW unavailable?)\n");
-        goto cleanup;
-    }
+    EXAMPLE_CHECK(state.win != NULL, "dvz_app_window_glfw() failed (GLFW unavailable?)");
 
     DvzPanzoom* panzoom = dvz_app_window_panel_panzoom(state.win, state.panel, NULL);
-    if (panzoom == NULL)
-    {
-        dvz_fprintf(stderr, "failed to create or bind panzoom controller\n");
-        goto cleanup;
-    }
+    EXAMPLE_CHECK(panzoom != NULL, "failed to create or bind panzoom controller");
+
     DvzGuiConfig gui_config = dvz_gui_config();
     DvzGui* gui = dvz_app_window_gui(state.win, &gui_config);
-    if (gui == NULL)
-    {
-        dvz_fprintf(stderr, "dvz_app_window_gui() failed\n");
-        goto cleanup;
-    }
+    EXAMPLE_CHECK(gui != NULL, "dvz_app_window_gui() failed");
     dvz_app_window_set_gui_callback(state.win, _segment_gui, &state);
     dvz_app_window_set_frame_callback(state.win, _segment_frame, &state);
     dvz_scene_set_clock_mode(scene, DVZ_CLOCK_REALTIME);

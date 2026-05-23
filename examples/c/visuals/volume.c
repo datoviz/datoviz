@@ -388,29 +388,19 @@ static void _volume_glfw_gui(DvzGui* gui, DvzAppWindow* win, void* user_data)
 int main(int argc, char** argv)
 {
     uint32_t frame_count = example_frame_count_any(argc, argv);
+    int ret = 1;
+    DvzScene* scene = NULL;
+    DvzApp* app = NULL;
+    uint8_t* data = NULL;
 
-    DvzScene* scene = dvz_scene();
-    if (scene == NULL)
-    {
-        dvz_fprintf(stderr, "dvz_scene() failed\n");
-        return 1;
-    }
+    scene = dvz_scene();
+    EXAMPLE_CHECK(scene != NULL, "dvz_scene() failed");
 
     DvzFigure* figure = dvz_figure(scene, WIDTH, HEIGHT, 0);
-    if (figure == NULL)
-    {
-        dvz_fprintf(stderr, "dvz_figure() failed\n");
-        dvz_scene_destroy(scene);
-        return 1;
-    }
+    EXAMPLE_CHECK(figure != NULL, "dvz_figure() failed");
 
     DvzPanel* panel = dvz_panel_full(figure);
-    if (panel == NULL)
-    {
-        dvz_fprintf(stderr, "dvz_panel() failed\n");
-        dvz_scene_destroy(scene);
-        return 1;
-    }
+    EXAMPLE_CHECK(panel != NULL, "dvz_panel() failed");
 
     DvzCameraDesc camera_desc = dvz_camera_desc();
     camera_desc.eye[2] = 3.0f;
@@ -418,21 +408,11 @@ int main(int argc, char** argv)
     camera_desc.fov_y = 0.78539816339f;
     camera_desc.near = 0.1f;
     camera_desc.far = 100.0f;
-    if (!dvz_panel_set_camera(panel, &camera_desc))
-    {
-        dvz_fprintf(stderr, "dvz_panel_set_camera() failed\n");
-        dvz_scene_destroy(scene);
-        return 1;
-    }
+    EXAMPLE_CHECK(dvz_panel_set_camera(panel, &camera_desc), "dvz_panel_set_camera() failed");
 
     uint64_t bytes = (uint64_t)VOLUME_SIZE * VOLUME_SIZE * VOLUME_SIZE;
-    uint8_t* data = (uint8_t*)dvz_malloc(bytes);
-    if (data == NULL)
-    {
-        dvz_fprintf(stderr, "volume allocation failed\n");
-        dvz_scene_destroy(scene);
-        return 1;
-    }
+    data = (uint8_t*)dvz_malloc(bytes);
+    EXAMPLE_CHECK(data != NULL, "volume allocation failed");
     _fill_volume(data, VOLUME_SIZE);
 
     DvzSampledField* field = dvz_sampled_field(
@@ -444,69 +424,33 @@ int main(int argc, char** argv)
                    .height = VOLUME_SIZE,
                    .depth = VOLUME_SIZE,
                });
-    if (field == NULL)
-    {
-        dvz_fprintf(stderr, "dvz_sampled_field() failed\n");
-        dvz_free(data);
-        dvz_scene_destroy(scene);
-        return 1;
-    }
-    if (!dvz_sampled_field_set_data(
+    EXAMPLE_CHECK(field != NULL, "dvz_sampled_field() failed");
+    EXAMPLE_CHECK(
+        dvz_sampled_field_set_data(
             field, &(DvzFieldDataView){
                        .data = data,
                        .bytes_per_row = VOLUME_SIZE,
                        .rows_per_image = VOLUME_SIZE,
-                   }))
-    {
-        dvz_fprintf(stderr, "dvz_sampled_field_set_data() failed\n");
-        dvz_free(data);
-        dvz_scene_destroy(scene);
-        return 1;
-    }
+                   }),
+        "dvz_sampled_field_set_data() failed");
     dvz_free(data);
+    data = NULL;
 
     DvzVisual* volume = dvz_volume(scene, 0);
-    if (volume == NULL)
-    {
-        dvz_fprintf(stderr, "dvz_volume() failed\n");
-        dvz_scene_destroy(scene);
-        return 1;
-    }
-    if (!dvz_visual_set_field(volume, "field", field))
-    {
-        dvz_fprintf(stderr, "dvz_visual_set_field() failed\n");
-        dvz_scene_destroy(scene);
-        return 1;
-    }
-    if (dvz_visual_set_alpha_mode(volume, DVZ_ALPHA_BLENDED) != 0)
-    {
-        dvz_fprintf(stderr, "dvz_visual_set_alpha_mode() failed\n");
-        dvz_scene_destroy(scene);
-        return 1;
-    }
+    EXAMPLE_CHECK(volume != NULL, "dvz_volume() failed");
+    EXAMPLE_CHECK(dvz_visual_set_field(volume, "field", field), "dvz_visual_set_field() failed");
+    EXAMPLE_CHECK(
+        dvz_visual_set_alpha_mode(volume, DVZ_ALPHA_BLENDED) == 0,
+        "dvz_visual_set_alpha_mode() failed");
+
     DvzScale* transfer_scale = dvz_scale(scene, &(DvzScaleDesc){.kind = DVZ_SCALE_CONTINUOUS});
-    if (transfer_scale == NULL)
-    {
-        dvz_fprintf(stderr, "dvz_scale() failed\n");
-        dvz_scene_destroy(scene);
-        return 1;
-    }
+    EXAMPLE_CHECK(transfer_scale != NULL, "dvz_scale() failed");
     dvz_scale_set_domain(transfer_scale, 0.0, 1.0);
     DvzColormap* transfer_map = dvz_colormap(scene, NULL);
-    if (transfer_map == NULL)
-    {
-        dvz_fprintf(stderr, "dvz_colormap() failed\n");
-        dvz_scene_destroy(scene);
-        return 1;
-    }
+    EXAMPLE_CHECK(transfer_map != NULL, "dvz_colormap() failed");
     dvz_scale_set_colormap(transfer_scale, transfer_map);
     (void)dvz_volume_set_value_range(volume, 0.0, 1.0);
-    if (dvz_panel_add_visual(panel, volume, NULL) != 0)
-    {
-        dvz_fprintf(stderr, "dvz_panel_add_visual() failed\n");
-        dvz_scene_destroy(scene);
-        return 1;
-    }
+    EXAMPLE_CHECK(dvz_panel_add_visual(panel, volume, NULL) == 0, "dvz_panel_add_visual() failed");
     dvz_panel_set_background_color(panel, 0.025f, 0.035f, 0.045f, 1.0f);
 
     VolumeGlfwState state = {
@@ -530,42 +474,19 @@ int main(int argc, char** argv)
     _update_transfer_function(&state);
     _apply_volume_controls(&state);
 
-    DvzApp* app = dvz_app(scene);
-    if (app == NULL)
-    {
-        dvz_fprintf(stderr, "dvz_app() failed (no GPU or display?)\n");
-        dvz_scene_destroy(scene);
-        return 1;
-    }
+    app = dvz_app(scene);
+    EXAMPLE_CHECK(app != NULL, "dvz_app() failed (no GPU or display?)");
 
     DvzAppWindow* win = dvz_app_window_glfw(app, figure, WIDTH, HEIGHT, "volume");
-    if (win == NULL)
-    {
-        dvz_fprintf(stderr, "dvz_app_window_glfw() failed (GLFW unavailable?)\n");
-        dvz_app_destroy(app);
-        dvz_scene_destroy(scene);
-        return 1;
-    }
+    EXAMPLE_CHECK(win != NULL, "dvz_app_window_glfw() failed (GLFW unavailable?)");
 
     DvzArcball* arcball = dvz_app_window_panel_arcball(win, panel, NULL);
-    if (arcball == NULL)
-    {
-        dvz_fprintf(stderr, "failed to create or bind arcball controller\n");
-        dvz_app_destroy(app);
-        dvz_scene_destroy(scene);
-        return 1;
-    }
+    EXAMPLE_CHECK(arcball != NULL, "failed to create or bind arcball controller");
     dvz_arcball_set(arcball, (vec3){+0.55f, 0.0f, +0.30f});
 
     DvzGuiConfig gui_config = dvz_gui_config();
     DvzGui* gui = dvz_app_window_gui(win, &gui_config);
-    if (gui == NULL)
-    {
-        dvz_fprintf(stderr, "dvz_app_window_gui() failed\n");
-        dvz_app_destroy(app);
-        dvz_scene_destroy(scene);
-        return 1;
-    }
+    EXAMPLE_CHECK(gui != NULL, "dvz_app_window_gui() failed");
     dvz_app_window_set_gui_callback(win, _volume_glfw_gui, &state);
 
     dvz_scene_set_clock_mode(scene, DVZ_CLOCK_REALTIME);
@@ -574,18 +495,17 @@ int main(int argc, char** argv)
     DvzAnimation* spin = dvz_anim_arcball_spin(
         scene, arcball, (vec3){0.0f, 1.0f, 0.0f}, ROTATION_SPEED_RAD_PER_SEC,
         DVZ_ARCBALL_SPIN_FLAGS_PAUSE_ON_INTERACTION);
-    if (spin == NULL)
-    {
-        dvz_fprintf(stderr, "dvz_anim_arcball_spin() failed\n");
-        dvz_app_destroy(app);
-        dvz_scene_destroy(scene);
-        return 1;
-    }
+    EXAMPLE_CHECK(spin != NULL, "dvz_anim_arcball_spin() failed");
     dvz_anim_start(spin, 0.0);
 
     dvz_app_run(app, frame_count);
+    ret = 0;
 
-    dvz_app_destroy(app);
-    dvz_scene_destroy(scene);
-    return 0;
+cleanup:
+    if (app != NULL)
+        dvz_app_destroy(app);
+    dvz_free(data);
+    if (scene != NULL)
+        dvz_scene_destroy(scene);
+    return ret;
 }

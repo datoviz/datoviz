@@ -97,37 +97,22 @@ int main(int argc, char** argv)
 {
     const uint32_t frame_count = example_frame_count_any(argc, argv);
     const uint32_t vertex_count = SURFACE_ROWS * SURFACE_COLS;
+    int ret = 1;
+    DvzScene* scene = NULL;
+    DvzApp* app = NULL;
+    DvzGeometry* geometry = NULL;
 
     double* heights = (double*)dvz_calloc(vertex_count, sizeof(double));
     DvzColor* colors = (DvzColor*)dvz_calloc(vertex_count, sizeof(DvzColor));
-    if (heights == NULL || colors == NULL)
-    {
-        dvz_fprintf(stderr, "surface_grid: allocation failed\n");
-        dvz_free(heights);
-        dvz_free(colors);
-        return 1;
-    }
+    EXAMPLE_CHECK(heights != NULL && colors != NULL, "surface_grid: allocation failed");
     _surface_data(heights, colors);
 
-    DvzScene* scene = dvz_scene();
-    if (scene == NULL)
-    {
-        dvz_fprintf(stderr, "dvz_scene() failed\n");
-        dvz_free(heights);
-        dvz_free(colors);
-        return 1;
-    }
+    scene = dvz_scene();
+    EXAMPLE_CHECK(scene != NULL, "dvz_scene() failed");
 
     DvzFigure* figure = dvz_figure(scene, WIDTH, HEIGHT, 0);
     DvzPanel* panel = figure != NULL ? dvz_panel_full(figure) : NULL;
-    if (figure == NULL || panel == NULL)
-    {
-        dvz_fprintf(stderr, "scene setup failed\n");
-        dvz_scene_destroy(scene);
-        dvz_free(heights);
-        dvz_free(colors);
-        return 1;
-    }
+    EXAMPLE_CHECK(figure != NULL && panel != NULL, "scene setup failed");
 
     DvzCameraDesc camera_desc = dvz_camera_desc();
     camera_desc.eye[0] = 1.8f;
@@ -139,14 +124,7 @@ int main(int argc, char** argv)
     camera_desc.fov_y = 0.72f;
     camera_desc.near = 0.05f;
     camera_desc.far = 100.0f;
-    if (!dvz_panel_set_camera(panel, &camera_desc))
-    {
-        dvz_fprintf(stderr, "dvz_panel_set_camera() failed\n");
-        dvz_scene_destroy(scene);
-        dvz_free(heights);
-        dvz_free(colors);
-        return 1;
-    }
+    EXAMPLE_CHECK(dvz_panel_set_camera(panel, &camera_desc), "dvz_panel_set_camera() failed");
 
     DvzGeometrySurfaceGridDesc desc = {
         .rows = SURFACE_ROWS,
@@ -159,26 +137,13 @@ int main(int argc, char** argv)
         .height_axis = {0.0, 0.0, 1.0},
         .height_scale = 1.0,
     };
-    DvzGeometry* geometry = dvz_geom_surface_grid(&desc);
-    if (geometry == NULL)
-    {
-        dvz_fprintf(stderr, "dvz_geom_surface_grid() failed\n");
-        dvz_scene_destroy(scene);
-        dvz_free(heights);
-        dvz_free(colors);
-        return 1;
-    }
+    geometry = dvz_geom_surface_grid(&desc);
+    EXAMPLE_CHECK(geometry != NULL, "dvz_geom_surface_grid() failed");
 
     DvzVisual* visual = dvz_mesh(scene, 0);
-    if (visual == NULL || dvz_mesh_geometry(visual, geometry) != 0)
-    {
-        dvz_fprintf(stderr, "dvz_mesh_geometry() failed\n");
-        dvz_geometry_destroy(geometry);
-        dvz_scene_destroy(scene);
-        dvz_free(heights);
-        dvz_free(colors);
-        return 1;
-    }
+    EXAMPLE_CHECK(
+        visual != NULL && dvz_mesh_geometry(visual, geometry) == 0,
+        "dvz_mesh_geometry() failed");
     DvzMaterialDesc material = dvz_phong_material_desc();
     material.light_direction[0] = 0.35f;
     material.light_direction[1] = -0.45f;
@@ -191,31 +156,26 @@ int main(int argc, char** argv)
     dvz_panel_add_visual(panel, visual, NULL);
     dvz_panel_set_background_color(panel, 0.04f, 0.045f, 0.05f, 1.0f);
 
-    DvzApp* app = dvz_app(scene);
+    app = dvz_app(scene);
     DvzAppWindow* win =
         app != NULL ? dvz_app_window_glfw(app, figure, WIDTH, HEIGHT, "surface grid") : NULL;
-    if (app == NULL || win == NULL)
-    {
-        dvz_fprintf(stderr, "app/window setup failed\n");
-        if (app != NULL)
-            dvz_app_destroy(app);
-        dvz_geometry_destroy(geometry);
-        dvz_scene_destroy(scene);
-        dvz_free(heights);
-        dvz_free(colors);
-        return 1;
-    }
+    EXAMPLE_CHECK(app != NULL && win != NULL, "app/window setup failed");
 
     DvzArcball* arcball = dvz_app_window_panel_arcball(win, panel, NULL);
     if (arcball != NULL)
         dvz_arcball_initial(arcball, (vec3){0.55f, 0.0f, -0.25f});
 
     dvz_app_run(app, frame_count);
+    ret = 0;
 
-    dvz_app_destroy(app);
-    dvz_geometry_destroy(geometry);
-    dvz_scene_destroy(scene);
+cleanup:
+    if (app != NULL)
+        dvz_app_destroy(app);
+    if (geometry != NULL)
+        dvz_geometry_destroy(geometry);
+    if (scene != NULL)
+        dvz_scene_destroy(scene);
     dvz_free(heights);
     dvz_free(colors);
-    return 0;
+    return ret;
 }
