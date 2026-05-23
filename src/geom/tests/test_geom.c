@@ -83,6 +83,40 @@ int test_geometry_cube(TstContext* suite, const TstCase* tstitem)
     AC(cube->normals[0][0], 1.0, EPS);
 
     dvz_geometry_destroy(cube);
+
+    DvzColor face_colors[DVZ_GEOM_CUBE_FACE_COUNT] = {
+        {239, 83, 80, 255},
+        {66, 165, 245, 255},
+        {102, 187, 106, 255},
+        {255, 202, 40, 255},
+        {171, 71, 188, 255},
+        {255, 112, 67, 255},
+    };
+    DvzGeometry* colored_cube = dvz_geom_cube(&(DvzGeometryCubeDesc){
+        .size = 1.0,
+        .face_colors = face_colors,
+        .face_color_count = DVZ_GEOM_CUBE_FACE_COUNT,
+    });
+    AT(colored_cube != NULL);
+    for (uint32_t face = 0; face < DVZ_GEOM_CUBE_FACE_COUNT; face++)
+    {
+        for (uint32_t corner = 0; corner < 4; corner++)
+        {
+            const uint32_t vertex = 4 * face + corner;
+            AT(colored_cube->colors[vertex][0] == face_colors[face][0]);
+            AT(colored_cube->colors[vertex][1] == face_colors[face][1]);
+            AT(colored_cube->colors[vertex][2] == face_colors[face][2]);
+            AT(colored_cube->colors[vertex][3] == face_colors[face][3]);
+        }
+    }
+    dvz_geometry_destroy(colored_cube);
+
+    AT(dvz_geom_cube(&(DvzGeometryCubeDesc){
+           .size = 1.0,
+           .face_colors = face_colors,
+           .face_color_count = DVZ_GEOM_CUBE_FACE_COUNT - 1,
+       }) == NULL);
+
     return 0;
 }
 

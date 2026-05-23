@@ -46,57 +46,15 @@
 #define WIDTH  1600
 #define HEIGHT 1200
 
-#define MESH_CUBE_SIZE         1.16
-#define MESH_CUBE_VERTEX_COUNT 24
-#define MESH_CUBE_INDEX_COUNT  36
+#define MESH_CUBE_SIZE 1.16
 
 #define ROTATION_SPEED_RAD_PER_SEC 0.9f
 
 
 
 /*************************************************************************************************/
-/*  Helpers                                                                                      */
+/*  Functions                                                                                    */
 /*************************************************************************************************/
-
-/**
- * Assign the example's per-face colors to a generated cube geometry.
- *
- * @param cube generated cube geometry
- * @return whether the cube layout matched the expected face-duplicated layout
- */
-static bool _apply_cube_face_colors(DvzGeometry* cube)
-{
-    if (cube == NULL)
-        return false;
-
-    if (cube->vertex_count != MESH_CUBE_VERTEX_COUNT || cube->index_count != MESH_CUBE_INDEX_COUNT)
-        return false;
-
-    const DvzColor face_colors[6] = {
-        {239, 83, 80, 255},
-        {66, 165, 245, 255},
-        {102, 187, 106, 255},
-        {255, 202, 40, 255},
-        {171, 71, 188, 255},
-        {255, 112, 67, 255},
-    };
-
-    for (uint32_t face = 0; face < 6; face++)
-    {
-        for (uint32_t corner = 0; corner < 4; corner++)
-        {
-            const uint32_t vertex = 4 * face + corner;
-            cube->colors[vertex][0] = face_colors[face][0];
-            cube->colors[vertex][1] = face_colors[face][1];
-            cube->colors[vertex][2] = face_colors[face][2];
-            cube->colors[vertex][3] = face_colors[face][3];
-        }
-    }
-
-    return true;
-}
-
-
 
 /**
  * Return whether the example should enable live MP4 recording.
@@ -236,12 +194,22 @@ int main(int argc, char** argv)
         return 1;
     }
 
-    DvzGeometry* cube = dvz_geom_cube(&(DvzGeometryCubeDesc){.size = MESH_CUBE_SIZE});
-    if (cube == NULL || !_apply_cube_face_colors(cube))
+    const DvzColor face_colors[DVZ_GEOM_CUBE_FACE_COUNT] = {
+        {239, 83, 80, 255},
+        {66, 165, 245, 255},
+        {102, 187, 106, 255},
+        {255, 202, 40, 255},
+        {171, 71, 188, 255},
+        {255, 112, 67, 255},
+    };
+    DvzGeometry* cube = dvz_geom_cube(&(DvzGeometryCubeDesc){
+        .size = MESH_CUBE_SIZE,
+        .face_colors = face_colors,
+        .face_color_count = DVZ_GEOM_CUBE_FACE_COUNT,
+    });
+    if (cube == NULL)
     {
         dvz_fprintf(stderr, "dvz_geom_cube() failed\n");
-        if (cube != NULL)
-            dvz_geometry_destroy(cube);
         dvz_scene_destroy(scene);
         return 1;
     }

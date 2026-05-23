@@ -74,9 +74,11 @@ struct DvzGeometryBounds
 
 struct DvzGeometryCubeDesc
 {
-    dvec3 center;   // cube center
-    double size;    // edge length
-    DvzColor color; // vertex color, defaults to opaque white when all channels are zero
+    dvec3 center;                 // cube center
+    double size;                  // edge length
+    DvzColor color;               // fallback vertex color, defaults to opaque white
+    const DvzColor* face_colors;  // optional six face colors: +X, -X, +Y, -Y, +Z, -Z
+    uint32_t face_color_count;    // number of entries in face_colors, must be at least 6
 };
 
 

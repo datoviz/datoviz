@@ -787,6 +787,8 @@ DvzGeometry* dvz_geom_cube(const DvzGeometryCubeDesc* desc)
         cfg = *desc;
     if (cfg.size <= 0)
         return NULL;
+    if (cfg.face_colors != NULL && cfg.face_color_count < DVZ_GEOM_CUBE_FACE_COUNT)
+        return NULL;
 
     DvzColor color = {0};
     _geom_color_or_default(cfg.color, color);
@@ -804,7 +806,7 @@ DvzGeometry* dvz_geom_cube(const DvzGeometryCubeDesc* desc)
     const double cz = cfg.center[2];
     const dvec2 uv[4] = {{0, 0}, {1, 0}, {1, 1}, {0, 1}};
 
-    const dvec3 faces[6][4] = {
+    const dvec3 faces[DVZ_GEOM_CUBE_FACE_COUNT][4] = {
         {{cx + h, cy - h, cz - h}, {cx + h, cy + h, cz - h}, {cx + h, cy + h, cz + h},
          {cx + h, cy - h, cz + h}},
         {{cx - h, cy + h, cz - h}, {cx - h, cy - h, cz - h}, {cx - h, cy - h, cz + h},
@@ -818,14 +820,23 @@ DvzGeometry* dvz_geom_cube(const DvzGeometryCubeDesc* desc)
         {{cx - h, cy + h, cz - h}, {cx + h, cy + h, cz - h}, {cx + h, cy - h, cz - h},
          {cx - h, cy - h, cz - h}},
     };
-    const dvec3 normals[6] = {
+    const dvec3 normals[DVZ_GEOM_CUBE_FACE_COUNT] = {
         {+1, 0, 0}, {-1, 0, 0}, {0, +1, 0}, {0, -1, 0}, {0, 0, +1}, {0, 0, -1}};
 
-    for (uint32_t face = 0; face < 6; face++)
+    for (uint32_t face = 0; face < DVZ_GEOM_CUBE_FACE_COUNT; face++)
     {
+        DvzColor face_color = {0};
+        const DvzColor* vertex_color = &color;
+        if (cfg.face_colors != NULL)
+        {
+            _geom_color_or_default(cfg.face_colors[face], face_color);
+            vertex_color = &face_color;
+        }
+
         const uint32_t base = 4 * face;
         for (uint32_t j = 0; j < 4; j++)
-            _geom_set_vertex(geometry, base + j, faces[face][j], normals[face], uv[j], color);
+            _geom_set_vertex(
+                geometry, base + j, faces[face][j], normals[face], uv[j], *vertex_color);
 
         const uint32_t index_base = 6 * face;
         _geom_set_index(geometry, index_base + 0, base + 0);

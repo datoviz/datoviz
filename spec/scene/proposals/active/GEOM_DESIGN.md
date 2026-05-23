@@ -87,7 +87,8 @@ Implemented on 2026-05-21:
 5. `dvz_mesh_geometry()` provides the current bridge from retained F64 CPU geometry to scene mesh
    upload paths that still consume F32 arrays;
 6. `dvz_geom_cube()` and `dvz_geom_plane()` generate indexed geometry with normals, UVs, and
-   zero-initialized color descriptors defaulting to opaque white;
+   zero-initialized color descriptors defaulting to opaque white; cube descriptors also support
+   six per-face colors for the duplicated cube-face layout;
 7. focused `geom` tests cover allocation/reset, cube bounds/index validity, plane normals/bounds,
    surface grids, transforms, merge behavior, and core-runner wiring.
 
