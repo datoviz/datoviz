@@ -121,10 +121,13 @@ static void _build_cube(
 int main(int argc, char** argv)
 {
     uint32_t frame_count = example_frame_count(argc, argv);
+    int ret = 1;
+    DvzScene* scene = NULL;
+    DvzApp* app = NULL;
 
-    DvzScene* scene = dvz_scene();
-    if (scene == NULL)
-        return 1;
+    scene = dvz_scene();
+    EXAMPLE_CHECK(scene != NULL, "dvz_scene() failed");
+
     DvzCapabilitySnapshot caps;
     dvz_capability_snapshot_default(&caps);
     caps.max_color_attachments = 3;
@@ -134,12 +137,7 @@ int main(int argc, char** argv)
 
     DvzFigure* figure = dvz_figure(scene, WIDTH, HEIGHT, 0);
     DvzPanel* panel = dvz_panel_full(figure);
-    if (figure == NULL || panel == NULL)
-    {
-        dvz_fprintf(stderr, "scene setup failed\n");
-        dvz_scene_destroy(scene);
-        return 1;
-    }
+    EXAMPLE_CHECK(figure != NULL && panel != NULL, "scene setup failed");
     dvz_panel_set_background_color(panel, 0.05f, 0.05f, 0.08f, 1.0f);
 
     DvzCameraDesc camera_desc = dvz_camera_desc();
@@ -148,21 +146,11 @@ int main(int argc, char** argv)
     camera_desc.fov_y = 0.78539816339f;
     camera_desc.near = 0.1f;
     camera_desc.far = 100.0f;
-    if (!dvz_panel_set_camera(panel, &camera_desc))
-    {
-        dvz_fprintf(stderr, "dvz_panel_set_camera() failed\n");
-        dvz_scene_destroy(scene);
-        return 1;
-    }
+    EXAMPLE_CHECK(dvz_panel_set_camera(panel, &camera_desc), "dvz_panel_set_camera() failed");
 
     DvzVisual* reference = dvz_primitive(scene, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 0);
     DvzVisual* cube = dvz_mesh(scene, 0);
-    if (reference == NULL || cube == NULL)
-    {
-        dvz_fprintf(stderr, "visual creation failed\n");
-        dvz_scene_destroy(scene);
-        return 1;
-    }
+    EXAMPLE_CHECK(reference != NULL && cube != NULL, "visual creation failed");
 
     float reference_positions[12][3] = {
         {-0.95f, -0.95f, -1.05f},
@@ -205,13 +193,9 @@ int main(int argc, char** argv)
                    .usage = DVZ_SCENE_BUFFER_USAGE_INDEX,
                    .stride = sizeof(DvzIndex),
                });
-    if (index_buffer == NULL ||
-        !dvz_scene_buffer_set_data(index_buffer, indices, sizeof(indices)))
-    {
-        dvz_fprintf(stderr, "index buffer setup failed\n");
-        dvz_scene_destroy(scene);
-        return 1;
-    }
+    EXAMPLE_CHECK(
+        index_buffer != NULL && dvz_scene_buffer_set_data(index_buffer, indices, sizeof(indices)),
+        "index buffer setup failed");
 
     dvz_primitive_data(reference, reference_positions, reference_colors, NULL, 12);
 
@@ -222,32 +206,15 @@ int main(int argc, char** argv)
     dvz_panel_add_visual(panel, reference, NULL);
     dvz_panel_add_visual(panel, cube, NULL);
 
-    DvzApp* app = dvz_app(scene);
-    if (app == NULL)
-    {
-        dvz_fprintf(stderr, "dvz_app() failed (no GPU or display?)\n");
-        dvz_scene_destroy(scene);
-        return 1;
-    }
+    app = dvz_app(scene);
+    EXAMPLE_CHECK(app != NULL, "dvz_app() failed (no GPU or display?)");
 
     DvzAppWindow* win =
         dvz_app_window_glfw(app, figure, WIDTH, HEIGHT, "depth_peel");
-    if (win == NULL)
-    {
-        dvz_fprintf(stderr, "dvz_app_window_glfw() failed (GLFW unavailable?)\n");
-        dvz_app_destroy(app);
-        dvz_scene_destroy(scene);
-        return 1;
-    }
+    EXAMPLE_CHECK(win != NULL, "dvz_app_window_glfw() failed (GLFW unavailable?)");
 
     DvzArcball* arcball = dvz_app_window_panel_arcball(win, panel, NULL);
-    if (arcball == NULL)
-    {
-        dvz_fprintf(stderr, "failed to create or bind arcball controller\n");
-        dvz_app_destroy(app);
-        dvz_scene_destroy(scene);
-        return 1;
-    }
+    EXAMPLE_CHECK(arcball != NULL, "failed to create or bind arcball controller");
     dvz_arcball_set(arcball, (vec3){+0.65f, 0.0f, +0.35f});
 
     dvz_scene_set_clock_mode(scene, DVZ_CLOCK_REALTIME);
@@ -256,18 +223,16 @@ int main(int argc, char** argv)
     DvzAnimation* spin = dvz_anim_arcball_spin(
         scene, arcball, (vec3){0.0f, 1.0f, 0.0f}, ROTATION_SPEED_RAD_PER_SEC,
         DVZ_ARCBALL_SPIN_FLAGS_PAUSE_ON_INTERACTION);
-    if (spin == NULL)
-    {
-        dvz_fprintf(stderr, "dvz_anim_arcball_spin() failed\n");
-        dvz_app_destroy(app);
-        dvz_scene_destroy(scene);
-        return 1;
-    }
+    EXAMPLE_CHECK(spin != NULL, "dvz_anim_arcball_spin() failed");
     dvz_anim_start(spin, 0.0);
 
     dvz_app_run(app, frame_count);
+    ret = 0;
 
-    dvz_app_destroy(app);
-    dvz_scene_destroy(scene);
-    return 0;
+cleanup:
+    if (app != NULL)
+        dvz_app_destroy(app);
+    if (scene != NULL)
+        dvz_scene_destroy(scene);
+    return ret;
 }
