@@ -345,16 +345,16 @@ int main(int argc, char** argv)
 
     dvz_panel_set_background_color(panel, 0.040f, 0.043f, 0.052f, 1.0f);
     _fill_triangles(&state, 0.0f);
-    if (!_upload_triangles(&state) ||
-        dvz_visual_set_primitive_shading(
-            state.visual,
-            &(DvzPrimitiveShadingDesc){
-                .light_direction = {0.32f, 0.46f, 0.82f},
-                .ambient = 0.23f,
-                .diffuse = 0.78f,
-                .specular = 0.34f,
-                .shininess = 48.0f,
-            }) != 0 ||
+    DvzMaterialDesc material = dvz_phong_material_desc();
+    material.alpha_mode = dvz_visual_alpha_mode(state.visual);
+    material.light_direction[0] = 0.32f;
+    material.light_direction[1] = 0.46f;
+    material.light_direction[2] = 0.82f;
+    material.phong.ambient = 0.23f;
+    material.phong.diffuse = 0.78f;
+    material.phong.specular = 0.34f;
+    material.phong.shininess = 48.0f;
+    if (!_upload_triangles(&state) || dvz_visual_set_material(state.visual, &material) != 0 ||
         dvz_panel_add_visual(panel, state.visual, NULL) != 0)
     {
         dvz_fprintf(stderr, "primitive visual setup failed\n");

@@ -179,15 +179,15 @@ int main(int argc, char** argv)
         dvz_free(colors);
         return 1;
     }
-    dvz_visual_set_primitive_shading(
-        visual,
-        &(DvzPrimitiveShadingDesc){
-            .light_direction = {0.35f, -0.45f, 0.82f},
-            .ambient = 0.18f,
-            .diffuse = 0.78f,
-            .specular = 0.85f,
-            .shininess = 96.0f,
-        });
+    DvzMaterialDesc material = dvz_phong_material_desc();
+    material.light_direction[0] = 0.35f;
+    material.light_direction[1] = -0.45f;
+    material.light_direction[2] = 0.82f;
+    material.phong.ambient = 0.18f;
+    material.phong.diffuse = 0.78f;
+    material.phong.specular = 0.85f;
+    material.phong.shininess = 96.0f;
+    dvz_visual_set_material(visual, &material);
     dvz_panel_add_visual(panel, visual, NULL);
     dvz_panel_set_background_color(panel, 0.04f, 0.045f, 0.05f, 1.0f);
 

@@ -190,17 +190,14 @@ static void _mesh_wboit_update_cube(MeshWboitState* state)
         dvz_memcpy(state->cube_colors[i], sizeof(DvzColor), color, sizeof(DvzColor));
 
     dvz_visual_set_data(state->cube, "color", state->cube_colors, state->cube_vertex_count);
-    dvz_visual_set_primitive_shading(
-        state->cube,
-        &(DvzPrimitiveShadingDesc){
-            .light_direction = {
-                state->cube_light_direction[0],
-                state->cube_light_direction[1],
-                state->cube_light_direction[2],
-            },
-            .ambient = state->cube_ambient,
-            .diffuse = state->cube_diffuse,
-        });
+    DvzMaterialDesc material = dvz_phong_material_desc();
+    material.alpha_mode = dvz_visual_alpha_mode(state->cube);
+    material.light_direction[0] = state->cube_light_direction[0];
+    material.light_direction[1] = state->cube_light_direction[1];
+    material.light_direction[2] = state->cube_light_direction[2];
+    material.phong.ambient = state->cube_ambient;
+    material.phong.diffuse = state->cube_diffuse;
+    dvz_visual_set_material(state->cube, &material);
 }
 
 

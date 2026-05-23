@@ -418,17 +418,14 @@ static void _apply_shell_material(BwmExampleState* state)
             state->dataset->mesh_vertex_count) != 0)
         dvz_fprintf(stderr, "failed to update BWM shell color\n");
 
-    if (dvz_visual_set_primitive_shading(
-            state->mesh,
-            &(DvzPrimitiveShadingDesc){
-                .light_direction = {
-                    state->light_direction[0],
-                    state->light_direction[1],
-                    state->light_direction[2],
-                },
-                .ambient = state->ambient,
-                .diffuse = state->diffuse,
-            }) != 0)
+    DvzMaterialDesc material = dvz_phong_material_desc();
+    material.alpha_mode = dvz_visual_alpha_mode(state->mesh);
+    material.light_direction[0] = state->light_direction[0];
+    material.light_direction[1] = state->light_direction[1];
+    material.light_direction[2] = state->light_direction[2];
+    material.phong.ambient = state->ambient;
+    material.phong.diffuse = state->diffuse;
+    if (dvz_visual_set_material(state->mesh, &material) != 0)
         dvz_fprintf(stderr, "failed to update BWM shell material\n");
 }
 

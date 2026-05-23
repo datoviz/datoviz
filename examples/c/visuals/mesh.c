@@ -223,13 +223,13 @@ int main(int argc, char** argv)
     }
     dvz_geometry_destroy(cube);
 
-    dvz_visual_set_primitive_shading(
-        visual,
-        &(DvzPrimitiveShadingDesc){
-            .light_direction = {0.35f, 0.55f, 0.75f},
-            .ambient = 0.25f,
-            .diffuse = 0.85f,
-        });
+    DvzMaterialDesc material = dvz_phong_material_desc();
+    material.light_direction[0] = 0.35f;
+    material.light_direction[1] = 0.55f;
+    material.light_direction[2] = 0.75f;
+    material.phong.ambient = 0.25f;
+    material.phong.diffuse = 0.85f;
+    dvz_visual_set_material(visual, &material);
     dvz_panel_add_visual(panel, visual, NULL);
     dvz_panel_set_background_color(panel, 0.05f, 0.05f, 0.08f, 1.0f);
 

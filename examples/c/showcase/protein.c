@@ -1171,15 +1171,15 @@ int main(int argc, char** argv)
         return 1;
     }
 
-    dvz_visual_set_primitive_shading(
-        spheres,
-        &(DvzPrimitiveShadingDesc){
-            .light_direction = {0.25f, 0.65f, 0.72f},
-            .ambient = 0.20f,
-            .diffuse = 0.76f,
-            .specular = 0.55f,
-            .shininess = 80.0f,
-        });
+    DvzMaterialDesc sphere_material = dvz_phong_material_desc();
+    sphere_material.light_direction[0] = 0.25f;
+    sphere_material.light_direction[1] = 0.65f;
+    sphere_material.light_direction[2] = 0.72f;
+    sphere_material.phong.ambient = 0.20f;
+    sphere_material.phong.diffuse = 0.76f;
+    sphere_material.phong.specular = 0.55f;
+    sphere_material.phong.shininess = 80.0f;
+    dvz_visual_set_material(spheres, &sphere_material);
 
     if (bundle.has_ribbon)
     {
@@ -1206,15 +1206,15 @@ int main(int argc, char** argv)
             return 1;
         }
 
-        dvz_visual_set_primitive_shading(
-            ribbon,
-            &(DvzPrimitiveShadingDesc){
-                .light_direction = {0.25f, 0.65f, 0.72f},
-                .ambient = 0.26f,
-                .diffuse = 0.78f,
-                .specular = 0.35f,
-                .shininess = 48.0f,
-            });
+        DvzMaterialDesc ribbon_material = dvz_phong_material_desc();
+        ribbon_material.light_direction[0] = 0.25f;
+        ribbon_material.light_direction[1] = 0.65f;
+        ribbon_material.light_direction[2] = 0.72f;
+        ribbon_material.phong.ambient = 0.26f;
+        ribbon_material.phong.diffuse = 0.78f;
+        ribbon_material.phong.specular = 0.35f;
+        ribbon_material.phong.shininess = 48.0f;
+        dvz_visual_set_material(ribbon, &ribbon_material);
         dvz_visual_set_visible(ribbon, false);
     }
 

@@ -1397,17 +1397,14 @@ static void _apply_atlas_mesh_controls(AllenMouseBrainState* state)
         dvz_fprintf(stderr, "failed to update Allen/IBL atlas mesh color\n");
     }
 
-    if (dvz_visual_set_primitive_shading(
-            state->atlas_mesh_visual,
-            &(DvzPrimitiveShadingDesc){
-                .light_direction = {
-                    state->atlas_light_direction[0],
-                    state->atlas_light_direction[1],
-                    state->atlas_light_direction[2],
-                },
-                .ambient = state->atlas_ambient,
-                .diffuse = state->atlas_diffuse,
-            }) != 0)
+    DvzMaterialDesc material = dvz_phong_material_desc();
+    material.alpha_mode = dvz_visual_alpha_mode(state->atlas_mesh_visual);
+    material.light_direction[0] = state->atlas_light_direction[0];
+    material.light_direction[1] = state->atlas_light_direction[1];
+    material.light_direction[2] = state->atlas_light_direction[2];
+    material.phong.ambient = state->atlas_ambient;
+    material.phong.diffuse = state->atlas_diffuse;
+    if (dvz_visual_set_material(state->atlas_mesh_visual, &material) != 0)
     {
         dvz_fprintf(stderr, "failed to update Allen/IBL atlas mesh material\n");
     }
