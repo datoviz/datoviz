@@ -620,20 +620,16 @@ static void _marker_rotation_timer(
  */
 int main(int argc, char** argv)
 {
-    DvzScene* scene = dvz_scene();
-    if (scene == NULL)
-    {
-        dvz_fprintf(stderr, "dvz_scene() failed\n");
-        return 1;
-    }
+    int ret = 1;
+    DvzScene* scene = NULL;
+    DvzApp* app = NULL;
+    MarkerStressState state = {0};
+
+    scene = dvz_scene();
+    EXAMPLE_CHECK(scene != NULL, "dvz_scene() failed");
 
     DvzFigure* figure = dvz_figure(scene, MARKER_STRESS_WIDTH, MARKER_STRESS_HEIGHT, 0);
-    if (figure == NULL)
-    {
-        dvz_fprintf(stderr, "dvz_figure() failed\n");
-        dvz_scene_destroy(scene);
-        return 1;
-    }
+    EXAMPLE_CHECK(figure != NULL, "dvz_figure() failed");
 
     DvzPanel* panel =
         dvz_panel(figure, (DvzPanelDesc){
@@ -642,111 +638,62 @@ int main(int argc, char** argv)
                               MARKER_STRESS_PANEL_W,
                               MARKER_STRESS_PANEL_H,
                           });
-    if (panel == NULL)
-    {
-        dvz_fprintf(stderr, "dvz_panel() failed\n");
-        dvz_scene_destroy(scene);
-        return 1;
-    }
+    EXAMPLE_CHECK(panel != NULL, "dvz_panel() failed");
     dvz_panel_set_background_color(panel, 0.065f, 0.075f, 0.095f, 1.0f);
 
     DvzVisual* visual = dvz_marker(scene, 0);
-    if (visual == NULL)
-    {
-        dvz_fprintf(stderr, "dvz_marker() failed\n");
-        dvz_scene_destroy(scene);
-        return 1;
-    }
+    EXAMPLE_CHECK(visual != NULL, "dvz_marker() failed");
 
-    MarkerStressState state = {
-        .visual = visual,
-        .max_count = MARKER_STRESS_MAX_COUNT,
-        .active_count = 8192u,
-        .active_count_value = 8192.0f,
-        .diameter = 22.0f,
-        .rotation_speed_rad_per_sec = MARKER_STRESS_ROTATION_SPEED_RAD_PER_SEC,
-        .fill_alpha = 0.88f,
-        .edge_color = {0.02f, 0.025f, 0.035f, 1.0f},
-        .stroke_width = 2.0f,
-        .style_mode = MARKER_STRESS_STYLE_BOTH,
-        .animate = false,
-        .mixed_shapes = true,
-    };
+    state.visual = visual;
+    state.max_count = MARKER_STRESS_MAX_COUNT;
+    state.active_count = 8192u;
+    state.active_count_value = 8192.0f;
+    state.diameter = 22.0f;
+    state.rotation_speed_rad_per_sec = MARKER_STRESS_ROTATION_SPEED_RAD_PER_SEC;
+    state.fill_alpha = 0.88f;
+    state.edge_color[0] = 0.02f;
+    state.edge_color[1] = 0.025f;
+    state.edge_color[2] = 0.035f;
+    state.edge_color[3] = 1.0f;
+    state.stroke_width = 2.0f;
+    state.style_mode = MARKER_STRESS_STYLE_BOTH;
+    state.animate = false;
+    state.mixed_shapes = true;
 
-    if (_marker_stress_alloc(&state) != 0)
-    {
-        dvz_fprintf(stderr, "marker stress allocation failed\n");
-        dvz_scene_destroy(scene);
-        return 1;
-    }
+    EXAMPLE_CHECK(_marker_stress_alloc(&state) == 0, "marker stress allocation failed");
 
     _upload_marker_attributes(&state);
     _apply_marker_style(&state);
     state.rotation_animation = dvz_anim_timer(scene, 0.0, _marker_rotation_timer, &state);
-    if (state.rotation_animation == NULL)
-    {
-        dvz_fprintf(stderr, "dvz_anim_timer() failed\n");
-        _marker_stress_free(&state);
-        dvz_scene_destroy(scene);
-        return 1;
-    }
-    if (dvz_panel_add_visual(panel, visual, NULL) != 0)
-    {
-        dvz_fprintf(stderr, "dvz_panel_add_visual() failed\n");
-        _marker_stress_free(&state);
-        dvz_scene_destroy(scene);
-        return 1;
-    }
+    EXAMPLE_CHECK(state.rotation_animation != NULL, "dvz_anim_timer() failed");
+    EXAMPLE_CHECK(dvz_panel_add_visual(panel, visual, NULL) == 0, "dvz_panel_add_visual() failed");
 
-    DvzApp* app = dvz_app(scene);
-    if (app == NULL)
-    {
-        dvz_fprintf(stderr, "dvz_app() failed (no GPU or display?)\n");
-        _marker_stress_free(&state);
-        dvz_scene_destroy(scene);
-        return 1;
-    }
+    app = dvz_app(scene);
+    EXAMPLE_CHECK(app != NULL, "dvz_app() failed (no GPU or display?)");
 
     DvzAppWindow* win =
         dvz_app_window_glfw(app, figure, MARKER_STRESS_WIDTH, MARKER_STRESS_HEIGHT,
                             "marker");
-    if (win == NULL)
-    {
-        dvz_fprintf(stderr, "dvz_app_window_glfw() failed (GLFW unavailable?)\n");
-        dvz_app_destroy(app);
-        _marker_stress_free(&state);
-        dvz_scene_destroy(scene);
-        return 1;
-    }
+    EXAMPLE_CHECK(win != NULL, "dvz_app_window_glfw() failed (GLFW unavailable?)");
 
     DvzPanzoom* panzoom = dvz_app_window_panel_panzoom(win, panel, NULL);
-    if (panzoom == NULL)
-    {
-        dvz_fprintf(stderr, "failed to create or bind panzoom controller\n");
-        dvz_app_destroy(app);
-        _marker_stress_free(&state);
-        dvz_scene_destroy(scene);
-        return 1;
-    }
+    EXAMPLE_CHECK(panzoom != NULL, "failed to create or bind panzoom controller");
 
     DvzGuiConfig gui_config = dvz_gui_config();
     DvzGui* gui = dvz_app_window_gui(win, &gui_config);
-    if (gui == NULL)
-    {
-        dvz_fprintf(stderr, "dvz_app_window_gui() failed\n");
-        dvz_app_destroy(app);
-        _marker_stress_free(&state);
-        dvz_scene_destroy(scene);
-        return 1;
-    }
+    EXAMPLE_CHECK(gui != NULL, "dvz_app_window_gui() failed");
 
     dvz_app_window_set_gui_callback(win, _marker_stress_gui, &state);
     dvz_scene_set_clock_mode(scene, DVZ_CLOCK_REALTIME);
     dvz_scene_set_fps(scene, 60.0);
     dvz_app_run(app, example_frame_count(argc, argv));
+    ret = 0;
 
-    dvz_app_destroy(app);
+cleanup:
+    if (app != NULL)
+        dvz_app_destroy(app);
     _marker_stress_free(&state);
-    dvz_scene_destroy(scene);
-    return 0;
+    if (scene != NULL)
+        dvz_scene_destroy(scene);
+    return ret;
 }

@@ -610,176 +610,96 @@ static void _point_stress_frame(DvzAppWindow* win, void* user_data)
 
 int main(int argc, char** argv)
 {
+    int ret = 1;
+    DvzScene* scene = NULL;
+    DvzApp* app = NULL;
+    PointStressState state = {0};
+
     if (MAX_POINTS > SIZE_MAX / sizeof(float[3]) || MAX_POINTS > SIZE_MAX / sizeof(DvzColor) ||
         MAX_POINTS > SIZE_MAX / sizeof(float))
     {
         dvz_fprintf(stderr, "point allocation size overflow\n");
-        return 1;
+        goto cleanup;
     }
 
-    DvzScene* scene = dvz_scene();
-    if (scene == NULL)
-    {
-        dvz_fprintf(stderr, "dvz_scene() failed\n");
-        return 1;
-    }
+    scene = dvz_scene();
+    EXAMPLE_CHECK(scene != NULL, "dvz_scene() failed");
 
     DvzFigure* figure = dvz_figure(scene, WIDTH, HEIGHT, 0);
-    if (figure == NULL)
-    {
-        dvz_fprintf(stderr, "dvz_figure() failed\n");
-        dvz_scene_destroy(scene);
-        return 1;
-    }
+    EXAMPLE_CHECK(figure != NULL, "dvz_figure() failed");
 
     DvzPanel* panel = dvz_panel_full(figure);
-    if (panel == NULL)
-    {
-        dvz_fprintf(stderr, "dvz_panel() failed\n");
-        dvz_scene_destroy(scene);
-        return 1;
-    }
+    EXAMPLE_CHECK(panel != NULL, "dvz_panel() failed");
 
     DvzCameraDesc camera_desc = dvz_camera_desc();
     camera_desc.eye[2] = 4.2f;
     camera_desc.near = 0.1f;
     camera_desc.far = 100.0f;
-    if (!dvz_panel_set_camera(panel, &camera_desc))
-    {
-        dvz_fprintf(stderr, "dvz_panel_set_camera() failed\n");
-        dvz_scene_destroy(scene);
-        return 1;
-    }
+    EXAMPLE_CHECK(dvz_panel_set_camera(panel, &camera_desc), "dvz_panel_set_camera() failed");
     dvz_panel_set_background_color(panel, 0.035f, 0.040f, 0.050f, 1.0f);
 
     DvzVisual* visual = dvz_point(scene, 0);
-    if (visual == NULL)
-    {
-        dvz_fprintf(stderr, "dvz_point() failed\n");
-        dvz_scene_destroy(scene);
-        return 1;
-    }
+    EXAMPLE_CHECK(visual != NULL, "dvz_point() failed");
 
-    PointStressState state = {
-        .panel = panel,
-        .visual = visual,
-        .max_count = MAX_POINTS,
-        .preset_index = DEFAULT_PRESET,
-        .active_count = _preset_count(DEFAULT_PRESET),
-    };
+    state.panel = panel;
+    state.visual = visual;
+    state.max_count = MAX_POINTS;
+    state.preset_index = DEFAULT_PRESET;
+    state.active_count = _preset_count(DEFAULT_PRESET);
     state.base_positions = (float(*)[3])dvz_calloc(MAX_POINTS, sizeof(*state.base_positions));
     state.positions = (float(*)[3])dvz_calloc(MAX_POINTS, sizeof(*state.positions));
     state.colors = (DvzColor*)dvz_calloc(MAX_POINTS, sizeof(DvzColor));
     state.diameters = (float*)dvz_calloc(MAX_POINTS, sizeof(float));
-    if (state.base_positions == NULL || state.positions == NULL || state.colors == NULL ||
-        state.diameters == NULL)
-    {
-        dvz_fprintf(stderr, "point allocation failed\n");
-        dvz_free(state.diameters);
-        dvz_free(state.colors);
-        dvz_free(state.positions);
-        dvz_free(state.base_positions);
-        dvz_scene_destroy(scene);
-        return 1;
-    }
+    EXAMPLE_CHECK(
+        state.base_positions != NULL && state.positions != NULL && state.colors != NULL &&
+            state.diameters != NULL,
+        "point allocation failed");
 
     _build_points(&state);
     state.diameter = 5.0f;
     state.alpha = 0.78f;
     _apply_alpha_to_colors(&state);
     _apply_diameter_to_points(&state);
-    if (!_upload_points(&state) || dvz_panel_add_visual(panel, visual, NULL) != 0)
-    {
-        dvz_fprintf(stderr, "point visual setup failed\n");
-        dvz_free(state.diameters);
-        dvz_free(state.colors);
-        dvz_free(state.positions);
-        dvz_free(state.base_positions);
-        dvz_scene_destroy(scene);
-        return 1;
-    }
+    EXAMPLE_CHECK(
+        _upload_points(&state) && dvz_panel_add_visual(panel, visual, NULL) == 0,
+        "point visual setup failed");
 
-    DvzApp* app = dvz_app(scene);
-    if (app == NULL)
-    {
-        dvz_fprintf(stderr, "dvz_app() failed (no GPU or display?)\n");
-        dvz_free(state.diameters);
-        dvz_free(state.colors);
-        dvz_free(state.positions);
-        dvz_free(state.base_positions);
-        dvz_scene_destroy(scene);
-        return 1;
-    }
+    app = dvz_app(scene);
+    EXAMPLE_CHECK(app != NULL, "dvz_app() failed (no GPU or display?)");
 
     DvzAppWindow* win =
         dvz_app_window_glfw(app, figure, WIDTH, HEIGHT, "point");
-    if (win == NULL)
-    {
-        dvz_fprintf(stderr, "dvz_app_window_glfw() failed (GLFW unavailable?)\n");
-        dvz_app_destroy(app);
-        dvz_free(state.diameters);
-        dvz_free(state.colors);
-        dvz_free(state.positions);
-        dvz_free(state.base_positions);
-        dvz_scene_destroy(scene);
-        return 1;
-    }
+    EXAMPLE_CHECK(win != NULL, "dvz_app_window_glfw() failed (GLFW unavailable?)");
 
     DvzArcball* arcball = dvz_app_window_panel_arcball(win, panel, NULL);
-    if (arcball == NULL)
-    {
-        dvz_fprintf(stderr, "failed to create or bind arcball controller\n");
-        dvz_app_destroy(app);
-        dvz_free(state.diameters);
-        dvz_free(state.colors);
-        dvz_free(state.positions);
-        dvz_free(state.base_positions);
-        dvz_scene_destroy(scene);
-        return 1;
-    }
+    EXAMPLE_CHECK(arcball != NULL, "failed to create or bind arcball controller");
     dvz_arcball_set(arcball, (vec3){+0.42f, -0.10f, +0.18f});
 
     state.spin = dvz_anim_arcball_spin(
         scene, arcball, (vec3){0.0f, 1.0f, 0.0f}, ROTATION_SPEED_RAD_PER_SEC,
         DVZ_ARCBALL_SPIN_FLAGS_PAUSE_ON_INTERACTION);
-    if (state.spin == NULL)
-    {
-        dvz_fprintf(stderr, "dvz_anim_arcball_spin() failed\n");
-        dvz_app_destroy(app);
-        dvz_free(state.diameters);
-        dvz_free(state.colors);
-        dvz_free(state.positions);
-        dvz_free(state.base_positions);
-        dvz_scene_destroy(scene);
-        return 1;
-    }
+    EXAMPLE_CHECK(state.spin != NULL, "dvz_anim_arcball_spin() failed");
     _reset_controls(&state);
 
     DvzGuiConfig gui_config = dvz_gui_config();
     DvzGui* gui = dvz_app_window_gui(win, &gui_config);
-    if (gui == NULL)
-    {
-        dvz_fprintf(stderr, "dvz_app_window_gui() failed\n");
-        dvz_app_destroy(app);
-        dvz_free(state.diameters);
-        dvz_free(state.colors);
-        dvz_free(state.positions);
-        dvz_free(state.base_positions);
-        dvz_scene_destroy(scene);
-        return 1;
-    }
+    EXAMPLE_CHECK(gui != NULL, "dvz_app_window_gui() failed");
     dvz_app_window_set_gui_callback(win, _point_stress_gui, &state);
     dvz_app_window_set_frame_callback(win, _point_stress_frame, &state);
 
     dvz_scene_set_clock_mode(scene, DVZ_CLOCK_REALTIME);
     dvz_scene_set_fps(scene, 60.0);
     dvz_app_run(app, example_frame_count(argc, argv));
+    ret = 0;
 
-    dvz_app_destroy(app);
+cleanup:
+    if (app != NULL)
+        dvz_app_destroy(app);
     dvz_free(state.diameters);
     dvz_free(state.colors);
     dvz_free(state.positions);
     dvz_free(state.base_positions);
-    dvz_scene_destroy(scene);
-    return 0;
+    if (scene != NULL)
+        dvz_scene_destroy(scene);
+    return ret;
 }

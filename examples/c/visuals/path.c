@@ -515,6 +515,9 @@ static void _path_stress_frame(DvzAppWindow* win, void* user_data)
  */
 int main(int argc, char** argv)
 {
+    int ret = 1;
+    DvzScene* scene = NULL;
+    DvzApp* app = NULL;
     PathStressState state = {
         .active_count = PATH_DEFAULT_VERTICES,
         .subpath_count = 8u,
@@ -532,108 +535,56 @@ int main(int argc, char** argv)
     state.stroke_widths = (float*)dvz_calloc(PATH_MAX_VERTICES, sizeof(*state.stroke_widths));
     state.subpath_lengths =
         (uint32_t*)dvz_calloc(PATH_MAX_SUBPATHS, sizeof(*state.subpath_lengths));
-    if (state.positions == NULL || state.colors == NULL || state.stroke_widths == NULL ||
-        state.subpath_lengths == NULL)
-    {
-        dvz_fprintf(stderr, "failed to allocate path stress buffers\n");
-        _destroy_state(&state);
-        return 1;
-    }
+    EXAMPLE_CHECK(
+        state.positions != NULL && state.colors != NULL && state.stroke_widths != NULL &&
+            state.subpath_lengths != NULL,
+        "failed to allocate path stress buffers");
 
-    DvzScene* scene = dvz_scene();
-    if (scene == NULL)
-    {
-        dvz_fprintf(stderr, "dvz_scene() failed\n");
-        _destroy_state(&state);
-        return 1;
-    }
+    scene = dvz_scene();
+    EXAMPLE_CHECK(scene != NULL, "dvz_scene() failed");
 
     DvzFigure* figure = dvz_figure(scene, WIDTH, HEIGHT, 0);
-    if (figure == NULL)
-    {
-        dvz_fprintf(stderr, "dvz_figure() failed\n");
-        dvz_scene_destroy(scene);
-        _destroy_state(&state);
-        return 1;
-    }
+    EXAMPLE_CHECK(figure != NULL, "dvz_figure() failed");
 
     DvzPanel* panel = dvz_panel_full(figure);
-    if (panel == NULL)
-    {
-        dvz_fprintf(stderr, "dvz_panel() failed\n");
-        dvz_scene_destroy(scene);
-        _destroy_state(&state);
-        return 1;
-    }
+    EXAMPLE_CHECK(panel != NULL, "dvz_panel() failed");
 
     state.thin_visual = dvz_path(scene, 0);
     state.stroked_visual = dvz_path(scene, 0);
-    if (state.thin_visual == NULL || state.stroked_visual == NULL)
-    {
-        dvz_fprintf(stderr, "dvz_path() failed\n");
-        dvz_scene_destroy(scene);
-        _destroy_state(&state);
-        return 1;
-    }
+    EXAMPLE_CHECK(
+        state.thin_visual != NULL && state.stroked_visual != NULL, "dvz_path() failed");
 
     _upload_path_data(&state);
-    if (dvz_panel_add_visual(panel, state.thin_visual, NULL) != 0 ||
-        dvz_panel_add_visual(panel, state.stroked_visual, NULL) != 0)
-    {
-        dvz_fprintf(stderr, "dvz_panel_add_visual() failed\n");
-        dvz_scene_destroy(scene);
-        _destroy_state(&state);
-        return 1;
-    }
+    EXAMPLE_CHECK(
+        dvz_panel_add_visual(panel, state.thin_visual, NULL) == 0 &&
+            dvz_panel_add_visual(panel, state.stroked_visual, NULL) == 0,
+        "dvz_panel_add_visual() failed");
     dvz_panel_set_background_color(panel, 0.035f, 0.040f, 0.050f, 1.0f);
 
-    DvzApp* app = dvz_app(scene);
-    if (app == NULL)
-    {
-        dvz_fprintf(stderr, "dvz_app() failed (no GPU or display?)\n");
-        dvz_scene_destroy(scene);
-        _destroy_state(&state);
-        return 1;
-    }
+    app = dvz_app(scene);
+    EXAMPLE_CHECK(app != NULL, "dvz_app() failed (no GPU or display?)");
 
     DvzAppWindow* win =
         dvz_app_window_glfw(app, figure, WIDTH, HEIGHT, "path");
-    if (win == NULL)
-    {
-        dvz_fprintf(stderr, "dvz_app_window_glfw() failed (GLFW unavailable?)\n");
-        dvz_app_destroy(app);
-        dvz_scene_destroy(scene);
-        _destroy_state(&state);
-        return 1;
-    }
+    EXAMPLE_CHECK(win != NULL, "dvz_app_window_glfw() failed (GLFW unavailable?)");
 
     DvzPanzoom* panzoom = dvz_app_window_panel_panzoom(win, panel, NULL);
-    if (panzoom == NULL)
-    {
-        dvz_fprintf(stderr, "failed to create or bind panzoom controller\n");
-        dvz_app_destroy(app);
-        dvz_scene_destroy(scene);
-        _destroy_state(&state);
-        return 1;
-    }
+    EXAMPLE_CHECK(panzoom != NULL, "failed to create or bind panzoom controller");
 
     DvzGuiConfig gui_config = dvz_gui_config();
     DvzGui* gui = dvz_app_window_gui(win, &gui_config);
-    if (gui == NULL)
-    {
-        dvz_fprintf(stderr, "dvz_app_window_gui() failed\n");
-        dvz_app_destroy(app);
-        dvz_scene_destroy(scene);
-        _destroy_state(&state);
-        return 1;
-    }
+    EXAMPLE_CHECK(gui != NULL, "dvz_app_window_gui() failed");
     dvz_app_window_set_gui_callback(win, _path_stress_gui, &state);
     dvz_app_window_set_frame_callback(win, _path_stress_frame, &state);
 
     dvz_app_run(app, example_frame_count(argc, argv));
+    ret = 0;
 
-    dvz_app_destroy(app);
-    dvz_scene_destroy(scene);
+cleanup:
+    if (app != NULL)
+        dvz_app_destroy(app);
+    if (scene != NULL)
+        dvz_scene_destroy(scene);
     _destroy_state(&state);
-    return 0;
+    return ret;
 }
