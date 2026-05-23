@@ -1157,6 +1157,29 @@ DVZ_EXPORT DvzMaterialDesc dvz_material_desc(void);
 
 
 /**
+ * Return default Phong visual material options.
+ *
+ * The descriptor uses `DVZ_MATERIAL_MODEL_PHONG` with the same defaults as
+ * `dvz_material_desc()`.
+ *
+ * @return default Phong material descriptor
+ */
+DVZ_EXPORT DvzMaterialDesc dvz_phong_material_desc(void);
+
+
+/**
+ * Return default standard visual material options.
+ *
+ * The descriptor uses `DVZ_MATERIAL_MODEL_STANDARD` with opaque alpha, full opacity, a white
+ * base-color factor, light direction `(0, 0, 1)`, roughness `0.5`, specular `0.5`, metallic `0`,
+ * no emissive contribution, and no rim contribution.
+ *
+ * @return default standard material descriptor
+ */
+DVZ_EXPORT DvzMaterialDesc dvz_standard_material_desc(void);
+
+
+/**
  * Set the shared material parameters for a primitive, mesh, or sphere visual.
  *
  * The Phong model maps directly to the current material shader payload. The standard model is
@@ -1168,21 +1191,6 @@ DVZ_EXPORT DvzMaterialDesc dvz_material_desc(void);
  * @return 0 on success, -1 on error
  */
 DVZ_EXPORT int dvz_visual_set_material(DvzVisual* visual, const DvzMaterialDesc* desc);
-
-
-/**
- * Override primitive shading parameters.
- *
- * Compatibility wrapper around `dvz_visual_set_material()` with `DVZ_MATERIAL_MODEL_PHONG`.
- * The current primitive/mesh slice uses these parameters only when a visual also has a bound
- * `normal` attribute. Sphere visuals use the same material light parameters.
- *
- * @param visual the visual
- * @param desc the shading descriptor, or NULL to restore defaults
- * @return 0 on success, -1 on error
- */
-DVZ_EXPORT int
-dvz_visual_set_primitive_shading(DvzVisual* visual, const DvzPrimitiveShadingDesc* desc);
 
 
 /**

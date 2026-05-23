@@ -66,7 +66,7 @@ struct SceneRenderDraw
 {
     uint64_t pipeline_id;
     uint64_t bg_set0; /* MVP bg; 0 = none */
-    uint64_t bg_set1; /* image texture or primitive shading bg; 0 = none */
+    uint64_t bg_set1; /* image texture or material bg; 0 = none */
     uint64_t bg_set2; /* scene occlusion bg; 0 = none */
     uint64_t bg_set3; /* depth-peel sampled bg; 0 = none */
     DvzFramePlanClipRect clip_rect;

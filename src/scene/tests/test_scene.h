@@ -296,7 +296,7 @@ int test_scene_indexed_primitive_emits_draw_indexed(TstContext* suite, const Tst
 
 int test_scene_shared_index_buffer_emits_one_upload(TstContext* suite, const TstCase* item);
 
-int test_scene_indexed_primitive_shading_updates_runtime(TstContext* suite, const TstCase* item);
+int test_scene_indexed_primitive_material_updates_runtime(TstContext* suite, const TstCase* item);
 
 int test_scene_path_glsl_executes(TstContext* suite, const TstCase* item);
 

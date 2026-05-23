@@ -92,6 +92,37 @@
 
 #if defined(DVZ_HAS_APP) && DVZ_HAS_APP
 
+/**
+ * Apply a Phong material while preserving the current visual alpha mode.
+ *
+ * @param visual the visual
+ * @param light_direction material light direction
+ * @param ambient ambient coefficient
+ * @param diffuse diffuse coefficient
+ * @param specular specular coefficient
+ * @param shininess shininess exponent
+ * @return 0 on success, -1 on error
+ */
+static int _test_set_phong_material(
+    DvzVisual* visual, const float light_direction[3], float ambient, float diffuse,
+    float specular, float shininess)
+{
+    ANN(visual);
+    ANN(light_direction);
+    DvzMaterialDesc material = dvz_phong_material_desc();
+    material.alpha_mode = dvz_visual_alpha_mode(visual);
+    material.light_direction[0] = light_direction[0];
+    material.light_direction[1] = light_direction[1];
+    material.light_direction[2] = light_direction[2];
+    material.phong.ambient = ambient;
+    material.phong.diffuse = diffuse;
+    material.phong.specular = specular;
+    material.phong.shininess = shininess;
+    return dvz_visual_set_material(visual, &material);
+}
+
+
+
 typedef struct
 {
     uint32_t calls;
@@ -3617,25 +3648,15 @@ int test_app_offscreen_lit_primitive_depth_orders_overlap(TstContext* suite, con
     AT(dvz_visual_set_data(near_visual, "color", near_colors, 6) == 0);
     AT(dvz_visual_set_data(near_visual, "normal", normals, 6) == 0);
     AT(dvz_panel_add_visual(panel, near_visual, NULL) == 0);
-    AT(dvz_visual_set_primitive_shading(
-           near_visual,
-           &(DvzPrimitiveShadingDesc){
-               .light_direction = {0.0f, 0.0f, 1.0f},
-               .ambient = 1.0f,
-               .diffuse = 0.0f,
-           }) == 0);
+    AT(_test_set_phong_material(
+           near_visual, (float[3]){0.0f, 0.0f, 1.0f}, 1.0f, 0.0f, 0.25f, 32.0f) == 0);
 
     AT(dvz_visual_set_data(far_visual, "position", far_positions, 6) == 0);
     AT(dvz_visual_set_data(far_visual, "color", far_colors, 6) == 0);
     AT(dvz_visual_set_data(far_visual, "normal", normals, 6) == 0);
     AT(dvz_panel_add_visual(panel, far_visual, NULL) == 0);
-    AT(dvz_visual_set_primitive_shading(
-           far_visual,
-           &(DvzPrimitiveShadingDesc){
-               .light_direction = {0.0f, 0.0f, 1.0f},
-               .ambient = 1.0f,
-               .diffuse = 0.0f,
-           }) == 0);
+    AT(_test_set_phong_material(
+           far_visual, (float[3]){0.0f, 0.0f, 1.0f}, 1.0f, 0.0f, 0.25f, 32.0f) == 0);
 
     DvzApp* app = _app_test_create(suite, scene);
     if (app == NULL)
@@ -3718,13 +3739,8 @@ int test_app_offscreen_lit_primitive_depth_cue_darkens_far(
     AT(dvz_visual_set_data(visual, "position", positions, 12) == 0);
     AT(dvz_visual_set_data(visual, "color", colors, 12) == 0);
     AT(dvz_visual_set_data(visual, "normal", normals, 12) == 0);
-    AT(dvz_visual_set_primitive_shading(
-           visual,
-           &(DvzPrimitiveShadingDesc){
-               .light_direction = {0.0f, 0.0f, 1.0f},
-               .ambient = 1.0f,
-               .diffuse = 0.0f,
-           }) == 0);
+    AT(_test_set_phong_material(
+           visual, (float[3]){0.0f, 0.0f, 1.0f}, 1.0f, 0.0f, 0.25f, 32.0f) == 0);
     AT(dvz_visual_set_depth_cue(
            visual,
            &(DvzDepthCueDesc){
@@ -3828,13 +3844,8 @@ int test_app_offscreen_mesh_renders_nonblank(TstContext* suite, const TstCase* i
     AT(dvz_visual_set_data(visual, "normal", normals, 4) == 0);
     AT(dvz_visual_set_buffer(visual, "index", index_buffer));
     AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
-    AT(dvz_visual_set_primitive_shading(
-           visual,
-           &(DvzPrimitiveShadingDesc){
-               .light_direction = {0.0f, 0.0f, 1.0f},
-               .ambient = 1.0f,
-               .diffuse = 0.0f,
-           }) == 0);
+    AT(_test_set_phong_material(
+           visual, (float[3]){0.0f, 0.0f, 1.0f}, 1.0f, 0.0f, 0.25f, 32.0f) == 0);
 
     DvzApp* app = _app_test_create(suite, scene);
     if (app == NULL)
@@ -4085,13 +4096,9 @@ int test_app_offscreen_rotated_mesh_depth_orders_faces(TstContext* suite, const 
     AT(dvz_visual_set_data(visual, "normal", normals, 24) == 0);
     AT(dvz_visual_set_buffer(visual, "index", index_buffer));
     AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
-    AT(dvz_visual_set_primitive_shading(
-           visual,
-           &(DvzPrimitiveShadingDesc){
-               .light_direction = {0.35f, 0.55f, 0.75f},
-               .ambient = 0.25f,
-               .diffuse = 0.85f,
-           }) == 0);
+    AT(_test_set_phong_material(
+           visual, (float[3]){0.35f, 0.55f, 0.75f}, 0.25f, 0.85f, 0.25f, 32.0f) ==
+       0);
     dvz_panel_set_background_color(panel, 0.05f, 0.05f, 0.08f, 1.0f);
 
     DvzApp* app = _app_test_create(suite, scene);
@@ -4188,13 +4195,9 @@ int test_app_offscreen_camera_arcball_mesh_renders_cube(TstContext* suite, const
     AT(dvz_visual_set_data(visual, "normal", normals, 24) == 0);
     AT(dvz_visual_set_buffer(visual, "index", index_buffer));
     AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
-    AT(dvz_visual_set_primitive_shading(
-           visual,
-           &(DvzPrimitiveShadingDesc){
-               .light_direction = {0.35f, 0.55f, 0.75f},
-               .ambient = 0.25f,
-               .diffuse = 0.85f,
-           }) == 0);
+    AT(_test_set_phong_material(
+           visual, (float[3]){0.35f, 0.55f, 0.75f}, 0.25f, 0.85f, 0.25f, 32.0f) ==
+       0);
     dvz_panel_set_background_color(panel, 0.05f, 0.05f, 0.08f, 1.0f);
 
     DvzApp* app = _app_test_create(suite, scene);
@@ -4589,13 +4592,8 @@ int test_app_offscreen_resize_reuses_runtime_with_mesh_and_image(TstContext* sui
     AT(dvz_visual_set_data(mesh, "color", mesh_colors, 4) == 0);
     AT(dvz_visual_set_data(mesh, "normal", mesh_normals, 4) == 0);
     AT(dvz_visual_set_buffer(mesh, "index", index_buffer));
-    AT(dvz_visual_set_primitive_shading(
-           mesh,
-           &(DvzPrimitiveShadingDesc){
-               .light_direction = {0.0f, 0.0f, 1.0f},
-               .ambient = 1.0f,
-               .diffuse = 0.0f,
-           }) == 0);
+    AT(_test_set_phong_material(
+           mesh, (float[3]){0.0f, 0.0f, 1.0f}, 1.0f, 0.0f, 0.25f, 32.0f) == 0);
     AT(dvz_panel_add_visual(panel, mesh, NULL) == 0);
 
     float image_positions[4][3] = {

@@ -23,6 +23,37 @@
 /*  Tests                                                                                        */
 /*************************************************************************************************/
 
+/**
+ * Apply a Phong material while preserving the current visual alpha mode.
+ *
+ * @param visual the visual
+ * @param light_direction material light direction
+ * @param ambient ambient coefficient
+ * @param diffuse diffuse coefficient
+ * @param specular specular coefficient
+ * @param shininess shininess exponent
+ * @return 0 on success, -1 on error
+ */
+static int _test_set_phong_material(
+    DvzVisual* visual, const float light_direction[3], float ambient, float diffuse,
+    float specular, float shininess)
+{
+    ANN(visual);
+    ANN(light_direction);
+    DvzMaterialDesc material = dvz_phong_material_desc();
+    material.alpha_mode = dvz_visual_alpha_mode(visual);
+    material.light_direction[0] = light_direction[0];
+    material.light_direction[1] = light_direction[1];
+    material.light_direction[2] = light_direction[2];
+    material.phong.ambient = ambient;
+    material.phong.diffuse = diffuse;
+    material.phong.specular = specular;
+    material.phong.shininess = shininess;
+    return dvz_visual_set_material(visual, &material);
+}
+
+
+
 int test_scene_point_emit_glsl_executes(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
@@ -180,15 +211,8 @@ int test_scene_sphere_mode(TstContext* suite, const TstCase* item)
     AT(sphere->material_params.depth_cue_extra[3] == (float)DVZ_SPHERE_MODE_RAYCAST_IMPOSTOR);
     AT(sphere->material_params_dirty);
 
-    AT(dvz_visual_set_primitive_shading(
-           sphere,
-           &(DvzPrimitiveShadingDesc){
-               .light_direction = {0.0f, 0.0f, 1.0f},
-               .ambient = 0.2f,
-               .diffuse = 0.7f,
-               .specular = 0.8f,
-               .shininess = 64.0f,
-           }) == 0);
+    AT(_test_set_phong_material(
+           sphere, (float[3]){0.0f, 0.0f, 1.0f}, 0.2f, 0.7f, 0.8f, 64.0f) == 0);
     AT(sphere->sphere_mode == DVZ_SPHERE_MODE_RAYCAST_IMPOSTOR);
     AT(sphere->material_params.depth_cue_extra[3] == (float)DVZ_SPHERE_MODE_RAYCAST_IMPOSTOR);
     AT(dvz_sphere_mode(sphere, DVZ_SPHERE_MODE_FAST_IMPOSTOR) == 0);
@@ -4045,7 +4069,7 @@ int test_scene_point_emit_has_vertex_layout(TstContext* suite, const TstCase* it
 }
 
 
-int test_scene_indexed_primitive_shading_updates_runtime(TstContext* suite, const TstCase* item)
+int test_scene_indexed_primitive_material_updates_runtime(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -4087,13 +4111,8 @@ int test_scene_indexed_primitive_shading_updates_runtime(TstContext* suite, cons
     AT(dvz_visual_set_data(visual, "normal", normals, 4) == 0);
     AT(dvz_visual_set_buffer(visual, "index", index_buffer));
     AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
-    AT(dvz_visual_set_primitive_shading(
-           visual,
-           &(DvzPrimitiveShadingDesc){
-               .light_direction = {0.0f, 0.0f, 1.0f},
-               .ambient = 0.0f,
-               .diffuse = 0.0f,
-           }) == 0);
+    AT(_test_set_phong_material(
+           visual, (float[3]){0.0f, 0.0f, 1.0f}, 0.0f, 0.0f, 0.25f, 32.0f) == 0);
 
     DvzCapabilitySnapshot caps;
     dvz_capability_snapshot_default(&caps);
@@ -4130,13 +4149,8 @@ int test_scene_indexed_primitive_shading_updates_runtime(TstContext* suite, cons
     dvz_drp2_stream_destroy(stream0);
     stream0 = NULL;
 
-    AT(dvz_visual_set_primitive_shading(
-           visual,
-           &(DvzPrimitiveShadingDesc){
-               .light_direction = {0.0f, 0.0f, 1.0f},
-               .ambient = 1.0f,
-               .diffuse = 0.0f,
-           }) == 0);
+    AT(_test_set_phong_material(
+           visual, (float[3]){0.0f, 0.0f, 1.0f}, 1.0f, 0.0f, 0.25f, 32.0f) == 0);
 
     DvzDrp2CommandStream* stream1 = dvz_figure_emit_ex(figure, &caps, &report, &emit_cfg);
     ANN(stream1);
@@ -5888,13 +5902,8 @@ int test_scene_visual_internal_material_state(TstContext* suite, const TstCase* 
     uint64_t material_version = mesh->material.version;
     AT(material_version > 0);
 
-    AT(dvz_visual_set_primitive_shading(
-           mesh,
-           &(DvzPrimitiveShadingDesc){
-               .light_direction = {1.0f, 2.0f, 3.0f},
-               .ambient = 0.35f,
-               .diffuse = 0.65f,
-           }) == 0);
+    AT(_test_set_phong_material(
+           mesh, (float[3]){1.0f, 2.0f, 3.0f}, 0.35f, 0.65f, 0.25f, 32.0f) == 0);
     AT(mesh->material_params.light_direction[0] == 1.0f);
     AT(mesh->material_params.light_direction[1] == 2.0f);
     AT(mesh->material_params.light_direction[2] == 3.0f);
@@ -5967,6 +5976,11 @@ int test_scene_visual_material_setter(TstContext* suite, const TstCase* item)
     AT(defaults.phong.shininess == 32.0f);
     AT(defaults.standard.roughness == 0.5f);
     AT(defaults.standard.specular == 0.5f);
+    DvzMaterialDesc phong_defaults = dvz_phong_material_desc();
+    AT(phong_defaults.model == DVZ_MATERIAL_MODEL_PHONG);
+    DvzMaterialDesc standard_defaults = dvz_standard_material_desc();
+    AT(standard_defaults.model == DVZ_MATERIAL_MODEL_STANDARD);
+    AT(standard_defaults.standard.roughness == 0.5f);
 
     DvzScene* scene = dvz_scene();
     AT(scene != NULL);
@@ -5979,7 +5993,7 @@ int test_scene_visual_material_setter(TstContext* suite, const TstCase* item)
     AT(mesh->material.model == DVZ_MATERIAL_MODEL_PHONG);
     AT(point->material.model == DVZ_MATERIAL_MODEL_UNLIT);
 
-    DvzMaterialDesc phong = dvz_material_desc();
+    DvzMaterialDesc phong = dvz_phong_material_desc();
     phong.alpha_mode = DVZ_ALPHA_WBOIT;
     phong.opacity = 0.5f;
     phong.base_color_factor[0] = 0.75f;
@@ -6013,8 +6027,7 @@ int test_scene_visual_material_setter(TstContext* suite, const TstCase* item)
     AT(mesh->material_params.base_color_factor[0] == 0.75f);
     AT(mesh->material.version > version);
 
-    DvzMaterialDesc standard = dvz_material_desc();
-    standard.model = DVZ_MATERIAL_MODEL_STANDARD;
+    DvzMaterialDesc standard = dvz_standard_material_desc();
     standard.alpha_mode = DVZ_ALPHA_OPAQUE;
     standard.opacity = 0.9f;
     standard.standard.roughness = 0.25f;
@@ -6060,15 +6073,8 @@ int test_scene_visual_material_setter(TstContext* suite, const TstCase* item)
     AT(mesh->material_params.params[0] == 0.2f);
     AT(mesh->material_params.params[1] == 0.8f);
 
-    AT(dvz_visual_set_primitive_shading(
-           sphere,
-           &(DvzPrimitiveShadingDesc){
-               .light_direction = {0.0f, 1.0f, 0.0f},
-               .ambient = 0.3f,
-               .diffuse = 0.6f,
-               .specular = 0.2f,
-               .shininess = 16.0f,
-           }) == 0);
+    AT(_test_set_phong_material(
+           sphere, (float[3]){0.0f, 1.0f, 0.0f}, 0.3f, 0.6f, 0.2f, 16.0f) == 0);
     AT(sphere->material.model == DVZ_MATERIAL_MODEL_PHONG);
     AT(sphere->material.ambient == 0.3f);
     AT(sphere->material_params.params[3] == 16.0f);

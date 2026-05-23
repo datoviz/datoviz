@@ -342,17 +342,6 @@ struct DvzSceneBufferDesc
 typedef struct DvzSceneBufferDesc DvzSceneBufferDesc;
 
 
-struct DvzPrimitiveShadingDesc
-{
-    float light_direction[3];
-    float ambient;
-    float diffuse;
-    float specular;
-    float shininess;
-};
-typedef struct DvzPrimitiveShadingDesc DvzPrimitiveShadingDesc;
-
-
 struct DvzPhongMaterial
 {
     float ambient;

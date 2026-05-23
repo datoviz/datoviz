@@ -22,6 +22,37 @@
 /*  Tests                                                                                        */
 /*************************************************************************************************/
 
+/**
+ * Apply a Phong material while preserving the current visual alpha mode.
+ *
+ * @param visual the visual
+ * @param light_direction material light direction
+ * @param ambient ambient coefficient
+ * @param diffuse diffuse coefficient
+ * @param specular specular coefficient
+ * @param shininess shininess exponent
+ * @return 0 on success, -1 on error
+ */
+static int _test_set_phong_material(
+    DvzVisual* visual, const float light_direction[3], float ambient, float diffuse,
+    float specular, float shininess)
+{
+    ANN(visual);
+    ANN(light_direction);
+    DvzMaterialDesc material = dvz_phong_material_desc();
+    material.alpha_mode = dvz_visual_alpha_mode(visual);
+    material.light_direction[0] = light_direction[0];
+    material.light_direction[1] = light_direction[1];
+    material.light_direction[2] = light_direction[2];
+    material.phong.ambient = ambient;
+    material.phong.diffuse = diffuse;
+    material.phong.specular = specular;
+    material.phong.shininess = shininess;
+    return dvz_visual_set_material(visual, &material);
+}
+
+
+
 int test_scene_draw_contract_resolver_matrix(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
@@ -4334,13 +4365,9 @@ int test_scene_visual_alpha_mode_wboit_glsl_executes(TstContext* suite, const Ts
     AT(dvz_visual_set_data(transparent, "position", positions, 3) == 0);
     AT(dvz_visual_set_data(transparent, "color", colors, 3) == 0);
     AT(dvz_visual_set_data(transparent, "normal", normals, 3) == 0);
-    AT(dvz_visual_set_primitive_shading(
-           transparent,
-           &(DvzPrimitiveShadingDesc){
-               .light_direction = {0.0f, 0.0f, 1.0f},
-               .ambient = 0.25f,
-               .diffuse = 0.75f,
-           }) == 0);
+    AT(_test_set_phong_material(
+           transparent, (float[3]){0.0f, 0.0f, 1.0f}, 0.25f, 0.75f, 0.25f, 32.0f) ==
+       0);
     AT(dvz_visual_set_alpha_mode(transparent, DVZ_ALPHA_WBOIT) == 0);
     AT(dvz_panel_add_visual(panel, transparent, NULL) == 0);
 

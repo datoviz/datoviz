@@ -82,6 +82,35 @@ DvzMaterialDesc dvz_material_desc(void)
 }
 
 
+
+/**
+ * Return the default public Phong material descriptor.
+ *
+ * @return default Phong material descriptor
+ */
+DvzMaterialDesc dvz_phong_material_desc(void)
+{
+    DvzMaterialDesc desc = dvz_material_desc();
+    desc.model = DVZ_MATERIAL_MODEL_PHONG;
+    return desc;
+}
+
+
+
+/**
+ * Return the default public standard material descriptor.
+ *
+ * @return default standard material descriptor
+ */
+DvzMaterialDesc dvz_standard_material_desc(void)
+{
+    DvzMaterialDesc desc = dvz_material_desc();
+    desc.model = DVZ_MATERIAL_MODEL_STANDARD;
+    return desc;
+}
+
+
+
 /**
  * Return default circular point styling.
  *
@@ -569,34 +598,6 @@ int dvz_visual_set_material(DvzVisual* visual, const DvzMaterialDesc* desc)
     return 0;
 }
 
-
-
-/**
- * Override primitive, mesh, or sphere shading parameters.
- *
- * @param visual the visual
- * @param desc the shading descriptor, or NULL to restore defaults
- * @return 0 on success, -1 on error
- */
-int dvz_visual_set_primitive_shading(DvzVisual* visual, const DvzPrimitiveShadingDesc* desc)
-{
-    ANN(visual);
-    DvzMaterialDesc material = dvz_material_desc();
-    material.model = DVZ_MATERIAL_MODEL_PHONG;
-    material.alpha_mode = visual->alpha_mode;
-    material.opacity = visual->material.opacity;
-    if (desc != NULL)
-    {
-        material.light_direction[0] = desc->light_direction[0];
-        material.light_direction[1] = desc->light_direction[1];
-        material.light_direction[2] = desc->light_direction[2];
-        material.phong.ambient = desc->ambient;
-        material.phong.diffuse = desc->diffuse;
-        material.phong.specular = desc->specular;
-        material.phong.shininess = desc->shininess;
-    }
-    return dvz_visual_set_material(visual, &material);
-}
 
 
 /**

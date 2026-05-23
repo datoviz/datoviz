@@ -147,7 +147,7 @@ int test_scene_graph(TstSuite* suite)
     TST_CASE(test_scene_empty_figure_emit_clear_only);
     TST_CASE(test_scene_point_emit_has_vertex_layout);
     TST_CASE(test_scene_point_visual_resizes_existing_attributes);
-    TST_SCENE_GRAPH_GPU_CASE(test_scene_indexed_primitive_shading_updates_runtime);
+    TST_SCENE_GRAPH_GPU_CASE(test_scene_indexed_primitive_material_updates_runtime);
     TST_SCENE_GRAPH_GPU_CASE(test_scene_point_large_count_executes);
     TST_CASE(test_scene_second_emit_no_uploads_when_not_dirty);
     TST_CASE(test_scene_pending_render_work_tracks_volume_state);
