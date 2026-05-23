@@ -84,12 +84,12 @@ Implemented on 2026-05-21:
 3. `dvz_geometry()`, `dvz_geometry_reset()`, and `dvz_geometry_destroy()` own positions,
    normals, colors, UVs, and triangle indices through the shared allocator wrappers;
 4. `dvz_geometry_bounds()` computes F64 bounds;
-5. `dvz_geometry_positions_f32()` and `dvz_geometry_normals_f32()` provide the current bridge to
-   scene mesh upload paths that still consume F32 arrays;
+5. `dvz_mesh_geometry()` provides the current bridge from retained F64 CPU geometry to scene mesh
+   upload paths that still consume F32 arrays;
 6. `dvz_geom_cube()` and `dvz_geom_plane()` generate indexed geometry with normals, UVs, and
    zero-initialized color descriptors defaulting to opaque white;
 7. focused `geom` tests cover allocation/reset, cube bounds/index validity, plane normals/bounds,
-   F32 conversion, and core-runner wiring.
+   surface grids, transforms, merge behavior, and core-runner wiring.
 
 
 ## Second Implementation Slice

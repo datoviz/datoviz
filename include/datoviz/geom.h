@@ -101,32 +101,6 @@ dvz_geometry_merge(uint32_t count, const DvzGeometry* const* geometries);
 
 
 /**
- * Convert geometry positions to F32 vectors for current scene mesh upload paths.
- *
- * @param geometry the geometry
- * @param out output F32 position buffer
- * @param out_count number of vectors available in out
- * @return 0 on success, -1 on invalid input
- */
-DVZ_EXPORT int dvz_geometry_positions_f32(
-    const DvzGeometry* geometry, vec3* out, uint32_t out_count);
-
-
-
-/**
- * Convert geometry normals to F32 vectors for current scene mesh upload paths.
- *
- * @param geometry the geometry
- * @param out output F32 normal buffer
- * @param out_count number of vectors available in out
- * @return 0 on success, -1 on invalid input
- */
-DVZ_EXPORT int dvz_geometry_normals_f32(
-    const DvzGeometry* geometry, vec3* out, uint32_t out_count);
-
-
-
-/**
  * Create an indexed cube geometry.
  *
  * @param desc optional cube descriptor

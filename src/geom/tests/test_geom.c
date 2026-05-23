@@ -121,27 +121,6 @@ int test_geometry_plane(TstContext* suite, const TstCase* tstitem)
 
 
 
-int test_geometry_f32(TstContext* suite, const TstCase* tstitem)
-{
-    ANN(suite);
-
-    DvzGeometry* cube = dvz_geom_cube(NULL);
-    AT(cube != NULL);
-
-    vec3 positions[24] = {0};
-    vec3 normals[24] = {0};
-    AT(dvz_geometry_positions_f32(cube, positions, 24) == 0);
-    AT(dvz_geometry_normals_f32(cube, normals, 24) == 0);
-    AT(dvz_geometry_positions_f32(cube, positions, 23) == -1);
-    AC(positions[0][0], 0.5f, EPS);
-    AC(normals[0][0], 1.0f, EPS);
-
-    dvz_geometry_destroy(cube);
-    return 0;
-}
-
-
-
 int test_geometry_surface_grid(TstContext* suite, const TstCase* tstitem)
 {
     ANN(suite);
@@ -376,7 +355,6 @@ int test_geom(TstSuite* suite)
     TST_CASE(test_geometry_alloc);
     TST_CASE(test_geometry_cube);
     TST_CASE(test_geometry_plane);
-    TST_CASE(test_geometry_f32);
     TST_CASE(test_geometry_surface_grid);
     TST_CASE(test_geometry_surface_grid_update);
     TST_CASE(test_geometry_sphere);

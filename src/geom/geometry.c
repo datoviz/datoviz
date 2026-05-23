@@ -171,27 +171,6 @@ static void _geom_fill_color(DvzGeometry* geometry, const DvzColor color)
 
 
 /**
- * Copy F64 vectors to F32 vectors.
- *
- * @param count vector count
- * @param src source F64 vectors
- * @param out output F32 vectors
- */
-static void _geom_copy_dvec3_to_vec3(uint32_t count, const dvec3* src, vec3* out)
-{
-    ANN(src);
-    ANN(out);
-    for (uint32_t i = 0; i < count; i++)
-    {
-        out[i][0] = (float)src[i][0];
-        out[i][1] = (float)src[i][1];
-        out[i][2] = (float)src[i][2];
-    }
-}
-
-
-
-/**
  * Return the squared length of a F64 3-vector.
  *
  * @param v vector
@@ -790,46 +769,6 @@ DvzGeometry* dvz_geometry_merge(uint32_t count, const DvzGeometry* const* geomet
     }
 
     return out;
-}
-
-
-
-/**
- * Convert geometry positions to F32 vectors for current scene mesh upload paths.
- *
- * @param geometry the geometry
- * @param out output F32 position buffer
- * @param out_count number of vectors available in out
- * @return 0 on success, -1 on invalid input
- */
-int dvz_geometry_positions_f32(const DvzGeometry* geometry, vec3* out, uint32_t out_count)
-{
-    if (geometry == NULL || out == NULL || geometry->positions == NULL ||
-        out_count < geometry->vertex_count)
-        return -1;
-
-    _geom_copy_dvec3_to_vec3(geometry->vertex_count, geometry->positions, out);
-    return 0;
-}
-
-
-
-/**
- * Convert geometry normals to F32 vectors for current scene mesh upload paths.
- *
- * @param geometry the geometry
- * @param out output F32 normal buffer
- * @param out_count number of vectors available in out
- * @return 0 on success, -1 on invalid input
- */
-int dvz_geometry_normals_f32(const DvzGeometry* geometry, vec3* out, uint32_t out_count)
-{
-    if (geometry == NULL || out == NULL || geometry->normals == NULL ||
-        out_count < geometry->vertex_count)
-        return -1;
-
-    _geom_copy_dvec3_to_vec3(geometry->vertex_count, geometry->normals, out);
-    return 0;
 }
 
 
