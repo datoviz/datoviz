@@ -128,6 +128,7 @@ int test_scene_background_color_creates_fixed_quad(TstContext* suite, const TstC
     AT(panel->visuals[0].visual == panel->background_visual);
     AT(panel->visuals[0].z_layer == -1);
     AT(panel->visuals[0].controller_mode == DVZ_CONTROLLER_FIXED);
+    AT(panel->background_type == DVZ_PANEL_BACKGROUND_COLOR);
 
     /* Second call with a different color: updates in place, no new visual. */
     DvzVisual* before = panel->background_visual;
@@ -148,6 +149,83 @@ int test_scene_background_color_creates_fixed_quad(TstContext* suite, const TstC
     AT(panel->visual_count == 2);
     AT(panel->visuals[1].z_layer == 0);
     AT(panel->visuals[1].controller_mode == DVZ_CONTROLLER_APPLY);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+int test_scene_background_descriptor_gradient_and_image(TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
+
+    DvzPanelBackgroundDesc gradient = {
+        .type = DVZ_PANEL_BACKGROUND_LINEAR_GRADIENT,
+        .gradient = {
+            .start = {0.0f, 0.0f},
+            .end = {1.0f, 0.0f},
+            .color0 = {1.0f, 0.0f, 0.0f, 1.0f},
+            .color1 = {0.0f, 0.0f, 1.0f, 1.0f},
+        },
+    };
+    AT(dvz_panel_set_background(panel, &gradient));
+    AT(panel->visual_count == 1);
+    ANN(panel->background_visual);
+    AT(panel->background_type == DVZ_PANEL_BACKGROUND_LINEAR_GRADIENT);
+    AT(panel->background_visual->type == DVZ_VISUAL_TYPE_PRIMITIVE);
+    AT(panel->visuals[0].z_layer == -1);
+    AT(panel->visuals[0].controller_mode == DVZ_CONTROLLER_FIXED);
+
+    int color_idx = _attr_index(panel->background_visual, "color");
+    AT(color_idx >= 0);
+    const DvzColor* colors = (const DvzColor*)panel->background_visual->attrs[color_idx].data;
+    ANN(colors);
+    AT(colors[0][0] == 255);
+    AT(colors[0][2] == 0);
+    AT(colors[1][0] == 255);
+    AT(colors[1][2] == 0);
+    AT(colors[2][0] == 0);
+    AT(colors[2][2] == 255);
+    AT(colors[3][0] == 0);
+    AT(colors[3][2] == 255);
+
+    DvzVisual* gradient_visual = panel->background_visual;
+    gradient.gradient.end[0] = 0.0f;
+    gradient.gradient.end[1] = 1.0f;
+    AT(dvz_panel_set_background(panel, &gradient));
+    AT(panel->visual_count == 1);
+    AT(panel->background_visual == gradient_visual);
+
+    uint8_t pixels[2 * 2 * 4] = {
+        255, 0, 0, 255, 0, 255, 0, 255,
+        0, 0, 255, 255, 255, 255, 255, 255,
+    };
+    DvzPanelBackgroundDesc image = {
+        .type = DVZ_PANEL_BACKGROUND_IMAGE,
+        .image = {.rgba = pixels, .width = 2, .height = 2},
+    };
+    AT(dvz_panel_set_background(panel, &image));
+    AT(panel->visual_count == 1);
+    ANN(panel->background_visual);
+    AT(panel->background_visual != gradient_visual);
+    AT(panel->background_type == DVZ_PANEL_BACKGROUND_IMAGE);
+    AT(panel->background_visual->type == DVZ_VISUAL_TYPE_IMAGE);
+    AT(panel->background_visual->field != NULL);
+    AT(panel->background_visual->field->desc.width == 2);
+    AT(panel->background_visual->field->desc.height == 2);
+    AT(panel->visuals[0].visual == panel->background_visual);
+    AT(panel->visuals[0].z_layer == -1);
+    AT(panel->visuals[0].controller_mode == DVZ_CONTROLLER_FIXED);
+
+    dvz_panel_clear_background(panel);
+    AT(panel->visual_count == 0);
+    AT(panel->background_visual == NULL);
+    AT(panel->background_type == DVZ_PANEL_BACKGROUND_NONE);
 
     dvz_scene_destroy(scene);
     return 0;

@@ -1118,6 +1118,7 @@ struct DvzPanel
      * lives in scene->visuals[] (weak ref); this pointer lets repeat calls update the
      * existing visual instead of stacking new ones. */
     DvzVisual* background_visual;
+    DvzPanelBackgroundType background_type;
 
     uint32_t colorbar_count;
     DvzColorbar* colorbars[DVZ_SCENE_MAX_PANEL_COLORBARS];

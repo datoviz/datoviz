@@ -14,6 +14,7 @@
 /*************************************************************************************************/
 
 #include <float.h>
+#include <math.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <string.h>
@@ -198,6 +199,152 @@ void _scene_panel_visual_order(const DvzPanel* panel, uint32_t* order)
 
 
 /**
+ * Convert a normalized color component to an unsigned byte.
+ *
+ * @param value normalized component value
+ * @return clamped byte value
+ */
+static uint8_t _panel_background_u8(float value)
+{
+    if (!isfinite(value))
+        value = 0.0f;
+    if (value < 0.0f)
+        value = 0.0f;
+    if (value > 1.0f)
+        value = 1.0f;
+    return (uint8_t)(value * 255.0f + 0.5f);
+}
+
+
+
+/**
+ * Convert normalized float RGBA values to a DvzColor.
+ *
+ * @param rgba normalized RGBA values
+ * @param out output color
+ */
+static void _panel_background_color(const float rgba[4], DvzColor out)
+{
+    ANN(rgba);
+    ANN(out);
+    out[0] = _panel_background_u8(rgba[0]);
+    out[1] = _panel_background_u8(rgba[1]);
+    out[2] = _panel_background_u8(rgba[2]);
+    out[3] = _panel_background_u8(rgba[3]);
+}
+
+
+
+/**
+ * Detach the current background visual from one panel.
+ *
+ * @param panel the panel
+ */
+static void _panel_background_detach(DvzPanel* panel)
+{
+    ANN(panel);
+    if (panel->background_visual == NULL)
+    {
+        panel->background_type = DVZ_PANEL_BACKGROUND_NONE;
+        return;
+    }
+
+    for (uint32_t i = 0; i < panel->visual_count; i++)
+    {
+        if (panel->visuals[i].visual != panel->background_visual)
+            continue;
+        for (uint32_t j = i + 1; j < panel->visual_count; j++)
+            panel->visuals[j - 1] = panel->visuals[j];
+        panel->visual_count--;
+        for (uint32_t j = 0; j < panel->visual_count; j++)
+            panel->visuals[j].insertion_index = j;
+        break;
+    }
+
+    dvz_visual_destroy(panel->background_visual);
+    panel->background_visual = NULL;
+    panel->background_type = DVZ_PANEL_BACKGROUND_NONE;
+    if (panel->figure != NULL)
+        _scene_notify_request_frame(panel->figure);
+}
+
+
+
+/**
+ * Fill the four fullscreen background quad colors from a linear gradient.
+ *
+ * @param background background descriptor
+ * @param colors output vertex colors
+ */
+static void
+_panel_background_gradient_colors(const DvzPanelBackgroundDesc* background, DvzColor colors[4])
+{
+    ANN(background);
+    ANN(colors);
+
+    const float* start = background->gradient.start;
+    const float* end = background->gradient.end;
+    float dx = end[0] - start[0];
+    float dy = end[1] - start[1];
+    float len2 = dx * dx + dy * dy;
+    const float points[4][2] = {
+        {0.0f, 0.0f},
+        {0.0f, 1.0f},
+        {1.0f, 0.0f},
+        {1.0f, 1.0f},
+    };
+
+    for (uint32_t i = 0; i < 4; i++)
+    {
+        float t = 0.0f;
+        if (len2 > FLT_EPSILON && isfinite(len2))
+            t = ((points[i][0] - start[0]) * dx + (points[i][1] - start[1]) * dy) / len2;
+        if (!isfinite(t))
+            t = 0.0f;
+        if (t < 0.0f)
+            t = 0.0f;
+        if (t > 1.0f)
+            t = 1.0f;
+
+        float rgba[4] = {0};
+        for (uint32_t c = 0; c < 4; c++)
+        {
+            rgba[c] = background->gradient.color0[c] * (1.0f - t) +
+                      background->gradient.color1[c] * t;
+        }
+        _panel_background_color(rgba, colors[i]);
+    }
+}
+
+
+
+/**
+ * Attach a visual as the panel background.
+ *
+ * @param panel the panel
+ * @param visual the visual
+ * @param type background type represented by the visual
+ * @return whether the visual was attached
+ */
+static bool _panel_background_attach(
+    DvzPanel* panel, DvzVisual* visual, DvzPanelBackgroundType type)
+{
+    ANN(panel);
+    ANN(visual);
+    if (dvz_panel_add_visual(
+            panel, visual,
+            &(DvzVisualAttachDesc){.z_layer = -1, .controller_mode = DVZ_CONTROLLER_FIXED}) != 0)
+    {
+        return false;
+    }
+    panel->background_visual = visual;
+    panel->background_type = type;
+    return true;
+}
+
+
+
+/**
  * Clear one visual scale binding.
  *
  * @param visual the visual
@@ -242,20 +389,44 @@ int dvz_panel_add_visual(DvzPanel* panel, DvzVisual* visual, const DvzVisualAtta
 
 
 /**
- * Set or update the panel background color visual.
+ * Clear a panel background.
  *
  * @param panel the panel
- * @param r red channel in normalized units
- * @param g green channel in normalized units
- * @param b blue channel in normalized units
- * @param a alpha channel in normalized units
  */
-void dvz_panel_set_background_color(DvzPanel* panel, float r, float g, float b, float a)
+void dvz_panel_clear_background(DvzPanel* panel)
 {
     ANN(panel);
     if (panel->figure == NULL || panel->figure->scene == NULL)
         return;
     DvzScene* scene = panel->figure->scene;
+    if (!_scene_visual_mutation_allowed(scene, "clear panel background"))
+        return;
+    _panel_background_detach(panel);
+}
+
+
+
+/**
+ * Set or update a panel background.
+ *
+ * @param panel the panel
+ * @param background the background descriptor, or NULL to clear
+ * @return whether the background was updated
+ */
+bool dvz_panel_set_background(DvzPanel* panel, const DvzPanelBackgroundDesc* background)
+{
+    ANN(panel);
+    if (panel->figure == NULL || panel->figure->scene == NULL)
+        return false;
+    DvzScene* scene = panel->figure->scene;
+    if (!_scene_visual_mutation_allowed(scene, "set panel background"))
+        return false;
+
+    if (background == NULL || background->type == DVZ_PANEL_BACKGROUND_NONE)
+    {
+        _panel_background_detach(panel);
+        return true;
+    }
 
     /* Fullscreen quad in clip space, TRIANGLE_STRIP order (TL, BL, TR, BR). The visual is
      * attached with controller_mode=FIXED so the panzoom/arcball MVP doesn't move it,
@@ -266,48 +437,141 @@ void dvz_panel_set_background_color(DvzPanel* panel, float r, float g, float b, 
         +1.0f, +1.0f, 0.0f, /* TR */
         +1.0f, -1.0f, 0.0f, /* BR */
     };
-    DvzColor color = {
-        (uint8_t)(r * 255.0f + 0.5f),
-        (uint8_t)(g * 255.0f + 0.5f),
-        (uint8_t)(b * 255.0f + 0.5f),
-        (uint8_t)(a * 255.0f + 0.5f),
-    };
-    DvzColor colors[4] = {
-        {color[0], color[1], color[2], color[3]},
-        {color[0], color[1], color[2], color[3]},
-        {color[0], color[1], color[2], color[3]},
-        {color[0], color[1], color[2], color[3]},
-    };
 
-    if (panel->background_visual == NULL)
+    if (background->type == DVZ_PANEL_BACKGROUND_COLOR ||
+        background->type == DVZ_PANEL_BACKGROUND_LINEAR_GRADIENT)
     {
-        DvzVisual* bg = dvz_primitive(scene, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP, 0);
-        if (bg == NULL)
+        DvzColor colors[4] = {0};
+        if (background->type == DVZ_PANEL_BACKGROUND_COLOR)
         {
-            log_error("dvz_panel_set_background_color: failed to allocate background visual");
-            return;
+            DvzColor color = {0};
+            _panel_background_color(background->color, color);
+            for (uint32_t i = 0; i < 4; i++)
+                dvz_memcpy(colors[i], sizeof(DvzColor), color, sizeof(DvzColor));
         }
-        if (dvz_visual_set_data(bg, "position", positions, 4) != 0 ||
-            dvz_visual_set_data(bg, "color", colors, 4) != 0)
+        else
         {
-            log_error("dvz_panel_set_background_color: failed to set background data");
-            return;
+            _panel_background_gradient_colors(background, colors);
         }
-        if (dvz_panel_add_visual(
-                panel, bg,
-                &(DvzVisualAttachDesc){.z_layer = -1, .controller_mode = DVZ_CONTROLLER_FIXED}) !=
-            0)
+
+        if (panel->background_visual != NULL &&
+            panel->background_type != DVZ_PANEL_BACKGROUND_COLOR &&
+            panel->background_type != DVZ_PANEL_BACKGROUND_LINEAR_GRADIENT)
         {
-            log_error("dvz_panel_set_background_color: failed to attach background visual");
-            return;
+            _panel_background_detach(panel);
         }
-        panel->background_visual = bg;
+
+        if (panel->background_visual == NULL)
+        {
+            DvzVisual* bg = dvz_primitive(scene, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP, 0);
+            if (bg == NULL)
+            {
+                log_error("dvz_panel_set_background: failed to allocate background visual");
+                return false;
+            }
+            if (dvz_visual_set_data(bg, "position", positions, 4) != 0 ||
+                dvz_visual_set_data(bg, "color", colors, 4) != 0)
+            {
+                log_error("dvz_panel_set_background: failed to set background data");
+                dvz_visual_destroy(bg);
+                return false;
+            }
+            if (!_panel_background_attach(panel, bg, background->type))
+            {
+                log_error("dvz_panel_set_background: failed to attach background visual");
+                dvz_visual_destroy(bg);
+                return false;
+            }
+        }
+        else if (dvz_visual_set_data(panel->background_visual, "color", colors, 4) != 0)
+        {
+            log_error("dvz_panel_set_background: failed to update background color data");
+            return false;
+        }
+        panel->background_type = background->type;
+        return true;
     }
-    else
+
+    if (background->type == DVZ_PANEL_BACKGROUND_IMAGE)
     {
-        /* Existing background - just update its color. Position is already correct. */
-        dvz_visual_set_data(panel->background_visual, "color", colors, 4);
+        if (background->image.rgba == NULL || background->image.width == 0 ||
+            background->image.height == 0)
+        {
+            log_error("dvz_panel_set_background: image background requires non-empty RGBA8 data");
+            return false;
+        }
+
+        static const float texcoords[4 * 2] = {
+            0.0f, 0.0f, /* TL */
+            0.0f, 1.0f, /* BL */
+            1.0f, 0.0f, /* TR */
+            1.0f, 1.0f, /* BR */
+        };
+
+        if (panel->background_visual != NULL &&
+            panel->background_type != DVZ_PANEL_BACKGROUND_IMAGE)
+        {
+            _panel_background_detach(panel);
+        }
+
+        if (panel->background_visual == NULL)
+        {
+            DvzVisual* bg = dvz_image(scene, 0);
+            if (bg == NULL)
+            {
+                log_error("dvz_panel_set_background: failed to allocate image background visual");
+                return false;
+            }
+            if (dvz_visual_set_data(bg, "position", positions, 4) != 0 ||
+                dvz_visual_set_data(bg, "texcoords", texcoords, 4) != 0 ||
+                dvz_visual_set_texture(
+                    bg, background->image.rgba, background->image.width,
+                    background->image.height) != 0)
+            {
+                log_error("dvz_panel_set_background: failed to set image background data");
+                dvz_visual_destroy(bg);
+                return false;
+            }
+            if (!_panel_background_attach(panel, bg, DVZ_PANEL_BACKGROUND_IMAGE))
+            {
+                log_error("dvz_panel_set_background: failed to attach image background visual");
+                dvz_visual_destroy(bg);
+                return false;
+            }
+        }
+        else if (dvz_visual_set_texture(
+                     panel->background_visual, background->image.rgba, background->image.width,
+                     background->image.height) != 0)
+        {
+            log_error("dvz_panel_set_background: failed to update image background texture");
+            return false;
+        }
+        panel->background_type = DVZ_PANEL_BACKGROUND_IMAGE;
+        return true;
     }
+
+    log_error("dvz_panel_set_background: unknown background type");
+    return false;
+}
+
+
+
+/**
+ * Set or update the panel background color visual.
+ *
+ * @param panel the panel
+ * @param r red channel in normalized units
+ * @param g green channel in normalized units
+ * @param b blue channel in normalized units
+ * @param a alpha channel in normalized units
+ */
+void dvz_panel_set_background_color(DvzPanel* panel, float r, float g, float b, float a)
+{
+    DvzPanelBackgroundDesc background = {
+        .type = DVZ_PANEL_BACKGROUND_COLOR,
+        .color = {r, g, b, a},
+    };
+    (void)dvz_panel_set_background(panel, &background);
 }
 
 

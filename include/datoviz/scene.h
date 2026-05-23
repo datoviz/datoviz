@@ -447,9 +447,33 @@ DVZ_EXPORT int dvz_panel_add_visual(
 
 
 /**
+ * Set or update a panel background.
+ *
+ * Backgrounds are rendered as a fixed full-panel visual behind regular visuals. Passing NULL or
+ * a descriptor with type DVZ_PANEL_BACKGROUND_NONE clears the current background. Linear gradients
+ * use panel-local start and end points in [0, 1]. Image backgrounds accept tightly packed RGBA8
+ * pixels and stretch them to the panel rectangle.
+ *
+ * @param panel the panel
+ * @param background the background descriptor, or NULL to clear
+ * @return whether the background was updated
+ */
+DVZ_EXPORT bool
+dvz_panel_set_background(DvzPanel* panel, const DvzPanelBackgroundDesc* background);
+
+
+/**
+ * Clear a panel background.
+ *
+ * @param panel the panel
+ */
+DVZ_EXPORT void dvz_panel_clear_background(DvzPanel* panel);
+
+
+/**
  * Set or update a uniform-color background for a panel.
  *
- * Internally creates a fullscreen-quad visual attached at z_layer=-1 with
+ * Internally creates a fullscreen-quad visual attached behind regular visuals with
  * controller_mode=FIXED so the background fills the panel rect and is unaffected by
  * panzoom/arcball navigation. Repeat calls update the existing background's color
  * instead of stacking new visuals.
