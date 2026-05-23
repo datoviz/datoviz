@@ -80,10 +80,10 @@ typedef struct ColorbarState
     float detached_offset_y;
     float detached_width;
     float detached_height;
-    float padding_left_px;
-    float padding_right_px;
-    float padding_top_px;
-    float padding_bottom_px;
+    int padding_left_px;
+    int padding_right_px;
+    int padding_top_px;
+    int padding_bottom_px;
     bool show_x_axis;
     bool show_y_axis;
     bool show_grid;
@@ -330,10 +330,10 @@ static void _apply_panel_padding(ColorbarState* state)
 
     (void)dvz_panel_set_padding(
         state->panel, &(DvzPanelReserve){
-                          .left_px = state->padding_left_px,
-                          .right_px = state->padding_right_px,
-                          .top_px = state->padding_top_px,
-                          .bottom_px = state->padding_bottom_px,
+                          .left_px = (float)state->padding_left_px,
+                          .right_px = (float)state->padding_right_px,
+                          .top_px = (float)state->padding_top_px,
+                          .bottom_px = (float)state->padding_bottom_px,
                       });
 }
 
@@ -415,14 +415,10 @@ static void _colorbar_gui(DvzGui* gui, DvzAppWindow* win, void* user_data)
         }
 
         dvz_gui_separator_text(gui, "Panel");
-        padding_changed |= dvz_gui_slider_float(
-            gui, "Padding L", &state->padding_left_px, 0.0f, 96.0f);
-        padding_changed |= dvz_gui_slider_float(
-            gui, "Padding R", &state->padding_right_px, 0.0f, 96.0f);
-        padding_changed |= dvz_gui_slider_float(
-            gui, "Padding T", &state->padding_top_px, 0.0f, 96.0f);
-        padding_changed |= dvz_gui_slider_float(
-            gui, "Padding B", &state->padding_bottom_px, 0.0f, 96.0f);
+        padding_changed |= dvz_gui_slider_int(gui, "Padding L", &state->padding_left_px, 0, 96);
+        padding_changed |= dvz_gui_slider_int(gui, "Padding R", &state->padding_right_px, 0, 96);
+        padding_changed |= dvz_gui_slider_int(gui, "Padding T", &state->padding_top_px, 0, 96);
+        padding_changed |= dvz_gui_slider_int(gui, "Padding B", &state->padding_bottom_px, 0, 96);
 
         dvz_gui_separator_text(gui, "Colorbar");
         const char* const modes[] = {"Attached", "Detached"};
