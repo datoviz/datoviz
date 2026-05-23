@@ -88,40 +88,26 @@ static void gui_callback(DvzGui* gui, DvzAppWindow* win, void* user_data)
 
 int main(int argc, char** argv)
 {
-    DvzScene* scene = dvz_scene();
-    if (scene == NULL)
-    {
-        fprintf(stderr, "dvz_scene() failed\n");
-        return 1;
-    }
+    int ret = 1;
+    DvzScene* scene = NULL;
+    DvzApp* app = NULL;
+    DvzGuiViewport* viewport = NULL;
+
+    scene = dvz_scene();
+    EXAMPLE_CHECK(scene != NULL, "dvz_scene() failed");
 
     DvzFigure* source_figure = dvz_figure(scene, 640, 480, 0);
     DvzFigure* host_figure = dvz_figure(scene, 1000, 700, 0);
-    if (source_figure == NULL || host_figure == NULL)
-    {
-        fprintf(stderr, "dvz_figure() failed\n");
-        dvz_scene_destroy(scene);
-        return 1;
-    }
+    EXAMPLE_CHECK(source_figure != NULL && host_figure != NULL, "dvz_figure() failed");
 
     DvzPanel* source_panel = dvz_panel_full(source_figure);
     DvzPanel* host_panel = dvz_panel_full(host_figure);
-    if (source_panel == NULL || host_panel == NULL)
-    {
-        fprintf(stderr, "dvz_panel() failed\n");
-        dvz_scene_destroy(scene);
-        return 1;
-    }
+    EXAMPLE_CHECK(source_panel != NULL && host_panel != NULL, "dvz_panel() failed");
     dvz_panel_set_background_color(source_panel, 0.08f, 0.09f, 0.12f, 1.0f);
     dvz_panel_set_background_color(host_panel, 0.06f, 0.07f, 0.09f, 1.0f);
 
     DvzVisual* visual = dvz_point(scene, 0);
-    if (visual == NULL)
-    {
-        fprintf(stderr, "dvz_point() failed\n");
-        dvz_scene_destroy(scene);
-        return 1;
-    }
+    EXAMPLE_CHECK(visual != NULL, "dvz_point() failed");
 
     float positions[5][3] = {
         {-0.70f, -0.50f, 0.0f},
@@ -146,59 +132,38 @@ int main(int argc, char** argv)
     dvz_point_data(visual, positions, colors, state.sizes, 5);
     dvz_panel_add_visual(source_panel, visual, NULL);
 
-    DvzApp* app = dvz_app(scene);
-    if (app == NULL)
-    {
-        fprintf(stderr, "dvz_app() failed (no GPU or display?)\n");
-        dvz_scene_destroy(scene);
-        return 1;
-    }
+    app = dvz_app(scene);
+    EXAMPLE_CHECK(app != NULL, "dvz_app() failed (no GPU or display?)");
 
     DvzAppWindow* host_win =
         dvz_app_window_glfw(app, host_figure, 1000, 700, "gui_viewport");
-    if (host_win == NULL)
-    {
-        fprintf(stderr, "dvz_app_window_glfw() failed (GLFW unavailable?)\n");
-        dvz_app_destroy(app);
-        dvz_scene_destroy(scene);
-        return 1;
-    }
+    EXAMPLE_CHECK(host_win != NULL, "dvz_app_window_glfw() failed (GLFW unavailable?)");
 
     DvzGuiConfig gui_config = dvz_gui_config();
     DvzGui* gui = dvz_app_window_gui(host_win, &gui_config);
-    if (gui == NULL)
-    {
-        fprintf(stderr, "dvz_app_window_gui() failed\n");
-        dvz_app_destroy(app);
-        dvz_scene_destroy(scene);
-        return 1;
-    }
+    EXAMPLE_CHECK(gui != NULL, "dvz_app_window_gui() failed");
 
-    state.gui_viewport = dvz_gui_viewport(gui, source_figure, NULL);
-    if (state.gui_viewport == NULL)
-    {
-        fprintf(stderr, "dvz_gui_viewport() failed\n");
-        dvz_app_destroy(app);
-        dvz_scene_destroy(scene);
-        return 1;
-    }
+    viewport = dvz_gui_viewport(gui, source_figure, NULL);
+    EXAMPLE_CHECK(viewport != NULL, "dvz_gui_viewport() failed");
+    state.gui_viewport = viewport;
+
     DvzController* panzoom_controller = dvz_panzoom(scene, NULL);
-    if (panzoom_controller == NULL ||
-        dvz_panel_bind_controller(source_panel, panzoom_controller, DVZ_DIM_MASK_XY) != 0)
-    {
-        fprintf(stderr, "failed to create or bind panzoom controller\n");
-        dvz_gui_viewport_destroy(state.gui_viewport);
-        dvz_app_destroy(app);
-        dvz_scene_destroy(scene);
-        return 1;
-    }
+    EXAMPLE_CHECK(
+        panzoom_controller != NULL &&
+            dvz_panel_bind_controller(source_panel, panzoom_controller, DVZ_DIM_MASK_XY) == 0,
+        "failed to create or bind panzoom controller");
     dvz_panel_connect_input(source_panel, dvz_gui_viewport_input(state.gui_viewport));
     dvz_app_window_set_gui_callback(host_win, gui_callback, &state);
 
     dvz_app_run(app, example_frame_count(argc, argv));
+    ret = 0;
 
-    dvz_gui_viewport_destroy(state.gui_viewport);
-    dvz_app_destroy(app);
-    dvz_scene_destroy(scene);
-    return 0;
+cleanup:
+    if (viewport != NULL)
+        dvz_gui_viewport_destroy(viewport);
+    if (app != NULL)
+        dvz_app_destroy(app);
+    if (scene != NULL)
+        dvz_scene_destroy(scene);
+    return ret;
 }

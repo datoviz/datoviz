@@ -261,20 +261,15 @@ static void _linked_panels_frame(DvzAppWindow* win, void* user_data)
 
 int main(int argc, char** argv)
 {
-    DvzScene* scene = dvz_scene();
-    if (scene == NULL)
-    {
-        fprintf(stderr, "dvz_scene() failed\n");
-        return 1;
-    }
+    int ret = 1;
+    DvzScene* scene = NULL;
+    DvzApp* app = NULL;
+
+    scene = dvz_scene();
+    EXAMPLE_CHECK(scene != NULL, "dvz_scene() failed");
 
     DvzFigure* figure = dvz_figure(scene, WIDTH, HEIGHT, 0);
-    if (figure == NULL)
-    {
-        fprintf(stderr, "dvz_figure() failed\n");
-        dvz_scene_destroy(scene);
-        return 1;
-    }
+    EXAMPLE_CHECK(figure != NULL, "dvz_figure() failed");
 
     DvzPanel* panels[PANEL_COUNT] = {
         dvz_panel(figure, (DvzPanelDesc){.x = 0.00f, .y = 0.00f, .width = 0.50f, .height = 0.50f}),
@@ -283,61 +278,40 @@ int main(int argc, char** argv)
     };
     for (uint32_t i = 0; i < PANEL_COUNT; i++)
     {
-        if (panels[i] == NULL)
-        {
-            fprintf(stderr, "dvz_panel() failed\n");
-            dvz_scene_destroy(scene);
-            return 1;
-        }
+        EXAMPLE_CHECK(panels[i] != NULL, "dvz_panel() failed");
     }
 
     dvz_panel_set_background_color(panels[0], 0.045f, 0.060f, 0.075f, 1.0f);
     dvz_panel_set_background_color(panels[1], 0.070f, 0.055f, 0.050f, 1.0f);
     dvz_panel_set_background_color(panels[2], 0.050f, 0.060f, 0.050f, 1.0f);
 
-    if (!_add_point_grid(scene, panels[0], 0) || !_add_point_grid(scene, panels[1], 1) ||
-        !_add_point_grid(scene, panels[2], 2))
-    {
-        fprintf(stderr, "visual setup failed\n");
-        dvz_scene_destroy(scene);
-        return 1;
-    }
+    EXAMPLE_CHECK(
+        _add_point_grid(scene, panels[0], 0) && _add_point_grid(scene, panels[1], 1) &&
+            _add_point_grid(scene, panels[2], 2),
+        "visual setup failed");
 
-    DvzApp* app = dvz_app(scene);
-    if (app == NULL)
-    {
-        fprintf(stderr, "dvz_app() failed (no GPU or display?)\n");
-        dvz_scene_destroy(scene);
-        return 1;
-    }
+    app = dvz_app(scene);
+    EXAMPLE_CHECK(app != NULL, "dvz_app() failed (no GPU or display?)");
 
     DvzAppWindow* win =
         dvz_app_window_glfw(app, figure, WIDTH, HEIGHT, "linked_panels");
-    if (win == NULL)
-    {
-        fprintf(stderr, "dvz_app_window_glfw() failed (GLFW unavailable?)\n");
-        dvz_app_destroy(app);
-        dvz_scene_destroy(scene);
-        return 1;
-    }
+    EXAMPLE_CHECK(win != NULL, "dvz_app_window_glfw() failed (GLFW unavailable?)");
 
     LinkedPanelsState state = {0};
     for (uint32_t i = 0; i < PANEL_COUNT; i++)
     {
         state.panzooms[i] = dvz_app_window_panel_panzoom(win, panels[i], NULL);
-        if (state.panzooms[i] == NULL)
-        {
-            fprintf(stderr, "failed to create or bind panzoom controller\n");
-            dvz_app_destroy(app);
-            dvz_scene_destroy(scene);
-            return 1;
-        }
+        EXAMPLE_CHECK(state.panzooms[i] != NULL, "failed to create or bind panzoom controller");
     }
 
     dvz_app_window_set_frame_callback(win, _linked_panels_frame, &state);
     dvz_app_run(app, example_frame_count(argc, argv));
+    ret = 0;
 
-    dvz_app_destroy(app);
-    dvz_scene_destroy(scene);
-    return 0;
+cleanup:
+    if (app != NULL)
+        dvz_app_destroy(app);
+    if (scene != NULL)
+        dvz_scene_destroy(scene);
+    return ret;
 }
