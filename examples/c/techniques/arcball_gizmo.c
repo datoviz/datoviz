@@ -47,8 +47,8 @@
 #define GIZMO_TIP_RADIUS           0.105f
 #define GIZMO_HUB_HALF_SIZE        0.075f
 #define GIZMO_RING_RADIUS          0.92f
-#define GIZMO_RING_WIDTH           0.012f
 #define GIZMO_RING_SEGMENTS        96u
+#define GIZMO_RING_STROKE_WIDTH    2.4f
 #define ROTATION_SPEED_RAD_PER_SEC 0.42f
 
 #define INSET_LEFT   0.765f
@@ -58,12 +58,12 @@
 
 #define GIZMO_CYLINDER_VERTEX_COUNT (GIZMO_SEGMENTS * 6u)
 #define GIZMO_CONE_VERTEX_COUNT     (GIZMO_SEGMENTS * 6u)
-#define GIZMO_RING_VERTEX_COUNT     (GIZMO_RING_SEGMENTS * 6u)
+#define GIZMO_RING_POINT_COUNT      (GIZMO_RING_SEGMENTS + 1u)
 #define GIZMO_HUB_VERTEX_COUNT      36u
 #define GIZMO_AXES_VERTEX_COUNT                                                                  \
     (GIZMO_AXIS_COUNT * (GIZMO_CYLINDER_VERTEX_COUNT + GIZMO_CONE_VERTEX_COUNT) +                 \
      GIZMO_HUB_VERTEX_COUNT)
-#define GIZMO_RINGS_VERTEX_COUNT (GIZMO_AXIS_COUNT * GIZMO_RING_VERTEX_COUNT)
+#define GIZMO_RINGS_POINT_COUNT (GIZMO_AXIS_COUNT * GIZMO_RING_POINT_COUNT)
 
 static const float TAU = 6.28318530718f;
 
@@ -81,6 +81,16 @@ typedef struct GizmoMesh
     uint32_t count;
     uint32_t capacity;
 } GizmoMesh;
+
+
+typedef struct GizmoPath
+{
+    vec3* positions;
+    DvzColor* colors;
+    float* stroke_widths;
+    uint32_t count;
+    uint32_t capacity;
+} GizmoPath;
 
 
 
@@ -417,49 +427,6 @@ static bool _append_tip(GizmoMesh* mesh, uint32_t axis)
 
 
 /**
- * Append one thin orientation ring in the plane perpendicular to an axis.
- *
- * @param mesh target mesh arrays
- * @param axis axis index
- * @return true when all ring triangles were appended
- */
-static bool _append_ring(GizmoMesh* mesh, uint32_t axis)
-{
-    ANN(mesh);
-
-    vec3 dir = {0};
-    vec3 u = {0};
-    vec3 v = {0};
-    DvzColor color = {0};
-    _axis_basis(axis, dir, u, v);
-    _axis_color(axis, color);
-    color[3] = 255;
-
-    for (uint32_t i = 0; i < GIZMO_RING_SEGMENTS; i++)
-    {
-        const float a0 = TAU * (float)i / (float)GIZMO_RING_SEGMENTS;
-        const float a1 = TAU * (float)(i + 1u) / (float)GIZMO_RING_SEGMENTS;
-
-        vec3 p00 = {0};
-        vec3 p01 = {0};
-        vec3 p10 = {0};
-        vec3 p11 = {0};
-        _radial_at(u, v, a0, GIZMO_RING_RADIUS - GIZMO_RING_WIDTH, p00);
-        _radial_at(u, v, a1, GIZMO_RING_RADIUS - GIZMO_RING_WIDTH, p01);
-        _radial_at(u, v, a0, GIZMO_RING_RADIUS + GIZMO_RING_WIDTH, p10);
-        _radial_at(u, v, a1, GIZMO_RING_RADIUS + GIZMO_RING_WIDTH, p11);
-
-        if (!_gizmo_triangle(mesh, p00, dir, p11, dir, p10, dir, color))
-            return false;
-        if (!_gizmo_triangle(mesh, p00, dir, p01, dir, p11, dir, color))
-            return false;
-    }
-    return true;
-}
-
-
-
-/**
  * Append the small white cube at the gizmo origin.
  *
  * @param mesh target mesh arrays
@@ -499,6 +466,31 @@ static bool _append_hub(GizmoMesh* mesh)
 
 
 /**
+ * Append one path point to the gizmo rings.
+ *
+ * @param path target path arrays
+ * @param position point position
+ * @param color point color
+ * @return true when the point was appended
+ */
+static bool _gizmo_path_point(GizmoPath* path, const vec3 position, const DvzColor color)
+{
+    ANN(path);
+    ANN(position);
+    ANN(color);
+    if (path->count >= path->capacity)
+        return false;
+
+    dvz_memcpy(path->positions[path->count], sizeof(vec3), position, sizeof(vec3));
+    dvz_memcpy(path->colors[path->count], sizeof(DvzColor), color, sizeof(DvzColor));
+    path->stroke_widths[path->count] = GIZMO_RING_STROKE_WIDTH;
+    path->count++;
+    return true;
+}
+
+
+
+/**
  * Fill the retained mesh buffers for the lit gizmo axes and hub.
  *
  * @param mesh target mesh arrays
@@ -525,21 +517,36 @@ static bool _build_gizmo_axes(GizmoMesh* mesh)
 
 
 /**
- * Fill the retained mesh buffers for the unlit orientation rings.
+ * Fill the retained path buffers for the orientation rings.
  *
- * @param mesh target mesh arrays
- * @return true when the mesh was fully generated
+ * @param path target path arrays
+ * @return true when the path was fully generated
  */
-static bool _build_gizmo_rings(GizmoMesh* mesh)
+static bool _build_gizmo_rings(GizmoPath* path)
 {
-    ANN(mesh);
+    ANN(path);
 
     for (uint32_t axis = 0; axis < GIZMO_AXIS_COUNT; axis++)
     {
-        if (!_append_ring(mesh, axis))
-            return false;
+        vec3 dir = {0};
+        vec3 u = {0};
+        vec3 v = {0};
+        DvzColor color = {0};
+        _axis_basis(axis, dir, u, v);
+        _axis_color(axis, color);
+        color[3] = 255;
+
+        for (uint32_t i = 0; i < GIZMO_RING_POINT_COUNT; i++)
+        {
+            const float angle = TAU * (float)(i % GIZMO_RING_SEGMENTS) /
+                                (float)GIZMO_RING_SEGMENTS;
+            vec3 p = {0};
+            _radial_at(u, v, angle, GIZMO_RING_RADIUS, p);
+            if (!_gizmo_path_point(path, p, color))
+                return false;
+        }
     }
-    return mesh->count == GIZMO_RINGS_VERTEX_COUNT;
+    return path->count == GIZMO_RINGS_POINT_COUNT;
 }
 
 
@@ -558,7 +565,7 @@ int main(int argc, char** argv)
     DvzApp* app = NULL;
     DvzGeometry* cube = NULL;
     GizmoMesh axes_mesh = {0};
-    GizmoMesh rings_mesh = {0};
+    GizmoPath rings_path = {0};
 
     axes_mesh.capacity = GIZMO_AXES_VERTEX_COUNT;
     axes_mesh.positions = (vec3*)dvz_calloc(axes_mesh.capacity, sizeof(vec3));
@@ -568,18 +575,19 @@ int main(int argc, char** argv)
         axes_mesh.positions != NULL && axes_mesh.normals != NULL && axes_mesh.colors != NULL,
         "gizmo axes mesh allocation failed");
 
-    rings_mesh.capacity = GIZMO_RINGS_VERTEX_COUNT;
-    rings_mesh.positions = (vec3*)dvz_calloc(rings_mesh.capacity, sizeof(vec3));
-    rings_mesh.normals = (vec3*)dvz_calloc(rings_mesh.capacity, sizeof(vec3));
-    rings_mesh.colors = (DvzColor*)dvz_calloc(rings_mesh.capacity, sizeof(DvzColor));
+    rings_path.capacity = GIZMO_RINGS_POINT_COUNT;
+    rings_path.positions = (vec3*)dvz_calloc(rings_path.capacity, sizeof(vec3));
+    rings_path.colors = (DvzColor*)dvz_calloc(rings_path.capacity, sizeof(DvzColor));
+    rings_path.stroke_widths = (float*)dvz_calloc(rings_path.capacity, sizeof(float));
     EXAMPLE_CHECK(
-        rings_mesh.positions != NULL && rings_mesh.normals != NULL && rings_mesh.colors != NULL,
-        "gizmo rings mesh allocation failed");
+        rings_path.positions != NULL && rings_path.colors != NULL &&
+            rings_path.stroke_widths != NULL,
+        "gizmo rings path allocation failed");
 
     bool ok = _build_gizmo_axes(&axes_mesh);
     EXAMPLE_CHECK(ok, "gizmo axes mesh generation failed");
-    ok = _build_gizmo_rings(&rings_mesh);
-    EXAMPLE_CHECK(ok, "gizmo rings mesh generation failed");
+    ok = _build_gizmo_rings(&rings_path);
+    EXAMPLE_CHECK(ok, "gizmo rings path generation failed");
 
     scene = dvz_scene();
     EXAMPLE_CHECK(scene != NULL, "dvz_scene() failed");
@@ -633,10 +641,10 @@ int main(int argc, char** argv)
 
     DvzVisual* cube_visual = dvz_mesh(scene, 0);
     DvzVisual* gizmo_axes_visual = dvz_mesh(scene, 0);
-    DvzVisual* gizmo_rings_visual = dvz_mesh(scene, 0);
+    DvzVisual* gizmo_rings_visual = dvz_path(scene, 0);
     EXAMPLE_CHECK(
         cube_visual != NULL && gizmo_axes_visual != NULL && gizmo_rings_visual != NULL,
-        "dvz_mesh() failed");
+        "visual creation failed");
 
     const DvzColor face_colors[DVZ_GEOM_CUBE_FACE_COUNT] = {
         {240, 82, 82, 255},  {78, 154, 246, 255},  {96, 190, 126, 255},
@@ -663,12 +671,25 @@ int main(int argc, char** argv)
     EXAMPLE_CHECK(rc == 0, "dvz_visual_set_data_many() failed for gizmo axes");
 
     DvzVisualDataUpdate gizmo_rings_updates[] = {
-        {.attr_name = "position", .data = rings_mesh.positions, .item_count = rings_mesh.count},
-        {.attr_name = "normal", .data = rings_mesh.normals, .item_count = rings_mesh.count},
-        {.attr_name = "color", .data = rings_mesh.colors, .item_count = rings_mesh.count},
+        {.attr_name = "position", .data = rings_path.positions, .item_count = rings_path.count},
+        {.attr_name = "color", .data = rings_path.colors, .item_count = rings_path.count},
+        {
+            .attr_name = "stroke_width",
+            .data = rings_path.stroke_widths,
+            .item_count = rings_path.count,
+        },
     };
     rc = dvz_visual_set_data_many(gizmo_rings_visual, gizmo_rings_updates, 3);
     EXAMPLE_CHECK(rc == 0, "dvz_visual_set_data_many() failed for gizmo rings");
+    const uint32_t ring_subpaths[GIZMO_AXIS_COUNT] = {
+        GIZMO_RING_POINT_COUNT,
+        GIZMO_RING_POINT_COUNT,
+        GIZMO_RING_POINT_COUNT,
+    };
+    rc = dvz_path_set_subpaths(gizmo_rings_visual, GIZMO_AXIS_COUNT, ring_subpaths);
+    EXAMPLE_CHECK(rc == 0, "dvz_path_set_subpaths() failed for gizmo rings");
+    rc = dvz_path_set_caps(gizmo_rings_visual, DVZ_SEGMENT_CAP_NONE, DVZ_SEGMENT_CAP_NONE);
+    EXAMPLE_CHECK(rc == 0, "dvz_path_set_caps() failed for gizmo rings");
 
     DvzMaterialDesc cube_material = dvz_phong_material_desc();
     cube_material.light_direction[0] = 0.35f;
@@ -691,12 +712,6 @@ int main(int argc, char** argv)
     gizmo_material.phong.shininess = 58.0f;
     rc = dvz_visual_set_material(gizmo_axes_visual, &gizmo_material);
     EXAMPLE_CHECK(rc == 0, "dvz_visual_set_material() failed for gizmo axes");
-
-    DvzMaterialDesc ring_material = dvz_material_desc();
-    ring_material.model = DVZ_MATERIAL_MODEL_UNLIT;
-    ring_material.opacity = 1.0f;
-    rc = dvz_visual_set_material(gizmo_rings_visual, &ring_material);
-    EXAMPLE_CHECK(rc == 0, "dvz_visual_set_material() failed for gizmo rings");
 
     rc = dvz_panel_add_visual(main_panel, cube_visual, NULL);
     EXAMPLE_CHECK(rc == 0, "dvz_panel_add_visual() failed for cube");
@@ -756,8 +771,8 @@ cleanup:
     dvz_free(axes_mesh.positions);
     dvz_free(axes_mesh.normals);
     dvz_free(axes_mesh.colors);
-    dvz_free(rings_mesh.positions);
-    dvz_free(rings_mesh.normals);
-    dvz_free(rings_mesh.colors);
+    dvz_free(rings_path.positions);
+    dvz_free(rings_path.colors);
+    dvz_free(rings_path.stroke_widths);
     return ret;
 }
