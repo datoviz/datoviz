@@ -691,9 +691,15 @@ static bool _reload_bundle(ProteinExampleState* state, const char* bundle_path)
         return false;
     }
 
-    if (dvz_sphere_data(
-            state->spheres, next.positions, _atom_colors(&next, state->atom_color_mode),
-            next_radii, next.atom_count) != 0)
+    DvzVisualDataUpdate sphere_updates[] = {
+        {.attr_name = "position", .data = next.positions, .item_count = next.atom_count},
+        {.attr_name = "color",
+         .data = _atom_colors(&next, state->atom_color_mode),
+         .item_count = next.atom_count},
+        {.attr_name = "radius", .data = next_radii, .item_count = next.atom_count},
+    };
+    int rc = dvz_visual_set_data_many(state->spheres, sphere_updates, 3);
+    if (rc != 0)
     {
         _protein_bundle_destroy(&next);
         dvz_free(next_radii);
@@ -716,13 +722,22 @@ static bool _reload_bundle(ProteinExampleState* state, const char* bundle_path)
                 dvz_free(next_radii);
                 return false;
             }
-            if (!dvz_scene_buffer_set_data(
-                    state->ribbon_index_buffer, state->ribbon_indices_upload,
-                    (uint64_t)state->ribbon_index_upload_count * sizeof(DvzIndex)) ||
-                dvz_mesh_data(
-                    state->ribbon, next.ribbon_positions,
-                    _ribbon_colors(&next, state->ribbon_color_mode), next.ribbon_normals,
-                    next.ribbon_vertex_count) != 0)
+            bool ok = dvz_scene_buffer_set_data(
+                state->ribbon_index_buffer, state->ribbon_indices_upload,
+                (uint64_t)state->ribbon_index_upload_count * sizeof(DvzIndex));
+            DvzVisualDataUpdate ribbon_updates[] = {
+                {.attr_name = "position",
+                 .data = next.ribbon_positions,
+                 .item_count = next.ribbon_vertex_count},
+                {.attr_name = "color",
+                 .data = _ribbon_colors(&next, state->ribbon_color_mode),
+                 .item_count = next.ribbon_vertex_count},
+                {.attr_name = "normal",
+                 .data = next.ribbon_normals,
+                 .item_count = next.ribbon_vertex_count},
+            };
+            rc = ok ? dvz_visual_set_data_many(state->ribbon, ribbon_updates, 3) : -1;
+            if (rc != 0)
             {
                 _protein_bundle_destroy(&next);
                 dvz_free(next_radii);
@@ -1145,9 +1160,13 @@ int main(int argc, char** argv)
     int rc = dvz_sphere_mode(spheres, DVZ_SPHERE_MODE_RAYCAST_IMPOSTOR);
     EXAMPLE_CHECK(rc == 0, "dvz_sphere_mode() failed");
 
-    rc = dvz_sphere_data(
-        spheres, bundle.positions, bundle.atom_colors_element, scaled_radii, bundle.atom_count);
-    EXAMPLE_CHECK(rc == 0, "dvz_sphere_data() failed");
+    DvzVisualDataUpdate sphere_updates[] = {
+        {.attr_name = "position", .data = bundle.positions, .item_count = bundle.atom_count},
+        {.attr_name = "color", .data = bundle.atom_colors_element, .item_count = bundle.atom_count},
+        {.attr_name = "radius", .data = scaled_radii, .item_count = bundle.atom_count},
+    };
+    rc = dvz_visual_set_data_many(spheres, sphere_updates, 3);
+    EXAMPLE_CHECK(rc == 0, "dvz_visual_set_data_many() failed for spheres");
 
     rc = dvz_panel_add_visual(panel, spheres, NULL);
     EXAMPLE_CHECK(rc == 0, "dvz_panel_add_visual(spheres) failed");
@@ -1178,10 +1197,19 @@ int main(int argc, char** argv)
             (uint64_t)bundle.ribbon_index_count * sizeof(DvzIndex));
         EXAMPLE_CHECK(ok, "dvz_scene_buffer_set_data() failed for ribbon");
 
-        rc = dvz_mesh_data(
-            ribbon, bundle.ribbon_positions, bundle.ribbon_colors_chain, bundle.ribbon_normals,
-            bundle.ribbon_vertex_count);
-        EXAMPLE_CHECK(rc == 0, "dvz_mesh_data() failed for ribbon");
+        DvzVisualDataUpdate ribbon_updates[] = {
+            {.attr_name = "position",
+             .data = bundle.ribbon_positions,
+             .item_count = bundle.ribbon_vertex_count},
+            {.attr_name = "color",
+             .data = bundle.ribbon_colors_chain,
+             .item_count = bundle.ribbon_vertex_count},
+            {.attr_name = "normal",
+             .data = bundle.ribbon_normals,
+             .item_count = bundle.ribbon_vertex_count},
+        };
+        rc = dvz_visual_set_data_many(ribbon, ribbon_updates, 3);
+        EXAMPLE_CHECK(rc == 0, "dvz_visual_set_data_many() failed for ribbon");
 
         ok = dvz_visual_set_buffer(ribbon, "index", ribbon_index_buffer);
         EXAMPLE_CHECK(ok, "dvz_visual_set_buffer() failed for ribbon");

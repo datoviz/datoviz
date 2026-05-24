@@ -674,13 +674,20 @@ int main(int argc, char** argv)
         .light_direction = {0.20f, 0.70f, 0.45f},
     };
 
-    int rc = dvz_point_data(
-        point, dataset.cluster_pos, dataset.cluster_color, dataset.cluster_size,
-        dataset.cluster_count);
-    EXAMPLE_CHECK(rc == 0, "dvz_point_data() failed");
+    DvzVisualDataUpdate point_updates[] = {
+        {.attr_name = "position", .data = dataset.cluster_pos, .item_count = dataset.cluster_count},
+        {.attr_name = "color", .data = dataset.cluster_color, .item_count = dataset.cluster_count},
+        {.attr_name = "diameter", .data = dataset.cluster_size, .item_count = dataset.cluster_count},
+    };
+    int rc = dvz_visual_set_data_many(point, point_updates, 3);
+    EXAMPLE_CHECK(rc == 0, "dvz_visual_set_data_many() failed for points");
 
-    rc = dvz_mesh_data(mesh, dataset.mesh_pos, NULL, dataset.mesh_normal, dataset.mesh_vertex_count);
-    EXAMPLE_CHECK(rc == 0, "dvz_mesh_data() failed");
+    DvzVisualDataUpdate mesh_updates[] = {
+        {.attr_name = "position", .data = dataset.mesh_pos, .item_count = dataset.mesh_vertex_count},
+        {.attr_name = "normal", .data = dataset.mesh_normal, .item_count = dataset.mesh_vertex_count},
+    };
+    rc = dvz_visual_set_data_many(mesh, mesh_updates, 2);
+    EXAMPLE_CHECK(rc == 0, "dvz_visual_set_data_many() failed for mesh");
 
     ok = dvz_visual_set_buffer(mesh, "index", index_buffer);
     EXAMPLE_CHECK(ok, "dvz_visual_set_buffer() failed");

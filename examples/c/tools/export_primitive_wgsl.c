@@ -65,8 +65,12 @@ int main(int argc, char** argv)
         {70, 132, 255, 255},
     };
 
-    int rc = dvz_primitive_data(visual, positions, colors, NULL, 3);
-    EXAMPLE_CHECK(rc == 0, "dvz_primitive_data() failed");
+    DvzVisualDataUpdate updates[] = {
+        {.attr_name = "position", .data = positions, .item_count = 3},
+        {.attr_name = "color", .data = colors, .item_count = 3},
+    };
+    int rc = dvz_visual_set_data_many(visual, updates, 2);
+    EXAMPLE_CHECK(rc == 0, "dvz_visual_set_data_many() failed");
 
     rc = dvz_panel_add_visual(panel, visual, NULL);
     EXAMPLE_CHECK(rc == 0, "dvz_panel_add_visual() failed");

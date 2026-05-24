@@ -228,8 +228,15 @@ int main(int argc, char** argv)
         {255, 255, 255, 255},
     };
     float sizes[5] = {36.0f, 42.0f, 48.0f, 40.0f, 28.0f};
-    dvz_point_data(visual, positions, colors, sizes, 5);
-    dvz_panel_add_visual(panel, visual, NULL);
+    DvzVisualDataUpdate updates[] = {
+        {.attr_name = "position", .data = positions, .item_count = 5},
+        {.attr_name = "color", .data = colors, .item_count = 5},
+        {.attr_name = "diameter", .data = sizes, .item_count = 5},
+    };
+    int rc = dvz_visual_set_data_many(visual, updates, 3);
+    EXAMPLE_CHECK(rc == 0, "dvz_visual_set_data_many() failed");
+    rc = dvz_panel_add_visual(panel, visual, NULL);
+    EXAMPLE_CHECK(rc == 0, "dvz_panel_add_visual() failed");
 
     app = dvz_app(scene);
     EXAMPLE_CHECK(app != NULL, "dvz_app() failed (no GPU?)");
@@ -237,7 +244,7 @@ int main(int argc, char** argv)
     DvzAppWindow* win = dvz_app_window(app, figure, WIDTH, HEIGHT);
     EXAMPLE_CHECK(win != NULL, "dvz_app_window() failed");
 
-    int rc = dvz_app_window_record_start(win, recording_path);
+    rc = dvz_app_window_record_start(win, recording_path);
     EXAMPLE_CHECK(rc == 0, "failed to start DVZR recording");
 
     int frame_result = dvz_app_window_render_once(win);

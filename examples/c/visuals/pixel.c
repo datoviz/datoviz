@@ -131,8 +131,12 @@ static bool _upload_pixels(PixelState* state)
     ANN(state);
     ANN(state->visual);
 
-    if (dvz_pixel_data(
-            state->visual, state->positions, state->colors, state->sizes, state->active_count) != 0)
+    DvzVisualDataUpdate updates[] = {
+        {.attr_name = "position", .data = state->positions, .item_count = state->active_count},
+        {.attr_name = "color", .data = state->colors, .item_count = state->active_count},
+        {.attr_name = "pixel_size", .data = state->sizes, .item_count = state->active_count},
+    };
+    if (dvz_visual_set_data_many(state->visual, updates, 3) != 0)
         return false;
     return dvz_visual_set_alpha_mode(
                state->visual, state->alpha < 0.999f ? DVZ_ALPHA_BLENDED : DVZ_ALPHA_OPAQUE) == 0;

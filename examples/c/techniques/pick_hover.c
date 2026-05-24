@@ -237,8 +237,13 @@ int main(int argc, char** argv)
         }
     }
 
-    int rc = dvz_point_data(visual, positions, colors, state.sizes, POINT_COUNT);
-    EXAMPLE_CHECK(rc == 0, "dvz_point_data() failed");
+    DvzVisualDataUpdate updates[] = {
+        {.attr_name = "position", .data = positions, .item_count = POINT_COUNT},
+        {.attr_name = "color", .data = colors, .item_count = POINT_COUNT},
+        {.attr_name = "diameter", .data = state.sizes, .item_count = POINT_COUNT},
+    };
+    int rc = dvz_visual_set_data_many(visual, updates, 3);
+    EXAMPLE_CHECK(rc == 0, "dvz_visual_set_data_many() failed");
     dvz_visual_set_pick_capabilities(visual, DVZ_PICK_CAPABILITY_ITEM);
 
     rc = dvz_panel_add_visual(panel, visual, NULL);

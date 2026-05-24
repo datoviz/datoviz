@@ -2128,8 +2128,13 @@ int test_scene_point_typed_data_upload(TstContext* suite, const TstCase* item)
     float diameters[2] = {4.0f, 8.0f};
     uint8_t selection[2] = {1, 0};
 
-    AT(dvz_point_data(visual, positions, colors, diameters, 2) == 0);
-    AT(dvz_point_selection(visual, selection, 2) == 0);
+    DvzVisualDataUpdate point_updates[] = {
+        {.attr_name = "position", .data = positions, .item_count = 2},
+        {.attr_name = "color", .data = colors, .item_count = 2},
+        {.attr_name = "diameter", .data = diameters, .item_count = 2},
+    };
+    AT(dvz_visual_set_data_many(visual, point_updates, 3) == 0);
+    AT(dvz_visual_set_data(visual, "selection", selection, 2) == 0);
 
     DvzVisualDataView view = {0};
     AT(dvz_visual_data(visual, "diameter", &view) == 0);
@@ -2179,9 +2184,14 @@ int test_scene_mesh_typed_data_upload(TstContext* suite, const TstCase* item)
                            {0.0f, 0.0f, 1.0f, 0.0f},
                            {0.0f, 0.0f, 0.0f, 1.0f}}};
 
-    AT(dvz_mesh_data(visual, positions, colors, normals, 3) == 0);
+    DvzVisualDataUpdate mesh_updates[] = {
+        {.attr_name = "position", .data = positions, .item_count = 3},
+        {.attr_name = "color", .data = colors, .item_count = 3},
+        {.attr_name = "normal", .data = normals, .item_count = 3},
+    };
+    AT(dvz_visual_set_data_many(visual, mesh_updates, 3) == 0);
     AT(dvz_visual_set_data(visual, "texcoords", texcoords, 3) == 0);
-    AT(dvz_mesh_instances(visual, transforms, 1) == 0);
+    AT(dvz_visual_set_data(visual, "instance_transform", transforms, 1) == 0);
 
     DvzVisualDataView normal_view = {0};
     AT(dvz_visual_data(visual, "normal", &normal_view) == 0);
@@ -2202,7 +2212,7 @@ int test_scene_mesh_typed_data_upload(TstContext* suite, const TstCase* item)
 
     DvzVisual* default_color_mesh = dvz_mesh(scene, 0);
     ANN(default_color_mesh);
-    AT(dvz_mesh_data(default_color_mesh, positions, NULL, NULL, 3) == 0);
+    AT(dvz_visual_set_data(default_color_mesh, "position", positions, 3) == 0);
     DvzVisualDataView color_view = {0};
     AT(dvz_visual_data(default_color_mesh, "color", &color_view) == 0);
     AT(color_view.item_count == 3);
@@ -2290,7 +2300,29 @@ int test_scene_mesh_geometry_upload(TstContext* suite, const TstCase* item)
     DvzGeometry* geometry = dvz_geom_surface_grid(&desc);
     ANN(geometry);
 
-    AT(dvz_mesh_geometry(visual, geometry) == 0);
+    vec3 positions_upload[4] = {0};
+    vec3 normals_upload[4] = {0};
+    vec2 texcoords_upload[4] = {0};
+    for (uint32_t i = 0; i < geometry->vertex_count; i++)
+    {
+        positions_upload[i][0] = (float)geometry->positions[i][0];
+        positions_upload[i][1] = (float)geometry->positions[i][1];
+        positions_upload[i][2] = (float)geometry->positions[i][2];
+        normals_upload[i][0] = (float)geometry->normals[i][0];
+        normals_upload[i][1] = (float)geometry->normals[i][1];
+        normals_upload[i][2] = (float)geometry->normals[i][2];
+        texcoords_upload[i][0] = (float)geometry->texcoords[i][0];
+        texcoords_upload[i][1] = (float)geometry->texcoords[i][1];
+    }
+
+    DvzVisualDataUpdate updates[] = {
+        {.attr_name = "position", .data = positions_upload, .item_count = geometry->vertex_count},
+        {.attr_name = "color", .data = geometry->colors, .item_count = geometry->vertex_count},
+        {.attr_name = "normal", .data = normals_upload, .item_count = geometry->vertex_count},
+        {.attr_name = "texcoords", .data = texcoords_upload, .item_count = geometry->vertex_count},
+    };
+    AT(dvz_visual_set_data_many(visual, updates, 4) == 0);
+    AT(dvz_visual_set_index_data(visual, geometry->indices, geometry->index_count) == 0);
 
     DvzVisualDataView position_view = {0};
     AT(dvz_visual_data(visual, "position", &position_view) == 0);
@@ -2324,10 +2356,6 @@ int test_scene_mesh_geometry_upload(TstContext* suite, const TstCase* item)
     AT(visual->buffer->desc.usage & DVZ_SCENE_BUFFER_USAGE_INDEX);
     AT(visual->buffer->desc.stride == sizeof(DvzIndex));
     AT(visual->buffer->desc.byte_size == 6 * sizeof(DvzIndex));
-
-    DvzVisual* point = dvz_point(scene, 0);
-    ANN(point);
-    AT(dvz_mesh_geometry(point, geometry) == -1);
 
     dvz_geometry_destroy(geometry);
     dvz_scene_destroy(scene);
@@ -2364,9 +2392,24 @@ int test_scene_additional_typed_data_uploads(TstContext* suite, const TstCase* i
     ANN(primitive);
     ANN(sphere);
 
-    AT(dvz_pixel_data(pixel, positions, colors, sizes, 3) == 0);
-    AT(dvz_primitive_data(primitive, positions, colors, normals, 3) == 0);
-    AT(dvz_sphere_data(sphere, positions, colors, sizes, 3) == 0);
+    DvzVisualDataUpdate pixel_updates[] = {
+        {.attr_name = "position", .data = positions, .item_count = 3},
+        {.attr_name = "color", .data = colors, .item_count = 3},
+        {.attr_name = "pixel_size", .data = sizes, .item_count = 3},
+    };
+    DvzVisualDataUpdate primitive_updates[] = {
+        {.attr_name = "position", .data = positions, .item_count = 3},
+        {.attr_name = "color", .data = colors, .item_count = 3},
+        {.attr_name = "normal", .data = normals, .item_count = 3},
+    };
+    DvzVisualDataUpdate sphere_updates[] = {
+        {.attr_name = "position", .data = positions, .item_count = 3},
+        {.attr_name = "color", .data = colors, .item_count = 3},
+        {.attr_name = "radius", .data = sizes, .item_count = 3},
+    };
+    AT(dvz_visual_set_data_many(pixel, pixel_updates, 3) == 0);
+    AT(dvz_visual_set_data_many(primitive, primitive_updates, 3) == 0);
+    AT(dvz_visual_set_data_many(sphere, sphere_updates, 3) == 0);
 
     DvzVisualDataView pixel_size_view = {0};
     AT(dvz_visual_data(pixel, "pixel_size", &pixel_size_view) == 0);
@@ -2385,7 +2428,11 @@ int test_scene_additional_typed_data_uploads(TstContext* suite, const TstCase* i
 
     DvzVisual* flat_primitive = dvz_primitive(scene, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 0);
     ANN(flat_primitive);
-    AT(dvz_primitive_data(flat_primitive, positions, colors, NULL, 3) == 0);
+    DvzVisualDataUpdate flat_updates[] = {
+        {.attr_name = "position", .data = positions, .item_count = 3},
+        {.attr_name = "color", .data = colors, .item_count = 3},
+    };
+    AT(dvz_visual_set_data_many(flat_primitive, flat_updates, 2) == 0);
     DvzVisualDataView flat_normal_view = {0};
     AT(dvz_visual_data(flat_primitive, "normal", &flat_normal_view) == -1);
 
@@ -2403,12 +2450,10 @@ int test_scene_typed_upload_rejects_wrong_family(TstContext* suite, const TstCas
     DvzScene* scene = dvz_scene();
     ANN(scene);
     DvzVisual* point = dvz_point(scene, 0);
-    DvzVisual* pixel = dvz_pixel(scene, 0);
     DvzVisual* mesh = dvz_mesh(scene, 0);
     DvzVisual* primitive = dvz_primitive(scene, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 0);
     DvzVisual* sphere = dvz_sphere(scene, 0);
     ANN(point);
-    ANN(pixel);
     ANN(mesh);
     ANN(primitive);
     ANN(sphere);
@@ -2417,23 +2462,18 @@ int test_scene_typed_upload_rejects_wrong_family(TstContext* suite, const TstCas
     DvzColor colors[1] = {{255, 255, 255, 255}};
     float diameters[1] = {4.0f};
     uint8_t selection[1] = {1};
-    mat4 transforms[1] = {{{1.0f, 0.0f, 0.0f, 0.0f},
-                           {0.0f, 1.0f, 0.0f, 0.0f},
-                           {0.0f, 0.0f, 1.0f, 0.0f},
-                           {0.0f, 0.0f, 0.0f, 1.0f}}};
 
-    AT(dvz_point_data(mesh, positions, colors, diameters, 1) == -1);
-    AT(dvz_point_selection(mesh, selection, 1) == -1);
-    AT(dvz_pixel_data(point, positions, colors, diameters, 1) == -1);
-    AT(dvz_mesh_data(point, positions, colors, NULL, 1) == -1);
-    AT(dvz_mesh_instances(point, transforms, 1) == -1);
-    AT(dvz_primitive_data(point, positions, colors, NULL, 1) == -1);
-    AT(dvz_sphere_data(point, positions, colors, diameters, 1) == -1);
-    AT(dvz_point_data(point, NULL, colors, diameters, 1) == -1);
-    AT(dvz_pixel_data(pixel, positions, colors, NULL, 1) == -1);
-    AT(dvz_mesh_data(mesh, positions, NULL, NULL, 0) == -1);
-    AT(dvz_primitive_data(primitive, positions, NULL, NULL, 1) == -1);
-    AT(dvz_sphere_data(sphere, positions, colors, diameters, 0) == -1);
+    AT(dvz_visual_set_data(mesh, "diameter", diameters, 1) == -1);
+    AT(dvz_visual_set_data(point, "normal", positions, 1) == -1);
+    AT(dvz_visual_set_data(primitive, "radius", diameters, 1) == -1);
+    AT(dvz_visual_set_data(sphere, "pixel_size", diameters, 1) == -1);
+    AT(dvz_visual_set_data(point, "selection", selection, 0) == -1);
+
+    DvzVisualDataUpdate mismatch[] = {
+        {.attr_name = "position", .data = positions, .item_count = 1},
+        {.attr_name = "color", .data = colors, .item_count = 2},
+    };
+    AT(dvz_visual_set_data_many(point, mismatch, 2) == -1);
 
     dvz_scene_destroy(scene);
     return 0;

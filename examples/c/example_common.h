@@ -23,6 +23,14 @@
 #include "_compat.h"
 
 
+/*************************************************************************************************/
+/*  Typedefs                                                                                     */
+/*************************************************************************************************/
+
+typedef struct DvzGeometry DvzGeometry;
+typedef struct DvzVisual   DvzVisual;
+
+
 
 /*************************************************************************************************/
 /*  Macros                                                                                       */
@@ -61,3 +69,5 @@ uint32_t example_frame_count_from_text(const char* text);
 uint32_t example_frame_count(int argc, char** argv);
 
 uint32_t example_frame_count_any(int argc, char** argv);
+
+bool example_mesh_geometry(DvzVisual* visual, const DvzGeometry* geometry);

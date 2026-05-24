@@ -35,11 +35,10 @@ Done:
 4. App-window controller helpers exist with final names under the `dvz_app_window_panel_*()` family:
    `dvz_app_window_panel_panzoom()`, `dvz_app_window_panel_arcball()`,
    `dvz_app_window_panel_fly()`, and `dvz_app_window_panel_turntable()`.
-5. Typed visual upload helpers exist for the stable repeated bundles:
-   `dvz_point_data()`, `dvz_point_selection()`, `dvz_mesh_data()`, and
-   `dvz_mesh_instances()`, plus `dvz_pixel_data()`, `dvz_primitive_data()`, and
-   `dvz_sphere_data()`.
-6. A generic `dvz_visual_set_index_data()` helper now covers the common copied index-buffer case
+5. Typed visual upload helpers for point, pixel, mesh, primitive, and sphere were removed again
+   because they duplicated the generic retained visual data path and made generic scene code carry
+   visual-family-specific API surface.
+6. A generic `dvz_visual_set_index_data()` helper covers the common copied index-buffer case
    while preserving explicit `DvzSceneBuffer` binding for shared or external buffers.
 7. Pick/probe callback dispatch remains intentionally deferred.
 8. C examples have been migrated to the landed helpers where the replacement is behavior-preserving.
@@ -137,47 +136,22 @@ Remaining work: use the app-window helpers for new app-window examples. Do not f
 into GUI-viewport examples.
 
 
-### 5. Add typed visual upload helpers
+### 5. Keep generic visual data uploads; remove family upload helpers
 
-Accepted; implemented for stable repeated bundles.
+Accepted after reconsideration; implemented by removing the duplicate helpers.
 
-Keep `dvz_visual_set_data()` as the generic visual data path, but add family-level helpers for common
-attribute bundles. The goal is to reduce repeated string attributes, centralize count validation, and
-make user code less error-prone.
+Keep `dvz_visual_set_data()`, `dvz_visual_set_data_many()`, and
+`dvz_visual_set_data_range()` as the generic visual data path. Do not add public family-level
+wrappers such as point/pixel/mesh/primitive/sphere data upload helpers unless a future family has
+semantics that cannot be expressed cleanly with the generic attribute update model.
 
-Candidate examples:
+The copied index-buffer case is the exception because it targets a reusable scene buffer rather
+than a dense visual attribute. `dvz_visual_set_index_data()` remains as the convenience API for
+ordinary copied indices, while explicit `DvzSceneBuffer` creation remains the sharing/external
+buffer path.
 
-```c
-int dvz_point_data(
-    DvzVisual* visual, const float* positions, const DvzColor* colors,
-    const float* diameters, uint32_t count);
-
-int dvz_mesh_data(
-    DvzVisual* visual, const float* positions, const float* normals,
-    const DvzColor* colors, uint32_t vertex_count);
-
-int dvz_mesh_indices(DvzVisual* visual, const uint32_t* indices, uint32_t index_count);
-
-int dvz_pixel_data(
-    DvzVisual* visual, const void* positions, const void* colors,
-    const float* pixel_sizes, uint32_t item_count);
-
-int dvz_primitive_data(
-    DvzVisual* visual, const void* positions, const void* colors,
-    const void* normals, uint32_t vertex_count);
-
-int dvz_sphere_data(
-    DvzVisual* visual, const void* positions, const void* colors,
-    const float* radii, uint32_t item_count);
-```
-
-Current implemented helpers cover point, mesh, pixel, primitive, sphere, and the generic copied
-index-buffer case through `dvz_visual_set_index_data()`. Exact future helper coverage should follow
-the active visual families and their required/optional attributes.
-
-Remaining work: keep `dvz_visual_set_data()` as the generic path and avoid adding helpers for
-one-off or unstable attribute combinations. Image, path, marker, segment, and text examples remain
-explicit until their standard bundles are stable enough to justify a public helper.
+Remaining work: keep examples on explicit generic visual data calls, and keep any non-public
+example-only conversion helpers local to `examples/c` rather than promoting them to the scene API.
 
 
 ### 6. Defer pick/probe callback dispatch
@@ -194,8 +168,7 @@ payload design continues separately.
 1. Done: add `examples/c` helper infrastructure and migrate `_frame_count()` first.
 2. Done: add `dvz_panel_full()`.
 3. Done: add app-window controller/input binding helpers.
-4. Done: add typed visual upload helpers for point, mesh, pixel, primitive, sphere, and copied
-   index buffers.
+4. Done: add copied index-buffer helper and remove duplicate typed visual upload helpers.
 5. Done: migrate examples to the landed helpers without changing example behavior.
 6. Later: revisit pick/probe callbacks after the richer interaction API settles.
 

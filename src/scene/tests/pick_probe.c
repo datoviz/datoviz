@@ -1311,7 +1311,12 @@ int test_scene_sphere_pick_resolves_item(TstContext* suite, const TstCase* item)
         {0, 255, 0, 255},
     };
     float radii[2] = {0.2f, 0.25f};
-    AT(dvz_sphere_data(sphere, positions, colors, radii, 2) == 0);
+    DvzVisualDataUpdate sphere_updates[] = {
+        {.attr_name = "position", .data = positions, .item_count = 2},
+        {.attr_name = "color", .data = colors, .item_count = 2},
+        {.attr_name = "radius", .data = radii, .item_count = 2},
+    };
+    AT(dvz_visual_set_data_many(sphere, sphere_updates, 3) == 0);
     AT(dvz_panel_add_visual(panel, sphere, NULL) == 0);
 
     DvzDrp2RuntimeConfig runtime_cfg =
@@ -1566,7 +1571,11 @@ int test_scene_primitive_pick_resolves_item(TstContext* suite, const TstCase* it
         {255, 255, 255, 255}, {255, 255, 255, 255}, {255, 255, 255, 255},
         {255, 255, 255, 255}, {255, 255, 255, 255}, {255, 255, 255, 255},
     };
-    AT(dvz_primitive_data(primitive, primitive_pos, primitive_color, NULL, 6) == 0);
+    DvzVisualDataUpdate primitive_updates[] = {
+        {.attr_name = "position", .data = primitive_pos, .item_count = 6},
+        {.attr_name = "color", .data = primitive_color, .item_count = 6},
+    };
+    AT(dvz_visual_set_data_many(primitive, primitive_updates, 2) == 0);
     AT(dvz_panel_add_visual(panel, primitive, NULL) == 0);
 
     DvzDrp2RuntimeConfig runtime_cfg =
@@ -1630,7 +1639,11 @@ int test_scene_primitive_pick_resolves_item(TstContext* suite, const TstCase* it
                });
     ANN(index_buffer);
     AT(dvz_scene_buffer_set_data(index_buffer, mesh_indices, sizeof(mesh_indices)));
-    AT(dvz_mesh_data(mesh, mesh_pos, NULL, mesh_normals, 4) == 0);
+    DvzVisualDataUpdate mesh_updates[] = {
+        {.attr_name = "position", .data = mesh_pos, .item_count = 4},
+        {.attr_name = "normal", .data = mesh_normals, .item_count = 4},
+    };
+    AT(dvz_visual_set_data_many(mesh, mesh_updates, 2) == 0);
     AT(dvz_visual_set_buffer(mesh, "index", index_buffer));
     AT(dvz_panel_add_visual(panel, mesh, NULL) == 0);
 

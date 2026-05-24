@@ -97,8 +97,8 @@ int main(int argc, char** argv)
     });
     EXAMPLE_CHECK(cube != NULL, "dvz_geom_cube() failed");
 
-    int rc = dvz_mesh_geometry(visual, cube);
-    EXAMPLE_CHECK(rc == 0, "dvz_mesh_geometry() failed");
+    bool uploaded = example_mesh_geometry(visual, cube);
+    EXAMPLE_CHECK(uploaded, "example_mesh_geometry() failed");
     dvz_geometry_destroy(cube);
     cube = NULL;
 
@@ -109,7 +109,8 @@ int main(int argc, char** argv)
     material.phong.ambient = 0.25f;
     material.phong.diffuse = 0.85f;
     dvz_visual_set_material(visual, &material);
-    dvz_panel_add_visual(panel, visual, NULL);
+    int rc = dvz_panel_add_visual(panel, visual, NULL);
+    EXAMPLE_CHECK(rc == 0, "dvz_panel_add_visual() failed");
     dvz_panel_set_background_color(panel, 0.05f, 0.05f, 0.08f, 1.0f);
 
     app = dvz_app(scene);

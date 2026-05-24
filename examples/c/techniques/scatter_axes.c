@@ -109,8 +109,15 @@ int main(int argc, char** argv)
         dvz_panel_data_to_visual_positions(panel, &data_positions[0][0], &visual_positions[0][0], N);
     EXAMPLE_CHECK(rc == 0, "dvz_panel_data_to_visual_positions() failed");
 
-    dvz_point_data(visual, visual_positions, colors, sizes, N);
-    dvz_panel_add_visual(panel, visual, NULL);
+    DvzVisualDataUpdate updates[] = {
+        {.attr_name = "position", .data = visual_positions, .item_count = N},
+        {.attr_name = "color", .data = colors, .item_count = N},
+        {.attr_name = "diameter", .data = sizes, .item_count = N},
+    };
+    rc = dvz_visual_set_data_many(visual, updates, 3);
+    EXAMPLE_CHECK(rc == 0, "dvz_visual_set_data_many() failed");
+    rc = dvz_panel_add_visual(panel, visual, NULL);
+    EXAMPLE_CHECK(rc == 0, "dvz_panel_add_visual() failed");
 
     DvzAxis* x_axis = dvz_panel_axis(panel, DVZ_DIM_X);
     DvzAxis* y_axis = dvz_panel_axis(panel, DVZ_DIM_Y);

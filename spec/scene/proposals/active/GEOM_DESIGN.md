@@ -84,8 +84,8 @@ Implemented on 2026-05-21:
 3. `dvz_geometry()`, `dvz_geometry_reset()`, and `dvz_geometry_destroy()` own positions,
    normals, colors, UVs, and triangle indices through the shared allocator wrappers;
 4. `dvz_geometry_bounds()` computes F64 bounds;
-5. `dvz_mesh_geometry()` provides the current bridge from retained F64 CPU geometry to scene mesh
-   upload paths that still consume F32 arrays;
+5. examples now bridge retained F64 CPU geometry to scene mesh upload paths with explicit local
+   conversion helpers and generic visual data calls;
 6. `dvz_geom_cube()` and `dvz_geom_plane()` generate indexed geometry with normals, UVs, and
    zero-initialized color descriptors defaulting to opaque white; cube descriptors also support
    six per-face colors for the duplicated cube-face layout;
@@ -101,8 +101,8 @@ Implemented on 2026-05-22:
    height/color arrays, UVs, smooth normals, and row/column provenance on `DvzGeometry`;
 2. `dvz_geometry_compute_normals()`, `dvz_geometry_transform()`, and `dvz_geometry_merge()` cover the
    first normal/transform/composition operation slice;
-3. `dvz_mesh_geometry()` uploads a `DvzGeometry` directly into a scene mesh visual, including dense
-   position/color/normal attributes and a scene-owned index buffer;
+3. `DvzGeometry` data can be uploaded into a scene mesh visual by explicitly downcasting dense
+   position/color/normal attributes and binding copied indices through `dvz_visual_set_index_data()`;
 4. tests cover generated surface-grid counts, winding/index validity, invalid dimensions, transform
    behavior, merge index rebasing, and the direct scene mesh upload path.
 
@@ -113,8 +113,8 @@ Additional v0.4 follow-up work on 2026-05-22 added:
 
 1. `dvz_geom_sphere()` as the first post-cube solid generator;
 2. `dvz_geom_surface_grid_update_heights()` for in-place structured-grid height updates;
-3. retained mesh `texcoords` support, with `dvz_mesh_geometry()` lowering `DvzGeometry` UVs into the
-   mesh visual attribute set;
+3. retained mesh `texcoords` support, with example-local geometry upload code lowering
+   `DvzGeometry` UVs into the mesh visual attribute set;
 4. `examples/c/visuals/surface_grid.c` as a visible app-path pressure test for generated geometry.
 
 Remaining deferred work:

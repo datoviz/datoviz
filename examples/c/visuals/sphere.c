@@ -561,8 +561,13 @@ int main(int argc, char** argv)
 
     DvzVisual* visual = dvz_sphere(scene, DVZ_SPHERE_FLAGS_LIGHTING);
     EXAMPLE_CHECK(visual != NULL, "dvz_sphere() failed");
-    int rc = dvz_sphere_data(visual, &positions[0][0], colors, live_sizes, sphere_count);
-    EXAMPLE_CHECK(rc == 0, "dvz_sphere_data() failed");
+    DvzVisualDataUpdate updates[] = {
+        {.attr_name = "position", .data = &positions[0][0], .item_count = sphere_count},
+        {.attr_name = "color", .data = colors, .item_count = sphere_count},
+        {.attr_name = "radius", .data = live_sizes, .item_count = sphere_count},
+    };
+    int rc = dvz_visual_set_data_many(visual, updates, 3);
+    EXAMPLE_CHECK(rc == 0, "dvz_visual_set_data_many() failed");
 
     rc = dvz_panel_add_visual(panel, visual, NULL);
     EXAMPLE_CHECK(rc == 0, "dvz_panel_add_visual() failed");

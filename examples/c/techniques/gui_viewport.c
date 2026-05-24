@@ -129,8 +129,15 @@ int main(int argc, char** argv)
         .show_points = true,
     };
     update_visual(&state);
-    dvz_point_data(visual, positions, colors, state.sizes, 5);
-    dvz_panel_add_visual(source_panel, visual, NULL);
+    DvzVisualDataUpdate updates[] = {
+        {.attr_name = "position", .data = positions, .item_count = 5},
+        {.attr_name = "color", .data = colors, .item_count = 5},
+        {.attr_name = "diameter", .data = state.sizes, .item_count = 5},
+    };
+    int rc = dvz_visual_set_data_many(visual, updates, 3);
+    EXAMPLE_CHECK(rc == 0, "dvz_visual_set_data_many() failed");
+    rc = dvz_panel_add_visual(source_panel, visual, NULL);
+    EXAMPLE_CHECK(rc == 0, "dvz_panel_add_visual() failed");
 
     app = dvz_app(scene);
     EXAMPLE_CHECK(app != NULL, "dvz_app() failed (no GPU or display?)");
@@ -150,7 +157,7 @@ int main(int argc, char** argv)
     DvzController* panzoom_controller = dvz_panzoom(scene, NULL);
     EXAMPLE_CHECK(panzoom_controller != NULL, "dvz_panzoom() failed");
 
-    int rc = dvz_panel_bind_controller(source_panel, panzoom_controller, DVZ_DIM_MASK_XY);
+    rc = dvz_panel_bind_controller(source_panel, panzoom_controller, DVZ_DIM_MASK_XY);
     EXAMPLE_CHECK(rc == 0, "dvz_panel_bind_controller() failed");
     dvz_panel_connect_input(source_panel, dvz_gui_viewport_input(state.gui_viewport));
     dvz_app_window_set_gui_callback(host_win, gui_callback, &state);

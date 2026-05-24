@@ -89,8 +89,17 @@ setup_source(DvzScene* scene, DvzFigure* figure, SourceState* state, float shift
         {235, 205,  80, 255},
     };
     update_source(state);
-    dvz_point_data(visual, positions, colors, state->sizes, 4);
-    dvz_panel_add_visual(panel, visual, NULL);
+    DvzVisualDataUpdate updates[] = {
+        {.attr_name = "position", .data = positions, .item_count = 4},
+        {.attr_name = "color", .data = colors, .item_count = 4},
+        {.attr_name = "diameter", .data = state->sizes, .item_count = 4},
+    };
+    int rc = dvz_visual_set_data_many(visual, updates, 3);
+    if (rc != 0)
+        return NULL;
+    rc = dvz_panel_add_visual(panel, visual, NULL);
+    if (rc != 0)
+        return NULL;
     return panel;
 }
 

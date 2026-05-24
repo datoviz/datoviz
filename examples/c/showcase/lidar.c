@@ -750,9 +750,13 @@ int main(int argc, char** argv)
     DvzVisual* visual = dvz_pixel(scene, 0);
     EXAMPLE_CHECK(visual != NULL, "dvz_pixel() failed");
 
-    int rc =
-        dvz_pixel_data(visual, dataset.positions, dataset.colors, dataset.sizes, dataset.point_count);
-    EXAMPLE_CHECK(rc == 0, "dvz_pixel_data() failed");
+    DvzVisualDataUpdate updates[] = {
+        {.attr_name = "position", .data = dataset.positions, .item_count = dataset.point_count},
+        {.attr_name = "color", .data = dataset.colors, .item_count = dataset.point_count},
+        {.attr_name = "pixel_size", .data = dataset.sizes, .item_count = dataset.point_count},
+    };
+    int rc = dvz_visual_set_data_many(visual, updates, 3);
+    EXAMPLE_CHECK(rc == 0, "dvz_visual_set_data_many() failed");
 
     rc = dvz_panel_add_visual(panel, visual, NULL);
     EXAMPLE_CHECK(rc == 0, "dvz_panel_add_visual() failed");

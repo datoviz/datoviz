@@ -183,11 +183,16 @@ static bool _add_point_grid(DvzScene* scene, DvzPanel* panel, uint32_t variant)
         }
     }
 
-    if (dvz_point_data(visual, positions, colors, sizes, POINT_COUNT) != 0)
-    {
+    DvzVisualDataUpdate updates[] = {
+        {.attr_name = "position", .data = positions, .item_count = POINT_COUNT},
+        {.attr_name = "color", .data = colors, .item_count = POINT_COUNT},
+        {.attr_name = "diameter", .data = sizes, .item_count = POINT_COUNT},
+    };
+    int rc = dvz_visual_set_data_many(visual, updates, 3);
+    if (rc != 0)
         return false;
-    }
-    return dvz_panel_add_visual(panel, visual, NULL) == 0;
+    rc = dvz_panel_add_visual(panel, visual, NULL);
+    return rc == 0;
 }
 
 

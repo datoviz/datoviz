@@ -69,8 +69,13 @@ int main(int argc, char** argv)
     };
     float sizes[5] = {42.0f, 64.0f, 52.0f, 34.0f, 58.0f};
 
-    int rc = dvz_point_data(visual, positions, colors, sizes, 5);
-    EXAMPLE_CHECK(rc == 0, "dvz_point_data() failed");
+    DvzVisualDataUpdate updates[] = {
+        {.attr_name = "position", .data = positions, .item_count = 5},
+        {.attr_name = "color", .data = colors, .item_count = 5},
+        {.attr_name = "diameter", .data = sizes, .item_count = 5},
+    };
+    int rc = dvz_visual_set_data_many(visual, updates, 3);
+    EXAMPLE_CHECK(rc == 0, "dvz_visual_set_data_many() failed");
 
     rc = dvz_panel_add_visual(panel, visual, NULL);
     EXAMPLE_CHECK(rc == 0, "dvz_panel_add_visual() failed");

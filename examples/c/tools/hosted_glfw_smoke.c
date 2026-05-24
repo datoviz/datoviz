@@ -308,8 +308,23 @@ static DvzScene* _make_scene(DvzFigure** out_figure, DvzPanel** out_panel)
     };
     float sizes[3] = {24.0f, 24.0f, 24.0f};
 
-    dvz_point_data(visual, positions, colors, sizes, 3);
-    dvz_panel_add_visual(panel, visual, NULL);
+    DvzVisualDataUpdate updates[] = {
+        {.attr_name = "position", .data = positions, .item_count = 3},
+        {.attr_name = "color", .data = colors, .item_count = 3},
+        {.attr_name = "diameter", .data = sizes, .item_count = 3},
+    };
+    int rc = dvz_visual_set_data_many(visual, updates, 3);
+    if (rc != 0)
+    {
+        dvz_scene_destroy(scene);
+        return NULL;
+    }
+    rc = dvz_panel_add_visual(panel, visual, NULL);
+    if (rc != 0)
+    {
+        dvz_scene_destroy(scene);
+        return NULL;
+    }
     dvz_panel_set_background_color(panel, 0.08f, 0.10f, 0.14f, 1.0f);
 
     if (out_figure != NULL)

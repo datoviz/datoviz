@@ -200,14 +200,28 @@ int main(int argc, char** argv)
     ok = dvz_scene_buffer_set_data(index_buffer, indices, sizeof(indices));
     EXAMPLE_CHECK(ok, "dvz_scene_buffer_set_data() failed");
 
-    dvz_primitive_data(reference, reference_positions, reference_colors, NULL, 12);
+    DvzVisualDataUpdate reference_updates[] = {
+        {.attr_name = "position", .data = reference_positions, .item_count = 12},
+        {.attr_name = "color", .data = reference_colors, .item_count = 12},
+    };
+    int rc = dvz_visual_set_data_many(reference, reference_updates, 2);
+    EXAMPLE_CHECK(rc == 0, "dvz_visual_set_data_many() failed for reference");
 
-    dvz_mesh_data(cube, positions, colors, normals, 24);
-    dvz_visual_set_buffer(cube, "index", index_buffer);
+    DvzVisualDataUpdate cube_updates[] = {
+        {.attr_name = "position", .data = positions, .item_count = 24},
+        {.attr_name = "color", .data = colors, .item_count = 24},
+        {.attr_name = "normal", .data = normals, .item_count = 24},
+    };
+    rc = dvz_visual_set_data_many(cube, cube_updates, 3);
+    EXAMPLE_CHECK(rc == 0, "dvz_visual_set_data_many() failed for cube");
+    ok = dvz_visual_set_buffer(cube, "index", index_buffer);
+    EXAMPLE_CHECK(ok, "dvz_visual_set_buffer() failed");
     dvz_visual_set_alpha_mode(cube, DVZ_ALPHA_DEPTH_PEEL);
 
-    dvz_panel_add_visual(panel, reference, NULL);
-    dvz_panel_add_visual(panel, cube, NULL);
+    rc = dvz_panel_add_visual(panel, reference, NULL);
+    EXAMPLE_CHECK(rc == 0, "dvz_panel_add_visual() failed for reference");
+    rc = dvz_panel_add_visual(panel, cube, NULL);
+    EXAMPLE_CHECK(rc == 0, "dvz_panel_add_visual() failed for cube");
 
     app = dvz_app(scene);
     EXAMPLE_CHECK(app != NULL, "dvz_app() failed (no GPU or display?)");
