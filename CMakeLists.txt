@@ -56,6 +56,8 @@ option(DVZ_BUILD_APP "Build the app presentation layer" ON)
 option(DVZ_BUILD_GUI "Build the Dear ImGui app overlay layer" ON)
 option(DVZ_WITH_FREETYPE "Enable FreeType-backed scene text atlases when available" ON)
 option(DVZ_WITH_MSDF_ATLAS "Enable msdf-atlas-gen scene text atlases when available" ON)
+set(DVZ_MSDF_ATLAS_SOURCE_DIR "${PROJECT_SOURCE_DIR}/external/msdf-atlas-gen" CACHE PATH
+    "Optional local msdf-atlas-gen source directory")
 
 if(DVZ_ENABLE_GPROF)
     add_compile_options(
@@ -133,31 +135,54 @@ if(DVZ_BUILD_SCENE AND DVZ_WITH_FREETYPE)
 endif()
 
 if(DVZ_BUILD_SCENE AND DVZ_WITH_MSDF_ATLAS)
-    include(FetchContent)
     set(MSDFGEN_CORE_ONLY OFF CACHE BOOL "" FORCE)
     set(MSDFGEN_BUILD_STANDALONE OFF CACHE BOOL "" FORCE)
     set(MSDFGEN_USE_VCPKG OFF CACHE BOOL "" FORCE)
     set(MSDFGEN_USE_SKIA OFF CACHE BOOL "" FORCE)
     set(MSDFGEN_DISABLE_SVG ON CACHE BOOL "" FORCE)
+    set(MSDFGEN_DISABLE_PNG ON CACHE BOOL "" FORCE)
     set(MSDF_ATLAS_BUILD_STANDALONE OFF CACHE BOOL "" FORCE)
     set(MSDF_ATLAS_USE_VCPKG OFF CACHE BOOL "" FORCE)
     set(MSDF_ATLAS_USE_SKIA OFF CACHE BOOL "" FORCE)
+    set(MSDF_ATLAS_NO_ARTERY_FONT ON CACHE BOOL "" FORCE)
     set(MSDF_ATLAS_DYNAMIC_RUNTIME OFF CACHE BOOL "" FORCE)
     set(MSDF_ATLAS_MSDFGEN_EXTERNAL OFF CACHE BOOL "" FORCE)
     set(MSDF_ATLAS_INSTALL OFF CACHE BOOL "" FORCE)
 
-    FetchContent_Declare(
-        msdfgen-atlas
-        GIT_REPOSITORY https://github.com/Chlumsky/msdf-atlas-gen.git
-        GIT_TAG master
-    )
-    FetchContent_MakeAvailable(msdfgen-atlas)
-
-    if(TARGET msdf-atlas-gen::msdf-atlas-gen)
-        set(DVZ_HAS_MSDF_ATLAS 1)
-        list(APPEND DVZ_TEXT_ATLAS_LIBS msdf-atlas-gen::msdf-atlas-gen)
+    if(NOT DVZ_HAS_FREETYPE)
+        message(WARNING "DVZ_WITH_MSDF_ATLAS is ON but FreeType was not found; MSDF text is disabled.")
     else()
-        message(WARNING "DVZ_WITH_MSDF_ATLAS is ON but msdf-atlas-gen target was not created; MSDF text is disabled.")
+        if(NOT TARGET msdf-atlas-gen::msdf-atlas-gen AND NOT TARGET msdf-atlas-gen AND
+                EXISTS "${DVZ_MSDF_ATLAS_SOURCE_DIR}/CMakeLists.txt")
+            add_subdirectory(
+                "${DVZ_MSDF_ATLAS_SOURCE_DIR}"
+                "${CMAKE_CURRENT_BINARY_DIR}/external/msdf-atlas-gen"
+                EXCLUDE_FROM_ALL)
+        endif()
+
+        if(NOT TARGET msdf-atlas-gen::msdf-atlas-gen AND NOT TARGET msdf-atlas-gen)
+            find_package(msdf-atlas-gen CONFIG QUIET)
+        endif()
+
+        if(NOT TARGET msdf-atlas-gen::msdf-atlas-gen AND NOT TARGET msdf-atlas-gen AND
+                DVZ_MSDF_ATLAS_SOURCE_DIR AND
+                NOT EXISTS "${DVZ_MSDF_ATLAS_SOURCE_DIR}/CMakeLists.txt")
+            message(STATUS "msdf-atlas-gen source directory not found: ${DVZ_MSDF_ATLAS_SOURCE_DIR}")
+        endif()
+
+        if(NOT TARGET msdf-atlas-gen::msdf-atlas-gen AND NOT TARGET msdf-atlas-gen)
+            message(WARNING "DVZ_WITH_MSDF_ATLAS is ON but msdf-atlas-gen was not found locally; "
+                "MSDF text is disabled. Initialize external/msdf-atlas-gen or set "
+                "DVZ_MSDF_ATLAS_SOURCE_DIR to a local checkout.")
+        endif()
+
+        if(TARGET msdf-atlas-gen::msdf-atlas-gen)
+            set(DVZ_HAS_MSDF_ATLAS 1)
+            list(APPEND DVZ_TEXT_ATLAS_LIBS msdf-atlas-gen::msdf-atlas-gen)
+        elseif(TARGET msdf-atlas-gen)
+            set(DVZ_HAS_MSDF_ATLAS 1)
+            list(APPEND DVZ_TEXT_ATLAS_LIBS msdf-atlas-gen)
+        endif()
     endif()
 endif()
 
@@ -228,9 +253,18 @@ if(DVZ_ENABLE_KVAZAAR)
             set(_dvz_prev_build_tests_defined 0)
         endif()
 
+        if(DEFINED GIT_SUBMODULE)
+            set(_dvz_prev_git_submodule "${GIT_SUBMODULE}")
+            set(_dvz_prev_git_submodule_defined 1)
+        else()
+            set(_dvz_prev_git_submodule "")
+            set(_dvz_prev_git_submodule_defined 0)
+        endif()
+
         set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
         set(BUILD_TESTS OFF CACHE BOOL "" FORCE)
         set(BUILD_KVAZAAR_BINARY OFF CACHE BOOL "" FORCE)
+        set(GIT_SUBMODULE OFF CACHE BOOL "" FORCE)
         set(USE_CRYPTO OFF CACHE BOOL "" FORCE)
 
         add_subdirectory(
@@ -256,6 +290,12 @@ if(DVZ_ENABLE_KVAZAAR)
             unset(BUILD_TESTS CACHE)
         endif()
 
+        if(_dvz_prev_git_submodule_defined)
+            set(GIT_SUBMODULE "${_dvz_prev_git_submodule}" CACHE BOOL "" FORCE)
+        else()
+            unset(GIT_SUBMODULE CACHE)
+        endif()
+
         unset(BUILD_KVAZAAR_BINARY CACHE)
         unset(USE_CRYPTO CACHE)
 
@@ -263,6 +303,8 @@ if(DVZ_ENABLE_KVAZAAR)
         unset(_dvz_prev_build_shared_libs_defined)
         unset(_dvz_prev_build_tests)
         unset(_dvz_prev_build_tests_defined)
+        unset(_dvz_prev_git_submodule)
+        unset(_dvz_prev_git_submodule_defined)
     else()
         message(WARNING "Kvazaar submodule missing — disable DVZ_ENABLE_KVAZAAR or run 'git submodule update --init external/kvazaar'")
     endif()
