@@ -25,6 +25,7 @@
 #include "_assertions.h"
 #include "datoviz/app.h"
 #include "datoviz/geom.h"
+#include "datoviz/gui.h"
 #include "datoviz/scene.h"
 #include "example_common.h"
 
@@ -91,6 +92,42 @@ typedef struct GizmoPath
     uint32_t count;
     uint32_t capacity;
 } GizmoPath;
+
+
+typedef struct GizmoGeometry
+{
+    float shaft_length;
+    float tip_length;
+    float shaft_radius;
+    float tip_radius;
+    float hub_half_size;
+    float ring_radius;
+    float ring_stroke_width;
+} GizmoGeometry;
+
+
+typedef struct ArcballGizmoState
+{
+    DvzScene* scene;
+    DvzPanel* gizmo_panel;
+    DvzVisual* gizmo_axes_visual;
+    DvzVisual* gizmo_rings_visual;
+    DvzAnimation* spin;
+    GizmoMesh* axes_mesh;
+    GizmoPath* rings_path;
+    GizmoGeometry geometry;
+    DvzPanelDesc inset_desc;
+    bool auto_rotate;
+    bool show_axes;
+    bool show_rings;
+    bool show_gizmo;
+    float spin_speed;
+    float light_direction[3];
+    float ambient;
+    float diffuse;
+    float specular;
+    float shininess;
+} ArcballGizmoState;
 
 
 
@@ -316,12 +353,14 @@ static void _axis_point(const vec3 dir, const vec3 radial, float distance, vec3 
  * Append one colored cylindrical shaft.
  *
  * @param mesh target mesh arrays
+ * @param geometry gizmo geometry controls
  * @param axis axis index
  * @return true when all shaft triangles were appended
  */
-static bool _append_shaft(GizmoMesh* mesh, uint32_t axis)
+static bool _append_shaft(GizmoMesh* mesh, const GizmoGeometry* geometry, uint32_t axis)
 {
     ANN(mesh);
+    ANN(geometry);
 
     vec3 dir = {0};
     vec3 u = {0};
@@ -337,8 +376,8 @@ static bool _append_shaft(GizmoMesh* mesh, uint32_t axis)
 
         vec3 r0 = {0};
         vec3 r1 = {0};
-        _radial_at(u, v, a0, GIZMO_SHAFT_RADIUS, r0);
-        _radial_at(u, v, a1, GIZMO_SHAFT_RADIUS, r1);
+        _radial_at(u, v, a0, geometry->shaft_radius, r0);
+        _radial_at(u, v, a1, geometry->shaft_radius, r1);
 
         vec3 n0 = {r0[0], r0[1], r0[2]};
         vec3 n1 = {r1[0], r1[1], r1[2]};
@@ -351,8 +390,8 @@ static bool _append_shaft(GizmoMesh* mesh, uint32_t axis)
         vec3 p11 = {0};
         _axis_point(dir, r0, 0.0f, p00);
         _axis_point(dir, r1, 0.0f, p01);
-        _axis_point(dir, r0, GIZMO_SHAFT_LENGTH, p10);
-        _axis_point(dir, r1, GIZMO_SHAFT_LENGTH, p11);
+        _axis_point(dir, r0, geometry->shaft_length, p10);
+        _axis_point(dir, r1, geometry->shaft_length, p11);
 
         if (!_gizmo_triangle(mesh, p00, n0, p11, n1, p10, n0, color))
             return false;
@@ -368,12 +407,14 @@ static bool _append_shaft(GizmoMesh* mesh, uint32_t axis)
  * Append one colored conical arrow tip.
  *
  * @param mesh target mesh arrays
+ * @param geometry gizmo geometry controls
  * @param axis axis index
  * @return true when all cone triangles were appended
  */
-static bool _append_tip(GizmoMesh* mesh, uint32_t axis)
+static bool _append_tip(GizmoMesh* mesh, const GizmoGeometry* geometry, uint32_t axis)
 {
     ANN(mesh);
+    ANN(geometry);
 
     vec3 dir = {0};
     vec3 u = {0};
@@ -384,8 +425,8 @@ static bool _append_tip(GizmoMesh* mesh, uint32_t axis)
 
     vec3 apex = {0};
     vec3 base_center = {0};
-    _axis_point(dir, (vec3){0}, GIZMO_SHAFT_LENGTH + GIZMO_TIP_LENGTH, apex);
-    _axis_point(dir, (vec3){0}, GIZMO_SHAFT_LENGTH, base_center);
+    _axis_point(dir, (vec3){0}, geometry->shaft_length + geometry->tip_length, apex);
+    _axis_point(dir, (vec3){0}, geometry->shaft_length, base_center);
 
     for (uint32_t i = 0; i < GIZMO_SEGMENTS; i++)
     {
@@ -394,20 +435,22 @@ static bool _append_tip(GizmoMesh* mesh, uint32_t axis)
 
         vec3 r0 = {0};
         vec3 r1 = {0};
-        _radial_at(u, v, a0, GIZMO_TIP_RADIUS, r0);
-        _radial_at(u, v, a1, GIZMO_TIP_RADIUS, r1);
+        _radial_at(u, v, a0, geometry->tip_radius, r0);
+        _radial_at(u, v, a1, geometry->tip_radius, r1);
 
         vec3 p0 = {0};
         vec3 p1 = {0};
-        _axis_point(dir, r0, GIZMO_SHAFT_LENGTH, p0);
-        _axis_point(dir, r1, GIZMO_SHAFT_LENGTH, p1);
+        _axis_point(dir, r0, geometry->shaft_length, p0);
+        _axis_point(dir, r1, geometry->shaft_length, p1);
 
         vec3 n0 = {0};
         vec3 n1 = {0};
         _vec3_add_scaled(
-            r0, 1.0f / GIZMO_TIP_RADIUS, dir, GIZMO_TIP_RADIUS / GIZMO_TIP_LENGTH, n0);
+            r0, 1.0f / geometry->tip_radius, dir, geometry->tip_radius / geometry->tip_length,
+            n0);
         _vec3_add_scaled(
-            r1, 1.0f / GIZMO_TIP_RADIUS, dir, GIZMO_TIP_RADIUS / GIZMO_TIP_LENGTH, n1);
+            r1, 1.0f / geometry->tip_radius, dir, geometry->tip_radius / geometry->tip_length,
+            n1);
         _normalize3(n0);
         _normalize3(n1);
 
@@ -430,13 +473,15 @@ static bool _append_tip(GizmoMesh* mesh, uint32_t axis)
  * Append the small white cube at the gizmo origin.
  *
  * @param mesh target mesh arrays
+ * @param geometry gizmo geometry controls
  * @return true when all hub triangles were appended
  */
-static bool _append_hub(GizmoMesh* mesh)
+static bool _append_hub(GizmoMesh* mesh, const GizmoGeometry* geometry)
 {
     ANN(mesh);
+    ANN(geometry);
 
-    const float s = GIZMO_HUB_HALF_SIZE;
+    const float s = geometry->hub_half_size;
     const DvzColor color = {238, 240, 244, 255};
     const vec3 p[8] = {
         {-s, -s, -s}, {+s, -s, -s}, {+s, +s, -s}, {-s, +s, -s},
@@ -471,9 +516,11 @@ static bool _append_hub(GizmoMesh* mesh)
  * @param path target path arrays
  * @param position point position
  * @param color point color
+ * @param stroke_width stroke width in pixels
  * @return true when the point was appended
  */
-static bool _gizmo_path_point(GizmoPath* path, const vec3 position, const DvzColor color)
+static bool _gizmo_path_point(
+    GizmoPath* path, const vec3 position, const DvzColor color, float stroke_width)
 {
     ANN(path);
     ANN(position);
@@ -483,7 +530,7 @@ static bool _gizmo_path_point(GizmoPath* path, const vec3 position, const DvzCol
 
     dvz_memcpy(path->positions[path->count], sizeof(vec3), position, sizeof(vec3));
     dvz_memcpy(path->colors[path->count], sizeof(DvzColor), color, sizeof(DvzColor));
-    path->stroke_widths[path->count] = GIZMO_RING_STROKE_WIDTH;
+    path->stroke_widths[path->count] = stroke_width;
     path->count++;
     return true;
 }
@@ -494,21 +541,25 @@ static bool _gizmo_path_point(GizmoPath* path, const vec3 position, const DvzCol
  * Fill the retained mesh buffers for the lit gizmo axes and hub.
  *
  * @param mesh target mesh arrays
+ * @param geometry gizmo geometry controls
  * @return true when the mesh was fully generated
  */
-static bool _build_gizmo_axes(GizmoMesh* mesh)
+static bool _build_gizmo_axes(GizmoMesh* mesh, const GizmoGeometry* geometry)
 {
     ANN(mesh);
+    ANN(geometry);
+
+    mesh->count = 0;
 
     for (uint32_t axis = 0; axis < GIZMO_AXIS_COUNT; axis++)
     {
-        if (!_append_shaft(mesh, axis))
+        if (!_append_shaft(mesh, geometry, axis))
             return false;
-        if (!_append_tip(mesh, axis))
+        if (!_append_tip(mesh, geometry, axis))
             return false;
     }
 
-    if (!_append_hub(mesh))
+    if (!_append_hub(mesh, geometry))
         return false;
 
     return mesh->count == GIZMO_AXES_VERTEX_COUNT;
@@ -520,11 +571,15 @@ static bool _build_gizmo_axes(GizmoMesh* mesh)
  * Fill the retained path buffers for the orientation rings.
  *
  * @param path target path arrays
+ * @param geometry gizmo geometry controls
  * @return true when the path was fully generated
  */
-static bool _build_gizmo_rings(GizmoPath* path)
+static bool _build_gizmo_rings(GizmoPath* path, const GizmoGeometry* geometry)
 {
     ANN(path);
+    ANN(geometry);
+
+    path->count = 0;
 
     for (uint32_t axis = 0; axis < GIZMO_AXIS_COUNT; axis++)
     {
@@ -541,12 +596,299 @@ static bool _build_gizmo_rings(GizmoPath* path)
             const float angle = TAU * (float)(i % GIZMO_RING_SEGMENTS) /
                                 (float)GIZMO_RING_SEGMENTS;
             vec3 p = {0};
-            _radial_at(u, v, angle, GIZMO_RING_RADIUS, p);
-            if (!_gizmo_path_point(path, p, color))
+            _radial_at(u, v, angle, geometry->ring_radius, p);
+            if (!_gizmo_path_point(path, p, color, geometry->ring_stroke_width))
                 return false;
         }
     }
     return path->count == GIZMO_RINGS_POINT_COUNT;
+}
+
+
+
+/**
+ * Return default geometry controls for the inset gizmo.
+ *
+ * @return default geometry controls
+ */
+static GizmoGeometry _gizmo_geometry_defaults(void)
+{
+    return (GizmoGeometry){
+        .shaft_length = GIZMO_SHAFT_LENGTH,
+        .tip_length = GIZMO_TIP_LENGTH,
+        .shaft_radius = GIZMO_SHAFT_RADIUS,
+        .tip_radius = GIZMO_TIP_RADIUS,
+        .hub_half_size = GIZMO_HUB_HALF_SIZE,
+        .ring_radius = GIZMO_RING_RADIUS,
+        .ring_stroke_width = GIZMO_RING_STROKE_WIDTH,
+    };
+}
+
+
+
+/**
+ * Apply the retained mesh/path payloads for the current gizmo geometry.
+ *
+ * @param state live GUI state
+ * @return whether the visual data updates succeeded
+ */
+static bool _gizmo_apply_geometry(ArcballGizmoState* state)
+{
+    ANN(state);
+    ANN(state->axes_mesh);
+    ANN(state->rings_path);
+    ANN(state->gizmo_axes_visual);
+    ANN(state->gizmo_rings_visual);
+
+    if (!_build_gizmo_axes(state->axes_mesh, &state->geometry))
+        return false;
+    if (!_build_gizmo_rings(state->rings_path, &state->geometry))
+        return false;
+
+    DvzVisualDataUpdate axes_updates[] = {
+        {
+            .attr_name = "position",
+            .data = state->axes_mesh->positions,
+            .item_count = state->axes_mesh->count,
+        },
+        {
+            .attr_name = "normal",
+            .data = state->axes_mesh->normals,
+            .item_count = state->axes_mesh->count,
+        },
+        {
+            .attr_name = "color",
+            .data = state->axes_mesh->colors,
+            .item_count = state->axes_mesh->count,
+        },
+    };
+    if (dvz_visual_set_data_many(state->gizmo_axes_visual, axes_updates, 3) != 0)
+        return false;
+
+    DvzVisualDataUpdate ring_updates[] = {
+        {
+            .attr_name = "position",
+            .data = state->rings_path->positions,
+            .item_count = state->rings_path->count,
+        },
+        {
+            .attr_name = "color",
+            .data = state->rings_path->colors,
+            .item_count = state->rings_path->count,
+        },
+        {
+            .attr_name = "stroke_width",
+            .data = state->rings_path->stroke_widths,
+            .item_count = state->rings_path->count,
+        },
+    };
+    if (dvz_visual_set_data_many(state->gizmo_rings_visual, ring_updates, 3) != 0)
+        return false;
+
+    const uint32_t ring_subpaths[GIZMO_AXIS_COUNT] = {
+        GIZMO_RING_POINT_COUNT,
+        GIZMO_RING_POINT_COUNT,
+        GIZMO_RING_POINT_COUNT,
+    };
+    return dvz_path_set_subpaths(state->gizmo_rings_visual, GIZMO_AXIS_COUNT, ring_subpaths) == 0;
+}
+
+
+
+/**
+ * Apply the current lit material controls to the gizmo axes.
+ *
+ * @param state live GUI state
+ * @return whether the material update succeeded
+ */
+static bool _gizmo_apply_material(ArcballGizmoState* state)
+{
+    ANN(state);
+    ANN(state->gizmo_axes_visual);
+
+    DvzMaterialDesc material = dvz_phong_material_desc();
+    material.light_direction[0] = state->light_direction[0];
+    material.light_direction[1] = state->light_direction[1];
+    material.light_direction[2] = state->light_direction[2];
+    material.phong.ambient = state->ambient;
+    material.phong.diffuse = state->diffuse;
+    material.phong.specular = state->specular;
+    material.phong.shininess = state->shininess;
+    return dvz_visual_set_material(state->gizmo_axes_visual, &material) == 0;
+}
+
+
+
+/**
+ * Apply current gizmo visual visibility flags.
+ *
+ * @param state live GUI state
+ */
+static void _gizmo_apply_visibility(ArcballGizmoState* state)
+{
+    ANN(state);
+    ANN(state->gizmo_axes_visual);
+    ANN(state->gizmo_rings_visual);
+
+    dvz_visual_set_visible(state->gizmo_axes_visual, state->show_gizmo && state->show_axes);
+    dvz_visual_set_visible(state->gizmo_rings_visual, state->show_gizmo && state->show_rings);
+}
+
+
+
+/**
+ * Apply the current inset panel rectangle.
+ *
+ * @param state live GUI state
+ */
+static void _gizmo_apply_layout(ArcballGizmoState* state)
+{
+    ANN(state);
+    ANN(state->gizmo_panel);
+    (void)dvz_panel_set_desc(state->gizmo_panel, state->inset_desc);
+}
+
+
+
+/**
+ * Apply current auto-rotation controls.
+ *
+ * @param state live GUI state
+ */
+static void _gizmo_apply_spin(ArcballGizmoState* state)
+{
+    ANN(state);
+    if (state->spin == NULL)
+        return;
+    dvz_anim_set_speed(state->spin, state->spin_speed);
+    if (state->auto_rotate)
+        dvz_anim_start(state->spin, 0.0);
+    else
+        dvz_anim_stop(state->spin);
+}
+
+
+
+/**
+ * Reset user-facing controls to the polished example defaults.
+ *
+ * @param state live GUI state
+ */
+static void _gizmo_reset_controls(ArcballGizmoState* state)
+{
+    ANN(state);
+
+    state->geometry = _gizmo_geometry_defaults();
+    state->inset_desc = (DvzPanelDesc){
+        .x = INSET_LEFT,
+        .y = INSET_TOP,
+        .width = INSET_WIDTH,
+        .height = INSET_HEIGHT,
+    };
+    state->auto_rotate = true;
+    state->show_axes = true;
+    state->show_rings = true;
+    state->show_gizmo = true;
+    state->spin_speed = ROTATION_SPEED_RAD_PER_SEC;
+    state->light_direction[0] = 0.25f;
+    state->light_direction[1] = 0.52f;
+    state->light_direction[2] = 0.82f;
+    state->ambient = 0.62f;
+    state->diffuse = 0.44f;
+    state->specular = 0.68f;
+    state->shininess = 76.0f;
+}
+
+
+
+/**
+ * Build live GUI controls for the arcball gizmo example.
+ *
+ * @param gui GUI overlay
+ * @param win view
+ * @param user_data example state
+ */
+static void _arcball_gizmo_gui(DvzGui* gui, DvzView* win, void* user_data)
+{
+    (void)win;
+    ArcballGizmoState* state = (ArcballGizmoState*)user_data;
+    if (state == NULL)
+        return;
+
+    bool geometry_changed = false;
+    bool material_changed = false;
+    bool layout_changed = false;
+    bool visibility_changed = false;
+    bool spin_changed = false;
+    bool reset = false;
+
+    if (dvz_gui_begin(gui, "Arcball Gizmo", NULL, 0))
+    {
+        dvz_gui_separator_text(gui, "Animation");
+        spin_changed |= dvz_gui_checkbox(gui, "Auto rotate", &state->auto_rotate);
+        spin_changed |= dvz_gui_slider_float_format(
+            gui, "Rotation speed", &state->spin_speed, 0.0f, 1.8f, "%.2f rad/s");
+
+        dvz_gui_separator_text(gui, "Inset panel");
+        layout_changed |= dvz_gui_slider_float(gui, "X", &state->inset_desc.x, 0.0f, 0.95f);
+        layout_changed |= dvz_gui_slider_float(gui, "Y", &state->inset_desc.y, 0.0f, 0.95f);
+        layout_changed |=
+            dvz_gui_slider_float(gui, "Width", &state->inset_desc.width, 0.08f, 0.45f);
+        layout_changed |=
+            dvz_gui_slider_float(gui, "Height", &state->inset_desc.height, 0.08f, 0.45f);
+
+        dvz_gui_separator_text(gui, "Visibility");
+        visibility_changed |= dvz_gui_checkbox(gui, "Show gizmo", &state->show_gizmo);
+        visibility_changed |= dvz_gui_checkbox(gui, "Show axes", &state->show_axes);
+        visibility_changed |= dvz_gui_checkbox(gui, "Show rings", &state->show_rings);
+
+        dvz_gui_separator_text(gui, "Geometry");
+        geometry_changed |= dvz_gui_slider_float(
+            gui, "Shaft length", &state->geometry.shaft_length, 0.45f, 1.80f);
+        geometry_changed |= dvz_gui_slider_float_format(
+            gui, "Shaft radius", &state->geometry.shaft_radius, 0.012f, 0.080f, "%.3f");
+        geometry_changed |=
+            dvz_gui_slider_float(gui, "Tip length", &state->geometry.tip_length, 0.10f, 0.70f);
+        geometry_changed |= dvz_gui_slider_float_format(
+            gui, "Tip radius", &state->geometry.tip_radius, 0.040f, 0.180f, "%.3f");
+        geometry_changed |= dvz_gui_slider_float_format(
+            gui, "Hub half-size", &state->geometry.hub_half_size, 0.035f, 0.160f, "%.3f");
+        geometry_changed |=
+            dvz_gui_slider_float(gui, "Ring radius", &state->geometry.ring_radius, 0.45f, 1.30f);
+        geometry_changed |= dvz_gui_slider_float_format(
+            gui, "Ring width", &state->geometry.ring_stroke_width, 1.0f, 8.0f, "%.1f px");
+
+        dvz_gui_separator_text(gui, "Lighting");
+        material_changed |=
+            dvz_gui_slider_float3(gui, "Light direction", state->light_direction, -1.0f, 1.0f);
+        material_changed |= dvz_gui_slider_float(gui, "Ambient", &state->ambient, 0.0f, 1.0f);
+        material_changed |= dvz_gui_slider_float(gui, "Diffuse", &state->diffuse, 0.0f, 1.5f);
+        material_changed |= dvz_gui_slider_float(gui, "Specular", &state->specular, 0.0f, 1.5f);
+        material_changed |= dvz_gui_slider_float(gui, "Shininess", &state->shininess, 1.0f, 160.0f);
+
+        reset = dvz_gui_button(gui, "Reset");
+    }
+    dvz_gui_end(gui);
+
+    if (reset)
+    {
+        _gizmo_reset_controls(state);
+        geometry_changed = true;
+        material_changed = true;
+        layout_changed = true;
+        visibility_changed = true;
+        spin_changed = true;
+    }
+    if (geometry_changed && !_gizmo_apply_geometry(state))
+        return;
+    if (material_changed)
+        (void)_gizmo_apply_material(state);
+    if (layout_changed)
+        _gizmo_apply_layout(state);
+    if (visibility_changed)
+        _gizmo_apply_visibility(state);
+    if (spin_changed)
+        _gizmo_apply_spin(state);
 }
 
 
@@ -566,6 +908,8 @@ int main(int argc, char** argv)
     DvzGeometry* cube = NULL;
     GizmoMesh axes_mesh = {0};
     GizmoPath rings_path = {0};
+    ArcballGizmoState gui_state = {0};
+    _gizmo_reset_controls(&gui_state);
 
     axes_mesh.capacity = GIZMO_AXES_VERTEX_COUNT;
     axes_mesh.positions = (vec3*)dvz_calloc(axes_mesh.capacity, sizeof(vec3));
@@ -584,11 +928,6 @@ int main(int argc, char** argv)
             rings_path.stroke_widths != NULL,
         "gizmo rings path allocation failed");
 
-    bool ok = _build_gizmo_axes(&axes_mesh);
-    EXAMPLE_CHECK(ok, "gizmo axes mesh generation failed");
-    ok = _build_gizmo_rings(&rings_path);
-    EXAMPLE_CHECK(ok, "gizmo rings path generation failed");
-
     scene = dvz_scene();
     EXAMPLE_CHECK(scene != NULL, "dvz_scene() failed");
 
@@ -598,13 +937,7 @@ int main(int argc, char** argv)
     DvzPanel* main_panel = dvz_panel_full(figure);
     EXAMPLE_CHECK(main_panel != NULL, "dvz_panel_full() failed");
 
-    DvzPanel* gizmo_panel = dvz_panel(
-        figure, (DvzPanelDesc){
-                    .x = INSET_LEFT,
-                    .y = INSET_TOP,
-                    .width = INSET_WIDTH,
-                    .height = INSET_HEIGHT,
-                });
+    DvzPanel* gizmo_panel = dvz_panel(figure, gui_state.inset_desc);
     EXAMPLE_CHECK(gizmo_panel != NULL, "inset dvz_panel() failed");
 
     DvzCameraDesc camera_desc = dvz_camera_desc();
@@ -620,7 +953,7 @@ int main(int argc, char** argv)
     camera_desc.fov_y = 0.72f;
     camera_desc.near = 0.05f;
     camera_desc.far = 100.0f;
-    ok = dvz_panel_set_camera(main_panel, &camera_desc);
+    bool ok = dvz_panel_set_camera(main_panel, &camera_desc);
     EXAMPLE_CHECK(ok, "dvz_panel_set_camera(main_panel) failed");
 
     DvzCameraDesc gizmo_camera_desc = dvz_camera_desc();
@@ -662,32 +995,17 @@ int main(int argc, char** argv)
     dvz_geometry_destroy(cube);
     cube = NULL;
 
-    DvzVisualDataUpdate gizmo_axes_updates[] = {
-        {.attr_name = "position", .data = axes_mesh.positions, .item_count = axes_mesh.count},
-        {.attr_name = "normal", .data = axes_mesh.normals, .item_count = axes_mesh.count},
-        {.attr_name = "color", .data = axes_mesh.colors, .item_count = axes_mesh.count},
-    };
-    int rc = dvz_visual_set_data_many(gizmo_axes_visual, gizmo_axes_updates, 3);
-    EXAMPLE_CHECK(rc == 0, "dvz_visual_set_data_many() failed for gizmo axes");
+    gui_state.scene = scene;
+    gui_state.gizmo_panel = gizmo_panel;
+    gui_state.gizmo_axes_visual = gizmo_axes_visual;
+    gui_state.gizmo_rings_visual = gizmo_rings_visual;
+    gui_state.axes_mesh = &axes_mesh;
+    gui_state.rings_path = &rings_path;
 
-    DvzVisualDataUpdate gizmo_rings_updates[] = {
-        {.attr_name = "position", .data = rings_path.positions, .item_count = rings_path.count},
-        {.attr_name = "color", .data = rings_path.colors, .item_count = rings_path.count},
-        {
-            .attr_name = "stroke_width",
-            .data = rings_path.stroke_widths,
-            .item_count = rings_path.count,
-        },
-    };
-    rc = dvz_visual_set_data_many(gizmo_rings_visual, gizmo_rings_updates, 3);
-    EXAMPLE_CHECK(rc == 0, "dvz_visual_set_data_many() failed for gizmo rings");
-    const uint32_t ring_subpaths[GIZMO_AXIS_COUNT] = {
-        GIZMO_RING_POINT_COUNT,
-        GIZMO_RING_POINT_COUNT,
-        GIZMO_RING_POINT_COUNT,
-    };
-    rc = dvz_path_set_subpaths(gizmo_rings_visual, GIZMO_AXIS_COUNT, ring_subpaths);
-    EXAMPLE_CHECK(rc == 0, "dvz_path_set_subpaths() failed for gizmo rings");
+    ok = _gizmo_apply_geometry(&gui_state);
+    EXAMPLE_CHECK(ok, "failed to initialize gizmo geometry");
+
+    int rc = 0;
     rc = dvz_path_set_caps(gizmo_rings_visual, DVZ_SEGMENT_CAP_NONE, DVZ_SEGMENT_CAP_NONE);
     EXAMPLE_CHECK(rc == 0, "dvz_path_set_caps() failed for gizmo rings");
     rc = dvz_path_set_join(gizmo_rings_visual, DVZ_PATH_JOIN_MITER, 4.0f);
@@ -704,16 +1022,9 @@ int main(int argc, char** argv)
     rc = dvz_visual_set_material(cube_visual, &cube_material);
     EXAMPLE_CHECK(rc == 0, "dvz_visual_set_material() failed for cube");
 
-    DvzMaterialDesc gizmo_material = dvz_phong_material_desc();
-    gizmo_material.light_direction[0] = 0.25f;
-    gizmo_material.light_direction[1] = 0.52f;
-    gizmo_material.light_direction[2] = 0.82f;
-    gizmo_material.phong.ambient = 0.62f;
-    gizmo_material.phong.diffuse = 0.44f;
-    gizmo_material.phong.specular = 0.30f;
-    gizmo_material.phong.shininess = 44.0f;
-    rc = dvz_visual_set_material(gizmo_axes_visual, &gizmo_material);
-    EXAMPLE_CHECK(rc == 0, "dvz_visual_set_material() failed for gizmo axes");
+    ok = _gizmo_apply_material(&gui_state);
+    EXAMPLE_CHECK(ok, "dvz_visual_set_material() failed for gizmo axes");
+    _gizmo_apply_visibility(&gui_state);
 
     rc = dvz_panel_add_visual(main_panel, cube_visual, NULL);
     EXAMPLE_CHECK(rc == 0, "dvz_panel_add_visual() failed for cube");
@@ -729,6 +1040,11 @@ int main(int argc, char** argv)
 
     DvzView* win = dvz_view_glfw(app, figure, WIDTH, HEIGHT, "arcball gizmo");
     EXAMPLE_CHECK(win != NULL, "dvz_view_glfw() failed (GLFW unavailable?)");
+
+    DvzGuiConfig gui_config = dvz_gui_config();
+    DvzGui* gui = dvz_view_gui(win, &gui_config);
+    EXAMPLE_CHECK(gui != NULL, "dvz_view_gui() failed");
+    dvz_view_set_gui_callback(win, _arcball_gizmo_gui, &gui_state);
 
     DvzArcball* arcball = dvz_view_arcball(win, main_panel, NULL);
     EXAMPLE_CHECK(arcball != NULL, "failed to create or bind arcball controller");
@@ -756,7 +1072,8 @@ int main(int argc, char** argv)
         scene, arcball, (vec3){0.0f, 0.0f, 1.0f}, ROTATION_SPEED_RAD_PER_SEC,
         DVZ_ARCBALL_SPIN_FLAGS_PAUSE_ON_INTERACTION);
     EXAMPLE_CHECK(spin != NULL, "dvz_anim_arcball_spin() failed");
-    dvz_anim_start(spin, 0.0);
+    gui_state.spin = spin;
+    _gizmo_apply_spin(&gui_state);
 
     dvz_app_run(app, frame_count);
     rc = dvz_view_capture_stop(win);
