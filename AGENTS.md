@@ -551,6 +551,11 @@ When editing C code, treat robustness and undefined behavior avoidance as first-
   directly to `ANN()`, `ASSERT()`, or `DVZ_ASSUME()`. Evaluate the expression once into a local variable
   first, then assert/assume on that variable; Clang ignores `__builtin_assume()` expressions with
   potential side effects and emits `-Wassume`.
+* In `examples/c`, keep `EXAMPLE_CHECK()` conditions simple and side-effect free. Do not call
+  mutating/status-returning functions directly inside `EXAMPLE_CHECK()`, and do not combine multiple
+  setup calls with `&&` inside a single check. Evaluate each call into a local `int rc` or `bool ok`
+  first, then check that result with a specific failure message. Object/factory calls should still be
+  assigned first and checked with simple pointer comparisons such as `EXAMPLE_CHECK(image != NULL, ...)`.
 * Make ownership explicit. Every pointer or Vulkan handle should be clearly owned or borrowed by the
   current object. Destroy/free paths must be idempotent, set pointers to `NULL`, set Vulkan handles to
   `VK_NULL_HANDLE`, and never destroy borrowed handles.
