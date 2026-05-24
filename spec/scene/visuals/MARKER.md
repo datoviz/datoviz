@@ -21,8 +21,8 @@ The implemented path supports:
 2. dense `position`, `color`, `size`, `angle`, and `shape` attributes;
 3. `shape` values stored as `uint32_t` `DvzMarkerShape` values;
 4. built-in code-SDF shapes `disc`, `square`, `triangle`, `diamond`, `cross`, and `ring`;
-5. `dvz_marker_style()` and `dvz_marker_set_style()` with `edge_color`, `line_width`, `filled`,
-   `stroke`, and `outline`;
+5. `dvz_marker_style()` and `dvz_marker_set_style()` with `edge_color`, `stroke_width`, and
+   exclusive `filled`/`stroke`/`outline` aspect semantics;
 6. GLSL/Vulkan native point-list lowering with marker SDF coverage;
 7. WGSL/WebGPU instanced-quad lowering through the point-like lowering policy;
 8. GPU-backed marker picking using the marker sprite bounding box.
@@ -203,7 +203,7 @@ attribute in the active first slice.
 | Mutability | `dynamic` |
 
 - `filled`: solid fill, no visible edge.
-- `stroke`: edge only, no fill. Width controlled by `line_width`.
+- `stroke`: edge only, no fill. Width controlled by `stroke_width`.
 - `outline`: filled body with edge on top. Uses both `color` (fill) and `edge_color` (edge).
 
 
@@ -212,18 +212,18 @@ attribute in the active first slice.
 | Property | Value |
 |---|---|
 | Type | `rgba_u8` |
-| Default | white `(255, 255, 255, 255)` |
+| Default | black `(0, 0, 0, 255)` |
 | Mutability | `dynamic` |
 
 Edge color for `aspect = stroke` or `aspect = outline`. Visual-wide.
 
 
-### `line_width`
+### `stroke_width`
 
 | Property | Value |
 |---|---|
 | Type | `float32`, screen pixels |
-| Default | `1.0` |
+| Default | `0.0` |
 | Mutability | `dynamic` |
 
 Edge width for `aspect = stroke` or `aspect = outline`.
@@ -358,7 +358,7 @@ and emits a diagnostic. `color_mode = scalar` and `size_mode = scalar` follow st
 | `dvz_marker_aspect` | `aspect` parameter |
 | `dvz_marker_shape` | `shape` parameter |
 | `dvz_marker_position/size/color/angle` | same attributes, extended sources and modes |
-| `dvz_marker_edgecolor/linewidth` | `edge_color` and `line_width` style fields |
+| `dvz_marker_edgecolor/linewidth` | `edge_color` and `stroke_width` style fields |
 | `dvz_marker_texture/tex_scale` | unchanged |
 
 v0.4 adds: `size_space`, `shift`, `color_mode = scalar`, `size_mode = scalar`.

@@ -59,7 +59,7 @@ Useful ideas to retain:
 
 1. code-generated SDF marker shapes;
 2. bitmap, SDF, MSDF, and MTSDF modes as marker render modes;
-3. fill/stroke/outline aspects;
+3. fill/stroke/outline aspect enum;
 4. rotation, edge color, and edge width;
 5. SVG-to-MSDF asset generation as a tool/helper path.
 

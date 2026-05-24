@@ -35,8 +35,8 @@ The active v0.4 visual API should use precise attribute names rather than a fami
 
 Public typed setters should configure behavior, not duplicate generic visual data upload. Visual
 item data should flow through `dvz_visual_set_data()` / range updates using the canonical attribute
-names above. Examples include `dvz_sphere_mode()`, `dvz_visual_set_material()`, and shared
-fill/stroke or stroke-style setters as behavior APIs.
+names above. Examples include `dvz_sphere_mode()`, `dvz_visual_set_material()`, shared
+fill/stroke/outline aspect setters, and stroke-style setters as behavior APIs.
 
 Picking is GPU-backed only. A visual without a GPU pick implementation for the requested precision
 must fail explicitly through `DvzPickStatus` rather than falling back to CPU hit testing or silently

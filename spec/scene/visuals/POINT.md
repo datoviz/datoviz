@@ -19,8 +19,8 @@ The implemented path supports:
 1. retained `point` visual construction via `dvz_point()`;
 2. dense `position`, `color`, and `size` attributes, where `size` is the screen-space diameter;
 3. antialiased circular rendering;
-4. `dvz_point_style_desc()` and `dvz_point_set_style()` with `edge_color`, `line_width`,
-   `filled`, `stroke`, and `outline`;
+4. `dvz_point_style_desc()` and `dvz_point_set_style()` with `edge_color`, `stroke_width`,
+   and exclusive `filled`/`stroke`/`outline` aspect semantics;
 5. GLSL/Vulkan native point-list lowering using point-coordinate coverage;
 6. WGSL/WebGPU instanced-quad lowering;
 7. GPU-backed circular picking that rejects points outside the disc;
@@ -99,6 +99,41 @@ yet project data-space radii must emit a capability diagnostic or fall back expl
 not reinterpret data-space sizes as screen pixels silently.
 
 
+### `aspect`
+
+| Property | Value |
+|---|---|
+| Type | enum: `filled`, `stroke`, `outline` |
+| Default | `filled` |
+| Mutability | `dynamic` |
+
+- `filled`: solid fill, no visible edge.
+- `stroke`: edge only, no fill. Width controlled by `stroke_width`.
+- `outline`: filled body with edge on top. Uses both `color` (fill) and `edge_color` (edge).
+
+
+### `edge_color`
+
+| Property | Value |
+|---|---|
+| Type | `rgba_u8` |
+| Default | black `(0, 0, 0, 255)` |
+| Mutability | `dynamic` |
+
+Edge color for `aspect = stroke` or `aspect = outline`. Visual-wide.
+
+
+### `stroke_width`
+
+| Property | Value |
+|---|---|
+| Type | `float32`, screen pixels |
+| Default | `0.0` |
+| Mutability | `dynamic` |
+
+Edge width for `aspect = stroke` or `aspect = outline`.
+
+
 ## Defaults And Missing Values
 
 | Field | Default | Missing-value policy | `DvzStyle` override |
@@ -107,6 +142,9 @@ not reinterpret data-space sizes as screen pixels silently.
 | `color` | opaque white RGBA | scalar NaN uses scale missing color | yes |
 | `size` | `size_default` | scalar NaN uses size-scale fallback | yes |
 | `size_default` | family-defined screen size | n/a | yes |
+| `aspect` | `filled` | n/a | yes |
+| `edge_color` | black RGBA | n/a | yes |
+| `stroke_width` | 0 screen pixels | n/a | yes |
 
 
 ## Variant Axes

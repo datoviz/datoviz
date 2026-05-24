@@ -174,7 +174,7 @@ Naming:
 1. `color` remains the face/fill color attribute.
 2. `edge_color` is the stroke/edge color.
 3. `stroke_width` is the stroke width in screen pixels.
-4. Use marker-compatible style aspects where needed: `filled`, `stroke`, and `outline`.
+4. Use one marker-compatible style aspect enum where needed: `filled`, `stroke`, or `outline`.
 
 Backend lowering:
 
@@ -215,7 +215,7 @@ Style naming:
 1. `color` is fill/tint color.
 2. `edge_color` is edge/stroke color.
 3. `stroke_width` is stroke width in screen pixels.
-4. Style aspects are `filled`, `stroke`, and `outline`.
+4. Style aspect is one exclusive value: `filled`, `stroke`, or `outline`.
 
 Deferred:
 

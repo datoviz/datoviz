@@ -67,8 +67,8 @@ typedef struct PointStressState PointStressState;
 typedef enum PointStressStyleMode
 {
     POINT_STRESS_STYLE_FILL = 0,
-    POINT_STRESS_STYLE_EDGE = 1,
-    POINT_STRESS_STYLE_BOTH = 2,
+    POINT_STRESS_STYLE_STROKE = 1,
+    POINT_STRESS_STYLE_OUTLINE = 2,
 } PointStressStyleMode;
 
 
@@ -257,7 +257,7 @@ static bool _upload_points(PointStressState* state)
 
 
 /**
- * Apply point fill, edge, or fill-and-edge styling.
+ * Apply point fill, stroke, or outline styling.
  *
  * @param state point stress state
  */
@@ -269,21 +269,15 @@ static void _apply_style(PointStressState* state)
     DvzPointStyleDesc style = dvz_point_style_desc();
     switch ((PointStressStyleMode)state->style_mode)
     {
-    case POINT_STRESS_STYLE_EDGE:
-        style.filled = false;
-        style.stroke = true;
-        style.outline = true;
+    case POINT_STRESS_STYLE_STROKE:
+        style.aspect = DVZ_SHAPE_ASPECT_STROKE;
         break;
-    case POINT_STRESS_STYLE_BOTH:
-        style.filled = true;
-        style.stroke = true;
-        style.outline = false;
+    case POINT_STRESS_STYLE_OUTLINE:
+        style.aspect = DVZ_SHAPE_ASPECT_OUTLINE;
         break;
     case POINT_STRESS_STYLE_FILL:
     default:
-        style.filled = true;
-        style.stroke = false;
-        style.outline = false;
+        style.aspect = DVZ_SHAPE_ASPECT_FILLED;
         break;
     }
     style.stroke_width = state->stroke_width;
@@ -425,7 +419,7 @@ static void _reset_controls(PointStressState* state)
     state->edge_rgb[0] = 0.03f;
     state->edge_rgb[1] = 0.04f;
     state->edge_rgb[2] = 0.05f;
-    state->style_mode = POINT_STRESS_STYLE_BOTH;
+    state->style_mode = POINT_STRESS_STYLE_OUTLINE;
     state->alpha_mode = 0;
     state->depth_test_enabled = true;
     state->msaa_enabled = true;
@@ -516,8 +510,8 @@ static void _point_stress_gui(DvzGui* gui, DvzAppWindow* win, void* user_data)
         data_changed |= dvz_gui_slider_float(gui, "Alpha", &state->alpha, 0.02f, 1.0f);
         static const char* const style_labels[] = {
             "fill",
-            "edge",
-            "both",
+            "stroke",
+            "outline",
         };
         style_changed |= dvz_gui_combo(gui, "Style", &state->style_mode, style_labels, 3);
         style_changed |=

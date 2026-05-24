@@ -57,8 +57,8 @@
 typedef enum MarkerStressStyleMode
 {
     MARKER_STRESS_STYLE_FILL = 0,
-    MARKER_STRESS_STYLE_OUTLINE = 1,
-    MARKER_STRESS_STYLE_BOTH = 2,
+    MARKER_STRESS_STYLE_STROKE = 1,
+    MARKER_STRESS_STYLE_OUTLINE = 2,
 } MarkerStressStyleMode;
 
 
@@ -370,21 +370,15 @@ static void _apply_marker_style(MarkerStressState* state)
     DvzMarkerStyle style = dvz_marker_style();
     switch ((MarkerStressStyleMode)state->style_mode)
     {
-    case MARKER_STRESS_STYLE_OUTLINE:
-        style.filled = false;
-        style.stroke = true;
-        style.outline = true;
+    case MARKER_STRESS_STYLE_STROKE:
+        style.aspect = DVZ_SHAPE_ASPECT_STROKE;
         break;
-    case MARKER_STRESS_STYLE_BOTH:
-        style.filled = true;
-        style.stroke = true;
-        style.outline = false;
+    case MARKER_STRESS_STYLE_OUTLINE:
+        style.aspect = DVZ_SHAPE_ASPECT_OUTLINE;
         break;
     case MARKER_STRESS_STYLE_FILL:
     default:
-        style.filled = true;
-        style.stroke = false;
-        style.outline = false;
+        style.aspect = DVZ_SHAPE_ASPECT_FILLED;
         break;
     }
     style.edge_color[0] = _u8_from_float(state->edge_color[0]);
@@ -546,8 +540,8 @@ static void _marker_stress_gui(DvzGui* gui, DvzAppWindow* win, void* user_data)
 
         static const char* const style_labels[] = {
             "fill",
+            "stroke",
             "outline",
-            "both",
         };
         style_changed |= dvz_gui_combo(gui, "Style", &state->style_mode, style_labels, 3);
         style_changed |=
@@ -656,7 +650,7 @@ int main(int argc, char** argv)
     state.edge_color[2] = 0.035f;
     state.edge_color[3] = 1.0f;
     state.stroke_width = 2.0f;
-    state.style_mode = MARKER_STRESS_STYLE_BOTH;
+    state.style_mode = MARKER_STRESS_STYLE_OUTLINE;
     state.animate = false;
     state.mixed_shapes = true;
 
