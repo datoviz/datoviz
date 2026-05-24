@@ -406,6 +406,8 @@ static void _set_animation_enabled(MarkerStressState* state, bool animate)
     {
         state->base_angle = _wrap_angle(state->base_angle + state->phase);
         state->phase = 0.0f;
+        if (state->rotation_animation != NULL)
+            dvz_anim_phase_set_value(state->rotation_animation, 0.0f);
         _upload_angles(state);
     }
 
@@ -490,6 +492,7 @@ static void _marker_stress_gui(DvzGui* gui, DvzAppWindow* win, void* user_data)
     bool upload_angle = false;
     bool upload_shape = false;
     bool style_changed = false;
+    bool speed_changed = false;
     bool animate = state->animate;
 
     static const char* const shape_items[] = {
@@ -534,7 +537,7 @@ static void _marker_stress_gui(DvzGui* gui, DvzAppWindow* win, void* user_data)
             "%.2f rad");
         if (dvz_gui_checkbox(gui, "Animate rotation", &animate))
             _set_animation_enabled(state, animate);
-        (void)dvz_gui_slider_float_format(
+        speed_changed |= dvz_gui_slider_float_format(
             gui, "Rotation speed", &state->rotation_speed_rad_per_sec, 0.0f, 8.0f,
             "%.2f rad/s");
 
@@ -572,30 +575,31 @@ static void _marker_stress_gui(DvzGui* gui, DvzAppWindow* win, void* user_data)
 
     if (style_changed)
         _apply_marker_style(state);
+
+    if (speed_changed && state->rotation_animation != NULL)
+        dvz_anim_set_speed(state->rotation_animation, state->rotation_speed_rad_per_sec);
 }
 
 
 
 /**
- * Advance animated marker rotation from the scene clock.
+ * Apply the wrapped marker rotation phase from the scene clock.
  *
- * @param animation timer animation
- * @param t scene-clock time in seconds
- * @param dt scene-clock delta in seconds
+ * @param animation phase animation
+ * @param value wrapped rotation phase in radians
+ * @param delta unwrapped phase delta in radians
  * @param user_data marker stress state
  */
-static void _marker_rotation_timer(
-    DvzAnimation* animation, double t, double dt, void* user_data)
+static void _marker_rotation_phase(
+    DvzAnimation* animation, float value, float delta, void* user_data)
 {
     (void)animation;
-    (void)t;
+    (void)delta;
     MarkerStressState* state = (MarkerStressState*)user_data;
-    if (state == NULL || !state->animate || dt <= 0.0)
+    if (state == NULL || !state->animate)
         return;
 
-    state->phase += state->rotation_speed_rad_per_sec * (float)dt;
-    state->phase = _wrap_angle(state->phase);
-
+    state->phase = value;
     _upload_angles(state);
 }
 
@@ -659,8 +663,16 @@ int main(int argc, char** argv)
 
     _upload_marker_attributes(&state);
     _apply_marker_style(&state);
-    state.rotation_animation = dvz_anim_timer(scene, 0.0, _marker_rotation_timer, &state);
-    EXAMPLE_CHECK(state.rotation_animation != NULL, "dvz_anim_timer() failed");
+    state.rotation_animation = dvz_anim_phase(
+        scene, &(DvzAnimPhaseDesc){
+                   .initial = state.phase,
+                   .speed = state.rotation_speed_rad_per_sec,
+                   .wrap_min = -MARKER_STRESS_PI,
+                   .wrap_max = +MARKER_STRESS_PI,
+                   .callback = _marker_rotation_phase,
+                   .user_data = &state,
+               });
+    EXAMPLE_CHECK(state.rotation_animation != NULL, "dvz_anim_phase() failed");
     rc = dvz_panel_add_visual(panel, visual, NULL);
     EXAMPLE_CHECK(rc == 0, "dvz_panel_add_visual() failed");
 
