@@ -50,6 +50,27 @@ DVZ_EXPORT DvzScene* dvz_scene(void);
 
 
 /**
+ * Set the scene font defaults used by text objects without an explicit font.
+ *
+ * The scene copies the descriptor values, but string pointers remain borrowed and must outlive
+ * any later default-font resolution that uses them.
+ *
+ * @param scene the scene
+ * @param defaults font defaults, or NULL for dvz_font_defaults()
+ */
+DVZ_EXPORT void dvz_scene_set_font_defaults(DvzScene* scene, const DvzFontDefaults* defaults);
+
+
+/**
+ * Return the scene font defaults.
+ *
+ * @param scene the scene
+ * @return the scene font defaults, or dvz_font_defaults() when scene is NULL
+ */
+DVZ_EXPORT DvzFontDefaults dvz_scene_font_defaults(const DvzScene* scene);
+
+
+/**
  * Set the runtime capability snapshot used for frame planning.
  *
  * @param scene the scene

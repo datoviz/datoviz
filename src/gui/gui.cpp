@@ -43,8 +43,6 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define DVZ_GUI_DEFAULT_FONT_SIZE 16.0f
-#define DVZ_GUI_DEFAULT_MONO_FONT_SIZE 16.0f
 #define DVZ_GUI_VIEWPORT_DEFAULT_INITIAL_WIDTH 640u
 #define DVZ_GUI_VIEWPORT_DEFAULT_INITIAL_HEIGHT 480u
 #define DVZ_GUI_VIEWPORT_DEFAULT_MIN_WIDTH 32u
@@ -349,7 +347,7 @@ static void _gui_viewport_set_visible(DvzGuiViewport* viewport, bool visible)
 
 
 /**
- * Load Datoviz's embedded ImGui fonts into the current font atlas.
+ * Load Datoviz's ImGui fonts into the current font atlas.
  *
  * @param gui the GUI overlay
  */
@@ -359,17 +357,28 @@ static void _gui_load_fonts(DvzGui* gui)
     _gui_set_current(gui);
 
     ImGuiIO& io = ImGui::GetIO();
-    const float font_size = _gui_font_size(gui->config.font_size, DVZ_GUI_DEFAULT_FONT_SIZE);
+    DvzFontDefaults defaults = gui->config.font_defaults;
+    DvzFontDefaults fallback_defaults = dvz_font_defaults();
+    if (defaults.ui_size_px <= 0.0f)
+        defaults.ui_size_px = fallback_defaults.ui_size_px;
+    if (defaults.mono_size_px <= 0.0f)
+        defaults.mono_size_px = fallback_defaults.mono_size_px;
+
+    const float font_size = _gui_font_size(defaults.ui_size_px, fallback_defaults.ui_size_px);
     const float mono_font_size =
-        _gui_font_size(gui->config.mono_font_size, DVZ_GUI_DEFAULT_MONO_FONT_SIZE);
+        _gui_font_size(defaults.mono_size_px, fallback_defaults.mono_size_px);
 
     ImFontConfig regular_config = {};
     regular_config.OversampleH = 2;
     regular_config.OversampleV = 1;
-    gui->font_regular = io.Fonts->AddFontFromMemoryCompressedTTF(
-        dvz_gui_font_karla_regular_compressed_data,
-        (int)dvz_gui_font_karla_regular_compressed_size, font_size, &regular_config,
-        io.Fonts->GetGlyphRangesDefault());
+    if (defaults.sans.path != NULL && defaults.sans.path[0] != '\0')
+        gui->font_regular = io.Fonts->AddFontFromFileTTF(
+            defaults.sans.path, font_size, &regular_config, io.Fonts->GetGlyphRangesDefault());
+    if (gui->font_regular == NULL)
+        gui->font_regular = io.Fonts->AddFontFromMemoryCompressedTTF(
+            dvz_gui_font_karla_regular_compressed_data,
+            (int)dvz_gui_font_karla_regular_compressed_size, font_size, &regular_config,
+            io.Fonts->GetGlyphRangesDefault());
     if (gui->font_regular == NULL)
     {
         log_error("Dear ImGui failed to load the embedded Karla font");
@@ -379,10 +388,14 @@ static void _gui_load_fonts(DvzGui* gui)
     ImFontConfig mono_config = {};
     mono_config.OversampleH = 2;
     mono_config.OversampleV = 1;
-    gui->font_mono = io.Fonts->AddFontFromMemoryCompressedTTF(
-        dvz_gui_font_cousine_regular_compressed_data,
-        (int)dvz_gui_font_cousine_regular_compressed_size, mono_font_size, &mono_config,
-        io.Fonts->GetGlyphRangesDefault());
+    if (defaults.mono.path != NULL && defaults.mono.path[0] != '\0')
+        gui->font_mono = io.Fonts->AddFontFromFileTTF(
+            defaults.mono.path, mono_font_size, &mono_config, io.Fonts->GetGlyphRangesDefault());
+    if (gui->font_mono == NULL)
+        gui->font_mono = io.Fonts->AddFontFromMemoryCompressedTTF(
+            dvz_gui_font_cousine_regular_compressed_data,
+            (int)dvz_gui_font_cousine_regular_compressed_size, mono_font_size, &mono_config,
+            io.Fonts->GetGlyphRangesDefault());
     if (gui->font_mono == NULL)
         log_error("Dear ImGui failed to load the embedded Cousine font");
 
@@ -1297,8 +1310,7 @@ DvzGuiConfig dvz_gui_config(void)
 {
     DvzGuiConfig config = {};
     config.flags = DVZ_GUI_FLAGS_DOCKING | DVZ_GUI_FLAGS_DOCKSPACE;
-    config.font_size = DVZ_GUI_DEFAULT_FONT_SIZE;
-    config.mono_font_size = DVZ_GUI_DEFAULT_MONO_FONT_SIZE;
+    config.font_defaults = dvz_font_defaults();
     return config;
 }
 

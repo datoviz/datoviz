@@ -17,6 +17,7 @@
 #include "test_gui.h"
 
 #include <stdint.h>
+#include <string.h>
 
 #include "_alloc.h"
 #include "_assertions.h"
@@ -206,6 +207,30 @@ static int test_gui_viewport_config_defaults(TstContext* suite, const TstCase* i
     AT(config.min_height > 0);
     AT(config.resize_step > 0);
     AT(config.resize_delay_frames > 0);
+    return 0;
+}
+
+
+/**
+ * Check GUI overlay default font policy.
+ *
+ * @param suite test suite
+ * @param item test item
+ * @return 0 on success
+ */
+static int test_gui_config_font_defaults(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzGuiConfig config = dvz_gui_config();
+    DvzFontDefaults defaults = dvz_font_defaults();
+    AT(strcmp(config.font_defaults.sans.family, defaults.sans.family) == 0);
+    AT(strcmp(config.font_defaults.sans.style, defaults.sans.style) == 0);
+    AT(strcmp(config.font_defaults.mono.family, defaults.mono.family) == 0);
+    AT(config.font_defaults.ui_size_px == defaults.ui_size_px);
+    AT(config.font_defaults.mono_size_px == defaults.mono_size_px);
+    AT(config.font_defaults.text_size_px == defaults.text_size_px);
     return 0;
 }
 
@@ -457,6 +482,7 @@ int test_gui(TstSuite* suite)
     TST_MODULE(suite, tags);
     TST_CASE(test_gui_imgui_public_header);
     TST_CASE(test_gui_viewport_config_defaults);
+    TST_CASE(test_gui_config_font_defaults);
     TST_CASE(test_gui_widget_wrapper_symbols);
     TST_CASE(test_gui_viewport_resize_hidden_smoke);
     TST_CASE(test_gui_multi_viewport_input_routers);

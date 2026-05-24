@@ -21,6 +21,7 @@
 
 #include "datoviz/app.h"
 #include "datoviz/common/macros.h"
+#include "datoviz/font.h"
 #include "datoviz/math/types.h"
 
 
@@ -70,8 +71,7 @@ typedef struct DvzGuiConfig
 {
     uint32_t flags;
     const char* ini_path;
-    float font_size;
-    float mono_font_size;
+    DvzFontDefaults font_defaults;
 } DvzGuiConfig;
 
 

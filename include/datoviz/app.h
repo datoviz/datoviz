@@ -22,6 +22,7 @@
 #include <vulkan/vulkan_core.h>
 
 #include "datoviz/common/macros.h"
+#include "datoviz/font.h"
 #include "datoviz/input/enums.h"
 #include "datoviz/input/keycodes.h"
 #include "datoviz/scene/types.h"
@@ -89,6 +90,7 @@ struct DvzAppConfig
     bool enable_glfw_extensions;
     DvzAppScheduleMode schedule_mode;
     double fps_cap;
+    DvzFontDefaults font_defaults;
 };
 
 

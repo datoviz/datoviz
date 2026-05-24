@@ -399,6 +399,104 @@ int test_scene_text_annotation_bookkeeping(TstContext* suite, const TstCase* ite
 }
 
 
+/**
+ * Check scene-level font defaults and retained text default sizing.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_font_defaults(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    ANN(item);
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFontDefaults defaults = dvz_scene_font_defaults(scene);
+    DvzFontDefaults built_in = dvz_font_defaults();
+    AT(strcmp(defaults.sans.family, built_in.sans.family) == 0);
+    AT(defaults.text_size_px == built_in.text_size_px);
+
+    DvzFontDefaults custom = built_in;
+    custom.sans.family = "Scene Sans";
+    custom.sans.style = "Book";
+    custom.text_size_px = 19.0f;
+    dvz_scene_set_font_defaults(scene, &custom);
+    defaults = dvz_scene_font_defaults(scene);
+    AT(strcmp(defaults.sans.family, "Scene Sans") == 0);
+    AT(strcmp(defaults.sans.style, "Book") == 0);
+    AT(defaults.text_size_px == 19.0f);
+
+    DvzFigure* figure = dvz_figure(scene, 640, 480, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(
+        figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+    ANN(panel);
+    DvzText* text = dvz_text(panel, 0);
+    ANN(text);
+    AT(text->style.size_px == 19.0f);
+
+    dvz_scene_set_font_defaults(scene, NULL);
+    defaults = dvz_scene_font_defaults(scene);
+    AT(strcmp(defaults.sans.family, built_in.sans.family) == 0);
+    AT(defaults.text_size_px == built_in.text_size_px);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+/**
+ * Check that SDF text realization uses scene font defaults for null-font styles.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_text_sdf_default_font(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    ANN(item);
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFontDefaults defaults = dvz_scene_font_defaults(scene);
+    defaults.sans.family = "SDF Default";
+    defaults.sans.style = "Book";
+    defaults.text_size_px = 18.0f;
+    dvz_scene_set_font_defaults(scene, &defaults);
+
+    DvzFigure* figure = dvz_figure(scene, 640, 480, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(
+        figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+    ANN(panel);
+
+    DvzVisual* text = _scene_text_visual(scene, 0);
+    ANN(text);
+    AT(_scene_text_visual_set_renderer(text, DVZ_TEXT_RENDERER_MSDF_ATLAS) == 0);
+    const char* strings[1] = {"A"};
+    float positions[1][3] = {{32.0f, 48.0f, 0.0f}};
+    DvzVisualDataUpdate updates[1] = {
+        {.attr_name = "position", .data = positions, .item_count = 1},
+    };
+    AT(dvz_visual_set_strings(text, "text", strings, 1) == 0);
+    AT(dvz_visual_set_data_many(text, updates, 1) == 0);
+    AT(dvz_panel_add_visual(
+           panel, text,
+           &(DvzVisualAttachDesc){.z_layer = 1, .controller_mode = DVZ_CONTROLLER_FIXED}) == 0);
+
+    _scene_prepare_text_visuals(figure);
+    AT(scene->font_count == 1);
+    AT(strcmp(scene->fonts[0].family, "SDF Default") == 0);
+    AT(strcmp(scene->fonts[0].style, "Book") == 0);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
 int test_scene_text_semantic_object_realization(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
@@ -1272,6 +1370,8 @@ int test_scene_interaction(TstSuite* suite)
     TST_CASE(test_scene_selection_apply_pick_and_link_keys);
     TST_CASE(test_scene_selection_apply_pick_updates_visual_masks);
     TST_CASE(test_scene_text_annotation_bookkeeping);
+    TST_CASE(test_scene_font_defaults);
+    TST_CASE(test_scene_text_sdf_default_font);
     TST_CASE(test_scene_text_semantic_object_realization);
     TST_CASE(test_scene_text_bitmap_visual_realization);
     TST_CASE(test_scene_text_sdf_visual_realization);

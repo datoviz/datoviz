@@ -1153,6 +1153,7 @@ struct DvzScene
 {
     DvzCapabilitySnapshot caps;
     DvzSceneTechniqueState techniques;
+    DvzFontDefaults font_defaults;
 
     DvzSceneClock clock;
 

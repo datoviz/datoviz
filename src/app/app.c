@@ -199,7 +199,9 @@ static DvzAppConfig _app_config_defaults(void)
         .enable_glfw_extensions = true,
         .schedule_mode = DVZ_APP_SCHEDULE_ON_DEMAND,
         .fps_cap = 0.0,
+        .font_defaults = {0},
     };
+    config.font_defaults = dvz_font_defaults();
     return config;
 }
 
@@ -2776,6 +2778,7 @@ dvz_app_with_resources(DvzScene* scene, const DvzAppConfig* config, const DvzApp
         return NULL;
     app->scene = scene;
     app->config = resolved;
+    dvz_scene_set_font_defaults(scene, &resolved.font_defaults);
     _dvz_app_status_init(&app->status);
 
     /* Window host first — needed to query GLFW surface extensions before building the instance. */
@@ -4085,7 +4088,10 @@ DvzGui* dvz_app_window_gui(DvzAppWindow* win, const DvzGuiConfig* config)
         return win->gui;
     if (win->app == NULL || win->app->gpu_ctx == NULL || win->window == NULL)
         return NULL;
-    win->gui = _dvz_gui_create(win->app, win->app->gpu_ctx, win, win->window, config);
+    DvzGuiConfig resolved = config != NULL ? *config : dvz_gui_config();
+    if (config == NULL)
+        resolved.font_defaults = win->app->config.font_defaults;
+    win->gui = _dvz_gui_create(win->app, win->app->gpu_ctx, win, win->window, &resolved);
     if (win->gui != NULL)
         dvz_app_window_request_frame(win);
     return win->gui;

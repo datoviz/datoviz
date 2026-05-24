@@ -19,6 +19,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "datoviz/font.h"
 #include "datoviz/math/types.h"
 #include "datoviz/scene/enums.h"
 
@@ -645,17 +646,6 @@ struct DvzColorbarDesc
     uint32_t flags;
 };
 typedef struct DvzColorbarDesc DvzColorbarDesc;
-
-
-struct DvzFontDesc
-{
-    const char* path;
-    const char* family;
-    const char* style;
-    uint32_t face_index;
-    uint32_t flags;
-};
-typedef struct DvzFontDesc DvzFontDesc;
 
 
 struct DvzTextStyle

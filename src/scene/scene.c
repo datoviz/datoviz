@@ -2291,6 +2291,7 @@ DvzScene* dvz_scene(void)
         return NULL;
     dvz_capability_snapshot_default(&scene->caps);
     _scene_technique_state_init(&scene->techniques);
+    scene->font_defaults = dvz_font_defaults();
     scene->clock.mode = DVZ_CLOCK_REALTIME;
     scene->clock.fps = 60.0;
     scene->emitter = dvz_frame_plan_emitter();
@@ -2300,6 +2301,33 @@ DvzScene* dvz_scene(void)
         return NULL;
     }
     return scene;
+}
+
+
+/**
+ * Set the scene font defaults used by text objects without an explicit font.
+ *
+ * @param scene the scene
+ * @param defaults font defaults, or NULL for built-in defaults
+ */
+void dvz_scene_set_font_defaults(DvzScene* scene, const DvzFontDefaults* defaults)
+{
+    ANN(scene);
+    scene->font_defaults = defaults != NULL ? *defaults : dvz_font_defaults();
+}
+
+
+/**
+ * Return the scene font defaults.
+ *
+ * @param scene the scene
+ * @return scene font defaults
+ */
+DvzFontDefaults dvz_scene_font_defaults(const DvzScene* scene)
+{
+    if (scene == NULL)
+        return dvz_font_defaults();
+    return scene->font_defaults;
 }
 
 

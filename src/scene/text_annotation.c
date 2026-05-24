@@ -112,14 +112,15 @@ static const uint8_t _text_font_6x8[DVZ_TEXT_BITMAP_GLYPH_COUNT * 6] = {
  * Return the resolved text size in pixels.
  *
  * @param style the text style
+ * @param fallback_size_px fallback text size in pixels
  * @return the resolved size
  */
-static float _text_style_size_px(const DvzTextStyle* style)
+static float _text_style_size_px(const DvzTextStyle* style, float fallback_size_px)
 {
     ANN(style);
     float size_px = style->size_px;
     if (size_px <= 0.0f)
-        size_px = 12.0f;
+        size_px = fallback_size_px > 0.0f ? fallback_size_px : dvz_font_defaults().text_size_px;
     return size_px;
 }
 
@@ -130,10 +131,11 @@ static float _text_style_size_px(const DvzTextStyle* style)
  *
  * @param renderer the requested text renderer
  * @param style the text style
+ * @param fallback_size_px fallback text size in pixels
  * @return the internal atlas backend
  */
 static DvzTextAtlasBackend _text_renderer_backend(
-    DvzTextRenderer renderer, const DvzTextStyle* style)
+    DvzTextRenderer renderer, const DvzTextStyle* style, float fallback_size_px)
 {
     ANN(style);
     if (renderer == DVZ_TEXT_RENDERER_SMALL_BITMAP_ATLAS)
@@ -150,7 +152,7 @@ static DvzTextAtlasBackend _text_renderer_backend(
         return DVZ_TEXT_ATLAS_BACKEND_MSDF;
     if (renderer == DVZ_TEXT_RENDERER_AUTO)
     {
-        if (_text_style_size_px(style) < 14.0f)
+        if (_text_style_size_px(style, fallback_size_px) < 14.0f)
         {
 #if defined(DVZ_HAS_FREETYPE) && DVZ_HAS_FREETYPE
             return DVZ_TEXT_ATLAS_BACKEND_FREETYPE_BITMAP;
@@ -174,17 +176,25 @@ static DvzTextAtlasBackend _text_renderer_backend(
 static DvzFont* _text_default_sdf_font(DvzScene* scene)
 {
     ANN(scene);
-    const char* family = "__datoviz_default_sdf__";
+    DvzFontDesc desc = scene->font_defaults.sans;
+    if (desc.family == NULL || desc.family[0] == '\0')
+        desc.family = "Roboto";
+    if (desc.style == NULL || desc.style[0] == '\0')
+        desc.style = "Regular";
     for (uint32_t i = 0; i < scene->font_count; i++)
     {
-        if (strcmp(scene->fonts[i].family, family) == 0)
+        bool path_matches = false;
+        if (desc.path == NULL || desc.path[0] == '\0')
+            path_matches = scene->fonts[i].path[0] == '\0';
+        else
+            path_matches = strcmp(scene->fonts[i].path, desc.path) == 0;
+
+        if (
+            path_matches && strcmp(scene->fonts[i].family, desc.family) == 0 &&
+            strcmp(scene->fonts[i].style, desc.style) == 0)
             return &scene->fonts[i];
     }
-    return dvz_font(
-        scene, &(DvzFontDesc){
-                   .family = family,
-                   .style = "Regular",
-               });
+    return dvz_font(scene, &desc);
 }
 
 
@@ -1059,7 +1069,9 @@ static bool _text_prepare_visual(DvzFigure* figure, DvzText* text)
     ANN(text);
     if (text->scene == NULL || text->panel == NULL || text->panel->figure != figure)
         return true;
-    DvzTextAtlasBackend backend = _text_renderer_backend(text->style.renderer, &text->style);
+    float default_size_px = text->scene->font_defaults.text_size_px;
+    DvzTextAtlasBackend backend =
+        _text_renderer_backend(text->style.renderer, &text->style, default_size_px);
     bool use_builtin = backend == DVZ_TEXT_ATLAS_BACKEND_BUILTIN_BITMAP;
     bool screen_placement = text->placement.mode == DVZ_TEXT_PLACEMENT_SCREEN;
     DvzVisualAttachDesc attach = {
@@ -1081,7 +1093,7 @@ static bool _text_prepare_visual(DvzFigure* figure, DvzText* text)
     {
         DvzFont* font = _text_sdf_font(text->scene, &text->style);
         DvzTextAtlasSpec spec =
-            _scene_text_atlas_spec(backend, _text_style_size_px(&text->style));
+            _scene_text_atlas_spec(backend, _text_style_size_px(&text->style, default_size_px));
         if (font == NULL || !_scene_text_atlas_ensure_string(font, &spec, text->string))
             return false;
         font_atlas = _text_font_atlas(font, &spec);
@@ -1500,12 +1512,13 @@ static bool _text_visual_prepare(
         }
     }
     if (spec_size_px <= 0.0f)
-        spec_size_px = 12.0f;
+        spec_size_px = visual->scene->font_defaults.text_size_px;
     DvzTextStyle backend_style = {
         .size_px = spec_size_px,
         .renderer = renderer,
     };
-    DvzTextAtlasBackend backend = _text_renderer_backend(renderer, &backend_style);
+    DvzTextAtlasBackend backend =
+        _text_renderer_backend(renderer, &backend_style, visual->scene->font_defaults.text_size_px);
     bool use_builtin = backend == DVZ_TEXT_ATLAS_BACKEND_BUILTIN_BITMAP;
     DvzTextAtlas* font_atlas = NULL;
     DvzSampledField* atlas = NULL;
@@ -1959,12 +1972,16 @@ void dvz_font_destroy(DvzFont* font)
 /**
  * Return the default retained text style.
  *
+ * @param scene the scene
  * @return default text style
  */
-static DvzTextStyle _text_default_style(void)
+static DvzTextStyle _text_default_style(const DvzScene* scene)
 {
+    float size_px = dvz_font_defaults().text_size_px;
+    if (scene != NULL && scene->font_defaults.text_size_px > 0.0f)
+        size_px = scene->font_defaults.text_size_px;
     DvzTextStyle style = {0};
-    style.size_px = 12.0f;
+    style.size_px = size_px;
     style.renderer = DVZ_TEXT_RENDERER_SMALL_BITMAP_ATLAS;
     style.color[0] = 255;
     style.color[1] = 255;
@@ -2044,7 +2061,7 @@ DvzText* dvz_text(DvzPanel* panel, uint32_t flags)
     dvz_memset(text, sizeof(DvzText), 0, sizeof(DvzText));
     text->scene = scene;
     text->panel = panel;
-    text->style = _text_default_style();
+    text->style = _text_default_style(scene);
     text->placement = _text_default_placement();
     text->flags = flags;
     text->dirty_flags = DVZ_TEXT_DIRTY_ALL;
@@ -2103,7 +2120,7 @@ void dvz_text_set_string(DvzText* text, const char* string)
 int dvz_text_set_style(DvzText* text, const DvzTextStyle* style)
 {
     ANN(text);
-    DvzTextStyle resolved = style != NULL ? *style : _text_default_style();
+    DvzTextStyle resolved = style != NULL ? *style : _text_default_style(text->scene);
     if (resolved.font != NULL && resolved.font->scene != text->scene)
     {
         log_error("cannot bind a font from a different scene");
