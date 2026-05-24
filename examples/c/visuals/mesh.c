@@ -13,8 +13,8 @@
  * Build:  just example-c visuals/mesh
  * Run:    ./build/examples/c/visuals/mesh
  * Smoke:  ./build/examples/c/visuals/mesh 60
- * DVZR:   ./build/examples/c/visuals/mesh record
- * Video:  ./build/examples/c/visuals/mesh video
+ * DVZR:   DVZ_CAPTURE=dvzr ./build/examples/c/visuals/mesh 60
+ * Video:  DVZ_CAPTURE=mp4 ./build/examples/c/visuals/mesh 60
  */
 
 
@@ -26,12 +26,9 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "_compat.h"
 #include "datoviz/geom.h"
 #include "datoviz/app.h"
-#include "datoviz/canvas.h"
 #include "datoviz/scene.h"
-#include "datoviz/video.h"
 #include "example_common.h"
 
 
@@ -55,13 +52,9 @@
 
 int main(int argc, char** argv)
 {
-    bool video_enabled = example_arg_has(argc, argv, "video");
     uint32_t frame_count = example_frame_count_any(argc, argv);
-    char default_dvzr_path[512] = {0};
-    char dvzr_path[512] = {0};
-    example_outpath(argv[0], "mesh.dvzr", default_dvzr_path, sizeof(default_dvzr_path));
-    bool recording_enabled =
-        example_recording_path(argc, argv, default_dvzr_path, dvzr_path, sizeof(dvzr_path));
+    DvzAppCaptureConfig capture = dvz_app_capture_config_from_env("mesh");
+    bool video_enabled = (capture.flags & DVZ_APP_CAPTURE_VIDEO) != 0;
 
     int ret = 1;
     DvzScene* scene = NULL;
@@ -132,22 +125,8 @@ int main(int argc, char** argv)
     dvz_scene_set_clock_mode(scene, video_enabled ? DVZ_CLOCK_OFFLINE : DVZ_CLOCK_REALTIME);
     dvz_scene_set_fps(scene, 60.0);
 
-    char mp4_path[512] = {0};
-    if (video_enabled)
-    {
-        DvzVideoSinkConfig video = dvz_video_sink_default_config();
-        video.encoder.backend = "nvenc";
-        video.encoder.width = WIDTH;
-        video.encoder.height = HEIGHT;
-        video.encoder.fps = 60;
-        example_outpath(argv[0], "mesh.mp4", mp4_path, sizeof(mp4_path));
-        video.encoder.mp4_path = mp4_path;
-
-        rc = dvz_canvas_configure_video_sink(dvz_app_window_canvas(win), true, &video);
-        EXAMPLE_CHECK(rc == 0, "dvz_canvas_configure_video_sink() failed");
-    }
-    if (recording_enabled && dvz_app_window_record_start(win, dvzr_path) != 0)
-        EXAMPLE_CHECK(false, "dvz_app_window_record_start() failed");
+    rc = dvz_app_window_capture_start(win, &capture);
+    EXAMPLE_CHECK(rc == 0, "dvz_app_window_capture_start() failed");
 
     DvzAnimation* spin = dvz_anim_arcball_spin(
         scene, arcball, (vec3){0.0f, 1.0f, 0.0f}, ROTATION_SPEED_RAD_PER_SEC,
@@ -156,15 +135,8 @@ int main(int argc, char** argv)
     dvz_anim_start(spin, 0.0);
 
     dvz_app_run(app, frame_count);
-    if (recording_enabled)
-    {
-        if (dvz_app_window_record_stop(win) != 0)
-            dvz_fprintf(stderr, "dvz_app_window_record_stop() failed\n");
-        else
-            dvz_fprintf(stdout, "mesh: saved %s\n", dvzr_path);
-    }
-    if (video_enabled)
-        dvz_fprintf(stdout, "mesh: saved %s\n", mp4_path);
+    rc = dvz_app_window_capture_stop(win);
+    EXAMPLE_CHECK(rc == 0, "dvz_app_window_capture_stop() failed");
     ret = 0;
 
 cleanup:
