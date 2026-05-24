@@ -60,9 +60,10 @@
 #define GIZMO_CONE_VERTEX_COUNT     (GIZMO_SEGMENTS * 6u)
 #define GIZMO_RING_VERTEX_COUNT     (GIZMO_RING_SEGMENTS * 6u)
 #define GIZMO_HUB_VERTEX_COUNT      36u
-#define GIZMO_VERTEX_COUNT                                                                        \
+#define GIZMO_AXES_VERTEX_COUNT                                                                  \
     (GIZMO_AXIS_COUNT * (GIZMO_CYLINDER_VERTEX_COUNT + GIZMO_CONE_VERTEX_COUNT) +                 \
-     GIZMO_AXIS_COUNT * GIZMO_RING_VERTEX_COUNT + GIZMO_HUB_VERTEX_COUNT)
+     GIZMO_HUB_VERTEX_COUNT)
+#define GIZMO_RINGS_VERTEX_COUNT (GIZMO_AXIS_COUNT * GIZMO_RING_VERTEX_COUNT)
 
 static const float TAU = 6.28318530718f;
 
@@ -432,7 +433,7 @@ static bool _append_ring(GizmoMesh* mesh, uint32_t axis)
     DvzColor color = {0};
     _axis_basis(axis, dir, u, v);
     _axis_color(axis, color);
-    color[3] = 170;
+    color[3] = 255;
 
     for (uint32_t i = 0; i < GIZMO_RING_SEGMENTS; i++)
     {
@@ -498,12 +499,12 @@ static bool _append_hub(GizmoMesh* mesh)
 
 
 /**
- * Fill the retained mesh buffers for the axis gizmo.
+ * Fill the retained mesh buffers for the lit gizmo axes and hub.
  *
  * @param mesh target mesh arrays
  * @return true when the mesh was fully generated
  */
-static bool _build_gizmo(GizmoMesh* mesh)
+static bool _build_gizmo_axes(GizmoMesh* mesh)
 {
     ANN(mesh);
 
@@ -513,14 +514,32 @@ static bool _build_gizmo(GizmoMesh* mesh)
             return false;
         if (!_append_tip(mesh, axis))
             return false;
-        if (!_append_ring(mesh, axis))
-            return false;
     }
 
     if (!_append_hub(mesh))
         return false;
 
-    return mesh->count == GIZMO_VERTEX_COUNT;
+    return mesh->count == GIZMO_AXES_VERTEX_COUNT;
+}
+
+
+
+/**
+ * Fill the retained mesh buffers for the unlit orientation rings.
+ *
+ * @param mesh target mesh arrays
+ * @return true when the mesh was fully generated
+ */
+static bool _build_gizmo_rings(GizmoMesh* mesh)
+{
+    ANN(mesh);
+
+    for (uint32_t axis = 0; axis < GIZMO_AXIS_COUNT; axis++)
+    {
+        if (!_append_ring(mesh, axis))
+            return false;
+    }
+    return mesh->count == GIZMO_RINGS_VERTEX_COUNT;
 }
 
 
@@ -538,18 +557,29 @@ int main(int argc, char** argv)
     DvzScene* scene = NULL;
     DvzApp* app = NULL;
     DvzGeometry* cube = NULL;
-    GizmoMesh mesh = {0};
+    GizmoMesh axes_mesh = {0};
+    GizmoMesh rings_mesh = {0};
 
-    mesh.capacity = GIZMO_VERTEX_COUNT;
-    mesh.positions = (vec3*)dvz_calloc(mesh.capacity, sizeof(vec3));
-    mesh.normals = (vec3*)dvz_calloc(mesh.capacity, sizeof(vec3));
-    mesh.colors = (DvzColor*)dvz_calloc(mesh.capacity, sizeof(DvzColor));
+    axes_mesh.capacity = GIZMO_AXES_VERTEX_COUNT;
+    axes_mesh.positions = (vec3*)dvz_calloc(axes_mesh.capacity, sizeof(vec3));
+    axes_mesh.normals = (vec3*)dvz_calloc(axes_mesh.capacity, sizeof(vec3));
+    axes_mesh.colors = (DvzColor*)dvz_calloc(axes_mesh.capacity, sizeof(DvzColor));
     EXAMPLE_CHECK(
-        mesh.positions != NULL && mesh.normals != NULL && mesh.colors != NULL,
-        "gizmo mesh allocation failed");
+        axes_mesh.positions != NULL && axes_mesh.normals != NULL && axes_mesh.colors != NULL,
+        "gizmo axes mesh allocation failed");
 
-    bool ok = _build_gizmo(&mesh);
-    EXAMPLE_CHECK(ok, "gizmo mesh generation failed");
+    rings_mesh.capacity = GIZMO_RINGS_VERTEX_COUNT;
+    rings_mesh.positions = (vec3*)dvz_calloc(rings_mesh.capacity, sizeof(vec3));
+    rings_mesh.normals = (vec3*)dvz_calloc(rings_mesh.capacity, sizeof(vec3));
+    rings_mesh.colors = (DvzColor*)dvz_calloc(rings_mesh.capacity, sizeof(DvzColor));
+    EXAMPLE_CHECK(
+        rings_mesh.positions != NULL && rings_mesh.normals != NULL && rings_mesh.colors != NULL,
+        "gizmo rings mesh allocation failed");
+
+    bool ok = _build_gizmo_axes(&axes_mesh);
+    EXAMPLE_CHECK(ok, "gizmo axes mesh generation failed");
+    ok = _build_gizmo_rings(&rings_mesh);
+    EXAMPLE_CHECK(ok, "gizmo rings mesh generation failed");
 
     scene = dvz_scene();
     EXAMPLE_CHECK(scene != NULL, "dvz_scene() failed");
@@ -602,8 +632,11 @@ int main(int argc, char** argv)
     EXAMPLE_CHECK(ok, "dvz_panel_set_camera(gizmo_panel) failed");
 
     DvzVisual* cube_visual = dvz_mesh(scene, 0);
-    DvzVisual* gizmo_visual = dvz_mesh(scene, 0);
-    EXAMPLE_CHECK(cube_visual != NULL && gizmo_visual != NULL, "dvz_mesh() failed");
+    DvzVisual* gizmo_axes_visual = dvz_mesh(scene, 0);
+    DvzVisual* gizmo_rings_visual = dvz_mesh(scene, 0);
+    EXAMPLE_CHECK(
+        cube_visual != NULL && gizmo_axes_visual != NULL && gizmo_rings_visual != NULL,
+        "dvz_mesh() failed");
 
     const DvzColor face_colors[DVZ_GEOM_CUBE_FACE_COUNT] = {
         {240, 82, 82, 255},  {78, 154, 246, 255},  {96, 190, 126, 255},
@@ -621,13 +654,21 @@ int main(int argc, char** argv)
     dvz_geometry_destroy(cube);
     cube = NULL;
 
-    DvzVisualDataUpdate gizmo_updates[] = {
-        {.attr_name = "position", .data = mesh.positions, .item_count = mesh.count},
-        {.attr_name = "normal", .data = mesh.normals, .item_count = mesh.count},
-        {.attr_name = "color", .data = mesh.colors, .item_count = mesh.count},
+    DvzVisualDataUpdate gizmo_axes_updates[] = {
+        {.attr_name = "position", .data = axes_mesh.positions, .item_count = axes_mesh.count},
+        {.attr_name = "normal", .data = axes_mesh.normals, .item_count = axes_mesh.count},
+        {.attr_name = "color", .data = axes_mesh.colors, .item_count = axes_mesh.count},
     };
-    int rc = dvz_visual_set_data_many(gizmo_visual, gizmo_updates, 3);
-    EXAMPLE_CHECK(rc == 0, "dvz_visual_set_data_many() failed for gizmo");
+    int rc = dvz_visual_set_data_many(gizmo_axes_visual, gizmo_axes_updates, 3);
+    EXAMPLE_CHECK(rc == 0, "dvz_visual_set_data_many() failed for gizmo axes");
+
+    DvzVisualDataUpdate gizmo_rings_updates[] = {
+        {.attr_name = "position", .data = rings_mesh.positions, .item_count = rings_mesh.count},
+        {.attr_name = "normal", .data = rings_mesh.normals, .item_count = rings_mesh.count},
+        {.attr_name = "color", .data = rings_mesh.colors, .item_count = rings_mesh.count},
+    };
+    rc = dvz_visual_set_data_many(gizmo_rings_visual, gizmo_rings_updates, 3);
+    EXAMPLE_CHECK(rc == 0, "dvz_visual_set_data_many() failed for gizmo rings");
 
     DvzMaterialDesc cube_material = dvz_phong_material_desc();
     cube_material.light_direction[0] = 0.35f;
@@ -648,13 +689,21 @@ int main(int argc, char** argv)
     gizmo_material.phong.diffuse = 0.78f;
     gizmo_material.phong.specular = 0.42f;
     gizmo_material.phong.shininess = 58.0f;
-    rc = dvz_visual_set_material(gizmo_visual, &gizmo_material);
-    EXAMPLE_CHECK(rc == 0, "dvz_visual_set_material() failed for gizmo");
+    rc = dvz_visual_set_material(gizmo_axes_visual, &gizmo_material);
+    EXAMPLE_CHECK(rc == 0, "dvz_visual_set_material() failed for gizmo axes");
+
+    DvzMaterialDesc ring_material = dvz_material_desc();
+    ring_material.model = DVZ_MATERIAL_MODEL_UNLIT;
+    ring_material.opacity = 1.0f;
+    rc = dvz_visual_set_material(gizmo_rings_visual, &ring_material);
+    EXAMPLE_CHECK(rc == 0, "dvz_visual_set_material() failed for gizmo rings");
 
     rc = dvz_panel_add_visual(main_panel, cube_visual, NULL);
     EXAMPLE_CHECK(rc == 0, "dvz_panel_add_visual() failed for cube");
-    rc = dvz_panel_add_visual(gizmo_panel, gizmo_visual, NULL);
-    EXAMPLE_CHECK(rc == 0, "dvz_panel_add_visual() failed for gizmo");
+    rc = dvz_panel_add_visual(gizmo_panel, gizmo_rings_visual, NULL);
+    EXAMPLE_CHECK(rc == 0, "dvz_panel_add_visual() failed for gizmo rings");
+    rc = dvz_panel_add_visual(gizmo_panel, gizmo_axes_visual, NULL);
+    EXAMPLE_CHECK(rc == 0, "dvz_panel_add_visual() failed for gizmo axes");
     dvz_panel_set_background_color(main_panel, 0.035f, 0.038f, 0.046f, 1.0f);
     dvz_panel_set_background_color(gizmo_panel, 0.080f, 0.087f, 0.100f, 1.0f);
 
@@ -704,8 +753,11 @@ cleanup:
         dvz_app_destroy(app);
     if (scene != NULL)
         dvz_scene_destroy(scene);
-    dvz_free(mesh.positions);
-    dvz_free(mesh.normals);
-    dvz_free(mesh.colors);
+    dvz_free(axes_mesh.positions);
+    dvz_free(axes_mesh.normals);
+    dvz_free(axes_mesh.colors);
+    dvz_free(rings_mesh.positions);
+    dvz_free(rings_mesh.normals);
+    dvz_free(rings_mesh.colors);
     return ret;
 }
