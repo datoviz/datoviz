@@ -640,7 +640,8 @@ int main(int argc, char** argv)
     camera_desc.fov_y = 0.72f;
     camera_desc.near = 0.01f;
     camera_desc.far = 100.0f;
-    EXAMPLE_CHECK(dvz_panel_set_camera(panel, &camera_desc), "dvz_panel_set_camera() failed");
+    bool ok = dvz_panel_set_camera(panel, &camera_desc);
+    EXAMPLE_CHECK(ok, "dvz_panel_set_camera() failed");
 
     DvzVisual* point = dvz_point(scene, 0);
     DvzVisual* mesh = dvz_mesh(scene, 0);
@@ -651,11 +652,11 @@ int main(int argc, char** argv)
                    .usage = DVZ_SCENE_BUFFER_USAGE_INDEX,
                    .stride = sizeof(DvzIndex),
                });
-    EXAMPLE_CHECK(
-        index_buffer != NULL &&
-            dvz_scene_buffer_set_data(
-                index_buffer, dataset.mesh_idx, dataset.mesh_index_count * sizeof(DvzIndex)),
-        "index buffer setup failed");
+    EXAMPLE_CHECK(index_buffer != NULL, "dvz_scene_buffer() failed");
+
+    ok = dvz_scene_buffer_set_data(
+        index_buffer, dataset.mesh_idx, dataset.mesh_index_count * sizeof(DvzIndex));
+    EXAMPLE_CHECK(ok, "dvz_scene_buffer_set_data() failed");
 
     BwmExampleState state = {
         .point = point,
@@ -673,14 +674,16 @@ int main(int argc, char** argv)
         .light_direction = {0.20f, 0.70f, 0.45f},
     };
 
-    EXAMPLE_CHECK(
-        dvz_point_data(
-            point, dataset.cluster_pos, dataset.cluster_color, dataset.cluster_size,
-            dataset.cluster_count) == 0 &&
-            dvz_mesh_data(
-                mesh, dataset.mesh_pos, NULL, dataset.mesh_normal, dataset.mesh_vertex_count) == 0 &&
-            dvz_visual_set_buffer(mesh, "index", index_buffer),
-        "visual data upload failed");
+    int rc = dvz_point_data(
+        point, dataset.cluster_pos, dataset.cluster_color, dataset.cluster_size,
+        dataset.cluster_count);
+    EXAMPLE_CHECK(rc == 0, "dvz_point_data() failed");
+
+    rc = dvz_mesh_data(mesh, dataset.mesh_pos, NULL, dataset.mesh_normal, dataset.mesh_vertex_count);
+    EXAMPLE_CHECK(rc == 0, "dvz_mesh_data() failed");
+
+    ok = dvz_visual_set_buffer(mesh, "index", index_buffer);
+    EXAMPLE_CHECK(ok, "dvz_visual_set_buffer() failed");
 
     _apply_shell_material(&state);
     _apply_technique(&state);

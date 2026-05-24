@@ -645,11 +645,14 @@ int main(int argc, char** argv)
     dvz_visual_set_pick_capabilities(label_pick, DVZ_PICK_CAPABILITY_GROUP);
     dvz_visual_set_visible(label_pick, false);
 
-    EXAMPLE_CHECK(
-        dvz_panel_add_visual(panel, base, &(DvzVisualAttachDesc){.z_layer = 0}) == 0 &&
-            dvz_panel_add_visual(panel, overlay, &(DvzVisualAttachDesc){.z_layer = 1}) == 0 &&
-            dvz_panel_add_visual(panel, label_pick, &(DvzVisualAttachDesc){.z_layer = 2}) == 0,
-        "panel visual attachment failed");
+    int rc = dvz_panel_add_visual(panel, base, &(DvzVisualAttachDesc){.z_layer = 0});
+    EXAMPLE_CHECK(rc == 0, "dvz_panel_add_visual(base) failed");
+
+    rc = dvz_panel_add_visual(panel, overlay, &(DvzVisualAttachDesc){.z_layer = 1});
+    EXAMPLE_CHECK(rc == 0, "dvz_panel_add_visual(overlay) failed");
+
+    rc = dvz_panel_add_visual(panel, label_pick, &(DvzVisualAttachDesc){.z_layer = 2});
+    EXAMPLE_CHECK(rc == 0, "dvz_panel_add_visual(label_pick) failed");
     dvz_panel_set_background_color(panel, 0.02f, 0.025f, 0.03f, 1.0f);
 
     app = dvz_app(scene);

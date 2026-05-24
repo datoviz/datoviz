@@ -832,14 +832,13 @@ int main(int argc, char** argv)
             });
     }
     dvz_visual_set_alpha_mode(points, DVZ_ALPHA_BLENDED);
-    EXAMPLE_CHECK(
-        dvz_panel_add_visual(
-            panel, points,
-            &(DvzVisualAttachDesc){
-                .z_layer = 1,
-                .controller_mode = DVZ_CONTROLLER_APPLY,
-            }) == 0,
-        "dense_points: point visual attach failed");
+    int rc = dvz_panel_add_visual(
+        panel, points,
+        &(DvzVisualAttachDesc){
+            .z_layer = 1,
+            .controller_mode = DVZ_CONTROLLER_APPLY,
+        });
+    EXAMPLE_CHECK(rc == 0, "dense_points: point visual attach failed");
 
     state = (DenseState){
         .dataset = dataset,

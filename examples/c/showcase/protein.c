@@ -1139,15 +1139,18 @@ int main(int argc, char** argv)
     camera_desc.fov_y = 0.68f;
     camera_desc.near = 0.05f;
     camera_desc.far = 100.0f;
-    EXAMPLE_CHECK(dvz_panel_set_camera(panel, &camera_desc), "dvz_panel_set_camera() failed");
+    bool ok = dvz_panel_set_camera(panel, &camera_desc);
+    EXAMPLE_CHECK(ok, "dvz_panel_set_camera() failed");
 
-    EXAMPLE_CHECK(
-        dvz_sphere_mode(spheres, DVZ_SPHERE_MODE_RAYCAST_IMPOSTOR) == 0 &&
-            dvz_sphere_data(
-                spheres, bundle.positions, bundle.atom_colors_element, scaled_radii,
-                bundle.atom_count) == 0 &&
-            dvz_panel_add_visual(panel, spheres, NULL) == 0,
-        "sphere visual setup failed");
+    int rc = dvz_sphere_mode(spheres, DVZ_SPHERE_MODE_RAYCAST_IMPOSTOR);
+    EXAMPLE_CHECK(rc == 0, "dvz_sphere_mode() failed");
+
+    rc = dvz_sphere_data(
+        spheres, bundle.positions, bundle.atom_colors_element, scaled_radii, bundle.atom_count);
+    EXAMPLE_CHECK(rc == 0, "dvz_sphere_data() failed");
+
+    rc = dvz_panel_add_visual(panel, spheres, NULL);
+    EXAMPLE_CHECK(rc == 0, "dvz_panel_add_visual(spheres) failed");
 
     DvzMaterialDesc sphere_material = dvz_phong_material_desc();
     sphere_material.light_direction[0] = 0.25f;
@@ -1167,17 +1170,24 @@ int main(int argc, char** argv)
                        .usage = DVZ_SCENE_BUFFER_USAGE_INDEX,
                        .stride = sizeof(DvzIndex),
                    });
-        EXAMPLE_CHECK(
-            ribbon != NULL && ribbon_index_buffer != NULL &&
-                dvz_scene_buffer_set_data(
-                    ribbon_index_buffer, bundle.ribbon_indices,
-                    (uint64_t)bundle.ribbon_index_count * sizeof(DvzIndex)) &&
-                dvz_mesh_data(
-                    ribbon, bundle.ribbon_positions, bundle.ribbon_colors_chain,
-                    bundle.ribbon_normals, bundle.ribbon_vertex_count) == 0 &&
-                dvz_visual_set_buffer(ribbon, "index", ribbon_index_buffer) &&
-                dvz_panel_add_visual(panel, ribbon, NULL) == 0,
-            "ribbon visual setup failed");
+        EXAMPLE_CHECK(ribbon != NULL, "dvz_mesh() failed for ribbon");
+        EXAMPLE_CHECK(ribbon_index_buffer != NULL, "dvz_scene_buffer() failed for ribbon");
+
+        ok = dvz_scene_buffer_set_data(
+            ribbon_index_buffer, bundle.ribbon_indices,
+            (uint64_t)bundle.ribbon_index_count * sizeof(DvzIndex));
+        EXAMPLE_CHECK(ok, "dvz_scene_buffer_set_data() failed for ribbon");
+
+        rc = dvz_mesh_data(
+            ribbon, bundle.ribbon_positions, bundle.ribbon_colors_chain, bundle.ribbon_normals,
+            bundle.ribbon_vertex_count);
+        EXAMPLE_CHECK(rc == 0, "dvz_mesh_data() failed for ribbon");
+
+        ok = dvz_visual_set_buffer(ribbon, "index", ribbon_index_buffer);
+        EXAMPLE_CHECK(ok, "dvz_visual_set_buffer() failed for ribbon");
+
+        rc = dvz_panel_add_visual(panel, ribbon, NULL);
+        EXAMPLE_CHECK(rc == 0, "dvz_panel_add_visual(ribbon) failed");
 
         DvzMaterialDesc ribbon_material = dvz_phong_material_desc();
         ribbon_material.light_direction[0] = 0.25f;

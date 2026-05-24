@@ -744,16 +744,18 @@ int main(int argc, char** argv)
     dvz_memcpy(camera_desc.up, sizeof(camera_desc.up), view.up, sizeof(view.up));
     camera_desc.near = 0.1f;
     camera_desc.far = view.far;
-    EXAMPLE_CHECK(dvz_panel_set_camera(panel, &camera_desc), "dvz_panel_set_camera() failed");
+    bool ok = dvz_panel_set_camera(panel, &camera_desc);
+    EXAMPLE_CHECK(ok, "dvz_panel_set_camera() failed");
 
     DvzVisual* visual = dvz_pixel(scene, 0);
     EXAMPLE_CHECK(visual != NULL, "dvz_pixel() failed");
 
-    EXAMPLE_CHECK(
-        dvz_pixel_data(
-            visual, dataset.positions, dataset.colors, dataset.sizes, dataset.point_count) == 0 &&
-            dvz_panel_add_visual(panel, visual, NULL) == 0,
-        "LIDAR visual setup failed");
+    int rc =
+        dvz_pixel_data(visual, dataset.positions, dataset.colors, dataset.sizes, dataset.point_count);
+    EXAMPLE_CHECK(rc == 0, "dvz_pixel_data() failed");
+
+    rc = dvz_panel_add_visual(panel, visual, NULL);
+    EXAMPLE_CHECK(rc == 0, "dvz_panel_add_visual() failed");
     dvz_panel_set_background_color(panel, 0.030f, 0.036f, 0.042f, 1.0f);
 
     LidarExampleState gui_state = {
