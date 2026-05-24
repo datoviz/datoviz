@@ -192,6 +192,8 @@ int main(int argc, char** argv)
 
     DvzVisual* spheres = dvz_sphere(scene, 0);
     EXAMPLE_CHECK(spheres != NULL, "dvz_sphere() failed");
+    rc = dvz_sphere_mode(spheres, DVZ_SPHERE_MODE_RAYCAST_IMPOSTOR);
+    EXAMPLE_CHECK(rc == 0, "dvz_sphere_mode() failed");
     float sphere_positions[SPHERE_COUNT][3] = {0};
     DvzColor sphere_colors[SPHERE_COUNT] = {0};
     float sphere_radii[SPHERE_COUNT] = {0};

@@ -225,12 +225,13 @@ static bool _bounds_from_sphere(const DvzVisual* visual, DvzBounds* out)
     ANN(visual);
     ANN(out);
     const DvzVisualAttr* position = _bounds_attr(visual, "position", 3 * sizeof(float));
-    const DvzVisualAttr* size = _bounds_attr(visual, "size", sizeof(float));
-    if (position == NULL || size == NULL || position->item_count != size->item_count)
+    const DvzVisualAttr* radius_attr = _bounds_attr(visual, "radius", sizeof(float));
+    if (position == NULL || radius_attr == NULL ||
+        position->item_count != radius_attr->item_count)
         return false;
 
     const float* pos = (const float*)position->data;
-    const float* radius = (const float*)size->data;
+    const float* radius = (const float*)radius_attr->data;
     for (uint64_t i = 0; i < position->item_count; i++)
     {
         double r = (double)radius[i];
