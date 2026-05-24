@@ -331,6 +331,9 @@ uint32_t _dvz_figure_process_requests_with_executor(
         caps = &local_caps;
     }
 
+    if (!_scene_figure_resolve_layouts(figure))
+        return 0;
+
     DvzScene* scene = figure->scene;
     uint32_t processed = 0;
     _scene_coalesce_pending_pick_requests(scene, figure);

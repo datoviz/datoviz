@@ -130,6 +130,124 @@ int test_scene_grid_resolve_rejects_invalid_inputs(TstContext* suite, const TstC
 
 
 
+int test_scene_grid_panel_recomputes_before_emit(TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    DvzFigure* figure = dvz_figure(scene, 200, 100, 0);
+    DvzGrid* grid = dvz_figure_grid(figure, 1, 2);
+    ANN(grid);
+    DvzPanel* left = dvz_grid_panel(grid, 0, 0);
+    DvzPanel* right = dvz_grid_panel(grid, 0, 1);
+    ANN(left);
+    ANN(right);
+
+    AT(dvz_grid_col_size(grid, 0, DVZ_GRID_SIZE_FIXED_PX, 60.0f));
+
+    float pos[3] = {0.0f, 0.0f, 0.0f};
+    DvzColor col = {255, 255, 255, 255};
+    float sz = 5.0f;
+    DvzVisual* vl = dvz_point(scene, 0);
+    DvzVisual* vr = dvz_point(scene, 0);
+    AT(dvz_visual_set_data(vl, "position", pos, 1) == 0);
+    AT(dvz_visual_set_data(vl, "color", &col, 1) == 0);
+    AT(dvz_visual_set_data(vl, "size", &sz, 1) == 0);
+    AT(dvz_visual_set_data(vr, "position", pos, 1) == 0);
+    AT(dvz_visual_set_data(vr, "color", &col, 1) == 0);
+    AT(dvz_visual_set_data(vr, "size", &sz, 1) == 0);
+    AT(dvz_panel_add_visual(left, vl, NULL) == 0);
+    AT(dvz_panel_add_visual(right, vr, NULL) == 0);
+
+    DvzCapabilitySnapshot caps;
+    dvz_capability_snapshot_default(&caps);
+    caps.shader_format_glsl = true;
+    caps.max_vertex_buffers = 16;
+    caps.max_bind_groups = 4;
+    caps.max_buffer_size = 256 * 1024 * 1024;
+
+    DvzFramePlanEmitConfig cfg = dvz_frame_plan_emit_config();
+    cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
+
+    DvzDiagnosticReport report;
+    dvz_diagnostic_report_init(&report);
+    DvzDrp2CommandStream* stream = dvz_figure_emit_ex(figure, &caps, &report, &cfg);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+    ANN(stream);
+
+    uint32_t viewport_count = 0;
+    for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
+    {
+        const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream, i);
+        if (cmd->type != DVZ_DRP2_COMMAND_SET_VIEWPORT)
+            continue;
+        if (viewport_count == 0)
+        {
+            AC(cmd->u.set_viewport.viewport[0], 0.0f, 1e-6f);
+            AC(cmd->u.set_viewport.viewport[2], 0.3f, 1e-6f);
+        }
+        else if (viewport_count == 1)
+        {
+            AC(cmd->u.set_viewport.viewport[0], 0.3f, 1e-6f);
+            AC(cmd->u.set_viewport.viewport[2], 0.7f, 1e-6f);
+        }
+        viewport_count++;
+    }
+    AT(viewport_count == 2);
+
+    dvz_drp2_stream_destroy(stream);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
+int test_scene_grid_panel_tracks_figure_resize(TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    DvzFigure* figure = dvz_figure(scene, 200, 100, 0);
+    DvzGrid* grid = dvz_figure_grid(figure, 1, 2);
+    ANN(grid);
+    AT(dvz_grid_set_gutter(grid, 10.0f, 0.0f));
+    AT(dvz_grid_col_size(grid, 1, DVZ_GRID_SIZE_FIXED_PX, 60.0f));
+
+    DvzPanel* data = dvz_grid_panel(grid, 0, 0);
+    DvzPanel* colorbar = dvz_grid_panel(grid, 0, 1);
+    ANN(data);
+    ANN(colorbar);
+
+    AC(data->desc.x, 0.0f, 1e-6f);
+    AC(data->desc.width, 0.65f, 1e-6f);
+    AC(colorbar->desc.x, 0.70f, 1e-6f);
+    AC(colorbar->desc.width, 0.30f, 1e-6f);
+
+    dvz_figure_resize(figure, 400, 100);
+    AC(data->desc.x, 0.0f, 1e-6f);
+    AC(data->desc.width, 0.825f, 1e-6f);
+    AC(colorbar->desc.x, 0.85f, 1e-6f);
+    AC(colorbar->desc.width, 0.15f, 1e-6f);
+
+    AT(dvz_panel_set_desc(data, (DvzPanelDesc){.x = 0.1f, .y = 0.1f, .width = 0.8f,
+                                               .height = 0.8f}));
+    dvz_figure_resize(figure, 500, 100);
+    AC(data->desc.x, 0.1f, 1e-6f);
+    AC(data->desc.width, 0.8f, 1e-6f);
+    AC(colorbar->desc.x, 0.88f, 1e-6f);
+    AC(colorbar->desc.width, 0.12f, 1e-6f);
+
+    AT(!dvz_panel_set_desc(colorbar, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 0.0f,
+                                                    .height = 1.0f}));
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
 int test_scene_z_layer_orders_emit(TstContext* suite, const TstCase* item)
 {
     (void)suite;

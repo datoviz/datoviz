@@ -235,6 +235,31 @@ DVZ_EXPORT bool dvz_grid_resolve(
 
 
 /**
+ * Create a grid-owned panel for one cell.
+ *
+ * @param grid the grid
+ * @param row zero-based row index
+ * @param col zero-based column index
+ * @return the panel, or NULL on validation/allocation error
+ */
+DVZ_EXPORT DvzPanel* dvz_grid_panel(DvzGrid* grid, uint32_t row, uint32_t col);
+
+
+/**
+ * Create a grid-owned panel spanning contiguous cells.
+ *
+ * @param grid the grid
+ * @param row zero-based origin row index
+ * @param col zero-based origin column index
+ * @param row_span number of rows covered by the panel
+ * @param col_span number of columns covered by the panel
+ * @return the panel, or NULL on validation/allocation error
+ */
+DVZ_EXPORT DvzPanel* dvz_grid_panel_span(
+    DvzGrid* grid, uint32_t row, uint32_t col, uint32_t row_span, uint32_t col_span);
+
+
+/**
  * Destroy a figure.
  *
  * @param figure the figure
@@ -363,6 +388,19 @@ DVZ_EXPORT DvzMsaaDesc dvz_msaa_desc(void);
  * @return the panel
  */
 DVZ_EXPORT DvzPanel* dvz_panel(DvzFigure* figure, DvzPanelDesc desc);
+
+
+/**
+ * Update a panel rectangle in normalized figure coordinates.
+ *
+ * Changing the descriptor updates panel viewport/scissor state on the next emit and marks
+ * layout-dependent adornments dirty.
+ *
+ * @param panel the panel
+ * @param desc panel position and size in normalized [0, 1] figure coordinates
+ * @return whether the descriptor was accepted
+ */
+DVZ_EXPORT bool dvz_panel_set_desc(DvzPanel* panel, DvzPanelDesc desc);
 
 
 /**

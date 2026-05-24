@@ -232,6 +232,8 @@ void _scene_panel_plot_pixel_rect(
 
 DvzPanelDesc _scene_panel_plot_desc(const DvzPanel* panel);
 
+bool _scene_figure_resolve_layouts(DvzFigure* figure);
+
 void _scene_panel_set_axis_reserve(DvzPanel* panel, const DvzPanelReserve* reserve);
 
 void _scene_panel_set_colorbar_reserve(DvzPanel* panel, const DvzPanelReserve* reserve);
@@ -1097,6 +1099,8 @@ struct DvzPanel
 {
     DvzFigure*  figure;
     DvzPanelDesc desc; /* normalized position and size */
+    DvzGrid* grid;     /* optional owner grid for retained layout */
+    DvzGridCell grid_cell;
     DvzSceneTechniqueState techniques;
 
     uint32_t       visual_count;
@@ -1149,6 +1153,13 @@ typedef struct DvzGridTrack
 } DvzGridTrack;
 
 
+typedef struct DvzGridPanel
+{
+    DvzPanel*   panel;
+    DvzGridCell cell;
+} DvzGridPanel;
+
+
 
 struct DvzGrid
 {
@@ -1160,6 +1171,8 @@ struct DvzGrid
     float gutter_y_px;
     DvzGridTrack row_sizes[DVZ_SCENE_MAX_GRID_ROWS];
     DvzGridTrack col_sizes[DVZ_SCENE_MAX_GRID_COLS];
+    uint32_t panel_count;
+    DvzGridPanel panels[DVZ_SCENE_MAX_PANELS];
     bool dirty;
 };
 

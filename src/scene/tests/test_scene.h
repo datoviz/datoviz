@@ -428,6 +428,10 @@ int test_scene_grid_resolve_weights_fixed_and_spans(TstContext* suite, const Tst
 
 int test_scene_grid_resolve_rejects_invalid_inputs(TstContext* suite, const TstCase* item);
 
+int test_scene_grid_panel_recomputes_before_emit(TstContext* suite, const TstCase* item);
+
+int test_scene_grid_panel_tracks_figure_resize(TstContext* suite, const TstCase* item);
+
 int test_scene_rejects_cross_scene_visual(TstContext* suite, const TstCase* item);
 
 int test_scene_z_layer_orders_emit(TstContext* suite, const TstCase* item);

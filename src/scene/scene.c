@@ -2425,6 +2425,7 @@ void dvz_figure_resize(DvzFigure* figure, uint32_t width, uint32_t height)
         return;
     figure->width = width;
     figure->height = height;
+    (void)_scene_figure_resolve_layouts(figure);
     for (uint32_t i = 0; i < figure->panel_count; i++)
     {
         DvzPanel* panel = &figure->panels[i];
@@ -2790,6 +2791,197 @@ bool dvz_grid_resolve(
 
 
 
+/**
+ * Return whether one panel descriptor is finite and inside the figure.
+ *
+ * @param desc the descriptor
+ * @return whether the descriptor is valid
+ */
+static bool _panel_desc_valid(DvzPanelDesc desc)
+{
+    const float eps = 1e-6f;
+    if (!isfinite(desc.x) || !isfinite(desc.y) || !isfinite(desc.width) ||
+        !isfinite(desc.height))
+    {
+        return false;
+    }
+    if (desc.x < 0.0f || desc.y < 0.0f || desc.width <= 0.0f || desc.height <= 0.0f)
+        return false;
+    if (desc.x + desc.width > 1.0f + eps)
+        return false;
+    if (desc.y + desc.height > 1.0f + eps)
+        return false;
+    return true;
+}
+
+
+
+
+/**
+ * Return whether two panel descriptors are effectively equal.
+ *
+ * @param a first descriptor
+ * @param b second descriptor
+ * @return whether the descriptors match
+ */
+static bool _panel_desc_equal(DvzPanelDesc a, DvzPanelDesc b)
+{
+    const float eps = 1e-6f;
+    return fabsf(a.x - b.x) <= eps && fabsf(a.y - b.y) <= eps &&
+           fabsf(a.width - b.width) <= eps && fabsf(a.height - b.height) <= eps;
+}
+
+
+
+
+/**
+ * Update a panel descriptor without changing grid ownership.
+ *
+ * @param panel the panel
+ * @param desc the new descriptor
+ * @return whether the descriptor was accepted
+ */
+static bool _scene_panel_set_desc_internal(DvzPanel* panel, DvzPanelDesc desc)
+{
+    if (panel == NULL || !_panel_desc_valid(desc))
+        return false;
+    if (_panel_desc_equal(panel->desc, desc))
+        return true;
+
+    panel->desc = desc;
+    if (panel->camera != NULL)
+    {
+        float panel_width = 0.0f;
+        float panel_height = 0.0f;
+        _scene_panel_pixel_size(panel, &panel_width, &panel_height);
+        dvz_camera_resize(panel->camera, panel_width, panel_height);
+    }
+    _panel_mark_layout_changed(panel);
+    return true;
+}
+
+
+
+
+/**
+ * Attach one panel to a retained grid cell.
+ *
+ * @param grid the grid
+ * @param panel the panel
+ * @param cell the retained cell attachment
+ * @return whether the panel was attached
+ */
+static bool _scene_grid_attach_panel(DvzGrid* grid, DvzPanel* panel, DvzGridCell cell)
+{
+    if (grid == NULL || panel == NULL || grid->panel_count >= DVZ_SCENE_MAX_PANELS)
+        return false;
+    if (!_grid_cell_valid(grid, cell))
+        return false;
+    panel->grid = grid;
+    panel->grid_cell = cell;
+    grid->panels[grid->panel_count++] = (DvzGridPanel){.panel = panel, .cell = cell};
+    _scene_grid_mark_dirty(grid);
+    return true;
+}
+
+
+
+
+/**
+ * Recompute retained grid-owned panel rectangles for one figure.
+ *
+ * @param figure the figure
+ * @return whether all active grid-owned panels were resolved
+ */
+bool _scene_figure_resolve_layouts(DvzFigure* figure)
+{
+    if (figure == NULL)
+        return false;
+    bool ok = true;
+    for (uint32_t gi = 0; gi < figure->grid_count; gi++)
+    {
+        DvzGrid* grid = &figure->grids[gi];
+        if (grid->figure != figure)
+            continue;
+        for (uint32_t pi = 0; pi < grid->panel_count; pi++)
+        {
+            DvzGridPanel* attachment = &grid->panels[pi];
+            DvzPanel* panel = attachment->panel;
+            if (panel == NULL || panel->figure != figure || panel->grid != grid)
+                continue;
+
+            DvzPanelDesc desc = {0};
+            if (!dvz_grid_resolve(
+                    grid, figure->width, figure->height, attachment->cell, &desc) ||
+                !_scene_panel_set_desc_internal(panel, desc))
+            {
+                ok = false;
+            }
+        }
+        if (ok)
+            grid->dirty = false;
+    }
+    return ok;
+}
+
+
+
+
+/**
+ * Create a grid-owned panel spanning contiguous cells.
+ *
+ * @param grid the grid
+ * @param row zero-based origin row index
+ * @param col zero-based origin column index
+ * @param row_span number of rows covered by the panel
+ * @param col_span number of columns covered by the panel
+ * @return the panel, or NULL
+ */
+DvzPanel* dvz_grid_panel_span(
+    DvzGrid* grid, uint32_t row, uint32_t col, uint32_t row_span, uint32_t col_span)
+{
+    if (grid == NULL || grid->figure == NULL)
+        return NULL;
+    DvzGridCell cell = {
+        .row = row,
+        .col = col,
+        .row_span = row_span,
+        .col_span = col_span,
+    };
+    DvzPanelDesc desc = {0};
+    if (!dvz_grid_resolve(grid, grid->figure->width, grid->figure->height, cell, &desc))
+        return NULL;
+
+    DvzPanel* panel = dvz_panel(grid->figure, desc);
+    if (panel == NULL)
+        return NULL;
+    if (!_scene_grid_attach_panel(grid, panel, cell))
+    {
+        dvz_panel_destroy(panel);
+        return NULL;
+    }
+    return panel;
+}
+
+
+
+
+/**
+ * Create a grid-owned panel for one cell.
+ *
+ * @param grid the grid
+ * @param row zero-based row index
+ * @param col zero-based column index
+ * @return the panel, or NULL
+ */
+DvzPanel* dvz_grid_panel(DvzGrid* grid, uint32_t row, uint32_t col)
+{
+    return dvz_grid_panel_span(grid, row, col, 1, 1);
+}
+
+
+
+
 void dvz_figure_destroy(DvzFigure* figure)
 {
     if (figure == NULL)
@@ -3059,6 +3251,12 @@ DvzDrp2CommandStream* dvz_figure_emit_ex(
     DvzFramePlanEmitConfig default_cfg;
     _scene_emit_defaults(&caps, &default_caps, &report, &local_report, &cfg, &default_cfg);
 
+    if (!_scene_figure_resolve_layouts(figure))
+    {
+        (void)dvz_diagnostic_report_add(report, "scene grid layout resolution failed");
+        return NULL;
+    }
+
     char figure_id[64];
     _scene_figure_id(figure, figure_id, sizeof(figure_id));
 
@@ -3196,11 +3394,15 @@ DvzMsaaDesc dvz_msaa_desc(void)
 DvzPanel* dvz_panel(DvzFigure* figure, DvzPanelDesc desc)
 {
     ANN(figure);
+    if (!_panel_desc_valid(desc))
+        return NULL;
     if (figure->panel_count >= DVZ_SCENE_MAX_PANELS)
         return NULL;
     DvzPanel* panel       = &figure->panels[figure->panel_count++];
     panel->figure         = figure;
     panel->desc           = desc;
+    panel->grid           = NULL;
+    panel->grid_cell      = (DvzGridCell){0};
     panel->base_reserve   = (DvzPanelReserve){0};
     panel->axis_reserve   = (DvzPanelReserve){0};
     panel->colorbar_reserve = (DvzPanelReserve){0};
@@ -3209,6 +3411,26 @@ DvzPanel* dvz_panel(DvzFigure* figure, DvzPanelDesc desc)
     _scene_technique_state_init(&panel->techniques);
     panel->visual_count = 0;
     return panel;
+}
+
+
+
+/**
+ * Update a panel rectangle in normalized figure coordinates.
+ *
+ * @param panel the panel
+ * @param desc panel position and size in normalized [0, 1] figure coordinates
+ * @return whether the descriptor was accepted
+ */
+bool dvz_panel_set_desc(DvzPanel* panel, DvzPanelDesc desc)
+{
+    if (panel == NULL)
+        return false;
+    if (!_panel_desc_valid(desc))
+        return false;
+    panel->grid = NULL;
+    panel->grid_cell = (DvzGridCell){0};
+    return _scene_panel_set_desc_internal(panel, desc);
 }
 
 
@@ -3560,6 +3782,8 @@ void dvz_panel_destroy(DvzPanel* panel)
     for (uint32_t i = 0; i < 3; i++)
         panel->controllers[i] = NULL;
     panel->turntable = NULL;
+    panel->grid = NULL;
+    panel->grid_cell = (DvzGridCell){0};
     if (panel->camera != NULL)
     {
         dvz_camera_destroy(panel->camera);
