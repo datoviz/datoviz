@@ -1483,7 +1483,12 @@ bool _emitter_emit_render_multi(
     ok = ok && _stream_apply_graph_color_ops(stream, graph_pass, color_id, NULL);
     ok = ok && _stream_apply_graph_depth(stream, graph_pass, graph_depth_id);
     if (ok && needs_depth && graph_depth_id == 0)
+    {
         ok = dvz_drp2_stream_begin_render_pass_set_depth(stream, 1.0f);
+        if (ok && !clear)
+            ok = dvz_drp2_stream_begin_render_pass_set_depth_ops(
+                stream, DVZ_DRP2_ATTACHMENT_LOAD_CLEAR, DVZ_DRP2_ATTACHMENT_STORE_STORE);
+    }
     ok = ok &&
          _emitter_emit_render_multi_draws(
              stream, render, render_pass_id, draws, draw_count, cache) &&
@@ -2885,6 +2890,69 @@ bool _emitter_emit_render(
 
 
 /**
+ * Return whether two normalized panel rectangles overlap with positive area.
+ *
+ * @param a first panel rectangle.
+ * @param b second panel rectangle.
+ * @return whether the two rectangles overlap.
+ */
+static bool _panel_desc_overlaps(DvzPanelDesc a, DvzPanelDesc b)
+{
+    if (a.width <= 0.0f || a.height <= 0.0f || b.width <= 0.0f || b.height <= 0.0f)
+        return false;
+
+    const float ax1 = a.x + a.width;
+    const float ay1 = a.y + a.height;
+    const float bx1 = b.x + b.width;
+    const float by1 = b.y + b.height;
+    return a.x < bx1 && b.x < ax1 && a.y < by1 && b.y < ay1;
+}
+
+
+
+/**
+ * Return whether plain scene render batching would mix overlapping depth-tested panels.
+ *
+ * @param emitter persistent frame-plan emitter.
+ * @param plan FramePlan containing plain render nodes.
+ * @param cfg frame-plan emit configuration.
+ * @return whether overlapping depth-tested panels require separate render passes.
+ */
+static bool _plain_scene_depth_panels_overlap(
+    DvzFramePlanEmitter* emitter, const DvzFramePlan* plan, const DvzFramePlanEmitConfig* cfg)
+{
+    ANN(emitter);
+    ANN(plan);
+
+    if (cfg == NULL || cfg->shader_format != DVZ_SCENE_SHADER_FORMAT_GLSL)
+        return false;
+
+    DvzPanelDesc depth_descs[DVZ_SCENE_MAX_PANELS] = {0};
+    uint32_t depth_desc_count = 0;
+    for (uint32_t i = 0; i < plan->count; i++)
+    {
+        const DvzFramePlanNode* render = &plan->nodes[i];
+        if (render->type != DVZ_FRAME_PLAN_NODE_RENDER || render->u.render.visual_count == 0)
+            continue;
+        if (!_scene_render_visual_has_position_resource(emitter, render, 0))
+            continue;
+        if (!_scene_render_needs_depth(emitter, render))
+            continue;
+
+        for (uint32_t j = 0; j < depth_desc_count; j++)
+        {
+            if (_panel_desc_overlaps(depth_descs[j], render->u.render.desc))
+                return true;
+        }
+        if (depth_desc_count < DVZ_SCENE_MAX_PANELS)
+            depth_descs[depth_desc_count++] = render->u.render.desc;
+    }
+    return false;
+}
+
+
+
+/**
  * Emit all plain render nodes in a runtime-mode FramePlan.
  *
  * @param emitter the persistent emitter
@@ -2930,8 +2998,9 @@ bool _emitter_emit_plain_renders(
             }
         }
     }
+    bool depth_panels_overlap = _plain_scene_depth_panels_overlap(emitter, plan, cfg);
     if (dvz_frame_plan_graph_pass_count(plan) == 0 && render_node_count > 0 &&
-        render_node_count == scene_render_node_count)
+        render_node_count == scene_render_node_count && !depth_panels_overlap)
         return _emitter_emit_scene_figure_renders(
             emitter, stream, plan, readback, cfg, any_scene_render_needs_depth, report);
 

@@ -855,3 +855,73 @@ int test_scene_multi_panel_glsl_emits_viewport_scissor_commands(
     dvz_scene_destroy(scene);
     return 0;
 }
+
+
+int test_scene_overlapping_depth_panels_glsl_clear_depth(TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    DvzFigure* figure = dvz_figure(scene, 128, 128, 0);
+    DvzPanel* main = dvz_panel_full(figure);
+    DvzPanel* inset = dvz_panel(figure, (DvzPanelDesc){0.55f, 0.55f, 0.35f, 0.35f});
+    AT(main != NULL);
+    AT(inset != NULL);
+
+    float pos_main[3] = {0.0f, 0.0f, 0.0f};
+    float pos_inset[3] = {0.0f, 0.0f, 0.0f};
+    DvzColor col = {255, 255, 255, 255};
+    float sz = 8.0f;
+
+    DvzVisual* main_point = dvz_point(scene, 0);
+    DvzVisual* inset_point = dvz_point(scene, 0);
+    AT(dvz_visual_set_data(main_point, "position", pos_main, 1) == 0);
+    AT(dvz_visual_set_data(main_point, "color", &col, 1) == 0);
+    AT(dvz_visual_set_data(main_point, "size", &sz, 1) == 0);
+    AT(dvz_visual_set_data(inset_point, "position", pos_inset, 1) == 0);
+    AT(dvz_visual_set_data(inset_point, "color", &col, 1) == 0);
+    AT(dvz_visual_set_data(inset_point, "size", &sz, 1) == 0);
+    AT(dvz_panel_add_visual(main, main_point, NULL) == 0);
+    AT(dvz_panel_add_visual(inset, inset_point, NULL) == 0);
+
+    DvzCapabilitySnapshot caps;
+    dvz_capability_snapshot_default(&caps);
+    caps.shader_format_glsl = true;
+    caps.max_vertex_buffers = 16;
+    caps.max_bind_groups = 4;
+    caps.max_buffer_size = 256 * 1024 * 1024;
+
+    DvzFramePlanEmitConfig cfg = dvz_frame_plan_emit_config();
+    cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
+
+    DvzDiagnosticReport report;
+    dvz_diagnostic_report_init(&report);
+    DvzDrp2CommandStream* stream = dvz_figure_emit_ex(figure, &caps, &report, &cfg);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+    ANN(stream);
+
+    uint32_t pass_count = 0;
+    for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
+    {
+        const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream, i);
+        if (cmd->type != DVZ_DRP2_COMMAND_BEGIN_RENDER_PASS)
+            continue;
+        AT(cmd->u.begin_render_pass.has_depth_attachment);
+        AT(cmd->u.begin_render_pass.depth_load_op == DVZ_DRP2_ATTACHMENT_LOAD_CLEAR);
+        if (pass_count == 0)
+        {
+            AT(cmd->u.begin_render_pass.clear);
+        }
+        else if (pass_count == 1)
+        {
+            AT(!cmd->u.begin_render_pass.clear);
+        }
+        pass_count++;
+    }
+    AT(pass_count == 2);
+
+    dvz_drp2_stream_destroy(stream);
+    dvz_scene_destroy(scene);
+    return 0;
+}
