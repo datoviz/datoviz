@@ -124,11 +124,11 @@ The active application path owns the presentation objects and wires them to the 
 scene  = dvz_scene();
 figure = dvz_figure(scene, width, height, 0);
 app    = dvz_app(scene);
-win    = dvz_app_window(app, figure, width, height);
+win    = dvz_view_offscreen(app, figure, width, height);
 dvz_app_run(app, 0);
 ```
 
-`DvzAppWindow` owns or borrows the concrete target: a GLFW/offscreen canvas for Datoviz-owned
+`DvzView` owns or borrows the concrete target: a GLFW/offscreen canvas for Datoviz-owned
 presentation, or an externally supplied Vulkan surface for hosted presentation. It creates and
 reuses the canvas/vklite/DRP2 runtime objects needed to execute frames for the figure.
 
@@ -153,8 +153,8 @@ dvz_scene_build_frame(scene, &frame_plan)
 ```
 
 The implementation may fuse these operationally, and the current app path does so inside
-`dvz_app_window_render_once()` / `dvz_app_render_once()`: figure state is synchronized, a frame plan
-is emitted to DRP2, and the runtime executes through the app window's canvas target.
+`dvz_view_render_once()` / `dvz_app_render_once()`: figure state is synchronized, a frame plan
+is emitted to DRP2, and the runtime executes through the view's canvas target.
 
 
 ## Diagnostics

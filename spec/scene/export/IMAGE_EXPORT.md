@@ -15,8 +15,8 @@ The canvas and runtime are responsible for capturing the rendered output.
 
 The scene-level contract for still image capture is:
 
-1. the application creates `dvz_scene()`, `dvz_figure()`, `dvz_app()`, and a `DvzAppWindow`,
-2. `DvzAppWindow` drives one frame with `dvz_app_window_render_once()` or `dvz_app_run()`,
+1. the application creates `dvz_scene()`, `dvz_figure()`, `dvz_app()`, and a `DvzView`,
+2. `DvzView` drives one frame with `dvz_view_render_once()` or `dvz_app_run()`,
 3. the scene builds a `FramePlan` as usual,
 4. the app layer emits a `DvzDrp2CommandStream`,
 5. `DvzDrp2Runtime` executes the stream through vklite/canvas,
@@ -27,26 +27,26 @@ The scene has no knowledge of whether the rendered frame is displayed, saved, or
 **Programmatic single-frame render:**
 
 ```text
-dvz_app_window_render_once(win)
-dvz_app_window_capture_png(win, "frame.png")
+dvz_view_render_once(win)
+dvz_view_capture_png(win, "frame.png")
 ```
 
 No special scene API is needed. The lower-level canvas capture API remains available through
-`dvz_app_window_canvas(win)` when callers need RGBA buffers instead of PNG files.
+`dvz_view_canvas(win)` when callers need RGBA buffers instead of PNG files.
 
 
 ## DRP2 Recording And Replay
 
-The active app layer can record and replay the DRP2 command stream for an app window:
+The active app layer can record and replay the DRP2 command stream for a view:
 
 ```text
-dvz_app_window_record_start(win, "capture.dvzr")
-dvz_app_window_render_once(win)
-dvz_app_window_record_stop(win)
+dvz_view_record_start(win, "capture.dvzr")
+dvz_view_render_once(win)
+dvz_view_record_stop(win)
 
-dvz_app_window_replay_start(win, "capture.dvzr")
-dvz_app_window_render_once(win)
-dvz_app_window_replay_stop(win)
+dvz_view_replay_start(win, "capture.dvzr")
+dvz_view_render_once(win)
+dvz_view_replay_stop(win)
 ```
 
 A `.dvzr` recording is an app/runtime artifact. It records backend-agnostic DRP2 command streams;
@@ -56,7 +56,7 @@ it does not make scene semantics depend on export or replay.
 ## Future Render Scale (Supersampling)
 
 A render scale would multiply the logical canvas size to produce a higher-resolution output. This
-is not active in the current app-window path and should remain a future API direction until runtime
+is not active in the current view path and should remain a future API direction until runtime
 allocation, downsampling, capture, and hosted-surface behavior are implemented together.
 
 ```text

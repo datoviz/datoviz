@@ -120,7 +120,7 @@ starts slow work such as `time.sleep(5)`, file I/O, or scientific computation. I
 scene data, the prepare phase must copy that data into a snapshot on the render thread first. The
 worker must not retain pointers into scene-owned visual buffers or callback event structs.
 
-An app/window-level post queue, proposed as `dvz_app_window_post()`, should complement the scene
+An app/window-level post queue, proposed as `dvz_view_post()`, should complement the scene
 transfer queue by letting worker threads schedule arbitrary apply callbacks on the Datoviz/UI thread.
 Those callbacks may then use normal scene mutation APIs at a documented safe drain point.
 
@@ -234,4 +234,4 @@ Sharing resources across multiple scenes or across threads is not supported in v
 | `pipeline/INVALIDATION_AND_CACHING.md` | drained transfers mark affected attributes dirty |
 | `pipeline/RESOURCE_MODEL.md` | staging pool and zero-copy upload path |
 | `pipeline/FRAME_PLAN.md` | dirty attributes resolved into UploadNodes in the same frame |
-| `../proposals/active/ASYNC_CALLBACKS.md` | prepare/work/apply callback model and app-window post primitive |
+| `../proposals/active/ASYNC_CALLBACKS.md` | prepare/work/apply callback model and view post primitive |

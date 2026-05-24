@@ -300,7 +300,7 @@ Normative scene semantics and pipeline contracts:
 
 Integration and export:
 
-- [integration/HOSTED_BACKENDS.md](integration/HOSTED_BACKENDS.md): hosted app-window,
+- [integration/HOSTED_BACKENDS.md](integration/HOSTED_BACKENDS.md): hosted view,
   external-surface, and render-once integration.
 - [integration/EXTERNAL_UI.md](integration/EXTERNAL_UI.md): boundary with UI frameworks such as
   ImGui.

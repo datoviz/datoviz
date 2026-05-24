@@ -32,9 +32,9 @@ Done:
 2. No public app-session ownership wrapper was added; explicit app/scene/window ownership remains
    the public path.
 3. `dvz_panel_full()` exists for the common full-panel case.
-4. App-window controller helpers exist with final names under the `dvz_app_window_panel_*()` family:
-   `dvz_app_window_panel_panzoom()`, `dvz_app_window_panel_arcball()`,
-   `dvz_app_window_panel_fly()`, and `dvz_app_window_panel_turntable()`.
+4. App-window controller helpers exist with final names under the `dvz_view_panel_*()` family:
+   `dvz_view_panzoom()`, `dvz_view_arcball()`,
+   `dvz_view_fly()`, and `dvz_view_turntable()`.
 5. Typed visual upload helpers for point, pixel, mesh, primitive, and sphere were removed again
    because they duplicated the generic retained visual data path and made generic scene code carry
    visual-family-specific API surface.
@@ -43,7 +43,7 @@ Done:
 7. Pick/probe callback dispatch remains intentionally deferred.
 8. C examples have been migrated to the landed helpers where the replacement is behavior-preserving.
 9. GUI-viewport examples intentionally stay on the lower-level controller/input primitives where
-   the router comes from `DvzGuiViewport` rather than `DvzAppWindow`.
+   the router comes from `DvzGuiViewport` rather than `DvzView`.
 
 Still open:
 
@@ -81,7 +81,7 @@ example code remains both noisy and non-public after the current cleanup.
 Rejected for now; implemented by omission.
 
 Do not add a public `DvzAppSession` or similar wrapper that owns `DvzScene`, `DvzFigure`, `DvzApp`,
-and `DvzAppWindow`. The explicit low-level ownership model remains the public app path for now.
+and `DvzView`. The explicit low-level ownership model remains the public app path for now.
 
 Examples may still use local helpers to reduce cleanup repetition, but those helpers should not
 promote a new public ownership abstraction.
@@ -107,7 +107,7 @@ multi-panel layouts or deliberately inset/custom panels to `dvz_panel_full()`.
 
 ### 4. Add controller/input binding helpers
 
-Accepted; implemented for app windows.
+Accepted; implemented for views.
 
 Add public convenience helpers that create a controller, bind it to a panel, and connect it to the
 target window input router. The repeated low-level sequence should remain available:
@@ -121,18 +121,18 @@ The new helpers should sit above that sequence and preserve the lower-level prim
 shape:
 
 ```c
-DvzPanzoom* dvz_panel_panzoom(DvzPanel* panel, DvzAppWindow* win, const DvzPanzoomDesc* desc);
-DvzArcball* dvz_panel_arcball(DvzPanel* panel, DvzAppWindow* win, const DvzArcballDesc* desc);
-DvzFly* dvz_panel_fly(DvzPanel* panel, DvzAppWindow* win, const DvzFlyDesc* desc);
+DvzPanzoom* dvz_panel_panzoom(DvzPanel* panel, DvzView* win, const DvzPanzoomDesc* desc);
+DvzArcball* dvz_panel_arcball(DvzPanel* panel, DvzView* win, const DvzArcballDesc* desc);
+DvzFly* dvz_panel_fly(DvzPanel* panel, DvzView* win, const DvzFlyDesc* desc);
 DvzTurntable* dvz_panel_turntable(
-    DvzPanel* panel, DvzAppWindow* win, const DvzTurntableDesc* desc);
+    DvzPanel* panel, DvzView* win, const DvzTurntableDesc* desc);
 ```
 
-Final names use the `dvz_app_window_panel_*()` prefix because these helpers bind through an
-app-window input router. Keep GUI-viewport and other non-app-window routers on the lower-level
+Final names use the `dvz_view_panel_*()` prefix because these helpers bind through an
+view input router. Keep GUI-viewport and other non-view routers on the lower-level
 controller/input primitives unless a separate helper is justified.
 
-Remaining work: use the app-window helpers for new app-window examples. Do not force this helper
+Remaining work: use the view helpers for new view examples. Do not force this helper
 into GUI-viewport examples.
 
 
@@ -167,7 +167,7 @@ payload design continues separately.
 
 1. Done: add `examples/c` helper infrastructure and migrate `_frame_count()` first.
 2. Done: add `dvz_panel_full()`.
-3. Done: add app-window controller/input binding helpers.
+3. Done: add view controller/input binding helpers.
 4. Done: add copied index-buffer helper and remove duplicate typed visual upload helpers.
 5. Done: migrate examples to the landed helpers without changing example behavior.
 6. Later: revisit pick/probe callbacks after the richer interaction API settles.

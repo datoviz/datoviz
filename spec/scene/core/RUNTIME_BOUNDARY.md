@@ -45,7 +45,7 @@ The intended relationship is:
 5. the app layer owns presentation, capture, hosted surfaces, and event-loop stepping.
 
 The active public flow is `dvz_scene()` -> `dvz_figure()` -> `dvz_app()` ->
-`DvzAppWindow`, with the app window driving render-once or run-loop execution.
+`DvzView`, with the view driving render-once or run-loop execution.
 
 
 ## Core Rules
@@ -96,7 +96,7 @@ The minimum conceptual runtime surface includes:
 5. `RuntimeDiagnostic` — runtime failures mapped back to scene-visible identities.
 
 The scene layer interacts with the runtime through app-owned opaque objects. In the active
-implementation, `DvzAppWindow` owns the canvas target and `DvzDrp2Runtime` reuse needed for a
+implementation, `DvzView` owns the canvas target and `DvzDrp2Runtime` reuse needed for a
 figure. There is no split device/encoder/queue model exposed to the scene. Encoder lifecycle and
 DRP2 session management are hidden inside the runtime/app boundary.
 
@@ -104,8 +104,8 @@ DRP2 session management are hidden inside the runtime/app boundary.
 DvzScene* scene = dvz_scene();
 DvzFigure* figure = dvz_figure(scene, width, height, 0);
 DvzApp* app = dvz_app(scene);
-DvzAppWindow* win = dvz_app_window(app, figure, width, height);
-dvz_app_window_render_once(win);
+DvzView* win = dvz_view_offscreen(app, figure, width, height);
+dvz_view_render_once(win);
 ```
 
 
@@ -240,7 +240,7 @@ submissions, with internal caching or deferred object creation. A convenience
 does not make `FramePlan` the primary runtime contract. Internal details must not alter the meaning
 of the submitted frame, the identity route for diagnostics, or the identity route for completions.
 
-`DvzAppWindow` is the active owner of repeated submissions for a figure. It may reuse request and
+`DvzView` is the active owner of repeated submissions for a figure. It may reuse request and
 frame runtimes, resize the canvas to match the figure, render once for hosted loops, or run a
 Datoviz-owned loop through `dvz_app_run()`.
 
@@ -256,9 +256,9 @@ At minimum:
 3. typed completion routing back to scene-visible request or target identity,
 4. stale-result rejection where the scene model requires it (e.g. hover picking).
 
-The active app layer exposes PNG capture through `dvz_app_window_capture_png()` and lower-level
-canvas capture access through `dvz_app_window_canvas()`. DRP2 linear `.dvzr` recording and replay
-belong to the app-window/runtime boundary, not to scene semantics.
+The active app layer exposes PNG capture through `dvz_view_capture_png()` and lower-level
+canvas capture access through `dvz_view_canvas()`. DRP2 linear `.dvzr` recording and replay
+belong to the view/runtime boundary, not to scene semantics.
 
 Completion delivery: v0.4 uses polling — `dvz_scene_poll_pick_result` and the
 `DVZ_EVENT_PICK_RESULT` callback cover the primary readback use case. DRP2 does not expose
@@ -288,14 +288,14 @@ The active ownership model is:
 
 1. the user creates `DvzScene` and one or more `DvzFigure` objects,
 2. the user creates `DvzApp` for the scene,
-3. the user creates `DvzAppWindow` objects for figures,
-4. each app window owns or borrows the canvas target and owns runtime reuse for rendering,
+3. the user creates `DvzView` objects for figures,
+4. each view owns or borrows the canvas target and owns runtime reuse for rendering,
 5. the scene never references canvas, stream, sink, swapchain, or host surfaces directly.
 
 Per-frame flow:
 
 ```text
-DvzAppWindow render step
+DvzView render step
   -> app synchronizes figure size and input state
   -> scene builds FramePlan
   -> scene-to-DRP2 converter emits DvzDrp2CommandStream
@@ -311,8 +311,8 @@ Video, capture, and live-image sinks remain app/canvas concerns.
 The scene needs to know the logical output dimensions and format for a frame — but not the backend
 object behind them.
 
-In the active implementation this is carried by `DvzFigure` and `DvzAppWindow`, not by a public
-`DvzRenderTarget` handle. The figure carries logical dimensions and panel layout; the app window
+In the active implementation this is carried by `DvzFigure` and `DvzView`, not by a public
+`DvzRenderTarget` handle. The figure carries logical dimensions and panel layout; the view
 maps those dimensions to a concrete canvas target, hosted external surface, capture target, or
 replay target.
 
@@ -328,14 +328,14 @@ In the active DRP2 `2.0` surface, render-pass attachments reference textures dir
 for bind-group bindings, not for render-pass attachment slots.
 
 Scene-layer code that constructs render passes should therefore reference the logical frame target
-selected by the figure/app-window path and let the runtime resolve it to the correct texture id. It
+selected by the figure/view path and let the runtime resolve it to the correct texture id. It
 should not assume texture-view ids are needed on the attachment path.
 
 
 ## Export Helpers
 
-PNG capture is active at the app/canvas layer through `dvz_app_window_capture_png()` and
-`dvz_app_window_canvas()`. DRP2 `.dvzr` recording/replay is also app-window owned. Figure-level
+PNG capture is active at the app/canvas layer through `dvz_view_capture_png()` and
+`dvz_view_canvas()`. DRP2 `.dvzr` recording/replay is also view owned. Figure-level
 export helpers are not the current active scene/runtime boundary.
 
 

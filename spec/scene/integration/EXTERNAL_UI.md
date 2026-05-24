@@ -137,7 +137,7 @@ apply(result, scene)  -> void       # host UI / Datoviz render thread
 ```
 
 For Qt-hosted applications, host-native worker mechanisms such as `QThreadPool`, queued signals, or
-`QtConcurrent` remain appropriate. A Datoviz app-window post primitive should integrate with the
+`QtConcurrent` remain appropriate. A Datoviz view post primitive should integrate with the
 hosted request-frame callback so a worker result can schedule `QWindow::requestUpdate()` or
 `QWidget::update()` without requiring another input event.
 

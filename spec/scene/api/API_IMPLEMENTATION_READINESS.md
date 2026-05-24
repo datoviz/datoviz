@@ -26,7 +26,7 @@ The normative sources remain:
 These boundaries are now explicit enough to start public API drafting:
 
 1. The active construction path is `dvz_scene()` -> `dvz_figure()` -> `dvz_app()` ->
-   `DvzAppWindow`. App windows may be Datoviz-owned GLFW/offscreen windows or hosted windows
+   `DvzView`. Views may be Datoviz-owned GLFW/offscreen windows or hosted windows
    backed by an external surface.
 2. Text is a retained semantic object (`DvzText`) or annotation object that may lower to `glyph`
    visual contributions. `glyph` remains the visual-family contract for shaped glyph runs.
@@ -43,19 +43,19 @@ These boundaries are now explicit enough to start public API drafting:
 8. The active rendering path is scene -> `FramePlan` -> `DvzDrp2CommandStream` ->
    `DvzDrp2Runtime` -> vklite/canvas/app. Scene code emits backend-agnostic DRP2 work and does
    not own swapchains, command-buffer lifetimes, or native host event loops.
-9. App capture is active through `DvzAppWindow`/canvas PNG capture. DRP2 linear `.dvzr`
-   recording and replay are active app-window capabilities.
+9. App capture is active through `DvzView`/canvas PNG capture. DRP2 linear `.dvzr`
+   recording and replay are active view capabilities.
 
 
 ## Implementation Status Snapshot
 
-The installed headers now spell the first versions of scene, figure, app-window, interaction,
+The installed headers now spell the first versions of scene, figure, view, interaction,
 scale/colorbar, text/annotation, sampled-field, material, technique, and visual-family APIs. The
 active implementation status is:
 
 | Area | Public API | Retained state | Native rendering / execution | GPU request/readback | Remaining gaps |
 |---|---|---|---|---|---|
-| Core scene/app | scene, figure, panel, app-window, emit, capture, DVZR recording/replay | active | active scene -> FramePlan -> DRP2 -> vklite/canvas/app path | frame capture and runtime readbacks are used by tests | installed CLI boundary for DVZR replay remains a product decision |
+| Core scene/app | scene, figure, panel, view, emit, capture, DVZR recording/replay | active | active scene -> FramePlan -> DRP2 -> vklite/canvas/app path | frame capture and runtime readbacks are used by tests | installed CLI boundary for DVZR replay remains a product decision |
 | Visual families | pixel, point, primitive, path, image, mesh, sphere, volume, glyph constructors | active for those families | active for retained first slices, including WBOIT/depth-peel, EDL, SSAO/G-buffer where eligible; glyph path renders atlas-backed text | point pick and image probe only | richer marker/segment/glyph semantics, errorbar, boxplot, richer path/image/volume features |
 | Sampled fields/scales | `DvzSampledField`, scale, colormap, colorbar APIs | fields/scales/colorbars retain state | image and volume consume fields; image/volume colormap bindings are active | image probe returns a basic value payload | labels/categorical fields, richer probe payloads, rendered colorbar ticks/labels |
 | Interaction/selection | policies, pick/probe queues, selection/link APIs | active bookkeeping and tests | request processing executes through app/runtime for point/image | narrow point/image GPU readback | broader mesh/object/sphere/volume picking and rendered selection highlights |

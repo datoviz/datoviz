@@ -166,7 +166,7 @@ state, or event fields needed by the worker. The worker phase receives only owne
 must not access live Datoviz scene, runtime, DRP2, or GPU objects. The apply phase is dispatched back
 to the render thread and may mutate scene state through normal APIs.
 
-A future app-level dispatch primitive such as `dvz_app_window_post()` should provide the low-level
+A future app-level dispatch primitive such as `dvz_view_post()` should provide the low-level
 thread-safe path used by C examples, Python bindings, GLFW-hosted apps, and Qt-hosted adapters to
 run apply callbacks on the Datoviz/UI thread.
 

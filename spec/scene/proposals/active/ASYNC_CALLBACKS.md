@@ -114,14 +114,14 @@ updates live Datoviz state.
 The foundational C primitive should be a thread-safe way to enqueue app/render-thread work:
 
 ```c
-typedef void (*DvzAppTaskCallback)(DvzAppWindow* win, void* user_data);
-typedef void (*DvzAppTaskDestroyCallback)(void* user_data);
+typedef void (*DvzViewTaskCallback)(DvzView* win, void* user_data);
+typedef void (*DvzViewTaskDestroyCallback)(void* user_data);
 
-int dvz_app_window_post(
-    DvzAppWindow* win,
-    DvzAppTaskCallback callback,
+int dvz_view_post(
+    DvzView* win,
+    DvzViewTaskCallback callback,
     void* user_data,
-    DvzAppTaskDestroyCallback destroy);
+    DvzViewTaskDestroyCallback destroy);
 ```
 
 Target semantics:
@@ -145,11 +145,11 @@ After main-thread dispatch exists, Datoviz may provide an optional convenience h
 
 ```c
 typedef void* (*DvzAsyncWorkCallback)(void* input, void* user_data);
-typedef void (*DvzAsyncDoneCallback)(DvzAppWindow* win, void* result, void* user_data);
+typedef void (*DvzAsyncDoneCallback)(DvzView* win, void* result, void* user_data);
 typedef void (*DvzAsyncDestroyCallback)(void* ptr);
 
-int dvz_app_window_submit(
-    DvzAppWindow* win,
+int dvz_view_submit(
+    DvzView* win,
     DvzAsyncWorkCallback work,
     void* input,
     DvzAsyncDoneCallback done,
@@ -166,7 +166,7 @@ Target semantics:
 4. cancellation and app/window destruction either run destructors or skip callbacks safely,
 5. scene access remains forbidden in `work` and allowed in `done`.
 
-This helper is not required for the first implementation if examples can use `dvz_app_window_post()`
+This helper is not required for the first implementation if examples can use `dvz_view_post()`
 plus user-managed worker threads.
 
 
@@ -182,7 +182,7 @@ input callback
 
 worker thread
   -> do slow work
-  -> call dvz_app_window_post(win, apply, result, destroy)
+  -> call dvz_view_post(win, apply, result, destroy)
 
 app/render thread
   -> run apply(result)
@@ -284,7 +284,7 @@ integration because it directly solves the `time.sleep(5)` use case.
 
 ## GLFW Integration
 
-When Datoviz owns the loop through a GLFW app window, posted tasks should be drained inside the
+When Datoviz owns the loop through a GLFW view, posted tasks should be drained inside the
 Datoviz app/render loop at a documented safe point. Posting a task should request another frame or
 otherwise wake the loop when the backend supports it.
 
@@ -301,7 +301,7 @@ adapters should continue to:
 3. map Datoviz frame requests to native repaint scheduling,
 4. use host-native worker systems such as `QThreadPool` or queued signals when appropriate.
 
-`dvz_app_window_post()` should integrate with hosted scheduling by triggering the registered request
+`dvz_view_post()` should integrate with hosted scheduling by triggering the registered request
 frame callback or equivalent host hook. In Qt, the adapter should map that request to
 `QWindow::requestUpdate()` or `QWidget::update()`.
 
@@ -337,9 +337,9 @@ This proposal does not require:
 
 ## Open Questions
 
-1. Should the first C implementation expose only `dvz_app_window_post()` or also
-   `dvz_app_window_submit()`?
-2. Is the dispatch queue owned by `DvzApp`, `DvzAppWindow`, or a lower-level hosted-window object?
+1. Should the first C implementation expose only `dvz_view_post()` or also
+   `dvz_view_submit()`?
+2. Is the dispatch queue owned by `DvzApp`, `DvzView`, or a lower-level hosted-window object?
 3. What exact lifecycle point should drain posted callbacks for interactive, offscreen, and hosted
    windows?
 4. How should cancellation behave if a window is destroyed while worker jobs are still running?

@@ -14,16 +14,16 @@ hosted-toolkit integration.
 
 The refactor is closed for the v0.4 scheduler slice:
 
-1. `dvz_app_window_render_once()` remains scheduler-free for hosted integrations.
+1. `dvz_view_render_once()` remains scheduler-free for hosted integrations.
 2. `dvz_app_run()` owns Datoviz scheduling policy for built-in interactive apps.
 3. The default app scheduler is on-demand; explicit continuous mode keeps benchmark behavior.
 4. `DVZ_APP_SCHEDULE=continuous` and `DVZ_FPS_CAP=<positive-number>` control continuous/capped
    built-in scheduling independently from `DVZ_PRESENT_MODE`.
 5. Window backends expose poll/wait/wait-timeout/request-frame hooks, with GLFW using native event
    wait/wakeup behavior.
-6. App windows carry instance-scoped dirty/frame-request/deadline state.
+6. Views carry instance-scoped dirty/frame-request/deadline state.
 7. Scene mutations, request paths, animations, replay paths, and hosted-surface paths wake the
-   owning app windows when a new frame is needed.
+   owning views when a new frame is needed.
 8. Figure resize notifications are emitted only on real size changes, so app-side per-frame size
    synchronization does not keep on-demand windows permanently dirty.
 
@@ -59,7 +59,7 @@ interactive scene can therefore spin at 100% CPU even when nothing visible chang
 
 Keep rendering primitives separate from scheduling:
 
-1. `dvz_app_window_render_once()` remains scheduler-free. Hosted integrations such as Qt, SDL, Tk,
+1. `dvz_view_render_once()` remains scheduler-free. Hosted integrations such as Qt, SDL, Tk,
    and notebook adapters own their own event loop and call this when they decide to render.
 2. `dvz_canvas_frame()` and `dvz_canvas_submit()` remain low-level primitives. They should not gain
    hidden sleeps, caps, or GUI scheduling policy.
@@ -155,7 +155,7 @@ Initial fallback behavior for simple/headless/backends without native waiting ca
 
 ## Per-Window State
 
-Track scheduling state in `DvzAppWindow`, not in `DvzCanvas`:
+Track scheduling state in `DvzView`, not in `DvzCanvas`:
 
 ```c
 bool frame_requested;
@@ -174,14 +174,14 @@ Semantics:
 Set invalidation from:
 
 1. resize events,
-2. pointer, wheel, and keyboard events routed through the app-window,
-3. `dvz_app_window_request_frame()`,
+2. pointer, wheel, and keyboard events routed through the view,
+3. `dvz_view_request_frame()`,
 4. replay start/advance/loop,
 5. pick/probe/readback requests that need a render or request pass,
-6. app-window enable/disable or surface updates,
+6. view enable/disable or surface updates,
 7. scene mutations once a reliable scene dirty signal exists.
 
-Do not rely only on scene-level dirty state. Some frame demand is app-window-specific: swapchain
+Do not rely only on scene-level dirty state. Some frame demand is view-specific: swapchain
 recreation, external surface availability, GUI state, replay target attachment, capture/readback,
 and request callbacks.
 
@@ -205,7 +205,7 @@ while (any_interactive_window_open)
 
     for each window:
         if (should_render_window(win))
-            dvz_app_window_render_once(win);
+            dvz_view_render_once(win);
 
     pace_active_continuous_work_if_needed(app);
 }
@@ -225,7 +225,7 @@ while (any_interactive_window_open)
 
 The FPS cap is only a scheduler policy for active work:
 
-1. Do not cap `dvz_app_window_render_once()`.
+1. Do not cap `dvz_view_render_once()`.
 2. Do not cap offscreen render-once/capture paths.
 3. Do not cap low-level canvas functions.
 4. Apply the cap in `dvz_app_run()` when continuous work is active.
@@ -314,7 +314,7 @@ This task used subagents because the write scopes were naturally separable:
    `include/datoviz/window.h`, window tests.
 2. **App scheduler worker:** `include/datoviz/app.h`, `src/app/app.c`, app tests.
 3. **Scene/request explorer:** read-only audit of scene mutation, animation, replay, pick/probe,
-   and request paths that should invalidate app windows.
+   and request paths that should invalidate views.
 4. **Validation worker:** focused tests and manual smoke commands after the first implementation
    slices land.
 

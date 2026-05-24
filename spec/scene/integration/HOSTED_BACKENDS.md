@@ -21,9 +21,9 @@ The current codebase has the active ingredients needed for native host surfaces:
 4. `dvz_window_wrap_attach_surface()`, `dvz_window_wrap_update_surface()`, and
    `dvz_window_wrap_detach_surface()` bind, resize, replace, lose, or detach the surface,
 5. `dvz_app_with_config()` accepts required instance extensions before app/runtime creation,
-6. `dvz_app_window_external_surface()` creates a hosted `DvzAppWindow` above `DVZ_BACKEND_WRAP`,
-7. `dvz_app_window_render_once()` and `dvz_app_render_once()` support host-owned loops,
-8. `dvz_app_window_emit_*()` APIs inject host resize, pointer, wheel, and key events,
+6. `dvz_view_external_surface()` creates a hosted `DvzView` above `DVZ_BACKEND_WRAP`,
+7. `dvz_view_render_once()` and `dvz_app_render_once()` support host-owned loops,
+8. `dvz_view_emit_*()` APIs inject host resize, pointer, wheel, and key events,
 9. request-frame callbacks let Datoviz signal a passive need for the host to schedule rendering.
 
 Qt/PyQt remains the first expected serious consumer, without adding a Qt dependency to Datoviz
@@ -57,7 +57,7 @@ Core may still expose generic hooks needed by Qt. It should not expose `QWidget`
 
 ## Hosted Rendering Contract
 
-The current `DvzApp` / `DvzAppWindow` API covers Datoviz-owned offscreen and GLFW loops and now
+The current `DvzApp` / `DvzView` API covers Datoviz-owned offscreen and GLFW loops and now
 also exposes the hosted hooks external hosts need:
 
 1. GPU context creation,
@@ -73,15 +73,15 @@ External hosts can step Datoviz without handing over their event loop.
 The active concepts are:
 
 1. `DvzApp`: owns the scene-level app context and shared runtime setup.
-2. `DvzAppWindow`: binds a `DvzFigure` to a concrete canvas target and owns per-window frame state.
-3. `dvz_app_window_external_surface()`: creates a hosted window around an externally supplied
+2. `DvzView`: binds a `DvzFigure` to a concrete canvas target and owns per-window frame state.
+3. `dvz_view_external_surface()`: creates a hosted window around an externally supplied
    Vulkan surface.
-4. `dvz_app_window_render_once(win)`: renders exactly one frame if the target is ready.
-5. `dvz_app_window_resize()` / `dvz_app_window_update_external_surface()` /
-   `dvz_app_window_release_external_surface()`: update size and surface lifetime.
-6. `dvz_app_window_emit_resize()`, `dvz_app_window_emit_pointer()`, `dvz_app_window_emit_wheel()`,
-   and `dvz_app_window_emit_key()`: inject normalized host events.
-7. `dvz_app_window_input()`: exposes the input router for adapters that need direct routing.
+4. `dvz_view_render_once(win)`: renders exactly one frame if the target is ready.
+5. `dvz_view_resize()` / `dvz_view_update_external_surface()` /
+   `dvz_view_release_external_surface()`: update size and surface lifetime.
+6. `dvz_view_emit_resize()`, `dvz_view_emit_pointer()`, `dvz_view_emit_wheel()`,
+   and `dvz_view_emit_key()`: inject normalized host events.
+7. `dvz_view_input()`: exposes the input router for adapters that need direct routing.
 8. a request-frame callback: Datoviz or scene mutations can ask the host to schedule a future frame,
    while the host still decides when that frame happens.
 
@@ -121,12 +121,12 @@ Preferred first native path:
 2. the adapter provides the platform WSI instance extensions before Datoviz creates its GPU
    context, or Qt adopts the Datoviz `VkInstance` when Qt is responsible for surface creation,
 3. Qt creates or returns a `VkSurfaceKHR` for the window,
-4. the adapter creates a hosted Datoviz app window with `dvz_app_window_external_surface()`,
+4. the adapter creates a hosted Datoviz view with `dvz_view_external_surface()`,
 5. Qt owns expose/update/timer events and calls Datoviz render-once,
 6. Qt resize, device-pixel-ratio, and surface-loss events call the Datoviz resize/update/detach
    hooks,
 7. Qt mouse, wheel, keyboard, focus, and modifier events are translated into
-   `dvz_app_window_emit_*()` calls or the Datoviz input router.
+   `dvz_view_emit_*()` calls or the Datoviz input router.
 
 Avoid making `QVulkanWindow` the first core target. `QVulkanWindow` manages a Vulkan device, queues,
 command buffers, depth-stencil images, and swapchain resources, which overlaps with the current
@@ -207,7 +207,7 @@ Already active:
 
 1. an app creation config that accepts backend-required instance extensions before
    GPU context creation,
-2. a public external-surface `DvzAppWindow` constructor above `DVZ_BACKEND_WRAP`,
+2. a public external-surface `DvzView` constructor above `DVZ_BACKEND_WRAP`,
 3. render-once APIs for host-owned loops,
 4. resize/surface-loss update APIs that do not require Datoviz event polling,
 5. request-frame notification hooks,
@@ -221,7 +221,7 @@ Still useful follow-up:
 
 Avoid:
 
-1. `dvz_app_window_qt()` as the only path,
+1. `dvz_view_qt()` as the only path,
 2. Qt symbols in core public headers,
 3. a second renderer path parallel to scene -> frame plan -> DRP2 -> runtime,
 4. backend-native handles leaking into scene APIs,
@@ -230,8 +230,8 @@ Avoid:
 
 ## Suggested Implementation Order
 
-1. Keep hardening the hosted `DvzAppWindow` path without changing scene semantics.
-2. Add a C example that manually steps an app window from a simple custom loop.
+1. Keep hardening the hosted `DvzView` path without changing scene semantics.
+2. Add a C example that manually steps a view from a simple custom loop.
 3. Add a wrap-target example using an externally supplied surface if a portable test fixture is
    practical.
 4. Add an optional Qt adapter as the first real hosted backend.

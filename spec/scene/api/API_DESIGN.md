@@ -254,7 +254,7 @@ primary runtime boundary is the DRP2 command stream.
 **Terminology note**: `canvas` (from `core/RUNTIME_BOUNDARY.md`) is the application-owned window +
 swapchain object. The scene never holds a canvas reference. Earlier drafts used a public
 `DvzRenderTarget`; the active v0.4 path carries logical output size through `DvzFigure` and resolves
-native targets in `DvzAppWindow` / `DvzDrp2Runtime`.
+native targets in `DvzView` / `DvzDrp2Runtime`.
 
 
 ## Preferred Error And Diagnostics Surface

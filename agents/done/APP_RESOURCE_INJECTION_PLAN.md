@@ -76,7 +76,7 @@ bool owns_window_host;
 
 `dvz_app_destroy()` must use these flags:
 
-1. destroy app windows and canvases first,
+1. destroy views and canvases first,
 2. destroy the runtime only when `owns_runtime` is true,
 3. destroy the GPU context only when `owns_gpu_ctx` is true,
 4. destroy the window host only when `owns_window_host` is true.
@@ -93,7 +93,7 @@ canvases:
 1. If both `gpu_ctx` and `runtime` are provided, the runtime must be compatible with the borrowed
    GPU context. If there is no runtime/device accessor yet, add a narrow checkable path or document
    that the caller is responsible until such accessors exist.
-2. If `runtime` is provided without `gpu_ctx`, app window creation still needs a device for
+2. If `runtime` is provided without `gpu_ctx`, view creation still needs a device for
    canvases. Either require `gpu_ctx` whenever `runtime` is provided, or derive the required device
    and allocator from a runtime config only if that is reliable.
 3. A provided `window_host` must already have required backends registered. The app must not assume

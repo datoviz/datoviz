@@ -143,5 +143,5 @@ Frame emit reads controller state → uploads MVP UBO → emits DRP2 stream.
 6. **Scene emit wiring** — `WRITE_BUFFER` + `SET_BIND_GROUP(set=0)` per frame in converter ✓
 7. **Port panzoom** — `src/scene/panzoom.c` + `include/datoviz/scene/panzoom.h` ✓
 8. **Port arcball** — `src/scene/arcball.c` + `include/datoviz/scene/arcball.h` ✓
-9. **Panel controller API** — `dvz_panel_set_panzoom` / `dvz_panel_set_arcball` + `dvz_app_window_input` ✓
+9. **Panel controller API** — `dvz_panel_set_panzoom` / `dvz_panel_set_arcball` + `dvz_view_input` ✓
 10. **`hello_point_glfw` extended** — live pan/zoom demo ✓

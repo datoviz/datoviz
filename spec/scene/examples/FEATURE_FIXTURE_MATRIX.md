@@ -44,7 +44,7 @@ example is `v0.4 required`, `v0.4 experimental`, `v0.4 fixture-only`, `v0.5`, `l
 
 | Area | Feature | Status | Example name | Output | Requirements | Minimal fixture idea |
 | ---- | ------- | ------ | ------------ | ------ | ------------ | -------------------- |
-| Scene lifecycle | Empty scene | Implemented | `fixture_scene_empty.c` | PNG | scene+app | Create one scene, figure, panel, and offscreen app window; capture an empty frame. |
+| Scene lifecycle | Empty scene | Implemented | `fixture_scene_empty.c` | PNG | scene+app | Create one scene, figure, panel, and offscreen view; capture an empty frame. |
 | Figure | Resize | Implemented | `fixture_figure_resize.c` | PNG x2 | scene+app | Render at one size, resize the figure/window, render again. |
 | Panel | Layout | Implemented | `fixture_panel_layout.c` | PNG | scene+app | Two panels with different background colors. |
 | Panel | Background color | Implemented | `fixture_panel_background.c` | PNG | scene+app | One panel filled by `dvz_panel_set_background_color()`. |
@@ -115,7 +115,7 @@ example is `v0.4 required`, `v0.4 experimental`, `v0.4 fixture-only`, `v0.5`, `l
 
 | Area | Feature | Status | Example name | Output | Requirements | Minimal fixture idea |
 | ---- | ------- | ------ | ------------ | ------ | ------------ | -------------------- |
-| GUI | Overlay attach | Implemented | `fixture_gui_overlay.c` | bounded GLFW | GUI+GLFW | Attach `DvzGui` to a GLFW app window and show one tiny window. |
+| GUI | Overlay attach | Implemented | `fixture_gui_overlay.c` | bounded GLFW | GUI+GLFW | Attach `DvzGui` to a GLFW view and show one tiny window. |
 | GUI | Callback | Implemented | `fixture_gui_callback.c` | bounded GLFW | GUI+GLFW | Register a GUI callback that increments and displays a counter. |
 | GUI | Curated controls | Implemented | `fixture_gui_controls.c` | bounded GLFW | GUI+GLFW | One panel with text, button, checkbox, combo, and slider. |
 | GUI | Text widget | Implemented | `fixture_gui_text.c` | bounded GLFW | GUI+GLFW | Show one `dvz_gui_text()` item. |
