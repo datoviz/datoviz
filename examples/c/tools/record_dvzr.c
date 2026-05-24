@@ -17,7 +17,6 @@
 
 #include <stdint.h>
 #include <stdio.h>
-#include <string.h>
 
 #include <vulkan/vulkan_core.h>
 
@@ -52,25 +51,6 @@
 /*************************************************************************************************/
 /*  Helpers                                                                                      */
 /*************************************************************************************************/
-
-/**
- * Build an output path next to the executable.
- *
- * @param exe executable path
- * @param name output file name
- * @param out output buffer
- * @param out_size output buffer size
- */
-static void _outpath(const char* exe, const char* name, char* out, size_t out_size)
-{
-    const char* slash = strrchr(exe, '/');
-    if (slash != NULL)
-        dvz_snprintf(out, out_size, "%.*s/%s", (int)(slash - exe), exe, name);
-    else
-        dvz_snprintf(out, out_size, "%s", name);
-}
-
-
 
 /**
  * Create a GPU context suitable for DRP2 replay.
@@ -216,9 +196,9 @@ int main(int argc, char** argv)
     char recording_path[512] = {0};
     char original_png[512] = {0};
     char replay_png[512] = {0};
-    _outpath(argv[0], "record_dvzr.dvzr", recording_path, sizeof(recording_path));
-    _outpath(argv[0], "record_dvzr_original.png", original_png, sizeof(original_png));
-    _outpath(argv[0], "record_dvzr_replay.png", replay_png, sizeof(replay_png));
+    example_outpath(argv[0], "record_dvzr.dvzr", recording_path, sizeof(recording_path));
+    example_outpath(argv[0], "record_dvzr_original.png", original_png, sizeof(original_png));
+    example_outpath(argv[0], "record_dvzr_replay.png", replay_png, sizeof(replay_png));
 
     int ret = 1;
     DvzScene* scene = NULL;

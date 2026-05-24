@@ -25,13 +25,13 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 
 #include <vulkan/vulkan_core.h>
 
 #include "datoviz/drp2.h"
 #include "datoviz/fileio/fileio.h"
 #include "datoviz/vk/gpu_ctx.h"
+#include "example_common.h"
 
 
 
@@ -94,13 +94,6 @@ static const char* FRAG_GLSL =
 /*************************************************************************************************/
 /*  Main                                                                                         */
 /*************************************************************************************************/
-
-static void _outpath(const char* exe, const char* name, char* buf, size_t n)
-{
-    const char* slash = strrchr(exe, '/');
-    if (slash) snprintf(buf, n, "%.*s/%s", (int)(slash - exe), exe, name);
-    else        snprintf(buf, n, "%s", name);
-}
 
 int main(int argc, char** argv)
 {
@@ -253,7 +246,7 @@ int main(int argc, char** argv)
 
     dvz_drp2_runtime_download_buffer(runtime, ID_RBUF, 0, pixel_count, pixels);
     char out[512];
-    _outpath(argv[0], "raw_triangle_drp2.png", out, sizeof(out));
+    example_outpath(argv[0], "raw_triangle_drp2.png", out, sizeof(out));
     dvz_write_png(out, WIDTH, HEIGHT, pixels);
     free(pixels);
 

@@ -25,18 +25,9 @@
  * Run:    ./build/examples/c/tools/raw_triangle [offscreen|video]
  */
 
-#include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
-
-static void _outpath(const char* exe, const char* name, char* buf, size_t n)
-{
-    const char* slash = strrchr(exe, '/');
-    if (slash) snprintf(buf, n, "%.*s/%s", (int)(slash - exe), exe, name);
-    else        snprintf(buf, n, "%s", name);
-}
 
 #include <volk.h>
 #include <vulkan/vulkan_core.h>
@@ -48,6 +39,7 @@ static void _outpath(const char* exe, const char* name, char* buf, size_t n)
 #include "datoviz/vk/gpu_ctx.h"
 #include "datoviz/vklite.h"
 #include "datoviz/window.h"
+#include "example_common.h"
 
 
 
@@ -242,8 +234,7 @@ static void draw_triangle(DvzCanvas* canvas, const DvzStreamFrame* frame, void* 
 
 int main(int argc, char** argv)
 {
-    const char* mode = (argc > 1) ? argv[1] : "offscreen";
-    const int   video_mode = strcmp(mode, "video") == 0;
+    const int video_mode = example_arg_has(argc, argv, "video");
 
     /* GPU context — dynamicRendering + synchronization2 required by DvzCanvas */
     DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
@@ -284,8 +275,8 @@ int main(int argc, char** argv)
         vsink.encoder.height   = wcfg.height;
         vsink.encoder.fps      = 30;
         char mp4_out[512], h26x_out[512];
-        _outpath(argv[0], "raw_triangle.mp4",  mp4_out,  sizeof(mp4_out));
-        _outpath(argv[0], "raw_triangle.h26x", h26x_out, sizeof(h26x_out));
+        example_outpath(argv[0], "raw_triangle.mp4", mp4_out, sizeof(mp4_out));
+        example_outpath(argv[0], "raw_triangle.h26x", h26x_out, sizeof(h26x_out));
         vsink.encoder.mp4_path = mp4_out;
         vsink.encoder.raw_path = h26x_out;
         if (dvz_canvas_configure_video_sink(canvas, true, &vsink) != 0)
@@ -316,12 +307,12 @@ int main(int argc, char** argv)
     /* Save PNG for offscreen mode */
     if (!video_mode) {
         char png_out[512];
-        _outpath(argv[0], "raw_triangle.png", png_out, sizeof(png_out));
+        example_outpath(argv[0], "raw_triangle.png", png_out, sizeof(png_out));
         dvz_canvas_capture_png(canvas, png_out);
         printf("raw_triangle: saved %s\n", png_out);
     } else {
         char mp4_msg[512];
-        _outpath(argv[0], "raw_triangle.mp4", mp4_msg, sizeof(mp4_msg));
+        example_outpath(argv[0], "raw_triangle.mp4", mp4_msg, sizeof(mp4_msg));
         printf("raw_triangle: saved %s\n", mp4_msg);
     }
 
