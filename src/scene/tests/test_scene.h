@@ -663,6 +663,8 @@ int test_scene_visual_bounds_mesh_instance_transform(TstContext* suite, const Ts
 
 int test_scene_panel_visual_bounds_and_union(TstContext* suite, const TstCase* item);
 
+int test_scene_panel_bounds_overlay_visual(TstContext* suite, const TstCase* item);
+
 int test_scene_point_typed_data_upload(TstContext* suite, const TstCase* item);
 
 int test_scene_mesh_typed_data_upload(TstContext* suite, const TstCase* item);

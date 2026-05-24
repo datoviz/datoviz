@@ -1133,6 +1133,8 @@ struct DvzPanel
     DvzController* controllers[3]; /* optional scene-owned spatial controller bindings */
     DvzInputRouter* input_router; /* optional router subscribed through panel-local dispatch */
     DvzVisual* fly_pivot_marker_visual; /* optional navigation overlay marker visual */
+    DvzVisual* bounds_visual; /* optional panel-owned visual bounds overlay */
+    bool bounds_visible;
     DvzTurntable* turntable; /* optional turntable camera controller (owned) */
     DvzAxis axes[2];
     DvzInteractionPolicy* interaction;
@@ -1443,6 +1445,8 @@ bool _scene_visual_indexed_resource_key(
 void _scene_prepare_axis_visuals(DvzFigure* figure);
 
 void _scene_prepare_colorbar_visuals(DvzFigure* figure, DvzDiagnosticReport* report);
+
+void _scene_prepare_bounds_visuals(DvzFigure* figure);
 
 void _scene_prepare_text_visuals(DvzFigure* figure);
 

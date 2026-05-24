@@ -2341,6 +2341,66 @@ int test_scene_panel_visual_bounds_and_union(TstContext* suite, const TstCase* i
 
 
 
+/**
+ * Verify the panel-owned bounds overlay generates a segment wireframe visual.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_panel_bounds_overlay_visual(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 200, 100, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    ANN(panel);
+
+    DvzVisual* points = dvz_point(scene, 0);
+    ANN(points);
+    vec3 positions[2] = {{-1.0f, -1.0f, 0.0f}, {+1.0f, +1.0f, 0.0f}};
+    AT(dvz_visual_set_data(points, "position", positions, 2) == 0);
+    AT(dvz_panel_add_visual(panel, points, NULL) == 0);
+
+    AT(!dvz_panel_bounds_visible(panel));
+    AT(dvz_panel_set_bounds_visible(panel, true) == 0);
+    AT(dvz_panel_bounds_visible(panel));
+    _scene_prepare_bounds_visuals(figure);
+
+    ANN(panel->bounds_visual);
+    AT(panel->bounds_visual->type == DVZ_VISUAL_TYPE_SEGMENT);
+    AT(panel->bounds_visual->visible);
+    int start_idx = _attr_index(panel->bounds_visual, "position_start");
+    int end_idx = _attr_index(panel->bounds_visual, "position_end");
+    int color_idx = _attr_index(panel->bounds_visual, "color");
+    int width_idx = _attr_index(panel->bounds_visual, "line_width");
+    AT(start_idx >= 0);
+    AT(end_idx >= 0);
+    AT(color_idx >= 0);
+    AT(width_idx >= 0);
+    AT(panel->bounds_visual->attrs[start_idx].item_count == 4);
+    AT(panel->bounds_visual->attrs[end_idx].item_count == 4);
+    AT(panel->bounds_visual->attrs[color_idx].item_count == 4);
+    AT(panel->bounds_visual->attrs[width_idx].item_count == 4);
+
+    DvzBounds bounds = {0};
+    AT(dvz_panel_bounds(panel, DVZ_BOUNDS_SPACE_VISUAL, &bounds) == 0);
+    AT(_bounds_expect(&bounds, 2, -1.0, -1.0, 0.0, +1.0, +1.0, 0.0) == 0);
+
+    AT(dvz_panel_set_bounds_visible(panel, false) == 0);
+    _scene_prepare_bounds_visuals(figure);
+    AT(!panel->bounds_visual->visible);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
 int test_scene_point_typed_data_upload(TstContext* suite, const TstCase* item)
 {
     ANN(suite);

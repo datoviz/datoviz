@@ -3699,6 +3699,8 @@ DvzPanel* dvz_panel(DvzFigure* figure, DvzPanelDesc desc)
     panel->padding        = (DvzPanelReserve){0};
     _scene_technique_state_init(&panel->techniques);
     panel->visual_count = 0;
+    panel->bounds_visual = NULL;
+    panel->bounds_visible = false;
     return panel;
 }
 
@@ -4080,6 +4082,8 @@ void dvz_panel_destroy(DvzPanel* panel)
     }
     panel->figure       = NULL;
     panel->visual_count = 0;
+    panel->bounds_visual = NULL;
+    panel->bounds_visible = false;
     panel->colorbar_count = 0;
     panel->interaction = NULL;
     panel->pinned_readout_count = 0;

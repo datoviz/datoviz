@@ -1337,6 +1337,7 @@ void _scene_emit_visual_uploads(
     _scene_prepare_axis_visuals(figure);
     _scene_prepare_colorbar_visuals(figure, report);
     _scene_prepare_text_visuals(figure);
+    _scene_prepare_bounds_visuals(figure);
     bool emitted_buffers[DVZ_SCENE_MAX_BUFFERS] = {0};
     for (uint32_t pi = 0; pi < figure->panel_count; pi++)
     {

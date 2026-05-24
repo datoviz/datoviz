@@ -722,6 +722,28 @@ dvz_panel_set_scene_occlusion(DvzPanel* panel, const DvzSceneOcclusionDesc* desc
 
 
 /**
+ * Show or hide the panel-owned visual bounds overlay.
+ *
+ * The overlay is a generated wireframe segment visual in visual space. It follows the panel
+ * controller and is rebuilt from visible, controller-applied visuals before frame emission.
+ *
+ * @param panel the panel
+ * @param visible whether bounds boxes should be shown
+ * @return 0 on success, -1 on error
+ */
+DVZ_EXPORT int dvz_panel_set_bounds_visible(DvzPanel* panel, bool visible);
+
+
+/**
+ * Return whether the panel-owned visual bounds overlay is enabled.
+ *
+ * @param panel the panel
+ * @return whether bounds boxes should be shown
+ */
+DVZ_EXPORT bool dvz_panel_bounds_visible(const DvzPanel* panel);
+
+
+/**
  * Set a panel data domain for one axis dimension.
  *
  * The first WIP axis slice supports finite linear X/Y domains. Axis geometry is derived from this

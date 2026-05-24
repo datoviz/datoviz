@@ -20,7 +20,11 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "_alloc.h"
 #include "_assertions.h"
+#include "_compat.h"
+#include "_log.h"
+#include "_overflow.h"
 #include "_scene.h"
 #include "_visual_internal.h"
 #include "datoviz/math/_cglm.h"
@@ -511,6 +515,250 @@ static bool _bounds_project_screen(
 }
 
 
+/**
+ * Return the number of wireframe line segments required for one bounds box.
+ *
+ * @param bounds the bounds box
+ * @return line segment count
+ */
+static uint32_t _bounds_wire_line_count(const DvzBounds* bounds)
+{
+    ANN(bounds);
+    if (!bounds->valid)
+        return 0;
+    return bounds->dims == 3 ? 12 : 4;
+}
+
+
+
+/**
+ * Append one edge to packed segment arrays.
+ *
+ * @param start output start positions
+ * @param end output end positions
+ * @param colors output colors
+ * @param widths output line widths
+ * @param line_count current output line count
+ * @param a edge start position
+ * @param b edge end position
+ */
+static void _bounds_wire_append_edge(
+    float (*start)[3], float (*end)[3], DvzColor* colors, float* widths, uint32_t* line_count,
+    const double a[3], const double b[3])
+{
+    ANN(start);
+    ANN(end);
+    ANN(colors);
+    ANN(widths);
+    ANN(line_count);
+    uint32_t i = *line_count;
+    for (uint32_t dim = 0; dim < 3; dim++)
+    {
+        start[i][dim] = (float)a[dim];
+        end[i][dim] = (float)b[dim];
+    }
+    colors[i][0] = 255;
+    colors[i][1] = 214;
+    colors[i][2] = 72;
+    colors[i][3] = 245;
+    widths[i] = 2.0f;
+    *line_count = i + 1;
+}
+
+
+
+/**
+ * Append one bounds box as wireframe line segments.
+ *
+ * @param bounds source bounds box
+ * @param start output start positions
+ * @param end output end positions
+ * @param colors output colors
+ * @param widths output line widths
+ * @param line_count current output line count
+ */
+static void _bounds_wire_append_box(
+    const DvzBounds* bounds, float (*start)[3], float (*end)[3], DvzColor* colors, float* widths,
+    uint32_t* line_count)
+{
+    ANN(bounds);
+    ANN(start);
+    ANN(end);
+    ANN(colors);
+    ANN(widths);
+    ANN(line_count);
+    if (!bounds->valid)
+        return;
+
+    double p[8][3] = {
+        {bounds->min[0], bounds->min[1], bounds->min[2]},
+        {bounds->max[0], bounds->min[1], bounds->min[2]},
+        {bounds->max[0], bounds->max[1], bounds->min[2]},
+        {bounds->min[0], bounds->max[1], bounds->min[2]},
+        {bounds->min[0], bounds->min[1], bounds->max[2]},
+        {bounds->max[0], bounds->min[1], bounds->max[2]},
+        {bounds->max[0], bounds->max[1], bounds->max[2]},
+        {bounds->min[0], bounds->max[1], bounds->max[2]},
+    };
+    const uint32_t edges_2d[4][2] = {{0, 1}, {1, 2}, {2, 3}, {3, 0}};
+    const uint32_t edges_3d[12][2] = {
+        {0, 1}, {1, 2}, {2, 3}, {3, 0}, {4, 5}, {5, 6},
+        {6, 7}, {7, 4}, {0, 4}, {1, 5}, {2, 6}, {3, 7},
+    };
+    uint32_t edge_count = _bounds_wire_line_count(bounds);
+    for (uint32_t i = 0; i < edge_count; i++)
+    {
+        const uint32_t* edge = bounds->dims == 3 ? edges_3d[i] : edges_2d[i];
+        _bounds_wire_append_edge(start, end, colors, widths, line_count, p[edge[0]], p[edge[1]]);
+    }
+}
+
+
+
+/**
+ * Ensure a panel has a generated bounds overlay visual.
+ *
+ * @param panel the panel
+ * @return the generated visual, or NULL on error
+ */
+static DvzVisual* _bounds_overlay_visual(DvzPanel* panel)
+{
+    ANN(panel);
+    if (panel->bounds_visual != NULL)
+        return panel->bounds_visual;
+    if (panel->figure == NULL || panel->figure->scene == NULL)
+        return NULL;
+
+    DvzVisual* visual = dvz_segment(panel->figure->scene, 0);
+    if (visual == NULL)
+        return NULL;
+    if (dvz_visual_set_depth_test(visual, false) != 0)
+        return NULL;
+    DvzVisualAttachDesc attach = {
+        .z_layer = 9500,
+        .controller_mode = DVZ_CONTROLLER_APPLY,
+    };
+    if (dvz_panel_add_visual(panel, visual, &attach) != 0)
+        return NULL;
+    panel->bounds_visual = visual;
+    dvz_visual_set_visible(visual, false);
+    return visual;
+}
+
+
+
+/**
+ * Rebuild one panel's generated bounds overlay visual.
+ *
+ * @param panel the panel
+ * @return whether the overlay is synchronized
+ */
+static bool _bounds_overlay_sync_panel(DvzPanel* panel)
+{
+    ANN(panel);
+    if (!panel->bounds_visible)
+    {
+        if (panel->bounds_visual != NULL)
+            dvz_visual_set_visible(panel->bounds_visual, false);
+        return true;
+    }
+
+    DvzVisual* overlay = _bounds_overlay_visual(panel);
+    if (overlay == NULL)
+        return false;
+
+    uint64_t max_lines = 0;
+    for (uint32_t i = 0; i < panel->visual_count; i++)
+    {
+        const DvzPanelAttach* attach = &panel->visuals[i];
+        DvzVisual* visual = attach->visual;
+        if (visual == NULL || visual == overlay || !visual->visible ||
+            attach->controller_mode == DVZ_CONTROLLER_FIXED)
+        {
+            continue;
+        }
+
+        DvzBounds bounds = {0};
+        if (dvz_visual_bounds(visual, &bounds) != 0)
+            continue;
+        uint64_t next = 0;
+        if (_dvz_add_u64_overflows(max_lines, _bounds_wire_line_count(&bounds), &next))
+        {
+            log_error("bounds overlay line count overflow");
+            return false;
+        }
+        max_lines = next;
+    }
+
+    if (max_lines == 0 || max_lines > UINT32_MAX)
+    {
+        dvz_visual_set_visible(overlay, false);
+        return max_lines == 0;
+    }
+
+    uint64_t start_bytes = 0;
+    uint64_t end_bytes = 0;
+    uint64_t color_bytes = 0;
+    uint64_t width_bytes = 0;
+    if (_dvz_mul_u64_overflows(max_lines, 3u * sizeof(float), &start_bytes) ||
+        _dvz_mul_u64_overflows(max_lines, 3u * sizeof(float), &end_bytes) ||
+        _dvz_mul_u64_overflows(max_lines, sizeof(DvzColor), &color_bytes) ||
+        _dvz_mul_u64_overflows(max_lines, sizeof(float), &width_bytes) ||
+        start_bytes > SIZE_MAX || end_bytes > SIZE_MAX || color_bytes > SIZE_MAX ||
+        width_bytes > SIZE_MAX)
+    {
+        log_error("bounds overlay allocation size overflow");
+        return false;
+    }
+
+    float(*start)[3] = (float(*)[3])dvz_calloc((DvzSize)start_bytes, 1);
+    float(*end)[3] = (float(*)[3])dvz_calloc((DvzSize)end_bytes, 1);
+    DvzColor* colors = (DvzColor*)dvz_calloc((DvzSize)color_bytes, 1);
+    float* widths = (float*)dvz_calloc((DvzSize)width_bytes, 1);
+    if (start == NULL || end == NULL || colors == NULL || widths == NULL)
+    {
+        dvz_free(start);
+        dvz_free(end);
+        dvz_free(colors);
+        dvz_free(widths);
+        log_error("bounds overlay allocation failed");
+        return false;
+    }
+
+    uint32_t line_count = 0;
+    for (uint32_t i = 0; i < panel->visual_count; i++)
+    {
+        const DvzPanelAttach* attach = &panel->visuals[i];
+        DvzVisual* visual = attach->visual;
+        if (visual == NULL || visual == overlay || !visual->visible ||
+            attach->controller_mode == DVZ_CONTROLLER_FIXED)
+        {
+            continue;
+        }
+
+        DvzBounds bounds = {0};
+        if (dvz_visual_bounds(visual, &bounds) != 0)
+            continue;
+        _bounds_wire_append_box(&bounds, start, end, colors, widths, &line_count);
+    }
+
+    DvzVisualDataUpdate updates[] = {
+        {.attr_name = "position_start", .data = start, .item_count = line_count},
+        {.attr_name = "position_end", .data = end, .item_count = line_count},
+        {.attr_name = "color", .data = colors, .item_count = line_count},
+        {.attr_name = "stroke_width", .data = widths, .item_count = line_count},
+    };
+    int rc = line_count > 0 ? dvz_visual_set_data_many(overlay, updates, 4) : -1;
+    dvz_visual_set_visible(overlay, rc == 0 && line_count > 0);
+
+    dvz_free(start);
+    dvz_free(end);
+    dvz_free(colors);
+    dvz_free(widths);
+    return rc == 0;
+}
+
+
 
 /*************************************************************************************************/
 /*  Functions                                                                                    */
@@ -633,7 +881,7 @@ int dvz_panel_bounds(const DvzPanel* panel, DvzBoundsSpace space, DvzBounds* out
     for (uint32_t i = 0; i < panel->visual_count; i++)
     {
         const DvzVisual* visual = panel->visuals[i].visual;
-        if (visual == NULL || !visual->visible)
+        if (visual == NULL || visual == panel->bounds_visual || !visual->visible)
             continue;
 
         DvzBounds bounds = {0};
@@ -647,4 +895,56 @@ int dvz_panel_bounds(const DvzPanel* panel, DvzBoundsSpace space, DvzBounds* out
     if (space == DVZ_BOUNDS_SPACE_SCREEN && out->valid)
         out->dims = 2;
     return out->valid ? 0 : -1;
+}
+
+
+
+/**
+ * Show or hide the panel-owned visual bounds overlay.
+ *
+ * @param panel the panel
+ * @param visible whether bounds boxes should be shown
+ * @return 0 on success, -1 on error
+ */
+int dvz_panel_set_bounds_visible(DvzPanel* panel, bool visible)
+{
+    ANN(panel);
+    if (panel->figure == NULL)
+        return -1;
+    panel->bounds_visible = visible;
+    if (panel->bounds_visual != NULL)
+        dvz_visual_set_visible(panel->bounds_visual, visible);
+    _scene_notify_request_frame(panel->figure);
+    return 0;
+}
+
+
+
+/**
+ * Return whether the panel-owned visual bounds overlay is enabled.
+ *
+ * @param panel the panel
+ * @return whether bounds boxes should be shown
+ */
+bool dvz_panel_bounds_visible(const DvzPanel* panel)
+{
+    ANN(panel);
+    return panel->bounds_visible;
+}
+
+
+
+/**
+ * Rebuild generated bounds overlay visuals before frame emission.
+ *
+ * @param figure the figure
+ */
+void _scene_prepare_bounds_visuals(DvzFigure* figure)
+{
+    ANN(figure);
+    for (uint32_t i = 0; i < figure->panel_count; i++)
+    {
+        if (!_bounds_overlay_sync_panel(&figure->panels[i]))
+            log_error("failed to update panel bounds overlay");
+    }
 }
