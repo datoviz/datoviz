@@ -128,6 +128,31 @@ DVZ_EXPORT void dvz_geometry_edges_destroy(DvzGeometryEdges* edges);
 
 
 /**
+ * Extract contour line segments from indexed triangle geometry and per-vertex scalar values.
+ *
+ * @param geometry the geometry
+ * @param values scalar value per vertex
+ * @param value_count number of scalar values
+ * @param levels contour levels
+ * @param level_count number of contour levels
+ * @return the extracted contour segments, or NULL on invalid input or allocation failure
+ */
+DVZ_EXPORT DvzGeometryContours* dvz_geometry_contours(
+    const DvzGeometry* geometry, const double* values, uint32_t value_count, const double* levels,
+    uint32_t level_count);
+
+
+
+/**
+ * Destroy extracted contour segments.
+ *
+ * @param contours the contour segment list
+ */
+DVZ_EXPORT void dvz_geometry_contours_destroy(DvzGeometryContours* contours);
+
+
+
+/**
  * Create an indexed cube geometry.
  *
  * @param desc optional cube descriptor

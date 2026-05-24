@@ -412,6 +412,42 @@ int test_geometry_edges(TstContext* suite, const TstCase* tstitem)
 
 
 
+int test_geometry_contours(TstContext* suite, const TstCase* tstitem)
+{
+    ANN(suite);
+
+    DvzGeometry* plane = dvz_geom_plane(NULL);
+    AT(plane != NULL);
+
+    double values[4] = {0};
+    for (uint32_t i = 0; i < plane->vertex_count; i++)
+        values[i] = plane->positions[i][0];
+    double levels[1] = {0.0};
+
+    DvzGeometryContours* contours =
+        dvz_geometry_contours(plane, values, plane->vertex_count, levels, 1);
+    AT(contours != NULL);
+    AT(contours->segment_count == 2);
+
+    for (uint32_t i = 0; i < contours->segment_count; i++)
+    {
+        const DvzGeometryContourSegment* segment = &contours->segments[i];
+        AC(segment->p0[0], 0.0, EPS);
+        AC(segment->p1[0], 0.0, EPS);
+        AC(segment->level, 0.0, EPS);
+        AT(segment->level_index == 0);
+        AT(segment->face_index < 2);
+    }
+
+    AT(dvz_geometry_contours(plane, values, plane->vertex_count - 1, levels, 1) == NULL);
+
+    dvz_geometry_contours_destroy(contours);
+    dvz_geometry_destroy(plane);
+    return 0;
+}
+
+
+
 /*************************************************************************************************/
 /*  Entry-point                                                                                  */
 /*************************************************************************************************/
@@ -433,6 +469,7 @@ int test_geom(TstSuite* suite)
     TST_CASE(test_geometry_transform);
     TST_CASE(test_geometry_merge);
     TST_CASE(test_geometry_edges);
+    TST_CASE(test_geometry_contours);
 
     return 0;
 }

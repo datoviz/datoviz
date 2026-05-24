@@ -254,6 +254,43 @@ static void _geom_dvec3_cross(const dvec3 a, const dvec3 b, dvec3 out)
 
 
 /**
+ * Linearly interpolate two F64 3D positions.
+ *
+ * @param a first position
+ * @param b second position
+ * @param t interpolation coordinate
+ * @param out output position
+ */
+static void _geom_dvec3_lerp(const dvec3 a, const dvec3 b, double t, dvec3 out)
+{
+    ANN(a);
+    ANN(b);
+    ANN(out);
+    out[0] = a[0] + t * (b[0] - a[0]);
+    out[1] = a[1] + t * (b[1] - a[1]);
+    out[2] = a[2] + t * (b[2] - a[2]);
+}
+
+
+
+/**
+ * Return whether two F64 3D positions are equal enough for contour extraction.
+ *
+ * @param a first position
+ * @param b second position
+ * @return whether the positions are nearly equal
+ */
+static bool _geom_dvec3_nearly_equal(const dvec3 a, const dvec3 b)
+{
+    ANN(a);
+    ANN(b);
+    const dvec3 d = {a[0] - b[0], a[1] - b[1], a[2] - b[2]};
+    return _geom_dvec3_norm2(d) <= EPSILON * EPSILON;
+}
+
+
+
+/**
  * Compute one triangle normal from indexed positions.
  *
  * @param geometry the geometry
@@ -489,6 +526,46 @@ static void _geom_edge_candidate_set(
     candidates[offset].v0 = a < b ? a : b;
     candidates[offset].v1 = a < b ? b : a;
     candidates[offset].face = face;
+}
+
+
+
+/**
+ * Append one contour intersection point for a triangle edge when present.
+ *
+ * @param geometry the geometry
+ * @param ia first vertex index
+ * @param ib second vertex index
+ * @param sa first scalar value
+ * @param sb second scalar value
+ * @param level contour level
+ * @param points output point array
+ * @param count output point count
+ */
+static void _geom_contour_intersection(
+    const DvzGeometry* geometry, DvzIndex ia, DvzIndex ib, double sa, double sb, double level,
+    dvec3 points[3], uint32_t* count)
+{
+    ANN(geometry);
+    ANN(points);
+    ANN(count);
+    ASSERT(ia < geometry->vertex_count);
+    ASSERT(ib < geometry->vertex_count);
+    if (*count >= 3 || sa == sb)
+        return;
+
+    const double min_value = sa < sb ? sa : sb;
+    const double max_value = sa > sb ? sa : sb;
+    if (level < min_value || level >= max_value)
+        return;
+
+    const double t = (level - sa) / (sb - sa);
+    if (!isfinite(t) || t < -EPSILON || t > 1.0 + EPSILON)
+        return;
+
+    _geom_dvec3_lerp(geometry->positions[ia], geometry->positions[ib], CLIP(t, 0.0, 1.0),
+                     points[*count]);
+    *count += 1;
 }
 
 
@@ -970,6 +1047,114 @@ void dvz_geometry_edges_destroy(DvzGeometryEdges* edges)
     dvz_free(edges->edges);
     dvz_memset(edges, sizeof(DvzGeometryEdges), 0, sizeof(DvzGeometryEdges));
     dvz_free(edges);
+}
+
+
+
+/**
+ * Extract contour line segments from indexed triangle geometry and per-vertex scalar values.
+ *
+ * @param geometry the geometry
+ * @param values scalar value per vertex
+ * @param value_count number of scalar values
+ * @param levels contour levels
+ * @param level_count number of contour levels
+ * @return the extracted contour segments, or NULL on invalid input or allocation failure
+ */
+DvzGeometryContours* dvz_geometry_contours(
+    const DvzGeometry* geometry, const double* values, uint32_t value_count, const double* levels,
+    uint32_t level_count)
+{
+    if (!_geom_valid_indexed_triangles(geometry) || geometry->positions == NULL || values == NULL ||
+        levels == NULL || value_count != geometry->vertex_count || level_count == 0)
+    {
+        return NULL;
+    }
+
+    const uint32_t triangle_count = geometry->index_count / 3;
+    uint64_t max_segments_u64 = 0;
+    if (_dvz_mul_u64_overflows((uint64_t)triangle_count, (uint64_t)level_count, &max_segments_u64) ||
+        max_segments_u64 > UINT32_MAX ||
+        !_geom_allocation_valid(
+            (uint32_t)max_segments_u64, sizeof(DvzGeometryContourSegment)))
+    {
+        return NULL;
+    }
+    const uint32_t max_segments = (uint32_t)max_segments_u64;
+
+    DvzGeometryContours* out = (DvzGeometryContours*)dvz_calloc(1, sizeof(DvzGeometryContours));
+    if (out == NULL)
+        return NULL;
+
+    if (max_segments > 0)
+    {
+        out->segments =
+            (DvzGeometryContourSegment*)dvz_calloc(max_segments, sizeof(DvzGeometryContourSegment));
+        if (out->segments == NULL)
+        {
+            dvz_free(out);
+            return NULL;
+        }
+    }
+
+    for (uint32_t face = 0; face < triangle_count; face++)
+    {
+        const uint32_t offset = 3 * face;
+        const DvzIndex i0 = geometry->indices[offset + 0];
+        const DvzIndex i1 = geometry->indices[offset + 1];
+        const DvzIndex i2 = geometry->indices[offset + 2];
+        const double s0 = values[i0];
+        const double s1 = values[i1];
+        const double s2 = values[i2];
+        if (!isfinite(s0) || !isfinite(s1) || !isfinite(s2))
+            continue;
+
+        for (uint32_t level_index = 0; level_index < level_count; level_index++)
+        {
+            const double level = levels[level_index];
+            if (!isfinite(level))
+                continue;
+
+            dvec3 points[3] = {{0}};
+            uint32_t point_count = 0;
+            _geom_contour_intersection(
+                geometry, i0, i1, s0, s1, level, points, &point_count);
+            _geom_contour_intersection(
+                geometry, i1, i2, s1, s2, level, points, &point_count);
+            _geom_contour_intersection(
+                geometry, i2, i0, s2, s0, level, points, &point_count);
+
+            if (point_count != 2 || _geom_dvec3_nearly_equal(points[0], points[1]))
+                continue;
+
+            ASSERT(out->segment_count < max_segments);
+            DvzGeometryContourSegment* segment = &out->segments[out->segment_count++];
+            dvz_memcpy(segment->p0, sizeof(dvec3), points[0], sizeof(dvec3));
+            dvz_memcpy(segment->p1, sizeof(dvec3), points[1], sizeof(dvec3));
+            segment->level = level;
+            segment->level_index = level_index;
+            segment->face_index = face;
+        }
+    }
+
+    return out;
+}
+
+
+
+/**
+ * Destroy extracted contour segments.
+ *
+ * @param contours the contour segment list
+ */
+void dvz_geometry_contours_destroy(DvzGeometryContours* contours)
+{
+    if (contours == NULL)
+        return;
+
+    dvz_free(contours->segments);
+    dvz_memset(contours, sizeof(DvzGeometryContours), 0, sizeof(DvzGeometryContours));
+    dvz_free(contours);
 }
 
 
