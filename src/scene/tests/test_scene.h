@@ -458,6 +458,9 @@ int test_app_offscreen_point_depth_cue_darkens_far(TstContext* suite, const TstC
 
 int test_app_offscreen_records_dvzr_frames(TstContext* suite, const TstCase* item);
 
+int test_app_offscreen_colorbar_has_visible_ramp_and_labels(
+    TstContext* suite, const TstCase* item);
+
 int test_scene_background_color_creates_fixed_quad(TstContext* suite, const TstCase* item);
 
 int test_scene_background_descriptor_gradient_and_image(TstContext* suite, const TstCase* item);

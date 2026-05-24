@@ -2855,6 +2855,154 @@ int test_app_offscreen_image_has_nonblank_pixels(TstContext* suite, const TstCas
 
 
 /**
+ * Ensure a scene-generated colorbar renders visible ramp and text pixels offscreen.
+ *
+ * @param suite the test suite
+ * @param item the test item
+ * @return 0 on success
+ */
+int test_app_offscreen_colorbar_has_visible_ramp_and_labels(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    TST_SCENE_APP_REQUIRE_VKLITE(suite);
+
+    DvzScene* scene = dvz_scene();
+    AT(scene != NULL);
+    DvzFigure* figure = dvz_figure(scene, 256, 192, 0);
+    AT(figure != NULL);
+    DvzPanel* panel = dvz_panel(
+        figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+    AT(panel != NULL);
+
+    DvzScale* scale = dvz_scale(
+        scene, &(DvzScaleDesc){.kind = DVZ_SCALE_CONTINUOUS, .label = "Intensity"});
+    AT(scale != NULL);
+    dvz_scale_set_domain(scale, 0.0, 1.0);
+    DvzColormap* colormap = dvz_colormap(scene, NULL);
+    AT(colormap != NULL);
+    DvzColormapStop stops[2] = {
+        {.position = 0.0, .rgba = {0, 0, 255, 255}},
+        {.position = 1.0, .rgba = {255, 0, 0, 255}},
+    };
+    dvz_colormap_set_stops(colormap, stops, 2);
+    dvz_scale_set_colormap(scale, colormap);
+
+    DvzVisual* image = dvz_image(scene, 0);
+    AT(image != NULL);
+    float positions[4][3] = {
+        {-0.95f, -0.95f, 0.0f}, {-0.95f, 0.95f, 0.0f},
+        {0.95f, -0.95f, 0.0f},  {0.95f, 0.95f, 0.0f},
+    };
+    float texcoords[4][2] = {
+        {0.0f, 0.0f}, {0.0f, 1.0f}, {1.0f, 0.0f}, {1.0f, 1.0f},
+    };
+    int rc = dvz_visual_set_data(image, "position", positions, 4);
+    AT(rc == 0);
+    rc = dvz_visual_set_data(image, "texcoords", texcoords, 4);
+    AT(rc == 0);
+    rc = dvz_visual_set_scale(image, "colormap", scale);
+    AT(rc == 0);
+
+    DvzSampledField* field = dvz_sampled_field(
+        scene, &(DvzSampledFieldDesc){
+                   .dim = DVZ_FIELD_DIM_2D,
+                   .format = DVZ_FIELD_FORMAT_R32_FLOAT,
+                   .semantic = DVZ_FIELD_SEMANTIC_SCALAR,
+                   .width = 8,
+                   .height = 8,
+                   .depth = 1,
+               });
+    AT(field != NULL);
+    float values[8 * 8] = {0};
+    for (uint32_t y = 0; y < 8; y++)
+    {
+        for (uint32_t x = 0; x < 8; x++)
+            values[y * 8 + x] = (float)x / 7.0f;
+    }
+    bool ok = dvz_sampled_field_set_data(
+        field, &(DvzFieldDataView){
+                   .data = values,
+                   .bytes_per_row = 8 * sizeof(float),
+                   .rows_per_image = 8,
+               });
+    AT(ok);
+    ok = dvz_visual_set_field(image, "field", field);
+    AT(ok);
+    rc = dvz_panel_add_visual(panel, image, NULL);
+    AT(rc == 0);
+
+    DvzColorbar* colorbar = dvz_colorbar(
+        panel, scale,
+        &(DvzColorbarDesc){
+            .orientation = DVZ_COLORBAR_ORIENTATION_VERTICAL,
+            .anchor = DVZ_SCENE_ANCHOR_PANEL_RIGHT,
+            .title = "Intensity",
+        });
+    AT(colorbar != NULL);
+    dvz_colorbar_set_format(colorbar, &(DvzFormatDesc){.precision = 1});
+    dvz_panel_set_background_color(panel, 0.0f, 0.0f, 0.0f, 1.0f);
+
+    DvzApp* app = _app_test_create(suite, scene);
+    if (app == NULL)
+    {
+        log_warn(
+            "test_app_offscreen_colorbar_has_visible_ramp_and_labels skipped: GPU context "
+            "creation failed");
+        tst_skip(suite, "GPU context creation failed");
+        dvz_scene_destroy(scene);
+        return 0;
+    }
+    DvzView* win = dvz_view_offscreen(app, figure, 256, 192);
+    AT(win != NULL);
+    DvzCanvas* canvas = dvz_view_canvas(win);
+    AT(canvas != NULL);
+
+    for (uint32_t frame = 0; frame < 3; frame++)
+        dvz_app_run(app, 1);
+
+    uint32_t width = 0;
+    uint32_t height = 0;
+    uint8_t* rgba = NULL;
+    rc = dvz_canvas_capture_rgba(canvas, &width, &height, &rgba);
+    AT(rc == 0);
+    AT(rgba != NULL);
+    AT(width == 256);
+    AT(height == 192);
+
+    uint32_t red_count = 0;
+    uint32_t blue_count = 0;
+    uint32_t light_count = 0;
+    uint32_t dark_count = 0;
+    for (uint32_t y = 12; y < height - 12; y++)
+    {
+        for (uint32_t x = width / 2; x < width - 4; x++)
+        {
+            const uint8_t* px = _pixel_at(rgba, width, height, x, y);
+            if (px[0] > 150 && px[1] < 120 && px[2] < 120)
+                red_count++;
+            if (px[2] > 150 && px[0] < 120 && px[1] < 120)
+                blue_count++;
+            if (px[0] > 150 && px[1] > 150 && px[2] > 150)
+                light_count++;
+            if (px[0] < 30 && px[1] < 30 && px[2] < 30)
+                dark_count++;
+        }
+    }
+    AT(red_count > 8);
+    AT(blue_count > 8);
+    AT(light_count > 8);
+    AT(dark_count > 8);
+
+    dvz_free(rgba);
+    dvz_app_destroy(app);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+/**
  * Ensure batched text renders visible pixels through the offscreen app path.
  *
  * @param suite the test suite
@@ -5982,6 +6130,7 @@ int test_scene_app(TstSuite* suite)
         test_app_offscreen_records_dvzr_frames,
         TST_SCENE_APP_GPU_RES | TST_RES_FILESYSTEM | TST_RES_ENV, TST_ISOLATION_PROCESS);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_image_has_nonblank_pixels);
+    TST_SCENE_APP_SHARED_CASE(test_app_offscreen_colorbar_has_visible_ramp_and_labels);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_text_has_nonblank_pixels);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_sdf_text_has_nonblank_pixels);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_image_field_partial_update_changes_region);
