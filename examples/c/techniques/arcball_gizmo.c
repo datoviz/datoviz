@@ -690,7 +690,7 @@ int main(int argc, char** argv)
     EXAMPLE_CHECK(rc == 0, "dvz_path_set_subpaths() failed for gizmo rings");
     rc = dvz_path_set_caps(gizmo_rings_visual, DVZ_SEGMENT_CAP_NONE, DVZ_SEGMENT_CAP_NONE);
     EXAMPLE_CHECK(rc == 0, "dvz_path_set_caps() failed for gizmo rings");
-    rc = dvz_path_set_join(gizmo_rings_visual, DVZ_PATH_JOIN_ROUND, 4.0f);
+    rc = dvz_path_set_join(gizmo_rings_visual, DVZ_PATH_JOIN_MITER, 4.0f);
     EXAMPLE_CHECK(rc == 0, "dvz_path_set_join() failed for gizmo rings");
 
     DvzMaterialDesc cube_material = dvz_phong_material_desc();
