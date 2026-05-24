@@ -13,6 +13,10 @@ rendering through scene -> FramePlan -> DRP2 -> vklite, `position`, optional `co
 camera transforms, WBOIT/depth-peeling participation, SSAO G-buffer participation when normals are
 present, and offscreen/app execution coverage.
 
+Update on 2026-05-24: CPU-side `geom` helpers can derive unique mesh edges and unstitched scalar
+contour segments. The first live overlay example lowers those derived outputs to `segment` visuals;
+this does not make edge overlay or isolines native mesh runtime features yet.
+
 Texture slots, scalar colormap mode, automatic normal generation, edge overlay, isolines,
 shape-builder integration, and face/region picking are target capabilities unless marked above as
 implemented.
@@ -108,6 +112,11 @@ path should be derived geometry:
 Vulkan polygon line mode and permanent barycentric wireframe shaders are diagnostic or fallback
 tools, not the default public path.
 
+The first implementation path should reuse `segment` or a segment-like derived overlay for
+wireframe rendering. Joins are not required for general mesh wireframes because mesh vertices do not
+define ordered polylines; boundary loops and feature-edge chains may lower to `path` later when an
+ordered chain is available.
+
 ## Isolines
 
 `isoline_count > 0` draws evenly spaced levels within `isoline_range`. The range defaults to the
@@ -120,6 +129,11 @@ by level value. The face-color colormap and isoline-color scale are independent.
 Prefer a dedicated mesh-isoline or derived-overlay path once scalar surface fields are retained in
 the mesh resource. Do not add isoline payloads to the baseline vertex layout unless the selected
 shader variant needs them.
+
+CPU-extracted contour segments should lower to `segment` first. Once contour stitching exists,
+connected open and closed contour lines should lower to `path` spans so joins, caps, and per-level
+styling follow the path contract. A shader-only isoline variant remains useful for dense visual
+overlays, but it should be treated separately from exportable or pickable contour geometry.
 
 ## Shape Builders
 

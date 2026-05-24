@@ -8,6 +8,11 @@ transform/merge helpers, surface-grid height updates, F32 conversion helpers, an
 upload from `DvzGeometry` including retained mesh texcoords. Triangulation, curve tessellation,
 simplification, hulls, polygon booleans, and richer import paths remain target capabilities.
 
+Implementation update on 2026-05-24: `dvz_geometry_edges()` derives stable unique edge lists from
+indexed triangle geometry, and `dvz_geometry_contours()` extracts unstitched contour segments from
+per-vertex scalar values and explicit levels. The first live overlay example lowers both outputs to
+ordinary `segment` visuals. Future contour stitching may lower connected contours to `path` spans.
+
 Geometry utilities operate above the scene layer and below user code. They produce standard scene
 resource data such as F64 vertices, indices, and atlas textures that enter the normal resource upload
 path.
@@ -49,6 +54,21 @@ Generators produce ordinary indexed geometry payloads.
 | `dvz_geom_plane` | center, width, height, z offset, color | implemented as indexed XY plane |
 | `dvz_geom_gizmo_axes` | axis length, shaft/head dimensions, tessellation, per-axis colors | scene/app owns pinning and camera sync |
 | `dvz_geom_surface_grid` | rows/cols, height/color arrays, origin, basis, height policy, normals, metadata | implemented with row/column provenance and height updates; richer update helpers remain future work |
+
+
+## Derived Mesh Overlays
+
+Mesh wireframe is derived data, not a baseline mesh vertex layout concern. The first public helper
+path derives unique edges from triangle indices and preserves endpoint vertex ids, adjacent face
+counts, and boundary/nonmanifold flags. Scene or example code should lower those edges to `segment`
+or a segment-like overlay pass with screen-space stroke width, analytic coverage, butt caps by
+default, and depth bias or small geometric offset when drawn over the source surface.
+
+Scalar isolines are also derived data. The first helper path emits independent contour segments from
+indexed triangle geometry and a scalar value per vertex. This is intentionally exportable and
+backend-neutral. Connected contour stitching, closed contour loops, label placement, and direct
+`path` lowering remain follow-up work. Visual-only shader isolines are a separate future mesh
+variant, not a replacement for semantic contour geometry.
 
 
 ## Triangulation
