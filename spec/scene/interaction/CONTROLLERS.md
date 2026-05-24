@@ -75,7 +75,7 @@ callbacks; see [`../integration/TOUCH_SUPPORT.md`](../integration/TOUCH_SUPPORT.
 | `GlobeController` | panel-local or shared handle | longitude, latitude, altitude, optional up-vector | `PanelTransformDirty`; redraw | Natural controller for `DVZ_TRANSFORM_GEO_GLOBE`; domain queries return geographic units. |
 | `HoverController` | usually panel-local | pointer position and hover target | redraw when hover-visible state changes; optional style dirtiness | Issues/coalesces pick requests and applies only fresh latest-request-wins results from [`PICKING.md`](PICKING.md). |
 | `SelectionController` | panel-local gestures, scene-owned selection | selection state | redraw; style dirtiness when selection affects visual props | Click/drag gestures may use picking or geometric region queries. |
-| `LinkedPanelsController` | scene-global | shared domains, cursors, hover, or selection | affected panel transforms, overlays, or redraw | Sharing one controller handle is the linking mechanism. |
+| `LinkedPanelsController` | scene-global | shared cursors, hover, selection, or semantic coordination | affected overlays, redraw, or style dirtiness | Navigation-state linking is handled by controller identity sharing or explicit controller state links, not by this higher-level controller. |
 
 
 ## State Inspection And Editing
@@ -110,11 +110,85 @@ The public binding model is fixed by
 | Construction | Short scene-owned family constructors are the public surface; generic constructors may remain internal. |
 | Lifetime | The scene destroys controllers with the scene; explicit early destruction may exist. |
 | Per-dimension binding | Panels bind controllers per dimension so X, Y, Z, or full camera navigation can be linked independently. |
-| Linking | Sharing a controller handle across panels is the linking API; no separate link object is required. |
+| Linking | Sharing one controller handle is valid only when every bound panel should share the full controller state and compatible panel-local evaluation context. Partial synchronization uses explicit controller state links. |
 | Query model | Axes and scene objects pull visible domains from bound controllers during update. If none is bound, the panel uses its full data-space domain. |
 
 Domain query values are data-space scalar bounds for ordinary controllers and longitude, latitude,
 or altitude for `GlobeController`.
+
+
+## Controller State Links
+
+Controller links are the authoritative mechanism for partial navigation synchronization between
+controllers. A link propagates selected semantic components from a source controller to a target
+controller while preserving the target panel's own viewport, camera basis, interaction capture,
+application policy, and unlinked state.
+
+Sharing a controller handle remains the simplest full-link path. Use identity sharing only when the
+panels should truly share all semantic controller state. Do not share one mutable controller handle
+merely to synchronize one component, because panel-local evaluation may differ by viewport, camera,
+or overlay placement.
+
+Recommended first public shape:
+
+```c
+typedef enum DvzControllerLinkComponent
+{
+    DVZ_CONTROLLER_LINK_ROTATION = 1 << 0,
+    DVZ_CONTROLLER_LINK_PAN      = 1 << 1,
+    DVZ_CONTROLLER_LINK_ZOOM     = 1 << 2,
+    DVZ_CONTROLLER_LINK_EXTENT_X = 1 << 3,
+    DVZ_CONTROLLER_LINK_EXTENT_Y = 1 << 4,
+    DVZ_CONTROLLER_LINK_CAMERA   = 1 << 5,
+} DvzControllerLinkComponent;
+
+typedef enum DvzControllerLinkMode
+{
+    DVZ_CONTROLLER_LINK_ONE_WAY,
+    DVZ_CONTROLLER_LINK_TWO_WAY,
+} DvzControllerLinkMode;
+
+DvzControllerLink* dvz_controller_link(
+    DvzScene* scene,
+    DvzController* source,
+    DvzController* target,
+    uint32_t components,
+    DvzControllerLinkMode mode);
+```
+
+The link object is scene-owned. Destroying a controller disables or removes links that reference it.
+Links must validate controller family compatibility and component support. First-slice support
+should include:
+
+1. panzoom to panzoom: `EXTENT_X`, `EXTENT_Y`, `PAN`, and `ZOOM` where the state model supports
+   them;
+2. arcball to arcball: `ROTATION`, `PAN`, and `ZOOM`;
+3. turntable to turntable: orientation and distance components once its POD state snapshot is
+   finalized.
+
+Mixed-family links are rejected until a clear semantic mapping is specified. For example, arcball
+rotation to turntable orientation may become valid later, but it should not be inferred silently.
+
+Link propagation runs after controller state changes from input, animation, or typed state setters
+and before frame-plan emission. Propagation must be deterministic, bounded, and cycle-safe. For
+two-way links, the implementation must track the initiating source of the current update or use a
+single shared backing state so changes do not bounce indefinitely.
+
+Orientation gizmos are the canonical example for partial links:
+
+```c
+DvzController* view = dvz_arcball(scene, NULL);
+DvzController* gizmo = dvz_arcball(scene, NULL);
+
+dvz_panel_bind_controller(main_panel, view, DVZ_DIM_MASK_XYZ);
+dvz_panel_bind_controller(gizmo_panel, gizmo, DVZ_DIM_MASK_XYZ);
+
+dvz_controller_link(
+    scene, view, gizmo, DVZ_CONTROLLER_LINK_ROTATION, DVZ_CONTROLLER_LINK_ONE_WAY);
+```
+
+The main panel may keep pan and zoom for navigation. The gizmo receives only orientation, so it
+stays centered in its inset panel and uses its own camera/viewport evaluation context.
 
 
 ## Interaction Flows

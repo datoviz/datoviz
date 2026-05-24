@@ -30,8 +30,8 @@ Decision records have historical authority only:
 Active scene ADR files:
 
 1. [CONTROLLER_BINDING_MODEL.md](CONTROLLER_BINDING_MODEL.md): scene-owned opaque controller
-   handles, panel dimension binding, linked panels through shared handles, and WASM-facing
-   controller API constraints.
+   handles, panel dimension binding, full-state sharing through shared handles, partial
+   synchronization through controller state links, and WASM-facing controller API constraints.
 
 The former active design records now live in
 [../proposals](../proposals). Treat that directory as the staging area for unsettled or

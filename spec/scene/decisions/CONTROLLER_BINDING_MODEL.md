@@ -2,6 +2,7 @@
 
 - Status: accepted for the v0.4 controller refactor
 - Date: 2026-05-18
+- Amended: 2026-05-24, to distinguish full identity sharing from partial controller state links
 - Applies to: scene controllers, panel linking, axes, interaction routing, and WASM-facing API
 
 
@@ -42,8 +43,29 @@ int dvz_panel_bind_controller(DvzPanel* panel, DvzController* controller, DvzDim
 DvzController* dvz_panel_controller(DvzPanel* panel, DvzDim dim);
 ```
 
-Linked panels are made by binding the same controller handle to multiple panels. No separate
-panzoom-specific linked-panels API is needed.
+Full linked panels may be made by binding the same controller handle to multiple panels. This is
+identity sharing: every panel observes the same full controller state. It is correct for shared X
+panzoom, shared XY panzoom, or genuinely identical 3D navigation.
+
+Partial synchronization uses explicit controller state links between distinct controllers. A
+general controller-link API is preferred over family-specific sync helpers:
+
+```c
+DvzControllerLink* dvz_controller_link(
+    DvzScene* scene,
+    DvzController* source,
+    DvzController* target,
+    uint32_t components,
+    DvzControllerLinkMode mode);
+```
+
+The link components are semantic state components such as `ROTATION`, `PAN`, `ZOOM`,
+`EXTENT_X`, `EXTENT_Y`, and eventually camera-oriented components. For example, an orientation
+gizmo should have its own arcball controller linked one-way from the main arcball by `ROTATION`
+only. It should not share the main arcball handle, because the inset needs independent viewport,
+camera-basis, and pan/zoom behavior.
+
+No panzoom-specific or arcball-specific linked-panels API is needed.
 
 
 ## Non-Decision
@@ -51,9 +73,10 @@ panzoom-specific linked-panels API is needed.
 This decision does not require a general-purpose property API such as
 `dvz_controller_set_float(controller, key, value)`. Controller families should keep typed state APIs.
 
-This decision also does not make `LinkedPanelsController` the way to synchronize panzoom state.
+This decision also does not make `LinkedPanelsController` the way to synchronize navigation state.
 `LinkedPanelsController` remains reserved for higher-level linked behavior such as shared cursors,
-hover, selection, brushing, and cross-panel semantic coordination.
+hover, selection, brushing, and cross-panel semantic coordination. Navigation-state links belong to
+the controller binding/link system.
 
 
 ## Ownership
@@ -67,6 +90,8 @@ hover, selection, brushing, and cross-panel semantic coordination.
 6. Rebinding a controller replaces previous bindings for the target dimensions only.
 7. Rebinding X must not affect Y unless the binding mask includes Y.
 8. A panel dimension may have at most one spatial navigation controller.
+9. A controller link does not transfer ownership; source and target controllers remain
+   scene-owned handles.
 
 
 ## Dimension Binding
@@ -103,6 +128,10 @@ camera navigation values.
 A shared controller must not own one canonical native viewport. Different panels bound to the same
 controller may have different sizes and positions.
 
+When panel-local evaluation context differs meaningfully, prefer distinct controllers plus a
+component link over sharing one handle. Arcball orientation gizmos are the canonical case: the main
+view may pan and zoom while the inset controller receives only orientation and remains centered.
+
 
 ## Axis Pull Model
 
@@ -135,6 +164,25 @@ Typed state APIs validate the controller family and return an error for the wron
 State snapshots are the supported surface for tests, bindings, serialization, external UI
 inspectors, and examples. Public code should not copy controller struct fields.
 
+Controller state links should be implemented in terms of these typed semantic snapshots or
+equivalent internal family ops, not by ad hoc public struct copying. Links propagate selected
+components after input, animation, or typed setter changes and before frame-plan emission.
+
+
+## Link Components
+
+The general controller-link layer should define component masks instead of one API per family.
+First-slice components:
+
+1. `DVZ_CONTROLLER_LINK_ROTATION` for arcball/turntable orientation;
+2. `DVZ_CONTROLLER_LINK_PAN` for panzoom pan or arcball panel-plane pan where supported;
+3. `DVZ_CONTROLLER_LINK_ZOOM` for panzoom zoom or arcball uniform zoom where supported;
+4. `DVZ_CONTROLLER_LINK_EXTENT_X` and `DVZ_CONTROLLER_LINK_EXTENT_Y` for domain/extent sharing.
+
+Links validate family compatibility and reject unsupported components. Mixed-family links are
+deferred until a specific semantic mapping is documented. Link propagation must be deterministic,
+cycle-safe, and redraw-aware.
+
 
 ## WASM And Binding Constraints
 
@@ -155,8 +203,8 @@ layout must not leak into installed headers or generated bindings.
 
 Positive consequences:
 
-1. linked panels are achieved by identity sharing instead of state copying,
-2. partial links such as shared X with independent Y become first-class,
+1. fully linked panels are achieved by identity sharing instead of state copying,
+2. partial links such as shared X with independent Y or rotation-only gizmos become first-class,
 3. axes have one clear source for visible-domain queries,
 4. generated bindings and WASM can expose one controller handle type,
 5. controller families retain typed, discoverable state APIs,
@@ -169,7 +217,8 @@ Costs:
    subscriptions,
 3. current panzoom, arcball, fly, and turntable storage needs consolidation behind the scene-owned
    controller table,
-4. tests need to cover binding, rebinding, resize, and wrong-family validation.
+4. tests need to cover binding, rebinding, resize, wrong-family validation, component-link
+   validation, and cycle-safe propagation.
 
 
 ## Acceptance Criteria
@@ -184,7 +233,10 @@ Implementation of this decision should include tests or examples for:
 6. wrong-family or incompatible-dimension bindings failing validation,
 7. scene destruction freeing shared controllers once,
 8. panel destruction not destroying shared controllers,
-9. typed state get/set rejecting the wrong controller family.
+9. typed state get/set rejecting the wrong controller family,
+10. arcball rotation-only link keeping an orientation gizmo centered while the source arcball is
+    panned or zoomed,
+11. link destruction or source/target controller destruction stopping propagation cleanly.
 
 
 ## Related Specs

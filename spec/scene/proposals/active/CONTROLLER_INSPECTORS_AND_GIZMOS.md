@@ -120,7 +120,7 @@ Recommended properties:
 
 1. generated from `geom` arrows or a dedicated `dvz_geom_gizmo_axes()` helper;
 2. rendered in a small fixed viewport or overlay panel;
-3. follows the main 3D view rotation;
+3. follows the main 3D view rotation through a rotation-only controller state link;
 4. ignores main view translation and zoom;
 5. uses unlit or lightly lit colored mesh geometry;
 6. stays outside the main panel depth range;
@@ -145,6 +145,12 @@ Recommended first implementation slice:
 The first slice should support arcball and turntable orientation sources. Camera/fly support may
 follow once camera state snapshots are explicit enough to read orientation without duplicating
 controller math.
+
+Implementation note: this should use the general controller state-link model in
+[`../../interaction/CONTROLLERS.md`](../../interaction/CONTROLLERS.md), not an
+orientation-gizmo-specific or arcball-specific synchronization API. The source and gizmo should be
+distinct controllers linked by orientation only so the gizmo keeps its own viewport/camera
+evaluation and remains centered in its inset.
 
 
 ### Interactive Transform Gizmo
