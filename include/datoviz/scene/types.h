@@ -394,9 +394,7 @@ struct DvzPointStyleDesc
 {
     DvzColor edge_color;
     float stroke_width;
-    bool filled;
-    bool stroke;
-    bool outline;
+    DvzShapeAspect aspect;
 };
 typedef struct DvzPointStyleDesc DvzPointStyleDesc;
 
@@ -405,9 +403,7 @@ struct DvzMarkerStyle
 {
     DvzColor edge_color;
     float stroke_width;
-    bool filled;
-    bool stroke;
-    bool outline;
+    DvzShapeAspect aspect;
 };
 typedef struct DvzMarkerStyle DvzMarkerStyle;
 

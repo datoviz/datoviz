@@ -175,6 +175,14 @@ typedef enum
 
 typedef enum
 {
+    DVZ_SHAPE_ASPECT_FILLED  = 0,
+    DVZ_SHAPE_ASPECT_STROKE  = 1,
+    DVZ_SHAPE_ASPECT_OUTLINE = 2,
+} DvzShapeAspect;
+
+
+typedef enum
+{
     DVZ_DEPTH_CUE_NONE = 0,
     DVZ_DEPTH_CUE_FADE_TO_BACKGROUND,
     DVZ_DEPTH_CUE_DESATURATE,

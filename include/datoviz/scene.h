@@ -1116,8 +1116,8 @@ DVZ_EXPORT int dvz_visual_set_depth_cue(DvzVisual* visual, const DvzDepthCueDesc
  * Return default point styling.
  *
  * The default point style renders filled circular points with no stroke. The `color` visual
- * attribute remains the fill color; `edge_color` and `stroke_width` apply only when `stroke` or
- * `outline` is enabled.
+ * attribute remains the fill color; `edge_color` and `stroke_width` apply when the aspect is
+ * `DVZ_SHAPE_ASPECT_STROKE` or `DVZ_SHAPE_ASPECT_OUTLINE`.
  *
  * @return default point style descriptor
  */
@@ -1127,8 +1127,9 @@ DVZ_EXPORT DvzPointStyleDesc dvz_point_style_desc(void);
 /**
  * Configure circular point fill/stroke styling.
  *
- * Pass NULL to restore the default filled/no-stroke style. `outline` renders only the stroke ring;
- * otherwise `filled` controls whether the disc interior is drawn.
+ * Pass NULL to restore the default filled/no-stroke style. The aspect is exclusive:
+ * `DVZ_SHAPE_ASPECT_FILLED` draws only the fill, `DVZ_SHAPE_ASPECT_STROKE` draws only the edge,
+ * and `DVZ_SHAPE_ASPECT_OUTLINE` draws the fill with an edge.
  *
  * @param visual the point visual
  * @param desc the point style descriptor, or NULL to restore defaults
@@ -1141,8 +1142,8 @@ DVZ_EXPORT int dvz_point_set_style(DvzVisual* visual, const DvzPointStyleDesc* d
  * Return default marker styling.
  *
  * The default marker style renders filled markers with no stroke. The `color` visual attribute
- * remains the fill color; `edge_color` and `stroke_width` apply when `stroke` or `outline` is
- * enabled.
+ * remains the fill color; `edge_color` and `stroke_width` apply when the aspect is
+ * `DVZ_SHAPE_ASPECT_STROKE` or `DVZ_SHAPE_ASPECT_OUTLINE`.
  *
  * @return default marker style descriptor
  */
@@ -1152,8 +1153,9 @@ DVZ_EXPORT DvzMarkerStyle dvz_marker_style(void);
 /**
  * Configure marker fill/stroke styling.
  *
- * Pass NULL to restore the default filled/no-stroke style. `outline` renders only the stroke;
- * otherwise `filled` controls whether the marker interior is drawn.
+ * Pass NULL to restore the default filled/no-stroke style. The aspect is exclusive:
+ * `DVZ_SHAPE_ASPECT_FILLED` draws only the fill, `DVZ_SHAPE_ASPECT_STROKE` draws only the edge,
+ * and `DVZ_SHAPE_ASPECT_OUTLINE` draws the fill with an edge.
  *
  * @param visual the marker visual
  * @param style the marker style descriptor, or NULL to restore defaults
@@ -1173,7 +1175,7 @@ DVZ_EXPORT int dvz_marker_set_style(DvzVisual* visual, const DvzMarkerStyle* sty
  * Renders screen-space antialiased circular sprites with `position` (vec3), `color` (RGBA8),
  * and `diameter` (float, in pixels). An optional `selection` (uint8) mask dims unselected
  * items. `dvz_point_set_style()` controls optional edge styling with `edge_color`,
- * `stroke_width`, and filled/stroke/outline aspects.
+ * `stroke_width`, and a filled/stroke/outline aspect.
  *
  * @param scene the scene
  * @param flags variant flags

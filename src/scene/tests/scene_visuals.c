@@ -569,8 +569,7 @@ int test_scene_point_style_emits_glsl_and_wgsl(TstContext* suite, const TstCase*
            &(DvzPointStyleDesc){
                .edge_color = {0, 0, 0, 255},
                .stroke_width = 3.0f,
-               .filled = true,
-               .stroke = true,
+               .aspect = DVZ_SHAPE_ASPECT_OUTLINE,
            }) == 0);
     AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
 
@@ -664,8 +663,7 @@ int test_scene_marker_api_and_emit_glsl(TstContext* suite, const TstCase* item)
            &(DvzMarkerStyle){
                .edge_color = {0, 0, 0, 255},
                .stroke_width = 2.0f,
-               .filled = true,
-               .stroke = true,
+               .aspect = DVZ_SHAPE_ASPECT_OUTLINE,
            }) == 0);
     tst_log_capture_begin(suite);
     AT_EXPECTED_ERROR_STRICT(

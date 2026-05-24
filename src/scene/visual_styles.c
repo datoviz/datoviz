@@ -38,9 +38,7 @@ DvzPointStyleDesc dvz_point_style_desc(void)
     DvzPointStyleDesc desc = {
         .edge_color = {0, 0, 0, 255},
         .stroke_width = 0.0f,
-        .filled = true,
-        .stroke = false,
-        .outline = false,
+        .aspect = DVZ_SHAPE_ASPECT_FILLED,
     };
     return desc;
 }
@@ -56,9 +54,7 @@ DvzMarkerStyle dvz_marker_style(void)
     DvzMarkerStyle style = {
         .edge_color = {0, 0, 0, 255},
         .stroke_width = 0.0f,
-        .filled = true,
-        .stroke = false,
-        .outline = false,
+        .aspect = DVZ_SHAPE_ASPECT_FILLED,
     };
     return style;
 }
@@ -73,7 +69,7 @@ DvzMarkerStyle dvz_marker_style(void)
 bool _point_style_enabled(const DvzPointStyleDesc* style)
 {
     ANN(style);
-    return style->outline || !style->filled || style->stroke;
+    return style->aspect != DVZ_SHAPE_ASPECT_FILLED;
 }
 
 
@@ -95,9 +91,7 @@ DvzPointStyleDesc _marker_style_to_point_style(const DvzMarkerStyle* style)
                 style->edge_color[3],
             },
         .stroke_width = style->stroke_width,
-        .filled = style->filled,
-        .stroke = style->stroke,
-        .outline = style->outline,
+        .aspect = style->aspect,
     };
     return out;
 }
@@ -113,11 +107,12 @@ void _point_style_sync_params(DvzSceneMaterialParams* params, const DvzPointStyl
 {
     ANN(params);
     ANN(style);
-    const bool stroke_enabled = style->stroke || style->outline;
+    const bool stroke_enabled =
+        style->aspect == DVZ_SHAPE_ASPECT_STROKE || style->aspect == DVZ_SHAPE_ASPECT_OUTLINE;
     params->params[0] = stroke_enabled && style->stroke_width > 0.0f ? style->stroke_width : 0.0f;
-    params->params[1] = style->filled ? 1.0f : 0.0f;
-    params->params[2] = style->stroke ? 1.0f : 0.0f;
-    params->params[3] = style->outline ? 1.0f : 0.0f;
+    params->params[1] = (float)style->aspect;
+    params->params[2] = 0.0f;
+    params->params[3] = 0.0f;
     params->base_color_factor[0] = (float)style->edge_color[0] / 255.0f;
     params->base_color_factor[1] = (float)style->edge_color[1] / 255.0f;
     params->base_color_factor[2] = (float)style->edge_color[2] / 255.0f;
@@ -244,6 +239,11 @@ int dvz_point_set_style(DvzVisual* visual, const DvzPointStyleDesc* desc)
         log_error("point stroke_width must be finite and nonnegative");
         return -1;
     }
+    if (style.aspect < DVZ_SHAPE_ASPECT_FILLED || style.aspect > DVZ_SHAPE_ASPECT_OUTLINE)
+    {
+        log_error("point aspect must be filled, stroke, or outline");
+        return -1;
+    }
 
     visual->material.point_style = style;
     visual->material.point_style_enabled = _point_style_enabled(&style);
@@ -274,6 +274,12 @@ int dvz_marker_set_style(DvzVisual* visual, const DvzMarkerStyle* style)
     if (!isfinite(marker_style.stroke_width) || marker_style.stroke_width < 0.0f)
     {
         log_error("marker stroke_width must be finite and nonnegative");
+        return -1;
+    }
+    if (marker_style.aspect < DVZ_SHAPE_ASPECT_FILLED ||
+        marker_style.aspect > DVZ_SHAPE_ASPECT_OUTLINE)
+    {
+        log_error("marker aspect must be filled, stroke, or outline");
         return -1;
     }
 

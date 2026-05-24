@@ -892,7 +892,7 @@ static bool _scene_panel_sync_fly_pivot_marker(DvzPanel* panel)
         if (marker == NULL)
             return false;
         DvzPointStyleDesc style = dvz_point_style_desc();
-        style.stroke = true;
+        style.aspect = DVZ_SHAPE_ASPECT_OUTLINE;
         style.stroke_width = 2.0f;
         style.edge_color[0] = 0;
         style.edge_color[1] = 0;

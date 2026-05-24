@@ -60,12 +60,12 @@ void main()
         discard;
 
     float lineWidth = max(material.params.x, 0.0);
-    bool filled = material.params.y > 0.5;
-    bool stroke = material.params.z > 0.5 || material.params.w > 0.5;
-    bool outline = material.params.w > 0.5;
+    int aspect = int(material.params.y + 0.5);
+    bool filled = aspect == 0 || aspect == 2;
+    bool stroke = aspect == 1 || aspect == 2;
     float strokeWidth = stroke ? max(2.0 * max(lineWidth, 1.0) / max(fragSize, 1.0), aa) : 0.0;
     float edgeMask = stroke ? 1.0 - smoothstep(strokeWidth - aa, strokeWidth + aa, -dist) : 0.0;
-    float fillMask = (filled && !outline) ? 1.0 - edgeMask : 0.0;
+    float fillMask = filled ? 1.0 - edgeMask : 0.0;
     float strokeMask = stroke ? edgeMask : 0.0;
     float coverage = outer * max(fillMask, strokeMask);
     if (coverage <= 0.0)

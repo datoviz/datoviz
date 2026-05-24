@@ -17,13 +17,13 @@ void main()
         discard;
 
     float lineWidth = max(material.params.x, 0.0);
-    bool filled = material.params.y > 0.5;
-    bool stroke = material.params.z > 0.5 || material.params.w > 0.5;
-    bool outline = material.params.w > 0.5;
+    int aspect = int(material.params.y + 0.5);
+    bool filled = aspect == 0 || aspect == 2;
+    bool stroke = aspect == 1 || aspect == 2;
     float strokeWidth = stroke ? max(lineWidth, 1.0) : 0.0;
     float innerRadius = max(1.0 - 2.0 * strokeWidth / max(fragSize, 1.0), 0.0);
     float edgeMix = stroke ? smoothstep(innerRadius - aa, innerRadius + aa, dist) : 0.0;
-    float fillMask = (filled && !outline) ? 1.0 - edgeMix : 0.0;
+    float fillMask = filled ? 1.0 - edgeMix : 0.0;
     float strokeMask = stroke ? edgeMix : 0.0;
     float coverage = outer * max(fillMask, strokeMask);
     if (coverage <= 0.0)
