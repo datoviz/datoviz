@@ -174,25 +174,25 @@ static void _state_defaults(SurfaceOverlayState* state)
     state->boundary_only = false;
     state->show_diagnostics = true;
 
-    state->height_scale = 1.0f;
+    state->height_scale = 0.938f;
     state->surface_opacity = 1.0f;
     state->light_direction[0] = 0.35f;
     state->light_direction[1] = -0.45f;
     state->light_direction[2] = 0.82f;
-    state->ambient = 0.20f;
-    state->diffuse = 0.78f;
+    state->ambient = 0.279f;
+    state->diffuse = 0.642f;
     state->specular = 0.55f;
-    state->shininess = 80.0f;
+    state->shininess = 55.395f;
 
     state->wire_color[0] = 20;
     state->wire_color[1] = 24;
     state->wire_color[2] = 30;
     state->wire_color[3] = 205;
-    state->wire_width = 0.75f;
-    state->wire_z_offset = 0.002f;
+    state->wire_width = 2.39f;
+    state->wire_z_offset = 0.0011f;
 
-    state->contour_count = 13.0f;
-    state->contour_major_step = 4.0f;
+    state->contour_count = 15.0f;
+    state->contour_major_step = 1.0f;
     state->contour_minor_color[0] = 245;
     state->contour_minor_color[1] = 245;
     state->contour_minor_color[2] = 245;
@@ -201,9 +201,9 @@ static void _state_defaults(SurfaceOverlayState* state)
     state->contour_major_color[1] = 255;
     state->contour_major_color[2] = 255;
     state->contour_major_color[3] = 255;
-    state->contour_width = 2.0f;
+    state->contour_width = 2.1f;
     state->contour_major_width = 1.65f;
-    state->contour_z_offset = 0.006f;
+    state->contour_z_offset = 0.0045f;
 }
 
 
