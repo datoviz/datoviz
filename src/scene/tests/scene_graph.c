@@ -120,6 +120,10 @@ int test_scene_graph(TstSuite* suite)
     TST_CASE(test_scene_blended_mesh_occlusion_contracts);
     TST_CASE(test_scene_visual_attr_source_and_mutability_metadata);
     TST_CASE(test_scene_visual_data_view);
+    TST_CASE(test_scene_visual_bounds_point_and_range_update);
+    TST_CASE(test_scene_visual_bounds_family_reducers);
+    TST_CASE(test_scene_visual_bounds_mesh_instance_transform);
+    TST_CASE(test_scene_panel_visual_bounds_and_union);
     TST_CASE(test_scene_point_typed_data_upload);
     TST_CASE(test_scene_mesh_typed_data_upload);
     TST_CASE(test_scene_visual_index_data_upload);

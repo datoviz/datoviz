@@ -655,6 +655,14 @@ int test_scene_visual_attr_source_and_mutability_metadata(TstContext* suite, con
 
 int test_scene_visual_data_view(TstContext* suite, const TstCase* item);
 
+int test_scene_visual_bounds_point_and_range_update(TstContext* suite, const TstCase* item);
+
+int test_scene_visual_bounds_family_reducers(TstContext* suite, const TstCase* item);
+
+int test_scene_visual_bounds_mesh_instance_transform(TstContext* suite, const TstCase* item);
+
+int test_scene_panel_visual_bounds_and_union(TstContext* suite, const TstCase* item);
+
 int test_scene_point_typed_data_upload(TstContext* suite, const TstCase* item);
 
 int test_scene_mesh_typed_data_upload(TstContext* suite, const TstCase* item);

@@ -24,6 +24,37 @@
 /*************************************************************************************************/
 
 /**
+ * Assert one bounds object exactly enough for deterministic test inputs.
+ *
+ * @param bounds the bounds object
+ * @param dims expected dimension count
+ * @param min0 expected lower x coordinate
+ * @param min1 expected lower y coordinate
+ * @param min2 expected lower z coordinate
+ * @param max0 expected upper x coordinate
+ * @param max1 expected upper y coordinate
+ * @param max2 expected upper z coordinate
+ * @return 0 on success, 1 on assertion failure
+ */
+static int _bounds_expect(
+    const DvzBounds* bounds, uint32_t dims, double min0, double min1, double min2, double max0,
+    double max1, double max2)
+{
+    ANN(bounds);
+    AT(bounds->valid);
+    AT(bounds->dims == dims);
+    AC(bounds->min[0], min0, 1e-6);
+    AC(bounds->min[1], min1, 1e-6);
+    AC(bounds->min[2], min2, 1e-6);
+    AC(bounds->max[0], max0, 1e-6);
+    AC(bounds->max[1], max1, 1e-6);
+    AC(bounds->max[2], max2, 1e-6);
+    return 0;
+}
+
+
+
+/**
  * Apply a Phong material while preserving the current visual alpha mode.
  *
  * @param visual the visual
@@ -2104,6 +2135,205 @@ int test_scene_visual_data_view(TstContext* suite, const TstCase* item)
     AT(dvz_visual_data(NULL, "position", &missing_view) == -1);
     AT(dvz_visual_data(visual, NULL, &missing_view) == -1);
     AT(dvz_visual_data(visual, "position", NULL) == -1);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
+/**
+ * Verify retained visual-space bounds for point data and range mutations.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_visual_bounds_point_and_range_update(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzVisual* visual = dvz_point(scene, 0);
+    ANN(visual);
+
+    DvzBounds bounds = {0};
+    AT(dvz_visual_bounds(visual, &bounds) == -1);
+    AT(!bounds.valid);
+
+    vec3 positions[3] = {
+        {-2.0f, +1.0f, 0.0f},
+        {+4.0f, -3.0f, 2.0f},
+        {+1.0f, +5.0f, -1.0f},
+    };
+    AT(dvz_visual_set_data(visual, "position", positions, 3) == 0);
+    AT(dvz_visual_bounds(visual, &bounds) == 0);
+    AT(_bounds_expect(&bounds, 3, -2.0, -3.0, -1.0, +4.0, +5.0, +2.0) == 0);
+
+    vec3 update[1] = {{+8.0f, +2.0f, +4.0f}};
+    AT(dvz_visual_set_data_range(visual, "position", update, 1, 1) == 0);
+    AT(dvz_visual_bounds(visual, &bounds) == 0);
+    AT(_bounds_expect(&bounds, 3, -2.0, +1.0, -1.0, +8.0, +5.0, +4.0) == 0);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
+/**
+ * Verify family-specific retained visual-space bounds.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_visual_bounds_family_reducers(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzBounds bounds = {0};
+
+    DvzVisual* segment = dvz_segment(scene, 0);
+    ANN(segment);
+    vec3 starts[2] = {{-1.0f, -2.0f, 0.0f}, {+2.0f, +1.0f, +3.0f}};
+    vec3 ends[2] = {{+4.0f, -1.0f, 1.0f}, {-3.0f, +5.0f, -2.0f}};
+    AT(dvz_visual_set_data(segment, "position_start", starts, 2) == 0);
+    AT(dvz_visual_set_data(segment, "position_end", ends, 2) == 0);
+    AT(dvz_visual_bounds(segment, &bounds) == 0);
+    AT(_bounds_expect(&bounds, 3, -3.0, -2.0, -2.0, +4.0, +5.0, +3.0) == 0);
+
+    DvzVisual* sphere = dvz_sphere(scene, 0);
+    ANN(sphere);
+    vec3 sphere_pos[2] = {{0.0f, 0.0f, 0.0f}, {3.0f, -1.0f, 2.0f}};
+    float radius[2] = {0.5f, 2.0f};
+    AT(dvz_visual_set_data(sphere, "position", sphere_pos, 2) == 0);
+    AT(dvz_visual_set_data(sphere, "radius", radius, 2) == 0);
+    AT(dvz_visual_bounds(sphere, &bounds) == 0);
+    AT(_bounds_expect(&bounds, 3, -0.5, -3.0, -0.5, +5.0, +1.0, +4.0) == 0);
+
+    DvzVisual* image = dvz_image(scene, 0);
+    ANN(image);
+    vec3 image_pos[2] = {{0.0f, 0.0f, 0.0f}, {4.0f, 2.0f, 1.0f}};
+    vec2 image_extent[2] = {{2.0f, 4.0f}, {6.0f, 2.0f}};
+    vec2 image_anchor[2] = {{0.0f, 0.0f}, {-1.0f, +1.0f}};
+    AT(dvz_visual_set_data(image, "position", image_pos, 2) == 0);
+    AT(dvz_visual_set_data(image, "extent", image_extent, 2) == 0);
+    AT(dvz_visual_set_data(image, "anchor", image_anchor, 2) == 0);
+    AT(dvz_visual_bounds(image, &bounds) == 0);
+    AT(_bounds_expect(&bounds, 3, -1.0, -2.0, 0.0, +10.0, +2.0, +1.0) == 0);
+
+    DvzVisual* volume = dvz_volume(scene, 0);
+    ANN(volume);
+    double volume_min[3] = {-2.0, -3.0, -4.0};
+    double volume_max[3] = {+4.0, +5.0, +6.0};
+    AT(dvz_volume_set_bounds(volume, volume_min, volume_max) == 0);
+    AT(dvz_visual_bounds(volume, &bounds) == 0);
+    AT(_bounds_expect(&bounds, 3, -2.0, -3.0, -4.0, +4.0, +5.0, +6.0) == 0);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
+/**
+ * Verify mesh bounds include per-instance transforms.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_visual_bounds_mesh_instance_transform(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzVisual* mesh = dvz_mesh(scene, 0);
+    ANN(mesh);
+
+    vec3 positions[2] = {{0.0f, 0.0f, 0.0f}, {1.0f, 2.0f, 3.0f}};
+    float transforms[2][16] = {
+        {
+            1.0f, 0.0f, 0.0f, 0.0f,
+            0.0f, 1.0f, 0.0f, 0.0f,
+            0.0f, 0.0f, 1.0f, 0.0f,
+            0.0f, 0.0f, 0.0f, 1.0f,
+        },
+        {
+            1.0f, 0.0f, 0.0f, 0.0f,
+            0.0f, 1.0f, 0.0f, 0.0f,
+            0.0f, 0.0f, 1.0f, 0.0f,
+            10.0f, -1.0f, 2.0f, 1.0f,
+        },
+    };
+    AT(dvz_visual_set_data(mesh, "position", positions, 2) == 0);
+    AT(dvz_visual_set_data(mesh, "instance_transform", transforms, 2) == 0);
+
+    DvzBounds bounds = {0};
+    AT(dvz_visual_bounds(mesh, &bounds) == 0);
+    AT(_bounds_expect(&bounds, 3, 0.0, -1.0, 0.0, 11.0, 2.0, 5.0) == 0);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
+/**
+ * Verify panel-level visual and screen bounds.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_panel_visual_bounds_and_union(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 200, 100, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    ANN(panel);
+
+    DvzVisual* left = dvz_point(scene, 0);
+    DvzVisual* right = dvz_point(scene, 0);
+    ANN(left);
+    ANN(right);
+    vec3 left_pos[2] = {{-1.0f, -1.0f, 0.0f}, {0.0f, +1.0f, 0.0f}};
+    vec3 right_pos[2] = {{+0.5f, -0.5f, 0.0f}, {+1.0f, +0.5f, 0.0f}};
+    AT(dvz_visual_set_data(left, "position", left_pos, 2) == 0);
+    AT(dvz_visual_set_data(right, "position", right_pos, 2) == 0);
+    AT(dvz_panel_add_visual(panel, left, NULL) == 0);
+    AT(dvz_panel_add_visual(panel, right, NULL) == 0);
+
+    DvzBounds bounds = {0};
+    AT(dvz_panel_visual_bounds(panel, left, DVZ_BOUNDS_SPACE_VISUAL, &bounds) == 0);
+    AT(_bounds_expect(&bounds, 2, -1.0, -1.0, 0.0, 0.0, +1.0, 0.0) == 0);
+
+    AT(dvz_panel_bounds(panel, DVZ_BOUNDS_SPACE_VISUAL, &bounds) == 0);
+    AT(_bounds_expect(&bounds, 2, -1.0, -1.0, 0.0, +1.0, +1.0, 0.0) == 0);
+
+    dvz_visual_set_visible(right, false);
+    AT(dvz_panel_bounds(panel, DVZ_BOUNDS_SPACE_VISUAL, &bounds) == 0);
+    AT(_bounds_expect(&bounds, 2, -1.0, -1.0, 0.0, 0.0, +1.0, 0.0) == 0);
+
+    AT(dvz_panel_visual_bounds(panel, left, DVZ_BOUNDS_SPACE_SCREEN, &bounds) == 0);
+    AT(_bounds_expect(&bounds, 2, 0.0, 0.0, 0.0, 100.0, 100.0, 0.0) == 0);
+
+    DvzVisual* unattached = dvz_point(scene, 0);
+    ANN(unattached);
+    AT(dvz_panel_visual_bounds(panel, unattached, DVZ_BOUNDS_SPACE_VISUAL, &bounds) == -1);
 
     dvz_scene_destroy(scene);
     return 0;
