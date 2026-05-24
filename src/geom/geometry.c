@@ -22,6 +22,7 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
+#include <stdlib.h>
 
 #include "_alloc.h"
 #include "_assertions.h"
@@ -41,6 +42,19 @@
 #define DVZ_GEOM_PLANE_INDEX_COUNT  6
 #define DVZ_GEOM_SPHERE_DEFAULT_RINGS 16
 #define DVZ_GEOM_SPHERE_DEFAULT_SECTORS 32
+
+
+
+/*************************************************************************************************/
+/*  Structs                                                                                      */
+/*************************************************************************************************/
+
+struct _GeomEdgeCandidate
+{
+    DvzIndex v0;
+    DvzIndex v1;
+    uint32_t face;
+};
 
 
 
@@ -408,6 +422,78 @@ static bool _geom_valid_payload(const DvzGeometry* geometry)
 
 
 /**
+ * Return whether a geometry has valid triangle-list indices.
+ *
+ * @param geometry the geometry
+ * @return whether indexed triangles are available
+ */
+static bool _geom_valid_indexed_triangles(const DvzGeometry* geometry)
+{
+    if (geometry == NULL || geometry->vertex_count == 0 || geometry->index_count == 0 ||
+        geometry->indices == NULL || geometry->index_count % 3 != 0)
+    {
+        return false;
+    }
+
+    for (uint32_t i = 0; i < geometry->index_count; i++)
+    {
+        if (geometry->indices[i] >= geometry->vertex_count)
+            return false;
+    }
+    return true;
+}
+
+
+
+/**
+ * Compare derived edge candidates.
+ *
+ * @param ap first edge candidate
+ * @param bp second edge candidate
+ * @return sort comparison result
+ */
+static int _geom_edge_candidate_compare(const void* ap, const void* bp)
+{
+    const struct _GeomEdgeCandidate* a = (const struct _GeomEdgeCandidate*)ap;
+    const struct _GeomEdgeCandidate* b = (const struct _GeomEdgeCandidate*)bp;
+    if (a->v0 < b->v0)
+        return -1;
+    if (a->v0 > b->v0)
+        return +1;
+    if (a->v1 < b->v1)
+        return -1;
+    if (a->v1 > b->v1)
+        return +1;
+    if (a->face < b->face)
+        return -1;
+    if (a->face > b->face)
+        return +1;
+    return 0;
+}
+
+
+
+/**
+ * Store one canonicalized triangle edge candidate.
+ *
+ * @param candidates edge candidate array
+ * @param offset target offset
+ * @param a first endpoint index
+ * @param b second endpoint index
+ * @param face source triangle index
+ */
+static void _geom_edge_candidate_set(
+    struct _GeomEdgeCandidate* candidates, uint32_t offset, DvzIndex a, DvzIndex b, uint32_t face)
+{
+    ANN(candidates);
+    candidates[offset].v0 = a < b ? a : b;
+    candidates[offset].v1 = a < b ? b : a;
+    candidates[offset].face = face;
+}
+
+
+
+/**
  * Store structured-grid provenance on a geometry.
  *
  * @param geometry the geometry
@@ -769,6 +855,121 @@ DvzGeometry* dvz_geometry_merge(uint32_t count, const DvzGeometry* const* geomet
     }
 
     return out;
+}
+
+
+
+/**
+ * Derive a unique edge list from indexed triangle geometry.
+ *
+ * @param geometry the geometry
+ * @return the derived edge list, or NULL on invalid input or allocation failure
+ */
+DvzGeometryEdges* dvz_geometry_edges(const DvzGeometry* geometry)
+{
+    if (!_geom_valid_indexed_triangles(geometry))
+        return NULL;
+
+    const uint32_t triangle_count = geometry->index_count / 3;
+    uint64_t candidate_count_u64 = 0;
+    if (_dvz_mul_u64_overflows((uint64_t)triangle_count, 3, &candidate_count_u64) ||
+        candidate_count_u64 > UINT32_MAX ||
+        !_geom_allocation_valid((uint32_t)candidate_count_u64, sizeof(struct _GeomEdgeCandidate)))
+    {
+        return NULL;
+    }
+    const uint32_t candidate_count = (uint32_t)candidate_count_u64;
+
+    struct _GeomEdgeCandidate* candidates =
+        (struct _GeomEdgeCandidate*)dvz_calloc(candidate_count, sizeof(struct _GeomEdgeCandidate));
+    if (candidates == NULL)
+        return NULL;
+
+    for (uint32_t face = 0; face < triangle_count; face++)
+    {
+        const uint32_t offset = 3 * face;
+        const DvzIndex i0 = geometry->indices[offset + 0];
+        const DvzIndex i1 = geometry->indices[offset + 1];
+        const DvzIndex i2 = geometry->indices[offset + 2];
+        _geom_edge_candidate_set(candidates, offset + 0, i0, i1, face);
+        _geom_edge_candidate_set(candidates, offset + 1, i1, i2, face);
+        _geom_edge_candidate_set(candidates, offset + 2, i2, i0, face);
+    }
+
+    qsort(candidates, candidate_count, sizeof(struct _GeomEdgeCandidate),
+          _geom_edge_candidate_compare);
+
+    uint32_t edge_count = 0;
+    for (uint32_t i = 0; i < candidate_count;)
+    {
+        const DvzIndex v0 = candidates[i].v0;
+        const DvzIndex v1 = candidates[i].v1;
+        do
+            i++;
+        while (i < candidate_count && candidates[i].v0 == v0 && candidates[i].v1 == v1);
+        edge_count++;
+    }
+
+    DvzGeometryEdges* out = (DvzGeometryEdges*)dvz_calloc(1, sizeof(DvzGeometryEdges));
+    if (out == NULL)
+    {
+        dvz_free(candidates);
+        return NULL;
+    }
+
+    out->edges = (DvzGeometryEdge*)dvz_calloc(edge_count, sizeof(DvzGeometryEdge));
+    if (out->edges == NULL)
+    {
+        dvz_free(candidates);
+        dvz_free(out);
+        return NULL;
+    }
+    out->edge_count = edge_count;
+
+    uint32_t edge_index = 0;
+    for (uint32_t i = 0; i < candidate_count;)
+    {
+        DvzGeometryEdge* edge = &out->edges[edge_index++];
+        edge->v0 = candidates[i].v0;
+        edge->v1 = candidates[i].v1;
+        edge->face0 = UINT32_MAX;
+        edge->face1 = UINT32_MAX;
+
+        while (i < candidate_count && candidates[i].v0 == edge->v0 && candidates[i].v1 == edge->v1)
+        {
+            if (edge->adjacent_count == 0)
+                edge->face0 = candidates[i].face;
+            else if (edge->adjacent_count == 1)
+                edge->face1 = candidates[i].face;
+            edge->adjacent_count++;
+            i++;
+        }
+
+        if (edge->adjacent_count == 1)
+            edge->flags |= DVZ_GEOMETRY_EDGE_BOUNDARY;
+        else if (edge->adjacent_count > 2)
+            edge->flags |= DVZ_GEOMETRY_EDGE_NONMANIFOLD;
+    }
+
+    dvz_free(candidates);
+    return out;
+}
+
+
+
+/**
+ * Destroy a derived geometry edge list.
+ *
+ * @param edges the edge list
+ */
+void dvz_geometry_edges_destroy(DvzGeometryEdges* edges)
+{
+    if (edges == NULL)
+        return;
+
+    dvz_free(edges->edges);
+    dvz_memset(edges, sizeof(DvzGeometryEdges), 0, sizeof(DvzGeometryEdges));
+    dvz_free(edges);
 }
 
 

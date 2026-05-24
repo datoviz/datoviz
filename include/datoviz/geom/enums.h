@@ -50,3 +50,13 @@ typedef enum
     DVZ_GEOMETRY_INDEXING_SURFACE_GRID = 0x02,  // structured surface-grid indexing
     DVZ_GEOMETRY_INDEXING_TRIANGULATION = 0x04, // polygon/PSLG triangulation
 } DvzGeometryIndexingFlags;
+
+
+
+// Derived mesh-edge flags.
+typedef enum
+{
+    DVZ_GEOMETRY_EDGE_NONE = 0x00,        // no derived edge flags
+    DVZ_GEOMETRY_EDGE_BOUNDARY = 0x01,    // edge belongs to one face
+    DVZ_GEOMETRY_EDGE_NONMANIFOLD = 0x02, // edge belongs to more than two faces
+} DvzGeometryEdgeFlags;

@@ -374,6 +374,44 @@ int test_geometry_merge(TstContext* suite, const TstCase* tstitem)
 
 
 
+int test_geometry_edges(TstContext* suite, const TstCase* tstitem)
+{
+    ANN(suite);
+
+    DvzGeometry* plane = dvz_geom_plane(NULL);
+    AT(plane != NULL);
+
+    DvzGeometryEdges* edges = dvz_geometry_edges(plane);
+    AT(edges != NULL);
+    AT(edges->edge_count == 5);
+
+    uint32_t boundary_count = 0;
+    uint32_t interior_count = 0;
+    bool found_diagonal = false;
+    for (uint32_t i = 0; i < edges->edge_count; i++)
+    {
+        const DvzGeometryEdge* edge = &edges->edges[i];
+        AT(edge->v0 < plane->vertex_count);
+        AT(edge->v1 < plane->vertex_count);
+        AT(edge->v0 <= edge->v1);
+        if (edge->flags & DVZ_GEOMETRY_EDGE_BOUNDARY)
+            boundary_count++;
+        if (edge->adjacent_count == 2)
+            interior_count++;
+        if (edge->v0 == 0 && edge->v1 == 2)
+            found_diagonal = true;
+    }
+    AT(boundary_count == 4);
+    AT(interior_count == 1);
+    AT(found_diagonal);
+
+    dvz_geometry_edges_destroy(edges);
+    dvz_geometry_destroy(plane);
+    return 0;
+}
+
+
+
 /*************************************************************************************************/
 /*  Entry-point                                                                                  */
 /*************************************************************************************************/
@@ -394,6 +432,7 @@ int test_geom(TstSuite* suite)
     TST_CASE(test_geometry_sphere);
     TST_CASE(test_geometry_transform);
     TST_CASE(test_geometry_merge);
+    TST_CASE(test_geometry_edges);
 
     return 0;
 }

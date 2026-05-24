@@ -109,6 +109,25 @@ dvz_geometry_merge(uint32_t count, const DvzGeometry* const* geometries);
 
 
 /**
+ * Derive a unique edge list from indexed triangle geometry.
+ *
+ * @param geometry the geometry
+ * @return the derived edge list, or NULL on invalid input or allocation failure
+ */
+DVZ_EXPORT DvzGeometryEdges* dvz_geometry_edges(const DvzGeometry* geometry);
+
+
+
+/**
+ * Destroy a derived geometry edge list.
+ *
+ * @param edges the edge list
+ */
+DVZ_EXPORT void dvz_geometry_edges_destroy(DvzGeometryEdges* edges);
+
+
+
+/**
  * Create an indexed cube geometry.
  *
  * @param desc optional cube descriptor

@@ -40,6 +40,8 @@ int test_geometry_transform(TstContext* suite, const TstCase* tstitem);
 
 int test_geometry_merge(TstContext* suite, const TstCase* tstitem);
 
+int test_geometry_edges(TstContext* suite, const TstCase* tstitem);
+
 
 
 /*************************************************************************************************/

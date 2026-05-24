@@ -33,6 +33,10 @@ typedef struct DvzGeometryCubeDesc DvzGeometryCubeDesc;
 typedef struct DvzGeometryPlaneDesc DvzGeometryPlaneDesc;
 typedef struct DvzGeometrySphereDesc DvzGeometrySphereDesc;
 typedef struct DvzGeometrySurfaceGridDesc DvzGeometrySurfaceGridDesc;
+typedef struct DvzGeometryEdge DvzGeometryEdge;
+typedef struct DvzGeometryEdges DvzGeometryEdges;
+typedef struct DvzGeometryContourSegment DvzGeometryContourSegment;
+typedef struct DvzGeometryContours DvzGeometryContours;
 
 
 
@@ -120,4 +124,45 @@ struct DvzGeometrySurfaceGridDesc
 
     double height_scale; // multiplier applied to heights, defaults to 1
     DvzColor color;      // fallback vertex color, defaults to opaque white
+};
+
+
+
+struct DvzGeometryEdge
+{
+    DvzIndex v0; // first endpoint vertex index, canonicalized so v0 <= v1
+    DvzIndex v1; // second endpoint vertex index
+
+    uint32_t face0;          // first adjacent triangle index, or UINT32_MAX when absent
+    uint32_t face1;          // second adjacent triangle index, or UINT32_MAX when absent
+    uint32_t adjacent_count; // number of adjacent triangles
+    uint32_t flags;          // DvzGeometryEdgeFlags
+};
+
+
+
+struct DvzGeometryEdges
+{
+    uint32_t edge_count;    // number of unique edges
+    DvzGeometryEdge* edges; // edge array
+};
+
+
+
+struct DvzGeometryContourSegment
+{
+    dvec3 p0; // first contour segment endpoint
+    dvec3 p1; // second contour segment endpoint
+
+    double level;        // contour level value
+    uint32_t level_index; // index in the input level array
+    uint32_t face_index;  // source triangle index
+};
+
+
+
+struct DvzGeometryContours
+{
+    uint32_t segment_count;              // number of contour segments
+    DvzGeometryContourSegment* segments; // contour segment array
 };
