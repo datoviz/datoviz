@@ -36,6 +36,7 @@ primary implementation-facing source when they exist.
 6. [RENDER_CONTRACT_RESOLVER.md](RENDER_CONTRACT_RESOLVER.md)
 7. [VOLUME_DESIGN.md](VOLUME_DESIGN.md)
 8. [RAY_TRACING_FORWARD_COMPAT.md](RAY_TRACING_FORWARD_COMPAT.md)
+9. [VISUAL_COMMAND_STREAM.md](VISUAL_COMMAND_STREAM.md)
 
 
 ## Resources, Transforms, Geometry, Validation, And Integration
