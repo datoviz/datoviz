@@ -129,9 +129,9 @@ typedef struct DvzSceneVisualPassCaps
 
 typedef struct DvzSceneVisualShaderDesc
 {
-    char vertex_key[32];
-    char fragment_key[32];
-    char pipeline_key[48];
+    char vertex_key[64];
+    char fragment_key[64];
+    char pipeline_key[96];
     const char* vertex_glsl;
     const char* fragment_glsl;
     const char* vertex_wgsl;

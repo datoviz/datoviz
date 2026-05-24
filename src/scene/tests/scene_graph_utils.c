@@ -255,6 +255,32 @@ bool _stream_has_render_pipeline_label(const DvzDrp2CommandStream* stream, const
 
 
 /**
+ * Return whether an emitted stream contains a render pipeline label substring.
+ *
+ * @param stream the emitted DRP2 stream
+ * @param part expected pipeline label substring
+ * @return whether a matching pipeline label was found
+ */
+bool _stream_has_render_pipeline_label_part(const DvzDrp2CommandStream* stream, const char* part)
+{
+    ANN(stream);
+    ANN(part);
+    for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
+    {
+        const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream, i);
+        if (cmd == NULL || cmd->type != DVZ_DRP2_COMMAND_CREATE_RENDER_PIPELINE)
+            continue;
+        const char* pipeline_label =
+            dvz_drp2_stream_label(stream, cmd->u.create_render_pipeline.id);
+        if (pipeline_label != NULL && strstr(pipeline_label, part) != NULL)
+            return true;
+    }
+    return false;
+}
+
+
+
+/**
  * Register the shared scene-graph GPU fixture.
  *
  * @param suite the active test suite

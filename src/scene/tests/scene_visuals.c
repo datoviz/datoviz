@@ -2401,6 +2401,62 @@ int test_scene_panel_bounds_overlay_visual(TstContext* suite, const TstCase* ite
 
 
 
+/**
+ * Verify bounds overlay pipeline keys survive runtime suffix composition.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_panel_bounds_overlay_emit_runtime(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 200, 100, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    ANN(panel);
+
+    DvzMsaaDesc msaa = dvz_msaa_desc();
+    msaa.sample_count = 4;
+    AT(dvz_panel_set_msaa(panel, &msaa));
+
+    DvzVisual* spheres = dvz_sphere(scene, 0);
+    ANN(spheres);
+    vec3 positions[1] = {{0.0f, 0.0f, 0.0f}};
+    DvzColor colors[1] = {{220, 120, 80, 255}};
+    float radii[1] = {0.25f};
+    AT(dvz_visual_set_data(spheres, "position", positions, 1) == 0);
+    AT(dvz_visual_set_data(spheres, "color", colors, 1) == 0);
+    AT(dvz_visual_set_data(spheres, "radius", radii, 1) == 0);
+    AT(dvz_panel_add_visual(panel, spheres, NULL) == 0);
+    AT(dvz_panel_set_bounds_visible(panel, true) == 0);
+
+    DvzCapabilitySnapshot caps;
+    dvz_capability_snapshot_default(&caps);
+    caps.shader_format_glsl = true;
+
+    DvzFramePlanEmitConfig cfg = dvz_frame_plan_emit_config();
+    cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
+
+    DvzDiagnosticReport report;
+    dvz_diagnostic_report_init(&report);
+    DvzDrp2CommandStream* stream = dvz_figure_emit_ex(figure, &caps, &report, &cfg);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+    ANN(stream);
+    AT(_stream_has_render_pipeline_label_part(
+        stream, "_pipe_segmentg_coverage_blend_no_depth_test"));
+
+    dvz_drp2_stream_destroy(stream);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
 int test_scene_point_typed_data_upload(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
