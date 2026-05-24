@@ -25,9 +25,6 @@
 
 #include <stdbool.h>
 #include <stdint.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 
 #include "_compat.h"
 #include "datoviz/geom.h"
@@ -56,99 +53,15 @@
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
-/**
- * Return whether the example should enable live MP4 recording.
- *
- * @param argc command-line argument count
- * @param argv command-line argument vector
- * @return whether video recording was requested
- */
-static bool _video_enabled(int argc, char** argv)
-{
-    if (argc < 2 || argv == NULL)
-        return false;
-    for (int i = 1; i < argc; i++)
-    {
-        if (argv[i] != NULL && strcmp(argv[i], "video") == 0)
-            return true;
-    }
-    return false;
-}
-
-
-
-/**
- * Return whether the example should record a DVZR stream.
- *
- * @param argc command-line argument count
- * @param argv command-line argument vector
- * @param default_path default path next to the executable
- * @param out output recording path
- * @param out_size output buffer size
- * @return whether DVZR recording was requested
- */
-static bool _recording_path(
-    int argc, char** argv, const char* default_path, char* out, size_t out_size)
-{
-    if (argc < 2 || argv == NULL || out == NULL || out_size == 0)
-        return false;
-    for (int i = 1; i < argc; i++)
-    {
-        if (argv[i] == NULL)
-            continue;
-        if (strcmp(argv[i], "record") == 0)
-        {
-            dvz_snprintf(out, out_size, "%s", default_path);
-            return true;
-        }
-        if (strncmp(argv[i], "record=", 7) == 0)
-        {
-            dvz_snprintf(out, out_size, "%s", argv[i] + 7);
-            return true;
-        }
-        if (strcmp(argv[i], "--record") == 0 && i + 1 < argc && argv[i + 1] != NULL)
-        {
-            dvz_snprintf(out, out_size, "%s", argv[i + 1]);
-            return true;
-        }
-    }
-    return false;
-}
-
-
-
-/**
- * Build an output path next to the example executable.
- *
- * @param exe executable path from argv[0]
- * @param name output file name
- * @param out destination path buffer
- * @param size destination path buffer size
- */
-static void _outpath(const char* exe, const char* name, char* out, size_t size)
-{
-    const char* slash = exe != NULL ? strrchr(exe, '/') : NULL;
-    if (slash != NULL)
-        dvz_snprintf(out, size, "%.*s/%s", (int)(slash - exe), exe, name);
-    else
-        dvz_snprintf(out, size, "%s", name);
-}
-
-
-
-/*************************************************************************************************/
-/*  Functions                                                                                    */
-/*************************************************************************************************/
-
 int main(int argc, char** argv)
 {
-    bool video_enabled = _video_enabled(argc, argv);
+    bool video_enabled = example_arg_has(argc, argv, "video");
     uint32_t frame_count = example_frame_count_any(argc, argv);
     char default_dvzr_path[512] = {0};
     char dvzr_path[512] = {0};
-    _outpath(argv[0], "mesh.dvzr", default_dvzr_path, sizeof(default_dvzr_path));
+    example_outpath(argv[0], "mesh.dvzr", default_dvzr_path, sizeof(default_dvzr_path));
     bool recording_enabled =
-        _recording_path(argc, argv, default_dvzr_path, dvzr_path, sizeof(dvzr_path));
+        example_recording_path(argc, argv, default_dvzr_path, dvzr_path, sizeof(dvzr_path));
 
     int ret = 1;
     DvzScene* scene = NULL;
@@ -227,7 +140,7 @@ int main(int argc, char** argv)
         video.encoder.width = WIDTH;
         video.encoder.height = HEIGHT;
         video.encoder.fps = 60;
-        _outpath(argv[0], "mesh.mp4", mp4_path, sizeof(mp4_path));
+        example_outpath(argv[0], "mesh.mp4", mp4_path, sizeof(mp4_path));
         video.encoder.mp4_path = mp4_path;
 
         rc = dvz_canvas_configure_video_sink(dvz_app_window_canvas(win), true, &video);
