@@ -708,10 +708,10 @@ int main(int argc, char** argv)
     gizmo_material.light_direction[0] = 0.25f;
     gizmo_material.light_direction[1] = 0.52f;
     gizmo_material.light_direction[2] = 0.82f;
-    gizmo_material.phong.ambient = 0.34f;
-    gizmo_material.phong.diffuse = 0.78f;
-    gizmo_material.phong.specular = 0.42f;
-    gizmo_material.phong.shininess = 58.0f;
+    gizmo_material.phong.ambient = 0.62f;
+    gizmo_material.phong.diffuse = 0.44f;
+    gizmo_material.phong.specular = 0.30f;
+    gizmo_material.phong.shininess = 44.0f;
     rc = dvz_visual_set_material(gizmo_axes_visual, &gizmo_material);
     EXAMPLE_CHECK(rc == 0, "dvz_visual_set_material() failed for gizmo axes");
 
