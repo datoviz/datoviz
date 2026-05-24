@@ -158,6 +158,9 @@ int test_panel_panzoom_getter(TstContext* suite, const TstCase* item);
 
 int test_shared_panzoom_xy_visible_domains(TstContext* suite, const TstCase* item);
 
+int test_panzoom_panel_input_uses_hidpi_figure_coordinates(
+    TstContext* suite, const TstCase* item);
+
 int test_split_panzoom_x_y_bindings(TstContext* suite, const TstCase* item);
 
 int test_arcball_create_reset(TstContext* suite, const TstCase* item);
