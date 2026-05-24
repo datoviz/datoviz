@@ -25,6 +25,7 @@
 #include "datoviz/input/enums.h"
 #include "datoviz/input/keycodes.h"
 #include "datoviz/scene/types.h"
+#include "datoviz/video.h"
 
 
 
@@ -33,6 +34,7 @@
 /*************************************************************************************************/
 
 typedef struct DvzApp       DvzApp;
+typedef struct DvzAppCaptureConfig DvzAppCaptureConfig;
 typedef struct DvzAppConfig DvzAppConfig;
 typedef struct DvzAppResources DvzAppResources;
 typedef struct DvzAppWindow DvzAppWindow;
@@ -65,6 +67,15 @@ typedef enum DvzAppScheduleMode
 } DvzAppScheduleMode;
 
 
+typedef enum DvzAppCaptureFlags
+{
+    DVZ_APP_CAPTURE_NONE = 0,
+    DVZ_APP_CAPTURE_DVZR = 1 << 0,
+    DVZ_APP_CAPTURE_VIDEO = 1 << 1,
+    DVZ_APP_CAPTURE_PNG = 1 << 2,
+} DvzAppCaptureFlags;
+
+
 
 /*************************************************************************************************/
 /*  Structs                                                                                      */
@@ -78,6 +89,17 @@ struct DvzAppConfig
     bool enable_glfw_extensions;
     DvzAppScheduleMode schedule_mode;
     double fps_cap;
+};
+
+
+struct DvzAppCaptureConfig
+{
+    uint32_t flags;
+    const char* directory;
+    const char* basename;
+    double fps;
+    const char* video_backend;
+    DvzVideoCaptureMode video_capture_mode;
 };
 
 
@@ -431,6 +453,71 @@ DVZ_EXPORT DvzTurntable* dvz_app_window_panel_turntable(
  * @return 0 on success, negative on error
  */
 DVZ_EXPORT int dvz_app_window_capture_png(DvzAppWindow* win, const char* path);
+
+
+/**
+ * Return the default app capture configuration.
+ *
+ * The returned config enables no capture by default. When enabled, outputs are written in the
+ * current directory with basename "capture" at 60 FPS using the automatic video backend.
+ *
+ * @return the default capture configuration
+ */
+DVZ_EXPORT DvzAppCaptureConfig dvz_app_capture_config(void);
+
+
+/**
+ * Return an app capture configuration derived from environment variables.
+ *
+ * `DVZ_CAPTURE` accepts comma-, semicolon-, plus-, colon-, pipe-, or space-separated tokens:
+ * `dvzr`, `mp4`/`video`, `png`, `all`, or false-like values (`0`, `false`, `off`, `none`).
+ * Optional overrides are `DVZ_CAPTURE_DIR`, `DVZ_CAPTURE_BASENAME`, `DVZ_CAPTURE_FPS`,
+ * `DVZ_CAPTURE_VIDEO_BACKEND`, and `DVZ_CAPTURE_VIDEO_MODE` (`auto`, `external`, `cpu`).
+ *
+ * @param basename fallback output basename, or NULL for "capture"
+ * @return the environment-derived capture configuration
+ */
+DVZ_EXPORT DvzAppCaptureConfig dvz_app_capture_config_from_env(const char* basename);
+
+
+/**
+ * Start configured captures for an app-window.
+ *
+ * DVZR capture records emitted app DRP2 frame streams, video capture enables the canvas video
+ * sink, and PNG capture is written when dvz_app_window_capture_stop() is called after rendering.
+ *
+ * @param win the app-window
+ * @param config capture configuration, or NULL for dvz_app_capture_config()
+ * @return 0 on success, negative on error
+ */
+DVZ_EXPORT int dvz_app_window_capture_start(
+    DvzAppWindow* win, const DvzAppCaptureConfig* config);
+
+
+/**
+ * Start captures for an app-window from environment variables.
+ *
+ * This is a convenience wrapper around dvz_app_capture_config_from_env() and
+ * dvz_app_window_capture_start(). If `DVZ_CAPTURE` is unset or disables capture, the function is a
+ * no-op and returns success.
+ *
+ * @param win the app-window
+ * @param basename fallback output basename, or NULL for "capture"
+ * @return 0 on success, negative on error
+ */
+DVZ_EXPORT int dvz_app_window_capture_from_env(DvzAppWindow* win, const char* basename);
+
+
+/**
+ * Stop active captures started by dvz_app_window_capture_start().
+ *
+ * Video capture is disabled, DVZR recordings are closed, and pending PNG capture is written from
+ * the last rendered frame.
+ *
+ * @param win the app-window
+ * @return 0 on success, negative on error
+ */
+DVZ_EXPORT int dvz_app_window_capture_stop(DvzAppWindow* win);
 
 
 /**

@@ -81,6 +81,10 @@
 /* Keep developer DVZR recordings compact by default. Set DVZ_DRP2_RECORD_FPS<=0 to disable. */
 #define DVZ_APP_DEFAULT_RECORD_FPS 30.0
 
+#define DVZ_APP_CAPTURE_PATH_SIZE 1024
+#define DVZ_APP_CAPTURE_BACKEND_SIZE 64
+#define DVZ_APP_CAPTURE_DEFAULT_FPS 60.0
+
 
 
 /*************************************************************************************************/
@@ -144,6 +148,13 @@ struct DvzAppWindow
     bool frame_requested;
     bool dirty;
     uint64_t next_frame_ns;
+    bool capture_dvzr_enabled;
+    bool capture_video_enabled;
+    bool capture_png_enabled;
+    char capture_dvzr_path[DVZ_APP_CAPTURE_PATH_SIZE];
+    char capture_video_path[DVZ_APP_CAPTURE_PATH_SIZE];
+    char capture_png_path[DVZ_APP_CAPTURE_PATH_SIZE];
+    char capture_video_backend[DVZ_APP_CAPTURE_BACKEND_SIZE];
 #if defined(DVZ_HAS_GUI) && DVZ_HAS_GUI
     DvzGui* gui;
 #endif
@@ -250,6 +261,230 @@ static void _app_config_apply_env(DvzAppConfig* config)
     ANN(config);
     _app_config_apply_schedule_env(config);
     _app_config_apply_fps_cap_env(config);
+}
+
+
+/**
+ * Return whether a capture token delimiter was found.
+ *
+ * @param c character to inspect
+ * @return whether the character separates capture tokens
+ */
+static bool _app_capture_is_separator(char c)
+{
+    return c == ',' || c == ';' || c == '+' || c == ':' || c == '|' || c == ' ' || c == '\t' ||
+           c == '\n' || c == '\r';
+}
+
+
+
+/**
+ * Return a lowercase ASCII character.
+ *
+ * @param c input character
+ * @return lowercase ASCII character when applicable
+ */
+static char _app_ascii_lower(char c)
+{
+    if (c >= 'A' && c <= 'Z')
+        return (char)(c - 'A' + 'a');
+    return c;
+}
+
+
+
+/**
+ * Return whether a token disables capture.
+ *
+ * @param token lowercase capture token
+ * @return whether the token is a false-like value
+ */
+static bool _app_capture_token_is_false(const char* token)
+{
+    ANN(token);
+    return strcmp(token, "0") == 0 || strcmp(token, "false") == 0 ||
+           strcmp(token, "off") == 0 || strcmp(token, "none") == 0 ||
+           strcmp(token, "no") == 0 || strcmp(token, "disable") == 0 ||
+           strcmp(token, "disabled") == 0;
+}
+
+
+
+/**
+ * Apply one capture token to a flag mask.
+ *
+ * @param token lowercase capture token
+ * @param flags capture flags to update
+ * @return whether the token was recognized
+ */
+static bool _app_capture_apply_token(const char* token, uint32_t* flags)
+{
+    ANN(token);
+    ANN(flags);
+    if (token[0] == '\0')
+        return true;
+    if (_app_capture_token_is_false(token))
+    {
+        *flags = DVZ_APP_CAPTURE_NONE;
+        return true;
+    }
+    if (
+        strcmp(token, "1") == 0 || strcmp(token, "true") == 0 ||
+        strcmp(token, "on") == 0 || strcmp(token, "yes") == 0)
+    {
+        *flags |= DVZ_APP_CAPTURE_DVZR | DVZ_APP_CAPTURE_VIDEO;
+        return true;
+    }
+    if (strcmp(token, "all") == 0)
+    {
+        *flags |= DVZ_APP_CAPTURE_DVZR | DVZ_APP_CAPTURE_VIDEO | DVZ_APP_CAPTURE_PNG;
+        return true;
+    }
+    if (strcmp(token, "dvzr") == 0 || strcmp(token, "record") == 0)
+    {
+        *flags |= DVZ_APP_CAPTURE_DVZR;
+        return true;
+    }
+    if (strcmp(token, "mp4") == 0 || strcmp(token, "video") == 0)
+    {
+        *flags |= DVZ_APP_CAPTURE_VIDEO;
+        return true;
+    }
+    if (strcmp(token, "png") == 0 || strcmp(token, "screenshot") == 0)
+    {
+        *flags |= DVZ_APP_CAPTURE_PNG;
+        return true;
+    }
+    return false;
+}
+
+
+
+/**
+ * Parse the DVZ_CAPTURE token list into app capture flags.
+ *
+ * @param value environment variable value
+ * @return parsed capture flags
+ */
+static uint32_t _app_capture_flags_from_env_value(const char* value)
+{
+    if (value == NULL || value[0] == '\0')
+        return DVZ_APP_CAPTURE_NONE;
+
+    uint32_t flags = DVZ_APP_CAPTURE_NONE;
+    char token[32] = {0};
+    size_t token_len = 0;
+    bool valid = true;
+    for (const char* p = value;; p++)
+    {
+        char c = *p;
+        if (c == '\0' || _app_capture_is_separator(c))
+        {
+            token[token_len] = '\0';
+            if (!_app_capture_apply_token(token, &flags))
+            {
+                log_warn("ignoring unknown DVZ_CAPTURE token '%s'", token);
+                valid = false;
+            }
+            token_len = 0;
+            if (c == '\0')
+                break;
+            continue;
+        }
+        if (token_len + 1 < sizeof(token))
+            token[token_len++] = _app_ascii_lower(c);
+        else
+            valid = false;
+    }
+
+    if (!valid)
+        log_warn("DVZ_CAPTURE='%s' was only partially understood", value);
+    return flags;
+}
+
+
+
+/**
+ * Parse the capture FPS environment override.
+ *
+ * @param fallback fallback FPS value
+ * @return parsed FPS, or fallback on invalid input
+ */
+static double _app_capture_fps_from_env(double fallback)
+{
+    const char* env = getenv("DVZ_CAPTURE_FPS");
+    if (env == NULL || env[0] == '\0')
+        return fallback;
+
+    char* end = NULL;
+    double fps = strtod(env, &end);
+    if (end == env || *end != '\0' || fps <= 0)
+    {
+        log_warn("ignoring DVZ_CAPTURE_FPS='%s' (expected positive FPS)", env);
+        return fallback;
+    }
+    return fps;
+}
+
+
+
+/**
+ * Parse the capture video mode environment override.
+ *
+ * @param fallback fallback video capture mode
+ * @return parsed video capture mode
+ */
+static DvzVideoCaptureMode _app_capture_video_mode_from_env(DvzVideoCaptureMode fallback)
+{
+    const char* env = getenv("DVZ_CAPTURE_VIDEO_MODE");
+    if (env == NULL || env[0] == '\0')
+        return fallback;
+    if (strcmp(env, "auto") == 0)
+        return DVZ_VIDEO_CAPTURE_AUTO;
+    if (strcmp(env, "external") == 0)
+        return DVZ_VIDEO_CAPTURE_EXTERNAL;
+    if (strcmp(env, "cpu") == 0 || strcmp(env, "cpu_readback") == 0)
+        return DVZ_VIDEO_CAPTURE_CPU_READBACK;
+
+    log_warn("ignoring DVZ_CAPTURE_VIDEO_MODE='%s' (expected auto|external|cpu)", env);
+    return fallback;
+}
+
+
+
+/**
+ * Build a capture output path.
+ *
+ * @param config capture configuration
+ * @param extension output extension including the leading dot
+ * @param out destination path buffer
+ * @param out_size destination path buffer size
+ * @return whether the path fit in the destination buffer
+ */
+static bool _app_capture_path(
+    const DvzAppCaptureConfig* config, const char* extension, char* out, size_t out_size)
+{
+    ANN(config);
+    ANN(extension);
+    ANN(out);
+    if (out_size == 0)
+        return false;
+
+    const char* directory =
+        (config->directory != NULL && config->directory[0] != '\0') ? config->directory : ".";
+    const char* basename =
+        (config->basename != NULL && config->basename[0] != '\0') ? config->basename : "capture";
+
+    int rc = 0;
+    size_t dir_len = strlen(directory);
+    if (strcmp(directory, ".") == 0)
+        rc = dvz_snprintf(out, out_size, "%s%s", basename, extension);
+    else if (dir_len > 0 && directory[dir_len - 1] == '/')
+        rc = dvz_snprintf(out, out_size, "%s%s%s", directory, basename, extension);
+    else
+        rc = dvz_snprintf(out, out_size, "%s/%s%s", directory, basename, extension);
+
+    return rc >= 0 && (size_t)rc < out_size;
 }
 
 
@@ -3308,6 +3543,223 @@ int dvz_app_window_capture_png(DvzAppWindow* win, const char* path)
     ANN(path);
 #if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
     return dvz_canvas_capture_png(win->canvas, path);
+#else
+    return -1;
+#endif
+}
+
+
+/**
+ * Return the default app capture configuration.
+ *
+ * @return default capture configuration
+ */
+DvzAppCaptureConfig dvz_app_capture_config(void)
+{
+    DvzAppCaptureConfig config = {
+        .flags = DVZ_APP_CAPTURE_NONE,
+        .directory = ".",
+        .basename = "capture",
+        .fps = DVZ_APP_CAPTURE_DEFAULT_FPS,
+        .video_backend = "auto",
+        .video_capture_mode = DVZ_VIDEO_CAPTURE_AUTO,
+    };
+    return config;
+}
+
+
+
+/**
+ * Return an app capture configuration from environment variables.
+ *
+ * @param basename fallback output basename
+ * @return environment-derived capture configuration
+ */
+DvzAppCaptureConfig dvz_app_capture_config_from_env(const char* basename)
+{
+    DvzAppCaptureConfig config = dvz_app_capture_config();
+    if (basename != NULL && basename[0] != '\0')
+        config.basename = basename;
+
+    const char* capture = getenv("DVZ_CAPTURE");
+    config.flags = _app_capture_flags_from_env_value(capture);
+
+    const char* directory = getenv("DVZ_CAPTURE_DIR");
+    if (directory != NULL && directory[0] != '\0')
+        config.directory = directory;
+
+    const char* env_basename = getenv("DVZ_CAPTURE_BASENAME");
+    if (env_basename != NULL && env_basename[0] != '\0')
+        config.basename = env_basename;
+
+    config.fps = _app_capture_fps_from_env(config.fps);
+
+    const char* backend = getenv("DVZ_CAPTURE_VIDEO_BACKEND");
+    if (backend != NULL && backend[0] != '\0')
+        config.video_backend = backend;
+
+    config.video_capture_mode = _app_capture_video_mode_from_env(config.video_capture_mode);
+    return config;
+}
+
+
+
+/**
+ * Start configured app-window captures.
+ *
+ * @param win the app-window
+ * @param config capture configuration
+ * @return 0 on success, negative on error
+ */
+int dvz_app_window_capture_start(DvzAppWindow* win, const DvzAppCaptureConfig* config)
+{
+    ANN(win);
+    DvzAppCaptureConfig resolved = config != NULL ? *config : dvz_app_capture_config();
+    if (resolved.flags == DVZ_APP_CAPTURE_NONE)
+        return 0;
+
+#if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
+    if (win->canvas == NULL)
+        return -1;
+    if (win->capture_dvzr_enabled || win->capture_video_enabled || win->capture_png_enabled)
+        return -1;
+
+    if ((resolved.flags & DVZ_APP_CAPTURE_DVZR) != 0)
+    {
+        if (!_app_capture_path(
+                &resolved, ".dvzr", win->capture_dvzr_path, sizeof(win->capture_dvzr_path)))
+        {
+            log_error("DVZR capture path is too long");
+            return -1;
+        }
+        if (dvz_app_window_record_start(win, win->capture_dvzr_path) != 0)
+            return -1;
+        win->capture_dvzr_enabled = true;
+    }
+
+    if ((resolved.flags & DVZ_APP_CAPTURE_VIDEO) != 0)
+    {
+        if (!_app_capture_path(
+                &resolved, ".mp4", win->capture_video_path, sizeof(win->capture_video_path)))
+        {
+            log_error("video capture path is too long");
+            if (win->capture_dvzr_enabled)
+                (void)dvz_app_window_record_stop(win);
+            win->capture_dvzr_enabled = false;
+            return -1;
+        }
+
+        DvzVideoSinkConfig video = dvz_video_sink_default_config();
+        const char* backend = resolved.video_backend != NULL ? resolved.video_backend : "auto";
+        int backend_rc = dvz_snprintf(
+            win->capture_video_backend, sizeof(win->capture_video_backend), "%s", backend);
+        if (backend_rc < 0 || (size_t)backend_rc >= sizeof(win->capture_video_backend))
+        {
+            log_error("video capture backend name is too long");
+            if (win->capture_dvzr_enabled)
+                (void)dvz_app_window_record_stop(win);
+            win->capture_dvzr_enabled = false;
+            return -1;
+        }
+        if (resolved.fps > (double)UINT32_MAX)
+        {
+            log_error("video capture FPS is too large");
+            if (win->capture_dvzr_enabled)
+                (void)dvz_app_window_record_stop(win);
+            win->capture_dvzr_enabled = false;
+            return -1;
+        }
+        video.encoder.backend = win->capture_video_backend;
+        video.encoder.width = win->figure != NULL ? win->figure->width : 0;
+        video.encoder.height = win->figure != NULL ? win->figure->height : 0;
+        video.encoder.fps = resolved.fps > 0 ? (uint32_t)(resolved.fps + 0.5) : 60;
+        video.encoder.mp4_path = win->capture_video_path;
+        video.capture_mode = resolved.video_capture_mode;
+
+        if (dvz_canvas_configure_video_sink(win->canvas, true, &video) != 0)
+        {
+            if (win->capture_dvzr_enabled)
+                (void)dvz_app_window_record_stop(win);
+            win->capture_dvzr_enabled = false;
+            return -1;
+        }
+        win->capture_video_enabled = true;
+    }
+
+    if ((resolved.flags & DVZ_APP_CAPTURE_PNG) != 0)
+    {
+        if (!_app_capture_path(
+                &resolved, ".png", win->capture_png_path, sizeof(win->capture_png_path)))
+        {
+            log_error("PNG capture path is too long");
+            (void)dvz_app_window_capture_stop(win);
+            return -1;
+        }
+        win->capture_png_enabled = true;
+    }
+
+    return 0;
+#else
+    return -1;
+#endif
+}
+
+
+
+/**
+ * Start app-window captures from environment variables.
+ *
+ * @param win the app-window
+ * @param basename fallback output basename
+ * @return 0 on success, negative on error
+ */
+int dvz_app_window_capture_from_env(DvzAppWindow* win, const char* basename)
+{
+    ANN(win);
+    DvzAppCaptureConfig config = dvz_app_capture_config_from_env(basename);
+    return dvz_app_window_capture_start(win, &config);
+}
+
+
+
+/**
+ * Stop active app-window captures.
+ *
+ * @param win the app-window
+ * @return 0 on success, negative on error
+ */
+int dvz_app_window_capture_stop(DvzAppWindow* win)
+{
+    ANN(win);
+#if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
+    int rc = 0;
+    if (win->capture_png_enabled)
+    {
+        if (dvz_app_window_capture_png(win, win->capture_png_path) != 0)
+            rc = -1;
+        else
+            dvz_fprintf(stdout, "datoviz: saved %s\n", win->capture_png_path);
+        win->capture_png_enabled = false;
+    }
+
+    if (win->capture_video_enabled)
+    {
+        if (dvz_canvas_configure_video_sink(win->canvas, false, NULL) != 0)
+            rc = -1;
+        else
+            dvz_fprintf(stdout, "datoviz: saved %s\n", win->capture_video_path);
+        win->capture_video_enabled = false;
+    }
+
+    if (win->capture_dvzr_enabled)
+    {
+        if (dvz_app_window_record_stop(win) != 0)
+            rc = -1;
+        else
+            dvz_fprintf(stdout, "datoviz: saved %s\n", win->capture_dvzr_path);
+        win->capture_dvzr_enabled = false;
+    }
+    return rc;
 #else
     return -1;
 #endif

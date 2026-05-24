@@ -244,6 +244,85 @@ static int test_app_config_env_fps_cap(TstContext* suite, const TstCase* item)
 
 
 
+static int test_app_capture_config_defaults(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    ANN(item);
+
+    DvzAppCaptureConfig config = dvz_app_capture_config();
+    AT(config.flags == DVZ_APP_CAPTURE_NONE);
+    AT(strcmp(config.directory, ".") == 0);
+    AT(strcmp(config.basename, "capture") == 0);
+    AT(config.fps == 60.0);
+    AT(strcmp(config.video_backend, "auto") == 0);
+    AT(config.video_capture_mode == DVZ_VIDEO_CAPTURE_AUTO);
+    return 0;
+}
+
+
+
+static int test_app_capture_config_env(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    ANN(item);
+
+    const char* old_capture = getenv("DVZ_CAPTURE");
+    const char* old_dir = getenv("DVZ_CAPTURE_DIR");
+    const char* old_basename = getenv("DVZ_CAPTURE_BASENAME");
+    const char* old_fps = getenv("DVZ_CAPTURE_FPS");
+    const char* old_backend = getenv("DVZ_CAPTURE_VIDEO_BACKEND");
+    const char* old_mode = getenv("DVZ_CAPTURE_VIDEO_MODE");
+    char saved_capture[128] = {0};
+    char saved_dir[128] = {0};
+    char saved_basename[128] = {0};
+    char saved_fps[128] = {0};
+    char saved_backend[128] = {0};
+    char saved_mode[128] = {0};
+    if (old_capture != NULL)
+        dvz_snprintf(saved_capture, sizeof(saved_capture), "%s", old_capture);
+    if (old_dir != NULL)
+        dvz_snprintf(saved_dir, sizeof(saved_dir), "%s", old_dir);
+    if (old_basename != NULL)
+        dvz_snprintf(saved_basename, sizeof(saved_basename), "%s", old_basename);
+    if (old_fps != NULL)
+        dvz_snprintf(saved_fps, sizeof(saved_fps), "%s", old_fps);
+    if (old_backend != NULL)
+        dvz_snprintf(saved_backend, sizeof(saved_backend), "%s", old_backend);
+    if (old_mode != NULL)
+        dvz_snprintf(saved_mode, sizeof(saved_mode), "%s", old_mode);
+
+    AT(setenv("DVZ_CAPTURE", "dvzr,mp4,png", 1) == 0);
+    AT(setenv("DVZ_CAPTURE_DIR", "/tmp/datoviz-capture", 1) == 0);
+    AT(setenv("DVZ_CAPTURE_BASENAME", "env-name", 1) == 0);
+    AT(setenv("DVZ_CAPTURE_FPS", "24", 1) == 0);
+    AT(setenv("DVZ_CAPTURE_VIDEO_BACKEND", "stub", 1) == 0);
+    AT(setenv("DVZ_CAPTURE_VIDEO_MODE", "cpu", 1) == 0);
+
+    DvzAppCaptureConfig config = dvz_app_capture_config_from_env("fallback-name");
+    AT((config.flags & DVZ_APP_CAPTURE_DVZR) != 0);
+    AT((config.flags & DVZ_APP_CAPTURE_VIDEO) != 0);
+    AT((config.flags & DVZ_APP_CAPTURE_PNG) != 0);
+    AT(strcmp(config.directory, "/tmp/datoviz-capture") == 0);
+    AT(strcmp(config.basename, "env-name") == 0);
+    AT(config.fps == 24.0);
+    AT(strcmp(config.video_backend, "stub") == 0);
+    AT(config.video_capture_mode == DVZ_VIDEO_CAPTURE_CPU_READBACK);
+
+    AT(setenv("DVZ_CAPTURE", "off", 1) == 0);
+    config = dvz_app_capture_config_from_env("fallback-name");
+    AT(config.flags == DVZ_APP_CAPTURE_NONE);
+
+    _test_restore_env("DVZ_CAPTURE", old_capture != NULL ? saved_capture : NULL);
+    _test_restore_env("DVZ_CAPTURE_DIR", old_dir != NULL ? saved_dir : NULL);
+    _test_restore_env("DVZ_CAPTURE_BASENAME", old_basename != NULL ? saved_basename : NULL);
+    _test_restore_env("DVZ_CAPTURE_FPS", old_fps != NULL ? saved_fps : NULL);
+    _test_restore_env("DVZ_CAPTURE_VIDEO_BACKEND", old_backend != NULL ? saved_backend : NULL);
+    _test_restore_env("DVZ_CAPTURE_VIDEO_MODE", old_mode != NULL ? saved_mode : NULL);
+    return 0;
+}
+
+
+
 /**
  * Create and destroy an app that owns every top-level resource.
  */
@@ -1178,6 +1257,8 @@ int test_app(TstSuite* suite)
     TST_CASE(test_app_config_defaults);
     TST_CASE(test_app_config_env_schedule);
     TST_CASE(test_app_config_env_fps_cap);
+    TST_CASE(test_app_capture_config_defaults);
+    TST_CASE(test_app_capture_config_env);
     TST_CASE(test_app_resources_owned_defaults);
     TST_CASE(test_app_resources_reject_runtime_without_gpu);
     TST_CASE(test_app_resources_reject_incompatible_runtime);
