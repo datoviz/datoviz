@@ -54,6 +54,30 @@ static void _test_screen_to_arcball(vec2 p, vec4 out)
 }
 
 
+
+/**
+ * Return whether two 4x4 matrices match within an absolute tolerance.
+ *
+ * @param a first matrix
+ * @param b second matrix
+ * @param eps absolute tolerance
+ * @return whether every coefficient is within tolerance
+ */
+static bool _test_mat4_close(mat4 a, mat4 b, float eps)
+{
+    for (uint32_t i = 0; i < 4; i++)
+    {
+        for (uint32_t j = 0; j < 4; j++)
+        {
+            if (fabsf(a[i][j] - b[i][j]) > eps)
+                return false;
+        }
+    }
+    return true;
+}
+
+
+
 int test_panzoom_create_reset(TstContext* suite, const TstCase* item)
 {
     (void)suite;
@@ -553,6 +577,256 @@ int test_arcball_panel_input_uses_hidpi_figure_coordinates(TstContext* suite, co
 
 
 /**
+ * Ensure a rotation-only arcball link follows drag and release without copying pan or zoom.
+ *
+ * @param suite the test suite
+ * @param item the test item
+ * @return 0 on success
+ */
+int test_controller_link_arcball_rotation_only_keeps_target_centered(
+    TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 800, 400, 0);
+    ANN(figure);
+    DvzPanel* main_panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 0.75f, 1.0f});
+    DvzPanel* gizmo_panel = dvz_panel(figure, (DvzPanelDesc){0.75f, 0.0f, 0.25f, 0.25f});
+    ANN(main_panel);
+    ANN(gizmo_panel);
+
+    DvzController* main_controller = dvz_arcball(scene, NULL);
+    DvzController* gizmo_controller = dvz_arcball(scene, NULL);
+    ANN(main_controller);
+    ANN(gizmo_controller);
+    DvzArcball* main_arcball = dvz_controller_arcball(main_controller);
+    DvzArcball* gizmo_arcball = dvz_controller_arcball(gizmo_controller);
+    ANN(main_arcball);
+    ANN(gizmo_arcball);
+    AT(dvz_panel_bind_controller(main_panel, main_controller, DVZ_DIM_MASK_XYZ) == 0);
+    AT(dvz_panel_bind_controller(gizmo_panel, gizmo_controller, DVZ_DIM_MASK_XYZ) == 0);
+
+    dvz_arcball_pan(main_arcball, (vec2){0.25f, -0.15f});
+    dvz_arcball_zoom(main_arcball, 2.25f);
+    DvzControllerLink* link = dvz_controller_link(
+        scene, main_controller, gizmo_controller, DVZ_CONTROLLER_LINK_ROTATION,
+        DVZ_CONTROLLER_LINK_ONE_WAY);
+    ANN(link);
+    AC(gizmo_arcball->pan[0], 0.0f, 1e-6f);
+    AC(gizmo_arcball->pan[1], 0.0f, 1e-6f);
+    AC(gizmo_arcball->zoom, 1.0f, 1e-6f);
+
+    DvzInputRouter* router = dvz_input_router();
+    ANN(router);
+    AT(dvz_panel_connect_input(main_panel, router) == 0);
+
+    DvzInputEvent drag = {
+        .type = DVZ_INPUT_EVENT_POINTER,
+        .content.pointer =
+            {
+                .type = DVZ_POINTER_EVENT_DRAG,
+                .button = DVZ_POINTER_BUTTON_LEFT,
+                .content.d =
+                    {
+                        .press_pos = {220.0f, 210.0f},
+                        .last_pos = {220.0f, 210.0f},
+                        .shift = {160.0f, -40.0f},
+                        .is_press_valid = true,
+                    },
+                .pos = {380.0f, 170.0f},
+            },
+    };
+    dvz_input_emit_event(router, &drag);
+
+    AT(_test_mat4_close(main_arcball->mat, gizmo_arcball->mat, 1e-5f));
+    AC(main_arcball->rotation[0], gizmo_arcball->rotation[0], 1e-6f);
+    AC(main_arcball->rotation[1], gizmo_arcball->rotation[1], 1e-6f);
+    AC(main_arcball->rotation[2], gizmo_arcball->rotation[2], 1e-6f);
+    AC(main_arcball->rotation[3], gizmo_arcball->rotation[3], 1e-6f);
+    AC(gizmo_arcball->pan[0], 0.0f, 1e-6f);
+    AC(gizmo_arcball->pan[1], 0.0f, 1e-6f);
+    AC(gizmo_arcball->zoom, 1.0f, 1e-6f);
+
+    DvzInputEvent drag_stop = {
+        .type = DVZ_INPUT_EVENT_POINTER,
+        .content.pointer =
+            {
+                .type = DVZ_POINTER_EVENT_DRAG_STOP,
+                .button = DVZ_POINTER_BUTTON_LEFT,
+                .pos = {380.0f, 170.0f},
+            },
+    };
+    dvz_input_emit_event(router, &drag_stop);
+
+    AT(_test_mat4_close(main_arcball->mat, gizmo_arcball->mat, 1e-5f));
+    AC(main_arcball->rotation[0], gizmo_arcball->rotation[0], 1e-6f);
+    AC(main_arcball->rotation[1], gizmo_arcball->rotation[1], 1e-6f);
+    AC(main_arcball->rotation[2], gizmo_arcball->rotation[2], 1e-6f);
+    AC(main_arcball->rotation[3], gizmo_arcball->rotation[3], 1e-6f);
+    AC(gizmo_arcball->pan[0], 0.0f, 1e-6f);
+    AC(gizmo_arcball->pan[1], 0.0f, 1e-6f);
+    AC(gizmo_arcball->zoom, 1.0f, 1e-6f);
+
+    dvz_input_router_destroy(router);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+/**
+ * Ensure panzoom extent links can copy only one axis.
+ *
+ * @param suite the test suite
+ * @param item the test item
+ * @return 0 on success
+ */
+int test_controller_link_panzoom_extent_x_only(TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzController* source = dvz_panzoom(scene, NULL);
+    DvzController* target = dvz_panzoom(scene, NULL);
+    ANN(source);
+    ANN(target);
+    DvzPanzoom* source_pz = dvz_controller_panzoom(source);
+    DvzPanzoom* target_pz = dvz_controller_panzoom(target);
+    ANN(source_pz);
+    ANN(target_pz);
+
+    dvz_panzoom_pan(source_pz, (vec2){0.30f, -0.40f});
+    dvz_panzoom_zoom(source_pz, (vec2){2.0f, 3.0f});
+
+    DvzControllerLink* link = dvz_controller_link(
+        scene, source, target, DVZ_CONTROLLER_LINK_EXTENT_X, DVZ_CONTROLLER_LINK_ONE_WAY);
+    ANN(link);
+    AC(target_pz->pan[0], source_pz->pan[0], 1e-6f);
+    AC(target_pz->zoom[0], source_pz->zoom[0], 1e-6f);
+    AC(target_pz->pan[1], 0.0f, 1e-6f);
+    AC(target_pz->zoom[1], 1.0f, 1e-6f);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+/**
+ * Ensure invalid controller link combinations are rejected.
+ *
+ * @param suite the test suite
+ * @param item the test item
+ * @return 0 on success
+ */
+int test_controller_link_validation(TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    DvzScene* other = dvz_scene();
+    ANN(scene);
+    ANN(other);
+    DvzController* arc_a = dvz_arcball(scene, NULL);
+    DvzController* arc_b = dvz_arcball(scene, NULL);
+    DvzController* panzoom = dvz_panzoom(scene, NULL);
+    DvzController* other_arc = dvz_arcball(other, NULL);
+    ANN(arc_a);
+    ANN(arc_b);
+    ANN(panzoom);
+    ANN(other_arc);
+
+    AT(dvz_controller_link(
+           NULL, arc_a, arc_b, DVZ_CONTROLLER_LINK_ROTATION, DVZ_CONTROLLER_LINK_ONE_WAY) ==
+       NULL);
+    AT(dvz_controller_link(
+           scene, NULL, arc_b, DVZ_CONTROLLER_LINK_ROTATION, DVZ_CONTROLLER_LINK_ONE_WAY) ==
+       NULL);
+    AT(dvz_controller_link(
+           scene, arc_a, NULL, DVZ_CONTROLLER_LINK_ROTATION, DVZ_CONTROLLER_LINK_ONE_WAY) ==
+       NULL);
+    AT(dvz_controller_link(
+           scene, arc_a, arc_a, DVZ_CONTROLLER_LINK_ROTATION, DVZ_CONTROLLER_LINK_ONE_WAY) ==
+       NULL);
+    AT(dvz_controller_link(
+           scene, arc_a, arc_b, DVZ_CONTROLLER_LINK_NONE, DVZ_CONTROLLER_LINK_ONE_WAY) ==
+       NULL);
+    AT(dvz_controller_link(
+           scene, arc_a, panzoom, DVZ_CONTROLLER_LINK_ROTATION, DVZ_CONTROLLER_LINK_ONE_WAY) ==
+       NULL);
+    AT(dvz_controller_link(
+           scene, arc_a, other_arc, DVZ_CONTROLLER_LINK_ROTATION, DVZ_CONTROLLER_LINK_ONE_WAY) ==
+       NULL);
+    AT(dvz_controller_link(
+           scene, arc_a, arc_b, DVZ_CONTROLLER_LINK_CAMERA, DVZ_CONTROLLER_LINK_ONE_WAY) ==
+       NULL);
+    AT(dvz_controller_link(
+           scene, arc_a, arc_b, DVZ_CONTROLLER_LINK_ROTATION, DVZ_CONTROLLER_LINK_TWO_WAY) ==
+       NULL);
+
+    dvz_scene_destroy(other);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+/**
+ * Ensure destroying a controller link stops future propagation.
+ *
+ * @param suite the test suite
+ * @param item the test item
+ * @return 0 on success
+ */
+int test_controller_link_destroy_stops_arcball_propagation(
+    TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzController* source = dvz_arcball(scene, NULL);
+    DvzController* target = dvz_arcball(scene, NULL);
+    ANN(source);
+    ANN(target);
+    DvzArcball* source_arcball = dvz_controller_arcball(source);
+    DvzArcball* target_arcball = dvz_controller_arcball(target);
+    ANN(source_arcball);
+    ANN(target_arcball);
+
+    DvzControllerLink* link = dvz_controller_link(
+        scene, source, target, DVZ_CONTROLLER_LINK_ROTATION, DVZ_CONTROLLER_LINK_ONE_WAY);
+    ANN(link);
+    dvz_arcball_rotate_axis(source_arcball, 0.35f, (vec3){0.0f, 1.0f, 0.0f});
+    _dvz_scene_controller_links_propagate(scene);
+
+    mat4 source_model = GLM_MAT4_IDENTITY_INIT;
+    mat4 target_model = GLM_MAT4_IDENTITY_INIT;
+    dvz_arcball_model(source_arcball, source_model);
+    dvz_arcball_model(target_arcball, target_model);
+    AT(_test_mat4_close(source_model, target_model, 1e-5f));
+
+    dvz_controller_link_destroy(link);
+    mat4 target_before = GLM_MAT4_IDENTITY_INIT;
+    dvz_arcball_model(target_arcball, target_before);
+
+    dvz_arcball_rotate_axis(source_arcball, 0.45f, (vec3){1.0f, 0.0f, 0.0f});
+    _dvz_scene_controller_links_propagate(scene);
+    dvz_arcball_model(source_arcball, source_model);
+    dvz_arcball_model(target_arcball, target_model);
+    AT(_test_mat4_close(target_before, target_model, 1e-5f));
+    AT(!_test_mat4_close(source_model, target_model, 1e-5f));
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+/**
  * Ensure panel camera and arcball compose into view/projection and model matrices.
  *
  * @param suite the test suite
@@ -985,6 +1259,10 @@ int test_scene_panzoom_arcball(TstSuite* suite)
     TST_CASE(test_arcball_double_click_resets);
     TST_CASE(test_arcball_scene_binding_uses_panel_input);
     TST_CASE(test_arcball_panel_input_uses_hidpi_figure_coordinates);
+    TST_CASE(test_controller_link_arcball_rotation_only_keeps_target_centered);
+    TST_CASE(test_controller_link_panzoom_extent_x_only);
+    TST_CASE(test_controller_link_validation);
+    TST_CASE(test_controller_link_destroy_stops_arcball_propagation);
 
     TST_CASE(test_scene_camera_arcball_mvp_composition);
     return 0;
