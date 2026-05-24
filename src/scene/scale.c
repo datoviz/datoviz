@@ -1347,6 +1347,41 @@ bool _scene_color_from_colormap(
 
 
 /**
+ * Sample a scene-owned colormap at a normalized coordinate.
+ *
+ * @param colormap the colormap, or NULL for grayscale fallback
+ * @param t normalized scalar coordinate
+ * @param out the output RGBA color
+ * @return true when a color was written
+ */
+bool dvz_colormap_sample(const DvzColormap* colormap, double t, DvzColor out)
+{
+    return _scene_color_from_colormap(colormap, t, out);
+}
+
+
+
+/**
+ * Sample a built-in colormap at a normalized coordinate.
+ *
+ * @param builtin the built-in colormap selector
+ * @param t normalized scalar coordinate
+ * @param out the output RGBA color
+ * @return true when a color was written
+ */
+bool dvz_colormap_builtin_sample(DvzBuiltinColormap builtin, double t, DvzColor out)
+{
+    ANN(out);
+    DvzColormap colormap = {
+        .kind = DVZ_COLORMAP_CONTINUOUS,
+        .builtin = builtin,
+    };
+    return _scene_color_from_colormap(&colormap, t, out);
+}
+
+
+
+/**
  * Create a scene-owned scale object.
  *
  * @param scene the scene

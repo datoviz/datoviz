@@ -200,50 +200,6 @@ static uint32_t _build_subpaths(PathStressState* state)
 
 
 /**
- * Fill one RGBA color from a cool-to-warm gradient.
- *
- * @param t normalized color coordinate
- * @param out output RGBA color
- */
-static void _gradient_color(float t, DvzColor out)
-{
-    ANN(out);
-    t = _clamp_float(t, 0.0f, 1.0f);
-    float r = 0.0f;
-    float g = 0.0f;
-    float b = 0.0f;
-
-    if (t < 0.33f)
-    {
-        float u = t / 0.33f;
-        r = 35.0f + 55.0f * u;
-        g = 120.0f + 110.0f * u;
-        b = 250.0f - 70.0f * u;
-    }
-    else if (t < 0.66f)
-    {
-        float u = (t - 0.33f) / 0.33f;
-        r = 90.0f + 160.0f * u;
-        g = 230.0f - 25.0f * u;
-        b = 180.0f - 120.0f * u;
-    }
-    else
-    {
-        float u = (t - 0.66f) / 0.34f;
-        r = 250.0f - 15.0f * u;
-        g = 205.0f - 145.0f * u;
-        b = 60.0f + 30.0f * u;
-    }
-
-    out[0] = (uint8_t)_clamp_float(r, 0.0f, 255.0f);
-    out[1] = (uint8_t)_clamp_float(g, 0.0f, 255.0f);
-    out[2] = (uint8_t)_clamp_float(b, 0.0f, 255.0f);
-    out[3] = 255;
-}
-
-
-
-/**
  * Rebuild the active path attribute arrays from the current controls.
  *
  * @param state example state
@@ -304,7 +260,8 @@ static uint32_t _build_path_data(PathStressState* state)
 
             if (state->color_gradient)
             {
-                _gradient_color(global_t, state->colors[idx]);
+                (void)dvz_colormap_builtin_sample(
+                    DVZ_BUILTIN_COLORMAP_TURBO, global_t, state->colors[idx]);
             }
             else
             {

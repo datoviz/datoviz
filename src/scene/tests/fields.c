@@ -116,6 +116,20 @@ int test_scene_scale_colormap_colorbar_core(TstContext* suite, const TstCase* it
     AT(_scene_color_from_colormap(colormap, 0.5, builtin_rgba));
     AT(builtin_rgba[0] != builtin_rgba[1]);
 
+    DvzColor public_rgba = {0};
+    AT(dvz_colormap_sample(colormap, 0.5, public_rgba));
+    AT(public_rgba[0] == builtin_rgba[0]);
+    AT(public_rgba[1] == builtin_rgba[1]);
+    AT(public_rgba[2] == builtin_rgba[2]);
+    AT(public_rgba[3] == builtin_rgba[3]);
+
+    DvzColor direct_rgba = {0};
+    AT(dvz_colormap_builtin_sample(DVZ_BUILTIN_COLORMAP_MAGMA, 0.5, direct_rgba));
+    AT(direct_rgba[0] == builtin_rgba[0]);
+    AT(direct_rgba[1] == builtin_rgba[1]);
+    AT(direct_rgba[2] == builtin_rgba[2]);
+    AT(direct_rgba[3] == builtin_rgba[3]);
+
     DvzColormapStop stops[2] = {
         {.position = 0.0, .rgba = {0, 0, 0, 255}},
         {.position = 1.0, .rgba = {255, 255, 255, 255}},

@@ -105,6 +105,29 @@ DVZ_EXPORT DvzColormap* dvz_colormap_builtin(
 
 
 /**
+ * Sample a scene-owned colormap at a normalized coordinate.
+ *
+ * @param colormap the colormap, or NULL for grayscale fallback
+ * @param t normalized scalar coordinate
+ * @param out the output RGBA color
+ * @return true when a color was written
+ */
+DVZ_EXPORT bool dvz_colormap_sample(const DvzColormap* colormap, double t, DvzColor out);
+
+
+/**
+ * Sample a built-in colormap at a normalized coordinate.
+ *
+ * @param builtin the built-in colormap selector
+ * @param t normalized scalar coordinate
+ * @param out the output RGBA color
+ * @return true when a color was written
+ */
+DVZ_EXPORT bool dvz_colormap_builtin_sample(
+    DvzBuiltinColormap builtin, double t, DvzColor out);
+
+
+/**
  * Destroy a colormap object.
  *
  * @param colormap the colormap

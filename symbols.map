@@ -356,7 +356,9 @@ dvz_colorbar_set_orientation
 dvz_colorbar_set_title
 dvz_colormap
 dvz_colormap_builtin
+dvz_colormap_builtin_sample
 dvz_colormap_destroy
+dvz_colormap_sample
 dvz_colormap_set_center
 dvz_colormap_set_stops
 dvz_scale
