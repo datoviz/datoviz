@@ -35,6 +35,7 @@ scene APIs should not expose atlas UVs as the primary text model.
 |---|---|
 | Text ownership | Scene text objects own content, style, placement, transform, and semantic identity. |
 | Resource ownership | Scene-owned font and glyph-atlas resources are shared; text objects do not own private atlases by default. |
+| Font defaults | `DvzFontDefaults` is the shared policy descriptor used by app, GUI, and scene text; runtime objects remain backend-owned (`ImFont*` for GUI, `DvzFont*`/atlases for scene). |
 | Placement | Support screen-space and world-space text explicitly. World-space text may billboard or use a fixed text plane. |
 | Scale | Keep screen/pixel scale and world-unit scale as explicit modes. |
 | Styling | Start with run color, optional per-glyph color, regular/bold/italic, and underline as a derived decoration. |
@@ -68,4 +69,5 @@ Do not duplicate those rules here when editing nearby text.
 3. Exact color-font and emoji capability model and fallback diagnostics.
 4. Whether direct GPU outline rendering is only an internal backend or a selectable capability.
 5. Final object-level text picking payload shape and its relationship to annotations and readouts.
-6. Bundled font policy for predictable scientific and equation output.
+6. Broader bundled font policy for predictable scientific and equation output beyond the current shared
+   default descriptor.
