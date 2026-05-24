@@ -30,7 +30,7 @@ void main()
         discard;
 
     vec4 edgeColor = material.baseColorFactor;
-    vec4 color = mix(fragColor, edgeColor, strokeMask);
+    vec4 color = filled ? mix(fragColor, edgeColor, strokeMask) : edgeColor;
     vec3 rgb = applyDepthCue(color.rgb, fragCue);
     outColor = vec4(rgb, color.a * coverage);
 }

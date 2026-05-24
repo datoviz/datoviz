@@ -72,7 +72,7 @@ void main()
         discard;
 
     vec4 edgeColor = material.baseColorFactor;
-    vec4 color = mix(fragColor, edgeColor, strokeMask);
+    vec4 color = filled ? mix(fragColor, edgeColor, strokeMask) : edgeColor;
     outColor = vec4(color.rgb, color.a * coverage);
     if (outColor.a <= 0.0)
         discard;
