@@ -586,9 +586,9 @@ int main(int argc, char** argv)
     EXAMPLE_CHECK(ok, "dvz_panel_set_camera(main_panel) failed");
 
     DvzCameraDesc gizmo_camera_desc = dvz_camera_desc();
-    gizmo_camera_desc.target[0] = 0.46f;
-    gizmo_camera_desc.target[1] = 0.46f;
-    gizmo_camera_desc.target[2] = 0.46f;
+    gizmo_camera_desc.target[0] = 0.0f;
+    gizmo_camera_desc.target[1] = 0.0f;
+    gizmo_camera_desc.target[2] = 0.0f;
     gizmo_camera_desc.eye[0] = gizmo_camera_desc.target[0] + camera_desc.eye[0];
     gizmo_camera_desc.eye[1] = gizmo_camera_desc.target[1] + camera_desc.eye[1];
     gizmo_camera_desc.eye[2] = gizmo_camera_desc.target[2] + camera_desc.eye[2];
