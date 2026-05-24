@@ -21,6 +21,7 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
+#include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -146,7 +147,8 @@ int main(int argc, char** argv)
     camera_desc.fov_y = 0.78539816339f;
     camera_desc.near = 0.1f;
     camera_desc.far = 100.0f;
-    EXAMPLE_CHECK(dvz_panel_set_camera(panel, &camera_desc), "dvz_panel_set_camera() failed");
+    bool ok = dvz_panel_set_camera(panel, &camera_desc);
+    EXAMPLE_CHECK(ok, "dvz_panel_set_camera() failed");
 
     DvzVisual* reference = dvz_primitive(scene, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 0);
     DvzVisual* cube = dvz_mesh(scene, 0);
@@ -193,9 +195,10 @@ int main(int argc, char** argv)
                    .usage = DVZ_SCENE_BUFFER_USAGE_INDEX,
                    .stride = sizeof(DvzIndex),
                });
-    EXAMPLE_CHECK(
-        index_buffer != NULL && dvz_scene_buffer_set_data(index_buffer, indices, sizeof(indices)),
-        "index buffer setup failed");
+    EXAMPLE_CHECK(index_buffer != NULL, "dvz_scene_buffer() failed");
+
+    ok = dvz_scene_buffer_set_data(index_buffer, indices, sizeof(indices));
+    EXAMPLE_CHECK(ok, "dvz_scene_buffer_set_data() failed");
 
     dvz_primitive_data(reference, reference_positions, reference_colors, NULL, 12);
 

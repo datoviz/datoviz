@@ -388,7 +388,8 @@ int main(int argc, char** argv)
     camera_desc.eye[2] = 3.0f;
     camera_desc.near = 0.1f;
     camera_desc.far = 100.0f;
-    EXAMPLE_CHECK(dvz_panel_set_camera(panel, &camera_desc), "dvz_panel_set_camera() failed");
+    bool ok = dvz_panel_set_camera(panel, &camera_desc);
+    EXAMPLE_CHECK(ok, "dvz_panel_set_camera() failed");
 
     DvzVisual* visual = dvz_point(scene, 0);
     EXAMPLE_CHECK(visual != NULL, "dvz_point() failed");
@@ -399,10 +400,11 @@ int main(int argc, char** argv)
     EXAMPLE_CHECK(positions != NULL && colors != NULL && sizes != NULL, "point allocation failed");
     _build_points(positions, colors, sizes, POINT_COUNT);
 
-    EXAMPLE_CHECK(
-        dvz_point_data(visual, positions, colors, sizes, POINT_COUNT) == 0 &&
-            dvz_panel_add_visual(panel, visual, NULL) == 0,
-        "point visual setup failed");
+    int rc = dvz_point_data(visual, positions, colors, sizes, POINT_COUNT);
+    EXAMPLE_CHECK(rc == 0, "dvz_point_data() failed");
+
+    rc = dvz_panel_add_visual(panel, visual, NULL);
+    EXAMPLE_CHECK(rc == 0, "dvz_panel_add_visual() failed");
     dvz_panel_set_background_color(panel, 0.035f, 0.045f, 0.055f, 1.0f);
 
     EdlExampleState gui_state = {

@@ -148,10 +148,10 @@ int main(int argc, char** argv)
     state.gui_viewport = viewport;
 
     DvzController* panzoom_controller = dvz_panzoom(scene, NULL);
-    EXAMPLE_CHECK(
-        panzoom_controller != NULL &&
-            dvz_panel_bind_controller(source_panel, panzoom_controller, DVZ_DIM_MASK_XY) == 0,
-        "failed to create or bind panzoom controller");
+    EXAMPLE_CHECK(panzoom_controller != NULL, "dvz_panzoom() failed");
+
+    int rc = dvz_panel_bind_controller(source_panel, panzoom_controller, DVZ_DIM_MASK_XY);
+    EXAMPLE_CHECK(rc == 0, "dvz_panel_bind_controller() failed");
     dvz_panel_connect_input(source_panel, dvz_gui_viewport_input(state.gui_viewport));
     dvz_app_window_set_gui_callback(host_win, gui_callback, &state);
 

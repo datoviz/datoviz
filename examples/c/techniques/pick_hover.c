@@ -237,12 +237,12 @@ int main(int argc, char** argv)
         }
     }
 
-    EXAMPLE_CHECK(
-        dvz_point_data(visual, positions, colors, state.sizes, POINT_COUNT) == 0,
-        "dvz_visual_set_data() failed");
+    int rc = dvz_point_data(visual, positions, colors, state.sizes, POINT_COUNT);
+    EXAMPLE_CHECK(rc == 0, "dvz_point_data() failed");
     dvz_visual_set_pick_capabilities(visual, DVZ_PICK_CAPABILITY_ITEM);
 
-    EXAMPLE_CHECK(dvz_panel_add_visual(panel, visual, NULL) == 0, "dvz_panel_add_visual() failed");
+    rc = dvz_panel_add_visual(panel, visual, NULL);
+    EXAMPLE_CHECK(rc == 0, "dvz_panel_add_visual() failed");
 
     dvz_panel_set_background_color(panel, 0.05f, 0.07f, 0.10f, 1.0f);
 

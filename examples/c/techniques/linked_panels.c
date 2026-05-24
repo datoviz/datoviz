@@ -285,10 +285,14 @@ int main(int argc, char** argv)
     dvz_panel_set_background_color(panels[1], 0.070f, 0.055f, 0.050f, 1.0f);
     dvz_panel_set_background_color(panels[2], 0.050f, 0.060f, 0.050f, 1.0f);
 
-    EXAMPLE_CHECK(
-        _add_point_grid(scene, panels[0], 0) && _add_point_grid(scene, panels[1], 1) &&
-            _add_point_grid(scene, panels[2], 2),
-        "visual setup failed");
+    bool ok = _add_point_grid(scene, panels[0], 0);
+    EXAMPLE_CHECK(ok, "_add_point_grid(panel 0) failed");
+
+    ok = _add_point_grid(scene, panels[1], 1);
+    EXAMPLE_CHECK(ok, "_add_point_grid(panel 1) failed");
+
+    ok = _add_point_grid(scene, panels[2], 2);
+    EXAMPLE_CHECK(ok, "_add_point_grid(panel 2) failed");
 
     app = dvz_app(scene);
     EXAMPLE_CHECK(app != NULL, "dvz_app() failed (no GPU or display?)");

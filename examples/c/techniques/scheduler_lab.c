@@ -558,16 +558,19 @@ int main(int argc, char** argv)
         {1.0f, 0.0f},
         {1.0f, 1.0f},
     };
-    EXAMPLE_CHECK(
-        dvz_visual_set_data(image, "position", image_pos, 4) == 0 &&
-            dvz_visual_set_data(image, "texcoords", texcoords, 4) == 0 &&
-            dvz_panel_add_visual(
-                panel, image,
-                &(DvzVisualAttachDesc){
-                    .z_layer = -1,
-                    .controller_mode = DVZ_CONTROLLER_FIXED,
-                }) == 0,
-        "image setup failed");
+    int rc = dvz_visual_set_data(image, "position", image_pos, 4);
+    EXAMPLE_CHECK(rc == 0, "dvz_visual_set_data(image position) failed");
+
+    rc = dvz_visual_set_data(image, "texcoords", texcoords, 4);
+    EXAMPLE_CHECK(rc == 0, "dvz_visual_set_data(image texcoords) failed");
+
+    rc = dvz_panel_add_visual(
+        panel, image,
+        &(DvzVisualAttachDesc){
+            .z_layer = -1,
+            .controller_mode = DVZ_CONTROLLER_FIXED,
+        });
+    EXAMPLE_CHECK(rc == 0, "dvz_panel_add_visual(image) failed");
 
     float point_pos[LAB_POINT_COUNT][3] = {
         {0.00f, 0.00f, 0.0f},
@@ -584,11 +587,14 @@ int main(int argc, char** argv)
         {220, 120, 245, 255},
     };
     dvz_visual_set_pick_capabilities(points, DVZ_PICK_CAPABILITY_ITEM);
-    EXAMPLE_CHECK(
-        dvz_visual_set_data(points, "position", point_pos, LAB_POINT_COUNT) == 0 &&
-            dvz_visual_set_data(points, "color", point_color, LAB_POINT_COUNT) == 0 &&
-            dvz_panel_add_visual(panel, points, NULL) == 0,
-        "point setup failed");
+    rc = dvz_visual_set_data(points, "position", point_pos, LAB_POINT_COUNT);
+    EXAMPLE_CHECK(rc == 0, "dvz_visual_set_data(point position) failed");
+
+    rc = dvz_visual_set_data(points, "color", point_color, LAB_POINT_COUNT);
+    EXAMPLE_CHECK(rc == 0, "dvz_visual_set_data(point color) failed");
+
+    rc = dvz_panel_add_visual(panel, points, NULL);
+    EXAMPLE_CHECK(rc == 0, "dvz_panel_add_visual(points) failed");
 
     SchedulerLabState state = {
         .scene = scene,

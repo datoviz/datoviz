@@ -276,12 +276,17 @@ int main(int argc, char** argv)
     uint8_t pixels[IMG * IMG * 4] = {0};
     _fill_probe_image(pixels);
 
-    EXAMPLE_CHECK(
-        dvz_visual_set_data(image, "position", positions, 4) == 0 &&
-            dvz_visual_set_data(image, "texcoords", texcoords, 4) == 0 &&
-            dvz_visual_set_texture(image, pixels, IMG, IMG) == 0,
-        "image visual setup failed");
-    EXAMPLE_CHECK(dvz_panel_add_visual(panel, image, NULL) == 0, "dvz_panel_add_visual() failed");
+    int rc = dvz_visual_set_data(image, "position", positions, 4);
+    EXAMPLE_CHECK(rc == 0, "dvz_visual_set_data(position) failed");
+
+    rc = dvz_visual_set_data(image, "texcoords", texcoords, 4);
+    EXAMPLE_CHECK(rc == 0, "dvz_visual_set_data(texcoords) failed");
+
+    rc = dvz_visual_set_texture(image, pixels, IMG, IMG);
+    EXAMPLE_CHECK(rc == 0, "dvz_visual_set_texture() failed");
+
+    rc = dvz_panel_add_visual(panel, image, NULL);
+    EXAMPLE_CHECK(rc == 0, "dvz_panel_add_visual() failed");
 
     dvz_panel_set_background_color(panel, 0.04f, 0.05f, 0.06f, 1.0f);
 

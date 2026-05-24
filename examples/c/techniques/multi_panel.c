@@ -275,10 +275,17 @@ int main(int argc, char** argv)
     dvz_panel_set_background_color(panels[2], 0.055f, 0.060f, 0.045f, 1.0f);
     dvz_panel_set_background_color(panels[3], 0.050f, 0.050f, 0.070f, 1.0f);
 
-    EXAMPLE_CHECK(
-        _add_point_grid(scene, panels[0], 55, 85, 210) && _add_image_panel(scene, panels[1]) &&
-            _add_path_panel(scene, panels[2]) && _add_point_grid(scene, panels[3], 145, 65, 120),
-        "visual setup failed");
+    bool ok = _add_point_grid(scene, panels[0], 55, 85, 210);
+    EXAMPLE_CHECK(ok, "_add_point_grid(panel 0) failed");
+
+    ok = _add_image_panel(scene, panels[1]);
+    EXAMPLE_CHECK(ok, "_add_image_panel(panel 1) failed");
+
+    ok = _add_path_panel(scene, panels[2]);
+    EXAMPLE_CHECK(ok, "_add_path_panel(panel 2) failed");
+
+    ok = _add_point_grid(scene, panels[3], 145, 65, 120);
+    EXAMPLE_CHECK(ok, "_add_point_grid(panel 3) failed");
 
     app = dvz_app(scene);
     EXAMPLE_CHECK(app != NULL, "dvz_app() failed (no GPU or display?)");
@@ -286,7 +293,8 @@ int main(int argc, char** argv)
     DvzAppWindow* win = dvz_app_window_glfw(app, figure, WIDTH, HEIGHT, "multi_panel");
     EXAMPLE_CHECK(win != NULL, "dvz_app_window_glfw() failed (GLFW unavailable?)");
 
-    EXAMPLE_CHECK(_attach_panzoom(win, panels, 4), "panzoom setup failed");
+    ok = _attach_panzoom(win, panels, 4);
+    EXAMPLE_CHECK(ok, "panzoom setup failed");
 
     dvz_app_run(app, example_frame_count(argc, argv));
     ret = 0;

@@ -15,6 +15,7 @@
  */
 
 #include <math.h>
+#include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -88,11 +89,10 @@ int main(int argc, char** argv)
     DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.08f, 0.06f, 0.86f, 0.86f});
     EXAMPLE_CHECK(panel != NULL, "dvz_panel() failed");
     dvz_panel_set_background_color(panel, 0.07f, 0.08f, 0.11f, 1.0f);
-    EXAMPLE_CHECK(
-        dvz_panel_set_layout_reserve(
-            panel, &(DvzPanelLayoutReserve){.left = 0.14f, .right = 0.0f, .bottom = 0.18f,
-                                            .top = 0.0f}),
-        "dvz_panel_set_layout_reserve() failed");
+    bool ok = dvz_panel_set_layout_reserve(
+        panel, &(DvzPanelLayoutReserve){.left = 0.14f, .right = 0.0f, .bottom = 0.18f,
+                                        .top = 0.0f});
+    EXAMPLE_CHECK(ok, "dvz_panel_set_layout_reserve() failed");
 
     DvzVisual* visual = dvz_point(scene, 0);
     EXAMPLE_CHECK(visual != NULL, "dvz_point() failed");
@@ -105,10 +105,9 @@ int main(int argc, char** argv)
 
     dvz_panel_set_domain(panel, DVZ_DIM_X, -5.0, +5.0);
     dvz_panel_set_domain(panel, DVZ_DIM_Y, -3.0, +3.0);
-    EXAMPLE_CHECK(
-        dvz_panel_data_to_visual_positions(panel, &data_positions[0][0], &visual_positions[0][0], N)
-            == 0,
-        "dvz_panel_data_to_visual_positions() failed");
+    int rc =
+        dvz_panel_data_to_visual_positions(panel, &data_positions[0][0], &visual_positions[0][0], N);
+    EXAMPLE_CHECK(rc == 0, "dvz_panel_data_to_visual_positions() failed");
 
     dvz_point_data(visual, visual_positions, colors, sizes, N);
     dvz_panel_add_visual(panel, visual, NULL);
