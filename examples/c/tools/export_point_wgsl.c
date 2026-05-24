@@ -69,10 +69,11 @@ int main(int argc, char** argv)
     };
     float sizes[5] = {42.0f, 64.0f, 52.0f, 34.0f, 58.0f};
 
-    EXAMPLE_CHECK(
-        dvz_point_data(visual, positions, colors, sizes, 5) == 0 &&
-            dvz_panel_add_visual(panel, visual, NULL) == 0,
-        "point visual setup failed");
+    int rc = dvz_point_data(visual, positions, colors, sizes, 5);
+    EXAMPLE_CHECK(rc == 0, "dvz_point_data() failed");
+
+    rc = dvz_panel_add_visual(panel, visual, NULL);
+    EXAMPLE_CHECK(rc == 0, "dvz_panel_add_visual() failed");
 
     DvzCapabilitySnapshot caps;
     dvz_capability_snapshot_default(&caps);
@@ -90,9 +91,8 @@ int main(int argc, char** argv)
     DvzDiagnosticReport report;
     dvz_diagnostic_report_init(&report);
     stream = dvz_figure_emit_ex(figure, &caps, &report, &emit_cfg);
-    EXAMPLE_CHECK(
-        stream != NULL && dvz_diagnostic_report_count(&report) == 0,
-        "frame-plan emission failed");
+    uint32_t diagnostic_count = dvz_diagnostic_report_count(&report);
+    EXAMPLE_CHECK(stream != NULL && diagnostic_count == 0, "frame-plan emission failed");
 
     json = dvz_drp2_stream_json(stream, "scene_point_wgsl");
     if (json != NULL)

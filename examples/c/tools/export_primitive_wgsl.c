@@ -65,10 +65,11 @@ int main(int argc, char** argv)
         {70, 132, 255, 255},
     };
 
-    EXAMPLE_CHECK(
-        dvz_primitive_data(visual, positions, colors, NULL, 3) == 0 &&
-            dvz_panel_add_visual(panel, visual, NULL) == 0,
-        "primitive visual setup failed");
+    int rc = dvz_primitive_data(visual, positions, colors, NULL, 3);
+    EXAMPLE_CHECK(rc == 0, "dvz_primitive_data() failed");
+
+    rc = dvz_panel_add_visual(panel, visual, NULL);
+    EXAMPLE_CHECK(rc == 0, "dvz_panel_add_visual() failed");
 
     DvzCapabilitySnapshot caps;
     dvz_capability_snapshot_default(&caps);
@@ -86,9 +87,8 @@ int main(int argc, char** argv)
     DvzDiagnosticReport report;
     dvz_diagnostic_report_init(&report);
     stream = dvz_figure_emit_ex(figure, &caps, &report, &emit_cfg);
-    EXAMPLE_CHECK(
-        stream != NULL && dvz_diagnostic_report_count(&report) == 0,
-        "frame-plan emission failed");
+    uint32_t diagnostic_count = dvz_diagnostic_report_count(&report);
+    EXAMPLE_CHECK(stream != NULL && diagnostic_count == 0, "frame-plan emission failed");
 
     json = dvz_drp2_stream_json(stream, "scene_primitive_wgsl");
     if (json != NULL)

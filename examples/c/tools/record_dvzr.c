@@ -257,12 +257,17 @@ int main(int argc, char** argv)
     DvzAppWindow* win = dvz_app_window(app, figure, WIDTH, HEIGHT);
     EXAMPLE_CHECK(win != NULL, "dvz_app_window() failed");
 
-    EXAMPLE_CHECK(dvz_app_window_record_start(win, recording_path) == 0, "failed to start DVZR recording");
-    EXAMPLE_CHECK(
-        dvz_app_window_render_once(win) == DVZ_CANVAS_FRAME_READY &&
-            dvz_app_window_record_stop(win) == 0 &&
-            dvz_app_window_capture_png(win, original_png) == 0,
-        "failed to render/capture original scene");
+    int rc = dvz_app_window_record_start(win, recording_path);
+    EXAMPLE_CHECK(rc == 0, "failed to start DVZR recording");
+
+    int frame_result = dvz_app_window_render_once(win);
+    EXAMPLE_CHECK(frame_result == DVZ_CANVAS_FRAME_READY, "failed to render original scene");
+
+    rc = dvz_app_window_record_stop(win);
+    EXAMPLE_CHECK(rc == 0, "failed to stop DVZR recording");
+
+    rc = dvz_app_window_capture_png(win, original_png);
+    EXAMPLE_CHECK(rc == 0, "failed to capture original scene");
 
     dvz_app_destroy(app);
     app = NULL;

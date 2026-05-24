@@ -72,12 +72,17 @@ int main(int argc, char** argv)
         255, 220, 90, 255,
     };
 
-    EXAMPLE_CHECK(
-        dvz_visual_set_data(visual, "position", positions, 4) == 0 &&
-            dvz_visual_set_data(visual, "texcoords", texcoords, 4) == 0 &&
-            dvz_visual_set_texture(visual, pixels, 2, 2) == 0 &&
-            dvz_panel_add_visual(panel, visual, NULL) == 0,
-        "image visual setup failed");
+    int rc = dvz_visual_set_data(visual, "position", positions, 4);
+    EXAMPLE_CHECK(rc == 0, "dvz_visual_set_data(position) failed");
+
+    rc = dvz_visual_set_data(visual, "texcoords", texcoords, 4);
+    EXAMPLE_CHECK(rc == 0, "dvz_visual_set_data(texcoords) failed");
+
+    rc = dvz_visual_set_texture(visual, pixels, 2, 2);
+    EXAMPLE_CHECK(rc == 0, "dvz_visual_set_texture() failed");
+
+    rc = dvz_panel_add_visual(panel, visual, NULL);
+    EXAMPLE_CHECK(rc == 0, "dvz_panel_add_visual() failed");
 
     DvzCapabilitySnapshot caps;
     dvz_capability_snapshot_default(&caps);
@@ -95,9 +100,8 @@ int main(int argc, char** argv)
     DvzDiagnosticReport report;
     dvz_diagnostic_report_init(&report);
     stream = dvz_figure_emit_ex(figure, &caps, &report, &emit_cfg);
-    EXAMPLE_CHECK(
-        stream != NULL && dvz_diagnostic_report_count(&report) == 0,
-        "frame-plan emission failed");
+    uint32_t diagnostic_count = dvz_diagnostic_report_count(&report);
+    EXAMPLE_CHECK(stream != NULL && diagnostic_count == 0, "frame-plan emission failed");
 
     json = dvz_drp2_stream_json(stream, "scene_image_wgsl");
     if (json != NULL)

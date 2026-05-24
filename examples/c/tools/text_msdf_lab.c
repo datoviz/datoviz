@@ -922,10 +922,11 @@ int main(int argc, char** argv)
     state.show_grid = true;
     set_sample_text(&state);
 
-    EXAMPLE_CHECK(
-        setup_source_scene(scene, &state.sources[0]) == 0 &&
-            setup_source_scene(scene, &state.sources[1]) == 0,
-        "source setup failed");
+    int rc = setup_source_scene(scene, &state.sources[0]);
+    EXAMPLE_CHECK(rc == 0, "setup_source_scene(source 0) failed");
+
+    rc = setup_source_scene(scene, &state.sources[1]);
+    EXAMPLE_CHECK(rc == 0, "setup_source_scene(source 1) failed");
 
     DvzFigure* host_figure = dvz_figure(scene, TEXT_MSDF_LAB_HOST_WIDTH, TEXT_MSDF_LAB_HOST_HEIGHT, 0);
     DvzPanel* host_panel = host_figure != NULL ? dvz_panel_full(host_figure) : NULL;
@@ -963,12 +964,13 @@ int main(int argc, char** argv)
             dvz_gui_viewport_from_window(gui, state.sources[i].win, &viewport_config);
         EXAMPLE_CHECK(state.sources[i].viewport != NULL, "GUI viewport setup failed");
         DvzController* panzoom_controller = dvz_panzoom(scene, NULL);
+        EXAMPLE_CHECK(panzoom_controller != NULL, "dvz_panzoom() failed");
+
         state.sources[i].panzoom = dvz_controller_panzoom(panzoom_controller);
-        EXAMPLE_CHECK(
-            state.sources[i].panzoom != NULL &&
-                dvz_panel_bind_controller(
-                    state.sources[i].panel, panzoom_controller, DVZ_DIM_MASK_XY) == 0,
-            "failed to create or bind panzoom controller");
+        EXAMPLE_CHECK(state.sources[i].panzoom != NULL, "dvz_controller_panzoom() failed");
+
+        rc = dvz_panel_bind_controller(state.sources[i].panel, panzoom_controller, DVZ_DIM_MASK_XY);
+        EXAMPLE_CHECK(rc == 0, "dvz_panel_bind_controller() failed");
         dvz_panel_connect_input(
             state.sources[i].panel, dvz_gui_viewport_input(state.sources[i].viewport));
     }
