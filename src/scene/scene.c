@@ -70,6 +70,9 @@ static void _scene_panel_pixel_size(const DvzPanel* panel, float* out_width, flo
 static void _scene_panel_inner_pixel_size(
     const DvzPanel* panel, float* out_width, float* out_height);
 
+static void _scene_controller_links_propagate_from(DvzController* source);
+static void _scene_controller_links_destroy_for_controller(DvzController* controller);
+
 static bool _panel_padding_valid(const DvzPanel* panel, const DvzPanelReserve* padding);
 
 static bool _panel_reserve_valid_for_padding(
@@ -802,6 +805,7 @@ static void _scene_controller_destroy(DvzController* controller)
 {
     if (controller == NULL || !controller->active)
         return;
+    _scene_controller_links_destroy_for_controller(controller);
     if (controller->panzoom != NULL)
     {
         dvz_panzoom_destroy(controller->panzoom);
@@ -990,6 +994,230 @@ static void _scene_notify_controller_figures(const DvzController* controller)
             bound = bound || _scene_panel_has_controller(&figure->panels[pi], controller);
         if (bound)
             _scene_notify_request_frame(figure);
+    }
+}
+
+
+
+/**
+ * Return whether one controller link endpoint is usable.
+ *
+ * @param controller the controller
+ * @return whether the endpoint can participate in propagation
+ */
+static bool _scene_controller_link_endpoint_valid(const DvzController* controller)
+{
+    return controller != NULL && controller->active && controller->scene != NULL;
+}
+
+
+
+/**
+ * Return whether the requested link components are supported by two controllers.
+ *
+ * @param source the source controller
+ * @param target the target controller
+ * @param components component bitmask
+ * @return whether the link components are compatible
+ */
+static bool _scene_controller_link_components_valid(
+    const DvzController* source, const DvzController* target, uint32_t components)
+{
+    if (!_scene_controller_link_endpoint_valid(source) ||
+        !_scene_controller_link_endpoint_valid(target) || source->type != target->type ||
+        components == DVZ_CONTROLLER_LINK_NONE)
+    {
+        return false;
+    }
+
+    uint32_t supported = 0;
+    switch (source->type)
+    {
+    case DVZ_CONTROLLER_TYPE_PANZOOM:
+        supported =
+            DVZ_CONTROLLER_LINK_PAN | DVZ_CONTROLLER_LINK_ZOOM |
+            DVZ_CONTROLLER_LINK_EXTENT_X | DVZ_CONTROLLER_LINK_EXTENT_Y;
+        break;
+    case DVZ_CONTROLLER_TYPE_ARCBALL:
+        supported =
+            DVZ_CONTROLLER_LINK_ROTATION | DVZ_CONTROLLER_LINK_PAN |
+            DVZ_CONTROLLER_LINK_ZOOM;
+        break;
+    default:
+        return false;
+    }
+    return (components & ~supported) == 0;
+}
+
+
+
+/**
+ * Copy selected panzoom state from one controller payload to another.
+ *
+ * @param source source panzoom payload
+ * @param target target panzoom payload
+ * @param components component bitmask
+ */
+static void _scene_controller_link_copy_panzoom(
+    DvzPanzoom* source, DvzPanzoom* target, uint32_t components)
+{
+    ANN(source);
+    ANN(target);
+    if ((components & DVZ_CONTROLLER_LINK_PAN) != 0)
+    {
+        glm_vec2_copy(source->pan, target->pan);
+        glm_vec2_copy(source->pan_center, target->pan_center);
+    }
+    if ((components & DVZ_CONTROLLER_LINK_ZOOM) != 0)
+    {
+        glm_vec2_copy(source->zoom, target->zoom);
+        glm_vec2_copy(source->zoom_center, target->zoom_center);
+    }
+    if ((components & DVZ_CONTROLLER_LINK_EXTENT_X) != 0)
+    {
+        target->pan[0] = source->pan[0];
+        target->pan_center[0] = source->pan_center[0];
+        target->zoom[0] = source->zoom[0];
+        target->zoom_center[0] = source->zoom_center[0];
+    }
+    if ((components & DVZ_CONTROLLER_LINK_EXTENT_Y) != 0)
+    {
+        target->pan[1] = source->pan[1];
+        target->pan_center[1] = source->pan_center[1];
+        target->zoom[1] = source->zoom[1];
+        target->zoom_center[1] = source->zoom_center[1];
+    }
+}
+
+
+
+/**
+ * Copy selected arcball state from one controller payload to another.
+ *
+ * @param source source arcball payload
+ * @param target target arcball payload
+ * @param components component bitmask
+ */
+static void _scene_controller_link_copy_arcball(
+    DvzArcball* source, DvzArcball* target, uint32_t components)
+{
+    ANN(source);
+    ANN(target);
+    if ((components & DVZ_CONTROLLER_LINK_ROTATION) != 0)
+    {
+        glm_mat4_copy(source->mat, target->mat);
+        glm_vec4_copy(source->rotation, target->rotation);
+        target->interacting = source->interacting;
+    }
+    if ((components & DVZ_CONTROLLER_LINK_PAN) != 0)
+    {
+        glm_vec2_copy(source->pan, target->pan);
+        glm_vec2_copy(source->pan_center, target->pan_center);
+    }
+    if ((components & DVZ_CONTROLLER_LINK_ZOOM) != 0)
+        target->zoom = source->zoom;
+}
+
+
+
+/**
+ * Apply one controller link from source to target.
+ *
+ * @param link the active link
+ * @return whether propagation was applied
+ */
+static bool _scene_controller_link_apply(DvzControllerLink* link)
+{
+    if (link == NULL || !link->active || link->mode != DVZ_CONTROLLER_LINK_ONE_WAY ||
+        !_scene_controller_link_endpoint_valid(link->source) ||
+        !_scene_controller_link_endpoint_valid(link->target))
+    {
+        return false;
+    }
+
+    if (!_scene_controller_link_components_valid(link->source, link->target, link->components))
+        return false;
+
+    switch (link->source->type)
+    {
+    case DVZ_CONTROLLER_TYPE_PANZOOM:
+        if (link->source->panzoom == NULL || link->target->panzoom == NULL)
+            return false;
+        _scene_controller_link_copy_panzoom(
+            link->source->panzoom, link->target->panzoom, link->components);
+        break;
+    case DVZ_CONTROLLER_TYPE_ARCBALL:
+        if (link->source->arcball == NULL || link->target->arcball == NULL)
+            return false;
+        _scene_controller_link_copy_arcball(
+            link->source->arcball, link->target->arcball, link->components);
+        break;
+    default:
+        return false;
+    }
+    return true;
+}
+
+
+
+/**
+ * Disable all links referencing one controller.
+ *
+ * @param controller the controller being destroyed
+ */
+static void _scene_controller_links_destroy_for_controller(DvzController* controller)
+{
+    if (controller == NULL || controller->scene == NULL)
+        return;
+    DvzScene* scene = controller->scene;
+    for (uint32_t i = 0; i < scene->controller_link_count; i++)
+    {
+        DvzControllerLink* link = &scene->controller_links[i];
+        if (!link->active)
+            continue;
+        if (link->source == controller || link->target == controller)
+            dvz_controller_link_destroy(link);
+    }
+}
+
+
+
+/**
+ * Propagate all active controller links in a scene.
+ *
+ * @param scene the scene
+ */
+void _dvz_scene_controller_links_propagate(DvzScene* scene)
+{
+    if (scene == NULL)
+        return;
+    for (uint32_t i = 0; i < scene->controller_link_count; i++)
+    {
+        DvzControllerLink* link = &scene->controller_links[i];
+        if (_scene_controller_link_apply(link))
+            _scene_notify_controller_figures(link->target);
+    }
+}
+
+
+
+/**
+ * Propagate active controller links whose source is one controller.
+ *
+ * @param source the source controller
+ */
+static void _scene_controller_links_propagate_from(DvzController* source)
+{
+    if (!_scene_controller_link_endpoint_valid(source))
+        return;
+    DvzScene* scene = source->scene;
+    for (uint32_t i = 0; i < scene->controller_link_count; i++)
+    {
+        DvzControllerLink* link = &scene->controller_links[i];
+        if (!link->active || link->source != source)
+            continue;
+        if (_scene_controller_link_apply(link))
+            _scene_notify_controller_figures(link->target);
     }
 }
 
@@ -1261,7 +1489,10 @@ static bool _scene_panel_dispatch_pointer_controller(
         break;
     }
     if (consumed)
+    {
+        _scene_controller_links_propagate_from(controller);
         _scene_notify_controller_figures(controller);
+    }
     return consumed;
 }
 
@@ -3164,6 +3395,64 @@ DvzControllerType dvz_controller_type(const DvzController* controller)
     if (controller == NULL || !controller->active)
         return DVZ_CONTROLLER_TYPE_NONE;
     return controller->type;
+}
+
+
+/**
+ * Create a scene-owned controller state link.
+ *
+ * @param scene the scene
+ * @param source the source controller
+ * @param target the target controller
+ * @param components bitmask of DvzControllerLinkComponent values
+ * @param mode link propagation mode
+ * @return the scene-owned link handle, or NULL on validation error
+ */
+DvzControllerLink* dvz_controller_link(
+    DvzScene* scene, DvzController* source, DvzController* target, uint32_t components,
+    DvzControllerLinkMode mode)
+{
+    if (scene == NULL || source == NULL || target == NULL || source == target)
+        return NULL;
+    if (mode != DVZ_CONTROLLER_LINK_ONE_WAY)
+        return NULL;
+    if (source->scene != scene || target->scene != scene)
+        return NULL;
+    if (!_scene_controller_link_components_valid(source, target, components))
+        return NULL;
+    if (scene->controller_link_count >= DVZ_SCENE_MAX_CONTROLLER_LINKS)
+        return NULL;
+
+    DvzControllerLink* link = &scene->controller_links[scene->controller_link_count++];
+    link->scene = scene;
+    link->source = source;
+    link->target = target;
+    link->components = components;
+    link->mode = mode;
+    link->active = true;
+
+    if (_scene_controller_link_apply(link))
+        _scene_notify_controller_figures(target);
+    return link;
+}
+
+
+
+/**
+ * Destroy a scene-owned controller state link.
+ *
+ * @param link the link
+ */
+void dvz_controller_link_destroy(DvzControllerLink* link)
+{
+    if (link == NULL || !link->active)
+        return;
+    link->scene = NULL;
+    link->source = NULL;
+    link->target = NULL;
+    link->components = DVZ_CONTROLLER_LINK_NONE;
+    link->mode = DVZ_CONTROLLER_LINK_ONE_WAY;
+    link->active = false;
 }
 
 

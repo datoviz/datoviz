@@ -277,6 +277,33 @@ DVZ_EXPORT DvzControllerType dvz_controller_type(const DvzController* controller
 
 
 /**
+ * Create a scene-owned controller state link.
+ *
+ * Links propagate selected semantic state components from a source controller to a distinct target
+ * controller in the same scene. The first supported link mode is one-way propagation between
+ * controllers of the same family.
+ *
+ * @param scene the scene
+ * @param source the source controller
+ * @param target the target controller
+ * @param components bitmask of DvzControllerLinkComponent values
+ * @param mode link propagation mode
+ * @return the scene-owned link handle, or NULL on validation error
+ */
+DVZ_EXPORT DvzControllerLink* dvz_controller_link(
+    DvzScene* scene, DvzController* source, DvzController* target, uint32_t components,
+    DvzControllerLinkMode mode);
+
+
+/**
+ * Destroy a scene-owned controller state link.
+ *
+ * @param link the link
+ */
+DVZ_EXPORT void dvz_controller_link_destroy(DvzControllerLink* link);
+
+
+/**
  * Return the panzoom payload of a panzoom controller.
  *
  * @param controller the controller

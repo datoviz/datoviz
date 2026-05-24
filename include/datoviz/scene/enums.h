@@ -117,6 +117,25 @@ typedef enum
 } DvzControllerMode;
 
 
+typedef enum
+{
+    DVZ_CONTROLLER_LINK_NONE     = 0x00u,
+    DVZ_CONTROLLER_LINK_ROTATION = 0x01u,
+    DVZ_CONTROLLER_LINK_PAN      = 0x02u,
+    DVZ_CONTROLLER_LINK_ZOOM     = 0x04u,
+    DVZ_CONTROLLER_LINK_EXTENT_X = 0x08u,
+    DVZ_CONTROLLER_LINK_EXTENT_Y = 0x10u,
+    DVZ_CONTROLLER_LINK_CAMERA   = 0x20u,
+} DvzControllerLinkComponent;
+
+
+typedef enum
+{
+    DVZ_CONTROLLER_LINK_ONE_WAY = 0,
+    DVZ_CONTROLLER_LINK_TWO_WAY = 1,
+} DvzControllerLinkMode;
+
+
 
 typedef enum
 {

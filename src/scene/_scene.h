@@ -68,6 +68,7 @@
 #define DVZ_SCENE_MAX_AXIS_MINOR_TICKS 8
 #define DVZ_SCENE_MAX_REQUEST_FRAME_SUBSCRIPTIONS 16
 #define DVZ_SCENE_MAX_CONTROLLERS 128
+#define DVZ_SCENE_MAX_CONTROLLER_LINKS 128
 #define DVZ_SCENE_MAX_AXIS_LINES                                                                  \
     ((2 + DVZ_SCENE_MAX_AXIS_MINOR_TICKS) * DVZ_SCENE_MAX_AXIS_TICKS + 1)
 #define DVZ_SCENE_TEXT_ATLAS_MAX_GLYPHS 256
@@ -161,6 +162,20 @@ struct DvzController
     DvzFly* fly;
     DvzTurntable* turntable;
 };
+
+
+struct DvzControllerLink
+{
+    DvzScene* scene;
+    DvzController* source;
+    DvzController* target;
+    uint32_t components;
+    DvzControllerLinkMode mode;
+    bool active;
+};
+
+
+void _dvz_scene_controller_links_propagate(DvzScene* scene);
 
 
 
@@ -1214,6 +1229,9 @@ struct DvzScene
 
     uint32_t controller_count;
     DvzController controllers[DVZ_SCENE_MAX_CONTROLLERS];
+
+    uint32_t controller_link_count;
+    DvzControllerLink controller_links[DVZ_SCENE_MAX_CONTROLLER_LINKS];
 
     DvzFramePlanEmitter* emitter; /* shared across all figures — owns GPU resource key→ID map */
 
