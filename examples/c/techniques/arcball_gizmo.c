@@ -48,7 +48,7 @@
 #define GIZMO_HUB_HALF_SIZE        0.075f
 #define GIZMO_RING_RADIUS          0.92f
 #define GIZMO_RING_SEGMENTS        96u
-#define GIZMO_RING_STROKE_WIDTH    2.4f
+#define GIZMO_RING_STROKE_WIDTH    4.0f
 #define ROTATION_SPEED_RAD_PER_SEC 0.42f
 
 #define INSET_LEFT   0.765f
@@ -690,6 +690,8 @@ int main(int argc, char** argv)
     EXAMPLE_CHECK(rc == 0, "dvz_path_set_subpaths() failed for gizmo rings");
     rc = dvz_path_set_caps(gizmo_rings_visual, DVZ_SEGMENT_CAP_NONE, DVZ_SEGMENT_CAP_NONE);
     EXAMPLE_CHECK(rc == 0, "dvz_path_set_caps() failed for gizmo rings");
+    rc = dvz_path_set_join(gizmo_rings_visual, DVZ_PATH_JOIN_ROUND, 4.0f);
+    EXAMPLE_CHECK(rc == 0, "dvz_path_set_join() failed for gizmo rings");
 
     DvzMaterialDesc cube_material = dvz_phong_material_desc();
     cube_material.light_direction[0] = 0.35f;
