@@ -18,6 +18,7 @@
 
 #include <stdbool.h>
 #include <stdint.h>
+#include <stddef.h>
 
 #include "_compat.h"
 
@@ -44,6 +45,16 @@
 /*************************************************************************************************/
 
 bool example_parse_u32(const char* text, uint32_t* out);
+
+bool example_arg_has(int argc, char** argv, const char* name);
+
+bool example_arg_value(int argc, char** argv, const char* name, const char** out);
+
+bool example_arg_value_prefix(int argc, char** argv, const char* prefix, const char** out);
+
+void example_outpath(const char* exe, const char* name, char* out, size_t size);
+
+bool example_recording_path(int argc, char** argv, const char* default_path, char* out, size_t size);
 
 uint32_t example_frame_count_from_text(const char* text);
 
