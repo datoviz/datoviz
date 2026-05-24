@@ -89,19 +89,22 @@ static void _fill_spheres(float positions[SPHERE_COUNT][3], DvzColor colors[SPHE
 {
     for (uint32_t i = 0; i < SPHERE_COUNT; i++)
     {
-        float t = (float)i / (float)(SPHERE_COUNT - 1);
-        float a = 7.0f * 3.14159265358979323846f * t;
-        float z = -0.75f + 1.5f * t;
-        float r = 0.28f + 0.45f * sinf(3.0f * 3.14159265358979323846f * t);
-        positions[i][0] = r * cosf(a);
-        positions[i][1] = r * sinf(a);
-        positions[i][2] = z;
+        uint32_t ix = i % 4;
+        uint32_t iy = (i / 4) % 4;
+        uint32_t iz = i / 16;
+        float jx = 0.035f * sinf(1.7f * (float)i);
+        float jy = 0.035f * cosf(2.1f * (float)i);
+        float jz = 0.055f * sinf(0.9f * (float)i);
+        positions[i][0] = -0.54f + 0.36f * (float)ix + jx;
+        positions[i][1] = -0.54f + 0.36f * (float)iy + jy;
+        positions[i][2] = -0.36f + 0.72f * (float)iz + jz;
 
+        float t = (float)i / (float)(SPHERE_COUNT - 1);
         colors[i][0] = (uint8_t)(230.0f - 120.0f * t);
         colors[i][1] = (uint8_t)(80.0f + 120.0f * t);
         colors[i][2] = (uint8_t)(120.0f + 100.0f * t);
-        colors[i][3] = 235;
-        radii[i] = 0.045f + 0.035f * (0.5f + 0.5f * cosf(11.0f * t));
+        colors[i][3] = 255;
+        radii[i] = 0.07f;
     }
 }
 
