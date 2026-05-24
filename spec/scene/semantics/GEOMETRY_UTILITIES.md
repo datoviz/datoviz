@@ -17,6 +17,10 @@ Geometry utilities operate above the scene layer and below user code. They produ
 resource data such as F64 vertices, indices, and atlas textures that enter the normal resource upload
 path.
 
+Triangulation, polygon-set rendering, mesh upload helpers, and PSLG backend choices are further
+refined in
+[../proposals/active/POLYGON_PSLG_API_DESIGN.md](../proposals/active/POLYGON_PSLG_API_DESIGN.md).
+
 
 ## Core Rules
 
