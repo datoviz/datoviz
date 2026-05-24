@@ -51,6 +51,7 @@ typedef struct DvzFramePlanNode DvzFramePlanNode;
 /* Scene graph objects (opaque handles) */
 typedef struct DvzScene             DvzScene;
 typedef struct DvzFigure            DvzFigure;
+typedef struct DvzGrid              DvzGrid;
 typedef struct DvzPanel             DvzPanel;
 typedef struct DvzVisual            DvzVisual;
 typedef struct DvzCamera            DvzCamera;
@@ -158,6 +159,16 @@ struct DvzPanelDesc
     float width, height;  /* extent in normalized figure coords */
 };
 typedef struct DvzPanelDesc DvzPanelDesc;
+
+
+struct DvzGridCell
+{
+    uint32_t row;
+    uint32_t col;
+    uint32_t row_span;
+    uint32_t col_span;
+};
+typedef struct DvzGridCell DvzGridCell;
 
 
 typedef enum

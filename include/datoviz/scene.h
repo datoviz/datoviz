@@ -159,6 +159,82 @@ dvz_figure_size(const DvzFigure* figure, uint32_t* out_width, uint32_t* out_heig
 
 
 /**
+ * Create a retained grid layout object owned by a figure.
+ *
+ * Rows and columns default to weight-based sizing with weight 1.0. Grid margins and gutters
+ * default to zero logical pixels.
+ *
+ * @param figure the figure
+ * @param rows number of rows
+ * @param cols number of columns
+ * @return the grid, or NULL on validation/allocation error
+ */
+DVZ_EXPORT DvzGrid* dvz_figure_grid(DvzFigure* figure, uint32_t rows, uint32_t cols);
+
+
+/**
+ * Set fixed logical-pixel margins around one grid.
+ *
+ * @param grid the grid
+ * @param margins grid margins, or NULL for zero margins
+ * @return whether the margins were accepted
+ */
+DVZ_EXPORT bool dvz_grid_set_margins(DvzGrid* grid, const DvzPanelReserve* margins);
+
+
+/**
+ * Set fixed logical-pixel gutters between grid columns and rows.
+ *
+ * @param grid the grid
+ * @param x_px horizontal gutter in logical pixels
+ * @param y_px vertical gutter in logical pixels
+ * @return whether the gutters were accepted
+ */
+DVZ_EXPORT bool dvz_grid_set_gutter(DvzGrid* grid, float x_px, float y_px);
+
+
+/**
+ * Set one grid column size.
+ *
+ * @param grid the grid
+ * @param col zero-based column index
+ * @param mode size mode
+ * @param value weight or fixed logical-pixel size
+ * @return whether the size was accepted
+ */
+DVZ_EXPORT bool
+dvz_grid_col_size(DvzGrid* grid, uint32_t col, DvzGridSizeMode mode, float value);
+
+
+/**
+ * Set one grid row size.
+ *
+ * @param grid the grid
+ * @param row zero-based row index
+ * @param mode size mode
+ * @param value weight or fixed logical-pixel size
+ * @return whether the size was accepted
+ */
+DVZ_EXPORT bool
+dvz_grid_row_size(DvzGrid* grid, uint32_t row, DvzGridSizeMode mode, float value);
+
+
+/**
+ * Resolve one grid cell into a normalized figure-space panel rectangle.
+ *
+ * @param grid the grid
+ * @param width figure width in logical pixels
+ * @param height figure height in logical pixels
+ * @param cell zero-based cell and span
+ * @param out output normalized panel rectangle
+ * @return whether the cell was resolved
+ */
+DVZ_EXPORT bool dvz_grid_resolve(
+    const DvzGrid* grid, uint32_t width, uint32_t height, DvzGridCell cell,
+    DvzPanelDesc* out);
+
+
+/**
  * Destroy a figure.
  *
  * @param figure the figure

@@ -70,6 +70,13 @@ typedef enum
 } DvzSceneShaderFormat;
 
 
+typedef enum
+{
+    DVZ_GRID_SIZE_WEIGHT = 0,
+    DVZ_GRID_SIZE_FIXED_PX,
+} DvzGridSizeMode;
+
+
 
 typedef enum
 {

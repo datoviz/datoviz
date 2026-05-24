@@ -43,6 +43,93 @@ int test_scene_panel_full_helper(TstContext* suite, const TstCase* item)
 
 
 
+int test_scene_grid_resolve_weights_fixed_and_spans(TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    DvzFigure* figure = dvz_figure(scene, 400, 200, 0);
+    DvzGrid* grid = dvz_figure_grid(figure, 2, 3);
+    ANN(grid);
+
+    AT(dvz_grid_set_margins(
+        grid, &(DvzPanelReserve){
+                  .left_px = 40.0f, .right_px = 20.0f, .top_px = 10.0f,
+                  .bottom_px = 30.0f}));
+    AT(dvz_grid_set_gutter(grid, 10.0f, 20.0f));
+    AT(dvz_grid_col_size(grid, 0, DVZ_GRID_SIZE_WEIGHT, 1.0f));
+    AT(dvz_grid_col_size(grid, 1, DVZ_GRID_SIZE_WEIGHT, 2.0f));
+    AT(dvz_grid_col_size(grid, 2, DVZ_GRID_SIZE_FIXED_PX, 60.0f));
+
+    DvzPanelDesc main = {0};
+    AT(dvz_grid_resolve(
+        grid, 400, 200, (DvzGridCell){.row = 0, .col = 0, .row_span = 1, .col_span = 2},
+        &main));
+    AC(main.x, 0.10f, 1e-6f);
+    AC(main.y, 0.05f, 1e-6f);
+    AC(main.width, 0.675f, 1e-6f);
+    AC(main.height, 0.35f, 1e-6f);
+
+    DvzPanelDesc side = {0};
+    AT(dvz_grid_resolve(
+        grid, 400, 200, (DvzGridCell){.row = 0, .col = 2, .row_span = 2, .col_span = 1},
+        &side));
+    AC(side.x, 0.80f, 1e-6f);
+    AC(side.y, 0.05f, 1e-6f);
+    AC(side.width, 0.15f, 1e-6f);
+    AC(side.height, 0.80f, 1e-6f);
+
+    DvzPanelDesc resized = {0};
+    AT(dvz_grid_resolve(
+        grid, 800, 200, (DvzGridCell){.row = 0, .col = 2, .row_span = 2, .col_span = 1},
+        &resized));
+    AC(resized.x, 0.90f, 1e-6f);
+    AC(resized.width, 0.075f, 1e-6f);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
+int test_scene_grid_resolve_rejects_invalid_inputs(TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    DvzGrid* grid = dvz_figure_grid(figure, 2, 2);
+    ANN(grid);
+
+    AT(!dvz_figure_grid(figure, 0, 2));
+    AT(!dvz_figure_grid(figure, 2, 0));
+    AT(!dvz_grid_col_size(grid, 0, DVZ_GRID_SIZE_WEIGHT, 0.0f));
+    AT(!dvz_grid_row_size(grid, 0, DVZ_GRID_SIZE_FIXED_PX, -1.0f));
+    AT(!dvz_grid_set_gutter(grid, -1.0f, 0.0f));
+    AT(!dvz_grid_set_margins(grid, &(DvzPanelReserve){.left_px = -1.0f}));
+
+    DvzPanelDesc desc = {0};
+    AT(!dvz_grid_resolve(
+        grid, 64, 64, (DvzGridCell){.row = 1, .col = 1, .row_span = 2, .col_span = 1},
+        &desc));
+    AT(!dvz_grid_resolve(
+        grid, 0, 64, (DvzGridCell){.row = 0, .col = 0, .row_span = 1, .col_span = 1},
+        &desc));
+
+    AT(dvz_grid_set_margins(
+        grid, &(DvzPanelReserve){.left_px = 40.0f, .right_px = 40.0f}));
+    AT(!dvz_grid_resolve(
+        grid, 64, 64, (DvzGridCell){.row = 0, .col = 0, .row_span = 1, .col_span = 1},
+        &desc));
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
 int test_scene_z_layer_orders_emit(TstContext* suite, const TstCase* item)
 {
     (void)suite;

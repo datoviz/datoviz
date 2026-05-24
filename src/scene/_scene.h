@@ -35,6 +35,9 @@
 /*************************************************************************************************/
 
 #define DVZ_SCENE_MAX_FIGURES    16
+#define DVZ_SCENE_MAX_GRIDS      16
+#define DVZ_SCENE_MAX_GRID_ROWS  32
+#define DVZ_SCENE_MAX_GRID_COLS  32
 #define DVZ_SCENE_MAX_PANELS     64
 #define DVZ_SCENE_MAX_VISUALS    256
 #define DVZ_SCENE_MAX_FIELDS     128
@@ -120,6 +123,7 @@ struct DvzVisualTexture
 
 typedef struct DvzScene   DvzScene;
 typedef struct DvzFigure  DvzFigure;
+typedef struct DvzGrid    DvzGrid;
 typedef struct DvzPanel   DvzPanel;
 typedef struct DvzVisual  DvzVisual;
 typedef struct DvzSampledField DvzSampledField;
@@ -1135,6 +1139,33 @@ struct DvzPanel
 
 
 /*************************************************************************************************/
+/*  DvzGrid                                                                                     */
+/*************************************************************************************************/
+
+typedef struct DvzGridTrack
+{
+    DvzGridSizeMode mode;
+    float           value;
+} DvzGridTrack;
+
+
+
+struct DvzGrid
+{
+    DvzFigure* figure;
+    uint32_t rows;
+    uint32_t cols;
+    DvzPanelReserve margins;
+    float gutter_x_px;
+    float gutter_y_px;
+    DvzGridTrack row_sizes[DVZ_SCENE_MAX_GRID_ROWS];
+    DvzGridTrack col_sizes[DVZ_SCENE_MAX_GRID_COLS];
+    bool dirty;
+};
+
+
+
+/*************************************************************************************************/
 /*  DvzFigure                                                                                   */
 /*************************************************************************************************/
 
@@ -1147,6 +1178,8 @@ struct DvzFigure
 
     uint32_t   panel_count;
     DvzPanel   panels[DVZ_SCENE_MAX_PANELS];
+    uint32_t   grid_count;
+    DvzGrid    grids[DVZ_SCENE_MAX_GRIDS];
 };
 
 

@@ -61,6 +61,8 @@ int test_scene_graph(TstSuite* suite)
     TST_CASE(test_scene_json_includes_field_dirty_metadata);
     TST_CASE(test_scene_json_includes_buffer_binding_metadata);
     TST_CASE(test_scene_panel_full_helper);
+    TST_CASE(test_scene_grid_resolve_weights_fixed_and_spans);
+    TST_CASE(test_scene_grid_resolve_rejects_invalid_inputs);
     TST_CASE(test_scene_z_layer_orders_emit);
     TST_CASE(test_scene_background_color_creates_fixed_quad);
     TST_CASE(test_scene_background_descriptor_gradient_and_image);
