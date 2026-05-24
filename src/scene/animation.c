@@ -14,6 +14,7 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
+#include <math.h>
 #include <stdbool.h>
 #include <stdint.h>
 
@@ -102,6 +103,48 @@ static bool _animation_should_advance(const DvzAnimation* animation, double t)
         return false;
     return t >= animation->t_start;
 }
+
+
+
+/**
+ * Wrap a phase value into a half-open interval.
+ *
+ * @param value input value
+ * @param min minimum wrapped value
+ * @param max maximum wrapped value
+ * @return wrapped value
+ */
+static float _animation_wrap_phase(float value, float min, float max)
+{
+    float width = max - min;
+    if (width <= 0.0f)
+        return value;
+    float wrapped = value - width * floorf((value - min) / width);
+    if (wrapped >= max)
+        wrapped = min;
+    return wrapped;
+}
+
+
+
+/**
+ * Advance a wrapped linear phase animation by one scene-clock delta.
+ *
+ * @param animation phase animation
+ * @param dt elapsed scene-clock time since the previous step
+ */
+static void _animation_phase_step(DvzAnimation* animation, double dt)
+{
+    ANN(animation);
+    if (animation->phase_callback == NULL)
+        return;
+
+    float delta = animation->phase_speed * (float)dt;
+    animation->phase_value = _animation_wrap_phase(
+        animation->phase_value + delta, animation->phase_wrap_min, animation->phase_wrap_max);
+    animation->phase_callback(animation, animation->phase_value, delta, animation->user_data);
+}
+
 
 
 /**
@@ -276,6 +319,51 @@ DvzAnimation* dvz_anim_timer(
 }
 
 
+
+/**
+ * Create a wrapped linear phase animation driven by the scene clock.
+ *
+ * @param scene owning scene
+ * @param desc phase animation descriptor
+ * @return the animation handle, or NULL on failure
+ */
+DvzAnimation* dvz_anim_phase(DvzScene* scene, const DvzAnimPhaseDesc* desc)
+{
+    ANN(scene);
+    ANN(desc);
+    if (desc->callback == NULL)
+    {
+        log_error("phase animation callback is required");
+        return NULL;
+    }
+    if (!isfinite(desc->initial) || !isfinite(desc->speed) || !isfinite(desc->wrap_min) ||
+        !isfinite(desc->wrap_max))
+    {
+        log_error("phase animation values must be finite");
+        return NULL;
+    }
+    if (desc->wrap_max <= desc->wrap_min)
+    {
+        log_error("phase animation wrap range must be increasing");
+        return NULL;
+    }
+
+    DvzAnimation* animation = _animation_alloc(scene);
+    if (animation == NULL)
+        return NULL;
+    animation->type = DVZ_ANIMATION_PHASE;
+    animation->phase_callback = desc->callback;
+    animation->user_data = desc->user_data;
+    animation->phase_value =
+        _animation_wrap_phase(desc->initial, desc->wrap_min, desc->wrap_max);
+    animation->phase_speed = desc->speed;
+    animation->phase_wrap_min = desc->wrap_min;
+    animation->phase_wrap_max = desc->wrap_max;
+    return animation;
+}
+
+
+
 /**
  * Create an arcball spin animation driven by the scene clock.
  *
@@ -305,6 +393,57 @@ DvzAnimation* dvz_anim_arcball_spin(
     animation->speed_rad_per_sec = speed_rad_per_sec;
     animation->flags = flags;
     return animation;
+}
+
+
+
+/**
+ * Set the scalar speed used by phase and arcball spin animations.
+ *
+ * @param animation animation handle
+ * @param speed scalar speed in units per second
+ */
+void dvz_anim_set_speed(DvzAnimation* animation, float speed)
+{
+    ANN(animation);
+    if (!isfinite(speed))
+    {
+        log_error("animation speed must be finite");
+        return;
+    }
+    switch (animation->type)
+    {
+    case DVZ_ANIMATION_PHASE:
+        animation->phase_speed = speed;
+        break;
+    case DVZ_ANIMATION_ARCBALL_SPIN:
+        animation->speed_rad_per_sec = speed;
+        break;
+    default:
+        break;
+    }
+}
+
+
+
+/**
+ * Set the current value of a phase animation.
+ *
+ * @param animation phase animation handle
+ * @param value new phase value
+ */
+void dvz_anim_phase_set_value(DvzAnimation* animation, float value)
+{
+    ANN(animation);
+    if (animation->type != DVZ_ANIMATION_PHASE)
+        return;
+    if (!isfinite(value))
+    {
+        log_error("phase animation value must be finite");
+        return;
+    }
+    animation->phase_value =
+        _animation_wrap_phase(value, animation->phase_wrap_min, animation->phase_wrap_max);
 }
 
 
@@ -392,6 +531,11 @@ void _dvz_scene_animations_step(DvzScene* scene, uint64_t wall_time_ns)
                 continue;
             animation->last_fire_t = t;
             animation->timer_callback(animation, t, dt, animation->user_data);
+            break;
+
+        case DVZ_ANIMATION_PHASE:
+            if (_animation_should_advance(animation, t))
+                _animation_phase_step(animation, dt);
             break;
 
         case DVZ_ANIMATION_ARCBALL_SPIN:

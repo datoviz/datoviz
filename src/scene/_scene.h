@@ -360,6 +360,7 @@ typedef enum
 {
     DVZ_ANIMATION_NONE = 0,
     DVZ_ANIMATION_TIMER,
+    DVZ_ANIMATION_PHASE,
     DVZ_ANIMATION_ARCBALL_SPIN,
 } DvzAnimationType;
 
@@ -388,7 +389,12 @@ struct DvzAnimation
     double period_s;
     double last_fire_t;
     DvzAnimTimerCallback timer_callback;
+    DvzAnimPhaseCallback phase_callback;
     void* user_data;
+    float phase_value;
+    float phase_speed;
+    float phase_wrap_min;
+    float phase_wrap_max;
     DvzArcball* arcball;
     vec3 axis;
     float speed_rad_per_sec;

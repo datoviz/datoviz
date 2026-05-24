@@ -51,6 +51,27 @@ typedef struct DvzArcball DvzArcball;
 typedef void (*DvzAnimTimerCallback)(
     DvzAnimation* animation, double t, double dt, void* user_data);
 
+typedef void (*DvzAnimPhaseCallback)(
+    DvzAnimation* animation, float value, float delta, void* user_data);
+
+
+
+/*************************************************************************************************/
+/*  Structs                                                                                      */
+/*************************************************************************************************/
+
+typedef struct DvzAnimPhaseDesc DvzAnimPhaseDesc;
+
+struct DvzAnimPhaseDesc
+{
+    float initial;
+    float speed;
+    float wrap_min;
+    float wrap_max;
+    DvzAnimPhaseCallback callback;
+    void* user_data;
+};
+
 
 
 EXTERN_C_ON
@@ -122,6 +143,16 @@ DVZ_EXPORT DvzAnimation* dvz_anim_timer(
 
 
 /**
+ * Create a wrapped linear phase animation driven by the scene clock.
+ *
+ * @param scene owning scene
+ * @param desc phase animation descriptor
+ * @return the animation handle, or NULL on failure
+ */
+DVZ_EXPORT DvzAnimation* dvz_anim_phase(DvzScene* scene, const DvzAnimPhaseDesc* desc);
+
+
+/**
  * Create an arcball spin animation driven by the scene clock.
  *
  * @param scene owning scene
@@ -133,6 +164,24 @@ DVZ_EXPORT DvzAnimation* dvz_anim_timer(
  */
 DVZ_EXPORT DvzAnimation* dvz_anim_arcball_spin(
     DvzScene* scene, DvzArcball* arcball, vec3 axis, float speed_rad_per_sec, uint32_t flags);
+
+
+/**
+ * Set the scalar speed used by phase and arcball spin animations.
+ *
+ * @param animation animation handle
+ * @param speed scalar speed in units per second
+ */
+DVZ_EXPORT void dvz_anim_set_speed(DvzAnimation* animation, float speed);
+
+
+/**
+ * Set the current value of a phase animation.
+ *
+ * @param animation phase animation handle
+ * @param value new phase value, wrapped into the configured interval
+ */
+DVZ_EXPORT void dvz_anim_phase_set_value(DvzAnimation* animation, float value);
 
 
 
