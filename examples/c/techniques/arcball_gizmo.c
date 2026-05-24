@@ -82,13 +82,6 @@ typedef struct GizmoMesh
 } GizmoMesh;
 
 
-typedef struct GizmoSyncState
-{
-    DvzArcball* main_arcball;
-    DvzArcball* gizmo_arcball;
-} GizmoSyncState;
-
-
 
 /*************************************************************************************************/
 /*  Helpers                                                                                      */
@@ -531,37 +524,6 @@ static bool _build_gizmo(GizmoMesh* mesh)
 }
 
 
-/**
- * Synchronize the inset orientation gizmo without inheriting cube pan.
- *
- * @param animation timer animation handle
- * @param t scene clock time
- * @param dt scene clock delta
- * @param user_data sync state
- */
-static void _sync_gizmo_arcball(DvzAnimation* animation, double t, double dt, void* user_data)
-{
-    (void)animation;
-    (void)t;
-    (void)dt;
-    GizmoSyncState* state = (GizmoSyncState*)user_data;
-    if (state == NULL || state->main_arcball == NULL || state->gizmo_arcball == NULL)
-        return;
-
-    DvzArcball* src = state->main_arcball;
-    DvzArcball* dst = state->gizmo_arcball;
-    dvz_memcpy(dst->mat, sizeof(dst->mat), src->mat, sizeof(src->mat));
-    dvz_memcpy(dst->rotation, sizeof(dst->rotation), src->rotation, sizeof(src->rotation));
-    dst->zoom = 1.0f;
-    dst->pan[0] = 0.0f;
-    dst->pan[1] = 0.0f;
-    dst->pan_center[0] = 0.0f;
-    dst->pan_center[1] = 0.0f;
-    dst->interacting = src->interacting;
-}
-
-
-
 /*************************************************************************************************/
 /*  Functions                                                                                    */
 /*************************************************************************************************/
@@ -577,7 +539,6 @@ int main(int argc, char** argv)
     DvzApp* app = NULL;
     DvzGeometry* cube = NULL;
     GizmoMesh mesh = {0};
-    GizmoSyncState sync = {0};
 
     mesh.capacity = GIZMO_VERTEX_COUNT;
     mesh.positions = (vec3*)dvz_calloc(mesh.capacity, sizeof(vec3));
@@ -706,15 +667,18 @@ int main(int argc, char** argv)
     DvzArcball* arcball = dvz_view_arcball(win, main_panel, NULL);
     EXAMPLE_CHECK(arcball != NULL, "failed to create or bind arcball controller");
     dvz_arcball_set(arcball, (vec3){+0.62f, -0.18f, +0.42f});
+    DvzController* main_controller = dvz_panel_controller(main_panel, DVZ_DIM_X);
+    EXAMPLE_CHECK(main_controller != NULL, "failed to resolve main arcball controller");
 
     DvzController* gizmo_controller = dvz_arcball(scene, NULL);
     DvzArcball* gizmo_arcball = dvz_controller_arcball(gizmo_controller);
     EXAMPLE_CHECK(gizmo_arcball != NULL, "failed to create inset arcball controller");
     rc = dvz_panel_bind_controller(gizmo_panel, gizmo_controller, DVZ_DIM_MASK_XYZ);
     EXAMPLE_CHECK(rc == 0, "failed to bind arcball controller to inset gizmo panel");
-    sync.main_arcball = arcball;
-    sync.gizmo_arcball = gizmo_arcball;
-    _sync_gizmo_arcball(NULL, 0.0, 0.0, &sync);
+    DvzControllerLink* gizmo_link = dvz_controller_link(
+        scene, main_controller, gizmo_controller, DVZ_CONTROLLER_LINK_ROTATION,
+        DVZ_CONTROLLER_LINK_ONE_WAY);
+    EXAMPLE_CHECK(gizmo_link != NULL, "failed to link main arcball rotation to inset gizmo");
 
     dvz_scene_set_clock_mode(scene, video_enabled ? DVZ_CLOCK_OFFLINE : DVZ_CLOCK_REALTIME);
     dvz_scene_set_fps(scene, 60.0);
@@ -727,10 +691,6 @@ int main(int argc, char** argv)
         DVZ_ARCBALL_SPIN_FLAGS_PAUSE_ON_INTERACTION);
     EXAMPLE_CHECK(spin != NULL, "dvz_anim_arcball_spin() failed");
     dvz_anim_start(spin, 0.0);
-
-    DvzAnimation* sync_anim = dvz_anim_timer(scene, 0.0, _sync_gizmo_arcball, &sync);
-    EXAMPLE_CHECK(sync_anim != NULL, "dvz_anim_timer() failed for inset gizmo sync");
-    dvz_anim_start(sync_anim, 0.0);
 
     dvz_app_run(app, frame_count);
     rc = dvz_view_capture_stop(win);
