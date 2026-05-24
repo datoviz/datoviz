@@ -74,11 +74,11 @@ example is `v0.4 required`, `v0.4 experimental`, `v0.4 fixture-only`, `v0.5`, `l
 | Field | 3D scalar field | Implemented | `fixture_field_scalar3d.c` | PNG | scene+app | Bind a tiny 3D scalar field to a volume visual. |
 | Scale | Domain clipping | Implemented | `fixture_scale_domain.c` | PNG | scene+app | Render the same scalar image with a clipped scale domain. |
 | Scale | Categorical colormap | Implemented | `fixture_scale_categorical.c` | PNG | scene+app | Render a small label image through a categorical scale. |
-| Colorbar | Retained bookkeeping | Implemented bookkeeping | `fixture_colorbar_bookkeeping.c` | stdout/JSON | scene | Create a colorbar object and serialize/inspect it. |
-| Colorbar | Frame-plan contributions | Planned first slice | `fixture_colorbar_frame_plan.c` | JSON | scene | Verify ramp, ticks, tick labels, title, anchor, orientation, and auto-reserve metadata. |
-| Colorbar | Rendered vertical colorbar | Planned first slice | `fixture_colorbar_vertical.c` | PNG | scene+app | Render scalar image plus a right-anchored continuous colorbar with title and tick labels. |
-| Colorbar | Rendered horizontal colorbar | Planned first slice | `fixture_colorbar_horizontal.c` | PNG | scene+app | Render scalar image plus a bottom-anchored continuous colorbar and deterministic tick labels. |
-| Colorbar | Unsupported scale/anchor diagnostics | Planned first slice | `fixture_colorbar_diagnostics.c` | stdout/JSON | scene | Check categorical scale and non-edge anchor diagnostics without silent fallback. |
+| Colorbar | Retained bookkeeping | Implemented | `fixture_colorbar_bookkeeping.c` | stdout/JSON | scene | Create a colorbar object and serialize/inspect it. |
+| Colorbar | Frame-plan contributions | Implemented in scene tests | `fixture_colorbar_frame_plan.c` | JSON | scene | Verify ramp, ticks, tick labels, title, anchor, orientation, and auto-reserve metadata. |
+| Colorbar | Rendered vertical colorbar | Implemented app/offscreen smoke | `fixture_colorbar_vertical.c` | PNG | scene+app | Render scalar image plus a right-anchored continuous colorbar with title and tick labels. |
+| Colorbar | Rendered horizontal colorbar | Scene-tested; PNG fixture pending | `fixture_colorbar_horizontal.c` | PNG | scene+app | Render scalar image plus a bottom-anchored continuous colorbar and deterministic tick labels. |
+| Colorbar | Unsupported scale/anchor diagnostics | Implemented in scene tests | `fixture_colorbar_diagnostics.c` | stdout/JSON | scene | Check categorical scale and non-edge anchor diagnostics without silent fallback. |
 | Material | Unlit | Implemented | `fixture_material_unlit.c` | PNG | scene+app | One triangle/mesh using unlit material state. |
 | Material | Phong/lit | Implemented | `fixture_material_phong.c` | PNG | scene+app | One lit cube or sphere with normals. |
 | Effect | Depth cue points | Implemented | `fixture_depth_cue_points.c` | PNG | scene+app | Points at different z values fade/darken with depth. |
@@ -340,5 +340,5 @@ features and should be backed by smaller fixtures for the individual capabilitie
 2. `fixture_video_kvazaar_cpu.c`
 3. `advanced_interop_cuda_buffer.c`
 4. WebGPU JSON fixture set
-5. rendered colorbar/text/annotation fixtures
+5. rendered text/annotation fixtures
 6. richer picking and frame-graph fixtures

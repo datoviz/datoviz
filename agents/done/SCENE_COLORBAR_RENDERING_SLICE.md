@@ -33,12 +33,17 @@ Recorded validation from the landing pass:
 5. `./build/testing/dvztest_scene text` -> `26/30 tests passed`, `4` Vulkan-dependent tests
    skipped because Vulkan instance creation failed in the local environment.
 
+Follow-up validation added on 2026-05-24:
+
+1. `direnv exec . ./build/testing/dvztest_scene test_app_offscreen_colorbar_has_visible_ramp_and_labels`
+   -> `1/1 tests passed`
+2. `direnv exec . ./build/examples/c/visuals/colorbar 1` -> bounded GLFW example smoke passed
+
 ## Remaining Follow-Ups
 
 Later work should not reopen the first colorbar slice. Treat these as follow-up lanes:
 
-1. app/offscreen visible colorbar smoke fixtures once Vulkan runtime is available,
-2. shared or consolidated colorbars in grid-level fixed-size slots,
-3. categorical legend support through a dedicated legend slice,
-4. richer scale semantics such as log transforms and interactive range editing,
-5. visual-family pressure beyond image/volume scalar mapping where examples need it.
+1. shared or consolidated colorbars in grid-level fixed-size slots,
+2. categorical legend support through a dedicated legend slice,
+3. richer scale semantics such as log transforms and interactive range editing,
+4. visual-family pressure beyond image/volume scalar mapping where examples need it.

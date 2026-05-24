@@ -231,10 +231,13 @@ Required v0.4 slice:
 
 Remaining follow-ups belong with examples/layout/legend/scale work, not this closed first slice:
 
-1. app/offscreen visible colorbar smoke fixtures,
-2. shared or consolidated grid-level colorbars,
-3. categorical legend support,
-4. richer scale transforms and interactive range editing.
+1. shared or consolidated grid-level colorbars,
+2. categorical legend support,
+3. richer scale transforms and interactive range editing.
+
+The app/offscreen visible colorbar smoke follow-up is covered by
+`test_app_offscreen_colorbar_has_visible_ramp_and_labels`; the interactive example smoke path is
+`examples/c/visuals/colorbar.c`.
 
 Primary spec:
 
