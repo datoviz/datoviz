@@ -119,10 +119,10 @@ _hover_pick_pointer(DvzInputRouter* router, const DvzPointerEvent* event, void* 
 /**
  * Consume pick results, update hover styling, and queue the next frame-local pick request.
  *
- * @param win app-window whose frame just completed
+ * @param win view whose frame just completed
  * @param user_data hover-pick example state
  */
-static void _hover_pick_frame(DvzAppWindow* win, void* user_data)
+static void _hover_pick_frame(DvzView* win, void* user_data)
 {
     (void)win;
     HoverPickState* state = (HoverPickState*)user_data;
@@ -254,16 +254,16 @@ int main(int argc, char** argv)
     app = dvz_app(scene);
     EXAMPLE_CHECK(app != NULL, "dvz_app() failed (no GPU or display?)");
 
-    DvzAppWindow* win = dvz_app_window_glfw(app, figure, WIDTH, HEIGHT, "pick_hover");
-    EXAMPLE_CHECK(win != NULL, "dvz_app_window_glfw() failed (GLFW unavailable?)");
+    DvzView* win = dvz_view_glfw(app, figure, WIDTH, HEIGHT, "pick_hover");
+    EXAMPLE_CHECK(win != NULL, "dvz_view_glfw() failed (GLFW unavailable?)");
 
-    DvzInputRouter* router = dvz_app_window_input(win);
-    EXAMPLE_CHECK(router != NULL, "dvz_app_window_input() failed");
+    DvzInputRouter* router = dvz_view_input(win);
+    EXAMPLE_CHECK(router != NULL, "dvz_view_input() failed");
 
-    DvzPanzoom* panzoom = dvz_app_window_panel_panzoom(win, panel, NULL);
+    DvzPanzoom* panzoom = dvz_view_panzoom(win, panel, NULL);
     EXAMPLE_CHECK(panzoom != NULL, "failed to create or bind panzoom controller");
     dvz_input_subscribe_pointer(router, _hover_pick_pointer, &state);
-    dvz_app_window_set_frame_callback(win, _hover_pick_frame, &state);
+    dvz_view_set_frame_callback(win, _hover_pick_frame, &state);
 
     dvz_app_run(app, example_frame_count(argc, argv));
     ret = 0;

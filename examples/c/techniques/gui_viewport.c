@@ -53,10 +53,10 @@ static void update_visual(GuiViewportState* state)
  * Build the dockable GUI windows.
  *
  * @param gui GUI overlay
- * @param win app window
+ * @param win view
  * @param user_data example state
  */
-static void gui_callback(DvzGui* gui, DvzAppWindow* win, void* user_data)
+static void gui_callback(DvzGui* gui, DvzView* win, void* user_data)
 {
     (void)win;
     GuiViewportState* state = (GuiViewportState*)user_data;
@@ -142,13 +142,13 @@ int main(int argc, char** argv)
     app = dvz_app(scene);
     EXAMPLE_CHECK(app != NULL, "dvz_app() failed (no GPU or display?)");
 
-    DvzAppWindow* host_win =
-        dvz_app_window_glfw(app, host_figure, 1000, 700, "gui_viewport");
-    EXAMPLE_CHECK(host_win != NULL, "dvz_app_window_glfw() failed (GLFW unavailable?)");
+    DvzView* host_win =
+        dvz_view_glfw(app, host_figure, 1000, 700, "gui_viewport");
+    EXAMPLE_CHECK(host_win != NULL, "dvz_view_glfw() failed (GLFW unavailable?)");
 
     DvzGuiConfig gui_config = dvz_gui_config();
-    DvzGui* gui = dvz_app_window_gui(host_win, &gui_config);
-    EXAMPLE_CHECK(gui != NULL, "dvz_app_window_gui() failed");
+    DvzGui* gui = dvz_view_gui(host_win, &gui_config);
+    EXAMPLE_CHECK(gui != NULL, "dvz_view_gui() failed");
 
     viewport = dvz_gui_viewport(gui, source_figure, NULL);
     EXAMPLE_CHECK(viewport != NULL, "dvz_gui_viewport() failed");
@@ -160,7 +160,7 @@ int main(int argc, char** argv)
     rc = dvz_panel_bind_controller(source_panel, panzoom_controller, DVZ_DIM_MASK_XY);
     EXAMPLE_CHECK(rc == 0, "dvz_panel_bind_controller() failed");
     dvz_panel_connect_input(source_panel, dvz_gui_viewport_input(state.gui_viewport));
-    dvz_app_window_set_gui_callback(host_win, gui_callback, &state);
+    dvz_view_set_gui_callback(host_win, gui_callback, &state);
 
     dvz_app_run(app, example_frame_count(argc, argv));
     ret = 0;

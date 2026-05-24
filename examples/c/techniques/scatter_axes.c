@@ -129,10 +129,10 @@ int main(int argc, char** argv)
     app = dvz_app(scene);
     EXAMPLE_CHECK(app != NULL, "dvz_app() failed (no GPU or display?)");
 
-    DvzAppWindow* win = dvz_app_window_glfw(app, figure, 1000, 700, "scatter_axes");
-    EXAMPLE_CHECK(win != NULL, "dvz_app_window_glfw() failed (GLFW unavailable?)");
+    DvzView* win = dvz_view_glfw(app, figure, 1000, 700, "scatter_axes");
+    EXAMPLE_CHECK(win != NULL, "dvz_view_glfw() failed (GLFW unavailable?)");
 
-    DvzPanzoom* panzoom = dvz_app_window_panel_panzoom(win, panel, NULL);
+    DvzPanzoom* panzoom = dvz_view_panzoom(win, panel, NULL);
     EXAMPLE_CHECK(panzoom != NULL, "failed to create or bind panzoom controller");
 
     dvz_app_run(app, example_frame_count(argc, argv));

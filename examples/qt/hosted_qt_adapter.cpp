@@ -25,7 +25,7 @@
 
 
 
-static void _request_frame_callback(DvzAppWindow* win, void* user_data);
+static void _request_frame_callback(DvzView* win, void* user_data);
 
 
 
@@ -188,7 +188,7 @@ static bool _append_extension(
 
 
 
-static void _request_frame_callback(DvzAppWindow* win, void* user_data)
+static void _request_frame_callback(DvzView* win, void* user_data)
 {
     (void)win;
     DvzQtHostedWindow* window = static_cast<DvzQtHostedWindow*>(user_data);
@@ -229,8 +229,8 @@ void DvzQtHostedWindow::schedule_frame()
 
 void DvzQtHostedWindow::request_scene_frame()
 {
-    if (_app_window != nullptr)
-        dvz_app_window_request_frame(_app_window);
+    if (_view != nullptr)
+        dvz_view_request_frame(_view);
     else
         requestUpdate();
 }
@@ -239,12 +239,12 @@ void DvzQtHostedWindow::request_scene_frame()
 
 void DvzQtHostedWindow::release_surface()
 {
-    if (_app_window == nullptr)
+    if (_view == nullptr)
         return;
 
-    (void)dvz_app_window_release_external_surface(_app_window);
+    (void)dvz_view_release_external_surface(_view);
 
-    _app_window = nullptr;
+    _view = nullptr;
     _app = nullptr;
 }
 
@@ -257,9 +257,9 @@ void DvzQtHostedWindow::set_wheel_scale(float scale)
 
 
 
-DvzAppWindow* DvzQtHostedWindow::app_window() const
+DvzView* DvzQtHostedWindow::view() const
 {
-    return _app_window;
+    return _view;
 }
 
 
@@ -337,15 +337,15 @@ void DvzQtHostedWindow::mouseReleaseEvent(QMouseEvent* event)
 
 void DvzQtHostedWindow::wheelEvent(QWheelEvent* event)
 {
-    if (_app_window == nullptr)
+    if (_view == nullptr)
         return;
 
     const QPointF pos = event->position();
     const QSize win_size = size();
     const QPointF wheel = _wheel_steps(event) * (double)_wheel_scale;
 
-    (void)dvz_app_window_emit_wheel(
-        _app_window, (float)pos.x(), (float)pos.y(), (float)win_size.width(),
+    (void)dvz_view_emit_wheel(
+        _view, (float)pos.x(), (float)pos.y(), (float)win_size.width(),
         (float)win_size.height(), (float)wheel.x(), (float)wheel.y(), _mods(event->modifiers()));
 }
 
@@ -400,7 +400,7 @@ DvzWindowExternalSurfaceInfo DvzQtHostedWindow::_surface_info(VkSurfaceKHR surfa
 
 bool DvzQtHostedWindow::_ensure_initialized()
 {
-    if (_app_window != nullptr)
+    if (_view != nullptr)
         return true;
     if (_app == nullptr || _figure == nullptr || _instance == nullptr || !_instance->isValid())
         return false;
@@ -410,18 +410,18 @@ bool DvzQtHostedWindow::_ensure_initialized()
         return false;
 
     DvzWindowExternalSurfaceInfo info = _surface_info(surface);
-    _app_window = dvz_app_window_external_surface(_app, _figure, &info);
-    if (_app_window == nullptr)
+    _view = dvz_view_external_surface(_app, _figure, &info);
+    if (_view == nullptr)
         return false;
 
-    dvz_app_window_set_request_frame_callback(_app_window, _request_frame_callback, this);
+    dvz_view_set_request_frame_callback(_view, _request_frame_callback, this);
     if (_panel != nullptr)
     {
         DvzController* controller = dvz_panzoom(dvz_figure_scene(_figure), NULL);
         if (controller != NULL &&
             dvz_panel_bind_controller(_panel, controller, DVZ_DIM_MASK_XY) == 0)
         {
-            (void)dvz_panel_connect_input(_panel, dvz_app_window_input(_app_window));
+            (void)dvz_panel_connect_input(_panel, dvz_view_input(_view));
         }
     }
     _emit_resize();
@@ -432,7 +432,7 @@ bool DvzQtHostedWindow::_ensure_initialized()
 
 void DvzQtHostedWindow::_emit_resize()
 {
-    if (_app_window == nullptr)
+    if (_view == nullptr)
         return;
 
     const double scale = devicePixelRatio();
@@ -440,8 +440,8 @@ void DvzQtHostedWindow::_emit_resize()
     const int fb_width = (int)std::lround((double)win_size.width() * scale);
     const int fb_height = (int)std::lround((double)win_size.height() * scale);
 
-    (void)dvz_app_window_emit_resize(
-        _app_window, _positive_u32(fb_width), _positive_u32(fb_height),
+    (void)dvz_view_emit_resize(
+        _view, _positive_u32(fb_width), _positive_u32(fb_height),
         _positive_u32(win_size.width()), _positive_u32(win_size.height()),
         scale > 0.0 ? (float)scale : 1.0f, scale > 0.0 ? (float)scale : 1.0f);
 }
@@ -451,13 +451,13 @@ void DvzQtHostedWindow::_emit_resize()
 void DvzQtHostedWindow::_emit_pointer(
     DvzPointerEventType type, QMouseEvent* event, DvzPointerButton button)
 {
-    if (_app_window == nullptr)
+    if (_view == nullptr)
         return;
 
     const QPointF pos = event->position();
     const QSize win_size = size();
-    (void)dvz_app_window_emit_pointer(
-        _app_window, type, (float)pos.x(), (float)pos.y(), (float)win_size.width(),
+    (void)dvz_view_emit_pointer(
+        _view, type, (float)pos.x(), (float)pos.y(), (float)win_size.width(),
         (float)win_size.height(), button, _mods(event->modifiers()));
 }
 
@@ -465,13 +465,13 @@ void DvzQtHostedWindow::_emit_pointer(
 
 void DvzQtHostedWindow::_emit_key(DvzKeyboardEventType type, QKeyEvent* event)
 {
-    if (_app_window == nullptr)
+    if (_view == nullptr)
         return;
 
     const DvzKeyCode key = _key(event->key());
     if (key == DVZ_KEY_UNKNOWN)
         return;
-    (void)dvz_app_window_emit_key(_app_window, type, key, _mods(event->modifiers()));
+    (void)dvz_view_emit_key(_view, type, key, _mods(event->modifiers()));
 }
 
 
@@ -488,7 +488,7 @@ void DvzQtHostedWindow::_render_once()
 
     VkSurfaceKHR surface = QVulkanInstance::surfaceForWindow(this);
     DvzWindowExternalSurfaceInfo info = _surface_info(surface);
-    if (dvz_app_window_update_external_surface(_app_window, &info) != 0)
+    if (dvz_view_update_external_surface(_view, &info) != 0)
     {
         std::fprintf(stderr, "hosted_qt: surface update failed\n");
         close();
@@ -499,7 +499,7 @@ void DvzQtHostedWindow::_render_once()
         return;
     _repaint_requested = false;
 
-    const int rc = dvz_app_window_render_once(_app_window);
+    const int rc = dvz_view_render_once(_view);
     if (rc < 0)
     {
         std::fprintf(stderr, "hosted_qt: render failed (%d)\n", rc);

@@ -33,7 +33,7 @@ class DvzQtHostedWindow : public QWindow
     void release_surface();
     void set_wheel_scale(float scale);
 
-    DvzAppWindow* app_window() const;
+    DvzView* view() const;
     uint32_t request_count() const;
 
   protected:
@@ -55,7 +55,7 @@ class DvzQtHostedWindow : public QWindow
     DvzFigure* _figure = nullptr;
     DvzPanel* _panel = nullptr;
     QVulkanInstance* _instance = nullptr;
-    DvzAppWindow* _app_window = nullptr;
+    DvzView* _view = nullptr;
     uint32_t _request_count = 0;
     bool _repaint_requested = true;
     float _wheel_scale = 1.0f;

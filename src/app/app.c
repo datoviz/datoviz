@@ -62,7 +62,7 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define DVZ_APP_MAX_WINDOWS 16
+#define DVZ_APP_MAX_VIEWS 16
 
 /* Keep borrowed canvas targets out of the scene emitter's low transient id range. */
 #define DVZ_APP_CANVAS_TARGET_BASE UINT64_C(0xF000000000000000)
@@ -101,7 +101,7 @@ typedef struct DvzAppRuntimeFailure
 
 
 
-struct DvzAppWindow
+struct DvzView
 {
     DvzApp*    app;
     DvzFigure* figure;
@@ -113,9 +113,9 @@ struct DvzAppWindow
     bool is_interactive;
     bool render_enabled;
     uint64_t frame_index;
-    DvzAppFrameCallback frame_callback;
+    DvzViewFrameCallback frame_callback;
     void* frame_user_data;
-    DvzAppRequestFrameCallback request_frame_callback;
+    DvzViewRequestFrameCallback request_frame_callback;
     void* request_frame_user_data;
     DvzAppTraceSnapshot last_trace_snapshot;
     bool has_last_trace_snapshot;
@@ -174,8 +174,8 @@ struct DvzApp
     bool owns_runtime;
     bool owns_window_host;
 #endif
-    uint32_t     window_count;
-    DvzAppWindow windows[DVZ_APP_MAX_WINDOWS];
+    uint32_t     view_count;
+    DvzView views[DVZ_APP_MAX_VIEWS];
     DvzAppStatus status;
 };
 
@@ -634,10 +634,10 @@ static void _app_apply_runtime_caps(DvzApp* app, DvzCapabilitySnapshot* caps)
 /**
  * Update the per-window FPS estimator after a submitted frame.
  *
- * @param win app-window receiving the submitted frame
+ * @param win view receiving the submitted frame
  * @param now current monotonic timestamp in nanoseconds
  */
-static void _app_window_fps_update(DvzAppWindow* win, uint64_t now)
+static void _view_fps_update(DvzView* win, uint64_t now)
 {
     ANN(win);
     if (now == 0)
@@ -684,11 +684,11 @@ static void _app_window_fps_update(DvzAppWindow* win, uint64_t now)
 
 
 /**
- * Mark an app-window as needing a submitted frame.
+ * Mark a view as needing a submitted frame.
  *
- * @param win app-window to invalidate
+ * @param win view to invalidate
  */
-static void _app_window_mark_dirty(DvzAppWindow* win)
+static void _view_mark_dirty(DvzView* win)
 {
     ANN(win);
     win->dirty = true;
@@ -698,39 +698,39 @@ static void _app_window_mark_dirty(DvzAppWindow* win)
 
 
 /**
- * Forward input-router events into the app-window scheduler state.
+ * Forward input-router events into the view scheduler state.
  *
  * @param router input router that emitted the event
  * @param event input event
- * @param user_data app-window pointer
+ * @param user_data view pointer
  */
 static void
-_app_window_input_event(DvzInputRouter* router, const DvzInputEvent* event, void* user_data)
+_view_input_event(DvzInputRouter* router, const DvzInputEvent* event, void* user_data)
 {
     (void)router;
     if (event == NULL)
         return;
-    DvzAppWindow* win = (DvzAppWindow*)user_data;
+    DvzView* win = (DvzView*)user_data;
     if (win == NULL)
         return;
-    _app_window_mark_dirty(win);
+    _view_mark_dirty(win);
 }
 
 
 
 /**
- * Subscribe an app-window to input events that invalidate rendered content.
+ * Subscribe a view to input events that invalidate rendered content.
  *
- * @param win app-window receiving input events
+ * @param win view receiving input events
  */
-static void _app_window_subscribe_input(DvzAppWindow* win)
+static void _view_subscribe_input(DvzView* win)
 {
     ANN(win);
     if (win->canvas == NULL)
         return;
     DvzInputRouter* router = dvz_canvas_input(win->canvas);
     if (router != NULL)
-        dvz_input_subscribe_event(router, _app_window_input_event, win);
+        dvz_input_subscribe_event(router, _view_input_event, win);
 }
 
 
@@ -799,7 +799,7 @@ static void _app_host_wait_until(DvzApp* app, uint64_t deadline_ns)
 
 
 /**
- * Return whether at least one interactive app-window is still open.
+ * Return whether at least one interactive view is still open.
  *
  * @param app app to inspect
  * @return whether the interactive loop should continue
@@ -807,9 +807,9 @@ static void _app_host_wait_until(DvzApp* app, uint64_t deadline_ns)
 static bool _app_any_interactive_window_open(DvzApp* app)
 {
     ANN(app);
-    for (uint32_t i = 0; i < app->window_count; i++)
+    for (uint32_t i = 0; i < app->view_count; i++)
     {
-        DvzAppWindow* win = &app->windows[i];
+        DvzView* win = &app->views[i];
         if (win->is_interactive && win->window != NULL && !dvz_window_should_close(win->window))
             return true;
     }
@@ -831,9 +831,9 @@ static bool _app_has_continuous_work(DvzApp* app)
         return true;
     if (app->scene != NULL && dvz_scene_has_active_animations(app->scene))
         return true;
-    for (uint32_t i = 0; i < app->window_count; i++)
+    for (uint32_t i = 0; i < app->view_count; i++)
     {
-        DvzAppWindow* win = &app->windows[i];
+        DvzView* win = &app->views[i];
         if (win->is_interactive && win->window != NULL && dvz_window_should_close(win->window))
             continue;
         if (win->render_enabled && win->frame_callback != NULL)
@@ -850,12 +850,12 @@ static bool _app_has_continuous_work(DvzApp* app)
 
 
 /**
- * Return whether one app-window's figure has queued scene requests.
+ * Return whether one view's figure has queued scene requests.
  *
- * @param win app-window to inspect
+ * @param win view to inspect
  * @return whether pick/probe work is pending for the figure
  */
-static bool _app_window_has_pending_requests(DvzAppWindow* win)
+static bool _view_has_pending_requests(DvzView* win)
 {
     ANN(win);
     if (win->app == NULL || win->app->scene == NULL || win->figure == NULL)
@@ -879,12 +879,12 @@ static bool _app_window_has_pending_requests(DvzAppWindow* win)
 
 
 /**
- * Return whether one app-window has retained scene work waiting for a frame.
+ * Return whether one view has retained scene work waiting for a frame.
  *
- * @param win app-window to inspect
+ * @param win view to inspect
  * @return whether the window's figure has dirty scene state
  */
-static bool _app_window_has_pending_scene_work(DvzAppWindow* win)
+static bool _view_has_pending_scene_work(DvzView* win)
 {
     ANN(win);
     return _scene_figure_has_pending_render_work(win->figure);
@@ -901,15 +901,15 @@ static bool _app_window_has_pending_scene_work(DvzAppWindow* win)
 static bool _app_has_pending_windows(DvzApp* app)
 {
     ANN(app);
-    for (uint32_t i = 0; i < app->window_count; i++)
+    for (uint32_t i = 0; i < app->view_count; i++)
     {
-        DvzAppWindow* win = &app->windows[i];
+        DvzView* win = &app->views[i];
         if (win->is_interactive && win->window != NULL && dvz_window_should_close(win->window))
             continue;
         if (
             win->render_enabled &&
-            (win->dirty || win->frame_requested || _app_window_has_pending_requests(win) ||
-             _app_window_has_pending_scene_work(win)))
+            (win->dirty || win->frame_requested || _view_has_pending_requests(win) ||
+             _view_has_pending_scene_work(win)))
             return true;
     }
     return false;
@@ -927,9 +927,9 @@ static uint64_t _app_next_continuous_deadline(DvzApp* app)
 {
     ANN(app);
     uint64_t deadline = 0;
-    for (uint32_t i = 0; i < app->window_count; i++)
+    for (uint32_t i = 0; i < app->view_count; i++)
     {
-        DvzAppWindow* win = &app->windows[i];
+        DvzView* win = &app->views[i];
         if (!win->render_enabled || win->next_frame_ns == 0)
             continue;
         if (win->is_interactive && win->window != NULL && dvz_window_should_close(win->window))
@@ -943,14 +943,14 @@ static uint64_t _app_next_continuous_deadline(DvzApp* app)
 
 
 /**
- * Return whether one app-window should render on this scheduler tick.
+ * Return whether one view should render on this scheduler tick.
  *
- * @param win app-window to inspect
+ * @param win view to inspect
  * @param continuous whether continuous scheduling is active
  * @param now current scheduler timestamp in nanoseconds
- * @return whether the app-window should render
+ * @return whether the view should render
  */
-static bool _app_window_should_render(DvzAppWindow* win, bool continuous, uint64_t now)
+static bool _view_should_render(DvzView* win, bool continuous, uint64_t now)
 {
     ANN(win);
     if (!win->render_enabled)
@@ -966,9 +966,9 @@ static bool _app_window_should_render(DvzAppWindow* win, bool continuous, uint64
     }
     if (win->dirty || win->frame_requested)
         return true;
-    if (_app_window_has_pending_requests(win))
+    if (_view_has_pending_requests(win))
         return true;
-    if (_app_window_has_pending_scene_work(win))
+    if (_view_has_pending_scene_work(win))
         return true;
     if (continuous)
         return win->next_frame_ns == 0 || now >= win->next_frame_ns;
@@ -977,16 +977,16 @@ static bool _app_window_should_render(DvzAppWindow* win, bool continuous, uint64
 
 
 /**
- * Return whether one app-window should render on this scheduler tick.
+ * Return whether one view should render on this scheduler tick.
  *
- * @param win app-window to inspect
+ * @param win view to inspect
  * @param continuous whether continuous scheduling is active
  * @param now current scheduler timestamp in nanoseconds
- * @return whether the app-window should render
+ * @return whether the view should render
  */
-bool _dvz_app_window_scheduler_should_render(DvzAppWindow* win, bool continuous, uint64_t now)
+bool _dvz_view_scheduler_should_render(DvzView* win, bool continuous, uint64_t now)
 {
-    return _app_window_should_render(win, continuous, now);
+    return _view_should_render(win, continuous, now);
 }
 
 
@@ -1003,7 +1003,7 @@ bool _dvz_app_has_continuous_work(DvzApp* app)
 
 
 /**
- * Forward scene request-frame notifications to the app-window that owns the figure.
+ * Forward scene request-frame notifications to the view that owns the figure.
  *
  * @param figure figure requesting a frame
  * @param user_data app pointer
@@ -1013,24 +1013,24 @@ static void _app_scene_request_frame(DvzFigure* figure, void* user_data)
     DvzApp* app = (DvzApp*)user_data;
     if (app == NULL || figure == NULL)
         return;
-    for (uint32_t i = 0; i < app->window_count; i++)
+    for (uint32_t i = 0; i < app->view_count; i++)
     {
-        DvzAppWindow* win = &app->windows[i];
+        DvzView* win = &app->views[i];
         if (win->figure == figure)
-            dvz_app_window_request_frame(win);
+            dvz_view_request_frame(win);
     }
 }
 
 
 
 /**
- * Update one app-window's next continuous-frame deadline after a submitted frame.
+ * Update one view's next continuous-frame deadline after a submitted frame.
  *
- * @param win app-window to update
+ * @param win view to update
  * @param now current scheduler timestamp in nanoseconds
  * @param fps_cap positive FPS cap, or zero for unlimited
  */
-static void _app_window_update_deadline(DvzAppWindow* win, uint64_t now, double fps_cap)
+static void _view_update_deadline(DvzView* win, uint64_t now, double fps_cap)
 {
     ANN(win);
     if (fps_cap <= 0)
@@ -1972,10 +1972,10 @@ static void _app_trace_stream_full(
  * frames rewrite one in-place status line without scrolling. In full mode, every frame prints an
  * expanded command list.
  *
- * @param win app-window owning the trace state
+ * @param win view owning the trace state
  * @param stream the emitted command stream
  */
-static void _app_trace_stream(DvzAppWindow* win, const DvzDrp2CommandStream* stream)
+static void _app_trace_stream(DvzView* win, const DvzDrp2CommandStream* stream)
 {
     ANN(win);
     ANN(stream);
@@ -2037,10 +2037,10 @@ static void _app_trace_stream(DvzAppWindow* win, const DvzDrp2CommandStream* str
 /**
  * Synchronize the figure size with the current output before emitting a frame.
  *
- * @param win app window being drawn
+ * @param win view being drawn
  * @param frame canvas frame attached to the DRP2 runtime
  */
-static void _app_sync_figure_size(DvzAppWindow* win, const DvzStreamFrame* frame)
+static void _app_sync_figure_size(DvzView* win, const DvzStreamFrame* frame)
 {
     ANN(win);
     ANN(win->figure);
@@ -2204,10 +2204,10 @@ _app_runtime_failure_equal(const DvzAppRuntimeFailure* a, const DvzAppRuntimeFai
 /**
  * Clear repeated runtime-failure state after a successful frame.
  *
- * @param win app-window carrying failure state
+ * @param win view carrying failure state
  * @param context short recovery context
  */
-static void _app_runtime_failure_reset(DvzAppWindow* win, const char* context)
+static void _app_runtime_failure_reset(DvzView* win, const char* context)
 {
     ANN(win);
     ANN(context);
@@ -2227,13 +2227,13 @@ static void _app_runtime_failure_reset(DvzAppWindow* win, const char* context)
 /**
  * Report one failed DRP2 runtime execution, suppressing exact repeats.
  *
- * @param win app-window carrying failure state
+ * @param win view carrying failure state
  * @param prefix short failure context
  * @param stream the emitted command stream
  * @param result the failed validation result
  */
 static void _app_log_runtime_failure(
-    DvzAppWindow* win, const char* prefix, const DvzDrp2CommandStream* stream,
+    DvzView* win, const char* prefix, const DvzDrp2CommandStream* stream,
     DvzDrp2ValidationResult result)
 {
     ANN(win);
@@ -2292,10 +2292,10 @@ static void _app_log_runtime_failure(
 /**
  * Return whether a frame callback may safely run mutation-oriented user code.
  *
- * @param win app window owning the callback
+ * @param win view owning the callback
  * @return true when no emitted scene stream is still live
  */
-static bool _app_frame_callback_allowed(DvzAppWindow* win)
+static bool _app_frame_callback_allowed(DvzView* win)
 {
     ANN(win);
     if (win->app == NULL || win->app->scene == NULL)
@@ -2308,12 +2308,12 @@ static bool _app_frame_callback_allowed(DvzAppWindow* win)
 /**
  * Append one emitted app stream to the active DVZR recorder.
  *
- * @param win app window owning the recorder
+ * @param win view owning the recorder
  * @param frame borrowed stream frame for target dimensions
  * @param stream emitted scene stream
  */
 static void _app_record_stream(
-    DvzAppWindow* win, const DvzStreamFrame* frame, const DvzDrp2CommandStream* stream)
+    DvzView* win, const DvzStreamFrame* frame, const DvzDrp2CommandStream* stream)
 {
     ANN(win);
     ANN(frame);
@@ -2467,9 +2467,9 @@ static bool _app_replay_find_target_id(
 /**
  * Reset live replay timing and runtime state.
  *
- * @param win replay app-window
+ * @param win replay view
  */
-static void _app_replay_restart(DvzAppWindow* win)
+static void _app_replay_restart(DvzView* win)
 {
     ANN(win);
     if (win->app != NULL && win->app->runtime != NULL)
@@ -2484,10 +2484,10 @@ static void _app_replay_restart(DvzAppWindow* win)
 /**
  * Sleep until a recorded frame timestamp should be presented.
  *
- * @param win replay app-window
+ * @param win replay view
  * @param frame recorded frame metadata
  */
-static void _app_replay_pace(DvzAppWindow* win, const DvzDrp2RecordedFrame* frame)
+static void _app_replay_pace(DvzView* win, const DvzDrp2RecordedFrame* frame)
 {
     ANN(win);
     if (!win->replay_paced || frame == NULL || frame->t_present <= 0)
@@ -2515,10 +2515,10 @@ static void _app_replay_pace(DvzAppWindow* win, const DvzDrp2RecordedFrame* fram
 /**
  * Replay one recorded frame into the current live canvas frame.
  *
- * @param win replay app-window
+ * @param win replay view
  * @param frame borrowed canvas frame
  */
-static void _app_draw_replay(DvzAppWindow* win, const DvzStreamFrame* frame)
+static void _app_draw_replay(DvzView* win, const DvzStreamFrame* frame)
 {
     ANN(win);
     ANN(frame);
@@ -2608,7 +2608,7 @@ static void _app_draw(DvzCanvas* canvas, const DvzStreamFrame* frame, void* user
 {
     (void)canvas;
     ANN(frame);
-    DvzAppWindow* win = (DvzAppWindow*)user_data;
+    DvzView* win = (DvzView*)user_data;
     ANN(win);
     DvzApp* app = win->app;
     ANN(app);
@@ -2700,10 +2700,10 @@ static void _app_draw(DvzCanvas* canvas, const DvzStreamFrame* frame, void* user
 
     if (win->frame_callback != NULL && _app_frame_callback_allowed(win))
         win->frame_callback(win, win->frame_user_data);
-    if (_app_window_has_pending_scene_work(win))
-        dvz_app_window_request_frame(win);
+    if (_view_has_pending_scene_work(win))
+        dvz_view_request_frame(win);
     if (fly_active)
-        dvz_app_window_request_frame(win);
+        dvz_view_request_frame(win);
     win->frame_index++;
 }
 
@@ -2911,9 +2911,9 @@ void dvz_app_destroy(DvzApp* app)
 
 #if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
     _dvz_app_status_finish(&app->status);
-    for (uint32_t i = 0; i < app->window_count; i++)
+    for (uint32_t i = 0; i < app->view_count; i++)
     {
-        DvzAppWindow* win = &app->windows[i];
+        DvzView* win = &app->views[i];
 #if defined(DVZ_HAS_GUI) && DVZ_HAS_GUI
         if (win->gui != NULL)
         {
@@ -2954,17 +2954,17 @@ void dvz_app_destroy(DvzApp* app)
 
 
 /*************************************************************************************************/
-/*  Window management                                                                            */
+/*  View management                                                                            */
 /*************************************************************************************************/
 
-DvzAppWindow*
-dvz_app_window(DvzApp* app, DvzFigure* figure, uint32_t width, uint32_t height)
+DvzView*
+dvz_view_offscreen(DvzApp* app, DvzFigure* figure, uint32_t width, uint32_t height)
 {
     ANN(app);
     ANN(figure);
 
 #if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
-    if (app->window_count >= DVZ_APP_MAX_WINDOWS)
+    if (app->view_count >= DVZ_APP_MAX_VIEWS)
         return NULL;
 
     /* Create the offscreen window. */
@@ -2987,18 +2987,18 @@ dvz_app_window(DvzApp* app, DvzFigure* figure, uint32_t width, uint32_t height)
         return NULL;
     }
 
-    DvzAppWindow* win = &app->windows[app->window_count];
+    DvzView* win = &app->views[app->view_count];
     win->app           = app;
     win->figure        = figure;
     win->window        = window;
     win->canvas        = canvas;
-    win->target_id     = DVZ_APP_CANVAS_TARGET_BASE + (uint64_t)app->window_count;
+    win->target_id     = DVZ_APP_CANVAS_TARGET_BASE + (uint64_t)app->view_count;
     win->render_enabled = true;
-    _app_window_mark_dirty(win);
-    app->window_count++;
+    _view_mark_dirty(win);
+    app->view_count++;
 
     dvz_canvas_set_draw_callback(canvas, _app_draw, win);
-    _app_window_subscribe_input(win);
+    _view_subscribe_input(win);
     return win;
 #else
     (void)width;
@@ -3009,15 +3009,15 @@ dvz_app_window(DvzApp* app, DvzFigure* figure, uint32_t width, uint32_t height)
 
 
 
-DvzAppWindow*
-dvz_app_window_glfw(DvzApp* app, DvzFigure* figure, uint32_t width, uint32_t height,
+DvzView*
+dvz_view_glfw(DvzApp* app, DvzFigure* figure, uint32_t width, uint32_t height,
                     const char* title)
 {
     ANN(app);
     ANN(figure);
 
 #if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE && DVZ_HAS_GLFW
-    if (app->window_count >= DVZ_APP_MAX_WINDOWS)
+    if (app->view_count >= DVZ_APP_MAX_VIEWS)
         return NULL;
 
     DvzWindowConfig wcfg = dvz_window_default_config();
@@ -3048,22 +3048,22 @@ dvz_app_window_glfw(DvzApp* app, DvzFigure* figure, uint32_t width, uint32_t hei
         return NULL;
     }
 
-    DvzAppWindow* win = &app->windows[app->window_count];
+    DvzView* win = &app->views[app->view_count];
     win->app            = app;
     win->figure         = figure;
     win->window         = window;
     win->canvas         = canvas;
-    win->target_id      = DVZ_APP_CANVAS_TARGET_BASE + (uint64_t)app->window_count;
+    win->target_id      = DVZ_APP_CANVAS_TARGET_BASE + (uint64_t)app->view_count;
     win->is_interactive = true;
     win->render_enabled = true;
     win->fps_overlay_enabled = _app_env_flag_enabled("DVZ_FPS_OVERLAY");
-    _app_window_mark_dirty(win);
-    app->window_count++;
+    _view_mark_dirty(win);
+    app->view_count++;
 
     dvz_canvas_set_draw_callback(canvas, _app_draw, win);
-    _app_window_subscribe_input(win);
+    _view_subscribe_input(win);
 #if defined(DVZ_HAS_GUI) && DVZ_HAS_GUI
-    if (win->fps_overlay_enabled && dvz_app_window_gui(win, NULL) == NULL)
+    if (win->fps_overlay_enabled && dvz_view_gui(win, NULL) == NULL)
         log_warn("DVZ_FPS_OVERLAY is enabled but the Dear ImGui overlay could not be created");
 #else
     if (win->fps_overlay_enabled)
@@ -3081,14 +3081,14 @@ dvz_app_window_glfw(DvzApp* app, DvzFigure* figure, uint32_t width, uint32_t hei
 
 
 /**
- * Create an app-window around an externally-owned Vulkan surface.
+ * Create a view around an externally-owned Vulkan surface.
  *
  * @param app app that owns the rendering runtime
  * @param figure figure rendered into the surface
  * @param surface external surface description
- * @return app-window handle, or NULL on failure
+ * @return view handle, or NULL on failure
  */
-DvzAppWindow* dvz_app_window_external_surface(
+DvzView* dvz_view_external_surface(
     DvzApp* app, DvzFigure* figure, const DvzWindowExternalSurfaceInfo* surface)
 {
     ANN(app);
@@ -3096,7 +3096,7 @@ DvzAppWindow* dvz_app_window_external_surface(
     ANN(surface);
 
 #if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
-    if (app->window_count >= DVZ_APP_MAX_WINDOWS)
+    if (app->view_count >= DVZ_APP_MAX_VIEWS)
         return NULL;
 
     DvzWindowConfig wcfg = dvz_window_default_config();
@@ -3126,18 +3126,18 @@ DvzAppWindow* dvz_app_window_external_surface(
         return NULL;
     }
 
-    DvzAppWindow* win = &app->windows[app->window_count];
+    DvzView* win = &app->views[app->view_count];
     win->app        = app;
     win->figure     = figure;
     win->window     = window;
     win->canvas     = canvas;
-    win->target_id  = DVZ_APP_CANVAS_TARGET_BASE + (uint64_t)app->window_count;
+    win->target_id  = DVZ_APP_CANVAS_TARGET_BASE + (uint64_t)app->view_count;
     win->render_enabled = true;
-    _app_window_mark_dirty(win);
-    app->window_count++;
+    _view_mark_dirty(win);
+    app->view_count++;
 
     dvz_canvas_set_draw_callback(canvas, _app_draw, win);
-    _app_window_subscribe_input(win);
+    _view_subscribe_input(win);
     return win;
 #else
     return NULL;
@@ -3151,12 +3151,12 @@ DvzAppWindow* dvz_app_window_external_surface(
 /*************************************************************************************************/
 
 /**
- * Return the content scale currently cached for an app-window.
+ * Return the content scale currently cached for a view.
  *
- * @param win app-window to query
+ * @param win view to query
  * @return horizontal content scale, or 1 when unavailable
  */
-static float _app_window_content_scale(DvzAppWindow* win)
+static float _view_content_scale(DvzView* win)
 {
     ANN(win);
 #if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
@@ -3174,14 +3174,14 @@ static float _app_window_content_scale(DvzAppWindow* win)
 
 
 /**
- * Update the external Vulkan surface associated with a hosted app-window.
+ * Update the external Vulkan surface associated with a hosted view.
  *
- * @param win hosted app-window
+ * @param win hosted view
  * @param surface external surface description
  * @return 0 on success, negative on error
  */
-int dvz_app_window_update_external_surface(
-    DvzAppWindow* win, const DvzWindowExternalSurfaceInfo* surface)
+int dvz_view_update_external_surface(
+    DvzView* win, const DvzWindowExternalSurfaceInfo* surface)
 {
     ANN(win);
     ANN(surface);
@@ -3190,7 +3190,7 @@ int dvz_app_window_update_external_surface(
         return -1;
     int rc = dvz_window_wrap_update_surface(win->window, surface);
     if (rc == 0)
-        dvz_app_window_request_frame(win);
+        dvz_view_request_frame(win);
     return rc;
 #else
     return -1;
@@ -3202,24 +3202,24 @@ int dvz_app_window_update_external_surface(
 /**
  * Release a hosted external Vulkan surface before the host destroys it.
  *
- * @param win hosted app-window
+ * @param win hosted view
  * @return DVZ_CANVAS_FRAME_WAIT_SURFACE on clean release, or negative on error
  */
-int dvz_app_window_release_external_surface(DvzAppWindow* win)
+int dvz_view_release_external_surface(DvzView* win)
 {
     ANN(win);
 #if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
     if (win->window == NULL || dvz_window_backend_type(win->window) != DVZ_BACKEND_WRAP)
         return -1;
 
-    dvz_app_window_set_request_frame_callback(win, NULL, NULL);
+    dvz_view_set_request_frame_callback(win, NULL, NULL);
 
     DvzWindowExternalSurfaceInfo surface = {0};
     surface.scale_x = 1.0f;
     surface.scale_y = 1.0f;
-    if (dvz_app_window_update_external_surface(win, &surface) != 0)
+    if (dvz_view_update_external_surface(win, &surface) != 0)
         return -1;
-    return dvz_app_window_render_once(win);
+    return dvz_view_render_once(win);
 #else
     return -1;
 #endif
@@ -3228,9 +3228,9 @@ int dvz_app_window_release_external_surface(DvzAppWindow* win)
 
 
 /**
- * Emit a hosted resize event for an app-window.
+ * Emit a hosted resize event for a view.
  *
- * @param win app-window receiving the event
+ * @param win view receiving the event
  * @param framebuffer_width framebuffer width in physical pixels
  * @param framebuffer_height framebuffer height in physical pixels
  * @param window_width logical host-window width
@@ -3239,8 +3239,8 @@ int dvz_app_window_release_external_surface(DvzAppWindow* win)
  * @param content_scale_y vertical content scale
  * @return 0 on success, negative on error
  */
-int dvz_app_window_emit_resize(
-    DvzAppWindow* win, uint32_t framebuffer_width, uint32_t framebuffer_height,
+int dvz_view_emit_resize(
+    DvzView* win, uint32_t framebuffer_width, uint32_t framebuffer_height,
     uint32_t window_width, uint32_t window_height, float content_scale_x, float content_scale_y)
 {
     ANN(win);
@@ -3250,7 +3250,7 @@ int dvz_app_window_emit_resize(
     dvz_window_backend_emit_resize(
         win->window, framebuffer_width, framebuffer_height, window_width, window_height,
         content_scale_x, content_scale_y);
-    dvz_app_window_request_frame(win);
+    dvz_view_request_frame(win);
     return 0;
 #else
     return -1;
@@ -3260,9 +3260,9 @@ int dvz_app_window_emit_resize(
 
 
 /**
- * Emit a hosted pointer position/button event for an app-window.
+ * Emit a hosted pointer position/button event for a view.
  *
- * @param win app-window receiving the event
+ * @param win view receiving the event
  * @param type pointer event type
  * @param x pointer x position in logical host-window coordinates
  * @param y pointer y position in logical host-window coordinates
@@ -3272,8 +3272,8 @@ int dvz_app_window_emit_resize(
  * @param mods keyboard modifier bit mask
  * @return 0 on success, negative on error
  */
-int dvz_app_window_emit_pointer(
-    DvzAppWindow* win, DvzPointerEventType type, float x, float y, float window_width,
+int dvz_view_emit_pointer(
+    DvzView* win, DvzPointerEventType type, float x, float y, float window_width,
     float window_height, DvzPointerButton button, int mods)
 {
     ANN(win);
@@ -3285,9 +3285,9 @@ int dvz_app_window_emit_pointer(
         return -1;
     dvz_pointer_emit_position(
         router, type, x, y, window_width, window_height, button, mods,
-        _app_window_content_scale(win), dvz_input_timestamp_ns(),
+        _view_content_scale(win), dvz_input_timestamp_ns(),
         win->window != NULL ? dvz_window_user_data(win->window) : NULL);
-    dvz_app_window_request_frame(win);
+    dvz_view_request_frame(win);
     return 0;
 #else
     return -1;
@@ -3297,9 +3297,9 @@ int dvz_app_window_emit_pointer(
 
 
 /**
- * Emit a hosted pointer wheel event for an app-window.
+ * Emit a hosted pointer wheel event for a view.
  *
- * @param win app-window receiving the event
+ * @param win view receiving the event
  * @param x pointer x position in logical host-window coordinates
  * @param y pointer y position in logical host-window coordinates
  * @param window_width logical host-window width
@@ -3309,8 +3309,8 @@ int dvz_app_window_emit_pointer(
  * @param mods keyboard modifier bit mask
  * @return 0 on success, negative on error
  */
-int dvz_app_window_emit_wheel(
-    DvzAppWindow* win, float x, float y, float window_width, float window_height, float dx,
+int dvz_view_emit_wheel(
+    DvzView* win, float x, float y, float window_width, float window_height, float dx,
     float dy, int mods)
 {
     ANN(win);
@@ -3321,9 +3321,9 @@ int dvz_app_window_emit_wheel(
     if (router == NULL)
         return -1;
     dvz_pointer_emit_wheel(
-        router, x, y, window_width, window_height, dx, dy, mods, _app_window_content_scale(win),
+        router, x, y, window_width, window_height, dx, dy, mods, _view_content_scale(win),
         dvz_input_timestamp_ns(), win->window != NULL ? dvz_window_user_data(win->window) : NULL);
-    dvz_app_window_request_frame(win);
+    dvz_view_request_frame(win);
     return 0;
 #else
     return -1;
@@ -3333,16 +3333,16 @@ int dvz_app_window_emit_wheel(
 
 
 /**
- * Emit a hosted keyboard event for an app-window.
+ * Emit a hosted keyboard event for a view.
  *
- * @param win app-window receiving the event
+ * @param win view receiving the event
  * @param type keyboard event type
  * @param key Datoviz key code
  * @param mods keyboard modifier bit mask
  * @return 0 on success, negative on error
  */
 int
-dvz_app_window_emit_key(DvzAppWindow* win, DvzKeyboardEventType type, DvzKeyCode key, int mods)
+dvz_view_emit_key(DvzView* win, DvzKeyboardEventType type, DvzKeyCode key, int mods)
 {
     ANN(win);
 #if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
@@ -3353,7 +3353,7 @@ dvz_app_window_emit_key(DvzAppWindow* win, DvzKeyboardEventType type, DvzKeyCode
         return -1;
     dvz_keyboard_emit(
         router, type, key, mods, win->window != NULL ? dvz_window_user_data(win->window) : NULL);
-    dvz_app_window_request_frame(win);
+    dvz_view_request_frame(win);
     return 0;
 #else
     return -1;
@@ -3363,7 +3363,7 @@ dvz_app_window_emit_key(DvzAppWindow* win, DvzKeyboardEventType type, DvzKeyCode
 
 
 
-struct DvzCanvas* dvz_app_window_canvas(DvzAppWindow* win)
+struct DvzCanvas* dvz_view_canvas(DvzView* win)
 {
     ANN(win);
 #if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
@@ -3374,7 +3374,7 @@ struct DvzCanvas* dvz_app_window_canvas(DvzAppWindow* win)
 }
 
 
-struct DvzInputRouter* dvz_app_window_input(DvzAppWindow* win)
+struct DvzInputRouter* dvz_view_input(DvzView* win)
 {
     ANN(win);
 #if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
@@ -3386,18 +3386,18 @@ struct DvzInputRouter* dvz_app_window_input(DvzAppWindow* win)
 
 
 /**
- * Connect a panel's bound controllers to an app-window input router.
+ * Connect a panel's bound controllers to a view input router.
  *
- * @param win the app-window
+ * @param win the view
  * @param panel the panel
  * @return 0 on success, -1 on validation error
  */
-int dvz_app_window_connect_panel(DvzAppWindow* win, DvzPanel* panel)
+int dvz_view_connect_panel(DvzView* win, DvzPanel* panel)
 {
     if (win == NULL || panel == NULL)
         return -1;
 
-    DvzInputRouter* router = dvz_app_window_input(win);
+    DvzInputRouter* router = dvz_view_input(win);
     if (router == NULL)
         return -1;
 
@@ -3407,21 +3407,21 @@ int dvz_app_window_connect_panel(DvzAppWindow* win, DvzPanel* panel)
 
 
 /**
- * Bind a controller to a panel and connect the panel to an app-window input router.
+ * Bind a controller to a panel and connect the panel to a view input router.
  *
- * @param win the app-window
+ * @param win the view
  * @param panel the panel
  * @param controller the scene-owned controller
  * @param dims dimension mask
  * @return 0 on success, -1 on validation error
  */
-int dvz_app_window_bind_controller(
-    DvzAppWindow* win, DvzPanel* panel, DvzController* controller, DvzDimMask dims)
+int dvz_view_bind_controller(
+    DvzView* win, DvzPanel* panel, DvzController* controller, DvzDimMask dims)
 {
     if (win == NULL || panel == NULL || controller == NULL)
         return -1;
 
-    DvzInputRouter* router = dvz_app_window_input(win);
+    DvzInputRouter* router = dvz_view_input(win);
     if (router == NULL)
         return -1;
 
@@ -3436,24 +3436,24 @@ int dvz_app_window_bind_controller(
 /**
  * Create, bind, and connect a panzoom controller for one panel.
  *
- * @param win the app-window
+ * @param win the view
  * @param panel the panel
  * @param desc panzoom descriptor, or NULL for defaults
  * @return the panzoom payload, or NULL on validation error
  */
 DvzPanzoom*
-dvz_app_window_panel_panzoom(DvzAppWindow* win, DvzPanel* panel, const DvzPanzoomDesc* desc)
+dvz_view_panzoom(DvzView* win, DvzPanel* panel, const DvzPanzoomDesc* desc)
 {
     if (win == NULL || panel == NULL || panel->figure == NULL || panel->figure->scene == NULL)
         return NULL;
-    if (dvz_app_window_input(win) == NULL)
+    if (dvz_view_input(win) == NULL)
         return NULL;
 
     DvzController* controller = dvz_panzoom(panel->figure->scene, desc);
     DvzPanzoom* panzoom = dvz_controller_panzoom(controller);
     if (panzoom == NULL)
         return NULL;
-    if (dvz_app_window_bind_controller(win, panel, controller, DVZ_DIM_MASK_XY) != 0)
+    if (dvz_view_bind_controller(win, panel, controller, DVZ_DIM_MASK_XY) != 0)
         return NULL;
     return panzoom;
 }
@@ -3463,24 +3463,24 @@ dvz_app_window_panel_panzoom(DvzAppWindow* win, DvzPanel* panel, const DvzPanzoo
 /**
  * Create, bind, and connect an arcball controller for one panel.
  *
- * @param win the app-window
+ * @param win the view
  * @param panel the panel
  * @param desc arcball descriptor, or NULL for defaults
  * @return the arcball payload, or NULL on validation error
  */
 DvzArcball*
-dvz_app_window_panel_arcball(DvzAppWindow* win, DvzPanel* panel, const DvzArcballDesc* desc)
+dvz_view_arcball(DvzView* win, DvzPanel* panel, const DvzArcballDesc* desc)
 {
     if (win == NULL || panel == NULL || panel->figure == NULL || panel->figure->scene == NULL)
         return NULL;
-    if (dvz_app_window_input(win) == NULL)
+    if (dvz_view_input(win) == NULL)
         return NULL;
 
     DvzController* controller = dvz_arcball(panel->figure->scene, desc);
     DvzArcball* arcball = dvz_controller_arcball(controller);
     if (arcball == NULL)
         return NULL;
-    if (dvz_app_window_bind_controller(win, panel, controller, DVZ_DIM_MASK_XYZ) != 0)
+    if (dvz_view_bind_controller(win, panel, controller, DVZ_DIM_MASK_XYZ) != 0)
         return NULL;
     return arcball;
 }
@@ -3490,23 +3490,23 @@ dvz_app_window_panel_arcball(DvzAppWindow* win, DvzPanel* panel, const DvzArcbal
 /**
  * Create, bind, and connect a fly controller for one panel.
  *
- * @param win the app-window
+ * @param win the view
  * @param panel the panel
  * @param desc fly descriptor, or NULL for defaults
  * @return the fly payload, or NULL on validation error
  */
-DvzFly* dvz_app_window_panel_fly(DvzAppWindow* win, DvzPanel* panel, const DvzFlyDesc* desc)
+DvzFly* dvz_view_fly(DvzView* win, DvzPanel* panel, const DvzFlyDesc* desc)
 {
     if (win == NULL || panel == NULL || panel->figure == NULL || panel->figure->scene == NULL)
         return NULL;
-    if (dvz_app_window_input(win) == NULL)
+    if (dvz_view_input(win) == NULL)
         return NULL;
 
     DvzController* controller = dvz_fly(panel->figure->scene, desc);
     DvzFly* fly = dvz_controller_fly(controller);
     if (fly == NULL)
         return NULL;
-    if (dvz_app_window_bind_controller(win, panel, controller, DVZ_DIM_MASK_XYZ) != 0)
+    if (dvz_view_bind_controller(win, panel, controller, DVZ_DIM_MASK_XYZ) != 0)
         return NULL;
     return fly;
 }
@@ -3516,31 +3516,31 @@ DvzFly* dvz_app_window_panel_fly(DvzAppWindow* win, DvzPanel* panel, const DvzFl
 /**
  * Create, bind, and connect a turntable controller for one panel.
  *
- * @param win the app-window
+ * @param win the view
  * @param panel the panel
  * @param desc turntable descriptor, or NULL for defaults
  * @return the turntable payload, or NULL on validation error
  */
-DvzTurntable* dvz_app_window_panel_turntable(
-    DvzAppWindow* win, DvzPanel* panel, const DvzTurntableDesc* desc)
+DvzTurntable* dvz_view_turntable(
+    DvzView* win, DvzPanel* panel, const DvzTurntableDesc* desc)
 {
     if (win == NULL || panel == NULL || panel->figure == NULL || panel->figure->scene == NULL)
         return NULL;
-    if (dvz_app_window_input(win) == NULL)
+    if (dvz_view_input(win) == NULL)
         return NULL;
 
     DvzController* controller = dvz_turntable(panel->figure->scene, desc);
     DvzTurntable* turntable = dvz_controller_turntable(controller);
     if (turntable == NULL)
         return NULL;
-    if (dvz_app_window_bind_controller(win, panel, controller, DVZ_DIM_MASK_XYZ) != 0)
+    if (dvz_view_bind_controller(win, panel, controller, DVZ_DIM_MASK_XYZ) != 0)
         return NULL;
     return turntable;
 }
 
 
 
-int dvz_app_window_capture_png(DvzAppWindow* win, const char* path)
+int dvz_view_capture_png(DvzView* win, const char* path)
 {
     ANN(win);
     ANN(path);
@@ -3608,13 +3608,13 @@ DvzAppCaptureConfig dvz_app_capture_config_from_env(const char* basename)
 
 
 /**
- * Start configured app-window captures.
+ * Start configured view captures.
  *
- * @param win the app-window
+ * @param win the view
  * @param config capture configuration
  * @return 0 on success, negative on error
  */
-int dvz_app_window_capture_start(DvzAppWindow* win, const DvzAppCaptureConfig* config)
+int dvz_view_capture_start(DvzView* win, const DvzAppCaptureConfig* config)
 {
     ANN(win);
     DvzAppCaptureConfig resolved = config != NULL ? *config : dvz_app_capture_config();
@@ -3635,7 +3635,7 @@ int dvz_app_window_capture_start(DvzAppWindow* win, const DvzAppCaptureConfig* c
             log_error("DVZR capture path is too long");
             return -1;
         }
-        if (dvz_app_window_record_start(win, win->capture_dvzr_path) != 0)
+        if (dvz_view_record_start(win, win->capture_dvzr_path) != 0)
             return -1;
         win->capture_dvzr_enabled = true;
     }
@@ -3647,7 +3647,7 @@ int dvz_app_window_capture_start(DvzAppWindow* win, const DvzAppCaptureConfig* c
         {
             log_error("video capture path is too long");
             if (win->capture_dvzr_enabled)
-                (void)dvz_app_window_record_stop(win);
+                (void)dvz_view_record_stop(win);
             win->capture_dvzr_enabled = false;
             return -1;
         }
@@ -3660,7 +3660,7 @@ int dvz_app_window_capture_start(DvzAppWindow* win, const DvzAppCaptureConfig* c
         {
             log_error("video capture backend name is too long");
             if (win->capture_dvzr_enabled)
-                (void)dvz_app_window_record_stop(win);
+                (void)dvz_view_record_stop(win);
             win->capture_dvzr_enabled = false;
             return -1;
         }
@@ -3668,7 +3668,7 @@ int dvz_app_window_capture_start(DvzAppWindow* win, const DvzAppCaptureConfig* c
         {
             log_error("video capture FPS is too large");
             if (win->capture_dvzr_enabled)
-                (void)dvz_app_window_record_stop(win);
+                (void)dvz_view_record_stop(win);
             win->capture_dvzr_enabled = false;
             return -1;
         }
@@ -3682,7 +3682,7 @@ int dvz_app_window_capture_start(DvzAppWindow* win, const DvzAppCaptureConfig* c
         if (dvz_canvas_configure_video_sink(win->canvas, true, &video) != 0)
         {
             if (win->capture_dvzr_enabled)
-                (void)dvz_app_window_record_stop(win);
+                (void)dvz_view_record_stop(win);
             win->capture_dvzr_enabled = false;
             return -1;
         }
@@ -3695,7 +3695,7 @@ int dvz_app_window_capture_start(DvzAppWindow* win, const DvzAppCaptureConfig* c
                 &resolved, ".png", win->capture_png_path, sizeof(win->capture_png_path)))
         {
             log_error("PNG capture path is too long");
-            (void)dvz_app_window_capture_stop(win);
+            (void)dvz_view_capture_stop(win);
             return -1;
         }
         win->capture_png_enabled = true;
@@ -3710,35 +3710,35 @@ int dvz_app_window_capture_start(DvzAppWindow* win, const DvzAppCaptureConfig* c
 
 
 /**
- * Start app-window captures from environment variables.
+ * Start view captures from environment variables.
  *
- * @param win the app-window
+ * @param win the view
  * @param basename fallback output basename
  * @return 0 on success, negative on error
  */
-int dvz_app_window_capture_from_env(DvzAppWindow* win, const char* basename)
+int dvz_view_capture_from_env(DvzView* win, const char* basename)
 {
     ANN(win);
     DvzAppCaptureConfig config = dvz_app_capture_config_from_env(basename);
-    return dvz_app_window_capture_start(win, &config);
+    return dvz_view_capture_start(win, &config);
 }
 
 
 
 /**
- * Stop active app-window captures.
+ * Stop active view captures.
  *
- * @param win the app-window
+ * @param win the view
  * @return 0 on success, negative on error
  */
-int dvz_app_window_capture_stop(DvzAppWindow* win)
+int dvz_view_capture_stop(DvzView* win)
 {
     ANN(win);
 #if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
     int rc = 0;
     if (win->capture_png_enabled)
     {
-        if (dvz_app_window_capture_png(win, win->capture_png_path) != 0)
+        if (dvz_view_capture_png(win, win->capture_png_path) != 0)
             rc = -1;
         else
             dvz_fprintf(stdout, "datoviz: saved %s\n", win->capture_png_path);
@@ -3756,7 +3756,7 @@ int dvz_app_window_capture_stop(DvzAppWindow* win)
 
     if (win->capture_dvzr_enabled)
     {
-        if (dvz_app_window_record_stop(win) != 0)
+        if (dvz_view_record_stop(win) != 0)
             rc = -1;
         else
             dvz_fprintf(stdout, "datoviz: saved %s\n", win->capture_dvzr_path);
@@ -3770,13 +3770,13 @@ int dvz_app_window_capture_stop(DvzAppWindow* win)
 
 
 /**
- * Start app-window DVZR recording.
+ * Start view DVZR recording.
  *
- * @param win the app-window
+ * @param win the view
  * @param path output recording directory path
  * @return 0 on success, negative on error
  */
-int dvz_app_window_record_start(DvzAppWindow* win, const char* path)
+int dvz_view_record_start(DvzView* win, const char* path)
 {
     ANN(win);
     ANN(path);
@@ -3799,7 +3799,7 @@ int dvz_app_window_record_start(DvzAppWindow* win, const char* path)
     win->recording_last_t_present = 0.0;
     win->recording_target_created = false;
     win->recording_has_last_frame = false;
-    dvz_app_window_request_frame(win);
+    dvz_view_request_frame(win);
     return 0;
 #else
     return -1;
@@ -3809,12 +3809,12 @@ int dvz_app_window_record_start(DvzAppWindow* win, const char* path)
 
 
 /**
- * Stop app-window DVZR recording.
+ * Stop view DVZR recording.
  *
- * @param win the app-window
+ * @param win the view
  * @return 0 on success, negative on error
  */
-int dvz_app_window_record_stop(DvzAppWindow* win)
+int dvz_view_record_stop(DvzView* win)
 {
     ANN(win);
 #if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
@@ -3824,7 +3824,7 @@ int dvz_app_window_record_stop(DvzAppWindow* win)
     win->recorder = NULL;
     win->recording_target_created = false;
     win->recording_has_last_frame = false;
-    dvz_app_window_request_frame(win);
+    dvz_view_request_frame(win);
     return ok ? 0 : -1;
 #else
     return -1;
@@ -3834,13 +3834,13 @@ int dvz_app_window_record_stop(DvzAppWindow* win)
 
 
 /**
- * Start app-window DVZR live replay.
+ * Start view DVZR live replay.
  *
- * @param win the app-window
+ * @param win the view
  * @param path input recording directory path
  * @return 0 on success, negative on error
  */
-int dvz_app_window_replay_start(DvzAppWindow* win, const char* path)
+int dvz_view_replay_start(DvzView* win, const char* path)
 {
     ANN(win);
     ANN(path);
@@ -3869,7 +3869,7 @@ int dvz_app_window_replay_start(DvzAppWindow* win, const char* path)
     win->replay_speed = 1.0;
     win->render_enabled = true;
     dvz_drp2_runtime_reset(win->app->runtime);
-    dvz_app_window_request_frame(win);
+    dvz_view_request_frame(win);
     return 0;
 #else
     return -1;
@@ -3879,12 +3879,12 @@ int dvz_app_window_replay_start(DvzAppWindow* win, const char* path)
 
 
 /**
- * Stop app-window DVZR live replay.
+ * Stop view DVZR live replay.
  *
- * @param win the app-window
+ * @param win the view
  * @return 0 on success, negative on error
  */
-int dvz_app_window_replay_stop(DvzAppWindow* win)
+int dvz_view_replay_stop(DvzView* win)
 {
     ANN(win);
 #if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
@@ -3895,7 +3895,7 @@ int dvz_app_window_replay_stop(DvzAppWindow* win)
     win->replay_target_id = 0;
     win->replay_frame_index = 0;
     win->replay_clock_started = false;
-    dvz_app_window_request_frame(win);
+    dvz_view_request_frame(win);
     return 0;
 #else
     return -1;
@@ -3907,14 +3907,14 @@ int dvz_app_window_replay_stop(DvzAppWindow* win)
 /**
  * Enable or disable timestamp-paced live replay.
  *
- * @param win the app-window
+ * @param win the view
  * @param paced whether replay waits for recorded timestamps
  */
-void dvz_app_window_replay_set_paced(DvzAppWindow* win, bool paced)
+void dvz_view_replay_set_paced(DvzView* win, bool paced)
 {
     ANN(win);
     win->replay_paced = paced;
-    dvz_app_window_request_frame(win);
+    dvz_view_request_frame(win);
 }
 
 
@@ -3922,16 +3922,16 @@ void dvz_app_window_replay_set_paced(DvzAppWindow* win, bool paced)
 /**
  * Set the live replay speed multiplier.
  *
- * @param win the app-window
+ * @param win the view
  * @param speed speed multiplier
  */
-void dvz_app_window_replay_set_speed(DvzAppWindow* win, double speed)
+void dvz_view_replay_set_speed(DvzView* win, double speed)
 {
     ANN(win);
     if (speed > 0)
     {
         win->replay_speed = speed;
-        dvz_app_window_request_frame(win);
+        dvz_view_request_frame(win);
     }
 }
 
@@ -3940,14 +3940,14 @@ void dvz_app_window_replay_set_speed(DvzAppWindow* win, double speed)
 /**
  * Enable or disable live replay looping.
  *
- * @param win the app-window
+ * @param win the view
  * @param loop whether replay should loop
  */
-void dvz_app_window_replay_set_loop(DvzAppWindow* win, bool loop)
+void dvz_view_replay_set_loop(DvzView* win, bool loop)
 {
     ANN(win);
     win->replay_loop = loop;
-    dvz_app_window_request_frame(win);
+    dvz_view_request_frame(win);
 }
 
 
@@ -3955,10 +3955,10 @@ void dvz_app_window_replay_set_loop(DvzAppWindow* win, bool loop)
 /**
  * Return the active live replay frame count.
  *
- * @param win the app-window
+ * @param win the view
  * @return replay frame count, or 0 when no replay is active
  */
-uint32_t dvz_app_window_replay_frame_count(const DvzAppWindow* win)
+uint32_t dvz_view_replay_frame_count(const DvzView* win)
 {
     ANN(win);
 #if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
@@ -3973,14 +3973,14 @@ uint32_t dvz_app_window_replay_frame_count(const DvzAppWindow* win)
 
 
 /**
- * Resize an app-window's logical and framebuffer extent.
+ * Resize a view's logical and framebuffer extent.
  *
- * @param win the app-window
+ * @param win the view
  * @param width width in pixels
  * @param height height in pixels
  * @return 0 on success, negative on error
  */
-int dvz_app_window_resize(DvzAppWindow* win, uint32_t width, uint32_t height)
+int dvz_view_resize(DvzView* win, uint32_t width, uint32_t height)
 {
     ANN(win);
     if (width == 0 || height == 0)
@@ -3991,7 +3991,7 @@ int dvz_app_window_resize(DvzAppWindow* win, uint32_t width, uint32_t height)
         return -1;
     dvz_window_backend_emit_resize(win->window, width, height, width, height, 1.0f, 1.0f);
     dvz_figure_resize(win->figure, width, height);
-    dvz_app_window_request_frame(win);
+    dvz_view_request_frame(win);
     return 0;
 #else
     (void)width;
@@ -4002,27 +4002,27 @@ int dvz_app_window_resize(DvzAppWindow* win, uint32_t width, uint32_t height)
 
 
 /**
- * Enable or disable rendering for an app-window.
+ * Enable or disable rendering for a view.
  *
- * @param win app-window to update
+ * @param win view to update
  * @param enabled whether rendering should be enabled
  */
-void dvz_app_window_set_render_enabled(DvzAppWindow* win, bool enabled)
+void dvz_view_set_render_enabled(DvzView* win, bool enabled)
 {
     ANN(win);
     win->render_enabled = enabled;
-    _app_window_mark_dirty(win);
+    _view_mark_dirty(win);
 }
 
 
 
 /**
- * Return whether rendering is enabled for an app-window.
+ * Return whether rendering is enabled for a view.
  *
- * @param win app-window to query
+ * @param win view to query
  * @return whether rendering is enabled
  */
-bool dvz_app_window_render_enabled(const DvzAppWindow* win)
+bool dvz_view_render_enabled(const DvzView* win)
 {
     ANN(win);
     return win->render_enabled;
@@ -4031,14 +4031,14 @@ bool dvz_app_window_render_enabled(const DvzAppWindow* win)
 
 
 /**
- * Request that the host schedules another frame for an app-window.
+ * Request that the host schedules another frame for a view.
  *
- * @param win app-window requesting a frame
+ * @param win view requesting a frame
  */
-void dvz_app_window_request_frame(DvzAppWindow* win)
+void dvz_view_request_frame(DvzView* win)
 {
     ANN(win);
-    _app_window_mark_dirty(win);
+    _view_mark_dirty(win);
 #if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
     if (win->app != NULL && win->app->window_host != NULL && win->window != NULL)
         dvz_window_host_request_frame(win->app->window_host, win->window);
@@ -4052,12 +4052,12 @@ void dvz_app_window_request_frame(DvzAppWindow* win)
 /**
  * Register a callback invoked whenever Datoviz requests another frame.
  *
- * @param win app-window receiving the callback
+ * @param win view receiving the callback
  * @param callback callback pointer, or NULL to clear it
  * @param user_data opaque pointer forwarded to the callback
  */
-void dvz_app_window_set_request_frame_callback(
-    DvzAppWindow* win, DvzAppRequestFrameCallback callback, void* user_data)
+void dvz_view_set_request_frame_callback(
+    DvzView* win, DvzViewRequestFrameCallback callback, void* user_data)
 {
     ANN(win);
     win->request_frame_callback = callback;
@@ -4066,8 +4066,8 @@ void dvz_app_window_set_request_frame_callback(
 
 
 
-void dvz_app_window_set_frame_callback(
-    DvzAppWindow* win, DvzAppFrameCallback callback, void* user_data)
+void dvz_view_set_frame_callback(
+    DvzView* win, DvzViewFrameCallback callback, void* user_data)
 {
     ANN(win);
     win->frame_callback = callback;
@@ -4080,7 +4080,7 @@ void dvz_app_window_set_frame_callback(
 /*  GUI                                                                                          */
 /*************************************************************************************************/
 
-DvzGui* dvz_app_window_gui(DvzAppWindow* win, const DvzGuiConfig* config)
+DvzGui* dvz_view_gui(DvzView* win, const DvzGuiConfig* config)
 {
     ANN(win);
 #if defined(DVZ_HAS_GUI) && DVZ_HAS_GUI
@@ -4093,7 +4093,7 @@ DvzGui* dvz_app_window_gui(DvzAppWindow* win, const DvzGuiConfig* config)
         resolved.font_defaults = win->app->config.font_defaults;
     win->gui = _dvz_gui_create(win->app, win->app->gpu_ctx, win, win->window, &resolved);
     if (win->gui != NULL)
-        dvz_app_window_request_frame(win);
+        dvz_view_request_frame(win);
     return win->gui;
 #else
     (void)config;
@@ -4103,15 +4103,15 @@ DvzGui* dvz_app_window_gui(DvzAppWindow* win, const DvzGuiConfig* config)
 
 
 
-void dvz_app_window_set_gui_callback(
-    DvzAppWindow* win, DvzGuiCallback callback, void* user_data)
+void dvz_view_set_gui_callback(
+    DvzView* win, DvzGuiCallback callback, void* user_data)
 {
     ANN(win);
 #if defined(DVZ_HAS_GUI) && DVZ_HAS_GUI
     if (win->gui != NULL)
     {
         _dvz_gui_set_callback(win->gui, callback, user_data);
-        dvz_app_window_request_frame(win);
+        dvz_view_request_frame(win);
     }
 #else
     (void)callback;
@@ -4126,12 +4126,12 @@ void dvz_app_window_set_gui_callback(
 /*************************************************************************************************/
 
 /**
- * Render one frame for a single app-window.
+ * Render one frame for a single view.
  *
- * @param win app-window to render
+ * @param win view to render
  * @return canvas frame status or negative on error
  */
-int dvz_app_window_render_once(DvzAppWindow* win)
+int dvz_view_render_once(DvzView* win)
 {
     ANN(win);
 
@@ -4155,17 +4155,17 @@ int dvz_app_window_render_once(DvzAppWindow* win)
             win->frame_requested = win->frame_requested || requested_before;
             return -1;
         }
-        _app_window_fps_update(win, dvz_input_timestamp_ns());
+        _view_fps_update(win, dvz_input_timestamp_ns());
         if (win->app != NULL && win->app->scene != NULL &&
             dvz_scene_has_active_animations(win->app->scene))
         {
-            dvz_app_window_request_frame(win);
+            dvz_view_request_frame(win);
         }
         if (win->replay_recording != NULL)
         {
             uint32_t frame_count = dvz_drp2_recording_frame_count(win->replay_recording);
             if (frame_count > 0 && (win->replay_loop || win->replay_frame_index < frame_count))
-                dvz_app_window_request_frame(win);
+                dvz_view_request_frame(win);
         }
     }
     else
@@ -4182,7 +4182,7 @@ int dvz_app_window_render_once(DvzAppWindow* win)
 
 
 /**
- * Render one frame for every app-window without polling events.
+ * Render one frame for every view without polling events.
  *
  * @param app app whose windows should render
  * @return 0 on success, wait-surface status, or negative on error
@@ -4193,9 +4193,9 @@ int dvz_app_render_once(DvzApp* app)
 
 #if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
     int result = 0;
-    for (uint32_t i = 0; i < app->window_count; i++)
+    for (uint32_t i = 0; i < app->view_count; i++)
     {
-        int rc = dvz_app_window_render_once(&app->windows[i]);
+        int rc = dvz_view_render_once(&app->views[i]);
         if (rc < 0)
             result = -1;
         else if (result == 0 && rc == DVZ_CANVAS_FRAME_WAIT_SURFACE)
@@ -4247,14 +4247,14 @@ void dvz_app_run(DvzApp* app, uint32_t frame_count)
 
             continuous = _app_has_continuous_work(app);
             uint64_t now = _app_scheduler_now_ns();
-            for (uint32_t i = 0; i < app->window_count; i++)
+            for (uint32_t i = 0; i < app->view_count; i++)
             {
-                DvzAppWindow* win = &app->windows[i];
-                if (!_app_window_should_render(win, continuous, now))
+                DvzView* win = &app->views[i];
+                if (!_view_should_render(win, continuous, now))
                     continue;
-                int rc = dvz_app_window_render_once(win);
+                int rc = dvz_view_render_once(win);
                 if (continuous && app->config.fps_cap > 0 && rc == DVZ_CANVAS_FRAME_READY)
-                    _app_window_update_deadline(win, _app_scheduler_now_ns(), app->config.fps_cap);
+                    _view_update_deadline(win, _app_scheduler_now_ns(), app->config.fps_cap);
                 if (rc == DVZ_CANVAS_FRAME_READY && fps_enabled)
                     fps_window_frames++;
             }
@@ -4279,10 +4279,10 @@ void dvz_app_run(DvzApp* app, uint32_t frame_count)
         for (uint32_t f = 0; f < frame_count; f++)
         {
             dvz_window_host_poll(app->window_host);
-            for (uint32_t i = 0; i < app->window_count; i++)
+            for (uint32_t i = 0; i < app->view_count; i++)
             {
-                DvzAppWindow* win = &app->windows[i];
-                (void)dvz_app_window_render_once(win);
+                DvzView* win = &app->views[i];
+                (void)dvz_view_render_once(win);
             }
         }
     }

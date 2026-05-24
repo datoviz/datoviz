@@ -676,10 +676,10 @@ static bool _switch_dataset(DenseState* state, DenseDatasetChoice choice)
  * Build the GUI controls.
  *
  * @param gui GUI overlay
- * @param win app window
+ * @param win view
  * @param user_data demo state
  */
-static void _gui_callback(DvzGui* gui, DvzAppWindow* win, void* user_data)
+static void _gui_callback(DvzGui* gui, DvzView* win, void* user_data)
 {
     DenseState* state = (DenseState*)user_data;
     bool changed = false;
@@ -698,7 +698,7 @@ static void _gui_callback(DvzGui* gui, DvzAppWindow* win, void* user_data)
         {
             if (!_switch_dataset(state, (DenseDatasetChoice)next_dataset))
                 dvz_fprintf(stderr, "dense_points: dataset switch failed\n");
-            dvz_app_window_request_frame(win);
+            dvz_view_request_frame(win);
         }
         changed |= igCombo_Str_arr("Point count", &state->point_preset, presets, 4, 4);
         changed |= igCombo_Str_arr("Color mode", &state->color_mode, modes, 3, 3);
@@ -724,7 +724,7 @@ static void _gui_callback(DvzGui* gui, DvzAppWindow* win, void* user_data)
         state->dirty = true;
         if (!_upload_points(state))
             dvz_fprintf(stderr, "dense_points: point upload failed\n");
-        dvz_app_window_request_frame(win);
+        dvz_view_request_frame(win);
     }
 }
 
@@ -733,10 +733,10 @@ static void _gui_callback(DvzGui* gui, DvzAppWindow* win, void* user_data)
 /**
  * Print periodic FPS and rendered point-count status.
  *
- * @param win app window
+ * @param win view
  * @param user_data demo state
  */
-static void _frame_callback(DvzAppWindow* win, void* user_data)
+static void _frame_callback(DvzView* win, void* user_data)
 {
     (void)win;
     DenseState* state = (DenseState*)user_data;
@@ -860,19 +860,19 @@ int main(int argc, char** argv)
     app = dvz_app(scene);
     EXAMPLE_CHECK(app != NULL, "dense_points: dvz_app() failed (no GPU or display?)");
 
-    DvzAppWindow* win =
-        dvz_app_window_glfw(app, figure, WIDTH, HEIGHT, "Dense spatial omics points");
+    DvzView* win =
+        dvz_view_glfw(app, figure, WIDTH, HEIGHT, "Dense spatial omics points");
     EXAMPLE_CHECK(win != NULL, "dense_points: GLFW window creation failed");
 
     DvzPanzoomDesc panzoom_desc = dvz_panzoom_desc();
     panzoom_desc.flags = DVZ_PANZOOM_FLAGS_KEEP_ASPECT;
-    DvzPanzoom* panzoom = dvz_app_window_panel_panzoom(win, panel, &panzoom_desc);
+    DvzPanzoom* panzoom = dvz_view_panzoom(win, panel, &panzoom_desc);
     EXAMPLE_CHECK(panzoom != NULL, "dense_points: panzoom setup failed");
     DvzGuiConfig gui_config = dvz_gui_config();
-    DvzGui* gui = dvz_app_window_gui(win, &gui_config);
+    DvzGui* gui = dvz_view_gui(win, &gui_config);
     EXAMPLE_CHECK(gui != NULL, "dense_points: GUI creation failed");
-    dvz_app_window_set_gui_callback(win, _gui_callback, &state);
-    dvz_app_window_set_frame_callback(win, _frame_callback, &state);
+    dvz_view_set_gui_callback(win, _gui_callback, &state);
+    dvz_view_set_frame_callback(win, _frame_callback, &state);
 
     dvz_app_run(app, cfg.frames);
 

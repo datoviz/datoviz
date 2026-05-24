@@ -195,10 +195,10 @@ static bool _update_patch(DvzSampledField* field, uint32_t x, uint32_t y, float 
 /**
  * Move the highlighted texture patch every few frames.
  *
- * @param win app-window whose frame just completed
+ * @param win view whose frame just completed
  * @param user_data texture-update example state
  */
-static void _texture_update_frame(DvzAppWindow* win, void* user_data)
+static void _texture_update_frame(DvzView* win, void* user_data)
 {
     (void)win;
     TextureUpdateState* state = (TextureUpdateState*)user_data;
@@ -324,10 +324,10 @@ int main(int argc, char** argv)
     app = dvz_app(scene);
     EXAMPLE_CHECK(app != NULL, "dvz_app() failed (no GPU or display?)");
 
-    DvzAppWindow* win =
-        dvz_app_window_glfw(app, figure, WIDTH, HEIGHT, "image");
-    EXAMPLE_CHECK(win != NULL, "dvz_app_window_glfw() failed (GLFW unavailable?)");
-    dvz_app_window_set_frame_callback(win, _texture_update_frame, &state);
+    DvzView* win =
+        dvz_view_glfw(app, figure, WIDTH, HEIGHT, "image");
+    EXAMPLE_CHECK(win != NULL, "dvz_view_glfw() failed (GLFW unavailable?)");
+    dvz_view_set_frame_callback(win, _texture_update_frame, &state);
 
     dvz_app_run(app, example_frame_count(argc, argv));
     ret = 0;

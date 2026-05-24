@@ -38,11 +38,11 @@ EXTERN_C_ON
 
 DvzGui*
 _dvz_gui_create(
-    DvzApp* app, DvzGpuCtx* gpu_ctx, DvzAppWindow* app_window, DvzWindow* window,
+    DvzApp* app, DvzGpuCtx* gpu_ctx, DvzView* view, DvzWindow* window,
     const DvzGuiConfig* config);
 void _dvz_gui_destroy(DvzGui* gui);
 void _dvz_gui_set_callback(DvzGui* gui, DvzGuiCallback callback, void* user_data);
-void _dvz_gui_begin_frame(DvzGui* gui, DvzAppWindow* win, const DvzStreamFrame* frame);
+void _dvz_gui_begin_frame(DvzGui* gui, DvzView* view, const DvzStreamFrame* frame);
 void _dvz_gui_fps_overlay(
     DvzGui* gui, double fps, double frame_ms, uint32_t frames, double elapsed_s);
 void _dvz_gui_render_frame(DvzGui* gui, const DvzStreamFrame* frame);

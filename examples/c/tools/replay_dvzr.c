@@ -196,28 +196,28 @@ int main(int argc, char** argv)
     app = dvz_app(scene);
     EXAMPLE_CHECK(app != NULL, "dvz_app() failed (no GPU?)");
 
-    DvzAppWindow* win = dvz_app_window_glfw(app, figure, WIDTH, HEIGHT, "Datoviz DVZR replay");
-    EXAMPLE_CHECK(win != NULL, "dvz_app_window_glfw() failed");
+    DvzView* win = dvz_view_glfw(app, figure, WIDTH, HEIGHT, "Datoviz DVZR replay");
+    EXAMPLE_CHECK(win != NULL, "dvz_view_glfw() failed");
 
-    if (dvz_app_window_replay_start(win, args.path) != 0)
+    if (dvz_view_replay_start(win, args.path) != 0)
     {
         dvz_fprintf(stderr, "failed to start replay from %s\n", args.path);
         goto cleanup;
     }
-    dvz_app_window_replay_set_loop(win, args.loop);
-    dvz_app_window_replay_set_paced(win, !args.fast);
-    dvz_app_window_replay_set_speed(win, args.speed);
+    dvz_view_replay_set_loop(win, args.loop);
+    dvz_view_replay_set_paced(win, !args.fast);
+    dvz_view_replay_set_speed(win, args.speed);
 
     uint32_t frame_count = args.frame_count;
     if (!args.loop && frame_count == 0)
-        frame_count = dvz_app_window_replay_frame_count(win);
+        frame_count = dvz_view_replay_frame_count(win);
 
     dvz_fprintf(
         stdout, "replay_dvzr: replaying %s (%s%s, speed %.3g)\n", args.path,
         args.loop ? "loop" : "once", args.fast ? ", fast" : "", args.speed);
     dvz_app_run(app, frame_count);
 
-    (void)dvz_app_window_replay_stop(win);
+    (void)dvz_view_replay_stop(win);
     ret = 0;
 
 cleanup:

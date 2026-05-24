@@ -479,10 +479,10 @@ static int _marker_stress_alloc(MarkerStressState* state)
  * Build the live marker stress control window.
  *
  * @param gui GUI overlay
- * @param win app window
+ * @param win view
  * @param user_data marker stress state
  */
-static void _marker_stress_gui(DvzGui* gui, DvzAppWindow* win, void* user_data)
+static void _marker_stress_gui(DvzGui* gui, DvzView* win, void* user_data)
 {
     (void)win;
     MarkerStressState* state = (MarkerStressState*)user_data;
@@ -679,19 +679,19 @@ int main(int argc, char** argv)
     app = dvz_app(scene);
     EXAMPLE_CHECK(app != NULL, "dvz_app() failed (no GPU or display?)");
 
-    DvzAppWindow* win =
-        dvz_app_window_glfw(app, figure, MARKER_STRESS_WIDTH, MARKER_STRESS_HEIGHT,
+    DvzView* win =
+        dvz_view_glfw(app, figure, MARKER_STRESS_WIDTH, MARKER_STRESS_HEIGHT,
                             "marker");
-    EXAMPLE_CHECK(win != NULL, "dvz_app_window_glfw() failed (GLFW unavailable?)");
+    EXAMPLE_CHECK(win != NULL, "dvz_view_glfw() failed (GLFW unavailable?)");
 
-    DvzPanzoom* panzoom = dvz_app_window_panel_panzoom(win, panel, NULL);
+    DvzPanzoom* panzoom = dvz_view_panzoom(win, panel, NULL);
     EXAMPLE_CHECK(panzoom != NULL, "failed to create or bind panzoom controller");
 
     DvzGuiConfig gui_config = dvz_gui_config();
-    DvzGui* gui = dvz_app_window_gui(win, &gui_config);
-    EXAMPLE_CHECK(gui != NULL, "dvz_app_window_gui() failed");
+    DvzGui* gui = dvz_view_gui(win, &gui_config);
+    EXAMPLE_CHECK(gui != NULL, "dvz_view_gui() failed");
 
-    dvz_app_window_set_gui_callback(win, _marker_stress_gui, &state);
+    dvz_view_set_gui_callback(win, _marker_stress_gui, &state);
     dvz_scene_set_clock_mode(scene, DVZ_CLOCK_REALTIME);
     dvz_scene_set_fps(scene, 60.0);
     dvz_app_run(app, example_frame_count(argc, argv));

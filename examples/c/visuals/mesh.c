@@ -116,18 +116,18 @@ int main(int argc, char** argv)
     app = dvz_app(scene);
     EXAMPLE_CHECK(app != NULL, "dvz_app() failed (no GPU or display?)");
 
-    DvzAppWindow* win = dvz_app_window_glfw(app, figure, WIDTH, HEIGHT, "mesh");
-    EXAMPLE_CHECK(win != NULL, "dvz_app_window_glfw() failed (GLFW unavailable?)");
+    DvzView* win = dvz_view_glfw(app, figure, WIDTH, HEIGHT, "mesh");
+    EXAMPLE_CHECK(win != NULL, "dvz_view_glfw() failed (GLFW unavailable?)");
 
-    DvzArcball* arcball = dvz_app_window_panel_arcball(win, panel, NULL);
+    DvzArcball* arcball = dvz_view_arcball(win, panel, NULL);
     EXAMPLE_CHECK(arcball != NULL, "failed to create or bind arcball controller");
     dvz_arcball_set(arcball, (vec3){+0.65f, 0.0f, +0.35f});
 
     dvz_scene_set_clock_mode(scene, video_enabled ? DVZ_CLOCK_OFFLINE : DVZ_CLOCK_REALTIME);
     dvz_scene_set_fps(scene, 60.0);
 
-    rc = dvz_app_window_capture_start(win, &capture);
-    EXAMPLE_CHECK(rc == 0, "dvz_app_window_capture_start() failed");
+    rc = dvz_view_capture_start(win, &capture);
+    EXAMPLE_CHECK(rc == 0, "dvz_view_capture_start() failed");
 
     DvzAnimation* spin = dvz_anim_arcball_spin(
         scene, arcball, (vec3){0.0f, 1.0f, 0.0f}, ROTATION_SPEED_RAD_PER_SEC,
@@ -136,8 +136,8 @@ int main(int argc, char** argv)
     dvz_anim_start(spin, 0.0);
 
     dvz_app_run(app, frame_count);
-    rc = dvz_app_window_capture_stop(win);
-    EXAMPLE_CHECK(rc == 0, "dvz_app_window_capture_stop() failed");
+    rc = dvz_view_capture_stop(win);
+    EXAMPLE_CHECK(rc == 0, "dvz_view_capture_stop() failed");
     ret = 0;
 
 cleanup:

@@ -73,7 +73,7 @@ struct LabelsDemoState
 {
     DvzScene* scene;
     DvzPanel* panel;
-    DvzAppWindow* win;
+    DvzView* win;
     DvzVisual* overlay;
     uint32_t* labels;
     uint8_t* base_rgba;
@@ -421,7 +421,7 @@ static void _request_label_probe(LabelsDemoState* state, bool select)
     if (select)
         state->select_probe_request_id = request_id;
     if (state->win != NULL)
-        dvz_app_window_request_frame(state->win);
+        dvz_view_request_frame(state->win);
 }
 
 
@@ -522,10 +522,10 @@ static void _input_event_callback(DvzInputRouter* router, const DvzInputEvent* e
 /**
  * Apply deferred overlay updates after input events.
  *
- * @param win app-window whose frame just completed
+ * @param win view whose frame just completed
  * @param user_data demo state
  */
-static void _frame_callback(DvzAppWindow* win, void* user_data)
+static void _frame_callback(DvzView* win, void* user_data)
 {
     (void)win;
     LabelsDemoState* state = (LabelsDemoState*)user_data;
@@ -557,10 +557,10 @@ static void _frame_callback(DvzAppWindow* win, void* user_data)
  * Build the demo control panel.
  *
  * @param gui GUI overlay
- * @param win app window
+ * @param win view
  * @param user_data demo state
  */
-static void _gui_callback(DvzGui* gui, DvzAppWindow* win, void* user_data)
+static void _gui_callback(DvzGui* gui, DvzView* win, void* user_data)
 {
     (void)win;
     LabelsDemoState* state = (LabelsDemoState*)user_data;
@@ -658,25 +658,25 @@ int main(int argc, char** argv)
     app = dvz_app(scene);
     EXAMPLE_CHECK(app != NULL, "dvz_app() failed (no GPU or display?)");
 
-    DvzAppWindow* win =
-        dvz_app_window_glfw(app, figure, WIDTH, HEIGHT, "labels");
-    EXAMPLE_CHECK(win != NULL, "dvz_app_window_glfw() failed (GLFW unavailable?)");
+    DvzView* win =
+        dvz_view_glfw(app, figure, WIDTH, HEIGHT, "labels");
+    EXAMPLE_CHECK(win != NULL, "dvz_view_glfw() failed (GLFW unavailable?)");
     state.win = win;
 
-    DvzInputRouter* router = dvz_app_window_input(win);
-    EXAMPLE_CHECK(router != NULL, "dvz_app_window_input() failed");
+    DvzInputRouter* router = dvz_view_input(win);
+    EXAMPLE_CHECK(router != NULL, "dvz_view_input() failed");
     DvzPanzoomDesc panzoom_desc = dvz_panzoom_desc();
     panzoom_desc.flags = DVZ_PANZOOM_FLAGS_KEEP_ASPECT;
-    DvzPanzoom* panzoom = dvz_app_window_panel_panzoom(win, panel, &panzoom_desc);
+    DvzPanzoom* panzoom = dvz_view_panzoom(win, panel, &panzoom_desc);
     EXAMPLE_CHECK(panzoom != NULL, "failed to create or bind panzoom controller");
     dvz_input_subscribe_pointer(router, _pointer_callback, &state);
     dvz_input_subscribe_event(router, _input_event_callback, &state);
-    dvz_app_window_set_frame_callback(win, _frame_callback, &state);
+    dvz_view_set_frame_callback(win, _frame_callback, &state);
 
     DvzGuiConfig gui_config = dvz_gui_config();
-    DvzGui* gui = dvz_app_window_gui(win, &gui_config);
-    EXAMPLE_CHECK(gui != NULL, "dvz_app_window_gui() failed");
-    dvz_app_window_set_gui_callback(win, _gui_callback, &state);
+    DvzGui* gui = dvz_view_gui(win, &gui_config);
+    EXAMPLE_CHECK(gui != NULL, "dvz_view_gui() failed");
+    dvz_view_set_gui_callback(win, _gui_callback, &state);
 
     dvz_app_run(app, example_frame_count(argc, argv));
 

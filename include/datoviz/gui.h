@@ -33,7 +33,7 @@
 typedef struct DvzGui DvzGui;
 typedef struct DvzGuiViewport DvzGuiViewport;
 
-typedef void (*DvzGuiCallback)(DvzGui* gui, DvzAppWindow* win, void* user_data);
+typedef void (*DvzGuiCallback)(DvzGui* gui, DvzView* view, void* user_data);
 
 
 
@@ -120,26 +120,26 @@ DVZ_EXPORT DvzGuiViewportConfig dvz_gui_viewport_config(void);
 
 
 /**
- * Attach a Dear ImGui overlay to a GLFW app window.
+ * Attach a Dear ImGui overlay to a GLFW view.
  *
- * @param win the app window
+ * @param view the view
  * @param config optional GUI configuration
  * @return the GUI overlay, or NULL on failure
  */
-DVZ_EXPORT DvzGui* dvz_app_window_gui(DvzAppWindow* win, const DvzGuiConfig* config);
+DVZ_EXPORT DvzGui* dvz_view_gui(DvzView* view, const DvzGuiConfig* config);
 
 
 
 /**
  * Register a GUI callback called while building each ImGui frame.
  *
- * @param win the app window
+ * @param view the view
  * @param callback callback pointer, or NULL to clear it
  * @param user_data opaque pointer forwarded to the callback
  */
 DVZ_EXPORT void
-dvz_app_window_set_gui_callback(
-    DvzAppWindow* win, DvzGuiCallback callback, void* user_data);
+dvz_view_set_gui_callback(
+    DvzView* view, DvzGuiCallback callback, void* user_data);
 
 
 
@@ -463,7 +463,7 @@ DVZ_EXPORT void dvz_gui_demo(DvzGui* gui, bool* open);
  *
  * A GUI viewport is an ImGui-hosted Datoviz render target. It is not a scene DvzPanel. The
  * supplied figure may contain any scene panels and visuals; the viewport creates and manages the
- * offscreen app-window used to render that figure, then displays the latest source image in an
+ * offscreen view used to render that figure, then displays the latest source image in an
  * ImGui window created by dvz_gui_viewport_window().
  *
  * @param gui the GUI overlay
@@ -477,25 +477,25 @@ dvz_gui_viewport(DvzGui* gui, DvzFigure* figure, const DvzGuiViewportConfig* con
 
 
 /**
- * Create a dockable ImGui viewport from an existing offscreen app window.
+ * Create a dockable ImGui viewport from an existing offscreen view.
  *
- * This is the advanced path for callers that already own the source app-window. Most users should
+ * This is the advanced path for callers that already own the source view. Most users should
  * prefer dvz_gui_viewport(), which creates the offscreen source from a figure. The source window
  * must use offscreen canvas rendering.
  *
  * @param gui the GUI overlay
- * @param source app window providing the rendered image
+ * @param source view providing the rendered image
  * @param config optional viewport configuration
  * @return the GUI viewport, or NULL on failure
  */
 DVZ_EXPORT DvzGuiViewport*
 dvz_gui_viewport_from_window(
-    DvzGui* gui, DvzAppWindow* source, const DvzGuiViewportConfig* config);
+    DvzGui* gui, DvzView* source, const DvzGuiViewportConfig* config);
 
 
 
 /**
- * Return the input router used by a GUI viewport's offscreen app window.
+ * Return the input router used by a GUI viewport's offscreen view.
  *
  * Pass the returned router to dvz_panel_connect_input() to route input through scene panels
  * rendered in the GUI viewport.

@@ -135,7 +135,7 @@ typedef struct
 typedef struct
 {
     uint32_t calls;
-    DvzAppWindow* last_window;
+    DvzView* last_window;
 } AppRequestFrameProbe;
 
 
@@ -395,12 +395,12 @@ static void _app_timer_probe_callback(
 
 
 /**
- * Record one app-window request-frame callback.
+ * Record one view request-frame callback.
  *
- * @param win app-window requesting a frame
+ * @param win view requesting a frame
  * @param user_data request-frame probe storage
  */
-static void _app_request_frame_probe_callback(DvzAppWindow* win, void* user_data)
+static void _app_request_frame_probe_callback(DvzView* win, void* user_data)
 {
     AppRequestFrameProbe* probe = (AppRequestFrameProbe*)user_data;
     ANN(probe);
@@ -410,12 +410,12 @@ static void _app_request_frame_probe_callback(DvzAppWindow* win, void* user_data
 
 
 /**
- * Accept one app-window frame callback without mutating test state.
+ * Accept one view frame callback without mutating test state.
  *
- * @param win app-window that completed a frame
+ * @param win view that completed a frame
  * @param user_data unused callback user data
  */
-static void _app_empty_frame_callback(DvzAppWindow* win, void* user_data)
+static void _app_empty_frame_callback(DvzView* win, void* user_data)
 {
     (void)win;
     (void)user_data;
@@ -673,7 +673,7 @@ static AppSceneOcclusionCapture _app_source_over_scene_occlusion_capture_center(
         dvz_scene_destroy(scene);
         return out;
     }
-    DvzAppWindow* win = dvz_app_window(app, figure, 64, 64);
+    DvzView* win = dvz_view_offscreen(app, figure, 64, 64);
     if (win == NULL)
     {
         out.skipped = true;
@@ -682,7 +682,7 @@ static AppSceneOcclusionCapture _app_source_over_scene_occlusion_capture_center(
         dvz_scene_destroy(scene);
         return out;
     }
-    DvzCanvas* canvas = dvz_app_window_canvas(win);
+    DvzCanvas* canvas = dvz_view_canvas(win);
     if (canvas == NULL)
     {
         out.skipped = true;
@@ -775,7 +775,7 @@ static AppWboitCapture _app_wboit_capture_center(TstContext* suite, bool reverse
         dvz_scene_destroy(scene);
         return out;
     }
-    DvzAppWindow* win = dvz_app_window(app, figure, 64, 64);
+    DvzView* win = dvz_view_offscreen(app, figure, 64, 64);
     if (win == NULL)
     {
         out.skipped = true;
@@ -784,7 +784,7 @@ static AppWboitCapture _app_wboit_capture_center(TstContext* suite, bool reverse
         dvz_scene_destroy(scene);
         return out;
     }
-    DvzCanvas* canvas = dvz_app_window_canvas(win);
+    DvzCanvas* canvas = dvz_view_canvas(win);
     if (canvas == NULL)
     {
         out.skipped = true;
@@ -1104,7 +1104,7 @@ static AppRgbaCapture _app_edl_point_capture(TstContext* suite, bool enabled)
         dvz_scene_destroy(scene);
         return out;
     }
-    DvzAppWindow* win = dvz_app_window(app, figure, 64, 64);
+    DvzView* win = dvz_view_offscreen(app, figure, 64, 64);
     if (win == NULL)
     {
         out.skipped = true;
@@ -1113,7 +1113,7 @@ static AppRgbaCapture _app_edl_point_capture(TstContext* suite, bool enabled)
         dvz_scene_destroy(scene);
         return out;
     }
-    DvzCanvas* canvas = dvz_app_window_canvas(win);
+    DvzCanvas* canvas = dvz_view_canvas(win);
     if (canvas == NULL)
     {
         out.skipped = true;
@@ -1151,7 +1151,7 @@ static AppRgbaCapture _app_edl_point_capture(TstContext* suite, bool enabled)
  * Render a few app frames and return the last captured RGB luminance sum.
  *
  * @param app the offscreen app
- * @param canvas the app-window canvas
+ * @param canvas the view canvas
  * @param frame_count number of frames to render before returning
  * @param out_width captured width
  * @param out_height captured height
@@ -1290,20 +1290,20 @@ int test_app_offscreen(TstContext* suite, const TstCase* item)
         return 0;
     }
     AT(dvz_app_vk_instance(app) != VK_NULL_HANDLE);
-    DvzAppWindow* win = dvz_app_window(app, figure, 64, 64);
+    DvzView* win = dvz_view_offscreen(app, figure, 64, 64);
     AT(win != NULL);
 
     AppRequestFrameProbe request_probe = {0};
-    dvz_app_window_set_request_frame_callback(win, _app_request_frame_probe_callback, &request_probe);
-    dvz_app_window_request_frame(win);
+    dvz_view_set_request_frame_callback(win, _app_request_frame_probe_callback, &request_probe);
+    dvz_view_request_frame(win);
     AT(request_probe.calls == 1);
     AT(request_probe.last_window == win);
-    AT(dvz_app_window_emit_resize(win, 64, 64, 64, 64, 1.0f, 1.0f) == 0);
+    AT(dvz_view_emit_resize(win, 64, 64, 64, 64, 1.0f, 1.0f) == 0);
     AT(request_probe.calls == 2);
     AT(request_probe.last_window == win);
 
     /* Exercise host-driven and Datoviz-owned frame paths. */
-    AT(dvz_app_window_render_once(win) == DVZ_CANVAS_FRAME_READY);
+    AT(dvz_view_render_once(win) == DVZ_CANVAS_FRAME_READY);
     AT(dvz_app_render_once(app) == 0);
     dvz_app_run(app, 1);
 
@@ -1356,32 +1356,32 @@ int test_app_offscreen_scheduler_sees_scene_dirty_without_request(
         dvz_scene_destroy(scene);
         return 0;
     }
-    DvzAppWindow* win = dvz_app_window(app, figure, 64, 64);
+    DvzView* win = dvz_view_offscreen(app, figure, 64, 64);
     AT(win != NULL);
 
-    AT(_dvz_app_window_scheduler_should_render(win, false, 0));
-    AT(dvz_app_window_render_once(win) == DVZ_CANVAS_FRAME_READY);
-    if (_dvz_app_window_scheduler_should_render(win, false, 0))
-        AT(dvz_app_window_render_once(win) == DVZ_CANVAS_FRAME_READY);
-    AT(!_dvz_app_window_scheduler_should_render(win, false, 0));
+    AT(_dvz_view_scheduler_should_render(win, false, 0));
+    AT(dvz_view_render_once(win) == DVZ_CANVAS_FRAME_READY);
+    if (_dvz_view_scheduler_should_render(win, false, 0))
+        AT(dvz_view_render_once(win) == DVZ_CANVAS_FRAME_READY);
+    AT(!_dvz_view_scheduler_should_render(win, false, 0));
 
     AppRequestFrameProbe request_probe = {0};
-    dvz_app_window_set_request_frame_callback(win, _app_request_frame_probe_callback, &request_probe);
+    dvz_view_set_request_frame_callback(win, _app_request_frame_probe_callback, &request_probe);
 
     float updated_size[1] = {16.0f};
     AT(dvz_visual_set_data(visual, "size", updated_size, 1) == 0);
     AT(request_probe.calls == 1);
     AT(request_probe.last_window == win);
-    AT(_dvz_app_window_scheduler_should_render(win, false, 0));
-    AT(dvz_app_window_render_once(win) == DVZ_CANVAS_FRAME_READY);
-    AT(!_dvz_app_window_scheduler_should_render(win, false, 0));
+    AT(_dvz_view_scheduler_should_render(win, false, 0));
+    AT(dvz_view_render_once(win) == DVZ_CANVAS_FRAME_READY);
+    AT(!_dvz_view_scheduler_should_render(win, false, 0));
 
     dvz_visual_set_visible(visual, false);
     AT(request_probe.calls == 2);
     AT(request_probe.last_window == win);
-    AT(_dvz_app_window_scheduler_should_render(win, false, 0));
-    AT(dvz_app_window_render_once(win) == DVZ_CANVAS_FRAME_READY);
-    AT(!_dvz_app_window_scheduler_should_render(win, false, 0));
+    AT(_dvz_view_scheduler_should_render(win, false, 0));
+    AT(dvz_view_render_once(win) == DVZ_CANVAS_FRAME_READY);
+    AT(!_dvz_view_scheduler_should_render(win, false, 0));
 
     dvz_app_destroy(app);
     dvz_scene_destroy(scene);
@@ -1420,13 +1420,13 @@ int test_app_offscreen_frame_callback_enables_continuous_scheduler(
         return 0;
     }
 
-    DvzAppWindow* win = dvz_app_window(app, figure, 64, 64);
+    DvzView* win = dvz_view_offscreen(app, figure, 64, 64);
     AT(win != NULL);
 
     AT(!_dvz_app_has_continuous_work(app));
-    dvz_app_window_set_frame_callback(win, _app_empty_frame_callback, NULL);
+    dvz_view_set_frame_callback(win, _app_empty_frame_callback, NULL);
     AT(_dvz_app_has_continuous_work(app));
-    dvz_app_window_set_frame_callback(win, NULL, NULL);
+    dvz_view_set_frame_callback(win, NULL, NULL);
     AT(!_dvz_app_has_continuous_work(app));
 
     dvz_app_destroy(app);
@@ -1436,7 +1436,7 @@ int test_app_offscreen_frame_callback_enables_continuous_scheduler(
 
 
 /**
- * Ensure pick and probe requests notify hosted app-window repaint callbacks.
+ * Ensure pick and probe requests notify hosted view repaint callbacks.
  *
  * @param suite the test suite
  * @param item the test item
@@ -1504,25 +1504,25 @@ int test_app_offscreen_pick_probe_requests_notify_hosted_callback(
         dvz_scene_destroy(scene);
         return 0;
     }
-    DvzAppWindow* win = dvz_app_window(app, figure, 64, 64);
+    DvzView* win = dvz_view_offscreen(app, figure, 64, 64);
     AT(win != NULL);
-    AT(dvz_app_window_render_once(win) == DVZ_CANVAS_FRAME_READY);
-    if (_dvz_app_window_scheduler_should_render(win, false, 0))
-        AT(dvz_app_window_render_once(win) == DVZ_CANVAS_FRAME_READY);
-    AT(!_dvz_app_window_scheduler_should_render(win, false, 0));
+    AT(dvz_view_render_once(win) == DVZ_CANVAS_FRAME_READY);
+    if (_dvz_view_scheduler_should_render(win, false, 0))
+        AT(dvz_view_render_once(win) == DVZ_CANVAS_FRAME_READY);
+    AT(!_dvz_view_scheduler_should_render(win, false, 0));
 
     AppRequestFrameProbe request_probe = {0};
-    dvz_app_window_set_request_frame_callback(win, _app_request_frame_probe_callback, &request_probe);
+    dvz_view_set_request_frame_callback(win, _app_request_frame_probe_callback, &request_probe);
 
     AT(dvz_panel_pick(panel, 32.0, 32.0, &(DvzPickRequest){.request_id = 1}) == 0);
     AT(request_probe.calls == 1);
     AT(request_probe.last_window == win);
-    AT(_dvz_app_window_scheduler_should_render(win, false, 0));
+    AT(_dvz_view_scheduler_should_render(win, false, 0));
 
     AT(dvz_panel_probe(panel, 32.0, 32.0, &(DvzProbeRequest){.request_id = 2}) == 0);
     AT(request_probe.calls == 2);
     AT(request_probe.last_window == win);
-    AT(_dvz_app_window_scheduler_should_render(win, false, 0));
+    AT(_dvz_view_scheduler_should_render(win, false, 0));
 
     dvz_app_destroy(app);
     dvz_scene_destroy(scene);
@@ -1563,7 +1563,7 @@ int test_app_offscreen_shared_scene_request_frame_subscribers(
         dvz_scene_destroy(scene);
         return 0;
     }
-    DvzAppWindow* win1 = dvz_app_window(app1, figure, 64, 64);
+    DvzView* win1 = dvz_view_offscreen(app1, figure, 64, 64);
     AT(win1 != NULL);
 
     DvzApp* app2 = dvz_app(scene);
@@ -1577,13 +1577,13 @@ int test_app_offscreen_shared_scene_request_frame_subscribers(
         dvz_scene_destroy(scene);
         return 0;
     }
-    DvzAppWindow* win2 = dvz_app_window(app2, figure, 64, 64);
+    DvzView* win2 = dvz_view_offscreen(app2, figure, 64, 64);
     AT(win2 != NULL);
 
     AppRequestFrameProbe probe1 = {0};
     AppRequestFrameProbe probe2 = {0};
-    dvz_app_window_set_request_frame_callback(win1, _app_request_frame_probe_callback, &probe1);
-    dvz_app_window_set_request_frame_callback(win2, _app_request_frame_probe_callback, &probe2);
+    dvz_view_set_request_frame_callback(win1, _app_request_frame_probe_callback, &probe1);
+    dvz_view_set_request_frame_callback(win2, _app_request_frame_probe_callback, &probe2);
 
     AT(dvz_panel_pick(panel, 32.0, 32.0, &(DvzPickRequest){.request_id = 1}) == 0);
     AT(probe1.calls == 1);
@@ -1630,7 +1630,7 @@ int test_app_offscreen_timer_advances_in_app_run(TstContext* suite, const TstCas
         dvz_scene_destroy(scene);
         return 0;
     }
-    DvzAppWindow* win = dvz_app_window(app, figure, 64, 64);
+    DvzView* win = dvz_view_offscreen(app, figure, 64, 64);
     AT(win != NULL);
 
     dvz_app_run(app, 2);
@@ -1676,16 +1676,16 @@ int test_app_offscreen_timer_advances_in_render_once(TstContext* suite, const Ts
         dvz_scene_destroy(scene);
         return 0;
     }
-    DvzAppWindow* win = dvz_app_window(app, figure, 64, 64);
+    DvzView* win = dvz_view_offscreen(app, figure, 64, 64);
     AT(win != NULL);
 
     AppRequestFrameProbe request_probe = {0};
-    dvz_app_window_set_request_frame_callback(win, _app_request_frame_probe_callback, &request_probe);
-    AT(dvz_app_window_render_once(win) == DVZ_CANVAS_FRAME_READY);
+    dvz_view_set_request_frame_callback(win, _app_request_frame_probe_callback, &request_probe);
+    AT(dvz_view_render_once(win) == DVZ_CANVAS_FRAME_READY);
     AT(request_probe.calls >= 1);
     AT(request_probe.last_window == win);
     uint32_t calls_after_first_frame = request_probe.calls;
-    AT(dvz_app_window_render_once(win) == DVZ_CANVAS_FRAME_READY);
+    AT(dvz_view_render_once(win) == DVZ_CANVAS_FRAME_READY);
     AT(request_probe.calls > calls_after_first_frame);
     AT(request_probe.last_window == win);
 
@@ -1698,7 +1698,7 @@ int test_app_offscreen_timer_advances_in_render_once(TstContext* suite, const Ts
 
     dvz_anim_stop(timer);
     uint32_t calls_after_active_frames = request_probe.calls;
-    AT(dvz_app_window_render_once(win) == DVZ_CANVAS_FRAME_READY);
+    AT(dvz_view_render_once(win) == DVZ_CANVAS_FRAME_READY);
     AT(request_probe.calls == calls_after_active_frames);
     AT(!dvz_scene_has_active_animations(scene));
 
@@ -1735,23 +1735,23 @@ int test_app_offscreen_render_enabled_gate(TstContext* suite, const TstCase* ite
         dvz_scene_destroy(scene);
         return 0;
     }
-    DvzAppWindow* win = dvz_app_window(app, figure, 64, 64);
+    DvzView* win = dvz_view_offscreen(app, figure, 64, 64);
     AT(win != NULL);
-    AT(dvz_app_window_render_enabled(win));
+    AT(dvz_view_render_enabled(win));
 
     AppRequestFrameProbe request_probe = {0};
-    dvz_app_window_set_request_frame_callback(win, _app_request_frame_probe_callback, &request_probe);
+    dvz_view_set_request_frame_callback(win, _app_request_frame_probe_callback, &request_probe);
 
-    dvz_app_window_set_render_enabled(win, false);
-    AT(!dvz_app_window_render_enabled(win));
-    AT(dvz_app_window_render_once(win) == 0);
+    dvz_view_set_render_enabled(win, false);
+    AT(!dvz_view_render_enabled(win));
+    AT(dvz_view_render_once(win) == 0);
     AT(request_probe.calls == 0);
     AT(timer_probe.calls == 0);
     AC(dvz_scene_clock_time(scene), 0.0, EPS);
 
-    dvz_app_window_set_render_enabled(win, true);
-    AT(dvz_app_window_render_enabled(win));
-    AT(dvz_app_window_render_once(win) == DVZ_CANVAS_FRAME_READY);
+    dvz_view_set_render_enabled(win, true);
+    AT(dvz_view_render_enabled(win));
+    AT(dvz_view_render_once(win) == DVZ_CANVAS_FRAME_READY);
     AT(request_probe.calls >= 1);
     AT(request_probe.last_window == win);
     AT(timer_probe.calls == 1);
@@ -1763,7 +1763,7 @@ int test_app_offscreen_render_enabled_gate(TstContext* suite, const TstCase* ite
 }
 
 
-int test_app_window_panel_panzoom_helper(TstContext* suite, const TstCase* item)
+int test_view_panel_panzoom_helper(TstContext* suite, const TstCase* item)
 {
     (void)item;
 
@@ -1775,16 +1775,16 @@ int test_app_window_panel_panzoom_helper(TstContext* suite, const TstCase* item)
     DvzApp* app = _app_test_create(suite, scene);
     if (app == NULL)
     {
-        log_warn("test_app_window_panel_panzoom_helper skipped: GPU context creation failed");
+        log_warn("test_view_panel_panzoom_helper skipped: GPU context creation failed");
         tst_skip(suite, "GPU context creation failed");
         dvz_scene_destroy(scene);
         return 0;
     }
 
-    DvzAppWindow* win = dvz_app_window(app, figure, 64, 64);
+    DvzView* win = dvz_view_offscreen(app, figure, 64, 64);
     ANN(win);
 
-    DvzPanzoom* panzoom = dvz_app_window_panel_panzoom(win, panel, NULL);
+    DvzPanzoom* panzoom = dvz_view_panzoom(win, panel, NULL);
     ANN(panzoom);
 
     DvzController* controller_x = dvz_panel_controller(panel, DVZ_DIM_X);
@@ -1878,18 +1878,18 @@ int test_app_external_surface_release_waits(TstContext* suite, const TstCase* it
 
     DvzWindowExternalSurfaceInfo surface_info =
         _app_glfw_surface_info(instance, surface, 64, 64);
-    DvzAppWindow* win = dvz_app_window_external_surface(app, figure, &surface_info);
+    DvzView* win = dvz_view_external_surface(app, figure, &surface_info);
     AT(win != NULL);
 
     AppRequestFrameProbe request_probe = {0};
-    dvz_app_window_set_request_frame_callback(win, _app_request_frame_probe_callback, &request_probe);
-    AT(dvz_app_window_render_once(win) == DVZ_CANVAS_FRAME_READY);
+    dvz_view_set_request_frame_callback(win, _app_request_frame_probe_callback, &request_probe);
+    AT(dvz_view_render_once(win) == DVZ_CANVAS_FRAME_READY);
 
     AT_EXPECTED_LOG_STRICT(
         suite, LOG_WARN,
-        dvz_app_window_release_external_surface(win) == DVZ_CANVAS_FRAME_WAIT_SURFACE);
+        dvz_view_release_external_surface(win) == DVZ_CANVAS_FRAME_WAIT_SURFACE);
     AT_EXPECTED_LOG_STRICT(
-        suite, LOG_WARN, dvz_app_window_render_once(win) == DVZ_CANVAS_FRAME_WAIT_SURFACE);
+        suite, LOG_WARN, dvz_view_render_once(win) == DVZ_CANVAS_FRAME_WAIT_SURFACE);
     AT_EXPECTED_LOG_STRICT(suite, LOG_WARN, dvz_app_render_once(app) == DVZ_CANVAS_FRAME_WAIT_SURFACE);
 
     vkDestroySurfaceKHR(instance, surface, NULL);
@@ -1948,9 +1948,9 @@ int test_app_offscreen_panel_three_visuals_all_drawn(TstContext* suite, const Ts
         dvz_scene_destroy(scene);
         return 0;
     }
-    DvzAppWindow* win = dvz_app_window(app, figure, 64, 64);
+    DvzView* win = dvz_view_offscreen(app, figure, 64, 64);
     AT(win != NULL);
-    DvzCanvas* canvas = dvz_app_window_canvas(win);
+    DvzCanvas* canvas = dvz_view_canvas(win);
     ANN(canvas);
 
     uint32_t red_count = 0, green_count = 0, blue_count = 0;
@@ -2039,9 +2039,9 @@ int test_app_offscreen_point_depth_orders_overlap(TstContext* suite, const TstCa
         dvz_scene_destroy(scene);
         return 0;
     }
-    DvzAppWindow* win = dvz_app_window(app, figure, 64, 64);
+    DvzView* win = dvz_view_offscreen(app, figure, 64, 64);
     AT(win != NULL);
-    DvzCanvas* canvas = dvz_app_window_canvas(win);
+    DvzCanvas* canvas = dvz_view_canvas(win);
     ANN(canvas);
 
     dvz_app_run(app, 1);
@@ -2118,9 +2118,9 @@ int test_app_offscreen_point_depth_cue_darkens_far(TstContext* suite, const TstC
         dvz_scene_destroy(scene);
         return 0;
     }
-    DvzAppWindow* win = dvz_app_window(app, figure, 64, 64);
+    DvzView* win = dvz_view_offscreen(app, figure, 64, 64);
     AT(win != NULL);
-    DvzCanvas* canvas = dvz_app_window_canvas(win);
+    DvzCanvas* canvas = dvz_view_canvas(win);
     ANN(canvas);
 
     dvz_app_run(app, 1);
@@ -2178,12 +2178,12 @@ int test_app_offscreen_has_nonblank_pixels(TstContext* suite, const TstCase* ite
         dvz_scene_destroy(scene);
         return 0;
     }
-    DvzAppWindow* win = dvz_app_window(app, figure, 64, 64);
+    DvzView* win = dvz_view_offscreen(app, figure, 64, 64);
     AT(win != NULL);
 
     dvz_app_run(app, 1);
 
-    DvzCanvas* canvas = dvz_app_window_canvas(win);
+    DvzCanvas* canvas = dvz_view_canvas(win);
     ANN(canvas);
 
     uint32_t width = 0, height = 0;
@@ -2259,11 +2259,11 @@ int test_app_offscreen_path_join_has_no_center_gap(TstContext* suite, const TstC
         dvz_scene_destroy(scene);
         return 0;
     }
-    DvzAppWindow* win = dvz_app_window(app, figure, 64, 64);
+    DvzView* win = dvz_view_offscreen(app, figure, 64, 64);
     AT(win != NULL);
     dvz_app_run(app, 1);
 
-    DvzCanvas* canvas = dvz_app_window_canvas(win);
+    DvzCanvas* canvas = dvz_view_canvas(win);
     ANN(canvas);
     uint32_t width = 0, height = 0;
     uint8_t* rgba = NULL;
@@ -2323,12 +2323,12 @@ int test_app_offscreen_pixel_square_has_nonblank_pixels(TstContext* suite, const
         dvz_scene_destroy(scene);
         return 0;
     }
-    DvzAppWindow* win = dvz_app_window(app, figure, 64, 64);
+    DvzView* win = dvz_view_offscreen(app, figure, 64, 64);
     AT(win != NULL);
 
     dvz_app_run(app, 1);
 
-    DvzCanvas* canvas = dvz_app_window_canvas(win);
+    DvzCanvas* canvas = dvz_view_canvas(win);
     ANN(canvas);
 
     uint32_t width = 0, height = 0;
@@ -2409,9 +2409,9 @@ int test_app_offscreen_points_edl_renders(TstContext* suite, const TstCase* item
         dvz_scene_destroy(scene);
         return 0;
     }
-    DvzAppWindow* win = dvz_app_window(app, figure, 64, 64);
+    DvzView* win = dvz_view_offscreen(app, figure, 64, 64);
     ANN(win);
-    DvzCanvas* canvas = dvz_app_window_canvas(win);
+    DvzCanvas* canvas = dvz_view_canvas(win);
     ANN(canvas);
 
     dvz_app_run(app, 1);
@@ -2540,9 +2540,9 @@ int test_app_offscreen_mesh_ssao_changes_pixels(TstContext* suite, const TstCase
         dvz_scene_destroy(scene);
         return 0;
     }
-    DvzAppWindow* win = dvz_app_window(app, figure, 96, 96);
+    DvzView* win = dvz_view_offscreen(app, figure, 96, 96);
     ANN(win);
-    DvzCanvas* canvas = dvz_app_window_canvas(win);
+    DvzCanvas* canvas = dvz_view_canvas(win);
     ANN(canvas);
 
     dvz_app_run(app, 1);
@@ -2648,9 +2648,9 @@ int test_app_offscreen_sphere_ssao_darkens_contact(TstContext* suite, const TstC
         dvz_scene_destroy(scene);
         return 0;
     }
-    DvzAppWindow* win = dvz_app_window(app, figure, 96, 96);
+    DvzView* win = dvz_view_offscreen(app, figure, 96, 96);
     ANN(win);
-    DvzCanvas* canvas = dvz_app_window_canvas(win);
+    DvzCanvas* canvas = dvz_view_canvas(win);
     ANN(canvas);
 
     dvz_app_run(app, 1);
@@ -2730,7 +2730,7 @@ int test_app_offscreen_records_dvzr_frames(TstContext* suite, const TstCase* ite
         dvz_scene_destroy(scene);
         return 0;
     }
-    DvzAppWindow* win = dvz_app_window(app, figure, 64, 64);
+    DvzView* win = dvz_view_offscreen(app, figure, 64, 64);
     AT(win != NULL);
 
     const char* path = "/tmp/dvz_app_offscreen_recording.dvzr";
@@ -2740,15 +2740,15 @@ int test_app_offscreen_records_dvzr_frames(TstContext* suite, const TstCase* ite
     if (had_record_fps)
         dvz_strlcpy(saved_record_fps, old_record_fps, sizeof(saved_record_fps));
     AT(setenv("DVZ_DRP2_RECORD_FPS", "0", 1) == 0);
-    int record_start = dvz_app_window_record_start(win, path);
+    int record_start = dvz_view_record_start(win, path);
     if (had_record_fps)
         (void)setenv("DVZ_DRP2_RECORD_FPS", saved_record_fps, 1);
     else
         (void)unsetenv("DVZ_DRP2_RECORD_FPS");
     AT(record_start == 0);
-    AT(dvz_app_window_render_once(win) == DVZ_CANVAS_FRAME_READY);
-    AT(dvz_app_window_render_once(win) == DVZ_CANVAS_FRAME_READY);
-    AT(dvz_app_window_record_stop(win) == 0);
+    AT(dvz_view_render_once(win) == DVZ_CANVAS_FRAME_READY);
+    AT(dvz_view_render_once(win) == DVZ_CANVAS_FRAME_READY);
+    AT(dvz_view_record_stop(win) == 0);
 
     DvzDrp2Recording* recording = dvz_drp2_recording_open(path);
     ANN(recording);
@@ -2822,12 +2822,12 @@ int test_app_offscreen_image_has_nonblank_pixels(TstContext* suite, const TstCas
         dvz_scene_destroy(scene);
         return 0;
     }
-    DvzAppWindow* win = dvz_app_window(app, figure, 64, 64);
+    DvzView* win = dvz_view_offscreen(app, figure, 64, 64);
     AT(win != NULL);
 
     dvz_app_run(app, 1);
 
-    DvzCanvas* canvas = dvz_app_window_canvas(win);
+    DvzCanvas* canvas = dvz_view_canvas(win);
     ANN(canvas);
 
     uint32_t width = 0, height = 0;
@@ -2905,12 +2905,12 @@ int test_app_offscreen_text_has_nonblank_pixels(TstContext* suite, const TstCase
         dvz_scene_destroy(scene);
         return 0;
     }
-    DvzAppWindow* win = dvz_app_window(app, figure, 64, 64);
+    DvzView* win = dvz_view_offscreen(app, figure, 64, 64);
     AT(win != NULL);
 
     dvz_app_run(app, 1);
 
-    DvzCanvas* canvas = dvz_app_window_canvas(win);
+    DvzCanvas* canvas = dvz_view_canvas(win);
     ANN(canvas);
 
     uint32_t width = 0;
@@ -2987,12 +2987,12 @@ int test_app_offscreen_sdf_text_has_nonblank_pixels(TstContext* suite, const Tst
         dvz_scene_destroy(scene);
         return 0;
     }
-    DvzAppWindow* win = dvz_app_window(app, figure, 256, 72);
+    DvzView* win = dvz_view_offscreen(app, figure, 256, 72);
     AT(win != NULL);
 
     dvz_app_run(app, 1);
 
-    DvzCanvas* canvas = dvz_app_window_canvas(win);
+    DvzCanvas* canvas = dvz_view_canvas(win);
     ANN(canvas);
 
     uint32_t width = 0;
@@ -3139,9 +3139,9 @@ int test_app_offscreen_image_field_partial_update_changes_region(TstContext* sui
         dvz_scene_destroy(scene);
         return 0;
     }
-    DvzAppWindow* win = dvz_app_window(app, figure, 64, 64);
+    DvzView* win = dvz_view_offscreen(app, figure, 64, 64);
     ANN(win);
-    DvzCanvas* canvas = dvz_app_window_canvas(win);
+    DvzCanvas* canvas = dvz_view_canvas(win);
     ANN(canvas);
 
     dvz_app_run(app, 1);
@@ -3280,9 +3280,9 @@ int test_app_offscreen_source_over_mesh_depth_and_blend(TstContext* suite, const
         dvz_scene_destroy(scene);
         return 0;
     }
-    DvzAppWindow* win = dvz_app_window(app, figure, 64, 64);
+    DvzView* win = dvz_view_offscreen(app, figure, 64, 64);
     ANN(win);
-    DvzCanvas* canvas = dvz_app_window_canvas(win);
+    DvzCanvas* canvas = dvz_view_canvas(win);
     ANN(canvas);
 
     for (uint32_t frame = 0; frame < 3; frame++)
@@ -3360,9 +3360,9 @@ int test_app_offscreen_depth_peel_mesh_two_layers(TstContext* suite, const TstCa
         dvz_scene_destroy(scene);
         return 0;
     }
-    DvzAppWindow* win = dvz_app_window(app, figure, 64, 64);
+    DvzView* win = dvz_view_offscreen(app, figure, 64, 64);
     ANN(win);
-    DvzCanvas* canvas = dvz_app_window_canvas(win);
+    DvzCanvas* canvas = dvz_view_canvas(win);
     ANN(canvas);
 
     for (uint32_t frame = 0; frame < 3; frame++)
@@ -3453,9 +3453,9 @@ int test_app_offscreen_depth_peel_mesh_three_layers(TstContext* suite, const Tst
         dvz_scene_destroy(scene);
         return 0;
     }
-    DvzAppWindow* win = dvz_app_window(app, figure, 64, 64);
+    DvzView* win = dvz_view_offscreen(app, figure, 64, 64);
     ANN(win);
-    DvzCanvas* canvas = dvz_app_window_canvas(win);
+    DvzCanvas* canvas = dvz_view_canvas(win);
     ANN(canvas);
 
     for (uint32_t frame = 0; frame < 3; frame++)
@@ -3668,9 +3668,9 @@ int test_app_offscreen_lit_primitive_depth_orders_overlap(TstContext* suite, con
         dvz_scene_destroy(scene);
         return 0;
     }
-    DvzAppWindow* win = dvz_app_window(app, figure, 64, 64);
+    DvzView* win = dvz_view_offscreen(app, figure, 64, 64);
     ANN(win);
-    DvzCanvas* canvas = dvz_app_window_canvas(win);
+    DvzCanvas* canvas = dvz_view_canvas(win);
     ANN(canvas);
 
     dvz_app_run(app, 1);
@@ -3762,9 +3762,9 @@ int test_app_offscreen_lit_primitive_depth_cue_darkens_far(
         dvz_scene_destroy(scene);
         return 0;
     }
-    DvzAppWindow* win = dvz_app_window(app, figure, 64, 64);
+    DvzView* win = dvz_view_offscreen(app, figure, 64, 64);
     ANN(win);
-    DvzCanvas* canvas = dvz_app_window_canvas(win);
+    DvzCanvas* canvas = dvz_view_canvas(win);
     ANN(canvas);
 
     dvz_app_run(app, 1);
@@ -3855,9 +3855,9 @@ int test_app_offscreen_mesh_renders_nonblank(TstContext* suite, const TstCase* i
         dvz_scene_destroy(scene);
         return 0;
     }
-    DvzAppWindow* win = dvz_app_window(app, figure, 64, 64);
+    DvzView* win = dvz_view_offscreen(app, figure, 64, 64);
     ANN(win);
-    DvzCanvas* canvas = dvz_app_window_canvas(win);
+    DvzCanvas* canvas = dvz_view_canvas(win);
     ANN(canvas);
 
     dvz_app_run(app, 1);
@@ -4111,9 +4111,9 @@ int test_app_offscreen_rotated_mesh_depth_orders_faces(TstContext* suite, const 
         dvz_scene_destroy(scene);
         return 0;
     }
-    DvzAppWindow* win = dvz_app_window(app, figure, 128, 96);
+    DvzView* win = dvz_view_offscreen(app, figure, 128, 96);
     ANN(win);
-    DvzCanvas* canvas = dvz_app_window_canvas(win);
+    DvzCanvas* canvas = dvz_view_canvas(win);
     ANN(canvas);
 
     dvz_app_run(app, 1);
@@ -4210,9 +4210,9 @@ int test_app_offscreen_camera_arcball_mesh_renders_cube(TstContext* suite, const
         dvz_scene_destroy(scene);
         return 0;
     }
-    DvzAppWindow* win = dvz_app_window(app, figure, 128, 96);
+    DvzView* win = dvz_view_offscreen(app, figure, 128, 96);
     ANN(win);
-    DvzCanvas* canvas = dvz_app_window_canvas(win);
+    DvzCanvas* canvas = dvz_view_canvas(win);
     ANN(canvas);
 
     dvz_app_run(app, 1);
@@ -4329,9 +4329,9 @@ int test_app_offscreen_shared_field_mixed_runtime_updates(TstContext* suite, con
         dvz_scene_destroy(scene);
         return 0;
     }
-    DvzAppWindow* win = dvz_app_window(app, figure, 96, 64);
+    DvzView* win = dvz_view_offscreen(app, figure, 96, 64);
     ANN(win);
-    DvzCanvas* canvas = dvz_app_window_canvas(win);
+    DvzCanvas* canvas = dvz_view_canvas(win);
     ANN(canvas);
 
     dvz_app_run(app, 1);
@@ -4424,9 +4424,9 @@ int test_app_offscreen_retained_render_second_frame(TstContext* suite, const Tst
         dvz_scene_destroy(scene);
         return 0;
     }
-    DvzAppWindow* win = dvz_app_window(app, figure, 64, 64);
+    DvzView* win = dvz_view_offscreen(app, figure, 64, 64);
     AT(win != NULL);
-    DvzCanvas* canvas = dvz_app_window_canvas(win);
+    DvzCanvas* canvas = dvz_view_canvas(win);
     ANN(canvas);
 
     uint32_t yellow_counts[2] = {0, 0};
@@ -4501,9 +4501,9 @@ int test_app_offscreen_image_retained_render_second_frame(TstContext* suite, con
         dvz_scene_destroy(scene);
         return 0;
     }
-    DvzAppWindow* win = dvz_app_window(app, figure, 64, 64);
+    DvzView* win = dvz_view_offscreen(app, figure, 64, 64);
     AT(win != NULL);
-    DvzCanvas* canvas = dvz_app_window_canvas(win);
+    DvzCanvas* canvas = dvz_view_canvas(win);
     ANN(canvas);
 
     /* Both frames should show red pixels from the retained texture. */
@@ -4625,9 +4625,9 @@ int test_app_offscreen_resize_reuses_runtime_with_mesh_and_image(TstContext* sui
         dvz_scene_destroy(scene);
         return 0;
     }
-    DvzAppWindow* win = dvz_app_window(app, figure, 96, 64);
+    DvzView* win = dvz_view_offscreen(app, figure, 96, 64);
     AT(win != NULL);
-    DvzCanvas* canvas = dvz_app_window_canvas(win);
+    DvzCanvas* canvas = dvz_view_canvas(win);
     ANN(canvas);
 
     const uint32_t sizes[][2] = {
@@ -4642,8 +4642,8 @@ int test_app_offscreen_resize_reuses_runtime_with_mesh_and_image(TstContext* sui
     {
         uint32_t expected_width = sizes[frame][0];
         uint32_t expected_height = sizes[frame][1];
-        AT(dvz_app_window_resize(win, expected_width, expected_height) == 0);
-        AT(dvz_app_window_render_once(win) == DVZ_CANVAS_FRAME_READY);
+        AT(dvz_view_resize(win, expected_width, expected_height) == 0);
+        AT(dvz_view_render_once(win) == DVZ_CANVAS_FRAME_READY);
 
         uint32_t width = 0;
         uint32_t height = 0;
@@ -4738,7 +4738,7 @@ int test_app_offscreen_pick_probe_request_steady_state(TstContext* suite, const 
         dvz_scene_destroy(scene);
         return 0;
     }
-    DvzAppWindow* win = dvz_app_window(app, figure, 64, 64);
+    DvzView* win = dvz_view_offscreen(app, figure, 64, 64);
     AT(win != NULL);
 
     for (uint32_t frame = 0; frame < 8; frame++)
@@ -4750,7 +4750,7 @@ int test_app_offscreen_pick_probe_request_steady_state(TstContext* suite, const 
         AT(scene->pending_pick_count == 1);
         AT(scene->pending_probe_count == 1);
 
-        AT(dvz_app_window_render_once(win) == DVZ_CANVAS_FRAME_READY);
+        AT(dvz_view_render_once(win) == DVZ_CANVAS_FRAME_READY);
         AT(scene->pending_pick_count == 0);
         AT(scene->pending_probe_count == 0);
 
@@ -4828,10 +4828,10 @@ int test_app_offscreen_two_panel_points_light_both_halves(TstContext* suite, con
         dvz_scene_destroy(scene);
         return 0;
     }
-    DvzAppWindow* win = dvz_app_window(app, figure, 96, 64);
+    DvzView* win = dvz_view_offscreen(app, figure, 96, 64);
     AT(win != NULL);
 
-    DvzCanvas* canvas = dvz_app_window_canvas(win);
+    DvzCanvas* canvas = dvz_view_canvas(win);
     ANN(canvas);
 
     uint32_t red_count = 0;
@@ -4898,12 +4898,12 @@ int test_app_offscreen_clear_color(TstContext* suite, const TstCase* item)
         dvz_scene_destroy(scene);
         return 0;
     }
-    DvzAppWindow* win = dvz_app_window(app, figure, 64, 64);
+    DvzView* win = dvz_view_offscreen(app, figure, 64, 64);
     AT(win != NULL);
 
     dvz_app_run(app, 1);
 
-    DvzCanvas* canvas = dvz_app_window_canvas(win);
+    DvzCanvas* canvas = dvz_view_canvas(win);
     ANN(canvas);
 
     uint32_t width = 0, height = 0;
@@ -4953,11 +4953,11 @@ int test_app_capture_rejects_wrong_dimensions(TstContext* suite, const TstCase* 
         dvz_scene_destroy(scene);
         return 0;
     }
-    DvzAppWindow* win = dvz_app_window(app, figure, 64, 64);
+    DvzView* win = dvz_view_offscreen(app, figure, 64, 64);
     AT(win != NULL);
     dvz_app_run(app, 1);
 
-    DvzCanvas* canvas = dvz_app_window_canvas(win);
+    DvzCanvas* canvas = dvz_view_canvas(win);
     ANN(canvas);
 
     /* Ask for a dimension that doesn't match the 64x64 offscreen canvas. */
@@ -4995,11 +4995,11 @@ int test_app_capture_rejects_undersized_buffer(TstContext* suite, const TstCase*
         dvz_scene_destroy(scene);
         return 0;
     }
-    DvzAppWindow* win = dvz_app_window(app, figure, 64, 64);
+    DvzView* win = dvz_view_offscreen(app, figure, 64, 64);
     AT(win != NULL);
     dvz_app_run(app, 1);
 
-    DvzCanvas* canvas = dvz_app_window_canvas(win);
+    DvzCanvas* canvas = dvz_view_canvas(win);
     ANN(canvas);
 
     /* Buffer is one byte short of the required 64*64*4 bytes. */
@@ -5064,9 +5064,9 @@ int test_app_offscreen_volume_slice_renders_field(TstContext* suite, const TstCa
         dvz_scene_destroy(scene);
         return 0;
     }
-    DvzAppWindow* win = dvz_app_window(app, figure, 64, 64);
+    DvzView* win = dvz_view_offscreen(app, figure, 64, 64);
     ANN(win);
-    DvzCanvas* canvas = dvz_app_window_canvas(win);
+    DvzCanvas* canvas = dvz_view_canvas(win);
     ANN(canvas);
 
     uint32_t white_count = 0;
@@ -5152,9 +5152,9 @@ int test_app_offscreen_volume_mip_renders_bright_slice(TstContext* suite, const 
         dvz_scene_destroy(scene);
         return 0;
     }
-    DvzAppWindow* win = dvz_app_window(app, figure, 64, 64);
+    DvzView* win = dvz_view_offscreen(app, figure, 64, 64);
     ANN(win);
-    DvzCanvas* canvas = dvz_app_window_canvas(win);
+    DvzCanvas* canvas = dvz_view_canvas(win);
     ANN(canvas);
 
     uint32_t white_count = 0;
@@ -5235,9 +5235,9 @@ int test_app_offscreen_volume_composite_renders_field(TstContext* suite, const T
         dvz_scene_destroy(scene);
         return 0;
     }
-    DvzAppWindow* win = dvz_app_window(app, figure, 64, 64);
+    DvzView* win = dvz_view_offscreen(app, figure, 64, 64);
     ANN(win);
-    DvzCanvas* canvas = dvz_app_window_canvas(win);
+    DvzCanvas* canvas = dvz_view_canvas(win);
     ANN(canvas);
 
     uint32_t bright_count = 0;
@@ -5406,7 +5406,7 @@ static AppVolumeOcclusionCapture _app_volume_occlusion_capture(
         dvz_scene_destroy(scene);
         return out;
     }
-    DvzAppWindow* win = dvz_app_window(app, figure, 64, 64);
+    DvzView* win = dvz_view_offscreen(app, figure, 64, 64);
     if (win == NULL)
     {
         out.skipped = true;
@@ -5415,7 +5415,7 @@ static AppVolumeOcclusionCapture _app_volume_occlusion_capture(
         dvz_scene_destroy(scene);
         return out;
     }
-    DvzCanvas* canvas = dvz_app_window_canvas(win);
+    DvzCanvas* canvas = dvz_view_canvas(win);
     if (canvas == NULL)
     {
         out.skipped = true;
@@ -5773,20 +5773,20 @@ int test_app_offscreen_volume_slice_mesh_scene_occlusion_toggle(TstContext* suit
         dvz_scene_destroy(scene);
         return 0;
     }
-    DvzAppWindow* win = dvz_app_window(app, figure, 64, 64);
+    DvzView* win = dvz_view_offscreen(app, figure, 64, 64);
     if (win == NULL)
     {
         log_warn(
-            "test_app_offscreen_volume_slice_mesh_scene_occlusion_toggle skipped: app window "
+            "test_app_offscreen_volume_slice_mesh_scene_occlusion_toggle skipped: view "
             "failed");
-        tst_skip(suite, "app window creation failed");
+        tst_skip(suite, "view creation failed");
         dvz_app_destroy(app);
         dvz_scene_destroy(scene);
         return 0;
     }
 
     tst_log_capture_begin(suite);
-    int rc = dvz_app_window_render_once(win);
+    int rc = dvz_view_render_once(win);
     AppLogCapture first = {0};
     _app_log_capture_from_suite(suite, &first);
     tst_log_capture_end(suite);
@@ -5805,7 +5805,7 @@ int test_app_offscreen_volume_slice_mesh_scene_occlusion_toggle(TstContext* suit
                   }) == 0);
 
     tst_log_capture_begin(suite);
-    rc = dvz_app_window_render_once(win);
+    rc = dvz_view_render_once(win);
     AppLogCapture second = {0};
     _app_log_capture_from_suite(suite, &second);
     tst_log_capture_end(suite);
@@ -5895,9 +5895,9 @@ int test_app_offscreen_volume_depth_occluded_by_primitive(TstContext* suite, con
         dvz_scene_destroy(scene);
         return 0;
     }
-    DvzAppWindow* win = dvz_app_window(app, figure, 64, 64);
+    DvzView* win = dvz_view_offscreen(app, figure, 64, 64);
     ANN(win);
-    DvzCanvas* canvas = dvz_app_window_canvas(win);
+    DvzCanvas* canvas = dvz_view_canvas(win);
     ANN(canvas);
 
     uint32_t width = 0, height = 0;
@@ -5956,7 +5956,7 @@ int test_scene_app(TstSuite* suite)
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_timer_advances_in_app_run);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_timer_advances_in_render_once);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_render_enabled_gate);
-    TST_SCENE_APP_SHARED_CASE(test_app_window_panel_panzoom_helper);
+    TST_SCENE_APP_SHARED_CASE(test_view_panel_panzoom_helper);
 #if defined(DVZ_HAS_GLFW) && DVZ_HAS_GLFW
     TST_SCENE_APP_CASE(
         test_app_external_surface_release_waits, TST_SCENE_APP_GPU_RES | TST_RES_GLFW,

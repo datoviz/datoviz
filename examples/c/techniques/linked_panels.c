@@ -204,10 +204,10 @@ static bool _add_point_grid(DvzScene* scene, DvzPanel* panel, uint32_t variant)
 /**
  * Propagate panzoom changes across the linked top panels after each frame.
  *
- * @param win app-window whose frame just completed
+ * @param win view whose frame just completed
  * @param user_data linked-panels example state
  */
-static void _linked_panels_frame(DvzAppWindow* win, void* user_data)
+static void _linked_panels_frame(DvzView* win, void* user_data)
 {
     (void)win;
     LinkedPanelsState* state = (LinkedPanelsState*)user_data;
@@ -302,18 +302,18 @@ int main(int argc, char** argv)
     app = dvz_app(scene);
     EXAMPLE_CHECK(app != NULL, "dvz_app() failed (no GPU or display?)");
 
-    DvzAppWindow* win =
-        dvz_app_window_glfw(app, figure, WIDTH, HEIGHT, "linked_panels");
-    EXAMPLE_CHECK(win != NULL, "dvz_app_window_glfw() failed (GLFW unavailable?)");
+    DvzView* win =
+        dvz_view_glfw(app, figure, WIDTH, HEIGHT, "linked_panels");
+    EXAMPLE_CHECK(win != NULL, "dvz_view_glfw() failed (GLFW unavailable?)");
 
     LinkedPanelsState state = {0};
     for (uint32_t i = 0; i < PANEL_COUNT; i++)
     {
-        state.panzooms[i] = dvz_app_window_panel_panzoom(win, panels[i], NULL);
+        state.panzooms[i] = dvz_view_panzoom(win, panels[i], NULL);
         EXAMPLE_CHECK(state.panzooms[i] != NULL, "failed to create or bind panzoom controller");
     }
 
-    dvz_app_window_set_frame_callback(win, _linked_panels_frame, &state);
+    dvz_view_set_frame_callback(win, _linked_panels_frame, &state);
     dvz_app_run(app, example_frame_count(argc, argv));
     ret = 0;
 

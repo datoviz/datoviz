@@ -159,11 +159,11 @@ int main(int argc, char** argv)
     dvz_panel_set_background_color(panel, 0.04f, 0.045f, 0.05f, 1.0f);
 
     app = dvz_app(scene);
-    DvzAppWindow* win =
-        app != NULL ? dvz_app_window_glfw(app, figure, WIDTH, HEIGHT, "surface grid") : NULL;
+    DvzView* win =
+        app != NULL ? dvz_view_glfw(app, figure, WIDTH, HEIGHT, "surface grid") : NULL;
     EXAMPLE_CHECK(app != NULL && win != NULL, "app/window setup failed");
 
-    DvzArcball* arcball = dvz_app_window_panel_arcball(win, panel, NULL);
+    DvzArcball* arcball = dvz_view_arcball(win, panel, NULL);
     if (arcball != NULL)
         dvz_arcball_initial(arcball, (vec3){0.55f, 0.0f, -0.25f});
 

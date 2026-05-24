@@ -372,10 +372,10 @@ static void _destroy_state(PathStressState* state)
  * Build live controls for path stress parameters.
  *
  * @param gui GUI overlay
- * @param win app window
+ * @param win view
  * @param user_data example state
  */
-static void _path_stress_gui(DvzGui* gui, DvzAppWindow* win, void* user_data)
+static void _path_stress_gui(DvzGui* gui, DvzView* win, void* user_data)
 {
     (void)win;
     PathStressState* state = (PathStressState*)user_data;
@@ -439,10 +439,10 @@ static void _path_stress_gui(DvzGui* gui, DvzAppWindow* win, void* user_data)
 /**
  * Animate path data after each submitted frame.
  *
- * @param win app-window whose frame just completed
+ * @param win view whose frame just completed
  * @param user_data example state
  */
-static void _path_stress_frame(DvzAppWindow* win, void* user_data)
+static void _path_stress_frame(DvzView* win, void* user_data)
 {
     PathStressState* state = (PathStressState*)user_data;
     if (state == NULL)
@@ -454,7 +454,7 @@ static void _path_stress_frame(DvzAppWindow* win, void* user_data)
 
     state->phase += 0.055f;
     _upload_path_data(state);
-    dvz_app_window_request_frame(win);
+    dvz_view_request_frame(win);
 }
 
 
@@ -522,18 +522,18 @@ int main(int argc, char** argv)
     app = dvz_app(scene);
     EXAMPLE_CHECK(app != NULL, "dvz_app() failed (no GPU or display?)");
 
-    DvzAppWindow* win =
-        dvz_app_window_glfw(app, figure, WIDTH, HEIGHT, "path");
-    EXAMPLE_CHECK(win != NULL, "dvz_app_window_glfw() failed (GLFW unavailable?)");
+    DvzView* win =
+        dvz_view_glfw(app, figure, WIDTH, HEIGHT, "path");
+    EXAMPLE_CHECK(win != NULL, "dvz_view_glfw() failed (GLFW unavailable?)");
 
-    DvzPanzoom* panzoom = dvz_app_window_panel_panzoom(win, panel, NULL);
+    DvzPanzoom* panzoom = dvz_view_panzoom(win, panel, NULL);
     EXAMPLE_CHECK(panzoom != NULL, "failed to create or bind panzoom controller");
 
     DvzGuiConfig gui_config = dvz_gui_config();
-    DvzGui* gui = dvz_app_window_gui(win, &gui_config);
-    EXAMPLE_CHECK(gui != NULL, "dvz_app_window_gui() failed");
-    dvz_app_window_set_gui_callback(win, _path_stress_gui, &state);
-    dvz_app_window_set_frame_callback(win, _path_stress_frame, &state);
+    DvzGui* gui = dvz_view_gui(win, &gui_config);
+    EXAMPLE_CHECK(gui != NULL, "dvz_view_gui() failed");
+    dvz_view_set_gui_callback(win, _path_stress_gui, &state);
+    dvz_view_set_frame_callback(win, _path_stress_frame, &state);
 
     dvz_app_run(app, example_frame_count(argc, argv));
     ret = 0;

@@ -644,10 +644,10 @@ static void _reset_lidar_controls(LidarExampleState* state)
  * Build the live LIDAR EDL controls.
  *
  * @param gui GUI overlay
- * @param win app window
+ * @param win view
  * @param user_data example state
  */
-static void _lidar_gui(DvzGui* gui, DvzAppWindow* win, void* user_data)
+static void _lidar_gui(DvzGui* gui, DvzView* win, void* user_data)
 {
     (void)win;
     LidarExampleState* state = (LidarExampleState*)user_data;
@@ -773,8 +773,8 @@ int main(int argc, char** argv)
     app = dvz_app(scene);
     EXAMPLE_CHECK(app != NULL, "dvz_app() failed (no GPU or display?)");
 
-    DvzAppWindow* win = dvz_app_window_glfw(app, figure, WIDTH, HEIGHT, "lidar");
-    EXAMPLE_CHECK(win != NULL, "dvz_app_window_glfw() failed (GLFW unavailable?)");
+    DvzView* win = dvz_view_glfw(app, figure, WIDTH, HEIGHT, "lidar");
+    EXAMPLE_CHECK(win != NULL, "dvz_view_glfw() failed (GLFW unavailable?)");
 
     DvzFlyDesc fly_desc = dvz_fly_desc();
     fly_desc.mode = DVZ_FLY_MODE_PLANE;
@@ -782,14 +782,14 @@ int main(int argc, char** argv)
     dvz_memcpy(fly_desc.target, sizeof(fly_desc.target), view.target, sizeof(view.target));
     dvz_memcpy(fly_desc.up, sizeof(fly_desc.up), view.up, sizeof(view.up));
     fly_desc.speed = view.speed;
-    DvzFly* fly = dvz_app_window_panel_fly(win, panel, &fly_desc);
+    DvzFly* fly = dvz_view_fly(win, panel, &fly_desc);
     EXAMPLE_CHECK(fly != NULL, "failed to create or bind the LIDAR fly controller");
     gui_state.fly = fly;
 
     DvzGuiConfig gui_config = dvz_gui_config();
-    DvzGui* gui = dvz_app_window_gui(win, &gui_config);
-    EXAMPLE_CHECK(gui != NULL, "dvz_app_window_gui() failed");
-    dvz_app_window_set_gui_callback(win, _lidar_gui, &gui_state);
+    DvzGui* gui = dvz_view_gui(win, &gui_config);
+    EXAMPLE_CHECK(gui != NULL, "dvz_view_gui() failed");
+    dvz_view_set_gui_callback(win, _lidar_gui, &gui_state);
 
     dvz_app_run(app, example_frame_count(argc, argv));
 

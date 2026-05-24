@@ -103,10 +103,10 @@ static DvzFigure* _gui_test_figure(DvzScene* scene, uint32_t width, uint32_t hei
  * Build a viewport window with changing size and collapsed state.
  *
  * @param gui GUI overlay
- * @param win app window
+ * @param win view
  * @param user_data GUI viewport smoke state
  */
-static void _gui_viewport_resize_callback(DvzGui* gui, DvzAppWindow* win, void* user_data)
+static void _gui_viewport_resize_callback(DvzGui* gui, DvzView* win, void* user_data)
 {
     (void)gui;
     (void)win;
@@ -320,19 +320,19 @@ static int test_gui_viewport_resize_hidden_smoke(TstContext* suite, const TstCas
         return 0;
     }
 
-    DvzAppWindow* source_win = dvz_app_window(app, source_figure, 160, 120);
-    DvzAppWindow* host_win =
-        dvz_app_window_glfw(app, host_figure, 640, 480, "test_gui_viewport_resize_hidden_smoke");
+    DvzView* source_win = dvz_view_offscreen(app, source_figure, 160, 120);
+    DvzView* host_win =
+        dvz_view_glfw(app, host_figure, 640, 480, "test_gui_viewport_resize_hidden_smoke");
     if (source_win == NULL || host_win == NULL)
     {
-        log_warn("test_gui_viewport_resize_hidden_smoke skipped: app-window creation failed");
-        tst_skip(suite, "app-window creation failed");
+        log_warn("test_gui_viewport_resize_hidden_smoke skipped: view creation failed");
+        tst_skip(suite, "view creation failed");
         dvz_app_destroy(app);
         dvz_scene_destroy(scene);
         return 0;
     }
 
-    DvzGui* gui = dvz_app_window_gui(host_win, NULL);
+    DvzGui* gui = dvz_view_gui(host_win, NULL);
     if (gui == NULL)
     {
         log_warn("test_gui_viewport_resize_hidden_smoke skipped: GUI creation failed");
@@ -349,17 +349,17 @@ static int test_gui_viewport_resize_hidden_smoke(TstContext* suite, const TstCas
     smoke.viewport = dvz_gui_viewport_from_window(gui, source_win, &config);
     AT(smoke.viewport != NULL);
 
-    dvz_app_window_set_gui_callback(host_win, _gui_viewport_resize_callback, &smoke);
+    dvz_view_set_gui_callback(host_win, _gui_viewport_resize_callback, &smoke);
     dvz_app_run(app, 4);
 
     AT(smoke.shown_count > 0);
     AT(smoke.hidden_count > 0);
-    AT(!dvz_app_window_render_enabled(source_win));
+    AT(!dvz_view_render_enabled(source_win));
 
     uint32_t width = 0;
     uint32_t height = 0;
     uint8_t* rgba = NULL;
-    AT(dvz_canvas_capture_rgba(dvz_app_window_canvas(source_win), &width, &height, &rgba) == 0);
+    AT(dvz_canvas_capture_rgba(dvz_view_canvas(source_win), &width, &height, &rgba) == 0);
     AT(width > 0);
     AT(height > 0);
     dvz_free(rgba);
@@ -408,18 +408,18 @@ static int test_gui_multi_viewport_input_routers(TstContext* suite, const TstCas
         return 0;
     }
 
-    DvzAppWindow* host_win =
-        dvz_app_window_glfw(app, host_figure, 640, 480, "test_gui_multi_viewport_input_routers");
+    DvzView* host_win =
+        dvz_view_glfw(app, host_figure, 640, 480, "test_gui_multi_viewport_input_routers");
     if (host_win == NULL)
     {
         log_warn("test_gui_multi_viewport_input_routers skipped: GLFW window creation failed");
-        tst_skip(suite, "app-window creation failed");
+        tst_skip(suite, "view creation failed");
         dvz_app_destroy(app);
         dvz_scene_destroy(scene);
         return 0;
     }
 
-    DvzGui* gui = dvz_app_window_gui(host_win, NULL);
+    DvzGui* gui = dvz_view_gui(host_win, NULL);
     if (gui == NULL)
     {
         log_warn("test_gui_multi_viewport_input_routers skipped: GUI creation failed");

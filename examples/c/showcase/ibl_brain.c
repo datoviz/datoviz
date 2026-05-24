@@ -530,10 +530,10 @@ static void _reset_controls(BwmExampleState* state)
  * Build the live BWM shell transparency controls.
  *
  * @param gui GUI overlay
- * @param win app window
+ * @param win view
  * @param user_data example state
  */
-static void _bwm_gui(DvzGui* gui, DvzAppWindow* win, void* user_data)
+static void _bwm_gui(DvzGui* gui, DvzView* win, void* user_data)
 {
     (void)win;
     BwmExampleState* state = (BwmExampleState*)user_data;
@@ -702,17 +702,17 @@ int main(int argc, char** argv)
     app = dvz_app(scene);
     EXAMPLE_CHECK(app != NULL, "dvz_app() failed (no GPU or display?)");
 
-    DvzAppWindow* win = dvz_app_window_glfw(app, figure, WIDTH, HEIGHT, "ibl_brain");
-    EXAMPLE_CHECK(win != NULL, "dvz_app_window_glfw() failed (GLFW unavailable?)");
+    DvzView* win = dvz_view_glfw(app, figure, WIDTH, HEIGHT, "ibl_brain");
+    EXAMPLE_CHECK(win != NULL, "dvz_view_glfw() failed (GLFW unavailable?)");
 
-    DvzArcball* arcball = dvz_app_window_panel_arcball(win, panel, NULL);
+    DvzArcball* arcball = dvz_view_arcball(win, panel, NULL);
     EXAMPLE_CHECK(arcball != NULL, "failed to create or bind arcball controller");
     dvz_arcball_set(arcball, (vec3){+0.70f, 0.0f, +0.20f});
 
     DvzGuiConfig gui_config = dvz_gui_config();
-    DvzGui* gui = dvz_app_window_gui(win, &gui_config);
-    EXAMPLE_CHECK(gui != NULL, "dvz_app_window_gui() failed");
-    dvz_app_window_set_gui_callback(win, _bwm_gui, &state);
+    DvzGui* gui = dvz_view_gui(win, &gui_config);
+    EXAMPLE_CHECK(gui != NULL, "dvz_view_gui() failed");
+    dvz_view_set_gui_callback(win, _bwm_gui, &state);
 
     dvz_scene_set_clock_mode(scene, DVZ_CLOCK_REALTIME);
     dvz_scene_set_fps(scene, 60.0);

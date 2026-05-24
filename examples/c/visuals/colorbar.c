@@ -59,7 +59,7 @@ typedef struct ColorbarState
     DvzAxisStyle x_axis_style;
     DvzAxisStyle y_axis_style;
     DvzColormap* colormaps[COLORMAP_COUNT];
-    DvzAppWindow* win;
+    DvzView* win;
     int colormap_index;
     int placement_mode;
     int orientation;
@@ -373,7 +373,7 @@ static void _apply_colorbar_controls(
         dvz_scale_set_view_range(state->scale, state->range_min, state->range_max);
     }
     if (state->win != NULL)
-        dvz_app_window_request_frame(state->win);
+        dvz_view_request_frame(state->win);
 }
 
 
@@ -382,10 +382,10 @@ static void _apply_colorbar_controls(
  * Render the colorbar example controls.
  *
  * @param gui GUI context
- * @param win app window
+ * @param win view
  * @param user_data colorbar example state
  */
-static void _colorbar_gui(DvzGui* gui, DvzAppWindow* win, void* user_data)
+static void _colorbar_gui(DvzGui* gui, DvzView* win, void* user_data)
 {
     (void)win;
     ColorbarState* state = (ColorbarState*)user_data;
@@ -521,7 +521,7 @@ static void _colorbar_gui(DvzGui* gui, DvzAppWindow* win, void* user_data)
     if (padding_changed)
         _apply_panel_padding(state);
     if ((layout_changed || axis_changed || padding_changed) && state->win != NULL)
-        dvz_app_window_request_frame(state->win);
+        dvz_view_request_frame(state->win);
 }
 
 
@@ -688,14 +688,14 @@ int main(int argc, char** argv)
     app = dvz_app(scene);
     EXAMPLE_CHECK(app != NULL, "dvz_app() failed (no GPU or display?)");
 
-    DvzAppWindow* win = dvz_app_window_glfw(app, figure, WIDTH, HEIGHT, "colorbar");
-    EXAMPLE_CHECK(win != NULL, "dvz_app_window_glfw() failed (GLFW unavailable?)");
+    DvzView* win = dvz_view_glfw(app, figure, WIDTH, HEIGHT, "colorbar");
+    EXAMPLE_CHECK(win != NULL, "dvz_view_glfw() failed (GLFW unavailable?)");
     state.win = win;
 
     DvzGuiConfig gui_config = dvz_gui_config();
-    DvzGui* gui = dvz_app_window_gui(win, &gui_config);
-    EXAMPLE_CHECK(gui != NULL, "dvz_app_window_gui() failed");
-    dvz_app_window_set_gui_callback(win, _colorbar_gui, &state);
+    DvzGui* gui = dvz_view_gui(win, &gui_config);
+    EXAMPLE_CHECK(gui != NULL, "dvz_view_gui() failed");
+    dvz_view_set_gui_callback(win, _colorbar_gui, &state);
 
     dvz_app_run(app, example_frame_count(argc, argv));
     ret = 0;

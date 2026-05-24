@@ -948,10 +948,10 @@ static void _apply_spin(ProteinExampleState* state)
  * Build the live protein controls.
  *
  * @param gui GUI overlay
- * @param win app window
+ * @param win view
  * @param user_data example state
  */
-static void _protein_gui(DvzGui* gui, DvzAppWindow* win, void* user_data)
+static void _protein_gui(DvzGui* gui, DvzView* win, void* user_data)
 {
     ANN(gui);
     ANN(win);
@@ -1233,11 +1233,11 @@ int main(int argc, char** argv)
     app = dvz_app(scene);
     EXAMPLE_CHECK(app != NULL, "dvz_app() failed (no GPU or display?)");
 
-    DvzAppWindow* win =
-        dvz_app_window_glfw(app, figure, WIDTH, HEIGHT, "protein");
-    EXAMPLE_CHECK(win != NULL, "dvz_app_window_glfw() failed (GLFW unavailable?)");
+    DvzView* win =
+        dvz_view_glfw(app, figure, WIDTH, HEIGHT, "protein");
+    EXAMPLE_CHECK(win != NULL, "dvz_view_glfw() failed (GLFW unavailable?)");
 
-    DvzArcball* arcball = dvz_app_window_panel_arcball(win, panel, NULL);
+    DvzArcball* arcball = dvz_view_arcball(win, panel, NULL);
     EXAMPLE_CHECK(arcball != NULL, "failed to create or bind arcball controller");
     dvz_arcball_initial(arcball, (vec3){+0.70f, 0.0f, +0.30f});
     dvz_scene_set_clock_mode(scene, DVZ_CLOCK_REALTIME);
@@ -1290,11 +1290,11 @@ int main(int argc, char** argv)
     _apply_msaa(&state);
     _apply_ssao(&state);
 
-    DvzGui* gui = dvz_app_window_gui(win, NULL);
+    DvzGui* gui = dvz_view_gui(win, NULL);
     if (gui == NULL)
         dvz_fprintf(stderr, "warning: failed to attach GUI overlay\n");
     else
-        dvz_app_window_set_gui_callback(win, _protein_gui, &state);
+        dvz_view_set_gui_callback(win, _protein_gui, &state);
 
     dvz_fprintf(
         stderr, "loaded %" PRIu32 " atoms from %s\n", bundle.atom_count, bundle.path);

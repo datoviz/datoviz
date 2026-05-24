@@ -54,7 +54,7 @@ static const float TAU = 6.28318530718f;
 typedef struct PrimitiveState
 {
     DvzVisual* visual;
-    DvzAppWindow* win;
+    DvzView* win;
     float (*positions)[3];
     float (*normals)[3];
     DvzColor* colors;
@@ -233,10 +233,10 @@ static bool _upload_triangles(PrimitiveState* state)
  * Render primitive visual controls.
  *
  * @param gui GUI context
- * @param win app window
+ * @param win view
  * @param user_data primitive workbench state
  */
-static void _gui_callback(DvzGui* gui, DvzAppWindow* win, void* user_data)
+static void _gui_callback(DvzGui* gui, DvzView* win, void* user_data)
 {
     (void)win;
     PrimitiveState* state = (PrimitiveState*)user_data;
@@ -263,7 +263,7 @@ static void _gui_callback(DvzGui* gui, DvzAppWindow* win, void* user_data)
             state->triangle_count = state->max_triangles;
         _fill_triangles(state, 0.0f);
         (void)_upload_triangles(state);
-        dvz_app_window_request_frame(state->win);
+        dvz_view_request_frame(state->win);
     }
 }
 
@@ -272,10 +272,10 @@ static void _gui_callback(DvzGui* gui, DvzAppWindow* win, void* user_data)
 /**
  * Update animated primitive data before each frame.
  *
- * @param win app window
+ * @param win view
  * @param user_data primitive workbench state
  */
-static void _frame_callback(DvzAppWindow* win, void* user_data)
+static void _frame_callback(DvzView* win, void* user_data)
 {
     PrimitiveState* state = (PrimitiveState*)user_data;
     if (state == NULL || !state->animate)
@@ -284,7 +284,7 @@ static void _frame_callback(DvzAppWindow* win, void* user_data)
     state->phase += 0.025f;
     _fill_triangles(state, state->phase);
     (void)_upload_triangles(state);
-    dvz_app_window_request_frame(win);
+    dvz_view_request_frame(win);
 }
 
 
@@ -360,16 +360,16 @@ int main(int argc, char** argv)
     app = dvz_app(scene);
     EXAMPLE_CHECK(app != NULL, "dvz_app() failed");
 
-    state.win = dvz_app_window_glfw(app, figure, WIDTH, HEIGHT, "primitive");
-    EXAMPLE_CHECK(state.win != NULL, "dvz_app_window_glfw() failed");
+    state.win = dvz_view_glfw(app, figure, WIDTH, HEIGHT, "primitive");
+    EXAMPLE_CHECK(state.win != NULL, "dvz_view_glfw() failed");
 
-    DvzArcball* arcball = dvz_app_window_panel_arcball(state.win, panel, NULL);
+    DvzArcball* arcball = dvz_view_arcball(state.win, panel, NULL);
     EXAMPLE_CHECK(arcball != NULL, "failed to create or bind arcball controller");
     dvz_arcball_set(arcball, (vec3){+0.54f, -0.10f, +0.26f});
-    DvzGui* gui = dvz_app_window_gui(state.win, NULL);
+    DvzGui* gui = dvz_view_gui(state.win, NULL);
     if (gui != NULL)
-        dvz_app_window_set_gui_callback(state.win, _gui_callback, &state);
-    dvz_app_window_set_frame_callback(state.win, _frame_callback, &state);
+        dvz_view_set_gui_callback(state.win, _gui_callback, &state);
+    dvz_view_set_frame_callback(state.win, _frame_callback, &state);
 
     dvz_app_run(app, example_frame_count(argc, argv));
     ret = 0;

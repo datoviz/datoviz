@@ -9,7 +9,7 @@
  * Qt is used here as an external toolkit adapter. Datoviz does not create the Qt window and does
  * not enter dvz_app_run(); the host provides Vulkan instance extensions, Datoviz creates the
  * VkInstance, Qt creates VkSurfaceKHR from that instance, forwards input/resize events, and calls
- * dvz_app_window_render_once() from Qt's update path.
+ * dvz_view_render_once() from Qt's update path.
  *
  * Build:  just build
  * Run:    ./build/examples/qt/hosted_qt_smoke [frames]

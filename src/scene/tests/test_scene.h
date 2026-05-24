@@ -374,7 +374,7 @@ int test_app_offscreen_timer_advances_in_render_once(TstContext* suite, const Ts
 
 int test_app_offscreen_render_enabled_gate(TstContext* suite, const TstCase* item);
 
-int test_app_window_panel_panzoom_helper(TstContext* suite, const TstCase* item);
+int test_view_panel_panzoom_helper(TstContext* suite, const TstCase* item);
 
 #if defined(DVZ_HAS_GLFW) && DVZ_HAS_GLFW
 int test_app_external_surface_release_waits(TstContext* suite, const TstCase* item);

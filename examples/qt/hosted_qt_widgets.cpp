@@ -7,7 +7,7 @@
 /* hosted_qt_widgets - live Qt Widgets host around a Datoviz Vulkan scene.
  *
  * Qt owns the event loop and widgets. Datoviz creates the Vulkan instance and renders into a
- * Qt-created VkSurfaceKHR through the hosted app-window contract.
+ * Qt-created VkSurfaceKHR through the hosted view contract.
  *
  * Build:  just build
  * Run:    ./build/examples/qt/hosted_qt_widgets

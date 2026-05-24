@@ -91,7 +91,7 @@ VkQueue dvz_queue_handle(DvzQueue* queue);
 struct DvzGui
 {
     DvzApp* app;
-    DvzAppWindow* app_window;
+    DvzView* view;
     DvzGpuCtx* gpu_ctx;
     DvzDevice* device;
     DvzQueue* queue;
@@ -116,7 +116,7 @@ struct DvzGuiViewport
 {
     DvzGui* gui;
     DvzFigure* figure;
-    DvzAppWindow* source;
+    DvzView* source;
     DvzCanvas* canvas;
     DvzGuiViewportConfig config;
     VkSampler sampler;
@@ -326,7 +326,7 @@ static DvzKeyboardEventType _gui_key_event_type(int action)
 
 
 /**
- * Update whether the source app-window should render.
+ * Update whether the source view should render.
  *
  * @param viewport GUI viewport
  * @param visible whether the viewport image was visible this frame
@@ -341,7 +341,7 @@ static void _gui_viewport_set_visible(DvzGuiViewport* viewport, bool visible)
     const bool render_hidden =
         (viewport->config.flags & DVZ_GUI_VIEWPORT_FLAGS_RENDER_WHEN_HIDDEN) != 0;
     const bool enabled = visible || !viewport->has_frame || render_hidden;
-    dvz_app_window_set_render_enabled(viewport->source, enabled);
+    dvz_view_set_render_enabled(viewport->source, enabled);
 }
 
 
@@ -581,7 +581,7 @@ static void _gui_viewport_resize_source(DvzGuiViewport* viewport, uint32_t width
     ANN(viewport);
     if (viewport->requested_width == width && viewport->requested_height == height)
         return;
-    if (dvz_app_window_resize(viewport->source, width, height) != 0)
+    if (dvz_view_resize(viewport->source, width, height) != 0)
         return;
     viewport->requested_width = width;
     viewport->requested_height = height;
@@ -647,7 +647,7 @@ static void _gui_viewport_request_resize(DvzGuiViewport* viewport, uint32_t widt
 
 
 /**
- * Forward ImGui item input to the source app-window router.
+ * Forward ImGui item input to the source view router.
  *
  * @param viewport GUI viewport
  * @param image_min top-left image position in ImGui coordinates
@@ -657,7 +657,7 @@ static void _gui_viewport_forward_input(
     DvzGuiViewport* viewport, ImVec2 image_min, ImVec2 size)
 {
     ANN(viewport);
-    if (viewport->source == NULL || dvz_app_window_input(viewport->source) == NULL ||
+    if (viewport->source == NULL || dvz_view_input(viewport->source) == NULL ||
         size.x <= 0 || size.y <= 0)
     {
         return;
@@ -692,7 +692,7 @@ static void _gui_viewport_forward_input(
             viewport->input_capturing = true;
             viewport->input_button = i;
             viewport->input_dvz_button = buttons[i];
-            (void)dvz_app_window_emit_pointer(
+            (void)dvz_view_emit_pointer(
                 viewport->source, DVZ_POINTER_EVENT_PRESS, x, y, window_x, window_y, buttons[i],
                 mods);
         }
@@ -701,12 +701,12 @@ static void _gui_viewport_forward_input(
     if (!hovered && !viewport->input_capturing)
         return;
 
-    (void)dvz_app_window_emit_pointer(
+    (void)dvz_view_emit_pointer(
         viewport->source, DVZ_POINTER_EVENT_MOVE, x, y, window_x, window_y,
         DVZ_POINTER_BUTTON_NONE, mods);
     if (hovered && (io.MouseWheel != 0.0f || io.MouseWheelH != 0.0f))
     {
-        (void)dvz_app_window_emit_wheel(
+        (void)dvz_view_emit_wheel(
             viewport->source, x, y, window_x, window_y, io.MouseWheelH, io.MouseWheel, mods);
     }
 
@@ -714,7 +714,7 @@ static void _gui_viewport_forward_input(
         viewport->input_capturing &&
         (ImGui::IsMouseReleased(viewport->input_button) || !io.MouseDown[viewport->input_button]))
     {
-        (void)dvz_app_window_emit_pointer(
+        (void)dvz_view_emit_pointer(
             viewport->source, DVZ_POINTER_EVENT_RELEASE, x, y, window_x, window_y,
             viewport->input_dvz_button, mods);
         viewport->input_capturing = false;
@@ -769,7 +769,7 @@ static void _gui_viewport_destroy(DvzGuiViewport* viewport, bool detach)
     if (viewport->canvas != NULL)
         (void)dvz_canvas_configure_live_image_sink(viewport->canvas, false, NULL);
     if (viewport->source != NULL && viewport->owns_source)
-        dvz_app_window_set_render_enabled(viewport->source, false);
+        dvz_view_set_render_enabled(viewport->source, false);
     _gui_viewport_remove_texture(viewport);
     if (gui != NULL && viewport->sampler != VK_NULL_HANDLE)
     {
@@ -832,21 +832,21 @@ static bool _gui_viewport_forward_key(DvzGui* gui, int key, int action, int mods
     if (type == DVZ_KEYBOARD_EVENT_NONE)
         return false;
 
-    return dvz_app_window_emit_key(viewport->source, type, (DvzKeyCode)key, mods) == 0;
+    return dvz_view_emit_key(viewport->source, type, (DvzKeyCode)key, mods) == 0;
 }
 
 
 
 /**
- * Request an app-window frame after GUI input changes ImGui state.
+ * Request a view frame after GUI input changes ImGui state.
  *
  * @param gui the GUI overlay
  */
 static void _gui_request_frame(DvzGui* gui)
 {
-    if (gui == NULL || gui->app_window == NULL)
+    if (gui == NULL || gui->view == NULL)
         return;
-    dvz_app_window_request_frame(gui->app_window);
+    dvz_view_request_frame(gui->view);
 }
 
 
@@ -1065,13 +1065,13 @@ static void _gui_submit_dockspace(DvzGui* gui)
  *
  * @param app app that owns any GUI-hosted offscreen windows
  * @param gpu_ctx GPU context borrowed from the app
- * @param app_window app-window to invalidate after GUI input
- * @param window GLFW window borrowed from the app window
+ * @param view view to invalidate after GUI input
+ * @param window GLFW window borrowed from the view
  * @param config optional GUI configuration
  * @return created GUI overlay, or NULL
  */
 DvzGui* _dvz_gui_create(
-    DvzApp* app, DvzGpuCtx* gpu_ctx, DvzAppWindow* app_window, DvzWindow* window,
+    DvzApp* app, DvzGpuCtx* gpu_ctx, DvzView* view, DvzWindow* window,
     const DvzGuiConfig* config)
 {
     ANN(app);
@@ -1090,7 +1090,7 @@ DvzGui* _dvz_gui_create(
         return NULL;
 
     gui->app = app;
-    gui->app_window = app_window;
+    gui->view = view;
     gui->gpu_ctx = gpu_ctx;
     gui->device = dvz_gpu_ctx_device(gpu_ctx);
     gui->queue = dvz_gpu_ctx_queue(gpu_ctx, DVZ_QUEUE_MAIN);
@@ -1178,10 +1178,10 @@ void _dvz_gui_set_callback(DvzGui* gui, DvzGuiCallback callback, void* user_data
  * Begin a new ImGui frame and call user GUI code.
  *
  * @param gui the GUI overlay
- * @param win app window passed to user callbacks
+ * @param win view passed to user callbacks
  * @param frame current canvas frame
  */
-void _dvz_gui_begin_frame(DvzGui* gui, DvzAppWindow* win, const DvzStreamFrame* frame)
+void _dvz_gui_begin_frame(DvzGui* gui, DvzView* win, const DvzStreamFrame* frame)
 {
     ANN(gui);
     ANN(frame);
@@ -1817,25 +1817,25 @@ void dvz_gui_demo(DvzGui* gui, bool* open)
 
 
 /**
- * Create a dockable ImGui viewport from an offscreen source app-window.
+ * Create a dockable ImGui viewport from an offscreen source view.
  *
  * @param gui the GUI overlay
- * @param source app window providing the rendered image
+ * @param source view providing the rendered image
  * @param config optional viewport configuration
- * @param owns_source whether the viewport owns the source app-window lifecycle policy
+ * @param owns_source whether the viewport owns the source view lifecycle policy
  * @return the GUI viewport, or NULL on failure
  */
 static DvzGuiViewport* _gui_viewport_from_window(
-    DvzGui* gui, DvzAppWindow* source, const DvzGuiViewportConfig* config, bool owns_source)
+    DvzGui* gui, DvzView* source, const DvzGuiViewportConfig* config, bool owns_source)
 {
     ANN(gui);
     ANN(source);
-    DvzCanvas* canvas = dvz_app_window_canvas(source);
+    DvzCanvas* canvas = dvz_view_canvas(source);
     if (canvas == NULL)
         return NULL;
     if (dvz_canvas_render_mode(canvas) != DVZ_CANVAS_RENDER_MODE_OFFSCREEN)
     {
-        log_error("Datoviz GUI viewports require an offscreen source app-window");
+        log_error("Datoviz GUI viewports require an offscreen source view");
         return NULL;
     }
 
@@ -1886,15 +1886,15 @@ dvz_gui_viewport(DvzGui* gui, DvzFigure* figure, const DvzGuiViewportConfig* con
         return NULL;
 
     DvzGuiViewportConfig cfg = _gui_viewport_config_normalize(config);
-    DvzAppWindow* source =
-        dvz_app_window(gui->app, figure, cfg.initial_width, cfg.initial_height);
+    DvzView* source =
+        dvz_view_offscreen(gui->app, figure, cfg.initial_width, cfg.initial_height);
     if (source == NULL)
         return NULL;
 
     DvzGuiViewport* viewport = _gui_viewport_from_window(gui, source, &cfg, true);
     if (viewport == NULL)
     {
-        dvz_app_window_set_render_enabled(source, false);
+        dvz_view_set_render_enabled(source, false);
         return NULL;
     }
     viewport->figure = figure;
@@ -1904,15 +1904,15 @@ dvz_gui_viewport(DvzGui* gui, DvzFigure* figure, const DvzGuiViewportConfig* con
 
 
 /**
- * Create a dockable ImGui viewport from an existing offscreen app window.
+ * Create a dockable ImGui viewport from an existing offscreen view.
  *
  * @param gui the GUI overlay
- * @param source app window providing the rendered image
+ * @param source view providing the rendered image
  * @param config optional viewport configuration
  * @return the GUI viewport, or NULL on failure
  */
 DvzGuiViewport* dvz_gui_viewport_from_window(
-    DvzGui* gui, DvzAppWindow* source, const DvzGuiViewportConfig* config)
+    DvzGui* gui, DvzView* source, const DvzGuiViewportConfig* config)
 {
     return _gui_viewport_from_window(gui, source, config, false);
 }
@@ -1920,7 +1920,7 @@ DvzGuiViewport* dvz_gui_viewport_from_window(
 
 
 /**
- * Return the input router used by a GUI viewport's offscreen app window.
+ * Return the input router used by a GUI viewport's offscreen view.
  *
  * @param viewport the GUI viewport
  * @return the input router, or NULL
@@ -1930,7 +1930,7 @@ DvzInputRouter* dvz_gui_viewport_input(DvzGuiViewport* viewport)
     ANN(viewport);
     if (viewport->source == NULL)
         return NULL;
-    return dvz_app_window_input(viewport->source);
+    return dvz_view_input(viewport->source);
 }
 
 

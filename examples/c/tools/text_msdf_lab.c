@@ -52,7 +52,7 @@ typedef struct TextLabSource
 {
     DvzFigure* figure;
     DvzPanel* panel;
-    DvzAppWindow* win;
+    DvzView* win;
     DvzGuiViewport* viewport;
     DvzVisual* text;
     DvzPanzoom* panzoom;
@@ -68,7 +68,7 @@ typedef struct TextLabSource
 typedef struct TextMsdfLabState
 {
     TextLabSource sources[2];
-    DvzAppWindow* host_win;
+    DvzView* host_win;
     char text[TEXT_MSDF_LAB_TEXT_MAX];
     float size_px;
     float angle;
@@ -356,7 +356,7 @@ static void update_source_text(TextMsdfLabState* state, uint32_t source)
     (void)dvz_visual_set_strings(src->text, "text", strings, 1);
     (void)dvz_visual_set_data_many(src->text, updates, 5);
     if (src->win != NULL)
-        dvz_app_window_request_frame(src->win);
+        dvz_view_request_frame(src->win);
 }
 
 
@@ -457,13 +457,13 @@ static void sync_panzooms(TextMsdfLabState* state)
     {
         copy_panzoom(state->sources[1].panzoom, state->sources[0].panzoom);
         if (state->sources[1].win != NULL)
-            dvz_app_window_request_frame(state->sources[1].win);
+            dvz_view_request_frame(state->sources[1].win);
     }
     else if (changed_b && !changed_a)
     {
         copy_panzoom(state->sources[0].panzoom, state->sources[1].panzoom);
         if (state->sources[0].win != NULL)
-            dvz_app_window_request_frame(state->sources[0].win);
+            dvz_view_request_frame(state->sources[0].win);
     }
     store_panzooms(state);
 }
@@ -481,7 +481,7 @@ static void capture_source(TextLabSource* source)
     source->capture_valid = false;
     if (source->win == NULL)
         return;
-    DvzCanvas* canvas = dvz_app_window_canvas(source->win);
+    DvzCanvas* canvas = dvz_view_canvas(source->win);
     if (canvas == NULL)
         return;
 
@@ -759,10 +759,10 @@ static void draw_inspector(DvzGui* gui, TextMsdfLabState* state)
  * Build the control GUI.
  *
  * @param gui GUI overlay
- * @param win app window
+ * @param win view
  * @param user_data lab state
  */
-static void gui_callback(DvzGui* gui, DvzAppWindow* win, void* user_data)
+static void gui_callback(DvzGui* gui, DvzView* win, void* user_data)
 {
     (void)win;
     TextMsdfLabState* state = (TextMsdfLabState*)user_data;
@@ -817,7 +817,7 @@ static void gui_callback(DvzGui* gui, DvzAppWindow* win, void* user_data)
                 if (state->sources[i].panzoom != NULL)
                     dvz_panzoom_reset(state->sources[i].panzoom);
                 if (state->sources[i].win != NULL)
-                    dvz_app_window_request_frame(state->sources[i].win);
+                    dvz_view_request_frame(state->sources[i].win);
             }
             store_panzooms(state);
         }
@@ -941,17 +941,17 @@ int main(int argc, char** argv)
 
     for (uint32_t i = 0; i < 2; i++)
     {
-        state.sources[i].win = dvz_app_window(
+        state.sources[i].win = dvz_view_offscreen(
             app, state.sources[i].figure, TEXT_MSDF_LAB_SOURCE_WIDTH, TEXT_MSDF_LAB_SOURCE_HEIGHT);
-        EXAMPLE_CHECK(state.sources[i].win != NULL, "source app-window setup failed");
+        EXAMPLE_CHECK(state.sources[i].win != NULL, "source view setup failed");
     }
     state.host_win =
-        dvz_app_window_glfw(app, host_figure, TEXT_MSDF_LAB_HOST_WIDTH, TEXT_MSDF_LAB_HOST_HEIGHT,
+        dvz_view_glfw(app, host_figure, TEXT_MSDF_LAB_HOST_WIDTH, TEXT_MSDF_LAB_HOST_HEIGHT,
                             "text_msdf_lab");
     EXAMPLE_CHECK(state.host_win != NULL, "host GLFW window setup failed");
 
     DvzGuiConfig gui_config = dvz_gui_config();
-    DvzGui* gui = dvz_app_window_gui(state.host_win, &gui_config);
+    DvzGui* gui = dvz_view_gui(state.host_win, &gui_config);
     EXAMPLE_CHECK(gui != NULL, "GUI setup failed");
 
     DvzGuiViewportConfig viewport_config = dvz_gui_viewport_config();
@@ -975,7 +975,7 @@ int main(int argc, char** argv)
             state.sources[i].panel, dvz_gui_viewport_input(state.sources[i].viewport));
     }
     store_panzooms(&state);
-    dvz_app_window_set_gui_callback(state.host_win, gui_callback, &state);
+    dvz_view_set_gui_callback(state.host_win, gui_callback, &state);
 
     dvz_app_run(app, example_frame_count(argc, argv));
     ret = 0;

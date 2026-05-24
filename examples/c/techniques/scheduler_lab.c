@@ -53,7 +53,7 @@ typedef struct SchedulerLabState
 {
     DvzScene* scene;
     DvzPanel* panel;
-    DvzAppWindow* win;
+    DvzView* win;
     DvzInputRouter* router;
     DvzVisual* points;
     DvzVisual* image;
@@ -297,10 +297,10 @@ static void _lab_pointer(DvzInputRouter* router, const DvzPointerEvent* event, v
 /**
  * Record that the app requested another frame.
  *
- * @param win app-window requesting a frame
+ * @param win view requesting a frame
  * @param user_data example state
  */
-static void _lab_request_frame(DvzAppWindow* win, void* user_data)
+static void _lab_request_frame(DvzView* win, void* user_data)
 {
     (void)win;
     SchedulerLabState* state = (SchedulerLabState*)user_data;
@@ -313,10 +313,10 @@ static void _lab_request_frame(DvzAppWindow* win, void* user_data)
 /**
  * Update FPS counters and consume pick/probe results after each frame.
  *
- * @param win app-window whose frame just completed
+ * @param win view whose frame just completed
  * @param user_data example state
  */
-static void _lab_frame(DvzAppWindow* win, void* user_data)
+static void _lab_frame(DvzView* win, void* user_data)
 {
     SchedulerLabState* state = (SchedulerLabState*)user_data;
     if (state == NULL)
@@ -399,7 +399,7 @@ static void _lab_frame(DvzAppWindow* win, void* user_data)
         _lab_update_points(state);
     }
     if (state->continuous_repaint)
-        dvz_app_window_request_frame(win);
+        dvz_view_request_frame(win);
 }
 
 
@@ -408,10 +408,10 @@ static void _lab_frame(DvzAppWindow* win, void* user_data)
  * Render the Dear ImGui controls and scheduling status panel.
  *
  * @param gui GUI overlay
- * @param win app-window
+ * @param win view
  * @param user_data example state
  */
-static void _lab_gui(DvzGui* gui, DvzAppWindow* win, void* user_data)
+static void _lab_gui(DvzGui* gui, DvzView* win, void* user_data)
 {
     SchedulerLabState* state = (SchedulerLabState*)user_data;
     if (state == NULL)
@@ -425,7 +425,7 @@ static void _lab_gui(DvzGui* gui, DvzAppWindow* win, void* user_data)
     if (dvz_gui_begin(gui, "Scheduler", NULL, 0))
     {
         dvz_gui_separator_text(gui, "Status");
-        bool wants_frame = _dvz_app_window_scheduler_should_render(
+        bool wants_frame = _dvz_view_scheduler_should_render(
             win, state->continuous_repaint, dvz_time_monotonic_ns());
         (void)snprintf(line, sizeof(line), "state: drawing");
         dvz_gui_text(gui, line);
@@ -472,7 +472,7 @@ static void _lab_gui(DvzGui* gui, DvzAppWindow* win, void* user_data)
 
         dvz_gui_separator_text(gui, "Controls");
         if (dvz_gui_button(gui, "Request frame"))
-            dvz_app_window_request_frame(win);
+            dvz_view_request_frame(win);
         if (dvz_gui_button(gui, "Mutate points"))
         {
             state->point_size += 6.0f;
@@ -519,7 +519,7 @@ static void _lab_gui(DvzGui* gui, DvzAppWindow* win, void* user_data)
         request_next = true;
     }
     if (request_next)
-        dvz_app_window_request_frame(win);
+        dvz_view_request_frame(win);
 }
 
 
@@ -620,24 +620,24 @@ int main(int argc, char** argv)
     app = dvz_app(scene);
     EXAMPLE_CHECK(app != NULL, "dvz_app() failed (no GPU or display?)");
 
-    DvzAppWindow* win = dvz_app_window_glfw(app, figure, LAB_WIDTH, LAB_HEIGHT, "scheduler_lab");
-    EXAMPLE_CHECK(win != NULL, "dvz_app_window_glfw() failed (GLFW unavailable?)");
+    DvzView* win = dvz_view_glfw(app, figure, LAB_WIDTH, LAB_HEIGHT, "scheduler_lab");
+    EXAMPLE_CHECK(win != NULL, "dvz_view_glfw() failed (GLFW unavailable?)");
     state.win = win;
 
-    state.router = dvz_app_window_input(win);
-    EXAMPLE_CHECK(state.router != NULL, "dvz_app_window_input() failed");
+    state.router = dvz_view_input(win);
+    EXAMPLE_CHECK(state.router != NULL, "dvz_view_input() failed");
 
-    DvzPanzoom* panzoom = dvz_app_window_panel_panzoom(win, panel, NULL);
+    DvzPanzoom* panzoom = dvz_view_panzoom(win, panel, NULL);
     EXAMPLE_CHECK(panzoom != NULL, "failed to create or bind panzoom controller");
     dvz_input_subscribe_pointer(state.router, _lab_pointer, &state);
 
-    DvzGui* gui = dvz_app_window_gui(win, NULL);
-    EXAMPLE_CHECK(gui != NULL, "dvz_app_window_gui() failed");
+    DvzGui* gui = dvz_view_gui(win, NULL);
+    EXAMPLE_CHECK(gui != NULL, "dvz_view_gui() failed");
 
-    dvz_app_window_set_request_frame_callback(win, _lab_request_frame, &state);
-    dvz_app_window_set_frame_callback(win, _lab_frame, &state);
-    dvz_app_window_set_gui_callback(win, _lab_gui, &state);
-    dvz_app_window_request_frame(win);
+    dvz_view_set_request_frame_callback(win, _lab_request_frame, &state);
+    dvz_view_set_frame_callback(win, _lab_frame, &state);
+    dvz_view_set_gui_callback(win, _lab_gui, &state);
+    dvz_view_request_frame(win);
 
     dvz_app_run(app, example_frame_count(argc, argv));
     ret = 0;

@@ -70,7 +70,7 @@ typedef struct SegmentStressState SegmentStressState;
 
 struct SegmentStressState
 {
-    DvzAppWindow* win;
+    DvzView* win;
     DvzPanel* panel;
     DvzVisual* visual;
 
@@ -404,7 +404,7 @@ static void _segment_upload(SegmentStressState* state)
         state->visual, state->alpha < 0.999f ? DVZ_ALPHA_BLENDED : DVZ_ALPHA_OPAQUE);
 
     if (state->win != NULL)
-        dvz_app_window_request_frame(state->win);
+        dvz_view_request_frame(state->win);
 }
 
 
@@ -522,10 +522,10 @@ static void _segment_apply_count_preset(SegmentStressState* state)
  * Build the dockable segment stress GUI.
  *
  * @param gui GUI overlay
- * @param win app window
+ * @param win view
  * @param user_data segment stress state
  */
-static void _segment_gui(DvzGui* gui, DvzAppWindow* win, void* user_data)
+static void _segment_gui(DvzGui* gui, DvzView* win, void* user_data)
 {
     SegmentStressState* state = (SegmentStressState*)user_data;
     ANN(state);
@@ -610,10 +610,10 @@ static void _segment_gui(DvzGui* gui, DvzAppWindow* win, void* user_data)
 /**
  * Advance optional endpoint animation after a rendered frame.
  *
- * @param win app window
+ * @param win view
  * @param user_data segment stress state
  */
-static void _segment_frame(DvzAppWindow* win, void* user_data)
+static void _segment_frame(DvzView* win, void* user_data)
 {
     (void)win;
     SegmentStressState* state = (SegmentStressState*)user_data;
@@ -679,17 +679,17 @@ int main(int argc, char** argv)
     app = dvz_app(scene);
     EXAMPLE_CHECK(app != NULL, "dvz_app() failed (no GPU or display?)");
 
-    state.win = dvz_app_window_glfw(app, figure, WIDTH, HEIGHT, "segment");
-    EXAMPLE_CHECK(state.win != NULL, "dvz_app_window_glfw() failed (GLFW unavailable?)");
+    state.win = dvz_view_glfw(app, figure, WIDTH, HEIGHT, "segment");
+    EXAMPLE_CHECK(state.win != NULL, "dvz_view_glfw() failed (GLFW unavailable?)");
 
-    DvzPanzoom* panzoom = dvz_app_window_panel_panzoom(state.win, state.panel, NULL);
+    DvzPanzoom* panzoom = dvz_view_panzoom(state.win, state.panel, NULL);
     EXAMPLE_CHECK(panzoom != NULL, "failed to create or bind panzoom controller");
 
     DvzGuiConfig gui_config = dvz_gui_config();
-    DvzGui* gui = dvz_app_window_gui(state.win, &gui_config);
-    EXAMPLE_CHECK(gui != NULL, "dvz_app_window_gui() failed");
-    dvz_app_window_set_gui_callback(state.win, _segment_gui, &state);
-    dvz_app_window_set_frame_callback(state.win, _segment_frame, &state);
+    DvzGui* gui = dvz_view_gui(state.win, &gui_config);
+    EXAMPLE_CHECK(gui != NULL, "dvz_view_gui() failed");
+    dvz_view_set_gui_callback(state.win, _segment_gui, &state);
+    dvz_view_set_frame_callback(state.win, _segment_frame, &state);
     dvz_scene_set_clock_mode(scene, DVZ_CLOCK_REALTIME);
     dvz_scene_set_fps(scene, 60.0);
 

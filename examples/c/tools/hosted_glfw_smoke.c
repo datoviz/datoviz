@@ -9,7 +9,7 @@
  * GLFW is used here only as an external toolkit surrogate. Datoviz does not create the GLFW
  * window and does not enter dvz_app_run(); the host provides Vulkan instance extensions,
  * creates VkSurfaceKHR from the Datoviz-owned VkInstance, forwards resize metadata, and calls
- * dvz_app_window_render_once() from its own loop.
+ * dvz_view_render_once() from its own loop.
  *
  * Build:  just build
  * Run:    ./build/examples/c/tools/hosted_glfw_smoke [frames]
@@ -32,7 +32,7 @@
 
 typedef struct
 {
-    DvzAppWindow* app_window;
+    DvzView* view;
     bool repaint_requested;
     uint32_t request_count;
 } HostedGlfwState;
@@ -42,10 +42,10 @@ typedef struct
 /**
  * Mark that Datoviz requested a host repaint.
  *
- * @param win Datoviz app-window requesting a frame
+ * @param win Datoviz view requesting a frame
  * @param user_data hosted GLFW state
  */
-static void _request_frame_callback(DvzAppWindow* win, void* user_data)
+static void _request_frame_callback(DvzView* win, void* user_data)
 {
     (void)win;
     HostedGlfwState* state = (HostedGlfwState*)user_data;
@@ -61,11 +61,11 @@ static void _request_frame_callback(DvzAppWindow* win, void* user_data)
  * Emit the current host framebuffer/logical size to Datoviz.
  *
  * @param window GLFW window owned by the host
- * @param app_window Datoviz hosted app-window
+ * @param view Datoviz hosted view
  */
-static void _emit_resize(GLFWwindow* window, DvzAppWindow* app_window)
+static void _emit_resize(GLFWwindow* window, DvzView* view)
 {
-    if (window == NULL || app_window == NULL)
+    if (window == NULL || view == NULL)
         return;
 
     int fb_width = 0;
@@ -82,8 +82,8 @@ static void _emit_resize(GLFWwindow* window, DvzAppWindow* app_window)
     if (scale_y <= 0.0f)
         scale_y = 1.0f;
 
-    (void)dvz_app_window_emit_resize(
-        app_window, fb_width > 0 ? (uint32_t)fb_width : 0,
+    (void)dvz_view_emit_resize(
+        view, fb_width > 0 ? (uint32_t)fb_width : 0,
         fb_height > 0 ? (uint32_t)fb_height : 0, win_width > 0 ? (uint32_t)win_width : 0,
         win_height > 0 ? (uint32_t)win_height : 0, scale_x, scale_y);
 }
@@ -91,17 +91,17 @@ static void _emit_resize(GLFWwindow* window, DvzAppWindow* app_window)
 
 
 /**
- * Return the hosted Datoviz app-window associated with a GLFW host window.
+ * Return the hosted Datoviz view associated with a GLFW host window.
  *
  * @param window GLFW window owned by the host
- * @return hosted app-window, or NULL when unavailable
+ * @return hosted view, or NULL when unavailable
  */
-static DvzAppWindow* _hosted_app_window(GLFWwindow* window)
+static DvzView* _hosted_view(GLFWwindow* window)
 {
     if (window == NULL)
         return NULL;
     HostedGlfwState* state = (HostedGlfwState*)glfwGetWindowUserPointer(window);
-    return state != NULL ? state->app_window : NULL;
+    return state != NULL ? state->view : NULL;
 }
 
 
@@ -115,14 +115,14 @@ static DvzAppWindow* _hosted_app_window(GLFWwindow* window)
  */
 static void _cursor_pos_callback(GLFWwindow* window, double xpos, double ypos)
 {
-    DvzAppWindow* app_window = _hosted_app_window(window);
-    if (app_window == NULL)
+    DvzView* view = _hosted_view(window);
+    if (view == NULL)
         return;
     int win_width = 0;
     int win_height = 0;
     glfwGetWindowSize(window, &win_width, &win_height);
-    (void)dvz_app_window_emit_pointer(
-        app_window, DVZ_POINTER_EVENT_MOVE, (float)xpos, (float)ypos, (float)win_width,
+    (void)dvz_view_emit_pointer(
+        view, DVZ_POINTER_EVENT_MOVE, (float)xpos, (float)ypos, (float)win_width,
         (float)win_height, DVZ_POINTER_BUTTON_NONE, 0);
 }
 
@@ -138,8 +138,8 @@ static void _cursor_pos_callback(GLFWwindow* window, double xpos, double ypos)
  */
 static void _mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 {
-    DvzAppWindow* app_window = _hosted_app_window(window);
-    if (app_window == NULL)
+    DvzView* view = _hosted_view(window);
+    if (view == NULL)
         return;
     double xpos = 0.0;
     double ypos = 0.0;
@@ -149,8 +149,8 @@ static void _mouse_button_callback(GLFWwindow* window, int button, int action, i
     glfwGetWindowSize(window, &win_width, &win_height);
     DvzPointerEventType type =
         action == GLFW_PRESS ? DVZ_POINTER_EVENT_PRESS : DVZ_POINTER_EVENT_RELEASE;
-    (void)dvz_app_window_emit_pointer(
-        app_window, type, (float)xpos, (float)ypos, (float)win_width, (float)win_height,
+    (void)dvz_view_emit_pointer(
+        view, type, (float)xpos, (float)ypos, (float)win_width, (float)win_height,
         dvz_pointer_button_from_glfw(button), mods);
 }
 
@@ -165,8 +165,8 @@ static void _mouse_button_callback(GLFWwindow* window, int button, int action, i
  */
 static void _scroll_callback(GLFWwindow* window, double dx, double dy)
 {
-    DvzAppWindow* app_window = _hosted_app_window(window);
-    if (app_window == NULL)
+    DvzView* view = _hosted_view(window);
+    if (view == NULL)
         return;
     double xpos = 0.0;
     double ypos = 0.0;
@@ -177,8 +177,8 @@ static void _scroll_callback(GLFWwindow* window, double dx, double dy)
 #if defined(__APPLE__)
     dy = -dy;
 #endif
-    (void)dvz_app_window_emit_wheel(
-        app_window, (float)xpos, (float)ypos, (float)win_width, (float)win_height, (float)dx,
+    (void)dvz_view_emit_wheel(
+        view, (float)xpos, (float)ypos, (float)win_width, (float)win_height, (float)dx,
         (float)dy, 0);
 }
 
@@ -196,8 +196,8 @@ static void _scroll_callback(GLFWwindow* window, double dx, double dy)
 static void _key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
     (void)scancode;
-    DvzAppWindow* app_window = _hosted_app_window(window);
-    if (app_window == NULL)
+    DvzView* view = _hosted_view(window);
+    if (view == NULL)
         return;
     DvzKeyboardEventType type = DVZ_KEYBOARD_EVENT_NONE;
     if (action == GLFW_PRESS)
@@ -207,7 +207,7 @@ static void _key_callback(GLFWwindow* window, int key, int scancode, int action,
     else if (action == GLFW_RELEASE)
         type = DVZ_KEYBOARD_EVENT_RELEASE;
     if (type != DVZ_KEYBOARD_EVENT_NONE)
-        (void)dvz_app_window_emit_key(app_window, type, (DvzKeyCode)key, mods);
+        (void)dvz_view_emit_key(view, type, (DvzKeyCode)key, mods);
 }
 
 
@@ -223,7 +223,7 @@ static void _framebuffer_size_callback(GLFWwindow* window, int width, int height
 {
     (void)width;
     (void)height;
-    _emit_resize(window, _hosted_app_window(window));
+    _emit_resize(window, _hosted_view(window));
 }
 
 
@@ -239,7 +239,7 @@ static void _content_scale_callback(GLFWwindow* window, float scale_x, float sca
 {
     (void)scale_x;
     (void)scale_y;
-    _emit_resize(window, _hosted_app_window(window));
+    _emit_resize(window, _hosted_view(window));
 }
 
 
@@ -418,10 +418,10 @@ int main(int argc, char** argv)
     }
 
     DvzWindowExternalSurfaceInfo info = _surface_info(window, instance, surface, false);
-    DvzAppWindow* app_window = dvz_app_window_external_surface(app, figure, &info);
-    if (app_window == NULL)
+    DvzView* view = dvz_view_external_surface(app, figure, &info);
+    if (view == NULL)
     {
-        fprintf(stderr, "hosted_glfw_smoke: hosted app-window creation failed\n");
+        fprintf(stderr, "hosted_glfw_smoke: hosted view creation failed\n");
         vkDestroySurfaceKHR(instance, surface, NULL);
         glfwDestroyWindow(window);
         dvz_app_destroy(app);
@@ -430,17 +430,17 @@ int main(int argc, char** argv)
         return 1;
     }
 
-    HostedGlfwState host_state = {.app_window = app_window};
+    HostedGlfwState host_state = {.view = view};
     glfwSetWindowUserPointer(window, &host_state);
-    dvz_app_window_set_request_frame_callback(app_window, _request_frame_callback, &host_state);
+    dvz_view_set_request_frame_callback(view, _request_frame_callback, &host_state);
     glfwSetCursorPosCallback(window, _cursor_pos_callback);
     glfwSetMouseButtonCallback(window, _mouse_button_callback);
     glfwSetScrollCallback(window, _scroll_callback);
     glfwSetKeyCallback(window, _key_callback);
     glfwSetFramebufferSizeCallback(window, _framebuffer_size_callback);
     glfwSetWindowContentScaleCallback(window, _content_scale_callback);
-    _emit_resize(window, app_window);
-    DvzPanzoom* panzoom = dvz_app_window_panel_panzoom(app_window, panel, NULL);
+    _emit_resize(window, view);
+    DvzPanzoom* panzoom = dvz_view_panzoom(view, panel, NULL);
     if (panzoom == NULL)
     {
         fprintf(stderr, "failed to create or bind panzoom controller\n");
@@ -461,7 +461,7 @@ int main(int argc, char** argv)
             glfwPollEvents();
 
         info = _surface_info(window, instance, surface, false);
-        if (dvz_app_window_update_external_surface(app_window, &info) != 0)
+        if (dvz_view_update_external_surface(view, &info) != 0)
         {
             fprintf(stderr, "hosted_glfw_smoke: surface update failed\n");
             break;
@@ -470,7 +470,7 @@ int main(int argc, char** argv)
         if (max_frames == 0 && !host_state.repaint_requested)
             continue;
         host_state.repaint_requested = false;
-        int rc = dvz_app_window_render_once(app_window);
+        int rc = dvz_view_render_once(view);
         if (rc < 0)
         {
             fprintf(stderr, "hosted_glfw_smoke: render failed (%d)\n", rc);
@@ -481,7 +481,7 @@ int main(int argc, char** argv)
     }
 
     info = _surface_info(window, instance, surface, true);
-    if (dvz_app_window_update_external_surface(app_window, &info) == 0)
+    if (dvz_view_update_external_surface(view, &info) == 0)
         surface = VK_NULL_HANDLE;
 
     dvz_app_destroy(app);

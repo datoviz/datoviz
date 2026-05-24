@@ -38,7 +38,7 @@ typedef struct DvzApp       DvzApp;
 typedef struct DvzAppCaptureConfig DvzAppCaptureConfig;
 typedef struct DvzAppConfig DvzAppConfig;
 typedef struct DvzAppResources DvzAppResources;
-typedef struct DvzAppWindow DvzAppWindow;
+typedef struct DvzView DvzView;
 typedef struct DvzArcball DvzArcball;
 typedef struct DvzArcballDesc DvzArcballDesc;
 typedef struct DvzDrp2Runtime DvzDrp2Runtime;
@@ -52,8 +52,8 @@ typedef struct DvzTurntableDesc DvzTurntableDesc;
 typedef struct DvzWindowHost DvzWindowHost;
 typedef struct DvzWindowExternalSurfaceInfo DvzWindowExternalSurfaceInfo;
 
-typedef void (*DvzAppFrameCallback)(DvzAppWindow* win, void* user_data);
-typedef void (*DvzAppRequestFrameCallback)(DvzAppWindow* win, void* user_data);
+typedef void (*DvzViewFrameCallback)(DvzView* view, void* user_data);
+typedef void (*DvzViewRequestFrameCallback)(DvzView* view, void* user_data);
 
 
 
@@ -198,11 +198,11 @@ DVZ_EXPORT void dvz_app_destroy(DvzApp* app);
 
 
 /*************************************************************************************************/
-/*  Window management                                                                            */
+/*  View management                                                                            */
 /*************************************************************************************************/
 
 /**
- * Create an offscreen canvas window for a figure.
+ * Create an offscreen view for a figure.
  *
  * The figure's panels and visuals are rendered into an offscreen framebuffer of the given size
  * on every call to dvz_app_run().
@@ -211,14 +211,14 @@ DVZ_EXPORT void dvz_app_destroy(DvzApp* app);
  * @param figure the figure to render (borrowed)
  * @param width framebuffer width in pixels
  * @param height framebuffer height in pixels
- * @return the app-window handle, or NULL on failure
+ * @return the view handle, or NULL on failure
  */
-DVZ_EXPORT DvzAppWindow*
-dvz_app_window(DvzApp* app, DvzFigure* figure, uint32_t width, uint32_t height);
+DVZ_EXPORT DvzView*
+dvz_view_offscreen(DvzApp* app, DvzFigure* figure, uint32_t width, uint32_t height);
 
 
 /**
- * Create an interactive GLFW window for a figure.
+ * Create an interactive GLFW view for a figure.
  *
  * Opens a visible window backed by a present (swapchain) canvas.  The frame loop started by
  * dvz_app_run(app, 0) drives rendering until the user closes the window.
@@ -231,14 +231,14 @@ dvz_app_window(DvzApp* app, DvzFigure* figure, uint32_t width, uint32_t height);
  * @param width window width in pixels
  * @param height window height in pixels
  * @param title window title string, or NULL for a default title
- * @return the app-window handle, or NULL on failure
+ * @return the view handle, or NULL on failure
  */
-DVZ_EXPORT DvzAppWindow* dvz_app_window_glfw(
+DVZ_EXPORT DvzView* dvz_view_glfw(
     DvzApp* app, DvzFigure* figure, uint32_t width, uint32_t height, const char* title);
 
 
 /**
- * Create a hosted present window around an externally-owned Vulkan surface.
+ * Create a hosted present view around an externally-owned Vulkan surface.
  *
  * The caller owns the native event loop and must create the Vulkan surface using the instance
  * extensions passed to dvz_app_with_config().  Datoviz owns only the rendering objects built on
@@ -247,25 +247,25 @@ DVZ_EXPORT DvzAppWindow* dvz_app_window_glfw(
  * @param app the app
  * @param figure the figure to render (borrowed)
  * @param surface external Vulkan surface description
- * @return the app-window handle, or NULL on failure
+ * @return the view handle, or NULL on failure
  */
-DVZ_EXPORT DvzAppWindow* dvz_app_window_external_surface(
+DVZ_EXPORT DvzView* dvz_view_external_surface(
     DvzApp* app, DvzFigure* figure, const DvzWindowExternalSurfaceInfo* surface);
 
 
 /**
- * Update the hosted external surface associated with an app-window.
+ * Update the hosted external surface associated with a view.
  *
  * Use this when the host toolkit recreates or resizes its native surface.  A NULL surface handle is
  * accepted to mark the surface temporarily unavailable; rendering then returns
  * DVZ_CANVAS_FRAME_WAIT_SURFACE until a valid surface is supplied again.
  *
- * @param win app-window created with dvz_app_window_external_surface()
+ * @param view view created with dvz_view_external_surface()
  * @param surface external Vulkan surface description
  * @return 0 on success, negative on error
  */
-DVZ_EXPORT int dvz_app_window_update_external_surface(
-    DvzAppWindow* win, const DvzWindowExternalSurfaceInfo* surface);
+DVZ_EXPORT int dvz_view_update_external_surface(
+    DvzView* view, const DvzWindowExternalSurfaceInfo* surface);
 
 
 /**
@@ -275,19 +275,19 @@ DVZ_EXPORT int dvz_app_window_update_external_surface(
  * render-once step so the present swapchain observes the unavailable surface and releases borrowed
  * surface-dependent objects. The host remains responsible for destroying the VkSurfaceKHR.
  *
- * @param win app-window created with dvz_app_window_external_surface()
+ * @param view view created with dvz_view_external_surface()
  * @return DVZ_CANVAS_FRAME_WAIT_SURFACE on clean release, or a negative error code
  */
-DVZ_EXPORT int dvz_app_window_release_external_surface(DvzAppWindow* win);
+DVZ_EXPORT int dvz_view_release_external_surface(DvzView* view);
 
 
 /**
- * Emit a hosted resize event for an app-window.
+ * Emit a hosted resize event for a view.
  *
  * External UI adapters call this after host resize notifications so Datoviz controllers and figure
  * sizing see the host's logical and framebuffer dimensions.
  *
- * @param win the app-window
+ * @param view the view
  * @param framebuffer_width framebuffer width in physical pixels
  * @param framebuffer_height framebuffer height in physical pixels
  * @param window_width logical host-window width
@@ -296,15 +296,15 @@ DVZ_EXPORT int dvz_app_window_release_external_surface(DvzAppWindow* win);
  * @param content_scale_y vertical content scale
  * @return 0 on success, negative on error
  */
-DVZ_EXPORT int dvz_app_window_emit_resize(
-    DvzAppWindow* win, uint32_t framebuffer_width, uint32_t framebuffer_height,
+DVZ_EXPORT int dvz_view_emit_resize(
+    DvzView* view, uint32_t framebuffer_width, uint32_t framebuffer_height,
     uint32_t window_width, uint32_t window_height, float content_scale_x, float content_scale_y);
 
 
 /**
- * Emit a hosted pointer position/button event for an app-window.
+ * Emit a hosted pointer position/button event for a view.
  *
- * @param win the app-window
+ * @param view the view
  * @param type pointer event type
  * @param x pointer x position in host-window coordinates
  * @param y pointer y position in host-window coordinates
@@ -314,15 +314,15 @@ DVZ_EXPORT int dvz_app_window_emit_resize(
  * @param mods keyboard modifier bit mask
  * @return 0 on success, negative on error
  */
-DVZ_EXPORT int dvz_app_window_emit_pointer(
-    DvzAppWindow* win, DvzPointerEventType type, float x, float y, float window_width,
+DVZ_EXPORT int dvz_view_emit_pointer(
+    DvzView* view, DvzPointerEventType type, float x, float y, float window_width,
     float window_height, DvzPointerButton button, int mods);
 
 
 /**
- * Emit a hosted pointer wheel event for an app-window.
+ * Emit a hosted pointer wheel event for a view.
  *
- * @param win the app-window
+ * @param view the view
  * @param x pointer x position in host-window coordinates
  * @param y pointer y position in host-window coordinates
  * @param window_width logical host-window width
@@ -332,22 +332,22 @@ DVZ_EXPORT int dvz_app_window_emit_pointer(
  * @param mods keyboard modifier bit mask
  * @return 0 on success, negative on error
  */
-DVZ_EXPORT int dvz_app_window_emit_wheel(
-    DvzAppWindow* win, float x, float y, float window_width, float window_height, float dx,
+DVZ_EXPORT int dvz_view_emit_wheel(
+    DvzView* view, float x, float y, float window_width, float window_height, float dx,
     float dy, int mods);
 
 
 /**
- * Emit a hosted keyboard event for an app-window.
+ * Emit a hosted keyboard event for a view.
  *
- * @param win the app-window
+ * @param view the view
  * @param type keyboard event type
  * @param key Datoviz key code
  * @param mods keyboard modifier bit mask
  * @return 0 on success, negative on error
  */
 DVZ_EXPORT int
-dvz_app_window_emit_key(DvzAppWindow* win, DvzKeyboardEventType type, DvzKeyCode key, int mods);
+dvz_view_emit_key(DvzView* view, DvzKeyboardEventType type, DvzKeyCode key, int mods);
 
 
 /**
@@ -355,106 +355,106 @@ dvz_app_window_emit_key(DvzAppWindow* win, DvzKeyboardEventType type, DvzKeyCode
  *
  * Gives access to the full canvas API (capture, video sink, live-image sink, etc.).
  *
- * @param win the app-window
+ * @param view the view
  * @return the canvas, or NULL if the window was not created with GPU support
  */
-DVZ_EXPORT struct DvzCanvas* dvz_app_window_canvas(DvzAppWindow* win);
+DVZ_EXPORT struct DvzCanvas* dvz_view_canvas(DvzView* view);
 
 
 /**
- * Return the input router for an app-window.
+ * Return the input router for a view.
  *
  * Pass the returned router to dvz_panel_connect_input() to route panel-local input through
  * scene-owned controller bindings. Returns NULL when GPU support is absent.
  *
- * @param win the app-window
+ * @param view the view
  * @return the input router, or NULL
  */
-DVZ_EXPORT struct DvzInputRouter* dvz_app_window_input(DvzAppWindow* win);
+DVZ_EXPORT struct DvzInputRouter* dvz_view_input(DvzView* view);
 
 
 /**
- * Connect a panel's bound controllers to an app-window input router.
+ * Connect a panel's bound controllers to a view input router.
  *
- * @param win the app-window
+ * @param view the view
  * @param panel the panel
  * @return 0 on success, -1 on validation error
  */
-DVZ_EXPORT int dvz_app_window_connect_panel(DvzAppWindow* win, DvzPanel* panel);
+DVZ_EXPORT int dvz_view_connect_panel(DvzView* view, DvzPanel* panel);
 
 
 /**
- * Bind a controller to a panel and connect the panel to an app-window input router.
+ * Bind a controller to a panel and connect the panel to a view input router.
  *
- * @param win the app-window
+ * @param view the view
  * @param panel the panel
  * @param controller the scene-owned controller
  * @param dims dimension mask
  * @return 0 on success, -1 on validation error
  */
-DVZ_EXPORT int dvz_app_window_bind_controller(
-    DvzAppWindow* win, DvzPanel* panel, DvzController* controller, DvzDimMask dims);
+DVZ_EXPORT int dvz_view_bind_controller(
+    DvzView* view, DvzPanel* panel, DvzController* controller, DvzDimMask dims);
 
 
 /**
  * Create, bind, and connect a panzoom controller for one panel.
  *
- * @param win the app-window
+ * @param view the view
  * @param panel the panel
  * @param desc panzoom descriptor, or NULL for defaults
  * @return the panzoom payload, or NULL on validation error
  */
 DVZ_EXPORT DvzPanzoom*
-dvz_app_window_panel_panzoom(DvzAppWindow* win, DvzPanel* panel, const DvzPanzoomDesc* desc);
+dvz_view_panzoom(DvzView* view, DvzPanel* panel, const DvzPanzoomDesc* desc);
 
 
 /**
  * Create, bind, and connect an arcball controller for one panel.
  *
- * @param win the app-window
+ * @param view the view
  * @param panel the panel
  * @param desc arcball descriptor, or NULL for defaults
  * @return the arcball payload, or NULL on validation error
  */
 DVZ_EXPORT DvzArcball*
-dvz_app_window_panel_arcball(DvzAppWindow* win, DvzPanel* panel, const DvzArcballDesc* desc);
+dvz_view_arcball(DvzView* view, DvzPanel* panel, const DvzArcballDesc* desc);
 
 
 /**
  * Create, bind, and connect a fly controller for one panel.
  *
- * @param win the app-window
+ * @param view the view
  * @param panel the panel
  * @param desc fly descriptor, or NULL for defaults
  * @return the fly payload, or NULL on validation error
  */
 DVZ_EXPORT DvzFly*
-dvz_app_window_panel_fly(DvzAppWindow* win, DvzPanel* panel, const DvzFlyDesc* desc);
+dvz_view_fly(DvzView* view, DvzPanel* panel, const DvzFlyDesc* desc);
 
 
 /**
  * Create, bind, and connect a turntable controller for one panel.
  *
- * @param win the app-window
+ * @param view the view
  * @param panel the panel
  * @param desc turntable descriptor, or NULL for defaults
  * @return the turntable payload, or NULL on validation error
  */
-DVZ_EXPORT DvzTurntable* dvz_app_window_panel_turntable(
-    DvzAppWindow* win, DvzPanel* panel, const DvzTurntableDesc* desc);
+DVZ_EXPORT DvzTurntable* dvz_view_turntable(
+    DvzView* view, DvzPanel* panel, const DvzTurntableDesc* desc);
 
 
 /**
  * Capture the last rendered frame and write it to a PNG file.
  *
- * Convenience wrapper around dvz_app_window_canvas() + dvz_canvas_capture_png().
+ * Convenience wrapper around dvz_view_canvas() + dvz_canvas_capture_png().
  * Call after at least one dvz_app_run() iteration.
  *
- * @param win the app-window
+ * @param view the view
  * @param path output file path
  * @return 0 on success, negative on error
  */
-DVZ_EXPORT int dvz_app_window_capture_png(DvzAppWindow* win, const char* path);
+DVZ_EXPORT int dvz_view_capture_png(DvzView* view, const char* path);
 
 
 /**
@@ -483,97 +483,97 @@ DVZ_EXPORT DvzAppCaptureConfig dvz_app_capture_config_from_env(const char* basen
 
 
 /**
- * Start configured captures for an app-window.
+ * Start configured captures for a view.
  *
  * DVZR capture records emitted app DRP2 frame streams, video capture enables the canvas video
- * sink, and PNG capture is written when dvz_app_window_capture_stop() is called after rendering.
+ * sink, and PNG capture is written when dvz_view_capture_stop() is called after rendering.
  *
- * @param win the app-window
+ * @param view the view
  * @param config capture configuration, or NULL for dvz_app_capture_config()
  * @return 0 on success, negative on error
  */
-DVZ_EXPORT int dvz_app_window_capture_start(
-    DvzAppWindow* win, const DvzAppCaptureConfig* config);
+DVZ_EXPORT int dvz_view_capture_start(
+    DvzView* view, const DvzAppCaptureConfig* config);
 
 
 /**
- * Start captures for an app-window from environment variables.
+ * Start captures for a view from environment variables.
  *
  * This is a convenience wrapper around dvz_app_capture_config_from_env() and
- * dvz_app_window_capture_start(). If `DVZ_CAPTURE` is unset or disables capture, the function is a
+ * dvz_view_capture_start(). If `DVZ_CAPTURE` is unset or disables capture, the function is a
  * no-op and returns success.
  *
- * @param win the app-window
+ * @param view the view
  * @param basename fallback output basename, or NULL for "capture"
  * @return 0 on success, negative on error
  */
-DVZ_EXPORT int dvz_app_window_capture_from_env(DvzAppWindow* win, const char* basename);
+DVZ_EXPORT int dvz_view_capture_from_env(DvzView* view, const char* basename);
 
 
 /**
- * Stop active captures started by dvz_app_window_capture_start().
+ * Stop active captures started by dvz_view_capture_start().
  *
  * Video capture is disabled, DVZR recordings are closed, and pending PNG capture is written from
  * the last rendered frame.
  *
- * @param win the app-window
+ * @param view the view
  * @return 0 on success, negative on error
  */
-DVZ_EXPORT int dvz_app_window_capture_stop(DvzAppWindow* win);
+DVZ_EXPORT int dvz_view_capture_stop(DvzView* view);
 
 
 /**
- * Start recording emitted scene DRP2 frame streams for an app-window.
+ * Start recording emitted scene DRP2 frame streams for a view.
  *
  * The recording is a `.dvzr` directory written by the DRP2 linear recorder. Frames are appended
  * from the app draw path after successful runtime execution. Call
- * dvz_app_window_record_stop() to close the recording before replaying it.
+ * dvz_view_record_stop() to close the recording before replaying it.
  *
- * @param win the app-window
+ * @param view the view
  * @param path output recording directory path
  * @return 0 on success, negative on error
  */
-DVZ_EXPORT int dvz_app_window_record_start(DvzAppWindow* win, const char* path);
+DVZ_EXPORT int dvz_view_record_start(DvzView* view, const char* path);
 
 
 /**
- * Stop recording emitted scene DRP2 frame streams for an app-window.
+ * Stop recording emitted scene DRP2 frame streams for a view.
  *
- * @param win the app-window
+ * @param view the view
  * @return 0 on success, negative on error
  */
-DVZ_EXPORT int dvz_app_window_record_stop(DvzAppWindow* win);
+DVZ_EXPORT int dvz_view_record_stop(DvzView* view);
 
 
 /**
- * Start live replay of a DRP2 recording in an app-window.
+ * Start live replay of a DRP2 recording in a view.
  *
  * The replay path executes recorded DRP2 frame streams directly. App recordings render into the
- * current app-window frame by attaching that borrowed frame under the recording's target id.
+ * current view frame by attaching that borrowed frame under the recording's target id.
  *
- * @param win the app-window
+ * @param view the view
  * @param path input `.dvzr` recording directory
  * @return 0 on success, negative on error
  */
-DVZ_EXPORT int dvz_app_window_replay_start(DvzAppWindow* win, const char* path);
+DVZ_EXPORT int dvz_view_replay_start(DvzView* view, const char* path);
 
 
 /**
  * Stop live replay and release the loaded recording.
  *
- * @param win the app-window
+ * @param view the view
  * @return 0 on success, negative on error
  */
-DVZ_EXPORT int dvz_app_window_replay_stop(DvzAppWindow* win);
+DVZ_EXPORT int dvz_view_replay_stop(DvzView* view);
 
 
 /**
  * Enable or disable timestamp-paced replay.
  *
- * @param win the app-window
+ * @param view the view
  * @param paced whether replay waits for recorded timestamps
  */
-DVZ_EXPORT void dvz_app_window_replay_set_paced(DvzAppWindow* win, bool paced);
+DVZ_EXPORT void dvz_view_replay_set_paced(DvzView* view, bool paced);
 
 
 /**
@@ -581,10 +581,10 @@ DVZ_EXPORT void dvz_app_window_replay_set_paced(DvzAppWindow* win, bool paced);
  *
  * Values below or equal to zero are ignored. A value of 2 plays twice as fast.
  *
- * @param win the app-window
+ * @param view the view
  * @param speed replay speed multiplier
  */
-DVZ_EXPORT void dvz_app_window_replay_set_speed(DvzAppWindow* win, double speed);
+DVZ_EXPORT void dvz_view_replay_set_speed(DvzView* view, double speed);
 
 
 /**
@@ -592,95 +592,95 @@ DVZ_EXPORT void dvz_app_window_replay_set_speed(DvzAppWindow* win, double speed)
  *
  * Looping resets the app DRP2 runtime before replay starts from frame zero again.
  *
- * @param win the app-window
+ * @param view the view
  * @param loop whether the recording should loop
  */
-DVZ_EXPORT void dvz_app_window_replay_set_loop(DvzAppWindow* win, bool loop);
+DVZ_EXPORT void dvz_view_replay_set_loop(DvzView* view, bool loop);
 
 
 /**
  * Return the number of frames in the active replay recording.
  *
- * @param win the app-window
+ * @param view the view
  * @return replay frame count, or 0 when no replay is active
  */
-DVZ_EXPORT uint32_t dvz_app_window_replay_frame_count(const DvzAppWindow* win);
+DVZ_EXPORT uint32_t dvz_view_replay_frame_count(const DvzView* view);
 
 
 /**
- * Resize an app-window's logical and framebuffer extent.
+ * Resize a view's logical and framebuffer extent.
  *
  * Intended for offscreen or externally-hosted windows whose size is controlled by another UI
  * toolkit. GLFW windows should normally be resized by the platform window itself.
  *
- * @param win the app-window
+ * @param view the view
  * @param width width in pixels
  * @param height height in pixels
  * @return 0 on success, negative on error
  */
-DVZ_EXPORT int dvz_app_window_resize(DvzAppWindow* win, uint32_t width, uint32_t height);
+DVZ_EXPORT int dvz_view_resize(DvzView* view, uint32_t width, uint32_t height);
 
 
 /**
- * Enable or disable rendering for an app-window.
+ * Enable or disable rendering for a view.
  *
- * Disabled windows remain owned by the app but dvz_app_window_render_once() skips them. This is
+ * Disabled windows remain owned by the app but dvz_view_render_once() skips them. This is
  * intended for hosted/offscreen integrations such as hidden dock tabs.
  *
- * @param win the app-window
+ * @param view the view
  * @param enabled whether rendering should be enabled
  */
-DVZ_EXPORT void dvz_app_window_set_render_enabled(DvzAppWindow* win, bool enabled);
+DVZ_EXPORT void dvz_view_set_render_enabled(DvzView* view, bool enabled);
 
 
 /**
- * Return whether rendering is enabled for an app-window.
+ * Return whether rendering is enabled for a view.
  *
- * @param win the app-window
+ * @param view the view
  * @return whether rendering is enabled
  */
-DVZ_EXPORT bool dvz_app_window_render_enabled(const DvzAppWindow* win);
+DVZ_EXPORT bool dvz_view_render_enabled(const DvzView* view);
 
 
 /**
- * Request that the host schedules another frame for an app-window.
+ * Request that the host schedules another frame for a view.
  *
  * Hosted UI adapters should map the registered callback to their native repaint primitive, for
  * example QWindow::requestUpdate(), QWidget::update(), an SDL wakeup, or a Tk idle callback.
  *
- * @param win the app-window
+ * @param view the view
  */
-DVZ_EXPORT void dvz_app_window_request_frame(DvzAppWindow* win);
+DVZ_EXPORT void dvz_view_request_frame(DvzView* view);
 
 
 /**
  * Register a callback invoked whenever Datoviz requests another frame.
  *
  * This is a passive scheduling signal: it does not change dvz_app_run() behavior and does not
- * render by itself. The host remains responsible for calling dvz_app_window_render_once().
+ * render by itself. The host remains responsible for calling dvz_view_render_once().
  *
- * @param win the app-window
+ * @param view the view
  * @param callback callback pointer, or NULL to clear it
  * @param user_data opaque pointer forwarded to the callback
  */
-DVZ_EXPORT void dvz_app_window_set_request_frame_callback(
-    DvzAppWindow* win, DvzAppRequestFrameCallback callback, void* user_data);
+DVZ_EXPORT void dvz_view_set_request_frame_callback(
+    DvzView* view, DvzViewRequestFrameCallback callback, void* user_data);
 
 
 /**
- * Register a callback invoked after each successful frame for one app-window.
+ * Register a callback invoked after each successful frame for one view.
  *
  * The callback runs after the scene stream has been emitted, executed, request processing has
  * completed, and the emitted stream has been destroyed. Scene mutations from the callback are
  * therefore allowed and become visible on the next frame.
  *
- * @param win the app-window
+ * @param view the view
  * @param callback callback pointer, or NULL to clear it
  * @param user_data opaque pointer forwarded to the callback
  */
 DVZ_EXPORT void
-dvz_app_window_set_frame_callback(
-    DvzAppWindow* win, DvzAppFrameCallback callback, void* user_data);
+dvz_view_set_frame_callback(
+    DvzView* view, DvzViewFrameCallback callback, void* user_data);
 
 
 
@@ -689,20 +689,20 @@ dvz_app_window_set_frame_callback(
 /*************************************************************************************************/
 
 /**
- * Render one frame for a single app-window without polling any Datoviz-owned event loop.
+ * Render one frame for a single view without polling any Datoviz-owned event loop.
  *
  * This is the primary hosted-loop primitive for Qt, SDL, Tk, IPython, and other integrations where
  * the caller owns scheduling.  Returns the dvz_canvas_frame() status when no frame was submitted.
  *
- * @param win the app-window
+ * @param view the view
  * @return DVZ_CANVAS_FRAME_READY after a submitted frame, DVZ_CANVAS_FRAME_WAIT_SURFACE while the
  * surface is unavailable, or a negative error code
  */
-DVZ_EXPORT int dvz_app_window_render_once(DvzAppWindow* win);
+DVZ_EXPORT int dvz_view_render_once(DvzView* view);
 
 
 /**
- * Render one frame for every app-window without polling any Datoviz-owned event loop.
+ * Render one frame for every view without polling any Datoviz-owned event loop.
  *
  * @param app the app
  * @return 0 on success, DVZ_CANVAS_FRAME_WAIT_SURFACE if any surface is unavailable, or negative on

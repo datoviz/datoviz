@@ -32,10 +32,10 @@
  * Compile a Datoviz GUI callback that uses raw cimgui calls from the public header.
  *
  * @param gui GUI overlay
- * @param win app window
+ * @param win view
  * @param user_data opaque user data
  */
-static void _gui_raw_imgui_public_callback(DvzGui* gui, DvzAppWindow* win, void* user_data)
+static void _gui_raw_imgui_public_callback(DvzGui* gui, DvzView* win, void* user_data)
 {
     (void)gui;
     (void)win;

@@ -192,10 +192,10 @@ _image_probe_pointer(DvzInputRouter* router, const DvzPointerEvent* event, void*
 /**
  * Poll probe results and queue the next cursor probe.
  *
- * @param win app-window whose frame just completed
+ * @param win view whose frame just completed
  * @param user_data image probe example state
  */
-static void _image_probe_frame(DvzAppWindow* win, void* user_data)
+static void _image_probe_frame(DvzView* win, void* user_data)
 {
     (void)win;
     ImageProbeState* state = (ImageProbeState*)user_data;
@@ -293,18 +293,18 @@ int main(int argc, char** argv)
     app = dvz_app(scene);
     EXAMPLE_CHECK(app != NULL, "dvz_app() failed (no GPU or display?)");
 
-    DvzAppWindow* win = dvz_app_window_glfw(app, figure, WIDTH, HEIGHT, "image_probe");
-    EXAMPLE_CHECK(win != NULL, "dvz_app_window_glfw() failed (GLFW unavailable?)");
+    DvzView* win = dvz_view_glfw(app, figure, WIDTH, HEIGHT, "image_probe");
+    EXAMPLE_CHECK(win != NULL, "dvz_view_glfw() failed (GLFW unavailable?)");
 
-    DvzInputRouter* router = dvz_app_window_input(win);
-    EXAMPLE_CHECK(router != NULL, "dvz_app_window_input() failed");
+    DvzInputRouter* router = dvz_view_input(win);
+    EXAMPLE_CHECK(router != NULL, "dvz_view_input() failed");
 
     ImageProbeState state = {
         .scene = scene,
         .panel = panel,
     };
     dvz_input_subscribe_pointer(router, _image_probe_pointer, &state);
-    dvz_app_window_set_frame_callback(win, _image_probe_frame, &state);
+    dvz_view_set_frame_callback(win, _image_probe_frame, &state);
 
     dvz_app_run(app, example_frame_count(argc, argv));
     ret = 0;

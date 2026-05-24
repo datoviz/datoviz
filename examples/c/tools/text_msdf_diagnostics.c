@@ -330,7 +330,7 @@ static int render_case(
         dvz_scene_destroy(scene);
         return -1;
     }
-    DvzAppWindow* win = dvz_app_window(app, figure, TEXT_DIAG_WIDTH, TEXT_DIAG_HEIGHT);
+    DvzView* win = dvz_view_offscreen(app, figure, TEXT_DIAG_WIDTH, TEXT_DIAG_HEIGHT);
     if (win == NULL)
     {
         dvz_app_destroy(app);
@@ -338,7 +338,7 @@ static int render_case(
         return -1;
     }
 
-    int render_status = dvz_app_window_render_once(win);
+    int render_status = dvz_view_render_once(win);
     if (render_status < 0)
     {
         dvz_fprintf(stderr, "render failed for %s/%s/%.0f\n", renderer->name, sample->name, size);
@@ -355,7 +355,7 @@ static int render_case(
     dvz_snprintf(
         atlas_path, sizeof(atlas_path), "%s/%s_%s_%02u_atlas.png", out_dir, renderer->name,
         sample->name, (uint32_t)size);
-    if (dvz_app_window_capture_png(win, scene_path) != 0)
+    if (dvz_view_capture_png(win, scene_path) != 0)
         dvz_fprintf(stderr, "failed to capture %s\n", scene_path);
     write_atlas_png(scene, renderer->renderer, size, atlas_path);
 

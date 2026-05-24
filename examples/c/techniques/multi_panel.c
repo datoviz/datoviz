@@ -220,15 +220,15 @@ static bool _add_path_panel(DvzScene* scene, DvzPanel* panel)
 
 
 /**
- * Attach app-window panzoom controllers to every panel.
+ * Attach view panzoom controllers to every panel.
  *
- * @param win app window owning the input router
+ * @param win view owning the input router
  * @param panels panels to connect
  * @param count number of panels
  * @return true on success, false on error
  */
 static bool
-_attach_panzoom(DvzAppWindow* win, DvzPanel** panels, uint32_t count)
+_attach_panzoom(DvzView* win, DvzPanel** panels, uint32_t count)
 {
     if (win == NULL || panels == NULL)
         return false;
@@ -237,7 +237,7 @@ _attach_panzoom(DvzAppWindow* win, DvzPanel** panels, uint32_t count)
     {
         if (panels[i] == NULL)
             return false;
-        DvzPanzoom* panzoom = dvz_app_window_panel_panzoom(win, panels[i], NULL);
+        DvzPanzoom* panzoom = dvz_view_panzoom(win, panels[i], NULL);
         if (panzoom == NULL)
         {
             return false;
@@ -295,8 +295,8 @@ int main(int argc, char** argv)
     app = dvz_app(scene);
     EXAMPLE_CHECK(app != NULL, "dvz_app() failed (no GPU or display?)");
 
-    DvzAppWindow* win = dvz_app_window_glfw(app, figure, WIDTH, HEIGHT, "multi_panel");
-    EXAMPLE_CHECK(win != NULL, "dvz_app_window_glfw() failed (GLFW unavailable?)");
+    DvzView* win = dvz_view_glfw(app, figure, WIDTH, HEIGHT, "multi_panel");
+    EXAMPLE_CHECK(win != NULL, "dvz_view_glfw() failed (GLFW unavailable?)");
 
     ok = _attach_panzoom(win, panels, 4);
     EXAMPLE_CHECK(ok, "panzoom setup failed");
