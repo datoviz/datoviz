@@ -1122,6 +1122,22 @@ dvz_visual_set_buffer(DvzVisual* visual, const char* slot_name, DvzSceneBuffer* 
 
 
 /**
+ * Replace a visual's index buffer with copied 32-bit index data.
+ *
+ * This convenience path creates a scene-owned index buffer, copies the index payload into it, and
+ * binds it to the visual's `"index"` slot. Use `dvz_scene_buffer()` plus
+ * `dvz_visual_set_buffer()` instead when the index buffer must be shared across several visuals.
+ *
+ * @param visual the primitive or mesh visual
+ * @param indices index array
+ * @param index_count number of indices
+ * @return 0 on success, -1 on error
+ */
+DVZ_EXPORT int
+dvz_visual_set_index_data(DvzVisual* visual, const DvzIndex* indices, uint32_t index_count);
+
+
+/**
  * Bind a scene-owned buffer to a per-item visual attribute.
  *
  * This is the C-level groundwork for externally produced GPU attributes. The first slice supports

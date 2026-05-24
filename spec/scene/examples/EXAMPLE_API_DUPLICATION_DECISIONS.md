@@ -39,9 +39,11 @@ Done:
    `dvz_point_data()`, `dvz_point_selection()`, `dvz_mesh_data()`, and
    `dvz_mesh_instances()`, plus `dvz_pixel_data()`, `dvz_primitive_data()`, and
    `dvz_sphere_data()`.
-6. Pick/probe callback dispatch remains intentionally deferred.
-7. C examples have been migrated to the landed helpers where the replacement is behavior-preserving.
-8. GUI-viewport examples intentionally stay on the lower-level controller/input primitives where
+6. A generic `dvz_visual_set_index_data()` helper now covers the common copied index-buffer case
+   while preserving explicit `DvzSceneBuffer` binding for shared or external buffers.
+7. Pick/probe callback dispatch remains intentionally deferred.
+8. C examples have been migrated to the landed helpers where the replacement is behavior-preserving.
+9. GUI-viewport examples intentionally stay on the lower-level controller/input primitives where
    the router comes from `DvzGuiViewport` rather than `DvzAppWindow`.
 
 Still open:
@@ -49,12 +51,10 @@ Still open:
 1. Image should wait until the retained image helper shape is clear because the current image path
    has multiple valid input forms. A narrow quad helper may become worthwhile later, but the public
    shape is intentionally deferred.
-2. Decide whether an index-buffer helper such as `dvz_mesh_indices()` is actually worth adding.
-   The current scene-buffer path is explicit and still acceptable.
-3. Broaden the local example helper layer only for repeated non-public chores that remain noisy
+2. Broaden the local example helper layer only for repeated non-public chores that remain noisy
    after the current cleanup, such as common output-path handling. Do not add generic lifecycle or
    cleanup wrappers unless repeated error paths become a real maintenance problem.
-4. Revisit pick/probe callback dispatch only after richer picking/probing payload semantics settle.
+3. Revisit pick/probe callback dispatch only after richer picking/probing payload semantics settle.
 
 
 ## Decisions
@@ -171,8 +171,9 @@ int dvz_sphere_data(
     const float* radii, uint32_t item_count);
 ```
 
-Current implemented helpers cover point, mesh, pixel, primitive, and sphere. Exact future helper
-coverage should follow the active visual families and their required/optional attributes.
+Current implemented helpers cover point, mesh, pixel, primitive, sphere, and the generic copied
+index-buffer case through `dvz_visual_set_index_data()`. Exact future helper coverage should follow
+the active visual families and their required/optional attributes.
 
 Remaining work: keep `dvz_visual_set_data()` as the generic path and avoid adding helpers for
 one-off or unstable attribute combinations. Image, path, marker, segment, and text examples remain
@@ -193,7 +194,8 @@ payload design continues separately.
 1. Done: add `examples/c` helper infrastructure and migrate `_frame_count()` first.
 2. Done: add `dvz_panel_full()`.
 3. Done: add app-window controller/input binding helpers.
-4. Done: add typed visual upload helpers for point, mesh, pixel, primitive, and sphere.
+4. Done: add typed visual upload helpers for point, mesh, pixel, primitive, sphere, and copied
+   index buffers.
 5. Done: migrate examples to the landed helpers without changing example behavior.
 6. Later: revisit pick/probe callbacks after the richer interaction API settles.
 

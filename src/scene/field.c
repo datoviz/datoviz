@@ -1078,7 +1078,7 @@ void dvz_scene_buffer_destroy(DvzSceneBuffer* buffer)
         {
             DvzVisual* visual = &scene->visuals[i];
             if (visual->buffer == buffer)
-                _scene_release_visual_buffer(visual);
+                _visual_binding_clear(visual, DVZ_VISUAL_BINDING_BUFFER);
             for (uint32_t ai = 0; ai < visual->attr_count; ai++)
             {
                 if (visual->attrs[ai].buffer == buffer)
@@ -1207,6 +1207,56 @@ bool dvz_visual_set_buffer(DvzVisual* visual, const char* slot_name, DvzSceneBuf
         _visual_binding_clear(visual, DVZ_VISUAL_BINDING_BUFFER);
     _scene_notify_visual_changed(visual);
     return true;
+}
+
+
+
+/**
+ * Replace one visual's index buffer with copied 32-bit index data.
+ *
+ * @param visual the primitive or mesh visual
+ * @param indices the index array
+ * @param index_count the number of indices
+ * @return 0 on success, -1 on error
+ */
+int dvz_visual_set_index_data(
+    DvzVisual* visual, const DvzIndex* indices, uint32_t index_count)
+{
+    if (visual == NULL || indices == NULL || index_count == 0)
+        return -1;
+    if (visual->type != DVZ_VISUAL_TYPE_PRIMITIVE && visual->type != DVZ_VISUAL_TYPE_MESH)
+        return -1;
+    if (!_scene_visual_mutation_allowed(visual->scene, "replace visual index data"))
+        return -1;
+
+    uint64_t byte_size = 0;
+    if (_dvz_mul_u64_overflows((uint64_t)index_count, (uint64_t)sizeof(DvzIndex), &byte_size))
+    {
+        log_error("visual index data byte size overflow for index_count=%u", index_count);
+        return -1;
+    }
+
+    DvzSceneBuffer* buffer = dvz_scene_buffer(
+        visual->scene,
+        &(DvzSceneBufferDesc){
+            .usage = DVZ_SCENE_BUFFER_USAGE_INDEX,
+            .stride = sizeof(DvzIndex),
+        });
+    if (buffer == NULL)
+        return -1;
+    if (!dvz_scene_buffer_set_data(buffer, indices, byte_size))
+    {
+        dvz_scene_buffer_destroy(buffer);
+        return -1;
+    }
+    if (!dvz_visual_set_buffer(visual, "index", buffer))
+    {
+        dvz_scene_buffer_destroy(buffer);
+        return -1;
+    }
+
+    _visual_binding_assign(visual, DVZ_VISUAL_BINDING_BUFFER, "index", buffer, true);
+    return 0;
 }
 
 
@@ -1502,7 +1552,12 @@ void _scene_release_visual_buffer(DvzVisual* visual)
 {
     if (visual == NULL)
         return;
+    DvzSceneBuffer* buffer = visual->buffer;
+    const DvzVisualBinding* binding = _visual_binding_const(visual, DVZ_VISUAL_BINDING_BUFFER);
+    bool owned = binding != NULL ? binding->owned : false;
     _visual_binding_clear(visual, DVZ_VISUAL_BINDING_BUFFER);
+    if (owned && buffer != NULL)
+        dvz_scene_buffer_destroy(buffer);
 }
 
 

@@ -2213,6 +2213,59 @@ int test_scene_mesh_typed_data_upload(TstContext* suite, const TstCase* item)
 
 
 
+/**
+ * Check copied index data convenience upload and helper-owned buffer replacement.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_visual_index_data_upload(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzVisual* mesh = dvz_mesh(scene, 0);
+    DvzVisual* primitive = dvz_primitive(scene, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 0);
+    DvzVisual* point = dvz_point(scene, 0);
+    ANN(mesh);
+    ANN(primitive);
+    ANN(point);
+
+    DvzIndex indices[6] = {0, 1, 2, 2, 1, 3};
+    AT(dvz_visual_set_index_data(mesh, indices, 6) == 0);
+    AT(mesh->buffer != NULL);
+    AT(mesh->buffer->desc.usage & DVZ_SCENE_BUFFER_USAGE_INDEX);
+    AT(mesh->buffer->desc.stride == sizeof(DvzIndex));
+    AT(mesh->buffer->desc.byte_size == sizeof(indices));
+    const DvzIndex* stored = mesh->buffer->data;
+    AT(stored[5] == 3);
+
+    DvzSceneBuffer* old_buffer = mesh->buffer;
+    DvzIndex updated[3] = {0, 2, 1};
+    AT(dvz_visual_set_index_data(mesh, updated, 3) == 0);
+    AT(mesh->buffer != old_buffer);
+    AT(old_buffer->scene == NULL);
+    AT(mesh->buffer->desc.byte_size == sizeof(updated));
+    stored = mesh->buffer->data;
+    AT(stored[1] == 2);
+
+    AT(dvz_visual_set_index_data(primitive, indices, 3) == 0);
+    AT(primitive->buffer != NULL);
+    AT(primitive->buffer->desc.byte_size == 3 * sizeof(DvzIndex));
+
+    AT(dvz_visual_set_index_data(point, indices, 3) == -1);
+    AT(dvz_visual_set_index_data(mesh, NULL, 3) == -1);
+    AT(dvz_visual_set_index_data(mesh, indices, 0) == -1);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
 int test_scene_mesh_geometry_upload(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
