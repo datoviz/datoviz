@@ -30,6 +30,7 @@
 /*************************************************************************************************/
 
 typedef struct TimerTestState TimerTestState;
+typedef struct PhaseTestState PhaseTestState;
 
 struct TimerTestState
 {
@@ -37,6 +38,15 @@ struct TimerTestState
     double last_t;
     double last_dt;
     double sum_dt;
+};
+
+
+
+struct PhaseTestState
+{
+    uint32_t calls;
+    float last_value;
+    float last_delta;
 };
 
 
@@ -62,6 +72,27 @@ static void _timer_test_callback(DvzAnimation* animation, double t, double dt, v
     state->last_t = t;
     state->last_dt = dt;
     state->sum_dt += dt;
+}
+
+
+
+/**
+ * Record one phase callback invocation.
+ *
+ * @param animation phase animation
+ * @param value current wrapped phase value
+ * @param delta unwrapped phase delta applied on this step
+ * @param user_data phase test state
+ */
+static void _phase_test_callback(
+    DvzAnimation* animation, float value, float delta, void* user_data)
+{
+    (void)animation;
+    PhaseTestState* state = (PhaseTestState*)user_data;
+    ANN(state);
+    state->calls++;
+    state->last_value = value;
+    state->last_delta = delta;
 }
 
 
@@ -174,6 +205,162 @@ int test_scene_animation_realtime_delta_clamp(TstContext* suite, const TstCase* 
     _dvz_scene_animations_step(scene, 2000000000ULL);
     AC(dvz_scene_clock_dt(scene), 0.1, EPS);
     AC(dvz_scene_clock_time(scene), 0.1, EPS);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
+/**
+ * Ensure a phase animation advances linearly on the scene clock.
+ *
+ * @param suite test suite
+ * @param item test item
+ * @return 0 on success
+ */
+int test_scene_animation_phase_linear(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    ANN(item);
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    dvz_scene_set_clock_mode(scene, DVZ_CLOCK_OFFLINE);
+    dvz_scene_set_fps(scene, 2.0);
+
+    PhaseTestState state = {0};
+    DvzAnimation* phase = dvz_anim_phase(
+        scene, &(DvzAnimPhaseDesc){
+                   .initial = 0.0f,
+                   .speed = 1.0f,
+                   .wrap_min = 0.0f,
+                   .wrap_max = 10.0f,
+                   .callback = _phase_test_callback,
+                   .user_data = &state,
+               });
+    ANN(phase);
+    dvz_anim_start(phase, 0.0);
+
+    _dvz_scene_animations_step(scene, 100);
+    AT(state.calls == 1);
+    AC((double)state.last_value, 0.0, EPS);
+    AC((double)state.last_delta, 0.0, EPS);
+
+    _dvz_scene_animations_step(scene, 200);
+    AT(state.calls == 2);
+    AC((double)state.last_value, 0.5, EPS);
+    AC((double)state.last_delta, 0.5, EPS);
+
+    _dvz_scene_animations_step(scene, 300);
+    AT(state.calls == 3);
+    AC((double)state.last_value, 1.0, EPS);
+    AC((double)state.last_delta, 0.5, EPS);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
+/**
+ * Ensure a phase animation wraps values and honors live value/speed setters.
+ *
+ * @param suite test suite
+ * @param item test item
+ * @return 0 on success
+ */
+int test_scene_animation_phase_wrap_and_setters(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    ANN(item);
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    dvz_scene_set_clock_mode(scene, DVZ_CLOCK_OFFLINE);
+    dvz_scene_set_fps(scene, 2.0);
+
+    PhaseTestState state = {0};
+    DvzAnimation* phase = dvz_anim_phase(
+        scene, &(DvzAnimPhaseDesc){
+                   .initial = 0.9f,
+                   .speed = 0.4f,
+                   .wrap_min = 0.0f,
+                   .wrap_max = 1.0f,
+                   .callback = _phase_test_callback,
+                   .user_data = &state,
+               });
+    ANN(phase);
+    dvz_anim_start(phase, 0.0);
+
+    _dvz_scene_animations_step(scene, 100);
+    AC((double)state.last_value, 0.9, EPS);
+    AC((double)state.last_delta, 0.0, EPS);
+
+    _dvz_scene_animations_step(scene, 200);
+    AC((double)state.last_value, 0.1, EPS);
+    AC((double)state.last_delta, 0.2, EPS);
+
+    dvz_anim_set_speed(phase, 0.8f);
+    _dvz_scene_animations_step(scene, 300);
+    AC((double)state.last_value, 0.5, EPS);
+    AC((double)state.last_delta, 0.4, EPS);
+
+    dvz_anim_phase_set_value(phase, 1.25f);
+    _dvz_scene_animations_step(scene, 400);
+    AC((double)state.last_value, 0.65, EPS);
+    AC((double)state.last_delta, 0.4, EPS);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
+/**
+ * Ensure stopping and restarting a phase animation preserves its current value.
+ *
+ * @param suite test suite
+ * @param item test item
+ * @return 0 on success
+ */
+int test_scene_animation_phase_stop_restart(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    ANN(item);
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    dvz_scene_set_clock_mode(scene, DVZ_CLOCK_OFFLINE);
+    dvz_scene_set_fps(scene, 4.0);
+
+    PhaseTestState state = {0};
+    DvzAnimation* phase = dvz_anim_phase(
+        scene, &(DvzAnimPhaseDesc){
+                   .initial = 1.0f,
+                   .speed = 2.0f,
+                   .wrap_min = -10.0f,
+                   .wrap_max = 10.0f,
+                   .callback = _phase_test_callback,
+                   .user_data = &state,
+               });
+    ANN(phase);
+    dvz_anim_start(phase, 0.0);
+
+    _dvz_scene_animations_step(scene, 100);
+    _dvz_scene_animations_step(scene, 200);
+    AT(state.calls == 2);
+    AC((double)state.last_value, 1.5, EPS);
+
+    dvz_anim_stop(phase);
+    _dvz_scene_animations_step(scene, 300);
+    AT(state.calls == 2);
+    AC((double)state.last_value, 1.5, EPS);
+
+    dvz_anim_start(phase, 0.0);
+    _dvz_scene_animations_step(scene, 400);
+    AT(state.calls == 3);
+    AC((double)state.last_value, 2.0, EPS);
 
     dvz_scene_destroy(scene);
     return 0;
@@ -320,6 +507,9 @@ int test_scene_animation(TstSuite* suite)
     TST_CASE(test_scene_animation_offline_timer_every_frame);
     TST_CASE(test_scene_animation_timer_period_and_stop);
     TST_CASE(test_scene_animation_realtime_delta_clamp);
+    TST_CASE(test_scene_animation_phase_linear);
+    TST_CASE(test_scene_animation_phase_wrap_and_setters);
+    TST_CASE(test_scene_animation_phase_stop_restart);
     TST_CASE(test_scene_animation_destroy_reuses_slot);
     TST_CASE(test_scene_animation_active_query);
     TST_CASE(test_scene_animation_arcball_spin);
