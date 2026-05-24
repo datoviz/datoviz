@@ -1059,6 +1059,48 @@ DVZ_EXPORT int dvz_visual_data(
 
 
 /**
+ * Return the retained visual-space bounding box of one visual.
+ *
+ * The box is computed from CPU-retained dense visual attributes and family-specific geometry state.
+ * It does not require an emitted frame or a live graphics backend. Buffer-backed attributes do not
+ * expose CPU-side bounds in this first slice.
+ *
+ * @param visual the visual
+ * @param out output bounding box
+ * @return 0 when bounds are available, -1 otherwise
+ */
+DVZ_EXPORT int dvz_visual_bounds(const DvzVisual* visual, DvzBounds* out);
+
+
+/**
+ * Return one visual's bounds in the coordinate space of one panel attachment.
+ *
+ * `DVZ_BOUNDS_SPACE_VISUAL` returns the retained visual-space AABB. `DVZ_BOUNDS_SPACE_SCREEN`
+ * projects the visual-space box through the panel attachment MVP and returns pixel bounds relative
+ * to the figure.
+ *
+ * @param panel the panel
+ * @param visual visual attached to the panel
+ * @param space target bounds space
+ * @param out output bounding box
+ * @return 0 when bounds are available, -1 otherwise
+ */
+DVZ_EXPORT int dvz_panel_visual_bounds(
+    const DvzPanel* panel, const DvzVisual* visual, DvzBoundsSpace space, DvzBounds* out);
+
+
+/**
+ * Return the union of all visible visual bounds attached to one panel.
+ *
+ * @param panel the panel
+ * @param space target bounds space
+ * @param out output bounding box
+ * @return 0 when at least one visible visual has bounds, -1 otherwise
+ */
+DVZ_EXPORT int dvz_panel_bounds(const DvzPanel* panel, DvzBoundsSpace space, DvzBounds* out);
+
+
+/**
  * Write variable-length string data to a visual.
  *
  * Text visuals accept the `"text"` string attribute. The item count must match any configured

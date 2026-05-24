@@ -494,6 +494,23 @@ struct DvzVisualDataView
 typedef struct DvzVisualDataView DvzVisualDataView;
 
 
+typedef enum
+{
+    DVZ_BOUNDS_SPACE_VISUAL = 0,
+    DVZ_BOUNDS_SPACE_SCREEN = 1,
+} DvzBoundsSpace;
+
+
+struct DvzBounds
+{
+    bool valid;
+    uint32_t dims;
+    double min[3];
+    double max[3];
+};
+typedef struct DvzBounds DvzBounds;
+
+
 
 struct DvzFormatDesc
 {

@@ -37,6 +37,7 @@ bool _attr_source_supported(DvzVisualType type, const char* name, DvzVisualAttrS
 bool _visual_data_update_contains_attr(
     DvzVisualType type, const DvzVisualDataUpdate* updates, uint32_t update_count,
     const char* attr_name);
+int _attr_index(const DvzVisual* visual, const char* name);
 DvzVisualAttr* _attr_get_or_create(DvzVisual* visual, const char* name, uint32_t item_size);
 bool _visual_attr_count_consistent(
     const DvzVisual* visual, const char* attr_name, uint32_t item_count);
