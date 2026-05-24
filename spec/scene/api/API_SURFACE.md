@@ -16,6 +16,11 @@ This document is normative for public API shape policy. Installed headers under
 If this document conflicts with a specialized semantic spec, the specialized spec owns behavior and
 this document should be corrected to match it.
 
+Scene public APIs also follow the cross-module conventions in
+[`../../api/PUBLIC_API_CONVENTIONS.md`](../../api/PUBLIC_API_CONVENTIONS.md). This document may add
+scene-specific rules, but it should not redefine general C API, binding, or struct-versus-setter
+policy.
+
 
 ## Header Ownership
 
@@ -67,6 +72,46 @@ Implementation-ready rendering work for those retained objects is tracked in:
 1. [../slices/TEXT_RENDERING_SLICE.md](../slices/TEXT_RENDERING_SLICE.md),
 2. [../slices/ANNOTATION_LABEL_SLICE.md](../slices/ANNOTATION_LABEL_SLICE.md),
 3. [../slices/COLORBAR_RENDERING_SLICE.md](../slices/COLORBAR_RENDERING_SLICE.md).
+
+
+## Leaf Visuals And Semantic Composites
+
+The scene API should distinguish low-level render leaves from semantic objects that may compose
+several leaves.
+
+`DvzVisual` is the public handle for leaf render families such as point, marker, segment, path,
+mesh, image, sphere, and volume. These families map closely to one visual data contract and one
+rendering path.
+
+Semantic scene objects may own, derive, or coordinate one or more leaf visuals internally. Examples
+include axes, colorbars, annotations, orientation gizmos, and future polygon or graph objects. These
+objects should expose typed APIs for normal use rather than requiring users to manage their internal
+visual composition.
+
+Composite object constructors should follow the existing scene style:
+
+```text
+dvz_<object>(scene, flags)
+```
+
+Composite role/property setters should follow the cross-module role/property rule:
+
+```text
+dvz_<object>_<role>_<property>()
+```
+
+Examples:
+
+```text
+dvz_polygon_fill_color()
+dvz_polygon_stroke_width()
+dvz_graph_nodes_size()
+dvz_graph_edges_color()
+```
+
+Advanced APIs may expose generated visuals by stable role names, such as `"fill"`, `"stroke"`,
+`"nodes"`, or `"edges"`, but this should be an escape hatch for integration and tests. It should not
+replace typed object APIs for common user workflows.
 
 
 ## Opaque Handles Versus Public Structs

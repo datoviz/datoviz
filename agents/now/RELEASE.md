@@ -218,21 +218,26 @@ Work:
 6. Review error/status behavior: assertion-only invariants vs recoverable runtime failures.
 7. Decide whether lower-level APIs are officially supported in v0.4 or documented as advanced
    unstable surfaces.
-8. Decide and document the v0.4 Python API policy: Datoviz ships raw/generated `ctypes`
+8. Review the public API against
+   [`../../spec/api/PUBLIC_API_CONVENTIONS.md`](../../spec/api/PUBLIC_API_CONVENTIONS.md),
+   including struct-versus-setter choices, composite object naming, and WASM/binding ergonomics.
+9. Decide and document the v0.4 Python API policy: Datoviz ships raw/generated `ctypes`
    bindings only, the v0.3-style Python OO API is out of scope, GSP/VisPy2 owns the future
    object-oriented and plotting APIs, and Matplotlib is the publication/vector-export backend.
-9. Decide and document that Datoviz-native vector export is not part of the v0.4 backend promise;
+10. Decide and document that Datoviz-native vector export is not part of the v0.4 backend promise;
    Datoviz should provide raster image capture while GSP/Matplotlib owns publication-oriented
    vector output.
-10. Add or normalize Doxygen-style docstrings for public and module-level functions.
-11. Generate a public API inventory and compare it with the intended v0.4 narrative.
+11. Add or normalize Doxygen-style docstrings for public and module-level functions.
+12. Generate a public API inventory and compare it with the intended v0.4 narrative.
 
 Exit criteria:
 
 1. A generated or scripted API inventory exists.
 2. Public headers have consistent doc comments.
 3. Accidental public symbols are removed, renamed, or explicitly documented.
-4. The v0.4 compatibility policy is written: API breaks allowed in v0.5, but v0.4 patch releases
+4. Public constructors, descriptors, style setters, composite objects, and binding-facing APIs have
+   been checked against `spec/api/PUBLIC_API_CONVENTIONS.md`.
+5. The v0.4 compatibility policy is written: API breaks allowed in v0.5, but v0.4 patch releases
    should avoid unnecessary source breakage.
 
 

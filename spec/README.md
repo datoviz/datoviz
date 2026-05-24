@@ -11,6 +11,7 @@ Do not use it for execution planning or broad architecture essays.
 
 - `drp2/`: backend-agnostic rendering protocol contract, schemas, fixtures, and native-runtime
   pressure rules
+- `api/`: cross-module public API conventions for naming, structs, bindings, and release review
 - `scene/`: scene-layer requirements, consumer-side object model, retained object semantics, and
   implementation boundary notes
 

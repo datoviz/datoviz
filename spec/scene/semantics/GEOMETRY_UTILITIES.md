@@ -26,8 +26,11 @@ path.
 3. Outputs lower to existing resource classes in
    [`../pipeline/RESOURCE_MODEL.md`](../pipeline/RESOURCE_MODEL.md), not special resource classes.
 4. v0.4 may break the old `DvzShape` surface. New utility APIs should expose `DvzGeometry`,
-   `DvzPolygon`, `DvzPSLG`, and explicit descriptors rather than preserving shape-era fields or
-   compatibility names.
+   explicit geometry input records, and explicit descriptors rather than preserving shape-era fields
+   or compatibility names.
+5. Geometry utility naming must stay distinct from renderable scene object naming. If `DvzPolygon`
+   becomes a semantic scene object, CPU-side triangulation input should use a name such as
+   `DvzGeomPolygon` or `DvzPolygonData`.
 
 
 ## Bundled Dependencies
@@ -35,7 +38,7 @@ path.
 | Utility area | Library | Contract |
 |---|---|---|
 | simple polygon triangulation | earcut (C++) | holes, fast, no external deps |
-| constrained Delaunay / PSLG | Triangle (Shewchuk) | quality mesh, constrained edges, holes |
+| constrained Delaunay / PSLG | permissive candidate TBD | constrained edges, holes, optional refinement |
 | curve tessellation | built-in | Bezier, Catmull-Rom, B-spline |
 | line simplification | built-in | Douglas-Peucker |
 | 2D hull | built-in | convex hull baseline; concave deferred |
@@ -75,11 +78,18 @@ variant, not a replacement for semantic contour geometry.
 
 | Input | Function | Contract | Use |
 |---|---|---|---|
-| `DvzPolygon` | `dvz_triangulate_polygon` | outer F64 ring plus holes -> F64 vertices + `uint32` indices | filled polygons, regions, annotation shapes |
+| `DvzGeomPolygon` or `DvzPolygonData` | `dvz_triangulate_polygon` | outer F64 ring plus holes -> F64 vertices + `uint32` indices | filled polygons, regions, annotation shapes |
 | `DvzPSLG` | `dvz_triangulate_pslg` | F64 points, constrained edges, holes, quality -> F64 vertices + `uint32` indices | boundaries, constrained/scattered Delaunay |
 
-`DvzTriangulateQuality` carries optional minimum angle and maximum triangle area. Earcut and Triangle
-operate in F64; no upload-time downcast occurs here.
+`DvzTriangulateQuality` carries optional minimum angle and maximum triangle area. Triangulation
+backends operate in F64; no upload-time downcast occurs here.
+
+Earcut is the preferred first built-in backend for simple polygons with holes because it is already
+vendored and license-compatible with the MIT project. Shewchuk Triangle remains technically useful
+but should not be bundled into the default Datoviz source or binary distribution because its license
+does not preserve the expected MIT redistribution and commercial-use surface. Triangle may be
+supported only as an explicitly optional external backend. A permissive constrained-Delaunay backend
+such as CDT should be evaluated before adding built-in PSLG support.
 
 
 ## Curve Tessellation
@@ -152,8 +162,8 @@ compute work.
 |---|---|
 | triangulation | `IndexedGeometry` -> `mesh` |
 | curve tessellation | `ItemTable`/`GroupedItemTable` -> `path` |
-| hull | `DvzPolygon` -> triangulation -> `mesh`/`primitive` |
-| boolean polygons | `DvzPolygon` -> triangulation -> `mesh` |
+| hull | CPU polygon input -> triangulation -> `mesh`/`primitive` |
+| boolean polygons | CPU polygon input -> triangulation -> `mesh` |
 | MSDF/SDF | `Texture2DResource` -> `marker`, `glyph`, or annotation |
 
 No special resource handling is needed.
