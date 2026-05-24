@@ -102,15 +102,14 @@ int main(int argc, char** argv)
     {
         DvzText* text = dvz_text(panel, 0);
         EXAMPLE_CHECK(text != NULL, "dvz_text() failed");
-        EXAMPLE_CHECK(
-            dvz_text_set_style(
-                text,
-                &(DvzTextStyle){
-                    .size_px = sizes[i],
-                    .renderer = DVZ_TEXT_RENDERER_MSDF_ATLAS,
-                    .color = {colors[i][0], colors[i][1], colors[i][2], colors[i][3]},
-                }) == 0,
-            "dvz_text_set_style() failed");
+        int rc = dvz_text_set_style(
+            text,
+            &(DvzTextStyle){
+                .size_px = sizes[i],
+                .renderer = DVZ_TEXT_RENDERER_MSDF_ATLAS,
+                .color = {colors[i][0], colors[i][1], colors[i][2], colors[i][3]},
+            });
+        EXAMPLE_CHECK(rc == 0, "dvz_text_set_style() failed");
         dvz_text_set_placement(
             text,
             &(DvzTextPlacement){

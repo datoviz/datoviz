@@ -244,7 +244,8 @@ int main(int argc, char** argv)
     camera_desc.eye[2] = 3.6f;
     camera_desc.near = 0.1f;
     camera_desc.far = 100.0f;
-    EXAMPLE_CHECK(dvz_panel_set_camera(panel, &camera_desc), "dvz_panel_set_camera() failed");
+    bool ok = dvz_panel_set_camera(panel, &camera_desc);
+    EXAMPLE_CHECK(ok, "dvz_panel_set_camera() failed");
 
     dvz_panel_set_background_color(panel, 0.030f, 0.036f, 0.045f, 1.0f);
     DvzDepthCueDesc cue = {
@@ -258,10 +259,14 @@ int main(int argc, char** argv)
         .background_color = {0.030f, 0.036f, 0.045f, 1.0f},
     };
     _fill_pixels(&state, 0.0f);
-    EXAMPLE_CHECK(
-        _upload_pixels(&state) && dvz_visual_set_depth_cue(state.visual, &cue) == 0 &&
-            dvz_panel_add_visual(panel, state.visual, NULL) == 0,
-        "pixel visual setup failed");
+    ok = _upload_pixels(&state);
+    EXAMPLE_CHECK(ok, "pixel data upload failed");
+
+    int rc = dvz_visual_set_depth_cue(state.visual, &cue);
+    EXAMPLE_CHECK(rc == 0, "dvz_visual_set_depth_cue() failed");
+
+    rc = dvz_panel_add_visual(panel, state.visual, NULL);
+    EXAMPLE_CHECK(rc == 0, "dvz_panel_add_visual() failed");
 
     app = dvz_app(scene);
     EXAMPLE_CHECK(app != NULL, "dvz_app() failed");

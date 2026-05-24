@@ -330,7 +330,8 @@ int main(int argc, char** argv)
     camera_desc.eye[2] = 3.6f;
     camera_desc.near = 0.1f;
     camera_desc.far = 100.0f;
-    EXAMPLE_CHECK(dvz_panel_set_camera(panel, &camera_desc), "dvz_panel_set_camera() failed");
+    bool ok = dvz_panel_set_camera(panel, &camera_desc);
+    EXAMPLE_CHECK(ok, "dvz_panel_set_camera() failed");
 
     dvz_panel_set_background_color(panel, 0.040f, 0.043f, 0.052f, 1.0f);
     _fill_triangles(&state, 0.0f);
@@ -343,10 +344,14 @@ int main(int argc, char** argv)
     material.phong.diffuse = 0.78f;
     material.phong.specular = 0.34f;
     material.phong.shininess = 48.0f;
-    EXAMPLE_CHECK(
-        _upload_triangles(&state) && dvz_visual_set_material(state.visual, &material) == 0 &&
-            dvz_panel_add_visual(panel, state.visual, NULL) == 0,
-        "primitive visual setup failed");
+    ok = _upload_triangles(&state);
+    EXAMPLE_CHECK(ok, "primitive data upload failed");
+
+    int rc = dvz_visual_set_material(state.visual, &material);
+    EXAMPLE_CHECK(rc == 0, "dvz_visual_set_material() failed");
+
+    rc = dvz_panel_add_visual(panel, state.visual, NULL);
+    EXAMPLE_CHECK(rc == 0, "dvz_panel_add_visual() failed");
 
     app = dvz_app(scene);
     EXAMPLE_CHECK(app != NULL, "dvz_app() failed");

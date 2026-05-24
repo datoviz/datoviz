@@ -555,10 +555,11 @@ int main(int argc, char** argv)
         state.thin_visual != NULL && state.stroked_visual != NULL, "dvz_path() failed");
 
     _upload_path_data(&state);
-    EXAMPLE_CHECK(
-        dvz_panel_add_visual(panel, state.thin_visual, NULL) == 0 &&
-            dvz_panel_add_visual(panel, state.stroked_visual, NULL) == 0,
-        "dvz_panel_add_visual() failed");
+    int rc = dvz_panel_add_visual(panel, state.thin_visual, NULL);
+    EXAMPLE_CHECK(rc == 0, "dvz_panel_add_visual(thin) failed");
+
+    rc = dvz_panel_add_visual(panel, state.stroked_visual, NULL);
+    EXAMPLE_CHECK(rc == 0, "dvz_panel_add_visual(stroked) failed");
     dvz_panel_set_background_color(panel, 0.035f, 0.040f, 0.050f, 1.0f);
 
     app = dvz_app(scene);

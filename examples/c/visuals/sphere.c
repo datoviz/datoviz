@@ -545,7 +545,8 @@ int main(int argc, char** argv)
     camera_desc.fov_y = 0.72f;
     camera_desc.near = 0.1f;
     camera_desc.far = 100.0f;
-    EXAMPLE_CHECK(dvz_panel_set_camera(panel, &camera_desc), "dvz_panel_set_camera() failed");
+    bool ok = dvz_panel_set_camera(panel, &camera_desc);
+    EXAMPLE_CHECK(ok, "dvz_panel_set_camera() failed");
 
     positions = (float(*)[3])dvz_calloc(MAX_SPHERES, sizeof(*positions));
     colors = (DvzColor*)dvz_calloc(MAX_SPHERES, sizeof(DvzColor));
@@ -560,10 +561,11 @@ int main(int argc, char** argv)
 
     DvzVisual* visual = dvz_sphere(scene, DVZ_SPHERE_FLAGS_LIGHTING);
     EXAMPLE_CHECK(visual != NULL, "dvz_sphere() failed");
-    EXAMPLE_CHECK(
-        dvz_sphere_data(visual, &positions[0][0], colors, live_sizes, sphere_count) == 0 &&
-            dvz_panel_add_visual(panel, visual, NULL) == 0,
-        "sphere visual setup failed");
+    int rc = dvz_sphere_data(visual, &positions[0][0], colors, live_sizes, sphere_count);
+    EXAMPLE_CHECK(rc == 0, "dvz_sphere_data() failed");
+
+    rc = dvz_panel_add_visual(panel, visual, NULL);
+    EXAMPLE_CHECK(rc == 0, "dvz_panel_add_visual() failed");
     dvz_panel_set_background_color(panel, 0.035f, 0.040f, 0.052f, 1.0f);
 
     app = dvz_app(scene);

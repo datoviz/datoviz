@@ -647,7 +647,8 @@ int main(int argc, char** argv)
         .max_count = MAX_SEGMENT_COUNT,
     };
 
-    EXAMPLE_CHECK(_segment_state_alloc(&state), "segment stress buffer allocation failed");
+    bool ok = _segment_state_alloc(&state);
+    EXAMPLE_CHECK(ok, "segment stress buffer allocation failed");
 
     scene = dvz_scene();
     EXAMPLE_CHECK(scene != NULL, "dvz_scene() failed");
@@ -671,9 +672,8 @@ int main(int argc, char** argv)
         state.visual, "stroke_width", DVZ_VISUAL_ATTR_MUTABILITY_STREAMING);
 
     _segment_reset(&state);
-    EXAMPLE_CHECK(
-        dvz_panel_add_visual(state.panel, state.visual, NULL) == 0,
-        "dvz_panel_add_visual() failed");
+    int rc = dvz_panel_add_visual(state.panel, state.visual, NULL);
+    EXAMPLE_CHECK(rc == 0, "dvz_panel_add_visual() failed");
     dvz_panel_set_background_color(state.panel, 0.055f, 0.060f, 0.075f, 1.0f);
 
     app = dvz_app(scene);

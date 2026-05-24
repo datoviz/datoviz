@@ -279,11 +279,14 @@ int main(int argc, char** argv)
         {1.0f, 0.0f},
         {1.0f, 1.0f},
     };
-    EXAMPLE_CHECK(
-        dvz_visual_set_data(image, "position", positions, 4) == 0 &&
-            dvz_visual_set_data(image, "texcoords", texcoords, 4) == 0 &&
-            dvz_visual_set_scale(image, "colormap", scale) == 0,
-        "image visual setup failed");
+    int rc = dvz_visual_set_data(image, "position", positions, 4);
+    EXAMPLE_CHECK(rc == 0, "dvz_visual_set_data(position) failed");
+
+    rc = dvz_visual_set_data(image, "texcoords", texcoords, 4);
+    EXAMPLE_CHECK(rc == 0, "dvz_visual_set_data(texcoords) failed");
+
+    rc = dvz_visual_set_scale(image, "colormap", scale);
+    EXAMPLE_CHECK(rc == 0, "dvz_visual_set_scale(colormap) failed");
 
     DvzSampledField* field = dvz_sampled_field(
         scene, &(DvzSampledFieldDesc){
@@ -302,19 +305,19 @@ int main(int argc, char** argv)
     float values[FIELD_SIZE * FIELD_SIZE] = {0};
     _fill_field(values);
     _fill_field_patch(values, state.patch_x, state.patch_y, 1.0f);
-    EXAMPLE_CHECK(
-        dvz_sampled_field_set_data(
-            field, &(DvzFieldDataView){
-                       .data = values,
-                       .bytes_per_row = FIELD_SIZE * sizeof(float),
-                       .rows_per_image = FIELD_SIZE,
-                   }),
-        "dvz_sampled_field_set_data() failed");
+    bool ok = dvz_sampled_field_set_data(
+        field, &(DvzFieldDataView){
+                   .data = values,
+                   .bytes_per_row = FIELD_SIZE * sizeof(float),
+                   .rows_per_image = FIELD_SIZE,
+               });
+    EXAMPLE_CHECK(ok, "dvz_sampled_field_set_data() failed");
 
-    EXAMPLE_CHECK(
-        dvz_visual_set_field(image, "field", field) &&
-            dvz_panel_add_visual(panel, image, NULL) == 0,
-        "field binding failed");
+    ok = dvz_visual_set_field(image, "field", field);
+    EXAMPLE_CHECK(ok, "dvz_visual_set_field() failed");
+
+    rc = dvz_panel_add_visual(panel, image, NULL);
+    EXAMPLE_CHECK(rc == 0, "dvz_panel_add_visual() failed");
 
     dvz_panel_set_background_color(panel, 0.04f, 0.05f, 0.06f, 1.0f);
 

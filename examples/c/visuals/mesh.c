@@ -170,7 +170,8 @@ int main(int argc, char** argv)
     camera_desc.fov_y = 0.78539816339f;
     camera_desc.near = 0.1f;
     camera_desc.far = 100.0f;
-    EXAMPLE_CHECK(dvz_panel_set_camera(panel, &camera_desc), "dvz_panel_set_camera() failed");
+    bool ok = dvz_panel_set_camera(panel, &camera_desc);
+    EXAMPLE_CHECK(ok, "dvz_panel_set_camera() failed");
 
     DvzVisual* visual = dvz_mesh(scene, 0);
     EXAMPLE_CHECK(visual != NULL, "dvz_mesh() failed");
@@ -190,7 +191,8 @@ int main(int argc, char** argv)
     });
     EXAMPLE_CHECK(cube != NULL, "dvz_geom_cube() failed");
 
-    EXAMPLE_CHECK(dvz_mesh_geometry(visual, cube) == 0, "dvz_mesh_geometry() failed");
+    int rc = dvz_mesh_geometry(visual, cube);
+    EXAMPLE_CHECK(rc == 0, "dvz_mesh_geometry() failed");
     dvz_geometry_destroy(cube);
     cube = NULL;
 
@@ -228,9 +230,8 @@ int main(int argc, char** argv)
         _outpath(argv[0], "mesh.mp4", mp4_path, sizeof(mp4_path));
         video.encoder.mp4_path = mp4_path;
 
-        EXAMPLE_CHECK(
-            dvz_canvas_configure_video_sink(dvz_app_window_canvas(win), true, &video) == 0,
-            "dvz_canvas_configure_video_sink() failed");
+        rc = dvz_canvas_configure_video_sink(dvz_app_window_canvas(win), true, &video);
+        EXAMPLE_CHECK(rc == 0, "dvz_canvas_configure_video_sink() failed");
     }
     if (recording_enabled && dvz_app_window_record_start(win, dvzr_path) != 0)
         EXAMPLE_CHECK(false, "dvz_app_window_record_start() failed");

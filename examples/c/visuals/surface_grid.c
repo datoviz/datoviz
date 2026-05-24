@@ -124,7 +124,8 @@ int main(int argc, char** argv)
     camera_desc.fov_y = 0.72f;
     camera_desc.near = 0.05f;
     camera_desc.far = 100.0f;
-    EXAMPLE_CHECK(dvz_panel_set_camera(panel, &camera_desc), "dvz_panel_set_camera() failed");
+    bool ok = dvz_panel_set_camera(panel, &camera_desc);
+    EXAMPLE_CHECK(ok, "dvz_panel_set_camera() failed");
 
     DvzGeometrySurfaceGridDesc desc = {
         .rows = SURFACE_ROWS,
@@ -141,9 +142,10 @@ int main(int argc, char** argv)
     EXAMPLE_CHECK(geometry != NULL, "dvz_geom_surface_grid() failed");
 
     DvzVisual* visual = dvz_mesh(scene, 0);
-    EXAMPLE_CHECK(
-        visual != NULL && dvz_mesh_geometry(visual, geometry) == 0,
-        "dvz_mesh_geometry() failed");
+    EXAMPLE_CHECK(visual != NULL, "dvz_mesh() failed");
+
+    int rc = dvz_mesh_geometry(visual, geometry);
+    EXAMPLE_CHECK(rc == 0, "dvz_mesh_geometry() failed");
     DvzMaterialDesc material = dvz_phong_material_desc();
     material.light_direction[0] = 0.35f;
     material.light_direction[1] = -0.45f;

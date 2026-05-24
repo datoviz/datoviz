@@ -660,13 +660,15 @@ int main(int argc, char** argv)
     state.animate = false;
     state.mixed_shapes = true;
 
-    EXAMPLE_CHECK(_marker_stress_alloc(&state) == 0, "marker stress allocation failed");
+    int rc = _marker_stress_alloc(&state);
+    EXAMPLE_CHECK(rc == 0, "marker stress allocation failed");
 
     _upload_marker_attributes(&state);
     _apply_marker_style(&state);
     state.rotation_animation = dvz_anim_timer(scene, 0.0, _marker_rotation_timer, &state);
     EXAMPLE_CHECK(state.rotation_animation != NULL, "dvz_anim_timer() failed");
-    EXAMPLE_CHECK(dvz_panel_add_visual(panel, visual, NULL) == 0, "dvz_panel_add_visual() failed");
+    rc = dvz_panel_add_visual(panel, visual, NULL);
+    EXAMPLE_CHECK(rc == 0, "dvz_panel_add_visual() failed");
 
     app = dvz_app(scene);
     EXAMPLE_CHECK(app != NULL, "dvz_app() failed (no GPU or display?)");

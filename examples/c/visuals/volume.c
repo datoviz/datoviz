@@ -408,7 +408,8 @@ int main(int argc, char** argv)
     camera_desc.fov_y = 0.78539816339f;
     camera_desc.near = 0.1f;
     camera_desc.far = 100.0f;
-    EXAMPLE_CHECK(dvz_panel_set_camera(panel, &camera_desc), "dvz_panel_set_camera() failed");
+    bool ok = dvz_panel_set_camera(panel, &camera_desc);
+    EXAMPLE_CHECK(ok, "dvz_panel_set_camera() failed");
 
     uint64_t bytes = (uint64_t)VOLUME_SIZE * VOLUME_SIZE * VOLUME_SIZE;
     data = (uint8_t*)dvz_malloc(bytes);
@@ -425,23 +426,23 @@ int main(int argc, char** argv)
                    .depth = VOLUME_SIZE,
                });
     EXAMPLE_CHECK(field != NULL, "dvz_sampled_field() failed");
-    EXAMPLE_CHECK(
-        dvz_sampled_field_set_data(
-            field, &(DvzFieldDataView){
-                       .data = data,
-                       .bytes_per_row = VOLUME_SIZE,
-                       .rows_per_image = VOLUME_SIZE,
-                   }),
-        "dvz_sampled_field_set_data() failed");
+    ok = dvz_sampled_field_set_data(
+        field, &(DvzFieldDataView){
+                   .data = data,
+                   .bytes_per_row = VOLUME_SIZE,
+                   .rows_per_image = VOLUME_SIZE,
+               });
+    EXAMPLE_CHECK(ok, "dvz_sampled_field_set_data() failed");
     dvz_free(data);
     data = NULL;
 
     DvzVisual* volume = dvz_volume(scene, 0);
     EXAMPLE_CHECK(volume != NULL, "dvz_volume() failed");
-    EXAMPLE_CHECK(dvz_visual_set_field(volume, "field", field), "dvz_visual_set_field() failed");
-    EXAMPLE_CHECK(
-        dvz_visual_set_alpha_mode(volume, DVZ_ALPHA_BLENDED) == 0,
-        "dvz_visual_set_alpha_mode() failed");
+    ok = dvz_visual_set_field(volume, "field", field);
+    EXAMPLE_CHECK(ok, "dvz_visual_set_field() failed");
+
+    int rc = dvz_visual_set_alpha_mode(volume, DVZ_ALPHA_BLENDED);
+    EXAMPLE_CHECK(rc == 0, "dvz_visual_set_alpha_mode() failed");
 
     DvzScale* transfer_scale = dvz_scale(scene, &(DvzScaleDesc){.kind = DVZ_SCALE_CONTINUOUS});
     EXAMPLE_CHECK(transfer_scale != NULL, "dvz_scale() failed");
@@ -450,7 +451,8 @@ int main(int argc, char** argv)
     EXAMPLE_CHECK(transfer_map != NULL, "dvz_colormap() failed");
     dvz_scale_set_colormap(transfer_scale, transfer_map);
     (void)dvz_volume_set_value_range(volume, 0.0, 1.0);
-    EXAMPLE_CHECK(dvz_panel_add_visual(panel, volume, NULL) == 0, "dvz_panel_add_visual() failed");
+    rc = dvz_panel_add_visual(panel, volume, NULL);
+    EXAMPLE_CHECK(rc == 0, "dvz_panel_add_visual() failed");
     dvz_panel_set_background_color(panel, 0.025f, 0.035f, 0.045f, 1.0f);
 
     VolumeGlfwState state = {
