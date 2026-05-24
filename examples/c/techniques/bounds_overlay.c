@@ -177,6 +177,22 @@ int main(int argc, char** argv)
     dvz_panel_set_background_color(panel_2d, 0.06f, 0.07f, 0.09f, 1.0f);
     dvz_panel_set_background_color(panel_3d, 0.07f, 0.065f, 0.075f, 1.0f);
 
+    DvzCameraDesc camera_desc = dvz_camera_desc();
+    camera_desc.eye[0] = 0.0f;
+    camera_desc.eye[1] = -2.9f;
+    camera_desc.eye[2] = 2.1f;
+    camera_desc.target[0] = 0.0f;
+    camera_desc.target[1] = 0.0f;
+    camera_desc.target[2] = 0.0f;
+    camera_desc.up[0] = 0.0f;
+    camera_desc.up[1] = 0.0f;
+    camera_desc.up[2] = 1.0f;
+    camera_desc.fov_y = 0.72f;
+    camera_desc.near = 0.05f;
+    camera_desc.far = 100.0f;
+    DvzCamera* camera = dvz_panel_set_camera(panel_3d, &camera_desc);
+    EXAMPLE_CHECK(camera != NULL, "dvz_panel_set_camera() failed for 3D panel");
+
     DvzVisual* points = dvz_point(scene, 0);
     EXAMPLE_CHECK(points != NULL, "dvz_point() failed");
     float point_positions[POINT_COUNT][3] = {0};
