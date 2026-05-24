@@ -3700,6 +3700,7 @@ DvzPanel* dvz_panel(DvzFigure* figure, DvzPanelDesc desc)
     _scene_technique_state_init(&panel->techniques);
     panel->visual_count = 0;
     panel->bounds_visual = NULL;
+    panel->bounds_occluded_visual = NULL;
     panel->bounds_visible = false;
     return panel;
 }
@@ -4083,6 +4084,7 @@ void dvz_panel_destroy(DvzPanel* panel)
     panel->figure       = NULL;
     panel->visual_count = 0;
     panel->bounds_visual = NULL;
+    panel->bounds_occluded_visual = NULL;
     panel->bounds_visible = false;
     panel->colorbar_count = 0;
     panel->interaction = NULL;

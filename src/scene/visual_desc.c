@@ -408,6 +408,8 @@ static bool _scene_visual_desc_from_metadata(
     ANN(out);
 
     out->depth_test_enabled = meta->depth_test_enabled;
+    out->depth_compare_op =
+        meta->depth_compare_op != 0 ? meta->depth_compare_op : VK_COMPARE_OP_LESS_OR_EQUAL;
     out->depth_cue_enabled = meta->depth_cue_enabled;
     out->point_style_enabled = meta->point_style_enabled;
     out->scene_occluded = meta->scene_occluded;
@@ -1131,6 +1133,7 @@ bool _scene_visual_desc_from_render(
         return false;
 
     out->depth_test_enabled = true;
+    out->depth_compare_op = VK_COMPARE_OP_LESS_OR_EQUAL;
     out->instance_count = 1;
     const DvzFramePlanVisualMeta* meta = &render->u.render.visual_metadata[visual_index];
     if (meta->has_metadata)

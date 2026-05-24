@@ -2044,6 +2044,7 @@ static bool _scene_item_pick_plan(
                                                  (uint32_t)visual->type;
     metadata.alpha_mode = DVZ_ALPHA_OPAQUE;
     metadata.depth_test_enabled = visual->depth_test_enabled;
+    metadata.depth_compare_op = visual->depth_compare_op;
     dvz_strlcpy(metadata.position_id, "pick0_position", sizeof(metadata.position_id));
     dvz_strlcpy(metadata.color_id, "pick0_color", sizeof(metadata.color_id));
     dvz_strlcpy(metadata.size_id, "pick0_size", sizeof(metadata.size_id));
@@ -2202,6 +2203,7 @@ static bool _scene_stroke_pick_plan(
     metadata.visual_type = (uint32_t)visual->type;
     metadata.alpha_mode = DVZ_ALPHA_OPAQUE;
     metadata.depth_test_enabled = visual->depth_test_enabled;
+    metadata.depth_compare_op = visual->depth_compare_op;
     metadata.vertex_count = (uint32_t)vertex_count;
     metadata.index_count = (uint32_t)index_count;
     dvz_strlcpy(
@@ -2447,6 +2449,7 @@ static bool _scene_primitive_pick_plan(
     metadata.topology = draw_topology;
     metadata.alpha_mode = DVZ_ALPHA_OPAQUE;
     metadata.depth_test_enabled = visual->depth_test_enabled;
+    metadata.depth_compare_op = visual->depth_compare_op;
     metadata.vertex_count = (uint32_t)draw_vertex_count;
     dvz_strlcpy(metadata.position_id, "pick0_position", sizeof(metadata.position_id));
     dvz_strlcpy(metadata.color_id, "pick0_color", sizeof(metadata.color_id));
@@ -2636,6 +2639,7 @@ static bool _scene_image_pick_plan(
     metadata.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
     metadata.alpha_mode = DVZ_ALPHA_OPAQUE;
     metadata.depth_test_enabled = visual->depth_test_enabled;
+    metadata.depth_compare_op = visual->depth_compare_op;
     metadata.vertex_count = (uint32_t)vertex_count;
     dvz_strlcpy(metadata.position_id, "pick0_position", sizeof(metadata.position_id));
     dvz_strlcpy(metadata.color_id, "pick0_color", sizeof(metadata.color_id));
@@ -2744,6 +2748,7 @@ static bool _scene_volume_pick_plan(
     metadata.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
     metadata.alpha_mode = DVZ_ALPHA_OPAQUE;
     metadata.depth_test_enabled = visual->depth_test_enabled;
+    metadata.depth_compare_op = visual->depth_compare_op;
     metadata.vertex_count = (uint32_t)vertex_count;
     dvz_strlcpy(metadata.position_id, "pick0_position", sizeof(metadata.position_id));
     dvz_strlcpy(metadata.color_id, "pick0_color", sizeof(metadata.color_id));

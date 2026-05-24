@@ -469,6 +469,13 @@ bool _emitter_prepare_render_multi(
             if (!ok)
                 break;
         }
+        else if (desc.depth_compare_op == VK_COMPARE_OP_GREATER)
+        {
+            ok = _runtime_key_append(
+                shader.pipeline_key, sizeof(shader.pipeline_key), "_depth_gt", report);
+            if (!ok)
+                break;
+        }
         if (_scene_alpha_mode_is_depth_peel(alpha_mode))
         {
             const char* peel_suffix =

@@ -288,6 +288,7 @@ typedef struct DvzFramePlanVisualMeta
     uint32_t instance_count;
     DvzAlphaMode alpha_mode;
     bool depth_test_enabled;
+    uint32_t depth_compare_op;
     bool depth_cue_enabled;
     bool point_style_enabled;
     bool has_volume;

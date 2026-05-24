@@ -20,6 +20,8 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include <vulkan/vulkan_core.h>
+
 #include "_alloc.h"
 #include "_assertions.h"
 #include "_compat.h"
@@ -617,31 +619,38 @@ static void _bounds_wire_append_box(
 
 
 /**
- * Ensure a panel has a generated bounds overlay visual.
+ * Ensure a panel has one generated bounds overlay visual.
  *
  * @param panel the panel
+ * @param occluded whether to create the occluded x-ray pass visual
  * @return the generated visual, or NULL on error
  */
-static DvzVisual* _bounds_overlay_visual(DvzPanel* panel)
+static DvzVisual* _bounds_overlay_visual(DvzPanel* panel, bool occluded)
 {
     ANN(panel);
-    if (panel->bounds_visual != NULL)
+    if (!occluded && panel->bounds_visual != NULL)
         return panel->bounds_visual;
+    if (occluded && panel->bounds_occluded_visual != NULL)
+        return panel->bounds_occluded_visual;
     if (panel->figure == NULL || panel->figure->scene == NULL)
         return NULL;
 
     DvzVisual* visual = dvz_segment(panel->figure->scene, 0);
     if (visual == NULL)
         return NULL;
-    if (dvz_visual_set_depth_test(visual, false) != 0)
+    if (dvz_visual_set_depth_test(visual, true) != 0)
         return NULL;
+    visual->depth_compare_op = occluded ? VK_COMPARE_OP_GREATER : VK_COMPARE_OP_LESS_OR_EQUAL;
     DvzVisualAttachDesc attach = {
-        .z_layer = 9500,
+        .z_layer = occluded ? 9499 : 9500,
         .controller_mode = DVZ_CONTROLLER_APPLY,
     };
     if (dvz_panel_add_visual(panel, visual, &attach) != 0)
         return NULL;
-    panel->bounds_visual = visual;
+    if (occluded)
+        panel->bounds_occluded_visual = visual;
+    else
+        panel->bounds_visual = visual;
     dvz_visual_set_visible(visual, false);
     return visual;
 }
@@ -661,11 +670,14 @@ static bool _bounds_overlay_sync_panel(DvzPanel* panel)
     {
         if (panel->bounds_visual != NULL)
             dvz_visual_set_visible(panel->bounds_visual, false);
+        if (panel->bounds_occluded_visual != NULL)
+            dvz_visual_set_visible(panel->bounds_occluded_visual, false);
         return true;
     }
 
-    DvzVisual* overlay = _bounds_overlay_visual(panel);
-    if (overlay == NULL)
+    DvzVisual* overlay = _bounds_overlay_visual(panel, false);
+    DvzVisual* occluded_overlay = _bounds_overlay_visual(panel, true);
+    if (overlay == NULL || occluded_overlay == NULL)
         return false;
 
     uint64_t max_lines = 0;
@@ -673,8 +685,8 @@ static bool _bounds_overlay_sync_panel(DvzPanel* panel)
     {
         const DvzPanelAttach* attach = &panel->visuals[i];
         DvzVisual* visual = attach->visual;
-        if (visual == NULL || visual == overlay || !visual->visible ||
-            attach->controller_mode == DVZ_CONTROLLER_FIXED)
+        if (visual == NULL || visual == overlay || visual == occluded_overlay ||
+            !visual->visible || attach->controller_mode == DVZ_CONTROLLER_FIXED)
         {
             continue;
         }
@@ -694,6 +706,7 @@ static bool _bounds_overlay_sync_panel(DvzPanel* panel)
     if (max_lines == 0 || max_lines > UINT32_MAX)
     {
         dvz_visual_set_visible(overlay, false);
+        dvz_visual_set_visible(occluded_overlay, false);
         return max_lines == 0;
     }
 
@@ -731,8 +744,8 @@ static bool _bounds_overlay_sync_panel(DvzPanel* panel)
     {
         const DvzPanelAttach* attach = &panel->visuals[i];
         DvzVisual* visual = attach->visual;
-        if (visual == NULL || visual == overlay || !visual->visible ||
-            attach->controller_mode == DVZ_CONTROLLER_FIXED)
+        if (visual == NULL || visual == overlay || visual == occluded_overlay ||
+            !visual->visible || attach->controller_mode == DVZ_CONTROLLER_FIXED)
         {
             continue;
         }
@@ -750,13 +763,25 @@ static bool _bounds_overlay_sync_panel(DvzPanel* panel)
         {.attr_name = "stroke_width", .data = widths, .item_count = line_count},
     };
     int rc = line_count > 0 ? dvz_visual_set_data_many(overlay, updates, 4) : -1;
-    dvz_visual_set_visible(overlay, rc == 0 && line_count > 0);
+    bool visible = rc == 0 && line_count > 0;
+
+    for (uint32_t i = 0; i < line_count; i++)
+    {
+        colors[i][3] = 90;
+        widths[i] = 1.5f;
+    }
+    if (visible)
+        rc = dvz_visual_set_data_many(occluded_overlay, updates, 4);
+    bool occluded_visible = rc == 0 && line_count > 0;
+
+    dvz_visual_set_visible(overlay, visible);
+    dvz_visual_set_visible(occluded_overlay, occluded_visible);
 
     dvz_free(start);
     dvz_free(end);
     dvz_free(colors);
     dvz_free(widths);
-    return rc == 0;
+    return visible && occluded_visible;
 }
 
 
@@ -882,7 +907,8 @@ int dvz_panel_bounds(const DvzPanel* panel, DvzBoundsSpace space, DvzBounds* out
     for (uint32_t i = 0; i < panel->visual_count; i++)
     {
         const DvzVisual* visual = panel->visuals[i].visual;
-        if (visual == NULL || visual == panel->bounds_visual || !visual->visible)
+        if (visual == NULL || visual == panel->bounds_visual ||
+            visual == panel->bounds_occluded_visual || !visual->visible)
             continue;
 
         DvzBounds bounds = {0};
@@ -915,6 +941,8 @@ int dvz_panel_set_bounds_visible(DvzPanel* panel, bool visible)
     panel->bounds_visible = visible;
     if (panel->bounds_visual != NULL)
         dvz_visual_set_visible(panel->bounds_visual, visible);
+    if (panel->bounds_occluded_visual != NULL)
+        dvz_visual_set_visible(panel->bounds_occluded_visual, visible);
     _scene_notify_request_frame(panel->figure);
     return 0;
 }

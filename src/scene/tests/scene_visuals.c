@@ -2342,7 +2342,7 @@ int test_scene_panel_visual_bounds_and_union(TstContext* suite, const TstCase* i
 
 
 /**
- * Verify the panel-owned bounds overlay generates a segment wireframe visual.
+ * Verify the panel-owned bounds overlay generates front and occluded wireframe visuals.
  *
  * @param suite the active test suite
  * @param item the active test item
@@ -2371,21 +2371,47 @@ int test_scene_panel_bounds_overlay_visual(TstContext* suite, const TstCase* ite
     AT(dvz_panel_bounds_visible(panel));
     _scene_prepare_bounds_visuals(figure);
 
-    ANN(panel->bounds_visual);
-    AT(panel->bounds_visual->type == DVZ_VISUAL_TYPE_SEGMENT);
-    AT(panel->bounds_visual->visible);
-    int start_idx = _attr_index(panel->bounds_visual, "position_start");
-    int end_idx = _attr_index(panel->bounds_visual, "position_end");
-    int color_idx = _attr_index(panel->bounds_visual, "color");
-    int width_idx = _attr_index(panel->bounds_visual, "line_width");
+    DvzVisual* overlay = panel->bounds_visual;
+    DvzVisual* occluded_overlay = panel->bounds_occluded_visual;
+    ANN(overlay);
+    ANN(occluded_overlay);
+    AT(overlay != occluded_overlay);
+    AT(overlay->type == DVZ_VISUAL_TYPE_SEGMENT);
+    AT(occluded_overlay->type == DVZ_VISUAL_TYPE_SEGMENT);
+    AT(overlay->visible);
+    AT(occluded_overlay->visible);
+    AT(overlay->depth_test_enabled);
+    AT(occluded_overlay->depth_test_enabled);
+    AT(overlay->depth_compare_op == VK_COMPARE_OP_LESS_OR_EQUAL);
+    AT(occluded_overlay->depth_compare_op == VK_COMPARE_OP_GREATER);
+    int start_idx = _attr_index(overlay, "position_start");
+    int end_idx = _attr_index(overlay, "position_end");
+    int color_idx = _attr_index(overlay, "color");
+    int width_idx = _attr_index(overlay, "line_width");
     AT(start_idx >= 0);
     AT(end_idx >= 0);
     AT(color_idx >= 0);
     AT(width_idx >= 0);
-    AT(panel->bounds_visual->attrs[start_idx].item_count == 4);
-    AT(panel->bounds_visual->attrs[end_idx].item_count == 4);
-    AT(panel->bounds_visual->attrs[color_idx].item_count == 4);
-    AT(panel->bounds_visual->attrs[width_idx].item_count == 4);
+    AT(overlay->attrs[start_idx].item_count == 4);
+    AT(overlay->attrs[end_idx].item_count == 4);
+    AT(overlay->attrs[color_idx].item_count == 4);
+    AT(overlay->attrs[width_idx].item_count == 4);
+
+    start_idx = _attr_index(occluded_overlay, "position_start");
+    end_idx = _attr_index(occluded_overlay, "position_end");
+    color_idx = _attr_index(occluded_overlay, "color");
+    width_idx = _attr_index(occluded_overlay, "line_width");
+    AT(start_idx >= 0);
+    AT(end_idx >= 0);
+    AT(color_idx >= 0);
+    AT(width_idx >= 0);
+    AT(occluded_overlay->attrs[start_idx].item_count == 4);
+    AT(occluded_overlay->attrs[end_idx].item_count == 4);
+    AT(occluded_overlay->attrs[color_idx].item_count == 4);
+    AT(occluded_overlay->attrs[width_idx].item_count == 4);
+    DvzColor* hidden_colors = (DvzColor*)occluded_overlay->attrs[color_idx].data;
+    ANN(hidden_colors);
+    AT(hidden_colors[0][3] == 90);
 
     DvzBounds bounds = {0};
     AT(dvz_panel_bounds(panel, DVZ_BOUNDS_SPACE_VISUAL, &bounds) == 0);
@@ -2393,7 +2419,8 @@ int test_scene_panel_bounds_overlay_visual(TstContext* suite, const TstCase* ite
 
     AT(dvz_panel_set_bounds_visible(panel, false) == 0);
     _scene_prepare_bounds_visuals(figure);
-    AT(!panel->bounds_visual->visible);
+    AT(!overlay->visible);
+    AT(!occluded_overlay->visible);
 
     dvz_scene_destroy(scene);
     return 0;
@@ -2448,7 +2475,38 @@ int test_scene_panel_bounds_overlay_emit_runtime(TstContext* suite, const TstCas
     AT(dvz_diagnostic_report_count(&report) == 0);
     ANN(stream);
     AT(_stream_has_render_pipeline_label_part(
-        stream, "_pipe_segmentg_coverage_blend_no_depth_test"));
+        stream, "_pipe_segmentg_coverage_blend_depth_msaa4"));
+    AT(_stream_has_render_pipeline_label_part(
+        stream, "_pipe_segmentg_coverage_blend_depth_gt_depth_msaa4"));
+
+    bool found_front_pipeline = false;
+    bool found_occluded_pipeline = false;
+    for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
+    {
+        const DvzDrp2Command* command = dvz_drp2_stream_get(stream, i);
+        ANN(command);
+        if (command->type != DVZ_DRP2_COMMAND_CREATE_RENDER_PIPELINE)
+            continue;
+        const char* label = dvz_drp2_stream_label(stream, command->u.create_render_pipeline.id);
+        if (label == NULL)
+            continue;
+        if (strstr(label, "_pipe_segmentg_coverage_blend_depth_gt_depth_msaa4") != NULL)
+        {
+            found_occluded_pipeline =
+                command->u.create_render_pipeline.has_depth_attachment &&
+                !command->u.create_render_pipeline.depth_write_enabled &&
+                command->u.create_render_pipeline.depth_compare_op == VK_COMPARE_OP_GREATER;
+        }
+        else if (strstr(label, "_pipe_segmentg_coverage_blend_depth_msaa4") != NULL)
+        {
+            found_front_pipeline =
+                command->u.create_render_pipeline.has_depth_attachment &&
+                command->u.create_render_pipeline.depth_write_enabled &&
+                command->u.create_render_pipeline.depth_compare_op == VK_COMPARE_OP_LESS_OR_EQUAL;
+        }
+    }
+    AT(found_front_pipeline);
+    AT(found_occluded_pipeline);
 
     dvz_drp2_stream_destroy(stream);
     dvz_scene_destroy(scene);

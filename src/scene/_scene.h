@@ -940,6 +940,7 @@ struct DvzVisual
     int32_t      z_layer;
     DvzAlphaMode alpha_mode;
     bool         depth_test_enabled;
+    uint32_t     depth_compare_op;
     DvzSceneMaterialState material;
 
     DvzPrimitiveTopology topology; /* used by DVZ_VISUAL_TYPE_PRIMITIVE */
@@ -1133,7 +1134,8 @@ struct DvzPanel
     DvzController* controllers[3]; /* optional scene-owned spatial controller bindings */
     DvzInputRouter* input_router; /* optional router subscribed through panel-local dispatch */
     DvzVisual* fly_pivot_marker_visual; /* optional navigation overlay marker visual */
-    DvzVisual* bounds_visual; /* optional panel-owned visual bounds overlay */
+    DvzVisual* bounds_visual; /* optional panel-owned visible bounds overlay */
+    DvzVisual* bounds_occluded_visual; /* optional panel-owned occluded bounds overlay */
     bool bounds_visible;
     DvzTurntable* turntable; /* optional turntable camera controller (owned) */
     DvzAxis axes[2];

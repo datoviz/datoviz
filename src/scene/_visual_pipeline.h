@@ -67,6 +67,7 @@ typedef struct DvzSceneVisualDesc
     DvzScenePointLikeKind point_like_kind;
     bool has_normal;
     bool depth_test_enabled;
+    uint32_t depth_compare_op;
     uint32_t topology;
     uint64_t vbuf_ids[DVZ_SCENE_MAX_NODE_RESOURCES];
     uint32_t vbuf_count;

@@ -2282,13 +2282,15 @@ bool _scene_draw_contract_from_visual(
     DvzSceneVisualPassCaps caps = {0};
     if (!_scene_visual_pass_caps_from_visual(visual, attach, &caps))
         return false;
+    bool forward_depth_compare = visual->depth_compare_op == VK_COMPARE_OP_LESS ||
+                                 visual->depth_compare_op == VK_COMPARE_OP_LESS_OR_EQUAL;
 
     DvzSceneDrawFacts facts = {
         .visual_type = (uint32_t)visual->type,
         .alpha_mode = visual->alpha_mode,
         .can_depth_test = caps.can_depth_test,
         .can_write_depth = caps.can_write_depth,
-        .writes_depth = caps.writes_depth,
+        .writes_depth = caps.writes_depth && forward_depth_compare,
         .samples_depth = caps.samples_depth,
         .volume_occluded = visual->volume_occluded,
         .scene_occluded = visual->scene_occluded,

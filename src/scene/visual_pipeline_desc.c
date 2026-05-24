@@ -177,7 +177,7 @@ static void _pipeline_instance_transform(
  */
 static void _pipeline_apply_standard_depth_state(
     const DvzSceneVisualPassCaps* caps, bool pass_needs_depth, bool wboit_accumulation,
-    DvzAlphaMode alpha_mode, DvzSceneVisualPipelineDesc* out)
+    DvzAlphaMode alpha_mode, uint32_t depth_compare_op, DvzSceneVisualPipelineDesc* out)
 {
     ANN(caps);
     ANN(out);
@@ -185,10 +185,12 @@ static void _pipeline_apply_standard_depth_state(
     if (!pass_needs_depth)
         return;
 
+    bool forward_compare = depth_compare_op == VK_COMPARE_OP_LESS ||
+                           depth_compare_op == VK_COMPARE_OP_LESS_OR_EQUAL;
     out->depth_write_enabled =
-        caps->can_write_depth && !wboit_accumulation && alpha_mode != DVZ_ALPHA_BLENDED;
-    out->depth_compare_op =
-        caps->can_depth_test ? VK_COMPARE_OP_LESS_OR_EQUAL : VK_COMPARE_OP_ALWAYS;
+        caps->can_write_depth && forward_compare && !wboit_accumulation &&
+        alpha_mode != DVZ_ALPHA_BLENDED;
+    out->depth_compare_op = caps->can_depth_test ? depth_compare_op : VK_COMPARE_OP_ALWAYS;
 }
 
 
@@ -266,7 +268,7 @@ static bool _pipeline_apply_fixed_visual(
     {
         out->needs_material_layout = caps->needs_material_layout;
         _pipeline_apply_standard_depth_state(
-            caps, pass_needs_depth, wboit_accumulation, alpha_mode, out);
+            caps, pass_needs_depth, wboit_accumulation, alpha_mode, visual->depth_compare_op, out);
     }
     else if (visual->kind == DVZ_SCENE_VISUAL_DESC_IMAGE)
     {
@@ -348,7 +350,8 @@ bool _scene_visual_pipeline_desc(
             out->needs_common_layout = caps.uses_common_set;
             out->needs_material_layout = caps.needs_material_layout && !picking;
             _pipeline_apply_standard_depth_state(
-                &caps, pass_needs_depth, wboit_accumulation, alpha_mode, out);
+                &caps, pass_needs_depth, wboit_accumulation, alpha_mode,
+                visual->depth_compare_op, out);
             return true;
         }
 
@@ -370,7 +373,8 @@ bool _scene_visual_pipeline_desc(
         out->needs_common_layout = caps.uses_common_set;
         out->needs_material_layout = caps.needs_material_layout && !picking;
         _pipeline_apply_standard_depth_state(
-            &caps, pass_needs_depth, wboit_accumulation, alpha_mode, out);
+            &caps, pass_needs_depth, wboit_accumulation, alpha_mode, visual->depth_compare_op,
+            out);
         return true;
 
     case DVZ_SCENE_VISUAL_DESC_PRIMITIVE:
@@ -391,7 +395,8 @@ bool _scene_visual_pipeline_desc(
         out->needs_common_layout = caps.uses_common_set;
         out->needs_material_layout = caps.needs_material_layout && !picking;
         _pipeline_apply_standard_depth_state(
-            &caps, pass_needs_depth, wboit_accumulation, alpha_mode, out);
+            &caps, pass_needs_depth, wboit_accumulation, alpha_mode, visual->depth_compare_op,
+            out);
         return true;
 
     case DVZ_SCENE_VISUAL_DESC_SEGMENT:

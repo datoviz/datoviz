@@ -67,6 +67,7 @@ bool _scene_visual_frame_plan_metadata(
     metadata->instance_count = 1;
     metadata->alpha_mode = visual->alpha_mode;
     metadata->depth_test_enabled = visual->depth_test_enabled;
+    metadata->depth_compare_op = visual->depth_compare_op;
     metadata->depth_cue_enabled = visual->material.depth_cue_enabled;
     metadata->point_style_enabled =
         visual->type == DVZ_VISUAL_TYPE_POINT && visual->material.point_style_enabled;

@@ -19,6 +19,8 @@
 #include <stdint.h>
 #include <string.h>
 
+#include <vulkan/vulkan_core.h>
+
 #include "_alloc.h"
 #include "_assertions.h"
 #include "_compat.h"
@@ -48,6 +50,7 @@ DvzVisual* _scene_alloc_visual(DvzScene* scene, DvzVisualType type, uint32_t fla
     visual->z_layer = 0;
     visual->alpha_mode = DVZ_ALPHA_OPAQUE;
     visual->depth_test_enabled = true;
+    visual->depth_compare_op = VK_COMPARE_OP_LESS_OR_EQUAL;
     _material_state_default(&visual->material, type);
     _material_params_default(&visual->material_params);
     _material_params_sync_state(&visual->material_params, &visual->material);
