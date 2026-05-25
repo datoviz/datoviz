@@ -3293,8 +3293,6 @@ bool _emitter_emit_render(
         ok = dvz_drp2_stream_set_bind_group(stream, render_pass_id, 0, common_bg_id);
     if (ok && is_image && bg_id != 0)
         ok = dvz_drp2_stream_set_bind_group(stream, render_pass_id, 1, bg_id);
-    for (uint32_t i = 0; ok && i < vertex_buffer_count; i++)
-        ok = dvz_drp2_stream_set_vertex_buffer(stream, render_pass_id, i, vertex_buffer_ids[i], 0);
     uint32_t draw_vertex_count = vertex_count;
     uint32_t draw_instance_count = 1;
     if (is_point_like && has_point_like_lowering)
@@ -3302,6 +3300,59 @@ bool _emitter_emit_render(
         draw_vertex_count = point_like_lowering.draw_vertex_count;
         draw_instance_count = point_like_lowering.draw_instance_count;
     }
+    if (is_point_like || is_primitive || is_image)
+    {
+        DvzSceneVisualDesc draw_visual = {0};
+        DvzSceneVisualPipelineDesc draw_pipeline = {0};
+        draw_visual.kind = is_image           ? DVZ_SCENE_VISUAL_DESC_IMAGE
+                           : is_primitive    ? DVZ_SCENE_VISUAL_DESC_PRIMITIVE
+                           : is_marker       ? DVZ_SCENE_VISUAL_DESC_MARKER
+                           : is_pixel        ? DVZ_SCENE_VISUAL_DESC_PIXEL
+                                             : DVZ_SCENE_VISUAL_DESC_POINT;
+        draw_visual.vertex_count = draw_vertex_count;
+        draw_visual.instance_count = draw_instance_count;
+        draw_visual.vbuf_count = vertex_buffer_count;
+        uint32_t binding_count = is_marker ? 5 : is_point_like ? 3 : is_primitive ? 2 : 2;
+        if (binding_count > vertex_buffer_count)
+            binding_count = vertex_buffer_count;
+        draw_pipeline.binding_count = binding_count;
+        for (uint32_t i = 0; i < binding_count; i++)
+        {
+            draw_visual.vbuf_ids[i] = vertex_buffer_ids[i];
+            draw_pipeline.step_modes[i] = DVZ_DRP2_VERTEX_STEP_MODE_VERTEX;
+        }
+        if (is_point_like)
+        {
+            draw_pipeline.strides[0] = 3 * sizeof(float);
+            draw_pipeline.strides[1] = 4 * sizeof(uint8_t);
+            draw_pipeline.strides[2] = sizeof(float);
+            if (is_marker && binding_count >= 5)
+            {
+                draw_pipeline.strides[3] = sizeof(float);
+                draw_pipeline.strides[4] = sizeof(uint32_t);
+            }
+            if (has_point_like_lowering &&
+                point_like_lowering.lowering == DVZ_SCENE_POINT_LIKE_LOWERING_INSTANCED_QUADS)
+            {
+                for (uint32_t i = 0; i < binding_count; i++)
+                    draw_pipeline.step_modes[i] = DVZ_DRP2_VERTEX_STEP_MODE_INSTANCE;
+            }
+        }
+        else if (is_primitive)
+        {
+            draw_pipeline.strides[0] = 3 * sizeof(float);
+            draw_pipeline.strides[1] = 4 * sizeof(uint8_t);
+        }
+        else
+        {
+            draw_pipeline.strides[0] = 3 * sizeof(float);
+            draw_pipeline.strides[1] = 2 * sizeof(float);
+        }
+        if (!_draw_validation_validate(&emitter->resources, &draw_visual, &draw_pipeline, report))
+            return false;
+    }
+    for (uint32_t i = 0; ok && i < vertex_buffer_count; i++)
+        ok = dvz_drp2_stream_set_vertex_buffer(stream, render_pass_id, i, vertex_buffer_ids[i], 0);
     ok = ok &&
          dvz_drp2_stream_draw(
              stream, render_pass_id, draw_vertex_count, draw_instance_count, 0, 0) &&

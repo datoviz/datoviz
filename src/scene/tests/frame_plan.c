@@ -585,6 +585,22 @@ int test_frame_plan_draw_resource_validation_rejects_short_position(
     AT(strstr(message, "logical_count=2") != NULL);
 
     dvz_frame_plan_emitter_destroy(emitter);
+
+    emit_cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_WGSL;
+    dvz_diagnostic_report_init(&report);
+    emitter = dvz_frame_plan_emitter();
+    ANN(emitter);
+    stream = dvz_frame_plan_emitter_emit_drp2(emitter, plan, &caps, &report, &emit_cfg);
+    AT(stream == NULL);
+    AT(dvz_diagnostic_report_count(&report) >= 1);
+    message = dvz_diagnostic_report_get(&report, 0);
+    ANN(message);
+    AT(strstr(message, "visual=point") != NULL);
+    AT(strstr(message, "role=position") != NULL);
+    AT(strstr(message, "draw_count=3") != NULL);
+    AT(strstr(message, "logical_count=2") != NULL);
+
+    dvz_frame_plan_emitter_destroy(emitter);
     dvz_frame_plan_destroy(plan);
     return 0;
 }
