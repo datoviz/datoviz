@@ -207,234 +207,6 @@ bool _runtime_key_appendf(
 
 
 /**
- * Return a compact visual-kind name for draw resource diagnostics.
- *
- * @param kind visual descriptor kind
- * @return the visual-kind name
- */
-static const char* _draw_validation_kind_name(DvzSceneVisualDescKind kind)
-{
-    switch (kind)
-    {
-    case DVZ_SCENE_VISUAL_DESC_POINT:
-        return "point";
-    case DVZ_SCENE_VISUAL_DESC_PIXEL:
-        return "pixel";
-    case DVZ_SCENE_VISUAL_DESC_MARKER:
-        return "marker";
-    case DVZ_SCENE_VISUAL_DESC_SPHERE:
-        return "sphere";
-    case DVZ_SCENE_VISUAL_DESC_SEGMENT:
-        return "segment";
-    case DVZ_SCENE_VISUAL_DESC_PATH:
-        return "path";
-    case DVZ_SCENE_VISUAL_DESC_PRIMITIVE:
-        return "primitive";
-    case DVZ_SCENE_VISUAL_DESC_IMAGE:
-        return "image";
-    case DVZ_SCENE_VISUAL_DESC_GLYPH:
-        return "glyph";
-    case DVZ_SCENE_VISUAL_DESC_VOLUME:
-        return "volume";
-    case DVZ_SCENE_VISUAL_DESC_NONE:
-    default:
-        return "unknown";
-    }
-}
-
-
-
-/**
- * Return a compact resource-role name for draw resource diagnostics.
- *
- * @param state resource id state
- * @param id resource id
- * @return the resource-role name
- */
-static const char* _draw_validation_role_name(const ConverterState* state, uint64_t id)
-{
-    ANN(state);
-    const char* tag = _resource_data_tag(state, id);
-    if (tag != NULL && tag[0] != '\0')
-        return tag;
-
-    switch (_resource_role(state, id))
-    {
-    case DVZ_FRAME_PLAN_RESOURCE_ROLE_POSITION:
-        return "position";
-    case DVZ_FRAME_PLAN_RESOURCE_ROLE_POSITION_START:
-        return "position_start";
-    case DVZ_FRAME_PLAN_RESOURCE_ROLE_POSITION_END:
-        return "position_end";
-    case DVZ_FRAME_PLAN_RESOURCE_ROLE_COLOR:
-        return "color";
-    case DVZ_FRAME_PLAN_RESOURCE_ROLE_SIZE:
-        return "size";
-    case DVZ_FRAME_PLAN_RESOURCE_ROLE_ANGLE:
-        return "angle";
-    case DVZ_FRAME_PLAN_RESOURCE_ROLE_SHAPE:
-        return "shape";
-    case DVZ_FRAME_PLAN_RESOURCE_ROLE_LINE_WIDTH:
-        return "line_width";
-    case DVZ_FRAME_PLAN_RESOURCE_ROLE_TEXCOORDS:
-        return "texcoords";
-    case DVZ_FRAME_PLAN_RESOURCE_ROLE_TEXTURE:
-        return "texture";
-    case DVZ_FRAME_PLAN_RESOURCE_ROLE_NORMAL:
-        return "normal";
-    case DVZ_FRAME_PLAN_RESOURCE_ROLE_INDEX:
-        return "index";
-    case DVZ_FRAME_PLAN_RESOURCE_ROLE_MATERIAL_PARAMS:
-        return "material_params";
-    case DVZ_FRAME_PLAN_RESOURCE_ROLE_SELECTION:
-        return "selection";
-    case DVZ_FRAME_PLAN_RESOURCE_ROLE_PATH_FLAGS:
-        return "path_flags";
-    case DVZ_FRAME_PLAN_RESOURCE_ROLE_PATH_DISTANCE:
-        return "path_distance";
-    case DVZ_FRAME_PLAN_RESOURCE_ROLE_NONE:
-    default:
-        return "unknown";
-    }
-}
-
-
-
-/**
- * Resolve the logical item count for a draw-bound buffer.
- *
- * @param state resource id state
- * @param id resource id
- * @param stride required stride in bytes
- * @param visual visual descriptor being validated
- * @param role resource role name
- * @param report optional diagnostic report
- * @param out_count output logical item count
- * @return whether a valid logical count was resolved
- */
-static bool _draw_validation_resource_count(
-    const ConverterState* state, uint64_t id, uint32_t stride, const DvzSceneVisualDesc* visual,
-    const char* role, DvzDiagnosticReport* report, uint64_t* out_count)
-{
-    ANN(state);
-    ANN(visual);
-    ANN(role);
-    ANN(out_count);
-
-    uint64_t logical_count = _resource_logical_item_count(state, id);
-    if (logical_count > 0)
-    {
-        *out_count = logical_count;
-        return true;
-    }
-
-    uint64_t byte_size = _resource_byte_size(state, id);
-    if (stride == 0 || byte_size == 0 || byte_size % stride != 0 || byte_size / stride == 0)
-    {
-        char message[DVZ_SCENE_DIAGNOSTIC_SIZE];
-        dvz_snprintf(
-            message, sizeof(message),
-            "scene draw resource validation failed: visual=%s role=%s resource_id=%" PRIu64
-            " byte_size=%" PRIu64 " stride=%" PRIu32,
-            _draw_validation_kind_name(visual->kind), role, id, byte_size, stride);
-        _diagnostic(report, message);
-        return false;
-    }
-
-    *out_count = byte_size / stride;
-    return true;
-}
-
-
-
-/**
- * Validate that one draw descriptor is covered by all bound resource logical counts.
- *
- * @param state resource id state
- * @param visual visual descriptor being validated
- * @param pipeline pipeline vertex-input descriptor
- * @param report optional diagnostic report
- * @return whether all draw-bound resources cover the draw range
- */
-static bool _draw_validation_validate(
-    const ConverterState* state, const DvzSceneVisualDesc* visual,
-    const DvzSceneVisualPipelineDesc* pipeline, DvzDiagnosticReport* report)
-{
-    ANN(state);
-    ANN(visual);
-    ANN(pipeline);
-
-    if (pipeline->binding_count > visual->vbuf_count)
-    {
-        char message[DVZ_SCENE_DIAGNOSTIC_SIZE];
-        dvz_snprintf(
-            message, sizeof(message),
-            "scene draw resource validation failed: visual=%s binding_count=%" PRIu32
-            " vbuf_count=%" PRIu32,
-            _draw_validation_kind_name(visual->kind), pipeline->binding_count,
-            visual->vbuf_count);
-        _diagnostic(report, message);
-        return false;
-    }
-
-    for (uint32_t binding = 0; binding < pipeline->binding_count; binding++)
-    {
-        uint64_t id = visual->vbuf_ids[binding];
-        const char* role = _draw_validation_role_name(state, id);
-        uint64_t logical_count = 0;
-        if (!_draw_validation_resource_count(
-                state, id, pipeline->strides[binding], visual, role, report, &logical_count))
-            return false;
-
-        uint64_t draw_count =
-            pipeline->step_modes[binding] == DVZ_DRP2_VERTEX_STEP_MODE_INSTANCE
-                ? visual->instance_count
-                : visual->vertex_count;
-        if (draw_count > logical_count)
-        {
-            char message[DVZ_SCENE_DIAGNOSTIC_SIZE];
-            dvz_snprintf(
-                message, sizeof(message),
-                "scene draw resource validation failed: visual=%s role=%s resource_id=%" PRIu64
-                " draw_count=%" PRIu64 " logical_count=%" PRIu64,
-                _draw_validation_kind_name(visual->kind), role, id, draw_count, logical_count);
-            _diagnostic(report, message);
-            return false;
-        }
-    }
-
-    if (visual->index_buffer_id != 0)
-    {
-        uint32_t stride = _resource_item_stride(state, visual->index_buffer_id);
-        if (stride == 0)
-            stride = visual->index_format != NULL && strcmp(visual->index_format, "uint16") == 0
-                         ? sizeof(uint16_t)
-                         : sizeof(uint32_t);
-        uint64_t logical_count = 0;
-        if (!_draw_validation_resource_count(
-                state, visual->index_buffer_id, stride, visual, "index", report,
-                &logical_count))
-            return false;
-        if (visual->index_count > logical_count)
-        {
-            char message[DVZ_SCENE_DIAGNOSTIC_SIZE];
-            dvz_snprintf(
-                message, sizeof(message),
-                "scene draw resource validation failed: visual=%s role=index resource_id=%" PRIu64
-                " draw_count=%" PRIu32 " logical_count=%" PRIu64,
-                _draw_validation_kind_name(visual->kind), visual->index_buffer_id,
-                visual->index_count, logical_count);
-            _diagnostic(report, message);
-            return false;
-        }
-    }
-
-    return true;
-}
-
-
-
-/**
  * Prepare resources for one panel's draws before opening the render pass.
  *
  * @param emitter frame-plan emitter carrying scene/runtime state.
@@ -3278,61 +3050,31 @@ bool _emitter_emit_render(
     }
     if (is_point_like || is_primitive || is_image)
     {
-        DvzSceneVisualDesc draw_visual = {0};
-        DvzSceneVisualPipelineDesc draw_pipeline = {0};
-        draw_visual.kind = is_image           ? DVZ_SCENE_VISUAL_DESC_IMAGE
-                           : is_primitive    ? DVZ_SCENE_VISUAL_DESC_PRIMITIVE
-                           : is_marker       ? DVZ_SCENE_VISUAL_DESC_MARKER
-                           : is_pixel        ? DVZ_SCENE_VISUAL_DESC_PIXEL
-                                             : DVZ_SCENE_VISUAL_DESC_POINT;
-        draw_visual.vertex_count = draw_vertex_count;
-        draw_visual.instance_count = draw_instance_count;
-        draw_visual.vbuf_count = vertex_buffer_count;
-        uint32_t binding_count = is_marker ? 5 : is_point_like ? 3 : is_primitive ? 2 : 2;
-        if (binding_count > vertex_buffer_count)
-            binding_count = vertex_buffer_count;
-        draw_pipeline.binding_count = binding_count;
-        for (uint32_t i = 0; i < binding_count; i++)
-        {
-            draw_visual.vbuf_ids[i] = vertex_buffer_ids[i];
-            draw_pipeline.step_modes[i] = DVZ_DRP2_VERTEX_STEP_MODE_VERTEX;
-        }
-        if (is_point_like)
-        {
-            draw_pipeline.strides[0] = 3 * sizeof(float);
-            draw_pipeline.strides[1] = 4 * sizeof(uint8_t);
-            draw_pipeline.strides[2] = sizeof(float);
-            if (is_marker && binding_count >= 5)
-            {
-                draw_pipeline.strides[3] = sizeof(float);
-                draw_pipeline.strides[4] = sizeof(uint32_t);
-            }
-            if (has_point_like_lowering &&
-                point_like_lowering.lowering == DVZ_SCENE_POINT_LIKE_LOWERING_INSTANCED_QUADS)
-            {
-                for (uint32_t i = 0; i < binding_count; i++)
-                    draw_pipeline.step_modes[i] = DVZ_DRP2_VERTEX_STEP_MODE_INSTANCE;
-            }
-        }
-        else if (is_primitive)
-        {
-            draw_pipeline.strides[0] = 3 * sizeof(float);
-            draw_pipeline.strides[1] = 4 * sizeof(uint8_t);
-        }
-        else
-        {
-            draw_pipeline.strides[0] = 3 * sizeof(float);
-            draw_pipeline.strides[1] = 2 * sizeof(float);
-        }
-        if (!_draw_validation_validate(&emitter->resources, &draw_visual, &draw_pipeline, report))
+        DvzSceneVisualDescKind kind = is_image        ? DVZ_SCENE_VISUAL_DESC_IMAGE
+                                      : is_primitive ? DVZ_SCENE_VISUAL_DESC_PRIMITIVE
+                                      : is_marker    ? DVZ_SCENE_VISUAL_DESC_MARKER
+                                      : is_pixel     ? DVZ_SCENE_VISUAL_DESC_PIXEL
+                                                     : DVZ_SCENE_VISUAL_DESC_POINT;
+        bool instanced_point_like =
+            has_point_like_lowering &&
+            point_like_lowering.lowering == DVZ_SCENE_POINT_LIKE_LOWERING_INSTANCED_QUADS;
+        SceneDrawPacket packet = {0};
+        if (!_scene_draw_packet_init_fallback(
+                &emitter->resources, kind, pipe_id, common_bg_id, is_image ? bg_id : 0,
+                vertex_buffer_ids, vertex_buffer_count, draw_vertex_count, draw_instance_count,
+                instanced_point_like, report, &packet))
             return false;
+        ok = ok && _scene_draw_packet_emit(stream, render_pass_id, &packet);
     }
-    for (uint32_t i = 0; ok && i < vertex_buffer_count; i++)
-        ok = dvz_drp2_stream_set_vertex_buffer(stream, render_pass_id, i, vertex_buffer_ids[i], 0);
-    ok = ok &&
-         dvz_drp2_stream_draw(
-             stream, render_pass_id, draw_vertex_count, draw_instance_count, 0, 0) &&
-         dvz_drp2_stream_end_render_pass(stream, render_pass_id);
+    else
+    {
+        for (uint32_t i = 0; ok && i < vertex_buffer_count; i++)
+            ok = dvz_drp2_stream_set_vertex_buffer(
+                stream, render_pass_id, i, vertex_buffer_ids[i], 0);
+        ok = ok && dvz_drp2_stream_draw(
+                       stream, render_pass_id, draw_vertex_count, draw_instance_count, 0, 0);
+    }
+    ok = ok && dvz_drp2_stream_end_render_pass(stream, render_pass_id);
     ok =
         ok && _render_pass_copy_finish_submit(
                   stream, encoder_id, command_buffer_id, submission_id, color_id, rb_id, readback);
