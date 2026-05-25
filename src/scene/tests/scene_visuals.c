@@ -14,6 +14,8 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
+#include <float.h>
+
 #include "scene_graph_utils.h"
 #include "datoviz/geom.h"
 
@@ -2527,6 +2529,68 @@ int test_scene_panel_bounds_overlay_visual(TstContext* suite, const TstCase* ite
     return 0;
 }
 
+
+
+/**
+ * Verify sphere overlays use conservative wire bounds while public bounds remain exact.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_panel_bounds_overlay_sphere_wire_padding(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 200, 200, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    ANN(panel);
+
+    DvzVisual* sphere = dvz_sphere(scene, 0);
+    ANN(sphere);
+    vec3 position[1] = {{0.0f, 0.0f, 0.0f}};
+    DvzColor color[1] = {{255, 255, 255, 255}};
+    float radius[1] = {0.25f};
+    AT(dvz_visual_set_data(sphere, "position", position, 1) == 0);
+    AT(dvz_visual_set_data(sphere, "color", color, 1) == 0);
+    AT(dvz_visual_set_data(sphere, "radius", radius, 1) == 0);
+    AT(dvz_panel_add_visual(panel, sphere, NULL) == 0);
+
+    DvzBounds bounds = {0};
+    AT(dvz_visual_bounds(sphere, &bounds) == 0);
+    AT(_bounds_expect(&bounds, 3, -0.25, -0.25, -0.25, +0.25, +0.25, +0.25) == 0);
+
+    AT(dvz_panel_set_bounds_visible(panel, true) == 0);
+    _scene_prepare_bounds_visuals(figure);
+    ANN(panel->bounds_visual);
+    int start_idx = _attr_index(panel->bounds_visual, "position_start");
+    int end_idx = _attr_index(panel->bounds_visual, "position_end");
+    AT(start_idx >= 0);
+    AT(end_idx >= 0);
+    const float* starts = (const float*)panel->bounds_visual->attrs[start_idx].data;
+    const float* ends = (const float*)panel->bounds_visual->attrs[end_idx].data;
+    ANN(starts);
+    ANN(ends);
+
+    float min_x = +FLT_MAX;
+    float max_x = -FLT_MAX;
+    for (uint32_t i = 0; i < panel->bounds_visual->attrs[start_idx].item_count; i++)
+    {
+        min_x = fminf(min_x, starts[3 * i + 0]);
+        min_x = fminf(min_x, ends[3 * i + 0]);
+        max_x = fmaxf(max_x, starts[3 * i + 0]);
+        max_x = fmaxf(max_x, ends[3 * i + 0]);
+    }
+    AT(min_x < -0.40f);
+    AT(max_x > +0.40f);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
 
 
 /**

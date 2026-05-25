@@ -265,6 +265,60 @@ static bool _bounds_from_sphere(const DvzVisual* visual, DvzBounds* out)
 }
 
 
+/**
+ * Expand already computed sphere bounds for the generated wire overlay.
+ *
+ * @param visual the sphere visual
+ * @param bounds bounds to expand in place
+ */
+static void _bounds_expand_sphere_wire_overlay(const DvzVisual* visual, DvzBounds* bounds)
+{
+    ANN(visual);
+    ANN(bounds);
+    if (visual->type != DVZ_VISUAL_TYPE_SPHERE || !bounds->valid)
+        return;
+
+    const DvzVisualAttr* radius_attr = _bounds_attr(visual, "radius", sizeof(float));
+    if (radius_attr == NULL)
+        return;
+    const float* radius = (const float*)radius_attr->data;
+    double max_radius = 0.0;
+    for (uint64_t i = 0; i < radius_attr->item_count; i++)
+    {
+        double r = (double)radius[i];
+        if (isfinite(r) && r > max_radius)
+            max_radius = r;
+    }
+    if (!(max_radius > 0.0))
+        return;
+
+    const double pad = (sqrt(3.0) - 1.0) * max_radius;
+    for (uint32_t dim = 0; dim < 3; dim++)
+    {
+        bounds->min[dim] -= pad;
+        bounds->max[dim] += pad;
+    }
+}
+
+
+/**
+ * Return bounds suitable for a perspective wire overlay.
+ *
+ * @param visual the visual
+ * @param out output bounds
+ * @return 0 when bounds are available, -1 otherwise
+ */
+static int _bounds_overlay_source_bounds(const DvzVisual* visual, DvzBounds* out)
+{
+    ANN(visual);
+    ANN(out);
+    if (dvz_visual_bounds(visual, out) != 0)
+        return -1;
+    _bounds_expand_sphere_wire_overlay(visual, out);
+    return 0;
+}
+
+
 
 /**
  * Include one transformed AABB corner in bounds.
@@ -709,7 +763,7 @@ static bool _bounds_overlay_sync_panel(DvzPanel* panel)
         }
 
         DvzBounds bounds = {0};
-        if (dvz_visual_bounds(visual, &bounds) != 0)
+        if (_bounds_overlay_source_bounds(visual, &bounds) != 0)
             continue;
         uint64_t next = 0;
         if (_dvz_add_u64_overflows(max_lines, _bounds_wire_line_count(&bounds), &next))
@@ -768,7 +822,7 @@ static bool _bounds_overlay_sync_panel(DvzPanel* panel)
         }
 
         DvzBounds bounds = {0};
-        if (dvz_visual_bounds(visual, &bounds) != 0)
+        if (_bounds_overlay_source_bounds(visual, &bounds) != 0)
             continue;
         _bounds_wire_append_box(&bounds, start, end, colors, widths, &line_count);
     }

@@ -683,6 +683,9 @@ int test_scene_panel_visual_bounds_and_union(TstContext* suite, const TstCase* i
 
 int test_scene_panel_bounds_overlay_visual(TstContext* suite, const TstCase* item);
 
+int test_scene_panel_bounds_overlay_sphere_wire_padding(
+    TstContext* suite, const TstCase* item);
+
 int test_scene_panel_bounds_overlay_emit_runtime(TstContext* suite, const TstCase* item);
 
 int test_scene_point_typed_data_upload(TstContext* suite, const TstCase* item);
