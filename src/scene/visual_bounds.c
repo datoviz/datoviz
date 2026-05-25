@@ -35,6 +35,22 @@
 
 
 /*************************************************************************************************/
+/*  Constants                                                                                    */
+/*************************************************************************************************/
+
+#define BOUNDS_OVERLAY_COLOR_R 255
+#define BOUNDS_OVERLAY_COLOR_G 214
+#define BOUNDS_OVERLAY_COLOR_B 72
+#define BOUNDS_OVERLAY_ALPHA_VISIBLE 245
+#define BOUNDS_OVERLAY_ALPHA_OCCLUDED 150
+#define BOUNDS_OVERLAY_WIDTH_VISIBLE 2.0f
+#define BOUNDS_OVERLAY_WIDTH_OCCLUDED 1.5f
+#define BOUNDS_OVERLAY_Z_LAYER_VISIBLE 9500
+#define BOUNDS_OVERLAY_Z_LAYER_OCCLUDED 9499
+
+
+
+/*************************************************************************************************/
 /*  Helpers                                                                                      */
 /*************************************************************************************************/
 
@@ -560,11 +576,11 @@ static void _bounds_wire_append_edge(
         start[i][dim] = (float)a[dim];
         end[i][dim] = (float)b[dim];
     }
-    colors[i][0] = 255;
-    colors[i][1] = 214;
-    colors[i][2] = 72;
-    colors[i][3] = 245;
-    widths[i] = 2.0f;
+    colors[i][0] = BOUNDS_OVERLAY_COLOR_R;
+    colors[i][1] = BOUNDS_OVERLAY_COLOR_G;
+    colors[i][2] = BOUNDS_OVERLAY_COLOR_B;
+    colors[i][3] = BOUNDS_OVERLAY_ALPHA_VISIBLE;
+    widths[i] = BOUNDS_OVERLAY_WIDTH_VISIBLE;
     *line_count = i + 1;
 }
 
@@ -642,7 +658,8 @@ static DvzVisual* _bounds_overlay_visual(DvzPanel* panel, bool occluded)
         return NULL;
     visual->depth_compare_op = occluded ? VK_COMPARE_OP_GREATER : VK_COMPARE_OP_LESS_OR_EQUAL;
     DvzVisualAttachDesc attach = {
-        .z_layer = occluded ? 9499 : 9500,
+        .z_layer =
+            occluded ? BOUNDS_OVERLAY_Z_LAYER_OCCLUDED : BOUNDS_OVERLAY_Z_LAYER_VISIBLE,
         .controller_mode = DVZ_CONTROLLER_APPLY,
     };
     if (dvz_panel_add_visual(panel, visual, &attach) != 0)
@@ -767,8 +784,8 @@ static bool _bounds_overlay_sync_panel(DvzPanel* panel)
 
     for (uint32_t i = 0; i < line_count; i++)
     {
-        colors[i][3] = 150;
-        widths[i] = 1.5f;
+        colors[i][3] = BOUNDS_OVERLAY_ALPHA_OCCLUDED;
+        widths[i] = BOUNDS_OVERLAY_WIDTH_OCCLUDED;
     }
     if (visible)
         rc = dvz_visual_set_data_many(occluded_overlay, updates, 4);

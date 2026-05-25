@@ -104,7 +104,9 @@ static void _fill_spheres(float positions[SPHERE_COUNT][3], DvzColor colors[SPHE
         colors[i][1] = (uint8_t)(80.0f + 120.0f * t);
         colors[i][2] = (uint8_t)(120.0f + 100.0f * t);
         colors[i][3] = 255;
-        radii[i] = 0.07f;
+        const float radius_classes[3] = {0.045f, 0.075f, 0.120f};
+        uint32_t radius_class = (i * 7u + iz) % 3u;
+        radii[i] = radius_classes[radius_class] + 0.006f * sinf(0.8f * (float)i);
     }
 }
 
