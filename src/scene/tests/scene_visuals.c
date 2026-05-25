@@ -3175,17 +3175,20 @@ int test_scene_typed_upload_rejects_wrong_family(TstContext* suite, const TstCas
     float diameters[1] = {4.0f};
     uint8_t selection[1] = {1};
 
-    AT(dvz_visual_set_data(mesh, "diameter", diameters, 1) == -1);
-    AT(dvz_visual_set_data(point, "normal", positions, 1) == -1);
-    AT(dvz_visual_set_data(primitive, "radius", diameters, 1) == -1);
-    AT(dvz_visual_set_data(sphere, "pixel_size", diameters, 1) == -1);
-    AT(dvz_visual_set_data(point, "selection", selection, 0) == -1);
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_visual_set_data(mesh, "diameter", diameters, 1) == -1);
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_visual_set_data(point, "normal", positions, 1) == -1);
+    AT_EXPECTED_ERROR_STRICT(
+        suite, dvz_visual_set_data(primitive, "radius", diameters, 1) == -1);
+    AT_EXPECTED_ERROR_STRICT(
+        suite, dvz_visual_set_data(sphere, "pixel_size", diameters, 1) == -1);
+    AT_EXPECTED_ERROR_STRICT(
+        suite, dvz_visual_set_data(point, "selection", selection, 0) == -1);
 
     DvzVisualDataUpdate mismatch[] = {
         {.attr_name = "position", .data = positions, .item_count = 1},
         {.attr_name = "color", .data = colors, .item_count = 2},
     };
-    AT(dvz_visual_set_data_many(point, mismatch, 2) == -1);
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_visual_set_data_many(point, mismatch, 2) == -1);
 
     dvz_scene_destroy(scene);
     return 0;
