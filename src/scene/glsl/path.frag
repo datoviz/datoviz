@@ -10,6 +10,7 @@ layout(location = 2) in float fragLength;
 layout(location = 3) in float fragLineWidth;
 layout(location = 4) in float fragHasPrev;
 layout(location = 5) in float fragHasNext;
+layout(location = 6) in float fragBevelDistance;
 
 layout(location = 0) out vec4 outColor;
 
@@ -61,21 +62,32 @@ void main()
     int joinType = int(round(material.params.z));
     if (fragCoord.x < 0.0)
     {
-        int capType = fragHasPrev < 0.5 ? int(round(material.params.x)) : joinType;
-        if (fragHasPrev >= 0.5 && joinType != 1)
-            capType = 5;
-        distance = capDistance(capType, fragCoord.x, fragCoord.y, fragLineWidth);
+        if (!(fragHasPrev >= 0.5 && joinType == 2))
+        {
+            int capType = fragHasPrev < 0.5 ? int(round(material.params.x)) : joinType;
+            if (fragHasPrev >= 0.5 && joinType == 0)
+                capType = 5;
+            distance = capDistance(capType, fragCoord.x, fragCoord.y, fragLineWidth);
+        }
     }
     else if (fragCoord.x > fragLength)
     {
-        int capType = fragHasNext < 0.5 ? int(round(material.params.y)) : joinType;
-        if (fragHasNext >= 0.5 && joinType != 1)
-            capType = 5;
-        distance = capDistance(
-            capType, fragCoord.x - fragLength, fragCoord.y, fragLineWidth);
+        if (!(fragHasNext >= 0.5 && joinType == 2))
+        {
+            int capType = fragHasNext < 0.5 ? int(round(material.params.y)) : joinType;
+            if (fragHasNext >= 0.5 && joinType == 0)
+                capType = 5;
+            distance = capDistance(
+                capType, fragCoord.x - fragLength, fragCoord.y, fragLineWidth);
+        }
     }
 
     float alpha = strokeAlpha(distance, fragLineWidth);
+    bool bevelOverhang = joinType == 2 &&
+                         ((fragCoord.x < 0.0 && fragHasPrev >= 0.5) ||
+                          (fragCoord.x > fragLength && fragHasNext >= 0.5));
+    if (bevelOverhang)
+        alpha *= 1.0 - smoothstep(-1.0, 1.0, fragBevelDistance);
     if (alpha <= 0.0)
         discard;
     outColor = vec4(fragColor.rgb, fragColor.a * alpha);

@@ -28,6 +28,7 @@ layout(location = 2) out float fragLength;
 layout(location = 3) out float fragLineWidth;
 layout(location = 4) out float fragHasPrev;
 layout(location = 5) out float fragHasNext;
+layout(location = 6) out float fragBevelDistance;
 
 const uint SIDE_NEGATIVE = 0x01u;
 const uint ENDPOINT_END = 0x02u;
@@ -98,12 +99,14 @@ void main()
     float tangentOffset = 0.0;
 
     vec2 normal = segmentNormal;
+    vec2 miter = segmentNormal;
+    float miterScale = 1.0;
     if (hasPrev && hasNext)
     {
-        vec2 miter = safeNormalize(normalIn + normalOut, segmentNormal);
+        miter = safeNormalize(normalIn + normalOut, segmentNormal);
         float denom = dot(miter, segmentNormal);
-        float miterScale = denom > 1e-3 ? 1.0 / denom : 1.0;
-        if (joinType == 1)
+        miterScale = denom > 1e-3 ? 1.0 / denom : 1.0;
+        if (joinType == 1 || joinType == 2)
             normal = miter * miterScale;
         else if (joinType == 0 && miterScale <= miterLimit)
             normal = miter * miterScale;
@@ -119,7 +122,21 @@ void main()
     gl_Position = pixelToClip(pixel, currClip.z / max(abs(currClip.w), 1e-6));
 
     fragColor = inColor;
-    if (hasPrev && hasNext && joinType == 1)
+    fragBevelDistance = -halfWidth;
+    if (hasPrev && hasNext && joinType == 2)
+    {
+        float turn = dirIn.x * dirOut.y - dirIn.y * dirOut.x;
+        float outerSide = turn > 0.0 ? -1.0 : 1.0;
+        vec2 bevelStart = currPx + normalIn * outerSide * halfWidth;
+        vec2 bevelEnd = currPx + normalOut * outerSide * halfWidth;
+        vec2 bevelDir = safeNormalize(bevelEnd - bevelStart, segmentNormal);
+        vec2 bevelNormal = vec2(-bevelDir.y, bevelDir.x);
+        vec2 outerMiter = currPx + miter * outerSide * miterScale * halfWidth;
+        if (dot(outerMiter - bevelStart, bevelNormal) < 0.0)
+            bevelNormal = -bevelNormal;
+        fragBevelDistance = dot(pixel - bevelStart, bevelNormal);
+    }
+    if (hasPrev && hasNext && (joinType == 1 || joinType == 2))
     {
         vec2 segmentStartPx = endpointEnd ? prevPx : currPx;
         fragCoord =

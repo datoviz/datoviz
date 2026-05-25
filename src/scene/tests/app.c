@@ -2285,6 +2285,133 @@ int test_app_offscreen_path_join_has_no_center_gap(TstContext* suite, const TstC
 
 
 /**
+ * Count red-dominant captured pixels.
+ *
+ * @param rgba captured RGBA8 pixels
+ * @param pixel_count number of pixels
+ * @return red-dominant pixel count
+ */
+static uint32_t _app_red_dominant_pixel_count(const uint8_t* rgba, uint32_t pixel_count)
+{
+    ANN(rgba);
+    uint32_t count = 0;
+    for (uint32_t i = 0; i < pixel_count; i++)
+    {
+        const uint8_t* px = &rgba[4 * i];
+        if (px[0] > 80 && px[0] > px[1] + 40 && px[0] > px[2] + 40)
+            count++;
+    }
+    return count;
+}
+
+
+
+/**
+ * Render one sharp path join and count its red pixels.
+ *
+ * @param suite the test suite
+ * @param join path join mode
+ * @param out_count output red-dominant pixel count
+ * @return 0 on success, -1 on skipped GPU setup
+ */
+static int _app_render_path_join_count(TstContext* suite, DvzPathJoin join, uint32_t* out_count)
+{
+    ANN(suite);
+    ANN(out_count);
+    *out_count = 0;
+
+    DvzScene* scene = dvz_scene();
+    AT(scene != NULL);
+    DvzFigure* figure = dvz_figure(scene, 96, 96, 0);
+    AT(figure != NULL);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    AT(panel != NULL);
+    dvz_panel_set_background_color(panel, 0.0f, 0.0f, 0.0f, 1.0f);
+
+    DvzVisual* visual = dvz_path(scene, 0);
+    AT(visual != NULL);
+    vec3 positions[3] = {
+        {-0.78f, -0.62f, 0.0f},
+        {0.0f, 0.0f, 0.0f},
+        {0.78f, -0.62f, 0.0f},
+    };
+    DvzColor colors[3] = {
+        {255, 0, 0, 255},
+        {255, 0, 0, 255},
+        {255, 0, 0, 255},
+    };
+    float widths[3] = {32.0f, 32.0f, 32.0f};
+    AT(dvz_visual_set_data(visual, "position", positions, 3) == 0);
+    AT(dvz_visual_set_data(visual, "color", colors, 3) == 0);
+    AT(dvz_visual_set_data(visual, "stroke_width", widths, 3) == 0);
+    AT(dvz_path_set_join(visual, join, 4.0f) == 0);
+    AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
+
+    DvzApp* app = _app_test_create(suite, scene);
+    if (app == NULL)
+    {
+        dvz_scene_destroy(scene);
+        return -1;
+    }
+    DvzView* win = dvz_view_offscreen(app, figure, 96, 96);
+    AT(win != NULL);
+    dvz_app_run(app, 1);
+
+    DvzCanvas* canvas = dvz_view_canvas(win);
+    ANN(canvas);
+    uint32_t width = 0, height = 0;
+    uint8_t* rgba = NULL;
+    AT(dvz_canvas_capture_rgba(canvas, &width, &height, &rgba) == 0);
+    ANN(rgba);
+    AT(width == 96);
+    AT(height == 96);
+    *out_count = _app_red_dominant_pixel_count(rgba, width * height);
+
+    dvz_free(rgba);
+    dvz_app_destroy(app);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
+/**
+ * Ensure path join modes have distinct stable silhouettes.
+ *
+ * @param suite the test suite
+ * @param item the test item
+ * @return 0 on success
+ */
+int test_app_offscreen_path_join_modes_are_ordered(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    TST_SCENE_APP_REQUIRE_VKLITE(suite);
+
+    uint32_t miter_count = 0;
+    uint32_t round_count = 0;
+    uint32_t bevel_count = 0;
+    if (_app_render_path_join_count(suite, DVZ_PATH_JOIN_MITER, &miter_count) != 0 ||
+        _app_render_path_join_count(suite, DVZ_PATH_JOIN_ROUND, &round_count) != 0 ||
+        _app_render_path_join_count(suite, DVZ_PATH_JOIN_BEVEL, &bevel_count) != 0)
+    {
+        log_warn("path join mode silhouette test skipped: GPU context creation failed");
+        tst_skip(suite, "GPU context creation failed");
+        return 0;
+    }
+
+    AT(miter_count > 0);
+    AT(round_count > 0);
+    AT(bevel_count > 0);
+    AT(miter_count > round_count);
+    AT(round_count > bevel_count);
+    return 0;
+}
+
+
+
+/**
  * Ensure pixel visuals render nonblank square marks through the offscreen app path.
  *
  * @param suite the active test suite
@@ -6121,6 +6248,7 @@ int test_scene_app(TstSuite* suite)
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_point_depth_cue_darkens_far);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_has_nonblank_pixels);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_path_join_has_no_center_gap);
+    TST_SCENE_APP_SHARED_CASE(test_app_offscreen_path_join_modes_are_ordered);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_pixel_square_has_nonblank_pixels);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_points_edl_renders);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_points_edl_changes_pixels);

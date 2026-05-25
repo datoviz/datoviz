@@ -126,6 +126,8 @@ int test_scene_frame_plan(TstSuite* suite);
 
 int test_scene_frame_plan_emit(TstSuite* suite);
 
+int test_scene_dpi(TstSuite* suite);
+
 int test_scene_fields(TstSuite* suite);
 
 int test_scene_interaction(TstSuite* suite);
@@ -833,6 +835,8 @@ int test_scene_text_attach_mode_change_regenerates_glyphs(TstContext* suite, con
 int test_app_offscreen_has_nonblank_pixels(TstContext* suite, const TstCase* item);
 
 int test_app_offscreen_path_join_has_no_center_gap(TstContext* suite, const TstCase* item);
+
+int test_app_offscreen_path_join_modes_are_ordered(TstContext* suite, const TstCase* item);
 
 int test_app_offscreen_pixel_square_has_nonblank_pixels(TstContext* suite, const TstCase* item);
 
