@@ -799,6 +799,27 @@ static DvzDrp2ValidationResult _validate_create_render_pipeline(
         return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
     if (command->u.create_render_pipeline.bind_group_layout_count > DVZ_DRP2_MAX_BIND_GROUPS)
         return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+    if (command->u.create_render_pipeline.binding_count > 16 ||
+        command->u.create_render_pipeline.attr_count > 16 ||
+        command->u.create_render_pipeline.binding_count >
+            command->u.create_render_pipeline.vertex_buffer_slots)
+        return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_ARGUMENT, command_index);
+    for (uint32_t i = 0; i < command->u.create_render_pipeline.binding_count; i++)
+    {
+        uint32_t step_mode = command->u.create_render_pipeline.binding_step_modes[i];
+        if (command->u.create_render_pipeline.binding_strides[i] == 0 ||
+            (step_mode != DVZ_DRP2_VERTEX_STEP_MODE_VERTEX &&
+             step_mode != DVZ_DRP2_VERTEX_STEP_MODE_INSTANCE))
+            return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_ARGUMENT, command_index);
+    }
+    for (uint32_t i = 0; i < command->u.create_render_pipeline.attr_count; i++)
+    {
+        uint32_t binding = command->u.create_render_pipeline.attr_bindings[i];
+        if (binding >= command->u.create_render_pipeline.binding_count ||
+            command->u.create_render_pipeline.attr_offsets[i] >=
+                command->u.create_render_pipeline.binding_strides[binding])
+            return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_ARGUMENT, command_index);
+    }
     if (command->u.create_render_pipeline.color_target_count > DVZ_DRP2_MAX_COLOR_ATTACHMENTS)
         return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
     if (command->u.create_render_pipeline.has_raster_state &&
@@ -837,6 +858,26 @@ static DvzDrp2ValidationResult _validate_create_render_pipeline(
     if (object == NULL)
         return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
     object->vertex_buffer_slots = command->u.create_render_pipeline.vertex_buffer_slots;
+    object->vertex_binding_count = command->u.create_render_pipeline.binding_count;
+    object->vertex_attr_count = command->u.create_render_pipeline.attr_count;
+    if (object->vertex_binding_count > 0)
+    {
+        dvz_memcpy(
+            object->vertex_binding_strides, sizeof(object->vertex_binding_strides),
+            command->u.create_render_pipeline.binding_strides,
+            object->vertex_binding_count * sizeof(uint32_t));
+        dvz_memcpy(
+            object->vertex_binding_step_modes, sizeof(object->vertex_binding_step_modes),
+            command->u.create_render_pipeline.binding_step_modes,
+            object->vertex_binding_count * sizeof(uint32_t));
+    }
+    if (object->vertex_attr_count > 0)
+    {
+        dvz_memcpy(
+            object->vertex_attr_bindings, sizeof(object->vertex_attr_bindings),
+            command->u.create_render_pipeline.attr_bindings,
+            object->vertex_attr_count * sizeof(uint32_t));
+    }
     object->vertex_shader_module_id = command->u.create_render_pipeline.vertex_shader_module_id;
     object->fragment_shader_module_id = command->u.create_render_pipeline.fragment_shader_module_id;
     object->bind_group_layout_count = command->u.create_render_pipeline.bind_group_layout_count;
@@ -1530,6 +1571,14 @@ static DvzDrp2ValidationResult _validate_set_pipeline(
     pass->pipeline_id = command->u.set_pipeline.pipeline_id;
     pass->bound_vertex_mask = 0;
     pass->index_buffer_bound = false;
+    pass->index_buffer_id = 0;
+    pass->index_buffer_offset = 0;
+    pass->index_format_size = 0;
+    dvz_memset(pass->bound_vertex_buffer_ids, sizeof(pass->bound_vertex_buffer_ids), 0,
+               sizeof(pass->bound_vertex_buffer_ids));
+    dvz_memset(
+        pass->bound_vertex_buffer_offsets, sizeof(pass->bound_vertex_buffer_offsets), 0,
+        sizeof(pass->bound_vertex_buffer_offsets));
     pass->bound_bind_group_mask = 0;
     _mark_referenced(state, command->u.set_pipeline.pipeline_id);
     return _drp2_ok();
@@ -1633,6 +1682,10 @@ static DvzDrp2ValidationResult _validate_set_vertex_buffer(
         return _drp2_fail(DVZ_DRP2_VALIDATION_OUT_OF_RANGE, command_index);
 
     pass->bound_vertex_mask |= (uint32_t)(1u << command->u.set_vertex_buffer.slot);
+    pass->bound_vertex_buffer_ids[command->u.set_vertex_buffer.slot] =
+        command->u.set_vertex_buffer.buffer_id;
+    pass->bound_vertex_buffer_offsets[command->u.set_vertex_buffer.slot] =
+        command->u.set_vertex_buffer.offset;
     _mark_referenced(state, command->u.set_vertex_buffer.buffer_id);
     return _drp2_ok();
 }
@@ -1661,8 +1714,113 @@ static DvzDrp2ValidationResult _validate_set_index_buffer(
         return _drp2_fail(DVZ_DRP2_VALIDATION_USAGE, command_index);
 
     pass->index_buffer_bound = true;
+    pass->index_buffer_id = command->u.set_index_buffer.buffer_id;
+    pass->index_buffer_offset = command->u.set_index_buffer.offset;
+    pass->index_format_size =
+        strcmp(command->u.set_index_buffer.index_format, "uint16") == 0 ? sizeof(uint16_t)
+                                                                         : sizeof(uint32_t);
     _mark_referenced(state, command->u.set_index_buffer.buffer_id);
     return _drp2_ok();
+}
+
+
+
+/**
+ * Validate that one bound buffer covers a draw range.
+ *
+ * @param buffer the semantic buffer object
+ * @param offset binding byte offset
+ * @param item_count number of logical items read by the draw
+ * @param stride item stride in bytes
+ * @param command_index command index used for validation reporting
+ * @return validation result
+ */
+static DvzDrp2ValidationResult _validate_bound_buffer_range(
+    const Drp2Object* buffer, uint64_t offset, uint64_t item_count, uint32_t stride,
+    uint32_t command_index)
+{
+    ANN(buffer);
+    uint64_t required_size = 0;
+    if (_dvz_mul_u64_overflows(item_count, stride, &required_size))
+        return _drp2_fail(DVZ_DRP2_VALIDATION_OUT_OF_RANGE, command_index);
+    if (_drp2_range_overflows(offset, required_size, buffer->size))
+        return _drp2_fail(DVZ_DRP2_VALIDATION_OUT_OF_RANGE, command_index);
+    return _drp2_ok();
+}
+
+
+
+/**
+ * Validate draw coverage against the currently bound vertex buffers.
+ *
+ * @param state semantic runtime state
+ * @param pass active render pass
+ * @param pipeline active render pipeline
+ * @param vertex_count draw vertex count, or zero when indexed vertex range is unknown
+ * @param instance_count draw instance count
+ * @param first_vertex first vertex
+ * @param first_instance first instance
+ * @param command_index command index used for validation reporting
+ * @return validation result
+ */
+static DvzDrp2ValidationResult _validate_draw_vertex_ranges(
+    Drp2RuntimeState* state, const Drp2Object* pass, const Drp2Object* pipeline,
+    uint32_t vertex_count, uint32_t instance_count, uint32_t first_vertex,
+    uint32_t first_instance, uint32_t command_index)
+{
+    ANN(state);
+    ANN(pass);
+    ANN(pipeline);
+
+    for (uint32_t binding = 0; binding < pipeline->vertex_binding_count; binding++)
+    {
+        if ((pass->bound_vertex_mask & (1u << binding)) == 0)
+            return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+        Drp2Object* buffer = _find_object(state, pass->bound_vertex_buffer_ids[binding]);
+        if (buffer == NULL || buffer->kind != DRP2_OBJECT_BUFFER)
+            return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+
+        uint64_t item_count = 0;
+        if (pipeline->vertex_binding_step_modes[binding] == DVZ_DRP2_VERTEX_STEP_MODE_INSTANCE)
+            item_count = (uint64_t)first_instance + (uint64_t)instance_count;
+        else if (vertex_count > 0)
+            item_count = (uint64_t)first_vertex + (uint64_t)vertex_count;
+        else
+            continue;
+
+        DvzDrp2ValidationResult result = _validate_bound_buffer_range(
+            buffer, pass->bound_vertex_buffer_offsets[binding], item_count,
+            pipeline->vertex_binding_strides[binding], command_index);
+        if (!result.ok)
+            return result;
+    }
+    return _drp2_ok();
+}
+
+
+
+/**
+ * Validate draw coverage against the currently bound index buffer.
+ *
+ * @param state semantic runtime state
+ * @param pass active render pass
+ * @param index_count draw index count
+ * @param first_index first index
+ * @param command_index command index used for validation reporting
+ * @return validation result
+ */
+static DvzDrp2ValidationResult _validate_draw_index_range(
+    Drp2RuntimeState* state, const Drp2Object* pass, uint32_t index_count, uint32_t first_index,
+    uint32_t command_index)
+{
+    ANN(state);
+    ANN(pass);
+    Drp2Object* buffer = _find_object(state, pass->index_buffer_id);
+    if (buffer == NULL || buffer->kind != DRP2_OBJECT_BUFFER || pass->index_format_size == 0)
+        return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+    uint64_t item_count = (uint64_t)first_index + (uint64_t)index_count;
+    return _validate_bound_buffer_range(
+        buffer, pass->index_buffer_offset, item_count, pass->index_format_size, command_index);
 }
 
 
@@ -1709,7 +1867,13 @@ static DvzDrp2ValidationResult _validate_draw(
     if (pass == NULL || pass->kind != DRP2_OBJECT_RENDER_PASS || !pass->open)
         return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
 
-    return _validate_render_draw_state(state, pass, command_index);
+    DvzDrp2ValidationResult result = _validate_render_draw_state(state, pass, command_index);
+    if (!result.ok)
+        return result;
+    Drp2Object* pipeline = _find_object(state, pass->pipeline_id);
+    return _validate_draw_vertex_ranges(
+        state, pass, pipeline, command->u.draw.vertex_count, command->u.draw.instance_count,
+        command->u.draw.first_vertex, command->u.draw.first_instance, command_index);
 }
 
 
@@ -1729,7 +1893,15 @@ static DvzDrp2ValidationResult _validate_draw_indexed(
         return result;
     if (!pass->index_buffer_bound)
         return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
-    return _drp2_ok();
+    Drp2Object* pipeline = _find_object(state, pass->pipeline_id);
+    result = _validate_draw_vertex_ranges(
+        state, pass, pipeline, 0, command->u.draw_indexed.instance_count, 0,
+        command->u.draw_indexed.first_instance, command_index);
+    if (!result.ok)
+        return result;
+    return _validate_draw_index_range(
+        state, pass, command->u.draw_indexed.index_count, command->u.draw_indexed.first_index,
+        command_index);
 }
 
 

@@ -62,6 +62,11 @@ int test_drp2_runtime_validate_render_state_inherited_across_passes(
 int test_drp2_runtime_validate_dynamic_viewport_scissor(
     TstContext* suite, const TstCase* item);
 
+int test_drp2_runtime_rejects_draw_past_vertex_buffer(TstContext* suite, const TstCase* item);
+
+int test_drp2_runtime_rejects_draw_indexed_past_index_buffer(
+    TstContext* suite, const TstCase* item);
+
 int test_drp2_runtime_rejects_duplicate_id(TstContext* suite, const TstCase* item);
 
 int test_drp2_runtime_failed_stream_does_not_commit_state(TstContext* suite, const TstCase* item);

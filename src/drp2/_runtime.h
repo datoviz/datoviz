@@ -151,6 +151,16 @@ struct Drp2Object
     uint32_t color_attachment_count;
     uint32_t color_attachment_formats[DVZ_DRP2_MAX_COLOR_ATTACHMENTS];
     uint32_t depth_attachment_format;
+    uint32_t vertex_binding_count;
+    uint32_t vertex_binding_strides[16];
+    uint32_t vertex_binding_step_modes[16];
+    uint32_t vertex_attr_count;
+    uint32_t vertex_attr_bindings[16];
+    uint64_t bound_vertex_buffer_ids[16];
+    uint64_t bound_vertex_buffer_offsets[16];
+    uint64_t index_buffer_id;
+    uint64_t index_buffer_offset;
+    uint32_t index_format_size;
     uint32_t raster_sample_count;
     bool alpha_to_coverage_enabled;
     bool depth_write_enabled;

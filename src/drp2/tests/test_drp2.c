@@ -712,6 +712,79 @@ int test_drp2_runtime_validate_dynamic_viewport_scissor(TstContext* suite, const
 }
 
 
+int test_drp2_runtime_rejects_draw_past_vertex_buffer(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzDrp2CommandStream* stream = dvz_drp2_stream();
+    ANN(stream);
+
+    uint32_t stride = sizeof(float);
+    uint32_t binding = 0;
+    uint32_t location = 0;
+    uint32_t format = VK_FORMAT_R32_SFLOAT;
+    uint32_t offset = 0;
+
+    AT(dvz_drp2_stream_hello_renderer(stream, "test-client"));
+    AT(dvz_drp2_stream_renderer_hello_reply(stream, "test-renderer"));
+    AT(dvz_drp2_stream_create_buffer(stream, 1, 2 * sizeof(float), DVZ_DRP2_BUFFER_USAGE_VERTEX));
+    AT(dvz_drp2_stream_create_shader_module(stream, 2, "vertex", "@vertex fn main() {}"));
+    AT(dvz_drp2_stream_create_shader_module(stream, 3, "fragment", "@fragment fn main() {}"));
+    AT(dvz_drp2_stream_create_render_pipeline_ex(
+        stream, 4, 2, 3, 1, VK_PRIMITIVE_TOPOLOGY_POINT_LIST, 1, &stride, 1, &binding,
+        &location, &format, &offset));
+    AT(dvz_drp2_stream_create_texture_2d(stream, 5, 4, 4));
+    AT(dvz_drp2_stream_begin_command_encoder(stream, 6));
+    AT(dvz_drp2_stream_begin_render_pass(stream, 7, 6, 5));
+    AT(dvz_drp2_stream_set_pipeline(stream, 7, 4));
+    AT(dvz_drp2_stream_set_vertex_buffer(stream, 7, 0, 1, 0));
+    AT(dvz_drp2_stream_draw(stream, 7, 3, 1, 0, 0));
+
+    DvzDrp2ValidationResult result = dvz_drp2_validate_stream(stream);
+    AT(!result.ok);
+    AT(result.code == DVZ_DRP2_VALIDATION_OUT_OF_RANGE);
+    AT(result.command_index == 11);
+
+    dvz_drp2_stream_destroy(stream);
+    return 0;
+}
+
+
+int test_drp2_runtime_rejects_draw_indexed_past_index_buffer(
+    TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzDrp2CommandStream* stream = dvz_drp2_stream();
+    ANN(stream);
+
+    AT(dvz_drp2_stream_hello_renderer(stream, "test-client"));
+    AT(dvz_drp2_stream_renderer_hello_reply(stream, "test-renderer"));
+    AT(dvz_drp2_stream_create_shader_module(stream, 2, "vertex", "@vertex fn main() {}"));
+    AT(dvz_drp2_stream_create_shader_module(stream, 3, "fragment", "@fragment fn main() {}"));
+    AT(dvz_drp2_stream_create_render_pipeline(stream, 4, 2, 3, 1));
+    AT(dvz_drp2_stream_create_buffer(stream, 11, 64, DVZ_DRP2_BUFFER_USAGE_VERTEX));
+    AT(dvz_drp2_stream_create_buffer(stream, 12, 2 * sizeof(uint16_t), DVZ_DRP2_BUFFER_USAGE_INDEX));
+    AT(dvz_drp2_stream_create_texture_2d(stream, 5, 4, 4));
+    AT(dvz_drp2_stream_begin_command_encoder(stream, 6));
+    AT(dvz_drp2_stream_begin_render_pass(stream, 7, 6, 5));
+    AT(dvz_drp2_stream_set_pipeline(stream, 7, 4));
+    AT(dvz_drp2_stream_set_vertex_buffer(stream, 7, 0, 11, 0));
+    AT(dvz_drp2_stream_set_index_buffer(stream, 7, 12, "uint16", 0));
+    AT(dvz_drp2_stream_draw_indexed(stream, 7, 3, 1, 0, 0, 0));
+
+    DvzDrp2ValidationResult result = dvz_drp2_validate_stream(stream);
+    AT(!result.ok);
+    AT(result.code == DVZ_DRP2_VALIDATION_OUT_OF_RANGE);
+    AT(result.command_index == 13);
+
+    dvz_drp2_stream_destroy(stream);
+    return 0;
+}
+
+
 
 int test_drp2_runtime_rejects_duplicate_id(TstContext* suite, const TstCase* item)
 {
@@ -6653,6 +6726,8 @@ int test_drp2(TstSuite* suite)
     TST_CASE(test_drp2_runtime_validate_render_stream);
     TST_CASE(test_drp2_runtime_validate_render_state_inherited_across_passes);
     TST_CASE(test_drp2_runtime_validate_dynamic_viewport_scissor);
+    TST_CASE(test_drp2_runtime_rejects_draw_past_vertex_buffer);
+    TST_CASE(test_drp2_runtime_rejects_draw_indexed_past_index_buffer);
     TST_CASE(test_drp2_runtime_rejects_duplicate_id);
     TST_CASE(test_drp2_runtime_failed_stream_does_not_commit_state);
     TST_CASE(test_drp2_runtime_rejects_unknown_buffer_write);
