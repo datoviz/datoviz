@@ -2,7 +2,7 @@
 
 > **Execution Status**
 > - **Status:** `ACTIVE OPERATIONAL TRACKER`
-> - **Updated on:** `2026-05-19`
+> - **Updated on:** `2026-05-25`
 > - **Purpose:** tell agents where v0.4 C implementation stands, what to pick next, and which
 >   lanes can run in parallel.
 
@@ -42,19 +42,23 @@ Status vocabulary:
 
 ## Current Next Pickup
 
-**Next critical-path item:** text/colorbar realization.
+**Next critical-path item:** feature-freeze closure and RC1 release proof.
 
-Reason: the first rendered `dvz_text()` slice is landed and validated, and the app scheduler is now
-closed. The next release-quality lane is to consume the text substrate from axes, colorbars,
-annotations, labels, and readouts while keeping data/world placement, DPI behavior, clipping, and
-renderer fallback policy explicit.
+Reason: basic rendered text, linear 2D axes/ticks/labels, continuous colorbars, label annotations,
+and retained scale bars have landed enough that they are no longer primary feature-freeze blockers.
+The next release-quality lane is to make the declared v0.4 surface honest: feature/status table,
+WebGPU/WASM experimental subset, raw `ctypes` scope and smoke, v0.3 visible parity audit, public
+API/status cleanup, and a compact release-example proof set. Remaining text, axes, layout,
+readout, and scale-bar work should be treated as RC1 proof gaps only when a required example or
+test cannot exercise the declared feature; otherwise it belongs to RC2 polish or v0.5 deferral.
 
 Primary specs:
 
-1. [`../../spec/scene/semantics/AXES.md`](../../spec/scene/semantics/AXES.md)
-2. [`../../spec/scene/slices/COLORBAR_RENDERING_SLICE.md`](../../spec/scene/slices/COLORBAR_RENDERING_SLICE.md)
-3. [`../done/APP_FRAME_SCHEDULING_REFACTOR.md`](../done/APP_FRAME_SCHEDULING_REFACTOR.md)
-   when changing app-loop wakeups while implementing the visual-release lane.
+1. [`V0_4_RELEASE_MASTER_CHECKLIST.md`](V0_4_RELEASE_MASTER_CHECKLIST.md)
+2. [`RELEASE.md`](RELEASE.md)
+3. [`../../spec/scene/examples/EXAMPLE_RELEASE_STAGING.md`](../../spec/scene/examples/EXAMPLE_RELEASE_STAGING.md)
+4. [`../../spec/scene/api/API_SURFACE.md`](../../spec/scene/api/API_SURFACE.md)
+5. [`../../spec/scene/validation/DEFERRED_TRACKER.md`](../../spec/scene/validation/DEFERRED_TRACKER.md)
 
 
 ## Critical Path
@@ -116,7 +120,7 @@ Last validation on `2026-05-19`:
 
 ### 2. Text Integration And API Cleanup
 
-Status: `Next`; first rendered slice landed.
+Status: `Parallel / RC2 polish`; first rendered slice landed.
 
 Goal:
 
@@ -144,7 +148,7 @@ Landed first-slice behavior:
 6. retained string, style, renderer, resize, visibility, and destroy behavior,
 7. unsupported-glyph fallback to a visible fallback glyph.
 
-Remaining v0.4 work:
+Remaining v0.4 work, unless explicitly needed by an RC1 release example:
 
 1. make axes, colorbars, legends, annotation labels, and pinned readouts consume the landed text
    path without changing text internals,
@@ -179,7 +183,7 @@ Suggested validation:
 
 ### 3. 2D Axes And Ticks
 
-Status: `Partial`; axis API/example state exists, but visible generated ticks/labels are incomplete.
+Status: `Closed first slice / RC2 polish`.
 
 Goal:
 
@@ -189,19 +193,17 @@ Current state:
 
 1. `examples/c/techniques/scatter_axes.c` already uses panel-owned axes, domains, grid enablement,
    labels, panzoom, and normalized data positions.
-2. Treat that example as an axes API smoke until generated tick geometry and tick/axis labels render
-   through the text path.
+2. The active scene path has panel-owned axes, panzoom-aware linear tick regeneration, primitive
+   spine/tick/grid geometry, and rendered tick/axis labels through the text path.
+3. Treat `scatter_axes` and linked-panel examples as release-proof targets rather than as evidence
+   that axes are still planning-only.
 
-Required v0.4 slice:
+Remaining v0.4 checks, unless explicitly needed by an RC1 release example:
 
-1. panel-owned x/y axes for panzoom panels,
-2. linear numeric tick generation,
-3. tick labels and axis labels,
-4. units/format policy,
-5. axis lines and tick marks,
-6. optional grid lines,
-7. panzoom and resize updates,
-8. diagnostics for unsupported axis kinds.
+1. screenshot/offscreen smoke coverage for `scatter_axes`,
+2. label layout edge cases, clipping, and richer formatter policy,
+3. plot-area reserve behavior shared with colorbars, legends, and annotations,
+4. explicit deferral for log, nonlinear, geographic, and polar axes.
 
 Primary specs:
 
@@ -246,21 +248,24 @@ Primary spec:
 
 ### 5. Basic Annotations And Readouts
 
-Status: `Parallel`; retained annotation/readout bookkeeping exists, and simple visible labels can
-now target the landed screen-space text path. Data-anchored readouts and richer update behavior
-remain open.
+Status: `Closed label slice / readout polish`.
 
 Goal:
 
-Make retained annotation/readout objects visible enough for examples.
+Keep retained annotation/readout objects honest for examples.
 
-Required v0.4 slice:
+Current state:
 
-1. panel-attached text labels,
-2. data-anchored labels,
-3. pinned image-probe readout text,
-4. optional crosshair/probe overlay if needed by the linked-panel example,
-5. update/destroy tests.
+1. Retained annotation/readout bookkeeping exists.
+2. Label annotations can render through the current text path.
+3. Pinned readouts have public/bookkeeping state and formatting.
+
+Remaining v0.4 checks, unless explicitly needed by an RC1 release example:
+
+1. data-anchored label/readout smoke coverage,
+2. pinned image-probe readout text in the API/example proof path,
+3. optional crosshair/probe overlay if needed by the linked-panel example,
+4. explicit deferral for rich rendered readout cards, callouts, and measurement tools.
 
 Primary specs:
 
@@ -268,7 +273,34 @@ Primary specs:
 2. [`../../spec/scene/semantics/ANNOTATIONS.md`](../../spec/scene/semantics/ANNOTATIONS.md)
 
 
-### 6. Grid Layout And Linked Panels
+### 6. Scale Bars
+
+Status: `Closed first slice / RC2 performance polish`.
+
+Goal:
+
+Keep retained scale bars represented in the release proof set without making richer scale-bar
+layout or performance work a feature-freeze blocker.
+
+Current state:
+
+1. The retained 2D scale-bar rendering slice is implemented.
+2. The 3D reference slice has a completed record.
+3. The remaining known issue is update churn during panzoom/domain changes, tracked separately.
+
+Required RC1 proof:
+
+1. a narrow scale-bar fixture or example smoke,
+2. explicit known issue or follow-up note for live panzoom update churn if it remains observable.
+
+Primary records:
+
+1. [`../done/SCENE_SCALEBAR_RENDERING_SLICE.md`](../done/SCENE_SCALEBAR_RENDERING_SLICE.md)
+2. [`../done/SCENE_SCALEBAR_3D_REFERENCE_SLICE.md`](../done/SCENE_SCALEBAR_3D_REFERENCE_SLICE.md)
+3. [`../soon/scene/SCENE_SCALEBAR_UPDATE_PERF_REFACTOR_PLAN.md`](../soon/scene/SCENE_SCALEBAR_UPDATE_PERF_REFACTOR_PLAN.md)
+
+
+### 7. Grid Layout And Linked Panels
 
 Status: `Partial`
 
@@ -292,7 +324,7 @@ Primary specs:
 2. [`../../spec/scene/core/PANEL_LAYOUT.md`](../../spec/scene/core/PANEL_LAYOUT.md)
 
 
-### 7. Visual Family Polish Pass
+### 8. Visual Family Polish Pass
 
 Status: `Partial`
 
@@ -318,7 +350,7 @@ Primary docs:
 2. [`../../spec/scene/examples/EXAMPLE_PRIORITIZATION.md`](../../spec/scene/examples/EXAMPLE_PRIORITIZATION.md)
 
 
-### 8. Selection, Pick, Probe, And Highlight
+### 9. Selection, Pick, Probe, And Highlight
 
 Status: `Partial`
 
@@ -344,7 +376,7 @@ Primary specs:
 3. [`../../spec/scene/interaction/SELECTION.md`](../../spec/scene/interaction/SELECTION.md)
 
 
-### 8. WebGPU/WASM Experimental Slice
+### 10. WebGPU/WASM Experimental Slice
 
 Status: `Partial`
 
@@ -368,7 +400,7 @@ Primary docs:
 3. [`../soon/runtime/SCENE_WASM_WEBGPU_PORT_PLAN.md`](../soon/runtime/SCENE_WASM_WEBGPU_PORT_PLAN.md)
 
 
-### 9. Gallery And Example Pressure Tests
+### 11. Gallery And Example Pressure Tests
 
 Status: `Partial`
 
@@ -381,10 +413,11 @@ First v0.4 batch:
 1. scatter with axes and markers,
 2. image probe with colorbar and pinned readout,
 3. linked panels,
-4. protein/mesh/sphere flagship,
-5. volume/brain example,
-6. LiDAR or dense point cloud with EDL,
-7. one WebGPU/WASM experimental page for the supported subset.
+4. narrow scale-bar fixture,
+5. protein/mesh/sphere flagship,
+6. volume/brain example,
+7. LiDAR or dense point cloud with EDL,
+8. one WebGPU/WASM experimental page for the supported subset.
 
 Primary docs:
 
@@ -393,7 +426,7 @@ Primary docs:
 3. [`../../spec/scene/examples/EXAMPLE_RELEASE_STAGING.md`](../../spec/scene/examples/EXAMPLE_RELEASE_STAGING.md)
 
 
-### 10. Runtime Hardening
+### 12. Runtime Hardening
 
 Status: `Parallel`
 
@@ -412,7 +445,7 @@ Required v0.4 checks:
 7. Vulkan validation smoke for touched graphics paths.
 
 
-### 11. API Inventory And Release Readiness
+### 13. API Inventory And Release Readiness
 
 Status: `Parallel`
 
@@ -438,45 +471,48 @@ Primary doc:
 
 Good parallel lanes right now:
 
-1. **Text integration/API cleanup:** reconcile the public text API with the landed
+1. **RC1 release closure:** feature/status table, v0.3 visible parity audit, public API/status
+   inventory, raw `ctypes` scope/smoke, WebGPU/WASM experimental scope/smoke, and compact example
+   proof list.
+2. **Text integration/API cleanup:** reconcile the public text API with the landed
    `dvz_text()`/glyph path, harden data/world placement, DPI/clipping behavior, diagnostics, and
    focused text/app smokes.
-2. **Axes/tick integration:** axis tick generation, semantic state, grid/line geometry, and tests
-   that can use current text as labels mature.
-3. **WebGPU command parity:** `examples/webgpu`, DRP2 fixture/preflight work, no scene API churn.
-4. **Example audit/polish:** C examples and gallery harnesses that use already-implemented
+3. **Axes/tick polish:** screenshot smoke coverage, label layout edge cases, clipping, formatter
+   policy, and shared reserve behavior.
+4. **WebGPU command parity:** `examples/webgpu`, DRP2 fixture/preflight work, no scene API churn.
+5. **Example audit/polish:** C examples and gallery harnesses that use already-implemented
    features.
-5. **Runtime hardening:** DRP2/vklite/app lifetime bugs with focused tests.
-6. **API inventory/docs:** read-only or markdown-only work that does not alter active C code.
-7. **DRP2 contract and fixture maintenance:** `spec/drp2`, `spec/drp2/AGENT_SPEC_PHASE.md`,
+6. **Runtime hardening:** DRP2/vklite/app lifetime bugs with focused tests.
+7. **API inventory/docs:** read-only or markdown-only work that does not alter active C code.
+8. **DRP2 contract and fixture maintenance:** `spec/drp2`, `spec/drp2/AGENT_SPEC_PHASE.md`,
    `tools/drp2_fixture_runner.py`, schema docs, and fixture updates that keep the active command
    surface aligned with native and WebGPU pressure.
-8. **DVZR recording/replay portability:** `src/drp2` recording/replay code, `src/app` recording
+9. **DVZR recording/replay portability:** `src/drp2` recording/replay code, `src/app` recording
    hooks, replay/player examples, and raw-fallback diagnostics. Keep this coordinated with DRP2
    schema/fixture work when portable command coverage changes.
-9. **Render-contract and technique hardening:** scene FramePlan contracts, technique builders,
+10. **Render-contract and technique hardening:** scene FramePlan contracts, technique builders,
     post-emit DRP2 validation, and deterministic offscreen readback coverage for source-over,
     WBOIT, depth peeling, MSAA, EDL, SSAO, volume occlusion, and scene occlusion.
-10. **Material and shader ABI polish:** active scene shader ABI, material uniforms, vertex
+11. **Material and shader ABI polish:** active scene shader ABI, material uniforms, vertex
     attribute descriptors, generated shader variants, GLSL/WGSL parity checks, and material-model
     examples.
-11. **Selection and request payload widening:** richer point/marker/image pick/probe payloads,
+12. **Selection and request payload widening:** richer point/marker/image pick/probe payloads,
     highlight state, linked-panel request propagation, and explicit deferrals for mesh/path/volume
     picking.
-12. **Test-runner scheduling follow-up:** process-level sharding, CI orchestration, optional
+13. **Test-runner scheduling follow-up:** process-level sharding, CI orchestration, optional
     thread-safe workers, and remaining skip cleanup as tracked in
     [../later/TEST_RUNNER_SCHEDULING.md](../later/TEST_RUNNER_SCHEDULING.md). The completed serial
     modernization history is in
     [../done/TEST_RUNNER_MODERNIZATION.md](../done/TEST_RUNNER_MODERNIZATION.md).
-13. **Performance and long-run smoke:** immediate-presentation FPS preservation, repeated-frame
+14. **Performance and long-run smoke:** immediate-presentation FPS preservation, repeated-frame
     allocation/destructor pressure, descriptor churn, bounded live GLFW loops, and trace-assisted
     investigation of unexpected stream changes.
-14. **Capture/video/export support for examples:** offscreen screenshots, frame-sequence/video
+15. **Capture/video/export support for examples:** offscreen screenshots, frame-sequence/video
     paths, gallery artifact generation, and codec/backend skip behavior. Keep publication/vector
     export out of Datoviz v0.4 scope.
-15. **GUI-driven example controls:** ImGui/example-side controls that exercise existing scene/app
+16. **GUI-driven example controls:** ImGui/example-side controls that exercise existing scene/app
     parameters without promoting the GUI module into a broad public API surface.
-16. **Release documentation and website staging:** user-facing docs, example staging tables,
+17. **Release documentation and website staging:** user-facing docs, example staging tables,
     capability matrix updates, public/private/experimental labels, and known-gap notes.
 
 Avoid parallel edits that touch the same write scope:

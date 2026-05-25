@@ -88,6 +88,13 @@ Checklist:
    in examples/tests and are not stale planning-only claims.
 5. Decide whether any rendered pinned readout work is required for release examples; otherwise mark
    richer readouts as polish or v0.5.
+6. Reconcile [IMPLEMENTATION.md](IMPLEMENTATION.md),
+   [../../spec/scene/examples/EXAMPLE_RELEASE_STAGING.md](../../spec/scene/examples/EXAMPLE_RELEASE_STAGING.md),
+   and the public feature table so completed first slices are not still presented as active
+   feature-freeze blockers.
+7. Decide or explicitly defer unresolved API-shape questions that affect RC1 feedback, especially
+   unified panel query versus pick/probe polling and callback wording versus the retained polling
+   model.
 
 Suggested validation:
 
@@ -224,7 +231,11 @@ Required artifacts:
 5. API inventory or public-surface summary,
 6. raw `ctypes` scope and smoke result,
 7. WebGPU/WASM experimental scope and smoke result,
-8. core example list and validation result.
+8. core example list and validation result,
+9. explicit deferred-feature list aligned with
+   [../../spec/scene/validation/DEFERRED_TRACKER.md](../../spec/scene/validation/DEFERRED_TRACKER.md),
+10. release-staging reconciliation for examples that prove text, axes, colorbars, annotations,
+    scale bars, pick/probe, sampled fields, sphere, volume, and dense point coverage.
 
 Minimum validation:
 
@@ -235,13 +246,15 @@ Minimum validation:
 5. `just spec-check`
 6. WebGPU fixture preflight
 7. ctypes smoke
-8. selected offscreen/GLFW example smokes
+8. selected offscreen/GLFW example smokes, including a narrow scale-bar fixture
 
 Exit criteria:
 
 1. RC1 can be published with honest known issues.
 2. Feedback requested from users is focused on API shape, architecture, installability, and obvious
    feature gaps.
+3. Remaining text, axes, annotation, readout, scale-bar, picking, and visual-family polish is either
+   tied to a required release example or clearly staged for RC2/v0.5.
 
 
 ## Phase 7: Render Conformance And Gallery
@@ -266,6 +279,9 @@ Checklist:
 5. Build release gallery examples:
    scatter with axes, linked image probe/colorbar, protein, brain/volume, LiDAR or dense point
    cloud, and one WebGPU/WASM subset page.
+6. Add gallery/example metadata and asset-policy notes before broadening showcase examples.
+7. Use the active view/canvas raster capture path for gallery screenshots; keep render-scale,
+   panel-as-texture, and native vector/PDF/SVG export out of the v0.4 promise.
 
 Exit criteria:
 
@@ -308,6 +324,8 @@ Checklist:
 5. Audit vendored libraries, fonts, shaders, datasets, gallery assets, and license notices.
 6. Add install-after-build tests for wheels and source distributions.
 7. Capture the validation matrix for release notes.
+8. Smoke-test component/package-consumer build paths where practical, including the modular target
+   split and out-of-tree package-consumer cases tracked in [../later/SPLIT.md](../later/SPLIT.md).
 
 Suggested validation:
 

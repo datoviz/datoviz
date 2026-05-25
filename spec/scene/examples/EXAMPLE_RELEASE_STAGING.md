@@ -1,7 +1,7 @@
 # Scene Example Release Staging
 
 > **Status:** Active planning
-> **Updated on:** 2026-05-18
+> **Updated on:** 2026-05-25
 > **Scope:** `spec/scene/examples`, current `examples/c`, and v0.4/v0.5/later feature staging
 > **Purpose:** classify examples by release target and make feature dependencies explicit.
 
@@ -42,13 +42,15 @@ Each example also has a separate **current readiness**:
 | Readiness | Meaning |
 |---|---|
 | `ready-now` | Can be implemented or polished with the current active stack. |
-| `blocked-by-v0.4-critical-path` | Belongs in v0.4, but waits for text, axes, colorbars, layout, selection, or another active v0.4 item. |
+| `needs-rc1-proof` | The first implementation slice exists, but the release still needs a runnable example, fixture, screenshot smoke, or explicit known-issue note. |
+| `blocked-by-v0.4-critical-path` | Belongs in v0.4, but waits for WebGPU/WASM, raw `ctypes`, parity audit, public status cleanup, or another remaining feature-freeze item. |
 | `partial-now` | A smaller version can run today, but the staged release promise needs more work. |
 | `blocked-by-v0.5-feature` | Should not be forced into v0.4 because it needs a deferred feature. |
 
 This distinction avoids a common confusion: `PATH_AXES_2D` is a `v0.4 required` release target, but
-it is currently `blocked-by-v0.4-critical-path` until the existing text and axes prototypes become a
-release-quality integrated axes/tick/label path.
+it is no longer evidence that axes are planning-only. It is now `needs-rc1-proof`: the active
+linear axes/tick/label path should be exercised by a release fixture or example before RC1, while
+label-layout polish can move to RC2 or v0.5.
 
 
 ## Feature Milestone Map
@@ -76,18 +78,19 @@ These examples should be part of the v0.4 release narrative or required C valida
 | Example | Stage | Required feature slice | Decision |
 |---|---|---|---|
 | `core/POINT_2D.md` | `v0.4 required` / `ready-now` | retained scene, point visual, panzoom/offscreen | Keep as the smallest retained-scene smoke. |
-| `core/PATH_AXES_2D.md` | `v0.4 required` / `blocked-by-v0.4-critical-path` | path, rendered text, 2D axes/ticks | Use as the first axes/text regression target. |
-| `core/LINKED_PANELS_AXES_PANZOOM.md` | `v0.4 required` / `blocked-by-v0.4-critical-path` | grid/layout, linked panzoom, axes | Required to prove linked panels are real, not only layout. |
-| `core/LINKED_PANELS_PROBE_COLORBAR.md` | `v0.4 required` / `blocked-by-v0.4-critical-path` | image probe, colorbar, annotation/readout, linked state | Main 2D explanatory-object pressure test. |
+| `core/PATH_AXES_2D.md` | `v0.4 required` / `needs-rc1-proof` | path, rendered text, 2D axes/ticks | Use as the first axes/text regression target. |
+| `core/LINKED_PANELS_AXES_PANZOOM.md` | `v0.4 required` / `needs-rc1-proof` | grid/layout, linked panzoom, axes | Required to prove linked panels are real, not only layout. |
+| `core/LINKED_PANELS_PROBE_COLORBAR.md` | `v0.4 required` / `needs-rc1-proof` | image probe, colorbar, annotation/readout, linked state | Main 2D explanatory-object pressure test. |
 | `core/MARKER_PICKING.md` | `v0.4 required` / `partial-now` | marker visual, marker pick, selection highlight | Required if marker remains a supported v0.4 visual family. |
 | `core/SPHERE_IMPOSTOR.md` | `v0.4 required` / `ready-now` | sphere visual, lighting/depth basics | Small proof for sphere impostors and 3D visual polish. |
 | `core/VOLUME_SLICE.md` | `v0.4 required` / `partial-now` | 3D sampled field, volume slice, transfer/value range | Required to avoid volume regression from v0.3. |
 | `core/VOLUME_OFFSCREEN.md` | `v0.4 required` / `partial-now` | volume rendering plus deterministic capture | Required as the volume capture smoke. |
-| `api/API_IMAGE_PROBE_PINNED_READOUT.md` | `v0.4 required` / `blocked-by-v0.4-critical-path` | image probe, pinned readout text | Keep as the API-level readout contract test. |
-| `api/API_SCALE_COLORBAR_ANNOTATION.md` | `v0.4 required` / `blocked-by-v0.4-critical-path` | scales, colorbars, labels, annotations | Keep as the explanatory-object API contract test. |
+| `core/SCALEBAR_2D_3D.md` | `v0.4 required` / `needs-rc1-proof` | retained scale bars, labels, panzoom/domain updates | Keep a narrow fixture in RC1; leave update-churn optimization for RC2 unless it blocks examples. |
+| `api/API_IMAGE_PROBE_PINNED_READOUT.md` | `v0.4 required` / `needs-rc1-proof` | image probe, pinned readout text | Keep as the API-level readout contract test. |
+| `api/API_SCALE_COLORBAR_ANNOTATION.md` | `v0.4 required` / `needs-rc1-proof` | scales, colorbars, labels, annotations | Keep as the explanatory-object API contract test. |
 | `api/API_SAMPLED_FIELD.md` | `v0.4 required` / `partial-now` | sampled fields, image, volume | Keep as the resource-sharing contract test. |
 | `bio/PROTEIN_ARCBALL_VIEWER.md` | `v0.4 required` / `partial-now` | mesh, sphere, materials, SSAO/MSAA, GUI, arcball | Flagship native C showcase; defer labels/picking/molecular surface if needed. |
-| `geo/SHOWCASE_WIND_FIELD.md` | `v0.4 required` / `blocked-by-v0.4-critical-path` | image field, arrows via primitives, paths, panzoom, colorbar | Best 2D showcase; vector visual can be v0.5 replacement. |
+| `geo/SHOWCASE_WIND_FIELD.md` | `v0.4 required` / `needs-rc1-proof` | image field, arrows via primitives, paths, panzoom, colorbar | Best 2D showcase; vector visual can be v0.5 replacement. |
 | `neuro/ALLEN_IBL_COORDINATE_MESH_VOLUME_PLAN.md` | `v0.4 required` / `partial-now` | volume, mesh transparency, GUI, arcball | Prefer a narrow volume + transparent atlas mesh slice. |
 | LiDAR/dense point cloud C showcase | `v0.4 required` / `ready-now` | point/pixel, EDL, fly/camera, large buffer smoke | Current `examples/c/showcase/lidar.c` can be the concrete target. |
 
@@ -198,9 +201,10 @@ the worked-spec tables above; exact fixture names remain in
 |---|---|---|
 | `examples/c/visuals/point.c`, `pixel.c`, `marker.c`, `primitive.c`, `segment.c`, `path.c`, `mesh.c`, `image.c`, `volume.c`, `sphere.c` | `v0.4 fixture-only` | Keep buildable as active visual-family smoke examples. |
 | `examples/c/visuals/text.c` | `v0.4 required` / `partial-now` | Existing basic rendered-text smoke; harden as the canonical v0.4 text example. |
-| `examples/c/techniques/scatter_axes.c` | `v0.4 required` / `blocked-by-v0.4-critical-path` | Existing axes API/grid smoke; promote after generated ticks and axis/tick labels render reliably. |
+| `examples/c/techniques/scatter_axes.c` | `v0.4 required` / `needs-rc1-proof` | Existing axes API/grid smoke; keep as the narrow linear axes/tick/label release proof. |
 | `examples/c/techniques/linked_panels.c`, `multi_panel.c` | `v0.4 required` | Keep as layout and linked-panel smoke targets. |
 | `examples/c/techniques/image_probe.c`, `pick_hover.c` | `v0.4 required` | Keep as request/readback interaction targets. |
+| `examples/c/annotations/scalebar_minimal.c`, `scalebar_2d_3d.c` | `v0.4 required` / `needs-rc1-proof` | Keep at least one narrow scale-bar smoke in the RC1 proof set. |
 | `examples/c/techniques/depth_cue.c`, `edl.c`, `depth_peel.c`, `wboit.c` | `v0.4 fixture-only` | Keep as technique regression examples; polished screenshots may be gallery material. |
 | `examples/c/techniques/gui_viewport.c`, `gui_multi_viewport.c` | `v0.4 experimental` | Useful native GUI/runtime examples, but not scene-core release blockers. |
 | `examples/c/showcase/protein.c` | `v0.4 required` | Main native C flagship candidate. |
@@ -217,11 +221,11 @@ the worked-spec tables above; exact fixture names remain in
 
 These decisions refine the feature roadmap:
 
-1. **Text and axes are partial, not absent.** Basic text rendering exists in
+1. **Text and axes are implemented first slices, not absent.** Basic text rendering exists in
    `examples/c/visuals/text.c`, and axes/grid API usage exists in
-   `examples/c/techniques/scatter_axes.c`; the next hard blocker is release-quality integration
-   with generated ticks, labels, colorbars, annotations, readouts, dashboards, and polished 2D
-   examples.
+   `examples/c/techniques/scatter_axes.c`; the next RC1 need is release proof and honest status,
+   not treating text/axes/colorbars as planning-only blockers. DPI, clipping, collision behavior,
+   richer formatting, and gallery polish can move to RC2 unless a required example fails.
 2. **Axes/colorbars should be v0.4 required, but narrow.** Linear 2D axes and continuous colorbars
    are enough for v0.4; log/date/categorical/geographic axes and rich legends can wait.
 3. **Vector/arrow visual can slip to v0.5 only if `SHOWCASE_WIND_FIELD` uses primitive arrows in
@@ -238,9 +242,12 @@ These decisions refine the feature roadmap:
    avoids blocking v0.4 on region picking, UI trees, and linked 2D/3D atlas workflows.
 7. **One dense streaming example is enough for v0.4.** Choose DAQ or physiology and keep it simple;
    reserve full ring-buffer/LOD policies for v0.5.
-8. **Scene-level compute/custom shaders should not block v0.4.** Gray-Scott, Mandelbrot, and
+8. **Scale bars need an RC1 fixture, not a broad new feature lane.** The first retained scale-bar
+   slices are active; live panzoom update-churn optimization belongs to RC2 unless it blocks the
+   selected examples.
+9. **Scene-level compute/custom shaders should not block v0.4.** Gray-Scott, Mandelbrot, and
    particles should wait until there is a proper scene-level resource/material API.
-9. **WebGPU/WASM should be example-visible in v0.4, but explicitly experimental.** The example
+10. **WebGPU/WASM should be example-visible in v0.4, but explicitly experimental.** The example
    promise is a supported subset, not parity.
 
 
@@ -249,16 +256,18 @@ These decisions refine the feature roadmap:
 1. `POINT_2D.md`
 2. `PATH_AXES_2D.md`
 3. `LINKED_PANELS_AXES_PANZOOM.md`
-4. `API_SCALE_COLORBAR_ANNOTATION.md`
-5. `API_IMAGE_PROBE_PINNED_READOUT.md`
-6. `LINKED_PANELS_PROBE_COLORBAR.md`
-7. `MARKER_PICKING.md`
-8. `VOLUME_SLICE.md`
-9. `PROTEIN_ARCBALL_VIEWER.md`
-10. `SHOWCASE_WIND_FIELD.md`
-11. narrow Allen/IBL volume + transparent mesh showcase
-12. LiDAR/dense point cloud with EDL
-13. WebGPU/WASM minimal browser subset
+4. `SCALEBAR_2D_3D.md` or a minimal scale-bar C smoke
+5. `API_SCALE_COLORBAR_ANNOTATION.md`
+6. `API_IMAGE_PROBE_PINNED_READOUT.md`
+7. `LINKED_PANELS_PROBE_COLORBAR.md`
+8. `MARKER_PICKING.md`
+9. `VOLUME_SLICE.md`
+10. `PROTEIN_ARCBALL_VIEWER.md`
+11. `SHOWCASE_WIND_FIELD.md`
+12. narrow Allen/IBL volume + transparent mesh showcase
+13. LiDAR/dense point cloud with EDL
+14. WebGPU/WASM minimal browser subset
 
-This order follows the C implementation critical path: text/axes integration -> colorbars -> linked
-panels and readouts -> picking/selection -> volume/3D/showcases -> experimental browser path.
+This order follows the release proof path: smallest retained scene -> explanatory objects and scale
+bars -> linked panels and readouts -> picking/selection -> volume/3D/showcases -> experimental
+browser path.
