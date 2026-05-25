@@ -109,6 +109,8 @@ struct DvzGui
     bool glfw_initialized;
     bool vulkan_initialized;
     bool failed;
+    bool had_active_item;
+    bool had_open_popup;
 };
 
 
@@ -151,6 +153,7 @@ struct DvzGuiViewport
 /*************************************************************************************************/
 
 static void _gui_request_frame(DvzGui* gui);
+static bool _gui_update_followup_frame_state(DvzGui* gui);
 
 
 
@@ -852,6 +855,29 @@ static void _gui_request_frame(DvzGui* gui)
 
 
 /**
+ * Update tracked ImGui interaction state and report whether another frame is needed.
+ *
+ * @param gui the GUI overlay
+ * @return whether the current GUI state transition needs a follow-up frame
+ */
+static bool _gui_update_followup_frame_state(DvzGui* gui)
+{
+    ANN(gui);
+    _gui_set_current(gui);
+
+    ImGuiIO& io = ImGui::GetIO();
+    bool active_item = ImGui::IsAnyItemActive() || io.WantTextInput;
+    bool open_popup = ImGui::IsPopupOpen(NULL, ImGuiPopupFlags_AnyPopup);
+    bool request_frame = active_item != gui->had_active_item || open_popup != gui->had_open_popup;
+
+    gui->had_active_item = active_item;
+    gui->had_open_popup = open_popup;
+    return request_frame;
+}
+
+
+
+/**
  * Forward a raw GLFW cursor event to ImGui.
  *
  * @param window Datoviz window
@@ -1273,6 +1299,8 @@ void _dvz_gui_render_frame(DvzGui* gui, const DvzStreamFrame* frame)
         return;
 
     _gui_set_current(gui);
+    if (_gui_update_followup_frame_state(gui))
+        _gui_request_frame(gui);
     ImGui::Render();
 
     VkRenderingAttachmentInfo color = {};
