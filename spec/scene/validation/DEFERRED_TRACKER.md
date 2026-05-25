@@ -44,7 +44,7 @@ These items are in scope for v0.4 but deferred beyond the initial implementation
 | Annotation shape generation (msdfgen integration) | `spec/scene/semantics/GEOMETRY_UTILITIES.md` |
 | Advanced text shaping, fallback chains, equation layout, diagnostics, and data/world placement polish beyond the active rendered text path | `spec/scene/semantics/TEXT.md`, `spec/scene/visuals/GLYPH.md` |
 | Glyph-level, substring-level, and text-object picking | `spec/scene/semantics/TEXT.md`, `spec/scene/visuals/GLYPH.md` |
-| Rendered annotations, annotation labels, guides, and callout geometry | `spec/scene/semantics/ANNOTATIONS.md` |
+| Non-label rendered annotations, rich readout UI, guides, and callout geometry beyond the active label and scale-bar slices | `spec/scene/semantics/ANNOTATIONS.md` |
 | Shared colorbar layout, categorical legends, interactive scale/range editing, and richer legend composition beyond the active continuous colorbar path | `spec/scene/semantics/LEGENDS_AND_COLORBARS.md` |
 | Labels and categorical sampled-field rendering/probe semantics beyond retained descriptors | `spec/scene/proposals/promoted/SAMPLED_FIELD_API_DESIGN.md` |
 | Richer probe payloads beyond basic point identity and image RGBA/value readback | `spec/scene/proposals/promoted/PROBE_READOUT_DESIGN.md` |

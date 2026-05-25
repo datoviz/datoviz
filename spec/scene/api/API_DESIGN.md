@@ -47,12 +47,11 @@ The public scene API must also satisfy the WASM portability contract in
 anonymous unions, layout-dependent handle casts, native platform types, and signatures that make
 generated bindings depend on native pointer width.
 
-Python binds to the C API through an auto-generated ctypes binding layer (`datoviz/_ctypes.py`),
-produced by `tools/parse_headers.py` and `tools/build_ctypes.py` — the same pipeline used in
-v0.3, updated for v0.4 headers.
-A thin Python sugar layer sits above the generated binding and adds ergonomics (NumPy arrays,
-keyword arguments, context managers, inline scale shortcuts).
-All scene logic lives in C; the Python layers add no logic of their own.
+Python binds to the C API through an auto-generated raw ctypes binding layer
+(`datoviz/_ctypes.py`), produced by the v0.4 header parsing/build pipeline. That low-level binding
+surface is in Datoviz v0.4 scope and must honestly reflect the public C API. High-level
+object-oriented plotting or Python-first convenience wrappers belong to the external GSP/VisPy2
+stack, not to the Datoviz v0.4 release surface. All scene logic lives in C.
 
 See `api/IMPLEMENTATION_NOTES.md` for the full three-tier binding architecture and v0.3 pipeline
 details.

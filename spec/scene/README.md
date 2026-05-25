@@ -13,20 +13,20 @@ The scene layer should remain pure high-level logic:
 ## Status
 
 - Status: active specification with multiple implementation slices in `src/scene`
-- Implementation priority: pressure-test the active retained scene path with native 3D/depth/manual
-  app examples, then decide between early WebGPU feasibility, rendered annotation/colorbar work, and
-  wider visual/picking payloads
+- Implementation priority: prove the declared v0.4 surface for RC1, especially release examples,
+  WebGPU/WASM experimental scope, raw bindings, API/status labeling, and v0.3 visible parity
 - Primary constraint: do not let scene design leak backend details into its public API
 
 Current source implementation is intentionally smaller than this spec. It includes scene/figure/panel
-objects, `pixel`, `point`, `primitive`, `mesh`, `sphere`, path-as-line/strip, `image`, and `volume`
-visuals; capability snapshots; diagnostic reports; frame plans; DRP2 emission; panel controllers;
-retained sampled fields; scene buffers; scale/colormap state for image and volume paths; interaction
-bookkeeping; queued point-pick and image-probe requests with narrow GPU readback execution; retained
-text/annotation/colorbar bookkeeping; and an app/offscreen/GLFW path in `src/app`. Public headers
-also declare broader interaction, text, annotation, colorbar, selection, material, and technique
-behavior that is not fully rendered or semantically complete yet. Treat broader sections of this spec
-as design pressure and direction, not as a claim that all families and interactions are already
+objects; `pixel`, `point`, `marker`, `primitive`, `mesh`, `sphere`, path/segment, `image`, `volume`,
+and text/glyph visuals; capability snapshots; diagnostic reports; frame plans; DRP2 emission; panel
+controllers; retained sampled fields; scene buffers; scale/colormap state for image and volume
+paths; rendered continuous colorbars; rendered label annotations; rendered scale bars; queued
+point-pick and image-probe requests with narrow GPU readback execution; selection/link
+bookkeeping; graph-backed techniques; and app/offscreen/GLFW paths. Public headers also declare
+broader interaction, annotation/readout, selection, material, technique, and visual-family behavior
+that is not fully rendered or semantically complete yet. Treat broader sections of this spec as
+design pressure and direction, not as a claim that all families and interactions are already
 implemented.
 
 

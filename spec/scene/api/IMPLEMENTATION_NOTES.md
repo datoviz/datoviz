@@ -180,12 +180,16 @@ share a single diagnostic record type. See `validation/DIAGNOSTICS.md`.
 The C scene API is the canonical source of truth. Python (and any other language) binds to it;
 the Python layer does not reimplement scene logic.
 
+Current v0.4 release scope keeps only the raw generated binding inside Datoviz. The high-level
+Python sugar layer shown here is an external GSP/VisPy2 concern unless a later release explicitly
+brings it back into Datoviz.
+
 Three tiers:
 
 ```
 ┌─────────────────────────────────┐
-│  Python sugar layer             │  datoviz/*.py        (pure Python)
-│  ergonomics, NumPy, defaults    │
+│  External Python sugar layer    │  GSP/VisPy2          (out of Datoviz v0.4)
+│  plotting ergonomics            │
 ├─────────────────────────────────┤
 │  Generated ctypes binding       │  datoviz/_ctypes.py  (auto-generated)
 │  1:1 with C API, no compilation │

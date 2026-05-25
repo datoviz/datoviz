@@ -30,7 +30,8 @@ Read this against:
 2. `../../semantics/SCALES.md`
 3. `../../semantics/LEGENDS_AND_COLORBARS.md`
 4. `../../semantics/ANNOTATIONS.md`
-5. `../../proposals/active/ANNOTATION_TEXT_SCALE_API.md`
+5. `../../proposals/active/ANNOTATION_TEXT_SCALE_API.md` for historical rationale only; installed
+   headers own landed names
 
 
 ## Desired User Flow

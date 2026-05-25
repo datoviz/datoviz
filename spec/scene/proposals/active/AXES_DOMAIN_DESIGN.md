@@ -1,13 +1,14 @@
 > **Execution Status**
-> - **Status:** `SCENE SPEC PROPOSAL`
-> - **Updated on:** `2026-05-09`
+> - **Status:** `PARTIALLY SUPERSEDED PROPOSAL`
+> - **Updated on:** `2026-05-25`
 > - **Purpose:** define the intended v0.4 panel-domain, axes, and unit-semantics model for 2D
 >   scientific views and the first 3D orientation aids.
 
 # Axes and Domain Design
 
-This note narrows the larger scene axes discussion into the active contract needed now for units,
-scale bars, 2D domain mapping, and early 3D orientation helpers.
+This note narrows the larger scene axes discussion into the contract that informed the landed
+linear X/Y axis and scale-bar first slices. Installed headers and `spec/scene/semantics/AXES.md`
+are authoritative for APIs that now exist.
 
 
 ## Objective
@@ -258,20 +259,22 @@ Recommended split:
 
 ## Initial Public API Direction
 
-The exact names can still move, but the conceptual API should support:
+The landed first-slice names differ from the earlier sketch, but the conceptual API supports:
 
 1. configuring panel X/Y domains,
 2. enabling/configuring X/Y axes per panel,
 3. linking panel domains,
 4. reading shared visible-scale information for measurement overlays.
 
-Likely surface concepts:
+Current surface concepts:
 
-1. `dvz_panel_set_domain_x(...)`
-2. `dvz_panel_set_domain_y(...)`
-3. `dvz_panel_axis_x(...)`
-4. `dvz_panel_axis_y(...)`
-5. `dvz_panel_link_domain(...)`
+1. `dvz_panel_set_domain(panel, dim, min, max)`
+2. `dvz_panel_visible_domain(panel, dim, &min, &max)`
+3. `dvz_panel_axis(panel, dim)`
+4. `dvz_axis_set_visible(axis, visible)`
+5. `dvz_axis_set_grid(axis, visible)`
+6. `dvz_axis_set_label(axis, label)`
+7. linked-domain behavior remains follow-up work
 
 The implementation can remain flexible as long as the semantics stay panel-owned.
 

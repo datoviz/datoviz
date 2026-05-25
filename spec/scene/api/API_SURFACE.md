@@ -54,19 +54,22 @@ The first public header split has landed. Treat these groups as implemented APIs
 10. font/text and annotation retained-object bookkeeping,
 11. semantic `DvzText*` public surface and first rendered text/glyph output through atlas-backed
     scene resources,
-12. rendered continuous colorbar ramp, ticks, title, and labels.
+12. rendered label annotations through the text/glyph path,
+13. rendered continuous colorbar ramp, ticks, title, and labels,
+14. rendered 2D/3D scale bars through `dvz_annotation_scalebar()`.
 
 Treat these installed declarations as draft contracts until implemented in `src/scene`:
 
-1. rendered non-label annotations and callouts,
+1. rendered non-label annotations, rich readouts, and callouts,
 2. selection highlight rendering and broader link-driven state propagation,
 3. mesh/object picking and richer probe payloads,
 4. broad mapped attributes beyond the current image/volume colormap paths,
 5. shared or categorical legend layout beyond the first continuous colorbar slice.
 
-Colorbars, text, and annotations are retained semantic objects. Text/glyph rendering and
-continuous colorbar rendering exist as first slices; remaining work should use those semantic
-objects rather than visual-private or backend-shaped state.
+Colorbars, text, labels, and scale bars are retained semantic objects. Text/glyph rendering, label
+annotation rendering, scale-bar rendering, and continuous colorbar rendering exist as first slices;
+remaining work should use those semantic objects rather than visual-private or backend-shaped
+state.
 
 Implementation-ready rendering work for those retained objects is tracked in:
 

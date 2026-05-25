@@ -98,11 +98,11 @@ example is `v0.4 required`, `v0.4 experimental`, `v0.4 fixture-only`, `v0.5`, `l
 | Interaction | Link channel | Implemented bookkeeping | `fixture_link_channel.c` | stdout | scene | Link two panel ranges through a channel with synthetic state. |
 | Interaction | Pinned readout | Implemented bookkeeping | `fixture_pinned_readout.c` | stdout | scene | Create a pinned readout from a synthetic probe result. |
 | Interaction | Hover picking | Implemented live example | `fixture_pick_hover_glfw.c` | bounded GLFW | scene+app+GLFW | Minimal live hover-pick point scene. |
-| Text | Font resource | Implemented bookkeeping | `fixture_font_resource.c` | stdout | scene | Create/destroy a scene-owned font resource. |
-| Text | Retained text | Implemented bookkeeping | `fixture_text_bookkeeping.c` | JSON/stdout | scene | Create text, update string/style/placement. |
-| Text | Rendered text | Partial/example exists | `fixture_text_rendered.c` | PNG | scene+app | Promote `examples/c/visuals/text.c` behavior into a deterministic offscreen fixture. |
-| Annotation | Retained label | Implemented bookkeeping | `fixture_annotation_bookkeeping.c` | JSON/stdout | scene | Create a label annotation and update format. |
-| Annotation | Rendered label | Planned | `fixture_annotation_rendered.c` | PNG | scene+app | One point with one label/callout. |
+| Text | Font resource | Implemented | `fixture_font_resource.c` | stdout | scene | Create/destroy a scene-owned font resource. |
+| Text | Retained text | Implemented | `fixture_text_bookkeeping.c` | JSON/stdout | scene | Create text, update string/style/placement. |
+| Text | Rendered text | Implemented example/app smoke | `fixture_text_rendered.c` | PNG | scene+app | Promote `examples/c/visuals/text.c` behavior into a deterministic offscreen fixture. |
+| Annotation | Retained label | Implemented | `fixture_annotation_bookkeeping.c` | JSON/stdout | scene | Create a label annotation and update format. |
+| Annotation | Rendered label | Implemented first slice | `fixture_annotation_rendered.c` | PNG | scene+app | One point with one label overlay; callouts remain separate. |
 | App | Offscreen render | Implemented | `fixture_app_offscreen.c` | PNG | scene+app | Render one point scene offscreen. |
 | App | PNG capture | Implemented | `fixture_capture_png.c` | PNG | scene+app | Render and save a PNG through app/canvas capture. |
 | App | GLFW live window | Implemented | `fixture_glfw_window.c` | bounded GLFW | scene+app+GLFW | One point scene, auto-close after N frames. |

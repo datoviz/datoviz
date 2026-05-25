@@ -16,9 +16,12 @@ primary implementation-facing source when they exist.
 
 ## Text, Axes, Scales, Annotations, And Overlays
 
-1. [ANNOTATION_MEASUREMENT_DESIGN.md](ANNOTATION_MEASUREMENT_DESIGN.md)
-2. [ANNOTATION_TEXT_SCALE_API.md](ANNOTATION_TEXT_SCALE_API.md)
-3. [AXES_DOMAIN_DESIGN.md](AXES_DOMAIN_DESIGN.md)
+1. [ANNOTATION_MEASUREMENT_DESIGN.md](ANNOTATION_MEASUREMENT_DESIGN.md): partially superseded by
+   landed label and scale-bar slices; still useful for dimensions/callouts.
+2. [ANNOTATION_TEXT_SCALE_API.md](ANNOTATION_TEXT_SCALE_API.md): partially superseded by installed
+   text/colorbar/annotation APIs; use as rationale only for landed names.
+3. [AXES_DOMAIN_DESIGN.md](AXES_DOMAIN_DESIGN.md): partially superseded by installed panel domain
+   and axis APIs; use as rationale for remaining linked-domain/unit work.
 4. [COLORBAR_COLORMAP_DESIGN.md](COLORBAR_COLORMAP_DESIGN.md)
 5. [TEXT_DESIGN.md](TEXT_DESIGN.md)
 6. [SCREEN_SPACE_OVERLAY_LAYOUT.md](SCREEN_SPACE_OVERLAY_LAYOUT.md)

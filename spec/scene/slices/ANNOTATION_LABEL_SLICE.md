@@ -1,6 +1,8 @@
 # Annotation Label Slice
 
-This slice defines the first rendered annotation path: `dvz_annotation_label()`.
+This slice records the first rendered annotation path: `dvz_annotation_label()`.
+
+Status: first rendered label slice landed.
 
 It depends on [TEXT_RENDERING_SLICE.md](TEXT_RENDERING_SLICE.md). Labels should reuse the same text
 renderer rather than creating a second text path.
@@ -8,9 +10,10 @@ renderer rather than creating a second text path.
 
 ## Scope
 
-Implement visible label annotations attached to a panel.
+Visible label annotations attached to a panel are implemented as the first annotation rendering
+slice.
 
-The first slice supports:
+The landed first slice supports:
 
 1. `DVZ_ANNOTATION_LABEL`,
 2. retained text content from `DvzAnnotation.text`,
@@ -110,7 +113,7 @@ This metadata is for diagnostics and future picking, not for backend execution.
 
 ## Tests
 
-Add focused scene tests for:
+Focused scene tests should cover or keep covering:
 
 1. `dvz_annotation_label()` emits a glyph/text contribution,
 2. unsupported annotation kinds produce diagnostics or no-op behavior according to flags,
@@ -119,16 +122,28 @@ Add focused scene tests for:
 5. labels can share font and atlas resources with ordinary `DvzText`,
 6. cross-scene font binding is rejected.
 
-Add one offscreen smoke with an image or point visual plus a label overlay.
+Keep at least one offscreen or example smoke with an image or point visual plus a label overlay in
+release validation.
 
 
 ## Acceptance
 
-This slice is complete when:
+This slice is complete for the first rendered label path when:
 
 1. `dvz_annotation_label()` renders visible text,
 2. it uses the same text renderer and atlas resource path as `DvzText`,
 3. label lifecycle is covered by focused tests,
 4. unsupported annotation kinds are explicit diagnostics or documented no-ops,
-5. later callout and measurement slices can reuse the label placement and formatting path.
+5. later callout, readout, and measurement slices can reuse the label placement and formatting path.
 
+
+## Remaining Work
+
+Follow-up work belongs outside this closed first slice:
+
+1. rendered pinned readout cards,
+2. callout leader lines,
+3. crosshair guides,
+4. dimension annotations,
+5. annotation-object picking,
+6. richer data/world anchoring and collision behavior.

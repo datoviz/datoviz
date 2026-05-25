@@ -2,7 +2,7 @@
 
 > **Execution Status**
 > - **Status:** `PLANNING GUIDE`
-> - **Updated on:** `2026-05-16`
+> - **Updated on:** `2026-05-25`
 > - **Scope:** post-feature-completion release work for the public Datoviz v0.4 release
 > - **Non-scope:** implementation planning for visual families, text, axes, GUI widgets, WebGPU,
 >   video, and other feature tracks already covered by focused implementation plans.
@@ -133,7 +133,8 @@ The v0.4 explanatory-object slice may defer:
 4. interactive axis or colorbar range editing,
 5. categorical legends beyond a small documented first slice,
 6. grouped legends, multi-scale legends, and symbol/line-style legend composition,
-7. callout leader lines, dimension annotations, scale bars, and measurement tools,
+7. callout leader lines, dimension annotations, and measurement tools beyond the active scale-bar
+   slice,
 8. vector/PDF/SVG preservation of text and axes inside Datoviz.
 
 

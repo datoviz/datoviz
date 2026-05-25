@@ -1,6 +1,6 @@
 > **Execution Status**
-> - **Status:** `SCENE SPEC PROPOSAL`
-> - **Updated on:** `2026-05-09`
+> - **Status:** `PARTIALLY SUPERSEDED PROPOSAL`
+> - **Updated on:** `2026-05-25`
 > - **Purpose:** define the intended first scene-facing API shape for text visuals, shared scales,
 >   colorbars, measurement annotations, and pinned semantic labels.
 
@@ -16,7 +16,9 @@ For concrete implementation work, prefer the narrower slice documents:
 3. [../slices/COLORBAR_RENDERING_SLICE.md](../../slices/COLORBAR_RENDERING_SLICE.md),
 4. [../slices/LEGEND_SLICE.md](../../slices/LEGEND_SLICE.md).
 
-This proposal remains rationale and API-shape background.
+This proposal remains rationale and API-shape background. Installed headers and specialized slice
+documents are authoritative for APIs that have landed; in particular, `dvz_text()` now returns a
+semantic `DvzText*`, not a leaf `DvzVisual*`.
 
 
 ## Objective
@@ -67,17 +69,15 @@ Recommended first-class scene-facing concepts:
 
 ## Text Visual Surface
 
-Text should be a visual family with high-level content and placement setters.
+Text should be a semantic panel object with high-level content and placement setters.
 
 Conceptual API shape:
 
 ```text
-DvzVisual* text = dvz_text(panel, flags);
+DvzText* text = dvz_text(panel, flags);
 dvz_text_set_string(text, "CA1");
 dvz_text_set_style(text, &style);
 dvz_text_set_placement(text, &placement);
-dvz_text_set_color(text, rgba);
-dvz_text_set_glyph_colors(text, colors, count);
 ```
 
 Recommended first-slice text concepts:

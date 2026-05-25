@@ -1,6 +1,6 @@
 > **Execution Status**
-> - **Status:** `SCENE SPEC PROPOSAL`
-> - **Updated on:** `2026-05-09`
+> - **Status:** `PARTIALLY SUPERSEDED PROPOSAL`
+> - **Updated on:** `2026-05-25`
 > - **Purpose:** define the intended v0.4 annotation and measurement model for scale bars,
 >   dimensions, bounding boxes, and mixed screen-space/world-space overlays.
 
@@ -10,8 +10,9 @@ This note narrows the broader scene annotation discussion into the active measur
 requirements that should shape v0.4 text, transforms, picking, and axes.
 
 For immediate implementation work, start with
-[../slices/ANNOTATION_LABEL_SLICE.md](../../slices/ANNOTATION_LABEL_SLICE.md). Measurement annotations
-should be implemented after the retained label and text rendering paths are active.
+[../slices/ANNOTATION_LABEL_SLICE.md](../../slices/ANNOTATION_LABEL_SLICE.md). The label and
+scale-bar first slices have landed; this note now mainly covers remaining dimension, bounding-box,
+callout, and richer measurement overlays.
 
 
 ## Objective

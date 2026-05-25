@@ -27,7 +27,9 @@ transparency, clipping, transforms, or geometry utilities.
 ## Active Proposal Inputs
 
 1. [../proposals/active/ANNOTATION_MEASUREMENT_DESIGN.md](../proposals/active/ANNOTATION_MEASUREMENT_DESIGN.md)
+   for dimensions/callouts beyond landed label and scale-bar slices
 2. [../proposals/active/AXES_DOMAIN_DESIGN.md](../proposals/active/AXES_DOMAIN_DESIGN.md)
+   for linked-domain and unit rationale beyond landed linear axes
 3. [../proposals/active/COLORBAR_COLORMAP_DESIGN.md](../proposals/active/COLORBAR_COLORMAP_DESIGN.md)
 4. [../proposals/active/GEOM_DESIGN.md](../proposals/active/GEOM_DESIGN.md)
 5. [../proposals/active/MESH_SHADING_DESIGN.md](../proposals/active/MESH_SHADING_DESIGN.md)

@@ -100,8 +100,10 @@ Use this map when turning proposals into implementation-ready spec changes.
    `../integration/EXTERNAL_UI.md`,
    `../interaction/CONTROLLERS.md`, `../semantics/GEOMETRY_UTILITIES.md`,
    [GEOM_DESIGN.md](active/GEOM_DESIGN.md), and `../visuals/MESH.md`.
-2. [ANNOTATION_MEASUREMENT_DESIGN.md](active/ANNOTATION_MEASUREMENT_DESIGN.md),
-   [ANNOTATION_TEXT_SCALE_API.md](active/ANNOTATION_TEXT_SCALE_API.md),
+2. [ANNOTATION_MEASUREMENT_DESIGN.md](active/ANNOTATION_MEASUREMENT_DESIGN.md) and
+   [ANNOTATION_TEXT_SCALE_API.md](active/ANNOTATION_TEXT_SCALE_API.md) are now partially
+   superseded by landed text, label, colorbar, and scale-bar first slices. Remaining ideas from
+   those notes, plus
    [COLORBAR_COLORMAP_DESIGN.md](active/COLORBAR_COLORMAP_DESIGN.md),
    [AXES_DOMAIN_DESIGN.md](active/AXES_DOMAIN_DESIGN.md),
    [TEXT_DESIGN.md](active/TEXT_DESIGN.md), and
@@ -171,7 +173,8 @@ For the next public API pass, read these first:
 4. [../slices/ANNOTATION_LABEL_SLICE.md](../slices/ANNOTATION_LABEL_SLICE.md)
 5. [../slices/COLORBAR_RENDERING_SLICE.md](../slices/COLORBAR_RENDERING_SLICE.md)
 6. [INTERACTION_API_DESIGN.md](active/INTERACTION_API_DESIGN.md)
-7. [ANNOTATION_TEXT_SCALE_API.md](active/ANNOTATION_TEXT_SCALE_API.md)
+7. [ANNOTATION_TEXT_SCALE_API.md](active/ANNOTATION_TEXT_SCALE_API.md), for unresolved rationale
+   only; installed headers own landed names
 8. [PICKING_DESIGN.md](promoted/PICKING_DESIGN.md)
 9. [PROBE_READOUT_DESIGN.md](promoted/PROBE_READOUT_DESIGN.md)
 10. [COLORBAR_COLORMAP_DESIGN.md](active/COLORBAR_COLORMAP_DESIGN.md)
