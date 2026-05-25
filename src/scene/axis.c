@@ -908,6 +908,50 @@ static void _axis_append_tick(
 
 
 /**
+ * Return whether the retained primitive visual already stores one axis geometry payload.
+ *
+ * @param axis the axis
+ * @param vertex_count generated vertex count
+ * @param positions generated vertex positions
+ * @param colors generated vertex colors
+ * @return whether the retained visual payload is unchanged
+ */
+static bool _axis_visual_cache_matches(
+    const DvzAxis* axis, uint32_t vertex_count, const float positions[][3],
+    const uint8_t colors[][4])
+{
+    ANN(axis);
+    ANN(positions);
+    ANN(colors);
+    if (axis->visual == NULL || vertex_count == 0)
+        return false;
+
+    DvzVisualDataView position_view = {0};
+    DvzVisualDataView color_view = {0};
+    if (dvz_visual_data(axis->visual, "position", &position_view) != 0 ||
+        dvz_visual_data(axis->visual, "color", &color_view) != 0)
+    {
+        return false;
+    }
+    if (position_view.data == NULL || color_view.data == NULL)
+        return false;
+    if (
+        position_view.item_count != vertex_count || color_view.item_count != vertex_count ||
+        position_view.item_size != sizeof(positions[0]) ||
+        color_view.item_size != sizeof(colors[0]))
+    {
+        return false;
+    }
+
+    const size_t position_bytes = (size_t)vertex_count * sizeof(positions[0]);
+    const size_t color_bytes = (size_t)vertex_count * sizeof(colors[0]);
+    return memcmp(position_view.data, positions, position_bytes) == 0 &&
+           memcmp(color_view.data, colors, color_bytes) == 0;
+}
+
+
+
+/**
  * Rebuild the derived text visual for tick labels and the axis label.
  *
  * @param axis the axis
@@ -1135,7 +1179,8 @@ static void _axis_update_visual(DvzAxis* axis)
         {.attr_name = "position", .data = positions, .item_count = vertex_count},
         {.attr_name = "color", .data = colors, .item_count = vertex_count},
     };
-    (void)dvz_visual_set_data_many(axis->visual, updates, 2);
+    if (!_axis_visual_cache_matches(axis, vertex_count, positions, colors))
+        (void)dvz_visual_set_data_many(axis->visual, updates, 2);
     _axis_update_text(axis, x0, x1, y0, y1, visible_min, visible_max);
     axis->dirty = false;
 }

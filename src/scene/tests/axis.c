@@ -74,6 +74,26 @@ static uint32_t _axis_test_draw_vertex_count(const DvzDrp2CommandStream* stream)
 
 
 /**
+ * Return one retained visual attribute dirty item count.
+ *
+ * @param visual the visual
+ * @param attr_name the attribute name
+ * @return dirty item count, or UINT64_MAX when the attribute is absent
+ */
+static uint64_t _axis_test_attr_dirty_item_count(const DvzVisual* visual, const char* attr_name)
+{
+    ANN(visual);
+    ANN(attr_name);
+    for (uint32_t i = 0; i < visual->attr_count; i++)
+    {
+        if (strcmp(visual->attrs[i].name, attr_name) == 0)
+            return visual->attrs[i].dirty_item_count;
+    }
+    return UINT64_MAX;
+}
+
+
+/**
  * Return the number of axis decoration rectangles with one color.
  *
  * @param axis the axis
@@ -918,6 +938,60 @@ static int test_axis_panzoom_resize_visual_smoke(TstContext* suite, const TstCas
 }
 
 
+/**
+ * Check that preparing a static axis twice leaves retained axis data clean.
+ *
+ * @param suite the test suite
+ * @param item the test case
+ * @return zero on success
+ */
+static int test_axis_static_prepare_idempotent(TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 1000, 700, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(
+        figure, (DvzPanelDesc){.x = 0.08f, .y = 0.06f, .width = 0.86f, .height = 0.86f});
+    ANN(panel);
+
+    AT(dvz_panel_set_layout_reserve(
+        panel, &(DvzPanelLayoutReserve){.left = 0.14f, .right = 0.0f, .bottom = 0.18f,
+                                        .top = 0.0f}));
+    AT(dvz_panel_set_domain(panel, DVZ_DIM_X, -5.0, +5.0) == 0);
+    DvzAxis* axis = dvz_panel_axis(panel, DVZ_DIM_X);
+    ANN(axis);
+    AT(dvz_axis_set_grid(axis, true));
+    AT(dvz_axis_set_label(axis, "x"));
+
+    DvzCapabilitySnapshot caps;
+    dvz_capability_snapshot_default(&caps);
+    caps.supports_color_blending = true;
+    DvzDiagnosticReport report;
+    dvz_diagnostic_report_init(&report);
+    DvzFramePlanEmitConfig cfg = dvz_frame_plan_emit_config();
+    cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
+
+    DvzDrp2CommandStream* stream = dvz_figure_emit_ex(figure, &caps, &report, &cfg);
+    ANN(stream);
+    dvz_drp2_stream_destroy(stream);
+
+    AT(!_scene_figure_has_pending_render_work(figure));
+
+    _scene_prepare_axis_visuals(figure);
+    _scene_prepare_text_visuals(figure);
+    AT(_axis_test_attr_dirty_item_count(axis->visual, "position") == 0);
+    AT(_axis_test_attr_dirty_item_count(axis->visual, "color") == 0);
+    AT(!_scene_figure_has_pending_render_work(figure));
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
 int test_axis_dynamic_segment_draw_count(TstContext* suite, const TstCase* item)
 {
     (void)suite;
@@ -988,6 +1062,7 @@ int test_scene_axis(TstSuite* suite)
     TST_CASE(test_axis_panzoom_visible_domain);
     TST_CASE(test_axis_zoom_out_in_grid_regression);
     TST_CASE(test_axis_panzoom_resize_visual_smoke);
+    TST_CASE(test_axis_static_prepare_idempotent);
     TST_CASE(test_axis_dynamic_segment_draw_count);
     return 0;
 }

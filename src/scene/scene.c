@@ -2410,7 +2410,7 @@ static bool _scene_panel_has_pending_adornment_work(const DvzPanel* panel)
     for (uint32_t dim = 0; dim < 2; dim++)
     {
         const DvzAxis* axis = &panel->axes[dim];
-        if (axis->panel == panel && axis->dirty)
+        if (axis->panel == panel && axis->enabled && axis->dirty)
             return true;
     }
 
@@ -2517,8 +2517,13 @@ static void _scene_commit_emit_success(DvzFigure* figure)
                     visual->type == DVZ_VISUAL_TYPE_PATH || visual->type == DVZ_VISUAL_TYPE_SPHERE)
                     visual->material_params_dirty = false;
             }
-            if (visual->type == DVZ_VISUAL_TYPE_IMAGE || visual->type == DVZ_VISUAL_TYPE_VOLUME)
+            if (
+                visual->type == DVZ_VISUAL_TYPE_IMAGE ||
+                visual->type == DVZ_VISUAL_TYPE_GLYPH ||
+                visual->type == DVZ_VISUAL_TYPE_VOLUME)
+            {
                 _scene_visual_texture_mark_clean(visual);
+            }
             if (visual->type == DVZ_VISUAL_TYPE_VOLUME)
                 visual->volume_realized_version = visual->volume.version;
         }
