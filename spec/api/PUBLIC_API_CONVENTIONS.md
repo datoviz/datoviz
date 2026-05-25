@@ -56,6 +56,7 @@ Typed semantic object APIs remain the normal user path:
 ```text
 dvz_polygon_set_geometry()
 dvz_polygon_fill_color()
+dvz_polygon_set_region_fill_color()
 dvz_graph_nodes_size()
 dvz_graph_edges_color()
 ```

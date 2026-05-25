@@ -117,6 +117,18 @@ DvzComposite* view = dvz_polygon_composite(polygon, 0);
 dvz_panel_add_composite(panel, view, NULL);
 ```
 
+Multi-region polygon data uses `DvzPolygonSet`; per-region API names include `region` to avoid
+confusing the object name with the verb "set":
+
+```c
+DvzPolygonSet* polygons = dvz_polygon_set(scene, 0);
+uint32_t region = dvz_polygon_set_add(polygons, &geom_polygon);
+dvz_polygon_set_region_fill_color(polygons, region, fill);
+
+DvzComposite* regions = dvz_polygon_set_composite(polygons, 0);
+dvz_panel_add_composite(panel, regions, NULL);
+```
+
 This keeps semantic state reusable across panels and render policies while keeping panel-local
 attachment state out of the semantic object.
 

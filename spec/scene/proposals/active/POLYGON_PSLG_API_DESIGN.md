@@ -187,18 +187,17 @@ should distinguish array index from stable user id.
 Primary per-region setters:
 
 ```c
-dvz_polygon_set_region(polygons, polygon_index, &polygon_desc);
-dvz_polygon_set_outer_at(polygons, polygon_index, count, xy);
-dvz_polygon_set_hole_at(polygons, polygon_index, hole_index, count, xy);
-dvz_polygon_set_fill_color_at(polygons, polygon_index, color);
-dvz_polygon_set_stroke_color_at(polygons, polygon_index, color);
-dvz_polygon_set_stroke_width_at(polygons, polygon_index, width);
+uint32_t polygon_index = dvz_polygon_set_add(polygons, &polygon_desc);
+dvz_polygon_set_region_geometry(polygons, polygon_index, &polygon_desc);
+dvz_polygon_set_region_fill_color(polygons, polygon_index, color);
+dvz_polygon_set_region_stroke_color(polygons, polygon_index, color);
+dvz_polygon_set_region_stroke_width(polygons, polygon_index, width);
 ```
 
 Optional bulk/range helpers are allowed for large datasets:
 
 ```c
-dvz_polygon_set_fill_colors(polygons, first_polygon, polygon_count, colors);
+dvz_polygon_set_region_fill_colors(polygons, first_polygon, polygon_count, colors);
 ```
 
 Bulk helpers are convenience and performance APIs. They should not replace the per-region API as the
@@ -207,7 +206,7 @@ conceptual model.
 If stable semantic ids are needed for picking or external data joins, use a separate id setter:
 
 ```c
-dvz_polygon_set_region_id_at(polygons, polygon_index, user_id);
+dvz_polygon_set_region_id(polygons, polygon_index, user_id);
 ```
 
 Do not use a single `region_id` argument when the value is only a positional array index.
