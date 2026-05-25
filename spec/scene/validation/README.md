@@ -16,6 +16,8 @@ promotion/deferment.
    and remaining diagnostics after the core GPU-backed image probe path landed.
 6. [MANUAL_SCENE_SMOKE.md](MANUAL_SCENE_SMOKE.md): manual interactive smoke matrix for the active
    scene -> DRP2 -> app path.
+7. [RENDER_CONFORMANCE.md](RENDER_CONFORMANCE.md): planned automated DRP2 snapshot and backend image
+   reference testing for scene render conformance.
 
 
 ## Active Proposal Inputs
