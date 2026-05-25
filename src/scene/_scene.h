@@ -51,6 +51,7 @@
 #define DVZ_SCENE_MAX_COLORBARS  64
 #define DVZ_SCENE_MAX_LEGENDS    64
 #define DVZ_SCENE_MAX_SCALE_CATEGORIES 64
+#define DVZ_SCENE_MAX_LEGEND_TEXTS (DVZ_SCENE_MAX_SCALE_CATEGORIES + 1)
 #define DVZ_SCENE_MAX_INTERACTIONS 64
 #define DVZ_SCENE_MAX_SELECTIONS 64
 #define DVZ_SCENE_MAX_LINK_CHANNELS 64
@@ -651,6 +652,13 @@ struct DvzLegend
     DvzVisual* mark_visual;
     DvzVisual* text_visual;
     uint32_t entry_count;
+    uint32_t text_count;
+    char text_labels[DVZ_SCENE_MAX_LEGEND_TEXTS][DVZ_SCENE_LABEL_SIZE];
+    float text_positions[DVZ_SCENE_MAX_LEGEND_TEXTS][3];
+    float text_anchors[DVZ_SCENE_MAX_LEGEND_TEXTS][2];
+    float text_sizes[DVZ_SCENE_MAX_LEGEND_TEXTS];
+    uint8_t text_colors[DVZ_SCENE_MAX_LEGEND_TEXTS][4];
+    float text_angles[DVZ_SCENE_MAX_LEGEND_TEXTS];
 };
 
 
@@ -1610,6 +1618,8 @@ bool _scene_visual_indexed_resource_key(
 void _scene_prepare_axis_visuals(DvzFigure* figure);
 
 void _scene_prepare_colorbar_visuals(DvzFigure* figure, DvzDiagnosticReport* report);
+
+void _scene_prepare_legend_visuals(DvzFigure* figure, DvzDiagnosticReport* report);
 
 void _scene_prepare_bounds_visuals(DvzFigure* figure);
 

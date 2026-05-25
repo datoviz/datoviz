@@ -1443,6 +1443,466 @@ static bool _colorbar_needs_visual_update(const DvzColorbar* colorbar)
 }
 
 
+/**
+ * Hide all derived visuals owned by a legend.
+ *
+ * @param legend the legend
+ */
+static void _legend_hide(DvzLegend* legend)
+{
+    if (legend == NULL)
+        return;
+    if (legend->mark_visual != NULL)
+        dvz_visual_set_visible(legend->mark_visual, false);
+    if (legend->text_visual != NULL)
+    {
+        dvz_visual_set_visible(legend->text_visual, false);
+        if (legend->text_visual->text.glyph_visual != NULL)
+            dvz_visual_set_visible(legend->text_visual->text.glyph_visual, false);
+    }
+}
+
+
+/**
+ * Hide one invalid legend and report the validation failure once per dirty cycle.
+ *
+ * @param legend the legend
+ * @param report optional diagnostic report
+ * @param message the diagnostic message
+ */
+static void _legend_fail(DvzLegend* legend, DvzDiagnosticReport* report, const char* message)
+{
+    ANN(legend);
+    ANN(message);
+    if (legend->dirty || report != NULL)
+        _colorbar_report(report, message);
+    legend->dirty = false;
+    _legend_hide(legend);
+}
+
+
+/**
+ * Ensure one legend-derived visual is attached to the panel.
+ *
+ * @param legend the legend
+ * @param visual the visual
+ * @param z_layer z layer for panel sorting
+ * @return whether the visual is attached
+ */
+static bool _legend_attach_visual(DvzLegend* legend, DvzVisual* visual, int32_t z_layer)
+{
+    ANN(legend);
+    ANN(legend->panel);
+    ANN(visual);
+    DvzVisualAttachDesc attach = {.z_layer = z_layer, .controller_mode = DVZ_CONTROLLER_FIXED};
+    for (uint32_t i = 0; i < legend->panel->visual_count; i++)
+    {
+        DvzPanelAttach* existing = &legend->panel->visuals[i];
+        if (existing->visual != visual)
+            continue;
+        existing->z_layer = attach.z_layer;
+        existing->controller_mode = attach.controller_mode;
+        return true;
+    }
+    return dvz_panel_add_visual(legend->panel, visual, &attach) == 0;
+}
+
+
+/**
+ * Ensure derived mark and text visuals exist for a legend.
+ *
+ * @param legend the legend
+ * @return whether all derived visuals exist
+ */
+static bool _legend_ensure_visuals(DvzLegend* legend)
+{
+    ANN(legend);
+    if (legend->scene == NULL || legend->panel == NULL)
+        return false;
+    if (legend->mark_visual == NULL)
+    {
+        legend->mark_visual = dvz_marker(legend->scene, 0);
+        if (legend->mark_visual == NULL)
+            return false;
+        legend->mark_visual->visible = false;
+    }
+    if (!_legend_attach_visual(legend, legend->mark_visual, 1002))
+        return false;
+
+    if (legend->text_visual == NULL)
+    {
+        legend->text_visual = _scene_text_visual(legend->scene, 0);
+        if (legend->text_visual == NULL)
+            return false;
+        legend->text_visual->visible = false;
+    }
+    return _legend_attach_visual(legend, legend->text_visual, 1003);
+}
+
+
+/**
+ * Append one text item to legend text arrays.
+ *
+ * @param legend the legend
+ * @param label text label
+ * @param x text position x in panel-local pixels
+ * @param y text position y in panel-local pixels
+ * @param anchor_x text anchor x
+ * @param anchor_y text anchor y
+ * @param size text size in pixels
+ */
+static void _legend_append_text(
+    DvzLegend* legend, const char* label, float x, float y, float anchor_x, float anchor_y,
+    float size)
+{
+    ANN(legend);
+    ANN(label);
+    if (legend->text_count >= DVZ_SCENE_MAX_LEGEND_TEXTS)
+        return;
+    uint32_t i = legend->text_count++;
+    dvz_strlcpy(legend->text_labels[i], label, sizeof(legend->text_labels[i]));
+    legend->text_positions[i][0] = x;
+    legend->text_positions[i][1] = y;
+    legend->text_positions[i][2] = 0.0f;
+    legend->text_anchors[i][0] = anchor_x;
+    legend->text_anchors[i][1] = anchor_y;
+    legend->text_sizes[i] = size;
+    legend->text_colors[i][0] = 255;
+    legend->text_colors[i][1] = 255;
+    legend->text_colors[i][2] = 255;
+    legend->text_colors[i][3] = 255;
+    legend->text_angles[i] = 0.0f;
+}
+
+
+/**
+ * Update the legend batched text visual.
+ *
+ * @param legend the legend
+ */
+static void _legend_update_text(DvzLegend* legend)
+{
+    ANN(legend);
+    if (legend->text_visual == NULL || legend->text_count == 0)
+    {
+        if (legend->text_visual != NULL)
+            dvz_visual_set_visible(legend->text_visual, false);
+        return;
+    }
+    const char* strings[DVZ_SCENE_MAX_LEGEND_TEXTS] = {0};
+    for (uint32_t i = 0; i < legend->text_count; i++)
+        strings[i] = legend->text_labels[i];
+    DvzVisualDataUpdate updates[5] = {
+        {.attr_name = "position", .data = legend->text_positions, .item_count = legend->text_count},
+        {.attr_name = "anchor", .data = legend->text_anchors, .item_count = legend->text_count},
+        {.attr_name = "size", .data = legend->text_sizes, .item_count = legend->text_count},
+        {.attr_name = "color", .data = legend->text_colors, .item_count = legend->text_count},
+        {.attr_name = "angle", .data = legend->text_angles, .item_count = legend->text_count},
+    };
+    if (dvz_visual_set_strings(legend->text_visual, "text", strings, legend->text_count) == 0 &&
+        dvz_visual_set_data_many(legend->text_visual, updates, 5) == 0)
+    {
+        dvz_visual_set_visible(legend->text_visual, true);
+    }
+    else
+    {
+        dvz_visual_set_visible(legend->text_visual, false);
+    }
+}
+
+
+/**
+ * Resolve an anchored detached legend rectangle to panel-local pixels.
+ *
+ * @param legend the legend
+ * @param panel_x panel x origin in figure pixels
+ * @param panel_y panel y origin in figure pixels
+ * @param panel_width panel width in pixels
+ * @param panel_height panel height in pixels
+ * @param out output rectangle as x0, y0, x1, y1 in panel-local pixels
+ */
+static void _legend_detached_rect(
+    const DvzLegend* legend, float panel_x, float panel_y, float panel_width, float panel_height,
+    float out[4])
+{
+    ANN(legend);
+    ANN(out);
+    const DvzPlacement* placement = &legend->placement;
+    float space_x = 0.0f;
+    float space_y = 0.0f;
+    float space_width = panel_width;
+    float space_height = panel_height;
+    if (placement->space == DVZ_PLACEMENT_SPACE_FIGURE && legend->panel != NULL &&
+        legend->panel->figure != NULL)
+    {
+        space_x = -panel_x;
+        space_y = -panel_y;
+        space_width = legend->panel->figure->width > 0 ? (float)legend->panel->figure->width :
+                                                         panel_width;
+        space_height = legend->panel->figure->height > 0 ? (float)legend->panel->figure->height :
+                                                           panel_height;
+    }
+
+    float default_height =
+        (legend->scale != NULL ? (float)legend->scale->category_count : 1.0f) *
+            (legend->mark_size_px + legend->entry_gap_px) +
+        (legend->title[0] != '\0' ? 20.0f : 0.0f);
+    float width = _legend_positive_or_default(placement->width_px, legend->reserve_px);
+    float height = _legend_positive_or_default(placement->height_px, default_height);
+    float x = space_x + placement->offset_x_px;
+    if (placement->horizontal_anchor == DVZ_HORIZONTAL_ANCHOR_CENTER)
+        x = space_x + 0.5f * (space_width - width) + placement->offset_x_px;
+    else if (placement->horizontal_anchor == DVZ_HORIZONTAL_ANCHOR_RIGHT)
+        x = space_x + space_width - width + placement->offset_x_px;
+
+    float y = space_y + placement->offset_y_px;
+    if (placement->vertical_anchor == DVZ_VERTICAL_ANCHOR_CENTER)
+        y = space_y + 0.5f * (space_height - height) + placement->offset_y_px;
+    else if (placement->vertical_anchor == DVZ_VERTICAL_ANCHOR_BOTTOM)
+        y = space_y + space_height - height + placement->offset_y_px;
+
+    out[0] = x;
+    out[1] = y;
+    out[2] = x + width;
+    out[3] = y + height;
+}
+
+
+/**
+ * Resolve the legend content rectangle to panel-local pixels.
+ *
+ * @param legend the legend
+ * @param panel_x panel x origin in figure pixels
+ * @param panel_y panel y origin in figure pixels
+ * @param panel_width panel width in pixels
+ * @param panel_height panel height in pixels
+ * @param out output content rectangle as x0, y0, x1, y1 in panel-local pixels
+ */
+static void _legend_content_rect(
+    const DvzLegend* legend, float panel_x, float panel_y, float panel_width, float panel_height,
+    float out[4])
+{
+    ANN(legend);
+    ANN(out);
+    if (legend->placement_mode == DVZ_LEGEND_PLACEMENT_DETACHED)
+    {
+        _legend_detached_rect(legend, panel_x, panel_y, panel_width, panel_height, out);
+        return;
+    }
+
+    float plot_x = 0.0f;
+    float plot_y = 0.0f;
+    float plot_width = 0.0f;
+    float plot_height = 0.0f;
+    _scene_panel_plot_pixel_rect(legend->panel, &plot_x, &plot_y, &plot_width, &plot_height);
+    plot_x -= panel_x;
+    plot_y -= panel_y;
+
+    if (legend->anchor == DVZ_SCENE_ANCHOR_PANEL_LEFT)
+    {
+        out[0] = legend->edge_offset_px;
+        out[2] = plot_x - legend->plot_gap_px;
+        out[1] = plot_y + legend->edge_offset_px;
+        out[3] = plot_y + plot_height - legend->edge_offset_px;
+    }
+    else if (legend->anchor == DVZ_SCENE_ANCHOR_PANEL_RIGHT)
+    {
+        out[0] = plot_x + plot_width + legend->plot_gap_px;
+        out[2] = panel_width - legend->edge_offset_px;
+        out[1] = plot_y + legend->edge_offset_px;
+        out[3] = plot_y + plot_height - legend->edge_offset_px;
+    }
+    else if (legend->anchor == DVZ_SCENE_ANCHOR_PANEL_TOP)
+    {
+        out[0] = plot_x + legend->edge_offset_px;
+        out[2] = plot_x + plot_width - legend->edge_offset_px;
+        out[1] = legend->edge_offset_px;
+        out[3] = plot_y - legend->plot_gap_px;
+    }
+    else
+    {
+        out[0] = plot_x + legend->edge_offset_px;
+        out[2] = plot_x + plot_width - legend->edge_offset_px;
+        out[1] = plot_y + plot_height + legend->plot_gap_px;
+        out[3] = panel_height - legend->edge_offset_px;
+    }
+}
+
+
+/**
+ * Return sorted category indices for a legend scale.
+ *
+ * @param scale the categorical scale
+ * @param out output index table
+ * @return number of indices written
+ */
+static uint32_t _legend_sorted_category_indices(const DvzScale* scale, uint32_t* out)
+{
+    ANN(scale);
+    ANN(out);
+    uint32_t count = scale->category_count;
+    for (uint32_t i = 0; i < count; i++)
+        out[i] = i;
+    for (uint32_t i = 0; i < count; i++)
+    {
+        for (uint32_t j = i + 1; j < count; j++)
+        {
+            const DvzScaleCategoryState* a = &scale->categories[out[i]];
+            const DvzScaleCategoryState* b = &scale->categories[out[j]];
+            if (b->order < a->order)
+            {
+                uint32_t tmp = out[i];
+                out[i] = out[j];
+                out[j] = tmp;
+            }
+        }
+    }
+    return count;
+}
+
+
+/**
+ * Rebuild the derived visuals for one retained legend.
+ *
+ * @param legend the legend
+ * @param report optional diagnostic report
+ */
+static void _legend_update_visuals(DvzLegend* legend, DvzDiagnosticReport* report)
+{
+    ANN(legend);
+    if (legend->scene == NULL || legend->panel == NULL || legend->scale == NULL)
+        return;
+    if (legend->placement_mode == DVZ_LEGEND_PLACEMENT_ATTACHED &&
+        !_legend_anchor_supported(legend->anchor))
+    {
+        _legend_fail(legend, report, "attached legend anchor must be a panel edge");
+        return;
+    }
+    if (legend->scale->kind != DVZ_SCALE_CATEGORICAL)
+    {
+        _legend_fail(legend, report, "legends require a categorical scale");
+        return;
+    }
+    if (legend->scale->category_count == 0)
+    {
+        _legend_fail(legend, report, "legend scale has no retained categories");
+        return;
+    }
+
+    float panel_x = 0.0f;
+    float panel_y = 0.0f;
+    float width = 0.0f;
+    float height = 0.0f;
+    _scene_panel_pixel_rect(legend->panel, &panel_x, &panel_y, &width, &height);
+    if (!(width > 0.0f) || !(height > 0.0f) || !isfinite(width) || !isfinite(height))
+    {
+        legend->realized_panel_width = 0.0f;
+        legend->realized_panel_height = 0.0f;
+        _legend_hide(legend);
+        return;
+    }
+    legend->realized_panel_width = width;
+    legend->realized_panel_height = height;
+    if (!_legend_ensure_visuals(legend))
+    {
+        _legend_hide(legend);
+        return;
+    }
+
+    float rect[4] = {0};
+    _legend_content_rect(legend, panel_x, panel_y, width, height, rect);
+    if (rect[0] < 0.0f || rect[1] < 0.0f || rect[2] > width || rect[3] > height ||
+        rect[2] <= rect[0] || rect[3] <= rect[1])
+    {
+        _legend_fail(legend, report, "panel is too small for deterministic legend layout");
+        return;
+    }
+
+    uint32_t sorted[DVZ_SCENE_MAX_SCALE_CATEGORIES] = {0};
+    uint32_t count = _legend_sorted_category_indices(legend->scale, sorted);
+    legend->entry_count = count;
+    legend->text_count = 0;
+
+    if (legend->title[0] != '\0')
+    {
+        _legend_append_text(
+            legend, legend->title, rect[0], rect[1], 0.0f, 0.0f, COLORBAR_TITLE_TEXT_SIZE_PX);
+    }
+
+    float mark_positions[DVZ_SCENE_MAX_SCALE_CATEGORIES][3] = {{0}};
+    DvzColor mark_colors[DVZ_SCENE_MAX_SCALE_CATEGORIES] = {{0}};
+    float mark_sizes[DVZ_SCENE_MAX_SCALE_CATEGORIES] = {0};
+    float mark_angles[DVZ_SCENE_MAX_SCALE_CATEGORIES] = {0};
+    uint32_t mark_shapes[DVZ_SCENE_MAX_SCALE_CATEGORIES] = {0};
+    float y = rect[1] + (legend->title[0] != '\0' ? 24.0f : 0.0f) + 0.5f * legend->mark_size_px;
+    uint32_t mark_count = 0;
+    for (uint32_t i = 0; i < count; i++)
+    {
+        const DvzScaleCategoryState* category = &legend->scale->categories[sorted[i]];
+        float mark_x = rect[0] + 0.5f * legend->mark_size_px;
+        if (y + 0.5f * legend->mark_size_px > rect[3])
+            break;
+        _colorbar_pixel_to_visual(width, height, mark_x, y, 0.0f, mark_positions[mark_count]);
+        dvz_memcpy(mark_colors[mark_count], sizeof(DvzColor), category->color, sizeof(DvzColor));
+        mark_sizes[mark_count] = legend->mark_size_px;
+        mark_angles[mark_count] = 0.0f;
+        mark_shapes[mark_count] = DVZ_MARKER_SHAPE_SQUARE;
+
+        char fallback[32] = {0};
+        const char* label = category->has_label ? category->label : fallback;
+        if (!category->has_label)
+            dvz_snprintf(fallback, sizeof(fallback), "%d", category->category_id);
+        _legend_append_text(
+            legend, label, rect[0] + legend->mark_size_px + legend->mark_label_gap_px, y, 0.0f,
+            0.5f, COLORBAR_TICK_TEXT_SIZE_PX);
+        y += legend->mark_size_px + legend->entry_gap_px;
+        mark_count++;
+    }
+
+    DvzVisualDataUpdate updates[5] = {
+        {.attr_name = "position", .data = mark_positions, .item_count = mark_count},
+        {.attr_name = "color", .data = mark_colors, .item_count = mark_count},
+        {.attr_name = "diameter", .data = mark_sizes, .item_count = mark_count},
+        {.attr_name = "angle", .data = mark_angles, .item_count = mark_count},
+        {.attr_name = "shape", .data = mark_shapes, .item_count = mark_count},
+    };
+    if (mark_count > 0 && dvz_visual_set_data_many(legend->mark_visual, updates, 5) == 0)
+        dvz_visual_set_visible(legend->mark_visual, true);
+    else
+        dvz_visual_set_visible(legend->mark_visual, false);
+    _legend_update_text(legend);
+    legend->dirty = false;
+}
+
+
+/**
+ * Return whether one retained legend needs its derived visuals rebuilt.
+ *
+ * @param legend the legend
+ * @return whether the legend visual payloads need rebuilding
+ */
+static bool _legend_needs_visual_update(const DvzLegend* legend)
+{
+    ANN(legend);
+    if (legend->dirty || legend->mark_visual == NULL || legend->text_visual == NULL)
+        return true;
+    if (legend->panel == NULL)
+        return false;
+
+    float panel_x = 0.0f;
+    float panel_y = 0.0f;
+    float width = 0.0f;
+    float height = 0.0f;
+    _scene_panel_pixel_rect(legend->panel, &panel_x, &panel_y, &width, &height);
+    (void)panel_x;
+    (void)panel_y;
+    if (!(width > 0.0f) || !(height > 0.0f) || !isfinite(width) || !isfinite(height))
+        return true;
+    return fabsf(width - legend->realized_panel_width) > COLORBAR_LAYOUT_EPS ||
+           fabsf(height - legend->realized_panel_height) > COLORBAR_LAYOUT_EPS;
+}
+
+
 
 /*************************************************************************************************/
 /*  Functions                                                                                    */
@@ -2182,14 +2642,7 @@ void dvz_legend_destroy(DvzLegend* legend)
 {
     if (legend == NULL)
         return;
-    if (legend->mark_visual != NULL)
-        dvz_visual_set_visible(legend->mark_visual, false);
-    if (legend->text_visual != NULL)
-    {
-        dvz_visual_set_visible(legend->text_visual, false);
-        if (legend->text_visual->text.glyph_visual != NULL)
-            dvz_visual_set_visible(legend->text_visual->text.glyph_visual, false);
-    }
+    _legend_hide(legend);
     DvzPanel* panel = legend->panel;
     if (panel != NULL)
     {
@@ -2293,5 +2746,28 @@ void _scene_prepare_colorbar_visuals(DvzFigure* figure, DvzDiagnosticReport* rep
         _colorbar_apply_auto_reserve(colorbar);
         if (_colorbar_needs_visual_update(colorbar))
             _colorbar_update_visuals(colorbar, report);
+    }
+}
+
+
+/**
+ * Rebuild all retained legend visuals before FramePlan emission.
+ *
+ * @param figure the figure
+ * @param report optional diagnostic report
+ */
+void _scene_prepare_legend_visuals(DvzFigure* figure, DvzDiagnosticReport* report)
+{
+    if (figure == NULL || figure->scene == NULL)
+        return;
+    DvzScene* scene = figure->scene;
+    for (uint32_t i = 0; i < scene->legend_count; i++)
+    {
+        DvzLegend* legend = &scene->legends[i];
+        if (legend->scene != scene || legend->panel == NULL || legend->panel->figure != figure)
+            continue;
+        _legend_apply_auto_reserve(legend);
+        if (_legend_needs_visual_update(legend))
+            _legend_update_visuals(legend, report);
     }
 }

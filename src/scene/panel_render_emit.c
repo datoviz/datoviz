@@ -347,6 +347,31 @@ static bool _scene_visual_is_colorbar_derived(const DvzPanel* panel, const DvzVi
 }
 
 
+/**
+ * Return whether a visual is owned by a panel legend adornment.
+ *
+ * @param panel the panel owning legend handles
+ * @param visual the visual to classify
+ * @return whether the visual is legend-derived
+ */
+static bool _scene_visual_is_legend_derived(const DvzPanel* panel, const DvzVisual* visual)
+{
+    ANN(panel);
+    ANN(visual);
+    for (uint32_t i = 0; i < panel->legend_count; i++)
+    {
+        const DvzLegend* legend = panel->legends[i];
+        if (legend == NULL)
+            continue;
+        if (visual == legend->mark_visual || visual == legend->text_visual)
+            return true;
+        if (legend->text_visual != NULL && visual == legend->text_visual->text.glyph_visual)
+            return true;
+    }
+    return false;
+}
+
+
 
 /**
  * Return the clip rectangle one visual should use within its panel render pass.
@@ -360,7 +385,8 @@ static DvzFramePlanClipRect _scene_visual_clip_rect(const DvzPanel* panel, const
     ANN(panel);
     ANN(visual);
     if (visual == panel->background_visual || visual->type == DVZ_VISUAL_TYPE_GLYPH ||
-        _scene_visual_is_colorbar_derived(panel, visual))
+        _scene_visual_is_colorbar_derived(panel, visual) ||
+        _scene_visual_is_legend_derived(panel, visual))
     {
         return DVZ_FRAME_PLAN_CLIP_RECT_PANEL;
     }
@@ -597,6 +623,7 @@ bool _scene_emit_panel_render_ex(
     _scene_prepare_composite_visuals(figure);
     _scene_prepare_axis_visuals(figure);
     _scene_prepare_colorbar_visuals(figure, NULL);
+    _scene_prepare_legend_visuals(figure, NULL);
     _scene_prepare_text_visuals(figure);
     ASSERT(panel_index < figure->panel_count);
     DvzPanel* panel = &figure->panels[panel_index];

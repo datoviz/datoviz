@@ -315,6 +315,165 @@ int test_scene_legend_lifecycle_and_reserve(TstContext* suite, const TstCase* it
 }
 
 
+int test_scene_legend_prepare_visuals(TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 500, 320, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
+    ANN(panel);
+
+    DvzScale* scale = dvz_scale(scene, &(DvzScaleDesc){.kind = DVZ_SCALE_CATEGORICAL});
+    ANN(scale);
+    DvzScaleCategory categories[3] = {
+        {.category_id = 7, .order = 2, .label = "Beta", .color = {220, 40, 40, 255}},
+        {.category_id = 3, .order = 1, .label = "Alpha", .color = {40, 220, 40, 255}},
+        {.category_id = 9, .order = 3, .label = NULL, .color = {40, 40, 220, 255}},
+    };
+    AT(dvz_scale_set_categories(scale, categories, 3));
+
+    DvzLegend* legend = dvz_legend(
+        panel, scale, &(DvzLegendDesc){
+                          .anchor = DVZ_SCENE_ANCHOR_PANEL_RIGHT,
+                          .title = "Classes",
+                          .reserve_px = 150.0f,
+                          .mark_size_px = 12.0f,
+                      });
+    ANN(legend);
+
+    _scene_prepare_legend_visuals(figure, NULL);
+    AT(legend->mark_visual != NULL);
+    AT(legend->text_visual != NULL);
+    AT(legend->mark_visual->visible);
+    AT(legend->text_visual->visible);
+    AT(legend->entry_count == 3);
+    AT(legend->text_count == 4);
+    AT(strcmp(legend->text_labels[0], "Classes") == 0);
+    AT(strcmp(legend->text_labels[1], "Alpha") == 0);
+    AT(strcmp(legend->text_labels[2], "Beta") == 0);
+    AT(strcmp(legend->text_labels[3], "9") == 0);
+
+    DvzVisualDataView color_view = {0};
+    AT(dvz_visual_data(legend->mark_visual, "color", &color_view) == 0);
+    AT(color_view.item_count == 3);
+    const DvzColor* colors = (const DvzColor*)color_view.data;
+    ANN(colors);
+    AT(colors[0][1] == 220);
+    AT(colors[1][0] == 220);
+    AT(colors[2][2] == 220);
+
+    DvzVisualDataView position_view = {0};
+    AT(dvz_visual_data(legend->mark_visual, "position", &position_view) == 0);
+    AT(position_view.item_count == 3);
+    const float* positions = (const float*)position_view.data;
+    ANN(positions);
+    AT(positions[0] > 0.0f);
+
+    DvzVisualDataView text_position_view = {0};
+    AT(dvz_visual_data(legend->text_visual, "position", &text_position_view) == 0);
+    AT(text_position_view.item_count == 4);
+
+    DvzVisualDataView first_position = {0};
+    AT(dvz_visual_data(legend->mark_visual, "position", &first_position) == 0);
+    const void* first_ptr = first_position.data;
+    _scene_prepare_legend_visuals(figure, NULL);
+    AT(dvz_visual_data(legend->mark_visual, "position", &first_position) == 0);
+    AT(first_position.data == first_ptr);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+int test_scene_legend_emit_stream_contains_derived_visuals(
+    TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 640, 480, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
+    ANN(panel);
+
+    DvzScale* scale = dvz_scale(scene, &(DvzScaleDesc){.kind = DVZ_SCALE_CATEGORICAL});
+    ANN(scale);
+    DvzScaleCategory categories[2] = {
+        {.category_id = 1, .order = 0, .label = "A", .color = {255, 80, 80, 255}},
+        {.category_id = 2, .order = 1, .label = "B", .color = {80, 255, 80, 255}},
+    };
+    AT(dvz_scale_set_categories(scale, categories, 2));
+    DvzLegend* legend = dvz_legend(
+        panel, scale, &(DvzLegendDesc){
+                          .anchor = DVZ_SCENE_ANCHOR_PANEL_RIGHT,
+                          .title = "Group",
+                      });
+    ANN(legend);
+
+    DvzCapabilitySnapshot caps = {0};
+    DvzDiagnosticReport report = {0};
+    DvzFramePlanEmitConfig emit_cfg = dvz_frame_plan_emit_config();
+    emit_cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
+    dvz_capability_snapshot_default(&caps);
+    caps.supports_color_blending = true;
+    dvz_diagnostic_report_init(&report);
+
+    DvzDrp2CommandStream* stream = dvz_figure_emit_ex(figure, &caps, &report, &emit_cfg);
+    ANN(stream);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+    AT(legend->mark_visual != NULL);
+    AT(legend->text_visual != NULL);
+    AT(legend->text_visual->text.glyph_visual != NULL);
+
+    bool found_mark_position_label = false;
+    bool found_mark_color_label = false;
+    bool found_mark_shape_label = false;
+    bool found_glyph_position_label = false;
+    bool found_glyph_draw = false;
+    for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
+    {
+        const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream, i);
+        ANN(cmd);
+        if (cmd->type == DVZ_DRP2_COMMAND_WRITE_BUFFER)
+        {
+            const char* label = dvz_drp2_stream_label(stream, cmd->u.write_buffer.buffer_id);
+            if (label == NULL)
+                continue;
+            found_mark_position_label =
+                found_mark_position_label || strcmp(label, "legend.0.marks.position") == 0;
+            found_mark_color_label =
+                found_mark_color_label || strcmp(label, "legend.0.marks.color") == 0;
+            found_mark_shape_label =
+                found_mark_shape_label || strcmp(label, "legend.0.marks.shape") == 0;
+            found_glyph_position_label =
+                found_glyph_position_label ||
+                strcmp(label, "legend.0.labels.glyph.position") == 0;
+        }
+        else if (cmd->type == DVZ_DRP2_COMMAND_DRAW && cmd->u.draw.vertex_count > 0 &&
+                 cmd->u.draw.vertex_count % 6 == 0)
+        {
+            found_glyph_draw = true;
+        }
+    }
+    AT(found_mark_position_label);
+    AT(found_mark_color_label);
+    AT(found_mark_shape_label);
+    AT(found_glyph_position_label);
+    AT(found_glyph_draw);
+    AT(_colorbar_stream_has_pipeline_label(stream, "_pipe_glyphg"));
+
+    dvz_drp2_stream_destroy(stream);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
 int test_scene_colorbar_auto_reserve_and_visuals(TstContext* suite, const TstCase* item)
 {
     (void)suite;
@@ -3100,6 +3259,8 @@ int test_scene_fields(TstSuite* suite)
     TST_CASE(test_scene_scale_colormap_colorbar_core);
     TST_CASE(test_scene_categorical_scale_entries);
     TST_CASE(test_scene_legend_lifecycle_and_reserve);
+    TST_CASE(test_scene_legend_prepare_visuals);
+    TST_CASE(test_scene_legend_emit_stream_contains_derived_visuals);
     TST_CASE(test_scene_colorbar_auto_reserve_and_visuals);
     TST_CASE(test_scene_colorbar_prepare_is_idempotent);
     TST_CASE(test_scene_colorbar_auto_reserve_tracks_resize);

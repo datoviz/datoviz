@@ -205,6 +205,38 @@ static bool _scene_colorbar_visual_resource_key(
 }
 
 
+/**
+ * Format a legend-derived visual id when the visual is owned by a retained legend.
+ *
+ * @param figure the figure being emitted
+ * @param visual the visual to identify
+ * @param out the output key buffer
+ * @param out_size the output buffer capacity
+ * @return whether the visual is legend-derived and the key was written
+ */
+static bool _scene_legend_visual_resource_key(
+    const DvzFigure* figure, const DvzVisual* visual, char* out, size_t out_size)
+{
+    if (figure == NULL || figure->scene == NULL || visual == NULL || out == NULL || out_size == 0)
+        return false;
+
+    DvzScene* scene = figure->scene;
+    for (uint32_t i = 0; i < scene->legend_count; i++)
+    {
+        const DvzLegend* legend = &scene->legends[i];
+        if (legend->scene != scene || legend->panel == NULL || legend->panel->figure != figure)
+            continue;
+        if (visual == legend->mark_visual)
+            return _format_key(out, out_size, "legend.%u.marks", i);
+        if (visual == legend->text_visual)
+            return _format_key(out, out_size, "legend.%u.labels", i);
+        if (legend->text_visual != NULL && visual == legend->text_visual->text.glyph_visual)
+            return _format_key(out, out_size, "legend.%u.labels.glyph", i);
+    }
+    return false;
+}
+
+
 
 /**
  * Format a visual resource id, preserving semantic debug provenance when available.
@@ -221,6 +253,8 @@ bool _scene_visual_resource_key(
     size_t out_size)
 {
     if (_scene_colorbar_visual_resource_key(figure, visual, out, out_size))
+        return true;
+    if (_scene_legend_visual_resource_key(figure, visual, out, out_size))
         return true;
     return _scene_resource_key_visual(visual_index, out, out_size);
 }
@@ -245,6 +279,8 @@ bool _scene_visual_attr_resource_key(
     ANN(attr_name);
     char visual_id[128] = {0};
     if (_scene_colorbar_visual_resource_key(figure, visual, visual_id, sizeof(visual_id)))
+        return _format_key(out, out_size, "%s.%s", visual_id, attr_name);
+    if (_scene_legend_visual_resource_key(figure, visual, visual_id, sizeof(visual_id)))
         return _format_key(out, out_size, "%s.%s", visual_id, attr_name);
     return _scene_resource_key_visual_attr(visual_index, attr_name, out, out_size);
 }
@@ -287,6 +323,10 @@ bool _scene_visual_indexed_resource_key(
 {
     char visual_id[128] = {0};
     if (_scene_colorbar_visual_resource_key(figure, visual, visual_id, sizeof(visual_id)))
+    {
+        return _format_key(out, out_size, "%s#index=b%u", visual_id, buffer_index);
+    }
+    if (_scene_legend_visual_resource_key(figure, visual, visual_id, sizeof(visual_id)))
     {
         return _format_key(out, out_size, "%s#index=b%u", visual_id, buffer_index);
     }
