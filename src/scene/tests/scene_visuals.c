@@ -716,6 +716,8 @@ int test_scene_marker_api_and_emit_glsl(TstContext* suite, const TstCase* item)
     bool found_pipeline = false;
     bool found_material_bg = false;
     bool found_draw = false;
+    bool found_vertex_slots[5] = {false};
+    uint32_t set_vertex_buffer_count = 0;
     for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
     {
         const DvzDrp2Command* command = dvz_drp2_stream_get(stream, i);
@@ -733,6 +735,14 @@ int test_scene_marker_api_and_emit_glsl(TstContext* suite, const TstCase* item)
         {
             found_material_bg = found_material_bg || command->u.set_bind_group.slot == 1;
         }
+        else if (command->type == DVZ_DRP2_COMMAND_SET_VERTEX_BUFFER)
+        {
+            set_vertex_buffer_count++;
+            AT(command->u.set_vertex_buffer.buffer_id != 0);
+            AT(command->u.set_vertex_buffer.offset == 0);
+            AT(command->u.set_vertex_buffer.slot < 5);
+            found_vertex_slots[command->u.set_vertex_buffer.slot] = true;
+        }
         else if (command->type == DVZ_DRP2_COMMAND_DRAW)
         {
             found_draw = true;
@@ -742,6 +752,9 @@ int test_scene_marker_api_and_emit_glsl(TstContext* suite, const TstCase* item)
     }
     AT(found_pipeline);
     AT(found_material_bg);
+    AT(set_vertex_buffer_count == 5);
+    for (uint32_t slot = 0; slot < 5; slot++)
+        AT(found_vertex_slots[slot]);
     AT(found_draw);
 
     dvz_drp2_stream_destroy(stream);
@@ -1324,16 +1337,27 @@ int test_scene_mesh_indexed_default_color_emits_draw_indexed(TstContext* suite, 
 
     bool found_set_index = false;
     bool found_draw_indexed = false;
+    uint32_t set_index_order = UINT32_MAX;
+    uint32_t draw_indexed_order = UINT32_MAX;
     for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
     {
         const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream, i);
         if (cmd->type == DVZ_DRP2_COMMAND_SET_INDEX_BUFFER)
+        {
             found_set_index = strcmp(cmd->u.set_index_buffer.index_format, "uint32") == 0;
+            if (found_set_index)
+                set_index_order = i;
+        }
         if (cmd->type == DVZ_DRP2_COMMAND_DRAW_INDEXED)
+        {
             found_draw_indexed = cmd->u.draw_indexed.index_count == 6;
+            if (found_draw_indexed)
+                draw_indexed_order = i;
+        }
     }
     AT(found_set_index);
     AT(found_draw_indexed);
+    AT(set_index_order < draw_indexed_order);
     AT(_stream_set_vertex_buffer_count(stream) == 3);
     AT(_stream_write_buffer_range_count(stream, 0, sizeof(DvzSceneMaterialParams)) == 1);
 
