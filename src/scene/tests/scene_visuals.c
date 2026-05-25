@@ -2411,7 +2411,7 @@ int test_scene_panel_bounds_overlay_visual(TstContext* suite, const TstCase* ite
     AT(occluded_overlay->attrs[width_idx].item_count == 4);
     DvzColor* hidden_colors = (DvzColor*)occluded_overlay->attrs[color_idx].data;
     ANN(hidden_colors);
-    AT(hidden_colors[0][3] == 90);
+    AT(hidden_colors[0][3] == 150);
 
     DvzBounds bounds = {0};
     AT(dvz_panel_bounds(panel, DVZ_BOUNDS_SPACE_VISUAL, &bounds) == 0);

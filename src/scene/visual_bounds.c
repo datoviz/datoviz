@@ -767,7 +767,7 @@ static bool _bounds_overlay_sync_panel(DvzPanel* panel)
 
     for (uint32_t i = 0; i < line_count; i++)
     {
-        colors[i][3] = 90;
+        colors[i][3] = 150;
         widths[i] = 1.5f;
     }
     if (visible)
