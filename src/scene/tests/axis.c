@@ -435,6 +435,42 @@ static int test_axis_text_hidpi_scales_glyph_bounds(TstContext* suite, const Tst
 }
 
 
+static int test_axis_text_renderer_style(TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 800, 600, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
+    ANN(panel);
+    AT(dvz_panel_set_domain(panel, DVZ_DIM_X, 0.0, 10.0) == 0);
+
+    DvzAxis* axis = dvz_panel_axis(panel, DVZ_DIM_X);
+    ANN(axis);
+    AT(axis->style.text_renderer == DVZ_TEXT_RENDERER_MSDF_ATLAS);
+    _scene_prepare_axis_visuals(figure);
+    ANN(axis->text_visual);
+    AT(axis->text_visual->text.renderer == DVZ_TEXT_RENDERER_MSDF_ATLAS);
+
+    DvzAxisStyle style = axis->style;
+    style.text_renderer = DVZ_TEXT_RENDERER_SMALL_BITMAP_ATLAS;
+    AT(dvz_axis_set_style(axis, &style));
+    _scene_prepare_axis_visuals(figure);
+    AT(axis->text_visual->text.renderer == DVZ_TEXT_RENDERER_SMALL_BITMAP_ATLAS);
+
+    style.text_renderer = DVZ_TEXT_RENDERER_VECTOR_GPU;
+    AT(dvz_axis_set_style(axis, &style));
+    _scene_prepare_axis_visuals(figure);
+    AT(axis->text_visual->text.renderer == DVZ_TEXT_RENDERER_MSDF_ATLAS);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
 static int test_axis_text_updates_after_domain_change(TstContext* suite, const TstCase* item)
 {
     (void)suite;
@@ -1111,6 +1147,7 @@ int test_scene_axis(TstSuite* suite)
     TST_CASE(test_axis_tick_density_tracks_panel_size);
     TST_CASE(test_axis_text_labels);
     TST_CASE(test_axis_text_hidpi_scales_glyph_bounds);
+    TST_CASE(test_axis_text_renderer_style);
     TST_CASE(test_axis_text_updates_after_domain_change);
     TST_CASE(test_axis_text_layout_reserve);
     TST_CASE(test_axis_text_inset_panel_coordinates);

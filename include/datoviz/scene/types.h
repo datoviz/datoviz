@@ -262,6 +262,7 @@ struct DvzAxisStyle
     float label_gap_px;
     float tick_size_px;
     float label_size_px;
+    DvzTextRenderer text_renderer;
     float plot_margin_left;
     float plot_margin_right;
     float plot_margin_bottom;

@@ -59,7 +59,7 @@ static DvzAxisTickPolicy _axis_default_tick_policy(void)
 
 
 /**
- * Return the default WIP axis line style.
+ * Return the default WIP axis line and text style.
  *
  * @return default axis style
  */
@@ -77,6 +77,7 @@ static DvzAxisStyle _axis_default_style(void)
         .label_gap_px = AXIS_TEXT_LABEL_GAP,
         .tick_size_px = AXIS_TEXT_TICK_SIZE,
         .label_size_px = AXIS_TEXT_LABEL_SIZE,
+        .text_renderer = DVZ_TEXT_RENDERER_MSDF_ATLAS,
         .plot_margin_left = 0.0f,
         .plot_margin_right = 0.0f,
         .plot_margin_bottom = 0.0f,
@@ -103,6 +104,46 @@ static DvzAxisStyle _axis_default_style(void)
 static bool _axis_dim_supported(DvzDim dim)
 {
     return dim == DVZ_DIM_X || dim == DVZ_DIM_Y;
+}
+
+
+
+/**
+ * Return a renderer supported by internal axis text visuals.
+ *
+ * @param style axis style
+ * @return supported text renderer
+ */
+static DvzTextRenderer _axis_text_renderer(const DvzAxisStyle* style)
+{
+    ANN(style);
+    switch (style->text_renderer)
+    {
+    case DVZ_TEXT_RENDERER_AUTO:
+    case DVZ_TEXT_RENDERER_SMALL_BITMAP_ATLAS:
+    case DVZ_TEXT_RENDERER_BITMAP_ATLAS:
+    case DVZ_TEXT_RENDERER_MSDF_ATLAS:
+        return style->text_renderer;
+    default:
+        return DVZ_TEXT_RENDERER_MSDF_ATLAS;
+    }
+}
+
+
+
+/**
+ * Apply the axis text renderer to the derived text visual.
+ *
+ * @param axis the axis
+ * @return whether the renderer was applied
+ */
+static bool _axis_apply_text_renderer(DvzAxis* axis)
+{
+    ANN(axis);
+    if (axis->text_visual == NULL)
+        return true;
+    DvzTextRenderer renderer = _axis_text_renderer(&axis->style);
+    return _scene_text_visual_set_renderer(axis->text_visual, renderer) == 0;
 }
 
 
@@ -566,6 +607,11 @@ static bool _axis_ensure_text_visual(DvzAxis* axis)
     axis->text_visual = _scene_text_visual(axis->panel->figure->scene, 0);
     if (axis->text_visual == NULL)
         return false;
+    if (!_axis_apply_text_renderer(axis))
+    {
+        axis->text_visual = NULL;
+        return false;
+    }
     axis->text_visual->visible = false;
     DvzVisualAttachDesc attach = {.z_layer = 1001, .controller_mode = DVZ_CONTROLLER_FIXED};
     if (dvz_panel_add_visual(axis->panel, axis->text_visual, &attach) != 0)
@@ -1073,6 +1119,8 @@ static void _axis_update_text(
     }
     if (!_axis_ensure_text_visual(axis))
         return;
+    if (!_axis_apply_text_renderer(axis))
+        return;
     if (_axis_text_cache_matches(axis, count, labels, positions, anchors, sizes, colors, angles))
     {
         if (!axis->text_visual->visible)
@@ -1374,7 +1422,7 @@ DvzAxisTickPolicy dvz_axis_tick_policy(void)
 
 
 /**
- * Return the default axis style.
+ * Return the default axis line and text style.
  *
  * @return default axis style
  */
@@ -1463,7 +1511,7 @@ bool dvz_axis_set_tick_policy(DvzAxis* axis, const DvzAxisTickPolicy* policy)
 
 
 /**
- * Set the line style for one panel-owned axis.
+ * Set the line and text style for one panel-owned axis.
  *
  * @param axis the axis
  * @param style axis style, or NULL for defaults

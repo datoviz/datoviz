@@ -38,6 +38,7 @@ typedef struct ScatterAxesState
     DvzAxisStyle y_style;
     DvzAxisTickPolicy x_policy;
     DvzAxisTickPolicy y_policy;
+    int text_renderer;
     bool x_visible;
     bool y_visible;
     bool x_grid;
@@ -92,6 +93,23 @@ static void _make_scatter(vec3 positions[N], DvzColor colors[N], float sizes[N])
 
 
 /**
+ * Return the axis text renderer matching one GUI combo index.
+ *
+ * @param index GUI combo index
+ * @return text renderer
+ */
+static DvzTextRenderer _axis_renderer_from_index(int index)
+{
+    if (index == 1)
+        return DVZ_TEXT_RENDERER_BITMAP_ATLAS;
+    if (index == 2)
+        return DVZ_TEXT_RENDERER_SMALL_BITMAP_ATLAS;
+    return DVZ_TEXT_RENDERER_MSDF_ATLAS;
+}
+
+
+
+/**
  * Apply the live axis controls to the retained axes.
  *
  * @param state example state
@@ -100,6 +118,8 @@ static void _apply_axis_controls(ScatterAxesState* state)
 {
     if (state == NULL)
         return;
+    state->x_style.text_renderer = _axis_renderer_from_index(state->text_renderer);
+    state->y_style.text_renderer = state->x_style.text_renderer;
     (void)dvz_axis_set_style(state->x_axis, &state->x_style);
     (void)dvz_axis_set_style(state->y_axis, &state->y_style);
     (void)dvz_axis_set_tick_policy(state->x_axis, &state->x_policy);
@@ -146,6 +166,8 @@ static void _scatter_axes_gui(DvzGui* gui, DvzView* win, void* user_data)
         changed |=
             dvz_gui_slider_float(gui, "Label size", &state->x_style.label_size_px, 10.0f, 34.0f);
         state->y_style.label_size_px = state->x_style.label_size_px;
+        const char* renderer_items[] = {"MSDF", "Bitmap", "Small bitmap"};
+        changed |= dvz_gui_combo(gui, "Renderer", &state->text_renderer, renderer_items, 3);
         changed |=
             dvz_gui_slider_float(gui, "Tick gap", &state->x_style.tick_gap_px, 2.0f, 24.0f);
         state->y_style.tick_gap_px = state->x_style.tick_gap_px;
@@ -236,6 +258,7 @@ int main(int argc, char** argv)
         .y_style = dvz_axis_style(),
         .x_policy = dvz_axis_tick_policy(),
         .y_policy = dvz_axis_tick_policy(),
+        .text_renderer = 0,
         .x_visible = true,
         .y_visible = true,
         .x_grid = true,

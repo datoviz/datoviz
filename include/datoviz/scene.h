@@ -824,7 +824,7 @@ DVZ_EXPORT DvzAxisTickPolicy dvz_axis_tick_policy(void);
 
 
 /**
- * Return the default axis style.
+ * Return the default axis line and text style.
  *
  * @return default axis style
  */
@@ -874,7 +874,7 @@ DVZ_EXPORT bool dvz_axis_set_tick_policy(DvzAxis* axis, const DvzAxisTickPolicy*
 
 
 /**
- * Set the line style for one panel-owned axis.
+ * Set the line and text style for one panel-owned axis.
  *
  * @param axis the axis
  * @param style axis style, or NULL for defaults
