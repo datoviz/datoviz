@@ -306,6 +306,7 @@ set(DVZ_DRP2_COMPONENTS
 )
 
 set(DVZ_SCENE_COMPONENTS
+    datoviz_geom
     datoviz_scene
 )
 

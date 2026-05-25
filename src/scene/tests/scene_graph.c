@@ -131,6 +131,7 @@ int test_scene_graph(TstSuite* suite)
     TST_CASE(test_scene_mesh_typed_data_upload);
     TST_CASE(test_scene_visual_index_data_upload);
     TST_CASE(test_scene_mesh_geometry_upload);
+    TST_CASE(test_scene_polygon_composite);
     TST_CASE(test_scene_additional_typed_data_uploads);
     TST_CASE(test_scene_typed_upload_rejects_wrong_family);
     TST_CASE(test_scene_point_external_position_buffer_emits_no_upload);

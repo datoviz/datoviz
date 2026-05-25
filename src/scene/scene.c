@@ -2578,6 +2578,10 @@ void dvz_scene_destroy(DvzScene* scene)
         return;
     if (!_scene_visual_mutation_allowed(scene, "destroy scene-owned visual data"))
         return;
+    for (uint32_t i = 0; i < scene->composite_count; i++)
+        _scene_composite_reset(&scene->composites[i]);
+    for (uint32_t i = 0; i < scene->polygon_count; i++)
+        _scene_polygon_reset(&scene->polygons[i]);
     for (uint32_t i = 0; i < scene->visual_count; i++)
         _scene_visual_reset(&scene->visuals[i], true);
     for (uint32_t i = 0; i < scene->font_count; i++)

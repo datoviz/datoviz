@@ -54,6 +54,8 @@ typedef struct DvzFigure            DvzFigure;
 typedef struct DvzGrid              DvzGrid;
 typedef struct DvzPanel             DvzPanel;
 typedef struct DvzVisual            DvzVisual;
+typedef struct DvzComposite         DvzComposite;
+typedef struct DvzPolygon           DvzPolygon;
 typedef struct DvzCamera            DvzCamera;
 typedef struct DvzController        DvzController;
 typedef struct DvzControllerLink    DvzControllerLink;

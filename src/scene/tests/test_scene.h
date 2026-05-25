@@ -678,6 +678,8 @@ int test_scene_visual_index_data_upload(TstContext* suite, const TstCase* item);
 
 int test_scene_mesh_geometry_upload(TstContext* suite, const TstCase* item);
 
+int test_scene_polygon_composite(TstContext* suite, const TstCase* item);
+
 int test_scene_additional_typed_data_uploads(TstContext* suite, const TstCase* item);
 
 int test_scene_typed_upload_rejects_wrong_family(TstContext* suite, const TstCase* item);

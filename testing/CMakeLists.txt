@@ -704,6 +704,7 @@ if(_dvz_has_core AND _dvz_has_vk AND _dvz_has_canvas)
             datoviz_common
             datoviz_ds
             datoviz_fileio
+            datoviz_geom
             datoviz_math
             datoviz_thread
             datoviz_input
@@ -851,6 +852,7 @@ if(_dvz_has_core AND _dvz_has_vk AND _dvz_has_canvas)
         datoviz_common
         datoviz_ds
         datoviz_fileio
+        datoviz_geom
         datoviz_math
         datoviz_thread
         datoviz_input

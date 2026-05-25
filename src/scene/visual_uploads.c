@@ -1334,6 +1334,7 @@ void _scene_emit_visual_uploads(
     ANN(figure);
     ANN(figure->scene);
     ANN(plan);
+    _scene_prepare_composite_visuals(figure);
     _scene_prepare_axis_visuals(figure);
     _scene_prepare_colorbar_visuals(figure, report);
     _scene_prepare_text_visuals(figure);

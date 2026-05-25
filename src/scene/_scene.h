@@ -17,6 +17,7 @@
 #include "_frame_plan.h"
 #include "datoviz/drp2/runtime.h"
 #include "datoviz/drp2/types.h"
+#include "datoviz/geom/types.h"
 #include "datoviz/math/_cglm.h"
 #include "datoviz/scene/animation.h"
 #include "datoviz/scene/arcball.h"
@@ -40,6 +41,8 @@
 #define DVZ_SCENE_MAX_GRID_COLS  32
 #define DVZ_SCENE_MAX_PANELS     64
 #define DVZ_SCENE_MAX_VISUALS    256
+#define DVZ_SCENE_MAX_COMPOSITES 128
+#define DVZ_SCENE_MAX_POLYGONS   64
 #define DVZ_SCENE_MAX_FIELDS     128
 #define DVZ_SCENE_MAX_BUFFERS    128
 #define DVZ_SCENE_MAX_SCALES     64
@@ -73,6 +76,8 @@
     ((2 + DVZ_SCENE_MAX_AXIS_MINOR_TICKS) * DVZ_SCENE_MAX_AXIS_TICKS + 1)
 #define DVZ_SCENE_TEXT_ATLAS_MAX_GLYPHS 256
 #define DVZ_SCENE_MAX_TEXT_ATLASES_PER_FONT 32
+#define DVZ_COMPOSITE_MAX_VISUALS 8
+#define DVZ_COMPOSITE_ROLE_SIZE   32
 
 
 
@@ -96,6 +101,67 @@ typedef enum
     DVZ_VISUAL_TYPE_GLYPH     = 11,
     DVZ_VISUAL_TYPE_TEXT      = 12,
 } DvzVisualType;
+
+
+
+typedef enum
+{
+    DVZ_COMPOSITE_TYPE_NONE,
+    DVZ_COMPOSITE_TYPE_POLYGON,
+} DvzCompositeType;
+
+
+
+typedef struct DvzPolygonStoredRing DvzPolygonStoredRing;
+typedef struct DvzCompositeVisual DvzCompositeVisual;
+
+
+
+struct DvzPolygonStoredRing
+{
+    dvec2* xy;
+    uint32_t count;
+};
+
+
+
+struct DvzPolygon
+{
+    DvzScene* scene;
+    uint32_t flags;
+    bool active;
+    DvzPolygonStoredRing outer;
+    DvzPolygonStoredRing* holes;
+    uint32_t hole_count;
+    DvzColor fill_color;
+    DvzColor stroke_color;
+    float stroke_width;
+    uint64_t version;
+};
+
+
+
+struct DvzCompositeVisual
+{
+    char role[DVZ_COMPOSITE_ROLE_SIZE];
+    DvzVisual* visual;
+    int32_t z_offset;
+};
+
+
+
+struct DvzComposite
+{
+    DvzScene* scene;
+    DvzCompositeType type;
+    uint32_t flags;
+    bool active;
+    bool dirty;
+    void* source;
+    uint64_t source_version_seen;
+    uint32_t visual_count;
+    DvzCompositeVisual visuals[DVZ_COMPOSITE_MAX_VISUALS];
+};
 
 
 
@@ -1247,6 +1313,12 @@ struct DvzScene
     uint32_t  visual_count;
     DvzVisual visuals[DVZ_SCENE_MAX_VISUALS]; /* owner of all visual objects */
 
+    uint32_t polygon_count;
+    DvzPolygon polygons[DVZ_SCENE_MAX_POLYGONS];
+
+    uint32_t composite_count;
+    DvzComposite composites[DVZ_SCENE_MAX_COMPOSITES];
+
     uint32_t field_count;
     DvzSampledField fields[DVZ_SCENE_MAX_FIELDS];
 
@@ -1365,6 +1437,9 @@ void _scene_remove_request_frame_callback(
 void _scene_notify_request_frame(DvzFigure* figure);
 void _scene_notify_visual_changed(DvzVisual* visual);
 void _scene_notify_buffer_changed(DvzSceneBuffer* buffer);
+void _scene_prepare_composite_visuals(DvzFigure* figure);
+void _scene_polygon_reset(DvzPolygon* polygon);
+void _scene_composite_reset(DvzComposite* composite);
 
 
 

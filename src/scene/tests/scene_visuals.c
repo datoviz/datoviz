@@ -2748,6 +2748,111 @@ int test_scene_mesh_geometry_upload(TstContext* suite, const TstCase* item)
 
 
 
+int test_scene_polygon_composite(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    ANN(panel);
+
+    DvzPolygon* polygon = dvz_polygon(scene, 0);
+    ANN(polygon);
+    const dvec2 outer[4] = {
+        {0.0, 0.0},
+        {1.0, 0.0},
+        {1.0, 1.0},
+        {0.0, 1.0},
+    };
+    AT(dvz_polygon_set_geometry(
+           polygon, &(DvzPolygonDesc){.outer = {.xy = outer, .count = 4}}) == 0);
+
+    const DvzColor fill_color = {20, 40, 200, 255};
+    const DvzColor stroke_color = {240, 220, 40, 255};
+    AT(dvz_polygon_fill_color(polygon, fill_color) == 0);
+    AT(dvz_polygon_stroke_color(polygon, stroke_color) == 0);
+    AT(dvz_polygon_stroke_width(polygon, 3.0f) == 0);
+
+    DvzComposite* composite = dvz_polygon_composite(polygon, 0);
+    ANN(composite);
+    AT(dvz_composite_visual_count(composite) == 2);
+    DvzVisual* fill = dvz_composite_visual(composite, "fill");
+    DvzVisual* stroke = dvz_composite_visual(composite, "stroke");
+    ANN(fill);
+    ANN(stroke);
+    AT(dvz_composite_visual_at(composite, 0) == fill);
+
+    AT(dvz_panel_add_composite(panel, composite, &(DvzVisualAttachDesc){.z_layer = 5}) == 0);
+    AT(panel->visual_count == 2);
+    AT(panel->visuals[0].visual == fill);
+    AT(panel->visuals[0].z_layer == 5);
+    AT(panel->visuals[1].visual == stroke);
+    AT(panel->visuals[1].z_layer == 6);
+    AT(dvz_panel_add_composite(panel, composite, NULL) == 0);
+    AT(panel->visual_count == 2);
+
+    DvzVisualDataView fill_position_view = {0};
+    AT(dvz_visual_data(fill, "position", &fill_position_view) == 0);
+    AT(fill_position_view.item_count == 4);
+    AT(fill->buffer != NULL);
+    AT(fill->buffer->desc.byte_size == 6 * sizeof(DvzIndex));
+
+    DvzVisualDataView fill_color_view = {0};
+    AT(dvz_visual_data(fill, "color", &fill_color_view) == 0);
+    const DvzColor* fill_colors = fill_color_view.data;
+    AT(fill_colors[0][0] == fill_color[0]);
+    AT(fill_colors[0][1] == fill_color[1]);
+    AT(fill_colors[0][2] == fill_color[2]);
+    AT(fill_colors[0][3] == fill_color[3]);
+
+    DvzVisualDataView stroke_position_view = {0};
+    AT(dvz_visual_data(stroke, "position", &stroke_position_view) == 0);
+    AT(stroke_position_view.item_count == 5);
+    AT(stroke->path.subpath_count == 1);
+    AT(stroke->path.subpath_lengths[0] == 5);
+    DvzVisualDataView stroke_width_view = {0};
+    AT(dvz_visual_data(stroke, "stroke_width", &stroke_width_view) == 0);
+    const float* widths = stroke_width_view.data;
+    AC(widths[0], 3.0f, EPS);
+
+    const DvzColor fill_update = {200, 30, 40, 255};
+    AT(dvz_polygon_fill_color(polygon, fill_update) == 0);
+    _scene_prepare_composite_visuals(figure);
+    AT(dvz_visual_data(fill, "color", &fill_color_view) == 0);
+    fill_colors = fill_color_view.data;
+    AT(fill_colors[0][0] == fill_update[0]);
+    AT(fill_colors[0][1] == fill_update[1]);
+    AT(fill_colors[0][2] == fill_update[2]);
+
+    const dvec2 hole[4] = {
+        {0.25, 0.25},
+        {0.75, 0.25},
+        {0.75, 0.75},
+        {0.25, 0.75},
+    };
+    AT(dvz_polygon_hole(polygon, 0, 4, hole) == 0);
+    _scene_prepare_composite_visuals(figure);
+    AT(dvz_visual_data(fill, "position", &fill_position_view) == 0);
+    AT(fill_position_view.item_count == 8);
+    AT(dvz_visual_data(stroke, "position", &stroke_position_view) == 0);
+    AT(stroke_position_view.item_count == 10);
+    AT(stroke->path.subpath_count == 2);
+
+    dvz_composite_destroy(composite);
+    AT(dvz_composite_visual_count(composite) == 0);
+    AT(!fill->visible);
+    AT(!stroke->visible);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
 int test_scene_additional_typed_data_uploads(TstContext* suite, const TstCase* item)
 {
     ANN(suite);

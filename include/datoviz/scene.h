@@ -609,6 +609,21 @@ DVZ_EXPORT int dvz_panel_add_visual(
 
 
 /**
+ * Add all generated visual roles of a composite to a panel.
+ *
+ * The composite is realized before attachment. Generated visuals are then attached to the panel
+ * with the same semantics as dvz_panel_add_visual().
+ *
+ * @param panel the panel
+ * @param composite the composite
+ * @param desc attachment options applied to the composite roles
+ * @return 0 on success, -1 on error
+ */
+DVZ_EXPORT int dvz_panel_add_composite(
+    DvzPanel* panel, DvzComposite* composite, const DvzVisualAttachDesc* desc);
+
+
+/**
  * Set or update a panel background.
  *
  * Backgrounds are rendered as a fixed full-panel visual behind regular visuals. Passing NULL or
@@ -1538,6 +1553,142 @@ DVZ_EXPORT DvzVisual* dvz_mesh(DvzScene* scene, uint32_t flags);
  * @return 0 on success, -1 on invalid input or upload failure
  */
 DVZ_EXPORT int dvz_mesh_set_geometry(DvzVisual* visual, const DvzGeometry* geometry);
+
+
+/**
+ * Create a scene-owned semantic polygon object.
+ *
+ * A polygon represents one filled region with one outer ring and optional hole rings.
+ *
+ * @param scene the scene
+ * @param flags reserved polygon flags
+ * @return the polygon, or NULL on allocation failure
+ */
+DVZ_EXPORT DvzPolygon* dvz_polygon(DvzScene* scene, uint32_t flags);
+
+
+/**
+ * Destroy a scene-owned polygon object and release its copied ring data.
+ *
+ * @param polygon the polygon
+ */
+DVZ_EXPORT void dvz_polygon_destroy(DvzPolygon* polygon);
+
+
+/**
+ * Replace all polygon rings from a borrowed descriptor.
+ *
+ * @param polygon the polygon
+ * @param desc borrowed polygon descriptor
+ * @return 0 on success, -1 on invalid input or allocation failure
+ */
+DVZ_EXPORT int dvz_polygon_set_geometry(DvzPolygon* polygon, const DvzPolygonDesc* desc);
+
+
+/**
+ * Replace the polygon outer ring while preserving existing holes.
+ *
+ * @param polygon the polygon
+ * @param count number of outer ring vertices
+ * @param xy borrowed XY vertex array
+ * @return 0 on success, -1 on invalid input or allocation failure
+ */
+DVZ_EXPORT int dvz_polygon_outer(DvzPolygon* polygon, uint32_t count, const dvec2* xy);
+
+
+/**
+ * Append or replace one polygon hole ring.
+ *
+ * Passing hole_index equal to the current hole count appends a new hole. Passing a smaller index
+ * replaces that hole.
+ *
+ * @param polygon the polygon
+ * @param hole_index hole index to replace, or current hole count to append
+ * @param count number of hole ring vertices
+ * @param xy borrowed XY vertex array
+ * @return 0 on success, -1 on invalid input or allocation failure
+ */
+DVZ_EXPORT int
+dvz_polygon_hole(DvzPolygon* polygon, uint32_t hole_index, uint32_t count, const dvec2* xy);
+
+
+/**
+ * Set the polygon fill color.
+ *
+ * @param polygon the polygon
+ * @param color RGBA fill color
+ * @return 0 on success, -1 on error
+ */
+DVZ_EXPORT int dvz_polygon_fill_color(DvzPolygon* polygon, const DvzColor color);
+
+
+/**
+ * Set the polygon stroke color.
+ *
+ * @param polygon the polygon
+ * @param color RGBA stroke color
+ * @return 0 on success, -1 on error
+ */
+DVZ_EXPORT int dvz_polygon_stroke_color(DvzPolygon* polygon, const DvzColor color);
+
+
+/**
+ * Set the polygon stroke width in pixels.
+ *
+ * @param polygon the polygon
+ * @param width stroke width in pixels
+ * @return 0 on success, -1 on invalid input
+ */
+DVZ_EXPORT int dvz_polygon_stroke_width(DvzPolygon* polygon, float width);
+
+
+/**
+ * Create a scene-owned composite render view for a polygon.
+ *
+ * @param polygon the source polygon
+ * @param flags reserved composite flags
+ * @return the composite, or NULL on allocation failure
+ */
+DVZ_EXPORT DvzComposite* dvz_polygon_composite(DvzPolygon* polygon, uint32_t flags);
+
+
+/**
+ * Destroy a scene-owned composite render view.
+ *
+ * @param composite the composite
+ */
+DVZ_EXPORT void dvz_composite_destroy(DvzComposite* composite);
+
+
+/**
+ * Return the number of generated visuals owned by a composite.
+ *
+ * @param composite the composite
+ * @return generated visual count
+ */
+DVZ_EXPORT uint32_t dvz_composite_visual_count(const DvzComposite* composite);
+
+
+/**
+ * Return a generated visual by role index.
+ *
+ * @param composite the composite
+ * @param index role index
+ * @return the generated visual, or NULL when out of range
+ */
+DVZ_EXPORT DvzVisual* dvz_composite_visual_at(DvzComposite* composite, uint32_t index);
+
+
+/**
+ * Return a generated visual by role name.
+ *
+ * Polygon composites currently expose "fill" and "stroke" roles.
+ *
+ * @param composite the composite
+ * @param role role name
+ * @return the generated visual, or NULL when absent
+ */
+DVZ_EXPORT DvzVisual* dvz_composite_visual(DvzComposite* composite, const char* role);
 
 
 /**
