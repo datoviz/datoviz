@@ -16,9 +16,11 @@ Use this document together with:
 1. [START.md](START.md) for current branch context and active technical priorities.
 2. [STATUS.md](STATUS.md) for remaining C implementation lanes and parallel-work
    coordination.
-3. [../../spec/scene/examples/EXAMPLE_RELEASE_STAGING.md](../../spec/scene/examples/EXAMPLE_RELEASE_STAGING.md)
+3. [DOCUMENTATION.md](DOCUMENTATION.md) for public documentation deliverables, API/docs inventory,
+   RC documentation gates, and final documentation artifacts.
+4. [../../spec/scene/examples/EXAMPLE_RELEASE_STAGING.md](../../spec/scene/examples/EXAMPLE_RELEASE_STAGING.md)
    for release example staging.
-4. [../../spec/scene/validation/RENDER_CONFORMANCE.md](../../spec/scene/validation/RENDER_CONFORMANCE.md)
+5. [../../spec/scene/validation/RENDER_CONFORMANCE.md](../../spec/scene/validation/RENDER_CONFORMANCE.md)
    for the planned render-conformance lane.
 
 
@@ -204,17 +206,13 @@ Goal: make the release surface coherent before users start testing release candi
 
 Checklist:
 
-1. Generate or write a public API inventory.
-2. Classify symbols and modules as public, experimental, advanced/unstable, internal leakage, or
-   deferred.
-3. Confirm ownership, destroy rules, callback lifetimes, and error/status behavior.
-4. Review lower-layer status: `scene` and `app` are the main public narrative; `drp2` is an
-   advanced protocol surface; `vk`, `vklite`, `canvas`, `stream`, and `video` are lower-level or
-   integration-oriented surfaces.
-5. Update README, build docs, release notes, feature-status docs, migration notes, and known issues.
-6. Keep active v0.4 design material out of legacy `docs/` unless the public documentation migration
+1. Complete the RC1 API/docs inventory and public-surface classification described in
+   [DOCUMENTATION.md](DOCUMENTATION.md).
+2. Update the required README, build, release-note, feature-status, migration, and known-issues
+   deliverables listed in [DOCUMENTATION.md](DOCUMENTATION.md).
+3. Keep active v0.4 design material out of legacy `docs/` unless the public documentation migration
    has explicitly started.
-7. Prepare a minimal RC1 user guide outside `docs/`, preferably at the repository root, so RC1
+4. Prepare a minimal RC1 user guide outside `docs/`, preferably at the repository root, so RC1
    users have a temporary v0.4 source of truth before the full documentation migration. Link it
    from `README.md` and the GitHub pre-release body.
 
@@ -313,12 +311,9 @@ Goal: publish a documentation and gallery candidate.
 
 Required artifacts:
 
-1. website or documentation structure mostly final,
-2. generated C reference or complete API reference outline,
-3. raw ctypes documentation,
-4. gallery examples with screenshots or captured artifacts,
-5. minimal render-conformance fixture result,
-6. updated known issues from RC1 feedback.
+1. the RC2 documentation and gallery artifacts listed in [DOCUMENTATION.md](DOCUMENTATION.md),
+2. minimal render-conformance fixture result,
+3. updated known issues from RC1 feedback.
 
 Exit criteria:
 
@@ -388,8 +383,7 @@ Checklist:
 1. Apply only release-blocking fixes after RC3.
 2. Re-run the final validation matrix.
 3. Tag the final release.
-4. Publish feature table, known issues, migration notes, install instructions, ctypes scope,
-   WebGPU/WASM experimental scope, and GSP/VisPy2 positioning.
+4. Publish the final documentation artifacts listed in [DOCUMENTATION.md](DOCUMENTATION.md).
 5. Publish website/gallery/release announcement assets.
 
 Exit criteria:
@@ -419,7 +413,8 @@ release-blocking bug.
 
 1. Start each release task by reading this file and the current phase's linked references.
 2. Keep changes scoped to one phase or one checklist item.
-3. Update this checklist, [START.md](START.md), or [STATUS.md](STATUS.md)
+3. Update this checklist, [START.md](START.md), [STATUS.md](STATUS.md), or
+   [DOCUMENTATION.md](DOCUMENTATION.md)
    when a release-blocking item changes state.
 4. Move completed focused plans from `agents/now/` or `agents/soon/` to `agents/done/` when they
    are no longer active.

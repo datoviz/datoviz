@@ -11,8 +11,9 @@ starting work. Durable behavior belongs in `spec/`; completed implementation his
 `agents/done/`; long-horizon or RC2 polish belongs in `agents/later/`.
 
 Start release sequencing from
-[`RELEASE.md`](RELEASE.md). Use
-[`START.md`](START.md) for the current dispatch context.
+[`RELEASE.md`](RELEASE.md). Use [`DOCUMENTATION.md`](DOCUMENTATION.md) for API/docs inventory,
+public documentation deliverables, and RC documentation gates. Use [`START.md`](START.md) for the
+current dispatch context.
 
 
 ## Current Pickup
@@ -36,9 +37,10 @@ Feature-freeze blockers:
 Primary references:
 
 1. [`RELEASE.md`](RELEASE.md)
-2. [`../../spec/scene/examples/EXAMPLE_RELEASE_STAGING.md`](../../spec/scene/examples/EXAMPLE_RELEASE_STAGING.md)
-3. [`../../spec/scene/api/API_SURFACE.md`](../../spec/scene/api/API_SURFACE.md)
-4. [`../../spec/scene/validation/DEFERRED_TRACKER.md`](../../spec/scene/validation/DEFERRED_TRACKER.md)
+2. [`DOCUMENTATION.md`](DOCUMENTATION.md)
+3. [`../../spec/scene/examples/EXAMPLE_RELEASE_STAGING.md`](../../spec/scene/examples/EXAMPLE_RELEASE_STAGING.md)
+4. [`../../spec/scene/api/API_SURFACE.md`](../../spec/scene/api/API_SURFACE.md)
+5. [`../../spec/scene/validation/DEFERRED_TRACKER.md`](../../spec/scene/validation/DEFERRED_TRACKER.md)
 
 
 ## Feature Status
@@ -57,7 +59,7 @@ Primary references:
 | WebGPU/WASM | `Partial / blocker` | `examples/webgpu/`, `tools/webgpu_fixture_preflight.py`, DRP2 WGSL fixtures | Document and smoke the experimental subset. |
 | Raw `ctypes` | `Partial / blocker` | `tools/build_ctypes.py`, `datoviz/_ctypes.py`, `just ctypes` | Regenerate, load, and document low-level binding scope. |
 | Runtime hardening | `Ongoing` | DRP2/vklite/app tests and completed lifetime records | Fix concrete lifetime, resize, descriptor, repeated-frame, or churn bugs as examples expose them. |
-| API inventory and docs | `Blocker for RC1` | public headers under `include/datoviz/` | Produce public surface/status table and known-gap notes. |
+| API inventory and docs | `Blocker for RC1` | [`DOCUMENTATION.md`](DOCUMENTATION.md), public headers under `include/datoviz/` | Produce public surface/status table and known-gap notes. |
 
 
 ## Parallel Lanes
@@ -70,7 +72,8 @@ Good parallel work now:
 3. **Runtime hardening:** focused scene -> DRP2 -> vklite/canvas/app lifetime or churn fixes with
    narrow tests.
 4. **WebGPU parity:** `examples/webgpu`, DRP2 fixtures/preflight, WGSL emission, and diagnostics.
-5. **API/docs inventory:** markdown/header-comment updates that classify actual v0.4 behavior.
+5. **API/docs inventory:** work from [`DOCUMENTATION.md`](DOCUMENTATION.md) that classifies actual
+   v0.4 behavior.
 6. **RC2 polish:** text placement/DPI, axes formatter/clipping, shared layout, categorical legends,
    richer readouts, and broader pick/probe payloads.
 

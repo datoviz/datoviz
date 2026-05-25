@@ -13,7 +13,8 @@ Start with the small active set in [now/](now/). These are the active entry poin
 
 1. [now/START.md](now/START.md)
 2. [now/RELEASE.md](now/RELEASE.md)
-3. [now/STATUS.md](now/STATUS.md)
+3. [now/DOCUMENTATION.md](now/DOCUMENTATION.md)
+4. [now/STATUS.md](now/STATUS.md)
 
 Subsystem-specific execution notes and stable behavior records live outside `now/`:
 
@@ -31,37 +32,38 @@ contracts in `spec/scene`, `spec/drp2`, or completed records in `agents/done`.
 If resuming work on the branch:
 
 1. Read [now/RELEASE.md](now/RELEASE.md) when working
-   toward v0.4 feature freeze, release candidates, final release, release validation, or release
-   documentation.
+   toward v0.4 feature freeze, release candidates, final release, or release validation.
 2. Read [now/START.md](now/START.md) for branch orientation and guardrails.
-3. Read [done/APP_FRAME_SCHEDULING_REFACTOR.md](done/APP_FRAME_SCHEDULING_REFACTOR.md) before
+3. Read [now/DOCUMENTATION.md](now/DOCUMENTATION.md) when working on public documentation,
+   API/docs inventory, migration notes, known issues, gallery documentation, or release docs.
+4. Read [done/APP_FRAME_SCHEDULING_REFACTOR.md](done/APP_FRAME_SCHEDULING_REFACTOR.md) before
    changing the app loop, frame pacing, window wait/wakeup behavior, or immediate-present CPU
    policy.
-4. Read [now/STATUS.md](now/STATUS.md) to decide
+5. Read [now/STATUS.md](now/STATUS.md) to decide
    the next C implementation item and see which lanes can run in parallel.
-5. Read [done/TEST_RUNNER_MODERNIZATION.md](done/TEST_RUNNER_MODERNIZATION.md) for completed
+6. Read [done/TEST_RUNNER_MODERNIZATION.md](done/TEST_RUNNER_MODERNIZATION.md) for completed
    test-runner modernization history, and
    [later/TEST_RUNNER_SCHEDULING.md](later/TEST_RUNNER_SCHEDULING.md) before changing scheduling,
    process sharding, CI orchestration, or remaining skip/reporting behavior.
-6. Read [../spec/scene/visuals/IMPLEMENTATION_DECISIONS.md](../spec/scene/visuals/IMPLEMENTATION_DECISIONS.md)
+7. Read [../spec/scene/visuals/IMPLEMENTATION_DECISIONS.md](../spec/scene/visuals/IMPLEMENTATION_DECISIONS.md)
    before extending pixel, point, marker, segment, path, image, sphere, or mesh first-slice
    behavior.
-7. Read [../spec/scene/validation/IMAGE_PICKING_RECOVERY.md](../spec/scene/validation/IMAGE_PICKING_RECOVERY.md)
+8. Read [../spec/scene/validation/IMAGE_PICKING_RECOVERY.md](../spec/scene/validation/IMAGE_PICKING_RECOVERY.md)
    before changing image probe coordinates, hidden pick-capable image behavior, panzoom probe
    mapping, or CPU fallback behavior.
-8. Read [../spec/scene/README.md](../spec/scene/README.md) before changing scene semantics,
+9. Read [../spec/scene/README.md](../spec/scene/README.md) before changing scene semantics,
    public scene API shape, frame planning, visual families, interaction, annotations, scales, or
    runtime boundaries.
-9. Read [../spec/scene/api/API_SURFACE.md](../spec/scene/api/API_SURFACE.md) before changing public
+10. Read [../spec/scene/api/API_SURFACE.md](../spec/scene/api/API_SURFACE.md) before changing public
    scene API shape or adding new scene object families.
-10. Read [../spec/drp2/README.md](../spec/drp2/README.md) and
+11. Read [../spec/drp2/README.md](../spec/drp2/README.md) and
    [../spec/drp2/AGENT_SPEC_PHASE.md](../spec/drp2/AGENT_SPEC_PHASE.md) before touching
    `spec/drp2/`, `src/drp2/`, or
    DRP2-emitting scene code.
-11. Read [done/SCENE_DRP2_IMPLEMENTATION.md](done/SCENE_DRP2_IMPLEMENTATION.md) and
+12. Read [done/SCENE_DRP2_IMPLEMENTATION.md](done/SCENE_DRP2_IMPLEMENTATION.md) and
    [done/DRP2_SCENE_SAFETY.md](done/DRP2_SCENE_SAFETY.md) when touching the completed first
    scene -> DRP2 -> runtime slice.
-12. Read [done/SCENE_CONTROLLER_BINDING_REFACTOR_PLAN.md](done/SCENE_CONTROLLER_BINDING_REFACTOR_PLAN.md)
+13. Read [done/SCENE_CONTROLLER_BINDING_REFACTOR_PLAN.md](done/SCENE_CONTROLLER_BINDING_REFACTOR_PLAN.md)
    and [done/SCENE_TURNTABLE_CONTROLLER_PLAN.md](done/SCENE_TURNTABLE_CONTROLLER_PLAN.md) before
    changing scene-owned controller binding, panel-local input routing, or camera controller
    semantics.
@@ -74,8 +76,10 @@ If resuming work on the branch:
 Small active execution notes:
 
 1. `START.md`: dispatch and branch orientation only.
-2. `STATUS.md`: feature gateboard and parallel-work lanes.
-3. `RELEASE.md`: release sequencing, scope, quality gates, and artifacts.
+2. `RELEASE.md`: release sequencing, scope, quality gates, and artifacts.
+3. `DOCUMENTATION.md`: public documentation deliverables, API/docs inventory, and RC documentation
+   gates.
+4. `STATUS.md`: feature gateboard and parallel-work lanes.
 
 These files should answer what to do next and where to read the normative spec. They should not be
 the long-term home for scene semantics, completed audit logs, or plans that describe code already
