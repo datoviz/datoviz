@@ -133,12 +133,12 @@ For cross-tree overlap, use this source-of-truth order:
 
 1. DRP2 command, lifetime, and error prose for protocol semantics,
 2. DRP2 active JSON schemas for machine-checkable command shape,
-3. scene normative documents for scene semantics,
-4. scene proposals for rules not yet promoted into specialized spec files,
-5. scene implementation slices for concrete work boundaries that apply those rules,
-6. historical scene decision records for rationale behind older choices,
-7. installed scene headers for public names and signatures that already exist,
-8. `spec/scene/api/API_SURFACE.md` for public API shape policy and not-yet-implemented groups,
+3. installed scene headers for public names and signatures that already exist,
+4. scene normative documents for scene semantics,
+5. `spec/scene/api/API_SURFACE.md` for public API shape policy and not-yet-implemented groups,
+6. scene proposals for rules not yet promoted into specialized spec files,
+7. scene implementation slices for concrete work boundaries that apply those rules,
+8. historical scene decision records for rationale behind older choices,
 9. examples, deferred trackers, and historical header sketches as informative material.
 
 

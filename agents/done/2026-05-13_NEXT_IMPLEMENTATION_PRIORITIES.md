@@ -171,7 +171,7 @@ Goal: turn current interactive behavior into repeatable manual checks before add
 Current status:
 
 1. the manual smoke matrix now lives in
-   [../../architecture/manual_scene_smoke.md](/home/cyrille/GIT/Viz/datoviz/docs/architecture/manual_scene_smoke.md),
+   [../../spec/scene/validation/MANUAL_SCENE_SMOKE.md](../../spec/scene/validation/MANUAL_SCENE_SMOKE.md),
 2. it lists the command, expected behavior, automated coverage, and known gaps for the current
    examples and focused test-only paths,
 3. screenshots or captures remain optional unless they reveal a regression.

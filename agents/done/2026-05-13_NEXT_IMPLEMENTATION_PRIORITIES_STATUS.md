@@ -21,7 +21,7 @@ The next branch work should not treat these as one large mixed refactor. They sh
 lanes with separate validation gates.
 
 The native 3D example is now represented by `examples/c/visuals/mesh.c`, and the manual scene
-smoke matrix is recorded in `docs/architecture/manual_scene_smoke.md`. The `hello_*` C example
+smoke matrix is recorded in `spec/scene/validation/MANUAL_SCENE_SMOKE.md`. The `hello_*` C example
 smoke set was reported successful on `2026-05-14`, including the paired offscreen capture examples
 that cover the readback side of the mesh smoke path. The next implementation work should therefore
 move to the targeted hygiene/static-analysis pass unless a specific manual smoke gap is promoted
@@ -52,5 +52,5 @@ git diff --check
 Detailed lane checklists live in:
 
 ```text
-docs/tasks/2026-05-13-next-implementation-priorities/NEXT_STEPS.md
+agents/done/2026-05-13_NEXT_IMPLEMENTATION_PRIORITIES.md
 ```

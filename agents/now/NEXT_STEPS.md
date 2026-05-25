@@ -105,9 +105,9 @@ and shared-fixture follow-ups live in
    implementation record and follow-up checklist.
 8. [../../spec/scene/examples/EXAMPLE_PRIORITIZATION.md](../../spec/scene/examples/EXAMPLE_PRIORITIZATION.md): ranked
    scene/example priorities.
-9. [../../docs/tasks/2026-05-13-next-implementation-priorities/NEXT_STEPS.md](../../docs/tasks/2026-05-13-next-implementation-priorities/NEXT_STEPS.md):
+9. [../done/2026-05-13_NEXT_IMPLEMENTATION_PRIORITIES.md](../done/2026-05-13_NEXT_IMPLEMENTATION_PRIORITIES.md):
    detailed implementation-lane notes from the May 13 planning pass.
-10. [../../docs/architecture/manual_scene_smoke.md](../../docs/architecture/manual_scene_smoke.md):
+10. [../../spec/scene/validation/MANUAL_SCENE_SMOKE.md](../../spec/scene/validation/MANUAL_SCENE_SMOKE.md):
    manual interactive scene smoke coverage.
 
 

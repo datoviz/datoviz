@@ -315,8 +315,8 @@ Work:
 
 1. Audit root docs: `README.md`, `BUILD.md`, `ARCHITECTURE.md`, `CONTRIBUTING.md`,
    `MAINTAINERS.md`, `CHANGELOG.md`, `AUDIT.md`, `ADVICE.md`, and `CLAUDE.md`.
-2. Audit `docs/guide/`, `docs/visuals/`, `docs/reference/`, `docs/architecture/`, and
-   `docs/gallery/`.
+2. Audit the legacy `docs/` tree only as migration input for future public documentation; do not
+   add new v0.4 architecture records there.
 3. Audit `spec/` for DRP2 and any scene specs that become normative.
 4. Audit `examples/*/README.md`.
 5. Decide what stays as public documentation, what becomes developer architecture notes, and what

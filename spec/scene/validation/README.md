@@ -14,6 +14,8 @@ promotion/deferment.
 4. [DEFERRED_TRACKER.md](DEFERRED_TRACKER.md): deferred items by milestone.
 5. [IMAGE_PICKING_RECOVERY.md](IMAGE_PICKING_RECOVERY.md): image pick/probe recovery guardrails
    and remaining diagnostics after the core GPU-backed image probe path landed.
+6. [MANUAL_SCENE_SMOKE.md](MANUAL_SCENE_SMOKE.md): manual interactive smoke matrix for the active
+   scene -> DRP2 -> app path.
 
 
 ## Active Proposal Inputs
