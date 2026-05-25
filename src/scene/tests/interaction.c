@@ -554,6 +554,142 @@ static int test_scene_scalebar_2d_realization(TstContext* suite, const TstCase* 
 }
 
 
+
+/**
+ * Check the minimal no-data scale-bar stream contains both bar geometry and text work.
+ *
+ * @param suite the active test suite
+ * @param item the active test case
+ * @return 0 on success
+ */
+static int test_scene_scalebar_minimal_stream(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    ANN(item);
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 720, 420, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel_full(figure);
+    ANN(panel);
+    AT(dvz_panel_set_domain(panel, DVZ_DIM_X, 0.0, 0.010) == 0);
+    AT(dvz_panel_set_domain(panel, DVZ_DIM_Y, 0.0, 0.006) == 0);
+
+    DvzAnnotation* scalebar = dvz_annotation_scalebar(
+        panel,
+        &(DvzScaleBarDesc){
+            .dimension = DVZ_DIM_X,
+            .anchor = DVZ_SCENE_ANCHOR_BOTTOM_LEFT,
+            .label_position = DVZ_SCALEBAR_LABEL_ABOVE,
+            .target_length_px = 160.0f,
+            .min_length_px = 90.0f,
+            .max_length_px = 240.0f,
+            .offset_px = {36.0f, 34.0f},
+            .tick_length_px = 12.0f,
+            .line_width_px = 3.0f,
+            .line_color = {245, 248, 252, 255},
+            .unit = "m",
+            .data_to_unit = 1.0,
+            .label_style = {
+                .size_px = 22.0f,
+                .renderer = DVZ_TEXT_RENDERER_MSDF_ATLAS,
+                .color = {255, 236, 176, 255},
+            },
+        });
+    ANN(scalebar);
+
+    DvzCapabilitySnapshot caps;
+    dvz_capability_snapshot_default(&caps);
+    caps.shader_format_glsl = true;
+    caps.max_vertex_buffers = 16;
+    caps.max_bind_groups = 4;
+    caps.max_buffer_size = 256 * 1024 * 1024;
+    caps.supports_color_blending = true;
+
+    DvzFramePlanEmitConfig cfg = dvz_frame_plan_emit_config();
+    cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
+    cfg.target_width = 720;
+    cfg.target_height = 420;
+
+    DvzDiagnosticReport report;
+    dvz_diagnostic_report_init(&report);
+    DvzDrp2CommandStream* stream = dvz_figure_emit_ex(figure, &caps, &report, &cfg);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+    ANN(stream);
+
+    bool saw_segment_pipeline = false;
+    bool saw_segment_draw = false;
+    bool saw_glyph_pipeline = false;
+    bool glyph_pipeline_bound = false;
+    bool saw_glyph_bind = false;
+    bool saw_glyph_draw = false;
+    uint64_t glyph_pass = 0;
+    uint32_t segment_draw_index = UINT32_MAX;
+    uint32_t glyph_draw_index = UINT32_MAX;
+    for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
+    {
+        const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream, i);
+        if (cmd == NULL)
+            continue;
+        if (cmd->type == DVZ_DRP2_COMMAND_CREATE_RENDER_PIPELINE)
+        {
+            const char* label = dvz_drp2_stream_label(stream, cmd->u.create_render_pipeline.id);
+            if (label != NULL && strstr(label, "_pipe_segment") != NULL)
+                saw_segment_pipeline = true;
+            if (label != NULL && strstr(label, "_pipe_glyph") != NULL)
+                saw_glyph_pipeline = true;
+        }
+        else if (cmd->type == DVZ_DRP2_COMMAND_SET_PIPELINE)
+        {
+            const char* label = dvz_drp2_stream_label(stream, cmd->u.set_pipeline.pipeline_id);
+            if (label != NULL && strstr(label, "_pipe_glyph") != NULL)
+            {
+                glyph_pass = cmd->u.set_pipeline.pass_id;
+                glyph_pipeline_bound = true;
+            }
+        }
+        else if (cmd->type == DVZ_DRP2_COMMAND_SET_BIND_GROUP)
+        {
+            if (
+                glyph_pipeline_bound && cmd->u.set_bind_group.pass_id == glyph_pass &&
+                cmd->u.set_bind_group.slot == 1)
+                saw_glyph_bind = true;
+        }
+        else if (cmd->type == DVZ_DRP2_COMMAND_DRAW_INDEXED)
+        {
+            if (!saw_segment_draw && cmd->u.draw_indexed.index_count >= 18)
+            {
+                saw_segment_draw = true;
+                segment_draw_index = i;
+            }
+        }
+        else if (cmd->type == DVZ_DRP2_COMMAND_DRAW)
+        {
+            if (
+                glyph_pipeline_bound && cmd->u.draw.pass_id == glyph_pass &&
+                cmd->u.draw.vertex_count >= 6)
+            {
+                saw_glyph_draw = true;
+                glyph_draw_index = i;
+            }
+        }
+    }
+    AT(strcmp(scalebar->text, "2 mm") == 0);
+    AT(saw_segment_pipeline);
+    AT(saw_segment_draw);
+    AT(saw_glyph_pipeline);
+    AT(saw_glyph_bind);
+    AT(saw_glyph_draw);
+    AT(segment_draw_index < glyph_draw_index);
+
+    dvz_drp2_stream_destroy(stream);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
 /**
  * Check that a graph-backed scale-bar label does not drop a plain neighboring panel.
  *
@@ -1696,6 +1832,7 @@ int test_scene_interaction(TstSuite* suite)
     TST_CASE(test_scene_text_annotation_bookkeeping);
     TST_CASE(test_scene_scalebar_formatting);
     TST_CASE(test_scene_scalebar_2d_realization);
+    TST_CASE(test_scene_scalebar_minimal_stream);
     TST_CASE(test_scene_scalebar_2d_3d_stream_order);
     TST_CASE(test_scene_font_defaults);
     TST_CASE(test_scene_text_sdf_default_font);
