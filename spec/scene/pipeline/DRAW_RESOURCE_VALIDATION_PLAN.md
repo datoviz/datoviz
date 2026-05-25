@@ -2,7 +2,7 @@
 
 ## Status
 
-- Status: implementation plan
+- Status: implemented
 - Updated on: 2026-05-25
 - Purpose: harden the scene -> DRP2 handoff against mismatches between draw counts and bound GPU
   resource contents.
@@ -110,6 +110,13 @@ The packet should contain:
 
 The packet becomes the only path that can emit draw commands from scene. Validation happens before
 lowering to DRP2 commands, and tests assert both accepted packets and rejected mismatches.
+
+Implemented on 2026-05-25:
+
+1. retained scene visual draws now prepare `SceneDrawPacket` instances before lowering to DRP2,
+2. WGSL/fallback scene visual draws use the same packet initializer and lowering helper,
+3. fullscreen/effect helper triangles remain outside the visual packet path,
+4. marker and indexed primitive tests assert packet-sensitive vertex/index binding behavior.
 
 
 ## Recommended Order
