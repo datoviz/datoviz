@@ -2702,29 +2702,7 @@ int test_scene_mesh_geometry_upload(TstContext* suite, const TstCase* item)
     DvzGeometry* geometry = dvz_geom_surface_grid(&desc);
     ANN(geometry);
 
-    vec3 positions_upload[4] = {0};
-    vec3 normals_upload[4] = {0};
-    vec2 texcoords_upload[4] = {0};
-    for (uint32_t i = 0; i < geometry->vertex_count; i++)
-    {
-        positions_upload[i][0] = (float)geometry->positions[i][0];
-        positions_upload[i][1] = (float)geometry->positions[i][1];
-        positions_upload[i][2] = (float)geometry->positions[i][2];
-        normals_upload[i][0] = (float)geometry->normals[i][0];
-        normals_upload[i][1] = (float)geometry->normals[i][1];
-        normals_upload[i][2] = (float)geometry->normals[i][2];
-        texcoords_upload[i][0] = (float)geometry->texcoords[i][0];
-        texcoords_upload[i][1] = (float)geometry->texcoords[i][1];
-    }
-
-    DvzVisualDataUpdate updates[] = {
-        {.attr_name = "position", .data = positions_upload, .item_count = geometry->vertex_count},
-        {.attr_name = "color", .data = geometry->colors, .item_count = geometry->vertex_count},
-        {.attr_name = "normal", .data = normals_upload, .item_count = geometry->vertex_count},
-        {.attr_name = "texcoords", .data = texcoords_upload, .item_count = geometry->vertex_count},
-    };
-    AT(dvz_visual_set_data_many(visual, updates, 4) == 0);
-    AT(dvz_visual_set_index_data(visual, geometry->indices, geometry->index_count) == 0);
+    AT(dvz_mesh_set_geometry(visual, geometry) == 0);
 
     DvzVisualDataView position_view = {0};
     AT(dvz_visual_data(visual, "position", &position_view) == 0);
@@ -2758,6 +2736,10 @@ int test_scene_mesh_geometry_upload(TstContext* suite, const TstCase* item)
     AT(visual->buffer->desc.usage & DVZ_SCENE_BUFFER_USAGE_INDEX);
     AT(visual->buffer->desc.stride == sizeof(DvzIndex));
     AT(visual->buffer->desc.byte_size == 6 * sizeof(DvzIndex));
+
+    DvzVisual* point = dvz_point(scene, 0);
+    ANN(point);
+    AT(dvz_mesh_set_geometry(point, geometry) == -1);
 
     dvz_geometry_destroy(geometry);
     dvz_scene_destroy(scene);

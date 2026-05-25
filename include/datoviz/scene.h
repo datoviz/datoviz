@@ -1528,6 +1528,19 @@ DVZ_EXPORT DvzVisual* dvz_mesh(DvzScene* scene, uint32_t flags);
 
 
 /**
+ * Upload a CPU geometry object into a mesh visual.
+ *
+ * Geometry positions, colors, normals, texture coordinates, and optional triangle indices are
+ * copied into the visual's retained attribute and index buffers.
+ *
+ * @param visual the mesh visual
+ * @param geometry the CPU geometry object
+ * @return 0 on success, -1 on invalid input or upload failure
+ */
+DVZ_EXPORT int dvz_mesh_set_geometry(DvzVisual* visual, const DvzGeometry* geometry);
+
+
+/**
  * Create a path visual.
  *
  * A path accepts `position` (vec3), `color` (RGBA8), and optional per-point `stroke_width`
