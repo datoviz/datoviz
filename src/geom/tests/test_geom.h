@@ -44,6 +44,10 @@ int test_geometry_edges(TstContext* suite, const TstCase* tstitem);
 
 int test_geometry_contours(TstContext* suite, const TstCase* tstitem);
 
+int test_geometry_polygon_triangulation(TstContext* suite, const TstCase* tstitem);
+
+int test_geometry_polygon_triangulation_invalid(TstContext* suite, const TstCase* tstitem);
+
 
 
 /*************************************************************************************************/

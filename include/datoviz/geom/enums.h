@@ -53,6 +53,15 @@ typedef enum
 
 
 
+// Polygon triangulation backend.
+typedef enum
+{
+    DVZ_TRIANGULATION_BACKEND_DEFAULT,
+    DVZ_TRIANGULATION_BACKEND_EARCUT,
+} DvzTriangulationBackend;
+
+
+
 // Derived mesh-edge flags.
 typedef enum
 {

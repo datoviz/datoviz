@@ -203,4 +203,16 @@ DVZ_EXPORT DvzGeometry* dvz_geom_surface_grid(const DvzGeometrySurfaceGridDesc* 
 DVZ_EXPORT int
 dvz_geom_surface_grid_update_heights(DvzGeometry* geometry, const double* heights, uint32_t count);
 
+
+
+/**
+ * Triangulate a polygon with optional holes into indexed XY mesh geometry.
+ *
+ * @param polygon borrowed polygon descriptor
+ * @param desc optional triangulation descriptor
+ * @return the triangulated geometry, or NULL on invalid input or triangulation failure
+ */
+DVZ_EXPORT DvzGeometry*
+dvz_triangulate_polygon(const DvzPolygonDesc* polygon, const DvzTriangulationDesc* desc);
+
 EXTERN_C_OFF

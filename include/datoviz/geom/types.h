@@ -33,6 +33,9 @@ typedef struct DvzGeometryCubeDesc DvzGeometryCubeDesc;
 typedef struct DvzGeometryPlaneDesc DvzGeometryPlaneDesc;
 typedef struct DvzGeometrySphereDesc DvzGeometrySphereDesc;
 typedef struct DvzGeometrySurfaceGridDesc DvzGeometrySurfaceGridDesc;
+typedef struct DvzPolygonRing DvzPolygonRing;
+typedef struct DvzPolygonDesc DvzPolygonDesc;
+typedef struct DvzTriangulationDesc DvzTriangulationDesc;
 typedef struct DvzGeometryEdge DvzGeometryEdge;
 typedef struct DvzGeometryEdges DvzGeometryEdges;
 typedef struct DvzGeometryContourSegment DvzGeometryContourSegment;
@@ -124,6 +127,31 @@ struct DvzGeometrySurfaceGridDesc
 
     double height_scale; // multiplier applied to heights, defaults to 1
     DvzColor color;      // fallback vertex color, defaults to opaque white
+};
+
+
+
+struct DvzPolygonRing
+{
+    const dvec2* xy; // borrowed XY vertex array
+    uint32_t count; // number of vertices, optionally including a repeated closing vertex
+};
+
+
+
+struct DvzPolygonDesc
+{
+    DvzPolygonRing outer;         // borrowed outer boundary ring
+    const DvzPolygonRing* holes;  // borrowed hole ring array, or NULL when hole_count is zero
+    uint32_t hole_count;          // number of hole rings
+};
+
+
+
+struct DvzTriangulationDesc
+{
+    DvzTriangulationBackend backend; // triangulation backend, defaults to Earcut
+    uint32_t flags;                  // reserved for future triangulation options
 };
 
 

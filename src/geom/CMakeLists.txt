@@ -10,6 +10,7 @@ target_include_directories(datoviz_geom
     ${PROJECT_SOURCE_DIR}/include
     ${PROJECT_SOURCE_DIR}/src/common
     ${PROJECT_SOURCE_DIR}/external/cglm/include
+    ${PROJECT_SOURCE_DIR}/external
 )
 
 target_compile_definitions(datoviz_geom PUBLIC ${DVZ_COMPILE_DEFINITIONS})

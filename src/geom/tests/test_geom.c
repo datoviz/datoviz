@@ -19,6 +19,8 @@
 #include "test_geom.h"
 #include "testing.h"
 
+#include <math.h>
+
 
 
 /*************************************************************************************************/
@@ -448,6 +450,151 @@ int test_geometry_contours(TstContext* suite, const TstCase* tstitem)
 
 
 
+int test_geometry_polygon_triangulation(TstContext* suite, const TstCase* tstitem)
+{
+    ANN(suite);
+
+    const dvec2 triangle_xy[3] = {
+        {0.0, 0.0},
+        {1.0, 0.0},
+        {0.0, 1.0},
+    };
+    DvzGeometry* triangle = dvz_triangulate_polygon(
+        &(DvzPolygonDesc){.outer = {.xy = triangle_xy, .count = 3}}, NULL);
+    AT(triangle != NULL);
+    AT(triangle->type == DVZ_GEOMETRY_CUSTOM);
+    AT(triangle->flags & DVZ_GEOMETRY_INDEXING_TRIANGLES);
+    AT(triangle->flags & DVZ_GEOMETRY_INDEXING_TRIANGULATION);
+    AT(triangle->vertex_count == 3);
+    AT(triangle->index_count == 3);
+    for (uint32_t i = 0; i < triangle->index_count; i++)
+        AT(triangle->indices[i] < triangle->vertex_count);
+    for (uint32_t i = 0; i < triangle->vertex_count; i++)
+    {
+        AC(triangle->positions[i][2], 0.0, EPS);
+        AC(triangle->normals[i][0], 0.0, EPS);
+        AC(triangle->normals[i][1], 0.0, EPS);
+        AC(triangle->normals[i][2], 1.0, EPS);
+        AC(triangle->texcoords[i][0], 0.0, EPS);
+        AC(triangle->texcoords[i][1], 0.0, EPS);
+        AT(triangle->colors[i][0] == 255);
+        AT(triangle->colors[i][1] == 255);
+        AT(triangle->colors[i][2] == 255);
+        AT(triangle->colors[i][3] == 255);
+    }
+    dvz_geometry_destroy(triangle);
+
+    const dvec2 square_xy[4] = {
+        {0.0, 0.0},
+        {2.0, 0.0},
+        {2.0, 2.0},
+        {0.0, 2.0},
+    };
+    DvzGeometry* square = dvz_triangulate_polygon(
+        &(DvzPolygonDesc){.outer = {.xy = square_xy, .count = 4}}, NULL);
+    AT(square != NULL);
+    AT(square->vertex_count == 4);
+    AT(square->index_count == 6);
+    for (uint32_t i = 0; i < square->index_count; i++)
+        AT(square->indices[i] < square->vertex_count);
+    dvz_geometry_destroy(square);
+
+    const dvec2 closed_xy[5] = {
+        {0.0, 0.0},
+        {2.0, 0.0},
+        {2.0, 2.0},
+        {0.0, 2.0},
+        {0.0, 0.0},
+    };
+    DvzGeometry* closed = dvz_triangulate_polygon(
+        &(DvzPolygonDesc){.outer = {.xy = closed_xy, .count = 5}}, NULL);
+    AT(closed != NULL);
+    AT(closed->vertex_count == 4);
+    AT(closed->index_count == 6);
+    dvz_geometry_destroy(closed);
+
+    const dvec2 hole_xy[4] = {
+        {0.5, 0.5},
+        {1.5, 0.5},
+        {1.5, 1.5},
+        {0.5, 1.5},
+    };
+    const DvzPolygonRing holes[1] = {{.xy = hole_xy, .count = 4}};
+    DvzGeometry* holed = dvz_triangulate_polygon(
+        &(DvzPolygonDesc){
+            .outer = {.xy = square_xy, .count = 4},
+            .holes = holes,
+            .hole_count = 1,
+        },
+        &(DvzTriangulationDesc){.backend = DVZ_TRIANGULATION_BACKEND_EARCUT});
+    AT(holed != NULL);
+    AT(holed->vertex_count == 8);
+    AT(holed->index_count > 0);
+    AT(holed->index_count % 3 == 0);
+    for (uint32_t i = 0; i < holed->index_count; i++)
+        AT(holed->indices[i] < holed->vertex_count);
+    dvz_geometry_destroy(holed);
+
+    return 0;
+}
+
+
+
+int test_geometry_polygon_triangulation_invalid(TstContext* suite, const TstCase* tstitem)
+{
+    ANN(suite);
+
+    const dvec2 two_xy[2] = {
+        {0.0, 0.0},
+        {1.0, 0.0},
+    };
+    AT(dvz_triangulate_polygon(&(DvzPolygonDesc){.outer = {.xy = two_xy, .count = 2}}, NULL) ==
+       NULL);
+
+    const dvec2 square_xy[4] = {
+        {0.0, 0.0},
+        {1.0, 0.0},
+        {1.0, 1.0},
+        {0.0, 1.0},
+    };
+    AT(dvz_triangulate_polygon(
+           &(DvzPolygonDesc){.outer = {.xy = square_xy, .count = 4}, .hole_count = 1}, NULL) ==
+       NULL);
+
+    const DvzPolygonRing short_hole[1] = {{.xy = two_xy, .count = 2}};
+    AT(dvz_triangulate_polygon(
+           &(DvzPolygonDesc){
+               .outer = {.xy = square_xy, .count = 4},
+               .holes = short_hole,
+               .hole_count = 1,
+           },
+           NULL) == NULL);
+
+    const dvec2 nan_xy[3] = {
+        {0.0, 0.0},
+        {NAN, 0.0},
+        {0.0, 1.0},
+    };
+    AT(dvz_triangulate_polygon(&(DvzPolygonDesc){.outer = {.xy = nan_xy, .count = 3}}, NULL) ==
+       NULL);
+
+    const dvec2 zero_area_xy[3] = {
+        {0.0, 0.0},
+        {1.0, 0.0},
+        {2.0, 0.0},
+    };
+    AT(dvz_triangulate_polygon(
+           &(DvzPolygonDesc){.outer = {.xy = zero_area_xy, .count = 3}}, NULL) == NULL);
+
+    AT(dvz_triangulate_polygon(
+           &(DvzPolygonDesc){.outer = {.xy = square_xy, .count = 4}},
+           &(DvzTriangulationDesc){.backend = (DvzTriangulationBackend)UINT32_MAX}) == NULL);
+
+    return 0;
+}
+
+
+
 /*************************************************************************************************/
 /*  Entry-point                                                                                  */
 /*************************************************************************************************/
@@ -470,6 +617,8 @@ int test_geom(TstSuite* suite)
     TST_CASE(test_geometry_merge);
     TST_CASE(test_geometry_edges);
     TST_CASE(test_geometry_contours);
+    TST_CASE(test_geometry_polygon_triangulation);
+    TST_CASE(test_geometry_polygon_triangulation_invalid);
 
     return 0;
 }
