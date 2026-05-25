@@ -94,6 +94,7 @@ void main()
     vec2 tangent = endpointEnd ? dirIn : dirOut;
     vec2 segmentNormal = endpointEnd ? normalIn : normalOut;
     float lengthPx = endpointEnd ? length(currPx - prevPx) : length(nextPx - currPx);
+    float along = endpointEnd ? lengthPx : 0.0;
     float tangentOffset = 0.0;
 
     vec2 normal = segmentNormal;
@@ -118,8 +119,16 @@ void main()
     gl_Position = pixelToClip(pixel, currClip.z / max(abs(currClip.w), 1e-6));
 
     fragColor = inColor;
-    vec2 segmentStartPx = endpointEnd ? prevPx : currPx;
-    fragCoord = vec2(dot(pixel - segmentStartPx, tangent), dot(pixel - currPx, segmentNormal));
+    if (hasPrev && hasNext && joinType == 1)
+    {
+        vec2 segmentStartPx = endpointEnd ? prevPx : currPx;
+        fragCoord =
+            vec2(dot(pixel - segmentStartPx, tangent), dot(pixel - currPx, segmentNormal));
+    }
+    else
+    {
+        fragCoord = vec2(along + tangentOffset, side * halfWidth);
+    }
     fragLength = lengthPx;
     fragLineWidth = strokeWidth;
     fragHasPrev = hasPrev ? 1.0 : 0.0;
