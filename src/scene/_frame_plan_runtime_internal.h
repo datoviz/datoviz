@@ -40,7 +40,8 @@
 /*  Structs                                                                                      */
 /*************************************************************************************************/
 
-typedef struct SceneRenderDraw SceneRenderDraw;
+typedef struct SceneDrawVertexBuffer SceneDrawVertexBuffer;
+typedef struct SceneDrawPacket SceneDrawPacket;
 typedef struct SceneRenderBatch SceneRenderBatch;
 typedef struct SceneGraphRuntimeTarget SceneGraphRuntimeTarget;
 typedef struct SceneGraphRuntimeTargets SceneGraphRuntimeTargets;
@@ -62,22 +63,49 @@ typedef struct DvzSceneGlyphUniform
 } DvzSceneGlyphUniform;
 
 
-struct SceneRenderDraw
+struct SceneDrawVertexBuffer
 {
+    uint32_t slot;
+    uint64_t buffer_id;
+    uint32_t stride;
+    uint32_t step_mode;
+    uint64_t logical_count;
+    const char* role;
+    bool validates_draw;
+};
+
+
+struct SceneDrawPacket
+{
+    DvzSceneVisualDescKind kind;
     uint64_t pipeline_id;
     uint64_t bg_set0; /* MVP bg; 0 = none */
     uint64_t bg_set1; /* image texture or material bg; 0 = none */
     uint64_t bg_set2; /* scene occlusion bg; 0 = none */
     uint64_t bg_set3; /* depth-peel sampled bg; 0 = none */
     DvzFramePlanClipRect clip_rect;
-    DvzSceneVisualDesc visual;
+    SceneDrawVertexBuffer vertex_buffers[DVZ_SCENE_MAX_NODE_RESOURCES];
+    uint32_t vertex_buffer_count;
+    uint32_t validation_binding_count;
+    uint64_t index_buffer_id;
+    const char* index_format;
+    uint32_t index_stride;
+    uint64_t index_logical_count;
+    uint32_t first_vertex;
+    uint32_t vertex_count;
+    uint32_t first_instance;
+    uint32_t instance_count;
+    uint32_t first_index;
+    int32_t base_vertex;
+    uint32_t index_count;
+    bool indexed;
 };
 
 
 struct SceneRenderBatch
 {
     const DvzFramePlanNode* render;
-    SceneRenderDraw draws[DVZ_SCENE_MAX_RENDER_VISUALS];
+    SceneDrawPacket draws[DVZ_SCENE_MAX_RENDER_VISUALS];
     uint32_t draw_count;
 };
 
@@ -214,17 +242,29 @@ void _label_render_pass_contract(
 bool _runtime_key_append(char* key, size_t size, const char* suffix, DvzDiagnosticReport* report);
 bool _runtime_key_appendf(
     char* key, size_t size, DvzDiagnosticReport* report, const char* format, ...);
+bool _scene_draw_packet_init(
+    const ConverterState* state, const DvzSceneVisualDesc* visual,
+    const DvzSceneVisualPipelineDesc* pipeline, uint64_t pipeline_id, uint64_t bg_set0,
+    uint64_t bg_set1, uint64_t bg_set2, uint64_t bg_set3, DvzFramePlanClipRect clip_rect,
+    DvzDiagnosticReport* report, SceneDrawPacket* out);
+bool _scene_draw_packet_init_fallback(
+    const ConverterState* state, DvzSceneVisualDescKind kind, uint64_t pipeline_id,
+    uint64_t bg_set0, uint64_t bg_set1, const uint64_t* vertex_buffer_ids,
+    uint32_t vertex_buffer_count, uint32_t vertex_count, uint32_t instance_count,
+    bool instanced_point_like, DvzDiagnosticReport* report, SceneDrawPacket* out);
+bool _scene_draw_packet_emit(
+    DvzDrp2CommandStream* stream, uint64_t render_pass_id, const SceneDrawPacket* packet);
 bool _emitter_prepare_render_multi(
     DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, const DvzFramePlanNode* render,
     const DvzFramePlanEmitConfig* cfg, bool pass_has_depth_attachment, bool force_point_depth,
     uint64_t sampled_depth_id, bool sampled_depth_is_volume_occlusion,
     uint64_t scene_occlusion_depth_id, uint64_t depth_peel_sampled_bgl_id,
     uint64_t depth_peel_sampled_bg_id, uint64_t depth_peel_dummy_bg_id, uint32_t pass_sample_count,
-    bool pass_alpha_to_coverage, DvzDiagnosticReport* report, SceneRenderDraw* draws,
+    bool pass_alpha_to_coverage, DvzDiagnosticReport* report, SceneDrawPacket* draws,
     uint32_t* draw_count_out);
 bool _emitter_emit_render_multi_draws(
     DvzDrp2CommandStream* stream, const DvzFramePlanNode* render,
-    const DvzFramePlanEmitConfig* cfg, uint64_t render_pass_id, const SceneRenderDraw* draws,
+    const DvzFramePlanEmitConfig* cfg, uint64_t render_pass_id, const SceneDrawPacket* draws,
     uint32_t draw_count, SceneRenderStateCache* cache);
 void _emit_target_extent(const DvzFramePlanEmitConfig* cfg, uint32_t* width, uint32_t* height);
 const DvzFrameGraphResource*

@@ -459,7 +459,7 @@ bool _emitter_prepare_render_multi(
     uint64_t sampled_depth_id, bool sampled_depth_is_volume_occlusion,
     uint64_t scene_occlusion_depth_id, uint64_t depth_peel_sampled_bgl_id,
     uint64_t depth_peel_sampled_bg_id, uint64_t depth_peel_dummy_bg_id, uint32_t pass_sample_count,
-    bool pass_alpha_to_coverage, DvzDiagnosticReport* report, SceneRenderDraw* draws,
+    bool pass_alpha_to_coverage, DvzDiagnosticReport* report, SceneDrawPacket* draws,
     uint32_t* draw_count_out)
 {
     ANN(emitter);
@@ -893,11 +893,6 @@ bool _emitter_prepare_render_multi(
             (desc.kind == DVZ_SCENE_VISUAL_DESC_SPHERE || point_like_desc) &&
             pass_alpha_to_coverage)
             pipeline.alpha_to_coverage = true;
-        if (!_draw_validation_validate(&emitter->resources, &desc, &pipeline, report))
-        {
-            ok = false;
-            break;
-        }
         if (ok && is_new)
         {
             uint64_t material_bgl_id = 0;
@@ -1328,15 +1323,14 @@ bool _emitter_prepare_render_multi(
             break;
         }
 
-        draws[draw_count].pipeline_id = pipe_id;
-        draws[draw_count].bg_set0 = vis_bg_set0;
-        draws[draw_count].bg_set1 = vis_bg_set1;
-        draws[draw_count].bg_set2 = vis_bg_set2;
-        draws[draw_count].bg_set3 = vis_bg_set3;
-        draws[draw_count].clip_rect = render->u.render.visual_metadata[i].has_metadata
-                                          ? render->u.render.visual_metadata[i].clip_rect
-                                          : DVZ_FRAME_PLAN_CLIP_RECT_PANEL;
-        draws[draw_count].visual = desc;
+        DvzFramePlanClipRect clip_rect = render->u.render.visual_metadata[i].has_metadata
+                                             ? render->u.render.visual_metadata[i].clip_rect
+                                             : DVZ_FRAME_PLAN_CLIP_RECT_PANEL;
+        ok = _scene_draw_packet_init(
+            &emitter->resources, &desc, &pipeline, pipe_id, vis_bg_set0, vis_bg_set1,
+            vis_bg_set2, vis_bg_set3, clip_rect, report, &draws[draw_count]);
+        if (!ok)
+            break;
         draw_count++;
     }
 
@@ -1390,7 +1384,7 @@ static DvzPanelDesc _render_desc_framebuffer_rect(
  */
 bool _emitter_emit_render_multi_draws(
     DvzDrp2CommandStream* stream, const DvzFramePlanNode* render,
-    const DvzFramePlanEmitConfig* cfg, uint64_t render_pass_id, const SceneRenderDraw* draws,
+    const DvzFramePlanEmitConfig* cfg, uint64_t render_pass_id, const SceneDrawPacket* draws,
     uint32_t draw_count, SceneRenderStateCache* cache)
 {
     ANN(stream);
@@ -1456,25 +1450,7 @@ bool _emitter_emit_render_multi_draws(
                           stream, render_pass_id, DVZ_SCENE_DEPTH_PEEL_BIND_SET, draws[d].bg_set3);
             last_bg_set3 = draws[d].bg_set3;
         }
-        for (uint32_t j = 0; ok && j < draws[d].visual.vbuf_count; j++)
-            ok = ok && dvz_drp2_stream_set_vertex_buffer(
-                           stream, render_pass_id, j, draws[d].visual.vbuf_ids[j], 0);
-        if (ok && draws[d].visual.index_buffer_id != 0)
-        {
-            ok = ok &&
-                 dvz_drp2_stream_set_index_buffer(
-                     stream, render_pass_id, draws[d].visual.index_buffer_id,
-                     draws[d].visual.index_format, 0) &&
-                 dvz_drp2_stream_draw_indexed(
-                     stream, render_pass_id, draws[d].visual.index_count,
-                     draws[d].visual.instance_count, 0, 0, 0);
-        }
-        else
-        {
-            ok = ok && dvz_drp2_stream_draw(
-                           stream, render_pass_id, draws[d].visual.vertex_count,
-                           draws[d].visual.instance_count, 0, 0);
-        }
+        ok = ok && _scene_draw_packet_emit(stream, render_pass_id, &draws[d]);
     }
 
     if (cache != NULL)
@@ -1859,7 +1835,7 @@ bool _emitter_emit_render_multi(
     if (!pass_has_depth_attachment && needs_depth && graph_depth_id == 0)
         pass_has_depth_attachment = true;
 
-    SceneRenderDraw draws[DVZ_SCENE_MAX_RENDER_VISUALS] = {0};
+    SceneDrawPacket draws[DVZ_SCENE_MAX_RENDER_VISUALS] = {0};
     uint32_t draw_count = 0;
     uint32_t pass_sample_count = _graph_render_pass_sample_count(emitter, plan, graph_pass);
     ok = _emitter_prepare_render_multi(
