@@ -498,6 +498,13 @@ typedef enum
 } DvzScaleBarLabelPosition;
 
 
+typedef enum
+{
+    DVZ_SCALEBAR_REFERENCE_PANEL_DOMAIN = 0,
+    DVZ_SCALEBAR_REFERENCE_WORLD_POINT,
+} DvzScaleBarReferenceMode;
+
+
 
 typedef enum
 {

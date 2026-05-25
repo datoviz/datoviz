@@ -556,6 +556,79 @@ static int test_scene_scalebar_2d_realization(TstContext* suite, const TstCase* 
 
 
 /**
+ * Check retained 3D scale-bar lowering from an explicit world reference.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+static int test_scene_scalebar_3d_world_reference(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 400, 200, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel_full(figure);
+    ANN(panel);
+
+    DvzCameraDesc camera_desc = dvz_camera_desc();
+    camera_desc.eye[2] = 3.20f;
+    camera_desc.fov_y = 0.74f;
+    DvzCamera* camera = dvz_panel_set_camera(panel, &camera_desc);
+    ANN(camera);
+
+    DvzAnnotation* scalebar = dvz_annotation_scalebar(
+        panel,
+        &(DvzScaleBarDesc){
+            .dimension = DVZ_DIM_X,
+            .reference_mode = DVZ_SCALEBAR_REFERENCE_WORLD_POINT,
+            .reference_position = {0.0, 0.0, 0.0},
+            .reference_direction = {1.0, 0.0, 0.0},
+            .anchor = DVZ_SCENE_ANCHOR_BOTTOM_RIGHT,
+            .label_position = DVZ_SCALEBAR_LABEL_ABOVE,
+            .target_length_px = 120.0f,
+            .min_length_px = 70.0f,
+            .max_length_px = 180.0f,
+            .offset_px = {20.0f, 20.0f},
+            .line_width_px = 2.0f,
+            .line_color = {255, 255, 255, 255},
+            .unit = "m",
+            .data_to_unit = 1.0,
+            .label_style = {
+                .size_px = 10.0f,
+                .renderer = DVZ_TEXT_RENDERER_SMALL_BITMAP_ATLAS,
+                .color = {255, 255, 255, 255},
+            },
+        });
+    ANN(scalebar);
+
+    _scene_prepare_text_visuals(figure);
+    ANN(scalebar->scalebar_visual);
+    ANN(scalebar->visual);
+    AT(scalebar->scalebar_visual->visible);
+    AT(scalebar->visual->visible);
+    AT(strcmp(scalebar->text, "1 m") == 0);
+    AC(scalebar->scalebar_units, 1.0, 1e-12);
+    AT(scalebar->scalebar_px >= 70.0f);
+    AT(scalebar->scalebar_px <= 180.0f);
+
+    dvz_camera_set_view(
+        camera, (vec3){0.0f, 0.0f, 6.40f}, (vec3){0.0f, 0.0f, 0.0f},
+        (vec3){0.0f, 1.0f, 0.0f});
+    _scene_prepare_text_visuals(figure);
+    AT(strcmp(scalebar->text, "2 m") == 0);
+    AC(scalebar->scalebar_units, 2.0, 1e-12);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
+/**
  * Check render emission does not invalidate scale-bar glyph upload sources.
  *
  * @param suite the active test suite
@@ -851,6 +924,32 @@ static int test_scene_scalebar_2d_3d_stream_order(TstContext* suite, const TstCa
     camera_desc.far = 100.0f;
     DvzCamera* camera = dvz_panel_set_camera(right, &camera_desc);
     ANN(camera);
+
+    DvzAnnotation* right_scalebar = dvz_annotation_scalebar(
+        right,
+        &(DvzScaleBarDesc){
+            .dimension = DVZ_DIM_X,
+            .reference_mode = DVZ_SCALEBAR_REFERENCE_WORLD_POINT,
+            .reference_position = {0.0, 0.0, 0.0},
+            .reference_direction = {1.0, 0.0, 0.0},
+            .anchor = DVZ_SCENE_ANCHOR_BOTTOM_RIGHT,
+            .label_position = DVZ_SCALEBAR_LABEL_ABOVE,
+            .target_length_px = 125.0f,
+            .min_length_px = 75.0f,
+            .max_length_px = 185.0f,
+            .offset_px = {28.0f, 24.0f},
+            .tick_length_px = 9.0f,
+            .line_width_px = 2.0f,
+            .line_color = {235, 246, 255, 255},
+            .unit = "m",
+            .data_to_unit = 1.0,
+            .label_style = {
+                .size_px = 18.0f,
+                .renderer = DVZ_TEXT_RENDERER_MSDF_ATLAS,
+                .color = {178, 226, 255, 255},
+            },
+        });
+    ANN(right_scalebar);
 
     DvzVisual* right_points = dvz_point(scene, 0);
     ANN(right_points);
@@ -1925,6 +2024,7 @@ int test_scene_interaction(TstSuite* suite)
     TST_CASE(test_scene_text_annotation_bookkeeping);
     TST_CASE(test_scene_scalebar_formatting);
     TST_CASE(test_scene_scalebar_2d_realization);
+    TST_CASE(test_scene_scalebar_3d_world_reference);
     TST_CASE(test_scene_scalebar_render_emit_keeps_upload_sources);
     TST_CASE(test_scene_scalebar_minimal_stream);
     TST_CASE(test_scene_scalebar_2d_3d_stream_order);

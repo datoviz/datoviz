@@ -34,10 +34,10 @@ text sizes. It does not introduce a separate logical/physical pixel model.
 Added `examples/c/annotations/scalebar_2d_3d.c`, a two-panel smoke example:
 
 1. left panel: physical-domain 2D scatter with retained 2D scale bar and panzoom;
-2. right panel: 3D sphere cloud with arcball, ready for the explicit-reference 3D follow-up.
+2. right panel: 3D point cloud with arcball and an explicit-reference 3D scale bar.
 
-The right panel intentionally does not invent a perspective scale policy. The 3D scale-bar work is
-tracked separately in [../later/SCENE_SCALEBAR_3D_REFERENCE_FOLLOWUP.md](../later/SCENE_SCALEBAR_3D_REFERENCE_FOLLOWUP.md).
+The explicit-reference 3D scale-bar follow-up is recorded in
+[SCENE_SCALEBAR_3D_REFERENCE_SLICE.md](SCENE_SCALEBAR_3D_REFERENCE_SLICE.md).
 
 
 ## Validation

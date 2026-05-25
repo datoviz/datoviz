@@ -159,6 +159,45 @@ static bool _add_2d_scalebar(DvzPanel* panel)
 
 
 /**
+ * Attach a world-referenced scale bar to the 3D arcball panel.
+ *
+ * @param panel panel receiving the annotation
+ * @return true on success, false on error
+ */
+static bool _add_3d_scalebar(DvzPanel* panel)
+{
+    ANN(panel);
+
+    DvzAnnotation* scalebar = dvz_annotation_scalebar(
+        panel,
+        &(DvzScaleBarDesc){
+            .dimension = DVZ_DIM_X,
+            .reference_mode = DVZ_SCALEBAR_REFERENCE_WORLD_POINT,
+            .reference_position = {0.0, 0.0, 0.0},
+            .reference_direction = {1.0, 0.0, 0.0},
+            .anchor = DVZ_SCENE_ANCHOR_BOTTOM_RIGHT,
+            .label_position = DVZ_SCALEBAR_LABEL_ABOVE,
+            .target_length_px = 125.0f,
+            .min_length_px = 75.0f,
+            .max_length_px = 185.0f,
+            .offset_px = {28.0f, 24.0f},
+            .tick_length_px = 9.0f,
+            .line_width_px = 2.0f,
+            .line_color = {235, 246, 255, 255},
+            .unit = "m",
+            .data_to_unit = 1.0,
+            .label_style = {
+                .size_px = 18.0f,
+                .renderer = DVZ_TEXT_RENDERER_MSDF_ATLAS,
+                .color = {178, 226, 255, 255},
+            },
+        });
+    return scalebar != NULL;
+}
+
+
+
+/**
  * Add a compact 3D point cloud for the companion arcball panel.
  *
  * @param scene scene owning the visual
@@ -257,6 +296,8 @@ int main(int argc, char** argv)
     EXAMPLE_CHECK(ok, "_add_2d_scalebar() failed");
     ok = _add_3d_point_cloud(scene, panel_3d);
     EXAMPLE_CHECK(ok, "_add_3d_point_cloud() failed");
+    ok = _add_3d_scalebar(panel_3d);
+    EXAMPLE_CHECK(ok, "_add_3d_scalebar() failed");
 
     app = dvz_app(scene);
     EXAMPLE_CHECK(app != NULL, "dvz_app() failed (no GPU or display?)");

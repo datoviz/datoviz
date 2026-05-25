@@ -1585,36 +1585,177 @@ static void _scalebar_hide(DvzAnnotation* annotation)
 
 
 /**
- * Update or create the internal visuals for one 2D scale-bar annotation.
+ * Resolve the world reference direction for a 3D scale bar.
+ *
+ * @param desc scale-bar descriptor
+ * @param out output normalized direction
+ * @return whether a finite direction was resolved
+ */
+static bool _scalebar_reference_direction(const DvzScaleBarDesc* desc, vec3 out)
+{
+    ANN(desc);
+    ANN(out);
+
+    out[0] = (float)desc->reference_direction[0];
+    out[1] = (float)desc->reference_direction[1];
+    out[2] = (float)desc->reference_direction[2];
+    if (!isfinite(out[0]) || !isfinite(out[1]) || !isfinite(out[2]))
+        return false;
+
+    float norm = sqrtf(out[0] * out[0] + out[1] * out[1] + out[2] * out[2]);
+    if (norm <= 0.0f)
+    {
+        out[0] = 0.0f;
+        out[1] = 0.0f;
+        out[2] = 0.0f;
+        switch (desc->dimension)
+        {
+        case DVZ_DIM_Y:
+            out[1] = 1.0f;
+            break;
+        case DVZ_DIM_Z:
+            out[2] = 1.0f;
+            break;
+        case DVZ_DIM_X:
+        default:
+            out[0] = 1.0f;
+            break;
+        }
+        return true;
+    }
+
+    out[0] /= norm;
+    out[1] /= norm;
+    out[2] /= norm;
+    return true;
+}
+
+
+
+/**
+ * Project one world point to panel-local pixels.
+ *
+ * @param panel panel owning the scale bar
+ * @param mvp active panel MVP
+ * @param point input world position
+ * @param out_x output panel-local x coordinate in pixels
+ * @param out_y output panel-local y coordinate in pixels
+ * @return whether projection succeeded
+ */
+static bool _scalebar_project_world_to_panel_px(
+    const DvzPanel* panel, DvzMVP* mvp, const vec3 point, float* out_x, float* out_y)
+{
+    ANN(panel);
+    ANN(mvp);
+    ANN(out_x);
+    ANN(out_y);
+
+    vec4 p = {point[0], point[1], point[2], 1.0f};
+    vec4 tmp0 = {0};
+    vec4 tmp1 = {0};
+    vec4 clip = {0};
+    glm_mat4_mulv(mvp->model, p, tmp0);
+    glm_mat4_mulv(mvp->view, tmp0, tmp1);
+    glm_mat4_mulv(mvp->proj, tmp1, clip);
+    if (!isfinite(clip[0]) || !isfinite(clip[1]) || !isfinite(clip[3]) ||
+        fabsf(clip[3]) <= 1e-12f)
+        return false;
+
+    float panel_x = 0.0f;
+    float panel_y = 0.0f;
+    float panel_width = 0.0f;
+    float panel_height = 0.0f;
+    _scene_panel_pixel_rect(panel, &panel_x, &panel_y, &panel_width, &panel_height);
+    (void)panel_x;
+    (void)panel_y;
+    if (panel_width <= 0.0f || panel_height <= 0.0f)
+        return false;
+
+    float ndc_x = clip[0] / clip[3];
+    float ndc_y = clip[1] / clip[3];
+    if (!isfinite(ndc_x) || !isfinite(ndc_y))
+        return false;
+    *out_x = 0.5f * (ndc_x + 1.0f) * panel_width;
+    *out_y = 0.5f * (1.0f - ndc_y) * panel_height;
+    return isfinite(*out_x) && isfinite(*out_y);
+}
+
+
+
+/**
+ * Resolve local world-units-per-pixel for a 3D scale bar.
+ *
+ * @param annotation scale-bar annotation
+ * @param out_units_per_px output physical units per panel pixel
+ * @return whether a finite local scale was resolved
+ */
+static bool _scalebar_world_units_per_px(
+    DvzAnnotation* annotation, double* out_units_per_px)
+{
+    ANN(annotation);
+    ANN(out_units_per_px);
+    DvzScaleBarDesc* desc = &annotation->scalebar;
+    vec3 reference = {
+        (float)desc->reference_position[0],
+        (float)desc->reference_position[1],
+        (float)desc->reference_position[2],
+    };
+    if (!isfinite(reference[0]) || !isfinite(reference[1]) || !isfinite(reference[2]))
+        return false;
+
+    vec3 direction = {0};
+    if (!_scalebar_reference_direction(desc, direction))
+        return false;
+
+    DvzMVP mvp = {0};
+    _scene_panel_apply_mvp(annotation->panel, &mvp);
+
+    float x0 = 0.0f;
+    float y0 = 0.0f;
+    float x1 = 0.0f;
+    float y1 = 0.0f;
+    if (!_scalebar_project_world_to_panel_px(annotation->panel, &mvp, reference, &x0, &y0))
+        return false;
+
+    vec3 unit_point = {
+        reference[0] + direction[0],
+        reference[1] + direction[1],
+        reference[2] + direction[2],
+    };
+    if (!_scalebar_project_world_to_panel_px(annotation->panel, &mvp, unit_point, &x1, &y1))
+        return false;
+
+    float dx = x1 - x0;
+    float dy = y1 - y0;
+    float px_per_data_unit = sqrtf(dx * dx + dy * dy);
+    if (!isfinite(px_per_data_unit) || px_per_data_unit <= 0.0f)
+        return false;
+
+    double data_to_unit = desc->data_to_unit != 0.0 && isfinite(desc->data_to_unit)
+                              ? fabs(desc->data_to_unit)
+                              : 1.0;
+    *out_units_per_px = data_to_unit / (double)px_per_data_unit;
+    return isfinite(*out_units_per_px) && *out_units_per_px > 0.0;
+}
+
+
+
+/**
+ * Update or create the internal visuals for one screen-space scale-bar overlay.
  *
  * @param figure the figure being emitted
  * @param annotation scale-bar annotation
+ * @param units_per_px physical units per panel pixel
+ * @param horizontal whether the bar is drawn horizontally
  * @return whether preparation succeeded
  */
-static bool _scalebar_prepare_visual(DvzFigure* figure, DvzAnnotation* annotation)
+static bool _scalebar_prepare_overlay_visual(
+    DvzFigure* figure, DvzAnnotation* annotation, double units_per_px, bool horizontal)
 {
     ANN(figure);
     ANN(annotation);
-    if (annotation->scene == NULL || annotation->panel == NULL ||
-        annotation->panel->figure != figure)
-        return true;
-    if (annotation->kind != DVZ_ANNOTATION_SCALEBAR)
-        return true;
 
     DvzScaleBarDesc* desc = &annotation->scalebar;
-    if (desc->dimension != DVZ_DIM_X && desc->dimension != DVZ_DIM_Y)
-    {
-        _scalebar_hide(annotation);
-        return true;
-    }
-    double visible_min = 0.0;
-    double visible_max = 0.0;
-    if (!dvz_panel_visible_domain(annotation->panel, desc->dimension, &visible_min, &visible_max))
-    {
-        _scalebar_hide(annotation);
-        return true;
-    }
-
     float panel_x = 0.0f;
     float panel_y = 0.0f;
     float panel_width = 0.0f;
@@ -1622,17 +1763,12 @@ static bool _scalebar_prepare_visual(DvzFigure* figure, DvzAnnotation* annotatio
     _scene_panel_pixel_rect(annotation->panel, &panel_x, &panel_y, &panel_width, &panel_height);
     (void)panel_x;
     (void)panel_y;
-    float span_px = desc->dimension == DVZ_DIM_X ? panel_width : panel_height;
-    if (span_px <= 0.0f)
+    if (panel_width <= 0.0f || panel_height <= 0.0f)
     {
         _scalebar_hide(annotation);
         return true;
     }
 
-    double data_to_unit = desc->data_to_unit != 0.0 && isfinite(desc->data_to_unit)
-                              ? fabs(desc->data_to_unit)
-                              : 1.0;
-    double units_per_px = fabs(visible_max - visible_min) * data_to_unit / (double)span_px;
     double length_units = 0.0;
     float length_px = 0.0f;
     if (!_scene_scalebar_choose_length(
@@ -1661,7 +1797,7 @@ static bool _scalebar_prepare_visual(DvzFigure* figure, DvzAnnotation* annotatio
     float y0 = anchor_y;
     float x1 = anchor_x;
     float y1 = anchor_y;
-    if (desc->dimension == DVZ_DIM_X)
+    if (horizontal)
     {
         if (_scalebar_anchor_center_x(desc->anchor))
             x0 -= 0.5f * length_px;
@@ -1679,7 +1815,7 @@ static bool _scalebar_prepare_visual(DvzFigure* figure, DvzAnnotation* annotatio
     float half_tick = 0.5f * tick;
     vec3 starts[3] = {{0}};
     vec3 ends[3] = {{0}};
-    if (desc->dimension == DVZ_DIM_X)
+    if (horizontal)
     {
         _text_panel_pixel_to_clip(annotation->panel, x0, y0, 0.0f, starts[0]);
         _text_panel_pixel_to_clip(annotation->panel, x1, y1, 0.0f, ends[0]);
@@ -1730,8 +1866,8 @@ static bool _scalebar_prepare_visual(DvzFigure* figure, DvzAnnotation* annotatio
         _scene_text_visual_set_renderer(annotation->visual, renderer) != 0)
         return false;
     float label_pos[1][3] = {{0}};
-    label_pos[0][0] = desc->dimension == DVZ_DIM_X ? 0.5f * (x0 + x1) : x1;
-    label_pos[0][1] = desc->dimension == DVZ_DIM_X ? y0 : 0.5f * (y0 + y1);
+    label_pos[0][0] = horizontal ? 0.5f * (x0 + x1) : x1;
+    label_pos[0][1] = horizontal ? y0 : 0.5f * (y0 + y1);
     float label_gap = DVZ_SCALEBAR_LABEL_GAP_PX;
     if (desc->label_position == DVZ_SCALEBAR_LABEL_ABOVE)
         label_pos[0][1] -= tick + label_gap;
@@ -1769,6 +1905,78 @@ static bool _scalebar_prepare_visual(DvzFigure* figure, DvzAnnotation* annotatio
     annotation->dirty_flags = DVZ_TEXT_DIRTY_NONE;
     annotation->version++;
     return true;
+}
+
+
+
+/**
+ * Update or create the internal visuals for one scale-bar annotation.
+ *
+ * @param figure the figure being emitted
+ * @param annotation scale-bar annotation
+ * @return whether preparation succeeded
+ */
+static bool _scalebar_prepare_visual(DvzFigure* figure, DvzAnnotation* annotation)
+{
+    ANN(figure);
+    ANN(annotation);
+    if (annotation->scene == NULL || annotation->panel == NULL ||
+        annotation->panel->figure != figure)
+        return true;
+    if (annotation->kind != DVZ_ANNOTATION_SCALEBAR)
+        return true;
+
+    DvzScaleBarDesc* desc = &annotation->scalebar;
+    if (desc->reference_mode == DVZ_SCALEBAR_REFERENCE_WORLD_POINT)
+    {
+        double units_per_px = 0.0;
+        if (!_scalebar_world_units_per_px(annotation, &units_per_px))
+        {
+            _scalebar_hide(annotation);
+            return true;
+        }
+        return _scalebar_prepare_overlay_visual(
+            figure, annotation, units_per_px, desc->dimension != DVZ_DIM_Y);
+    }
+
+    if (desc->dimension != DVZ_DIM_X && desc->dimension != DVZ_DIM_Y)
+    {
+        _scalebar_hide(annotation);
+        return true;
+    }
+    double visible_min = 0.0;
+    double visible_max = 0.0;
+    if (!dvz_panel_visible_domain(annotation->panel, desc->dimension, &visible_min, &visible_max))
+    {
+        _scalebar_hide(annotation);
+        return true;
+    }
+
+    float panel_x = 0.0f;
+    float panel_y = 0.0f;
+    float panel_width = 0.0f;
+    float panel_height = 0.0f;
+    _scene_panel_pixel_rect(annotation->panel, &panel_x, &panel_y, &panel_width, &panel_height);
+    (void)panel_x;
+    (void)panel_y;
+    float span_px = desc->dimension == DVZ_DIM_X ? panel_width : panel_height;
+    if (span_px <= 0.0f)
+    {
+        _scalebar_hide(annotation);
+        return true;
+    }
+
+    double data_to_unit = desc->data_to_unit != 0.0 && isfinite(desc->data_to_unit)
+                              ? fabs(desc->data_to_unit)
+                              : 1.0;
+    double units_per_px = fabs(visible_max - visible_min) * data_to_unit / (double)span_px;
+    if (!isfinite(units_per_px) || units_per_px <= 0.0)
+    {
+        _scalebar_hide(annotation);
+        return true;
+    }
+    return _scalebar_prepare_overlay_visual(
+        figure, annotation, units_per_px, desc->dimension == DVZ_DIM_X);
 }
 
 
@@ -2658,7 +2866,7 @@ DvzAnnotation* dvz_annotation_label(DvzPanel* panel, const DvzLabelDesc* desc)
 
 
 /**
- * Create a retained 2D scale-bar annotation.
+ * Create a retained scale-bar annotation.
  *
  * @param panel the panel
  * @param desc the scale-bar descriptor
@@ -2678,7 +2886,9 @@ DvzAnnotation* dvz_annotation_scalebar(DvzPanel* panel, const DvzScaleBarDesc* d
     if (annotation == NULL)
         return NULL;
     annotation->scalebar = *desc;
-    if (annotation->scalebar.dimension != DVZ_DIM_Y)
+    if (
+        annotation->scalebar.dimension != DVZ_DIM_Y &&
+        annotation->scalebar.dimension != DVZ_DIM_Z)
         annotation->scalebar.dimension = DVZ_DIM_X;
     if (annotation->scalebar.anchor == DVZ_SCENE_ANCHOR_NONE)
         annotation->scalebar.anchor = DVZ_SCENE_ANCHOR_PANEL_BOTTOM_LEFT;
