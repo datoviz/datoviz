@@ -1,7 +1,6 @@
 # Text Rendering Slice
 
-This slice records the first rendered text path and the migration work needed to make retained
-semantic `DvzText` the v0.4 public text API.
+This slice records the first rendered text path built around retained semantic `DvzText` objects.
 
 The active implementation provides the smallest useful text renderer while preserving the broader
 text semantics in
@@ -16,26 +15,23 @@ The implementation-facing shaping, layout, atlas, and cache contract lives in
 
 Status: first rendered slice landed.
 
-The first rendered text implementation has landed, but the installed v0.4-dev public surface still
-uses a transitional visual-backed entry point:
+The first rendered text implementation has landed and the installed v0.4-dev public surface now uses
+retained semantic text objects:
 
-1. `dvz_text()` currently returns a `DvzVisual*` text visual, not a semantic `DvzText*` handle,
-2. text content is supplied with `dvz_visual_set_strings(text, "text", ...)`,
-3. position, anchor, size, color, and angle are supplied as visual attributes,
-4. `dvz_text_set_renderer()` selects the bitmap/SDF/MSDF-capable atlas path,
-5. text lowers internally to scene-owned glyph visuals and atlas resources,
-6. offscreen/runtime readback tests verify visible bitmap and SDF-backed text.
+1. `dvz_text()` returns a `DvzText*` handle attached to a panel,
+2. text content is supplied with `dvz_text_set_string()`,
+3. style, placement, and renderer selection use `dvz_text_set_style()`,
+   `dvz_text_set_placement()`, and `dvz_text_set_renderer()`,
+4. text lowers internally to scene-owned glyph visuals and atlas resources,
+5. offscreen/runtime readback tests verify visible bitmap and SDF-backed text.
 
-Because v0.4 may break API and ABI for architectural cleanup, this slice now treats the visual-backed
-surface as migration debt rather than a compatibility constraint. The next implementation target is
-to promote `DvzText*` as the source of truth and keep glyph visuals as derived rendering output.
+Glyph visuals remain derived implementation output or an explicit low-level escape hatch; they are
+not the normal public path for labels, annotations, axes, legends, colorbars, or readouts.
 
 
 ## Scope
 
-Support visible text attached to a panel through a retained semantic `DvzText` object. The existing
-visual-backed implementation may be reused internally during migration, but new behavior should be
-specified and tested against semantic text state.
+Support visible text attached to a panel through a retained semantic `DvzText` object.
 
 The first semantic text slice supports:
 
@@ -48,14 +44,12 @@ The first semantic text slice supports:
 7. offscreen app rendering and runtime readback through scene -> `FramePlan` -> DRP2 ->
    vklite/canvas.
 
-Remaining first-slice gaps:
+Remaining first-slice follow-ups:
 
-1. migrate or remove the current visual-backed `dvz_text()` surface so `DvzText*` is the public
-   text handle,
-2. finish data/world-space retained text placement and depth policy,
-3. harden DPI behavior and panel clipping edge cases,
-4. improve explicit diagnostics for renderer fallback, missing glyphs, and unsupported modes,
-5. add or record bounded GLFW/manual smoke coverage.
+1. finish data/world-space retained text placement and depth policy,
+2. harden DPI behavior and panel clipping edge cases,
+3. improve explicit diagnostics for renderer fallback, missing glyphs, and unsupported modes,
+4. add or record bounded GLFW/manual smoke coverage.
 
 
 ## Non-Goals
@@ -77,7 +71,7 @@ scene diagnostic.
 
 ## Public API Boundary
 
-Use or introduce the semantic public APIs for this slice:
+Use the installed semantic public APIs for this slice:
 
 1. `dvz_font()`,
 2. `dvz_font_destroy()`,
@@ -89,9 +83,7 @@ Use or introduce the semantic public APIs for this slice:
 8. `dvz_text_set_renderer()`.
 
 `dvz_glyph()` may remain as a low-level visual constructor or internal derived visual path, but it
-must not be the normal public API for labels, annotations, axes, legends, or readouts. Existing
-`dvz_visual_set_strings()` and visual-attribute text calls should be migrated instead of preserved
-as the stable v0.4 surface.
+must not be the normal public API for labels, annotations, axes, legends, or readouts.
 
 
 ## Retained State
@@ -105,9 +97,8 @@ The retained state in `DvzText` is the semantic source:
 5. `placement`,
 6. `flags`.
 
-The current implementation stores some text state on `DvzVisual` and uses an internal derived glyph
-visual. During migration that state should move to `DvzText`; derived glyph visuals and caches remain
-internal implementation details:
+The current implementation stores semantic text state on `DvzText` and uses internal derived glyph
+visuals. Derived glyph visuals and caches remain internal implementation details:
 
 1. font face identity,
 2. glyph metrics,

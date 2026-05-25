@@ -1,10 +1,10 @@
 # Scene Grid Layout Spec
 
 > **Execution Status**
-> - **Status:** `DESIGN NOTE`
-> - **Updated on:** `2026-05-18`
-> - **Purpose:** define a retained grid/subplot layout layer for scene panels, including resize
->   behavior and future dashboard boundaries.
+> - **Status:** `IMPLEMENTED BASELINE / DASHBOARD FOLLOW-UP NOTE`
+> - **Updated on:** `2026-05-25`
+> - **Purpose:** record the landed retained grid/subplot layout layer for scene panels and the
+>   remaining dashboard/adornment-layout boundaries.
 
 
 ## Summary
@@ -16,19 +16,19 @@ DvzPanel* panel = dvz_panel(
     figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 0.5f, .height = 1.0f});
 ```
 
-That is the right low-level primitive for frame-plan emission because scene lowering can pass the
-normalized rectangle directly to DRP2 viewport and scissor commands. What is missing is a retained
-layout intent above those rectangles: rows, columns, spans, margins, gutters, weights, aspect
-constraints, and future automatic adornment space.
+That remains the right low-level primitive for frame-plan emission because scene lowering can pass
+the normalized rectangle directly to DRP2 viewport and scissor commands. The active v0.4 code now
+adds retained grid layout intent above those rectangles: rows, columns, spans, margins, gutters,
+weight/fixed sizing, and automatic resize-driven re-resolution for grid-owned panels.
 
-The proposed grid layer should compute `DvzPanelDesc` values from semantic subplot placement. It
-should not create a parallel render path, a new panel kind, or a dashboard widget model.
+The grid layer computes `DvzPanelDesc` values from semantic subplot placement. It does not create a
+parallel render path, a new panel kind, or a dashboard widget model.
 
 
 ## Goals
 
 1. Keep `DvzPanelDesc` as the renderer-facing panel rectangle contract.
-2. Add a retained grid/subplot abstraction that can recompute panel rectangles when the figure size
+2. Use the retained grid/subplot abstraction to recompute panel rectangles when the figure size
    changes.
 3. Support common scientific visualization layouts: regular subplot grids, unequal row/column
    sizes, spanning cells, fixed-width colorbar columns, fixed-height overview panels, and stable
@@ -58,8 +58,9 @@ The current scene path already has the rendering pieces needed by a layout resol
 4. DRP2 emission converts render nodes into viewport/scissor commands.
 5. App resize already synchronizes the figure logical size before frame emission.
 6. Panel controllers already receive panel pixel viewport information derived from the descriptor.
-
-The missing piece is retained layout metadata plus a dirty/recompute step before emission.
+7. `DvzGrid` stores retained rows, columns, margins, gutters, per-row/per-column sizing, and
+   grid-owned panel cell attachments.
+8. Grid-owned panels are re-resolved before frame emission when figure size or grid layout changes.
 
 
 ## Core Model
@@ -68,7 +69,7 @@ Use three layers:
 
 1. **Rectangle panel.** The existing `DvzPanelDesc` remains the low-level escape hatch and test
    primitive.
-2. **Grid spec.** A retained layout object stores semantic grid intent and resolves it into panel
+2. **Grid.** A retained layout object stores semantic grid intent and resolves it into panel
    rectangles.
 3. **Higher-level plotting/dashboard layers.** GSP/VisPy2 can expose richer APIs above the C grid
    layer. Dashboard docking and widgets should remain above scene figures.
@@ -77,7 +78,7 @@ Conceptually:
 
 ```text
 DvzFigure
-  DvzGridSpec
+  DvzGrid
     row/column definitions
     margins and gutters
     panel cell attachments
@@ -97,9 +98,8 @@ Grid sizing should distinguish flexible and fixed dimensions.
 | `FRACTION` | fixed fraction of the figure | simple proportional layouts |
 | `AUTO` | measured from adornments | future axes, labels, legends, colorbars |
 
-The first implementation should support `WEIGHT` and `PIXEL`. `FRACTION` is convenient but not
-essential. `AUTO` should be reserved in the type model even if it initially behaves like a default
-weight or fixed value.
+The active implementation supports `WEIGHT` and fixed logical-pixel sizing. `FRACTION` and `AUTO`
+remain future layout extensions.
 
 
 ## Resize Behavior
@@ -142,40 +142,33 @@ Instead, grid-owned panels should remember their cell attachment and update when
 is dirty.
 
 
-## Proposed C API Shape
+## C API Shape
 
-The exact names are provisional, but the API should look like this class of operations:
-
-```c
-DvzGridSpec grid = dvz_grid_spec(2, 3);
-
-dvz_grid_set_margins(&grid, 48.0f, 16.0f, 36.0f, 12.0f); /* left, right, bottom, top px */
-dvz_grid_set_gutter(&grid, 8.0f, 8.0f);                  /* x, y px */
-
-float col_weights[] = {1.0f, 2.0f, 1.0f};
-float row_weights[] = {1.0f, 1.0f};
-dvz_grid_set_col_weights(&grid, 3, col_weights);
-dvz_grid_set_row_weights(&grid, 2, row_weights);
-
-DvzPanel* main = dvz_panel_grid(figure, &grid, 0, 0, 1, 2);
-DvzPanel* side = dvz_panel_grid(figure, &grid, 0, 2, 2, 1);
-DvzPanel* hist = dvz_panel_grid(figure, &grid, 1, 0, 1, 2);
-```
-
-For implementation, prefer a figure-owned retained layout object over a stack-only grid copied by
-value into panels. A stack-only helper is useful for quick rectangle computation, but retained
-resize behavior needs ownership:
+The installed API uses a figure-owned retained grid object:
 
 ```c
-DvzGridSpec* grid = dvz_figure_grid(figure, 2, 3);
-DvzPanel* panel = dvz_grid_panel(grid, 0, 0, 1, 1);
+DvzGrid* grid = dvz_figure_grid(figure, 2, 3);
+
+dvz_grid_set_margins(grid, &(DvzPanelReserve){
+    .left_px = 48.0f, .right_px = 16.0f, .bottom_px = 36.0f, .top_px = 12.0f});
+dvz_grid_set_gutter(grid, 8.0f, 8.0f);
+
+dvz_grid_col_size(grid, 0, DVZ_GRID_SIZE_WEIGHT, 1.0f);
+dvz_grid_col_size(grid, 1, DVZ_GRID_SIZE_WEIGHT, 2.0f);
+dvz_grid_col_size(grid, 2, DVZ_GRID_SIZE_WEIGHT, 1.0f);
+dvz_grid_row_size(grid, 0, DVZ_GRID_SIZE_WEIGHT, 1.0f);
+dvz_grid_row_size(grid, 1, DVZ_GRID_SIZE_WEIGHT, 1.0f);
+
+DvzPanel* main = dvz_grid_panel_span(grid, 0, 0, 1, 2);
+DvzPanel* side = dvz_grid_panel_span(grid, 0, 2, 2, 1);
+DvzPanel* hist = dvz_grid_panel_span(grid, 1, 0, 1, 2);
 ```
 
-The implementation can still provide pure resolver helpers for tests:
+The implementation also provides a pure resolver helper for tests and tooling:
 
 ```c
 bool dvz_grid_resolve(
-    const DvzGridSpec* grid, uint32_t width, uint32_t height,
+    const DvzGrid* grid, uint32_t width, uint32_t height,
     DvzGridCell cell, DvzPanelDesc* out);
 ```
 
@@ -286,22 +279,22 @@ subplot layout.
 
 ## Implementation Slices
 
-1. Add pure `DvzGridSpec` resolver tests for margins, gutters, weights, spans, and resize.
-2. Add retained figure-owned grid objects and grid-owned panel attachments.
-3. Add internal panel descriptor mutation with validation and dirty marking.
-4. Recompute dirty figure layouts before `dvz_figure_emit()` and request processing.
-5. Add examples: two-panel split, image grid with colorbar column, main plot plus marginal
+1. Landed: pure resolver tests for margins, gutters, weights, spans, and resize.
+2. Landed: retained figure-owned grid objects and grid-owned panel attachments.
+3. Landed: internal panel descriptor mutation with validation and dirty marking.
+4. Landed: dirty figure layouts are recomputed before frame emission.
+5. Remaining: add examples for image grids with shared colorbar slots and main plot plus marginal
    histogram.
-6. Add shared-axis convenience only after the layout layer is stable.
-7. Add automatic adornment measurement later, once text/annotation rendering has enough metrics.
+6. Remaining: add shared-axis convenience only after linked-domain semantics are stable.
+7. Remaining: add automatic adornment measurement later, once text/annotation metrics and
+   categorical legends are mature.
 
 
 ## Open Questions
 
-1. Should grid objects be public opaque handles or value descriptors copied into the figure?
-2. Should fixed sizes use logical pixels only, or also physical pixels after DPI scaling?
-3. Should grid-owned panels be allowed to overlap for insets, or should insets be a separate API?
-4. Should out-of-bounds rectangles be rejected universally or only for retained grid layout?
-5. How much of shared-axis behavior belongs in C versus GSP/VisPy2?
-6. Should `AUTO` rows/columns wait for rendered text metrics, or support explicit user-supplied
+1. Should fixed sizes use logical pixels only, or also physical pixels after DPI scaling?
+2. Should grid-owned panels be allowed to overlap for insets, or should insets be a separate API?
+3. Should out-of-bounds rectangles be rejected universally or only for retained grid layout?
+4. How much of shared-axis behavior belongs in C versus GSP/VisPy2?
+5. Should `AUTO` rows/columns wait for rendered text metrics, or support explicit user-supplied
    measured sizes first?

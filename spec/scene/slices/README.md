@@ -33,13 +33,13 @@ slice.
 
 | Feature | Specified | API declared | Retained state | Rendered | Pickable | Exported | Focused tests | Next slice |
 |---|---|---|---|---|---|---|---|---|
-| Text object | yes | semantic `DvzText` target; visual-backed `dvz_text()` pending migration | retained text state plus current visual-backed state | first rendered slice active | no | raster capture only | text realization, atlas growth, runtime readback, app/offscreen smoke | semantic API migration |
+| Text object | yes | yes, semantic `DvzText*` | retained semantic text state | first rendered slice active | no | raster capture only | text realization, atlas growth, runtime readback, app/offscreen smoke | data/world placement and diagnostics |
 | Glyph visual contract | yes | yes, `dvz_glyph()` low-level | active as text lowering target | atlas-backed glyph path active | no | raster capture only | covered through text/glyph tests | keep low-level boundary |
 | Label annotation | yes | yes, `DvzAnnotation` / `dvz_annotation_label()` | yes | simple glyph lowering active; richer readouts pending | no | raster capture only | annotation bookkeeping and realization tests | [ANNOTATION_LABEL_SLICE.md](ANNOTATION_LABEL_SLICE.md) |
 | Generic annotation kinds | broad semantics | partial, `DvzAnnotationKind` | partial | no | no | no | no rendered path | after label slice |
 | Continuous scale | yes | yes, `DvzScale` | yes | active for image/volume colormap binding | no | capture only | scale/field tests | colorbar slice |
 | Colormap | yes | yes, `DvzColormap` | yes | active for image/volume colormap binding | no | capture only | scale/field tests | colorbar slice |
-| Continuous colorbar | yes | yes, `DvzColorbar` | yes | no ticks/ramp labels | no | no | bookkeeping only | [COLORBAR_RENDERING_SLICE.md](COLORBAR_RENDERING_SLICE.md) |
+| Continuous colorbar | yes | yes, `DvzColorbar` | yes | ramp, ticks, title, and labels active | no | raster capture only | colorbar realization and app/offscreen smoke | shared layout and categorical legend follow-up |
 | Discrete legend | yes, broad | no active public handle | no | no | no | no | none | [LEGEND_SLICE.md](LEGEND_SLICE.md) |
 | Scale bar measurement | proposal only | no dedicated public handle | no | no | no | no | none | after label and text slices |
 | Dimension measurement | proposal only | no dedicated public handle | no | no | no | no | none | after label and text slices |
@@ -63,10 +63,8 @@ Each implementation slice should answer these questions before code starts:
 
 Use this order unless a concrete user task changes priority:
 
-1. Promote semantic `DvzText` as the public text source of truth and migrate the visual-backed
-   `dvz_text()` shape.
-2. Wire axes, colorbars, labels, annotations, and readouts to semantic text/glyph lowering.
-3. Finish data/world text placement and depth policy.
-4. Render a continuous `DvzColorbar` ramp plus title/tick labels.
-5. Add a dedicated scale-bar measurement annotation.
-6. Define and implement `DvzLegend` only after categorical scale labels and ordering are concrete.
+1. Wire remaining axes, labels, annotations, legends, and readouts to semantic text/glyph lowering.
+2. Finish data/world text placement and depth policy.
+3. Harden continuous colorbars through shared layout, examples, and categorical legend follow-up.
+4. Add a dedicated scale-bar measurement annotation.
+5. Define and implement `DvzLegend` only after categorical scale labels and ordering are concrete.

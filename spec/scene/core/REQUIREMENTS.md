@@ -1,6 +1,6 @@
 # Scene Requirements
 
-This document defines what the future scene layer must require from DRP2 and its runtime.
+This document defines what the active scene layer requires from DRP2 and its runtime.
 
 It intentionally does not define the final public scene API.
 

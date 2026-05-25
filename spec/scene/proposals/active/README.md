@@ -22,7 +22,6 @@ primary implementation-facing source when they exist.
 4. [COLORBAR_COLORMAP_DESIGN.md](COLORBAR_COLORMAP_DESIGN.md)
 5. [TEXT_DESIGN.md](TEXT_DESIGN.md)
 6. [SCREEN_SPACE_OVERLAY_LAYOUT.md](SCREEN_SPACE_OVERLAY_LAYOUT.md)
-7. [PANEL_CONTENT_PADDING.md](PANEL_CONTENT_PADDING.md)
 
 
 ## Visual Families, Material, Lighting, And Render Modes

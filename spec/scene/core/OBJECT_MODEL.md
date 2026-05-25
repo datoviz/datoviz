@@ -1,6 +1,6 @@
 # Scene Object Model
 
-This document defines the minimum stable concepts for the future scene layer.
+This document defines the minimum stable concepts for the active scene layer.
 
 
 ## Core Objects

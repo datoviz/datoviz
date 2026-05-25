@@ -1,6 +1,6 @@
 # Scene Diagnostics Schema
 
-This document defines the preferred conceptual schema for diagnostics across the future scene layer.
+This document defines the preferred conceptual schema for diagnostics across the active scene layer.
 
 It unifies diagnostics emitted by validation, capability adaptation, frame planning, and runtime
 execution.

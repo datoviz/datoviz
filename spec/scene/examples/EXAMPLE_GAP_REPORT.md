@@ -2,7 +2,7 @@
 
 > **Execution Status**
 > - **Status:** `ANALYSIS REPORT`
-> - **Updated on:** `2026-05-15`
+> - **Updated on:** `2026-05-25`
 > - **Scope:** `spec/scene/examples/*.md`
 > - **Purpose:** summarize what Datoviz v0.4 still needs in scene, DRP2, app, and renderer/runtime
 >   support before all scene worked examples can be implemented.
@@ -14,19 +14,19 @@ The current active stack already supports a useful retained scene slice:
 
 1. retained figures, panels, per-panel viewport/scissor, resize synchronization, offscreen/window
    presentation, app frame callbacks, capture, and a DRP2 runtime path through vklite/canvas;
-2. retained built-in visuals for `point`, `pixel`, `primitive`, `mesh`, path-as-line-strip, and
-   one-quad `image`;
+2. retained built-in visuals for `point`, `pixel`, `marker`, `primitive`, `mesh`, `sphere`,
+   path/segment, `image`, `volume`, and text/glyph;
 3. dense per-item attributes, partial range updates, scene-owned buffers, index buffers for
    primitive/mesh, external vertex-buffer registration, and basic dirty tracking;
-4. sampled-field storage for 2D and 3D descriptors, but rendering/binding is currently image-first:
-   `dvz_visual_set_field()` accepts image `"field"` and requires a 2D field;
-5. image scalar colormapping through CPU-side conversion, retained scale/colormap/colorbar objects,
-   and text/annotation/pinned-readout bookkeeping;
-6. panzoom, camera, and arcball controllers feeding panel transforms;
+4. sampled-field storage for 2D and 3D descriptors, with image and volume consumers;
+5. image/volume scalar colormapping, retained scale/colormap/colorbar objects, rendered continuous
+   colorbars, semantic text, annotation, and pinned-readout bookkeeping;
+6. panzoom, camera, arcball, fly, and turntable controllers feeding panel transforms;
 7. DRP2 buffers, textures, shader modules, render/compute pipelines, bind groups, samplers,
    render/compute pass scopes, copies, readbacks, multiple color attachments, depth attachments,
    WBOIT-shaped accumulation/resolve streams, and a native vklite runtime;
-8. a narrow GPU-backed scene request path: point picking and image probing only.
+8. a narrow GPU-backed scene request path: point/marker/pixel picking and image/volume-slice
+   probing/readout coverage, with broader mesh/path/text picking still deferred.
 
 That is enough for the smallest examples to be close, but most examples require broader scene
 semantics, visual families, framegraph construction, UI integration, or Python-facing API support.
@@ -35,18 +35,18 @@ semantics, visual families, framegraph construction, UI integration, or Python-f
 ## Highest-Value Missing Capabilities
 
 1. **Text/axes release integration, labels, legends, and colorbars.**
-   The scene now has a basic rendered-text example and an axes/grid API example, plus retained
-   annotation and colorbar handles. The examples still need release-quality text behavior, formatted
-   tick generation, axis/tick label rendering, colorbar ramp/tick geometry, layout, and draw-node
-   coverage. This blocks `PATH_AXES_2D`,
+   The scene now has rendered text, rendered continuous colorbars, an axes/grid API example, and
+   retained annotation/readout handles. The examples still need release-quality text behavior,
+   richer axis/readout integration, shared layout, categorical legends, and data/world annotation
+   placement. This blocks polished versions of `PATH_AXES_2D`,
    `LINKED_PANELS_AXES_PANZOOM`, `API_SCALE_COLORBAR_ANNOTATION`,
    `LINKED_PANELS_PROBE_COLORBAR`, `MARKET_MICROSTRUCTURE`, and all polished gallery examples.
 
-2. **Visual family expansion.**
-   Missing or incomplete families include `marker`, `sphere`, `volume`, grouped/ragged `path3d`,
-   tubes/ribbons, vector glyphs/arrows, bars/candles, cubemap/skybox, textured terrain, fullscreen
-   custom visual, and postprocess/composite visuals. Existing `point`, `mesh`, `primitive`, `path`,
-   and `image` cover only the simplest approximations.
+2. **Visual family expansion and polish.**
+   Implemented families now include `marker`, `sphere`, and `volume`, but gaps remain for
+   grouped/ragged 3D paths, tubes/ribbons, vector glyphs/arrows, bars/candles, cubemap/skybox,
+   textured terrain, fullscreen custom visuals, and postprocess/composite visuals. Existing
+   families still need richer picking, labels, categorical data, and large-data policies.
 
 3. **General scene framegraph and per-panel virtual resources.**
    DRP2 can express multi-pass work, compute, render targets, copies, and WBOIT-like passes, but the
@@ -66,9 +66,10 @@ semantics, visual families, framegraph construction, UI integration, or Python-f
    transitions expressed at the scene/framegraph level.
 
 6. **Volumetric rendering and 3D texture sampling through scene visuals.**
-   `SampledField` can describe 3D fields, but `volume` visuals, slice placement, shared 3D texture
-   binding, raymarch shaders, transfer functions, window/level mapping, 3D probe coordinates, and
-   deterministic offscreen volume export are missing.
+   `SampledField` and `volume` visuals now cover the first 3D field rendering paths, including
+   slice/MIP/composite modes and basic slice probe/readout behavior. Remaining gaps include richer
+   transfer functions, arbitrary MPR workflows, categorical label volumes, DVR/MIP picking,
+   isosurfaces, bricking/out-of-core policies, and WebGPU parity.
 
 7. **Richer picking, probing, selection, and linking.**
    Current GPU-backed execution covers point pick and image probe. The examples need marker, mesh
@@ -100,18 +101,18 @@ semantics, visual families, framegraph construction, UI integration, or Python-f
 | --- | --- | --- |
 | `POINT_2D.md` | Mostly supported. Retained point visual, panel, panzoom, uploads, render pass, and app path exist. | Public data-coordinate normalization/range API, axis-free minimal example polish, and fixture/example coverage that this exact path is stable. |
 | `PATH_AXES_2D.md` | Path-as-line-strip and panzoom exist. | Grouped/ragged paths, axes as semantic objects, tick generation, glyph/text rendering, axis dirty-region policy, and line styling beyond the primitive path. |
-| `MARKER_PICKING.md` | Internal marker type is present in metadata, and point picking exists. | Public marker constructor/API, marker shapes/edges, marker-specific shaders, marker item identity, marker GPU pick pass, and selection/highlight routing. |
-| `SPHERE_IMPOSTOR.md` | Could be approximated with mesh or point sprites. | First-class `sphere` visual, impostor billboard shader, radius/channel support, lighting/depth-correct impostor math, and optional mesh fallback. |
-| `VOLUME_SLICE.md` | 3D `SampledField` descriptors exist. | Public `volume` visual, binding 3D fields to volume slots, slice placement parameters, 3D texture sampling, colormap/transfer parameters, and slice probe coordinates. |
-| `VOLUME_OFFSCREEN.md` | Offscreen/app capture and DRP2 readback paths exist. | Volume rendering itself, deterministic volume export integration, transfer/raycast parameters, and explicit readback nodes from scene volume output. |
-| `LINKED_PANELS_PROBE_COLORBAR.md` | Multi-panel rendering, shared image fields, image probe, scales, colorbar handles, annotations, and pinned-readout bookkeeping exist. | Rendered colorbar/annotations/crosshairs, consolidated scene-level colorbar layout, linked-panel controller semantics, shared mapping identity enforcement, and richer multi-panel probe routing. |
+| `MARKER_PICKING.md` | Public marker constructor/API, shape subset, code-SDF shader, item identity, bounding-box GPU pick path, and point/marker selection mask highlighting exist. | Exact SDF picking, richer marker style payloads, and polished selection/highlight routing. |
+| `SPHERE_IMPOSTOR.md` | First-class `sphere` visual, analytic impostor shader, radius support, lighting/depth, SSAO/G-buffer coverage, and example coverage exist. | Texture variants, per-item material/PBR, and sphere picking. |
+| `VOLUME_SLICE.md` | Public `volume` visual, 3D sampled-field binding, slice/composite/MIP modes, bounds, clipping, colormap/transfer parameters, and basic slice probe/readout exist. | Arbitrary MPR semantics, richer transfer functions, categorical volumes, and volume picking beyond the first slice. |
+| `VOLUME_OFFSCREEN.md` | Offscreen/app capture, volume rendering, and DRP2 readback paths exist. | Deterministic gallery/export conventions and richer transfer/raycast controls. |
+| `LINKED_PANELS_PROBE_COLORBAR.md` | Multi-panel rendering, shared image fields, image probe, scales, rendered continuous colorbar, annotations, and pinned-readout bookkeeping exist. | Consolidated scene-level colorbar layout, linked-panel controller semantics, shared mapping identity enforcement, rendered crosshairs, and richer multi-panel probe routing. |
 | `MOUSE_BRAIN_ATLAS_EXPLORER.md` | Mesh, WBOIT, image probe, selection bookkeeping, and arcball are partial building blocks. | Volume slice visual, region/group identity in mesh batches, mesh/region picking, selection-driven per-region opacity/highlight, linked 2D panel updates, rendered annotations, and UI tree/filter integration. |
 | `LINKED_PANELS_AXES_PANZOOM.md` | Multiple panels, panzoom, path, and point/pixel-like rendering exist. | Shared X-only controller binding, independent Y controller binding, axes/ticks/glyphs, covered-domain tick caching, and scoped axis resource invalidation. |
 | `ANIMATION_VIDEO_EXPORT.md` | Timer animation, offline/realtime scene clocks, frame callbacks, app loop, and video module exist. | Transition animation helpers, camera-path animation, public marker/alpha style animation, deterministic video export loop wired through app/scene, and no-spurious-upload animation dirty tracking for style params. |
 | `API_MESH_SELECTION_LINK.md` | Mesh visual, link channels, selection objects, link-key storage, and pick result structs exist. | Mesh face/item GPU picking, resolved mesh parent/child identity, linked highlight propagation into visual styling, and public mesh selection examples. |
 | `API_IMAGE_PROBE_PINNED_READOUT.md` | Image probe result and pinned-readout bookkeeping exist. | Rendered pinned readouts, shared formatting realization, stronger semantic payloads for scalar/vector/category probes, and polished public API examples. |
-| `API_SCALE_COLORBAR_ANNOTATION.md` | Scale, colormap, colorbar, annotation, label, format descriptors, and placement structs exist. | Rendering for colorbars, labels, annotations, font/text backend, layout/anchoring behavior, and data-anchored annotation transform integration. |
-| `API_SAMPLED_FIELD.md` | `SampledField` covers scalar/color 2D/3D descriptors, geometry metadata, full/region updates, and image binding. | Non-image field consumers, direct GPU scalar colormap sampling, 3D texture binding, row/depth layout coverage in scene emit, and volume visual integration. |
+| `API_SCALE_COLORBAR_ANNOTATION.md` | Scale, colormap, rendered continuous colorbar, annotation, label, format descriptors, text backend, and placement structs exist. | Non-label annotations, data-anchored transform integration, categorical legends, and shared layout. |
+| `API_SAMPLED_FIELD.md` | `SampledField` covers scalar/color 2D/3D descriptors, geometry metadata, full/region updates, image binding, and volume binding. | Labels/categorical fields, richer probe payloads, and broader non-image consumers. |
 | `GALAXY.md` | 3D panel, camera/arcball, point/pixel visuals, alpha modes, and WBOIT path are partial fits. | True marker/point-sprite radial falloff, large-star dataset loader/cache, per-star alpha/size style quality, rotation animation helper, overlay text, and gallery screenshot path. |
 | `GLOBAL_WIND_PROJECTIONS.md` | Primitive/path/image can approximate some layers. | Projection-aware transform pipeline, vector glyph/arrow visual, vector Jacobian semantics, coastline/graticule helpers, orthographic globe/projection interaction, optional compute particle overlay, and hover labels. |
 | `GRAND_CANYON_FLYOVER.md` | Mesh, texture image path, depth, camera, arcball, app capture, and animation callbacks are building blocks. | Textured mesh material path beyond image quads, terrain sampler parameters, camera flyover/keyframe helper, cache/download bundle handling, optional sky/background pass, and deterministic gallery screenshot example. |

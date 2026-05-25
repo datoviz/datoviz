@@ -1,12 +1,12 @@
 > **Execution Status**
-> - **Status:** `SCENE SPEC PROPOSAL`
-> - **Updated on:** `2026-05-22`
-> - **Purpose:** define a panel-level padding model so plot content and reserved adornment bands,
->   especially colorbars, share the same outer inset.
+> - **Status:** `PROMOTED / IMPLEMENTED IN V0.4-DEV`
+> - **Updated on:** `2026-05-25`
+> - **Purpose:** preserve the panel-level padding rationale after the implemented behavior moved to
+>   `spec/scene/core/PANEL_LAYOUT.md`.
 
 # Panel Padding
 
-This proposal records the layout direction exposed by the colorbar example hardening: users often
+This promoted note records the layout direction exposed by the colorbar example hardening: users often
 want visible breathing room around an entire panel, while still expecting the plot area and
 panel-attached adornments such as colorbars to share natural alignment.
 
@@ -33,14 +33,12 @@ Colorbar-local `edge_offset_px` is not the right abstraction either. It trims on
 and does not tell the image, axes, probes, or other panel-aligned objects to use the same inset.
 
 
-## Recommendation
+## Implemented API
 
-Add a panel-owned padding in fixed logical pixels:
+The active public API exposes panel-owned padding in fixed logical pixels:
 
 ```c
-bool dvz_panel_set_padding(
-    DvzPanel* panel, float left_px, float right_px, float bottom_px, float top_px);
-
+bool dvz_panel_set_padding(DvzPanel* panel, const DvzPanelReserve* padding);
 bool dvz_panel_get_padding(const DvzPanel* panel, DvzPanelReserve* out);
 bool dvz_panel_inner_rect_px(const DvzPanel* panel, DvzRect* out);
 ```
@@ -135,9 +133,9 @@ panel-level layout and generated examples, not reinterpret arbitrary user geomet
 
 ## Relation To Existing Specs
 
-This proposal refines the panel box model in
-[`../../core/PANEL_LAYOUT.md`](../../core/PANEL_LAYOUT.md). Once implemented and tested, the
-normative content should move there, and this proposal can be retired.
+The normative panel box model now lives in
+[`../../core/PANEL_LAYOUT.md`](../../core/PANEL_LAYOUT.md). Keep this file as rationale only; do
+not extend active behavior here.
 
 It also refines the attached colorbar alignment rules described in
 [`../../semantics/LEGENDS_AND_COLORBARS.md`](../../semantics/LEGENDS_AND_COLORBARS.md) and

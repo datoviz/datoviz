@@ -57,9 +57,9 @@ active implementation status is:
 |---|---|---|---|---|---|
 | Core scene/app | scene, figure, panel, view, emit, capture, DVZR recording/replay | active | active scene -> FramePlan -> DRP2 -> vklite/canvas/app path | frame capture and runtime readbacks are used by tests | installed CLI boundary for DVZR replay remains a product decision |
 | Visual families | pixel, point, primitive, path, image, mesh, sphere, volume, glyph constructors | active for those families | active for retained first slices, including WBOIT/depth-peel, EDL, SSAO/G-buffer where eligible; glyph path renders atlas-backed text | point pick and image probe only | richer marker/segment/glyph semantics, errorbar, boxplot, richer path/image/volume features |
-| Sampled fields/scales | `DvzSampledField`, scale, colormap, colorbar APIs | fields/scales/colorbars retain state | image and volume consume fields; image/volume colormap bindings are active | image probe returns a basic value payload | labels/categorical fields, richer probe payloads, rendered colorbar ticks/labels |
+| Sampled fields/scales | `DvzSampledField`, scale, colormap, colorbar APIs | fields/scales/colorbars retain state | image and volume consume fields; image/volume colormap bindings and continuous colorbar rendering are active | image probe returns a basic value payload | labels/categorical fields, richer probe payloads, shared colorbar layout, categorical legends |
 | Interaction/selection | policies, pick/probe queues, selection/link APIs | active bookkeeping and tests | request processing executes through app/runtime for point/image | narrow point/image GPU readback | broader mesh/object/sphere/volume picking and rendered selection highlights |
-| Text/annotations | font, text, annotation APIs | active bookkeeping and lifecycle tests; semantic `DvzText` migration pending | first rendered glyph/text path active; label annotations use text lowering | no | semantic text API migration, data/world placement, colorbar/readout integration, shaping, diagnostics, glyph/text picking |
+| Text/annotations | font, text, annotation APIs | active semantic `DvzText` state, bookkeeping, and lifecycle tests | first rendered glyph/text path active; label annotations use text lowering | no | data/world placement, readout integration, shaping, diagnostics, glyph/text picking |
 
 The implementation-ready packets for the retained and explanatory-object rows are:
 
@@ -71,7 +71,7 @@ The implementation-ready packets for the retained and explanatory-object rows ar
 Remaining implementation work should focus on:
 
 1. broadening pick/probe coverage beyond the first point/image DRP2 readback paths,
-2. promoting semantic `DvzText` before adding more text placement behavior to the visual-backed API,
+2. hardening semantic `DvzText` placement before adding broader text-dependent behavior,
 3. deciding whether mesh needs a separate public geometry resource beyond current scene buffers,
 4. extending volume/sampled-field probe results beyond the current image-oriented payload,
 5. implementing rendered selection highlights once selection/link bookkeeping has a stable visual

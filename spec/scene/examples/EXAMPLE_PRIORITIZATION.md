@@ -93,7 +93,7 @@ materials, and large-data policies.
 | Vector glyphs/arrows | Missing as a semantic visual. | Wind, CFD, trajectories, cell motion, tokamak. | Implement a vector/arrow visual instead of relying on primitive triangles. |
 | Text/glyph rendering | Partial: basic rendered text example and glyph path exist. | Axes, annotations, labels, colorbars, LaTeX/math, dashboards. | Highest-value release-hardening and integration capability for 2D and gallery polish. |
 | Axes/ticks | Partial: axis API/grid example exists. | Path axes, linked panels, DAQ, physiology, market dashboard. | Finish generated ticks, labels, layout, and update policy on top of text and panzoom domain state. |
-| Colorbars/annotations/readouts | Retained bookkeeping exists; rendering incomplete. | Probe/colorbar panels, image probe readout, volume/DICOM, dashboards. | Render colorbar ramp, ticks, labels, anchored annotations, and pinned readouts. |
+| Colorbars/annotations/readouts | Rendered continuous colorbars and retained annotation/readout bookkeeping exist. | Probe/colorbar panels, image probe readout, volume/DICOM, dashboards. | Harden shared layout, rendered readouts/crosshairs, categorical legends, and data-anchored annotations. |
 | Panzoom | Implemented. | Wind, probe panels, DAQ, physiology, market, image viewers. | Add shared x/y controller semantics and linked crosshair/probe state. |
 | Arcball/camera/fly/turntable | Implemented. | Protein, brain, volume, LiDAR, terrain, sphere SSAO. | Add camera-path animation helpers for cinematic examples. |
 | Materials/lighting | Partial but active. | Protein, sphere cloud, mesh, terrain, finite-element viewer. | Clarify material API and add texture slots for mesh/sphere paths. |

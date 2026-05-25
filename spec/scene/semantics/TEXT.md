@@ -45,10 +45,9 @@ Glyph atlas pages, glyph packing, UV coordinates, and rasterization details are 
 details. Public scene APIs and readback/export paths must not expose atlas internals as the only
 meaning of text.
 
-For v0.4 implementation work, `DvzText` is the semantic source of truth. Existing visual-backed
-text entry points are migration debt, not compatibility constraints. New text placement, invalidation,
-diagnostics, and explanatory-object integration should be specified against retained text state; glyph
-visuals are derived rendering output or low-level escape hatches.
+For v0.4 implementation work, `DvzText` is the semantic source of truth. Text placement,
+invalidation, diagnostics, and explanatory-object integration should be specified against retained
+text state; glyph visuals are derived rendering output or low-level escape hatches.
 
 
 ## Architecture Split

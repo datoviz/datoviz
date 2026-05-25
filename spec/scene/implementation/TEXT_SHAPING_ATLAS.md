@@ -44,8 +44,8 @@ Rules:
 4. atlas entries are keyed by selected font face and glyph id, not only by Unicode codepoint,
 5. renderer resources are internal implementation details and must not become the primary public
    meaning of text,
-6. visual-backed text state should be migrated into `DvzText` instead of treated as a stable v0.4
-   public contract.
+6. `DvzText` state is the stable semantic source; glyph visuals and atlas resources are derived
+   implementation details.
 
 
 ## Shaping Contract

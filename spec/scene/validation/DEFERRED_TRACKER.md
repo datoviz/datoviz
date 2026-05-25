@@ -5,11 +5,12 @@ It is informative — the authoritative deferral note lives in the originating d
 
 Items are grouped by target milestone.
 
-Status note on 2026-05-16: this tracker no longer lists capabilities that have landed in the
+Status note on 2026-05-25: this tracker no longer lists capabilities that have landed in the
 active scene/app slice, including retained point/primitive/mesh/path/image/pixel/sphere/volume
-visuals, retained sampled fields and scale/colorbar bookkeeping, WBOIT/depth-peel/EDL/SSAO/G-buffer
-execution slices, app/offscreen/GLFW presentation, DVZR app recording/replay, point-pick readback,
-and basic image-probe readback. Deferred entries below are gaps beyond those active slices.
+visuals, semantic text and rendered glyphs, retained sampled fields, rendered continuous colorbars,
+WBOIT/depth-peel/EDL/SSAO/G-buffer execution slices, app/offscreen/GLFW presentation, DVZR app
+recording/replay, point/marker/pixel pick readback, basic image-probe readback, and basic
+volume-slice probe/readout behavior. Deferred entries below are gaps beyond those active slices.
 
 
 ## DRP2 2.1
@@ -41,10 +42,10 @@ These items are in scope for v0.4 but deferred beyond the initial implementation
 | Automatic LOD for mesh simplification | `spec/scene/semantics/GEOMETRY_UTILITIES.md` |
 | Concave (alpha-shape) hull computation | `spec/scene/semantics/GEOMETRY_UTILITIES.md` |
 | Annotation shape generation (msdfgen integration) | `spec/scene/semantics/GEOMETRY_UTILITIES.md` |
-| Rendered text/glyph path: shaping, atlas population, glyph runs, and text draw emission | `spec/scene/semantics/TEXT.md`, `spec/scene/visuals/GLYPH.md` |
+| Advanced text shaping, fallback chains, equation layout, diagnostics, and data/world placement polish beyond the active rendered text path | `spec/scene/semantics/TEXT.md`, `spec/scene/visuals/GLYPH.md` |
 | Glyph-level, substring-level, and text-object picking | `spec/scene/semantics/TEXT.md`, `spec/scene/visuals/GLYPH.md` |
 | Rendered annotations, annotation labels, guides, and callout geometry | `spec/scene/semantics/ANNOTATIONS.md` |
-| Rendered colorbar ramps, ticks, labels, and layout-realization geometry | `spec/scene/semantics/LEGENDS_AND_COLORBARS.md` |
+| Shared colorbar layout, categorical legends, interactive scale/range editing, and richer legend composition beyond the active continuous colorbar path | `spec/scene/semantics/LEGENDS_AND_COLORBARS.md` |
 | Labels and categorical sampled-field rendering/probe semantics beyond retained descriptors | `spec/scene/proposals/promoted/SAMPLED_FIELD_API_DESIGN.md` |
 | Richer probe payloads beyond basic point identity and image RGBA/value readback | `spec/scene/proposals/promoted/PROBE_READOUT_DESIGN.md` |
 | Broader mesh, sphere, volume, object, and grouped-family picking | `spec/scene/interaction/PICKING.md` |

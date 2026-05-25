@@ -22,9 +22,10 @@ specialized `spec/scene/` documents listed below.
 5. [PANEL_RESERVE_AND_COLORBAR_PLACEMENT.md](PANEL_RESERVE_AND_COLORBAR_PLACEMENT.md) ->
    `../../core/PANEL_LAYOUT.md`, `../../semantics/LEGENDS_AND_COLORBARS.md`, and
    `../../api/API_SURFACE.md`.
-6. [TRANSPARENCY_WBOIT_DESIGN.md](TRANSPARENCY_WBOIT_DESIGN.md) ->
+6. [PANEL_CONTENT_PADDING.md](PANEL_CONTENT_PADDING.md) -> `../../core/PANEL_LAYOUT.md`.
+7. [TRANSPARENCY_WBOIT_DESIGN.md](TRANSPARENCY_WBOIT_DESIGN.md) ->
    `../../semantics/TRANSPARENCY.md`, `../../pipeline/FRAME_PLAN.md`, and
    `../../validation/ADAPTATION.md`.
-7. [UI_BACKEND_INTEGRATION.md](UI_BACKEND_INTEGRATION.md) ->
+8. [UI_BACKEND_INTEGRATION.md](UI_BACKEND_INTEGRATION.md) ->
    `../../integration/EXTERNAL_UI.md`, `../../integration/HOSTED_BACKENDS.md`,
    `../../pipeline/FRAME_LIFECYCLE.md`, and `../../core/RUNTIME_BOUNDARY.md`.

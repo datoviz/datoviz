@@ -1,6 +1,6 @@
 # Panel Layout
 
-This document defines how panels are positioned and sized within a figure in the future scene
+This document defines how panels are positioned and sized within a figure in the active v0.4 scene
 layer.
 
 
@@ -165,11 +165,9 @@ No special API is needed.
 ### Grid Layout
 
 ```text
-DvzGridOpts opts = {
-    .spacing   = 0.01,        // inter-panel gap, normalized units
-    .margin    = {50, 20, 50, 60},  // outer margin: top, right, bottom, left — pixels
-}
-DvzGrid* grid = dvz_figure_grid(fig, rows, cols, &opts)
+DvzGrid* grid = dvz_figure_grid(fig, rows, cols)
+dvz_grid_set_margins(grid, &margins_px)
+dvz_grid_set_gutter(grid, gutter_x_px, gutter_y_px)
 ```
 
 `dvz_figure_grid` partitions the figure into a rows×cols grid and returns a `DvzGrid*` handle.
@@ -190,15 +188,15 @@ By default all columns have equal width and all rows have equal height.
 Override with relative weights or fixed pixel sizes:
 
 ```text
-dvz_grid_col_width(grid, col, DVZ_SIZE_WEIGHT, 2.0)   // twice as wide as default
-dvz_grid_col_width(grid, col, DVZ_SIZE_FIXED_PX, 60)  // exactly 60 px wide
-dvz_grid_row_height(grid, row, DVZ_SIZE_WEIGHT, 1.0)  // default weight
-dvz_grid_row_height(grid, row, DVZ_SIZE_FIXED_PX, 40) // exactly 40 px tall
+dvz_grid_col_size(grid, col, DVZ_GRID_SIZE_WEIGHT, 2.0)   // twice as wide as default
+dvz_grid_col_size(grid, col, DVZ_GRID_SIZE_FIXED_PX, 60)  // exactly 60 px wide
+dvz_grid_row_size(grid, row, DVZ_GRID_SIZE_WEIGHT, 1.0)   // default weight
+dvz_grid_row_size(grid, row, DVZ_GRID_SIZE_FIXED_PX, 40)  // exactly 40 px tall
 ```
 
-`DVZ_SIZE_WEIGHT` values are relative to each other — `2.0` and `1.0` means the first column
+`DVZ_GRID_SIZE_WEIGHT` values are relative to each other — `2.0` and `1.0` means the first column
 is twice as wide as the second, with remaining space split proportionally.
-`DVZ_SIZE_FIXED_PX` columns/rows consume their declared pixel size before proportional
+`DVZ_GRID_SIZE_FIXED_PX` columns/rows consume their declared pixel size before proportional
 distribution of the remainder.
 
 
@@ -239,9 +237,9 @@ with the data column carrying the remaining proportional weight:
 
 ```text
 // 2-column grid: data panel (proportional) + colorbar (60 px fixed)
-DvzGrid* grid = dvz_figure_grid(fig, 1, 2, &opts)
-dvz_grid_col_width(grid, 0, DVZ_SIZE_WEIGHT,    1.0)   // data panel
-dvz_grid_col_width(grid, 1, DVZ_SIZE_FIXED_PX,  60)    // colorbar slot
+DvzGrid* grid = dvz_figure_grid(fig, 1, 2)
+dvz_grid_col_size(grid, 0, DVZ_GRID_SIZE_WEIGHT,    1.0)   // data panel
+dvz_grid_col_size(grid, 1, DVZ_GRID_SIZE_FIXED_PX,  60)    // colorbar slot
 
 DvzPanel* data_panel  = dvz_grid_panel(grid, 0, 0)
 DvzPanel* cbar_panel  = dvz_grid_panel(grid, 0, 1)
@@ -264,9 +262,9 @@ and return a `DvzPanel*` for the colorbar. `DVZ_PANEL_SIDE_RIGHT`, `_LEFT`, `_TO
 For a shared colorbar spanning multiple data rows, use a row-span:
 
 ```text
-DvzGrid* grid = dvz_figure_grid(fig, 3, 2, &opts)
+DvzGrid* grid = dvz_figure_grid(fig, 3, 2)
 // columns: 0 = data, 1 = colorbar
-dvz_grid_col_width(grid, 1, DVZ_SIZE_FIXED_PX, 60)
+dvz_grid_col_size(grid, 1, DVZ_GRID_SIZE_FIXED_PX, 60)
 // colorbar panel spans all 3 rows
 DvzPanel* cbar_panel = dvz_grid_panel_span(grid, 0, 1, 3, 1)
 ```
@@ -302,6 +300,37 @@ The grid allocates space for grid panels; ImGui-driven panels float freely over 
 surface in their own ImGui windows.
 
 See `integration/EXTERNAL_UI.md` for the full ImGui rendering architecture and input routing details.
+
+
+## Panel Padding
+
+Panel padding is fixed logical-pixel breathing room inside one panel's outer rectangle. It is
+applied before reserves are resolved, so the padded inner rectangle contains both the plot rectangle
+and any reserved adornment bands.
+
+```text
+dvz_panel_set_padding(panel, &padding_px)
+dvz_panel_get_padding(panel, &padding_px)
+dvz_panel_inner_rect_px(panel, &inner_rect)
+```
+
+The resolved rectangle model is:
+
+```text
+panel rect
+  panel padding
+    inner panel rect
+      reserve bands
+      plot rect
+```
+
+Default padding is zero on every side. Padding is not reserve: reserve divides the padded inner
+panel rectangle into plot and adornment bands, while padding insets the entire panel-local layout
+area. This keeps data visuals, axes, legends, colorbars, probes, and panel-local annotations aligned
+to one shared inner panel boundary.
+
+Validation should reject negative, non-finite, or overlarge padding that collapses the inner panel
+rect or the resolved plot rect after reserve.
 
 
 ## Panel Margins

@@ -1,13 +1,13 @@
 # Colorbar Rendering Slice
 
-This slice defines the first rendered continuous colorbar path for `DvzColorbar`.
+This slice records the first rendered continuous colorbar path for `DvzColorbar`.
 
-It implements a panel-attached colorbar that explains a scene-owned continuous color scale.
+Status: first rendered continuous colorbar slice landed.
 
 
 ## Scope
 
-Implement visible continuous colorbars bound to `DvzScale`.
+The implemented slice supports visible continuous colorbars bound to `DvzScale`.
 
 The first slice supports:
 
@@ -62,8 +62,7 @@ Use the installed APIs:
 If an installed setter is missing for a required field, add the narrow setter rather than encoding
 the behavior through flags.
 
-The first implementation should add these narrow setters if code needs to mutate retained colorbar
-layout state after creation:
+The installed API includes these narrow setters for retained colorbar layout state:
 
 1. `dvz_colorbar_set_orientation()`,
 2. `dvz_colorbar_set_anchor()`,
@@ -229,7 +228,7 @@ primitive strips.
 
 ## Tests
 
-Add focused scene tests for:
+Focused scene/app coverage includes:
 
 1. colorbar creation emits ramp, tick mark, and text contributions,
 2. vertical and horizontal orientations use different deterministic layout,
@@ -241,12 +240,12 @@ Add focused scene tests for:
 8. unsupported anchors produce explicit diagnostics,
 9. auto-reserve updates the selected panel edge using pixel-to-visual conversion.
 
-Add one app/offscreen smoke that captures an image or volume slice with a visible colorbar.
+The app/offscreen smoke coverage includes a visible colorbar ramp and labels.
 
 
 ## Acceptance
 
-This slice is complete when:
+This slice is complete for the first continuous colorbar path:
 
 1. a retained `DvzColorbar` renders a visible continuous ramp with title and tick labels,
 2. the colorbar references, but does not own, the scale and colormap,

@@ -32,15 +32,14 @@ The current v0.4-dev implementation has visible glyph rendering, but its public 
 still being migrated:
 
 1. `dvz_glyph()` is installed as a low-level `DvzVisual*` constructor,
-2. `dvz_text()` is currently installed as a visual-backed text API that lowers internally to glyph
-   visuals,
+2. `dvz_text()` is installed as a semantic `DvzText*` API that lowers internally to glyph visuals,
 3. text uses bitmap/SDF/MSDF-capable atlas resources and renders through the scene -> FramePlan ->
    DRP2 -> vklite/canvas path,
 4. focused tests cover text realization, UTF-8 atlas growth, missing-glyph fallback, many-label
    batching, runtime readback, and app/offscreen visible pixels.
 
-The v0.4 target is no longer to preserve the visual-backed `dvz_text()` surface. Semantic
-`DvzText*` objects should own content, style, placement, and identity; glyph visuals are derived
+The v0.4 target is semantic text ownership. `DvzText*` objects own content, style, placement, and
+identity; glyph visuals are derived
 implementation output or an explicit low-level escape hatch for advanced callers.
 
 

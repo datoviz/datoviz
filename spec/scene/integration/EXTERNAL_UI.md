@@ -1,6 +1,6 @@
 # External UI Integration
 
-This document defines how external UI frameworks should interact with the future scene layer.
+This document defines how external UI frameworks should interact with the active scene layer.
 
 An external UI framework may be ImGui, a native widget toolkit, a web-side control surface, or any
 other app-level interface that reads and mutates scene-owned semantic state.

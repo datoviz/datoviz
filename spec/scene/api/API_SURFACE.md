@@ -52,20 +52,21 @@ The first public header split has landed. Treat these groups as implemented APIs
    bookkeeping,
 9. first point-pick and image-probe execution through the DRP2 runtime request processor,
 10. font/text and annotation retained-object bookkeeping,
-11. first rendered text/glyph output through atlas-backed scene resources.
+11. semantic `DvzText*` public surface and first rendered text/glyph output through atlas-backed
+    scene resources,
+12. rendered continuous colorbar ramp, ticks, title, and labels.
 
 Treat these installed declarations as draft contracts until implemented in `src/scene`:
 
-1. semantic `DvzText*` public surface migration from the current visual-backed text entry point,
-2. rendered non-label annotations and callouts,
-3. rendered colorbar ticks/labels,
-4. selection highlight rendering and broader link-driven state propagation,
-5. mesh/object picking and richer probe payloads,
-6. broad mapped attributes beyond the current image colormap path.
+1. rendered non-label annotations and callouts,
+2. selection highlight rendering and broader link-driven state propagation,
+3. mesh/object picking and richer probe payloads,
+4. broad mapped attributes beyond the current image/volume colormap paths,
+5. shared or categorical legend layout beyond the first continuous colorbar slice.
 
-Colorbars, text, and annotations are retained semantic objects. Text/glyph rendering exists as a
-first slice, but the visual-backed text API must be migrated so retained `DvzText` is the v0.4
-source of truth.
+Colorbars, text, and annotations are retained semantic objects. Text/glyph rendering and
+continuous colorbar rendering exist as first slices; remaining work should use those semantic
+objects rather than visual-private or backend-shaped state.
 
 Implementation-ready rendering work for those retained objects is tracked in:
 
@@ -198,11 +199,11 @@ to the passive orientation widget.
 
 ## SampledField Surface
 
-The next public scene API should introduce `DvzSampledField` as the shared regular-grid data object.
+The installed public scene API includes `DvzSampledField` as the shared regular-grid data object.
 
-The first surface should expose:
+The current surface exposes:
 
-1. a dedicated public subheader, likely `include/datoviz/scene/field.h`,
+1. the dedicated public subheader `include/datoviz/scene/field.h`,
 2. one creation descriptor with dimension, format, resolution, and semantic hints,
 3. one geometry descriptor with optional axis and physical metadata,
 4. one scene-owned opaque handle,
@@ -221,7 +222,7 @@ execution choices behind the same field object.
 
 ## Interaction Surface
 
-The first public interaction surface should include:
+The installed public interaction surface includes:
 
 1. an interaction policy object,
 2. visual picking capability declarations,
@@ -366,10 +367,8 @@ The first public surface should expose:
 Text callers should bind content, style, font, placement, and color. They should not manage glyph
 atlases, glyph UVs, or text render-pass resources directly.
 
-For v0.4, `DvzText*` is the target public text handle. The existing `DvzVisual* dvz_text()` shape is
-not a compatibility constraint; either reshape `dvz_text()` to return `DvzText*` or replace it with
-a clearly named semantic constructor. `dvz_glyph()` may remain low-level, but axes, colorbars,
-annotations, legends, and readouts should consume semantic text or annotation APIs.
+For v0.4, `DvzText*` is the public text handle. `dvz_glyph()` may remain low-level, but axes,
+colorbars, annotations, legends, and readouts should consume semantic text or annotation APIs.
 
 
 ## Formatting Descriptor Policy
