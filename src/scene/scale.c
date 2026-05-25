@@ -852,7 +852,8 @@ static bool _colorbar_ensure_visuals(DvzColorbar* colorbar)
 
     if (colorbar->text_visual == NULL)
     {
-        colorbar->text_visual = _scene_text_visual(colorbar->scene, 0);
+        colorbar->text_visual =
+            _scene_adornment_text_visual(colorbar->scene, colorbar->text_renderer);
         if (colorbar->text_visual == NULL)
             return false;
         colorbar->text_visual->visible = false;
@@ -911,6 +912,12 @@ static void _colorbar_update_text(DvzColorbar* colorbar)
     {
         if (colorbar->text_visual != NULL)
             dvz_visual_set_visible(colorbar->text_visual, false);
+        return;
+    }
+    if (_scene_adornment_text_visual_set_renderer(
+            colorbar->text_visual, colorbar->text_renderer) != 0)
+    {
+        dvz_visual_set_visible(colorbar->text_visual, false);
         return;
     }
     const char* strings[DVZ_SCENE_MAX_COLORBAR_TEXTS] = {0};
@@ -1531,7 +1538,7 @@ static bool _legend_ensure_visuals(DvzLegend* legend)
 
     if (legend->text_visual == NULL)
     {
-        legend->text_visual = _scene_text_visual(legend->scene, 0);
+        legend->text_visual = _scene_adornment_text_visual(legend->scene, legend->text_renderer);
         if (legend->text_visual == NULL)
             return false;
         legend->text_visual->visible = false;
@@ -1587,6 +1594,11 @@ static void _legend_update_text(DvzLegend* legend)
     {
         if (legend->text_visual != NULL)
             dvz_visual_set_visible(legend->text_visual, false);
+        return;
+    }
+    if (_scene_adornment_text_visual_set_renderer(legend->text_visual, legend->text_renderer) != 0)
+    {
+        dvz_visual_set_visible(legend->text_visual, false);
         return;
     }
     const char* strings[DVZ_SCENE_MAX_LEGEND_TEXTS] = {0};
@@ -2349,6 +2361,9 @@ DvzColorbar* dvz_colorbar(DvzPanel* panel, DvzScale* scale, const DvzColorbarDes
         desc != NULL ? desc->tick_length_px : 0.0f, COLORBAR_TICK_LENGTH_PX);
     colorbar->label_gap_px = _colorbar_positive_or_default(
         desc != NULL ? desc->label_gap_px : 0.0f, COLORBAR_LABEL_GAP_PX);
+    colorbar->text_renderer = _scene_adornment_text_renderer(
+        desc != NULL && desc->text_renderer != 0 ? desc->text_renderer :
+                                                   DVZ_TEXT_RENDERER_MSDF_ATLAS);
     colorbar->placement =
         desc != NULL ? desc->placement :
                        (DvzPlacement){
@@ -2519,6 +2534,8 @@ bool dvz_colorbar_set_layout(DvzColorbar* colorbar, const DvzColorbarDesc* desc)
         _colorbar_positive_or_default(desc->tick_length_px, COLORBAR_TICK_LENGTH_PX);
     colorbar->label_gap_px =
         _colorbar_positive_or_default(desc->label_gap_px, COLORBAR_LABEL_GAP_PX);
+    colorbar->text_renderer = _scene_adornment_text_renderer(
+        desc->text_renderer != 0 ? desc->text_renderer : DVZ_TEXT_RENDERER_MSDF_ATLAS);
     colorbar->placement = desc->placement;
     if (desc->title != NULL)
         dvz_strlcpy(colorbar->title, desc->title, sizeof(colorbar->title));
@@ -2616,6 +2633,9 @@ DvzLegend* dvz_legend(DvzPanel* panel, DvzScale* scale, const DvzLegendDesc* des
         desc != NULL ? desc->mark_size_px : 0.0f, LEGEND_MARK_SIZE_PX);
     legend->mark_label_gap_px = _legend_positive_or_default(
         desc != NULL ? desc->mark_label_gap_px : 0.0f, LEGEND_MARK_LABEL_GAP_PX);
+    legend->text_renderer = _scene_adornment_text_renderer(
+        desc != NULL && desc->text_renderer != 0 ? desc->text_renderer :
+                                                   DVZ_TEXT_RENDERER_MSDF_ATLAS);
     legend->placement =
         desc != NULL ? desc->placement :
                        (DvzPlacement){
@@ -2699,6 +2719,8 @@ bool dvz_legend_set_layout(DvzLegend* legend, const DvzLegendDesc* desc)
     legend->mark_size_px = _legend_positive_or_default(desc->mark_size_px, LEGEND_MARK_SIZE_PX);
     legend->mark_label_gap_px =
         _legend_positive_or_default(desc->mark_label_gap_px, LEGEND_MARK_LABEL_GAP_PX);
+    legend->text_renderer = _scene_adornment_text_renderer(
+        desc->text_renderer != 0 ? desc->text_renderer : DVZ_TEXT_RENDERER_MSDF_ATLAS);
     legend->placement = desc->placement;
     if (desc->title != NULL)
         dvz_strlcpy(legend->title, desc->title, sizeof(legend->title));

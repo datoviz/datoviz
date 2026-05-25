@@ -610,6 +610,7 @@ struct DvzColorbar
     float plot_gap_px;
     float tick_length_px;
     float label_gap_px;
+    DvzTextRenderer text_renderer;
     DvzPlacement placement;
     bool dirty;
     uint64_t version;
@@ -646,6 +647,7 @@ struct DvzLegend
     float entry_gap_px;
     float mark_size_px;
     float mark_label_gap_px;
+    DvzTextRenderer text_renderer;
     DvzPlacement placement;
     bool dirty;
     uint64_t version;
@@ -1668,6 +1670,12 @@ void _scene_prepare_text_visuals(DvzFigure* figure);
 DvzVisual* _scene_text_visual(DvzScene* scene, uint32_t flags);
 
 int _scene_text_visual_set_renderer(DvzVisual* visual, DvzTextRenderer renderer);
+
+DvzTextRenderer _scene_adornment_text_renderer(DvzTextRenderer renderer);
+
+DvzVisual* _scene_adornment_text_visual(DvzScene* scene, DvzTextRenderer renderer);
+
+int _scene_adornment_text_visual_set_renderer(DvzVisual* visual, DvzTextRenderer renderer);
 
 EXTERN_C_ON
 

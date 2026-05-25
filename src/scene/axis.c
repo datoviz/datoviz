@@ -109,29 +109,6 @@ static bool _axis_dim_supported(DvzDim dim)
 
 
 /**
- * Return a renderer supported by internal axis text visuals.
- *
- * @param style axis style
- * @return supported text renderer
- */
-static DvzTextRenderer _axis_text_renderer(const DvzAxisStyle* style)
-{
-    ANN(style);
-    switch (style->text_renderer)
-    {
-    case DVZ_TEXT_RENDERER_AUTO:
-    case DVZ_TEXT_RENDERER_SMALL_BITMAP_ATLAS:
-    case DVZ_TEXT_RENDERER_BITMAP_ATLAS:
-    case DVZ_TEXT_RENDERER_MSDF_ATLAS:
-        return style->text_renderer;
-    default:
-        return DVZ_TEXT_RENDERER_MSDF_ATLAS;
-    }
-}
-
-
-
-/**
  * Apply the axis text renderer to the derived text visual.
  *
  * @param axis the axis
@@ -142,8 +119,8 @@ static bool _axis_apply_text_renderer(DvzAxis* axis)
     ANN(axis);
     if (axis->text_visual == NULL)
         return true;
-    DvzTextRenderer renderer = _axis_text_renderer(&axis->style);
-    return _scene_text_visual_set_renderer(axis->text_visual, renderer) == 0;
+    return _scene_adornment_text_visual_set_renderer(
+               axis->text_visual, axis->style.text_renderer) == 0;
 }
 
 
@@ -604,14 +581,10 @@ static bool _axis_ensure_text_visual(DvzAxis* axis)
         return true;
     if (axis->panel == NULL || axis->panel->figure == NULL || axis->panel->figure->scene == NULL)
         return false;
-    axis->text_visual = _scene_text_visual(axis->panel->figure->scene, 0);
+    axis->text_visual =
+        _scene_adornment_text_visual(axis->panel->figure->scene, axis->style.text_renderer);
     if (axis->text_visual == NULL)
         return false;
-    if (!_axis_apply_text_renderer(axis))
-    {
-        axis->text_visual = NULL;
-        return false;
-    }
     axis->text_visual->visible = false;
     DvzVisualAttachDesc attach = {.z_layer = 1001, .controller_mode = DVZ_CONTROLLER_FIXED};
     if (dvz_panel_add_visual(axis->panel, axis->text_visual, &attach) != 0)

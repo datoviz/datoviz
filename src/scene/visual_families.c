@@ -971,6 +971,63 @@ int _scene_text_visual_set_renderer(DvzVisual* visual, DvzTextRenderer renderer)
 
 
 /**
+ * Resolve a generated adornment text renderer to a supported internal renderer.
+ *
+ * @param renderer requested renderer
+ * @return supported renderer for generated labels
+ */
+DvzTextRenderer _scene_adornment_text_renderer(DvzTextRenderer renderer)
+{
+    switch (renderer)
+    {
+    case DVZ_TEXT_RENDERER_AUTO:
+    case DVZ_TEXT_RENDERER_SMALL_BITMAP_ATLAS:
+    case DVZ_TEXT_RENDERER_BITMAP_ATLAS:
+    case DVZ_TEXT_RENDERER_MSDF_ATLAS:
+        return renderer;
+    default:
+        return DVZ_TEXT_RENDERER_MSDF_ATLAS;
+    }
+}
+
+
+
+/**
+ * Create an internal text visual for scene-generated labels.
+ *
+ * @param scene the scene
+ * @param renderer requested renderer
+ * @return the visual, or NULL on allocation failure
+ */
+DvzVisual* _scene_adornment_text_visual(DvzScene* scene, DvzTextRenderer renderer)
+{
+    ANN(scene);
+    DvzVisual* visual = _scene_text_visual(scene, 0);
+    if (visual == NULL)
+        return NULL;
+    if (_scene_adornment_text_visual_set_renderer(visual, renderer) != 0)
+        return NULL;
+    return visual;
+}
+
+
+
+/**
+ * Select the renderer for an internal scene-generated label text visual.
+ *
+ * @param visual text visual
+ * @param renderer requested renderer
+ * @return 0 on success, -1 on error
+ */
+int _scene_adornment_text_visual_set_renderer(DvzVisual* visual, DvzTextRenderer renderer)
+{
+    ANN(visual);
+    return _scene_text_visual_set_renderer(visual, _scene_adornment_text_renderer(renderer));
+}
+
+
+
+/**
  * Create a glyph visual.
  *
  * @param scene the scene

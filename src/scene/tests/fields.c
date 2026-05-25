@@ -159,6 +159,7 @@ int test_scene_scale_colormap_colorbar_core(TstContext* suite, const TstCase* it
     AT(colorbar->scale == scale);
     AT(colorbar->orientation == DVZ_COLORBAR_ORIENTATION_HORIZONTAL);
     AT(colorbar->anchor == DVZ_SCENE_ANCHOR_PANEL_BOTTOM);
+    AT(colorbar->text_renderer == DVZ_TEXT_RENDERER_MSDF_ATLAS);
     AT(strcmp(colorbar->title, "Depth map") == 0);
 
     dvz_colorbar_set_format(
@@ -270,6 +271,7 @@ int test_scene_legend_lifecycle_and_reserve(TstContext* suite, const TstCase* it
         legend, &(DvzLegendDesc){
                     .placement_mode = DVZ_LEGEND_PLACEMENT_DETACHED,
                     .title = "Detached",
+                    .text_renderer = DVZ_TEXT_RENDERER_SMALL_BITMAP_ATLAS,
                     .placement = {
                         .space = DVZ_PLACEMENT_SPACE_FIGURE,
                         .horizontal_anchor = DVZ_HORIZONTAL_ANCHOR_RIGHT,
@@ -281,6 +283,7 @@ int test_scene_legend_lifecycle_and_reserve(TstContext* suite, const TstCase* it
                     },
                 }));
     AT(legend->placement_mode == DVZ_LEGEND_PLACEMENT_DETACHED);
+    AT(legend->text_renderer == DVZ_TEXT_RENDERER_SMALL_BITMAP_ATLAS);
     AT(fabsf(panel->legend_reserve.right_px) < 1e-6f);
     AT(fabsf(panel->reserve.right_px) < 1e-6f);
 
@@ -348,6 +351,7 @@ int test_scene_legend_prepare_visuals(TstContext* suite, const TstCase* item)
     _scene_prepare_legend_visuals(figure, NULL);
     AT(legend->mark_visual != NULL);
     AT(legend->text_visual != NULL);
+    AT(legend->text_visual->text.renderer == DVZ_TEXT_RENDERER_MSDF_ATLAS);
     AT(legend->mark_visual->visible);
     AT(legend->text_visual->visible);
     AT(legend->entry_count == 3);
@@ -535,6 +539,7 @@ int test_scene_colorbar_auto_reserve_and_visuals(TstContext* suite, const TstCas
     AT(colorbar->ramp_visual != NULL);
     AT(colorbar->tick_visual != NULL);
     AT(colorbar->text_visual != NULL);
+    AT(colorbar->text_visual->text.renderer == DVZ_TEXT_RENDERER_MSDF_ATLAS);
     AT(colorbar->ramp_visual->topology == DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
     AT(colorbar->ramp_visual->visible);
     AT(colorbar->tick_visual->visible);
@@ -913,6 +918,7 @@ int test_scene_colorbar_detached_placement(TstContext* suite, const TstCase* ite
             .orientation = DVZ_COLORBAR_ORIENTATION_VERTICAL,
             .title = "Detached",
             .ramp_width_px = 24.0f,
+            .text_renderer = DVZ_TEXT_RENDERER_SMALL_BITMAP_ATLAS,
             .placement = {
                 .space = DVZ_PLACEMENT_SPACE_FIGURE,
                 .horizontal_anchor = DVZ_HORIZONTAL_ANCHOR_RIGHT,
@@ -925,6 +931,7 @@ int test_scene_colorbar_detached_placement(TstContext* suite, const TstCase* ite
         });
     ANN(colorbar);
     AT(colorbar->placement_mode == DVZ_COLORBAR_PLACEMENT_DETACHED);
+    AT(colorbar->text_renderer == DVZ_TEXT_RENDERER_SMALL_BITMAP_ATLAS);
 
     DvzRect after = {0};
     AT(dvz_panel_plot_rect_px(panel, &after));
@@ -935,6 +942,8 @@ int test_scene_colorbar_detached_placement(TstContext* suite, const TstCase* ite
 
     _scene_prepare_colorbar_visuals(figure, NULL);
     AT(colorbar->ramp_visual != NULL);
+    AT(colorbar->text_visual != NULL);
+    AT(colorbar->text_visual->text.renderer == DVZ_TEXT_RENDERER_SMALL_BITMAP_ATLAS);
     DvzVisualDataView pos_view = {0};
     AT(dvz_visual_data(colorbar->ramp_visual, "position", &pos_view) == 0);
     const float* positions = (const float*)pos_view.data;

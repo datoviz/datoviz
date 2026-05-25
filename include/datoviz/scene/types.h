@@ -693,6 +693,7 @@ struct DvzColorbarDesc
     float plot_gap_px;
     float tick_length_px;
     float label_gap_px;
+    DvzTextRenderer text_renderer;
     DvzPlacement placement;
     uint32_t flags;
 };
@@ -710,6 +711,7 @@ struct DvzLegendDesc
     float entry_gap_px;
     float mark_size_px;
     float mark_label_gap_px;
+    DvzTextRenderer text_renderer;
     DvzPlacement placement;
     uint32_t flags;
 };

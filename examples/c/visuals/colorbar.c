@@ -67,6 +67,7 @@ typedef struct ColorbarState
     int placement_space;
     int horizontal_anchor;
     int vertical_anchor;
+    int text_renderer;
     int precision;
     double range_min;
     double range_max;
@@ -220,6 +221,22 @@ static DvzVerticalAnchor _vertical_anchor_from_index(int index)
 
 
 /**
+ * Return the text renderer matching one GUI combo index.
+ *
+ * @param index GUI combo index
+ * @return text renderer
+ */
+static DvzTextRenderer _text_renderer_from_index(int index)
+{
+    if (index == 1)
+        return DVZ_TEXT_RENDERER_BITMAP_ATLAS;
+    if (index == 2)
+        return DVZ_TEXT_RENDERER_SMALL_BITMAP_ATLAS;
+    return DVZ_TEXT_RENDERER_MSDF_ATLAS;
+}
+
+
+/**
  * Return the example's default axis style.
  *
  * @return axis style
@@ -236,6 +253,7 @@ static DvzAxisStyle _axis_style(void)
         .reserve_px = 0.0f,
         .tick_gap_px = 6.0f,
         .label_gap_px = 28.0f,
+        .text_renderer = DVZ_TEXT_RENDERER_MSDF_ATLAS,
         .spine_color = {220, 220, 220, 255},
         .major_tick_color = {220, 220, 220, 255},
         .minor_tick_color = {170, 170, 170, 220},
@@ -284,6 +302,7 @@ static void _apply_colorbar_layout(ColorbarState* state)
                              .plot_gap_px = state->plot_gap_px,
                              .tick_length_px = state->tick_length_px,
                              .label_gap_px = state->label_gap_px,
+                             .text_renderer = _text_renderer_from_index(state->text_renderer),
                              .placement = placement,
                          });
 }
@@ -440,6 +459,9 @@ static void _colorbar_gui(DvzGui* gui, DvzView* win, void* user_data)
             gui, "Tick length", &state->tick_length_px, 0.0f, 24.0f);
         layout_changed |=
             dvz_gui_slider_float(gui, "Label gap", &state->label_gap_px, 0.0f, 32.0f);
+        const char* renderer_items[] = {"MSDF", "Bitmap", "Small bitmap"};
+        layout_changed |=
+            dvz_gui_combo(gui, "Text renderer", &state->text_renderer, renderer_items, 3);
 
         if (state->placement_mode == 1)
         {
@@ -567,6 +589,7 @@ int main(int argc, char** argv)
         .placement_space = 0,
         .horizontal_anchor = 2,
         .vertical_anchor = 1,
+        .text_renderer = 0,
         .precision = 2,
         .range_min = FIELD_MIN,
         .range_max = FIELD_MAX,
