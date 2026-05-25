@@ -48,8 +48,8 @@ Reason: basic rendered text, linear 2D axes/ticks/labels, continuous colorbars, 
 and retained scale bars have landed enough that they are no longer primary feature-freeze blockers.
 The next release-quality lane is to make the declared v0.4 surface honest: feature/status table,
 WebGPU/WASM experimental subset, raw `ctypes` scope and smoke, v0.3 visible parity audit, public
-API/status cleanup, retained scale-bar update-performance refactor, and a compact release-example
-proof set. Remaining text, axes, layout, and readout work should be treated as RC1 proof gaps only
+API/status cleanup, retained scale-bar validation coverage, and a compact release-example proof
+set. Remaining text, axes, layout, and readout work should be treated as RC1 proof gaps only
 when a required example or test cannot exercise the declared feature; otherwise it belongs to RC2
 polish or v0.5 deferral.
 
@@ -281,29 +281,27 @@ pending.
 
 Goal:
 
-Keep retained scale bars represented in the release proof set and complete the update-performance
-refactor so live panzoom/domain changes do not repeatedly rebuild text/glyph resources.
+Keep retained scale bars represented in the release proof set and keep the landed
+update-performance churn tests in validation so live panzoom/domain changes do not repeatedly
+rebuild text/glyph resources.
 
 Current state:
 
 1. The retained 2D scale-bar rendering slice is implemented.
 2. The 3D reference slice has a completed record.
-3. The remaining known issue is update churn during panzoom/domain changes, tracked as a v0.4
-   release-hardening task.
+3. The update churn refactor is landed with focused churn tests and live scale-bar example smoke.
 
 Required v0.4 work:
 
 1. a narrow scale-bar fixture or example smoke,
-2. cached scale-bar realization state and dirty classes for geometry, label position, label text,
-   style, and visibility,
-3. no repeated glyph/text rebuilds when panzoom/domain changes leave the formatted label unchanged,
-4. focused churn tests and a bounded example or trace smoke proving reduced DRP2 resource churn.
+2. keep live Vulkan scale-bar example smoke in release validation,
+3. keep the DRP2 trace smoke proving reduced runtime resource churn in release validation.
 
 Primary records:
 
 1. [`../done/SCENE_SCALEBAR_RENDERING_SLICE.md`](../done/SCENE_SCALEBAR_RENDERING_SLICE.md)
 2. [`../done/SCENE_SCALEBAR_3D_REFERENCE_SLICE.md`](../done/SCENE_SCALEBAR_3D_REFERENCE_SLICE.md)
-3. [`../soon/scene/SCENE_SCALEBAR_UPDATE_PERF_REFACTOR_PLAN.md`](../soon/scene/SCENE_SCALEBAR_UPDATE_PERF_REFACTOR_PLAN.md)
+3. [`../done/SCENE_SCALEBAR_UPDATE_PERF_REFACTOR.md`](../done/SCENE_SCALEBAR_UPDATE_PERF_REFACTOR.md)
 
 
 ### 7. Grid Layout And Linked Panels

@@ -31,9 +31,10 @@ implemented enough that they should not be treated as primary feature-freeze blo
 readouts currently have public/bookkeeping state and formatting; richer rendered readout UI can be
 polish or v0.5 work unless a release example depends on it.
 
-Scale-bar rendering is present, but the retained scale-bar update-performance refactor remains a
-v0.4 release-hardening item. It should be completed before the final v0.4 release so panzoom/domain
-changes do not repeatedly rebuild text/glyph resources or add avoidable DRP2 resource churn.
+Scale-bar rendering is present, including the retained update-performance refactor captured in
+[../done/SCENE_SCALEBAR_UPDATE_PERF_REFACTOR.md](../done/SCENE_SCALEBAR_UPDATE_PERF_REFACTOR.md).
+Panzoom/domain changes now avoid rebuilding text/glyph resources when the formatted label and text
+style are unchanged.
 
 The remaining feature-freeze blockers are:
 
@@ -92,9 +93,8 @@ Checklist:
    in examples/tests and are not stale planning-only claims.
 5. Decide whether any rendered pinned readout work is required for release examples; otherwise mark
    richer readouts as polish or v0.5.
-6. Keep the retained scale-bar update-performance refactor tracked in
-   [../soon/scene/SCENE_SCALEBAR_UPDATE_PERF_REFACTOR_PLAN.md](../soon/scene/SCENE_SCALEBAR_UPDATE_PERF_REFACTOR_PLAN.md),
-   as required v0.4 release-hardening work rather than post-release polish.
+6. Keep the landed retained scale-bar update-performance churn tests and live example smokes
+   represented in release validation.
 7. Reconcile [IMPLEMENTATION.md](IMPLEMENTATION.md),
    [../../spec/scene/examples/EXAMPLE_RELEASE_STAGING.md](../../spec/scene/examples/EXAMPLE_RELEASE_STAGING.md),
    and the public feature table so completed first slices are not still presented as active
@@ -261,8 +261,8 @@ Exit criteria:
 2. Feedback requested from users is focused on API shape, architecture, installability, and obvious
    feature gaps.
 3. Remaining text, axes, annotation, readout, picking, and visual-family polish is either tied to a
-   required release example or clearly staged for RC2/v0.5; scale-bar update-performance work
-   remains required before final v0.4 unless it has already landed.
+   required release example or clearly staged for RC2/v0.5; scale-bar update-performance has landed
+   with focused churn tests and live example smoke.
 
 
 ## Phase 7: Render Conformance And Gallery
@@ -284,8 +284,8 @@ Checklist:
 3. Use exact image refs only where stable; otherwise use nonblank checks, expected sampled pixels,
    changed-region checks, and metamorphic assertions.
 4. Add failure artifacts for actual/diff images when image comparison is active.
-5. Land the retained scale-bar update-performance refactor and keep its churn tests or DRP2 trace
-   smoke in the release validation set.
+5. Keep the retained scale-bar update-performance churn tests or DRP2 trace smoke in the release
+   validation set.
 6. Build release gallery examples:
    scatter with axes, linked image probe/colorbar, protein, brain/volume, LiDAR or dense point
    cloud, and one WebGPU/WASM subset page.

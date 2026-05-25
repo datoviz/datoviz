@@ -8,7 +8,7 @@
 This file lists refactoring work that should wait until after the public `v0.4.0` release unless a
 specific item becomes necessary to fix a release-blocking bug. The v0.4 release branch should focus
 on supported-surface honesty, WebGPU/WASM experimental proof, raw `ctypes`, release examples,
-runtime hardening, and the retained scale-bar update-performance refactor.
+runtime hardening, and live validation of landed retained scale-bar update-performance behavior.
 
 
 ## Not v0.4 Release Blockers
