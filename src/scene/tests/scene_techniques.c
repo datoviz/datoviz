@@ -523,13 +523,13 @@ int test_scene_gbuffer_runtime_lowering(TstContext* suite, const TstCase* item)
     DvzVisual* mesh = dvz_mesh(scene, 0);
     AT(mesh != NULL);
 
-    float positions[4][3] = {
+    vec3 positions[4] = {
         {-0.5f, -0.5f, 0.0f},
         {0.5f, -0.5f, 0.0f},
         {-0.5f, 0.5f, 0.0f},
         {0.5f, 0.5f, 0.0f},
     };
-    float normals[4][3] = {
+    vec3 normals[4] = {
         {0.0f, 0.0f, 1.0f},
         {0.0f, 0.0f, 1.0f},
         {0.0f, 0.0f, 1.0f},
@@ -684,13 +684,13 @@ int test_scene_frame_plan_node_reallocation_safe(TstContext* suite, const TstCas
     AT(panel != NULL);
     _scene_technique_state_enable_gbuffer(&panel->techniques, true);
 
-    float positions[4][3] = {
+    vec3 positions[4] = {
         {-0.5f, -0.5f, 0.0f},
         {0.5f, -0.5f, 0.0f},
         {-0.5f, 0.5f, 0.0f},
         {0.5f, 0.5f, 0.0f},
     };
-    float normals[4][3] = {
+    vec3 normals[4] = {
         {0.0f, 0.0f, 1.0f},
         {0.0f, 0.0f, 1.0f},
         {0.0f, 0.0f, 1.0f},
@@ -715,7 +715,7 @@ int test_scene_frame_plan_node_reallocation_safe(TstContext* suite, const TstCas
         AT(dvz_panel_add_visual(panel, mesh, NULL) == 0);
     }
 
-    float point_positions[3][3] = {
+    vec3 point_positions[3] = {
         {-0.25f, -0.25f, 0.1f},
         {0.25f, -0.25f, 0.1f},
         {0.0f, 0.25f, 0.1f},
@@ -819,7 +819,7 @@ int test_scene_msaa_runtime_lowering(TstContext* suite, const TstCase* item)
 
     DvzVisual* sphere = dvz_sphere(scene, 0);
     AT(sphere != NULL);
-    float positions[1][3] = {{0.0f, 0.0f, 0.0f}};
+    vec3 positions[1] = {{0.0f, 0.0f, 0.0f}};
     DvzColor colors[1] = {{255, 128, 64, 255}};
     float sizes[1] = {0.35f};
     AT(dvz_visual_set_data(sphere, "position", positions, 1) == 0);
@@ -966,7 +966,7 @@ int test_scene_msaa_runtime_capability_lowering(TstContext* suite, const TstCase
 
     DvzVisual* sphere = dvz_sphere(scene, 0);
     AT(sphere != NULL);
-    float positions[1][3] = {{0.0f, 0.0f, 0.0f}};
+    vec3 positions[1] = {{0.0f, 0.0f, 0.0f}};
     DvzColor colors[1] = {{255, 128, 64, 255}};
     float sizes[1] = {0.35f};
     AT(dvz_visual_set_data(sphere, "position", positions, 1) == 0);
@@ -1101,7 +1101,7 @@ int test_scene_edl_runtime_lowering(TstContext* suite, const TstCase* item)
 
     DvzVisual* points = dvz_point(scene, 0);
     AT(points != NULL);
-    float positions[3][3] = {
+    vec3 positions[3] = {
         {-0.35f, -0.20f, 0.1f},
         {+0.20f, +0.05f, 0.3f},
         {+0.05f, +0.35f, 0.6f},
@@ -1246,7 +1246,7 @@ int test_scene_edl_depth_producer_capabilities(TstContext* suite, const TstCase*
     DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
     AT(panel != NULL);
 
-    float point_positions[3][3] = {
+    vec3 point_positions[3] = {
         {-0.90f, +0.45f, 0.0f},
         {-0.65f, +0.45f, 0.1f},
         {-0.78f, +0.70f, 0.2f},
@@ -1264,7 +1264,7 @@ int test_scene_edl_depth_producer_capabilities(TstContext* suite, const TstCase*
     AT(dvz_visual_set_data(point, "size", point_sizes, 3) == 0);
     AT(dvz_panel_add_visual(panel, point, NULL) == 0);
 
-    float primitive_positions[3][3] = {
+    vec3 primitive_positions[3] = {
         {-0.80f, -0.60f, 0.1f},
         {-0.20f, -0.60f, 0.1f},
         {-0.50f, +0.10f, 0.1f},
@@ -1280,13 +1280,13 @@ int test_scene_edl_depth_producer_capabilities(TstContext* suite, const TstCase*
     AT(dvz_visual_set_data(primitive, "color", primitive_colors, 3) == 0);
     AT(dvz_panel_add_visual(panel, primitive, NULL) == 0);
 
-    float mesh_positions[4][3] = {
+    vec3 mesh_positions[4] = {
         {0.10f, -0.50f, 0.2f},
         {0.70f, -0.50f, 0.2f},
         {0.10f, +0.30f, 0.2f},
         {0.70f, +0.30f, 0.2f},
     };
-    float mesh_normals[4][3] = {
+    vec3 mesh_normals[4] = {
         {0.0f, 0.0f, 1.0f},
         {0.0f, 0.0f, 1.0f},
         {0.0f, 0.0f, 1.0f},
@@ -1356,7 +1356,7 @@ int test_scene_edl_ignores_ineligible_passes(TstContext* suite, const TstCase* i
     AT(fixed_panel != NULL);
     AT(transparent_panel != NULL);
 
-    float positions[3][3] = {
+    vec3 positions[3] = {
         {-0.5f, -0.5f, 0.0f},
         {+0.5f, -0.5f, 0.0f},
         {0.0f, +0.5f, 0.0f},
@@ -1441,13 +1441,13 @@ int test_scene_ssao_graph_foundation(TstContext* suite, const TstCase* item)
     DvzVisual* mesh = dvz_mesh(scene, 0);
     AT(mesh != NULL);
 
-    float positions[4][3] = {
+    vec3 positions[4] = {
         {-0.5f, -0.5f, 0.0f},
         {0.5f, -0.5f, 0.0f},
         {-0.5f, 0.5f, 0.0f},
         {0.5f, 0.5f, 0.0f},
     };
-    float normals[4][3] = {
+    vec3 normals[4] = {
         {0.0f, 0.0f, 1.0f},
         {0.0f, 0.0f, 1.0f},
         {0.0f, 0.0f, 1.0f},
@@ -1617,13 +1617,13 @@ int test_scene_ssao_runtime_lowering(TstContext* suite, const TstCase* item)
     DvzVisual* mesh = dvz_mesh(scene, 0);
     AT(mesh != NULL);
 
-    float positions[4][3] = {
+    vec3 positions[4] = {
         {-0.5f, -0.5f, 0.0f},
         {0.5f, -0.5f, 0.0f},
         {-0.5f, 0.5f, 0.0f},
         {0.5f, 0.5f, 0.0f},
     };
-    float normals[4][3] = {
+    vec3 normals[4] = {
         {0.0f, 0.0f, 1.0f},
         {0.0f, 0.0f, 1.0f},
         {0.0f, 0.0f, 1.0f},
@@ -1778,13 +1778,13 @@ int test_scene_ssao_glsl_executes(TstContext* suite, const TstCase* item)
     DvzVisual* mesh = dvz_mesh(scene, 0);
     AT(mesh != NULL);
 
-    float positions[4][3] = {
+    vec3 positions[4] = {
         {-0.75f, -0.75f, 0.20f},
         {+0.75f, -0.75f, 0.20f},
         {-0.75f, +0.75f, 0.55f},
         {+0.75f, +0.75f, 0.55f},
     };
-    float normals[4][3] = {
+    vec3 normals[4] = {
         {0.0f, -0.35f, 0.94f},
         {0.0f, -0.35f, 0.94f},
         {0.0f, +0.35f, 0.94f},
@@ -1877,7 +1877,7 @@ int test_scene_sphere_ssao_glsl_executes(TstContext* suite, const TstCase* item)
     AT(sphere != NULL);
     AT(dvz_sphere_mode(sphere, DVZ_SPHERE_MODE_RAYCAST_IMPOSTOR) == 0);
 
-    float positions[4][3] = {
+    vec3 positions[4] = {
         {-0.30f, -0.25f, 0.15f},
         {+0.15f, -0.25f, 0.25f},
         {-0.08f, +0.12f, 0.35f},
@@ -1891,7 +1891,7 @@ int test_scene_sphere_ssao_glsl_executes(TstContext* suite, const TstCase* item)
     };
     float sizes[4] = {0.28f, 0.28f, 0.26f, 0.24f};
 
-    AT(dvz_visual_set_data(sphere, "position", &positions[0][0], 4) == 0);
+    AT(dvz_visual_set_data(sphere, "position", positions, 4) == 0);
     AT(dvz_visual_set_data(sphere, "color", colors, 4) == 0);
     AT(dvz_visual_set_data(sphere, "radius", sizes, 4) == 0);
     AT(dvz_panel_add_visual(panel, sphere, NULL) == 0);
@@ -1954,7 +1954,7 @@ int test_scene_ssao_ignores_ineligible_visuals(TstContext* suite, const TstCase*
 
     DvzVisual* primitive = dvz_primitive(scene, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 0);
     AT(primitive != NULL);
-    float positions[3][3] = {
+    vec3 positions[3] = {
         {-0.5f, -0.5f, 0.0f},
         {+0.5f, -0.5f, 0.0f},
         {0.0f, +0.5f, 0.0f},
@@ -2010,10 +2010,10 @@ int test_scene_visual_alpha_mode_standard_blend(TstContext* suite, const TstCase
     AT(opaque != NULL);
     AT(blended != NULL);
 
-    float positions[] = {
-        -0.5f, -0.5f, 0.0f,
-         0.5f, -0.5f, 0.0f,
-         0.0f,  0.5f, 0.0f,
+    vec3 positions[3] = {
+        {-0.5f, -0.5f, 0.0f},
+        {0.5f, -0.5f, 0.0f},
+        {0.0f, 0.5f, 0.0f},
     };
     DvzColor opaque_colors[3] = {{255, 0, 0, 255}, {0, 255, 0, 255}, {0, 0, 255, 255}};
     DvzColor blended_colors[3] = {{255, 0, 0, 128}, {0, 255, 0, 128}, {0, 0, 255, 128}};
@@ -2164,13 +2164,13 @@ int test_scene_blended_mesh_orders_after_volume_slice(TstContext* suite, const T
     AT(slice != NULL);
     AT(mesh != NULL);
 
-    float positions[4][3] = {
+    vec3 positions[4] = {
         {-0.5f, -0.5f, 0.0f},
         {0.5f, -0.5f, 0.0f},
         {-0.5f, 0.5f, 0.0f},
         {0.5f, 0.5f, 0.0f},
     };
-    float normals[4][3] = {
+    vec3 normals[4] = {
         {0.0f, 0.0f, 1.0f},
         {0.0f, 0.0f, 1.0f},
         {0.0f, 0.0f, 1.0f},
@@ -2346,13 +2346,13 @@ int test_scene_blended_mesh_occlusion_contracts(TstContext* suite, const TstCase
     AT(slice != NULL);
     AT(mesh != NULL);
 
-    float positions[4][3] = {
+    vec3 positions[4] = {
         {-0.5f, -0.5f, 0.1f},
         {+0.5f, -0.5f, 0.1f},
         {-0.5f, +0.5f, 0.1f},
         {+0.5f, +0.5f, 0.1f},
     };
-    float normals[4][3] = {
+    vec3 normals[4] = {
         {0.0f, 0.0f, 1.0f},
         {0.0f, 0.0f, 1.0f},
         {0.0f, 0.0f, 1.0f},
@@ -2650,10 +2650,10 @@ int test_scene_visual_alpha_mode_splits_frame_plan_passes(TstContext* suite, con
     AT(opaque != NULL);
     AT(transparent != NULL);
 
-    float positions[] = {
-        -0.5f, -0.5f, 0.0f,
-         0.5f, -0.5f, 0.0f,
-         0.0f,  0.5f, 0.0f,
+    vec3 positions[3] = {
+        {-0.5f, -0.5f, 0.0f},
+        {0.5f, -0.5f, 0.0f},
+        {0.0f, 0.5f, 0.0f},
     };
     DvzColor opaque_colors[3] = {{255, 0, 0, 255}, {0, 255, 0, 255}, {0, 0, 255, 255}};
     DvzColor transparent_colors[3] = {{255, 0, 0, 128}, {0, 255, 0, 128}, {0, 0, 255, 128}};
@@ -2830,10 +2830,10 @@ int test_scene_visual_alpha_mode_wboit_transparent_only_depth(TstContext* suite,
     DvzVisual* transparent = dvz_point(scene, 0);
     AT(transparent != NULL);
 
-    float positions[] = {
-        -0.5f, -0.5f, 0.0f,
-         0.5f, -0.5f, 0.0f,
-         0.0f,  0.5f, 0.0f,
+    vec3 positions[3] = {
+        {-0.5f, -0.5f, 0.0f},
+        {0.5f, -0.5f, 0.0f},
+        {0.0f, 0.5f, 0.0f},
     };
     DvzColor colors[3] = {{255, 0, 0, 128}, {0, 255, 0, 128}, {0, 0, 255, 128}};
     float sizes[3] = {10.0f, 12.0f, 14.0f};
@@ -2946,7 +2946,7 @@ int test_scene_visual_alpha_mode_depth_peel_frame_plan(TstContext* suite, const 
     AT(opaque != NULL);
     AT(transparent != NULL);
 
-    float positions[3][3] = {
+    vec3 positions[3] = {
         {-0.5f, -0.5f, 0.0f},
         {0.5f, -0.5f, 0.0f},
         {0.0f, 0.5f, 0.0f},
@@ -3128,7 +3128,7 @@ int test_scene_visual_alpha_mode_mixed_oit_rejected(TstContext* suite, const Tst
     AT(wboit != NULL);
     AT(peel != NULL);
 
-    float positions[3][3] = {
+    vec3 positions[3] = {
         {-0.5f, -0.5f, 0.0f},
         {0.5f, -0.5f, 0.0f},
         {0.0f, 0.5f, 0.0f},
@@ -3194,7 +3194,7 @@ int test_scene_visual_alpha_mode_emits_depth_peel_drp2(TstContext* suite, const 
     AT(opaque != NULL);
     AT(transparent != NULL);
 
-    float positions[3][3] = {
+    vec3 positions[3] = {
         {-0.5f, -0.5f, 0.0f},
         {0.5f, -0.5f, 0.0f},
         {0.0f, 0.5f, 0.0f},
@@ -3462,10 +3462,10 @@ int test_scene_visual_alpha_mode_requires_wboit_capabilities(TstContext* suite, 
     DvzVisual* visual = dvz_point(scene, 0);
     AT(visual != NULL);
 
-    float positions[] = {
-        -0.5f, -0.5f, 0.0f,
-         0.5f, -0.5f, 0.0f,
-         0.0f,  0.5f, 0.0f,
+    vec3 positions[3] = {
+        {-0.5f, -0.5f, 0.0f},
+        {0.5f, -0.5f, 0.0f},
+        {0.0f, 0.5f, 0.0f},
     };
     DvzColor colors[3] = {{255, 0, 0, 128}, {0, 255, 0, 128}, {0, 0, 255, 128}};
     float sizes[3] = {10.0f, 12.0f, 14.0f};
@@ -3529,7 +3529,7 @@ int test_scene_visual_alpha_mode_emits_wboit_drp2(TstContext* suite, const TstCa
     AT(opaque != NULL);
     AT(transparent != NULL);
 
-    float positions[3][3] = {
+    vec3 positions[3] = {
         {-0.5f, -0.5f, 0.0f},
         {0.5f, -0.5f, 0.0f},
         {0.0f, 0.5f, 0.0f},
@@ -3899,7 +3899,7 @@ int test_scene_drp2_contract_checker_rejects_pipeline_drift(TstContext* suite, c
     DvzVisual* transparent = dvz_primitive(scene, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 0);
     AT(opaque != NULL);
     AT(transparent != NULL);
-    float positions[3][3] = {
+    vec3 positions[3] = {
         {-0.5f, -0.5f, 0.0f},
         {0.5f, -0.5f, 0.0f},
         {0.0f, 0.5f, 0.0f},
@@ -4090,7 +4090,7 @@ int test_scene_drp2_contract_checker_rejects_raster_drift(TstContext* suite, con
     DvzVisual* transparent = dvz_primitive(scene, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 0);
     AT(opaque != NULL);
     AT(transparent != NULL);
-    float positions[3][3] = {
+    vec3 positions[3] = {
         {-0.5f, -0.5f, 0.0f},
         {0.5f, -0.5f, 0.0f},
         {0.0f, 0.5f, 0.0f},
@@ -4203,12 +4203,12 @@ int test_scene_alpha_mode_toggle_refreshes_drp2_contracts(TstContext* suite, con
     AT(opaque != NULL);
     AT(transparent != NULL);
 
-    float positions[3][3] = {
+    vec3 positions[3] = {
         {-0.5f, -0.5f, 0.0f},
         {0.5f, -0.5f, 0.0f},
         {0.0f, 0.5f, 0.0f},
     };
-    float shifted[3][3] = {
+    vec3 shifted[3] = {
         {-0.45f, -0.45f, -0.1f},
         {0.55f, -0.45f, -0.1f},
         {0.05f, 0.55f, -0.1f},
@@ -4351,12 +4351,12 @@ int test_scene_visual_alpha_mode_wboit_glsl_executes(TstContext* suite, const Ts
 
     DvzVisual* transparent = dvz_primitive(scene, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 0);
     AT(transparent != NULL);
-    float positions[3][3] = {
+    vec3 positions[3] = {
         {-0.6f, -0.6f, 0.0f},
         {0.6f, -0.6f, 0.0f},
         {0.0f, 0.6f, 0.0f},
     };
-    float normals[3][3] = {
+    vec3 normals[3] = {
         {0.0f, 0.0f, 1.0f},
         {0.0f, 0.0f, 1.0f},
         {0.0f, 0.0f, 1.0f},
@@ -4501,7 +4501,7 @@ int test_scene_visual_alpha_mode_depth_peel_glsl_executes(TstContext* suite, con
     DvzVisual* transparent = dvz_primitive(scene, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 0);
     AT(transparent != NULL);
     dvz_panel_set_background_color(panel, 0.05f, 0.05f, 0.08f, 1.0f);
-    float positions[3][3] = {
+    vec3 positions[3] = {
         {-0.6f, -0.6f, 0.0f},
         {0.6f, -0.6f, 0.0f},
         {0.0f, 0.6f, 0.0f},

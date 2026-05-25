@@ -57,7 +57,7 @@ int test_scene_render_pass_scope_excludes_resource_commands(TstContext* suite, c
     DvzVisual* visual = dvz_point(scene, 0);
     AT(visual != NULL);
 
-    float positions[3][3] = {
+    vec3 positions[3] = {
         {-0.5f, -0.5f, 0.0f},
         {+0.5f, -0.5f, 0.0f},
         { 0.0f, +0.5f, 0.0f},

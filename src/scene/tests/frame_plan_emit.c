@@ -254,7 +254,7 @@ static bool _add_dvzr_visual(DvzScene* scene, DvzPanel* panel, SceneDvzrVisualKi
     {
         DvzVisual* visual = dvz_point(scene, 0);
         ANN(visual);
-        float positions[3][3] = {
+        vec3 positions[3] = {
             {-0.5f, -0.5f, 0.0f},
             {0.5f, -0.5f, 0.0f},
             {0.0f, 0.5f, 0.0f},
@@ -275,7 +275,7 @@ static bool _add_dvzr_visual(DvzScene* scene, DvzPanel* panel, SceneDvzrVisualKi
     {
         DvzVisual* visual = dvz_primitive(scene, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 0);
         ANN(visual);
-        float positions[3][3] = {
+        vec3 positions[3] = {
             {-0.6f, -0.5f, 0.0f},
             {0.6f, -0.5f, 0.0f},
             {0.0f, 0.6f, 0.0f},
@@ -294,13 +294,13 @@ static bool _add_dvzr_visual(DvzScene* scene, DvzPanel* panel, SceneDvzrVisualKi
     {
         DvzVisual* visual = dvz_mesh(scene, 0);
         ANN(visual);
-        float positions[4][3] = {
+        vec3 positions[4] = {
             {-0.8f, -0.8f, 0.0f},
             {-0.8f, 0.8f, 0.0f},
             {0.8f, -0.8f, 0.0f},
             {0.8f, 0.8f, 0.0f},
         };
-        float normals[4][3] = {
+        vec3 normals[4] = {
             {0.0f, 0.0f, 1.0f},
             {0.0f, 0.0f, 1.0f},
             {0.0f, 0.0f, 1.0f},
@@ -324,13 +324,13 @@ static bool _add_dvzr_visual(DvzScene* scene, DvzPanel* panel, SceneDvzrVisualKi
     {
         DvzVisual* visual = dvz_image(scene, 0);
         ANN(visual);
-        float positions[4][3] = {
+        vec3 positions[4] = {
             {-0.5f, -0.5f, 0.0f},
             {-0.5f, 0.5f, 0.0f},
             {0.5f, -0.5f, 0.0f},
             {0.5f, 0.5f, 0.0f},
         };
-        float texcoords[4][2] = {
+        vec2 texcoords[4] = {
             {0.0f, 0.0f},
             {0.0f, 1.0f},
             {1.0f, 0.0f},

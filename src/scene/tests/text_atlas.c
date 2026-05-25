@@ -247,8 +247,8 @@ int test_scene_text_atlas_utf8_runtime_readback(TstContext* suite, const TstCase
     ANN(text);
     AT(_scene_text_visual_set_renderer(text, DVZ_TEXT_RENDERER_MSDF_ATLAS) == 0);
     const char* strings[1] = {"Atlas UTF-8 caf" "\xC3" "\xA9"};
-    float positions[1][3] = {{8.0f, 16.0f, 0.0f}};
-    float text_anchors[1][2] = {{0.0f, 0.0f}};
+    vec3 positions[1] = {{8.0f, 16.0f, 0.0f}};
+    vec2 text_anchors[1] = {{0.0f, 0.0f}};
     float sizes[1] = {24.0f};
     float angles[1] = {0.0f};
     DvzColor colors[1] = {{0, 255, 0, 255}};

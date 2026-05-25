@@ -205,7 +205,7 @@ int test_scene_selection_apply_pick_updates_visual_masks(TstContext* suite, cons
     ANN(point);
     ANN(marker);
 
-    float point_pos[3][3] = {{0.0f, 0.0f, 0.0f}, {0.25f, 0.0f, 0.0f}, {0.5f, 0.0f, 0.0f}};
+    vec3 point_pos[3] = {{0.0f, 0.0f, 0.0f}, {0.25f, 0.0f, 0.0f}, {0.5f, 0.0f, 0.0f}};
     DvzColor point_color[3] = {
         {255, 255, 255, 255},
         {255, 255, 255, 255},
@@ -219,7 +219,7 @@ int test_scene_selection_apply_pick_updates_visual_masks(TstContext* suite, cons
     AT(dvz_visual_set_link_keys(point, channel, point_keys, 3) == 0);
     AT(dvz_panel_add_visual(panel, point, NULL) == 0);
 
-    float marker_pos[3][3] = {{0.0f, 0.25f, 0.0f}, {0.25f, 0.25f, 0.0f}, {0.5f, 0.25f, 0.0f}};
+    vec3 marker_pos[3] = {{0.0f, 0.25f, 0.0f}, {0.25f, 0.25f, 0.0f}, {0.5f, 0.25f, 0.0f}};
     DvzColor marker_color[3] = {
         {255, 255, 255, 255},
         {255, 255, 255, 255},
@@ -337,8 +337,8 @@ int test_scene_text_annotation_bookkeeping(TstContext* suite, const TstCase* ite
     AT(text->text.renderer == DVZ_TEXT_RENDERER_MSDF_ATLAS);
     AT(text->text.renderer_version == 2);
     const char* strings[2] = {"hello", "world"};
-    float positions[2][3] = {{10.0f, 20.0f, 0.0f}, {80.0f, 24.0f, 0.0f}};
-    float text_anchors[2][2] = {{0.0f, 0.0f}, {0.5f, 0.5f}};
+    vec3 positions[2] = {{10.0f, 20.0f, 0.0f}, {80.0f, 24.0f, 0.0f}};
+    vec2 text_anchors[2] = {{0.0f, 0.0f}, {0.5f, 0.5f}};
     float sizes[2] = {14.0f, 18.0f};
     float angles[2] = {0.25f, -0.5f};
     DvzColor colors[2] = {{255, 255, 255, 255}, {128, 200, 255, 255}};
@@ -477,7 +477,7 @@ int test_scene_text_sdf_default_font(TstContext* suite, const TstCase* item)
     ANN(text);
     AT(_scene_text_visual_set_renderer(text, DVZ_TEXT_RENDERER_MSDF_ATLAS) == 0);
     const char* strings[1] = {"A"};
-    float positions[1][3] = {{32.0f, 48.0f, 0.0f}};
+    vec3 positions[1] = {{32.0f, 48.0f, 0.0f}};
     DvzVisualDataUpdate updates[1] = {
         {.attr_name = "position", .data = positions, .item_count = 1},
     };
@@ -540,7 +540,7 @@ int test_scene_text_semantic_object_realization(TstContext* suite, const TstCase
     AT(text->dirty_flags == DVZ_TEXT_DIRTY_NONE);
     DvzVisualDataView position_view = {0};
     AT(dvz_visual_data(text->visual, "position", &position_view) == 0);
-    const float(*positions)[3] = (const float(*)[3])position_view.data;
+    const vec3* positions = (const vec3*)position_view.data;
     ANN(positions);
     AC(positions[0][0], -0.96875f, 1e-6f);
     AC(positions[0][1], 0.9166667f, 1e-6f);
@@ -556,7 +556,7 @@ int test_scene_text_semantic_object_realization(TstContext* suite, const TstCase
         });
     _scene_prepare_text_visuals(figure);
     AT(dvz_visual_data(text->visual, "position", &position_view) == 0);
-    positions = (const float(*)[3])position_view.data;
+    positions = (const vec3*)position_view.data;
     ANN(positions);
     AC(positions[0][0], 0.25f, 1e-6f);
     AC(positions[0][1], -0.5f, 1e-6f);
@@ -594,8 +594,8 @@ int test_scene_text_bitmap_visual_realization(TstContext* suite, const TstCase* 
     DvzVisual* text = _scene_text_visual(scene, 0);
     ANN(text);
     const char* strings[1] = {"Hi"};
-    float positions_text[1][3] = {{10.0f, 20.0f, 0.0f}};
-    float text_anchors[1][2] = {{0.0f, 0.0f}};
+    vec3 positions_text[1] = {{10.0f, 20.0f, 0.0f}};
+    vec2 text_anchors[1] = {{0.0f, 0.0f}};
     float sizes[1] = {8.0f};
     float angles[1] = {0.0f};
     DvzColor colors_text[1] = {{64, 128, 255, 255}};
@@ -643,8 +643,8 @@ int test_scene_text_bitmap_visual_realization(TstContext* suite, const TstCase* 
     AT(glyph->attrs[uv_idx].item_count == 12);
     AT(glyph->attrs[color_idx].item_count == 12);
     AT(glyph->attrs[angle_idx].item_count == 12);
-    const float(*positions)[3] = (const float(*)[3])glyph->attrs[pos_idx].data;
-    const float(*bounds)[4] = (const float(*)[4])glyph->attrs[bounds_idx].data;
+    const vec3* positions = (const vec3*)glyph->attrs[pos_idx].data;
+    const vec4* bounds = (const vec4*)glyph->attrs[bounds_idx].data;
     ANN(positions);
     ANN(bounds);
     AC(positions[0][0], -0.96875f, 1e-6f);
@@ -658,8 +658,8 @@ int test_scene_text_bitmap_visual_realization(TstContext* suite, const TstCase* 
     text_anchors[0][1] = 0.5f;
     AT(dvz_visual_set_data(text, "anchor", text_anchors, 1) == 0);
     _scene_prepare_text_visuals(figure);
-    positions = (const float(*)[3])glyph->attrs[pos_idx].data;
-    bounds = (const float(*)[4])glyph->attrs[bounds_idx].data;
+    positions = (const vec3*)glyph->attrs[pos_idx].data;
+    bounds = (const vec4*)glyph->attrs[bounds_idx].data;
     ANN(positions);
     ANN(bounds);
     AC(positions[0][0], -0.96875f, 1e-6f);
@@ -718,7 +718,7 @@ int test_scene_text_bitmap_visual_realization(TstContext* suite, const TstCase* 
     _scene_prepare_text_visuals(figure);
     dvz_figure_resize(figure, 320, 240);
     _scene_prepare_text_visuals(figure);
-    positions = (const float(*)[3])glyph->attrs[pos_idx].data;
+    positions = (const vec3*)glyph->attrs[pos_idx].data;
     ANN(positions);
     AC(positions[0][0], -0.9375f, 1e-6f);
     AC(positions[0][1], 0.8333333f, 1e-6f);
@@ -784,8 +784,8 @@ int test_scene_text_sdf_visual_realization(TstContext* suite, const TstCase* ite
     ANN(text);
     AT(_scene_text_visual_set_renderer(text, DVZ_TEXT_RENDERER_MSDF_ATLAS) == 0);
     const char* strings[1] = {"S D"};
-    float positions[1][3] = {{32.0f, 48.0f, 0.0f}};
-    float text_anchors[1][2] = {{0.0f, 0.0f}};
+    vec3 positions[1] = {{32.0f, 48.0f, 0.0f}};
+    vec2 text_anchors[1] = {{0.0f, 0.0f}};
     float sizes[1] = {18.0f};
     DvzColor colors[1] = {{255, 255, 255, 255}};
     DvzVisualDataUpdate updates[4] = {
@@ -866,7 +866,7 @@ int test_scene_text_sdf_visual_realization(TstContext* suite, const TstCase* ite
     AT(glyph->attrs[bounds_idx].item_count == 12);
     AT(glyph->attrs[uv_idx].item_count == 12);
     AT(glyph->attrs[color_idx].item_count == 12);
-    const float(*glyph_bounds)[4] = (const float(*)[4])glyph->attrs[bounds_idx].data;
+    const vec4* glyph_bounds = (const vec4*)glyph->attrs[bounds_idx].data;
     ANN(glyph_bounds);
     float first_max_x = glyph_bounds[0][2];
     float second_min_x = glyph_bounds[6][0];
@@ -928,7 +928,7 @@ int test_scene_text_auto_renderer_selection(TstContext* suite, const TstCase* it
     ANN(small);
     AT(_scene_text_visual_set_renderer(small, DVZ_TEXT_RENDERER_AUTO) == 0);
     const char* small_string[1] = {"small"};
-    float small_pos[1][3] = {{24.0f, 24.0f, 0.0f}};
+    vec3 small_pos[1] = {{24.0f, 24.0f, 0.0f}};
     float small_size[1] = {10.0f};
     DvzVisualDataUpdate small_updates[2] = {
         {.attr_name = "position", .data = small_pos, .item_count = 1},
@@ -944,7 +944,7 @@ int test_scene_text_auto_renderer_selection(TstContext* suite, const TstCase* it
     ANN(large);
     AT(_scene_text_visual_set_renderer(large, DVZ_TEXT_RENDERER_AUTO) == 0);
     const char* large_string[1] = {"large"};
-    float large_pos[1][3] = {{24.0f, 64.0f, 0.0f}};
+    vec3 large_pos[1] = {{24.0f, 64.0f, 0.0f}};
     float large_size[1] = {24.0f};
     DvzVisualDataUpdate large_updates[2] = {
         {.attr_name = "position", .data = large_pos, .item_count = 1},
@@ -1036,8 +1036,8 @@ int test_scene_text_font_atlas_expands_for_utf8(TstContext* suite, const TstCase
 
     const char* ascii_strings[1] = {"ASCII"};
     const char* utf8_strings[1] = {"caf\xC3\xA9"};
-    float ascii_pos[1][3] = {{24.0f, 32.0f, 0.0f}};
-    float utf8_pos[1][3] = {{24.0f, 72.0f, 0.0f}};
+    vec3 ascii_pos[1] = {{24.0f, 32.0f, 0.0f}};
+    vec3 utf8_pos[1] = {{24.0f, 72.0f, 0.0f}};
     float sizes[1] = {24.0f};
     DvzVisualDataUpdate ascii_updates[2] = {
         {.attr_name = "position", .data = ascii_pos, .item_count = 1},
@@ -1131,7 +1131,7 @@ int test_scene_text_font_atlas_missing_glyph_fallback(TstContext* suite, const T
     ANN(text);
     AT(_scene_text_visual_set_renderer(text, DVZ_TEXT_RENDERER_MSDF_ATLAS) == 0);
     const char* strings[1] = {"missing \xF4\x8F\xBF\xBF"};
-    float positions[1][3] = {{24.0f, 32.0f, 0.0f}};
+    vec3 positions[1] = {{24.0f, 32.0f, 0.0f}};
     float sizes[1] = {24.0f};
     DvzVisualDataUpdate updates[2] = {
         {.attr_name = "position", .data = positions, .item_count = 1},
@@ -1184,8 +1184,8 @@ int test_scene_text_many_labels_render_plan(TstContext* suite, const TstCase* it
     ANN(text);
     char labels[16][16] = {{0}};
     const char* strings[16] = {0};
-    float positions[16][3] = {{0}};
-    float text_anchors[16][2] = {{0}};
+    vec3 positions[16] = {{0}};
+    vec2 text_anchors[16] = {{0}};
     float sizes[16] = {0};
     float angles[16] = {0};
     DvzColor colors[16] = {{0}};
@@ -1261,7 +1261,7 @@ int test_scene_text_panzoom_glyph_anchor_coordinates(TstContext* suite, const Ts
     DvzVisual* text = _scene_text_visual(scene, 0);
     ANN(text);
     const char* strings[1] = {"panzoom"};
-    float positions[1][3] = {{0.25f, -0.125f, 0.25f}};
+    vec3 positions[1] = {{0.25f, -0.125f, 0.25f}};
     float sizes[1] = {24.0f};
     DvzVisualDataUpdate updates[2] = {
         {.attr_name = "position", .data = positions, .item_count = 1},
@@ -1315,7 +1315,7 @@ int test_scene_text_attach_mode_change_regenerates_glyphs(TstContext* suite, con
     DvzVisual* text = _scene_text_visual(scene, 0);
     ANN(text);
     const char* strings[1] = {"mode"};
-    float positions[1][3] = {{320.0f, 240.0f, 0.0f}};
+    vec3 positions[1] = {{320.0f, 240.0f, 0.0f}};
     float sizes[1] = {24.0f};
     DvzVisualDataUpdate updates[2] = {
         {.attr_name = "position", .data = positions, .item_count = 1},

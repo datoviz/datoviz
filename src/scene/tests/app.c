@@ -476,14 +476,14 @@ static AppSsaoQuad _app_ssao_add_quad(
     if (out.visual == NULL)
         return out;
 
-    float positions[4][3] = {
+    vec3 positions[4] = {
         {xmin, ymin, z},
         {xmax, ymin, z},
         {xmin, ymax, z},
         {xmax, ymax, z},
     };
     DvzColor colors[4] = {0};
-    float normals[4][3] = {
+    vec3 normals[4] = {
         {0.0f, 0.0f, 1.0f},
         {0.0f, 0.0f, 1.0f},
         {0.0f, 0.0f, 1.0f},
@@ -534,7 +534,7 @@ _app_wboit_add_layer(DvzScene* scene, DvzPanel* panel, DvzColor color)
     if (visual == NULL)
         return NULL;
 
-    float positions[3][3] = {
+    vec3 positions[3] = {
         {-0.9f, -0.9f, 0.0f},
         {0.9f, -0.9f, 0.0f},
         {0.0f, 0.9f, 0.0f},
@@ -581,7 +581,7 @@ static DvzVisual* _app_primitive_add_quad(
     if (visual == NULL)
         return NULL;
 
-    float positions[6][3] = {
+    vec3 positions[6] = {
         {xmin, ymin, z},
         {xmax, ymin, z},
         {xmin, ymax, z},
@@ -967,7 +967,7 @@ static bool _app_glyph_pixel_bounds(
             uint64_t bounds_offset = 4 * i;
             float x0 = bounds[bounds_offset + 0], y0 = bounds[bounds_offset + 1];
             float x1 = bounds[bounds_offset + 2], y1 = bounds[bounds_offset + 3];
-            float corners[4][2] = {{x0, y0}, {x0, y1}, {x1, y0}, {x1, y1}};
+            vec2 corners[4] = {{x0, y0}, {x0, y1}, {x1, y0}, {x1, y1}};
             for (uint32_t k = 0; k < 4; k++)
             {
                 float x = px + c * corners[k][0] - s * corners[k][1];
@@ -1066,7 +1066,7 @@ static AppRgbaCapture _app_edl_point_capture(TstContext* suite, bool enabled)
         dvz_scene_destroy(scene);
         return out;
     }
-    float positions[6][3] = {
+    vec3 positions[6] = {
         {-0.24f, -0.18f, -0.30f},
         {+0.18f, -0.12f, +0.10f},
         {-0.05f, +0.18f, +0.36f},
@@ -1272,8 +1272,8 @@ int test_app_offscreen(TstContext* suite, const TstCase* item)
     DvzVisual* visual = dvz_point(scene, 0);
     AT(visual != NULL);
 
-    float positions[] = {-0.5f, -0.5f, 0.0f,  0.5f, -0.5f, 0.0f,  0.0f, 0.5f, 0.0f};
-    uint8_t colors[3][4] = {{255, 0, 0, 255}, {0, 255, 0, 255}, {0, 0, 255, 255}};
+    vec3 positions[3] = {{-0.5f, -0.5f, 0.0f}, {0.5f, -0.5f, 0.0f}, {0.0f, 0.5f, 0.0f}};
+    DvzColor colors[3] = {{255, 0, 0, 255}, {0, 255, 0, 255}, {0, 0, 255, 255}};
     float sizes[3] = {10.0f, 20.0f, 15.0f};
     AT(dvz_visual_set_data(visual, "position", positions, 3) == 0);
     AT(dvz_visual_set_data(visual, "color", colors, 3) == 0);
@@ -1338,7 +1338,7 @@ int test_app_offscreen_scheduler_sees_scene_dirty_without_request(
 
     DvzVisual* visual = dvz_point(scene, 0);
     AT(visual != NULL);
-    float position[1][3] = {{0.0f, 0.0f, 0.0f}};
+    vec3 position[1] = {{0.0f, 0.0f, 0.0f}};
     DvzColor color[1] = {{255, 255, 255, 255}};
     float size[1] = {8.0f};
     AT(dvz_visual_set_data(visual, "position", position, 1) == 0);
@@ -1461,7 +1461,7 @@ int test_app_offscreen_pick_probe_requests_notify_hosted_callback(
     DvzVisual* points = dvz_point(scene, 0);
     AT(points != NULL);
     dvz_visual_set_pick_capabilities(points, DVZ_PICK_CAPABILITY_ITEM);
-    float point_pos[1][3] = {{0.0f, 0.0f, 0.0f}};
+    vec3 point_pos[1] = {{0.0f, 0.0f, 0.0f}};
     DvzColor point_color[1] = {{255, 255, 0, 255}};
     float point_size[1] = {24.0f};
     AT(dvz_visual_set_data(points, "position", point_pos, 1) == 0);
@@ -1471,13 +1471,13 @@ int test_app_offscreen_pick_probe_requests_notify_hosted_callback(
 
     DvzVisual* image = dvz_image(scene, 0);
     AT(image != NULL);
-    float image_pos[4][3] = {
+    vec3 image_pos[4] = {
         {-1.0f, -1.0f, 0.0f},
         {-1.0f, 1.0f, 0.0f},
         {1.0f, -1.0f, 0.0f},
         {1.0f, 1.0f, 0.0f},
     };
-    float texcoords[4][2] = {
+    vec2 texcoords[4] = {
         {0.0f, 0.0f},
         {0.0f, 1.0f},
         {1.0f, 0.0f},
@@ -2088,7 +2088,7 @@ int test_app_offscreen_point_depth_cue_darkens_far(TstContext* suite, const TstC
     DvzVisual* visual = dvz_point(scene, 0);
     AT(visual != NULL);
 
-    float positions[2][3] = {{-0.45f, 0.0f, 0.0f}, {0.45f, 0.0f, 0.8f}};
+    vec3 positions[2] = {{-0.45f, 0.0f, 0.0f}, {0.45f, 0.0f, 0.8f}};
     DvzColor colors[2] = {{255, 64, 64, 255}, {255, 64, 64, 255}};
     float sizes[2] = {20.0f, 20.0f};
 
@@ -2233,7 +2233,7 @@ int test_app_offscreen_path_join_has_no_center_gap(TstContext* suite, const TstC
     DvzVisual* visual = dvz_path(scene, 0);
     AT(visual != NULL);
 
-    float positions[3][3] = {
+    vec3 positions[3] = {
         {-0.75f, -0.45f, 0.0f},
         {0.0f, 0.0f, 0.0f},
         {0.75f, -0.45f, 0.0f},
@@ -2380,7 +2380,7 @@ int test_app_offscreen_points_edl_renders(TstContext* suite, const TstCase* item
 
     DvzVisual* visual = dvz_point(scene, 0);
     AT(visual != NULL);
-    float positions[4][3] = {
+    vec3 positions[4] = {
         {-0.25f, -0.15f, -0.20f},
         {+0.20f, -0.05f, +0.15f},
         {-0.05f, +0.20f, +0.35f},
@@ -2620,7 +2620,7 @@ int test_app_offscreen_sphere_ssao_darkens_contact(TstContext* suite, const TstC
     DvzVisual* sphere = dvz_sphere(scene, DVZ_SPHERE_FLAGS_LIGHTING);
     AT(sphere != NULL);
     AT(dvz_sphere_mode(sphere, DVZ_SPHERE_MODE_RAYCAST_IMPOSTOR) == 0);
-    float positions[4][3] = {
+    vec3 positions[4] = {
         {-0.22f, -0.08f, 0.20f},
         {+0.10f, -0.06f, 0.24f},
         {-0.05f, +0.16f, 0.28f},
@@ -2633,7 +2633,7 @@ int test_app_offscreen_sphere_ssao_darkens_contact(TstContext* suite, const TstC
         {230, 190, 75, 255},
     };
     float radii[4] = {0.28f, 0.27f, 0.25f, 0.23f};
-    AT(dvz_visual_set_data(sphere, "position", &positions[0][0], 4) == 0);
+    AT(dvz_visual_set_data(sphere, "position", positions, 4) == 0);
     AT(dvz_visual_set_data(sphere, "color", colors, 4) == 0);
     AT(dvz_visual_set_data(sphere, "radius", radii, 4) == 0);
     AT(dvz_panel_add_visual(panel, sphere, NULL) == 0);
@@ -2791,11 +2791,11 @@ int test_app_offscreen_image_has_nonblank_pixels(TstContext* suite, const TstCas
     AT(visual != NULL);
 
     /* Large quad covering most of the panel. TRIANGLE_STRIP order: TL, BL, TR, BR */
-    float positions[4][3] = {
+    vec3 positions[4] = {
         {-0.9f, -0.9f, 0.0f}, {-0.9f, 0.9f, 0.0f},
         { 0.9f, -0.9f, 0.0f}, { 0.9f, 0.9f, 0.0f},
     };
-    float texcoords[4][2] = {
+    vec2 texcoords[4] = {
         {0.0f, 0.0f}, {0.0f, 1.0f}, {1.0f, 0.0f}, {1.0f, 1.0f},
     };
 
@@ -2891,11 +2891,11 @@ int test_app_offscreen_colorbar_has_visible_ramp_and_labels(TstContext* suite, c
 
     DvzVisual* image = dvz_image(scene, 0);
     AT(image != NULL);
-    float positions[4][3] = {
+    vec3 positions[4] = {
         {-0.95f, -0.95f, 0.0f}, {-0.95f, 0.95f, 0.0f},
         {0.95f, -0.95f, 0.0f},  {0.95f, 0.95f, 0.0f},
     };
-    float texcoords[4][2] = {
+    vec2 texcoords[4] = {
         {0.0f, 0.0f}, {0.0f, 1.0f}, {1.0f, 0.0f}, {1.0f, 1.0f},
     };
     int rc = dvz_visual_set_data(image, "position", positions, 4);
@@ -3027,8 +3027,8 @@ int test_app_offscreen_text_has_nonblank_pixels(TstContext* suite, const TstCase
     DvzVisual* text = _scene_text_visual(scene, 0);
     AT(text != NULL);
     const char* strings[1] = {"HI"};
-    float positions[1][3] = {{8.0f, 8.0f, 0.0f}};
-    float text_anchors[1][2] = {{0.0f, 0.0f}};
+    vec3 positions[1] = {{8.0f, 8.0f, 0.0f}};
+    vec2 text_anchors[1] = {{0.0f, 0.0f}};
     float sizes[1] = {16.0f};
     float angles[1] = {0.0f};
     DvzColor colors[1] = {{0, 255, 0, 255}};
@@ -3110,8 +3110,8 @@ int test_app_offscreen_sdf_text_has_nonblank_pixels(TstContext* suite, const Tst
     AT(text != NULL);
     AT(_scene_text_visual_set_renderer(text, DVZ_TEXT_RENDERER_MSDF_ATLAS) == 0);
     const char* strings[1] = {"UTF-8 fallback: A?B cafe? -> ?"};
-    float positions[1][3] = {{6.0f, 12.0f, 0.0f}};
-    float text_anchors[1][2] = {{0.0f, 0.0f}};
+    vec3 positions[1] = {{6.0f, 12.0f, 0.0f}};
+    vec2 text_anchors[1] = {{0.0f, 0.0f}};
     float sizes[1] = {24.0f};
     float angles[1] = {0.0f};
     DvzColor colors[1] = {{0, 255, 0, 255}};
@@ -3246,11 +3246,11 @@ int test_app_offscreen_image_field_partial_update_changes_region(TstContext* sui
 
     DvzVisual* image = dvz_image(scene, 0);
     ANN(image);
-    float positions[4][3] = {
+    vec3 positions[4] = {
         {-0.95f, -0.95f, 0.0f}, {-0.95f, 0.95f, 0.0f},
         {0.95f, -0.95f, 0.0f},  {0.95f, 0.95f, 0.0f},
     };
-    float texcoords[4][2] = {
+    vec2 texcoords[4] = {
         {0.0f, 0.0f}, {0.0f, 1.0f}, {1.0f, 0.0f}, {1.0f, 1.0f},
     };
     AT(dvz_visual_set_data(image, "position", positions, 4) == 0);
@@ -3766,15 +3766,15 @@ int test_app_offscreen_lit_primitive_depth_orders_overlap(TstContext* suite, con
     ANN(near_visual);
     ANN(far_visual);
 
-    float near_positions[6][3] = {
+    vec3 near_positions[6] = {
         {-0.9f, -0.9f, 0.1f}, {-0.9f, 0.9f, 0.1f},  {0.9f, -0.9f, 0.1f},
         {0.9f, -0.9f, 0.1f},  {-0.9f, 0.9f, 0.1f},  {0.9f, 0.9f, 0.1f},
     };
-    float far_positions[6][3] = {
+    vec3 far_positions[6] = {
         {-0.9f, -0.9f, 0.8f}, {-0.9f, 0.9f, 0.8f},  {0.9f, -0.9f, 0.8f},
         {0.9f, -0.9f, 0.8f},  {-0.9f, 0.9f, 0.8f},  {0.9f, 0.9f, 0.8f},
     };
-    float normals[6][3] = {
+    vec3 normals[6] = {
         {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 1.0f},
         {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 1.0f},
     };
@@ -3865,13 +3865,13 @@ int test_app_offscreen_lit_primitive_depth_cue_darkens_far(
     DvzVisual* visual = dvz_primitive(scene, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 0);
     ANN(visual);
 
-    float positions[12][3] = {
+    vec3 positions[12] = {
         {-0.9f, -0.8f, 0.0f}, {-0.9f, 0.8f, 0.0f}, {-0.1f, -0.8f, 0.0f},
         {-0.1f, -0.8f, 0.0f}, {-0.9f, 0.8f, 0.0f}, {-0.1f, 0.8f, 0.0f},
         {0.1f, -0.8f, 0.8f},  {0.1f, 0.8f, 0.8f},  {0.9f, -0.8f, 0.8f},
         {0.9f, -0.8f, 0.8f},  {0.1f, 0.8f, 0.8f},  {0.9f, 0.8f, 0.8f},
     };
-    float normals[12][3];
+    vec3 normals[12];
     DvzColor colors[12];
     for (uint32_t i = 0; i < 12; i++)
     {
@@ -3963,7 +3963,7 @@ int test_app_offscreen_mesh_renders_nonblank(TstContext* suite, const TstCase* i
     DvzVisual* visual = dvz_mesh(scene, 0);
     ANN(visual);
 
-    float positions[4][3] = {
+    vec3 positions[4] = {
         {-0.8f, -0.8f, 0.0f}, {-0.8f, 0.8f, 0.0f},
         {0.8f, -0.8f, 0.0f},  {0.8f, 0.8f, 0.0f},
     };
@@ -3973,7 +3973,7 @@ int test_app_offscreen_mesh_renders_nonblank(TstContext* suite, const TstCase* i
         {64, 64, 255, 255},
         {255, 224, 64, 255},
     };
-    float normals[4][3] = {
+    vec3 normals[4] = {
         {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 1.0f},
         {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 1.0f},
     };
@@ -4071,10 +4071,10 @@ static void _rotated_mesh_rotate_point(float x, float y, float z, float* out)
 
 
 static void _rotated_mesh_build_cube(
-    float positions[24][3], DvzColor colors[24], float normals[24][3], DvzIndex indices[36])
+    vec3 positions[24], DvzColor colors[24], vec3 normals[24], DvzIndex indices[36])
 {
     const float s = 0.58f;
-    const float face_positions[6][4][3] = {
+    const vec3 face_positions[6][4] = {
         {{-s, -s, +s}, {+s, -s, +s}, {+s, +s, +s}, {-s, +s, +s}},
         {{+s, -s, -s}, {-s, -s, -s}, {-s, +s, -s}, {+s, +s, -s}},
         {{-s, -s, -s}, {-s, -s, +s}, {-s, +s, +s}, {-s, +s, -s}},
@@ -4082,7 +4082,7 @@ static void _rotated_mesh_build_cube(
         {{-s, +s, +s}, {+s, +s, +s}, {+s, +s, -s}, {-s, +s, -s}},
         {{-s, -s, -s}, {+s, -s, -s}, {+s, -s, +s}, {-s, -s, +s}},
     };
-    const float face_normals[6][3] = {
+    const vec3 face_normals[6] = {
         {0.0f, 0.0f, +1.0f},
         {0.0f, 0.0f, -1.0f},
         {-1.0f, 0.0f, 0.0f},
@@ -4143,10 +4143,10 @@ static void _rotated_mesh_build_cube(
 
 
 static void _mesh_build_cube_object_space(
-    float positions[24][3], DvzColor colors[24], float normals[24][3], DvzIndex indices[36])
+    vec3 positions[24], DvzColor colors[24], vec3 normals[24], DvzIndex indices[36])
 {
     const float s = 0.58f;
-    const float face_positions[6][4][3] = {
+    const vec3 face_positions[6][4] = {
         {{-s, -s, +s}, {+s, -s, +s}, {+s, +s, +s}, {-s, +s, +s}},
         {{+s, -s, -s}, {-s, -s, -s}, {-s, +s, -s}, {+s, +s, -s}},
         {{-s, -s, -s}, {-s, -s, +s}, {-s, +s, +s}, {-s, +s, -s}},
@@ -4154,7 +4154,7 @@ static void _mesh_build_cube_object_space(
         {{-s, +s, +s}, {+s, +s, +s}, {+s, +s, -s}, {-s, +s, -s}},
         {{-s, -s, -s}, {+s, -s, -s}, {+s, -s, +s}, {-s, -s, +s}},
     };
-    const float face_normals[6][3] = {
+    const vec3 face_normals[6] = {
         {0.0f, 0.0f, +1.0f},
         {0.0f, 0.0f, -1.0f},
         {-1.0f, 0.0f, 0.0f},
@@ -4225,9 +4225,9 @@ int test_app_offscreen_rotated_mesh_depth_orders_faces(TstContext* suite, const 
     DvzVisual* visual = dvz_mesh(scene, 0);
     ANN(visual);
 
-    float positions[24][3] = {0};
+    vec3 positions[24] = {0};
     DvzColor colors[24] = {0};
-    float normals[24][3] = {0};
+    vec3 normals[24] = {0};
     DvzIndex indices[36] = {0};
     _rotated_mesh_build_cube(positions, colors, normals, indices);
 
@@ -4324,9 +4324,9 @@ int test_app_offscreen_camera_arcball_mesh_renders_cube(TstContext* suite, const
     DvzVisual* visual = dvz_mesh(scene, 0);
     ANN(visual);
 
-    float positions[24][3] = {0};
+    vec3 positions[24] = {0};
     DvzColor colors[24] = {0};
-    float normals[24][3] = {0};
+    vec3 normals[24] = {0};
     DvzIndex indices[36] = {0};
     _mesh_build_cube_object_space(positions, colors, normals, indices);
 
@@ -4439,14 +4439,14 @@ int test_app_offscreen_shared_field_mixed_runtime_updates(TstContext* suite, con
                    .rows_per_image = 4,
                }));
 
-    float texcoords[4][2] = {
+    vec2 texcoords[4] = {
         {0.0f, 0.0f}, {0.0f, 1.0f}, {1.0f, 0.0f}, {1.0f, 1.0f},
     };
-    float left_positions[4][3] = {
+    vec3 left_positions[4] = {
         {-1.0f, -0.95f, 0.0f}, {-1.0f, 0.95f, 0.0f},
         {0.0f, -0.95f, 0.0f},  {0.0f, 0.95f, 0.0f},
     };
-    float right_positions[4][3] = {
+    vec3 right_positions[4] = {
         {0.0f, -0.95f, 0.0f}, {0.0f, 0.95f, 0.0f},
         {1.0f, -0.95f, 0.0f}, {1.0f, 0.95f, 0.0f},
     };
@@ -4623,11 +4623,11 @@ int test_app_offscreen_image_retained_render_second_frame(TstContext* suite, con
     DvzVisual* visual = dvz_image(scene, 0);
     AT(visual != NULL);
 
-    float positions[4][3] = {
+    vec3 positions[4] = {
         {-0.9f, -0.9f, 0.0f}, {-0.9f, 0.9f, 0.0f},
         { 0.9f, -0.9f, 0.0f}, { 0.9f, 0.9f, 0.0f},
     };
-    float texcoords[4][2] = {
+    vec2 texcoords[4] = {
         {0.0f, 0.0f}, {0.0f, 1.0f}, {1.0f, 0.0f}, {1.0f, 1.0f},
     };
     uint8_t pixels[4 * 4 * 4];
@@ -4712,7 +4712,7 @@ int test_app_offscreen_resize_reuses_runtime_with_mesh_and_image(TstContext* sui
     AT(mesh != NULL);
     AT(image != NULL);
 
-    float mesh_positions[4][3] = {
+    vec3 mesh_positions[4] = {
         {-0.9f, -0.8f, 0.0f}, {-0.9f, 0.8f, 0.0f},
         {-0.1f, -0.8f, 0.0f}, {-0.1f, 0.8f, 0.0f},
     };
@@ -4722,7 +4722,7 @@ int test_app_offscreen_resize_reuses_runtime_with_mesh_and_image(TstContext* sui
         {64, 255, 64, 255},
         {64, 255, 64, 255},
     };
-    float mesh_normals[4][3] = {
+    vec3 mesh_normals[4] = {
         {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 1.0f},
         {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 1.0f},
     };
@@ -4744,11 +4744,11 @@ int test_app_offscreen_resize_reuses_runtime_with_mesh_and_image(TstContext* sui
            mesh, (float[3]){0.0f, 0.0f, 1.0f}, 1.0f, 0.0f, 0.25f, 32.0f) == 0);
     AT(dvz_panel_add_visual(panel, mesh, NULL) == 0);
 
-    float image_positions[4][3] = {
+    vec3 image_positions[4] = {
         {0.1f, -0.8f, 0.0f}, {0.1f, 0.8f, 0.0f},
         {0.9f, -0.8f, 0.0f}, {0.9f, 0.8f, 0.0f},
     };
-    float image_texcoords[4][2] = {
+    vec2 image_texcoords[4] = {
         {0.0f, 0.0f}, {0.0f, 1.0f}, {1.0f, 0.0f}, {1.0f, 1.0f},
     };
     uint8_t pixels[4 * 4 * 4] = {0};
@@ -4845,7 +4845,7 @@ int test_app_offscreen_pick_probe_request_steady_state(TstContext* suite, const 
     DvzVisual* points = dvz_point(scene, 0);
     AT(points != NULL);
     dvz_visual_set_pick_capabilities(points, DVZ_PICK_CAPABILITY_ITEM);
-    float point_pos[1][3] = {{0.0f, 0.0f, 0.0f}};
+    vec3 point_pos[1] = {{0.0f, 0.0f, 0.0f}};
     DvzColor point_color[1] = {{255, 255, 0, 255}};
     float point_size[1] = {24.0f};
     AT(dvz_visual_set_data(points, "position", point_pos, 1) == 0);
@@ -4855,13 +4855,13 @@ int test_app_offscreen_pick_probe_request_steady_state(TstContext* suite, const 
 
     DvzVisual* image = dvz_image(scene, 0);
     AT(image != NULL);
-    float image_pos[4][3] = {
+    vec3 image_pos[4] = {
         {-1.0f, -1.0f, 0.0f},
         {-1.0f, 1.0f, 0.0f},
         {1.0f, -1.0f, 0.0f},
         {1.0f, 1.0f, 0.0f},
     };
-    float texcoords[4][2] = {
+    vec2 texcoords[4] = {
         {0.0f, 0.0f},
         {0.0f, 1.0f},
         {1.0f, 0.0f},
@@ -5847,13 +5847,13 @@ int test_app_offscreen_volume_slice_mesh_scene_occlusion_toggle(TstContext* suit
     ANN(slice);
     ANN(mesh);
 
-    float positions[4][3] = {
+    vec3 positions[4] = {
         {-0.5f, -0.5f, 0.1f},
         {+0.5f, -0.5f, 0.1f},
         {-0.5f, +0.5f, 0.1f},
         {+0.5f, +0.5f, 0.1f},
     };
-    float normals[4][3] = {
+    vec3 normals[4] = {
         {0.0f, 0.0f, 1.0f},
         {0.0f, 0.0f, 1.0f},
         {0.0f, 0.0f, 1.0f},
@@ -5994,7 +5994,7 @@ int test_app_offscreen_volume_depth_occluded_by_primitive(TstContext* suite, con
     ANN(occluder);
     ANN(volume);
 
-    float quad[6][3] = {
+    vec3 quad[6] = {
         {-0.65f, -0.65f, 0.1f}, {-0.65f, 0.65f, 0.1f}, {0.65f, -0.65f, 0.1f},
         {0.65f, -0.65f, 0.1f},  {-0.65f, 0.65f, 0.1f}, {0.65f, 0.65f, 0.1f},
     };

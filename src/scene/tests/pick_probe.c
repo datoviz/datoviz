@@ -589,13 +589,13 @@ int test_scene_image_probe_transparent_pixel_misses(TstContext* suite, const Tst
 
     DvzVisual* image = dvz_image(scene, 0);
     ANN(image);
-    float image_pos[4][3] = {
+    vec3 image_pos[4] = {
         {-1.0f, -1.0f, 0.0f},
         {-1.0f, 1.0f, 0.0f},
         {1.0f, -1.0f, 0.0f},
         {1.0f, 1.0f, 0.0f},
     };
-    float texcoords[4][2] = {
+    vec2 texcoords[4] = {
         {0.0f, 0.0f},
         {0.0f, 1.0f},
         {1.0f, 0.0f},
@@ -681,13 +681,13 @@ int test_scene_image_probe_gpu_readback_failure_misses(TstContext* suite, const 
 
     DvzVisual* image = dvz_image(scene, 0);
     ANN(image);
-    float image_pos[4][3] = {
+    vec3 image_pos[4] = {
         {-1.0f, -1.0f, 0.0f},
         {-1.0f, 1.0f, 0.0f},
         {1.0f, -1.0f, 0.0f},
         {1.0f, 1.0f, 0.0f},
     };
-    float texcoords[4][2] = {
+    vec2 texcoords[4] = {
         {0.0f, 0.0f},
         {0.0f, 1.0f},
         {1.0f, 0.0f},
@@ -842,8 +842,8 @@ int test_scene_process_pick_probe_requests(TstContext* suite, const TstCase* ite
     uint64_t point_link_keys[1] = {1234};
     ANN(channel);
     AT(dvz_visual_set_link_keys(points, channel, point_link_keys, 1) == 0);
-    float point_pos[1][3] = {{0.0f, 0.0f, 0.0f}};
-    uint8_t point_color[1][4] = {{255, 255, 0, 255}};
+    vec3 point_pos[1] = {{0.0f, 0.0f, 0.0f}};
+    DvzColor point_color[1] = {{255, 255, 0, 255}};
     float point_size[1] = {24.0f};
     AT(dvz_visual_set_data(points, "position", point_pos, 1) == 0);
     AT(dvz_visual_set_data(points, "color", point_color, 1) == 0);
@@ -852,13 +852,13 @@ int test_scene_process_pick_probe_requests(TstContext* suite, const TstCase* ite
 
     DvzVisual* image = dvz_image(scene, 0);
     ANN(image);
-    float image_pos[4][3] = {
+    vec3 image_pos[4] = {
         {-1.0f, -1.0f, 0.0f},
         {-1.0f, 1.0f, 0.0f},
         {1.0f, -1.0f, 0.0f},
         {1.0f, 1.0f, 0.0f},
     };
-    float texcoords[4][2] = {
+    vec2 texcoords[4] = {
         {0.0f, 0.0f},
         {0.0f, 1.0f},
         {1.0f, 0.0f},
@@ -964,13 +964,13 @@ int test_scene_point_pick_quadrants(TstContext* suite, const TstCase* item)
     DvzVisual* points = dvz_point(scene, 0);
     ANN(points);
     dvz_visual_set_pick_capabilities(points, DVZ_PICK_CAPABILITY_ITEM);
-    float point_pos[4][3] = {
+    vec3 point_pos[4] = {
         {-0.5f, -0.5f, 0.0f},
         {0.5f, -0.5f, 0.0f},
         {-0.5f, 0.5f, 0.0f},
         {0.5f, 0.5f, 0.0f},
     };
-    uint8_t point_color[4][4] = {
+    DvzColor point_color[4] = {
         {255, 0, 0, 255},
         {0, 255, 0, 255},
         {0, 0, 255, 255},
@@ -991,7 +991,7 @@ int test_scene_point_pick_quadrants(TstContext* suite, const TstCase* item)
     dvz_capability_snapshot_default(&caps);
     caps.shader_format_glsl = true;
 
-    const double coords[4][2] = {
+    const dvec2 coords[4] = {
         {16.0, 16.0},
         {48.0, 16.0},
         {16.0, 48.0},
@@ -1073,7 +1073,7 @@ int test_scene_point_pick_rejects_disc_corner(TstContext* suite, const TstCase* 
     DvzVisual* point = dvz_point(scene, 0);
     ANN(point);
     dvz_visual_set_pick_capabilities(point, DVZ_PICK_CAPABILITY_ITEM);
-    float point_pos[1][3] = {{0.0f, 0.0f, 0.0f}};
+    vec3 point_pos[1] = {{0.0f, 0.0f, 0.0f}};
     DvzColor point_color[1] = {{255, 255, 255, 255}};
     float point_size[1] = {24.0f};
     AT(dvz_visual_set_data(point, "position", point_pos, 1) == 0);
@@ -1145,7 +1145,7 @@ int test_scene_pixel_pick_accepts_square_corner(TstContext* suite, const TstCase
     DvzVisual* pixel = dvz_pixel(scene, 0);
     ANN(pixel);
     dvz_visual_set_pick_capabilities(pixel, DVZ_PICK_CAPABILITY_ITEM);
-    float pixel_pos[1][3] = {{0.0f, 0.0f, 0.0f}};
+    vec3 pixel_pos[1] = {{0.0f, 0.0f, 0.0f}};
     DvzColor pixel_color[1] = {{255, 255, 255, 255}};
     float pixel_size[1] = {24.0f};
     AT(dvz_visual_set_data(pixel, "position", pixel_pos, 1) == 0);
@@ -1221,7 +1221,7 @@ int test_scene_marker_pick_accepts_bbox_corner(TstContext* suite, const TstCase*
     DvzVisual* marker = dvz_marker(scene, 0);
     ANN(marker);
     dvz_visual_set_pick_capabilities(marker, DVZ_PICK_CAPABILITY_ITEM);
-    float marker_pos[1][3] = {{0.0f, 0.0f, 0.0f}};
+    vec3 marker_pos[1] = {{0.0f, 0.0f, 0.0f}};
     DvzColor marker_color[1] = {{255, 255, 255, 255}};
     float marker_size[1] = {24.0f};
     float marker_angle[1] = {0.0f};
@@ -1302,7 +1302,7 @@ int test_scene_sphere_pick_resolves_item(TstContext* suite, const TstCase* item)
     DvzVisual* sphere = dvz_sphere(scene, 0);
     ANN(sphere);
     dvz_visual_set_pick_capabilities(sphere, DVZ_PICK_CAPABILITY_ITEM);
-    float positions[2][3] = {
+    vec3 positions[2] = {
         {-0.5f, 0.0f, 0.0f},
         {0.0f, 0.0f, 0.0f},
     };
@@ -1404,11 +1404,11 @@ int test_scene_stroke_pick_resolves_item(TstContext* suite, const TstCase* item)
     DvzVisual* segment = dvz_segment(scene, 0);
     ANN(segment);
     dvz_visual_set_pick_capabilities(segment, DVZ_PICK_CAPABILITY_ITEM);
-    float segment_start[2][3] = {
+    vec3 segment_start[2] = {
         {-0.75f, -0.5f, 0.0f},
         {-0.75f, 0.0f, 0.0f},
     };
-    float segment_end[2][3] = {
+    vec3 segment_end[2] = {
         {0.75f, -0.5f, 0.0f},
         {0.75f, 0.0f, 0.0f},
     };
@@ -1465,7 +1465,7 @@ int test_scene_stroke_pick_resolves_item(TstContext* suite, const TstCase* item)
     DvzVisual* path = dvz_path(scene, 0);
     ANN(path);
     dvz_visual_set_pick_capabilities(path, DVZ_PICK_CAPABILITY_ITEM);
-    float path_position[3][3] = {
+    vec3 path_position[3] = {
         {-0.75f, 0.0f, 0.0f},
         {0.0f, 0.0f, 0.0f},
         {0.75f, 0.0f, 0.0f},
@@ -1559,7 +1559,7 @@ int test_scene_primitive_pick_resolves_item(TstContext* suite, const TstCase* it
     DvzVisual* primitive = dvz_primitive(scene, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 0);
     ANN(primitive);
     dvz_visual_set_pick_capabilities(primitive, DVZ_PICK_CAPABILITY_ITEM);
-    float primitive_pos[6][3] = {
+    vec3 primitive_pos[6] = {
         {-0.9f, -0.7f, 0.0f},
         {-0.9f, 0.7f, 0.0f},
         {-0.1f, 0.0f, 0.0f},
@@ -1619,13 +1619,13 @@ int test_scene_primitive_pick_resolves_item(TstContext* suite, const TstCase* it
     DvzVisual* mesh = dvz_mesh(scene, 0);
     ANN(mesh);
     dvz_visual_set_pick_capabilities(mesh, DVZ_PICK_CAPABILITY_ITEM);
-    float mesh_pos[4][3] = {
+    vec3 mesh_pos[4] = {
         {-0.8f, -0.8f, 0.0f},
         {-0.8f, 0.8f, 0.0f},
         {0.8f, -0.8f, 0.0f},
         {0.8f, 0.8f, 0.0f},
     };
-    float mesh_normals[4][3] = {
+    vec3 mesh_normals[4] = {
         {0.0f, 0.0f, 1.0f},
         {0.0f, 0.0f, 1.0f},
         {0.0f, 0.0f, 1.0f},
@@ -1710,11 +1710,11 @@ int test_scene_image_pick_resolves_item(TstContext* suite, const TstCase* item)
     DvzVisual* image = dvz_image(scene, 0);
     ANN(image);
     dvz_visual_set_pick_capabilities(image, DVZ_PICK_CAPABILITY_ITEM);
-    float positions[2][3] = {
+    vec3 positions[2] = {
         {-0.5f, 0.0f, 0.0f},
         {0.5f, 0.0f, 0.0f},
     };
-    float extents[2][2] = {
+    vec2 extents[2] = {
         {0.4f, 0.4f},
         {0.4f, 0.4f},
     };
@@ -1799,7 +1799,7 @@ int test_scene_pick_respects_visual_order_across_families(
     DvzVisual* point = dvz_point(scene, 0);
     ANN(point);
     dvz_visual_set_pick_capabilities(point, DVZ_PICK_CAPABILITY_ITEM);
-    float point_pos[1][3] = {{0.0f, 0.0f, 0.0f}};
+    vec3 point_pos[1] = {{0.0f, 0.0f, 0.0f}};
     DvzColor point_color[1] = {{255, 255, 255, 255}};
     float point_size[1] = {24.0f};
     AT(dvz_visual_set_data(point, "position", point_pos, 1) == 0);
@@ -1810,8 +1810,8 @@ int test_scene_pick_respects_visual_order_across_families(
     DvzVisual* image = dvz_image(scene, 0);
     ANN(image);
     dvz_visual_set_pick_capabilities(image, DVZ_PICK_CAPABILITY_ITEM);
-    float image_pos[1][3] = {{0.0f, 0.0f, 0.0f}};
-    float image_extent[1][2] = {{0.8f, 0.8f}};
+    vec3 image_pos[1] = {{0.0f, 0.0f, 0.0f}};
+    vec2 image_extent[1] = {{0.8f, 0.8f}};
     AT(dvz_visual_set_data(image, "position", image_pos, 1) == 0);
     AT(dvz_visual_set_data(image, "extent", image_extent, 1) == 0);
     AT(dvz_panel_add_visual(panel, image, NULL) == 0);
@@ -2022,13 +2022,13 @@ int test_scene_image_probe_reuses_retained_request_executor(TstContext* suite, c
 
     DvzVisual* image = dvz_image(scene, 0);
     ANN(image);
-    float image_pos[4][3] = {
+    vec3 image_pos[4] = {
         {-1.0f, -1.0f, 0.0f},
         {-1.0f, 1.0f, 0.0f},
         {1.0f, -1.0f, 0.0f},
         {1.0f, 1.0f, 0.0f},
     };
-    float texcoords[4][2] = {
+    vec2 texcoords[4] = {
         {0.0f, 0.0f},
         {0.0f, 1.0f},
         {1.0f, 0.0f},
@@ -2138,13 +2138,13 @@ int test_scene_image_probe_respects_panel_request_position(TstContext* suite, co
 
     DvzVisual* image = dvz_image(scene, 0);
     ANN(image);
-    float image_pos[4][3] = {
+    vec3 image_pos[4] = {
         {-1.0f, -1.0f, 0.0f},
         {-1.0f, 1.0f, 0.0f},
         {1.0f, -1.0f, 0.0f},
         {1.0f, 1.0f, 0.0f},
     };
-    float texcoords[4][2] = {
+    vec2 texcoords[4] = {
         {0.0f, 0.0f},
         {0.0f, 1.0f},
         {1.0f, 0.0f},
@@ -2275,13 +2275,13 @@ int test_scene_image_probe_segment_rgba_hidden_visual(TstContext* suite, const T
 
     DvzVisual* image = dvz_image(scene, 0);
     ANN(image);
-    float image_pos[4][3] = {
+    vec3 image_pos[4] = {
         {-1.0f, -1.0f, 0.0f},
         {-1.0f, 1.0f, 0.0f},
         {1.0f, -1.0f, 0.0f},
         {1.0f, 1.0f, 0.0f},
     };
-    float texcoords[4][2] = {
+    vec2 texcoords[4] = {
         {0.0f, 0.0f},
         {0.0f, 1.0f},
         {1.0f, 0.0f},
@@ -2397,13 +2397,13 @@ int test_scene_image_probe_plan_rejects_size_overflow(TstContext* suite, const T
 
     DvzVisual* image = dvz_image(scene, 0);
     ANN(image);
-    float image_pos[4][3] = {
+    vec3 image_pos[4] = {
         {-1.0f, -1.0f, 0.0f},
         {-1.0f, 1.0f, 0.0f},
         {1.0f, -1.0f, 0.0f},
         {1.0f, 1.0f, 0.0f},
     };
-    float texcoords[4][2] = {
+    vec2 texcoords[4] = {
         {0.0f, 0.0f},
         {0.0f, 1.0f},
         {1.0f, 0.0f},

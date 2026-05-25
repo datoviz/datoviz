@@ -1447,11 +1447,11 @@ int test_scene_image_scalar_texture_uses_bound_scale(TstContext* suite, const Ts
     ANN(visual);
     AT(dvz_visual_set_scale(visual, "colormap", scale) == 0);
 
-    float positions[4][3] = {
+    vec3 positions[4] = {
         {-0.5f, -0.5f, 0.0f}, {-0.5f, 0.5f, 0.0f},
         { 0.5f, -0.5f, 0.0f}, { 0.5f, 0.5f, 0.0f},
     };
-    float texcoords[4][2] = {
+    vec2 texcoords[4] = {
         {0.0f, 0.0f}, {0.0f, 1.0f}, {1.0f, 0.0f}, {1.0f, 1.0f},
     };
     float pixels[4 * 4];
@@ -1509,11 +1509,11 @@ int test_scene_image_r16_float_field_uses_bound_scale(TstContext* suite, const T
 
     DvzVisual* image = dvz_image(scene, 0);
     ANN(image);
-    float positions[4][3] = {
+    vec3 positions[4] = {
         {-0.5f, -0.5f, 0.0f}, {-0.5f, 0.5f, 0.0f},
         { 0.5f, -0.5f, 0.0f}, { 0.5f, 0.5f, 0.0f},
     };
-    float texcoords[4][2] = {
+    vec2 texcoords[4] = {
         {0.0f, 0.0f}, {0.0f, 1.0f}, {1.0f, 0.0f}, {1.0f, 1.0f},
     };
     AT(dvz_visual_set_data(image, "position", positions, 4) == 0);
@@ -1585,11 +1585,11 @@ int test_scene_image_r16_snorm_field_uses_bound_scale(TstContext* suite, const T
 
     DvzVisual* image = dvz_image(scene, 0);
     ANN(image);
-    float positions[4][3] = {
+    vec3 positions[4] = {
         {-0.5f, -0.5f, 0.0f}, {-0.5f, 0.5f, 0.0f},
         { 0.5f, -0.5f, 0.0f}, { 0.5f, 0.5f, 0.0f},
     };
-    float texcoords[4][2] = {
+    vec2 texcoords[4] = {
         {0.0f, 0.0f}, {0.0f, 1.0f}, {1.0f, 0.0f}, {1.0f, 1.0f},
     };
     AT(dvz_visual_set_data(image, "position", positions, 4) == 0);
@@ -1783,8 +1783,8 @@ int test_scene_volume_visual_binds_3d_field(TstContext* suite, const TstCase* it
     AT(dvz_visual_data(volume, "texcoords", &texcoord_view) == 0);
     AT(position_view.item_count == 36);
     AT(texcoord_view.item_count == 36);
-    const float(*positions)[3] = (const float(*)[3])position_view.data;
-    const float(*texcoords)[3] = (const float(*)[3])texcoord_view.data;
+    const vec3* positions = (const vec3*)position_view.data;
+    const vec3* texcoords = (const vec3*)texcoord_view.data;
     ANN(positions);
     ANN(texcoords);
     AT(positions[0][2] == -1.0f);
@@ -2917,11 +2917,11 @@ int test_scene_image_field_partial_update_emits_texture_subregion(TstContext* su
 
     DvzVisual* image = dvz_image(scene, 0);
     ANN(image);
-    float positions[4][3] = {
+    vec3 positions[4] = {
         {-0.5f, -0.5f, 0.0f}, {-0.5f, 0.5f, 0.0f},
         { 0.5f, -0.5f, 0.0f}, { 0.5f, 0.5f, 0.0f},
     };
-    float texcoords[4][2] = {
+    vec2 texcoords[4] = {
         {0.0f, 0.0f}, {0.0f, 1.0f}, {1.0f, 0.0f}, {1.0f, 1.0f},
     };
     AT(dvz_visual_set_data(image, "position", positions, 4) == 0);
@@ -3010,11 +3010,11 @@ int test_scene_image_field_resize_emits_texture_reallocation(TstContext* suite, 
 
     DvzVisual* image = dvz_image(scene, 0);
     ANN(image);
-    float positions[4][3] = {
+    vec3 positions[4] = {
         {-0.5f, -0.5f, 0.0f}, {-0.5f, 0.5f, 0.0f},
         { 0.5f, -0.5f, 0.0f}, { 0.5f, 0.5f, 0.0f},
     };
-    float texcoords[4][2] = {
+    vec2 texcoords[4] = {
         {0.0f, 0.0f}, {0.0f, 1.0f}, {1.0f, 0.0f}, {1.0f, 1.0f},
     };
     AT(dvz_visual_set_data(image, "position", positions, 4) == 0);
@@ -3162,15 +3162,15 @@ int test_scene_shared_field_mixed_full_and_partial_uploads(TstContext* suite, co
     AT(dvz_sampled_field_set_data(
         field, &(DvzFieldDataView){.data = values, .bytes_per_row = 4 * sizeof(float), .rows_per_image = 4}));
 
-    float positions0[4][3] = {
+    vec3 positions0[4] = {
         {-1.0f, -1.0f, 0.0f}, {-1.0f, 0.0f, 0.0f},
         { 0.0f, -1.0f, 0.0f}, { 0.0f, 0.0f, 0.0f},
     };
-    float positions1[4][3] = {
+    vec3 positions1[4] = {
         {0.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f},
         {1.0f, 0.0f, 0.0f}, {1.0f, 1.0f, 0.0f},
     };
-    float texcoords[4][2] = {
+    vec2 texcoords[4] = {
         {0.0f, 0.0f}, {0.0f, 1.0f}, {1.0f, 0.0f}, {1.0f, 1.0f},
     };
 
