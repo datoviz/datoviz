@@ -519,6 +519,69 @@ static float _path_point_distance(const float* position, uint64_t i0, uint64_t i
 
 
 /**
+ * Return whether one subpath repeats its first point as a closed-ring sentinel.
+ *
+ * @param position flat vec3 position array
+ * @param offset first point index of the subpath
+ * @param length subpath point count
+ * @return whether the first and last points are equal
+ */
+static bool _path_subpath_is_closed(const float* position, uint64_t offset, uint32_t length)
+{
+    ANN(position);
+    if (length < 3)
+        return false;
+
+    const uint64_t first = offset;
+    const uint64_t last = offset + length - 1;
+    return position[3 * first + 0] == position[3 * last + 0] &&
+           position[3 * first + 1] == position[3 * last + 1] &&
+           position[3 * first + 2] == position[3 * last + 2];
+}
+
+
+/**
+ * Return the previous adjacency point for one path endpoint.
+ *
+ * @param point_idx endpoint point index
+ * @param offset first point index of the subpath
+ * @param length subpath point count
+ * @param closed whether the subpath repeats its first point at the end
+ * @return previous adjacency point index
+ */
+static uint64_t _path_prev_index(
+    uint64_t point_idx, uint64_t offset, uint32_t length, bool closed)
+{
+    if (closed && point_idx == offset)
+        return offset + length - 2;
+    if (point_idx > offset)
+        return point_idx - 1;
+    return point_idx;
+}
+
+
+/**
+ * Return the next adjacency point for one path endpoint.
+ *
+ * @param point_idx endpoint point index
+ * @param offset first point index of the subpath
+ * @param length subpath point count
+ * @param closed whether the subpath repeats its first point at the end
+ * @return next adjacency point index
+ */
+static uint64_t _path_next_index(
+    uint64_t point_idx, uint64_t offset, uint32_t length, bool closed)
+{
+    const uint64_t end = offset + length;
+    if (closed && point_idx + 1 == end)
+        return offset + 1;
+    if (point_idx + 1 < end)
+        return point_idx + 1;
+    return point_idx;
+}
+
+
+/**
  * Return packed path vertex flags for one derived stroke vertex.
  *
  * @param side_negative whether the vertex is on the negative normal side
@@ -613,6 +676,7 @@ static bool _path_cache_rebuild(DvzVisual* visual)
     {
         uint32_t length = visual->path.subpath_count > 0 ? visual->path.subpath_lengths[sp]
                                                          : (uint32_t)point_count;
+        bool closed = _path_subpath_is_closed(position, offset, length);
         float cumulative = 0.0f;
         for (uint32_t i = 0; i + 1 < length; i++)
         {
@@ -624,12 +688,12 @@ static bool _path_cache_rebuild(DvzVisual* visual)
                 bool endpoint_end = j >= 2;
                 bool side_negative = j == 1 || j == 2;
                 uint64_t point_idx = endpoint_end ? i1 : i0;
-                uint64_t prev_idx = point_idx > offset ? point_idx - 1 : point_idx;
-                uint64_t next_idx = point_idx + 1 < offset + length ? point_idx + 1 : point_idx;
+                uint64_t prev_idx = _path_prev_index(point_idx, offset, length, closed);
+                uint64_t next_idx = _path_next_index(point_idx, offset, length, closed);
                 bool has_prev = prev_idx != point_idx;
                 bool has_next = next_idx != point_idx;
-                bool subpath_start = point_idx == offset;
-                bool subpath_end = point_idx + 1 == offset + length;
+                bool subpath_start = !closed && point_idx == offset;
+                bool subpath_end = !closed && point_idx + 1 == offset + length;
                 uint64_t dst = 4 * segment + j;
                 dvz_memcpy(
                     &cache->position_prev[3 * dst], 3 * sizeof(float), &position[3 * prev_idx],

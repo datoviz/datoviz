@@ -25,10 +25,12 @@ The implemented path supports:
 5. `dvz_path_set_subpaths()` for explicit open subpath lengths in the stroked path lane;
 6. `dvz_path_set_caps()` and `dvz_path_set_join()` with round caps/joins by default and a default
    miter limit of `4.0`;
-7. stroked lowering through path-native adjacency resources carrying previous/current/next
+7. repeated first/last points in a stroked subpath are treated as a closed-ring sentinel for
+   adjacency and cap suppression, which is the current polygon-stroke path;
+8. stroked lowering through path-native adjacency resources carrying previous/current/next
    positions, color, internal `line_width`, per-vertex role/subpath flags, cumulative distance, and
    indices when `stroke_width` is present;
-8. GLSL/Vulkan frame-plan and DRP2 emission through the `scene.path` stroke pipeline for stroked
+9. GLSL/Vulkan frame-plan and DRP2 emission through the `scene.path` stroke pipeline for stroked
    paths, while `segment` remains the independent endpoint-pair stroke pipeline.
 
 `stroke_width` is the public attribute name. The current retained storage and shader width input
@@ -37,8 +39,8 @@ still use the historical internal name `line_width`.
 Current limitations:
 
 1. thin line-strip paths do not yet consume explicit subpath lengths;
-2. closed subpaths, dashes, picking, SVG parsing, filled paths/polygons, data-space stroke width,
-   and WGSL lowering are deferred.
+2. a first-class closed-path API, dashes, picking, SVG parsing, filled paths/polygons, data-space
+   stroke width, and WGSL lowering are deferred.
 
 The following sections describe the target path contract. Closed subpaths, dashes, filled
 paths/polygons, SVG parsing, path picking, data-space stroke width, and fuller backend parity are
@@ -193,8 +195,9 @@ Cap style is ignored for closed paths.
 Cannot change at runtime. Paths in a `closed` visual are all closed; paths in an `open` visual
 are all open.
 
-Status on 2026-05-17: closed subpaths are not implemented. `dvz_path_set_subpaths()` records open
-subpath lengths only.
+Status on 2026-05-25: a repeated first/last point in the stroked path lane is treated as a closed
+ring for adjacency and cap suppression. A first-class closed-path API is not implemented yet.
+`dvz_path_set_subpaths()` still records point counts only.
 
 
 ### `stroke_width_space`

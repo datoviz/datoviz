@@ -56,6 +56,7 @@ int test_scene_graph(TstSuite* suite)
     TST_SCENE_GRAPH_SHARED_GPU_CASE(test_scene_mesh_glsl_executes);
     TST_SCENE_GRAPH_SHARED_GPU_CASE(test_scene_path_glsl_executes);
     TST_CASE(test_scene_path_line_width_emit_glsl);
+    TST_CASE(test_scene_path_repeated_endpoint_closes_subpath);
     TST_SCENE_GRAPH_SHARED_GPU_CASE(test_scene_image_glsl_executes);
     TST_CASE(test_scene_json);
     TST_CASE(test_scene_json_includes_field_dirty_metadata);

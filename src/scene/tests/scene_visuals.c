@@ -107,10 +107,10 @@ int test_scene_point_emit_glsl_executes(TstContext* suite, const TstCase* item)
     DvzVisual* visual = dvz_point(scene, 0);
     AT(visual != NULL);
 
-    float positions[] = {
-        -0.5f, -0.5f, 0.0f,
-         0.5f, -0.5f, 0.0f,
-         0.0f,  0.5f, 0.0f,
+    vec3 positions[3] = {
+        {-0.5f, -0.5f, 0.0f},
+        {0.5f, -0.5f, 0.0f},
+        {0.0f, 0.5f, 0.0f},
     };
     DvzColor colors[3] = {{255, 0, 0, 255}, {0, 255, 0, 255}, {0, 0, 255, 255}};
     float sizes[3]     = {10.0f, 20.0f, 15.0f};
@@ -176,7 +176,7 @@ int test_scene_sphere_emit_glsl_executes(TstContext* suite, const TstCase* item)
     DvzVisual* sphere = dvz_sphere(scene, DVZ_SPHERE_FLAGS_LIGHTING);
     AT(sphere != NULL);
 
-    float positions[3][3] = {
+    vec3 positions[3] = {
         {-0.45f, -0.20f, 0.0f},
         {+0.25f, -0.05f, 0.2f},
         {+0.00f, +0.38f, 0.1f},
@@ -188,7 +188,7 @@ int test_scene_sphere_emit_glsl_executes(TstContext* suite, const TstCase* item)
     };
     float sizes[3] = {0.22f, 0.26f, 0.20f};
 
-    AT(dvz_visual_set_data(sphere, "position", &positions[0][0], 3) == 0);
+    AT(dvz_visual_set_data(sphere, "position", positions, 3) == 0);
     AT(dvz_visual_set_data(sphere, "color", colors, 3) == 0);
     AT(dvz_visual_set_data(sphere, "radius", sizes, 3) == 0);
     AT(dvz_panel_add_visual(panel, sphere, NULL) == 0);
@@ -508,7 +508,7 @@ int test_scene_point_emit_glsl_native_points(TstContext* suite, const TstCase* i
     DvzVisual* visual = dvz_point(scene, 0);
     AT(visual != NULL);
 
-    float positions[3][3] = {
+    vec3 positions[3] = {
         {-0.5f, -0.4f, 0.0f},
         { 0.0f,  0.4f, 0.0f},
         { 0.5f, -0.4f, 0.0f},
@@ -589,7 +589,7 @@ int test_scene_point_style_emits_glsl_and_wgsl(TstContext* suite, const TstCase*
     DvzVisual* visual = dvz_point(scene, 0);
     AT(visual != NULL);
 
-    float positions[2][3] = {{-0.25f, 0.0f, 0.0f}, {+0.25f, 0.0f, 0.0f}};
+    vec3 positions[2] = {{-0.25f, 0.0f, 0.0f}, {+0.25f, 0.0f, 0.0f}};
     DvzColor colors[2] = {{255, 80, 40, 255}, {80, 160, 255, 255}};
     float sizes[2] = {18.0f, 22.0f};
     AT(dvz_visual_set_data(visual, "position", positions, 2) == 0);
@@ -670,7 +670,7 @@ int test_scene_marker_api_and_emit_glsl(TstContext* suite, const TstCase* item)
     AT(visual != NULL);
     AT(visual->type == DVZ_VISUAL_TYPE_MARKER);
 
-    float positions[3][3] = {
+    vec3 positions[3] = {
         {-0.35f, 0.0f, 0.0f},
         {+0.00f, 0.0f, 0.0f},
         {+0.35f, 0.0f, 0.0f},
@@ -771,7 +771,7 @@ int test_scene_pixel_emit_glsl_native_square_points(TstContext* suite, const Tst
     DvzVisual* visual = dvz_pixel(scene, 0);
     AT(visual != NULL);
 
-    float positions[2][3] = {{-0.25f, 0.0f, 0.0f}, {+0.25f, 0.0f, 0.0f}};
+    vec3 positions[2] = {{-0.25f, 0.0f, 0.0f}, {+0.25f, 0.0f, 0.0f}};
     DvzColor colors[2] = {{255, 0, 0, 255}, {0, 255, 0, 255}};
     float sizes[2] = {8.0f, 12.0f};
     AT(dvz_visual_set_data(visual, "position", positions, 2) == 0);
@@ -958,11 +958,11 @@ static int _scene_mesh_emit_executes(TstContext* suite)
     DvzVisual* visual = dvz_mesh(scene, 0);
     AT(visual != NULL);
 
-    float positions[4][3] = {
+    vec3 positions[4] = {
         {-0.8f, -0.8f, 0.0f}, {-0.8f, 0.8f, 0.0f},
         {0.8f, -0.8f, 0.0f},  {0.8f, 0.8f, 0.0f},
     };
-    float normals[4][3] = {
+    vec3 normals[4] = {
         {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 1.0f},
         {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 1.0f},
     };
@@ -1031,7 +1031,7 @@ int test_scene_point_emit_wgsl_instanced_quads(TstContext* suite, const TstCase*
     DvzVisual* visual = dvz_point(scene, 0);
     AT(visual != NULL);
 
-    float positions[3][3] = {
+    vec3 positions[3] = {
         {-0.5f, -0.4f, 0.0f},
         { 0.0f,  0.4f, 0.0f},
         { 0.5f, -0.4f, 0.0f},
@@ -1123,7 +1123,7 @@ int test_scene_pixel_emit_wgsl_instanced_quads(TstContext* suite, const TstCase*
     DvzVisual* visual = dvz_pixel(scene, 0);
     AT(visual != NULL);
 
-    float positions[3][3] = {
+    vec3 positions[3] = {
         {-0.5f, -0.4f, 0.0f},
         { 0.0f,  0.4f, 0.0f},
         { 0.5f, -0.4f, 0.0f},
@@ -1221,7 +1221,7 @@ int test_scene_primitive_triangle_list_emit_wgsl(TstContext* suite, const TstCas
     DvzVisual* visual = dvz_primitive(scene, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 0);
     AT(visual != NULL);
 
-    float positions[3][3] = {
+    vec3 positions[3] = {
         {-0.6f, -0.5f, 0.0f},
         { 0.6f, -0.5f, 0.0f},
         { 0.0f,  0.6f, 0.0f},
@@ -1283,11 +1283,11 @@ int test_scene_mesh_indexed_default_color_emits_draw_indexed(TstContext* suite, 
     DvzVisual* visual = dvz_mesh(scene, 0);
     ANN(visual);
 
-    float positions[4][3] = {
+    vec3 positions[4] = {
         {-0.8f, -0.8f, 0.0f}, {-0.8f, 0.8f, 0.0f},
         {0.8f, -0.8f, 0.0f},  {0.8f, 0.8f, 0.0f},
     };
-    float normals[4][3] = {
+    vec3 normals[4] = {
         {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 1.0f},
         {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 1.0f},
     };
@@ -1357,7 +1357,7 @@ int test_scene_mesh_instance_transform_emits_instanced_draw(TstContext* suite, c
     DvzVisual* visual = dvz_mesh(scene, 0);
     ANN(visual);
 
-    float positions[4][3] = {
+    vec3 positions[4] = {
         {-0.25f, -0.25f, 0.0f}, {-0.25f, 0.25f, 0.0f},
         {0.25f, -0.25f, 0.0f},  {0.25f, 0.25f, 0.0f},
     };
@@ -1443,11 +1443,11 @@ int test_scene_mesh_emits_depth_attachment(TstContext* suite, const TstCase* ite
     DvzVisual* visual = dvz_mesh(scene, 0);
     ANN(visual);
 
-    float positions[4][3] = {
+    vec3 positions[4] = {
         {-0.8f, -0.8f, 0.1f}, {-0.8f, 0.8f, 0.1f},
         {0.8f, -0.8f, 0.1f},  {0.8f, 0.8f, 0.1f},
     };
-    float normals[4][3] = {
+    vec3 normals[4] = {
         {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 1.0f},
         {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 1.0f},
     };
@@ -1532,14 +1532,14 @@ int test_scene_indexed_primitive_emits_draw_indexed(TstContext* suite, const Tst
     DvzVisual* visual = dvz_primitive(scene, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 0);
     ANN(visual);
 
-    float positions[4][3] = {
+    vec3 positions[4] = {
         {-0.8f, -0.8f, 0.0f}, {-0.8f, 0.8f, 0.0f},
         {0.8f, -0.8f, 0.0f},  {0.8f, 0.8f, 0.0f},
     };
     DvzColor colors[4] = {
         {255, 0, 0, 255}, {255, 0, 0, 255}, {255, 0, 0, 255}, {255, 0, 0, 255},
     };
-    float normals[4][3] = {
+    vec3 normals[4] = {
         {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 1.0f},
         {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 1.0f},
     };
@@ -1609,11 +1609,11 @@ int test_scene_shared_index_buffer_emits_one_upload(TstContext* suite, const Tst
     ANN(visual0);
     ANN(visual1);
 
-    float positions0[4][3] = {
+    vec3 positions0[4] = {
         {-0.8f, -0.8f, 0.0f}, {-0.8f, 0.0f, 0.0f},
         {-0.2f, -0.8f, 0.0f}, {-0.2f, 0.0f, 0.0f},
     };
-    float positions1[4][3] = {
+    vec3 positions1[4] = {
         {0.2f, 0.0f, 0.0f}, {0.2f, 0.8f, 0.0f},
         {0.8f, 0.0f, 0.0f}, {0.8f, 0.8f, 0.0f},
     };
@@ -1701,7 +1701,7 @@ int test_scene_path_line_width_emit_glsl(TstContext* suite, const TstCase* item)
     DvzVisual* visual = dvz_path(scene, 0);
     AT(visual != NULL);
 
-    float positions[5][3] = {
+    vec3 positions[5] = {
         {-0.75f, -0.25f, 0.0f},
         {-0.35f,  0.25f, 0.0f},
         { 0.00f, -0.10f, 0.0f},
@@ -1777,6 +1777,83 @@ int test_scene_path_line_width_emit_glsl(TstContext* suite, const TstCase* item)
 }
 
 
+/**
+ * Verify repeated first/last path points are lowered as closed joins, not open caps.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_path_repeated_endpoint_closes_subpath(TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    AT(scene != NULL);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    AT(figure != NULL);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    AT(panel != NULL);
+    DvzVisual* visual = dvz_path(scene, 0);
+    AT(visual != NULL);
+
+    vec3 positions[5] = {
+        {-0.50f, -0.50f, 0.0f},
+        {+0.50f, -0.50f, 0.0f},
+        {+0.50f, +0.50f, 0.0f},
+        {-0.50f, +0.50f, 0.0f},
+        {-0.50f, -0.50f, 0.0f},
+    };
+    DvzColor colors[5] = {
+        {255, 255, 255, 255},
+        {255, 255, 255, 255},
+        {255, 255, 255, 255},
+        {255, 255, 255, 255},
+        {255, 255, 255, 255},
+    };
+    float stroke_widths[5] = {8.0f, 8.0f, 8.0f, 8.0f, 8.0f};
+    uint32_t subpath = 5;
+
+    AT(dvz_visual_set_data(visual, "position", positions, 5) == 0);
+    AT(dvz_visual_set_data(visual, "color", colors, 5) == 0);
+    AT(dvz_visual_set_data(visual, "stroke_width", stroke_widths, 5) == 0);
+    AT(dvz_path_set_subpaths(visual, 1, &subpath) == 0);
+    AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
+
+    DvzFramePlan* plan = dvz_frame_plan("figure.path.closed", 0);
+    AT(plan != NULL);
+    _scene_emit_visual_uploads(figure, plan, NULL);
+
+    const uint32_t has_prev = 0x04u;
+    const uint32_t has_next = 0x08u;
+    const uint32_t subpath_start = 0x10u;
+    const uint32_t subpath_end = 0x20u;
+    const DvzPathGpuCache* cache = &visual->path.gpu;
+    AT(cache->segment_count == 4);
+    AT(cache->vertex_count == 16);
+
+    const uint32_t first_start = cache->path_flags[0];
+    AT((first_start & has_prev) != 0);
+    AT((first_start & has_next) != 0);
+    AT((first_start & subpath_start) == 0);
+    AC(cache->position_prev[0], positions[3][0], 1e-6);
+    AC(cache->position_prev[1], positions[3][1], 1e-6);
+
+    const uint32_t last_end_index = 4 * 3 + 2;
+    const uint32_t last_end = cache->path_flags[last_end_index];
+    AT((last_end & has_prev) != 0);
+    AT((last_end & has_next) != 0);
+    AT((last_end & subpath_end) == 0);
+    AC(cache->position_next[3 * last_end_index + 0], positions[1][0], 1e-6);
+    AC(cache->position_next[3 * last_end_index + 1], positions[1][1], 1e-6);
+
+    dvz_frame_plan_destroy(plan);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
 int test_scene_image_glsl_executes(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
@@ -1799,13 +1876,13 @@ int test_scene_image_glsl_executes(TstContext* suite, const TstCase* item)
     AT(visual != NULL);
 
     /* TRIANGLE_STRIP: TL, BL, TR, BR */
-    float positions[4][3] = {
+    vec3 positions[4] = {
         {-0.5f, -0.5f, 0.0f},
         {-0.5f,  0.5f, 0.0f},
         { 0.5f, -0.5f, 0.0f},
         { 0.5f,  0.5f, 0.0f},
     };
-    float texcoords[4][2] = {
+    vec2 texcoords[4] = {
         {0.0f, 0.0f},
         {0.0f, 1.0f},
         {1.0f, 0.0f},
@@ -1860,7 +1937,7 @@ int test_scene_json(TstContext* suite, const TstCase* item)
     DvzPanel*  panel  = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
     DvzVisual* visual = dvz_point(scene, 0);
 
-    float positions[] = {-0.5f, -0.5f, 0.0f, 0.5f, 0.5f, 0.0f};
+    vec3 positions[2] = {{-0.5f, -0.5f, 0.0f}, {0.5f, 0.5f, 0.0f}};
     dvz_visual_set_data(visual, "position", positions, 2);
     dvz_panel_add_visual(panel, visual, NULL);
 
@@ -1893,11 +1970,11 @@ int test_scene_json_includes_field_dirty_metadata(TstContext* suite, const TstCa
     DvzVisual* image = dvz_image(scene, 0);
     ANN(image);
 
-    float positions[4][3] = {
+    vec3 positions[4] = {
         {-0.5f, -0.5f, 0.0f}, {-0.5f, 0.5f, 0.0f},
         { 0.5f, -0.5f, 0.0f}, { 0.5f, 0.5f, 0.0f},
     };
-    float texcoords[4][2] = {
+    vec2 texcoords[4] = {
         {0.0f, 0.0f}, {0.0f, 1.0f}, {1.0f, 0.0f}, {1.0f, 1.0f},
     };
     AT(dvz_visual_set_data(image, "position", positions, 4) == 0);
@@ -1958,7 +2035,7 @@ int test_scene_json_includes_buffer_binding_metadata(TstContext* suite, const Ts
     DvzVisual* visual = dvz_primitive(scene, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 0);
     ANN(visual);
 
-    float positions[3][3] = {
+    vec3 positions[3] = {
         {-0.5f, -0.5f, 0.0f},
         {0.5f, -0.5f, 0.0f},
         {0.0f, 0.5f, 0.0f},
@@ -3531,11 +3608,11 @@ int test_scene_rejects_scale_binding_while_emitted_stream_is_live(TstContext* su
     DvzScale* scale = dvz_scale(scene, NULL);
     ANN(scale);
 
-    float positions[4][3] = {
+    vec3 positions[4] = {
         {-0.5f, -0.5f, 0.0f}, {-0.5f, 0.5f, 0.0f},
         {0.5f, -0.5f, 0.0f}, {0.5f, 0.5f, 0.0f},
     };
-    float texcoords[4][2] = {
+    vec2 texcoords[4] = {
         {0.0f, 0.0f}, {0.0f, 1.0f}, {1.0f, 0.0f}, {1.0f, 1.0f},
     };
     uint8_t pixels[4 * 4 * 4] = {0};
@@ -3799,10 +3876,10 @@ int test_scene_point_emit(TstContext* suite, const TstCase* item)
     DvzVisual* visual = dvz_point(scene, 0);
     AT(visual != NULL);
 
-    float positions[] = {
-        -0.5f, -0.5f, 0.0f,
-         0.5f, -0.5f, 0.0f,
-         0.0f,  0.5f, 0.0f,
+    vec3 positions[3] = {
+        {-0.5f, -0.5f, 0.0f},
+        {0.5f, -0.5f, 0.0f},
+        {0.0f, 0.5f, 0.0f},
     };
     DvzColor colors[3] = {{255, 0, 0, 255}, {0, 255, 0, 255}, {0, 0, 255, 255}};
     float sizes[3]     = {10.0f, 20.0f, 15.0f};
@@ -3854,7 +3931,7 @@ int test_scene_path_emit(TstContext* suite, const TstCase* item)
     DvzVisual* visual = dvz_path(scene, 0);
     AT(visual != NULL);
 
-    float positions[4][3] = {
+    vec3 positions[4] = {
         {-0.75f, -0.25f, 0.0f},
         {-0.25f, 0.25f, 0.0f},
         {0.25f, -0.25f, 0.0f},
@@ -3919,11 +3996,11 @@ int test_scene_image_emit(TstContext* suite, const TstCase* item)
     DvzVisual* visual = dvz_image(scene, 0);
     AT(visual != NULL);
 
-    float positions[4][3] = {
+    vec3 positions[4] = {
         {-0.5f, -0.5f, 0.0f}, {-0.5f, 0.5f, 0.0f},
         { 0.5f, -0.5f, 0.0f}, { 0.5f, 0.5f, 0.0f},
     };
-    float texcoords[4][2] = {
+    vec2 texcoords[4] = {
         {0.0f, 0.0f}, {0.0f, 1.0f}, {1.0f, 0.0f}, {1.0f, 1.0f},
     };
     uint8_t pixels[4 * 4 * 4];
@@ -3964,9 +4041,9 @@ int test_scene_image_multi_item_emit(TstContext* suite, const TstCase* item)
     DvzVisual* visual = dvz_image(scene, 0);
     ANN(visual);
 
-    float positions[2][3] = {{-0.4f, 0.0f, 0.0f}, {+0.4f, 0.0f, 0.0f}};
-    float extents[2][2] = {{0.3f, 0.4f}, {0.2f, 0.5f}};
-    float tex_rects[2][4] = {{0.0f, 0.0f, 0.5f, 1.0f}, {0.5f, 0.0f, 1.0f, 1.0f}};
+    vec3 positions[2] = {{-0.4f, 0.0f, 0.0f}, {+0.4f, 0.0f, 0.0f}};
+    vec2 extents[2] = {{0.3f, 0.4f}, {0.2f, 0.5f}};
+    vec4 tex_rects[2] = {{0.0f, 0.0f, 0.5f, 1.0f}, {0.5f, 0.0f, 1.0f, 1.0f}};
     uint8_t pixels[4 * 4 * 4];
     dvz_memset(pixels, sizeof(pixels), 128, sizeof(pixels));
 
@@ -4063,13 +4140,13 @@ int test_scene_glyph_emit_glsl(TstContext* suite, const TstCase* item)
     DvzVisual* visual = dvz_glyph(scene, 0);
     ANN(visual);
 
-    float positions[6][3] = {{0.0f, 0.0f, 0.0f}};
-    float bounds[6][4] = {
+    vec3 positions[6] = {{0.0f, 0.0f, 0.0f}};
+    vec4 bounds[6] = {
         {-16.0f, -16.0f, 16.0f, 16.0f}, {-16.0f, -16.0f, 16.0f, 16.0f},
         {-16.0f, -16.0f, 16.0f, 16.0f}, {-16.0f, -16.0f, 16.0f, 16.0f},
         {-16.0f, -16.0f, 16.0f, 16.0f}, {-16.0f, -16.0f, 16.0f, 16.0f},
     };
-    float texcoords[6][4] = {
+    vec4 texcoords[6] = {
         {0.0f, 0.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 1.0f, 1.0f},
         {0.0f, 0.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 1.0f, 1.0f},
         {0.0f, 0.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 1.0f, 1.0f},
@@ -4241,11 +4318,11 @@ int test_scene_image_emit_wgsl(TstContext* suite, const TstCase* item)
     DvzVisual* visual = dvz_image(scene, 0);
     AT(visual != NULL);
 
-    float positions[4][3] = {
+    vec3 positions[4] = {
         {-0.5f, -0.5f, 0.0f}, {-0.5f, 0.5f, 0.0f},
         { 0.5f, -0.5f, 0.0f}, { 0.5f, 0.5f, 0.0f},
     };
-    float texcoords[4][2] = {
+    vec2 texcoords[4] = {
         {0.0f, 0.0f}, {0.0f, 1.0f}, {1.0f, 0.0f}, {1.0f, 1.0f},
     };
     uint8_t pixels[4 * 4 * 4];
@@ -4308,11 +4385,11 @@ int test_scene_image_emit_uses_common_and_texture_sets(TstContext* suite, const 
     DvzVisual* visual = dvz_image(scene, 0);
     AT(visual != NULL);
 
-    float positions[4][3] = {
+    vec3 positions[4] = {
         {-0.5f, -0.5f, 0.0f}, {-0.5f, 0.5f, 0.0f},
         { 0.5f, -0.5f, 0.0f}, { 0.5f, 0.5f, 0.0f},
     };
-    float texcoords[4][2] = {
+    vec2 texcoords[4] = {
         {0.0f, 0.0f}, {0.0f, 1.0f}, {1.0f, 0.0f}, {1.0f, 1.0f},
     };
     uint8_t pixels[4 * 4 * 4];
@@ -4421,7 +4498,7 @@ int test_scene_visual_common_binding_layout_order(TstContext* suite, const TstCa
     DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
     ANN(panel);
 
-    float point_pos[3][3] = {
+    vec3 point_pos[3] = {
         {-0.8f, -0.8f, 0.0f}, {-0.7f, -0.8f, 0.0f}, {-0.75f, -0.7f, 0.0f},
     };
     DvzColor point_color[3] = {
@@ -4435,7 +4512,7 @@ int test_scene_visual_common_binding_layout_order(TstContext* suite, const TstCa
     AT(dvz_visual_set_data(point, "size", point_size, 3) == 0);
     AT(dvz_panel_add_visual(panel, point, NULL) == 0);
 
-    float prim_pos[3][3] = {
+    vec3 prim_pos[3] = {
         {-0.5f, -0.8f, 0.0f}, {-0.3f, -0.8f, 0.0f}, {-0.4f, -0.6f, 0.0f},
     };
     DvzColor prim_color[3] = {
@@ -4447,7 +4524,7 @@ int test_scene_visual_common_binding_layout_order(TstContext* suite, const TstCa
     AT(dvz_visual_set_data(primitive, "color", prim_color, 3) == 0);
     AT(dvz_panel_add_visual(panel, primitive, NULL) == 0);
 
-    float path_pos[4][3] = {
+    vec3 path_pos[4] = {
         {-0.2f, -0.8f, 0.0f}, {-0.1f, -0.7f, 0.0f},
         {0.0f, -0.8f, 0.0f},  {0.1f, -0.7f, 0.0f},
     };
@@ -4461,11 +4538,11 @@ int test_scene_visual_common_binding_layout_order(TstContext* suite, const TstCa
     AT(dvz_visual_set_data(path, "color", path_color, 4) == 0);
     AT(dvz_panel_add_visual(panel, path, NULL) == 0);
 
-    float image_pos[4][3] = {
+    vec3 image_pos[4] = {
         {0.2f, -0.8f, 0.0f}, {0.2f, -0.6f, 0.0f},
         {0.4f, -0.8f, 0.0f}, {0.4f, -0.6f, 0.0f},
     };
-    float image_uv[4][2] = {
+    vec2 image_uv[4] = {
         {0.0f, 0.0f}, {0.0f, 1.0f}, {1.0f, 0.0f}, {1.0f, 1.0f},
     };
     uint8_t pixels[4 * 4 * 4];
@@ -4477,11 +4554,11 @@ int test_scene_visual_common_binding_layout_order(TstContext* suite, const TstCa
     AT(dvz_visual_set_texture(image, pixels, 4, 4) == 0);
     AT(dvz_panel_add_visual(panel, image, NULL) == 0);
 
-    float mesh_pos[4][3] = {
+    vec3 mesh_pos[4] = {
         {0.55f, -0.8f, 0.0f}, {0.55f, -0.6f, 0.0f},
         {0.75f, -0.8f, 0.0f}, {0.75f, -0.6f, 0.0f},
     };
-    float mesh_normal[4][3] = {
+    vec3 mesh_normal[4] = {
         {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 1.0f},
         {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 1.0f},
     };
@@ -4698,7 +4775,7 @@ int test_scene_point_emit_has_vertex_layout(TstContext* suite, const TstCase* it
     DvzVisual* visual = dvz_point(scene, 0);
     AT(visual != NULL);
 
-    float positions[] = {-0.5f, -0.5f, 0.0f,  0.5f, -0.5f, 0.0f,  0.0f, 0.5f, 0.0f};
+    vec3 positions[3] = {{-0.5f, -0.5f, 0.0f}, {0.5f, -0.5f, 0.0f}, {0.0f, 0.5f, 0.0f}};
     DvzColor colors[3] = {{255, 0, 0, 255}, {0, 255, 0, 255}, {0, 0, 255, 255}};
     float sizes[3] = {10.0f, 10.0f, 10.0f};
     AT(dvz_visual_set_data(visual, "position", positions, 3) == 0);
@@ -4756,14 +4833,14 @@ int test_scene_indexed_primitive_material_updates_runtime(TstContext* suite, con
     DvzVisual* visual = dvz_primitive(scene, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 0);
     ANN(visual);
 
-    float positions[4][3] = {
+    vec3 positions[4] = {
         {-0.8f, -0.8f, 0.0f}, {-0.8f, 0.8f, 0.0f},
         {0.8f, -0.8f, 0.0f},  {0.8f, 0.8f, 0.0f},
     };
     DvzColor colors[4] = {
         {255, 0, 0, 255}, {255, 0, 0, 255}, {255, 0, 0, 255}, {255, 0, 0, 255},
     };
-    float normals[4][3] = {
+    vec3 normals[4] = {
         {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 1.0f},
         {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 1.0f},
     };
@@ -4955,7 +5032,7 @@ int test_scene_second_emit_no_uploads_when_not_dirty(TstContext* suite, const Ts
     DvzVisual* visual = dvz_point(scene, 0);
     AT(visual != NULL);
 
-    float positions[] = {-0.5f, 0.0f, 0.0f,  0.5f, 0.0f, 0.0f};
+    vec3 positions[2] = {{-0.5f, 0.0f, 0.0f}, {0.5f, 0.0f, 0.0f}};
     DvzColor colors[2] = {{255, 0, 0, 255}, {0, 255, 0, 255}};
     float sizes[2] = {8.0f, 8.0f};
     AT(dvz_visual_set_data(visual, "position", positions, 2) == 0);
@@ -5130,7 +5207,7 @@ int test_scene_hidden_visual_first_visible_later_uploads(TstContext* suite, cons
     DvzVisual* visual = dvz_point(scene, 0);
     AT(visual != NULL);
 
-    float positions[] = {-0.5f, 0.0f, 0.0f,  0.5f, 0.0f, 0.0f};
+    vec3 positions[2] = {{-0.5f, 0.0f, 0.0f}, {0.5f, 0.0f, 0.0f}};
     DvzColor colors[2] = {{255, 0, 0, 255}, {0, 255, 0, 255}};
     float sizes[2] = {8.0f, 8.0f};
     AT(dvz_visual_set_data(visual, "position", positions, 2) == 0);
@@ -5187,13 +5264,13 @@ int test_scene_hidden_indexed_mesh_first_visible_later_uploads(TstContext* suite
     DvzVisual* visual = dvz_mesh(scene, 0);
     AT(visual != NULL);
 
-    float positions[4][3] = {
+    vec3 positions[4] = {
         {-0.5f, -0.5f, 0.0f},
         {+0.5f, -0.5f, 0.0f},
         {-0.5f, +0.5f, 0.0f},
         {+0.5f, +0.5f, 0.0f},
     };
-    float normals[4][3] = {
+    vec3 normals[4] = {
         {0.0f, 0.0f, 1.0f},
         {0.0f, 0.0f, 1.0f},
         {0.0f, 0.0f, 1.0f},
@@ -5314,13 +5391,13 @@ int test_scene_hidden_wboit_mesh_scene_occlusion_two_frames_glsl_executes(
     AT(dvz_visual_set_scene_occluder(volume, true) == 0);
     AT(dvz_visual_set_scene_occluded(slice, true) == 0);
 
-    float positions[4][3] = {
+    vec3 positions[4] = {
         {-0.5f, -0.5f, 0.1f},
         {+0.5f, -0.5f, 0.1f},
         {-0.5f, +0.5f, 0.1f},
         {+0.5f, +0.5f, 0.1f},
     };
-    float normals[4][3] = {
+    vec3 normals[4] = {
         {0.0f, 0.0f, 1.0f},
         {0.0f, 0.0f, 1.0f},
         {0.0f, 0.0f, 1.0f},
@@ -5923,10 +6000,10 @@ int test_scene_visual_scene_occlusion_frame_plan(TstContext* suite, const TstCas
     AT(occluder != NULL);
     AT(occluded != NULL);
 
-    float positions[] = {
-        -0.5f, -0.5f, 0.0f,
-         0.5f, -0.5f, 0.0f,
-         0.0f,  0.5f, 0.0f,
+    vec3 positions[3] = {
+        {-0.5f, -0.5f, 0.0f},
+        {0.5f, -0.5f, 0.0f},
+        {0.0f, 0.5f, 0.0f},
     };
     DvzColor colors[3] = {{255, 0, 0, 255}, {0, 255, 0, 255}, {0, 0, 255, 255}};
     float sizes[3] = {10.0f, 10.0f, 10.0f};
@@ -6046,7 +6123,7 @@ int test_scene_visual_scene_occlusion_emits_drp2(TstContext* suite, const TstCas
     AT(occluder != NULL);
     AT(occluded != NULL);
 
-    float positions[3][3] = {
+    vec3 positions[3] = {
         {-0.5f, -0.5f, 0.0f},
         {0.5f, -0.5f, 0.0f},
         {0.0f, 0.5f, 0.0f},
@@ -6784,7 +6861,7 @@ int test_scene_pixel_depth_cue_toggle_switches_pipeline(TstContext* suite, const
     AT(panel != NULL);
     AT(pixel != NULL);
 
-    float positions[3][3] = {
+    vec3 positions[3] = {
         {-0.5f, -0.5f, 0.0f},
         {+0.5f, -0.5f, 0.0f},
         {+0.0f, +0.5f, 0.0f},
@@ -6874,7 +6951,7 @@ int test_scene_visual_pass_capabilities(TstContext* suite, const TstCase* item)
     AT(image != NULL);
     AT(volume != NULL);
 
-    float normals[3][3] = {
+    vec3 normals[3] = {
         {0.0f, 0.0f, 1.0f},
         {0.0f, 0.0f, 1.0f},
         {0.0f, 0.0f, 1.0f},
