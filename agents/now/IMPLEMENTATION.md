@@ -12,8 +12,7 @@ starting work. Durable behavior belongs in `spec/`; completed implementation his
 
 Start release sequencing from
 [`V0_4_RELEASE_MASTER_CHECKLIST.md`](V0_4_RELEASE_MASTER_CHECKLIST.md). Use
-[`NEXT_STEPS.md`](NEXT_STEPS.md) for the current dispatch context and
-[`RELEASE.md`](RELEASE.md) for detailed release-readiness work.
+[`NEXT_STEPS.md`](NEXT_STEPS.md) for the current dispatch context.
 
 
 ## Current Pickup
@@ -37,10 +36,9 @@ Feature-freeze blockers:
 Primary references:
 
 1. [`V0_4_RELEASE_MASTER_CHECKLIST.md`](V0_4_RELEASE_MASTER_CHECKLIST.md)
-2. [`RELEASE.md`](RELEASE.md)
-3. [`../../spec/scene/examples/EXAMPLE_RELEASE_STAGING.md`](../../spec/scene/examples/EXAMPLE_RELEASE_STAGING.md)
-4. [`../../spec/scene/api/API_SURFACE.md`](../../spec/scene/api/API_SURFACE.md)
-5. [`../../spec/scene/validation/DEFERRED_TRACKER.md`](../../spec/scene/validation/DEFERRED_TRACKER.md)
+2. [`../../spec/scene/examples/EXAMPLE_RELEASE_STAGING.md`](../../spec/scene/examples/EXAMPLE_RELEASE_STAGING.md)
+3. [`../../spec/scene/api/API_SURFACE.md`](../../spec/scene/api/API_SURFACE.md)
+4. [`../../spec/scene/validation/DEFERRED_TRACKER.md`](../../spec/scene/validation/DEFERRED_TRACKER.md)
 
 
 ## Feature Status

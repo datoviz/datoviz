@@ -14,7 +14,6 @@ Start with the small active set in [now/](now/). These are the active entry poin
 1. [now/V0_4_RELEASE_MASTER_CHECKLIST.md](now/V0_4_RELEASE_MASTER_CHECKLIST.md)
 2. [now/NEXT_STEPS.md](now/NEXT_STEPS.md)
 3. [now/IMPLEMENTATION.md](now/IMPLEMENTATION.md)
-4. [now/RELEASE.md](now/RELEASE.md)
 
 Subsystem-specific execution notes and stable behavior records live outside `now/`:
 
@@ -40,32 +39,29 @@ If resuming work on the branch:
    policy.
 4. Read [now/IMPLEMENTATION.md](now/IMPLEMENTATION.md) to decide
    the next C implementation item and see which lanes can run in parallel.
-5. Read [now/RELEASE.md](now/RELEASE.md) when working on
-   post-feature-completion quality, API review, documentation, bindings, gallery, packaging,
-   release candidates, or communication planning.
-6. Read [done/TEST_RUNNER_MODERNIZATION.md](done/TEST_RUNNER_MODERNIZATION.md) for completed
+5. Read [done/TEST_RUNNER_MODERNIZATION.md](done/TEST_RUNNER_MODERNIZATION.md) for completed
    test-runner modernization history, and
    [later/TEST_RUNNER_SCHEDULING.md](later/TEST_RUNNER_SCHEDULING.md) before changing scheduling,
    process sharding, CI orchestration, or remaining skip/reporting behavior.
-7. Read [../spec/scene/visuals/IMPLEMENTATION_DECISIONS.md](../spec/scene/visuals/IMPLEMENTATION_DECISIONS.md)
+6. Read [../spec/scene/visuals/IMPLEMENTATION_DECISIONS.md](../spec/scene/visuals/IMPLEMENTATION_DECISIONS.md)
    before extending pixel, point, marker, segment, path, image, sphere, or mesh first-slice
    behavior.
-8. Read [../spec/scene/validation/IMAGE_PICKING_RECOVERY.md](../spec/scene/validation/IMAGE_PICKING_RECOVERY.md)
+7. Read [../spec/scene/validation/IMAGE_PICKING_RECOVERY.md](../spec/scene/validation/IMAGE_PICKING_RECOVERY.md)
    before changing image probe coordinates, hidden pick-capable image behavior, panzoom probe
    mapping, or CPU fallback behavior.
-9. Read [../spec/scene/README.md](../spec/scene/README.md) before changing scene semantics,
+8. Read [../spec/scene/README.md](../spec/scene/README.md) before changing scene semantics,
    public scene API shape, frame planning, visual families, interaction, annotations, scales, or
    runtime boundaries.
-10. Read [../spec/scene/api/API_SURFACE.md](../spec/scene/api/API_SURFACE.md) before changing public
+9. Read [../spec/scene/api/API_SURFACE.md](../spec/scene/api/API_SURFACE.md) before changing public
    scene API shape or adding new scene object families.
-11. Read [../spec/drp2/README.md](../spec/drp2/README.md) and
+10. Read [../spec/drp2/README.md](../spec/drp2/README.md) and
    [../spec/drp2/AGENT_SPEC_PHASE.md](../spec/drp2/AGENT_SPEC_PHASE.md) before touching
    `spec/drp2/`, `src/drp2/`, or
    DRP2-emitting scene code.
-12. Read [done/SCENE_DRP2_IMPLEMENTATION.md](done/SCENE_DRP2_IMPLEMENTATION.md) and
+11. Read [done/SCENE_DRP2_IMPLEMENTATION.md](done/SCENE_DRP2_IMPLEMENTATION.md) and
    [done/DRP2_SCENE_SAFETY.md](done/DRP2_SCENE_SAFETY.md) when touching the completed first
    scene -> DRP2 -> runtime slice.
-13. Read [done/SCENE_CONTROLLER_BINDING_REFACTOR_PLAN.md](done/SCENE_CONTROLLER_BINDING_REFACTOR_PLAN.md)
+12. Read [done/SCENE_CONTROLLER_BINDING_REFACTOR_PLAN.md](done/SCENE_CONTROLLER_BINDING_REFACTOR_PLAN.md)
    and [done/SCENE_TURNTABLE_CONTROLLER_PLAN.md](done/SCENE_TURNTABLE_CONTROLLER_PLAN.md) before
    changing scene-owned controller binding, panel-local input routing, or camera controller
    semantics.
@@ -75,9 +71,15 @@ If resuming work on the branch:
 
 ### `now/`
 
-Small active execution notes. These files should answer what to do next and where to read the
-normative spec. They should not be the long-term home for scene semantics, completed audit logs, or
-plans that describe code already landed.
+Small active execution notes:
+
+1. `NEXT_STEPS.md`: dispatch and branch orientation only.
+2. `IMPLEMENTATION.md`: feature gateboard and parallel-work lanes.
+3. `V0_4_RELEASE_MASTER_CHECKLIST.md`: release sequencing, scope, quality gates, and artifacts.
+
+These files should answer what to do next and where to read the normative spec. They should not be
+the long-term home for scene semantics, completed audit logs, or plans that describe code already
+landed.
 
 ### `soon/`
 

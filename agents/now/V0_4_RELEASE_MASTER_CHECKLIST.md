@@ -16,10 +16,9 @@ Use this document together with:
 1. [NEXT_STEPS.md](NEXT_STEPS.md) for current branch context and active technical priorities.
 2. [IMPLEMENTATION.md](IMPLEMENTATION.md) for remaining C implementation lanes and parallel-work
    coordination.
-3. [RELEASE.md](RELEASE.md) for detailed release-readiness guidance after feature completion.
-4. [../../spec/scene/examples/EXAMPLE_RELEASE_STAGING.md](../../spec/scene/examples/EXAMPLE_RELEASE_STAGING.md)
+3. [../../spec/scene/examples/EXAMPLE_RELEASE_STAGING.md](../../spec/scene/examples/EXAMPLE_RELEASE_STAGING.md)
    for release example staging.
-5. [../../spec/scene/validation/RENDER_CONFORMANCE.md](../../spec/scene/validation/RENDER_CONFORMANCE.md)
+4. [../../spec/scene/validation/RENDER_CONFORMANCE.md](../../spec/scene/validation/RENDER_CONFORMANCE.md)
    for the planned render-conformance lane.
 
 
