@@ -199,6 +199,107 @@ Once the runner, artifact format, update workflow, and failure output are stable
 matrix toward the full active scene API surface.
 
 
+## Prioritized Fixture Plan
+
+The first fixtures should maximize diagnostic value before breadth. Start with tests that prove the
+runner and artifact comparison behavior, then add small scene fixtures that isolate one layer of the
+scene -> DRP2 -> runtime path at a time.
+
+### Wave 0: Harness and Diagnostics
+
+These tests should land before the fixture corpus grows. Every later failure depends on their
+reporting being trustworthy.
+
+| Priority | Test | Coverage |
+|----------|------|----------|
+| P0 | `conformance_runner_finds_fixture` | fixture discovery and deterministic ordering |
+| P0 | `conformance_ref_update_requires_flag` | normal runs never rewrite references |
+| P0 | `conformance_snapshot_diff_reports_lines` | readable normalized DRP2 snapshot diffs |
+| P0 | `conformance_image_diff_reports_metrics` | dimensions, max delta, changed pixels, actual/diff paths |
+| P0 | `drp2_diagnostics_matches_app_trace` | shared normalizer preserves current app trace behavior |
+
+### Wave 1: First Scene Fixtures
+
+These are the first real scene fixtures to write. Require normalized DRP2 snapshots and vklite image
+references for each fixture. Canonical stream references may start with payload byte counts and
+stable hashes so the references remain reviewable.
+
+| Priority | Fixture | Coverage |
+|----------|---------|----------|
+| P1 | `point_basic_2d` | retained visual, vertex upload, point pipeline, viewport, draw |
+| P1 | `image_colormap_basic` | texture upload, sampler, scale/colormap binding, fragment sampling |
+| P1 | `mesh_depth_basic` | indexed draw, depth attachment, depth compare/write, camera MVP |
+| P1 | `multi_panel_scissor_basic` | panel layout, per-panel viewport/scissor, no cross-panel bleed |
+| P1 | `retained_second_frame_no_churn` | stable resource reuse and no unnecessary semantic stream churn |
+| P1 | `partial_update_region` | buffer or texture subrange update in both stream and rendered output |
+
+### Wave 2: Visual Family Coverage
+
+Add these after the first wave proves the artifact format and failure reports. Keep each fixture
+small, deterministic, and focused on one visual family or visual-specific shader path.
+
+| Priority | Fixture | Coverage |
+|----------|---------|----------|
+| P2 | `pixel_basic` | square pixel sizing and pixel shader path |
+| P2 | `marker_basic_shapes` | marker shape selection, size, and color |
+| P2 | `primitive_basic` | triangle or quad primitive lowering |
+| P2 | `segment_basic` | segment width and endpoint behavior |
+| P2 | `path_join_modes` | miter, bevel, and round join behavior |
+| P2 | `sphere_impostor_basic` | impostor shader, depth, and lighting cue |
+| P2 | `volume_slice_basic` | 3D texture upload and slice sampling |
+| P2 | `volume_mip_basic` | deterministic bright-slice projection |
+| P2 | `text_label_basic` | text output once atlas and tolerances are stable |
+| P2 | `colorbar_continuous_basic` | ramp, ticks, title, and colorbar bookkeeping |
+
+### Wave 3: Cameras, Layout, and Techniques
+
+These fixtures should catch regressions in frame planning, graph-backed passes, and state carried
+between passes.
+
+| Priority | Fixture | Coverage |
+|----------|---------|----------|
+| P3 | `panzoom_transform_fixed` | deterministic 2D transform |
+| P3 | `arcball_mesh_fixed` | deterministic 3D camera matrix |
+| P3 | `dpi_scale_viewport` | framebuffer size versus logical size |
+| P3 | `clear_color_alpha` | render-target clear behavior |
+| P3 | `msaa_resolve_basic` | multisample target plus resolve target |
+| P3 | `edl_points_basic` | graph-backed postprocess input/output wiring |
+| P3 | `ssao_mesh_basic` | depth texture sampling and SSAO pass ordering |
+| P3 | `wboit_two_layers` | order-independent transparency output |
+| P3 | `source_over_depth_blend` | alpha blending plus depth interaction |
+| P3 | `depth_peel_two_layers` | multi-pass transparency and depth-peeling resources |
+
+### Wave 4: Requests and Interaction Outputs
+
+Request fixtures should be tiny and deterministic. Prefer one-pixel or one-item targets so failures
+can report exact expected and observed payloads.
+
+| Priority | Fixture | Coverage |
+|----------|---------|----------|
+| P4 | `point_pick_center_hit` | pick render/readback path and item-id payload |
+| P4 | `point_pick_miss` | no-hit status and stable payload |
+| P4 | `image_probe_center_pixel` | probe readback returns expected texel/value |
+| P4 | `image_probe_oob` | out-of-bounds status behavior |
+| P4 | `linked_panel_pick_route` | request targets the intended panel |
+| P4 | `selection_highlight_point` | pick result drives a visible retained update |
+
+### Wave 5: Backend Parity and Stress
+
+Add these once native vklite references are stable. The WebGPU fixtures should use the same scene
+semantics and only relax backend-specific image tolerances.
+
+| Priority | Fixture | Coverage |
+|----------|---------|----------|
+| P5 | `webgpu_point_basic` | DRP2 point subset parity |
+| P5 | `webgpu_image_colormap_basic` | texture, sampler, and WGSL parity |
+| P5 | `webgpu_mesh_depth_basic` | depth-state parity |
+| P5 | `webgpu_marker_segment_basic` | marker and segment shader parity |
+| P5 | `resize_recreate_mesh_image` | descriptor refresh after target/resource recreation |
+| P5 | `many_panels_scissor_matrix` | layout and scissor pressure |
+| P5 | `large_payload_hash_only` | reviewable stream refs for large uploads |
+| P5 | `saved_stream_replay_point_image_mesh` | backend regression isolated from scene emission |
+
+
 ## Open Decisions
 
 1. final artifact directory names and whether refs live under `spec/scene/refs/` or `testing/`,
