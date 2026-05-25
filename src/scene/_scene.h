@@ -741,6 +741,30 @@ struct DvzText
 };
 
 
+typedef struct DvzScaleBarRealization DvzScaleBarRealization;
+
+struct DvzScaleBarRealization
+{
+    bool valid;
+    bool horizontal;
+    double units_per_px;
+    double length_units;
+    float length_px;
+    float screen_scale;
+    vec3 starts[3];
+    vec3 ends[3];
+    DvzColor line_colors[3];
+    float line_width[3];
+    char label[DVZ_SCENE_LABEL_SIZE];
+    float label_position[3];
+    float label_anchor[2];
+    float label_size;
+    DvzColor label_color;
+    float label_angle;
+    DvzTextRenderer renderer;
+};
+
+
 struct DvzAnnotation
 {
     DvzScene* scene;
@@ -763,6 +787,7 @@ struct DvzAnnotation
     DvzVisual* scalebar_visual;
     double scalebar_units;
     float scalebar_px;
+    DvzScaleBarRealization scalebar_realization;
 };
 
 
@@ -1024,10 +1049,12 @@ struct DvzTextVisualState
     uint32_t span_count;
     DvzVisual* glyph_visual;
     uint64_t realized_version;
+    uint64_t realized_layout_version;
     uint64_t atlas_generation;
     DvzControllerMode realized_controller_mode;
     uint32_t visual_figure_width;
     uint32_t visual_figure_height;
+    uint32_t reserved_glyph_vertices;
 };
 
 

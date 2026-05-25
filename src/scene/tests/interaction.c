@@ -58,6 +58,23 @@ static DvzTextAtlas* text_test_atlas(
 
 
 /**
+ * Return one visual attribute by name.
+ *
+ * @param visual the visual to inspect
+ * @param name the retained attribute name
+ * @return the attribute, or NULL if missing
+ */
+static const DvzVisualAttr* _interaction_visual_attr(const DvzVisual* visual, const char* name)
+{
+    ANN(visual);
+    ANN(name);
+    int idx = _attr_index(visual, name);
+    return idx >= 0 ? &visual->attrs[idx] : NULL;
+}
+
+
+
+/**
  * Return whether one stream pipeline has a specific vertex attribute.
  *
  * @param stream the command stream
@@ -549,6 +566,135 @@ static int test_scene_scalebar_2d_realization(TstContext* suite, const TstCase* 
     dvz_annotation_destroy(scalebar);
     AT(!scalebar->scalebar_visual->visible);
     AT(!scalebar->visual->visible);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
+/**
+ * Check scale-bar updates dirty only changed retained text/glyph payloads.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+static int test_scene_scalebar_update_churn(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 400, 200, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel_full(figure);
+    ANN(panel);
+    AT(dvz_panel_set_domain(panel, DVZ_DIM_X, 0.0, 0.010) == 0);
+
+    DvzAnnotation* scalebar = dvz_annotation_scalebar(
+        panel,
+        &(DvzScaleBarDesc){
+            .dimension = DVZ_DIM_X,
+            .anchor = DVZ_SCENE_ANCHOR_BOTTOM_LEFT,
+            .label_position = DVZ_SCALEBAR_LABEL_ABOVE,
+            .unit = "m",
+            .target_length_px = 120.0f,
+            .min_length_px = 70.0f,
+            .max_length_px = 180.0f,
+            .offset_px = {20.0f, 20.0f},
+            .line_width_px = 2.0f,
+            .line_color = {255, 255, 255, 255},
+            .label_style = {
+                .size_px = 10.0f,
+                .renderer = DVZ_TEXT_RENDERER_SMALL_BITMAP_ATLAS,
+                .color = {255, 255, 255, 255},
+            },
+        });
+    ANN(scalebar);
+    _scene_prepare_text_visuals(figure);
+    ANN(scalebar->visual);
+    ANN(scalebar->visual->text.glyph_visual);
+    DvzVisual* glyph = scalebar->visual->text.glyph_visual;
+
+    const DvzVisualAttr* glyph_position = _interaction_visual_attr(glyph, "position");
+    const DvzVisualAttr* glyph_bounds = _interaction_visual_attr(glyph, "bounds");
+    const DvzVisualAttr* glyph_texcoords = _interaction_visual_attr(glyph, "texcoords");
+    const DvzVisualAttr* glyph_color = _interaction_visual_attr(glyph, "color");
+    const DvzVisualAttr* glyph_angle = _interaction_visual_attr(glyph, "angle");
+    const DvzVisualAttr* segment_start =
+        _interaction_visual_attr(scalebar->scalebar_visual, "position_start");
+    ANN(glyph_position);
+    ANN(glyph_bounds);
+    ANN(glyph_texcoords);
+    ANN(glyph_color);
+    ANN(glyph_angle);
+    ANN(segment_start);
+    AT(glyph_position->item_count == 72u);
+    AT(strcmp(scalebar->text, "2 mm") == 0);
+
+    uint64_t strings_version = scalebar->visual->text.strings_version;
+    uint64_t glyph_position_version = glyph_position->version;
+    uint64_t glyph_bounds_version = glyph_bounds->version;
+    uint64_t glyph_texcoords_version = glyph_texcoords->version;
+    uint64_t glyph_color_version = glyph_color->version;
+    uint64_t glyph_angle_version = glyph_angle->version;
+    uint64_t segment_start_version = segment_start->version;
+
+    AT(dvz_panel_set_domain(panel, DVZ_DIM_X, 0.0, 0.011) == 0);
+    _scene_prepare_text_visuals(figure);
+    AT(strcmp(scalebar->text, "2 mm") == 0);
+    glyph_position = _interaction_visual_attr(glyph, "position");
+    glyph_bounds = _interaction_visual_attr(glyph, "bounds");
+    glyph_texcoords = _interaction_visual_attr(glyph, "texcoords");
+    glyph_color = _interaction_visual_attr(glyph, "color");
+    glyph_angle = _interaction_visual_attr(glyph, "angle");
+    segment_start = _interaction_visual_attr(scalebar->scalebar_visual, "position_start");
+    ANN(glyph_position);
+    ANN(glyph_bounds);
+    ANN(glyph_texcoords);
+    ANN(glyph_color);
+    ANN(glyph_angle);
+    ANN(segment_start);
+    AT(scalebar->visual->text.strings_version == strings_version);
+    AT(glyph_position->version > glyph_position_version);
+    AT(glyph_bounds->version == glyph_bounds_version);
+    AT(glyph_texcoords->version == glyph_texcoords_version);
+    AT(glyph_color->version == glyph_color_version);
+    AT(glyph_angle->version == glyph_angle_version);
+    AT(segment_start->version > segment_start_version);
+    AT(glyph_position->item_count == 72u);
+
+    glyph_position_version = glyph_position->version;
+    segment_start_version = segment_start->version;
+    _scene_prepare_text_visuals(figure);
+    glyph_position = _interaction_visual_attr(glyph, "position");
+    segment_start = _interaction_visual_attr(scalebar->scalebar_visual, "position_start");
+    ANN(glyph_position);
+    ANN(segment_start);
+    AT(glyph_position->version == glyph_position_version);
+    AT(segment_start->version == segment_start_version);
+
+    AT(dvz_panel_set_domain(panel, DVZ_DIM_X, 0.0, 0.001) == 0);
+    _scene_prepare_text_visuals(figure);
+    AT(strcmp(scalebar->text, "200 um") == 0);
+    glyph_position = _interaction_visual_attr(glyph, "position");
+    glyph_bounds = _interaction_visual_attr(glyph, "bounds");
+    glyph_texcoords = _interaction_visual_attr(glyph, "texcoords");
+    glyph_color = _interaction_visual_attr(glyph, "color");
+    glyph_angle = _interaction_visual_attr(glyph, "angle");
+    ANN(glyph_position);
+    ANN(glyph_bounds);
+    ANN(glyph_texcoords);
+    ANN(glyph_color);
+    ANN(glyph_angle);
+    AT(scalebar->visual->text.strings_version > strings_version);
+    AT(glyph_bounds->version > glyph_bounds_version);
+    AT(glyph_texcoords->version > glyph_texcoords_version);
+    AT(glyph_color->version > glyph_color_version);
+    AT(glyph_angle->version > glyph_angle_version);
+    AT(glyph_position->item_count == 72u);
+
     dvz_scene_destroy(scene);
     return 0;
 }
@@ -2024,6 +2170,7 @@ int test_scene_interaction(TstSuite* suite)
     TST_CASE(test_scene_text_annotation_bookkeeping);
     TST_CASE(test_scene_scalebar_formatting);
     TST_CASE(test_scene_scalebar_2d_realization);
+    TST_CASE(test_scene_scalebar_update_churn);
     TST_CASE(test_scene_scalebar_3d_world_reference);
     TST_CASE(test_scene_scalebar_render_emit_keeps_upload_sources);
     TST_CASE(test_scene_scalebar_minimal_stream);

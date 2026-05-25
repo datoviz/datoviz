@@ -52,6 +52,7 @@
 #define DVZ_SCALEBAR_LINE_WIDTH_PX    1.0f
 #define DVZ_SCALEBAR_LABEL_GAP_PX     6.0f
 #define DVZ_SCALEBAR_LABEL_SIZE_PX    12.0f
+#define DVZ_SCALEBAR_LABEL_RESERVED_GLYPHS 12u
 
 
 
@@ -1555,6 +1556,8 @@ static bool _scalebar_ensure_visuals(DvzAnnotation* annotation)
         annotation->visual = _scene_text_visual(annotation->scene, 0);
         if (annotation->visual == NULL)
             return false;
+        annotation->visual->text.reserved_glyph_vertices =
+            DVZ_SCALEBAR_LABEL_RESERVED_GLYPHS * 6u;
         annotation->visual->visible = false;
         if (dvz_panel_add_visual(
                 annotation->panel, annotation->visual,
@@ -1580,6 +1583,7 @@ static void _scalebar_hide(DvzAnnotation* annotation)
         dvz_visual_set_visible(annotation->scalebar_visual, false);
     if (annotation->visual != NULL)
         dvz_visual_set_visible(annotation->visual, false);
+    annotation->scalebar_realization.valid = false;
 }
 
 
@@ -1741,6 +1745,65 @@ static bool _scalebar_world_units_per_px(
 
 
 /**
+ * Return whether two resolved scale bars have identical segment payloads.
+ *
+ * @param a first resolved scale-bar state
+ * @param b second resolved scale-bar state
+ * @return whether segment geometry and style payloads match exactly
+ */
+static bool _scalebar_segment_payload_equal(
+    const DvzScaleBarRealization* a, const DvzScaleBarRealization* b)
+{
+    ANN(a);
+    ANN(b);
+    return a->horizontal == b->horizontal &&
+           memcmp(a->starts, b->starts, sizeof(a->starts)) == 0 &&
+           memcmp(a->ends, b->ends, sizeof(a->ends)) == 0 &&
+           memcmp(a->line_colors, b->line_colors, sizeof(a->line_colors)) == 0 &&
+           memcmp(a->line_width, b->line_width, sizeof(a->line_width)) == 0;
+}
+
+
+
+/**
+ * Return whether two resolved scale bars have identical label anchor positions.
+ *
+ * @param a first resolved scale-bar state
+ * @param b second resolved scale-bar state
+ * @return whether label anchor positions match exactly
+ */
+static bool _scalebar_label_position_equal(
+    const DvzScaleBarRealization* a, const DvzScaleBarRealization* b)
+{
+    ANN(a);
+    ANN(b);
+    return memcmp(a->label_position, b->label_position, sizeof(a->label_position)) == 0;
+}
+
+
+
+/**
+ * Return whether two resolved scale bars can reuse the same glyph layout payload.
+ *
+ * @param a first resolved scale-bar state
+ * @param b second resolved scale-bar state
+ * @return whether text, style, and renderer payloads match exactly
+ */
+static bool _scalebar_label_layout_equal(
+    const DvzScaleBarRealization* a, const DvzScaleBarRealization* b)
+{
+    ANN(a);
+    ANN(b);
+    return strcmp(a->label, b->label) == 0 &&
+           memcmp(a->label_anchor, b->label_anchor, sizeof(a->label_anchor)) == 0 &&
+           a->label_size == b->label_size &&
+           memcmp(a->label_color, b->label_color, sizeof(a->label_color)) == 0 &&
+           a->label_angle == b->label_angle && a->renderer == b->renderer;
+}
+
+
+
+/**
  * Update or create the internal visuals for one screen-space scale-bar overlay.
  *
  * @param figure the figure being emitted
@@ -1785,6 +1848,15 @@ static bool _scalebar_prepare_overlay_visual(
     if (!_scalebar_ensure_visuals(annotation))
         return false;
 
+    DvzScaleBarRealization resolved = {
+        .valid = true,
+        .horizontal = horizontal,
+        .units_per_px = units_per_px,
+        .length_units = length_units,
+        .length_px = length_px,
+        .screen_scale = _scene_screen_scale(figure),
+    };
+
     float anchor_x = 0.0f;
     float anchor_y = 0.0f;
     _scalebar_anchor_px(desc->anchor, panel_width, panel_height, &anchor_x, &anchor_y);
@@ -1813,97 +1885,133 @@ static bool _scalebar_prepare_overlay_visual(
 
     float tick = _scalebar_positive_or_default(desc->tick_length_px, DVZ_SCALEBAR_TICK_LENGTH_PX);
     float half_tick = 0.5f * tick;
-    vec3 starts[3] = {{0}};
-    vec3 ends[3] = {{0}};
     if (horizontal)
     {
-        _text_panel_pixel_to_clip(annotation->panel, x0, y0, 0.0f, starts[0]);
-        _text_panel_pixel_to_clip(annotation->panel, x1, y1, 0.0f, ends[0]);
-        _text_panel_pixel_to_clip(annotation->panel, x0, y0 - half_tick, 0.0f, starts[1]);
-        _text_panel_pixel_to_clip(annotation->panel, x0, y0 + half_tick, 0.0f, ends[1]);
-        _text_panel_pixel_to_clip(annotation->panel, x1, y1 - half_tick, 0.0f, starts[2]);
-        _text_panel_pixel_to_clip(annotation->panel, x1, y1 + half_tick, 0.0f, ends[2]);
+        _text_panel_pixel_to_clip(annotation->panel, x0, y0, 0.0f, resolved.starts[0]);
+        _text_panel_pixel_to_clip(annotation->panel, x1, y1, 0.0f, resolved.ends[0]);
+        _text_panel_pixel_to_clip(annotation->panel, x0, y0 - half_tick, 0.0f, resolved.starts[1]);
+        _text_panel_pixel_to_clip(annotation->panel, x0, y0 + half_tick, 0.0f, resolved.ends[1]);
+        _text_panel_pixel_to_clip(annotation->panel, x1, y1 - half_tick, 0.0f, resolved.starts[2]);
+        _text_panel_pixel_to_clip(annotation->panel, x1, y1 + half_tick, 0.0f, resolved.ends[2]);
     }
     else
     {
-        _text_panel_pixel_to_clip(annotation->panel, x0, y0, 0.0f, starts[0]);
-        _text_panel_pixel_to_clip(annotation->panel, x1, y1, 0.0f, ends[0]);
-        _text_panel_pixel_to_clip(annotation->panel, x0 - half_tick, y0, 0.0f, starts[1]);
-        _text_panel_pixel_to_clip(annotation->panel, x0 + half_tick, y0, 0.0f, ends[1]);
-        _text_panel_pixel_to_clip(annotation->panel, x1 - half_tick, y1, 0.0f, starts[2]);
-        _text_panel_pixel_to_clip(annotation->panel, x1 + half_tick, y1, 0.0f, ends[2]);
+        _text_panel_pixel_to_clip(annotation->panel, x0, y0, 0.0f, resolved.starts[0]);
+        _text_panel_pixel_to_clip(annotation->panel, x1, y1, 0.0f, resolved.ends[0]);
+        _text_panel_pixel_to_clip(annotation->panel, x0 - half_tick, y0, 0.0f, resolved.starts[1]);
+        _text_panel_pixel_to_clip(annotation->panel, x0 + half_tick, y0, 0.0f, resolved.ends[1]);
+        _text_panel_pixel_to_clip(annotation->panel, x1 - half_tick, y1, 0.0f, resolved.starts[2]);
+        _text_panel_pixel_to_clip(annotation->panel, x1 + half_tick, y1, 0.0f, resolved.ends[2]);
     }
-    DvzColor colors[3] = {{0}};
-    _scalebar_line_color(desc, colors[0]);
-    colors[1][0] = colors[2][0] = colors[0][0];
-    colors[1][1] = colors[2][1] = colors[0][1];
-    colors[1][2] = colors[2][2] = colors[0][2];
-    colors[1][3] = colors[2][3] = colors[0][3];
-    float line_width[3] = {
-        _scalebar_positive_or_default(desc->line_width_px, DVZ_SCALEBAR_LINE_WIDTH_PX),
-        _scalebar_positive_or_default(desc->line_width_px, DVZ_SCALEBAR_LINE_WIDTH_PX),
-        _scalebar_positive_or_default(desc->line_width_px, DVZ_SCALEBAR_LINE_WIDTH_PX)};
-    DvzVisualDataUpdate updates[4] = {
-        {.attr_name = "position_start", .data = starts, .item_count = 3},
-        {.attr_name = "position_end", .data = ends, .item_count = 3},
-        {.attr_name = "color", .data = colors, .item_count = 3},
-        {.attr_name = "line_width", .data = line_width, .item_count = 3},
-    };
-    if (dvz_visual_set_data_many(annotation->scalebar_visual, updates, 4) != 0)
-        return false;
-    dvz_visual_set_visible(annotation->scalebar_visual, true);
+    _scalebar_line_color(desc, resolved.line_colors[0]);
+    resolved.line_colors[1][0] = resolved.line_colors[2][0] = resolved.line_colors[0][0];
+    resolved.line_colors[1][1] = resolved.line_colors[2][1] = resolved.line_colors[0][1];
+    resolved.line_colors[1][2] = resolved.line_colors[2][2] = resolved.line_colors[0][2];
+    resolved.line_colors[1][3] = resolved.line_colors[2][3] = resolved.line_colors[0][3];
+    resolved.line_width[0] =
+        _scalebar_positive_or_default(desc->line_width_px, DVZ_SCALEBAR_LINE_WIDTH_PX);
+    resolved.line_width[1] = resolved.line_width[0];
+    resolved.line_width[2] = resolved.line_width[0];
 
-    char label[DVZ_SCENE_LABEL_SIZE] = {0};
-    _scene_format_si_value(length_units, desc->unit, label, sizeof(label));
-    const char* labels[1] = {label};
-    float screen_scale = _scene_screen_scale(figure);
-    float label_size =
+    _scene_format_si_value(length_units, desc->unit, resolved.label, sizeof(resolved.label));
+    resolved.label_size =
         _scalebar_positive_or_default(desc->label_style.size_px, DVZ_SCALEBAR_LABEL_SIZE_PX) *
-        screen_scale;
-    DvzTextRenderer renderer =
+        resolved.screen_scale;
+    resolved.renderer =
         desc->label_style.renderer != 0 ? desc->label_style.renderer : DVZ_TEXT_RENDERER_MSDF_ATLAS;
-    if (annotation->visual->text.renderer != renderer &&
-        _scene_text_visual_set_renderer(annotation->visual, renderer) != 0)
-        return false;
-    float label_pos[1][3] = {{0}};
-    label_pos[0][0] = horizontal ? 0.5f * (x0 + x1) : x1;
-    label_pos[0][1] = horizontal ? y0 : 0.5f * (y0 + y1);
+    resolved.label_position[0] = horizontal ? 0.5f * (x0 + x1) : x1;
+    resolved.label_position[1] = horizontal ? y0 : 0.5f * (y0 + y1);
     float label_gap = DVZ_SCALEBAR_LABEL_GAP_PX;
     if (desc->label_position == DVZ_SCALEBAR_LABEL_ABOVE)
-        label_pos[0][1] -= tick + label_gap;
+        resolved.label_position[1] -= tick + label_gap;
     else
-        label_pos[0][1] += tick + label_gap;
-    float text_anchor[1][2] = {{0.5f, desc->label_position == DVZ_SCALEBAR_LABEL_ABOVE ? 1.0f : 0.0f}};
-    float sizes[1] = {label_size};
-    DvzColor text_colors[1] = {{0}};
-    _text_style_color(&desc->label_style, text_colors[0]);
-    float angles[1] = {0.0f};
-    DvzVisualDataUpdate text_updates[5] = {
-        {.attr_name = "position", .data = label_pos, .item_count = 1},
-        {.attr_name = "anchor", .data = text_anchor, .item_count = 1},
-        {.attr_name = "size", .data = sizes, .item_count = 1},
-        {.attr_name = "color", .data = text_colors, .item_count = 1},
-        {.attr_name = "angle", .data = angles, .item_count = 1},
-    };
-    if (dvz_visual_set_strings(annotation->visual, "text", labels, 1) != 0 ||
-        dvz_visual_set_data_many(annotation->visual, text_updates, 5) != 0)
-        return false;
-    dvz_visual_set_visible(annotation->visual, true);
-    if (!_text_visual_prepare(
-            figure, annotation->panel,
-            &(DvzPanelAttach){
-                .visual = annotation->visual,
-                .z_layer = INT32_MAX / 4,
-                .controller_mode = DVZ_CONTROLLER_FIXED,
-            },
-            annotation->visual))
-        return false;
+        resolved.label_position[1] += tick + label_gap;
+    resolved.label_anchor[0] = 0.5f;
+    resolved.label_anchor[1] = desc->label_position == DVZ_SCALEBAR_LABEL_ABOVE ? 1.0f : 0.0f;
+    _text_style_color(&desc->label_style, resolved.label_color);
+    resolved.label_angle = 0.0f;
 
-    dvz_strlcpy(annotation->text, label, sizeof(annotation->text));
-    annotation->scalebar_units = length_units;
-    annotation->scalebar_px = length_px;
+    DvzScaleBarRealization* previous = &annotation->scalebar_realization;
+    bool previous_valid = previous->valid;
+    bool segment_dirty =
+        !previous_valid || !_scalebar_segment_payload_equal(previous, &resolved);
+    bool label_layout_dirty =
+        !previous_valid || !_scalebar_label_layout_equal(previous, &resolved);
+    bool label_position_dirty =
+        label_layout_dirty || !previous_valid ||
+        !_scalebar_label_position_equal(previous, &resolved);
+
+    if (segment_dirty)
+    {
+        DvzVisualDataUpdate updates[4] = {
+            {.attr_name = "position_start", .data = resolved.starts, .item_count = 3},
+            {.attr_name = "position_end", .data = resolved.ends, .item_count = 3},
+            {.attr_name = "color", .data = resolved.line_colors, .item_count = 3},
+            {.attr_name = "line_width", .data = resolved.line_width, .item_count = 3},
+        };
+        if (dvz_visual_set_data_many(annotation->scalebar_visual, updates, 4) != 0)
+            return false;
+    }
+    dvz_visual_set_visible(annotation->scalebar_visual, true);
+
+    if (label_layout_dirty)
+    {
+        const char* labels[1] = {resolved.label};
+        float label_pos[1][3] = {
+            {resolved.label_position[0], resolved.label_position[1], resolved.label_position[2]}};
+        float text_anchor[1][2] = {{resolved.label_anchor[0], resolved.label_anchor[1]}};
+        float sizes[1] = {resolved.label_size};
+        DvzColor text_colors[1] = {{0}};
+        text_colors[0][0] = resolved.label_color[0];
+        text_colors[0][1] = resolved.label_color[1];
+        text_colors[0][2] = resolved.label_color[2];
+        text_colors[0][3] = resolved.label_color[3];
+        float angles[1] = {resolved.label_angle};
+        DvzVisualDataUpdate text_updates[5] = {
+            {.attr_name = "position", .data = label_pos, .item_count = 1},
+            {.attr_name = "anchor", .data = text_anchor, .item_count = 1},
+            {.attr_name = "size", .data = sizes, .item_count = 1},
+            {.attr_name = "color", .data = text_colors, .item_count = 1},
+            {.attr_name = "angle", .data = angles, .item_count = 1},
+        };
+        if (annotation->visual->text.renderer != resolved.renderer &&
+            _scene_text_visual_set_renderer(annotation->visual, resolved.renderer) != 0)
+            return false;
+        if (dvz_visual_set_strings(annotation->visual, "text", labels, 1) != 0 ||
+            dvz_visual_set_data_many(annotation->visual, text_updates, 5) != 0)
+            return false;
+    }
+    else if (label_position_dirty)
+    {
+        float label_pos[1][3] = {
+            {resolved.label_position[0], resolved.label_position[1], resolved.label_position[2]}};
+        if (dvz_visual_set_data(annotation->visual, "position", label_pos, 1) != 0)
+            return false;
+    }
+    dvz_visual_set_visible(annotation->visual, true);
+
+    if (label_position_dirty)
+    {
+        if (!_text_visual_prepare(
+                figure, annotation->panel,
+                &(DvzPanelAttach){
+                    .visual = annotation->visual,
+                    .z_layer = INT32_MAX / 4,
+                    .controller_mode = DVZ_CONTROLLER_FIXED,
+                },
+                annotation->visual))
+            return false;
+    }
+
+    if (segment_dirty || label_position_dirty)
+    {
+        annotation->scalebar_realization = resolved;
+        dvz_strlcpy(annotation->text, resolved.label, sizeof(annotation->text));
+        annotation->scalebar_units = length_units;
+        annotation->scalebar_px = length_px;
+        annotation->version++;
+    }
     annotation->dirty_flags = DVZ_TEXT_DIRTY_NONE;
-    annotation->version++;
     return true;
 }
 
@@ -2072,6 +2180,126 @@ static uint64_t _text_visual_version(const DvzVisual* visual)
 
 
 /**
+ * Resolve a text-visual realization version excluding anchor positions.
+ *
+ * @param visual the text visual
+ * @return the layout realization version
+ */
+static uint64_t _text_visual_layout_version(const DvzVisual* visual)
+{
+    ANN(visual);
+    uint64_t version = visual->text.strings_version + visual->text.renderer_version;
+    for (uint32_t i = 0; i < visual->attr_count; i++)
+    {
+        if (strcmp(visual->attrs[i].name, "position") == 0)
+            continue;
+        version += visual->attrs[i].version;
+    }
+    return version;
+}
+
+
+
+/**
+ * Replace only the derived glyph anchor-position attribute for one text visual.
+ *
+ * @param figure the figure being emitted
+ * @param panel the panel carrying the text visual
+ * @param attach the panel attachment for the text visual
+ * @param visual the batched text visual
+ * @param position_attr the source per-string position attribute
+ * @param version the full realized text version after the update
+ * @param layout_version the layout-only realized text version after the update
+ * @return whether the derived glyph positions were updated
+ */
+static bool _text_visual_update_glyph_positions(
+    DvzFigure* figure, DvzPanel* panel, const DvzPanelAttach* attach, DvzVisual* visual,
+    const DvzVisualAttr* position_attr, uint64_t version, uint64_t layout_version)
+{
+    ANN(figure);
+    ANN(panel);
+    ANN(attach);
+    ANN(visual);
+    ANN(position_attr);
+    DvzVisual* glyph_visual = visual->text.glyph_visual;
+    if (glyph_visual == NULL || visual->text.spans == NULL)
+        return false;
+
+    int glyph_pos_idx = _attr_index(glyph_visual, "position");
+    if (glyph_pos_idx < 0 || glyph_visual->attrs[glyph_pos_idx].item_count == 0)
+        return false;
+    uint32_t vertex_capacity = glyph_visual->attrs[glyph_pos_idx].item_count;
+
+    uint64_t position_bytes = 0;
+    if (_dvz_mul_u64_overflows(vertex_capacity, 3u * sizeof(float), &position_bytes) ||
+        position_bytes > SIZE_MAX)
+    {
+        log_error("text visual glyph position buffer size overflow");
+        return false;
+    }
+    float* positions = (float*)dvz_calloc((DvzSize)position_bytes, 1);
+    if (positions == NULL)
+    {
+        log_error("text visual glyph position allocation failed");
+        return false;
+    }
+
+    const float(*target)[3] = (const float(*)[3])position_attr->data;
+    for (uint32_t i = 0; i < visual->text.span_count; i++)
+    {
+        if (i >= position_attr->item_count)
+            break;
+        DvzTextGlyphSpan* span = &visual->text.spans[i];
+        uint64_t first_vertex64 = (uint64_t)span->first_glyph * 6u;
+        uint64_t vertex_count64 = (uint64_t)span->glyph_count * 6u;
+        if (
+            first_vertex64 > UINT32_MAX || vertex_count64 > UINT32_MAX ||
+            first_vertex64 + vertex_count64 > vertex_capacity)
+        {
+            dvz_free(positions);
+            log_error("text visual glyph span exceeds reserved position capacity");
+            return false;
+        }
+
+        float anchor_position[3] = {0};
+        if (attach->controller_mode == DVZ_CONTROLLER_FIXED)
+        {
+            _text_panel_pixel_to_clip(
+                panel, target[i][0], target[i][1], target[i][2], anchor_position);
+        }
+        else
+        {
+            anchor_position[0] = target[i][0];
+            anchor_position[1] = target[i][1];
+            anchor_position[2] = target[i][2];
+        }
+        uint32_t first_vertex = (uint32_t)first_vertex64;
+        uint32_t vertex_count = (uint32_t)vertex_count64;
+        for (uint32_t j = 0; j < vertex_count; j++)
+        {
+            uint32_t vertex_index = first_vertex + j;
+            positions[3 * vertex_index + 0] = anchor_position[0];
+            positions[3 * vertex_index + 1] = anchor_position[1];
+            positions[3 * vertex_index + 2] = anchor_position[2];
+        }
+    }
+
+    bool ok = dvz_visual_set_data(glyph_visual, "position", positions, vertex_capacity) == 0;
+    dvz_free(positions);
+    if (!ok)
+        return false;
+    dvz_visual_set_visible(glyph_visual, true);
+    visual->text.realized_version = version;
+    visual->text.realized_layout_version = layout_version;
+    visual->text.realized_controller_mode = attach->controller_mode;
+    visual->text.visual_figure_width = figure->width;
+    visual->text.visual_figure_height = figure->height;
+    return true;
+}
+
+
+
+/**
  * Update or create the internal glyph visual for one batched text visual.
  *
  * @param figure the figure being emitted
@@ -2120,6 +2348,7 @@ static bool _text_visual_prepare(
     }
 
     uint64_t version = _text_visual_version(visual);
+    uint64_t layout_version = _text_visual_layout_version(visual);
 
     DvzTextRenderer renderer = visual->text.renderer;
     float spec_size_px = 0.0f;
@@ -2182,6 +2411,17 @@ static bool _text_visual_prepare(
     if (realized_cache_valid)
     {
         return _text_sync_glyph_visual_attach(panel, visual->text.glyph_visual, &glyph_attach);
+    }
+    bool position_only_dirty =
+        visual->text.glyph_visual != NULL && visual->text.glyph_visual->field != NULL &&
+        visual->text.realized_layout_version == layout_version &&
+        visual->text.atlas_generation == atlas_generation;
+    if (position_only_dirty)
+    {
+        if (!_text_sync_glyph_visual_attach(panel, visual->text.glyph_visual, &glyph_attach))
+            return false;
+        return _text_visual_update_glyph_positions(
+            figure, panel, attach, visual, position_attr, version, layout_version);
     }
 
     uint64_t vertex_count64 = 0;
@@ -2430,12 +2670,15 @@ static bool _text_visual_prepare(
             font_atlas != NULL ? font_atlas->encoding : DVZ_TEXT_ATLAS_ENCODING_BITMAP_ALPHA;
         visual->text.glyph_visual->glyph_distance_range_px =
             font_atlas != NULL ? font_atlas->distance_range_px : 1.0f;
+        uint32_t upload_vertex_count = vertex_count;
+        if (visual->text.reserved_glyph_vertices > upload_vertex_count)
+            upload_vertex_count = visual->text.reserved_glyph_vertices;
         DvzVisualDataUpdate updates[5] = {
-            {.attr_name = "position", .data = positions, .item_count = vertex_count},
-            {.attr_name = "bounds", .data = bounds, .item_count = vertex_count},
-            {.attr_name = "texcoords", .data = texcoords, .item_count = vertex_count},
-            {.attr_name = "color", .data = colors, .item_count = vertex_count},
-            {.attr_name = "angle", .data = glyph_angles, .item_count = vertex_count},
+            {.attr_name = "position", .data = positions, .item_count = upload_vertex_count},
+            {.attr_name = "bounds", .data = bounds, .item_count = upload_vertex_count},
+            {.attr_name = "texcoords", .data = texcoords, .item_count = upload_vertex_count},
+            {.attr_name = "color", .data = colors, .item_count = upload_vertex_count},
+            {.attr_name = "angle", .data = glyph_angles, .item_count = upload_vertex_count},
         };
         ok = dvz_visual_set_data_many(visual->text.glyph_visual, updates, 5) == 0 &&
              dvz_visual_set_field(visual->text.glyph_visual, "field", atlas);
@@ -2448,6 +2691,7 @@ static bool _text_visual_prepare(
         visual->text.span_count = count;
         spans = NULL;
         visual->text.realized_version = version;
+        visual->text.realized_layout_version = layout_version;
         visual->text.atlas_generation = atlas_generation;
         visual->text.realized_controller_mode = attach->controller_mode;
         visual->text.visual_figure_width = figure->width;
