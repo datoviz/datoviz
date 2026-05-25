@@ -38,18 +38,38 @@ Backend or third-party names should not appear in high-level user APIs unless th
 an explicit backend policy such as a triangulation backend.
 
 
-## Objects, Visuals, And Composites
+## Visuals, Semantic Objects, And Composites
 
 `DvzVisual` is a low-level render leaf: point, marker, segment, path, mesh, image, volume, and
 similar visual families.
 
-Higher-level semantic objects may be composites that own or derive one or more visuals internally.
-Examples include future polygon regions, graphs, axes, colorbars, annotations, and orientation
-gizmos.
+Higher-level semantic objects own domain state and expose typed APIs. Examples include polygon
+regions, graph topology, axes, colorbars, annotations, and orientation gizmos. They should not expose
+their implementation visuals as the primary mutation surface.
 
-Composite objects should expose typed object APIs for normal use. They may also expose generated
-leaf visuals by stable role names for advanced users, testing, and integration code. The leaf visual
-roles are implementation-facing extension points, not a substitute for the typed composite API.
+`DvzComposite` is the renderable bridge between semantic objects and panel-attached visuals. A
+composite is a scene-owned renderable view over one semantic object and may own or derive several
+coordinated leaf visuals internally.
+
+Typed semantic object APIs remain the normal user path:
+
+```text
+dvz_polygon_set_geometry()
+dvz_polygon_fill_color()
+dvz_graph_nodes_size()
+dvz_graph_edges_color()
+```
+
+Composites provide the generic panel attachment path:
+
+```text
+dvz_panel_add_visual()
+dvz_panel_add_composite()
+```
+
+Composites may expose generated leaf visuals by stable role names for advanced users, testing, and
+integration code. The leaf visual roles are implementation-facing extension points, not a substitute
+for the typed semantic API.
 
 
 ## Structs Versus Setters

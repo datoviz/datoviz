@@ -32,9 +32,9 @@ refined in
 4. v0.4 may break the old `DvzShape` surface. New utility APIs should expose `DvzGeometry`,
    explicit geometry input records, and explicit descriptors rather than preserving shape-era fields
    or compatibility names.
-5. Geometry utility naming must stay distinct from renderable scene object naming. If `DvzPolygon`
-   becomes a semantic scene object, CPU-side triangulation input should use a name such as
-   `DvzGeomPolygon` or `DvzPolygonData`.
+5. Geometry utility naming must stay distinct from retained scene object naming. `DvzGeomPolygon`
+   is the borrowed CPU-side triangulation input. `DvzPolygon` is the scene-owned semantic object
+   that may retain ring data, style, ids, and dirty state.
 
 
 ## Bundled Dependencies
@@ -82,10 +82,10 @@ variant, not a replacement for semantic contour geometry.
 
 | Input | Function | Contract | Use |
 |---|---|---|---|
-| `DvzGeomPolygon` or `DvzPolygonData` | `dvz_triangulate_polygon` | outer F64 ring plus holes -> F64 vertices + `uint32` indices | filled polygons, regions, annotation shapes |
-| `DvzPSLG` | `dvz_triangulate_pslg` | F64 points, constrained edges, holes, quality -> F64 vertices + `uint32` indices | boundaries, constrained/scattered Delaunay |
+| `DvzGeomPolygon` | `dvz_triangulate_polygon` | outer F64 ring plus holes -> F64 vertices + `uint32` indices | filled polygons, regions, annotation shapes |
+| `DvzPslg` | `dvz_triangulate_pslg` | F64 points, constrained edges, holes, quality -> F64 vertices + `uint32` indices | boundaries, constrained/scattered Delaunay |
 
-`DvzTriangulateQuality` carries optional minimum angle and maximum triangle area. Triangulation
+`DvzTriangulationQuality` carries optional minimum angle and maximum triangle area. Triangulation
 backends operate in F64; no upload-time downcast occurs here.
 
 Earcut is the preferred first built-in backend for simple polygons with holes because it is already
@@ -94,6 +94,11 @@ but should not be bundled into the default Datoviz source or binary distribution
 does not preserve the expected MIT redistribution and commercial-use surface. Triangle may be
 supported only as an explicitly optional external backend. A permissive constrained-Delaunay backend
 such as CDT should be evaluated before adding built-in PSLG support.
+
+Retained scene polygon rendering is a separate layer. `DvzPolygon` and `DvzPolygonSet` own semantic
+polygon state inside the scene. `DvzComposite` views such as `dvz_polygon_composite()` lower that
+state through ordinary visuals and attach to panels with `dvz_panel_add_composite()`. Geometry
+utilities remain CPU-only and do not own panels, render state, or generated visuals.
 
 
 ## Curve Tessellation
@@ -164,10 +169,11 @@ compute work.
 
 | Utility output | Resource path |
 |---|---|
-| triangulation | `IndexedGeometry` -> `mesh` |
+| triangulation | `DvzGeometry` -> `mesh` |
 | curve tessellation | `ItemTable`/`GroupedItemTable` -> `path` |
 | hull | CPU polygon input -> triangulation -> `mesh`/`primitive` |
 | boolean polygons | CPU polygon input -> triangulation -> `mesh` |
 | MSDF/SDF | `Texture2DResource` -> `marker`, `glyph`, or annotation |
+| semantic polygon render view | `DvzPolygon`/`DvzPolygonSet` -> `DvzComposite` -> generated visuals |
 
 No special resource handling is needed.

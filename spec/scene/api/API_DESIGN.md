@@ -74,7 +74,9 @@ The preferred construction model is:
    implementation concern, not a scene API concern; the write surface is uniform,
 3. allocation separated from creation — a visual is created without a committed item count;
    data is written when available and size is established on first write,
-4. optional explicit pre-allocation hint for performance when count is known upfront.
+4. optional explicit pre-allocation hint for performance when count is known upfront,
+5. semantic data objects and renderable composites separated for graph-, polygon-, and
+   domain-object-style APIs.
 
 Conceptually:
 
@@ -102,19 +104,41 @@ Attribute names are plain strings matching the per-family spec names. There is n
 `DVZ_ATTR_*` enum. Visual handles are opaque `DvzVisual*`; there is no `DvzVisualType`
 enum in the public API — family identity is fixed at construction and not queried.
 
+Semantic objects use typed constructors and typed mutation APIs. When a semantic object needs to be
+rendered, a scene-owned `DvzComposite` view lowers it to one or more coordinated visuals and is
+attached to a panel like a visual:
+
+```c
+DvzPolygon* polygon = dvz_polygon(scene, 0);
+dvz_polygon_set_geometry(polygon, &geom_polygon);
+dvz_polygon_fill_color(polygon, fill);
+
+DvzComposite* view = dvz_polygon_composite(polygon, 0);
+dvz_panel_add_composite(panel, view, NULL);
+```
+
+This keeps semantic state reusable across panels and render policies while keeping panel-local
+attachment state out of the semantic object.
+
 
 ## Preferred Ownership Model
 
 The preferred ownership model is:
 
-1. `Scene` owns shared resources (scales, fonts, textures), global invalidation state, and the
-   collection of figures,
+1. `Scene` owns shared resources (scales, fonts, textures), global invalidation state, the
+   collection of figures, semantic objects, and composites,
 2. `Figure` owns layout (panels, margins, render-target binding) — one figure per output window
    or offscreen target; one scene may have multiple figures (e.g. two windows sharing a GPU
    context),
-3. `Panel` owns panel-local view state, controllers, axes, and panel-local attachments,
+3. `Panel` owns panel-local view state, controllers, axes, and panel-local visual/composite
+   attachments,
 4. one `FramePlan` per figure is built each frame,
 5. the runtime remains below the scene semantic layer.
+
+Composites are not a generic object system. They are renderable views over typed semantic objects.
+The source object owns domain data and type-specific style; the composite owns derived visuals,
+lowering caches, dirty state, and role-name access to generated visuals; the panel owns attachment
+state such as z-layer and controller mode.
 
 
 ## Preferred Visual And Resource Binding Model

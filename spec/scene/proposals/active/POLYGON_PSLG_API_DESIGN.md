@@ -1,6 +1,6 @@
 > **Execution Status**
 > - **Status:** `ACTIVE API DESIGN ADDENDUM`
-> - **Updated on:** `2026-05-24`
+> - **Updated on:** `2026-05-25`
 > - **Purpose:** record the v0.4 polygon, polygon-set, and PSLG API decisions before implementation.
 
 # Polygon And PSLG API Design
@@ -38,16 +38,10 @@ This design follows the cross-module public API rules in
 5. keep WASM and generated bindings practical.
 
 
-## CPU Geometry Names
+## CPU Geometry Input
 
-If `DvzPolygon` becomes the renderable scene object name, CPU-only triangulation input must use a
-different name. Preferred candidates:
-
-1. `DvzGeomPolygon`,
-2. `DvzPolygonData`.
-
-The first is more consistent with the `geom` module; the second reads more clearly at user call
-sites. The implementation should choose one before adding public headers and use it consistently.
+The CPU-only triangulation input should be named `DvzGeomPolygon`. This keeps it in the `geom`
+vocabulary and avoids confusion with the retained scene object `DvzPolygon`.
 
 The CPU input type should represent:
 
@@ -56,6 +50,29 @@ The CPU input type should represent:
 3. optional source/user id metadata only when needed for polygon sets;
 4. no renderer, panel, color, material, or stroke state.
 
+The first public shape should stay simple and binding-friendly:
+
+```c
+typedef struct DvzGeomRing DvzGeomRing;
+typedef struct DvzGeomPolygon DvzGeomPolygon;
+
+struct DvzGeomRing
+{
+    const dvec2* xy;
+    uint32_t count;
+};
+
+struct DvzGeomPolygon
+{
+    DvzGeomRing outer;
+    const DvzGeomRing* holes;
+    uint32_t hole_count;
+};
+```
+
+This is a borrowed input view. The triangulation call reads it during the call and does not retain
+the ring pointers.
+
 
 ## First Slice: Polygon Triangulation
 
@@ -63,11 +80,13 @@ The first implementation should add:
 
 ```c
 DvzGeometry* dvz_triangulate_polygon(
-    const DvzGeomPolygon* polygon, const DvzTriangulateDesc* desc);
+    const DvzGeomPolygon* polygon, const DvzTriangulationDesc* desc);
 ```
 
-The output is an ordinary `DvzGeometry` with F64 positions, normals, colors where provided, and
-triangle-list indices. It should set `DVZ_GEOMETRY_INDEXING_TRIANGULATION`.
+The output is an ordinary `DvzGeometry` with F64 positions, derived normals if useful for mesh
+upload, default colors only when the geometry container requires them, and triangle-list indices. It
+should set `DVZ_GEOMETRY_INDEXING_TRIANGULATION`. Fill color, stroke color, material, and outline
+style are not triangulation state; they belong to retained scene objects or composites.
 
 The first built-in backend should be earcut because it is already vendored and compatible with the
 MIT project. The function should:
@@ -102,30 +121,47 @@ The exact name may still be reviewed during the API consistency pass, but the co
 a copied `DvzGeometry` -> mesh upload helper, not a new geometry ownership path.
 
 
-## Scene Polygon Composite
+## Scene Polygon Object And Composite
 
-After CPU triangulation is tested, add a renderable scene object:
+After CPU triangulation is tested, add a retained scene semantic object:
 
 ```c
 DvzPolygon* polygon = dvz_polygon(scene, flags);
 ```
 
-The object is a semantic composite, not a `DvzVisual`. Internally it may own:
-
-1. a fill visual, backed by `mesh` or `primitive`;
-2. a stroke visual, backed by `path` or `segment`;
-3. CPU ring data and derived `DvzGeometry`;
-4. dirty flags for ring, fill style, stroke style, and derived visual data.
-
+`DvzPolygon` is scene-owned semantic data, not a panel-owned renderable and not a `DvzVisual`.
+It stores ring data, per-polygon ids when needed, fill/stroke style, and dirty/version state.
 Common user-facing APIs should be flat and role/property based:
 
 ```c
+dvz_polygon_set_geometry(polygon, &geom_polygon);
 dvz_polygon_outer(polygon, count, xy);
-dvz_polygon_hole(polygon, count, xy);
+dvz_polygon_hole(polygon, hole_index, count, xy);
 dvz_polygon_fill_color(polygon, color);
 dvz_polygon_stroke_color(polygon, color);
 dvz_polygon_stroke_width(polygon, width);
 ```
+
+`dvz_polygon_set_geometry()` is the coherent bulk setter and should be the robust path for replacing
+outer/hole rings atomically. The `outer`/`hole` calls are convenience mutators over the same retained
+state.
+
+Rendering a semantic polygon uses a separate scene-owned renderable view:
+
+```c
+DvzComposite* composite = dvz_polygon_composite(polygon, flags);
+dvz_panel_add_composite(panel, composite, attach_desc);
+```
+
+`DvzComposite` is the generic bridge for graph-, polygon-, and other semantic objects that lower to
+one or more coordinated visuals. It should be defined narrowly as a renderable composite view, not
+as a generic object system. A composite may own:
+
+1. a fill visual, backed by `mesh` or `primitive`;
+2. a stroke visual, backed by `path` or `segment`;
+3. derived `DvzGeometry` and lowering caches;
+4. dirty flags for fill, stroke, and derived visual data;
+5. a borrowed pointer to its semantic source object and the source version it last lowered.
 
 Do not make a nested `DvzPolygonStyle` the primary API. Optional style convenience structs may be
 added later only if the flat setters remain available.
@@ -133,26 +169,35 @@ added later only if the flat setters remain available.
 Generated visuals may be exposed by role for advanced use and tests, but ordinary users should not
 need to know that fill and stroke are separate visuals.
 
+```c
+DvzVisual* dvz_composite_visual(DvzComposite* composite, const char* role);
+```
+
+Polygon roles should start with `"fill"` and `"stroke"`. Future graph roles may include `"nodes"`,
+`"edges"`, and `"labels"`.
+
 
 ## Polygon Collections
 
-Many-region use cases such as choropleths should use one semantic polygon object in multi mode or a
-dedicated collection object. The API should distinguish array index from stable user id.
+Many-region use cases such as choropleths should use a dedicated scene-owned `DvzPolygonSet`
+semantic object rather than overloading a single-polygon object with ambiguous multi mode. The API
+should distinguish array index from stable user id.
 
 Primary per-region setters:
 
 ```c
-dvz_polygon_outer_at(polygons, polygon_index, count, xy);
-dvz_polygon_hole_at(polygons, polygon_index, hole_index, count, xy);
-dvz_polygon_fill_color_at(polygons, polygon_index, color);
-dvz_polygon_stroke_color_at(polygons, polygon_index, color);
-dvz_polygon_stroke_width_at(polygons, polygon_index, width);
+dvz_polygon_set_region(polygons, polygon_index, &geom_polygon);
+dvz_polygon_set_outer_at(polygons, polygon_index, count, xy);
+dvz_polygon_set_hole_at(polygons, polygon_index, hole_index, count, xy);
+dvz_polygon_set_fill_color_at(polygons, polygon_index, color);
+dvz_polygon_set_stroke_color_at(polygons, polygon_index, color);
+dvz_polygon_set_stroke_width_at(polygons, polygon_index, width);
 ```
 
 Optional bulk/range helpers are allowed for large datasets:
 
 ```c
-dvz_polygon_fill_colors(polygons, first_polygon, polygon_count, colors);
+dvz_polygon_set_fill_colors(polygons, first_polygon, polygon_count, colors);
 ```
 
 Bulk helpers are convenience and performance APIs. They should not replace the per-region API as the
@@ -161,7 +206,7 @@ conceptual model.
 If stable semantic ids are needed for picking or external data joins, use a separate id setter:
 
 ```c
-dvz_polygon_region_id_at(polygons, polygon_index, user_id);
+dvz_polygon_set_region_id_at(polygons, polygon_index, user_id);
 ```
 
 Do not use a single `region_id` argument when the value is only a positional array index.
@@ -184,10 +229,10 @@ Holes should produce their own closed outline rings.
 PSLG support should stay CPU-side first:
 
 ```c
-DvzGeometry* dvz_triangulate_pslg(const DvzPSLG* pslg, const DvzTriangulateDesc* desc);
+DvzGeometry* dvz_triangulate_pslg(const DvzPslg* pslg, const DvzTriangulationDesc* desc);
 ```
 
-`DvzPSLG` represents F64 points, constrained edges, holes, and optional quality controls. It should
+`DvzPslg` represents F64 points, constrained edges, holes, and optional quality controls. It should
 not expose CDT, Triangle, or any backend-specific type.
 
 Backend policy:
@@ -205,9 +250,10 @@ Backend policy:
 2. Add focused `geom` tests for simple, concave, holed, closed, degenerate, and invalid polygons.
 3. Add copied `DvzGeometry` -> mesh upload helper.
 4. Add a small C example that renders a triangulated polygon through `mesh`.
-5. Add the scene `DvzPolygon` composite with fill/stroke flat setters.
-6. Add polygon collections with per-region and optional range setters.
-7. Evaluate CDT for `DvzPSLG` after polygon fill and collection rendering are stable.
+5. Add the scene-owned `DvzPolygon` semantic object with geometry and fill/stroke flat setters.
+6. Add `DvzComposite`, `dvz_polygon_composite()`, and `dvz_panel_add_composite()`.
+7. Add `DvzPolygonSet` with per-region and optional range setters.
+8. Evaluate CDT for `DvzPslg` after polygon fill and collection rendering are stable.
 
 
 ## Explicit Non-Goals For The First Slice
