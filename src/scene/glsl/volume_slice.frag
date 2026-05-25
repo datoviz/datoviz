@@ -12,9 +12,10 @@ layout(set = 0, binding = 0) uniform MVP {
     uint flags;
 } mvp;
 
-layout(set = 1, binding = 0) uniform sampler3D tex;
-layout(set = 1, binding = 3) uniform sampler2D depthTex;
-layout(set = 1, binding = 4) uniform sampler2D transferTex;
+layout(set = 1, binding = 0) uniform texture3D tex;
+layout(set = 1, binding = 1) uniform sampler samp;
+layout(set = 1, binding = 3) uniform texture2D depthTex;
+layout(set = 1, binding = 4) uniform texture2D transferTex;
 
 layout(set = 1, binding = 2) uniform VolumeParams {
     vec4 clip_min;
@@ -142,7 +143,7 @@ vec4 transfer_value(float value)
 {
     float denom = max(volume.value_range.y - volume.value_range.x, 1e-12);
     float t = clamp((value - volume.value_range.x) / denom, 0.0, 1.0);
-    return texture(transferTex, vec2(t, 0.5));
+    return texture(sampler2D(transferTex, samp), vec2(t, 0.5));
 }
 
 bool inside_clip_plane(vec3 uvw)
@@ -156,9 +157,9 @@ bool inside_clip_plane(vec3 uvw)
 
 float depth_visibility(vec3 uvw)
 {
-    vec2 size = vec2(textureSize(depthTex, 0));
+    vec2 size = vec2(textureSize(sampler2D(depthTex, samp), 0));
     vec2 uv = clamp(gl_FragCoord.xy / size, vec2(0.0), vec2(1.0));
-    float scene_depth = texture(depthTex, uv).r;
+    float scene_depth = texture(sampler2D(depthTex, samp), uv).r;
     float self_depth = projected_depth(uvw);
     if (volume.occlusion.w > 0.5) {
         if (scene_depth <= 0.000001) {
@@ -186,9 +187,9 @@ float depth_visibility(vec3 uvw)
 #ifdef DVZ_SCENE_OCCLUSION
 float scene_occlusion_visibility_linear(vec3 uvw)
 {
-    vec2 size = vec2(textureSize(sceneOcclusionDepth, 0));
+    vec2 size = vec2(textureSize(sampler2D(sceneOcclusionDepth, sceneOcclusionSamp), 0));
     vec2 uv = clamp(gl_FragCoord.xy / size, vec2(0.0), vec2(1.0));
-    float scene_depth = texture(sceneOcclusionDepth, uv).r;
+    float scene_depth = texture(sampler2D(sceneOcclusionDepth, sceneOcclusionSamp), uv).r;
     if (scene_depth >= 0.999999) {
         return 1.0;
     }
@@ -251,7 +252,7 @@ void main()
         discard;
     }
 
-    vec4 sample_value = texture(tex, texture_uvw(uvw));
+        vec4 sample_value = texture(sampler3D(tex, samp), texture_uvw(uvw));
     if (volume.clip_min.w > 0.5) {
         outColor = vec4(sample_value.rgb, sample_value.a * volume.params.x * visibility);
     } else {

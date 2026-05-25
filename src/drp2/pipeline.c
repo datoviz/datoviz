@@ -108,7 +108,7 @@ static VkDescriptorType _vklite_descriptor_type(DvzDrp2BindingType type)
     case DVZ_DRP2_BINDING_TYPE_STORAGE_BUFFER:
         return VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
     case DVZ_DRP2_BINDING_TYPE_SAMPLED_TEXTURE:
-        return VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+        return VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
     case DVZ_DRP2_BINDING_TYPE_STORAGE_TEXTURE:
         return VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
     case DVZ_DRP2_BINDING_TYPE_SAMPLER:
@@ -581,31 +581,6 @@ DvzDrp2ValidationResult _vklite_build_bind_group_descriptors(
             }
 
             VkSampler sampler_handle = VK_NULL_HANDLE;
-            if (entry->binding_type == DVZ_DRP2_BINDING_TYPE_SAMPLED_TEXTURE)
-            {
-                const DvzDrp2BindGroupEntry* sampler_entry = NULL;
-                for (uint32_t j = 0; j < bind_group->bind_group_entry_count; j++)
-                {
-                    if (bind_group->bind_group_entries[j].binding_type ==
-                        DVZ_DRP2_BINDING_TYPE_SAMPLER)
-                    {
-                        sampler_entry = &bind_group->bind_group_entries[j];
-                        break;
-                    }
-                }
-                if (sampler_entry == NULL)
-                {
-                    dvz_descriptors_free(descriptors);
-                    return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
-                }
-                Drp2VkliteObject* sampler = _vklite_find(state, sampler_entry->resource_id);
-                if (sampler == NULL || sampler->sampler == NULL)
-                {
-                    dvz_descriptors_free(descriptors);
-                    return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
-                }
-                sampler_handle = dvz_sampler_handle(sampler->sampler);
-            }
             VkImageLayout image_layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
             if (entry->binding_type == DVZ_DRP2_BINDING_TYPE_STORAGE_TEXTURE)
                 image_layout = VK_IMAGE_LAYOUT_GENERAL;

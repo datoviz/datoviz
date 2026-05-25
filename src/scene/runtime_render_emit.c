@@ -1450,6 +1450,79 @@ bool _emitter_emit_wboit_resolve(
 
 
 
+/**
+ * Emit one graph-unordered plain render node into the final color target.
+ *
+ * @param emitter persistent frame-plan emitter.
+ * @param stream destination DRP2 command stream.
+ * @param render render node not referenced by a frame-graph pass.
+ * @param cfg frame-plan emission configuration.
+ * @param encoder_id active command encoder id.
+ * @param color_id final color target id.
+ * @param clear_color final target clear color.
+ * @param batch prepared draw batch for the render node.
+ * @param clear_final whether the final target still needs its first clear.
+ * @return whether the render commands were emitted.
+ */
+static bool _emitter_emit_graph_unordered_plain_render(
+    DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, const DvzFramePlanNode* render,
+    const DvzFramePlanEmitConfig* cfg, uint64_t encoder_id, uint64_t color_id,
+    const float clear_color[4], const SceneRenderBatch* batch, bool* clear_final)
+{
+    ANN(emitter);
+    ANN(stream);
+    ANN(render);
+    ANN(batch);
+    ANN(clear_final);
+
+    if (render->u.render.pass_role != DVZ_FRAME_PLAN_RENDER_PASS_OPAQUE &&
+        render->u.render.pass_role != DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_BLEND)
+    {
+        return true;
+    }
+
+    bool clear = *clear_final;
+    uint64_t pass_id = _emitter_next_transient_id(emitter);
+    _label_render_pass_contract(stream, pass_id, render);
+    bool ok = true;
+
+    if (render->u.render.pass_role == DVZ_FRAME_PLAN_RENDER_PASS_OPAQUE)
+    {
+        ok = dvz_drp2_stream_begin_render_pass_region_clear(
+            stream, pass_id, encoder_id, color_id, clear_color[0], clear_color[1], clear_color[2],
+            clear_color[3], 0.0f, 0.0f, 1.0f, 1.0f, clear);
+    }
+    else
+    {
+        clear = false;
+        ok = dvz_drp2_stream_begin_render_pass_region_clear(
+            stream, pass_id, encoder_id, color_id, clear_color[0], clear_color[1], clear_color[2],
+            clear_color[3], render->u.render.desc.x, render->u.render.desc.y,
+            render->u.render.desc.width, render->u.render.desc.height, false);
+    }
+
+    bool needs_depth = _scene_render_needs_depth(emitter, render);
+    if (ok && needs_depth)
+    {
+        ok = dvz_drp2_stream_begin_render_pass_set_depth(stream, 1.0f);
+        if (ok && !clear)
+            ok = dvz_drp2_stream_begin_render_pass_set_depth_ops(
+                stream, DVZ_DRP2_ATTACHMENT_LOAD_CLEAR, DVZ_DRP2_ATTACHMENT_STORE_STORE);
+    }
+
+    SceneRenderStateCache scene_cache = {0};
+    ok = ok &&
+         _emitter_emit_render_multi_draws(
+             stream, render, cfg, pass_id, batch->draws, batch->draw_count, &scene_cache) &&
+         dvz_drp2_stream_end_render_pass(stream, pass_id);
+
+    if (ok)
+        *clear_final = false;
+    return ok;
+}
+
+
+
 /* Scene render path: one BeginRenderPass per panel, one Draw per visual inside it. */
 bool _emitter_emit_render_multi(
     DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, const DvzFramePlan* plan,
@@ -2080,7 +2153,13 @@ bool _emitter_emit_scene_graph_renders(
                 ok = _stream_apply_graph_depth(stream, graph_pass, graph_depth_id);
             if (ok && has_draws && graph_depth_id == 0 &&
                 _scene_render_needs_depth(emitter, render))
+            {
                 ok = dvz_drp2_stream_begin_render_pass_set_depth(stream, 1.0f);
+                if (ok && !clear_final)
+                    ok = dvz_drp2_stream_begin_render_pass_set_depth_ops(
+                        stream, DVZ_DRP2_ATTACHMENT_LOAD_CLEAR,
+                        DVZ_DRP2_ATTACHMENT_STORE_STORE);
+            }
             if (ok && has_draws)
             {
                 scene_cache.pipeline_id = 0;
@@ -2404,6 +2483,22 @@ bool _emitter_emit_scene_graph_renders(
                  _emitter_emit_wboit_resolve(stream, render, cfg, pass_id, targets) &&
                  dvz_drp2_stream_end_render_pass(stream, pass_id);
         }
+    }
+
+    float clear_color[4] = {cr, cg, cb, ca};
+    for (uint32_t i = 0; ok && use_graph_order && i < plan->count; i++)
+    {
+        const DvzFramePlanNode* render = &plan->nodes[i];
+        if (render->type != DVZ_FRAME_PLAN_NODE_RENDER || render->u.render.visual_count == 0)
+            continue;
+        if (_graph_pass_for_render(plan, render) != NULL)
+            continue;
+
+        const SceneRenderBatch* batch = _render_batch_for_node(batches, batch_count, render);
+        if (batch == NULL)
+            continue;
+        ok = _emitter_emit_graph_unordered_plain_render(
+            emitter, stream, render, cfg, encoder_id, color_id, clear_color, batch, &clear_final);
     }
 
     uint64_t command_buffer_id = _emitter_next_transient_id(emitter);

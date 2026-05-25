@@ -8,9 +8,10 @@ layout(set = 0, binding = 0) uniform MVP {
     uint flags;
 } mvp;
 
-layout(set = 1, binding = 0) uniform sampler3D tex;
-layout(set = 1, binding = 3) uniform sampler2D depthTex;
-layout(set = 1, binding = 4) uniform sampler2D transferTex;
+layout(set = 1, binding = 0) uniform texture3D tex;
+layout(set = 1, binding = 1) uniform sampler samp;
+layout(set = 1, binding = 3) uniform texture2D depthTex;
+layout(set = 1, binding = 4) uniform texture2D transferTex;
 
 layout(set = 1, binding = 2) uniform VolumeParams {
     vec4 clip_min;
@@ -116,9 +117,9 @@ float projected_depth(vec3 uvw)
 
 bool occluded_by_scene_depth(vec3 uvw)
 {
-    vec2 size = vec2(textureSize(depthTex, 0));
+    vec2 size = vec2(textureSize(sampler2D(depthTex, samp), 0));
     vec2 uv = clamp(gl_FragCoord.xy / size, vec2(0.0), vec2(1.0));
-    float scene_depth = texture(depthTex, uv).r;
+    float scene_depth = texture(sampler2D(depthTex, samp), uv).r;
     if (scene_depth >= 0.999999) {
         return false;
     }
@@ -168,11 +169,12 @@ void main()
         if (occluded_by_scene_depth(uvw)) {
             break;
         }
-        vec4 sample_value = texture(tex, texture_uvw(uvw));
+        vec4 sample_value = texture(sampler3D(tex, samp), texture_uvw(uvw));
         float density = transfer ? sample_value.a : transfer_t(sample_value.r);
         if (density > value) {
             value = density;
-            color = transfer ? sample_value.rgb : texture(transferTex, vec2(density, 0.5)).rgb;
+            color = transfer ? sample_value.rgb
+                             : texture(sampler2D(transferTex, samp), vec2(density, 0.5)).rgb;
         }
     }
     outColor = vec4(color, value * volume.params.x);

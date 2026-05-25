@@ -555,6 +555,166 @@ static int test_scene_scalebar_2d_realization(TstContext* suite, const TstCase* 
 
 
 /**
+ * Check that a graph-backed scale-bar label does not drop a plain neighboring panel.
+ *
+ * @param suite the active test suite
+ * @param item the active test case
+ * @return 0 on success
+ */
+static int test_scene_scalebar_2d_3d_stream_order(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    ANN(item);
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 1100, 620, 0);
+    ANN(figure);
+    DvzPanel* left = dvz_panel(
+        figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 0.5f, .height = 1.0f});
+    DvzPanel* right = dvz_panel(
+        figure, (DvzPanelDesc){.x = 0.5f, .y = 0.0f, .width = 0.5f, .height = 1.0f});
+    ANN(left);
+    ANN(right);
+    dvz_panel_set_background_color(left, 0.04f, 0.05f, 0.06f, 1.0f);
+    dvz_panel_set_background_color(right, 0.04f, 0.044f, 0.052f, 1.0f);
+
+    DvzVisual* left_points = dvz_point(scene, 0);
+    ANN(left_points);
+    vec3 left_positions[2] = {{0.0f, 0.0f, 0.0f}, {0.8f, 0.7f, 0.0f}};
+    DvzColor left_colors[2] = {{220, 120, 160, 255}, {120, 220, 190, 255}};
+    float left_diameters[2] = {10.0f, 12.0f};
+    DvzVisualDataUpdate left_updates[] = {
+        {.attr_name = "position", .data = left_positions, .item_count = 2},
+        {.attr_name = "color", .data = left_colors, .item_count = 2},
+        {.attr_name = "diameter", .data = left_diameters, .item_count = 2},
+    };
+    AT(dvz_visual_set_data_many(left_points, left_updates, 3) == 0);
+    AT(dvz_panel_add_visual(left, left_points, NULL) == 0);
+
+    DvzAnnotation* scalebar = dvz_annotation_scalebar(
+        left,
+        &(DvzScaleBarDesc){
+            .dimension = DVZ_DIM_X,
+            .anchor = DVZ_SCENE_ANCHOR_BOTTOM_LEFT,
+            .label_position = DVZ_SCALEBAR_LABEL_ABOVE,
+            .target_length_px = 125.0f,
+            .min_length_px = 75.0f,
+            .max_length_px = 185.0f,
+            .offset_px = {26.0f, 24.0f},
+            .tick_length_px = 9.0f,
+            .line_width_px = 2.0f,
+            .line_color = {245, 248, 252, 255},
+            .unit = "m",
+            .data_to_unit = 1.0,
+            .label_style = {
+                .size_px = 18.0f,
+                .renderer = DVZ_TEXT_RENDERER_MSDF_ATLAS,
+                .color = {255, 236, 176, 255},
+            },
+        });
+    ANN(scalebar);
+
+    DvzCameraDesc camera_desc = dvz_camera_desc();
+    camera_desc.eye[2] = 3.20f;
+    camera_desc.up[1] = 1.0f;
+    camera_desc.fov_y = 0.74f;
+    camera_desc.near = 0.1f;
+    camera_desc.far = 100.0f;
+    DvzCamera* camera = dvz_panel_set_camera(right, &camera_desc);
+    ANN(camera);
+
+    DvzVisual* right_points = dvz_point(scene, 0);
+    ANN(right_points);
+    vec3 right_positions[3] = {
+        {-0.5f, -0.2f, 0.2f}, {0.0f, 0.0f, 0.0f}, {0.5f, 0.3f, -0.2f}};
+    DvzColor right_colors[3] = {
+        {120, 200, 255, 255}, {255, 140, 220, 255}, {120, 255, 180, 255}};
+    float right_diameters[3] = {18.0f, 20.0f, 16.0f};
+    DvzVisualDataUpdate right_updates[] = {
+        {.attr_name = "position", .data = right_positions, .item_count = 3},
+        {.attr_name = "color", .data = right_colors, .item_count = 3},
+        {.attr_name = "diameter", .data = right_diameters, .item_count = 3},
+    };
+    AT(dvz_visual_set_data_many(right_points, right_updates, 3) == 0);
+    AT(dvz_panel_add_visual(right, right_points, NULL) == 0);
+
+    DvzCapabilitySnapshot caps;
+    dvz_capability_snapshot_default(&caps);
+    caps.shader_format_glsl = true;
+    caps.max_vertex_buffers = 16;
+    caps.max_bind_groups = 4;
+    caps.max_buffer_size = 256 * 1024 * 1024;
+    caps.supports_color_blending = true;
+
+    DvzFramePlanEmitConfig cfg = dvz_frame_plan_emit_config();
+    cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
+    cfg.target_width = 1100;
+    cfg.target_height = 620;
+
+    DvzDiagnosticReport report;
+    dvz_diagnostic_report_init(&report);
+    DvzDrp2CommandStream* stream = dvz_figure_emit_ex(figure, &caps, &report, &cfg);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+    ANN(stream);
+
+    uint64_t right_pass = 0;
+    uint64_t glyph_pass = 0;
+    bool right_pipeline = false;
+    bool glyph_pipeline = false;
+    bool saw_right_viewport = false;
+    bool saw_right_point_draw = false;
+    bool saw_glyph_draw = false;
+    for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
+    {
+        const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream, i);
+        if (cmd == NULL)
+            continue;
+        if (cmd->type == DVZ_DRP2_COMMAND_SET_VIEWPORT)
+        {
+            if (fabsf(cmd->u.set_viewport.viewport[0] - 550.0f) < 1e-5f &&
+                fabsf(cmd->u.set_viewport.viewport[2] - 550.0f) < 1e-5f)
+            {
+                saw_right_viewport = true;
+                right_pass = cmd->u.set_viewport.pass_id;
+                right_pipeline = false;
+            }
+        }
+        else if (cmd->type == DVZ_DRP2_COMMAND_SET_PIPELINE)
+        {
+            const char* label = dvz_drp2_stream_label(stream, cmd->u.set_pipeline.pipeline_id);
+            if (label == NULL)
+                continue;
+            if (cmd->u.set_pipeline.pass_id == right_pass &&
+                strstr(label, "_pipe_point") != NULL)
+                right_pipeline = true;
+            if (strstr(label, "_pipe_glyph") != NULL)
+            {
+                glyph_pass = cmd->u.set_pipeline.pass_id;
+                glyph_pipeline = true;
+            }
+        }
+        else if (cmd->type == DVZ_DRP2_COMMAND_DRAW)
+        {
+            if (cmd->u.draw.pass_id == right_pass && right_pipeline &&
+                cmd->u.draw.vertex_count == 3)
+                saw_right_point_draw = true;
+            if (cmd->u.draw.pass_id == glyph_pass && glyph_pipeline &&
+                cmd->u.draw.vertex_count >= 6)
+                saw_glyph_draw = true;
+        }
+    }
+    AT(saw_right_viewport);
+    AT(saw_right_point_draw);
+    AT(saw_glyph_draw);
+
+    dvz_drp2_stream_destroy(stream);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
+/**
  * Check scene-level font defaults and retained text default sizing.
  *
  * @param suite the active test suite
@@ -1527,6 +1687,7 @@ int test_scene_interaction(TstSuite* suite)
     TST_CASE(test_scene_text_annotation_bookkeeping);
     TST_CASE(test_scene_scalebar_formatting);
     TST_CASE(test_scene_scalebar_2d_realization);
+    TST_CASE(test_scene_scalebar_2d_3d_stream_order);
     TST_CASE(test_scene_font_defaults);
     TST_CASE(test_scene_text_sdf_default_font);
     TST_CASE(test_scene_text_semantic_object_realization);

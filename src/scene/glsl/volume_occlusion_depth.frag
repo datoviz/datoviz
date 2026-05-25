@@ -8,8 +8,9 @@ layout(set = 0, binding = 0) uniform MVP {
     uint flags;
 } mvp;
 
-layout(set = 1, binding = 0) uniform sampler3D tex;
-layout(set = 1, binding = 4) uniform sampler2D transferTex;
+layout(set = 1, binding = 0) uniform texture3D tex;
+layout(set = 1, binding = 1) uniform sampler samp;
+layout(set = 1, binding = 4) uniform texture2D transferTex;
 
 layout(set = 1, binding = 2) uniform VolumeParams {
     vec4 clip_min;
@@ -94,7 +95,7 @@ float transfer_alpha(float value)
 {
     float denom = max(volume.value_range.y - volume.value_range.x, 1e-12);
     float t = clamp((value - volume.value_range.x) / denom, 0.0, 1.0);
-    return texture(transferTex, vec2(t, 0.5)).a;
+    return texture(sampler2D(transferTex, samp), vec2(t, 0.5)).a;
 }
 
 bool inside_clip_plane(vec3 uvw)
@@ -165,7 +166,7 @@ void main()
         if (!inside_clip_plane(uvw)) {
             continue;
         }
-        vec4 sample_value = texture(tex, texture_uvw(uvw));
+        vec4 sample_value = texture(sampler3D(tex, samp), texture_uvw(uvw));
         float density = clamp(transfer ? sample_value.a : transfer_alpha(sample_value.r), 0.0, 1.0);
         float sample_alpha =
             1.0 - exp(-density * volume.params.x * EXTINCTION_SCALE * step_len);
