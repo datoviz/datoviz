@@ -759,6 +759,10 @@ struct DvzAnnotation
     uint64_t visual_version;
     uint32_t visual_figure_width;
     uint32_t visual_figure_height;
+    DvzScaleBarDesc scalebar;
+    DvzVisual* scalebar_visual;
+    double scalebar_units;
+    float scalebar_px;
 };
 
 

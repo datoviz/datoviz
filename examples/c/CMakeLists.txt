@@ -140,6 +140,8 @@ if(TARGET datoviz_app AND DVZ_HAS_GLFW AND TARGET datoviz_gui)
     dvz_add_example(techniques gui_viewport techniques/gui_viewport.c)
     dvz_add_example(techniques gui_multi_viewport techniques/gui_multi_viewport.c)
 
+    dvz_add_example(annotations scalebar_2d_3d annotations/scalebar_2d_3d.c)
+
     dvz_add_example(showcase lidar showcase/lidar.c)
     dvz_add_example(showcase protein showcase/protein.c)
     dvz_add_example(showcase brain showcase/brain.c)

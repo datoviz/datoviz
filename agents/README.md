@@ -97,12 +97,11 @@ Scene feature lanes:
 4. [soon/scene/SCENE_VOLUME_RENDERING_FOLLOWUP.md](soon/scene/SCENE_VOLUME_RENDERING_FOLLOWUP.md)
 5. [soon/scene/SCENE_NAPARI_IMAGE_LABELS_PLAN.md](soon/scene/SCENE_NAPARI_IMAGE_LABELS_PLAN.md)
 6. [soon/scene/SCENE_ORIENTATION_GIZMO_PLAN.md](soon/scene/SCENE_ORIENTATION_GIZMO_PLAN.md)
-7. [soon/scene/SCENE_SCALEBAR_IMPLEMENTATION_PLAN.md](soon/scene/SCENE_SCALEBAR_IMPLEMENTATION_PLAN.md)
-8. [soon/effects/SCENE_MSAA_PLAN.md](soon/effects/SCENE_MSAA_PLAN.md)
-9. [soon/effects/SCENE_SSAO_IMPLEMENTATION_PLAN.md](soon/effects/SCENE_SSAO_IMPLEMENTATION_PLAN.md)
-10. [soon/effects/SCENE_SSAO_QUALITY_PLAN.md](soon/effects/SCENE_SSAO_QUALITY_PLAN.md)
-11. [soon/effects/SCENE_TECHNIQUES_MATERIALS_PLAN.md](soon/effects/SCENE_TECHNIQUES_MATERIALS_PLAN.md)
-12. [soon/scene/SCENE_VISUAL_SHADER_ABI_FOLLOWUP.md](soon/scene/SCENE_VISUAL_SHADER_ABI_FOLLOWUP.md)
+7. [soon/effects/SCENE_MSAA_PLAN.md](soon/effects/SCENE_MSAA_PLAN.md)
+8. [soon/effects/SCENE_SSAO_IMPLEMENTATION_PLAN.md](soon/effects/SCENE_SSAO_IMPLEMENTATION_PLAN.md)
+9. [soon/effects/SCENE_SSAO_QUALITY_PLAN.md](soon/effects/SCENE_SSAO_QUALITY_PLAN.md)
+10. [soon/effects/SCENE_TECHNIQUES_MATERIALS_PLAN.md](soon/effects/SCENE_TECHNIQUES_MATERIALS_PLAN.md)
+11. [soon/scene/SCENE_VISUAL_SHADER_ABI_FOLLOWUP.md](soon/scene/SCENE_VISUAL_SHADER_ABI_FOLLOWUP.md)
 
 For visual-family lanes, durable contracts live under [../spec/scene/visuals](../spec/scene/visuals);
 the `soon/` files above are execution follow-up notes.
@@ -142,6 +141,7 @@ Recently retired or historical notes:
 12. [done/SCENE_FILE_SPLIT_REFACTOR.md](done/SCENE_FILE_SPLIT_REFACTOR.md)
 13. [done/SCENE_VISUAL_DATA_VIEW_API.md](done/SCENE_VISUAL_DATA_VIEW_API.md)
 14. [done/SCENE_COLORBAR_RENDERING_SLICE.md](done/SCENE_COLORBAR_RENDERING_SLICE.md)
+15. [done/SCENE_SCALEBAR_RENDERING_SLICE.md](done/SCENE_SCALEBAR_RENDERING_SLICE.md)
 
 ### `later/`
 
@@ -150,6 +150,7 @@ Backlog, strategic direction, or secondary cleanup tracks.
 API design backlog:
 
 1. [later/SCENE_SHARED_VISUAL_DATA_API.md](later/SCENE_SHARED_VISUAL_DATA_API.md)
+2. [later/SCENE_SCALEBAR_3D_REFERENCE_FOLLOWUP.md](later/SCENE_SCALEBAR_3D_REFERENCE_FOLLOWUP.md)
 
 Strategic visual backlog:
 

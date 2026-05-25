@@ -23,6 +23,7 @@
 #include "_compat.h"
 #include "_log.h"
 #include "_overflow.h"
+#include "_scale_ticks.h"
 #include "_scene.h"
 #include "datoviz/scene.h"
 
@@ -43,6 +44,14 @@
 #define DVZ_TEXT_BITMAP_ATLAS_PAD    1u
 #define DVZ_TEXT_BITMAP_ATLAS_CELL_W (DVZ_TEXT_BITMAP_GLYPH_WIDTH + 2u * DVZ_TEXT_BITMAP_ATLAS_PAD)
 #define DVZ_TEXT_BITMAP_ATLAS_CELL_H (DVZ_TEXT_BITMAP_GLYPH_HEIGHT + 2u * DVZ_TEXT_BITMAP_ATLAS_PAD)
+#define DVZ_SCALEBAR_TARGET_LENGTH_PX 120.0f
+#define DVZ_SCALEBAR_MIN_LENGTH_PX    70.0f
+#define DVZ_SCALEBAR_MAX_LENGTH_PX    180.0f
+#define DVZ_SCALEBAR_OFFSET_PX        16.0f
+#define DVZ_SCALEBAR_TICK_LENGTH_PX   8.0f
+#define DVZ_SCALEBAR_LINE_WIDTH_PX    1.0f
+#define DVZ_SCALEBAR_LABEL_GAP_PX     6.0f
+#define DVZ_SCALEBAR_LABEL_SIZE_PX    12.0f
 
 
 
@@ -107,6 +116,11 @@ static const uint8_t _text_font_6x8[DVZ_TEXT_BITMAP_GLYPH_COUNT * 6] = {
 /*************************************************************************************************/
 /*  Helpers                                                                                      */
 /*************************************************************************************************/
+
+static bool _text_visual_prepare(
+    DvzFigure* figure, DvzPanel* panel, const DvzPanelAttach* attach, DvzVisual* visual);
+
+
 
 /**
  * Return the resolved text size in pixels.
@@ -1365,6 +1379,402 @@ static bool _text_prepare_visual(DvzFigure* figure, DvzText* text)
 
 
 /**
+ * Return a positive finite scale-bar descriptor value or a fallback.
+ *
+ * @param value input value
+ * @param fallback fallback value
+ * @return resolved value
+ */
+static float _scalebar_positive_or_default(float value, float fallback)
+{
+    return isfinite(value) && value > 0.0f ? value : fallback;
+}
+
+
+
+/**
+ * Resolve a scale-bar line color, defaulting to opaque white.
+ *
+ * @param desc scale-bar descriptor
+ * @param out output color
+ */
+static void _scalebar_line_color(const DvzScaleBarDesc* desc, DvzColor out)
+{
+    ANN(desc);
+    ANN(out);
+    out[0] = desc->line_color[0];
+    out[1] = desc->line_color[1];
+    out[2] = desc->line_color[2];
+    out[3] = desc->line_color[3];
+    if (out[3] == 0 && out[0] == 0 && out[1] == 0 && out[2] == 0)
+    {
+        out[0] = 255;
+        out[1] = 255;
+        out[2] = 255;
+        out[3] = 255;
+    }
+}
+
+
+
+/**
+ * Resolve the panel-local anchor point for a scale bar.
+ *
+ * @param anchor scene anchor
+ * @param width panel width in logical pixels
+ * @param height panel height in logical pixels
+ * @param out_x output x coordinate
+ * @param out_y output y coordinate
+ */
+static void _scalebar_anchor_px(
+    DvzSceneAnchor anchor, float width, float height, float* out_x, float* out_y)
+{
+    ANN(out_x);
+    ANN(out_y);
+    switch (anchor)
+    {
+    case DVZ_SCENE_ANCHOR_PANEL_TOP:
+        *out_x = 0.5f * width;
+        *out_y = 0.0f;
+        break;
+    case DVZ_SCENE_ANCHOR_PANEL_TOP_RIGHT:
+        *out_x = width;
+        *out_y = 0.0f;
+        break;
+    case DVZ_SCENE_ANCHOR_PANEL_LEFT:
+        *out_x = 0.0f;
+        *out_y = 0.5f * height;
+        break;
+    case DVZ_SCENE_ANCHOR_PANEL_CENTER:
+        *out_x = 0.5f * width;
+        *out_y = 0.5f * height;
+        break;
+    case DVZ_SCENE_ANCHOR_PANEL_RIGHT:
+        *out_x = width;
+        *out_y = 0.5f * height;
+        break;
+    case DVZ_SCENE_ANCHOR_PANEL_BOTTOM_LEFT:
+        *out_x = 0.0f;
+        *out_y = height;
+        break;
+    case DVZ_SCENE_ANCHOR_PANEL_BOTTOM:
+        *out_x = 0.5f * width;
+        *out_y = height;
+        break;
+    case DVZ_SCENE_ANCHOR_PANEL_BOTTOM_RIGHT:
+        *out_x = width;
+        *out_y = height;
+        break;
+    case DVZ_SCENE_ANCHOR_NONE:
+    case DVZ_SCENE_ANCHOR_PANEL_TOP_LEFT:
+    default:
+        *out_x = 0.0f;
+        *out_y = 0.0f;
+        break;
+    }
+}
+
+
+
+/**
+ * Return whether one anchor is on the right edge.
+ *
+ * @param anchor scene anchor
+ * @return whether the anchor is right-aligned
+ */
+static bool _scalebar_anchor_right(DvzSceneAnchor anchor)
+{
+    return anchor == DVZ_SCENE_ANCHOR_PANEL_TOP_RIGHT || anchor == DVZ_SCENE_ANCHOR_TOP_RIGHT ||
+           anchor == DVZ_SCENE_ANCHOR_PANEL_RIGHT || anchor == DVZ_SCENE_ANCHOR_RIGHT ||
+           anchor == DVZ_SCENE_ANCHOR_PANEL_BOTTOM_RIGHT ||
+           anchor == DVZ_SCENE_ANCHOR_BOTTOM_RIGHT;
+}
+
+
+
+/**
+ * Return whether one anchor is horizontally centered.
+ *
+ * @param anchor scene anchor
+ * @return whether the anchor is centered
+ */
+static bool _scalebar_anchor_center_x(DvzSceneAnchor anchor)
+{
+    return anchor == DVZ_SCENE_ANCHOR_PANEL_TOP || anchor == DVZ_SCENE_ANCHOR_TOP ||
+           anchor == DVZ_SCENE_ANCHOR_PANEL_CENTER || anchor == DVZ_SCENE_ANCHOR_CENTER ||
+           anchor == DVZ_SCENE_ANCHOR_PANEL_BOTTOM || anchor == DVZ_SCENE_ANCHOR_BOTTOM;
+}
+
+
+
+/**
+ * Return whether one anchor is on the bottom edge.
+ *
+ * @param anchor scene anchor
+ * @return whether the anchor is bottom-aligned
+ */
+static bool _scalebar_anchor_bottom(DvzSceneAnchor anchor)
+{
+    return anchor == DVZ_SCENE_ANCHOR_PANEL_BOTTOM_LEFT ||
+           anchor == DVZ_SCENE_ANCHOR_BOTTOM_LEFT || anchor == DVZ_SCENE_ANCHOR_PANEL_BOTTOM ||
+           anchor == DVZ_SCENE_ANCHOR_BOTTOM ||
+           anchor == DVZ_SCENE_ANCHOR_PANEL_BOTTOM_RIGHT ||
+           anchor == DVZ_SCENE_ANCHOR_BOTTOM_RIGHT;
+}
+
+
+
+/**
+ * Ensure scale-bar derived segment and text visuals exist and are attached.
+ *
+ * @param annotation scale-bar annotation
+ * @return whether visuals exist
+ */
+static bool _scalebar_ensure_visuals(DvzAnnotation* annotation)
+{
+    ANN(annotation);
+    ANN(annotation->scene);
+    ANN(annotation->panel);
+    if (annotation->scalebar_visual == NULL)
+    {
+        annotation->scalebar_visual = dvz_segment(annotation->scene, 0);
+        if (annotation->scalebar_visual == NULL)
+            return false;
+        annotation->scalebar_visual->visible = false;
+        if (dvz_segment_set_caps(
+                annotation->scalebar_visual, DVZ_SEGMENT_CAP_BUTT, DVZ_SEGMENT_CAP_BUTT) != 0)
+            return false;
+        if (dvz_panel_add_visual(
+                annotation->panel, annotation->scalebar_visual,
+                &(DvzVisualAttachDesc){
+                    .z_layer = INT32_MAX / 4 - 1, .controller_mode = DVZ_CONTROLLER_FIXED}) != 0)
+            return false;
+    }
+    if (annotation->visual == NULL)
+    {
+        annotation->visual = _scene_text_visual(annotation->scene, 0);
+        if (annotation->visual == NULL)
+            return false;
+        annotation->visual->visible = false;
+        if (dvz_panel_add_visual(
+                annotation->panel, annotation->visual,
+                &(DvzVisualAttachDesc){
+                    .z_layer = INT32_MAX / 4, .controller_mode = DVZ_CONTROLLER_FIXED}) != 0)
+            return false;
+    }
+    return true;
+}
+
+
+
+/**
+ * Hide all derived visuals for one scale bar.
+ *
+ * @param annotation scale-bar annotation
+ */
+static void _scalebar_hide(DvzAnnotation* annotation)
+{
+    if (annotation == NULL)
+        return;
+    if (annotation->scalebar_visual != NULL)
+        dvz_visual_set_visible(annotation->scalebar_visual, false);
+    if (annotation->visual != NULL)
+        dvz_visual_set_visible(annotation->visual, false);
+}
+
+
+
+/**
+ * Update or create the internal visuals for one 2D scale-bar annotation.
+ *
+ * @param figure the figure being emitted
+ * @param annotation scale-bar annotation
+ * @return whether preparation succeeded
+ */
+static bool _scalebar_prepare_visual(DvzFigure* figure, DvzAnnotation* annotation)
+{
+    ANN(figure);
+    ANN(annotation);
+    if (annotation->scene == NULL || annotation->panel == NULL ||
+        annotation->panel->figure != figure)
+        return true;
+    if (annotation->kind != DVZ_ANNOTATION_SCALEBAR)
+        return true;
+
+    DvzScaleBarDesc* desc = &annotation->scalebar;
+    if (desc->dimension != DVZ_DIM_X && desc->dimension != DVZ_DIM_Y)
+    {
+        _scalebar_hide(annotation);
+        return true;
+    }
+    double visible_min = 0.0;
+    double visible_max = 0.0;
+    if (!dvz_panel_visible_domain(annotation->panel, desc->dimension, &visible_min, &visible_max))
+    {
+        _scalebar_hide(annotation);
+        return true;
+    }
+
+    float panel_x = 0.0f;
+    float panel_y = 0.0f;
+    float panel_width = 0.0f;
+    float panel_height = 0.0f;
+    _scene_panel_pixel_rect(annotation->panel, &panel_x, &panel_y, &panel_width, &panel_height);
+    (void)panel_x;
+    (void)panel_y;
+    float span_px = desc->dimension == DVZ_DIM_X ? panel_width : panel_height;
+    if (span_px <= 0.0f)
+    {
+        _scalebar_hide(annotation);
+        return true;
+    }
+
+    double data_to_unit = desc->data_to_unit != 0.0 && isfinite(desc->data_to_unit)
+                              ? fabs(desc->data_to_unit)
+                              : 1.0;
+    double units_per_px = fabs(visible_max - visible_min) * data_to_unit / (double)span_px;
+    double length_units = 0.0;
+    float length_px = 0.0f;
+    if (!_scene_scalebar_choose_length(
+            units_per_px,
+            _scalebar_positive_or_default(
+                desc->target_length_px, DVZ_SCALEBAR_TARGET_LENGTH_PX),
+            _scalebar_positive_or_default(desc->min_length_px, DVZ_SCALEBAR_MIN_LENGTH_PX),
+            _scalebar_positive_or_default(desc->max_length_px, DVZ_SCALEBAR_MAX_LENGTH_PX),
+            &length_units, &length_px))
+    {
+        _scalebar_hide(annotation);
+        return true;
+    }
+    if (!_scalebar_ensure_visuals(annotation))
+        return false;
+
+    float anchor_x = 0.0f;
+    float anchor_y = 0.0f;
+    _scalebar_anchor_px(desc->anchor, panel_width, panel_height, &anchor_x, &anchor_y);
+    float offset_x = desc->offset_px[0] != 0.0f ? desc->offset_px[0] : DVZ_SCALEBAR_OFFSET_PX;
+    float offset_y = desc->offset_px[1] != 0.0f ? desc->offset_px[1] : DVZ_SCALEBAR_OFFSET_PX;
+    anchor_x += _scalebar_anchor_right(desc->anchor) ? -offset_x : offset_x;
+    anchor_y += _scalebar_anchor_bottom(desc->anchor) ? -offset_y : offset_y;
+
+    float x0 = anchor_x;
+    float y0 = anchor_y;
+    float x1 = anchor_x;
+    float y1 = anchor_y;
+    if (desc->dimension == DVZ_DIM_X)
+    {
+        if (_scalebar_anchor_center_x(desc->anchor))
+            x0 -= 0.5f * length_px;
+        else if (_scalebar_anchor_right(desc->anchor))
+            x0 -= length_px;
+        x1 = x0 + length_px;
+    }
+    else
+    {
+        y0 -= _scalebar_anchor_bottom(desc->anchor) ? length_px : 0.0f;
+        y1 = y0 + length_px;
+    }
+
+    float tick = _scalebar_positive_or_default(desc->tick_length_px, DVZ_SCALEBAR_TICK_LENGTH_PX);
+    float half_tick = 0.5f * tick;
+    vec3 starts[3] = {{0}};
+    vec3 ends[3] = {{0}};
+    if (desc->dimension == DVZ_DIM_X)
+    {
+        _text_panel_pixel_to_clip(annotation->panel, x0, y0, 0.0f, starts[0]);
+        _text_panel_pixel_to_clip(annotation->panel, x1, y1, 0.0f, ends[0]);
+        _text_panel_pixel_to_clip(annotation->panel, x0, y0 - half_tick, 0.0f, starts[1]);
+        _text_panel_pixel_to_clip(annotation->panel, x0, y0 + half_tick, 0.0f, ends[1]);
+        _text_panel_pixel_to_clip(annotation->panel, x1, y1 - half_tick, 0.0f, starts[2]);
+        _text_panel_pixel_to_clip(annotation->panel, x1, y1 + half_tick, 0.0f, ends[2]);
+    }
+    else
+    {
+        _text_panel_pixel_to_clip(annotation->panel, x0, y0, 0.0f, starts[0]);
+        _text_panel_pixel_to_clip(annotation->panel, x1, y1, 0.0f, ends[0]);
+        _text_panel_pixel_to_clip(annotation->panel, x0 - half_tick, y0, 0.0f, starts[1]);
+        _text_panel_pixel_to_clip(annotation->panel, x0 + half_tick, y0, 0.0f, ends[1]);
+        _text_panel_pixel_to_clip(annotation->panel, x1 - half_tick, y1, 0.0f, starts[2]);
+        _text_panel_pixel_to_clip(annotation->panel, x1 + half_tick, y1, 0.0f, ends[2]);
+    }
+    DvzColor colors[3] = {{0}};
+    _scalebar_line_color(desc, colors[0]);
+    colors[1][0] = colors[2][0] = colors[0][0];
+    colors[1][1] = colors[2][1] = colors[0][1];
+    colors[1][2] = colors[2][2] = colors[0][2];
+    colors[1][3] = colors[2][3] = colors[0][3];
+    float line_width[3] = {
+        _scalebar_positive_or_default(desc->line_width_px, DVZ_SCALEBAR_LINE_WIDTH_PX),
+        _scalebar_positive_or_default(desc->line_width_px, DVZ_SCALEBAR_LINE_WIDTH_PX),
+        _scalebar_positive_or_default(desc->line_width_px, DVZ_SCALEBAR_LINE_WIDTH_PX)};
+    DvzVisualDataUpdate updates[4] = {
+        {.attr_name = "position_start", .data = starts, .item_count = 3},
+        {.attr_name = "position_end", .data = ends, .item_count = 3},
+        {.attr_name = "color", .data = colors, .item_count = 3},
+        {.attr_name = "line_width", .data = line_width, .item_count = 3},
+    };
+    if (dvz_visual_set_data_many(annotation->scalebar_visual, updates, 4) != 0)
+        return false;
+    dvz_visual_set_visible(annotation->scalebar_visual, true);
+
+    char label[DVZ_SCENE_LABEL_SIZE] = {0};
+    _scene_format_si_value(length_units, desc->unit, label, sizeof(label));
+    const char* labels[1] = {label};
+    float screen_scale = _scene_screen_scale(figure);
+    float label_size =
+        _scalebar_positive_or_default(desc->label_style.size_px, DVZ_SCALEBAR_LABEL_SIZE_PX) *
+        screen_scale;
+    DvzTextRenderer renderer = desc->label_style.renderer != 0
+                                   ? desc->label_style.renderer
+                                   : DVZ_TEXT_RENDERER_SMALL_BITMAP_ATLAS;
+    if (annotation->visual->text.renderer != renderer &&
+        _scene_text_visual_set_renderer(annotation->visual, renderer) != 0)
+        return false;
+    float label_pos[1][3] = {{0}};
+    label_pos[0][0] = desc->dimension == DVZ_DIM_X ? 0.5f * (x0 + x1) : x1;
+    label_pos[0][1] = desc->dimension == DVZ_DIM_X ? y0 : 0.5f * (y0 + y1);
+    float label_gap = DVZ_SCALEBAR_LABEL_GAP_PX;
+    if (desc->label_position == DVZ_SCALEBAR_LABEL_ABOVE)
+        label_pos[0][1] -= tick + label_gap;
+    else
+        label_pos[0][1] += tick + label_gap;
+    float text_anchor[1][2] = {{0.5f, desc->label_position == DVZ_SCALEBAR_LABEL_ABOVE ? 1.0f : 0.0f}};
+    float sizes[1] = {label_size};
+    DvzColor text_colors[1] = {{0}};
+    _text_style_color(&desc->label_style, text_colors[0]);
+    float angles[1] = {0.0f};
+    DvzVisualDataUpdate text_updates[5] = {
+        {.attr_name = "position", .data = label_pos, .item_count = 1},
+        {.attr_name = "anchor", .data = text_anchor, .item_count = 1},
+        {.attr_name = "size", .data = sizes, .item_count = 1},
+        {.attr_name = "color", .data = text_colors, .item_count = 1},
+        {.attr_name = "angle", .data = angles, .item_count = 1},
+    };
+    if (dvz_visual_set_strings(annotation->visual, "text", labels, 1) != 0 ||
+        dvz_visual_set_data_many(annotation->visual, text_updates, 5) != 0)
+        return false;
+    dvz_visual_set_visible(annotation->visual, true);
+    if (!_text_visual_prepare(
+            figure, annotation->panel,
+            &(DvzPanelAttach){
+                .visual = annotation->visual,
+                .z_layer = INT32_MAX / 4,
+                .controller_mode = DVZ_CONTROLLER_FIXED,
+            },
+            annotation->visual))
+        return false;
+
+    dvz_strlcpy(annotation->text, label, sizeof(annotation->text));
+    annotation->scalebar_units = length_units;
+    annotation->scalebar_px = length_px;
+    annotation->dirty_flags = DVZ_TEXT_DIRTY_NONE;
+    annotation->version++;
+    return true;
+}
+
+
+
+/**
  * Update or create the internal glyph visual for one retained annotation label.
  *
  * @param figure the figure being emitted
@@ -1378,10 +1788,14 @@ static bool _annotation_prepare_visual(DvzFigure* figure, DvzAnnotation* annotat
     if (annotation->scene == NULL || annotation->panel == NULL ||
         annotation->panel->figure != figure)
         return true;
+    if (annotation->kind == DVZ_ANNOTATION_SCALEBAR)
+        return _scalebar_prepare_visual(figure, annotation);
     if (annotation->kind != DVZ_ANNOTATION_LABEL)
     {
         if (annotation->visual != NULL)
             dvz_visual_set_visible(annotation->visual, false);
+        if (annotation->scalebar_visual != NULL)
+            dvz_visual_set_visible(annotation->scalebar_visual, false);
         return true;
     }
 
@@ -2245,6 +2659,56 @@ DvzAnnotation* dvz_annotation_label(DvzPanel* panel, const DvzLabelDesc* desc)
 
 
 /**
+ * Create a retained 2D scale-bar annotation.
+ *
+ * @param panel the panel
+ * @param desc the scale-bar descriptor
+ * @return the annotation, or NULL on allocation failure
+ */
+DvzAnnotation* dvz_annotation_scalebar(DvzPanel* panel, const DvzScaleBarDesc* desc)
+{
+    ANN(panel);
+    if (panel->figure == NULL || panel->figure->scene == NULL)
+        return NULL;
+    DvzScaleBarDesc fallback = {0};
+    if (desc == NULL)
+        desc = &fallback;
+
+    DvzAnnotation* annotation = dvz_annotation(
+        panel, &(DvzAnnotationDesc){.kind = DVZ_ANNOTATION_SCALEBAR, .flags = desc->flags});
+    if (annotation == NULL)
+        return NULL;
+    annotation->scalebar = *desc;
+    if (annotation->scalebar.dimension != DVZ_DIM_Y)
+        annotation->scalebar.dimension = DVZ_DIM_X;
+    if (annotation->scalebar.anchor == DVZ_SCENE_ANCHOR_NONE)
+        annotation->scalebar.anchor = DVZ_SCENE_ANCHOR_PANEL_BOTTOM_LEFT;
+    if (annotation->scalebar.label_style.size_px <= 0.0f)
+        annotation->scalebar.label_style.size_px = DVZ_SCALEBAR_LABEL_SIZE_PX;
+    if (annotation->scalebar.label_style.renderer == DVZ_TEXT_RENDERER_AUTO)
+        annotation->scalebar.label_style.renderer = DVZ_TEXT_RENDERER_SMALL_BITMAP_ATLAS;
+    if (annotation->scalebar.data_to_unit == 0.0 ||
+        !isfinite(annotation->scalebar.data_to_unit))
+        annotation->scalebar.data_to_unit = 1.0;
+    if (annotation->scalebar.target_length_px <= 0.0f)
+        annotation->scalebar.target_length_px = DVZ_SCALEBAR_TARGET_LENGTH_PX;
+    if (annotation->scalebar.min_length_px <= 0.0f)
+        annotation->scalebar.min_length_px = DVZ_SCALEBAR_MIN_LENGTH_PX;
+    if (annotation->scalebar.max_length_px <= 0.0f)
+        annotation->scalebar.max_length_px = DVZ_SCALEBAR_MAX_LENGTH_PX;
+    if (annotation->scalebar.tick_length_px <= 0.0f)
+        annotation->scalebar.tick_length_px = DVZ_SCALEBAR_TICK_LENGTH_PX;
+    if (annotation->scalebar.line_width_px <= 0.0f)
+        annotation->scalebar.line_width_px = DVZ_SCALEBAR_LINE_WIDTH_PX;
+    annotation->dirty_flags = DVZ_TEXT_DIRTY_ALL;
+    annotation->version = 1;
+    _scene_notify_request_frame(panel->figure);
+    return annotation;
+}
+
+
+
+/**
  * Destroy a retained annotation object.
  *
  * @param annotation the annotation
@@ -2255,6 +2719,8 @@ void dvz_annotation_destroy(DvzAnnotation* annotation)
         return;
     if (annotation->visual != NULL)
         dvz_visual_set_visible(annotation->visual, false);
+    if (annotation->scalebar_visual != NULL)
+        dvz_visual_set_visible(annotation->scalebar_visual, false);
     _scene_notify_request_frame(annotation->panel != NULL ? annotation->panel->figure : NULL);
     annotation->scene = NULL;
     annotation->panel = NULL;
@@ -2274,6 +2740,14 @@ void dvz_annotation_set_format(DvzAnnotation* annotation, const DvzFormatDesc* f
     ANN(annotation);
     annotation->has_format = format != NULL;
     _scene_format_state_copy(&annotation->format, format);
+    if (annotation->kind == DVZ_ANNOTATION_SCALEBAR)
+    {
+        if (format != NULL)
+            annotation->scalebar.format = *format;
+        else
+            dvz_memset(
+                &annotation->scalebar.format, sizeof(DvzFormatDesc), 0, sizeof(DvzFormatDesc));
+    }
     annotation->dirty_flags |=
         DVZ_TEXT_DIRTY_STRING | DVZ_TEXT_DIRTY_LAYOUT | DVZ_TEXT_DIRTY_RENDER;
     annotation->version++;

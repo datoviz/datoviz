@@ -48,6 +48,17 @@ DVZ_EXPORT DvzAnnotation* dvz_annotation_label(DvzPanel* panel, const DvzLabelDe
 
 
 /**
+ * Create a retained 2D scale-bar annotation attached to a panel.
+ *
+ * @param panel the panel
+ * @param desc the scale-bar descriptor
+ * @return the annotation
+ */
+DVZ_EXPORT DvzAnnotation* dvz_annotation_scalebar(
+    DvzPanel* panel, const DvzScaleBarDesc* desc);
+
+
+/**
  * Destroy a retained annotation object.
  *
  * @param annotation the annotation

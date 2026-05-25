@@ -23,6 +23,7 @@
 #include "_compat.h"
 #include "../../drp2/_stream.h"
 #include "../_frame_plan.h"
+#include "../_scale_ticks.h"
 #include "../_scene.h"
 #include "../_scene_emit.h"
 #include "datoviz/scene.h"
@@ -394,6 +395,143 @@ int test_scene_text_annotation_bookkeeping(TstContext* suite, const TstCase* ite
     AT(annotation->scene == NULL);
     AT(font->scene == NULL);
 
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+/**
+ * Check scale-bar nice-length selection and SI unit formatting.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+static int test_scene_scalebar_formatting(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    double units = 0.0;
+    float px = 0.0f;
+    AT(_scene_scalebar_choose_length(2.5e-5, 120.0f, 70.0f, 180.0f, &units, &px));
+    AC(units, 0.002, 1e-12);
+    AC(px, 80.0f, 1e-5f);
+
+    char label[64] = {0};
+    _scene_format_si_value(0.002, "m", label, sizeof(label));
+    AT(strcmp(label, "2 mm") == 0);
+    _scene_format_si_value(0.0002, "m", label, sizeof(label));
+    AT(strcmp(label, "200 um") == 0);
+    _scene_format_si_value(0.02, "m", label, sizeof(label));
+    AT(strcmp(label, "2 cm") == 0);
+    _scene_format_si_value(2000.0, "m", label, sizeof(label));
+    AT(strcmp(label, "2 km") == 0);
+    return 0;
+}
+
+
+
+/**
+ * Check retained 2D scale-bar lowering, panzoom/domain updates, and DPI line width.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+static int test_scene_scalebar_2d_realization(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 400, 200, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel_full(figure);
+    ANN(panel);
+    AT(dvz_panel_set_domain(panel, DVZ_DIM_X, 0.0, 0.01) == 0);
+
+    DvzAnnotation* scalebar = dvz_annotation_scalebar(
+        panel,
+        &(DvzScaleBarDesc){
+            .dimension = DVZ_DIM_X,
+            .anchor = DVZ_SCENE_ANCHOR_BOTTOM_LEFT,
+            .label_position = DVZ_SCALEBAR_LABEL_ABOVE,
+            .unit = "m",
+            .target_length_px = 120.0f,
+            .min_length_px = 70.0f,
+            .max_length_px = 180.0f,
+            .offset_px = {20.0f, 20.0f},
+            .line_width_px = 2.0f,
+            .line_color = {255, 255, 255, 255},
+            .label_style = {
+                .size_px = 10.0f,
+                .renderer = DVZ_TEXT_RENDERER_SMALL_BITMAP_ATLAS,
+                .color = {255, 255, 255, 255},
+            },
+        });
+    ANN(scalebar);
+    _scene_prepare_text_visuals(figure);
+    ANN(scalebar->scalebar_visual);
+    ANN(scalebar->visual);
+    AT(scalebar->kind == DVZ_ANNOTATION_SCALEBAR);
+    AT(scalebar->scalebar_visual->type == DVZ_VISUAL_TYPE_SEGMENT);
+    AT(scalebar->visual->type == DVZ_VISUAL_TYPE_TEXT);
+    AT(scalebar->scalebar_visual->visible);
+    AT(scalebar->visual->visible);
+    ANN(scalebar->visual->text.glyph_visual);
+    AT(scalebar->visual->text.glyph_visual->visible);
+    AT(strcmp(scalebar->text, "2 mm") == 0);
+    AC(scalebar->scalebar_units, 0.002, 1e-12);
+    AC(scalebar->scalebar_px, 80.0f, 1e-5f);
+
+    AT(dvz_panel_set_domain(panel, DVZ_DIM_X, 0.0, 0.001) == 0);
+    _scene_prepare_text_visuals(figure);
+    AT(strcmp(scalebar->text, "200 um") == 0);
+
+    DvzCapabilitySnapshot caps;
+    dvz_capability_snapshot_default(&caps);
+    caps.shader_format_glsl = true;
+    caps.max_vertex_buffers = 16;
+    caps.max_bind_groups = 4;
+    caps.max_buffer_size = 256 * 1024 * 1024;
+    caps.supports_color_blending = true;
+
+    DvzFramePlanEmitConfig cfg = dvz_frame_plan_emit_config();
+    cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
+    cfg.target_width = 800;
+    cfg.target_height = 400;
+    cfg.device_scale_x = 2.0f;
+    cfg.device_scale_y = 2.0f;
+
+    DvzDiagnosticReport report;
+    dvz_diagnostic_report_init(&report);
+    DvzDrp2CommandStream* stream = dvz_figure_emit_ex(figure, &caps, &report, &cfg);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+    ANN(stream);
+
+    bool saw_scaled_width = false;
+    for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
+    {
+        const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream, i);
+        if (cmd == NULL || cmd->type != DVZ_DRP2_COMMAND_WRITE_BUFFER)
+            continue;
+        const char* label = dvz_drp2_stream_label(stream, cmd->u.write_buffer.buffer_id);
+        if (label == NULL || strstr(label, "line_width") == NULL)
+            continue;
+        const float* width = (const float*)cmd->u.write_buffer.data_raw;
+        ANN(width);
+        AC(width[0], 4.0f, 1e-6f);
+        saw_scaled_width = true;
+        break;
+    }
+    AT(saw_scaled_width);
+
+    dvz_drp2_stream_destroy(stream);
+    dvz_annotation_destroy(scalebar);
+    AT(!scalebar->scalebar_visual->visible);
+    AT(!scalebar->visual->visible);
     dvz_scene_destroy(scene);
     return 0;
 }
@@ -1370,6 +1508,8 @@ int test_scene_interaction(TstSuite* suite)
     TST_CASE(test_scene_selection_apply_pick_and_link_keys);
     TST_CASE(test_scene_selection_apply_pick_updates_visual_masks);
     TST_CASE(test_scene_text_annotation_bookkeeping);
+    TST_CASE(test_scene_scalebar_formatting);
+    TST_CASE(test_scene_scalebar_2d_realization);
     TST_CASE(test_scene_font_defaults);
     TST_CASE(test_scene_text_sdf_default_font);
     TST_CASE(test_scene_text_semantic_object_realization);

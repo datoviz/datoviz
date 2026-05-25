@@ -760,3 +760,26 @@ struct DvzLabelDesc
     uint32_t flags;
 };
 typedef struct DvzLabelDesc DvzLabelDesc;
+
+
+struct DvzScaleBarDesc
+{
+    DvzDim dimension;
+    DvzSceneAnchor anchor;
+    DvzScaleBarLabelPosition label_position;
+    DvzTextStyle label_style;
+    DvzTextPlacement placement;
+    DvzFormatDesc format;
+    const char* unit;
+    double data_to_unit;
+    float target_length_px;
+    float min_length_px;
+    float max_length_px;
+    float offset_px[2];
+    float tick_length_px;
+    float line_width_px;
+    uint8_t line_color[4];
+    uint8_t background_color[4];
+    uint32_t flags;
+};
+typedef struct DvzScaleBarDesc DvzScaleBarDesc;
