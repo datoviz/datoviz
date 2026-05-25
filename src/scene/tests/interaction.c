@@ -528,6 +528,15 @@ static int test_scene_scalebar_2d_realization(TstContext* suite, const TstCase* 
     AT(dvz_diagnostic_report_count(&report) == 0);
     ANN(stream);
 
+    const DvzVisualAttr* label_size_attr = _interaction_visual_attr(scalebar->visual, "size");
+    ANN(label_size_attr);
+    AT(label_size_attr->item_count == 1);
+    const float* label_size = (const float*)label_size_attr->data;
+    ANN(label_size);
+    AC(label_size[0], 10.0f, 1e-6f);
+    AC(scalebar->scalebar_realization.screen_scale, 2.0f, 1e-6f);
+    AC(scalebar->scalebar_realization.label_size, 10.0f, 1e-6f);
+
     bool saw_scaled_width = false;
     bool saw_glyph_pipeline = false;
     bool saw_glyph_draw = false;

@@ -1795,6 +1795,7 @@ static bool _scalebar_label_layout_equal(
     ANN(a);
     ANN(b);
     return strcmp(a->label, b->label) == 0 &&
+           fabsf(a->screen_scale - b->screen_scale) <= 1e-6f &&
            memcmp(a->label_anchor, b->label_anchor, sizeof(a->label_anchor)) == 0 &&
            a->label_size == b->label_size &&
            memcmp(a->label_color, b->label_color, sizeof(a->label_color)) == 0 &&
@@ -1915,8 +1916,7 @@ static bool _scalebar_prepare_overlay_visual(
 
     _scene_format_si_value(length_units, desc->unit, resolved.label, sizeof(resolved.label));
     resolved.label_size =
-        _scalebar_positive_or_default(desc->label_style.size_px, DVZ_SCALEBAR_LABEL_SIZE_PX) *
-        resolved.screen_scale;
+        _scalebar_positive_or_default(desc->label_style.size_px, DVZ_SCALEBAR_LABEL_SIZE_PX);
     resolved.renderer =
         desc->label_style.renderer != 0 ? desc->label_style.renderer : DVZ_TEXT_RENDERER_MSDF_ATLAS;
     resolved.label_position[0] = horizontal ? 0.5f * (x0 + x1) : x1;
