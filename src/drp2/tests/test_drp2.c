@@ -1371,9 +1371,10 @@ int test_drp2_runtime_vklite_samples_3d_texture(TstContext* suite, const TstCase
         "void main(){gl_Position=vec4(p[gl_VertexIndex],0,1);}"));
     AT(dvz_drp2_stream_create_shader_module_format(
         stream, 2, "FRAGMENT", "glsl",
-        "#version 450\nlayout(set=0,binding=0)uniform sampler3D tex;"
+        "#version 450\nlayout(set=0,binding=0)uniform texture3D tex;"
+        "layout(set=0,binding=1)uniform sampler samp;"
         "layout(location=0)out vec4 color;"
-        "void main(){color=texture(tex,vec3(0.5));}"));
+        "void main(){color=texture(sampler3D(tex,samp),vec3(0.5));}"));
     AT(dvz_drp2_stream_create_texture_sampler_bind_group_layout(stream, 3));
     AT(dvz_drp2_stream_create_render_pipeline_with_bind_group_layout(stream, 4, 1, 2, 0, 3));
     AT(dvz_drp2_stream_create_sampler(stream, 5));
@@ -4034,11 +4035,13 @@ int test_drp2_runtime_vklite_draws_wboit_format_passes(TstContext* suite, const 
         "void main(){gl_Position=vec4(p[gl_VertexIndex],0,1);}"));
     AT(dvz_drp2_stream_create_shader_module_format(
         stream, 21, "FRAGMENT", "glsl",
-        "#version 450\nlayout(set=0,binding=0)uniform sampler2D accum_tex;"
-        "layout(set=0,binding=1)uniform sampler2D reveal_tex;"
+        "#version 450\nlayout(set=0,binding=0)uniform texture2D accum_tex;"
+        "layout(set=0,binding=1)uniform texture2D reveal_tex;"
+        "layout(set=0,binding=2)uniform sampler samp;"
         "layout(location=0)out vec4 color;"
-        "void main(){vec4 a=texelFetch(accum_tex,ivec2(0),0);"
-        "float r=texelFetch(reveal_tex,ivec2(0),0).r;color=vec4(a.r,r,0,1);}"));
+        "void main(){vec4 a=texelFetch(sampler2D(accum_tex,samp),ivec2(0),0);"
+        "float r=texelFetch(sampler2D(reveal_tex,samp),ivec2(0),0).r;"
+        "color=vec4(a.r,r,0,1);}"));
     AT(dvz_drp2_stream_create_render_pipeline_with_bind_group_layout(
         stream, 22, 20, 21, 0, 3));
 
@@ -4219,13 +4222,16 @@ int test_drp2_runtime_vklite_draws_depth_peeling_shape(TstContext* suite, const 
     AT(dvz_drp2_stream_create_shader_module_format(stream, 30, "VERTEX", "glsl", fullscreen_vs));
     AT(dvz_drp2_stream_create_shader_module_format(
         stream, 31, "FRAGMENT", "glsl",
-        "#version 450\nlayout(set=0,binding=0)uniform sampler2D prev_front;"
-        "layout(set=0,binding=1)uniform sampler2D prev_back;"
-        "layout(set=0,binding=2)uniform sampler2D prev_depth;"
+        "#version 450\nlayout(set=0,binding=0)uniform texture2D prev_front;"
+        "layout(set=0,binding=1)uniform texture2D prev_back;"
+        "layout(set=0,binding=2)uniform texture2D prev_depth;"
+        "layout(set=0,binding=3)uniform sampler samp;"
         "layout(location=0)out vec4 front_accum;layout(location=1)out vec4 back_accum;"
         "layout(location=2)out vec4 depth_pair;"
-        "void main(){ivec2 uv=ivec2(gl_FragCoord.xy);vec4 f=texelFetch(prev_front,uv,0);"
-        "vec4 b=texelFetch(prev_back,uv,0);vec4 d=texelFetch(prev_depth,uv,0);"
+        "void main(){ivec2 uv=ivec2(gl_FragCoord.xy);"
+        "vec4 f=texelFetch(sampler2D(prev_front,samp),uv,0);"
+        "vec4 b=texelFetch(sampler2D(prev_back,samp),uv,0);"
+        "vec4 d=texelFetch(sampler2D(prev_depth,samp),uv,0);"
         "front_accum=f+vec4(0.25,0,0,0);back_accum=b+vec4(0,0.25,0,0);"
         "depth_pair=d+vec4(0.05,0.05,0,0);}"));
     AT(dvz_drp2_stream_create_render_pipeline_with_bind_group_layout(
@@ -4243,12 +4249,15 @@ int test_drp2_runtime_vklite_draws_depth_peeling_shape(TstContext* suite, const 
     AT(dvz_drp2_stream_create_shader_module_format(stream, 40, "VERTEX", "glsl", fullscreen_vs));
     AT(dvz_drp2_stream_create_shader_module_format(
         stream, 41, "FRAGMENT", "glsl",
-        "#version 450\nlayout(set=0,binding=0)uniform sampler2D front_accum;"
-        "layout(set=0,binding=1)uniform sampler2D back_accum;"
-        "layout(set=0,binding=2)uniform sampler2D depth_pair;"
+        "#version 450\nlayout(set=0,binding=0)uniform texture2D front_accum;"
+        "layout(set=0,binding=1)uniform texture2D back_accum;"
+        "layout(set=0,binding=2)uniform texture2D depth_pair;"
+        "layout(set=0,binding=3)uniform sampler samp;"
         "layout(location=0)out vec4 color;"
-        "void main(){ivec2 uv=ivec2(gl_FragCoord.xy);vec4 f=texelFetch(front_accum,uv,0);"
-        "vec4 b=texelFetch(back_accum,uv,0);vec4 d=texelFetch(depth_pair,uv,0);"
+        "void main(){ivec2 uv=ivec2(gl_FragCoord.xy);"
+        "vec4 f=texelFetch(sampler2D(front_accum,samp),uv,0);"
+        "vec4 b=texelFetch(sampler2D(back_accum,samp),uv,0);"
+        "vec4 d=texelFetch(sampler2D(depth_pair,samp),uv,0);"
         "color=vec4(f.r,b.g,d.r,1.0);}"));
     AT(dvz_drp2_stream_create_render_pipeline_with_bind_group_layout(
         stream, 42, 40, 41, 0, 3));
@@ -4478,9 +4487,11 @@ int test_drp2_runtime_vklite_samples_read_only_active_depth(
     AT(dvz_drp2_stream_create_shader_module_format(stream, 20, "VERTEX", "glsl", fullscreen_vs));
     AT(dvz_drp2_stream_create_shader_module_format(
         stream, 21, "FRAGMENT", "glsl",
-        "#version 450\nlayout(set=0,binding=0)uniform sampler2D depth_tex;"
+        "#version 450\nlayout(set=0,binding=0)uniform texture2D depth_tex;"
+        "layout(set=0,binding=1)uniform sampler samp;"
         "layout(location=0)out vec4 color;"
-        "void main(){float d=texelFetch(depth_tex,ivec2(0),0).r;color=vec4(d,d,d,1);}"));
+        "void main(){float d=texelFetch(sampler2D(depth_tex,samp),ivec2(0),0).r;"
+        "color=vec4(d,d,d,1);}"));
 
     DvzDrp2BindGroupLayoutEntry layout_entries[2] = {
         {
@@ -4595,9 +4606,10 @@ int test_drp2_runtime_vklite_samples_then_copies_texture(TstContext* suite, cons
         "void main(){gl_Position=vec4(p[gl_VertexIndex],0,1);}"));
     AT(dvz_drp2_stream_create_shader_module_format(
         stream, 2, "FRAGMENT", "glsl",
-        "#version 450\nlayout(set=0,binding=0)uniform sampler2D tex;"
+        "#version 450\nlayout(set=0,binding=0)uniform texture2D tex;"
+        "layout(set=0,binding=1)uniform sampler samp;"
         "layout(location=0)out vec4 color;"
-        "void main(){color=texture(tex,vec2(0.5));}"));
+        "void main(){color=texture(sampler2D(tex,samp),vec2(0.5));}"));
     AT(dvz_drp2_stream_create_texture_sampler_bind_group_layout(stream, 3));
     AT(dvz_drp2_stream_create_render_pipeline_with_bind_group_layout(stream, 4, 1, 2, 0, 3));
     AT(dvz_drp2_stream_create_sampler(stream, 5));
@@ -4680,9 +4692,10 @@ int test_drp2_runtime_vklite_refreshes_bind_group_after_texture_recreate(
         "void main(){gl_Position=vec4(p[gl_VertexIndex],0,1);}"));
     AT(dvz_drp2_stream_create_shader_module_format(
         setup, 2, "FRAGMENT", "glsl",
-        "#version 450\nlayout(set=0,binding=0)uniform sampler2D tex;"
+        "#version 450\nlayout(set=0,binding=0)uniform texture2D tex;"
+        "layout(set=0,binding=1)uniform sampler samp;"
         "layout(location=0)out vec4 color;"
-        "void main(){color=texture(tex,vec2(0.5));}"));
+        "void main(){color=texture(sampler2D(tex,samp),vec2(0.5));}"));
     AT(dvz_drp2_stream_create_texture_sampler_bind_group_layout(setup, 3));
     AT(dvz_drp2_stream_create_render_pipeline_with_bind_group_layout(setup, 4, 1, 2, 0, 3));
     AT(dvz_drp2_stream_create_sampler(setup, 5));
@@ -4813,9 +4826,10 @@ int test_drp2_runtime_vklite_refreshes_bind_group_after_buffer_sampler_recreate(
         "#version 450\n"
         "layout(set=0,binding=0)uniform Ubo{vec4 u_color;}ubo;"
         "layout(set=1,binding=0)readonly buffer Sbo{vec4 s_color;}sbo;"
-        "layout(set=2,binding=0)uniform sampler2D tex;"
+        "layout(set=2,binding=0)uniform texture2D tex;"
+        "layout(set=2,binding=1)uniform sampler samp;"
         "layout(location=0)out vec4 color;"
-        "void main(){vec4 t=texture(tex,vec2(0.5));"
+        "void main(){vec4 t=texture(sampler2D(tex,samp),vec2(0.5));"
         "color=vec4(ubo.u_color.r,sbo.s_color.g,t.b,1.0);}"));
     AT(dvz_drp2_stream_create_uniform_bind_group_layout(setup, 3));
     AT(dvz_drp2_stream_create_bind_group_layout_entries(setup, 4, 1, &storage_layout));
