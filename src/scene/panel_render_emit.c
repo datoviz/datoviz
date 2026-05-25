@@ -620,11 +620,7 @@ bool _scene_emit_panel_render_ex(
     ANN(figure);
     ANN(plan);
     ANN(figure_id);
-    _scene_prepare_composite_visuals(figure);
-    _scene_prepare_axis_visuals(figure);
-    _scene_prepare_colorbar_visuals(figure, NULL);
-    _scene_prepare_legend_visuals(figure, NULL);
-    _scene_prepare_text_visuals(figure);
+    /* Visual preparation is owned by upload emission before render nodes borrow visual data. */
     ASSERT(panel_index < figure->panel_count);
     DvzPanel* panel = &figure->panels[panel_index];
 

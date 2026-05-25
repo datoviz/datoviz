@@ -556,6 +556,99 @@ static int test_scene_scalebar_2d_realization(TstContext* suite, const TstCase* 
 
 
 /**
+ * Check render emission does not invalidate scale-bar glyph upload sources.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+static int test_scene_scalebar_render_emit_keeps_upload_sources(
+    TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    ANN(item);
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 720, 420, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel_full(figure);
+    ANN(panel);
+    AT(dvz_panel_set_domain(panel, DVZ_DIM_X, 0.0, 0.010) == 0);
+    AT(dvz_panel_set_domain(panel, DVZ_DIM_Y, 0.0, 0.006) == 0);
+
+    DvzAnnotation* scalebar = dvz_annotation_scalebar(
+        panel,
+        &(DvzScaleBarDesc){
+            .dimension = DVZ_DIM_X,
+            .anchor = DVZ_SCENE_ANCHOR_BOTTOM_LEFT,
+            .label_position = DVZ_SCALEBAR_LABEL_ABOVE,
+            .target_length_px = 160.0f,
+            .min_length_px = 90.0f,
+            .max_length_px = 240.0f,
+            .offset_px = {36.0f, 34.0f},
+            .tick_length_px = 12.0f,
+            .line_width_px = 3.0f,
+            .line_color = {245, 248, 252, 255},
+            .unit = "m",
+            .data_to_unit = 1.0,
+            .label_style = {
+                .size_px = 22.0f,
+                .renderer = DVZ_TEXT_RENDERER_MSDF_ATLAS,
+                .color = {255, 236, 176, 255},
+            },
+        });
+    ANN(scalebar);
+
+    DvzFramePlan* plan = dvz_frame_plan("figure_0", 0);
+    ANN(plan);
+    DvzDiagnosticReport report;
+    dvz_diagnostic_report_init(&report);
+    _scene_emit_visual_uploads(figure, plan, &report);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+    ANN(scalebar->visual);
+    ANN(scalebar->visual->text.glyph_visual);
+    DvzVisual* glyph = scalebar->visual->text.glyph_visual;
+
+    const DvzVisualAttr* position_attr = NULL;
+    for (uint32_t ai = 0; ai < glyph->attr_count; ai++)
+    {
+        if (strcmp(glyph->attrs[ai].name, "position") == 0)
+        {
+            position_attr = &glyph->attrs[ai];
+            break;
+        }
+    }
+    ANN(position_attr);
+    ANN(position_attr->data);
+
+    uint32_t upload_index = UINT32_MAX;
+    for (uint32_t i = 0; i < plan->count; i++)
+    {
+        const DvzFramePlanNode* node = &plan->nodes[i];
+        if (
+            node->type == DVZ_FRAME_PLAN_NODE_UPLOAD &&
+            node->u.upload.metadata.visual_type == (uint32_t)DVZ_VISUAL_TYPE_GLYPH &&
+            node->u.upload.metadata.role == DVZ_FRAME_PLAN_RESOURCE_ROLE_POSITION)
+        {
+            upload_index = i;
+            break;
+        }
+    }
+    AT(upload_index != UINT32_MAX);
+    AT(plan->nodes[upload_index].u.upload.data == position_attr->data);
+
+    AT(_scene_emit_panel_render_ex(figure, 0, plan, "figure_0", &report));
+    AT(plan->nodes[upload_index].u.upload.data == position_attr->data);
+
+    dvz_frame_plan_destroy(plan);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
+/**
  * Check the minimal no-data scale-bar stream contains both bar geometry and text work.
  *
  * @param suite the active test suite
@@ -1832,6 +1925,7 @@ int test_scene_interaction(TstSuite* suite)
     TST_CASE(test_scene_text_annotation_bookkeeping);
     TST_CASE(test_scene_scalebar_formatting);
     TST_CASE(test_scene_scalebar_2d_realization);
+    TST_CASE(test_scene_scalebar_render_emit_keeps_upload_sources);
     TST_CASE(test_scene_scalebar_minimal_stream);
     TST_CASE(test_scene_scalebar_2d_3d_stream_order);
     TST_CASE(test_scene_font_defaults);
