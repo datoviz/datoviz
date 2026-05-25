@@ -78,8 +78,8 @@ struct PointStressState
     DvzPanel* panel;
     DvzVisual* visual;
     DvzAnimation* spin;
-    float (*base_positions)[3];
-    float (*positions)[3];
+    vec3* base_positions;
+    vec3* positions;
     DvzColor* colors;
     float* diameters;
     uint32_t max_count;
@@ -644,8 +644,8 @@ int main(int argc, char** argv)
     state.max_count = MAX_POINTS;
     state.preset_index = DEFAULT_PRESET;
     state.active_count = _preset_count(DEFAULT_PRESET);
-    state.base_positions = (float(*)[3])dvz_calloc(MAX_POINTS, sizeof(*state.base_positions));
-    state.positions = (float(*)[3])dvz_calloc(MAX_POINTS, sizeof(*state.positions));
+    state.base_positions = (vec3*)dvz_calloc(MAX_POINTS, sizeof(*state.base_positions));
+    state.positions = (vec3*)dvz_calloc(MAX_POINTS, sizeof(*state.positions));
     state.colors = (DvzColor*)dvz_calloc(MAX_POINTS, sizeof(DvzColor));
     state.diameters = (float*)dvz_calloc(MAX_POINTS, sizeof(float));
     EXAMPLE_CHECK(

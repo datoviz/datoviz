@@ -340,9 +340,9 @@ static void update_source_text(TextMsdfLabState* state, uint32_t source)
     (void)_scene_text_visual_set_renderer(src->text, src->renderer);
 
     const char* strings[1] = {state->text};
-    float positions[1][3] = {{0}};
+    vec3 positions[1] = {{0}};
     source_pixel_to_visual(36.0f, 118.0f, 0.0f, positions[0]);
-    float anchors[1][2] = {{0.0f, 0.5f}};
+    vec2 anchors[1] = {{0.0f, 0.5f}};
     float sizes[1] = {state->size_px};
     float angles[1] = {state->angle};
     DvzColor colors[1] = {{color[0], color[1], color[2], color[3]}};

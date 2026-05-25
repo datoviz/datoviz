@@ -47,8 +47,8 @@ struct SceneState
     DvzFigure* figure = nullptr;
     DvzPanel* panel = nullptr;
     DvzVisual* visual = nullptr;
-    float positions[POINT_COUNT][3] = {};
-    uint8_t colors[POINT_COUNT][4] = {};
+    vec3 positions[POINT_COUNT] = {};
+    DvzColor colors[POINT_COUNT] = {};
     float sizes[POINT_COUNT] = {};
     float point_size = 18.0f;
     float phase = 0.0f;

@@ -68,7 +68,7 @@ typedef struct MarkerStressState
     DvzAnimation* rotation_animation;
     DvzVisual* visual;
 
-    float(*positions)[3];
+    vec3* positions;
     DvzColor* colors;
     float* diameters;
     float* angles;
@@ -454,7 +454,7 @@ static void _marker_stress_free(MarkerStressState* state)
  */
 static int _marker_stress_alloc(MarkerStressState* state)
 {
-    state->positions = (float(*)[3])dvz_calloc(state->max_count, sizeof(*state->positions));
+    state->positions = (vec3*)dvz_calloc(state->max_count, sizeof(*state->positions));
     state->colors = (DvzColor*)dvz_calloc(state->max_count, sizeof(DvzColor));
     state->diameters = (float*)dvz_calloc(state->max_count, sizeof(float));
     state->angles = (float*)dvz_calloc(state->max_count, sizeof(float));

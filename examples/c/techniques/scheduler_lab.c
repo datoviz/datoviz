@@ -546,13 +546,13 @@ int main(int argc, char** argv)
     DvzVisual* points = dvz_point(scene, 0);
     EXAMPLE_CHECK(image != NULL && points != NULL, "visual creation failed");
 
-    float image_pos[4][3] = {
+    vec3 image_pos[4] = {
         {-1.0f, -1.0f, 0.0f},
         {-1.0f, +1.0f, 0.0f},
         {+1.0f, -1.0f, 0.0f},
         {+1.0f, +1.0f, 0.0f},
     };
-    float texcoords[4][2] = {
+    vec2 texcoords[4] = {
         {0.0f, 0.0f},
         {0.0f, 1.0f},
         {1.0f, 0.0f},
@@ -572,7 +572,7 @@ int main(int argc, char** argv)
         });
     EXAMPLE_CHECK(rc == 0, "dvz_panel_add_visual(image) failed");
 
-    float point_pos[LAB_POINT_COUNT][3] = {
+    vec3 point_pos[LAB_POINT_COUNT] = {
         {0.00f, 0.00f, 0.0f},
         {-0.45f, -0.30f, 0.0f},
         {+0.45f, -0.25f, 0.0f},

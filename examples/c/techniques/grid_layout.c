@@ -68,8 +68,8 @@ static bool _add_point_grid(
     if (visual == NULL)
         return false;
 
-    float positions[POINT_COUNT][3] = {0};
-    uint8_t colors[POINT_COUNT][4] = {0};
+    vec3 positions[POINT_COUNT] = {0};
+    DvzColor colors[POINT_COUNT] = {0};
     float sizes[POINT_COUNT] = {0};
     for (uint32_t row = 0; row < POINT_ROWS; row++)
     {

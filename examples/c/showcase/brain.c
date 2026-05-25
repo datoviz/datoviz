@@ -97,8 +97,8 @@ typedef struct AllenIblAtlasRegion
 
 typedef struct AllenIblAtlasMesh
 {
-    float (*pos)[3];
-    float (*normal)[3];
+    vec3* pos;
+    vec3* normal;
     DvzColor* base_color;
     DvzColor* color;
     DvzIndex* idx;
@@ -592,8 +592,8 @@ static bool _load_ibl_atlas_mesh(const char* data_dir, AllenIblAtlasMesh* atlas)
     DvzSize normal_size = 0;
     DvzSize color_size = 0;
     DvzSize idx_size = 0;
-    float(*pos)[3] = _read_ibl_asset_npy(data_dir, "allen_ibl_mesh_pos.npy", &pos_size);
-    float(*normal)[3] = _read_ibl_asset_npy(data_dir, "allen_ibl_mesh_normal.npy", &normal_size);
+    vec3* pos = _read_ibl_asset_npy(data_dir, "allen_ibl_mesh_pos.npy", &pos_size);
+    vec3* normal = _read_ibl_asset_npy(data_dir, "allen_ibl_mesh_normal.npy", &normal_size);
     DvzColor* color = _read_ibl_asset_npy(data_dir, "allen_ibl_mesh_color.npy", &color_size);
     DvzIndex* idx = _read_ibl_asset_npy(data_dir, "allen_ibl_mesh_idx.npy", &idx_size);
 

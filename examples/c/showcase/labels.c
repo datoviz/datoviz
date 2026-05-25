@@ -441,13 +441,13 @@ _image_visual(DvzScene* scene, const uint8_t* pixels, DvzAlphaMode alpha_mode)
     if (visual == NULL)
         return NULL;
 
-    float positions[4][3] = {
+    vec3 positions[4] = {
         {IMAGE_MIN_NDC, IMAGE_MIN_NDC, 0.0f},
         {IMAGE_MIN_NDC, IMAGE_MAX_NDC, 0.0f},
         {IMAGE_MAX_NDC, IMAGE_MIN_NDC, 0.0f},
         {IMAGE_MAX_NDC, IMAGE_MAX_NDC, 0.0f},
     };
-    float texcoords[4][2] = {
+    vec2 texcoords[4] = {
         {0.0f, 0.0f},
         {0.0f, 1.0f},
         {1.0f, 0.0f},

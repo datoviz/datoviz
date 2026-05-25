@@ -70,8 +70,8 @@ static bool _add_point_grid(
     if (visual == NULL)
         return false;
 
-    float positions[POINT_COUNT][3] = {0};
-    uint8_t colors[POINT_COUNT][4] = {0};
+    vec3 positions[POINT_COUNT] = {0};
+    DvzColor colors[POINT_COUNT] = {0};
     float sizes[POINT_COUNT] = {0};
     for (uint32_t row = 0; row < POINT_ROWS; row++)
     {
@@ -120,13 +120,13 @@ static bool _add_image_panel(DvzScene* scene, DvzPanel* panel)
     if (visual == NULL)
         return false;
 
-    float positions[4][3] = {
+    vec3 positions[4] = {
         {-0.88f, -0.78f, 0.0f},
         {-0.88f, 0.78f, 0.0f},
         {0.88f, -0.78f, 0.0f},
         {0.88f, 0.78f, 0.0f},
     };
-    float texcoords[4][2] = {
+    vec2 texcoords[4] = {
         {0.0f, 0.0f},
         {0.0f, 1.0f},
         {1.0f, 0.0f},
@@ -193,8 +193,8 @@ static bool _add_path_panel(DvzScene* scene, DvzPanel* panel)
     if (visual == NULL)
         return false;
 
-    float positions[PATH_COUNT][3] = {0};
-    uint8_t colors[PATH_COUNT][4] = {0};
+    vec3 positions[PATH_COUNT] = {0};
+    DvzColor colors[PATH_COUNT] = {0};
     for (uint32_t i = 0; i < PATH_COUNT; i++)
     {
         float t = (float)i / (float)(PATH_COUNT - 1);

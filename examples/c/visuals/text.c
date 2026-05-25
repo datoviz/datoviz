@@ -70,8 +70,8 @@ int main(int argc, char** argv)
         "visual coordinates, pixel-sized glyphs",
         "rotated text",
     };
-    float positions[TEXT_COUNT][3] = {{0}};
-    float anchors[TEXT_COUNT][2] = {
+    vec3 positions[TEXT_COUNT] = {{0}};
+    vec2 anchors[TEXT_COUNT] = {
         {0.0f, 0.5f},
         {0.0f, 0.5f},
         {0.0f, 0.5f},

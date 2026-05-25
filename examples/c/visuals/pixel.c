@@ -54,7 +54,7 @@ typedef struct PixelState
 {
     DvzVisual* visual;
     DvzView* win;
-    float (*positions)[3];
+    vec3* positions;
     DvzColor* colors;
     float* sizes;
     uint32_t max_count;

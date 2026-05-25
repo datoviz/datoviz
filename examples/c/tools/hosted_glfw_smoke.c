@@ -296,12 +296,12 @@ static DvzScene* _make_scene(DvzFigure** out_figure, DvzPanel** out_panel)
         return NULL;
     }
 
-    float positions[3][3] = {
+    vec3 positions[3] = {
         {-0.5f, -0.5f, 0.0f},
         { 0.5f, -0.5f, 0.0f},
         { 0.0f,  0.5f, 0.0f},
     };
-    uint8_t colors[3][4] = {
+    DvzColor colors[3] = {
         {255,   0,   0, 255},
         {  0, 255,   0, 255},
         {  0,   0, 255, 255},

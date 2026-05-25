@@ -53,7 +53,7 @@ int main(int argc, char** argv)
     DvzVisual* visual = dvz_point(scene, 0);
     EXAMPLE_CHECK(figure != NULL && panel != NULL && visual != NULL, "scene setup failed");
 
-    float positions[5][3] = {
+    vec3 positions[5] = {
         {-0.62f, -0.34f, 0.0f},
         {-0.25f,  0.35f, 0.0f},
         { 0.00f, -0.05f, 0.0f},

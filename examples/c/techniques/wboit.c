@@ -86,11 +86,11 @@ struct MeshWboitState
  * @param indices output triangle-list indices
  */
 static void _build_cube(
-    float scale, DvzColor color, float positions[24][3], DvzColor colors[24],
-    float normals[24][3], DvzIndex indices[36])
+    float scale, DvzColor color, vec3 positions[24], DvzColor colors[24],
+    vec3 normals[24], DvzIndex indices[36])
 {
     const float s = scale;
-    const float face_positions[6][4][3] = {
+    const vec3 face_positions[6][4] = {
         {{-s, -s, +s}, {+s, -s, +s}, {+s, +s, +s}, {-s, +s, +s}},
         {{+s, -s, -s}, {-s, -s, -s}, {-s, +s, -s}, {+s, +s, -s}},
         {{-s, -s, -s}, {-s, -s, +s}, {-s, +s, +s}, {-s, +s, -s}},
@@ -98,7 +98,7 @@ static void _build_cube(
         {{-s, +s, +s}, {+s, +s, +s}, {+s, +s, -s}, {-s, +s, -s}},
         {{-s, -s, -s}, {+s, -s, -s}, {+s, -s, +s}, {-s, -s, +s}},
     };
-    const float face_normals[6][3] = {
+    const vec3 face_normals[6] = {
         {0.0f, 0.0f, +1.0f},
         {0.0f, 0.0f, -1.0f},
         {-1.0f, 0.0f, 0.0f},
@@ -299,7 +299,7 @@ int main(int argc, char** argv)
     DvzVisual* cube = dvz_mesh(scene, 0);
     EXAMPLE_CHECK(reference != NULL && cube != NULL, "visual creation failed");
 
-    float reference_positions[12][3] = {
+    vec3 reference_positions[12] = {
         {-0.95f, -0.95f, -1.05f},
         {+0.95f, -0.95f, -1.05f},
         {+0.95f, +0.95f, -1.05f},
@@ -328,9 +328,9 @@ int main(int argc, char** argv)
         {32, 32, 32, 255},
     };
 
-    float positions[24][3] = {0};
+    vec3 positions[24] = {0};
     DvzColor colors[24] = {0};
-    float normals[24][3] = {0};
+    vec3 normals[24] = {0};
     DvzIndex indices[36] = {0};
     DvzColor cube_color = {36, 150, 185, 82};
     _build_cube(0.72f, cube_color, positions, colors, normals, indices);

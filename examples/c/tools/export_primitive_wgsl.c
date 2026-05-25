@@ -54,7 +54,7 @@ int main(int argc, char** argv)
     DvzVisual* visual = dvz_primitive(scene, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 0);
     EXAMPLE_CHECK(figure != NULL && panel != NULL && visual != NULL, "scene setup failed");
 
-    float positions[3][3] = {
+    vec3 positions[3] = {
         {-0.62f, -0.54f, 0.0f},
         { 0.62f, -0.54f, 0.0f},
         { 0.00f,  0.62f, 0.0f},

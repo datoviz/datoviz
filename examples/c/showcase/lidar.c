@@ -63,7 +63,7 @@
 
 typedef struct LidarDataset
 {
-    float (*positions)[3];
+    vec3* positions;
     DvzColor* colors;
     float* sizes;
     uint32_t point_count;
@@ -228,7 +228,7 @@ static bool _load_lidar_dataset(const char* data_dir, uint32_t stride, LidarData
 
     DvzSize pos_size = 0;
     DvzSize color_size = 0;
-    float(*positions)[3] = dvz_read_npy(pos_path, &pos_size);
+    vec3* positions = dvz_read_npy(pos_path, &pos_size);
     DvzColor* colors = dvz_read_npy(color_path, &color_size);
     if (positions == NULL || colors == NULL)
     {

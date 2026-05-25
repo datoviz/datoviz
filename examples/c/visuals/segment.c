@@ -78,10 +78,10 @@ struct SegmentStressState
     uint32_t active_count;
     float active_count_value;
 
-    float (*base_start)[3];
-    float (*base_end)[3];
-    float (*position_start)[3];
-    float (*position_end)[3];
+    vec3* base_start;
+    vec3* base_end;
+    vec3* position_start;
+    vec3* position_end;
     DvzColor* colors;
     float* stroke_widths;
 
@@ -470,11 +470,11 @@ static void _segment_state_destroy(SegmentStressState* state)
 static bool _segment_state_alloc(SegmentStressState* state)
 {
     ANN(state);
-    state->base_start = (float(*)[3])dvz_calloc(state->max_count, sizeof(*state->base_start));
-    state->base_end = (float(*)[3])dvz_calloc(state->max_count, sizeof(*state->base_end));
+    state->base_start = (vec3*)dvz_calloc(state->max_count, sizeof(*state->base_start));
+    state->base_end = (vec3*)dvz_calloc(state->max_count, sizeof(*state->base_end));
     state->position_start =
-        (float(*)[3])dvz_calloc(state->max_count, sizeof(*state->position_start));
-    state->position_end = (float(*)[3])dvz_calloc(state->max_count, sizeof(*state->position_end));
+        (vec3*)dvz_calloc(state->max_count, sizeof(*state->position_start));
+    state->position_end = (vec3*)dvz_calloc(state->max_count, sizeof(*state->position_end));
     state->colors = (DvzColor*)dvz_calloc(state->max_count, sizeof(DvzColor));
     state->stroke_widths = (float*)dvz_calloc(state->max_count, sizeof(float));
 

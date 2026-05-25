@@ -135,7 +135,7 @@ static float _jitter(uint32_t seed)
  * @return number of generated spheres
  */
 static uint32_t
-_build_sphere_cloud(float (*positions)[3], DvzColor* colors, float* sizes, uint32_t max_count)
+_build_sphere_cloud(vec3* positions, DvzColor* colors, float* sizes, uint32_t max_count)
 {
     ANN(positions);
     ANN(colors);
@@ -525,7 +525,7 @@ int main(int argc, char** argv)
     int ret = 1;
     DvzScene* scene = NULL;
     DvzApp* app = NULL;
-    float(*positions)[3] = NULL;
+    vec3* positions = NULL;
     DvzColor* colors = NULL;
     float* base_sizes = NULL;
     float* live_sizes = NULL;
@@ -548,7 +548,7 @@ int main(int argc, char** argv)
     bool ok = dvz_panel_set_camera(panel, &camera_desc);
     EXAMPLE_CHECK(ok, "dvz_panel_set_camera() failed");
 
-    positions = (float(*)[3])dvz_calloc(MAX_SPHERES, sizeof(*positions));
+    positions = (vec3*)dvz_calloc(MAX_SPHERES, sizeof(*positions));
     colors = (DvzColor*)dvz_calloc(MAX_SPHERES, sizeof(DvzColor));
     base_sizes = (float*)dvz_calloc(MAX_SPHERES, sizeof(float));
     live_sizes = (float*)dvz_calloc(MAX_SPHERES, sizeof(float));
@@ -562,7 +562,7 @@ int main(int argc, char** argv)
     DvzVisual* visual = dvz_sphere(scene, DVZ_SPHERE_FLAGS_LIGHTING);
     EXAMPLE_CHECK(visual != NULL, "dvz_sphere() failed");
     DvzVisualDataUpdate updates[] = {
-        {.attr_name = "position", .data = &positions[0][0], .item_count = sphere_count},
+        {.attr_name = "position", .data = positions, .item_count = sphere_count},
         {.attr_name = "color", .data = colors, .item_count = sphere_count},
         {.attr_name = "radius", .data = live_sizes, .item_count = sphere_count},
     };

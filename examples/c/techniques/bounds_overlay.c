@@ -55,7 +55,7 @@ typedef struct BoundsOverlayState
  * @param colors output colors
  * @param sizes output point diameters
  */
-static void _fill_points(float positions[POINT_COUNT][3], DvzColor colors[POINT_COUNT],
+static void _fill_points(vec3 positions[POINT_COUNT], DvzColor colors[POINT_COUNT],
                          float sizes[POINT_COUNT])
 {
     for (uint32_t i = 0; i < POINT_COUNT; i++)
@@ -84,7 +84,7 @@ static void _fill_points(float positions[POINT_COUNT][3], DvzColor colors[POINT_
  * @param colors output colors
  * @param radii output radii
  */
-static void _fill_spheres(float positions[SPHERE_COUNT][3], DvzColor colors[SPHERE_COUNT],
+static void _fill_spheres(vec3 positions[SPHERE_COUNT], DvzColor colors[SPHERE_COUNT],
                           float radii[SPHERE_COUNT])
 {
     for (uint32_t i = 0; i < SPHERE_COUNT; i++)
@@ -197,7 +197,7 @@ int main(int argc, char** argv)
 
     DvzVisual* points = dvz_point(scene, 0);
     EXAMPLE_CHECK(points != NULL, "dvz_point() failed");
-    float point_positions[POINT_COUNT][3] = {0};
+    vec3 point_positions[POINT_COUNT] = {0};
     DvzColor point_colors[POINT_COUNT] = {0};
     float point_sizes[POINT_COUNT] = {0};
     _fill_points(point_positions, point_colors, point_sizes);
@@ -215,7 +215,7 @@ int main(int argc, char** argv)
     EXAMPLE_CHECK(spheres != NULL, "dvz_sphere() failed");
     rc = dvz_sphere_mode(spheres, DVZ_SPHERE_MODE_RAYCAST_IMPOSTOR);
     EXAMPLE_CHECK(rc == 0, "dvz_sphere_mode() failed");
-    float sphere_positions[SPHERE_COUNT][3] = {0};
+    vec3 sphere_positions[SPHERE_COUNT] = {0};
     DvzColor sphere_colors[SPHERE_COUNT] = {0};
     float sphere_radii[SPHERE_COUNT] = {0};
     _fill_spheres(sphere_positions, sphere_colors, sphere_radii);

@@ -55,8 +55,8 @@ typedef struct PrimitiveState
 {
     DvzVisual* visual;
     DvzView* win;
-    float (*positions)[3];
-    float (*normals)[3];
+    vec3* positions;
+    vec3* normals;
     DvzColor* colors;
     uint32_t max_triangles;
     uint32_t triangle_count;

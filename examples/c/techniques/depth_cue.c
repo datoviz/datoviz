@@ -84,7 +84,7 @@ typedef struct DepthCueExampleState
  * @param count number of points to fill
  */
 static void _build_points(
-    float (*positions)[3], DvzColor* colors, float* sizes, uint32_t count)
+    vec3* positions, DvzColor* colors, float* sizes, uint32_t count)
 {
     ANN(positions);
     ANN(colors);
@@ -502,7 +502,7 @@ int main(int argc, char** argv)
     int ret = 1;
     DvzScene* scene = NULL;
     DvzApp* app = NULL;
-    float(*positions)[3] = NULL;
+    vec3* positions = NULL;
     DvzColor* colors = NULL;
     float* sizes = NULL;
 
@@ -525,7 +525,7 @@ int main(int argc, char** argv)
     DvzVisual* visual = dvz_point(scene, 0);
     EXAMPLE_CHECK(visual != NULL, "dvz_point() failed");
 
-    positions = (float(*)[3])dvz_calloc(POINT_COUNT, sizeof(*positions));
+    positions = (vec3*)dvz_calloc(POINT_COUNT, sizeof(*positions));
     colors = (DvzColor*)dvz_calloc(POINT_COUNT, sizeof(DvzColor));
     sizes = (float*)dvz_calloc(POINT_COUNT, sizeof(float));
     EXAMPLE_CHECK(positions != NULL && colors != NULL && sizes != NULL, "point allocation failed");

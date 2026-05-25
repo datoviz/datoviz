@@ -71,7 +71,7 @@ typedef struct PathStressState
     DvzVisual* thin_visual;
     DvzVisual* stroked_visual;
 
-    float (*positions)[3];
+    vec3* positions;
     DvzColor* colors;
     float* stroke_widths;
     uint32_t* subpath_lengths;
@@ -487,7 +487,7 @@ int main(int argc, char** argv)
         .global_stroke_width = 5.0f,
     };
 
-    state.positions = (float(*)[3])dvz_calloc(PATH_MAX_VERTICES, sizeof(*state.positions));
+    state.positions = (vec3*)dvz_calloc(PATH_MAX_VERTICES, sizeof(*state.positions));
     state.colors = (DvzColor*)dvz_calloc(PATH_MAX_VERTICES, sizeof(*state.colors));
     state.stroke_widths = (float*)dvz_calloc(PATH_MAX_VERTICES, sizeof(*state.stroke_widths));
     state.subpath_lengths =

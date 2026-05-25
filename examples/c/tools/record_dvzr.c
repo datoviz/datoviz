@@ -213,14 +213,14 @@ int main(int argc, char** argv)
     EXAMPLE_CHECK(
         figure != NULL && panel != NULL && visual != NULL, "failed to create scene objects");
 
-    float positions[5][3] = {
+    vec3 positions[5] = {
         {-0.7f, -0.5f, 0.0f},
         {-0.2f, 0.45f, 0.0f},
         {0.25f, -0.2f, 0.0f},
         {0.65f, 0.45f, 0.0f},
         {0.0f, 0.0f, 0.0f},
     };
-    uint8_t colors[5][4] = {
+    DvzColor colors[5] = {
         {255, 64, 64, 255},
         {64, 255, 128, 255},
         {64, 128, 255, 255},

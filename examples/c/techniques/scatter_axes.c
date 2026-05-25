@@ -47,7 +47,7 @@ static float _randf(void)
  * @param colors output RGBA colors
  * @param sizes output diameters in pixels
  */
-static void _make_scatter(float positions[N][3], uint8_t colors[N][4], float sizes[N])
+static void _make_scatter(vec3 positions[N], DvzColor colors[N], float sizes[N])
 {
     for (uint32_t i = 0; i < N; i++)
     {
@@ -97,9 +97,9 @@ int main(int argc, char** argv)
     DvzVisual* visual = dvz_point(scene, 0);
     EXAMPLE_CHECK(visual != NULL, "dvz_point() failed");
 
-    float data_positions[N][3];
-    float visual_positions[N][3];
-    uint8_t colors[N][4];
+    vec3 data_positions[N];
+    vec3 visual_positions[N];
+    DvzColor colors[N];
     float sizes[N];
     _make_scatter(data_positions, colors, sizes);
 

@@ -56,8 +56,8 @@ typedef struct LinkedPanelsState LinkedPanelsState;
 struct LinkedPanelsState
 {
     DvzPanzoom* panzooms[PANEL_COUNT];
-    float last_pan[PANEL_COUNT][2];
-    float last_zoom[PANEL_COUNT][2];
+    vec2 last_pan[PANEL_COUNT];
+    vec2 last_zoom[PANEL_COUNT];
     uint32_t frame;
     bool initialized;
 };
@@ -160,8 +160,8 @@ static bool _add_point_grid(DvzScene* scene, DvzPanel* panel, uint32_t variant)
     if (visual == NULL)
         return false;
 
-    float positions[POINT_COUNT][3] = {0};
-    uint8_t colors[POINT_COUNT][4] = {0};
+    vec3 positions[POINT_COUNT] = {0};
+    DvzColor colors[POINT_COUNT] = {0};
     float sizes[POINT_COUNT] = {0};
     for (uint32_t row = 0; row < POINT_ROWS; row++)
     {

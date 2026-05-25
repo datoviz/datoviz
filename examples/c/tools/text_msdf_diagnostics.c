@@ -261,8 +261,8 @@ static bool configure_text_visual(
         return false;
 
     const char* strings[1] = {text};
-    float positions[1][3] = {{36.0f, 94.0f, 0.0f}};
-    float anchors[1][2] = {{0.0f, 0.0f}};
+    vec3 positions[1] = {{36.0f, 94.0f, 0.0f}};
+    vec2 anchors[1] = {{0.0f, 0.0f}};
     float sizes[1] = {size};
     float angles[1] = {0.0f};
     DvzColor colors[1] = {{222, 238, 255, 255}};

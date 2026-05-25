@@ -109,14 +109,14 @@ int main(int argc, char** argv)
     DvzVisual* visual = dvz_point(scene, 0);
     EXAMPLE_CHECK(visual != NULL, "dvz_point() failed");
 
-    float positions[5][3] = {
+    vec3 positions[5] = {
         {-0.70f, -0.50f, 0.0f},
         { 0.70f, -0.45f, 0.0f},
         { 0.00f,  0.60f, 0.0f},
         {-0.35f,  0.05f, 0.0f},
         { 0.35f,  0.08f, 0.0f},
     };
-    uint8_t colors[5][4] = {
+    DvzColor colors[5] = {
         {245,  90,  80, 255},
         { 95, 210, 130, 255},
         { 80, 145, 245, 255},

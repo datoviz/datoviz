@@ -66,13 +66,13 @@ typedef enum BwmTechnique
 
 typedef struct BwmDataset
 {
-    float (*cluster_pos)[3];
+    vec3* cluster_pos;
     DvzColor* cluster_color;
     float* cluster_size;
     uint32_t cluster_count;
 
-    float (*mesh_pos)[3];
-    float (*mesh_normal)[3];
+    vec3* mesh_pos;
+    vec3* mesh_normal;
     DvzColor* mesh_color;
     DvzIndex* mesh_idx;
     uint32_t mesh_vertex_count;
@@ -188,11 +188,11 @@ static bool _load_bwm_dataset(const char* data_dir, BwmDataset* dataset)
     DvzSize mesh_color_size = 0;
     DvzSize mesh_idx_size = 0;
 
-    float(*cluster_pos)[3] = _read_bwm_npy(data_dir, "bwm_cluster_pos.npy", &cluster_pos_size);
+    vec3* cluster_pos = _read_bwm_npy(data_dir, "bwm_cluster_pos.npy", &cluster_pos_size);
     DvzColor* cluster_color = _read_bwm_npy(data_dir, "bwm_cluster_color.npy", &cluster_color_size);
     float* cluster_size = _read_bwm_npy(data_dir, "bwm_cluster_size.npy", &cluster_size_size);
-    float(*mesh_pos)[3] = _read_bwm_npy(data_dir, "bwm_mesh_pos.npy", &mesh_pos_size);
-    float(*mesh_normal)[3] = _read_bwm_npy(data_dir, "bwm_mesh_normal.npy", &mesh_normal_size);
+    vec3* mesh_pos = _read_bwm_npy(data_dir, "bwm_mesh_pos.npy", &mesh_pos_size);
+    vec3* mesh_normal = _read_bwm_npy(data_dir, "bwm_mesh_normal.npy", &mesh_normal_size);
     DvzColor* mesh_color = _read_bwm_npy(data_dir, "bwm_mesh_color.npy", &mesh_color_size);
     DvzIndex* mesh_idx = _read_bwm_npy(data_dir, "bwm_mesh_idx.npy", &mesh_idx_size);
 

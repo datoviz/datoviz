@@ -218,8 +218,8 @@ int main(int argc, char** argv)
         .hovered_index = UINT32_MAX,
     };
 
-    float positions[POINT_COUNT][3] = {0};
-    uint8_t colors[POINT_COUNT][4] = {0};
+    vec3 positions[POINT_COUNT] = {0};
+    DvzColor colors[POINT_COUNT] = {0};
     for (uint32_t row = 0; row < GRID_ROWS; row++)
     {
         for (uint32_t col = 0; col < GRID_COLS; col++)

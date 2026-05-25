@@ -76,13 +76,13 @@ setup_source(DvzScene* scene, DvzFigure* figure, SourceState* state, float shift
     state->point_size = 28.0f;
     state->show_points = true;
 
-    float positions[4][3] = {
+    vec3 positions[4] = {
         {-0.55f + shift, -0.45f, 0.0f},
         { 0.45f + shift, -0.35f, 0.0f},
         {-0.30f + shift,  0.45f, 0.0f},
         { 0.55f + shift,  0.35f, 0.0f},
     };
-    uint8_t colors[4][4] = {
+    DvzColor colors[4] = {
         {245,  90,  80, 255},
         { 85, 205, 140, 255},
         { 80, 145, 245, 255},

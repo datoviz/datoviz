@@ -604,13 +604,13 @@ static DvzVisual* _background_visual(DvzScene* scene, const DenseDataset* datase
     DvzVisual* visual = dvz_image(scene, 0);
     if (visual == NULL)
         return NULL;
-    float positions[4][3] = {
+    vec3 positions[4] = {
         {-0.92f, -0.92f, 0.0f},
         {-0.92f, +0.92f, 0.0f},
         {+0.92f, -0.92f, 0.0f},
         {+0.92f, +0.92f, 0.0f},
     };
-    float texcoords[4][2] = {
+    vec2 texcoords[4] = {
         {0.0f, 0.0f},
         {0.0f, 1.0f},
         {1.0f, 0.0f},
