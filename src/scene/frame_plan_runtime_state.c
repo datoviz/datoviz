@@ -481,6 +481,23 @@ uint32_t _resource_usage(const ConverterState* state, uint64_t id)
 
 
 /**
+ * Look up the logical item count for a resource id.
+ *
+ * @param state the converter state
+ * @param id the DRP2 resource id
+ * @return the logical item count, or 0 when the id is unknown or untracked
+ */
+uint64_t _resource_logical_item_count(const ConverterState* state, uint64_t id)
+{
+    for (uint32_t i = 0; i < state->count; i++)
+        if (state->resources[i].id == id)
+            return state->resources[i].logical_item_count;
+    return 0;
+}
+
+
+
+/**
  * Look up the item stride for a resource id.
  *
  * @param state the converter state

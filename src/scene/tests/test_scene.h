@@ -214,6 +214,8 @@ int test_scene_resource_keys(TstContext* suite, const TstCase* item);
 
 int test_frame_plan_render_visual_metadata(TstContext* suite, const TstCase* item);
 int test_frame_plan_render_visual_metadata_diagnostic(TstContext* suite, const TstCase* item);
+int test_frame_plan_draw_resource_validation_rejects_short_position(
+    TstContext* suite, const TstCase* item);
 
 int test_frame_plan_dynamic_update(TstContext* suite, const TstCase* item);
 

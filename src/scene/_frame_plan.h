@@ -263,6 +263,7 @@ typedef struct DvzFramePlanUploadMeta
     uint32_t visual_type;
     uint32_t visual_index;
     uint32_t buffer_index;
+    uint64_t logical_item_count;
 } DvzFramePlanUploadMeta;
 
 

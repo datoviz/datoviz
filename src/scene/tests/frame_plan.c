@@ -517,6 +517,79 @@ int test_frame_plan_render_visual_metadata_diagnostic(TstContext* suite, const T
 }
 
 
+/**
+ * Ensure draw emission rejects resources whose logical count is shorter than the draw count.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_frame_plan_draw_resource_validation_rejects_short_position(
+    TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzFramePlan* plan = dvz_frame_plan("figure.draw_resource.invalid", 3);
+    ANN(plan);
+
+    DvzFramePlanUploadMeta upload_meta = {0};
+    upload_meta.kind = DVZ_FRAME_PLAN_RESOURCE_KIND_BUFFER;
+    upload_meta.visual_type = DVZ_VISUAL_TYPE_POINT;
+    upload_meta.visual_index = 0;
+    upload_meta.buffer_index = UINT32_MAX;
+
+    AT(dvz_frame_plan_upload(plan, "point-position", 0, 3 * 3 * sizeof(float), ""));
+    upload_meta.role = DVZ_FRAME_PLAN_RESOURCE_ROLE_POSITION;
+    upload_meta.logical_item_count = 2;
+    AT(dvz_frame_plan_upload_metadata(plan, &upload_meta));
+    AT(dvz_frame_plan_upload(plan, "point-color", 0, 3 * sizeof(DvzColor), ""));
+    upload_meta.role = DVZ_FRAME_PLAN_RESOURCE_ROLE_COLOR;
+    upload_meta.logical_item_count = 3;
+    AT(dvz_frame_plan_upload_metadata(plan, &upload_meta));
+    AT(dvz_frame_plan_upload(plan, "point-size", 0, 3 * sizeof(float), ""));
+    upload_meta.role = DVZ_FRAME_PLAN_RESOURCE_ROLE_SIZE;
+    upload_meta.logical_item_count = 3;
+    AT(dvz_frame_plan_upload_metadata(plan, &upload_meta));
+    AT(dvz_frame_plan_render(plan, "panel.0", "target.panel.0.color", false));
+    AT(dvz_frame_plan_render_visual(plan, "point-debug-id"));
+
+    DvzFramePlanVisualMeta metadata = {0};
+    metadata.visual_type = DVZ_VISUAL_TYPE_POINT;
+    metadata.visual_index = 0;
+    metadata.buffer_index = UINT32_MAX;
+    metadata.topology = UINT32_MAX;
+    dvz_strlcpy(metadata.position_id, "point-position", sizeof(metadata.position_id));
+    dvz_strlcpy(metadata.color_id, "point-color", sizeof(metadata.color_id));
+    dvz_strlcpy(metadata.size_id, "point-size", sizeof(metadata.size_id));
+    AT(dvz_frame_plan_render_visual_metadata(plan, &metadata));
+
+    DvzCapabilitySnapshot caps = {0};
+    DvzDiagnosticReport report = {0};
+    DvzFramePlanEmitConfig emit_cfg = dvz_frame_plan_emit_config();
+    emit_cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
+    dvz_capability_snapshot_default(&caps);
+    dvz_diagnostic_report_init(&report);
+
+    DvzFramePlanEmitter* emitter = dvz_frame_plan_emitter();
+    ANN(emitter);
+    DvzDrp2CommandStream* stream =
+        dvz_frame_plan_emitter_emit_drp2(emitter, plan, &caps, &report, &emit_cfg);
+    AT(stream == NULL);
+    AT(dvz_diagnostic_report_count(&report) >= 1);
+    const char* message = dvz_diagnostic_report_get(&report, 0);
+    ANN(message);
+    AT(strstr(message, "visual=point") != NULL);
+    AT(strstr(message, "role=position") != NULL);
+    AT(strstr(message, "draw_count=3") != NULL);
+    AT(strstr(message, "logical_count=2") != NULL);
+
+    dvz_frame_plan_emitter_destroy(emitter);
+    dvz_frame_plan_destroy(plan);
+    return 0;
+}
+
+
 int test_frame_plan_dynamic_update(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
@@ -1616,6 +1689,7 @@ int test_scene_frame_plan(TstSuite* suite)
     TST_CASE(test_frame_plan_render_visual_metadata);
     TST_CASE(test_frame_plan_runtime_uses_graph_pass_order);
     TST_CASE(test_frame_plan_render_visual_metadata_diagnostic);
+    TST_CASE(test_frame_plan_draw_resource_validation_rejects_short_position);
     TST_CASE(test_frame_plan_dynamic_update);
     TST_CASE(test_frame_plan_texture_upload_json_includes_region);
     TST_CASE(test_frame_plan_readbacks);

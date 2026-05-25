@@ -64,6 +64,7 @@ bool _emitter_emit_upload(
         {
             resource->kind = node->u.upload.metadata.kind;
             resource->role = node->u.upload.metadata.role;
+            resource->logical_item_count = node->u.upload.metadata.logical_item_count;
         }
         resource->byte_size = node->u.upload.byte_size;
         uint32_t w = node->u.upload.texture_width;
@@ -179,6 +180,8 @@ bool _emitter_emit_upload(
     {
         resource->kind = node->u.upload.metadata.kind;
         resource->role = node->u.upload.metadata.role;
+        if (node->u.upload.metadata.logical_item_count > 0)
+            resource->logical_item_count = node->u.upload.metadata.logical_item_count;
     }
     resource->usage = node->u.upload.buffer_usage;
     resource->item_stride = node->u.upload.item_stride;

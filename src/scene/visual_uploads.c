@@ -265,7 +265,8 @@ static uint32_t _scene_buffer_drp2_usage(uint32_t usage)
  */
 static bool _scene_attach_upload_metadata(
     DvzFramePlan* plan, const DvzVisual* visual, uint32_t visual_index,
-    DvzFramePlanResourceRole role, DvzFramePlanResourceKind kind, uint32_t buffer_index)
+    DvzFramePlanResourceRole role, DvzFramePlanResourceKind kind, uint32_t buffer_index,
+    uint64_t logical_item_count)
 {
     ANN(plan);
     ANN(visual);
@@ -275,6 +276,7 @@ static bool _scene_attach_upload_metadata(
     metadata.visual_type = (uint32_t)visual->type;
     metadata.visual_index = visual_index;
     metadata.buffer_index = buffer_index;
+    metadata.logical_item_count = logical_item_count;
     return dvz_frame_plan_upload_metadata(plan, &metadata);
 }
 
@@ -513,7 +515,7 @@ static void _scene_emit_segment_uploads(
             continue;
         _scene_attach_upload_metadata(
             plan, visual, visual_index, uploads[i].role, DVZ_FRAME_PLAN_RESOURCE_KIND_BUFFER,
-            UINT32_MAX);
+            UINT32_MAX, cache->vertex_count);
     }
 
     char index_id[128];
@@ -526,7 +528,7 @@ static void _scene_emit_segment_uploads(
             dvz_frame_plan_upload_bytes(plan, index_id, 0, byte_size, "index", cache->indices);
             _scene_attach_upload_metadata(
                 plan, visual, visual_index, DVZ_FRAME_PLAN_RESOURCE_ROLE_INDEX,
-                DVZ_FRAME_PLAN_RESOURCE_KIND_BUFFER, UINT32_MAX);
+                DVZ_FRAME_PLAN_RESOURCE_KIND_BUFFER, UINT32_MAX, cache->index_count);
             DvzFramePlanNode* node = &plan->nodes[plan->count - 1];
             node->u.upload.buffer_usage =
                 DVZ_DRP2_BUFFER_USAGE_COPY_DST | DVZ_DRP2_BUFFER_USAGE_INDEX;
@@ -852,7 +854,7 @@ static void _scene_emit_path_uploads(
             continue;
         _scene_attach_upload_metadata(
             plan, visual, visual_index, uploads[i].role, DVZ_FRAME_PLAN_RESOURCE_KIND_BUFFER,
-            UINT32_MAX);
+            UINT32_MAX, cache->vertex_count);
     }
 
     char index_id[128];
@@ -865,7 +867,7 @@ static void _scene_emit_path_uploads(
             dvz_frame_plan_upload_bytes(plan, index_id, 0, byte_size, "index", cache->indices);
             _scene_attach_upload_metadata(
                 plan, visual, visual_index, DVZ_FRAME_PLAN_RESOURCE_ROLE_INDEX,
-                DVZ_FRAME_PLAN_RESOURCE_KIND_BUFFER, UINT32_MAX);
+                DVZ_FRAME_PLAN_RESOURCE_KIND_BUFFER, UINT32_MAX, cache->index_count);
             DvzFramePlanNode* node = &plan->nodes[plan->count - 1];
             node->u.upload.buffer_usage =
                 DVZ_DRP2_BUFFER_USAGE_COPY_DST | DVZ_DRP2_BUFFER_USAGE_INDEX;
@@ -1026,7 +1028,7 @@ static void _scene_emit_image_uploads(
             plan, resource_id, 0, byte_size, uploads[i].name, uploads[i].data);
         _scene_attach_upload_metadata(
             plan, visual, visual_index, uploads[i].role, DVZ_FRAME_PLAN_RESOURCE_KIND_BUFFER,
-            UINT32_MAX);
+            UINT32_MAX, cache->vertex_count);
         if (strcmp(uploads[i].name, "position") == 0)
             dvz_frame_plan_upload_set_topology(plan, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
     }
@@ -1240,7 +1242,7 @@ static bool _scene_emit_visual_material_upload(
     plan->nodes[plan->count - 1].u.upload.owned_data = params;
     _scene_attach_upload_metadata(
         plan, visual, visual_index, DVZ_FRAME_PLAN_RESOURCE_ROLE_MATERIAL_PARAMS,
-        DVZ_FRAME_PLAN_RESOURCE_KIND_BUFFER, UINT32_MAX);
+        DVZ_FRAME_PLAN_RESOURCE_KIND_BUFFER, UINT32_MAX, 1);
     DvzFramePlanNode* node = &plan->nodes[plan->count - 1];
     node->u.upload.buffer_usage = DVZ_DRP2_BUFFER_USAGE_UNIFORM |
                                   DVZ_DRP2_BUFFER_USAGE_MAP_WRITE |
@@ -1331,7 +1333,7 @@ static void _scene_emit_image_like_texture_upload(
     dvz_frame_plan_upload_bytes(plan, tex_resource_id, 0, bytes, "texture", upload_data);
     _scene_attach_upload_metadata(
         plan, visual, visual_index, DVZ_FRAME_PLAN_RESOURCE_ROLE_TEXTURE,
-        DVZ_FRAME_PLAN_RESOURCE_KIND_TEXTURE_2D, UINT32_MAX);
+        DVZ_FRAME_PLAN_RESOURCE_KIND_TEXTURE_2D, UINT32_MAX, 0);
     dvz_frame_plan_upload_set_texture_extent(plan, upload_region.width, upload_region.height);
     dvz_frame_plan_upload_set_texture_allocation_extent(
         plan, visual->texture.width, visual->texture.height);
@@ -1397,7 +1399,7 @@ static void _scene_emit_volume_source_texture_upload(
     }
     _scene_attach_upload_metadata(
         plan, visual, visual_index, DVZ_FRAME_PLAN_RESOURCE_ROLE_TEXTURE,
-        DVZ_FRAME_PLAN_RESOURCE_KIND_TEXTURE_3D, UINT32_MAX);
+        DVZ_FRAME_PLAN_RESOURCE_KIND_TEXTURE_3D, UINT32_MAX, 0);
 }
 
 
@@ -1532,7 +1534,8 @@ void _scene_emit_visual_uploads(
                                 attr->name, attr->buffer->data);
                             _scene_attach_upload_metadata(
                                 plan, visual, vidx, _scene_attr_frame_plan_role(attr->name),
-                                DVZ_FRAME_PLAN_RESOURCE_KIND_BUFFER, buffer_idx);
+                                DVZ_FRAME_PLAN_RESOURCE_KIND_BUFFER, buffer_idx,
+                                attr->item_count);
                             DvzFramePlanNode* node = &plan->nodes[plan->count - 1];
                             node->u.upload.external = !has_cpu_data;
                             node->u.upload.buffer_usage =
@@ -1572,7 +1575,7 @@ void _scene_emit_visual_uploads(
                     }
                     _scene_attach_upload_metadata(
                         plan, visual, vidx, role, DVZ_FRAME_PLAN_RESOURCE_KIND_BUFFER,
-                        UINT32_MAX);
+                        UINT32_MAX, attr->item_count);
                     if ((visual->type == DVZ_VISUAL_TYPE_PRIMITIVE ||
                          visual->type == DVZ_VISUAL_TYPE_MESH ||
                          visual->type == DVZ_VISUAL_TYPE_PATH ||
@@ -1610,7 +1613,10 @@ void _scene_emit_visual_uploads(
                         visual->buffer->data);
                     _scene_attach_upload_metadata(
                         plan, visual, vidx, DVZ_FRAME_PLAN_RESOURCE_ROLE_INDEX,
-                        DVZ_FRAME_PLAN_RESOURCE_KIND_BUFFER, buffer_idx);
+                        DVZ_FRAME_PLAN_RESOURCE_KIND_BUFFER, buffer_idx,
+                        visual->buffer->desc.stride > 0
+                            ? visual->buffer->desc.byte_size / visual->buffer->desc.stride
+                            : 0);
                     DvzFramePlanNode* node = &plan->nodes[plan->count - 1];
                     node->u.upload.buffer_usage =
                         DVZ_DRP2_BUFFER_USAGE_COPY_DST | DVZ_DRP2_BUFFER_USAGE_INDEX;

@@ -83,6 +83,7 @@ struct ResourceId
     uint64_t id;
     char data_tag[DVZ_SCENE_LABEL_SIZE]; /* attribute name, e.g. "position", "color", "size" */
     uint64_t byte_size;                  /* total bytes uploaded to this buffer               */
+    uint64_t logical_item_count;          /* logical items covered by the current payload      */
     uint32_t usage;                      /* DRP2 buffer usage flags                           */
     uint32_t item_stride;                /* optional element stride (index buffers)          */
     uint32_t topology;                   /* primitive topology hint (UINT32_MAX = unset)      */
@@ -187,6 +188,8 @@ DvzFramePlanResourceRole _resource_role(const ConverterState* state, uint64_t id
 uint64_t _resource_byte_size(const ConverterState* state, uint64_t id);
 
 uint32_t _resource_usage(const ConverterState* state, uint64_t id);
+
+uint64_t _resource_logical_item_count(const ConverterState* state, uint64_t id);
 
 uint32_t _resource_item_stride(const ConverterState* state, uint64_t id);
 
