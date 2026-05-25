@@ -95,10 +95,11 @@ Scene feature lanes:
 4. [soon/scene/SCENE_VOLUME_RENDERING_FOLLOWUP.md](soon/scene/SCENE_VOLUME_RENDERING_FOLLOWUP.md)
 5. [soon/scene/SCENE_NAPARI_IMAGE_LABELS_PLAN.md](soon/scene/SCENE_NAPARI_IMAGE_LABELS_PLAN.md)
 6. [soon/scene/SCENE_ORIENTATION_GIZMO_PLAN.md](soon/scene/SCENE_ORIENTATION_GIZMO_PLAN.md)
-7. [soon/effects/SCENE_MSAA_PLAN.md](soon/effects/SCENE_MSAA_PLAN.md)
-8. [soon/effects/SCENE_SSAO_QUALITY_PLAN.md](soon/effects/SCENE_SSAO_QUALITY_PLAN.md)
-9. [soon/effects/SCENE_TECHNIQUES_MATERIALS_PLAN.md](soon/effects/SCENE_TECHNIQUES_MATERIALS_PLAN.md)
-10. [soon/scene/SCENE_VISUAL_SHADER_ABI_FOLLOWUP.md](soon/scene/SCENE_VISUAL_SHADER_ABI_FOLLOWUP.md)
+7. [soon/scene/SCENE_SCALEBAR_UPDATE_PERF_REFACTOR_PLAN.md](soon/scene/SCENE_SCALEBAR_UPDATE_PERF_REFACTOR_PLAN.md)
+8. [soon/effects/SCENE_MSAA_PLAN.md](soon/effects/SCENE_MSAA_PLAN.md)
+9. [soon/effects/SCENE_SSAO_QUALITY_PLAN.md](soon/effects/SCENE_SSAO_QUALITY_PLAN.md)
+10. [soon/effects/SCENE_TECHNIQUES_MATERIALS_PLAN.md](soon/effects/SCENE_TECHNIQUES_MATERIALS_PLAN.md)
+11. [soon/scene/SCENE_VISUAL_SHADER_ABI_FOLLOWUP.md](soon/scene/SCENE_VISUAL_SHADER_ABI_FOLLOWUP.md)
 
 For visual-family lanes, durable contracts live under [../spec/scene/visuals](../spec/scene/visuals);
 the `soon/` files above are execution follow-up notes.

@@ -13,9 +13,11 @@ belongs in [../../later/](../../later/).
    and marker follow-up.
 4. [SCENE_VECTOR_VISUALS_PLAN.md](SCENE_VECTOR_VISUALS_PLAN.md): remaining segment, path, and
    vector-family follow-up.
-5. [SCENE_VISUAL_SHADER_ABI_FOLLOWUP.md](SCENE_VISUAL_SHADER_ABI_FOLLOWUP.md): remaining
+5. [SCENE_SCALEBAR_UPDATE_PERF_REFACTOR_PLAN.md](SCENE_SCALEBAR_UPDATE_PERF_REFACTOR_PLAN.md):
+   retained scale-bar update and glyph-upload performance follow-up.
+6. [SCENE_VISUAL_SHADER_ABI_FOLLOWUP.md](SCENE_VISUAL_SHADER_ABI_FOLLOWUP.md): remaining
    visual shader ABI cleanup.
-6. [SCENE_VOLUME_RENDERING_FOLLOWUP.md](SCENE_VOLUME_RENDERING_FOLLOWUP.md): remaining volume and napari
+7. [SCENE_VOLUME_RENDERING_FOLLOWUP.md](SCENE_VOLUME_RENDERING_FOLLOWUP.md): remaining volume and napari
    clipping follow-up.
-7. [SCENE_WGSL_SHADER_VARIANTS_PLAN.md](SCENE_WGSL_SHADER_VARIANTS_PLAN.md): remaining WGSL
+8. [SCENE_WGSL_SHADER_VARIANTS_PLAN.md](SCENE_WGSL_SHADER_VARIANTS_PLAN.md): remaining WGSL
    shader-variant parity work.
