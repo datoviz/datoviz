@@ -1,10 +1,10 @@
 > **Implementation Status**
 > - **Status:** `STRATEGIC BACKLOG`
-> - **Verified on:** `2026-05-13`
-> - **Role:** long-horizon direction for DRP2, WebGPU runtime work, and eventual scene bring-up
-> - **Current branch status:** not the immediate coding checklist, but now worth a narrow feasibility
->   spike after the native 3D/manual-smoke pass because visuals are still early enough that browser
->   constraints can influence DRP2 without major rewrites
+> - **Verified on:** `2026-05-25`
+> - **Role:** long-horizon direction for active DRP2, the active scene layer, and WebGPU parity work
+> - **Current branch status:** not the immediate coding checklist, but still worth narrow WebGPU
+>   feasibility spikes because browser constraints can pressure DRP2 without forking scene
+>   semantics.
 > - **Execution note:** the actionable spec-phase entry point is `spec/drp2/AGENT_SPEC_PHASE.md`
 > - **Implementation note:** the active repo-local implementation guide is
 >   `agents/now/NEXT_STEPS.md`
@@ -22,7 +22,8 @@ Reach a point where Datoviz has:
 1. a stable DRP2 contract,
 2. a native runtime that executes that contract,
 3. a browser runtime over WebGPU that executes the same contract,
-4. enough conformance parity to let a future scene layer target DRP2 rather than backend internals.
+4. enough conformance parity for the active scene layer to keep targeting DRP2 rather than backend
+   internals.
 
 
 ## Ground Rules
@@ -33,8 +34,9 @@ Reach a point where Datoviz has:
 4. Vulkan remains the first native backend implementation target.
 5. Keep performance measurable at every milestone.
 6. Browser support is a first-class requirement, not a later port.
-7. The future Scene API in C/WASM must target DRP and browser JS runtime, not low-level C runtime internals.
-8. Do not start scene rewrite until renderer milestones are green.
+7. The Scene API in C/WASM must keep targeting DRP and browser JS runtime contracts, not low-level
+   C runtime internals.
+8. Do not fork scene semantics for WebGPU; pressure the active scene -> DRP2 subset instead.
 9. Native escape hatches (Vulkan/CUDA interop) live outside DRP and must be explicitly
    opt-in, clearly marked as advanced, and capability-gated.
 10. Power-user requirements are first-class:
@@ -61,14 +63,14 @@ Reach a point where Datoviz has:
    undergone a substantial February 2026 refactor and is currently the stable runtime foundation.
 2. `drp2` and `scene` are now active default-build modules with a working first vertical slice:
    scene/frame-plan emission -> DRP2 command stream -> vklite runtime -> canvas/stream execution.
-3. Built-in scene visuals currently implemented are `point`, `primitive`, `mesh`, path-as-line/strip,
-   and `image`.
-4. Per-panel runtime viewport/scissor, retained sampled fields, image colormap scale binding, shared
-   scene buffers, and controller-driven panel transforms are already live on the native path.
-5. First point-pick and image-probe request execution is active through DRP2 readbacks. Mesh depth
-   attachments and depth-enabled pipelines are structurally emitted and tested; a stronger manual
-   native 3D example should pressure them before broader browser parity or long-tail visual
-   expansion.
+3. Built-in scene visuals currently implemented include point, pixel, marker, primitive, mesh,
+   path/segment, image, volume, sphere impostors, and text/glyph-backed labels.
+4. Per-panel runtime viewport/scissor, retained sampled fields, image colormap scale binding,
+   graph-backed colorbar/text/effect paths, shared scene buffers, and controller-driven panel
+   transforms are already live on the native path.
+5. First point-pick and image-probe request execution is active through DRP2 readbacks. Mesh depth,
+   material, MSAA, EDL, SSAO, WBOIT, and generic occlusion paths have graph-backed coverage, but
+   browser parity and long-tail visual behavior still need narrower fixture-driven lanes.
 
 
 ## Target Architecture

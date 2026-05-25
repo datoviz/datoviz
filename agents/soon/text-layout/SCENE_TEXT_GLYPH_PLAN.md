@@ -29,10 +29,11 @@ scene-owned glyph visuals, uses bitmap/SDF/MSDF-capable atlas resources, emits t
 scene -> FramePlan -> DRP2 -> vklite/app path, and has focused scene/app readback coverage.
 
 The remaining work is no longer first proof of visibility. Because v0.4 may break API and ABI for a
-cleaner architecture, the next text/glyph pass should promote semantic `DvzText*` as the source of
-truth instead of preserving the current visual-backed `dvz_text()` surface. Follow-up work is API
-migration, integration with explanatory objects, data/world placement, depth policy, DPI/clipping
-hardening, production shaping, richer font fallback, diagnostics, and equation lowering.
+cleaner architecture, the text/glyph lane should keep the landed semantic `DvzText* dvz_text()`
+surface as the source of truth while `dvz_glyph()` remains the lower-level derived/implementation
+path. Follow-up work is integration with explanatory objects, data/world placement, depth policy,
+DPI/clipping hardening, production shaping, richer font fallback, diagnostics, and equation
+lowering.
 
 Use this file only for execution sequencing. Do not duplicate stable text semantics here.
 
@@ -43,7 +44,8 @@ These items were previously mixed into the active follow-up list but are now cov
 tests, or specs:
 
 1. retained text, font, and annotation bookkeeping exists in the active scene module;
-2. `dvz_text()` is a visible visual-backed API and lowers internally to scene-owned glyph visuals;
+2. `dvz_text()` is a visible semantic `DvzText*` API and lowers internally to scene-owned glyph
+   visuals;
 3. `dvz_glyph()` emits atlas-backed glyph quads through the scene -> DRP2 -> runtime path;
 4. annotation labels use the current glyph/text realization path;
 5. built-in bitmap, FreeType bitmap, SDF, and MSDF-capable atlas rendering paths exist behind
@@ -53,17 +55,17 @@ tests, or specs:
 7. focused tests cover bitmap and SDF/MSDF-backed realization, automatic renderer selection,
    UTF-8 atlas growth, missing-glyph fallback, many-label batching, glyph emission, runtime
    readback, and app/offscreen visible text;
-8. the current `DvzVisual* dvz_text()` / `DvzVisual* dvz_glyph()` surface is documented in
-   `spec/scene/visuals/GLYPH.md` as implementation state to migrate, not the target v0.4 text API.
+8. `spec/scene/visuals/GLYPH.md` documents glyphs as the lower-level rendered representation rather
+   than the primary public text API.
 
 
 ## Remaining Text And Glyph Work
 
 Recommended follow-up commits:
 
-1. Promote the semantic `DvzText*` API/state as the v0.4 public text surface and migrate or remove
-   the current visual-backed `DvzVisual* dvz_text()` shape.
-2. Keep `dvz_glyph()` low-level or internal, then wire axes, colorbars, legends, and pinned
+1. Keep the semantic `DvzText*` API/state as the v0.4 public text surface and avoid re-exposing
+   text primarily as visual-attribute calls.
+2. Keep `dvz_glyph()` low-level or derived, then wire axes, colorbars, legends, and pinned
    readouts to semantic text rather than visual-attribute text calls.
 3. Finish data/world placement instead of hiding non-screen retained text modes.
 4. Honor depth policy for data/world text instead of always forcing generated glyph visuals to

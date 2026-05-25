@@ -31,8 +31,8 @@ Recommended follow-up commits:
 3. Add or confirm alpha-to-coverage capability in visual pipeline descriptors.
 4. Enable alpha-to-coverage for opaque sphere impostors when panel MSAA is active.
 5. Add a GLFW sphere comparison control for sample count and later alpha-to-coverage.
-6. Decide when to expose a public `DvzMsaaDesc` or `dvz_panel_set_msaa()` API if it is not already
-   stable enough.
+6. Keep the public `DvzMsaaDesc` / `dvz_panel_set_msaa()` semantics documented and covered as
+   sample-count and alpha-to-coverage behavior hardens.
 
 
 ## Validation

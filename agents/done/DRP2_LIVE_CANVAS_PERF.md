@@ -1,6 +1,6 @@
 # DRP2 Live Canvas Performance Findings
 
-> **Status:** `ACTIVE`
+> **Status:** `HISTORICAL PERFORMANCE RECORD`
 > **Measured on:** `2026-04-30`
 > **Primary report:** `build/profiles/live-canvas-20260430-114526`
 > **Post-fix report:** `build/profiles/live-canvas-20260430-115310`

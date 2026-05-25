@@ -1,22 +1,24 @@
-# Scene SSAO Implementation Plan
+# Scene SSAO Completed Baseline
 
 > **Execution Status**
 > - **Status:** `IMPLEMENTED THROUGH SPHERE SSAO; QUALITY FOLLOW-UP OPEN`
-> - **Updated on:** `2026-05-19`
-> - **Purpose:** keep the remaining SSAO pickup work aligned with the active scene FramePlan graph,
->   runtime graph-resource emission, and DRP2/vklite descriptor-refresh path.
+> - **Updated on:** `2026-05-25`
+> - **Purpose:** record the landed SSAO baseline and keep residual quality/runtime watch items
+>   aligned with the active scene FramePlan graph, runtime graph-resource emission, and
+>   DRP2/vklite descriptor-refresh path.
 
 
 ## Durable Contract
 
 Use the shared occlusion implementation contract:
-[../../../spec/scene/implementation/OCCLUSION_EFFECTS.md](../../../spec/scene/implementation/OCCLUSION_EFFECTS.md).
+[../../spec/scene/implementation/OCCLUSION_EFFECTS.md](../../spec/scene/implementation/OCCLUSION_EFFECTS.md).
 
 The generic graph-technique rules are in
-[../../../spec/scene/implementation/GRAPH_TECHNIQUES.md](../../../spec/scene/implementation/GRAPH_TECHNIQUES.md).
+[../../spec/scene/implementation/GRAPH_TECHNIQUES.md](../../spec/scene/implementation/GRAPH_TECHNIQUES.md).
 
-This file should only track remaining SSAO execution order, validation, and immediate blockers.
-Do not add a parallel renderer, presentation layer, or ad-hoc Vulkan path for scene SSAO.
+This file is no longer an active implementation queue. Use it for the landed baseline, validation
+history, and residual follow-up boundaries. Do not add a parallel renderer, presentation layer, or
+ad-hoc Vulkan path for scene SSAO.
 
 
 ## Current Baseline
@@ -31,7 +33,7 @@ The scene SSAO lane has landed the graph-backed runtime foundation:
 6. runtime smoke, offscreen image-difference, and sphere-impostor coverage exist.
 
 The current shader remains a foundation, not the final quality target. The next work should follow
-[SCENE_SSAO_QUALITY_PLAN.md](SCENE_SSAO_QUALITY_PLAN.md).
+[../soon/effects/SCENE_SSAO_QUALITY_PLAN.md](../soon/effects/SCENE_SSAO_QUALITY_PLAN.md).
 
 
 ## Remaining DRP2 / Runtime Watch Items

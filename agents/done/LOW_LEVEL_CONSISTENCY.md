@@ -1,12 +1,12 @@
-# Datoviz v0.4-dev Low-Level Consistency Plan
+# Datoviz v0.4-dev Low-Level Consistency Record
 
 > **Status**
-> - **Status:** `ACTIVE`
+> - **Status:** `COMPLETED BASELINE / RESIDUAL FOLLOW-UP RECORD`
 > - **Created on:** `2026-03-23`
 > - **Predecessor phase:** `vk` / `vklite` ownership-boundary and wrapper-opacity cleanup is
 >   effectively complete for the active surface.
-> - **Current intent:** avoid reopening broad low-level boundary refactors unless a concrete API
->   pressure appears, and instead make the active low-level stack feel intentionally designed.
+> - **Current intent:** record the completed low-level consistency baseline and avoid reopening
+>   broad boundary refactors unless a concrete API pressure appears.
 
 ## Why this phase exists
 
@@ -118,8 +118,8 @@ On Vulkan/presentation paths, prefer the repo environment (`direnv exec .`) and 
 runtime context, as already noted elsewhere in the repo guidance.
 
 
-## Exit criteria for this phase
+## Residual Follow-Ups
 
-1. The active low-level modules have more uniform lifecycle and naming conventions.
-2. Focused lifecycle regression tests remain green while the cleanup proceeds.
-3. The codebase feels less transitional and more like a deliberate v0.4 low-level API.
+1. Keep lifecycle and naming conventions uniform as the active low-level modules evolve.
+2. Keep focused lifecycle regression tests green while follow-up cleanup proceeds.
+3. Reopen this area only for concrete API pressure, ownership bugs, or validation failures.

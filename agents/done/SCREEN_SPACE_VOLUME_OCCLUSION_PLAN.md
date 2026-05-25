@@ -1,18 +1,18 @@
-# Screen-Space Volume Occlusion Follow-Up
+# Screen-Space Volume Occlusion Completed Baseline
 
 > **Execution Status**
-> - **Status:** `ACTIVE / FOLLOW-UP NOTE`
-> - **Updated on:** `2026-05-19`
-> - **Purpose:** track remaining volume-occlusion work after the first prepass and Allen slice
->   integration landed.
+> - **Status:** `IMPLEMENTED BASELINE / FOLLOW-UP RECORD`
+> - **Updated on:** `2026-05-25`
+> - **Purpose:** record the volume-occlusion prepass and Allen slice integration baseline while
+>   keeping residual follow-ups visible.
 
 
 ## Current State
 
 Durable contracts live in:
 
-1. [`../../../spec/scene/implementation/OCCLUSION_EFFECTS.md`](../../../spec/scene/implementation/OCCLUSION_EFFECTS.md)
-2. [`../../../spec/scene/visuals/VOLUME.md`](../../../spec/scene/visuals/VOLUME.md)
+1. [`../../spec/scene/implementation/OCCLUSION_EFFECTS.md`](../../spec/scene/implementation/OCCLUSION_EFFECTS.md)
+2. [`../../spec/scene/visuals/VOLUME.md`](../../spec/scene/visuals/VOLUME.md)
 
 Use this file only for implementation status, remaining commit order, open questions, and
 validation. Do not duplicate volume occlusion texture semantics, fragment behavior, descriptor
@@ -36,9 +36,9 @@ Recommended follow-up commits:
 1. Keep atlas mesh occlusion disabled until mesh/primitive shader families support generic
    occlusion.
 2. Add mesh or primitive consumers through
-   [`SCENE_MESH_VOLUME_OCCLUSION_PLAN.md`](SCENE_MESH_VOLUME_OCCLUSION_PLAN.md).
-3. Migrate volume-specific plumbing into generic scene occlusion when
-   [`SCREEN_SPACE_SCENE_OCCLUSION_PLAN.md`](SCREEN_SPACE_SCENE_OCCLUSION_PLAN.md) lands.
+   [`../soon/effects/SCENE_MESH_VOLUME_OCCLUSION_PLAN.md`](../soon/effects/SCENE_MESH_VOLUME_OCCLUSION_PLAN.md).
+3. Continue migrating volume-specific plumbing into the generic scene occlusion path recorded in
+   [`SCREEN_SPACE_SCENE_OCCLUSION_PLAN.md`](SCREEN_SPACE_SCENE_OCCLUSION_PLAN.md).
 4. Keep unsupported visual families explicit and tested.
 5. Decide whether the public API remains volume-specific or becomes generic scene occlusion.
 6. Keep Allen controls focused on `Volume hides slice`, threshold, fade distance, and hidden alpha.

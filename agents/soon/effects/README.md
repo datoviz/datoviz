@@ -14,12 +14,12 @@ Transparency, depth-peeling, and MSAA implementation rules live in
 2. [SCENE_MSAA_PLAN.md](SCENE_MSAA_PLAN.md): MSAA follow-up.
 3. [SCENE_SCREEN_SPACE_EFFECTS_PLAN.md](SCENE_SCREEN_SPACE_EFFECTS_PLAN.md): screen-space effects
    follow-up.
-4. [SCENE_SSAO_IMPLEMENTATION_PLAN.md](SCENE_SSAO_IMPLEMENTATION_PLAN.md): SSAO implementation
-   follow-up.
-5. [SCENE_SSAO_QUALITY_PLAN.md](SCENE_SSAO_QUALITY_PLAN.md): SSAO quality follow-up.
-6. [SCENE_TECHNIQUES_MATERIALS_PLAN.md](SCENE_TECHNIQUES_MATERIALS_PLAN.md): techniques and
+4. [SCENE_SSAO_QUALITY_PLAN.md](SCENE_SSAO_QUALITY_PLAN.md): SSAO quality follow-up.
+5. [SCENE_TECHNIQUES_MATERIALS_PLAN.md](SCENE_TECHNIQUES_MATERIALS_PLAN.md): techniques and
    materials follow-up.
-7. [SCREEN_SPACE_SCENE_OCCLUSION_PLAN.md](SCREEN_SPACE_SCENE_OCCLUSION_PLAN.md): scene
-   screen-space occlusion follow-up.
-8. [SCREEN_SPACE_VOLUME_OCCLUSION_PLAN.md](SCREEN_SPACE_VOLUME_OCCLUSION_PLAN.md): volume
-    screen-space occlusion follow-up.
+
+Completed baseline records now live in `agents/done/`:
+
+1. [../../done/SCENE_SSAO_IMPLEMENTATION_PLAN.md](../../done/SCENE_SSAO_IMPLEMENTATION_PLAN.md)
+2. [../../done/SCREEN_SPACE_SCENE_OCCLUSION_PLAN.md](../../done/SCREEN_SPACE_SCENE_OCCLUSION_PLAN.md)
+3. [../../done/SCREEN_SPACE_VOLUME_OCCLUSION_PLAN.md](../../done/SCREEN_SPACE_VOLUME_OCCLUSION_PLAN.md)

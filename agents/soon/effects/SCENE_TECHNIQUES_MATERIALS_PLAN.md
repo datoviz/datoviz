@@ -57,8 +57,8 @@ Recommended follow-up commits:
 
 1. [`SCENE_SCREEN_SPACE_EFFECTS_PLAN.md`](SCENE_SCREEN_SPACE_EFFECTS_PLAN.md): outline, edge
    enhancement, and bloom pickup order.
-2. [`SCENE_SSAO_IMPLEMENTATION_PLAN.md`](SCENE_SSAO_IMPLEMENTATION_PLAN.md): SSAO runtime and
-   graph follow-up.
+2. [`../../done/SCENE_SSAO_IMPLEMENTATION_PLAN.md`](../../done/SCENE_SSAO_IMPLEMENTATION_PLAN.md):
+   completed SSAO runtime and graph baseline.
 3. [`SCENE_SSAO_QUALITY_PLAN.md`](SCENE_SSAO_QUALITY_PLAN.md): SSAO quality tuning.
 4. [`SCENE_MSAA_PLAN.md`](SCENE_MSAA_PLAN.md): remaining MSAA and alpha-to-coverage work.
 5. [`../../done/DUAL_DEPTH_PEELING_IMPLEMENTATION.md`](../../done/DUAL_DEPTH_PEELING_IMPLEMENTATION.md):

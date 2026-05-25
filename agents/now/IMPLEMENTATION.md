@@ -148,8 +148,8 @@ Remaining v0.4 work:
 
 1. make axes, colorbars, legends, annotation labels, and pinned readouts consume the landed text
    path without changing text internals,
-2. reconcile the planned semantic `DvzText*` API with the current public `DvzVisual* dvz_text()`
-   surface, or explicitly document the transitional API,
+2. keep the landed semantic `DvzText* dvz_text()` API aligned with style, placement, and lifecycle
+   setters while `dvz_glyph()` remains the lower-level derived/implementation path,
 3. finish data/world-space placement instead of silently hiding non-screen retained text modes,
 4. harden DPI behavior, panel clipping edge cases, and bounded GLFW/manual smokes,
 5. improve missing-glyph and renderer fallback diagnostics,

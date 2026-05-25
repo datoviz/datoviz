@@ -244,7 +244,8 @@ later by creating a parallel resource model and presentation path.
 This document complements:
 
 1. `agents/soon/scene/SCENE_VOLUME_RENDERING_FOLLOWUP.md` for the near-term 3D volume implementation path,
-2. `agents/soon/effects/SCREEN_SPACE_VOLUME_OCCLUSION_PLAN.md` for screen-space volume interaction ideas,
+2. `agents/done/SCREEN_SPACE_VOLUME_OCCLUSION_PLAN.md` for the completed first screen-space volume
+   occlusion baseline,
 3. `agents/soon/scene/SCENE_NAPARI_IMAGE_LABELS_PLAN.md` for image/label colormap and palette semantics,
 4. `agents/later/DRP2_WEBGPU_ROADMAP.md` for long-horizon backend portability and compute pressure,
 5. `spec/scene/semantics/SCALES.md` for stable scale and colormap semantics once this direction is

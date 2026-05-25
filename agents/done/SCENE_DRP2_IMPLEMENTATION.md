@@ -3,7 +3,7 @@
 > **Status:** `FIRST VERTICAL SLICE COMPLETE`
 > **Created on:** `2026-04-28`
 > **Completed on:** `2026-04-30`
-> **Purpose:** provide the concrete first implementation path for DRP2 and the future scene layer,
+> **Purpose:** provide the concrete first implementation path for DRP2 and the active scene layer,
 > using the existing `canvas`, `stream`/sink, and `vklite` stack instead of inventing a parallel
 > graphics path.
 

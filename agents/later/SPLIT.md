@@ -1,14 +1,14 @@
 > **Implementation Status**
 > - **Status:** `PARTIALLY COMPLETED`
-> - **Verified on:** `2026-03-23`
+> - **Verified on:** `2026-05-25`
 > - **Codebase alignment:** Phases A-D are implemented in code today: layered shared targets,
 >   package exports, build toggles, component runners, and the legacy integration runner all exist.
 > - **Current branch status:** The split work is structurally successful and no longer the main
 >   blocker for the branch. Remaining work is mostly packaging/CI tightening rather than core
 >   architecture bring-up.
 > - **Remaining gap:** CI profile coverage, out-of-tree package-consumer smoke tests, and
->   component-owned header install sets remain open. Phase E (`drp2`/`webgpu`/`scene`) is still
->   planning-only and should not be treated as an active near-term execution phase.
+>   component-owned header install sets remain open. `drp2` and `scene` are now active
+>   default-build modules; WebGPU remains planned/experimental.
 
 # Datoviz v0.4-dev Monorepo Target Split Plan
 
@@ -26,8 +26,9 @@ Primary decision:
 1. Let users adopt only the layer they need:
    1. thin Vulkan wrappers (`vk` + `vklite`)
    2. batteries-included canvas stack
-   3. future DRP2/WebGPU runtime
-   4. future scene layer
+   3. active DRP2 protocol/runtime
+   4. active scene layer
+   5. future WebGPU runtime
 2. Prevent accidental coupling across layers.
 3. Preserve fast internal refactors through monorepo co-location.
 4. Support desktop and wasm deliverables with clear boundaries.
@@ -57,16 +58,16 @@ Define the following installable targets and public include entry points.
    2. Depends on: `datoviz::core`, `datoviz::vk`
    3. Public umbrellas: `include/datoviz/canvas.h`, `include/datoviz/window.h`, `include/datoviz/stream.h`,
       `include/datoviz/video.h`, `include/datoviz/input.h`
-4. `datoviz::drp2` (planned)
-   1. Modules: new DRP2 spec/protocol/runtime
+4. `datoviz::drp2`
+   1. Modules: active DRP2 spec/protocol/runtime
    2. Platform-neutral contract; no Vulkan symbols in public headers
    3. wasm-portable by design
 5. `datoviz::webgpu` (planned)
    1. WebGPU renderer runtime on desktop
    2. Depends on `datoviz::drp2`
    3. May optionally integrate with `datoviz::canvas` for presentation/capture workflows
-6. `datoviz::scene` (planned)
-   1. High-level scene API built on DRP2/WebGPU contract
+6. `datoviz::scene`
+   1. Active high-level scene API built on DRP2/runtime contracts
    2. Desktop and wasm-facing public API
 7. `datoviz::datoviz` (aggregate convenience target)
    1. Links all active layers
@@ -140,9 +141,9 @@ Acceptance criteria:
    1. `DVZ_BUILD_CORE=ON`
    2. `DVZ_BUILD_VK=ON`
    3. `DVZ_BUILD_CANVAS=ON`
-   4. `DVZ_BUILD_DRP2=OFF` (until implemented)
+   4. `DVZ_BUILD_DRP2=ON`
    5. `DVZ_BUILD_WEBGPU=OFF` (until implemented)
-   6. `DVZ_BUILD_SCENE=OFF` (until implemented)
+   6. `DVZ_BUILD_SCENE=ON`
 2. Gate subdirectories and tests by these options.
 3. Define CI matrix jobs:
    1. core-only
@@ -175,9 +176,9 @@ Acceptance criteria:
 ## Phase E - DRP2/WebGPU/Scene onboarding
 
 1. Create new source roots with strict dependencies:
-   1. `src/drp2/`
-   2. `src/webgpu/`
-   3. `src/scene/` (new implementation, not scaffold placeholders)
+   1. `src/drp2/` (active)
+   2. `src/webgpu/` (future/experimental)
+   3. `src/scene/` (active implementation)
 2. Add public headers:
    1. `include/datoviz/drp2.h` + `include/datoviz/drp2/*`
    2. `include/datoviz/webgpu.h` + `include/datoviz/webgpu/*`

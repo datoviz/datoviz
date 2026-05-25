@@ -269,7 +269,7 @@ Exit criteria:
    - `testing/components/dvztest_vk.c` was updated on `2026-03-24` so the focused vk runner now
      includes `test_vklite_commands_destroy_without_recording`; this runner had drifted slightly
      behind the unified `vklite` suite before that fix.
-5. Remaining work before this document can reasonably be marked `COMPLETED`:
+5. Residual follow-ups after the completed baseline:
    - Add dedicated `vk/memory_interop.h` coverage for export/import and failure-path behavior.
    - Keep lifecycle/failure-path regressions expanding around submit failure, recreate/reset, and
      partial-init unwind; the recent `commands_destroy_without_recording` and
