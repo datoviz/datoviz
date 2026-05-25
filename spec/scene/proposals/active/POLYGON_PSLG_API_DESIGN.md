@@ -40,8 +40,9 @@ This design follows the cross-module public API rules in
 
 ## CPU Geometry Input
 
-The CPU-only triangulation input should be named `DvzGeomPolygon`. This keeps it in the `geom`
-vocabulary and avoids confusion with the retained scene object `DvzPolygon`.
+The CPU-only triangulation input should be named `DvzPolygonDesc`. This keeps the descriptor
+vocabulary used elsewhere in the public C API while avoiding confusion with the retained scene
+object `DvzPolygon`.
 
 The CPU input type should represent:
 
@@ -53,19 +54,19 @@ The CPU input type should represent:
 The first public shape should stay simple and binding-friendly:
 
 ```c
-typedef struct DvzGeomRing DvzGeomRing;
-typedef struct DvzGeomPolygon DvzGeomPolygon;
+typedef struct DvzPolygonRing DvzPolygonRing;
+typedef struct DvzPolygonDesc DvzPolygonDesc;
 
-struct DvzGeomRing
+struct DvzPolygonRing
 {
     const dvec2* xy;
     uint32_t count;
 };
 
-struct DvzGeomPolygon
+struct DvzPolygonDesc
 {
-    DvzGeomRing outer;
-    const DvzGeomRing* holes;
+    DvzPolygonRing outer;
+    const DvzPolygonRing* holes;
     uint32_t hole_count;
 };
 ```
@@ -80,7 +81,7 @@ The first implementation should add:
 
 ```c
 DvzGeometry* dvz_triangulate_polygon(
-    const DvzGeomPolygon* polygon, const DvzTriangulationDesc* desc);
+    const DvzPolygonDesc* polygon, const DvzTriangulationDesc* desc);
 ```
 
 The output is an ordinary `DvzGeometry` with F64 positions, derived normals if useful for mesh
@@ -134,7 +135,7 @@ It stores ring data, per-polygon ids when needed, fill/stroke style, and dirty/v
 Common user-facing APIs should be flat and role/property based:
 
 ```c
-dvz_polygon_set_geometry(polygon, &geom_polygon);
+dvz_polygon_set_geometry(polygon, &polygon_desc);
 dvz_polygon_outer(polygon, count, xy);
 dvz_polygon_hole(polygon, hole_index, count, xy);
 dvz_polygon_fill_color(polygon, color);
@@ -186,7 +187,7 @@ should distinguish array index from stable user id.
 Primary per-region setters:
 
 ```c
-dvz_polygon_set_region(polygons, polygon_index, &geom_polygon);
+dvz_polygon_set_region(polygons, polygon_index, &polygon_desc);
 dvz_polygon_set_outer_at(polygons, polygon_index, count, xy);
 dvz_polygon_set_hole_at(polygons, polygon_index, hole_index, count, xy);
 dvz_polygon_set_fill_color_at(polygons, polygon_index, color);

@@ -32,9 +32,9 @@ refined in
 4. v0.4 may break the old `DvzShape` surface. New utility APIs should expose `DvzGeometry`,
    explicit geometry input records, and explicit descriptors rather than preserving shape-era fields
    or compatibility names.
-5. Geometry utility naming must stay distinct from retained scene object naming. `DvzGeomPolygon`
-   is the borrowed CPU-side triangulation input. `DvzPolygon` is the scene-owned semantic object
-   that may retain ring data, style, ids, and dirty state.
+5. Geometry utility naming must stay distinct from retained scene object naming. `DvzPolygonDesc`
+   is the borrowed CPU-side triangulation input descriptor. `DvzPolygon` is the scene-owned semantic
+   object that may retain ring data, style, ids, and dirty state.
 
 
 ## Bundled Dependencies
@@ -82,7 +82,7 @@ variant, not a replacement for semantic contour geometry.
 
 | Input | Function | Contract | Use |
 |---|---|---|---|
-| `DvzGeomPolygon` | `dvz_triangulate_polygon` | outer F64 ring plus holes -> F64 vertices + `uint32` indices | filled polygons, regions, annotation shapes |
+| `DvzPolygonDesc` | `dvz_triangulate_polygon` | outer F64 ring plus holes -> F64 vertices + `uint32` indices | filled polygons, regions, annotation shapes |
 | `DvzPslg` | `dvz_triangulate_pslg` | F64 points, constrained edges, holes, quality -> F64 vertices + `uint32` indices | boundaries, constrained/scattered Delaunay |
 
 `DvzTriangulationQuality` carries optional minimum angle and maximum triangle area. Triangulation
