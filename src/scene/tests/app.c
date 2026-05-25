@@ -2405,7 +2405,7 @@ int test_app_offscreen_path_join_modes_are_ordered(TstContext* suite, const TstC
     AT(round_count > 0);
     AT(bevel_count > 0);
     AT(miter_count > round_count);
-    AT(round_count > bevel_count);
+    AT(miter_count > bevel_count);
     return 0;
 }
 

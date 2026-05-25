@@ -83,11 +83,15 @@ void main()
     }
 
     float alpha = strokeAlpha(distance, fragLineWidth);
+    float bevelExtent = max(fragLineWidth, 0.0) * 0.5 + 2.0;
     bool bevelOverhang = joinType == 2 &&
-                         ((fragCoord.x < 0.0 && fragHasPrev >= 0.5) ||
-                          (fragCoord.x > fragLength && fragHasNext >= 0.5));
+                         ((fragCoord.x < bevelExtent && fragHasPrev >= 0.5) ||
+                          (fragCoord.x > fragLength - bevelExtent && fragHasNext >= 0.5));
     if (bevelOverhang)
-        alpha *= 1.0 - smoothstep(-1.0, 1.0, fragBevelDistance);
+    {
+        float bevelDistance = max(abs(distance), fragBevelDistance - 1.0);
+        alpha = strokeAlpha(bevelDistance, fragLineWidth);
+    }
     if (alpha <= 0.0)
         discard;
     outColor = vec4(fragColor.rgb, fragColor.a * alpha);
