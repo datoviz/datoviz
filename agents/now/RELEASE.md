@@ -214,6 +214,9 @@ Checklist:
 5. Update README, build docs, release notes, feature-status docs, migration notes, and known issues.
 6. Keep active v0.4 design material out of legacy `docs/` unless the public documentation migration
    has explicitly started.
+7. Prepare a minimal RC1 user guide outside `docs/`, preferably at the repository root, so RC1
+   users have a temporary v0.4 source of truth before the full documentation migration. Link it
+   from `README.md` and the GitHub pre-release body.
 
 Exit criteria:
 
@@ -241,7 +244,11 @@ Required artifacts:
 9. explicit deferred-feature list aligned with
    [../../spec/scene/validation/DEFERRED_TRACKER.md](../../spec/scene/validation/DEFERRED_TRACKER.md),
 10. release-staging reconciliation for examples that prove text, axes, colorbars, annotations,
-    scale bars, pick/probe, sampled fields, sphere, volume, and dense point coverage.
+    scale bars, pick/probe, sampled fields, sphere, volume, and dense point coverage,
+11. temporary RC1 user guide at the repository root, for example `V0_4_RC1.md`, explaining that
+    legacy `docs/` and the public website may still describe v0.3, and giving source-build,
+    optional wheel/raw-`ctypes`, example-smoke, known-issues, feedback, and
+    supported/deferred-scope instructions.
 
 Minimum validation:
 
