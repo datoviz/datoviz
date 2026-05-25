@@ -1052,6 +1052,7 @@ struct DvzTextVisualState
     uint64_t realized_layout_version;
     uint64_t atlas_generation;
     DvzControllerMode realized_controller_mode;
+    float screen_scale;
     uint32_t visual_figure_width;
     uint32_t visual_figure_height;
     uint32_t reserved_glyph_vertices;

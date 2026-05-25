@@ -377,6 +377,64 @@ static int test_axis_text_labels(TstContext* suite, const TstCase* item)
 }
 
 
+static int test_axis_text_hidpi_scales_glyph_bounds(TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 800, 600, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
+    ANN(panel);
+
+    AT(dvz_panel_set_domain(panel, DVZ_DIM_X, 0.0, 10.0) == 0);
+    DvzAxis* axis = dvz_panel_axis(panel, DVZ_DIM_X);
+    ANN(axis);
+    DvzAxisStyle style = axis->style;
+    style.tick_size_px = 18.0f;
+    style.label_size_px = 22.0f;
+    AT(dvz_axis_set_style(axis, &style));
+    AT(dvz_axis_set_label(axis, "Time"));
+
+    DvzCapabilitySnapshot caps;
+    dvz_capability_snapshot_default(&caps);
+    caps.shader_format_glsl = true;
+    caps.supports_color_blending = true;
+    DvzDiagnosticReport report;
+    dvz_diagnostic_report_init(&report);
+    DvzFramePlanEmitConfig cfg = dvz_frame_plan_emit_config();
+    cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
+    cfg.device_scale_x = 2.0f;
+    cfg.device_scale_y = 2.0f;
+
+    DvzDrp2CommandStream* stream = dvz_figure_emit_ex(figure, &caps, &report, &cfg);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+    ANN(stream);
+    ANN(axis->text_visual);
+    ANN(axis->text_visual->text.glyph_visual);
+
+    DvzVisualDataView bounds_view = {0};
+    AT(dvz_visual_data(axis->text_visual->text.glyph_visual, "bounds", &bounds_view) == 0);
+    const float* bounds = (const float*)bounds_view.data;
+    ANN(bounds);
+    float max_extent = 0.0f;
+    for (uint64_t i = 0; i < bounds_view.item_count; i++)
+    {
+        max_extent = fmaxf(max_extent, fabsf(bounds[4 * i + 0]));
+        max_extent = fmaxf(max_extent, fabsf(bounds[4 * i + 1]));
+        max_extent = fmaxf(max_extent, fabsf(bounds[4 * i + 2]));
+        max_extent = fmaxf(max_extent, fabsf(bounds[4 * i + 3]));
+    }
+    AT(max_extent > 30.0f);
+
+    dvz_drp2_stream_destroy(stream);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
 static int test_axis_text_updates_after_domain_change(TstContext* suite, const TstCase* item)
 {
     (void)suite;
@@ -1052,6 +1110,7 @@ int test_scene_axis(TstSuite* suite)
     TST_CASE(test_axis_minor_ticks);
     TST_CASE(test_axis_tick_density_tracks_panel_size);
     TST_CASE(test_axis_text_labels);
+    TST_CASE(test_axis_text_hidpi_scales_glyph_bounds);
     TST_CASE(test_axis_text_updates_after_domain_change);
     TST_CASE(test_axis_text_layout_reserve);
     TST_CASE(test_axis_text_inset_panel_coordinates);

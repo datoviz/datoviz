@@ -2349,6 +2349,7 @@ static bool _text_visual_prepare(
 
     uint64_t version = _text_visual_version(visual);
     uint64_t layout_version = _text_visual_layout_version(visual);
+    float screen_scale = _scene_screen_scale(figure);
 
     DvzTextRenderer renderer = visual->text.renderer;
     float spec_size_px = 0.0f;
@@ -2363,6 +2364,7 @@ static bool _text_visual_prepare(
     }
     if (spec_size_px <= 0.0f)
         spec_size_px = visual->scene->font_defaults.text_size_px;
+    spec_size_px *= screen_scale;
     DvzTextStyle backend_style = {
         .size_px = spec_size_px,
         .renderer = renderer,
@@ -2406,6 +2408,7 @@ static bool _text_visual_prepare(
         visual->text.realized_version == version &&
         visual->text.atlas_generation == atlas_generation &&
         visual->text.realized_controller_mode == attach->controller_mode &&
+        fabsf(visual->text.screen_scale - screen_scale) <= 1e-6f &&
         visual->text.visual_figure_width == figure->width &&
         visual->text.visual_figure_height == figure->height;
     if (realized_cache_valid)
@@ -2415,7 +2418,8 @@ static bool _text_visual_prepare(
     bool position_only_dirty =
         visual->text.glyph_visual != NULL && visual->text.glyph_visual->field != NULL &&
         visual->text.realized_layout_version == layout_version &&
-        visual->text.atlas_generation == atlas_generation;
+        visual->text.atlas_generation == atlas_generation &&
+        fabsf(visual->text.screen_scale - screen_scale) <= 1e-6f;
     if (position_only_dirty)
     {
         if (!_text_sync_glyph_visual_attach(panel, visual->text.glyph_visual, &glyph_attach))
@@ -2504,7 +2508,7 @@ static bool _text_visual_prepare(
     for (uint32_t i = 0; i < count; i++)
     {
         DvzTextStyle style = {
-            .size_px = sizes != NULL ? sizes[i] : 12.0f,
+            .size_px = (sizes != NULL ? sizes[i] : 12.0f) * screen_scale,
             .renderer = renderer,
             .color = {255, 255, 255, 255},
         };
@@ -2694,6 +2698,7 @@ static bool _text_visual_prepare(
         visual->text.realized_layout_version = layout_version;
         visual->text.atlas_generation = atlas_generation;
         visual->text.realized_controller_mode = attach->controller_mode;
+        visual->text.screen_scale = screen_scale;
         visual->text.visual_figure_width = figure->width;
         visual->text.visual_figure_height = figure->height;
     }

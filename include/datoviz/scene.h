@@ -816,6 +816,22 @@ DVZ_EXPORT DvzAxis* dvz_panel_axis(DvzPanel* panel, DvzDim dim);
 
 
 /**
+ * Return the default axis tick policy.
+ *
+ * @return default axis tick policy
+ */
+DVZ_EXPORT DvzAxisTickPolicy dvz_axis_tick_policy(void);
+
+
+/**
+ * Return the default axis style.
+ *
+ * @return default axis style
+ */
+DVZ_EXPORT DvzAxisStyle dvz_axis_style(void);
+
+
+/**
  * Show or hide one panel-owned axis.
  *
  * @param axis the axis

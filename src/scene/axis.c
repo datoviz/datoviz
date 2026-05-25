@@ -75,6 +75,8 @@ static DvzAxisStyle _axis_default_style(void)
         .reserve_px = 0.0f,
         .tick_gap_px = AXIS_TEXT_TICK_GAP,
         .label_gap_px = AXIS_TEXT_LABEL_GAP,
+        .tick_size_px = AXIS_TEXT_TICK_SIZE,
+        .label_size_px = AXIS_TEXT_LABEL_SIZE,
         .plot_margin_left = 0.0f,
         .plot_margin_right = 0.0f,
         .plot_margin_bottom = 0.0f,
@@ -646,6 +648,19 @@ static uint32_t _axis_minor_count(const DvzAxis* axis)
 
 
 /**
+ * Return a positive axis text size, falling back to the built-in default.
+ *
+ * @param value configured size in logical pixels
+ * @param fallback fallback size in logical pixels
+ * @return resolved size in logical pixels
+ */
+static float _axis_text_size(float value, float fallback)
+{
+    return value > 0.0f && isfinite(value) ? value : fallback;
+}
+
+
+/**
  * Fill the visible tick values for the current tick step.
  *
  * @param axis the axis
@@ -1003,7 +1018,9 @@ static void _axis_update_text(
                       AXIS_TEXT_TICK_GAP;
             _axis_append_text_item(
                 &count, labels, strings, positions, anchors, sizes, colors, angles, tick_label, px,
-                py, 0.5f, 0.0f, AXIS_TEXT_TICK_SIZE, axis->style.major_tick_color, 0.0f);
+                py, 0.5f, 0.0f,
+                _axis_text_size(axis->style.tick_size_px, AXIS_TEXT_TICK_SIZE),
+                axis->style.major_tick_color, 0.0f);
         }
         else
         {
@@ -1013,7 +1030,9 @@ static void _axis_update_text(
                       AXIS_TEXT_TICK_GAP;
             _axis_append_text_item(
                 &count, labels, strings, positions, anchors, sizes, colors, angles, tick_label, px,
-                py, 1.0f, 0.5f, AXIS_TEXT_TICK_SIZE, axis->style.major_tick_color, 0.0f);
+                py, 1.0f, 0.5f,
+                _axis_text_size(axis->style.tick_size_px, AXIS_TEXT_TICK_SIZE),
+                axis->style.major_tick_color, 0.0f);
         }
     }
 
@@ -1029,7 +1048,9 @@ static void _axis_update_text(
                       AXIS_TEXT_LABEL_GAP;
             _axis_append_text_item(
                 &count, labels, strings, positions, anchors, sizes, colors, angles, axis->label,
-                px, py, 0.5f, 0.0f, AXIS_TEXT_LABEL_SIZE, axis->style.spine_color, 0.0f);
+                px, py, 0.5f, 0.0f,
+                _axis_text_size(axis->style.label_size_px, AXIS_TEXT_LABEL_SIZE),
+                axis->style.spine_color, 0.0f);
         }
         else
         {
@@ -1039,8 +1060,9 @@ static void _axis_update_text(
                       AXIS_TEXT_LABEL_GAP;
             _axis_append_text_item(
                 &count, labels, strings, positions, anchors, sizes, colors, angles, axis->label,
-                px, py, 0.5f, 0.5f, AXIS_TEXT_LABEL_SIZE, axis->style.spine_color,
-                AXIS_TEXT_Y_LABEL_ANGLE);
+                px, py, 0.5f, 0.5f,
+                _axis_text_size(axis->style.label_size_px, AXIS_TEXT_LABEL_SIZE),
+                axis->style.spine_color, AXIS_TEXT_Y_LABEL_ANGLE);
         }
     }
 
@@ -1337,6 +1359,28 @@ DvzAxis* dvz_panel_axis(DvzPanel* panel, DvzDim dim)
     axis->enabled = true;
     _axis_mark_dirty(axis);
     return axis;
+}
+
+
+/**
+ * Return the default axis tick policy.
+ *
+ * @return default axis tick policy
+ */
+DvzAxisTickPolicy dvz_axis_tick_policy(void)
+{
+    return _axis_default_tick_policy();
+}
+
+
+/**
+ * Return the default axis style.
+ *
+ * @return default axis style
+ */
+DvzAxisStyle dvz_axis_style(void)
+{
+    return _axis_default_style();
 }
 
 

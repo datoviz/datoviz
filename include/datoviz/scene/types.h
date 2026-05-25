@@ -260,6 +260,8 @@ struct DvzAxisStyle
     float reserve_px;
     float tick_gap_px;
     float label_gap_px;
+    float tick_size_px;
+    float label_size_px;
     float plot_margin_left;
     float plot_margin_right;
     float plot_margin_bottom;
