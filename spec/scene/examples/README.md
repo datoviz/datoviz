@@ -99,6 +99,7 @@ Small examples that should stay closest to the active v0.4 implementation path.
 9. [core/MOUSE_BRAIN_ATLAS_EXPLORER.md](core/MOUSE_BRAIN_ATLAS_EXPLORER.md)
 10. [core/ANIMATION_VIDEO_EXPORT.md](core/ANIMATION_VIDEO_EXPORT.md)
 11. [core/LATEX_MICROTEX_TEXT_VISUAL.md](core/LATEX_MICROTEX_TEXT_VISUAL.md)
+12. [core/SCALEBAR_2D_3D.md](core/SCALEBAR_2D_3D.md)
 
 ### `api/`
 
