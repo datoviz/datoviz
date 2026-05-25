@@ -25,14 +25,12 @@ scale bars, graph-backed techniques, and app/offscreen/GLFW slices. The app fram
 refactor is closed; the built-in loop is now on-demand by default with explicit continuous and
 capped modes. Treat these as active code, not future scaffolding.
 
-The CPU-side `geom` v0.4 subset is active in the core build: public `DvzGeometry`, owned geometry
-buffers, cube/plane/sphere/surface-grid generators, bounds, normal recomputation, transform/merge
-helpers, surface-grid height updates, F32 conversion helpers for current mesh upload paths, direct
-`DvzGeometry` upload into scene mesh visuals including retained texcoords, a visible surface-grid
-example, and focused `geom`/scene tests. Remaining `geom` work is now optional expansion: arrow/
-gizmo-axis and other solid generators, richer structured-grid update/provenance helpers,
-triangulation, curve utilities, simplification, hulls, polygon booleans, and import/asset-layer
-decisions.
+The CPU-side `geom` v0.4 subset is active in the core build. Public geometry support includes owned
+`DvzGeometry` buffers, cube/plane/sphere/surface-grid generators, bounds, normal recomputation,
+transform/merge helpers, unique-edge and contour extraction, surface-grid height updates, polygon
+triangulation, mesh upload through `dvz_mesh_set_geometry()`, polygon scene helpers, visible
+surface-grid/polygon examples, and focused `geom`/scene tests. Treat remaining `geom` work as
+optional expansion unless a release example needs it.
 
 The C test-runner modernization and low-risk process-sharding performance pass are complete enough
 to treat as a stable baseline. Historical notes live in
