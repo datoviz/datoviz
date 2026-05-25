@@ -1,4 +1,4 @@
-# Datoviz v0.4 Release Master Checklist
+# Datoviz v0.4 Release Plan
 
 > **Execution Status**
 > - **Status:** `ACTIVE RELEASE ROADMAP`
@@ -13,8 +13,8 @@ the current phase.
 
 Use this document together with:
 
-1. [NEXT_STEPS.md](NEXT_STEPS.md) for current branch context and active technical priorities.
-2. [IMPLEMENTATION.md](IMPLEMENTATION.md) for remaining C implementation lanes and parallel-work
+1. [START.md](START.md) for current branch context and active technical priorities.
+2. [STATUS.md](STATUS.md) for remaining C implementation lanes and parallel-work
    coordination.
 3. [../../spec/scene/examples/EXAMPLE_RELEASE_STAGING.md](../../spec/scene/examples/EXAMPLE_RELEASE_STAGING.md)
    for release example staging.
@@ -86,7 +86,7 @@ Checklist:
 1. Write or update the v0.4 feature status table.
 2. Mark each feature as `supported`, `experimental`, `advanced/unstable`, `deferred`, or
    `external/GSP`.
-3. Close or explicitly defer every item in [IMPLEMENTATION.md](IMPLEMENTATION.md) that is still
+3. Close or explicitly defer every item in [STATUS.md](STATUS.md) that is still
    listed as feature-freeze critical.
 4. Verify that text, axes, ticks, axis labels, colorbars, annotations, and scale bars are represented
    in examples/tests and are not stale planning-only claims.
@@ -94,7 +94,7 @@ Checklist:
    richer readouts as polish or v0.5.
 6. Keep the landed retained scale-bar update-performance churn tests and live example smokes
    represented in release validation.
-7. Reconcile [IMPLEMENTATION.md](IMPLEMENTATION.md),
+7. Reconcile [STATUS.md](STATUS.md),
    [../../spec/scene/examples/EXAMPLE_RELEASE_STAGING.md](../../spec/scene/examples/EXAMPLE_RELEASE_STAGING.md),
    and the public feature table so completed first slices are not still presented as active
    feature-freeze blockers.
@@ -412,7 +412,7 @@ release-blocking bug.
 
 1. Start each release task by reading this file and the current phase's linked references.
 2. Keep changes scoped to one phase or one checklist item.
-3. Update this checklist, [NEXT_STEPS.md](NEXT_STEPS.md), or [IMPLEMENTATION.md](IMPLEMENTATION.md)
+3. Update this checklist, [START.md](START.md), or [STATUS.md](STATUS.md)
    when a release-blocking item changes state.
 4. Move completed focused plans from `agents/now/` or `agents/soon/` to `agents/done/` when they
    are no longer active.

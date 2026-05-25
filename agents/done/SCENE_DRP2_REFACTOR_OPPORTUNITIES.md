@@ -6,7 +6,7 @@
 > - **Scope:** preserve the completed scene, request-path, DRP2 runtime, serialization, and test
 >   decomposition record.
 > - **Current location:** `agents/done/`; current follow-up work should be safety- or
->   behavior-driven and tracked from [../now/NEXT_STEPS.md](../now/NEXT_STEPS.md).
+>   behavior-driven and tracked from [../now/START.md](../now/START.md).
 
 
 ## Context
@@ -219,7 +219,7 @@ domain files.
 11. Done: split scene tests into short domain-named files while preserving existing test function
     names and `test_scene(TstSuite*)` as the single module entry point.
 12. Next: move to the native 3D pressure example and manual smoke coverage described in
-    `agents/now/NEXT_STEPS.md`.
+    `agents/now/START.md`.
 
 
 ## Validation Guidance

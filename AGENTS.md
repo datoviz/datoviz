@@ -43,11 +43,11 @@ When refactoring, do NOT delete existing comments, keep them and update them if 
   `35/35` WebGPU preflight fixtures, `52` fixture-runner tests, and `7` schema/generation tests;
   `just test drp2` has passed `119/119`; `just test scene` has passed beyond the first
   EDL/material slices, with later focused shader/visual-family checks recorded in
-  `agents/now/NEXT_STEPS.md`. Re-run the narrow target before relying on a newer slice.
+  `agents/now/START.md`. Re-run the narrow target before relying on a newer slice.
 * For the current execution summary and next-step guidance, start with
-  `agents/now/NEXT_STEPS.md`, then use `agents/README.md` to find completed phase records.
+  `agents/now/START.md`, then use `agents/README.md` to find completed phase records.
 * For the v0.4 feature-freeze, release-candidate, validation, packaging, and final-release roadmap,
-  start with `agents/now/V0_4_RELEASE_MASTER_CHECKLIST.md`.
+  start with `agents/now/RELEASE.md`.
 
 ### 🏗️ Current refactor status (v0.4-dev)
 

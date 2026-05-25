@@ -6,8 +6,8 @@
 >   feasibility spikes because browser constraints can pressure DRP2 without forking scene
 >   semantics.
 > - **Execution note:** the actionable spec-phase entry point is `spec/drp2/AGENT_SPEC_PHASE.md`
-> - **Implementation note:** the active repo-local implementation guide is
->   `agents/now/NEXT_STEPS.md`
+> - **Implementation note:** the active repo-local implementation status guide is
+>   `agents/now/STATUS.md`
 
 # DRP2 / WebGPU / Scene Roadmap
 

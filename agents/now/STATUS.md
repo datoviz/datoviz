@@ -1,18 +1,18 @@
-# Datoviz v0.4 Implementation Gateboard
+# Datoviz v0.4 Status
 
 > **Execution Status**
-> - **Status:** `ACTIVE IMPLEMENTATION GATEBOARD`
+> - **Status:** `ACTIVE STATUS GATEBOARD`
 > - **Updated on:** `2026-05-25`
 > - **Purpose:** keep the current v0.4 implementation status concise, identify RC1 blockers,
 >   and point to the durable spec or completed record for each lane.
 
-This file is the branch-level implementation dashboard. It should stay short enough to scan before
+This file is the branch-level status dashboard. It should stay short enough to scan before
 starting work. Durable behavior belongs in `spec/`; completed implementation history belongs in
 `agents/done/`; long-horizon or RC2 polish belongs in `agents/later/`.
 
 Start release sequencing from
-[`V0_4_RELEASE_MASTER_CHECKLIST.md`](V0_4_RELEASE_MASTER_CHECKLIST.md). Use
-[`NEXT_STEPS.md`](NEXT_STEPS.md) for the current dispatch context.
+[`RELEASE.md`](RELEASE.md). Use
+[`START.md`](START.md) for the current dispatch context.
 
 
 ## Current Pickup
@@ -35,7 +35,7 @@ Feature-freeze blockers:
 
 Primary references:
 
-1. [`V0_4_RELEASE_MASTER_CHECKLIST.md`](V0_4_RELEASE_MASTER_CHECKLIST.md)
+1. [`RELEASE.md`](RELEASE.md)
 2. [`../../spec/scene/examples/EXAMPLE_RELEASE_STAGING.md`](../../spec/scene/examples/EXAMPLE_RELEASE_STAGING.md)
 3. [`../../spec/scene/api/API_SURFACE.md`](../../spec/scene/api/API_SURFACE.md)
 4. [`../../spec/scene/validation/DEFERRED_TRACKER.md`](../../spec/scene/validation/DEFERRED_TRACKER.md)

@@ -6,9 +6,10 @@
 > - **Current branch priority:** DRP2 is now both an executable spec lane and an active C
 >   implementation/runtime lane. Keep prose, schemas, fixtures, stream code, runtime behavior, and
 >   scene emitters aligned.
-> - **Related active lane:** DVZR recording/replay is tracked in
->   [../../agents/now/NEXT_STEPS.md](../../agents/now/NEXT_STEPS.md); keep DRP2 portability changes coordinated with that
->   lane, but do not turn this file into the DVZR execution checklist.
+> - **Related active lane:** DRP2 and portability implementation status is tracked in
+>   [../../agents/now/STATUS.md](../../agents/now/STATUS.md); keep DRP2 portability changes
+>   coordinated with active implementation lanes, but do not turn this file into an execution
+>   checklist.
 
 # DRP2 Spec Phase
 
@@ -151,7 +152,7 @@ focused on contract quality and executable conformance material.
 
 The first implementation sequencing plan is complete and recorded in
 `agents/done/SCENE_DRP2_IMPLEMENTATION.md`. Current implementation sequencing is tracked in
-`agents/now/NEXT_STEPS.md`.
+`agents/now/STATUS.md`.
 
 Keep this file focused on the active DRP2 contract and fixture lane. Do not duplicate module
 bring-up order here.

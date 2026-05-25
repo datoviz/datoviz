@@ -1,4 +1,4 @@
-# Datoviz v0.4 Next Steps
+# Datoviz v0.4 Start
 
 > **Execution Status**
 > - **Status:** `ACTIVE DEVELOPMENT DISPATCH`
@@ -14,9 +14,9 @@ release criteria, or long implementation history.
 
 1. For release sequencing, feature freeze, RCs, final release, release validation, or release
    documentation, read
-   [`V0_4_RELEASE_MASTER_CHECKLIST.md`](V0_4_RELEASE_MASTER_CHECKLIST.md).
+   [`RELEASE.md`](RELEASE.md).
 2. For current implementation lane status, RC1 blockers, and parallel-work guidance, read
-   [`IMPLEMENTATION.md`](IMPLEMENTATION.md).
+   [`STATUS.md`](STATUS.md).
 3. For scene semantics, public scene API shape, frame planning, visual families, interaction,
    annotations, scales, or runtime boundaries, read [`../../spec/scene/README.md`](../../spec/scene/README.md).
 4. For DRP2 commands, fixtures, schemas, or scene code that emits DRP2, read

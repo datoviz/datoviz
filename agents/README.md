@@ -11,9 +11,9 @@ archive for finished agent plans. Long-horizon backlog belongs in [later/](later
 
 Start with the small active set in [now/](now/). These are the active entry points:
 
-1. [now/V0_4_RELEASE_MASTER_CHECKLIST.md](now/V0_4_RELEASE_MASTER_CHECKLIST.md)
-2. [now/NEXT_STEPS.md](now/NEXT_STEPS.md)
-3. [now/IMPLEMENTATION.md](now/IMPLEMENTATION.md)
+1. [now/START.md](now/START.md)
+2. [now/RELEASE.md](now/RELEASE.md)
+3. [now/STATUS.md](now/STATUS.md)
 
 Subsystem-specific execution notes and stable behavior records live outside `now/`:
 
@@ -30,14 +30,14 @@ contracts in `spec/scene`, `spec/drp2`, or completed records in `agents/done`.
 
 If resuming work on the branch:
 
-1. Read [now/V0_4_RELEASE_MASTER_CHECKLIST.md](now/V0_4_RELEASE_MASTER_CHECKLIST.md) when working
+1. Read [now/RELEASE.md](now/RELEASE.md) when working
    toward v0.4 feature freeze, release candidates, final release, release validation, or release
    documentation.
-2. Read [now/NEXT_STEPS.md](now/NEXT_STEPS.md) for the current practical task list.
+2. Read [now/START.md](now/START.md) for branch orientation and guardrails.
 3. Read [done/APP_FRAME_SCHEDULING_REFACTOR.md](done/APP_FRAME_SCHEDULING_REFACTOR.md) before
    changing the app loop, frame pacing, window wait/wakeup behavior, or immediate-present CPU
    policy.
-4. Read [now/IMPLEMENTATION.md](now/IMPLEMENTATION.md) to decide
+4. Read [now/STATUS.md](now/STATUS.md) to decide
    the next C implementation item and see which lanes can run in parallel.
 5. Read [done/TEST_RUNNER_MODERNIZATION.md](done/TEST_RUNNER_MODERNIZATION.md) for completed
    test-runner modernization history, and
@@ -73,9 +73,9 @@ If resuming work on the branch:
 
 Small active execution notes:
 
-1. `NEXT_STEPS.md`: dispatch and branch orientation only.
-2. `IMPLEMENTATION.md`: feature gateboard and parallel-work lanes.
-3. `V0_4_RELEASE_MASTER_CHECKLIST.md`: release sequencing, scope, quality gates, and artifacts.
+1. `START.md`: dispatch and branch orientation only.
+2. `STATUS.md`: feature gateboard and parallel-work lanes.
+3. `RELEASE.md`: release sequencing, scope, quality gates, and artifacts.
 
 These files should answer what to do next and where to read the normative spec. They should not be
 the long-term home for scene semantics, completed audit logs, or plans that describe code already

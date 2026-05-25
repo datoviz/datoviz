@@ -8,7 +8,7 @@
 > - **Inputs:** local code review plus three parallel subagent audits covering contract semantics,
 >   implementation consistency, and automated test coverage.
 > - **Current location:** `agents/done/`; the active follow-up items are recorded in
->   [../now/NEXT_STEPS.md](../now/NEXT_STEPS.md).
+>   [../now/START.md](../now/START.md).
 
 This report audits whether the proposed render-contract resolver is robust enough to become the
 authority for the difficult transparency, depth, volume, occlusion, MSAA, EDL, and SSAO cases.

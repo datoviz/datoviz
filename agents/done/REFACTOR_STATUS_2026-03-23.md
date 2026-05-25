@@ -8,10 +8,10 @@ refactor burst.
 > - **Updated on:** `2026-05-18`
 > - **Purpose:** preserve the March 2026 refactor snapshot as background context.
 > - **Current location:** `agents/done/`; for current work, start with
->   [../now/NEXT_STEPS.md](../now/NEXT_STEPS.md).
+>   [../now/START.md](../now/START.md).
 
 > **Historical note:** this file is a March checkpoint. For current May 2026 execution guidance,
-> start with [now/NEXT_STEPS.md](/home/cyrille/GIT/Viz/datoviz/agents/now/NEXT_STEPS.md).
+> start with [now/START.md](/home/cyrille/GIT/Viz/datoviz/agents/now/START.md).
 
 
 ## May 2026 Addendum

@@ -18,7 +18,7 @@ Read this together with:
 2. [`EXAMPLE_ORGANIZATION.md`](EXAMPLE_ORGANIZATION.md) for repository/API-layer ownership,
 3. [`EXAMPLE_PRIORITIZATION.md`](EXAMPLE_PRIORITIZATION.md)
    for visual-payoff ranking,
-4. [`../../../agents/now/IMPLEMENTATION.md`](../../../agents/now/IMPLEMENTATION.md)
+4. [`../../../agents/now/STATUS.md`](../../../agents/now/STATUS.md)
    for the active C implementation critical path.
 
 
