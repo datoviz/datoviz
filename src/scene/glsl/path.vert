@@ -91,36 +91,35 @@ void main()
     int joinType = int(round(material.params.z));
     float miterLimit = max(material.params.w, 1.0);
 
-    vec2 normal = endpointEnd ? normalIn : normalOut;
-    if (hasPrev && hasNext && joinType == 0)
+    vec2 tangent = endpointEnd ? dirIn : dirOut;
+    vec2 segmentNormal = endpointEnd ? normalIn : normalOut;
+    float lengthPx = endpointEnd ? length(currPx - prevPx) : length(nextPx - currPx);
+    float tangentOffset = 0.0;
+
+    vec2 normal = segmentNormal;
+    if (hasPrev && hasNext)
     {
-        vec2 miter = safeNormalize(normalIn + normalOut, normal);
-        float denom = max(abs(dot(miter, normalOut)), 1e-3);
-        float miterScale = 1.0 / denom;
-        normal = miterScale <= miterLimit ? miter * miterScale : normal;
-    }
-    else if (hasPrev && hasNext && joinType == 1)
-    {
-        normal = safeNormalize(normalIn + normalOut, normal);
+        vec2 miter = safeNormalize(normalIn + normalOut, segmentNormal);
+        float denom = dot(miter, segmentNormal);
+        float miterScale = denom > 1e-3 ? 1.0 / denom : 1.0;
+        if (joinType == 1)
+            normal = miter * miterScale;
+        else if (joinType == 0 && miterScale <= miterLimit)
+            normal = miter * miterScale;
     }
 
-    vec2 tangent = endpointEnd ? dirIn : dirOut;
-    float lengthPx = endpointEnd ? length(currPx - prevPx) : length(nextPx - currPx);
-    float along = endpointEnd ? lengthPx : 0.0;
-    float tangentOffset = 0.0;
     int capType = endpointEnd ? int(round(material.params.y)) : int(round(material.params.x));
     if (!hasPrev && !endpointEnd)
         tangentOffset = -capExtension(capType, halfWidth);
     else if (!hasNext && endpointEnd)
         tangentOffset = capExtension(capType, halfWidth);
-    else if (hasPrev && hasNext && joinType == 1)
-        tangentOffset = endpointEnd ? halfWidth : -halfWidth;
 
     vec2 pixel = currPx + normal * side * halfWidth + tangent * tangentOffset;
     gl_Position = pixelToClip(pixel, currClip.z / max(abs(currClip.w), 1e-6));
 
     fragColor = inColor;
-    fragCoord = vec2(along + tangentOffset, side * halfWidth);
+    vec2 segmentStartPx = endpointEnd ? prevPx : currPx;
+    fragCoord = vec2(dot(pixel - segmentStartPx, tangent), dot(pixel - currPx, segmentNormal));
     fragLength = lengthPx;
     fragLineWidth = strokeWidth;
     fragHasPrev = hasPrev ? 1.0 : 0.0;
