@@ -93,16 +93,15 @@ Runtime, graph, and backend lanes:
 
 Scene feature lanes:
 
-1. [soon/scene/SCENE_2D_AXES_IMPLEMENTATION_PLAN.md](soon/scene/SCENE_2D_AXES_IMPLEMENTATION_PLAN.md)
-2. [soon/scene/SCENE_POINT_PIXEL_MARKER_FOLLOWUP.md](soon/scene/SCENE_POINT_PIXEL_MARKER_FOLLOWUP.md)
-3. [soon/scene/SCENE_VECTOR_VISUALS_PLAN.md](soon/scene/SCENE_VECTOR_VISUALS_PLAN.md)
-4. [soon/scene/SCENE_VOLUME_RENDERING_FOLLOWUP.md](soon/scene/SCENE_VOLUME_RENDERING_FOLLOWUP.md)
-5. [soon/scene/SCENE_NAPARI_IMAGE_LABELS_PLAN.md](soon/scene/SCENE_NAPARI_IMAGE_LABELS_PLAN.md)
-6. [soon/scene/SCENE_ORIENTATION_GIZMO_PLAN.md](soon/scene/SCENE_ORIENTATION_GIZMO_PLAN.md)
-7. [soon/effects/SCENE_MSAA_PLAN.md](soon/effects/SCENE_MSAA_PLAN.md)
-8. [soon/effects/SCENE_SSAO_QUALITY_PLAN.md](soon/effects/SCENE_SSAO_QUALITY_PLAN.md)
-9. [soon/effects/SCENE_TECHNIQUES_MATERIALS_PLAN.md](soon/effects/SCENE_TECHNIQUES_MATERIALS_PLAN.md)
-10. [soon/scene/SCENE_VISUAL_SHADER_ABI_FOLLOWUP.md](soon/scene/SCENE_VISUAL_SHADER_ABI_FOLLOWUP.md)
+1. [soon/scene/SCENE_POINT_PIXEL_MARKER_FOLLOWUP.md](soon/scene/SCENE_POINT_PIXEL_MARKER_FOLLOWUP.md)
+2. [soon/scene/SCENE_VECTOR_VISUALS_PLAN.md](soon/scene/SCENE_VECTOR_VISUALS_PLAN.md)
+3. [soon/scene/SCENE_VOLUME_RENDERING_FOLLOWUP.md](soon/scene/SCENE_VOLUME_RENDERING_FOLLOWUP.md)
+4. [soon/scene/SCENE_NAPARI_IMAGE_LABELS_PLAN.md](soon/scene/SCENE_NAPARI_IMAGE_LABELS_PLAN.md)
+5. [soon/scene/SCENE_ORIENTATION_GIZMO_PLAN.md](soon/scene/SCENE_ORIENTATION_GIZMO_PLAN.md)
+6. [soon/effects/SCENE_MSAA_PLAN.md](soon/effects/SCENE_MSAA_PLAN.md)
+7. [soon/effects/SCENE_SSAO_QUALITY_PLAN.md](soon/effects/SCENE_SSAO_QUALITY_PLAN.md)
+8. [soon/effects/SCENE_TECHNIQUES_MATERIALS_PLAN.md](soon/effects/SCENE_TECHNIQUES_MATERIALS_PLAN.md)
+9. [soon/scene/SCENE_VISUAL_SHADER_ABI_FOLLOWUP.md](soon/scene/SCENE_VISUAL_SHADER_ABI_FOLLOWUP.md)
 
 For visual-family lanes, durable contracts live under [../spec/scene/visuals](../spec/scene/visuals);
 the `soon/` files above are execution follow-up notes.
@@ -162,6 +161,7 @@ Strategic visual backlog:
 1. [later/SPLATTING_TIERED_PLAN.md](later/SPLATTING_TIERED_PLAN.md)
 2. [later/SCENE_SPHERE_VISUAL_BACKLOG.md](later/SCENE_SPHERE_VISUAL_BACKLOG.md)
 3. [later/DRP2_WEBGPU_ROADMAP.md](later/DRP2_WEBGPU_ROADMAP.md)
+4. [later/SCENE_2D_AXES_POLISH.md](later/SCENE_2D_AXES_POLISH.md)
 
 Tooling backlog:
 
@@ -181,3 +181,18 @@ Tooling backlog:
 7. Keep example and gallery planning out of `agents/`; it belongs under `spec/scene/examples/`.
 8. On the `v0.4` branch, prefer architecture, correctness, and maintainability over API or ABI
    compatibility with earlier work.
+
+
+## Progress Tracking Rules
+
+Use one active status fact per feature. The preferred shape is a compact table row with:
+
+1. current disposition,
+2. evidence link,
+3. next action,
+4. validation command when recent.
+
+Avoid copying the same status narrative across `agents/now`, `agents/soon`, and `spec/scene`.
+If a note grows into an implementation diary, archive it under `agents/done/` after the slice
+lands. If it describes stable behavior, promote the rule into the closest specialized `spec/`
+document and leave only a link from `agents/`.

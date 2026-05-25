@@ -2,7 +2,7 @@
 
 > **Execution Status**
 > - **Status:** `ACTIVE DEVELOPMENT DISPATCH`
-> - **Updated on:** `2026-05-21`
+> - **Updated on:** `2026-05-25`
 > - **Purpose:** keep the current v0.4 work queue short and point longer history elsewhere.
 
 Start here, then follow the linked specs or completed records only for the subsystem being edited.
@@ -19,11 +19,11 @@ and `window`) are the runtime foundation; do not create parallel presentation, f
 Vulkan wrapper paths.
 
 Implemented scene coverage includes retained point, pixel, marker, primitive, mesh, path/segment,
-image, volume, sphere, sampled-field, material, controller, pick/probe, annotation/text
-bookkeeping, a first rendered text/glyph-atlas slice, graph-backed technique, and
-app/offscreen/GLFW slices. The app frame scheduler refactor is closed; the built-in loop is now
-on-demand by default with explicit continuous and capped modes. Treat these as active code, not
-future scaffolding.
+image, volume, sphere, sampled-field, material, controller, pick/probe, selection bookkeeping,
+rendered text/glyph-atlas, rendered label annotations, rendered continuous colorbars, rendered
+scale bars, graph-backed techniques, and app/offscreen/GLFW slices. The app frame scheduler
+refactor is closed; the built-in loop is now on-demand by default with explicit continuous and
+capped modes. Treat these as active code, not future scaffolding.
 
 The CPU-side `geom` v0.4 subset is active in the core build: public `DvzGeometry`, owned geometry
 buffers, cube/plane/sphere/surface-grid generators, bounds, normal recomputation, transform/merge
@@ -64,10 +64,10 @@ and shared-fixture follow-ups live in
 
 ## Active Priorities
 
-1. **Text/annotation/readout realization:** use the landed first rendered text slice for axes,
-   labels, annotations, and pinned readouts. The first continuous colorbar rendering slice is
-   closed; remaining colorbar work is now shared-layout, categorical legend, and richer scale
-   follow-up rather than ramp/tick/text realization.
+1. **RC1 release proof:** close the feature/status table, v0.3 visible parity audit, public
+   API/status labels, raw `ctypes` smoke, WebGPU/WASM experimental scope, and compact example proof
+   set. Do not treat text, axes, continuous colorbars, label annotations, or scale bars as absent
+   feature-freeze blockers.
 2. **WebGPU/WGSL parity:** pressure the active DRP2 subset with point, primitive, image, minimal
    mesh/depth, marker, segment/path stroke, sphere, volume, and capability-gated advanced passes.
 3. **DVZR portability:** keep `dvz_drp2_player`, `replay_dvzr_glfw`, app recording hooks, and raw
@@ -83,7 +83,8 @@ and shared-fixture follow-ups live in
    highlighting. Continue with richer point/marker/image pick/probe payloads, image selection,
    linked-panel request propagation, and explicit deferrals for mesh/path/volume picking.
 7. **Examples and gallery pressure:** keep C examples, manual smoke notes, gallery harnesses,
-   screenshots, and video/capture paths exercising already-implemented features.
+   screenshots, and video/capture paths exercising already-implemented features. Prefer release
+   proof over new speculative examples.
 8. **CUDA/CuPy external-memory contract:** prefer Vulkan-owned exportable resources imported into
    CUDA/CuPy with explicit external-memory and semaphore metadata. Do not make CUDA-owned
    allocation import or NVIDIA CIG the primary architecture.

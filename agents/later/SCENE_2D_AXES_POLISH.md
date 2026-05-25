@@ -1,10 +1,9 @@
-# Scene 2D Axes Follow-Up
+# Scene 2D Axes Polish
 
 > **Execution Status**
-> - **Status:** `ACTIVE / FOLLOW-UP NOTE`
-> - **Updated on:** `2026-05-19`
-> - **Purpose:** track remaining 2D axes work after the first panel-owned domain/tick/geometry
->   slice landed.
+> - **Status:** `LATER / RC2 POLISH`
+> - **Updated on:** `2026-05-25`
+> - **Purpose:** record non-blocking axes polish after the first rendered v0.4 slice landed.
 
 
 ## Current State
@@ -16,7 +15,7 @@ domain/ownership recommendation lives in
 with controller binding behavior in
 [`../../../spec/scene/decisions/CONTROLLER_BINDING_MODEL.md`](../../../spec/scene/decisions/CONTROLLER_BINDING_MODEL.md).
 
-The active v0.4 code already has:
+The active v0.4 code has:
 
 1. finite linear X/Y panel domains through `dvz_panel_set_domain()`;
 2. visible-domain queries through `dvz_panel_visible_domain()`;
@@ -28,18 +27,18 @@ The active v0.4 code already has:
 8. rendered tick labels and axis labels through the current `dvz_text()` visual path;
 9. focused scene tests and the `examples/c/techniques/scatter_axes.c` smoke example.
 
-Use this file only for remaining execution work. Do not duplicate stable axis/domain semantics here.
+Use this file only for remaining polish. Do not duplicate stable axis/domain semantics here.
 
 
-## Remaining Axes Work
+## Remaining Polish
 
-Recommended follow-up commits:
+Follow-up commits:
 
 1. Harden tick and axis label layout: collision behavior, edge clipping, formatter policy, and
    richer text style controls are still separate from the first rendered-label slice.
 2. Harden plot-area reserve behavior so axes, labels, colorbars, legends, and annotations can share
    panel-adjacent space without one-off margins.
-3. Add image/screenshot smoke coverage for `scatter_axes`.
+3. Keep image/screenshot smoke coverage for `scatter_axes` in release validation.
 4. Decide whether inverted numeric domains should become valid in the first v0.4 API. If yes, update
    validation, tick ordering, tests, and the semantics together.
 5. Add log-domain and nonlinear-domain support only after linear labels and visible geometry are
