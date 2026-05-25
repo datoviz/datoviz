@@ -664,6 +664,8 @@ static int test_scene_scalebar_2d_3d_stream_order(TstContext* suite, const TstCa
     bool saw_right_viewport = false;
     bool saw_right_point_draw = false;
     bool saw_glyph_draw = false;
+    uint32_t right_point_draw_index = UINT32_MAX;
+    uint32_t glyph_draw_index = UINT32_MAX;
     for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
     {
         const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream, i);
@@ -697,15 +699,22 @@ static int test_scene_scalebar_2d_3d_stream_order(TstContext* suite, const TstCa
         {
             if (cmd->u.draw.pass_id == right_pass && right_pipeline &&
                 cmd->u.draw.vertex_count == 3)
+            {
                 saw_right_point_draw = true;
+                right_point_draw_index = i;
+            }
             if (cmd->u.draw.pass_id == glyph_pass && glyph_pipeline &&
                 cmd->u.draw.vertex_count >= 6)
+            {
                 saw_glyph_draw = true;
+                glyph_draw_index = i;
+            }
         }
     }
     AT(saw_right_viewport);
     AT(saw_right_point_draw);
     AT(saw_glyph_draw);
+    AT(right_point_draw_index < glyph_draw_index);
 
     dvz_drp2_stream_destroy(stream);
     dvz_scene_destroy(scene);
