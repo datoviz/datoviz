@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* scalebar_2d_3d - retained 2D physical scale bar beside a 3D arcball panel.
+/* scalebar_2d_3d - retained 2D physical scale bar beside a 3D arcball point panel.
  *
  * Build:  just example-c scalebar_2d_3d
  * Run:    ./build/examples/c/annotations/scalebar_2d_3d
@@ -36,7 +36,7 @@
 #define WIDTH        1100u
 #define HEIGHT       620u
 #define POINT_COUNT  240u
-#define SPHERE_COUNT 125u
+#define CLOUD_COUNT 125u
 
 #define TAU 6.28318530718f
 
@@ -148,9 +148,9 @@ static bool _add_2d_scalebar(DvzPanel* panel)
             .unit = "m",
             .data_to_unit = 1.0,
             .label_style = {
-                .size_px = 12.0f,
-                .renderer = DVZ_TEXT_RENDERER_SMALL_BITMAP_ATLAS,
-                .color = {245, 248, 252, 255},
+                .size_px = 18.0f,
+                .renderer = DVZ_TEXT_RENDERER_MSDF_ATLAS,
+                .color = {255, 236, 176, 255},
             },
         });
     return scalebar != NULL;
@@ -159,13 +159,13 @@ static bool _add_2d_scalebar(DvzPanel* panel)
 
 
 /**
- * Add a compact 3D sphere cloud for the companion arcball panel.
+ * Add a compact 3D point cloud for the companion arcball panel.
  *
  * @param scene scene owning the visual
  * @param panel panel receiving the visual
  * @return true on success, false on error
  */
-static bool _add_sphere_cloud(DvzScene* scene, DvzPanel* panel)
+static bool _add_3d_point_cloud(DvzScene* scene, DvzPanel* panel)
 {
     ANN(scene);
     ANN(panel);
@@ -180,9 +180,9 @@ static bool _add_sphere_cloud(DvzScene* scene, DvzPanel* panel)
     if (!ok)
         return false;
 
-    vec3 positions[SPHERE_COUNT] = {0};
-    DvzColor colors[SPHERE_COUNT] = {0};
-    float radii[SPHERE_COUNT] = {0};
+    vec3 positions[CLOUD_COUNT] = {0};
+    DvzColor colors[CLOUD_COUNT] = {0};
+    float diameters[CLOUD_COUNT] = {0};
     uint32_t count = 0;
     for (uint32_t z = 0; z < 5u; z++)
     {
@@ -194,28 +194,28 @@ static bool _add_sphere_cloud(DvzScene* scene, DvzPanel* panel)
                 const float fy = -1.0f + 0.5f * (float)y;
                 const float fz = -1.0f + 0.5f * (float)z;
                 const float d = sqrtf(fx * fx + fy * fy + fz * fz);
-                if (d > 1.24f || count >= SPHERE_COUNT)
+                if (d > 1.24f || count >= CLOUD_COUNT)
                     continue;
                 positions[count][0] = fx;
                 positions[count][1] = fy;
                 positions[count][2] = fz;
-                colors[count][0] = _u8(0.25f + 0.45f * (float)x / 4.0f);
-                colors[count][1] = _u8(0.34f + 0.46f * (float)y / 4.0f);
-                colors[count][2] = _u8(0.92f - 0.44f * (float)z / 4.0f);
+                colors[count][0] = _u8(0.40f + 0.50f * (float)x / 4.0f);
+                colors[count][1] = _u8(0.50f + 0.42f * (float)y / 4.0f);
+                colors[count][2] = _u8(0.96f - 0.32f * (float)z / 4.0f);
                 colors[count][3] = 255;
-                radii[count] = 0.075f + 0.028f * (1.24f - d);
+                diameters[count] = 12.0f + 8.0f * (1.24f - d);
                 count++;
             }
         }
     }
 
-    DvzVisual* visual = dvz_sphere(scene, DVZ_SPHERE_FLAGS_LIGHTING);
+    DvzVisual* visual = dvz_point(scene, 0);
     if (visual == NULL)
         return false;
     DvzVisualDataUpdate updates[] = {
         {.attr_name = "position", .data = positions, .item_count = count},
         {.attr_name = "color", .data = colors, .item_count = count},
-        {.attr_name = "radius", .data = radii, .item_count = count},
+        {.attr_name = "diameter", .data = diameters, .item_count = count},
     };
     int rc = dvz_visual_set_data_many(visual, updates, 3);
     if (rc != 0)
@@ -255,8 +255,8 @@ int main(int argc, char** argv)
     EXAMPLE_CHECK(ok, "_add_physical_scatter() failed");
     ok = _add_2d_scalebar(panel_2d);
     EXAMPLE_CHECK(ok, "_add_2d_scalebar() failed");
-    ok = _add_sphere_cloud(scene, panel_3d);
-    EXAMPLE_CHECK(ok, "_add_sphere_cloud() failed");
+    ok = _add_3d_point_cloud(scene, panel_3d);
+    EXAMPLE_CHECK(ok, "_add_3d_point_cloud() failed");
 
     app = dvz_app(scene);
     EXAMPLE_CHECK(app != NULL, "dvz_app() failed (no GPU or display?)");
@@ -270,6 +270,7 @@ int main(int argc, char** argv)
     DvzArcball* arcball = dvz_view_arcball(win, panel_3d, NULL);
     EXAMPLE_CHECK(arcball != NULL, "failed to create or bind arcball controller");
     dvz_arcball_set(arcball, (vec3){+0.64f, -0.14f, +0.28f});
+    dvz_view_request_frame(win);
 
     dvz_app_run(app, example_frame_count(argc, argv));
     ret = 0;

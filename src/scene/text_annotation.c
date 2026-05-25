@@ -1724,9 +1724,8 @@ static bool _scalebar_prepare_visual(DvzFigure* figure, DvzAnnotation* annotatio
     float label_size =
         _scalebar_positive_or_default(desc->label_style.size_px, DVZ_SCALEBAR_LABEL_SIZE_PX) *
         screen_scale;
-    DvzTextRenderer renderer = desc->label_style.renderer != 0
-                                   ? desc->label_style.renderer
-                                   : DVZ_TEXT_RENDERER_SMALL_BITMAP_ATLAS;
+    DvzTextRenderer renderer =
+        desc->label_style.renderer != 0 ? desc->label_style.renderer : DVZ_TEXT_RENDERER_MSDF_ATLAS;
     if (annotation->visual->text.renderer != renderer &&
         _scene_text_visual_set_renderer(annotation->visual, renderer) != 0)
         return false;
@@ -2686,7 +2685,7 @@ DvzAnnotation* dvz_annotation_scalebar(DvzPanel* panel, const DvzScaleBarDesc* d
     if (annotation->scalebar.label_style.size_px <= 0.0f)
         annotation->scalebar.label_style.size_px = DVZ_SCALEBAR_LABEL_SIZE_PX;
     if (annotation->scalebar.label_style.renderer == DVZ_TEXT_RENDERER_AUTO)
-        annotation->scalebar.label_style.renderer = DVZ_TEXT_RENDERER_SMALL_BITMAP_ATLAS;
+        annotation->scalebar.label_style.renderer = DVZ_TEXT_RENDERER_MSDF_ATLAS;
     if (annotation->scalebar.data_to_unit == 0.0 ||
         !isfinite(annotation->scalebar.data_to_unit))
         annotation->scalebar.data_to_unit = 1.0;
