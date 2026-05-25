@@ -2853,6 +2853,95 @@ int test_scene_polygon_composite(TstContext* suite, const TstCase* item)
 
 
 
+int test_scene_polygon_set_composite(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    ANN(panel);
+
+    DvzPolygonSet* set = dvz_polygon_set(scene, 0);
+    ANN(set);
+    const dvec2 left[4] = {
+        {0.0, 0.0},
+        {1.0, 0.0},
+        {1.0, 1.0},
+        {0.0, 1.0},
+    };
+    const dvec2 right[4] = {
+        {2.0, 0.0},
+        {3.0, 0.0},
+        {3.0, 1.0},
+        {2.0, 1.0},
+    };
+    const uint32_t left_index = dvz_polygon_set_add(
+        set, &(DvzPolygonDesc){.outer = {.xy = left, .count = 4}});
+    const uint32_t right_index = dvz_polygon_set_add(
+        set, &(DvzPolygonDesc){.outer = {.xy = right, .count = 4}});
+    AT(left_index == 0);
+    AT(right_index == 1);
+
+    const DvzColor red = {255, 0, 0, 255};
+    const DvzColor green = {0, 255, 0, 255};
+    AT(dvz_polygon_set_region_fill_color(set, left_index, red) == 0);
+    AT(dvz_polygon_set_region_fill_color(set, right_index, green) == 0);
+    AT(dvz_polygon_set_region_stroke_width(set, left_index, 2.0f) == 0);
+    AT(dvz_polygon_set_region_stroke_width(set, right_index, 4.0f) == 0);
+
+    DvzComposite* composite = dvz_polygon_set_composite(set, 0);
+    ANN(composite);
+    AT(dvz_panel_add_composite(panel, composite, NULL) == 0);
+    AT(panel->visual_count == 2);
+
+    DvzVisual* fill = dvz_composite_visual(composite, "fill");
+    DvzVisual* stroke = dvz_composite_visual(composite, "stroke");
+    ANN(fill);
+    ANN(stroke);
+
+    DvzVisualDataView position_view = {0};
+    AT(dvz_visual_data(fill, "position", &position_view) == 0);
+    AT(position_view.item_count == 8);
+    AT(fill->buffer != NULL);
+    AT(fill->buffer->desc.byte_size == 12 * sizeof(DvzIndex));
+
+    DvzVisualDataView color_view = {0};
+    AT(dvz_visual_data(fill, "color", &color_view) == 0);
+    const DvzColor* colors = color_view.data;
+    AT(colors[0][0] == red[0]);
+    AT(colors[0][1] == red[1]);
+    AT(colors[4][0] == green[0]);
+    AT(colors[4][1] == green[1]);
+
+    DvzVisualDataView stroke_position_view = {0};
+    AT(dvz_visual_data(stroke, "position", &stroke_position_view) == 0);
+    AT(stroke_position_view.item_count == 10);
+    AT(stroke->path.subpath_count == 2);
+    DvzVisualDataView stroke_width_view = {0};
+    AT(dvz_visual_data(stroke, "stroke_width", &stroke_width_view) == 0);
+    const float* widths = stroke_width_view.data;
+    AC(widths[0], 2.0f, EPS);
+    AC(widths[5], 4.0f, EPS);
+
+    const DvzColor blue = {0, 0, 255, 255};
+    AT(dvz_polygon_set_region_fill_color(set, right_index, blue) == 0);
+    _scene_prepare_composite_visuals(figure);
+    AT(dvz_visual_data(fill, "color", &color_view) == 0);
+    colors = color_view.data;
+    AT(colors[4][0] == blue[0]);
+    AT(colors[4][1] == blue[1]);
+    AT(colors[4][2] == blue[2]);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
 int test_scene_additional_typed_data_uploads(TstContext* suite, const TstCase* item)
 {
     ANN(suite);

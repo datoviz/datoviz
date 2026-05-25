@@ -43,6 +43,7 @@
 #define DVZ_SCENE_MAX_VISUALS    256
 #define DVZ_SCENE_MAX_COMPOSITES 128
 #define DVZ_SCENE_MAX_POLYGONS   64
+#define DVZ_SCENE_MAX_POLYGON_SETS 32
 #define DVZ_SCENE_MAX_FIELDS     128
 #define DVZ_SCENE_MAX_BUFFERS    128
 #define DVZ_SCENE_MAX_SCALES     64
@@ -108,11 +109,13 @@ typedef enum
 {
     DVZ_COMPOSITE_TYPE_NONE,
     DVZ_COMPOSITE_TYPE_POLYGON,
+    DVZ_COMPOSITE_TYPE_POLYGON_SET,
 } DvzCompositeType;
 
 
 
 typedef struct DvzPolygonStoredRing DvzPolygonStoredRing;
+typedef struct DvzPolygonSetItem DvzPolygonSetItem;
 typedef struct DvzCompositeVisual DvzCompositeVisual;
 
 
@@ -136,6 +139,33 @@ struct DvzPolygon
     DvzColor fill_color;
     DvzColor stroke_color;
     float stroke_width;
+    uint64_t version;
+};
+
+
+
+struct DvzPolygonSetItem
+{
+    bool active;
+    DvzPolygonStoredRing outer;
+    DvzPolygonStoredRing* holes;
+    uint32_t hole_count;
+    DvzColor fill_color;
+    DvzColor stroke_color;
+    float stroke_width;
+    uint64_t version;
+};
+
+
+
+struct DvzPolygonSet
+{
+    DvzScene* scene;
+    uint32_t flags;
+    bool active;
+    DvzPolygonSetItem* polygons;
+    uint32_t polygon_count;
+    uint32_t polygon_capacity;
     uint64_t version;
 };
 
@@ -1316,6 +1346,9 @@ struct DvzScene
     uint32_t polygon_count;
     DvzPolygon polygons[DVZ_SCENE_MAX_POLYGONS];
 
+    uint32_t polygon_set_count;
+    DvzPolygonSet polygon_sets[DVZ_SCENE_MAX_POLYGON_SETS];
+
     uint32_t composite_count;
     DvzComposite composites[DVZ_SCENE_MAX_COMPOSITES];
 
@@ -1439,6 +1472,7 @@ void _scene_notify_visual_changed(DvzVisual* visual);
 void _scene_notify_buffer_changed(DvzSceneBuffer* buffer);
 void _scene_prepare_composite_visuals(DvzFigure* figure);
 void _scene_polygon_reset(DvzPolygon* polygon);
+void _scene_polygon_set_reset(DvzPolygonSet* set);
 void _scene_composite_reset(DvzComposite* composite);
 
 

@@ -1653,6 +1653,95 @@ DVZ_EXPORT DvzComposite* dvz_polygon_composite(DvzPolygon* polygon, uint32_t fla
 
 
 /**
+ * Create a scene-owned semantic polygon set object.
+ *
+ * A polygon set stores several independent polygon regions. Each region has its own rings and
+ * style.
+ *
+ * @param scene the scene
+ * @param flags reserved polygon-set flags
+ * @return the polygon set, or NULL on allocation failure
+ */
+DVZ_EXPORT DvzPolygonSet* dvz_polygon_set(DvzScene* scene, uint32_t flags);
+
+
+/**
+ * Destroy a scene-owned polygon set object.
+ *
+ * @param set the polygon set
+ */
+DVZ_EXPORT void dvz_polygon_set_destroy(DvzPolygonSet* set);
+
+
+/**
+ * Append one polygon region to a polygon set.
+ *
+ * @param set the polygon set
+ * @param desc borrowed polygon descriptor
+ * @return the polygon index, or UINT32_MAX on error
+ */
+DVZ_EXPORT uint32_t dvz_polygon_set_add(DvzPolygonSet* set, const DvzPolygonDesc* desc);
+
+
+/**
+ * Replace one polygon region's rings.
+ *
+ * @param set the polygon set
+ * @param polygon_index polygon index
+ * @param desc borrowed polygon descriptor
+ * @return 0 on success, -1 on error
+ */
+DVZ_EXPORT int dvz_polygon_set_region_geometry(
+    DvzPolygonSet* set, uint32_t polygon_index, const DvzPolygonDesc* desc);
+
+
+/**
+ * Set one polygon region's fill color.
+ *
+ * @param set the polygon set
+ * @param polygon_index polygon index
+ * @param color RGBA fill color
+ * @return 0 on success, -1 on error
+ */
+DVZ_EXPORT int dvz_polygon_set_region_fill_color(
+    DvzPolygonSet* set, uint32_t polygon_index, const DvzColor color);
+
+
+/**
+ * Set one polygon region's stroke color.
+ *
+ * @param set the polygon set
+ * @param polygon_index polygon index
+ * @param color RGBA stroke color
+ * @return 0 on success, -1 on error
+ */
+DVZ_EXPORT int dvz_polygon_set_region_stroke_color(
+    DvzPolygonSet* set, uint32_t polygon_index, const DvzColor color);
+
+
+/**
+ * Set one polygon region's stroke width in pixels.
+ *
+ * @param set the polygon set
+ * @param polygon_index polygon index
+ * @param width stroke width in pixels
+ * @return 0 on success, -1 on error
+ */
+DVZ_EXPORT int
+dvz_polygon_set_region_stroke_width(DvzPolygonSet* set, uint32_t polygon_index, float width);
+
+
+/**
+ * Create a scene-owned composite render view for a polygon set.
+ *
+ * @param set the polygon set
+ * @param flags reserved composite flags
+ * @return the composite, or NULL on allocation failure
+ */
+DVZ_EXPORT DvzComposite* dvz_polygon_set_composite(DvzPolygonSet* set, uint32_t flags);
+
+
+/**
  * Destroy a scene-owned composite render view.
  *
  * @param composite the composite

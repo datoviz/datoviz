@@ -2580,6 +2580,8 @@ void dvz_scene_destroy(DvzScene* scene)
         return;
     for (uint32_t i = 0; i < scene->composite_count; i++)
         _scene_composite_reset(&scene->composites[i]);
+    for (uint32_t i = 0; i < scene->polygon_set_count; i++)
+        _scene_polygon_set_reset(&scene->polygon_sets[i]);
     for (uint32_t i = 0; i < scene->polygon_count; i++)
         _scene_polygon_reset(&scene->polygons[i]);
     for (uint32_t i = 0; i < scene->visual_count; i++)
