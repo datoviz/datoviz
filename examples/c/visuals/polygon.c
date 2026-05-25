@@ -79,8 +79,8 @@ typedef struct PolygonExampleState
     DvzComposite* polygon_composite;
     DvzComposite* set_composite;
     DvzVisual* triangulation;
-    float (*triangulation_start)[3];
-    float (*triangulation_end)[3];
+    vec3* triangulation_start;
+    vec3* triangulation_end;
     DvzColor* triangulation_color;
     float* triangulation_widths;
     uint32_t triangulation_count;
@@ -261,8 +261,8 @@ static uint32_t _triangulation_segment_count(const DvzGeometry* geometry)
  * @return updated write offset
  */
 static uint32_t _append_triangulation_edges(
-    const DvzGeometry* geometry, float (*starts)[3], float (*ends)[3], DvzColor* colors,
-    float* widths, uint32_t offset, float width)
+    const DvzGeometry* geometry, vec3* starts, vec3* ends, DvzColor* colors, float* widths,
+    uint32_t offset, float width)
 {
     if (geometry == NULL || starts == NULL || ends == NULL || colors == NULL || widths == NULL)
         return offset;
@@ -351,9 +351,9 @@ static bool _add_triangulation_overlay(
         goto error;
 
     state->triangulation_start =
-        (float(*)[3])dvz_calloc(segment_count, sizeof(*state->triangulation_start));
+        (vec3*)dvz_calloc(segment_count, sizeof(*state->triangulation_start));
     state->triangulation_end =
-        (float(*)[3])dvz_calloc(segment_count, sizeof(*state->triangulation_end));
+        (vec3*)dvz_calloc(segment_count, sizeof(*state->triangulation_end));
     state->triangulation_color = (DvzColor*)dvz_calloc(segment_count, sizeof(DvzColor));
     state->triangulation_widths = (float*)dvz_calloc(segment_count, sizeof(float));
     if (

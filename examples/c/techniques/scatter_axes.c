@@ -105,8 +105,8 @@ int main(int argc, char** argv)
 
     dvz_panel_set_domain(panel, DVZ_DIM_X, -5.0, +5.0);
     dvz_panel_set_domain(panel, DVZ_DIM_Y, -3.0, +3.0);
-    int rc =
-        dvz_panel_data_to_visual_positions(panel, &data_positions[0][0], &visual_positions[0][0], N);
+    int rc = dvz_panel_data_to_visual_positions(
+        panel, (const float*)data_positions, (float*)visual_positions, N);
     EXAMPLE_CHECK(rc == 0, "dvz_panel_data_to_visual_positions() failed");
 
     DvzVisualDataUpdate updates[] = {
