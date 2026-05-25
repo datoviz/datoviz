@@ -6,6 +6,9 @@
 > - **Purpose:** keep the current v0.4 work queue short and point longer history elsewhere.
 
 Start here, then follow the linked specs or completed records only for the subsystem being edited.
+For release work, feature-freeze decisions, release-candidate sequencing, validation scope, or
+release documentation, start with
+[V0_4_RELEASE_MASTER_CHECKLIST.md](V0_4_RELEASE_MASTER_CHECKLIST.md).
 
 
 ## Current Position
@@ -51,9 +54,11 @@ and shared-fixture follow-ups live in
 4. [../../spec/drp2/README.md](../../spec/drp2/README.md) and
    [../../spec/drp2/AGENT_SPEC_PHASE.md](../../spec/drp2/AGENT_SPEC_PHASE.md) before touching
    DRP2 commands, fixtures, schema docs, or DRP2-emitting scene code.
-5. [IMPLEMENTATION.md](IMPLEMENTATION.md) for the current
+5. [V0_4_RELEASE_MASTER_CHECKLIST.md](V0_4_RELEASE_MASTER_CHECKLIST.md) before release-roadmap,
+   feature-freeze, release-candidate, final-release, or release-validation work.
+6. [IMPLEMENTATION.md](IMPLEMENTATION.md) for the current
    lane inventory and parallel-work prompts.
-6. [RELEASE.md](RELEASE.md) for post-feature-completion
+7. [RELEASE.md](RELEASE.md) for post-feature-completion
    API review, documentation, bindings, gallery, packaging, and release-candidate work.
 
 

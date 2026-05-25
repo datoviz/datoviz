@@ -11,9 +11,10 @@ archive for finished agent plans. Long-horizon backlog belongs in [later/](later
 
 Start with the small active set in [now/](now/). These are the active entry points:
 
-1. [now/NEXT_STEPS.md](now/NEXT_STEPS.md)
-2. [now/IMPLEMENTATION.md](now/IMPLEMENTATION.md)
-3. [now/RELEASE.md](now/RELEASE.md)
+1. [now/V0_4_RELEASE_MASTER_CHECKLIST.md](now/V0_4_RELEASE_MASTER_CHECKLIST.md)
+2. [now/NEXT_STEPS.md](now/NEXT_STEPS.md)
+3. [now/IMPLEMENTATION.md](now/IMPLEMENTATION.md)
+4. [now/RELEASE.md](now/RELEASE.md)
 
 Subsystem-specific execution notes and stable behavior records live outside `now/`:
 
@@ -30,38 +31,41 @@ contracts in `spec/scene`, `spec/drp2`, or completed records in `agents/done`.
 
 If resuming work on the branch:
 
-1. Read [now/NEXT_STEPS.md](now/NEXT_STEPS.md) for the current practical task list.
-2. Read [done/APP_FRAME_SCHEDULING_REFACTOR.md](done/APP_FRAME_SCHEDULING_REFACTOR.md) before
+1. Read [now/V0_4_RELEASE_MASTER_CHECKLIST.md](now/V0_4_RELEASE_MASTER_CHECKLIST.md) when working
+   toward v0.4 feature freeze, release candidates, final release, release validation, or release
+   documentation.
+2. Read [now/NEXT_STEPS.md](now/NEXT_STEPS.md) for the current practical task list.
+3. Read [done/APP_FRAME_SCHEDULING_REFACTOR.md](done/APP_FRAME_SCHEDULING_REFACTOR.md) before
    changing the app loop, frame pacing, window wait/wakeup behavior, or immediate-present CPU
    policy.
-3. Read [now/IMPLEMENTATION.md](now/IMPLEMENTATION.md) to decide
+4. Read [now/IMPLEMENTATION.md](now/IMPLEMENTATION.md) to decide
    the next C implementation item and see which lanes can run in parallel.
-4. Read [now/RELEASE.md](now/RELEASE.md) when working on
+5. Read [now/RELEASE.md](now/RELEASE.md) when working on
    post-feature-completion quality, API review, documentation, bindings, gallery, packaging,
    release candidates, or communication planning.
-5. Read [done/TEST_RUNNER_MODERNIZATION.md](done/TEST_RUNNER_MODERNIZATION.md) for completed
+6. Read [done/TEST_RUNNER_MODERNIZATION.md](done/TEST_RUNNER_MODERNIZATION.md) for completed
    test-runner modernization history, and
    [later/TEST_RUNNER_SCHEDULING.md](later/TEST_RUNNER_SCHEDULING.md) before changing scheduling,
    process sharding, CI orchestration, or remaining skip/reporting behavior.
-6. Read [../spec/scene/visuals/IMPLEMENTATION_DECISIONS.md](../spec/scene/visuals/IMPLEMENTATION_DECISIONS.md)
+7. Read [../spec/scene/visuals/IMPLEMENTATION_DECISIONS.md](../spec/scene/visuals/IMPLEMENTATION_DECISIONS.md)
    before extending pixel, point, marker, segment, path, image, sphere, or mesh first-slice
    behavior.
-7. Read [../spec/scene/validation/IMAGE_PICKING_RECOVERY.md](../spec/scene/validation/IMAGE_PICKING_RECOVERY.md)
+8. Read [../spec/scene/validation/IMAGE_PICKING_RECOVERY.md](../spec/scene/validation/IMAGE_PICKING_RECOVERY.md)
    before changing image probe coordinates, hidden pick-capable image behavior, panzoom probe
    mapping, or CPU fallback behavior.
-8. Read [../spec/scene/README.md](../spec/scene/README.md) before changing scene semantics,
+9. Read [../spec/scene/README.md](../spec/scene/README.md) before changing scene semantics,
    public scene API shape, frame planning, visual families, interaction, annotations, scales, or
    runtime boundaries.
-9. Read [../spec/scene/api/API_SURFACE.md](../spec/scene/api/API_SURFACE.md) before changing public
+10. Read [../spec/scene/api/API_SURFACE.md](../spec/scene/api/API_SURFACE.md) before changing public
    scene API shape or adding new scene object families.
-10. Read [../spec/drp2/README.md](../spec/drp2/README.md) and
+11. Read [../spec/drp2/README.md](../spec/drp2/README.md) and
    [../spec/drp2/AGENT_SPEC_PHASE.md](../spec/drp2/AGENT_SPEC_PHASE.md) before touching
    `spec/drp2/`, `src/drp2/`, or
    DRP2-emitting scene code.
-11. Read [done/SCENE_DRP2_IMPLEMENTATION.md](done/SCENE_DRP2_IMPLEMENTATION.md) and
+12. Read [done/SCENE_DRP2_IMPLEMENTATION.md](done/SCENE_DRP2_IMPLEMENTATION.md) and
    [done/DRP2_SCENE_SAFETY.md](done/DRP2_SCENE_SAFETY.md) when touching the completed first
    scene -> DRP2 -> runtime slice.
-12. Read [done/SCENE_CONTROLLER_BINDING_REFACTOR_PLAN.md](done/SCENE_CONTROLLER_BINDING_REFACTOR_PLAN.md)
+13. Read [done/SCENE_CONTROLLER_BINDING_REFACTOR_PLAN.md](done/SCENE_CONTROLLER_BINDING_REFACTOR_PLAN.md)
    and [done/SCENE_TURNTABLE_CONTROLLER_PLAN.md](done/SCENE_TURNTABLE_CONTROLLER_PLAN.md) before
    changing scene-owned controller binding, panel-local input routing, or camera controller
    semantics.

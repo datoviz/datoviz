@@ -46,6 +46,8 @@ When refactoring, do NOT delete existing comments, keep them and update them if 
   `agents/now/NEXT_STEPS.md`. Re-run the narrow target before relying on a newer slice.
 * For the current execution summary and next-step guidance, start with
   `agents/now/NEXT_STEPS.md`, then use `agents/README.md` to find completed phase records.
+* For the v0.4 feature-freeze, release-candidate, validation, packaging, and final-release roadmap,
+  start with `agents/now/V0_4_RELEASE_MASTER_CHECKLIST.md`.
 
 ### 🏗️ Current refactor status (v0.4-dev)
 

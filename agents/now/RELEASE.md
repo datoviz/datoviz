@@ -13,6 +13,12 @@
 This document describes the work needed after the v0.4 feature set is mostly implemented, before
 Datoviz v0.4 should be released publicly.
 
+For the step-by-step roadmap from the current branch through feature freeze, release candidates, and
+the final `v0.4.0` release, start with
+[V0_4_RELEASE_MASTER_CHECKLIST.md](V0_4_RELEASE_MASTER_CHECKLIST.md). This file remains the
+detailed release-readiness reference for API review, documentation, bindings, gallery, packaging,
+quality, and communication work.
+
 The key distinction is intentional:
 
 1. **Implementation completion** decides what v0.4 can do.
