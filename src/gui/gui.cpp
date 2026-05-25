@@ -2025,6 +2025,19 @@ bool dvz_gui_viewport_window(DvzGuiViewport* viewport, const char* title, bool* 
     if (ImGui::Begin(title, open, flags))
     {
         ImVec2 avail = ImGui::GetContentRegionAvail();
+        /* Repair stale saved layouts that collapsed the hosted source below its minimum size. */
+        if (
+            ImGui::IsWindowAppearing() &&
+            (avail.x < (float)viewport->config.min_width ||
+             avail.y < (float)viewport->config.min_height))
+        {
+            ImGui::SetWindowSize(
+                ImVec2(
+                    (float)viewport->config.initial_width,
+                    (float)viewport->config.initial_height),
+                ImGuiCond_Always);
+            avail = ImGui::GetContentRegionAvail();
+        }
         if (avail.x < 1.0f)
             avail.x = 1.0f;
         if (avail.y < 1.0f)
