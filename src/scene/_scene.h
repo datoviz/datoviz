@@ -49,6 +49,7 @@
 #define DVZ_SCENE_MAX_SCALES     64
 #define DVZ_SCENE_MAX_COLORMAPS  64
 #define DVZ_SCENE_MAX_COLORBARS  64
+#define DVZ_SCENE_MAX_SCALE_CATEGORIES 64
 #define DVZ_SCENE_MAX_INTERACTIONS 64
 #define DVZ_SCENE_MAX_SELECTIONS 64
 #define DVZ_SCENE_MAX_LINK_CHANNELS 64
@@ -537,6 +538,17 @@ bool _dvz_figure_fly_update(DvzFigure* figure, double dt);
 /*  Scale / colormap / colorbar                                                                  */
 /*************************************************************************************************/
 
+typedef struct DvzScaleCategoryState
+{
+    int32_t category_id;
+    uint32_t order;
+    bool has_label;
+    char label[DVZ_SCENE_LABEL_SIZE];
+    DvzColor color;
+    uint32_t flags;
+} DvzScaleCategoryState;
+
+
 struct DvzScale
 {
     DvzScene* scene;
@@ -551,6 +563,8 @@ struct DvzScale
     bool has_domain;
     bool has_view_range;
     DvzColormap* colormap;
+    uint32_t category_count;
+    DvzScaleCategoryState categories[DVZ_SCENE_MAX_SCALE_CATEGORIES];
 };
 
 

@@ -644,6 +644,17 @@ struct DvzScaleDesc
 typedef struct DvzScaleDesc DvzScaleDesc;
 
 
+struct DvzScaleCategory
+{
+    int32_t category_id;
+    uint32_t order;
+    const char* label;
+    DvzColor color;
+    uint32_t flags;
+};
+typedef struct DvzScaleCategory DvzScaleCategory;
+
+
 struct DvzColormapStop
 {
     double position;

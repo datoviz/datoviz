@@ -39,6 +39,9 @@ static void _scene_texture_bump_version(DvzVisual* visual);
 
 static void _scene_mark_colorbar_dirty(DvzColorbar* colorbar);
 
+static bool _scale_categories_have_duplicate_ids(
+    const DvzScaleCategory* categories, uint32_t count);
+
 
 
 static void _colorbar_report(DvzDiagnosticReport* report, const char* message);
@@ -347,6 +350,29 @@ static bool _colorbar_anchor_matches_orientation(
         return anchor == DVZ_SCENE_ANCHOR_PANEL_TOP || anchor == DVZ_SCENE_ANCHOR_PANEL_BOTTOM;
     }
     return anchor == DVZ_SCENE_ANCHOR_PANEL_LEFT || anchor == DVZ_SCENE_ANCHOR_PANEL_RIGHT;
+}
+
+
+/**
+ * Return whether a category table contains duplicate category ids.
+ *
+ * @param categories category descriptors
+ * @param count number of descriptors
+ * @return whether any category id appears more than once
+ */
+static bool _scale_categories_have_duplicate_ids(
+    const DvzScaleCategory* categories, uint32_t count)
+{
+    ANN(categories);
+    for (uint32_t i = 0; i < count; i++)
+    {
+        for (uint32_t j = i + 1; j < count; j++)
+        {
+            if (categories[i].category_id == categories[j].category_id)
+                return true;
+        }
+    }
+    return false;
 }
 
 
@@ -1497,6 +1523,66 @@ void dvz_scale_set_format(DvzScale* scale, const DvzFormatDesc* format)
     ANN(scale);
     _scene_format_state_copy(&scale->format, format);
     _scene_mark_scale_dirty(scale);
+}
+
+
+/**
+ * Replace retained categorical entries on a scale.
+ *
+ * @param scale the scale
+ * @param categories category entry array, or NULL to clear
+ * @param count the number of category entries
+ * @return true when the category table was accepted
+ */
+bool dvz_scale_set_categories(
+    DvzScale* scale, const DvzScaleCategory* categories, uint32_t count)
+{
+    ANN(scale);
+    if (scale->kind != DVZ_SCALE_CATEGORICAL)
+    {
+        log_error("scale categories are valid only for categorical scales");
+        return false;
+    }
+    if (categories == NULL || count == 0)
+    {
+        scale->category_count = 0;
+        _scene_mark_scale_dirty(scale);
+        return true;
+    }
+    if (count > DVZ_SCENE_MAX_SCALE_CATEGORIES)
+    {
+        log_error(
+            "too many scale categories: %u > %u", count, DVZ_SCENE_MAX_SCALE_CATEGORIES);
+        return false;
+    }
+    if (_scale_categories_have_duplicate_ids(categories, count))
+    {
+        log_error("duplicate scale category id");
+        return false;
+    }
+
+    for (uint32_t i = 0; i < count; i++)
+    {
+        DvzScaleCategoryState* dst = &scale->categories[i];
+        const DvzScaleCategory* src = &categories[i];
+        dvz_memset(dst, sizeof(DvzScaleCategoryState), 0, sizeof(DvzScaleCategoryState));
+        dst->category_id = src->category_id;
+        dst->order = src->order;
+        dst->flags = src->flags;
+        dst->has_label = src->label != NULL && src->label[0] != '\0';
+        if (dst->has_label)
+            dvz_strlcpy(dst->label, src->label, sizeof(dst->label));
+        dvz_memcpy(dst->color, sizeof(DvzColor), src->color, sizeof(DvzColor));
+    }
+    for (uint32_t i = count; i < scale->category_count; i++)
+    {
+        dvz_memset(
+            &scale->categories[i], sizeof(DvzScaleCategoryState), 0,
+            sizeof(DvzScaleCategoryState));
+    }
+    scale->category_count = count;
+    _scene_mark_scale_dirty(scale);
+    return true;
 }
 
 

@@ -175,6 +175,52 @@ int test_scene_scale_colormap_colorbar_core(TstContext* suite, const TstCase* it
 }
 
 
+int test_scene_categorical_scale_entries(TstContext* suite, const TstCase* item)
+{
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+
+    DvzScale* categorical = dvz_scale(scene, &(DvzScaleDesc){.kind = DVZ_SCALE_CATEGORICAL});
+    ANN(categorical);
+    DvzScaleCategory categories[3] = {
+        {.category_id = 7, .order = 2, .label = "Beta", .color = {220, 40, 40, 255}},
+        {.category_id = 3, .order = 1, .label = "Alpha", .color = {40, 220, 40, 255}},
+        {.category_id = 9, .order = 3, .label = NULL, .color = {40, 40, 220, 255}},
+    };
+    AT(dvz_scale_set_categories(categorical, categories, 3));
+    AT(categorical->category_count == 3);
+    AT(categorical->categories[0].category_id == 7);
+    AT(categorical->categories[0].order == 2);
+    AT(categorical->categories[0].has_label);
+    AT(strcmp(categorical->categories[0].label, "Beta") == 0);
+    AT(categorical->categories[0].color[0] == 220);
+    AT(categorical->categories[1].category_id == 3);
+    AT(categorical->categories[2].category_id == 9);
+    AT(!categorical->categories[2].has_label);
+
+    DvzScaleCategory duplicate[2] = {
+        {.category_id = 4, .order = 0, .label = "First", .color = {1, 2, 3, 255}},
+        {.category_id = 4, .order = 1, .label = "Second", .color = {4, 5, 6, 255}},
+    };
+    AT_EXPECTED_ERROR_STRICT(suite, !dvz_scale_set_categories(categorical, duplicate, 2));
+    AT(categorical->category_count == 3);
+    AT(categorical->categories[0].category_id == 7);
+
+    DvzScale* continuous = dvz_scale(scene, &(DvzScaleDesc){.kind = DVZ_SCALE_CONTINUOUS});
+    ANN(continuous);
+    AT_EXPECTED_ERROR_STRICT(suite, !dvz_scale_set_categories(continuous, categories, 3));
+    AT(continuous->category_count == 0);
+
+    AT(dvz_scale_set_categories(categorical, NULL, 0));
+    AT(categorical->category_count == 0);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
 int test_scene_colorbar_auto_reserve_and_visuals(TstContext* suite, const TstCase* item)
 {
     (void)suite;
@@ -2958,6 +3004,7 @@ int test_scene_fields(TstSuite* suite)
     TST_GROUP("fields");
 
     TST_CASE(test_scene_scale_colormap_colorbar_core);
+    TST_CASE(test_scene_categorical_scale_entries);
     TST_CASE(test_scene_colorbar_auto_reserve_and_visuals);
     TST_CASE(test_scene_colorbar_prepare_is_idempotent);
     TST_CASE(test_scene_colorbar_auto_reserve_tracks_resize);

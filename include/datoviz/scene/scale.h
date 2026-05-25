@@ -84,6 +84,21 @@ DVZ_EXPORT void dvz_scale_set_format(DvzScale* scale, const DvzFormatDesc* forma
 
 
 /**
+ * Replace retained categorical entries on a scale.
+ *
+ * Entries are valid only on categorical scales. Passing NULL or count=0 clears explicit entries
+ * and restores palette-index fallback for categorical mapping.
+ *
+ * @param scale the scale
+ * @param categories category entry array, or NULL to clear
+ * @param count the number of category entries
+ * @return true when the category table was accepted
+ */
+DVZ_EXPORT bool dvz_scale_set_categories(
+    DvzScale* scale, const DvzScaleCategory* categories, uint32_t count);
+
+
+/**
  * Create a scene-owned colormap object.
  *
  * @param scene the scene
