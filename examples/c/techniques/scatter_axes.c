@@ -21,10 +21,29 @@
 #include <stdlib.h>
 
 #include "datoviz/app.h"
+#include "datoviz/gui.h"
 #include "datoviz/scene.h"
 #include "example_common.h"
 
 #define N 2000
+
+
+
+typedef struct ScatterAxesState
+{
+    DvzPanel* panel;
+    DvzAxis* x_axis;
+    DvzAxis* y_axis;
+    DvzAxisStyle x_style;
+    DvzAxisStyle y_style;
+    DvzAxisTickPolicy x_policy;
+    DvzAxisTickPolicy y_policy;
+    bool x_visible;
+    bool y_visible;
+    bool x_grid;
+    bool y_grid;
+    bool show_bounds;
+} ScatterAxesState;
 
 
 
@@ -67,6 +86,89 @@ static void _make_scatter(vec3 positions[N], DvzColor colors[N], float sizes[N])
         colors[i][3] = 230;
 
         sizes[i] = 4.0f + 14.0f * _randf();
+    }
+}
+
+
+
+/**
+ * Apply the live axis controls to the retained axes.
+ *
+ * @param state example state
+ */
+static void _apply_axis_controls(ScatterAxesState* state)
+{
+    if (state == NULL)
+        return;
+    (void)dvz_axis_set_style(state->x_axis, &state->x_style);
+    (void)dvz_axis_set_style(state->y_axis, &state->y_style);
+    (void)dvz_axis_set_tick_policy(state->x_axis, &state->x_policy);
+    (void)dvz_axis_set_tick_policy(state->y_axis, &state->y_policy);
+    (void)dvz_axis_set_visible(state->x_axis, state->x_visible);
+    (void)dvz_axis_set_visible(state->y_axis, state->y_visible);
+    (void)dvz_axis_set_grid(state->x_axis, state->x_grid);
+    (void)dvz_axis_set_grid(state->y_axis, state->y_grid);
+    (void)dvz_panel_set_bounds_visible(state->panel, state->show_bounds);
+}
+
+
+
+/**
+ * Build the live axis control panel.
+ *
+ * @param gui GUI overlay
+ * @param win view
+ * @param user_data example state
+ */
+static void _scatter_axes_gui(DvzGui* gui, DvzView* win, void* user_data)
+{
+    (void)win;
+    ScatterAxesState* state = (ScatterAxesState*)user_data;
+    if (state == NULL)
+        return;
+
+    bool changed = false;
+    float target_ticks = (float)state->x_policy.target_count;
+    float min_spacing = state->x_policy.min_pixel_spacing;
+    float minor_ticks = (float)state->x_policy.minor_per_interval;
+    if (dvz_gui_begin(gui, "Axes", NULL, 0))
+    {
+        changed |= dvz_gui_checkbox(gui, "X axis", &state->x_visible);
+        changed |= dvz_gui_checkbox(gui, "Y axis", &state->y_visible);
+        changed |= dvz_gui_checkbox(gui, "X grid", &state->x_grid);
+        changed |= dvz_gui_checkbox(gui, "Y grid", &state->y_grid);
+        changed |= dvz_gui_checkbox(gui, "Bounds", &state->show_bounds);
+
+        dvz_gui_separator_text(gui, "Text");
+        changed |=
+            dvz_gui_slider_float(gui, "Tick size", &state->x_style.tick_size_px, 8.0f, 28.0f);
+        state->y_style.tick_size_px = state->x_style.tick_size_px;
+        changed |=
+            dvz_gui_slider_float(gui, "Label size", &state->x_style.label_size_px, 10.0f, 34.0f);
+        state->y_style.label_size_px = state->x_style.label_size_px;
+        changed |=
+            dvz_gui_slider_float(gui, "Tick gap", &state->x_style.tick_gap_px, 2.0f, 24.0f);
+        state->y_style.tick_gap_px = state->x_style.tick_gap_px;
+        changed |=
+            dvz_gui_slider_float(gui, "Label gap", &state->x_style.label_gap_px, 16.0f, 60.0f);
+        state->y_style.label_gap_px = state->x_style.label_gap_px;
+
+        dvz_gui_separator_text(gui, "Ticks");
+        changed |= dvz_gui_slider_float(gui, "Target ticks", &target_ticks, 2.0f, 12.0f);
+        changed |= dvz_gui_slider_float(gui, "Min spacing", &min_spacing, 40.0f, 180.0f);
+        changed |= dvz_gui_slider_float(gui, "Minor ticks", &minor_ticks, 0.0f, 8.0f);
+    }
+    dvz_gui_end(gui);
+
+    if (changed)
+    {
+        state->x_policy.target_count = (uint32_t)(target_ticks + 0.5f);
+        state->y_policy.target_count = state->x_policy.target_count;
+        state->x_policy.min_pixel_spacing = min_spacing;
+        state->y_policy.min_pixel_spacing = min_spacing;
+        state->x_policy.minor_per_interval = (uint32_t)(minor_ticks + 0.5f);
+        state->y_policy.minor_per_interval = state->x_policy.minor_per_interval;
+        _apply_axis_controls(state);
     }
 }
 
@@ -126,6 +228,20 @@ int main(int argc, char** argv)
     dvz_axis_set_label(x_axis, "x");
     dvz_axis_set_label(y_axis, "y");
 
+    ScatterAxesState state = {
+        .panel = panel,
+        .x_axis = x_axis,
+        .y_axis = y_axis,
+        .x_style = dvz_axis_style(),
+        .y_style = dvz_axis_style(),
+        .x_policy = dvz_axis_tick_policy(),
+        .y_policy = dvz_axis_tick_policy(),
+        .x_visible = true,
+        .y_visible = true,
+        .x_grid = true,
+        .y_grid = true,
+    };
+
     app = dvz_app(scene);
     EXAMPLE_CHECK(app != NULL, "dvz_app() failed (no GPU or display?)");
 
@@ -134,6 +250,11 @@ int main(int argc, char** argv)
 
     DvzPanzoom* panzoom = dvz_view_panzoom(win, panel, NULL);
     EXAMPLE_CHECK(panzoom != NULL, "failed to create or bind panzoom controller");
+
+    DvzGuiConfig gui_config = dvz_gui_config();
+    DvzGui* gui = dvz_view_gui(win, &gui_config);
+    EXAMPLE_CHECK(gui != NULL, "dvz_view_gui() failed");
+    dvz_view_set_gui_callback(win, _scatter_axes_gui, &state);
 
     dvz_app_run(app, example_frame_count(argc, argv));
     ret = 0;
