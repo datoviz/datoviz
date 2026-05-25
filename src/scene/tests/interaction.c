@@ -512,21 +512,38 @@ static int test_scene_scalebar_2d_realization(TstContext* suite, const TstCase* 
     ANN(stream);
 
     bool saw_scaled_width = false;
+    bool saw_glyph_pipeline = false;
+    bool saw_glyph_draw = false;
     for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
     {
         const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream, i);
-        if (cmd == NULL || cmd->type != DVZ_DRP2_COMMAND_WRITE_BUFFER)
+        if (cmd == NULL)
             continue;
-        const char* label = dvz_drp2_stream_label(stream, cmd->u.write_buffer.buffer_id);
-        if (label == NULL || strstr(label, "line_width") == NULL)
-            continue;
-        const float* width = (const float*)cmd->u.write_buffer.data_raw;
-        ANN(width);
-        AC(width[0], 4.0f, 1e-6f);
-        saw_scaled_width = true;
-        break;
+        if (cmd->type == DVZ_DRP2_COMMAND_CREATE_RENDER_PIPELINE)
+        {
+            const char* label = dvz_drp2_stream_label(stream, cmd->u.create_render_pipeline.id);
+            if (label != NULL && strstr(label, "_pipe_glyph") != NULL)
+                saw_glyph_pipeline = true;
+        }
+        else if (cmd->type == DVZ_DRP2_COMMAND_DRAW)
+        {
+            if (cmd->u.draw.vertex_count >= 6 && cmd->u.draw.instance_count == 1)
+                saw_glyph_draw = true;
+        }
+        else if (cmd->type == DVZ_DRP2_COMMAND_WRITE_BUFFER)
+        {
+            const char* label = dvz_drp2_stream_label(stream, cmd->u.write_buffer.buffer_id);
+            if (label == NULL || strstr(label, "line_width") == NULL)
+                continue;
+            const float* width = (const float*)cmd->u.write_buffer.data_raw;
+            ANN(width);
+            AC(width[0], 4.0f, 1e-6f);
+            saw_scaled_width = true;
+        }
     }
     AT(saw_scaled_width);
+    AT(saw_glyph_pipeline);
+    AT(saw_glyph_draw);
 
     dvz_drp2_stream_destroy(stream);
     dvz_annotation_destroy(scalebar);

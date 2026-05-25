@@ -666,8 +666,10 @@ DvzDrp2ValidationResult _vklite_begin_render_pass(
     pass->rendering = rendering;
     Drp2VkliteObject* transient_depth_owner = NULL;
 
+    int32_t render_x = viewport_x <= (uint32_t)INT32_MAX ? (int32_t)viewport_x : INT32_MAX;
+    int32_t render_y = viewport_y <= (uint32_t)INT32_MAX ? (int32_t)viewport_y : INT32_MAX;
     dvz_rendering(rendering);
-    dvz_rendering_area(rendering, 0, 0, target->width, target->height);
+    dvz_rendering_area(rendering, render_x, render_y, viewport_width, viewport_height);
     for (uint32_t i = 0; i < color_count; i++)
     {
         const DvzDrp2ColorAttachment* attachment =
