@@ -8,6 +8,7 @@
  *
  * Run:    just example-c scalebar_minimal
  * Bitmap: just example-c scalebar_minimal bitmap
+ * Auto:   just example-c scalebar_minimal auto 120
  * Smoke:  just example-c scalebar_minimal 120
  *         just example-c scalebar_minimal bitmap 120
  */
@@ -39,6 +40,35 @@
 /*************************************************************************************************/
 /*  Helpers                                                                                      */
 /*************************************************************************************************/
+
+typedef struct ScaleBarMinimalState ScaleBarMinimalState;
+
+struct ScaleBarMinimalState
+{
+    DvzPanzoom* panzoom;
+};
+
+
+
+/**
+ * Apply a small programmatic zoom on every frame when the auto diagnostic mode is enabled.
+ *
+ * @param win view receiving frame callbacks
+ * @param user_data callback state
+ */
+static void _frame_callback(DvzView* win, void* user_data)
+{
+    ANN(win);
+    ScaleBarMinimalState* state = (ScaleBarMinimalState*)user_data;
+    if (state == NULL || state->panzoom == NULL)
+        return;
+
+    dvz_panzoom_zoom_wheel(
+        state->panzoom, (vec2){0.0f, 1.0f}, (vec2){0.5f * WIDTH, 0.5f * HEIGHT});
+    dvz_view_request_frame(win);
+}
+
+
 
 /**
  * Attach one bottom-left scale bar to an otherwise empty 2D panel.
@@ -125,6 +155,10 @@ int main(int argc, char** argv)
 
     DvzPanzoom* panzoom = dvz_view_panzoom(win, panel, NULL);
     EXAMPLE_CHECK(panzoom != NULL, "failed to create or bind panzoom controller");
+
+    ScaleBarMinimalState state = {.panzoom = panzoom};
+    if (example_arg_has(argc, argv, "auto"))
+        dvz_view_set_frame_callback(win, _frame_callback, &state);
 
     dvz_view_request_frame(win);
     dvz_app_run(app, example_frame_count_any(argc, argv));
