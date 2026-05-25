@@ -221,6 +221,100 @@ int test_scene_categorical_scale_entries(TstContext* suite, const TstCase* item)
 }
 
 
+int test_scene_legend_lifecycle_and_reserve(TstContext* suite, const TstCase* item)
+{
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 400, 300, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
+    ANN(panel);
+
+    DvzScale* scale = dvz_scale(scene, &(DvzScaleDesc){.kind = DVZ_SCALE_CATEGORICAL});
+    ANN(scale);
+    DvzScaleCategory categories[2] = {
+        {.category_id = 1, .order = 0, .label = "One", .color = {255, 0, 0, 255}},
+        {.category_id = 2, .order = 1, .label = "Two", .color = {0, 255, 0, 255}},
+    };
+    AT(dvz_scale_set_categories(scale, categories, 2));
+
+    DvzLegend* legend = dvz_legend(
+        panel, scale, &(DvzLegendDesc){
+                          .anchor = DVZ_SCENE_ANCHOR_PANEL_RIGHT,
+                          .title = "Classes",
+                          .reserve_px = 120.0f,
+                          .mark_size_px = 10.0f,
+                      });
+    ANN(legend);
+    AT(scene->legend_count == 1);
+    AT(panel->legend_count == 1);
+    AT(panel->legends[0] == legend);
+    AT(legend->scene == scene);
+    AT(legend->panel == panel);
+    AT(legend->scale == scale);
+    AT(legend->placement_mode == DVZ_LEGEND_PLACEMENT_ATTACHED);
+    AT(legend->anchor == DVZ_SCENE_ANCHOR_PANEL_RIGHT);
+    AT(strcmp(legend->title, "Classes") == 0);
+    AT(fabsf(panel->legend_reserve.right_px - 120.0f) < 1e-6f);
+    AT(fabsf(panel->reserve.right_px - 120.0f) < 1e-6f);
+
+    uint64_t version = legend->version;
+    dvz_legend_set_title(legend, "Updated");
+    AT(strcmp(legend->title, "Updated") == 0);
+    AT(legend->dirty);
+    AT(legend->version > version);
+
+    AT(dvz_legend_set_layout(
+        legend, &(DvzLegendDesc){
+                    .placement_mode = DVZ_LEGEND_PLACEMENT_DETACHED,
+                    .title = "Detached",
+                    .placement = {
+                        .space = DVZ_PLACEMENT_SPACE_FIGURE,
+                        .horizontal_anchor = DVZ_HORIZONTAL_ANCHOR_RIGHT,
+                        .vertical_anchor = DVZ_VERTICAL_ANCHOR_TOP,
+                        .offset_x_px = -12.0f,
+                        .offset_y_px = 16.0f,
+                        .width_px = 80.0f,
+                        .height_px = 120.0f,
+                    },
+                }));
+    AT(legend->placement_mode == DVZ_LEGEND_PLACEMENT_DETACHED);
+    AT(fabsf(panel->legend_reserve.right_px) < 1e-6f);
+    AT(fabsf(panel->reserve.right_px) < 1e-6f);
+
+    dvz_legend_destroy(legend);
+    AT(panel->legend_count == 0);
+    AT(legend->scene == NULL);
+    AT(legend->panel == NULL);
+    AT(legend->scale == NULL);
+
+    DvzScale* continuous = dvz_scale(scene, &(DvzScaleDesc){.kind = DVZ_SCALE_CONTINUOUS});
+    ANN(continuous);
+    DvzLegend* invalid = NULL;
+    AT_EXPECTED_ERROR_STRICT(suite, (invalid = dvz_legend(panel, continuous, NULL)) == NULL);
+    AT(invalid == NULL);
+
+    DvzScene* other_scene = dvz_scene();
+    ANN(other_scene);
+    DvzScale* foreign = dvz_scale(other_scene, &(DvzScaleDesc){.kind = DVZ_SCALE_CATEGORICAL});
+    ANN(foreign);
+    AT_EXPECTED_ERROR_STRICT(suite, (invalid = dvz_legend(panel, foreign, NULL)) == NULL);
+    AT(invalid == NULL);
+    dvz_scene_destroy(other_scene);
+
+    AT_EXPECTED_ERROR_STRICT(
+        suite,
+        (invalid = dvz_legend(
+             panel, scale, &(DvzLegendDesc){.anchor = DVZ_SCENE_ANCHOR_PANEL_CENTER})) == NULL);
+    AT(invalid == NULL);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
 int test_scene_colorbar_auto_reserve_and_visuals(TstContext* suite, const TstCase* item)
 {
     (void)suite;
@@ -3005,6 +3099,7 @@ int test_scene_fields(TstSuite* suite)
 
     TST_CASE(test_scene_scale_colormap_colorbar_core);
     TST_CASE(test_scene_categorical_scale_entries);
+    TST_CASE(test_scene_legend_lifecycle_and_reserve);
     TST_CASE(test_scene_colorbar_auto_reserve_and_visuals);
     TST_CASE(test_scene_colorbar_prepare_is_idempotent);
     TST_CASE(test_scene_colorbar_auto_reserve_tracks_resize);

@@ -39,6 +39,8 @@ static void _scene_texture_bump_version(DvzVisual* visual);
 
 static void _scene_mark_colorbar_dirty(DvzColorbar* colorbar);
 
+static void _scene_mark_legend_dirty(DvzLegend* legend);
+
 static bool _scale_categories_have_duplicate_ids(
     const DvzScaleCategory* categories, uint32_t count);
 
@@ -70,6 +72,12 @@ static void _colorbar_fail(DvzColorbar* colorbar, DvzDiagnosticReport* report, c
 #define COLORBAR_TITLE_TEXT_SIZE_PX 13.0f
 #define COLORBAR_EPS 1e-12
 #define COLORBAR_LAYOUT_EPS 1e-3f
+#define LEGEND_RESERVE_PX 140.0f
+#define LEGEND_EDGE_OFFSET_PX 8.0f
+#define LEGEND_PLOT_GAP_PX 12.0f
+#define LEGEND_ENTRY_GAP_PX 6.0f
+#define LEGEND_MARK_SIZE_PX 12.0f
+#define LEGEND_MARK_LABEL_GAP_PX 6.0f
 
 
 
@@ -241,6 +249,12 @@ static void _scene_mark_scale_dirty(DvzScale* scale)
         if (colorbar->scene == scene && colorbar->scale == scale)
             _scene_mark_colorbar_dirty(colorbar);
     }
+    for (uint32_t i = 0; i < scene->legend_count; i++)
+    {
+        DvzLegend* legend = &scene->legends[i];
+        if (legend->scene == scene && legend->scale == scale)
+            _scene_mark_legend_dirty(legend);
+    }
 }
 
 
@@ -290,6 +304,21 @@ static void _scene_mark_colorbar_dirty(DvzColorbar* colorbar)
     colorbar->dirty = true;
     colorbar->version = colorbar->version == UINT64_MAX ? 1 : colorbar->version + 1;
     _scene_notify_request_frame(colorbar->panel != NULL ? colorbar->panel->figure : NULL);
+}
+
+
+/**
+ * Mark one retained legend layout as dirty.
+ *
+ * @param legend the legend
+ */
+static void _scene_mark_legend_dirty(DvzLegend* legend)
+{
+    if (legend == NULL)
+        return;
+    legend->dirty = true;
+    legend->version = legend->version == UINT64_MAX ? 1 : legend->version + 1;
+    _scene_notify_request_frame(legend->panel != NULL ? legend->panel->figure : NULL);
 }
 
 
@@ -501,6 +530,94 @@ static void _colorbar_apply_auto_reserve(DvzColorbar* colorbar)
     if (colorbar->panel == NULL)
         return;
     _scene_panel_refresh_colorbar_reserve(colorbar->panel);
+}
+
+
+/**
+ * Return whether a legend anchor is supported by the first slice.
+ *
+ * @param anchor the anchor
+ * @return whether the anchor is a panel edge
+ */
+static bool _legend_anchor_supported(DvzSceneAnchor anchor)
+{
+    return anchor == DVZ_SCENE_ANCHOR_PANEL_LEFT || anchor == DVZ_SCENE_ANCHOR_PANEL_RIGHT ||
+           anchor == DVZ_SCENE_ANCHOR_PANEL_TOP || anchor == DVZ_SCENE_ANCHOR_PANEL_BOTTOM;
+}
+
+
+/**
+ * Return a positive legend descriptor value or its fallback.
+ *
+ * @param value descriptor value
+ * @param fallback default value
+ * @return value when positive, otherwise fallback
+ */
+static float _legend_positive_or_default(float value, float fallback)
+{
+    return value > 0.0f && isfinite(value) ? value : fallback;
+}
+
+
+/**
+ * Refresh aggregate attached legend reserve for one panel.
+ *
+ * @param panel the panel
+ */
+void _scene_panel_refresh_legend_reserve(DvzPanel* panel)
+{
+    if (panel == NULL)
+        return;
+    DvzPanelReserve reserve = {0};
+    for (uint32_t i = 0; i < panel->legend_count; i++)
+    {
+        DvzLegend* legend = panel->legends[i];
+        if (legend == NULL || legend->panel != panel)
+            continue;
+        DvzPanelReserve applied = {0};
+        if (legend->placement_mode == DVZ_LEGEND_PLACEMENT_ATTACHED &&
+            _legend_anchor_supported(legend->anchor))
+        {
+            float reserve_px = _legend_positive_or_default(legend->reserve_px, LEGEND_RESERVE_PX);
+            switch (legend->anchor)
+            {
+            case DVZ_SCENE_ANCHOR_PANEL_LEFT:
+                applied.left_px = reserve_px;
+                reserve.left_px += reserve_px;
+                break;
+            case DVZ_SCENE_ANCHOR_PANEL_RIGHT:
+                applied.right_px = reserve_px;
+                reserve.right_px += reserve_px;
+                break;
+            case DVZ_SCENE_ANCHOR_PANEL_TOP:
+                applied.top_px = reserve_px;
+                reserve.top_px += reserve_px;
+                break;
+            case DVZ_SCENE_ANCHOR_PANEL_BOTTOM:
+                applied.bottom_px = reserve_px;
+                reserve.bottom_px += reserve_px;
+                break;
+            default:
+                break;
+            }
+        }
+        legend->auto_reserve = applied;
+    }
+    _scene_panel_set_legend_reserve(panel, &reserve);
+}
+
+
+/**
+ * Apply the deterministic first-slice panel reserve for a legend edge.
+ *
+ * @param legend the legend
+ */
+static void _legend_apply_auto_reserve(DvzLegend* legend)
+{
+    ANN(legend);
+    if (legend->panel == NULL)
+        return;
+    _scene_panel_refresh_legend_reserve(legend->panel);
 }
 
 
@@ -1967,6 +2084,191 @@ void dvz_colorbar_set_title(DvzColorbar* colorbar, const char* title)
         return;
     dvz_strlcpy(colorbar->title, src, sizeof(colorbar->title));
     _scene_mark_colorbar_dirty(colorbar);
+}
+
+
+/**
+ * Create a panel-attached legend bound to a categorical scale.
+ *
+ * @param panel the panel
+ * @param scale the categorical scale
+ * @param desc the legend descriptor, or NULL for defaults
+ * @return the legend, or NULL on allocation failure
+ */
+DvzLegend* dvz_legend(DvzPanel* panel, DvzScale* scale, const DvzLegendDesc* desc)
+{
+    ANN(panel);
+    ANN(scale);
+    if (panel->figure == NULL || panel->figure->scene == NULL)
+    {
+        log_error("cannot create a legend on a detached panel");
+        return NULL;
+    }
+    DvzScene* scene = panel->figure->scene;
+    if (scale->scene != scene)
+    {
+        log_error("cannot attach a scale from a different scene to a panel legend");
+        return NULL;
+    }
+    if (scale->kind != DVZ_SCALE_CATEGORICAL)
+    {
+        log_error("legends require a categorical scale; use a colorbar for continuous scales");
+        return NULL;
+    }
+    DvzLegendPlacementMode placement_mode =
+        desc != NULL ? desc->placement_mode : DVZ_LEGEND_PLACEMENT_ATTACHED;
+    DvzSceneAnchor anchor = desc != NULL && desc->anchor != DVZ_SCENE_ANCHOR_NONE ?
+                                desc->anchor :
+                                DVZ_SCENE_ANCHOR_PANEL_RIGHT;
+    if (placement_mode == DVZ_LEGEND_PLACEMENT_ATTACHED && !_legend_anchor_supported(anchor))
+    {
+        log_error("attached legend anchor must be a panel edge");
+        return NULL;
+    }
+    if (scene->legend_count >= DVZ_SCENE_MAX_LEGENDS)
+    {
+        log_error("maximum legend count reached");
+        return NULL;
+    }
+    if (panel->legend_count >= DVZ_SCENE_MAX_PANEL_LEGENDS)
+    {
+        log_error("maximum panel legend count reached");
+        return NULL;
+    }
+
+    DvzLegend* legend = &scene->legends[scene->legend_count++];
+    dvz_memset(legend, sizeof(DvzLegend), 0, sizeof(DvzLegend));
+    legend->scene = scene;
+    legend->panel = panel;
+    legend->scale = scale;
+    legend->placement_mode = placement_mode;
+    legend->anchor = anchor;
+    legend->flags = desc != NULL ? desc->flags : 0;
+    legend->reserve_px =
+        _legend_positive_or_default(desc != NULL ? desc->reserve_px : 0.0f, LEGEND_RESERVE_PX);
+    legend->edge_offset_px = _legend_positive_or_default(
+        desc != NULL ? desc->edge_offset_px : 0.0f, LEGEND_EDGE_OFFSET_PX);
+    legend->plot_gap_px = _legend_positive_or_default(
+        desc != NULL ? desc->plot_gap_px : 0.0f, LEGEND_PLOT_GAP_PX);
+    legend->entry_gap_px = _legend_positive_or_default(
+        desc != NULL ? desc->entry_gap_px : 0.0f, LEGEND_ENTRY_GAP_PX);
+    legend->mark_size_px = _legend_positive_or_default(
+        desc != NULL ? desc->mark_size_px : 0.0f, LEGEND_MARK_SIZE_PX);
+    legend->mark_label_gap_px = _legend_positive_or_default(
+        desc != NULL ? desc->mark_label_gap_px : 0.0f, LEGEND_MARK_LABEL_GAP_PX);
+    legend->placement =
+        desc != NULL ? desc->placement :
+                       (DvzPlacement){
+                           .space = DVZ_PLACEMENT_SPACE_PANEL,
+                           .horizontal_anchor = DVZ_HORIZONTAL_ANCHOR_LEFT,
+                           .vertical_anchor = DVZ_VERTICAL_ANCHOR_TOP,
+                       };
+    if (desc != NULL && desc->title != NULL)
+        dvz_strlcpy(legend->title, desc->title, sizeof(legend->title));
+    legend->dirty = true;
+    legend->version = 1;
+    panel->legends[panel->legend_count++] = legend;
+    _legend_apply_auto_reserve(legend);
+    return legend;
+}
+
+
+/**
+ * Destroy a legend.
+ *
+ * @param legend the legend
+ */
+void dvz_legend_destroy(DvzLegend* legend)
+{
+    if (legend == NULL)
+        return;
+    if (legend->mark_visual != NULL)
+        dvz_visual_set_visible(legend->mark_visual, false);
+    if (legend->text_visual != NULL)
+    {
+        dvz_visual_set_visible(legend->text_visual, false);
+        if (legend->text_visual->text.glyph_visual != NULL)
+            dvz_visual_set_visible(legend->text_visual->text.glyph_visual, false);
+    }
+    DvzPanel* panel = legend->panel;
+    if (panel != NULL)
+    {
+        for (uint32_t i = 0; i < panel->legend_count; i++)
+        {
+            if (panel->legends[i] != legend)
+                continue;
+            for (uint32_t j = i + 1; j < panel->legend_count; j++)
+                panel->legends[j - 1] = panel->legends[j];
+            panel->legends[panel->legend_count - 1] = NULL;
+            panel->legend_count--;
+            break;
+        }
+        _scene_panel_refresh_legend_reserve(panel);
+    }
+    legend->scene = NULL;
+    legend->panel = NULL;
+    legend->scale = NULL;
+    legend->dirty = false;
+    legend->mark_visual = NULL;
+    legend->text_visual = NULL;
+    legend->entry_count = 0;
+}
+
+
+/**
+ * Update legend layout and placement parameters.
+ *
+ * @param legend the legend
+ * @param desc layout descriptor
+ * @return true when the layout was accepted
+ */
+bool dvz_legend_set_layout(DvzLegend* legend, const DvzLegendDesc* desc)
+{
+    ANN(legend);
+    if (desc == NULL)
+        return false;
+    DvzLegendPlacementMode placement_mode = desc->placement_mode;
+    DvzSceneAnchor anchor =
+        desc->anchor != DVZ_SCENE_ANCHOR_NONE ? desc->anchor : DVZ_SCENE_ANCHOR_PANEL_RIGHT;
+    if (placement_mode == DVZ_LEGEND_PLACEMENT_ATTACHED && !_legend_anchor_supported(anchor))
+    {
+        log_error("attached legend anchor must be a panel edge");
+        return false;
+    }
+    legend->placement_mode = placement_mode;
+    legend->anchor = anchor;
+    legend->flags = desc->flags;
+    legend->reserve_px = _legend_positive_or_default(desc->reserve_px, LEGEND_RESERVE_PX);
+    legend->edge_offset_px =
+        _legend_positive_or_default(desc->edge_offset_px, LEGEND_EDGE_OFFSET_PX);
+    legend->plot_gap_px = _legend_positive_or_default(desc->plot_gap_px, LEGEND_PLOT_GAP_PX);
+    legend->entry_gap_px = _legend_positive_or_default(desc->entry_gap_px, LEGEND_ENTRY_GAP_PX);
+    legend->mark_size_px = _legend_positive_or_default(desc->mark_size_px, LEGEND_MARK_SIZE_PX);
+    legend->mark_label_gap_px =
+        _legend_positive_or_default(desc->mark_label_gap_px, LEGEND_MARK_LABEL_GAP_PX);
+    legend->placement = desc->placement;
+    if (desc->title != NULL)
+        dvz_strlcpy(legend->title, desc->title, sizeof(legend->title));
+    _legend_apply_auto_reserve(legend);
+    _scene_mark_legend_dirty(legend);
+    return true;
+}
+
+
+/**
+ * Set the legend title.
+ *
+ * @param legend the legend
+ * @param title the title, or NULL to clear
+ */
+void dvz_legend_set_title(DvzLegend* legend, const char* title)
+{
+    ANN(legend);
+    const char* src = title != NULL ? title : "";
+    if (strcmp(legend->title, src) == 0)
+        return;
+    dvz_strlcpy(legend->title, src, sizeof(legend->title));
+    _scene_mark_legend_dirty(legend);
 }
 
 

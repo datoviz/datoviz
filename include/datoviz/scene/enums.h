@@ -399,6 +399,13 @@ typedef enum
 } DvzColorbarPlacementMode;
 
 
+typedef enum
+{
+    DVZ_LEGEND_PLACEMENT_ATTACHED = 0,
+    DVZ_LEGEND_PLACEMENT_DETACHED,
+} DvzLegendPlacementMode;
+
+
 
 typedef enum
 {

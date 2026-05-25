@@ -69,6 +69,7 @@ typedef struct DvzPinnedReadout     DvzPinnedReadout;
 typedef struct DvzScale             DvzScale;
 typedef struct DvzColormap          DvzColormap;
 typedef struct DvzColorbar          DvzColorbar;
+typedef struct DvzLegend            DvzLegend;
 typedef struct DvzFont              DvzFont;
 typedef struct DvzText              DvzText;
 typedef struct DvzAnnotation        DvzAnnotation;
@@ -689,6 +690,23 @@ struct DvzColorbarDesc
     uint32_t flags;
 };
 typedef struct DvzColorbarDesc DvzColorbarDesc;
+
+
+struct DvzLegendDesc
+{
+    DvzLegendPlacementMode placement_mode;
+    DvzSceneAnchor anchor;
+    const char* title;
+    float reserve_px;
+    float edge_offset_px;
+    float plot_gap_px;
+    float entry_gap_px;
+    float mark_size_px;
+    float mark_label_gap_px;
+    DvzPlacement placement;
+    uint32_t flags;
+};
+typedef struct DvzLegendDesc DvzLegendDesc;
 
 
 struct DvzTextStyle

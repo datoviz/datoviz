@@ -495,6 +495,8 @@ int test_scene_scale_colormap_colorbar_core(TstContext* suite, const TstCase* it
 
 int test_scene_categorical_scale_entries(TstContext* suite, const TstCase* item);
 
+int test_scene_legend_lifecycle_and_reserve(TstContext* suite, const TstCase* item);
+
 int test_scene_colorbar_auto_reserve_and_visuals(TstContext* suite, const TstCase* item);
 
 int test_scene_colorbar_prepare_is_idempotent(TstContext* suite, const TstCase* item);

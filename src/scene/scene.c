@@ -202,6 +202,7 @@ static DvzPanelReserve _panel_resolve_reserve(const DvzPanel* panel)
     DvzPanelReserve reserve = panel->base_reserve;
     _panel_reserve_add(&reserve, &panel->axis_reserve);
     _panel_reserve_add(&reserve, &panel->colorbar_reserve);
+    _panel_reserve_add(&reserve, &panel->legend_reserve);
     if (!_panel_reserve_valid(panel, &reserve))
     {
         if (_panel_reserve_valid(panel, &panel->base_reserve))
@@ -256,6 +257,14 @@ static void _panel_mark_layout_changed(DvzPanel* panel)
         colorbar->dirty = true;
         colorbar->version = colorbar->version == UINT64_MAX ? 1 : colorbar->version + 1;
     }
+    for (uint32_t i = 0; i < panel->legend_count; i++)
+    {
+        DvzLegend* legend = panel->legends[i];
+        if (legend == NULL)
+            continue;
+        legend->dirty = true;
+        legend->version = legend->version == UINT64_MAX ? 1 : legend->version + 1;
+    }
     _scene_notify_request_frame(panel->figure);
 }
 
@@ -296,6 +305,26 @@ void _scene_panel_set_colorbar_reserve(DvzPanel* panel, const DvzPanelReserve* r
     if (_panel_reserve_equal(&panel->colorbar_reserve, &next))
         return;
     panel->colorbar_reserve = next;
+    _panel_update_reserve(panel);
+}
+
+
+/**
+ * Set one panel's aggregate legend reserve contribution.
+ *
+ * @param panel the panel
+ * @param reserve legend reserve contribution, or NULL for zero
+ */
+void _scene_panel_set_legend_reserve(DvzPanel* panel, const DvzPanelReserve* reserve)
+{
+    if (panel == NULL)
+        return;
+    DvzPanelReserve next = reserve != NULL ? *reserve : (DvzPanelReserve){0};
+    if (!_panel_reserve_valid(panel, &next) && !_panel_reserve_equal(&next, &(DvzPanelReserve){0}))
+        next = (DvzPanelReserve){0};
+    if (_panel_reserve_equal(&panel->legend_reserve, &next))
+        return;
+    panel->legend_reserve = next;
     _panel_update_reserve(panel);
 }
 
@@ -3701,6 +3730,7 @@ DvzPanel* dvz_panel(DvzFigure* figure, DvzPanelDesc desc)
     panel->base_reserve   = (DvzPanelReserve){0};
     panel->axis_reserve   = (DvzPanelReserve){0};
     panel->colorbar_reserve = (DvzPanelReserve){0};
+    panel->legend_reserve = (DvzPanelReserve){0};
     panel->reserve        = (DvzPanelReserve){0};
     panel->padding        = (DvzPanelReserve){0};
     _scene_technique_state_init(&panel->techniques);
@@ -3812,6 +3842,7 @@ bool dvz_panel_set_padding(DvzPanel* panel, const DvzPanelReserve* padding)
     DvzPanelReserve reserve = panel->base_reserve;
     _panel_reserve_add(&reserve, &panel->axis_reserve);
     _panel_reserve_add(&reserve, &panel->colorbar_reserve);
+    _panel_reserve_add(&reserve, &panel->legend_reserve);
     if (!_panel_reserve_valid_for_padding(panel, &reserve, &next))
         return false;
     if (_panel_reserve_equal(&panel->padding, &next))
@@ -4093,6 +4124,7 @@ void dvz_panel_destroy(DvzPanel* panel)
     panel->bounds_occluded_visual = NULL;
     panel->bounds_visible = false;
     panel->colorbar_count = 0;
+    panel->legend_count = 0;
     panel->interaction = NULL;
     panel->pinned_readout_count = 0;
     dvz_memset(&panel->hover, sizeof(DvzHoverState), 0, sizeof(DvzHoverState));

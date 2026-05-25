@@ -253,6 +253,50 @@ DVZ_EXPORT void dvz_colorbar_set_title(DvzColorbar* colorbar, const char* title)
 
 
 /*************************************************************************************************/
+/*  Legends                                                                                      */
+/*************************************************************************************************/
+
+/**
+ * Create a panel-attached legend bound to a categorical scale.
+ *
+ * @param panel the panel
+ * @param scale the categorical scale
+ * @param desc the legend descriptor, or NULL for defaults
+ * @return the legend
+ */
+DVZ_EXPORT DvzLegend* dvz_legend(
+    DvzPanel* panel, DvzScale* scale, const DvzLegendDesc* desc);
+
+
+/**
+ * Destroy a legend.
+ *
+ * @param legend the legend
+ */
+DVZ_EXPORT void dvz_legend_destroy(DvzLegend* legend);
+
+
+/**
+ * Update legend layout and placement parameters.
+ *
+ * @param legend the legend
+ * @param desc layout descriptor
+ * @return true when the layout was accepted
+ */
+DVZ_EXPORT bool dvz_legend_set_layout(DvzLegend* legend, const DvzLegendDesc* desc);
+
+
+/**
+ * Set the legend title.
+ *
+ * @param legend the legend
+ * @param title the title, or NULL to clear
+ */
+DVZ_EXPORT void dvz_legend_set_title(DvzLegend* legend, const char* title);
+
+
+
+/*************************************************************************************************/
 /*  Visual scale bindings                                                                        */
 /*************************************************************************************************/
 

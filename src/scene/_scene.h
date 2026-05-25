@@ -49,6 +49,7 @@
 #define DVZ_SCENE_MAX_SCALES     64
 #define DVZ_SCENE_MAX_COLORMAPS  64
 #define DVZ_SCENE_MAX_COLORBARS  64
+#define DVZ_SCENE_MAX_LEGENDS    64
 #define DVZ_SCENE_MAX_SCALE_CATEGORIES 64
 #define DVZ_SCENE_MAX_INTERACTIONS 64
 #define DVZ_SCENE_MAX_SELECTIONS 64
@@ -58,6 +59,7 @@
 #define DVZ_SCENE_MAX_TEXTS 128
 #define DVZ_SCENE_MAX_ANNOTATIONS 128
 #define DVZ_SCENE_MAX_PANEL_COLORBARS 16
+#define DVZ_SCENE_MAX_PANEL_LEGENDS 16
 #define DVZ_SCENE_MAX_COLORBAR_TICKS 16
 #define DVZ_SCENE_MAX_COLORBAR_TEXTS (DVZ_SCENE_MAX_COLORBAR_TICKS + 1)
 #define DVZ_SCENE_MAX_COLOR_STOPS 32
@@ -229,6 +231,7 @@ typedef struct DvzSceneBuffer DvzSceneBuffer;
 typedef struct DvzScale   DvzScale;
 typedef struct DvzColormap DvzColormap;
 typedef struct DvzColorbar DvzColorbar;
+typedef struct DvzLegend DvzLegend;
 typedef struct DvzInteractionPolicy DvzInteractionPolicy;
 typedef struct DvzSelection DvzSelection;
 typedef struct DvzLinkChannel DvzLinkChannel;
@@ -350,9 +353,13 @@ void _scene_panel_set_axis_reserve(DvzPanel* panel, const DvzPanelReserve* reser
 
 void _scene_panel_set_colorbar_reserve(DvzPanel* panel, const DvzPanelReserve* reserve);
 
+void _scene_panel_set_legend_reserve(DvzPanel* panel, const DvzPanelReserve* reserve);
+
 void _scene_panel_refresh_axis_reserve(DvzPanel* panel);
 
 void _scene_panel_refresh_colorbar_reserve(DvzPanel* panel);
+
+void _scene_panel_refresh_legend_reserve(DvzPanel* panel);
 
 
 
@@ -617,6 +624,33 @@ struct DvzColorbar
     float text_sizes[DVZ_SCENE_MAX_COLORBAR_TEXTS];
     uint8_t text_colors[DVZ_SCENE_MAX_COLORBAR_TEXTS][4];
     float text_angles[DVZ_SCENE_MAX_COLORBAR_TEXTS];
+};
+
+
+struct DvzLegend
+{
+    DvzScene* scene;
+    DvzPanel* panel;
+    DvzScale* scale;
+    DvzLegendPlacementMode placement_mode;
+    DvzSceneAnchor anchor;
+    char title[DVZ_SCENE_LABEL_SIZE];
+    uint32_t flags;
+    DvzPanelReserve auto_reserve;
+    float reserve_px;
+    float edge_offset_px;
+    float plot_gap_px;
+    float entry_gap_px;
+    float mark_size_px;
+    float mark_label_gap_px;
+    DvzPlacement placement;
+    bool dirty;
+    uint64_t version;
+    float realized_panel_width;
+    float realized_panel_height;
+    DvzVisual* mark_visual;
+    DvzVisual* text_visual;
+    uint32_t entry_count;
 };
 
 
@@ -1234,6 +1268,7 @@ struct DvzPanel
     DvzPanelReserve base_reserve;
     DvzPanelReserve axis_reserve;
     DvzPanelReserve colorbar_reserve;
+    DvzPanelReserve legend_reserve;
     DvzPanelReserve reserve;
     DvzPanelReserve padding;
 
@@ -1265,6 +1300,8 @@ struct DvzPanel
 
     uint32_t colorbar_count;
     DvzColorbar* colorbars[DVZ_SCENE_MAX_PANEL_COLORBARS];
+    uint32_t legend_count;
+    DvzLegend* legends[DVZ_SCENE_MAX_PANEL_LEGENDS];
     uint32_t pinned_readout_count;
     DvzPinnedReadout* pinned_readouts[DVZ_SCENE_MAX_PINNED_READOUTS];
 };
@@ -1380,6 +1417,9 @@ struct DvzScene
 
     uint32_t colorbar_count;
     DvzColorbar colorbars[DVZ_SCENE_MAX_COLORBARS];
+
+    uint32_t legend_count;
+    DvzLegend legends[DVZ_SCENE_MAX_LEGENDS];
 
     uint32_t interaction_count;
     DvzInteractionPolicy interactions[DVZ_SCENE_MAX_INTERACTIONS];
