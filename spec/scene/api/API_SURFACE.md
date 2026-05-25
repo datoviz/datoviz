@@ -4,8 +4,8 @@ This document is the normative bridge between the semantic scene spec and the dr
 headers.
 
 It defines the first header-drafting target for interaction objects, selection/link/probe result
-types, shared scales and colorbars, and retained text/annotation objects. Detailed behavior remains
-in the specialized spec documents and active proposals.
+types, shared scales, colorbars, legends, and retained text/annotation objects. Detailed behavior
+remains in the specialized spec documents and active proposals.
 
 
 ## Normative Status
@@ -126,10 +126,11 @@ Use opaque handles for retained scene-owned objects:
 6. `DvzScale`
 7. `DvzColormap`
 8. `DvzColorbar`
-9. `DvzFont`
-10. `DvzText`
-11. `DvzAnnotation`
-12. `DvzOrientationGizmo`
+9. `DvzLegend`
+10. `DvzFont`
+11. `DvzText`
+12. `DvzAnnotation`
+13. `DvzOrientationGizmo`
 
 Use public structs for value-like data:
 
@@ -289,7 +290,7 @@ Linking should be channel-based:
 Changing an active link channel must not reinterpret existing selection contents retroactively.
 
 
-## Scale, Colormap, And Colorbar Surface
+## Scale, Colormap, Colorbar, And Legend Surface
 
 Scales and colormaps are scene-owned semantic objects.
 
@@ -297,16 +298,23 @@ Colorbars are explanatory objects bound to a scale; they do not own the scale or
 They may be attached to a panel edge with a fixed pixel reserve or detached with explicit anchored
 panel/figure pixel placement.
 
+Legends are distinct explanatory objects bound to categorical scales. They should use a dedicated
+`DvzLegend` handle rather than hiding categorical behavior behind `DvzColorbar`, because legends and
+colorbars have different content models, validation rules, and future interaction policies.
+
 The first public surface should expose:
 
 1. continuous scale creation and domain/view-range setters,
 2. unit and label metadata,
 3. built-in colormap selection,
 4. custom color-stop ramps,
-5. diverging center support,
-6. panel-attached colorbar creation,
-7. panel pixel reserve accessors and plot-rectangle queries,
-8. colorbar orientation, anchor, placement, title, geometry, and formatting overrides.
+5. retained categorical scale entries with stable ids, order, labels, and sample colors,
+6. diverging center support,
+7. panel-attached colorbar creation,
+8. panel pixel reserve accessors and plot-rectangle queries,
+9. colorbar orientation, anchor, placement, title, geometry, and formatting overrides,
+10. panel-attached legend creation for categorical scales,
+11. legend title, anchor, placement, geometry, and visibility overrides.
 
 Installed colorbar layout mutation is represented by `dvz_colorbar_set_layout()`, which accepts the
 same `DvzColorbarDesc` layout fields used at creation time. This avoids destroy/recreate churn in
@@ -320,6 +328,23 @@ reserve.
 
 Interactive range editing should be represented as interaction policy on the scale/colorbar pair,
 not as an external UI-only behavior.
+
+The first legend surface should be deliberately narrow:
+
+```text
+DvzLegend
+DvzLegendDesc
+dvz_legend(panel, scale, desc)
+dvz_legend_destroy(legend)
+dvz_legend_set_layout(legend, desc)
+dvz_legend_set_title(legend, title)
+```
+
+`DvzLegendDesc` should mirror the implemented colorbar placement vocabulary where it applies:
+attached panel-edge placement contributes fixed logical-pixel reserve to the selected edge, while
+detached placement uses `DvzPlacement` in panel or figure pixel space. The first implementation may
+support only vertical stacked entries, but the descriptor should leave room for a future horizontal
+or wrapped layout without changing the constructor signature.
 
 
 ## Text And Annotation Surface

@@ -69,15 +69,53 @@ Custom palettes are arrays of RGBA stops. Stop positions are uniform unless expl
 
 A categorical scale maps integer category ids directly to discrete colors.
 
+Retained categorical entries are part of the scale state. They provide the source of truth for
+deterministic legends and for any future categorical export or interaction policy.
+
+Required per-entry fields:
+
+| Field | Description |
+|---|---|
+| `category_id` | stable integer id matched by visual item data |
+| `order` | deterministic display order; insertion order is the fallback |
+| `label` | optional display label used by legends and probes |
+| `color` | RGBA sample color for the category |
+| `flags` | optional state bits for hidden, disabled, or future interaction policy |
+
 Rules:
 
 - Input is `int32`; output is `rgba_u8`.
 - No normalization or interpolation is applied.
-- Category id `i` maps to `colors[i % len(colors)]`.
+- If explicit entries exist, `category_id` maps to the matching retained entry color.
+- If explicit entries do not exist, category id `i` maps to `colors[i % len(colors)]`.
 - Built-in color sets must include `tab10` and `tab20`.
 - Custom color sets are explicit `rgba_u8` arrays.
 - Palette/color-set updates mark the scale dirty but do not require reuploading item ids.
 - Item-id updates mark the visual data dirty but do not change the scale.
+- Entry order is stable across frames and figure resizes. Reordering entries marks legends dirty but
+  does not require reuploading visual item ids.
+- A missing entry label falls back to a deterministic decimal representation of `category_id`.
+- Duplicate category ids are invalid. Duplicate labels are allowed because ids, not labels, are the
+  semantic identity.
+
+Minimal C surface for the retained entry model:
+
+```c
+typedef struct DvzScaleCategory
+{
+    int32_t category_id;
+    uint32_t order;
+    const char* label;
+    DvzColor color;
+    uint32_t flags;
+} DvzScaleCategory;
+
+DVZ_EXPORT bool dvz_scale_set_categories(
+    DvzScale* scale, const DvzScaleCategory* categories, uint32_t count);
+```
+
+The setter replaces the retained category table. It is valid only for categorical scales. Passing a
+`NULL` pointer or `count == 0` clears explicit entries and restores palette-index fallback.
 
 ## Size Scale
 
