@@ -48,9 +48,10 @@ Reason: basic rendered text, linear 2D axes/ticks/labels, continuous colorbars, 
 and retained scale bars have landed enough that they are no longer primary feature-freeze blockers.
 The next release-quality lane is to make the declared v0.4 surface honest: feature/status table,
 WebGPU/WASM experimental subset, raw `ctypes` scope and smoke, v0.3 visible parity audit, public
-API/status cleanup, and a compact release-example proof set. Remaining text, axes, layout,
-readout, and scale-bar work should be treated as RC1 proof gaps only when a required example or
-test cannot exercise the declared feature; otherwise it belongs to RC2 polish or v0.5 deferral.
+API/status cleanup, retained scale-bar update-performance refactor, and a compact release-example
+proof set. Remaining text, axes, layout, and readout work should be treated as RC1 proof gaps only
+when a required example or test cannot exercise the declared feature; otherwise it belongs to RC2
+polish or v0.5 deferral.
 
 Primary specs:
 
@@ -275,23 +276,28 @@ Primary specs:
 
 ### 6. Scale Bars
 
-Status: `Closed first slice / RC2 performance polish`.
+Status: `Next / v0.4 release-hardening`; rendering slice closed, update-performance refactor
+pending.
 
 Goal:
 
-Keep retained scale bars represented in the release proof set without making richer scale-bar
-layout or performance work a feature-freeze blocker.
+Keep retained scale bars represented in the release proof set and complete the update-performance
+refactor so live panzoom/domain changes do not repeatedly rebuild text/glyph resources.
 
 Current state:
 
 1. The retained 2D scale-bar rendering slice is implemented.
 2. The 3D reference slice has a completed record.
-3. The remaining known issue is update churn during panzoom/domain changes, tracked separately.
+3. The remaining known issue is update churn during panzoom/domain changes, tracked as a v0.4
+   release-hardening task.
 
-Required RC1 proof:
+Required v0.4 work:
 
 1. a narrow scale-bar fixture or example smoke,
-2. explicit known issue or follow-up note for live panzoom update churn if it remains observable.
+2. cached scale-bar realization state and dirty classes for geometry, label position, label text,
+   style, and visibility,
+3. no repeated glyph/text rebuilds when panzoom/domain changes leave the formatted label unchanged,
+4. focused churn tests and a bounded example or trace smoke proving reduced DRP2 resource churn.
 
 Primary records:
 

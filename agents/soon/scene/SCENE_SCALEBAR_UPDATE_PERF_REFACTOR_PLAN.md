@@ -1,9 +1,13 @@
 # Scene Scale Bar Update Performance Refactor Plan
 
 > **Execution Status**
-> - **Status:** `PLANNED`
+> - **Status:** `V0.4 RELEASE-HARDENING`
 > - **Updated on:** `2026-05-25`
 > - **Purpose:** reduce retained scale-bar update churn during panzoom/domain changes.
+
+This refactor is part of the v0.4 release-hardening track. It should be completed before the final
+`v0.4.0` release, not deferred as general RC2 polish, because unnecessary glyph/text rebuilds can
+create avoidable DRP2 resource churn in required scale-bar examples.
 
 
 ## Problem

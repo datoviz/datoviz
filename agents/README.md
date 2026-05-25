@@ -165,7 +165,8 @@ Strategic visual backlog:
 
 Tooling backlog:
 
-1. [later/TEST_RUNNER_SCHEDULING.md](later/TEST_RUNNER_SCHEDULING.md)
+1. [later/POST_V0_4_REFACTOR_ROADMAP.md](later/POST_V0_4_REFACTOR_ROADMAP.md)
+2. [later/TEST_RUNNER_SCHEDULING.md](later/TEST_RUNNER_SCHEDULING.md)
 
 
 ## Maintenance Rules

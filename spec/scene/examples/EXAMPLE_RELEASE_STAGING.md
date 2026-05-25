@@ -242,9 +242,9 @@ These decisions refine the feature roadmap:
    avoids blocking v0.4 on region picking, UI trees, and linked 2D/3D atlas workflows.
 7. **One dense streaming example is enough for v0.4.** Choose DAQ or physiology and keep it simple;
    reserve full ring-buffer/LOD policies for v0.5.
-8. **Scale bars need an RC1 fixture, not a broad new feature lane.** The first retained scale-bar
-   slices are active; live panzoom update-churn optimization belongs to RC2 unless it blocks the
-   selected examples.
+8. **Scale bars need an RC1 fixture and the v0.4 update-performance refactor.** The first retained
+   scale-bar slices are active; live panzoom/domain updates should not rebuild glyph/text resources
+   unless the formatted label or relevant style changed. Richer layout and exotic units can wait.
 9. **Scene-level compute/custom shaders should not block v0.4.** Gray-Scott, Mandelbrot, and
    particles should wait until there is a proper scene-level resource/material API.
 10. **WebGPU/WASM should be example-visible in v0.4, but explicitly experimental.** The example

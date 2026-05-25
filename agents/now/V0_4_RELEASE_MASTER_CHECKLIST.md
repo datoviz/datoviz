@@ -31,6 +31,10 @@ implemented enough that they should not be treated as primary feature-freeze blo
 readouts currently have public/bookkeeping state and formatting; richer rendered readout UI can be
 polish or v0.5 work unless a release example depends on it.
 
+Scale-bar rendering is present, but the retained scale-bar update-performance refactor remains a
+v0.4 release-hardening item. It should be completed before the final v0.4 release so panzoom/domain
+changes do not repeatedly rebuild text/glyph resources or add avoidable DRP2 resource churn.
+
 The remaining feature-freeze blockers are:
 
 1. **WebGPU/WASM experimental path:** a documented and tested browser/backend subset, not full
@@ -88,11 +92,14 @@ Checklist:
    in examples/tests and are not stale planning-only claims.
 5. Decide whether any rendered pinned readout work is required for release examples; otherwise mark
    richer readouts as polish or v0.5.
-6. Reconcile [IMPLEMENTATION.md](IMPLEMENTATION.md),
+6. Keep the retained scale-bar update-performance refactor tracked in
+   [../soon/scene/SCENE_SCALEBAR_UPDATE_PERF_REFACTOR_PLAN.md](../soon/scene/SCENE_SCALEBAR_UPDATE_PERF_REFACTOR_PLAN.md),
+   as required v0.4 release-hardening work rather than post-release polish.
+7. Reconcile [IMPLEMENTATION.md](IMPLEMENTATION.md),
    [../../spec/scene/examples/EXAMPLE_RELEASE_STAGING.md](../../spec/scene/examples/EXAMPLE_RELEASE_STAGING.md),
    and the public feature table so completed first slices are not still presented as active
    feature-freeze blockers.
-7. Decide or explicitly defer unresolved API-shape questions that affect RC1 feedback, especially
+8. Decide or explicitly defer unresolved API-shape questions that affect RC1 feedback, especially
    unified panel query versus pick/probe polling and callback wording versus the retained polling
    model.
 
@@ -253,8 +260,9 @@ Exit criteria:
 1. RC1 can be published with honest known issues.
 2. Feedback requested from users is focused on API shape, architecture, installability, and obvious
    feature gaps.
-3. Remaining text, axes, annotation, readout, scale-bar, picking, and visual-family polish is either
-   tied to a required release example or clearly staged for RC2/v0.5.
+3. Remaining text, axes, annotation, readout, picking, and visual-family polish is either tied to a
+   required release example or clearly staged for RC2/v0.5; scale-bar update-performance work
+   remains required before final v0.4 unless it has already landed.
 
 
 ## Phase 7: Render Conformance And Gallery
@@ -276,11 +284,13 @@ Checklist:
 3. Use exact image refs only where stable; otherwise use nonblank checks, expected sampled pixels,
    changed-region checks, and metamorphic assertions.
 4. Add failure artifacts for actual/diff images when image comparison is active.
-5. Build release gallery examples:
+5. Land the retained scale-bar update-performance refactor and keep its churn tests or DRP2 trace
+   smoke in the release validation set.
+6. Build release gallery examples:
    scatter with axes, linked image probe/colorbar, protein, brain/volume, LiDAR or dense point
    cloud, and one WebGPU/WASM subset page.
-6. Add gallery/example metadata and asset-policy notes before broadening showcase examples.
-7. Use the active view/canvas raster capture path for gallery screenshots; keep render-scale,
+7. Add gallery/example metadata and asset-policy notes before broadening showcase examples.
+8. Use the active view/canvas raster capture path for gallery screenshots; keep render-scale,
    panel-as-texture, and native vector/PDF/SVG export out of the v0.4 promise.
 
 Exit criteria:
@@ -381,6 +391,22 @@ Exit criteria:
 1. `v0.4.0` is tagged and published with reproducible artifacts.
 2. Known limitations are documented rather than implicit.
 3. The next active work queue is reset for v0.4 patch work and v0.5 planning.
+
+
+## After v0.4.0: Refactor Queue
+
+After the final release, move non-blocking cleanup to
+[../later/POST_V0_4_REFACTOR_ROADMAP.md](../later/POST_V0_4_REFACTOR_ROADMAP.md). The first
+post-release refactor batch should focus on:
+
+1. lower-risk `src/scene/scene.c` structural cleanup that was not needed for v0.4;
+2. shared DRP2 diagnostics for app trace normalization and future render-conformance snapshots;
+3. out-of-tree package-consumer smoke tests before tightening component-owned header installs;
+4. conservative shared-fixture test migrations while keeping failure-path, resize, pick/probe,
+   GLFW, video, and device-lost tests isolated until audited.
+
+Do not let these post-release refactors delay `v0.4.0` unless one becomes necessary to fix a
+release-blocking bug.
 
 
 ## Recommended Agent Workflow
