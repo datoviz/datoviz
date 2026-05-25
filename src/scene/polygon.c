@@ -322,8 +322,10 @@ static bool _polygon_borrowed_desc(
  * Notify generated visuals for every composite depending on one polygon.
  *
  * @param polygon changed polygon
+ * @param fill_dirty whether the fill role needs refresh
+ * @param stroke_dirty whether the stroke role needs refresh
  */
-static void _polygon_mark_composites_dirty(DvzPolygon* polygon)
+static void _polygon_mark_composites_dirty(DvzPolygon* polygon, bool fill_dirty, bool stroke_dirty)
 {
     if (polygon == NULL || polygon->scene == NULL)
         return;
@@ -338,8 +340,21 @@ static void _polygon_mark_composites_dirty(DvzPolygon* polygon)
             continue;
         }
         composite->dirty = true;
+        composite->fill_dirty = composite->fill_dirty || fill_dirty;
+        composite->stroke_dirty = composite->stroke_dirty || stroke_dirty;
         for (uint32_t j = 0; j < composite->visual_count; j++)
-            _scene_notify_visual_changed(composite->visuals[j].visual);
+        {
+            DvzCompositeVisual* composite_visual = &composite->visuals[j];
+            bool notify_fill =
+                fill_dirty && strcmp(composite_visual->role, DVZ_POLYGON_COMPOSITE_FILL_ROLE) == 0;
+            bool notify_stroke = stroke_dirty &&
+                                 strcmp(composite_visual->role,
+                                        DVZ_POLYGON_COMPOSITE_STROKE_ROLE) == 0;
+            if (notify_fill || notify_stroke)
+            {
+                _scene_notify_visual_changed(composite_visual->visual);
+            }
+        }
     }
 }
 
@@ -349,8 +364,11 @@ static void _polygon_mark_composites_dirty(DvzPolygon* polygon)
  * Notify generated visuals for every composite depending on one polygon set.
  *
  * @param set changed polygon set
+ * @param fill_dirty whether the fill role needs refresh
+ * @param stroke_dirty whether the stroke role needs refresh
  */
-static void _polygon_set_mark_composites_dirty(DvzPolygonSet* set)
+static void _polygon_set_mark_composites_dirty(
+    DvzPolygonSet* set, bool fill_dirty, bool stroke_dirty)
 {
     if (set == NULL || set->scene == NULL)
         return;
@@ -365,8 +383,21 @@ static void _polygon_set_mark_composites_dirty(DvzPolygonSet* set)
             continue;
         }
         composite->dirty = true;
+        composite->fill_dirty = composite->fill_dirty || fill_dirty;
+        composite->stroke_dirty = composite->stroke_dirty || stroke_dirty;
         for (uint32_t j = 0; j < composite->visual_count; j++)
-            _scene_notify_visual_changed(composite->visuals[j].visual);
+        {
+            DvzCompositeVisual* composite_visual = &composite->visuals[j];
+            bool notify_fill =
+                fill_dirty && strcmp(composite_visual->role, DVZ_POLYGON_COMPOSITE_FILL_ROLE) == 0;
+            bool notify_stroke = stroke_dirty &&
+                                 strcmp(composite_visual->role,
+                                        DVZ_POLYGON_COMPOSITE_STROKE_ROLE) == 0;
+            if (notify_fill || notify_stroke)
+            {
+                _scene_notify_visual_changed(composite_visual->visual);
+            }
+        }
     }
 }
 
@@ -515,6 +546,8 @@ static DvzComposite* _scene_alloc_composite(DvzScene* scene)
     composite->scene = scene;
     composite->active = true;
     composite->dirty = true;
+    composite->fill_dirty = true;
+    composite->stroke_dirty = true;
     return composite;
 }
 
@@ -989,12 +1022,14 @@ static int _polygon_set_composite_prepare(DvzComposite* composite)
     if (fill == NULL || stroke == NULL)
         return -1;
 
-    if (_polygon_set_prepare_fill(set, fill) != 0)
+    if (composite->fill_dirty && _polygon_set_prepare_fill(set, fill) != 0)
         return -1;
-    if (_polygon_set_prepare_stroke(set, stroke) != 0)
+    if (composite->stroke_dirty && _polygon_set_prepare_stroke(set, stroke) != 0)
         return -1;
 
     composite->dirty = false;
+    composite->fill_dirty = false;
+    composite->stroke_dirty = false;
     composite->source_version_seen = set->version;
     return 0;
 }
@@ -1046,12 +1081,14 @@ static int _polygon_composite_prepare(DvzComposite* composite)
     if (fill == NULL || stroke == NULL)
         return -1;
 
-    if (_polygon_prepare_fill(polygon, fill) != 0)
+    if (composite->fill_dirty && _polygon_prepare_fill(polygon, fill) != 0)
         return -1;
-    if (_polygon_prepare_stroke(polygon, stroke) != 0)
+    if (composite->stroke_dirty && _polygon_prepare_stroke(polygon, stroke) != 0)
         return -1;
 
     composite->dirty = false;
+    composite->fill_dirty = false;
+    composite->stroke_dirty = false;
     composite->source_version_seen = polygon->version;
     return 0;
 }
@@ -1243,7 +1280,7 @@ int dvz_polygon_set_geometry(DvzPolygon* polygon, const DvzPolygonDesc* desc)
     polygon->holes = holes;
     polygon->hole_count = desc->hole_count;
     polygon->version++;
-    _polygon_mark_composites_dirty(polygon);
+    _polygon_mark_composites_dirty(polygon, true, true);
     return 0;
 }
 
@@ -1344,7 +1381,7 @@ int dvz_polygon_fill_color(DvzPolygon* polygon, const DvzColor color)
         return -1;
     _polygon_color_copy(polygon->fill_color, color);
     polygon->version++;
-    _polygon_mark_composites_dirty(polygon);
+    _polygon_mark_composites_dirty(polygon, true, false);
     return 0;
 }
 
@@ -1365,7 +1402,7 @@ int dvz_polygon_stroke_color(DvzPolygon* polygon, const DvzColor color)
         return -1;
     _polygon_color_copy(polygon->stroke_color, color);
     polygon->version++;
-    _polygon_mark_composites_dirty(polygon);
+    _polygon_mark_composites_dirty(polygon, false, true);
     return 0;
 }
 
@@ -1386,7 +1423,7 @@ int dvz_polygon_stroke_width(DvzPolygon* polygon, float width)
         return -1;
     polygon->stroke_width = width;
     polygon->version++;
-    _polygon_mark_composites_dirty(polygon);
+    _polygon_mark_composites_dirty(polygon, false, true);
     return 0;
 }
 
@@ -1508,7 +1545,7 @@ uint32_t dvz_polygon_set_add(DvzPolygonSet* set, const DvzPolygonDesc* desc)
 
     set->polygon_count++;
     set->version++;
-    _polygon_set_mark_composites_dirty(set);
+    _polygon_set_mark_composites_dirty(set, true, true);
     return index;
 }
 
@@ -1537,7 +1574,7 @@ int dvz_polygon_set_region_geometry(
     if (_polygon_set_item_set_geometry(item, desc) != 0)
         return -1;
     set->version++;
-    _polygon_set_mark_composites_dirty(set);
+    _polygon_set_mark_composites_dirty(set, true, true);
     return 0;
 }
 
@@ -1565,7 +1602,7 @@ int dvz_polygon_set_region_fill_color(
     _polygon_color_copy(set->polygons[polygon_index].fill_color, color);
     set->polygons[polygon_index].version++;
     set->version++;
-    _polygon_set_mark_composites_dirty(set);
+    _polygon_set_mark_composites_dirty(set, true, false);
     return 0;
 }
 
@@ -1593,7 +1630,7 @@ int dvz_polygon_set_region_stroke_color(
     _polygon_color_copy(set->polygons[polygon_index].stroke_color, color);
     set->polygons[polygon_index].version++;
     set->version++;
-    _polygon_set_mark_composites_dirty(set);
+    _polygon_set_mark_composites_dirty(set, false, true);
     return 0;
 }
 
@@ -1620,7 +1657,7 @@ int dvz_polygon_set_region_stroke_width(DvzPolygonSet* set, uint32_t polygon_ind
     set->polygons[polygon_index].stroke_width = width;
     set->polygons[polygon_index].version++;
     set->version++;
-    _polygon_set_mark_composites_dirty(set);
+    _polygon_set_mark_composites_dirty(set, false, true);
     return 0;
 }
 

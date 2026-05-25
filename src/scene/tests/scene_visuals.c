@@ -2896,6 +2896,34 @@ int test_scene_polygon_composite(TstContext* suite, const TstCase* item)
     const float* widths = stroke_width_view.data;
     AC(widths[0], 3.0f, EPS);
 
+    uint64_t fill_position_version = 0;
+    uint64_t fill_color_version = 0;
+    for (uint32_t ai = 0; ai < fill->attr_count; ai++)
+    {
+        if (strcmp(fill->attrs[ai].name, "position") == 0)
+            fill_position_version = fill->attrs[ai].version;
+        else if (strcmp(fill->attrs[ai].name, "color") == 0)
+            fill_color_version = fill->attrs[ai].version;
+    }
+    AT(fill_position_version > 0);
+    AT(fill_color_version > 0);
+    AT(dvz_polygon_stroke_width(polygon, 7.0f) == 0);
+    _scene_prepare_composite_visuals(figure);
+    AT(dvz_visual_data(stroke, "stroke_width", &stroke_width_view) == 0);
+    widths = stroke_width_view.data;
+    AC(widths[0], 7.0f, EPS);
+    for (uint32_t ai = 0; ai < fill->attr_count; ai++)
+    {
+        if (strcmp(fill->attrs[ai].name, "position") == 0)
+        {
+            AT(fill->attrs[ai].version == fill_position_version);
+        }
+        else if (strcmp(fill->attrs[ai].name, "color") == 0)
+        {
+            AT(fill->attrs[ai].version == fill_color_version);
+        }
+    }
+
     const DvzColor fill_update = {200, 30, 40, 255};
     AT(dvz_polygon_fill_color(polygon, fill_update) == 0);
     _scene_prepare_composite_visuals(figure);
@@ -3003,6 +3031,35 @@ int test_scene_polygon_set_composite(TstContext* suite, const TstCase* item)
     const float* widths = stroke_width_view.data;
     AC(widths[0], 2.0f, EPS);
     AC(widths[5], 4.0f, EPS);
+
+    uint64_t fill_position_version = 0;
+    uint64_t fill_color_version = 0;
+    for (uint32_t ai = 0; ai < fill->attr_count; ai++)
+    {
+        if (strcmp(fill->attrs[ai].name, "position") == 0)
+            fill_position_version = fill->attrs[ai].version;
+        else if (strcmp(fill->attrs[ai].name, "color") == 0)
+            fill_color_version = fill->attrs[ai].version;
+    }
+    AT(fill_position_version > 0);
+    AT(fill_color_version > 0);
+    AT(dvz_polygon_set_region_stroke_width(set, right_index, 7.0f) == 0);
+    _scene_prepare_composite_visuals(figure);
+    AT(dvz_visual_data(stroke, "stroke_width", &stroke_width_view) == 0);
+    widths = stroke_width_view.data;
+    AC(widths[0], 2.0f, EPS);
+    AC(widths[5], 7.0f, EPS);
+    for (uint32_t ai = 0; ai < fill->attr_count; ai++)
+    {
+        if (strcmp(fill->attrs[ai].name, "position") == 0)
+        {
+            AT(fill->attrs[ai].version == fill_position_version);
+        }
+        else if (strcmp(fill->attrs[ai].name, "color") == 0)
+        {
+            AT(fill->attrs[ai].version == fill_color_version);
+        }
+    }
 
     const DvzColor blue = {0, 0, 255, 255};
     AT(dvz_polygon_set_region_fill_color(set, right_index, blue) == 0);
