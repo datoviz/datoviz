@@ -16,7 +16,7 @@ void main()
     vec4 centerView = mvp.view * mvp.model * vec4(inPos, 1.0);
     vec4 tr = transform(inPos);
     float radius = max(inSize, 1e-6);
-    float radiusPx = radius * viewport.rect.w * abs(mvp.proj[1][1]) / max(abs(tr.w), 1e-6);
+    float radiusPx = radius * viewport.rect.w * abs(mvp.proj[0][0]) / max(abs(tr.w), 1e-6);
     float paddedRadiusPx = radiusPx + 1.5;
 
     gl_Position = tr;
