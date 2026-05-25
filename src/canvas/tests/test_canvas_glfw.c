@@ -830,8 +830,14 @@ int test_canvas_video_wait_handle_ready_on_first_start(TstContext* suite, const 
     DvzStreamFrame* frame = dvz_canvas_frame_pool_current(&canvas->frame_pool);
     AT(frame != NULL);
     AT(frame->wait_semaphore_fd >= 0);
-    AT(dvz_canvas_submit(canvas) == 0);
+#if OS_UNIX
+    // This test has no real video sink importing the exported FD; close the probe-only handle before
+    // presentation so the submit path is not coupled to an unused external handle lifetime.
+    close(frame->wait_semaphore_fd);
+    frame->wait_semaphore_fd = -1;
+#endif
     canvas->video_sink_enabled = false;
+    AT(dvz_canvas_submit(canvas) == 0);
 
     canvas_glfw_fixture_destroy(&fixture);
     return 0;
