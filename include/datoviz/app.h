@@ -374,6 +374,33 @@ DVZ_EXPORT struct DvzInputRouter* dvz_view_input(DvzView* view);
 
 
 /**
+ * Return the current device scale for a view.
+ *
+ * @param view the view
+ * @return physical pixels per logical pixel, or 1 when unavailable
+ */
+DVZ_EXPORT float dvz_view_device_scale(const DvzView* view);
+
+
+/**
+ * Return the current user scale for UI-like scene quantities.
+ *
+ * @param view the view
+ * @return user scale, defaulting to 1
+ */
+DVZ_EXPORT float dvz_view_user_scale(const DvzView* view);
+
+
+/**
+ * Set the user scale for UI-like scene quantities.
+ *
+ * @param view the view
+ * @param scale positive user scale
+ */
+DVZ_EXPORT void dvz_view_set_user_scale(DvzView* view, float scale);
+
+
+/**
  * Connect a panel's bound controllers to a view input router.
  *
  * @param view the view

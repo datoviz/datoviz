@@ -16,6 +16,7 @@
 
 #include <stdbool.h>
 #include <inttypes.h>
+#include <math.h>
 #include <stdint.h>
 #include <stdio.h>
 
@@ -123,6 +124,14 @@ struct DvzView
     bool has_last_runtime_failure;
     uint32_t runtime_failure_repeat_count;
     DvzDrp2Recorder* recorder;
+    uint32_t logical_width;
+    uint32_t logical_height;
+    uint32_t framebuffer_width;
+    uint32_t framebuffer_height;
+    float device_scale_x;
+    float device_scale_y;
+    float render_scale;
+    float user_scale;
     DvzClock recording_clock;
     double recording_fps;
     double recording_last_t_present;
@@ -693,6 +702,163 @@ static void _view_mark_dirty(DvzView* win)
     ANN(win);
     win->dirty = true;
     win->frame_requested = true;
+}
+
+
+/**
+ * Return a valid scale, replacing invalid values with one.
+ *
+ * @param scale input scale
+ * @return positive finite scale
+ */
+static float _view_valid_scale(float scale)
+{
+    return isfinite(scale) && scale > 0.0f ? scale : 1.0f;
+}
+
+
+
+/**
+ * Round a positive float pixel size to a nonzero integer.
+ *
+ * @param value input value
+ * @return rounded integer size, or zero when unavailable
+ */
+static uint32_t _view_round_size(float value)
+{
+    if (!isfinite(value) || value <= 0.0f)
+        return 0;
+    if (value >= (float)UINT32_MAX)
+        return UINT32_MAX;
+    return (uint32_t)(value + 0.5f);
+}
+
+
+
+/**
+ * Update cached logical, framebuffer, and scale state for one view.
+ *
+ * @param win view to update
+ * @param logical_width logical width, or zero to derive it
+ * @param logical_height logical height, or zero to derive it
+ * @param framebuffer_width physical framebuffer width, or zero when unknown
+ * @param framebuffer_height physical framebuffer height, or zero when unknown
+ * @param device_scale_x horizontal device scale
+ * @param device_scale_y vertical device scale
+ */
+static void _view_update_size_state(
+    DvzView* win, uint32_t logical_width, uint32_t logical_height, uint32_t framebuffer_width,
+    uint32_t framebuffer_height, float device_scale_x, float device_scale_y)
+{
+    ANN(win);
+    device_scale_x = _view_valid_scale(device_scale_x);
+    device_scale_y = _view_valid_scale(device_scale_y);
+
+    if (logical_width == 0 && framebuffer_width > 0)
+        logical_width = _view_round_size((float)framebuffer_width / device_scale_x);
+    if (logical_height == 0 && framebuffer_height > 0)
+        logical_height = _view_round_size((float)framebuffer_height / device_scale_y);
+    if (framebuffer_width == 0 && logical_width > 0)
+        framebuffer_width = _view_round_size((float)logical_width * device_scale_x);
+    if (framebuffer_height == 0 && logical_height > 0)
+        framebuffer_height = _view_round_size((float)logical_height * device_scale_y);
+
+    win->logical_width = logical_width;
+    win->logical_height = logical_height;
+    win->framebuffer_width = framebuffer_width;
+    win->framebuffer_height = framebuffer_height;
+    win->device_scale_x = device_scale_x;
+    win->device_scale_y = device_scale_y;
+    if (win->render_scale <= 0.0f || !isfinite(win->render_scale))
+        win->render_scale = 1.0f;
+    if (win->user_scale <= 0.0f || !isfinite(win->user_scale))
+        win->user_scale = 1.0f;
+}
+
+
+
+/**
+ * Return the current surface scale for one view.
+ *
+ * @param win view to query
+ * @param out_x output horizontal scale
+ * @param out_y output vertical scale
+ */
+static void _view_surface_scale(const DvzView* win, float* out_x, float* out_y)
+{
+    ANN(win);
+    ANN(out_x);
+    ANN(out_y);
+    *out_x = win->device_scale_x > 0.0f ? win->device_scale_x : 1.0f;
+    *out_y = win->device_scale_y > 0.0f ? win->device_scale_y : 1.0f;
+#if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
+    if (win->window != NULL)
+    {
+        const DvzWindowSurface* surface = dvz_window_surface(win->window);
+        if (surface != NULL)
+        {
+            *out_x = _view_valid_scale(surface->scale_x);
+            *out_y = _view_valid_scale(surface->scale_y);
+        }
+    }
+#endif
+}
+
+
+
+/**
+ * Refresh cached size state from the latest frame, surface, and resize event.
+ *
+ * @param win view to refresh
+ * @param frame current canvas frame, or NULL when unavailable
+ */
+static void _view_refresh_size_state(DvzView* win, const DvzStreamFrame* frame)
+{
+    ANN(win);
+    uint32_t framebuffer_width = win->framebuffer_width;
+    uint32_t framebuffer_height = win->framebuffer_height;
+    uint32_t logical_width = win->logical_width;
+    uint32_t logical_height = win->logical_height;
+    float device_scale_x = 1.0f;
+    float device_scale_y = 1.0f;
+    _view_surface_scale(win, &device_scale_x, &device_scale_y);
+
+    if (frame != NULL)
+    {
+        framebuffer_width = frame->extent.width;
+        framebuffer_height = frame->extent.height;
+    }
+
+#if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
+    if (win->canvas != NULL)
+    {
+        DvzInputRouter* router = dvz_canvas_input(win->canvas);
+        DvzInputResizeEvent resize = {0};
+        if (router != NULL && dvz_input_router_last_resize(router, &resize))
+        {
+            if (resize.framebuffer_width > 0 && resize.framebuffer_height > 0)
+            {
+                framebuffer_width = resize.framebuffer_width;
+                framebuffer_height = resize.framebuffer_height;
+            }
+            if (resize.window_width > 0 && resize.window_height > 0)
+            {
+                logical_width = resize.window_width;
+                logical_height = resize.window_height;
+            }
+            device_scale_x = _view_valid_scale(resize.content_scale_x);
+            device_scale_y = _view_valid_scale(resize.content_scale_y);
+        }
+    }
+#endif
+
+    if (logical_width == 0 && win->figure != NULL && win->figure->width > 0)
+        logical_width = win->figure->width;
+    if (logical_height == 0 && win->figure != NULL && win->figure->height > 0)
+        logical_height = win->figure->height;
+    _view_update_size_state(
+        win, logical_width, logical_height, framebuffer_width, framebuffer_height, device_scale_x,
+        device_scale_y);
 }
 
 
@@ -2046,23 +2212,9 @@ static void _app_sync_figure_size(DvzView* win, const DvzStreamFrame* frame)
     ANN(win->figure);
     ANN(frame);
 
-    uint32_t width = frame->extent.width;
-    uint32_t height = frame->extent.height;
-
-    if (win->is_interactive && win->canvas != NULL)
-    {
-        DvzInputRouter* router = dvz_canvas_input(win->canvas);
-        DvzInputResizeEvent resize = {0};
-        if (router != NULL && dvz_input_router_last_resize(router, &resize) &&
-            resize.framebuffer_width > 0 && resize.framebuffer_height > 0)
-        {
-            width = resize.framebuffer_width;
-            height = resize.framebuffer_height;
-        }
-    }
-
-    if (width > 0 && height > 0)
-        dvz_figure_resize(win->figure, width, height);
+    _view_refresh_size_state(win, frame);
+    if (win->logical_width > 0 && win->logical_height > 0)
+        dvz_figure_resize(win->figure, win->logical_width, win->logical_height);
 }
 
 
@@ -2660,6 +2812,10 @@ static void _app_draw(DvzCanvas* canvas, const DvzStreamFrame* frame, void* user
     cfg.color_target_id       = win->target_id;
     cfg.target_width          = frame->extent.width;
     cfg.target_height         = frame->extent.height;
+    cfg.device_scale_x        = win->device_scale_x > 0.0f ? win->device_scale_x : 1.0f;
+    cfg.device_scale_y        = win->device_scale_y > 0.0f ? win->device_scale_y : 1.0f;
+    cfg.render_scale          = win->render_scale > 0.0f ? win->render_scale : 1.0f;
+    cfg.user_scale            = win->user_scale > 0.0f ? win->user_scale : 1.0f;
     cfg.runtime_resource_scope_id = _app_frame_runtime_scope(frame);
     cfg.clear_color[0]        = 0.05f;
     cfg.clear_color[1]        = 0.05f;
@@ -2994,6 +3150,7 @@ dvz_view_offscreen(DvzApp* app, DvzFigure* figure, uint32_t width, uint32_t heig
     win->canvas        = canvas;
     win->target_id     = DVZ_APP_CANVAS_TARGET_BASE + (uint64_t)app->view_count;
     win->render_enabled = true;
+    _view_update_size_state(win, width, height, width, height, 1.0f, 1.0f);
     _view_mark_dirty(win);
     app->view_count++;
 
@@ -3057,6 +3214,9 @@ dvz_view_glfw(DvzApp* app, DvzFigure* figure, uint32_t width, uint32_t height,
     win->is_interactive = true;
     win->render_enabled = true;
     win->fps_overlay_enabled = _app_env_flag_enabled("DVZ_FPS_OVERLAY");
+    _view_refresh_size_state(win, NULL);
+    if (win->logical_width == 0 || win->logical_height == 0)
+        _view_update_size_state(win, width, height, 0, 0, 1.0f, 1.0f);
     _view_mark_dirty(win);
     app->view_count++;
 
@@ -3133,6 +3293,7 @@ DvzView* dvz_view_external_surface(
     win->canvas     = canvas;
     win->target_id  = DVZ_APP_CANVAS_TARGET_BASE + (uint64_t)app->view_count;
     win->render_enabled = true;
+    _view_refresh_size_state(win, NULL);
     _view_mark_dirty(win);
     app->view_count++;
 
@@ -3250,6 +3411,11 @@ int dvz_view_emit_resize(
     dvz_window_backend_emit_resize(
         win->window, framebuffer_width, framebuffer_height, window_width, window_height,
         content_scale_x, content_scale_y);
+    _view_update_size_state(
+        win, window_width, window_height, framebuffer_width, framebuffer_height, content_scale_x,
+        content_scale_y);
+    if (win->figure != NULL && win->logical_width > 0 && win->logical_height > 0)
+        dvz_figure_resize(win->figure, win->logical_width, win->logical_height);
     dvz_view_request_frame(win);
     return 0;
 #else
@@ -3382,6 +3548,58 @@ struct DvzInputRouter* dvz_view_input(DvzView* win)
 #else
     return NULL;
 #endif
+}
+
+
+/**
+ * Return the current device scale for a view.
+ *
+ * @param win the view
+ * @return physical pixels per logical pixel, or 1 when unavailable
+ */
+float dvz_view_device_scale(const DvzView* win)
+{
+    ANN(win);
+    float sx = 1.0f;
+    float sy = 1.0f;
+    _view_surface_scale(win, &sx, &sy);
+    return 0.5f * (sx + sy);
+}
+
+
+
+/**
+ * Return the current user scale for UI-like scene quantities.
+ *
+ * @param win the view
+ * @return user scale, defaulting to 1
+ */
+float dvz_view_user_scale(const DvzView* win)
+{
+    ANN(win);
+    return win->user_scale > 0.0f && isfinite(win->user_scale) ? win->user_scale : 1.0f;
+}
+
+
+
+/**
+ * Set the user scale for UI-like scene quantities.
+ *
+ * @param win the view
+ * @param scale positive user scale
+ */
+void dvz_view_set_user_scale(DvzView* win, float scale)
+{
+    ANN(win);
+    if (!isfinite(scale) || scale <= 0.0f)
+    {
+        log_error("view user scale must be positive and finite");
+        return;
+    }
+    if (win->user_scale == scale)
+        return;
+    win->user_scale = scale;
+    _view_mark_dirty(win);
 }
 
 
@@ -3990,6 +4208,7 @@ int dvz_view_resize(DvzView* win, uint32_t width, uint32_t height)
     if (win->window == NULL || win->figure == NULL)
         return -1;
     dvz_window_backend_emit_resize(win->window, width, height, width, height, 1.0f, 1.0f);
+    _view_update_size_state(win, width, height, width, height, 1.0f, 1.0f);
     dvz_figure_resize(win->figure, width, height);
     dvz_view_request_frame(win);
     return 0;

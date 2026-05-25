@@ -151,6 +151,10 @@ struct DvzFramePlanEmitConfig
     uint64_t color_target_id;
     uint32_t target_width;
     uint32_t target_height;
+    float device_scale_x;
+    float device_scale_y;
+    float render_scale;
+    float user_scale;
     bool fullscreen_triangle;
     uint64_t runtime_resource_scope_id; /* Optional scope for mutable runtime intermediates. */
     float clear_color[4]; /* RGBA clear color for the render pass [0,1]; default opaque black */

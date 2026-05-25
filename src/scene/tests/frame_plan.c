@@ -427,6 +427,8 @@ static int test_frame_plan_runtime_uses_graph_pass_order(TstContext* suite, cons
     DvzDiagnosticReport report = {0};
     DvzFramePlanEmitConfig emit_cfg = dvz_frame_plan_emit_config();
     emit_cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
+    emit_cfg.target_width = 100;
+    emit_cfg.target_height = 100;
     dvz_capability_snapshot_default(&caps);
     dvz_diagnostic_report_init(&report);
 
@@ -448,7 +450,7 @@ static int test_frame_plan_runtime_uses_graph_pass_order(TstContext* suite, cons
     }
     AT(viewport_count == 2);
     AC(viewport_x[0], 0.0f, 1e-6f);
-    AC(viewport_x[1], 0.5f, 1e-6f);
+    AC(viewport_x[1], 50.0f, 1e-6f);
 
     dvz_drp2_stream_destroy(stream);
     dvz_frame_plan_emitter_destroy(emitter);

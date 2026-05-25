@@ -1681,6 +1681,14 @@ void dvz_frame_plan_destroy(DvzFramePlan* plan)
 {
     if (plan == NULL)
         return;
+    for (uint32_t i = 0; i < plan->count; i++)
+    {
+        if (plan->nodes[i].type == DVZ_FRAME_PLAN_NODE_UPLOAD)
+        {
+            dvz_free(plan->nodes[i].u.upload.owned_data);
+            plan->nodes[i].u.upload.owned_data = NULL;
+        }
+    }
     dvz_free(plan->nodes);
     dvz_free(plan->graph_resources);
     dvz_free(plan->graph_passes);

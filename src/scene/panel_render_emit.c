@@ -667,6 +667,18 @@ bool _scene_emit_panel_render_ex(
     _scene_panel_pixel_rect(
         panel, &panel_viewport.x, &panel_viewport.y, &panel_viewport.width,
         &panel_viewport.height);
+    float framebuffer_scale_x =
+        figure->device_scale_x > 0.0f ? figure->device_scale_x * figure->render_scale : 1.0f;
+    float framebuffer_scale_y =
+        figure->device_scale_y > 0.0f ? figure->device_scale_y * figure->render_scale : 1.0f;
+    if (framebuffer_scale_x <= 0.0f)
+        framebuffer_scale_x = 1.0f;
+    if (framebuffer_scale_y <= 0.0f)
+        framebuffer_scale_y = 1.0f;
+    panel_viewport.x *= framebuffer_scale_x;
+    panel_viewport.y *= framebuffer_scale_y;
+    panel_viewport.width *= framebuffer_scale_x;
+    panel_viewport.height *= framebuffer_scale_y;
     DvzPanelDesc plot_desc = _scene_panel_plot_desc(panel);
 
     const uint32_t invalid_node = UINT32_MAX;

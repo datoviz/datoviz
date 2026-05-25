@@ -280,6 +280,69 @@ static bool _scene_attach_upload_metadata(
 
 
 /**
+ * Return whether one upload role stores logical screen-space pixels.
+ *
+ * @param role typed resource role
+ * @return whether the upload should be lowered to physical style pixels
+ */
+static bool _scene_upload_role_screen_space(DvzFramePlanResourceRole role)
+{
+    return role == DVZ_FRAME_PLAN_RESOURCE_ROLE_SIZE ||
+           role == DVZ_FRAME_PLAN_RESOURCE_ROLE_LINE_WIDTH;
+}
+
+
+
+/**
+ * Append an upload, scaling float screen-space payloads into owned plan storage when needed.
+ *
+ * @param figure parent figure
+ * @param plan destination frame plan
+ * @param resource_id resource key
+ * @param byte_offset upload byte offset
+ * @param byte_size upload byte size
+ * @param data_tag debug data tag
+ * @param data source payload
+ * @param role typed resource role
+ * @return whether the upload was appended
+ */
+static bool _scene_frame_plan_upload_style_bytes(
+    const DvzFigure* figure, DvzFramePlan* plan, const char* resource_id, uint64_t byte_offset,
+    uint64_t byte_size, const char* data_tag, const void* data, DvzFramePlanResourceRole role)
+{
+    ANN(plan);
+    const void* upload_data = data;
+    void* owned = NULL;
+    float scale = _scene_screen_scale(figure);
+    if (_scene_upload_role_screen_space(role) && data != NULL && scale != 1.0f)
+    {
+        if (byte_size % sizeof(float) != 0 || byte_size > SIZE_MAX)
+            return false;
+        owned = dvz_malloc((size_t)byte_size);
+        if (owned == NULL)
+            return false;
+        size_t count = (size_t)(byte_size / sizeof(float));
+        const float* src = (const float*)data;
+        float* dst = (float*)owned;
+        for (size_t i = 0; i < count; i++)
+            dst[i] = src[i] * scale;
+        upload_data = owned;
+    }
+
+    bool ok =
+        dvz_frame_plan_upload_bytes(plan, resource_id, byte_offset, byte_size, data_tag, upload_data);
+    if (!ok)
+    {
+        dvz_free(owned);
+        return false;
+    }
+    if (owned != NULL)
+        plan->nodes[plan->count - 1].u.upload.owned_data = owned;
+    return true;
+}
+
+
+/**
  * Return whether one segment visual has all dense attributes required for rendering.
  *
  * @param visual the segment visual
@@ -444,8 +507,10 @@ static void _scene_emit_segment_uploads(
         uint64_t byte_size = 0;
         if (_dvz_mul_u64_overflows(cache->vertex_count, uploads[i].item_size, &byte_size))
             continue;
-        dvz_frame_plan_upload_bytes(
-            plan, resource_id, 0, byte_size, uploads[i].name, uploads[i].data);
+        if (!_scene_frame_plan_upload_style_bytes(
+                figure, plan, resource_id, 0, byte_size, uploads[i].name, uploads[i].data,
+                uploads[i].role))
+            continue;
         _scene_attach_upload_metadata(
             plan, visual, visual_index, uploads[i].role, DVZ_FRAME_PLAN_RESOURCE_KIND_BUFFER,
             UINT32_MAX);
@@ -781,8 +846,10 @@ static void _scene_emit_path_uploads(
         uint64_t byte_size = 0;
         if (_dvz_mul_u64_overflows(cache->vertex_count, uploads[i].item_size, &byte_size))
             continue;
-        dvz_frame_plan_upload_bytes(
-            plan, resource_id, 0, byte_size, uploads[i].name, uploads[i].data);
+        if (!_scene_frame_plan_upload_style_bytes(
+                figure, plan, resource_id, 0, byte_size, uploads[i].name, uploads[i].data,
+                uploads[i].role))
+            continue;
         _scene_attach_upload_metadata(
             plan, visual, visual_index, uploads[i].role, DVZ_FRAME_PLAN_RESOURCE_KIND_BUFFER,
             UINT32_MAX);
@@ -1153,9 +1220,24 @@ static bool _scene_emit_visual_material_upload(
     {
         return false;
     }
-    dvz_frame_plan_upload_bytes(
-        plan, material_resource_id, 0, sizeof(DvzSceneMaterialParams), "material_params",
-        &visual->material_params);
+    DvzSceneMaterialParams* params =
+        (DvzSceneMaterialParams*)dvz_malloc(sizeof(DvzSceneMaterialParams));
+    if (params == NULL)
+        return false;
+    *params = visual->material_params;
+    if ((visual->type == DVZ_VISUAL_TYPE_POINT || visual->type == DVZ_VISUAL_TYPE_MARKER) &&
+        visual->material.point_style_enabled)
+    {
+        params->params[0] *= _scene_screen_scale(figure);
+    }
+    if (!dvz_frame_plan_upload_bytes(
+            plan, material_resource_id, 0, sizeof(DvzSceneMaterialParams), "material_params",
+            params))
+    {
+        dvz_free(params);
+        return false;
+    }
+    plan->nodes[plan->count - 1].u.upload.owned_data = params;
     _scene_attach_upload_metadata(
         plan, visual, visual_index, DVZ_FRAME_PLAN_RESOURCE_ROLE_MATERIAL_PARAMS,
         DVZ_FRAME_PLAN_RESOURCE_KIND_BUFFER, UINT32_MAX);
@@ -1481,11 +1563,16 @@ void _scene_emit_visual_uploads(
                     uint64_t byte_offset = (uint64_t)attr->dirty_first_item * attr->item_size;
                     uint64_t byte_size = (uint64_t)attr->dirty_item_count * attr->item_size;
                     const void* data_ptr = (const uint8_t*)attr->data + byte_offset;
-                    dvz_frame_plan_upload_bytes(
-                        plan, resource_id, byte_offset, byte_size, attr->name, data_ptr);
+                    DvzFramePlanResourceRole role = _scene_attr_frame_plan_role(attr->name);
+                    if (!_scene_frame_plan_upload_style_bytes(
+                            figure, plan, resource_id, byte_offset, byte_size, attr->name,
+                            data_ptr, role))
+                    {
+                        continue;
+                    }
                     _scene_attach_upload_metadata(
-                        plan, visual, vidx, _scene_attr_frame_plan_role(attr->name),
-                        DVZ_FRAME_PLAN_RESOURCE_KIND_BUFFER, UINT32_MAX);
+                        plan, visual, vidx, role, DVZ_FRAME_PLAN_RESOURCE_KIND_BUFFER,
+                        UINT32_MAX);
                     if ((visual->type == DVZ_VISUAL_TYPE_PRIMITIVE ||
                          visual->type == DVZ_VISUAL_TYPE_MESH ||
                          visual->type == DVZ_VISUAL_TYPE_PATH ||

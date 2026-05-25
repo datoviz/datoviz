@@ -104,6 +104,65 @@ static void _render_area_from_viewport(
 }
 
 
+
+/**
+ * Clamp a framebuffer-coordinate rectangle to an in-bounds pixel render area.
+ *
+ * @param target_width render-target width in pixels
+ * @param target_height render-target height in pixels
+ * @param rect framebuffer x/y/width/height
+ * @param out_x output left pixel coordinate
+ * @param out_y output top pixel coordinate
+ * @param out_width output width in pixels
+ * @param out_height output height in pixels
+ */
+static void _render_area_from_framebuffer_rect(
+    uint32_t target_width, uint32_t target_height, const float rect[4], uint32_t* out_x,
+    uint32_t* out_y, uint32_t* out_width, uint32_t* out_height)
+{
+    ANN(rect);
+    ANN(out_x);
+    ANN(out_y);
+    ANN(out_width);
+    ANN(out_height);
+
+    float x0 = rect[0] > 0.0f ? rect[0] : 0.0f;
+    float y0 = rect[1] > 0.0f ? rect[1] : 0.0f;
+    float x1 = rect[0] + rect[2];
+    float y1 = rect[1] + rect[3];
+    if (x1 < x0)
+        x1 = x0;
+    if (y1 < y0)
+        y1 = y0;
+    if (x1 > (float)target_width)
+        x1 = (float)target_width;
+    if (y1 > (float)target_height)
+        y1 = (float)target_height;
+
+    uint32_t px0 = (uint32_t)(x0 + 0.5f);
+    uint32_t py0 = (uint32_t)(y0 + 0.5f);
+    uint32_t px1 = (uint32_t)(x1 + 0.5f);
+    uint32_t py1 = (uint32_t)(y1 + 0.5f);
+    if (px0 > target_width)
+        px0 = target_width;
+    if (py0 > target_height)
+        py0 = target_height;
+    if (px1 > target_width)
+        px1 = target_width;
+    if (py1 > target_height)
+        py1 = target_height;
+    if (px1 <= px0 && target_width > px0)
+        px1 = px0 + 1;
+    if (py1 <= py0 && target_height > py0)
+        py1 = py0 + 1;
+
+    *out_x = px0;
+    *out_y = py0;
+    *out_width = px1 > px0 ? px1 - px0 : 0;
+    *out_height = py1 > py0 ? py1 - py0 : 0;
+}
+
+
 /**
  * Convert DRP2 depth attachment access to vklite texture access.
  *
@@ -584,14 +643,21 @@ DvzDrp2ValidationResult _vklite_begin_render_pass(
     pass->color_target_count = color_count;
     for (uint32_t i = 0; i < color_count; i++)
         pass->color_target_ids[i] = targets[i]->id;
-    pass->viewport_x = command->u.begin_render_pass.viewport[0];
-    pass->viewport_y = command->u.begin_render_pass.viewport[1];
-    pass->viewport_width = command->u.begin_render_pass.viewport[2];
-    pass->viewport_height = command->u.begin_render_pass.viewport[3];
-    pass->scissor_x = command->u.begin_render_pass.viewport[0];
-    pass->scissor_y = command->u.begin_render_pass.viewport[1];
-    pass->scissor_width = command->u.begin_render_pass.viewport[2];
-    pass->scissor_height = command->u.begin_render_pass.viewport[3];
+    uint32_t viewport_x = 0;
+    uint32_t viewport_y = 0;
+    uint32_t viewport_width = target->width;
+    uint32_t viewport_height = target->height;
+    _render_area_from_viewport(
+        target->width, target->height, command->u.begin_render_pass.viewport, &viewport_x,
+        &viewport_y, &viewport_width, &viewport_height);
+    pass->viewport_x = (float)viewport_x;
+    pass->viewport_y = (float)viewport_y;
+    pass->viewport_width = (float)viewport_width;
+    pass->viewport_height = (float)viewport_height;
+    pass->scissor_x = (float)viewport_x;
+    pass->scissor_y = (float)viewport_y;
+    pass->scissor_width = (float)viewport_width;
+    pass->scissor_height = (float)viewport_height;
 
     DvzRendering* rendering = dvz_rendering_create_wrapper();
     if (rendering == NULL)
@@ -877,10 +943,10 @@ DvzDrp2ValidationResult _vklite_set_pipeline(
             pass->scissor_width,
             pass->scissor_height,
         };
-        _render_area_from_viewport(
+        _render_area_from_framebuffer_rect(
             pass->width, pass->height, viewport, &viewport_x, &viewport_y, &viewport_width,
             &viewport_height);
-        _render_area_from_viewport(
+        _render_area_from_framebuffer_rect(
             pass->width, pass->height, scissor, &scissor_x, &scissor_y, &scissor_width,
             &scissor_height);
         dvz_graphics_viewport(
@@ -988,7 +1054,7 @@ DvzDrp2ValidationResult _vklite_set_viewport(
     pass->viewport_height = command->u.set_viewport.viewport[3];
 
     uint32_t x = 0, y = 0, width = pass->width, height = pass->height;
-    _render_area_from_viewport(
+    _render_area_from_framebuffer_rect(
         pass->width, pass->height, command->u.set_viewport.viewport, &x, &y, &width, &height);
     VkViewport viewport = {
         .x = (float)x,
@@ -1027,7 +1093,7 @@ DvzDrp2ValidationResult _vklite_set_scissor(
     pass->scissor_height = command->u.set_scissor.scissor[3];
 
     uint32_t x = 0, y = 0, width = pass->width, height = pass->height;
-    _render_area_from_viewport(
+    _render_area_from_framebuffer_rect(
         pass->width, pass->height, command->u.set_scissor.scissor, &x, &y, &width, &height);
     VkRect2D scissor = {
         .offset = {.x = (int32_t)x, .y = (int32_t)y},

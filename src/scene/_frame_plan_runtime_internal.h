@@ -223,8 +223,9 @@ bool _emitter_prepare_render_multi(
     bool pass_alpha_to_coverage, DvzDiagnosticReport* report, SceneRenderDraw* draws,
     uint32_t* draw_count_out);
 bool _emitter_emit_render_multi_draws(
-    DvzDrp2CommandStream* stream, const DvzFramePlanNode* render, uint64_t render_pass_id,
-    const SceneRenderDraw* draws, uint32_t draw_count, SceneRenderStateCache* cache);
+    DvzDrp2CommandStream* stream, const DvzFramePlanNode* render,
+    const DvzFramePlanEmitConfig* cfg, uint64_t render_pass_id, const SceneRenderDraw* draws,
+    uint32_t draw_count, SceneRenderStateCache* cache);
 void _emit_target_extent(const DvzFramePlanEmitConfig* cfg, uint32_t* width, uint32_t* height);
 const DvzFrameGraphResource*
 _graph_resource_by_id(const DvzFramePlan* plan, const char* resource_id);
@@ -338,8 +339,8 @@ const SceneDepthPeelTargets* _depth_peel_targets_for_panel(
 const SceneRenderBatch* _render_batch_for_node(
     const SceneRenderBatch* batches, uint32_t count, const DvzFramePlanNode* render);
 bool _emitter_emit_wboit_resolve(
-    DvzDrp2CommandStream* stream, const DvzFramePlanNode* render, uint64_t render_pass_id,
-    const SceneWboitTargets* targets);
+    DvzDrp2CommandStream* stream, const DvzFramePlanNode* render,
+    const DvzFramePlanEmitConfig* cfg, uint64_t render_pass_id, const SceneWboitTargets* targets);
 bool _emitter_emit_render_multi(
     DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, const DvzFramePlan* plan,
     const DvzFramePlanNode* render, const DvzFramePlanNode* readback, bool clear,

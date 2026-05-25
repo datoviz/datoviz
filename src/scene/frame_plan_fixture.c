@@ -445,6 +445,10 @@ DvzFramePlanEmitConfig dvz_frame_plan_emit_config(void)
     cfg.color_target_id = DRP2_ID_COLOR_TARGET;
     cfg.target_width = 4;
     cfg.target_height = 4;
+    cfg.device_scale_x = 1.0f;
+    cfg.device_scale_y = 1.0f;
+    cfg.render_scale = 1.0f;
+    cfg.user_scale = 1.0f;
     cfg.fullscreen_triangle = false;
     /* Default clear: opaque black. */
     cfg.clear_color[0] = 0.0f;

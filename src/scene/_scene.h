@@ -1364,6 +1364,10 @@ struct DvzFigure
     uint32_t   width;
     uint32_t   height;
     uint32_t   flags;
+    float      device_scale_x;
+    float      device_scale_y;
+    float      render_scale;
+    float      user_scale;
 
     uint32_t   panel_count;
     DvzPanel   panels[DVZ_SCENE_MAX_PANELS];
@@ -1550,6 +1554,8 @@ int _attr_index(const DvzVisual* visual, const char* name);
 const char* _visual_type_name(DvzVisualType type);
 
 bool _figure_visual_index(const DvzFigure* figure, const DvzVisual* visual, uint32_t* out_index);
+
+float _scene_screen_scale(const DvzFigure* figure);
 
 bool _scene_visual_mutation_allowed(const DvzScene* scene, const char* action);
 

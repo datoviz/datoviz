@@ -1000,10 +1000,10 @@ DVZ_EXPORT bool dvz_drp2_stream_begin_render_pass_clear(
  * @param g clear color green channel
  * @param b clear color blue channel
  * @param a clear color alpha channel
- * @param x normalized left coordinate in [0, 1]
- * @param y normalized top coordinate in [0, 1]
- * @param width normalized width in [0, 1]
- * @param height normalized height in [0, 1]
+ * @param x left coordinate in framebuffer pixels
+ * @param y top coordinate in framebuffer pixels
+ * @param width width in framebuffer pixels
+ * @param height height in framebuffer pixels
  * @param clear whether to clear the target at render-pass begin
  * @return whether the command was appended
  */
@@ -1138,10 +1138,10 @@ DVZ_EXPORT bool dvz_drp2_stream_begin_compute_pass(
  *
  * @param stream the command stream
  * @param pass_id the render pass id
- * @param x normalized left coordinate in [0, 1]
- * @param y normalized top coordinate in [0, 1]
- * @param width normalized width in [0, 1]
- * @param height normalized height in [0, 1]
+ * @param x left coordinate in framebuffer pixels
+ * @param y top coordinate in framebuffer pixels
+ * @param width width in framebuffer pixels
+ * @param height height in framebuffer pixels
  * @return whether the command was appended
  */
 DVZ_EXPORT bool dvz_drp2_stream_set_viewport(
@@ -1154,10 +1154,10 @@ DVZ_EXPORT bool dvz_drp2_stream_set_viewport(
  *
  * @param stream the command stream
  * @param pass_id the render pass id
- * @param x normalized left coordinate in [0, 1]
- * @param y normalized top coordinate in [0, 1]
- * @param width normalized width in [0, 1]
- * @param height normalized height in [0, 1]
+ * @param x left coordinate in framebuffer pixels
+ * @param y top coordinate in framebuffer pixels
+ * @param width width in framebuffer pixels
+ * @param height height in framebuffer pixels
  * @return whether the command was appended
  */
 DVZ_EXPORT bool dvz_drp2_stream_set_scissor(

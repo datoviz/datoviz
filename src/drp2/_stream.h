@@ -219,12 +219,12 @@ struct DvzDrp2Command
         struct
         {
             uint64_t pass_id;
-            float viewport[4]; /* normalized x, y, width, height in [0,1] target space */
+            float viewport[4]; /* x, y, width, height in framebuffer pixels */
         } set_viewport;
         struct
         {
             uint64_t pass_id;
-            float scissor[4]; /* normalized x, y, width, height in [0,1] target space */
+            float scissor[4]; /* x, y, width, height in framebuffer pixels */
         } set_scissor;
         struct
         {

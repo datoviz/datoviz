@@ -1121,10 +1121,34 @@ bool _emitter_prepare_render_multi(
 
 
 /**
+ * Convert one normalized render descriptor to framebuffer coordinates.
+ *
+ * @param desc normalized render descriptor
+ * @param cfg emission configuration carrying target extent
+ * @return framebuffer-coordinate rectangle
+ */
+static DvzPanelDesc _render_desc_framebuffer_rect(
+    const DvzPanelDesc* desc, const DvzFramePlanEmitConfig* cfg)
+{
+    ANN(desc);
+    float width = cfg != NULL && cfg->target_width > 0 ? (float)cfg->target_width : 1.0f;
+    float height = cfg != NULL && cfg->target_height > 0 ? (float)cfg->target_height : 1.0f;
+    return (DvzPanelDesc){
+        .x = desc->x * width,
+        .y = desc->y * height,
+        .width = desc->width * width,
+        .height = desc->height * height,
+    };
+}
+
+
+
+/**
  * Emit one panel's already-prepared draws inside an open render pass.
  *
  * @param stream destination DRP2 command stream.
  * @param render render node whose viewport/scissor and visuals are emitted.
+ * @param cfg emission configuration carrying target extent
  * @param render_pass_id active render-pass id.
  * @param draws prepared draw descriptors.
  * @param draw_count number of prepared draw descriptors.
@@ -1132,21 +1156,23 @@ bool _emitter_prepare_render_multi(
  * @return true when all draw commands were emitted successfully, false otherwise.
  */
 bool _emitter_emit_render_multi_draws(
-    DvzDrp2CommandStream* stream, const DvzFramePlanNode* render, uint64_t render_pass_id,
-    const SceneRenderDraw* draws, uint32_t draw_count, SceneRenderStateCache* cache)
+    DvzDrp2CommandStream* stream, const DvzFramePlanNode* render,
+    const DvzFramePlanEmitConfig* cfg, uint64_t render_pass_id, const SceneRenderDraw* draws,
+    uint32_t draw_count, SceneRenderStateCache* cache)
 {
     ANN(stream);
     ANN(render);
     ANN(draws);
 
+    DvzPanelDesc viewport = _render_desc_framebuffer_rect(&render->u.render.desc, cfg);
     bool ok = dvz_drp2_stream_set_viewport(
-                  stream, render_pass_id, render->u.render.desc.x, render->u.render.desc.y,
-                  render->u.render.desc.width, render->u.render.desc.height) &&
+                  stream, render_pass_id, viewport.x, viewport.y, viewport.width,
+                  viewport.height) &&
               dvz_drp2_stream_set_scissor(
-                  stream, render_pass_id, render->u.render.desc.x, render->u.render.desc.y,
-                  render->u.render.desc.width, render->u.render.desc.height);
+                  stream, render_pass_id, viewport.x, viewport.y, viewport.width,
+                  viewport.height);
 
-    DvzPanelDesc active_scissor = render->u.render.desc;
+    DvzPanelDesc active_scissor = viewport;
     uint64_t last_pipeline = (cache != NULL) ? cache->pipeline_id : 0;
     uint64_t last_bg_set0 = (cache != NULL) ? cache->bg_set0 : 0;
     uint64_t last_bg_set1 = 0;
@@ -1154,9 +1180,9 @@ bool _emitter_emit_render_multi_draws(
     uint64_t last_bg_set3 = 0;
     for (uint32_t d = 0; ok && d < draw_count; d++)
     {
-        DvzPanelDesc draw_scissor = render->u.render.desc;
+        DvzPanelDesc draw_scissor = viewport;
         if (draws[d].clip_rect == DVZ_FRAME_PLAN_CLIP_RECT_PLOT && render->u.render.has_plot_desc)
-            draw_scissor = render->u.render.plot_desc;
+            draw_scissor = _render_desc_framebuffer_rect(&render->u.render.plot_desc, cfg);
         if (draw_scissor.x != active_scissor.x || draw_scissor.y != active_scissor.y ||
             draw_scissor.width != active_scissor.width ||
             draw_scissor.height != active_scissor.height)
@@ -1399,24 +1425,24 @@ const SceneRenderBatch* _render_batch_for_node(
  *
  * @param stream destination DRP2 command stream.
  * @param render resolve render node.
+ * @param cfg emission configuration carrying target extent
  * @param render_pass_id active render-pass id.
  * @param targets WBOIT target ids.
  * @return whether all commands were emitted.
  */
 bool _emitter_emit_wboit_resolve(
-    DvzDrp2CommandStream* stream, const DvzFramePlanNode* render, uint64_t render_pass_id,
-    const SceneWboitTargets* targets)
+    DvzDrp2CommandStream* stream, const DvzFramePlanNode* render,
+    const DvzFramePlanEmitConfig* cfg, uint64_t render_pass_id, const SceneWboitTargets* targets)
 {
     ANN(stream);
     ANN(render);
     ANN(targets);
 
+    DvzPanelDesc viewport = _render_desc_framebuffer_rect(&render->u.render.desc, cfg);
     return dvz_drp2_stream_set_viewport(
-               stream, render_pass_id, render->u.render.desc.x, render->u.render.desc.y,
-               render->u.render.desc.width, render->u.render.desc.height) &&
+               stream, render_pass_id, viewport.x, viewport.y, viewport.width, viewport.height) &&
            dvz_drp2_stream_set_scissor(
-               stream, render_pass_id, render->u.render.desc.x, render->u.render.desc.y,
-               render->u.render.desc.width, render->u.render.desc.height) &&
+               stream, render_pass_id, viewport.x, viewport.y, viewport.width, viewport.height) &&
            dvz_drp2_stream_set_pipeline(stream, render_pass_id, targets->resolve_pipeline_id) &&
            dvz_drp2_stream_set_bind_group(stream, render_pass_id, 0, targets->resolve_bg_id) &&
            dvz_drp2_stream_draw(stream, render_pass_id, 3, 1, 0, 0);
@@ -1498,7 +1524,7 @@ bool _emitter_emit_render_multi(
     }
     ok = ok &&
          _emitter_emit_render_multi_draws(
-             stream, render, render_pass_id, draws, draw_count, cache) &&
+             stream, render, cfg, render_pass_id, draws, draw_count, cache) &&
          dvz_drp2_stream_end_render_pass(stream, render_pass_id);
     ok =
         ok && _render_pass_copy_finish_submit(
@@ -1585,8 +1611,8 @@ bool _emitter_emit_scene_figure_renders(
     for (uint32_t i = 0; ok && i < batch_count; i++)
     {
         ok = _emitter_emit_render_multi_draws(
-            stream, batches[i].render, render_pass_id, batches[i].draws, batches[i].draw_count,
-            &scene_cache);
+            stream, batches[i].render, cfg, render_pass_id, batches[i].draws,
+            batches[i].draw_count, &scene_cache);
     }
 
     ok = ok && dvz_drp2_stream_end_render_pass(stream, render_pass_id);
@@ -1940,7 +1966,7 @@ bool _emitter_emit_scene_graph_renders(
                 scene_cache.pipeline_id = 0;
                 scene_cache.bg_set0 = 0;
                 ok = _emitter_emit_render_multi_draws(
-                    stream, render, pass_id, batch->draws, batch->draw_count, &scene_cache);
+                    stream, render, cfg, pass_id, batch->draws, batch->draw_count, &scene_cache);
             }
             ok = ok && dvz_drp2_stream_end_render_pass(stream, pass_id);
             scene_cache.pipeline_id = 0;
@@ -1993,7 +2019,7 @@ bool _emitter_emit_scene_graph_renders(
                 scene_cache.pipeline_id = 0;
                 scene_cache.bg_set0 = 0;
                 ok = _emitter_emit_render_multi_draws(
-                    stream, render, pass_id, batch->draws, batch->draw_count, &scene_cache);
+                    stream, render, cfg, pass_id, batch->draws, batch->draw_count, &scene_cache);
             }
             ok = ok && dvz_drp2_stream_end_render_pass(stream, pass_id);
             scene_cache.pipeline_id = 0;
@@ -2060,7 +2086,7 @@ bool _emitter_emit_scene_graph_renders(
                 scene_cache.pipeline_id = 0;
                 scene_cache.bg_set0 = 0;
                 ok = _emitter_emit_render_multi_draws(
-                    stream, render, pass_id, batch->draws, batch->draw_count, &scene_cache);
+                    stream, render, cfg, pass_id, batch->draws, batch->draw_count, &scene_cache);
             }
             ok = ok && dvz_drp2_stream_end_render_pass(stream, pass_id);
             scene_cache.pipeline_id = 0;
@@ -2101,7 +2127,7 @@ bool _emitter_emit_scene_graph_renders(
                 scene_cache.pipeline_id = 0;
                 scene_cache.bg_set0 = 0;
                 ok = _emitter_emit_render_multi_draws(
-                    stream, render, pass_id, batch->draws, batch->draw_count, &scene_cache);
+                    stream, render, cfg, pass_id, batch->draws, batch->draw_count, &scene_cache);
             }
             ok = ok && dvz_drp2_stream_end_render_pass(stream, pass_id);
         }
@@ -2145,7 +2171,7 @@ bool _emitter_emit_scene_graph_renders(
                 scene_cache.pipeline_id = 0;
                 scene_cache.bg_set0 = 0;
                 ok = _emitter_emit_render_multi_draws(
-                    stream, render, pass_id, batch->draws, batch->draw_count, &scene_cache);
+                    stream, render, cfg, pass_id, batch->draws, batch->draw_count, &scene_cache);
             }
             ok = ok && dvz_drp2_stream_end_render_pass(stream, pass_id);
             clear_final = false;
@@ -2191,7 +2217,7 @@ bool _emitter_emit_scene_graph_renders(
                 scene_cache.pipeline_id = 0;
                 scene_cache.bg_set0 = 0;
                 ok = _emitter_emit_render_multi_draws(
-                    stream, render, pass_id, batch->draws, batch->draw_count, &scene_cache);
+                    stream, render, cfg, pass_id, batch->draws, batch->draw_count, &scene_cache);
             }
             ok = ok && dvz_drp2_stream_end_render_pass(stream, pass_id);
         }
@@ -2212,17 +2238,16 @@ bool _emitter_emit_scene_graph_renders(
                                                       : _graph_pass_for_render(plan, render);
             uint64_t target_id = _graph_color_attachment_texture_id(
                 graph_pass, 0, color_id, &targets->graph, color_id);
+            DvzPanelDesc viewport = _render_desc_framebuffer_rect(&render->u.render.desc, cfg);
             ok = dvz_drp2_stream_begin_render_pass_region_clear(
                      stream, pass_id, encoder_id, target_id, 0.0f, 0.0f, 0.0f, 0.0f,
                      render->u.render.desc.x, render->u.render.desc.y, render->u.render.desc.width,
                      render->u.render.desc.height, false) &&
                  _stream_apply_graph_color_ops(stream, graph_pass, color_id, &targets->graph) &&
                  dvz_drp2_stream_set_viewport(
-                     stream, pass_id, render->u.render.desc.x, render->u.render.desc.y,
-                     render->u.render.desc.width, render->u.render.desc.height) &&
+                     stream, pass_id, viewport.x, viewport.y, viewport.width, viewport.height) &&
                  dvz_drp2_stream_set_scissor(
-                     stream, pass_id, render->u.render.desc.x, render->u.render.desc.y,
-                     render->u.render.desc.width, render->u.render.desc.height) &&
+                     stream, pass_id, viewport.x, viewport.y, viewport.width, viewport.height) &&
                  dvz_drp2_stream_set_pipeline(stream, pass_id, targets->composite_pipeline_id) &&
                  dvz_drp2_stream_set_bind_group(stream, pass_id, 0, targets->composite_bg_id) &&
                  dvz_drp2_stream_draw(stream, pass_id, 3, 1, 0, 0) &&
@@ -2245,17 +2270,16 @@ bool _emitter_emit_scene_graph_renders(
                                                       : _graph_pass_for_render(plan, render);
             uint64_t target_id = _graph_color_attachment_texture_id(
                 graph_pass, 0, color_id, &targets->graph, targets->occlusion_id);
+            DvzPanelDesc viewport = _render_desc_framebuffer_rect(&render->u.render.desc, cfg);
             ok = dvz_drp2_stream_begin_render_pass_region_clear(
                      stream, pass_id, encoder_id, target_id, 1.0f, 1.0f, 1.0f, 1.0f,
                      render->u.render.desc.x, render->u.render.desc.y, render->u.render.desc.width,
                      render->u.render.desc.height, true) &&
                  _stream_apply_graph_color_ops(stream, graph_pass, color_id, &targets->graph) &&
                  dvz_drp2_stream_set_viewport(
-                     stream, pass_id, render->u.render.desc.x, render->u.render.desc.y,
-                     render->u.render.desc.width, render->u.render.desc.height) &&
+                     stream, pass_id, viewport.x, viewport.y, viewport.width, viewport.height) &&
                  dvz_drp2_stream_set_scissor(
-                     stream, pass_id, render->u.render.desc.x, render->u.render.desc.y,
-                     render->u.render.desc.width, render->u.render.desc.height) &&
+                     stream, pass_id, viewport.x, viewport.y, viewport.width, viewport.height) &&
                  dvz_drp2_stream_set_pipeline(stream, pass_id, targets->ssao_pipeline_id) &&
                  dvz_drp2_stream_set_bind_group(stream, pass_id, 0, targets->ssao_bg_id) &&
                  dvz_drp2_stream_draw(stream, pass_id, 3, 1, 0, 0) &&
@@ -2277,17 +2301,16 @@ bool _emitter_emit_scene_graph_renders(
                                                       : _graph_pass_for_render(plan, render);
             uint64_t target_id = _graph_color_attachment_texture_id(
                 graph_pass, 0, color_id, &targets->graph, targets->blur_id);
+            DvzPanelDesc viewport = _render_desc_framebuffer_rect(&render->u.render.desc, cfg);
             ok = dvz_drp2_stream_begin_render_pass_region_clear(
                      stream, pass_id, encoder_id, target_id, 1.0f, 1.0f, 1.0f, 1.0f,
                      render->u.render.desc.x, render->u.render.desc.y, render->u.render.desc.width,
                      render->u.render.desc.height, true) &&
                  _stream_apply_graph_color_ops(stream, graph_pass, color_id, &targets->graph) &&
                  dvz_drp2_stream_set_viewport(
-                     stream, pass_id, render->u.render.desc.x, render->u.render.desc.y,
-                     render->u.render.desc.width, render->u.render.desc.height) &&
+                     stream, pass_id, viewport.x, viewport.y, viewport.width, viewport.height) &&
                  dvz_drp2_stream_set_scissor(
-                     stream, pass_id, render->u.render.desc.x, render->u.render.desc.y,
-                     render->u.render.desc.width, render->u.render.desc.height) &&
+                     stream, pass_id, viewport.x, viewport.y, viewport.width, viewport.height) &&
                  dvz_drp2_stream_set_pipeline(stream, pass_id, targets->blur_pipeline_id) &&
                  dvz_drp2_stream_set_bind_group(stream, pass_id, 0, targets->blur_bg_id) &&
                  dvz_drp2_stream_draw(stream, pass_id, 3, 1, 0, 0) &&
@@ -2309,17 +2332,16 @@ bool _emitter_emit_scene_graph_renders(
                                                       : _graph_pass_for_render(plan, render);
             uint64_t target_id = _graph_color_attachment_texture_id(
                 graph_pass, 0, color_id, &targets->graph, color_id);
+            DvzPanelDesc viewport = _render_desc_framebuffer_rect(&render->u.render.desc, cfg);
             ok = dvz_drp2_stream_begin_render_pass_region_clear(
                      stream, pass_id, encoder_id, target_id, 0.0f, 0.0f, 0.0f, 0.0f,
                      render->u.render.desc.x, render->u.render.desc.y, render->u.render.desc.width,
                      render->u.render.desc.height, false) &&
                  _stream_apply_graph_color_ops(stream, graph_pass, color_id, &targets->graph) &&
                  dvz_drp2_stream_set_viewport(
-                     stream, pass_id, render->u.render.desc.x, render->u.render.desc.y,
-                     render->u.render.desc.width, render->u.render.desc.height) &&
+                     stream, pass_id, viewport.x, viewport.y, viewport.width, viewport.height) &&
                  dvz_drp2_stream_set_scissor(
-                     stream, pass_id, render->u.render.desc.x, render->u.render.desc.y,
-                     render->u.render.desc.width, render->u.render.desc.height) &&
+                     stream, pass_id, viewport.x, viewport.y, viewport.width, viewport.height) &&
                  dvz_drp2_stream_set_pipeline(stream, pass_id, targets->composite_pipeline_id) &&
                  dvz_drp2_stream_set_bind_group(stream, pass_id, 0, targets->composite_bg_id) &&
                  dvz_drp2_stream_draw(stream, pass_id, 3, 1, 0, 0) &&
@@ -2342,17 +2364,16 @@ bool _emitter_emit_scene_graph_renders(
                                                       : _graph_pass_for_render(plan, render);
             uint64_t target_id = _graph_color_attachment_texture_id(
                 graph_pass, 0, color_id, &targets->graph, color_id);
+            DvzPanelDesc viewport = _render_desc_framebuffer_rect(&render->u.render.desc, cfg);
             ok = dvz_drp2_stream_begin_render_pass_region_clear(
                      stream, pass_id, encoder_id, target_id, cr, cg, cb, ca,
                      render->u.render.desc.x, render->u.render.desc.y, render->u.render.desc.width,
                      render->u.render.desc.height, true) &&
                  _stream_apply_graph_color_ops(stream, graph_pass, color_id, &targets->graph) &&
                  dvz_drp2_stream_set_viewport(
-                     stream, pass_id, render->u.render.desc.x, render->u.render.desc.y,
-                     render->u.render.desc.width, render->u.render.desc.height) &&
+                     stream, pass_id, viewport.x, viewport.y, viewport.width, viewport.height) &&
                  dvz_drp2_stream_set_scissor(
-                     stream, pass_id, render->u.render.desc.x, render->u.render.desc.y,
-                     render->u.render.desc.width, render->u.render.desc.height) &&
+                     stream, pass_id, viewport.x, viewport.y, viewport.width, viewport.height) &&
                  dvz_drp2_stream_set_pipeline(stream, pass_id, targets->resolve_pipeline_id) &&
                  dvz_drp2_stream_set_bind_group(stream, pass_id, 0, targets->resolve_bg_id) &&
                  dvz_drp2_stream_draw(stream, pass_id, 3, 1, 0, 0) &&
@@ -2380,7 +2401,7 @@ bool _emitter_emit_scene_graph_renders(
                      render->u.render.desc.x, render->u.render.desc.y, render->u.render.desc.width,
                      render->u.render.desc.height, false) &&
                  _stream_apply_graph_color_ops(stream, graph_pass, color_id, &targets->graph) &&
-                 _emitter_emit_wboit_resolve(stream, render, pass_id, targets) &&
+                 _emitter_emit_wboit_resolve(stream, render, cfg, pass_id, targets) &&
                  dvz_drp2_stream_end_render_pass(stream, pass_id);
         }
     }

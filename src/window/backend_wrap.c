@@ -207,8 +207,21 @@ _wrap_apply_surface_update(DvzWindow* window, const DvzWindowExternalSurfaceInfo
     surface->scale_y = info->scale_y;
     window->backend_owns_surface = info->owned_by_datoviz;
 
+    float scale_x = info->scale_x > 0.0f ? info->scale_x : 1.0f;
+    float scale_y = info->scale_y > 0.0f ? info->scale_y : 1.0f;
+    uint32_t logical_width = info->extent.width;
+    uint32_t logical_height = info->extent.height;
+    if (scale_x > 0.0f)
+        logical_width = (uint32_t)((float)info->extent.width / scale_x + 0.5f);
+    if (scale_y > 0.0f)
+        logical_height = (uint32_t)((float)info->extent.height / scale_y + 0.5f);
+    if (logical_width == 0)
+        logical_width = info->extent.width;
+    if (logical_height == 0)
+        logical_height = info->extent.height;
+
     dvz_window_backend_emit_resize(
-        window, info->extent.width, info->extent.height, info->extent.width, info->extent.height,
+        window, info->extent.width, info->extent.height, logical_width, logical_height,
         info->scale_x, info->scale_y);
     return 0;
 }

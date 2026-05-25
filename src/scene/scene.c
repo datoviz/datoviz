@@ -78,6 +78,10 @@ static bool _panel_padding_valid(const DvzPanel* panel, const DvzPanelReserve* p
 static bool _panel_reserve_valid_for_padding(
     const DvzPanel* panel, const DvzPanelReserve* reserve, const DvzPanelReserve* padding);
 
+static float _scene_scale_or_one(float scale);
+
+static void _scene_figure_mark_screen_space_dirty(DvzFigure* figure);
+
 
 /**
  * Return whether a panel pixel reservation is finite and leaves non-empty plot space.
@@ -91,6 +95,91 @@ static bool _panel_reserve_valid(const DvzPanel* panel, const DvzPanelReserve* r
     ANN(panel);
     ANN(reserve);
     return _panel_reserve_valid_for_padding(panel, reserve, &panel->padding);
+}
+
+
+
+/**
+ * Return a positive finite scale, falling back to one.
+ *
+ * @param scale input scale
+ * @return valid scale
+ */
+static float _scene_scale_or_one(float scale)
+{
+    return isfinite(scale) && scale > 0.0f ? scale : 1.0f;
+}
+
+
+
+/**
+ * Resolve the scalar screen-space style scale for a figure.
+ *
+ * @param figure parent figure
+ * @return device scale multiplied by user scale
+ */
+float _scene_screen_scale(const DvzFigure* figure)
+{
+    if (figure == NULL)
+        return 1.0f;
+    float sx = _scene_scale_or_one(figure->device_scale_x);
+    float sy = _scene_scale_or_one(figure->device_scale_y);
+    float user = _scene_scale_or_one(figure->user_scale);
+    return 0.5f * (sx + sy) * user;
+}
+
+
+
+/**
+ * Return whether one attribute stores screen-space style pixels.
+ *
+ * @param attr_name attribute name
+ * @return whether the attribute should be regenerated after screen scale changes
+ */
+static bool _scene_attr_is_screen_space(const char* attr_name)
+{
+    return attr_name != NULL &&
+           (strcmp(attr_name, "size") == 0 || strcmp(attr_name, "line_width") == 0);
+}
+
+
+
+/**
+ * Mark screen-space visual resources dirty after a DPI or user-scale change.
+ *
+ * @param figure the figure whose visible visuals should be marked
+ */
+static void _scene_figure_mark_screen_space_dirty(DvzFigure* figure)
+{
+    ANN(figure);
+    for (uint32_t pi = 0; pi < figure->panel_count; pi++)
+    {
+        DvzPanel* panel = &figure->panels[pi];
+        for (uint32_t vi = 0; vi < panel->visual_count; vi++)
+        {
+            DvzVisual* visual = panel->visuals[vi].visual;
+            if (visual == NULL)
+                continue;
+            for (uint32_t ai = 0; ai < visual->attr_count; ai++)
+            {
+                DvzVisualAttr* attr = &visual->attrs[ai];
+                if (!_scene_attr_is_screen_space(attr->name) || attr->item_count == 0)
+                    continue;
+                attr->dirty_first_item = 0;
+                attr->dirty_item_count = attr->item_count;
+            }
+            if (visual->type == DVZ_VISUAL_TYPE_POINT ||
+                visual->type == DVZ_VISUAL_TYPE_MARKER ||
+                visual->type == DVZ_VISUAL_TYPE_PATH)
+            {
+                visual->material_params_dirty = true;
+            }
+            if (visual->type == DVZ_VISUAL_TYPE_SEGMENT)
+                visual->segment.gpu.dirty = true;
+            if (visual->type == DVZ_VISUAL_TYPE_PATH)
+                visual->path.gpu.dirty = true;
+        }
+    }
 }
 
 
@@ -2655,6 +2744,10 @@ DvzFigure* dvz_figure(DvzScene* scene, uint32_t width, uint32_t height, uint32_t
     fig->width  = width;
     fig->height = height;
     fig->flags  = flags;
+    fig->device_scale_x = 1.0f;
+    fig->device_scale_y = 1.0f;
+    fig->render_scale = 1.0f;
+    fig->user_scale = 1.0f;
     return fig;
 }
 
@@ -3574,6 +3667,20 @@ DvzDrp2CommandStream* dvz_figure_emit_ex(
     DvzDiagnosticReport local_report;
     DvzFramePlanEmitConfig default_cfg;
     _scene_emit_defaults(&caps, &default_caps, &report, &local_report, &cfg, &default_cfg);
+    float next_device_scale_x = _scene_scale_or_one(cfg->device_scale_x);
+    float next_device_scale_y = _scene_scale_or_one(cfg->device_scale_y);
+    float next_render_scale = _scene_scale_or_one(cfg->render_scale);
+    float next_user_scale = _scene_scale_or_one(cfg->user_scale);
+    bool screen_scale_changed =
+        fabsf(figure->device_scale_x - next_device_scale_x) > 1e-6f ||
+        fabsf(figure->device_scale_y - next_device_scale_y) > 1e-6f ||
+        fabsf(figure->user_scale - next_user_scale) > 1e-6f;
+    figure->device_scale_x = next_device_scale_x;
+    figure->device_scale_y = next_device_scale_y;
+    figure->render_scale = next_render_scale;
+    figure->user_scale = next_user_scale;
+    if (screen_scale_changed)
+        _scene_figure_mark_screen_space_dirty(figure);
 
     if (!_scene_figure_resolve_layouts(figure))
     {

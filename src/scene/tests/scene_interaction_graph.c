@@ -169,6 +169,8 @@ int test_scene_grid_panel_recomputes_before_emit(TstContext* suite, const TstCas
 
     DvzFramePlanEmitConfig cfg = dvz_frame_plan_emit_config();
     cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
+    cfg.target_width = 200;
+    cfg.target_height = 100;
 
     DvzDiagnosticReport report;
     dvz_diagnostic_report_init(&report);
@@ -185,12 +187,12 @@ int test_scene_grid_panel_recomputes_before_emit(TstContext* suite, const TstCas
         if (viewport_count == 0)
         {
             AC(cmd->u.set_viewport.viewport[0], 0.0f, 1e-6f);
-            AC(cmd->u.set_viewport.viewport[2], 0.3f, 1e-6f);
+            AC(cmd->u.set_viewport.viewport[2], 60.0f, 1e-5f);
         }
         else if (viewport_count == 1)
         {
-            AC(cmd->u.set_viewport.viewport[0], 0.3f, 1e-6f);
-            AC(cmd->u.set_viewport.viewport[2], 0.7f, 1e-6f);
+            AC(cmd->u.set_viewport.viewport[0], 60.0f, 1e-5f);
+            AC(cmd->u.set_viewport.viewport[2], 140.0f, 1e-5f);
         }
         viewport_count++;
     }
@@ -513,6 +515,8 @@ int test_scene_panel_plot_clip_rect_metadata(TstContext* suite, const TstCase* i
 
     DvzFramePlanEmitConfig cfg = dvz_frame_plan_emit_config();
     cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
+    cfg.target_width = 128;
+    cfg.target_height = 96;
 
     DvzDiagnosticReport report;
     dvz_diagnostic_report_init(&report);
@@ -528,10 +532,10 @@ int test_scene_panel_plot_clip_rect_metadata(TstContext* suite, const TstCase* i
         if (cmd->type != DVZ_DRP2_COMMAND_SET_SCISSOR)
             continue;
         scissor_count++;
-        if (fabsf(cmd->u.set_scissor.scissor[0] - plot_desc.x) < 1e-6f &&
-            fabsf(cmd->u.set_scissor.scissor[1] - plot_desc.y) < 1e-6f &&
-            fabsf(cmd->u.set_scissor.scissor[2] - plot_desc.width) < 1e-6f &&
-            fabsf(cmd->u.set_scissor.scissor[3] - plot_desc.height) < 1e-6f)
+        if (fabsf(cmd->u.set_scissor.scissor[0] - plot_rect.x) < 1e-6f &&
+            fabsf(cmd->u.set_scissor.scissor[1] - plot_rect.y) < 1e-6f &&
+            fabsf(cmd->u.set_scissor.scissor[2] - plot_rect.width) < 1e-6f &&
+            fabsf(cmd->u.set_scissor.scissor[3] - plot_rect.height) < 1e-6f)
             saw_plot_scissor = true;
     }
     AT(scissor_count >= 2);
@@ -789,6 +793,8 @@ int test_scene_multi_panel_glsl_emits_viewport_scissor_commands(
 
     DvzFramePlanEmitConfig cfg = dvz_frame_plan_emit_config();
     cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
+    cfg.target_width = 128;
+    cfg.target_height = 64;
 
     DvzDiagnosticReport report;
     dvz_diagnostic_report_init(&report);
@@ -815,15 +821,15 @@ int test_scene_multi_panel_glsl_emits_viewport_scissor_commands(
             {
                 AC(cmd->u.set_viewport.viewport[0], 0.0f, 1e-6f);
                 AC(cmd->u.set_viewport.viewport[1], 0.0f, 1e-6f);
-                AC(cmd->u.set_viewport.viewport[2], 0.5f, 1e-6f);
-                AC(cmd->u.set_viewport.viewport[3], 1.0f, 1e-6f);
+                AC(cmd->u.set_viewport.viewport[2], 64.0f, 1e-5f);
+                AC(cmd->u.set_viewport.viewport[3], 64.0f, 1e-5f);
             }
             else if (viewport_count == 1)
             {
-                AC(cmd->u.set_viewport.viewport[0], 0.5f, 1e-6f);
+                AC(cmd->u.set_viewport.viewport[0], 64.0f, 1e-5f);
                 AC(cmd->u.set_viewport.viewport[1], 0.0f, 1e-6f);
-                AC(cmd->u.set_viewport.viewport[2], 0.5f, 1e-6f);
-                AC(cmd->u.set_viewport.viewport[3], 1.0f, 1e-6f);
+                AC(cmd->u.set_viewport.viewport[2], 64.0f, 1e-5f);
+                AC(cmd->u.set_viewport.viewport[3], 64.0f, 1e-5f);
             }
             viewport_count++;
         }
@@ -833,15 +839,15 @@ int test_scene_multi_panel_glsl_emits_viewport_scissor_commands(
             {
                 AC(cmd->u.set_scissor.scissor[0], 0.0f, 1e-6f);
                 AC(cmd->u.set_scissor.scissor[1], 0.0f, 1e-6f);
-                AC(cmd->u.set_scissor.scissor[2], 0.5f, 1e-6f);
-                AC(cmd->u.set_scissor.scissor[3], 1.0f, 1e-6f);
+                AC(cmd->u.set_scissor.scissor[2], 64.0f, 1e-5f);
+                AC(cmd->u.set_scissor.scissor[3], 64.0f, 1e-5f);
             }
             else if (scissor_count == 1)
             {
-                AC(cmd->u.set_scissor.scissor[0], 0.5f, 1e-6f);
+                AC(cmd->u.set_scissor.scissor[0], 64.0f, 1e-5f);
                 AC(cmd->u.set_scissor.scissor[1], 0.0f, 1e-6f);
-                AC(cmd->u.set_scissor.scissor[2], 0.5f, 1e-6f);
-                AC(cmd->u.set_scissor.scissor[3], 1.0f, 1e-6f);
+                AC(cmd->u.set_scissor.scissor[2], 64.0f, 1e-5f);
+                AC(cmd->u.set_scissor.scissor[3], 64.0f, 1e-5f);
             }
             scissor_count++;
         }

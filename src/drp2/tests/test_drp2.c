@@ -694,8 +694,8 @@ int test_drp2_runtime_validate_dynamic_viewport_scissor(TstContext* suite, const
 
     AT(dvz_drp2_stream_begin_command_encoder(stream, 20));
     AT(dvz_drp2_stream_begin_render_pass(stream, 21, 20, 5));
-    AT(dvz_drp2_stream_set_viewport(stream, 21, 0.25f, 0.0f, 0.5f, 1.0f));
-    AT(dvz_drp2_stream_set_scissor(stream, 21, 0.25f, 0.0f, 0.5f, 1.0f));
+    AT(dvz_drp2_stream_set_viewport(stream, 21, 25.0f, 0.0f, 50.0f, 100.0f));
+    AT(dvz_drp2_stream_set_scissor(stream, 21, 25.0f, 0.0f, 50.0f, 100.0f));
     AT(dvz_drp2_stream_set_pipeline(stream, 21, 4));
     AT(dvz_drp2_stream_set_vertex_buffer(stream, 21, 0, 1, 0));
     AT(dvz_drp2_stream_draw(stream, 21, 3, 1, 0, 0));
@@ -6282,8 +6282,8 @@ int test_drp2_recording_render_jsonl_no_raw_fallback(TstContext* suite, const Ts
     AT(dvz_drp2_stream_create_render_pipeline(stream, 4, 2, 3, 0));
     AT(dvz_drp2_stream_begin_command_encoder(stream, 5));
     AT(dvz_drp2_stream_begin_render_pass_clear(stream, 6, 5, 1, 0.25f, 0.5f, 0.75f, 1.0f));
-    AT(dvz_drp2_stream_set_viewport(stream, 6, 0.0f, 0.0f, 0.5f, 0.5f));
-    AT(dvz_drp2_stream_set_scissor(stream, 6, 0.0f, 0.0f, 0.5f, 0.5f));
+    AT(dvz_drp2_stream_set_viewport(stream, 6, 0.0f, 0.0f, 4.0f, 4.0f));
+    AT(dvz_drp2_stream_set_scissor(stream, 6, 0.0f, 0.0f, 4.0f, 4.0f));
     AT(dvz_drp2_stream_set_pipeline(stream, 6, 4));
     AT(dvz_drp2_stream_draw(stream, 6, 3, 1, 0, 0));
     AT(dvz_drp2_stream_end_render_pass(stream, 6));
