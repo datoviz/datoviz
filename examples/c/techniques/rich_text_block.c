@@ -121,6 +121,31 @@ static bool _add_screen_text(
 }
 
 
+
+/**
+ * Return the panel's logical pixel extent inside its figure.
+ *
+ * @param panel the panel
+ * @param out_width output width in logical pixels
+ * @param out_height output height in logical pixels
+ * @return true when the extent is usable
+ */
+static bool _panel_logical_size(DvzPanel* panel, float* out_width, float* out_height)
+{
+    if (
+        panel == NULL || panel->figure == NULL || out_width == NULL || out_height == NULL ||
+        panel->desc.width <= 0.0f || panel->desc.height <= 0.0f)
+    {
+        return false;
+    }
+
+    *out_width = (float)panel->figure->width * panel->desc.width;
+    *out_height = (float)panel->figure->height * panel->desc.height;
+    return *out_width > 0.0f && *out_height > 0.0f;
+}
+
+
+
 /**
  * Build and attach the private rich text block as a normal image visual.
  *
@@ -170,15 +195,33 @@ static bool _add_rich_text_block(DvzTextBlock* block, DvzPanel* panel)
     if (rc != 0)
         return false;
 
-    float aspect = (float)block->raster_height / (float)block->raster_width;
+    float panel_width = 0.0f;
+    float panel_height = 0.0f;
+    if (!_panel_logical_size(panel, &panel_width, &panel_height))
+        return false;
+
+    float scale = block->raster_scale > 0.0f ? block->raster_scale : 1.0f;
+    float block_width = (float)block->raster_width / scale;
+    float block_height = (float)block->raster_height / scale;
+    float block_x = 54.0f;
+    float block_y = 154.0f;
+    vec3 position = {
+        -1.0f + 2.0f * block_x / panel_width,
+        +1.0f - 2.0f * block_y / panel_height,
+        0.0f,
+    };
+    vec2 extent = {
+        2.0f * block_width / panel_width,
+        2.0f * block_height / panel_height,
+    };
     rc = _scene_text_block_realize_image(
         block, panel,
         &(DvzTextBlockImageDesc){
-            .position = {-0.76f, 0.34f, 0.0f},
-            .extent = {1.32f, 1.32f * aspect},
+            .position = {position[0], position[1], position[2]},
+            .extent = {extent[0], extent[1]},
             .anchor = {-1.0f, +1.0f},
             .z_layer = 2,
-            .controller_mode = DVZ_CONTROLLER_APPLY,
+            .controller_mode = DVZ_CONTROLLER_FIXED,
         });
     return rc == 0;
 }

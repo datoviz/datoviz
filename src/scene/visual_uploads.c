@@ -962,8 +962,9 @@ static bool _image_cache_rebuild(DvzVisual* visual)
         const float quad_pos[6][3] = {
             {x0, y0, z}, {x0, y1, z}, {x1, y0, z}, {x1, y0, z}, {x0, y1, z}, {x1, y1, z},
         };
+        /* Generated image quads use top-origin UV bounds, matching RGBA row upload order. */
         const float quad_uv[6][2] = {
-            {u0, v0}, {u0, v1}, {u1, v0}, {u1, v0}, {u0, v1}, {u1, v1},
+            {u0, v1}, {u0, v0}, {u1, v1}, {u1, v1}, {u0, v0}, {u1, v0},
         };
 
         for (uint32_t j = 0; j < 6; j++)

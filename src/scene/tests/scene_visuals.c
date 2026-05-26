@@ -4219,6 +4219,7 @@ int test_scene_image_multi_item_emit(TstContext* suite, const TstCase* item)
     bool found_draw = false;
     bool found_position_upload = false;
     bool found_uv_upload = false;
+    bool found_uv_values = false;
     for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
     {
         const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream, i);
@@ -4254,13 +4255,28 @@ int test_scene_image_multi_item_emit(TstContext* suite, const TstCase* item)
         if (cmd->u.write_buffer.buffer_id == position_buffer_id)
             found_position_upload = cmd->u.write_buffer.size == 12 * 3 * sizeof(float);
         if (cmd->u.write_buffer.buffer_id == uv_buffer_id)
+        {
             found_uv_upload = cmd->u.write_buffer.size == 12 * 2 * sizeof(float);
+            if (found_uv_upload && cmd->u.write_buffer.data_raw != NULL)
+            {
+                const float* uv = (const float*)cmd->u.write_buffer.data_raw;
+                const float expected_uv[24] = {
+                    0.0f, 1.0f, 0.0f, 0.0f, 0.5f, 1.0f, 0.5f, 1.0f,
+                    0.0f, 0.0f, 0.5f, 0.0f, 0.5f, 1.0f, 0.5f, 0.0f,
+                    1.0f, 1.0f, 1.0f, 1.0f, 0.5f, 0.0f, 1.0f, 0.0f,
+                };
+                found_uv_values = true;
+                for (uint32_t j = 0; j < 24; j++)
+                    found_uv_values = found_uv_values && uv[j] == expected_uv[j];
+            }
+        }
     }
 
     AT(found_pipeline);
     AT(found_draw);
     AT(found_position_upload);
     AT(found_uv_upload);
+    AT(found_uv_values);
 
     dvz_drp2_stream_destroy(stream);
     dvz_scene_destroy(scene);
