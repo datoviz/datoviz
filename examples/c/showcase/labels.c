@@ -533,6 +533,23 @@ static void _select_label(LabelsDemoState* state, DvzCategoryId id)
 
 
 /**
+ * Toggle the selected label ID and refresh GUI-visible state.
+ *
+ * @param state demo state
+ * @param id clicked label ID
+ */
+static void _toggle_label(LabelsDemoState* state, DvzCategoryId id)
+{
+    ANN(state);
+    if (id == 0 || id == state->selected_id)
+        _select_label(state, 0);
+    else
+        _select_label(state, id);
+}
+
+
+
+/**
  * Create and initialize one image visual.
  *
  * @param scene owning scene
@@ -650,7 +667,7 @@ static void _input_event_callback(DvzInputRouter* router, const DvzInputEvent* e
         return;
 
     state->hover_id = _label_at_pointer(state, pointer->pos[0], pointer->pos[1]);
-    _select_label(state, state->hover_id);
+    _toggle_label(state, state->hover_id);
 }
 
 
