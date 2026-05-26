@@ -30,6 +30,8 @@ These commits are the current implemented baseline for this lane:
 13. `84f23ff61 scene: harden rich text block raster backend`
 14. `0c84332d5 scene: add rich text overlay cards`
 15. `ab77a35f6 examples: showcase overlay cards`
+16. `4e7600664 examples: add rich text block lowering demo`
+17. `5a6640b67 scene: rasterize text blocks with freetype`
 
 Current behavior:
 
@@ -39,7 +41,9 @@ Current behavior:
 4. A private `DvzTextBlock` parser/measurement prototype exists for `<b>`, `<i>`, `<u>`,
    `<color=#RRGGBB>`, escaped `<`, `>`, and `&`, with source/text style runs and diagnostics.
 5. Text blocks can rasterize to owned RGBA8 pixels and lower to image-like scene visuals backed by
-   explicit sampled fields, with scale-aware raster output.
+   explicit sampled fields, with scale-aware raster output. When a scene/font is provided and
+   FreeType is available, rich text blocks use FreeType bitmap rasterization; the deterministic
+   pseudo-glyph path remains as a dependency-light fallback.
 6. Offscreen app coverage confirms text-block image lowering renders nonblank pixels.
 7. Retained selections are the second in-tree `DvzSceneCard` consumer and render selected-item
    metadata cards through the same text/adornment path.
@@ -49,9 +53,11 @@ Current behavior:
    and rich text content lowered through the private text-block raster/image backend.
 10. `examples/c/techniques/overlay_card.c` demonstrates polished GPU-text overlay cards, and
     `examples/c/techniques/overlay_rich_card.c` demonstrates rich overlay cards.
+11. `examples/c/techniques/rich_text_block.c` demonstrates the same private rich text-block
+    lowering path without overlay/card APIs.
 
 Remaining follow-up is polish outside this completed lane: DPI cache keys, richer wrapping,
-font-backed rich-text rasterization, and broader annotation rich-text integration.
+HarfBuzz shaping, richer font-style resolution, and broader annotation rich-text integration.
 
 
 ## Owning References
@@ -180,11 +186,11 @@ The public first slice exposes:
 ### 7. Rich Text-Block Prototype
 
 Status: **landed as private prototype** in `c8d85a70d`, `1bdafc8bb`, `343b9bdc7`,
-`acce3878f`, and hardened in `84f23ff61`.
+`acce3878f`, hardened in `84f23ff61`, and upgraded to FreeType rasterization in `5a6640b67`.
 The first slice covers parsing, fixed-advance measurement, deterministic RGBA8 raster output,
 sampled-field image lowering, underline/color runs, scale-aware rasterization, and offscreen
-nonblank rendering. DPI cache keys, richer wrapping, font-backed rasterization, and broader
-annotation integration remain follow-up polish.
+nonblank rendering. DPI cache keys, richer wrapping, HarfBuzz shaping, richer font-style
+resolution, and broader annotation integration remain follow-up polish.
 
 Prototype a private text-block backend only after the glyph-card path is stable:
 
@@ -224,6 +230,34 @@ just test scene/interaction
 ```
 
 
+### 9. FreeType Rich Text-Block Rasterization
+
+Status: **landed** in `4e7600664` and `5a6640b67`.
+
+The private text-block backend now has a readable font-backed path:
+
+1. `DvzTextBlockRasterDesc` can carry a scene or font pointer plus raster scale and font size;
+2. `_scene_text_block_rasterize()` uses FreeType when scene/font context is available;
+3. the existing deterministic pseudo-glyph raster path remains the fallback for no-FreeType or
+   no-scene tests;
+4. rich overlay cards pass their scene into the raster descriptor, so public rich cards use
+   FreeType-backed text in normal builds;
+5. `rich_text_block` demonstrates non-overlay rich text lowering as a regular image visual;
+6. focused tests and offscreen smoke cover parser/layout/raster/lowering behavior.
+
+Validation recorded for this slice:
+
+```text
+git diff --check
+just build
+just test scene/interaction/text_block
+just test scene/interaction/overlay_card_rich_text_public_api
+just test scene/app-offscreen/text_block_raster_has_nonblank_pixels
+./build/examples/c/techniques/rich_text_block 1
+./build/examples/c/techniques/overlay_rich_card 1
+```
+
+
 ## Subagent Use
 
 Good bounded subagent tasks:
@@ -247,4 +281,6 @@ This plan moved to `agents/done/` after:
 4. examples demonstrate pinned readouts, public overlay cards, and rich overlay cards;
 5. the rich text-block backend is prototyped and validated by offscreen nonblank rendering;
 6. public rich overlay cards lower rich text through image-like quads;
-7. the public overlay API is gated by two internal consumers.
+7. non-overlay rich text-block lowering is demonstrated by an in-tree example;
+8. FreeType-backed rasterization makes rich text blocks readable in normal builds;
+9. the public overlay API is gated by two internal consumers.
