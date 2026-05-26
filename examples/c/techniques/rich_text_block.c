@@ -43,20 +43,6 @@
 
 
 /*************************************************************************************************/
-/*  Structs                                                                                      */
-/*************************************************************************************************/
-
-typedef struct RichTextBlockState
-{
-    DvzTextBlock* block;
-    DvzPanel* panel;
-    uint32_t figure_width;
-    uint32_t figure_height;
-} RichTextBlockState;
-
-
-
-/*************************************************************************************************/
 /*  Helpers                                                                                      */
 /*************************************************************************************************/
 
@@ -137,30 +123,7 @@ static bool _add_screen_text(
 
 
 /**
- * Return the panel's logical pixel extent inside its figure.
- *
- * @param panel the panel
- * @param out_width output width in logical pixels
- * @param out_height output height in logical pixels
- * @return true when the extent is usable
- */
-static bool _panel_logical_size(DvzPanel* panel, float* out_width, float* out_height)
-{
-    if (
-        panel == NULL || panel->figure == NULL || out_width == NULL || out_height == NULL ||
-        panel->desc.width <= 0.0f || panel->desc.height <= 0.0f)
-    {
-        return false;
-    }
-
-    *out_width = (float)panel->figure->width * panel->desc.width;
-    *out_height = (float)panel->figure->height * panel->desc.height;
-    return *out_width > 0.0f && *out_height > 0.0f;
-}
-
-
-/**
- * Place the rich text-block image visual in panel-local coordinates from current panel pixels.
+ * Place the rich text-block image visual in panel pixels.
  *
  * @param block text block storage
  * @param panel destination panel
@@ -171,76 +134,23 @@ static bool _place_rich_text_block(DvzTextBlock* block, DvzPanel* panel)
     if (block == NULL || panel == NULL)
         return false;
 
-    float panel_width = 0.0f;
-    float panel_height = 0.0f;
-    if (!_panel_logical_size(panel, &panel_width, &panel_height))
-        return false;
-
     float scale = block->raster_scale > 0.0f ? block->raster_scale : 1.0f;
     float block_width = (float)block->raster_width / scale;
     float block_height = (float)block->raster_height / scale;
     float block_x = 54.0f;
     float block_y = 154.0f;
-    vec3 position = {
-        -1.0f + 2.0f * block_x / panel_width,
-        +1.0f - 2.0f * block_y / panel_height,
-        0.0f,
-    };
-    vec2 extent = {
-        2.0f * block_width / panel_width,
-        2.0f * block_height / panel_height,
-    };
     int rc = _scene_text_block_realize_image(
         block, panel,
         &(DvzTextBlockImageDesc){
-            .position = {position[0], position[1], position[2]},
-            .extent = {extent[0], extent[1]},
-            .anchor = {-1.0f, +1.0f},
+            .position_px = {block_x, block_y, 0.0f},
+            .extent_px = {block_width, block_height},
+            .anchor = {-1.0f, -1.0f},
+            .pixel_space = true,
             .z_layer = 2,
             .controller_mode = DVZ_CONTROLLER_FIXED,
         });
     return rc == 0;
 }
-
-
-/**
- * Record the current figure size used for panel-local rich text-block placement.
- *
- * @param state placement state
- */
-static void _remember_rich_text_block_size(RichTextBlockState* state)
-{
-    if (state == NULL || state->panel == NULL || state->panel->figure == NULL)
-        return;
-    dvz_figure_size(state->panel->figure, &state->figure_width, &state->figure_height);
-}
-
-
-/**
- * Refresh the rich text-block placement after a figure resize.
- *
- * @param view rendered view
- * @param user_data pointer to RichTextBlockState
- */
-static void _rich_text_block_frame(DvzView* view, void* user_data)
-{
-    (void)view;
-    RichTextBlockState* state = (RichTextBlockState*)user_data;
-    if (state == NULL || state->panel == NULL || state->panel->figure == NULL)
-        return;
-
-    uint32_t width = 0;
-    uint32_t height = 0;
-    dvz_figure_size(state->panel->figure, &width, &height);
-    if (width == state->figure_width && height == state->figure_height)
-        return;
-    if (_place_rich_text_block(state->block, state->panel))
-    {
-        state->figure_width = width;
-        state->figure_height = height;
-    }
-}
-
 
 
 /**
@@ -315,7 +225,6 @@ int main(int argc, char** argv)
     DvzScene* scene = NULL;
     DvzApp* app = NULL;
     DvzTextBlock block = {0};
-    RichTextBlockState block_state = {0};
     bool block_initialized = false;
 
     scene = dvz_scene();
@@ -356,15 +265,12 @@ int main(int argc, char** argv)
     ok = _add_rich_text_block(&block, panel);
     block_initialized = true;
     EXAMPLE_CHECK(ok, "failed to create private rich text block");
-    block_state = (RichTextBlockState){.block = &block, .panel = panel};
-    _remember_rich_text_block_size(&block_state);
 
     app = dvz_app(scene);
     EXAMPLE_CHECK(app != NULL, "dvz_app() failed (no GPU or display?)");
 
     DvzView* win = dvz_view_glfw(app, figure, WIDTH, HEIGHT, "rich_text_block");
     EXAMPLE_CHECK(win != NULL, "dvz_view_glfw() failed (GLFW unavailable?)");
-    dvz_view_set_frame_callback(win, _rich_text_block_frame, &block_state);
 
     DvzPanzoom* panzoom = dvz_view_panzoom(win, panel, NULL);
     EXAMPLE_CHECK(panzoom != NULL, "failed to create or bind panzoom controller");
