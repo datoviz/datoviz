@@ -58,6 +58,12 @@ static void _readout_format_value(
 
 static void _readout_refresh_text(DvzPinnedReadout* readout);
 
+static void _readout_panel_size_px(const DvzFigure* figure, const DvzPanel* panel, float out[2]);
+
+static bool _readout_card_realize(DvzFigure* figure, DvzPinnedReadout* readout);
+
+static void _readout_card_hide(DvzPinnedReadout* readout);
+
 
 
 /*************************************************************************************************/
@@ -422,6 +428,190 @@ static void _readout_refresh_text(DvzPinnedReadout* readout)
         dvz_snprintf(readout->text, sizeof(readout->text), "%s: n/a", label);
         break;
     }
+}
+
+
+
+/**
+ * Return the panel size in logical pixels for overlay placement.
+ *
+ * @param figure the figure
+ * @param panel the panel
+ * @param out output width and height
+ */
+static void _readout_panel_size_px(const DvzFigure* figure, const DvzPanel* panel, float out[2])
+{
+    ANN(figure);
+    ANN(panel);
+    ANN(out);
+    out[0] = (float)figure->width * panel->desc.width;
+    out[1] = (float)figure->height * panel->desc.height;
+}
+
+
+
+/**
+ * Hide generated card visuals for one readout.
+ *
+ * @param readout the pinned readout
+ */
+static void _readout_card_hide(DvzPinnedReadout* readout)
+{
+    if (readout == NULL)
+        return;
+    if (readout->card_background_visual != NULL)
+        dvz_visual_set_visible(readout->card_background_visual, false);
+    if (readout->card_text_visual != NULL)
+    {
+        dvz_visual_set_visible(readout->card_text_visual, false);
+        if (readout->card_text_visual->text.glyph_visual != NULL)
+            dvz_visual_set_visible(readout->card_text_visual->text.glyph_visual, false);
+    }
+}
+
+
+
+/**
+ * Realize or update the private overlay card for one pinned readout.
+ *
+ * @param figure the figure being prepared
+ * @param readout the pinned readout
+ * @return whether realization succeeded
+ */
+static bool _readout_card_realize(DvzFigure* figure, DvzPinnedReadout* readout)
+{
+    ANN(figure);
+    ANN(readout);
+    if (readout->scene == NULL || readout->panel == NULL || readout->panel->figure != figure)
+        return true;
+    if (readout->text[0] == '\0')
+    {
+        _readout_card_hide(readout);
+        return true;
+    }
+
+    DvzPanel* panel = readout->panel;
+    DvzScene* scene = readout->scene;
+    if (readout->card_background_visual == NULL)
+    {
+        readout->card_background_visual =
+            dvz_primitive(scene, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP, 0);
+        if (readout->card_background_visual == NULL)
+            return false;
+        readout->card_background_visual->visible = false;
+        if (dvz_visual_set_alpha_mode(readout->card_background_visual, DVZ_ALPHA_BLENDED) != 0)
+            return false;
+        if (dvz_visual_set_depth_test(readout->card_background_visual, false) != 0)
+            return false;
+        if (dvz_panel_add_visual(
+                panel, readout->card_background_visual,
+                &(DvzVisualAttachDesc){
+                    .z_layer = INT32_MAX / 4 - 2, .controller_mode = DVZ_CONTROLLER_FIXED}) != 0)
+            return false;
+    }
+    if (readout->card_text_visual == NULL)
+    {
+        readout->card_text_visual = _scene_text_visual(scene, 0);
+        if (readout->card_text_visual == NULL)
+            return false;
+        readout->card_text_visual->visible = false;
+        readout->card_text_visual->text.reserved_glyph_vertices = 96u * 6u;
+        if (_scene_text_visual_set_renderer(
+                readout->card_text_visual, DVZ_TEXT_RENDERER_SMALL_BITMAP_ATLAS) != 0)
+            return false;
+        if (dvz_panel_add_visual(
+                panel, readout->card_text_visual,
+                &(DvzVisualAttachDesc){
+                    .z_layer = INT32_MAX / 4 - 1, .controller_mode = DVZ_CONTROLLER_FIXED}) != 0)
+            return false;
+    }
+
+    bool size_changed =
+        readout->card_figure_width != figure->width || readout->card_figure_height != figure->height;
+    bool text_changed = strcmp(readout->card_text, readout->text) != 0;
+    if (!readout->dirty && !size_changed && !text_changed)
+    {
+        dvz_visual_set_visible(readout->card_background_visual, true);
+        dvz_visual_set_visible(readout->card_text_visual, true);
+        return true;
+    }
+
+    float panel_size[2] = {0};
+    _readout_panel_size_px(figure, panel, panel_size);
+    if (panel_size[0] <= 0.0f || panel_size[1] <= 0.0f)
+    {
+        _readout_card_hide(readout);
+        return true;
+    }
+
+    size_t text_len = strlen(readout->text);
+    if (text_len > 96)
+        text_len = 96;
+    float card_w = 16.0f + 7.0f * (float)text_len;
+    float card_h = 24.0f;
+    if (card_w > panel_size[0] - 8.0f)
+        card_w = panel_size[0] - 8.0f;
+    if (card_w < 32.0f)
+        card_w = 32.0f;
+
+    float x = (float)readout->probe.panel_position[0] + 12.0f;
+    float y = (float)readout->probe.panel_position[1] + 12.0f;
+    if (x + card_w > panel_size[0] - 4.0f)
+        x = panel_size[0] - card_w - 4.0f;
+    if (y + card_h > panel_size[1] - 4.0f)
+        y = panel_size[1] - card_h - 4.0f;
+    if (x < 4.0f)
+        x = 4.0f;
+    if (y < 4.0f)
+        y = 4.0f;
+
+    float x0 = -1.0f + 2.0f * x / panel_size[0];
+    float x1 = -1.0f + 2.0f * (x + card_w) / panel_size[0];
+    float y0 = +1.0f - 2.0f * y / panel_size[1];
+    float y1 = +1.0f - 2.0f * (y + card_h) / panel_size[1];
+    vec3 positions[4] = {
+        {x0, y0, 0.0f},
+        {x0, y1, 0.0f},
+        {x1, y0, 0.0f},
+        {x1, y1, 0.0f},
+    };
+    DvzColor colors[4] = {
+        dvz_color_rgba(16, 22, 32, 225),
+        dvz_color_rgba(16, 22, 32, 225),
+        dvz_color_rgba(16, 22, 32, 225),
+        dvz_color_rgba(16, 22, 32, 225),
+    };
+    DvzVisualDataUpdate background_updates[2] = {
+        {.attr_name = "position", .data = positions, .item_count = 4},
+        {.attr_name = "color", .data = colors, .item_count = 4},
+    };
+    if (dvz_visual_set_data_many(readout->card_background_visual, background_updates, 2) != 0)
+        return false;
+    dvz_visual_set_visible(readout->card_background_visual, true);
+
+    const char* labels[1] = {readout->text};
+    vec3 text_pos[1] = {{x + 8.0f, y + 6.0f, 0.0f}};
+    vec2 text_anchor[1] = {{0.0f, 0.0f}};
+    float text_size[1] = {12.0f};
+    DvzColor text_color[1] = {dvz_color_rgb(245, 248, 255)};
+    float text_angle[1] = {0.0f};
+    DvzVisualDataUpdate text_updates[5] = {
+        {.attr_name = "position", .data = text_pos, .item_count = 1},
+        {.attr_name = "anchor", .data = text_anchor, .item_count = 1},
+        {.attr_name = "size", .data = text_size, .item_count = 1},
+        {.attr_name = "color", .data = text_color, .item_count = 1},
+        {.attr_name = "angle", .data = text_angle, .item_count = 1},
+    };
+    if (dvz_visual_set_strings(readout->card_text_visual, "text", labels, 1) != 0 ||
+        dvz_visual_set_data_many(readout->card_text_visual, text_updates, 5) != 0)
+        return false;
+    dvz_visual_set_visible(readout->card_text_visual, true);
+
+    readout->card_figure_width = figure->width;
+    readout->card_figure_height = figure->height;
+    dvz_strlcpy(readout->card_text, readout->text, sizeof(readout->card_text));
+    readout->dirty = false;
+    return true;
 }
 
 
@@ -825,6 +1015,26 @@ const DvzHoverState* dvz_scene_hover(const DvzScene* scene, const DvzPanel* pane
 
 
 
+/**
+ * Prepare private pinned-readout card visuals attached to one figure.
+ *
+ * @param figure the figure being emitted
+ */
+void _scene_prepare_pinned_readout_cards(DvzFigure* figure)
+{
+    ANN(figure);
+    ANN(figure->scene);
+    DvzScene* scene = figure->scene;
+    for (uint32_t i = 0; i < scene->pinned_readout_count; i++)
+    {
+        DvzPinnedReadout* readout = &scene->pinned_readouts[i];
+        if (!_readout_card_realize(figure, readout))
+            log_error("failed to prepare pinned readout card %u", i);
+    }
+}
+
+
+
 /*************************************************************************************************/
 /*  Pinned readouts                                                                              */
 /*************************************************************************************************/
@@ -876,6 +1086,7 @@ void dvz_pinned_readout_destroy(DvzPinnedReadout* readout)
 {
     if (readout == NULL)
         return;
+    _readout_card_hide(readout);
     if (readout->panel != NULL)
     {
         DvzPanel* panel = readout->panel;
@@ -895,6 +1106,11 @@ void dvz_pinned_readout_destroy(DvzPinnedReadout* readout)
     readout->has_format = false;
     readout->text[0] = '\0';
     readout->dirty = false;
+    readout->card_background_visual = NULL;
+    readout->card_text_visual = NULL;
+    readout->card_figure_width = 0;
+    readout->card_figure_height = 0;
+    readout->card_text[0] = '\0';
 }
 
 

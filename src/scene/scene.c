@@ -2425,6 +2425,12 @@ static bool _scene_panel_has_pending_adornment_work(const DvzPanel* panel)
         if (annotation->panel == panel && annotation->dirty_flags != DVZ_TEXT_DIRTY_NONE)
             return true;
     }
+    for (uint32_t i = 0; i < scene->pinned_readout_count; i++)
+    {
+        const DvzPinnedReadout* readout = &scene->pinned_readouts[i];
+        if (readout->panel == panel && readout->dirty)
+            return true;
+    }
     for (uint32_t i = 0; i < scene->text_count; i++)
     {
         const DvzText* text = &scene->texts[i];

@@ -2744,6 +2744,7 @@ void _scene_prepare_text_visuals(DvzFigure* figure)
     for (uint32_t pass = 0; pass < 3; pass++)
     {
         uint64_t font_version_before = _text_scene_font_version_sum(scene);
+        _scene_prepare_pinned_readout_cards(figure);
         for (uint32_t pi = 0; pi < figure->panel_count; pi++)
         {
             DvzPanel* panel = &figure->panels[pi];

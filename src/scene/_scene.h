@@ -694,6 +694,11 @@ struct DvzPinnedReadout
     DvzSceneFormatState format;
     char text[DVZ_SCENE_LABEL_SIZE];
     bool dirty;
+    DvzVisual* card_background_visual;
+    DvzVisual* card_text_visual;
+    uint32_t card_figure_width;
+    uint32_t card_figure_height;
+    char card_text[DVZ_SCENE_LABEL_SIZE];
 };
 
 
@@ -1657,6 +1662,8 @@ void _scene_prepare_legend_visuals(DvzFigure* figure, DvzDiagnosticReport* repor
 void _scene_prepare_bounds_visuals(DvzFigure* figure);
 
 void _scene_prepare_text_visuals(DvzFigure* figure);
+
+void _scene_prepare_pinned_readout_cards(DvzFigure* figure);
 
 DvzVisual* _scene_text_visual(DvzScene* scene, uint32_t flags);
 
