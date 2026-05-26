@@ -1485,10 +1485,10 @@ static void _scalebar_anchor_px(
  */
 static bool _scalebar_anchor_right(DvzSceneAnchor anchor)
 {
-    return anchor == DVZ_SCENE_ANCHOR_PANEL_TOP_RIGHT || anchor == DVZ_SCENE_ANCHOR_TOP_RIGHT ||
-           anchor == DVZ_SCENE_ANCHOR_PANEL_RIGHT || anchor == DVZ_SCENE_ANCHOR_RIGHT ||
+    return anchor == DVZ_SCENE_ANCHOR_PANEL_TOP_RIGHT ||
+           anchor == DVZ_SCENE_ANCHOR_PANEL_RIGHT ||
            anchor == DVZ_SCENE_ANCHOR_PANEL_BOTTOM_RIGHT ||
-           anchor == DVZ_SCENE_ANCHOR_BOTTOM_RIGHT;
+           anchor == DVZ_SCENE_ANCHOR_PANEL_BOTTOM_RIGHT;
 }
 
 
@@ -1501,9 +1501,9 @@ static bool _scalebar_anchor_right(DvzSceneAnchor anchor)
  */
 static bool _scalebar_anchor_center_x(DvzSceneAnchor anchor)
 {
-    return anchor == DVZ_SCENE_ANCHOR_PANEL_TOP || anchor == DVZ_SCENE_ANCHOR_TOP ||
-           anchor == DVZ_SCENE_ANCHOR_PANEL_CENTER || anchor == DVZ_SCENE_ANCHOR_CENTER ||
-           anchor == DVZ_SCENE_ANCHOR_PANEL_BOTTOM || anchor == DVZ_SCENE_ANCHOR_BOTTOM;
+    return anchor == DVZ_SCENE_ANCHOR_PANEL_TOP ||
+           anchor == DVZ_SCENE_ANCHOR_PANEL_CENTER ||
+           anchor == DVZ_SCENE_ANCHOR_PANEL_BOTTOM;
 }
 
 
@@ -1517,10 +1517,9 @@ static bool _scalebar_anchor_center_x(DvzSceneAnchor anchor)
 static bool _scalebar_anchor_bottom(DvzSceneAnchor anchor)
 {
     return anchor == DVZ_SCENE_ANCHOR_PANEL_BOTTOM_LEFT ||
-           anchor == DVZ_SCENE_ANCHOR_BOTTOM_LEFT || anchor == DVZ_SCENE_ANCHOR_PANEL_BOTTOM ||
-           anchor == DVZ_SCENE_ANCHOR_BOTTOM ||
+           anchor == DVZ_SCENE_ANCHOR_PANEL_BOTTOM ||
            anchor == DVZ_SCENE_ANCHOR_PANEL_BOTTOM_RIGHT ||
-           anchor == DVZ_SCENE_ANCHOR_BOTTOM_RIGHT;
+           anchor == DVZ_SCENE_ANCHOR_PANEL_BOTTOM_RIGHT;
 }
 
 
