@@ -522,6 +522,16 @@ typedef enum
 } DvzTextBlockStyleFlag;
 
 
+typedef enum
+{
+    DVZ_TEXT_BLOCK_FACE_REGULAR = 0,
+    DVZ_TEXT_BLOCK_FACE_BOLD,
+    DVZ_TEXT_BLOCK_FACE_ITALIC,
+    DVZ_TEXT_BLOCK_FACE_BOLD_ITALIC,
+    DVZ_TEXT_BLOCK_FACE_COUNT,
+} DvzTextBlockFaceSlot;
+
+
 struct DvzTextBlockRun
 {
     uint32_t source_start;
@@ -536,6 +546,12 @@ struct DvzTextBlockRun
 
 struct DvzTextBlockLayout
 {
+    DvzScene* scene;
+    DvzFont* font;
+    DvzFont* bold_font;
+    DvzFont* italic_font;
+    DvzFont* bold_italic_font;
+    float font_size_px;
     float max_width_px;
     float char_width_px;
     float line_height_px;
@@ -577,7 +593,21 @@ struct DvzTextBlock
     DvzTextLayoutMetrics metrics;
     uint32_t layout_x[DVZ_SCENE_TEXT_BLOCK_TEXT_SIZE];
     uint32_t layout_y[DVZ_SCENE_TEXT_BLOCK_TEXT_SIZE];
+    uint32_t layout_text_start[DVZ_SCENE_TEXT_BLOCK_TEXT_SIZE];
+    uint32_t layout_text_end[DVZ_SCENE_TEXT_BLOCK_TEXT_SIZE];
+    uint32_t layout_codepoint[DVZ_SCENE_TEXT_BLOCK_TEXT_SIZE];
+    uint32_t layout_glyph_index[DVZ_SCENE_TEXT_BLOCK_TEXT_SIZE];
+    uint32_t layout_style_flags[DVZ_SCENE_TEXT_BLOCK_TEXT_SIZE];
+    uint32_t layout_face_slot[DVZ_SCENE_TEXT_BLOCK_TEXT_SIZE];
+    float layout_pos_x[DVZ_SCENE_TEXT_BLOCK_TEXT_SIZE];
+    float layout_baseline_y[DVZ_SCENE_TEXT_BLOCK_TEXT_SIZE];
+    float layout_advance[DVZ_SCENE_TEXT_BLOCK_TEXT_SIZE];
+    DvzColor layout_color[DVZ_SCENE_TEXT_BLOCK_TEXT_SIZE];
+    bool layout_visible[DVZ_SCENE_TEXT_BLOCK_TEXT_SIZE];
+    DvzFont* layout_fonts[DVZ_TEXT_BLOCK_FACE_COUNT];
+    uint32_t layout_glyph_count;
     uint32_t layout_line_count;
+    uint32_t missing_style_flags;
     uint8_t* rgba;
     uint64_t rgba_size;
     uint32_t raster_width;

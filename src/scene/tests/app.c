@@ -3374,9 +3374,10 @@ int test_app_offscreen_text_block_raster_has_nonblank_pixels(
     AT(_scene_text_block_measure(
            &block,
            &(DvzTextBlockLayout){
+               .scene = scene,
                .max_width_px = 96.0f,
-               .char_width_px = 7.0f,
-               .line_height_px = 12.0f,
+               .font_size_px = 12.0f,
+               .line_height_px = 15.0f,
                .padding_px = {3.0f, 3.0f},
            }) == 0);
     AT(_scene_text_block_rasterize(

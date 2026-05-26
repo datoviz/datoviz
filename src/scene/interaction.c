@@ -1793,6 +1793,8 @@ int dvz_overlay_card_set_rich_text(DvzOverlayCard* card, const DvzOverlayRichTex
     _scene_text_block_init(&card->rich_block, desc->source);
 
     card->rich_layout = (DvzTextBlockLayout){
+        .scene = card->scene,
+        .font_size_px = desc->line_height_px > 0.0f ? 0.78f * desc->line_height_px : 11.0f,
         .max_width_px = desc->max_width_px > 0.0f ? desc->max_width_px : 220.0f,
         .char_width_px = desc->char_width_px > 0.0f ? desc->char_width_px : 7.0f,
         .line_height_px = desc->line_height_px > 0.0f ? desc->line_height_px : 14.0f,
@@ -1806,7 +1808,7 @@ int dvz_overlay_card_set_rich_text(DvzOverlayCard* card, const DvzOverlayRichTex
         .scene = card->scene,
         .text_color = text_color,
         .background_color = desc->background_color,
-        .font_size_px = 0.78f * card->rich_layout.line_height_px,
+        .font_size_px = card->rich_layout.font_size_px,
         .scale = desc->scale > 0.0f ? desc->scale : 1.0f,
     };
 

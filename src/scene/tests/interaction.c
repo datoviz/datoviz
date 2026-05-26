@@ -2489,6 +2489,48 @@ int test_scene_text_block_measure(TstContext* suite, const TstCase* item)
     AC(block.metrics.line_height, 10.0f, 1e-6f);
     AC(block.metrics.baseline, 12.0f, 1e-6f);
 
+#if defined(DVZ_HAS_FREETYPE) && DVZ_HAS_FREETYPE
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+
+    DvzTextBlock narrow = {0};
+    DvzTextBlock wide = {0};
+    _scene_text_block_init(&narrow, "iiii");
+    _scene_text_block_init(&wide, "WWWW");
+    AT(_scene_text_block_parse(&narrow) == 0);
+    AT(_scene_text_block_parse(&wide) == 0);
+    DvzTextBlockLayout ft_layout = {
+        .scene = scene,
+        .font_size_px = 16.0f,
+        .line_height_px = 21.0f,
+    };
+    AT(_scene_text_block_measure(&narrow, &ft_layout) == 0);
+    AT(_scene_text_block_measure(&wide, &ft_layout) == 0);
+    AT(narrow.layout_glyph_count == 4);
+    AT(wide.layout_glyph_count == 4);
+    AT(narrow.metrics.advance[0] < wide.metrics.advance[0]);
+
+    DvzTextBlock bold = {0};
+    _scene_text_block_init(&bold, "<b>bold</b>");
+    AT(_scene_text_block_parse(&bold) == 0);
+    AT(_scene_text_block_measure(&bold, &ft_layout) == 0);
+    AT(bold.layout_fonts[DVZ_TEXT_BLOCK_FACE_BOLD] != NULL);
+    AT((bold.layout_style_flags[0] & DVZ_TEXT_BLOCK_STYLE_BOLD) != 0);
+
+    DvzTextBlock italic = {0};
+    _scene_text_block_init(&italic, "<i>italic</i>");
+    AT(_scene_text_block_parse(&italic) == 0);
+    AT(_scene_text_block_measure(&italic, &ft_layout) == 0);
+    AT((italic.layout_style_flags[0] & DVZ_TEXT_BLOCK_STYLE_ITALIC) == 0);
+    AT(italic.diagnostic[0] != '\0');
+
+    _scene_text_block_destroy(&narrow);
+    _scene_text_block_destroy(&wide);
+    _scene_text_block_destroy(&bold);
+    _scene_text_block_destroy(&italic);
+    dvz_scene_destroy(scene);
+#endif
+
     return 0;
 }
 
@@ -2590,8 +2632,9 @@ int test_scene_text_block_image_lowering(TstContext* suite, const TstCase* item)
     AT(_scene_text_block_measure(
            &block,
            &(DvzTextBlockLayout){
-               .char_width_px = 7.0f,
-               .line_height_px = 10.0f,
+               .scene = scene,
+               .font_size_px = 11.0f,
+               .line_height_px = 14.0f,
                .padding_px = {2.0f, 2.0f},
            }) == 0);
     AT(_scene_text_block_rasterize(
