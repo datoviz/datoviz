@@ -81,6 +81,9 @@
     ((2 + DVZ_SCENE_MAX_AXIS_MINOR_TICKS) * DVZ_SCENE_MAX_AXIS_TICKS + 1)
 #define DVZ_SCENE_TEXT_ATLAS_MAX_GLYPHS 256
 #define DVZ_SCENE_MAX_TEXT_ATLASES_PER_FONT 32
+#define DVZ_SCENE_TEXT_BLOCK_SOURCE_SIZE 1024
+#define DVZ_SCENE_TEXT_BLOCK_TEXT_SIZE   1024
+#define DVZ_SCENE_TEXT_BLOCK_MAX_RUNS    64
 #define DVZ_COMPOSITE_MAX_VISUALS 8
 #define DVZ_COMPOSITE_ROLE_SIZE   32
 
@@ -251,6 +254,9 @@ typedef struct DvzTextGlyphInstance DvzTextGlyphInstance;
 typedef struct DvzTextAtlasGlyph DvzTextAtlasGlyph;
 typedef struct DvzTextAtlasSpec DvzTextAtlasSpec;
 typedef struct DvzTextAtlas DvzTextAtlas;
+typedef struct DvzTextBlockRun DvzTextBlockRun;
+typedef struct DvzTextBlockLayout DvzTextBlockLayout;
+typedef struct DvzTextBlock DvzTextBlock;
 
 typedef void (*DvzSceneRequestFrameCallback)(DvzFigure* figure, void* user_data);
 
@@ -485,6 +491,48 @@ struct DvzTextAtlas
     uint32_t missing_glyph_count;
     uint64_t generation;
     DvzTextAtlasGlyph glyphs[DVZ_SCENE_TEXT_ATLAS_MAX_GLYPHS];
+};
+
+
+typedef enum
+{
+    DVZ_TEXT_BLOCK_STYLE_NONE = 0x00u,
+    DVZ_TEXT_BLOCK_STYLE_BOLD = 0x01u,
+    DVZ_TEXT_BLOCK_STYLE_ITALIC = 0x02u,
+} DvzTextBlockStyleFlag;
+
+
+struct DvzTextBlockRun
+{
+    uint32_t source_start;
+    uint32_t source_end;
+    uint32_t text_start;
+    uint32_t text_end;
+    uint32_t style_flags;
+};
+
+
+struct DvzTextBlockLayout
+{
+    float max_width_px;
+    float char_width_px;
+    float line_height_px;
+    float padding_px[2];
+};
+
+
+struct DvzTextBlock
+{
+    char source[DVZ_SCENE_TEXT_BLOCK_SOURCE_SIZE];
+    char text[DVZ_SCENE_TEXT_BLOCK_TEXT_SIZE];
+    char diagnostic[DVZ_SCENE_LABEL_SIZE];
+    uint32_t source_size;
+    uint32_t text_size;
+    uint32_t run_count;
+    DvzTextBlockRun runs[DVZ_SCENE_TEXT_BLOCK_MAX_RUNS];
+    DvzTextBlockLayout layout;
+    DvzTextLayoutMetrics metrics;
+    bool valid;
 };
 
 
@@ -1645,6 +1693,12 @@ bool _scene_prepare_image_texture(
 
 bool _scene_emit_sampled_field_texture_upload(
     DvzFramePlan* plan, const char* resource_id, DvzSampledField* field);
+
+void _scene_text_block_init(DvzTextBlock* block, const char* source);
+
+int _scene_text_block_parse(DvzTextBlock* block);
+
+int _scene_text_block_measure(DvzTextBlock* block, const DvzTextBlockLayout* layout);
 
 bool _scene_visual_frame_plan_metadata(
     const DvzFigure* figure, const DvzVisual* visual, uint32_t visual_index,

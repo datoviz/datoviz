@@ -2155,6 +2155,74 @@ int test_scene_text_attach_mode_change_regenerates_glyphs(TstContext* suite, con
 }
 
 
+/**
+ * Verify private text-block markup parsing and source/text run bookkeeping.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_text_block_parse_markup(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    ANN(item);
+
+    DvzTextBlock block = {0};
+    _scene_text_block_init(&block, "a <b>bold <i>both</i></b> &lt;x&gt; &amp;");
+    AT(_scene_text_block_parse(&block) == 0);
+    AT(block.valid);
+    AT(block.diagnostic[0] == '\0');
+    AT(strcmp(block.text, "a bold both <x> &") == 0);
+    AT(block.run_count == 4);
+    AT(block.runs[0].style_flags == DVZ_TEXT_BLOCK_STYLE_NONE);
+    AT(block.runs[1].style_flags == DVZ_TEXT_BLOCK_STYLE_BOLD);
+    AT(block.runs[2].style_flags == (DVZ_TEXT_BLOCK_STYLE_BOLD | DVZ_TEXT_BLOCK_STYLE_ITALIC));
+    AT(block.runs[3].style_flags == DVZ_TEXT_BLOCK_STYLE_NONE);
+    AT(block.runs[2].source_start < block.runs[2].source_end);
+    AT(block.runs[2].text_start < block.runs[2].text_end);
+
+    _scene_text_block_init(&block, "x </b> y");
+    AT(_scene_text_block_parse(&block) == 0);
+    AT(block.valid);
+    AT(block.diagnostic[0] != '\0');
+    AT(strcmp(block.text, "x </b> y") == 0);
+
+    return 0;
+}
+
+
+/**
+ * Verify private text-block measurement uses fixed-advance wrapping metadata.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_text_block_measure(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    ANN(item);
+
+    DvzTextBlock block = {0};
+    _scene_text_block_init(&block, "abcdefghi");
+    AT(_scene_text_block_parse(&block) == 0);
+    AT(_scene_text_block_measure(
+           &block,
+           &(DvzTextBlockLayout){
+               .max_width_px = 28.0f,
+               .char_width_px = 7.0f,
+               .line_height_px = 10.0f,
+               .padding_px = {0.0f, 2.0f},
+           }) == 0);
+    AC(block.metrics.advance[0], 28.0f, 1e-6f);
+    AC(block.metrics.advance[1], 34.0f, 1e-6f);
+    AC(block.metrics.line_height, 10.0f, 1e-6f);
+    AC(block.metrics.baseline, 12.0f, 1e-6f);
+
+    return 0;
+}
+
+
 
 /**
  * Register scene interaction tests.
@@ -2193,6 +2261,8 @@ int test_scene_interaction(TstSuite* suite)
     TST_CASE(test_scene_text_many_labels_render_plan);
     TST_CASE(test_scene_text_panzoom_glyph_anchor_coordinates);
     TST_CASE(test_scene_text_attach_mode_change_regenerates_glyphs);
+    TST_CASE(test_scene_text_block_parse_markup);
+    TST_CASE(test_scene_text_block_measure);
 
     return 0;
 }
