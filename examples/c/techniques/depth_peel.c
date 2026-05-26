@@ -90,7 +90,7 @@ static void _build_cube(
             positions[vertex][0] = face_positions[face][corner][0];
             positions[vertex][1] = face_positions[face][corner][1];
             positions[vertex][2] = face_positions[face][corner][2];
-            dvz_memcpy(colors[vertex], sizeof(DvzColor), color, sizeof(DvzColor));
+            colors[vertex] = color;
             normals[vertex][0] = face_normals[face][0];
             normals[vertex][1] = face_normals[face][1];
             normals[vertex][2] = face_normals[face][2];

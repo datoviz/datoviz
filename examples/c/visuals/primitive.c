@@ -191,11 +191,11 @@ static void _fill_triangles(PrimitiveState* state, float phase)
             state->normals[base + k][0] = normal[0];
             state->normals[base + k][1] = normal[1];
             state->normals[base + k][2] = normal[2];
-            state->colors[base + k][0] =
-                (uint8_t)(72u + (uint32_t)(145.0f * (0.5f + 0.5f * ridge)));
-            state->colors[base + k][1] = (uint8_t)(64u + (uint32_t)(145.0f * dome));
-            state->colors[base + k][2] = (uint8_t)(112u + (uint32_t)(108.0f * (1.0f - 0.35f * u)));
-            state->colors[base + k][3] = (uint8_t)(255.0f * state->alpha);
+            state->colors[base + k] = dvz_color_rgba(
+                (uint8_t)(72u + (uint32_t)(145.0f * (0.5f + 0.5f * ridge))),
+                (uint8_t)(64u + (uint32_t)(145.0f * dome)),
+                (uint8_t)(112u + (uint32_t)(108.0f * (1.0f - 0.35f * u))),
+                (uint8_t)(255.0f * state->alpha));
         }
     }
 }

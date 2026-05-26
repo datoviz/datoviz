@@ -181,10 +181,10 @@ static void _build_points(PointStressState* state)
 
         const float warm = 0.5f + 0.5f * sinf(7.0f * t + 0.2f * layer);
         const float cool = 0.5f + 0.5f * cosf(11.0f * t - 0.3f * layer);
-        state->colors[i][0] = (uint8_t)(45.0f + 185.0f * warm);
-        state->colors[i][1] = (uint8_t)(70.0f + 150.0f * (1.0f - local));
-        state->colors[i][2] = (uint8_t)(80.0f + 165.0f * cool);
-        state->colors[i][3] = 230;
+        state->colors[i] = dvz_color_rgba(
+            (uint8_t)(45.0f + 185.0f * warm),
+            (uint8_t)(70.0f + 150.0f * (1.0f - local)),
+            (uint8_t)(80.0f + 165.0f * cool), 230);
         state->diameters[i] = 4.5f + 2.5f * local;
     }
 }
@@ -203,7 +203,7 @@ static void _apply_alpha_to_colors(PointStressState* state)
 
     const uint8_t alpha = _u8_from_unit(state->alpha);
     for (uint32_t i = 0; i < state->max_count; i++)
-        state->colors[i][3] = alpha;
+        state->colors[i].a = alpha;
 }
 
 
@@ -281,10 +281,8 @@ static void _apply_style(PointStressState* state)
         break;
     }
     style.stroke_width = state->stroke_width;
-    style.edge_color[0] = _u8_from_unit(state->edge_rgb[0]);
-    style.edge_color[1] = _u8_from_unit(state->edge_rgb[1]);
-    style.edge_color[2] = _u8_from_unit(state->edge_rgb[2]);
-    style.edge_color[3] = 255;
+    style.edge_color =
+        dvz_color_from_unit(state->edge_rgb[0], state->edge_rgb[1], state->edge_rgb[2], 1.0f);
 
     if (dvz_point_set_style(state->visual, &style) != 0)
         dvz_fprintf(stderr, "dvz_point_set_style() failed\n");

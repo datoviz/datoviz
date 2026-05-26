@@ -286,10 +286,7 @@ static uint32_t _append_triangulation_edges(
             ends[j][0] = (float)(*p1)[0];
             ends[j][1] = (float)(*p1)[1];
             ends[j][2] = (float)(*p1)[2];
-            colors[j][0] = 20;
-            colors[j][1] = 20;
-            colors[j][2] = 20;
-            colors[j][3] = 210;
+            colors[j] = dvz_color_rgba(20, 20, 20, 210);
             widths[j] = width;
         }
     }

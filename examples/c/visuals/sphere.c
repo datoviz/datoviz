@@ -163,10 +163,9 @@ _build_sphere_cloud(vec3* positions, DvzColor* colors, float* sizes, uint32_t ma
 
                 float t = 0.5f + 0.5f * z;
                 float band = 0.5f + 0.5f * sinf(9.0f * x + 5.0f * y);
-                colors[count][0] = _u8(0.24f + 0.58f * t);
-                colors[count][1] = _u8(0.34f + 0.36f * band);
-                colors[count][2] = _u8(0.74f - 0.42f * t + 0.12f * band);
-                colors[count][3] = 255;
+                colors[count] = dvz_color_rgb(
+                    _u8(0.24f + 0.58f * t), _u8(0.34f + 0.36f * band),
+                    _u8(0.74f - 0.42f * t + 0.12f * band));
 
                 sizes[count] = 0.060f + 0.018f * (1.0f - r) + 0.010f * band;
                 count++;

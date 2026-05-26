@@ -104,10 +104,9 @@ static void _build_points(
         positions[i][1] = ring * sinf(theta) * 0.72f;
         positions[i][2] = -0.72f + 0.48f * (float)layer + 0.08f * cosf(5.0f * theta);
 
-        colors[i][0] = (uint8_t)(210u - 28u * layer);
-        colors[i][1] = (uint8_t)(70u + 42u * layer);
-        colors[i][2] = (uint8_t)(90u + 34u * layer);
-        colors[i][3] = 255;
+        colors[i] = dvz_color_rgb(
+            (uint8_t)(210u - 28u * layer), (uint8_t)(70u + 42u * layer),
+            (uint8_t)(90u + 34u * layer));
         sizes[i] = 6.0f;
     }
 }

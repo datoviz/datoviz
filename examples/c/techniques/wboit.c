@@ -115,7 +115,7 @@ static void _build_cube(
             positions[vertex][0] = face_positions[face][corner][0];
             positions[vertex][1] = face_positions[face][corner][1];
             positions[vertex][2] = face_positions[face][corner][2];
-            dvz_memcpy(colors[vertex], sizeof(DvzColor), color, sizeof(DvzColor));
+            colors[vertex] = color;
             normals[vertex][0] = face_normals[face][0];
             normals[vertex][1] = face_normals[face][1];
             normals[vertex][2] = face_normals[face][2];
@@ -180,14 +180,11 @@ static void _mesh_wboit_update_cube(MeshWboitState* state)
     if (state->cube == NULL || state->cube_vertex_count == 0)
         return;
 
-    DvzColor color = {
-        _u8_from_unit(state->cube_rgb[0]),
-        _u8_from_unit(state->cube_rgb[1]),
-        _u8_from_unit(state->cube_rgb[2]),
-        _u8_from_unit(state->cube_alpha),
-    };
+    DvzColor color = dvz_color_rgba(
+        _u8_from_unit(state->cube_rgb[0]), _u8_from_unit(state->cube_rgb[1]),
+        _u8_from_unit(state->cube_rgb[2]), _u8_from_unit(state->cube_alpha));
     for (uint32_t i = 0; i < state->cube_vertex_count; i++)
-        dvz_memcpy(state->cube_colors[i], sizeof(DvzColor), color, sizeof(DvzColor));
+        state->cube_colors[i] = color;
 
     dvz_visual_set_data(state->cube, "color", state->cube_colors, state->cube_vertex_count);
     DvzMaterialDesc material = dvz_phong_material_desc();

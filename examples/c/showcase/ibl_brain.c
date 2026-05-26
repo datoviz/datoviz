@@ -411,7 +411,7 @@ static void _apply_shell_material(BwmExampleState* state)
 
     uint8_t alpha = _alpha_u8(state->mesh_alpha);
     for (uint32_t i = 0; i < state->dataset->mesh_vertex_count; i++)
-        state->dataset->mesh_color[i][3] = alpha;
+        state->dataset->mesh_color[i].a = alpha;
 
     if (dvz_visual_set_data(
             state->mesh, "color", state->dataset->mesh_color,

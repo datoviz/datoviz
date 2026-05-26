@@ -94,10 +94,9 @@ static bool _add_physical_scatter(DvzScene* scene, DvzPanel* panel)
         data_positions[i][0] = 0.020f + r * cosf(a);
         data_positions[i][1] = 0.013f + 0.70f * r * sinf(a);
         data_positions[i][2] = 0.0f;
-        colors[i][0] = _u8(0.15f + 0.70f * t);
-        colors[i][1] = _u8(0.76f - 0.36f * t);
-        colors[i][2] = _u8(0.92f - 0.48f * sinf(0.5f * a) * sinf(0.5f * a));
-        colors[i][3] = 230;
+        colors[i] = dvz_color_rgba(
+            _u8(0.15f + 0.70f * t), _u8(0.76f - 0.36f * t),
+            _u8(0.92f - 0.48f * sinf(0.5f * a) * sinf(0.5f * a)), 230);
         diameters[i] = 6.0f + 6.0f * sinf(TAU * t) * sinf(TAU * t);
     }
 
@@ -238,10 +237,10 @@ static bool _add_3d_point_cloud(DvzScene* scene, DvzPanel* panel)
                 positions[count][0] = fx;
                 positions[count][1] = fy;
                 positions[count][2] = fz;
-                colors[count][0] = _u8(0.40f + 0.50f * (float)x / 4.0f);
-                colors[count][1] = _u8(0.50f + 0.42f * (float)y / 4.0f);
-                colors[count][2] = _u8(0.96f - 0.32f * (float)z / 4.0f);
-                colors[count][3] = 255;
+                colors[count] = dvz_color_rgb(
+                    _u8(0.40f + 0.50f * (float)x / 4.0f),
+                    _u8(0.50f + 0.42f * (float)y / 4.0f),
+                    _u8(0.96f - 0.32f * (float)z / 4.0f));
                 diameters[count] = 12.0f + 8.0f * (1.24f - d);
                 count++;
             }

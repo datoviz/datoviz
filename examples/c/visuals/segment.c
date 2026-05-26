@@ -349,10 +349,10 @@ static void _segment_fill_upload_buffers(SegmentStressState* state)
         state->position_end[i][1] = state->base_end[i][1] + dy;
         state->position_end[i][2] = state->base_end[i][2];
 
-        state->colors[i][0] = _u8_from_unit(0.25f + 0.70f * _unit(i, 7));
-        state->colors[i][1] = _u8_from_unit(0.35f + 0.55f * _unit(i, 8));
-        state->colors[i][2] = _u8_from_unit(0.45f + 0.50f * _unit(i, 9));
-        state->colors[i][3] = alpha;
+        state->colors[i] = dvz_color_rgba(
+            _u8_from_unit(0.25f + 0.70f * _unit(i, 7)),
+            _u8_from_unit(0.35f + 0.55f * _unit(i, 8)),
+            _u8_from_unit(0.45f + 0.50f * _unit(i, 9)), alpha);
         state->stroke_widths[i] = state->stroke_width * (0.55f + 0.90f * _unit(i, 10));
     }
 }

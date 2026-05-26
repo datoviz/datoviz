@@ -392,14 +392,14 @@ int test_scene_background_descriptor_gradient_and_image(TstContext* suite, const
     AT(color_idx >= 0);
     const DvzColor* colors = (const DvzColor*)panel->background_visual->attrs[color_idx].data;
     ANN(colors);
-    AT(colors[0][0] == 255);
-    AT(colors[0][2] == 0);
-    AT(colors[1][0] == 255);
-    AT(colors[1][2] == 0);
-    AT(colors[2][0] == 0);
-    AT(colors[2][2] == 255);
-    AT(colors[3][0] == 0);
-    AT(colors[3][2] == 255);
+    AT(colors[0].r == 255);
+    AT(colors[0].b == 0);
+    AT(colors[1].r == 255);
+    AT(colors[1].b == 0);
+    AT(colors[2].r == 0);
+    AT(colors[2].b == 255);
+    AT(colors[3].r == 0);
+    AT(colors[3].b == 255);
 
     DvzVisual* gradient_visual = panel->background_visual;
     gradient.gradient.end[0] = 0.0f;

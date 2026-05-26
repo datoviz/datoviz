@@ -262,7 +262,7 @@ static int test_gui_widget_wrapper_symbols(TstContext* suite, const TstCase* ite
         DvzGui*, const char*, float*, float*, float, float, float, const char*) =
         dvz_gui_range_float;
     bool (*color_edit4)(DvzGui*, const char*, float*, int) = dvz_gui_color_edit4;
-    bool (*color_edit_dvz)(DvzGui*, const char*, DvzColor, int) = dvz_gui_color_edit_dvz;
+    bool (*color_edit_dvz)(DvzGui*, const char*, DvzColor*, int) = dvz_gui_color_edit_dvz;
     bool (*color_picker4)(DvzGui*, const char*, float*, int) = dvz_gui_color_picker4;
     void (*separator_text)(DvzGui*, const char*) = dvz_gui_separator_text;
     bool (*collapsing_header)(DvzGui*, const char*, int) = dvz_gui_collapsing_header;

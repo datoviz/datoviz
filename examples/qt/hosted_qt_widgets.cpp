@@ -66,10 +66,9 @@ static void _fill_scene_data(SceneState* state)
         state->positions[i][0] = radius * std::cos(angle);
         state->positions[i][1] = radius * std::sin(angle);
         state->positions[i][2] = 0.0f;
-        state->colors[i][0] = (uint8_t)(80 + (i * 97) % 176);
-        state->colors[i][1] = (uint8_t)(80 + (i * 53) % 176);
-        state->colors[i][2] = (uint8_t)(80 + (i * 29) % 176);
-        state->colors[i][3] = 255;
+        state->colors[i] = dvz_color_rgb(
+            (uint8_t)(80 + (i * 97) % 176), (uint8_t)(80 + (i * 53) % 176),
+            (uint8_t)(80 + (i * 29) % 176));
         state->sizes[i] = state->point_size;
     }
 }
@@ -94,23 +93,22 @@ static int _apply_palette(SceneState* state, int palette)
         const uint8_t b = (uint8_t)((i * 67) % 256);
         if (palette == 0)
         {
-            state->colors[i][0] = (uint8_t)(40 + (a % 180));
-            state->colors[i][1] = (uint8_t)(90 + (b % 130));
-            state->colors[i][2] = (uint8_t)(160 + ((a + b) % 80));
+            state->colors[i] = dvz_color_rgb(
+                (uint8_t)(40 + (a % 180)), (uint8_t)(90 + (b % 130)),
+                (uint8_t)(160 + ((a + b) % 80)));
         }
         else if (palette == 1)
         {
-            state->colors[i][0] = (uint8_t)(180 + (a % 70));
-            state->colors[i][1] = (uint8_t)(70 + (b % 120));
-            state->colors[i][2] = (uint8_t)(80 + ((a + b) % 90));
+            state->colors[i] = dvz_color_rgb(
+                (uint8_t)(180 + (a % 70)), (uint8_t)(70 + (b % 120)),
+                (uint8_t)(80 + ((a + b) % 90)));
         }
         else
         {
-            state->colors[i][0] = (uint8_t)(70 + (b % 110));
-            state->colors[i][1] = (uint8_t)(170 + (a % 70));
-            state->colors[i][2] = (uint8_t)(110 + ((a + b) % 120));
+            state->colors[i] = dvz_color_rgb(
+                (uint8_t)(70 + (b % 110)), (uint8_t)(170 + (a % 70)),
+                (uint8_t)(110 + ((a + b) % 120)));
         }
-        state->colors[i][3] = 255;
     }
     return dvz_visual_set_data(state->visual, "color", state->colors, POINT_COUNT);
 }

@@ -79,10 +79,10 @@ static void _surface_data(double* heights, DvzColor* colors)
             heights[idx] = wave;
 
             const double t = CLIP((wave + 0.36) / 0.72, 0.0, 1.0);
-            colors[idx][0] = (uint8_t)(28.0 + 210.0 * t);
-            colors[idx][1] = (uint8_t)(70.0 + 135.0 * (1.0 - fabs(2.0 * t - 1.0)));
-            colors[idx][2] = (uint8_t)(150.0 + 85.0 * (1.0 - t));
-            colors[idx][3] = 255;
+            colors[idx] = dvz_color_rgb(
+                (uint8_t)(28.0 + 210.0 * t),
+                (uint8_t)(70.0 + 135.0 * (1.0 - fabs(2.0 * t - 1.0))),
+                (uint8_t)(150.0 + 85.0 * (1.0 - t)));
         }
     }
 }

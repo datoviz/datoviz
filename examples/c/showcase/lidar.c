@@ -279,10 +279,7 @@ static bool _load_lidar_dataset(const char* data_dir, uint32_t stride, LidarData
             positions[dst][0] = positions[src][0];
             positions[dst][1] = positions[src][1];
             positions[dst][2] = positions[src][2];
-            colors[dst][0] = colors[src][0];
-            colors[dst][1] = colors[src][1];
-            colors[dst][2] = colors[src][2];
-            colors[dst][3] = colors[src][3];
+            colors[dst] = colors[src];
         }
     }
 

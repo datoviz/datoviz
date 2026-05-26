@@ -17,6 +17,7 @@
 #include <math.h>
 #include <stddef.h>
 
+#include "_assertions.h"
 #include "datoviz/common/types.h"
 #include "test_math.h"
 #include "testing.h"

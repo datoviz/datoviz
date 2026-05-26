@@ -177,8 +177,10 @@ static void _lab_set_hover_point_color(SchedulerLabState* state, uint64_t item_i
     if (state == NULL || item_id >= LAB_POINT_COUNT)
         return;
 
-    for (uint32_t i = 0; i < 4; i++)
-        state->hover_point_rgba[i] = (float)state->point_colors[item_id][i] / 255.0f;
+    state->hover_point_rgba[0] = (float)state->point_colors[item_id].r / 255.0f;
+    state->hover_point_rgba[1] = (float)state->point_colors[item_id].g / 255.0f;
+    state->hover_point_rgba[2] = (float)state->point_colors[item_id].b / 255.0f;
+    state->hover_point_rgba[3] = (float)state->point_colors[item_id].a / 255.0f;
     state->hover_point_color_valid = true;
 }
 
@@ -609,10 +611,7 @@ int main(int argc, char** argv)
     (void)snprintf(state.last_pick, sizeof(state.last_pick), "pick: none");
     (void)snprintf(state.last_probe, sizeof(state.last_probe), "probe: none");
     for (uint32_t i = 0; i < LAB_POINT_COUNT; i++)
-    {
-        for (uint32_t c = 0; c < 4; c++)
-            state.point_colors[i][c] = point_color[i][c];
-    }
+        state.point_colors[i] = point_color[i];
     _lab_update_points(&state);
     _lab_update_image(&state);
     state.mutation_count = 0;

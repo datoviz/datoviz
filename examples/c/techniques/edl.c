@@ -106,10 +106,9 @@ static void _build_points(
         positions[i][2] = wave * equator * sinf(theta);
 
         float hue = 0.5f + 0.5f * sinf(theta + 1.8f * v);
-        colors[i][0] = (uint8_t)(45.0f + 160.0f * hue);
-        colors[i][1] = (uint8_t)(85.0f + 130.0f * (1.0f - u));
-        colors[i][2] = (uint8_t)(150.0f + 80.0f * u);
-        colors[i][3] = 255;
+        colors[i] = dvz_color_rgb(
+            (uint8_t)(45.0f + 160.0f * hue), (uint8_t)(85.0f + 130.0f * (1.0f - u)),
+            (uint8_t)(150.0f + 80.0f * u));
         sizes[i] = 5.5f;
     }
 }

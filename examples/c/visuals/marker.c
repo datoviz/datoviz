@@ -184,7 +184,7 @@ static void _apply_fill_alpha(MarkerStressState* state)
 {
     uint8_t alpha = _u8_from_float(state->fill_alpha);
     for (uint32_t i = 0; i < state->active_count; i++)
-        state->colors[i][3] = alpha;
+        state->colors[i].a = alpha;
 }
 
 
@@ -273,9 +273,9 @@ static void _make_active_marker_data(MarkerStressState* state)
             state->positions[i][1] = MARKER_STRESS_Y0 + (MARKER_STRESS_Y1 - MARKER_STRESS_Y0) * v;
             state->positions[i][2] = 0.035f * wave;
 
-            state->colors[i][0] = (uint8_t)(40.0f + 205.0f * u);
-            state->colors[i][1] = (uint8_t)(220.0f - 140.0f * v);
-            state->colors[i][2] = (uint8_t)(90.0f + 120.0f * (0.5f + 0.5f * wave));
+            state->colors[i].r = (uint8_t)(40.0f + 205.0f * u);
+            state->colors[i].g = (uint8_t)(220.0f - 140.0f * v);
+            state->colors[i].b = (uint8_t)(90.0f + 120.0f * (0.5f + 0.5f * wave));
             i++;
         }
     }
@@ -381,10 +381,8 @@ static void _apply_marker_style(MarkerStressState* state)
         style.aspect = DVZ_SHAPE_ASPECT_FILLED;
         break;
     }
-    style.edge_color[0] = _u8_from_float(state->edge_color[0]);
-    style.edge_color[1] = _u8_from_float(state->edge_color[1]);
-    style.edge_color[2] = _u8_from_float(state->edge_color[2]);
-    style.edge_color[3] = _u8_from_float(state->edge_color[3]);
+    style.edge_color = dvz_color_from_unit(
+        state->edge_color[0], state->edge_color[1], state->edge_color[2], state->edge_color[3]);
     style.stroke_width = state->stroke_width;
     (void)dvz_marker_set_style(state->visual, &style);
 }

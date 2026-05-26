@@ -67,10 +67,9 @@ static void _fill_points(vec3 positions[POINT_COUNT], DvzColor colors[POINT_COUN
         positions[i][1] = radius * sinf(angle);
         positions[i][2] = 0.0f;
 
-        colors[i][0] = (uint8_t)(40.0f + 180.0f * t);
-        colors[i][1] = (uint8_t)(210.0f - 70.0f * t);
-        colors[i][2] = (uint8_t)(255.0f - 170.0f * t);
-        colors[i][3] = 230;
+        colors[i] = dvz_color_rgba(
+            (uint8_t)(40.0f + 180.0f * t), (uint8_t)(210.0f - 70.0f * t),
+            (uint8_t)(255.0f - 170.0f * t), 230);
         sizes[i] = 5.0f + 9.0f * t;
     }
 }
@@ -100,10 +99,9 @@ static void _fill_spheres(vec3 positions[SPHERE_COUNT], DvzColor colors[SPHERE_C
         positions[i][2] = -0.36f + 0.72f * (float)iz + jz;
 
         float t = (float)i / (float)(SPHERE_COUNT - 1);
-        colors[i][0] = (uint8_t)(230.0f - 120.0f * t);
-        colors[i][1] = (uint8_t)(80.0f + 120.0f * t);
-        colors[i][2] = (uint8_t)(120.0f + 100.0f * t);
-        colors[i][3] = 255;
+        colors[i] = dvz_color_rgb(
+            (uint8_t)(230.0f - 120.0f * t), (uint8_t)(80.0f + 120.0f * t),
+            (uint8_t)(120.0f + 100.0f * t));
         const float radius_classes[3] = {0.045f, 0.075f, 0.120f};
         uint32_t radius_class = (i * 7u + iz) % 3u;
         radii[i] = radius_classes[radius_class] + 0.006f * sinf(0.8f * (float)i);

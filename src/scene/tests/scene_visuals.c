@@ -2514,7 +2514,7 @@ int test_scene_panel_bounds_overlay_visual(TstContext* suite, const TstCase* ite
     AT(occluded_overlay->attrs[width_idx].item_count == 4);
     DvzColor* hidden_colors = (DvzColor*)occluded_overlay->attrs[color_idx].data;
     ANN(hidden_colors);
-    AT(hidden_colors[0][3] == 120);
+    AT(hidden_colors[0].a == 120);
 
     DvzBounds bounds = {0};
     AT(dvz_panel_bounds(panel, DVZ_BOUNDS_SPACE_VISUAL, &bounds) == 0);
@@ -2969,10 +2969,10 @@ int test_scene_polygon_composite(TstContext* suite, const TstCase* item)
     DvzVisualDataView fill_color_view = {0};
     AT(dvz_visual_data(fill, "color", &fill_color_view) == 0);
     const uint8_t* fill_colors = fill_color_view.data;
-    AT(fill_colors[0] == fill_color[0]);
-    AT(fill_colors[1] == fill_color[1]);
-    AT(fill_colors[2] == fill_color[2]);
-    AT(fill_colors[3] == fill_color[3]);
+    AT(fill_colors[0] == fill_color.r);
+    AT(fill_colors[1] == fill_color.g);
+    AT(fill_colors[2] == fill_color.b);
+    AT(fill_colors[3] == fill_color.a);
 
     DvzVisualDataView stroke_position_view = {0};
     AT(dvz_visual_data(stroke, "position", &stroke_position_view) == 0);
@@ -3017,9 +3017,9 @@ int test_scene_polygon_composite(TstContext* suite, const TstCase* item)
     _scene_prepare_composite_visuals(figure);
     AT(dvz_visual_data(fill, "color", &fill_color_view) == 0);
     fill_colors = fill_color_view.data;
-    AT(fill_colors[0] == fill_update[0]);
-    AT(fill_colors[1] == fill_update[1]);
-    AT(fill_colors[2] == fill_update[2]);
+    AT(fill_colors[0] == fill_update.r);
+    AT(fill_colors[1] == fill_update.g);
+    AT(fill_colors[2] == fill_update.b);
 
     const dvec2 hole[4] = {
         {0.25, 0.25},
@@ -3105,10 +3105,10 @@ int test_scene_polygon_set_composite(TstContext* suite, const TstCase* item)
     DvzVisualDataView color_view = {0};
     AT(dvz_visual_data(fill, "color", &color_view) == 0);
     const uint8_t* colors = color_view.data;
-    AT(colors[0] == red[0]);
-    AT(colors[1] == red[1]);
-    AT(colors[16] == green[0]);
-    AT(colors[17] == green[1]);
+    AT(colors[0] == red.r);
+    AT(colors[1] == red.g);
+    AT(colors[16] == green.r);
+    AT(colors[17] == green.g);
 
     DvzVisualDataView stroke_position_view = {0};
     AT(dvz_visual_data(stroke, "position", &stroke_position_view) == 0);
@@ -3154,9 +3154,9 @@ int test_scene_polygon_set_composite(TstContext* suite, const TstCase* item)
     _scene_prepare_composite_visuals(figure);
     AT(dvz_visual_data(fill, "color", &color_view) == 0);
     colors = color_view.data;
-    AT(colors[16] == blue[0]);
-    AT(colors[17] == blue[1]);
-    AT(colors[18] == blue[2]);
+    AT(colors[16] == blue.r);
+    AT(colors[17] == blue.g);
+    AT(colors[18] == blue.b);
 
     dvz_scene_destroy(scene);
     return 0;
@@ -5121,10 +5121,7 @@ int test_scene_point_large_count_executes(TstContext* suite, const TstCase* item
         positions[3 * i + 0] = -1.0f + 2.0f * (float)i / (float)(N - 1);
         positions[3 * i + 1] = 0.0f;
         positions[3 * i + 2] = 0.0f;
-        colors[i][0] = 255;
-        colors[i][1] = (uint8_t)(i % 256);
-        colors[i][2] = 0;
-        colors[i][3] = 255;
+        colors[i] = dvz_color_rgba(255, (uint8_t)(i % 256), 0, 255);
         sizes[i] = 4.0f;
     }
 
@@ -5672,7 +5669,7 @@ int test_scene_partial_update_uploads_only_range(TstContext* suite, const TstCas
         positions[3 * i]     = (float)i / (float)N * 2.0f - 1.0f;
         positions[3 * i + 1] = 0.0f;
         positions[3 * i + 2] = 0.0f;
-        colors[i][0] = 255; colors[i][1] = 0; colors[i][2] = 0; colors[i][3] = 255;
+        colors[i] = dvz_color_rgb(255, 0, 0);
         sizes[i] = 5.0f;
     }
     AT(dvz_visual_set_data(visual, "position", positions, N) == 0);
@@ -5754,10 +5751,7 @@ int test_scene_repeated_partial_updates_across_frames(TstContext* suite, const T
         positions[3 * i]     = (float)i / (float)N * 2.0f - 1.0f;
         positions[3 * i + 1] = 0.0f;
         positions[3 * i + 2] = 0.0f;
-        colors[i][0]         = 255;
-        colors[i][1]         = 0;
-        colors[i][2]         = 0;
-        colors[i][3]         = 255;
+        colors[i]             = dvz_color_rgb(255, 0, 0);
         sizes[i]             = 5.0f;
     }
     AT(dvz_visual_set_data(visual, "position", positions, N) == 0);
@@ -5841,10 +5835,7 @@ int test_scene_partial_update_merges_ranges_before_emit(TstContext* suite, const
         positions[3 * i]     = (float)i / (float)N * 2.0f - 1.0f;
         positions[3 * i + 1] = 0.0f;
         positions[3 * i + 2] = 0.0f;
-        colors[i][0]         = 0;
-        colors[i][1]         = 255;
-        colors[i][2]         = 0;
-        colors[i][3]         = 255;
+        colors[i]             = dvz_color_rgb(0, 255, 0);
         sizes[i]             = 5.0f;
     }
     AT(dvz_visual_set_data(visual, "position", positions, N) == 0);

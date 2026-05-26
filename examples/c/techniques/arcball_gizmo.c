@@ -179,18 +179,16 @@ static void _axis_basis(uint32_t axis, vec3 dir, vec3 u, vec3 v)
  * Return the display color for one gizmo axis.
  *
  * @param axis axis index
- * @param out output RGBA color
+ * @return RGBA color
  */
-static void _axis_color(uint32_t axis, DvzColor out)
+static DvzColor _axis_color(uint32_t axis)
 {
-    ANN(out);
-
     const DvzColor colors[GIZMO_AXIS_COUNT] = {
         {242, 80, 86, 255},
         {86, 196, 126, 255},
         {78, 150, 250, 255},
     };
-    dvz_memcpy(out, sizeof(DvzColor), colors[axis % GIZMO_AXIS_COUNT], sizeof(DvzColor));
+    return colors[axis % GIZMO_AXIS_COUNT];
 }
 
 
@@ -258,14 +256,12 @@ _gizmo_vertex(GizmoMesh* mesh, const vec3 position, const vec3 normal, const Dvz
     ANN(mesh);
     ANN(position);
     ANN(normal);
-    ANN(color);
-
     if (mesh->count >= mesh->capacity)
         return false;
 
     dvz_memcpy(mesh->positions[mesh->count], sizeof(vec3), position, sizeof(vec3));
     dvz_memcpy(mesh->normals[mesh->count], sizeof(vec3), normal, sizeof(vec3));
-    dvz_memcpy(mesh->colors[mesh->count], sizeof(DvzColor), color, sizeof(DvzColor));
+    mesh->colors[mesh->count] = color;
     mesh->count++;
     return true;
 }
@@ -296,8 +292,6 @@ static bool _gizmo_triangle(
     ANN(n1);
     ANN(p2);
     ANN(n2);
-    ANN(color);
-
     return _gizmo_vertex(mesh, p0, n0, color) && _gizmo_vertex(mesh, p1, n1, color) &&
            _gizmo_vertex(mesh, p2, n2, color);
 }
@@ -365,9 +359,8 @@ static bool _append_shaft(GizmoMesh* mesh, const GizmoGeometry* geometry, uint32
     vec3 dir = {0};
     vec3 u = {0};
     vec3 v = {0};
-    DvzColor color = {0};
     _axis_basis(axis, dir, u, v);
-    _axis_color(axis, color);
+    DvzColor color = _axis_color(axis);
 
     for (uint32_t i = 0; i < GIZMO_SEGMENTS; i++)
     {
@@ -419,9 +412,8 @@ static bool _append_tip(GizmoMesh* mesh, const GizmoGeometry* geometry, uint32_t
     vec3 dir = {0};
     vec3 u = {0};
     vec3 v = {0};
-    DvzColor color = {0};
     _axis_basis(axis, dir, u, v);
-    _axis_color(axis, color);
+    DvzColor color = _axis_color(axis);
 
     vec3 apex = {0};
     vec3 base_center = {0};
@@ -524,12 +516,11 @@ static bool _gizmo_path_point(
 {
     ANN(path);
     ANN(position);
-    ANN(color);
     if (path->count >= path->capacity)
         return false;
 
     dvz_memcpy(path->positions[path->count], sizeof(vec3), position, sizeof(vec3));
-    dvz_memcpy(path->colors[path->count], sizeof(DvzColor), color, sizeof(DvzColor));
+    path->colors[path->count] = color;
     path->stroke_widths[path->count] = stroke_width;
     path->count++;
     return true;
@@ -586,10 +577,9 @@ static bool _build_gizmo_rings(GizmoPath* path, const GizmoGeometry* geometry)
         vec3 dir = {0};
         vec3 u = {0};
         vec3 v = {0};
-        DvzColor color = {0};
         _axis_basis(axis, dir, u, v);
-        _axis_color(axis, color);
-        color[3] = 255;
+        DvzColor color = _axis_color(axis);
+        color.a = 255;
 
         for (uint32_t i = 0; i < GIZMO_RING_POINT_COUNT; i++)
         {

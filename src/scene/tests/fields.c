@@ -117,18 +117,18 @@ int test_scene_scale_colormap_colorbar_core(TstContext* suite, const TstCase* it
     AT(builtin_rgba[0] != builtin_rgba[1]);
 
     DvzColor public_rgba = {0};
-    AT(dvz_colormap_sample(colormap, 0.5, public_rgba));
-    AT(public_rgba[0] == builtin_rgba[0]);
-    AT(public_rgba[1] == builtin_rgba[1]);
-    AT(public_rgba[2] == builtin_rgba[2]);
-    AT(public_rgba[3] == builtin_rgba[3]);
+    AT(dvz_colormap_sample(colormap, 0.5, &public_rgba));
+    AT(public_rgba.r == builtin_rgba[0]);
+    AT(public_rgba.g == builtin_rgba[1]);
+    AT(public_rgba.b == builtin_rgba[2]);
+    AT(public_rgba.a == builtin_rgba[3]);
 
     DvzColor direct_rgba = {0};
-    AT(dvz_colormap_builtin_sample(DVZ_BUILTIN_COLORMAP_MAGMA, 0.5, direct_rgba));
-    AT(direct_rgba[0] == builtin_rgba[0]);
-    AT(direct_rgba[1] == builtin_rgba[1]);
-    AT(direct_rgba[2] == builtin_rgba[2]);
-    AT(direct_rgba[3] == builtin_rgba[3]);
+    AT(dvz_colormap_builtin_sample(DVZ_BUILTIN_COLORMAP_MAGMA, 0.5, &direct_rgba));
+    AT(direct_rgba.r == builtin_rgba[0]);
+    AT(direct_rgba.g == builtin_rgba[1]);
+    AT(direct_rgba.b == builtin_rgba[2]);
+    AT(direct_rgba.a == builtin_rgba[3]);
 
     DvzColormapStop stops[2] = {
         {.position = 0.0, .rgba = {0, 0, 0, 255}},
@@ -196,7 +196,7 @@ int test_scene_categorical_scale_entries(TstContext* suite, const TstCase* item)
     AT(categorical->categories[0].order == 2);
     AT(categorical->categories[0].has_label);
     AT(strcmp(categorical->categories[0].label, "Beta") == 0);
-    AT(categorical->categories[0].color[0] == 220);
+    AT(categorical->categories[0].color.r == 220);
     AT(categorical->categories[1].category_id == 3);
     AT(categorical->categories[2].category_id == 9);
     AT(!categorical->categories[2].has_label);

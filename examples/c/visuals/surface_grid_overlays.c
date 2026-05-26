@@ -147,10 +147,10 @@ static void _surface_data(double* heights, DvzColor* colors, double* out_min, do
     for (uint32_t i = 0; i < SURFACE_ROWS * SURFACE_COLS; i++)
     {
         const double t = CLIP((heights[i] - zmin) / span, 0.0, 1.0);
-        colors[i][0] = (uint8_t)(34.0 + 206.0 * t);
-        colors[i][1] = (uint8_t)(75.0 + 150.0 * (1.0 - fabs(2.0 * t - 1.0)));
-        colors[i][2] = (uint8_t)(165.0 + 60.0 * (1.0 - t));
-        colors[i][3] = 255;
+        colors[i] = dvz_color_rgb(
+            (uint8_t)(34.0 + 206.0 * t),
+            (uint8_t)(75.0 + 150.0 * (1.0 - fabs(2.0 * t - 1.0))),
+            (uint8_t)(165.0 + 60.0 * (1.0 - t)));
     }
 
     *out_min = zmin;
@@ -184,23 +184,14 @@ static void _state_defaults(SurfaceOverlayState* state)
     state->specular = 0.55f;
     state->shininess = 55.395f;
 
-    state->wire_color[0] = 20;
-    state->wire_color[1] = 24;
-    state->wire_color[2] = 30;
-    state->wire_color[3] = 205;
+    state->wire_color = dvz_color_rgba(20, 24, 30, 205);
     state->wire_width = 2.39f;
     state->wire_z_offset = 0.0011f;
 
     state->contour_count = 15.0f;
     state->contour_major_step = 1.0f;
-    state->contour_minor_color[0] = 245;
-    state->contour_minor_color[1] = 245;
-    state->contour_minor_color[2] = 245;
-    state->contour_minor_color[3] = 225;
-    state->contour_major_color[0] = 255;
-    state->contour_major_color[1] = 255;
-    state->contour_major_color[2] = 255;
-    state->contour_major_color[3] = 255;
+    state->contour_minor_color = dvz_color_rgba(245, 245, 245, 225);
+    state->contour_major_color = dvz_color_rgb(255, 255, 255);
     state->contour_width = 2.1f;
     state->contour_major_width = 1.65f;
     state->contour_z_offset = 0.0045f;
@@ -341,10 +332,7 @@ static bool _state_upload_edges(SurfaceOverlayState* state)
         ends[dst][0] = (float)(*p1)[0];
         ends[dst][1] = (float)(*p1)[1];
         ends[dst][2] = (float)((*p1)[2] + state->wire_z_offset);
-        colors[dst][0] = state->wire_color[0];
-        colors[dst][1] = state->wire_color[1];
-        colors[dst][2] = state->wire_color[2];
-        colors[dst][3] = state->wire_color[3];
+        colors[dst] = state->wire_color;
         widths[dst] = state->wire_width;
         dst++;
     }
@@ -405,10 +393,7 @@ static bool _state_upload_contours(SurfaceOverlayState* state)
         ends[i][0] = (float)segment->p1[0];
         ends[i][1] = (float)segment->p1[1];
         ends[i][2] = (float)(segment->p1[2] + state->contour_z_offset);
-        colors[i][0] = (*color)[0];
-        colors[i][1] = (*color)[1];
-        colors[i][2] = (*color)[2];
-        colors[i][3] = (*color)[3];
+        colors[i] = *color;
         widths[i] = major ? state->contour_width * state->contour_major_width :
                             state->contour_width;
     }
@@ -596,7 +581,7 @@ static void _overlays_gui(DvzGui* gui, DvzView* win, void* user_data)
 
         dvz_gui_separator_text(gui, "Wireframe");
         wire_changed |= dvz_gui_checkbox(gui, "Boundary only", &state->boundary_only);
-        wire_changed |= dvz_gui_color_edit_dvz(gui, "Wire color", state->wire_color, 0);
+        wire_changed |= dvz_gui_color_edit_dvz(gui, "Wire color", &state->wire_color, 0);
         wire_changed |=
             dvz_gui_slider_float_format(gui, "Wire width", &state->wire_width, 0.25f, 5.0f,
                                         "%.2f px");
@@ -615,9 +600,9 @@ static void _overlays_gui(DvzGui* gui, DvzView* win, void* user_data)
             dvz_gui_slider_float_format(gui, "Major every", &state->contour_major_step, 1.0f,
                                         16.0f, "%.0f");
         contour_style_changed |=
-            dvz_gui_color_edit_dvz(gui, "Minor color", state->contour_minor_color, 0);
+            dvz_gui_color_edit_dvz(gui, "Minor color", &state->contour_minor_color, 0);
         contour_style_changed |=
-            dvz_gui_color_edit_dvz(gui, "Major color", state->contour_major_color, 0);
+            dvz_gui_color_edit_dvz(gui, "Major color", &state->contour_major_color, 0);
         contour_style_changed |=
             dvz_gui_slider_float_format(gui, "Contour width", &state->contour_width, 0.5f, 8.0f,
                                         "%.1f px");

@@ -229,10 +229,10 @@ int main(int argc, char** argv)
             positions[index][1] = -0.90f + 1.80f * ((float)row / (float)(GRID_ROWS - 1));
             positions[index][2] = 0.0f;
 
-            colors[index][0] = (uint8_t)(40 + (215 * col) / (GRID_COLS - 1));
-            colors[index][1] = (uint8_t)(70 + (160 * row) / (GRID_ROWS - 1));
-            colors[index][2] = (uint8_t)(220 - (120 * row) / (GRID_ROWS - 1));
-            colors[index][3] = 255;
+            colors[index] = dvz_color_rgb(
+                (uint8_t)(40 + (215 * col) / (GRID_COLS - 1)),
+                (uint8_t)(70 + (160 * row) / (GRID_ROWS - 1)),
+                (uint8_t)(220 - (120 * row) / (GRID_ROWS - 1)));
             state.sizes[index] = BASE_SIZE;
         }
     }

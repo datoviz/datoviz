@@ -82,10 +82,9 @@ static bool _add_point_grid(
             positions[index][1] = -0.85f + 1.70f * ((float)row / (float)(POINT_ROWS - 1));
             positions[index][2] = 0.0f;
 
-            colors[index][0] = (uint8_t)(red_base + (95 * col) / (POINT_COLS - 1));
-            colors[index][1] = (uint8_t)(green_base + (95 * row) / (POINT_ROWS - 1));
-            colors[index][2] = blue_base;
-            colors[index][3] = 255;
+            colors[index] = dvz_color_rgb(
+                (uint8_t)(red_base + (95 * col) / (POINT_COLS - 1)),
+                (uint8_t)(green_base + (95 * row) / (POINT_ROWS - 1)), blue_base);
             sizes[index] = 18.0f + 8.0f * ((float)((row + col) % 3) / 2.0f);
         }
     }
@@ -203,10 +202,9 @@ static bool _add_path_panel(DvzScene* scene, DvzPanel* panel)
         positions[i][0] = x;
         positions[i][1] = y;
         positions[i][2] = 0.0f;
-        colors[i][0] = (uint8_t)(245 - (120 * i) / (PATH_COUNT - 1));
-        colors[i][1] = (uint8_t)(140 + (80 * i) / (PATH_COUNT - 1));
-        colors[i][2] = 70;
-        colors[i][3] = 255;
+        colors[i] = dvz_color_rgb(
+            (uint8_t)(245 - (120 * i) / (PATH_COUNT - 1)),
+            (uint8_t)(140 + (80 * i) / (PATH_COUNT - 1)), 70);
     }
 
     if (dvz_visual_set_data(visual, "position", positions, PATH_COUNT) != 0 ||

@@ -2005,10 +2005,7 @@ int test_scene_text_many_labels_render_plan(TstContext* suite, const TstCase* it
         text_anchors[i][0] = 0.5f;
         text_anchors[i][1] = 0.5f;
         sizes[i] = 8.0f;
-        colors[i][0] = 255;
-        colors[i][1] = 255;
-        colors[i][2] = 255;
-        colors[i][3] = 255;
+        colors[i] = dvz_color_rgb(255, 255, 255);
     }
     DvzVisualDataUpdate updates[5] = {
         {.attr_name = "position", .data = positions, .item_count = label_count},

@@ -110,11 +110,11 @@ static void _fill_pixels(PixelState* state, float phase)
         state->positions[i][1] = 1.02f * r * sinf(spiral);
         state->positions[i][2] = z - 0.34f;
         state->sizes[i] = state->pixel_size * (0.62f + 0.58f * ridge);
-        state->colors[i][0] = (uint8_t)(70u + (uint32_t)(145.0f * ridge));
-        state->colors[i][1] = (uint8_t)(58u + (uint32_t)(150.0f * dome));
-        state->colors[i][2] =
-            (uint8_t)(105u + (uint32_t)(118.0f * (1.0f - 0.45f * u + 0.25f * v)));
-        state->colors[i][3] = (uint8_t)(255.0f * state->alpha);
+        state->colors[i] = dvz_color_rgba(
+            (uint8_t)(70u + (uint32_t)(145.0f * ridge)),
+            (uint8_t)(58u + (uint32_t)(150.0f * dome)),
+            (uint8_t)(105u + (uint32_t)(118.0f * (1.0f - 0.45f * u + 0.25f * v))),
+            (uint8_t)(255.0f * state->alpha));
     }
 }
 

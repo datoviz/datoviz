@@ -175,10 +175,10 @@ static bool _add_point_grid(DvzScene* scene, DvzPanel* panel, uint32_t variant)
             positions[index][1] = y + wave;
             positions[index][2] = 0.0f;
 
-            colors[index][0] = (uint8_t)(80 + 45 * variant + (85 * col) / (POINT_COLS - 1));
-            colors[index][1] = (uint8_t)(80 + (120 * row) / (POINT_ROWS - 1));
-            colors[index][2] = (uint8_t)(215 - 45 * variant);
-            colors[index][3] = 255;
+            colors[index] = dvz_color_rgb(
+                (uint8_t)(80 + 45 * variant + (85 * col) / (POINT_COLS - 1)),
+                (uint8_t)(80 + (120 * row) / (POINT_ROWS - 1)),
+                (uint8_t)(215 - 45 * variant));
             sizes[index] = 16.0f + 6.0f * (float)((row + col + variant) % 3);
         }
     }

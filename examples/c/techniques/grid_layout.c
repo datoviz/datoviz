@@ -81,10 +81,10 @@ static bool _add_point_grid(
             positions[index][0] = -0.82f + 1.64f * x;
             positions[index][1] = -0.78f + 1.56f * y;
             positions[index][2] = 0.0f;
-            colors[index][0] = (uint8_t)(red_base + (uint8_t)(42.0f * x));
-            colors[index][1] = (uint8_t)(green_base + (uint8_t)(36.0f * y));
-            colors[index][2] = (uint8_t)(blue_base + (uint8_t)(28.0f * (1.0f - y)));
-            colors[index][3] = 255;
+            colors[index] = dvz_color_rgb(
+                (uint8_t)(red_base + (uint8_t)(42.0f * x)),
+                (uint8_t)(green_base + (uint8_t)(36.0f * y)),
+                (uint8_t)(blue_base + (uint8_t)(28.0f * (1.0f - y))));
             sizes[index] = 8.0f + 4.0f * sinf((float)(row + col) * 0.31f);
         }
     }

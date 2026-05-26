@@ -81,10 +81,9 @@ static void _make_scatter(vec3 positions[N], DvzColor colors[N], float sizes[N])
         positions[i][1] = y;
         positions[i][2] = 0.0f;
 
-        colors[i][0] = (uint8_t)(40.0f + 215.0f * t);
-        colors[i][1] = (uint8_t)(180.0f + 60.0f * _randf());
-        colors[i][2] = (uint8_t)(255.0f - 180.0f * t);
-        colors[i][3] = 230;
+        colors[i] = dvz_color_rgba(
+            (uint8_t)(40.0f + 215.0f * t), (uint8_t)(180.0f + 60.0f * _randf()),
+            (uint8_t)(255.0f - 180.0f * t), 230);
 
         sizes[i] = 4.0f + 14.0f * _randf();
     }

@@ -117,19 +117,10 @@ static void source_pixel_to_visual(float x, float y, float z, float out[3])
  * @param rgba float RGBA channels in [0, 1]
  * @param out output color
  */
-static void gui_color_to_dvz(const float rgba[4], DvzColor out)
+static DvzColor gui_color_to_dvz(const float rgba[4])
 {
     ANN(rgba);
-    ANN(out);
-    for (uint32_t i = 0; i < 4; i++)
-    {
-        float v = rgba[i];
-        if (v < 0.0f)
-            v = 0.0f;
-        if (v > 1.0f)
-            v = 1.0f;
-        out[i] = (uint8_t)(255.0f * v + 0.5f);
-    }
+    return dvz_color_from_unit(rgba[0], rgba[1], rgba[2], rgba[3]);
 }
 
 
@@ -334,8 +325,7 @@ static void update_source_text(TextMsdfLabState* state, uint32_t source)
     if (src->text == NULL)
         return;
 
-    DvzColor color = {0};
-    gui_color_to_dvz(state->color, color);
+    DvzColor color = gui_color_to_dvz(state->color);
     src->renderer = selected_renderer(state->renderer_index[source]);
     (void)_scene_text_visual_set_renderer(src->text, src->renderer);
 
@@ -345,7 +335,7 @@ static void update_source_text(TextMsdfLabState* state, uint32_t source)
     vec2 anchors[1] = {{0.0f, 0.5f}};
     float sizes[1] = {state->size_px};
     float angles[1] = {state->angle};
-    DvzColor colors[1] = {{color[0], color[1], color[2], color[3]}};
+    DvzColor colors[1] = {color};
     DvzVisualDataUpdate updates[5] = {
         {.attr_name = "position", .data = positions, .item_count = 1},
         {.attr_name = "anchor", .data = anchors, .item_count = 1},

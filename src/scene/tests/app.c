@@ -490,7 +490,7 @@ static AppSsaoQuad _app_ssao_add_quad(
         {0.0f, 0.0f, 1.0f},
     };
     for (uint32_t i = 0; i < 4; i++)
-        dvz_memcpy(colors[i], sizeof(DvzColor), color, sizeof(DvzColor));
+        colors[i] = color;
 
     DvzIndex indices[6] = {0, 1, 2, 2, 1, 3};
     DvzSceneBuffer* index_buffer = dvz_scene_buffer(
@@ -541,7 +541,7 @@ _app_wboit_add_layer(DvzScene* scene, DvzPanel* panel, DvzColor color)
     };
     DvzColor colors[3] = {0};
     for (uint32_t i = 0; i < 3; i++)
-        dvz_memcpy(colors[i], sizeof(DvzColor), color, sizeof(DvzColor));
+        colors[i] = color;
 
     if (dvz_visual_set_data(visual, "position", positions, 3) != 0 ||
         dvz_visual_set_data(visual, "color", colors, 3) != 0 ||
@@ -591,7 +591,7 @@ static DvzVisual* _app_primitive_add_quad(
     };
     DvzColor colors[6] = {0};
     for (uint32_t i = 0; i < 6; i++)
-        dvz_memcpy(colors[i], sizeof(DvzColor), color, sizeof(DvzColor));
+        colors[i] = color;
 
     if (dvz_visual_set_data(visual, "position", positions, 6) != 0 ||
         dvz_visual_set_data(visual, "color", colors, 6) != 0 ||
@@ -3572,7 +3572,7 @@ int test_app_offscreen_source_over_mesh_depth_and_blend(TstContext* suite, const
 
     const uint8_t* blended = _pixel_at(rgba, width, height, width / 4, height / 2);
     const uint8_t* occluded = _pixel_at(rgba, width, height, (5 * width) / 8, height / 2);
-    AT(blended[0] > background[0] + 60);
+    AT(blended[0] > background.r + 60);
     AT(blended[2] > 70);
     AT(blended[1] < 80);
     AT(occluded[1] > 160);
@@ -3666,9 +3666,9 @@ int test_app_offscreen_depth_peel_mesh_two_layers(TstContext* suite, const TstCa
     uint64_t occluded_region_b =
         _app_rgb_region_channel_sum(rgba, width, height, 40, 28, 48, 36, 2);
 
-    AT(red_region_r > ((uint64_t)background[0] + 45) * region_pixels);
+    AT(red_region_r > ((uint64_t)background.r + 45) * region_pixels);
     AT(red_region_r > red_region_b + 30 * region_pixels);
-    AT(blue_region_b > ((uint64_t)background[2] + 45) * region_pixels);
+    AT(blue_region_b > ((uint64_t)background.b + 45) * region_pixels);
     AT(blue_region_b > blue_region_r + 30 * region_pixels);
     AT(occluded_region_g > 160 * region_pixels);
     AT(occluded_region_g > occluded_region_r + 80 * region_pixels);
@@ -3909,14 +3909,8 @@ int test_app_offscreen_lit_primitive_depth_orders_overlap(TstContext* suite, con
     DvzColor far_colors[6];
     for (uint32_t i = 0; i < 6; i++)
     {
-        near_colors[i][0] = 32;
-        near_colors[i][1] = 64;
-        near_colors[i][2] = 255;
-        near_colors[i][3] = 255;
-        far_colors[i][0] = 255;
-        far_colors[i][1] = 32;
-        far_colors[i][2] = 32;
-        far_colors[i][3] = 255;
+        near_colors[i] = dvz_color_rgba(32, 64, 255, 255);
+        far_colors[i] = dvz_color_rgba(255, 32, 32, 255);
     }
 
     AT(dvz_visual_set_data(near_visual, "position", near_positions, 6) == 0);
@@ -4005,10 +3999,7 @@ int test_app_offscreen_lit_primitive_depth_cue_darkens_far(
         normals[i][0] = 0.0f;
         normals[i][1] = 0.0f;
         normals[i][2] = 1.0f;
-        colors[i][0] = 255;
-        colors[i][1] = 48;
-        colors[i][2] = 48;
-        colors[i][3] = 255;
+        colors[i] = dvz_color_rgba(255, 48, 48, 255);
     }
 
     AT(dvz_visual_set_data(visual, "position", positions, 12) == 0);
@@ -4239,10 +4230,7 @@ static void _rotated_mesh_build_cube(
             _rotated_mesh_rotate_point(
                 face_positions[face][corner][0], face_positions[face][corner][1],
                 face_positions[face][corner][2], positions[vertex]);
-            colors[vertex][0] = face_colors[face][0];
-            colors[vertex][1] = face_colors[face][1];
-            colors[vertex][2] = face_colors[face][2];
-            colors[vertex][3] = face_colors[face][3];
+            colors[vertex] = face_colors[face];
             normals[vertex][0] = rotated_normal[0];
             normals[vertex][1] = rotated_normal[1];
             normals[vertex][2] = rotated_normal[2];
@@ -4306,10 +4294,7 @@ static void _mesh_build_cube_object_space(
             positions[vertex][0] = face_positions[face][corner][0];
             positions[vertex][1] = face_positions[face][corner][1];
             positions[vertex][2] = face_positions[face][corner][2];
-            colors[vertex][0] = face_colors[face][0];
-            colors[vertex][1] = face_colors[face][1];
-            colors[vertex][2] = face_colors[face][2];
-            colors[vertex][3] = face_colors[face][3];
+            colors[vertex] = face_colors[face];
             normals[vertex][0] = face_normals[face][0];
             normals[vertex][1] = face_normals[face][1];
             normals[vertex][2] = face_normals[face][2];
@@ -6128,10 +6113,7 @@ int test_app_offscreen_volume_depth_occluded_by_primitive(TstContext* suite, con
     DvzColor black[6];
     for (uint32_t i = 0; i < 6; i++)
     {
-        black[i][0] = 0;
-        black[i][1] = 0;
-        black[i][2] = 0;
-        black[i][3] = 255;
+        black[i] = dvz_color_rgb(0, 0, 0);
     }
     AT(dvz_visual_set_data(occluder, "position", quad, 6) == 0);
     AT(dvz_visual_set_data(occluder, "color", black, 6) == 0);

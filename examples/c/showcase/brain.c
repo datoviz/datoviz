@@ -653,8 +653,8 @@ static bool _load_ibl_atlas_mesh(const char* data_dir, AllenIblAtlasMesh* atlas)
     dvz_memcpy(atlas->draw_idx, idx_size, atlas->idx, idx_size);
     for (uint32_t i = 0; i < (uint32_t)vertex_count; i++)
     {
-        atlas->base_color[i][3] = 255;
-        atlas->color[i][3] = 255;
+        atlas->base_color[i].a = 255;
+        atlas->color[i].a = 255;
     }
 
     _load_ibl_volume_bounds(data_dir, atlas);
@@ -1374,7 +1374,7 @@ static void _apply_atlas_mesh_controls(AllenMouseBrainState* state)
     {
         uint32_t alpha = 255;
         alpha = (uint32_t)((float)alpha * state->atlas_alpha_scale + 0.5f);
-        state->atlas_mesh->color[i][3] = alpha > 255u ? 255u : (uint8_t)alpha;
+        state->atlas_mesh->color[i].a = alpha > 255u ? 255u : (uint8_t)alpha;
     }
     for (uint32_t r = 0; r < state->atlas_mesh->region_count; r++)
     {
@@ -1387,7 +1387,7 @@ static void _apply_atlas_mesh_controls(AllenMouseBrainState* state)
         if (alpha > 255u)
             alpha = 255u;
         for (uint32_t i = region->vertex_start; i < end; i++)
-            state->atlas_mesh->color[i][3] = (uint8_t)alpha;
+            state->atlas_mesh->color[i].a = (uint8_t)alpha;
     }
 
     if (dvz_visual_set_data(

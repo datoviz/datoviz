@@ -107,7 +107,7 @@ int main(int argc, char** argv)
             &(DvzTextStyle){
                 .size_px = sizes[i],
                 .renderer = DVZ_TEXT_RENDERER_MSDF_ATLAS,
-                .color = {colors[i][0], colors[i][1], colors[i][2], colors[i][3]},
+                .color = {colors[i].r, colors[i].g, colors[i].b, colors[i].a},
             });
         EXAMPLE_CHECK(rc == 0, "dvz_text_set_style() failed");
         dvz_text_set_placement(

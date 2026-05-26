@@ -57,10 +57,7 @@ int test_geometry_cube(TstContext* suite, const TstCase* tstitem)
     ANN(suite);
 
     DvzGeometryCubeDesc desc = {.center = {1.0, 2.0, 3.0}, .size = 2.0};
-    desc.color[0] = 10;
-    desc.color[1] = 20;
-    desc.color[2] = 30;
-    desc.color[3] = 255;
+    desc.color = dvz_color_rgba(10, 20, 30, 255);
 
     DvzGeometry* cube = dvz_geom_cube(&desc);
     AT(cube != NULL);
@@ -78,10 +75,10 @@ int test_geometry_cube(TstContext* suite, const TstCase* tstitem)
 
     for (uint32_t i = 0; i < cube->index_count; i++)
         AT(cube->indices[i] < cube->vertex_count);
-    AT(cube->colors[0][0] == 10);
-    AT(cube->colors[0][1] == 20);
-    AT(cube->colors[0][2] == 30);
-    AT(cube->colors[0][3] == 255);
+    AT(cube->colors[0].r == 10);
+    AT(cube->colors[0].g == 20);
+    AT(cube->colors[0].b == 30);
+    AT(cube->colors[0].a == 255);
     AC(cube->normals[0][0], 1.0, EPS);
 
     dvz_geometry_destroy(cube);
@@ -105,10 +102,10 @@ int test_geometry_cube(TstContext* suite, const TstCase* tstitem)
         for (uint32_t corner = 0; corner < 4; corner++)
         {
             const uint32_t vertex = 4 * face + corner;
-            AT(colored_cube->colors[vertex][0] == face_colors[face][0]);
-            AT(colored_cube->colors[vertex][1] == face_colors[face][1]);
-            AT(colored_cube->colors[vertex][2] == face_colors[face][2]);
-            AT(colored_cube->colors[vertex][3] == face_colors[face][3]);
+            AT(colored_cube->colors[vertex].r == face_colors[face].r);
+            AT(colored_cube->colors[vertex].g == face_colors[face].g);
+            AT(colored_cube->colors[vertex].b == face_colors[face].b);
+            AT(colored_cube->colors[vertex].a == face_colors[face].a);
         }
     }
     dvz_geometry_destroy(colored_cube);
@@ -148,7 +145,7 @@ int test_geometry_plane(TstContext* suite, const TstCase* tstitem)
         AC(plane->normals[i][0], 0.0, EPS);
         AC(plane->normals[i][1], 0.0, EPS);
         AC(plane->normals[i][2], 1.0, EPS);
-        AT(plane->colors[i][3] == 255);
+        AT(plane->colors[i].a == 255);
     }
 
     dvz_geometry_destroy(plane);
@@ -169,10 +166,7 @@ int test_geometry_surface_grid(TstContext* suite, const TstCase* tstitem)
     DvzColor colors[9] = {0};
     for (uint32_t i = 0; i < 9; i++)
     {
-        colors[i][0] = (uint8_t)i;
-        colors[i][1] = 20;
-        colors[i][2] = 30;
-        colors[i][3] = 255;
+        colors[i] = dvz_color_rgba((uint8_t)i, 20, 30, 255);
     }
 
     DvzGeometrySurfaceGridDesc desc = {
@@ -195,8 +189,8 @@ int test_geometry_surface_grid(TstContext* suite, const TstCase* tstitem)
     AC(grid->positions[4][2], 1.0, EPS);
     AC(grid->texcoords[8][0], 1.0, EPS);
     AC(grid->texcoords[8][1], 1.0, EPS);
-    AT(grid->colors[8][0] == 8);
-    AT(grid->colors[8][3] == 255);
+    AT(grid->colors[8].r == 8);
+    AT(grid->colors[8].a == 255);
 
     AT(grid->indices[0] == 0);
     AT(grid->indices[1] == 1);
@@ -477,10 +471,10 @@ int test_geometry_polygon_triangulation(TstContext* suite, const TstCase* tstite
         AC(triangle->normals[i][2], 1.0, EPS);
         AC(triangle->texcoords[i][0], 0.0, EPS);
         AC(triangle->texcoords[i][1], 0.0, EPS);
-        AT(triangle->colors[i][0] == 255);
-        AT(triangle->colors[i][1] == 255);
-        AT(triangle->colors[i][2] == 255);
-        AT(triangle->colors[i][3] == 255);
+        AT(triangle->colors[i].r == 255);
+        AT(triangle->colors[i].g == 255);
+        AT(triangle->colors[i].b == 255);
+        AT(triangle->colors[i].a == 255);
     }
     dvz_geometry_destroy(triangle);
 

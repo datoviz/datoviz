@@ -261,14 +261,11 @@ static uint32_t _build_path_data(PathStressState* state)
             if (state->color_gradient)
             {
                 (void)dvz_colormap_builtin_sample(
-                    DVZ_BUILTIN_COLORMAP_TURBO, global_t, state->colors[idx]);
+                    DVZ_BUILTIN_COLORMAP_TURBO, global_t, &state->colors[idx]);
             }
             else
             {
-                state->colors[idx][0] = 232;
-                state->colors[idx][1] = 236;
-                state->colors[idx][2] = 230;
-                state->colors[idx][3] = 255;
+                state->colors[idx] = dvz_color_rgba(232, 236, 230, 255);
             }
 
             float width = _clamp_float(state->global_stroke_width, 0.5f, 32.0f);
