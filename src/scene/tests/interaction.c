@@ -2324,6 +2324,20 @@ int test_scene_text_block_parse_markup(TstContext* suite, const TstCase* item)
     AT(block.diagnostic[0] != '\0');
     AT(strcmp(block.text, "x </b> y") == 0);
 
+    _scene_text_block_init(
+        &block, "<u>under</u> <color=#2A80E6><b>blue</b></color>");
+    AT(_scene_text_block_parse(&block) == 0);
+    AT(block.valid);
+    AT(block.diagnostic[0] == '\0');
+    AT(strcmp(block.text, "under blue") == 0);
+    AT(block.run_count == 3);
+    AT((block.runs[0].style_flags & DVZ_TEXT_BLOCK_STYLE_UNDERLINE) != 0);
+    AT(block.runs[2].has_color);
+    AT(block.runs[2].color.r == 42);
+    AT(block.runs[2].color.g == 128);
+    AT(block.runs[2].color.b == 230);
+    AT((block.runs[2].style_flags & DVZ_TEXT_BLOCK_STYLE_BOLD) != 0);
+
     return 0;
 }
 
@@ -2412,6 +2426,18 @@ int test_scene_text_block_rasterize(TstContext* suite, const TstCase* item)
     AT(_scene_text_block_rasterize(&block, NULL) == 0);
     AT(block.rgba == first_raster);
     AT(block.raster_version == 2);
+
+    AT(_scene_text_block_rasterize(
+           &block,
+           &(DvzTextBlockRasterDesc){
+               .text_color = {255, 255, 255, 255},
+               .background_color = {0, 0, 0, 0},
+               .scale = 2.0f,
+           }) == 0);
+    AT(block.raster_width == 64);
+    AT(block.raster_height == 28);
+    AC(block.raster_scale, 2.0f, 1e-6f);
+    AT(block.raster_version == 3);
     _scene_text_block_destroy(&block);
     AT(block.rgba == NULL);
     AT(block.rgba_size == 0);

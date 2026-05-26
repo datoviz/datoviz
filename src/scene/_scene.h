@@ -508,6 +508,7 @@ typedef enum
     DVZ_TEXT_BLOCK_STYLE_NONE = 0x00u,
     DVZ_TEXT_BLOCK_STYLE_BOLD = 0x01u,
     DVZ_TEXT_BLOCK_STYLE_ITALIC = 0x02u,
+    DVZ_TEXT_BLOCK_STYLE_UNDERLINE = 0x04u,
 } DvzTextBlockStyleFlag;
 
 
@@ -518,6 +519,8 @@ struct DvzTextBlockRun
     uint32_t text_start;
     uint32_t text_end;
     uint32_t style_flags;
+    bool has_color;
+    DvzColor color;
 };
 
 
@@ -534,6 +537,7 @@ struct DvzTextBlockRasterDesc
 {
     DvzColor text_color;
     DvzColor background_color;
+    float scale;
 };
 
 
@@ -558,10 +562,14 @@ struct DvzTextBlock
     DvzTextBlockRun runs[DVZ_SCENE_TEXT_BLOCK_MAX_RUNS];
     DvzTextBlockLayout layout;
     DvzTextLayoutMetrics metrics;
+    uint32_t layout_x[DVZ_SCENE_TEXT_BLOCK_TEXT_SIZE];
+    uint32_t layout_y[DVZ_SCENE_TEXT_BLOCK_TEXT_SIZE];
+    uint32_t layout_line_count;
     uint8_t* rgba;
     uint64_t rgba_size;
     uint32_t raster_width;
     uint32_t raster_height;
+    float raster_scale;
     uint64_t raster_version;
     DvzVisual* image_visual;
     DvzSampledField* image_field;

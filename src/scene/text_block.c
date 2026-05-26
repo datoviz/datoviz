@@ -64,6 +64,71 @@ static bool _text_block_starts_with(const char* source, uint32_t offset, const c
 }
 
 
+/**
+ * Return the integer value of one hexadecimal character.
+ *
+ * @param c character
+ * @param out output nibble
+ * @return whether the character is hexadecimal
+ */
+static bool _text_block_hex(char c, uint8_t* out)
+{
+    ANN(out);
+    if (c >= '0' && c <= '9')
+    {
+        *out = (uint8_t)(c - '0');
+        return true;
+    }
+    if (c >= 'a' && c <= 'f')
+    {
+        *out = (uint8_t)(10 + c - 'a');
+        return true;
+    }
+    if (c >= 'A' && c <= 'F')
+    {
+        *out = (uint8_t)(10 + c - 'A');
+        return true;
+    }
+    return false;
+}
+
+
+/**
+ * Parse a `<color=#RRGGBB>` opening tag.
+ *
+ * @param source UTF-8 source text
+ * @param offset byte offset
+ * @param out_color output color
+ * @param out_len output token length
+ * @return whether a valid color tag was parsed
+ */
+static bool _text_block_parse_color_open(
+    const char* source, uint32_t offset, DvzColor* out_color, uint32_t* out_len)
+{
+    ANN(source);
+    ANN(out_color);
+    ANN(out_len);
+    const char* prefix = "<color=#";
+    if (!_text_block_starts_with(source, offset, prefix))
+        return false;
+    uint32_t start = offset + (uint32_t)strlen(prefix);
+    if (source[start + 6] != '>')
+        return false;
+
+    uint8_t n[6] = {0};
+    for (uint32_t i = 0; i < 6; i++)
+    {
+        if (!_text_block_hex(source[start + i], &n[i]))
+            return false;
+    }
+    *out_color = dvz_color_rgba(
+        (uint8_t)((n[0] << 4u) | n[1]), (uint8_t)((n[2] << 4u) | n[3]),
+        (uint8_t)((n[4] << 4u) | n[5]), 255);
+    *out_len = (uint32_t)strlen(prefix) + 7u;
+    return true;
+}
+
+
 
 /**
  * Append one parsed style run.
@@ -97,13 +162,16 @@ static int _text_block_push_run(DvzTextBlock* block, const DvzTextBlockRun* run)
  * @param source_start source byte offset before the source token
  * @param source_end source byte offset after the source token
  * @param style_flags active style flags
+ * @param has_color whether the active run overrides the default text color
+ * @param color active run color
  * @param active whether a current run is active
  * @param current current run state
  * @return 0 on success, -1 on text buffer overflow
  */
 static int _text_block_append_byte(
     DvzTextBlock* block, char byte, uint32_t source_start, uint32_t source_end,
-    uint32_t style_flags, bool* active, DvzTextBlockRun* current)
+    uint32_t style_flags, bool has_color, DvzColor color, bool* active,
+    DvzTextBlockRun* current)
 {
     ANN(block);
     ANN(active);
@@ -118,6 +186,8 @@ static int _text_block_append_byte(
         current->source_start = source_start;
         current->text_start = block->text_size;
         current->style_flags = style_flags;
+        current->has_color = has_color;
+        current->color = color;
         *active = true;
     }
     block->text[block->text_size++] = byte;
@@ -173,6 +243,22 @@ static uint32_t _text_block_px(float value, uint32_t fallback)
 }
 
 
+/**
+ * Return a positive integer pixel size after applying a raster scale.
+ *
+ * @param value logical pixel value
+ * @param scale raster scale
+ * @param fallback fallback integer value
+ * @return rounded positive integer
+ */
+static uint32_t _text_block_scaled_px(float value, float scale, uint32_t fallback)
+{
+    if (scale <= 0.0f)
+        scale = 1.0f;
+    return _text_block_px(value * scale, fallback);
+}
+
+
 
 /**
  * Return style flags active at one parsed text byte.
@@ -191,6 +277,28 @@ static uint32_t _text_block_style_at(const DvzTextBlock* block, uint32_t text_in
             return run->style_flags;
     }
     return DVZ_TEXT_BLOCK_STYLE_NONE;
+}
+
+
+/**
+ * Return the text color active at one parsed text byte.
+ *
+ * @param block the text block
+ * @param text_index parsed text byte index
+ * @param fallback fallback color
+ * @return active text color
+ */
+static DvzColor _text_block_color_at(
+    const DvzTextBlock* block, uint32_t text_index, DvzColor fallback)
+{
+    ANN(block);
+    for (uint32_t i = 0; i < block->run_count; i++)
+    {
+        const DvzTextBlockRun* run = &block->runs[i];
+        if (text_index >= run->text_start && text_index < run->text_end)
+            return run->has_color ? run->color : fallback;
+    }
+    return fallback;
 }
 
 
@@ -249,20 +357,22 @@ static bool _text_block_glyph_cell(char byte, uint32_t col, uint32_t row)
  * @param y origin y coordinate
  * @param style_flags active style flags
  * @param color text color
+ * @param scale raster scale
  */
 static void _text_block_draw_byte(
     DvzTextBlock* block, char byte, uint32_t x, uint32_t y, uint32_t style_flags,
-    const DvzColor color)
+    const DvzColor color, float scale)
 {
     ANN(block);
     if (byte == ' ' || byte == '\t' || byte == '\n')
         return;
 
-    uint32_t char_w = _text_block_px(block->layout.char_width_px, 7);
-    uint32_t line_h = _text_block_px(block->layout.line_height_px, 14);
+    uint32_t char_w = _text_block_scaled_px(block->layout.char_width_px, scale, 7);
+    uint32_t line_h = _text_block_scaled_px(block->layout.line_height_px, scale, 14);
     uint32_t glyph_w = char_w > 2 ? char_w - 2u : char_w;
     uint32_t glyph_h = line_h > 4 ? line_h - 4u : line_h;
     uint32_t thickness = (style_flags & DVZ_TEXT_BLOCK_STYLE_BOLD) != 0 ? 2u : 1u;
+    uint32_t underline_y = y + line_h - 2u;
     for (uint32_t gy = 0; gy < glyph_h; gy++)
     {
         uint32_t row = glyph_h > 1 ? (7u * gy) / glyph_h : 0;
@@ -277,6 +387,92 @@ static void _text_block_draw_byte(
                 _text_block_put_px(block, x + 1u + gx + italic_shift + t, y + 2u + gy, color);
         }
     }
+    if ((style_flags & DVZ_TEXT_BLOCK_STYLE_UNDERLINE) != 0)
+    {
+        for (uint32_t ux = 1; ux + 1 < char_w; ux++)
+            _text_block_put_px(block, x + ux, underline_y, color);
+    }
+}
+
+
+/**
+ * Compute fixed-advance text positions with simple word wrapping.
+ *
+ * @param block the text block
+ * @param wrap_chars maximum visible characters per line, or zero for no wrapping
+ * @param out_max_line_chars output maximum line length
+ * @param out_line_count output line count
+ */
+static void _text_block_layout_chars(
+    DvzTextBlock* block, uint32_t wrap_chars, uint32_t* out_max_line_chars,
+    uint32_t* out_line_count)
+{
+    ANN(block);
+    ANN(out_max_line_chars);
+    ANN(out_line_count);
+    uint32_t line_chars = 0;
+    uint32_t max_line_chars = 0;
+    uint32_t line_count = 1;
+    uint32_t i = 0;
+    while (i < block->text_size)
+    {
+        if (block->text[i] == '\n')
+        {
+            block->layout_x[i] = line_chars;
+            block->layout_y[i] = line_count - 1u;
+            if (line_chars > max_line_chars)
+                max_line_chars = line_chars;
+            line_chars = 0;
+            line_count++;
+            i++;
+            continue;
+        }
+
+        uint32_t word_len = 0;
+        while (i + word_len < block->text_size)
+        {
+            char c = block->text[i + word_len];
+            if (c == ' ' || c == '\t' || c == '\n')
+                break;
+            word_len++;
+        }
+        bool word_start =
+            i == 0 || block->text[i - 1u] == ' ' || block->text[i - 1u] == '\t' ||
+            block->text[i - 1u] == '\n';
+        if (wrap_chars > 0 && word_start && word_len > 0 && line_chars > 0 &&
+            line_chars + word_len > wrap_chars)
+        {
+            if (line_chars > max_line_chars)
+                max_line_chars = line_chars;
+            line_chars = 0;
+            line_count++;
+        }
+
+        char c = block->text[i];
+        if ((c == ' ' || c == '\t') && wrap_chars > 0 && line_chars == 0)
+        {
+            block->layout_x[i] = 0;
+            block->layout_y[i] = line_count - 1u;
+            i++;
+            continue;
+        }
+        if (wrap_chars > 0 && line_chars >= wrap_chars)
+        {
+            if (line_chars > max_line_chars)
+                max_line_chars = line_chars;
+            line_chars = 0;
+            line_count++;
+        }
+        block->layout_x[i] = line_chars;
+        block->layout_y[i] = line_count - 1u;
+        line_chars++;
+        i++;
+    }
+    if (line_chars > max_line_chars)
+        max_line_chars = line_chars;
+    *out_max_line_chars = max_line_chars;
+    *out_line_count = line_count;
+    block->layout_line_count = line_count;
 }
 
 
@@ -354,6 +550,8 @@ int _scene_text_block_parse(DvzTextBlock* block)
     block->valid = false;
 
     uint32_t style_flags = DVZ_TEXT_BLOCK_STYLE_NONE;
+    bool has_color = false;
+    DvzColor active_color = {0};
     DvzTextBlockRun current = {0};
     bool active = false;
     uint32_t i = 0;
@@ -419,10 +617,78 @@ int _scene_text_block_parse(DvzTextBlock* block)
                 continue;
             }
         }
+        else if (_text_block_starts_with(block->source, i, "<u>"))
+        {
+            if ((style_flags & DVZ_TEXT_BLOCK_STYLE_UNDERLINE) != 0)
+            {
+                _text_block_diag(block, "duplicate underline markup", i);
+            }
+            else
+            {
+                if (_text_block_close_run(block, &active, &current) != 0)
+                    return -1;
+                style_flags |= DVZ_TEXT_BLOCK_STYLE_UNDERLINE;
+                i += 3;
+                continue;
+            }
+        }
+        else if (_text_block_starts_with(block->source, i, "</u>"))
+        {
+            if ((style_flags & DVZ_TEXT_BLOCK_STYLE_UNDERLINE) == 0)
+            {
+                _text_block_diag(block, "unmatched underline close markup", i);
+            }
+            else
+            {
+                if (_text_block_close_run(block, &active, &current) != 0)
+                    return -1;
+                style_flags &= ~((uint32_t)DVZ_TEXT_BLOCK_STYLE_UNDERLINE);
+                i += 4;
+                continue;
+            }
+        }
+        else
+        {
+            DvzColor parsed_color = {0};
+            uint32_t color_tag_len = 0;
+            if (_text_block_parse_color_open(block->source, i, &parsed_color, &color_tag_len))
+            {
+                if (has_color)
+                {
+                    _text_block_diag(block, "nested color markup", i);
+                }
+                else
+                {
+                    if (_text_block_close_run(block, &active, &current) != 0)
+                        return -1;
+                    active_color = parsed_color;
+                    has_color = true;
+                    i += color_tag_len;
+                    continue;
+                }
+            }
+        }
+        if (_text_block_starts_with(block->source, i, "</color>"))
+        {
+            if (!has_color)
+            {
+                _text_block_diag(block, "unmatched color close markup", i);
+            }
+            else
+            {
+                if (_text_block_close_run(block, &active, &current) != 0)
+                    return -1;
+                has_color = false;
+                active_color = (DvzColor){0};
+                i += 8;
+                continue;
+            }
+        }
         else if (_text_block_starts_with(block->source, i, "&lt;"))
         {
             if (_text_block_append_byte(
-                    block, '<', i, i + 4, style_flags, &active, &current) != 0)
+                    block, '<', i, i + 4, style_flags, has_color, active_color, &active,
+                    &current) != 0)
                 return -1;
             i += 4;
             continue;
@@ -430,7 +696,8 @@ int _scene_text_block_parse(DvzTextBlock* block)
         else if (_text_block_starts_with(block->source, i, "&gt;"))
         {
             if (_text_block_append_byte(
-                    block, '>', i, i + 4, style_flags, &active, &current) != 0)
+                    block, '>', i, i + 4, style_flags, has_color, active_color, &active,
+                    &current) != 0)
                 return -1;
             i += 4;
             continue;
@@ -438,7 +705,8 @@ int _scene_text_block_parse(DvzTextBlock* block)
         else if (_text_block_starts_with(block->source, i, "&amp;"))
         {
             if (_text_block_append_byte(
-                    block, '&', i, i + 5, style_flags, &active, &current) != 0)
+                    block, '&', i, i + 5, style_flags, has_color, active_color, &active,
+                    &current) != 0)
                 return -1;
             i += 5;
             continue;
@@ -449,14 +717,15 @@ int _scene_text_block_parse(DvzTextBlock* block)
         }
 
         if (_text_block_append_byte(
-                block, block->source[i], i, i + 1, style_flags, &active, &current) != 0)
+                block, block->source[i], i, i + 1, style_flags, has_color, active_color, &active,
+                &current) != 0)
             return -1;
         i++;
     }
 
     if (_text_block_close_run(block, &active, &current) != 0)
         return -1;
-    if (style_flags != DVZ_TEXT_BLOCK_STYLE_NONE)
+    if (style_flags != DVZ_TEXT_BLOCK_STYLE_NONE || has_color)
         _text_block_diag(block, "unclosed text block markup", block->source_size);
     block->valid = true;
     return 0;
@@ -497,30 +766,9 @@ int _scene_text_block_measure(DvzTextBlock* block, const DvzTextBlockLayout* lay
             wrap_chars = (uint32_t)(content_width / resolved.char_width_px);
     }
 
-    uint32_t line_chars = 0;
     uint32_t max_line_chars = 0;
     uint32_t line_count = 1;
-    for (uint32_t i = 0; i < block->text_size; i++)
-    {
-        if (block->text[i] == '\n')
-        {
-            if (line_chars > max_line_chars)
-                max_line_chars = line_chars;
-            line_chars = 0;
-            line_count++;
-            continue;
-        }
-        if (wrap_chars > 0 && line_chars >= wrap_chars)
-        {
-            if (line_chars > max_line_chars)
-                max_line_chars = line_chars;
-            line_chars = 0;
-            line_count++;
-        }
-        line_chars++;
-    }
-    if (line_chars > max_line_chars)
-        max_line_chars = line_chars;
+    _text_block_layout_chars(block, wrap_chars, &max_line_chars, &line_count);
 
     float width_px = (float)max_line_chars * resolved.char_width_px + 2.0f * resolved.padding_px[0];
     if (resolved.max_width_px > 0.0f && width_px > resolved.max_width_px)
@@ -567,12 +815,15 @@ int _scene_text_block_rasterize(DvzTextBlock* block, const DvzTextBlockRasterDes
     DvzTextBlockRasterDesc resolved = {
         .text_color = {255, 255, 255, 255},
         .background_color = {0, 0, 0, 0},
+        .scale = 1.0f,
     };
     if (desc != NULL)
         resolved = *desc;
+    if (resolved.scale <= 0.0f)
+        resolved.scale = 1.0f;
 
-    uint32_t width = _text_block_px(block->metrics.advance[0], 1);
-    uint32_t height = _text_block_px(block->metrics.advance[1], 1);
+    uint32_t width = _text_block_scaled_px(block->metrics.advance[0], resolved.scale, 1);
+    uint32_t height = _text_block_scaled_px(block->metrics.advance[1], resolved.scale, 1);
     uint64_t pixel_count = 0;
     uint64_t byte_count = 0;
     if (_dvz_mul_u64_overflows(width, height, &pixel_count) ||
@@ -599,6 +850,7 @@ int _scene_text_block_rasterize(DvzTextBlock* block, const DvzTextBlockRasterDes
     }
     block->raster_width = width;
     block->raster_height = height;
+    block->raster_scale = resolved.scale;
 
     for (uint64_t i = 0; i < pixel_count; i++)
     {
@@ -608,39 +860,20 @@ int _scene_text_block_rasterize(DvzTextBlock* block, const DvzTextBlockRasterDes
         block->rgba[4u * i + 3] = resolved.background_color.a;
     }
 
-    uint32_t char_w = _text_block_px(block->layout.char_width_px, 7);
-    uint32_t line_h = _text_block_px(block->layout.line_height_px, 14);
-    uint32_t pad_x = _text_block_px(block->layout.padding_px[0], 0);
-    uint32_t pad_y = _text_block_px(block->layout.padding_px[1], 0);
-    uint32_t wrap_chars = 0;
-    if (block->layout.max_width_px > 0.0f)
-    {
-        float content_width = block->layout.max_width_px - 2.0f * block->layout.padding_px[0];
-        if (content_width > block->layout.char_width_px)
-            wrap_chars = (uint32_t)(content_width / block->layout.char_width_px);
-    }
-
-    uint32_t line_chars = 0;
-    uint32_t line_index = 0;
+    uint32_t char_w = _text_block_scaled_px(block->layout.char_width_px, resolved.scale, 7);
+    uint32_t line_h = _text_block_scaled_px(block->layout.line_height_px, resolved.scale, 14);
+    uint32_t pad_x = _text_block_scaled_px(block->layout.padding_px[0], resolved.scale, 0);
+    uint32_t pad_y = _text_block_scaled_px(block->layout.padding_px[1], resolved.scale, 0);
     for (uint32_t i = 0; i < block->text_size; i++)
     {
         if (block->text[i] == '\n')
-        {
-            line_chars = 0;
-            line_index++;
             continue;
-        }
-        if (wrap_chars > 0 && line_chars >= wrap_chars)
-        {
-            line_chars = 0;
-            line_index++;
-        }
 
-        uint32_t x = pad_x + line_chars * char_w;
-        uint32_t y = pad_y + line_index * line_h;
+        uint32_t x = pad_x + block->layout_x[i] * char_w;
+        uint32_t y = pad_y + block->layout_y[i] * line_h;
+        DvzColor color = _text_block_color_at(block, i, resolved.text_color);
         _text_block_draw_byte(
-            block, block->text[i], x, y, _text_block_style_at(block, i), resolved.text_color);
-        line_chars++;
+            block, block->text[i], x, y, _text_block_style_at(block, i), color, resolved.scale);
     }
 
     block->raster_version++;
