@@ -59,7 +59,7 @@ label-layout polish can move to RC2 or v0.5.
 |---|---|---|---|
 | Scene/app basics | Retained scene, figures, panels, offscreen/GLFW app, capture, frame callbacks. | Broader hosted/integration polish. | Application frameworks owned above Datoviz. |
 | Core visuals | Point, pixel, marker, primitive, segment/path, image, mesh, sphere, volume, basic text visual hardening. | Vector/arrow visual, richer path grouping, textured mesh/sphere, stronger volume slices. | Tubes/ribbons, skybox/cubemap, advanced domain visuals. |
-| Text/explanatory objects | Release-quality basic rendered text, 2D axes/ticks, continuous colorbars, labels/readouts. | Legends, categorical scales, richer annotation/callout and label layout. | Full math/TeX, complex shaping, publication typography in GSP/Matplotlib. |
+| Text/explanatory objects | Release-quality basic rendered text, 2D axes/ticks, continuous colorbars, categorical legends, labels/readouts. | Shared legends/colorbars, richer annotation/callout and label layout. | Full math/TeX, complex shaping, publication typography in GSP/Matplotlib. |
 | Interaction | Point pick, image probe, marker pick, basic selection highlight, linked crosshair/probe. | Mesh/region, path, label, volume pick/probe; lasso/box selection. | Full dashboard interaction models in GSP/VisPy2. |
 | Layout/linking | Grid/subplot layout, linked panzoom x/y, panel reservations. | Dashboard layout helpers, shared legends/colorbars. | Full application/dashboard framework in GSP/VisPy2. |
 | Large data | Stable high-count point/pixel/path updates and basic partial updates. | LOD, ring buffers, visible-range policies, tiled images. | Out-of-core and distributed data policies. |
@@ -81,14 +81,14 @@ These examples should be part of the v0.4 release narrative or required C valida
 | `core/PATH_AXES_2D.md` | `v0.4 required` / `needs-rc1-proof` | path, rendered text, 2D axes/ticks | Use as the first axes/text regression target. |
 | `core/LINKED_PANELS_AXES_PANZOOM.md` | `v0.4 required` / `needs-rc1-proof` | grid/layout, linked panzoom, axes | Required to prove linked panels are real, not only layout. |
 | `core/LINKED_PANELS_PROBE_COLORBAR.md` | `v0.4 required` / `needs-rc1-proof` | image probe, colorbar, annotation/readout, linked state | Main 2D explanatory-object pressure test. |
-| `core/MARKER_PICKING.md` | `v0.4 required` / `partial-now` | marker visual, marker pick, selection highlight | Required if marker remains a supported v0.4 visual family. |
+| `core/MARKER_PICKING.md` | `v0.4 required` / `needs-rc1-proof` | marker visual, bounding-box marker pick, selection highlight | Required if marker remains a supported v0.4 visual family; exact SDF picking can follow. |
 | `core/SPHERE_IMPOSTOR.md` | `v0.4 required` / `ready-now` | sphere visual, lighting/depth basics | Small proof for sphere impostors and 3D visual polish. |
-| `core/VOLUME_SLICE.md` | `v0.4 required` / `partial-now` | 3D sampled field, volume slice, transfer/value range | Required to avoid volume regression from v0.3. |
-| `core/VOLUME_OFFSCREEN.md` | `v0.4 required` / `partial-now` | volume rendering plus deterministic capture | Required as the volume capture smoke. |
+| `core/VOLUME_SLICE.md` | `v0.4 required` / `needs-rc1-proof` | 3D sampled field, volume slice, transfer/value range | Required to avoid volume regression from v0.3. |
+| `core/VOLUME_OFFSCREEN.md` | `v0.4 required` / `needs-rc1-proof` | volume rendering plus deterministic capture | Required as the volume capture smoke. |
 | `core/SCALEBAR_2D_3D.md` | `v0.4 required` / `needs-rc1-proof` | retained scale bars, labels, panzoom/domain updates | Keep a narrow fixture in RC1; leave update-churn optimization for RC2 unless it blocks examples. |
 | `api/API_IMAGE_PROBE_PINNED_READOUT.md` | `v0.4 required` / `needs-rc1-proof` | image probe, pinned readout text | Keep as the API-level readout contract test. |
 | `api/API_SCALE_COLORBAR_ANNOTATION.md` | `v0.4 required` / `needs-rc1-proof` | scales, colorbars, labels, annotations | Keep as the explanatory-object API contract test. |
-| `api/API_SAMPLED_FIELD.md` | `v0.4 required` / `partial-now` | sampled fields, image, volume | Keep as the resource-sharing contract test. |
+| `api/API_SAMPLED_FIELD.md` | `v0.4 required` / `needs-rc1-proof` | sampled fields, image, labels, volume | Keep as the resource-sharing contract test. |
 | `bio/PROTEIN_ARCBALL_VIEWER.md` | `v0.4 required` / `partial-now` | mesh, sphere, materials, SSAO/MSAA, GUI, arcball | Flagship native C showcase; defer labels/picking/molecular surface if needed. |
 | `geo/SHOWCASE_WIND_FIELD.md` | `v0.4 required` / `needs-rc1-proof` | image field, arrows via primitives, paths, panzoom, colorbar | Best 2D showcase; vector visual can be v0.5 replacement. |
 | `neuro/ALLEN_IBL_COORDINATE_MESH_VOLUME_PLAN.md` | `v0.4 required` / `partial-now` | volume, mesh transparency, GUI, arcball | Prefer a narrow volume + transparent atlas mesh slice. |
@@ -199,7 +199,7 @@ the worked-spec tables above; exact fixture names remain in
 
 | Path / family | Stage | Decision |
 |---|---|---|
-| `examples/c/visuals/point.c`, `pixel.c`, `marker.c`, `primitive.c`, `segment.c`, `path.c`, `mesh.c`, `image.c`, `volume.c`, `sphere.c` | `v0.4 fixture-only` | Keep buildable as active visual-family smoke examples. |
+| `examples/c/visuals/point.c`, `pixel.c`, `marker.c`, `primitive.c`, `segment.c`, `path.c`, `mesh.c`, `polygon.c`, `image.c`, `volume.c`, `sphere.c` | `v0.4 fixture-only` | Keep buildable as active visual-family and semantic-composite smoke examples. |
 | `examples/c/visuals/text.c` | `v0.4 required` / `partial-now` | Existing basic rendered-text smoke; harden as the canonical v0.4 text example. |
 | `examples/c/techniques/scatter_axes.c` | `v0.4 required` / `needs-rc1-proof` | Existing axes API/grid smoke; keep as the narrow linear axes/tick/label release proof. |
 | `examples/c/techniques/linked_panels.c`, `multi_panel.c` | `v0.4 required` | Keep as layout and linked-panel smoke targets. |
@@ -211,7 +211,7 @@ the worked-spec tables above; exact fixture names remain in
 | `examples/c/showcase/lidar.c` | `v0.4 required` | Dense point/EDL/performance showcase candidate. |
 | `examples/c/showcase/brain.c`, `ibl_brain.c` | `v0.4 required` for narrow slice | Keep as volume/mesh/transparency showcase lane; defer full atlas interaction. |
 | `examples/c/showcase/spatial_omics.c` | `v0.4 experimental` | Useful large point/pixel stress demo; polish can slip if text/selection are incomplete. |
-| `examples/c/showcase/labels.c` | `v0.4 fixture-only` | CPU-emulated label proof; final label texture/selection path is v0.5. |
+| `examples/c/showcase/labels.c` | `v0.4 experimental` | First-class integer labels visual with categorical legend, shader-side selection/boundary styling, and temporary CPU hover/click lookup until raw label GPU probing lands. |
 | `examples/c/tools/export_point_wgsl.c`, `export_primitive_wgsl.c`, `export_image_wgsl.c` | `v0.4 fixture-only` | WGSL/WebGPU stream generation fixtures. |
 | `examples/c/tools/raw_triangle_drp2.c`, `record_dvzr.c`, `replay_dvzr.c`, `hosted_glfw_smoke.c` | `v0.4 fixture-only` | Protocol/runtime/hosted-boundary validation. |
 | `examples/c/tools/raw_triangle.c` | `v0.4 experimental` | Low-level developer example, not scene release narrative. |

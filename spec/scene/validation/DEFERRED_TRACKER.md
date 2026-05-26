@@ -34,7 +34,7 @@ These items are in scope for v0.4 but deferred beyond the initial implementation
 | Lanczos and high-quality downsampling filters for export | `spec/scene/export/IMAGE_EXPORT.md` |
 | GPU compute pre-pass for non-linear projection (e.g., geographic) | `spec/scene/semantics/NONLINEAR_TRANSFORMS.md` |
 | Non-linear transform interaction with axes | `spec/scene/semantics/NONLINEAR_TRANSFORMS.md` |
-| Path widths, caps, joins, grouping, and tapered (per-vertex width) lines | `spec/scene/visuals/PATH.md` |
+| Path dashes, first-class closed-path API, path/subpath identity picking, SVG import, data-space stroke width, and WGSL parity beyond the active stroked path/caps/joins/subpath slice | `spec/scene/visuals/PATH.md` |
 | Future tube visual: impostor tubes, mesh tubes, ribbons, curve-id picking, and tube-specific pass policy | `spec/scene/visuals/TUBE.md` |
 | `volume` multiplane / MPR render mode | `spec/scene/visuals/VOLUME.md` |
 | Richer volume transfer functions and isosurface controls beyond the active first slice | `spec/scene/visuals/VOLUME.md` |
@@ -45,10 +45,10 @@ These items are in scope for v0.4 but deferred beyond the initial implementation
 | Advanced text shaping, fallback chains, equation layout, diagnostics, and data/world placement polish beyond the active rendered text path | `spec/scene/semantics/TEXT.md`, `spec/scene/visuals/GLYPH.md` |
 | Glyph-level, substring-level, and text-object picking | `spec/scene/semantics/TEXT.md`, `spec/scene/visuals/GLYPH.md` |
 | Non-label rendered annotations, rich readout UI, guides, and callout geometry beyond the active label and scale-bar slices | `spec/scene/semantics/ANNOTATIONS.md` |
-| Shared colorbar layout, categorical legends, interactive scale/range editing, and richer legend composition beyond the active continuous colorbar path | `spec/scene/semantics/LEGENDS_AND_COLORBARS.md` |
-| Labels and categorical sampled-field rendering/probe semantics beyond retained descriptors | `spec/scene/proposals/promoted/SAMPLED_FIELD_API_DESIGN.md` |
+| Shared colorbar/legend layout, interactive scale/range editing, and richer legend composition beyond the active continuous colorbar and categorical legend slices | `spec/scene/semantics/LEGENDS_AND_COLORBARS.md` |
+| Labels GPU probing, 3D label slices, GPU-only label resources, and large sparse-id pressure tests beyond the active 2D integer-label rendering slice | `spec/scene/proposals/active/LABELS_VISUAL_DESIGN.md` |
 | Richer probe payloads beyond basic point identity and image RGBA/value readback | `spec/scene/proposals/promoted/PROBE_READOUT_DESIGN.md` |
-| Broader mesh, sphere, volume, object, and grouped-family picking | `spec/scene/interaction/PICKING.md` |
+| Richer mesh face/region, path/subpath, label, text, volume ray-hit, object, and grouped-family picking beyond the active broad item-pick slices | `spec/scene/interaction/PICKING.md` |
 | Scene-level animation timeline coordination | `spec/scene/interaction/ANIMATION.md` |
 | Multi-scene GPU resource sharing across threads | `spec/scene/integration/THREAD_SAFETY.md` |
 | Polar axis geometry (circular gridlines, radial labels) | `spec/scene/pipeline/TRANSFORM_PIPELINE.md` |

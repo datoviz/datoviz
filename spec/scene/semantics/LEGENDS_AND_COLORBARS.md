@@ -15,10 +15,9 @@ capability fallbacks.
 
 ## API Model
 
-`DvzColorbar` is installed as a retained API handle. `DvzLegend` is the preferred semantic handle
-for discrete legends but is not installed yet; categorical legend API work must be recorded in
-`../api/API_SURFACE.md` before implementation. Legends and colorbars remain distinct API concepts
-because their content models differ.
+`DvzColorbar` and `DvzLegend` are installed as retained API handles. `DvzColorbar` explains
+continuous or ordered scalar mappings, while `DvzLegend` explains categorical/discrete mappings.
+Legends and colorbars remain distinct API concepts because their content models differ.
 
 Both may reference a first-class `DvzScale*` from [SCALES.md](SCALES.md). They do not own the scale.
 
@@ -55,15 +54,15 @@ Both may reference a first-class `DvzScale*` from [SCALES.md](SCALES.md). They d
 Legends and colorbars are annotation classes; shared anchor/placement behavior is defined in
 [ANNOTATIONS.md](ANNOTATIONS.md).
 
-The installed colorbar API supports two placement modes:
+The installed colorbar and legend APIs support two placement modes:
 
-1. attached colorbars contribute fixed logical pixels on a panel edge to the panel's resolved
+1. attached explanatory objects contribute fixed logical pixels on a panel edge to the panel's resolved
    reserve and render in that panel's adornment band;
-2. detached colorbars do not reserve plot space and use explicit `DvzPlacement` anchored in panel
+2. detached explanatory objects do not reserve plot space and use explicit `DvzPlacement` anchored in panel
    or figure pixel space.
 
-Attached colorbars use the same panel reserve aggregation path as axes. This keeps data visuals,
-axis geometry, and explanatory colorbar geometry aligned on one resolved plot rectangle while
+Attached colorbars and legends use the same panel reserve aggregation path as axes. This keeps data
+visuals, axis geometry, and explanatory-object geometry aligned on one resolved plot rectangle while
 preserving separate retained objects and invalidation rules.
 
 

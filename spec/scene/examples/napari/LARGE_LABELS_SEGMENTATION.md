@@ -15,9 +15,10 @@ instance-label overlay supporting opacity, random label coloring, boundaries, an
 highlighting. The preferred data is BBBC038 / Kaggle 2018 nuclei segmentation, converted into a
 cached image plus label-map representation; development may use `human_mitosis`, `cells3d`, or
 deterministic generated labels when the download is unavailable. The first implementation slice
-should use prepared data and the closest current v0.4 image/label path while preserving the staged
-plan for a first-class `LabelsVisual`. Validation should follow the existing staged acceptance
-criteria, especially visual alignment, stable pan/zoom, and correct label coloring semantics.
+should use prepared data and the current first-class `dvz_labels()` path while preserving the staged
+plan for raw label-ID GPU probing and larger sparse-ID pressure tests. Validation should follow the
+existing staged acceptance criteria, especially visual alignment, stable pan/zoom, correct label
+coloring semantics, and selection/boundary updates that do not require full label-texture rewrites.
 
 ## Purpose
 
@@ -198,36 +199,39 @@ Suggested message:
 - Enables future GPU picking by reading label ID under cursor.
 - Shows how napari layer semantics can map to a backend-neutral rendering primitive.
 
-## Current implementation gap
+## Current implementation status
 
-As of the current v0.4-dev scene slice, this demo is not yet implementable in the final intended
-architecture without more rendering work.
+As of the current v0.4-dev scene slice, the first intended labels-rendering architecture is partly
+implemented. The live synthetic labels example is `examples/c/showcase/labels.c`.
 
 Already available:
 
 - retained `ImageVisual` rendering through the scene -> DRP2 -> vklite/app path;
-- retained `SampledField` objects, including enum values for integer field formats such as
-  `R16_UINT` and `R32_UINT`;
+- retained `SampledField` objects with integer label semantics and signed/unsigned integer texture
+  formats;
 - z-layered panel visual attachment, so a base image visual and an overlay visual can be drawn in
   order;
 - partial sampled-field updates and dirty tracking;
 - live app/window execution with panzoom and Dear ImGui controls;
-- image probe request plumbing that can read back RGBA values from the image visual path.
+- image probe request plumbing that can read back RGBA/category-like values from the image visual
+  path;
+- first-class `dvz_labels()` rendering backed by integer sampled fields and categorical scales;
+- label shaders that fetch signed/unsigned integer IDs and apply hash/categorical styling;
+- label opacity, background ID, selected label, hidden IDs, fallback seed, and selected-boundary
+  styling through retained label state;
+- rendered categorical legends with signed-ID fallback labels and selection highlight support.
 
 Missing for the real Labels-layer architecture:
 
-- a first-class `LabelsVisual` or an equivalent image-label mode that binds integer sampled fields
-  directly instead of CPU-converting them to RGBA;
-- format-aware DRP2 texture upload validation and runtime copy layout for non-RGBA8 texel sizes;
-- sampler configuration, especially nearest filtering for labels;
-- label shaders that use `usampler2D` / `textureLoad()` and color IDs in the fragment shader;
-- low-latency label uniforms for opacity, selected label, color mode, and boundary mode;
 - label-specific probing/picking that returns the integer label ID under the cursor, rather than an
   RGBA value;
+- 3D labels slice rendering and GPU-only label resources;
+- larger sparse-ID pressure tests using thousands to tens of thousands of distinct IDs;
+- broader label palette/category editing controls and napari-style blend modes;
 - focused tests for integer texture upload, label compositing, selected-label updates, and label
   probe readback.
 
-## Quick proof-of-concept path
+## Legacy proof-of-concept path
 
 A short-term demo can emulate the napari workflow without claiming to be the final architecture:
 
@@ -246,20 +250,19 @@ A short-term demo can emulate the napari workflow without claiming to be the fin
 9. emulate hover label readout on the CPU by mapping the cursor to panel/image pixel coordinates and
    indexing the retained `uint32` label map directly.
 
-This shortcut is useful for a conference/demo proof of concept because it exercises the current
-scene/app path, panzoom, layered image compositing, GUI controls, and label-readout user experience.
-It deliberately does not demonstrate the key backend claim that labels remain integer GPU data and
-are colored/probed on the GPU. Any demo built this way should be described as "emulated labels
-overlay" or "CPU-colored labels prototype".
+This shortcut was useful before `dvz_labels()` landed and remains acceptable only as a fallback when
+integer label textures are unavailable. New v0.4 work should prefer the labels visual and describe
+any CPU-colored overlay as an emulated labels prototype.
 
 ## Minimal implementation plan
 
 1. Write `prepare_bbbc038_labels.py` to download and convert 10 representative BBBC038 images.
-2. Implement a Datoviz textured image visual.
-3. Implement a labels overlay shader using a `uint` texture or packed integer texture.
-4. Add GUI controls for opacity, boundaries, and selected label.
-5. Add stress-test mosaic generation.
-6. Record a 30-second demo video and measure FPS/latency.
+2. Bind the microscopy image through `dvz_image()`.
+3. Bind the integer labels map through `dvz_labels()` and a categorical scale.
+4. Add GUI controls for opacity, boundaries, selected label, hidden IDs, and legend highlight.
+5. Add raw label-ID GPU probing and replace any temporary CPU hover/click lookup.
+6. Add stress-test mosaic generation.
+7. Record a 30-second demo video and measure FPS/latency.
 
 ## Acceptance criteria
 

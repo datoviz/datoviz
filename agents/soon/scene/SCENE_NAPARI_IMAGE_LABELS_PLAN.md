@@ -22,8 +22,10 @@ Durable behavior and pressure-test material now lives in specialized spec files:
 
 The active v0.4 code already has retained `SampledField` resources, 2D image visuals backed by
 sampled fields, image dirty-region uploads, z-layered panel attachment, scale/colormap bookkeeping,
-and image probe/readback plumbing. Scalar fields are still commonly colorized through a staged RGBA
-path, and first-class integer label rendering remains a follow-up.
+categorical scale/legend bookkeeping and rendering, first-class `dvz_labels()` integer sampled-field
+rendering, label GLSL/WGSL shader variants, selected-label/boundary/hidden-label styling, and image
+probe/readback plumbing. Scalar fields are still commonly colorized through a staged RGBA path, and
+raw label-ID GPU probing remains a follow-up.
 
 Use this file only for execution sequencing. Do not duplicate napari or image visual semantics here.
 
@@ -34,12 +36,11 @@ Recommended follow-up commits:
 
 1. Add native shader-side scalar image lookup: raw scalar texture, contrast/gamma params, colormap
    palette texture, opacity, and raw-value probe semantics.
-2. Add first-class integer label rendering as an `image` mode unless implementation pressure proves
-   that a separate `label` visual family is necessary.
+2. Add raw label-ID GPU probing so hover/click readout does not rely on CPU coordinate lookup.
 3. Preserve label IDs as integer sampled-field data; labels must use nearest sampling or texel
    fetch, with label `0` transparent by default.
-4. Add label palette/hash color, selected-label-only, contour, opacity, and background-id params as
-   small parameter or palette updates rather than full texture rewrites.
+4. Continue broadening label palette/hash color, selected-label-only, contour, opacity, hidden-ID,
+   and background-id params as small parameter or palette updates rather than full texture rewrites.
 5. Keep napari-style blend modes separate from alpha modes: source-over, additive, minimum, opaque,
    and no-depth translucent behavior should be explicit 2D layer-compositing policy.
 6. Harden image and label probes so readback returns semantic raw values, data coordinates, visual
@@ -55,8 +56,9 @@ Recommended follow-up commits:
 Recommended example order:
 
 1. scalar image colormap with contrast/gamma/opacity controls;
-2. image + CPU-colored labels overlay prototype, explicitly described as an emulated labels path;
-3. integer label shader path with palette/hash colors, selected label, contour, and label-id probe;
+2. integer labels overlay with categorical legend, shader-side selection/boundary styling, and
+   temporary CPU hover/click lookup, matching `examples/c/showcase/labels.c`;
+3. label-id GPU probe/readback;
 4. multi-layer image stack with napari-style blend-mode controls;
 5. dirty-tile or multiscale level-switching smoke after sampled-field region updates are stable.
 

@@ -35,9 +35,10 @@ semantics, visual families, framegraph construction, UI integration, or Python-f
 ## Highest-Value Missing Capabilities
 
 1. **Text/axes release integration, labels, legends, and colorbars.**
-   The scene now has rendered text, rendered continuous colorbars, an axes/grid API example, and
-   retained annotation/readout handles. The examples still need release-quality text behavior,
-   richer axis/readout integration, shared layout, categorical legends, and data/world annotation
+   The scene now has rendered text, rendered continuous colorbars, rendered categorical legends, an
+   axes/grid API example, first-class integer labels, and retained annotation/readout handles. The
+   examples still need release-quality text behavior, richer axis/readout integration, shared
+   layout, richer legend/colorbar composition, label GPU probing, and data/world annotation
    placement. This blocks polished versions of `PATH_AXES_2D`,
    `LINKED_PANELS_AXES_PANZOOM`, `API_SCALE_COLORBAR_ANNOTATION`,
    `LINKED_PANELS_PROBE_COLORBAR`, `MARKET_MICROSTRUCTURE`, and all polished gallery examples.
@@ -46,7 +47,8 @@ semantics, visual families, framegraph construction, UI integration, or Python-f
    Implemented families now include `marker`, `sphere`, and `volume`, but gaps remain for
    grouped/ragged 3D paths, tubes/ribbons, vector glyphs/arrows, bars/candles, cubemap/skybox,
    textured terrain, fullscreen custom visuals, and postprocess/composite visuals. Existing
-   families still need richer picking, labels, categorical data, and large-data policies.
+   families still need richer picking identities, categorical workflows beyond the first labels
+   slice, and large-data policies.
 
 3. **General scene framegraph and per-panel virtual resources.**
    DRP2 can express multi-pass work, compute, render targets, copies, and WBOIT-like passes, but the
@@ -72,8 +74,10 @@ semantics, visual families, framegraph construction, UI integration, or Python-f
    isosurfaces, bricking/out-of-core policies, and WebGPU parity.
 
 7. **Richer picking, probing, selection, and linking.**
-   Current GPU-backed execution covers point pick and image probe. The examples need marker, mesh
-   face/region, streamline, heatmap-cell, volume-slice, and annotation/text targets; stable
+   Current request execution covers broad item picking for point-like, stroke, primitive, image,
+   mesh, sphere, and volume proxy targets, plus image and image-segment probe payloads. The examples
+   still need exact marker/path semantics, mesh face/region identity, raw label GPU probes,
+   streamline, heatmap-cell, DVR/MIP volume ray-hit, and annotation/text targets; stable
    visual/item/group identities; link-key propagation; selection-driven styling; multi-panel hover
    routing; and CPU/GPU fallback policies.
 
@@ -100,19 +104,19 @@ semantics, visual families, framegraph construction, UI integration, or Python-f
 | Example | Current support | Missing features before full support |
 | --- | --- | --- |
 | `POINT_2D.md` | Mostly supported. Retained point visual, panel, panzoom, uploads, render pass, and app path exist. | Public data-coordinate normalization/range API, axis-free minimal example polish, and fixture/example coverage that this exact path is stable. |
-| `PATH_AXES_2D.md` | Path-as-line-strip, panzoom, semantic axes, generated linear ticks, and rendered axis/tick labels exist. | Grouped/ragged paths, richer axis layout/formatter/clipping policy, release proof for this exact example, and line styling beyond the primitive path. |
+| `PATH_AXES_2D.md` | Path-as-line-strip and path-native stroked rendering, caps, joins, subpaths, panzoom, semantic axes, generated linear ticks, and rendered axis/tick labels exist. | Grouped/ragged path semantics beyond explicit subpaths, richer axis layout/formatter/clipping policy, release proof for this exact example, dashes, and path/subpath picking. |
 | `MARKER_PICKING.md` | Public marker constructor/API, shape subset, code-SDF shader, item identity, bounding-box GPU pick path, and point/marker selection mask highlighting exist. | Exact SDF picking, richer marker style payloads, and polished selection/highlight routing. |
-| `SPHERE_IMPOSTOR.md` | First-class `sphere` visual, analytic impostor shader, radius support, lighting/depth, SSAO/G-buffer coverage, and example coverage exist. | Texture variants, per-item material/PBR, and sphere picking. |
-| `VOLUME_SLICE.md` | Public `volume` visual, 3D sampled-field binding, slice/composite/MIP modes, bounds, clipping, colormap/transfer parameters, and basic slice probe/readout exist. | Arbitrary MPR semantics, richer transfer functions, categorical volumes, and volume picking beyond the first slice. |
+| `SPHERE_IMPOSTOR.md` | First-class `sphere` visual, analytic impostor shader, radius support, lighting/depth, SSAO/G-buffer coverage, item picking, and example coverage exist. | Texture variants and per-item material/PBR. |
+| `VOLUME_SLICE.md` | Public `volume` visual, 3D sampled-field binding, slice/composite/MIP modes, bounds, clipping, colormap/transfer parameters, proxy item picking, and basic slice probe/readout exist. | Arbitrary MPR semantics, richer transfer functions, categorical volumes, and DVR/MIP ray-hit picking beyond the first slice. |
 | `VOLUME_OFFSCREEN.md` | Offscreen/app capture, volume rendering, and DRP2 readback paths exist. | Deterministic gallery/export conventions and richer transfer/raycast controls. |
 | `LINKED_PANELS_PROBE_COLORBAR.md` | Multi-panel rendering, shared image fields, image probe, scales, rendered continuous colorbar, annotations, and pinned-readout bookkeeping exist. | Consolidated scene-level colorbar layout, linked-panel controller semantics, shared mapping identity enforcement, rendered crosshairs, and richer multi-panel probe routing. |
 | `MOUSE_BRAIN_ATLAS_EXPLORER.md` | Mesh, WBOIT, image probe, selection bookkeeping, and arcball are partial building blocks. | Volume slice visual, region/group identity in mesh batches, mesh/region picking, selection-driven per-region opacity/highlight, linked 2D panel updates, rendered annotations, and UI tree/filter integration. |
 | `LINKED_PANELS_AXES_PANZOOM.md` | Multiple panels, panzoom, path, point/pixel-like rendering, axes, generated ticks, rendered labels, covered-domain caching, and scoped axis invalidation exist. | Shared X-only controller binding, independent Y controller binding, release proof for linked axes behavior, and richer layout polish. |
 | `ANIMATION_VIDEO_EXPORT.md` | Timer animation, offline/realtime scene clocks, frame callbacks, app loop, and video module exist. | Transition animation helpers, camera-path animation, public marker/alpha style animation, deterministic video export loop wired through app/scene, and no-spurious-upload animation dirty tracking for style params. |
-| `API_MESH_SELECTION_LINK.md` | Mesh visual, link channels, selection objects, link-key storage, and pick result structs exist. | Mesh face/item GPU picking, resolved mesh parent/child identity, linked highlight propagation into visual styling, and public mesh selection examples. |
+| `API_MESH_SELECTION_LINK.md` | Mesh visual, item-level mesh picking, link channels, selection objects, link-key storage, and pick result structs exist. | Mesh face/region identity, resolved mesh parent/child identity, linked highlight propagation into visual styling, and public mesh selection examples. |
 | `API_IMAGE_PROBE_PINNED_READOUT.md` | Image probe result and pinned-readout bookkeeping exist. | Rendered pinned readouts, shared formatting realization, stronger semantic payloads for scalar/vector/category probes, and polished public API examples. |
-| `API_SCALE_COLORBAR_ANNOTATION.md` | Scale, colormap, rendered continuous colorbar, annotation, label, format descriptors, text backend, and placement structs exist. | Non-label annotations, data-anchored transform integration, categorical legends, and shared layout. |
-| `API_SAMPLED_FIELD.md` | `SampledField` covers scalar/color 2D/3D descriptors, geometry metadata, full/region updates, image binding, and volume binding. | Labels/categorical fields, richer probe payloads, and broader non-image consumers. |
+| `API_SCALE_COLORBAR_ANNOTATION.md` | Scale, colormap, categorical entries, rendered continuous colorbar, rendered categorical legend, annotation, label, format descriptors, text backend, and placement structs exist. | Non-label annotations, data-anchored transform integration, richer legend/colorbar layout, and shared layout. |
+| `API_SAMPLED_FIELD.md` | `SampledField` covers scalar/color/label 2D/3D descriptors, geometry metadata, full/region updates, image binding, labels binding, and volume binding. | Labels GPU probing, richer probe payloads, 3D labels, and broader non-image consumers. |
 | `GALAXY.md` | 3D panel, camera/arcball, point/pixel visuals, alpha modes, and WBOIT path are partial fits. | True marker/point-sprite radial falloff, large-star dataset loader/cache, per-star alpha/size style quality, rotation animation helper, overlay text, and gallery screenshot path. |
 | `GLOBAL_WIND_PROJECTIONS.md` | Primitive/path/image can approximate some layers. | Projection-aware transform pipeline, vector glyph/arrow visual, vector Jacobian semantics, coastline/graticule helpers, orthographic globe/projection interaction, optional compute particle overlay, and hover labels. |
 | `GRAND_CANYON_FLYOVER.md` | Mesh, texture image path, depth, camera, arcball, app capture, and animation callbacks are building blocks. | Textured mesh material path beyond image quads, terrain sampler parameters, camera flyover/keyframe helper, cache/download bundle handling, optional sky/background pass, and deterministic gallery screenshot example. |
@@ -130,14 +134,14 @@ semantics, visual families, framegraph construction, UI integration, or Python-f
 
 ## Cross-Cutting Work Queue
 
-1. **Text and explanatory objects first.**
-   Harden the existing rendered text path, finish formatted ticks and axes, then wire labels,
-   annotations, and colorbars on top. This unlocks many 2D examples and improves every gallery
-   scene.
+1. **Text and explanatory-object proof first.**
+   Harden the existing rendered text, axes, labels, legends, annotations, colorbars, and scale bars
+   through focused examples and screenshot/offscreen proof. This unlocks many 2D examples and
+   improves every gallery scene.
 
-2. **Complete the point-like family.**
-   Add public marker and point-sprite/impostor variants with shape, edge, size, alpha, and item-id
-   support. This supports marker picking, galaxy, particles fallback, and scientific scatter uses.
+2. **Polish the point-like family.**
+   Public marker, point, pixel, and sphere first slices exist with item-id support. The next work is
+   exact marker hit testing, richer marker style payloads, large-count stress, and selection styling.
 
 3. **Make FramePlan multi-pass resources explicit in scene.**
    Add named virtual textures/buffers, dependencies, pass roles, fullscreen/postprocess passes, and

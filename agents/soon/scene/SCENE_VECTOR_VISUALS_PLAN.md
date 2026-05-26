@@ -34,8 +34,8 @@ Recommended follow-up commits:
    returning path/subpath identity rather than derived edge identity.
 3. Add WGSL lowering for segment and stroked path so WebGPU preserves the public
    `position_start`/`position_end` and `line_width` semantics.
-4. Add path-native joins, closed subpaths, miter-limit behavior, and path-specific cap handling
-   before dashes or arrow caps.
+4. Add first-class closed-path API and path/subpath identity preservation on top of the landed
+   path-native joins, miter-limit behavior, subpath metadata, and path-specific cap handling.
 5. Add dashing after cumulative path-distance metadata and dash phase updates can be tested without
    rebuilding source geometry.
 6. Add arrow/vector-field helpers on top of segment/path plus marker-style arrowheads once picking

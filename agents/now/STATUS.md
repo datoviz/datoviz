@@ -51,12 +51,12 @@ Primary references:
 | App frame scheduling | `Done` | [`../done/APP_FRAME_SCHEDULING_REFACTOR.md`](../done/APP_FRAME_SCHEDULING_REFACTOR.md) | Keep scheduler validation in release smoke only. |
 | Text | `Closed first slice / RC polish` | `examples/c/visuals/text.c`, scene text tests, app/offscreen text smokes | Data/world placement, DPI/clipping, fallback diagnostics, and public API wording. |
 | 2D axes and ticks | `Closed first slice / RC proof` | `src/scene/tests/axis.c`, `examples/c/techniques/scatter_axes.c` | Screenshot/offscreen proof, formatter/clipping polish, shared reserve behavior. |
-| Continuous colorbars | `Closed first slice` | `src/scene/tests/fields.c`, `test_app_offscreen_colorbar_has_visible_ramp_and_labels`, `examples/c/visuals/colorbar.c` | Shared layout and categorical legend follow-up. |
+| Continuous colorbars and categorical legends | `Closed first slices` | `src/scene/tests/fields.c`, `test_app_offscreen_colorbar_has_visible_ramp_and_labels`, `examples/c/visuals/colorbar.c`, `examples/c/showcase/labels.c` | Shared layout, richer legend composition, and interactive scale/range editing remain follow-up. |
 | Label annotations and readouts | `Readout, selection, overlay-card, and FreeType rich text-block slices landed` | annotation/text realization tests, `test_scene_selection_card_realizes_pick_metadata`, `test_scene_overlay_card_public_api`, `test_scene_overlay_card_rich_text_public_api`, `test_app_offscreen_text_block_raster_has_nonblank_pixels`, `examples/c/techniques/image_probe.c`, `examples/c/techniques/overlay_card.c`, `examples/c/techniques/overlay_rich_card.c`, `examples/c/techniques/rich_text_block.c`, [`../done/PINNED_READOUT_OVERLAY_CARD_IMPLEMENTATION.md`](../done/PINNED_READOUT_OVERLAY_CARD_IMPLEMENTATION.md) | Keep richer text-block polish, DPI cache keys, wrapping, HarfBuzz shaping, richer font-style resolution, and broader annotation rich-text integration as follow-up. |
 | Scale bars | `Closed first slice / validation` | [`../done/SCENE_SCALEBAR_RENDERING_SLICE.md`](../done/SCENE_SCALEBAR_RENDERING_SLICE.md), [`../done/SCENE_SCALEBAR_3D_REFERENCE_SLICE.md`](../done/SCENE_SCALEBAR_3D_REFERENCE_SLICE.md), [`../done/SCENE_SCALEBAR_UPDATE_PERF_REFACTOR.md`](../done/SCENE_SCALEBAR_UPDATE_PERF_REFACTOR.md) | Keep fixture/example smoke and churn trace in release validation. |
 | Grid layout and linked panels | `Partial / RC proof` | grid/panel tests, `examples/c/techniques/linked_panels.c` | Prove release examples resize and link predictably; defer richer dashboard layout. |
-| Visual families | `Mostly first-slice active` | point, pixel, marker, primitive, mesh, path/segment, image, volume, sphere examples/tests | Fill release-example gaps and mark unsupported variants explicitly. |
-| Pick, probe, selection | `Partial` | point pick, image probe, selection-mask tests, `examples/c/techniques/pick_hover.c` | Marker-pick decision, richer payloads, linked-panel probe state, explicit deferrals for mesh/path/volume/text picking. |
+| Visual families | `Mostly first-slice active` | point, pixel, marker, primitive, mesh, path/segment, image, labels, volume, sphere, polygon/composite examples/tests | Fill release-example gaps and mark unsupported variants explicitly. |
+| Pick, probe, selection | `Broader first slices landed` | point/pixel/marker/sphere/stroke/primitive/image/mesh/volume item-pick tests, image/probe tests, selection-mask tests, `examples/c/techniques/pick_hover.c` | Richer payloads, linked-panel probe state, exact marker/path semantics, mesh face/region identity, label GPU probe, volume ray hits, and text picking remain follow-up. |
 | WebGPU/WASM | `Partial / blocker` | `examples/webgpu/`, `tools/webgpu_fixture_preflight.py`, DRP2 WGSL fixtures | Document and smoke the experimental subset. |
 | Raw `ctypes` | `Partial / blocker` | `tools/build_ctypes.py`, `datoviz/_ctypes.py`, `just ctypes` | Regenerate, load, and document low-level binding scope. |
 | Runtime hardening | `Ongoing` | DRP2/vklite/app tests and completed lifetime records | Fix concrete lifetime, resize, descriptor, repeated-frame, or churn bugs as examples expose them. |
@@ -75,7 +75,7 @@ Good parallel work now:
 4. **WebGPU parity:** `examples/webgpu`, DRP2 fixtures/preflight, WGSL emission, and diagnostics.
 5. **API/docs inventory:** work from [`DOCUMENTATION.md`](DOCUMENTATION.md) that classifies actual
    v0.4 behavior.
-6. **RC2 polish:** text placement/DPI, axes formatter/clipping, shared layout, categorical legends,
+6. **RC2 polish:** text placement/DPI, axes formatter/clipping, shared layout, richer legends,
    richer readouts, and broader pick/probe payloads.
 7. **Pinned readout/card lane:** completed private C card shell, rendered pinned image readouts,
    selected-item metadata cards, public overlay card API, rich overlay card API, example proof,

@@ -43,33 +43,40 @@ The first public header split has landed. Treat these groups as implemented APIs
 
 1. scene / figure / panel lifecycle,
 2. frame plans and DRP2 emitters,
-3. point, primitive, mesh, path-as-line/strip, and image visuals,
+3. point, pixel, marker, primitive, segment/path, image, labels, mesh, sphere, volume, and glyph
+   visuals,
 4. retained visual attributes and scene buffers,
 5. sampled fields and image field binding,
 6. scale/colormap core and image colormap binding,
 7. panzoom and arcball controllers,
 8. interaction policy, selection, link-channel, pick/probe queue, hover-state, and pinned-readout
    bookkeeping,
-9. first point-pick and image-probe execution through the DRP2 runtime request processor,
+9. first request execution slices through the DRP2 runtime request processor, including item
+   picking for point-like, stroke, primitive, image, mesh, sphere, and volume proxy targets plus
+   image and image-segment probe payloads,
 10. font/text and annotation retained-object bookkeeping,
 11. semantic `DvzText*` public surface and first rendered text/glyph output through atlas-backed
     scene resources,
 12. rendered label annotations through the text/glyph path,
 13. rendered continuous colorbar ramp, ticks, title, and labels,
-14. rendered 2D/3D scale bars through `dvz_annotation_scalebar()`.
+14. rendered 2D/3D scale bars through `dvz_annotation_scalebar()`,
+15. retained categorical scale entries and rendered categorical legends,
+16. semantic polygon and polygon-set composites lowered to fill/stroke visuals.
 
 Treat these installed declarations as draft contracts until implemented in `src/scene`:
 
 1. rendered non-label annotations, rich readouts, and callouts,
-2. selection highlight rendering and broader link-driven state propagation,
-3. mesh/object picking and richer probe payloads,
+2. broader link-driven state propagation,
+3. mesh face/region picking, exact path/marker semantics, label GPU probing, and richer probe
+   payloads,
 4. broad mapped attributes beyond the current image/volume colormap paths,
-5. shared or categorical legend layout beyond the first continuous colorbar slice.
+5. shared legend/colorbar layout and richer legend composition beyond the first categorical legend
+   slice.
 
-Colorbars, text, labels, and scale bars are retained semantic objects. Text/glyph rendering, label
-annotation rendering, scale-bar rendering, and continuous colorbar rendering exist as first slices;
-remaining work should use those semantic objects rather than visual-private or backend-shaped
-state.
+Colorbars, legends, text, labels, and scale bars are retained semantic objects. Text/glyph
+rendering, label annotation rendering, scale-bar rendering, continuous colorbar rendering,
+categorical legend rendering, and integer label rendering exist as first slices; remaining work
+should use those semantic objects rather than visual-private or backend-shaped state.
 
 Implementation-ready rendering work for those retained objects is tracked in:
 

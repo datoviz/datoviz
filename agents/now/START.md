@@ -33,14 +33,15 @@ The low-level graphics modules (`vk`, `vklite`, `canvas`, `stream`, `video`, and
 runtime foundation; do not create parallel presentation, frame-stream, or Vulkan wrapper paths.
 
 Native first slices are active for retained visual families, sampled fields, material/controller
-state, pick/probe, selection bookkeeping, rendered text/glyphs, label annotations, continuous
-colorbars, scale bars, graph-backed techniques, app/offscreen/GLFW rendering, and capture. Treat
-these as active code, not future scaffolding.
+state, broad item pick/probe request execution, selection bookkeeping, rendered text/glyphs, label
+annotations, continuous colorbars, categorical legends, first-class integer labels, scale bars,
+graph-backed techniques, app/offscreen/GLFW rendering, and capture. Treat these as active code, not
+future scaffolding.
 
 The CPU-side `geom` subset is also active: owned `DvzGeometry` buffers, cube/plane/sphere/surface
 grid generators, bounds, normals, transforms, merges, edges, contours, polygon triangulation, mesh
-upload, polygon scene helpers, and focused tests/examples. Remaining `geom` work is optional unless
-a release example needs it.
+upload, polygon scene helpers, semantic polygon/polygon-set composites, and focused tests/examples.
+Remaining `geom` work is optional unless a release example needs it.
 
 
 ## Guardrails

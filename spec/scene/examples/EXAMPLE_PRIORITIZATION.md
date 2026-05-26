@@ -34,10 +34,11 @@ it depends on rendered text, overlay cards, large-data policies, and preprocessi
 conventions.
 
 The current code is ahead of older gap notes: `dvz_sphere`, `dvz_volume`, EDL, MSAA, SSAO, depth
-peeling-shaped passes, WBOIT, volume occlusion, fly/turntable controllers, and several polished C
-GLFW examples already exist. The biggest remaining blockers for polished examples are rendered
-text/axes/colorbars, vector/arrow visuals, broad picking/selection, scene-level compute/custom
-materials, and large-data policies.
+peeling-shaped passes, WBOIT, volume occlusion, fly/turntable controllers, first-class labels,
+categorical legends, broad item-pick first slices, and several polished C GLFW examples already
+exist. The biggest remaining blockers for polished examples are release proof and polish for
+rendered text/axes/colorbars/legends, vector/arrow visuals, richer picking/probe payloads,
+scene-level compute/custom materials, and large-data policies.
 
 
 ## Recommended First Batch
@@ -67,7 +68,7 @@ materials, and large-data policies.
 | 8 | PD12M image embedding LOD | Medium | Image sprite LOD, large sampled fields, thumbnail packing, panzoom, picking. | Use only PD12M as the public dataset and keep all embedding/reduction work in preprocessing. |
 | 9 | Wikipedia semantic embedding atlas | Medium | Dense points, label LOD, search/query, selected cards, overlay layout. | Use Wikivecs map coordinates first; add N-dimensional vectors and query sidecar later. |
 | 10 | Toy DICOM / volume clipping | Medium | 3D sampled field, slices, crosshair, window/level, 4-panel layout. | Needs better slice semantics and colorbar/text. |
-| 11 | Large labels segmentation | Medium-low | Integer label textures, random label colors, selection. | CPU RGBA fallback is possible but undersells the goal. |
+| 11 | Large labels segmentation | Medium | Integer label textures, random label colors, selection, categorical legends. | First-class `dvz_labels()` path exists; raw label GPU probe and larger sparse-ID pressure tests remain. |
 | 12 | Earth / terrain / Mars flyover | Medium-low | Textured mesh/sphere, cubemap/skybox, asset cache, camera path. | Great gallery material after material textures land. |
 | 13 | Gray-Scott / Mandelbrot / particles | Low for scene-first | Scene-level compute, custom shaders, ping-pong resources. | Very high eye-candy, but should not be forced through ad hoc DRP-only paths. |
 | 14 | Tractography / tokamak / HEP | Low-medium | Ragged 3D paths, tubes, vector fields, transparency, picking. | Excellent later architecture-pressure demos. |
@@ -82,18 +83,19 @@ materials, and large-data policies.
 | GUI integration | Implemented in examples. | Protein, volume, LiDAR, transparent mesh, brain. | Keep GUI as example/runtime infrastructure, not scene core. |
 | Point visual | Implemented. | LiDAR, dense raster fallback, galaxy, particles render fallback. | Validate very large counts and stable partial updates. |
 | Pixel visual | Implemented. | Dense raster, spike plots, large point-like 2D data. | Stress test performance at v0.3 showcase scale. |
-| Marker visual | Missing as a public first-class family. | Marker picking, polished scatter, selected events. | Add marker shapes, edge color/width, item identity, marker pick path. |
+| Marker visual | Implemented first slice. | Marker picking, polished scatter, selected events. | Exact SDF picking, richer style payloads, and selection polish. |
 | Primitive visual | Implemented. | Wind arrows, bars, overlays, simple geometry. | Avoid overusing it as a permanent substitute for semantic visuals. |
 | Mesh visual | Implemented. | Protein ribbon, brain atlas mesh, terrain, finite-element viewer. | Add mesh face/region picking and textured material slots. |
-| Path visual | Partial: line/strip path exists. | Wind streamlines, DAQ traces, physiology, tractography fallback. | Add ragged/grouped paths, per-path identity, joins, width, and later tubes/ribbons. |
-| Image visual | Implemented. | Wind scalar background, image probe, segmentation underlay, heatmaps. | Add direct GPU colormap/label paths and tiled/LOD image policy. |
-| Sampled fields | Implemented for 2D image and 3D volume consumers. | Probe panels, texture update, volume, DICOM. | Broaden non-image consumers and strengthen 3D layout/update coverage. |
+| Path visual | Implemented first stroked slice: line-strip path, subpaths, caps, joins, miter limit. | Wind streamlines, DAQ traces, physiology, tractography fallback. | Add first-class closed-path API, dashes, path/subpath identity picking, and later tubes/ribbons. |
+| Image visual | Implemented. | Wind scalar background, image probe, segmentation underlay, heatmaps. | Add tiled/LOD image policy and richer probe payloads. |
+| Labels visual | Implemented first 2D slice. | Segmentation labels, napari-style overlays, categorical legends. | Add raw label GPU probing, 3D labels slices, and larger sparse-ID pressure tests. |
+| Sampled fields | Implemented for 2D image/labels and 3D volume consumers. | Probe panels, texture update, labels, volume, DICOM. | Broaden non-image consumers and strengthen 3D layout/update coverage. |
 | Sphere visual | Implemented. | Protein atoms, sphere SSAO, crystal lattice. | Tune SSAO/material quality; add textured/equirectangular sphere later. |
 | Volume visual | Implemented first slice. | Volume slice/offscreen, DICOM, Allen brain, volume clipping. | Add arbitrary slice plane semantics, richer transfer functions, and volume probes. |
 | Vector glyphs/arrows | Missing as a semantic visual. | Wind, CFD, trajectories, cell motion, tokamak. | Implement a vector/arrow visual instead of relying on primitive triangles. |
 | Text/glyph rendering | Implemented first slice: semantic text, glyph lowering, examples, and app/offscreen smokes. | Axes, annotations, labels, colorbars, LaTeX/math, dashboards. | Harden data/world placement, DPI/clipping, diagnostics, and example proof. |
 | Axes/ticks | Implemented first slice: linear domains, generated ticks, grid/spines, rendered labels, and scatter example. | Path axes, linked panels, DAQ, physiology, market dashboard. | Harden formatter/clipping/layout policy and release proof. |
-| Colorbars/annotations/readouts | Continuous colorbars and label annotations render; scale bars render; pinned readouts remain partial. | Probe/colorbar panels, image probe readout, volume/DICOM, dashboards. | Harden shared layout, rendered readouts/crosshairs, categorical legends, and data-anchored annotations. |
+| Colorbars/annotations/readouts | Continuous colorbars, categorical legends, label annotations, scale bars, overlay cards, and rich text blocks render first slices. | Probe/colorbar panels, image probe readout, labels, volume/DICOM, dashboards. | Harden shared layout, rendered readouts/crosshairs, richer legends, and data-anchored annotations. |
 | Panzoom | Implemented. | Wind, probe panels, DAQ, physiology, market, image viewers. | Add shared x/y controller semantics and linked crosshair/probe state. |
 | Arcball/camera/fly/turntable | Implemented. | Protein, brain, volume, LiDAR, terrain, sphere SSAO. | Add camera-path animation helpers for cinematic examples. |
 | Materials/lighting | Partial but active. | Protein, sphere cloud, mesh, terrain, finite-element viewer. | Clarify material API and add texture slots for mesh/sphere paths. |
@@ -102,7 +104,7 @@ materials, and large-data policies.
 | MSAA | Implemented. | Sphere edges, polished 3D. | Keep fallback/capability behavior explicit. |
 | WBOIT/depth peeling | Implemented first slices. | Brain mesh, transparent mesh, protein surfaces. | Harden composition and consider full dual depth peeling when needed. |
 | Volume occlusion | Implemented first slice. | Allen brain, embedded overlays inside volume. | Generalize beyond one narrow volume-occluder lane. |
-| Picking/probing | Point picking and image probing are GPU-backed. | Marker picking, linked probe, brain, mesh selection. | Add marker, mesh face/region, label, path, and volume pick/probe payloads. |
+| Picking/probing | Broad item picking and image probes are GPU-backed for the first slice. | Marker picking, linked probe, brain, mesh selection. | Add exact marker/path semantics, mesh face/region, label GPU probe, text, and volume ray-hit payloads. |
 | Selection/linking | Point/marker mask highlight exists; broader linking is partial. | Mesh selection, brain region highlight, dashboards. | Extend selection styling to images and linked panels, then mesh/region highlights. |
 | FramePlan graph | Internal multi-pass shapes exist. | WBOIT, depth peel, EDL, SSAO, volume, future compute. | Expose scene-level virtual resources and pass dependencies. |
 | Compute/custom shaders | DRP2-level only. | Gray-Scott, Mandelbrot, particles, custom postprocess. | Promote compute/custom material resources into scene semantics. |

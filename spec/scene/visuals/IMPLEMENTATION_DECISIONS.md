@@ -287,14 +287,14 @@ Ordering:
 2. The current path implementation keeps primitive line-strip rendering when `stroke_width` is
    absent and lowers to the segment stroke pipeline when `stroke_width` is present.
 
-Implemented first stroked path slice:
+Implemented stroked path slice:
 
 1. The current line-strip convenience path is preserved for paths without `stroke_width`.
 2. Explicit open subpath metadata is provided by `dvz_path_set_subpaths()`.
 3. `dvz_visual_set_data("span_sizes", ...)` is not used as the primary public API.
-4. Default caps are `butt` through the segment stroke pipeline.
-5. Path-specific joins remain deferred.
-6. Path-specific miter limit remains deferred.
+4. Path caps are configured by `dvz_path_set_caps()`.
+5. Path-specific joins are configured by `dvz_path_set_join()`.
+6. Path-specific miter-limit fallback is implemented for the GLSL/Vulkan path pipeline.
 7. Per-point/per-vertex path width is implemented.
 8. Open subpath lengths are preserved explicitly; closed path metadata remains deferred.
 
@@ -302,8 +302,8 @@ Deferred:
 
 1. Dashes.
 2. SVG parsing.
-3. Filled paths/polygons.
-4. Path picking unless explicitly scoped after rendering is stable.
+3. SVG import and filled paths beyond the semantic polygon/polygon-set composite path.
+4. Path/subpath identity picking beyond the active stroke item-pick slice.
 5. Data-space stroke width unless a separate implementation note defines the 2D/3D projection rules.
 6. Closed subpaths.
 7. WGSL lowering for path-native strokes.

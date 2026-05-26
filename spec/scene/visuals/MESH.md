@@ -169,8 +169,8 @@ Transform model and stage participation are standard; see `SHARED_ATTRIBUTES.md`
 Picking returns face identity, not vertex identity. For indexed geometry, face id is the index
 buffer triplet index. For non-indexed triangles, face id is `vertex_index / 3`.
 
-Status on 2026-05-17: mesh face picking is specified but not implemented; the active GPU-backed
-request path covers point picking and image probing first.
+Status on 2026-05-26: the active GPU-backed request path includes item-level mesh picking through
+the rendered mesh target. Mesh face/region identity remains deferred.
 
 ## Related Families
 
