@@ -16,7 +16,8 @@ Current implementation status, as of 2026-05-26:
    continuous-scale only. Labels examples should attach legends, not categorical colorbars.
 5. `examples/c/showcase/labels.c` is the live labels example: signed integer label field,
    categorical scale, retained labels visual, attached legend, panzoom panel, GUI controls, and a
-   temporary hidden image probe path until raw label GPU probing lands.
+   working temporary selection highlight overlay until shader-side selected/hidden/boundary
+   controls and raw label GPU probing land.
 
 
 ## Purpose
@@ -384,14 +385,14 @@ examples/c/showcase/labels.c
 Current concept: an interactive 2D segmentation board with a synthetic microscopy underlay and a
 labels overlay. The label texture is a signed `R32_SINT` sampled field with `0` background,
 negative IDs such as `-7` and `-100`, sparse positive IDs such as `17`, `42`, `89`, and `1009`,
-plus unknown IDs that demonstrate deterministic hash fallback colors.
+and additional positive sparse IDs.
 
 The first screen should be the working visualization, not a landing page:
 
 1. central panzoom panel with the image and labels overlay;
 2. right-side attached legend titled "Labels";
-3. compact GUI panel for label presentation state;
-4. hover/probe readout showing raw ID through the temporary segment probe path;
+3. compact GUI panel for working visibility and selection controls;
+4. hover readout showing raw ID through a temporary CPU coordinate lookup;
 5. optional future status text for texture format and whether the field is CPU-owned or GPU-only.
 
 Useful GUI controls:
@@ -407,15 +408,17 @@ Useful GUI controls:
 9. texture format selector for signed and unsigned first-slice formats;
 10. probe mode toggle that shows the GPU-returned raw ID without reading CPU data.
 
-The current example implements the underlay, signed labels visual, attached legend, panzoom, and GUI
-controls for visibility, opacity, selected label, background ID, hidden unassigned labels,
-boundaries, fallback seed, and reset. It also exercises the runtime compatibility requirement that
+The current example intentionally exposes only controls that visibly work today: labels overlay
+visibility, selected-label dropdown/click selection, selection-highlight visibility, outline width,
+clear selection, reset view, and hover/selected readout. Selection feedback uses a transparent
+highlight image overlay generated from the signed label field; the labels visual remains backed by
+the raw integer texture. The example also exercises the runtime compatibility requirement that
 integer labels textures use nearest samplers, including mipmap mode, not linear sampling.
 
 Remaining example upgrades should become small incremental patches as the underlying labels
 features land:
 
-1. replace the temporary hidden image segment probe with raw labels GPU probing;
+1. replace the temporary CPU hover/click lookup with raw labels GPU probing;
 2. make opacity, selected, hidden, boundary, and fallback-seed controls affect the labels shader;
 3. add scale editing controls once categorical scale updates lower into GPU style buffers;
 4. add an unsigned `R32_UINT` mode showing very large IDs such as `4000000000`;
