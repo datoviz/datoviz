@@ -176,10 +176,10 @@ static bool _add_rich_text_block(DvzTextBlock* block, DvzPanel* panel)
         block,
         &(DvzTextBlockLayout){
             .scene = scene,
-            .font_size_px = 17.0f,
-            .max_width_px = 620.0f,
-            .line_height_px = 23.0f,
-            .padding_px = {20.0f, 16.0f},
+            .font_size_px = 22.0f,
+            .max_width_px = 760.0f,
+            .line_height_px = 30.0f,
+            .padding_px = {24.0f, 18.0f},
         });
     if (rc != 0)
         return false;
@@ -190,7 +190,7 @@ static bool _add_rich_text_block(DvzTextBlock* block, DvzPanel* panel)
             .scene = scene,
             .text_color = {236, 241, 248, 255},
             .background_color = {12, 18, 28, 232},
-            .font_size_px = 17.0f,
+            .font_size_px = 22.0f,
             .scale = 3.0f,
         });
     if (rc != 0)

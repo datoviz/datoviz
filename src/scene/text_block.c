@@ -17,6 +17,7 @@
 #include <math.h>
 #include <stdbool.h>
 #include <stdint.h>
+#include <stdio.h>
 #include <string.h>
 
 #include "_alloc.h"
@@ -25,7 +26,6 @@
 #include "_log.h"
 #include "_overflow.h"
 #include "_scene.h"
-#include "datoviz/fileio.h"
 #include "datoviz/scene/text.h"
 
 #if defined(DVZ_HAS_FREETYPE) && DVZ_HAS_FREETYPE
@@ -415,10 +415,12 @@ static bool _text_block_font_path_available(const char* path)
     if (path == NULL || path[0] == '\0')
         return false;
 
-    DvzSize size = 0;
-    void* bytes = dvz_read_file(path, &size);
-    if (bytes != NULL)
-        dvz_free(bytes);
+    FILE* fp = fopen(path, "rb");
+    if (fp == NULL)
+        return false;
+    int seek_rc = fseek(fp, 0, SEEK_END);
+    long size = seek_rc == 0 ? ftell(fp) : 0;
+    fclose(fp);
     return size > 0;
 }
 
@@ -443,12 +445,22 @@ static const char* _text_block_known_font_path(const char* family, const char* s
             return "data/fonts/Roboto-Regular.ttf";
         if (strcmp(style, "Bold") == 0)
             return "data/fonts/Roboto-Bold.ttf";
+        if (strcmp(style, "Italic") == 0)
+            return "data/fonts/Roboto-Italic.ttf";
+        if (strcmp(style, "Bold Italic") == 0)
+            return "data/fonts/Roboto-BoldItalic.ttf";
         if (strcmp(style, "Medium") == 0)
             return "data/fonts/Roboto-Medium.ttf";
+        if (strcmp(style, "Medium Italic") == 0)
+            return "data/fonts/Roboto-MediumItalic.ttf";
         if (strcmp(style, "Light") == 0)
             return "data/fonts/Roboto-Light.ttf";
+        if (strcmp(style, "Light Italic") == 0)
+            return "data/fonts/Roboto-LightItalic.ttf";
         if (strcmp(style, "Black") == 0)
             return "data/fonts/Roboto-Black.ttf";
+        if (strcmp(style, "Black Italic") == 0)
+            return "data/fonts/Roboto-BlackItalic.ttf";
     }
     if (strcmp(family, "Roboto Mono") == 0 || strcmp(family, "RobotoMono") == 0)
     {
