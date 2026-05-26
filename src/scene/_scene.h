@@ -574,7 +574,10 @@ struct DvzTextBlockImageDesc
 {
     vec3 position;
     vec2 extent;
+    vec3 position_px;
+    vec2 extent_px;
     vec2 anchor;
+    bool pixel_space;
     int32_t z_layer;
     DvzControllerMode controller_mode;
 };

@@ -1988,12 +1988,30 @@ int _scene_text_block_realize_image(
             return -1;
     }
 
-    vec3 positions[1] = {{resolved.position[0], resolved.position[1], resolved.position[2]}};
-    vec2 extents[1] = {{resolved.extent[0], resolved.extent[1]}};
+    const char* position_attr = resolved.pixel_space ? "position_px" : "position";
+    const char* extent_attr = resolved.pixel_space ? "extent_px" : "extent";
+    vec3 positions[1] = {0};
+    vec2 extents[1] = {0};
+    if (resolved.pixel_space)
+    {
+        positions[0][0] = resolved.position_px[0];
+        positions[0][1] = resolved.position_px[1];
+        positions[0][2] = resolved.position_px[2];
+        extents[0][0] = resolved.extent_px[0];
+        extents[0][1] = resolved.extent_px[1];
+    }
+    else
+    {
+        positions[0][0] = resolved.position[0];
+        positions[0][1] = resolved.position[1];
+        positions[0][2] = resolved.position[2];
+        extents[0][0] = resolved.extent[0];
+        extents[0][1] = resolved.extent[1];
+    }
     vec2 anchors[1] = {{resolved.anchor[0], resolved.anchor[1]}};
     DvzVisualDataUpdate updates[3] = {
-        {.attr_name = "position", .data = positions, .item_count = 1},
-        {.attr_name = "extent", .data = extents, .item_count = 1},
+        {.attr_name = position_attr, .data = positions, .item_count = 1},
+        {.attr_name = extent_attr, .data = extents, .item_count = 1},
         {.attr_name = "anchor", .data = anchors, .item_count = 1},
     };
     if (dvz_visual_set_data_many(block->image_visual, updates, 3) != 0)

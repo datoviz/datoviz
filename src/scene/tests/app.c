@@ -3390,11 +3390,12 @@ int test_app_offscreen_text_block_raster_has_nonblank_pixels(
     AT(_scene_text_block_realize_image(
            &block, panel,
            &(DvzTextBlockImageDesc){
-               .position = {0.0f, 0.0f, 0.0f},
-               .extent = {1.5f, 0.65f},
-               .anchor = {0.0f, 0.0f},
+               .position_px = {12.0f, 12.0f, 0.0f},
+               .extent_px = {(float)block.raster_width, (float)block.raster_height},
+               .anchor = {-1.0f, -1.0f},
+               .pixel_space = true,
                .z_layer = 1,
-               .controller_mode = DVZ_CONTROLLER_APPLY,
+               .controller_mode = DVZ_CONTROLLER_FIXED,
            }) == 0);
 
     DvzApp* app = _app_test_create(suite, scene);

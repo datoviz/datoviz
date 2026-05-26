@@ -1060,33 +1060,17 @@ static bool _overlay_card_realize_rich(DvzFigure* figure, DvzOverlayCard* card)
     if (!_scene_card_realize(figure, &card->card))
         return false;
 
-    float panel_size[2] = {0};
-    _scene_card_panel_size_px(figure, panel, panel_size);
-    if (panel_size[0] <= 0.0f || panel_size[1] <= 0.0f)
-    {
-        _overlay_card_hide_rich(card);
-        return true;
-    }
-
     float content_x = card->card.realized_rect_px[0] + card->card.padding_px[0];
     float content_y = card->card.realized_rect_px[1] + card->card.padding_px[1];
     float content_w = card->card.content_size_px[0];
     float content_h = card->card.content_size_px[1];
-    vec3 position = {
-        -1.0f + 2.0f * content_x / panel_size[0],
-        +1.0f - 2.0f * content_y / panel_size[1],
-        0.0f,
-    };
-    vec2 extent = {
-        2.0f * content_w / panel_size[0],
-        2.0f * content_h / panel_size[1],
-    };
     return _scene_text_block_realize_image(
                &card->rich_block, panel,
                &(DvzTextBlockImageDesc){
-                   .position = {position[0], position[1], position[2]},
-                   .extent = {extent[0], extent[1]},
-                   .anchor = {-1.0f, +1.0f},
+                   .position_px = {content_x, content_y, 0.0f},
+                   .extent_px = {content_w, content_h},
+                   .anchor = {-1.0f, -1.0f},
+                   .pixel_space = true,
                    .z_layer = INT32_MAX / 4 - 1,
                    .controller_mode = DVZ_CONTROLLER_FIXED,
                }) == 0;

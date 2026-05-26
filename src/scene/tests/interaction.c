@@ -2654,11 +2654,12 @@ int test_scene_text_block_image_lowering(TstContext* suite, const TstCase* item)
     AT(_scene_text_block_realize_image(
            &block, panel,
            &(DvzTextBlockImageDesc){
-               .position = {-0.5f, 0.25f, 0.0f},
-               .extent = {0.8f, 0.3f},
-               .anchor = {-1.0f, +1.0f},
+               .position_px = {8.0f, 12.0f, 0.0f},
+               .extent_px = {48.0f, 20.0f},
+               .anchor = {-1.0f, -1.0f},
+               .pixel_space = true,
                .z_layer = 3,
-               .controller_mode = DVZ_CONTROLLER_APPLY,
+               .controller_mode = DVZ_CONTROLLER_FIXED,
            }) == 0);
 
     ANN(block.image_visual);
@@ -2671,6 +2672,13 @@ int test_scene_text_block_image_lowering(TstContext* suite, const TstCase* item)
     AT(panel->visual_count == 1);
     AT(panel->visuals[0].visual == block.image_visual);
     AT(panel->visuals[0].z_layer == 3);
+    AT(panel->visuals[0].controller_mode == DVZ_CONTROLLER_FIXED);
+    const DvzVisualAttr* position_px = _interaction_visual_attr(block.image_visual, "position_px");
+    const DvzVisualAttr* extent_px = _interaction_visual_attr(block.image_visual, "extent_px");
+    ANN(position_px);
+    ANN(extent_px);
+    AT(position_px->item_count == 1);
+    AT(extent_px->item_count == 1);
 
     _scene_text_block_destroy(&block);
     AT(block.image_visual == NULL);
