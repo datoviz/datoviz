@@ -40,6 +40,7 @@ primary implementation-facing source when they exist.
 8. [RAY_TRACING_FORWARD_COMPAT.md](RAY_TRACING_FORWARD_COMPAT.md)
 9. [VISUAL_COMMAND_STREAM.md](VISUAL_COMMAND_STREAM.md)
 10. [LABELS_VISUAL_DESIGN.md](LABELS_VISUAL_DESIGN.md)
+11. [GPU_PROBE_READBACK_ARCHITECTURE.md](GPU_PROBE_READBACK_ARCHITECTURE.md)
 
 
 ## Resources, Transforms, Geometry, Validation, And Integration
