@@ -100,6 +100,7 @@ The granularity vocabulary (`CONSTANT`, `PER_ITEM`, `PER_SPAN`, `PER_GROUP`) and
 3. [../proposals/active/MATERIAL_LIGHTING_API.md](../proposals/active/MATERIAL_LIGHTING_API.md)
 4. [../proposals/active/VOLUME_DESIGN.md](../proposals/active/VOLUME_DESIGN.md)
 5. [../implementation/VISUAL_SHADER_REFACTOR.md](../implementation/VISUAL_SHADER_REFACTOR.md)
+6. [../proposals/active/LABELS_VISUAL_DESIGN.md](../proposals/active/LABELS_VISUAL_DESIGN.md)
 
 
 ## Future Semantic Resources

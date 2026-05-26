@@ -39,6 +39,7 @@ primary implementation-facing source when they exist.
 7. [VOLUME_DESIGN.md](VOLUME_DESIGN.md)
 8. [RAY_TRACING_FORWARD_COMPAT.md](RAY_TRACING_FORWARD_COMPAT.md)
 9. [VISUAL_COMMAND_STREAM.md](VISUAL_COMMAND_STREAM.md)
+10. [LABELS_VISUAL_DESIGN.md](LABELS_VISUAL_DESIGN.md)
 
 
 ## Resources, Transforms, Geometry, Validation, And Integration
