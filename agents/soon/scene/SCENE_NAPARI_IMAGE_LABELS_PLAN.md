@@ -2,7 +2,7 @@
 
 > **Execution Status**
 > - **Status:** `ACTIVE / FOLLOW-UP NOTE`
-> - **Updated on:** `2026-05-19`
+> - **Updated on:** `2026-05-26`
 > - **Purpose:** track remaining 2D image/label work needed for napari-class layer rendering.
 
 
@@ -24,8 +24,9 @@ The active v0.4 code already has retained `SampledField` resources, 2D image vis
 sampled fields, image dirty-region uploads, z-layered panel attachment, scale/colormap bookkeeping,
 categorical scale/legend bookkeeping and rendering, first-class `dvz_labels()` integer sampled-field
 rendering, label GLSL/WGSL shader variants, selected-label/boundary/hidden-label styling, and image
-probe/readback plumbing. Scalar fields are still commonly colorized through a staged RGBA path, and
-raw label-ID GPU probing remains a follow-up.
+probe/readback plumbing. The active request path also has a hidden-RGBA `dvz_image()` segment probe
+compatibility route for encoded masks. Scalar fields are still commonly colorized through a staged
+RGBA path, and true raw label-ID GPU probing for `dvz_labels()` remains a follow-up.
 
 Use this file only for execution sequencing. Do not duplicate napari or image visual semantics here.
 
@@ -36,7 +37,8 @@ Recommended follow-up commits:
 
 1. Add native shader-side scalar image lookup: raw scalar texture, contrast/gamma params, colormap
    palette texture, opacity, and raw-value probe semantics.
-2. Add raw label-ID GPU probing so hover/click readout does not rely on CPU coordinate lookup.
+2. Add raw label-ID GPU probing so hover/click readout does not rely on CPU coordinate lookup or the
+   hidden-RGBA image segment-probe compatibility route.
 3. Preserve label IDs as integer sampled-field data; labels must use nearest sampling or texel
    fetch, with label `0` transparent by default.
 4. Continue broadening label palette/hash color, selected-label-only, contour, opacity, hidden-ID,
@@ -44,7 +46,10 @@ Recommended follow-up commits:
 5. Keep napari-style blend modes separate from alpha modes: source-over, additive, minimum, opaque,
    and no-depth translucent behavior should be explicit 2D layer-compositing policy.
 6. Harden image and label probes so readback returns semantic raw values, data coordinates, visual
-   identity, and latest-request-wins hover behavior.
+   identity, and latest-request-wins hover behavior. Labels acceptance must include
+   `visual_family == DVZ_SCENE_VISUAL_FAMILY_LABELS`, the `dvz_labels()` visual ID, no required hidden
+   image visual, signed IDs such as `-7`, unsigned high IDs such as `4000000000`, and default
+   background miss behavior.
 7. Treat N-D slicing and thick-slice projection as adapter-owned for the first napari path; Datoviz
    should receive display-ready 2D fields and apply validated full or region updates.
 8. Keep 3D volume and 3D labels work in
@@ -58,7 +63,7 @@ Recommended example order:
 1. scalar image colormap with contrast/gamma/opacity controls;
 2. integer labels overlay with categorical legend, shader-side selection/boundary styling, and
    temporary CPU hover/click lookup, matching `examples/c/showcase/labels.c`;
-3. label-id GPU probe/readback;
+3. raw `dvz_labels()` label-id GPU probe/readback, distinct from the hidden-RGBA image segment probe;
 4. multi-layer image stack with napari-style blend-mode controls;
 5. dirty-tile or multiscale level-switching smoke after sampled-field region updates are stable.
 

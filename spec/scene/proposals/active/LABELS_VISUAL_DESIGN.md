@@ -475,6 +475,12 @@ Resolving a human-readable string from the retained scale after GPU readback is 
 identity came from the GPU. Returning labels by decoding rendered RGBA colors is not sufficient for
 the final path.
 
+Current code note on 2026-05-26: `src/scene/request_execute.c` has a hidden-RGBA `dvz_image()`
+segment-probe compatibility path that returns `DVZ_PROBE_VALUE_LABEL` for encoded image masks. That
+path is intentionally not the labels visual contract: it reports the image visual family, is limited
+by the encoded RGBA payload, cannot preserve signed raw IDs, and requires a duplicate image payload
+instead of probing the labels visual's integer texture.
+
 Implementation plan:
 
 1. Treat `DVZ_VISUAL_TYPE_LABELS` as probe-capable for `DVZ_SCENE_TARGET_SEGMENT` when the visual
@@ -501,6 +507,9 @@ Implementation plan:
    2D signed labels probe with `-7`, 2D unsigned labels probe with `4000000000`, background miss,
    scale-label resolution, panzoom-transformed coordinate mapping, and a regression proving no
    hidden RGBA image visual is required.
+10. Treat the implementation as incomplete unless the result reports
+    `visual_family == DVZ_SCENE_VISUAL_FAMILY_LABELS`, `visual_id` equal to the `dvz_labels()`
+    visual, `value_kind == DVZ_PROBE_VALUE_LABEL`, and `category_id` equal to the raw integer texel.
 
 The existing hidden RGBA image probe route may remain only as a compatibility path for image-based
 segment masks. It is not the labels visual contract because it cannot preserve negative IDs, is

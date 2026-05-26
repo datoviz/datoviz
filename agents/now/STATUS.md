@@ -72,7 +72,7 @@ best next choices when the task is to improve examples or add a visible capabili
 | Priority | Lane | Current read | Next action |
 | ---: | --- | --- | --- |
 | 1 | Vector/arrow visual | Missing as a semantic visual; wind-field examples can use primitives only as a temporary bridge. | Start from [`../soon/scene/SCENE_VECTOR_VISUALS_PLAN.md`](../soon/scene/SCENE_VECTOR_VISUALS_PLAN.md), then pressure it with a wind-field showcase. |
-| 2 | Raw label-id GPU probe | Labels rendering, legend, and selection exist; true label-id GPU probing is still the important interaction gap. | Extend the scene request/readback path and add sparse/high-id pressure tests. |
+| 2 | Raw label-id GPU probe | Labels rendering, legend, and selection exist; true `dvz_labels()` raw integer probing is still the important interaction gap. The existing hidden-RGBA image segment probe is not this path. | Add labels-specific scene request/readback dispatch, preserve signed/unsigned integer field IDs, and add sparse/high-id pressure tests. |
 | 3 | Explanatory layout proof | Reserve/layout infrastructure exists for axes, colorbars, legends, and scale bars. | Add one composed example and focused validation for predictable adornment composition. |
 | 4 | Gallery proof pass | Protein, LiDAR, brain, and labels showcases mostly exist. | Run/capture/tune defaults and fix concrete rough edges before RC1. |
 | 5 | Splat visual | Not implemented and intentionally a new visual family. | Keep after release proof unless maximum visual novelty is the goal. |
