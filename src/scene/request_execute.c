@@ -121,8 +121,7 @@ static void _scene_apply_pick_payload(
     DvzPickResult* out_result);
 
 static bool _scene_decode_image_probe_payload(
-    const DvzVisual* visual, bool segment_probe, const uint8_t rgba[4],
-    DvzSceneProbePayload* out_payload);
+    const DvzVisual* visual, const uint8_t rgba[4], DvzSceneProbePayload* out_payload);
 
 static void _scene_apply_probe_payload(
     const DvzScene* scene, const DvzVisual* visual, const DvzSceneProbePayload* payload,
@@ -150,6 +149,22 @@ static bool _scene_image_probe_needs_static_upload(
 static void _scene_image_probe_mark_static_uploaded(
     DvzSceneRequestExecutor* executor, DvzVisual* visual, uint64_t position_version,
     uint64_t texcoord_version, uint64_t texture_version);
+
+static bool _scene_labels_probe_integer_format(
+    DvzFieldFormat format, uint32_t* out_texture_format, uint32_t* out_bytes_per_texel);
+
+static bool _scene_labels_probe_visual_uv(
+    const DvzPanel* panel, const DvzVisual* visual, const vec2 request_ndc, double out_uv[2]);
+
+static bool _scene_labels_probe_readback(
+    const DvzScene* scene, DvzSceneRequestExecutor* executor, const DvzSampledField* field,
+    uint32_t texel_x, uint32_t texel_y, uint8_t out_sample[4], bool* out_executed);
+
+static bool _scene_labels_probe_decode_sample(
+    DvzFieldFormat format, const uint8_t sample[4], DvzCategoryId* out_id);
+
+static bool _scene_probe_request_has_labels_candidate(
+    const DvzFigure* figure, const DvzPendingProbeRequest* pending);
 
 static bool _scene_probe_request_has_image_candidate(
     const DvzFigure* figure, const DvzPendingProbeRequest* pending);
@@ -230,6 +245,10 @@ static bool _scene_process_pick_request(
     const DvzPendingPickRequest* pending);
 
 static bool _scene_process_image_probe_request(
+    DvzFigure* figure, DvzSceneRequestExecutor* executor, const DvzCapabilitySnapshot* caps,
+    const DvzPendingProbeRequest* pending);
+
+static bool _scene_process_labels_probe_request(
     DvzFigure* figure, DvzSceneRequestExecutor* executor, const DvzCapabilitySnapshot* caps,
     const DvzPendingProbeRequest* pending);
 
@@ -363,6 +382,14 @@ uint32_t _dvz_figure_process_requests_with_executor(
         if (pending.panel == NULL || pending.panel->figure != figure)
         {
             i++;
+            continue;
+        }
+        if (_scene_probe_request_has_labels_candidate(figure, &pending))
+        {
+            (void)_scene_request_executor_prepare(executor, runtime);
+            (void)_scene_process_labels_probe_request(figure, executor, caps, &pending);
+            _scene_remove_pending_probe_at(scene, i);
+            processed++;
             continue;
         }
         if (_scene_probe_request_has_volume_slice_candidate(figure, &pending))
@@ -640,17 +667,15 @@ static void _scene_apply_pick_payload(
 
 
 /**
- * Decode the GPU RGBA payload for an image or hidden label image probe.
+ * Decode the GPU RGBA payload for an image probe.
  *
  * @param visual visual that produced the payload
- * @param segment_probe whether the request targets segment labels
  * @param rgba sampled GPU pixel
  * @param out_payload decoded scene payload
  * @return true when the pixel contains a supported hit payload
  */
 static bool _scene_decode_image_probe_payload(
-    const DvzVisual* visual, bool segment_probe, const uint8_t rgba[4],
-    DvzSceneProbePayload* out_payload)
+    const DvzVisual* visual, const uint8_t rgba[4], DvzSceneProbePayload* out_payload)
 {
     ANN(visual);
     ANN(rgba);
@@ -663,24 +688,6 @@ static bool _scene_decode_image_probe_payload(
         return false;
 
     out_payload->status = DVZ_PROBE_STATUS_HIT;
-    if (segment_probe)
-    {
-        uint64_t label_id = (uint64_t)rgba[0] | ((uint64_t)rgba[1] << 8) |
-                            ((uint64_t)rgba[2] << 16);
-        if (label_id == 0)
-        {
-            out_payload->status = DVZ_PROBE_STATUS_MISS;
-            return false;
-        }
-        out_payload->target = DVZ_SCENE_TARGET_SEGMENT;
-        out_payload->target_id = label_id;
-        out_payload->group_id = label_id;
-        out_payload->value_kind = DVZ_PROBE_VALUE_LABEL;
-        out_payload->category_id = (DvzCategoryId)label_id;
-        dvz_snprintf(out_payload->label, sizeof(out_payload->label), "label %" PRIu64, label_id);
-        return true;
-    }
-
     out_payload->target = DVZ_SCENE_TARGET_PIXEL;
     out_payload->value_kind = DVZ_PROBE_VALUE_VEC4;
     out_payload->vector[0] = rgba[0] / 255.0;
@@ -900,20 +907,57 @@ static bool _scene_image_probe_static_versions(
     ANN(out_texture_version);
 
     int pos_idx = _attr_index(visual, "position");
-    int uv_idx = _attr_index(visual, "texcoords");
-    if (pos_idx < 0 || uv_idx < 0)
+    if (pos_idx < 0)
         return false;
     const DvzVisualAttr* pos_attr = &visual->attrs[pos_idx];
-    const DvzVisualAttr* uv_attr = &visual->attrs[uv_idx];
-    if (pos_attr->data == NULL || uv_attr->data == NULL || pos_attr->item_count == 0 ||
-        uv_attr->item_count != pos_attr->item_count || pos_attr->item_size != sizeof(vec3) ||
-        uv_attr->item_size != sizeof(vec2))
+    if (pos_attr->data == NULL || pos_attr->item_count == 0 || pos_attr->item_size != sizeof(vec3))
     {
         return false;
     }
 
+    uint64_t texcoord_version = 0;
+    int extent_idx = _attr_index(visual, "extent");
+    int extent_px_idx = _attr_index(visual, "extent_px");
+    bool has_extent = extent_idx >= 0 && visual->attrs[extent_idx].data != NULL;
+    bool has_extent_px = extent_px_idx >= 0 && visual->attrs[extent_px_idx].data != NULL;
+    if (has_extent || has_extent_px)
+    {
+        if (has_extent && has_extent_px)
+            return false;
+        const DvzVisualAttr* extent_attr =
+            has_extent_px ? &visual->attrs[extent_px_idx] : &visual->attrs[extent_idx];
+        if (
+            extent_attr->item_count != pos_attr->item_count ||
+            extent_attr->item_size != sizeof(vec2))
+        {
+            return false;
+        }
+        texcoord_version = extent_attr->version;
+
+        int anchor_idx = _attr_index(visual, "anchor");
+        if (anchor_idx >= 0 && visual->attrs[anchor_idx].data != NULL)
+            texcoord_version ^= visual->attrs[anchor_idx].version;
+        int tex_rect_idx = _attr_index(visual, "tex_rect");
+        if (tex_rect_idx >= 0 && visual->attrs[tex_rect_idx].data != NULL)
+            texcoord_version ^= visual->attrs[tex_rect_idx].version;
+    }
+    else
+    {
+        int uv_idx = _attr_index(visual, "texcoords");
+        if (uv_idx < 0)
+            return false;
+        const DvzVisualAttr* uv_attr = &visual->attrs[uv_idx];
+        if (
+            uv_attr->data == NULL || uv_attr->item_count != pos_attr->item_count ||
+            uv_attr->item_size != sizeof(vec2))
+        {
+            return false;
+        }
+        texcoord_version = uv_attr->version;
+    }
+
     *out_position_version = pos_attr->version;
-    *out_texcoord_version = uv_attr->version;
+    *out_texcoord_version = texcoord_version;
     *out_texture_version = visual->texture.version;
     return true;
 }
@@ -964,6 +1008,537 @@ static void _scene_image_probe_mark_static_uploaded(
     executor->image_probe_texcoord_version = texcoord_version;
     executor->image_probe_texture_version = texture_version;
 }
+
+
+
+/**
+ * Return the DRP2 texture format for a labels-probe integer field.
+ *
+ * @param format sampled-field format
+ * @param out_texture_format output texture format, using VkFormat values
+ * @param out_bytes_per_texel output texel byte size
+ * @return true when the format can carry raw label IDs
+ */
+static bool _scene_labels_probe_integer_format(
+    DvzFieldFormat format, uint32_t* out_texture_format, uint32_t* out_bytes_per_texel)
+{
+    ANN(out_texture_format);
+    ANN(out_bytes_per_texel);
+    switch (format)
+    {
+    case DVZ_FIELD_FORMAT_R8_UINT:
+    case DVZ_FIELD_FORMAT_R8_SINT:
+    case DVZ_FIELD_FORMAT_R16_UINT:
+    case DVZ_FIELD_FORMAT_R16_SINT:
+    case DVZ_FIELD_FORMAT_R32_UINT:
+    case DVZ_FIELD_FORMAT_R32_SINT:
+        return _field_format_texture_format(format, out_texture_format) &&
+               _field_format_bytes_per_texel(format, out_bytes_per_texel);
+    default:
+        *out_texture_format = 0;
+        *out_bytes_per_texel = 0;
+        return false;
+    }
+}
+
+
+
+/**
+ * Project one visual-space vertex into panel-local NDC.
+ *
+ * @param mvp panel MVP transform
+ * @param position visual-space position
+ * @param out_ndc projected NDC coordinate
+ * @return true when the projected position is finite
+ */
+static bool
+_scene_labels_probe_project_vertex(DvzMVP* mvp, const float position[3], double out_ndc[2])
+{
+    ANN(mvp);
+    ANN(position);
+    ANN(out_ndc);
+
+    vec4 p = {position[0], position[1], position[2], 1.0f};
+    vec4 tmp0 = {0};
+    vec4 tmp1 = {0};
+    vec4 clip = {0};
+    glm_mat4_mulv(mvp->model, p, tmp0);
+    glm_mat4_mulv(mvp->view, tmp0, tmp1);
+    glm_mat4_mulv(mvp->proj, tmp1, clip);
+    if (fabsf(clip[3]) < 1e-12f)
+        return false;
+    out_ndc[0] = (double)(clip[0] / clip[3]);
+    out_ndc[1] = (double)(clip[1] / clip[3]);
+    return isfinite(out_ndc[0]) && isfinite(out_ndc[1]);
+}
+
+
+
+/**
+ * Interpolate texture coordinates for a point inside one projected triangle.
+ *
+ * @param request_ndc requested panel-local NDC point
+ * @param p0 first projected triangle vertex
+ * @param p1 second projected triangle vertex
+ * @param p2 third projected triangle vertex
+ * @param uv0 first texture coordinate
+ * @param uv1 second texture coordinate
+ * @param uv2 third texture coordinate
+ * @param out_uv interpolated texture coordinate
+ * @return true when the request falls inside the triangle
+ */
+static bool _scene_labels_probe_triangle_uv(
+    const vec2 request_ndc, const double p0[2], const double p1[2], const double p2[2],
+    const float uv0[2], const float uv1[2], const float uv2[2], double out_uv[2])
+{
+    ANN(request_ndc);
+    ANN(p0);
+    ANN(p1);
+    ANN(p2);
+    ANN(uv0);
+    ANN(uv1);
+    ANN(uv2);
+    ANN(out_uv);
+
+    const double x = (double)request_ndc[0];
+    const double y = (double)request_ndc[1];
+    const double denom =
+        (p1[1] - p2[1]) * (p0[0] - p2[0]) + (p2[0] - p1[0]) * (p0[1] - p2[1]);
+    if (fabs(denom) < 1e-18)
+        return false;
+
+    const double w0 =
+        ((p1[1] - p2[1]) * (x - p2[0]) + (p2[0] - p1[0]) * (y - p2[1])) / denom;
+    const double w1 =
+        ((p2[1] - p0[1]) * (x - p2[0]) + (p0[0] - p2[0]) * (y - p2[1])) / denom;
+    const double w2 = 1.0 - w0 - w1;
+    const double eps = 1e-7;
+    if (w0 < -eps || w1 < -eps || w2 < -eps)
+        return false;
+
+    out_uv[0] = w0 * (double)uv0[0] + w1 * (double)uv1[0] + w2 * (double)uv2[0];
+    out_uv[1] = w0 * (double)uv0[1] + w1 * (double)uv1[1] + w2 * (double)uv2[1];
+    return isfinite(out_uv[0]) && isfinite(out_uv[1]);
+}
+
+
+
+/**
+ * Test one labels triangle and return the interpolated texture coordinate.
+ *
+ * @param mvp panel MVP transform
+ * @param request_ndc requested panel-local NDC point
+ * @param positions three visual-space positions
+ * @param texcoords three texture coordinates
+ * @param out_uv interpolated texture coordinate
+ * @return true when the triangle contains the request
+ */
+static bool _scene_labels_probe_projected_triangle_uv(
+    DvzMVP* mvp, const vec3 positions[3], const vec2 texcoords[3], const vec2 request_ndc,
+    double out_uv[2])
+{
+    ANN(mvp);
+    ANN(positions);
+    ANN(texcoords);
+    ANN(request_ndc);
+    ANN(out_uv);
+
+    double p0[2] = {0};
+    double p1[2] = {0};
+    double p2[2] = {0};
+    if (
+        !_scene_labels_probe_project_vertex(mvp, positions[0], p0) ||
+        !_scene_labels_probe_project_vertex(mvp, positions[1], p1) ||
+        !_scene_labels_probe_project_vertex(mvp, positions[2], p2))
+    {
+        return false;
+    }
+    return _scene_labels_probe_triangle_uv(
+        request_ndc, p0, p1, p2, texcoords[0], texcoords[1], texcoords[2], out_uv);
+}
+
+
+
+/**
+ * Return whether a visual attribute has dense data of one item size.
+ *
+ * @param visual the visual
+ * @param attr_name attribute name
+ * @param item_size expected item size
+ * @param out_attr optional output attribute
+ * @return true when matching data exists
+ */
+static bool _scene_labels_probe_attr(
+    const DvzVisual* visual, const char* attr_name, uint64_t item_size,
+    const DvzVisualAttr** out_attr)
+{
+    ANN(visual);
+    ANN(attr_name);
+    int idx = _attr_index(visual, attr_name);
+    if (idx < 0)
+        return false;
+    const DvzVisualAttr* attr = &visual->attrs[idx];
+    if (attr->data == NULL || attr->item_count == 0 || attr->item_size != item_size)
+        return false;
+    if (out_attr != NULL)
+        *out_attr = attr;
+    return true;
+}
+
+
+
+/**
+ * Resolve the labels texture coordinate for one retained labels visual.
+ *
+ * @param panel requesting panel
+ * @param visual labels visual
+ * @param request_ndc requested panel-local NDC coordinate
+ * @param out_uv output texture coordinate
+ * @return true when the request falls on the labels visual
+ */
+static bool _scene_labels_probe_visual_uv(
+    const DvzPanel* panel, const DvzVisual* visual, const vec2 request_ndc, double out_uv[2])
+{
+    ANN(panel);
+    ANN(visual);
+    ANN(request_ndc);
+    ANN(out_uv);
+
+    const DvzVisualAttr* pos_attr = NULL;
+    if (!_scene_labels_probe_attr(visual, "position", sizeof(vec3), &pos_attr))
+        return false;
+    const float* position = (const float*)pos_attr->data;
+
+    DvzMVP mvp = {0};
+    _scene_panel_apply_mvp(panel, &mvp);
+
+    const DvzVisualAttr* extent_attr = NULL;
+    if (_scene_labels_probe_attr(visual, "extent", sizeof(vec2), &extent_attr))
+    {
+        if (extent_attr->item_count != pos_attr->item_count)
+            return false;
+        const float* extent = (const float*)extent_attr->data;
+        const DvzVisualAttr* anchor_attr = NULL;
+        const bool has_anchor =
+            _scene_labels_probe_attr(visual, "anchor", sizeof(vec2), &anchor_attr) &&
+            anchor_attr->item_count == pos_attr->item_count;
+        const float* anchor = has_anchor ? (const float*)anchor_attr->data : NULL;
+        const DvzVisualAttr* tex_rect_attr = NULL;
+        const bool has_tex_rect =
+            _scene_labels_probe_attr(visual, "tex_rect", 4 * sizeof(float), &tex_rect_attr) &&
+            tex_rect_attr->item_count == pos_attr->item_count;
+        const float* tex_rect = has_tex_rect ? (const float*)tex_rect_attr->data : NULL;
+
+        for (uint64_t k = pos_attr->item_count; k > 0; k--)
+        {
+            uint64_t i = k - 1;
+            const float x = position[3 * i + 0];
+            const float y = position[3 * i + 1];
+            const float z = position[3 * i + 2];
+            const float w = extent[2 * i + 0];
+            const float h = extent[2 * i + 1];
+            const float ax = anchor != NULL ? anchor[2 * i + 0] : 0.0f;
+            const float ay = anchor != NULL ? anchor[2 * i + 1] : 0.0f;
+            const float x0 = x - 0.5f * (ax + 1.0f) * w;
+            const float x1 = x0 + w;
+            const float y0 = y - 0.5f * (ay + 1.0f) * h;
+            const float y1 = y0 + h;
+            const float u0 = tex_rect != NULL ? tex_rect[4 * i + 0] : 0.0f;
+            const float v0 = tex_rect != NULL ? tex_rect[4 * i + 1] : 0.0f;
+            const float u1 = tex_rect != NULL ? tex_rect[4 * i + 2] : 1.0f;
+            const float v1 = tex_rect != NULL ? tex_rect[4 * i + 3] : 1.0f;
+            const vec3 quad_pos[6] = {
+                {x0, y0, z}, {x0, y1, z}, {x1, y0, z},
+                {x1, y0, z}, {x0, y1, z}, {x1, y1, z},
+            };
+            const vec2 quad_uv[6] = {
+                {u0, v0}, {u0, v1}, {u1, v0}, {u1, v0}, {u0, v1}, {u1, v1},
+            };
+            for (uint32_t j = 0; j < 6; j += 3)
+            {
+                const vec3 tri_pos[3] = {
+                    {quad_pos[j + 0][0], quad_pos[j + 0][1], quad_pos[j + 0][2]},
+                    {quad_pos[j + 1][0], quad_pos[j + 1][1], quad_pos[j + 1][2]},
+                    {quad_pos[j + 2][0], quad_pos[j + 2][1], quad_pos[j + 2][2]},
+                };
+                const vec2 tri_uv[3] = {
+                    {quad_uv[j + 0][0], quad_uv[j + 0][1]},
+                    {quad_uv[j + 1][0], quad_uv[j + 1][1]},
+                    {quad_uv[j + 2][0], quad_uv[j + 2][1]},
+                };
+                if (_scene_labels_probe_projected_triangle_uv(
+                        &mvp, tri_pos, tri_uv, request_ndc, out_uv))
+                    return true;
+            }
+        }
+        return false;
+    }
+
+    const DvzVisualAttr* uv_attr = NULL;
+    if (!_scene_labels_probe_attr(visual, "texcoords", sizeof(vec2), &uv_attr))
+        return false;
+    if (uv_attr->item_count != pos_attr->item_count)
+        return false;
+    const float* texcoords = (const float*)uv_attr->data;
+    if (pos_attr->item_count == 4)
+    {
+        const uint32_t order[6] = {0, 1, 2, 2, 1, 3};
+        for (uint32_t j = 0; j < 6; j += 3)
+        {
+            const uint32_t i0 = order[j + 0];
+            const uint32_t i1 = order[j + 1];
+            const uint32_t i2 = order[j + 2];
+            const vec3 tri_pos[3] = {
+                {position[3 * i0 + 0], position[3 * i0 + 1], position[3 * i0 + 2]},
+                {position[3 * i1 + 0], position[3 * i1 + 1], position[3 * i1 + 2]},
+                {position[3 * i2 + 0], position[3 * i2 + 1], position[3 * i2 + 2]},
+            };
+            const vec2 tri_uv[3] = {
+                {texcoords[2 * i0 + 0], texcoords[2 * i0 + 1]},
+                {texcoords[2 * i1 + 0], texcoords[2 * i1 + 1]},
+                {texcoords[2 * i2 + 0], texcoords[2 * i2 + 1]},
+            };
+            if (_scene_labels_probe_projected_triangle_uv(
+                    &mvp, tri_pos, tri_uv, request_ndc, out_uv))
+                return true;
+        }
+        return false;
+    }
+    if (pos_attr->item_count % 3 != 0)
+        return false;
+    for (uint64_t tri = pos_attr->item_count / 3; tri > 0; tri--)
+    {
+        uint64_t base = 3 * (tri - 1);
+        const vec3 tri_pos[3] = {
+            {position[3 * (base + 0) + 0], position[3 * (base + 0) + 1],
+             position[3 * (base + 0) + 2]},
+            {position[3 * (base + 1) + 0], position[3 * (base + 1) + 1],
+             position[3 * (base + 1) + 2]},
+            {position[3 * (base + 2) + 0], position[3 * (base + 2) + 1],
+             position[3 * (base + 2) + 2]},
+        };
+        const vec2 tri_uv[3] = {
+            {texcoords[2 * (base + 0) + 0], texcoords[2 * (base + 0) + 1]},
+            {texcoords[2 * (base + 1) + 0], texcoords[2 * (base + 1) + 1]},
+            {texcoords[2 * (base + 2) + 0], texcoords[2 * (base + 2) + 1]},
+        };
+        if (_scene_labels_probe_projected_triangle_uv(&mvp, tri_pos, tri_uv, request_ndc, out_uv))
+            return true;
+    }
+    return false;
+}
+
+
+
+/**
+ * Execute a direct integer labels texture readback.
+ *
+ * @param scene owning scene, used for instance-scoped test controls
+ * @param executor retained request executor
+ * @param field labels sampled field
+ * @param texel_x x texel to decode after readback
+ * @param texel_y y texel to decode after readback
+ * @param out_sample raw texel bytes
+ * @param out_executed whether the stream executed successfully before download
+ * @return true when the selected sample was downloaded
+ */
+static bool _scene_labels_probe_readback(
+    const DvzScene* scene, DvzSceneRequestExecutor* executor, const DvzSampledField* field,
+    uint32_t texel_x, uint32_t texel_y, uint8_t out_sample[4], bool* out_executed)
+{
+    ANN(executor);
+    ANN(field);
+    ANN(out_sample);
+    ANN(out_executed);
+    *out_executed = false;
+
+    uint32_t texture_format = 0;
+    uint32_t bytes_per_texel = 0;
+    if (
+        executor->runtime == NULL || !_scene_labels_probe_integer_format(
+                                         field->desc.format, &texture_format, &bytes_per_texel))
+    {
+        return false;
+    }
+
+    uint64_t row_bytes = 0;
+    uint64_t buffer_size = 0;
+    if (
+        _dvz_mul_u64_overflows(field->desc.width, bytes_per_texel, &row_bytes) ||
+        _dvz_mul_u64_overflows(row_bytes, field->desc.height, &buffer_size) ||
+        row_bytes > UINT32_MAX || buffer_size == 0)
+    {
+        log_error("labels probe readback buffer size overflow");
+        return false;
+    }
+    uint64_t sample_offset = 0;
+    uint64_t row_offset = 0;
+    uint64_t texel_offset = 0;
+    if (
+        _dvz_mul_u64_overflows(texel_y, row_bytes, &row_offset) ||
+        _dvz_mul_u64_overflows(texel_x, bytes_per_texel, &texel_offset) ||
+        _dvz_add_u64_overflows(row_offset, texel_offset, &sample_offset))
+    {
+        log_error("labels probe readback sample offset overflow");
+        return false;
+    }
+
+    dvz_drp2_runtime_reset(executor->runtime);
+    executor->image_probe_visual = NULL;
+    executor->image_probe_position_version = 0;
+    executor->image_probe_texcoord_version = 0;
+    executor->image_probe_texture_version = 0;
+
+    const uint64_t texture_id = 7001;
+    const uint64_t buffer_id = 7002;
+    const uint64_t encoder_id = 7003;
+    const uint64_t command_buffer_id = 7004;
+    const uint64_t submission_id = 7005;
+    DvzDrp2CommandStream* stream = dvz_drp2_stream();
+    if (stream == NULL)
+        return false;
+
+    bool ok = dvz_drp2_stream_hello_renderer(stream, "scene-labels-probe") &&
+              dvz_drp2_stream_renderer_hello_reply(stream, "datoviz") &&
+              dvz_drp2_stream_create_texture_2d_format_usage(
+                  stream, texture_id, field->desc.width, field->desc.height, texture_format,
+                  DVZ_DRP2_TEXTURE_USAGE_COPY_DST | DVZ_DRP2_TEXTURE_USAGE_COPY_SRC) &&
+              dvz_drp2_stream_write_texture_2d_bytes(
+                  stream, texture_id, 0, field->desc.width, field->desc.height,
+                  (uint32_t)row_bytes, field->desc.height, field->data) &&
+              dvz_drp2_stream_create_buffer(
+                  stream, buffer_id, buffer_size,
+                  DVZ_DRP2_BUFFER_USAGE_COPY_DST | DVZ_DRP2_BUFFER_USAGE_MAP_READ) &&
+              dvz_drp2_stream_begin_command_encoder(stream, encoder_id) &&
+              dvz_drp2_stream_copy_texture_to_buffer(
+                  stream, encoder_id, texture_id, buffer_id, 0, field->desc.width,
+                  field->desc.height, (uint32_t)row_bytes, field->desc.height) &&
+              dvz_drp2_stream_finish_command_encoder(stream, encoder_id, command_buffer_id) &&
+              dvz_drp2_stream_queue_submit(stream, command_buffer_id, submission_id);
+    if (!ok)
+    {
+        log_error("labels probe readback stream assembly failed");
+        dvz_drp2_stream_destroy(stream);
+        return false;
+    }
+
+    DvzDrp2ValidationResult result = dvz_drp2_runtime_execute(executor->runtime, stream);
+    if (!result.ok)
+    {
+        log_error(
+            "labels probe readback runtime execution failed (code=%d command=%u)",
+            (int)result.code, result.command_index);
+        dvz_drp2_stream_destroy(stream);
+        return false;
+    }
+    *out_executed = true;
+
+    ok = false;
+    if (scene != NULL && scene->test.force_readback_download_failure)
+    {
+        log_error("labels probe readback buffer download forced to fail");
+    }
+    else
+    {
+        ok = dvz_drp2_runtime_download_buffer(
+            executor->runtime, buffer_id, sample_offset, bytes_per_texel, out_sample);
+        if (!ok)
+            log_error("labels probe readback buffer download failed");
+    }
+    dvz_drp2_stream_destroy(stream);
+    return ok;
+}
+
+
+
+/**
+ * Decode raw labels-probe texel bytes into a category ID.
+ *
+ * @param format sampled-field format
+ * @param sample raw texel bytes
+ * @param out_id decoded category ID
+ * @return true when the format was decoded
+ */
+static bool _scene_labels_probe_decode_sample(
+    DvzFieldFormat format, const uint8_t sample[4], DvzCategoryId* out_id)
+{
+    ANN(sample);
+    ANN(out_id);
+    switch (format)
+    {
+    case DVZ_FIELD_FORMAT_R8_UINT:
+        *out_id = (DvzCategoryId)sample[0];
+        return true;
+    case DVZ_FIELD_FORMAT_R8_SINT:
+    {
+        int8_t v = 0;
+        dvz_memcpy(&v, sizeof(v), sample, sizeof(v));
+        *out_id = (DvzCategoryId)v;
+        return true;
+    }
+    case DVZ_FIELD_FORMAT_R16_UINT:
+    {
+        uint16_t v = 0;
+        dvz_memcpy(&v, sizeof(v), sample, sizeof(v));
+        *out_id = (DvzCategoryId)v;
+        return true;
+    }
+    case DVZ_FIELD_FORMAT_R16_SINT:
+    {
+        int16_t v = 0;
+        dvz_memcpy(&v, sizeof(v), sample, sizeof(v));
+        *out_id = (DvzCategoryId)v;
+        return true;
+    }
+    case DVZ_FIELD_FORMAT_R32_UINT:
+    {
+        uint32_t v = 0;
+        dvz_memcpy(&v, sizeof(v), sample, sizeof(v));
+        *out_id = (DvzCategoryId)v;
+        return true;
+    }
+    case DVZ_FIELD_FORMAT_R32_SINT:
+    {
+        int32_t v = 0;
+        dvz_memcpy(&v, sizeof(v), sample, sizeof(v));
+        *out_id = (DvzCategoryId)v;
+        return true;
+    }
+    default:
+        return false;
+    }
+}
+
+
+
+/**
+ * Return the display label for one labels-probe category.
+ *
+ * @param visual labels visual
+ * @param id category ID
+ * @param out_label output display label
+ * @param label_size output label capacity
+ */
+static void _scene_labels_probe_category_label(
+    const DvzVisual* visual, DvzCategoryId id, char* out_label, uint64_t label_size)
+{
+    ANN(visual);
+    ANN(out_label);
+    if (visual->scale != NULL)
+    {
+        for (uint32_t i = 0; i < visual->scale->category_count; i++)
+        {
+            const DvzScaleCategoryState* category = &visual->scale->categories[i];
+            if (category->category_id == id && category->has_label)
+            {
+                dvz_strlcpy(out_label, category->label, label_size);
+                return;
+            }
+        }
+    }
+    dvz_snprintf(out_label, label_size, "label %" PRIi64, id);
+}
+
 
 
 /**
@@ -1210,6 +1785,55 @@ static bool _scene_probe_request_has_volume_slice_candidate(
 }
 
 
+/**
+ * Return whether one pending probe has a labels visual candidate.
+ *
+ * @param figure figure whose request queue is being processed
+ * @param pending pending probe request
+ * @return true when a matching labels visual exists
+ */
+static bool _scene_probe_request_has_labels_candidate(
+    const DvzFigure* figure, const DvzPendingProbeRequest* pending)
+{
+    ANN(figure);
+    ANN(pending);
+    if (pending->panel == NULL || pending->panel->figure != figure)
+        return false;
+    if (
+        pending->request.target != DVZ_SCENE_TARGET_NONE &&
+        pending->request.target != DVZ_SCENE_TARGET_SEGMENT)
+    {
+        return false;
+    }
+
+    const DvzPanel* panel = pending->panel;
+    for (uint32_t i = 0; i < panel->visual_count; i++)
+    {
+        const DvzPanelAttach* attach = &panel->visuals[i];
+        const DvzVisual* visual = attach->visual;
+        if (visual == NULL || !visual->visible || visual->type != DVZ_VISUAL_TYPE_LABELS)
+            continue;
+        if (attach->controller_mode == DVZ_CONTROLLER_FIXED)
+            continue;
+        if (visual->field == NULL || visual->field->data == NULL)
+            continue;
+        uint32_t texture_format = 0;
+        uint32_t bytes_per_texel = 0;
+        if (!_scene_labels_probe_integer_format(
+                visual->field->desc.format, &texture_format, &bytes_per_texel))
+            continue;
+        if (
+            visual->field->desc.dim != DVZ_FIELD_DIM_2D || visual->field->desc.width == 0 ||
+            visual->field->desc.height == 0)
+        {
+            continue;
+        }
+        return true;
+    }
+    return false;
+}
+
+
 
 /**
  * Return whether one pending probe has a visible image candidate that may need GPU readback.
@@ -1227,25 +1851,19 @@ static bool _scene_probe_request_has_image_candidate(
         return false;
     if (
         pending->request.target != DVZ_SCENE_TARGET_NONE &&
-        pending->request.target != DVZ_SCENE_TARGET_PIXEL &&
-        pending->request.target != DVZ_SCENE_TARGET_SEGMENT)
+        pending->request.target != DVZ_SCENE_TARGET_PIXEL)
     {
         return false;
     }
 
     const DvzPanel* panel = pending->panel;
-    bool segment_probe = pending->request.target == DVZ_SCENE_TARGET_SEGMENT;
     for (uint32_t i = 0; i < panel->visual_count; i++)
     {
-        const DvzVisual* visual = panel->visuals[i].visual;
+        const DvzPanelAttach* attach = &panel->visuals[i];
+        const DvzVisual* visual = attach->visual;
         if (visual == NULL || visual->type != DVZ_VISUAL_TYPE_IMAGE)
             continue;
-        if (segment_probe)
-        {
-            if ((visual->pick_capabilities & DVZ_PICK_CAPABILITY_GROUP) != 0)
-                return true;
-        }
-        else if (visual->visible)
+        if (visual->visible && attach->controller_mode != DVZ_CONTROLLER_FIXED)
         {
             return true;
         }
@@ -3704,6 +4322,138 @@ static bool _scene_process_volume_slice_probe_request(
 
 
 
+/**
+ * Resolve one labels probe request.
+ *
+ * @param figure figure whose request queue is being processed
+ * @param executor retained request executor
+ * @param caps runtime capability snapshot
+ * @param pending pending probe request
+ * @return whether a result was queued
+ */
+static bool _scene_process_labels_probe_request(
+    DvzFigure* figure, DvzSceneRequestExecutor* executor, const DvzCapabilitySnapshot* caps,
+    const DvzPendingProbeRequest* pending)
+{
+    ANN(figure);
+    ANN(pending);
+    ANN(pending->panel);
+    (void)caps;
+
+    DvzScene* scene = figure->scene;
+    DvzPanel* panel = pending->panel;
+    DvzProbeResult miss =
+        _scene_probe_miss_result(figure, panel, pending, DVZ_PROBE_STATUS_NO_CAPABLE_VISUAL);
+
+    if (
+        pending->request.target != DVZ_SCENE_TARGET_NONE &&
+        pending->request.target != DVZ_SCENE_TARGET_SEGMENT)
+    {
+        miss.status = DVZ_PROBE_STATUS_UNSUPPORTED_TARGET;
+        return _scene_push_probe_result(scene, panel, pending->freshness_serial, &miss);
+    }
+
+    vec2 request_ndc = {0};
+    if (!_scene_pick_request_ndc(figure, panel, pending->x, pending->y, request_ndc))
+    {
+        miss.status = DVZ_PROBE_STATUS_OUTSIDE_PANEL;
+        return _scene_push_probe_result(scene, panel, pending->freshness_serial, &miss);
+    }
+
+    uint32_t order[DVZ_SCENE_MAX_VISUALS] = {0};
+    _scene_panel_visual_order(panel, order);
+    for (int32_t oi = (int32_t)panel->visual_count - 1; oi >= 0; oi--)
+    {
+        DvzPanelAttach* attach = &panel->visuals[order[oi]];
+        DvzVisual* visual = attach->visual;
+        if (
+            visual == NULL || !visual->visible || visual->type != DVZ_VISUAL_TYPE_LABELS ||
+            attach->controller_mode == DVZ_CONTROLLER_FIXED)
+        {
+            continue;
+        }
+        DvzSampledField* field = visual->field;
+        if (field == NULL || field->data == NULL)
+            continue;
+        if (field->desc.dim != DVZ_FIELD_DIM_2D || field->desc.width == 0 ||
+            field->desc.height == 0)
+        {
+            continue;
+        }
+
+        uint32_t texture_format = 0;
+        uint32_t bytes_per_texel = 0;
+        if (!_scene_labels_probe_integer_format(
+                field->desc.format, &texture_format, &bytes_per_texel))
+            continue;
+        (void)texture_format;
+        (void)bytes_per_texel;
+
+        if (miss.status == DVZ_PROBE_STATUS_NO_CAPABLE_VISUAL)
+            miss.status = DVZ_PROBE_STATUS_MISS;
+
+        double uv[2] = {0};
+        if (!_scene_labels_probe_visual_uv(panel, visual, request_ndc, uv))
+            continue;
+        if (uv[0] < 0.0 || uv[0] > 1.0 || uv[1] < 0.0 || uv[1] > 1.0)
+            continue;
+
+        uint32_t texel_x = (uint32_t)floor(uv[0] * (double)field->desc.width);
+        uint32_t texel_y = (uint32_t)floor(uv[1] * (double)field->desc.height);
+        if (texel_x >= field->desc.width)
+            texel_x = field->desc.width - 1;
+        if (texel_y >= field->desc.height)
+            texel_y = field->desc.height - 1;
+
+        if (executor == NULL || executor->runtime == NULL)
+        {
+            log_error("labels probe request requires a DRP2 runtime");
+            miss.status = DVZ_PROBE_STATUS_GPU_EXEC_FAILED;
+            continue;
+        }
+
+        uint8_t sample[4] = {0};
+        bool executed = false;
+        bool readback_ok = _scene_labels_probe_readback(
+            scene, executor, field, texel_x, texel_y, sample, &executed);
+        if (!readback_ok)
+        {
+            miss.status =
+                executed ? DVZ_PROBE_STATUS_READBACK_FAILED : DVZ_PROBE_STATUS_GPU_EXEC_FAILED;
+            continue;
+        }
+
+        DvzCategoryId label_id = 0;
+        if (!_scene_labels_probe_decode_sample(field->desc.format, sample, &label_id))
+            continue;
+        if (label_id == visual->labels.background_id)
+            continue;
+
+        DvzProbeResult resolved = miss;
+        resolved.hit = true;
+        resolved.status = DVZ_PROBE_STATUS_HIT;
+        resolved.visual_id = _scene_visual_public_id(scene, visual);
+        resolved.visual_family = DVZ_SCENE_VISUAL_FAMILY_LABELS;
+        resolved.target = DVZ_SCENE_TARGET_SEGMENT;
+        resolved.value_kind = DVZ_PROBE_VALUE_LABEL;
+        resolved.category_id = label_id;
+        resolved.scale = visual->scale;
+        resolved.has_uvw = true;
+        resolved.uvw[0] = uv[0];
+        resolved.uvw[1] = uv[1];
+        resolved.uvw[2] = 0.0;
+        resolved.target_id = label_id >= 0 ? (uint64_t)label_id : 0;
+        resolved.group_id = resolved.target_id;
+        _scene_labels_probe_category_label(
+            visual, label_id, resolved.label, sizeof(resolved.label));
+        return _scene_push_probe_result(scene, panel, pending->freshness_serial, &resolved);
+    }
+
+    return _scene_push_probe_result(scene, panel, pending->freshness_serial, &miss);
+}
+
+
+
 static bool _scene_process_image_probe_request(
     DvzFigure* figure, DvzSceneRequestExecutor* executor, const DvzCapabilitySnapshot* caps,
     const DvzPendingProbeRequest* pending)
@@ -3732,10 +4482,8 @@ static bool _scene_process_image_probe_request(
         miss.status = DVZ_PROBE_STATUS_OUTSIDE_PANEL;
         return _scene_push_probe_result(scene, panel, pending->freshness_serial, &miss);
     }
-
     uint32_t order[DVZ_SCENE_MAX_VISUALS] = {0};
     _scene_panel_visual_order(panel, order);
-    bool segment_probe = pending->request.target == DVZ_SCENE_TARGET_SEGMENT;
 
     for (int32_t oi = (int32_t)panel->visual_count - 1; oi >= 0; oi--)
     {
@@ -3743,12 +4491,7 @@ static bool _scene_process_image_probe_request(
         DvzVisual* visual = attach->visual;
         if (visual == NULL || visual->type != DVZ_VISUAL_TYPE_IMAGE)
             continue;
-        if (segment_probe)
-        {
-            if ((visual->pick_capabilities & DVZ_PICK_CAPABILITY_GROUP) == 0)
-                continue;
-        }
-        else if (!visual->visible)
+        if (!visual->visible || attach->controller_mode == DVZ_CONTROLLER_FIXED)
         {
             continue;
         }
@@ -3794,7 +4537,7 @@ static bool _scene_process_image_probe_request(
             executor->image_probe_static_upload_count++;
         }
         bool hit = readback_ok && rgba[3] > 0;
-        if (!segment_probe && readback_ok && rgba[3] == 0)
+        if (readback_ok && rgba[3] == 0)
         {
             log_error(
                 "image probe request %" PRIu64 " returned a transparent GPU pixel",
@@ -3806,7 +4549,7 @@ static bool _scene_process_image_probe_request(
             continue;
 
         DvzSceneProbePayload payload = {0};
-        if (!_scene_decode_image_probe_payload(visual, segment_probe, rgba, &payload))
+        if (!_scene_decode_image_probe_payload(visual, rgba, &payload))
             continue;
 
         DvzProbeResult resolved = miss;

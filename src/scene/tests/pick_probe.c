@@ -2288,7 +2288,15 @@ int test_scene_image_probe_respects_panel_request_position(TstContext* suite, co
 }
 
 
-int test_scene_image_probe_segment_rgba_hidden_visual(TstContext* suite, const TstCase* item)
+/**
+ * Ensure image probes support retained position/extent image rectangles.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_image_probe_generated_rect_respects_panel_position(
+    TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     ANN(item);
@@ -2303,7 +2311,7 @@ int test_scene_image_probe_segment_rgba_hidden_visual(TstContext* suite, const T
     DvzGpuCtx* ctx = dvz_gpu_ctx(&gpu_cfg);
     if (ctx == NULL)
     {
-        log_warn("segment probe test skipped because GPU context creation failed");
+        log_warn("generated image probe position test skipped because GPU context creation failed");
         tst_skip(suite, "GPU context creation failed");
         return 0;
     }
@@ -2318,6 +2326,247 @@ int test_scene_image_probe_segment_rgba_hidden_visual(TstContext* suite, const T
 
     DvzVisual* image = dvz_image(scene, 0);
     ANN(image);
+    vec3 position[1] = {{0.0f, 0.0f, 0.0f}};
+    vec2 extent[1] = {{2.0f, 2.0f}};
+    uint8_t pixels[4 * 4 * 4] = {0};
+    for (uint32_t y = 0; y < 4; y++)
+    {
+        for (uint32_t x = 0; x < 4; x++)
+        {
+            uint32_t i = 4 * (y * 4 + x);
+            if (x < 2 && y < 2)
+            {
+                pixels[i + 0] = 255;
+                pixels[i + 3] = 255;
+            }
+            else if (x >= 2 && y < 2)
+            {
+                pixels[i + 1] = 255;
+                pixels[i + 3] = 255;
+            }
+            else if (x < 2 && y >= 2)
+            {
+                pixels[i + 2] = 255;
+                pixels[i + 3] = 255;
+            }
+            else
+            {
+                pixels[i + 0] = 255;
+                pixels[i + 1] = 255;
+                pixels[i + 3] = 255;
+            }
+        }
+    }
+    AT(dvz_visual_set_data(image, "position", position, 1) == 0);
+    AT(dvz_visual_set_data(image, "extent", extent, 1) == 0);
+    AT(dvz_visual_set_texture(image, pixels, 4, 4) == 0);
+    AT(dvz_panel_add_visual(panel, image, NULL) == 0);
+
+    DvzDrp2RuntimeConfig runtime_cfg =
+        dvz_drp2_runtime_vklite_config(dvz_gpu_ctx_device(ctx), dvz_gpu_ctx_alloc(ctx));
+    DvzDrp2Runtime* runtime = dvz_drp2_runtime_vklite(&runtime_cfg);
+    ANN(runtime);
+
+    DvzCapabilitySnapshot caps = {0};
+    dvz_capability_snapshot_default(&caps);
+    caps.shader_format_glsl = true;
+
+    AT(dvz_panel_probe(panel, 16.0, 16.0, &(DvzProbeRequest){.request_id = 41}) == 0);
+    AT(dvz_panel_probe(panel, 48.0, 16.0, &(DvzProbeRequest){.request_id = 42}) == 0);
+    AT(dvz_panel_probe(panel, 16.0, 48.0, &(DvzProbeRequest){.request_id = 43}) == 0);
+    AT(dvz_panel_probe(panel, 48.0, 48.0, &(DvzProbeRequest){.request_id = 44}) == 0);
+    AT(dvz_figure_process_requests(figure, runtime, &caps) == 4);
+
+    DvzProbeResult probe = {0};
+    AT(dvz_scene_poll_probe(scene, &probe));
+    AT(probe.hit);
+    AT(probe.request_id == 41);
+    AT(probe.vector[0] > 0.9);
+    AT(probe.vector[1] < 0.1);
+    AT(probe.vector[2] < 0.1);
+
+    AT(dvz_scene_poll_probe(scene, &probe));
+    AT(probe.hit);
+    AT(probe.request_id == 42);
+    AT(probe.vector[0] < 0.1);
+    AT(probe.vector[1] > 0.9);
+    AT(probe.vector[2] < 0.1);
+
+    AT(dvz_scene_poll_probe(scene, &probe));
+    AT(probe.hit);
+    AT(probe.request_id == 43);
+    AT(probe.vector[0] < 0.1);
+    AT(probe.vector[1] < 0.1);
+    AT(probe.vector[2] > 0.9);
+
+    AT(dvz_scene_poll_probe(scene, &probe));
+    AT(probe.hit);
+    AT(probe.request_id == 44);
+    AT(probe.vector[0] > 0.9);
+    AT(probe.vector[1] > 0.9);
+    AT(probe.vector[2] < 0.1);
+
+    dvz_drp2_runtime_destroy(runtime);
+    dvz_gpu_ctx_destroy(ctx);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+/**
+ * Ensure generated image rectangle probes resolve non-black samples on outer texel bins.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_image_probe_generated_rect_edge_bins(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    ANN(item);
+    TST_SCENE_PICK_PROBE_REQUIRE_VKLITE(suite);
+
+    enum
+    {
+        TEX_WIDTH = 16,
+        TEX_HEIGHT = 10,
+        FIG_WIDTH = 980,
+        FIG_HEIGHT = 680,
+    };
+    const float image_extent_x = 1.9f;
+    const float image_extent_y = 1.2f;
+
+    DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
+    VkPhysicalDeviceVulkan13Features features13 = {
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES};
+    features13.dynamicRendering = true;
+    features13.synchronization2 = true;
+    dvz_gpu_ctx_config_features13(&gpu_cfg, &features13);
+    DvzGpuCtx* ctx = dvz_gpu_ctx(&gpu_cfg);
+    if (ctx == NULL)
+    {
+        log_warn("generated image probe edge test skipped because GPU context creation failed");
+        tst_skip(suite, "GPU context creation failed");
+        return 0;
+    }
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, FIG_WIDTH, FIG_HEIGHT, 0);
+    ANN(figure);
+    DvzPanelDesc panel_desc = {.x = 0.045f, .y = 0.06f, .width = 0.91f, .height = 0.88f};
+    DvzPanel* panel = dvz_panel(figure, panel_desc);
+    ANN(panel);
+
+    DvzVisual* image = dvz_image(scene, 0);
+    ANN(image);
+    vec3 position[1] = {{0.0f, 0.0f, 0.0f}};
+    vec2 extent[1] = {{image_extent_x, image_extent_y}};
+    uint8_t pixels[TEX_WIDTH * TEX_HEIGHT * 4] = {0};
+    for (uint32_t y = 0; y < TEX_HEIGHT; y++)
+    {
+        for (uint32_t x = 0; x < TEX_WIDTH; x++)
+        {
+            uint32_t i = 4 * (y * TEX_WIDTH + x);
+            pixels[i + 0] = (uint8_t)(32u + 7u * x);
+            pixels[i + 1] = (uint8_t)(48u + 13u * y);
+            pixels[i + 2] = 180;
+            pixels[i + 3] = 255;
+        }
+    }
+    AT(dvz_visual_set_data(image, "position", position, 1) == 0);
+    AT(dvz_visual_set_data(image, "extent", extent, 1) == 0);
+    AT(dvz_visual_set_texture(image, pixels, TEX_WIDTH, TEX_HEIGHT) == 0);
+    AT(dvz_panel_add_visual(panel, image, NULL) == 0);
+
+    DvzDrp2RuntimeConfig runtime_cfg =
+        dvz_drp2_runtime_vklite_config(dvz_gpu_ctx_device(ctx), dvz_gpu_ctx_alloc(ctx));
+    DvzDrp2Runtime* runtime = dvz_drp2_runtime_vklite(&runtime_cfg);
+    ANN(runtime);
+
+    DvzCapabilitySnapshot caps = {0};
+    dvz_capability_snapshot_default(&caps);
+    caps.shader_format_glsl = true;
+
+    double panel_width = (double)panel_desc.width * (double)FIG_WIDTH;
+    double panel_height = (double)panel_desc.height * (double)FIG_HEIGHT;
+    double image_width = 0.5 * (double)image_extent_x * panel_width;
+    double image_height = 0.5 * (double)image_extent_y * panel_height;
+    double image_x0 = 0.5 * (panel_width - image_width);
+    double image_y0 = 0.5 * (panel_height - image_height);
+
+    uint32_t expected = 0;
+    for (uint32_t y = 0; y < TEX_HEIGHT; y++)
+    {
+        for (uint32_t x = 0; x < TEX_WIDTH; x++)
+        {
+            bool edge = x == 0 || y == 0 || x == TEX_WIDTH - 1 || y == TEX_HEIGHT - 1;
+            if (!edge)
+                continue;
+
+            double px = image_x0 + ((double)x + 0.5) * image_width / (double)TEX_WIDTH;
+            double py = image_y0 + ((double)y + 0.5) * image_height / (double)TEX_HEIGHT;
+            uint64_t request_id = 1000u + y * TEX_WIDTH + x;
+            AT(dvz_panel_probe(panel, px, py, &(DvzProbeRequest){.request_id = request_id}) == 0);
+            expected++;
+        }
+    }
+    uint32_t processed = dvz_figure_process_requests(figure, runtime, &caps);
+    AT(processed == expected);
+
+    for (uint32_t i = 0; i < expected; i++)
+    {
+        DvzProbeResult probe = {0};
+        AT(dvz_scene_poll_probe(scene, &probe));
+        AT(probe.hit);
+        AT(probe.vector[0] > 0.05);
+        AT(probe.vector[1] > 0.05);
+        AT(probe.vector[2] > 0.5);
+        AT(probe.vector[3] > 0.9);
+    }
+
+    dvz_drp2_runtime_destroy(runtime);
+    dvz_gpu_ctx_destroy(ctx);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+/**
+ * Ensure image probes ignore fixed image overlays and sample the data visual below them.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_image_probe_skips_fixed_image_overlays(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    ANN(item);
+    TST_SCENE_PICK_PROBE_REQUIRE_VKLITE(suite);
+
+    DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
+    VkPhysicalDeviceVulkan13Features features13 = {
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES};
+    features13.dynamicRendering = true;
+    features13.synchronization2 = true;
+    dvz_gpu_ctx_config_features13(&gpu_cfg, &features13);
+    DvzGpuCtx* ctx = dvz_gpu_ctx(&gpu_cfg);
+    if (ctx == NULL)
+    {
+        log_warn("fixed image overlay probe test skipped because GPU context creation failed");
+        tst_skip(suite, "GPU context creation failed");
+        return 0;
+    }
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(
+        figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+    ANN(panel);
+
     vec3 image_pos[4] = {
         {-1.0f, -1.0f, 0.0f},
         {-1.0f, 1.0f, 0.0f},
@@ -2330,25 +2579,147 @@ int test_scene_image_probe_segment_rgba_hidden_visual(TstContext* suite, const T
         {1.0f, 0.0f},
         {1.0f, 1.0f},
     };
-    uint8_t pixels[4 * 4 * 4] = {0};
-    for (uint32_t y = 0; y < 4; y++)
+    uint8_t red_pixels[4 * 4 * 4] = {0};
+    uint8_t green_pixels[4 * 4 * 4] = {0};
+    for (uint32_t i = 0; i < 16; i++)
     {
-        for (uint32_t x = 0; x < 4; x++)
-        {
-            uint32_t label = y < 2 ? (x < 2 ? 17u : 258u) : (x < 2 ? 65537u : 0u);
-            uint32_t i = 4 * (y * 4 + x);
-            pixels[i + 0] = (uint8_t)(label & 0xffu);
-            pixels[i + 1] = (uint8_t)((label >> 8) & 0xffu);
-            pixels[i + 2] = (uint8_t)((label >> 16) & 0xffu);
-            pixels[i + 3] = label == 0 ? 0 : 255;
-        }
+        red_pixels[4 * i + 0] = 255;
+        red_pixels[4 * i + 3] = 255;
+        green_pixels[4 * i + 1] = 255;
+        green_pixels[4 * i + 3] = 255;
     }
-    AT(dvz_visual_set_data(image, "position", image_pos, 4) == 0);
-    AT(dvz_visual_set_data(image, "texcoords", texcoords, 4) == 0);
-    AT(dvz_visual_set_texture(image, pixels, 4, 4) == 0);
-    dvz_visual_set_pick_capabilities(image, DVZ_PICK_CAPABILITY_GROUP);
-    dvz_visual_set_visible(image, false);
-    AT(dvz_panel_add_visual(panel, image, NULL) == 0);
+
+    DvzVisual* data_image = dvz_image(scene, 0);
+    ANN(data_image);
+    AT(dvz_visual_set_data(data_image, "position", image_pos, 4) == 0);
+    AT(dvz_visual_set_data(data_image, "texcoords", texcoords, 4) == 0);
+    AT(dvz_visual_set_texture(data_image, red_pixels, 4, 4) == 0);
+    AT(dvz_panel_add_visual(panel, data_image, &(DvzVisualAttachDesc){.z_layer = 0}) == 0);
+
+    DvzVisual* fixed_overlay = dvz_image(scene, 0);
+    ANN(fixed_overlay);
+    AT(dvz_visual_set_data(fixed_overlay, "position", image_pos, 4) == 0);
+    AT(dvz_visual_set_data(fixed_overlay, "texcoords", texcoords, 4) == 0);
+    AT(dvz_visual_set_texture(fixed_overlay, green_pixels, 4, 4) == 0);
+    AT(dvz_panel_add_visual(
+           panel, fixed_overlay,
+           &(DvzVisualAttachDesc){.z_layer = 1, .controller_mode = DVZ_CONTROLLER_FIXED}) == 0);
+
+    DvzDrp2RuntimeConfig runtime_cfg =
+        dvz_drp2_runtime_vklite_config(dvz_gpu_ctx_device(ctx), dvz_gpu_ctx_alloc(ctx));
+    DvzDrp2Runtime* runtime = dvz_drp2_runtime_vklite(&runtime_cfg);
+    ANN(runtime);
+
+    DvzCapabilitySnapshot caps = {0};
+    dvz_capability_snapshot_default(&caps);
+    caps.shader_format_glsl = true;
+
+    AT(dvz_panel_probe(panel, 32.0, 32.0, &(DvzProbeRequest){.request_id = 35}) == 0);
+    AT(dvz_figure_process_requests(figure, runtime, &caps) == 1);
+
+    DvzProbeResult probe = {0};
+    AT(dvz_scene_poll_probe(scene, &probe));
+    AT(probe.hit);
+    AT(probe.request_id == 35);
+    AT(probe.status == DVZ_PROBE_STATUS_HIT);
+    AT(probe.visual_family == DVZ_SCENE_VISUAL_FAMILY_IMAGE);
+    AT(probe.target == DVZ_SCENE_TARGET_PIXEL);
+    AT(probe.vector[0] > 0.9);
+    AT(probe.vector[1] < 0.1);
+    AT(probe.vector[2] < 0.1);
+
+    dvz_drp2_runtime_destroy(runtime);
+    dvz_gpu_ctx_destroy(ctx);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+/**
+ * Ensure labels probes read raw signed integer IDs from the labels field.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_labels_probe_raw_integer_field(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    ANN(item);
+    TST_SCENE_PICK_PROBE_REQUIRE_VKLITE(suite);
+
+    DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
+    VkPhysicalDeviceVulkan13Features features13 = {
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES};
+    features13.dynamicRendering = true;
+    features13.synchronization2 = true;
+    dvz_gpu_ctx_config_features13(&gpu_cfg, &features13);
+    DvzGpuCtx* ctx = dvz_gpu_ctx(&gpu_cfg);
+    if (ctx == NULL)
+    {
+        log_warn("labels probe test skipped because GPU context creation failed");
+        tst_skip(suite, "GPU context creation failed");
+        return 0;
+    }
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(
+        figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+    ANN(panel);
+
+    DvzVisual* labels = dvz_labels(scene, 0);
+    ANN(labels);
+    vec3 positions[4] = {
+        {-1.0f, -1.0f, 0.0f},
+        {-1.0f, 1.0f, 0.0f},
+        {1.0f, -1.0f, 0.0f},
+        {1.0f, 1.0f, 0.0f},
+    };
+    vec2 texcoords[4] = {
+        {0.0f, 0.0f},
+        {0.0f, 1.0f},
+        {1.0f, 0.0f},
+        {1.0f, 1.0f},
+    };
+    AT(dvz_visual_set_data(labels, "position", positions, 4) == 0);
+    AT(dvz_visual_set_data(labels, "texcoords", texcoords, 4) == 0);
+
+    int32_t label_data[4 * 4] = {0};
+    label_data[3 * 4 + 1] = -7;
+    label_data[3 * 4 + 3] = 17;
+    label_data[1 * 4 + 3] = 42;
+    DvzSampledField* field = dvz_sampled_field(
+        scene, &(DvzSampledFieldDesc){
+                   .dim = DVZ_FIELD_DIM_2D,
+                   .format = DVZ_FIELD_FORMAT_R32_SINT,
+                   .semantic = DVZ_FIELD_SEMANTIC_LABEL,
+                   .width = 4,
+                   .height = 4,
+                   .depth = 1,
+               });
+    ANN(field);
+    AT(dvz_sampled_field_set_data(
+        field, &(DvzFieldDataView){
+                   .data = label_data,
+                   .bytes_per_row = 4 * sizeof(int32_t),
+                   .rows_per_image = 4,
+               }));
+    AT(dvz_visual_set_field(labels, "field", field));
+    AT(dvz_labels_set_background(labels, 0) == 0);
+
+    DvzScale* scale = dvz_scale(
+        scene, &(DvzScaleDesc){.kind = DVZ_SCALE_CATEGORICAL, .label = "segments"});
+    ANN(scale);
+    DvzScaleCategory categories[2] = {
+        {.category_id = -7, .order = 0, .label = "negative seven", .color = {255, 0, 0, 255}},
+        {.category_id = 17, .order = 1, .label = "seventeen", .color = {0, 255, 0, 255}},
+    };
+    AT(dvz_scale_set_categories(scale, categories, 2));
+    AT(dvz_visual_set_scale(labels, "labels", scale) == 0);
+    AT(dvz_panel_add_visual(panel, labels, NULL) == 0);
 
     DvzDrp2RuntimeConfig runtime_cfg =
         dvz_drp2_runtime_vklite_config(dvz_gpu_ctx_device(ctx), dvz_gpu_ctx_alloc(ctx));
@@ -2368,55 +2739,135 @@ int test_scene_image_probe_segment_rgba_hidden_visual(TstContext* suite, const T
     AT(dvz_panel_probe(
            panel, 16.0, 48.0,
            &(DvzProbeRequest){.request_id = 43, .target = DVZ_SCENE_TARGET_SEGMENT}) == 0);
-    AT(dvz_panel_probe(
-           panel, 48.0, 48.0,
-           &(DvzProbeRequest){.request_id = 44, .target = DVZ_SCENE_TARGET_SEGMENT}) == 0);
-    AT(dvz_figure_process_requests(figure, runtime, &caps) == 4);
+    AT(dvz_figure_process_requests(figure, runtime, &caps) == 3);
 
     DvzProbeResult probe = {0};
     AT(dvz_scene_poll_probe(scene, &probe));
     AT(probe.hit);
     AT(probe.request_id == 41);
     AT(probe.status == DVZ_PROBE_STATUS_HIT);
-    AT(probe.visual_family == DVZ_SCENE_VISUAL_FAMILY_IMAGE);
+    AT(probe.visual_family == DVZ_SCENE_VISUAL_FAMILY_LABELS);
     AT(probe.target == DVZ_SCENE_TARGET_SEGMENT);
-    AT(probe.target_id == 17);
-    AT(probe.group_id == 17);
-    AT(probe.category_id == 17);
+    AT(probe.category_id == -7);
+    AT(probe.value_kind == DVZ_PROBE_VALUE_LABEL);
+    AT(probe.scale == scale);
+    AT(strcmp(probe.label, "negative seven") == 0);
+    AT(probe.has_uvw);
+    AT(probe.uvw[0] > 0.2 && probe.uvw[0] < 0.3);
+    AT(probe.uvw[1] > 0.7 && probe.uvw[1] < 0.8);
 
     AT(dvz_scene_poll_probe(scene, &probe));
     AT(probe.hit);
     AT(probe.request_id == 42);
-    AT(probe.category_id == 258);
-
-    AT(dvz_scene_poll_probe(scene, &probe));
-    AT(probe.hit);
-    AT(probe.request_id == 43);
-    AT(probe.category_id == 65537);
+    AT(probe.category_id == 17);
+    AT(strcmp(probe.label, "seventeen") == 0);
 
     AT(dvz_scene_poll_probe(scene, &probe));
     AT(!probe.hit);
-    AT(probe.request_id == 44);
+    AT(probe.request_id == 43);
     AT(probe.status == DVZ_PROBE_STATUS_MISS);
 
-    DvzController* panzoom_controller = dvz_panzoom(scene, NULL);
-    ANN(panzoom_controller);
-    DvzPanzoom* pz = dvz_controller_panzoom(panzoom_controller);
-    ANN(pz);
-    AT(dvz_panel_bind_controller(panel, panzoom_controller, DVZ_DIM_MASK_XY) == 0);
-    ANN(pz);
-    dvz_panzoom_zoom(pz, (vec2){2.0f, 2.0f});
-    dvz_panzoom_pan(pz, (vec2){0.5f, 0.0f});
+    dvz_drp2_runtime_destroy(runtime);
+    dvz_gpu_ctx_destroy(ctx);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+/**
+ * Ensure labels probes preserve high unsigned 32-bit category IDs.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_labels_probe_high_unsigned_id(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    ANN(item);
+    TST_SCENE_PICK_PROBE_REQUIRE_VKLITE(suite);
+
+    DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
+    VkPhysicalDeviceVulkan13Features features13 = {
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES};
+    features13.dynamicRendering = true;
+    features13.synchronization2 = true;
+    dvz_gpu_ctx_config_features13(&gpu_cfg, &features13);
+    DvzGpuCtx* ctx = dvz_gpu_ctx(&gpu_cfg);
+    if (ctx == NULL)
+    {
+        log_warn("labels high-id probe test skipped because GPU context creation failed");
+        tst_skip(suite, "GPU context creation failed");
+        return 0;
+    }
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(
+        figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+    ANN(panel);
+
+    DvzVisual* labels = dvz_labels(scene, 0);
+    ANN(labels);
+    vec3 positions[4] = {
+        {-1.0f, -1.0f, 0.0f},
+        {-1.0f, 1.0f, 0.0f},
+        {1.0f, -1.0f, 0.0f},
+        {1.0f, 1.0f, 0.0f},
+    };
+    vec2 texcoords[4] = {
+        {0.0f, 0.0f},
+        {0.0f, 1.0f},
+        {1.0f, 0.0f},
+        {1.0f, 1.0f},
+    };
+    AT(dvz_visual_set_data(labels, "position", positions, 4) == 0);
+    AT(dvz_visual_set_data(labels, "texcoords", texcoords, 4) == 0);
+
+    uint32_t label_data[4 * 4] = {0};
+    label_data[3 * 4 + 3] = 4000000000u;
+    DvzSampledField* field = dvz_sampled_field(
+        scene, &(DvzSampledFieldDesc){
+                   .dim = DVZ_FIELD_DIM_2D,
+                   .format = DVZ_FIELD_FORMAT_R32_UINT,
+                   .semantic = DVZ_FIELD_SEMANTIC_LABEL,
+                   .width = 4,
+                   .height = 4,
+                   .depth = 1,
+               });
+    ANN(field);
+    AT(dvz_sampled_field_set_data(
+        field, &(DvzFieldDataView){
+                   .data = label_data,
+                   .bytes_per_row = 4 * sizeof(uint32_t),
+                   .rows_per_image = 4,
+               }));
+    AT(dvz_visual_set_field(labels, "field", field));
+    AT(dvz_panel_add_visual(panel, labels, NULL) == 0);
+
+    DvzDrp2RuntimeConfig runtime_cfg =
+        dvz_drp2_runtime_vklite_config(dvz_gpu_ctx_device(ctx), dvz_gpu_ctx_alloc(ctx));
+    DvzDrp2Runtime* runtime = dvz_drp2_runtime_vklite(&runtime_cfg);
+    ANN(runtime);
+
+    DvzCapabilitySnapshot caps = {0};
+    dvz_capability_snapshot_default(&caps);
+    caps.shader_format_glsl = true;
 
     AT(dvz_panel_probe(
            panel, 48.0, 16.0,
            &(DvzProbeRequest){.request_id = 45, .target = DVZ_SCENE_TARGET_SEGMENT}) == 0);
     AT(dvz_figure_process_requests(figure, runtime, &caps) == 1);
+
+    DvzProbeResult probe = {0};
     AT(dvz_scene_poll_probe(scene, &probe));
     AT(probe.hit);
     AT(probe.request_id == 45);
     AT(probe.status == DVZ_PROBE_STATUS_HIT);
-    AT(probe.category_id == 17);
+    AT(probe.visual_family == DVZ_SCENE_VISUAL_FAMILY_LABELS);
+    AT(probe.category_id == 4000000000LL);
 
     dvz_drp2_runtime_destroy(runtime);
     dvz_gpu_ctx_destroy(ctx);
@@ -2525,7 +2976,11 @@ int test_scene_pick_probe(TstSuite* suite)
     TST_CASE(test_scene_process_requests_preserves_caller_runtime);
     TST_CASE(test_scene_image_probe_reuses_retained_request_executor);
     TST_SCENE_PICK_PROBE_GPU_CASE(test_scene_image_probe_respects_panel_request_position);
-    TST_SCENE_PICK_PROBE_GPU_CASE(test_scene_image_probe_segment_rgba_hidden_visual);
+    TST_SCENE_PICK_PROBE_GPU_CASE(test_scene_image_probe_generated_rect_respects_panel_position);
+    TST_SCENE_PICK_PROBE_GPU_CASE(test_scene_image_probe_generated_rect_edge_bins);
+    TST_SCENE_PICK_PROBE_GPU_CASE(test_scene_image_probe_skips_fixed_image_overlays);
+    TST_SCENE_PICK_PROBE_GPU_CASE(test_scene_labels_probe_raw_integer_field);
+    TST_SCENE_PICK_PROBE_GPU_CASE(test_scene_labels_probe_high_unsigned_id);
     TST_CASE(test_scene_image_probe_plan_rejects_size_overflow);
 
     return 0;

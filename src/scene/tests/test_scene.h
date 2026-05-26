@@ -372,7 +372,16 @@ int test_scene_image_probe_reuses_retained_request_executor(TstContext* suite, c
 
 int test_scene_image_probe_respects_panel_request_position(TstContext* suite, const TstCase* item);
 
-int test_scene_image_probe_segment_rgba_hidden_visual(TstContext* suite, const TstCase* item);
+int test_scene_image_probe_generated_rect_respects_panel_position(
+    TstContext* suite, const TstCase* item);
+
+int test_scene_image_probe_generated_rect_edge_bins(TstContext* suite, const TstCase* item);
+
+int test_scene_image_probe_skips_fixed_image_overlays(TstContext* suite, const TstCase* item);
+
+int test_scene_labels_probe_raw_integer_field(TstContext* suite, const TstCase* item);
+
+int test_scene_labels_probe_high_unsigned_id(TstContext* suite, const TstCase* item);
 
 int test_scene_image_probe_transparent_pixel_misses(TstContext* suite, const TstCase* item);
 
