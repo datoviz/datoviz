@@ -56,6 +56,8 @@
 #define DVZ_SCENE_MAX_SELECTIONS 64
 #define DVZ_SCENE_MAX_LINK_CHANNELS 64
 #define DVZ_SCENE_MAX_PINNED_READOUTS 128
+#define DVZ_SCENE_MAX_OVERLAYS 64
+#define DVZ_SCENE_MAX_OVERLAY_CARDS 128
 #define DVZ_SCENE_MAX_FONTS 64
 #define DVZ_SCENE_MAX_TEXTS 128
 #define DVZ_SCENE_MAX_ANNOTATIONS 128
@@ -800,6 +802,26 @@ struct DvzPinnedReadout
     DvzSceneFormatState format;
     char text[DVZ_SCENE_LABEL_SIZE];
     DvzSceneCard card;
+};
+
+
+struct DvzOverlay
+{
+    DvzScene* scene;
+    DvzPanel* panel;
+    uint32_t flags;
+    bool active;
+};
+
+
+struct DvzOverlayCard
+{
+    DvzScene* scene;
+    DvzOverlay* overlay;
+    DvzPanel* panel;
+    DvzSceneCard card;
+    uint32_t flags;
+    bool active;
 };
 
 
@@ -1578,6 +1600,12 @@ struct DvzScene
     uint32_t pinned_readout_count;
     DvzPinnedReadout pinned_readouts[DVZ_SCENE_MAX_PINNED_READOUTS];
 
+    uint32_t overlay_count;
+    DvzOverlay overlays[DVZ_SCENE_MAX_OVERLAYS];
+
+    uint32_t overlay_card_count;
+    DvzOverlayCard overlay_cards[DVZ_SCENE_MAX_OVERLAY_CARDS];
+
     uint32_t font_count;
     DvzFont fonts[DVZ_SCENE_MAX_FONTS];
 
@@ -1780,6 +1808,8 @@ void _scene_prepare_text_visuals(DvzFigure* figure);
 void _scene_prepare_pinned_readout_cards(DvzFigure* figure);
 
 void _scene_prepare_selection_cards(DvzFigure* figure);
+
+void _scene_prepare_overlay_cards(DvzFigure* figure);
 
 DvzVisual* _scene_text_visual(DvzScene* scene, uint32_t flags);
 

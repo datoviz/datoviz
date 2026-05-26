@@ -376,6 +376,70 @@ int test_scene_selection_card_realizes_pick_metadata(TstContext* suite, const Ts
 }
 
 
+int test_scene_overlay_card_public_api(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    ANN(item);
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 640, 480, 0);
+    DvzPanel* panel = dvz_panel(
+        figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+    ANN(figure);
+    ANN(panel);
+
+    DvzOverlay* overlay = dvz_overlay(panel, 0);
+    DvzOverlayCardStyle style = dvz_overlay_card_style();
+    style.background_color = dvz_color_rgba(10, 20, 30, 220);
+    style.text_color = dvz_color_rgb(230, 240, 250);
+    DvzOverlayCard* card = dvz_overlay_card(
+        overlay,
+        &(DvzOverlayCardDesc){
+            .text = "overlay",
+            .anchor_px = {40.0f, 50.0f},
+            .offset_px = {8.0f, 6.0f},
+            .style = &style});
+    ANN(overlay);
+    ANN(card);
+    AT(card->active);
+    AT(card->panel == panel);
+    AT(card->card.visible);
+    AT(strcmp(card->card.text, "overlay") == 0);
+
+    _scene_prepare_text_visuals(figure);
+    AT(card->card.background_visual != NULL);
+    AT(card->card.text_visual != NULL);
+    AT(card->card.text_visual->text.glyph_visual != NULL);
+    AT(card->card.background_visual->visible);
+    AT(card->card.text_visual->visible);
+    AT(card->card.text_visual->text.glyph_visual->visible);
+
+    dvz_overlay_card_set_text(card, "updated");
+    float anchor[2] = {100.0f, 120.0f};
+    float offset[2] = {2.0f, 3.0f};
+    dvz_overlay_card_set_layout(card, anchor, offset);
+    AT(card->card.dirty);
+    AT(strcmp(card->card.text, "updated") == 0);
+    AT(card->card.anchor_px[0] == 100.0f);
+    AT(card->card.offset_px[1] == 3.0f);
+
+    dvz_overlay_card_set_visible(card, false);
+    AT(!card->card.visible);
+    AT(!card->card.background_visual->visible);
+    dvz_overlay_card_set_visible(card, true);
+    _scene_prepare_text_visuals(figure);
+    AT(card->card.background_visual->visible);
+
+    dvz_overlay_destroy(overlay);
+    AT(!overlay->active);
+    AT(!card->active);
+    AT(!card->card.background_visual->visible);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
 int test_scene_text_annotation_bookkeeping(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
@@ -2415,6 +2479,7 @@ int test_scene_interaction(TstSuite* suite)
     TST_CASE(test_scene_selection_apply_pick_and_link_keys);
     TST_CASE(test_scene_selection_apply_pick_updates_visual_masks);
     TST_CASE(test_scene_selection_card_realizes_pick_metadata);
+    TST_CASE(test_scene_overlay_card_public_api);
     TST_CASE(test_scene_text_annotation_bookkeeping);
     TST_CASE(test_scene_scalebar_formatting);
     TST_CASE(test_scene_scalebar_2d_realization);

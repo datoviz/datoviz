@@ -66,6 +66,8 @@ typedef struct DvzInteractionPolicy DvzInteractionPolicy;
 typedef struct DvzSelection         DvzSelection;
 typedef struct DvzLinkChannel       DvzLinkChannel;
 typedef struct DvzPinnedReadout     DvzPinnedReadout;
+typedef struct DvzOverlay           DvzOverlay;
+typedef struct DvzOverlayCard       DvzOverlayCard;
 typedef struct DvzScale             DvzScale;
 typedef struct DvzColormap          DvzColormap;
 typedef struct DvzColorbar          DvzColorbar;

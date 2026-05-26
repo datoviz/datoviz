@@ -19,11 +19,9 @@ release criteria, or long implementation history.
    documentation, or migration/known-issues work, read [`DOCUMENTATION.md`](DOCUMENTATION.md).
 3. For current implementation lane status, RC1 blockers, and parallel-work guidance, read
    [`STATUS.md`](STATUS.md).
-4. For the active native C pinned-readout/card/text-block implementation lane, read
-   [`PINNED_READOUT_OVERLAY_CARD_PLAN.md`](PINNED_READOUT_OVERLAY_CARD_PLAN.md).
-5. For scene semantics, public scene API shape, frame planning, visual families, interaction,
+4. For scene semantics, public scene API shape, frame planning, visual families, interaction,
    annotations, scales, or runtime boundaries, read [`../../spec/scene/README.md`](../../spec/scene/README.md).
-6. For DRP2 commands, fixtures, schemas, or scene code that emits DRP2, read
+5. For DRP2 commands, fixtures, schemas, or scene code that emits DRP2, read
    [`../../spec/drp2/README.md`](../../spec/drp2/README.md) and
    [`../../spec/drp2/AGENT_SPEC_PHASE.md`](../../spec/drp2/AGENT_SPEC_PHASE.md).
 
@@ -72,6 +70,9 @@ a release example needs it.
 4. [`../../spec/scene/validation/IMAGE_PICKING_RECOVERY.md`](../../spec/scene/validation/IMAGE_PICKING_RECOVERY.md)
    before changing image probe coordinates, hidden pick-capable image behavior, panzoom probe
    mapping, or CPU fallback behavior.
+5. [`../done/PINNED_READOUT_OVERLAY_CARD_IMPLEMENTATION.md`](../done/PINNED_READOUT_OVERLAY_CARD_IMPLEMENTATION.md)
+   before changing pinned readout cards, selected-item metadata cards, public overlay cards, or
+   private rich text-block lowering.
 
 
 ## Validation Defaults

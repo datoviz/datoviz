@@ -24,6 +24,7 @@
 #include "_compat.h"
 #include "_log.h"
 #include "_scene.h"
+#include "datoviz/scene/overlay.h"
 
 
 
@@ -77,7 +78,11 @@ static void _scene_card_hide(DvzSceneCard* card);
 
 static bool _scene_card_realize(DvzFigure* figure, DvzSceneCard* card);
 
+static void _scene_card_apply_style(DvzSceneCard* card, const DvzOverlayCardStyle* style);
+
 static bool _readout_card_realize(DvzFigure* figure, DvzPinnedReadout* readout);
+
+static bool _overlay_card_realize(DvzFigure* figure, DvzOverlayCard* card);
 
 
 
@@ -601,6 +606,31 @@ static void _scene_card_init(DvzSceneCard* card, DvzPanel* panel)
 }
 
 
+/**
+ * Apply an optional public card style to an internal card shell.
+ *
+ * @param card the card
+ * @param style the public style, or NULL for defaults
+ */
+static void _scene_card_apply_style(DvzSceneCard* card, const DvzOverlayCardStyle* style)
+{
+    ANN(card);
+    if (style == NULL)
+        return;
+
+    card->background_color = style->background_color;
+    card->text_color = style->text_color;
+    card->padding_px[0] = style->padding_px[0];
+    card->padding_px[1] = style->padding_px[1];
+    card->min_width_px = style->min_width_px;
+    card->height_px = style->height_px;
+    card->glyph_advance_px = style->glyph_advance_px;
+    card->text_size_px = style->text_size_px;
+    card->max_text_chars = style->max_text_chars;
+    card->dirty = true;
+}
+
+
 
 /**
  * Return the panel size in logical pixels for overlay placement.
@@ -818,6 +848,23 @@ static bool _readout_card_realize(DvzFigure* figure, DvzPinnedReadout* readout)
     card->anchor_px[0] = (float)readout->probe.panel_position[0];
     card->anchor_px[1] = (float)readout->probe.panel_position[1];
     return _scene_card_realize(figure, card);
+}
+
+
+/**
+ * Realize or update one public overlay card.
+ *
+ * @param figure the figure being prepared
+ * @param card the overlay card
+ * @return whether realization succeeded
+ */
+static bool _overlay_card_realize(DvzFigure* figure, DvzOverlayCard* card)
+{
+    ANN(figure);
+    ANN(card);
+    if (!card->active || card->scene == NULL || card->panel == NULL || card->panel->figure != figure)
+        return true;
+    return _scene_card_realize(figure, &card->card);
 }
 
 
@@ -1279,6 +1326,242 @@ void _scene_prepare_selection_cards(DvzFigure* figure)
         if (!_selection_card_realize(figure, selection))
             log_error("failed to prepare selection card %u", i);
     }
+}
+
+
+/**
+ * Prepare public overlay-card visuals attached to one figure.
+ *
+ * @param figure the figure being emitted
+ */
+void _scene_prepare_overlay_cards(DvzFigure* figure)
+{
+    ANN(figure);
+    ANN(figure->scene);
+    DvzScene* scene = figure->scene;
+    for (uint32_t i = 0; i < scene->overlay_card_count; i++)
+    {
+        DvzOverlayCard* card = &scene->overlay_cards[i];
+        if (!_overlay_card_realize(figure, card))
+            log_error("failed to prepare overlay card %u", i);
+    }
+}
+
+
+
+/*************************************************************************************************/
+/*  Public overlays                                                                              */
+/*************************************************************************************************/
+
+/**
+ * Create a panel overlay object.
+ *
+ * @param panel the panel
+ * @param flags overlay flags
+ * @return the overlay, or NULL on error
+ */
+DvzOverlay* dvz_overlay(DvzPanel* panel, uint32_t flags)
+{
+    ANN(panel);
+    if (panel->figure == NULL || panel->figure->scene == NULL)
+        return NULL;
+    DvzScene* scene = panel->figure->scene;
+    if (scene->overlay_count >= DVZ_SCENE_MAX_OVERLAYS)
+    {
+        log_error("maximum overlay count reached");
+        return NULL;
+    }
+
+    DvzOverlay* overlay = &scene->overlays[scene->overlay_count++];
+    dvz_memset(overlay, sizeof(DvzOverlay), 0, sizeof(DvzOverlay));
+    overlay->scene = scene;
+    overlay->panel = panel;
+    overlay->flags = flags;
+    overlay->active = true;
+    return overlay;
+}
+
+
+/**
+ * Destroy a panel overlay object.
+ *
+ * @param overlay the overlay
+ */
+void dvz_overlay_destroy(DvzOverlay* overlay)
+{
+    if (overlay == NULL)
+        return;
+    DvzScene* scene = overlay->scene;
+    if (scene != NULL)
+    {
+        for (uint32_t i = 0; i < scene->overlay_card_count; i++)
+        {
+            DvzOverlayCard* card = &scene->overlay_cards[i];
+            if (card->overlay == overlay)
+                dvz_overlay_card_destroy(card);
+        }
+    }
+    overlay->scene = NULL;
+    overlay->panel = NULL;
+    overlay->flags = 0;
+    overlay->active = false;
+}
+
+
+/**
+ * Return the default overlay-card style.
+ *
+ * @return the default style descriptor
+ */
+DvzOverlayCardStyle dvz_overlay_card_style(void)
+{
+    DvzSceneCard card = {0};
+    _scene_card_init(&card, NULL);
+    return (DvzOverlayCardStyle){
+        .background_color = card.background_color,
+        .text_color = card.text_color,
+        .padding_px = {card.padding_px[0], card.padding_px[1]},
+        .min_width_px = card.min_width_px,
+        .height_px = card.height_px,
+        .glyph_advance_px = card.glyph_advance_px,
+        .text_size_px = card.text_size_px,
+        .max_text_chars = card.max_text_chars,
+    };
+}
+
+
+/**
+ * Create a card attached to a panel overlay.
+ *
+ * @param overlay the overlay
+ * @param desc card descriptor, or NULL for defaults
+ * @return the card, or NULL on error
+ */
+DvzOverlayCard* dvz_overlay_card(DvzOverlay* overlay, const DvzOverlayCardDesc* desc)
+{
+    ANN(overlay);
+    if (!overlay->active || overlay->scene == NULL || overlay->panel == NULL)
+        return NULL;
+    DvzScene* scene = overlay->scene;
+    if (scene->overlay_card_count >= DVZ_SCENE_MAX_OVERLAY_CARDS)
+    {
+        log_error("maximum overlay card count reached");
+        return NULL;
+    }
+
+    DvzOverlayCard* card = &scene->overlay_cards[scene->overlay_card_count++];
+    dvz_memset(card, sizeof(DvzOverlayCard), 0, sizeof(DvzOverlayCard));
+    card->scene = scene;
+    card->overlay = overlay;
+    card->panel = overlay->panel;
+    card->active = true;
+    card->flags = desc != NULL ? desc->flags : 0;
+    _scene_card_init(&card->card, overlay->panel);
+    if (desc != NULL)
+    {
+        _scene_card_apply_style(&card->card, desc->style);
+        if (desc->text != NULL)
+            dvz_strlcpy(card->card.text, desc->text, sizeof(card->card.text));
+        card->card.anchor_px[0] = desc->anchor_px[0];
+        card->card.anchor_px[1] = desc->anchor_px[1];
+        card->card.offset_px[0] = desc->offset_px[0];
+        card->card.offset_px[1] = desc->offset_px[1];
+    }
+    card->card.visible = (card->flags & DVZ_OVERLAY_CARD_HIDDEN) == 0;
+    card->card.dirty = true;
+    _scene_notify_request_frame(overlay->panel->figure);
+    return card;
+}
+
+
+/**
+ * Destroy an overlay card.
+ *
+ * @param card the card
+ */
+void dvz_overlay_card_destroy(DvzOverlayCard* card)
+{
+    if (card == NULL)
+        return;
+    DvzFigure* figure = card->panel != NULL ? card->panel->figure : NULL;
+    _scene_card_hide(&card->card);
+    card->scene = NULL;
+    card->overlay = NULL;
+    card->panel = NULL;
+    card->flags = 0;
+    card->active = false;
+    card->card.panel = NULL;
+    card->card.text[0] = '\0';
+    card->card.realized_text[0] = '\0';
+    card->card.dirty = false;
+    _scene_notify_request_frame(figure);
+}
+
+
+/**
+ * Set the text displayed in an overlay card.
+ *
+ * @param card the card
+ * @param text the text, or NULL to clear it
+ */
+void dvz_overlay_card_set_text(DvzOverlayCard* card, const char* text)
+{
+    ANN(card);
+    if (!card->active)
+        return;
+    if (text != NULL)
+        dvz_strlcpy(card->card.text, text, sizeof(card->card.text));
+    else
+        card->card.text[0] = '\0';
+    card->card.dirty = true;
+    _scene_notify_request_frame(card->panel != NULL ? card->panel->figure : NULL);
+}
+
+
+/**
+ * Set the panel-local pixel layout of an overlay card.
+ *
+ * @param card the card
+ * @param anchor_px panel-local anchor in logical pixels, or NULL to keep it unchanged
+ * @param offset_px offset from the anchor in logical pixels, or NULL to keep it unchanged
+ */
+void dvz_overlay_card_set_layout(
+    DvzOverlayCard* card, const float anchor_px[2], const float offset_px[2])
+{
+    ANN(card);
+    if (!card->active)
+        return;
+    if (anchor_px != NULL)
+    {
+        card->card.anchor_px[0] = anchor_px[0];
+        card->card.anchor_px[1] = anchor_px[1];
+    }
+    if (offset_px != NULL)
+    {
+        card->card.offset_px[0] = offset_px[0];
+        card->card.offset_px[1] = offset_px[1];
+    }
+    card->card.dirty = true;
+    _scene_notify_request_frame(card->panel != NULL ? card->panel->figure : NULL);
+}
+
+
+/**
+ * Show or hide an overlay card.
+ *
+ * @param card the card
+ * @param visible whether the card should be visible
+ */
+void dvz_overlay_card_set_visible(DvzOverlayCard* card, bool visible)
+{
+    ANN(card);
+    if (!card->active)
+        return;
+    card->card.visible = visible;
+    card->card.dirty = true;
+    if (!visible)
+        _scene_card_hide(&card->card);
+    _scene_notify_request_frame(card->panel != NULL ? card->panel->figure : NULL);
 }
 
 

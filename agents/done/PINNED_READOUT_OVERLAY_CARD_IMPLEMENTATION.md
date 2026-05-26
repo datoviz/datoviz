@@ -1,15 +1,14 @@
-# Pinned Readout Overlay Card Plan
+# Pinned Readout Overlay Card Implementation
 
 > **Execution Status**
-> - **Status:** `ACTIVE IMPLEMENTATION PLAN`
+> - **Status:** `DONE`
 > - **Updated on:** `2026-05-26`
-> - **Purpose:** stage the native C implementation path from rendered pinned image readouts to
->   reusable internal overlay cards and later rich text blocks.
+> - **Purpose:** record the native C implementation path from rendered pinned image readouts to
+>   reusable internal cards, public overlay cards, and private rich text blocks.
 
-This plan is the active pickup record for the C lane that connects image probe readouts, retained
-annotation/card semantics, generic screen-space card infrastructure, and future rich text-block
-rendering. Keep detailed semantics in `spec/scene/`; keep this file as the execution route and
-handoff record.
+This record closes the C lane that connected image probe readouts, retained card semantics,
+generic screen-space card infrastructure, and private rich text-block rendering. Detailed
+semantics remain in `spec/scene/`; this file is the implementation and validation handoff.
 
 
 ## Landed Slices
@@ -25,6 +24,8 @@ These commits are the current implemented baseline for this lane:
 7. `1bdafc8bb scene: rasterize private text blocks`
 8. `343b9bdc7 scene: lower text blocks to image visuals`
 9. `acce3878f scene: smoke text block image rendering`
+10. `180fbb1ca scene: show selection metadata cards`
+11. current change set: `scene: add public overlay card API`
 
 Current behavior:
 
@@ -36,12 +37,14 @@ Current behavior:
 5. Text blocks can rasterize to owned RGBA8 pixels and lower to image-like scene visuals backed by
    explicit sampled fields.
 6. Offscreen app coverage confirms text-block image lowering renders nonblank pixels.
+7. Retained selections are the second in-tree `DvzSceneCard` consumer and render selected-item
+   metadata cards through the same text/adornment path.
+8. The public `DvzOverlay` / `DvzOverlayCard` API exposes panel-local retained cards without
+   exposing the private `DvzSceneCard` shell.
+9. `examples/c/techniques/overlay_card.c` demonstrates the public overlay card API.
 
-Remaining follow-up before this plan should move to `agents/done/`:
-
-1. decide whether `DvzSceneCard` should grow a second in-tree consumer before any public overlay API,
-2. decide whether the current text-block raster/image prototype is enough for this active plan, or
-   split DPI cache keys, richer wrapping, and public annotation/card integration into a follow-up.
+Remaining follow-up is polish outside this completed lane: DPI cache keys, richer wrapping,
+font-backed rich-text rasterization, and public annotation/card rich-text integration.
 
 
 ## Owning References
@@ -65,7 +68,8 @@ Read these before changing code in this lane:
 
 ## Scope Decisions
 
-1. Keep the first card API private under `src/scene`; do not expose `DvzOverlay*` yet.
+1. The first card consumer stayed private until pinned readouts and selected-item cards proved the
+   internal shell.
 2. Use existing glyph text for the first rendered pinned readout. Do not block on rich text-block
    rasterization.
 3. Treat `DvzPinnedReadout` as a retained semantic readout/card, not as a visual-private helper.
@@ -73,8 +77,8 @@ Read these before changing code in this lane:
 5. Place the first cards in panel-local screen coordinates anchored near the probe position.
 6. Format probe payloads plainly: scalar, vector, and RGBA values with optional unit/suffix.
 7. Generalize into an internal card shell before adding a second card consumer.
-8. Promote public `DvzOverlay`/`DvzOverlayBox` APIs only after at least two consumers prove the
-   private shape.
+8. Promote public `DvzOverlay`/`DvzOverlayCard` APIs only after at least two consumers prove the
+   private shape. This is now satisfied by pinned readouts and selected-item cards.
 
 
 ## Commit Stages
@@ -138,17 +142,33 @@ data.
 
 ### 5. Internal Overlay Generalization
 
-Status: **landed as private `DvzSceneCard` refactor** in `acdbbca35`; a second consumer is still
-the gate before public overlay API promotion.
+Status: **landed as private `DvzSceneCard` refactor** in `acdbbca35`; second consumer landed in
+`180fbb1ca`.
 
 After pinned readouts work, refactor the private card shell toward a small internal overlay/card
 layer that can later support hover cards, selected-item cards, telemetry, and readouts without
 duplicating visuals.
 
-Do not expose public APIs in this stage unless a second committed consumer proves the shape.
+The second consumer gate is complete: selected-item metadata cards reuse the internal shell and
+are covered by `test_scene_selection_card_realizes_pick_metadata`.
 
 
-### 6. Rich Text-Block Prototype
+### 6. Public Overlay Card API
+
+Status: **landed** in current change set `scene: add public overlay card API`.
+
+The public first slice exposes:
+
+1. opaque `DvzOverlay` and `DvzOverlayCard` handles,
+2. `dvz_overlay()` / `dvz_overlay_destroy()`,
+3. `dvz_overlay_card_style()` and `DvzOverlayCardDesc`,
+4. `dvz_overlay_card()` / `dvz_overlay_card_destroy()`,
+5. text, panel-local layout, and visibility setters,
+6. focused public API coverage in `test_scene_overlay_card_public_api`,
+7. a minimal `examples/c/techniques/overlay_card.c` example.
+
+
+### 7. Rich Text-Block Prototype
 
 Status: **landed as private prototype** in `c8d85a70d`, `1bdafc8bb`, `343b9bdc7`, and `acce3878f`.
 The first slice covers parsing, fixed-advance measurement, deterministic RGBA8 raster output,
@@ -182,10 +202,11 @@ Avoid parallel code edits in the same files, especially `src/scene/interaction.c
 
 ## Exit Criteria
 
-This active plan can move to `agents/done/` when:
+This plan moved to `agents/done/` after:
 
 1. pinned image probe readouts render as retained cards through the scene path;
 2. the first card shell is reusable internally and documented in code;
 3. focused scene tests cover formatting, lifecycle, and emitted visuals;
-4. one C example demonstrates the flow;
-5. the rich text-block backend is either prototyped or explicitly split into a follow-up plan.
+4. examples demonstrate pinned readouts and public overlay cards;
+5. the rich text-block backend is prototyped and validated by offscreen nonblank rendering;
+6. the public overlay API is gated by two internal consumers.

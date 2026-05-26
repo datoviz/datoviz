@@ -2437,6 +2437,12 @@ static bool _scene_panel_has_pending_adornment_work(const DvzPanel* panel)
         if (selection->card_panel == panel && selection->card.dirty)
             return true;
     }
+    for (uint32_t i = 0; i < scene->overlay_card_count; i++)
+    {
+        const DvzOverlayCard* card = &scene->overlay_cards[i];
+        if (card->active && card->panel == panel && card->card.dirty)
+            return true;
+    }
     for (uint32_t i = 0; i < scene->text_count; i++)
     {
         const DvzText* text = &scene->texts[i];
@@ -2739,6 +2745,10 @@ void dvz_scene_destroy(DvzScene* scene)
         scene->link_channels[i].scene = NULL;
     for (uint32_t i = 0; i < scene->pinned_readout_count; i++)
         scene->pinned_readouts[i].scene = NULL;
+    for (uint32_t i = 0; i < scene->overlay_count; i++)
+        scene->overlays[i].scene = NULL;
+    for (uint32_t i = 0; i < scene->overlay_card_count; i++)
+        scene->overlay_cards[i].scene = NULL;
     for (uint32_t i = 0; i < scene->controller_count; i++)
         _scene_controller_destroy(&scene->controllers[i]);
     if (scene->emitter != NULL)
