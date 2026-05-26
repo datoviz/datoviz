@@ -3442,6 +3442,107 @@ int test_app_offscreen_text_block_raster_has_nonblank_pixels(
 }
 
 
+/**
+ * Ensure public rich overlay cards render their background and image-backed text.
+ *
+ * @param suite the test suite
+ * @param item the test item
+ * @return 0 on success
+ */
+int test_app_offscreen_overlay_rich_card_has_visible_pixels(
+    TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    TST_SCENE_APP_REQUIRE_VKLITE(suite);
+
+    DvzScene* scene = dvz_scene();
+    AT(scene != NULL);
+    DvzFigure* figure = dvz_figure(scene, 256, 160, 0);
+    AT(figure != NULL);
+    DvzPanel* panel = dvz_panel(
+        figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+    AT(panel != NULL);
+    dvz_panel_set_background_color(panel, 0.0f, 0.0f, 0.0f, 1.0f);
+
+    DvzOverlay* overlay = dvz_overlay(panel, 0);
+    AT(overlay != NULL);
+    DvzOverlayCardStyle style = dvz_overlay_card_style();
+    style.background_color = dvz_color_rgba(180, 20, 20, 255);
+    style.padding_px[0] = 10.0f;
+    style.padding_px[1] = 8.0f;
+    style.min_width_px = 120.0f;
+    DvzOverlayCard* card = dvz_overlay_card(
+        overlay,
+        &(DvzOverlayCardDesc){
+            .text = "fallback",
+            .placement = DVZ_OVERLAY_CARD_PLACEMENT_BOTTOM_RIGHT,
+            .offset_px = {12.0f, 10.0f},
+            .style = &style,
+        });
+    AT(card != NULL);
+    AT(dvz_overlay_card_set_rich_text(
+           card,
+           &(DvzOverlayRichTextDesc){
+               .source = "<b>Rich card</b> visible",
+               .max_width_px = 112.0f,
+               .char_width_px = 7.0f,
+               .line_height_px = 14.0f,
+               .scale = 2.0f,
+               .text_color = {0, 255, 0, 255},
+               .background_color = {0, 0, 0, 0},
+           }) == 0);
+
+    DvzApp* app = _app_test_create(suite, scene);
+    if (app == NULL)
+    {
+        log_warn(
+            "test_app_offscreen_overlay_rich_card_has_visible_pixels skipped: GPU context "
+            "creation failed");
+        tst_skip(suite, "GPU context creation failed");
+        dvz_scene_destroy(scene);
+        return 0;
+    }
+    DvzView* win = dvz_view_offscreen(app, figure, 256, 160);
+    AT(win != NULL);
+
+    dvz_app_run(app, 1);
+
+    DvzCanvas* canvas = dvz_view_canvas(win);
+    ANN(canvas);
+
+    uint32_t width = 0;
+    uint32_t height = 0;
+    uint8_t* rgba = NULL;
+    AT(dvz_canvas_capture_rgba(canvas, &width, &height, &rgba) == 0);
+    ANN(rgba);
+    AT(width == 256);
+    AT(height == 160);
+
+    uint32_t red_count = 0;
+    uint32_t green_count = 0;
+    for (uint32_t y = height / 2u; y < height; y++)
+    {
+        for (uint32_t x = width / 2u; x < width; x++)
+        {
+            const uint8_t* pixel = _pixel_at(rgba, width, height, x, y);
+            if (pixel[0] > 120 && pixel[1] < 80 && pixel[2] < 80)
+                red_count++;
+            if (_app_text_green_pixel(pixel))
+                green_count++;
+        }
+    }
+    AT(red_count > 100u);
+    AT(green_count > 8u);
+
+    dvz_free(rgba);
+    dvz_app_destroy(app);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
 int test_app_offscreen_image_field_partial_update_changes_region(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
@@ -6341,6 +6442,7 @@ int test_scene_app(TstSuite* suite)
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_text_has_nonblank_pixels);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_sdf_text_has_nonblank_pixels);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_text_block_raster_has_nonblank_pixels);
+    TST_SCENE_APP_SHARED_CASE(test_app_offscreen_overlay_rich_card_has_visible_pixels);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_image_field_partial_update_changes_region);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_lit_primitive_depth_orders_overlap);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_lit_primitive_depth_cue_darkens_far);
