@@ -14,6 +14,7 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
+#include <math.h>
 #include <string.h>
 
 #include "_assertions.h"
@@ -60,6 +61,20 @@ static int test_scene_dpi_physical_viewport_and_screen_scale(
     AT(dvz_visual_set_data(point, "size", size, 1) == 0);
     AT(dvz_panel_add_visual(panel, point, NULL) == 0);
 
+    DvzVisual* image = dvz_image(scene, 0);
+    AT(image != NULL);
+    vec3 image_pos[1] = {{10.0f, 20.0f, 0.0f}};
+    vec2 image_extent[1] = {{30.0f, 40.0f}};
+    vec2 image_anchor[1] = {{-1.0f, -1.0f}};
+    uint8_t image_pixels[4 * 4 * 4] = {0};
+    AT(dvz_visual_set_data(image, "position_px", image_pos, 1) == 0);
+    AT(dvz_visual_set_data(image, "extent_px", image_extent, 1) == 0);
+    AT(dvz_visual_set_data(image, "anchor", image_anchor, 1) == 0);
+    AT(dvz_visual_set_texture(image, image_pixels, 4, 4) == 0);
+    AT(dvz_panel_add_visual(
+           panel, image,
+           &(DvzVisualAttachDesc){.z_layer = 1, .controller_mode = DVZ_CONTROLLER_FIXED}) == 0);
+
     DvzCapabilitySnapshot caps;
     dvz_capability_snapshot_default(&caps);
     caps.shader_format_glsl = true;
@@ -85,6 +100,7 @@ static int test_scene_dpi_physical_viewport_and_screen_scale(
     bool found_scissor = false;
     bool found_viewport_uniform = false;
     bool found_size_upload = false;
+    bool found_image_position_upload = false;
     uint32_t count = dvz_drp2_stream_count(stream);
     for (uint32_t i = 0; i < count; i++)
     {
@@ -133,12 +149,32 @@ static int test_scene_dpi_physical_viewport_and_screen_scale(
                 found_size_upload = true;
             }
         }
+        else if (
+            cmd->type == DVZ_DRP2_COMMAND_WRITE_BUFFER &&
+            cmd->u.write_buffer.size == 18 * sizeof(float))
+        {
+            const char* label = dvz_drp2_stream_label(stream, cmd->u.write_buffer.buffer_id);
+            if (label != NULL && strstr(label, "_position") != NULL)
+            {
+                const float* uploaded = (const float*)cmd->u.write_buffer.data_raw;
+                ANN(uploaded);
+                const float expected[18] = {
+                    20.0f, 40.0f, 0.0f, 20.0f, 120.0f, 0.0f, 80.0f, 40.0f, 0.0f,
+                    80.0f, 40.0f, 0.0f, 20.0f, 120.0f, 0.0f, 80.0f, 120.0f, 0.0f,
+                };
+                bool matches = true;
+                for (uint32_t j = 0; j < 18; j++)
+                    matches = matches && fabsf(uploaded[j] - expected[j]) < 1e-6f;
+                found_image_position_upload = found_image_position_upload || matches;
+            }
+        }
     }
 
     AT(found_viewport);
     AT(found_scissor);
     AT(found_viewport_uniform);
     AT(found_size_upload);
+    AT(found_image_position_upload);
 
     dvz_drp2_stream_destroy(stream);
     dvz_scene_destroy(scene);

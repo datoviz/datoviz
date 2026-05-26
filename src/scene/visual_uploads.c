@@ -896,11 +896,13 @@ bool _scene_image_uses_generated_quads(const DvzVisual* visual)
 /**
  * Rebuild one image visual's derived six-vertex rectangle upload cache.
  *
+ * @param figure parent figure
  * @param visual the image visual
  * @return whether the cache is ready for upload
  */
-static bool _image_cache_rebuild(DvzVisual* visual)
+static bool _image_cache_rebuild(const DvzFigure* figure, DvzVisual* visual)
 {
+    ANN(figure);
     ANN(visual);
     if (!_scene_image_uses_generated_quads(visual))
     {
@@ -954,14 +956,27 @@ static bool _image_cache_rebuild(DvzVisual* visual)
     const float* anchor = anchor_idx >= 0 ? (const float*)visual->attrs[anchor_idx].data : NULL;
     const float* tex_rect =
         tex_rect_idx >= 0 ? (const float*)visual->attrs[tex_rect_idx].data : NULL;
+    float pixel_scale_x = 1.0f;
+    float pixel_scale_y = 1.0f;
+    if (has_pixel_rect)
+    {
+        pixel_scale_x =
+            figure->device_scale_x > 0.0f ? figure->device_scale_x * figure->render_scale : 1.0f;
+        pixel_scale_y =
+            figure->device_scale_y > 0.0f ? figure->device_scale_y * figure->render_scale : 1.0f;
+        if (pixel_scale_x <= 0.0f || !isfinite(pixel_scale_x))
+            pixel_scale_x = 1.0f;
+        if (pixel_scale_y <= 0.0f || !isfinite(pixel_scale_y))
+            pixel_scale_y = 1.0f;
+    }
 
     for (uint64_t i = 0; i < item_count; i++)
     {
-        const float x = position[3 * i + 0];
-        const float y = position[3 * i + 1];
+        const float x = position[3 * i + 0] * pixel_scale_x;
+        const float y = position[3 * i + 1] * pixel_scale_y;
         const float z = position[3 * i + 2];
-        const float w = extent[2 * i + 0];
-        const float h = extent[2 * i + 1];
+        const float w = extent[2 * i + 0] * pixel_scale_x;
+        const float h = extent[2 * i + 1] * pixel_scale_y;
         const float ax = anchor != NULL ? anchor[2 * i + 0] : 0.0f;
         const float ay = anchor != NULL ? anchor[2 * i + 1] : 0.0f;
 
@@ -980,7 +995,7 @@ static bool _image_cache_rebuild(DvzVisual* visual)
         };
         /* Generated image quads use top-origin UV bounds, matching RGBA row upload order. */
         const float quad_uv[6][2] = {
-            {u0, v1}, {u0, v0}, {u1, v1}, {u1, v1}, {u0, v0}, {u1, v0},
+            {u0, v0}, {u0, v1}, {u1, v0}, {u1, v0}, {u0, v1}, {u1, v1},
         };
 
         for (uint32_t j = 0; j < 6; j++)
@@ -1020,7 +1035,7 @@ static void _scene_emit_image_uploads(
         dirty = dirty || visual->attrs[i].dirty_item_count > 0;
     if (!dirty)
         return;
-    if (!_image_cache_rebuild(visual))
+    if (!_image_cache_rebuild(figure, visual))
         return;
 
     const struct

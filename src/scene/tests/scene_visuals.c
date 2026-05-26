@@ -4261,9 +4261,9 @@ int test_scene_image_multi_item_emit(TstContext* suite, const TstCase* item)
             {
                 const float* uv = (const float*)cmd->u.write_buffer.data_raw;
                 const float expected_uv[24] = {
-                    0.0f, 1.0f, 0.0f, 0.0f, 0.5f, 1.0f, 0.5f, 1.0f,
-                    0.0f, 0.0f, 0.5f, 0.0f, 0.5f, 1.0f, 0.5f, 0.0f,
-                    1.0f, 1.0f, 1.0f, 1.0f, 0.5f, 0.0f, 1.0f, 0.0f,
+                    0.0f, 0.0f, 0.0f, 1.0f, 0.5f, 0.0f, 0.5f, 0.0f,
+                    0.0f, 1.0f, 0.5f, 1.0f, 0.5f, 0.0f, 0.5f, 1.0f,
+                    1.0f, 0.0f, 1.0f, 0.0f, 0.5f, 1.0f, 1.0f, 1.0f,
                 };
                 found_uv_values = true;
                 for (uint32_t j = 0; j < 24; j++)

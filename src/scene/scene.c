@@ -46,6 +46,8 @@ static void _scene_stream_release(void* owner);
 
 static void _panel_mark_layout_changed(DvzPanel* panel);
 
+static bool _scene_visual_has_attr_data(const DvzVisual* visual, const char* attr_name);
+
 
 /**
  * Return whether a panel layout reservation is finite and leaves non-empty plot space.
@@ -176,6 +178,12 @@ static void _scene_figure_mark_screen_space_dirty(DvzFigure* figure)
             }
             if (visual->type == DVZ_VISUAL_TYPE_SEGMENT)
                 visual->segment.gpu.dirty = true;
+            if (visual->type == DVZ_VISUAL_TYPE_IMAGE &&
+                _scene_visual_has_attr_data(visual, "position_px") &&
+                _scene_visual_has_attr_data(visual, "extent_px"))
+            {
+                visual->image_gpu.dirty = true;
+            }
             if (visual->type == DVZ_VISUAL_TYPE_PATH)
                 visual->path.gpu.dirty = true;
         }
@@ -3705,6 +3713,7 @@ DvzDrp2CommandStream* dvz_figure_emit_ex(
     bool screen_scale_changed =
         fabsf(figure->device_scale_x - next_device_scale_x) > 1e-6f ||
         fabsf(figure->device_scale_y - next_device_scale_y) > 1e-6f ||
+        fabsf(figure->render_scale - next_render_scale) > 1e-6f ||
         fabsf(figure->user_scale - next_user_scale) > 1e-6f;
     figure->device_scale_x = next_device_scale_x;
     figure->device_scale_y = next_device_scale_y;
