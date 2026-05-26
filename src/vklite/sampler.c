@@ -126,7 +126,10 @@ int dvz_sampler_create(DvzSampler* sampler)
     info.unnormalizedCoordinates = VK_FALSE;
     info.compareEnable = VK_FALSE;
     info.compareOp = VK_COMPARE_OP_ALWAYS;
-    info.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+    info.mipmapMode =
+        sampler->min_filter == VK_FILTER_NEAREST && sampler->mag_filter == VK_FILTER_NEAREST ?
+            VK_SAMPLER_MIPMAP_MODE_NEAREST :
+            VK_SAMPLER_MIPMAP_MODE_LINEAR;
     info.mipLodBias = 0.0f;
     info.minLod = 0.0f;
     info.maxLod = 0.0f;

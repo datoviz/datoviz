@@ -263,7 +263,7 @@ bool _emitter_prepare_render_multi(
         return false;
 
     /* Image BGL + sampler (shared, created lazily on first image visual). */
-    uint64_t img_bgl_id = 0, img_sampler_id = 0;
+    uint64_t img_bgl_id = 0, img_sampler_linear_id = 0, img_sampler_nearest_id = 0;
     uint64_t glyph_bgl_id = 0, glyph_sampler_id = 0;
     uint64_t volume_bgl_id = 0, volume_sampler_linear_id = 0, volume_sampler_nearest_id = 0;
     uint64_t scene_occlusion_bgl_id = 0, scene_occlusion_sampler_id = 0;
@@ -951,20 +951,33 @@ bool _emitter_prepare_render_multi(
                     ok = ok && dvz_drp2_stream_create_texture_sampler_bind_group_layout(
                                    stream, img_bgl_id);
             }
-            if (img_sampler_id == 0)
+            uint64_t* img_sampler_id =
+                bind.image_nearest_sampler ? &img_sampler_nearest_id : &img_sampler_linear_id;
+            if (*img_sampler_id == 0)
             {
-                img_sampler_id = _obj_id(emitter, "_sampler_img", &is_new);
-                if (img_sampler_id == 0)
+                *img_sampler_id = _obj_id(
+                    emitter, bind.image_nearest_sampler ? "_sampler_img_nearest" : "_sampler_img",
+                    &is_new);
+                if (*img_sampler_id == 0)
                 {
                     ok = false;
                     break;
                 }
                 if (ok && is_new)
-                    ok = ok && dvz_drp2_stream_create_sampler(stream, img_sampler_id);
+                {
+                    DvzDrp2FilterMode filter = bind.image_nearest_sampler ?
+                                                   DVZ_DRP2_FILTER_NEAREST :
+                                                   DVZ_DRP2_FILTER_LINEAR;
+                    ok = ok && dvz_drp2_stream_create_sampler_filter(
+                                   stream, *img_sampler_id, filter, filter);
+                }
             }
             char img_bg_key[64];
             dvz_snprintf(
-                img_bg_key, sizeof(img_bg_key), "_bg_img_%" PRIu64, bind.image_texture_id);
+                img_bg_key, sizeof(img_bg_key), bind.image_nearest_sampler ?
+                                                    "_bg_img_nearest_%" PRIu64 :
+                                                    "_bg_img_%" PRIu64,
+                bind.image_texture_id);
             uint64_t img_bg_id = _obj_id(emitter, img_bg_key, &is_new);
             if (img_bg_id == 0)
             {
@@ -974,7 +987,7 @@ bool _emitter_prepare_render_multi(
             if (ok && is_new)
                 ok = ok &&
                      dvz_drp2_stream_create_texture_sampler_bind_group(
-                         stream, img_bg_id, img_bgl_id, bind.image_texture_id, img_sampler_id);
+                         stream, img_bg_id, img_bgl_id, bind.image_texture_id, *img_sampler_id);
             vis_bg_set1 = img_bg_id;
         }
         if (bind.uses_glyph_set1)
@@ -2796,14 +2809,23 @@ bool _emitter_emit_render(
             ok = ok && dvz_drp2_stream_create_texture_sampler_bind_group_layout(stream, bgl_id);
 
         bool sampler_new = false;
-        uint64_t sampler_id = _obj_id(emitter, "_sampler_img", &sampler_new);
+        bool labels_nearest = is_labels_sint || is_labels_uint;
+        uint64_t sampler_id = _obj_id(
+            emitter, labels_nearest ? "_sampler_img_nearest" : "_sampler_img", &sampler_new);
         if (sampler_id == 0)
             return false;
         if (ok && sampler_new)
-            ok = ok && dvz_drp2_stream_create_sampler(stream, sampler_id);
+        {
+            DvzDrp2FilterMode filter =
+                labels_nearest ? DVZ_DRP2_FILTER_NEAREST : DVZ_DRP2_FILTER_LINEAR;
+            ok = ok && dvz_drp2_stream_create_sampler_filter(stream, sampler_id, filter, filter);
+        }
 
         char bg_key[48];
-        dvz_snprintf(bg_key, sizeof(bg_key), "_bg_img_%" PRIu64, image_tex);
+        dvz_snprintf(
+            bg_key, sizeof(bg_key), labels_nearest ? "_bg_img_nearest_%" PRIu64 :
+                                                     "_bg_img_%" PRIu64,
+            image_tex);
         bool bg_new = false;
         bg_id = _obj_id(emitter, bg_key, &bg_new);
         if (bg_id == 0)

@@ -183,6 +183,7 @@ typedef struct DvzSceneVisualBindDesc
     bool uses_fixed_common;
     DvzControllerMode controller_mode;
     bool uses_image_set1;
+    bool image_nearest_sampler;
     uint64_t image_texture_id;
     bool uses_glyph_set1;
     uint64_t glyph_texture_id;

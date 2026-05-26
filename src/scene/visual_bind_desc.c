@@ -84,11 +84,18 @@ bool _scene_visual_bind_desc(
         return true;
 
     case DVZ_SCENE_VISUAL_DESC_IMAGE:
+        out->uses_common_set0 = caps.uses_common_set;
+        out->uses_fixed_common = caps.fixed_controller;
+        out->uses_image_set1 = caps.uses_image_set;
+        out->image_texture_id = visual->image_texture_id;
+        return true;
+
     case DVZ_SCENE_VISUAL_DESC_LABELS_SINT:
     case DVZ_SCENE_VISUAL_DESC_LABELS_UINT:
         out->uses_common_set0 = caps.uses_common_set;
         out->uses_fixed_common = caps.fixed_controller;
         out->uses_image_set1 = caps.uses_image_set;
+        out->image_nearest_sampler = true;
         out->image_texture_id = visual->image_texture_id;
         return true;
 

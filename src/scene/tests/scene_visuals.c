@@ -4712,6 +4712,8 @@ int test_scene_labels_emit_signed_glsl(TstContext* suite, const TstCase* item)
     ANN(json);
     AT(strstr(json, "\"format\": \"spirv\"") != NULL ||
        strstr(json, "\"format\": \"glsl\"") != NULL);
+    AT(strstr(json, "\"mag_filter\": \"nearest\"") != NULL);
+    AT(strstr(json, "\"min_filter\": \"nearest\"") != NULL);
     dvz_drp2_stream_json_destroy(json);
 
     dvz_drp2_stream_destroy(stream);

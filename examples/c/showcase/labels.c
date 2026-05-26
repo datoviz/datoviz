@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* labels - napari Labels-layer proof of concept.
+/* labels - napari-style Labels visual with categorical legend.
  *
- * This demo intentionally emulates labels on the CPU: a synthetic label map is colorized into an
- * RGBA8 overlay texture, then composited over a synthetic microscopy image with ordinary source-over
- * blending. The final LabelsVisual architecture should keep the label IDs as an integer GPU texture.
+ * This demo keeps label IDs in a signed integer sampled field, binds them to the retained labels
+ * visual, attaches a categorical scale/legend, and exposes the labels presentation state through a
+ * compact GUI. The hidden image probe path is temporary until labels get raw integer GPU probing.
  *
  * Build:  cmake --build build --target labels
  * Run:    ./build/examples/c/showcase/labels
@@ -22,6 +22,7 @@
 /*************************************************************************************************/
 
 #include <stdbool.h>
+#include <inttypes.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -48,6 +49,8 @@
 #define CELL_COUNT     135
 #define IMAGE_MIN_NDC -0.92f
 #define IMAGE_MAX_NDC +0.92f
+#define LEGEND_CATEGORY_COUNT 6
+#define SELECTED_ITEM_COUNT  6
 
 
 
@@ -61,7 +64,7 @@ typedef struct LabelsDemoState LabelsDemoState;
 
 struct LabelCell
 {
-    uint32_t id;
+    int32_t id;
     int32_t cx;
     int32_t cy;
     int32_t rx;
@@ -74,24 +77,42 @@ struct LabelsDemoState
     DvzScene* scene;
     DvzPanel* panel;
     DvzView* win;
-    DvzVisual* overlay;
-    uint32_t* labels;
-    uint8_t* base_rgba;
-    uint8_t* overlay_rgba;
-    uint8_t* pick_rgba;
-    uint32_t label_count;
+    DvzVisual* labels_visual;
+    int32_t* labels;
     float opacity;
-    float selected_label_value;
+    int selected_index;
+    int background_id;
+    int fallback_seed;
+    float boundary_width;
     bool labels_visible;
     bool boundary_mode;
-    bool selected_only;
-    bool dirty_overlay;
+    bool hide_unassigned;
     bool cursor_valid;
     double cursor_x;
     double cursor_y;
-    uint32_t hover_label;
+    DvzCategoryId hover_label;
     uint64_t next_probe_request_id;
     uint64_t select_probe_request_id;
+};
+
+
+static const DvzCategoryId LABEL_CATEGORY_IDS[LEGEND_CATEGORY_COUNT] = {
+    -100, -7, 17, 42, 89, 1009,
+};
+
+
+static const char* LABEL_CATEGORY_NAMES[LEGEND_CATEGORY_COUNT] = {
+    "artifact", "unassigned", "cell 17", "cell 42", "cell 89", "cell 1009",
+};
+
+
+static const DvzCategoryId SELECTED_IDS[SELECTED_ITEM_COUNT] = {
+    0, -100, -7, 17, 42, 1009,
+};
+
+
+static const char* SELECTED_LABELS[SELECTED_ITEM_COUNT] = {
+    "none", "artifact (-100)", "unassigned (-7)", "cell 17", "cell 42", "cell 1009",
 };
 
 
@@ -124,39 +145,14 @@ static uint32_t _hash_u32(uint32_t x)
  * @param id label id
  * @param out output RGBA color
  */
-static void _label_color(uint32_t id, uint8_t out[4])
+static void _label_color(DvzCategoryId id, DvzColor* out)
 {
-    uint32_t h = _hash_u32(id);
-    out[0] = (uint8_t)(70u + (h & 0x7fu));
-    out[1] = (uint8_t)(80u + ((h >> 8) & 0x7fu));
-    out[2] = (uint8_t)(90u + ((h >> 16) & 0x7fu));
-    out[3] = 255;
-}
-
-
-
-/**
- * Return whether a label-map pixel lies on a label boundary.
- *
- * @param labels label map
- * @param x pixel x coordinate
- * @param y pixel y coordinate
- * @return whether the pixel borders a different label id
- */
-static bool _label_boundary(const uint32_t* labels, uint32_t x, uint32_t y)
-{
-    uint32_t id = labels[y * TEX_W + x];
-    if (id == 0)
-        return false;
-    if (x > 0 && labels[y * TEX_W + x - 1] != id)
-        return true;
-    if (x + 1 < TEX_W && labels[y * TEX_W + x + 1] != id)
-        return true;
-    if (y > 0 && labels[(y - 1) * TEX_W + x] != id)
-        return true;
-    if (y + 1 < TEX_H && labels[(y + 1) * TEX_W + x] != id)
-        return true;
-    return false;
+    ANN(out);
+    uint32_t h = _hash_u32((uint32_t)(int32_t)id);
+    out->r = (uint8_t)(46u + (209u * ((h >> 0) & 0xffu)) / 255u);
+    out->g = (uint8_t)(46u + (209u * ((h >> 8) & 0xffu)) / 255u);
+    out->b = (uint8_t)(46u + (209u * ((h >> 16) & 0xffu)) / 255u);
+    out->a = 209;
 }
 
 
@@ -203,8 +199,15 @@ static void _generate_cells(LabelCell cells[CELL_COUNT])
     {
         uint32_t h0 = _hash_u32(101u + i * 13u);
         uint32_t h1 = _hash_u32(809u + i * 29u);
+        int32_t id = (int32_t)i + 1;
+        if (i % 41u == 0)
+            id = -100;
+        else if (i % 29u == 0)
+            id = -7;
+        else if (i % 31u == 0)
+            id = 1009;
         cells[i] = (LabelCell){
-            .id = i + 1u,
+            .id = id,
             .cx = 18 + (int32_t)(h0 % (TEX_W - 36u)),
             .cy = 18 + (int32_t)(h1 % (TEX_H - 36u)),
             .rx = 7 + (int32_t)((h0 >> 12) % 11u),
@@ -223,9 +226,9 @@ static void _generate_cells(LabelCell cells[CELL_COUNT])
  * @param base_rgba microscopy image to brighten in labeled regions
  */
 static void _generate_labels(
-    const LabelCell cells[CELL_COUNT], uint32_t* labels, uint8_t* base_rgba)
+    const LabelCell cells[CELL_COUNT], int32_t* labels, uint8_t* base_rgba)
 {
-    dvz_memset(labels, TEX_W * TEX_H * sizeof(uint32_t), 0, TEX_W * TEX_H * sizeof(uint32_t));
+    dvz_memset(labels, TEX_W * TEX_H * sizeof(int32_t), 0, TEX_W * TEX_H * sizeof(int32_t));
 
     for (uint32_t i = 0; i < CELL_COUNT; i++)
     {
@@ -270,57 +273,22 @@ static void _generate_labels(
 
 
 /**
- * Rebuild the CPU-colored RGBA labels overlay.
+ * Fill one categorical scale entry.
  *
- * @param state demo state
+ * @param category category entry to fill
+ * @param id category id
+ * @param order legend display order
+ * @param label legend label
  */
-static void _rebuild_overlay(LabelsDemoState* state)
+static void _set_category(
+    DvzScaleCategory* category, DvzCategoryId id, uint32_t order, const char* label)
 {
-    if (state == NULL || state->labels == NULL || state->overlay_rgba == NULL)
-        return;
-
-    uint32_t selected = (uint32_t)(state->selected_label_value + 0.5f);
-    float opacity = state->opacity;
-    if (opacity < 0.0f)
-        opacity = 0.0f;
-    if (opacity > 1.0f)
-        opacity = 1.0f;
-
-    for (uint32_t y = 0; y < TEX_H; y++)
-    {
-        for (uint32_t x = 0; x < TEX_W; x++)
-        {
-            uint32_t id = state->labels[y * TEX_W + x];
-            uint64_t p = 4ull * ((uint64_t)y * TEX_W + x);
-            state->overlay_rgba[p + 0] = 0;
-            state->overlay_rgba[p + 1] = 0;
-            state->overlay_rgba[p + 2] = 0;
-            state->overlay_rgba[p + 3] = 0;
-            if (!state->labels_visible || id == 0)
-                continue;
-            if (state->selected_only && selected != 0 && id != selected)
-                continue;
-            if (state->boundary_mode && !_label_boundary(state->labels, x, y))
-                continue;
-
-            uint8_t color[4] = {0};
-            _label_color(id, color);
-            if (selected != 0 && id == selected)
-            {
-                color[0] = 255;
-                color[1] = 246;
-                color[2] = 96;
-            }
-            float alpha = opacity;
-            if (selected != 0 && id == selected && alpha < 0.86f)
-                alpha = 0.86f;
-            state->overlay_rgba[p + 0] = color[0];
-            state->overlay_rgba[p + 1] = color[1];
-            state->overlay_rgba[p + 2] = color[2];
-            state->overlay_rgba[p + 3] = (uint8_t)(255.0f * alpha + 0.5f);
-        }
-    }
-    state->dirty_overlay = false;
+    ANN(category);
+    category->category_id = id;
+    category->order = order;
+    category->label = label;
+    _label_color(id, &category->color);
+    category->flags = 0;
 }
 
 
@@ -328,10 +296,10 @@ static void _rebuild_overlay(LabelsDemoState* state)
 /**
  * Encode label IDs into an RGBA8 texture for scene segment probing.
  *
- * @param labels source uint32 label map
+ * @param labels source signed label map
  * @param rgba output RGBA8 pick texture
  */
-static void _encode_pick_texture(const uint32_t* labels, uint8_t* rgba)
+static void _encode_pick_texture(const int32_t* labels, uint8_t* rgba)
 {
     if (labels == NULL || rgba == NULL)
         return;
@@ -342,7 +310,7 @@ static void _encode_pick_texture(const uint32_t* labels, uint8_t* rgba)
         {
             /* Match the displayed image orientation used by the scene image visual. */
             uint32_t src_y = TEX_H - 1u - y;
-            uint32_t id = labels[src_y * TEX_W + x];
+            uint32_t id = (uint32_t)labels[src_y * TEX_W + x];
             uint64_t p = 4ull * ((uint64_t)y * TEX_W + x);
             rgba[p + 0] = (uint8_t)(id & 0xffu);
             rgba[p + 1] = (uint8_t)((id >> 8) & 0xffu);
@@ -355,40 +323,62 @@ static void _encode_pick_texture(const uint32_t* labels, uint8_t* rgba)
 
 
 /**
- * Rebuild and upload the overlay texture if a control or click changed label display state.
+ * Apply labels visual state after a GUI change.
  *
  * @param state demo state
  */
-static void _upload_overlay_if_dirty(LabelsDemoState* state)
+static void _apply_labels_state(LabelsDemoState* state)
 {
-    if (state == NULL || !state->dirty_overlay || state->overlay == NULL)
+    if (state == NULL || state->labels_visual == NULL)
         return;
 
-    _rebuild_overlay(state);
-    if (dvz_visual_set_texture(state->overlay, state->overlay_rgba, TEX_W, TEX_H) != 0)
-        fprintf(stderr, "labels overlay texture update failed\n");
+    dvz_visual_set_visible(state->labels_visual, state->labels_visible);
+    (void)dvz_labels_set_opacity(state->labels_visual, state->opacity);
+    (void)dvz_labels_set_background(state->labels_visual, (DvzCategoryId)state->background_id);
+    if (state->selected_index > 0 && state->selected_index < SELECTED_ITEM_COUNT)
+        (void)dvz_labels_set_selected(state->labels_visual, SELECTED_IDS[state->selected_index]);
+    else
+        (void)dvz_labels_clear_selected(state->labels_visual);
+
+    DvzCategoryId hidden[1] = {-7};
+    (void)dvz_labels_set_hidden(
+        state->labels_visual, state->hide_unassigned ? hidden : NULL,
+        state->hide_unassigned ? 1u : 0u);
+
+    DvzColor boundary = {255, 255, 255, 255};
+    (void)dvz_labels_set_boundary(
+        state->labels_visual, state->boundary_mode, state->boundary_width, boundary);
+    (void)dvz_labels_set_fallback_seed(state->labels_visual, (uint32_t)state->fallback_seed);
+    if (state->win != NULL)
+        dvz_view_request_frame(state->win);
 }
 
 
 
 /**
- * Select a decoded label and mark the overlay for refresh.
+ * Select a decoded label and update the labels visual state.
  *
  * @param state demo state
  * @param label_id label id, or 0 to clear the selection
  */
-static void _select_label(LabelsDemoState* state, uint32_t label_id)
+static void _select_label(LabelsDemoState* state, DvzCategoryId label_id)
 {
     if (state == NULL)
         return;
 
-    uint32_t selected = label_id;
-    if (selected > state->label_count)
-        selected = 0;
-    if ((uint32_t)(state->selected_label_value + 0.5f) != selected)
+    int selected = 0;
+    for (int i = 1; i < SELECTED_ITEM_COUNT; i++)
     {
-        state->selected_label_value = (float)selected;
-        state->dirty_overlay = true;
+        if (SELECTED_IDS[i] == label_id)
+        {
+            selected = i;
+            break;
+        }
+    }
+    if (state->selected_index != selected)
+    {
+        state->selected_index = selected;
+        _apply_labels_state(state);
     }
 }
 
@@ -470,7 +460,7 @@ _image_visual(DvzScene* scene, const uint8_t* pixels, DvzAlphaMode alpha_mode)
 /*************************************************************************************************/
 
 /**
- * Track cursor movement for CPU label readout.
+ * Track cursor movement for label probing.
  *
  * @param router input router emitting the pointer event
  * @param event pointer event payload
@@ -520,7 +510,7 @@ static void _input_event_callback(DvzInputRouter* router, const DvzInputEvent* e
 
 
 /**
- * Apply deferred overlay updates after input events.
+ * Poll deferred probe results after input events.
  *
  * @param win view whose frame just completed
  * @param user_data demo state
@@ -538,8 +528,7 @@ static void _frame_callback(DvzView* win, void* user_data)
         if (probe.target != DVZ_SCENE_TARGET_SEGMENT)
             continue;
 
-        uint32_t label_id =
-            probe.hit && probe.category_id <= UINT32_MAX ? (uint32_t)probe.category_id : 0;
+        DvzCategoryId label_id = probe.hit ? probe.category_id : 0;
         state->hover_label = label_id;
         if (state->select_probe_request_id != 0 &&
             probe.request_id == state->select_probe_request_id)
@@ -548,7 +537,6 @@ static void _frame_callback(DvzView* win, void* user_data)
             state->select_probe_request_id = 0;
         }
     }
-    _upload_overlay_if_dirty(state);
 }
 
 
@@ -570,25 +558,45 @@ static void _gui_callback(DvzGui* gui, DvzView* win, void* user_data)
     bool changed = false;
     if (dvz_gui_begin(gui, "Napari labels", NULL, 0))
     {
+        dvz_gui_separator_text(gui, "Presentation");
         changed |= dvz_gui_checkbox(gui, "Labels", &state->labels_visible);
         changed |= dvz_gui_slider_float(gui, "Opacity", &state->opacity, 0.0f, 1.0f);
-        changed |=
-            dvz_gui_slider_float(gui, "Selected", &state->selected_label_value, 0.0f,
-                                 (float)state->label_count);
-        changed |= dvz_gui_checkbox(gui, "Selected only", &state->selected_only);
+        changed |= dvz_gui_combo(
+            gui, "Selected", &state->selected_index, SELECTED_LABELS, SELECTED_ITEM_COUNT);
+        changed |= dvz_gui_slider_int(gui, "Background ID", &state->background_id, -10, 0);
+        changed |= dvz_gui_checkbox(gui, "Hide unassigned", &state->hide_unassigned);
         changed |= dvz_gui_checkbox(gui, "Boundaries", &state->boundary_mode);
+        if (state->boundary_mode)
+            changed |= dvz_gui_slider_float(gui, "Boundary width", &state->boundary_width, 1.0f, 8.0f);
+        changed |= dvz_gui_slider_int(gui, "Fallback seed", &state->fallback_seed, 0, 64);
+
         if (dvz_gui_button(gui, "Clear selection"))
         {
-            state->selected_label_value = 0.0f;
+            state->selected_index = 0;
             changed = true;
         }
-        igSeparator();
-        igText("Hover: label %u", state->hover_label);
+        if (dvz_gui_button(gui, "Reset"))
+        {
+            state->opacity = 0.82f;
+            state->selected_index = 0;
+            state->background_id = 0;
+            state->fallback_seed = 0;
+            state->boundary_width = 1.0f;
+            state->labels_visible = true;
+            state->boundary_mode = false;
+            state->hide_unassigned = false;
+            changed = true;
+        }
+
+        dvz_gui_separator_text(gui, "Probe");
+        char line[128] = {0};
+        snprintf(line, sizeof(line), "Hover: label %" PRIi64, state->hover_label);
+        dvz_gui_text(gui, line);
     }
     dvz_gui_end(gui);
 
     if (changed)
-        state->dirty_overlay = true;
+        _apply_labels_state(state);
 }
 
 
@@ -603,12 +611,10 @@ int main(int argc, char** argv)
     DvzScene* scene = NULL;
     DvzApp* app = NULL;
     uint8_t* base_rgba = (uint8_t*)dvz_calloc(TEX_W * TEX_H * 4ull, 1);
-    uint8_t* overlay_rgba = (uint8_t*)dvz_calloc(TEX_W * TEX_H * 4ull, 1);
     uint8_t* pick_rgba = (uint8_t*)dvz_calloc(TEX_W * TEX_H * 4ull, 1);
-    uint32_t* labels = (uint32_t*)dvz_calloc(TEX_W * TEX_H, sizeof(uint32_t));
+    int32_t* labels = (int32_t*)dvz_calloc(TEX_W * TEX_H, sizeof(int32_t));
     EXAMPLE_CHECK(
-        base_rgba != NULL && overlay_rgba != NULL && pick_rgba != NULL && labels != NULL,
-        "texture allocation failed");
+        base_rgba != NULL && pick_rgba != NULL && labels != NULL, "texture allocation failed");
 
     LabelCell cells[CELL_COUNT] = {0};
     _generate_base_image(base_rgba);
@@ -627,32 +633,91 @@ int main(int argc, char** argv)
         .scene = scene,
         .panel = panel,
         .labels = labels,
-        .base_rgba = base_rgba,
-        .overlay_rgba = overlay_rgba,
-        .pick_rgba = pick_rgba,
-        .label_count = CELL_COUNT,
-        .opacity = 0.48f,
-        .selected_label_value = 0.0f,
+        .opacity = 0.82f,
+        .selected_index = 0,
+        .background_id = 0,
+        .fallback_seed = 0,
+        .boundary_width = 1.0f,
         .labels_visible = true,
     };
-    _rebuild_overlay(&state);
 
     DvzVisual* base = _image_visual(scene, base_rgba, DVZ_ALPHA_OPAQUE);
-    DvzVisual* overlay = _image_visual(scene, overlay_rgba, DVZ_ALPHA_BLENDED);
     DvzVisual* label_pick = _image_visual(scene, pick_rgba, DVZ_ALPHA_OPAQUE);
-    state.overlay = overlay;
-    EXAMPLE_CHECK(base != NULL && overlay != NULL && label_pick != NULL, "image visual setup failed");
+    EXAMPLE_CHECK(base != NULL && label_pick != NULL, "image visual setup failed");
     dvz_visual_set_pick_capabilities(label_pick, DVZ_PICK_CAPABILITY_GROUP);
     dvz_visual_set_visible(label_pick, false);
 
-    int rc = dvz_panel_add_visual(panel, base, &(DvzVisualAttachDesc){.z_layer = 0});
+    DvzScale* labels_scale = dvz_scale(
+        scene, &(DvzScaleDesc){
+                   .kind = DVZ_SCALE_CATEGORICAL,
+                   .label = "cell labels",
+               });
+    EXAMPLE_CHECK(labels_scale != NULL, "dvz_scale() failed");
+    DvzScaleCategory categories[LEGEND_CATEGORY_COUNT] = {0};
+    for (uint32_t i = 0; i < LEGEND_CATEGORY_COUNT; i++)
+        _set_category(&categories[i], LABEL_CATEGORY_IDS[i], i, LABEL_CATEGORY_NAMES[i]);
+    bool ok = dvz_scale_set_categories(labels_scale, categories, LEGEND_CATEGORY_COUNT);
+    EXAMPLE_CHECK(ok, "dvz_scale_set_categories() failed");
+
+    DvzSampledField* label_field = dvz_sampled_field(
+        scene, &(DvzSampledFieldDesc){
+                   .dim = DVZ_FIELD_DIM_2D,
+                   .format = DVZ_FIELD_FORMAT_R32_SINT,
+                   .semantic = DVZ_FIELD_SEMANTIC_LABEL,
+                   .width = TEX_W,
+                   .height = TEX_H,
+                   .depth = 1,
+               });
+    EXAMPLE_CHECK(label_field != NULL, "dvz_sampled_field(labels) failed");
+    ok = dvz_sampled_field_set_data(
+        label_field, &(DvzFieldDataView){
+                         .data = labels,
+                         .bytes_per_row = TEX_W * sizeof(int32_t),
+                         .rows_per_image = TEX_H,
+                     });
+    EXAMPLE_CHECK(ok, "dvz_sampled_field_set_data(labels) failed");
+
+    DvzVisual* labels_visual = dvz_labels(scene, 0);
+    EXAMPLE_CHECK(labels_visual != NULL, "dvz_labels() failed");
+    vec3 positions[4] = {
+        {IMAGE_MIN_NDC, IMAGE_MIN_NDC, 0.0f},
+        {IMAGE_MIN_NDC, IMAGE_MAX_NDC, 0.0f},
+        {IMAGE_MAX_NDC, IMAGE_MIN_NDC, 0.0f},
+        {IMAGE_MAX_NDC, IMAGE_MAX_NDC, 0.0f},
+    };
+    vec2 texcoords[4] = {
+        {0.0f, 0.0f},
+        {0.0f, 1.0f},
+        {1.0f, 0.0f},
+        {1.0f, 1.0f},
+    };
+    int rc = dvz_visual_set_data(labels_visual, "position", positions, 4);
+    EXAMPLE_CHECK(rc == 0, "dvz_visual_set_data(labels position) failed");
+    rc = dvz_visual_set_data(labels_visual, "texcoords", texcoords, 4);
+    EXAMPLE_CHECK(rc == 0, "dvz_visual_set_data(labels texcoords) failed");
+    ok = dvz_visual_set_field(labels_visual, "field", label_field);
+    EXAMPLE_CHECK(ok, "dvz_visual_set_field(labels) failed");
+    rc = dvz_visual_set_scale(labels_visual, "labels", labels_scale);
+    EXAMPLE_CHECK(rc == 0, "dvz_visual_set_scale(labels) failed");
+    state.labels_visual = labels_visual;
+    _apply_labels_state(&state);
+
+    rc = dvz_panel_add_visual(panel, base, &(DvzVisualAttachDesc){.z_layer = 0});
     EXAMPLE_CHECK(rc == 0, "dvz_panel_add_visual(base) failed");
 
-    rc = dvz_panel_add_visual(panel, overlay, &(DvzVisualAttachDesc){.z_layer = 1});
-    EXAMPLE_CHECK(rc == 0, "dvz_panel_add_visual(overlay) failed");
+    rc = dvz_panel_add_visual(panel, labels_visual, &(DvzVisualAttachDesc){.z_layer = 1});
+    EXAMPLE_CHECK(rc == 0, "dvz_panel_add_visual(labels) failed");
 
     rc = dvz_panel_add_visual(panel, label_pick, &(DvzVisualAttachDesc){.z_layer = 2});
     EXAMPLE_CHECK(rc == 0, "dvz_panel_add_visual(label_pick) failed");
+    DvzLegend* legend = dvz_legend(
+        panel, labels_scale,
+        &(DvzLegendDesc){
+            .title = "Labels",
+            .anchor = DVZ_SCENE_ANCHOR_PANEL_RIGHT,
+            .reserve_px = 150.0f,
+        });
+    EXAMPLE_CHECK(legend != NULL, "dvz_legend() failed");
     dvz_panel_set_background_color(panel, 0.02f, 0.025f, 0.03f, 1.0f);
 
     app = dvz_app(scene);
@@ -688,7 +753,6 @@ cleanup:
     if (scene != NULL)
         dvz_scene_destroy(scene);
     dvz_free(base_rgba);
-    dvz_free(overlay_rgba);
     dvz_free(pick_rgba);
     dvz_free(labels);
     return status;
