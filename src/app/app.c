@@ -201,15 +201,13 @@ struct DvzApp
  */
 static DvzAppConfig _app_config_defaults(void)
 {
-    DvzAppConfig config = {
-        .instance_extension_count = 0,
-        .instance_extensions = NULL,
-        .enable_canvas_extensions = false,
-        .enable_glfw_extensions = true,
-        .schedule_mode = DVZ_APP_SCHEDULE_ON_DEMAND,
-        .fps_cap = 0.0,
-        .font_defaults = {0},
-    };
+    DvzAppConfig config = {0};
+    config.instance_extension_count = 0;
+    config.instance_extensions = NULL;
+    config.enable_canvas_extensions = false;
+    config.enable_glfw_extensions = true;
+    config.schedule_mode = DVZ_APP_SCHEDULE_ON_DEMAND;
+    config.fps_cap = 0.0;
     config.font_defaults = dvz_font_defaults();
     return config;
 }
