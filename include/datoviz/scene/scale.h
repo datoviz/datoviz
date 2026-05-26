@@ -324,6 +324,41 @@ DVZ_EXPORT bool dvz_legend_set_layout(DvzLegend* legend, const DvzLegendDesc* de
 DVZ_EXPORT void dvz_legend_set_title(DvzLegend* legend, const char* title);
 
 
+/**
+ * Highlight one categorical legend entry.
+ *
+ * This is presentation state only: the bound scale category color and label are unchanged.
+ *
+ * @param legend the legend
+ * @param id category id to highlight
+ * @return true when the highlight state was accepted
+ */
+DVZ_EXPORT bool dvz_legend_set_highlight(DvzLegend* legend, DvzCategoryId id);
+
+
+/**
+ * Clear all highlighted categorical legend entries.
+ *
+ * @param legend the legend
+ * @return true when the highlight state was accepted
+ */
+DVZ_EXPORT bool dvz_legend_clear_highlight(DvzLegend* legend);
+
+
+/**
+ * Highlight multiple categorical legend entries.
+ *
+ * This is presentation state only: the bound scale category colors and labels are unchanged.
+ *
+ * @param legend the legend
+ * @param ids category ids to highlight
+ * @param count number of highlighted category ids
+ * @return true when the highlight state was accepted
+ */
+DVZ_EXPORT bool
+dvz_legend_set_highlights(DvzLegend* legend, const DvzCategoryId* ids, uint32_t count);
+
+
 
 /*************************************************************************************************/
 /*  Visual scale bindings                                                                        */

@@ -640,6 +640,8 @@ struct DvzLegend
     float realized_panel_height;
     DvzVisual* mark_visual;
     DvzVisual* text_visual;
+    DvzCategoryId highlighted_ids[DVZ_SCENE_MAX_SCALE_CATEGORIES];
+    uint32_t highlight_count;
     uint32_t entry_count;
     uint32_t text_count;
     char text_labels[DVZ_SCENE_MAX_LEGEND_TEXTS][DVZ_SCENE_LABEL_SIZE];

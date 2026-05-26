@@ -79,6 +79,7 @@ struct LabelsDemoState
     DvzPanzoom* panzoom;
     DvzVisual* labels_visual;
     DvzVisual* selection_visual;
+    DvzLegend* legend;
     int32_t* labels;
     uint8_t* selection_rgba;
     DvzCategoryId hover_id;
@@ -499,6 +500,13 @@ static void _apply_selection(LabelsDemoState* state)
         else
             (void)dvz_labels_set_selected(state->labels_visual, state->selected_id);
     }
+    if (state->legend != NULL)
+    {
+        if (state->selected_id == 0)
+            (void)dvz_legend_clear_highlight(state->legend);
+        else
+            (void)dvz_legend_set_highlight(state->legend, state->selected_id);
+    }
 
     if (state->selection_visual != NULL)
     {
@@ -834,6 +842,7 @@ int main(int argc, char** argv)
             .reserve_px = 168.0f,
         });
     EXAMPLE_CHECK(legend != NULL, "dvz_legend() failed");
+    state.legend = legend;
     dvz_panel_set_background_color(panel, 0.025f, 0.027f, 0.03f, 1.0f);
 
     app = dvz_app(scene);

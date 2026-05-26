@@ -1818,6 +1818,25 @@ static uint32_t _legend_sorted_category_indices(const DvzScale* scale, uint32_t*
 
 
 /**
+ * Return whether a category id is highlighted in one retained legend.
+ *
+ * @param legend the legend
+ * @param id the category id
+ * @return whether the category is highlighted
+ */
+static bool _legend_category_highlighted(const DvzLegend* legend, DvzCategoryId id)
+{
+    ANN(legend);
+    for (uint32_t i = 0; i < legend->highlight_count; i++)
+    {
+        if (legend->highlighted_ids[i] == id)
+            return true;
+    }
+    return false;
+}
+
+
+/**
  * Rebuild the derived visuals for one retained legend.
  *
  * @param legend the legend
@@ -1900,7 +1919,9 @@ static void _legend_update_visuals(DvzLegend* legend, DvzDiagnosticReport* repor
             break;
         _colorbar_pixel_to_visual(width, height, mark_x, y, 0.0f, mark_positions[mark_count]);
         mark_colors[mark_count] = category->color;
-        mark_sizes[mark_count] = legend->mark_size_px;
+        mark_sizes[mark_count] = _legend_category_highlighted(legend, category->category_id) ?
+                                     1.45f * legend->mark_size_px :
+                                     legend->mark_size_px;
         mark_angles[mark_count] = 0.0f;
         mark_shapes[mark_count] = DVZ_MARKER_SHAPE_SQUARE;
 
@@ -2874,6 +2895,90 @@ void dvz_legend_set_title(DvzLegend* legend, const char* title)
         return;
     dvz_strlcpy(legend->title, src, sizeof(legend->title));
     _scene_mark_legend_dirty(legend);
+}
+
+
+/**
+ * Highlight one categorical legend entry.
+ *
+ * @param legend the legend
+ * @param id category id to highlight
+ * @return true when the highlight state was accepted
+ */
+bool dvz_legend_set_highlight(DvzLegend* legend, DvzCategoryId id)
+{
+    return dvz_legend_set_highlights(legend, &id, 1);
+}
+
+
+/**
+ * Clear all highlighted categorical legend entries.
+ *
+ * @param legend the legend
+ * @return true when the highlight state was accepted
+ */
+bool dvz_legend_clear_highlight(DvzLegend* legend)
+{
+    ANN(legend);
+    if (legend->highlight_count == 0)
+        return true;
+    dvz_memset(
+        legend->highlighted_ids, sizeof(legend->highlighted_ids), 0,
+        sizeof(legend->highlighted_ids));
+    legend->highlight_count = 0;
+    _scene_mark_legend_dirty(legend);
+    return true;
+}
+
+
+/**
+ * Highlight multiple categorical legend entries.
+ *
+ * @param legend the legend
+ * @param ids category ids to highlight
+ * @param count number of highlighted category ids
+ * @return true when the highlight state was accepted
+ */
+bool dvz_legend_set_highlights(DvzLegend* legend, const DvzCategoryId* ids, uint32_t count)
+{
+    ANN(legend);
+    if (count > DVZ_SCENE_MAX_SCALE_CATEGORIES)
+    {
+        log_error("too many legend highlights (%" PRIu32 " > %u)", count,
+                  DVZ_SCENE_MAX_SCALE_CATEGORIES);
+        return false;
+    }
+    if (count > 0 && ids == NULL)
+    {
+        log_error("legend highlight ids are required when count is nonzero");
+        return false;
+    }
+
+    if (legend->highlight_count == count)
+    {
+        bool same = true;
+        for (uint32_t i = 0; i < count; i++)
+        {
+            if (legend->highlighted_ids[i] != ids[i])
+            {
+                same = false;
+                break;
+            }
+        }
+        if (same)
+            return true;
+    }
+
+    dvz_memset(
+        legend->highlighted_ids, sizeof(legend->highlighted_ids), 0,
+        sizeof(legend->highlighted_ids));
+    if (count > 0)
+        dvz_memcpy(
+            legend->highlighted_ids, count * sizeof(DvzCategoryId), ids,
+            count * sizeof(DvzCategoryId));
+    legend->highlight_count = count;
+    _scene_mark_legend_dirty(legend);
+    return true;
 }
 
 

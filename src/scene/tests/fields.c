@@ -406,6 +406,42 @@ int test_scene_legend_prepare_visuals(TstContext* suite, const TstCase* item)
     AT(dvz_visual_data(legend->mark_visual, "position", &first_position) == 0);
     AT(first_position.data == first_ptr);
 
+    uint64_t version = legend->version;
+    AT(dvz_legend_set_highlight(legend, -7));
+    AT(legend->highlight_count == 1);
+    AT(legend->highlighted_ids[0] == -7);
+    AT(legend->dirty);
+    AT(legend->version > version);
+    _scene_prepare_legend_visuals(figure, NULL);
+    DvzVisualDataView size_view = {0};
+    AT(dvz_visual_data(legend->mark_visual, "diameter", &size_view) == 0);
+    AT(size_view.item_count == 4);
+    const float* sizes = (const float*)size_view.data;
+    ANN(sizes);
+    AT(fabsf(sizes[0] - 12.0f) < 1e-6f);
+    AT(fabsf(sizes[1] - 12.0f) < 1e-6f);
+    AT(sizes[2] > 12.0f);
+    AT(fabsf(sizes[3] - 12.0f) < 1e-6f);
+
+    DvzCategoryId highlights[2] = {-7, 4000000000LL};
+    AT(dvz_legend_set_highlights(legend, highlights, 2));
+    _scene_prepare_legend_visuals(figure, NULL);
+    AT(dvz_visual_data(legend->mark_visual, "diameter", &size_view) == 0);
+    sizes = (const float*)size_view.data;
+    ANN(sizes);
+    AT(sizes[2] > 12.0f);
+    AT(sizes[3] > 12.0f);
+
+    AT(dvz_legend_clear_highlight(legend));
+    _scene_prepare_legend_visuals(figure, NULL);
+    AT(dvz_visual_data(legend->mark_visual, "diameter", &size_view) == 0);
+    sizes = (const float*)size_view.data;
+    ANN(sizes);
+    AT(fabsf(sizes[0] - 12.0f) < 1e-6f);
+    AT(fabsf(sizes[1] - 12.0f) < 1e-6f);
+    AT(fabsf(sizes[2] - 12.0f) < 1e-6f);
+    AT(fabsf(sizes[3] - 12.0f) < 1e-6f);
+
     dvz_scene_destroy(scene);
     return 0;
 }
