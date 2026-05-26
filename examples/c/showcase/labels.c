@@ -45,8 +45,8 @@
 
 #define WIDTH             1120
 #define HEIGHT            820
-#define TEX_W             768
-#define TEX_H             768
+#define TEX_W             1536
+#define TEX_H             1536
 #define IMAGE_MIN_NDC    -0.92f
 #define IMAGE_MAX_NDC    +0.92f
 #define REGION_SEED_COUNT 34
@@ -448,48 +448,36 @@ static void _rebuild_selection_overlay(LabelsDemoState* state)
     if (state->selected_id == 0 || !state->selection_visible)
         return;
 
-    int radius = state->outline_width > 0 ? state->outline_width : 1;
-    radius += 2;
+    uint32_t radius = state->outline_width > 0 ? (uint32_t)state->outline_width : 1u;
     for (uint32_t y = 0; y < TEX_H; y++)
     {
         for (uint32_t x = 0; x < TEX_W; x++)
         {
-            bool selected = (DvzCategoryId)state->labels[y * TEX_W + x] == state->selected_id;
-            int best_d2 = (radius + 1) * (radius + 1);
-            int xi = (int)x;
-            int yi = (int)y;
-            for (int dy = -radius; dy <= radius; dy++)
+            if ((DvzCategoryId)state->labels[y * TEX_W + x] != state->selected_id)
+                continue;
+
+            bool edge = false;
+            uint32_t x0 = x > radius ? x - radius : 0;
+            uint32_t y0 = y > radius ? y - radius : 0;
+            uint32_t x1 = x + radius < TEX_W ? x + radius : TEX_W - 1u;
+            uint32_t y1 = y + radius < TEX_H ? y + radius : TEX_H - 1u;
+            for (uint32_t yy = y0; yy <= y1 && !edge; yy++)
             {
-                int yy = yi + dy;
-                if (yy < 0 || yy >= (int)TEX_H)
-                    continue;
-                for (int dx = -radius; dx <= radius; dx++)
+                for (uint32_t xx = x0; xx <= x1; xx++)
                 {
-                    int xx = xi + dx;
-                    if (xx < 0 || xx >= (int)TEX_W)
-                        continue;
-                    bool other_selected =
-                        (DvzCategoryId)state->labels[(uint32_t)yy * TEX_W + (uint32_t)xx] ==
-                        state->selected_id;
-                    if (other_selected == selected)
-                        continue;
-                    int d2 = dx * dx + dy * dy;
-                    if (d2 < best_d2)
-                        best_d2 = d2;
+                    if ((DvzCategoryId)state->labels[yy * TEX_W + xx] != state->selected_id)
+                    {
+                        edge = true;
+                        break;
+                    }
                 }
             }
 
-            if (best_d2 > radius * radius)
-                continue;
-
-            float d = sqrtf((float)best_d2);
-            float t = 1.0f - fminf(1.0f, d / (float)radius);
-            float alpha = selected ? 42.0f + 170.0f * t : 18.0f + 210.0f * t;
             uint64_t p = 4ull * ((uint64_t)y * TEX_W + x);
             state->selection_rgba[p + 0] = 255;
-            state->selection_rgba[p + 1] = 242;
-            state->selection_rgba[p + 2] = 48;
-            state->selection_rgba[p + 3] = (uint8_t)(alpha + 0.5f);
+            state->selection_rgba[p + 1] = edge ? 244 : 220;
+            state->selection_rgba[p + 2] = edge ? 64 : 16;
+            state->selection_rgba[p + 3] = edge ? 245 : 48;
         }
     }
 }
