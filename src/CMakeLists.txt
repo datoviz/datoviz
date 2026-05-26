@@ -372,9 +372,19 @@ if(DVZ_BUILD_GUI)
     if(NOT _dvz_imgui_header MATCHES "IMGUI_HAS_DOCK")
         message(FATAL_ERROR "DVZ_BUILD_GUI requires a Dear ImGui docking branch/tag with IMGUI_HAS_DOCK.")
     endif()
+    if(NOT _dvz_imgui_header MATCHES "SliderFloatRange2")
+        message(FATAL_ERROR
+            "DVZ_BUILD_GUI requires Dear ImGui with SliderFloatRange2 support "
+            "(ocornut/imgui#9164 or an upstream equivalent).")
+    endif()
+    if(NOT _dvz_imgui_header MATCHES "SliderScalarRange2")
+        message(FATAL_ERROR
+            "DVZ_BUILD_GUI requires Dear ImGui with SliderScalarRange2 support "
+            "(ocornut/imgui#9164 or an upstream equivalent).")
+    endif()
     file(READ "${PROJECT_SOURCE_DIR}/external/cimgui/cimgui.h" _dvz_cimgui_header)
-    if(NOT _dvz_cimgui_header MATCHES "1\\.91\\.9b" OR NOT _dvz_cimgui_header MATCHES "docking branch")
-        message(FATAL_ERROR "DVZ_BUILD_GUI requires cimgui generated for Dear ImGui 1.91.9b docking.")
+    if(NOT _dvz_cimgui_header MATCHES "docking branch")
+        message(FATAL_ERROR "DVZ_BUILD_GUI requires cimgui generated from a Dear ImGui docking branch.")
     endif()
 endif()
 

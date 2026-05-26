@@ -15,7 +15,7 @@
 	url = https://github.com/glfw/glfw
 [submodule "external/cimgui"]
 	path = external/cimgui
-	url = https://github.com/cimgui/cimgui.git
+	url = https://github.com/datoviz/cimgui.git
 [submodule "external/msdf-atlas-gen"]
 	path = external/msdf-atlas-gen
 	url = https://github.com/Chlumsky/msdf-atlas-gen.git
