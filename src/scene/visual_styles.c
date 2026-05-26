@@ -83,13 +83,7 @@ DvzPointStyleDesc _marker_style_to_point_style(const DvzMarkerStyle* style)
 {
     ANN(style);
     DvzPointStyleDesc out = {
-        .edge_color =
-            {
-                style->edge_color[0],
-                style->edge_color[1],
-                style->edge_color[2],
-                style->edge_color[3],
-            },
+        .edge_color = style->edge_color,
         .stroke_width = style->stroke_width,
         .aspect = style->aspect,
     };
@@ -113,10 +107,10 @@ void _point_style_sync_params(DvzSceneMaterialParams* params, const DvzPointStyl
     params->params[1] = (float)style->aspect;
     params->params[2] = 0.0f;
     params->params[3] = 0.0f;
-    params->base_color_factor[0] = (float)style->edge_color[0] / 255.0f;
-    params->base_color_factor[1] = (float)style->edge_color[1] / 255.0f;
-    params->base_color_factor[2] = (float)style->edge_color[2] / 255.0f;
-    params->base_color_factor[3] = (float)style->edge_color[3] / 255.0f;
+    params->base_color_factor[0] = (float)style->edge_color.r / 255.0f;
+    params->base_color_factor[1] = (float)style->edge_color.g / 255.0f;
+    params->base_color_factor[2] = (float)style->edge_color.b / 255.0f;
+    params->base_color_factor[3] = (float)style->edge_color.a / 255.0f;
 }
 
 

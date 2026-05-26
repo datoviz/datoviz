@@ -278,10 +278,11 @@ static int _gui_mods_from_io(const ImGuiIO& io)
  */
 static void _gui_color_to_float(const DvzColor color, float out[4])
 {
-    ANN(color);
     ANN(out);
-    for (uint32_t i = 0; i < 4; i++)
-        out[i] = (float)color[i] / 255.0f;
+    out[0] = (float)color.r / 255.0f;
+    out[1] = (float)color.g / 255.0f;
+    out[2] = (float)color.b / 255.0f;
+    out[3] = (float)color.a / 255.0f;
 }
 
 
@@ -292,19 +293,11 @@ static void _gui_color_to_float(const DvzColor color, float out[4])
  * @param rgba input RGBA channels
  * @param out output Datoviz color
  */
-static void _gui_color_from_float(const float rgba[4], DvzColor out)
+static void _gui_color_from_float(const float rgba[4], DvzColor* out)
 {
     ANN(rgba);
     ANN(out);
-    for (uint32_t i = 0; i < 4; i++)
-    {
-        float v = rgba[i];
-        if (v < 0.0f)
-            v = 0.0f;
-        if (v > 1.0f)
-            v = 1.0f;
-        out[i] = (uint8_t)(v * 255.0f + 0.5f);
-    }
+    *out = dvz_color_from_unit(rgba[0], rgba[1], rgba[2], rgba[3]);
 }
 
 
@@ -1744,13 +1737,13 @@ bool dvz_gui_color_edit4(DvzGui* gui, const char* label, float rgba[4], int flag
  * @param flags Dear ImGui color edit flags
  * @return whether the value changed
  */
-bool dvz_gui_color_edit_dvz(DvzGui* gui, const char* label, DvzColor color, int flags)
+bool dvz_gui_color_edit_dvz(DvzGui* gui, const char* label, DvzColor* color, int flags)
 {
     ANN(gui);
     ANN(label);
     ANN(color);
     float rgba[4] = {};
-    _gui_color_to_float(color, rgba);
+    _gui_color_to_float(*color, rgba);
     bool changed = dvz_gui_color_edit4(gui, label, rgba, flags);
     if (changed)
         _gui_color_from_float(rgba, color);

@@ -32,6 +32,11 @@ int test_math(TstSuite* suite)
     const char* tags = "math";
 
     TST_MODULE(suite, "math");
+    TST_GROUP("color");
+    TST_CASE(test_color_layout);
+    TST_CASE(test_color_helpers);
+    TST_CASE(test_color_linear_roundtrip);
+
     TST_GROUP("prng");
     TST_CASE(test_prng_1);
 

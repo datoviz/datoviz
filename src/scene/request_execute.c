@@ -1499,16 +1499,16 @@ static bool _scene_pick_alloc(
  * Store one item id as an RGB pick payload.
  *
  * @param item_id zero-based visual-local item id
- * @param out_color output encoded color
+ * @return encoded color
  */
-static void _scene_pick_encode_item(uint64_t item_id, DvzColor out_color)
+static DvzColor _scene_pick_encode_item(uint64_t item_id)
 {
-    ANN(out_color);
     uint32_t encoded = (uint32_t)item_id + 1u;
-    out_color[0] = (uint8_t)(encoded & 0xFFu);
-    out_color[1] = (uint8_t)((encoded >> 8u) & 0xFFu);
-    out_color[2] = (uint8_t)((encoded >> 16u) & 0xFFu);
-    out_color[3] = 255;
+    return dvz_color_rgba(
+        (uint8_t)(encoded & 0xFFu),         //
+        (uint8_t)((encoded >> 8u) & 0xFFu), //
+        (uint8_t)((encoded >> 16u) & 0xFFu),
+        255);
 }
 
 
@@ -1848,7 +1848,7 @@ static bool _scene_segment_pick_geometry(
             dvz_memcpy(
                 &out_plan->pick_position_end[3 * dst], 3 * sizeof(float),
                 &position_end[3 * i], 3 * sizeof(float));
-            _scene_pick_encode_item(i, out_plan->pick_colors[dst]);
+            out_plan->pick_colors[dst] = _scene_pick_encode_item(i);
             out_plan->pick_line_width[dst] = line_width[i];
         }
         out_plan->pick_indices[6 * i + 0] = (uint32_t)(4 * i + 0);
@@ -1992,7 +1992,7 @@ static bool _scene_path_pick_geometry(
                 dvz_memcpy(
                     &out_plan->pick_position_end[3 * dst], 3 * sizeof(float),
                     &position[3 * next_idx], 3 * sizeof(float));
-                _scene_pick_encode_item(segment, out_plan->pick_colors[dst]);
+                out_plan->pick_colors[dst] = _scene_pick_encode_item(segment);
                 out_plan->pick_line_width[dst] = line_width[point_idx];
                 out_plan->pick_path_flags[dst] = _scene_pick_path_vertex_flags(
                     side_negative, endpoint_end, has_prev, has_next, subpath_start, subpath_end);
@@ -2088,11 +2088,7 @@ static bool _scene_item_pick_plan(
         return false;
     for (uint64_t i = 0; i < pos_attr->item_count; i++)
     {
-        uint32_t encoded = (uint32_t)i + 1u;
-        pick_colors[i][0] = (uint8_t)(encoded & 0xFFu);
-        pick_colors[i][1] = (uint8_t)((encoded >> 8u) & 0xFFu);
-        pick_colors[i][2] = (uint8_t)((encoded >> 16u) & 0xFFu);
-        pick_colors[i][3] = 255;
+        pick_colors[i] = _scene_pick_encode_item(i);
     }
 
     DvzFramePlan* plan = dvz_frame_plan("figure.pick", pending->request.request_id);
@@ -2476,7 +2472,7 @@ static bool _scene_primitive_pick_plan(
             dvz_memcpy(
                 out_plan->probe_positions[dst], sizeof(vec3), &position[3 * source_index],
                 sizeof(vec3));
-            _scene_pick_encode_item(prim, out_plan->pick_colors[dst]);
+            out_plan->pick_colors[dst] = _scene_pick_encode_item(prim);
         }
     }
 
@@ -2645,7 +2641,7 @@ static bool _scene_image_pick_plan(
             {
                 uint64_t dst = 6 * i + j;
                 dvz_memcpy(out_plan->probe_positions[dst], sizeof(vec3), quad_pos[j], sizeof(vec3));
-                _scene_pick_encode_item(i, out_plan->pick_colors[dst]);
+                out_plan->pick_colors[dst] = _scene_pick_encode_item(i);
             }
         }
     }
@@ -2657,7 +2653,7 @@ static bool _scene_image_pick_plan(
             dvz_memcpy(
                 out_plan->probe_positions[j], sizeof(vec3), &position[3 * order[j]],
                 sizeof(vec3));
-            _scene_pick_encode_item(0, out_plan->pick_colors[j]);
+            out_plan->pick_colors[j] = _scene_pick_encode_item(0);
         }
     }
     else
@@ -2666,7 +2662,7 @@ static bool _scene_image_pick_plan(
         {
             dvz_memcpy(
                 out_plan->probe_positions[j], sizeof(vec3), &position[3 * j], sizeof(vec3));
-            _scene_pick_encode_item(0, out_plan->pick_colors[j]);
+            out_plan->pick_colors[j] = _scene_pick_encode_item(0);
         }
     }
 
@@ -2778,7 +2774,7 @@ static bool _scene_volume_pick_plan(
         return false;
     }
     for (uint64_t i = 0; i < vertex_count; i++)
-        _scene_pick_encode_item(0, out_plan->pick_colors[i]);
+        out_plan->pick_colors[i] = _scene_pick_encode_item(0);
 
     uint32_t target_width = 0;
     uint32_t target_height = 0;

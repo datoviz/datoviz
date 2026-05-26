@@ -226,14 +226,15 @@ static uint8_t _panel_background_u8(float value)
  * @param rgba normalized RGBA values
  * @param out output color
  */
-static void _panel_background_color(const float rgba[4], DvzColor out)
+static void _panel_background_color(const float rgba[4], DvzColor* out)
 {
     ANN(rgba);
     ANN(out);
-    out[0] = _panel_background_u8(rgba[0]);
-    out[1] = _panel_background_u8(rgba[1]);
-    out[2] = _panel_background_u8(rgba[2]);
-    out[3] = _panel_background_u8(rgba[3]);
+    *out = dvz_color_rgba(
+        _panel_background_u8(rgba[0]), //
+        _panel_background_u8(rgba[1]), //
+        _panel_background_u8(rgba[2]), //
+        _panel_background_u8(rgba[3]));
 }
 
 
@@ -315,7 +316,7 @@ _panel_background_gradient_colors(const DvzPanelBackgroundDesc* background, DvzC
             rgba[c] = background->gradient.color0[c] * (1.0f - t) +
                       background->gradient.color1[c] * t;
         }
-        _panel_background_color(rgba, colors[i]);
+        _panel_background_color(rgba, &colors[i]);
     }
 }
 
@@ -448,9 +449,9 @@ bool dvz_panel_set_background(DvzPanel* panel, const DvzPanelBackgroundDesc* bac
         if (background->type == DVZ_PANEL_BACKGROUND_COLOR)
         {
             DvzColor color = {0};
-            _panel_background_color(background->color, color);
+            _panel_background_color(background->color, &color);
             for (uint32_t i = 0; i < 4; i++)
-                dvz_memcpy(colors[i], sizeof(DvzColor), color, sizeof(DvzColor));
+                colors[i] = color;
         }
         else
         {

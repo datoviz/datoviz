@@ -1000,6 +1000,8 @@ static void _colorbar_update_ramp(
         uint8_t rgba1[4] = {0};
         (void)_scene_color_from_colormap(colorbar->scale->colormap, t0, rgba0);
         (void)_scene_color_from_colormap(colorbar->scale->colormap, t1, rgba1);
+        const DvzColor color0 = dvz_color_rgba(rgba0[0], rgba0[1], rgba0[2], rgba0[3]);
+        const DvzColor color1 = dvz_color_rgba(rgba1[0], rgba1[1], rgba1[2], rgba1[3]);
         uint32_t k = 6u * i;
         _colorbar_pixel_to_visual(width, height, x0, y0, 0.0f, positions[k + 0]);
         _colorbar_pixel_to_visual(width, height, x1, y0, 0.0f, positions[k + 1]);
@@ -1009,21 +1011,21 @@ static void _colorbar_update_ramp(
         _colorbar_pixel_to_visual(width, height, x1, y1, 0.0f, positions[k + 5]);
         if (vertical)
         {
-            dvz_memcpy(colors[k + 0], sizeof(DvzColor), rgba0, sizeof(DvzColor));
-            dvz_memcpy(colors[k + 1], sizeof(DvzColor), rgba0, sizeof(DvzColor));
-            dvz_memcpy(colors[k + 2], sizeof(DvzColor), rgba1, sizeof(DvzColor));
-            dvz_memcpy(colors[k + 3], sizeof(DvzColor), rgba0, sizeof(DvzColor));
-            dvz_memcpy(colors[k + 4], sizeof(DvzColor), rgba1, sizeof(DvzColor));
-            dvz_memcpy(colors[k + 5], sizeof(DvzColor), rgba1, sizeof(DvzColor));
+            colors[k + 0] = color0;
+            colors[k + 1] = color0;
+            colors[k + 2] = color1;
+            colors[k + 3] = color0;
+            colors[k + 4] = color1;
+            colors[k + 5] = color1;
         }
         else
         {
-            dvz_memcpy(colors[k + 0], sizeof(DvzColor), rgba0, sizeof(DvzColor));
-            dvz_memcpy(colors[k + 1], sizeof(DvzColor), rgba1, sizeof(DvzColor));
-            dvz_memcpy(colors[k + 2], sizeof(DvzColor), rgba1, sizeof(DvzColor));
-            dvz_memcpy(colors[k + 3], sizeof(DvzColor), rgba0, sizeof(DvzColor));
-            dvz_memcpy(colors[k + 4], sizeof(DvzColor), rgba0, sizeof(DvzColor));
-            dvz_memcpy(colors[k + 5], sizeof(DvzColor), rgba1, sizeof(DvzColor));
+            colors[k + 0] = color0;
+            colors[k + 1] = color1;
+            colors[k + 2] = color1;
+            colors[k + 3] = color0;
+            colors[k + 4] = color0;
+            colors[k + 5] = color1;
         }
     }
     DvzVisualDataUpdate updates[2] = {
@@ -1115,10 +1117,7 @@ static void _colorbar_update_ticks_and_text(
         }
         _colorbar_pixel_to_visual(width, height, x0, y0, 0.0f, starts[count]);
         _colorbar_pixel_to_visual(width, height, x1, y1, 0.0f, ends[count]);
-        colors[count][0] = 255;
-        colors[count][1] = 255;
-        colors[count][2] = 255;
-        colors[count][3] = 255;
+        colors[count] = dvz_color_rgb(255, 255, 255);
         widths[count] = COLORBAR_TICK_WIDTH_PX;
 
         char label[DVZ_SCENE_LABEL_SIZE] = {0};
@@ -1855,7 +1854,7 @@ static void _legend_update_visuals(DvzLegend* legend, DvzDiagnosticReport* repor
         if (y + 0.5f * legend->mark_size_px > rect[3])
             break;
         _colorbar_pixel_to_visual(width, height, mark_x, y, 0.0f, mark_positions[mark_count]);
-        dvz_memcpy(mark_colors[mark_count], sizeof(DvzColor), category->color, sizeof(DvzColor));
+        mark_colors[mark_count] = category->color;
         mark_sizes[mark_count] = legend->mark_size_px;
         mark_angles[mark_count] = 0.0f;
         mark_shapes[mark_count] = DVZ_MARKER_SHAPE_SQUARE;
@@ -1969,9 +1968,13 @@ bool _scene_color_from_colormap(
  * @param out the output RGBA color
  * @return true when a color was written
  */
-bool dvz_colormap_sample(const DvzColormap* colormap, double t, DvzColor out)
+bool dvz_colormap_sample(const DvzColormap* colormap, double t, DvzColor* out)
 {
-    return _scene_color_from_colormap(colormap, t, out);
+    ANN(out);
+    uint8_t rgba[4] = {0};
+    const bool ok = _scene_color_from_colormap(colormap, t, rgba);
+    *out = dvz_color_rgba(rgba[0], rgba[1], rgba[2], rgba[3]);
+    return ok;
 }
 
 
@@ -1984,14 +1987,14 @@ bool dvz_colormap_sample(const DvzColormap* colormap, double t, DvzColor out)
  * @param out the output RGBA color
  * @return true when a color was written
  */
-bool dvz_colormap_builtin_sample(DvzBuiltinColormap builtin, double t, DvzColor out)
+bool dvz_colormap_builtin_sample(DvzBuiltinColormap builtin, double t, DvzColor* out)
 {
     ANN(out);
     DvzColormap colormap = {
         .kind = DVZ_COLORMAP_CONTINUOUS,
         .builtin = builtin,
     };
-    return _scene_color_from_colormap(&colormap, t, out);
+    return dvz_colormap_sample(&colormap, t, out);
 }
 
 
@@ -2161,7 +2164,7 @@ bool dvz_scale_set_categories(
         dst->has_label = src->label != NULL && src->label[0] != '\0';
         if (dst->has_label)
             dvz_strlcpy(dst->label, src->label, sizeof(dst->label));
-        dvz_memcpy(dst->color, sizeof(DvzColor), src->color, sizeof(DvzColor));
+        dst->color = src->color;
     }
     for (uint32_t i = count; i < scale->category_count; i++)
     {

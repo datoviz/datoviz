@@ -1399,20 +1399,15 @@ static float _scalebar_positive_or_default(float value, float fallback)
  * @param desc scale-bar descriptor
  * @param out output color
  */
-static void _scalebar_line_color(const DvzScaleBarDesc* desc, DvzColor out)
+static void _scalebar_line_color(const DvzScaleBarDesc* desc, DvzColor* out)
 {
     ANN(desc);
     ANN(out);
-    out[0] = desc->line_color[0];
-    out[1] = desc->line_color[1];
-    out[2] = desc->line_color[2];
-    out[3] = desc->line_color[3];
-    if (out[3] == 0 && out[0] == 0 && out[1] == 0 && out[2] == 0)
+    *out = dvz_color_rgba(
+        desc->line_color[0], desc->line_color[1], desc->line_color[2], desc->line_color[3]);
+    if (out->a == 0 && out->r == 0 && out->g == 0 && out->b == 0)
     {
-        out[0] = 255;
-        out[1] = 255;
-        out[2] = 255;
-        out[3] = 255;
+        *out = dvz_color_rgb(255, 255, 255);
     }
 }
 
@@ -1797,7 +1792,7 @@ static bool _scalebar_label_layout_equal(
            fabsf(a->screen_scale - b->screen_scale) <= 1e-6f &&
            memcmp(a->label_anchor, b->label_anchor, sizeof(a->label_anchor)) == 0 &&
            a->label_size == b->label_size &&
-           memcmp(a->label_color, b->label_color, sizeof(a->label_color)) == 0 &&
+           memcmp(&a->label_color, &b->label_color, sizeof(a->label_color)) == 0 &&
            a->label_angle == b->label_angle && a->renderer == b->renderer;
 }
 
@@ -1903,11 +1898,9 @@ static bool _scalebar_prepare_overlay_visual(
         _text_panel_pixel_to_clip(annotation->panel, x1 - half_tick, y1, 0.0f, resolved.starts[2]);
         _text_panel_pixel_to_clip(annotation->panel, x1 + half_tick, y1, 0.0f, resolved.ends[2]);
     }
-    _scalebar_line_color(desc, resolved.line_colors[0]);
-    resolved.line_colors[1][0] = resolved.line_colors[2][0] = resolved.line_colors[0][0];
-    resolved.line_colors[1][1] = resolved.line_colors[2][1] = resolved.line_colors[0][1];
-    resolved.line_colors[1][2] = resolved.line_colors[2][2] = resolved.line_colors[0][2];
-    resolved.line_colors[1][3] = resolved.line_colors[2][3] = resolved.line_colors[0][3];
+    _scalebar_line_color(desc, &resolved.line_colors[0]);
+    resolved.line_colors[1] = resolved.line_colors[0];
+    resolved.line_colors[2] = resolved.line_colors[0];
     resolved.line_width[0] =
         _scalebar_positive_or_default(desc->line_width_px, DVZ_SCALEBAR_LINE_WIDTH_PX);
     resolved.line_width[1] = resolved.line_width[0];
@@ -1927,7 +1920,10 @@ static bool _scalebar_prepare_overlay_visual(
         resolved.label_position[1] += tick + label_gap;
     resolved.label_anchor[0] = 0.5f;
     resolved.label_anchor[1] = desc->label_position == DVZ_SCALEBAR_LABEL_ABOVE ? 1.0f : 0.0f;
-    _text_style_color(&desc->label_style, resolved.label_color);
+    uint8_t label_color[4] = {0};
+    _text_style_color(&desc->label_style, label_color);
+    resolved.label_color =
+        dvz_color_rgba(label_color[0], label_color[1], label_color[2], label_color[3]);
     resolved.label_angle = 0.0f;
 
     DvzScaleBarRealization* previous = &annotation->scalebar_realization;
@@ -1961,10 +1957,7 @@ static bool _scalebar_prepare_overlay_visual(
         float text_anchor[1][2] = {{resolved.label_anchor[0], resolved.label_anchor[1]}};
         float sizes[1] = {resolved.label_size};
         DvzColor text_colors[1] = {{0}};
-        text_colors[0][0] = resolved.label_color[0];
-        text_colors[0][1] = resolved.label_color[1];
-        text_colors[0][2] = resolved.label_color[2];
-        text_colors[0][3] = resolved.label_color[3];
+        text_colors[0] = resolved.label_color;
         float angles[1] = {resolved.label_angle};
         DvzVisualDataUpdate text_updates[5] = {
             {.attr_name = "position", .data = label_pos, .item_count = 1},

@@ -204,10 +204,11 @@ DvzColor* dvz_mock_color(uint32_t count, DvzAlpha alpha)
     for (uint32_t i = 0; i < count; i++)
     {
         // dvz_colormap(DVZ_CMAP_HSV, i % 256, color[i]);
-        color[i][0] = k + (dvz_rand_byte() % (256 - k));
-        color[i][1] = k + (dvz_rand_byte() % (256 - k));
-        color[i][2] = k + (dvz_rand_byte() % (256 - k));
-        color[i][3] = alpha;
+        color[i] = dvz_color_rgba(
+            k + (dvz_rand_byte() % (256 - k)), //
+            k + (dvz_rand_byte() % (256 - k)), //
+            k + (dvz_rand_byte() % (256 - k)), //
+            alpha);
     }
     return color;
 }
@@ -221,10 +222,7 @@ DvzColor* dvz_mock_monochrome(uint32_t count, DvzColor mono)
     ANN(color);
     for (uint32_t i = 0; i < count; i++)
     {
-        color[i][0] = mono[0];
-        color[i][1] = mono[1];
-        color[i][2] = mono[2];
-        color[i][3] = mono[3];
+        color[i] = mono;
     }
     return color;
 }

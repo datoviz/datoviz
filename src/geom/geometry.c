@@ -86,22 +86,16 @@ static bool _geom_allocation_valid(uint32_t count, DvzSize item_size)
  * @param color source color
  * @param out output color
  */
-static void _geom_color_or_default(const DvzColor color, DvzColor out)
+static void _geom_color_or_default(const DvzColor color, DvzColor* out)
 {
     ANN(out);
-    if (color[0] == 0 && color[1] == 0 && color[2] == 0 && color[3] == 0)
+    if (color.r == 0 && color.g == 0 && color.b == 0 && color.a == 0)
     {
-        out[0] = 255;
-        out[1] = 255;
-        out[2] = 255;
-        out[3] = 255;
+        *out = dvz_color_rgb(255, 255, 255);
         return;
     }
 
-    out[0] = color[0];
-    out[1] = color[1];
-    out[2] = color[2];
-    out[3] = color[3];
+    *out = color;
 }
 
 
@@ -124,7 +118,6 @@ static void _geom_set_vertex(
     ANN(position);
     ANN(normal);
     ANN(texcoord);
-    ANN(color);
     ASSERT(index < geometry->vertex_count);
 
     geometry->positions[index][0] = position[0];
@@ -138,10 +131,7 @@ static void _geom_set_vertex(
     geometry->texcoords[index][0] = texcoord[0];
     geometry->texcoords[index][1] = texcoord[1];
 
-    geometry->colors[index][0] = color[0];
-    geometry->colors[index][1] = color[1];
-    geometry->colors[index][2] = color[2];
-    geometry->colors[index][3] = color[3];
+    geometry->colors[index] = color;
 }
 
 
@@ -172,13 +162,9 @@ static void _geom_set_index(DvzGeometry* geometry, uint32_t index, DvzIndex valu
 static void _geom_fill_color(DvzGeometry* geometry, const DvzColor color)
 {
     ANN(geometry);
-    ANN(color);
     for (uint32_t i = 0; i < geometry->vertex_count; i++)
     {
-        geometry->colors[i][0] = color[0];
-        geometry->colors[i][1] = color[1];
-        geometry->colors[i][2] = color[2];
-        geometry->colors[i][3] = color[3];
+        geometry->colors[i] = color;
     }
 }
 
@@ -405,7 +391,7 @@ static bool _geom_sphere_counts(
  * @param color output fallback color
  */
 static void _geom_surface_grid_config(
-    const DvzGeometrySurfaceGridDesc* desc, DvzGeometrySurfaceGridDesc* out, DvzColor color)
+    const DvzGeometrySurfaceGridDesc* desc, DvzGeometrySurfaceGridDesc* out, DvzColor* color)
 {
     ANN(out);
     ANN(color);
@@ -1177,7 +1163,7 @@ DvzGeometry* dvz_geom_cube(const DvzGeometryCubeDesc* desc)
         return NULL;
 
     DvzColor color = {0};
-    _geom_color_or_default(cfg.color, color);
+    _geom_color_or_default(cfg.color, &color);
 
     DvzGeometry* geometry = dvz_geometry(DVZ_GEOM_CUBE_VERTEX_COUNT, DVZ_GEOM_CUBE_INDEX_COUNT);
     if (geometry == NULL)
@@ -1215,7 +1201,7 @@ DvzGeometry* dvz_geom_cube(const DvzGeometryCubeDesc* desc)
         const DvzColor* vertex_color = &color;
         if (cfg.face_colors != NULL)
         {
-            _geom_color_or_default(cfg.face_colors[face], face_color);
+            _geom_color_or_default(cfg.face_colors[face], &face_color);
             vertex_color = &face_color;
         }
 
@@ -1255,7 +1241,7 @@ DvzGeometry* dvz_geom_plane(const DvzGeometryPlaneDesc* desc)
         return NULL;
 
     DvzColor color = {0};
-    _geom_color_or_default(cfg.color, color);
+    _geom_color_or_default(cfg.color, &color);
 
     DvzGeometry* geometry = dvz_geometry(DVZ_GEOM_PLANE_VERTEX_COUNT, DVZ_GEOM_PLANE_INDEX_COUNT);
     if (geometry == NULL)
@@ -1319,7 +1305,7 @@ DvzGeometry* dvz_geom_sphere(const DvzGeometrySphereDesc* desc)
         return NULL;
 
     DvzColor color = {0};
-    _geom_color_or_default(cfg.color, color);
+    _geom_color_or_default(cfg.color, &color);
 
     DvzGeometry* geometry = dvz_geometry(vertex_count, index_count);
     if (geometry == NULL)
@@ -1390,7 +1376,7 @@ DvzGeometry* dvz_geom_surface_grid(const DvzGeometrySurfaceGridDesc* desc)
 
     DvzGeometrySurfaceGridDesc cfg = {0};
     DvzColor fallback_color = {0};
-    _geom_surface_grid_config(desc, &cfg, fallback_color);
+    _geom_surface_grid_config(desc, &cfg, &fallback_color);
 
     uint32_t vertex_count = 0;
     uint32_t index_count = 0;

@@ -398,7 +398,7 @@ DVZ_EXPORT bool dvz_gui_color_edit4(DvzGui* gui, const char* label, float rgba[4
  * @param flags Dear ImGui color edit flags
  * @return whether the value changed
  */
-DVZ_EXPORT bool dvz_gui_color_edit_dvz(DvzGui* gui, const char* label, DvzColor color, int flags);
+DVZ_EXPORT bool dvz_gui_color_edit_dvz(DvzGui* gui, const char* label, DvzColor* color, int flags);
 
 
 

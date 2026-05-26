@@ -73,12 +73,10 @@ static bool _polygon_allocation_valid(uint32_t count, DvzSize item_size)
  * @param dst output color
  * @param src input color
  */
-static void _polygon_color_copy(DvzColor dst, const DvzColor src)
+static void _polygon_color_copy(DvzColor* dst, const DvzColor src)
 {
-    dst[0] = src[0];
-    dst[1] = src[1];
-    dst[2] = src[2];
-    dst[3] = src[3];
+    ANN(dst);
+    *dst = src;
 }
 
 
@@ -208,14 +206,8 @@ static void _polygon_set_item_reset(DvzPolygonSetItem* item)
 static void _polygon_set_item_default_style(DvzPolygonSetItem* item)
 {
     ANN(item);
-    item->fill_color[0] = 255;
-    item->fill_color[1] = 255;
-    item->fill_color[2] = 255;
-    item->fill_color[3] = 255;
-    item->stroke_color[0] = 0;
-    item->stroke_color[1] = 0;
-    item->stroke_color[2] = 0;
-    item->stroke_color[3] = 255;
+    item->fill_color = dvz_color_rgb(255, 255, 255);
+    item->stroke_color = dvz_color_rgb(0, 0, 0);
     item->stroke_width = 1.0f;
 }
 
@@ -418,14 +410,8 @@ static DvzPolygon* _scene_alloc_polygon(DvzScene* scene)
     dvz_memset(polygon, sizeof(DvzPolygon), 0, sizeof(DvzPolygon));
     polygon->scene = scene;
     polygon->active = true;
-    polygon->fill_color[0] = 255;
-    polygon->fill_color[1] = 255;
-    polygon->fill_color[2] = 255;
-    polygon->fill_color[3] = 255;
-    polygon->stroke_color[0] = 0;
-    polygon->stroke_color[1] = 0;
-    polygon->stroke_color[2] = 0;
-    polygon->stroke_color[3] = 255;
+    polygon->fill_color = dvz_color_rgb(255, 255, 255);
+    polygon->stroke_color = dvz_color_rgb(0, 0, 0);
     polygon->stroke_width = 1.0f;
     polygon->version = 1;
     return polygon;
@@ -624,10 +610,10 @@ static int _polygon_prepare_fill(DvzPolygon* polygon, DvzVisual* fill)
         return -1;
 
     for (uint32_t i = 0; i < geometry->vertex_count; i++)
-        _polygon_color_copy(geometry->colors[i], polygon->fill_color);
+        _polygon_color_copy(&geometry->colors[i], polygon->fill_color);
 
     const int out = dvz_mesh_set_geometry(fill, geometry);
-    fill->visible = polygon->fill_color[3] > 0;
+    fill->visible = polygon->fill_color.a > 0;
     dvz_geometry_destroy(geometry);
     return out;
 }
@@ -656,7 +642,7 @@ static uint32_t _polygon_append_stroke_ring(
         positions[j][0] = (float)ring->xy[i][0];
         positions[j][1] = (float)ring->xy[i][1];
         positions[j][2] = 0.0f;
-        _polygon_color_copy(colors[j], polygon->stroke_color);
+        _polygon_color_copy(&colors[j], polygon->stroke_color);
         widths[j] = polygon->stroke_width;
     }
 
@@ -664,7 +650,7 @@ static uint32_t _polygon_append_stroke_ring(
     positions[close][0] = (float)ring->xy[0][0];
     positions[close][1] = (float)ring->xy[0][1];
     positions[close][2] = 0.0f;
-    _polygon_color_copy(colors[close], polygon->stroke_color);
+    _polygon_color_copy(&colors[close], polygon->stroke_color);
     widths[close] = polygon->stroke_width;
     return close + 1;
 }
@@ -736,7 +722,7 @@ static int _polygon_prepare_stroke(DvzPolygon* polygon, DvzVisual* stroke)
     int out = dvz_visual_set_data_many(stroke, updates, 3);
     if (out == 0)
         out = dvz_path_set_subpaths(stroke, subpath_count, lengths);
-    stroke->visible = polygon->stroke_color[3] > 0 && polygon->stroke_width > 0.0f;
+    stroke->visible = polygon->stroke_color.a > 0 && polygon->stroke_width > 0.0f;
 
     dvz_free(positions);
     dvz_free(colors);
@@ -820,7 +806,7 @@ static int _polygon_set_prepare_fill(DvzPolygonSet* set, DvzVisual* fill)
             goto error;
 
         for (uint32_t j = 0; j < geometry->vertex_count; j++)
-            _polygon_color_copy(geometry->colors[j], item->fill_color);
+            _polygon_color_copy(&geometry->colors[j], item->fill_color);
         geometries[geometry_count++] = geometry;
     }
 
@@ -874,7 +860,7 @@ static uint32_t _polygon_set_append_stroke_ring(
         positions[j][0] = (float)ring->xy[i][0];
         positions[j][1] = (float)ring->xy[i][1];
         positions[j][2] = 0.0f;
-        _polygon_color_copy(colors[j], item->stroke_color);
+        _polygon_color_copy(&colors[j], item->stroke_color);
         widths[j] = item->stroke_width;
     }
 
@@ -882,7 +868,7 @@ static uint32_t _polygon_set_append_stroke_ring(
     positions[close][0] = (float)ring->xy[0][0];
     positions[close][1] = (float)ring->xy[0][1];
     positions[close][2] = 0.0f;
-    _polygon_color_copy(colors[close], item->stroke_color);
+    _polygon_color_copy(&colors[close], item->stroke_color);
     widths[close] = item->stroke_width;
     return close + 1;
 }
@@ -1375,11 +1361,11 @@ int dvz_polygon_hole(DvzPolygon* polygon, uint32_t hole_index, uint32_t count, c
  */
 int dvz_polygon_fill_color(DvzPolygon* polygon, const DvzColor color)
 {
-    if (polygon == NULL || polygon->scene == NULL || color == NULL)
+    if (polygon == NULL || polygon->scene == NULL)
         return -1;
     if (!_scene_visual_mutation_allowed(polygon->scene, "update polygon fill color"))
         return -1;
-    _polygon_color_copy(polygon->fill_color, color);
+    _polygon_color_copy(&polygon->fill_color, color);
     polygon->version++;
     _polygon_mark_composites_dirty(polygon, true, false);
     return 0;
@@ -1396,11 +1382,11 @@ int dvz_polygon_fill_color(DvzPolygon* polygon, const DvzColor color)
  */
 int dvz_polygon_stroke_color(DvzPolygon* polygon, const DvzColor color)
 {
-    if (polygon == NULL || polygon->scene == NULL || color == NULL)
+    if (polygon == NULL || polygon->scene == NULL)
         return -1;
     if (!_scene_visual_mutation_allowed(polygon->scene, "update polygon stroke color"))
         return -1;
-    _polygon_color_copy(polygon->stroke_color, color);
+    _polygon_color_copy(&polygon->stroke_color, color);
     polygon->version++;
     _polygon_mark_composites_dirty(polygon, false, true);
     return 0;
@@ -1592,14 +1578,13 @@ int dvz_polygon_set_region_fill_color(
     DvzPolygonSet* set, uint32_t polygon_index, const DvzColor color)
 {
     if (
-        set == NULL || set->scene == NULL || color == NULL ||
-        polygon_index >= set->polygon_count)
+        set == NULL || set->scene == NULL || polygon_index >= set->polygon_count)
     {
         return -1;
     }
     if (!_scene_visual_mutation_allowed(set->scene, "update polygon set fill color"))
         return -1;
-    _polygon_color_copy(set->polygons[polygon_index].fill_color, color);
+    _polygon_color_copy(&set->polygons[polygon_index].fill_color, color);
     set->polygons[polygon_index].version++;
     set->version++;
     _polygon_set_mark_composites_dirty(set, true, false);
@@ -1620,14 +1605,13 @@ int dvz_polygon_set_region_stroke_color(
     DvzPolygonSet* set, uint32_t polygon_index, const DvzColor color)
 {
     if (
-        set == NULL || set->scene == NULL || color == NULL ||
-        polygon_index >= set->polygon_count)
+        set == NULL || set->scene == NULL || polygon_index >= set->polygon_count)
     {
         return -1;
     }
     if (!_scene_visual_mutation_allowed(set->scene, "update polygon set stroke color"))
         return -1;
-    _polygon_color_copy(set->polygons[polygon_index].stroke_color, color);
+    _polygon_color_copy(&set->polygons[polygon_index].stroke_color, color);
     set->polygons[polygon_index].version++;
     set->version++;
     _polygon_set_mark_composites_dirty(set, false, true);

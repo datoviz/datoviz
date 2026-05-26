@@ -186,10 +186,7 @@ static void _polygon_append_ring(
         geometry->texcoords[vertex][0] = 0.0;
         geometry->texcoords[vertex][1] = 0.0;
 
-        geometry->colors[vertex][0] = 255;
-        geometry->colors[vertex][1] = 255;
-        geometry->colors[vertex][2] = 255;
-        geometry->colors[vertex][3] = 255;
+        geometry->colors[vertex] = dvz_color_rgb(255, 255, 255);
     }
 
     polygon.push_back(out_ring);

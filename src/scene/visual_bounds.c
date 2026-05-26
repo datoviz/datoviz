@@ -630,10 +630,9 @@ static void _bounds_wire_append_edge(
         start[i][dim] = (float)a[dim];
         end[i][dim] = (float)b[dim];
     }
-    colors[i][0] = BOUNDS_OVERLAY_COLOR_R;
-    colors[i][1] = BOUNDS_OVERLAY_COLOR_G;
-    colors[i][2] = BOUNDS_OVERLAY_COLOR_B;
-    colors[i][3] = BOUNDS_OVERLAY_ALPHA_VISIBLE;
+    colors[i] = dvz_color_rgba(
+        BOUNDS_OVERLAY_COLOR_R, BOUNDS_OVERLAY_COLOR_G, BOUNDS_OVERLAY_COLOR_B,
+        BOUNDS_OVERLAY_ALPHA_VISIBLE);
     widths[i] = BOUNDS_OVERLAY_WIDTH_VISIBLE;
     *line_count = i + 1;
 }
@@ -838,7 +837,7 @@ static bool _bounds_overlay_sync_panel(DvzPanel* panel)
 
     for (uint32_t i = 0; i < line_count; i++)
     {
-        colors[i][3] = BOUNDS_OVERLAY_ALPHA_OCCLUDED;
+        colors[i].a = BOUNDS_OVERLAY_ALPHA_OCCLUDED;
         widths[i] = BOUNDS_OVERLAY_WIDTH_OCCLUDED;
     }
     if (visible)

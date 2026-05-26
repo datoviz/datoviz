@@ -127,7 +127,7 @@ DVZ_EXPORT DvzColormap* dvz_colormap_builtin(
  * @param out the output RGBA color
  * @return true when a color was written
  */
-DVZ_EXPORT bool dvz_colormap_sample(const DvzColormap* colormap, double t, DvzColor out);
+DVZ_EXPORT bool dvz_colormap_sample(const DvzColormap* colormap, double t, DvzColor* out);
 
 
 /**
@@ -139,7 +139,7 @@ DVZ_EXPORT bool dvz_colormap_sample(const DvzColormap* colormap, double t, DvzCo
  * @return true when a color was written
  */
 DVZ_EXPORT bool dvz_colormap_builtin_sample(
-    DvzBuiltinColormap builtin, double t, DvzColor out);
+    DvzBuiltinColormap builtin, double t, DvzColor* out);
 
 
 /**
