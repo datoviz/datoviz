@@ -7,6 +7,10 @@ It does not replace the semantic text model in [../semantics/TEXT.md](../semanti
 first rendered text slice in [../slices/TEXT_RENDERING_SLICE.md](../slices/TEXT_RENDERING_SLICE.md),
 or the rationale in [../proposals/active/TEXT_DESIGN.md](../proposals/active/TEXT_DESIGN.md).
 
+CPU-rasterized rich paragraphs and bitmap math use the separate
+[TEXT_BLOCK_BACKENDS.md](TEXT_BLOCK_BACKENDS.md) contract. They should not be forced through the
+glyph-atlas path when one texture-backed block is the simpler semantic output.
+
 
 ## Normative Status
 

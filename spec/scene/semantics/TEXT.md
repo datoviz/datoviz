@@ -21,6 +21,8 @@ The first implementation-ready rendering packet is
 
 Implementation-facing details for shaping, layout, glyph atlas resources, cache keys, and DRP2
 emission live in [../implementation/TEXT_SHAPING_ATLAS.md](../implementation/TEXT_SHAPING_ATLAS.md).
+Implementation-facing details for CPU-rasterized rich text blocks and bitmap math fallback live in
+[../implementation/TEXT_BLOCK_BACKENDS.md](../implementation/TEXT_BLOCK_BACKENDS.md).
 
 
 ## Semantic Purpose
@@ -44,6 +46,10 @@ Text content, style, placement, and semantic identity are scene concepts.
 Glyph atlas pages, glyph packing, UV coordinates, and rasterization details are runtime-resource
 details. Public scene APIs and readback/export paths must not expose atlas internals as the only
 meaning of text.
+
+CPU-rasterized text blocks are also derived runtime resources. Their texture pixels are an
+implementation output of semantic text, markup, style, layout constraints, backend capabilities, and
+DPI state; they are not the semantic source of truth.
 
 For v0.4 implementation work, `DvzText` is the semantic source of truth. Text placement,
 invalidation, diagnostics, and explanatory-object integration should be specified against retained
@@ -85,11 +91,14 @@ They should not own private atlas lifetime by default.
 Scene text content may enter at three levels:
 
 1. plain text string,
-2. shaped glyph run,
-3. structured display list from an equation or layout backend.
+2. formatted text block with optional markup and paragraph constraints,
+3. shaped glyph run,
+4. structured display list from an equation or layout backend.
 
 Plain strings are the common public path. Shaped runs and display lists exist so advanced callers
 or language bindings can bypass internal shaping without exposing atlas packing as public state.
+Formatted text blocks exist for rich annotations, captions, readouts, and bitmap math paths where a
+single logical block naturally lowers to a CPU-rasterized texture.
 
 
 ## Shaping and Layout
@@ -106,6 +115,10 @@ Rules:
 
 Equation support should be modeled as an external or frontend backend that emits a structured
 composition of glyph runs, rules, boxes, and transforms.
+
+Paragraph-style rich text may also be implemented as a CPU-raster text-block backend that emits an
+RGBA or alpha texture plus an image-like quad. This path complements glyph text; it should not
+replace the glyph visual path for many small labels.
 
 
 ## Placement Modes
@@ -334,3 +347,4 @@ The first text slice does not include:
 7. [../integration/HIGH_DPI.md](../integration/HIGH_DPI.md)
 8. [../interaction/PICKING.md](../interaction/PICKING.md)
 9. [../implementation/TEXT_SHAPING_ATLAS.md](../implementation/TEXT_SHAPING_ATLAS.md)
+10. [../implementation/TEXT_BLOCK_BACKENDS.md](../implementation/TEXT_BLOCK_BACKENDS.md)

@@ -1,6 +1,6 @@
 > **Execution Status**
 > - **Status:** `SCENE SPEC PROPOSAL`
-> - **Updated on:** `2026-05-20`
+> - **Updated on:** `2026-05-26`
 > - **Purpose:** preserve the remaining proposal-stage text decisions after the normative text,
 >   rendering-slice, and shaping/atlas contracts absorbed the durable rules.
 
@@ -42,6 +42,7 @@ scene APIs should not expose atlas UVs as the primary text model.
 | Picking | Start with object/string-level identity; glyph-level picking is deferred. |
 | DPI | Scene sizes remain logical; runtime resources patch or rebuild when DPI changes. |
 | Rendering backend | Atlas-backed glyph rendering is first; direct GPU outline rendering remains a future backend option. |
+| Text blocks | Rich paragraphs and bitmap math should use CPU-rasterized text blocks lowered as image-like quads. |
 | Equation backend | Datoviz does not implement full TeX; a frontend/backend may emit glyph runs, rules, boxes, and transforms. |
 
 
@@ -55,9 +56,12 @@ The authoritative rules now live in:
    rendering packet;
 3. [Text Shaping And Atlas](../../implementation/TEXT_SHAPING_ATLAS.md) for shaping, atlas
    resources, cache keys, and DRP2 emission;
-4. [Geometry Utilities](../../semantics/GEOMETRY_UTILITIES.md) for shared SDF/MSDF and font-atlas
+4. [Text Block Raster Backends](../../implementation/TEXT_BLOCK_BACKENDS.md) for rich paragraphs,
+   formatted annotations, bitmap math fallback, Unicode/color-glyph capability boundaries, and
+   image-like lowering;
+5. [Geometry Utilities](../../semantics/GEOMETRY_UTILITIES.md) for shared SDF/MSDF and font-atlas
    utility placement;
-5. [Annotations](../../semantics/ANNOTATIONS.md) for annotation consumers of text.
+6. [Annotations](../../semantics/ANNOTATIONS.md) for annotation consumers of text.
 
 Do not duplicate those rules here when editing nearby text.
 

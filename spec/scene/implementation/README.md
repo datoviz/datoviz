@@ -13,11 +13,13 @@ behavior instead of restating it here.
    extension steps, descriptor checklist, and validation checklist.
 2. [TEXT_SHAPING_ATLAS.md](TEXT_SHAPING_ATLAS.md): implementation-facing text shaping, layout,
    atlas, cache, and DRP2 emission contract.
-3. [GRAPH_TECHNIQUES.md](GRAPH_TECHNIQUES.md): implementation-facing graph technique, resource,
+3. [TEXT_BLOCK_BACKENDS.md](TEXT_BLOCK_BACKENDS.md): implementation-facing CPU-raster text-block
+   backend contract for rich paragraphs, formatted annotations, and bitmap math.
+4. [GRAPH_TECHNIQUES.md](GRAPH_TECHNIQUES.md): implementation-facing graph technique, resource,
    pass, material capability, and runtime guardrail contract.
-4. [OCCLUSION_EFFECTS.md](OCCLUSION_EFFECTS.md): implementation-facing SSAO, scene occlusion,
+5. [OCCLUSION_EFFECTS.md](OCCLUSION_EFFECTS.md): implementation-facing SSAO, scene occlusion,
    volume occlusion, shader feature, and validation contract.
-5. [TRANSPARENCY_MSAA.md](TRANSPARENCY_MSAA.md): implementation-facing WBOIT, depth peeling,
+6. [TRANSPARENCY_MSAA.md](TRANSPARENCY_MSAA.md): implementation-facing WBOIT, depth peeling,
    MSAA, alpha-to-coverage, and validation contract.
 
 ## Current priorities
