@@ -448,36 +448,48 @@ static void _rebuild_selection_overlay(LabelsDemoState* state)
     if (state->selected_id == 0 || !state->selection_visible)
         return;
 
-    uint32_t radius = state->outline_width > 0 ? (uint32_t)state->outline_width : 1u;
+    int radius = state->outline_width > 0 ? state->outline_width : 1;
+    radius += 2;
     for (uint32_t y = 0; y < TEX_H; y++)
     {
         for (uint32_t x = 0; x < TEX_W; x++)
         {
-            if ((DvzCategoryId)state->labels[y * TEX_W + x] != state->selected_id)
-                continue;
-
-            bool edge = false;
-            uint32_t x0 = x > radius ? x - radius : 0;
-            uint32_t y0 = y > radius ? y - radius : 0;
-            uint32_t x1 = x + radius < TEX_W ? x + radius : TEX_W - 1u;
-            uint32_t y1 = y + radius < TEX_H ? y + radius : TEX_H - 1u;
-            for (uint32_t yy = y0; yy <= y1 && !edge; yy++)
+            bool selected = (DvzCategoryId)state->labels[y * TEX_W + x] == state->selected_id;
+            int best_d2 = (radius + 1) * (radius + 1);
+            int xi = (int)x;
+            int yi = (int)y;
+            for (int dy = -radius; dy <= radius; dy++)
             {
-                for (uint32_t xx = x0; xx <= x1; xx++)
+                int yy = yi + dy;
+                if (yy < 0 || yy >= (int)TEX_H)
+                    continue;
+                for (int dx = -radius; dx <= radius; dx++)
                 {
-                    if ((DvzCategoryId)state->labels[yy * TEX_W + xx] != state->selected_id)
-                    {
-                        edge = true;
-                        break;
-                    }
+                    int xx = xi + dx;
+                    if (xx < 0 || xx >= (int)TEX_W)
+                        continue;
+                    bool other_selected =
+                        (DvzCategoryId)state->labels[(uint32_t)yy * TEX_W + (uint32_t)xx] ==
+                        state->selected_id;
+                    if (other_selected == selected)
+                        continue;
+                    int d2 = dx * dx + dy * dy;
+                    if (d2 < best_d2)
+                        best_d2 = d2;
                 }
             }
 
+            if (best_d2 > radius * radius)
+                continue;
+
+            float d = sqrtf((float)best_d2);
+            float t = 1.0f - fminf(1.0f, d / (float)radius);
+            float alpha = selected ? 42.0f + 170.0f * t : 18.0f + 210.0f * t;
             uint64_t p = 4ull * ((uint64_t)y * TEX_W + x);
             state->selection_rgba[p + 0] = 255;
-            state->selection_rgba[p + 1] = edge ? 244 : 220;
-            state->selection_rgba[p + 2] = edge ? 64 : 16;
-            state->selection_rgba[p + 3] = edge ? 245 : 48;
+            state->selection_rgba[p + 1] = 242;
+            state->selection_rgba[p + 2] = 48;
+            state->selection_rgba[p + 3] = (uint8_t)(alpha + 0.5f);
         }
     }
 }
@@ -623,12 +635,34 @@ static void _pointer_callback(DvzInputRouter* router, const DvzPointerEvent* eve
     LabelsDemoState* state = (LabelsDemoState*)user_data;
     if (state == NULL || event == NULL)
         return;
-    if (event->type != DVZ_POINTER_EVENT_MOVE && event->type != DVZ_POINTER_EVENT_CLICK)
+    if (event->type != DVZ_POINTER_EVENT_MOVE)
         return;
 
     state->hover_id = _label_at_pointer(state, event->pos[0], event->pos[1]);
-    if (event->type == DVZ_POINTER_EVENT_CLICK)
-        _select_label(state, state->hover_id);
+}
+
+
+
+/**
+ * Select labels from derived pointer-click events.
+ *
+ * @param router input router emitting the input event
+ * @param event input event payload
+ * @param user_data demo state
+ */
+static void _input_event_callback(DvzInputRouter* router, const DvzInputEvent* event, void* user_data)
+{
+    (void)router;
+    LabelsDemoState* state = (LabelsDemoState*)user_data;
+    if (state == NULL || event == NULL || event->type != DVZ_INPUT_EVENT_POINTER)
+        return;
+
+    const DvzPointerEvent* pointer = &event->content.pointer;
+    if (pointer->type != DVZ_POINTER_EVENT_CLICK)
+        return;
+
+    state->hover_id = _label_at_pointer(state, pointer->pos[0], pointer->pos[1]);
+    _select_label(state, state->hover_id);
 }
 
 
@@ -812,6 +846,7 @@ int main(int argc, char** argv)
     EXAMPLE_CHECK(panzoom != NULL, "failed to create or bind panzoom controller");
     state.panzoom = panzoom;
     dvz_input_subscribe_pointer(router, _pointer_callback, &state);
+    dvz_input_subscribe_event(router, _input_event_callback, &state);
 
     DvzGui* gui = dvz_view_gui(win, NULL);
     EXAMPLE_CHECK(gui != NULL, "dvz_view_gui() failed");
