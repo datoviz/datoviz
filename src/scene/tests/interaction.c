@@ -2521,8 +2521,15 @@ int test_scene_text_block_measure(TstContext* suite, const TstCase* item)
     _scene_text_block_init(&italic, "<i>italic</i>");
     AT(_scene_text_block_parse(&italic) == 0);
     AT(_scene_text_block_measure(&italic, &ft_layout) == 0);
-    AT((italic.layout_style_flags[0] & DVZ_TEXT_BLOCK_STYLE_ITALIC) == 0);
-    AT(italic.diagnostic[0] != '\0');
+    if (italic.layout_fonts[DVZ_TEXT_BLOCK_FACE_ITALIC] != NULL)
+    {
+        AT((italic.layout_style_flags[0] & DVZ_TEXT_BLOCK_STYLE_ITALIC) != 0);
+    }
+    else
+    {
+        AT((italic.layout_style_flags[0] & DVZ_TEXT_BLOCK_STYLE_ITALIC) == 0);
+        AT(italic.diagnostic[0] != '\0');
+    }
 
     _scene_text_block_destroy(&narrow);
     _scene_text_block_destroy(&wide);
