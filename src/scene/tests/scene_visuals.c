@@ -2884,9 +2884,9 @@ int test_scene_mesh_geometry_upload(TstContext* suite, const TstCase* item)
 
     DvzVisualDataView color_view = {0};
     AT(dvz_visual_data(visual, "color", &color_view) == 0);
-    const DvzColor* stored_colors = color_view.data;
-    AT(stored_colors[0][0] == 255);
-    AT(stored_colors[1][1] == 255);
+    const uint8_t* stored_colors = color_view.data;
+    AT(stored_colors[0] == 255);
+    AT(stored_colors[5] == 255);
 
     DvzVisualDataView texcoord_view = {0};
     AT(dvz_visual_data(visual, "texcoords", &texcoord_view) == 0);
@@ -2968,11 +2968,11 @@ int test_scene_polygon_composite(TstContext* suite, const TstCase* item)
 
     DvzVisualDataView fill_color_view = {0};
     AT(dvz_visual_data(fill, "color", &fill_color_view) == 0);
-    const DvzColor* fill_colors = fill_color_view.data;
-    AT(fill_colors[0][0] == fill_color[0]);
-    AT(fill_colors[0][1] == fill_color[1]);
-    AT(fill_colors[0][2] == fill_color[2]);
-    AT(fill_colors[0][3] == fill_color[3]);
+    const uint8_t* fill_colors = fill_color_view.data;
+    AT(fill_colors[0] == fill_color[0]);
+    AT(fill_colors[1] == fill_color[1]);
+    AT(fill_colors[2] == fill_color[2]);
+    AT(fill_colors[3] == fill_color[3]);
 
     DvzVisualDataView stroke_position_view = {0};
     AT(dvz_visual_data(stroke, "position", &stroke_position_view) == 0);
@@ -3017,9 +3017,9 @@ int test_scene_polygon_composite(TstContext* suite, const TstCase* item)
     _scene_prepare_composite_visuals(figure);
     AT(dvz_visual_data(fill, "color", &fill_color_view) == 0);
     fill_colors = fill_color_view.data;
-    AT(fill_colors[0][0] == fill_update[0]);
-    AT(fill_colors[0][1] == fill_update[1]);
-    AT(fill_colors[0][2] == fill_update[2]);
+    AT(fill_colors[0] == fill_update[0]);
+    AT(fill_colors[1] == fill_update[1]);
+    AT(fill_colors[2] == fill_update[2]);
 
     const dvec2 hole[4] = {
         {0.25, 0.25},
@@ -3104,11 +3104,11 @@ int test_scene_polygon_set_composite(TstContext* suite, const TstCase* item)
 
     DvzVisualDataView color_view = {0};
     AT(dvz_visual_data(fill, "color", &color_view) == 0);
-    const DvzColor* colors = color_view.data;
-    AT(colors[0][0] == red[0]);
-    AT(colors[0][1] == red[1]);
-    AT(colors[4][0] == green[0]);
-    AT(colors[4][1] == green[1]);
+    const uint8_t* colors = color_view.data;
+    AT(colors[0] == red[0]);
+    AT(colors[1] == red[1]);
+    AT(colors[16] == green[0]);
+    AT(colors[17] == green[1]);
 
     DvzVisualDataView stroke_position_view = {0};
     AT(dvz_visual_data(stroke, "position", &stroke_position_view) == 0);
@@ -3154,9 +3154,9 @@ int test_scene_polygon_set_composite(TstContext* suite, const TstCase* item)
     _scene_prepare_composite_visuals(figure);
     AT(dvz_visual_data(fill, "color", &color_view) == 0);
     colors = color_view.data;
-    AT(colors[4][0] == blue[0]);
-    AT(colors[4][1] == blue[1]);
-    AT(colors[4][2] == blue[2]);
+    AT(colors[16] == blue[0]);
+    AT(colors[17] == blue[1]);
+    AT(colors[18] == blue[2]);
 
     dvz_scene_destroy(scene);
     return 0;

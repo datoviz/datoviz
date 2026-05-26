@@ -364,11 +364,11 @@ int test_scene_legend_prepare_visuals(TstContext* suite, const TstCase* item)
     DvzVisualDataView color_view = {0};
     AT(dvz_visual_data(legend->mark_visual, "color", &color_view) == 0);
     AT(color_view.item_count == 3);
-    const DvzColor* colors = (const DvzColor*)color_view.data;
+    const uint8_t* colors = color_view.data;
     ANN(colors);
-    AT(colors[0][1] == 220);
-    AT(colors[1][0] == 220);
-    AT(colors[2][2] == 220);
+    AT(colors[1] == 220);
+    AT(colors[4] == 220);
+    AT(colors[10] == 220);
 
     DvzVisualDataView position_view = {0};
     AT(dvz_visual_data(legend->mark_visual, "position", &position_view) == 0);
@@ -1011,10 +1011,10 @@ int test_scene_colorbar_updates_retained_visuals(TstContext* suite, const TstCas
 
     DvzVisualDataView ramp_color = {0};
     AT(dvz_visual_data(colorbar->ramp_visual, "color", &ramp_color) == 0);
-    const DvzColor* colors = (const DvzColor*)ramp_color.data;
+    const uint8_t* colors = ramp_color.data;
     ANN(colors);
-    AT(colors[0][2] == 255);
-    AT(colors[ramp_color.item_count - 1][0] == 255);
+    AT(colors[2] == 255);
+    AT(colors[4 * (ramp_color.item_count - 1)] == 255);
 
     dvz_scale_set_domain(scale, -10.0, 10.0);
     dvz_colorbar_set_title(colorbar, "Updated");
@@ -1031,12 +1031,12 @@ int test_scene_colorbar_updates_retained_visuals(TstContext* suite, const TstCas
     dvz_colormap_set_stops(colormap, stops1, 2);
     _scene_prepare_colorbar_visuals(figure, NULL);
     AT(dvz_visual_data(colorbar->ramp_visual, "color", &ramp_color) == 0);
-    colors = (const DvzColor*)ramp_color.data;
+    colors = ramp_color.data;
     ANN(colors);
-    AT(colors[0][1] == 255);
-    AT(colors[0][2] == 0);
-    AT(colors[ramp_color.item_count - 1][0] == 255);
-    AT(colors[ramp_color.item_count - 1][1] == 255);
+    AT(colors[1] == 255);
+    AT(colors[2] == 0);
+    AT(colors[4 * (ramp_color.item_count - 1)] == 255);
+    AT(colors[4 * (ramp_color.item_count - 1) + 1] == 255);
 
     DvzVisual* ramp = colorbar->ramp_visual;
     DvzVisual* ticks = colorbar->tick_visual;
@@ -1792,14 +1792,14 @@ int test_scene_volume_visual_binds_3d_field(TstContext* suite, const TstCase* it
     AT(dvz_visual_data(volume, "texcoords", &texcoord_view) == 0);
     AT(position_view.item_count == 36);
     AT(texcoord_view.item_count == 36);
-    const vec3* positions = (const vec3*)position_view.data;
-    const vec3* texcoords = (const vec3*)texcoord_view.data;
+    const float* positions = position_view.data;
+    const float* texcoords = texcoord_view.data;
     ANN(positions);
     ANN(texcoords);
-    AT(positions[0][2] == -1.0f);
-    AT(positions[11][2] == +1.0f);
-    AT(texcoords[0][2] == 0.0f);
-    AT(texcoords[11][2] == 1.0f);
+    AT(positions[2] == -1.0f);
+    AT(positions[11 * 3 + 2] == +1.0f);
+    AT(texcoords[2] == 0.0f);
+    AT(texcoords[11 * 3 + 2] == 1.0f);
 
     DvzSampledField* field3d = dvz_sampled_field(
         scene, &(DvzSampledFieldDesc){

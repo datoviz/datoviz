@@ -1347,10 +1347,10 @@ int test_scene_text_semantic_object_realization(TstContext* suite, const TstCase
     AT(text->dirty_flags == DVZ_TEXT_DIRTY_NONE);
     DvzVisualDataView position_view = {0};
     AT(dvz_visual_data(text->visual, "position", &position_view) == 0);
-    const vec3* positions = (const vec3*)position_view.data;
+    const float* positions = position_view.data;
     ANN(positions);
-    AC(positions[0][0], -0.96875f, 1e-6f);
-    AC(positions[0][1], 0.9166667f, 1e-6f);
+    AC(positions[0], -0.96875f, 1e-6f);
+    AC(positions[1], 0.9166667f, 1e-6f);
 
     dvz_text_set_placement(
         text,
@@ -1363,10 +1363,10 @@ int test_scene_text_semantic_object_realization(TstContext* suite, const TstCase
         });
     _scene_prepare_text_visuals(figure);
     AT(dvz_visual_data(text->visual, "position", &position_view) == 0);
-    positions = (const vec3*)position_view.data;
+    positions = position_view.data;
     ANN(positions);
-    AC(positions[0][0], 0.25f, 1e-6f);
-    AC(positions[0][1], -0.5f, 1e-6f);
+    AC(positions[0], 0.25f, 1e-6f);
+    AC(positions[1], -0.5f, 1e-6f);
     AT(text->visual->depth_test_enabled);
     bool found_data_attach = false;
     for (uint32_t i = 0; i < panel->visual_count; i++)
