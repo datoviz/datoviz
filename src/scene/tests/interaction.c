@@ -416,6 +416,47 @@ int test_scene_overlay_card_public_api(TstContext* suite, const TstCase* item)
     AT(card->card.background_visual->visible);
     AT(card->card.text_visual->visible);
     AT(card->card.text_visual->text.glyph_visual->visible);
+    const DvzVisualAttr* glyph_position =
+        _interaction_visual_attr(card->card.text_visual->text.glyph_visual, "position");
+    const DvzVisualAttr* glyph_bounds =
+        _interaction_visual_attr(card->card.text_visual->text.glyph_visual, "bounds");
+    const DvzVisualAttr* glyph_texcoords =
+        _interaction_visual_attr(card->card.text_visual->text.glyph_visual, "texcoords");
+    const DvzVisualAttr* glyph_color =
+        _interaction_visual_attr(card->card.text_visual->text.glyph_visual, "color");
+    const DvzVisualAttr* glyph_angle =
+        _interaction_visual_attr(card->card.text_visual->text.glyph_visual, "angle");
+    ANN(glyph_position);
+    ANN(glyph_bounds);
+    ANN(glyph_texcoords);
+    ANN(glyph_color);
+    ANN(glyph_angle);
+    AT(glyph_position->item_count == style.max_text_chars * 6u);
+    AT(glyph_bounds->item_count == glyph_position->item_count);
+    AT(glyph_texcoords->item_count == glyph_position->item_count);
+    AT(glyph_color->item_count == glyph_position->item_count);
+    AT(glyph_angle->item_count == glyph_position->item_count);
+
+    const uint32_t live_vertices = (uint32_t)strlen("overlay") * 6u;
+    const float* positions = (const float*)glyph_position->data;
+    const float* bounds = (const float*)glyph_bounds->data;
+    const float* texcoords = (const float*)glyph_texcoords->data;
+    const uint8_t* colors = (const uint8_t*)glyph_color->data;
+    const float* angles = (const float*)glyph_angle->data;
+    bool padding_zero = true;
+    for (uint32_t i = live_vertices; i < glyph_position->item_count; i++)
+    {
+        padding_zero =
+            padding_zero && positions[3 * i + 0] == 0.0f && positions[3 * i + 1] == 0.0f &&
+            positions[3 * i + 2] == 0.0f && bounds[4 * i + 0] == 0.0f &&
+            bounds[4 * i + 1] == 0.0f && bounds[4 * i + 2] == 0.0f &&
+            bounds[4 * i + 3] == 0.0f && texcoords[4 * i + 0] == 0.0f &&
+            texcoords[4 * i + 1] == 0.0f && texcoords[4 * i + 2] == 0.0f &&
+            texcoords[4 * i + 3] == 0.0f && colors[4 * i + 0] == 0u &&
+            colors[4 * i + 1] == 0u && colors[4 * i + 2] == 0u &&
+            colors[4 * i + 3] == 0u && angles[i] == 0.0f;
+    }
+    AT(padding_zero);
     AT(card->card.realized_rect_px[0] > 560.0f);
     AC(card->card.realized_rect_px[1], 6.0f, 1e-6f);
 

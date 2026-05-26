@@ -2451,17 +2451,20 @@ static bool _text_visual_prepare(
         return false;
     }
     uint32_t vertex_count_max = (uint32_t)vertex_count64;
+    uint32_t allocation_vertex_count = vertex_count_max;
+    if (visual->text.reserved_glyph_vertices > allocation_vertex_count)
+        allocation_vertex_count = visual->text.reserved_glyph_vertices;
 
     uint64_t position_bytes = 0;
     uint64_t bounds_bytes = 0;
     uint64_t texcoord_bytes = 0;
     uint64_t color_bytes = 0;
     uint64_t angle_bytes = 0;
-    if (_dvz_mul_u64_overflows(vertex_count_max, 3u * sizeof(float), &position_bytes) ||
-        _dvz_mul_u64_overflows(vertex_count_max, 4u * sizeof(float), &bounds_bytes) ||
-        _dvz_mul_u64_overflows(vertex_count_max, 4u * sizeof(float), &texcoord_bytes) ||
-        _dvz_mul_u64_overflows(vertex_count_max, 4u * sizeof(uint8_t), &color_bytes) ||
-        _dvz_mul_u64_overflows(vertex_count_max, sizeof(float), &angle_bytes) ||
+    if (_dvz_mul_u64_overflows(allocation_vertex_count, 3u * sizeof(float), &position_bytes) ||
+        _dvz_mul_u64_overflows(allocation_vertex_count, 4u * sizeof(float), &bounds_bytes) ||
+        _dvz_mul_u64_overflows(allocation_vertex_count, 4u * sizeof(float), &texcoord_bytes) ||
+        _dvz_mul_u64_overflows(allocation_vertex_count, 4u * sizeof(uint8_t), &color_bytes) ||
+        _dvz_mul_u64_overflows(allocation_vertex_count, sizeof(float), &angle_bytes) ||
         position_bytes > SIZE_MAX || bounds_bytes > SIZE_MAX || texcoord_bytes > SIZE_MAX ||
         color_bytes > SIZE_MAX || angle_bytes > SIZE_MAX)
     {
