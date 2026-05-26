@@ -55,19 +55,21 @@ integer semantic. Accepted first-slice formats are:
 
 ```text
 R8_UINT, R16_UINT, R32_UINT
+R8_SINT, R16_SINT, R32_SINT
 ```
 
-Signed integer formats may be accepted later if a real dataset requires them, but the initial label
-path should prefer unsigned IDs.
+Signed integer formats are required because real segmentation datasets may use negative IDs. The
+default background ID remains `0`, but applications may set a negative background ID when their
+data uses one.
 
 Labels-specific setters should configure presentation behavior, not semantic label colors:
 
 ```c
 int dvz_labels_set_opacity(DvzVisual* labels, float opacity);
-int dvz_labels_set_background(DvzVisual* labels, uint64_t label_id);
-int dvz_labels_set_selected(DvzVisual* labels, uint64_t label_id);
+int dvz_labels_set_background(DvzVisual* labels, DvzCategoryId label_id);
+int dvz_labels_set_selected(DvzVisual* labels, DvzCategoryId label_id);
 int dvz_labels_clear_selected(DvzVisual* labels);
-int dvz_labels_set_hidden(DvzVisual* labels, const uint64_t* ids, uint32_t count);
+int dvz_labels_set_hidden(DvzVisual* labels, const DvzCategoryId* ids, uint32_t count);
 int dvz_labels_set_boundary(DvzVisual* labels, bool enabled, float width_px, DvzColor color);
 int dvz_labels_set_fallback_seed(DvzVisual* labels, uint32_t seed);
 ```
@@ -97,22 +99,26 @@ DvzScale* scale = dvz_scale(scene, &(DvzScaleDesc){
 DvzScaleCategory categories[] = {
     {.category_id = 17, .order = 0, .label = "cell 17", .color = {255, 0, 0, 180}},
     {.category_id = 42, .order = 1, .label = "cell 42", .color = {0, 255, 0, 180}},
+    {.category_id = -1, .order = 2, .label = "unassigned", .color = {128, 128, 128, 120}},
 };
 
-dvz_scale_set_categories(scale, categories, 2);
+dvz_scale_set_categories(scale, categories, 3);
 dvz_visual_set_scale(labels, "labels", scale);
 ```
 
-The current `DvzScaleCategory.category_id` is `int32_t`, which is too narrow and signed for
-arbitrary `R32_UINT` labels. The labels work should introduce a shared semantic ID type, for
-example:
+The current `DvzScaleCategory.category_id` is `int32_t`, which cannot represent arbitrary
+`R32_UINT` labels and is too narrow for one shared category identity type. The labels work should
+introduce a signed shared semantic ID type so negative dataset IDs are preserved without remapping,
+while large unsigned `R32_UINT` IDs still fit:
 
 ```c
-typedef uint64_t DvzCategoryId;
+typedef int64_t DvzCategoryId;
 ```
 
 Use this type consistently in scale categories, label visual state, probe results, legends, and
-serialization. The GPU shader path can validate that a category ID fits the bound texture format.
+serialization. The GPU shader path must validate that a category ID fits the bound texture format.
+For example, `-1` is valid for `R8_SINT`, `R16_SINT`, and `R32_SINT`, but invalid for `R*_UINT`;
+`4000000000` is valid for `R32_UINT`, but invalid for `R32_SINT`.
 
 Scale mutation needs efficient batch and patch APIs. Prefer adding scale-level APIs rather than
 visual color setters:
@@ -170,21 +176,23 @@ should be a sorted sparse style buffer:
 ```c
 typedef struct DvzLabelGpuStyle
 {
-    uint32_t label_id_lo;
-    uint32_t label_id_hi;
+    uint32_t label_id_bits; /* raw integer payload in the bound texture format */
     uint32_t rgba;      /* packed RGBA8 */
     uint32_t flags;     /* hidden, selected, reserved */
+    uint32_t reserved;
 } DvzLabelGpuStyle;
 ```
 
 The shader performs binary search over the sorted style table. This is compact, deterministic, and
 simple enough for the first implementation: 1024 styles require about ten comparisons, and 4096
-styles require about twelve.
+styles require about twelve. The scene lowers `DvzCategoryId` values to `label_id_bits` only after
+validating them against the bound texture format. Sort order is format-specific: signed integer
+textures sort by signed value, and unsigned integer textures sort by unsigned value.
 
 Dense palettes should be an internal optimization only when the renderer proves the IDs are compact
-enough. They are useful for `uint8`, small `uint16`, or pre-compacted labels, but they must not be
-the user-visible semantic model. A GPU hash table is a later optimization for very large explicit
-style sets, not the first design.
+enough. They are useful for `uint8`, `int8`, small 16-bit formats, or pre-compacted labels, but
+they must not be the user-visible semantic model. A GPU hash table is a later optimization for very
+large explicit style sets, not the first design.
 
 Unknown IDs use deterministic hash coloring. Users should not have to provide every label color.
 Hash-color inputs should include the label ID and a visual-local fallback seed so separate views can
@@ -253,7 +261,8 @@ Use integer texture fetch:
 id = textureLoad(labels_tex, pixel_coord).r
 ```
 
-or GLSL equivalent `texelFetch()` with `usampler2D` / `usampler3D`.
+or GLSL equivalent `texelFetch()` with `usampler2D` / `usampler3D` for unsigned formats and
+`isampler2D` / `isampler3D` for signed formats.
 
 Do not use normalized floating-point `sampler2D` texture filtering for label IDs. The shader should
 derive integer texel coordinates from the interpolated UV and texture extent, then fetch exact IDs.
@@ -307,7 +316,8 @@ the final path.
 
 The labels visual should harden these lower-layer capabilities:
 
-1. typed integer 2D and 3D texture creation and upload for `R8_UINT`, `R16_UINT`, and `R32_UINT`;
+1. typed integer 2D and 3D texture creation and upload for `R8_UINT`, `R16_UINT`, `R32_UINT`,
+   `R8_SINT`, `R16_SINT`, and `R32_SINT`;
 2. frame-plan upload metadata carrying non-RGBA texel sizes and texture formats;
 3. runtime bind layouts for integer sampled textures plus uniform/storage style resources;
 4. exact texel fetch shaders in GLSL and WGSL;
@@ -319,7 +329,8 @@ The labels visual should harden these lower-layer capabilities:
 ## Implementation Phases
 
 1. Add the public visual family enum/type, state structs, validation, and API stubs.
-2. Introduce `DvzCategoryId` and migrate categorical scale/probe/legend paths that need label IDs.
+2. Introduce signed `DvzCategoryId` and migrate categorical scale/probe/legend paths that need
+   label IDs.
 3. Implement 2D label rendering with integer texture fetch, background transparency, opacity, and
    hash fallback colors.
 4. Lower categorical scale entries to a sorted sparse GPU style buffer and add scale patch APIs.
