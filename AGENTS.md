@@ -25,11 +25,11 @@ When refactoring, do NOT delete existing comments, keep them and update them if 
 Commit safety:
 
 * Do NOT commit changes inside the `data` submodule, or commit large binary files anywhere in the
-  repository, without explicit approval from Cyrille for that specific commit.
-* Treat `M data`, `? data`, or any staged `data` gitlink update as a stop sign unless Cyrille has
+  repository, without explicit user approval for that specific commit.
+* Treat `M data`, `? data`, or any staged `data` gitlink update as a stop sign unless the user has
   explicitly approved a data-submodule commit/pointer update in the current turn.
 * Do NOT stage or commit generated/runtime binary payloads such as `libs/vulkan/`, `*.dylib`,
-  `*.so`, `*.dll`, `*.npy`, `*.npz`, or `.DS_Store` unless Cyrille explicitly approves those exact
+  `*.so`, `*.dll`, `*.npy`, `*.npz`, or `.DS_Store` unless the user explicitly approves those exact
   files in the current turn.
 * Before committing, run `git status --short` and verify the staged set excludes unapproved data,
   vendored runtime libraries, and large binary assets.
