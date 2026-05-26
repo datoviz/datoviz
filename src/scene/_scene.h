@@ -692,6 +692,8 @@ struct DvzPinnedReadout
     DvzProbeResult probe;
     bool has_format;
     DvzSceneFormatState format;
+    char text[DVZ_SCENE_LABEL_SIZE];
+    bool dirty;
 };
 
 

@@ -16,6 +16,7 @@
 
 #include <inttypes.h>
 #include <math.h>
+#include <string.h>
 
 #include "_assertions.h"
 #include "_compat.h"
@@ -296,11 +297,35 @@ int test_scene_pick_probe_queues_and_pinned_readout(TstContext* suite, const Tst
     ANN(readout);
     AT(panel->pinned_readout_count == 1);
     AT(readout->probe.scalar == 3.5);
+    AT(strcmp(readout->text, "density: 3.5") == 0);
+    AT(readout->dirty);
+    readout->dirty = false;
     dvz_pinned_readout_set_format(
         readout, &(DvzFormatDesc){.precision = 2, .suffix = " u"});
     AT(readout->has_format);
     AT(strcmp(readout->format.suffix, " u") == 0);
+    AT(strcmp(readout->text, "density: 3.50 u") == 0);
+    AT(readout->dirty);
+
+    DvzProbeResult rgba_probe = {
+        .request_id = 7,
+        .hit = true,
+        .panel_id = 1,
+        .visual_id = 3,
+        .target = DVZ_SCENE_TARGET_PIXEL,
+        .target_id = 3,
+        .value_kind = DVZ_PROBE_VALUE_VEC4,
+        .vector = {0.25, 0.5, 1.0, 0.75},
+    };
+    dvz_snprintf(rgba_probe.label, sizeof(rgba_probe.label), "%s", "rgba");
+    DvzPinnedReadout* rgba_readout = dvz_pinned_readout(panel, &rgba_probe);
+    ANN(rgba_readout);
+    AT(panel->pinned_readout_count == 2);
+    AT(strcmp(rgba_readout->text, "rgba: 0.25 0.5 1 0.75") == 0);
+
     dvz_pinned_readout_destroy(readout);
+    AT(panel->pinned_readout_count == 1);
+    dvz_pinned_readout_destroy(rgba_readout);
     AT(panel->pinned_readout_count == 0);
 
     dvz_scene_destroy(scene);

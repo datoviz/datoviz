@@ -16,6 +16,7 @@
 
 #include <stdbool.h>
 #include <stdint.h>
+#include <string.h>
 
 #include "_alloc.h"
 #include "_assertions.h"
@@ -51,6 +52,11 @@ static bool _selection_matches_visual_item(
 static int _selection_sync_visual_mask(DvzSelection* selection, DvzVisual* visual);
 
 static int _selection_sync_masks(DvzSelection* selection);
+
+static void _readout_format_value(
+    const DvzSceneFormatState* format, double value, char* out, uint32_t out_size);
+
+static void _readout_refresh_text(DvzPinnedReadout* readout);
 
 
 
@@ -290,6 +296,132 @@ static int _selection_sync_masks(DvzSelection* selection)
             res = -1;
     }
     return res;
+}
+
+
+
+/**
+ * Format one numeric value for a readout label.
+ *
+ * @param format retained formatting state
+ * @param value numeric value
+ * @param out output text buffer
+ * @param out_size output text buffer size
+ */
+static void _readout_format_value(
+    const DvzSceneFormatState* format, double value, char* out, uint32_t out_size)
+{
+    ANN(out);
+    if (out_size == 0)
+        return;
+
+    DvzSceneFormatState default_format = {
+        .precision = 3,
+        .trim_trailing_zeros = true,
+    };
+    if (format == NULL)
+        format = &default_format;
+
+    int32_t precision = format->precision;
+    if (precision < 0)
+        precision = 0;
+    if (precision > 12)
+        precision = 12;
+
+    char value_str[64] = {0};
+    if (format->scientific)
+        dvz_snprintf(value_str, sizeof(value_str), "%.*e", precision, value);
+    else
+        dvz_snprintf(value_str, sizeof(value_str), "%.*f", precision, value);
+
+    if (format->trim_trailing_zeros && !format->scientific)
+    {
+        char* dot = strchr(value_str, '.');
+        if (dot != NULL)
+        {
+            char* end = value_str + strlen(value_str);
+            while (end > dot + 1 && end[-1] == '0')
+                *(--end) = '\0';
+            if (end > dot && end[-1] == '.')
+                *(--end) = '\0';
+        }
+    }
+
+    if (format->show_unit && format->unit[0] != '\0')
+    {
+        dvz_snprintf(
+            out, out_size, "%s%s %s%s", format->prefix, value_str, format->unit,
+            format->suffix);
+    }
+    else
+    {
+        dvz_snprintf(out, out_size, "%s%s%s", format->prefix, value_str, format->suffix);
+    }
+}
+
+
+
+/**
+ * Refresh the cached display text for one pinned readout.
+ *
+ * @param readout the pinned readout
+ */
+static void _readout_refresh_text(DvzPinnedReadout* readout)
+{
+    ANN(readout);
+    const DvzProbeResult* probe = &readout->probe;
+    const char* label = probe->label[0] != '\0' ? probe->label : "value";
+
+    DvzSceneFormatState probe_format = {
+        .precision = 3,
+        .trim_trailing_zeros = true,
+    };
+    const DvzSceneFormatState* format = readout->has_format ? &readout->format : &probe_format;
+    if (!readout->has_format && probe->unit[0] != '\0')
+    {
+        probe_format.show_unit = true;
+        dvz_strlcpy(probe_format.unit, probe->unit, sizeof(probe_format.unit));
+    }
+
+    char value[4][64] = {{0}};
+    switch (probe->value_kind)
+    {
+    case DVZ_PROBE_VALUE_SCALAR:
+        _readout_format_value(format, probe->scalar, value[0], sizeof(value[0]));
+        dvz_snprintf(readout->text, sizeof(readout->text), "%s: %s", label, value[0]);
+        break;
+
+    case DVZ_PROBE_VALUE_VEC2:
+        for (uint32_t i = 0; i < 2; i++)
+            _readout_format_value(format, probe->vector[i], value[i], sizeof(value[i]));
+        dvz_snprintf(
+            readout->text, sizeof(readout->text), "%s: %s %s", label, value[0], value[1]);
+        break;
+
+    case DVZ_PROBE_VALUE_VEC3:
+        for (uint32_t i = 0; i < 3; i++)
+            _readout_format_value(format, probe->vector[i], value[i], sizeof(value[i]));
+        dvz_snprintf(
+            readout->text, sizeof(readout->text), "%s: %s %s %s", label, value[0], value[1],
+            value[2]);
+        break;
+
+    case DVZ_PROBE_VALUE_VEC4:
+        for (uint32_t i = 0; i < 4; i++)
+            _readout_format_value(format, probe->vector[i], value[i], sizeof(value[i]));
+        dvz_snprintf(
+            readout->text, sizeof(readout->text), "%s: %s %s %s %s", label, value[0], value[1],
+            value[2], value[3]);
+        break;
+
+    case DVZ_PROBE_VALUE_LABEL:
+        dvz_snprintf(readout->text, sizeof(readout->text), "%s", probe->label);
+        break;
+
+    default:
+        dvz_snprintf(readout->text, sizeof(readout->text), "%s: n/a", label);
+        break;
+    }
 }
 
 
@@ -726,7 +858,10 @@ DvzPinnedReadout* dvz_pinned_readout(DvzPanel* panel, const DvzProbeResult* prob
     readout->scene = scene;
     readout->panel = panel;
     readout->probe = *probe;
+    _readout_refresh_text(readout);
+    readout->dirty = true;
     panel->pinned_readouts[panel->pinned_readout_count++] = readout;
+    _scene_notify_request_frame(panel->figure);
     return readout;
 }
 
@@ -758,6 +893,8 @@ void dvz_pinned_readout_destroy(DvzPinnedReadout* readout)
     readout->scene = NULL;
     readout->panel = NULL;
     readout->has_format = false;
+    readout->text[0] = '\0';
+    readout->dirty = false;
 }
 
 
@@ -773,4 +910,7 @@ void dvz_pinned_readout_set_format(DvzPinnedReadout* readout, const DvzFormatDes
     ANN(readout);
     readout->has_format = format != NULL;
     _scene_format_state_copy(&readout->format, format);
+    _readout_refresh_text(readout);
+    readout->dirty = true;
+    _scene_notify_request_frame(readout->panel != NULL ? readout->panel->figure : NULL);
 }
