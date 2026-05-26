@@ -60,11 +60,11 @@ static bool _mesh_geometry_f32_valid(double value)
 /**
  * Return whether one geometry position array is valid for upload.
  *
- * @param values F64 3-vector array
+ * @param values flattened F64 3-vector array
  * @param count number of items
  * @return whether all values are valid
  */
-static bool _mesh_geometry_dvec3_valid(const dvec3* values, uint32_t count)
+static bool _mesh_geometry_dvec3_valid(const double* values, uint32_t count)
 {
     if (values == NULL)
         return false;
@@ -73,7 +73,7 @@ static bool _mesh_geometry_dvec3_valid(const dvec3* values, uint32_t count)
     {
         for (uint32_t j = 0; j < 3; j++)
         {
-            if (!_mesh_geometry_f32_valid(values[i][j]))
+            if (!_mesh_geometry_f32_valid(values[(size_t)3 * i + j]))
                 return false;
         }
     }
@@ -85,11 +85,11 @@ static bool _mesh_geometry_dvec3_valid(const dvec3* values, uint32_t count)
 /**
  * Return whether one optional geometry texcoord array is valid for upload.
  *
- * @param values F64 2-vector array
+ * @param values flattened F64 2-vector array
  * @param count number of items
  * @return whether all values are valid
  */
-static bool _mesh_geometry_dvec2_valid(const dvec2* values, uint32_t count)
+static bool _mesh_geometry_dvec2_valid(const double* values, uint32_t count)
 {
     if (values == NULL)
         return false;
@@ -98,7 +98,7 @@ static bool _mesh_geometry_dvec2_valid(const dvec2* values, uint32_t count)
     {
         for (uint32_t j = 0; j < 2; j++)
         {
-            if (!_mesh_geometry_f32_valid(values[i][j]))
+            if (!_mesh_geometry_f32_valid(values[(size_t)2 * i + j]))
                 return false;
         }
     }
@@ -111,16 +111,16 @@ static bool _mesh_geometry_dvec2_valid(const dvec2* values, uint32_t count)
  * Copy a F64 3-vector array into a F32 3-vector array.
  *
  * @param out output F32 vectors
- * @param in input F64 vectors
+ * @param in flattened input F64 vectors
  * @param count number of items
  */
-static void _mesh_geometry_copy_dvec3(vec3* out, const dvec3* in, uint32_t count)
+static void _mesh_geometry_copy_dvec3(vec3* out, const double* in, uint32_t count)
 {
     for (uint32_t i = 0; i < count; i++)
     {
-        out[i][0] = (float)in[i][0];
-        out[i][1] = (float)in[i][1];
-        out[i][2] = (float)in[i][2];
+        out[i][0] = (float)in[(size_t)3 * i + 0];
+        out[i][1] = (float)in[(size_t)3 * i + 1];
+        out[i][2] = (float)in[(size_t)3 * i + 2];
     }
 }
 
@@ -130,15 +130,15 @@ static void _mesh_geometry_copy_dvec3(vec3* out, const dvec3* in, uint32_t count
  * Copy a F64 2-vector array into a F32 2-vector array.
  *
  * @param out output F32 vectors
- * @param in input F64 vectors
+ * @param in flattened input F64 vectors
  * @param count number of items
  */
-static void _mesh_geometry_copy_dvec2(vec2* out, const dvec2* in, uint32_t count)
+static void _mesh_geometry_copy_dvec2(vec2* out, const double* in, uint32_t count)
 {
     for (uint32_t i = 0; i < count; i++)
     {
-        out[i][0] = (float)in[i][0];
-        out[i][1] = (float)in[i][1];
+        out[i][0] = (float)in[(size_t)2 * i + 0];
+        out[i][1] = (float)in[(size_t)2 * i + 1];
     }
 }
 
@@ -171,11 +171,15 @@ int dvz_mesh_set_geometry(DvzVisual* visual, const DvzGeometry* geometry)
         return -1;
     }
 
-    if (!_mesh_geometry_dvec3_valid(geometry->positions, vertex_count))
+    if (!_mesh_geometry_dvec3_valid(&geometry->positions[0][0], vertex_count))
         return -1;
-    if (geometry->normals != NULL && !_mesh_geometry_dvec3_valid(geometry->normals, vertex_count))
+    if (
+        geometry->normals != NULL &&
+        !_mesh_geometry_dvec3_valid(&geometry->normals[0][0], vertex_count))
         return -1;
-    if (geometry->texcoords != NULL && !_mesh_geometry_dvec2_valid(geometry->texcoords, vertex_count))
+    if (
+        geometry->texcoords != NULL &&
+        !_mesh_geometry_dvec2_valid(&geometry->texcoords[0][0], vertex_count))
         return -1;
 
     if (geometry->index_count > 0)
@@ -200,14 +204,14 @@ int dvz_mesh_set_geometry(DvzVisual* visual, const DvzGeometry* geometry)
         return -1;
 
     int out = -1;
-    _mesh_geometry_copy_dvec3(positions, geometry->positions, vertex_count);
+    _mesh_geometry_copy_dvec3(positions, &geometry->positions[0][0], vertex_count);
 
     if (geometry->normals != NULL)
     {
         normals = (vec3*)dvz_calloc(vertex_count, sizeof(vec3));
         if (normals == NULL)
             goto cleanup;
-        _mesh_geometry_copy_dvec3(normals, geometry->normals, vertex_count);
+        _mesh_geometry_copy_dvec3(normals, &geometry->normals[0][0], vertex_count);
     }
 
     if (geometry->texcoords != NULL)
@@ -215,7 +219,7 @@ int dvz_mesh_set_geometry(DvzVisual* visual, const DvzGeometry* geometry)
         texcoords = (vec2*)dvz_calloc(vertex_count, sizeof(vec2));
         if (texcoords == NULL)
             goto cleanup;
-        _mesh_geometry_copy_dvec2(texcoords, geometry->texcoords, vertex_count);
+        _mesh_geometry_copy_dvec2(texcoords, &geometry->texcoords[0][0], vertex_count);
     }
 
     DvzVisualDataUpdate updates[4] = {

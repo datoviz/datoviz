@@ -277,15 +277,15 @@ static uint32_t _append_triangulation_edges(
         };
         for (uint32_t e = 0; e < 3; e++)
         {
-            const dvec3* p0 = &geometry->positions[tri[edges[e][0]]];
-            const dvec3* p1 = &geometry->positions[tri[edges[e][1]]];
+            const double* p0 = geometry->positions[tri[edges[e][0]]];
+            const double* p1 = geometry->positions[tri[edges[e][1]]];
             const uint32_t j = offset++;
-            starts[j][0] = (float)(*p0)[0];
-            starts[j][1] = (float)(*p0)[1];
-            starts[j][2] = (float)(*p0)[2];
-            ends[j][0] = (float)(*p1)[0];
-            ends[j][1] = (float)(*p1)[1];
-            ends[j][2] = (float)(*p1)[2];
+            starts[j][0] = (float)p0[0];
+            starts[j][1] = (float)p0[1];
+            starts[j][2] = (float)p0[2];
+            ends[j][0] = (float)p1[0];
+            ends[j][1] = (float)p1[1];
+            ends[j][2] = (float)p1[2];
             colors[j] = dvz_color_rgba(20, 20, 20, 210);
             widths[j] = width;
         }

@@ -324,14 +324,14 @@ static bool _state_upload_edges(SurfaceOverlayState* state)
         if (state->boundary_only && !(edge->flags & DVZ_GEOMETRY_EDGE_BOUNDARY))
             continue;
 
-        const dvec3* p0 = &state->geometry->positions[edge->v0];
-        const dvec3* p1 = &state->geometry->positions[edge->v1];
-        starts[dst][0] = (float)(*p0)[0];
-        starts[dst][1] = (float)(*p0)[1];
-        starts[dst][2] = (float)((*p0)[2] + state->wire_z_offset);
-        ends[dst][0] = (float)(*p1)[0];
-        ends[dst][1] = (float)(*p1)[1];
-        ends[dst][2] = (float)((*p1)[2] + state->wire_z_offset);
+        const double* p0 = state->geometry->positions[edge->v0];
+        const double* p1 = state->geometry->positions[edge->v1];
+        starts[dst][0] = (float)p0[0];
+        starts[dst][1] = (float)p0[1];
+        starts[dst][2] = (float)(p0[2] + state->wire_z_offset);
+        ends[dst][0] = (float)p1[0];
+        ends[dst][1] = (float)p1[1];
+        ends[dst][2] = (float)(p1[2] + state->wire_z_offset);
         colors[dst] = state->wire_color;
         widths[dst] = state->wire_width;
         dst++;

@@ -295,11 +295,11 @@ static bool _geom_triangle_normal(
     ASSERT(i1 < geometry->vertex_count);
     ASSERT(i2 < geometry->vertex_count);
 
-    const dvec3* p0 = &geometry->positions[i0];
-    const dvec3* p1 = &geometry->positions[i1];
-    const dvec3* p2 = &geometry->positions[i2];
-    dvec3 a = {(*p1)[0] - (*p0)[0], (*p1)[1] - (*p0)[1], (*p1)[2] - (*p0)[2]};
-    dvec3 b = {(*p2)[0] - (*p0)[0], (*p2)[1] - (*p0)[1], (*p2)[2] - (*p0)[2]};
+    const double* p0 = geometry->positions[i0];
+    const double* p1 = geometry->positions[i1];
+    const double* p2 = geometry->positions[i2];
+    dvec3 a = {p1[0] - p0[0], p1[1] - p0[1], p1[2] - p0[2]};
+    dvec3 b = {p2[0] - p0[0], p2[1] - p0[1], p2[2] - p0[2]};
     _geom_dvec3_cross(a, b, out);
     return _geom_dvec3_normalize(out);
 }
@@ -722,13 +722,13 @@ DvzGeometryBounds dvz_geometry_bounds(const DvzGeometry* geometry)
 
     for (uint32_t i = 0; i < geometry->vertex_count; i++)
     {
-        const dvec3* p = &geometry->positions[i];
-        xmin = (*p)[0] < xmin ? (*p)[0] : xmin;
-        xmax = (*p)[0] > xmax ? (*p)[0] : xmax;
-        ymin = (*p)[1] < ymin ? (*p)[1] : ymin;
-        ymax = (*p)[1] > ymax ? (*p)[1] : ymax;
-        zmin = (*p)[2] < zmin ? (*p)[2] : zmin;
-        zmax = (*p)[2] > zmax ? (*p)[2] : zmax;
+        const double* p = geometry->positions[i];
+        xmin = p[0] < xmin ? p[0] : xmin;
+        xmax = p[0] > xmax ? p[0] : xmax;
+        ymin = p[1] < ymin ? p[1] : ymin;
+        ymax = p[1] > ymax ? p[1] : ymax;
+        zmin = p[2] < zmin ? p[2] : zmin;
+        zmax = p[2] > zmax ? p[2] : zmax;
     }
 
     return (DvzGeometryBounds){

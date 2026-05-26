@@ -951,8 +951,7 @@ static void _axis_append_tick(
  * @return whether the retained visual payload is unchanged
  */
 static bool _axis_visual_cache_matches(
-    const DvzAxis* axis, uint32_t vertex_count, const float positions[][3],
-    const uint8_t colors[][4])
+    const DvzAxis* axis, uint32_t vertex_count, const float* positions, const uint8_t* colors)
 {
     ANN(axis);
     ANN(positions);
@@ -971,14 +970,13 @@ static bool _axis_visual_cache_matches(
         return false;
     if (
         position_view.item_count != vertex_count || color_view.item_count != vertex_count ||
-        position_view.item_size != sizeof(positions[0]) ||
-        color_view.item_size != sizeof(colors[0]))
+        position_view.item_size != sizeof(float[3]) || color_view.item_size != sizeof(uint8_t[4]))
     {
         return false;
     }
 
-    const size_t position_bytes = (size_t)vertex_count * sizeof(positions[0]);
-    const size_t color_bytes = (size_t)vertex_count * sizeof(colors[0]);
+    const size_t position_bytes = (size_t)vertex_count * sizeof(float[3]);
+    const size_t color_bytes = (size_t)vertex_count * sizeof(uint8_t[4]);
     return memcmp(position_view.data, positions, position_bytes) == 0 &&
            memcmp(color_view.data, colors, color_bytes) == 0;
 }
@@ -1222,7 +1220,7 @@ static void _axis_update_visual(DvzAxis* axis)
         {.attr_name = "position", .data = positions, .item_count = vertex_count},
         {.attr_name = "color", .data = colors, .item_count = vertex_count},
     };
-    if (!_axis_visual_cache_matches(axis, vertex_count, positions, colors))
+    if (!_axis_visual_cache_matches(axis, vertex_count, &positions[0][0], &colors[0][0]))
         (void)dvz_visual_set_data_many(axis->visual, updates, 2);
     _axis_update_text(axis, x0, x1, y0, y1, visible_min, visible_max);
     axis->dirty = false;
