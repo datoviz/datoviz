@@ -10,14 +10,15 @@ Current implementation status, as of 2026-05-26:
    binds categorical scales through the `"labels"` slot, and renders signed/unsigned integer
    textures with exact texel fetch in GLSL and WGSL.
 3. Labels presentation state setters exist for opacity, background ID, selected ID, hidden IDs,
-   boundary state, fallback seed, and 3D slice placeholders. These are retained state today; shader
-   uniforms for selected/hidden/boundary/fallback-seed effects remain follow-up work.
+   boundary state, fallback seed, and 3D slice placeholders. The 2D labels shaders now receive a
+   labels presentation uniform and apply opacity, background, selected, hidden, boundary, and
+   fallback-seed state for signed and unsigned integer labels.
 4. Categorical legends support signed and large positive IDs, while colorbars remain
    continuous-scale only. Labels examples should attach legends, not categorical colorbars.
 5. `examples/c/showcase/labels.c` is the live labels example: signed integer label field,
-   categorical scale, retained labels visual, attached legend, panzoom panel, GUI controls, and a
-   working temporary selection highlight overlay until shader-side selected/hidden/boundary
-   controls and raw label GPU probing land.
+   categorical scale, retained labels visual, attached legend, panzoom panel, GUI controls, shader
+   selected-boundary feedback, and legend highlight wiring. Hover/click readout still uses a
+   temporary CPU coordinate lookup until raw label GPU probing lands.
 
 
 ## Purpose
@@ -583,14 +584,16 @@ The labels visual should harden these lower-layer capabilities:
 3. Done: harden categorical legends for signed IDs: retained category storage, duplicate detection,
    fallback formatting, scale dirtiness, and negative-ID tests.
 4. Done: keep `DvzColorbar` continuous-only and retain categorical-scale rejection diagnostics.
-5. Partly done: implement 2D label rendering with integer texture fetch, background transparency,
-   and hash fallback colors. Shader-driven opacity is still pending.
+5. Done for the first 2D slice: implement 2D label rendering with integer texture fetch,
+   background transparency, shader-driven opacity, and hash fallback colors.
 6. Partly done: add scale patch/remove APIs. Lowering categorical scale entries to a sorted sparse
    GPU style buffer is pending.
-7. Pending: add generic legend highlight API and wire labels example selection to legend
-   highlight state.
-8. Pending: add selected, hidden, fallback-seed, and boundary uniforms.
-9. Pending: implement selected-label boundary rendering in GLSL/WGSL labels shaders.
+7. Done: add generic legend highlight API and wire labels example selection to legend highlight
+   state.
+8. Done for the first 2D slice: add selected, hidden, fallback-seed, opacity, background, and
+   boundary uniforms.
+9. Done for the first 2D slice: implement selected-label boundary rendering in GLSL/WGSL labels
+   shaders.
 10. Pending: add GPU probe/readback returning raw label IDs.
 11. Pending: add 3D axis-aligned label slice rendering.
 12. Pending: add GPU-only field/resource binding for labels.
