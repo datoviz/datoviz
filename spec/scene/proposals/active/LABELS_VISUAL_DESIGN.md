@@ -32,7 +32,8 @@ Required invariants:
 5. unknown labels get deterministic fallback colors without requiring a dense palette;
 6. picking/probing is GPU-side only and returns the raw integer label ID;
 7. label color/name/order metadata lives in the categorical scale layer, not in the visual;
-8. visual-local overrides are explicitly transient presentation state.
+8. visual-local overrides are explicitly transient presentation state;
+9. categorical label explanations use legends, not continuous colorbars.
 
 
 ## Public API Shape
@@ -132,6 +133,51 @@ bool dvz_scale_remove_categories(DvzScale* scale, const DvzCategoryId* ids, uint
 
 Every bound labels visual observes scale dirtiness and uploads the GPU style data derived from the
 scale.
+
+
+## Legends And Colorbars
+
+Labels are categorical data, so their explanatory object is a `DvzLegend`, not a `DvzColorbar`.
+The existing colorbar API should remain continuous-scale only and should continue to reject
+categorical scales with a diagnostic that points users to legends. A categorical colorbar ramp would
+be misleading for sparse, unordered, and possibly negative label IDs.
+
+A labels visual should support the normal retained legend path:
+
+```c
+DvzVisual* labels = dvz_labels(scene, 0);
+dvz_visual_set_field(labels, "field", field);
+dvz_visual_set_scale(labels, "labels", scale);
+
+DvzLegend* legend = dvz_legend(
+    panel, scale, &(DvzLegendDesc){
+                      .title = "Labels",
+                      .anchor = DVZ_SCENE_ANCHOR_PANEL_RIGHT,
+                  });
+```
+
+Legend entries are derived from retained categorical scale entries:
+
+1. `DvzScaleCategory.category_id` is the stable semantic ID shown by the legend;
+2. `DvzScaleCategory.order` controls deterministic display order, independent of numeric ID;
+3. `DvzScaleCategory.label` is the preferred text;
+4. missing labels fall back to a signed decimal rendering of `DvzCategoryId`;
+5. `DvzScaleCategory.color` is the sample mark color and the explicit GPU style color.
+
+Unknown hash-colored IDs do not appear in legends automatically because they are not retained
+semantic categories. If an application wants unknown observed IDs in a legend, it should promote
+them into the categorical scale through `dvz_scale_update_categories()`.
+
+Compatibility work required by signed label IDs:
+
+1. add `typedef int64_t DvzCategoryId` to the public scene type surface;
+2. migrate `DvzScaleCategory.category_id` from `int32_t` to `DvzCategoryId`;
+3. migrate retained `DvzScaleCategoryState.category_id` to `DvzCategoryId`;
+4. update duplicate detection, patch APIs, serialization, probes, and legends to use the shared
+   type;
+5. format legend fallback labels with the signed 64-bit representation rather than `%d`;
+6. keep the existing `DvzColorbar` categorical-scale rejection test and add signed-ID legend
+   coverage with negative and large positive IDs.
 
 
 ## Visual Overrides
@@ -312,6 +358,47 @@ identity came from the GPU. Returning labels by decoding rendered RGBA colors is
 the final path.
 
 
+## Live Example Target
+
+Add a live labels example that exercises the complete user-facing path: signed integer label field,
+categorical scale, labels visual, GPU probing, attached legend, and GUI controls. A good first
+target is:
+
+```text
+examples/scene/live_labels_legend.c
+```
+
+Concept: an interactive 2D segmentation board with a grayscale image underlay and a labels overlay.
+The label texture contains `0` background, `-1` unassigned regions, and sparse positive object IDs
+such as `17`, `42`, `1009`, and `4000000000` when using an unsigned texture variant. A second mode
+can switch to a signed texture with negative IDs such as `-7` and `-100`.
+
+The first screen should be the working visualization, not a landing page:
+
+1. central panzoom panel with the image and labels overlay;
+2. right-side attached legend titled "Labels";
+3. compact GUI panel for label presentation state;
+4. hover/probe readout showing raw ID, scale label, UV, and data coordinate;
+5. optional status text for texture format and whether the field is CPU-owned or GPU-only.
+
+Useful GUI controls:
+
+1. opacity slider wired to `dvz_labels_set_opacity()`;
+2. background ID selector/input, including `0` and `-1`;
+3. selected-label dropdown populated from the categorical scale;
+4. per-category visibility checkboxes that update hidden IDs;
+5. boundary enable toggle, width slider, and color swatch;
+6. fallback seed stepper to demonstrate deterministic unknown-label colors;
+7. category table editor for color, label, and order changes;
+8. buttons for "add unknown IDs to legend", "shuffle colors", and "reset scale";
+9. texture format selector for signed and unsigned first-slice formats;
+10. probe mode toggle that shows the GPU-returned raw ID without reading CPU data.
+
+The example should intentionally demonstrate the legend/colorbar boundary. It should create a
+legend for the categorical labels scale and should not create a colorbar for labels. A nearby scalar
+image underlay may have its own continuous colorbar only if that helps show the distinction.
+
+
 ## DRP2 And Runtime Requirements
 
 The labels visual should harden these lower-layer capabilities:
@@ -331,15 +418,19 @@ The labels visual should harden these lower-layer capabilities:
 1. Add the public visual family enum/type, state structs, validation, and API stubs.
 2. Introduce signed `DvzCategoryId` and migrate categorical scale/probe/legend paths that need
    label IDs.
-3. Implement 2D label rendering with integer texture fetch, background transparency, opacity, and
+3. Harden categorical legends for signed IDs: retained category storage, duplicate detection,
+   fallback formatting, scale dirtiness, and negative-ID tests.
+4. Keep `DvzColorbar` continuous-only and retain categorical-scale rejection diagnostics.
+5. Implement 2D label rendering with integer texture fetch, background transparency, opacity, and
    hash fallback colors.
-4. Lower categorical scale entries to a sorted sparse GPU style buffer and add scale patch APIs.
-5. Add selected, hidden, fallback-seed, and boundary uniforms.
-6. Add GPU probe/readback returning raw label IDs.
-7. Add 3D axis-aligned label slice rendering.
-8. Add GPU-only field/resource binding for labels.
-9. Add WGSL parity and fixture/preflight coverage.
-10. Add napari large-label pressure tests with arbitrary sparse IDs and thousands of categories.
+6. Lower categorical scale entries to a sorted sparse GPU style buffer and add scale patch APIs.
+7. Add selected, hidden, fallback-seed, and boundary uniforms.
+8. Add GPU probe/readback returning raw label IDs.
+9. Add 3D axis-aligned label slice rendering.
+10. Add GPU-only field/resource binding for labels.
+11. Add WGSL parity and fixture/preflight coverage.
+12. Add a live labels example with a proper legend and GUI controls for the label settings.
+13. Add napari large-label pressure tests with arbitrary sparse IDs and thousands of categories.
 
 
 ## Non-Goals For The First Slice
