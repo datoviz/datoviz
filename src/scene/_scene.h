@@ -1143,6 +1143,7 @@ struct DvzVisual
     bool                   scene_occluder;
     bool                   scene_occluded;
     bool                   volume_occluded;
+    DvzLabelsState         labels;
     DvzVolumeState         volume;
     uint64_t               volume_realized_version;
 

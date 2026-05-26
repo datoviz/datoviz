@@ -471,6 +471,28 @@ struct DvzVolumeState
 typedef struct DvzVolumeState DvzVolumeState;
 
 
+#define DVZ_LABELS_MAX_HIDDEN 256
+
+
+struct DvzLabelsState
+{
+    float opacity;
+    DvzCategoryId background_id;
+    bool selected_enabled;
+    DvzCategoryId selected_id;
+    DvzCategoryId hidden_ids[DVZ_LABELS_MAX_HIDDEN];
+    uint32_t hidden_count;
+    bool boundary_enabled;
+    float boundary_width_px;
+    DvzColor boundary_color;
+    uint32_t fallback_seed;
+    DvzVolumeAxis slice_axis;
+    double slice_position;
+    uint64_t version;
+};
+typedef struct DvzLabelsState DvzLabelsState;
+
+
 
 /* Per-visual attachment options.
  *

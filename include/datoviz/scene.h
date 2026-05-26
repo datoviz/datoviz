@@ -1888,6 +1888,109 @@ DVZ_EXPORT DvzVisual* dvz_labels(DvzScene* scene, uint32_t flags);
 
 
 /**
+ * Set the global opacity multiplier on a labels visual.
+ *
+ * @param visual the labels visual
+ * @param opacity opacity multiplier in [0, 1]
+ * @return 0 on success, -1 on error
+ */
+DVZ_EXPORT int dvz_labels_set_opacity(DvzVisual* visual, float opacity);
+
+
+/**
+ * Set the transparent background label ID on a labels visual.
+ *
+ * @param visual the labels visual
+ * @param label_id background label ID
+ * @return 0 on success, -1 on error
+ */
+DVZ_EXPORT int dvz_labels_set_background(DvzVisual* visual, DvzCategoryId label_id);
+
+
+/**
+ * Set the selected label ID on a labels visual.
+ *
+ * @param visual the labels visual
+ * @param label_id selected label ID
+ * @return 0 on success, -1 on error
+ */
+DVZ_EXPORT int dvz_labels_set_selected(DvzVisual* visual, DvzCategoryId label_id);
+
+
+/**
+ * Clear the selected label ID on a labels visual.
+ *
+ * @param visual the labels visual
+ * @return 0 on success, -1 on error
+ */
+DVZ_EXPORT int dvz_labels_clear_selected(DvzVisual* visual);
+
+
+/**
+ * Set the hidden label IDs on a labels visual.
+ *
+ * @param visual the labels visual
+ * @param ids hidden label IDs, or NULL when count is 0
+ * @param count hidden label ID count
+ * @return 0 on success, -1 on error
+ */
+DVZ_EXPORT int
+dvz_labels_set_hidden(DvzVisual* visual, const DvzCategoryId* ids, uint32_t count);
+
+
+/**
+ * Configure boundary rendering on a labels visual.
+ *
+ * @param visual the labels visual
+ * @param enabled whether boundary rendering is enabled
+ * @param width_px boundary width in pixels
+ * @param color boundary color
+ * @return 0 on success, -1 on error
+ */
+DVZ_EXPORT int
+dvz_labels_set_boundary(DvzVisual* visual, bool enabled, float width_px, DvzColor color);
+
+
+/**
+ * Set the deterministic fallback-color seed on a labels visual.
+ *
+ * @param visual the labels visual
+ * @param seed fallback-color seed
+ * @return 0 on success, -1 on error
+ */
+DVZ_EXPORT int dvz_labels_set_fallback_seed(DvzVisual* visual, uint32_t seed);
+
+
+/**
+ * Set the first-slice axis for a 3D labels visual.
+ *
+ * @param visual the labels visual
+ * @param axis slice axis
+ * @return 0 on success, -1 on error
+ */
+DVZ_EXPORT int dvz_labels_set_slice_axis(DvzVisual* visual, DvzVolumeAxis axis);
+
+
+/**
+ * Set the first-slice position for a 3D labels visual.
+ *
+ * @param visual the labels visual
+ * @param position normalized slice position in [0, 1]
+ * @return 0 on success, -1 on error
+ */
+DVZ_EXPORT int dvz_labels_set_slice_position(DvzVisual* visual, double position);
+
+
+/**
+ * Return the retained labels state for inspection.
+ *
+ * @param visual the labels visual
+ * @return the labels state, or NULL on error
+ */
+DVZ_EXPORT const DvzLabelsState* dvz_labels_state(const DvzVisual* visual);
+
+
+/**
  * Create a glyph visual.
  *
  * Renders atlas-backed glyph quads with `position` (vec3 anchor), `bounds` (vec4 local pixel

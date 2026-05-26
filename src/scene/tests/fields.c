@@ -1460,6 +1460,76 @@ int test_scene_labels_visual_binds_categorical_scale(TstContext* suite, const Ts
 }
 
 
+int test_scene_labels_state_setters(TstContext* suite, const TstCase* item)
+{
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzVisual* labels = dvz_labels(scene, 0);
+    ANN(labels);
+
+    const DvzLabelsState* state = dvz_labels_state(labels);
+    ANN(state);
+    AT(state->opacity == 1.0f);
+    AT(state->background_id == 0);
+    AT(!state->selected_enabled);
+    AT(state->boundary_width_px == 1.0f);
+    AT(state->slice_axis == DVZ_VOLUME_AXIS_Z);
+    AC(state->slice_position, 0.5, 1e-6);
+    uint64_t version0 = state->version;
+
+    AT(dvz_labels_set_opacity(labels, 0.35f) == 0);
+    AT(dvz_labels_set_background(labels, -1) == 0);
+    AT(dvz_labels_set_selected(labels, 42) == 0);
+    DvzCategoryId hidden[2] = {-7, 1009};
+    AT(dvz_labels_set_hidden(labels, hidden, 2) == 0);
+    DvzColor boundary = {12, 34, 56, 200};
+    AT(dvz_labels_set_boundary(labels, true, 2.5f, boundary) == 0);
+    AT(dvz_labels_set_fallback_seed(labels, 12345) == 0);
+    AT(dvz_labels_set_slice_axis(labels, DVZ_VOLUME_AXIS_X) == 0);
+    AT(dvz_labels_set_slice_position(labels, 0.25) == 0);
+
+    state = dvz_labels_state(labels);
+    ANN(state);
+    AC(state->opacity, 0.35f, 1e-6f);
+    AT(state->background_id == -1);
+    AT(state->selected_enabled);
+    AT(state->selected_id == 42);
+    AT(state->hidden_count == 2);
+    AT(state->hidden_ids[0] == -7);
+    AT(state->hidden_ids[1] == 1009);
+    AT(state->boundary_enabled);
+    AC(state->boundary_width_px, 2.5f, 1e-6f);
+    AT(state->boundary_color.r == 12);
+    AT(state->boundary_color.g == 34);
+    AT(state->boundary_color.b == 56);
+    AT(state->boundary_color.a == 200);
+    AT(state->fallback_seed == 12345);
+    AT(state->slice_axis == DVZ_VOLUME_AXIS_X);
+    AC(state->slice_position, 0.25, 1e-6);
+    AT(state->version > version0);
+
+    AT(dvz_labels_clear_selected(labels) == 0);
+    AT(!state->selected_enabled);
+    AT(dvz_labels_set_hidden(labels, NULL, 0) == 0);
+    AT(state->hidden_count == 0);
+
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_labels_set_opacity(labels, -0.1f) != 0);
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_labels_set_hidden(labels, NULL, 1) != 0);
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_labels_set_boundary(labels, true, -1.0f, boundary) != 0);
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_labels_set_slice_position(labels, 1.5) != 0);
+
+    DvzVisual* image = dvz_image(scene, 0);
+    ANN(image);
+    AT(dvz_labels_state(image) == NULL);
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_labels_set_opacity(image, 0.5f) != 0);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
 int test_scene_visual_scale_rejects_cross_scene_scale(TstContext* suite, const TstCase* item)
 {
     tst_log_capture_begin(suite);
@@ -3363,6 +3433,7 @@ int test_scene_fields(TstSuite* suite)
     TST_CASE(test_scene_colorbar_rejects_cross_scene_scale);
     TST_CASE(test_scene_image_visual_binds_colormap_scale);
     TST_CASE(test_scene_labels_visual_binds_categorical_scale);
+    TST_CASE(test_scene_labels_state_setters);
     TST_CASE(test_scene_visual_scale_rejects_cross_scene_scale);
     TST_CASE(test_scene_visual_buffer_rejects_cross_scene_buffer);
     TST_CASE(test_scene_image_scalar_texture_uses_bound_scale);

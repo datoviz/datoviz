@@ -56,6 +56,7 @@ bool _material_depth_cue_supported(DvzVisualType visual_type);
 int _material_apply_depth_cue(DvzSceneMaterialState* material, const DvzDepthCueDesc* desc);
 void _visual_material_mark_dirty(DvzVisual* visual);
 void _sphere_params_sync_mode(DvzVisual* visual);
+void _labels_state_default(DvzLabelsState* state);
 void _volume_state_default(DvzVolumeState* state);
 bool _point_style_enabled(const DvzPointStyleDesc* style);
 DvzPointStyleDesc _marker_style_to_point_style(const DvzMarkerStyle* style);
