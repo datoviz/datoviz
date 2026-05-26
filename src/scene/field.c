@@ -1002,6 +1002,17 @@ bool dvz_visual_set_field(DvzVisual* visual, const char* slot_name, DvzSampledFi
         log_error("labels visuals require a sampled field with LABEL semantic");
         return false;
     }
+    if (field != NULL && visual->type == DVZ_VISUAL_TYPE_LABELS &&
+        field->desc.format != DVZ_FIELD_FORMAT_R8_UINT &&
+        field->desc.format != DVZ_FIELD_FORMAT_R8_SINT &&
+        field->desc.format != DVZ_FIELD_FORMAT_R16_UINT &&
+        field->desc.format != DVZ_FIELD_FORMAT_R16_SINT &&
+        field->desc.format != DVZ_FIELD_FORMAT_R32_UINT &&
+        field->desc.format != DVZ_FIELD_FORMAT_R32_SINT)
+    {
+        log_error("labels visuals require an R8/R16/R32 signed or unsigned integer field");
+        return false;
+    }
     if (field != NULL && visual->type == DVZ_VISUAL_TYPE_VOLUME &&
         field->desc.dim != DVZ_FIELD_DIM_3D)
     {

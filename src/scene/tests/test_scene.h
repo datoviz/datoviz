@@ -333,6 +333,12 @@ int test_scene_image_emit_wgsl(TstContext* suite, const TstCase* item);
 
 int test_scene_glyph_emit_glsl(TstContext* suite, const TstCase* item);
 
+int test_scene_labels_emit_signed_glsl(TstContext* suite, const TstCase* item);
+
+int test_scene_labels_emit_unsigned_glsl(TstContext* suite, const TstCase* item);
+
+int test_scene_labels_emit_wgsl(TstContext* suite, const TstCase* item);
+
 int test_scene_image_emit_uses_common_and_texture_sets(TstContext* suite, const TstCase* item);
 
 int test_scene_visual_common_binding_layout_order(TstContext* suite, const TstCase* item);

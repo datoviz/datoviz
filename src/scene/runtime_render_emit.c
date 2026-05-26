@@ -2630,6 +2630,17 @@ bool _emitter_emit_render(
                     _is_image_visual(
                         &emitter->resources, vertex_buffer_ids, vertex_buffer_count, &image_pos,
                         &image_uv, &image_tex);
+    bool is_labels = is_image && visual_type == DVZ_VISUAL_TYPE_LABELS;
+    bool is_labels_sint =
+        is_labels && visual_meta != NULL &&
+        (visual_meta->field_format == DVZ_FIELD_FORMAT_R8_SINT ||
+         visual_meta->field_format == DVZ_FIELD_FORMAT_R16_SINT ||
+         visual_meta->field_format == DVZ_FIELD_FORMAT_R32_SINT);
+    bool is_labels_uint =
+        is_labels && visual_meta != NULL &&
+        (visual_meta->field_format == DVZ_FIELD_FORMAT_R8_UINT ||
+         visual_meta->field_format == DVZ_FIELD_FORMAT_R16_UINT ||
+         visual_meta->field_format == DVZ_FIELD_FORMAT_R32_UINT);
 
     const char* vs_glsl = NULL;
     const char* fs_glsl = NULL;
@@ -2757,12 +2768,24 @@ bool _emitter_emit_render(
         if (visual_meta != NULL && visual_meta->vertex_count > 0)
             vertex_count = visual_meta->vertex_count;
         topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP;
-        dvz_snprintf(vs_key, sizeof(vs_key), "_vs_img%s", fmt);
-        dvz_snprintf(fs_key, sizeof(fs_key), "_fs_img%s", fmt);
-        vs_glsl = _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_IMAGE, false);
-        fs_glsl = _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_IMAGE, true);
-        vs_wgsl = _builtin_shader_wgsl(DVZ_SCENE_BUILTIN_SHADER_IMAGE, false);
-        fs_wgsl = _builtin_shader_wgsl(DVZ_SCENE_BUILTIN_SHADER_IMAGE, true);
+        DvzSceneBuiltinShader image_shader = DVZ_SCENE_BUILTIN_SHADER_IMAGE;
+        const char* shader_name = "img";
+        if (is_labels_sint)
+        {
+            image_shader = DVZ_SCENE_BUILTIN_SHADER_LABELS_SINT;
+            shader_name = "labels_sint";
+        }
+        else if (is_labels_uint)
+        {
+            image_shader = DVZ_SCENE_BUILTIN_SHADER_LABELS_UINT;
+            shader_name = "labels_uint";
+        }
+        dvz_snprintf(vs_key, sizeof(vs_key), "_vs_%s%s", shader_name, fmt);
+        dvz_snprintf(fs_key, sizeof(fs_key), "_fs_%s%s", shader_name, fmt);
+        vs_glsl = _builtin_shader_glsl(image_shader, false);
+        fs_glsl = _builtin_shader_glsl(image_shader, true);
+        vs_wgsl = _builtin_shader_wgsl(image_shader, false);
+        fs_wgsl = _builtin_shader_wgsl(image_shader, true);
 
         /* Sampler + texture-sampler bind-group layout + bind-group, all persistent. */
         bool bgl_new = false;
@@ -2852,7 +2875,9 @@ bool _emitter_emit_render(
     else if (is_image)
     {
         vs_spirv_key = "image_vert";
-        fs_spirv_key = "image_frag";
+        fs_spirv_key = is_labels_sint    ? "labels_sint_frag"
+                       : is_labels_uint  ? "labels_uint_frag"
+                                         : "image_frag";
     }
 
     uint64_t vs_id = _obj_id(emitter, vs_key, &is_new);
@@ -2931,7 +2956,12 @@ bool _emitter_emit_render(
     else if (is_primitive)
         dvz_snprintf(pipe_key, sizeof(pipe_key), "_pipe_prim_t%u%s", topology, fmt);
     else if (is_image)
-        dvz_snprintf(pipe_key, sizeof(pipe_key), "_pipe_img%s", fmt);
+    {
+        const char* pipe_name = is_labels_sint  ? "labels_sint"
+                                : is_labels_uint ? "labels_uint"
+                                                 : "img";
+        dvz_snprintf(pipe_key, sizeof(pipe_key), "_pipe_%s%s", pipe_name, fmt);
+    }
     else
         dvz_snprintf(pipe_key, sizeof(pipe_key), "_pipe%u%s", vertex_buffer_count, fmt);
 
@@ -3055,6 +3085,10 @@ bool _emitter_emit_render(
                                       : is_marker    ? DVZ_SCENE_VISUAL_DESC_MARKER
                                       : is_pixel     ? DVZ_SCENE_VISUAL_DESC_PIXEL
                                                      : DVZ_SCENE_VISUAL_DESC_POINT;
+        if (is_labels_sint)
+            kind = DVZ_SCENE_VISUAL_DESC_LABELS_SINT;
+        else if (is_labels_uint)
+            kind = DVZ_SCENE_VISUAL_DESC_LABELS_UINT;
         bool instanced_point_like =
             has_point_like_lowering &&
             point_like_lowering.lowering == DVZ_SCENE_POINT_LIKE_LOWERING_INSTANCED_QUADS;

@@ -76,6 +76,13 @@ bool _scene_visual_frame_plan_metadata(
     metadata->scale_index = _scene_scale_index(figure->scene, visual->scale);
     metadata->scene_occluder = visual->scene_occluder;
     metadata->scene_occluded = visual->scene_occluded;
+    if (visual->field != NULL)
+    {
+        metadata->field_format = (uint32_t)visual->field->desc.format;
+        metadata->field_width = visual->field->desc.width;
+        metadata->field_height = visual->field->desc.height;
+        metadata->field_depth = visual->field->desc.depth;
+    }
 
     const char* vertex_count_attr =
         visual->type == DVZ_VISUAL_TYPE_SEGMENT ? "position_start" : "position";
@@ -213,7 +220,8 @@ bool _scene_visual_frame_plan_metadata(
             metadata->index_count = (uint32_t)visual->path.gpu.index_count;
         }
     }
-    if (visual->type == DVZ_VISUAL_TYPE_IMAGE && _scene_image_uses_generated_quads(visual))
+    if ((visual->type == DVZ_VISUAL_TYPE_IMAGE || visual->type == DVZ_VISUAL_TYPE_LABELS) &&
+        _scene_image_uses_generated_quads(visual))
     {
         if (visual->image_gpu.vertex_count > UINT32_MAX)
             return false;

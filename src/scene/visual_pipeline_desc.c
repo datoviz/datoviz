@@ -104,6 +104,10 @@ static const PipelineFixedLayout FIXED_PIPELINE_LAYOUTS[] = {
      (uint32_t)DVZ_ARRAY_COUNT(PATH_PIPELINE_ATTRS)},
     {DVZ_SCENE_VISUAL_DESC_IMAGE, IMAGE_PIPELINE_ATTRS,
      (uint32_t)DVZ_ARRAY_COUNT(IMAGE_PIPELINE_ATTRS)},
+    {DVZ_SCENE_VISUAL_DESC_LABELS_SINT, IMAGE_PIPELINE_ATTRS,
+     (uint32_t)DVZ_ARRAY_COUNT(IMAGE_PIPELINE_ATTRS)},
+    {DVZ_SCENE_VISUAL_DESC_LABELS_UINT, IMAGE_PIPELINE_ATTRS,
+     (uint32_t)DVZ_ARRAY_COUNT(IMAGE_PIPELINE_ATTRS)},
     {DVZ_SCENE_VISUAL_DESC_GLYPH, GLYPH_PIPELINE_ATTRS,
      (uint32_t)DVZ_ARRAY_COUNT(GLYPH_PIPELINE_ATTRS)},
     {DVZ_SCENE_VISUAL_DESC_VOLUME, VOLUME_PIPELINE_ATTRS,
@@ -270,7 +274,10 @@ static bool _pipeline_apply_fixed_visual(
         _pipeline_apply_standard_depth_state(
             caps, pass_needs_depth, wboit_accumulation, alpha_mode, visual->depth_compare_op, out);
     }
-    else if (visual->kind == DVZ_SCENE_VISUAL_DESC_IMAGE)
+    else if (
+        visual->kind == DVZ_SCENE_VISUAL_DESC_IMAGE ||
+        visual->kind == DVZ_SCENE_VISUAL_DESC_LABELS_SINT ||
+        visual->kind == DVZ_SCENE_VISUAL_DESC_LABELS_UINT)
     {
         out->needs_image_layout = caps->uses_image_set;
     }
@@ -402,6 +409,8 @@ bool _scene_visual_pipeline_desc(
     case DVZ_SCENE_VISUAL_DESC_SEGMENT:
     case DVZ_SCENE_VISUAL_DESC_PATH:
     case DVZ_SCENE_VISUAL_DESC_IMAGE:
+    case DVZ_SCENE_VISUAL_DESC_LABELS_SINT:
+    case DVZ_SCENE_VISUAL_DESC_LABELS_UINT:
     case DVZ_SCENE_VISUAL_DESC_GLYPH:
     case DVZ_SCENE_VISUAL_DESC_VOLUME:
         return _pipeline_apply_fixed_visual(

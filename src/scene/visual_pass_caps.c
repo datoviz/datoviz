@@ -141,8 +141,26 @@ bool _scene_visual_pass_caps_from_visual(
                    : DVZ_SCENE_VISUAL_DESC_PRIMITIVE;
         break;
     case DVZ_VISUAL_TYPE_IMAGE:
-    case DVZ_VISUAL_TYPE_LABELS:
         kind = DVZ_SCENE_VISUAL_DESC_IMAGE;
+        break;
+    case DVZ_VISUAL_TYPE_LABELS:
+        if (visual->field == NULL)
+            return false;
+        switch (visual->field->desc.format)
+        {
+        case DVZ_FIELD_FORMAT_R8_SINT:
+        case DVZ_FIELD_FORMAT_R16_SINT:
+        case DVZ_FIELD_FORMAT_R32_SINT:
+            kind = DVZ_SCENE_VISUAL_DESC_LABELS_SINT;
+            break;
+        case DVZ_FIELD_FORMAT_R8_UINT:
+        case DVZ_FIELD_FORMAT_R16_UINT:
+        case DVZ_FIELD_FORMAT_R32_UINT:
+            kind = DVZ_SCENE_VISUAL_DESC_LABELS_UINT;
+            break;
+        default:
+            return false;
+        }
         break;
     case DVZ_VISUAL_TYPE_GLYPH:
         kind = DVZ_SCENE_VISUAL_DESC_GLYPH;

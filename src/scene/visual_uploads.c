@@ -886,7 +886,8 @@ static void _scene_emit_path_uploads(
 bool _scene_image_uses_generated_quads(const DvzVisual* visual)
 {
     ANN(visual);
-    return visual->type == DVZ_VISUAL_TYPE_IMAGE && _scene_visual_has_attr_data(visual, "extent");
+    return (visual->type == DVZ_VISUAL_TYPE_IMAGE || visual->type == DVZ_VISUAL_TYPE_LABELS) &&
+           _scene_visual_has_attr_data(visual, "extent");
 }
 
 
@@ -902,7 +903,7 @@ static bool _image_cache_rebuild(DvzVisual* visual)
     if (!_scene_image_uses_generated_quads(visual) ||
         !_scene_visual_has_attr_data(visual, "position"))
     {
-        log_error("image visual per-item rectangles require position and extent attributes");
+        log_error("image-like visual per-item rectangles require position and extent attributes");
         return false;
     }
 
@@ -1309,9 +1310,24 @@ static void _scene_emit_image_like_texture_upload(
     ANN(figure);
     ANN(plan);
     ANN(visual);
-    if ((visual->type != DVZ_VISUAL_TYPE_IMAGE && visual->type != DVZ_VISUAL_TYPE_GLYPH) ||
+    if ((visual->type != DVZ_VISUAL_TYPE_IMAGE && visual->type != DVZ_VISUAL_TYPE_GLYPH &&
+         visual->type != DVZ_VISUAL_TYPE_LABELS) ||
         visual->field == NULL || (!visual->texture.dirty && !visual->field->dirty))
     {
+        return;
+    }
+
+    if (visual->type == DVZ_VISUAL_TYPE_LABELS)
+    {
+        char tex_resource_id[128];
+        if (!_scene_visual_texture_resource_key(
+                figure, visual, visual_index, tex_resource_id, sizeof(tex_resource_id)))
+            return;
+        if (_scene_emit_sampled_field_texture_upload(plan, tex_resource_id, visual->field))
+        {
+            visual->texture.width = visual->field->desc.width;
+            visual->texture.height = visual->field->desc.height;
+        }
         return;
     }
 

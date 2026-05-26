@@ -4519,6 +4519,304 @@ int test_scene_image_emit_wgsl(TstContext* suite, const TstCase* item)
 }
 
 
+/**
+ * Return whether a stream creates a texture with the expected format and extent.
+ *
+ * @param stream the emitted command stream
+ * @param format expected Vulkan texture format
+ * @param width expected texture width
+ * @param height expected texture height
+ * @return whether a matching texture command was found
+ */
+static bool _stream_has_texture_format(
+    const DvzDrp2CommandStream* stream, VkFormat format, uint32_t width, uint32_t height)
+{
+    ANN(stream);
+    for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
+    {
+        const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream, i);
+        if (cmd == NULL || cmd->type != DVZ_DRP2_COMMAND_CREATE_TEXTURE)
+            continue;
+        if (cmd->u.create_texture.format == format && cmd->u.create_texture.width == width &&
+            cmd->u.create_texture.height == height && cmd->u.create_texture.depth == 1)
+            return true;
+    }
+    return false;
+}
+
+
+
+/**
+ * Return whether a stream uploads one texture region with the expected row layout.
+ *
+ * @param stream the emitted command stream
+ * @param width expected upload width
+ * @param height expected upload height
+ * @param bytes_per_row expected row byte count
+ * @return whether a matching upload command was found
+ */
+static bool _stream_has_texture_upload(
+    const DvzDrp2CommandStream* stream, uint32_t width, uint32_t height, uint64_t bytes_per_row)
+{
+    ANN(stream);
+    for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
+    {
+        const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream, i);
+        if (cmd == NULL || cmd->type != DVZ_DRP2_COMMAND_WRITE_TEXTURE)
+            continue;
+        if (cmd->u.write_texture.width == width && cmd->u.write_texture.height == height &&
+            cmd->u.write_texture.depth == 1 && cmd->u.write_texture.bytes_per_row == bytes_per_row)
+            return true;
+    }
+    return false;
+}
+
+
+
+/**
+ * Log diagnostics before a focused labels test fails.
+ *
+ * @param report diagnostic report
+ */
+static void _labels_log_diagnostics(const DvzDiagnosticReport* report)
+{
+    ANN(report);
+    uint32_t count = dvz_diagnostic_report_count(report);
+    for (uint32_t i = 0; i < count; i++)
+    {
+        const char* message = dvz_diagnostic_report_get(report, i);
+        if (message != NULL)
+            log_error("%s", message);
+    }
+}
+
+
+
+/**
+ * Log render pipeline labels in a labels stream test.
+ *
+ * @param stream the emitted command stream
+ */
+static void _labels_log_pipeline_labels(const DvzDrp2CommandStream* stream)
+{
+    ANN(stream);
+    for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
+    {
+        const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream, i);
+        if (cmd == NULL || cmd->type != DVZ_DRP2_COMMAND_CREATE_RENDER_PIPELINE)
+            continue;
+        const char* label = dvz_drp2_stream_label(stream, cmd->u.create_render_pipeline.id);
+        log_error("pipeline: %s", label != NULL ? label : "(none)");
+    }
+}
+
+
+
+/**
+ * Build one retained labels visual bound to a categorical scale.
+ *
+ * @param scene owning scene
+ * @param format integer field format
+ * @param values field payload
+ * @param bytes_per_row field row byte count
+ * @param out_figure output configured figure
+ * @return 0 on success
+ */
+static int _labels_emit_figure(
+    DvzScene* scene, DvzFieldFormat format, const void* values, uint64_t bytes_per_row,
+    DvzFigure** out_figure)
+{
+    ANN(scene);
+    ANN(values);
+    ANN(out_figure);
+
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    ANN(panel);
+    DvzVisual* labels = dvz_labels(scene, 0);
+    ANN(labels);
+
+    vec3 positions[1] = {{0.0f, 0.0f, 0.0f}};
+    vec2 extents[1] = {{2.0f, 2.0f}};
+    AT(dvz_visual_set_data(labels, "position", positions, 1) == 0);
+    AT(dvz_visual_set_data(labels, "extent", extents, 1) == 0);
+
+    DvzSampledField* field = dvz_sampled_field(
+        scene, &(DvzSampledFieldDesc){
+                   .dim = DVZ_FIELD_DIM_2D,
+                   .format = format,
+                   .semantic = DVZ_FIELD_SEMANTIC_LABEL,
+                   .width = 2,
+                   .height = 2,
+                   .depth = 1,
+               });
+    ANN(field);
+    AT(dvz_sampled_field_set_data(
+        field, &(DvzFieldDataView){
+                   .data = values,
+                   .bytes_per_row = bytes_per_row,
+                   .rows_per_image = 2,
+               }));
+    AT(dvz_visual_set_field(labels, "field", field));
+
+    DvzScale* scale = dvz_scale(scene, &(DvzScaleDesc){.kind = DVZ_SCALE_CATEGORICAL});
+    ANN(scale);
+    DvzScaleCategory categories[3] = {
+        {.category_id = -7, .order = 0, .label = "negative", .color = {200, 40, 40, 180}},
+        {.category_id = 17, .order = 1, .label = "cell 17", .color = {40, 180, 80, 180}},
+        {.category_id = 4000000000LL, .order = 2, .label = "large", .color = {40, 80, 220, 180}},
+    };
+    AT(dvz_scale_set_categories(scale, categories, 3));
+    AT(dvz_visual_set_scale(labels, "labels", scale) == 0);
+    AT(dvz_panel_add_visual(panel, labels, NULL) == 0);
+
+    *out_figure = figure;
+    return 0;
+}
+
+
+
+int test_scene_labels_emit_signed_glsl(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    int32_t values[4] = {0, -7, 17, -100};
+    DvzFigure* figure = NULL;
+    AT(_labels_emit_figure(
+           scene, DVZ_FIELD_FORMAT_R32_SINT, values, 2 * sizeof(int32_t), &figure) == 0);
+    ANN(figure);
+
+    DvzCapabilitySnapshot caps;
+    dvz_capability_snapshot_default(&caps);
+    caps.supports_color_blending = true;
+    DvzDiagnosticReport report;
+    dvz_diagnostic_report_init(&report);
+    DvzFramePlanEmitConfig cfg = dvz_frame_plan_emit_config();
+    cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
+
+    DvzDrp2CommandStream* stream = dvz_figure_emit_ex(figure, &caps, &report, &cfg);
+    if (dvz_diagnostic_report_count(&report) != 0)
+        _labels_log_diagnostics(&report);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+    ANN(stream);
+    AT(_stream_has_render_pipeline_label_part(stream, "_pipe_labels_sintg"));
+    AT(!_stream_has_render_pipeline_label(stream, "_pipe_imgg"));
+    AT(_stream_has_texture_format(stream, VK_FORMAT_R32_SINT, 2, 2));
+    AT(_stream_has_texture_upload(stream, 2, 2, 2 * sizeof(int32_t)));
+
+    char* json = dvz_drp2_stream_json(stream, "scene_labels_signed_glsl_from_c");
+    ANN(json);
+    AT(strstr(json, "\"format\": \"spirv\"") != NULL ||
+       strstr(json, "\"format\": \"glsl\"") != NULL);
+    dvz_drp2_stream_json_destroy(json);
+
+    dvz_drp2_stream_destroy(stream);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
+int test_scene_labels_emit_unsigned_glsl(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    uint32_t values[4] = {0, 17, 1009, 4000000000u};
+    DvzFigure* figure = NULL;
+    AT(_labels_emit_figure(
+           scene, DVZ_FIELD_FORMAT_R32_UINT, values, 2 * sizeof(uint32_t), &figure) == 0);
+    ANN(figure);
+
+    DvzCapabilitySnapshot caps;
+    dvz_capability_snapshot_default(&caps);
+    caps.supports_color_blending = true;
+    DvzDiagnosticReport report;
+    dvz_diagnostic_report_init(&report);
+    DvzFramePlanEmitConfig cfg = dvz_frame_plan_emit_config();
+    cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
+
+    DvzDrp2CommandStream* stream = dvz_figure_emit_ex(figure, &caps, &report, &cfg);
+    if (dvz_diagnostic_report_count(&report) != 0)
+        _labels_log_diagnostics(&report);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+    ANN(stream);
+    AT(_stream_has_render_pipeline_label_part(stream, "_pipe_labels_uintg"));
+    AT(!_stream_has_render_pipeline_label(stream, "_pipe_imgg"));
+    AT(_stream_has_texture_format(stream, VK_FORMAT_R32_UINT, 2, 2));
+    AT(_stream_has_texture_upload(stream, 2, 2, 2 * sizeof(uint32_t)));
+
+    char* json = dvz_drp2_stream_json(stream, "scene_labels_unsigned_glsl_from_c");
+    ANN(json);
+    AT(strstr(json, "\"format\": \"spirv\"") != NULL ||
+       strstr(json, "\"format\": \"glsl\"") != NULL);
+    dvz_drp2_stream_json_destroy(json);
+
+    dvz_drp2_stream_destroy(stream);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
+int test_scene_labels_emit_wgsl(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    int32_t values[4] = {0, -7, 17, -100};
+    DvzFigure* figure = NULL;
+    AT(_labels_emit_figure(
+           scene, DVZ_FIELD_FORMAT_R32_SINT, values, 2 * sizeof(int32_t), &figure) == 0);
+    ANN(figure);
+
+    DvzCapabilitySnapshot caps;
+    dvz_capability_snapshot_default(&caps);
+    caps.supports_color_blending = true;
+    caps.shader_format_wgsl = true;
+    caps.shader_format_glsl = false;
+    caps.max_vertex_buffers = 16;
+    caps.max_bind_groups = 4;
+    caps.max_buffer_size = 256 * 1024 * 1024;
+
+    DvzDiagnosticReport report;
+    dvz_diagnostic_report_init(&report);
+    DvzFramePlanEmitConfig cfg = dvz_frame_plan_emit_config();
+    cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_WGSL;
+
+    DvzDrp2CommandStream* stream = dvz_figure_emit_ex(figure, &caps, &report, &cfg);
+    if (dvz_diagnostic_report_count(&report) != 0)
+        _labels_log_diagnostics(&report);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+    ANN(stream);
+    if (!_stream_has_render_pipeline_label_part(stream, "_pipe_labels_sintw"))
+        _labels_log_pipeline_labels(stream);
+    AT(_stream_has_render_pipeline_label_part(stream, "_pipe_labels_sintw"));
+    AT(_stream_has_texture_format(stream, VK_FORMAT_R32_SINT, 2, 2));
+
+    char* json = dvz_drp2_stream_json(stream, "scene_labels_wgsl_from_c");
+    ANN(json);
+    AT(strstr(json, "\"format\": \"wgsl\"") != NULL);
+    AT(strstr(json, "texture_2d<i32>") != NULL);
+    AT(strstr(json, "textureLoad") != NULL);
+    AT(strstr(json, "@group(1) @binding(0)") != NULL);
+    dvz_drp2_stream_json_destroy(json);
+
+    dvz_drp2_stream_destroy(stream);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
 int test_scene_image_emit_uses_common_and_texture_sets(TstContext* suite, const TstCase* item)
 {
     (void)suite;

@@ -153,7 +153,34 @@ bool _scene_visual_desc_is_primitive(DvzSceneVisualDescKind kind)
  */
 bool _scene_visual_desc_is_image(DvzSceneVisualDescKind kind)
 {
-    return kind == DVZ_SCENE_VISUAL_DESC_IMAGE || kind == DVZ_SCENE_VISUAL_DESC_GLYPH;
+    return kind == DVZ_SCENE_VISUAL_DESC_IMAGE || kind == DVZ_SCENE_VISUAL_DESC_LABELS_SINT ||
+           kind == DVZ_SCENE_VISUAL_DESC_LABELS_UINT || kind == DVZ_SCENE_VISUAL_DESC_GLYPH;
+}
+
+
+/**
+ * Return whether a field format is a signed labels format.
+ *
+ * @param format scene field format
+ * @return whether the format is a signed integer label format
+ */
+static bool _labels_format_is_signed(uint32_t format)
+{
+    return format == DVZ_FIELD_FORMAT_R8_SINT || format == DVZ_FIELD_FORMAT_R16_SINT ||
+           format == DVZ_FIELD_FORMAT_R32_SINT;
+}
+
+
+/**
+ * Return whether a field format is an unsigned labels format.
+ *
+ * @param format scene field format
+ * @return whether the format is an unsigned integer label format
+ */
+static bool _labels_format_is_unsigned(uint32_t format)
+{
+    return format == DVZ_FIELD_FORMAT_R8_UINT || format == DVZ_FIELD_FORMAT_R16_UINT ||
+           format == DVZ_FIELD_FORMAT_R32_UINT;
 }
 
 
@@ -673,7 +700,8 @@ static bool _scene_visual_desc_from_metadata(
             _scene_visual_resource_lookup_label(&emitter->resources, meta->material_id);
     }
     else if (
-        meta->visual_type == DVZ_VISUAL_TYPE_IMAGE || meta->visual_type == DVZ_VISUAL_TYPE_GLYPH)
+        meta->visual_type == DVZ_VISUAL_TYPE_IMAGE || meta->visual_type == DVZ_VISUAL_TYPE_GLYPH ||
+        meta->visual_type == DVZ_VISUAL_TYPE_LABELS)
     {
         uint64_t uv_id =
             _scene_visual_resource_lookup_label(&emitter->resources, meta->texcoords_id);
@@ -685,8 +713,23 @@ static bool _scene_visual_desc_from_metadata(
                 *error = "typed image metadata missing texcoords/texture resource";
             return false;
         }
-        out->kind = meta->visual_type == DVZ_VISUAL_TYPE_GLYPH ? DVZ_SCENE_VISUAL_DESC_GLYPH
-                                                               : DVZ_SCENE_VISUAL_DESC_IMAGE;
+        if (meta->visual_type == DVZ_VISUAL_TYPE_GLYPH)
+            out->kind = DVZ_SCENE_VISUAL_DESC_GLYPH;
+        else if (meta->visual_type == DVZ_VISUAL_TYPE_LABELS)
+        {
+            if (_labels_format_is_signed(meta->field_format))
+                out->kind = DVZ_SCENE_VISUAL_DESC_LABELS_SINT;
+            else if (_labels_format_is_unsigned(meta->field_format))
+                out->kind = DVZ_SCENE_VISUAL_DESC_LABELS_UINT;
+            else
+            {
+                if (error != NULL)
+                    *error = "labels metadata has unsupported integer texture format";
+                return false;
+            }
+        }
+        else
+            out->kind = DVZ_SCENE_VISUAL_DESC_IMAGE;
         if (meta->visual_type == DVZ_VISUAL_TYPE_GLYPH)
         {
             uint64_t bounds_id =

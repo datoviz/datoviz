@@ -59,6 +59,9 @@ static const char* _draw_packet_kind_name(DvzSceneVisualDescKind kind)
         return "primitive";
     case DVZ_SCENE_VISUAL_DESC_IMAGE:
         return "image";
+    case DVZ_SCENE_VISUAL_DESC_LABELS_SINT:
+    case DVZ_SCENE_VISUAL_DESC_LABELS_UINT:
+        return "labels";
     case DVZ_SCENE_VISUAL_DESC_GLYPH:
         return "glyph";
     case DVZ_SCENE_VISUAL_DESC_VOLUME:
