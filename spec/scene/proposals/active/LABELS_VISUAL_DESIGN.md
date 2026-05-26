@@ -373,6 +373,37 @@ Resolving a human-readable string from the retained scale after GPU readback is 
 identity came from the GPU. Returning labels by decoding rendered RGBA colors is not sufficient for
 the final path.
 
+Implementation plan:
+
+1. Treat `DVZ_VISUAL_TYPE_LABELS` as probe-capable for `DVZ_SCENE_TARGET_SEGMENT` when the visual
+   has a bound integer `DvzSampledField`.
+2. Add a labels-specific probe dispatch in `src/scene/request_execute.c` instead of routing labels
+   through the existing image RGBA probe decoder.
+3. Reuse the labels/image quad geometry and texcoords to map the panel request coordinate to labels
+   UV, then map UV to an exact integer texel coordinate. The mapping must match the labels fragment
+   shader convention and must miss outside the labels quad.
+4. Read one texel from the labels visual's integer GPU texture, preserving texture signedness and
+   width:
+   `R8_SINT`, `R16_SINT`, `R32_SINT`, `R8_UINT`, `R16_UINT`, and `R32_UINT`.
+5. Decode the raw texel into `DvzCategoryId` without going through rendered colors. For example,
+   `R32_SINT` `-7` returns `category_id = -7`, and `R32_UINT` `4000000000` returns
+   `category_id = 4000000000`.
+6. Apply background policy after readback. The default `background_id == 0` should return a miss
+   unless a future probe flag explicitly requests background hits.
+7. Resolve the optional display label from the bound categorical scale after GPU readback. Missing
+   scale entries should fall back to signed decimal ID formatting.
+8. Update `examples/c/showcase/labels.c` so hover and click both queue labels probes and consume
+   `dvz_scene_poll_probe()` results. Remove the temporary CPU `_label_at_pointer()` path from the
+   example once this lands.
+9. Add focused coverage:
+   2D signed labels probe with `-7`, 2D unsigned labels probe with `4000000000`, background miss,
+   scale-label resolution, panzoom-transformed coordinate mapping, and a regression proving no
+   hidden RGBA image visual is required.
+
+The existing hidden RGBA image probe route may remain only as a compatibility path for image-based
+segment masks. It is not the labels visual contract because it cannot preserve negative IDs, is
+limited by the encoded payload width, and duplicates the labels texture.
+
 
 ## Live Example Target
 
