@@ -79,6 +79,20 @@ Remaining implementation work should focus on:
    target.
 
 
+## Implementation Note: Picking And Probing Status
+
+As of 2026-05-26, the native scene request executor implements GPU-backed item picking for point,
+pixel, marker, sphere, segment/stroke, path, primitive, mesh, image, and volume proxy visuals. The
+implemented executor is narrower than the public capability and target model: native pick execution
+currently supports none/item targets, while the API names object, vertex, face, pixel, sample, group,
+strip, segment, triangle, text, and annotation-style targets for future expansion.
+
+Glyph, text, and labels picking are still unimplemented. `DvzPickHitPolicy` is queued but not yet
+materially applied by native execution, and richer payload fields such as `instance_id`,
+`data_position`, mesh face/region identity, image texel identity, and volume ray/sample identity still
+need backing implementation before the API should document them as available.
+
+
 ## Non-Blocking Follow-Up
 
 These items should not block the first header pass, but they should stay visible:

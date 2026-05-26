@@ -2,7 +2,7 @@
 
 > **Execution Status**
 > - **Status:** `POST-V0.4 ROADMAP`
-> - **Updated on:** `2026-05-25`
+> - **Updated on:** `2026-05-26`
 > - **Purpose:** keep useful refactors visible without making them v0.4 release blockers.
 
 This file lists refactoring work that should wait until after the public `v0.4.0` release unless a
@@ -30,6 +30,8 @@ These tasks are useful, but they should not delay `v0.4.0` by themselves.
    shader/cache-key bug.
 10. Build shared atlas/resource substrates for bitmap markers, marker/text SDF/MSDF sharing, or
     future text-layout infrastructure.
+11. Extract or table-drive the visual-family pick/probe operations currently concentrated in
+    `src/scene/request_execute.c`, while preserving the no-CPU-visual-picking contract.
 
 
 ## First Post-v0.4 Refactor Batch
@@ -38,7 +40,8 @@ The most valuable first batch after release is structural scene cleanup with foc
 
 1. finish the lower-risk pieces from
    [SCENE_C_REFACTOR_NOTES_2026-05-11.md](SCENE_C_REFACTOR_NOTES_2026-05-11.md) that were not
-   needed for v0.4;
+   needed for v0.4, plus the request-path-specific follow-up in
+   [SCENE_PICK_PROBE_REQUEST_PATH_REFACTOR.md](SCENE_PICK_PROBE_REQUEST_PATH_REFACTOR.md);
 2. move DRP2 stream fingerprint/snapshot normalization out of app tracing and into a DRP2-owned
    diagnostics layer;
 3. add out-of-tree package-consumer smoke tests for component targets before tightening installed
@@ -56,3 +59,5 @@ The most valuable first batch after release is structural scene cleanup with foc
    header ownership.
 4. Keep runner scheduling changes generic in `testing/`; Datoviz-specific GPU, GLFW, video, and
    environment behavior should stay in module tests or runner adapters.
+5. Do not combine request-path structure cleanup with new pick targets or new visual-family picking
+   semantics unless the feature is required to fix a release-blocking defect.

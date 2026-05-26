@@ -75,6 +75,23 @@ Grouped resources must preserve group identity by default so batching does not e
 identity.
 
 
+## Current Native Implementation Note
+
+As of 2026-05-26, the native executor implements GPU-backed item picking for point, pixel, marker,
+sphere, segment/stroke, path, primitive, mesh, image, and volume proxy visuals. Glyph, text, and
+labels do not have a native GPU picking path yet.
+
+The normative target model above is intentionally broader than the current implementation. Native
+pick execution currently handles none/item targets, while object, vertex, face, pixel, sample, group,
+strip, segment, triangle, text, and annotation-style targets remain future work unless a specific
+visual documents support. Hit policy execution and richer result payloads such as instance IDs, data
+positions, image texels, mesh face/region IDs, and volume ray/sample IDs are also still incomplete.
+
+Do not close those gaps by adding CPU-side visual hit tests. Visual picking must stay tied to the GPU
+render path so the result follows the same transforms, panel scissor, depth, visibility, and
+visual-specific shader semantics as rendered pixels.
+
+
 ## Timing, Coalescing, And APIs
 
 Picking may be requested immediately during interaction and delivered after the relevant frame

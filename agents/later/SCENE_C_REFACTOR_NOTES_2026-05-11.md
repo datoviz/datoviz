@@ -2,6 +2,10 @@
 
 Date: 2026-05-11
 
+Update 2026-05-26: several of the original `scene.c` hotspots have since been split into dedicated
+scene implementation files. The current request-path follow-up is tracked in
+[`SCENE_PICK_PROBE_REQUEST_PATH_REFACTOR.md`](SCENE_PICK_PROBE_REQUEST_PATH_REFACTOR.md).
+
 This note records concrete cleanup opportunities in `src/scene/scene.c` after a focused review of
 the current first-slice scene implementation. The file is functional, but it is carrying too many
 distinct responsibilities in one translation unit and now has several obvious extraction points.
@@ -12,7 +16,8 @@ distinct responsibilities in one translation unit and now has several obvious ex
 There is clear room for refactoring. The highest-value work is structural rather than semantic:
 
 1. Split `dvz_figure_emit_ex()` into smaller helpers.
-2. Unify the duplicated pick/probe readback pipeline.
+2. Unify the duplicated pick/probe readback pipeline, now centered on the current
+   `request_execute.c` aggregation point.
 3. Centralize repeated visual/texture dirty-state resets.
 4. Replace repeated constructor/setup patterns with small internal alloc/init helpers.
 5. Decompose the JSON exporter into append helpers.
@@ -112,6 +117,13 @@ Benefit:
 - one place for temporary emitter/stream/report lifecycle
 - easier to add triangle/image/mesh picking later without duplicating execution boilerplate
 - lower risk of divergence between pick and probe behavior
+
+2026-05-26 status: the first structural split is done. The relevant code now lives across
+`request_queue.c`, `hit_test.c`, `probe_plan.c`, and `request_execute.c`. The remaining cleanup is
+not the original "split out of `scene.c`" task; it is to keep generic request execution separate from
+visual-family pick/probe policy. See
+[`SCENE_PICK_PROBE_REQUEST_PATH_REFACTOR.md`](SCENE_PICK_PROBE_REQUEST_PATH_REFACTOR.md) before
+adding new pick targets, probe targets, or visual-family request branches.
 
 
 ## Priority 4: centralize visual texture dirty-state reset
@@ -253,9 +265,11 @@ This is small, but it is the kind of ambiguity that gets harder to spot when the
 1. Extract the shared emit helpers around `dvz_figure_emit_ex()`.
 2. Reuse `_scene_panel_visual_order()` and add a shared panel-MVP helper.
 3. Introduce one shared readback-execution helper for pick/probe requests.
-4. Centralize texture dirty-state mutation helpers.
-5. Fold visual/field/buffer constructors into small slot allocators.
-6. Split JSON serialization only after the lifecycle code is cleaner.
+4. Use the current pick/probe request-path follow-up before broadening request targets or
+   visual-family picking support.
+5. Centralize texture dirty-state mutation helpers.
+6. Fold visual/field/buffer constructors into small slot allocators.
+7. Split JSON serialization only after the lifecycle code is cleaner.
 
 
 ## Non-goals

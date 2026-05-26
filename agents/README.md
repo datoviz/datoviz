@@ -53,19 +53,22 @@ If resuming work on the branch:
 9. Read [../spec/scene/validation/IMAGE_PICKING_RECOVERY.md](../spec/scene/validation/IMAGE_PICKING_RECOVERY.md)
    before changing image probe coordinates, hidden pick-capable image behavior, panzoom probe
    mapping, or CPU fallback behavior.
-10. Read [../spec/scene/README.md](../spec/scene/README.md) before changing scene semantics,
+10. Read [later/SCENE_PICK_PROBE_REQUEST_PATH_REFACTOR.md](later/SCENE_PICK_PROBE_REQUEST_PATH_REFACTOR.md)
+   before changing `request_execute.c`, GPU pick/probe targets, request payload decoding, or
+   visual-family request execution policy.
+11. Read [../spec/scene/README.md](../spec/scene/README.md) before changing scene semantics,
    public scene API shape, frame planning, visual families, interaction, annotations, scales, or
    runtime boundaries.
-11. Read [../spec/scene/api/API_SURFACE.md](../spec/scene/api/API_SURFACE.md) before changing public
+12. Read [../spec/scene/api/API_SURFACE.md](../spec/scene/api/API_SURFACE.md) before changing public
    scene API shape or adding new scene object families.
-12. Read [../spec/drp2/README.md](../spec/drp2/README.md) and
+13. Read [../spec/drp2/README.md](../spec/drp2/README.md) and
    [../spec/drp2/AGENT_SPEC_PHASE.md](../spec/drp2/AGENT_SPEC_PHASE.md) before touching
    `spec/drp2/`, `src/drp2/`, or
    DRP2-emitting scene code.
-13. Read [done/SCENE_DRP2_IMPLEMENTATION.md](done/SCENE_DRP2_IMPLEMENTATION.md) and
+14. Read [done/SCENE_DRP2_IMPLEMENTATION.md](done/SCENE_DRP2_IMPLEMENTATION.md) and
    [done/DRP2_SCENE_SAFETY.md](done/DRP2_SCENE_SAFETY.md) when touching the completed first
    scene -> DRP2 -> runtime slice.
-14. Read [done/SCENE_CONTROLLER_BINDING_REFACTOR_PLAN.md](done/SCENE_CONTROLLER_BINDING_REFACTOR_PLAN.md)
+15. Read [done/SCENE_CONTROLLER_BINDING_REFACTOR_PLAN.md](done/SCENE_CONTROLLER_BINDING_REFACTOR_PLAN.md)
    and [done/SCENE_TURNTABLE_CONTROLLER_PLAN.md](done/SCENE_TURNTABLE_CONTROLLER_PLAN.md) before
    changing scene-owned controller binding, panel-local input routing, or camera controller
    semantics.
@@ -175,7 +178,8 @@ Strategic visual backlog:
 Tooling backlog:
 
 1. [later/POST_V0_4_REFACTOR_ROADMAP.md](later/POST_V0_4_REFACTOR_ROADMAP.md)
-2. [later/TEST_RUNNER_SCHEDULING.md](later/TEST_RUNNER_SCHEDULING.md)
+2. [later/SCENE_PICK_PROBE_REQUEST_PATH_REFACTOR.md](later/SCENE_PICK_PROBE_REQUEST_PATH_REFACTOR.md)
+3. [later/TEST_RUNNER_SCHEDULING.md](later/TEST_RUNNER_SCHEDULING.md)
 
 
 ## Maintenance Rules
