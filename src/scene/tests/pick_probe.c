@@ -298,14 +298,14 @@ int test_scene_pick_probe_queues_and_pinned_readout(TstContext* suite, const Tst
     AT(panel->pinned_readout_count == 1);
     AT(readout->probe.scalar == 3.5);
     AT(strcmp(readout->text, "density: 3.5") == 0);
-    AT(readout->dirty);
-    readout->dirty = false;
+    AT(readout->card.dirty);
+    readout->card.dirty = false;
     dvz_pinned_readout_set_format(
         readout, &(DvzFormatDesc){.precision = 2, .suffix = " u"});
     AT(readout->has_format);
     AT(strcmp(readout->format.suffix, " u") == 0);
     AT(strcmp(readout->text, "density: 3.50 u") == 0);
-    AT(readout->dirty);
+    AT(readout->card.dirty);
 
     DvzProbeResult rgba_probe = {
         .request_id = 7,
@@ -324,20 +324,20 @@ int test_scene_pick_probe_queues_and_pinned_readout(TstContext* suite, const Tst
     AT(strcmp(rgba_readout->text, "rgba: 0.25 0.5 1 0.75") == 0);
 
     _scene_prepare_text_visuals(figure);
-    ANN(readout->card_background_visual);
-    ANN(readout->card_text_visual);
-    ANN(readout->card_text_visual->text.glyph_visual);
-    ANN(rgba_readout->card_background_visual);
-    ANN(rgba_readout->card_text_visual);
-    AT(readout->card_background_visual->visible);
-    AT(readout->card_text_visual->visible);
-    AT(readout->card_text_visual->text.glyph_visual->visible);
-    AT(!readout->dirty);
-    AT(strcmp(readout->card_text, readout->text) == 0);
+    ANN(readout->card.background_visual);
+    ANN(readout->card.text_visual);
+    ANN(readout->card.text_visual->text.glyph_visual);
+    ANN(rgba_readout->card.background_visual);
+    ANN(rgba_readout->card.text_visual);
+    AT(readout->card.background_visual->visible);
+    AT(readout->card.text_visual->visible);
+    AT(readout->card.text_visual->text.glyph_visual->visible);
+    AT(!readout->card.dirty);
+    AT(strcmp(readout->card.realized_text, readout->text) == 0);
 
-    DvzVisual* background_visual = readout->card_background_visual;
-    DvzVisual* text_visual = readout->card_text_visual;
-    DvzVisual* glyph_visual = readout->card_text_visual->text.glyph_visual;
+    DvzVisual* background_visual = readout->card.background_visual;
+    DvzVisual* text_visual = readout->card.text_visual;
+    DvzVisual* glyph_visual = readout->card.text_visual->text.glyph_visual;
     dvz_pinned_readout_destroy(readout);
     AT(panel->pinned_readout_count == 1);
     AT(!background_visual->visible);

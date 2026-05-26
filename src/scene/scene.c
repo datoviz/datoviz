@@ -2428,7 +2428,7 @@ static bool _scene_panel_has_pending_adornment_work(const DvzPanel* panel)
     for (uint32_t i = 0; i < scene->pinned_readout_count; i++)
     {
         const DvzPinnedReadout* readout = &scene->pinned_readouts[i];
-        if (readout->panel == panel && readout->dirty)
+        if (readout->panel == panel && readout->card.dirty)
             return true;
     }
     for (uint32_t i = 0; i < scene->text_count; i++)

@@ -356,6 +356,7 @@ void _scene_panel_refresh_legend_reserve(DvzPanel* panel);
 /*************************************************************************************************/
 
 typedef struct DvzSceneFormatState DvzSceneFormatState;
+typedef struct DvzSceneCard DvzSceneCard;
 
 struct DvzSceneFormatState
 {
@@ -366,6 +367,29 @@ struct DvzSceneFormatState
     char unit[32];
     char prefix[DVZ_SCENE_LABEL_SIZE];
     char suffix[DVZ_SCENE_LABEL_SIZE];
+};
+
+
+struct DvzSceneCard
+{
+    DvzPanel* panel;
+    DvzVisual* background_visual;
+    DvzVisual* text_visual;
+    char text[DVZ_SCENE_LABEL_SIZE];
+    char realized_text[DVZ_SCENE_LABEL_SIZE];
+    float anchor_px[2];
+    float offset_px[2];
+    float padding_px[2];
+    float min_width_px;
+    float height_px;
+    float glyph_advance_px;
+    float text_size_px;
+    uint32_t max_text_chars;
+    DvzColor background_color;
+    DvzColor text_color;
+    uint32_t figure_width;
+    uint32_t figure_height;
+    bool dirty;
 };
 
 
@@ -693,12 +717,7 @@ struct DvzPinnedReadout
     bool has_format;
     DvzSceneFormatState format;
     char text[DVZ_SCENE_LABEL_SIZE];
-    bool dirty;
-    DvzVisual* card_background_visual;
-    DvzVisual* card_text_visual;
-    uint32_t card_figure_width;
-    uint32_t card_figure_height;
-    char card_text[DVZ_SCENE_LABEL_SIZE];
+    DvzSceneCard card;
 };
 
 
