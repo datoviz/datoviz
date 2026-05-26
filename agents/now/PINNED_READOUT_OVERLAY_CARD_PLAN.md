@@ -22,6 +22,9 @@ These commits are the current implemented baseline for this lane:
 4. `213a78a93 examples: pin image probe readouts`
 5. `acdbbca35 scene: factor pinned readouts through internal cards`
 6. `c8d85a70d scene: add private rich text block parser`
+7. `1bdafc8bb scene: rasterize private text blocks`
+8. `343b9bdc7 scene: lower text blocks to image visuals`
+9. `acce3878f scene: smoke text block image rendering`
 
 Current behavior:
 
@@ -30,13 +33,15 @@ Current behavior:
 3. `examples/c/techniques/image_probe.c` pins the next resolved image probe on click.
 4. A private `DvzTextBlock` parser/measurement prototype exists for `<b>`, `<i>`, escaped
    `<`, `>`, and `&`, with source/text style runs and diagnostics.
+5. Text blocks can rasterize to owned RGBA8 pixels and lower to image-like scene visuals backed by
+   explicit sampled fields.
+6. Offscreen app coverage confirms text-block image lowering renders nonblank pixels.
 
 Remaining follow-up before this plan should move to `agents/done/`:
 
 1. decide whether `DvzSceneCard` should grow a second in-tree consumer before any public overlay API,
-2. lower `DvzTextBlock` output to a raster/image-like scene contribution, or explicitly split that
-   into a new rich-text backend plan,
-3. add an offscreen nonblank smoke once rich text blocks render as image-like quads.
+2. decide whether the current text-block raster/image prototype is enough for this active plan, or
+   split DPI cache keys, richer wrapping, and public annotation/card integration into a follow-up.
 
 
 ## Owning References
@@ -145,8 +150,10 @@ Do not expose public APIs in this stage unless a second committed consumer prove
 
 ### 6. Rich Text-Block Prototype
 
-Status: **partially landed** in `c8d85a70d` as private parsing and fixed-advance measurement. CPU
-raster output, image-like quad lowering, DPI cache keys, and nonblank rendering smoke remain.
+Status: **landed as private prototype** in `c8d85a70d`, `1bdafc8bb`, `343b9bdc7`, and `acce3878f`.
+The first slice covers parsing, fixed-advance measurement, deterministic RGBA8 raster output,
+sampled-field image lowering, and offscreen nonblank rendering. DPI cache keys, richer wrapping,
+font-backed rasterization, and public annotation/card integration remain follow-up polish.
 
 Prototype a private text-block backend only after the glyph-card path is stable:
 
