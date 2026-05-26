@@ -31,9 +31,9 @@ The following parts of this target contract are intentionally deferred: `color`,
 `angle`, `shift`, `extent_space`, `transpose`, border/radius parameters, `texture_mode = none`,
 native shader-side scalar colormap sampling, heatmap isolines, and label-contour rendering.
 
-Before expanding this visual family, finish the image probe recovery slice for GPU-only readback,
-non-fullscreen quads, panzoom/keep-aspect transforms, hidden pick-capable segmentation images, and
-the live napari label-hover path.
+Before expanding this visual family, keep the image probe recovery slice covered for GPU-only
+readback, non-fullscreen quads, panzoom/keep-aspect transforms, and the live napari label-hover
+path. Segment IDs are owned by `dvz_labels()` probes rather than hidden image masks.
 
 
 ## Semantic Purpose

@@ -42,9 +42,9 @@ future scaffolding.
 
 Current shiny-demo recommendations are recorded in
 [`../soon/scene/SCENE_SHINY_DEMO_NEXT_STEPS.md`](../soon/scene/SCENE_SHINY_DEMO_NEXT_STEPS.md):
-vector/arrow visuals are the best new demo unlock, raw label-id GPU probing is the key labels
-interaction gap, explanatory layout proof is mostly validation/polish, and splats are attractive
-but a new visual family.
+vector/arrow visuals are the best new demo unlock, labels probe hardening is now sparse/high-id and
+transform pressure work, explanatory layout proof is mostly validation/polish, and splats are
+attractive but a new visual family.
 
 The CPU-side `geom` subset is also active: owned `DvzGeometry` buffers, cube/plane/sphere/surface
 grid generators, bounds, normals, transforms, merges, edges, contours, polygon triangulation, mesh
@@ -77,8 +77,7 @@ Remaining `geom` work is optional unless a release example needs it.
    [`../later/TEST_RUNNER_SCHEDULING.md`](../later/TEST_RUNNER_SCHEDULING.md) before changing test
    scheduling, process sharding, CI orchestration, or skip/reporting behavior.
 4. [`../../spec/scene/validation/IMAGE_PICKING_RECOVERY.md`](../../spec/scene/validation/IMAGE_PICKING_RECOVERY.md)
-   before changing image probe coordinates, hidden pick-capable image behavior, panzoom probe
-   mapping, or CPU fallback behavior.
+   before changing image/labels probe coordinates, panzoom probe mapping, or CPU fallback behavior.
 5. [`../done/PINNED_READOUT_OVERLAY_CARD_IMPLEMENTATION.md`](../done/PINNED_READOUT_OVERLAY_CARD_IMPLEMENTATION.md)
    before changing pinned readout cards, selected-item metadata cards, public overlay cards, or
    private rich text-block lowering.

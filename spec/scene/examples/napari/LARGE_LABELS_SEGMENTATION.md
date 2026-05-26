@@ -260,7 +260,7 @@ any CPU-colored overlay as an emulated labels prototype.
 2. Bind the microscopy image through `dvz_image()`.
 3. Bind the integer labels map through `dvz_labels()` and a categorical scale.
 4. Add GUI controls for opacity, boundaries, selected label, hidden IDs, and legend highlight.
-5. Add raw label-ID GPU probing and replace any temporary CPU hover/click lookup.
+5. Harden raw label-ID GPU probing with sparse IDs, panzoom transforms, and larger field sizes.
 6. Add stress-test mosaic generation.
 7. Record a 30-second demo video and measure FPS/latency.
 

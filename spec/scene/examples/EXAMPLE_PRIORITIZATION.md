@@ -42,9 +42,10 @@ scene-level compute/custom materials, and large-data policies.
 
 The current agent-facing recommendation for shiny demo follow-up is tracked in
 [`../../../agents/soon/scene/SCENE_SHINY_DEMO_NEXT_STEPS.md`](../../../agents/soon/scene/SCENE_SHINY_DEMO_NEXT_STEPS.md).
-In short: vector/arrow visuals are the best new showcase unlock; raw label-id GPU probing is the
-main remaining labels interaction gap; explanatory layout and the existing protein/LiDAR/brain/label
-showcases mostly need proof and polish; splats are attractive but are a new visual family.
+In short: vector/arrow visuals are the best new showcase unlock; labels probe hardening is now
+sparse/high-id and transform pressure work; explanatory layout and the existing
+protein/LiDAR/brain/label showcases mostly need proof and polish; splats are attractive but are a
+new visual family.
 
 
 ## Recommended First Batch
@@ -74,7 +75,7 @@ showcases mostly need proof and polish; splats are attractive but are a new visu
 | 8 | PD12M image embedding LOD | Medium | Image sprite LOD, large sampled fields, thumbnail packing, panzoom, picking. | Use only PD12M as the public dataset and keep all embedding/reduction work in preprocessing. |
 | 9 | Wikipedia semantic embedding atlas | Medium | Dense points, label LOD, search/query, selected cards, overlay layout. | Use Wikivecs map coordinates first; add N-dimensional vectors and query sidecar later. |
 | 10 | Toy DICOM / volume clipping | Medium | 3D sampled field, slices, crosshair, window/level, 4-panel layout. | Needs better slice semantics and colorbar/text. |
-| 11 | Large labels segmentation | Medium | Integer label textures, random label colors, selection, categorical legends. | First-class `dvz_labels()` path exists; raw label GPU probe and larger sparse-ID pressure tests remain. |
+| 11 | Large labels segmentation | Medium | Integer label textures, random label colors, selection, categorical legends. | First-class `dvz_labels()` path exists; larger sparse-ID and transform pressure tests remain. |
 | 12 | Earth / terrain / Mars flyover | Medium-low | Textured mesh/sphere, cubemap/skybox, asset cache, camera path. | Great gallery material after material textures land. |
 | 13 | Gray-Scott / Mandelbrot / particles | Low for scene-first | Scene-level compute, custom shaders, ping-pong resources. | Very high eye-candy, but should not be forced through ad hoc DRP-only paths. |
 | 14 | Tractography / tokamak / HEP | Low-medium | Ragged 3D paths, tubes, vector fields, transparency, picking. | Excellent later architecture-pressure demos. |
@@ -110,7 +111,7 @@ showcases mostly need proof and polish; splats are attractive but are a new visu
 | MSAA | Implemented. | Sphere edges, polished 3D. | Keep fallback/capability behavior explicit. |
 | WBOIT/depth peeling | Implemented first slices. | Brain mesh, transparent mesh, protein surfaces. | Harden composition and consider full dual depth peeling when needed. |
 | Volume occlusion | Implemented first slice. | Allen brain, embedded overlays inside volume. | Generalize beyond one narrow volume-occluder lane. |
-| Picking/probing | Broad item picking and image probes are GPU-backed for the first slice. | Marker picking, linked probe, brain, mesh selection. | Add exact marker/path semantics, mesh face/region, label GPU probe, text, and volume ray-hit payloads. |
+| Picking/probing | Broad item picking, image pixel probes, and labels segment probes are GPU-backed for the first slice. | Marker picking, linked probe, brain, mesh selection. | Add exact marker/path semantics, mesh face/region, labels probe pressure, text, and volume ray-hit payloads. |
 | Selection/linking | Point/marker mask highlight exists; broader linking is partial. | Mesh selection, brain region highlight, dashboards. | Extend selection styling to images and linked panels, then mesh/region highlights. |
 | FramePlan graph | Internal multi-pass shapes exist. | WBOIT, depth peel, EDL, SSAO, volume, future compute. | Expose scene-level virtual resources and pass dependencies. |
 | Compute/custom shaders | DRP2-level only. | Gray-Scott, Mandelbrot, particles, custom postprocess. | Promote compute/custom material resources into scene semantics. |

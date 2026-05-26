@@ -51,8 +51,7 @@ If resuming work on the branch:
    before extending pixel, point, marker, segment, path, image, sphere, or mesh first-slice
    behavior.
 9. Read [../spec/scene/validation/IMAGE_PICKING_RECOVERY.md](../spec/scene/validation/IMAGE_PICKING_RECOVERY.md)
-   before changing image probe coordinates, hidden pick-capable image behavior, panzoom probe
-   mapping, or CPU fallback behavior.
+   before changing image/labels probe coordinates, panzoom probe mapping, or CPU fallback behavior.
 10. Read [later/SCENE_PICK_PROBE_REQUEST_PATH_REFACTOR.md](later/SCENE_PICK_PROBE_REQUEST_PATH_REFACTOR.md)
    before changing `request_execute.c`, GPU pick/probe targets, request payload decoding, or
    visual-family request execution policy.

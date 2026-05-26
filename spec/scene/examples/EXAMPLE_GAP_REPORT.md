@@ -75,9 +75,9 @@ semantics, visual families, framegraph construction, UI integration, or Python-f
 
 7. **Richer picking, probing, selection, and linking.**
    Current request execution covers broad item picking for point-like, stroke, primitive, image,
-   mesh, sphere, and volume proxy targets, plus image and image-segment probe payloads. The examples
-   still need exact marker/path semantics, mesh face/region identity, raw label GPU probes,
-   streamline, heatmap-cell, DVR/MIP volume ray-hit, and annotation/text targets; stable
+   mesh, sphere, and volume proxy targets, plus image pixel and labels segment probe payloads. The
+   examples still need exact marker/path semantics, mesh face/region identity, labels probe
+   pressure tests, streamline, heatmap-cell, DVR/MIP volume ray-hit, and annotation/text targets; stable
    visual/item/group identities; link-key propagation; selection-driven styling; multi-panel hover
    routing; and CPU/GPU fallback policies.
 
@@ -116,7 +116,7 @@ semantics, visual families, framegraph construction, UI integration, or Python-f
 | `API_MESH_SELECTION_LINK.md` | Mesh visual, item-level mesh picking, link channels, selection objects, link-key storage, and pick result structs exist. | Mesh face/region identity, resolved mesh parent/child identity, linked highlight propagation into visual styling, and public mesh selection examples. |
 | `API_IMAGE_PROBE_PINNED_READOUT.md` | Image probe result and pinned-readout bookkeeping exist. | Rendered pinned readouts, shared formatting realization, stronger semantic payloads for scalar/vector/category probes, and polished public API examples. |
 | `API_SCALE_COLORBAR_ANNOTATION.md` | Scale, colormap, categorical entries, rendered continuous colorbar, rendered categorical legend, annotation, label, format descriptors, text backend, and placement structs exist. | Non-label annotations, data-anchored transform integration, richer legend/colorbar layout, and shared layout. |
-| `API_SAMPLED_FIELD.md` | `SampledField` covers scalar/color/label 2D/3D descriptors, geometry metadata, full/region updates, image binding, labels binding, and volume binding. | Labels GPU probing, richer probe payloads, 3D labels, and broader non-image consumers. |
+| `API_SAMPLED_FIELD.md` | `SampledField` covers scalar/color/label 2D/3D descriptors, geometry metadata, full/region updates, image binding, labels binding, and volume binding. | Richer probe payloads, labels probe pressure, 3D labels, and broader non-image consumers. |
 | `GALAXY.md` | 3D panel, camera/arcball, point/pixel visuals, alpha modes, and WBOIT path are partial fits. | True marker/point-sprite radial falloff, large-star dataset loader/cache, per-star alpha/size style quality, rotation animation helper, overlay text, and gallery screenshot path. |
 | `GLOBAL_WIND_PROJECTIONS.md` | Primitive/path/image can approximate some layers. | Projection-aware transform pipeline, vector glyph/arrow visual, vector Jacobian semantics, coastline/graticule helpers, orthographic globe/projection interaction, optional compute particle overlay, and hover labels. |
 | `GRAND_CANYON_FLYOVER.md` | Mesh, texture image path, depth, camera, arcball, app capture, and animation callbacks are building blocks. | Textured mesh material path beyond image quads, terrain sampler parameters, camera flyover/keyframe helper, cache/download bundle handling, optional sky/background pass, and deterministic gallery screenshot example. |

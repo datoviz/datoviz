@@ -211,7 +211,7 @@ the worked-spec tables above; exact fixture names remain in
 | `examples/c/showcase/lidar.c` | `v0.4 required` | Dense point/EDL/performance showcase candidate. |
 | `examples/c/showcase/brain.c`, `ibl_brain.c` | `v0.4 required` for narrow slice | Keep as volume/mesh/transparency showcase lane; defer full atlas interaction. |
 | `examples/c/showcase/spatial_omics.c` | `v0.4 experimental` | Useful large point/pixel stress demo; polish can slip if text/selection are incomplete. |
-| `examples/c/showcase/labels.c` | `v0.4 experimental` | First-class integer labels visual with categorical legend, shader-side selection/boundary styling, and temporary CPU hover/click lookup until raw label GPU probing lands. |
+| `examples/c/showcase/labels.c` | `v0.4 experimental` | First-class integer labels visual with categorical legend, shader-side selection/boundary styling, and probe-backed hover/click lookup. |
 | `examples/c/tools/export_point_wgsl.c`, `export_primitive_wgsl.c`, `export_image_wgsl.c` | `v0.4 fixture-only` | WGSL/WebGPU stream generation fixtures. |
 | `examples/c/tools/raw_triangle_drp2.c`, `record_dvzr.c`, `replay_dvzr.c`, `hosted_glfw_smoke.c` | `v0.4 fixture-only` | Protocol/runtime/hosted-boundary validation. |
 | `examples/c/tools/raw_triangle.c` | `v0.4 experimental` | Low-level developer example, not scene release narrative. |

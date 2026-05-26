@@ -53,7 +53,7 @@ The first public header split has landed. Treat these groups as implemented APIs
    bookkeeping,
 9. first request execution slices through the DRP2 runtime request processor, including item
    picking for point-like, stroke, primitive, image, mesh, sphere, and volume proxy targets plus
-   image and image-segment probe payloads,
+   image pixel and labels segment probe payloads,
 10. font/text and annotation retained-object bookkeeping,
 11. semantic `DvzText*` public surface and first rendered text/glyph output through atlas-backed
     scene resources,

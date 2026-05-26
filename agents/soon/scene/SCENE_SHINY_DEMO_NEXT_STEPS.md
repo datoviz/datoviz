@@ -50,14 +50,9 @@ and advanced per-item metadata unless the first showcase needs them.
 
 ### Raw Label-Id GPU Probe
 
-The labels showcase currently demonstrates rendering, legend integration, and selection, but hover
-and click readout should move off temporary CPU coordinate lookup. The target is a GPU-backed labels
-probe that returns the integer label id and mapped data coordinates.
-
-Do not count the existing hidden-RGBA `dvz_image()` segment probe as completion for this lane. That
-compatibility path decodes rendered RGBA payloads for image masks; the desired slice must probe a
-`DVZ_VISUAL_TYPE_LABELS` visual directly and return `DVZ_SCENE_VISUAL_FAMILY_LABELS`, the labels
-visual ID, and a `DvzCategoryId` preserving signed and high unsigned raw field values.
+The labels showcase now uses a GPU-backed `dvz_labels()` segment probe for hover and click readout.
+The remaining work is hardening: mapped data coordinates, panzoom/keep-aspect coverage, sparse-id
+pressure, and optimizing the request path beyond full-texture copies.
 
 Use [`SCENE_NAPARI_IMAGE_LABELS_PLAN.md`](SCENE_NAPARI_IMAGE_LABELS_PLAN.md) and
 [`../../../spec/scene/integration/napari/NAPARI.md`](../../../spec/scene/integration/napari/NAPARI.md)

@@ -5,9 +5,10 @@
 > - **Updated on:** `2026-05-18`
 > - **Purpose:** preserve the recovery checklist and remaining guardrails for image
 >   picking/probing after GPU-backed point/image request execution landed.
-> - **Current status:** the core GPU image-probe path, retained request executor reuse, hidden
->   segment-target RGBA probing, transparent misses, and readback-failure diagnostics are now
->   covered by scene tests. Napari/label-specific follow-up belongs in
+> - **Current status:** the core GPU image-probe path, retained request executor reuse,
+>   transparent misses, and readback-failure diagnostics are now covered by scene tests.
+>   Segment label probes now belong to `dvz_labels()` raw integer probing, not hidden RGBA image
+>   masks. Napari/label-specific follow-up belongs in
 >   [../../../agents/soon/scene/SCENE_NAPARI_IMAGE_LABELS_PLAN.md](../../../agents/soon/scene/SCENE_NAPARI_IMAGE_LABELS_PLAN.md).
 
 
@@ -20,9 +21,10 @@ label examples, or any panel-local image probe path: tests must cover the same c
 stack used by the app path.
 
 The important lesson is that executing a GPU readback is not enough. The tests must prove that the
-resolved label/color comes from the GPU bytes under the same conditions as the app path: hidden
-pick-capable image visuals, non-fullscreen image quads, panel-local coordinates, retained request
-execution, panzoom transforms, and `DVZ_PANZOOM_FLAGS_KEEP_ASPECT`.
+resolved color comes from the GPU bytes under the same conditions as the app path:
+non-fullscreen image quads, panel-local coordinates, retained request execution, panzoom
+transforms, and `DVZ_PANZOOM_FLAGS_KEEP_ASPECT`. Raw segment IDs should be validated through
+labels probes against integer `dvz_labels()` fields.
 
 
 ## Ground Rules
@@ -39,8 +41,8 @@ execution, panzoom transforms, and `DVZ_PANZOOM_FLAGS_KEEP_ASPECT`.
 ## Step-by-Step Plan
 
 The core recovery steps below are mostly landed for the current image-probe path. Treat the list as
-a regression checklist before changing probe coordinates, hidden pick-capable images, panzoom
-mapping, retained request execution, or CPU fallback behavior.
+a regression checklist before changing probe coordinates, panzoom mapping, retained request
+execution, or CPU fallback behavior.
 
 1. Stabilize the baseline.
    - Historical trigger: restore the segmentation-label hover labels to working behavior.
@@ -65,14 +67,14 @@ mapping, retained request execution, or CPU fallback behavior.
    - Verify panel-local pointer coordinates are transformed through the same MVP path used by
      normal scene rendering.
 
-5. Prove hidden segmentation picking.
-   - Use a visible image visual plus a hidden pick-capable image visual.
-   - Assert `DVZ_SCENE_TARGET_SEGMENT` probes select the hidden pick-capable visual.
-   - Assert decoded label ids for normal, zoomed, and panned views.
-   - Include a zero-label/transparent miss case.
+5. Prove labels segmentation probing.
+   - Use a visible `dvz_labels()` visual with an integer sampled field.
+   - Assert `DVZ_SCENE_TARGET_SEGMENT` probes select the labels visual.
+   - Assert decoded signed and high unsigned label ids for normal, zoomed, and panned views.
+   - Include a background-label miss case.
 
 6. Move the live example onto the proven path.
-   - Keep the hidden label texture orientation aligned with the displayed image.
+   - Keep labels field orientation aligned with the displayed labels visual.
    - Avoid CPU mouse-position label computation in the example.
    - Add a bounded smoke mode or test helper that queues deterministic probe requests without manual
      cursor movement.

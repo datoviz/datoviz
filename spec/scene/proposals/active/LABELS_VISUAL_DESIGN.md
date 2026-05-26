@@ -17,8 +17,7 @@ Current implementation status, as of 2026-05-26:
    continuous-scale only. Labels examples should attach legends, not categorical colorbars.
 5. `examples/c/showcase/labels.c` is the live labels example: signed integer label field,
    categorical scale, retained labels visual, attached legend, panzoom panel, GUI controls, shader
-   selected-boundary feedback, and legend highlight wiring. Hover/click readout still uses a
-   temporary CPU coordinate lookup until raw label GPU probing lands.
+   selected-boundary feedback, legend highlight wiring, and probe-backed hover/click readout.
 
 
 ## Purpose
@@ -475,13 +474,12 @@ Resolving a human-readable string from the retained scale after GPU readback is 
 identity came from the GPU. Returning labels by decoding rendered RGBA colors is not sufficient for
 the final path.
 
-Current code note on 2026-05-26: `src/scene/request_execute.c` has a hidden-RGBA `dvz_image()`
-segment-probe compatibility path that returns `DVZ_PROBE_VALUE_LABEL` for encoded image masks. That
-path is intentionally not the labels visual contract: it reports the image visual family, is limited
-by the encoded RGBA payload, cannot preserve signed raw IDs, and requires a duplicate image payload
-instead of probing the labels visual's integer texture.
+Current code note on 2026-05-26: the hidden-RGBA `dvz_image()` segment-probe compatibility path was
+removed. `src/scene/request_execute.c` now treats `DVZ_VISUAL_TYPE_LABELS` as the segment-probe
+owner for raw 2D integer label fields, preserving signed IDs and high unsigned IDs in
+`DvzCategoryId`.
 
-Implementation plan:
+Implemented first-slice plan:
 
 1. Treat `DVZ_VISUAL_TYPE_LABELS` as probe-capable for `DVZ_SCENE_TARGET_SEGMENT` when the visual
    has a bound integer `DvzSampledField`.
@@ -505,15 +503,13 @@ Implementation plan:
    example once this lands.
 9. Add focused coverage:
    2D signed labels probe with `-7`, 2D unsigned labels probe with `4000000000`, background miss,
-   scale-label resolution, panzoom-transformed coordinate mapping, and a regression proving no
-   hidden RGBA image visual is required.
+   scale-label resolution, and a regression proving no hidden RGBA image visual is required.
 10. Treat the implementation as incomplete unless the result reports
     `visual_family == DVZ_SCENE_VISUAL_FAMILY_LABELS`, `visual_id` equal to the `dvz_labels()`
     visual, `value_kind == DVZ_PROBE_VALUE_LABEL`, and `category_id` equal to the raw integer texel.
 
-The existing hidden RGBA image probe route may remain only as a compatibility path for image-based
-segment masks. It is not the labels visual contract because it cannot preserve negative IDs, is
-limited by the encoded payload width, and duplicates the labels texture.
+Follow-up hardening should add panzoom-transformed labels probe coverage and optimize the current
+request readback path so it does not need to copy the full labels texture to read one texel.
 
 
 ## Live Example Target
@@ -534,7 +530,7 @@ The first screen should be the working visualization, not a landing page:
 1. central panzoom panel with the image and labels overlay;
 2. right-side attached legend titled "Labels";
 3. compact GUI panel for working visibility and selection controls;
-4. hover readout showing raw ID through a temporary CPU coordinate lookup;
+4. hover readout showing the GPU-probed raw ID;
 5. optional future status text for texture format and whether the field is CPU-owned or GPU-only.
 
 Useful GUI controls:
@@ -560,7 +556,7 @@ integer labels textures use nearest samplers, including mipmap mode, not linear 
 Remaining example upgrades should become small incremental patches as the underlying labels
 features land:
 
-1. replace the temporary CPU hover/click lookup with raw labels GPU probing;
+1. add broader sparse-ID, panzoom, and keep-aspect pressure tests for labels probing;
 2. make opacity, selected, hidden, boundary, and fallback-seed controls affect the labels shader;
 3. add scale editing controls once categorical scale updates lower into GPU style buffers;
 4. add an unsigned `R32_UINT` mode showing very large IDs such as `4000000000`;
@@ -603,7 +599,7 @@ The labels visual should harden these lower-layer capabilities:
    boundary uniforms.
 9. Done for the first 2D slice: implement selected-label boundary rendering in GLSL/WGSL labels
    shaders.
-10. Pending: add GPU probe/readback returning raw label IDs.
+10. Done for the first 2D slice: add GPU probe/readback returning raw label IDs.
 11. Pending: add 3D axis-aligned label slice rendering.
 12. Pending: add GPU-only field/resource binding for labels.
 13. Done for first slice: add WGSL parity and fixture/preflight coverage for 2D labels.
