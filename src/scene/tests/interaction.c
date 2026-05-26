@@ -2223,6 +2223,65 @@ int test_scene_text_block_measure(TstContext* suite, const TstCase* item)
 }
 
 
+/**
+ * Verify private text-block rasterization produces owned RGBA8 pixels.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_text_block_rasterize(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    ANN(item);
+
+    DvzTextBlock block = {0};
+    _scene_text_block_init(&block, "<b>Hi</b> <i>x</i>");
+    AT(_scene_text_block_parse(&block) == 0);
+    AT(_scene_text_block_measure(
+           &block,
+           &(DvzTextBlockLayout){
+               .max_width_px = 48.0f,
+               .char_width_px = 7.0f,
+               .line_height_px = 10.0f,
+               .padding_px = {2.0f, 2.0f},
+           }) == 0);
+    AT(_scene_text_block_rasterize(
+           &block,
+           &(DvzTextBlockRasterDesc){
+               .text_color = {10, 240, 40, 255},
+               .background_color = {0, 0, 0, 0},
+           }) == 0);
+    AT(block.rgba != NULL);
+    AT(block.raster_width == 32);
+    AT(block.raster_height == 14);
+    AT(block.rgba_size == (uint64_t)block.raster_width * block.raster_height * 4u);
+    AT(block.raster_version == 1);
+
+    uint32_t opaque = 0;
+    uint32_t green = 0;
+    for (uint64_t i = 0; i < block.rgba_size / 4u; i++)
+    {
+        const uint8_t* px = &block.rgba[4u * i];
+        if (px[3] > 0)
+            opaque++;
+        if (px[0] == 10 && px[1] == 240 && px[2] == 40 && px[3] == 255)
+            green++;
+    }
+    AT(opaque > 0);
+    AT(green == opaque);
+
+    uint8_t* first_raster = block.rgba;
+    AT(_scene_text_block_rasterize(&block, NULL) == 0);
+    AT(block.rgba == first_raster);
+    AT(block.raster_version == 2);
+    _scene_text_block_destroy(&block);
+    AT(block.rgba == NULL);
+    AT(block.rgba_size == 0);
+    return 0;
+}
+
+
 
 /**
  * Register scene interaction tests.
@@ -2263,6 +2322,7 @@ int test_scene_interaction(TstSuite* suite)
     TST_CASE(test_scene_text_attach_mode_change_regenerates_glyphs);
     TST_CASE(test_scene_text_block_parse_markup);
     TST_CASE(test_scene_text_block_measure);
+    TST_CASE(test_scene_text_block_rasterize);
 
     return 0;
 }

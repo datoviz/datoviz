@@ -852,6 +852,8 @@ int test_scene_text_block_parse_markup(TstContext* suite, const TstCase* item);
 
 int test_scene_text_block_measure(TstContext* suite, const TstCase* item);
 
+int test_scene_text_block_rasterize(TstContext* suite, const TstCase* item);
+
 #if defined(DVZ_HAS_APP) && DVZ_HAS_APP
 int test_app_offscreen_has_nonblank_pixels(TstContext* suite, const TstCase* item);
 

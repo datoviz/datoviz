@@ -256,6 +256,7 @@ typedef struct DvzTextAtlasSpec DvzTextAtlasSpec;
 typedef struct DvzTextAtlas DvzTextAtlas;
 typedef struct DvzTextBlockRun DvzTextBlockRun;
 typedef struct DvzTextBlockLayout DvzTextBlockLayout;
+typedef struct DvzTextBlockRasterDesc DvzTextBlockRasterDesc;
 typedef struct DvzTextBlock DvzTextBlock;
 
 typedef void (*DvzSceneRequestFrameCallback)(DvzFigure* figure, void* user_data);
@@ -521,6 +522,13 @@ struct DvzTextBlockLayout
 };
 
 
+struct DvzTextBlockRasterDesc
+{
+    DvzColor text_color;
+    DvzColor background_color;
+};
+
+
 struct DvzTextBlock
 {
     char source[DVZ_SCENE_TEXT_BLOCK_SOURCE_SIZE];
@@ -532,6 +540,11 @@ struct DvzTextBlock
     DvzTextBlockRun runs[DVZ_SCENE_TEXT_BLOCK_MAX_RUNS];
     DvzTextBlockLayout layout;
     DvzTextLayoutMetrics metrics;
+    uint8_t* rgba;
+    uint64_t rgba_size;
+    uint32_t raster_width;
+    uint32_t raster_height;
+    uint64_t raster_version;
     bool valid;
 };
 
@@ -1696,9 +1709,13 @@ bool _scene_emit_sampled_field_texture_upload(
 
 void _scene_text_block_init(DvzTextBlock* block, const char* source);
 
+void _scene_text_block_destroy(DvzTextBlock* block);
+
 int _scene_text_block_parse(DvzTextBlock* block);
 
 int _scene_text_block_measure(DvzTextBlock* block, const DvzTextBlockLayout* layout);
+
+int _scene_text_block_rasterize(DvzTextBlock* block, const DvzTextBlockRasterDesc* desc);
 
 bool _scene_visual_frame_plan_metadata(
     const DvzFigure* figure, const DvzVisual* visual, uint32_t visual_index,
