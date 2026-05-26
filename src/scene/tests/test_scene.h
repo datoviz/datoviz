@@ -812,6 +812,8 @@ int test_scene_selection_card_realizes_pick_metadata(TstContext* suite, const Ts
 
 int test_scene_overlay_card_public_api(TstContext* suite, const TstCase* item);
 
+int test_scene_overlay_card_rich_text_public_api(TstContext* suite, const TstCase* item);
+
 int test_scene_pick_probe_queues_and_pinned_readout(TstContext* suite, const TstCase* item);
 
 int test_scene_pick_request_same_id_supersedes_older_unresolved(

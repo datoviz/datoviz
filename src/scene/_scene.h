@@ -369,6 +369,14 @@ void _scene_panel_refresh_legend_reserve(DvzPanel* panel);
 typedef struct DvzSceneFormatState DvzSceneFormatState;
 typedef struct DvzSceneCard DvzSceneCard;
 
+
+typedef enum
+{
+    DVZ_SCENE_CARD_CONTENT_TEXT = 0,
+    DVZ_SCENE_CARD_CONTENT_IMAGE,
+} DvzSceneCardContent;
+
+
 struct DvzSceneFormatState
 {
     int32_t precision;
@@ -386,6 +394,7 @@ struct DvzSceneCard
     DvzPanel* panel;
     DvzVisual* background_visual;
     DvzVisual* text_visual;
+    DvzSceneCardContent content;
     char text[DVZ_SCENE_LABEL_SIZE];
     char realized_text[DVZ_SCENE_LABEL_SIZE];
     DvzOverlayCardPlacement placement;
@@ -400,6 +409,7 @@ struct DvzSceneCard
     uint32_t max_text_chars;
     DvzColor background_color;
     DvzColor text_color;
+    float content_size_px[2];
     float realized_rect_px[4];
     uint32_t figure_width;
     uint32_t figure_height;
@@ -832,7 +842,12 @@ struct DvzOverlayCard
     DvzOverlay* overlay;
     DvzPanel* panel;
     DvzSceneCard card;
+    DvzTextBlock rich_block;
+    DvzTextBlockLayout rich_layout;
+    DvzTextBlockRasterDesc rich_raster;
     uint32_t flags;
+    bool rich_enabled;
+    bool rich_dirty;
     bool active;
 };
 

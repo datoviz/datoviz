@@ -90,6 +90,10 @@ static bool _readout_card_realize(DvzFigure* figure, DvzPinnedReadout* readout);
 
 static bool _overlay_card_realize(DvzFigure* figure, DvzOverlayCard* card);
 
+static void _overlay_card_hide_rich(DvzOverlayCard* card);
+
+static bool _overlay_card_realize_rich(DvzFigure* figure, DvzOverlayCard* card);
+
 
 
 /*************************************************************************************************/
@@ -602,6 +606,7 @@ static void _scene_card_init(DvzSceneCard* card, DvzPanel* panel)
     card->padding_px[1] = 6.0f;
     card->min_width_px = 32.0f;
     card->height_px = 24.0f;
+    card->content = DVZ_SCENE_CARD_CONTENT_TEXT;
     card->glyph_advance_px = 7.0f;
     card->text_size_px = 12.0f;
     card->text_renderer = DVZ_TEXT_RENDERER_SMALL_BITMAP_ATLAS;
@@ -763,7 +768,10 @@ static bool _scene_card_realize(DvzFigure* figure, DvzSceneCard* card)
     DvzPanel* panel = card->panel;
     if (panel == NULL || panel->figure != figure)
         return true;
-    if (!card->visible || card->text[0] == '\0')
+    if (!card->visible ||
+        (card->content == DVZ_SCENE_CARD_CONTENT_TEXT && card->text[0] == '\0') ||
+        (card->content == DVZ_SCENE_CARD_CONTENT_IMAGE &&
+         (card->content_size_px[0] <= 0.0f || card->content_size_px[1] <= 0.0f)))
     {
         _scene_card_hide(card);
         return true;
@@ -787,7 +795,7 @@ static bool _scene_card_realize(DvzFigure* figure, DvzSceneCard* card)
                     .z_layer = INT32_MAX / 4 - 2, .controller_mode = DVZ_CONTROLLER_FIXED}) != 0)
             return false;
     }
-    if (card->text_visual == NULL)
+    if (card->content == DVZ_SCENE_CARD_CONTENT_TEXT && card->text_visual == NULL)
     {
         card->text_visual = _scene_text_visual(scene, 0);
         if (card->text_visual == NULL)
@@ -802,20 +810,29 @@ static bool _scene_card_realize(DvzFigure* figure, DvzSceneCard* card)
                     .z_layer = INT32_MAX / 4 - 1, .controller_mode = DVZ_CONTROLLER_FIXED}) != 0)
             return false;
     }
-    if (card->text_visual->text.renderer != card->text_renderer)
+    if (card->content == DVZ_SCENE_CARD_CONTENT_TEXT &&
+        card->text_visual->text.renderer != card->text_renderer)
     {
         if (_scene_adornment_text_visual_set_renderer(card->text_visual, card->text_renderer) != 0)
             return false;
         card->dirty = true;
     }
+    if (card->content == DVZ_SCENE_CARD_CONTENT_IMAGE && card->text_visual != NULL)
+    {
+        dvz_visual_set_visible(card->text_visual, false);
+        if (card->text_visual->text.glyph_visual != NULL)
+            dvz_visual_set_visible(card->text_visual->text.glyph_visual, false);
+    }
 
     bool size_changed =
         card->figure_width != figure->width || card->figure_height != figure->height;
-    bool text_changed = strcmp(card->realized_text, card->text) != 0;
+    bool text_changed = card->content == DVZ_SCENE_CARD_CONTENT_TEXT &&
+                        strcmp(card->realized_text, card->text) != 0;
     if (!card->dirty && !size_changed && !text_changed)
     {
         dvz_visual_set_visible(card->background_visual, true);
-        dvz_visual_set_visible(card->text_visual, true);
+        if (card->content == DVZ_SCENE_CARD_CONTENT_TEXT && card->text_visual != NULL)
+            dvz_visual_set_visible(card->text_visual, true);
         return true;
     }
 
@@ -827,11 +844,21 @@ static bool _scene_card_realize(DvzFigure* figure, DvzSceneCard* card)
         return true;
     }
 
-    size_t text_len = strlen(card->text);
-    if (text_len > card->max_text_chars)
-        text_len = card->max_text_chars;
-    float card_w = 2.0f * card->padding_px[0] + card->glyph_advance_px * (float)text_len;
-    float card_h = card->height_px;
+    float card_w = 0.0f;
+    float card_h = 0.0f;
+    if (card->content == DVZ_SCENE_CARD_CONTENT_IMAGE)
+    {
+        card_w = 2.0f * card->padding_px[0] + card->content_size_px[0];
+        card_h = 2.0f * card->padding_px[1] + card->content_size_px[1];
+    }
+    else
+    {
+        size_t text_len = strlen(card->text);
+        if (text_len > card->max_text_chars)
+            text_len = card->max_text_chars;
+        card_w = 2.0f * card->padding_px[0] + card->glyph_advance_px * (float)text_len;
+        card_h = card->height_px;
+    }
     if (card_w > panel_size[0] - 8.0f)
         card_w = panel_size[0] - 8.0f;
     if (card_w < card->min_width_px)
@@ -878,27 +905,34 @@ static bool _scene_card_realize(DvzFigure* figure, DvzSceneCard* card)
         return false;
     dvz_visual_set_visible(card->background_visual, true);
 
-    const char* labels[1] = {card->text};
-    vec3 text_pos[1] = {{x + card->padding_px[0], y + card->padding_px[1], 0.0f}};
-    vec2 text_anchor[1] = {{0.0f, 0.0f}};
-    float text_size[1] = {card->text_size_px};
-    DvzColor text_color[1] = {card->text_color};
-    float text_angle[1] = {0.0f};
-    DvzVisualDataUpdate text_updates[5] = {
-        {.attr_name = "position", .data = text_pos, .item_count = 1},
-        {.attr_name = "anchor", .data = text_anchor, .item_count = 1},
-        {.attr_name = "size", .data = text_size, .item_count = 1},
-        {.attr_name = "color", .data = text_color, .item_count = 1},
-        {.attr_name = "angle", .data = text_angle, .item_count = 1},
-    };
-    if (dvz_visual_set_strings(card->text_visual, "text", labels, 1) != 0 ||
-        dvz_visual_set_data_many(card->text_visual, text_updates, 5) != 0)
-        return false;
-    dvz_visual_set_visible(card->text_visual, true);
+    if (card->content == DVZ_SCENE_CARD_CONTENT_TEXT)
+    {
+        ANN(card->text_visual);
+        const char* labels[1] = {card->text};
+        vec3 text_pos[1] = {{x + card->padding_px[0], y + card->padding_px[1], 0.0f}};
+        vec2 text_anchor[1] = {{0.0f, 0.0f}};
+        float text_size[1] = {card->text_size_px};
+        DvzColor text_color[1] = {card->text_color};
+        float text_angle[1] = {0.0f};
+        DvzVisualDataUpdate text_updates[5] = {
+            {.attr_name = "position", .data = text_pos, .item_count = 1},
+            {.attr_name = "anchor", .data = text_anchor, .item_count = 1},
+            {.attr_name = "size", .data = text_size, .item_count = 1},
+            {.attr_name = "color", .data = text_color, .item_count = 1},
+            {.attr_name = "angle", .data = text_angle, .item_count = 1},
+        };
+        if (dvz_visual_set_strings(card->text_visual, "text", labels, 1) != 0 ||
+            dvz_visual_set_data_many(card->text_visual, text_updates, 5) != 0)
+            return false;
+        dvz_visual_set_visible(card->text_visual, true);
+    }
 
     card->figure_width = figure->width;
     card->figure_height = figure->height;
-    dvz_strlcpy(card->realized_text, card->text, sizeof(card->realized_text));
+    if (card->content == DVZ_SCENE_CARD_CONTENT_TEXT)
+        dvz_strlcpy(card->realized_text, card->text, sizeof(card->realized_text));
+    else
+        card->realized_text[0] = '\0';
     card->dirty = false;
     return true;
 }
@@ -952,7 +986,110 @@ static bool _overlay_card_realize(DvzFigure* figure, DvzOverlayCard* card)
     ANN(card);
     if (!card->active || card->scene == NULL || card->panel == NULL || card->panel->figure != figure)
         return true;
-    return _scene_card_realize(figure, &card->card);
+    if (!card->rich_enabled)
+    {
+        _overlay_card_hide_rich(card);
+        return _scene_card_realize(figure, &card->card);
+    }
+    return _overlay_card_realize_rich(figure, card);
+}
+
+
+/**
+ * Hide the rich-image visual associated with one public overlay card.
+ *
+ * @param card the overlay card
+ */
+static void _overlay_card_hide_rich(DvzOverlayCard* card)
+{
+    if (card == NULL)
+        return;
+    if (card->rich_block.image_visual != NULL)
+        dvz_visual_set_visible(card->rich_block.image_visual, false);
+}
+
+
+/**
+ * Realize or update one public overlay card with rich text content.
+ *
+ * @param figure the figure being prepared
+ * @param card the overlay card
+ * @return whether realization succeeded
+ */
+static bool _overlay_card_realize_rich(DvzFigure* figure, DvzOverlayCard* card)
+{
+    ANN(figure);
+    ANN(card);
+    DvzPanel* panel = card->panel;
+    if (panel == NULL || panel->figure != figure)
+        return true;
+    if (!card->card.visible)
+    {
+        _scene_card_hide(&card->card);
+        _overlay_card_hide_rich(card);
+        return true;
+    }
+
+    if (card->rich_dirty || !card->rich_block.valid || card->rich_block.rgba == NULL)
+    {
+        if (_scene_text_block_parse(&card->rich_block) != 0)
+            return false;
+        if (_scene_text_block_measure(&card->rich_block, &card->rich_layout) != 0)
+            return false;
+        if (_scene_text_block_rasterize(&card->rich_block, &card->rich_raster) != 0)
+            return false;
+        card->rich_dirty = false;
+    }
+
+    float old_content_w = card->card.content_size_px[0];
+    float old_content_h = card->card.content_size_px[1];
+    card->card.content = DVZ_SCENE_CARD_CONTENT_IMAGE;
+    card->card.content_size_px[0] =
+        card->rich_block.raster_scale > 0.0f
+            ? (float)card->rich_block.raster_width / card->rich_block.raster_scale
+            : (float)card->rich_block.raster_width;
+    card->card.content_size_px[1] =
+        card->rich_block.raster_scale > 0.0f
+            ? (float)card->rich_block.raster_height / card->rich_block.raster_scale
+            : (float)card->rich_block.raster_height;
+    if (old_content_w != card->card.content_size_px[0] ||
+        old_content_h != card->card.content_size_px[1])
+    {
+        card->card.dirty = true;
+    }
+    if (!_scene_card_realize(figure, &card->card))
+        return false;
+
+    float panel_size[2] = {0};
+    _scene_card_panel_size_px(figure, panel, panel_size);
+    if (panel_size[0] <= 0.0f || panel_size[1] <= 0.0f)
+    {
+        _overlay_card_hide_rich(card);
+        return true;
+    }
+
+    float content_x = card->card.realized_rect_px[0] + card->card.padding_px[0];
+    float content_y = card->card.realized_rect_px[1] + card->card.padding_px[1];
+    float content_w = card->card.content_size_px[0];
+    float content_h = card->card.content_size_px[1];
+    vec3 position = {
+        -1.0f + 2.0f * content_x / panel_size[0],
+        +1.0f - 2.0f * content_y / panel_size[1],
+        0.0f,
+    };
+    vec2 extent = {
+        2.0f * content_w / panel_size[0],
+        2.0f * content_h / panel_size[1],
+    };
+    return _scene_text_block_realize_image(
+               &card->rich_block, panel,
+               &(DvzTextBlockImageDesc){
+                   .position = {position[0], position[1], position[2]},
+                   .extent = {extent[0], extent[1]},
+                   .anchor = {-1.0f, +1.0f},
+                   .z_layer = INT32_MAX / 4 - 1,
+                   .controller_mode = DVZ_CONTROLLER_FIXED,
+               }) == 0;
 }
 
 
@@ -1576,6 +1713,7 @@ void dvz_overlay_card_destroy(DvzOverlayCard* card)
         return;
     DvzFigure* figure = card->panel != NULL ? card->panel->figure : NULL;
     _scene_card_hide(&card->card);
+    _scene_text_block_destroy(&card->rich_block);
     card->scene = NULL;
     card->overlay = NULL;
     card->panel = NULL;
@@ -1585,6 +1723,8 @@ void dvz_overlay_card_destroy(DvzOverlayCard* card)
     card->card.text[0] = '\0';
     card->card.realized_text[0] = '\0';
     card->card.dirty = false;
+    card->rich_enabled = false;
+    card->rich_dirty = false;
     _scene_notify_request_frame(figure);
 }
 
@@ -1620,10 +1760,79 @@ void dvz_overlay_card_set_text(DvzOverlayCard* card, const char* text)
     ANN(card);
     if (!card->active)
         return;
+    if (card->rich_enabled)
+    {
+        _scene_text_block_destroy(&card->rich_block);
+        card->rich_enabled = false;
+        card->rich_dirty = false;
+    }
+    card->card.content = DVZ_SCENE_CARD_CONTENT_TEXT;
     if (text != NULL)
         dvz_strlcpy(card->card.text, text, sizeof(card->card.text));
     else
         card->card.text[0] = '\0';
+    card->card.dirty = true;
+    _scene_notify_request_frame(card->panel != NULL ? card->panel->figure : NULL);
+}
+
+
+/**
+ * Set rich text displayed in an overlay card.
+ *
+ * @param card the card
+ * @param desc rich text descriptor
+ * @return 0 on success, -1 on error
+ */
+int dvz_overlay_card_set_rich_text(DvzOverlayCard* card, const DvzOverlayRichTextDesc* desc)
+{
+    ANN(card);
+    if (!card->active || desc == NULL || desc->source == NULL)
+        return -1;
+
+    _scene_text_block_destroy(&card->rich_block);
+    _scene_text_block_init(&card->rich_block, desc->source);
+
+    card->rich_layout = (DvzTextBlockLayout){
+        .max_width_px = desc->max_width_px > 0.0f ? desc->max_width_px : 220.0f,
+        .char_width_px = desc->char_width_px > 0.0f ? desc->char_width_px : 7.0f,
+        .line_height_px = desc->line_height_px > 0.0f ? desc->line_height_px : 14.0f,
+        .padding_px = {0.0f, 0.0f},
+    };
+
+    DvzColor text_color = desc->text_color;
+    if (text_color.a == 0)
+        text_color = card->card.text_color;
+    card->rich_raster = (DvzTextBlockRasterDesc){
+        .text_color = text_color,
+        .background_color = desc->background_color,
+        .scale = desc->scale > 0.0f ? desc->scale : 1.0f,
+    };
+
+    card->rich_enabled = true;
+    card->rich_dirty = true;
+    card->card.content = DVZ_SCENE_CARD_CONTENT_IMAGE;
+    card->card.dirty = true;
+    _scene_notify_request_frame(card->panel != NULL ? card->panel->figure : NULL);
+    return 0;
+}
+
+
+/**
+ * Clear rich text content and return the card to the plain GPU text path.
+ *
+ * @param card the card
+ */
+void dvz_overlay_card_clear_rich_text(DvzOverlayCard* card)
+{
+    ANN(card);
+    if (!card->active)
+        return;
+    _scene_text_block_destroy(&card->rich_block);
+    card->rich_enabled = false;
+    card->rich_dirty = false;
+    card->card.content = DVZ_SCENE_CARD_CONTENT_TEXT;
+    card->card.content_size_px[0] = 0.0f;
+    card->card.content_size_px[1] = 0.0f;
     card->card.dirty = true;
     _scene_notify_request_frame(card->panel != NULL ? card->panel->figure : NULL);
 }
@@ -1696,7 +1905,10 @@ void dvz_overlay_card_set_visible(DvzOverlayCard* card, bool visible)
     card->card.visible = visible;
     card->card.dirty = true;
     if (!visible)
+    {
         _scene_card_hide(&card->card);
+        _overlay_card_hide_rich(card);
+    }
     _scene_notify_request_frame(card->panel != NULL ? card->panel->figure : NULL);
 }
 

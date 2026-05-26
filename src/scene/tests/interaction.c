@@ -459,6 +459,84 @@ int test_scene_overlay_card_public_api(TstContext* suite, const TstCase* item)
 }
 
 
+int test_scene_overlay_card_rich_text_public_api(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    ANN(item);
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 640, 480, 0);
+    DvzPanel* panel = dvz_panel(
+        figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+    ANN(figure);
+    ANN(panel);
+
+    DvzOverlay* overlay = dvz_overlay(panel, 0);
+    ANN(overlay);
+    DvzOverlayCardStyle style = dvz_overlay_card_style();
+    style.background_color = dvz_color_rgba(8, 12, 20, 235);
+    style.padding_px[0] = 10.0f;
+    style.padding_px[1] = 8.0f;
+    DvzOverlayCard* card = dvz_overlay_card(
+        overlay,
+        &(DvzOverlayCardDesc){
+            .text = "fallback",
+            .placement = DVZ_OVERLAY_CARD_PLACEMENT_TOP_LEFT,
+            .offset_px = {16.0f, 18.0f},
+            .style = &style});
+    ANN(card);
+
+    AT(dvz_overlay_card_set_rich_text(
+           card,
+           &(DvzOverlayRichTextDesc){
+               .source = "Rich <b>card</b> <u><color=#2A80E6>blue</color></u>",
+               .max_width_px = 126.0f,
+               .char_width_px = 7.0f,
+               .line_height_px = 12.0f,
+               .scale = 2.0f,
+               .text_color = {235, 240, 250, 255},
+               .background_color = {0, 0, 0, 0},
+           }) == 0);
+    AT(card->rich_enabled);
+    AT(card->rich_dirty);
+
+    _scene_prepare_text_visuals(figure);
+    AT(!card->rich_dirty);
+    AT(card->card.content == DVZ_SCENE_CARD_CONTENT_IMAGE);
+    AT(card->rich_block.rgba != NULL);
+    AT(card->rich_block.raster_width > 0);
+    AT(card->rich_block.raster_height > 0);
+    AC(card->rich_block.raster_scale, 2.0f, 1e-6f);
+    ANN(card->card.background_visual);
+    ANN(card->rich_block.image_visual);
+    AT(card->card.background_visual->visible);
+    AT(card->rich_block.image_visual->visible);
+    AT(card->card.text_visual == NULL || !card->card.text_visual->visible);
+    AT(card->card.realized_rect_px[2] >= card->card.content_size_px[0]);
+    AT(card->card.realized_rect_px[3] >= card->card.content_size_px[1]);
+
+    dvz_overlay_card_set_visible(card, false);
+    AT(!card->card.background_visual->visible);
+    AT(!card->rich_block.image_visual->visible);
+
+    dvz_overlay_card_set_visible(card, true);
+    _scene_prepare_text_visuals(figure);
+    AT(card->card.background_visual->visible);
+    AT(card->rich_block.image_visual->visible);
+
+    dvz_overlay_card_clear_rich_text(card);
+    AT(!card->rich_enabled);
+    AT(card->rich_block.image_visual == NULL);
+    AT(card->card.content == DVZ_SCENE_CARD_CONTENT_TEXT);
+    _scene_prepare_text_visuals(figure);
+    AT(card->card.text_visual != NULL);
+    AT(card->card.text_visual->visible);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
 int test_scene_text_annotation_bookkeeping(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
@@ -2525,6 +2603,7 @@ int test_scene_interaction(TstSuite* suite)
     TST_CASE(test_scene_selection_apply_pick_updates_visual_masks);
     TST_CASE(test_scene_selection_card_realizes_pick_metadata);
     TST_CASE(test_scene_overlay_card_public_api);
+    TST_CASE(test_scene_overlay_card_rich_text_public_api);
     TST_CASE(test_scene_text_annotation_bookkeeping);
     TST_CASE(test_scene_scalebar_formatting);
     TST_CASE(test_scene_scalebar_2d_realization);

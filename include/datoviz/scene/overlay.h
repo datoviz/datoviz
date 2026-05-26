@@ -72,6 +72,18 @@ typedef struct DvzOverlayCardDesc
 } DvzOverlayCardDesc;
 
 
+typedef struct DvzOverlayRichTextDesc
+{
+    const char* source;
+    float max_width_px;
+    float char_width_px;
+    float line_height_px;
+    float scale;
+    DvzColor text_color;
+    DvzColor background_color;
+} DvzOverlayRichTextDesc;
+
+
 /**
  * Create a panel overlay object.
  *
@@ -135,6 +147,25 @@ DVZ_EXPORT int dvz_overlay_card_set_style(
  * @param text the text, or NULL to clear it
  */
 DVZ_EXPORT void dvz_overlay_card_set_text(DvzOverlayCard* card, const char* text);
+
+
+/**
+ * Set rich text displayed in an overlay card.
+ *
+ * @param card the card
+ * @param desc rich text descriptor
+ * @return 0 on success, -1 on error
+ */
+DVZ_EXPORT int dvz_overlay_card_set_rich_text(
+    DvzOverlayCard* card, const DvzOverlayRichTextDesc* desc);
+
+
+/**
+ * Clear rich text content and return the card to the plain GPU text path.
+ *
+ * @param card the card
+ */
+DVZ_EXPORT void dvz_overlay_card_clear_rich_text(DvzOverlayCard* card);
 
 
 /**
