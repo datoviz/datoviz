@@ -2431,6 +2431,12 @@ static bool _scene_panel_has_pending_adornment_work(const DvzPanel* panel)
         if (readout->panel == panel && readout->card.dirty)
             return true;
     }
+    for (uint32_t i = 0; i < scene->selection_count; i++)
+    {
+        const DvzSelection* selection = &scene->selections[i];
+        if (selection->card_panel == panel && selection->card.dirty)
+            return true;
+    }
     for (uint32_t i = 0; i < scene->text_count; i++)
     {
         const DvzText* text = &scene->texts[i];

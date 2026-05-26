@@ -398,6 +398,7 @@ struct DvzSceneCard
     uint32_t figure_width;
     uint32_t figure_height;
     bool dirty;
+    bool visible;
 };
 
 
@@ -770,6 +771,10 @@ struct DvzSelection
 {
     DvzScene* scene;
     DvzSelectionDesc desc;
+    DvzPanel* card_panel;
+    bool card_enabled;
+    DvzPickResult card_pick;
+    DvzSceneCard card;
     uint32_t item_count;
     DvzSelectionItem items[DVZ_SCENE_MAX_SELECTION_ITEMS];
 };
@@ -1773,6 +1778,8 @@ void _scene_prepare_bounds_visuals(DvzFigure* figure);
 void _scene_prepare_text_visuals(DvzFigure* figure);
 
 void _scene_prepare_pinned_readout_cards(DvzFigure* figure);
+
+void _scene_prepare_selection_cards(DvzFigure* figure);
 
 DvzVisual* _scene_text_visual(DvzScene* scene, uint32_t flags);
 

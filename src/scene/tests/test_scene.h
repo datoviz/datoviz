@@ -808,6 +808,8 @@ int test_scene_selection_apply_pick_and_link_keys(TstContext* suite, const TstCa
 
 int test_scene_selection_apply_pick_updates_visual_masks(TstContext* suite, const TstCase* item);
 
+int test_scene_selection_card_realizes_pick_metadata(TstContext* suite, const TstCase* item);
+
 int test_scene_pick_probe_queues_and_pinned_readout(TstContext* suite, const TstCase* item);
 
 int test_scene_pick_request_same_id_supersedes_older_unresolved(

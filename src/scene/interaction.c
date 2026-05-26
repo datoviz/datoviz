@@ -14,6 +14,7 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
+#include <inttypes.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <string.h>
@@ -52,6 +53,16 @@ static bool _selection_matches_visual_item(
 static int _selection_sync_visual_mask(DvzSelection* selection, DvzVisual* visual);
 
 static int _selection_sync_masks(DvzSelection* selection);
+
+static DvzPanel* _selection_card_panel_from_pick(DvzSelection* selection, const DvzPickResult* pick);
+
+static void _selection_card_refresh_text(DvzSelection* selection, const DvzPickResult* pick);
+
+static void _selection_card_hide(DvzSelection* selection);
+
+static void _selection_card_update_from_pick(DvzSelection* selection, const DvzPickResult* pick);
+
+static bool _selection_card_realize(DvzFigure* figure, DvzSelection* selection);
 
 static void _readout_format_value(
     const DvzSceneFormatState* format, double value, char* out, uint32_t out_size);
@@ -309,6 +320,133 @@ static int _selection_sync_masks(DvzSelection* selection)
 }
 
 
+/**
+ * Resolve the panel that owns one selected-pick card.
+ *
+ * @param selection the selection
+ * @param pick the pick result
+ * @return the panel, or NULL when the pick cannot be resolved to this scene
+ */
+static DvzPanel* _selection_card_panel_from_pick(DvzSelection* selection, const DvzPickResult* pick)
+{
+    ANN(selection);
+    ANN(pick);
+    DvzScene* scene = selection->scene;
+    if (scene == NULL)
+        return NULL;
+
+    for (uint32_t fi = 0; fi < scene->figure_count; fi++)
+    {
+        DvzFigure* figure = &scene->figures[fi];
+        for (uint32_t pi = 0; pi < figure->panel_count; pi++)
+        {
+            DvzPanel* panel = &figure->panels[pi];
+            if (_scene_panel_public_id(figure, panel) == pick->panel_id)
+                return panel;
+        }
+    }
+    return NULL;
+}
+
+
+/**
+ * Format the selected-item metadata card text.
+ *
+ * @param selection the selection
+ * @param pick the pick result
+ */
+static void _selection_card_refresh_text(DvzSelection* selection, const DvzPickResult* pick)
+{
+    ANN(selection);
+    ANN(pick);
+    uint64_t item_id = pick->resolved_id != 0 ? pick->resolved_id : pick->item_id;
+    if (pick->link_key != 0)
+    {
+        dvz_snprintf(
+            selection->card.text, sizeof(selection->card.text),
+            "visual %" PRIu64 " item %" PRIu64 " key %" PRIu64, pick->visual_id, item_id,
+            pick->link_key);
+    }
+    else
+    {
+        dvz_snprintf(
+            selection->card.text, sizeof(selection->card.text),
+            "visual %" PRIu64 " item %" PRIu64, pick->visual_id, item_id);
+    }
+}
+
+
+/**
+ * Hide the selected-item metadata card.
+ *
+ * @param selection the selection
+ */
+static void _selection_card_hide(DvzSelection* selection)
+{
+    if (selection == NULL)
+        return;
+    DvzFigure* figure = selection->card_panel != NULL ? selection->card_panel->figure : NULL;
+    _scene_card_hide(&selection->card);
+    selection->card_panel = NULL;
+    selection->card_pick = (DvzPickResult){0};
+    selection->card.text[0] = '\0';
+    selection->card.dirty = true;
+    _scene_notify_request_frame(figure);
+}
+
+
+/**
+ * Update the selected-item metadata card from one applied pick.
+ *
+ * @param selection the selection
+ * @param pick the pick result
+ */
+static void _selection_card_update_from_pick(DvzSelection* selection, const DvzPickResult* pick)
+{
+    ANN(selection);
+    ANN(pick);
+    if (!selection->card_enabled)
+        return;
+    DvzPanel* panel = _selection_card_panel_from_pick(selection, pick);
+    if (panel == NULL)
+    {
+        _selection_card_hide(selection);
+        return;
+    }
+    if (selection->card.panel == NULL)
+        _scene_card_init(&selection->card, panel);
+    selection->card.panel = panel;
+    selection->card_panel = panel;
+    selection->card_pick = *pick;
+    selection->card.visible = true;
+    selection->card.anchor_px[0] = (float)pick->panel_position[0];
+    selection->card.anchor_px[1] = (float)pick->panel_position[1];
+    _selection_card_refresh_text(selection, pick);
+    selection->card.dirty = true;
+    _scene_notify_request_frame(panel->figure);
+}
+
+
+/**
+ * Realize or update the selected-item metadata card for one selection.
+ *
+ * @param figure the figure being prepared
+ * @param selection the selection
+ * @return whether realization succeeded
+ */
+static bool _selection_card_realize(DvzFigure* figure, DvzSelection* selection)
+{
+    ANN(figure);
+    ANN(selection);
+    if (selection->scene == NULL || selection->card_panel == NULL ||
+        selection->card_panel->figure != figure)
+    {
+        return true;
+    }
+    return _scene_card_realize(figure, &selection->card);
+}
+
+
 
 /**
  * Format one numeric value for a readout label.
@@ -459,6 +597,7 @@ static void _scene_card_init(DvzSceneCard* card, DvzPanel* panel)
     card->background_color = dvz_color_rgba(16, 22, 32, 225);
     card->text_color = dvz_color_rgb(245, 248, 255);
     card->dirty = true;
+    card->visible = true;
 }
 
 
@@ -490,6 +629,7 @@ static void _scene_card_hide(DvzSceneCard* card)
 {
     if (card == NULL)
         return;
+    card->visible = false;
     if (card->background_visual != NULL)
         dvz_visual_set_visible(card->background_visual, false);
     if (card->text_visual != NULL)
@@ -516,7 +656,7 @@ static bool _scene_card_realize(DvzFigure* figure, DvzSceneCard* card)
     DvzPanel* panel = card->panel;
     if (panel == NULL || panel->figure != figure)
         return true;
-    if (card->text[0] == '\0')
+    if (!card->visible || card->text[0] == '\0')
     {
         _scene_card_hide(card);
         return true;
@@ -669,6 +809,7 @@ static bool _readout_card_realize(DvzFigure* figure, DvzPinnedReadout* readout)
     }
     if (card->panel == NULL)
         _scene_card_init(card, readout->panel);
+    card->visible = true;
     if (strcmp(card->text, readout->text) != 0)
     {
         dvz_strlcpy(card->text, readout->text, sizeof(card->text));
@@ -921,6 +1062,7 @@ DvzSelection* dvz_selection(DvzScene* scene, const DvzSelectionDesc* desc)
         selection->desc = *desc;
     else
         selection->desc.mode = DVZ_SELECT_REPLACE;
+    selection->card_enabled = true;
     return selection;
 }
 
@@ -935,6 +1077,7 @@ void dvz_selection_destroy(DvzSelection* selection)
 {
     if (selection == NULL)
         return;
+    _selection_card_hide(selection);
     if (selection->scene != NULL)
     {
         DvzScene* scene = selection->scene;
@@ -946,6 +1089,7 @@ void dvz_selection_destroy(DvzSelection* selection)
     }
     selection->scene = NULL;
     selection->item_count = 0;
+    selection->card_enabled = false;
 }
 
 
@@ -960,6 +1104,7 @@ void dvz_selection_clear(DvzSelection* selection)
     ANN(selection);
     _selection_clear_items(selection);
     (void)_selection_sync_masks(selection);
+    _selection_card_hide(selection);
 }
 
 
@@ -990,23 +1135,39 @@ int dvz_selection_apply_pick(DvzSelection* selection, const DvzPickResult* pick)
     switch (selection->desc.mode)
     {
     case DVZ_SELECT_REPLACE:
+    {
         _selection_clear_items(selection);
         selection->items[0] = item;
         selection->item_count = 1;
-        return _selection_sync_masks(selection);
+        int replace_res = _selection_sync_masks(selection);
+        if (replace_res == 0)
+            _selection_card_update_from_pick(selection, pick);
+        return replace_res;
+    }
     case DVZ_SELECT_ADDITIVE:
         if (present)
+        {
+            _selection_card_update_from_pick(selection, pick);
             return 0;
+        }
         break;
     case DVZ_SELECT_SUBTRACT:
+    {
         if (present)
             _scene_remove_selection_item(selection, &item);
-        return _selection_sync_masks(selection);
+        int subtract_res = _selection_sync_masks(selection);
+        if (subtract_res == 0 && selection->item_count == 0)
+            _selection_card_hide(selection);
+        return subtract_res;
+    }
     case DVZ_SELECT_TOGGLE:
         if (present)
         {
             _scene_remove_selection_item(selection, &item);
-            return _selection_sync_masks(selection);
+            int toggle_remove_res = _selection_sync_masks(selection);
+            if (toggle_remove_res == 0)
+                _selection_card_hide(selection);
+            return toggle_remove_res;
         }
         break;
     default:
@@ -1018,7 +1179,10 @@ int dvz_selection_apply_pick(DvzSelection* selection, const DvzPickResult* pick)
         return -1;
     }
     selection->items[selection->item_count++] = item;
-    return _selection_sync_masks(selection);
+    int add_res = _selection_sync_masks(selection);
+    if (add_res == 0)
+        _selection_card_update_from_pick(selection, pick);
+    return add_res;
 }
 
 
@@ -1095,6 +1259,25 @@ void _scene_prepare_pinned_readout_cards(DvzFigure* figure)
         DvzPinnedReadout* readout = &scene->pinned_readouts[i];
         if (!_readout_card_realize(figure, readout))
             log_error("failed to prepare pinned readout card %u", i);
+    }
+}
+
+
+/**
+ * Prepare private selected-item card visuals attached to one figure.
+ *
+ * @param figure the figure being emitted
+ */
+void _scene_prepare_selection_cards(DvzFigure* figure)
+{
+    ANN(figure);
+    ANN(figure->scene);
+    DvzScene* scene = figure->scene;
+    for (uint32_t i = 0; i < scene->selection_count; i++)
+    {
+        DvzSelection* selection = &scene->selections[i];
+        if (!_selection_card_realize(figure, selection))
+            log_error("failed to prepare selection card %u", i);
     }
 }
 

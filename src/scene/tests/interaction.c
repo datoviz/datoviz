@@ -322,6 +322,60 @@ int test_scene_selection_apply_pick_updates_visual_masks(TstContext* suite, cons
 }
 
 
+int test_scene_selection_card_realizes_pick_metadata(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    ANN(item);
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 640, 480, 0);
+    DvzPanel* panel = dvz_panel(
+        figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+    DvzSelection* selection = dvz_selection(
+        scene, &(DvzSelectionDesc){.mode = DVZ_SELECT_REPLACE, .target = DVZ_SCENE_TARGET_ITEM});
+    ANN(figure);
+    ANN(panel);
+    ANN(selection);
+
+    DvzPickResult pick = {
+        .request_id = 1,
+        .status = DVZ_PICK_STATUS_HIT,
+        .hit = true,
+        .panel_id = _scene_panel_public_id(figure, panel),
+        .visual_id = 7,
+        .item_id = 42,
+        .resolved_target = DVZ_SCENE_TARGET_ITEM,
+        .resolved_id = 42,
+        .link_key = 123,
+        .panel_position = {20.0, 30.0},
+    };
+    AT(dvz_selection_apply_pick(selection, &pick) == 0);
+    AT(selection->card_panel == panel);
+    AT(selection->card.visible);
+    AT(selection->card.dirty);
+    AT(strcmp(selection->card.text, "visual 7 item 42 key 123") == 0);
+
+    _scene_prepare_text_visuals(figure);
+    AT(selection->card.background_visual != NULL);
+    AT(selection->card.text_visual != NULL);
+    AT(selection->card.text_visual->text.glyph_visual != NULL);
+    AT(selection->card.background_visual->visible);
+    AT(selection->card.text_visual->visible);
+    AT(selection->card.text_visual->text.glyph_visual->visible);
+    AT(!selection->card.dirty);
+
+    dvz_selection_clear(selection);
+    AT(selection->card_panel == NULL);
+    AT(!selection->card.visible);
+    AT(!selection->card.background_visual->visible);
+    AT(!selection->card.text_visual->visible);
+    AT(!selection->card.text_visual->text.glyph_visual->visible);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
 int test_scene_text_annotation_bookkeeping(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
@@ -2360,6 +2414,7 @@ int test_scene_interaction(TstSuite* suite)
     TST_CASE(test_scene_interaction_core);
     TST_CASE(test_scene_selection_apply_pick_and_link_keys);
     TST_CASE(test_scene_selection_apply_pick_updates_visual_masks);
+    TST_CASE(test_scene_selection_card_realizes_pick_metadata);
     TST_CASE(test_scene_text_annotation_bookkeeping);
     TST_CASE(test_scene_scalebar_formatting);
     TST_CASE(test_scene_scalebar_2d_realization);
