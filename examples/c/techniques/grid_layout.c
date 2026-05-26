@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* grid_layout — retained grid/subplot layout smoke example.
+/* grid_layout - retained grid/subplot layout smoke example.
  *
- * Opens a GLFW window with four plot panels and one fixed-width colorbar-style panel created from
- * one retained figure grid. Resize the window to verify the colorbar column remains 60 logical
- * pixels wide while plot columns absorb the remaining space.
+ * Opens a GLFW window with an irregular retained figure grid: mixed weighted/fixed tracks,
+ * multi-row and multi-column plot panels, and one fixed-width colorbar-style panel. Resize the
+ * window to verify fixed tracks remain stable while weighted tracks absorb the remaining space.
  *
  * Build:  just example-c grid_layout
  * Run:    ./build/examples/c/techniques/grid_layout
@@ -38,6 +38,7 @@
 
 #define WIDTH       1000
 #define HEIGHT      760
+#define PLOT_COUNT  5
 #define POINT_COLS  14
 #define POINT_ROWS  12
 #define POINT_COUNT (POINT_COLS * POINT_ROWS)
@@ -156,7 +157,7 @@ int main(int argc, char** argv)
     DvzFigure* figure = dvz_figure(scene, WIDTH, HEIGHT, 0);
     EXAMPLE_CHECK(figure != NULL, "dvz_figure() failed");
 
-    DvzGrid* grid = dvz_figure_grid(figure, 2, 3);
+    DvzGrid* grid = dvz_figure_grid(figure, 3, 4);
     EXAMPLE_CHECK(grid != NULL, "dvz_figure_grid() failed");
     bool ok = dvz_grid_set_margins(
         grid, &(DvzPanelReserve){.left_px = 24.0f, .right_px = 24.0f, .top_px = 24.0f,
@@ -164,24 +165,44 @@ int main(int argc, char** argv)
     EXAMPLE_CHECK(ok, "dvz_grid_set_margins() failed");
     ok = dvz_grid_set_gutter(grid, 12.0f, 12.0f);
     EXAMPLE_CHECK(ok, "dvz_grid_set_gutter() failed");
-    ok = dvz_grid_col_size(grid, 2, DVZ_GRID_SIZE_FIXED_PX, 60.0f);
-    EXAMPLE_CHECK(ok, "dvz_grid_col_size() failed");
 
-    DvzPanel* panels[4] = {
-        dvz_grid_panel(grid, 0, 0),
-        dvz_grid_panel(grid, 0, 1),
-        dvz_grid_panel(grid, 1, 0),
-        dvz_grid_panel(grid, 1, 1),
+    ok = dvz_grid_col_size(grid, 0, DVZ_GRID_SIZE_WEIGHT, 1.35f);
+    EXAMPLE_CHECK(ok, "dvz_grid_col_size(col 0) failed");
+    ok = dvz_grid_col_size(grid, 1, DVZ_GRID_SIZE_WEIGHT, 0.95f);
+    EXAMPLE_CHECK(ok, "dvz_grid_col_size(col 1) failed");
+    ok = dvz_grid_col_size(grid, 2, DVZ_GRID_SIZE_FIXED_PX, 210.0f);
+    EXAMPLE_CHECK(ok, "dvz_grid_col_size(col 2) failed");
+    ok = dvz_grid_col_size(grid, 3, DVZ_GRID_SIZE_FIXED_PX, 64.0f);
+    EXAMPLE_CHECK(ok, "dvz_grid_col_size(col 3) failed");
+
+    ok = dvz_grid_row_size(grid, 0, DVZ_GRID_SIZE_FIXED_PX, 180.0f);
+    EXAMPLE_CHECK(ok, "dvz_grid_row_size(row 0) failed");
+    ok = dvz_grid_row_size(grid, 1, DVZ_GRID_SIZE_WEIGHT, 1.45f);
+    EXAMPLE_CHECK(ok, "dvz_grid_row_size(row 1) failed");
+    ok = dvz_grid_row_size(grid, 2, DVZ_GRID_SIZE_WEIGHT, 0.90f);
+    EXAMPLE_CHECK(ok, "dvz_grid_row_size(row 2) failed");
+
+    DvzPanel* panels[PLOT_COUNT] = {
+        dvz_grid_panel_span(grid, 0, 0, 2, 2),
+        dvz_grid_panel(grid, 0, 2),
+        dvz_grid_panel(grid, 1, 2),
+        dvz_grid_panel(grid, 2, 0),
+        dvz_grid_panel_span(grid, 2, 1, 1, 2),
     };
-    DvzPanel* colorbar_panel = dvz_grid_panel_span(grid, 0, 2, 2, 1);
-    EXAMPLE_CHECK(colorbar_panel != NULL, "dvz_grid_panel_span() failed");
-    for (uint32_t i = 0; i < 4; i++)
-        EXAMPLE_CHECK(panels[i] != NULL, "dvz_grid_panel() failed");
+    DvzPanel* colorbar_panel = dvz_grid_panel_span(grid, 0, 3, 3, 1);
+    EXAMPLE_CHECK(colorbar_panel != NULL, "dvz_grid_panel_span(colorbar) failed");
+    for (uint32_t i = 0; i < PLOT_COUNT; i++)
+        EXAMPLE_CHECK(panels[i] != NULL, "plot panel creation failed");
+
+    ok = dvz_panel_set_layout_reserve(
+        panels[0], &(DvzPanelLayoutReserve){.left = 0.10f, .bottom = 0.08f});
+    EXAMPLE_CHECK(ok, "dvz_panel_set_layout_reserve() failed");
 
     dvz_panel_set_background_color(panels[0], 0.045f, 0.060f, 0.075f, 1.0f);
     dvz_panel_set_background_color(panels[1], 0.070f, 0.055f, 0.050f, 1.0f);
     dvz_panel_set_background_color(panels[2], 0.055f, 0.060f, 0.045f, 1.0f);
     dvz_panel_set_background_color(panels[3], 0.050f, 0.050f, 0.070f, 1.0f);
+    dvz_panel_set_background_color(panels[4], 0.045f, 0.066f, 0.064f, 1.0f);
     ok = dvz_panel_set_background(
         colorbar_panel,
         &(DvzPanelBackgroundDesc){
@@ -204,6 +225,8 @@ int main(int argc, char** argv)
     EXAMPLE_CHECK(ok, "_add_point_grid(panel 2) failed");
     ok = _add_point_grid(scene, panels[3], 120, 90, 170);
     EXAMPLE_CHECK(ok, "_add_point_grid(panel 3) failed");
+    ok = _add_point_grid(scene, panels[4], 65, 135, 150);
+    EXAMPLE_CHECK(ok, "_add_point_grid(panel 4) failed");
 
     app = dvz_app(scene);
     EXAMPLE_CHECK(app != NULL, "dvz_app() failed (no GPU or display?)");
@@ -211,7 +234,7 @@ int main(int argc, char** argv)
     DvzView* win = dvz_view_glfw(app, figure, WIDTH, HEIGHT, "grid_layout");
     EXAMPLE_CHECK(win != NULL, "dvz_view_glfw() failed (GLFW unavailable?)");
 
-    ok = _attach_panzoom(scene, win, panels, 4);
+    ok = _attach_panzoom(scene, win, panels, PLOT_COUNT);
     EXAMPLE_CHECK(ok, "panzoom setup failed");
 
     dvz_app_run(app, example_frame_count(argc, argv));
