@@ -1,7 +1,7 @@
 # Scene Example Release Staging
 
 > **Status:** Active planning
-> **Updated on:** 2026-05-25
+> **Updated on:** 2026-05-26
 > **Scope:** `spec/scene/examples`, current `examples/c`, and v0.4/v0.5/later feature staging
 > **Purpose:** classify examples by release target and make feature dependencies explicit.
 
@@ -20,6 +20,8 @@ Read this together with:
    for visual-payoff ranking,
 4. [`../../../agents/now/STATUS.md`](../../../agents/now/STATUS.md)
    for the active C implementation critical path.
+5. [`../../api/PYTHON_GSP_SCOPE.md`](../../api/PYTHON_GSP_SCOPE.md)
+   for the Datoviz, raw `ctypes`, GSP, and VisPy2 ownership split.
 
 
 ## Staging Vocabulary
@@ -36,6 +38,12 @@ Read this together with:
 The release target is about the **example promise**, not whether individual low-level pieces already
 exist. An example may use implemented features and still be staged for v0.5 if the full workflow
 needs deferred semantics, data policies, or API cleanup.
+
+Language ownership is part of the staging decision. Datoviz v0.4 examples are C-first because the
+v0.4 release surface is the native renderer/runtime and C API. Raw Python examples in this
+repository should stay close to generated `ctypes` smoke coverage. Pythonic plotting, notebook,
+dashboard, backend-comparison, and high-level scientific workflow examples belong primarily in
+GSP/VisPy2.
 
 Each example also has a separate **current readiness**:
 
@@ -69,6 +77,27 @@ label-layout polish can move to RC2 or v0.5.
 | WebGPU/WASM | Experimental point/primitive/image/basic mesh subset. | Broader scene subset and automated browser parity. | Full backend parity only if justified by demand. |
 | Vector export | Out of Datoviz scope. | Out of Datoviz scope. | GSP/Matplotlib publication backend. |
 | OO Python plotting | Out of Datoviz scope. | External GSP/VisPy2. | External GSP/VisPy2. |
+
+
+## Repository And Language Ownership
+
+Use the following split when deciding where an example should live:
+
+| Example kind | Primary repository | Language |
+|---|---|---|
+| Core renderer and visual fixtures | Datoviz | C |
+| Native app, controller, picking/probing, capture, and runtime examples | Datoviz | C |
+| Renderer/performance showcase examples | Datoviz | C |
+| DRP2, DVZR, WebGPU stream, and hosted-runtime validation | Datoviz | C or fixtures |
+| Raw binding smoke examples | Datoviz | minimal Python `ctypes` |
+| Pythonic plotting and scientific workflows | GSP/VisPy2 | Python |
+| Backend comparison examples, including Datoviz and Matplotlib renderers | GSP/VisPy2 | Python |
+| Publication/static Matplotlib fallback examples | GSP/VisPy2 | Python |
+
+Do not move Datoviz C showcase examples to Python merely because GSP/VisPy2 will become the
+Pythonic user surface. Datoviz keeps native C examples as release proof. Later GSP/VisPy2 examples
+may mirror some showcases through a higher-level Python API, but those examples should be
+counterparts rather than replacements.
 
 
 ## v0.4 Required Examples

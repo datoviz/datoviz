@@ -2,7 +2,7 @@
 
 > **Execution Status**
 > - **Status:** `ACTIVE DOCUMENTATION ROADMAP`
-> - **Updated on:** `2026-05-25`
+> - **Updated on:** `2026-05-26`
 > - **Purpose:** collect the v0.4 public-documentation deliverables, release gates, and
 >   source-of-truth links in one place
 > - **Audience:** maintainers and agents preparing the v0.4 API/docs inventory, release
@@ -21,14 +21,16 @@ the final release.
 3. Branch orientation belongs in [START.md](START.md).
 4. Normative public API rules belong in
    [../../spec/api/PUBLIC_API_CONVENTIONS.md](../../spec/api/PUBLIC_API_CONVENTIONS.md).
-5. Normative scene API shape belongs in
+5. The v0.4 C, raw `ctypes`, GSP, and VisPy2 ownership split belongs in
+   [../../spec/api/PYTHON_GSP_SCOPE.md](../../spec/api/PYTHON_GSP_SCOPE.md).
+6. Normative scene API shape belongs in
    [../../spec/scene/api/API_SURFACE.md](../../spec/scene/api/API_SURFACE.md) and installed
    headers under `include/datoviz/`.
-6. Scene semantics, visual contracts, frame planning, interaction, annotations, scales, and runtime
+7. Scene semantics, visual contracts, frame planning, interaction, annotations, scales, and runtime
    boundaries belong under [../../spec/scene/](../../spec/scene/).
-7. DRP2 commands, schemas, fixtures, conformance, and runtime contract details belong under
+8. DRP2 commands, schemas, fixtures, conformance, and runtime contract details belong under
    [../../spec/drp2/](../../spec/drp2/).
-8. User-facing tutorial, guide, and reference material should move to `docs/` only once the v0.4
+9. User-facing tutorial, guide, and reference material should move to `docs/` only once the v0.4
    public documentation migration has explicitly started.
 
 Do not copy detailed API rules or visual semantics into this file. Link to the owning spec instead.
@@ -54,6 +56,32 @@ The v0.4 public documentation set should include:
 11. WebGPU/WASM experimental-scope documentation with supported subset, diagnostics, and known gaps.
 12. GSP/VisPy2 positioning note that keeps high-level Python plotting outside the Datoviz v0.4
     release surface.
+
+
+## User Documentation Rebuild
+
+The v0.4 public documentation should be rebuilt around the new release surface rather than patched
+page-by-page from the legacy v0.3 Python-first docs. Datoviz v0.4 should be documented as a C-first
+renderer/runtime with native scene/app examples, raw generated `ctypes` for low-level Python
+integration, and GSP/VisPy2 as the intended home for Pythonic scientific visualization.
+
+The full v0.4 documentation structure should separate:
+
+1. getting started material for installing, building, running a first C scene, opening a window,
+   and capturing offscreen output;
+2. a C user guide covering scenes, figures, panels, visuals, retained data updates, scales,
+   colormaps, axes, text, annotations, controllers, picking/probing, selection, animation, and
+   capture;
+3. focused tutorials backed by runnable C examples, with screenshots or captured artifacts;
+4. visual-family reference pages for the v0.4 supported families;
+5. advanced topics for architecture, scene -> DRP2 -> runtime, frame lifecycle, resource ownership,
+   performance, rendering techniques, hosted integration, WebGPU/WASM, and DRP2/DVZR;
+6. reference pages for the C API, raw `ctypes`, feature status, known issues, and v0.3-to-v0.4
+   visible migration notes.
+
+Do not recreate the v0.3 object-oriented Python guide inside Datoviz. The Datoviz Python material
+should be deliberately small: raw `ctypes` loading, ownership rules, a few smoke examples, and links
+to GSP/VisPy2 for the Pythonic API.
 
 
 ## API Inventory Deliverables
